@@ -28,7 +28,7 @@
 #define TEXT_BUFFER_H_
 
 #include "TextSelection.h"
-#include "string_view.h"
+#include "util/string_view.h"
 #include <string>
 #include <deque>
 

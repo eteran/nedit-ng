@@ -27,7 +27,7 @@
 #ifndef SHIFT_H_
 #define SHIFT_H_
 
-#include "string_view.h"
+#include "util/string_view.h"
 #include "ShiftDirection.h"
 
 class Document;

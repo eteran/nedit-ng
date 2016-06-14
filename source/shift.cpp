@@ -35,7 +35,7 @@
 #include "nedit.h"
 #include "Document.h"
 #include "window.h"
-#include "memory.h"
+#include "util/memory.h"
 #include "TextDisplay.h"
 
 #include <cstring>

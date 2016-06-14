@@ -197,6 +197,7 @@ add_executable(nedit
 include(${QT_USE_FILE})
 
 include_directories(nedit
+	${PROJECT_SOURCE_DIR}
 	${CMAKE_CURRENT_SOURCE_DIR}/ui
 	${CMAKE_CURRENT_SOURCE_DIR}/include
 	${MOTIF_INCLUDES}

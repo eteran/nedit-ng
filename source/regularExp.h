@@ -27,7 +27,7 @@
 #include <X11/Intrinsic.h>
 #include <cstdint>
 #include "regex_error.h"
-#include "string_view.h"
+#include "util/string_view.h"
 #include <string>
 
 #ifndef REGULAREXP_H_

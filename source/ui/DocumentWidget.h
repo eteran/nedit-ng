@@ -6,7 +6,7 @@
 #include <QDialog>
 #include <QPointer>
 #include "LockReasons.h"
-#include "FileFormats.h"
+#include "util/FileFormats.h"
 #include "Bookmark.h"
 #include "userCmds.h"
 #include <Xm/Xm.h>

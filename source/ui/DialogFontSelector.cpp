@@ -6,7 +6,7 @@
 #include <set>
 #include <QStringList>
 #include <QString>
-#include "MotifHelper.h"
+#include "util/MotifHelper.h"
 
 namespace {
 const char DELIM = '-';

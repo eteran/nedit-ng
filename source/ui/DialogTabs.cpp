@@ -5,7 +5,7 @@
 #include "DialogTabs.h"
 #include "Document.h"
 #include "preferences.h"
-#include "MotifHelper.h"
+#include "util/MotifHelper.h"
 
 //------------------------------------------------------------------------------
 // Name: 

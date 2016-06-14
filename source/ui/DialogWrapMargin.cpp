@@ -3,7 +3,7 @@
 #include <QMessageBox>
 #include "preferences.h"
 #include "Document.h"
-#include "MotifHelper.h"
+#include "util/MotifHelper.h"
 
 DialogWrapMargin::DialogWrapMargin(Document *window, QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f), window_(window) {
 	ui.setupUi(this);

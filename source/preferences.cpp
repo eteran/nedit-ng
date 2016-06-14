@@ -37,7 +37,7 @@
 #include "ui/DialogColors.h"
 #include "LanguageMode.h"
 
-#include "memory.h"
+#include "util/memory.h"
 #include "preferences.h"
 #include "TextBuffer.h"
 #include "nedit.h"
@@ -54,11 +54,11 @@
 #include "smartIndent.h"
 #include "server.h"
 #include "tags.h"
-#include "MotifHelper.h"
-#include "prefFile.h"
-#include "misc.h"
-#include "fileUtils.h"
-#include "utils.h"
+#include "util/MotifHelper.h"
+#include "util/prefFile.h"
+#include "util/misc.h"
+#include "util/fileUtils.h"
+#include "util/utils.h"
 
 #include <cctype>
 #include <pwd.h>
@@ -69,7 +69,7 @@
 #include <sys/stat.h>
 
 #include <sys/param.h>
-#include "clearcase.h"
+#include "util/clearcase.h"
 
 #include <Xm/PushBG.h>
 #include <Xm/ToggleBG.h>

@@ -28,7 +28,7 @@
 #define HIGHLIGHT_DATA_H_
 
 #include "highlight.h"
-#include "string_view.h"
+#include "util/string_view.h"
 #include "preferences.h"
 #include <string>
 #include <QList>

@@ -31,7 +31,7 @@
 #include "ui/DialogFind.h"
 #include "ui/DialogReplace.h"
 #include "ui/DialogMultiReplace.h"
-#include "memory.h"
+#include "util/memory.h"
 #include "WrapStyle.h"
 #include "TextDisplay.h"
 #include "TextHelper.h"
@@ -48,14 +48,14 @@
 #include "file.h"
 #include "highlight.h"
 #include "selection.h"
-#include "MotifHelper.h"
+#include "util/MotifHelper.h"
 
 #ifdef REPLACE_SCOPE
 #include "TextDisplay.h"
 #include "textP.h"
 #endif
 
-#include "misc.h"
+#include "util/misc.h"
 
 #include <algorithm>
 #include <cstdlib>

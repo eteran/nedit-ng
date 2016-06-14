@@ -26,7 +26,7 @@
 *                                                                              *
 *******************************************************************************/
 
-#include "MotifHelper.h"
+#include "util/MotifHelper.h"
 #include "interpret.h"
 #include "TextBuffer.h"
 #include "nedit.h"

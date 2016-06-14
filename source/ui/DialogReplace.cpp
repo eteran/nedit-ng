@@ -9,9 +9,9 @@
 #include "Document.h"
 #include "search.h" // for the search type enum
 #include "server.h"
-#include "memory.h"
+#include "util/memory.h"
 #include "preferences.h"
-#include "MotifHelper.h"
+#include "util/MotifHelper.h"
 #include "regularExp.h"
 
 namespace {

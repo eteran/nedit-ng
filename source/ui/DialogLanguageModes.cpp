@@ -7,7 +7,7 @@
 #include <QRegExp>
 #include <QMessageBox>
 #include "DialogLanguageModes.h"
-#include "memory.h"
+#include "util/memory.h"
 #include "LanguageMode.h"
 #include "preferences.h"
 #include "Document.h"

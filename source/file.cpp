@@ -55,9 +55,9 @@
 #include "server.h"
 #include "interpret.h"
 #include "Document.h"
-#include "misc.h"
-#include "fileUtils.h"
-#include "utils.h"
+#include "util/misc.h"
+#include "util/fileUtils.h"
+#include "util/utils.h"
 
 #include <cerrno>
 #include <climits>

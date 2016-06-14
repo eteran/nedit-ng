@@ -43,10 +43,10 @@
 #include "search.h"
 #include "selection.h"
 #include "calltips.h"
-#include "MotifHelper.h"
-#include "fileUtils.h"
-#include "misc.h"
-#include "utils.h"
+#include "util/MotifHelper.h"
+#include "util/fileUtils.h"
+#include "util/misc.h"
+#include "util/utils.h"
 
 #include <cstdio>
 #include <cstdlib>

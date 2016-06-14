@@ -1,5 +1,5 @@
 
-#include "MotifHelper.h"
+#include "util/MotifHelper.h"
 #include "RangesetTable.h"
 #include "TextBuffer.h"
 #include <string>

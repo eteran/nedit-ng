@@ -50,14 +50,16 @@
 #include "interpret.h"
 #include "RangesetTable.h"
 #include "Rangeset.h"
-#include "MotifHelper.h"
-#include "../util/clearcase.h"
-#include "../util/misc.h"
-#include "../util/fileUtils.h"
-#include "../util/utils.h"
-#include "../util/fileUtils.h"
-#include "../Xlt/BubbleButtonP.h"
-#include "../Microline/XmL/Folder.h"
+
+#include "util/MotifHelper.h"
+#include "util/clearcase.h"
+#include "util/misc.h"
+#include "util/fileUtils.h"
+#include "util/utils.h"
+#include "util/fileUtils.h"
+
+#include "Xlt/BubbleButtonP.h"
+#include "Microline/XmL/Folder.h"
 
 #include <algorithm>
 #include <cctype>

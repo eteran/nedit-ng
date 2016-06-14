@@ -26,11 +26,11 @@
 *                                                                              *
 *******************************************************************************/
 
-#include "prefFile.h"
-#include "fileUtils.h"
-#include "utils.h"
-#include "system.h"
-#include "clearcase.h"
+#include "util/prefFile.h"
+#include "util/fileUtils.h"
+#include "util/utils.h"
+#include "util/system.h"
+#include "util/clearcase.h"
 #include "server_common.h"
 
 #include <cstdio>

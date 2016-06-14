@@ -39,9 +39,9 @@
 #include "menu.h"
 #include "preferences.h"
 #include "server_common.h"
-#include "../util/fileUtils.h"
-#include "../util/utils.h"
-#include "../util/misc.h"
+#include "util/fileUtils.h"
+#include "util/utils.h"
+#include "util/misc.h"
 
 #include <cstdio>
 #include <cstdlib>

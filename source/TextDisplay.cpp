@@ -40,9 +40,9 @@
 #include "Rangeset.h"
 #include "RangesetTable.h"
 #include "TextHelper.h"
-#include "misc.h"
-#include "MotifHelper.h"
-#include "memory.h"
+#include "util/misc.h"
+#include "util/MotifHelper.h"
+#include "util/memory.h"
 
 #include <cstdio>
 #include <cstdlib>

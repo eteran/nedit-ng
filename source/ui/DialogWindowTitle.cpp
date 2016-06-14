@@ -3,10 +3,10 @@
 #include <QRegExpValidator>
 #include "DialogWindowTitle.h"
 #include "Document.h"
-#include "clearcase.h"
+#include "util/clearcase.h"
 #include "preferences.h"
 #include "nedit.h"
-#include "utils.h"
+#include "util/utils.h"
 
 struct UpdateState {
 	bool fileNamePresent;

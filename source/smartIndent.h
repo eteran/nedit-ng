@@ -28,7 +28,7 @@
 #define X_SMART_INDENT_H_
 
 #include "preferences.h"
-#include "string_view.h"
+#include "util/string_view.h"
 #include <X11/Intrinsic.h>
 
 class QString;

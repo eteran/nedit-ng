@@ -28,8 +28,8 @@
 #define FILE_H_
 
 #include "nedit.h"
-#include "fileUtils.h"
-#include "string_view.h"
+#include "util/fileUtils.h"
+#include "util/string_view.h"
 
 /* flags for EditExistingFile */
 enum EditFlags {

@@ -41,14 +41,14 @@
 #include "help.h"
 #include "interpret.h"
 #include "macro.h"
-#include "MotifHelper.h"
+#include "util/MotifHelper.h"
 #include "nedit.h"
 #include "parse.h"
 #include "preferences.h"
 #include "shift.h"
 #include "TextBuffer.h"
 #include "text.h"
-#include "misc.h"
+#include "util/misc.h"
 #include "window.h"
 
 #include <cstdio>

@@ -6,9 +6,9 @@
 #include <QString>
 #include <list>
 #include "nedit.h"
-#include "fileUtils.h"
+#include "util/fileUtils.h"
 #include "calltips.h"
-#include "string_view.h"
+#include "util/string_view.h"
 #include "LockReasons.h"
 #include "Bookmark.h"
 #include <Xm/Xm.h>

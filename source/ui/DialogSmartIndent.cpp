@@ -9,7 +9,7 @@
 #include "smartIndent.h"
 #include "Document.h"
 #include "preferences.h"
-#include "MotifHelper.h"
+#include "util/MotifHelper.h"
 #include "macro.h"
 #include "interpret.h"
 

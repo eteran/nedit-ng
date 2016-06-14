@@ -26,7 +26,7 @@
 *                                                                              *
 *******************************************************************************/
 
-#include "utils.h"
+#include "util/utils.h"
 #include "nedit.h"
 #include "server_common.h"
 

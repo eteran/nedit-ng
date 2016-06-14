@@ -29,7 +29,7 @@
 
 #include <QString>
 #include "nedit.h"
-#include "string_view.h"
+#include "util/string_view.h"
 
 // types of current dialog and/or menu 
 enum DialogTypes {

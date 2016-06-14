@@ -34,17 +34,14 @@
 #include <QX11Info>
 #include "ui/DialogPrint.h"
 
-#include "QtMotif.h"
+#include "nedit.h"
 #include "Document.h"
-#include "MotifHelper.h"
+#include "QtMotif.h"
 #include "file.h"
-#include "fileUtils.h"
 #include "help.h"
 #include "interpret.h"
 #include "macro.h"
 #include "menu.h"
-#include "misc.h"
-#include "nedit.h"
 #include "parse.h"
 #include "preferences.h"
 #include "regularExp.h"
@@ -53,6 +50,9 @@
 #include "tags.h"
 #include "window.h"
 
+#include "util/MotifHelper.h"
+#include "util/fileUtils.h"
+#include "util/misc.h"
 
 #include <algorithm>
 #include <cctype>

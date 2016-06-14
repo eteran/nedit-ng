@@ -29,7 +29,7 @@
 
 #include "nedit.h"
 #include "rbTree.h"
-#include "string_view.h"
+#include "util/string_view.h"
 #include <map>
 #include <list>
 

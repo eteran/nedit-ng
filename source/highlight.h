@@ -28,7 +28,7 @@
 #define HIGHLIGHT_H_
 
 #include "Color.h"
-#include "string_view.h"
+#include "util/string_view.h"
 
 #include <X11/Intrinsic.h>
 

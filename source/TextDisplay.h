@@ -30,7 +30,7 @@
 #include "BlockDragTypes.h"
 #include "Point.h"
 #include "Rect.h"
-#include "string_view.h"
+#include "util/string_view.h"
 
 #include <X11/Intrinsic.h>
 #include <X11/Xlib.h>

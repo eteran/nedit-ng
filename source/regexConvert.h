@@ -28,7 +28,7 @@
 #define REGEX_CONVERT_H_
 
 #include "regex_error.h"
-#include "string_view.h"
+#include "util/string_view.h"
 
 char *ConvertRE(view::string_view exp);
 void ConvertSubstituteRE(const char *source, char *dest, int max);

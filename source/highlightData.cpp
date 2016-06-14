@@ -46,12 +46,12 @@
 #include "window.h"
 #include "Document.h"
 #include "regexConvert.h"
-#include "MotifHelper.h"
+#include "util/MotifHelper.h"
 #include "PatternSet.h"
 #include "HighlightPattern.h"
 #include "HighlightStyle.h"
-#include "misc.h"
-#include "memory.h"
+#include "util/misc.h"
+#include "util/memory.h"
 
 #include <cstdio>
 #include <cstring>

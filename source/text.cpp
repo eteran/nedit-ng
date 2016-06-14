@@ -36,7 +36,7 @@
 #include "Document.h"
 #include "calltips.h"
 #include "window.h"
-#include "memory.h"
+#include "util/memory.h"
 #include "TextHelper.h"
 
 #include <climits>

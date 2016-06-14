@@ -6,7 +6,7 @@
 
 
 #include "preferences.h"
-#include "prefFile.h"
+#include "util/prefFile.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/param.h>

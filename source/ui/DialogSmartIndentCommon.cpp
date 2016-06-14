@@ -4,7 +4,7 @@
 #include "IndentStyle.h"
 
 #include "smartIndent.h"
-#include "MotifHelper.h"
+#include "util/MotifHelper.h"
 #include "macro.h"
 #include "preferences.h"
 #include "Document.h"

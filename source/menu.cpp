@@ -62,12 +62,12 @@
 #include "highlightData.h"
 #include "interpret.h"
 #include "smartIndent.h"
-#include "MotifHelper.h"
+#include "util/MotifHelper.h"
 #include "Document.h"
-#include "misc.h"
-#include "fileUtils.h"
-#include "utils.h"
-#include "../Xlt/BubbleButton.h"
+#include "util/misc.h"
+#include "util/fileUtils.h"
+#include "util/utils.h"
+#include "Xlt/BubbleButton.h"
 
 #include <algorithm>
 #include <cctype>

@@ -44,9 +44,9 @@
 
 #include "TextDisplay.h"
 #include "macro.h"
-#include "misc.h"
-#include "utils.h"
-#include "MotifHelper.h"
+#include "util/misc.h"
+#include "util/utils.h"
+#include "util/MotifHelper.h"
 #include "Rangeset.h"
 #include "RangesetTable.h"
 #include "TextBuffer.h"

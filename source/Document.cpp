@@ -8,7 +8,7 @@
 #include "WrapStyle.h"
 #include "RangesetTable.h"
 #include "TextHelper.h"
-#include "MotifHelper.h"
+#include "util/MotifHelper.h"
 #include "Document.h"
 #include "file.h"
 #include "highlight.h"
@@ -29,11 +29,11 @@
 #include "userCmds.h"
 #include "window.h" // There are a few global functions found here... for now
 
-#include "Folder.h"
-#include "clearcase.h"
-#include "misc.h"
-#include "BubbleButton.h"
-#include "BubbleButtonP.h"
+#include "Microline/XmL/Folder.h"
+#include "util/clearcase.h"
+#include "util/misc.h"
+#include "Xlt/BubbleButton.h"
+#include "Xlt/BubbleButtonP.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>

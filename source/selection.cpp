@@ -40,7 +40,7 @@
 #include "preferences.h"
 #include "Document.h"
 #include "server.h"
-#include "../util/fileUtils.h"
+#include "util/fileUtils.h"
 
 #include <cstdlib>
 #include <cstdio>

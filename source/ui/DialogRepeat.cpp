@@ -4,7 +4,7 @@
 #include "DialogRepeat.h"
 #include "TextBuffer.h"
 #include "Document.h"
-#include "MotifHelper.h"
+#include "util/MotifHelper.h"
 #include "macro.h"
 
 DialogRepeat::DialogRepeat(Document *forWindow, QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f), forWindow_(forWindow) {

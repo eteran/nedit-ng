@@ -28,7 +28,7 @@
 #define MACRO_H_
 
 #include "nedit.h"
-#include "string_view.h"
+#include "util/string_view.h"
 
 class QString;
 class QWidget;

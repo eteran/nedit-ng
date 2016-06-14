@@ -39,8 +39,9 @@
 #include "preferences.h"
 #include "TextBuffer.h"
 #include "parse.h"
-#include "misc.h"
-#include "MotifHelper.h"
+
+#include "util/misc.h"
+#include "util/MotifHelper.h"
 
 #include <X11/IntrinsicP.h>
 #include <Xm/PushB.h>
