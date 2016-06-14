@@ -340,6 +340,13 @@ private:
 	int deleteEmulatedTab(XEvent *event);
 	void simpleInsertAtCursorEx(view::string_view chars, XEvent *event, int allowPendingDelete);
 	std::string createIndentStringEx(TextBuffer *buf, int bufOffset, int lineStartPos, int lineEndPos, int *length, int *column);
+	void checkAutoScroll(const Point &coord);
+	void selectWord(int pointerX);
+	void selectLine();
+
+public:
+	void adjustSecondarySelection(const Point &coord);
+	void adjustSelection(const Point &coord);
 
 public:
 	int spanBackward(TextBuffer *buf, int startPos, const char *searchChars, int ignoreSpace, int *foundPos);
