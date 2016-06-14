@@ -2772,66 +2772,12 @@ static void deselectAllAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 **  Note that the widget has no internal state about the focus, ie. it does
 **  not know whether it has the focus or not.
 */
-static void focusInAP(Widget widget, XEvent *event, String *unused1, Cardinal *unused2) {
-
-	(void)unused1;
-	(void)unused2;
-
-	auto tw = reinterpret_cast<TextWidget>(widget);
-	TextDisplay *textD = textD_of(tw);
-
-/* I don't entirely understand the traversal mechanism in Motif widgets,
-   particularly, what leads to this widget getting a focus-in event when
-   it does not actually have the input focus.  The temporary solution is
-   to do the comparison below, and not show the cursor when Motif says
-   we don't have focus, but keep looking for the real answer */
-	if (widget != XmGetFocusWidget(widget))
-		return;
-
-	// If the timer is not already started, start it
-	if (text_of(tw).P_cursorBlinkRate != 0 && textD->getCursorBlinkProcID() == 0) {
-		textD->cursorBlinkProcID = XtAppAddTimeOut(XtWidgetToApplicationContext(widget), text_of(tw).P_cursorBlinkRate, cursorBlinkTimerProc, widget);
-	}
-
-	// Change the cursor to active style
-	if (text_of(tw).P_overstrike) {
-		textD->TextDSetCursorStyle(BLOCK_CURSOR);
-	} else {
-		textD->TextDSetCursorStyle((text_of(tw).P_heavyCursor ? HEAVY_CURSOR : NORMAL_CURSOR));
-	}
-	
-	textD->TextDUnblankCursor();
-
-	// Notify Motif input manager that widget has focus
-	XmImVaSetFocusValues(widget, nullptr);
-
-	// Call any registered focus-in callbacks
-	XtCallCallbacks(widget, textNfocusCallback, (XtPointer)event);
+static void focusInAP(Widget widget, XEvent *event, String *args, Cardinal *nArgs) {
+	textD_of(widget)->focusInAP(event, args, nArgs);
 }
 
-static void focusOutAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	(void)args;
-	(void)nArgs;
-
-	auto textD = textD_of(w);
-
-	// Remove the cursor blinking timer procedure
-	if (textD->getCursorBlinkProcID() != 0) {
-		XtRemoveTimeOut(textD->getCursorBlinkProcID());
-	}
-	
-	textD->cursorBlinkProcID = 0;
-
-	// Leave a dim or destination cursor
-	textD->TextDSetCursorStyle(textD_of(w)->motifDestOwner ? CARET_CURSOR : DIM_CURSOR);
-	textD->TextDUnblankCursor();
-
-	// If there's a calltip displayed, kill it.
-	textD->TextDKillCalltip(0);
-
-	// Call any registered focus-out callbacks
-	XtCallCallbacks(w, textNlosingFocusCallback, (XtPointer)event);
+static void focusOutAP(Widget widget, XEvent *event, String *args, Cardinal *nArgs) {
+	textD_of(widget)->focusOutAP(event, args, nArgs);
 }
 
 /*

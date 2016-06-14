@@ -5796,3 +5796,61 @@ int TextDisplay::getCursorPos() const {
 int TextDisplay::getAnchor() const {
 	return this->anchor;
 }
+
+void TextDisplay::focusInAP(XEvent *event, String *args, Cardinal *nArgs) {
+
+	(void)args;
+	(void)nArgs;
+
+	/* I don't entirely understand the traversal mechanism in Motif widgets,
+	   particularly, what leads to this widget getting a focus-in event when
+	   it does not actually have the input focus.  The temporary solution is
+	   to do the comparison below, and not show the cursor when Motif says
+	   we don't have focus, but keep looking for the real answer */
+
+	if (this->w != XmGetFocusWidget(this->w)) {
+		return;
+	}
+
+	// If the timer is not already started, start it
+	if (text_of(this->w).P_cursorBlinkRate != 0 && this->getCursorBlinkProcID() == 0) {
+		this->cursorBlinkProcID = XtAppAddTimeOut(XtWidgetToApplicationContext(this->w), text_of(this->w).P_cursorBlinkRate, cursorBlinkTimerProc, this->w);
+	}
+
+	// Change the cursor to active style
+	if (text_of(this->w).P_overstrike) {
+		this->TextDSetCursorStyle(BLOCK_CURSOR);
+	} else {
+		this->TextDSetCursorStyle((text_of(this->w).P_heavyCursor ? HEAVY_CURSOR : NORMAL_CURSOR));
+	}
+	
+	this->TextDUnblankCursor();
+
+	// Notify Motif input manager that widget has focus
+	XmImVaSetFocusValues(this->w, nullptr);
+
+	// Call any registered focus-in callbacks
+	XtCallCallbacks(this->w, textNfocusCallback, (XtPointer)event);
+}
+
+void TextDisplay::focusOutAP(XEvent *event, String *args, Cardinal *nArgs) {
+	(void)args;
+	(void)nArgs;
+
+	// Remove the cursor blinking timer procedure
+	if (this->getCursorBlinkProcID() != 0) {
+		XtRemoveTimeOut(this->getCursorBlinkProcID());
+	}
+	
+	this->cursorBlinkProcID = 0;
+
+	// Leave a dim or destination cursor
+	this->TextDSetCursorStyle(this->motifDestOwner ? CARET_CURSOR : DIM_CURSOR);
+	this->TextDUnblankCursor();
+
+	// If there's a calltip displayed, kill it.
+	this->TextDKillCalltip(0);
+
+	// Call any registered focus-out callbacks
+	XtCallCallbacks(this->w, textNlosingFocusCallback, (XtPointer)event);
+}
