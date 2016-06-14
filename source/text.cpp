@@ -65,13 +65,13 @@ const int VERTICAL_SCROLL_DELAY = 50;
 
 }
 
-static void initialize(Widget request, Widget newWidget, ArgList args, Cardinal *num_args);
+static void initialize(Widget request, Widget new_widget, ArgList args, Cardinal *num_args);
 static void handleHidePointer(Widget w, XtPointer unused, XEvent *event, Boolean *continue_to_dispatch);
-static void redisplay(TextWidget w, XEvent *event, Region region);
+static void redisplay(Widget w, XEvent *event, Region region);
 static void redisplayGE(TextWidget w, XtPointer client_data, XEvent *event, Boolean *continue_to_dispatch_return);
-static void destroy(TextWidget w);
-static void resize(TextWidget w);
-static Boolean setValues(TextWidget current, TextWidget request, TextWidget new_widget);
+static void destroy(Widget w);
+static void resize(Widget w);
+static Boolean setValues(Widget current, Widget request, Widget new_widget, ArgList args, Cardinal *num_args);
 static void realize(Widget w, XtValueMask *valueMask, XSetWindowAttributes *attributes);
 static XtGeometryResult queryGeometry(Widget w, XtWidgetGeometry *proposed, XtWidgetGeometry *answer);
 static void grabFocusAP(Widget w, XEvent *event, String *args, Cardinal *n_args);
@@ -586,10 +586,10 @@ static TextClassRec textClassRec = {
 		true,                              // compress_exposure
 		true,                              // compress_enterleave
 		false,                             // visible_interest
-		(XtWidgetProc)destroy,             // destroy
-		(XtWidgetProc)resize,              // resize
-		(XtExposeProc)redisplay,           // expose
-		(XtSetValuesFunc)setValues,        // set_values
+		destroy,			               // destroy
+		resize, 			               // resize
+		redisplay,  		               // expose
+		setValues,                         // set_values
 		nullptr,                           // set_values_hook
 		XtInheritSetValuesAlmost,          // set_values_almost
 		nullptr,                           // get_values_hook
@@ -634,6 +634,13 @@ static void initialize(Widget request, Widget newWidget, ArgList args, Cardinal 
 
 	(void)args;
 	(void)num_args;
+	
+	/* NOTE(eteran):
+	** request:   Specifies a copy of the widget with resource values as requested by the argument list, the resource database, and the widget defaults.
+	** newWidget: Specifies the widget with the new values, both resource and nonresource, that are actually allowed.
+	** args:      Specifies the argument list passed by the client, for computing derived resource values. If the client created the widget using a varargs form, any resources specified via XtVaTypedArg are converted to the widget representation and the list is transformed into the ArgList format.
+	** num_args:  Specifies the number of entries in the argument list.
+	*/
 
 	auto new_widget = reinterpret_cast<TextWidget>(newWidget);
 	auto& tw = text_of(new_widget);
@@ -749,7 +756,7 @@ static void handleHidePointer(Widget w, XtPointer unused, XEvent *event, Boolean
 /*
 ** Widget destroy method
 */
-static void destroy(TextWidget w) {
+static void destroy(Widget w) {
 
 	/* Free the text display and possibly the attached buffer.  The buffer
 	   is freed only if after removing all of the modify procs (by calling
@@ -775,14 +782,14 @@ static void destroy(TextWidget w) {
 	//               maybe move that code to the textDisplay destructor? 
 	delete textD;
 
-	XtRemoveAllCallbacks((Widget)w, textNfocusCallback);
-	XtRemoveAllCallbacks((Widget)w, textNlosingFocusCallback);
-	XtRemoveAllCallbacks((Widget)w, textNcursorMovementCallback);
-	XtRemoveAllCallbacks((Widget)w, textNdragStartCallback);
-	XtRemoveAllCallbacks((Widget)w, textNdragEndCallback);
+	XtRemoveAllCallbacks(w, textNfocusCallback);
+	XtRemoveAllCallbacks(w, textNlosingFocusCallback);
+	XtRemoveAllCallbacks(w, textNcursorMovementCallback);
+	XtRemoveAllCallbacks(w, textNdragStartCallback);
+	XtRemoveAllCallbacks(w, textNdragEndCallback);
 
 	// Unregister the widget from the input manager
-	XmImUnregister((Widget)w);
+	XmImUnregister(w);
 	
 
 }
@@ -790,17 +797,19 @@ static void destroy(TextWidget w) {
 /*
 ** Widget resize method.  Called when the size of the widget changes
 */
-static void resize(TextWidget w) {
+static void resize(Widget w) {
 
-	XFontStruct *fs      = w->text.P_fontStruct;
-	int height           = w->core.height;
-	int width            = w->core.width;
-	int marginWidth      = w->text.P_marginWidth;
-	int marginHeight     = w->text.P_marginHeight;
-	int lineNumAreaWidth = w->text.P_lineNumCols == 0 ? 0 : w->text.P_marginWidth + fs->max_bounds.width * w->text.P_lineNumCols;
+	auto tw = reinterpret_cast<TextWidget>(w);
 
-	w->text.P_columns = (width - marginWidth * 2 - lineNumAreaWidth) / fs->max_bounds.width;
-	w->text.P_rows    = (height - marginHeight * 2) / (fs->ascent + fs->descent);
+	XFontStruct *fs      = tw->text.P_fontStruct;
+	int height           = tw->core.height;
+	int width            = tw->core.width;
+	int marginWidth      = tw->text.P_marginWidth;
+	int marginHeight     = tw->text.P_marginHeight;
+	int lineNumAreaWidth = tw->text.P_lineNumCols == 0 ? 0 : tw->text.P_marginWidth + fs->max_bounds.width * tw->text.P_lineNumCols;
+
+	tw->text.P_columns = (width - marginWidth * 2 - lineNumAreaWidth) / fs->max_bounds.width;
+	tw->text.P_rows    = (height - marginHeight * 2) / (fs->ascent + fs->descent);
 
 	/* Reject widths and heights less than a character, which the text
 	   display can't tolerate.  This is not strictly legal, but I've seen
@@ -809,14 +818,14 @@ static void resize(TextWidget w) {
 	   splitting windows on Linux 2.0 systems (same Motif, why the change in
 	   behavior?), causes one or two resize calls with < 1 line of height.
 	   Fixing it here is 100x easier than re-designing TextDisplay.c */
-	if (w->text.P_columns < 1) {
-		w->text.P_columns = 1;
-		w->core.width = width = fs->max_bounds.width + marginWidth * 2 + lineNumAreaWidth;
+	if (tw->text.P_columns < 1) {
+		tw->text.P_columns = 1;
+		tw->core.width = width = fs->max_bounds.width + marginWidth * 2 + lineNumAreaWidth;
 	}
 	
-	if (w->text.P_rows < 1) {
-		w->text.P_rows = 1;
-		w->core.height = height = fs->ascent + fs->descent + marginHeight * 2;
+	if (tw->text.P_rows < 1) {
+		tw->text.P_rows = 1;
+		tw->core.height = height = fs->ascent + fs->descent + marginHeight * 2;
 	}
 
 	// Resize the text display that the widget uses to render text
@@ -824,7 +833,7 @@ static void resize(TextWidget w) {
 
 	/* if the window became shorter or narrower, there may be text left
 	   in the bottom or right margin area, which must be cleaned up */
-	if (XtIsRealized((Widget)w)) {
+	if (XtIsRealized(w)) {
 		XClearArea(XtDisplay(w), XtWindow(w), 0, height - marginHeight, width, marginHeight, false);
 		XClearArea(XtDisplay(w), XtWindow(w), width - marginWidth, 0, marginWidth, height, false);
 	}
@@ -833,7 +842,7 @@ static void resize(TextWidget w) {
 /*
 ** Widget redisplay method
 */
-static void redisplay(TextWidget w, XEvent *event, Region region) {
+static void redisplay(Widget w, XEvent *event, Region region) {
 
 	(void)region;
 
@@ -856,9 +865,17 @@ static void redisplayGE(TextWidget w, XtPointer client_data, XEvent *event, Bool
 /*
 ** Widget setValues method
 */
-static Boolean setValues(TextWidget current, TextWidget request, TextWidget new_widget) {
+static Boolean setValues(Widget current, Widget request, Widget new_widget, ArgList args, Cardinal *num_args) {
+
+	/* NOTE(eteran):
+	** current:    Specifies a copy of the widget as it was before the XtSetValues call.
+	** request:    Specifies a copy of the widget with all values changed as asked for by the XtSetValues call before any class set_values procedures have been called.
+	** new_widget: Specifies the widget with the new values that are actually allowed.
+	*/
 
 	(void)request;
+	(void)args;
+	(void)num_args;
 
 	bool redraw = false;
 	bool reconfigure = false;
@@ -868,6 +885,7 @@ static Boolean setValues(TextWidget current, TextWidget request, TextWidget new_
 	TextDisplay *newD = textD_of(new_widget);
 	TextDisplay *curD = textD_of(current);
 
+	// did overstrike change?
 	if (newText.P_overstrike != curText.P_overstrike) {
 	
 		switch(curD->cursorStyle) {
@@ -883,6 +901,7 @@ static Boolean setValues(TextWidget current, TextWidget request, TextWidget new_
 		}
 	}
 
+	// did the font change?
 	if (newText.P_fontStruct != curText.P_fontStruct) {
 		
 		if (newText.P_lineNumCols != 0) {
@@ -892,6 +911,7 @@ static Boolean setValues(TextWidget current, TextWidget request, TextWidget new_
 		curD->TextDSetFont(newText.P_fontStruct);
 	}
 
+	// did the wrap change?
 	if (newText.P_wrapMargin != curText.P_wrapMargin || newText.P_continuousWrap != curText.P_continuousWrap) {
 		curD->TextDSetWrapMode(newText.P_continuousWrap, newText.P_wrapMargin);
 	}
@@ -927,6 +947,7 @@ static Boolean setValues(TextWidget current, TextWidget request, TextWidget new_
 		}
 	}
 
+	// did the backlight change?
 	if (newText.P_backlightCharTypes != curText.P_backlightCharTypes) {
 		TextDisplay::TextDSetupBGClasses((Widget)new_widget, newText.P_backlightCharTypes, &newD->bgClassPixel, &newD->bgClass, newD->bgPixel);
 		redraw = true;
@@ -1563,8 +1584,10 @@ static void cutPrimaryAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 	int insertPos, col;
 
 	textD->cancelDrag();
-	if (textD->checkReadOnly())
+	if (textD->checkReadOnly()) {
 		return;
+	}
+	
 	if (primary->selected && rectangular) {
 		std::string textToCopy = buf->BufGetSelectionTextEx();
 		insertPos = textD->TextDGetInsertPosition();
@@ -1619,8 +1642,7 @@ static void mousePanAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 static void pasteClipboardAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	auto tw = reinterpret_cast<TextWidget>(w);
-	TextDisplay *textD = textD_of(tw);
+	TextDisplay *textD = textD_of(w);
 
 	if (hasKey("rect", args, nArgs))
 		textD->TextColPasteClipboard(event->xkey.time);
@@ -2784,7 +2806,7 @@ static void focusInAP(Widget widget, XEvent *event, String *unused1, Cardinal *u
 	XmImVaSetFocusValues(widget, nullptr);
 
 	// Call any registered focus-in callbacks
-	XtCallCallbacks((Widget)widget, textNfocusCallback, (XtPointer)event);
+	XtCallCallbacks(widget, textNfocusCallback, (XtPointer)event);
 }
 
 static void focusOutAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -2809,7 +2831,7 @@ static void focusOutAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	textD->TextDKillCalltip(0);
 
 	// Call any registered focus-out callbacks
-	XtCallCallbacks((Widget)w, textNlosingFocusCallback, (XtPointer)event);
+	XtCallCallbacks(w, textNlosingFocusCallback, (XtPointer)event);
 }
 
 /*
@@ -3209,10 +3231,6 @@ static void endDrag(Widget w) {
 
 	textD_of(w)->dragState = NOT_CLICKED;
 }
-
-
-
-
 
 /*
 ** Adjust the selection as the mouse is dragged to position: (x, y).
