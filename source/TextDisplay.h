@@ -267,11 +267,14 @@ public:
 public:
 	void focusInAP(XEvent *event, String *args, Cardinal *nArgs);
 	void focusOutAP(XEvent *event, String *args, Cardinal *nArgs);
-
-public:	
+	void deselectAllAP(XEvent *event, String *args, Cardinal *nArgs);
+	void extendEndAP(XEvent *event, String *args, Cardinal *nArgs);
 	void backwardCharacterAP(XEvent *event, String *args, Cardinal *nArgs);
-	void backwardParagraphAP(XEvent *event, String *args, Cardinal *nArgs);
 	void backwardWordAP(XEvent *event, String *args, Cardinal *nArgs);
+	void forwardWordAP(XEvent *event, String *args, Cardinal *nArgs);	
+	
+public:	
+	void backwardParagraphAP(XEvent *event, String *args, Cardinal *nArgs);
 	void beginningOfFileAP(XEvent *event, String *args, Cardinal *nArgs);
 	void beginningOfLineAP(XEvent *event, String *args, Cardinal *nArgs);
 	void copyClipboardAP(XEvent *event, String *args, Cardinal *nArgs);
@@ -287,17 +290,14 @@ public:
 	void deleteSelectionAP(XEvent *event, String *args, Cardinal *nArgs);
 	void deleteToEndOfLineAP(XEvent *event, String *args, Cardinal *nArgs);
 	void deleteToStartOfLineAP(XEvent *event, String *args, Cardinal *nArgs);
-	void deselectAllAP(XEvent *event, String *args, Cardinal *nArgs);
 	void endDragAP(XEvent *event, String *args, Cardinal *nArgs);
 	void endOfFileAP(XEvent *event, String *args, Cardinal *nArgs);
 	void endOfLineAP(XEvent *event, String *args, Cardinal *nArgs);
 	void exchangeAP(XEvent *event, String *args, Cardinal *nArgs);
 	void extendAdjustAP(XEvent *event, String *args, Cardinal *nArgs);
-	void extendEndAP(XEvent *event, String *args, Cardinal *nArgs);
 	void extendStartAP(XEvent *event, String *args, Cardinal *nArgs);
 	void forwardCharacterAP(XEvent *event, String *args, Cardinal *nArgs);
 	void forwardParagraphAP(XEvent *event, String *args, Cardinal *nArgs);
-	void forwardWordAP(XEvent *event, String *args, Cardinal *nArgs);
 	void grabFocusAP(XEvent *event, String *args, Cardinal *n_args);
 	void insertStringAP(XEvent *event, String *args, Cardinal *nArgs);
 	void keySelectAP(XEvent *event, String *args, Cardinal *nArgs);
@@ -331,9 +331,17 @@ public:
 	void selectAllAP(XEvent *event, String *args, Cardinal *nArgs);
 	void selfInsertAP(XEvent *event, String *args, Cardinal *n_args);
 	void toggleOverstrikeAP(XEvent *event, String *args, Cardinal *nArgs);
-
+	
+private:
+	void endDrag();
+	void checkMoveSelectionChange(XEvent *event, int startPos, String *args, Cardinal *nArgs);
+	void keyMoveExtendSelection(XEvent *event, int origPos, int rectangular);
+	int endOfWord(int pos);
+	int startOfWord(int pos);
 
 public:
+	int spanBackward(TextBuffer *buf, int startPos, const char *searchChars, int ignoreSpace, int *foundPos);
+	int spanForward(TextBuffer *buf, int startPos, const char *searchChars, int ignoreSpace, int *foundPos);
 	static void TextDSetupBGClasses(Widget w, XmString str, Pixel **pp_bgClassPixel, uint8_t **pp_bgClass, Pixel bgPixelDefault);
 	static void cursorBlinkTimerProc(XtPointer clientData, XtIntervalId *id);
 	static void handleHidePointer(Widget w, XtPointer unused, XEvent *event, Boolean *continue_to_dispatch);

@@ -765,6 +765,27 @@ void loseMotifDestCB(Widget w, Atom *selType) {
 	}
 }
 
+/*
+** look at an action procedure's arguments to see if argument "key" has been
+** specified in the argument list
+*/
+bool hasKey(const char *key, const String *args, const Cardinal *nArgs) {
+
+	for (int i = 0; i < (int)*nArgs; i++) {
+		if (strcasecmp(args[i], key) == 0) {
+			return true;
+		}
+	}
+	return false;
+}
+
+void ringIfNecessary(bool silent) {
+	if (!silent) {
+		QApplication::beep();
+	}
+}
+
+
 }
 
 
@@ -5707,14 +5728,15 @@ void TextDisplay::SendSecondarySelection(Time time, bool removeAfter) {
 */
 void TextDisplay::TakeMotifDestination(Time time) {
 
-	if (textD_of(w)->motifDestOwner || text_of(w).P_readOnly)
+	if (this->motifDestOwner || text_of(w).P_readOnly)
 		return;
 
 	// Take ownership of the MOTIF_DESTINATION selection 
 	if (!XtOwnSelection(w, getAtom(XtDisplay(w), A_MOTIF_DESTINATION), time, convertMotifDestCB, loseMotifDestCB, nullptr)) {
 		return;
 	}
-	textD_of(w)->motifDestOwner = true;
+	
+	this->motifDestOwner = true;
 }
 
 int TextDisplay::fontAscent() const {
@@ -5834,12 +5856,13 @@ void TextDisplay::focusInAP(XEvent *event, String *args, Cardinal *nArgs) {
 }
 
 void TextDisplay::focusOutAP(XEvent *event, String *args, Cardinal *nArgs) {
+
 	(void)args;
 	(void)nArgs;
 
 	// Remove the cursor blinking timer procedure
-	if (this->getCursorBlinkProcID() != 0) {
-		XtRemoveTimeOut(this->getCursorBlinkProcID());
+	if (this->cursorBlinkProcID != 0) {
+		XtRemoveTimeOut(this->cursorBlinkProcID);
 	}
 	
 	this->cursorBlinkProcID = 0;
@@ -5853,4 +5876,330 @@ void TextDisplay::focusOutAP(XEvent *event, String *args, Cardinal *nArgs) {
 
 	// Call any registered focus-out callbacks
 	XtCallCallbacks(this->w, textNlosingFocusCallback, (XtPointer)event);
+}
+
+void TextDisplay::deselectAllAP(XEvent *event, String *args, Cardinal *nArgs) {
+
+	(void)event;
+	(void)args;
+	(void)nArgs;
+
+	this->cancelDrag();
+	this->textBuffer()->BufUnselect();
+}
+
+void TextDisplay::extendEndAP(XEvent *event, String *args, Cardinal *nArgs) {
+	(void)args;
+	(void)nArgs;
+	(void)event;
+
+	XButtonEvent *e = &event->xbutton;
+
+	if (this->dragState == PRIMARY_CLICKED && this->lastBtnDown <= e->time + XtGetMultiClickTime(XtDisplay(this->w))) {
+		this->multiClickState++;
+	}
+	
+	endDrag();
+}
+
+void TextDisplay::backwardCharacterAP(XEvent *event, String *args, Cardinal *nArgs) {
+
+	int insertPos = this->TextDGetInsertPosition();
+	bool silent = hasKey("nobell", args, nArgs);
+
+	this->cancelDrag();
+	if (!this->TextDMoveLeft()) {
+		ringIfNecessary(silent);
+	}
+	
+	checkMoveSelectionChange(event, insertPos, args, nArgs);
+	
+	this->checkAutoShowInsertPos();
+	this->callCursorMovementCBs(event);
+}
+
+void TextDisplay::backwardWordAP(XEvent *event, String *args, Cardinal *nArgs) {
+
+	TextBuffer *buf = this->buffer;
+	int pos;
+	int insertPos = this->TextDGetInsertPosition();
+	const char *delimiters = text_of(this->w).P_delimiters;
+	bool silent = hasKey("nobell", args, nArgs);
+
+	this->cancelDrag();
+	if (insertPos == 0) {
+		ringIfNecessary(silent);
+		return;
+	}
+	
+	pos = std::max(insertPos - 1, 0);
+	while (strchr(delimiters, buf->BufGetCharacter(pos)) != nullptr && pos > 0) {
+		pos--;
+	}
+	
+	pos = startOfWord(pos);
+
+	this->TextDSetInsertPosition(pos);
+	checkMoveSelectionChange(event, insertPos, args, nArgs);
+	this->checkAutoShowInsertPos();
+	this->callCursorMovementCBs(event);
+}
+
+void TextDisplay::forwardWordAP(XEvent *event, String *args, Cardinal *nArgs) {
+
+	TextBuffer *buf = this->buffer;
+	int pos, insertPos = this->TextDGetInsertPosition();
+	const char *delimiters = text_of(w).P_delimiters;
+	bool silent = hasKey("nobell", args, nArgs);
+
+	this->cancelDrag();
+	if (insertPos == buf->BufGetLength()) {
+		ringIfNecessary(silent);
+		return;
+	}
+	pos = insertPos;
+
+	if (hasKey("tail", args, nArgs)) {
+		for (; pos < buf->BufGetLength(); pos++) {
+			if (strchr(delimiters, buf->BufGetCharacter(pos)) == nullptr) {
+				break;
+			}
+		}
+		if (strchr(delimiters, buf->BufGetCharacter(pos)) == nullptr) {
+			pos = endOfWord(pos);
+		}
+	} else {
+		if (strchr(delimiters, buf->BufGetCharacter(pos)) == nullptr) {
+			pos = endOfWord(pos);
+		}
+		for (; pos < buf->BufGetLength(); pos++) {
+			if (strchr(delimiters, buf->BufGetCharacter(pos)) == nullptr) {
+				break;
+			}
+		}
+	}
+
+	this->TextDSetInsertPosition(pos);
+	checkMoveSelectionChange(event, insertPos, args, nArgs);
+	this->checkAutoShowInsertPos();
+	this->callCursorMovementCBs(event);
+}
+
+/*
+** Reset drag state and cancel the auto-scroll timer
+*/
+void TextDisplay::endDrag() {
+
+	if (this->autoScrollProcID != 0) {
+		XtRemoveTimeOut(this->autoScrollProcID);
+	}
+
+	this->autoScrollProcID = 0;
+
+	if (this->dragState == MOUSE_PAN) {
+		XUngrabPointer(XtDisplay(this->w), CurrentTime);
+	}
+
+	this->dragState = NOT_CLICKED;
+}
+
+
+/*
+** For actions involving cursor movement, "extend" keyword means incorporate
+** the new cursor position in the selection, and lack of an "extend" keyword
+** means cancel the existing selection
+*/
+void TextDisplay::checkMoveSelectionChange(XEvent *event, int startPos, String *args, Cardinal *nArgs) {
+
+	if (hasKey("extend", args, nArgs)) {
+		keyMoveExtendSelection(event, startPos, hasKey("rect", args, nArgs));
+	} else {
+		this->textBuffer()->BufUnselect();
+	}
+}
+
+/*
+** If a selection change was requested via a keyboard command for moving
+** the insertion cursor (usually with the "extend" keyword), adjust the
+** selection to include the new cursor position, or begin a new selection
+** between startPos and the new cursor position with anchor at startPos.
+*/
+void TextDisplay::keyMoveExtendSelection(XEvent *event, int origPos, int rectangular) {
+
+	XKeyEvent *e = &event->xkey;
+
+	TextBuffer *buf    = this->buffer;
+	TextSelection *sel = &buf->primary_;
+	int newPos         = this->TextDGetInsertPosition();
+	int startPos;
+	int endPos;
+	int startCol;
+	int endCol;
+	int newCol;
+	int origCol;
+	int anchor;
+	int rectAnchor;
+	int anchorLineStart;
+
+	/* Moving the cursor does not take the Motif destination, but as soon as
+	   the user selects something, grab it (I'm not sure if this distinction
+	   actually makes sense, but it's what Motif was doing, back when their
+	   secondary selections actually worked correctly) */
+	this->TakeMotifDestination(e->time);
+
+	if ((sel->selected || sel->zeroWidth) && sel->rectangular && rectangular) {
+	
+		// rect -> rect
+		newCol = buf->BufCountDispChars(buf->BufStartOfLine(newPos), newPos);
+		startCol = std::min(this->rectAnchor, newCol);
+		endCol = std::max(this->rectAnchor, newCol);
+		startPos = buf->BufStartOfLine(std::min(this->getAnchor(), newPos));
+		endPos = buf->BufEndOfLine(std::max(this->anchor, newPos));
+		buf->BufRectSelect(startPos, endPos, startCol, endCol);
+		
+	} else if (sel->selected && rectangular) { // plain -> rect
+	
+		newCol = buf->BufCountDispChars(buf->BufStartOfLine(newPos), newPos);
+		if (abs(newPos - sel->start) < abs(newPos - sel->end))
+			anchor = sel->end;
+		else
+			anchor = sel->start;
+		anchorLineStart = buf->BufStartOfLine(anchor);
+		rectAnchor = buf->BufCountDispChars(anchorLineStart, anchor);
+		this->anchor = anchor;
+		this->rectAnchor = rectAnchor;
+		buf->BufRectSelect(buf->BufStartOfLine(std::min(anchor, newPos)), buf->BufEndOfLine(std::max(anchor, newPos)), std::min(rectAnchor, newCol), std::max(rectAnchor, newCol));
+		
+	} else if (sel->selected && sel->rectangular) { // rect -> plain
+	
+		startPos = buf->BufCountForwardDispChars(buf->BufStartOfLine(sel->start), sel->rectStart);
+		endPos = buf->BufCountForwardDispChars(buf->BufStartOfLine(sel->end), sel->rectEnd);
+		if (abs(origPos - startPos) < abs(origPos - endPos)) {
+			anchor = endPos;
+		} else {
+			anchor = startPos;
+		} 
+		buf->BufSelect(anchor, newPos);
+		
+	} else if (sel->selected) { // plain -> plain
+	
+		if (abs(origPos - sel->start) < abs(origPos - sel->end)) {
+			anchor = sel->end;
+		} else {
+			anchor = sel->start;
+		} 
+		buf->BufSelect(anchor, newPos);
+		
+	} else if (rectangular) { // no sel -> rect
+	
+		origCol = buf->BufCountDispChars(buf->BufStartOfLine(origPos), origPos);
+		newCol = buf->BufCountDispChars(buf->BufStartOfLine(newPos), newPos);
+		startCol = std::min(newCol, origCol);
+		endCol = std::max(newCol, origCol);
+		startPos = buf->BufStartOfLine(std::min(origPos, newPos));
+		endPos = buf->BufEndOfLine(std::max(origPos, newPos));
+		this->anchor = origPos;
+		this->rectAnchor = origCol;
+		buf->BufRectSelect(startPos, endPos, startCol, endCol);
+		
+	} else { // no sel -> plain
+	
+		this->anchor = origPos;
+		this->rectAnchor = buf->BufCountDispChars(buf->BufStartOfLine(origPos), origPos);
+		buf->BufSelect(this->anchor, newPos);
+	}
+}
+
+int TextDisplay::startOfWord(int pos) {
+	int startPos;
+	TextBuffer *buf = this->textBuffer();
+	const char *delimiters = text_of(w).P_delimiters;
+	char c = buf->BufGetCharacter(pos);
+
+	if (c == ' ' || c == '\t') {
+		if (!spanBackward(buf, pos, " \t", false, &startPos))
+			return 0;
+	} else if (strchr(delimiters, c)) {
+		if (!spanBackward(buf, pos, delimiters, true, &startPos))
+			return 0;
+	} else {
+		if (!buf->BufSearchBackwardEx(pos, delimiters, &startPos))
+			return 0;
+	}
+	return std::min(pos, startPos + 1);
+}
+
+int TextDisplay::endOfWord(int pos) {
+	int endPos;
+	TextBuffer *buf = this->textBuffer();
+	const char *delimiters = text_of(w).P_delimiters;
+	char c = buf->BufGetCharacter(pos);
+
+	if (c == ' ' || c == '\t') {
+		if (!spanForward(buf, pos, " \t", false, &endPos))
+			return buf->BufGetLength();
+	} else if (strchr(delimiters, c)) {
+		if (!spanForward(buf, pos, delimiters, true, &endPos))
+			return buf->BufGetLength();
+	} else {
+		if (!buf->BufSearchForwardEx(pos, delimiters, &endPos))
+			return buf->BufGetLength();
+	}
+	return endPos;
+}
+
+/*
+** Search forwards in buffer "buf" for the first character NOT in
+** "searchChars",  starting with the character "startPos", and returning the
+** result in "foundPos" returns True if found, false if not. If ignoreSpace
+** is set, then Space, Tab, and Newlines are ignored in searchChars.
+*/
+int TextDisplay::spanForward(TextBuffer *buf, int startPos, const char *searchChars, int ignoreSpace, int *foundPos) {
+
+	const char *c;
+
+	int pos = startPos;
+	while (pos < buf->BufGetLength()) {
+		for (c = searchChars; *c != '\0'; c++)
+			if (!(ignoreSpace && (*c == ' ' || *c == '\t' || *c == '\n')))
+				if (buf->BufGetCharacter(pos) == *c)
+					break;
+		if (*c == 0) {
+			*foundPos = pos;
+			return True;
+		}
+		pos++;
+	}
+	*foundPos = buf->BufGetLength();
+	return False;
+}
+
+/*
+** Search backwards in buffer "buf" for the first character NOT in
+** "searchChars",  starting with the character BEFORE "startPos", returning the
+** result in "foundPos" returns True if found, false if not. If ignoreSpace is
+** set, then Space, Tab, and Newlines are ignored in searchChars.
+*/
+int TextDisplay::spanBackward(TextBuffer *buf, int startPos, const char *searchChars, int ignoreSpace, int *foundPos) {
+	int pos;
+	const char *c;
+
+	if (startPos == 0) {
+		*foundPos = 0;
+		return False;
+	}
+	pos = startPos == 0 ? 0 : startPos - 1;
+	while (pos >= 0) {
+		for (c = searchChars; *c != '\0'; c++)
+			if (!(ignoreSpace && (*c == ' ' || *c == '\t' || *c == '\n')))
+				if (buf->BufGetCharacter(pos) == *c)
+					break;
+		if (*c == 0) {
+			*foundPos = pos;
+			return True;
+		}
+		pos--;
+	}
+	*foundPos = 0;
+	return False;
 }

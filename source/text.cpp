@@ -1182,17 +1182,7 @@ static void extendStartAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 }
 
 static void extendEndAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	(void)args;
-	(void)nArgs;
-	(void)event;
-
-	XButtonEvent *e = &event->xbutton;
-	auto tw = reinterpret_cast<TextWidget>(w);
-
-	if (textD_of(tw)->dragState == PRIMARY_CLICKED && textD_of(tw)->lastBtnDown <= e->time + XtGetMultiClickTime(XtDisplay(w)))
-		textD_of(tw)->multiClickState++;
-	endDrag(w);
+	textD_of(w)->extendEndAP(event, args, nArgs);
 }
 
 static void processCancelAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -2078,80 +2068,15 @@ static void forwardCharacterAP(Widget w, XEvent *event, String *args, Cardinal *
 }
 
 static void backwardCharacterAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-	auto textD = textD_of(w);
-	int insertPos = textD_of(w)->TextDGetInsertPosition();
-	bool silent = hasKey("nobell", args, nArgs);
-
-	textD->cancelDrag();
-	if (!textD_of(w)->TextDMoveLeft()) {
-		ringIfNecessary(silent);
-	}
-	checkMoveSelectionChange(w, event, insertPos, args, nArgs);
-	textD->checkAutoShowInsertPos();
-	textD->callCursorMovementCBs(event);
+	textD_of(w)->backwardCharacterAP(event, args, nArgs);
 }
 
 static void forwardWordAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-	auto textD = textD_of(w);
-	TextBuffer *buf = textD->buffer;
-	int pos, insertPos = textD->TextDGetInsertPosition();
-	const char *delimiters = text_of(w).P_delimiters;
-	bool silent = hasKey("nobell", args, nArgs);
-
-	textD->cancelDrag();
-	if (insertPos == buf->BufGetLength()) {
-		ringIfNecessary(silent);
-		return;
-	}
-	pos = insertPos;
-
-	if (hasKey("tail", args, nArgs)) {
-		for (; pos < buf->BufGetLength(); pos++) {
-			if (strchr(delimiters, buf->BufGetCharacter(pos)) == nullptr) {
-				break;
-			}
-		}
-		if (strchr(delimiters, buf->BufGetCharacter(pos)) == nullptr) {
-			pos = endOfWord(reinterpret_cast<TextWidget>(w), pos);
-		}
-	} else {
-		if (strchr(delimiters, buf->BufGetCharacter(pos)) == nullptr) {
-			pos = endOfWord(reinterpret_cast<TextWidget>(w), pos);
-		}
-		for (; pos < buf->BufGetLength(); pos++) {
-			if (strchr(delimiters, buf->BufGetCharacter(pos)) == nullptr) {
-				break;
-			}
-		}
-	}
-
-	textD->TextDSetInsertPosition(pos);
-	checkMoveSelectionChange(w, event, insertPos, args, nArgs);
-	textD->checkAutoShowInsertPos();
-	textD->callCursorMovementCBs(event);
+	textD_of(w)->forwardWordAP(event, args, nArgs);
 }
 
 static void backwardWordAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-	auto textD = textD_of(w);
-	TextBuffer *buf = textD->buffer;
-	int pos, insertPos = textD->TextDGetInsertPosition();
-	const char *delimiters = text_of(w).P_delimiters;
-	bool silent = hasKey("nobell", args, nArgs);
-
-	textD->cancelDrag();
-	if (insertPos == 0) {
-		ringIfNecessary(silent);
-		return;
-	}
-	pos = std::max(insertPos - 1, 0);
-	while (strchr(delimiters, buf->BufGetCharacter(pos)) != nullptr && pos > 0)
-		pos--;
-	pos = startOfWord(reinterpret_cast<TextWidget>(w), pos);
-
-	textD->TextDSetInsertPosition(pos);
-	checkMoveSelectionChange(w, event, insertPos, args, nArgs);
-	textD->checkAutoShowInsertPos();
-	textD->callCursorMovementCBs(event);
+	textD_of(w)->backwardWordAP(event, args, nArgs);
 }
 
 static void forwardParagraphAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -2756,14 +2681,7 @@ static void selectAllAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 }
 
 static void deselectAllAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	(void)args;
-	(void)nArgs;
-	(void)event;
-
-	auto textD = textD_of(w);
-	textD->cancelDrag();
-	textD->textBuffer()->BufUnselect();
+	textD_of(w)->deselectAllAP(event, args, nArgs);
 }
 
 /*
