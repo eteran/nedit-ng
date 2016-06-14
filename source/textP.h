@@ -27,11 +27,11 @@
 #ifndef TEXTP_H_
 #define TEXTP_H_
 
+#include <Xm/XmP.h>
+#include <Xm/PrimitiveP.h>
 #include <X11/Intrinsic.h>
 #include <X11/Xlib.h>
 #include <X11/X.h>
-#include <Xm/XmP.h>
-#include <Xm/PrimitiveP.h>
 #include <X11/CoreP.h>
 
 class TextDisplay;

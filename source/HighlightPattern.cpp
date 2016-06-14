@@ -11,18 +11,16 @@ HighlightPattern::~HighlightPattern() {
 void HighlightPattern::swap(HighlightPattern &other) {
 	using std::swap;
 	
-	std::swap(name,         other.name);
-	std::swap(startRE,      other.startRE);
-	std::swap(endRE,        other.endRE);
-	std::swap(errorRE,      other.errorRE);
-	std::swap(style,        other.style);
-	std::swap(subPatternOf, other.subPatternOf);
-	std::swap(flags,        other.flags);
+	swap(name,  	   other.name);
+	swap(startRE,	   other.startRE);
+	swap(endRE, 	   other.endRE);
+	swap(errorRE,	   other.errorRE);
+	swap(style, 	   other.style);
+	swap(subPatternOf, other.subPatternOf);
+	swap(flags, 	   other.flags);
 }
 
-
 bool HighlightPattern::operator==(const HighlightPattern &rhs) const {
-
 
 	if (this->flags != rhs.flags) {
 		return false;

@@ -27,6 +27,7 @@
 *                                                                              *
 *******************************************************************************/
 
+#include <QDialogButtonBox>
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QPushButton>
@@ -34,30 +35,26 @@
 #include <QString>
 #include <QWidget>
 #include <QtDebug>
-#include "IndentStyle.h"
-#include "WrapStyle.h"
+
 #include "ui/DialogPrompt.h"
 #include "ui/DialogPromptList.h"
 #include "ui/DialogPromptString.h"
 #include "ui/DialogRepeat.h"
-#include "TextHelper.h"
 
-#include "TextDisplay.h"
 #include "macro.h"
-#include "util/misc.h"
-#include "util/utils.h"
-#include "util/MotifHelper.h"
-#include "Rangeset.h"
-#include "RangesetTable.h"
-#include "TextBuffer.h"
 #include "Document.h"
-#include "calltips.h"
+#include "HighlightPattern.h"
+#include "IndentStyle.h"
+#include "RangesetTable.h"
+#include "SearchDirection.h"
+#include "TextBuffer.h"
+#include "TextDisplay.h"
+#include "TextHelper.h"
+#include "WrapStyle.h"
 #include "highlight.h"
 #include "highlightData.h"
 #include "interpret.h"
-#include "nedit.h"
 #include "parse.h"
-#include "preferences.h"
 #include "search.h"
 #include "selection.h"
 #include "server.h"
@@ -66,21 +63,13 @@
 #include "tags.h"
 #include "text.h"
 #include "userCmds.h"
-#include "window.h"
-#include "HighlightPattern.h"
 
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <cctype>
-#include <cerrno>
-#include <cassert>
-#include <stack>
+#include "util/MotifHelper.h"
+#include "util/misc.h"
+#include "util/utils.h"
 
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <sys/param.h>
-#include <fcntl.h>
+#include <sys/stat.h>
 
 namespace {
 
@@ -758,7 +747,7 @@ static int readCheckMacroString(Widget dialogParent, const char *string, Documen
 	Program *prog;
 	Symbol *sym;
 	DataValue subrPtr;
-	std::stack<Program *> progStack;
+	QStack<Program *> progStack;
 
 	inPtr = string;
 	while (*inPtr != '\0') {

@@ -27,22 +27,17 @@
 #ifndef PREFERENCES_H_
 #define PREFERENCES_H_
 
-#define MAX_FONT_LEN 100    /* maximum length for a font name */
-#define MAX_COLOR_LEN 30    /* maximum length for a color name */
-
 #include "util/string_view.h"
 #include "SearchType.h"
+#include <X11/Intrinsic.h>
+#include <X11/Xresource.h>
+#include <Xm/Xm.h>
+#include <X11/Xlib.h>
 
 class QWidget;
 class QString;
 class Document;
 class LanguageMode;
-
-
-#include <X11/Intrinsic.h>
-#include <X11/Xresource.h>
-#include <Xm/Xm.h>
-#include <X11/Xlib.h>
 
 #define PLAIN_LANGUAGE_MODE -1
 
@@ -50,6 +45,9 @@ class LanguageMode;
 #define MAX_LANGUAGE_MODES 127
 
 #define MAX_TITLE_FORMAT_LEN 50
+
+#define MAX_FONT_LEN 100    /* maximum length for a font name */
+#define MAX_COLOR_LEN 30    /* maximum length for a color name */
 
 /* Identifiers for individual fonts in the help fonts list */
 enum HelpFonts {

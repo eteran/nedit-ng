@@ -4,7 +4,7 @@
 
 #include <QString>
 #include <QVector>
-#include <X11/Intrinsic.h> // For Widget
+#include <X11/Intrinsic.h>
 
 // cache user menus: manage mode of user menu list element
 enum UserMenuManageMode {

@@ -48,7 +48,11 @@ extern int searchMode;
 
 // file_type and search_type arguments are to select between tips and tags,
 // and should be one of TAG or TIP.  TIP_FROM_TAG is for ShowTipString.
-enum Mode { TAG, TIP_FROM_TAG, TIP };
+enum Mode {
+	TAG, 
+	TIP_FROM_TAG, 
+	TIP
+};
 
 int AddRelTagsFile(const char *tagSpec, const char *windowPath, int file_type);
 // tagSpec is a colon-delimited list of filenames 

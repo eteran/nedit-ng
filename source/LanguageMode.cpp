@@ -14,13 +14,13 @@ LanguageMode::LanguageMode() : wrapStyle(0), indentStyle(0), tabDist(DEFAULT_TAB
 void LanguageMode::swap(LanguageMode &other) {
 	using std::swap;
 	
-	std::swap(name, other.name);
-	std::swap(extensions, other.extensions);
-	std::swap(recognitionExpr, other.recognitionExpr);
-	std::swap(defTipsFile, other.defTipsFile);
-	std::swap(delimiters, other.delimiters);
-	std::swap(wrapStyle, other.wrapStyle);
-	std::swap(indentStyle, other.indentStyle);
-	std::swap(tabDist, other.tabDist);
-	std::swap(emTabDist, other.emTabDist);
+	swap(name,            other.name);
+	swap(extensions,      other.extensions);
+	swap(recognitionExpr, other.recognitionExpr);
+	swap(defTipsFile,     other.defTipsFile);
+	swap(delimiters,      other.delimiters);
+	swap(wrapStyle,       other.wrapStyle);
+	swap(indentStyle,     other.indentStyle);
+	swap(tabDist,         other.tabDist);
+	swap(emTabDist,       other.emTabDist);
 }

@@ -4,7 +4,6 @@
 
 #include <QString>
 #include <QVector>
-
 #include "HighlightPattern.h"
 
 // Header for a set of patterns

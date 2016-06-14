@@ -26,25 +26,10 @@
 *                                                                              *
 *******************************************************************************/
 
-#include "util/MotifHelper.h"
 #include "interpret.h"
-#include "TextBuffer.h"
-#include "nedit.h"
+#include "Document.h"
 #include "menu.h"
 #include "text.h"
-#include "Document.h"
-#include "window.h"
-
-#include <algorithm>
-#include <cassert>
-#include <cctype>
-#include <cerrno>
-#include <climits>
-#include <cmath>
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <sys/param.h>
 
 namespace {
 

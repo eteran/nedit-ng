@@ -4,7 +4,6 @@
 
 #include <string>
 
-
 /* The accumulated list of undo operations can potentially consume huge
    amounts of memory.  These tuning parameters determine how much undo infor-
    mation is retained.  Normally, the list is kept between UNDO_OP_LIMIT and

@@ -27,9 +27,15 @@
 #ifndef USER_CMDS_H_
 #define USER_CMDS_H_
 
-#include <QString>
-#include "nedit.h"
+#include "UserMenuListElement.h"
 #include "util/string_view.h"
+#include <QString>
+#include <X11/Intrinsic.h>
+
+class Document;
+class UserMenuCache;
+class UserBGMenuCache;
+class MenuItem;
 
 // types of current dialog and/or menu 
 enum DialogTypes {
@@ -37,10 +43,6 @@ enum DialogTypes {
 	MACRO_CMDS,
 	BG_MENU_CMDS
 };
-
-
-
-class MenuItem;
 
 /* Structure holding info about a single menu item.
    According to above example there exist 5 user menu items:
@@ -102,7 +104,6 @@ struct userSubMenuCache {
 	int              usmcNbrOfSubMenus;      // number of sub-menus 
 	userSubMenuInfo *usmcInfo;               // list of sub-menu info 
 };
-
 
 bool DoNamedBGMenuCmd(Document *window, const char *itemName);
 bool DoNamedMacroMenuCmd(Document *window, const char *itemName);

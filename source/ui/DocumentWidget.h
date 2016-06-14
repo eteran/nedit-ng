@@ -2,13 +2,16 @@
 #ifndef DOCUMENT_WIDGET_H_
 #define DOCUMENT_WIDGET_H_
 
-#include <QWidget>
 #include <QDialog>
 #include <QPointer>
-#include "LockReasons.h"
-#include "util/FileFormats.h"
+#include <QWidget>
+
 #include "Bookmark.h"
+#include "LockReasons.h"
+#include "UserBGMenuCache.h"
 #include "userCmds.h"
+#include "util/FileFormats.h"
+
 #include <Xm/Xm.h>
 
 class UndoInfo;

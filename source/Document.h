@@ -6,6 +6,7 @@
 #include <QString>
 #include <list>
 #include "nedit.h"
+#include "UserBGMenuCache.h"
 #include "util/fileUtils.h"
 #include "calltips.h"
 #include "util/string_view.h"
