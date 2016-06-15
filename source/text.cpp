@@ -585,7 +585,7 @@ WidgetClass textWidgetClass = reinterpret_cast<WidgetClass>(&textClassRec);
 
 namespace {
 const int NEDIT_HIDE_CURSOR_MASK = (KeyPressMask);
-const int NEDIT_SHOW_CURSOR_MASK = (FocusChangeMask | PointerMotionMask | ButtonMotionMask | ButtonPressMask | ButtonReleaseMask);
+
 char empty_bits[] = {0x00, 0x00, 0x00, 0x00};
 Cursor empty_cursor = 0;
 
@@ -713,8 +713,7 @@ static void handleHidePointer(Widget w, XtPointer unused, XEvent *event, Boolean
 	(void)event;
 	(void)continue_to_dispatch;
 
-	auto textD = textD_of(w);
-	textD->ShowHidePointer(true);
+	textD_of(w)->ShowHidePointer(true);
 }
 
 /*
@@ -808,9 +807,13 @@ static void redisplayGE(TextWidget w, XtPointer client_data, XEvent *event, Bool
 	(void)client_data;
 	(void)continue_to_dispatch_return;
 
-	if (event->type == GraphicsExpose || event->type == NoExpose) {
-		TextDisplay *textD = textD_of(w);	
-		textD->HandleAllPendingGraphicsExposeNoExposeEvents(event);
+	switch(event->type) {
+	case GraphicsExpose:
+	case NoExpose:
+		textD_of(w)->HandleAllPendingGraphicsExposeNoExposeEvents(event);
+		break;
+	default:
+		break;
 	}
 }
 
@@ -840,7 +843,7 @@ static Boolean setValues(Widget current, Widget request, Widget new_widget, ArgL
 	// did overstrike change?
 	if (newText.P_overstrike != curText.P_overstrike) {
 	
-		switch(curD->cursorStyle) {
+		switch(curD->getCursorStyle()) {
 		case BLOCK_CURSOR:
 			curD->TextDSetCursorStyle(curText.P_heavyCursor ? HEAVY_CURSOR : NORMAL_CURSOR);
 			break;

@@ -278,7 +278,7 @@ void getInsertSelectionCB(Widget w, XtPointer clientData, Atom *selType, Atom *t
 	(void)selType;
 
 	auto textD      = textD_of(w);
-	TextBuffer *buf = textD->buffer;
+	TextBuffer *buf = textD->TextGetBuffer();
 	auto resultFlag = static_cast<int *>(clientData);
 
 	// Confirm that the returned value is of the correct type 
@@ -317,7 +317,7 @@ void getInsertSelectionCB(Widget w, XtPointer clientData, Atom *selType, Atom *t
 */
 Boolean convertSelectionCB(Widget w, Atom *selType, Atom *target, Atom *type, XtPointer *value, unsigned long *length, int *format) {
 	XSelectionRequestEvent *event = XtGetSelectionRequest(w, *selType, nullptr);
-	auto buf = textD_of(w)->buffer;
+	auto buf = textD_of(w)->TextGetBuffer();
 	Display *display = XtDisplay(w);
 	Atom *targets, dummyAtom;
 	unsigned long nItems, dummyULong;
@@ -409,13 +409,13 @@ void loseSelectionCB(Widget w, Atom *selType) {
 	(void)selType;
 
 	auto tw = reinterpret_cast<TextWidget>(w);
-	TextSelection *sel = &textD_of(tw)->buffer->primary_;
+	TextSelection *sel = &textD_of(tw)->TextGetBuffer()->primary_;
 	char zeroWidth = sel->rectangular ? sel->zeroWidth : 0;
 
 	/* For zero width rect. sel. we give up the selection but keep the
 	    zero width tag. */
-	textD_of(tw)->selectionOwner = false;
-	textD_of(tw)->buffer->BufUnselect();
+	textD_of(tw)->setSelectionOwner(false);
+	textD_of(tw)->TextGetBuffer()->BufUnselect();
 	sel->zeroWidth = zeroWidth;
 }
 
@@ -440,8 +440,8 @@ void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view::strin
 
 	TextWidget w = static_cast<TextWidget>(cbArg);
 	Time time    = XtLastTimestampProcessed(XtDisplay((Widget)w));
-	int selected = textD_of(w)->buffer->primary_.selected;
-	int isOwner  = textD_of(w)->selectionOwner;
+	int selected = textD_of(w)->TextGetBuffer()->primary_.selected;
+	int isOwner  = textD_of(w)->getSelectionOwner();
 
 	/* If the widget owns the selection and the buffer text is still selected,
 	   or if the widget doesn't own it and there's no selection, do nothing */
@@ -456,9 +456,9 @@ void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view::strin
 
 	// Take ownership of the selection 
 	if (!XtOwnSelection((Widget)w, XA_PRIMARY, time, convertSelectionCB, loseSelectionCB, nullptr)) {
-		textD_of(w)->buffer->BufUnselect();
+		textD_of(w)->TextGetBuffer()->BufUnselect();
 	} else {
-		textD_of(w)->selectionOwner = true;
+		textD_of(w)->setSelectionOwner(true);
 	}
 }
 
@@ -488,7 +488,7 @@ void getSelectionCB(Widget w, XtPointer clientData, Atom *selType, Atom *type, X
 
 	/* If the string contains ascii-nul characters, substitute something
 	   else, or give up, warn, and refuse */
-	if (!textD->buffer->BufSubstituteNullCharsEx(string)) {
+	if (!textD->TextGetBuffer()->BufSubstituteNullCharsEx(string)) {
 		fprintf(stderr, "Too much binary data, giving up\n");
 		XtFree((char *)value);
 		return;
@@ -497,14 +497,14 @@ void getSelectionCB(Widget w, XtPointer clientData, Atom *selType, Atom *type, X
 	// Insert it in the text widget 
 	if (isColumnar) {
 		cursorPos = textD->TextDGetInsertPosition();
-		cursorLineStart = textD->buffer->BufStartOfLine(cursorPos);
+		cursorLineStart = textD->TextGetBuffer()->BufStartOfLine(cursorPos);
 		textD->TextDXYToUnconstrainedPosition(
-			textD_of(w)->btnDownCoord,
+			textD_of(w)->getButtonDownCoord(),
 			&row,
 			&column);
 			
-		textD->buffer->BufInsertColEx(column, cursorLineStart, string, nullptr, nullptr);
-		textD->TextDSetInsertPosition(textD->buffer->cursorPosHint_);
+		textD->TextGetBuffer()->BufInsertColEx(column, cursorLineStart, string, nullptr, nullptr);
+		textD->TextDSetInsertPosition(textD->TextGetBuffer()->cursorPosHint_);
 	} else
 		textD->TextInsertAtCursorEx(string, nullptr, False, text_of(w).P_autoWrapPastedText);
 
@@ -527,7 +527,7 @@ void selectNotifyEH(Widget w, XtPointer data, XEvent *event, Boolean *continueDi
 
 	(void)continueDispatch;
 
-	auto buf    = textD_of(w)->buffer;
+	auto buf    = textD_of(w)->TextGetBuffer();
 	auto e      = reinterpret_cast<XSelectionEvent *>(event);
 	auto cbInfo = static_cast<selectNotifyInfo *>(data);
 	int selStart, selEnd;
@@ -592,7 +592,7 @@ void selectNotifyTimerProc(XtPointer clientData, XtIntervalId *id) {
 	(void)id;
 
 	auto cbInfo = static_cast<selectNotifyInfo *>(clientData);
-	TextBuffer *buf = textD_of(cbInfo->widget)->buffer;
+	TextBuffer *buf = textD_of(cbInfo->widget)->TextGetBuffer();
 
 	fprintf(stderr, "NEdit: timeout on selection request\n");
 	XtRemoveEventHandler(cbInfo->widget, 0, true, selectNotifyEH, cbInfo);
@@ -611,7 +611,7 @@ Boolean convertSecondaryCB(Widget w, Atom *selType, Atom *target, Atom *type, Xt
 
 	(void)selType;
 
-	auto buf = textD_of(w)->buffer;
+	auto buf = textD_of(w)->TextGetBuffer();
 
 	// target must be string 
 	if (*target != XA_STRING && *target != getAtom(XtDisplay(w), A_TEXT))
@@ -644,45 +644,6 @@ void loseSecondaryCB(Widget w, Atom *selType) {
 }
 
 /*
-** Send an INSERT_SELECTION request to "sel".
-** Upon completion, do the action specified by "action" (one of enum
-** selectNotifyActions) using "actionText" and freeing actionText (if
-** not nullptr) when done.
-*/
-void sendSecondary(Widget w, Time time, Atom sel, int action, char *actionText, int actionTextLen) {
-	static Atom selInfoProp[2] = {XA_SECONDARY, XA_STRING};
-	Display *disp = XtDisplay(w);
-	XtAppContext context = XtWidgetToApplicationContext((Widget)w);
-
-	// Take ownership of the secondary selection, give up if we can't 
-	if (!XtOwnSelection(w, XA_SECONDARY, time, convertSecondaryCB, loseSecondaryCB, nullptr)) {
-		textD_of(w)->buffer->BufSecondaryUnselect();
-		return;
-	}
-
-	/* Set up a property on this window to pass along with the
-	   INSERT_SELECTION request to tell the MOTIF_DESTINATION owner what
-	   selection and what target from that selection to insert */
-	XChangeProperty(disp, XtWindow(w), getAtom(disp, A_INSERT_INFO), getAtom(disp, A_ATOM_PAIR), 32, PropModeReplace, (uint8_t *)selInfoProp, 2 /* 1? */);
-
-	/* Make INSERT_SELECTION request to the owner of selection "sel"
-	   to do the insert.  This must be done using XLib calls to specify
-	   the property with the information about what to insert.  This
-	   means it also requires an event handler to see if the request
-	   succeeded or not, and a backup timer to clean up if the select
-	   notify event is never returned */
-	XConvertSelection(XtDisplay(w), sel, getAtom(disp, A_INSERT_SELECTION), getAtom(disp, A_INSERT_INFO), XtWindow(w), time);
-	auto cbInfo = new selectNotifyInfo;
-	cbInfo->action       = action;
-	cbInfo->timeStamp    = time;
-	cbInfo->widget       = (Widget)w;
-	cbInfo->actionText   = actionText;
-	cbInfo->length       = actionTextLen;
-	XtAddEventHandler(w, 0, true, selectNotifyEH, cbInfo);
-	cbInfo->timeoutProcID = XtAppAddTimeOut(context, XtAppGetSelectionTimeout(context), selectNotifyTimerProc, cbInfo);
-}
-
-/*
 ** Called when data arrives from an X primary selection request for the
 ** purpose of exchanging the primary and secondary selections.
 ** If everything is in order, stores the retrieved text temporarily and
@@ -698,14 +659,14 @@ void getExchSelCB(Widget w, XtPointer clientData, Atom *selType, Atom *type, XtP
 	if (*length == 0 || !value || *type != XA_STRING || *format != 8) {
 		XtFree((char *)value);
 		QApplication::beep();
-		textD_of(w)->buffer->BufSecondaryUnselect();
+		textD_of(w)->TextGetBuffer()->BufSecondaryUnselect();
 		return;
 	}
 
 	/* Request the selection owner to replace the primary selection with
 	   this widget's secondary selection.  When complete, replace this
 	   widget's secondary selection with text "value" and free it. */
-	sendSecondary(w, XtLastTimestampProcessed(XtDisplay(w)), XA_PRIMARY, EXCHANGE_SECONDARY, (char *)value, *length);
+	textD_of(w)->sendSecondary(XtLastTimestampProcessed(XtDisplay(w)), XA_PRIMARY, EXCHANGE_SECONDARY, (char *)value, *length);
 }
 
 /*
@@ -769,10 +730,12 @@ Boolean convertMotifDestCB(Widget w, Atom *selType, Atom *target, Atom *type, Xt
 void loseMotifDestCB(Widget w, Atom *selType) {
 
 	(void)selType;
+	
+	auto textD = textD_of(w);
 
-	textD_of(w)->motifDestOwner = false;
-	if (textD_of(w)->cursorStyle == CARET_CURSOR) {
-		textD_of(w)->TextDSetCursorStyle(DIM_CURSOR);
+	textD->setMotifDestOwner(false);
+	if (textD->getCursorStyle() == CARET_CURSOR) {
+		textD->TextDSetCursorStyle(DIM_CURSOR);
 	}
 }
 
@@ -914,7 +877,7 @@ TextDisplay::TextDisplay(Widget widget,
 
 	/* Attach an event handler to the widget so we can know the visibility
 	   (used for choosing the fastest drawing method) */
-	XtAddEventHandler(widget, VisibilityChangeMask, False, visibilityEH, this);
+	XtAddEventHandler(widget, VisibilityChangeMask, false, visibilityEH, this);
 
 	/* Attach the callback to the text buffer for receiving modification
 	   information */
@@ -1241,7 +1204,7 @@ void TextDisplay::TextDResize(int width, int height) {
 	/* if the window became taller, there may be an opportunity to display
 	   more text by scrolling down */
 	if (canRedraw && oldVisibleLines < newVisibleLines && this->topLineNum + this->nVisibleLines > this->nBufferLines)
-		setScroll(std::max<int>(1, this->nBufferLines - this->nVisibleLines + 2 + text_of(w).P_cursorVPadding), this->horizOffset, False, false);
+		setScroll(std::max<int>(1, this->nBufferLines - this->nVisibleLines + 2 + text_of(w).P_cursorVPadding), this->horizOffset, false, false);
 
 	/* Update the scroll bar page increment size (as well as other scroll
 	   bar parameters.  If updating the horizontal range caused scrolling,
@@ -2094,7 +2057,7 @@ int TextDisplay::TextDCountBackwardNLines(int startPos, int nLines) {
 */
 static void bufPreDeleteCB(int pos, int nDeleted, void *cbArg) {
 	auto textD = static_cast<TextDisplay *>(cbArg);
-	if (textD->continuousWrap && (textD->fixedFontWidth == -1 || textD->modifyingTabDist))
+	if (textD->continuousWrap && (textD->getFixedFontWidth() == -1 || textD->getModifyingTabDist()))
 		/* Note: we must perform this measurement, even if there is not a
 		   single character deleted; the number of "deleted" lines is the
 		   number of visual lines spanned by the real line in which the
@@ -2105,23 +2068,29 @@ static void bufPreDeleteCB(int pos, int nDeleted, void *cbArg) {
 		   of the text may be completely different. */
 		textD->measureDeletedLines(pos, nDeleted);
 	else
-		textD->suppressResync = false; // Probably not needed, but just in case
+		textD->setSuppressResync(false); // Probably not needed, but just in case
 }
 
 /*
 ** Callback attached to the text buffer to receive modification information
 */
 static void bufModifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *cbArg) {
-	int linesInserted, linesDeleted, startDispPos, endDispPos;
+
+	int linesInserted;
+	int linesDeleted;
+	int startDispPos;
+	int endDispPos;
 	auto textD = static_cast<TextDisplay *>(cbArg);
-	TextBuffer *buf = textD->buffer;
-	int oldFirstChar = textD->firstChar;
-	int scrolled, origCursorPos = textD->cursorPos;
-	int wrapModStart, wrapModEnd;
+	TextBuffer *buf  = textD->TextGetBuffer();
+	int oldFirstChar = textD->getFirstChar();
+	int scrolled;
+	int origCursorPos = textD->getCursorPos();
+	int wrapModStart;
+	int wrapModEnd;
 
 	// buffer modification cancels vertical cursor motion column
 	if (nInserted != 0 || nDeleted != 0)
-		textD->cursorPreferredCol = -1;
+		textD->setCursorPreferredCol(-1);
 
 	/* Count the number of lines inserted and deleted, and in the case
 	   of continuous wrap mode, how much has changed */
@@ -2146,13 +2115,13 @@ static void bufModifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, v
 	   (non-wrapped) line number of the text displayed */
 	if (textD->maintainingAbsTopLineNum() && (nInserted != 0 || nDeleted != 0)) {
 		if (pos + nDeleted < oldFirstChar)
-			textD->absTopLineNum += buf->BufCountLines(pos, pos + nInserted) - countLinesEx(deletedText);
+			textD->setAbsTopLineNum(textD->getAbsTopLineNum() + buf->BufCountLines(pos, pos + nInserted) - countLinesEx(deletedText));
 		else if (pos < oldFirstChar)
 			textD->resetAbsLineNum();
 	}
 
 	// Update the line count for the whole buffer
-	textD->nBufferLines += linesInserted - linesDeleted;
+	textD->setNumberBufferLines(textD->getNumberBufferLines() + linesInserted - linesDeleted);
 
 	/* Update the scroll bar ranges (and value if the value changed).  Note
 	   that updating the horizontal scroll bar range requires scanning the
@@ -2164,23 +2133,24 @@ static void bufModifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, v
 	scrolled |= textD->updateHScrollBarRange();
 
 	// Update the cursor position
-	if (textD->cursorToHint != NO_HINT) {
-		textD->cursorPos = textD->cursorToHint;
-		textD->cursorToHint = NO_HINT;
-	} else if (textD->cursorPos > pos) {
-		if (textD->cursorPos < pos + nDeleted)
-			textD->cursorPos = pos;
-		else
-			textD->cursorPos += nInserted - nDeleted;
+	if (textD->getCursorToHint() != NO_HINT) {
+		textD->setCursorPos(textD->getCursorToHint());
+		textD->setCursorToHint(NO_HINT);
+	} else if (textD->getCursorPos() > pos) {
+		if (textD->getCursorPos() < pos + nDeleted) {
+			textD->setCursorPos(pos);
+		} else {
+			textD->setCursorPos(textD->getCursorPos() + nInserted - nDeleted);
+		}
 	}
 
 	// If the changes caused scrolling, re-paint everything and we're done.
 	if (scrolled) {
 		textD->blankCursorProtrusions();
-		textD->TextDRedisplayRect(0, textD->rect.top, textD->rect.width + textD->rect.left, textD->rect.height);
-		if (textD->styleBuffer) { // See comments in extendRangeForStyleMods
-			textD->styleBuffer->primary_.selected = false;
-			textD->styleBuffer->primary_.zeroWidth = false;
+		textD->TextDRedisplayRect(0, textD->getRect().top, textD->getRect().width + textD->getRect().left, textD->getRect().height);
+		if (textD->getStyleBuffer()) { // See comments in extendRangeForStyleMods
+			textD->getStyleBuffer()->primary_.selected = false;
+			textD->getStyleBuffer()->primary_.zeroWidth = false;
 		}
 		return;
 	}
@@ -2191,7 +2161,7 @@ static void bufModifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, v
 	   old cursor gets erased, and erase the bits of the cursor which extend
 	   beyond the left and right edges of the text. */
 	startDispPos = textD->continuousWrap ? wrapModStart : pos;
-	if (origCursorPos == startDispPos && textD->cursorPos != startDispPos)
+	if (origCursorPos == startDispPos && textD->getCursorPos() != startDispPos)
 		startDispPos = std::min(startDispPos, origCursorPos - 1);
 	if (linesInserted == linesDeleted) {
 		if (nInserted == 0 && nDeleted == 0)
@@ -2209,7 +2179,7 @@ static void bufModifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, v
 		if (linesInserted > 1)
 			textD->redrawLineNumbers(false);
 	} else { // linesInserted != linesDeleted
-		endDispPos = textD->lastChar + 1;
+		endDispPos = textD->getLastChar() + 1;
 		if (origCursorPos >= pos)
 			textD->blankCursorProtrusions();
 		textD->redrawLineNumbers(false);
@@ -2219,7 +2189,7 @@ static void bufModifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, v
 	   changes that need to be redisplayed.  (Redisplaying separately would
 	   cause double-redraw on almost every modification involving styled
 	   text).  Extend the redraw range to incorporate style changes */
-	if (textD->styleBuffer) {
+	if (textD->getStyleBuffer()) {
 		textD->extendRangeForStyleMods(&startDispPos, &endDispPos);
 	}
 
@@ -2247,10 +2217,15 @@ void TextDisplay::TextDMaintainAbsLineNum(int state) {
 ** Returns 0 if the absolute top line number is not being maintained.
 */
 int TextDisplay::getAbsTopLineNum() {
-	if (!this->continuousWrap)
+
+	if (!this->continuousWrap) {
 		return this->topLineNum;
-	if (maintainingAbsTopLineNum())
+	}
+		
+	if (maintainingAbsTopLineNum()) {
 		return this->absTopLineNum;
+	}
+		
 	return 0;
 }
 
@@ -3397,7 +3372,7 @@ void TextDisplay::TextDSetLineNumberArea(int lineNumLeft, int lineNumWidth, int 
 }
 
 /*
-** Refresh the line number area.  If clearAll is False, writes only over
+** Refresh the line number area.  If clearAll is false, writes only over
 ** the character cell areas.  Setting clearAll to True will clear out any
 ** stray marks outside of the character cell area, which might have been
 ** left from before a resize or font change.
@@ -3450,6 +3425,32 @@ void TextDisplay::redrawLineNumbers(int clearAll) {
 	}
 }
 
+void TextDisplay::hScrollCallback(XtPointer clientData, XtPointer callData) {
+
+	(void)clientData;
+
+	int newValue = reinterpret_cast<XmScrollBarCallbackStruct *>(callData)->value;
+
+	if (newValue == this->getHorizOffset())
+		return;
+		
+	this->setScroll(this->getTopLineNum(), newValue, false, false);
+}
+
+void TextDisplay::vScrollCallback(XtPointer clientData, XtPointer callData) {
+
+	(void)clientData;
+
+	int newValue = reinterpret_cast<XmScrollBarCallbackStruct *>(callData)->value;
+	int lineDelta = newValue - this->getTopLineNum();
+
+	if (lineDelta == 0)
+		return;
+		
+	this->setScroll(newValue, this->getHorizOffset(), false, true);
+}
+
+
 /*
 ** Callbacks for drag or valueChanged on scroll bars
 */
@@ -3457,23 +3458,14 @@ static void vScrollCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)w;
 
 	auto textD = static_cast<TextDisplay *>(clientData);
-	int newValue = ((XmScrollBarCallbackStruct *)callData)->value;
-	int lineDelta = newValue - textD->topLineNum;
-
-	if (lineDelta == 0)
-		return;
-	textD->setScroll(newValue, textD->horizOffset, False, true);
+	textD->vScrollCallback(clientData, callData);
 }
 
 static void hScrollCB(Widget w, XtPointer clientData, XtPointer callData) {
 	(void)w;
 
 	auto textD = static_cast<TextDisplay *>(clientData);
-	int newValue = ((XmScrollBarCallbackStruct *)callData)->value;
-
-	if (newValue == textD->horizOffset)
-		return;
-	textD->setScroll(textD->topLineNum, newValue, False, false);
+	textD->hScrollCallback(clientData, callData);
 }
 
 static void visibilityEH(Widget w, XtPointer data, XEvent *event, Boolean *continueDispatch) {
@@ -3484,8 +3476,9 @@ static void visibilityEH(Widget w, XtPointer data, XEvent *event, Boolean *conti
 	   is used for choosing the scrolling methodology for optimal performance,
 	   if the window is partially obscured, XCopyArea may not work */
 
-
-	static_cast<TextDisplay *>(data)->visibility = reinterpret_cast<XVisibilityEvent *>(event)->state;
+	auto textD = static_cast<TextDisplay *>(data);
+	
+	textD->setVisibility(reinterpret_cast<XVisibilityEvent *>(event)->state);
 }
 
 /*
@@ -4643,7 +4636,7 @@ int TextDisplay::wrapLine(TextBuffer *buf, int bufOffset, int lineStartPos, int 
 	int p;
 	int column;
 	
-	/* Scan backward for whitespace or BOL.  If BOL, return False, no
+	/* Scan backward for whitespace or BOL.  If BOL, return false, no
 	   whitespace in line at which to wrap */
 	for (p = lineEndPos;; p--) {
 		if (p < lineStartPos || p < limitPos) {
@@ -4808,24 +4801,24 @@ void TextDisplay::ShowHidePointer(bool hidePointer) {
 		if (hidePointer != this->pointerHidden) {
 			if (hidePointer) {
 				// Don't listen for keypresses any more
-				XtRemoveEventHandler((Widget)w, NEDIT_HIDE_CURSOR_MASK, False, handleHidePointer, nullptr);
+				XtRemoveEventHandler((Widget)w, NEDIT_HIDE_CURSOR_MASK, false, handleHidePointer, nullptr);
 				// Switch to empty cursor
 				XDefineCursor(XtDisplay(w), XtWindow(w), empty_cursor);
 
 				this->pointerHidden = true;
 
 				// Listen to mouse movement, focus change, and button presses
-				XtAddEventHandler((Widget)w, NEDIT_SHOW_CURSOR_MASK, False, handleShowPointer, nullptr);
+				XtAddEventHandler((Widget)w, NEDIT_SHOW_CURSOR_MASK, false, handleShowPointer, nullptr);
 			} else {
 				// Don't listen to mouse/focus events any more
-				XtRemoveEventHandler((Widget)w, NEDIT_SHOW_CURSOR_MASK, False, handleShowPointer, nullptr);
+				XtRemoveEventHandler((Widget)w, NEDIT_SHOW_CURSOR_MASK, false, handleShowPointer, nullptr);
 				// Switch to regular cursor
 				XUndefineCursor(XtDisplay(w), XtWindow(w));
 
 				this->pointerHidden = false;
 
 				// Listen for keypresses now
-				XtAddEventHandler((Widget)w, NEDIT_HIDE_CURSOR_MASK, False, handleHidePointer, nullptr);
+				XtAddEventHandler((Widget)w, NEDIT_HIDE_CURSOR_MASK, false, handleHidePointer, nullptr);
 			}
 		}
 	}
@@ -5739,7 +5732,7 @@ void TextDisplay::ExchangeSelections(Time time) {
 ** widget's buffer upon completion.
 */
 void TextDisplay::SendSecondarySelection(Time time, bool removeAfter) {
-	sendSecondary(w, time, getAtom(XtDisplay(w), A_MOTIF_DESTINATION), removeAfter ? REMOVE_SECONDARY : UNSELECT_SECONDARY, nullptr, 0);
+	textD_of(w)->sendSecondary(time, getAtom(XtDisplay(w), A_MOTIF_DESTINATION), removeAfter ? REMOVE_SECONDARY : UNSELECT_SECONDARY, nullptr, 0);
 }
 
 
@@ -5822,6 +5815,10 @@ void TextDisplay::setModifyingTabDist(int tabDist) {
 	this->modifyingTabDist = tabDist;
 }
 
+int TextDisplay::getModifyingTabDist() const {
+	return this->modifyingTabDist;
+}
+
 CallTip &TextDisplay::getCalltip() {
 	return this->calltip;
 }
@@ -5836,6 +5833,10 @@ int TextDisplay::getLastChar() const {
 
 int TextDisplay::getCursorPos() const {
 	return this->cursorPos;
+}
+
+void TextDisplay::setCursorPos(int pos) {
+	this->cursorPos = pos;
 }
 
 int TextDisplay::getAnchor() const {
@@ -7758,7 +7759,7 @@ void TextDisplay::copyToAP(XEvent *event, String *args, Cardinal *nArgs) {
 	endDrag();
 	if (!((dragState == SECONDARY_DRAG && secondary->selected) || (dragState == SECONDARY_RECT_DRAG && secondary->selected) || dragState == SECONDARY_CLICKED || dragState == NOT_CLICKED))
 		return;
-	if (!(secondary->selected && !textD_of(w)->motifDestOwner)) {
+	if (!(secondary->selected && !this->motifDestOwner)) {
 		if (this->checkReadOnly()) {
 			buf->BufSecondaryUnselect();
 			return;
@@ -7813,8 +7814,8 @@ void TextDisplay::secondaryOrDragStartAP(XEvent *event, String *args, Cardinal *
 	/* Record the site of the initial button press and the initial character
 	   position so subsequent motion events can decide when to begin a
 	   drag, and where to drag to */
-	textD_of(w)->btnDownCoord = Point{e->x, e->y};
-	textD_of(w)->dragState    = CLICKED_IN_SELECTION;
+	this->btnDownCoord = Point{e->x, e->y};
+	this->dragState    = CLICKED_IN_SELECTION;
 }
 
 void TextDisplay::secondaryAdjustAP(XEvent *event, String *args, Cardinal *nArgs) {
@@ -7955,7 +7956,7 @@ static void autoScrollTimerProc(XtPointer clientData, XtIntervalId *id) {
 	   scrolling, see if the position where the CURSOR would go is outside */
 	int newPos = textD->TextDXYToPosition(mouseCoord);
 	
-	if (textD->dragState == PRIMARY_RECT_DRAG) {
+	if (textD->getDragState() == PRIMARY_RECT_DRAG) {
 		cursorX = mouseCoord.x;
 	} else if (!textD->TextDPositionToXY(newPos, &cursorX, &y)) {
 		cursorX = mouseCoord.x;
@@ -7967,7 +7968,7 @@ static void autoScrollTimerProc(XtPointer clientData, XtIntervalId *id) {
 	
 	if (cursorX >= (int)w->core.width - text_of(w).P_marginWidth) {
 		horizOffset += fontWidth;
-	} else if (mouseCoord.x < textD->rect.left) {
+	} else if (mouseCoord.x < textD->getRect().left) {
 		horizOffset -= fontWidth;
 	}
 		
@@ -7981,7 +7982,7 @@ static void autoScrollTimerProc(XtPointer clientData, XtIntervalId *id) {
 
 	/* Continue the drag operation in progress.  If none is in progress
 	   (safety check) don't continue to re-establish the timer proc */
-	switch(textD->dragState) {
+	switch(textD->getDragState()) {
 	case PRIMARY_DRAG:
 		textD->adjustSelection(mouseCoord);
 		break;
@@ -7998,16 +7999,18 @@ static void autoScrollTimerProc(XtPointer clientData, XtIntervalId *id) {
 		textD->BlockDragSelection(mouseCoord, USE_LAST);
 		break;
 	default:
-		textD->autoScrollProcID = 0;
+		textD->setAutoScrollProcID(0);
 		return;
 	}
-	   
+		   
 	// re-establish the timer proc (this routine) to continue processing
-	textD->autoScrollProcID = XtAppAddTimeOut(
+	const XtIntervalId autoScrollID = XtAppAddTimeOut(
 		XtWidgetToApplicationContext(
 		(Widget)w), 
 		mouseCoord.y >= text_of(w).P_marginHeight && mouseCoord.y < w->core.height - text_of(w).P_marginHeight ? (VERTICAL_SCROLL_DELAY * fontWidth) / fontHeight : VERTICAL_SCROLL_DELAY,
 		autoScrollTimerProc, w);
+		
+	textD->setAutoScrollProcID(autoScrollID);
 }
 
 /*
@@ -8282,4 +8285,121 @@ void TextDisplay::selectLine() {
 	startPos = this->textBuffer()->BufStartOfLine(insertPos);
 	this->textBuffer()->BufSelect(startPos, std::min(endPos + 1, this->textBuffer()->BufGetLength()));
 	this->TextDSetInsertPosition(endPos);
+}
+
+/*
+** Send an INSERT_SELECTION request to "sel".
+** Upon completion, do the action specified by "action" (one of enum
+** selectNotifyActions) using "actionText" and freeing actionText (if
+** not nullptr) when done.
+*/
+void TextDisplay::sendSecondary(Time time, Atom sel, int action, char *actionText, int actionTextLen) {
+
+	static Atom selInfoProp[2] = {XA_SECONDARY, XA_STRING};
+	Display *disp = XtDisplay(w);
+	XtAppContext context = XtWidgetToApplicationContext(w);
+
+	// Take ownership of the secondary selection, give up if we can't 
+	if (!XtOwnSelection(w, XA_SECONDARY, time, convertSecondaryCB, loseSecondaryCB, nullptr)) {
+		this->buffer->BufSecondaryUnselect();
+		return;
+	}
+
+	/* Set up a property on this window to pass along with the
+	   INSERT_SELECTION request to tell the MOTIF_DESTINATION owner what
+	   selection and what target from that selection to insert */
+	XChangeProperty(disp, XtWindow(w), getAtom(disp, A_INSERT_INFO), getAtom(disp, A_ATOM_PAIR), 32, PropModeReplace, (uint8_t *)selInfoProp, 2 /* 1? */);
+
+	/* Make INSERT_SELECTION request to the owner of selection "sel"
+	   to do the insert.  This must be done using XLib calls to specify
+	   the property with the information about what to insert.  This
+	   means it also requires an event handler to see if the request
+	   succeeded or not, and a backup timer to clean up if the select
+	   notify event is never returned */
+	XConvertSelection(XtDisplay(w), sel, getAtom(disp, A_INSERT_SELECTION), getAtom(disp, A_INSERT_INFO), XtWindow(w), time);
+	
+	auto cbInfo = new selectNotifyInfo;
+	cbInfo->action       = action;
+	cbInfo->timeStamp    = time;
+	cbInfo->widget       = (Widget)w;
+	cbInfo->actionText   = actionText;
+	cbInfo->length       = actionTextLen;
+	XtAddEventHandler(w, 0, true, selectNotifyEH, cbInfo);
+	cbInfo->timeoutProcID = XtAppAddTimeOut(context, XtAppGetSelectionTimeout(context), selectNotifyTimerProc, cbInfo);
+}
+
+CursorStyles TextDisplay::getCursorStyle() const {
+	return this->cursorStyle;
+}
+
+int TextDisplay::getCursorToHint() const {
+	return this->cursorToHint;
+}
+
+bool TextDisplay::getSelectionOwner() {
+	return this->selectionOwner;
+}
+
+void TextDisplay::setSelectionOwner(bool value) {
+	this->selectionOwner = value;
+}
+
+int TextDisplay::getDragState() const {
+	return this->dragState;
+}
+
+void TextDisplay::setCursorToHint(int value) {
+	this->cursorToHint = value;
+}
+
+int TextDisplay::getTopLineNum() const {
+	return this->topLineNum;
+}
+
+Point TextDisplay::getButtonDownCoord() const {
+	return this->btnDownCoord;
+}
+
+int TextDisplay::getHorizOffset() const {
+	return this->horizOffset;
+}
+
+int TextDisplay::getCursorPreferredCol() const {
+	return this->cursorPreferredCol;
+}
+
+void TextDisplay::setCursorPreferredCol(int value) {
+	this->cursorPreferredCol = value;
+}
+
+void TextDisplay::setSuppressResync(bool value) {
+	this->suppressResync = value;
+}
+
+void TextDisplay::setVisibility(int value) {
+	this->visibility = value;
+}
+
+int TextDisplay::getFixedFontWidth() const {
+	return this->fixedFontWidth;
+}
+
+void TextDisplay::setNumberBufferLines(int count) {
+	this->nBufferLines = count;
+}
+
+int TextDisplay::getNumberBufferLines() const {
+	return this->nBufferLines;
+}
+
+void TextDisplay::setMotifDestOwner(bool value) {
+	this->motifDestOwner = value;
+}
+
+void TextDisplay::setAutoScrollProcID(XtIntervalId id) {
+	this->autoScrollProcID = id;
+}
+
+void TextDisplay::setAbsTopLineNum(int value) {
+	this->absTopLineNum = value;
 }

@@ -152,12 +152,14 @@ public:
 	void TextDRedrawCalltip(int calltipID);
 	
 public:
+	// block drag stuff
 	void BeginBlockDrag();
 	void BlockDragSelection(Point pos, int dragType);
 	void FinishBlockDrag();
 	void CancelBlockDrag();
 	
 public:
+	// clipboard/selection
 	void InsertClipboard(bool isColumnar);
 	void CopyToClipboard(Time time);
 	void HandleXSelections();
@@ -189,43 +191,68 @@ public:
 	void TextPasteClipboard(Time time);
 	void TextSetBuffer(TextBuffer *buffer);
 	void TextSetCursorPos(int pos);
-	void adjustRectForGraphicsExposeOrNoExposeEvent(XEvent *event, bool *first, int *left, int *top, int *width, int *height);
 	void adjustRectForGraphicsExposeOrNoExposeEvent(XEvent *event, bool *first, Rect *rect);
+	void adjustRectForGraphicsExposeOrNoExposeEvent(XEvent *event, bool *first, int *left, int *top, int *width, int *height);
 	void callCursorMovementCBs(XEvent *event);
 	void cancelDrag();
 	void checkAutoShowInsertPos();
 	void setScroll(int topLineNum, int horizOffset, int updateVScrollBar, int updateHScrollBar);
 	
 public:
+	CallTip &getCalltip();
+	CursorStyles getCursorStyle() const;
+	Pixel backgroundPixel() const;
+	Pixel foregroundPixel() const;
+	Point getButtonDownCoord() const;
+	Point getMouseCoord() const;
+	Rect getRect() const;
+	TextBuffer *getStyleBuffer() const;
+	TextBuffer *textBuffer() const;
+	XtIntervalId getCursorBlinkProcID() const;
+	bool getSelectionOwner();
 	int fontAscent() const;
 	int fontDescent() const;
-	Pixel foregroundPixel() const;
-	Pixel backgroundPixel() const;
-	TextBuffer *textBuffer() const;
-	TextBuffer *getStyleBuffer() const;
-	void setStyleBuffer(TextBuffer *buffer);
-	int getLineNumWidth() const;
-	int getLineNumLeft() const;
-	Rect getRect() const;
-	Point getMouseCoord() const;
-	void setMouseCoord(const Point &point);
-	int getBufferLinesCount() const;
-	XtIntervalId getCursorBlinkProcID() const;
-	void setModifyingTabDist(int tabDist);
-	CallTip &getCalltip();
-	int getFirstChar() const;
-	int getLastChar() const;
-	int getCursorPos() const;
+	int getAbsTopLineNum();
 	int getAnchor() const;
+	int getBufferLinesCount() const;
+	int getCursorPos() const;
+	int getCursorPreferredCol() const;
+	int getCursorToHint() const;
+	int getDragState() const;
+	int getFirstChar() const;
+	int getFixedFontWidth() const;
+	int getHorizOffset() const;
+	int getLastChar() const;
+	int getLineNumLeft() const;
+	int getLineNumWidth() const;
+	int getModifyingTabDist() const;
+	int getNumberBufferLines() const;
+	int getTopLineNum() const;
+	void setAbsTopLineNum(int value);
+	void setAutoScrollProcID(XtIntervalId id);
+	void setCursorPos(int pos);
+	void setCursorPreferredCol(int value);
+	void setCursorToHint(int value);
+	void setModifyingTabDist(int tabDist);
+	void setMotifDestOwner(bool value);
+	void setMouseCoord(const Point &point);
+	void setNumberBufferLines(int count);
+	void setSelectionOwner(bool value);
+	void setStyleBuffer(TextBuffer *buffer);
+	void setSuppressResync(bool value);
+	void setVisibility(int value);
 
 private:
 	Pixel getRangesetColor(int ind, Pixel bground);
+	int deleteEmulatedTab(XEvent *event);
+	int deletePendingSelection(XEvent *event);
 	int emptyLinesVisible() const;
-	int getAbsTopLineNum();
+	int endOfWord(int pos);
 	int measurePropChar(const char c, const int colNum, const int pos) const;
 	int measureVisLine(int visLineNum);
 	int pendingSelection();
 	int posToVisibleLineNum(int pos, int *lineNum);
+	int startOfWord(int pos);
 	int stringWidth(const char *string, const int length, const int style) const;
 	int styleOfPos(int lineStartPos, int lineLen, int lineIndex, int dispIndex, int thisChar);
 	int visLineLength(int visLineNum);
@@ -233,38 +260,39 @@ private:
 	int wrapUsesCharacter(int lineEndPos);
 	int xyToPos(int x, int y, int posType);
 	std::string createIndentStringEx(TextBuffer *buf, int bufOffset, int lineStartPos, int lineEndPos, int *column);
+	std::string createIndentStringEx(TextBuffer *buf, int bufOffset, int lineStartPos, int lineEndPos, int *length, int *column);
 	std::string wrapTextEx(view::string_view startLine, view::string_view text, int bufOffset, int wrapMargin, int *breakBefore);
 	void allocateFixedFontGCs(XFontStruct *fontStruct, Pixel bgPixel, Pixel fgPixel, Pixel selectFGPixel, Pixel selectBGPixel, Pixel highlightFGPixel, Pixel highlightBGPixel, Pixel lineNumFGPixel);
 	void calcLastChar();
 	void calcLineStarts(int startLine, int endLine);
-	void clearRect(GC gc, int x, int y, int width, int height);
+	void checkAutoScroll(const Point &coord);
+	void checkMoveSelectionChange(XEvent *event, int startPos, String *args, Cardinal *nArgs);
 	void clearRect(GC gc, const Rect &rect);
+	void clearRect(GC gc, int x, int y, int width, int height);
 	void drawCursor(int x, int y);
 	void drawString(int style, int x, int y, int toX, char *string, int nChars);
+	void endDrag();
 	void findLineEnd(int startPos, int startPosIsLineStart, int *lineEnd, int *nextLineStart);
 	void hideOrShowHScrollBar();
+	void keyMoveExtendSelection(XEvent *event, int origPos, int rectangular);
 	void offsetAbsLineNum(int oldFirstChar);
 	void offsetLineStarts(int newTopLineNum);
 	void redisplayLine(int visLineNum, int leftClip, int rightClip, int leftCharIndex, int rightCharIndex);
 	void resetClipRectangles();
+	void selectLine();
+	void selectWord(int pointerX);
 	void simpleInsertAtCursorEx(view::string_view chars, XEvent *event, bool allowPendingDelete);
+	void simpleInsertAtCursorEx(view::string_view chars, XEvent *event, int allowPendingDelete);
 	void wrappedLineCounter(const TextBuffer *buf, const int startPos, const int maxPos, const int maxLines, const Boolean startPosIsLineStart, const int styleBufOffset, int *retPos, int *retLines, int *retLineStart, int *retLineEnd) const;
 	void xyToUnconstrainedPos(int x, int y, int *row, int *column, int posType);
 
 public:
-	int maintainingAbsTopLineNum() const;
-	int updateHScrollBarRange();
-	void blankCursorProtrusions();
-	void extendRangeForStyleMods(int *start, int *end);
-	void findWrapRangeEx(view::string_view deletedText, int pos, int nInserted, int nDeleted, int *modRangeStart, int *modRangeEnd, int *linesInserted, int *linesDeleted);
-	void measureDeletedLines(int pos, int nDeleted);
-	void redrawLineNumbers(int clearAll);
-	void resetAbsLineNum();
-	void textDRedisplayRange(int start, int end);
-	void updateLineStarts(int pos, int charsInserted, int charsDeleted, int linesInserted, int linesDeleted, int *scrolled);
-	void updateVScrollBarRange();
+	// Callbacks
+	void hScrollCallback(XtPointer clientData, XtPointer callData);
+	void vScrollCallback(XtPointer clientData, XtPointer callData);
 
 public:
+	// Events
 	void backwardCharacterAP(XEvent *event, String *args, Cardinal *nArgs);
 	void backwardParagraphAP(XEvent *event, String *args, Cardinal *nArgs);
 	void backwardWordAP(XEvent *event, String *args, Cardinal *nArgs);
@@ -330,24 +358,22 @@ public:
 	void selfInsertAP(XEvent *event, String *args, Cardinal *n_args);
 	void toggleOverstrikeAP(XEvent *event, String *args, Cardinal *nArgs);
 
-private:
-	void endDrag();
-	void checkMoveSelectionChange(XEvent *event, int startPos, String *args, Cardinal *nArgs);
-	void keyMoveExtendSelection(XEvent *event, int origPos, int rectangular);
-	int endOfWord(int pos);
-	int startOfWord(int pos);
-	int deletePendingSelection(XEvent *event);
-	int deleteEmulatedTab(XEvent *event);
-	void simpleInsertAtCursorEx(view::string_view chars, XEvent *event, int allowPendingDelete);
-	std::string createIndentStringEx(TextBuffer *buf, int bufOffset, int lineStartPos, int lineEndPos, int *length, int *column);
-	void checkAutoScroll(const Point &coord);
-	void selectWord(int pointerX);
-	void selectLine();
-
 public:
+	int maintainingAbsTopLineNum() const;
+	int updateHScrollBarRange();
 	void adjustSecondarySelection(const Point &coord);
 	void adjustSelection(const Point &coord);
-
+	void blankCursorProtrusions();
+	void extendRangeForStyleMods(int *start, int *end);
+	void findWrapRangeEx(view::string_view deletedText, int pos, int nInserted, int nDeleted, int *modRangeStart, int *modRangeEnd, int *linesInserted, int *linesDeleted);
+	void measureDeletedLines(int pos, int nDeleted);
+	void redrawLineNumbers(int clearAll);
+	void resetAbsLineNum();
+	void sendSecondary(Time time, Atom sel, int action, char *actionText, int actionTextLen);
+	void textDRedisplayRange(int start, int end);
+	void updateLineStarts(int pos, int charsInserted, int charsDeleted, int linesInserted, int linesDeleted, int *scrolled);
+	void updateVScrollBarRange();
+	
 public:
 	int spanBackward(TextBuffer *buf, int startPos, const char *searchChars, int ignoreSpace, int *foundPos);
 	int spanForward(TextBuffer *buf, int startPos, const char *searchChars, int ignoreSpace, int *foundPos);
@@ -359,7 +385,7 @@ public:
 	static bool offscreenV(XWindowAttributes *screenAttr, int top, int height);
 
 public:
-	// COPY OF RESOURCE
+	// COPY OF RESOURCE?
 	Pixel          selectFGPixel;      // Foreground select color
 	Pixel          selectBGPixel;      // Background select color
 	Pixel          highlightFGPixel;   // Highlight colors are used when flashing matching parens
@@ -379,8 +405,12 @@ public:
 	Widget w; // TextWidget
 	Widget calltipW;                             // The Label widget for the calltip
 	Widget calltipShell;                         // The Shell that holds the calltip	
-
-public:
+	Pixel fgPixel;                               // Foreground color
+	Pixel bgPixel;                               // Background color	
+	Pixel *bgClassPixel;                         // table of colors for each BG class
+	uint8_t *bgClass;                            // obtains index into bgClassPixel[]
+	
+private:
 	Rect rect;
 	int lineNumLeft;
 	int lineNumWidth;
@@ -425,10 +455,6 @@ public:
 	// GC with color and font unspecified for drawing colored/styled text
 	GC styleGC;
 
-	Pixel fgPixel;                               // Foreground color
-	Pixel bgPixel;                               // Background color
-	Pixel *bgClassPixel;                         // table of colors for each BG class
-	uint8_t *bgClass;                            // obtains index into bgClassPixel[]
 	CallTip calltip;                       // The info for the calltip itself
 	bool suppressResync;                          // Suppress resynchronization of line starts during buffer updates
 	int nLinesDeleted;                           // Number of lines deleted during buffer modification (only used when resynchronization is suppressed)
