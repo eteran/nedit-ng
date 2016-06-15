@@ -8383,9 +8383,6 @@ int TextDisplay::getFixedFontWidth() const {
 	return this->fixedFontWidth;
 }
 
-int TextDisplay::getNumberBufferLines() const {
-	return this->nBufferLines;
-}
 
 void TextDisplay::setMotifDestOwner(bool value) {
 	this->motifDestOwner = value;

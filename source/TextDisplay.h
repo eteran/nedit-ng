@@ -225,7 +225,6 @@ public:
 	int getLineNumLeft() const;
 	int getLineNumWidth() const;
 	int getModifyingTabDist() const;
-	int getNumberBufferLines() const;
 	int getTopLineNum() const;
 	void setAbsTopLineNum(int value);
 	void setAutoScrollProcID(XtIntervalId id);
