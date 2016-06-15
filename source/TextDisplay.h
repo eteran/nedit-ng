@@ -216,7 +216,6 @@ public:
 	int getAnchor() const;
 	int getBufferLinesCount() const;
 	int getCursorPos() const;
-	int getCursorPreferredCol() const;
 	int getCursorToHint() const;
 	int getDragState() const;
 	int getFirstChar() const;
@@ -230,17 +229,12 @@ public:
 	int getTopLineNum() const;
 	void setAbsTopLineNum(int value);
 	void setAutoScrollProcID(XtIntervalId id);
-	void setCursorPos(int pos);
-	void setCursorPreferredCol(int value);
 	void setCursorToHint(int value);
 	void setModifyingTabDist(int tabDist);
 	void setMotifDestOwner(bool value);
 	void setMouseCoord(const Point &point);
-	void setNumberBufferLines(int count);
 	void setSelectionOwner(bool value);
 	void setStyleBuffer(TextBuffer *buffer);
-	void setSuppressResync(bool value);
-	void setVisibility(int value);
 
 private:
 	Pixel getRangesetColor(int ind, Pixel bground);
@@ -290,6 +284,9 @@ public:
 	// Callbacks
 	void hScrollCallback(XtPointer clientData, XtPointer callData);
 	void vScrollCallback(XtPointer clientData, XtPointer callData);
+	void visibilityEventHandler(XtPointer data, XEvent *event, Boolean *continueDispatch);
+	void bufPreDeleteCallback(int pos, int nDeleted);
+	void bufModifiedCallback(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText);
 
 public:
 	// Events

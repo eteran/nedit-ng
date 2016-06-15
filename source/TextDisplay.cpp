@@ -2051,13 +2051,8 @@ int TextDisplay::TextDCountBackwardNLines(int startPos, int nLines) {
 	}
 }
 
-/*
-** Callback attached to the text buffer to receive delete information before
-** the modifications are actually made.
-*/
-static void bufPreDeleteCB(int pos, int nDeleted, void *cbArg) {
-	auto textD = static_cast<TextDisplay *>(cbArg);
-	if (textD->continuousWrap && (textD->getFixedFontWidth() == -1 || textD->getModifyingTabDist()))
+void TextDisplay::bufPreDeleteCallback(int pos, int nDeleted) {
+	if (this->continuousWrap && (this->fixedFontWidth == -1 || this->modifyingTabDist)) {
 		/* Note: we must perform this measurement, even if there is not a
 		   single character deleted; the number of "deleted" lines is the
 		   number of visual lines spanned by the real line in which the
@@ -2066,36 +2061,32 @@ static void bufPreDeleteCB(int pos, int nDeleted, void *cbArg) {
 		   kind of calculations in advance, even if the font width is "fixed",
 		   because when the width of the tab characters changes, the layout
 		   of the text may be completely different. */
-		textD->measureDeletedLines(pos, nDeleted);
-	else
-		textD->setSuppressResync(false); // Probably not needed, but just in case
+		this->measureDeletedLines(pos, nDeleted);
+	} else {
+		this->suppressResync = false; // Probably not needed, but just in case
+	}
 }
 
-/*
-** Callback attached to the text buffer to receive modification information
-*/
-static void bufModifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *cbArg) {
-
+void TextDisplay::bufModifiedCallback(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText) {
 	int linesInserted;
 	int linesDeleted;
 	int startDispPos;
 	int endDispPos;
-	auto textD = static_cast<TextDisplay *>(cbArg);
-	TextBuffer *buf  = textD->TextGetBuffer();
-	int oldFirstChar = textD->getFirstChar();
+	TextBuffer *buf  = this->buffer;
+	int oldFirstChar = this->firstChar;
 	int scrolled;
-	int origCursorPos = textD->getCursorPos();
+	int origCursorPos = this->cursorPos;
 	int wrapModStart;
 	int wrapModEnd;
 
 	// buffer modification cancels vertical cursor motion column
 	if (nInserted != 0 || nDeleted != 0)
-		textD->setCursorPreferredCol(-1);
+		this->cursorPreferredCol = -1;
 
 	/* Count the number of lines inserted and deleted, and in the case
 	   of continuous wrap mode, how much has changed */
-	if (textD->continuousWrap) {
-		textD->findWrapRangeEx(deletedText, pos, nInserted, nDeleted, &wrapModStart, &wrapModEnd, &linesInserted, &linesDeleted);
+	if (this->continuousWrap) {
+		this->findWrapRangeEx(deletedText, pos, nInserted, nDeleted, &wrapModStart, &wrapModEnd, &linesInserted, &linesDeleted);
 	} else {
 		linesInserted = nInserted == 0 ? 0 : buf->BufCountLines(pos, pos + nInserted);
 		linesDeleted = nDeleted == 0 ? 0 : countLinesEx(deletedText);
@@ -2103,25 +2094,25 @@ static void bufModifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, v
 
 	// Update the line starts and topLineNum
 	if (nInserted != 0 || nDeleted != 0) {
-		if (textD->continuousWrap) {
-			textD->updateLineStarts( wrapModStart, wrapModEnd - wrapModStart, nDeleted + pos - wrapModStart + (wrapModEnd - (pos + nInserted)), linesInserted, linesDeleted, &scrolled);
+		if (this->continuousWrap) {
+			this->updateLineStarts( wrapModStart, wrapModEnd - wrapModStart, nDeleted + pos - wrapModStart + (wrapModEnd - (pos + nInserted)), linesInserted, linesDeleted, &scrolled);
 		} else {
-			textD->updateLineStarts( pos, nInserted, nDeleted, linesInserted, linesDeleted, &scrolled);
+			this->updateLineStarts( pos, nInserted, nDeleted, linesInserted, linesDeleted, &scrolled);
 		}
 	} else
 		scrolled = false;
 
 	/* If we're counting non-wrapped lines as well, maintain the absolute
 	   (non-wrapped) line number of the text displayed */
-	if (textD->maintainingAbsTopLineNum() && (nInserted != 0 || nDeleted != 0)) {
+	if (this->maintainingAbsTopLineNum() && (nInserted != 0 || nDeleted != 0)) {
 		if (pos + nDeleted < oldFirstChar)
-			textD->setAbsTopLineNum(textD->getAbsTopLineNum() + buf->BufCountLines(pos, pos + nInserted) - countLinesEx(deletedText));
+			this->absTopLineNum = this->absTopLineNum + buf->BufCountLines(pos, pos + nInserted) - countLinesEx(deletedText);
 		else if (pos < oldFirstChar)
-			textD->resetAbsLineNum();
+			this->resetAbsLineNum();
 	}
 
 	// Update the line count for the whole buffer
-	textD->setNumberBufferLines(textD->getNumberBufferLines() + linesInserted - linesDeleted);
+	this->nBufferLines = (this->nBufferLines + linesInserted - linesDeleted);
 
 	/* Update the scroll bar ranges (and value if the value changed).  Note
 	   that updating the horizontal scroll bar range requires scanning the
@@ -2129,28 +2120,28 @@ static void bufModifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, v
 	   much.  Note also, that the horizontal scroll bar update routine is
 	   allowed to re-adjust horizOffset if there is blank space to the right
 	   of all lines of text. */
-	textD->updateVScrollBarRange();
-	scrolled |= textD->updateHScrollBarRange();
+	this->updateVScrollBarRange();
+	scrolled |= this->updateHScrollBarRange();
 
 	// Update the cursor position
-	if (textD->getCursorToHint() != NO_HINT) {
-		textD->setCursorPos(textD->getCursorToHint());
-		textD->setCursorToHint(NO_HINT);
-	} else if (textD->getCursorPos() > pos) {
-		if (textD->getCursorPos() < pos + nDeleted) {
-			textD->setCursorPos(pos);
+	if (this->cursorToHint != NO_HINT) {
+		this->cursorPos = this->cursorToHint;
+		this->cursorToHint = NO_HINT;
+	} else if (this->cursorPos > pos) {
+		if (this->cursorPos < pos + nDeleted) {
+			this->cursorPos = pos;
 		} else {
-			textD->setCursorPos(textD->getCursorPos() + nInserted - nDeleted);
+			this->cursorPos = (this->cursorPos + nInserted - nDeleted);
 		}
 	}
 
 	// If the changes caused scrolling, re-paint everything and we're done.
 	if (scrolled) {
-		textD->blankCursorProtrusions();
-		textD->TextDRedisplayRect(0, textD->getRect().top, textD->getRect().width + textD->getRect().left, textD->getRect().height);
-		if (textD->getStyleBuffer()) { // See comments in extendRangeForStyleMods
-			textD->getStyleBuffer()->primary_.selected = false;
-			textD->getStyleBuffer()->primary_.zeroWidth = false;
+		this->blankCursorProtrusions();
+		this->TextDRedisplayRect(0, this->rect.top, this->rect.width + this->rect.left, this->rect.height);
+		if (this->styleBuffer) { // See comments in extendRangeForStyleMods
+			this->styleBuffer->primary_.selected = false;
+			this->styleBuffer->primary_.zeroWidth = false;
 		}
 		return;
 	}
@@ -2160,16 +2151,16 @@ static void bufModifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, v
 	   sure that the redisplay range covers the old cursor position so the
 	   old cursor gets erased, and erase the bits of the cursor which extend
 	   beyond the left and right edges of the text. */
-	startDispPos = textD->continuousWrap ? wrapModStart : pos;
-	if (origCursorPos == startDispPos && textD->getCursorPos() != startDispPos)
+	startDispPos = this->continuousWrap ? wrapModStart : pos;
+	if (origCursorPos == startDispPos && this->cursorPos != startDispPos)
 		startDispPos = std::min(startDispPos, origCursorPos - 1);
 	if (linesInserted == linesDeleted) {
 		if (nInserted == 0 && nDeleted == 0)
 			endDispPos = pos + nRestyled;
 		else {
-			endDispPos = textD->continuousWrap ? wrapModEnd : buf->BufEndOfLine(pos + nInserted) + 1;
+			endDispPos = this->continuousWrap ? wrapModEnd : buf->BufEndOfLine(pos + nInserted) + 1;
 			if (origCursorPos >= startDispPos && (origCursorPos <= endDispPos || endDispPos == buf->BufGetLength()))
-				textD->blankCursorProtrusions();
+				this->blankCursorProtrusions();
 		}
 		/* If more than one line is inserted/deleted, a line break may have
 		   been inserted or removed in between, and the line numbers may
@@ -2177,24 +2168,45 @@ static void bufModifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, v
 		   be affected (the insertion or removal of a line break always
 		   results in at least two lines being redrawn). */
 		if (linesInserted > 1)
-			textD->redrawLineNumbers(false);
+			this->redrawLineNumbers(false);
 	} else { // linesInserted != linesDeleted
-		endDispPos = textD->getLastChar() + 1;
+		endDispPos = this->lastChar + 1;
 		if (origCursorPos >= pos)
-			textD->blankCursorProtrusions();
-		textD->redrawLineNumbers(false);
+			this->blankCursorProtrusions();
+		this->redrawLineNumbers(false);
 	}
 
 	/* If there is a style buffer, check if the modification caused additional
 	   changes that need to be redisplayed.  (Redisplaying separately would
 	   cause double-redraw on almost every modification involving styled
 	   text).  Extend the redraw range to incorporate style changes */
-	if (textD->getStyleBuffer()) {
-		textD->extendRangeForStyleMods(&startDispPos, &endDispPos);
+	if (this->getStyleBuffer()) {
+		this->extendRangeForStyleMods(&startDispPos, &endDispPos);
 	}
 
 	// Redisplay computed range
-	textD->textDRedisplayRange(startDispPos, endDispPos);
+	this->textDRedisplayRange(startDispPos, endDispPos);
+}
+
+
+/*
+** Callback attached to the text buffer to receive delete information before
+** the modifications are actually made.
+*/
+static void bufPreDeleteCB(int pos, int nDeleted, void *cbArg) {
+
+	auto textD = static_cast<TextDisplay *>(cbArg);
+	textD->bufPreDeleteCallback(pos, nDeleted);
+}
+
+/*
+** Callback attached to the text buffer to receive modification information
+*/
+static void bufModifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *cbArg) {
+
+	auto textD = static_cast<TextDisplay *>(cbArg);
+	textD->bufModifiedCallback(pos, nInserted, nDeleted, nRestyled, deletedText);
+
 }
 
 /*
@@ -3450,6 +3462,14 @@ void TextDisplay::vScrollCallback(XtPointer clientData, XtPointer callData) {
 	this->setScroll(newValue, this->getHorizOffset(), false, true);
 }
 
+void TextDisplay::visibilityEventHandler(XtPointer data, XEvent *event, Boolean *continueDispatch) {
+
+	(void)data;
+	(void)continueDispatch;
+
+	this->visibility = reinterpret_cast<XVisibilityEvent *>(event)->state;
+}
+
 
 /*
 ** Callbacks for drag or valueChanged on scroll bars
@@ -3477,8 +3497,7 @@ static void visibilityEH(Widget w, XtPointer data, XEvent *event, Boolean *conti
 	   if the window is partially obscured, XCopyArea may not work */
 
 	auto textD = static_cast<TextDisplay *>(data);
-	
-	textD->setVisibility(reinterpret_cast<XVisibilityEvent *>(event)->state);
+	textD->visibilityEventHandler(data, event, continueDispatch);
 }
 
 /*
@@ -5835,10 +5854,6 @@ int TextDisplay::getCursorPos() const {
 	return this->cursorPos;
 }
 
-void TextDisplay::setCursorPos(int pos) {
-	this->cursorPos = pos;
-}
-
 int TextDisplay::getAnchor() const {
 	return this->anchor;
 }
@@ -6443,7 +6458,7 @@ void TextDisplay::pageRightAP(XEvent *event, String *args, Cardinal *nArgs) {
 void TextDisplay::nextPageAP(XEvent *event, String *args, Cardinal *nArgs) {
 
 	TextBuffer *buf = this->buffer;
-	int lastTopLine = std::max<int>(1, this->getBufferLinesCount() - (this->nVisibleLines - 2) + text_of(w).P_cursorVPadding);
+	int lastTopLine = std::max<int>(1, this->nBufferLines - (this->nVisibleLines - 2) + text_of(w).P_cursorVPadding);
 	int insertPos = this->TextDGetInsertPosition();
 	int column = 0;
 	int visLineNum;
@@ -6467,7 +6482,7 @@ void TextDisplay::nextPageAP(XEvent *event, String *args, Cardinal *nArgs) {
 	} else if (hasKey("stutter", args, nArgs)) { // Mac style
 		// move to bottom line of visible area
 		// if already there, page down maintaining preferrred column
-		targetLine = std::max(std::min(this->nVisibleLines - 1, this->getBufferLinesCount()), 0);
+		targetLine = std::max(std::min(this->nVisibleLines - 1, this->nBufferLines), 0);
 		column = this->TextDPreferredColumn(&visLineNum, &lineStartPos);
 		if (lineStartPos == this->lineStarts[targetLine]) {
 			if (insertPos >= buf->BufGetLength() || this->topLineNum == lastTopLine) {
@@ -6639,7 +6654,7 @@ void TextDisplay::endOfFileAP(XEvent *event, String *args, Cardinal *nArgs) {
 
 	this->cancelDrag();
 	if (hasKey("scrollbar", args, nArgs)) {
-		lastTopLine = std::max<int>(1, this->getBufferLinesCount() - (this->nVisibleLines - 2) + text_of(w).P_cursorVPadding);
+		lastTopLine = std::max<int>(1, this->nBufferLines - (this->nVisibleLines - 2) + text_of(w).P_cursorVPadding);
 		if (lastTopLine != this->topLineNum) {
 			this->TextDSetScroll(lastTopLine, this->horizOffset);
 		}
@@ -8364,28 +8379,8 @@ int TextDisplay::getHorizOffset() const {
 	return this->horizOffset;
 }
 
-int TextDisplay::getCursorPreferredCol() const {
-	return this->cursorPreferredCol;
-}
-
-void TextDisplay::setCursorPreferredCol(int value) {
-	this->cursorPreferredCol = value;
-}
-
-void TextDisplay::setSuppressResync(bool value) {
-	this->suppressResync = value;
-}
-
-void TextDisplay::setVisibility(int value) {
-	this->visibility = value;
-}
-
 int TextDisplay::getFixedFontWidth() const {
 	return this->fixedFontWidth;
-}
-
-void TextDisplay::setNumberBufferLines(int count) {
-	this->nBufferLines = count;
 }
 
 int TextDisplay::getNumberBufferLines() const {
