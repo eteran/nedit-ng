@@ -468,49 +468,7 @@ void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view::strin
 ** widget.
 */
 void getSelectionCB(Widget w, XtPointer clientData, Atom *selType, Atom *type, XtPointer value, unsigned long *length, int *format) {
-
-	(void)selType;
-
-	auto textD = textD_of(w);
-	int isColumnar = *(int *)clientData;
-	int cursorLineStart, cursorPos, column, row;
-
-	// Confirm that the returned value is of the correct type 
-	if (*type != XA_STRING || *format != 8) {
-		XtFree((char *)value);
-		return;
-	}
-
-	/* Copy the string just to make space for the null character (this may
-	   not be necessary, XLib documentation claims a nullptr is already added,
-	   but the Xt documentation for this routine makes no such claim) */
-	std::string string(static_cast<char *>(value), *length);
-
-	/* If the string contains ascii-nul characters, substitute something
-	   else, or give up, warn, and refuse */
-	if (!textD->TextGetBuffer()->BufSubstituteNullCharsEx(string)) {
-		fprintf(stderr, "Too much binary data, giving up\n");
-		XtFree((char *)value);
-		return;
-	}
-
-	// Insert it in the text widget 
-	if (isColumnar) {
-		cursorPos = textD->TextDGetInsertPosition();
-		cursorLineStart = textD->TextGetBuffer()->BufStartOfLine(cursorPos);
-		textD->TextDXYToUnconstrainedPosition(
-			textD_of(w)->getButtonDownCoord(),
-			&row,
-			&column);
-			
-		textD->TextGetBuffer()->BufInsertColEx(column, cursorLineStart, string, nullptr, nullptr);
-		textD->TextDSetInsertPosition(textD->TextGetBuffer()->cursorPosHint_);
-	} else
-		textD->TextInsertAtCursorEx(string, nullptr, False, text_of(w).P_autoWrapPastedText);
-
-	/* The selection requstor is required to free the memory passed
-	   to it via value */
-	XtFree((char *)value);
+	textD_of(w)->getSelectionCallback(clientData, selType, type, value, length, format);
 }
 
 /*
@@ -2180,7 +2138,7 @@ void TextDisplay::bufModifiedCallback(int pos, int nInserted, int nDeleted, int 
 	   changes that need to be redisplayed.  (Redisplaying separately would
 	   cause double-redraw on almost every modification involving styled
 	   text).  Extend the redraw range to incorporate style changes */
-	if (this->getStyleBuffer()) {
+	if (this->styleBuffer) {
 		this->extendRangeForStyleMods(&startDispPos, &endDispPos);
 	}
 
@@ -3421,7 +3379,7 @@ void TextDisplay::redrawLineNumbers(int clearAll) {
 	// Draw the line numbers, aligned to the text
 	nCols = std::min(11, this->lineNumWidth / charWidth);
 	y = this->rect.top;
-	line = this->getAbsTopLineNum();
+	line = this->absTopLineNum;
 	for (visLine = 0; visLine < this->nVisibleLines; visLine++) {
 		int lineStart = this->lineStarts[visLine];
 		if (lineStart != -1 && (lineStart == 0 || this->buffer->BufGetCharacter(lineStart - 1) == '\n')) {
@@ -3443,10 +3401,10 @@ void TextDisplay::hScrollCallback(XtPointer clientData, XtPointer callData) {
 
 	int newValue = reinterpret_cast<XmScrollBarCallbackStruct *>(callData)->value;
 
-	if (newValue == this->getHorizOffset())
+	if (newValue == this->horizOffset)
 		return;
 		
-	this->setScroll(this->getTopLineNum(), newValue, false, false);
+	this->setScroll(this->topLineNum, newValue, false, false);
 }
 
 void TextDisplay::vScrollCallback(XtPointer clientData, XtPointer callData) {
@@ -3454,12 +3412,12 @@ void TextDisplay::vScrollCallback(XtPointer clientData, XtPointer callData) {
 	(void)clientData;
 
 	int newValue = reinterpret_cast<XmScrollBarCallbackStruct *>(callData)->value;
-	int lineDelta = newValue - this->getTopLineNum();
+	int lineDelta = newValue - this->topLineNum;
 
 	if (lineDelta == 0)
 		return;
 		
-	this->setScroll(newValue, this->getHorizOffset(), false, true);
+	this->setScroll(newValue, this->horizOffset, false, true);
 }
 
 void TextDisplay::visibilityEventHandler(XtPointer data, XEvent *event, Boolean *continueDispatch) {
@@ -5874,7 +5832,7 @@ void TextDisplay::focusInAP(XEvent *event, String *args, Cardinal *nArgs) {
 	}
 
 	// If the timer is not already started, start it
-	if (text_of(this->w).P_cursorBlinkRate != 0 && this->getCursorBlinkProcID() == 0) {
+	if (text_of(this->w).P_cursorBlinkRate != 0 && this->cursorBlinkProcID == 0) {
 		this->cursorBlinkProcID = XtAppAddTimeOut(XtWidgetToApplicationContext(this->w), text_of(this->w).P_cursorBlinkRate, cursorBlinkTimerProc, this->w);
 	}
 
@@ -7964,14 +7922,14 @@ void TextDisplay::autoScrollTimerProcEx(XtPointer clientData, XtIntervalId *id) 
 	int y;
 	int fontWidth    = this->fontStruct->max_bounds.width;
 	int fontHeight   = this->fontStruct->ascent + this->fontStruct->descent;
-	Point mouseCoord = this->getMouseCoord();
+	Point mouseCoord = this->mouseCoord;
 
 	/* For vertical autoscrolling just dragging the mouse outside of the top
 	   or bottom of the window is sufficient, for horizontal (non-rectangular)
 	   scrolling, see if the position where the CURSOR would go is outside */
 	int newPos = this->TextDXYToPosition(mouseCoord);
 	
-	if (this->getDragState() == PRIMARY_RECT_DRAG) {
+	if (this->dragState == PRIMARY_RECT_DRAG) {
 		cursorX = mouseCoord.x;
 	} else if (!this->TextDPositionToXY(newPos, &cursorX, &y)) {
 		cursorX = mouseCoord.x;
@@ -8358,14 +8316,6 @@ CursorStyles TextDisplay::getCursorStyle() const {
 	return this->cursorStyle;
 }
 
-int TextDisplay::getHorizOffset() const {
-	return this->horizOffset;
-}
-
-int TextDisplay::getTopLineNum() const {
-	return this->topLineNum;
-}
-
 bool TextDisplay::getSelectionOwner() {
 	return this->selectionOwner;
 }
@@ -8374,17 +8324,12 @@ void TextDisplay::setSelectionOwner(bool value) {
 	this->selectionOwner = value;
 }
 
-int TextDisplay::getDragState() const {
-	return this->dragState;
-}
-
 void TextDisplay::setMotifDestOwner(bool value) {
 	this->motifDestOwner = value;
 }
 
-Point TextDisplay::getButtonDownCoord() const {
-	return this->btnDownCoord;
-}
+#else
+
 #endif
 
 void TextDisplay::addFocusCallback(XtCallbackProc callback, XtPointer client_data) {
@@ -8412,3 +8357,55 @@ void TextDisplay::addsmartIndentCallback(XtCallbackProc callback, XtPointer clie
 	
 	
 	
+/*
+** Called when data arrives from a request for the PRIMARY selection.  If
+** everything is in order, it inserts it at the cursor in the requesting
+** widget.
+*/
+void TextDisplay::getSelectionCallback(XtPointer clientData, Atom *selType, Atom *type, XtPointer value, unsigned long *length, int *format) {
+
+	(void)selType;
+	
+	int isColumnar = *(int *)clientData;
+	int cursorLineStart;
+	int cursorPos;
+	int column;
+	int row;
+
+	// Confirm that the returned value is of the correct type 
+	if (*type != XA_STRING || *format != 8) {
+		XtFree((char *)value);
+		return;
+	}
+
+	/* Copy the string just to make space for the null character (this may
+	   not be necessary, XLib documentation claims a '\0' is already added,
+	   but the Xt documentation for this routine makes no such claim) */
+	std::string string(static_cast<char *>(value), *length);
+
+	/* If the string contains ascii-nul characters, substitute something
+	   else, or give up, warn, and refuse */
+	if (!this->TextGetBuffer()->BufSubstituteNullCharsEx(string)) {
+		fprintf(stderr, "Too much binary data, giving up\n");
+		XtFree((char *)value);
+		return;
+	}
+
+	// Insert it in the text widget 
+	if (isColumnar) {
+		cursorPos = this->TextDGetInsertPosition();
+		cursorLineStart = this->TextGetBuffer()->BufStartOfLine(cursorPos);
+		this->TextDXYToUnconstrainedPosition(
+			this->btnDownCoord,
+			&row,
+			&column);
+			
+		this->TextGetBuffer()->BufInsertColEx(column, cursorLineStart, string, nullptr, nullptr);
+		this->TextDSetInsertPosition(this->TextGetBuffer()->cursorPosHint_);
+	} else
+		this->TextInsertAtCursorEx(string, nullptr, False, text_of(w).P_autoWrapPastedText);
+
+	/* The selection requstor is required to free the memory passed
+	   to it via value */
+	XtFree((char *)value);
+}
