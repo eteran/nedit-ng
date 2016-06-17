@@ -471,6 +471,49 @@ void ringIfNecessary(bool silent) {
 	}
 }
 
+/*
+** Returns a new string with each \t replaced with tab_width spaces or
+** a pointer to text if there were no tabs.
+** Note that this is dumb replacement, not smart tab-like behavior!  The goal
+** is to prevent tabs from turning into squares in calltips, not to get the
+** formatting just right.
+*/
+std::string expandAllTabsEx(view::string_view text, int tab_width) {
+	int nTabs = 0;
+
+	// First count 'em
+	for(char ch : text) {
+		if (ch == '\t') {
+			++nTabs;
+		}
+	}
+	
+	if (nTabs == 0) {
+		return text.to_string();
+	}
+
+	// Allocate the new string
+	size_t len = text.size() + (tab_width - 1) * nTabs;
+	
+	std::string textCpy;
+	textCpy.reserve(len);
+	
+	auto cCpy = std::back_inserter(textCpy);
+	
+	// Now replace 'em
+	for(char ch : text) {
+		if (ch == '\t') {
+			for (int i = 0; i < tab_width; ++i) {
+				*cCpy++ = ' ';
+			}
+		} else {
+			*cCpy++ = ch;
+		}
+	}
+	
+	
+	return textCpy;
+}
 
 }
 
@@ -7989,9 +8032,7 @@ CursorStyles TextDisplay::getCursorStyle() const {
 	return this->cursorStyle;
 }
 
-CallTip &TextDisplay::getCalltip() {
-	return this->calltip;
-}
+
 
 void TextDisplay::setStyleBuffer(TextBuffer *buffer) {
 	this->styleBuffer = buffer;
@@ -8437,4 +8478,119 @@ Boolean TextDisplay::convertMotifDestCallback(Atom *selType, Atom *target, Atom 
 	/* target TIMESTAMP is handled by the toolkit and not passed here, any
 	   others are unrecognized */
 	return false;
+}
+
+/*
+** Pop-up a calltip.
+** If a calltip is already being displayed it is destroyed and replaced with
+** the new calltip.  Returns the ID of the calltip or 0 on failure.
+*/
+int TextDisplay::TextDShowCalltip(view::string_view text, bool anchored, int pos, int hAlign, int vAlign, int alignMode) {
+	static int StaticCalltipID = 1;
+	
+	int rel_x;
+	int rel_y;
+	Position txtX;
+	Position txtY;
+
+	// Destroy any previous calltip 
+	this->TextDKillCalltip(0);
+
+	// Expand any tabs in the calltip and make it an XmString 
+	std::string textCpy = expandAllTabsEx(text, this->TextGetBuffer()->BufGetTabDistance());
+
+	XmString str = XmStringCreateLtoREx(textCpy, XmFONTLIST_DEFAULT_TAG);
+
+	// Get the location/dimensions of the text area 
+	XtVaGetValues(this->w, XmNx, &txtX, XmNy, &txtY, nullptr);
+
+	// Create the calltip widget on first request 
+	if (!this->calltipW) {
+		Arg args[10];
+		int argcnt = 0;
+		XtSetArg(args[argcnt], XmNsaveUnder, True);
+		argcnt++;
+		XtSetArg(args[argcnt], XmNallowShellResize, True);
+		argcnt++;
+
+		this->calltipShell = CreatePopupShellWithBestVis((String) "calltipshell", overrideShellWidgetClass, this->w, args, argcnt);
+
+		/* Might want to make this a read-only XmText eventually so that
+		    users can copy from it */
+		this->calltipW = XtVaCreateManagedWidget(
+			"calltip", 
+			xmLabelWidgetClass, 
+			this->calltipShell, 
+			XmNborderWidth, 
+			1, // Thin borders 
+			XmNhighlightThickness, 
+			0, 
+			XmNalignment, 
+			XmALIGNMENT_BEGINNING, 
+			XmNforeground, 
+			this->calltipFGPixel, 
+			XmNbackground, 
+			this->calltipBGPixel, 
+			nullptr);
+	}
+
+	// Set the text on the label 
+	XtVaSetValues(this->calltipW, XmNlabelString, str, nullptr);
+	XmStringFree(str);
+
+	// Figure out where to put the tip 
+	if (anchored) {
+		// Put it at the specified position 
+		// If position is not displayed, return 0 
+		if (pos < this->getFirstChar() || pos > this->getLastChar()) {
+			QApplication::beep();
+			return 0;
+		}
+		this->calltip.pos = pos;
+	} else {
+		/* Put it next to the cursor, or in the center of the window if the
+		    cursor is offscreen and mode != strict */
+		if (!this->TextDPositionToXY(this->TextGetCursorPos(), &rel_x, &rel_y)) {
+			if (alignMode == TIP_STRICT) {
+				QApplication::beep();
+				return 0;
+			}
+			this->calltip.pos = -1;
+		} else
+			// Store the x-offset for use when redrawing 
+			this->calltip.pos = rel_x;
+	}
+
+	// Should really bounds-check these enumerations... 
+	this->calltip.ID        = StaticCalltipID;
+	this->calltip.anchored  = anchored;
+	this->calltip.hAlign    = hAlign;
+	this->calltip.vAlign    = vAlign;
+	this->calltip.alignMode = alignMode;
+
+	/* Increment the static calltip ID.  Macro variables can only be int,
+	    not unsigned, so have to work to keep it > 0 on overflow */
+	if (++StaticCalltipID <= 0) {
+		StaticCalltipID = 1;
+	}
+
+	// Realize the calltip's shell so that its width & height are known 
+	XtRealizeWidget(this->calltipShell);
+	
+	// Move the calltip and pop it up 
+	this->TextDRedrawCalltip(0);
+	XtPopup(this->calltipShell, XtGrabNone);
+	return this->calltip.ID;
+}
+
+int TextDisplay::TextDGetCalltipID(int calltipID) {
+	if (calltipID == 0)
+		return this->calltip.ID;
+	else {
+		if (calltipID == this->calltip.ID) {
+			return calltipID;
+		} else {
+			return 0;
+		}
+	}
 }

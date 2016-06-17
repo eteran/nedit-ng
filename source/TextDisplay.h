@@ -199,7 +199,6 @@ public:
 	void setScroll(int topLineNum, int horizOffset, int updateVScrollBar, int updateHScrollBar);
 	
 public:
-	CallTip &getCalltip();
 	CursorStyles getCursorStyle() const;
 	Pixel backgroundPixel() const;
 	Pixel foregroundPixel() const;
@@ -216,6 +215,10 @@ public:
 	int getLineNumWidth() const;
 	void setModifyingTabDist(int tabDist);
 	void setStyleBuffer(TextBuffer *buffer);
+	
+public:
+	int TextDShowCalltip(view::string_view text, bool anchored, int pos, int hAlign, int vAlign, int alignMode);
+	int TextDGetCalltipID(int calltipID);
 
 private:
 	Pixel getRangesetColor(int ind, Pixel bground);
