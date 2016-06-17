@@ -263,6 +263,9 @@ private:
 
 public:
 	// Callbacks
+	Boolean convertMotifDestCallback(Atom *selType, Atom *target, Atom *type, XtPointer *value, unsigned long *length, int *format);
+	Boolean convertSecondaryCallback(Atom *selType, Atom *target, Atom *type, XtPointer *value, unsigned long *length, int *format);
+	void getExchSelCallback(XtPointer clientData, Atom *selType, Atom *type, XtPointer value, unsigned long *length, int *format);
 	void getInsertSelectionCallback(XtPointer clientData, Atom *selType, Atom *type, XtPointer value, unsigned long *length, int *format);
 	void cursorBlinkTimerProcEx(XtPointer clientData, XtIntervalId *id);
 	void hScrollCallback(XtPointer clientData, XtPointer callData);

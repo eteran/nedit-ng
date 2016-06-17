@@ -261,8 +261,10 @@ static Atom getAtom(Display *display, int atomNum) {
 	static Atom atomList[N_ATOMS] = {0};
 	static const char *atomNames[N_ATOMS] = {"TEXT", "TARGETS", "MULTIPLE", "TIMESTAMP", "INSERT_SELECTION", "DELETE", "CLIPBOARD", "INSERT_INFO", "ATOM_PAIR", "MOTIF_DESTINATION", "COMPOUND_TEXT"};
 
-	if (atomList[atomNum] == 0)
+	if (atomList[atomNum] == 0) {
 		atomList[atomNum] = XInternAtom(display, atomNames[atomNum], False);
+	}
+	
 	return atomList[atomNum];
 }
 
@@ -413,30 +415,8 @@ void selectNotifyTimerProc(XtPointer clientData, XtIntervalId *id) {
 ** to insert it.
 */
 Boolean convertSecondaryCB(Widget w, Atom *selType, Atom *target, Atom *type, XtPointer *value, unsigned long *length, int *format) {
+	return textD_of(w)->convertSecondaryCallback(selType, target, type, value, length, format);
 
-	(void)selType;
-
-	auto buf = textD_of(w)->TextGetBuffer();
-
-	// target must be string 
-	if (*target != XA_STRING && *target != getAtom(XtDisplay(w), A_TEXT))
-		return false;
-
-	/* Return the contents of the secondary selection.  The memory allocated
-	   here is freed by the X toolkit */
-	   
-	// TODO(eteran): inefficient copy here, but we plan to deprecate X Toolkit direct usage anyway
-	std::string s = buf->BufGetSecSelectTextEx();
-	buf->BufUnsubstituteNullCharsEx(s);
-	
-	char *str = XtStringDup(s);
-	
-	*type   = XA_STRING;
-	*value  = str;
-	*length = s.size();
-	*format = 8;
-
-	return true;
 }
 
 void loseSecondaryCB(Widget w, Atom *selType) {
@@ -456,22 +436,7 @@ void loseSecondaryCB(Widget w, Atom *selType) {
 ** secondary selection.
 */
 void getExchSelCB(Widget w, XtPointer clientData, Atom *selType, Atom *type, XtPointer value, unsigned long *length, int *format) {
-
-	(void)selType;
-	(void)clientData;
-
-	// Confirm that there is a value and it is of the correct type 
-	if (*length == 0 || !value || *type != XA_STRING || *format != 8) {
-		XtFree((char *)value);
-		QApplication::beep();
-		textD_of(w)->TextGetBuffer()->BufSecondaryUnselect();
-		return;
-	}
-
-	/* Request the selection owner to replace the primary selection with
-	   this widget's secondary selection.  When complete, replace this
-	   widget's secondary selection with text "value" and free it. */
-	textD_of(w)->sendSecondary(XtLastTimestampProcessed(XtDisplay(w)), XA_PRIMARY, EXCHANGE_SECONDARY, (char *)value, *length);
+	textD_of(w)->getExchSelCallback(clientData, selType, type, value, length, format);
 }
 
 /*
@@ -479,57 +444,7 @@ void getExchSelCB(Widget w, XtPointer clientData, Atom *selType, Atom *type, XtP
 ** destination, to handle INSERT_SELECTION requests.
 */
 Boolean convertMotifDestCB(Widget w, Atom *selType, Atom *target, Atom *type, XtPointer *value, unsigned long *length, int *format) {
-	XSelectionRequestEvent *event = XtGetSelectionRequest(w, *selType, nullptr);
-	Display *display = XtDisplay(w);
-	Atom *targets, dummyAtom;
-	unsigned long nItems, dummyULong;
-	Atom *reqAtoms;
-	int getFmt, result = INSERT_WAITING;
-	XEvent nextEvent;
-
-	// target is "TARGETS", return a list of targets it can handle 
-	if (*target == getAtom(display, A_TARGETS)) {
-		targets = (Atom *)XtMalloc(sizeof(Atom) * 3);
-		
-		targets[0] = getAtom(display, A_TARGETS);
-		targets[1] = getAtom(display, A_TIMESTAMP);
-		targets[2] = getAtom(display, A_INSERT_SELECTION);
-		
-		*type   = XA_ATOM;
-		*value  = targets;
-		*length = 3;
-		*format = 32;
-		return true;
-	}
-
-	/* target is "INSERT_SELECTION":  1) get the information about what
-	   selection and target to use to get the text to insert, from the
-	   property named in the property field of the selection request event.
-	   2) initiate a get value request for the selection and target named
-	   in the property, and WAIT until it completes */
-	if (*target == getAtom(display, A_INSERT_SELECTION)) {
-		if (text_of(w).P_readOnly)
-			return false;
-		if (XGetWindowProperty(event->display, event->requestor, event->property, 0, 2, False, AnyPropertyType, &dummyAtom, &getFmt, &nItems, &dummyULong, (uint8_t **)&reqAtoms) != Success || getFmt != 32 || nItems != 2)
-			return false;
-		if (reqAtoms[1] != XA_STRING)
-			return false;
-		XtGetSelectionValue(w, reqAtoms[0], reqAtoms[1], getInsertSelectionCB, &result, event->time);
-		XFree((char *)reqAtoms);
-		while (result == INSERT_WAITING) {
-			XtAppNextEvent(XtWidgetToApplicationContext(w), &nextEvent);
-			XtDispatchEvent(&nextEvent);
-		}
-		*type = getAtom(display, A_INSERT_SELECTION);
-		*format = 8;
-		*value = nullptr;
-		*length = 0;
-		return result == SUCCESSFUL_INSERT;
-	}
-
-	/* target TIMESTAMP is handled by the toolkit and not passed here, any
-	   others are unrecognized */
-	return false;
+	return textD_of(w)->convertMotifDestCallback(selType, target, type, value, length, format);
 }
 
 void loseMotifDestCB(Widget w, Atom *selType) {
@@ -8403,4 +8318,123 @@ void TextDisplay::getInsertSelectionCallback(XtPointer clientData, Atom *selType
 
 	// This callback is required to free the memory passed to it thru value 
 	XtFree((char *)value);
+}
+
+/*
+** Selection converter procedure used by the widget to (temporarily) provide
+** the secondary selection data to a single requestor who has been asked
+** to insert it.
+*/
+Boolean TextDisplay::convertSecondaryCallback(Atom *selType, Atom *target, Atom *type, XtPointer *value, unsigned long *length, int *format) {
+
+	(void)selType;
+
+	auto buf = this->TextGetBuffer();
+
+	// target must be string 
+	if (*target != XA_STRING && *target != getAtom(XtDisplay(w), A_TEXT))
+		return false;
+
+	/* Return the contents of the secondary selection.  The memory allocated
+	   here is freed by the X toolkit */
+	   
+	// TODO(eteran): inefficient copy here, but we plan to deprecate X Toolkit direct usage anyway
+	std::string s = buf->BufGetSecSelectTextEx();
+	buf->BufUnsubstituteNullCharsEx(s);
+	
+	char *str = XtStringDup(s);
+	
+	*type   = XA_STRING;
+	*value  = str;
+	*length = s.size();
+	*format = 8;
+
+	return true;
+}
+
+/*
+** Called when data arrives from an X primary selection request for the
+** purpose of exchanging the primary and secondary selections.
+** If everything is in order, stores the retrieved text temporarily and
+** initiates a request to replace the primary selection with this widget's
+** secondary selection.
+*/
+void TextDisplay::getExchSelCallback(XtPointer clientData, Atom *selType, Atom *type, XtPointer value, unsigned long *length, int *format) {
+
+	(void)selType;
+	(void)clientData;
+
+	// Confirm that there is a value and it is of the correct type 
+	if (*length == 0 || !value || *type != XA_STRING || *format != 8) {
+		XtFree((char *)value);
+		QApplication::beep();
+		this->TextGetBuffer()->BufSecondaryUnselect();
+		return;
+	}
+
+	/* Request the selection owner to replace the primary selection with
+	   this widget's secondary selection.  When complete, replace this
+	   widget's secondary selection with text "value" and free it. */
+	this->sendSecondary(XtLastTimestampProcessed(XtDisplay(w)), XA_PRIMARY, EXCHANGE_SECONDARY, (char *)value, *length);
+}
+
+/*
+** Selection converter procedure used by the widget when it owns the Motif
+** destination, to handle INSERT_SELECTION requests.
+*/
+Boolean TextDisplay::convertMotifDestCallback(Atom *selType, Atom *target, Atom *type, XtPointer *value, unsigned long *length, int *format) {
+
+	XSelectionRequestEvent *event = XtGetSelectionRequest(w, *selType, nullptr);
+	Display *display = XtDisplay(w);
+	Atom *targets, dummyAtom;
+	unsigned long nItems, dummyULong;
+	Atom *reqAtoms;
+	int getFmt, result = INSERT_WAITING;
+	XEvent nextEvent;
+
+	// target is "TARGETS", return a list of targets it can handle 
+	if (*target == getAtom(display, A_TARGETS)) {
+		targets = (Atom *)XtMalloc(sizeof(Atom) * 3);
+		
+		targets[0] = getAtom(display, A_TARGETS);
+		targets[1] = getAtom(display, A_TIMESTAMP);
+		targets[2] = getAtom(display, A_INSERT_SELECTION);
+		
+		*type   = XA_ATOM;
+		*value  = targets;
+		*length = 3;
+		*format = 32;
+		return true;
+	}
+
+	/* target is "INSERT_SELECTION":  1) get the information about what
+	   selection and target to use to get the text to insert, from the
+	   property named in the property field of the selection request event.
+	   2) initiate a get value request for the selection and target named
+	   in the property, and WAIT until it completes */
+	if (*target == getAtom(display, A_INSERT_SELECTION)) {
+		if (text_of(w).P_readOnly)
+			return false;
+		if (XGetWindowProperty(event->display, event->requestor, event->property, 0, 2, False, AnyPropertyType, &dummyAtom, &getFmt, &nItems, &dummyULong, (uint8_t **)&reqAtoms) != Success || getFmt != 32 || nItems != 2)
+			return false;
+		if (reqAtoms[1] != XA_STRING)
+			return false;
+		XtGetSelectionValue(w, reqAtoms[0], reqAtoms[1], getInsertSelectionCB, &result, event->time);
+		XFree((char *)reqAtoms);
+		
+		while (result == INSERT_WAITING) {
+			XtAppNextEvent(XtWidgetToApplicationContext(w), &nextEvent);
+			XtDispatchEvent(&nextEvent);
+		}
+		
+		*type = getAtom(display, A_INSERT_SELECTION);
+		*format = 8;
+		*value = nullptr;
+		*length = 0;
+		return result == SUCCESSFUL_INSERT;
+	}
+
+	/* target TIMESTAMP is handled by the toolkit and not passed here, any
+	   others are unrecognized */
+	return false;
 }
