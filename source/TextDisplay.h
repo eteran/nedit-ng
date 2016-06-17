@@ -216,19 +216,14 @@ public:
 	int getAnchor() const;
 	int getBufferLinesCount() const;
 	int getCursorPos() const;
-	int getCursorToHint() const;
 	int getDragState() const;
 	int getFirstChar() const;
-	int getFixedFontWidth() const;
 	int getHorizOffset() const;
 	int getLastChar() const;
 	int getLineNumLeft() const;
 	int getLineNumWidth() const;
 	int getModifyingTabDist() const;
 	int getTopLineNum() const;
-	void setAbsTopLineNum(int value);
-	void setAutoScrollProcID(XtIntervalId id);
-	void setCursorToHint(int value);
 	void setModifyingTabDist(int tabDist);
 	void setMotifDestOwner(bool value);
 	void setMouseCoord(const Point &point);
@@ -286,6 +281,7 @@ public:
 	void visibilityEventHandler(XtPointer data, XEvent *event, Boolean *continueDispatch);
 	void bufPreDeleteCallback(int pos, int nDeleted);
 	void bufModifiedCallback(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText);
+	void autoScrollTimerProcEx(XtPointer clientData, XtIntervalId *id);
 
 public:
 	void addFocusCallback(XtCallbackProc callback, XtPointer client_data);

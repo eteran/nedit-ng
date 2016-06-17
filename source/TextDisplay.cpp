@@ -6104,7 +6104,7 @@ void TextDisplay::keyMoveExtendSelection(XEvent *event, int origPos, int rectang
 		newCol = buf->BufCountDispChars(buf->BufStartOfLine(newPos), newPos);
 		startCol = std::min(this->rectAnchor, newCol);
 		endCol = std::max(this->rectAnchor, newCol);
-		startPos = buf->BufStartOfLine(std::min(this->getAnchor(), newPos));
+		startPos = buf->BufStartOfLine(std::min(this->anchor, newPos));
 		endPos = buf->BufEndOfLine(std::max(this->anchor, newPos));
 		buf->BufRectSelect(startPos, endPos, startCol, endCol);
 		
@@ -7942,48 +7942,48 @@ void TextDisplay::adjustSecondarySelection(const Point &coord) {
 		col      = this->TextDOffsetWrappedColumn(row, col);
 		startCol = std::min(this->rectAnchor, col);
 		endCol   = std::max(this->rectAnchor, col);
-		startPos = buf->BufStartOfLine(std::min(this->getAnchor(), newPos));
-		endPos   = buf->BufEndOfLine(std::max(this->getAnchor(), newPos));
+		startPos = buf->BufStartOfLine(std::min(this->anchor, newPos));
+		endPos   = buf->BufEndOfLine(std::max(this->anchor, newPos));
 		buf->BufSecRectSelect(startPos, endPos, startCol, endCol);
 	} else {
-		this->textBuffer()->BufSecondarySelect(this->getAnchor(), newPos);
+		this->textBuffer()->BufSecondarySelect(this->anchor, newPos);
 	}
 }
 
 /*
 ** Xt timer procedure for autoscrolling
 */
-static void autoScrollTimerProc(XtPointer clientData, XtIntervalId *id) {
+void TextDisplay::autoScrollTimerProcEx(XtPointer clientData, XtIntervalId *id) {
+
+	(void)clientData;
 	(void)id;
 
-	TextWidget w = static_cast<TextWidget>(clientData);
-	TextDisplay *textD = textD_of(w);
 	int topLineNum;
 	int horizOffset;
 	int cursorX;
 	int y;
-	int fontWidth    = textD->fontStruct->max_bounds.width;
-	int fontHeight   = textD->fontStruct->ascent + textD->fontStruct->descent;
-	Point mouseCoord = textD->getMouseCoord();
+	int fontWidth    = this->fontStruct->max_bounds.width;
+	int fontHeight   = this->fontStruct->ascent + this->fontStruct->descent;
+	Point mouseCoord = this->getMouseCoord();
 
 	/* For vertical autoscrolling just dragging the mouse outside of the top
 	   or bottom of the window is sufficient, for horizontal (non-rectangular)
 	   scrolling, see if the position where the CURSOR would go is outside */
-	int newPos = textD->TextDXYToPosition(mouseCoord);
+	int newPos = this->TextDXYToPosition(mouseCoord);
 	
-	if (textD->getDragState() == PRIMARY_RECT_DRAG) {
+	if (this->getDragState() == PRIMARY_RECT_DRAG) {
 		cursorX = mouseCoord.x;
-	} else if (!textD->TextDPositionToXY(newPos, &cursorX, &y)) {
+	} else if (!this->TextDPositionToXY(newPos, &cursorX, &y)) {
 		cursorX = mouseCoord.x;
 	}
 
 	/* Scroll away from the pointer, 1 character (horizontal), or 1 character
 	   for each fontHeight distance from the mouse to the text (vertical) */
-	textD->TextDGetScroll(&topLineNum, &horizOffset);
+	this->TextDGetScroll(&topLineNum, &horizOffset);
 	
 	if (cursorX >= (int)w->core.width - text_of(w).P_marginWidth) {
 		horizOffset += fontWidth;
-	} else if (mouseCoord.x < textD->getRect().left) {
+	} else if (mouseCoord.x < this->rect.left) {
 		horizOffset -= fontWidth;
 	}
 		
@@ -7993,28 +7993,28 @@ static void autoScrollTimerProc(XtPointer clientData, XtIntervalId *id) {
 		topLineNum -= 1 + ((text_of(w).P_marginHeight - mouseCoord.y) / fontHeight);
 	}
 	
-	textD->TextDSetScroll(topLineNum, horizOffset);
+	this->TextDSetScroll(topLineNum, horizOffset);
 
 	/* Continue the drag operation in progress.  If none is in progress
 	   (safety check) don't continue to re-establish the timer proc */
-	switch(textD->getDragState()) {
+	switch(this->dragState) {
 	case PRIMARY_DRAG:
-		textD->adjustSelection(mouseCoord);
+		this->adjustSelection(mouseCoord);
 		break;
 	case PRIMARY_RECT_DRAG:
-		textD->adjustSelection(mouseCoord);
+		this->adjustSelection(mouseCoord);
 		break;
 	case SECONDARY_DRAG:
-		textD->adjustSecondarySelection(mouseCoord);
+		this->adjustSecondarySelection(mouseCoord);
 		break;
 	case SECONDARY_RECT_DRAG:
-		textD->adjustSecondarySelection(mouseCoord);
+		this->adjustSecondarySelection(mouseCoord);
 		break;
 	case PRIMARY_BLOCK_DRAG:
-		textD->BlockDragSelection(mouseCoord, USE_LAST);
+		this->BlockDragSelection(mouseCoord, USE_LAST);
 		break;
 	default:
-		textD->setAutoScrollProcID(0);
+		this->autoScrollProcID = 0;
 		return;
 	}
 		   
@@ -8025,7 +8025,17 @@ static void autoScrollTimerProc(XtPointer clientData, XtIntervalId *id) {
 		mouseCoord.y >= text_of(w).P_marginHeight && mouseCoord.y < w->core.height - text_of(w).P_marginHeight ? (VERTICAL_SCROLL_DELAY * fontWidth) / fontHeight : VERTICAL_SCROLL_DELAY,
 		autoScrollTimerProc, w);
 		
-	textD->setAutoScrollProcID(autoScrollID);
+	this->autoScrollProcID = autoScrollID;
+}
+
+
+static void autoScrollTimerProc(XtPointer clientData, XtIntervalId *id) {
+
+	TextWidget w = static_cast<TextWidget>(clientData);
+	TextDisplay *textD = textD_of(w);
+	
+	textD->autoScrollTimerProcEx(clientData, id);
+
 }
 
 /*
@@ -8049,23 +8059,23 @@ void TextDisplay::adjustSelection(const Point &coord) {
 		col      = this->TextDOffsetWrappedColumn(row, col);
 		startCol = std::min(this->rectAnchor, col);
 		endCol   = std::max(this->rectAnchor, col);
-		startPos = buf->BufStartOfLine(std::min(this->getAnchor(), newPos));
-		endPos   = buf->BufEndOfLine(std::max(this->getAnchor(), newPos));
+		startPos = buf->BufStartOfLine(std::min(this->anchor, newPos));
+		endPos   = buf->BufEndOfLine(std::max(this->anchor, newPos));
 		buf->BufRectSelect(startPos, endPos, startCol, endCol);
 		
 	} else if (this->multiClickState == ONE_CLICK) {
-		startPos = this->startOfWord(std::min(this->getAnchor(), newPos));
-		endPos   = this->endOfWord(std::max(this->getAnchor(), newPos));
+		startPos = this->startOfWord(std::min(this->anchor, newPos));
+		endPos   = this->endOfWord(std::max(this->anchor, newPos));
 		buf->BufSelect(startPos, endPos);
-		newPos   = newPos < this->getAnchor() ? startPos : endPos;
+		newPos   = newPos < this->anchor ? startPos : endPos;
 		
 	} else if (this->multiClickState == TWO_CLICKS) {
-		startPos = buf->BufStartOfLine(std::min(this->getAnchor(), newPos));
-		endPos   = buf->BufEndOfLine(std::max(this->getAnchor(), newPos));
+		startPos = buf->BufStartOfLine(std::min(this->anchor, newPos));
+		endPos   = buf->BufEndOfLine(std::max(this->anchor, newPos));
 		buf->BufSelect(startPos, std::min(endPos + 1, buf->BufGetLength()));
-		newPos   = newPos < this->getAnchor() ? startPos : endPos;
+		newPos   = newPos < this->anchor ? startPos : endPos;
 	} else
-		buf->BufSelect(this->getAnchor(), newPos);
+		buf->BufSelect(this->anchor, newPos);
 
 	// Move the cursor
 	this->TextDSetInsertPosition(newPos);
@@ -8343,12 +8353,17 @@ void TextDisplay::sendSecondary(Time time, Atom sel, int action, char *actionTex
 	cbInfo->timeoutProcID = XtAppAddTimeOut(context, XtAppGetSelectionTimeout(context), selectNotifyTimerProc, cbInfo);
 }
 
+#if 1
 CursorStyles TextDisplay::getCursorStyle() const {
 	return this->cursorStyle;
 }
 
-int TextDisplay::getCursorToHint() const {
-	return this->cursorToHint;
+int TextDisplay::getHorizOffset() const {
+	return this->horizOffset;
+}
+
+int TextDisplay::getTopLineNum() const {
+	return this->topLineNum;
 }
 
 bool TextDisplay::getSelectionOwner() {
@@ -8363,38 +8378,14 @@ int TextDisplay::getDragState() const {
 	return this->dragState;
 }
 
-void TextDisplay::setCursorToHint(int value) {
-	this->cursorToHint = value;
-}
-
-int TextDisplay::getTopLineNum() const {
-	return this->topLineNum;
+void TextDisplay::setMotifDestOwner(bool value) {
+	this->motifDestOwner = value;
 }
 
 Point TextDisplay::getButtonDownCoord() const {
 	return this->btnDownCoord;
 }
-
-int TextDisplay::getHorizOffset() const {
-	return this->horizOffset;
-}
-
-int TextDisplay::getFixedFontWidth() const {
-	return this->fixedFontWidth;
-}
-
-
-void TextDisplay::setMotifDestOwner(bool value) {
-	this->motifDestOwner = value;
-}
-
-void TextDisplay::setAutoScrollProcID(XtIntervalId id) {
-	this->autoScrollProcID = id;
-}
-
-void TextDisplay::setAbsTopLineNum(int value) {
-	this->absTopLineNum = value;
-}
+#endif
 
 void TextDisplay::addFocusCallback(XtCallbackProc callback, XtPointer client_data) {
 	XtAddCallback(w, textNfocusCallback, callback, client_data);
