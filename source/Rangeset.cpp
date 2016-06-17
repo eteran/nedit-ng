@@ -558,7 +558,7 @@ const char *Rangeset::RangesetGetName() const {
 */
 
 int Rangeset::RangesetFindRangeNo(int index, int *start, int *end) {
-	if (!this || index < 0 || this->n_ranges <= index || !this->ranges) {
+	if (index < 0 || this->n_ranges <= index || !this->ranges) {
 		return 0;
 	}
 
@@ -576,10 +576,10 @@ int Rangeset::RangesetFindRangeNo(int index, int *start, int *end) {
 
 int Rangeset::RangesetFindRangeOfPos(int pos, int incl_end) {
 
-	if (!this || !this->n_ranges || !this->ranges) {
+	if (!this->n_ranges || !this->ranges) {
 		return -1;
 	}
-
+	
 	// TODO(eteran): BUGCHECK this seems very dangerous, I think this is well into UB
 	auto ranges = (int *)this->ranges; // { s1,e1, s2,e2, s3,e3,... } 
 	int len = this->n_ranges * 2;
@@ -612,7 +612,7 @@ int Rangeset::RangesetGetColorValid(Pixel *color) {
 */
 
 int Rangeset::RangesetGetNRanges() const {
-	return this ? this->n_ranges : 0;
+	return this->n_ranges;
 }
 
 
@@ -624,9 +624,6 @@ int Rangeset::RangesetGetNRanges() const {
 
 int Rangeset::RangesetInverse() {
 	int n;
-
-	if (!this)
-		return -1;
 
 	// TODO(eteran): BUGCHECK this seems very dangerous, I think this is well into UB
 	auto rangeTable = (int *)this->ranges;
@@ -1167,16 +1164,16 @@ void Rangeset::RangesetEmpty() {
 /*
 ** Get information about rangeset.
 */
-void Rangeset::RangesetGetInfo(int *defined, int *label, int *count, const char **color, const char **name, const char **mode) {
+void Rangeset::RangesetGetInfo(bool *defined, int *label, int *count, const char **color, const char **name, const char **mode) {
 	if(!this) {
-		*defined = False;
+		*defined = false;
 		*label = 0;
 		*count = 0;
 		*color = "";
 		*name  = "";
 		*mode  = "";
 	} else {
-		*defined = True;
+		*defined = true;
 		*label = (int)this->label;
 		*count = this->n_ranges;
 		*color = this->color_name ? this->color_name : "";

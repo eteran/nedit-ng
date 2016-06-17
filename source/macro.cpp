@@ -4189,7 +4189,7 @@ static int rangesetGetByNameMS(Document *window, DataValue *argList, int nArgs, 
 static int rangesetAddMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	TextBuffer *buffer = window->buffer_;
 	RangesetTable *rangesetTable = buffer->rangesetTable_;
-	Rangeset *targetRangeset, *sourceRangeset;
+	Rangeset *sourceRangeset;
 	int start, end, rectStart, rectEnd, maxpos, index;
 	bool isRect;
 	int label = 0;
@@ -4205,7 +4205,7 @@ static int rangesetAddMS(Document *window, DataValue *argList, int nArgs, DataVa
 		M_FAILURE("Rangeset does not exist in %s");
 	}
 
-	targetRangeset = rangesetTable->RangesetFetch(label);
+	Rangeset *targetRangeset = rangesetTable->RangesetFetch(label);
 
 	if(!targetRangeset) {
 		M_FAILURE("Rangeset does not exist in %s");
@@ -4372,7 +4372,6 @@ static int rangesetSubtractMS(Document *window, DataValue *argList, int nArgs, D
 static int rangesetInvertMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
 	RangesetTable *rangesetTable = window->buffer_->rangesetTable_;
-	Rangeset *rangeset;
 	int label = 0;
 
 	if (nArgs != 1)
@@ -4386,7 +4385,7 @@ static int rangesetInvertMS(Document *window, DataValue *argList, int nArgs, Dat
 		M_FAILURE("Rangeset does not exist in %s");
 	}
 
-	rangeset = rangesetTable->RangesetFetch(label);
+	Rangeset *rangeset = rangesetTable->RangesetFetch(label);
 	if(!rangeset) {
 		M_FAILURE("Rangeset does not exist in %s");
 	}
@@ -4408,7 +4407,8 @@ static int rangesetInvertMS(Document *window, DataValue *argList, int nArgs, Dat
 static int rangesetInfoMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	RangesetTable *rangesetTable = window->buffer_->rangesetTable_;
 	Rangeset *rangeset = nullptr;
-	int count, defined;
+	int count;
+	bool defined;
 	const char *color;
 	const char *name;
 	const char *mode;
@@ -4535,7 +4535,6 @@ static int rangesetRangeMS(Document *window, DataValue *argList, int nArgs, Data
 static int rangesetIncludesPosMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	TextBuffer *buffer = window->buffer_;
 	RangesetTable *rangesetTable = buffer->rangesetTable_;
-	Rangeset *rangeset;
 	int rangeIndex, maxpos;
 	int label = 0;
 
@@ -4551,7 +4550,7 @@ static int rangesetIncludesPosMS(Document *window, DataValue *argList, int nArgs
 		M_FAILURE("Rangeset does not exist in %s");
 	}
 
-	rangeset = rangesetTable->RangesetFetch(label);
+	Rangeset *rangeset = rangesetTable->RangesetFetch(label);
 	if(!rangeset) {
 		M_FAILURE("Rangeset does not exist in %s");
 	}

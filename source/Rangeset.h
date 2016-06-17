@@ -63,7 +63,7 @@ public:
 	int RangesetRemove(Rangeset *minusSet);
 	int RangesetRemoveBetween(int start, int end);
 	void RangesetEmpty();
-	void RangesetGetInfo(int *defined, int *label, int *count, const char **color, const char **name, const char **mode);
+	void RangesetGetInfo(bool *defined, int *label, int *count, const char **color, const char **name, const char **mode);
 	void RangesetRefreshRange(int start, int end);
 	void RangesetInit(int label, TextBuffer *buf);
 
