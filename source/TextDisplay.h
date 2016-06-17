@@ -288,6 +288,13 @@ public:
 	void bufModifiedCallback(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText);
 
 public:
+	void addFocusCallback(XtCallbackProc callback, XtPointer client_data);
+	void addCursorMovementCallback(XtCallbackProc callback, XtPointer client_data);
+	void addDragStartCallback(XtCallbackProc callback, XtPointer client_data);
+	void addDragEndCallback(XtCallbackProc callback, XtPointer client_data);
+	void addsmartIndentCallback(XtCallbackProc callback, XtPointer client_data);
+
+public:
 	// Events
 	void backwardCharacterAP(XEvent *event, String *args, Cardinal *nArgs);
 	void backwardParagraphAP(XEvent *event, String *args, Cardinal *nArgs);

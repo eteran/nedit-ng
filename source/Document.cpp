@@ -4454,12 +4454,14 @@ Widget Document::createTextArea(Widget parent, Document *window, int rows, int c
 
 	XtVaSetValues(sw, XmNworkWindow, frame, XmNhorizontalScrollBar, hScrollBar, XmNverticalScrollBar, vScrollBar, nullptr);
 
+	TextDisplay *textD = textD_of(text);
+
 	// add focus, drag, cursor tracking, and smart indent callbacks 
-	XtAddCallback(text, textNfocusCallback,          focusCB,       window);
-	XtAddCallback(text, textNcursorMovementCallback, movedCB,       window);
-	XtAddCallback(text, textNdragStartCallback,      dragStartCB,   window);
-	XtAddCallback(text, textNdragEndCallback,        dragEndCB,     window);
-	XtAddCallback(text, textNsmartIndentCallback,    SmartIndentCB, window);
+	textD->addFocusCallback(focusCB, window);
+	textD->addCursorMovementCallback(movedCB, window);
+	textD->addDragStartCallback(dragStartCB, window);
+	textD->addDragEndCallback(dragEndCB, window);
+	textD->addsmartIndentCallback(SmartIndentCB, window);
 
 	/* This makes sure the text area initially has a the insert point shown
 	   ... (check if still true with the nedit text widget, probably not) */
@@ -4474,7 +4476,7 @@ Widget Document::createTextArea(Widget parent, Document *window, int rows, int c
 	/* If absolute line numbers will be needed for display in the statistics
 	   line, tell the widget to maintain them (otherwise, it's a costly
 	   operation and performance will be better without it) */
-	textD_of(text)->TextDMaintainAbsLineNum(window->showStats_);
+	textD->TextDMaintainAbsLineNum(window->showStats_);
 
 	return text;
 }

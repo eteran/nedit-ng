@@ -8395,3 +8395,29 @@ void TextDisplay::setAutoScrollProcID(XtIntervalId id) {
 void TextDisplay::setAbsTopLineNum(int value) {
 	this->absTopLineNum = value;
 }
+
+void TextDisplay::addFocusCallback(XtCallbackProc callback, XtPointer client_data) {
+	XtAddCallback(w, textNfocusCallback, callback, client_data);
+}
+
+void TextDisplay::addCursorMovementCallback(XtCallbackProc callback, XtPointer client_data) {
+	XtAddCallback(w, textNcursorMovementCallback, callback, client_data);
+}
+
+void TextDisplay::addDragStartCallback(XtCallbackProc callback, XtPointer client_data) {
+	XtAddCallback(w, textNdragStartCallback, callback, client_data);
+}
+
+void TextDisplay::addDragEndCallback(XtCallbackProc callback, XtPointer client_data) {
+	XtAddCallback(w, textNdragEndCallback, callback, client_data);
+}
+
+void TextDisplay::addsmartIndentCallback(XtCallbackProc callback, XtPointer client_data) {
+	XtAddCallback(w, textNsmartIndentCallback, callback, client_data);
+}
+
+	
+	
+	
+	
+	
