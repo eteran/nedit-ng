@@ -8021,11 +8021,9 @@ void TextDisplay::selectWord(int pointerX) {
 void TextDisplay::selectLine() {
 
 	int insertPos = this->TextDGetInsertPosition();
-	int endPos;
-	int startPos;
 
-	endPos = this->buffer->BufEndOfLine(insertPos);
-	startPos = this->buffer->BufStartOfLine(insertPos);
+	int endPos = this->buffer->BufEndOfLine(insertPos);
+	int startPos = this->buffer->BufStartOfLine(insertPos);
 	this->buffer->BufSelect(startPos, std::min(endPos + 1, this->buffer->BufGetLength()));
 	this->TextDSetInsertPosition(endPos);
 }
