@@ -431,35 +431,8 @@ void loseSelectionCB(Widget w, Atom *selType) {
 ** result, since later callbacks will see the second modifications first).
 */
 void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *cbArg) {
-
-	(void)pos;
-	(void)nInserted;
-	(void)nRestyled;
-	(void)nDeleted;
-	(void)deletedText;
-
 	TextWidget w = static_cast<TextWidget>(cbArg);
-	Time time    = XtLastTimestampProcessed(XtDisplay((Widget)w));
-	int selected = textD_of(w)->TextGetBuffer()->primary_.selected;
-	int isOwner  = textD_of(w)->getSelectionOwner();
-
-	/* If the widget owns the selection and the buffer text is still selected,
-	   or if the widget doesn't own it and there's no selection, do nothing */
-	if ((isOwner && selected) || (!isOwner && !selected))
-		return;
-
-	/* Don't disown the selection here.  Another application (namely: klipper)
-	   may try to take it when it thinks nobody has the selection.  We then
-	   lose it, making selection-based macro operations fail.  Disowning
-	   is really only for when the widget is destroyed to avoid a convert
-	   callback from firing at a bad time. */
-
-	// Take ownership of the selection 
-	if (!XtOwnSelection((Widget)w, XA_PRIMARY, time, convertSelectionCB, loseSelectionCB, nullptr)) {
-		textD_of(w)->TextGetBuffer()->BufUnselect();
-	} else {
-		textD_of(w)->setSelectionOwner(true);
-	}
+	textD_of(w)->modifiedCallback(pos, nInserted, nDeleted, nRestyled, deletedText, cbArg);
 }
 
 /*
@@ -686,15 +659,7 @@ Boolean convertMotifDestCB(Widget w, Atom *selType, Atom *target, Atom *type, Xt
 }
 
 void loseMotifDestCB(Widget w, Atom *selType) {
-
-	(void)selType;
-	
-	auto textD = textD_of(w);
-
-	textD->setMotifDestOwner(false);
-	if (textD->getCursorStyle() == CARET_CURSOR) {
-		textD->TextDSetCursorStyle(DIM_CURSOR);
-	}
+	textD_of(w)->loseMotifDestCallback(selType);
 }
 
 /*
@@ -8312,24 +8277,15 @@ void TextDisplay::sendSecondary(Time time, Atom sel, int action, char *actionTex
 }
 
 #if 1
-CursorStyles TextDisplay::getCursorStyle() const {
-	return this->cursorStyle;
-}
-
-bool TextDisplay::getSelectionOwner() {
-	return this->selectionOwner;
-}
-
 void TextDisplay::setSelectionOwner(bool value) {
 	this->selectionOwner = value;
 }
 
-void TextDisplay::setMotifDestOwner(bool value) {
-	this->motifDestOwner = value;
+CursorStyles TextDisplay::getCursorStyle() const {
+	return this->cursorStyle;
 }
 
 #else
-
 #endif
 
 void TextDisplay::addFocusCallback(XtCallbackProc callback, XtPointer client_data) {
@@ -8351,11 +8307,6 @@ void TextDisplay::addDragEndCallback(XtCallbackProc callback, XtPointer client_d
 void TextDisplay::addsmartIndentCallback(XtCallbackProc callback, XtPointer client_data) {
 	XtAddCallback(w, textNsmartIndentCallback, callback, client_data);
 }
-
-	
-	
-	
-	
 	
 /*
 ** Called when data arrives from a request for the PRIMARY selection.  If
@@ -8385,7 +8336,7 @@ void TextDisplay::getSelectionCallback(XtPointer clientData, Atom *selType, Atom
 
 	/* If the string contains ascii-nul characters, substitute something
 	   else, or give up, warn, and refuse */
-	if (!this->TextGetBuffer()->BufSubstituteNullCharsEx(string)) {
+	if (!this->buffer->BufSubstituteNullCharsEx(string)) {
 		fprintf(stderr, "Too much binary data, giving up\n");
 		XtFree((char *)value);
 		return;
@@ -8394,18 +8345,61 @@ void TextDisplay::getSelectionCallback(XtPointer clientData, Atom *selType, Atom
 	// Insert it in the text widget 
 	if (isColumnar) {
 		cursorPos = this->TextDGetInsertPosition();
-		cursorLineStart = this->TextGetBuffer()->BufStartOfLine(cursorPos);
+		cursorLineStart = this->buffer->BufStartOfLine(cursorPos);
 		this->TextDXYToUnconstrainedPosition(
 			this->btnDownCoord,
 			&row,
 			&column);
 			
-		this->TextGetBuffer()->BufInsertColEx(column, cursorLineStart, string, nullptr, nullptr);
-		this->TextDSetInsertPosition(this->TextGetBuffer()->cursorPosHint_);
+		this->buffer->BufInsertColEx(column, cursorLineStart, string, nullptr, nullptr);
+		this->TextDSetInsertPosition(this->buffer->cursorPosHint_);
 	} else
 		this->TextInsertAtCursorEx(string, nullptr, False, text_of(w).P_autoWrapPastedText);
 
 	/* The selection requstor is required to free the memory passed
 	   to it via value */
 	XtFree((char *)value);
+}
+
+void TextDisplay::loseMotifDestCallback(Atom *selType) {
+
+	(void)selType;
+	
+	this->motifDestOwner = false;
+	if (this->cursorStyle == CARET_CURSOR) {
+		this->TextDSetCursorStyle(DIM_CURSOR);
+	}
+}
+
+void TextDisplay::modifiedCallback(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *cbArg) {
+
+	(void)pos;
+	(void)nInserted;
+	(void)nRestyled;
+	(void)nDeleted;
+	(void)deletedText;
+	(void)cbArg;
+
+	Time time    = XtLastTimestampProcessed(XtDisplay(this->w));
+	int selected = this->buffer->primary_.selected;
+	int isOwner  = this->selectionOwner;
+
+	/* If the widget owns the selection and the buffer text is still selected,
+	   or if the widget doesn't own it and there's no selection, do nothing */
+	if ((isOwner && selected) || (!isOwner && !selected)) {
+		return;
+	}	
+
+	/* Don't disown the selection here.  Another application (namely: klipper)
+	   may try to take it when it thinks nobody has the selection.  We then
+	   lose it, making selection-based macro operations fail.  Disowning
+	   is really only for when the widget is destroyed to avoid a convert
+	   callback from firing at a bad time. */
+
+	// Take ownership of the selection 
+	if (!XtOwnSelection(this->w, XA_PRIMARY, time, convertSelectionCB, loseSelectionCB, nullptr)) {
+		this->buffer->BufUnselect();
+	} else {
+		this->selectionOwner = true;
+	}
 }

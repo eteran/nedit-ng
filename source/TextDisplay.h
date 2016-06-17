@@ -208,7 +208,6 @@ public:
 	TextBuffer *getStyleBuffer() const;
 	TextBuffer *textBuffer() const;
 	XtIntervalId getCursorBlinkProcID() const;
-	bool getSelectionOwner();
 	int fontAscent() const;
 	int fontDescent() const;
 	int getAbsTopLineNum();
@@ -221,7 +220,6 @@ public:
 	int getLineNumWidth() const;
 	int getModifyingTabDist() const;
 	void setModifyingTabDist(int tabDist);
-	void setMotifDestOwner(bool value);
 	void setMouseCoord(const Point &point);
 	void setSelectionOwner(bool value);
 	void setStyleBuffer(TextBuffer *buffer);
@@ -279,6 +277,8 @@ public:
 	void bufModifiedCallback(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText);
 	void autoScrollTimerProcEx(XtPointer clientData, XtIntervalId *id);
 	void getSelectionCallback(XtPointer clientData, Atom *selType, Atom *type, XtPointer value, unsigned long *length, int *format);
+	void loseMotifDestCallback(Atom *selType);
+	void modifiedCallback(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *cbArg);
 
 public:
 	void addFocusCallback(XtCallbackProc callback, XtPointer client_data);
