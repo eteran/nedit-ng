@@ -274,37 +274,7 @@ static Atom getAtom(Display *display, int atomNum) {
 ** depending on the success of the operation.
 */
 void getInsertSelectionCB(Widget w, XtPointer clientData, Atom *selType, Atom *type, XtPointer value, unsigned long *length, int *format) {
-
-	(void)selType;
-
-	auto textD      = textD_of(w);
-	TextBuffer *buf = textD->TextGetBuffer();
-	auto resultFlag = static_cast<int *>(clientData);
-
-	// Confirm that the returned value is of the correct type 
-	if (*type != XA_STRING || *format != 8 || value == nullptr) {
-		XtFree((char *)value);
-		*resultFlag = UNSUCCESSFUL_INSERT;
-		return;
-	}
-
-	// Copy the string just to make space for the null character 
-	std::string string(static_cast<char *>(value), *length);
-
-	/* If the string contains ascii-nul characters, substitute something
-	   else, or give up, warn, and refuse */
-	if (!buf->BufSubstituteNullCharsEx(string)) {
-		fprintf(stderr, "Too much binary data, giving up\n");
-		XtFree((char *)value);
-		return;
-	}
-
-	// Insert it in the text widget 
-	textD->TextInsertAtCursorEx(string, nullptr, true, text_of(w).P_autoWrapPastedText);
-	*resultFlag = SUCCESSFUL_INSERT;
-
-	// This callback is required to free the memory passed to it thru value 
-	XtFree((char *)value);
+	textD_of(w)->getInsertSelectionCallback(clientData, selType, type, value, length, format);
 }
 
 /*
@@ -4621,21 +4591,28 @@ void TextDisplay::ResetCursorBlink(bool startsBlanked) {
 /*
 ** Xt timer procedure for cursor blinking
 */
-void TextDisplay::cursorBlinkTimerProc(XtPointer clientData, XtIntervalId *id) {
+void TextDisplay::cursorBlinkTimerProcEx(XtPointer clientData, XtIntervalId *id) {
 	(void)id;
 
 	TextWidget w = static_cast<TextWidget>(clientData);
-	TextDisplay *textD = textD_of(w);
 
 	// Blink the cursor
-	if (textD->cursorOn) {
-		textD->TextDBlankCursor();
+	if (this->cursorOn) {
+		this->TextDBlankCursor();
 	} else {
-		textD->TextDUnblankCursor();
+		this->TextDUnblankCursor();
 	}
 
 	// re-establish the timer proc (this routine) to continue processing
-	textD->cursorBlinkProcID = XtAppAddTimeOut(XtWidgetToApplicationContext((Widget)w), text_of(w).P_cursorBlinkRate, cursorBlinkTimerProc, w);
+	this->cursorBlinkProcID = XtAppAddTimeOut(XtWidgetToApplicationContext(reinterpret_cast<Widget>(w)), text_of(w).P_cursorBlinkRate, cursorBlinkTimerProc, w);
+}
+
+/*
+** Xt timer procedure for cursor blinking
+*/
+void TextDisplay::cursorBlinkTimerProc(XtPointer clientData, XtIntervalId *id) {
+	TextWidget w = static_cast<TextWidget>(clientData);
+	textD_of(w)->cursorBlinkTimerProcEx(clientData, id);
 }
 
 
@@ -4647,24 +4624,24 @@ void TextDisplay::ShowHidePointer(bool hidePointer) {
 		if (hidePointer != this->pointerHidden) {
 			if (hidePointer) {
 				// Don't listen for keypresses any more
-				XtRemoveEventHandler((Widget)w, NEDIT_HIDE_CURSOR_MASK, false, handleHidePointer, nullptr);
+				XtRemoveEventHandler(static_cast<Widget>(w), NEDIT_HIDE_CURSOR_MASK, false, handleHidePointer, nullptr);
 				// Switch to empty cursor
 				XDefineCursor(XtDisplay(w), XtWindow(w), empty_cursor);
 
 				this->pointerHidden = true;
 
 				// Listen to mouse movement, focus change, and button presses
-				XtAddEventHandler((Widget)w, NEDIT_SHOW_CURSOR_MASK, false, handleShowPointer, nullptr);
+				XtAddEventHandler(static_cast<Widget>(w), NEDIT_SHOW_CURSOR_MASK, false, handleShowPointer, nullptr);
 			} else {
 				// Don't listen to mouse/focus events any more
-				XtRemoveEventHandler((Widget)w, NEDIT_SHOW_CURSOR_MASK, false, handleShowPointer, nullptr);
+				XtRemoveEventHandler(static_cast<Widget>(w), NEDIT_SHOW_CURSOR_MASK, false, handleShowPointer, nullptr);
 				// Switch to regular cursor
 				XUndefineCursor(XtDisplay(w), XtWindow(w));
 
 				this->pointerHidden = false;
 
 				// Listen for keypresses now
-				XtAddEventHandler((Widget)w, NEDIT_HIDE_CURSOR_MASK, false, handleHidePointer, nullptr);
+				XtAddEventHandler(static_cast<Widget>(w), NEDIT_HIDE_CURSOR_MASK, false, handleHidePointer, nullptr);
 			}
 		}
 	}
@@ -7764,7 +7741,7 @@ void TextDisplay::autoScrollTimerProcEx(XtPointer clientData, XtIntervalId *id) 
 	// re-establish the timer proc (this routine) to continue processing
 	const XtIntervalId autoScrollID = XtAppAddTimeOut(
 		XtWidgetToApplicationContext(
-		(Widget)w), 
+		static_cast<Widget>(w)), 
 		mouseCoord.y >= text_of(w).P_marginHeight && mouseCoord.y < w->core.height - text_of(w).P_marginHeight ? (VERTICAL_SCROLL_DELAY * fontWidth) / fontHeight : VERTICAL_SCROLL_DELAY,
 		autoScrollTimerProc, w);
 		
@@ -8087,7 +8064,7 @@ void TextDisplay::sendSecondary(Time time, Atom sel, int action, char *actionTex
 	auto cbInfo = new selectNotifyInfo;
 	cbInfo->action       = action;
 	cbInfo->timeStamp    = time;
-	cbInfo->widget       = (Widget)w;
+	cbInfo->widget       = static_cast<Widget>(w);
 	cbInfo->actionText   = actionText;
 	cbInfo->length       = actionTextLen;
 	XtAddEventHandler(w, 0, true, selectNotifyEH, cbInfo);
@@ -8158,11 +8135,6 @@ XtIntervalId TextDisplay::getCursorBlinkProcID() const {
 TextBuffer *TextDisplay::getStyleBuffer() const {
 	return this->styleBuffer;
 }
-
-TextBuffer *TextDisplay::textBuffer() const {
-	return this->buffer;
-}
-
 
 #else
 #endif
@@ -8393,4 +8365,44 @@ void TextDisplay::loseSelectionCallback(Atom *selType) {
 	this->selectionOwner = false;
 	this->buffer->BufUnselect();
 	sel->zeroWidth = zeroWidth;
+}
+
+/*
+** Called when data arrives from request resulting from processing an
+** INSERT_SELECTION request.  If everything is in order, inserts it at
+** the cursor or replaces pending delete selection in widget "w", and sets
+** the flag passed in clientData to SUCCESSFUL_INSERT or UNSUCCESSFUL_INSERT
+** depending on the success of the operation.
+*/
+void TextDisplay::getInsertSelectionCallback(XtPointer clientData, Atom *selType, Atom *type, XtPointer value, unsigned long *length, int *format) {
+
+	(void)selType;
+
+	TextBuffer *buf = this->TextGetBuffer();
+	auto resultFlag = static_cast<int *>(clientData);
+
+	// Confirm that the returned value is of the correct type 
+	if (*type != XA_STRING || *format != 8 || value == nullptr) {
+		XtFree((char *)value);
+		*resultFlag = UNSUCCESSFUL_INSERT;
+		return;
+	}
+
+	// Copy the string just to make space for the null character 
+	std::string string(static_cast<char *>(value), *length);
+
+	/* If the string contains ascii-nul characters, substitute something
+	   else, or give up, warn, and refuse */
+	if (!buf->BufSubstituteNullCharsEx(string)) {
+		fprintf(stderr, "Too much binary data, giving up\n");
+		XtFree((char *)value);
+		return;
+	}
+
+	// Insert it in the text widget 
+	this->TextInsertAtCursorEx(string, nullptr, true, text_of(w).P_autoWrapPastedText);
+	*resultFlag = SUCCESSFUL_INSERT;
+
+	// This callback is required to free the memory passed to it thru value 
+	XtFree((char *)value);
 }

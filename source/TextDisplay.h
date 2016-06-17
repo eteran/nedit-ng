@@ -205,7 +205,6 @@ public:
 	Pixel foregroundPixel() const;
 	Rect getRect() const;
 	TextBuffer *getStyleBuffer() const;
-	TextBuffer *textBuffer() const;
 	XtIntervalId getCursorBlinkProcID() const;
 	int fontAscent() const;
 	int fontDescent() const;
@@ -264,6 +263,8 @@ private:
 
 public:
 	// Callbacks
+	void getInsertSelectionCallback(XtPointer clientData, Atom *selType, Atom *type, XtPointer value, unsigned long *length, int *format);
+	void cursorBlinkTimerProcEx(XtPointer clientData, XtIntervalId *id);
 	void hScrollCallback(XtPointer clientData, XtPointer callData);
 	void vScrollCallback(XtPointer clientData, XtPointer callData);
 	void visibilityEventHandler(XtPointer data, XEvent *event, Boolean *continueDispatch);
