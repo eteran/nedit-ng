@@ -211,7 +211,6 @@ public:
 	int fontDescent() const;
 	int getAbsTopLineNum();
 	int getBufferLinesCount() const;
-	int getCursorPos() const;
 	int getFirstChar() const;
 	int getLastChar() const;
 	int getLineNumLeft() const;

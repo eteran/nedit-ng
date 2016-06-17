@@ -4577,7 +4577,7 @@ int Document::ShowCalltip(view::string_view text, bool anchored, int pos, int hA
 	} else {
 		/* Put it next to the cursor, or in the center of the window if the
 		    cursor is offscreen and mode != strict */
-		if (!textD->TextDPositionToXY(textD->getCursorPos(), &rel_x, &rel_y)) {
+		if (!textD->TextDPositionToXY(textD->TextGetCursorPos(), &rel_x, &rel_y)) {
 			if (alignMode == TIP_STRICT) {
 				QApplication::beep();
 				return 0;

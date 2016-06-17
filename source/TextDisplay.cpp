@@ -2580,7 +2580,7 @@ void TextDisplay::drawCursor(int x, int y) {
 ** the number of displayed characters past the beginning of the line.  Passing
 ** lineStartPos of -1 returns the drawing style for "no text".
 **
-** Why not just: textD->styleOfPos(pos)?  Because style applies to blank areas
+** Why not just: styleOfPos(pos)?  Because style applies to blank areas
 ** of the window beyond the text boundaries, and because this routine must also
 ** decide whether a position is inside of a rectangular selection, and do so
 ** efficiently, without re-counting character positions from the start of the
@@ -2929,7 +2929,7 @@ void TextDisplay::updateLineStarts(int pos, int charsInserted, int charsDeleted,
 ** Scan through the text in the "textD"'s buffer and recalculate the line
 ** starts array values beginning at index "startLine" and continuing through
 ** (including) "endLine".  It assumes that the line starts entry preceding
-** "startLine" (or textD->firstChar if startLine is 0) is good, and re-counts
+** "startLine" (or firstChar if startLine is 0) is good, and re-counts
 ** newlines to fill in the requested entries.  Out of range values for
 ** "startLine" and "endLine" are acceptable.
 */
@@ -8113,10 +8113,6 @@ int TextDisplay::getFirstChar() const {
 
 int TextDisplay::getLastChar() const {
 	return this->lastChar;
-}
-
-int TextDisplay::getCursorPos() const {
-	return this->cursorPos;
 }
 
 int TextDisplay::fontAscent() const {
