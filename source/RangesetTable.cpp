@@ -182,7 +182,7 @@ RangesetTable::~RangesetTable() {
 ** make_active is true, and make it the most visible.
 */
 
-Rangeset *RangesetTable::RangesetFetch( int label) {
+Rangeset *RangesetTable::RangesetFetch(int label) {
 	int rangesetIndex = RangesetFindIndex(label, 0);
 
 	if (rangesetIndex < 0)
@@ -316,17 +316,15 @@ void RangesetTable::RangesetTableUpdatePos(int pos, int ins, int del) {
 */
 
 int RangesetTable::RangesetCreate() {
-	int label;
-	int setIndex;
 
 	size_t firstAvailableIndex = strspn((char *)rangeset_labels, (char *)this->list);
 
 	if (firstAvailableIndex >= sizeof(rangeset_labels))
 		return 0;
 
-	label = rangeset_labels[firstAvailableIndex];
+	int label = rangeset_labels[firstAvailableIndex];
 
-	setIndex = this->RangesetFindIndex(label, 0);
+	int setIndex = this->RangesetFindIndex(label, 0);
 
 	if (setIndex < 0)
 		return 0;
