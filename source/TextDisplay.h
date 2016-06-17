@@ -217,7 +217,6 @@ public:
 	int getLineNumLeft() const;
 	int getLineNumWidth() const;
 	void setModifyingTabDist(int tabDist);
-	void setMouseCoord(const Point &point);
 	void setStyleBuffer(TextBuffer *buffer);
 
 private:

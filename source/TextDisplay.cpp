@@ -756,7 +756,7 @@ TextDisplay::TextDisplay(Widget widget,
 TextDisplay::~TextDisplay() {
 
 	this->StopHandlingXSelections();
-	TextBuffer *buf = this->textBuffer();
+	TextBuffer *buf = this->buffer;
 	
 	
 	if (buf->modifyProcs_.empty()) {
@@ -5667,7 +5667,7 @@ void TextDisplay::deselectAllAP(XEvent *event, String *args, Cardinal *nArgs) {
 	(void)nArgs;
 
 	this->cancelDrag();
-	this->textBuffer()->BufUnselect();
+	this->buffer->BufUnselect();
 }
 
 void TextDisplay::extendEndAP(XEvent *event, String *args, Cardinal *nArgs) {
@@ -5773,7 +5773,7 @@ void TextDisplay::selectAllAP(XEvent *event, String *args, Cardinal *nArgs) {
 	(void)nArgs;
 	(void)event;
 
-	TextBuffer *buf = this->textBuffer();
+	TextBuffer *buf = this->buffer;
 
 	this->cancelDrag();
 	buf->BufSelect(0, buf->BufGetLength());
@@ -5808,7 +5808,7 @@ void TextDisplay::checkMoveSelectionChange(XEvent *event, int startPos, String *
 	if (hasKey("extend", args, nArgs)) {
 		keyMoveExtendSelection(event, startPos, hasKey("rect", args, nArgs));
 	} else {
-		this->textBuffer()->BufUnselect();
+		this->buffer->BufUnselect();
 	}
 }
 
@@ -5906,7 +5906,7 @@ void TextDisplay::keyMoveExtendSelection(XEvent *event, int origPos, int rectang
 
 int TextDisplay::startOfWord(int pos) {
 	int startPos;
-	TextBuffer *buf = this->textBuffer();
+	TextBuffer *buf = this->buffer;
 	const char *delimiters = text_of(w).P_delimiters;
 	char c = buf->BufGetCharacter(pos);
 
@@ -5925,7 +5925,7 @@ int TextDisplay::startOfWord(int pos) {
 
 int TextDisplay::endOfWord(int pos) {
 	int endPos;
-	TextBuffer *buf = this->textBuffer();
+	TextBuffer *buf = this->buffer;
 	const char *delimiters = text_of(w).P_delimiters;
 	char c = buf->BufGetCharacter(pos);
 
@@ -6402,7 +6402,7 @@ void TextDisplay::endOfFileAP(XEvent *event, String *args, Cardinal *nArgs) {
 			this->TextDSetScroll(lastTopLine, this->horizOffset);
 		}
 	} else {
-		this->TextDSetInsertPosition(this->textBuffer()->BufGetLength());
+		this->TextDSetInsertPosition(this->buffer->BufGetLength());
 		checkMoveSelectionChange(event, insertPos, args, nArgs);
 		this->checkAutoShowInsertPos();
 		this->callCursorMovementCBs(event);
@@ -6415,7 +6415,7 @@ void TextDisplay::beginningOfLineAP(XEvent *event, String *args, Cardinal *nArgs
 
 	this->cancelDrag();
 	if (hasKey("absolute", args, nArgs))
-		this->TextDSetInsertPosition(this->textBuffer()->BufStartOfLine(insertPos));
+		this->TextDSetInsertPosition(this->buffer->BufStartOfLine(insertPos));
 	else
 		this->TextDSetInsertPosition(this->TextDStartOfLine(insertPos));
 	checkMoveSelectionChange(event, insertPos, args, nArgs);
@@ -6430,7 +6430,7 @@ void TextDisplay::endOfLineAP(XEvent *event, String *args, Cardinal *nArgs) {
 
 	this->cancelDrag();
 	if (hasKey("absolute", args, nArgs))
-		this->TextDSetInsertPosition(this->textBuffer()->BufEndOfLine(insertPos));
+		this->TextDSetInsertPosition(this->buffer->BufEndOfLine(insertPos));
 	else
 		this->TextDSetInsertPosition(this->TextDEndOfLine(insertPos, false));
 	checkMoveSelectionChange(event, insertPos, args, nArgs);
@@ -6695,7 +6695,7 @@ void TextDisplay::deleteToEndOfLineAP(XEvent *event, String *args, Cardinal *nAr
 
 	silent = hasKey("nobell", args, nArgs);
 	if (hasKey("absolute", args, nArgs))
-		endOfLine = this->textBuffer()->BufEndOfLine(insertPos);
+		endOfLine = this->buffer->BufEndOfLine(insertPos);
 	else
 		endOfLine = this->TextDEndOfLine(insertPos, false);
 	this->cancelDrag();
@@ -6708,7 +6708,7 @@ void TextDisplay::deleteToEndOfLineAP(XEvent *event, String *args, Cardinal *nAr
 		ringIfNecessary(silent);
 		return;
 	}
-	this->textBuffer()->BufRemove(insertPos, endOfLine);
+	this->buffer->BufRemove(insertPos, endOfLine);
 	this->checkAutoShowInsertPos();
 	this->callCursorMovementCBs(event);
 }
@@ -6723,7 +6723,7 @@ void TextDisplay::deleteToStartOfLineAP(XEvent *event, String *args, Cardinal *n
 	if (hasKey("wrap", args, nArgs))
 		startOfLine =this->TextDStartOfLine(insertPos);
 	else
-		startOfLine = this->textBuffer()->BufStartOfLine(insertPos);
+		startOfLine = this->buffer->BufStartOfLine(insertPos);
 	this->cancelDrag();
 	if (this->checkReadOnly())
 		return;
@@ -6734,7 +6734,7 @@ void TextDisplay::deleteToStartOfLineAP(XEvent *event, String *args, Cardinal *n
 		ringIfNecessary(silent);
 		return;
 	}
-	this->textBuffer()->BufRemove(startOfLine, insertPos);
+	this->buffer->BufRemove(startOfLine, insertPos);
 	this->checkAutoShowInsertPos();
 	this->callCursorMovementCBs(event);
 }
@@ -6748,7 +6748,7 @@ int TextDisplay::deletePendingSelection(XEvent *event) {
 
 	TextBuffer *buf = this->buffer;
 
-	if (this->textBuffer()->primary_.selected) {
+	if (this->buffer->primary_.selected) {
 		buf->BufRemoveSelected();
 		this->TextDSetInsertPosition(buf->cursorPosHint_);
 		this->checkAutoShowInsertPos();
@@ -6782,13 +6782,13 @@ void TextDisplay::deletePreviousCharacterAP(XEvent *event, String *args, Cardina
 		return;
 
 	if (text_of(w).P_overstrike) {
-		c = this->textBuffer()->BufGetCharacter(insertPos - 1);
+		c = this->buffer->BufGetCharacter(insertPos - 1);
 		if (c == '\n')
-			this->textBuffer()->BufRemove(insertPos - 1, insertPos);
+			this->buffer->BufRemove(insertPos - 1, insertPos);
 		else if (c != '\t')
-			this->textBuffer()->BufReplaceEx(insertPos - 1, insertPos, " ");
+			this->buffer->BufReplaceEx(insertPos - 1, insertPos, " ");
 	} else {
-		this->textBuffer()->BufRemove(insertPos - 1, insertPos);
+		this->buffer->BufRemove(insertPos - 1, insertPos);
 	}
 
 	this->TextDSetInsertPosition(insertPos - 1);
@@ -6813,12 +6813,12 @@ void TextDisplay::deleteNextCharacterAP(XEvent *event, String *args, Cardinal *n
 		return;
 	}
 		
-	if (insertPos == this->textBuffer()->BufGetLength()) {
+	if (insertPos == this->buffer->BufGetLength()) {
 		ringIfNecessary(silent);
 		return;
 	}
 	
-	this->textBuffer()->BufRemove(insertPos, insertPos + 1);
+	this->buffer->BufRemove(insertPos, insertPos + 1);
 	this->checkAutoShowInsertPos();
 	this->callCursorMovementCBs(event);
 }
@@ -6828,7 +6828,7 @@ void TextDisplay::deletePreviousWordAP(XEvent *event, String *args, Cardinal *nA
 	XKeyEvent *e = &event->xkey;
 	int insertPos = this->TextDGetInsertPosition();
 	int pos;
-	int lineStart = this->textBuffer()->BufStartOfLine(insertPos);
+	int lineStart = this->buffer->BufStartOfLine(insertPos);
 	const char *delimiters = text_of(w).P_delimiters;
 	bool silent = hasKey("nobell", args, nArgs);
 
@@ -6848,12 +6848,12 @@ void TextDisplay::deletePreviousWordAP(XEvent *event, String *args, Cardinal *nA
 	}
 
 	pos = std::max(insertPos - 1, 0);
-	while (strchr(delimiters, this->textBuffer()->BufGetCharacter(pos)) != nullptr && pos != lineStart) {
+	while (strchr(delimiters, this->buffer->BufGetCharacter(pos)) != nullptr && pos != lineStart) {
 		pos--;
 	}
 
 	pos = startOfWord(pos);
-	this->textBuffer()->BufRemove(pos, insertPos);
+	this->buffer->BufRemove(pos, insertPos);
 	this->checkAutoShowInsertPos();
 	this->callCursorMovementCBs(event);
 }
@@ -6863,7 +6863,7 @@ void TextDisplay::deleteNextWordAP(XEvent *event, String *args, Cardinal *nArgs)
 	XKeyEvent *e = &event->xkey;
 	int insertPos = this->TextDGetInsertPosition();
 	int pos;
-	int lineEnd = this->textBuffer()->BufEndOfLine(insertPos);
+	int lineEnd = this->buffer->BufEndOfLine(insertPos);
 	const char *delimiters = text_of(w).P_delimiters;
 	bool silent = hasKey("nobell", args, nArgs);
 
@@ -6883,12 +6883,12 @@ void TextDisplay::deleteNextWordAP(XEvent *event, String *args, Cardinal *nArgs)
 	}
 
 	pos = insertPos;
-	while (strchr(delimiters, this->textBuffer()->BufGetCharacter(pos)) != nullptr && pos != lineEnd) {
+	while (strchr(delimiters, this->buffer->BufGetCharacter(pos)) != nullptr && pos != lineEnd) {
 		pos++;
 	}
 
 	pos = endOfWord(pos);
-	this->textBuffer()->BufRemove(insertPos, pos);
+	this->buffer->BufRemove(insertPos, pos);
 	this->checkAutoShowInsertPos();
 	this->callCursorMovementCBs(event);
 }
@@ -6902,7 +6902,7 @@ void TextDisplay::deleteNextWordAP(XEvent *event, String *args, Cardinal *nArgs)
 */
 int TextDisplay::deleteEmulatedTab(XEvent *event) {
 
-	TextBuffer *buf        = this->textBuffer();
+	TextBuffer *buf        = this->buffer;
 	int emTabDist          = text_of(w).P_emulateTabs;
 	int emTabsBeforeCursor = this->emTabsBeforeCursor;
 	int startIndent, toIndent, insertPos, startPos, lineStart;
@@ -7004,7 +7004,7 @@ void TextDisplay::newlineNoIndentAP(XEvent *event, String *args, Cardinal *nArgs
 	
 	this->TakeMotifDestination(e->time);
 	simpleInsertAtCursorEx("\n", event, true);
-	this->textBuffer()->BufUnselect();
+	this->buffer->BufUnselect();
 }
 
 void TextDisplay::newlineAndIndentAP(XEvent *event, String *args, Cardinal *nArgs) {
@@ -7085,9 +7085,9 @@ std::string TextDisplay::createIndentStringEx(TextBuffer *buf, int bufOffset, in
 
 	int pos;
 	int indent = -1;
-	int tabDist = this->textBuffer()->tabDist_;
+	int tabDist = this->buffer->tabDist_;
 	int i;
-	int useTabs = this->textBuffer()->useTabs_;
+	int useTabs = this->buffer->useTabs_;
 	char c;
 	smartIndentCBStruct smartIndent;
 
@@ -7176,7 +7176,7 @@ void TextDisplay::insertStringAP(XEvent *event, String *args, Cardinal *nArgs) {
 		XtCallCallbacks(w, textNsmartIndentCallback, &smartIndent);
 	}
 	this->TextInsertAtCursorEx(args[0], event, true, true);
-	this->textBuffer()->BufUnselect();
+	this->buffer->BufUnselect();
 }
 
 void TextDisplay::selfInsertAP(XEvent *event, String *args, Cardinal *nArgs) {
@@ -7219,7 +7219,7 @@ void TextDisplay::selfInsertAP(XEvent *event, String *args, Cardinal *nArgs) {
 		XtCallCallbacks(w, textNsmartIndentCallback, &smartIndent);
 	}
 	this->TextInsertAtCursorEx(chars, event, true, true);
-	this->textBuffer()->BufUnselect();
+	this->buffer->BufUnselect();
 }
 
 void TextDisplay::pasteClipboardAP(XEvent *event, String *args, Cardinal *nArgs) {
@@ -7671,7 +7671,7 @@ void TextDisplay::checkAutoScroll(const Point &coord) {
 	}
 
 	// Pass on the newest mouse location to the autoscroll routine
-	this->setMouseCoord(coord);
+	this->mouseCoord = coord;
 }
 
 void TextDisplay::adjustSecondarySelection(const Point &coord) {
@@ -7689,7 +7689,7 @@ void TextDisplay::adjustSecondarySelection(const Point &coord) {
 		endPos   = buf->BufEndOfLine(std::max(this->anchor, newPos));
 		buf->BufSecRectSelect(startPos, endPos, startCol, endCol);
 	} else {
-		this->textBuffer()->BufSecondarySelect(this->anchor, newPos);
+		this->buffer->BufSecondarySelect(this->anchor, newPos);
 	}
 }
 
@@ -7973,7 +7973,7 @@ void TextDisplay::grabFocusAP(XEvent *event, String *args, Cardinal *nArgs) {
 				this->callCursorMovementCBs(event);
 				return;
 			} else if (this->multiClickState == THREE_CLICKS) {
-				this->textBuffer()->BufSelect(0, this->textBuffer()->BufGetLength());
+				this->buffer->BufSelect(0, this->buffer->BufGetLength());
 				return;
 			} else if (this->multiClickState > THREE_CLICKS)
 				this->multiClickState = NO_CLICKS;
@@ -7982,7 +7982,7 @@ void TextDisplay::grabFocusAP(XEvent *event, String *args, Cardinal *nArgs) {
 	}
 
 	// Clear any existing selections
-	this->textBuffer()->BufUnselect();
+	this->buffer->BufUnselect();
 
 	// Move the cursor to the pointer location
 	moveDestinationAP(event, args, nArgs);
@@ -8047,9 +8047,9 @@ void TextDisplay::selectLine() {
 	int endPos;
 	int startPos;
 
-	endPos = this->textBuffer()->BufEndOfLine(insertPos);
-	startPos = this->textBuffer()->BufStartOfLine(insertPos);
-	this->textBuffer()->BufSelect(startPos, std::min(endPos + 1, this->textBuffer()->BufGetLength()));
+	endPos = this->buffer->BufEndOfLine(insertPos);
+	startPos = this->buffer->BufStartOfLine(insertPos);
+	this->buffer->BufSelect(startPos, std::min(endPos + 1, this->buffer->BufGetLength()));
 	this->TextDSetInsertPosition(endPos);
 }
 
@@ -8101,10 +8101,6 @@ CursorStyles TextDisplay::getCursorStyle() const {
 
 CallTip &TextDisplay::getCalltip() {
 	return this->calltip;
-}
-
-TextBuffer *TextDisplay::textBuffer() const {
-	return this->buffer;
 }
 
 void TextDisplay::setStyleBuffer(TextBuffer *buffer) {
@@ -8167,13 +8163,12 @@ TextBuffer *TextDisplay::getStyleBuffer() const {
 	return this->styleBuffer;
 }
 
-void TextDisplay::setMouseCoord(const Point &point) {
-	this->mouseCoord = point;
+TextBuffer *TextDisplay::textBuffer() const {
+	return this->buffer;
 }
 
 
 #else
-
 #endif
 
 void TextDisplay::addFocusCallback(XtCallbackProc callback, XtPointer client_data) {
