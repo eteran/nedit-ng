@@ -221,7 +221,6 @@ public:
 	int getModifyingTabDist() const;
 	void setModifyingTabDist(int tabDist);
 	void setMouseCoord(const Point &point);
-	void setSelectionOwner(bool value);
 	void setStyleBuffer(TextBuffer *buffer);
 
 private:
@@ -279,6 +278,8 @@ public:
 	void getSelectionCallback(XtPointer clientData, Atom *selType, Atom *type, XtPointer value, unsigned long *length, int *format);
 	void loseMotifDestCallback(Atom *selType);
 	void modifiedCallback(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *cbArg);
+	Boolean convertSelectionCallback(Atom *selType, Atom *target, Atom *type, XtPointer *value, unsigned long *length, int *format);
+	void loseSelectionCallback(Atom *selType);
 
 public:
 	void addFocusCallback(XtCallbackProc callback, XtPointer client_data);

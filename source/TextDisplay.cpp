@@ -316,107 +316,11 @@ void getInsertSelectionCB(Widget w, XtPointer clientData, Atom *selType, Atom *t
 ** procdeure is registered
 */
 Boolean convertSelectionCB(Widget w, Atom *selType, Atom *target, Atom *type, XtPointer *value, unsigned long *length, int *format) {
-	XSelectionRequestEvent *event = XtGetSelectionRequest(w, *selType, nullptr);
-	auto buf = textD_of(w)->TextGetBuffer();
-	Display *display = XtDisplay(w);
-	Atom *targets, dummyAtom;
-	unsigned long nItems, dummyULong;
-	Atom *reqAtoms;
-	int getFmt, result = INSERT_WAITING;
-	XEvent nextEvent;
-
-	// target is text, string, or compound text 
-	if (*target == XA_STRING || *target == getAtom(display, A_TEXT) || *target == getAtom(display, A_COMPOUND_TEXT)) {
-		/* We really don't directly support COMPOUND_TEXT, but recent
-		   versions gnome-terminal incorrectly ask for it, even though
-		   don't declare that we do.  Just reply in string format. */
-		   
-		// TODO(eteran): inefficient copy here, but we plan to deprecate X Toolkit direct usage anyway
-		std::string s = buf->BufGetSelectionTextEx();
-		buf->BufUnsubstituteNullCharsEx(s);
-		
-		char *str = XtStringDup(s);
-		   
-		*type   = XA_STRING;
-		*value  = str;
-		*length = s.size();
-		*format = 8;
-
-		return true;
-	}
-
-	// target is "TARGETS", return a list of targets we can handle 
-	if (*target == getAtom(display, A_TARGETS)) {
-		targets = (Atom *)XtMalloc(sizeof(Atom) * N_SELECT_TARGETS);
-		
-		targets[0] = XA_STRING;
-		targets[1] = getAtom(display, A_TEXT);
-		targets[2] = getAtom(display, A_TARGETS);
-		targets[3] = getAtom(display, A_MULTIPLE);
-		targets[4] = getAtom(display, A_TIMESTAMP);
-		targets[5] = getAtom(display, A_INSERT_SELECTION);
-		targets[6] = getAtom(display, A_DELETE);
-		
-		*type   = XA_ATOM;
-		*value  = targets;
-		*length = N_SELECT_TARGETS;
-		*format = 32;
-		return true;
-	}
-
-	/* target is "INSERT_SELECTION":  1) get the information about what
-	   selection and target to use to get the text to insert, from the
-	   property named in the property field of the selection request event.
-	   2) initiate a get value request for the selection and target named
-	   in the property, and WAIT until it completes */
-	if (*target == getAtom(display, A_INSERT_SELECTION)) {
-		if (text_of(w).P_readOnly)
-			return false;
-		if (XGetWindowProperty(event->display, event->requestor, event->property, 0, 2, False, AnyPropertyType, &dummyAtom, &getFmt, &nItems, &dummyULong, (uint8_t **)&reqAtoms) != Success || getFmt != 32 || nItems != 2)
-			return false;
-		if (reqAtoms[1] != XA_STRING)
-			return false;
-		XtGetSelectionValue(w, reqAtoms[0], reqAtoms[1], getInsertSelectionCB, &result, event->time);
-		XFree((char *)reqAtoms);
-		while (result == INSERT_WAITING) {
-			XtAppNextEvent(XtWidgetToApplicationContext(w), &nextEvent);
-			XtDispatchEvent(&nextEvent);
-		}
-		*type = getAtom(display, A_INSERT_SELECTION);
-		*format = 8;
-		*value = nullptr;
-		*length = 0;
-		return result == SUCCESSFUL_INSERT;
-	}
-
-	// target is "DELETE": delete primary selection 
-	if (*target == getAtom(display, A_DELETE)) {
-		buf->BufRemoveSelected();
-		*length = 0;
-		*format = 8;
-		*type = getAtom(display, A_DELETE);
-		*value = nullptr;
-		return true;
-	}
-
-	/* targets TIMESTAMP and MULTIPLE are handled by the toolkit, any
-	   others are unrecognized, return False */
-	return false;
+	return textD_of(w)->convertSelectionCallback(selType, target, type, value, length, format);
 }
 
 void loseSelectionCB(Widget w, Atom *selType) {
-
-	(void)selType;
-
-	auto tw = reinterpret_cast<TextWidget>(w);
-	TextSelection *sel = &textD_of(tw)->TextGetBuffer()->primary_;
-	char zeroWidth = sel->rectangular ? sel->zeroWidth : 0;
-
-	/* For zero width rect. sel. we give up the selection but keep the
-	    zero width tag. */
-	textD_of(tw)->setSelectionOwner(false);
-	textD_of(tw)->TextGetBuffer()->BufUnselect();
-	sel->zeroWidth = zeroWidth;
+	textD_of(w)->loseSelectionCallback(selType);
 }
 
 /*
@@ -7830,7 +7734,7 @@ void TextDisplay::checkAutoScroll(const Point &coord) {
 
 	// Is the pointer in or out of the window?
 	bool inWindow = 
-		coord.x >= textD_of(w)->rect.left && 
+		coord.x >= this->rect.left && 
 		coord.x < w->core.width - text_of(w).P_marginWidth && 
 		coord.y >= text_of(w).P_marginHeight && 
 		coord.y < w->core.height - text_of(w).P_marginHeight;
@@ -7955,9 +7859,7 @@ void TextDisplay::autoScrollTimerProcEx(XtPointer clientData, XtIntervalId *id) 
 static void autoScrollTimerProc(XtPointer clientData, XtIntervalId *id) {
 
 	TextWidget w = static_cast<TextWidget>(clientData);
-	TextDisplay *textD = textD_of(w);
-	
-	textD->autoScrollTimerProcEx(clientData, id);
+	textD_of(w)->autoScrollTimerProcEx(clientData, id);
 
 }
 
@@ -8277,10 +8179,6 @@ void TextDisplay::sendSecondary(Time time, Atom sel, int action, char *actionTex
 }
 
 #if 1
-void TextDisplay::setSelectionOwner(bool value) {
-	this->selectionOwner = value;
-}
-
 CursorStyles TextDisplay::getCursorStyle() const {
 	return this->cursorStyle;
 }
@@ -8402,4 +8300,116 @@ void TextDisplay::modifiedCallback(int pos, int nInserted, int nDeleted, int nRe
 	} else {
 		this->selectionOwner = true;
 	}
+}
+
+/*
+** Selection converter procedure used by the widget when it is the selection
+** owner to provide data in the format requested by the selection requestor.
+**
+** Note: Memory left in the *value field is freed by Xt as long as there is no
+** done_proc procedure registered in the XtOwnSelection call where this
+** procdeure is registered
+*/
+Boolean TextDisplay::convertSelectionCallback(Atom *selType, Atom *target, Atom *type, XtPointer *value, unsigned long *length, int *format) {
+
+	XSelectionRequestEvent *event = XtGetSelectionRequest(w, *selType, nullptr);
+	auto buf = this->buffer;
+	Display *display = XtDisplay(w);
+	Atom *targets, dummyAtom;
+	unsigned long nItems, dummyULong;
+	Atom *reqAtoms;
+	int getFmt, result = INSERT_WAITING;
+	XEvent nextEvent;
+
+	// target is text, string, or compound text 
+	if (*target == XA_STRING || *target == getAtom(display, A_TEXT) || *target == getAtom(display, A_COMPOUND_TEXT)) {
+		/* We really don't directly support COMPOUND_TEXT, but recent
+		   versions gnome-terminal incorrectly ask for it, even though
+		   don't declare that we do.  Just reply in string format. */
+		   
+		// TODO(eteran): inefficient copy here, but we plan to deprecate X Toolkit direct usage anyway
+		std::string s = buf->BufGetSelectionTextEx();
+		buf->BufUnsubstituteNullCharsEx(s);
+		
+		char *str = XtStringDup(s);
+		   
+		*type   = XA_STRING;
+		*value  = str;
+		*length = s.size();
+		*format = 8;
+
+		return true;
+	}
+
+	// target is "TARGETS", return a list of targets we can handle 
+	if (*target == getAtom(display, A_TARGETS)) {
+		targets = (Atom *)XtMalloc(sizeof(Atom) * N_SELECT_TARGETS);
+		
+		targets[0] = XA_STRING;
+		targets[1] = getAtom(display, A_TEXT);
+		targets[2] = getAtom(display, A_TARGETS);
+		targets[3] = getAtom(display, A_MULTIPLE);
+		targets[4] = getAtom(display, A_TIMESTAMP);
+		targets[5] = getAtom(display, A_INSERT_SELECTION);
+		targets[6] = getAtom(display, A_DELETE);
+		
+		*type   = XA_ATOM;
+		*value  = targets;
+		*length = N_SELECT_TARGETS;
+		*format = 32;
+		return true;
+	}
+
+	/* target is "INSERT_SELECTION":  1) get the information about what
+	   selection and target to use to get the text to insert, from the
+	   property named in the property field of the selection request event.
+	   2) initiate a get value request for the selection and target named
+	   in the property, and WAIT until it completes */
+	if (*target == getAtom(display, A_INSERT_SELECTION)) {
+		if (text_of(w).P_readOnly)
+			return false;
+		if (XGetWindowProperty(event->display, event->requestor, event->property, 0, 2, False, AnyPropertyType, &dummyAtom, &getFmt, &nItems, &dummyULong, (uint8_t **)&reqAtoms) != Success || getFmt != 32 || nItems != 2)
+			return false;
+		if (reqAtoms[1] != XA_STRING)
+			return false;
+		XtGetSelectionValue(w, reqAtoms[0], reqAtoms[1], getInsertSelectionCB, &result, event->time);
+		XFree((char *)reqAtoms);
+		while (result == INSERT_WAITING) {
+			XtAppNextEvent(XtWidgetToApplicationContext(w), &nextEvent);
+			XtDispatchEvent(&nextEvent);
+		}
+		*type = getAtom(display, A_INSERT_SELECTION);
+		*format = 8;
+		*value = nullptr;
+		*length = 0;
+		return result == SUCCESSFUL_INSERT;
+	}
+
+	// target is "DELETE": delete primary selection 
+	if (*target == getAtom(display, A_DELETE)) {
+		buf->BufRemoveSelected();
+		*length = 0;
+		*format = 8;
+		*type = getAtom(display, A_DELETE);
+		*value = nullptr;
+		return true;
+	}
+
+	/* targets TIMESTAMP and MULTIPLE are handled by the toolkit, any
+	   others are unrecognized, return False */
+	return false;
+}
+
+void TextDisplay::loseSelectionCallback(Atom *selType) {
+
+	(void)selType;
+
+	TextSelection *sel = &this->buffer->primary_;
+	char zeroWidth = sel->rectangular ? sel->zeroWidth : 0;
+
+	/* For zero width rect. sel. we give up the selection but keep the
+	    zero width tag. */
+	this->selectionOwner = false;
+	this->buffer->BufUnselect();
+	sel->zeroWidth = zeroWidth;
 }
