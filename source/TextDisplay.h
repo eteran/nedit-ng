@@ -203,7 +203,6 @@ public:
 	CursorStyles getCursorStyle() const;
 	Pixel backgroundPixel() const;
 	Pixel foregroundPixel() const;
-	Point getMouseCoord() const;
 	Rect getRect() const;
 	TextBuffer *getStyleBuffer() const;
 	TextBuffer *textBuffer() const;
@@ -211,14 +210,12 @@ public:
 	int fontAscent() const;
 	int fontDescent() const;
 	int getAbsTopLineNum();
-	int getAnchor() const;
 	int getBufferLinesCount() const;
 	int getCursorPos() const;
 	int getFirstChar() const;
 	int getLastChar() const;
 	int getLineNumLeft() const;
 	int getLineNumWidth() const;
-	int getModifyingTabDist() const;
 	void setModifyingTabDist(int tabDist);
 	void setMouseCoord(const Point &point);
 	void setStyleBuffer(TextBuffer *buffer);

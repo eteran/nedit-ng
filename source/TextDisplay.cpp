@@ -5601,90 +5601,6 @@ void TextDisplay::TakeMotifDestination(Time time) {
 	this->motifDestOwner = true;
 }
 
-int TextDisplay::fontAscent() const {
-	return this->ascent;
-}
-
-int TextDisplay::fontDescent() const {
-	return this->descent;
-}
-
-Pixel TextDisplay::foregroundPixel() const {
-	return this->fgPixel;
-}
-
-Pixel TextDisplay::backgroundPixel() const {
-	return this->bgPixel;
-}
-
-TextBuffer *TextDisplay::textBuffer() const {
-	return this->buffer;
-}
-
-int TextDisplay::getLineNumWidth() const {
-	return this->lineNumWidth;
-}
-
-int TextDisplay::getLineNumLeft() const {
-	return this->lineNumLeft;
-}
-
-Rect TextDisplay::getRect() const {
-	return this->rect;
-}
-
-Point TextDisplay::getMouseCoord() const {
-	return this->mouseCoord;
-}
-
-void TextDisplay::setMouseCoord(const Point &point) {
-	this->mouseCoord = point;
-}
-
-int TextDisplay::getBufferLinesCount() const {
-	return this->nBufferLines;
-}
-
-XtIntervalId TextDisplay::getCursorBlinkProcID() const {
-	return this->cursorBlinkProcID;
-}
-
-TextBuffer *TextDisplay::getStyleBuffer() const {
-	return this->styleBuffer;
-}
-
-void TextDisplay::setStyleBuffer(TextBuffer *buffer) {
-	this->styleBuffer = buffer;
-}
-
-void TextDisplay::setModifyingTabDist(int tabDist) {
-	this->modifyingTabDist = tabDist;
-}
-
-int TextDisplay::getModifyingTabDist() const {
-	return this->modifyingTabDist;
-}
-
-CallTip &TextDisplay::getCalltip() {
-	return this->calltip;
-}
-
-int TextDisplay::getFirstChar() const {
-	return this->firstChar;
-}
-
-int TextDisplay::getLastChar() const {
-	return this->lastChar;
-}
-
-int TextDisplay::getCursorPos() const {
-	return this->cursorPos;
-}
-
-int TextDisplay::getAnchor() const {
-	return this->anchor;
-}
-
 void TextDisplay::focusInAP(XEvent *event, String *args, Cardinal *nArgs) {
 
 	(void)args;
@@ -8183,7 +8099,81 @@ CursorStyles TextDisplay::getCursorStyle() const {
 	return this->cursorStyle;
 }
 
+CallTip &TextDisplay::getCalltip() {
+	return this->calltip;
+}
+
+TextBuffer *TextDisplay::textBuffer() const {
+	return this->buffer;
+}
+
+void TextDisplay::setStyleBuffer(TextBuffer *buffer) {
+	this->styleBuffer = buffer;
+}
+
+int TextDisplay::getFirstChar() const {
+	return this->firstChar;
+}
+
+int TextDisplay::getLastChar() const {
+	return this->lastChar;
+}
+
+int TextDisplay::getCursorPos() const {
+	return this->cursorPos;
+}
+
+int TextDisplay::fontAscent() const {
+	return this->ascent;
+}
+
+int TextDisplay::fontDescent() const {
+	return this->descent;
+}
+
+Rect TextDisplay::getRect() const {
+	return this->rect;
+}
+
+void TextDisplay::setModifyingTabDist(int tabDist) {
+	this->modifyingTabDist = tabDist;
+}
+
+int TextDisplay::getBufferLinesCount() const {
+	return this->nBufferLines;
+}
+
+int TextDisplay::getLineNumWidth() const {
+	return this->lineNumWidth;
+}
+
+int TextDisplay::getLineNumLeft() const {
+	return this->lineNumLeft;
+}
+
+Pixel TextDisplay::foregroundPixel() const {
+	return this->fgPixel;
+}
+
+Pixel TextDisplay::backgroundPixel() const {
+	return this->bgPixel;
+}
+
+XtIntervalId TextDisplay::getCursorBlinkProcID() const {
+	return this->cursorBlinkProcID;
+}
+
+TextBuffer *TextDisplay::getStyleBuffer() const {
+	return this->styleBuffer;
+}
+
+void TextDisplay::setMouseCoord(const Point &point) {
+	this->mouseCoord = point;
+}
+
+
 #else
+
 #endif
 
 void TextDisplay::addFocusCallback(XtCallbackProc callback, XtPointer client_data) {
