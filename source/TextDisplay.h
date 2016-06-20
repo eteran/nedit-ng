@@ -396,106 +396,106 @@ public:
 	static bool offscreenV(XWindowAttributes *screenAttr, int top, int height);
 
 private:
-	Widget w; // TextWidget
-	Widget calltipW;                             // The Label widget for the calltip
-	Widget calltipShell;                         // The Shell that holds the calltip
-	Pixel fgPixel;                               // Foreground color
-	Pixel bgPixel;                               // Background color	
-	Pixel *bgClassPixel;                         // table of colors for each BG class
-	uint8_t *bgClass;                            // obtains index into bgClassPixel[]		
-	Rect rect;
-	int lineNumLeft;
-	int lineNumWidth;
-	int cursorPos;
-	int cursorOn;
-	Point cursor;                               // X pos. of last drawn cursor Note: these are used for *drawing* and are not generally reliable for finding the insert position's x/y coordinates!
-	int cursorToHint;                            // Tells the buffer modified callback where to move the cursor, to reduce the number of redraw calls
-	CursorStyles cursorStyle;                    // One of enum cursorStyles above
-	int cursorPreferredCol;                      // Column for vert. cursor movement
-	int nVisibleLines;                           // # of visible (displayed) lines
-	int nBufferLines;                            // # of newlines in the buffer
-	TextBuffer *buffer;                          // Contains text to be displayed
-	TextBuffer *styleBuffer;                     // Optional parallel buffer containing color and font information
-	int firstChar;                               // Buffer positions of first and last displayed character (lastChar points either to a newline or one character beyond the end of the buffer)
-	int lastChar;
-	int *lineStarts;
-	int topLineNum;                              // Line number of top displayed line of file (first line of file is 1)
-	int absTopLineNum;                           // In continuous wrap mode, the line number of the top line if the text were not wrapped (note that this is only maintained as needed).
-	int needAbsTopLineNum;                       // Externally settable flag to continue maintaining absTopLineNum even if it isn't needed for line # display
-	int horizOffset;                             // Horizontal scroll pos. in pixels
-	int visibility;                              // Window visibility (see XVisibility event)
-	int nStyles;                                 // Number of entries in styleTable
-	StyleTableEntry *styleTable;                 // Table of fonts and colors for coloring/syntax-highlighting
-	char unfinishedStyle;                        // Style buffer entry which triggers on-the-fly reparsing of region
-	unfinishedStyleCBProc unfinishedHighlightCB; // Callback to parse "unfinished" regions
-	void *highlightCBArg;                        // Arg to unfinishedHighlightCB
-	int ascent;                                  // Composite ascent and descent for primary font + all-highlight fonts
-	int descent;
-	int fixedFontWidth;                          // Font width if all current fonts are fixed and match in width, else -1
+	Widget w_; // TextWidget
+	Widget calltipW_;                             // The Label widget for the calltip
+	Widget calltipShell_;                         // The Shell that holds the calltip
+	Pixel fgPixel_;                               // Foreground color
+	Pixel bgPixel_;                               // Background color	
+	Pixel *bgClassPixel_;                         // table of colors for each BG class
+	uint8_t *bgClass_;                            // obtains index into bgClassPixel[]		
+	Rect rect_;
+	int lineNumLeft_;
+	int lineNumWidth_;
+	int cursorPos_;
+	int cursorOn_;
+	Point cursor_;                               // X pos. of last drawn cursor Note: these are used for *drawing* and are not generally reliable for finding the insert position's x/y coordinates!
+	int cursorToHint_;                            // Tells the buffer modified callback where to move the cursor, to reduce the number of redraw calls
+	CursorStyles cursorStyle_;                    // One of enum cursorStyles above
+	int cursorPreferredCol_;                      // Column for vert. cursor movement
+	int nVisibleLines_;                           // # of visible (displayed) lines
+	int nBufferLines_;                            // # of newlines in the buffer
+	TextBuffer *buffer_;                          // Contains text to be displayed
+	TextBuffer *styleBuffer_;                     // Optional parallel buffer containing color and font information
+	int firstChar_;                               // Buffer positions of first and last displayed character (lastChar points either to a newline or one character beyond the end of the buffer)
+	int lastChar_;
+	int *lineStarts_;
+	int topLineNum_;                              // Line number of top displayed line of file (first line of file is 1)
+	int absTopLineNum_;                           // In continuous wrap mode, the line number of the top line if the text were not wrapped (note that this is only maintained as needed).
+	int needAbsTopLineNum_;                       // Externally settable flag to continue maintaining absTopLineNum even if it isn't needed for line # display
+	int horizOffset_;                             // Horizontal scroll pos. in pixels
+	int visibility_;                              // Window visibility (see XVisibility event)
+	int nStyles_;                                 // Number of entries in styleTable
+	StyleTableEntry *styleTable_;                 // Table of fonts and colors for coloring/syntax-highlighting
+	char unfinishedStyle_;                        // Style buffer entry which triggers on-the-fly reparsing of region
+	unfinishedStyleCBProc unfinishedHighlightCB_; // Callback to parse "unfinished" regions
+	void *highlightCBArg_;                        // Arg to unfinishedHighlightCB
+	int ascent_;                                  // Composite ascent and descent for primary font + all-highlight fonts
+	int descent_;
+	int fixedFontWidth_;                          // Font width if all current fonts are fixed and match in width, else -1
 
 	// GCs for drawing text
-	GC gc;
-	GC selectGC;
-	GC highlightGC;
+	GC gc_;
+	GC selectGC_;
+	GC highlightGC_;
 	// GCs for erasing text
-	GC selectBGGC;
-	GC highlightBGGC;
+	GC selectBGGC_;
+	GC highlightBGGC_;
 	// GC for drawing the cursor
-	GC cursorFGGC;
+	GC cursorFGGC_;
 	// GC for drawing line numbers
-	GC lineNumGC;
+	GC lineNumGC_;
 	// GC with color and font unspecified for drawing colored/styled text
-	GC styleGC;
+	GC styleGC_;
 
-	CallTip calltip;                       // The info for the calltip itself
-	bool suppressResync;                          // Suppress resynchronization of line starts during buffer updates
-	int nLinesDeleted;                           // Number of lines deleted during buffer modification (only used when resynchronization is suppressed)
-	int modifyingTabDist;                        // Whether tab distance is being modified
-	bool pointerHidden;                          // true if the mouse pointer is hidden
+	CallTip calltip_;                       // The info for the calltip itself
+	bool suppressResync_;                          // Suppress resynchronization of line starts during buffer updates
+	int nLinesDeleted_;                           // Number of lines deleted during buffer modification (only used when resynchronization is suppressed)
+	int modifyingTabDist_;                        // Whether tab distance is being modified
+	bool pointerHidden_;                          // true if the mouse pointer is hidden
 	graphicExposeTranslationEntry *graphicsExposeQueue_;
 	
 	// NOTE(eteran): moved from textP
-	TextBuffer *dragOrigBuf;        // backup buffer copy used during block dragging of selections
-	int dragXOffset;                // offsets between cursor location and actual insertion point in drag
-	int dragYOffset;                // offsets between cursor location and actual insertion point in drag
-	int dragType;                   // style of block drag operation
-	int dragInsertPos;              // location where text being block dragged was last inserted
-	int dragRectStart;              // rect. offset ""
-	int dragInserted;               // # of characters inserted at drag destination in last drag position
-	int dragDeleted;                // # of characters deleted ""
-	int dragSourceDeletePos;        // location from which move source text was removed at start of drag
-	int dragSourceInserted;         // # of chars. inserted when move source text was deleted
-	int dragSourceDeleted;          // # of chars. deleted ""
-	int dragNLines;                 // # of newlines in text being drag'd
+	TextBuffer *dragOrigBuf_;        // backup buffer copy used during block dragging of selections
+	int dragXOffset_;                // offsets between cursor location and actual insertion point in drag
+	int dragYOffset_;                // offsets between cursor location and actual insertion point in drag
+	int dragType_;                   // style of block drag operation
+	int dragInsertPos_;              // location where text being block dragged was last inserted
+	int dragRectStart_;              // rect. offset ""
+	int dragInserted_;               // # of characters inserted at drag destination in last drag position
+	int dragDeleted_;                // # of characters deleted ""
+	int dragSourceDeletePos_;        // location from which move source text was removed at start of drag
+	int dragSourceInserted_;         // # of chars. inserted when move source text was deleted
+	int dragSourceDeleted_;          // # of chars. deleted ""
+	int dragNLines_;                 // # of newlines in text being drag'd
 	
-	int anchor;                     // Anchor for drag operations
-	int rectAnchor;                 // Anchor for rectangular drag operations
-	int dragState;                  // Why is the mouse being dragged and what is being acquired
-	int multiClickState;            // How long is this multi-click sequence so far	
-	Point btnDownCoord;             // Mark the position of last btn down action for deciding when to begin paying attention to motion actions, and where to paste columns
-	Time lastBtnDown;               // Timestamp of last button down event for multi-click recognition
-	Point mouseCoord;               // Last known mouse position in drag operation (for autoscroll)
-	bool selectionOwner;            // True if widget owns the selection
-	bool motifDestOwner;            // " "            owns the motif destination
-	XtIntervalId autoScrollProcID;  // id of Xt timer proc for autoscroll
-	XtIntervalId cursorBlinkProcID; // id of timer proc for cursor blink
+	int anchor_;                     // Anchor for drag operations
+	int rectAnchor_;                 // Anchor for rectangular drag operations
+	int dragState_;                  // Why is the mouse being dragged and what is being acquired
+	int multiClickState_;            // How long is this multi-click sequence so far	
+	Point btnDownCoord_;             // Mark the position of last btn down action for deciding when to begin paying attention to motion actions, and where to paste columns
+	Time lastBtnDown_;               // Timestamp of last button down event for multi-click recognition
+	Point mouseCoord_;               // Last known mouse position in drag operation (for autoscroll)
+	bool selectionOwner_;            // True if widget owns the selection
+	bool motifDestOwner_;            // " "            owns the motif destination
+	XtIntervalId autoScrollProcID_;  // id of Xt timer proc for autoscroll
+	XtIntervalId cursorBlinkProcID_; // id of timer proc for cursor blink
 	
 private:
 	// COPY OF RESOURCE?
-	Pixel          selectFGPixel;      // Foreground select color
-	Pixel          selectBGPixel;      // Background select color
-	Pixel          highlightFGPixel;   // Highlight colors are used when flashing matching parens
-	Pixel          highlightBGPixel;
-	Pixel          lineNumFGPixel;     // Color for drawing line numbers
-	Pixel          cursorFGPixel;
-	Pixel          calltipFGPixel;
-	Pixel          calltipBGPixel;	
-	XFontStruct *  fontStruct;         // Font structure for primary font	
-	Widget         hScrollBar; 
-	Widget         vScrollBar;
-	bool           continuousWrap;     // Wrap long lines when displaying
-	int            wrapMargin;         // Margin in # of char positions for wrapping in continuousWrap mode	
-	int            emTabsBeforeCursor; // If non-zero, number of consecutive emulated tabs just entered.  Saved so chars can be deleted as a unit
+	Pixel          selectFGPixel_;      // Foreground select color
+	Pixel          selectBGPixel_;      // Background select color
+	Pixel          highlightFGPixel_;   // Highlight colors are used when flashing matching parens
+	Pixel          highlightBGPixel_;
+	Pixel          lineNumFGPixel_;     // Color for drawing line numbers
+	Pixel          cursorFGPixel_;
+	Pixel          calltipFGPixel_;
+	Pixel          calltipBGPixel_;	
+	XFontStruct *  fontStruct_;         // Font structure for primary font	
+	Widget         hScrollBar_; 
+	Widget         vScrollBar_;
+	bool           continuousWrap_;     // Wrap long lines when displaying
+	int            wrapMargin_;         // Margin in # of char positions for wrapping in continuousWrap mode	
+	int            emTabsBeforeCursor_; // If non-zero, number of consecutive emulated tabs just entered.  Saved so chars can be deleted as a unit
 };
 
 #endif
