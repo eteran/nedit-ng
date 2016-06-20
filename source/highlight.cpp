@@ -98,11 +98,21 @@ bool can_cross_line_boundaries(const ReparseContext *contextRequirements) {
 
 }
 
+
+struct ParseContext {
+	const char** string;
+	char**       styleString;
+	int          length;
+	char*        prevChar;
+	const char*  lookBehindTo;
+	const char*  match_till;
+};
+
 static HighlightData *compilePatterns(Widget dialogParent, HighlightPattern *patternSrc, int nPatterns);
 static HighlightData *patternOfStyle(HighlightData *patterns, int style);
 static PatternSet *findPatternsForWindow(Document *window, int warn);
 static StyleTableEntry *styleTableEntryOfCode(Document *window, int hCode);
-static bool parseString(HighlightData *pattern, const char **string, char **styleString, int length, char *prevChar, bool anchored, const char *delimiters, const char *lookBehindTo, const char *match_till);
+static bool parseString(HighlightData *pattern, const char **string, char **styleString, int length, char *prevChar, bool anchored, const QString &delimiters, const char *lookBehindTo, const char *match_till);
 static char getPrevChar(TextBuffer *buf, int pos);
 static int backwardOneContext(TextBuffer *buf, ReparseContext *context, int fromPos);
 static int findSafeParseRestartPos(TextBuffer *buf, WindowHighlightData *highlightData, int *pos);
@@ -216,22 +226,37 @@ void StartHighlighting(Document *window, int warn) {
 	// Prepare for a long delay, refresh display and put up a watch cursor 
 	BeginWait(window->shell_);
 	XmUpdateDisplay(window->shell_);
+	
+	
+	const int bufLength = window->buffer_->BufGetLength();
 
 	/* Parse the buffer with pass 1 patterns.  If there are none, initialize
 	   the style buffer to all UNFINISHED_STYLE to trigger parsing later */
-	auto styleString = new char[window->buffer_->BufGetLength() + 1];
+	auto styleString = new char[bufLength + 1];
 	char *stylePtr = styleString;
+	
 	if (!highlightData->pass1Patterns) {
-		for (i = 0; i < window->buffer_->BufGetLength(); i++) {
+		for (i = 0; i < bufLength; i++) {
 			*stylePtr++ = UNFINISHED_STYLE;
 		}
 	} else {
-		const char *bufString = window->buffer_->BufAsString();
-		const char *stringPtr = bufString;		
-		parseString(highlightData->pass1Patterns, &stringPtr, &stylePtr, window->buffer_->BufGetLength(), &prevChar, false, GetWindowDelimiters(window).toLatin1().data(), bufString, nullptr);
+		const char *const bufString = window->buffer_->BufAsString();
+		const char *const match_to  = bufString + bufLength;
+		const char *stringPtr = bufString;	
+			
+		parseString(
+			highlightData->pass1Patterns, 
+			&stringPtr, 
+			&stylePtr, 
+			bufLength, 
+			&prevChar, 
+			false, 
+			GetWindowDelimiters(window), 
+			bufString, 
+			match_to);
 	}
-	*stylePtr = '\0';
-	highlightData->styleBuffer->BufSetAllEx(styleString);
+	
+	highlightData->styleBuffer->BufSetAllEx(view::string_view(styleString, std::distance(styleString, stylePtr)));
 	delete [] styleString;
 
 	// install highlight pattern data in the window data structure 
@@ -1204,6 +1229,7 @@ static void handleUnparsedRegion(const Document *window, TextBuffer *styleBuf, c
 	std::string str       = buf->BufGetRangeEx(beginSafety, endSafety);
 	char *string          = &str[0];
 	const char *stringPtr = &str[0];
+	char *const match_to  = string + str.size();
 	
 	
 	std::string styleStr  = styleBuf->BufGetRangeEx(beginSafety, endSafety);
@@ -1212,7 +1238,17 @@ static void handleUnparsedRegion(const Document *window, TextBuffer *styleBuf, c
 
 	// Parse it with pass 2 patterns 
 	prevChar = getPrevChar(buf, beginSafety);
-	parseString(pass2Patterns, &stringPtr, &stylePtr, endParse - beginSafety, &prevChar, false, GetWindowDelimiters(window).toLatin1().data(), string, nullptr);
+
+	parseString(
+		pass2Patterns,
+		&stringPtr,
+		&stylePtr, 
+		endParse - beginSafety, 
+		&prevChar, 
+		false, 
+		GetWindowDelimiters(window),
+		string, 
+		match_to);
 
 	/* Update the style buffer the new style information, but only between
 	   beginParse and endParse.  Skip the safety region */
@@ -1362,8 +1398,9 @@ static int parseBufferRange(HighlightData *pass1Patterns, HighlightData *pass2Pa
 	std::string str      = buf->BufGetRangeEx(beginSafety, endSafety);
 	std::string styleStr = styleBuf->BufGetRangeEx(beginSafety, endSafety);
 	
-	char *string      = &str[0];
-	char *styleString = &styleStr[0];
+	char *const string      = &str[0];
+	char *const styleString = &styleStr[0];
+	char *const match_to    = string + str.size();
 
 	// Parse it with pass 1 patterns 
 	// printf("parsing from %d thru %d\n", beginSafety, endSafety); 
@@ -1371,7 +1408,16 @@ static int parseBufferRange(HighlightData *pass1Patterns, HighlightData *pass2Pa
 	const char *stringPtr = &string[beginParse - beginSafety];
 	char *stylePtr        = &styleString[beginParse - beginSafety];
 	
-	parseString(pass1Patterns, &stringPtr, &stylePtr, endParse - beginParse, &prevChar, false, delimiters, string, nullptr);
+	parseString(
+		pass1Patterns, 
+		&stringPtr, 
+		&stylePtr, 
+		endParse - beginParse, 
+		&prevChar, 
+		false, 
+		QLatin1String(delimiters),
+		string, 
+		match_to);
 
 	// On non top-level patterns, parsing can end early 
 	endParse = std::min<int>(endParse, stringPtr - string + beginSafety);
@@ -1386,8 +1432,9 @@ static int parseBufferRange(HighlightData *pass1Patterns, HighlightData *pass2Pa
 	if (styleBuf->primary_.selected) {
 		modStart = styleBuf->primary_.start;
 		modEnd = styleBuf->primary_.end;
-	} else
+	} else {
 		modStart = modEnd = 0;
+	}
 
 	/* Re-parse the areas before the modification with pass 2 patterns, from
 	   beginSafety to far enough beyond modStart to gurantee that parsing at
@@ -1400,13 +1447,17 @@ static int parseBufferRange(HighlightData *pass1Patterns, HighlightData *pass2Pa
 	if (beginSafety < modStart) {
 		if (endSafety > modStart) {
 			endPass2Safety = forwardOneContext(buf, contextRequirements, modStart);
-			if (endPass2Safety + PASS_2_REPARSE_CHUNK_SIZE >= modEnd)
+			if (endPass2Safety + PASS_2_REPARSE_CHUNK_SIZE >= modEnd) {
 				endPass2Safety = endSafety;
-		} else
+			}
+		} else {
 			endPass2Safety = endSafety;
+		}
+			
 		prevChar = getPrevChar(buf, beginSafety);
+
 		if (endPass2Safety == endSafety) {
-			passTwoParseString(pass2Patterns, string, styleString, endParse - beginSafety, &prevChar, delimiters, string, nullptr);
+			passTwoParseString(pass2Patterns, string, styleString, endParse - beginSafety, &prevChar, delimiters, string, match_to);
 			goto parseDone;
 		} else {
 		
@@ -1416,7 +1467,7 @@ static int parseBufferRange(HighlightData *pass1Patterns, HighlightData *pass2Pa
 		
 			const int tempLen = endPass2Safety - modStart;			
 			std::string temp(&styleString[modStart - beginSafety], tempLen);
-			passTwoParseString(pass2Patterns, string, styleString, modStart - beginSafety, &prevChar, delimiters, string, nullptr);
+			passTwoParseString(pass2Patterns, string, styleString, modStart - beginSafety, &prevChar, delimiters, string, match_to);
 			strncpy(&styleString[modStart - beginSafety], temp.c_str(), tempLen);
 		}
 	}
@@ -1427,7 +1478,7 @@ static int parseBufferRange(HighlightData *pass1Patterns, HighlightData *pass2Pa
 	if (endParse > modEnd) {
 		if (beginSafety > modEnd) {
 			prevChar = getPrevChar(buf, beginSafety);
-			passTwoParseString(pass2Patterns, string, styleString, endParse - beginSafety, &prevChar, delimiters, string, nullptr);
+			passTwoParseString(pass2Patterns, string, styleString, endParse - beginSafety, &prevChar, delimiters, string, match_to);
 		} else {
 			startPass2Safety = std::max<int>(beginSafety, backwardOneContext(buf, contextRequirements, modEnd));
 
@@ -1438,7 +1489,7 @@ static int parseBufferRange(HighlightData *pass1Patterns, HighlightData *pass2Pa
 			const int tempLen = modEnd - startPass2Safety;			
 			std::string temp(&styleString[startPass2Safety - beginSafety], tempLen);
 			prevChar = getPrevChar(buf, startPass2Safety);
-			passTwoParseString(pass2Patterns, &string[startPass2Safety - beginSafety], &styleString[startPass2Safety - beginSafety], endParse - startPass2Safety, &prevChar, delimiters, string, nullptr);
+			passTwoParseString(pass2Patterns, &string[startPass2Safety - beginSafety], &styleString[startPass2Safety - beginSafety], endParse - startPass2Safety, &prevChar, delimiters, string, match_to);
 			strncpy(&styleString[startPass2Safety - beginSafety], temp.c_str(), tempLen);
 		}
 	}
@@ -1476,7 +1527,7 @@ parseDone:
 ** the error pattern matched, if the end of the string was reached without
 ** matching the end expression, or in the unlikely event of an internal error.
 */
-static bool parseString(HighlightData *pattern, const char **string, char **styleString, int length, char *prevChar, bool anchored, const char *delimiters, const char *lookBehindTo, const char *match_till) {
+static bool parseString(HighlightData *pattern, const char **string, char **styleString, int length, char *prevChar, bool anchored, const QString &delimiters, const char *lookBehindTo, const char *match_till) {
 
 	bool subExecuted;
 	int *subExpr;
@@ -1490,8 +1541,8 @@ static bool parseString(HighlightData *pattern, const char **string, char **styl
 
 	const char *stringPtr = *string;
 	char *stylePtr        = *styleString;
-
-	while (pattern->subPatternRE->ExecRE(stringPtr, anchored ? *string + 1 : *string + length + 1, false, *prevChar, succChar, delimiters, lookBehindTo, match_till)) {
+	
+	while (pattern->subPatternRE->ExecRE(stringPtr, anchored ? *string + 1 : *string + length + 1, false, *prevChar, succChar, delimiters.toLatin1().data(), lookBehindTo, match_till)) {
 	
 		/* Beware of the case where only one real branch exists, but that
 		   branch has sub-branches itself. In that case the top_branch refers
@@ -1518,7 +1569,7 @@ static bool parseString(HighlightData *pattern, const char **string, char **styl
 					subPat = pattern->subPatterns[i];
 					if (subPat->colorOnly) {
 						if (!subExecuted) {
-							if (!pattern->endRE->ExecRE(savedStartPtr, savedStartPtr + 1, false, savedPrevChar, succChar, delimiters, lookBehindTo, match_till)) {
+							if (!pattern->endRE->ExecRE(savedStartPtr, savedStartPtr + 1, false, savedPrevChar, succChar, delimiters.toLatin1().data(), lookBehindTo, match_till)) {
 								fprintf(stderr, "Internal error, failed to recover end match in parseString\n");
 								return false;
 							}
@@ -1579,7 +1630,17 @@ static bool parseString(HighlightData *pattern, const char **string, char **styl
 				                subPat->style, prevChar);
 
 			// Parse to the end of the subPattern 
-			parseString(subPat, &stringPtr, &stylePtr, length - (stringPtr - *string), prevChar, false, delimiters, lookBehindTo, match_till);
+			parseString(
+				subPat, 
+				&stringPtr, 
+				&stylePtr, 
+				length - (stringPtr - *string), 
+				prevChar, 
+				false, 
+				delimiters, 
+				lookBehindTo, 
+				match_till);
+				
 		} else {
 			/* If the parent pattern is not a start/end pattern, the
 			   sub-pattern can between the boundaries of the parent's
@@ -1588,7 +1649,16 @@ static bool parseString(HighlightData *pattern, const char **string, char **styl
 			   Without that restriction, matching becomes unstable. */
 
 			// Parse to the end of the subPattern 
-			parseString(subPat, &stringPtr, &stylePtr, pattern->subPatternRE->endp[0] - stringPtr, prevChar, false, delimiters, lookBehindTo, pattern->subPatternRE->endp[0]);
+			parseString(
+				subPat, 
+				&stringPtr, 
+				&stylePtr, 
+				pattern->subPatternRE->endp[0] - stringPtr, 
+				prevChar, 
+				false, 
+				delimiters, 
+				lookBehindTo, 
+				pattern->subPatternRE->endp[0]);
 		}
 
 		/* If the sub-pattern has color-only sub-sub-patterns, add color
@@ -1598,7 +1668,7 @@ static bool parseString(HighlightData *pattern, const char **string, char **styl
 			subSubPat = subPat->subPatterns[i];
 			if (subSubPat->colorOnly) {
 				if (!subExecuted) {
-					if (!subPat->startRE->ExecRE(savedStartPtr, savedStartPtr + 1, false, savedPrevChar, succChar, delimiters, lookBehindTo, match_till)) {
+					if (!subPat->startRE->ExecRE(savedStartPtr, savedStartPtr + 1, false, savedPrevChar, succChar, delimiters.toLatin1().data(), lookBehindTo, match_till)) {
 						fprintf(stderr, "Internal error, failed to recover "
 						                "start match in parseString\n");
 						return false;
@@ -1667,7 +1737,19 @@ static void passTwoParseString(HighlightData *pattern, char *string, char *style
 			temp = *parseEnd;
 			*parseEnd = '\0';
 			// printf("pass2 parsing %d chars\n", strlen(stringPtr)); 
-			parseString(pattern, &stringPtr, &stylePtr, std::min<int>(parseEnd - parseStart, length - (parseStart - string)), prevChar, false, delimiters, lookBehindTo, match_till);
+			
+			parseString(
+				pattern, 
+				&stringPtr, 
+				&stylePtr, 
+				std::min<int>(parseEnd - parseStart, 
+				length - (parseStart - string)), 
+				prevChar, 
+				false, 
+				QLatin1String(delimiters),
+				lookBehindTo, 
+				match_till);
+				
 			*parseEnd = temp;
 			inParseRegion = false;
 		}
