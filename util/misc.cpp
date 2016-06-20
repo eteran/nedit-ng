@@ -1468,16 +1468,16 @@ int SpinClipboardRetrieve(Display *display, Window window, char *format_name, Xt
 	int i, res;
 	for (i = 0; i < SPINCOUNT; ++i) {
 		res = XmClipboardRetrieve(display, window, format_name, buffer, length, num_bytes, private_id);
-		if (res == XmClipboardSuccess) {
+		switch(res) {
+		case XmClipboardSuccess:
 			return res;
-		}
-		if (res == XmClipboardTruncate) {
+		case XmClipboardTruncate:
 			warning("XmClipboardRetrieve() failed: buffer too small.");
+			return res;		
+		case XmClipboardNoData:
 			return res;
 		}
-		if (res == XmClipboardNoData) {
-			return res;
-		}
+
 		microsleep(USLEEPTIME);
 	}
 	warning("XmClipboardRetrieve() failed: clipboard locked.");
