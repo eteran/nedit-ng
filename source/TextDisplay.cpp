@@ -3992,17 +3992,18 @@ void TextDisplay::TextDSetupBGClasses(Widget w, XmString str, Pixel **pp_bgClass
 	/* when we get here, we've set up our class table and class-to-pixel table
 	   in local variables: now put them into the "real thing" */
 	class_no++; // bigger than all valid class_nos
-	*pp_bgClass      = new uint8_t[256];
-	*pp_bgClassPixel = new Pixel[class_no];
 
-	if (!*pp_bgClass || !*pp_bgClassPixel) {
+	try {
+		*pp_bgClass      = new uint8_t[256];
+		*pp_bgClassPixel = new Pixel[class_no];
+	
+		std::copy_n(bgClass, 256, *pp_bgClass);
+		std::copy_n(bgClassPixel, class_no, *pp_bgClassPixel);
+
+	} catch(const std::bad_alloc &) {
 		delete [] *pp_bgClass;
-		delete [] *pp_bgClassPixel;
-		return;
+		delete [] *pp_bgClassPixel;	
 	}
-
-	std::copy_n(bgClass, 256, *pp_bgClass);
-	std::copy_n(bgClassPixel, class_no, *pp_bgClassPixel);
 }
 
 /*
