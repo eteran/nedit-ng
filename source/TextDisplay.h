@@ -378,6 +378,9 @@ public:
 public:
 	int spanBackward(TextBuffer *buf, int startPos, const char *searchChars, int ignoreSpace, int *foundPos);
 	int spanForward(TextBuffer *buf, int startPos, const char *searchChars, int ignoreSpace, int *foundPos);
+	void TextDSetupBGClassesEx(Widget w, XmString str);
+	
+public:
 	static void TextDSetupBGClasses(Widget w, XmString str, Pixel **pp_bgClassPixel, uint8_t **pp_bgClass, Pixel bgPixelDefault);
 	static void cursorBlinkTimerProc(XtPointer clientData, XtIntervalId *id);
 	static void handleHidePointer(Widget w, XtPointer unused, XEvent *event, Boolean *continue_to_dispatch);
@@ -402,16 +405,14 @@ public:
 	int            wrapMargin;         // Margin in # of char positions for wrapping in continuousWrap mode	
 	int            emTabsBeforeCursor; // If non-zero, number of consecutive emulated tabs just entered.  Saved so chars can be deleted as a unit		
 
-public:
-	Pixel fgPixel;                               // Foreground color
-	Pixel bgPixel;                               // Background color	
-	Pixel *bgClassPixel;                         // table of colors for each BG class
-	uint8_t *bgClass;                            // obtains index into bgClassPixel[]
-	
 private:
 	Widget w; // TextWidget
 	Widget calltipW;                             // The Label widget for the calltip
-	Widget calltipShell;                         // The Shell that holds the calltip		
+	Widget calltipShell;                         // The Shell that holds the calltip
+	Pixel fgPixel;                               // Foreground color
+	Pixel bgPixel;                               // Background color	
+	Pixel *bgClassPixel;                         // table of colors for each BG class
+	uint8_t *bgClass;                            // obtains index into bgClassPixel[]		
 	Rect rect;
 	int lineNumLeft;
 	int lineNumWidth;

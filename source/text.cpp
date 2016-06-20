@@ -904,7 +904,7 @@ static Boolean setValues(Widget current, Widget request, Widget new_widget, ArgL
 
 	// did the backlight change?
 	if (newText.P_backlightCharTypes != curText.P_backlightCharTypes) {
-		TextDisplay::TextDSetupBGClasses((Widget)new_widget, newText.P_backlightCharTypes, &newD->bgClassPixel, &newD->bgClass, newD->bgPixel);
+		newD->TextDSetupBGClassesEx((Widget)new_widget, newText.P_backlightCharTypes);
 		redraw = true;
 	}
 

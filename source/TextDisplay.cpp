@@ -3906,7 +3906,12 @@ Pixel TextDisplay::getRangesetColor(int ind, Pixel bground) {
 ** there'll be a pressing need. I suppose the scanning of the specification
 ** could be better too, but then, who cares!
 */
+void TextDisplay::TextDSetupBGClassesEx(Widget w, XmString str) {
+	TextDSetupBGClasses(w, str, &bgClassPixel, &bgClass, bgPixel);
+}
+
 void TextDisplay::TextDSetupBGClasses(Widget w, XmString str, Pixel **pp_bgClassPixel, uint8_t **pp_bgClass, Pixel bgPixelDefault) {
+
 	uint8_t bgClass[256];
 	Pixel bgClassPixel[256];
 	int class_no = 0;
