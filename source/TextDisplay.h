@@ -204,6 +204,7 @@ public:
 	Pixel foregroundPixel() const;
 	Rect getRect() const;
 	TextBuffer *getStyleBuffer() const;
+	XFontStruct *TextDGetFont() const;
 	XtIntervalId getCursorBlinkProcID() const;
 	int fontAscent() const;
 	int fontDescent() const;
@@ -215,6 +216,12 @@ public:
 	int getLineNumWidth() const;
 	void setModifyingTabDist(int tabDist);
 	void setStyleBuffer(TextBuffer *buffer);
+	Pixel getSelectFGPixel() const;
+	Pixel getSelectBGPixel() const;
+	Pixel getHighlightFGPixel() const;
+	Pixel getHighlightBGPixel() const;
+	Pixel getLineNumFGPixel() const;
+	Pixel getCursorFGPixel() const;
 	
 public:
 	int TextDShowCalltip(view::string_view text, bool anchored, int pos, int hAlign, int vAlign, int alignMode);
@@ -388,23 +395,6 @@ public:
 	static Bool findGraphicsExposeOrNoExposeEvent(Display *theDisplay, XEvent *event, XPointer arg);
 	static bool offscreenV(XWindowAttributes *screenAttr, int top, int height);
 
-public:
-	// COPY OF RESOURCE?
-	Pixel          selectFGPixel;      // Foreground select color
-	Pixel          selectBGPixel;      // Background select color
-	Pixel          highlightFGPixel;   // Highlight colors are used when flashing matching parens
-	Pixel          highlightBGPixel;
-	Pixel          lineNumFGPixel;     // Color for drawing line numbers
-	Pixel          cursorFGPixel;
-	Pixel          calltipFGPixel;
-	Pixel          calltipBGPixel;	
-	XFontStruct *  fontStruct;         // Font structure for primary font	
-	Widget         hScrollBar; 
-	Widget         vScrollBar;
-	bool           continuousWrap;     // Wrap long lines when displaying
-	int            wrapMargin;         // Margin in # of char positions for wrapping in continuousWrap mode	
-	int            emTabsBeforeCursor; // If non-zero, number of consecutive emulated tabs just entered.  Saved so chars can be deleted as a unit		
-
 private:
 	Widget w; // TextWidget
 	Widget calltipW;                             // The Label widget for the calltip
@@ -488,7 +478,24 @@ private:
 	bool selectionOwner;            // True if widget owns the selection
 	bool motifDestOwner;            // " "            owns the motif destination
 	XtIntervalId autoScrollProcID;  // id of Xt timer proc for autoscroll
-	XtIntervalId cursorBlinkProcID; // id of timer proc for cursor blink	
+	XtIntervalId cursorBlinkProcID; // id of timer proc for cursor blink
+	
+private:
+	// COPY OF RESOURCE?
+	Pixel          selectFGPixel;      // Foreground select color
+	Pixel          selectBGPixel;      // Background select color
+	Pixel          highlightFGPixel;   // Highlight colors are used when flashing matching parens
+	Pixel          highlightBGPixel;
+	Pixel          lineNumFGPixel;     // Color for drawing line numbers
+	Pixel          cursorFGPixel;
+	Pixel          calltipFGPixel;
+	Pixel          calltipBGPixel;	
+	XFontStruct *  fontStruct;         // Font structure for primary font	
+	Widget         hScrollBar; 
+	Widget         vScrollBar;
+	bool           continuousWrap;     // Wrap long lines when displaying
+	int            wrapMargin;         // Margin in # of char positions for wrapping in continuousWrap mode	
+	int            emTabsBeforeCursor; // If non-zero, number of consecutive emulated tabs just entered.  Saved so chars can be deleted as a unit
 };
 
 #endif

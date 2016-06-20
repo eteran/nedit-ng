@@ -503,7 +503,15 @@ void cloneTextPanes(Document *window, Document *orgWin) {
 			// Fix up the colors 
 			auto newTextD = textD_of(text);
 			XtVaSetValues(text, XmNforeground, textD->foregroundPixel(), XmNbackground, textD->backgroundPixel(), nullptr);
-			newTextD->TextDSetColors(textD->foregroundPixel(), textD->backgroundPixel(), textD->selectFGPixel, textD->selectBGPixel, textD->highlightFGPixel, textD->highlightBGPixel, textD->lineNumFGPixel, textD->cursorFGPixel);
+			newTextD->TextDSetColors(
+				textD->foregroundPixel(), 
+				textD->backgroundPixel(), 
+				textD->getSelectFGPixel(), 
+				textD->getSelectBGPixel(), 
+				textD->getHighlightFGPixel(), 
+				textD->getHighlightBGPixel(), 
+				textD->getLineNumFGPixel(), 
+				textD->getCursorFGPixel());
 		}
 
 		// Set the minimum pane height in the new pane 
@@ -2926,7 +2934,16 @@ void Document::SplitPane() {
 	textD = textD_of(textArea_);
 	newTextD = textD_of(text);
 	XtVaSetValues(text, XmNforeground, textD->foregroundPixel(), XmNbackground, textD->backgroundPixel(), nullptr);
-	newTextD->TextDSetColors(textD->foregroundPixel(), textD->backgroundPixel(), textD->selectFGPixel, textD->selectBGPixel, textD->highlightFGPixel, textD->highlightBGPixel, textD->lineNumFGPixel, textD->cursorFGPixel);
+
+	newTextD->TextDSetColors(
+		textD->foregroundPixel(), 
+		textD->backgroundPixel(), 
+		textD->getSelectFGPixel(), 
+		textD->getSelectBGPixel(), 
+		textD->getHighlightFGPixel(), 
+		textD->getHighlightBGPixel(), 
+		textD->getLineNumFGPixel(), 
+		textD->getCursorFGPixel());
 
 	// Set the minimum pane height in the new pane 
 	UpdateMinPaneHeights();

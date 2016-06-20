@@ -8615,3 +8615,31 @@ void TextDisplay::selectNotifyTimerProcEx(XtPointer clientData, XtIntervalId *id
 	XtFree(cbInfo->actionText);
 	delete cbInfo;
 }
+
+Pixel TextDisplay::getSelectFGPixel() const {
+	return this->selectFGPixel;
+}
+
+Pixel TextDisplay::getSelectBGPixel() const {
+	return this->selectBGPixel;
+}
+
+Pixel TextDisplay::getHighlightFGPixel() const {
+	return this->highlightFGPixel;
+}
+
+Pixel TextDisplay::getHighlightBGPixel() const {
+	return this->highlightBGPixel;
+}
+
+Pixel TextDisplay::getLineNumFGPixel() const {
+	return this->lineNumFGPixel;
+}
+
+Pixel TextDisplay::getCursorFGPixel() const {
+	return this->cursorFGPixel;
+}
+
+XFontStruct *TextDisplay::TextDGetFont() const {
+	return this->fontStruct;
+}

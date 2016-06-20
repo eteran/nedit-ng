@@ -932,7 +932,9 @@ static XtGeometryResult queryGeometry(Widget w, XtWidgetGeometry *proposed, XtWi
 
 	int curHeight    = tw->core.height;
 	int curWidth     = tw->core.width;
-	XFontStruct *fs  = textD_of(tw)->fontStruct;
+	
+	XFontStruct *fs  = textD_of(tw)->TextDGetFont();
+	
 	int fontWidth    = fs->max_bounds.width;
 	int fontHeight   = fs->ascent + fs->descent;
 	int marginHeight = text_of(tw).P_marginHeight;
