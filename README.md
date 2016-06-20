@@ -49,6 +49,12 @@ knowlege.
   using Qt, short of making a completely custom menu system.
 * NEdit has several points of customization which are controlled by XResource
   files. I intend to create a new dialog for these "advanced" options.
+* Secondary selection stuff. NEdit (apparently) has some features involing 
+  X11's secondary selection system. I honestly had no idea these existed before
+  starting this project. And it seems that secondary selections are not a 
+  terribly popular concept. Qt has no first class support for this. So I am a 
+  bit torn about how much effort should be put into trying to reproduce these 
+  features manually.
 
 Version 1.0's goal is to be a nearly 1:1 port of the original NEdit. Once that 
 is complete some post 1.0 goals are already planned:

@@ -2388,7 +2388,7 @@ void Document::ShowLineNumbers(bool state) {
 
 	/* line numbers panel is shell-level, hence other
 	   tabbed documents in the this should synch */
-	for (auto it = WindowList.begin(); it != WindowList.end();) {
+	for (auto it = WindowList.begin(); it != WindowList.end(); ++it) {
 		Document *const win = *it;
 		
 		if (win->shell_ != shell_ || win == this) {

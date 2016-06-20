@@ -2309,11 +2309,13 @@ void TextDisplay::clearRect(GC gc, int x, int y, int width, int height) {
 	if (width == 0 || XtWindow(w_) == 0) {
 		return;
 	}
+	
+	Display *display = XtDisplay(w_);
 
 	if (gc == gc_) {
-		XClearArea(XtDisplay(w_), XtWindow(w_), x, y, width, height, false);
+		XClearArea(display, XtWindow(w_), x, y, width, height, false);
 	} else {
-		XFillRectangle(XtDisplay(w_), XtWindow(w_), gc, x, y, width, height);
+		XFillRectangle(display, XtWindow(w_), gc, x, y, width, height);
 	}
 }
 
@@ -3111,20 +3113,21 @@ void TextDisplay::redrawLineNumbers(int clearAll) {
 
 	// Erase the previous contents of the line number area, if requested
 	if (clearAll)
-		XClearArea(XtDisplay(w_), XtWindow(w_), lineNumLeft_, rect_.top, lineNumWidth_, rect_.height, false);
+		XClearArea(display, XtWindow(w_), lineNumLeft_, rect_.top, lineNumWidth_, rect_.height, false);
 
 	// Draw the line numbers, aligned to the text
 	nCols = std::min(11, lineNumWidth_ / charWidth);
 	y = rect_.top;
-	line = absTopLineNum_;
+	line = getAbsTopLineNum();
 	for (visLine = 0; visLine < nVisibleLines_; visLine++) {
+	
 		int lineStart = lineStarts_[visLine];
 		if (lineStart != -1 && (lineStart == 0 || buffer_->BufGetCharacter(lineStart - 1) == '\n')) {
 			sprintf(lineNumString, "%*d", nCols, line);
-			XDrawImageString(XtDisplay(w_), XtWindow(w_), lineNumGC_, lineNumLeft_, y + ascent_, lineNumString, strlen(lineNumString));
+			XDrawImageString(display, XtWindow(w_), lineNumGC_, lineNumLeft_, y + ascent_, lineNumString, strlen(lineNumString));
 			line++;
 		} else {
-			XClearArea(XtDisplay(w_), XtWindow(w_), lineNumLeft_, y, lineNumWidth_, ascent_ + descent_, false);
+			XClearArea(display, XtWindow(w_), lineNumLeft_, y, lineNumWidth_, ascent_ + descent_, false);
 			if (visLine == 0)
 				line++;
 		}
@@ -7549,6 +7552,8 @@ void TextDisplay::secondaryOrDragStartAP(XEvent *event, String *args, Cardinal *
 }
 
 void TextDisplay::secondaryAdjustAP(XEvent *event, String *args, Cardinal *nArgs) {
+	
+	printf("[secondaryAdjustAP]\n");
 	
 	XMotionEvent *e = &event->xmotion;
 	int dragState = dragState_;
