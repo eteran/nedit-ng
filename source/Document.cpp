@@ -3396,10 +3396,6 @@ Document::Document(const QString &name, char *geometry, bool iconic) {
 
 	shell_ = CreateWidget(TheAppShell, "textShell", topLevelShellWidgetClass, al, ac);
 
-#ifdef EDITRES
-	XtAddEventHandler(shell_, (EventMask)0, true, (XtEventHandler)_XEditResCheckMessages, nullptr);
-#endif
-
 	addWindowIcon(shell_);
 	
 	/* Create a MainWindow to manage the menubar and text area, set the

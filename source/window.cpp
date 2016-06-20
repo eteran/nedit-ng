@@ -94,10 +94,6 @@
 #include <Xm/Frame.h>
 #include <Xm/CascadeB.h>
 
-#ifdef EDITRES
-#include <X11/Xmu/Editres.h>
-#endif
-
 static void saveYourselfCB(Widget w, XtPointer clientData, XtPointer callData);
 
 
