@@ -331,62 +331,7 @@ void getSelectionCB(Widget w, XtPointer clientData, Atom *selType, Atom *type, X
 ** the clean up if the selectionNotify event never arrived.)
 */
 void selectNotifyEH(Widget w, XtPointer data, XEvent *event, Boolean *continueDispatch) {
-
-	(void)continueDispatch;
-
-	auto buf    = textD_of(w)->TextGetBuffer();
-	auto e      = reinterpret_cast<XSelectionEvent *>(event);
-	auto cbInfo = static_cast<selectNotifyInfo *>(data);
-	int selStart, selEnd;
-
-	/* Check if this was the selection request for which this handler was
-	   set up, if not, do nothing */
-	if (event->type != SelectionNotify || e->time != cbInfo->timeStamp)
-		return;
-
-	/* The time stamp matched, remove this event handler and its
-	   backup timer procedure */
-	XtRemoveEventHandler(w, 0, true, selectNotifyEH, data);
-	XtRemoveTimeOut(cbInfo->timeoutProcID);
-
-	/* Check if the request succeeded, if not, beep, remove any existing
-	   secondary selection, and return */
-	if (e->property == None) {
-		QApplication::beep();
-		buf->BufSecondaryUnselect();
-		XtDisownSelection(w, XA_SECONDARY, e->time);
-		XtFree(cbInfo->actionText);
-		delete cbInfo;
-		return;
-	}
-
-	/* Do the requested action, if the action is exchange, also clean up
-	   the properties created for returning the primary selection and making
-	   the MULTIPLE target request */
-	if (cbInfo->action == REMOVE_SECONDARY) {
-		buf->BufRemoveSecSelect();
-	} else if (cbInfo->action == EXCHANGE_SECONDARY) {
-		std::string string(cbInfo->actionText, cbInfo->length);
-
-		selStart = buf->secondary_.start;
-		if (buf->BufSubstituteNullCharsEx(string)) {
-			buf->BufReplaceSecSelectEx(string);
-			if (buf->secondary_.rectangular) {
-				/*... it would be nice to re-select, but probably impossible */
-				textD_of(w)->TextDSetInsertPosition(buf->cursorPosHint_);
-			} else {
-				selEnd = selStart + cbInfo->length;
-				buf->BufSelect(selStart, selEnd);
-				textD_of(w)->TextDSetInsertPosition(selEnd);
-			}
-		} else {
-			fprintf(stderr, "Too much binary data\n");
-		}
-	}
-	buf->BufSecondaryUnselect();
-	XtDisownSelection(w, XA_SECONDARY, e->time);
-	XtFree(cbInfo->actionText);
-	delete cbInfo;
+	textD_of(w)->selectNotifyEHEx(data, event, continueDispatch);
 }
 
 /*
@@ -395,18 +340,8 @@ void selectNotifyEH(Widget w, XtPointer data, XEvent *event, Boolean *continueDi
 ** notify event for a convert selection request
 */
 void selectNotifyTimerProc(XtPointer clientData, XtIntervalId *id) {
-
-	(void)id;
-
 	auto cbInfo = static_cast<selectNotifyInfo *>(clientData);
-	TextBuffer *buf = textD_of(cbInfo->widget)->TextGetBuffer();
-
-	fprintf(stderr, "NEdit: timeout on selection request\n");
-	XtRemoveEventHandler(cbInfo->widget, 0, true, selectNotifyEH, cbInfo);
-	buf->BufSecondaryUnselect();
-	XtDisownSelection(cbInfo->widget, XA_SECONDARY, cbInfo->timeStamp);
-	XtFree(cbInfo->actionText);
-	delete cbInfo;
+	textD_of(cbInfo->widget)->selectNotifyTimerProcEx(clientData, id);
 }
 
 /*
@@ -7708,10 +7643,8 @@ void TextDisplay::autoScrollTimerProcEx(XtPointer clientData, XtIntervalId *id) 
 
 
 static void autoScrollTimerProc(XtPointer clientData, XtIntervalId *id) {
-
 	TextWidget w = static_cast<TextWidget>(clientData);
 	textD_of(w)->autoScrollTimerProcEx(clientData, id);
-
 }
 
 /*
@@ -8593,4 +8526,86 @@ int TextDisplay::TextDGetCalltipID(int calltipID) {
 			return 0;
 		}
 	}
+}
+
+/*
+** Event handler for SelectionNotify events, to finish off INSERT_SELECTION
+** requests which must be done through the lower
+** level (and more complicated) XLib selection mechanism.  Matches the
+** time stamp in the request against the time stamp stored when the selection
+** request was made to find the selectionNotify event that it was installed
+** to catch.  When it finds the correct event, it does the action it was
+** installed to do, and removes itself and its backup timer (which would do
+** the clean up if the selectionNotify event never arrived.)
+*/
+void TextDisplay::selectNotifyEHEx(XtPointer data, XEvent *event, Boolean *continueDispatch) {
+	(void)continueDispatch;
+
+	auto buf    = this->TextGetBuffer();
+	auto e      = reinterpret_cast<XSelectionEvent *>(event);
+	auto cbInfo = static_cast<selectNotifyInfo *>(data);
+	int selStart, selEnd;
+
+	/* Check if this was the selection request for which this handler was
+	   set up, if not, do nothing */
+	if (event->type != SelectionNotify || e->time != cbInfo->timeStamp)
+		return;
+
+	/* The time stamp matched, remove this event handler and its
+	   backup timer procedure */
+	XtRemoveEventHandler(w, 0, true, selectNotifyEH, data);
+	XtRemoveTimeOut(cbInfo->timeoutProcID);
+
+	/* Check if the request succeeded, if not, beep, remove any existing
+	   secondary selection, and return */
+	if (e->property == None) {
+		QApplication::beep();
+		buf->BufSecondaryUnselect();
+		XtDisownSelection(w, XA_SECONDARY, e->time);
+		XtFree(cbInfo->actionText);
+		delete cbInfo;
+		return;
+	}
+
+	/* Do the requested action, if the action is exchange, also clean up
+	   the properties created for returning the primary selection and making
+	   the MULTIPLE target request */
+	if (cbInfo->action == REMOVE_SECONDARY) {
+		buf->BufRemoveSecSelect();
+	} else if (cbInfo->action == EXCHANGE_SECONDARY) {
+		std::string string(cbInfo->actionText, cbInfo->length);
+
+		selStart = buf->secondary_.start;
+		if (buf->BufSubstituteNullCharsEx(string)) {
+			buf->BufReplaceSecSelectEx(string);
+			if (buf->secondary_.rectangular) {
+				/*... it would be nice to re-select, but probably impossible */
+				this->TextDSetInsertPosition(buf->cursorPosHint_);
+			} else {
+				selEnd = selStart + cbInfo->length;
+				buf->BufSelect(selStart, selEnd);
+				this->TextDSetInsertPosition(selEnd);
+			}
+		} else {
+			fprintf(stderr, "Too much binary data\n");
+		}
+	}
+	buf->BufSecondaryUnselect();
+	XtDisownSelection(w, XA_SECONDARY, e->time);
+	XtFree(cbInfo->actionText);
+	delete cbInfo;
+}
+
+void TextDisplay::selectNotifyTimerProcEx(XtPointer clientData, XtIntervalId *id) {
+	(void)id;
+
+	auto cbInfo = static_cast<selectNotifyInfo *>(clientData);
+	TextBuffer *buf = this->TextGetBuffer();
+
+	fprintf(stderr, "NEdit: timeout on selection request\n");
+	XtRemoveEventHandler(cbInfo->widget, 0, true, selectNotifyEH, cbInfo);
+	buf->BufSecondaryUnselect();
+	XtDisownSelection(cbInfo->widget, XA_SECONDARY, cbInfo->timeStamp);
+	XtFree(cbInfo->actionText);
+	delete cbInfo;
 }

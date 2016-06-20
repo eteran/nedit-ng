@@ -266,6 +266,8 @@ private:
 
 public:
 	// Callbacks
+	void selectNotifyTimerProcEx(XtPointer clientData, XtIntervalId *id);
+	void selectNotifyEHEx(XtPointer data, XEvent *event, Boolean *continueDispatch);
 	Boolean convertMotifDestCallback(Atom *selType, Atom *target, Atom *type, XtPointer *value, unsigned long *length, int *format);
 	Boolean convertSecondaryCallback(Atom *selType, Atom *target, Atom *type, XtPointer *value, unsigned long *length, int *format);
 	void getExchSelCallback(XtPointer clientData, Atom *selType, Atom *type, XtPointer value, unsigned long *length, int *format);
