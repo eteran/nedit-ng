@@ -403,15 +403,15 @@ public:
 	int            emTabsBeforeCursor; // If non-zero, number of consecutive emulated tabs just entered.  Saved so chars can be deleted as a unit		
 
 public:
-	Widget w; // TextWidget
-	Widget calltipW;                             // The Label widget for the calltip
-	Widget calltipShell;                         // The Shell that holds the calltip	
 	Pixel fgPixel;                               // Foreground color
 	Pixel bgPixel;                               // Background color	
 	Pixel *bgClassPixel;                         // table of colors for each BG class
 	uint8_t *bgClass;                            // obtains index into bgClassPixel[]
 	
 private:
+	Widget w; // TextWidget
+	Widget calltipW;                             // The Label widget for the calltip
+	Widget calltipShell;                         // The Shell that holds the calltip		
 	Rect rect;
 	int lineNumLeft;
 	int lineNumWidth;
