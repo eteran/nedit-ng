@@ -2557,7 +2557,19 @@ static bool Recursion_Limit_Exceeded; // Recursion limit exceeded flag
 
 
 bool AT_END_OF_STRING(const char *ptr) {
-	return (*ptr == '\0' || (End_Of_String != nullptr && ptr >= End_Of_String));
+
+	if(End_Of_String != nullptr && ptr >= End_Of_String) {
+		return true;
+	}
+	
+	if(*ptr == '\0') {
+		return true;
+		//assert(false);
+	}
+	
+
+	
+	return false;
 }
 
 
@@ -2693,8 +2705,8 @@ bool regexp::ExecRE(const char *string, const char *end, bool reverse, char prev
 	//               but for now, we will maintain old behavior
 
 	// Check for valid parameters. 
-	if (string == nullptr) {
-		reg_error("nullptr parameter to 'ExecRE'");
+	if (!string) {
+		reg_error("NULL parameter to 'ExecRE'");
 		return false;
 	}
 
@@ -3702,14 +3714,11 @@ static int match(uint8_t *prog, int *branch_index_param) {
 
 static unsigned long greedy(uint8_t *p, long max) {
 
-	const char *input_str;
-	uint8_t *operand;
 	unsigned long count = REG_ZERO;
-	unsigned long max_cmp;
 
-	input_str = Reg_Input;
-	operand = OPERAND(p); // Literal char or start of class characters. 
-	max_cmp = (max > 0) ? (unsigned long)max : ULONG_MAX;
+	const char *input_str = Reg_Input;
+	uint8_t *operand = OPERAND(p); // Literal char or start of class characters. 
+	unsigned long max_cmp = (max > 0) ? (unsigned long)max : ULONG_MAX;
 
 	switch (GET_OP_CODE(p)) {
 	case ANY:
