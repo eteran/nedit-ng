@@ -4458,7 +4458,7 @@ int Document::GetCalltipID(int calltipID) {
 ** the new calltip.  Returns the ID of the calltip or 0 on failure.
 */
 int Document::ShowCalltip(view::string_view text, bool anchored, int pos, int hAlign, int vAlign, int alignMode) {
-	lastFocus()->TextDShowCalltip(text, anchored, pos, hAlign, vAlign, alignMode);
+	return lastFocus()->TextDShowCalltip(text, anchored, pos, hAlign, vAlign, alignMode);
 }
 
 /*
