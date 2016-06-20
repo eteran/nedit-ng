@@ -4093,7 +4093,7 @@ int TextDisplay::TextFirstVisibleLine() const {
 	return topLineNum_;
 }
 
-	int TextDisplay::TextFirstVisiblePos() const {
+int TextDisplay::TextFirstVisiblePos() const {
 	return firstChar_;
 }
 
@@ -8288,7 +8288,7 @@ void TextDisplay::getInsertSelectionCallback(XtPointer clientData, Atom *selType
 
 	(void)selType;
 
-	TextBuffer *buf = TextGetBuffer();
+	TextBuffer *buf = buffer_;
 	auto resultFlag = static_cast<int *>(clientData);
 
 	// Confirm that the returned value is of the correct type 
@@ -8326,7 +8326,7 @@ Boolean TextDisplay::convertSecondaryCallback(Atom *selType, Atom *target, Atom 
 
 	(void)selType;
 
-	auto buf = TextGetBuffer();
+	auto buf = buffer_;
 
 	// target must be string 
 	if (*target != XA_STRING && *target != getAtom(XtDisplay(w_), A_TEXT))
@@ -8365,7 +8365,7 @@ void TextDisplay::getExchSelCallback(XtPointer clientData, Atom *selType, Atom *
 	if (*length == 0 || !value || *type != XA_STRING || *format != 8) {
 		XtFree((char *)value);
 		QApplication::beep();
-		TextGetBuffer()->BufSecondaryUnselect();
+		buffer_->BufSecondaryUnselect();
 		return;
 	}
 
@@ -8457,7 +8457,7 @@ int TextDisplay::TextDShowCalltip(view::string_view text, bool anchored, int pos
 	TextDKillCalltip(0);
 
 	// Expand any tabs in the calltip and make it an XmString 
-	std::string textCpy = expandAllTabsEx(text, TextGetBuffer()->BufGetTabDistance());
+	std::string textCpy = expandAllTabsEx(text, buffer_->BufGetTabDistance());
 
 	XmString str = XmStringCreateLtoREx(textCpy, XmFONTLIST_DEFAULT_TAG);
 
@@ -8568,7 +8568,7 @@ int TextDisplay::TextDGetCalltipID(int calltipID) {
 void TextDisplay::selectNotifyEHEx(XtPointer data, XEvent *event, Boolean *continueDispatch) {
 	(void)continueDispatch;
 
-	auto buf    = TextGetBuffer();
+	auto buf    = buffer_;
 	auto e      = reinterpret_cast<XSelectionEvent *>(event);
 	auto cbInfo = static_cast<selectNotifyInfo *>(data);
 	int selStart, selEnd;
@@ -8627,7 +8627,7 @@ void TextDisplay::selectNotifyTimerProcEx(XtPointer clientData, XtIntervalId *id
 	(void)id;
 
 	auto cbInfo = static_cast<selectNotifyInfo *>(clientData);
-	TextBuffer *buf = TextGetBuffer();
+	TextBuffer *buf = buffer_;
 
 	fprintf(stderr, "NEdit: timeout on selection request\n");
 	XtRemoveEventHandler(cbInfo->widget, 0, true, selectNotifyEH, cbInfo);
