@@ -44,6 +44,14 @@ enum CursorStyles {
 	HEAVY_CURSOR
 };
 
+/* Actions for selection notify event handler upon receiving confermation
+   of a successful convert selection request */
+enum selectNotifyActions {
+	UNSELECT_SECONDARY, 
+	REMOVE_SECONDARY, 
+	EXCHANGE_SECONDARY
+};
+
 #define NO_HINT -1
 
 class StyleTableEntry;
@@ -210,8 +218,6 @@ public:
 	int fontDescent() const;
 	int getAbsTopLineNum();
 	int getBufferLinesCount() const;
-	int getFirstChar() const;
-	int getLastChar() const;
 	int getLineNumLeft() const;
 	int getLineNumWidth() const;
 	void setModifyingTabDist(int tabDist);
@@ -377,7 +383,7 @@ public:
 	void measureDeletedLines(int pos, int nDeleted);
 	void redrawLineNumbers(int clearAll);
 	void resetAbsLineNum();
-	void sendSecondary(Time time, Atom sel, int action, char *actionText, int actionTextLen);
+	void sendSecondary(Time time, Atom sel, selectNotifyActions action, char *actionText, int actionTextLen);
 	void textDRedisplayRange(int start, int end);
 	void updateLineStarts(int pos, int charsInserted, int charsDeleted, int linesInserted, int linesDeleted, int *scrolled);
 	void updateVScrollBarRange();

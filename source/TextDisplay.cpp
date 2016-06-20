@@ -29,6 +29,8 @@
 #include <QApplication>
 #include <QMessageBox>
 #include <QToolTip>
+#include <QClipboard>
+#include <QMimeData>
 
 #include "TextDisplay.h"
 #include "Document.h"
@@ -160,14 +162,6 @@ enum insertResultFlags {
 	INSERT_WAITING, 
 	UNSUCCESSFUL_INSERT, 
 	SUCCESSFUL_INSERT
-};
-
-/* Actions for selection notify event handler upon receiving confermation
-   of a successful convert selection request */
-enum selectNotifyActions {
-	UNSELECT_SECONDARY, 
-	REMOVE_SECONDARY, 
-	EXCHANGE_SECONDARY
 };
 
 /*
@@ -2204,8 +2198,11 @@ void TextDisplay::drawString(int style, int x, int y, int toX, char *string, int
 	bool underlineStyle = false;
 
 	// Don't draw if widget isn't realized
-	if (XtWindow(w_) == 0)
+	if (XtWindow(w_) == 0) {
 		return;
+	}
+	
+	Display *display = XtDisplay(w_);
 
 	// select a GC
 	if (style & (STYLE_LOOKUP_MASK | BACKLIGHT_MASK | RANGESET_MASK)) {
@@ -2260,7 +2257,7 @@ void TextDisplay::drawString(int style, int x, int y, int toX, char *string, int
 		// set up gc for clearing using the foreground color entry
 		gcValues.foreground = bground;
 		gcValues.background = bground;
-		XChangeGC(XtDisplay(w_), gc, GCFont | GCForeground | GCBackground, &gcValues);
+		XChangeGC(display, gc, GCFont | GCForeground | GCBackground, &gcValues);
 	}
 
 	// Draw blank area rather than text, if that was the request
@@ -2283,19 +2280,19 @@ void TextDisplay::drawString(int style, int x, int y, int toX, char *string, int
 	// set up gc for writing text (set foreground properly)
 	if (bgGC == styleGC_) {
 		gcValues.foreground = fground;
-		XChangeGC(XtDisplay(w_), gc, GCForeground, &gcValues);
+		XChangeGC(display, gc, GCForeground, &gcValues);
 	}
 
 	// Draw the string using gc and font set above
-	XDrawImageString(XtDisplay(w_), XtWindow(w_), gc, x, y + ascent_, string, nChars);
+	XDrawImageString(display, XtWindow(w_), gc, x, y + ascent_, string, nChars);
 
 	// Underline if style is secondary selection
 	if (style & SECONDARY_MASK || underlineStyle) {
 		// restore foreground in GC (was set to background by clearRect())
 		gcValues.foreground = fground;
-		XChangeGC(XtDisplay(w_), gc, GCForeground, &gcValues);
+		XChangeGC(display, gc, GCForeground, &gcValues);
 		// draw underline
-		XDrawLine(XtDisplay(w_), XtWindow(w_), gc, x, y + ascent_, toX - 1, y + ascent_);
+		XDrawLine(display, XtWindow(w_), gc, x, y + ascent_, toX - 1, y + ascent_);
 	}
 }
 
@@ -2465,9 +2462,9 @@ int TextDisplay::styleOfPos(int lineStartPos, int lineLen, int lineIndex, int di
 
 	pos = lineStartPos + std::min(lineIndex, lineLen);
 
-	if (lineIndex >= lineLen)
+	if (lineIndex >= lineLen) {
 		style = FILL_MASK;
-	else if (styleBuf) {
+	} else if (styleBuf) {
 		style = (uint8_t)styleBuf->BufGetCharacter(pos);
 		if (style == unfinishedStyle_) {
 			// encountered "unfinished" style, trigger parsing
@@ -2475,12 +2472,16 @@ int TextDisplay::styleOfPos(int lineStartPos, int lineLen, int lineIndex, int di
 			style = (uint8_t)styleBuf->BufGetCharacter(pos);
 		}
 	}
+	
 	if (buf->primary_.inSelection(pos, lineStartPos, dispIndex))
 		style |= PRIMARY_MASK;
+		
 	if (buf->highlight_.inSelection(pos, lineStartPos, dispIndex))
 		style |= HIGHLIGHT_MASK;
+		
 	if (buf->secondary_.inSelection(pos, lineStartPos, dispIndex))
 		style |= SECONDARY_MASK;
+		
 	// store in the RANGESET_MASK portion of style the rangeset index for pos
 	if (buf->rangesetTable_) {
 		int rangesetIndex = buf->rangesetTable_->RangesetIndex1ofPos(pos, true);
@@ -5251,11 +5252,16 @@ void TextDisplay::CancelBlockDrag() {
 ** do an BufInsertColEx for a columnar paste instead of BufInsertEx.
 */
 void TextDisplay::InsertClipboard(bool isColumnar) {
-	unsigned long length, retLength;
 
-	auto buf   = buffer_;
-	int cursorLineStart, column, cursorPos;
+
+	auto buf = buffer_;
+	int cursorLineStart;
+	int column;
+	int cursorPos;
+#if 0	
 	long id = 0;
+	unsigned long length;
+	unsigned long retLength;
 
 	/* Get the clipboard contents.  Note: this code originally used the
 	   CLIPBOARD selection, rather than the Motif clipboard interface.  It
@@ -5289,6 +5295,14 @@ void TextDisplay::InsertClipboard(bool isColumnar) {
 	
 	std::string contents(string, retLength);
 	delete [] string;
+#else
+	QClipboard *clipboard = QApplication::clipboard();
+	if(!clipboard->mimeData()->hasText()) {
+		return;
+	}
+	QString clipboardText = clipboard->text();
+	std::string contents = clipboardText.toStdString();
+#endif
 
 	/* If the string contains ascii-nul characters, substitute something
 	   else, or give up, warn, and refuse */
@@ -5310,8 +5324,9 @@ void TextDisplay::InsertClipboard(bool isColumnar) {
 		TextDSetInsertPosition(buf->BufCountForwardDispChars(cursorLineStart, column));
 		if (text_of(w_).P_autoShowInsertPos)
 			TextDMakeInsertPosVisible();
-	} else
+	} else {
 		TextInsertAtCursorEx(contents, nullptr, true, text_of(w_).P_autoWrapPastedText);
+	}
 }
 
 
@@ -5319,7 +5334,7 @@ void TextDisplay::InsertClipboard(bool isColumnar) {
 ** Copy the primary selection to the clipboard
 */
 void TextDisplay::CopyToClipboard(Time time) {
-	long itemID = 0;
+	
 
 	// Get the selected text, if there's no selection, do nothing 
 	std::string text = buffer_->BufGetSelectionTextEx();
@@ -5332,6 +5347,9 @@ void TextDisplay::CopyToClipboard(Time time) {
 	int length = text.size();
 	buffer_->BufUnsubstituteNullCharsEx(text);
 
+#if 0
+	long itemID = 0;
+	
 	// Shut up LessTif 
 	if (SpinClipboardLock(XtDisplay(w_), XtWindow(w_)) != ClipboardSuccess) {
 		return;
@@ -5360,6 +5378,13 @@ void TextDisplay::CopyToClipboard(Time time) {
 
 	SpinClipboardEndCopy(XtDisplay(w_), XtWindow(w_), itemID);
 	SpinClipboardUnlock(XtDisplay(w_), XtWindow(w_));
+#else
+	(void)time;
+	(void)length;
+	
+	QClipboard *clipboard = QApplication::clipboard();
+	clipboard->setText(QString::fromStdString(text));
+#endif
 }
 
 /*
@@ -5403,6 +5428,10 @@ void TextDisplay::StopHandlingXSelections() {
 ** at the cursor position.
 */
 void TextDisplay::InsertPrimarySelection(Time time, bool isColumnar) {
+
+	printf("[InsertPrimarySelection: %d]\n", isColumnar);
+
+#if 0
 	static int isColFlag;
 
 	/* Theoretically, strange things could happen if the user managed to get
@@ -5411,6 +5440,43 @@ void TextDisplay::InsertPrimarySelection(Time time, bool isColumnar) {
 	   bother with further measures until real problems are observed. */
 	isColFlag = isColumnar;
 	XtGetSelectionValue(w_, XA_PRIMARY, XA_STRING, getSelectionCB, &isColFlag, time);
+#else
+
+	(void)time;
+	int cursorLineStart;
+	int cursorPos;
+	int column;
+	int row;
+	
+	QClipboard *clipboard = QApplication::clipboard();
+	if(!clipboard->mimeData(QClipboard::Selection)->hasText()) {
+		return;
+	}
+	QString clipboardText = clipboard->text(QClipboard::Selection);
+	std::string string = clipboardText.toStdString();	
+
+	/* If the string contains ascii-nul characters, substitute something
+	   else, or give up, warn, and refuse */
+	if (!buffer_->BufSubstituteNullCharsEx(string)) {
+		fprintf(stderr, "Too much binary data, giving up\n");
+		return;
+	}
+
+	// Insert it in the text widget 
+	if (isColumnar) {
+		cursorPos = cursorPos_;
+		cursorLineStart = buffer_->BufStartOfLine(cursorPos);
+		TextDXYToUnconstrainedPosition(
+			btnDownCoord_,
+			&row,
+			&column);
+			
+		buffer_->BufInsertColEx(column, cursorLineStart, string, nullptr, nullptr);
+		TextDSetInsertPosition(buffer_->cursorPosHint_);
+	} else {
+		TextInsertAtCursorEx(string, nullptr, False, text_of(w_).P_autoWrapPastedText);
+	}
+#endif
 }
 
 /*
@@ -5419,6 +5485,9 @@ void TextDisplay::InsertPrimarySelection(Time time, bool isColumnar) {
 ** (if the selection owner supports DELETE targets).
 */
 void TextDisplay::MovePrimarySelection( Time time, bool isColumnar) {
+
+	printf("[MovePrimarySelection]\n");
+
 	static Atom targets[2] = {XA_STRING};
 	static int isColFlag;
 	static XtPointer clientData[2] = {&isColFlag, &isColFlag};
@@ -5435,8 +5504,13 @@ void TextDisplay::MovePrimarySelection( Time time, bool isColumnar) {
 ** with the secondary selection)
 */
 void TextDisplay::ExchangeSelections(Time time) {
-	if (!buffer_->secondary_.selected)
+
+
+	printf("[ExchangeSelections]\n");
+
+	if (!buffer_->secondary_.selected) {
 		return;
+	}
 
 	/* Initiate an long series of events: 
 	** 1) get the primary selection,
@@ -5461,8 +5535,7 @@ void TextDisplay::ExchangeSelections(Time time) {
 ** widget's buffer upon completion.
 */
 void TextDisplay::SendSecondarySelection(Time time, bool removeAfter) {
-	// TODO(eteran): textD_of necessary?
-	textD_of(w_)->sendSecondary(time, getAtom(XtDisplay(w_), A_MOTIF_DESTINATION), removeAfter ? REMOVE_SECONDARY : UNSELECT_SECONDARY, nullptr, 0);
+	sendSecondary(time, getAtom(XtDisplay(w_), A_MOTIF_DESTINATION), removeAfter ? REMOVE_SECONDARY : UNSELECT_SECONDARY, nullptr, 0);
 }
 
 
@@ -5558,7 +5631,7 @@ void TextDisplay::extendEndAP(XEvent *event, String *args, Cardinal *nArgs) {
 	(void)args;
 	(void)nArgs;
 	(void)event;
-
+	
 	XButtonEvent *e = &event->xbutton;
 
 	if (dragState_ == PRIMARY_CLICKED && lastBtnDown_ <= e->time + XtGetMultiClickTime(XtDisplay(w_))) {
@@ -7398,24 +7471,28 @@ void TextDisplay::copyToAP(XEvent *event, String *args, Cardinal *nArgs) {
 
 	(void)args;
 	(void)nArgs;
-
+	
 	XButtonEvent *e = &event->xbutton;
 	auto tw = reinterpret_cast<TextWidget>(w_);
 	int dragState = dragState_;
 	TextBuffer *buf = buffer_;
-	TextSelection *secondary = &buf->secondary_, *primary = &buf->primary_;
+	TextSelection *secondary = &buf->secondary_;
+	TextSelection *primary = &buf->primary_;
 	int rectangular = secondary->rectangular;
 	int insertPos, lineStart, column;
 
 	endDrag();
-	if (!((dragState == SECONDARY_DRAG && secondary->selected) || (dragState == SECONDARY_RECT_DRAG && secondary->selected) || dragState == SECONDARY_CLICKED || dragState == NOT_CLICKED))
+	if (!((dragState == SECONDARY_DRAG && secondary->selected) || (dragState == SECONDARY_RECT_DRAG && secondary->selected) || dragState == SECONDARY_CLICKED || dragState == NOT_CLICKED)) {
 		return;
+	}
+	
 	if (!(secondary->selected && !motifDestOwner_)) {
 		if (checkReadOnly()) {
 			buf->BufSecondaryUnselect();
 			return;
 		}
 	}
+	
 	if (secondary->selected) {
 		if (motifDestOwner_) {
 			TextDBlankCursor();
@@ -7435,8 +7512,10 @@ void TextDisplay::copyToAP(XEvent *event, String *args, Cardinal *nArgs) {
 
 			buf->BufSecondaryUnselect();
 			TextDUnblankCursor();
-		} else
+		} else {
 			SendSecondarySelection(e->time, false);
+		}
+		
 	} else if (primary->selected) {
 		std::string textToCopy = buf->BufGetSelectionTextEx();
 		TextDSetInsertPosition(TextDXYToPosition(Point{e->x, e->y}));
@@ -7451,7 +7530,7 @@ void TextDisplay::secondaryOrDragStartAP(XEvent *event, String *args, Cardinal *
 
 	XMotionEvent *e = &event->xmotion;
 	TextBuffer *buf = buffer_;
-
+	
 	/* If the click was outside of the primary selection, this is not
 	   a drag, start a secondary selection */
 	if (!buf->primary_.selected || !TextDInSelection(Point{e->x, e->y})) {
@@ -7948,7 +8027,7 @@ void TextDisplay::selectLine() {
 ** selectNotifyActions) using "actionText" and freeing actionText (if
 ** not nullptr) when done.
 */
-void TextDisplay::sendSecondary(Time time, Atom sel, int action, char *actionText, int actionTextLen) {
+void TextDisplay::sendSecondary(Time time, Atom sel, selectNotifyActions action, char *actionText, int actionTextLen) {
 
 	static Atom selInfoProp[2] = {XA_SECONDARY, XA_STRING};
 	Display *disp = XtDisplay(w_);
@@ -7983,98 +8062,15 @@ void TextDisplay::sendSecondary(Time time, Atom sel, int action, char *actionTex
 	cbInfo->timeoutProcID = XtAppAddTimeOut(context, XtAppGetSelectionTimeout(context), selectNotifyTimerProc, cbInfo);
 }
 
-#if 1
-CursorStyles TextDisplay::getCursorStyle() const {
-	return cursorStyle_;
-}
-
-
-
-void TextDisplay::setStyleBuffer(TextBuffer *buffer) {
-	styleBuffer_ = buffer;
-}
-
-int TextDisplay::getFirstChar() const {
-	return firstChar_;
-}
-
-int TextDisplay::getLastChar() const {
-	return lastChar_;
-}
-
-int TextDisplay::fontAscent() const {
-	return ascent_;
-}
-
-int TextDisplay::fontDescent() const {
-	return descent_;
-}
-
-Rect TextDisplay::getRect() const {
-	return rect_;
-}
-
-void TextDisplay::setModifyingTabDist(int tabDist) {
-	modifyingTabDist_ = tabDist;
-}
-
-int TextDisplay::getBufferLinesCount() const {
-	return nBufferLines_;
-}
-
-int TextDisplay::getLineNumWidth() const {
-	return lineNumWidth_;
-}
-
-int TextDisplay::getLineNumLeft() const {
-	return lineNumLeft_;
-}
-
-Pixel TextDisplay::foregroundPixel() const {
-	return fgPixel_;
-}
-
-Pixel TextDisplay::backgroundPixel() const {
-	return bgPixel_;
-}
-
-XtIntervalId TextDisplay::getCursorBlinkProcID() const {
-	return cursorBlinkProcID_;
-}
-
-TextBuffer *TextDisplay::getStyleBuffer() const {
-	return styleBuffer_;
-}
-
-#else
-#endif
-
-void TextDisplay::addFocusCallback(XtCallbackProc callback, XtPointer client_data) {
-	XtAddCallback(w_, textNfocusCallback, callback, client_data);
-}
-
-void TextDisplay::addCursorMovementCallback(XtCallbackProc callback, XtPointer client_data) {
-	XtAddCallback(w_, textNcursorMovementCallback, callback, client_data);
-}
-
-void TextDisplay::addDragStartCallback(XtCallbackProc callback, XtPointer client_data) {
-	XtAddCallback(w_, textNdragStartCallback, callback, client_data);
-}
-
-void TextDisplay::addDragEndCallback(XtCallbackProc callback, XtPointer client_data) {
-	XtAddCallback(w_, textNdragEndCallback, callback, client_data);
-}
-
-void TextDisplay::addsmartIndentCallback(XtCallbackProc callback, XtPointer client_data) {
-	XtAddCallback(w_, textNsmartIndentCallback, callback, client_data);
-}
-	
 /*
 ** Called when data arrives from a request for the PRIMARY selection.  If
 ** everything is in order, it inserts it at the cursor in the requesting
 ** widget.
 */
 void TextDisplay::getSelectionCallback(XtPointer clientData, Atom *selType, Atom *type, XtPointer value, unsigned long *length, int *format) {
+
+
+	printf("[getSelectionCallback]\n");
 
 	(void)selType;
 	
@@ -8142,8 +8138,8 @@ void TextDisplay::modifiedCallback(int pos, int nInserted, int nDeleted, int nRe
 	(void)cbArg;
 
 	Time time    = XtLastTimestampProcessed(XtDisplay(w_));
-	int selected = buffer_->primary_.selected;
-	int isOwner  = selectionOwner_;
+	bool selected = buffer_->primary_.selected;
+	bool isOwner  = selectionOwner_;
 
 	/* If the widget owns the selection and the buffer text is still selected,
 	   or if the widget doesn't own it and there's no selection, do nothing */
@@ -8158,6 +8154,7 @@ void TextDisplay::modifiedCallback(int pos, int nInserted, int nDeleted, int nRe
 	   callback from firing at a bad time. */
 
 	// Take ownership of the selection 
+	printf("[modifiedCallback]\n");
 	if (!XtOwnSelection(w_, XA_PRIMARY, time, convertSelectionCB, loseSelectionCB, nullptr)) {
 		buffer_->BufUnselect();
 	} else {
@@ -8566,6 +8563,7 @@ int TextDisplay::TextDGetCalltipID(int calltipID) {
 ** the clean up if the selectionNotify event never arrived.)
 */
 void TextDisplay::selectNotifyEHEx(XtPointer data, XEvent *event, Boolean *continueDispatch) {
+
 	(void)continueDispatch;
 
 	auto buf    = buffer_;
@@ -8597,26 +8595,33 @@ void TextDisplay::selectNotifyEHEx(XtPointer data, XEvent *event, Boolean *conti
 	/* Do the requested action, if the action is exchange, also clean up
 	   the properties created for returning the primary selection and making
 	   the MULTIPLE target request */
-	if (cbInfo->action == REMOVE_SECONDARY) {
+	switch(cbInfo->action) {
+	case REMOVE_SECONDARY:
 		buf->BufRemoveSecSelect();
-	} else if (cbInfo->action == EXCHANGE_SECONDARY) {
-		std::string string(cbInfo->actionText, cbInfo->length);
+		break;
+	case EXCHANGE_SECONDARY:
+		{
+			std::string string(cbInfo->actionText, cbInfo->length);
 
-		selStart = buf->secondary_.start;
-		if (buf->BufSubstituteNullCharsEx(string)) {
-			buf->BufReplaceSecSelectEx(string);
-			if (buf->secondary_.rectangular) {
-				/*... it would be nice to re-select, but probably impossible */
-				TextDSetInsertPosition(buf->cursorPosHint_);
+			selStart = buf->secondary_.start;
+			if (buf->BufSubstituteNullCharsEx(string)) {
+				buf->BufReplaceSecSelectEx(string);
+				if (buf->secondary_.rectangular) {
+					/*... it would be nice to re-select, but probably impossible */
+					TextDSetInsertPosition(buf->cursorPosHint_);
+				} else {
+					selEnd = selStart + cbInfo->length;
+					buf->BufSelect(selStart, selEnd);
+					TextDSetInsertPosition(selEnd);
+				}
 			} else {
-				selEnd = selStart + cbInfo->length;
-				buf->BufSelect(selStart, selEnd);
-				TextDSetInsertPosition(selEnd);
+				fprintf(stderr, "Too much binary data\n");
 			}
-		} else {
-			fprintf(stderr, "Too much binary data\n");
 		}
+		break;	
 	}
+	
+
 	buf->BufSecondaryUnselect();
 	XtDisownSelection(w_, XA_SECONDARY, e->time);
 	XtFree(cbInfo->actionText);
@@ -8625,7 +8630,7 @@ void TextDisplay::selectNotifyEHEx(XtPointer data, XEvent *event, Boolean *conti
 
 void TextDisplay::selectNotifyTimerProcEx(XtPointer clientData, XtIntervalId *id) {
 	(void)id;
-
+	
 	auto cbInfo = static_cast<selectNotifyInfo *>(clientData);
 	TextBuffer *buf = buffer_;
 
@@ -8635,6 +8640,46 @@ void TextDisplay::selectNotifyTimerProcEx(XtPointer clientData, XtIntervalId *id
 	XtDisownSelection(cbInfo->widget, XA_SECONDARY, cbInfo->timeStamp);
 	XtFree(cbInfo->actionText);
 	delete cbInfo;
+}
+
+int TextDisplay::fontAscent() const {
+	return ascent_;
+}
+
+int TextDisplay::fontDescent() const {
+	return descent_;
+}
+
+void TextDisplay::setStyleBuffer(TextBuffer *buffer) {
+	styleBuffer_ = buffer;
+}
+
+int TextDisplay::getLineNumWidth() const {
+	return lineNumWidth_;
+}
+
+int TextDisplay::getLineNumLeft() const {
+	return lineNumLeft_;
+}
+
+Pixel TextDisplay::foregroundPixel() const {
+	return fgPixel_;
+}
+
+Pixel TextDisplay::backgroundPixel() const {
+	return bgPixel_;
+}
+
+Rect TextDisplay::getRect() const {
+	return rect_;
+}
+
+int TextDisplay::getBufferLinesCount() const {
+	return nBufferLines_;
+}
+
+void TextDisplay::setModifyingTabDist(int tabDist) {
+	modifyingTabDist_ = tabDist;
 }
 
 Pixel TextDisplay::getSelectFGPixel() const {
@@ -8661,6 +8706,38 @@ Pixel TextDisplay::getCursorFGPixel() const {
 	return cursorFGPixel_;
 }
 
+XtIntervalId TextDisplay::getCursorBlinkProcID() const {
+	return cursorBlinkProcID_;
+}
+
+TextBuffer *TextDisplay::getStyleBuffer() const {
+	return styleBuffer_;
+}
+
 XFontStruct *TextDisplay::TextDGetFont() const {
 	return fontStruct_;
+}
+
+CursorStyles TextDisplay::getCursorStyle() const {
+	return cursorStyle_;
+}
+
+void TextDisplay::addFocusCallback(XtCallbackProc callback, XtPointer client_data) {
+	XtAddCallback(w_, textNfocusCallback, callback, client_data);
+}
+
+void TextDisplay::addCursorMovementCallback(XtCallbackProc callback, XtPointer client_data) {
+	XtAddCallback(w_, textNcursorMovementCallback, callback, client_data);
+}
+
+void TextDisplay::addDragStartCallback(XtCallbackProc callback, XtPointer client_data) {
+	XtAddCallback(w_, textNdragStartCallback, callback, client_data);
+}
+
+void TextDisplay::addDragEndCallback(XtCallbackProc callback, XtPointer client_data) {
+	XtAddCallback(w_, textNdragEndCallback, callback, client_data);
+}
+
+void TextDisplay::addsmartIndentCallback(XtCallbackProc callback, XtPointer client_data) {
+	XtAddCallback(w_, textNsmartIndentCallback, callback, client_data);
 }
