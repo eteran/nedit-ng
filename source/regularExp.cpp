@@ -948,7 +948,8 @@ uint8_t *piece(int *flag_param, len_range *range_param) {
 	uint8_t op_code;
 	unsigned long min_max[2] = {REG_ZERO, REG_INFINITY};
 	int flags_local, i, brace_present = 0;
-	int lazy = 0, comma_present = 0;
+	bool lazy = false;
+	bool comma_present = false;
 	int digit_present[2] = {0, 0};
 	len_range range_local;
 
@@ -1005,7 +1006,7 @@ uint8_t *piece(int *flag_param, len_range *range_param) {
 			}
 
 			if (!comma_present && *Reg_Parse == ',') {
-				comma_present++;
+				comma_present = true;
 				++Reg_Parse;
 			}
 		}
@@ -1047,7 +1048,7 @@ uint8_t *piece(int *flag_param, len_range *range_param) {
 	// Check for a minimal matching (non-greedy or "lazy") specification. 
 
 	if (*Reg_Parse == '?') {
-		lazy = 1;
+		lazy = true;
 		++Reg_Parse;
 	}
 
@@ -1828,7 +1829,7 @@ uint8_t *atom(int *flag_param, len_range *range_param) {
 			/* Loop until we find a meta character, shortcut escape, back
 			   reference, or end of regex string. */
 
-			for (; Reg_Parse != Reg_Parse_End && !strchr(Meta_Char, (int)*Reg_Parse); len++) {
+			for (; Reg_Parse != Reg_Parse_End && !strchr(Meta_Char, static_cast<int>(*Reg_Parse)); len++) {
 
 				/* Save where we are in case we have to back
 				   this character out. */
@@ -2216,7 +2217,7 @@ uint8_t *shortcut_escape(uint8_t c, int *flag_param, int emit) {
 		valid_codes = codes;
 	}
 
-	if (!strchr(valid_codes, (int)c)) {
+	if (!strchr(valid_codes, static_cast<int>(c))) {
 		return nullptr; // Not a valid shortcut escape sequence 
 	} else if (emit == CHECK_ESCAPE || emit == CHECK_CLASS_ESCAPE) {
 		return ret_val; // Just checking if this is a valid shortcut escape. 
@@ -2379,7 +2380,7 @@ char numeric_escape(char c, const char **parse) {
 	scan = *parse;
 	scan++; // Only change *parse on success. 
 
-	pos_ptr = strchr(digit_str, (int)*scan);
+	pos_ptr = strchr(digit_str, static_cast<int>(*scan));
 
 	for (i = 0; pos_ptr != nullptr && (i < width); i++) {
 		pos = (pos_ptr - digit_str) + pos_delta;
@@ -2403,7 +2404,7 @@ char numeric_escape(char c, const char **parse) {
 		}
 
 		scan++;
-		pos_ptr = strchr(digit_str, (int)*scan);
+		pos_ptr = strchr(digit_str, static_cast<int>(*scan));
 	}
 
 	// Handle the case of "\0" i.e. trying to specify a nullptr character. 
@@ -2563,7 +2564,7 @@ bool AT_END_OF_STRING(const char *ptr) {
 	}
 	
 	if(*ptr == '\0') {
-		return true;
+		//return true;
 		//assert(false);
 	}
 	
@@ -3058,24 +3059,20 @@ static int match(uint8_t *prog, int *branch_index_param) {
 		break;
 
 		case EXACTLY: {
-			int len;
-			uint8_t *opnd;
-
-			opnd = OPERAND(scan);
+			uint8_t *opnd = OPERAND(scan);
 
 			// Inline the first character, for speed. 
-
-			if (*opnd != *Reg_Input)
+			if (*opnd != *Reg_Input) {
 				MATCH_RETURN(0);
+			}
 
-			len = strlen((char *)opnd);
+			const int len = strlen(reinterpret_cast<char *>(opnd));
 
 			if (End_Of_String != nullptr && Reg_Input + len > End_Of_String) {
 				MATCH_RETURN(0);
 			}
 
-			if (len > 1 && strncmp((char *)opnd, Reg_Input, len) != 0) {
-
+			if (len > 1 && strncmp(reinterpret_cast<char *>(opnd), Reg_Input, len) != 0) {
 				MATCH_RETURN(0);
 			}
 
@@ -3295,7 +3292,7 @@ static int match(uint8_t *prog, int *branch_index_param) {
 				                    considers \0 as a member
 				                    of the character set. */
 
-			if (strchr((char *)OPERAND(scan), *Reg_Input) == nullptr) {
+			if (strchr(reinterpret_cast<char *>(OPERAND(scan)), *Reg_Input) == nullptr) {
 				MATCH_RETURN(0);
 			}
 
@@ -3309,7 +3306,7 @@ static int match(uint8_t *prog, int *branch_index_param) {
 			if (AT_END_OF_STRING(Reg_Input))
 				MATCH_RETURN(0); // See comment for ANY_OF. 
 
-			if (strchr((char *)OPERAND(scan), *Reg_Input)) {
+			if (strchr(reinterpret_cast<char *>(OPERAND(scan)), *Reg_Input)) {
 				MATCH_RETURN(0);
 			}
 
@@ -3335,7 +3332,7 @@ static int match(uint8_t *prog, int *branch_index_param) {
 			const char *save;
 			uint8_t next_char;
 			uint8_t *next_op;
-			int lazy = 0;
+			bool lazy = false;
 
 			/* Lookahead (when possible) to avoid useless match attempts
 			   when we know what character comes next. */
@@ -3350,35 +3347,36 @@ static int match(uint8_t *prog, int *branch_index_param) {
 
 			switch (GET_OP_CODE(scan)) {
 			case LAZY_STAR:
-				lazy = 1;
+				lazy = true;
 			case STAR:
 				min = REG_ZERO;
 				max = ULONG_MAX;
 				break;
 
 			case LAZY_PLUS:
-				lazy = 1;
+				lazy = true;
 			case PLUS:
 				min = REG_ONE;
 				max = ULONG_MAX;
 				break;
 
 			case LAZY_QUESTION:
-				lazy = 1;
+				lazy = true;
 			case QUESTION:
 				min = REG_ZERO;
 				max = REG_ONE;
 				break;
 
 			case LAZY_BRACE:
-				lazy = 1;
+				lazy = true;
 			case BRACE:
-				min = (unsigned long)GET_OFFSET(scan + NEXT_PTR_SIZE);
+				min = static_cast<unsigned long>(GET_OFFSET(scan + NEXT_PTR_SIZE));
 
-				max = (unsigned long)GET_OFFSET(scan + (2 * NEXT_PTR_SIZE));
+				max = static_cast<unsigned long>(GET_OFFSET(scan + (2 * NEXT_PTR_SIZE)));
 
-				if (max <= REG_INFINITY)
+				if (max <= REG_INFINITY) {
 					max = ULONG_MAX;
+				}
 
 				next_op = OPERAND(scan + (2 * NEXT_PTR_SIZE));
 			}
@@ -3759,7 +3757,7 @@ static unsigned long greedy(uint8_t *p, long max) {
 		break;
 
 	case ANY_OF: // [...] character class. 
-		while (count < max_cmp && strchr((char *)operand, *input_str) != nullptr && !AT_END_OF_STRING(input_str)) {
+		while (count < max_cmp && strchr(reinterpret_cast<char *>(operand), *input_str) != nullptr && !AT_END_OF_STRING(input_str)) {
 
 			count++;
 			input_str++;
@@ -3771,7 +3769,7 @@ static unsigned long greedy(uint8_t *p, long max) {
 	                 match newline (\n added usually to operand at compile
 	                 time.) */
 
-		while (count < max_cmp && strchr((char *)operand, *input_str) == nullptr && !AT_END_OF_STRING(input_str)) {
+		while (count < max_cmp && strchr(reinterpret_cast<char *>(operand), *input_str) == nullptr && !AT_END_OF_STRING(input_str)) {
 
 			count++;
 			input_str++;
