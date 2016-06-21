@@ -131,7 +131,7 @@ static void handleUnparsedRegion(const Document *win, TextBuffer *styleBuf, cons
 static void handleUnparsedRegionCB(const TextDisplay *textD, const int pos, const void *cbArg);
 static void incrementalReparse(WindowHighlightData *highlightData, TextBuffer *buf, int pos, int nInserted, const char *delimiters);
 static void modifyStyleBuf(TextBuffer *styleBuf, char *styleString, int startPos, int endPos, int firstPass2Style);
-static void passTwoParseString(HighlightData *pattern, char *string, char *styleString, int length, char *prevChar, const char *delimiters, const char *lookBehindTo, const char *match_till);
+static void passTwoParseString(HighlightData *pattern, const char *string, char *styleString, int length, char *prevChar, const char *delimiters, const char *lookBehindTo, const char *match_till);
 static void recolorSubexpr(regexp *re, int subexpr, int style, const char *string, char *styleString);
 static void updateWindowHeight(Document *window, int oldFontHeight);
 
@@ -1398,9 +1398,9 @@ static int parseBufferRange(HighlightData *pass1Patterns, HighlightData *pass2Pa
 	std::string str      = buf->BufGetRangeEx(beginSafety, endSafety);
 	std::string styleStr = styleBuf->BufGetRangeEx(beginSafety, endSafety);
 	
-	char *const string      = &str[0];
-	char *const styleString = &styleStr[0];
-	char *const match_to    = string + str.size();
+	const char *const string   = &str[0];
+	char *const styleString    = &styleStr[0];
+	const char *const match_to = string + str.size();
 
 	// Parse it with pass 1 patterns 
 	// printf("parsing from %d thru %d\n", beginSafety, endSafety); 
@@ -1460,15 +1460,7 @@ static int parseBufferRange(HighlightData *pass1Patterns, HighlightData *pass2Pa
 			passTwoParseString(pass2Patterns, string, styleString, endParse - beginSafety, &prevChar, delimiters, string, match_to);
 			goto parseDone;
 		} else {
-		
-			// TODO(eteran): this code backs up a section of the style string
-			//               calls passTwoParseString and then restores it
-			//               is this necessary given the NUL safe code?		
-		
-			const int tempLen = endPass2Safety - modStart;			
-			std::string temp(&styleString[modStart - beginSafety], tempLen);
 			passTwoParseString(pass2Patterns, string, styleString, modStart - beginSafety, &prevChar, delimiters, string, match_to);
-			strncpy(&styleString[modStart - beginSafety], temp.c_str(), tempLen);
 		}
 	}
 
@@ -1482,15 +1474,9 @@ static int parseBufferRange(HighlightData *pass1Patterns, HighlightData *pass2Pa
 		} else {
 			startPass2Safety = std::max<int>(beginSafety, backwardOneContext(buf, contextRequirements, modEnd));
 
-			// TODO(eteran): this code backs up a section of the style string
-			//               calls passTwoParseString and then restores it
-			//               is this necessary given the NUL safe code?
 
-			const int tempLen = modEnd - startPass2Safety;			
-			std::string temp(&styleString[startPass2Safety - beginSafety], tempLen);
 			prevChar = getPrevChar(buf, startPass2Safety);
 			passTwoParseString(pass2Patterns, &string[startPass2Safety - beginSafety], &styleString[startPass2Safety - beginSafety], endParse - startPass2Safety, &prevChar, delimiters, string, match_to);
-			strncpy(&styleString[startPass2Safety - beginSafety], temp.c_str(), tempLen);
 		}
 	}
 
@@ -1717,25 +1703,32 @@ static bool parseString(HighlightData *pattern, const char **string, char **styl
 ** have the same meaning as in parseString, except that strings aren't doubly
 ** indirect and string pointers are not updated.
 */
-static void passTwoParseString(HighlightData *pattern, char *string, char *styleString, int length, char *prevChar, const char *delimiters, const char *lookBehindTo, const char *match_till) {
-	int inParseRegion = false;
-	char *stylePtr, temp, *parseStart = nullptr, *parseEnd, *s, *c;
+static void passTwoParseString(HighlightData *pattern, const char *string, char *styleString, int length, char *prevChar, const char *delimiters, const char *lookBehindTo, const char *match_till) {
+
+	bool inParseRegion = false;
+	char *stylePtr;
+	const char *parseStart = nullptr;
+	const char *parseEnd;
+	char *s = styleString;
+	const char *c = string;
 	const char *stringPtr;
 	int firstPass2Style = (uint8_t)pattern[1].style;
 
-	for (c = string, s = styleString;; c++, s++) {
-		if (!inParseRegion && *c != '\0' && (*s == UNFINISHED_STYLE || *s == PLAIN_STYLE || (uint8_t)*s >= firstPass2Style)) {
+	for (;; c++, s++) {
+		if (!inParseRegion && c != match_till && (*s == UNFINISHED_STYLE || *s == PLAIN_STYLE || (uint8_t)*s >= firstPass2Style)) {
 			parseStart = c;
 			inParseRegion = true;
 		}
-		if (inParseRegion && (*c == '\0' || !(*s == UNFINISHED_STYLE || *s == PLAIN_STYLE || (uint8_t)*s >= firstPass2Style))) {
+		if (inParseRegion && (c == match_till || !(*s == UNFINISHED_STYLE || *s == PLAIN_STYLE || (uint8_t)*s >= firstPass2Style))) {
 			parseEnd = c;
 			if (parseStart != string)
 				*prevChar = *(parseStart - 1);
 			stringPtr = parseStart;
 			stylePtr = &styleString[parseStart - string];
-			temp = *parseEnd;
-			*parseEnd = '\0';
+
+			match_till = parseEnd;
+
+
 			// printf("pass2 parsing %d chars\n", strlen(stringPtr)); 
 			
 			parseString(
@@ -1750,10 +1743,9 @@ static void passTwoParseString(HighlightData *pattern, char *string, char *style
 				lookBehindTo, 
 				match_till);
 				
-			*parseEnd = temp;
 			inParseRegion = false;
 		}
-		if (*c == '\0' || (!inParseRegion && c - string >= length))
+		if (c == match_till || (!inParseRegion && c - string >= length))
 			break;
 	}
 }
