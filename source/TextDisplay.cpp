@@ -730,10 +730,19 @@ void TextDisplay::TextDSetColors(Pixel textFgP, Pixel textBgP, Pixel selectFgP, 
 */
 void TextDisplay::TextDSetFont(XFontStruct *fontStruct) {
 	Display *display = XtDisplay(w_);
-	int i, maxAscent = fontStruct->ascent, maxDescent = fontStruct->descent;
-	int width, height, fontWidth;
-	Pixel bgPixel, fgPixel, selectFGPixel, selectBGPixel;
-	Pixel highlightFGPixel, highlightBGPixel, lineNumFGPixel;
+	int i;
+	int maxAscent = fontStruct->ascent;
+	int maxDescent = fontStruct->descent;
+	int width;
+	int height;
+	int fontWidth;
+	Pixel bgPixel;
+	Pixel fgPixel;
+	Pixel selectFGPixel;
+	Pixel selectBGPixel;
+	Pixel highlightFGPixel;
+	Pixel highlightBGPixel;
+	Pixel lineNumFGPixel;
 	XGCValues values;
 	XFontStruct *styleFont;
 
@@ -744,12 +753,15 @@ void TextDisplay::TextDSetFont(XFontStruct *fontStruct) {
 	   maximum font height for this text display */
 	for (i = 0; i < nStyles_; i++) {
 		styleFont = styleTable_[i].font;
+		
 		if (styleFont != nullptr && styleFont->ascent > maxAscent)
 			maxAscent = styleFont->ascent;
+		
 		if (styleFont != nullptr && styleFont->descent > maxDescent)
 			maxDescent = styleFont->descent;
 	}
-	ascent_ = maxAscent;
+	
+	ascent_  = maxAscent;
 	descent_ = maxDescent;
 
 	// If all of the current fonts are fixed and match in width, compute
@@ -1033,7 +1045,7 @@ void TextDisplay::TextDSetScroll(int topLineNum, int horizOffset) {
 	if (topLineNum < 1)
 		topLineNum = 1;
 	else if ((topLineNum > topLineNum_) && (topLineNum > (nBufferLines_ + 2 - nVisibleLines_ + vPadding)))
-		topLineNum = std::max<int>(topLineNum_, nBufferLines_ + 2 - nVisibleLines_ + vPadding);
+		topLineNum = std::max(topLineNum_, nBufferLines_ + 2 - nVisibleLines_ + vPadding);
 	XtVaGetValues(hScrollBar_, XmNmaximum, &sliderMax, XmNsliderSize, &sliderSize, nullptr);
 	if (horizOffset < 0)
 		horizOffset = 0;
@@ -2211,7 +2223,7 @@ void TextDisplay::drawString(int style, int x, int y, int toX, char *string, int
 		gc = highlightGC_;
 		bgGC = highlightBGGC_;
 	} else if (style & PRIMARY_MASK) {
-		gc = selectGC_;
+		gc   = selectGC_;
 		bgGC = selectBGGC_;
 	} else {
 		gc = bgGC = gc_;
@@ -2340,7 +2352,8 @@ void TextDisplay::drawCursor(int x, int y) {
 	right = left + cursorWidth;
 
 	// Create segments and draw cursor
-	if (cursorStyle_ == CARET_CURSOR) {
+	switch(cursorStyle_) {
+	case CARET_CURSOR:
 		midY = bot - fontHeight / 5;
 		segs[0].x1 = left;
 		segs[0].y1 = bot;
@@ -2359,7 +2372,9 @@ void TextDisplay::drawCursor(int x, int y) {
 		segs[3].x2 = right;
 		segs[3].y2 = bot;
 		nSegs = 4;
-	} else if (cursorStyle_ == NORMAL_CURSOR) {
+		break;
+		
+	case NORMAL_CURSOR:
 		segs[0].x1 = left;
 		segs[0].y1 = y;
 		segs[0].x2 = right;
@@ -2373,7 +2388,9 @@ void TextDisplay::drawCursor(int x, int y) {
 		segs[2].x2 = right;
 		segs[2].y2 = bot;
 		nSegs = 3;
-	} else if (cursorStyle_ == HEAVY_CURSOR) {
+		break;
+		
+	case HEAVY_CURSOR:
 		segs[0].x1 = x - 1;
 		segs[0].y1 = y;
 		segs[0].x2 = x - 1;
@@ -2395,7 +2412,9 @@ void TextDisplay::drawCursor(int x, int y) {
 		segs[4].x2 = right;
 		segs[4].y2 = bot;
 		nSegs = 5;
-	} else if (cursorStyle_ == DIM_CURSOR) {
+		break;
+		
+	case DIM_CURSOR:
 		midY = y + fontHeight / 2;
 		segs[0].x1 = x;
 		segs[0].y1 = y;
@@ -2410,7 +2429,9 @@ void TextDisplay::drawCursor(int x, int y) {
 		segs[2].x2 = x;
 		segs[2].y2 = bot;
 		nSegs = 3;
-	} else if (cursorStyle_ == BLOCK_CURSOR) {
+		break;
+		
+	case BLOCK_CURSOR:
 		right = x + fontWidth;
 		segs[0].x1 = x;
 		segs[0].y1 = y;
@@ -2429,6 +2450,7 @@ void TextDisplay::drawCursor(int x, int y) {
 		segs[3].x2 = x;
 		segs[3].y2 = y;
 		nSegs = 4;
+		break;
 	}
 	
 	XDrawSegments(XtDisplay(w_), XtWindow(w_), cursorFGGC_, segs, nSegs);
@@ -3025,7 +3047,7 @@ void TextDisplay::updateVScrollBarRange() {
 	sliderSize = std::max(nVisibleLines_, 1); // Avoid X warning (size < 1)
 	sliderValue = topLineNum_;
 	sliderMax = std::max<int>(nBufferLines_ + 2 + text_of(w_).P_cursorVPadding, sliderSize + sliderValue);
-	XtVaSetValues(vScrollBar_, XmNmaximum, sliderMax, XmNsliderSize, sliderSize, XmNpageIncrement, std::max<int>(1, nVisibleLines_ - 1), XmNvalue, sliderValue, nullptr);
+	XtVaSetValues(vScrollBar_, XmNmaximum, sliderMax, XmNsliderSize, sliderSize, XmNpageIncrement, std::max(1, nVisibleLines_ - 1), XmNvalue, sliderValue, nullptr);
 }
 
 /*
@@ -3059,7 +3081,7 @@ int TextDisplay::updateHScrollBarRange() {
 	// Readjust the scroll bar
 	sliderWidth = rect_.width;
 	sliderMax = std::max(maxWidth, sliderWidth + horizOffset_);
-	XtVaSetValues(hScrollBar_, XmNmaximum, sliderMax, XmNsliderSize, sliderWidth, XmNpageIncrement, std::max<int>(rect_.width - 100, 10), XmNvalue, horizOffset_, nullptr);
+	XtVaSetValues(hScrollBar_, XmNmaximum, sliderMax, XmNsliderSize, sliderWidth, XmNpageIncrement, std::max(rect_.width - 100, 10), XmNvalue, horizOffset_, nullptr);
 
 	// Return True if scroll position was changed
 	return origHOffset != horizOffset_;
@@ -3336,17 +3358,17 @@ void TextDisplay::resetClipRectangles() {
 	XRectangle clipRect;
 	Display *display = XtDisplay(w_);
 
-	clipRect.x = rect_.left;
-	clipRect.y = rect_.top;
-	clipRect.width = rect_.width;
+	clipRect.x      = rect_.left;
+	clipRect.y      = rect_.top;
+	clipRect.width  = rect_.width;
 	clipRect.height = rect_.height - rect_.height % (ascent_ + descent_);
 
-	XSetClipRectangles(display, gc_, 0, 0, &clipRect, 1, Unsorted);
-	XSetClipRectangles(display, selectGC_, 0, 0, &clipRect, 1, Unsorted);
-	XSetClipRectangles(display, highlightGC_, 0, 0, &clipRect, 1, Unsorted);
-	XSetClipRectangles(display, selectBGGC_, 0, 0, &clipRect, 1, Unsorted);
+	XSetClipRectangles(display, gc_,            0, 0, &clipRect, 1, Unsorted);
+	XSetClipRectangles(display, selectGC_,      0, 0, &clipRect, 1, Unsorted);
+	XSetClipRectangles(display, highlightGC_,   0, 0, &clipRect, 1, Unsorted);
+	XSetClipRectangles(display, selectBGGC_,    0, 0, &clipRect, 1, Unsorted);
 	XSetClipRectangles(display, highlightBGGC_, 0, 0, &clipRect, 1, Unsorted);
-	XSetClipRectangles(display, styleGC_, 0, 0, &clipRect, 1, Unsorted);
+	XSetClipRectangles(display, styleGC_,       0, 0, &clipRect, 1, Unsorted);
 }
 
 /*
@@ -3358,13 +3380,18 @@ int TextDisplay::visLineLength(int visLineNum) {
 
 	if (lineStartPos == -1)
 		return 0;
+
 	if (visLineNum + 1 >= nVisibleLines_)
 		return lastChar_ - lineStartPos;
+
 	nextLineStart = lineStarts_[visLineNum + 1];
+
 	if (nextLineStart == -1)
 		return lastChar_ - lineStartPos;
+		
 	if (wrapUsesCharacter(nextLineStart - 1))
 		return nextLineStart - 1 - lineStartPos;
+		
 	return nextLineStart - lineStartPos;
 }
 
@@ -3616,9 +3643,19 @@ void TextDisplay::measureDeletedLines(int pos, int nDeleted) {
 **   retLineEnd:    End position of the last line traversed
 */
 void TextDisplay::wrappedLineCounter(const TextBuffer *buf, const int startPos, const int maxPos, const int maxLines, const Boolean startPosIsLineStart, const int styleBufOffset, int *retPos, int *retLines, int *retLineStart, int *retLineEnd) const {
-	int lineStart, newLineStart = 0, b, p, colNum, wrapMargin;
-	int maxWidth, width, countPixels, i, foundBreak;
-	int nLines = 0, tabDist = buffer_->tabDist_;
+	int lineStart;
+	int newLineStart = 0;
+	int b;
+	int p;
+	int colNum;
+	int wrapMargin;
+	int maxWidth;
+	int width;
+	int countPixels;
+	int i;
+	int foundBreak;
+	int nLines = 0;
+	int tabDist = buffer_->tabDist_;
 	char nullSubsChar = buffer_->nullSubsChar_;
 
 	/* If the font is fixed, or there's a wrap margin set, it's more efficient
@@ -3715,7 +3752,7 @@ void TextDisplay::wrappedLineCounter(const TextBuffer *buf, const int startPos, 
 			}
 			nLines++;
 			if (nLines >= maxLines) {
-				*retPos = foundBreak ? b + 1 : std::max<int>(p, lineStart + 1);
+				*retPos = foundBreak ? b + 1 : std::max(p, lineStart + 1);
 				*retLines = nLines;
 				*retLineStart = lineStart;
 				*retLineEnd = foundBreak ? b : p;
@@ -3747,11 +3784,11 @@ void TextDisplay::wrappedLineCounter(const TextBuffer *buf, const int startPos, 
 ** should now be solid because they are now used for online help display.
 */
 int TextDisplay::measurePropChar(const char c, const int colNum, const int pos) const {
-	int charLen, style;
+	int style;
 	char expChar[MAX_EXP_CHAR_LEN];
 	TextBuffer *styleBuf = styleBuffer_;
 
-	charLen = TextBuffer::BufExpandCharacter(c, colNum, expChar, buffer_->tabDist_, buffer_->nullSubsChar_);
+	int charLen = TextBuffer::BufExpandCharacter(c, colNum, expChar, buffer_->tabDist_, buffer_->nullSubsChar_);
 	if(!styleBuf) {
 		style = 0;
 	} else {
@@ -3781,7 +3818,7 @@ void TextDisplay::findLineEnd(int startPos, int startPosIsLineStart, int *lineEn
 	// if we're not wrapping use more efficient BufEndOfLine
 	if (!continuousWrap_) {
 		*lineEnd = buffer_->BufEndOfLine(startPos);
-		*nextLineStart = std::min<int>(buffer_->BufGetLength(), *lineEnd + 1);
+		*nextLineStart = std::min(buffer_->BufGetLength(), *lineEnd + 1);
 		return;
 	}
 
@@ -3806,14 +3843,13 @@ void TextDisplay::findLineEnd(int startPos, int startPosIsLineStart, int *lineEn
 ** accounting is necessary, don't use this function.
 */
 int TextDisplay::wrapUsesCharacter(int lineEndPos) {
-	char c;
 
 	if (!continuousWrap_ || lineEndPos == buffer_->BufGetLength()) {
 		return true;
 	}
 
-	c = buffer_->BufGetCharacter(lineEndPos);
-	return c == '\n' || ((c == '\t' || c == ' ') && lineEndPos + 1 != buffer_->BufGetLength());
+	char c = buffer_->BufGetCharacter(lineEndPos);
+	return (c == '\n') || ((c == '\t' || c == ' ') && lineEndPos + 1 != buffer_->BufGetLength());
 }
 
 /*
@@ -4272,7 +4308,7 @@ std::string TextDisplay::wrapTextEx(view::string_view startLine, view::string_vi
 			colNum += TextBuffer::BufCharWidth(c, colNum, tabDist, buf->nullSubsChar_);
 			if (colNum > wrapMargin) {
 				if (!wrapLine(wrapBuf, bufOffset, lineStartPos, pos, limitPos, &breakAt, &charsAdded)) {
-					limitPos = std::max<int>(pos, limitPos);
+					limitPos = std::max(pos, limitPos);
 				} else {
 					lineStartPos = limitPos = breakAt + 1;
 					pos += charsAdded;
@@ -5299,12 +5335,11 @@ void TextDisplay::InsertClipboard(bool isColumnar) {
 	std::string contents(string, retLength);
 	delete [] string;
 #else
-	QClipboard *clipboard = QApplication::clipboard();
-	if(!clipboard->mimeData()->hasText()) {
+	const QMimeData *mimeData = QApplication::clipboard()->mimeData(QClipboard::Clipboard);
+	if(!mimeData->hasText()) {
 		return;
 	}
-	QString clipboardText = clipboard->text();
-	std::string contents = clipboardText.toStdString();
+	std::string contents = mimeData->text().toStdString();
 #endif
 
 	/* If the string contains ascii-nul characters, substitute something
@@ -5346,11 +5381,11 @@ void TextDisplay::CopyToClipboard(Time time) {
 	}
 
 	/* If the string contained ascii-nul characters, something else was
-	   substituted in the buffer.  Put the nulls back */
-	int length = text.size();
+	   substituted in the buffer.  Put the nulls back */	
 	buffer_->BufUnsubstituteNullCharsEx(text);
 
 #if 0
+	int length = text.size();
 	long itemID = 0;
 	
 	// Shut up LessTif 
@@ -5383,10 +5418,8 @@ void TextDisplay::CopyToClipboard(Time time) {
 	SpinClipboardUnlock(XtDisplay(w_), XtWindow(w_));
 #else
 	(void)time;
-	(void)length;
 	
-	QClipboard *clipboard = QApplication::clipboard();
-	clipboard->setText(QString::fromStdString(text));
+	QApplication::clipboard()->setText(QString::fromStdString(text));
 #endif
 }
 
@@ -5451,12 +5484,11 @@ void TextDisplay::InsertPrimarySelection(Time time, bool isColumnar) {
 	int column;
 	int row;
 	
-	QClipboard *clipboard = QApplication::clipboard();
-	if(!clipboard->mimeData(QClipboard::Selection)->hasText()) {
+	const QMimeData *mimeData = QApplication::clipboard()->mimeData(QClipboard::Selection);
+	if(!mimeData->hasText()) {
 		return;
 	}
-	QString clipboardText = clipboard->text(QClipboard::Selection);
-	std::string string = clipboardText.toStdString();	
+	std::string string = mimeData->text().toStdString();	
 
 	/* If the string contains ascii-nul characters, substitute something
 	   else, or give up, warn, and refuse */
@@ -7235,11 +7267,13 @@ void TextDisplay::mousePanAP(XEvent *event, String *args, Cardinal *nArgs) {
 		btnDownCoord_.y = e->y + topLineNum * lineHeight;
 		dragState_ = MOUSE_PAN;
 		
+		Display *disp = XtDisplay(w_);
+		
 		if (!panCursor) {
-			panCursor = XCreateFontCursor(XtDisplay(w_), XC_fleur);
+			panCursor = XCreateFontCursor(disp, XC_fleur);
 		}
 		
-		XGrabPointer(XtDisplay(w_), XtWindow(w_), false, ButtonMotionMask | ButtonReleaseMask, GrabModeAsync, GrabModeAsync, None, panCursor, CurrentTime);
+		XGrabPointer(disp, XtWindow(w_), false, ButtonMotionMask | ButtonReleaseMask, GrabModeAsync, GrabModeAsync, None, panCursor, CurrentTime);
 	} else
 		cancelDrag();
 }
@@ -8055,7 +8089,7 @@ void TextDisplay::sendSecondary(Time time, Atom sel, selectNotifyActions action,
 	   means it also requires an event handler to see if the request
 	   succeeded or not, and a backup timer to clean up if the select
 	   notify event is never returned */
-	XConvertSelection(XtDisplay(w_), sel, getAtom(disp, A_INSERT_SELECTION), getAtom(disp, A_INSERT_INFO), XtWindow(w_), time);
+	XConvertSelection(disp, sel, getAtom(disp, A_INSERT_SELECTION), getAtom(disp, A_INSERT_INFO), XtWindow(w_), time);
 	
 	auto cbInfo = new selectNotifyInfo;
 	cbInfo->action       = action;
