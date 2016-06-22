@@ -98,16 +98,6 @@ bool can_cross_line_boundaries(const ReparseContext *contextRequirements) {
 
 }
 
-
-struct ParseContext {
-	const char** string;
-	char**       styleString;
-	int          length;
-	char*        prevChar;
-	const char*  lookBehindTo;
-	const char*  match_till;
-};
-
 static HighlightData *compilePatterns(Widget dialogParent, HighlightPattern *patternSrc, int nPatterns);
 static HighlightData *patternOfStyle(HighlightData *patterns, int style);
 static PatternSet *findPatternsForWindow(Document *window, int warn);
