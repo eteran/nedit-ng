@@ -4782,8 +4782,10 @@ Bool TextDisplay::findGraphicsExposeOrNoExposeEvent(Display *theDisplay, XEvent 
 
 
 void TextDisplay::TextDKillCalltip(int calltipID) {
-	if (calltip_.ID == 0)
+	if (calltip_.ID == 0) {
 		return;
+	}
+	
 	if (calltipID == 0 || calltipID == calltip_.ID) {
 		XtPopdown(calltipShell_);
 		calltip_.ID = 0;
