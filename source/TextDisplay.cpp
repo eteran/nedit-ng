@@ -550,8 +550,8 @@ TextDisplay::TextDisplay(Widget widget,
 		lineStarts_[i] = -1;
 	}
 	
-	bgClassPixel_ = nullptr;
-	bgClass_ = nullptr;
+	bgClassPixel_ = QVector<Pixel>();
+	bgClass_      = QVector<uint8_t>();
 	TextDSetupBGClasses(widget, bgClassString, &bgClassPixel_, &bgClass_, bgPixel);
 
 	suppressResync_   = false;
@@ -640,9 +640,6 @@ TextDisplay::~TextDisplay() {
 
 	while (TextDPopGraphicExposeQueueEntry()) {
 	}
-
-	delete [] bgClassPixel_;
-	delete [] bgClass_;
 }
 
 /*
@@ -2251,15 +2248,26 @@ void TextDisplay::drawString(int style, int x, int y, int toX, char *string, int
 		}
 
 		/* Background color priority order is:
-		   1 Primary(Selection), 2 Highlight(Parens),
-		   3 Rangeset, 4 SyntaxHighlightStyle,
-		   5 Backlight (if NOT fill), 6 DefaultBackground */
-		bground = (style & PRIMARY_MASK)                           ? selectBGPixel_ :
-		          (style & HIGHLIGHT_MASK)                         ? highlightBGPixel_ :
-				  (style & RANGESET_MASK)                          ? getRangesetColor((style & RANGESET_MASK) >> RANGESET_SHIFT, bground) :
-				  (styleRec && !styleRec->bgColorName.isNull())    ? styleRec->bgColor :
-				  (style & BACKLIGHT_MASK) && !(style & FILL_MASK) ? bgClassPixel_[(style >> BACKLIGHT_SHIFT) & 0xff] :
-				  bgPixel_;
+		** 1 Primary(Selection),
+		** 2 Highlight(Parens),
+		** 3 Rangeset
+		** 4 SyntaxHighlightStyle,
+		** 5 Backlight (if NOT fill)
+		** 6 DefaultBackground
+		*/
+		if(style & PRIMARY_MASK) {
+			bground = selectBGPixel_;
+		} else if(style & HIGHLIGHT_MASK) {
+			bground = highlightBGPixel_;
+		} else if(style & RANGESET_MASK) {
+			bground = getRangesetColor((style & RANGESET_MASK) >> RANGESET_SHIFT, bground);
+		} else if(styleRec && !styleRec->bgColorName.isNull()) {
+			bground = styleRec->bgColor;
+		} else if((style & BACKLIGHT_MASK) && !(style & FILL_MASK)) {
+			bground = bgClassPixel_[(style >> BACKLIGHT_SHIFT) & 0xff];
+		} else {
+			bground = bgPixel_;
+		}
 
 
 		if (fground == bground) { // B&W kludge
@@ -2513,7 +2521,7 @@ int TextDisplay::styleOfPos(int lineStartPos, int lineLen, int lineIndex, int di
 	}
 	/* store in the BACKLIGHT_MASK portion of style the background color class
 	   of the character thisChar */
-	if (bgClass_) {
+	if (!bgClass_.isEmpty()) {
 		style |= (bgClass_[(uint8_t)thisChar] << BACKLIGHT_SHIFT);
 	}
 	return style;
@@ -3956,31 +3964,23 @@ void TextDisplay::TextDSetupBGClassesEx(Widget w, XmString str) {
 	TextDSetupBGClasses(w, str, &bgClassPixel_, &bgClass_, bgPixel_);
 }
 
-void TextDisplay::TextDSetupBGClasses(Widget w, XmString str, Pixel **pp_bgClassPixel, uint8_t **pp_bgClass, Pixel bgPixelDefault) {
+void TextDisplay::TextDSetupBGClasses(Widget w, XmString str, QVector<Pixel> *pp_bgClassPixel, QVector<uint8_t> *pp_bgClass, Pixel bgPixelDefault) {
 
-	uint8_t bgClass[256];
-	Pixel bgClassPixel[256];
-	int class_no = 0;
-	char *semicol;
+	*pp_bgClassPixel = QVector<Pixel>();
+	*pp_bgClass      = QVector<uint8_t>();
 
 	char *s = reinterpret_cast<char *>(str);
-
-	int lo, hi, dummy;
-	char *pos;
-
-	delete [] *pp_bgClass;
-	delete [] *pp_bgClassPixel;
-
-	*pp_bgClassPixel = nullptr;
-	*pp_bgClass      = nullptr;
-
-	if (!s)
+	if (!s) {
 		return;
+	}
+
+	uint8_t bgClass[256]    = {};
+	Pixel bgClassPixel[256] = {};
+
 
 	// default for all chars is class number zero, for standard background
-	memset(bgClassPixel, 0, sizeof bgClassPixel);
-	memset(bgClass, 0, sizeof bgClass);
 	bgClassPixel[0] = bgPixelDefault;
+
 	/* since class no == 0 in a "style" has no set bits in BACKLIGHT_MASK
 	   (see styleOfPos()), when drawString() is called for text with a
 	   backlight class no of zero, bgClassPixel[0] is never consulted, and
@@ -4005,56 +4005,67 @@ void TextDisplay::TextDSetupBGClasses(Widget w, XmString str, Pixel **pp_bgClass
 	   character background color to #f0f0f0; it is then set to red by the
 	   clause 1-31,127:red). */
 
-	while (s && class_no < 255) {
-		class_no++; // simple class alloc scheme
-		size_t was_semicol = 0;
-		bool is_good = true;
-		if ((semicol = strchr(s, ';'))) {
-			*semicol = '\0'; // null-terminate low[-high]:color clause
-			was_semicol = 1;
-		}
+	int class_no = 1;
+	QString formatString = QString::fromLatin1(s);
+	QStringList formats = formatString.split(QLatin1Char(';'), QString::SkipEmptyParts);
+	for(const QString &format : formats) {
 
-		/* loop over ranges before the color spec, assigning the characters
-		   in the ranges to the current class number */
-		for (lo = hi = strtol(s, &pos, 0); is_good; lo = hi = strtol(pos + 1, &pos, 0)) {
-			if (pos && *pos == '-')
-				hi = strtol(pos + 1, &pos, 0); // get end of range
-			is_good = (pos && 0 <= lo && lo <= hi && hi <= 255);
-			if (is_good)
-				while (lo <= hi)
-					bgClass[lo++] = (uint8_t)class_no;
-			if (*pos != ',')
+		QStringList s1 = format.split(QLatin1Char(':'), QString::SkipEmptyParts);
+		if(s1.size() == 2) {
+			QString ranges = s1[0];
+			QString color  = s1[1];
+
+			if(class_no > UINT8_MAX) {
 				break;
-		}
-		if ((is_good = (is_good && *pos == ':'))) {
-			is_good = (*pos++ != '\0'); // pos now points to color
-			bgClassPixel[class_no] = allocBGColor(w, pos, &dummy);
-		}
-		if (!is_good) {
-			// complain? this class spec clause (in string s) was faulty
-		}
+			}
 
-		// end of loop iterator clauses
-		if (was_semicol)
-			*semicol = ';'; // un-null-terminate low[-high]:color clause
-		s = semicol + was_semicol;
+			// NOTE(eteran): the original code started at index 1
+			// by indexing before using it. This code post increments
+			// starting the classes at 0, which allows NUL characters
+			// to be styled correctly. I am not aware of any negative
+			// side effects of this.
+			const uint8_t nextClass = class_no++;
+
+			int dummy;
+			bgClassPixel[nextClass] = allocBGColor(w, color.toLatin1().data(), &dummy);
+
+			QStringList rangeList = ranges.split(QLatin1Char(','), QString::SkipEmptyParts);
+			for(const QString &range : rangeList) {
+				QRegExp regex(QLatin1String("([0-9]+)(?:-([0-9]+))?"));
+				if(regex.exactMatch(range)) {
+
+					const QString lo = regex.cap(1);
+					const QString hi = regex.cap(2);
+
+					bool loOK;
+					bool hiOK;
+					int lowerBound = lo.toInt(&loOK);
+					int upperBound = hi.toInt(&hiOK);
+
+					if(loOK) {
+						if(!hiOK) {
+							upperBound = lowerBound;
+						}
+
+						for(int i = lowerBound; i <= upperBound; ++i) {
+							bgClass[i] = nextClass;
+						}
+					}
+				}
+			}
+		}
 	}
 
-	/* when we get here, we've set up our class table and class-to-pixel table
-	   in local variables: now put them into the "real thing" */
-	class_no++; // bigger than all valid class_nos
+    QVector<uint8_t> backgroundClass;
+    backgroundClass.reserve(256);
+    std::copy_n(bgClass, 256, std::back_inserter(backgroundClass));
 
-	try {
-		*pp_bgClass      = new uint8_t[256];
-		*pp_bgClassPixel = new Pixel[class_no];
-	
-		std::copy_n(bgClass, 256, *pp_bgClass);
-		std::copy_n(bgClassPixel, class_no, *pp_bgClassPixel);
+    QVector<Pixel> backgroundPixel;
+    backgroundPixel.reserve(class_no);
+    std::copy_n(bgClassPixel, class_no, std::back_inserter(backgroundPixel));
 
-	} catch(const std::bad_alloc &) {
-		delete [] *pp_bgClass;
-		delete [] *pp_bgClassPixel;	
-	}
+    *pp_bgClass      = backgroundClass;
+    *pp_bgClassPixel = backgroundPixel;
 }
 
 /*

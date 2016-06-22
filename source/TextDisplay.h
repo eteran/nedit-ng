@@ -27,6 +27,7 @@
 #ifndef TEXTDISP_H_
 #define TEXTDISP_H_
 
+#include <QVector>
 #include "BlockDragTypes.h"
 #include "Point.h"
 #include "Rect.h"
@@ -394,7 +395,7 @@ public:
 	void TextDSetupBGClassesEx(Widget w, XmString str);
 	
 public:
-	static void TextDSetupBGClasses(Widget w, XmString str, Pixel **pp_bgClassPixel, uint8_t **pp_bgClass, Pixel bgPixelDefault);
+	static void TextDSetupBGClasses(Widget w, XmString str, QVector<Pixel> *pp_bgClassPixel, QVector<uint8_t> *pp_bgClass, Pixel bgPixelDefault);
 	static void cursorBlinkTimerProc(XtPointer clientData, XtIntervalId *id);
 	static void handleHidePointer(Widget w, XtPointer unused, XEvent *event, Boolean *continue_to_dispatch);
 	static void handleShowPointer(Widget w, XtPointer unused, XEvent *event, Boolean *continue_to_dispatch);
@@ -407,8 +408,8 @@ private:
 	Widget calltipShell_;                         // The Shell that holds the calltip
 	Pixel fgPixel_;                               // Foreground color
 	Pixel bgPixel_;                               // Background color	
-	Pixel *bgClassPixel_;                         // table of colors for each BG class
-	uint8_t *bgClass_;                            // obtains index into bgClassPixel[]		
+	QVector<Pixel> bgClassPixel_;                 // table of colors for each BG class
+	QVector<uint8_t> bgClass_;                    // obtains index into bgClassPixel[]
 	Rect rect_;
 	int lineNumLeft_;
 	int lineNumWidth_;
