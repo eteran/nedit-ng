@@ -31,8 +31,9 @@
 #include <QToolTip>
 #include <QClipboard>
 #include <QMimeData>
-
+#include "ui/Calltip.h"
 #include "TextDisplay.h"
+
 #include "Document.h"
 #include "StyleTableEntry.h"
 #include "TextBuffer.h"
@@ -64,6 +65,9 @@
 #include <Xm/Label.h>
 #include <X11/Shell.h>
 #include <X11/cursorfont.h>
+
+// NOTE(eteran): TEST
+static Calltip *g_CallTip = nullptr;
 
 namespace {
 
@@ -4787,7 +4791,13 @@ void TextDisplay::TextDKillCalltip(int calltipID) {
 	}
 	
 	if (calltipID == 0 || calltipID == calltip_.ID) {
+#if 1
 		XtPopdown(calltipShell_);
+#else
+		if(g_CallTip) {
+			g_CallTip->hide();
+		}
+#endif
 		calltip_.ID = 0;
 	}
 }
@@ -4833,7 +4843,14 @@ void TextDisplay::TextDRedrawCalltip(int calltipID) {
 		rel_x = calltip_.pos;
 	}
 
+#if 1
 	XtVaGetValues(calltipShell_, XmNwidth, &tipWidth, XmNheight, &tipHeight, XmNborderWidth, &borderWidth, nullptr);
+#else
+	tipWidth    = g_CallTip->width();
+	tipHeight   = g_CallTip->height();
+	borderWidth = 0;
+#endif
+
 	rel_x += borderWidth;
 	rel_y += lineHeight / 2 + borderWidth;
 
@@ -4875,8 +4892,19 @@ void TextDisplay::TextDRedrawCalltip(int calltipID) {
 			// If no case applied, just go with the default placement. 
 		}
 	}
-
+	
+#if 1
 	XtVaSetValues(calltipShell_, XmNx, abs_x, XmNy, abs_y, nullptr);
+#else
+	// small experiement involving custom calltips
+	// though we need to figure out how to force it to the top
+	// best	
+	if(g_CallTip) {
+		g_CallTip->move(abs_x, abs_y);
+		g_CallTip->show();
+		g_CallTip->raise();
+	}
+#endif
 }
 
 bool TextDisplay::offscreenV(XWindowAttributes *screenAttr, int top, int height) {
@@ -8507,7 +8535,8 @@ int TextDisplay::TextDShowCalltip(view::string_view text, bool anchored, int pos
 
 	// Expand any tabs in the calltip and make it an XmString 
 	std::string textCpy = expandAllTabsEx(text, buffer_->BufGetTabDistance());
-
+	
+#if 1
 	XmString str = XmStringCreateLtoREx(textCpy, XmFONTLIST_DEFAULT_TAG);
 
 	// Get the location/dimensions of the text area 
@@ -8546,6 +8575,13 @@ int TextDisplay::TextDShowCalltip(view::string_view text, bool anchored, int pos
 	// Set the text on the label 
 	XtVaSetValues(calltipW_, XmNlabelString, str, nullptr);
 	XmStringFree(str);
+#else
+	if(!g_CallTip) {
+		g_CallTip = new Calltip(nullptr, Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
+	}
+	
+	g_CallTip->setText(QString::fromStdString(textCpy));
+#endif
 
 	// Figure out where to put the tip 
 	if (anchored) {
@@ -8583,12 +8619,16 @@ int TextDisplay::TextDShowCalltip(view::string_view text, bool anchored, int pos
 		StaticCalltipID = 1;
 	}
 
+#if 1
 	// Realize the calltip's shell so that its width & height are known 
 	XtRealizeWidget(calltipShell_);
-	
+#endif
+
 	// Move the calltip and pop it up 
 	TextDRedrawCalltip(0);
+#if 1
 	XtPopup(calltipShell_, XtGrabNone);
+#endif
 	return calltip_.ID;
 }
 
