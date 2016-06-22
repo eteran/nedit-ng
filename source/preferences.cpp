@@ -2101,33 +2101,39 @@ static QString WriteLanguageModesStringEx() {
 		
 		outBuf->BufAppendEx(str.toStdString());
 		outBuf->BufAppendEx(":");
-		if (!LanguageModes[i]->recognitionExpr.isNull()) {
+		if (!LanguageModes[i]->recognitionExpr.isEmpty()) {
 			std::string str = MakeQuotedStringEx(LanguageModes[i]->recognitionExpr.toStdString());
 			outBuf->BufAppendEx(str);
 		}
+		
 		outBuf->BufAppendEx(":");
 		if (LanguageModes[i]->indentStyle != DEFAULT_INDENT)
 			outBuf->BufAppendEx(AutoIndentTypes[LanguageModes[i]->indentStyle]);
+		
 		outBuf->BufAppendEx(":");
 		if (LanguageModes[i]->wrapStyle != DEFAULT_WRAP)
 			outBuf->BufAppendEx(AutoWrapTypes[LanguageModes[i]->wrapStyle]);
-		outBuf->BufAppendEx(":");
+		
+		outBuf->BufAppendEx(":");		
 		if (LanguageModes[i]->tabDist != DEFAULT_TAB_DIST) {
 			sprintf(numBuf, "%d", LanguageModes[i]->tabDist);
 			outBuf->BufAppendEx(numBuf);
 		}
+		
 		outBuf->BufAppendEx(":");
 		if (LanguageModes[i]->emTabDist != DEFAULT_EM_TAB_DIST) {
 			sprintf(numBuf, "%d", LanguageModes[i]->emTabDist);
 			outBuf->BufAppendEx(numBuf);
 		}
+		
 		outBuf->BufAppendEx(":");
-		if (!LanguageModes[i]->delimiters.isNull()) {
+		if (!LanguageModes[i]->delimiters.isEmpty()) {
 			std::string str = MakeQuotedStringEx(LanguageModes[i]->delimiters.toStdString());
 			outBuf->BufAppendEx(str);
 		}
+		
 		outBuf->BufAppendEx(":");
-		if (!LanguageModes[i]->defTipsFile.isNull()) {
+		if (!LanguageModes[i]->defTipsFile.isEmpty()) {
 			std::string str = MakeQuotedStringEx(LanguageModes[i]->defTipsFile.toStdString());
 			outBuf->BufAppendEx(str);
 		}
