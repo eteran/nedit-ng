@@ -1394,9 +1394,14 @@ void showMatchingCalltip(Widget parent, int i) {
 /*  Open a new (or existing) editor window to the location specified in
     tagFiles[i], tagSearch[i], tagPosInf[i] */
 void editTaggedLocation(Widget parent, int i) {
+
 	/* Globals: tagSearch, tagPosInf, tagFiles, tagName, textNrows, WindowList */
-	int startPos, endPos, lineNum, rows;
-	char filename[MAXPATHLEN], pathname[MAXPATHLEN];
+	int startPos;
+	int endPos;
+	int lineNum;
+	int rows;
+	char filename[MAXPATHLEN];
+	char pathname[MAXPATHLEN];
 	Document *windowToSearch;
 	Document *parentWindow = Document::WidgetToWindow(parent);
 
@@ -1430,9 +1435,10 @@ void editTaggedLocation(Widget parent, int i) {
 	/* Position it nicely in the window,
 	   about 1/4 of the way down from the top */
 	lineNum = windowToSearch->buffer_->BufCountLines(0, startPos);
-	XtVaGetValues(windowToSearch->lastFocus_, textNrows, &rows, nullptr);
 	
 	auto textD = textD_of(windowToSearch->lastFocus_);
+	
+	rows = textD->getRows();
 	
 	textD->TextDSetScroll(lineNum - rows / 4, 0);
 	textD->TextSetCursorPos(endPos);

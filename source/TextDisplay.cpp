@@ -8910,6 +8910,30 @@ int TextDisplay::getWrapMargin() {
 	return value;
 }
 
+int TextDisplay::getColumns() {
+	int value;
+	XtVaGetValues(w_, textNcolumns, &value, nullptr);
+	return value;
+}
+
+int TextDisplay::getRows() {
+	int value;
+	XtVaGetValues(w_, textNrows, &value, nullptr);
+	return value;
+}
+
+int TextDisplay::getMarginHeight() {
+	int value;
+	XtVaGetValues(w_, textNmarginHeight, &value, nullptr);
+	return value;
+}
+
+int TextDisplay::getMarginWidth() {
+	int value;
+	XtVaGetValues(w_, textNmarginWidth, &value, nullptr);
+	return value;
+}
+
 int TextDisplay::getLineNumCols() {
 	int value;
 	XtVaGetValues(w_, textNlineNumCols, &value, nullptr);
@@ -8922,11 +8946,17 @@ QString TextDisplay::getWordDelimiters() {
 	return QLatin1String(value);
 }
 
+XFontStruct *TextDisplay::getFont() {
+	XFontStruct *fs = nullptr;
+	XtVaGetValues(w_, textNfont, &fs, nullptr);
+	return fs;
+	
+}
+
 #if 0
 	Pixel TextDisplay::getBackgroundPixel();
 	Pixel TextDisplay::getForegroundPixel();
 	QString TextDisplay::getBacklightCharTypes();
-	XFontStruct *TextDisplay::getFont();
 	bool TextDisplay::getAutoIndent();
 	bool TextDisplay::getAutoShowInsertPos();
 	bool TextDisplay::getAutoWrap();

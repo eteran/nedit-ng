@@ -1265,7 +1265,7 @@ int Document::updateGutterWidth() {
 
 		newColsDiff = reqCols - maxCols;
 
-		XtVaGetValues(textArea_, textNfont, &fs, nullptr);
+		fs = textD_of(textArea_)->getFont();
 		fontWidth = fs->max_bounds.width;
 
 		XtVaGetValues(shell_, XmNwidth, &windowWidth, nullptr);
@@ -1478,9 +1478,14 @@ void Document::UpdateStatsLine() {
 ** rather than pixels, which is very helpful to users.
 */
 void Document::UpdateWMSizeHints() {
-	Dimension shellWidth, shellHeight, textHeight, hScrollBarHeight;
-	int marginHeight, marginWidth, totalHeight, nCols, nRows;
-	XFontStruct *fs;
+
+	Dimension shellWidth;
+	Dimension shellHeight;
+	Dimension textHeight;
+	Dimension hScrollBarHeight;
+	int totalHeight;
+	int nCols;
+	int nRows;
 	int i;
 	int baseWidth;
 	int baseHeight;
@@ -1490,7 +1495,7 @@ void Document::UpdateWMSizeHints() {
 	auto textD = textD_of(textArea_);
 
 	// Find the dimensions of a single character of the text font 
-	XtVaGetValues(textArea_, textNfont, &fs, nullptr);
+	XFontStruct *fs = textD_of(textArea_)->getFont();
 	fontHeight = textD->fontAscent() + textD->fontDescent();
 	fontWidth = fs->max_bounds.width;
 
@@ -1507,7 +1512,14 @@ void Document::UpdateWMSizeHints() {
 	   2. the Col x Row info reported by the WM will be based on the fully
 	      display text.
 	*/
-	XtVaGetValues(textArea_, XmNheight, &textHeight, textNmarginHeight, &marginHeight, textNmarginWidth, &marginWidth, nullptr);
+	
+	
+	int marginHeight = textD_of(textArea_)->getMarginHeight();
+#if 0
+	int marginWidth  = textD_of(textArea_)->getMarginWidth();
+#endif
+
+	XtVaGetValues(textArea_, XmNheight, &textHeight, nullptr);
 	totalHeight = textHeight - 2 * marginHeight;
 	for (i = 0; i < nPanes_; i++) {
 		XtVaGetValues(textPanes_[i], XmNheight, &textHeight, textNhScrollBar, &hScrollBar, nullptr);
@@ -1917,23 +1929,30 @@ void Document::SortTabBar() {
 ** to font or margin height.
 */
 void Document::UpdateMinPaneHeights() {
+
 	auto textD = textD_of(textArea_);
-	Dimension hsbHeight, swMarginHeight, frameShadowHeight;
-	int i, marginHeight, minPaneHeight;
+	Dimension hsbHeight;
+	Dimension swMarginHeight;
+	Dimension frameShadowHeight;
+	int minPaneHeight;
 	Widget hScrollBar;
 
 	// find the minimum allowable size for a pane 
 	XtVaGetValues(textArea_, textNhScrollBar, &hScrollBar, nullptr);
 	XtVaGetValues(containingPane(textArea_), XmNscrolledWindowMarginHeight, &swMarginHeight, nullptr);
 	XtVaGetValues(XtParent(textArea_), XmNshadowThickness, &frameShadowHeight, nullptr);
-	XtVaGetValues(textArea_, textNmarginHeight, &marginHeight, nullptr);
+	
+	int marginHeight = textD->getMarginHeight();
+	
 	XtVaGetValues(hScrollBar, XmNheight, &hsbHeight, nullptr);
 	minPaneHeight = textD->fontAscent() + textD->fontDescent() + marginHeight * 2 + swMarginHeight * 2 + hsbHeight + 2 * frameShadowHeight;
 
 	// Set it in all of the widgets in the this 
 	setPaneMinHeight(containingPane(textArea_), minPaneHeight);
-	for (i = 0; i < nPanes_; i++)
+
+	for (int i = 0; i < nPanes_; i++) {
 		setPaneMinHeight(containingPane(textPanes_[i]), minPaneHeight);
+	}
 }
 
 /*
@@ -2223,6 +2242,7 @@ void Document::MoveDocumentDialog() {
 ** well with rectangular selections.
 */
 void Document::MakeSelectionVisible(Widget textPane) {
+
 	Dimension width;
 	bool isRect;
 	int horizOffset;
@@ -2261,7 +2281,9 @@ void Document::MakeSelectionVisible(Widget textPane) {
 	   top or bottom of the window, to scroll the selection to (if scrolling is
 	   necessary), around 1/3 of the height of the window */
 	if (!((left >= topChar && right <= lastChar) || (left <= topChar && right >= lastChar))) {
-		XtVaGetValues(textPane, textNrows, &rows, nullptr);
+		
+		rows = textD->getRows();
+		
 		scrollOffset = rows / 3;
 		textD->TextDGetScroll(&topLineNum, &horizOffset);
 		if (right > lastChar) {
@@ -2302,7 +2324,10 @@ void Document::MakeSelectionVisible(Widget textPane) {
 	   reqested position to be vertically on screen) */
 	if (textD->TextDPositionToXY(left, &leftX, &y) && textD->TextDPositionToXY(right, &rightX, &y) && leftX <= rightX) {
 		textD->TextDGetScroll(&topLineNum, &horizOffset);
-		XtVaGetValues(textPane, XmNwidth, &width, textNmarginWidth, &margin, nullptr);
+		
+		margin = textD->getMarginWidth();
+		
+		XtVaGetValues(textPane, XmNwidth, &width, nullptr);
 		if (leftX < margin + textD->getLineNumLeft() + textD->getLineNumWidth())
 			horizOffset -= margin + textD->getLineNumLeft() + textD->getLineNumWidth() - leftX;
 		else if (rightX > width - margin)
@@ -2389,7 +2414,6 @@ void Document::ShowWindowTabBar() {
 void Document::ShowLineNumbers(bool state) {
 	Widget text;
 	int i;
-	int marginWidth;
 	unsigned reqCols = 0;
 	Dimension windowWidth;
 	auto textD = textD_of(textArea_);
@@ -2406,7 +2430,9 @@ void Document::ShowLineNumbers(bool state) {
 		reqCols = updateLineNumDisp();
 	} else {
 		XtVaGetValues(shell_, XmNwidth, &windowWidth, nullptr);
-		XtVaGetValues(textArea_, textNmarginWidth, &marginWidth, nullptr);
+		
+		int marginWidth = textD_of(textArea_)->getMarginWidth();
+		
 		XtVaSetValues(shell_, XmNwidth, windowWidth - textD->getRect().left + marginWidth, nullptr);
 
 		for (i = 0; i <= nPanes_; i++) {
@@ -2525,12 +2551,23 @@ void Document::SetShowMatching(int state) {
 */
 void Document::SetFonts(const char *fontName, const char *italicName, const char *boldName, const char *boldItalicName) {
 
-	XFontStruct *font, *oldFont;
-	int i, oldFontWidth, oldFontHeight, fontWidth, fontHeight;
-	int borderWidth, borderHeight, marginWidth, marginHeight;
+	XFontStruct *font;
+	int i;
+	int oldFontWidth;
+	int oldFontHeight;
+	int fontWidth;
+	int fontHeight;
+	int borderWidth;
+	int borderHeight;
 	bool highlightChanged = false;
-	Dimension oldWindowWidth, oldWindowHeight, oldTextWidth, oldTextHeight;
-	Dimension textHeight, newWindowWidth, newWindowHeight;
+	Dimension oldWindowWidth;
+	Dimension oldWindowHeight;
+	Dimension oldTextWidth;
+	Dimension oldTextHeight;
+	Dimension textHeight;
+	Dimension newWindowWidth;
+	Dimension newWindowHeight;
+	
 	auto textD = textD_of(textArea_);
 
 	// Check which fonts have changed 
@@ -2554,7 +2591,15 @@ void Document::SetFonts(const char *fontName, const char *italicName, const char
 	/* Get information about the current this sizing, to be used to
 	   determine the correct this size after the font is changed */
 	XtVaGetValues(shell_, XmNwidth, &oldWindowWidth, XmNheight, &oldWindowHeight, nullptr);
-	XtVaGetValues(textArea_, XmNheight, &textHeight, textNmarginHeight, &marginHeight, textNmarginWidth, &marginWidth, textNfont, &oldFont, nullptr);
+	
+	
+	int marginHeight     = textD_of(textArea_)->getMarginHeight();
+#if 0
+	int marginWidth      = textD_of(textArea_)->getMarginWidth();
+#endif
+	XFontStruct *oldFont = textD_of(textArea_)->getFont();
+	
+	XtVaGetValues(textArea_, XmNheight, &textHeight, nullptr);
 	oldTextWidth = textD->getRect().width + textD->getLineNumWidth();
 	oldTextHeight = textHeight - 2 * marginHeight;
 	for (i = 0; i < nPanes_; i++) {
@@ -2904,18 +2949,27 @@ void Document::deleteDocument() {
 ** as if there's only one single text pane in the window.
 */
 void Document::getTextPaneDimension(int *nRows, int *nCols) {
+	
 	Widget hScrollBar;
-	Dimension hScrollBarHeight, paneHeight;
-	int marginHeight, marginWidth, totalHeight, fontHeight;
+	Dimension hScrollBarHeight;
+	Dimension paneHeight;
+	int totalHeight;
+	int fontHeight;
+	
 	auto textD = textD_of(textArea_);
 
 	// width is the same for panes 
-	XtVaGetValues(textArea_, textNcolumns, nCols, nullptr);
+	*nCols = textD->getColumns();
 
 	// we have to work out the height, as the text area may have been split 
-	XtVaGetValues(textArea_, textNhScrollBar, &hScrollBar, textNmarginHeight, &marginHeight, textNmarginWidth, &marginWidth, nullptr);
+	int marginHeight = textD->getMarginHeight();
+#if 0
+	int marginWidth  = textD->getMarginWidth();
+#endif
+	XtVaGetValues(textArea_, textNhScrollBar, &hScrollBar, nullptr);
 	XtVaGetValues(hScrollBar, XmNheight, &hScrollBarHeight, nullptr);
 	XtVaGetValues(splitPane_, XmNheight, &paneHeight, nullptr);
+	
 	totalHeight = paneHeight - 2 * marginHeight - hScrollBarHeight;
 	fontHeight = textD->fontAscent() + textD->fontDescent();
 	*nRows = totalHeight / fontHeight;

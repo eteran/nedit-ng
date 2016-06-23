@@ -2277,7 +2277,10 @@ static void updateWindowHeight(Document *window, int oldFontHeight) {
 	/* Decompose the window height into the part devoted to displaying
 	   text (textHeight) and the non-text part (boderHeight) */
 	XtVaGetValues(window->shell_, XmNheight, &windowHeight, nullptr);
-	XtVaGetValues(window->textArea_, XmNheight, &textAreaHeight, textNmarginHeight, &marginHeight, nullptr);
+	
+	marginHeight = textD_of(window->textArea_)->getMarginHeight();
+	
+	XtVaGetValues(window->textArea_, XmNheight, &textAreaHeight, nullptr);
 	textHeight = textAreaHeight - 2 * marginHeight;
 	for (i = 0; i < window->nPanes_; i++) {
 		XtVaGetValues(window->textPanes_[i], XmNheight, &textAreaHeight, nullptr);

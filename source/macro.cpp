@@ -3485,11 +3485,11 @@ static int wrapMarginMV(Document *window, DataValue *argList, int nArgs, DataVal
 	(void)nArgs;
 	(void)argList;
 
-	int margin, nCols;
+	int margin = textD_of(window->textArea_)->getWrapMargin();
+	int nCols  = textD_of(window->textArea_)->getColumns();
 
-	XtVaGetValues(window->textArea_, textNcolumns, &nCols, textNwrapMargin, &margin, nullptr);
 	result->tag = INT_TAG;
-	result->val.n = margin == 0 ? nCols : margin;
+	result->val.n = (margin == 0) ? nCols : margin;
 	return true;
 }
 
@@ -3890,9 +3890,8 @@ static int emTabDistMV(Document *window, DataValue *argList, int nArgs, DataValu
 	(void)argList;
 	(void)errMsg;
 
-	int dist;
+	int dist = textD_of(window->textArea_)->getEmulateTabs();
 
-	XtVaGetValues(window->textArea_, textNemulateTabs, &dist, nullptr);
 	result->tag = INT_TAG;
 	result->val.n = dist;
 	return true;

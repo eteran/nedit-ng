@@ -275,8 +275,11 @@ void FillSelection(Document *window) {
 	if (hasSelection && isRect) {
 		rightMargin = rectEnd - rectStart;
 	} else {
-		XtVaGetValues(window->textArea_, textNcolumns, &nCols, textNwrapMargin, &wrapMargin, nullptr);
-		rightMargin = (wrapMargin == 0 ? nCols : wrapMargin);
+	
+		wrapMargin = textD_of(window->textArea_)->getWrapMargin();
+		nCols      = textD_of(window->textArea_)->getColumns();
+
+		rightMargin = (wrapMargin == 0) ? nCols : wrapMargin;
 	}
 
 	// Fill the text 

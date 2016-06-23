@@ -216,6 +216,10 @@ public:
 	int getEmulateTabs();
 	int getLineNumCols();
 	int getWrapMargin();
+	int getMarginHeight();
+	int getMarginWidth();
+	int getColumns();
+	int getRows();
 
 
 public:
