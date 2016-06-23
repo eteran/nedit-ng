@@ -438,10 +438,17 @@ std::list<UndoInfo *> cloneUndoItems(const std::list<UndoInfo *> &orgList) {
 }
 
 void cloneTextPanes(Document *window, Document *orgWin) {
+	
 	short paneHeights[MAX_PANES + 1];
-	int insertPositions[MAX_PANES + 1], topLines[MAX_PANES + 1];
+	int insertPositions[MAX_PANES + 1];
+	int topLines[MAX_PANES + 1];
 	int horizOffsets[MAX_PANES + 1];
-	int i, focusPane, emTabDist, wrapMargin, lineNumCols, totalHeight = 0;
+	int i;
+	int focusPane;
+	int emTabDist;
+	int wrapMargin;
+	int lineNumCols;
+	int totalHeight = 0;
 	char *delimiters;
 	Widget text;
 	TextSelection sel;
@@ -479,7 +486,13 @@ void cloneTextPanes(Document *window, Document *orgWin) {
 	// Copy some parameters 
 	XtVaGetValues(orgWin->textArea_, textNemulateTabs, &emTabDist, textNwordDelimiters, &delimiters, textNwrapMargin, &wrapMargin, nullptr);
 	lineNumCols = orgWin->showLineNumbers_ ? MIN_LINE_NUM_COLS : 0;
-	XtVaSetValues(window->textArea_, textNemulateTabs, emTabDist, textNwordDelimiters, delimiters, textNwrapMargin, wrapMargin, textNlineNumCols, lineNumCols, nullptr);
+
+	textD_of(window->textArea_)->setEmulateTabs(emTabDist);
+	textD_of(window->textArea_)->setWordDelimiters(QLatin1String(delimiters));
+	textD_of(window->textArea_)->setWrapMargin(wrapMargin);
+	textD_of(window->textArea_)->setLineNumCols(lineNumCols);
+
+
 
 	// clone split panes, if any 
 
@@ -502,7 +515,10 @@ void cloneTextPanes(Document *window, Document *orgWin) {
 
 			// Fix up the colors 
 			auto newTextD = textD_of(text);
-			XtVaSetValues(text, XmNforeground, textD->foregroundPixel(), XmNbackground, textD->backgroundPixel(), nullptr);
+			
+			newTextD->setForegroundPixel(textD->foregroundPixel());
+			newTextD->setBackgroundPixel(textD->backgroundPixel());	
+			
 			newTextD->TextDSetColors(
 				textD->foregroundPixel(), 
 				textD->backgroundPixel(), 
@@ -1271,8 +1287,8 @@ int Document::updateGutterWidth() {
 
 			//  Update all panes of this document.  
 			for (i = 0; i <= document->nPanes_; i++) {
-				text = (i == 0) ? document->textArea_ : document->textPanes_[i - 1];
-				XtVaSetValues(text, textNlineNumCols, reqCols, nullptr);
+				text = (i == 0) ? document->textArea_ : document->textPanes_[i - 1];				
+				textD_of(text)->setLineNumCols(reqCols);
 			}
 		}
 	}
@@ -1464,7 +1480,11 @@ void Document::UpdateWMSizeHints() {
 	Dimension shellWidth, shellHeight, textHeight, hScrollBarHeight;
 	int marginHeight, marginWidth, totalHeight, nCols, nRows;
 	XFontStruct *fs;
-	int i, baseWidth, baseHeight, fontHeight, fontWidth;
+	int i;
+	int baseWidth;
+	int baseHeight;
+	int fontHeight;
+	int fontWidth;
 	Widget hScrollBar;
 	auto textD = textD_of(textArea_);
 
@@ -1571,9 +1591,9 @@ void Document::SetTabDist(int tabDist) {
 */
 void Document::SetEmTabDist(int emTabDist) {
 
-	XtVaSetValues(textArea_, textNemulateTabs, emTabDist, nullptr);
+	textD_of(textArea_)->setEmulateTabs(emTabDist);
 	for (int i = 0; i < nPanes_; ++i) {
-		XtVaSetValues(textPanes_[i], textNemulateTabs, emTabDist, nullptr);
+		textD_of(textPanes_[i])->setEmulateTabs(emTabDist);
 	}
 }
 
@@ -1686,9 +1706,9 @@ void Document::ClearModeMessage() {
 ** Set the backlight character class string
 */
 void Document::SetBacklightChars(char *applyBacklightTypes) {
-	int i;
-	int is_applied = XmToggleButtonGetState(backlightCharsItem_) ? 1 : 0;
-	int do_apply = applyBacklightTypes ? 1 : 0;
+
+	const bool is_applied = XmToggleButtonGetState(backlightCharsItem_) ? true : false;
+	const bool do_apply   = applyBacklightTypes ? true : false;
 
 	backlightChars_ = do_apply;
 
@@ -1698,9 +1718,9 @@ void Document::SetBacklightChars(char *applyBacklightTypes) {
 		backlightCharTypes_ = QString();
 	}
 
-	XtVaSetValues(textArea_, textNbacklightCharTypes, backlightCharTypes_.toLatin1().data(), nullptr);
-	for (i = 0; i < nPanes_; i++) {
-		XtVaSetValues(textPanes_[i], textNbacklightCharTypes, backlightCharTypes_.toLatin1().data(), nullptr);
+	textD_of(textArea_)->setBacklightCharTypes(backlightCharTypes_);
+	for (int i = 0; i < nPanes_; i++) {
+		textD_of(textPanes_[i])->setBacklightCharTypes(backlightCharTypes_);
 	}
 	
 	if (is_applied != do_apply) {
@@ -1720,10 +1740,11 @@ void Document::UpdateWindowReadOnly() {
 	}
 
 	bool state = lockReasons_.isAnyLocked();
-	XtVaSetValues(textArea_, textNreadOnly, state, nullptr);
+	
+	textD_of(textArea_)->setReadOnly(state);
 	
 	for (int i = 0; i < nPanes_; i++) {
-		XtVaSetValues(textPanes_[i], textNreadOnly, state, nullptr);
+		textD_of(textPanes_[i])->setReadOnly(state);
 	}
 	
 	XmToggleButtonSetState(readOnlyItem_, state, false);
@@ -1931,10 +1952,10 @@ void Document::UpdateNewOppositeMenu(int openInTab) {
 */
 void Document::SetOverstrike(bool overstrike) {
 
-	XtVaSetValues(textArea_, textNoverstrike, overstrike, nullptr);
+	textD_of(textArea_)->setOverstrike(overstrike);
 	
 	for (int i = 0; i < nPanes_; i++) {
-		XtVaSetValues(textPanes_[i], textNoverstrike, overstrike, nullptr);
+		textD_of(textPanes_[i])->setOverstrike(overstrike);
 	}
 	
 	overstrike_ = overstrike;
@@ -1944,11 +1965,16 @@ void Document::SetOverstrike(bool overstrike) {
 ** Select auto-wrap mode, one of NO_WRAP, NEWLINE_WRAP, or CONTINUOUS_WRAP
 */
 void Document::SetAutoWrap(int state) {
-	int autoWrap = state == NEWLINE_WRAP, contWrap = state == CONTINUOUS_WRAP;
+	bool autoWrap = (state == NEWLINE_WRAP);
+	bool contWrap = (state == CONTINUOUS_WRAP);
 
-	XtVaSetValues(textArea_, textNautoWrap, autoWrap, textNcontinuousWrap, contWrap, nullptr);
+
+	textD_of(textArea_)->setAutoWrap(autoWrap);
+	textD_of(textArea_)->setContinuousWrap(contWrap);
+
 	for (int i = 0; i < nPanes_; i++) {
-		XtVaSetValues(textPanes_[i], textNautoWrap, autoWrap, textNcontinuousWrap, contWrap, nullptr);
+		textD_of(textPanes_[i])->setAutoWrap(autoWrap);
+		textD_of(textPanes_[i])->setContinuousWrap(contWrap);
 	}
 	
 	wrapMode_ = state;
@@ -1965,9 +1991,10 @@ void Document::SetAutoWrap(int state) {
 */
 void Document::SetAutoScroll(int margin) {
 
-	XtVaSetValues(textArea_, textNcursorVPadding, margin, nullptr);
-	for (int i = 0; i < nPanes_; i++)
-		XtVaSetValues(textPanes_[i], textNcursorVPadding, margin, nullptr);
+	textD_of(textArea_)->setCursorVPadding(margin);
+	for (int i = 0; i < nPanes_; i++) {
+		textD_of(textPanes_[i])->setCursorVPadding(margin);
+	}
 }
 
 /*
@@ -2360,7 +2387,8 @@ void Document::ShowWindowTabBar() {
 */
 void Document::ShowLineNumbers(bool state) {
 	Widget text;
-	int i, marginWidth;
+	int i;
+	int marginWidth;
 	unsigned reqCols = 0;
 	Dimension windowWidth;
 	auto textD = textD_of(textArea_);
@@ -2381,8 +2409,8 @@ void Document::ShowLineNumbers(bool state) {
 		XtVaSetValues(shell_, XmNwidth, windowWidth - textD->getRect().left + marginWidth, nullptr);
 
 		for (i = 0; i <= nPanes_; i++) {
-			text = i == 0 ? textArea_ : textPanes_[i - 1];
-			XtVaSetValues(text, textNlineNumCols, 0, nullptr);
+			text = (i == 0) ? textArea_ : textPanes_[i - 1];
+			textD_of(text)->setLineNumCols(0);
 		}
 	}
 
@@ -2399,8 +2427,8 @@ void Document::ShowLineNumbers(bool state) {
 
 		for (i = 0; i <= win->nPanes_; i++) {
 			text = (i == 0) ? win->textArea_ : win->textPanes_[i - 1];
-			//  reqCols should really be cast here, but into what? XmRInt?  
-			XtVaSetValues(text, textNlineNumCols, reqCols, nullptr);
+			//  reqCols should really be cast here, but into what? XmRInt?
+			textD_of(text)->setLineNumCols(reqCols);
 		}
 	}
 
@@ -2440,17 +2468,27 @@ void Document::ShowStatsLine(int state) {
 ** Set autoindent state to one of  NO_AUTO_INDENT, AUTO_INDENT, or SMART_INDENT.
 */
 void Document::SetAutoIndent(int state) {
-	int autoIndent = state == AUTO_INDENT, smartIndent = state == SMART_INDENT;
+	bool autoIndent  = (state == AUTO_INDENT);
+	bool smartIndent = (state == SMART_INDENT);
 	int i;
 
-	if (indentStyle_ == SMART_INDENT && !smartIndent)
+	if (indentStyle_ == SMART_INDENT && !smartIndent) {
 		EndSmartIndent(this);
-	else if (smartIndent && indentStyle_ != SMART_INDENT)
+	} else if (smartIndent && indentStyle_ != SMART_INDENT) {
 		BeginSmartIndent(this, true);
+	}
+	
 	indentStyle_ = state;
-	XtVaSetValues(textArea_, textNautoIndent, autoIndent, textNsmartIndent, smartIndent, nullptr);
-	for (i = 0; i < nPanes_; i++)
-		XtVaSetValues(textPanes_[i], textNautoIndent, autoIndent, textNsmartIndent, smartIndent, nullptr);
+	
+	
+	textD_of(textArea_)->setAutoIndent(smartIndent);
+	textD_of(textArea_)->setSmartIndent(autoIndent);
+	
+	for (i = 0; i < nPanes_; i++) {
+		textD_of(textPanes_[i])->setAutoIndent(smartIndent);
+		textD_of(textPanes_[i])->setSmartIndent(autoIndent);	
+	}
+	
 	if (IsTopDocument()) {
 		XmToggleButtonSetState(smartIndentItem_, smartIndent, false);
 		XmToggleButtonSetState(autoIndentItem_, autoIndent, false);
@@ -2554,9 +2592,12 @@ void Document::SetFonts(const char *fontName, const char *italicName, const char
 	// Change the primary font in all the widgets 
 	if (primaryChanged) {
 		font = GetDefaultFontStruct(fontList_);
-		XtVaSetValues(textArea_, textNfont, font, nullptr);
-		for (i = 0; i < nPanes_; i++)
-			XtVaSetValues(textPanes_[i], textNfont, font, nullptr);
+		
+		textD_of(textArea_)->setFont(font);
+		
+		for (i = 0; i < nPanes_; i++) {
+			textD_of(textPanes_[i])->setFont(font);
+		}
 	}
 
 	/* Change the highlight fonts, even if they didn't change, because
@@ -2923,8 +2964,9 @@ void Document::SplitPane() {
 	textD->TextSetBuffer(buffer_);
 	if (highlightData_)
 		AttachHighlightToWidget(text, this);
+		
 	if (backlightChars_) {
-		XtVaSetValues(text, textNbacklightCharTypes, backlightCharTypes_.toLatin1().data(), nullptr);
+		textD->setBacklightCharTypes(backlightCharTypes_);
 	}
 	
 	XtManageChild(text);

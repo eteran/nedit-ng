@@ -3869,9 +3869,10 @@ static void setWrapMarginAP(Widget w, XEvent *event, String *args, Cardinal *nAr
 		if (sscanf(args[0], "%d", &newMargin) == 1 && newMargin >= 0 && newMargin < 1000) {
 			int i;
 
-			XtVaSetValues(window->textArea_, textNwrapMargin, newMargin, nullptr);
+			textD_of(window->textArea_)->setWrapMargin(newMargin);
+
 			for (i = 0; i < window->nPanes_; ++i) {
-				XtVaSetValues(window->textPanes_[i], textNwrapMargin, newMargin, nullptr);
+				textD_of(window->textPanes_[i])->setWrapMargin(newMargin);
 			}
 		} else {
 			fprintf(stderr, "nedit: set_wrap_margin requires integer argument >= 0 and < 1000\n");

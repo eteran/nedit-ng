@@ -59,6 +59,8 @@
 #include "util/misc.h"
 #include "util/fileUtils.h"
 #include "util/utils.h"
+#include "TextHelper.h"
+#include "TextDisplay.h"
 
 #include <cctype>
 #include <pwd.h>
@@ -1821,10 +1823,12 @@ static void reapplyLanguageMode(Document *window, int mode, int forceDefaults) {
 	} else {
 		delimiters = LanguageModes[mode]->delimiters;
 	}
-		
-	XtVaSetValues(window->textArea_, textNwordDelimiters, delimiters.toLatin1().data(), nullptr);
-	for (i = 0; i < window->nPanes_; i++)
-		XtVaSetValues(window->textPanes_[i], textNautoIndent, delimiters.toLatin1().data(), nullptr);
+	
+	
+	textD_of(window->textArea_)->setWordDelimiters(delimiters);
+	for (i = 0; i < window->nPanes_; i++) {
+		textD_of(window->textPanes_[i])->setWordDelimiters(delimiters);
+	}
 
 	/* Decide on desired values for language-specific parameters.  If a
 	   parameter was set to its default value, set it to the new default,

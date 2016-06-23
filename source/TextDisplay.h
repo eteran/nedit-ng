@@ -178,6 +178,25 @@ public:
 	void ExchangeSelections(Time time);
 	void SendSecondarySelection(Time time, bool removeAfter);
 	void TakeMotifDestination(Time time);
+	
+public:
+	// resource setters
+	void setWordDelimiters(const QString &delimiters);
+	void setBacklightCharTypes(const QString &charTypes);
+	void setAutoShowInsertPos(bool value);
+	void setEmulateTabs(int value);
+	void setWrapMargin(int value);
+	void setLineNumCols(int value);
+	void setForegroundPixel(Pixel pixel);
+	void setBackgroundPixel(Pixel pixel);
+	void setReadOnly(bool value);
+	void setOverstrike(bool value);
+	void setCursorVPadding(int value);
+	void setFont(XFontStruct *font);
+	void setContinuousWrap(bool value);
+	void setAutoWrap(bool value);
+	void setAutoIndent(bool value);
+	void setSmartIndent(bool value);
 
 public:
 	TextBuffer *TextGetBuffer();

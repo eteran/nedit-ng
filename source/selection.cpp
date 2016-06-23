@@ -555,8 +555,8 @@ void AddMark(Document *window, Widget widget, char label) {
 }
 
 void GotoMark(Document *window, Widget w, char label, int extendSel) {
-	int index, oldStart, newStart, oldEnd, newEnd, cursorPos;
-	TextSelection *sel, *oldSel;
+	
+	int index;
 
 	// look up the mark in the mark table 
 	label = toupper(label);
@@ -564,33 +564,39 @@ void GotoMark(Document *window, Widget w, char label, int extendSel) {
 		if (window->markTable_[index].label == label)
 			break;
 	}
+
 	if (index == window->nMarks_) {
 		QApplication::beep();
 		return;
 	}
 
 	// reselect marked the selection, and move the cursor to the marked pos 
-	sel = &window->markTable_[index].sel;
-	oldSel = &window->buffer_->primary_;
-	cursorPos = window->markTable_[index].cursorPos;
+	TextSelection *sel    = &window->markTable_[index].sel;
+	TextSelection *oldSel = &window->buffer_->primary_;
+	
+	auto textD = textD_of(w);
+	
+	int cursorPos = window->markTable_[index].cursorPos;
 	if (extendSel) {
 		
-		auto textD = textD_of(w);
 		
-		oldStart = oldSel->selected ? oldSel->start : textD->TextGetCursorPos();
-		oldEnd   = oldSel->selected ? oldSel->end   : textD->TextGetCursorPos();
-		newStart = sel->selected    ? sel->start    : cursorPos;
-		newEnd   = sel->selected    ? sel->end      : cursorPos;
+		
+		int oldStart = oldSel->selected ? oldSel->start : textD->TextGetCursorPos();
+		int oldEnd   = oldSel->selected ? oldSel->end   : textD->TextGetCursorPos();
+		int newStart = sel->selected    ? sel->start    : cursorPos;
+		int newEnd   = sel->selected    ? sel->end      : cursorPos;
 		
 		window->buffer_->BufSelect(oldStart < newStart ? oldStart : newStart, oldEnd > newEnd ? oldEnd : newEnd);
 	} else {
 		if (sel->selected) {
-			if (sel->rectangular)
+			if (sel->rectangular) {
 				window->buffer_->BufRectSelect(sel->start, sel->end, sel->rectStart, sel->rectEnd);
-			else
+			} else {
 				window->buffer_->BufSelect(sel->start, sel->end);
-		} else
+			}
+		} else {
 			window->buffer_->BufUnselect();
+		}
 	}
 
 	/* Move the window into a pleasing position relative to the selection
@@ -599,13 +605,10 @@ void GotoMark(Document *window, Widget w, char label, int extendSel) {
 	   cursor position without first using the less pleasing capability
 	   of the widget itself for bringing the cursor in to view, you have to
 	   first turn it off, set the position, then turn it back on. */
-	XtVaSetValues(w, textNautoShowInsertPos, False, nullptr);
-	
-	auto textD = textD_of(w);
+	textD->setAutoShowInsertPos(false);
 	textD->TextSetCursorPos(cursorPos);
-	
 	window->MakeSelectionVisible(window->lastFocus_);
-	XtVaSetValues(w, textNautoShowInsertPos, True, nullptr);
+	textD->setAutoShowInsertPos(true);
 }
 
 /*

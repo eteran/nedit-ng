@@ -8833,3 +8833,67 @@ void TextDisplay::addDragEndCallback(XtCallbackProc callback, XtPointer client_d
 void TextDisplay::addsmartIndentCallback(XtCallbackProc callback, XtPointer client_data) {
 	XtAddCallback(w_, textNsmartIndentCallback, callback, client_data);
 }
+
+void TextDisplay::setWordDelimiters(const QString &delimiters) {
+	XtVaSetValues(w_, textNwordDelimiters, delimiters.toLatin1().data(), nullptr);
+}
+
+void TextDisplay::setAutoShowInsertPos(bool value) {
+	XtVaSetValues(w_, textNautoShowInsertPos, value, nullptr);
+}
+
+void TextDisplay::setEmulateTabs(int value) {
+	XtVaSetValues(w_, textNemulateTabs, value, nullptr);
+}
+
+void TextDisplay::setWrapMargin(int value) {
+	XtVaSetValues(w_, textNwrapMargin, value, nullptr);
+}
+
+void TextDisplay::setLineNumCols(int value) {
+	XtVaSetValues(w_, textNlineNumCols, value, nullptr);
+}
+
+void TextDisplay::setForegroundPixel(Pixel pixel) {
+	XtVaSetValues(w_, XmNforeground, pixel, nullptr);
+}
+
+void TextDisplay::setBackgroundPixel(Pixel pixel) {
+	XtVaSetValues(w_, XmNbackground, pixel, nullptr);
+}
+
+void TextDisplay::setBacklightCharTypes(const QString &charTypes) {
+	XtVaSetValues(w_, textNbacklightCharTypes, charTypes.toLatin1().data(), nullptr);
+}
+
+void TextDisplay::setReadOnly(bool value) {
+	XtVaSetValues(w_, textNreadOnly, value, nullptr);
+}
+
+void TextDisplay::setOverstrike(bool value) {
+	XtVaSetValues(w_, textNoverstrike, value, nullptr);
+}
+
+void TextDisplay::setCursorVPadding(int value) {
+	XtVaSetValues(w_, textNcursorVPadding, value, nullptr);
+}
+
+void TextDisplay::setFont(XFontStruct *font) {
+	XtVaSetValues(w_, textNfont, font, nullptr);
+}
+
+void TextDisplay::setAutoWrap(bool value) {
+	XtVaSetValues(w_, textNautoWrap, value, nullptr);
+}
+
+void TextDisplay::setContinuousWrap(bool value) {
+	XtVaSetValues(w_, textNcontinuousWrap, value, nullptr);
+}
+
+void TextDisplay::setAutoIndent(bool value) {
+	XtVaSetValues(w_, textNautoIndent, value, nullptr);
+}
+
+void TextDisplay::setSmartIndent(bool value) {
+	XtVaSetValues(w_, textNsmartIndent, value, nullptr);
+}

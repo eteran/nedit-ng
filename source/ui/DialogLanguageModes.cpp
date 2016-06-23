@@ -17,6 +17,8 @@
 #include "highlightData.h"
 #include "smartIndent.h"
 #include "userCmds.h"
+#include "TextHelper.h"
+#include "TextDisplay.h"
 
 //------------------------------------------------------------------------------
 // Name: DialogLanguageModes
@@ -447,9 +449,9 @@ bool DialogLanguageModes::updateLMList(bool silent) {
 						newDelimiters = GetPrefDelimiters();
 					}
 					
-					XtVaSetValues(window->textArea_, textNwordDelimiters, newDelimiters.toLatin1().data(), nullptr);
+					textD_of(window->textArea_)->setWordDelimiters(newDelimiters);					
 					for (int j = 0; j < window->nPanes_; j++) {
-						XtVaSetValues(window->textPanes_[j], textNwordDelimiters, newDelimiters.toLatin1().data(), nullptr);
+						textD_of(window->textPanes_[j])->setWordDelimiters(newDelimiters);
 					}
 					
 					// don't forget to adapt the LM stored within the user menu cache 

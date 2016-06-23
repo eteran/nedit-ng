@@ -1247,11 +1247,11 @@ void SelectToMatchingCharacter(Document *window) {
 	   string at a pleasing position on the screen (otherwise, the cursor would
 	   be automatically scrolled on screen and MakeSelectionVisible would do
 	   nothing) */
-	XtVaSetValues(window->lastFocus_, textNautoShowInsertPos, False, nullptr);
+	textD_of(window->lastFocus_)->setAutoShowInsertPos(false);
 	// select the text between the matching characters 
 	buf->BufSelect(startPos, endPos + 1);
 	window->MakeSelectionVisible(window->lastFocus_);
-	XtVaSetValues(window->lastFocus_, textNautoShowInsertPos, True, nullptr);
+	textD_of(window->lastFocus_)->setAutoShowInsertPos(true);
 }
 
 void GotoMatchingCharacter(Document *window) {
@@ -1294,13 +1294,13 @@ void GotoMatchingCharacter(Document *window) {
 	   string at a pleasing position on the screen (otherwise, the cursor would
 	   be automatically scrolled on screen and MakeSelectionVisible would do
 	   nothing) */
-	XtVaSetValues(window->lastFocus_, textNautoShowInsertPos, False, nullptr);
+	textD_of(window->lastFocus_)->setAutoShowInsertPos(false);
 
 	auto textD = window->lastFocus();
 	
 	textD->TextSetCursorPos(matchPos + 1);
 	window->MakeSelectionVisible(window->lastFocus_);
-	XtVaSetValues(window->lastFocus_, textNautoShowInsertPos, True, nullptr);
+	textD_of(window->lastFocus_)->setAutoShowInsertPos(true);
 }
 
 static int findMatchingChar(Document *window, char toMatch, void *styleToMatch, int charPos, int startLimit, int endLimit, int *matchPos) {
@@ -1543,12 +1543,13 @@ bool SearchAndReplace(Document *window, SearchDirection direction, const char *s
 	   string at a pleasing position on the screen (otherwise, the cursor would
 	   be automatically scrolled on screen and MakeSelectionVisible would do
 	   nothing) */
-	XtVaSetValues(window->lastFocus_, textNautoShowInsertPos, False, nullptr);
-
 	auto textD = window->lastFocus();
+	textD->setAutoShowInsertPos(false);
+
+	
 	textD->TextSetCursorPos(startPos + ((direction == SEARCH_FORWARD) ? replaceLen : 0));
 	window->MakeSelectionVisible(window->lastFocus_);
-	XtVaSetValues(window->lastFocus_, textNautoShowInsertPos, True, nullptr);
+	textD->setAutoShowInsertPos(true);
 
 	return true;
 }
