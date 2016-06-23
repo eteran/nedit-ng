@@ -8897,3 +8897,42 @@ void TextDisplay::setAutoIndent(bool value) {
 void TextDisplay::setSmartIndent(bool value) {
 	XtVaSetValues(w_, textNsmartIndent, value, nullptr);
 }
+
+int TextDisplay::getEmulateTabs() {
+	int value;
+	XtVaGetValues(w_, textNemulateTabs, &value, nullptr);
+	return value;
+}
+
+int TextDisplay::getWrapMargin() {
+	int value;
+	XtVaGetValues(w_, textNwrapMargin, &value, nullptr);
+	return value;
+}
+
+int TextDisplay::getLineNumCols() {
+	int value;
+	XtVaGetValues(w_, textNlineNumCols, &value, nullptr);
+	return value;
+}
+
+QString TextDisplay::getWordDelimiters() {
+	char *value;
+	XtVaGetValues(w_, textNwordDelimiters, &value, nullptr);
+	return QLatin1String(value);
+}
+
+#if 0
+	Pixel TextDisplay::getBackgroundPixel();
+	Pixel TextDisplay::getForegroundPixel();
+	QString TextDisplay::getBacklightCharTypes();
+	XFontStruct *TextDisplay::getFont();
+	bool TextDisplay::getAutoIndent();
+	bool TextDisplay::getAutoShowInsertPos();
+	bool TextDisplay::getAutoWrap();
+	bool TextDisplay::getContinuousWrap();
+	bool TextDisplay::getOverstrike();
+	bool TextDisplay::getReadOnly();
+	bool TextDisplay::getSmartIndent();
+	int TextDisplay::getCursorVPadding();
+#endif

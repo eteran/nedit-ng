@@ -445,11 +445,8 @@ void cloneTextPanes(Document *window, Document *orgWin) {
 	int horizOffsets[MAX_PANES + 1];
 	int i;
 	int focusPane;
-	int emTabDist;
-	int wrapMargin;
 	int lineNumCols;
 	int totalHeight = 0;
-	char *delimiters;
 	Widget text;
 	TextSelection sel;
 
@@ -484,11 +481,15 @@ void cloneTextPanes(Document *window, Document *orgWin) {
 	window->nPanes_ = orgWin->nPanes_;
 
 	// Copy some parameters 
-	XtVaGetValues(orgWin->textArea_, textNemulateTabs, &emTabDist, textNwordDelimiters, &delimiters, textNwrapMargin, &wrapMargin, nullptr);
+	int emTabDist      = textD_of(orgWin->textArea_)->getEmulateTabs();
+	QString delimiters = textD_of(orgWin->textArea_)->getWordDelimiters();
+	int wrapMargin     = textD_of(orgWin->textArea_)->getWrapMargin();
+	
+	
 	lineNumCols = orgWin->showLineNumbers_ ? MIN_LINE_NUM_COLS : 0;
 
 	textD_of(window->textArea_)->setEmulateTabs(emTabDist);
-	textD_of(window->textArea_)->setWordDelimiters(QLatin1String(delimiters));
+	textD_of(window->textArea_)->setWordDelimiters(delimiters);
 	textD_of(window->textArea_)->setWrapMargin(wrapMargin);
 	textD_of(window->textArea_)->setLineNumCols(lineNumCols);
 
@@ -504,7 +505,7 @@ void cloneTextPanes(Document *window, Document *orgWin) {
 		   highlight data to be the same as the other panes in the orgWin */
 
 		for (i = 0; i < orgWin->nPanes_; i++) {
-			text = Document::createTextArea(window->splitPane_, window, 1, 1, emTabDist, delimiters, wrapMargin, lineNumCols);
+			text = Document::createTextArea(window->splitPane_, window, 1, 1, emTabDist, delimiters.toLatin1().data(), wrapMargin, lineNumCols);
 			auto textD = textD_of(text);
 			textD->TextSetBuffer(window->buffer_);
 
@@ -1239,7 +1240,7 @@ int Document::updateGutterWidth() {
 			int lineNumCols, tmpReqCols;
 			TextDisplay *textD = textD_of(document->textArea_);
 
-			XtVaGetValues(document->textArea_, textNlineNumCols, &lineNumCols, nullptr);
+			lineNumCols = textD_of(document->textArea_)->getLineNumCols();
 
 			/* Is the width of the line number area sufficient to display all the
 			   line numbers in the file?  If not, expand line number field, and the
@@ -1279,7 +1280,7 @@ int Document::updateGutterWidth() {
 			int i;
 			int lineNumCols;
 
-			XtVaGetValues(document->textArea_, textNlineNumCols, &lineNumCols, nullptr);
+			lineNumCols = textD_of(document->textArea_)->getLineNumCols();
 
 			if (lineNumCols == reqCols) {
 				continue;
@@ -2926,10 +2927,12 @@ void Document::getTextPaneDimension(int *nRows, int *nCols) {
 */
 void Document::SplitPane() {
 	short paneHeights[MAX_PANES + 1];
-	int insertPositions[MAX_PANES + 1], topLines[MAX_PANES + 1];
+	int insertPositions[MAX_PANES + 1];
+	int topLines[MAX_PANES + 1];
 	int horizOffsets[MAX_PANES + 1];
-	int i, focusPane, emTabDist, wrapMargin, lineNumCols, totalHeight = 0;
-	char *delimiters;
+	int i;
+	int focusPane;
+	int totalHeight = 0;
 	Widget text = nullptr;
 	TextDisplay *newTextD;
 
@@ -2957,8 +2960,14 @@ void Document::SplitPane() {
 
 	/* Create a text widget to add to the pane and set its buffer and
 	   highlight data to be the same as the other panes in the document */
-	XtVaGetValues(textArea_, textNemulateTabs, &emTabDist, textNwordDelimiters, &delimiters, textNwrapMargin, &wrapMargin, textNlineNumCols, &lineNumCols, nullptr);
-	text = createTextArea(splitPane_, this, 1, 1, emTabDist, delimiters, wrapMargin, lineNumCols);
+	   
+	int emTabDist      = textD_of(textArea_)->getEmulateTabs();
+	QString delimiters = textD_of(textArea_)->getWordDelimiters();
+	int wrapMargin     = textD_of(textArea_)->getWrapMargin();
+	int lineNumCols    = textD_of(textArea_)->getLineNumCols();
+	
+	   
+	text = createTextArea(splitPane_, this, 1, 1, emTabDist, delimiters.toLatin1().data(), wrapMargin, lineNumCols);
 	auto textD = textD_of(text);
 	
 	textD->TextSetBuffer(buffer_);
@@ -3155,8 +3164,6 @@ void Document::RaiseDocument() {
 */
 void Document::cloneDocument(Document *window) {
 	
-	int emTabDist;
-
 	window->path_     = path_;
 	window->filename_ = filename_;
 
@@ -3171,7 +3178,9 @@ void Document::cloneDocument(Document *window) {
 	// copy the tab preferences (here!) 
 	window->buffer_->BufSetTabDistance(buffer_->tabDist_);
 	window->buffer_->useTabs_ = buffer_->useTabs_;
-	XtVaGetValues(textArea_, textNemulateTabs, &emTabDist, nullptr);
+	
+	int emTabDist = textD_of(textArea_)->getEmulateTabs();
+	
 	window->SetEmTabDist(emTabDist);
 
 	window->ignoreModify_ = false;

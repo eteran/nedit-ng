@@ -117,7 +117,7 @@ void ShiftSelection(Document *window, ShiftDirection direction, int byTab) {
 
 	// shift the text by the appropriate distance 
 	if (byTab) {
-		XtVaGetValues(window->textArea_, textNemulateTabs, &emTabDist, nullptr);
+		emTabDist = textD_of(window->textArea_)->getEmulateTabs();
 		shiftDist = emTabDist == 0 ? buf->tabDist_ : emTabDist;
 	} else
 		shiftDist = 1;
@@ -140,7 +140,7 @@ static void shiftRect(Document *window, int direction, int byTab, int selStart, 
 
 	// Calculate the the left/right offset for the new rectangle 
 	if (byTab) {
-		XtVaGetValues(window->textArea_, textNemulateTabs, &emTabDist, nullptr);
+		emTabDist = textD_of(window->textArea_)->getEmulateTabs();
 		offset = emTabDist == 0 ? buf->tabDist_ : emTabDist;
 	} else
 		offset = 1;

@@ -199,6 +199,26 @@ public:
 	void setSmartIndent(bool value);
 
 public:
+	// resource getters
+	Pixel getBackgroundPixel();
+	Pixel getForegroundPixel();
+	QString getBacklightCharTypes();
+	QString getWordDelimiters();
+	XFontStruct *getFont();
+	bool getAutoIndent();
+	bool getAutoShowInsertPos();
+	bool getAutoWrap();
+	bool getContinuousWrap();
+	bool getOverstrike();
+	bool getReadOnly();
+	bool getSmartIndent();
+	int getCursorVPadding();
+	int getEmulateTabs();
+	int getLineNumCols();
+	int getWrapMargin();
+
+
+public:
 	TextBuffer *TextGetBuffer();
 	bool checkReadOnly() const;
 	int TextFirstVisibleLine() const;

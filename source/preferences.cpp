@@ -1751,7 +1751,7 @@ void WrapMarginDialog(Widget parent, Document *forWindow) {
 	if(!forWindow) {
 		margin = GetPrefWrapMargin();
 	} else {
-		XtVaGetValues(forWindow->textArea_, textNwrapMargin, &margin, nullptr);
+		margin = textD_of(forWindow->textArea_)->getWrapMargin();
 	}
 	
 	dialog->ui.checkWrapAndFill->setChecked(margin == 0);
@@ -1835,7 +1835,8 @@ static void reapplyLanguageMode(Document *window, int mode, int forceDefaults) {
 	   otherwise, leave it alone */
 	wrapModeIsDef = window->wrapMode_ == GetPrefWrap(oldMode);
 	tabDistIsDef = window->buffer_->BufGetTabDistance() == GetPrefTabDist(oldMode);
-	XtVaGetValues(window->textArea_, textNemulateTabs, &oldEmTabDist, nullptr);
+	
+	oldEmTabDist = textD_of(window->textArea_)->getEmulateTabs();
 	
 	QString oldlanguageModeName = LanguageModeName(oldMode);
 	
