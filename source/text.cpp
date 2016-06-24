@@ -642,7 +642,7 @@ static void initialize(Widget request, Widget newWidget, ArgList args, Cardinal 
 	auto buf = new TextBuffer;
 
 	// Create and initialize the text-display part of the widget
-	int textLeft = tw.P_marginWidth + (lineNumCols == 0 ? 0 : marginWidth + charWidth * lineNumCols);
+	int textLeft = tw.P_marginWidth + ((lineNumCols == 0) ? 0 : marginWidth + charWidth * lineNumCols);
 
 	auto textD = new TextDisplay(
 		newWidget,

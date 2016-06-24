@@ -8925,93 +8925,99 @@ void TextDisplay::setSmartIndent(bool value) {
 	XtVaSetValues(w_, textNsmartIndent, value, nullptr);
 }
 
-int TextDisplay::getEmulateTabs() {
+int TextDisplay::getEmulateTabs() const {
 	int value;
 	XtVaGetValues(w_, textNemulateTabs, &value, nullptr);
 	return value;
 }
 
-int TextDisplay::getWrapMargin() {
+int TextDisplay::getWrapMargin() const {
 	int value;
 	XtVaGetValues(w_, textNwrapMargin, &value, nullptr);
 	return value;
 }
 
-int TextDisplay::getColumns() {
+int TextDisplay::getColumns() const {
 	int value;
 	XtVaGetValues(w_, textNcolumns, &value, nullptr);
 	return value;
 }
 
-int TextDisplay::getRows() {
+int TextDisplay::getRows() const {
 	int value;
 	XtVaGetValues(w_, textNrows, &value, nullptr);
 	return value;
 }
 
-int TextDisplay::getMarginHeight() {
+int TextDisplay::getMarginHeight() const {
 	int value;
 	XtVaGetValues(w_, textNmarginHeight, &value, nullptr);
 	return value;
 }
 
-int TextDisplay::getMarginWidth() {
+int TextDisplay::getMarginWidth() const {
 	int value;
 	XtVaGetValues(w_, textNmarginWidth, &value, nullptr);
 	return value;
 }
 
-int TextDisplay::getLineNumCols() {
+int TextDisplay::getLineNumCols() const {
 	int value;
 	XtVaGetValues(w_, textNlineNumCols, &value, nullptr);
 	return value;
 }
 
-QString TextDisplay::getWordDelimiters() {
+QString TextDisplay::getWordDelimiters() const {
 	char *value;
 	XtVaGetValues(w_, textNwordDelimiters, &value, nullptr);
 	return QLatin1String(value);
 }
 
-XFontStruct *TextDisplay::getFont() {
+XFontStruct *TextDisplay::getFont() const {
 	XFontStruct *fs = nullptr;
 	XtVaGetValues(w_, textNfont, &fs, nullptr);
 	return fs;
 }
 
-Position TextDisplay::getX() {
+Position TextDisplay::getX() const {
 	Position value;
 	XtVaGetValues(w_, XmNx, &value, nullptr);
 	return value;
 }
 
-Position TextDisplay::getY() {
+Position TextDisplay::getY() const {
 	Position value;
 	XtVaGetValues(w_, XmNy, &value, nullptr);
 	return value;
 }
 
-Pixel TextDisplay::getBackgroundPixel() {
+Pixel TextDisplay::getBackgroundPixel() const {
 	Pixel value;
 	XtVaGetValues(w_, XmNbackground, &value, nullptr);
 	return value;
 }
 
-Pixel TextDisplay::getForegroundPixel() {
+Pixel TextDisplay::getForegroundPixel() const {
 	Pixel value;
 	XtVaGetValues(w_, XmNforeground, &value, nullptr);
 	return value;
 }
 
-Dimension TextDisplay::getWidth() {
+Dimension TextDisplay::getWidth() const {
 	Dimension value;
 	XtVaGetValues(w_, XmNwidth, &value, nullptr);
 	return value;
 }
 
-Dimension TextDisplay::getHeight() {
+Dimension TextDisplay::getHeight() const {
 	Dimension value;
 	XtVaGetValues(w_, XmNheight, &value, nullptr);
+	return value;
+}
+
+Colormap TextDisplay::getColormap() const {
+	Colormap value;
+	XtVaGetValues(w_, XmNcolormap, &value, nullptr);
 	return value;
 }
 

@@ -200,30 +200,31 @@ public:
 
 public:
 	// resource getters
-	Pixel getBackgroundPixel();
-	Pixel getForegroundPixel();
-	QString getBacklightCharTypes();
-	QString getWordDelimiters();
-	XFontStruct *getFont();
-	bool getAutoIndent();
-	bool getAutoShowInsertPos();
-	bool getAutoWrap();
-	bool getContinuousWrap();
-	bool getOverstrike();
-	bool getReadOnly();
-	bool getSmartIndent();
-	int getCursorVPadding();
-	int getEmulateTabs();
-	int getLineNumCols();
-	int getWrapMargin();
-	int getMarginHeight();
-	int getMarginWidth();
-	int getColumns();
-	int getRows();
-	Position getX();
-	Position getY();
-	Dimension getWidth();
-	Dimension getHeight();
+	Pixel getBackgroundPixel() const;
+	Pixel getForegroundPixel() const;
+	QString getBacklightCharTypes() const;
+	QString getWordDelimiters() const;
+	XFontStruct *getFont() const;
+	bool getAutoIndent() const;
+	bool getAutoShowInsertPos() const;
+	bool getAutoWrap() const;
+	bool getContinuousWrap() const;
+	bool getOverstrike() const;
+	bool getReadOnly() const;
+	bool getSmartIndent() const;
+	int getCursorVPadding() const;
+	int getEmulateTabs() const;
+	int getLineNumCols() const;
+	int getWrapMargin() const;
+	int getMarginHeight() const;
+	int getMarginWidth() const;
+	int getColumns() const;
+	int getRows() const;
+	Position getX() const;
+	Position getY() const;
+	Dimension getWidth() const;
+	Dimension getHeight() const;
+	Colormap getColormap() const;
 
 
 public:
