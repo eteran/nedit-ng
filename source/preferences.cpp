@@ -1665,7 +1665,6 @@ static void setStringPref(char *prefDataField, const char *newValue) {
 void SetLanguageMode(Document *window, int mode, int forceNewDefaults) {
 	Widget menu;
 	WidgetList items;
-	int n;
 	Cardinal nItems;
 	void *userData;
 
@@ -1676,7 +1675,8 @@ void SetLanguageMode(Document *window, int mode, int forceNewDefaults) {
 	if (window->IsTopDocument()) {
 		XtVaGetValues(window->langModeCascade_, XmNsubMenuId, &menu, nullptr);
 		XtVaGetValues(menu, XmNchildren, &items, XmNnumChildren, &nItems, nullptr);
-		for (n = 0; n < (int)nItems; n++) {
+		
+		for (int n = 0; n < (int)nItems; n++) {
 			XtVaGetValues(items[n], XmNuserData, &userData, nullptr);
 			XmToggleButtonSetState(items[n], (long)userData == mode, False);
 		}
@@ -2652,7 +2652,7 @@ Widget CreateLanguageModeMenu(Widget parent, XtCallbackProc cbProc, void *cbArg)
 ** show a particular language mode
 */
 void SetLangModeMenu(Widget optMenu, const char *modeName) {
-	int i;
+
 	Cardinal nItems;
 	WidgetList items;
 	Widget pulldown, selectedItem;
@@ -2660,16 +2660,21 @@ void SetLangModeMenu(Widget optMenu, const char *modeName) {
 
 	XtVaGetValues(optMenu, XmNsubMenuId, &pulldown, nullptr);
 	XtVaGetValues(pulldown, XmNchildren, &items, XmNnumChildren, &nItems, nullptr);
-	if (nItems == 0)
+	
+	if (nItems == 0) {
 		return;
+	}
+	
 	selectedItem = items[0];
-	for (i = 0; i < (int)nItems; i++) {
+	
+	for (int i = 0; i < (int)nItems; i++) {
 		XtVaGetValues(items[i], XmNuserData, &itemName, nullptr);
 		if (!strcmp(itemName, modeName)) {
 			selectedItem = items[i];
 			break;
 		}
 	}
+	
 	XtVaSetValues(optMenu, XmNmenuHistory, selectedItem, nullptr);
 }
 
@@ -2690,26 +2695,29 @@ void CreateLanguageModeSubMenu(Document *window, const Widget parent, const char
 ** in the master list: LanguageModes.
 */
 void updateLanguageModeSubmenu(Document *window) {
-	long i;
+
 	XmString s1;
-	Widget menu, btn;
 	Arg args[1] = {{XmNradioBehavior, (XtArgVal)True}};
 
 	// Destroy and re-create the menu pane 
+	Widget menu;
 	XtVaGetValues(window->langModeCascade_, XmNsubMenuId, &menu, nullptr);
-	if(menu)
+	if(menu) {
 		XtDestroyWidget(menu);
+	}
+	
 	menu = CreatePulldownMenu(XtParent(window->langModeCascade_), "languageModes", args, 1);
-	btn =
-	    XtVaCreateManagedWidget("languageMode", xmToggleButtonGadgetClass, menu, XmNlabelString, s1 = XmStringCreateSimpleEx("Plain"), XmNuserData, PLAIN_LANGUAGE_MODE, XmNset, window->languageMode_ == PLAIN_LANGUAGE_MODE, nullptr);
+	Widget btn  = XtVaCreateManagedWidget("languageMode", xmToggleButtonGadgetClass, menu, XmNlabelString, s1 = XmStringCreateSimpleEx("Plain"), XmNuserData, PLAIN_LANGUAGE_MODE, XmNset, window->languageMode_ == PLAIN_LANGUAGE_MODE, nullptr);
+	
 	XmStringFree(s1);
 	XtAddCallback(btn, XmNvalueChangedCallback, setLangModeCB, window);
-	for (i = 0; i < NLanguageModes; i++) {
-		btn = XtVaCreateManagedWidget("languageMode", xmToggleButtonGadgetClass, menu, XmNlabelString, s1 = XmStringCreateSimpleEx(LanguageModes[i]->name), XmNmarginHeight, 0, XmNuserData, i, XmNset, window->languageMode_ == i,
-		                              nullptr);
+
+	for (int i = 0; i < NLanguageModes; i++) {
+		btn = XtVaCreateManagedWidget("languageMode", xmToggleButtonGadgetClass, menu, XmNlabelString, s1 = XmStringCreateSimpleEx(LanguageModes[i]->name), XmNmarginHeight, 0, XmNuserData, i, XmNset, window->languageMode_ == i, nullptr);
 		XmStringFree(s1);
 		XtAddCallback(btn, XmNvalueChangedCallback, setLangModeCB, window);
 	}
+
 	XtVaSetValues(window->langModeCascade_, XmNsubMenuId, menu, nullptr);
 }
 

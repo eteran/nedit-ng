@@ -220,6 +220,10 @@ public:
 	int getMarginWidth();
 	int getColumns();
 	int getRows();
+	Position getX();
+	Position getY();
+	Dimension getWidth();
+	Dimension getHeight();
 
 
 public:

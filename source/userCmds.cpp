@@ -564,7 +564,9 @@ static void updateMenu(Document *window, int menuType) {
 ** entries or remove empty space.
 */
 static void manageTearOffMenu(Widget menuPane) {
-	Dimension width, height, border;
+	Dimension width;
+	Dimension height;
+	Dimension border;
 
 	/* somehow OM went into a long CPU cycling when we
 	   attempt to change the shell window dimension by
@@ -1076,9 +1078,8 @@ static void deleteMenuItems(Widget menuPane) {
 	// Fetch the list of children from the menu pane to delete 
 	XtVaGetValues(menuPane, XmNchildren, &itemList, XmNnumChildren, &nItems, nullptr);
 
-	// make a copy because the widget alters the list as you delete widgets 
-	auto items = new Widget[nItems];
-	std::copy_n(itemList, nItems, items);
+	// make a copy because the widget alters the list as you delete widgets
+	std::vector<Widget> items(itemList, itemList + nItems);
 
 	// delete all of the widgets not marked as PERMANENT_MENU_ITEM 
 	for (size_t n = 0; n < nItems; n++) {
@@ -1099,8 +1100,6 @@ static void deleteMenuItems(Widget menuPane) {
 			XtDestroyWidget(items[n]);
 		}
 	}
-	
-	delete [] items;
 }
 
 int checkMacroText(const char *macro, Widget errorParent, Widget errFocus) {
@@ -1196,8 +1195,6 @@ static void bgMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
 	if (index < 0 || index >= BGMenuData.size())
 		return;
 
-
-	
 	QByteArray str = BGMenuData[index].item->name.toLatin1();
 	XtCallActionProcEx(window->lastFocus_, "bg_menu_command", ((XmAnyCallbackStruct *)callData)->event, str.data());
 }

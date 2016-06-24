@@ -1118,7 +1118,10 @@ Pixel HighlightColorValueOfCode(Document *window, int hCode, Color *color) {
 		color->g = 0;
 		color->b = 0;
 		
-		XtVaGetValues(window->textArea_, XtNcolormap, &cMap, XtNforeground, &colorDef.pixel, nullptr);
+		colorDef.pixel = textD_of(window->textArea_)->getForegroundPixel();
+		
+		XtVaGetValues(window->textArea_, XtNcolormap, &cMap, nullptr);
+		
 		if (XQueryColor(display, cMap, &colorDef)) {
 			color->r = colorDef.red;
 			color->g = colorDef.green;
@@ -2266,26 +2269,34 @@ static int findTopLevelParentIndex(HighlightPattern *patList, int nPats, int ind
 ** which must be subsequently reset by UpdateWMSizeHints.
 */
 static void updateWindowHeight(Document *window, int oldFontHeight) {
-	int i, borderHeight, marginHeight;
-	Dimension windowHeight, textAreaHeight, textHeight, newWindowHeight;
+	int i;
+	int borderHeight;
+	int marginHeight;
+	Dimension windowHeight;
+	Dimension textAreaHeight;
+	Dimension textHeight;
+	Dimension newWindowHeight;
 
 	/* resize if there's only _one_ document in the window, to avoid
 	   the growing-window bug */
-	if (window->TabCount() > 1)
+	if (window->TabCount() > 1) {
 		return;
+	}
 
 	/* Decompose the window height into the part devoted to displaying
 	   text (textHeight) and the non-text part (boderHeight) */
 	XtVaGetValues(window->shell_, XmNheight, &windowHeight, nullptr);
 	
-	marginHeight = textD_of(window->textArea_)->getMarginHeight();
-	
-	XtVaGetValues(window->textArea_, XmNheight, &textAreaHeight, nullptr);
+	marginHeight   = textD_of(window->textArea_)->getMarginHeight();
+	textAreaHeight = textD_of(window->textArea_)->getHeight();
+
 	textHeight = textAreaHeight - 2 * marginHeight;
+	
 	for (i = 0; i < window->nPanes_; i++) {
-		XtVaGetValues(window->textPanes_[i], XmNheight, &textAreaHeight, nullptr);
+		textAreaHeight = textD_of(window->textPanes_[i])->getHeight();
 		textHeight += textAreaHeight - 2 * marginHeight;
 	}
+	
 	borderHeight = windowHeight - textHeight;
 
 	// Calculate a new window height appropriate for the new font 

@@ -1879,8 +1879,9 @@ static void toolTipsDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 	SetPrefToolTips(state);
 	for(Document *win: WindowList) {
 		XtVaSetValues(win->tab_, XltNshowBubble, GetPrefToolTips(), nullptr);
-		if (win->IsTopDocument())
+		if (win->IsTopDocument()) {
 			XmToggleButtonSetState(win->toolTipsDefItem_, state, False);
+		}
 	}
 }
 
@@ -4093,18 +4094,22 @@ static Widget createMenu(Widget parent, const char *name, const char *label, cha
 
 	(void)mode;
 
-	Widget menu, cascade;
 	XmString st1;
 
-	menu = CreatePulldownMenu(parent, name, nullptr, 0);
-	cascade = XtVaCreateWidget(name, xmCascadeButtonWidgetClass, parent, XmNlabelString, st1 = XmStringCreateSimpleEx(label), XmNsubMenuId, menu, nullptr);
+	Widget menu = CreatePulldownMenu(parent, name, nullptr, 0);
+	Widget cascade = XtVaCreateWidget(name, xmCascadeButtonWidgetClass, parent, XmNlabelString, st1 = XmStringCreateSimpleEx(label), XmNsubMenuId, menu, nullptr);
 	XmStringFree(st1);
-	if (mnemonic != 0)
+	
+	if (mnemonic != 0) {
 		XtVaSetValues(cascade, XmNmnemonic, mnemonic, nullptr);
+	}
+	
 	XtManageChild(cascade);
 
-	if(cascadeBtn)
+	if(cascadeBtn) {
 		*cascadeBtn = cascade;
+	}
+	
 	return menu;
 }
 
@@ -4135,11 +4140,12 @@ static Widget createMenuItem(Widget parent, const char *name, const char *label,
 ** resources, and you can't specify "shift key is optional"
 */
 static Widget createFakeMenuItem(Widget parent, const char *name, menuCallbackProc callback, const void *cbArg) {
-	Widget button;
-	XmString st1;
 
-	button = XtVaCreateManagedWidget(name, xmPushButtonWidgetClass, parent, XmNlabelString, st1 = XmStringCreateSimpleEx(""), XmNshadowThickness, 0, XmNmarginHeight, 0, XmNheight, 0, nullptr);
+	XmString st1 = XmStringCreateSimpleEx("");
+
+	Widget button = XtVaCreateManagedWidget(name, xmPushButtonWidgetClass, parent, XmNlabelString, st1, XmNshadowThickness, 0, XmNmarginHeight, 0, XmNheight, 0, nullptr);
 	XtAddCallback(button, XmNactivateCallback, callback, const_cast<void *>(cbArg));
+	
 	XmStringFree(st1);
 	XtVaSetValues(button, XmNtraversalOn, False, nullptr);
 
@@ -4170,8 +4176,7 @@ static Widget createMenuToggle(Widget parent, const char *name, const char *labe
 */
 static Widget createMenuRadioToggle(Widget parent, const char *name, const char *label, char mnemonic, menuCallbackProc callback, const void *cbArg, int set, int mode) {
 
-	Widget button;
-	button = createMenuToggle(parent, name, label, mnemonic, callback, const_cast<void *>(cbArg), set, mode);
+	Widget button = createMenuToggle(parent, name, label, mnemonic, callback, const_cast<void *>(cbArg), set, mode);
 	XtVaSetValues(button, XmNindicatorType, XmONE_OF_MANY, nullptr);
 	return button;
 }
@@ -4747,7 +4752,7 @@ static void updateWindowSizeMenu(Document *win) {
 	XmToggleButtonSetState(win->size80x80DefItem_, rows == 80 && cols == 80, False);
 	if ((rows != 24 && rows != 40 && rows != 60 && rows != 80) || cols != 80) {
 		XmToggleButtonSetState(win->sizeCustomDefItem_, True, False);
-		sprintf(title, "Custom... (%d x %d)", rows, cols);
+		snprintf(title, sizeof(title), "Custom... (%d x %d)", rows, cols);
 		XtVaSetValues(win->sizeCustomDefItem_, XmNlabelString, st1 = XmStringCreateSimpleEx(title), nullptr);
 		XmStringFree(st1);
 	} else {

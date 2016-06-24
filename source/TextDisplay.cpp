@@ -558,11 +558,11 @@ TextDisplay::TextDisplay(Widget widget,
 	bgClass_      = QVector<uint8_t>();
 	TextDSetupBGClasses(widget, bgClassString, &bgClassPixel_, &bgClass_, bgPixel);
 
-	suppressResync_   = false;
-	nLinesDeleted_    = 0;
-	modifyingTabDist_ = 0;
-	pointerHidden_    = false;
-	graphicsExposeQueue_   = nullptr;
+	suppressResync_      = false;
+	nLinesDeleted_       = 0;
+	modifyingTabDist_    = 0;
+	pointerHidden_       = false;
+	graphicsExposeQueue_ = nullptr;
 
 	/* Attach an event handler to the widget so we can know the visibility
 	   (used for choosing the fastest drawing method) */
@@ -1039,19 +1039,27 @@ void TextDisplay::textDRedisplayRange(int start, int end) {
 ** horizontally by pixel offset from the left margin
 */
 void TextDisplay::TextDSetScroll(int topLineNum, int horizOffset) {
-	int sliderSize, sliderMax;
+
+	int sliderSize;
+	int sliderMax;
 	int vPadding = (int)(text_of(w_).P_cursorVPadding);
 
 	// Limit the requested scroll position to allowable values
-	if (topLineNum < 1)
+	if (topLineNum < 1) {
 		topLineNum = 1;
-	else if ((topLineNum > topLineNum_) && (topLineNum > (nBufferLines_ + 2 - nVisibleLines_ + vPadding)))
+	} else if ((topLineNum > topLineNum_) && (topLineNum > (nBufferLines_ + 2 - nVisibleLines_ + vPadding))) {
 		topLineNum = std::max(topLineNum_, nBufferLines_ + 2 - nVisibleLines_ + vPadding);
+	}
+	
 	XtVaGetValues(hScrollBar_, XmNmaximum, &sliderMax, XmNsliderSize, &sliderSize, nullptr);
-	if (horizOffset < 0)
+
+	if (horizOffset < 0) {
 		horizOffset = 0;
-	if (horizOffset > sliderMax - sliderSize)
+	}
+
+	if (horizOffset > sliderMax - sliderSize) {
 		horizOffset = sliderMax - sliderSize;
+	}
 
 	setScroll(topLineNum, horizOffset, true, true);
 }
@@ -3046,7 +3054,9 @@ void TextDisplay::setScroll(int topLineNum, int horizOffset, int updateVScrollBa
 ** for vertical scroll bar.
 */
 void TextDisplay::updateVScrollBarRange() {
-	int sliderSize, sliderMax, sliderValue;
+	int sliderSize;
+	int sliderMax;
+	int sliderValue;
 
 	if (!vScrollBar_) {
 		return;
@@ -3056,9 +3066,9 @@ void TextDisplay::updateVScrollBarRange() {
 	   line number, and the number of visible lines respectively.  The scroll
 	   bar maximum value is chosen to generally represent the size of the whole
 	   buffer, with minor adjustments to keep the scroll bar widget happy */
-	sliderSize = std::max(nVisibleLines_, 1); // Avoid X warning (size < 1)
+	sliderSize  = std::max(nVisibleLines_, 1); // Avoid X warning (size < 1)
 	sliderValue = topLineNum_;
-	sliderMax = std::max<int>(nBufferLines_ + 2 + text_of(w_).P_cursorVPadding, sliderSize + sliderValue);
+	sliderMax   = std::max<int>(nBufferLines_ + 2 + text_of(w_).P_cursorVPadding, sliderSize + sliderValue);
 	XtVaSetValues(vScrollBar_, XmNmaximum, sliderMax, XmNsliderSize, sliderSize, XmNpageIncrement, std::max(1, nVisibleLines_ - 1), XmNvalue, sliderValue, nullptr);
 }
 
@@ -3074,14 +3084,16 @@ void TextDisplay::updateVScrollBarRange() {
 ** character!
 */
 int TextDisplay::updateHScrollBarRange() {
-	int i, maxWidth = 0, sliderMax, sliderWidth;
+	int maxWidth = 0;
+	int sliderMax;
+	int sliderWidth;
 	int origHOffset = horizOffset_;
 
 	if (hScrollBar_ == nullptr || !XtIsManaged(hScrollBar_))
 		return false;
 
 	// Scan all the displayed lines to find the width of the longest line
-	for (i = 0; i < nVisibleLines_ && lineStarts_[i] != -1; i++)
+	for (int i = 0; i < nVisibleLines_ && lineStarts_[i] != -1; i++)
 		maxWidth = std::max(measureVisLine(i), maxWidth);
 
 	/* If the scroll position is beyond what's necessary to keep all lines
@@ -3092,7 +3104,8 @@ int TextDisplay::updateHScrollBarRange() {
 
 	// Readjust the scroll bar
 	sliderWidth = rect_.width;
-	sliderMax = std::max(maxWidth, sliderWidth + horizOffset_);
+	sliderMax   = std::max(maxWidth, sliderWidth + horizOffset_);
+
 	XtVaSetValues(hScrollBar_, XmNmaximum, sliderMax, XmNsliderSize, sliderWidth, XmNpageIncrement, std::max(rect_.width - 100, 10), XmNvalue, horizOffset_, nullptr);
 
 	// Return True if scroll position was changed
@@ -4807,18 +4820,31 @@ void TextDisplay::TextDKillCalltip(int calltipID) {
 ** Update the position of the current calltip if one exists, else do nothing
 */
 void TextDisplay::TextDRedrawCalltip(int calltipID) {
+	
 	int lineHeight = ascent_ + descent_;
-	Position txtX, txtY, borderWidth, abs_x, abs_y, tipWidth, tipHeight;
+	Position borderWidth;
+	Position abs_x;
+	Position abs_y;
+	Position tipWidth;
+	Position tipHeight;
 	XWindowAttributes screenAttr;
-	int rel_x, rel_y, flip_delta;
+	int rel_x;
+	int rel_y;
+	int flip_delta;
 
-	if (calltip_.ID == 0)
+	if (calltip_.ID == 0) {
 		return;
-	if (calltipID != 0 && calltipID != calltip_.ID)
+	}
+	
+	if (calltipID != 0 && calltipID != calltip_.ID) {
 		return;
+	}
 
-	// Get the location/dimensions of the text area 
-	XtVaGetValues(w_, XmNx, &txtX, XmNy, &txtY, nullptr);
+	// Get the location/dimensions of the text area
+#if 0
+	Poxition txtX = getX();
+	Poxition txtY = getY();
+#endif
 
 	if (calltip_.anchored) {
 		// Put it at the anchor position 
@@ -8527,8 +8553,6 @@ int TextDisplay::TextDShowCalltip(view::string_view text, bool anchored, int pos
 	
 	int rel_x;
 	int rel_y;
-	Position txtX;
-	Position txtY;
 
 	// Destroy any previous calltip 
 	TextDKillCalltip(0);
@@ -8540,7 +8564,10 @@ int TextDisplay::TextDShowCalltip(view::string_view text, bool anchored, int pos
 	XmString str = XmStringCreateLtoREx(textCpy, XmFONTLIST_DEFAULT_TAG);
 
 	// Get the location/dimensions of the text area 
-	XtVaGetValues(w_, XmNx, &txtX, XmNy, &txtY, nullptr);
+#if 0
+	Position txtX = getX();
+	Position txtY = getY();
+#endif
 
 	// Create the calltip widget on first request 
 	if (!calltipW_) {
@@ -8950,12 +8977,46 @@ XFontStruct *TextDisplay::getFont() {
 	XFontStruct *fs = nullptr;
 	XtVaGetValues(w_, textNfont, &fs, nullptr);
 	return fs;
-	
+}
+
+Position TextDisplay::getX() {
+	Position value;
+	XtVaGetValues(w_, XmNx, &value, nullptr);
+	return value;
+}
+
+Position TextDisplay::getY() {
+	Position value;
+	XtVaGetValues(w_, XmNy, &value, nullptr);
+	return value;
+}
+
+Pixel TextDisplay::getBackgroundPixel() {
+	Pixel value;
+	XtVaGetValues(w_, XmNbackground, &value, nullptr);
+	return value;
+}
+
+Pixel TextDisplay::getForegroundPixel() {
+	Pixel value;
+	XtVaGetValues(w_, XmNforeground, &value, nullptr);
+	return value;
+}
+
+Dimension TextDisplay::getWidth() {
+	Dimension value;
+	XtVaGetValues(w_, XmNwidth, &value, nullptr);
+	return value;
+}
+
+Dimension TextDisplay::getHeight() {
+	Dimension value;
+	XtVaGetValues(w_, XmNheight, &value, nullptr);
+	return value;
 }
 
 #if 0
-	Pixel TextDisplay::getBackgroundPixel();
-	Pixel TextDisplay::getForegroundPixel();
+
 	QString TextDisplay::getBacklightCharTypes();
 	bool TextDisplay::getAutoIndent();
 	bool TextDisplay::getAutoShowInsertPos();

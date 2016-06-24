@@ -2033,20 +2033,24 @@ void Document::SetColors(const char *textFg, const char *textBg, const char *sel
 	
 
 	// Update the main pane 
-	XtVaSetValues(textArea_, XmNforeground, textFgPix, XmNbackground, textBgPix, nullptr);
 	TextDisplay *textD = textD_of(textArea_);
+	textD->setForegroundPixel(textFgPix);
+	textD->setBackgroundPixel(textBgPix);
+	
 	textD->TextDSetColors(textFgPix, textBgPix, selectFgPix, selectBgPix, hiliteFgPix, hiliteBgPix, lineNoFgPix, cursorFgPix);
 
 	// Update any additional panes 
 	for (int i = 0; i < nPanes_; i++) {
-		XtVaSetValues(textPanes_[i], XmNforeground, textFgPix, XmNbackground, textBgPix, nullptr);
-		textD = textD_of(textPanes_[i]);
+		TextDisplay *textD = textD_of(textPanes_[i]);		
+		textD->setForegroundPixel(textFgPix);
+		textD->setBackgroundPixel(textBgPix);		
 		textD->TextDSetColors(textFgPix, textBgPix, selectFgPix, selectBgPix, hiliteFgPix, hiliteBgPix, lineNoFgPix, cursorFgPix);
 	}
 
 	// Redo any syntax highlighting 
-	if (highlightData_)
+	if (highlightData_) {
 		UpdateHighlightStyles(this);
+	}
 }
 
 /*
@@ -2325,9 +2329,9 @@ void Document::MakeSelectionVisible(Widget textPane) {
 	if (textD->TextDPositionToXY(left, &leftX, &y) && textD->TextDPositionToXY(right, &rightX, &y) && leftX <= rightX) {
 		textD->TextDGetScroll(&topLineNum, &horizOffset);
 		
-		margin = textD->getMarginWidth();
-		
-		XtVaGetValues(textPane, XmNwidth, &width, nullptr);
+		margin = textD->getMarginWidth();		
+		width  = textD->getWidth();
+				
 		if (leftX < margin + textD->getLineNumLeft() + textD->getLineNumWidth())
 			horizOffset -= margin + textD->getLineNumLeft() + textD->getLineNumWidth() - leftX;
 		else if (rightX > width - margin)
@@ -2593,22 +2597,24 @@ void Document::SetFonts(const char *fontName, const char *italicName, const char
 	XtVaGetValues(shell_, XmNwidth, &oldWindowWidth, XmNheight, &oldWindowHeight, nullptr);
 	
 	
-	int marginHeight     = textD_of(textArea_)->getMarginHeight();
+	int marginHeight     = textD->getMarginHeight();
 #if 0
-	int marginWidth      = textD_of(textArea_)->getMarginWidth();
+	int marginWidth      = textD->getMarginWidth();
 #endif
-	XFontStruct *oldFont = textD_of(textArea_)->getFont();
-	
-	XtVaGetValues(textArea_, XmNheight, &textHeight, nullptr);
+	XFontStruct *oldFont = textD->getFont();
+	textHeight           = textD->getHeight();
+
 	oldTextWidth = textD->getRect().width + textD->getLineNumWidth();
 	oldTextHeight = textHeight - 2 * marginHeight;
+	
 	for (i = 0; i < nPanes_; i++) {
-		XtVaGetValues(textPanes_[i], XmNheight, &textHeight, nullptr);
+		textHeight = textD_of(textPanes_[i])->getHeight();
 		oldTextHeight += textHeight - 2 * marginHeight;
 	}
-	borderWidth = oldWindowWidth - oldTextWidth;
-	borderHeight = oldWindowHeight - oldTextHeight;
-	oldFontWidth = oldFont->max_bounds.width;
+	
+	borderWidth   = oldWindowWidth - oldTextWidth;
+	borderHeight  = oldWindowHeight - oldTextHeight;
+	oldFontWidth  = oldFont->max_bounds.width;
 	oldFontHeight = textD->fontAscent() + textD->fontDescent();
 
 	/* Change the fonts in the this data structure.  If the primary font
@@ -3038,8 +3044,9 @@ void Document::SplitPane() {
 	// Fix up the colors 
 	textD = textD_of(textArea_);
 	newTextD = textD_of(text);
-	XtVaSetValues(text, XmNforeground, textD->foregroundPixel(), XmNbackground, textD->backgroundPixel(), nullptr);
-
+	newTextD->setForegroundPixel(textD->foregroundPixel());
+	newTextD->setBackgroundPixel(textD->backgroundPixel());
+	
 	newTextD->TextDSetColors(
 		textD->foregroundPixel(), 
 		textD->backgroundPixel(), 
