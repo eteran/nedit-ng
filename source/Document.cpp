@@ -2926,8 +2926,7 @@ void Document::CloseWindow() {
 		XtDestroyWidget(shell_);
 	}
 
-	// deallocate the window data structure
-	delete this;
+
 #if 1
 	// TODO(eteran): why did I need to add this?!?
 	//               looking above, RaiseDocument (which triggers the update)
@@ -2937,6 +2936,9 @@ void Document::CloseWindow() {
 		dialog->UpdateReplaceActionButtons();
 	}
 #endif
+
+	// deallocate the window data structure
+	delete this;
 }
 
 /*
