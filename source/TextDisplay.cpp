@@ -258,7 +258,19 @@ int findRelativeLineStart(const TextBuffer *buf, int referencePos, int reference
 */
 static Atom getAtom(Display *display, int atomNum) {
 	static Atom atomList[N_ATOMS] = {0};
-	static const char *atomNames[N_ATOMS] = {"TEXT", "TARGETS", "MULTIPLE", "TIMESTAMP", "INSERT_SELECTION", "DELETE", "CLIPBOARD", "INSERT_INFO", "ATOM_PAIR", "MOTIF_DESTINATION", "COMPOUND_TEXT"};
+	static const char *atomNames[N_ATOMS] = {
+		"TEXT", 
+		"TARGETS", 
+		"MULTIPLE", 
+		"TIMESTAMP", 
+		"INSERT_SELECTION", 
+		"DELETE", 
+		"CLIPBOARD", 
+		"INSERT_INFO", 
+		"ATOM_PAIR", 
+		"MOTIF_DESTINATION", 
+		"COMPOUND_TEXT"
+	};
 
 	if (atomList[atomNum] == 0) {
 		atomList[atomNum] = XInternAtom(display, atomNames[atomNum], False);
@@ -858,8 +870,10 @@ int TextDisplay::TextDMaxFontWidth(Boolean considerStyles) {
 ** Change the size of the displayed text area
 */
 void TextDisplay::TextDResize(int width, int height) {
+	
+	Window window = XtWindow(w_);
 	int oldVisibleLines = nVisibleLines_;
-	int canRedraw = XtWindow(w_) != 0;
+	int canRedraw = window != 0;
 	int newVisibleLines = height / (ascent_ + descent_);
 	int redrawAll = false;
 	int oldWidth = rect_.width;
@@ -895,7 +909,7 @@ void TextDisplay::TextDResize(int width, int height) {
 	/* if the window became shorter, there may be partially drawn
 	   text left at the bottom edge, which must be cleaned up */
 	if (canRedraw && oldVisibleLines > newVisibleLines && exactHeight != height)
-		XClearArea(XtDisplay(w_), XtWindow(w_), rect_.left, rect_.top + exactHeight, rect_.width, height - exactHeight, false);
+		XClearArea(XtDisplay(w_), window, rect_.left, rect_.top + exactHeight, rect_.width, height - exactHeight, false);
 
 	/* if the window became taller, there may be an opportunity to display
 	   more text by scrolling down */
@@ -1120,7 +1134,12 @@ void TextDisplay::TextDSetCursorStyle(CursorStyles style) {
 }
 
 void TextDisplay::TextDSetWrapMode(int wrap, int wrapMargin) {
-	wrapMargin_ = wrapMargin;
+
+	// NOTE(eteran): things are bit backwards from what i'd like
+	//               this is triggered by setting the resource based
+	//               version of these values which eventually triggers
+	//               setValues(...) to call this function.
+	wrapMargin_     = wrapMargin;
 	continuousWrap_ = wrap;
 
 	// wrapping can change change the total number of lines, re-count
@@ -1129,7 +1148,7 @@ void TextDisplay::TextDSetWrapMode(int wrap, int wrapMargin) {
 	/* changing wrap margins wrap or changing from wrapped mode to non-wrapped
 	   can leave the character at the top no longer at a line start, and/or
 	   change the line number */
-	firstChar_ = TextDStartOfLine(firstChar_);
+	firstChar_  = TextDStartOfLine(firstChar_);
 	topLineNum_ = TextDCountLines(0, firstChar_, True) + 1;
 	resetAbsLineNum();
 
@@ -2215,9 +2234,10 @@ void TextDisplay::drawString(int style, int x, int y, int toX, char *string, int
 	Pixel bground       = bgPixel_;
 	Pixel fground       = fgPixel_;
 	bool underlineStyle = false;
+	Window window       = XtWindow(w_);
 
 	// Don't draw if widget isn't realized
-	if (XtWindow(w_) == 0) {
+	if (window == 0) {
 		return;
 	}
 	
@@ -2314,7 +2334,7 @@ void TextDisplay::drawString(int style, int x, int y, int toX, char *string, int
 	}
 
 	// Draw the string using gc and font set above
-	XDrawImageString(display, XtWindow(w_), gc, x, y + ascent_, string, nChars);
+	XDrawImageString(display, window, gc, x, y + ascent_, string, nChars);
 
 	// Underline if style is secondary selection
 	if (style & SECONDARY_MASK || underlineStyle) {
@@ -2322,7 +2342,7 @@ void TextDisplay::drawString(int style, int x, int y, int toX, char *string, int
 		gcValues.foreground = fground;
 		XChangeGC(display, gc, GCForeground, &gcValues);
 		// draw underline
-		XDrawLine(display, XtWindow(w_), gc, x, y + ascent_, toX - 1, y + ascent_);
+		XDrawLine(display, window, gc, x, y + ascent_, toX - 1, y + ascent_);
 	}
 }
 
@@ -2335,17 +2355,19 @@ void TextDisplay::clearRect(GC gc, const Rect &rect) {
 
 void TextDisplay::clearRect(GC gc, int x, int y, int width, int height) {
 
+	Window window = XtWindow(w_);
+
 	// A width of zero means "clear to end of window" to XClearArea
-	if (width == 0 || XtWindow(w_) == 0) {
+	if (width == 0 || window == 0) {
 		return;
 	}
 	
 	Display *display = XtDisplay(w_);
 
 	if (gc == gc_) {
-		XClearArea(display, XtWindow(w_), x, y, width, height, false);
+		XClearArea(display, window, x, y, width, height, false);
 	} else {
-		XFillRectangle(display, XtWindow(w_), gc, x, y, width, height);
+		XFillRectangle(display, window, gc, x, y, width, height);
 	}
 }
 
@@ -2353,13 +2375,19 @@ void TextDisplay::clearRect(GC gc, int x, int y, int width, int height) {
 ** Draw a cursor with top center at x, y.
 */
 void TextDisplay::drawCursor(int x, int y) {
-	XSegment segs[5];
-	int left, right, cursorWidth, midY;
-	int fontWidth = fontStruct_->min_bounds.width, nSegs = 0;
-	int fontHeight = ascent_ + descent_;
-	int bot = y + fontHeight - 1;
 
-	if (XtWindow(w_) == 0 || x < rect_.left - 1 || x > rect_.left + rect_.width)
+	Window window = XtWindow(w_);
+	XSegment segs[5];
+	int left;
+	int right;
+	int cursorWidth;
+	int midY;
+	int fontWidth  = fontStruct_->min_bounds.width;
+	int nSegs      = 0;
+	int fontHeight = ascent_ + descent_;
+	int bot        = y + fontHeight - 1;
+
+	if (window == 0 || x < rect_.left - 1 || x > rect_.left + rect_.width)
 		return;
 
 	/* For cursors other than the block, make them around 2/3 of a character
@@ -2471,7 +2499,7 @@ void TextDisplay::drawCursor(int x, int y) {
 		break;
 	}
 	
-	XDrawSegments(XtDisplay(w_), XtWindow(w_), cursorFGGC_, segs, nSegs);
+	XDrawSegments(XtDisplay(w_), window, cursorFGGC_, segs, nSegs);
 
 	// Save the last position drawn
 	cursor_.x = x;
@@ -2974,10 +3002,11 @@ void TextDisplay::setScroll(int topLineNum, int horizOffset, int updateVScrollBa
 	int xOffset;
 	int yOffset;
 	int exactHeight = rect_.height - rect_.height % (ascent_ + descent_);
+	Window window  = XtWindow(w_);
 
 	/* Do nothing if scroll position hasn't actually changed or there's no
 	   window to draw in yet */
-	if (XtWindow(w_) == 0 || (horizOffset_ == horizOffset && topLineNum_ == topLineNum))
+	if (window == 0 || (horizOffset_ == horizOffset && topLineNum_ == topLineNum))
 		return;
 
 	/* If part of the cursor is protruding beyond the text clipping region,
@@ -3021,7 +3050,7 @@ void TextDisplay::setScroll(int topLineNum, int horizOffset, int updateVScrollBa
 		int height = exactHeight - abs(yOffset);
 		resetClipRectangles();
 		TextDTranlateGraphicExposeQueue(xOffset, yOffset, true);
-		XCopyArea(XtDisplay(w_), XtWindow(w_), XtWindow(w_), gc_, srcX, srcY, width, height, dstX, dstY);
+		XCopyArea(XtDisplay(w_), window, window, gc_, srcX, srcY, width, height, dstX, dstY);
 		// redraw the un-recoverable parts
 		if (yOffset > 0) {
 			TextDRedisplayRect(rect_.left, rect_.top, rect_.width, yOffset);
@@ -3151,10 +3180,11 @@ void TextDisplay::redrawLineNumbers(int clearAll) {
 	int charWidth  = fontStruct_->max_bounds.width;
 	XRectangle clipRect;
 	Display *display = XtDisplay(w_);
+	Window window    = XtWindow(w_);
 
 	/* Don't draw if lineNumWidth == 0 (line numbers are hidden), or widget is
 	   not yet realized */
-	if (lineNumWidth_ == 0 || XtWindow(w_) == 0)
+	if (lineNumWidth_ == 0 || window == 0)
 		return;
 
 	/* Make sure we reset the clipping range for the line numbers GC, because
@@ -3168,7 +3198,7 @@ void TextDisplay::redrawLineNumbers(int clearAll) {
 
 	// Erase the previous contents of the line number area, if requested
 	if (clearAll)
-		XClearArea(display, XtWindow(w_), lineNumLeft_, rect_.top, lineNumWidth_, rect_.height, false);
+		XClearArea(display, window, lineNumLeft_, rect_.top, lineNumWidth_, rect_.height, false);
 
 	// Draw the line numbers, aligned to the text
 	nCols = std::min(11, lineNumWidth_ / charWidth);
@@ -3179,10 +3209,10 @@ void TextDisplay::redrawLineNumbers(int clearAll) {
 		int lineStart = lineStarts_[visLine];
 		if (lineStart != -1 && (lineStart == 0 || buffer_->BufGetCharacter(lineStart - 1) == '\n')) {
 			sprintf(lineNumString, "%*d", nCols, line);
-			XDrawImageString(display, XtWindow(w_), lineNumGC_, lineNumLeft_, y + ascent_, lineNumString, strlen(lineNumString));
+			XDrawImageString(display, window, lineNumGC_, lineNumLeft_, y + ascent_, lineNumString, strlen(lineNumString));
 			line++;
 		} else {
-			XClearArea(display, XtWindow(w_), lineNumLeft_, y, lineNumWidth_, ascent_ + descent_, false);
+			XClearArea(display, window, lineNumLeft_, y, lineNumWidth_, ascent_ + descent_, false);
 			if (visLine == 0)
 				line++;
 		}
@@ -4603,11 +4633,14 @@ void TextDisplay::ShowHidePointer(bool hidePointer) {
 
 	if (text_of(tw).P_hidePointer) {
 		if (hidePointer != pointerHidden_) {
+		
+			Window window = XtWindow(w_);
+		
 			if (hidePointer) {
 				// Don't listen for keypresses any more
 				XtRemoveEventHandler(static_cast<Widget>(w_), NEDIT_HIDE_CURSOR_MASK, false, handleHidePointer, nullptr);
 				// Switch to empty cursor
-				XDefineCursor(XtDisplay(w_), XtWindow(w_), empty_cursor);
+				XDefineCursor(XtDisplay(w_), window, empty_cursor);
 
 				pointerHidden_ = true;
 
@@ -4617,7 +4650,7 @@ void TextDisplay::ShowHidePointer(bool hidePointer) {
 				// Don't listen to mouse/focus events any more
 				XtRemoveEventHandler(static_cast<Widget>(w_), NEDIT_SHOW_CURSOR_MASK, false, handleShowPointer, nullptr);
 				// Switch to regular cursor
-				XUndefineCursor(XtDisplay(w_), XtWindow(w_));
+				XUndefineCursor(XtDisplay(w_), window);
 
 				pointerHidden_ = false;
 
@@ -5376,6 +5409,7 @@ void TextDisplay::InsertClipboard(bool isColumnar) {
 	long id = 0;
 	unsigned long length;
 	unsigned long retLength;
+	Window window = XtWindow(w_);
 
 	/* Get the clipboard contents.  Note: this code originally used the
 	   CLIPBOARD selection, rather than the Motif clipboard interface.  It
@@ -5387,22 +5421,22 @@ void TextDisplay::InsertClipboard(bool isColumnar) {
 	   size of the data that be transferred via the clipboard, and are
 	   generally slower and buggier, they do preserve the clipboard across
 	   widget destruction and even program termination. */
-	if (SpinClipboardInquireLength(XtDisplay(w_), XtWindow(w_), (String) "STRING", &length) != ClipboardSuccess || length == 0) {
+	if (SpinClipboardInquireLength(XtDisplay(w_), window, (String) "STRING", &length) != ClipboardSuccess || length == 0) {
 		/*
 		 * Possibly, the clipboard can remain in a locked state after
 		 * a failure, so we try to remove the lock, just to be sure.
 		 */
-		SpinClipboardUnlock(XtDisplay(w_), XtWindow(w_));
+		SpinClipboardUnlock(XtDisplay(w_), window);
 		return;
 	}
 	auto string = new char[length + 1];
-	if (SpinClipboardRetrieve(XtDisplay(w_), XtWindow(w_), (String) "STRING", string, length, &retLength, &id) != ClipboardSuccess || retLength == 0) {
+	if (SpinClipboardRetrieve(XtDisplay(w_), window, (String) "STRING", string, length, &retLength, &id) != ClipboardSuccess || retLength == 0) {
 		XtFree(string);
 		/*
 		 * Possibly, the clipboard can remain in a locked state after
 		 * a failure, so we try to remove the lock, just to be sure.
 		 */
-		SpinClipboardUnlock(XtDisplay(w_), XtWindow(w_));
+		SpinClipboardUnlock(XtDisplay(w_), window);
 		return;
 	}
 	string[retLength] = '\0';
@@ -5462,20 +5496,21 @@ void TextDisplay::CopyToClipboard(Time time) {
 #if 0
 	int length = text.size();
 	long itemID = 0;
+	Window window = XtWindow(w_);
 	
 	// Shut up LessTif 
-	if (SpinClipboardLock(XtDisplay(w_), XtWindow(w_)) != ClipboardSuccess) {
+	if (SpinClipboardLock(XtDisplay(w_), window) != ClipboardSuccess) {
 		return;
 	}
 
 	/* Use the XmClipboard routines to copy the text to the clipboard.
 	   If errors occur, just give up.  */
 	XmString s = XmStringCreateSimpleEx("NEdit");
-	int stat = SpinClipboardStartCopy(XtDisplay(w_), XtWindow(w_), s, time, w_, nullptr, &itemID);
+	int stat = SpinClipboardStartCopy(XtDisplay(w_), window, s, time, w_, nullptr, &itemID);
 	XmStringFree(s);
 	
 	if (stat != ClipboardSuccess) {
-		SpinClipboardUnlock(XtDisplay(w_), XtWindow(w_));
+		SpinClipboardUnlock(XtDisplay(w_), window);
 		return;
 	}
 
@@ -5483,14 +5518,14 @@ void TextDisplay::CopyToClipboard(Time time) {
 	   that this was inconsistent with the somewhat ambiguous policy of
 	   including a terminating null but not mentioning it in the length */
 
-	if (SpinClipboardCopy(XtDisplay(w_), XtWindow(w_), itemID, (String) "STRING", (char *)text.data(), length, 0, nullptr) != ClipboardSuccess) {
-		SpinClipboardEndCopy(XtDisplay(w_), XtWindow(w_), itemID);
-		SpinClipboardUnlock(XtDisplay(w_), XtWindow(w_));
+	if (SpinClipboardCopy(XtDisplay(w_), window, itemID, (String) "STRING", (char *)text.data(), length, 0, nullptr) != ClipboardSuccess) {
+		SpinClipboardEndCopy(XtDisplay(w_), window, itemID);
+		SpinClipboardUnlock(XtDisplay(w_), window);
 		return;
 	}
 
-	SpinClipboardEndCopy(XtDisplay(w_), XtWindow(w_), itemID);
-	SpinClipboardUnlock(XtDisplay(w_), XtWindow(w_));
+	SpinClipboardEndCopy(XtDisplay(w_), window, itemID);
+	SpinClipboardUnlock(XtDisplay(w_), window);
 #else
 	(void)time;
 	
@@ -8143,11 +8178,13 @@ void TextDisplay::sendSecondary(Time time, Atom sel, selectNotifyActions action,
 		buffer_->BufSecondaryUnselect();
 		return;
 	}
+	
+	Window window = XtWindow(w_);
 
 	/* Set up a property on this window to pass along with the
 	   INSERT_SELECTION request to tell the MOTIF_DESTINATION owner what
 	   selection and what target from that selection to insert */
-	XChangeProperty(disp, XtWindow(w_), getAtom(disp, A_INSERT_INFO), getAtom(disp, A_ATOM_PAIR), 32, PropModeReplace, (uint8_t *)selInfoProp, 2 /* 1? */);
+	XChangeProperty(disp, window, getAtom(disp, A_INSERT_INFO), getAtom(disp, A_ATOM_PAIR), 32, PropModeReplace, (uint8_t *)selInfoProp, 2 /* 1? */);
 
 	/* Make INSERT_SELECTION request to the owner of selection "sel"
 	   to do the insert.  This must be done using XLib calls to specify
@@ -8155,7 +8192,7 @@ void TextDisplay::sendSecondary(Time time, Atom sel, selectNotifyActions action,
 	   means it also requires an event handler to see if the request
 	   succeeded or not, and a backup timer to clean up if the select
 	   notify event is never returned */
-	XConvertSelection(disp, sel, getAtom(disp, A_INSERT_SELECTION), getAtom(disp, A_INSERT_INFO), XtWindow(w_), time);
+	XConvertSelection(disp, sel, getAtom(disp, A_INSERT_SELECTION), getAtom(disp, A_INSERT_INFO), window, time);
 	
 	auto cbInfo = new selectNotifyInfo;
 	cbInfo->action       = action;
@@ -8388,22 +8425,23 @@ void TextDisplay::getInsertSelectionCallback(XtPointer clientData, Atom *selType
 
 	TextBuffer *buf = buffer_;
 	auto resultFlag = static_cast<int *>(clientData);
+	auto str        = static_cast<char *>(value);
 
 	// Confirm that the returned value is of the correct type 
-	if (*type != XA_STRING || *format != 8 || value == nullptr) {
-		XtFree((char *)value);
+	if (*type != XA_STRING || *format != 8 || !value) {
+		XtFree(str);
 		*resultFlag = UNSUCCESSFUL_INSERT;
 		return;
 	}
 
 	// Copy the string just to make space for the null character 
-	std::string string(static_cast<char *>(value), *length);
+	std::string string(str, *length);
 
 	/* If the string contains ascii-nul characters, substitute something
 	   else, or give up, warn, and refuse */
 	if (!buf->BufSubstituteNullCharsEx(string)) {
 		fprintf(stderr, "Too much binary data, giving up\n");
-		XtFree((char *)value);
+		XtFree(str);
 		return;
 	}
 
@@ -8412,7 +8450,7 @@ void TextDisplay::getInsertSelectionCallback(XtPointer clientData, Atom *selType
 	*resultFlag = SUCCESSFUL_INSERT;
 
 	// This callback is required to free the memory passed to it thru value 
-	XtFree((char *)value);
+	XtFree(str);
 }
 
 /*
@@ -8482,9 +8520,11 @@ Boolean TextDisplay::convertMotifDestCallback(Atom *selType, Atom *target, Atom 
 	XSelectionRequestEvent *event = XtGetSelectionRequest(w_, *selType, nullptr);
 	Display *display = XtDisplay(w_);
 	Atom *targets, dummyAtom;
-	unsigned long nItems, dummyULong;
+	unsigned long nItems;
+	unsigned long dummyULong;
 	Atom *reqAtoms;
-	int getFmt, result = INSERT_WAITING;
+	int getFmt;
+	int result = INSERT_WAITING;
 	XEvent nextEvent;
 
 	// target is "TARGETS", return a list of targets it can handle 
@@ -8655,14 +8695,13 @@ int TextDisplay::TextDShowCalltip(view::string_view text, bool anchored, int pos
 }
 
 int TextDisplay::TextDGetCalltipID(int calltipID) {
-	if (calltipID == 0)
+
+	if (calltipID == 0) {
 		return calltip_.ID;
-	else {
-		if (calltipID == calltip_.ID) {
-			return calltipID;
-		} else {
-			return 0;
-		}
+	} else if (calltipID == calltip_.ID) {
+		return calltipID;
+	} else {
+		return 0;
 	}
 }
 
@@ -9029,7 +9068,6 @@ Widget TextDisplay::getVerticalScrollbar() const {
 }
 
 #if 0
-
 	QString TextDisplay::getBacklightCharTypes();
 	bool TextDisplay::getAutoIndent();
 	bool TextDisplay::getAutoShowInsertPos();

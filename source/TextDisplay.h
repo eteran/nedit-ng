@@ -549,7 +549,7 @@ private:
 	Pixel          calltipBGPixel_;	
 	XFontStruct *  fontStruct_;         // Font structure for primary font	
 	bool           continuousWrap_;     // Wrap long lines when displaying
-	int            wrapMargin_;         // Margin in # of char positions for wrapping in continuousWrap mode	
+	int            wrapMargin_;         // Margin in # of char positions for wrapping in continuousWrap mod
 	int            emTabsBeforeCursor_; // If non-zero, number of consecutive emulated tabs just entered.  Saved so chars can be deleted as a unit
 };
 

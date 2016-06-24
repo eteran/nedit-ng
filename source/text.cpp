@@ -867,7 +867,7 @@ static Boolean setValues(Widget current, Widget request, Widget new_widget, ArgL
 	}
 
 	// did the wrap change?
-	if (newText.P_wrapMargin != curText.P_wrapMargin || newText.P_continuousWrap != curText.P_continuousWrap) {
+	if ((newText.P_wrapMargin != curText.P_wrapMargin) || (newText.P_continuousWrap != curText.P_continuousWrap)) {
 		curD->TextDSetWrapMode(newText.P_continuousWrap, newText.P_wrapMargin);
 	}
 
