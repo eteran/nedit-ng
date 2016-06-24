@@ -225,6 +225,8 @@ public:
 	Dimension getWidth() const;
 	Dimension getHeight() const;
 	Colormap getColormap() const;
+	Widget getHorizontalScrollbar() const;
+	Widget getVerticalScrollbar() const;
 
 
 public:
@@ -546,8 +548,6 @@ private:
 	Pixel          calltipFGPixel_;
 	Pixel          calltipBGPixel_;	
 	XFontStruct *  fontStruct_;         // Font structure for primary font	
-	Widget         hScrollBar_; 
-	Widget         vScrollBar_;
 	bool           continuousWrap_;     // Wrap long lines when displaying
 	int            wrapMargin_;         // Margin in # of char positions for wrapping in continuousWrap mode	
 	int            emTabsBeforeCursor_; // If non-zero, number of consecutive emulated tabs just entered.  Saved so chars can be deleted as a unit

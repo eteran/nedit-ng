@@ -504,8 +504,6 @@ TextDisplay::TextDisplay(Widget widget,
 	needAbsTopLineNum_  = false;
 	horizOffset_        = 0;
 	visibility_         = VisibilityUnobscured;
-	hScrollBar_         = hScrollBar;
-	vScrollBar_         = vScrollBar;
 	fontStruct_         = fontStruct;
 	ascent_             = fontStruct->ascent;
 	descent_            = fontStruct->descent;
@@ -1051,7 +1049,7 @@ void TextDisplay::TextDSetScroll(int topLineNum, int horizOffset) {
 		topLineNum = std::max(topLineNum_, nBufferLines_ + 2 - nVisibleLines_ + vPadding);
 	}
 	
-	XtVaGetValues(hScrollBar_, XmNmaximum, &sliderMax, XmNsliderSize, &sliderSize, nullptr);
+	XtVaGetValues(getHorizontalScrollbar(), XmNmaximum, &sliderMax, XmNsliderSize, &sliderSize, nullptr);
 
 	if (horizOffset < 0) {
 		horizOffset = 0;
@@ -2996,10 +2994,10 @@ void TextDisplay::setScroll(int topLineNum, int horizOffset, int updateVScrollBa
 	/* Update the scroll bar positions if requested, note: updating the
 	   horizontal scroll bars can have the further side-effect of changing
 	   the horizontal scroll position, horizOffset_ */
-	if (updateVScrollBar && vScrollBar_) {
+	if (updateVScrollBar && getVerticalScrollbar()) {
 		updateVScrollBarRange();
 	}
-	if (updateHScrollBar && hScrollBar_) {
+	if (updateHScrollBar && getHorizontalScrollbar()) {
 		updateHScrollBarRange();
 	}
 
@@ -3054,11 +3052,8 @@ void TextDisplay::setScroll(int topLineNum, int horizOffset, int updateVScrollBa
 ** for vertical scroll bar.
 */
 void TextDisplay::updateVScrollBarRange() {
-	int sliderSize;
-	int sliderMax;
-	int sliderValue;
 
-	if (!vScrollBar_) {
+	if (!getVerticalScrollbar()) {
 		return;
 	}
 
@@ -3066,10 +3061,16 @@ void TextDisplay::updateVScrollBarRange() {
 	   line number, and the number of visible lines respectively.  The scroll
 	   bar maximum value is chosen to generally represent the size of the whole
 	   buffer, with minor adjustments to keep the scroll bar widget happy */
-	sliderSize  = std::max(nVisibleLines_, 1); // Avoid X warning (size < 1)
-	sliderValue = topLineNum_;
-	sliderMax   = std::max<int>(nBufferLines_ + 2 + text_of(w_).P_cursorVPadding, sliderSize + sliderValue);
-	XtVaSetValues(vScrollBar_, XmNmaximum, sliderMax, XmNsliderSize, sliderSize, XmNpageIncrement, std::max(1, nVisibleLines_ - 1), XmNvalue, sliderValue, nullptr);
+	int sliderSize  = std::max(nVisibleLines_, 1); // Avoid X warning (size < 1)
+	int sliderValue = topLineNum_;
+	int sliderMax   = std::max<int>(nBufferLines_ + 2 + text_of(w_).P_cursorVPadding, sliderSize + sliderValue);
+	
+	XtVaSetValues(getVerticalScrollbar(), 
+		XmNmaximum,       sliderMax, 
+		XmNsliderSize,    sliderSize, 
+		XmNpageIncrement, std::max(1, nVisibleLines_ - 1), 
+		XmNvalue,         sliderValue, 
+		nullptr);
 }
 
 /*
@@ -3089,12 +3090,14 @@ int TextDisplay::updateHScrollBarRange() {
 	int sliderWidth;
 	int origHOffset = horizOffset_;
 
-	if (hScrollBar_ == nullptr || !XtIsManaged(hScrollBar_))
+	if (getHorizontalScrollbar() == nullptr || !XtIsManaged(getHorizontalScrollbar())) {
 		return false;
+	}
 
 	// Scan all the displayed lines to find the width of the longest line
-	for (int i = 0; i < nVisibleLines_ && lineStarts_[i] != -1; i++)
+	for (int i = 0; i < nVisibleLines_ && lineStarts_[i] != -1; i++) {
 		maxWidth = std::max(measureVisLine(i), maxWidth);
+	}
 
 	/* If the scroll position is beyond what's necessary to keep all lines
 	   in view, scroll to the left to bring the end of the longest line to
@@ -3106,7 +3109,12 @@ int TextDisplay::updateHScrollBarRange() {
 	sliderWidth = rect_.width;
 	sliderMax   = std::max(maxWidth, sliderWidth + horizOffset_);
 
-	XtVaSetValues(hScrollBar_, XmNmaximum, sliderMax, XmNsliderSize, sliderWidth, XmNpageIncrement, std::max(rect_.width - 100, 10), XmNvalue, horizOffset_, nullptr);
+	XtVaSetValues(getHorizontalScrollbar(), 
+		XmNmaximum,       sliderMax, 
+		XmNsliderSize,    sliderWidth, 
+		XmNpageIncrement, std::max(rect_.width - 100, 10), 
+		XmNvalue,         horizOffset_, 
+		nullptr);
 
 	// Return True if scroll position was changed
 	return origHOffset != horizOffset_;
@@ -3887,9 +3895,9 @@ int TextDisplay::wrapUsesCharacter(int lineEndPos) {
 */
 void TextDisplay::hideOrShowHScrollBar() {
 	if (continuousWrap_ && (wrapMargin_ == 0 || wrapMargin_ * fontStruct_->max_bounds.width < rect_.width))
-		XtUnmanageChild(hScrollBar_);
+		XtUnmanageChild(getHorizontalScrollbar());
 	else
-		XtManageChild(hScrollBar_);
+		XtManageChild(getHorizontalScrollbar());
 }
 
 /*
@@ -5532,8 +5540,6 @@ void TextDisplay::StopHandlingXSelections() {
 */
 void TextDisplay::InsertPrimarySelection(Time time, bool isColumnar) {
 
-	printf("[InsertPrimarySelection: %d]\n", isColumnar);
-
 #if 0
 	static int isColFlag;
 
@@ -5588,8 +5594,6 @@ void TextDisplay::InsertPrimarySelection(Time time, bool isColumnar) {
 */
 void TextDisplay::MovePrimarySelection( Time time, bool isColumnar) {
 
-	printf("[MovePrimarySelection]\n");
-
 	static Atom targets[2] = {XA_STRING};
 	static int isColFlag;
 	static XtPointer clientData[2] = {&isColFlag, &isColFlag};
@@ -5606,9 +5610,6 @@ void TextDisplay::MovePrimarySelection( Time time, bool isColumnar) {
 ** with the secondary selection)
 */
 void TextDisplay::ExchangeSelections(Time time) {
-
-
-	printf("[ExchangeSelections]\n");
 
 	if (!buffer_->secondary_.selected) {
 		return;
@@ -6136,7 +6137,7 @@ void TextDisplay::scrollLeftAP(XEvent *event, String *args, Cardinal *nArgs) {
 		return;
 	}
 	
-	XtVaGetValues(hScrollBar_, XmNmaximum, &sliderMax, XmNsliderSize, &sliderSize, nullptr);
+	XtVaGetValues(getHorizontalScrollbar(), XmNmaximum, &sliderMax, XmNsliderSize, &sliderSize, nullptr);
 	horizOffset = std::min(std::max(0, horizOffset_ - nPixels), sliderMax - sliderSize);
 	
 	if (horizOffset_ != horizOffset) {
@@ -6157,7 +6158,7 @@ void TextDisplay::scrollRightAP(XEvent *event, String *args, Cardinal *nArgs) {
 		return;
 	}
 	
-	XtVaGetValues(hScrollBar_, XmNmaximum, &sliderMax, XmNsliderSize, &sliderSize, nullptr);
+	XtVaGetValues(getHorizontalScrollbar(), XmNmaximum, &sliderMax, XmNsliderSize, &sliderSize, nullptr);
 	horizOffset = std::min(std::max(0, horizOffset_ + nPixels), sliderMax - sliderSize);
 	
 	if (horizOffset_ != horizOffset) {
@@ -6230,7 +6231,7 @@ void TextDisplay::pageRightAP(XEvent *event, String *args, Cardinal *nArgs) {
 
 	cancelDrag();
 	if (hasKey("scrollbar", args, nArgs)) {
-		XtVaGetValues(hScrollBar_, XmNmaximum, &sliderMax, XmNsliderSize, &sliderSize, nullptr);
+		XtVaGetValues(getHorizontalScrollbar(), XmNmaximum, &sliderMax, XmNsliderSize, &sliderSize, nullptr);
 		int horizOffset = std::min(horizOffset_ + rect_.width, sliderMax - sliderSize);
 		
 		if (horizOffset_ == horizOffset) {
@@ -7654,8 +7655,6 @@ void TextDisplay::secondaryOrDragStartAP(XEvent *event, String *args, Cardinal *
 
 void TextDisplay::secondaryAdjustAP(XEvent *event, String *args, Cardinal *nArgs) {
 	
-	printf("[secondaryAdjustAP]\n");
-	
 	XMotionEvent *e = &event->xmotion;
 	int dragState = dragState_;
 	bool rectDrag = hasKey("rect", args, nArgs);
@@ -8175,9 +8174,6 @@ void TextDisplay::sendSecondary(Time time, Atom sel, selectNotifyActions action,
 */
 void TextDisplay::getSelectionCallback(XtPointer clientData, Atom *selType, Atom *type, XtPointer value, unsigned long *length, int *format) {
 
-
-	printf("[getSelectionCallback]\n");
-
 	(void)selType;
 	
 	int isColumnar = *(int *)clientData;
@@ -8260,7 +8256,6 @@ void TextDisplay::modifiedCallback(int pos, int nInserted, int nDeleted, int nRe
 	   callback from firing at a bad time. */
 
 	// Take ownership of the selection 
-	printf("[modifiedCallback]\n");
 	if (!XtOwnSelection(w_, XA_PRIMARY, time, convertSelectionCB, loseSelectionCB, nullptr)) {
 		buffer_->BufUnselect();
 	} else {
@@ -9018,6 +9013,18 @@ Dimension TextDisplay::getHeight() const {
 Colormap TextDisplay::getColormap() const {
 	Colormap value;
 	XtVaGetValues(w_, XmNcolormap, &value, nullptr);
+	return value;
+}
+
+Widget TextDisplay::getHorizontalScrollbar() const {
+	Widget value;
+	XtVaGetValues(w_, textNhScrollBar, &value, nullptr);
+	return value;
+}
+
+Widget TextDisplay::getVerticalScrollbar() const {
+	Widget value;
+	XtVaGetValues(w_, textNvScrollBar, &value, nullptr);
 	return value;
 }
 
