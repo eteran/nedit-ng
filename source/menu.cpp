@@ -1209,7 +1209,7 @@ static void backlightCharsCB(Widget w, XtPointer clientData, XtPointer callData)
 	Q_UNUSED(clientData);
 	Q_UNUSED(callData);
 
-	int applyBacklight = XmToggleButtonGetState(w);
+	bool applyBacklight = XmToggleButtonGetState(w);
 	Document *window = Document::WidgetToWindow(MENU_WIDGET(w));
 	window->SetBacklightChars(applyBacklight ? GetPrefBacklightCharTypes() : nullptr);
 }

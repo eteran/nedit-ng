@@ -493,9 +493,6 @@ TextDisplay::TextDisplay(Widget widget,
 						 Pixel highlightBGPixel, 
 						 Pixel cursorFGPixel, 
 						 Pixel lineNumFGPixel, 
-						 bool continuousWrap, 
-						 int wrapMargin, 
-						 XmString bgClassString, 
 						 Pixel calltipFGPixel, 
 						 Pixel calltipBGPixel) {
 
@@ -503,7 +500,7 @@ TextDisplay::TextDisplay(Widget widget,
 	rect_               = { left, top, width, height };	
 	cursorOn_           = true;
 	cursorPos_          = 0;
-	cursor_             = Point{-100, -100};
+	cursor_             = { -100, -100 };
 	cursorToHint_       = NO_HINT;
 	cursorStyle_        = NORMAL_CURSOR;
 	cursorPreferredCol_ = -1;
@@ -531,8 +528,6 @@ TextDisplay::TextDisplay(Widget widget,
 	highlightBGPixel_   = highlightBGPixel;
 	lineNumFGPixel_     = lineNumFGPixel;
 	cursorFGPixel_      = cursorFGPixel;
-	wrapMargin_         = wrapMargin;
-	continuousWrap_     = continuousWrap;	
 	styleGC_            = allocateGC(w_, 0, 0, 0, fontStruct->fid, GCClipMask | GCForeground | GCBackground, GCArcMode);
 	lineNumLeft_        = lineNumLeft;
 	lineNumWidth_       = lineNumWidth;
@@ -566,7 +561,8 @@ TextDisplay::TextDisplay(Widget widget,
 	
 	bgClassPixel_ = QVector<Pixel>();
 	bgClass_      = QVector<uint8_t>();
-	TextDSetupBGClasses(widget, bgClassString, &bgClassPixel_, &bgClass_, bgPixel);
+	setBacklightCharTypes(QString()); // TODO(eteran): used to be set by resource textNbacklightCharTypes
+									  // which came from window->backlightCharTypes_ originally
 
 	suppressResync_      = false;
 	nLinesDeleted_       = 0;
@@ -629,7 +625,6 @@ TextDisplay::~TextDisplay() {
 
 	StopHandlingXSelections();
 	TextBuffer *buf = buffer_;
-	
 	
 	if (buf->modifyProcs_.empty()) {
 		delete buf;
@@ -885,7 +880,7 @@ void TextDisplay::TextDResize(int width, int height) {
 	/* In continuous wrap mode, a change in width affects the total number of
 	   lines in the buffer, and can leave the top line number incorrect, and
 	   the top character no longer pointing at a valid line start */
-	if (continuousWrap_ && wrapMargin_ == 0 && width != oldWidth) {
+	if (text_of(w_).P_continuousWrap && text_of(w_).P_wrapMargin == 0 && width != oldWidth) {
 		int oldFirstChar = firstChar_;
 		nBufferLines_ = TextDCountLines(0, buffer_->BufGetLength(), true);
 		firstChar_ = TextDStartOfLine(firstChar_);
@@ -1135,12 +1130,13 @@ void TextDisplay::TextDSetCursorStyle(CursorStyles style) {
 
 void TextDisplay::TextDSetWrapMode(int wrap, int wrapMargin) {
 
+	text_of(w_).P_continuousWrap = wrap;
+	text_of(w_).P_wrapMargin     = wrapMargin;
+
 	// NOTE(eteran): things are bit backwards from what i'd like
 	//               this is triggered by setting the resource based
 	//               version of these values which eventually triggers
 	//               setValues(...) to call this function.
-	wrapMargin_     = wrapMargin;
-	continuousWrap_ = wrap;
 
 	// wrapping can change change the total number of lines, re-count
 	nBufferLines_ = TextDCountLines(0, buffer_->BufGetLength(), true);
@@ -1393,7 +1389,7 @@ int TextDisplay::TextDPosToLineAndCol(int pos, int *lineNum, int *column) {
 	/* In continuous wrap mode, the absolute (non-wrapped) line count is
 	   maintained separately, as needed.  Only return it if we're actually
 	   keeping track of it and pos is in the displayed text */
-	if (continuousWrap_) {
+	if (text_of(w_).P_continuousWrap) {
 		if (!maintainingAbsTopLineNum() || pos < firstChar_ || pos > lastChar_)
 			return false;
 		*lineNum = absTopLineNum_ + buf->BufCountLines(firstChar_, pos);
@@ -1437,11 +1433,15 @@ int TextDisplay::TextDInSelection(Point p) {
 int TextDisplay::TextDOffsetWrappedColumn(int row, int column) {
 	int lineStart, dispLineStart;
 
-	if (!continuousWrap_ || row < 0 || row > nVisibleLines_)
+	if (!text_of(w_).P_continuousWrap || row < 0 || row > nVisibleLines_) {
 		return column;
+	}
+
 	dispLineStart = lineStarts_[row];
-	if (dispLineStart == -1)
+	if (dispLineStart == -1) {
 		return column;
+	}
+
 	lineStart = buffer_->BufStartOfLine(dispLineStart);
 	return column + buffer_->BufCountDispChars(lineStart, dispLineStart);
 }
@@ -1454,8 +1454,10 @@ int TextDisplay::TextDOffsetWrappedColumn(int row, int column) {
 ** needs a row, it needs it in terms of un-wrapped lines.
 */
 int TextDisplay::TextDOffsetWrappedRow(int row) const {
-	if (!continuousWrap_ || row < 0 || row > nVisibleLines_)
+	if (!text_of(w_).P_continuousWrap || row < 0 || row > nVisibleLines_) {
 		return row;
+	}
+
 	return buffer_->BufCountLines(firstChar_, lineStarts_[row]);
 }
 
@@ -1557,21 +1559,23 @@ int TextDisplay::TextDPreferredColumn(int *visLineNum, int *lineStartPos) {
 ** the lineStartPos.
 */
 int TextDisplay::TextDPosOfPreferredCol(int column, int lineStartPos) {
-	int newPos;
 
-	newPos = buffer_->BufCountForwardDispChars(lineStartPos, column);
-	if (continuousWrap_) {
+	int newPos = buffer_->BufCountForwardDispChars(lineStartPos, column);
+	if (text_of(w_).P_continuousWrap) {
 		newPos = std::min(newPos, TextDEndOfLine(lineStartPos, True));
 	}
-	return (newPos);
+
+	return newPos;
 }
 
 /*
 ** Cursor movement functions
 */
 int TextDisplay::TextDMoveRight() {
-	if (cursorPos_ >= buffer_->BufGetLength())
+	if (cursorPos_ >= buffer_->BufGetLength()) {
 		return false;
+	}
+
 	TextDSetInsertPosition(cursorPos_ + 1);
 	return true;
 }
@@ -1613,7 +1617,7 @@ int TextDisplay::TextDMoveUp(bool absolute) {
 	}
 
 	newPos = buffer_->BufCountForwardDispChars(prevLineStartPos, column);
-	if (continuousWrap_ && !absolute)
+	if (text_of(w_).P_continuousWrap && !absolute)
 		newPos = std::min(newPos, TextDEndOfLine(prevLineStartPos, True));
 
 	// move the cursor
@@ -1651,7 +1655,7 @@ int TextDisplay::TextDMoveDown(bool absolute) {
 
 	newPos = buffer_->BufCountForwardDispChars(nextLineStartPos, column);
 
-	if (continuousWrap_ && !absolute) {
+	if (text_of(w_).P_continuousWrap && !absolute) {
 		newPos = std::min(newPos, TextDEndOfLine(nextLineStartPos, True));
 	}
 
@@ -1671,8 +1675,9 @@ int TextDisplay::TextDCountLines(int startPos, int endPos, int startPosIsLineSta
 	int retLines, retPos, retLineStart, retLineEnd;
 
 	// If we're not wrapping use simple (and more efficient) BufCountLines
-	if (!continuousWrap_)
+	if (!text_of(w_).P_continuousWrap) {
 		return buffer_->BufCountLines(startPos, endPos);
+	}
 
 	wrappedLineCounter(buffer_, startPos, endPos, INT_MAX, startPosIsLineStart, 0, &retPos, &retLines, &retLineStart, &retLineEnd);
 	return retLines;
@@ -1688,12 +1693,14 @@ int TextDisplay::TextDCountForwardNLines(const int startPos, const unsigned nLin
 	int retLines, retPos, retLineStart, retLineEnd;
 
 	// if we're not wrapping use more efficient BufCountForwardNLines
-	if (!continuousWrap_)
+	if (!text_of(w_).P_continuousWrap) {
 		return buffer_->BufCountForwardNLines(startPos, nLines);
+	}
 
 	// wrappedLineCounter can't handle the 0 lines case
-	if (nLines == 0)
+	if (nLines == 0) {
 		return startPos;
+	}
 
 	// use the common line counting routine to count forward
 	wrappedLineCounter(buffer_, startPos, buffer_->BufGetLength(), nLines, startPosIsLineStart, 0, &retPos, &retLines, &retLineStart, &retLineEnd);
@@ -1716,15 +1723,18 @@ int TextDisplay::TextDCountForwardNLines(const int startPos, const unsigned nLin
 ** the start of the next line.  This is also consistent with the model used by
 ** visLineLength.
 */
-int TextDisplay::TextDEndOfLine(int pos, const Boolean startPosIsLineStart) {
+int TextDisplay::TextDEndOfLine(int pos, Boolean startPosIsLineStart) {
 	int retLines, retPos, retLineStart, retLineEnd;
 
 	// If we're not wrapping use more efficient BufEndOfLine
-	if (!continuousWrap_)
+	if (!text_of(w_).P_continuousWrap) {
 		return buffer_->BufEndOfLine(pos);
+	}
 
-	if (pos == buffer_->BufGetLength())
+	if (pos == buffer_->BufGetLength()) {
 		return pos;
+	}
+
 	wrappedLineCounter(buffer_, pos, buffer_->BufGetLength(), 1, startPosIsLineStart, 0, &retPos, &retLines, &retLineStart, &retLineEnd);
 	return retLineEnd;
 }
@@ -1737,8 +1747,9 @@ int TextDisplay::TextDStartOfLine(int pos) const {
 	int retLines, retPos, retLineStart, retLineEnd;
 
 	// If we're not wrapping, use the more efficient BufStartOfLine
-	if (!continuousWrap_)
+	if (!text_of(w_).P_continuousWrap) {
 		return buffer_->BufStartOfLine(pos);
+	}
 
 	wrappedLineCounter(buffer_, buffer_->BufStartOfLine(pos), pos, INT_MAX, True, 0, &retPos, &retLines, &retLineStart, &retLineEnd);
 	return retLineStart;
@@ -1749,18 +1760,19 @@ int TextDisplay::TextDStartOfLine(int pos) const {
 ** wrapping is turned on.
 */
 int TextDisplay::TextDCountBackwardNLines(int startPos, int nLines) {
+
 	TextBuffer *buf = buffer_;
-	int pos;
 	int retLines;
 	int retPos;
 	int retLineStart;
 	int retLineEnd;
 
 	// If we're not wrapping, use the more efficient BufCountBackwardNLines
-	if (!continuousWrap_)
+	if (!text_of(w_).P_continuousWrap) {
 		return buffer_->BufCountBackwardNLines(startPos, nLines);
+	}
 
-	pos = startPos;
+	int pos = startPos;
 	while (true) {
 		int lineStart = buf->BufStartOfLine(pos);
 		wrappedLineCounter(buffer_, lineStart, pos, INT_MAX, True, 0, &retPos, &retLines, &retLineStart, &retLineEnd);
@@ -1775,7 +1787,7 @@ int TextDisplay::TextDCountBackwardNLines(int startPos, int nLines) {
 }
 
 void TextDisplay::bufPreDeleteCallback(int pos, int nDeleted) {
-	if (continuousWrap_ && (fixedFontWidth_ == -1 || modifyingTabDist_)) {
+	if (text_of(w_).P_continuousWrap && (fixedFontWidth_ == -1 || modifyingTabDist_)) {
 		/* Note: we must perform this measurement, even if there is not a
 		   single character deleted; the number of "deleted" lines is the
 		   number of visual lines spanned by the real line in which the
@@ -1808,7 +1820,7 @@ void TextDisplay::bufModifiedCallback(int pos, int nInserted, int nDeleted, int 
 
 	/* Count the number of lines inserted and deleted, and in the case
 	   of continuous wrap mode, how much has changed */
-	if (continuousWrap_) {
+	if (text_of(w_).P_continuousWrap) {
 		findWrapRangeEx(deletedText, pos, nInserted, nDeleted, &wrapModStart, &wrapModEnd, &linesInserted, &linesDeleted);
 	} else {
 		linesInserted = nInserted == 0 ? 0 : buf->BufCountLines(pos, pos + nInserted);
@@ -1817,7 +1829,7 @@ void TextDisplay::bufModifiedCallback(int pos, int nInserted, int nDeleted, int 
 
 	// Update the line starts and topLineNum
 	if (nInserted != 0 || nDeleted != 0) {
-		if (continuousWrap_) {
+		if (text_of(w_).P_continuousWrap) {
 			updateLineStarts( wrapModStart, wrapModEnd - wrapModStart, nDeleted + pos - wrapModStart + (wrapModEnd - (pos + nInserted)), linesInserted, linesDeleted, &scrolled);
 		} else {
 			updateLineStarts( pos, nInserted, nDeleted, linesInserted, linesDeleted, &scrolled);
@@ -1874,16 +1886,17 @@ void TextDisplay::bufModifiedCallback(int pos, int nInserted, int nDeleted, int 
 	   sure that the redisplay range covers the old cursor position so the
 	   old cursor gets erased, and erase the bits of the cursor which extend
 	   beyond the left and right edges of the text. */
-	startDispPos = continuousWrap_ ? wrapModStart : pos;
+	startDispPos = text_of(w_).P_continuousWrap ? wrapModStart : pos;
 	if (origCursorPos == startDispPos && cursorPos_ != startDispPos)
 		startDispPos = std::min(startDispPos, origCursorPos - 1);
 	if (linesInserted == linesDeleted) {
-		if (nInserted == 0 && nDeleted == 0)
+		if (nInserted == 0 && nDeleted == 0) {
 			endDispPos = pos + nRestyled;
-		else {
-			endDispPos = continuousWrap_ ? wrapModEnd : buf->BufEndOfLine(pos + nInserted) + 1;
-			if (origCursorPos >= startDispPos && (origCursorPos <= endDispPos || endDispPos == buf->BufGetLength()))
+		} else {
+			endDispPos = text_of(w_).P_continuousWrap ? wrapModEnd : buf->BufEndOfLine(pos + nInserted) + 1;
+			if (origCursorPos >= startDispPos && (origCursorPos <= endDispPos || endDispPos == buf->BufGetLength())) {
 				blankCursorProtrusions();
+			}
 		}
 		/* If more than one line is inserted/deleted, a line break may have
 		   been inserted or removed in between, and the line numbers may
@@ -1953,7 +1966,7 @@ void TextDisplay::TextDMaintainAbsLineNum(int state) {
 */
 int TextDisplay::getAbsTopLineNum() {
 
-	if (!continuousWrap_) {
+	if (!text_of(w_).P_continuousWrap) {
 		return topLineNum_;
 	}
 		
@@ -1982,7 +1995,7 @@ void TextDisplay::offsetAbsLineNum(int oldFirstChar) {
 ** (for displaying line numbers or showing in the statistics line).
 */
 int TextDisplay::maintainingAbsTopLineNum() const {
-	return continuousWrap_ && (lineNumWidth_ != 0 || needAbsTopLineNum_);
+	return text_of(w_).P_continuousWrap && (lineNumWidth_ != 0 || needAbsTopLineNum_);
 }
 
 /*
@@ -2108,10 +2121,11 @@ void TextDisplay::redisplayLine(int visLineNum, int leftClip, int rightClip, int
 	   position and the line start we're using.  Since scanning back to find a
 	   newline is expensive, only do so if there's actually a rectangular
 	   selection which needs it */
-	if (continuousWrap_ && (buf->primary_.rangeTouchesRectSel(lineStartPos, lineStartPos + lineLen) || buf->secondary_.rangeTouchesRectSel(lineStartPos, lineStartPos + lineLen) || buf->highlight_.rangeTouchesRectSel(lineStartPos, lineStartPos + lineLen))) {
+	if (text_of(w_).P_continuousWrap && (buf->primary_.rangeTouchesRectSel(lineStartPos, lineStartPos + lineLen) || buf->secondary_.rangeTouchesRectSel(lineStartPos, lineStartPos + lineLen) || buf->highlight_.rangeTouchesRectSel(lineStartPos, lineStartPos + lineLen))) {
 		dispIndexOffset = buf->BufCountDispChars(buf->BufStartOfLine(lineStartPos), lineStartPos);
-	} else
+	} else {
 		dispIndexOffset = 0;
+	}
 
 	/* Step through character positions from the beginning of the line (even if
 	   that's off the left edge of the displayed area) to find the first
@@ -3725,9 +3739,9 @@ void TextDisplay::wrappedLineCounter(const TextBuffer *buf, const int startPos, 
 	   to measure in columns, than to count pixels.  Determine if we can count
 	   in columns (countPixels == False) or must count pixels (countPixels ==
 	   True), and set the wrap target for either pixels or columns */
-	if (fixedFontWidth_ != -1 || wrapMargin_ != 0) {
+	if (fixedFontWidth_ != -1 || text_of(w_).P_wrapMargin != 0) {
 		countPixels = false;
-		wrapMargin = wrapMargin_ != 0 ? wrapMargin_ : rect_.width / fixedFontWidth_;
+		wrapMargin = text_of(w_).P_wrapMargin != 0 ? text_of(w_).P_wrapMargin : rect_.width / fixedFontWidth_;
 		maxWidth = INT_MAX;
 	} else {
 		countPixels = true;
@@ -3879,7 +3893,7 @@ void TextDisplay::findLineEnd(int startPos, int startPosIsLineStart, int *lineEn
 	int retLines, retLineStart;
 
 	// if we're not wrapping use more efficient BufEndOfLine
-	if (!continuousWrap_) {
+	if (!text_of(w_).P_continuousWrap) {
 		*lineEnd = buffer_->BufEndOfLine(startPos);
 		*nextLineStart = std::min(buffer_->BufGetLength(), *lineEnd + 1);
 		return;
@@ -3907,7 +3921,7 @@ void TextDisplay::findLineEnd(int startPos, int startPosIsLineStart, int *lineEn
 */
 int TextDisplay::wrapUsesCharacter(int lineEndPos) {
 
-	if (!continuousWrap_ || lineEndPos == buffer_->BufGetLength()) {
+	if (!text_of(w_).P_continuousWrap || lineEndPos == buffer_->BufGetLength()) {
 		return true;
 	}
 
@@ -3924,7 +3938,7 @@ int TextDisplay::wrapUsesCharacter(int lineEndPos) {
 ** the longest possible line.
 */
 void TextDisplay::hideOrShowHScrollBar() {
-	if (continuousWrap_ && (wrapMargin_ == 0 || wrapMargin_ * fontStruct_->max_bounds.width < rect_.width))
+	if (text_of(w_).P_continuousWrap && (text_of(w_).P_wrapMargin == 0 || text_of(w_).P_wrapMargin * fontStruct_->max_bounds.width < rect_.width))
 		XtUnmanageChild(getHorizontalScrollbar());
 	else
 		XtManageChild(getHorizontalScrollbar());
@@ -4015,17 +4029,16 @@ Pixel TextDisplay::getRangesetColor(int ind, Pixel bground) {
 ** there'll be a pressing need. I suppose the scanning of the specification
 ** could be better too, but then, who cares!
 */
-void TextDisplay::TextDSetupBGClassesEx(Widget w, XmString str) {
-	TextDSetupBGClasses(w, str, &bgClassPixel_, &bgClass_, bgPixel_);
+void TextDisplay::TextDSetupBGClassesEx(const QString &str) {
+	TextDSetupBGClasses(w_, str, &bgClassPixel_, &bgClass_, bgPixel_);
 }
 
-void TextDisplay::TextDSetupBGClasses(Widget w, XmString str, QVector<Pixel> *pp_bgClassPixel, QVector<uint8_t> *pp_bgClass, Pixel bgPixelDefault) {
+void TextDisplay::TextDSetupBGClasses(Widget w, const QString &s, QVector<Pixel> *pp_bgClassPixel, QVector<uint8_t> *pp_bgClass, Pixel bgPixelDefault) {
 
 	*pp_bgClassPixel = QVector<Pixel>();
 	*pp_bgClass      = QVector<uint8_t>();
 
-	char *s = reinterpret_cast<char *>(str);
-	if (!s) {
+	if (s.isEmpty()) {
 		return;
 	}
 
@@ -4061,8 +4074,7 @@ void TextDisplay::TextDSetupBGClasses(Widget w, XmString str, QVector<Pixel> *pp
 	   clause 1-31,127:red). */
 
 	int class_no = 1;
-	QString formatString = QString::fromLatin1(s);
-	QStringList formats = formatString.split(QLatin1Char(';'), QString::SkipEmptyParts);
+	QStringList formats = s.split(QLatin1Char(';'), QString::SkipEmptyParts);
 	for(const QString &format : formats) {
 
 		QStringList s1 = format.split(QLatin1Char(':'), QString::SkipEmptyParts);
@@ -8896,7 +8908,14 @@ void TextDisplay::addsmartIndentCallback(XtCallbackProc callback, XtPointer clie
 }
 
 void TextDisplay::setWordDelimiters(const QString &delimiters) {
-	XtVaSetValues(w_, textNwordDelimiters, delimiters.toLatin1().data(), nullptr);
+	/* When delimiters are changed, copy the memory, so that the caller
+	   doesn't have to manage it, and add mandatory delimiters blank,
+	   tab, and newline to the list */
+	const size_t n = delimiters.size() + 4;
+	char *new_delimiters = new char[n];
+	delete [] text_of(w_).P_delimiters;
+	snprintf(new_delimiters, n, "%s%s", " \t\n", delimiters.toLatin1().data());
+	text_of(w_).P_delimiters = new_delimiters;
 }
 
 void TextDisplay::setAutoShowInsertPos(bool value) {
@@ -8904,11 +8923,11 @@ void TextDisplay::setAutoShowInsertPos(bool value) {
 }
 
 void TextDisplay::setEmulateTabs(int value) {
-	XtVaSetValues(w_, textNemulateTabs, value, nullptr);
+	text_of(w_).P_emulateTabs = value;
 }
 
 void TextDisplay::setWrapMargin(int value) {
-	XtVaSetValues(w_, textNwrapMargin, value, nullptr);
+	TextDSetWrapMode(text_of(w_).P_continuousWrap, value);
 }
 
 void TextDisplay::setLineNumCols(int value) {
@@ -8924,15 +8943,28 @@ void TextDisplay::setBackgroundPixel(Pixel pixel) {
 }
 
 void TextDisplay::setBacklightCharTypes(const QString &charTypes) {
-	XtVaSetValues(w_, textNbacklightCharTypes, charTypes.toLatin1().data(), nullptr);
+	TextDSetupBGClassesEx(charTypes);
+	XClearArea(XtDisplay(w_), XtWindow(w_), 0, 0, 0, 0, true);
 }
 
 void TextDisplay::setReadOnly(bool value) {
-	XtVaSetValues(w_, textNreadOnly, value, nullptr);
+	text_of(w_).P_readOnly = value;
 }
 
 void TextDisplay::setOverstrike(bool value) {
-	XtVaSetValues(w_, textNoverstrike, value, nullptr);
+	text_of(w_).P_overstrike = value;
+
+	switch(getCursorStyle()) {
+	case BLOCK_CURSOR:
+		TextDSetCursorStyle(text_of(w_).P_heavyCursor ? HEAVY_CURSOR : NORMAL_CURSOR);
+		break;
+	case NORMAL_CURSOR:
+	case HEAVY_CURSOR:
+		TextDSetCursorStyle(BLOCK_CURSOR);
+	default:
+		// NOTE(eteran): wasn't handled in the original code
+		break;
+	}
 }
 
 void TextDisplay::setCursorVPadding(int value) {
@@ -8944,73 +8976,55 @@ void TextDisplay::setFont(XFontStruct *font) {
 }
 
 void TextDisplay::setAutoWrap(bool value) {
-	XtVaSetValues(w_, textNautoWrap, value, nullptr);
+	text_of(w_).P_autoWrap = value;
 }
 
 void TextDisplay::setContinuousWrap(bool value) {
-	XtVaSetValues(w_, textNcontinuousWrap, value, nullptr);
+	TextDSetWrapMode(value, text_of(w_).P_wrapMargin);
 }
 
 void TextDisplay::setAutoIndent(bool value) {
-	XtVaSetValues(w_, textNautoIndent, value, nullptr);
+	text_of(w_).P_autoIndent = value;
 }
 
 void TextDisplay::setSmartIndent(bool value) {
-	XtVaSetValues(w_, textNsmartIndent, value, nullptr);
+	text_of(w_).P_smartIndent = value;
 }
 
 int TextDisplay::getEmulateTabs() const {
-	int value;
-	XtVaGetValues(w_, textNemulateTabs, &value, nullptr);
-	return value;
+	return text_of(w_).P_emulateTabs;
 }
 
 int TextDisplay::getWrapMargin() const {
-	int value;
-	XtVaGetValues(w_, textNwrapMargin, &value, nullptr);
-	return value;
+	return text_of(w_).P_wrapMargin;
 }
 
 int TextDisplay::getColumns() const {
-	int value;
-	XtVaGetValues(w_, textNcolumns, &value, nullptr);
-	return value;
+	return text_of(w_).P_columns;
 }
 
 int TextDisplay::getRows() const {
-	int value;
-	XtVaGetValues(w_, textNrows, &value, nullptr);
-	return value;
+	return text_of(w_).P_rows;
 }
 
 int TextDisplay::getMarginHeight() const {
-	int value;
-	XtVaGetValues(w_, textNmarginHeight, &value, nullptr);
-	return value;
+	return text_of(w_).P_marginHeight;
 }
 
 int TextDisplay::getMarginWidth() const {
-	int value;
-	XtVaGetValues(w_, textNmarginWidth, &value, nullptr);
-	return value;
+	return text_of(w_).P_marginWidth;
 }
 
 int TextDisplay::getLineNumCols() const {
-	int value;
-	XtVaGetValues(w_, textNlineNumCols, &value, nullptr);
-	return value;
+	return text_of(w_).P_lineNumCols;
 }
 
 QString TextDisplay::getWordDelimiters() const {
-	char *value;
-	XtVaGetValues(w_, textNwordDelimiters, &value, nullptr);
-	return QLatin1String(value);
+	return QString::fromLatin1(text_of(w_).P_delimiters);
 }
 
 XFontStruct *TextDisplay::getFont() const {
-	XFontStruct *fs = nullptr;
-	XtVaGetValues(w_, textNfont, &fs, nullptr);
-	return fs;
+	return text_of(w_).P_fontStruct;
 }
 
 Position TextDisplay::getX() const {
@@ -9056,19 +9070,14 @@ Colormap TextDisplay::getColormap() const {
 }
 
 Widget TextDisplay::getHorizontalScrollbar() const {
-	Widget value;
-	XtVaGetValues(w_, textNhScrollBar, &value, nullptr);
-	return value;
+	return text_of(w_).P_hScrollBar;
 }
 
 Widget TextDisplay::getVerticalScrollbar() const {
-	Widget value;
-	XtVaGetValues(w_, textNvScrollBar, &value, nullptr);
-	return value;
+	return text_of(w_).P_vScrollBar;
 }
 
 #if 0
-	QString TextDisplay::getBacklightCharTypes();
 	bool TextDisplay::getAutoIndent();
 	bool TextDisplay::getAutoShowInsertPos();
 	bool TextDisplay::getAutoWrap();

@@ -109,8 +109,6 @@
 #define textCEmulateTabs const_cast<char *>("EmulateTabs")
 #define textNcursorVPadding const_cast<char *>("cursorVPadding")
 #define textCCursorVPadding const_cast<char *>("CursorVPadding")
-#define textNbacklightCharTypes const_cast<char *>("backlightCharTypes")
-#define textCBacklightCharTypes const_cast<char *>("BacklightCharTypes")
 
 extern WidgetClass textWidgetClass;
 

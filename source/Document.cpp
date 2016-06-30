@@ -4500,7 +4500,6 @@ Widget Document::createTextArea(Widget parent, Document *window, int rows, int c
 		"text",
 		textWidgetClass,
 		frame,
-		textNbacklightCharTypes, window->backlightCharTypes_.toLatin1().data(),
 		textNrows,               rows,
 		textNcolumns,            cols,
 		textNlineNumCols,        lineNumCols,
@@ -4523,8 +4522,9 @@ Widget Document::createTextArea(Widget parent, Document *window, int rows, int c
 	XtVaSetValues(sw, XmNworkWindow, frame, XmNhorizontalScrollBar, hScrollBar, XmNverticalScrollBar, vScrollBar, nullptr);
 
 	TextDisplay *textD = textD_of(text);
+	textD->setBacklightCharTypes(window->backlightCharTypes_);
 
-	// add focus, drag, cursor tracking, and smart indent callbacks
+	// add focus, drag, cursor tracking, and smart indent callbacks	
 	textD->addFocusCallback(focusCB, window);
 	textD->addCursorMovementCallback(movedCB, window);
 	textD->addDragStartCallback(dragStartCB, window);

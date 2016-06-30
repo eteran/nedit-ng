@@ -497,7 +497,6 @@ static XtResource resources[] = {
 	{ textNcursorForeground,       textCCursorForeground,       XmRPixel,      sizeof(Pixel),         XtOffset(TextWidget, text.P_cursorFGPixel),           XmRString, (String)NEDIT_DEFAULT_CURSOR_FG           },
 	{ textNcalltipForeground,      textCcalltipForeground,      XmRPixel,      sizeof(Pixel),         XtOffset(TextWidget, text.P_calltipFGPixel),          XmRString, (String)NEDIT_DEFAULT_CALLTIP_FG          },
 	{ textNcalltipBackground,      textCcalltipBackground,      XmRPixel,      sizeof(Pixel),         XtOffset(TextWidget, text.P_calltipBGPixel),          XmRString, (String)NEDIT_DEFAULT_CALLTIP_BG          },
-	{ textNbacklightCharTypes,     textCBacklightCharTypes,     XmRString,     sizeof(XmString),      XtOffset(TextWidget, text.P_backlightCharTypes),      XmRString, nullptr                                   },
 	{ textNrows,                   textCRows,                   XmRInt,        sizeof(int),           XtOffset(TextWidget, text.P_rows),                    XmRString, (String) "24"                             },
 	{ textNcolumns,                textCColumns,                XmRInt,        sizeof(int),           XtOffset(TextWidget, text.P_columns),                 XmRString, (String) "80"                             },
 	{ textNmarginWidth,            textCMarginWidth,            XmRInt,        sizeof(int),           XtOffset(TextWidget, text.P_marginWidth),             XmRString, (String) "5"                              },
@@ -664,9 +663,6 @@ static void initialize(Widget request, Widget newWidget, ArgList args, Cardinal 
 		tw.P_highlightBGPixel,
 		tw.P_cursorFGPixel,
 	    tw.P_lineNumFGPixel,
-		tw.P_continuousWrap,
-		tw.P_wrapMargin,
-		tw.P_backlightCharTypes,
 		tw.P_calltipFGPixel,
 		tw.P_calltipBGPixel);
 		
@@ -676,12 +672,9 @@ static void initialize(Widget request, Widget newWidget, ArgList args, Cardinal 
 	   delimiters.  The memory use scheme here is that new values are
 	   always copied, and can therefore be safely freed on subsequent
 	   set-values calls or destroy */
-
-	const size_t n = strlen(tw.P_delimiters) + 4;
-    char *delimiters = new char[n];
-    snprintf(delimiters, n, "%s%s", " \t\n", tw.P_delimiters);
-    tw.P_delimiters = delimiters;
-
+	auto defaultDelimiters = QString::fromLatin1(tw.P_delimiters);
+	tw.P_delimiters = nullptr; // to prevent deleting memory we don't own
+	textD->setWordDelimiters(defaultDelimiters);
 
 	// Register the widget to the input manager
 	XmImRegister(newWidget, 0);
@@ -832,29 +825,12 @@ static Boolean setValues(Widget current, Widget request, Widget new_widget, ArgL
 	(void)args;
 	(void)num_args;
 
-	bool redraw = false;
 	bool reconfigure = false;
 	
 	auto &newText = text_of(new_widget);
 	auto &curText = text_of(current);
 	TextDisplay *newD = textD_of(new_widget);
 	TextDisplay *curD = textD_of(current);
-
-	// did overstrike change?
-	if (newText.P_overstrike != curText.P_overstrike) {
-	
-		switch(curD->getCursorStyle()) {
-		case BLOCK_CURSOR:
-			curD->TextDSetCursorStyle(curText.P_heavyCursor ? HEAVY_CURSOR : NORMAL_CURSOR);
-			break;
-		case NORMAL_CURSOR:
-		case HEAVY_CURSOR:
-			curD->TextDSetCursorStyle(BLOCK_CURSOR);
-		default:
-			// NOTE(eteran): wasn't handled in the original code
-			break;
-		}
-	}
 
 	// did the font change?
 	if (newText.P_fontStruct != curText.P_fontStruct) {
@@ -864,23 +840,6 @@ static Boolean setValues(Widget current, Widget request, Widget new_widget, ArgL
 		}
 		
 		curD->TextDSetFont(newText.P_fontStruct);
-	}
-
-	// did the wrap change?
-	if ((newText.P_wrapMargin != curText.P_wrapMargin) || (newText.P_continuousWrap != curText.P_continuousWrap)) {
-		curD->TextDSetWrapMode(newText.P_continuousWrap, newText.P_wrapMargin);
-	}
-
-	/* When delimiters are changed, copy the memory, so that the caller
-	   doesn't have to manage it, and add mandatory delimiters blank,
-	   tab, and newline to the list */
-	if (newText.P_delimiters != curText.P_delimiters) {
-
-		const size_t n = strlen(newText.P_delimiters) + 4;
-		char *delimiters = new char[n];	
-		delete [] curText.P_delimiters;
-		snprintf(delimiters, n, "%s%s", " \t\n", newText.P_delimiters);
-		newText.P_delimiters = delimiters;
 	}
 
 	/* Setting the lineNumCols resource tells the text widget to hide or
@@ -902,13 +861,7 @@ static Boolean setValues(Widget current, Widget request, Widget new_widget, ArgL
 		}
 	}
 
-	// did the backlight change?
-	if (newText.P_backlightCharTypes != curText.P_backlightCharTypes) {
-		newD->TextDSetupBGClassesEx((Widget)new_widget, newText.P_backlightCharTypes);
-		redraw = true;
-	}
-
-	return redraw;
+	return true;
 }
 
 /*

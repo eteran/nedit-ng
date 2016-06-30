@@ -80,8 +80,7 @@ struct CallTip {
 
 class TextDisplay {
 public:
-	TextDisplay(
-		Widget widget,
+	TextDisplay(Widget widget,
 		Widget hScrollBar,
 		Widget vScrollBar,
 		Position left,
@@ -100,9 +99,6 @@ public:
 		Pixel highlightBGPixel,
 		Pixel cursorFGPixel,
 		Pixel lineNumFGPixel,
-		bool continuousWrap,
-		int wrapMargin,
-		XmString bgClassString,
 		Pixel calltipFGPixel,
 		Pixel calltipBGPixel);
 
@@ -202,7 +198,6 @@ public:
 	// resource getters
 	Pixel getBackgroundPixel() const;
 	Pixel getForegroundPixel() const;
-	QString getBacklightCharTypes() const;
 	QString getWordDelimiters() const;
 	XFontStruct *getFont() const;
 	bool getAutoIndent() const;
@@ -442,10 +437,12 @@ public:
 public:
 	int spanBackward(TextBuffer *buf, int startPos, const char *searchChars, int ignoreSpace, int *foundPos);
 	int spanForward(TextBuffer *buf, int startPos, const char *searchChars, int ignoreSpace, int *foundPos);
-	void TextDSetupBGClassesEx(Widget w, XmString str);
+	void TextDSetupBGClassesEx(const QString &str);
 	
+private:
+	static void TextDSetupBGClasses(Widget w, const QString &str, QVector<Pixel> *pp_bgClassPixel, QVector<uint8_t> *pp_bgClass, Pixel bgPixelDefault);
+
 public:
-	static void TextDSetupBGClasses(Widget w, XmString str, QVector<Pixel> *pp_bgClassPixel, QVector<uint8_t> *pp_bgClass, Pixel bgPixelDefault);
 	static void cursorBlinkTimerProc(XtPointer clientData, XtIntervalId *id);
 	static void handleHidePointer(Widget w, XtPointer unused, XEvent *event, Boolean *continue_to_dispatch);
 	static void handleShowPointer(Widget w, XtPointer unused, XEvent *event, Boolean *continue_to_dispatch);
@@ -536,7 +533,7 @@ private:
 	bool motifDestOwner_;            // " "            owns the motif destination
 	XtIntervalId autoScrollProcID_;  // id of Xt timer proc for autoscroll
 	XtIntervalId cursorBlinkProcID_; // id of timer proc for cursor blink
-	
+
 private:
 	// COPY OF RESOURCE?
 	Pixel          selectFGPixel_;      // Foreground select color
@@ -548,8 +545,6 @@ private:
 	Pixel          calltipFGPixel_;
 	Pixel          calltipBGPixel_;	
 	XFontStruct *  fontStruct_;         // Font structure for primary font	
-	bool           continuousWrap_;     // Wrap long lines when displaying
-	int            wrapMargin_;         // Margin in # of char positions for wrapping in continuousWrap mod
 	int            emTabsBeforeCursor_; // If non-zero, number of consecutive emulated tabs just entered.  Saved so chars can be deleted as a unit
 };
 

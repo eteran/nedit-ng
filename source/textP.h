@@ -83,9 +83,6 @@ public:
 	Cardinal       P_cursorVPadding;
 	Widget         P_hScrollBar;
 	Widget         P_vScrollBar;
-
-	/* NOTE(eteran): as "private", but looks like a resource */
-	XmString P_backlightCharTypes;   // background class string to parse
 	
 	// these are set indirectly in Document::createTextArea
 	XtCallbackList P_focusInCB;		
