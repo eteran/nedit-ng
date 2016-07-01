@@ -8931,7 +8931,19 @@ void TextDisplay::setWrapMargin(int value) {
 }
 
 void TextDisplay::setLineNumCols(int value) {
-	XtVaSetValues(w_, textNlineNumCols, value, nullptr);
+
+	text_of(w_).P_lineNumCols = value;
+	int marginWidth = text_of(w_).P_marginWidth;
+	int charWidth   = text_of(w_).P_fontStruct->max_bounds.width;
+	int lineNumCols = text_of(w_).P_lineNumCols;
+
+	if (lineNumCols == 0) {
+		TextDSetLineNumberArea(0, 0, marginWidth);
+		text_of(w_).P_columns = (w_->core.width - marginWidth * 2) / charWidth;
+	} else {
+		TextDSetLineNumberArea(marginWidth, charWidth * lineNumCols, 2 * marginWidth + charWidth * lineNumCols);
+		text_of(w_).P_columns = (w_->core.width - marginWidth * 3 - charWidth * lineNumCols) / charWidth;
+	}
 }
 
 void TextDisplay::setForegroundPixel(Pixel pixel) {
@@ -8972,7 +8984,24 @@ void TextDisplay::setCursorVPadding(int value) {
 }
 
 void TextDisplay::setFont(XFontStruct *font) {
-	XtVaSetValues(w_, textNfont, font, nullptr);
+
+	bool reconfigure = false;
+	text_of(w_).P_fontStruct = font;
+
+	// did the font change?
+	if (text_of(w_).P_lineNumCols != 0) {
+		reconfigure = true;
+	}
+
+	TextDSetFont(text_of(w_).P_fontStruct);
+
+	/* Setting the lineNumCols resource tells the text widget to hide or
+	   show, or change the number of columns of the line number display,
+	   which requires re-organizing the x coordinates of both the line
+	   number display and the main text display */
+	if(reconfigure) {
+		setLineNumCols(getLineNumCols());
+	}
 }
 
 void TextDisplay::setAutoWrap(bool value) {

@@ -824,44 +824,10 @@ static Boolean setValues(Widget current, Widget request, Widget new_widget, ArgL
 	(void)request;
 	(void)args;
 	(void)num_args;
+	(void)current;
+	(void)new_widget;
 
-	bool reconfigure = false;
-	
-	auto &newText = text_of(new_widget);
-	auto &curText = text_of(current);
-	TextDisplay *newD = textD_of(new_widget);
-	TextDisplay *curD = textD_of(current);
-
-	// did the font change?
-	if (newText.P_fontStruct != curText.P_fontStruct) {
-		
-		if (newText.P_lineNumCols != 0) {
-			reconfigure = true;
-		}
-		
-		curD->TextDSetFont(newText.P_fontStruct);
-	}
-
-	/* Setting the lineNumCols resource tells the text widget to hide or
-	   show, or change the number of columns of the line number display,
-	   which requires re-organizing the x coordinates of both the line
-	   number display and the main text display */
-	if (newText.P_lineNumCols != curText.P_lineNumCols || reconfigure) {
-
-		int marginWidth = newText.P_marginWidth;
-		int charWidth   = newText.P_fontStruct->max_bounds.width;
-		int lineNumCols = newText.P_lineNumCols;
-
-		if (lineNumCols == 0) {
-			newD->TextDSetLineNumberArea(0, 0, marginWidth);
-			newText.P_columns = (new_widget->core.width - marginWidth * 2) / charWidth;
-		} else {
-			newD->TextDSetLineNumberArea(marginWidth, charWidth * lineNumCols, 2 * marginWidth + charWidth * lineNumCols);
-			newText.P_columns = (new_widget->core.width - marginWidth * 3 - charWidth * lineNumCols) / charWidth;
-		}
-	}
-
-	return true;
+	return false;
 }
 
 /*
