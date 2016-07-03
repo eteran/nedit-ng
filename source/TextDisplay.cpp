@@ -8879,10 +8879,6 @@ TextBuffer *TextDisplay::getStyleBuffer() const {
 	return styleBuffer_;
 }
 
-XFontStruct *TextDisplay::TextDGetFont() const {
-	return fontStruct_;
-}
-
 CursorStyles TextDisplay::getCursorStyle() const {
 	return cursorStyle_;
 }
@@ -9050,6 +9046,10 @@ int TextDisplay::getLineNumCols() const {
 
 QString TextDisplay::getWordDelimiters() const {
 	return QString::fromLatin1(text_of(w_).P_delimiters);
+}
+
+XFontStruct *TextDisplay::TextDGetFont() const {
+	return fontStruct_;
 }
 
 XFontStruct *TextDisplay::getFont() const {

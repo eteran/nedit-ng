@@ -52,7 +52,6 @@
 
 #ifdef REPLACE_SCOPE
 #include "TextDisplay.h"
-#include "textP.h"
 #endif
 
 #include "util/misc.h"
@@ -247,14 +246,19 @@ static void initToggleButtons(SearchType searchType, Widget regexToggle, Widget 
 ** This routine introduces a dependency on TextDisplay.h, which is not so nice,
 ** but I currently don't have a cleaner solution.
 */
-static int selectionSpansMultipleLines(Document *window) {
-	int selStart, selEnd, rectStart, rectEnd, lineStartStart, lineStartEnd;
+static bool selectionSpansMultipleLines(Document *window) {
+	int selStart;
+	int selEnd;
+	int rectStart;
+	int rectEnd;
+	int lineStartStart;
+	int lineStartEnd;
 	bool isRect;
 	int lineWidth;
-	TextDisplay *textD;
 
-	if (!window->buffer_->BufGetSelectionPos(&selStart, &selEnd, &isRect, &rectStart, &rectEnd))
-		return FALSE;
+	if (!window->buffer_->BufGetSelectionPos(&selStart, &selEnd, &isRect, &rectStart, &rectEnd)) {
+		return false;
+	}
 
 	/* This is kind of tricky. The perception of a line depends on the
 	   line wrap mode being used. So in theory, we should take into
@@ -273,27 +277,33 @@ static int selectionSpansMultipleLines(Document *window) {
 	lineStartStart = window->buffer_->BufStartOfLine(selStart);
 	lineStartEnd = window->buffer_->BufStartOfLine(selEnd);
 	// If the line starts differ, we have a "\n" in between. 
-	if (lineStartStart != lineStartEnd)
-		return TRUE;
+	if (lineStartStart != lineStartEnd) {
+		return true;
+	}
 
-	if (window->wrapMode_ != CONTINUOUS_WRAP)
-		return FALSE; // Same line 
+	if (window->wrapMode_ != CONTINUOUS_WRAP) {
+		return false; // Same line
+	}
 
 	// Estimate the number of characters on a line 
-	textD = textD_of(window->textArea_);
-	if (textD->fontStruct->max_bounds.width > 0)
-		lineWidth = textD->width / textD->fontStruct->max_bounds.width;
-	else
+	TextDisplay *textD = textD_of(window->textArea_);
+	if (textD->TextDGetFont()->max_bounds.width > 0) {
+		lineWidth = textD->getRect().width / textD->TextDGetFont()->max_bounds.width;
+	} else {
 		lineWidth = 1;
-	if (lineWidth < 1)
+	}
+
+	if (lineWidth < 1) {
 		lineWidth = 1; // Just in case 
+	}
 
 	/* Estimate the numbers of line breaks from the start of the line to
 	   the start and ending positions of the selection and compare.*/
-	if ((selStart - lineStartStart) / lineWidth != (selEnd - lineStartStart) / lineWidth)
-		return TRUE; // Spans multiple lines 
+	if ((selStart - lineStartStart) / lineWidth != (selEnd - lineStartStart) / lineWidth) {
+		return true; // Spans multiple lines
+	}
 
-	return FALSE; // Small selection; probably doesn't span lines 
+	return false; // Small selection; probably doesn't span lines
 }
 #endif
 

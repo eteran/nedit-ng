@@ -27,7 +27,6 @@
 #include <QMessageBox>
 #include <QApplication>
 #include "text.h"
-#include "textP.h"
 #include "TextBuffer.h"
 #include "TextDisplay.h"
 #include "MultiClickStates.h"
@@ -856,7 +855,7 @@ static XtGeometryResult queryGeometry(Widget w, XtWidgetGeometry *proposed, XtWi
 	
 	int fontWidth    = fs->max_bounds.width;
 	int fontHeight   = fs->ascent + fs->descent;
-	int marginHeight = text_of(tw).P_marginHeight;
+	int marginHeight = textD_of(tw)->getMarginHeight();
 	int propWidth    = (proposed->request_mode & CWWidth)  ? proposed->width  : 0;
 	int propHeight   = (proposed->request_mode & CWHeight) ? proposed->height : 0;
 
