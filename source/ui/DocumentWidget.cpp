@@ -36,7 +36,6 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 	filename_              = name;
 	undo_                  = std::list<UndoInfo *>();
 	redo_                  = std::list<UndoInfo *>();
-	nPanes_                = 0;
 	autoSaveCharCount_     = 0;
 	autoSaveOpCount_       = 0;
 	undoMemUsed_           = 0;

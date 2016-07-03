@@ -3246,8 +3246,8 @@ static void splitPaneAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 
 	window->SplitPane();
 	if (window->IsTopDocument()) {
-		XtSetSensitive(window->splitPaneItem_, window->nPanes_ < MAX_PANES);
-		XtSetSensitive(window->closePaneItem_, window->nPanes_ > 0);
+		XtSetSensitive(window->splitPaneItem_, window->textPanes_.size() < MAX_PANES);
+		XtSetSensitive(window->closePaneItem_, window->textPanes_.size() > 0);
 	}
 }
 
@@ -3261,8 +3261,8 @@ static void closePaneAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 
 	window->ClosePane();
 	if (window->IsTopDocument()) {
-		XtSetSensitive(window->splitPaneItem_, window->nPanes_ < MAX_PANES);
-		XtSetSensitive(window->closePaneItem_, window->nPanes_ > 0);
+		XtSetSensitive(window->splitPaneItem_, window->textPanes_.size() < MAX_PANES);
+		XtSetSensitive(window->closePaneItem_, window->textPanes_.size() > 0);
 	}
 }
 
@@ -3724,29 +3724,29 @@ static void focusPaneAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 		if (strcmp(args[0], "first") == 0) {
 			paneIndex = 0;
 		} else if (strcmp(args[0], "last") == 0) {
-			paneIndex = window->nPanes_;
+			paneIndex = window->textPanes_.size();
 		} else if (strcmp(args[0], "next") == 0) {
 			paneIndex = window->WidgetToPaneIndex(window->lastFocus_) + 1;
-			if (paneIndex > window->nPanes_) {
+			if (paneIndex > window->textPanes_.size()) {
 				paneIndex = 0;
 			}
 		} else if (strcmp(args[0], "previous") == 0) {
 			paneIndex = window->WidgetToPaneIndex(window->lastFocus_) - 1;
 			if (paneIndex < 0) {
-				paneIndex = window->nPanes_;
+				paneIndex = window->textPanes_.size();
 			}
 		} else {
 			if (sscanf(args[0], "%d", &paneIndex) == 1) {
 				if (paneIndex > 0) {
 					paneIndex = paneIndex - 1;
 				} else if (paneIndex < 0) {
-					paneIndex = window->nPanes_ + (paneIndex + 1);
+					paneIndex = window->textPanes_.size() + (paneIndex + 1);
 				} else {
 					paneIndex = -1;
 				}
 			}
 		}
-		if (paneIndex >= 0 && paneIndex <= window->nPanes_) {
+		if (paneIndex >= 0 && paneIndex <= window->textPanes_.size()) {
 			newFocusPane = window->GetPaneByIndex(paneIndex);
 		}
 		if (newFocusPane) {
@@ -3872,7 +3872,7 @@ static void setWrapMarginAP(Widget w, XEvent *event, String *args, Cardinal *nAr
 
 			textD_of(window->textArea_)->setWrapMargin(newMargin);
 
-			for (i = 0; i < window->nPanes_; ++i) {
+			for (i = 0; i < window->textPanes_.size(); ++i) {
 				textD_of(window->textPanes_[i])->setWrapMargin(newMargin);
 			}
 		} else {

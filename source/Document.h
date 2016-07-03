@@ -108,7 +108,7 @@ public:
 	void UpdateWindowReadOnly();
 	void UpdateWindowTitle();
 	void UpdateWMSizeHints();
-	Widget GetPaneByIndex(int paneIndex) const;
+	Widget GetPaneByIndex(int index) const;
 	int WidgetToPaneIndex(Widget w) const;
 	void EditCustomTitleFormat();
 	QString FullPath() const;	
@@ -181,7 +181,7 @@ public:
 	Widget mainWin_;              /* main window of shell */
 	Widget splitPane_;            /* paned win. for splitting text area */
 	Widget textArea_;             /* the first text editing area widget */
-	Widget textPanes_[MAX_PANES]; /* additional ones created on demand */
+	QVector<Widget> textPanes_;   /* additional ones created on demand */
 	Widget lastFocus_;            /* the last pane to have kbd. focus */
 	Widget statsLine_;            /* file stats information display */
 	Widget statsLineForm_;
@@ -332,7 +332,6 @@ public:
 	std::list<UndoInfo *> undo_;       /* info for undoing last operation */
 	std::list<UndoInfo *> redo_;       /* info for redoing last undone op */
 	TextBuffer *buffer_;               /* holds the text being edited */
-	int nPanes_;                       /* number of additional text editing areas, created by splitWindow */
 	int autoSaveCharCount_;            /* count of single characters typed since last backup file generated */
 	int autoSaveOpCount_;              /* count of editing operations "" */
 	int undoMemUsed_;                  /* amount of memory (in bytes) dedicated to the undo list */

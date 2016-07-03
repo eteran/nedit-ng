@@ -85,7 +85,6 @@ private:
 	int iSearchStartPos_;              // start pos. of current incr. search
 	int languageMode_;                 // identifies language mode currently selected in the window
 	int nMarks_;                       // number of active bookmarks
-	int nPanes_;                       // number of additional text editing areas, created by splitWindow
 	int nWritableWindows_;             // number of elements in the list
 	int rHistIndex_;
 	int undoMemUsed_;                  // amount of memory (in bytes) dedicated to the undo list

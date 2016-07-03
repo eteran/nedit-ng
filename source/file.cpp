@@ -267,12 +267,10 @@ Document *EditExistingFile(Document *inWindow, const QString &name, const QStrin
 
 void RevertToSaved(Document *window) {
 
-	int i;
 	int insertPositions[MAX_PANES];
 	int topLines[MAX_PANES];
 	int horizOffsets[MAX_PANES];
 	int openFlags = 0;
-	Widget text;
 
 	// Can't revert untitled windows 
 	if (!window->filenameSet_) {
@@ -281,8 +279,8 @@ void RevertToSaved(Document *window) {
 	}
 
 	// save insert & scroll positions of all of the panes to restore later 
-	for (i = 0; i <= window->nPanes_; i++) {
-		text = (i == 0) ? window->textArea_ : window->textPanes_[i - 1];
+	for (int i = 0; i <= window->textPanes_.size(); i++) {
+		Widget text = window->GetPaneByIndex(i);
 		
 		auto textD = textD_of(text);
 		insertPositions[i] = textD->TextGetCursorPos();
@@ -315,8 +313,8 @@ void RevertToSaved(Document *window) {
 	window->UpdateWindowReadOnly();
 
 	// restore the insert and scroll positions of each pane 
-	for (i = 0; i <= window->nPanes_; i++) {
-		text = i == 0 ? window->textArea_ : window->textPanes_[i - 1];
+	for (int i = 0; i <= window->textPanes_.size(); i++) {
+		Widget text = window->GetPaneByIndex(i);
 		auto textD = textD_of(text);
 		textD->TextSetCursorPos(insertPositions[i]);
 		textD->TextDSetScroll(topLines[i], horizOffsets[i]);
@@ -1791,8 +1789,8 @@ static void addWrapNewlines(Document *window) {
 	Widget text;
 
 	// save the insert and scroll positions of each pane 
-	for (i = 0; i <= window->nPanes_; i++) {
-		text = (i == 0) ? window->textArea_ : window->textPanes_[i - 1];
+	for (i = 0; i <= window->textPanes_.size(); i++) {
+		text = window->GetPaneByIndex(i);
 
 		auto textD = textD_of(text);
 		insertPositions[i] = textD->TextGetCursorPos();
@@ -1807,8 +1805,8 @@ static void addWrapNewlines(Document *window) {
 	window->buffer_->BufSetAllEx(fileString);
 
 	// restore the insert and scroll positions of each pane 
-	for (i = 0; i <= window->nPanes_; i++) {
-		text = (i == 0) ? window->textArea_ : window->textPanes_[i - 1];
+	for (i = 0; i <= window->textPanes_.size(); i++) {
+		text = window->GetPaneByIndex(i);
 		
 		auto textD = textD_of(text);
 		textD->TextSetCursorPos(insertPositions[i]);

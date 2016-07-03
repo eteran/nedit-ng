@@ -1826,7 +1826,7 @@ static void reapplyLanguageMode(Document *window, int mode, int forceDefaults) {
 	
 	
 	textD_of(window->textArea_)->setWordDelimiters(delimiters);
-	for (i = 0; i < window->nPanes_; i++) {
+	for (i = 0; i < window->textPanes_.size(); i++) {
 		textD_of(window->textPanes_[i])->setWordDelimiters(delimiters);
 	}
 

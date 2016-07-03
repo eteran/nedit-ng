@@ -259,7 +259,7 @@ void StartHighlighting(Document *window, int warn) {
 
 	// Attach highlight information to text widgets in each pane 
 	AttachHighlightToWidget(window->textArea_, window);
-	for (i = 0; i < window->nPanes_; i++)
+	for (i = 0; i < window->textPanes_.size(); i++)
 		AttachHighlightToWidget(window->textPanes_[i], window);
 
 	/* Re-size the window to fit the highlight fonts properly & tell the
@@ -299,7 +299,7 @@ void StopHighlighting(Document *window) {
 	/* Remove and detach style buffer and style table from all text
 	   display(s) of window, and redisplay without highlighting */
 	RemoveWidgetHighlight(window->textArea_);
-	for (i = 0; i < window->nPanes_; i++)
+	for (i = 0; i < window->textPanes_.size(); i++)
 		RemoveWidgetHighlight(window->textPanes_[i]);
 
 	/* Re-size the window to fit the primary font properly & tell the window
@@ -327,7 +327,7 @@ void FreeHighlightingData(Document *window) {
 	   information when it is destroyed, which would be a disaster. */
 	textD_of(window->textArea_)->setStyleBuffer(nullptr);
 	
-	for (int i = 0; i < window->nPanes_; i++) {
+	for (int i = 0; i < window->textPanes_.size(); i++) {
 		textD_of(window->textPanes_[i])->setStyleBuffer(nullptr);
 	}
 }
@@ -389,7 +389,7 @@ void UpdateHighlightStyles(Document *window) {
 	/* Attach new highlight information to text widgets in each pane
 	   (and redraw) */
 	AttachHighlightToWidget(window->textArea_, window);
-	for (int i = 0; i < window->nPanes_; i++) {
+	for (int i = 0; i < window->textPanes_.size(); i++) {
 		AttachHighlightToWidget(window->textPanes_[i], window);
 	}
 }
@@ -2292,7 +2292,7 @@ static void updateWindowHeight(Document *window, int oldFontHeight) {
 
 	textHeight = textAreaHeight - 2 * marginHeight;
 	
-	for (i = 0; i < window->nPanes_; i++) {
+	for (i = 0; i < window->textPanes_.size(); i++) {
 		textAreaHeight = textD_of(window->textPanes_[i])->getHeight();
 		textHeight += textAreaHeight - 2 * marginHeight;
 	}

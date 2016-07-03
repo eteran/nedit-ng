@@ -1198,11 +1198,11 @@ static void learnActionHook(Widget w, XtPointer clientData, String actionName, X
 	
 		if (window->textArea_ == w)
 			break;
-		for (i = 0; i < window->nPanes_; i++) {
+		for (i = 0; i < window->textPanes_.size(); i++) {
 			if (window->textPanes_[i] == w)
 				break;
 		}
-		if (i < window->nPanes_)
+		if (i < window->textPanes_.size())
 			break;
 	}
 	
@@ -1241,11 +1241,11 @@ static void lastActionHook(Widget w, XtPointer clientData, String actionName, XE
 	
 		if (window->textArea_ == w)
 			break;
-		for (i = 0; i < window->nPanes_; i++) {
+		for (i = 0; i < window->textPanes_.size(); i++) {
 			if (window->textPanes_[i] == w)
 				break;
 		}
-		if (i < window->nPanes_)
+		if (i < window->textPanes_.size())
 			break;
 	}
 	
@@ -3845,7 +3845,7 @@ static int nPanesMV(Document *window, DataValue *argList, int nArgs, DataValue *
 	(void)errMsg;
 
 	result->tag = INT_TAG;
-	result->val.n = window->nPanes_ + 1;
+	result->val.n = window->textPanes_.size() + 1;
 	return true;
 }
 

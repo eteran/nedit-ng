@@ -450,7 +450,7 @@ bool DialogLanguageModes::updateLMList(bool silent) {
 					}
 					
 					textD_of(window->textArea_)->setWordDelimiters(newDelimiters);					
-					for (int j = 0; j < window->nPanes_; j++) {
+					for (int j = 0; j < window->textPanes_.size(); j++) {
 						textD_of(window->textPanes_[j])->setWordDelimiters(newDelimiters);
 					}
 					

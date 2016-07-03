@@ -1182,7 +1182,7 @@ void FlashMatching(Document *window, Widget textW) {
 
 	/* constrain the search to visible text only when in single-pane mode
 	   AND using delimiter flashing (otherwise search the whole buffer) */
-	constrain = ((window->nPanes_ == 0) && (window->showMatchingStyle_ == FLASH_DELIMIT));
+	constrain = ((window->textPanes_.size() == 0) && (window->showMatchingStyle_ == FLASH_DELIMIT));
 
 	if (MatchingChars[matchIndex].direction == SEARCH_BACKWARD) {
 		startPos = constrain ? textD->TextFirstVisiblePos() : 0;
