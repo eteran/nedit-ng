@@ -3990,17 +3990,12 @@ static Pixel allocBGColor(Widget w, char *colorName, int *ok) {
 
 Pixel TextDisplay::getRangesetColor(int ind, Pixel bground) {
 
-	TextBuffer *buf;
-	RangesetTable *tab;
-	Pixel color;
-	int valid;
-
 	if (ind > 0) {
 		ind--;
-		buf = buffer_;
-		tab = buf->rangesetTable_;
+		RangesetTable *tab = buffer_->rangesetTable_;
 
-		valid = tab->RangesetTableGetColorValid(ind, &color);
+		Pixel color;
+		int valid = tab->RangesetTableGetColorValid(ind, &color);
 		if (valid == 0) {
 			char *color_name = tab->RangesetTableGetColorName(ind);
 			if (color_name)
@@ -4989,10 +4984,9 @@ bool TextDisplay::offscreenV(XWindowAttributes *screenAttr, int top, int height)
 */
 void TextDisplay::BeginBlockDrag() {
 
-	TextBuffer *buf    = buffer_;
 	int fontHeight     = fontStruct_->ascent + fontStruct_->descent;
 	int fontWidth      = fontStruct_->max_bounds.width;
-	TextSelection *sel = &buf->primary_;
+	TextSelection *sel = &buffer_->primary_;
 	int nLines;
 	int mousePos;
 	int lineStart;
@@ -5003,10 +4997,10 @@ void TextDisplay::BeginBlockDrag() {
 	/* Save a copy of the whole text buffer as a backup, and for
 	   deriving changes */
 	dragOrigBuf_ = new TextBuffer;
-	dragOrigBuf_->BufSetTabDistance(buf->tabDist_);
-	dragOrigBuf_->useTabs_ = buf->useTabs_;
+	dragOrigBuf_->BufSetTabDistance(buffer_->tabDist_);
+	dragOrigBuf_->useTabs_ = buffer_->useTabs_;
 
-	std::string text = buf->BufGetAllEx();
+	std::string text = buffer_->BufGetAllEx();
 	dragOrigBuf_->BufSetAllEx(text);
 
 	if (sel->rectangular)
@@ -5021,16 +5015,16 @@ void TextDisplay::BeginBlockDrag() {
 		dragXOffset_ = btnDownCoord_.x + horizOffset_ - rect_.left - sel->rectStart * fontWidth;
 	} else {
 		if (!TextDPositionToXY(sel->start, &x, &y)) {
-			x = buf->BufCountDispChars(TextDStartOfLine(sel->start), sel->start) * fontWidth + rect_.left - horizOffset_;
+			x = buffer_->BufCountDispChars(TextDStartOfLine(sel->start), sel->start) * fontWidth + rect_.left - horizOffset_;
 		}
 		dragXOffset_ = btnDownCoord_.x - x;
 	}
 
 	mousePos = TextDXYToPosition(btnDownCoord_);
-	nLines = buf->BufCountLines(sel->start, mousePos);
+	nLines = buffer_->BufCountLines(sel->start, mousePos);
 	
 	dragYOffset_ = nLines * fontHeight + (((btnDownCoord_.y - text_of(w_).P_marginHeight) % fontHeight) - fontHeight / 2);
-	dragNLines_  = buf->BufCountLines(sel->start, sel->end);
+	dragNLines_  = buffer_->BufCountLines(sel->start, sel->end);
 
 	/* Record the current drag insert position and the information for
 	   undoing the fictional insert of the selection in its new position */
@@ -5039,9 +5033,9 @@ void TextDisplay::BeginBlockDrag() {
 	if (sel->rectangular) {
 		auto testBuf = mem::make_unique<TextBuffer>();
 
-		std::string testText = buf->BufGetRangeEx(sel->start, sel->end);
-		testBuf->BufSetTabDistance(buf->tabDist_);
-		testBuf->useTabs_ = buf->useTabs_;
+		std::string testText = buffer_->BufGetRangeEx(sel->start, sel->end);
+		testBuf->BufSetTabDistance(buffer_->tabDist_);
+		testBuf->useTabs_ = buffer_->useTabs_;
 		testBuf->BufSetAllEx(testText);
 
 		testBuf->BufRemoveRect(0, sel->end - sel->start, sel->rectStart, sel->rectEnd);
@@ -5060,13 +5054,13 @@ void TextDisplay::BeginBlockDrag() {
 	/* For non-rectangular selections, fill in the rectangular information in
 	   the selection for overlay mode drags which are done rectangularly */
 	if (!sel->rectangular) {
-		lineStart = buf->BufStartOfLine(sel->start);
+		lineStart = buffer_->BufStartOfLine(sel->start);
 		if (dragNLines_ == 0) {
-			dragOrigBuf_->primary_.rectStart = buf->BufCountDispChars(lineStart, sel->start);
-			dragOrigBuf_->primary_.rectEnd   = buf->BufCountDispChars(lineStart, sel->end);
+			dragOrigBuf_->primary_.rectStart = buffer_->BufCountDispChars(lineStart, sel->start);
+			dragOrigBuf_->primary_.rectEnd   = buffer_->BufCountDispChars(lineStart, sel->end);
 		} else {
-			lineEnd = buf->BufGetCharacter(sel->end - 1) == '\n' ? sel->end - 1 : sel->end;
-			findTextMargins(buf, lineStart, lineEnd, &dragOrigBuf_->primary_.rectStart, &dragOrigBuf_->primary_.rectEnd);
+			lineEnd = buffer_->BufGetCharacter(sel->end - 1) == '\n' ? sel->end - 1 : sel->end;
+			findTextMargins(buffer_, lineStart, lineEnd, &dragOrigBuf_->primary_.rectStart, &dragOrigBuf_->primary_.rectEnd);
 		}
 	}
 
@@ -5084,7 +5078,6 @@ void TextDisplay::BeginBlockDrag() {
 */
 void TextDisplay::BlockDragSelection(Point pos, int dragType) {
 	
-	TextBuffer *buf        = buffer_;
 	int fontHeight         = fontStruct_->ascent + fontStruct_->descent;
 	int fontWidth          = fontStruct_->max_bounds.width;
 	TextBuffer *origBuf    = dragOrigBuf_;
@@ -5141,10 +5134,10 @@ void TextDisplay::BlockDragSelection(Point pos, int dragType) {
 	   range of characters which might be modified in this drag step
 	   (this could be tighter, but hopefully it's not too slow) */
 	auto tempBuf = new TextBuffer;
-	tempBuf->tabDist_ = buf->tabDist_;
-	tempBuf->useTabs_ = buf->useTabs_;
-	tempStart         = min3(dragInsertPos_, origSel->start, buf->BufCountBackwardNLines(firstChar_, nLines + 2));
-	tempEnd           = buf->BufCountForwardNLines(max3(dragInsertPos_, origSel->start, lastChar_), nLines + 2) + origSel->end - origSel->start;
+	tempBuf->tabDist_ = buffer_->tabDist_;
+	tempBuf->useTabs_ = buffer_->useTabs_;
+	tempStart         = min3(dragInsertPos_, origSel->start, buffer_->BufCountBackwardNLines(firstChar_, nLines + 2));
+	tempEnd           = buffer_->BufCountForwardNLines(max3(dragInsertPos_, origSel->start, lastChar_), nLines + 2) + origSel->end - origSel->start;
 	
 	std::string text  = origBuf->BufGetRangeEx(tempStart, tempEnd);
 	tempBuf->BufSetAllEx(text);
@@ -5237,7 +5230,7 @@ void TextDisplay::BlockDragSelection(Point pos, int dragType) {
 	/* find a common point of reference between the two buffers, from which
 	   the insert position line number can be translated to a position */
 	if (firstChar_ > modRangeStart) {
-		referenceLine = topLineNum_ - buf->BufCountLines(modRangeStart, firstChar_);
+		referenceLine = topLineNum_ - buffer_->BufCountLines(modRangeStart, firstChar_);
 		referencePos = modRangeStart;
 	} else {
 		referencePos = firstChar_;
@@ -5290,7 +5283,7 @@ void TextDisplay::BlockDragSelection(Point pos, int dragType) {
 	delete tempBuf;
 	
 	TextDBlankCursor();
-	buf->BufReplaceEx(modRangeStart, bufModRangeEnd, repText);
+	buffer_->BufReplaceEx(modRangeStart, bufModRangeEnd, repText);
 
 	// Store the necessary information for undoing this step 
 	dragInsertPos_       = insStart;
@@ -5305,10 +5298,10 @@ void TextDisplay::BlockDragSelection(Point pos, int dragType) {
 	// Reset the selection and cursor position 
 	if (rectangular || overlay) {
 		insRectEnd = insRectStart + origSel->rectEnd - origSel->rectStart;
-		buf->BufRectSelect(insStart, insStart + insertInserted, insRectStart, insRectEnd);
-		TextDSetInsertPosition(buf->BufCountForwardDispChars(buf->BufCountForwardNLines(insStart, dragNLines_), insRectEnd));
+		buffer_->BufRectSelect(insStart, insStart + insertInserted, insRectStart, insRectEnd);
+		TextDSetInsertPosition(buffer_->BufCountForwardDispChars(buffer_->BufCountForwardNLines(insStart, dragNLines_), insRectEnd));
 	} else {
-		buf->BufSelect(insStart, insStart + origSel->end - origSel->start);
+		buffer_->BufSelect(insStart, insStart + origSel->end - origSel->start);
 		TextDSetInsertPosition(insStart + origSel->end - origSel->start);
 	}
 	
@@ -5541,12 +5534,11 @@ void TextDisplay::CopyToClipboard(Time time) {
 ** in its attached buffer (a buffer can be attached to multiple text widgets).
 */
 void TextDisplay::HandleXSelections() {
-	auto buf = buffer_;
 
 	// Remove any existing selection handlers for other widgets 
-	for (const auto &pair : buf->modifyProcs_) {
+	for (const auto &pair : buffer_->modifyProcs_) {
 		if (pair.first == modifiedCB) {
-			buf->BufRemoveModifyCB(pair.first, pair.second);
+			buffer_->BufRemoveModifyCB(pair.first, pair.second);
 			break;
 		}
 	}
@@ -5913,9 +5905,7 @@ void TextDisplay::checkMoveSelectionChange(XEvent *event, int startPos, String *
 void TextDisplay::keyMoveExtendSelection(XEvent *event, int origPos, int rectangular) {
 
 	XKeyEvent *e = &event->xkey;
-
-	TextBuffer *buf    = buffer_;
-	TextSelection *sel = &buf->primary_;
+	TextSelection *sel = &buffer_->primary_;
 	int newPos         = cursorPos_;
 	int startPos;
 	int endPos;
@@ -5936,36 +5926,41 @@ void TextDisplay::keyMoveExtendSelection(XEvent *event, int origPos, int rectang
 	if ((sel->selected || sel->zeroWidth) && sel->rectangular && rectangular) {
 	
 		// rect -> rect
-		newCol = buf->BufCountDispChars(buf->BufStartOfLine(newPos), newPos);
+		newCol   = buffer_->BufCountDispChars(buffer_->BufStartOfLine(newPos), newPos);
 		startCol = std::min(rectAnchor_, newCol);
-		endCol = std::max(rectAnchor_, newCol);
-		startPos = buf->BufStartOfLine(std::min(anchor_, newPos));
-		endPos = buf->BufEndOfLine(std::max(anchor_, newPos));
-		buf->BufRectSelect(startPos, endPos, startCol, endCol);
+		endCol   = std::max(rectAnchor_, newCol);
+		startPos = buffer_->BufStartOfLine(std::min(anchor_, newPos));
+		endPos   = buffer_->BufEndOfLine(std::max(anchor_, newPos));
+		buffer_->BufRectSelect(startPos, endPos, startCol, endCol);
 		
 	} else if (sel->selected && rectangular) { // plain -> rect
 	
-		newCol = buf->BufCountDispChars(buf->BufStartOfLine(newPos), newPos);
-		if (abs(newPos - sel->start) < abs(newPos - sel->end))
+		newCol = buffer_->BufCountDispChars(buffer_->BufStartOfLine(newPos), newPos);
+
+		if (abs(newPos - sel->start) < abs(newPos - sel->end)) {
 			anchor = sel->end;
-		else
+		} else {
 			anchor = sel->start;
-		anchorLineStart = buf->BufStartOfLine(anchor);
-		rectAnchor = buf->BufCountDispChars(anchorLineStart, anchor);
-		anchor_ = anchor;
-		rectAnchor_ = rectAnchor;
-		buf->BufRectSelect(buf->BufStartOfLine(std::min(anchor, newPos)), buf->BufEndOfLine(std::max(anchor, newPos)), std::min(rectAnchor, newCol), std::max(rectAnchor, newCol));
+		}
+
+		anchorLineStart = buffer_->BufStartOfLine(anchor);
+		rectAnchor      = buffer_->BufCountDispChars(anchorLineStart, anchor);
+		anchor_         = anchor;
+		rectAnchor_     = rectAnchor;
+		buffer_->BufRectSelect(buffer_->BufStartOfLine(std::min(anchor, newPos)), buffer_->BufEndOfLine(std::max(anchor, newPos)), std::min(rectAnchor, newCol), std::max(rectAnchor, newCol));
 		
 	} else if (sel->selected && sel->rectangular) { // rect -> plain
 	
-		startPos = buf->BufCountForwardDispChars(buf->BufStartOfLine(sel->start), sel->rectStart);
-		endPos = buf->BufCountForwardDispChars(buf->BufStartOfLine(sel->end), sel->rectEnd);
+		startPos = buffer_->BufCountForwardDispChars(buffer_->BufStartOfLine(sel->start), sel->rectStart);
+		endPos = buffer_->BufCountForwardDispChars(buffer_->BufStartOfLine(sel->end), sel->rectEnd);
+
 		if (abs(origPos - startPos) < abs(origPos - endPos)) {
 			anchor = endPos;
 		} else {
 			anchor = startPos;
 		} 
-		buf->BufSelect(anchor, newPos);
+
+		buffer_->BufSelect(anchor, newPos);
 		
 	} else if (sel->selected) { // plain -> plain
 	
@@ -5974,25 +5969,25 @@ void TextDisplay::keyMoveExtendSelection(XEvent *event, int origPos, int rectang
 		} else {
 			anchor = sel->start;
 		} 
-		buf->BufSelect(anchor, newPos);
+		buffer_->BufSelect(anchor, newPos);
 		
 	} else if (rectangular) { // no sel -> rect
 	
-		origCol = buf->BufCountDispChars(buf->BufStartOfLine(origPos), origPos);
-		newCol = buf->BufCountDispChars(buf->BufStartOfLine(newPos), newPos);
+		origCol = buffer_->BufCountDispChars(buffer_->BufStartOfLine(origPos), origPos);
+		newCol = buffer_->BufCountDispChars(buffer_->BufStartOfLine(newPos), newPos);
 		startCol = std::min(newCol, origCol);
 		endCol = std::max(newCol, origCol);
-		startPos = buf->BufStartOfLine(std::min(origPos, newPos));
-		endPos = buf->BufEndOfLine(std::max(origPos, newPos));
+		startPos = buffer_->BufStartOfLine(std::min(origPos, newPos));
+		endPos = buffer_->BufEndOfLine(std::max(origPos, newPos));
 		anchor_ = origPos;
 		rectAnchor_ = origCol;
-		buf->BufRectSelect(startPos, endPos, startCol, endCol);
+		buffer_->BufRectSelect(startPos, endPos, startCol, endCol);
 		
 	} else { // no sel -> plain
 	
 		anchor_ = origPos;
-		rectAnchor_ = buf->BufCountDispChars(buf->BufStartOfLine(origPos), origPos);
-		buf->BufSelect(anchor_, newPos);
+		rectAnchor_ = buffer_->BufCountDispChars(buffer_->BufStartOfLine(origPos), origPos);
+		buffer_->BufSelect(anchor_, newPos);
 	}
 }
 
@@ -6216,7 +6211,6 @@ void TextDisplay::toggleOverstrikeAP(XEvent *event, String *args, Cardinal *nArg
 
 void TextDisplay::pageLeftAP(XEvent *event, String *args, Cardinal *nArgs) {
 
-	TextBuffer *buf  = buffer_;
 	int insertPos    = cursorPos_;
 	int maxCharWidth = fontStruct_->max_bounds.width;
 	int lineStartPos;
@@ -6234,13 +6228,13 @@ void TextDisplay::pageLeftAP(XEvent *event, String *args, Cardinal *nArgs) {
 		horizOffset = std::max(0, horizOffset_ - rect_.width);
 		TextDSetScroll(topLineNum_, horizOffset);
 	} else {
-		lineStartPos = buf->BufStartOfLine(insertPos);
+		lineStartPos = buffer_->BufStartOfLine(insertPos);
 		if (insertPos == lineStartPos && horizOffset_ == 0) {
 			ringIfNecessary(silent);
 			return;
 		}
-		indent = buf->BufCountDispChars(lineStartPos, insertPos);
-		pos = buf->BufCountForwardDispChars(lineStartPos, std::max(0, indent - rect_.width / maxCharWidth));
+		indent = buffer_->BufCountDispChars(lineStartPos, insertPos);
+		pos = buffer_->BufCountForwardDispChars(lineStartPos, std::max(0, indent - rect_.width / maxCharWidth));
 		TextDSetInsertPosition(pos);
 		TextDSetScroll(topLineNum_, std::max(0, horizOffset_ - rect_.width));
 		checkMoveSelectionChange(event, insertPos, args, nArgs);
@@ -6251,7 +6245,6 @@ void TextDisplay::pageLeftAP(XEvent *event, String *args, Cardinal *nArgs) {
 
 void TextDisplay::pageRightAP(XEvent *event, String *args, Cardinal *nArgs) {
 
-	TextBuffer *buf    = buffer_;
 	int insertPos      = cursorPos_;
 	int maxCharWidth   = fontStruct_->max_bounds.width;
 	int oldHorizOffset = horizOffset_;
@@ -6271,9 +6264,9 @@ void TextDisplay::pageRightAP(XEvent *event, String *args, Cardinal *nArgs) {
 		
 		TextDSetScroll(topLineNum_, horizOffset);
 	} else {
-		int lineStartPos = buf->BufStartOfLine(insertPos);
-		int indent       = buf->BufCountDispChars(lineStartPos, insertPos);
-		int pos          = buf->BufCountForwardDispChars(lineStartPos, indent + rect_.width / maxCharWidth);
+		int lineStartPos = buffer_->BufStartOfLine(insertPos);
+		int indent       = buffer_->BufCountDispChars(lineStartPos, insertPos);
+		int pos          = buffer_->BufCountForwardDispChars(lineStartPos, indent + rect_.width / maxCharWidth);
 		
 		TextDSetInsertPosition(pos);
 		TextDSetScroll(topLineNum_, horizOffset_ + rect_.width);
@@ -6991,7 +6984,6 @@ void TextDisplay::deleteNextWordAP(XEvent *event, String *args, Cardinal *nArgs)
 */
 int TextDisplay::deleteEmulatedTab(XEvent *event) {
 
-	TextBuffer *buf        = buffer_;
 	int emTabDist          = text_of(w_).P_emulateTabs;
 	int emTabsBeforeCursor = emTabsBeforeCursor_;
 	int startIndent, toIndent, insertPos, startPos, lineStart;
@@ -7003,8 +6995,8 @@ int TextDisplay::deleteEmulatedTab(XEvent *event) {
 
 	// Find the position of the previous tab stop
 	insertPos = cursorPos_;
-	lineStart = buf->BufStartOfLine(insertPos);
-	startIndent = buf->BufCountDispChars(lineStart, insertPos);
+	lineStart = buffer_->BufStartOfLine(insertPos);
+	startIndent = buffer_->BufCountDispChars(lineStart, insertPos);
 	toIndent = (startIndent - 1) - ((startIndent - 1) % emTabDist);
 
 	/* Find the position at which to begin deleting (stop at non-whitespace
@@ -7012,8 +7004,8 @@ int TextDisplay::deleteEmulatedTab(XEvent *event) {
 	startPosIndent = indent = 0;
 	startPos = lineStart;
 	for (pos = lineStart; pos < insertPos; pos++) {
-		c = buf->BufGetCharacter(pos);
-		indent += TextBuffer::BufCharWidth(c, indent, buf->tabDist_, buf->nullSubsChar_);
+		c = buffer_->BufGetCharacter(pos);
+		indent += TextBuffer::BufCharWidth(c, indent, buffer_->tabDist_, buffer_->nullSubsChar_);
 		if (indent > toIndent)
 			break;
 		startPosIndent = indent;
@@ -7022,7 +7014,7 @@ int TextDisplay::deleteEmulatedTab(XEvent *event) {
 
 	// Just to make sure, check that we're not deleting any non-white chars
 	for (pos = insertPos - 1; pos >= startPos; pos--) {
-		c = buf->BufGetCharacter(pos);
+		c = buffer_->BufGetCharacter(pos);
 		if (c != ' ' && c != '\t') {
 			startPos = pos + 1;
 			break;
@@ -7036,10 +7028,10 @@ int TextDisplay::deleteEmulatedTab(XEvent *event) {
 
 		std::string spaceString(toIndent - startPosIndent, ' ');
 
-		buf->BufReplaceEx(startPos, insertPos, spaceString);
+		buffer_->BufReplaceEx(startPos, insertPos, spaceString);
 		TextDSetInsertPosition(startPos + toIndent - startPosIndent);
 	} else {
-		buf->BufRemove(startPos, insertPos);
+		buffer_->BufRemove(startPos, insertPos);
 		TextDSetInsertPosition(startPos);
 	}
 
@@ -8291,7 +8283,6 @@ void TextDisplay::modifiedCallback(int pos, int nInserted, int nDeleted, int nRe
 Boolean TextDisplay::convertSelectionCallback(Atom *selType, Atom *target, Atom *type, XtPointer *value, unsigned long *length, int *format) {
 
 	XSelectionRequestEvent *event = XtGetSelectionRequest(w_, *selType, nullptr);
-	auto buf = buffer_;
 	Display *display = XtDisplay(w_);
 	Atom *targets, dummyAtom;
 	unsigned long nItems, dummyULong;
@@ -8306,8 +8297,8 @@ Boolean TextDisplay::convertSelectionCallback(Atom *selType, Atom *target, Atom 
 		   don't declare that we do.  Just reply in string format. */
 		   
 		// TODO(eteran): inefficient copy here, but we plan to deprecate X Toolkit direct usage anyway
-		std::string s = buf->BufGetSelectionTextEx();
-		buf->BufUnsubstituteNullCharsEx(s);
+		std::string s = buffer_->BufGetSelectionTextEx();
+		buffer_->BufUnsubstituteNullCharsEx(s);
 		
 		char *str = XtStringDup(s);
 		   
@@ -8365,7 +8356,7 @@ Boolean TextDisplay::convertSelectionCallback(Atom *selType, Atom *target, Atom 
 
 	// target is "DELETE": delete primary selection 
 	if (*target == getAtom(display, A_DELETE)) {
-		buf->BufRemoveSelected();
+		buffer_->BufRemoveSelected();
 		*length = 0;
 		*format = 8;
 		*type = getAtom(display, A_DELETE);
@@ -8441,8 +8432,6 @@ Boolean TextDisplay::convertSecondaryCallback(Atom *selType, Atom *target, Atom 
 
 	(void)selType;
 
-	auto buf = buffer_;
-
 	// target must be string 
 	if (*target != XA_STRING && *target != getAtom(XtDisplay(w_), A_TEXT))
 		return false;
@@ -8451,8 +8440,8 @@ Boolean TextDisplay::convertSecondaryCallback(Atom *selType, Atom *target, Atom 
 	   here is freed by the X toolkit */
 	   
 	// TODO(eteran): inefficient copy here, but we plan to deprecate X Toolkit direct usage anyway
-	std::string s = buf->BufGetSecSelectTextEx();
-	buf->BufUnsubstituteNullCharsEx(s);
+	std::string s = buffer_->BufGetSecSelectTextEx();
+	buffer_->BufUnsubstituteNullCharsEx(s);
 	
 	char *str = XtStringDup(s);
 	
@@ -8698,7 +8687,6 @@ void TextDisplay::selectNotifyEHEx(XtPointer data, XEvent *event, Boolean *conti
 
 	(void)continueDispatch;
 
-	auto buf    = buffer_;
 	auto e      = reinterpret_cast<XSelectionEvent *>(event);
 	auto cbInfo = static_cast<selectNotifyInfo *>(data);
 	int selStart, selEnd;
@@ -8717,7 +8705,7 @@ void TextDisplay::selectNotifyEHEx(XtPointer data, XEvent *event, Boolean *conti
 	   secondary selection, and return */
 	if (e->property == None) {
 		QApplication::beep();
-		buf->BufSecondaryUnselect();
+		buffer_->BufSecondaryUnselect();
 		XtDisownSelection(w_, XA_SECONDARY, e->time);
 		XtFree(cbInfo->actionText);
 		delete cbInfo;
@@ -8729,21 +8717,21 @@ void TextDisplay::selectNotifyEHEx(XtPointer data, XEvent *event, Boolean *conti
 	   the MULTIPLE target request */
 	switch(cbInfo->action) {
 	case REMOVE_SECONDARY:
-		buf->BufRemoveSecSelect();
+		buffer_->BufRemoveSecSelect();
 		break;
 	case EXCHANGE_SECONDARY:
 		{
 			std::string string(cbInfo->actionText, cbInfo->length);
 
-			selStart = buf->secondary_.start;
-			if (buf->BufSubstituteNullCharsEx(string)) {
-				buf->BufReplaceSecSelectEx(string);
-				if (buf->secondary_.rectangular) {
+			selStart = buffer_->secondary_.start;
+			if (buffer_->BufSubstituteNullCharsEx(string)) {
+				buffer_->BufReplaceSecSelectEx(string);
+				if (buffer_->secondary_.rectangular) {
 					/*... it would be nice to re-select, but probably impossible */
-					TextDSetInsertPosition(buf->cursorPosHint_);
+					TextDSetInsertPosition(buffer_->cursorPosHint_);
 				} else {
 					selEnd = selStart + cbInfo->length;
-					buf->BufSelect(selStart, selEnd);
+					buffer_->BufSelect(selStart, selEnd);
 					TextDSetInsertPosition(selEnd);
 				}
 			} else {
@@ -8754,7 +8742,7 @@ void TextDisplay::selectNotifyEHEx(XtPointer data, XEvent *event, Boolean *conti
 	}
 	
 
-	buf->BufSecondaryUnselect();
+	buffer_->BufSecondaryUnselect();
 	XtDisownSelection(w_, XA_SECONDARY, e->time);
 	XtFree(cbInfo->actionText);
 	delete cbInfo;
