@@ -8,7 +8,6 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 find_package(Motif REQUIRED)
 find_package(X11 REQUIRED)
 find_package(BISON REQUIRED)
-find_package(Boost 1.35 REQUIRED)
 find_package(Qt4 4.6.0 REQUIRED QtCore QtGui)
 
 find_library(LibM m)
