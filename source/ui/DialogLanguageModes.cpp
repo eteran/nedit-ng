@@ -449,9 +449,9 @@ bool DialogLanguageModes::updateLMList(bool silent) {
 						newDelimiters = GetPrefDelimiters();
 					}
 					
-					textD_of(window->textArea_)->setWordDelimiters(newDelimiters);					
-					for (int j = 0; j < window->textPanes_.size(); j++) {
-						textD_of(window->textPanes_[j])->setWordDelimiters(newDelimiters);
+					textD_of(window->textArea_)->setWordDelimiters(newDelimiters);
+					for(Widget tw : window->textPanes_) {
+						textD_of(tw)->setWordDelimiters(newDelimiters);
 					}
 					
 					// don't forget to adapt the LM stored within the user menu cache 

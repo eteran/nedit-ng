@@ -305,7 +305,7 @@ void movedCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	(void)callData;
 
-	auto textD = textD_of(w);
+	TextDisplay *textD = textD_of(w);
 
 	if (window->ignoreModify_) {
 		return;

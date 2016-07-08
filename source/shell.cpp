@@ -727,8 +727,6 @@ static void flushTimeoutProc(XtPointer clientData, XtIntervalId *id) {
 	auto textD = textD_of(cmdData->textW);	
 	TextBuffer *buf = textD->TextGetBuffer();
 
-
-
 	std::string outText = coalesceOutputEx(cmdData->outBufs);
 	if (!outText.empty()) {
 		if (buf->BufSubstituteNullCharsEx(outText)) {
