@@ -584,14 +584,14 @@ TextDisplay::TextDisplay(Widget widget,
 	// Initialize the scroll bars and attach movement callbacks
 	if (vScrollBar) {
 		XtVaSetValues(vScrollBar, XmNminimum, 1, XmNmaximum, 2, XmNsliderSize, 1, XmNrepeatDelay, 10, XmNvalue, 1, nullptr);
-		XtAddCallback(vScrollBar, XmNdragCallback, vScrollCB, (XtPointer)this);
-		XtAddCallback(vScrollBar, XmNvalueChangedCallback, vScrollCB, (XtPointer)this);
+		XtAddCallback(vScrollBar, XmNdragCallback, vScrollCB, this);
+		XtAddCallback(vScrollBar, XmNvalueChangedCallback, vScrollCB, this);
 	}
 	
 	if (hScrollBar) {
 		XtVaSetValues(hScrollBar, XmNminimum, 0, XmNmaximum, 1, XmNsliderSize, 1, XmNrepeatDelay, 10, XmNvalue, 0, XmNincrement, fontStruct->max_bounds.width, nullptr);
-		XtAddCallback(hScrollBar, XmNdragCallback, hScrollCB, (XtPointer)this);
-		XtAddCallback(hScrollBar, XmNvalueChangedCallback, hScrollCB, (XtPointer)this);
+		XtAddCallback(hScrollBar, XmNdragCallback, hScrollCB, this);
+		XtAddCallback(hScrollBar, XmNvalueChangedCallback, hScrollCB, this);
 	}
 
 	// Update the display to reflect the contents of the buffer
