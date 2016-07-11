@@ -523,6 +523,7 @@ private:
 	bool motifDestOwner_;            // " "            owns the motif destination
 	XtIntervalId autoScrollProcID_;  // id of Xt timer proc for autoscroll
 	XtIntervalId cursorBlinkProcID_; // id of timer proc for cursor blink
+	int            emTabsBeforeCursor_; // If non-zero, number of consecutive emulated tabs just entered.  Saved so chars can be deleted as a unit
 
 private:
 	// COPY OF RESOURCE?
@@ -537,7 +538,6 @@ private:
 	Pixel          calltipFGPixel_;
 	Pixel          calltipBGPixel_;	
 	XFontStruct *  fontStruct_;         // Font structure for primary font	
-	int            emTabsBeforeCursor_; // If non-zero, number of consecutive emulated tabs just entered.  Saved so chars can be deleted as a unit
 };
 
 #endif
