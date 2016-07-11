@@ -31,19 +31,16 @@
 #include "BlockDragTypes.h"
 #include "Point.h"
 #include "Rect.h"
+#include "CursorStyles.h"
+#include "CallTip.h"
+#include "graphicExposeTranslationEntry.h"
 #include "util/string_view.h"
 
 #include <X11/Intrinsic.h>
 #include <X11/Xlib.h>
 #include <Xm/Xm.h>
 
-enum CursorStyles {
-	NORMAL_CURSOR,
-	CARET_CURSOR,
-	DIM_CURSOR,
-	BLOCK_CURSOR,
-	HEAVY_CURSOR
-};
+
 
 /* Actions for selection notify event handler upon receiving confermation
    of a successful convert selection request */
@@ -60,22 +57,9 @@ class TextDisplay;
 class TextPart;
 class TextBuffer;
 
-struct graphicExposeTranslationEntry {
-	int horizontal;
-	int vertical;
-	graphicExposeTranslationEntry *next;
-};
-
 typedef void (*unfinishedStyleCBProc)(const TextDisplay *, int, const void *);
 
-struct CallTip {
-	int ID;           //  ID of displayed calltip.  Equals zero if none is displayed.
-	bool anchored; //  Is it anchored to a position
-	int pos;          //  Position tip is anchored to
-	int hAlign;       //  horizontal alignment
-	int vAlign;       //  vertical alignment
-	int alignMode;    //  Strict or sloppy alignment
-};
+
 
 
 class TextDisplay {
@@ -198,6 +182,8 @@ public:
 	// resource getters
 	Pixel getBackgroundPixel() const;
 	Pixel getForegroundPixel() const;
+	Pixel getCalltipFGPixel() const;
+	Pixel getCalltipBGPixel() const;
 	QString getWordDelimiters() const;
 	XFontStruct *getFont() const;
 	int getEmulateTabs() const;

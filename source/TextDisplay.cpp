@@ -9060,3 +9060,10 @@ Widget TextDisplay::getVerticalScrollbar() const {
 	return text_of(w_).P_vScrollBar;
 }
 
+Pixel TextDisplay::getCalltipFGPixel() const {
+	return calltipFGPixel_;
+}
+
+Pixel TextDisplay::getCalltipBGPixel() const {
+	return calltipBGPixel_;
+}
