@@ -9060,13 +9060,3 @@ Widget TextDisplay::getVerticalScrollbar() const {
 	return text_of(w_).P_vScrollBar;
 }
 
-#if 0
-	bool TextDisplay::getAutoIndent();
-	bool TextDisplay::getAutoShowInsertPos();
-	bool TextDisplay::getAutoWrap();
-	bool TextDisplay::getContinuousWrap();
-	bool TextDisplay::getOverstrike();
-	bool TextDisplay::getReadOnly();
-	bool TextDisplay::getSmartIndent();
-	int TextDisplay::getCursorVPadding();
-#endif

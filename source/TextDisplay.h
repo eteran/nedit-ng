@@ -200,14 +200,6 @@ public:
 	Pixel getForegroundPixel() const;
 	QString getWordDelimiters() const;
 	XFontStruct *getFont() const;
-	bool getAutoIndent() const;
-	bool getAutoShowInsertPos() const;
-	bool getAutoWrap() const;
-	bool getContinuousWrap() const;
-	bool getOverstrike() const;
-	bool getReadOnly() const;
-	bool getSmartIndent() const;
-	int getCursorVPadding() const;
 	int getEmulateTabs() const;
 	int getLineNumCols() const;
 	int getWrapMargin() const;
@@ -453,8 +445,6 @@ private:
 	Widget w_; // TextWidget
 	Widget calltipW_;                             // The Label widget for the calltip
 	Widget calltipShell_;                         // The Shell that holds the calltip
-	Pixel fgPixel_;                               // Foreground color
-	Pixel bgPixel_;                               // Background color	
 	QVector<Pixel> bgClassPixel_;                 // table of colors for each BG class
 	QVector<uint8_t> bgClass_;                    // obtains index into bgClassPixel[]
 	Rect rect_;
@@ -536,6 +526,8 @@ private:
 
 private:
 	// COPY OF RESOURCE?
+	Pixel          fgPixel_;            // Foreground color
+	Pixel          bgPixel_;            // Background color
 	Pixel          selectFGPixel_;      // Foreground select color
 	Pixel          selectBGPixel_;      // Background select color
 	Pixel          highlightFGPixel_;   // Highlight colors are used when flashing matching parens
