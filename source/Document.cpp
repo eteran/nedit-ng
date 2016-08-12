@@ -1,9 +1,11 @@
 
 #include <QMessageBox>
+#include <QX11Info>
 #include "ui/DialogFind.h"
 #include "ui/DialogReplace.h"
 #include "ui/DialogWindowTitle.h"
 #include "ui/DialogMoveDocument.h"
+#include "ui/TextArea.h"
 #include "IndentStyle.h"
 #include "WrapStyle.h"
 #include "RangesetTable.h"
@@ -504,7 +506,10 @@ void cloneTextPanes(Document *window, Document *orgWin) {
 
 		for (i = 0; i < orgWin->textPanes_.size(); i++) {
 
-			Widget text = Document::createTextArea(window->splitPane_, window, 1, 1, emTabDist, delimiters.toLatin1().data(), wrapMargin, lineNumCols);
+			Widget text;
+			TextArea *area;
+
+			std::tie(text, area) = Document::createTextArea(window->splitPane_, window, 1, 1, emTabDist, delimiters.toLatin1().data(), wrapMargin, lineNumCols);
 			auto newTextD = textD_of(text);
 			newTextD->TextSetBuffer(window->buffer_);
 
@@ -633,7 +638,10 @@ Widget addTab(Widget folder, const QString &string) {
 	/* BubbleButton simply use reversed video for tooltips,
 	   we try to use the 'standard' color */
 	tooltipLabel = XtNameToWidget(tab, "*BubbleLabel");
-	XtVaSetValues(tooltipLabel, XmNbackground, AllocateColor(tab, GetPrefTooltipBgColor()), XmNforeground, AllocateColor(tab, NEDIT_DEFAULT_FG), nullptr);
+	XtVaSetValues(
+				tooltipLabel,
+				XmNbackground, AllocateColor(GetPrefTooltipBgColor()),
+				XmNforeground, AllocateColor(NEDIT_DEFAULT_FG), nullptr);
 
 	/* put borders around tooltip. BubbleButton use
 	   transientShellWidgetClass as tooltip shell, which
@@ -2020,14 +2028,14 @@ void Document::SetAutoScroll(int margin) {
 */
 void Document::SetColors(const char *textFg, const char *textBg, const char *selectFg, const char *selectBg, const char *hiliteFg, const char *hiliteBg, const char *lineNoFg, const char *cursorFg) {
 
-	Pixel textFgPix   = AllocColor(textArea_, textFg);
-	Pixel textBgPix   = AllocColor(textArea_, textBg);
-	Pixel selectFgPix = AllocColor(textArea_, selectFg);
-	Pixel selectBgPix = AllocColor(textArea_, selectBg);
-	Pixel hiliteFgPix = AllocColor(textArea_, hiliteFg);
-	Pixel hiliteBgPix = AllocColor(textArea_, hiliteBg);
-	Pixel lineNoFgPix = AllocColor(textArea_, lineNoFg);
-	Pixel cursorFgPix = AllocColor(textArea_, cursorFg);
+	Pixel textFgPix   = AllocColor(textFg);
+	Pixel textBgPix   = AllocColor(textBg);
+	Pixel selectFgPix = AllocColor(selectFg);
+	Pixel selectBgPix = AllocColor(selectBg);
+	Pixel hiliteFgPix = AllocColor(hiliteFg);
+	Pixel hiliteBgPix = AllocColor(hiliteBg);
+	Pixel lineNoFgPix = AllocColor(lineNoFg);
+	Pixel cursorFgPix = AllocColor(cursorFg);
 
 
 	// Update the main pane
@@ -2997,6 +3005,7 @@ void Document::SplitPane() {
 	int focusPane;
 	int totalHeight = 0;
 	Widget text = nullptr;
+	TextArea *area = nullptr;
 	TextDisplay *newTextD;
 
 	// Don't create new panes if we're already at the limit
@@ -3030,7 +3039,9 @@ void Document::SplitPane() {
 	int lineNumCols    = textD_of(textArea_)->getLineNumCols();
 
 
-	text = createTextArea(splitPane_, this, 1, 1, emTabDist, delimiters.toLatin1().data(), wrapMargin, lineNumCols);
+
+
+	std::tie(text, area) = createTextArea(splitPane_, this, 1, 1, emTabDist, delimiters.toLatin1().data(), wrapMargin, lineNumCols);
 	auto textD = textD_of(text);
 
 	textD->TextSetBuffer(buffer_);
@@ -3690,9 +3701,33 @@ Document::Document(const QString &name, char *geometry, bool iconic) {
 
 	/* Create the first, and most permanent text area (other panes may
 	   be added & removed, but this one will never be removed */
-	textArea_ = createTextArea(splitPane_, this, rows, cols, GetPrefEmTabDist(PLAIN_LANGUAGE_MODE), GetPrefDelimiters().toLatin1().data(), GetPrefWrapMargin(), showLineNumbers_ ? MIN_LINE_NUM_COLS : 0);
+	TextArea *area;
+	std::tie(textArea_, area) = createTextArea(splitPane_, this, rows, cols, GetPrefEmTabDist(PLAIN_LANGUAGE_MODE), GetPrefDelimiters().toLatin1().data(), GetPrefWrapMargin(), showLineNumbers_ ? MIN_LINE_NUM_COLS : 0);
 	XtManageChild(textArea_);
 	lastFocus_ = textArea_;
+
+#if 1
+
+	Pixel textFgPix   = AllocColor(GetPrefColorName(TEXT_FG_COLOR));
+	Pixel textBgPix   = AllocColor(GetPrefColorName(TEXT_BG_COLOR));
+	Pixel selectFgPix = AllocColor(GetPrefColorName(SELECT_FG_COLOR));
+	Pixel selectBgPix = AllocColor(GetPrefColorName(SELECT_BG_COLOR));
+	Pixel hiliteFgPix = AllocColor(GetPrefColorName(HILITE_FG_COLOR));
+	Pixel hiliteBgPix = AllocColor(GetPrefColorName(HILITE_BG_COLOR));
+	Pixel lineNoFgPix = AllocColor(GetPrefColorName(LINENO_FG_COLOR));
+	Pixel cursorFgPix = AllocColor(GetPrefColorName(CURSOR_FG_COLOR));
+
+	area->TextDSetColors(
+		toQColor(textFgPix),
+		toQColor(textBgPix),
+		toQColor(selectFgPix),
+		toQColor(selectBgPix),
+		toQColor(hiliteFgPix),
+		toQColor(hiliteBgPix),
+		toQColor(lineNoFgPix),
+		toQColor(cursorFgPix));
+
+#endif
 
 	// Set the initial colors from the globals.
 	SetColors(
@@ -3731,7 +3766,15 @@ Document::Document(const QString &name, char *geometry, bool iconic) {
 	// Attach the buffer to the text widget, and add callbacks for modify
 	auto textD = textD_of(textArea_);
 	textD->TextSetBuffer(buffer_);
+
+#if 1
+	area->TextSetBuffer(buffer_);
+#endif
+
+
 	buffer_->BufAddModifyCB(modifiedCB, this);
+
+
 
 	// Designate the permanent text area as the owner for selections
 	textD->HandleXSelections();
@@ -3916,7 +3959,9 @@ Document *Document::CreateDocument(const QString &name) {
 
 	/* Create the first, and most permanent text area (other panes may
 	   be added & removed, but this one will never be removed */
-	Widget text = createTextArea(pane, window, nRows, nCols, GetPrefEmTabDist(PLAIN_LANGUAGE_MODE), GetPrefDelimiters().toLatin1().data(), GetPrefWrapMargin(), window->showLineNumbers_ ? MIN_LINE_NUM_COLS : 0);
+	Widget text;
+	TextArea *area;
+	std::tie(text, area) = createTextArea(pane, window, nRows, nCols, GetPrefEmTabDist(PLAIN_LANGUAGE_MODE), GetPrefDelimiters().toLatin1().data(), GetPrefWrapMargin(), window->showLineNumbers_ ? MIN_LINE_NUM_COLS : 0);
 	XtManageChild(text);
 
 	window->textArea_  = text;
@@ -4486,7 +4531,7 @@ int Document::WindowCount() {
 	return n;
 }
 
-Widget Document::createTextArea(Widget parent, Document *window, int rows, int cols, int emTabDist, char *delimiters, int wrapMargin, int lineNumCols) {
+std::tuple<Widget, TextArea *>  Document::createTextArea(Widget parent, Document *window, int rows, int cols, int emTabDist, char *delimiters, int wrapMargin, int lineNumCols) {
 
 	// Create a text widget inside of a scrolled window widget
 	Widget sw         = XtVaCreateManagedWidget("scrolledW",         xmScrolledWindowWidgetClass, parent, XmNpaneMaximum, SHRT_MAX,     XmNpaneMinimum, PANE_MIN_HEIGHT, XmNhighlightThickness, 0, nullptr);
@@ -4529,6 +4574,40 @@ Widget Document::createTextArea(Widget parent, Document *window, int rows, int c
 	textD->addDragEndCallback(dragEndCB, window);
 	textD->addsmartIndentCallback(SmartIndentCB, window);
 
+#if 1
+
+    XFontStruct *fi = textD->getFont();
+    unsigned long ret;
+    XGetFontProperty(fi, XA_FONT, &ret);
+    const char *name = XGetAtomName(QX11Info::display(), (Atom)ret);
+
+    //QFont f(QLatin1String("Monospace"), 12);
+    QFont f;
+    f.setRawName(QLatin1String(name));
+	auto textArea = new TextArea(
+		nullptr,
+		textD->getRect().left,
+		textD->getRect().top,
+		textD->getRect().width,
+		textD->getRect().height,
+		textD->getLineNumLeft(),
+		textD->getLineNumCols(),
+		textD->TextGetBuffer(),
+		f,
+		toQColor(textD->getBackgroundPixel()),
+		toQColor(textD->getForegroundPixel()),
+		toQColor(textD->getSelectFGPixel()),
+		toQColor(textD->getSelectBGPixel()),
+		toQColor(textD->getHighlightFGPixel()),
+		toQColor(textD->getHighlightBGPixel()),
+		toQColor(textD->getCursorFGPixel()),
+		toQColor(textD->getLineNumFGPixel()),
+		toQColor(textD->getCalltipFGPixel()),
+		toQColor(textD->getCalltipBGPixel())
+		);
+
+	textArea->show();
+#endif
 	/* This makes sure the text area initially has a the insert point shown
 	   ... (check if still true with the nedit text widget, probably not) */
 	XmAddTabGroup(containingPane(text));
@@ -4544,7 +4623,7 @@ Widget Document::createTextArea(Widget parent, Document *window, int rows, int c
 	   operation and performance will be better without it) */
 	textD->TextDMaintainAbsLineNum(window->showStats_);
 
-	return text;
+	return std::make_tuple(text, textArea);
 }
 
 

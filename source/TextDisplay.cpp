@@ -465,7 +465,7 @@ std::string expandAllTabsEx(view::string_view text, int tab_width) {
 
 static void autoScrollTimerProc(XtPointer clientData, XtIntervalId *id);
 static GC allocateGC(Widget w, unsigned long valueMask, unsigned long foreground, unsigned long background, Font font, unsigned long dynamicMask, unsigned long dontCareMask);
-static Pixel allocBGColor(Widget w, char *colorName, int *ok);
+static Pixel allocBGColor(char *colorName, int *ok);
 static int countLinesEx(view::string_view string);
 static void bufModifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *cbArg);
 static void bufPreDeleteCB(int pos, int nDeleted, void *cbArg);
@@ -3983,9 +3983,9 @@ void TextDisplay::extendRangeForStyleMods(int *start, int *end) {
 ** the colormap is full and there's no suitable substitute, print an error on
 ** stderr, and return the widget's background color as a backup.
 */
-static Pixel allocBGColor(Widget w, char *colorName, int *ok) {
+static Pixel allocBGColor(char *colorName, int *ok) {
 	*ok = 1;
-	return AllocColor(w, colorName);
+	return AllocColor(colorName);
 }
 
 Pixel TextDisplay::getRangesetColor(int ind, Pixel bground) {
@@ -3999,7 +3999,7 @@ Pixel TextDisplay::getRangesetColor(int ind, Pixel bground) {
 		if (valid == 0) {
 			char *color_name = tab->RangesetTableGetColorName(ind);
 			if (color_name)
-				color = allocBGColor(w_, color_name, &valid);
+				color = allocBGColor(color_name, &valid);
 			tab->RangesetTableAssignColorPixel(ind, color, valid);
 		}
 		if (valid > 0) {
@@ -4020,10 +4020,10 @@ Pixel TextDisplay::getRangesetColor(int ind, Pixel bground) {
 ** could be better too, but then, who cares!
 */
 void TextDisplay::TextDSetupBGClassesEx(const QString &str) {
-	TextDSetupBGClasses(w_, str, &bgClassPixel_, &bgClass_, bgPixel_);
+	TextDSetupBGClasses(str, &bgClassPixel_, &bgClass_, bgPixel_);
 }
 
-void TextDisplay::TextDSetupBGClasses(Widget w, const QString &s, QVector<Pixel> *pp_bgClassPixel, QVector<uint8_t> *pp_bgClass, Pixel bgPixelDefault) {
+void TextDisplay::TextDSetupBGClasses(const QString &s, QVector<Pixel> *pp_bgClassPixel, QVector<uint8_t> *pp_bgClass, Pixel bgPixelDefault) {
 
 	*pp_bgClassPixel = QVector<Pixel>();
 	*pp_bgClass      = QVector<uint8_t>();
@@ -4084,7 +4084,7 @@ void TextDisplay::TextDSetupBGClasses(Widget w, const QString &s, QVector<Pixel>
 			const uint8_t nextClass = class_no++;
 
 			int dummy;
-			bgClassPixel[nextClass] = allocBGColor(w, color.toLatin1().data(), &dummy);
+			bgClassPixel[nextClass] = allocBGColor(color.toLatin1().data(), &dummy);
 
 			QStringList rangeList = ranges.split(QLatin1Char(','), QString::SkipEmptyParts);
 			for(const QString &range : rangeList) {
@@ -6654,6 +6654,8 @@ void TextDisplay::processCancelAP(XEvent *event, String *args, Cardinal *nArgs) 
 	(void)nArgs;
 	(void)event;
 
+	qDebug("PROCESS_CANCEL");
+
 	int dragState = dragState_;
 
 	// If there's a calltip displayed, kill it.
@@ -8084,7 +8086,6 @@ void TextDisplay::moveDestinationAP(XEvent *event, String *args, Cardinal *nArgs
 
 	(void)args;
 	(void)nArgs;
-	(void)event;
 
 	XButtonEvent *e = &event->xbutton;
 

@@ -680,10 +680,10 @@ WindowHighlightData *createHighlightData(Document *window, PatternSet *patSet) {
 		p->isItalic      = FontOfNamedStyleIsItalic(pat->style.toStdString());
 
 		// And now for the more physical stuff 
-		p->color = AllocColor(window->textArea_, p->colorName, &c);
+		p->color = AllocColor(p->colorName, &c);
 		
 		if (!p->bgColorName.isNull()) {
-			p->bgColor = AllocColor(window->textArea_, p->bgColorName, &c);
+			p->bgColor = AllocColor(p->bgColorName, &c);
 		} else {
 			p->bgColor = p->color;
 		}
@@ -1850,9 +1850,9 @@ static double colorDistance(const XColor *c1, const XColor *c2) {
 ** the r, g & b components is not needed, thus saving
 ** the little hassle of creating the dummy variable.
 */
-Pixel AllocateColor(Widget w, const char *colorName) {
+Pixel AllocateColor(const char *colorName) {
 	Color dummy;
-	return AllocColor(w, colorName, &dummy);
+	return AllocColor(colorName, &dummy);
 }
 
 /*
@@ -1861,29 +1861,30 @@ Pixel AllocateColor(Widget w, const char *colorName) {
 ** the colormap is full and there's no suitable substitute, print an error on
 ** stderr, and return the widget's foreground color as a backup.
 */
-Pixel AllocColor(Widget w, const QString &colorName, Color *color) {
-	return AllocColor(w, colorName.toLatin1().data(), color);
+Pixel AllocColor(const QString &colorName, Color *color) {
+	return AllocColor(colorName.toLatin1().data(), color);
 }
 
-Pixel AllocColor(Widget w, const char *colorName, Color *color) {
+Pixel AllocColor(const char *colorName, Color *color) {
 	XColor colorDef;
 	XColor *allColorDefs;
-	Display *display = XtDisplay(w);
-	Colormap cMap;
-	Pixel foreground;
-	Pixel bestPixel;
 	double small = 1.0e9;
-	int depth;
 	unsigned int ncolors;
 	unsigned long i;
 	unsigned long best = 0; // pixel value 
 
+	Display *display = TheDisplay;
+	Colormap cMap    = DefaultColormap(display, DefaultScreen(display));
+	int depth        = XDefaultDepth(display, DefaultScreen(display));
+
 	/* Get the correct colormap for compatability with the "best" visual
 	   feature in 5.2.  Default visual of screen is no good here. */
-
-	XtVaGetValues(w, XtNcolormap, &cMap, XtNdepth, &depth, XtNforeground, &foreground, nullptr);
-
-	bestPixel = foreground; // Our last fallback 
+	// NOTE(eteran): because we are migrating to Qt, We are not terribly conerned with
+	//               with the minor details of X11's color routines
+	//               so I've simplified this to aid in porting (for now)
+	//               at the cost of NERFing the "best visual stuff"
+	Pixel foreground =  BlackPixelOfScreen(DefaultScreenOfDisplay(display));
+	Pixel bestPixel = foreground; // Our last fallback
 
 	// First, check for valid syntax 
 	if (!XParseColor(display, cMap, colorName, &colorDef)) {
@@ -1964,13 +1965,13 @@ Pixel AllocColor(Widget w, const char *colorName, Color *color) {
 	return bestPixel;
 }
 
-Pixel AllocColor(Widget w, const QString &colorName) {
-	return AllocColor(w, colorName.toLatin1().data());
+Pixel AllocColor(const QString &colorName) {
+	return AllocColor(colorName.toLatin1().data());
 }
 
-Pixel AllocColor(Widget w, const char *colorName) {
+Pixel AllocColor(const char *colorName) {
 	Color dummy;
-	return AllocColor(w, colorName, &dummy);
+	return AllocColor(colorName, &dummy);
 }
 
 /*

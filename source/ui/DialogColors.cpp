@@ -64,7 +64,7 @@ void DialogColors::chooseColor(QLineEdit *edit) {
 
 	QString name = edit->text();
 	Color c;
-	AllocColor(window_->shell_, name.toLatin1().data(), &c);
+	AllocColor(name.toLatin1().data(), &c);
 
 	QColor initColor = toQColor(c);
 	QColor color = QColorDialog::getColor(initColor, this);

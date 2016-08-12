@@ -28,6 +28,8 @@
 #define TEXT_H_
 
 #include "util/string_view.h"
+#include "dragEndCBStruct.h"
+#include "smartIndentCBStruct.h"
 #include <X11/Intrinsic.h>
 #include <X11/X.h>
 #include <X11/Xlib.h>
@@ -117,24 +119,9 @@ struct TextRec;
 
 typedef TextRec *TextWidget;
 
-struct dragEndCBStruct {
-	int               startPos;
-	int               nCharsDeleted;
-	int               nCharsInserted;
-	view::string_view deletedText;
-};
 
-enum SmartIndentCallbackReasons {
-	NEWLINE_INDENT_NEEDED, 
-	CHAR_TYPED
-};
 
-struct smartIndentCBStruct {
-	SmartIndentCallbackReasons reason;
-	int pos;
-	int indentRequest;
-	char *charsTyped;
-};
+
 
 /* User callable routines */
 XtActionsRec *TextGetActions(int *nActions);

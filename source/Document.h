@@ -5,6 +5,7 @@
 #include <QPointer>
 #include <QString>
 #include <list>
+#include <tuple>
 #include "nedit.h"
 #include "UserBGMenuCache.h"
 #include "util/fileUtils.h"
@@ -21,6 +22,7 @@ class DialogColors;
 class UndoInfo;
 class TextBuffer;
 class TextDisplay;
+class TextArea;
 
 
 /* The Document structure holds the information on a Document. A number
@@ -157,7 +159,7 @@ private:
 	void showTabBar(int state);
 
 public:
-	static Widget createTextArea(Widget parent, Document *window, int rows, int cols, int emTabDist, char *delimiters, int wrapMargin, int lineNumCols);
+	static std::tuple<Widget, TextArea *> createTextArea(Widget parent, Document *window, int rows, int cols, int emTabDist, char *delimiters, int wrapMargin, int lineNumCols);
 
 public:
 	DialogReplace *getDialogReplace() const;

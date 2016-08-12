@@ -13,8 +13,10 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 	// create the text widget
 	auto layout   = new QBoxLayout(QBoxLayout::TopToBottom);
 	auto splitter = new QSplitter(Qt::Vertical, this);
-	
+
+#if 0
 	splitter->addWidget(new TextArea(this));
+#endif
 	splitter->setChildrenCollapsible(false);
 	layout->addWidget(splitter);
 	layout->setContentsMargins(0, 0, 0, 0);

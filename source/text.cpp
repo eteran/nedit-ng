@@ -127,185 +127,186 @@ static void focusInAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void focusOutAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 
 static char defaultTranslations[] =
-    // Home
-    "~Shift ~Ctrl Alt<Key>osfBeginLine: last_document()\n"
+            // Home
+/*?*/            "~Shift ~Ctrl Alt<Key>osfBeginLine: last_document()\n"
 
-    // Backspace
-    "Ctrl<KeyPress>osfBackSpace: delete_previous_word()\n"
-    "<KeyPress>osfBackSpace: delete_previous_character()\n"
+/*X*/            // Backspace
+/*X*/            "Ctrl<KeyPress>osfBackSpace: delete_previous_word()\n"
+/*X*/            "<KeyPress>osfBackSpace: delete_previous_character()\n"
 
-    // Delete
-    "Alt Shift Ctrl<KeyPress>osfDelete: cut_primary(\"rect\")\n"
-    "Meta Shift Ctrl<KeyPress>osfDelete: cut_primary(\"rect\")\n"
-    "Shift Ctrl<KeyPress>osfDelete: cut_primary()\n"
-    "Ctrl<KeyPress>osfDelete: delete_to_end_of_line()\n"
-    "Shift<KeyPress>osfDelete: cut_clipboard()\n"
-    "<KeyPress>osfDelete: delete_next_character()\n"
+            // Delete
+            "Alt Shift Ctrl<KeyPress>osfDelete: cut_primary(\"rect\")\n"
+            "Meta Shift Ctrl<KeyPress>osfDelete: cut_primary(\"rect\")\n"
+            "Shift Ctrl<KeyPress>osfDelete: cut_primary()\n"
+            "Ctrl<KeyPress>osfDelete: delete_to_end_of_line()\n"
+/*X*/            "Shift<KeyPress>osfDelete: cut_clipboard()\n"
+/*X*/            "<KeyPress>osfDelete: delete_next_character()\n"
 
-    // Insert
-    "Alt Shift Ctrl<KeyPress>osfInsert: copy_primary(\"rect\")\n"
-    "Meta Shift Ctrl<KeyPress>osfInsert: copy_primary(\"rect\")\n"
-    "Shift Ctrl<KeyPress>osfInsert: copy_primary()\n"
-    "Shift<KeyPress>osfInsert: paste_clipboard()\n"
-    "Ctrl<KeyPress>osfInsert: copy_clipboard()\n"
-    "~Shift ~Ctrl<KeyPress>osfInsert: set_overtype_mode()\n"
+            // Insert
+            "Alt Shift Ctrl<KeyPress>osfInsert: copy_primary(\"rect\")\n"
+            "Meta Shift Ctrl<KeyPress>osfInsert: copy_primary(\"rect\")\n"
+/*X*/            "Shift Ctrl<KeyPress>osfInsert: copy_primary()\n"
+/*X*/            "Shift<KeyPress>osfInsert: paste_clipboard()\n"
+/*X*/            "Ctrl<KeyPress>osfInsert: copy_clipboard()\n"
+/*X*/            "~Shift ~Ctrl<KeyPress>osfInsert: set_overtype_mode()\n"
 
-    // Cut/Copy/Paste
-    "Shift Ctrl<KeyPress>osfCut: cut_primary()\n"
-    "<KeyPress>osfCut: cut_clipboard()\n"
-    "<KeyPress>osfCopy: copy_clipboard()\n"
-    "<KeyPress>osfPaste: paste_clipboard()\n"
-    "<KeyPress>osfPrimaryPaste: copy_primary()\n"
+            // Cut/Copy/Paste
+            "Shift Ctrl<KeyPress>osfCut: cut_primary()\n"
+/*X*/            "<KeyPress>osfCut: cut_clipboard()\n"
+/*X*/            "<KeyPress>osfCopy: copy_clipboard()\n"
+/*X*/            "<KeyPress>osfPaste: paste_clipboard()\n"
+            "<KeyPress>osfPrimaryPaste: copy_primary()\n"
 
-    // BeginLine
-    "Alt Shift Ctrl<KeyPress>osfBeginLine: beginning_of_file(\"extend\", \"rect\")\n"
-    "Meta Shift Ctrl<KeyPress>osfBeginLine: beginning_of_file(\"extend\" \"rect\")\n"
-    "Alt Shift<KeyPress>osfBeginLine: beginning_of_line(\"extend\", \"rect\")\n"
-    "Meta Shift<KeyPress>osfBeginLine: beginning_of_line(\"extend\", \"rect\")\n"
-    "Shift Ctrl<KeyPress>osfBeginLine: beginning_of_file(\"extend\")\n"
-    "Ctrl<KeyPress>osfBeginLine: beginning_of_file()\n"
-    "Shift<KeyPress>osfBeginLine: beginning_of_line(\"extend\")\n"
-    "~Alt~Shift~Ctrl~Meta<KeyPress>osfBeginLine: beginning_of_line()\n"
+            // BeginLine
+            "Alt Shift Ctrl<KeyPress>osfBeginLine: beginning_of_file(\"extend\", \"rect\")\n"
+            "Meta Shift Ctrl<KeyPress>osfBeginLine: beginning_of_file(\"extend\" \"rect\")\n"
+            "Alt Shift<KeyPress>osfBeginLine: beginning_of_line(\"extend\", \"rect\")\n"
+            "Meta Shift<KeyPress>osfBeginLine: beginning_of_line(\"extend\", \"rect\")\n"
+            "Shift Ctrl<KeyPress>osfBeginLine: beginning_of_file(\"extend\")\n"
+/*X*/            "Ctrl<KeyPress>osfBeginLine: beginning_of_file()\n"
+            "Shift<KeyPress>osfBeginLine: beginning_of_line(\"extend\")\n"
+/*X*/            "~Alt~Shift~Ctrl~Meta<KeyPress>osfBeginLine: beginning_of_line()\n"
 
-    // EndLine
-    "Alt Shift Ctrl<KeyPress>osfEndLine: end_of_file(\"extend\", \"rect\")\n"
-    "Meta Shift Ctrl<KeyPress>osfEndLine: end_of_file(\"extend\", \"rect\")\n"
-    "Alt Shift<KeyPress>osfEndLine: end_of_line(\"extend\", \"rect\")\n"
-    "Meta Shift<KeyPress>osfEndLine: end_of_line(\"extend\", \"rect\")\n"
-    "Shift Ctrl<KeyPress>osfEndLine: end_of_file(\"extend\")\n"
-    "Ctrl<KeyPress>osfEndLine: end_of_file()\n"
-    "Shift<KeyPress>osfEndLine: end_of_line(\"extend\")\n"
-    "~Alt~Shift~Ctrl~Meta<KeyPress>osfEndLine: end_of_line()\n"
+            // EndLine
+            "Alt Shift Ctrl<KeyPress>osfEndLine: end_of_file(\"extend\", \"rect\")\n"
+            "Meta Shift Ctrl<KeyPress>osfEndLine: end_of_file(\"extend\", \"rect\")\n"
+            "Alt Shift<KeyPress>osfEndLine: end_of_line(\"extend\", \"rect\")\n"
+            "Meta Shift<KeyPress>osfEndLine: end_of_line(\"extend\", \"rect\")\n"
+            "Shift Ctrl<KeyPress>osfEndLine: end_of_file(\"extend\")\n"
+/*X*/            "Ctrl<KeyPress>osfEndLine: end_of_file()\n"
+            "Shift<KeyPress>osfEndLine: end_of_line(\"extend\")\n"
+/*X*/            "~Alt~Shift~Ctrl~Meta<KeyPress>osfEndLine: end_of_line()\n"
 
-    // Left
-    "Alt Shift Ctrl<KeyPress>osfLeft: backward_word(\"extend\", \"rect\")\n"
-    "Meta Shift Ctrl<KeyPress>osfLeft: backward_word(\"extend\", \"rect\")\n"
-    "Alt Shift<KeyPress>osfLeft: key_select(\"left\", \"rect\")\n"
-    "Meta Shift<KeyPress>osfLeft: key_select(\"left\", \"rect\")\n"
-    "Shift Ctrl<KeyPress>osfLeft: backward_word(\"extend\")\n"
-    "Ctrl<KeyPress>osfLeft: backward_word()\n"
-    "Shift<KeyPress>osfLeft: key_select(\"left\")\n"
-    "~Alt~Shift~Ctrl~Meta<KeyPress>osfLeft: backward_character()\n"
+            // Left
+            "Alt Shift Ctrl<KeyPress>osfLeft: backward_word(\"extend\", \"rect\")\n"
+            "Meta Shift Ctrl<KeyPress>osfLeft: backward_word(\"extend\", \"rect\")\n"
+            "Alt Shift<KeyPress>osfLeft: key_select(\"left\", \"rect\")\n"
+            "Meta Shift<KeyPress>osfLeft: key_select(\"left\", \"rect\")\n"
+            "Shift Ctrl<KeyPress>osfLeft: backward_word(\"extend\")\n"
+/*X*/            "Ctrl<KeyPress>osfLeft: backward_word()\n"
+/*X*/            "Shift<KeyPress>osfLeft: key_select(\"left\")\n"
+/*X*/            "~Alt~Shift~Ctrl~Meta<KeyPress>osfLeft: backward_character()\n"
 
-    // Right
-    "Alt Shift Ctrl<KeyPress>osfRight: forward_word(\"extend\", \"rect\")\n"
-    "Meta Shift Ctrl<KeyPress>osfRight: forward_word(\"extend\", \"rect\")\n"
-    "Alt Shift<KeyPress>osfRight: key_select(\"right\", \"rect\")\n"
-    "Meta Shift<KeyPress>osfRight: key_select(\"right\", \"rect\")\n"
-    "Shift Ctrl<KeyPress>osfRight: forward_word(\"extend\")\n"
-    "Ctrl<KeyPress>osfRight: forward_word()\n"
-    "Shift<KeyPress>osfRight: key_select(\"right\")\n"
-    "~Alt~Shift~Ctrl~Meta<KeyPress>osfRight: forward_character()\n"
+            // Right
+            "Alt Shift Ctrl<KeyPress>osfRight: forward_word(\"extend\", \"rect\")\n"
+            "Meta Shift Ctrl<KeyPress>osfRight: forward_word(\"extend\", \"rect\")\n"
+            "Alt Shift<KeyPress>osfRight: key_select(\"right\", \"rect\")\n"
+            "Meta Shift<KeyPress>osfRight: key_select(\"right\", \"rect\")\n"
+            "Shift Ctrl<KeyPress>osfRight: forward_word(\"extend\")\n"
+/*X*/            "Ctrl<KeyPress>osfRight: forward_word()\n"
+/*X*/            "Shift<KeyPress>osfRight: key_select(\"right\")\n"
+/*X*/            "~Alt~Shift~Ctrl~Meta<KeyPress>osfRight: forward_character()\n"
 
-    // Up
-    "Alt Shift Ctrl<KeyPress>osfUp: backward_paragraph(\"extend\", \"rect\")\n"
-    "Meta Shift Ctrl<KeyPress>osfUp: backward_paragraph(\"extend\", \"rect\")\n"
-    "Alt Shift<KeyPress>osfUp: process_shift_up(\"rect\")\n"
-    "Meta Shift<KeyPress>osfUp: process_shift_up(\"rect\")\n"
-    "Shift Ctrl<KeyPress>osfUp: backward_paragraph(\"extend\")\n"
-    "Ctrl<KeyPress>osfUp: backward_paragraph()\n"
-    "Shift<KeyPress>osfUp: process_shift_up()\n"
-    "~Alt~Shift~Ctrl~Meta<KeyPress>osfUp: process_up()\n"
+            // Up
+            "Alt Shift Ctrl<KeyPress>osfUp: backward_paragraph(\"extend\", \"rect\")\n"
+            "Meta Shift Ctrl<KeyPress>osfUp: backward_paragraph(\"extend\", \"rect\")\n"
+            "Alt Shift<KeyPress>osfUp: process_shift_up(\"rect\")\n"
+            "Meta Shift<KeyPress>osfUp: process_shift_up(\"rect\")\n"
+            "Shift Ctrl<KeyPress>osfUp: backward_paragraph(\"extend\")\n"
+/*X*/            "Ctrl<KeyPress>osfUp: backward_paragraph()\n"
+/*X*/            "Shift<KeyPress>osfUp: process_shift_up()\n"
+/*X*/            "~Alt~Shift~Ctrl~Meta<KeyPress>osfUp: process_up()\n"
 
-    // Down
-    "Alt Shift Ctrl<KeyPress>osfDown: forward_paragraph(\"extend\", \"rect\")\n"
-    "Meta Shift Ctrl<KeyPress>osfDown: forward_paragraph(\"extend\", \"rect\")\n"
-    "Alt Shift<KeyPress>osfDown: process_shift_down(\"rect\")\n"
-    "Meta Shift<KeyPress>osfDown: process_shift_down(\"rect\")\n"
-    "Shift Ctrl<KeyPress>osfDown: forward_paragraph(\"extend\")\n"
-    "Ctrl<KeyPress>osfDown: forward_paragraph()\n"
-    "Shift<KeyPress>osfDown: process_shift_down()\n"
-    "~Alt~Shift~Ctrl~Meta<KeyPress>osfDown: process_down()\n"
+            // Down
+            "Alt Shift Ctrl<KeyPress>osfDown: forward_paragraph(\"extend\", \"rect\")\n"
+            "Meta Shift Ctrl<KeyPress>osfDown: forward_paragraph(\"extend\", \"rect\")\n"
+            "Alt Shift<KeyPress>osfDown: process_shift_down(\"rect\")\n"
+            "Meta Shift<KeyPress>osfDown: process_shift_down(\"rect\")\n"
+            "Shift Ctrl<KeyPress>osfDown: forward_paragraph(\"extend\")\n"
+/*X*/            "Ctrl<KeyPress>osfDown: forward_paragraph()\n"
+/*X*/            "Shift<KeyPress>osfDown: process_shift_down()\n"
+/*X*/            "~Alt~Shift~Ctrl~Meta<KeyPress>osfDown: process_down()\n"
 
-    // PageUp
-    "Alt Shift Ctrl<KeyPress>osfPageUp: page_left(\"extend\", \"rect\")\n"
-    "Meta Shift Ctrl<KeyPress>osfPageUp: page_left(\"extend\", \"rect\")\n"
-    "Alt Shift<KeyPress>osfPageUp: previous_page(\"extend\", \"rect\")\n"
-    "Meta Shift<KeyPress>osfPageUp: previous_page(\"extend\", \"rect\")\n"
-    "Shift Ctrl<KeyPress>osfPageUp: page_left(\"extend\")\n"
-    "Ctrl<KeyPress>osfPageUp: previous_document()\n"
-    "Shift<KeyPress>osfPageUp: previous_page(\"extend\")\n"
-    "~Alt ~Shift ~Ctrl ~Meta<KeyPress>osfPageUp: previous_page()\n"
+            // PageUp
+            "Alt Shift Ctrl<KeyPress>osfPageUp: page_left(\"extend\", \"rect\")\n"
+            "Meta Shift Ctrl<KeyPress>osfPageUp: page_left(\"extend\", \"rect\")\n"
+            "Alt Shift<KeyPress>osfPageUp: previous_page(\"extend\", \"rect\")\n"
+            "Meta Shift<KeyPress>osfPageUp: previous_page(\"extend\", \"rect\")\n"
+            "Shift Ctrl<KeyPress>osfPageUp: page_left(\"extend\")\n"
+            "Ctrl<KeyPress>osfPageUp: previous_document()\n"
+            "Shift<KeyPress>osfPageUp: previous_page(\"extend\")\n"
+            "~Alt ~Shift ~Ctrl ~Meta<KeyPress>osfPageUp: previous_page()\n"
 
-    // PageDown
-    "Alt Shift Ctrl<KeyPress>osfPageDown: page_right(\"extend\", \"rect\")\n"
-    "Meta Shift Ctrl<KeyPress>osfPageDown: page_right(\"extend\", \"rect\")\n"
-    "Alt Shift<KeyPress>osfPageDown: next_page(\"extend\", \"rect\")\n"
-    "Meta Shift<KeyPress>osfPageDown: next_page(\"extend\", \"rect\")\n"
-    "Shift Ctrl<KeyPress>osfPageDown: page_right(\"extend\")\n"
-    "Ctrl<KeyPress>osfPageDown: next_document()\n"
-    "Shift<KeyPress>osfPageDown: next_page(\"extend\")\n"
-    "~Alt ~Shift ~Ctrl ~Meta<KeyPress>osfPageDown: next_page()\n"
+            // PageDown
+            "Alt Shift Ctrl<KeyPress>osfPageDown: page_right(\"extend\", \"rect\")\n"
+            "Meta Shift Ctrl<KeyPress>osfPageDown: page_right(\"extend\", \"rect\")\n"
+            "Alt Shift<KeyPress>osfPageDown: next_page(\"extend\", \"rect\")\n"
+            "Meta Shift<KeyPress>osfPageDown: next_page(\"extend\", \"rect\")\n"
+            "Shift Ctrl<KeyPress>osfPageDown: page_right(\"extend\")\n"
+            "Ctrl<KeyPress>osfPageDown: next_document()\n"
+            "Shift<KeyPress>osfPageDown: next_page(\"extend\")\n"
+            "~Alt ~Shift ~Ctrl ~Meta<KeyPress>osfPageDown: next_page()\n"
 
-    /* PageLeft and PageRight are placed later than the PageUp/PageDown
-       bindings.  Some systems map osfPageLeft to Ctrl-PageUp.
-       Overloading this single key gives problems, and we want to give
-       priority to the normal version. */
+            /* PageLeft and PageRight are placed later than the PageUp/PageDown
+               bindings.  Some systems map osfPageLeft to Ctrl-PageUp.
+               Overloading this single key gives problems, and we want to give
+               priority to the normal version. */
 
-    // PageLeft
-    "Alt Shift<KeyPress>osfPageLeft: page_left(\"extend\", \"rect\")\n"
-    "Meta Shift<KeyPress>osfPageLeft: page_left(\"extend\", \"rect\")\n"
-    "Shift<KeyPress>osfPageLeft: page_left(\"extend\")\n"
-    "~Alt ~Shift ~Ctrl ~Meta<KeyPress>osfPageLeft: page_left()\n"
+            // PageLeft
+            "Alt Shift<KeyPress>osfPageLeft: page_left(\"extend\", \"rect\")\n"
+            "Meta Shift<KeyPress>osfPageLeft: page_left(\"extend\", \"rect\")\n"
+            "Shift<KeyPress>osfPageLeft: page_left(\"extend\")\n"
+            "~Alt ~Shift ~Ctrl ~Meta<KeyPress>osfPageLeft: page_left()\n"
 
-    // PageRight
-    "Alt Shift<KeyPress>osfPageRight: page_right(\"extend\", \"rect\")\n"
-    "Meta Shift<KeyPress>osfPageRight: page_right(\"extend\", \"rect\")\n"
-    "Shift<KeyPress>osfPageRight: page_right(\"extend\")\n"
-    "~Alt ~Shift ~Ctrl ~Meta<KeyPress>osfPageRight: page_right()\n"
+            // PageRight
+            "Alt Shift<KeyPress>osfPageRight: page_right(\"extend\", \"rect\")\n"
+            "Meta Shift<KeyPress>osfPageRight: page_right(\"extend\", \"rect\")\n"
+            "Shift<KeyPress>osfPageRight: page_right(\"extend\")\n"
+            "~Alt ~Shift ~Ctrl ~Meta<KeyPress>osfPageRight: page_right()\n"
 
-    "Shift<KeyPress>osfSelect: key_select()\n"
-    "<KeyPress>osfCancel: process_cancel()\n"
-    "Ctrl~Alt~Meta<KeyPress>v: paste_clipboard()\n"
-    "Ctrl~Alt~Meta<KeyPress>c: copy_clipboard()\n"
-    "Ctrl~Alt~Meta<KeyPress>x: cut_clipboard()\n"
-    "Ctrl~Alt~Meta<KeyPress>u: delete_to_start_of_line()\n"
-    "Ctrl<KeyPress>Return: newline_and_indent()\n"
-    "Shift<KeyPress>Return: newline_no_indent()\n"
-    "<KeyPress>Return: newline()\n"
-    /* KP_Enter = osfActivate
-       Note: Ctrl+KP_Enter is already bound to Execute Command Line... */
-    "Shift<KeyPress>osfActivate: newline_no_indent()\n"
-    "<KeyPress>osfActivate: newline()\n"
-    "Ctrl<KeyPress>Tab: self_insert()\n"
-    "<KeyPress>Tab: process_tab()\n"
-    "Alt Shift Ctrl<KeyPress>space: key_select(\"rect\")\n"
-    "Meta Shift Ctrl<KeyPress>space: key_select(\"rect\")\n"
-    "Shift Ctrl~Meta~Alt<KeyPress>space: key_select()\n"
-    "Ctrl~Meta~Alt<KeyPress>slash: select_all()\n"
-    "Ctrl~Meta~Alt<KeyPress>backslash: deselect_all()\n"
-    "<KeyPress>: self_insert()\n"
-    "Alt Ctrl<Btn1Down>: move_destination()\n"
-    "Meta Ctrl<Btn1Down>: move_destination()\n"
-    "Shift Ctrl<Btn1Down>: extend_start(\"rect\")\n"
-    "Shift<Btn1Down>: extend_start()\n"
-    "<Btn1Down>: grab_focus()\n"
-    "Button1 Ctrl<MotionNotify>: extend_adjust(\"rect\")\n"
-    "Button1~Ctrl<MotionNotify>: extend_adjust()\n"
-    "<Btn1Up>: extend_end()\n"
-    "<Btn2Down>: secondary_or_drag_start()\n"
-    "Shift Ctrl Button2<MotionNotify>: secondary_or_drag_adjust(\"rect\", \"copy\", \"overlay\")\n"
-    "Shift Button2<MotionNotify>: secondary_or_drag_adjust(\"copy\")\n"
-    "Ctrl Button2<MotionNotify>: secondary_or_drag_adjust(\"rect\", \"overlay\")\n"
-    "Button2<MotionNotify>: secondary_or_drag_adjust()\n"
-    "Shift Ctrl<Btn2Up>: move_to_or_end_drag(\"copy\", \"overlay\")\n"
-    "Shift <Btn2Up>: move_to_or_end_drag(\"copy\")\n"
-    "Alt<Btn2Up>: exchange()\n"
-    "Meta<Btn2Up>: exchange()\n"
-    "Ctrl<Btn2Up>: copy_to_or_end_drag(\"overlay\")\n"
-    "<Btn2Up>: copy_to_or_end_drag()\n"
-    "Ctrl~Meta~Alt<Btn3Down>: mouse_pan()\n"
-    "Ctrl~Meta~Alt Button3<MotionNotify>: mouse_pan()\n"
-    "<Btn3Up>: end_drag()\n"
-    "<FocusIn>: focusIn()\n"
-    "<FocusOut>: focusOut()\n"
-    // Support for mouse wheel in XFree86
-    "Shift<Btn4Down>,<Btn4Up>: scroll_up(1)\n"
-    "Shift<Btn5Down>,<Btn5Up>: scroll_down(1)\n"
-    "Ctrl<Btn4Down>,<Btn4Up>: scroll_up(1, pages)\n"
-    "Ctrl<Btn5Down>,<Btn5Up>: scroll_down(1, pages)\n"
-    "<Btn4Down>,<Btn4Up>: scroll_up(5)\n"
-    "<Btn5Down>,<Btn5Up>: scroll_down(5)\n";
+            "Shift<KeyPress>osfSelect: key_select()\n"
+/*X*/            "<KeyPress>osfCancel: process_cancel()\n"
+            "Ctrl~Alt~Meta<KeyPress>v: paste_clipboard()\n"
+            "Ctrl~Alt~Meta<KeyPress>c: copy_clipboard()\n"
+            "Ctrl~Alt~Meta<KeyPress>x: cut_clipboard()\n"
+            "Ctrl~Alt~Meta<KeyPress>u: delete_to_start_of_line()\n"
+/*X*/            "Ctrl<KeyPress>Return: newline_and_indent()\n"
+/*X*/            "Shift<KeyPress>Return: newline_no_indent()\n"
+/*X*/            "<KeyPress>Return: newline()\n"
+            /* KP_Enter = osfActivate
+               Note: Ctrl+KP_Enter is already bound to Execute Command Line... */
+/*X*/            "Shift<KeyPress>osfActivate: newline_no_indent()\n"
+/*X*/            "<KeyPress>osfActivate: newline()\n"
+/*X*/            "Ctrl<KeyPress>Tab: self_insert()\n"
+/*X*/            "<KeyPress>Tab: process_tab()\n"
+            "Alt Shift Ctrl<KeyPress>space: key_select(\"rect\")\n"
+            "Meta Shift Ctrl<KeyPress>space: key_select(\"rect\")\n"
+            "Shift Ctrl~Meta~Alt<KeyPress>space: key_select()\n"
+/*X*/            "Ctrl~Meta~Alt<KeyPress>slash: select_all()\n"
+/*X*/            "Ctrl~Meta~Alt<KeyPress>backslash: deselect_all()\n"
+/*X*/            "<KeyPress>: self_insert()\n"
+            "Alt Ctrl<Btn1Down>: move_destination()\n"
+            "Meta Ctrl<Btn1Down>: move_destination()\n"
+/*X*/            "Shift Ctrl<Btn1Down>: extend_start(\"rect\")\n"
+/*X*/            "Shift<Btn1Down>: extend_start()\n"
+/*X*/            "<Btn1Down>: grab_focus()\n"
+            "Button1 Ctrl<MotionNotify>: extend_adjust(\"rect\")\n"
+            "Button1~Ctrl<MotionNotify>: extend_adjust()\n"
+/*X*/            "<Btn1Up>: extend_end()\n"
+            "<Btn2Down>: secondary_or_drag_start()\n"
+            "Shift Ctrl Button2<MotionNotify>: secondary_or_drag_adjust(\"rect\", \"copy\", \"overlay\")\n"
+            "Shift Button2<MotionNotify>: secondary_or_drag_adjust(\"copy\")\n"
+            "Ctrl Button2<MotionNotify>: secondary_or_drag_adjust(\"rect\", \"overlay\")\n"
+            "Button2<MotionNotify>: secondary_or_drag_adjust()\n"
+            "Shift Ctrl<Btn2Up>: move_to_or_end_drag(\"copy\", \"overlay\")\n"
+            "Shift <Btn2Up>: move_to_or_end_drag(\"copy\")\n"
+            "Alt<Btn2Up>: exchange()\n"
+            "Meta<Btn2Up>: exchange()\n"
+            "Ctrl<Btn2Up>: copy_to_or_end_drag(\"overlay\")\n"
+            "<Btn2Up>: copy_to_or_end_drag()\n"
+            "Ctrl~Meta~Alt<Btn3Down>: mouse_pan()\n"
+            "Ctrl~Meta~Alt Button3<MotionNotify>: mouse_pan()\n"
+            "<Btn3Up>: end_drag()\n"
+            "<FocusIn>: focusIn()\n"
+            "<FocusOut>: focusOut()\n"
+            // Support for mouse wheel in XFree86
+            "Shift<Btn4Down>,<Btn4Up>: scroll_up(1)\n"
+            "Shift<Btn5Down>,<Btn5Up>: scroll_down(1)\n"
+            "Ctrl<Btn4Down>,<Btn4Up>: scroll_up(1, pages)\n"
+            "Ctrl<Btn5Down>,<Btn5Up>: scroll_down(1, pages)\n"
+            "<Btn4Down>,<Btn4Up>: scroll_up(5)\n"
+            "<Btn5Down>,<Btn5Up>: scroll_down(5)\n";
+
 /* some of the translations from the Motif text widget were not picked up:
  :<KeyPress>osfSelect: set-anchor()\n\
  :<KeyPress>osfActivate: activate()\n\

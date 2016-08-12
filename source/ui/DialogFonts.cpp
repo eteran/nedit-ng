@@ -264,8 +264,8 @@ void DialogFonts::browseFont(QLineEdit *lineEdit) {
 	QString origFontName = lineEdit->text();
 
 	// Get the values from the defaults 
-	Pixel fgPixel = AllocColor(window_->shell_, GetPrefColorName(TEXT_FG_COLOR), &fgColor);
-	Pixel bgPixel = AllocColor(window_->shell_, GetPrefColorName(TEXT_BG_COLOR), &bgColor);
+	Pixel fgPixel = AllocColor(GetPrefColorName(TEXT_FG_COLOR), &fgColor);
+	Pixel bgPixel = AllocColor(GetPrefColorName(TEXT_BG_COLOR), &bgColor);
 	
 	Q_UNUSED(fgPixel);
 	Q_UNUSED(bgPixel);

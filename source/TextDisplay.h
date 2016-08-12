@@ -418,7 +418,7 @@ public:
 	void TextDSetupBGClassesEx(const QString &str);
 	
 private:
-	static void TextDSetupBGClasses(Widget w, const QString &str, QVector<Pixel> *pp_bgClassPixel, QVector<uint8_t> *pp_bgClass, Pixel bgPixelDefault);
+	static void TextDSetupBGClasses(const QString &str, QVector<Pixel> *pp_bgClassPixel, QVector<uint8_t> *pp_bgClass, Pixel bgPixelDefault);
 
 public:
 	static void cursorBlinkTimerProc(XtPointer clientData, XtIntervalId *id);
