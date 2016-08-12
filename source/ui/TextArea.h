@@ -74,12 +74,12 @@ public:
 	virtual ~TextArea();
 
 protected:
-	virtual void contextMenuEvent(QContextMenuEvent *e) override;
+	virtual void contextMenuEvent(QContextMenuEvent *event) override;
 	virtual void dragEnterEvent(QDragEnterEvent *event) override;
 	virtual void dragLeaveEvent(QDragLeaveEvent *event) override;
 	virtual void dragMoveEvent(QDragMoveEvent *event) override;
 	virtual void dropEvent(QDropEvent *event) override;
-	virtual void keyPressEvent(QKeyEvent *e) override;
+	virtual void keyPressEvent(QKeyEvent *event) override;
 	virtual void mouseDoubleClickEvent(QMouseEvent *event) override;
 	virtual void mouseMoveEvent(QMouseEvent *event) override;
 	virtual void mousePressEvent(QMouseEvent *event) override;
@@ -97,7 +97,6 @@ private Q_SLOTS:
 	void clickTimeout();
 	void verticalScrollBar_valueChanged(int value);
 	void horizontalScrollBar_valueChanged(int value);
-	void customContextMenuRequested(const QPoint &pos);
 
 private:
 	bool clickTracker(QMouseEvent *event, bool inDoubleClickHandler);
@@ -133,6 +132,7 @@ private Q_SLOTS:
 	void processTabAP(EventFlags flags = NoneFlag);
 	void selectAllAP(EventFlags flags = NoneFlag);
 	void deselectAllAP(EventFlags flags = NoneFlag);
+	void deleteToStartOfLineAP(EventFlags flags = NoneFlag);
 
 private Q_SLOTS:
 	void keySelectLeftAP(EventFlags flags = NoneFlag);
@@ -140,6 +140,9 @@ private Q_SLOTS:
 	void moveDestinationAP(QMouseEvent *event);
 	void extendStartAP(QMouseEvent *event, EventFlags flags = NoneFlag);
 	void extendAdjustAP(QMouseEvent *event, EventFlags flags = NoneFlag);
+	void mousePanAP(QMouseEvent *event, EventFlags flags = NoneFlag);
+	void copyToOrEndDragAP(QMouseEvent *event, EventFlags flags = NoneFlag);
+	void copyToAP(QMouseEvent *event, EventFlags flags = NoneFlag);
 
 public:
 	int TextDStartOfLine(int pos) const;
@@ -155,6 +158,7 @@ public:
 	void TextDXYToUnconstrainedPosition(Point coord, int *row, int *column);
 	int TextDXYToPosition(Point coord);
 	int TextDOffsetWrappedColumn(int row, int column);
+	void TextDGetScroll(int *topLineNum, int *horizOffset);
 
 private:
 	void textDRedisplayRange(int start, int end);
@@ -256,6 +260,8 @@ private:
 	void endDrag();
 	void adjustSelection(const Point &coord);
 	void checkAutoScroll(const Point &coord);
+	void FinishBlockDrag();
+	void SendSecondarySelection(Time time, bool removeAfter);
 
 private:
 #if 1

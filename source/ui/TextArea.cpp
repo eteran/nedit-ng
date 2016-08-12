@@ -216,13 +216,12 @@ TextArea::TextArea(QWidget *parent,
 	QColor calltipFGPixel,
 	QColor calltipBGPixel) : QAbstractScrollArea(parent) {
 
-	setContextMenuPolicy(Qt::CustomContextMenu);
 	setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 	setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+	setMouseTracking(false);
 
     connect(verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(verticalScrollBar_valueChanged(int)));
     connect(horizontalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(horizontalScrollBar_valueChanged(int)));
-    connect(this, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(customContextMenuRequested(const QPoint &)));
 
 	autoScrollTimer_  = new QTimer(this);
 	cursorBlinkTimer_ = new QTimer(this);
@@ -396,6 +395,7 @@ TextArea::TextArea(QWidget *parent,
 	connect(autoScrollTimer_,  SIGNAL(timeout()), this, SLOT(autoScrollTimerTimeout()));
 
 
+	createShortcut(tr("delete_to_start_of_line"),  QKeySequence(Qt::CTRL + Qt::Key_U),                  SLOT(deleteToStartOfLineAP()));
 	createShortcut(tr("select_all"),               QKeySequence(Qt::CTRL + Qt::Key_Slash),              SLOT(selectAllAP()));
 	createShortcut(tr("deselect_all"),             QKeySequence(Qt::CTRL + Qt::Key_Backslash),          SLOT(deselectAllAP()));
 	createShortcut(tr("process_tab"),              QKeySequence(Qt::Key_Tab),                           SLOT(processTabAP()));
@@ -796,7 +796,17 @@ void TextArea::focusOutEvent(QFocusEvent *event) {
 // Name: contextMenuEvent
 //------------------------------------------------------------------------------
 void TextArea::contextMenuEvent(QContextMenuEvent *e) {
-	Q_UNUSED(e);
+	if(e->modifiers() != Qt::ControlModifier) {
+		auto menu = new QMenu(this);
+	#if 1 // TODO(eteran): replace with dynamically generated menu like Motif based widget
+		menu->addAction(tr("Undo"));
+		menu->addAction(tr("Redo"));
+		menu->addAction(tr("Cut"));
+		menu->addAction(tr("Copy"));
+		menu->addAction(tr("Paste"));
+	#endif
+		menu->exec(mapToParent(e->pos()));
+	}
 }
 
 //------------------------------------------------------------------------------
@@ -909,23 +919,25 @@ void TextArea::mouseQuadrupleClickEvent(QMouseEvent *event) {
 
 //------------------------------------------------------------------------------
 // Name: mouseMoveEvent
-// Note: "extend_adjust", "extend_adjust('rect')"
+// Note: "extend_adjust", "extend_adjust('rect')", "mouse_pan"
 //------------------------------------------------------------------------------
 void TextArea::mouseMoveEvent(QMouseEvent *event) {
 	Q_UNUSED(event);
 
-	//if(event->button() == Qt::LeftButton) {
+	if(event->buttons() == Qt::LeftButton) {
 		if(event->modifiers() & Qt::ControlModifier) {
 			extendAdjustAP(event, RectFlag);
 		} else {
 			extendAdjustAP(event);
 		}
-	//}
+	} else if(event->buttons() == Qt::RightButton) {
+		mousePanAP(event);
+	}
 }
 
 //------------------------------------------------------------------------------
 // Name: mousePressEvent
-// Note: "grab_focus", "extend_start", "extend_start('rect')"
+// Note: "grab_focus", "extend_start", "extend_start('rect')", "mouse_pan"
 //------------------------------------------------------------------------------
 void TextArea::mousePressEvent(QMouseEvent *event) {
 
@@ -975,6 +987,13 @@ void TextArea::mousePressEvent(QMouseEvent *event) {
 		TextDXYToUnconstrainedPosition(Point{event->x(), event->y()}, &row, &column);
 		column = TextDOffsetWrappedColumn(row, column);
 		rectAnchor_ = column;
+
+	} else if(event->button() == Qt::RightButton) {
+		if(event->modifiers() == Qt::ControlModifier) {
+			mousePanAP(event);
+		}
+	} else if(event->button() == Qt::MiddleButton) {
+
 	}
 
 }
@@ -3959,9 +3978,7 @@ void TextArea::cancelDrag() {
 		CancelBlockDrag();
 		break;
 	case MOUSE_PAN:
-#if 0
-		XUngrabPointer(XtDisplay(w_), CurrentTime);
-#endif
+		viewport()->setCursor(Qt::ArrowCursor);
 		break;
 	case NOT_CLICKED:
 		dragState_ = DRAG_CANCELED;
@@ -5776,11 +5793,11 @@ int TextArea::TextDOffsetWrappedColumn(int row, int column) {
 void TextArea::endDrag() {
 
 	autoScrollTimer_->stop();
-#if 0
+
 	if (dragState_ == MOUSE_PAN) {
-		XUngrabPointer(XtDisplay(w_), CurrentTime);
+		viewport()->setCursor(Qt::ArrowCursor);
 	}
-#endif
+
 	dragState_ = NOT_CLICKED;
 }
 
@@ -5824,22 +5841,6 @@ bool TextArea::clickTracker(QMouseEvent *event, bool inDoubleClickHandler) {
 void TextArea::clickTimeout() {
     clickCount_ = 0;
 }
-
-//------------------------------------------------------------------------------
-// Name: customContextMenuRequested
-//------------------------------------------------------------------------------
-void TextArea::customContextMenuRequested(const QPoint &pos) {
-    auto menu = new QMenu(this);
-#if 1 // TODO(eteran): replace with dynamically generated menu like Motif based widget
-    menu->addAction(tr("Undo"));
-    menu->addAction(tr("Redo"));
-    menu->addAction(tr("Cut"));
-    menu->addAction(tr("Copy"));
-    menu->addAction(tr("Paste"));
-#endif
-    menu->exec(mapToParent(pos));
-}
-
 
 void TextArea::selectAllAP(EventFlags flags) {
 
@@ -6015,4 +6016,186 @@ void TextArea::checkAutoScroll(const Point &coord) {
 
 	// Pass on the newest mouse location to the autoscroll routine
 	mouseCoord_ = coord;
+}
+
+void TextArea::deleteToStartOfLineAP(EventFlags flags) {
+
+	int insertPos = cursorPos_;
+	int startOfLine;
+
+	bool silent = (flags & NoBellFlag);
+
+	if (flags & WrapFlag) {
+		startOfLine = TextDStartOfLine(insertPos);
+	} else {
+		startOfLine = buffer_->BufStartOfLine(insertPos);
+	}
+
+	cancelDrag();
+	if (checkReadOnly()) {
+		return;
+	}
+
+	TakeMotifDestination(0);
+	if (deletePendingSelection()) {
+		return;
+	}
+
+	if (insertPos == startOfLine) {
+		ringIfNecessary(silent);
+		return;
+	}
+	buffer_->BufRemove(startOfLine, insertPos);
+	checkAutoShowInsertPos();
+	callCursorMovementCBs();
+}
+
+void TextArea::mousePanAP(QMouseEvent *event, EventFlags flags) {
+
+	Q_UNUSED(flags);
+
+	int lineHeight = ascent_ + descent_;
+	int topLineNum;
+	int horizOffset;
+
+
+	if (dragState_ == MOUSE_PAN) {
+		TextDSetScroll((btnDownCoord_.y - event->y() + lineHeight / 2) / lineHeight, btnDownCoord_.x - event->x());
+	} else if (dragState_ == NOT_CLICKED) {
+		TextDGetScroll(&topLineNum, &horizOffset);
+		btnDownCoord_.x = event->x() + horizOffset;
+		btnDownCoord_.y = event->y() + topLineNum * lineHeight;
+		dragState_ = MOUSE_PAN;
+
+		viewport()->setCursor(Qt::OpenHandCursor);
+	} else {
+		cancelDrag();
+	}
+}
+
+/*
+** Get the current scroll position for the text display, in terms of line
+** number of the top line and horizontal pixel offset from the left margin
+*/
+void TextArea::TextDGetScroll(int *topLineNum, int *horizOffset) {
+	*topLineNum = topLineNum_;
+	*horizOffset = horizOffset_;
+}
+
+void TextArea::copyToOrEndDragAP(QMouseEvent *event, EventFlags flags) {
+	int dragState = dragState_;
+
+	if (dragState != PRIMARY_BLOCK_DRAG) {
+		copyToAP(event, flags);
+		return;
+	}
+
+	FinishBlockDrag();
+}
+
+void TextArea::copyToAP(QMouseEvent *event, EventFlags flags) {
+
+	Q_UNUSED(flags);
+
+
+	int dragState = dragState_;
+	TextSelection *secondary = &buffer_->secondary_;
+	TextSelection *primary   = &buffer_->primary_;
+	int rectangular = secondary->rectangular;
+	int insertPos, lineStart, column;
+
+	endDrag();
+	if (!((dragState == SECONDARY_DRAG && secondary->selected) || (dragState == SECONDARY_RECT_DRAG && secondary->selected) || dragState == SECONDARY_CLICKED || dragState == NOT_CLICKED)) {
+		return;
+	}
+
+	if (!(secondary->selected && !motifDestOwner_)) {
+		if (checkReadOnly()) {
+			buffer_->BufSecondaryUnselect();
+			return;
+		}
+	}
+
+	if (secondary->selected) {
+		if (motifDestOwner_) {
+			TextDBlankCursor();
+			std::string textToCopy = buffer_->BufGetSecSelectTextEx();
+			if (primary->selected && rectangular) {
+				insertPos = cursorPos_;
+				buffer_->BufReplaceSelectedEx(textToCopy);
+				TextDSetInsertPosition(buffer_->cursorPosHint_);
+			} else if (rectangular) {
+				insertPos = cursorPos_;
+				lineStart = buffer_->BufStartOfLine(insertPos);
+				column = buffer_->BufCountDispChars(lineStart, insertPos);
+				buffer_->BufInsertColEx(column, lineStart, textToCopy, nullptr, nullptr);
+				TextDSetInsertPosition(buffer_->cursorPosHint_);
+			} else
+				TextInsertAtCursorEx(textToCopy, true, P_autoWrapPastedText);
+
+			buffer_->BufSecondaryUnselect();
+			TextDUnblankCursor();
+		} else {
+			SendSecondarySelection(/*time*/0, false);
+		}
+
+	} else if (primary->selected) {
+		std::string textToCopy = buffer_->BufGetSelectionTextEx();
+		TextDSetInsertPosition(TextDXYToPosition(Point{event->x(), event->y()}));
+		TextInsertAtCursorEx(textToCopy, false, P_autoWrapPastedText);
+	} else {
+		TextDSetInsertPosition(TextDXYToPosition(Point{event->x(), event->y()}));
+		InsertPrimarySelection(false);
+	}
+}
+
+/*
+** Complete a block text drag operation
+*/
+void TextArea::FinishBlockDrag() {
+
+	int modRangeStart = -1;
+	int origModRangeEnd;
+	int bufModRangeEnd;
+
+	/* Find the changed region of the buffer, covering both the deletion
+	   of the selected text at the drag start position, and insertion at
+	   the drag destination */
+	trackModifyRange(&modRangeStart, &bufModRangeEnd, &origModRangeEnd, dragSourceDeletePos_, dragSourceInserted_, dragSourceDeleted_);
+	trackModifyRange(&modRangeStart, &bufModRangeEnd, &origModRangeEnd, dragInsertPos_, dragInserted_, dragDeleted_);
+
+	// Get the original (pre-modified) range of text from saved backup buffer
+	std::string deletedText = dragOrigBuf_->BufGetRangeEx(modRangeStart, origModRangeEnd);
+
+	// Free the backup buffer
+	delete dragOrigBuf_;
+
+	// Return to normal drag state
+	dragState_ = NOT_CLICKED;
+
+	// Call finish-drag calback
+	dragEndCBStruct endStruct;
+	endStruct.startPos       = modRangeStart;
+	endStruct.nCharsDeleted  = origModRangeEnd - modRangeStart;
+	endStruct.nCharsInserted = bufModRangeEnd  - modRangeStart;
+	endStruct.deletedText    = deletedText;
+
+#if 0
+	XtCallCallbacks(w_, textNdragEndCallback, &endStruct);
+#endif
+}
+
+/*
+** Insert the secondary selection at the motif destination by initiating
+** an INSERT_SELECTION request to the current owner of the MOTIF_DESTINATION
+** selection.  Upon completion, unselect the secondary selection.  If
+** "removeAfter" is true, also delete the secondary selection from the
+** widget's buffer upon completion.
+*/
+void TextArea::SendSecondarySelection(Time time, bool removeAfter) {
+	Q_UNUSED(time);
+	Q_UNUSED(removeAfter);
+#if 0
+	sendSecondary(time, getAtom(XtDisplay(w_), A_MOTIF_DESTINATION), removeAfter ? REMOVE_SECONDARY : UNSELECT_SECONDARY, nullptr, 0);
+#endif
 }
