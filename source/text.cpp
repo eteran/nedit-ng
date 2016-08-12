@@ -256,15 +256,17 @@ static char defaultTranslations[] =
 
             "Shift<KeyPress>osfSelect: key_select()\n"
 /*X*/            "<KeyPress>osfCancel: process_cancel()\n"
-            "Ctrl~Alt~Meta<KeyPress>v: paste_clipboard()\n"
-            "Ctrl~Alt~Meta<KeyPress>c: copy_clipboard()\n"
-            "Ctrl~Alt~Meta<KeyPress>x: cut_clipboard()\n"
-            "Ctrl~Alt~Meta<KeyPress>u: delete_to_start_of_line()\n"
+/*X*/            "Ctrl~Alt~Meta<KeyPress>v: paste_clipboard()\n"
+/*X*/            "Ctrl~Alt~Meta<KeyPress>c: copy_clipboard()\n"
+/*X*/            "Ctrl~Alt~Meta<KeyPress>x: cut_clipboard()\n"
+/*X*/            "Ctrl~Alt~Meta<KeyPress>u: delete_to_start_of_line()\n"
 /*X*/            "Ctrl<KeyPress>Return: newline_and_indent()\n"
 /*X*/            "Shift<KeyPress>Return: newline_no_indent()\n"
 /*X*/            "<KeyPress>Return: newline()\n"
+
             /* KP_Enter = osfActivate
                Note: Ctrl+KP_Enter is already bound to Execute Command Line... */
+
 /*X*/            "Shift<KeyPress>osfActivate: newline_no_indent()\n"
 /*X*/            "<KeyPress>osfActivate: newline()\n"
 /*X*/            "Ctrl<KeyPress>Tab: self_insert()\n"
@@ -294,9 +296,9 @@ static char defaultTranslations[] =
             "Meta<Btn2Up>: exchange()\n"
             "Ctrl<Btn2Up>: copy_to_or_end_drag(\"overlay\")\n"
             "<Btn2Up>: copy_to_or_end_drag()\n"
-            "Ctrl~Meta~Alt<Btn3Down>: mouse_pan()\n"
-            "Ctrl~Meta~Alt Button3<MotionNotify>: mouse_pan()\n"
-            "<Btn3Up>: end_drag()\n"
+/*X*/            "Ctrl~Meta~Alt<Btn3Down>: mouse_pan()\n"
+/*X*/            "Ctrl~Meta~Alt Button3<MotionNotify>: mouse_pan()\n"
+/*X*/            "<Btn3Up>: end_drag()\n"
             "<FocusIn>: focusIn()\n"
             "<FocusOut>: focusOut()\n"
             // Support for mouse wheel in XFree86

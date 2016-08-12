@@ -143,7 +143,7 @@ public:
 public:
 	// block drag stuff
 	void BeginBlockDrag();
-	void BlockDragSelection(Point pos, int dragType);
+	void BlockDragSelection(Point pos, BlockDragTypes dragType);
 	void FinishBlockDrag();
 	void CancelBlockDrag();
 	
@@ -488,7 +488,7 @@ private:
 	TextBuffer *dragOrigBuf_;        // backup buffer copy used during block dragging of selections
 	int dragXOffset_;                // offsets between cursor location and actual insertion point in drag
 	int dragYOffset_;                // offsets between cursor location and actual insertion point in drag
-	int dragType_;                   // style of block drag operation
+	BlockDragTypes dragType_;        // style of block drag operation
 	int dragInsertPos_;              // location where text being block dragged was last inserted
 	int dragRectStart_;              // rect. offset ""
 	int dragInserted_;               // # of characters inserted at drag destination in last drag position

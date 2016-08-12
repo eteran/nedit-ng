@@ -143,6 +143,8 @@ private Q_SLOTS:
 	void mousePanAP(QMouseEvent *event, EventFlags flags = NoneFlag);
 	void copyToOrEndDragAP(QMouseEvent *event, EventFlags flags = NoneFlag);
 	void copyToAP(QMouseEvent *event, EventFlags flags = NoneFlag);
+	void secondaryOrDragStartAP(QMouseEvent *event, EventFlags flags = NoneFlag);
+	void secondaryStartAP(QMouseEvent *event, EventFlags flags = NoneFlag);
 
 public:
 	int TextDStartOfLine(int pos) const;
@@ -159,6 +161,7 @@ public:
 	int TextDXYToPosition(Point coord);
 	int TextDOffsetWrappedColumn(int row, int column);
 	void TextDGetScroll(int *topLineNum, int *horizOffset);
+	int TextDInSelection(Point p);
 
 private:
 	void textDRedisplayRange(int start, int end);

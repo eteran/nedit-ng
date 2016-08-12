@@ -993,7 +993,7 @@ void TextArea::mousePressEvent(QMouseEvent *event) {
 			mousePanAP(event);
 		}
 	} else if(event->button() == Qt::MiddleButton) {
-
+		secondaryOrDragStartAP(event);
 	}
 
 }
@@ -6097,7 +6097,6 @@ void TextArea::copyToAP(QMouseEvent *event, EventFlags flags) {
 
 	Q_UNUSED(flags);
 
-
 	int dragState = dragState_;
 	TextSelection *secondary = &buffer_->secondary_;
 	TextSelection *primary   = &buffer_->primary_;
@@ -6198,4 +6197,73 @@ void TextArea::SendSecondarySelection(Time time, bool removeAfter) {
 #if 0
 	sendSecondary(time, getAtom(XtDisplay(w_), A_MOTIF_DESTINATION), removeAfter ? REMOVE_SECONDARY : UNSELECT_SECONDARY, nullptr, 0);
 #endif
+}
+
+
+void TextArea::secondaryOrDragStartAP(QMouseEvent *event, EventFlags flags) {
+
+	Q_UNUSED(flags);
+
+	/* If the click was outside of the primary selection, this is not
+	   a drag, start a secondary selection */
+	if (!buffer_->primary_.selected || !TextDInSelection(Point{event->x(), event->y()})) {
+		secondaryStartAP(event);
+		return;
+	}
+
+	if (checkReadOnly())
+		return;
+
+	/* Record the site of the initial button press and the initial character
+	   position so subsequent motion events can decide when to begin a
+	   drag, and where to drag to */
+	btnDownCoord_ = Point{event->x(), event->y()};
+	dragState_    = CLICKED_IN_SELECTION;
+}
+
+/*
+** Return True if position (x, y) is inside of the primary selection
+*/
+int TextArea::TextDInSelection(Point p) {
+	int row;
+	int column;
+	int pos = xyToPos(p.x, p.y, CHARACTER_POS);
+
+	xyToUnconstrainedPos(p.x, p.y, &row, &column, CHARACTER_POS);
+	if (buffer_->primary_.rangeTouchesRectSel(firstChar_, lastChar_))
+		column = TextDOffsetWrappedColumn(row, column);
+	return buffer_->primary_.inSelection(pos, buffer_->BufStartOfLine(pos), column);
+}
+
+void TextArea::secondaryStartAP(QMouseEvent *event, EventFlags flags) {
+
+	Q_UNUSED(flags);
+
+	TextSelection *sel = &buffer_->secondary_;
+	int anchor, pos, row, column;
+
+	// Find the new anchor point and make the new selection
+	pos = TextDXYToPosition(Point{event->x(), event->y()});
+	if (sel->selected) {
+		if (abs(pos - sel->start) < abs(pos - sel->end)) {
+			anchor = sel->end;
+		} else {
+			anchor = sel->start;
+		}
+		buffer_->BufSecondarySelect(anchor, pos);
+	} else {
+		anchor = pos;
+	}
+
+	/* Record the site of the initial button press and the initial character
+	   position so subsequent motion events can decide when to begin a
+	   selection, (and where the selection began) */
+	btnDownCoord_ = Point{event->x(), event->y()};
+	anchor_       = pos;
+
+	TextDXYToUnconstrainedPosition(Point{event->x(), event->y()}, &row, &column);
+
+	column = TextDOffsetWrappedColumn(row, column);
+	rectAnchor_ = column;
+	dragState_ = SECONDARY_CLICKED;
 }
