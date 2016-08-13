@@ -16,6 +16,7 @@
 #include "CallTip.h"
 #include "graphicExposeTranslationEntry.h"
 #include "string_view.h"
+#include "BlockDragTypes.h"
 
 class TextBuffer;
 class TextArea;
@@ -145,6 +146,8 @@ private Q_SLOTS:
 	void copyToAP(QMouseEvent *event, EventFlags flags = NoneFlag);
 	void secondaryOrDragStartAP(QMouseEvent *event, EventFlags flags = NoneFlag);
 	void secondaryStartAP(QMouseEvent *event, EventFlags flags = NoneFlag);
+	void secondaryOrDragAdjustAP(QMouseEvent *event, EventFlags flags = NoneFlag);
+	void secondaryAdjustAP(QMouseEvent *event, EventFlags flags = NoneFlag);
 
 public:
 	int TextDStartOfLine(int pos) const;
@@ -188,6 +191,7 @@ private:
 	void TextCopyClipboard();
 	void TextPasteClipboard();
 	void TextColPasteClipboard();
+	int TextDOffsetWrappedRow(int row) const;
 
 public:
 	void setBacklightCharTypes(const QString &charTypes);
@@ -265,6 +269,9 @@ private:
 	void checkAutoScroll(const Point &coord);
 	void FinishBlockDrag();
 	void SendSecondarySelection(Time time, bool removeAfter);
+	void BeginBlockDrag();
+	void BlockDragSelection(Point pos, BlockDragTypes dragType);
+	void adjustSecondarySelection(const Point &coord);
 
 private:
 #if 1
@@ -314,7 +321,7 @@ private:
 	TextBuffer *dragOrigBuf_;        // backup buffer copy used during block dragging of selections
 	int dragXOffset_;                // offsets between cursor location and actual insertion point in drag
 	int dragYOffset_;                // offsets between cursor location and actual insertion point in drag
-	int dragType_;                   // style of block drag operation
+	BlockDragTypes dragType_;        // style of block drag operation
 	int dragInsertPos_;              // location where text being block dragged was last inserted
 	int dragRectStart_;              // rect. offset ""
 	int dragInserted_;               // # of characters inserted at drag destination in last drag position
