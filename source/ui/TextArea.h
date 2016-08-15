@@ -159,6 +159,7 @@ private Q_SLOTS:
 	void cutPrimaryAP(EventFlags flags = NoneFlag);
 
 private Q_SLOTS:
+	void keySelectRectAP(EventFlags flags = NoneFlag);
 	void keySelectLeftAP(EventFlags flags = NoneFlag);
 	void keySelectRightAP(EventFlags flags = NoneFlag);
 	void moveDestinationAP(QMouseEvent *event);
