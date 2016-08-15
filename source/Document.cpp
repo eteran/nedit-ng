@@ -513,8 +513,10 @@ void cloneTextPanes(Document *window, Document *orgWin) {
 			auto newTextD = textD_of(text);
 			newTextD->TextSetBuffer(window->buffer_);
 
-			if (window->highlightData_)
+			if (window->highlightData_) {
 				AttachHighlightToWidget(text, window);
+			}
+
 			XtManageChild(text);
 			window->textPanes_.push_back(text);
 
@@ -4606,6 +4608,16 @@ std::tuple<Widget, TextArea *>  Document::createTextArea(Widget parent, Document
 		toQColor(textD->getCalltipBGPixel())
 		);
 
+	textArea->setBacklightCharTypes(window->backlightCharTypes_);
+
+#if 0
+	// add focus, drag, cursor tracking, and smart indent callbacks
+	textArea->addFocusCallback(focusCB, window);
+	textArea->addCursorMovementCallback(movedCB, window);
+	textArea->addDragStartCallback(dragStartCB, window);
+	textArea->addDragEndCallback(dragEndCB, window);
+	textArea->addsmartIndentCallback(SmartIndentCB, window);
+#endif
 	textArea->show();
 #endif
 	/* This makes sure the text area initially has a the insert point shown

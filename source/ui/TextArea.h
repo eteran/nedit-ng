@@ -17,6 +17,7 @@
 #include "graphicExposeTranslationEntry.h"
 #include "string_view.h"
 #include "BlockDragTypes.h"
+#include "DragStates.h"
 
 class TextBuffer;
 class TextArea;
@@ -74,7 +75,27 @@ public:
 	TextArea& operator=(const TextArea &) = delete;
 	virtual ~TextArea();
 
+public:
+	// resource setters
+	void setWordDelimiters(const QString &delimiters);
+	void setBacklightCharTypes(const QString &charTypes);
+	void setAutoShowInsertPos(bool value);
+	void setEmulateTabs(int value);
+	void setWrapMargin(int value);
+	void setLineNumCols(int value);
+	void setForegroundPixel(Pixel pixel);
+	void setBackgroundPixel(Pixel pixel);
+	void setReadOnly(bool value);
+	void setOverstrike(bool value);
+	void setCursorVPadding(int value);
+	void setFont(XFontStruct *font);
+	void setContinuousWrap(bool value);
+	void setAutoWrap(bool value);
+	void setAutoIndent(bool value);
+	void setSmartIndent(bool value);
+
 protected:
+	//virtual void wheelEvent(QWheelEvent *event) override;
 	virtual void contextMenuEvent(QContextMenuEvent *event) override;
 	virtual void dragEnterEvent(QDragEnterEvent *event) override;
 	virtual void dragLeaveEvent(QDragLeaveEvent *event) override;
@@ -134,6 +155,8 @@ private Q_SLOTS:
 	void selectAllAP(EventFlags flags = NoneFlag);
 	void deselectAllAP(EventFlags flags = NoneFlag);
 	void deleteToStartOfLineAP(EventFlags flags = NoneFlag);
+	void deleteToEndOfLineAP(EventFlags flags = NoneFlag);
+	void cutPrimaryAP(EventFlags flags = NoneFlag);
 
 private Q_SLOTS:
 	void keySelectLeftAP(EventFlags flags = NoneFlag);
@@ -148,6 +171,9 @@ private Q_SLOTS:
 	void secondaryStartAP(QMouseEvent *event, EventFlags flags = NoneFlag);
 	void secondaryOrDragAdjustAP(QMouseEvent *event, EventFlags flags = NoneFlag);
 	void secondaryAdjustAP(QMouseEvent *event, EventFlags flags = NoneFlag);
+	void moveToOrEndDragAP(QMouseEvent *event, EventFlags flags = NoneFlag);
+	void moveToAP(QMouseEvent *event, EventFlags flags = NoneFlag);
+	void exchangeAP(QMouseEvent *event, EventFlags flags = NoneFlag);
 
 public:
 	int TextDStartOfLine(int pos) const;
@@ -167,6 +193,7 @@ public:
 	int TextDInSelection(Point p);
 
 private:
+	void TextDSetWrapMode(int wrap, int wrapMargin);
 	void textDRedisplayRange(int start, int end);
 	void TextDResize(int width, int height);
 	int TextDCountLines(int startPos, int endPos, int startPosIsLineStart);
@@ -192,9 +219,6 @@ private:
 	void TextPasteClipboard();
 	void TextColPasteClipboard();
 	int TextDOffsetWrappedRow(int row) const;
-
-public:
-	void setBacklightCharTypes(const QString &charTypes);
 
 public:
 	void bufPreDeleteCallback(int pos, int nDeleted);
@@ -268,10 +292,12 @@ private:
 	void adjustSelection(const Point &coord);
 	void checkAutoScroll(const Point &coord);
 	void FinishBlockDrag();
-	void SendSecondarySelection(Time time, bool removeAfter);
+	void SendSecondarySelection(bool removeAfter);
 	void BeginBlockDrag();
 	void BlockDragSelection(Point pos, BlockDragTypes dragType);
 	void adjustSecondarySelection(const Point &coord);
+	void MovePrimarySelection(bool isColumnar);
+	void ExchangeSelections();
 
 private:
 #if 1
@@ -333,7 +359,7 @@ private:
 
 	int anchor_;                     // Anchor for drag operations
 	int rectAnchor_;                 // Anchor for rectangular drag operations
-	int dragState_;                  // Why is the mouse being dragged and what is being acquired
+	DragStates dragState_;           // Why is the mouse being dragged and what is being acquired
 	Point btnDownCoord_;             // Mark the position of last btn down action for deciding when to begin paying attention to motion actions, and where to paste columns
 	Point mouseCoord_;               // Last known mouse position in drag operation (for autoscroll)
 	bool selectionOwner_;            // True if widget owns the selection

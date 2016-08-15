@@ -10,6 +10,7 @@
 #include <QX11Info>
 #include <QResizeEvent>
 #include <QFocusEvent>
+#include <QtDebug>
 #include "TextArea.h"
 #include "Document.h"
 #include "preferences.h"
@@ -38,7 +39,7 @@ const int NO_HINT = -1;
 const int SELECT_THRESHOLD = 5;
 
 // Length of delay in milliseconds for vertical autoscrolling
-const int VERTICAL_SCROLL_DELAY = 50;
+const int VERTICAL_SCROLL_DELAY = 10; // NOTE(eteran): was 50
 
 /* Masks for text drawing methods.  These are or'd together to form an
    integer which describes what drawing calls to use to draw a string */
@@ -280,10 +281,15 @@ TextArea::TextArea(QWidget *parent,
 	cursorBlinkTimer_ = new QTimer(this);
 	clickTimer_       = new QTimer(this);
 
+	autoScrollTimer_->setSingleShot(true);
+	connect(autoScrollTimer_,  SIGNAL(timeout()), this, SLOT(autoScrollTimerTimeout()));
+	connect(cursorBlinkTimer_, SIGNAL(timeout()), this, SLOT(cursorBlinkTimerTimeout()));
+
     clickTimer_->setSingleShot(true);
     connect(clickTimer_, SIGNAL(timeout()), this, SLOT(clickTimeout()));
-
     clickCount_ = 0;
+
+
 
 	// defaults for the "resources
 	P_marginWidth        = 0; // NOTE(eteran): was 5, but Qt has its own notion of widget margins that we'll use
@@ -444,10 +450,8 @@ TextArea::TextArea(QWidget *parent,
 
 	resize(width, height);
 
-	connect(cursorBlinkTimer_, SIGNAL(timeout()), this, SLOT(cursorBlinkTimerTimeout()));
-	connect(autoScrollTimer_,  SIGNAL(timeout()), this, SLOT(autoScrollTimerTimeout()));
-
-
+	createShortcut(tr("cut_primary"),              QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Delete), SLOT(cutPrimaryAP()));
+	createShortcut(tr("delete_to_end_of_line"),    QKeySequence(Qt::CTRL + Qt::Key_Delete),             SLOT(deleteToEndOfLineAP()));
 	createShortcut(tr("delete_to_start_of_line"),  QKeySequence(Qt::CTRL + Qt::Key_U),                  SLOT(deleteToStartOfLineAP()));
 	createShortcut(tr("select_all"),               QKeySequence(Qt::CTRL + Qt::Key_Slash),              SLOT(selectAllAP()));
 	createShortcut(tr("deselect_all"),             QKeySequence(Qt::CTRL + Qt::Key_Backslash),          SLOT(deselectAllAP()));
@@ -486,6 +490,15 @@ TextArea::TextArea(QWidget *parent,
 	createShortcut(tr("backward_paragraph"),       QKeySequence(Qt::CTRL + Qt::Key_Up),                 SLOT(backwardParagraphAP()));
 	createShortcut(tr("forward_paragraph"),        QKeySequence(Qt::CTRL + Qt::Key_Down),               SLOT(forwardParagraphAP()));
 
+#if 1
+	/* Add mandatory delimiters blank, tab, and newline to the list of
+	   delimiters.  The memory use scheme here is that new values are
+	   always copied, and can therefore be safely freed on subsequent
+	   set-values calls or destroy */
+	auto defaultDelimiters = QString::fromLatin1(P_delimiters);
+	P_delimiters = nullptr; // to prevent deleting memory we don't own
+	setWordDelimiters(defaultDelimiters);
+#endif
 
 }
 
@@ -797,6 +810,69 @@ void TextArea::cursorBlinkTimerTimeout() {
 //------------------------------------------------------------------------------
 void TextArea::autoScrollTimerTimeout() {
 
+	QFontMetrics fm(viewport()->font());
+	int topLineNum;
+	int horizOffset;
+	int cursorX;
+	int y;
+	int fontWidth    = fm.maxWidth();
+	int fontHeight   = fm.ascent() + fm.descent();
+	Point mouseCoord = mouseCoord_;
+
+	/* For vertical autoscrolling just dragging the mouse outside of the top
+	   or bottom of the window is sufficient, for horizontal (non-rectangular)
+	   scrolling, see if the position where the CURSOR would go is outside */
+	int newPos = TextDXYToPosition(mouseCoord);
+
+	if (dragState_ == PRIMARY_RECT_DRAG) {
+		cursorX = mouseCoord.x;
+	} else if (!TextDPositionToXY(newPos, &cursorX, &y)) {
+		cursorX = mouseCoord.x;
+	}
+
+	/* Scroll away from the pointer, 1 character (horizontal), or 1 character
+	   for each fontHeight distance from the mouse to the text (vertical) */
+	TextDGetScroll(&topLineNum, &horizOffset);
+
+	if (cursorX >= viewport()->width() - P_marginWidth) {
+		horizOffset += fontWidth;
+	} else if (mouseCoord.x < rect_.left) {
+		horizOffset -= fontWidth;
+	}
+
+	if (mouseCoord.y >= viewport()->height() - P_marginHeight) {
+		topLineNum += 1 + ((mouseCoord.y - viewport()->height() - P_marginHeight) / fontHeight) + 1;
+	} else if (mouseCoord.y < P_marginHeight) {
+		topLineNum -= 1 + ((P_marginHeight - mouseCoord.y) / fontHeight);
+	}
+
+	TextDSetScroll(topLineNum, horizOffset);
+
+	/* Continue the drag operation in progress.  If none is in progress
+	   (safety check) don't continue to re-establish the timer proc */
+	switch(dragState_) {
+	case PRIMARY_DRAG:
+		adjustSelection(mouseCoord);
+		break;
+	case PRIMARY_RECT_DRAG:
+		adjustSelection(mouseCoord);
+		break;
+	case SECONDARY_DRAG:
+		adjustSecondarySelection(mouseCoord);
+		break;
+	case SECONDARY_RECT_DRAG:
+		adjustSecondarySelection(mouseCoord);
+		break;
+	case PRIMARY_BLOCK_DRAG:
+		BlockDragSelection(mouseCoord, USE_LAST);
+		break;
+	default:
+		autoScrollTimer_->stop();
+		return;
+	}
+
+	// re-establish the timer proc (this routine) to continue processing
+	autoScrollTimer_->start(mouseCoord.y >= P_marginHeight && mouseCoord.y < viewport()->height() - P_marginHeight ? (VERTICAL_SCROLL_DELAY * fontWidth) / fontHeight : VERTICAL_SCROLL_DELAY);
 }
 
 //------------------------------------------------------------------------------
@@ -1011,14 +1087,18 @@ void TextArea::mouseMoveEvent(QMouseEvent *event) {
 void TextArea::mousePressEvent(QMouseEvent *event) {
 
 	if(event->button() == Qt::LeftButton) {
-		switch(event->modifiers() & (Qt::ShiftModifier | Qt::ControlModifier)) {
+		switch(event->modifiers() & (Qt::ShiftModifier | Qt::ControlModifier | Qt::AltModifier | Qt::MetaModifier)) {
 		case Qt::ShiftModifier | Qt::ControlModifier:
-			// extend_start("rect")
 			extendStartAP(event, RectFlag);
 			break;
 		case Qt::ShiftModifier:
-			// extend_start
 			extendStartAP(event);
+			break;
+		case Qt::ControlModifier | Qt::AltModifier:
+			moveDestinationAP(event);
+			break;
+		case Qt::ControlModifier | Qt::MetaModifier:
+			moveDestinationAP(event);
 			break;
 		default:
 			break;
@@ -1069,11 +1149,48 @@ void TextArea::mousePressEvent(QMouseEvent *event) {
 
 //------------------------------------------------------------------------------
 // Name: mouseReleaseEvent
-// Note: "extend_end"
+// Note: "extend_end", "copy_to_or_end_drag", "end_drag"
 //------------------------------------------------------------------------------
 void TextArea::mouseReleaseEvent(QMouseEvent *event) {
-	Q_UNUSED(event);
-	endDrag();
+
+	if(event->button() == Qt::LeftButton) {
+		endDrag();
+	} else if(event->button() == Qt::RightButton) {
+		endDrag();
+	} else if(event->button() == Qt::MiddleButton) {
+
+
+		switch(event->modifiers() & (Qt::ShiftModifier | Qt::ControlModifier | Qt::AltModifier | Qt::MetaModifier)) {
+		case Qt::ControlModifier:
+			copyToOrEndDragAP(event, OverlayFlag);
+			break;
+		case Qt::MetaModifier:
+			exchangeAP(event);
+			break;
+		case Qt::AltModifier:
+			exchangeAP(event);
+			break;
+		case Qt::ShiftModifier:
+			moveToOrEndDragAP(event, CopyFlag);
+			break;
+		case Qt::ShiftModifier | Qt::ControlModifier:
+			moveToOrEndDragAP(event, CopyFlag | OverlayFlag);
+			break;
+		default:
+			break;
+		}
+
+		int dragState = dragState_;
+
+		if (dragState != PRIMARY_BLOCK_DRAG) {
+			copyToAP(event);
+			return;
+		}
+
+		FinishBlockDrag();
+	}
+
+
 }
 
 //------------------------------------------------------------------------------
@@ -6067,12 +6184,7 @@ void TextArea::adjustSelection(const Point &coord) {
 void TextArea::checkAutoScroll(const Point &coord) {
 
 	// Is the pointer in or out of the window?
-	bool inWindow =
-		coord.x >= rect_.left &&
-		coord.x < viewport()->width() - P_marginWidth &&
-		coord.y >= P_marginHeight &&
-		coord.y < viewport()->height() - P_marginHeight;
-
+	const bool inWindow = viewport()->rect().contains(coord.x, coord.y);
 
 	// If it's in the window, cancel the timer procedure
 	if (inWindow) {
@@ -6081,7 +6193,7 @@ void TextArea::checkAutoScroll(const Point &coord) {
 	}
 
 	// If the timer is not already started, start it
-	autoScrollTimer_->start(VERTICAL_SCROLL_DELAY);
+	autoScrollTimer_->start(0);
 
 	// Pass on the newest mouse location to the autoscroll routine
 	mouseCoord_ = coord;
@@ -6204,7 +6316,7 @@ void TextArea::copyToAP(QMouseEvent *event, EventFlags flags) {
 			buffer_->BufSecondaryUnselect();
 			TextDUnblankCursor();
 		} else {
-			SendSecondarySelection(/*time*/0, false);
+			SendSecondarySelection(false);
 		}
 
 	} else if (primary->selected) {
@@ -6260,8 +6372,7 @@ void TextArea::FinishBlockDrag() {
 ** "removeAfter" is true, also delete the secondary selection from the
 ** widget's buffer upon completion.
 */
-void TextArea::SendSecondarySelection(Time time, bool removeAfter) {
-	Q_UNUSED(time);
+void TextArea::SendSecondarySelection(bool removeAfter) {
 	Q_UNUSED(removeAfter);
 #if 0
 	sendSecondary(time, getAtom(XtDisplay(w_), A_MOTIF_DESTINATION), removeAfter ? REMOVE_SECONDARY : UNSELECT_SECONDARY, nullptr, 0);
@@ -6777,3 +6888,313 @@ int TextArea::TextDOffsetWrappedRow(int row) const {
 
 	return buffer_->BufCountLines(firstChar_, lineStarts_[row]);
 }
+
+void TextArea::setWordDelimiters(const QString &delimiters) {
+	/* When delimiters are changed, copy the memory, so that the caller
+	   doesn't have to manage it, and add mandatory delimiters blank,
+	   tab, and newline to the list */
+	const size_t n = delimiters.size() + 4;
+	char *new_delimiters = new char[n];
+	delete [] P_delimiters;
+	snprintf(new_delimiters, n, "%s%s", " \t\n", delimiters.toLatin1().data());
+	P_delimiters = new_delimiters;
+}
+
+void TextArea::setAutoShowInsertPos(bool value) {
+	Q_UNUSED(value);
+#if 0
+	XtVaSetValues(w_, textNautoShowInsertPos, value, nullptr);
+#endif
+}
+
+void TextArea::setEmulateTabs(int value) {
+	P_emulateTabs = value;
+}
+
+void TextArea::setWrapMargin(int value) {
+	TextDSetWrapMode(P_continuousWrap, value);
+}
+
+void TextArea::TextDSetWrapMode(int wrap, int wrapMargin) {
+
+	P_continuousWrap = wrap;
+	P_wrapMargin     = wrapMargin;
+
+	// NOTE(eteran): things are bit backwards from what i'd like
+	//               this is triggered by setting the resource based
+	//               version of these values which eventually triggers
+	//               setValues(...) to call this function.
+
+	// wrapping can change change the total number of lines, re-count
+	nBufferLines_ = TextDCountLines(0, buffer_->BufGetLength(), true);
+
+	/* changing wrap margins wrap or changing from wrapped mode to non-wrapped
+	   can leave the character at the top no longer at a line start, and/or
+	   change the line number */
+	firstChar_  = TextDStartOfLine(firstChar_);
+	topLineNum_ = TextDCountLines(0, firstChar_, True) + 1;
+	resetAbsLineNum();
+
+	// update the line starts array
+	calcLineStarts(0, nVisibleLines_);
+	calcLastChar();
+
+	/* Update the scroll bar page increment size (as well as other scroll
+	   bar parameters) */
+	updateVScrollBarRange();
+	updateHScrollBarRange();
+
+	// Decide if the horizontal scroll bar needs to be visible
+	hideOrShowHScrollBar();
+
+	// Do a full redraw
+	TextDRedisplayRect(0, rect_.top, rect_.width + rect_.left, rect_.height);
+}
+
+
+void TextArea::deleteToEndOfLineAP(EventFlags flags) {
+
+	int insertPos = cursorPos_;
+	int endOfLine;
+
+	bool silent = flags & NoBellFlag;
+	if (flags & AbsoluteFlag) {
+		endOfLine = buffer_->BufEndOfLine(insertPos);
+	} else {
+		endOfLine = TextDEndOfLine(insertPos, false);
+	}
+
+	cancelDrag();
+	if (checkReadOnly())
+		return;
+	TakeMotifDestination(0);
+	if (deletePendingSelection()) {
+		return;
+	}
+
+	if (insertPos == endOfLine) {
+		ringIfNecessary(silent);
+		return;
+	}
+	buffer_->BufRemove(insertPos, endOfLine);
+	checkAutoShowInsertPos();
+	callCursorMovementCBs();
+}
+
+void TextArea::cutPrimaryAP(EventFlags flags) {
+
+	TextSelection *primary = &buffer_->primary_;
+
+	bool rectangular = flags & RectFlag;
+	int insertPos;
+	int col;
+
+	cancelDrag();
+	if (checkReadOnly()) {
+		return;
+	}
+
+	if (primary->selected && rectangular) {
+		std::string textToCopy = buffer_->BufGetSelectionTextEx();
+		insertPos = cursorPos_;
+		col = buffer_->BufCountDispChars(buffer_->BufStartOfLine(insertPos), insertPos);
+		buffer_->BufInsertColEx(col, insertPos, textToCopy, nullptr, nullptr);
+		TextDSetInsertPosition(buffer_->cursorPosHint_);
+
+		buffer_->BufRemoveSelected();
+		checkAutoShowInsertPos();
+	} else if (primary->selected) {
+		std::string textToCopy = buffer_->BufGetSelectionTextEx();
+		insertPos = cursorPos_;
+		buffer_->BufInsertEx(insertPos, textToCopy);
+		TextDSetInsertPosition(insertPos + textToCopy.size());
+
+		buffer_->BufRemoveSelected();
+		checkAutoShowInsertPos();
+	} else if (rectangular) {
+		if (!TextDPositionToXY(cursorPos_, &btnDownCoord_.x, &btnDownCoord_.y)) {
+			return; // shouldn't happen
+		}
+		MovePrimarySelection(true);
+	} else {
+		MovePrimarySelection(false);
+	}
+}
+
+/*
+** Insert the contents of the PRIMARY selection at the cursor position in
+** widget "w" and delete the contents of the selection in its current owner
+** (if the selection owner supports DELETE targets).
+*/
+void TextArea::MovePrimarySelection(bool isColumnar) {
+	Q_UNUSED(isColumnar);
+	qDebug() << "TODO(eteran) implement this!";
+#if 0
+	static Atom targets[2] = {XA_STRING};
+	static int isColFlag;
+	static XtPointer clientData[2] = { &isColFlag, &isColFlag };
+
+	targets[1] = getAtom(XtDisplay(w_), A_DELETE);
+	isColFlag = isColumnar;
+	/* some strangeness here: the selection callback appears to be getting
+	   clientData[1] for targets[0] */
+	XtGetSelectionValues(w_, XA_PRIMARY, targets, 2, getSelectionCB, clientData, time);
+#endif
+}
+
+
+void TextArea::moveToOrEndDragAP(QMouseEvent *event, EventFlags flags) {
+
+	int dragState = dragState_;
+
+	if (dragState != PRIMARY_BLOCK_DRAG) {
+		moveToAP(event, flags);
+		return;
+	}
+
+	FinishBlockDrag();
+}
+
+void TextArea::moveToAP(QMouseEvent *event, EventFlags flags) {
+
+	Q_UNUSED(flags);
+
+	int dragState   = dragState_;
+
+	TextSelection *secondary = &buffer_->secondary_;
+	TextSelection *primary   = &buffer_->primary_;
+
+	int insertPos;
+	int rectangular = secondary->rectangular;
+	int column;
+	int lineStart;
+
+	endDrag();
+
+	if (!((dragState == SECONDARY_DRAG && secondary->selected) || (dragState == SECONDARY_RECT_DRAG && secondary->selected) || dragState == SECONDARY_CLICKED || dragState == NOT_CLICKED)) {
+		return;
+	}
+
+	if (checkReadOnly()) {
+		buffer_->BufSecondaryUnselect();
+		return;
+	}
+
+	if (secondary->selected) {
+		if (motifDestOwner_) {
+			std::string textToCopy = buffer_->BufGetSecSelectTextEx();
+			if (primary->selected && rectangular) {
+				insertPos = cursorPos_;
+				buffer_->BufReplaceSelectedEx(textToCopy);
+				TextDSetInsertPosition(buffer_->cursorPosHint_);
+			} else if (rectangular) {
+				insertPos = cursorPos_;
+				lineStart = buffer_->BufStartOfLine(insertPos);
+				column = buffer_->BufCountDispChars(lineStart, insertPos);
+				buffer_->BufInsertColEx(column, lineStart, textToCopy, nullptr, nullptr);
+				TextDSetInsertPosition(buffer_->cursorPosHint_);
+			} else
+				TextInsertAtCursorEx(textToCopy, true, P_autoWrapPastedText);
+
+			buffer_->BufRemoveSecSelect();
+			buffer_->BufSecondaryUnselect();
+		} else
+			SendSecondarySelection(true);
+	} else if (primary->selected) {
+		std::string textToCopy = buffer_->BufGetRangeEx(primary->start, primary->end);
+		TextDSetInsertPosition(TextDXYToPosition(Point{event->x(), event->y()}));
+		TextInsertAtCursorEx(textToCopy, false, P_autoWrapPastedText);
+
+		buffer_->BufRemoveSelected();
+		buffer_->BufUnselect();
+	} else {
+		TextDSetInsertPosition(TextDXYToPosition(Point{event->x(), event->y()}));
+		MovePrimarySelection(false);
+	}
+}
+
+void TextArea::exchangeAP(QMouseEvent *event, EventFlags flags) {
+
+	Q_UNUSED(event);
+
+	TextSelection *sec     = &buffer_->secondary_;
+	TextSelection *primary = &buffer_->primary_;
+
+	int newPrimaryStart, newPrimaryEnd, secWasRect;
+	DragStates dragState = dragState_; // save before endDrag
+	bool silent = flags & NoBellFlag;
+
+	endDrag();
+	if (checkReadOnly())
+		return;
+
+	/* If there's no secondary selection here, or the primary and secondary
+	   selection overlap, just beep and return */
+	if (!sec->selected || (primary->selected && ((primary->start <= sec->start && primary->end > sec->start) || (sec->start <= primary->start && sec->end > primary->start)))) {
+		buffer_->BufSecondaryUnselect();
+		ringIfNecessary(silent);
+		/* If there's no secondary selection, but the primary selection is
+		   being dragged, we must not forget to finish the dragging.
+		   Otherwise, modifications aren't recorded. */
+		if (dragState == PRIMARY_BLOCK_DRAG) {
+			FinishBlockDrag();
+		}
+		return;
+	}
+
+	// if the primary selection is in another widget, use selection routines
+	if (!primary->selected) {
+		ExchangeSelections();
+		return;
+	}
+
+	// Both primary and secondary are in this widget, do the exchange here
+	std::string primaryText = buffer_->BufGetSelectionTextEx();
+	std::string secText     = buffer_->BufGetSecSelectTextEx();
+
+	secWasRect = sec->rectangular;
+	buffer_->BufReplaceSecSelectEx(primaryText);
+	newPrimaryStart = primary->start;
+	buffer_->BufReplaceSelectedEx(secText);
+	newPrimaryEnd = newPrimaryStart + secText.size();
+
+	buffer_->BufSecondaryUnselect();
+	if (secWasRect) {
+		TextDSetInsertPosition(buffer_->cursorPosHint_);
+	} else {
+		buffer_->BufSelect(newPrimaryStart, newPrimaryEnd);
+		TextDSetInsertPosition(newPrimaryEnd);
+	}
+	checkAutoShowInsertPos();
+}
+
+/*
+** Exchange Primary and secondary selections (to be called by the widget
+** with the secondary selection)
+*/
+void TextArea::ExchangeSelections() {
+
+	if (!buffer_->secondary_.selected) {
+		return;
+	}
+
+	/* Initiate an long series of events:
+	** 1) get the primary selection,
+	** 2) replace the primary selection with this widget's secondary,
+	** 3) replace this widget's secondary with the text returned from getting
+	**    the primary selection.  This could be done with a much more efficient
+	**    MULTIPLE request following ICCCM conventions, but the X toolkit
+	**    MULTIPLE handling routines can't handle INSERT_SELECTION requests
+	**    inside of MULTIPLE requests, because they don't allow access to the
+	**    requested property atom in  inside of an XtConvertSelectionProc.
+	**    It's simply not worth duplicating all of Xt's selection handling
+	**    routines for a little performance, and this would make the code
+	**    incompatible with Motif text widgets */
+#if 0
+	XtGetSelectionValue(w_, XA_PRIMARY, XA_STRING, getExchSelCB, nullptr, time);
+#endif
+}
+
+
+//void TextArea::wheelEvent(QWheelEvent *event) {
+//}
