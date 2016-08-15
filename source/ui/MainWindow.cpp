@@ -12,8 +12,9 @@
 MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(parent, flags) {
 	ui.setupUi(this);
 	
-	setupMenus();
+	setupMenuGroups();
 	setupTabBar();
+	setupMenuStrings();
 	
 	showStats_       = GetPrefStatsLine();
 	showISearchLine_ = GetPrefISearchLine();
@@ -46,9 +47,30 @@ void MainWindow::setupTabBar() {
 }
 
 //------------------------------------------------------------------------------
-// Name: setupMenus
+// Name: setupMenuStrings
+// Desc: nedit has some menu shortcuts which are different from conventional
+//       shortcuts. Fortunately, Qt has a means to do this stuff manually.
 //------------------------------------------------------------------------------
-void MainWindow::setupMenus() {
+void MainWindow::setupMenuStrings() {
+
+	ui.action_Shift_Left         ->setText(tr("Shift &Left\t[Shift] Ctrl+9"));
+	ui.action_Shift_Right        ->setText(tr("Shift Ri&ght\t[Shift] Ctrl+0"));
+	ui.action_Find               ->setText(tr("&Find...\t[Shift] Ctrl+F"));
+	ui.action_Find_Again         ->setText(tr("F&ind Again\t[Shift] Ctrl+G"));
+	ui.action_Find_Selection     ->setText(tr("Find &Selection\t[Shift] Ctrl+H"));
+	ui.action_Find_Incremental   ->setText(tr("Fi&nd Incremental\t[Shift] Ctrl+I"));
+	ui.action_Replace            ->setText(tr("&Replace...\t[Shift] Ctrl+R"));
+	ui.action_Replace_Find_Again ->setText(tr("Replace Find &Again\t[Shift] Ctrl+T"));
+	ui.action_Replace_Again      ->setText(tr("Re&place Again\t[Shift] Alt+T"));
+	ui.action_Mark               ->setText(tr("Mar&k\tAlt+M a-z"));
+	ui.action_Goto_Mark          ->setText(tr("G&oto Mark\t[Shift] Alt+G a-z"));
+	ui.action_Goto_Matching      ->setText(tr("Goto &Matching (..)\t[Shift] Ctrl+M"));
+}
+
+//------------------------------------------------------------------------------
+// Name: setupMenuGroups
+//------------------------------------------------------------------------------
+void MainWindow::setupMenuGroups() {
 	auto indentGroup = new QActionGroup(this);
 	indentGroup->addAction(ui.action_Indent_Off);
 	indentGroup->addAction(ui.action_Indent_On);

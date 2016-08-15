@@ -834,7 +834,7 @@
     </iconset>
    </property>
    <property name="text">
-    <string>&amp;Find</string>
+    <string>&amp;Find...</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+F</string>
@@ -983,7 +983,7 @@
     <string>E&amp;xecute Command Line</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+K</string>
+    <string>Ctrl+Enter</string>
    </property>
   </action>
   <action name="action_Filter_Selection">

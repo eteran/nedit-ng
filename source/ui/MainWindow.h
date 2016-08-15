@@ -15,7 +15,8 @@ public:
 	virtual ~MainWindow();
 	
 private:
-	void setupMenus();
+	void setupMenuGroups();
+	void setupMenuStrings();
 	void setupTabBar();
 
 public Q_SLOTS:
