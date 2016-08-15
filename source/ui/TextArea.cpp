@@ -647,7 +647,7 @@ void TextArea::processCancelAP(EventFlags flags) {
 
 	Q_UNUSED(flags);
 
-	int dragState = dragState_;
+	DragStates dragState = dragState_;
 
 	// If there's a calltip displayed, kill it.
 	TextDKillCalltip(0);
@@ -1190,7 +1190,7 @@ void TextArea::mouseReleaseEvent(QMouseEvent *event) {
 			break;
 		}
 
-		int dragState = dragState_;
+		DragStates dragState = dragState_;
 
 		if (dragState != PRIMARY_BLOCK_DRAG) {
 			copyToAP(event);
@@ -4161,7 +4161,7 @@ void TextArea::TextDSetColors(QColor textFgP, QColor textBgP, QColor selectFgP, 
 ** a drag operation)
 */
 void TextArea::cancelDrag() {
-	int dragState = dragState_;
+	DragStates dragState = dragState_;
 
 	autoScrollTimer_->stop();
 
@@ -4178,6 +4178,8 @@ void TextArea::cancelDrag() {
 		break;
 	case NOT_CLICKED:
 		dragState_ = DRAG_CANCELED;
+		break;
+	default:
 		break;
 	}
 }
@@ -6114,7 +6116,7 @@ void TextArea::extendStartAP(QMouseEvent *event, EventFlags flags) {
 
 void TextArea::extendAdjustAP(QMouseEvent *event, EventFlags flags) {
 
-	int dragState = dragState_;
+	DragStates dragState = dragState_;
 	bool rectDrag = flags & RectFlag;
 
 	// Make sure the proper initialization was done on mouse down
@@ -6274,7 +6276,7 @@ void TextArea::TextDGetScroll(int *topLineNum, int *horizOffset) {
 }
 
 void TextArea::copyToOrEndDragAP(QMouseEvent *event, EventFlags flags) {
-	int dragState = dragState_;
+	DragStates dragState = dragState_;
 
 	if (dragState != PRIMARY_BLOCK_DRAG) {
 		copyToAP(event, flags);
@@ -6288,7 +6290,7 @@ void TextArea::copyToAP(QMouseEvent *event, EventFlags flags) {
 
 	Q_UNUSED(flags);
 
-	int dragState = dragState_;
+	DragStates dragState = dragState_;
 	TextSelection *secondary = &buffer_->secondary_;
 	TextSelection *primary   = &buffer_->primary_;
 	int rectangular = secondary->rectangular;
@@ -6460,7 +6462,7 @@ void TextArea::secondaryStartAP(QMouseEvent *event, EventFlags flags) {
 
 void TextArea::secondaryOrDragAdjustAP(QMouseEvent *event, EventFlags flags) {
 
-	int dragState = dragState_;
+	DragStates dragState = dragState_;
 
 	/* Only dragging of blocks of text is handled in this action proc.
 	   Otherwise, defer to secondaryAdjust to handle the rest */
@@ -6493,7 +6495,7 @@ void TextArea::secondaryOrDragAdjustAP(QMouseEvent *event, EventFlags flags) {
 
 void TextArea::secondaryAdjustAP(QMouseEvent *event, EventFlags flags) {
 
-	int dragState = dragState_;
+	DragStates dragState = dragState_;
 	bool rectDrag = flags & RectFlag;
 
 	// Make sure the proper initialization was done on mouse down
@@ -7055,7 +7057,7 @@ void TextArea::MovePrimarySelection(bool isColumnar) {
 
 void TextArea::moveToOrEndDragAP(QMouseEvent *event, EventFlags flags) {
 
-	int dragState = dragState_;
+	DragStates dragState = dragState_;
 
 	if (dragState != PRIMARY_BLOCK_DRAG) {
 		moveToAP(event, flags);
@@ -7069,7 +7071,7 @@ void TextArea::moveToAP(QMouseEvent *event, EventFlags flags) {
 
 	Q_UNUSED(flags);
 
-	int dragState   = dragState_;
+	DragStates dragState   = dragState_;
 
 	TextSelection *secondary = &buffer_->secondary_;
 	TextSelection *primary   = &buffer_->primary_;
