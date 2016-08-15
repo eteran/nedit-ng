@@ -43,12 +43,9 @@ aspects have been improved simply by the fact that it is now a Qt application.
 There aren't many of them, but some things just can't be done in Qt to my 
 knowlege.
 
-* In NEdit, some menus have accelerators which indicate 2 shortcuts. For 
-  example: "[Shift]Ctrl + F" meaning that the shift is optional and will
-  alter the behavior of the shortcut. I am not aware of a way to do this
-  using Qt, short of making a completely custom menu system.
 * NEdit has several points of customization which are controlled by XResource
-  files. I intend to create a new dialog for these "advanced" options.
+  files. I intend to create a new dialog for these "advanced" options or Qt 
+  style sheets.
 * Secondary selection stuff. NEdit (apparently) has some features involing 
   X11's secondary selection system. I honestly had no idea these existed before
   starting this project. And it seems that secondary selections are not a 
@@ -59,6 +56,7 @@ knowlege.
 Version 1.0's goal is to be a nearly 1:1 port of the original NEdit. Once that 
 is complete some post 1.0 goals are already planned:
 
+* Cross platform
 * Internationalization!
 * Python scripting support in addition to the built-in macro system
 * An improved preferences system
