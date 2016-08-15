@@ -6258,7 +6258,7 @@ void TextArea::mousePanAP(QMouseEvent *event, EventFlags flags) {
 		btnDownCoord_.y = event->y() + topLineNum * lineHeight;
 		dragState_ = MOUSE_PAN;
 
-		viewport()->setCursor(Qt::OpenHandCursor);
+		viewport()->setCursor(Qt::SizeAllCursor);
 	} else {
 		cancelDrag();
 	}
