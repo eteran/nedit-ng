@@ -176,7 +176,12 @@ private Q_SLOTS:
 
 private Q_SLOTS:
 	// shotcuts with parameters
+	void beginningOfLineExtendAP(EventFlags flags = NoneFlag);
+	void beginningOfLineExtendRectAP(EventFlags flags = NoneFlag);
+	void beginningOfFileExtendAP(EventFlags flags = NoneFlag);
+	void beginningOfFileExtendRectAP(EventFlags flags = NoneFlag);
 	void cutPrimaryRectAP(EventFlags flags = NoneFlag);
+	void copyPrimaryRectAP(EventFlags flags = NoneFlag);
 	void keySelectRectAP(EventFlags flags = NoneFlag);
 	void keySelectLeftAP(EventFlags flags = NoneFlag);
 	void keySelectRightAP(EventFlags flags = NoneFlag);

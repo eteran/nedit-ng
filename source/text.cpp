@@ -143,19 +143,19 @@ static char defaultTranslations[] =
 /*X*/            "<KeyPress>osfDelete: delete_next_character()\n"
 
             // Insert
-            "Alt Shift Ctrl<KeyPress>osfInsert: copy_primary(\"rect\")\n"
-            "Meta Shift Ctrl<KeyPress>osfInsert: copy_primary(\"rect\")\n"
+/*X*/            "Alt Shift Ctrl<KeyPress>osfInsert: copy_primary(\"rect\")\n"
+/*X*/            "Meta Shift Ctrl<KeyPress>osfInsert: copy_primary(\"rect\")\n"
 /*X*/            "Shift Ctrl<KeyPress>osfInsert: copy_primary()\n"
 /*X*/            "Shift<KeyPress>osfInsert: paste_clipboard()\n"
 /*X*/            "Ctrl<KeyPress>osfInsert: copy_clipboard()\n"
 /*?*/            "~Shift ~Ctrl<KeyPress>osfInsert: set_overtype_mode()\n"
 
             // Cut/Copy/Paste
-            "Shift Ctrl<KeyPress>osfCut: cut_primary()\n"
+/*?*/            "Shift Ctrl<KeyPress>osfCut: cut_primary()\n"
 /*?*/            "<KeyPress>osfCut: cut_clipboard()\n"
 /*?*/            "<KeyPress>osfCopy: copy_clipboard()\n"
 /*?*/            "<KeyPress>osfPaste: paste_clipboard()\n"
-            "<KeyPress>osfPrimaryPaste: copy_primary()\n"
+/*?*/            "<KeyPress>osfPrimaryPaste: copy_primary()\n"
 
             // BeginLine
             "Alt Shift Ctrl<KeyPress>osfBeginLine: beginning_of_file(\"extend\", \"rect\")\n"

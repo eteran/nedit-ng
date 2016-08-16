@@ -450,6 +450,19 @@ TextArea::TextArea(QWidget *parent,
 
 	resize(width, height);
 
+#if 0
+	"Shift Ctrl<KeyPress>osfBeginLine: beginning_of_file(\"extend\")\n"
+
+	"Alt Shift<KeyPress>osfBeginLine: beginning_of_line(\"extend\", \"rect\")\n"
+	"Meta Shift<KeyPress>osfBeginLine: beginning_of_line(\"extend\", \"rect\")\n"
+	"Shift<KeyPress>osfBeginLine: beginning_of_line(\"extend\")\n"
+#endif
+
+	createShortcut(tr("-alt1-beginning_of_file"),  QKeySequence(Qt::CTRL + Qt::ALT + Qt::SHIFT + Qt::Key_Home),    SLOT(beginningOfFileExtendRectAP()));
+	createShortcut(tr("-alt2-beginning_of_file"),  QKeySequence(Qt::CTRL + Qt::META + Qt::SHIFT + Qt::Key_Home),   SLOT(beginningOfFileExtendRectAP()));
+	createShortcut(tr("-alt2-beginning_of_file"),  QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Home),              SLOT(beginningOfFileExtendAP()));
+	createShortcut(tr("-alt1-copy_primary"),       QKeySequence(Qt::CTRL + Qt::ALT + Qt::SHIFT + Qt::Key_Insert),  SLOT(copyPrimaryRectAP()));
+	createShortcut(tr("-alt2-copy_primary"),       QKeySequence(Qt::CTRL + Qt::META + Qt::SHIFT + Qt::Key_Insert), SLOT(copyPrimaryRectAP()));
 	createShortcut(tr("-alt1-cut_primary"),        QKeySequence(Qt::CTRL + Qt::ALT + Qt::SHIFT + Qt::Key_Delete),  SLOT(cutPrimaryRectAP()));
 	createShortcut(tr("-alt2-cut_primary"),        QKeySequence(Qt::CTRL + Qt::META + Qt::SHIFT + Qt::Key_Delete), SLOT(cutPrimaryRectAP()));
 	createShortcut(tr("key_select"),               QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Space),             SLOT(keySelectAP()));
@@ -504,12 +517,50 @@ TextArea::TextArea(QWidget *parent,
 	P_delimiters = nullptr; // to prevent deleting memory we don't own
 	setWordDelimiters(defaultDelimiters);
 #endif
+
+
+#if 1
+	const int marginWidth      = P_marginWidth;
+	const int marginHeight     = P_marginHeight;
+	const int lineNumAreaWidth = P_lineNumCols == 0 ? 0 : P_marginWidth + fm.maxWidth() * P_lineNumCols;
+
+	/* Reject widths and heights less than a character, which the text
+	   display can't tolerate.  This is not strictly legal, but I've seen
+	   it done in other widgets and it seems to do no serious harm.  NEdit
+	   prevents panes from getting smaller than one line, but sometimes
+	   splitting windows on Linux 2.0 systems (same Motif, why the change in
+	   behavior?), causes one or two resize calls with < 1 line of height.
+	   Fixing it here is 100x easier than re-designing TextDisplay.c */
+
+	setMinimumWidth(fm.maxWidth() + (marginWidth * 2) + lineNumAreaWidth);
+	setMinimumHeight(fm.ascent() + fm.descent() + (marginHeight * 2));
+#endif
 }
 
 QShortcut *TextArea::createShortcut(const QString &name, const QKeySequence &keySequence, const char *member) {
 	auto shortcut = new QShortcut(keySequence, this, member);
 	shortcut->setObjectName(name);
 	return shortcut;
+}
+
+void TextArea::beginningOfFileExtendAP(EventFlags flags) {
+		beginningOfFileAP(flags | ExtendFlag);
+}
+
+void TextArea::beginningOfFileExtendRectAP(EventFlags flags) {
+	beginningOfFileAP(flags | ExtendFlag | RectFlag);
+}
+
+void TextArea::beginningOfLineExtendAP(EventFlags flags) {
+		beginningOfLineAP(flags | ExtendFlag);
+}
+
+void TextArea::beginningOfLineExtendRectAP(EventFlags flags) {
+	beginningOfLineAP(flags | ExtendFlag | RectFlag);
+}
+
+void TextArea::copyPrimaryRectAP(EventFlags flags) {
+	copyPrimaryAP(flags | RectFlag);
 }
 
 void TextArea::cutPrimaryRectAP(EventFlags flags) {
@@ -1259,25 +1310,6 @@ void TextArea::resizeEvent(QResizeEvent *event) {
 
 	P_columns = (width - marginWidth * 2 - lineNumAreaWidth) / fm.maxWidth();
 	P_rows    = (height - marginHeight * 2) / (fm.ascent() + fm.descent());
-
-	/* Reject widths and heights less than a character, which the text
-	   display can't tolerate.  This is not strictly legal, but I've seen
-	   it done in other widgets and it seems to do no serious harm.  NEdit
-	   prevents panes from getting smaller than one line, but sometimes
-	   splitting windows on Linux 2.0 systems (same Motif, why the change in
-	   behavior?), causes one or two resize calls with < 1 line of height.
-	   Fixing it here is 100x easier than re-designing TextDisplay.c */
-	if (P_columns < 1) {
-		P_columns = 1;
-		width = fm.maxWidth() + marginWidth * 2 + lineNumAreaWidth;
-		resize(width, this->height());
-	}
-
-	if (P_rows < 1) {
-		P_rows = 1;
-		height = fm.ascent() + fm.descent() + marginHeight * 2;
-		resize(this->width(), height);
-	}
 
 	// Resize the text display that the widget uses to render text
 	TextDResize(width - marginWidth * 2 - lineNumAreaWidth, height - marginHeight * 2);
@@ -3436,9 +3468,6 @@ void TextArea::TextDResize(int width, int height) {
 	   text left at the bottom edge, which must be cleaned up */
 	if (canRedraw && oldVisibleLines > newVisibleLines && exactHeight != height) {
 		viewport()->update(QRect(rect_.left, rect_.top + exactHeight, rect_.width, height - exactHeight));
-#if 0
-		XClearArea(XtDisplay(w_), window, rect_.left, rect_.top + exactHeight, rect_.width, height - exactHeight, false);
-#endif
 	}
 
 	/* if the window became taller, there may be an opportunity to display
