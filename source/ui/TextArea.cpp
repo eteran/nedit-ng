@@ -450,9 +450,8 @@ TextArea::TextArea(QWidget *parent,
 
 	resize(width, height);
 
-    //"Alt Shift Ctrl<KeyPress>space: key_select(\"rect\")\n"
-    //"Meta Shift Ctrl<KeyPress>space: key_select(\"rect\")\n"
-
+	createShortcut(tr("-alt1-cut_primary"),        QKeySequence(Qt::CTRL + Qt::ALT + Qt::SHIFT + Qt::Key_Delete),  SLOT(cutPrimaryRectAP()));
+	createShortcut(tr("-alt2-cut_primary"),        QKeySequence(Qt::CTRL + Qt::META + Qt::SHIFT + Qt::Key_Delete), SLOT(cutPrimaryRectAP()));
 	createShortcut(tr("key_select"),               QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Space),             SLOT(keySelectAP()));
 	createShortcut(tr("-alt1-key_select"),         QKeySequence(Qt::CTRL + Qt::ALT + Qt::SHIFT + Qt::Key_Space),   SLOT(keySelectRectAP()));
 	createShortcut(tr("-alt2-key_select"),         QKeySequence(Qt::CTRL + Qt::META + Qt::SHIFT + Qt::Key_Space),  SLOT(keySelectRectAP()));
@@ -505,13 +504,16 @@ TextArea::TextArea(QWidget *parent,
 	P_delimiters = nullptr; // to prevent deleting memory we don't own
 	setWordDelimiters(defaultDelimiters);
 #endif
-
 }
 
 QShortcut *TextArea::createShortcut(const QString &name, const QKeySequence &keySequence, const char *member) {
 	auto shortcut = new QShortcut(keySequence, this, member);
 	shortcut->setObjectName(name);
 	return shortcut;
+}
+
+void TextArea::cutPrimaryRectAP(EventFlags flags) {
+	cutPrimaryAP(flags | RectFlag);
 }
 
 void TextArea::keySelectRectAP(EventFlags flags) {
@@ -1013,6 +1015,8 @@ void TextArea::keyPressEvent(QKeyEvent *e) {
 		smartIndent.pos           = cursorPos_;
 		smartIndent.indentRequest = 0;
 		smartIndent.charsTyped    = s.c_str(); // TODO(eteran): is this safe?
+
+		Q_UNUSED(smartIndent);
 #if 0
 		XtCallCallbacks(w_, textNsmartIndentCallback, &smartIndent);
 #endif
@@ -1277,15 +1281,6 @@ void TextArea::resizeEvent(QResizeEvent *event) {
 
 	// Resize the text display that the widget uses to render text
 	TextDResize(width - marginWidth * 2 - lineNumAreaWidth, height - marginHeight * 2);
-
-	/* if the window became shorter or narrower, there may be text left
-	   in the bottom or right margin area, which must be cleaned up */
-#if 0
-	if (XtIsRealized(w)) {
-		XClearArea(XtDisplay(w), XtWindow(w), 0, height - marginHeight, width, marginHeight, false);
-		XClearArea(XtDisplay(w), XtWindow(w), width - marginWidth, 0, marginWidth, height, false);
-	}
-#endif
 }
 
 //------------------------------------------------------------------------------
@@ -2754,6 +2749,9 @@ void TextArea::redrawLineNumbersEx(bool clearAll) {
 // Name:
 //------------------------------------------------------------------------------
 void TextArea::redrawLineNumbers(QPainter *painter, bool clearAll) {
+
+	Q_UNUSED(clearAll);
+
 	int y;
 	int line;
 	int visLine;
@@ -2762,10 +2760,7 @@ void TextArea::redrawLineNumbers(QPainter *painter, bool clearAll) {
 	QFontMetrics fm(viewport()->font());
 	int lineHeight = ascent_ + descent_;
 	int charWidth  = fm.maxWidth();
-#if 0
-	Display *display = XtDisplay(w_);
-	Window window    = XtWindow(w_);
-#endif
+
 	/* Don't draw if lineNumWidth == 0 (line numbers are hidden), or widget is
 	   not yet realized */
 	if (lineNumWidth_ == 0 /*|| window == 0*/)
@@ -2777,21 +2772,6 @@ void TextArea::redrawLineNumbers(QPainter *painter, bool clearAll) {
 	painter->save();
 	painter->setClipRect(QRect(lineNumLeft_, rect_.top, lineNumWidth_, rect_.height));
 
-#if 1
-	Q_UNUSED(y);
-	Q_UNUSED(visLine);
-	Q_UNUSED(line);
-	Q_UNUSED(lineNumString);
-	Q_UNUSED(lineHeight);
-	Q_UNUSED(clearAll);
-	Q_UNUSED(nCols);
-	Q_UNUSED(charWidth);
-#else
-
-	// Erase the previous contents of the line number area, if requested
-	if (clearAll)
-		XClearArea(display, window, lineNumLeft_, rect_.top, lineNumWidth_, rect_.height, false);
-
 	// Draw the line numbers, aligned to the text
 	nCols = std::min(11, lineNumWidth_ / charWidth);
 	y = rect_.top;
@@ -2801,16 +2781,17 @@ void TextArea::redrawLineNumbers(QPainter *painter, bool clearAll) {
 		int lineStart = lineStarts_[visLine];
 		if (lineStart != -1 && (lineStart == 0 || buffer_->BufGetCharacter(lineStart - 1) == '\n')) {
 			sprintf(lineNumString, "%*d", nCols, line);
-			XDrawImageString(display, window, lineNumGC_, lineNumLeft_, y + ascent_, lineNumString, strlen(lineNumString));
+
+			auto s = QString::fromLatin1(lineNumString);
+			painter->drawText(lineNumLeft_, y + ascent_, s);
 			line++;
 		} else {
-			XClearArea(display, window, lineNumLeft_, y, lineNumWidth_, ascent_ + descent_, false);
 			if (visLine == 0)
 				line++;
 		}
 		y += lineHeight;
 	}
-#endif
+
 	painter->restore();
 }
 
@@ -6913,10 +6894,7 @@ void TextArea::setWordDelimiters(const QString &delimiters) {
 }
 
 void TextArea::setAutoShowInsertPos(bool value) {
-	Q_UNUSED(value);
-#if 0
-	XtVaSetValues(w_, textNautoShowInsertPos, value, nullptr);
-#endif
+	P_autoShowInsertPos = value;
 }
 
 void TextArea::setEmulateTabs(int value) {
@@ -6925,6 +6903,40 @@ void TextArea::setEmulateTabs(int value) {
 
 void TextArea::setWrapMargin(int value) {
 	TextDSetWrapMode(P_continuousWrap, value);
+}
+
+void TextArea::setLineNumCols(int value) {
+
+	P_lineNumCols = value;
+
+	QFontMetrics fm(viewport()->font());
+
+	int marginWidth = P_marginWidth;
+	int charWidth   = fm.maxWidth();
+	int lineNumCols = P_lineNumCols;
+
+	if (lineNumCols == 0) {
+		TextDSetLineNumberArea(0, 0, marginWidth);
+		P_columns = (viewport()->width() - marginWidth * 2) / charWidth;
+	} else {
+		TextDSetLineNumberArea(marginWidth, charWidth * lineNumCols, 2 * marginWidth + charWidth * lineNumCols);
+		P_columns = (viewport()->width() - marginWidth * 3 - charWidth * lineNumCols) / charWidth;
+	}
+}
+
+/*
+** Define area for drawing line numbers.  A width of 0 disables line
+** number drawing.
+*/
+void TextArea::TextDSetLineNumberArea(int lineNumLeft, int lineNumWidth, int textLeft) {
+	int newWidth = rect_.width + rect_.left - textLeft;
+	lineNumLeft_ = lineNumLeft;
+	lineNumWidth_ = lineNumWidth;
+	rect_.left = textLeft;
+
+	resetAbsLineNum();
+	TextDResize(newWidth, rect_.height);
+	TextDRedisplayRect(0, rect_.top, INT_MAX, rect_.height);
 }
 
 void TextArea::TextDSetWrapMode(int wrap, int wrapMargin) {
@@ -7207,6 +7219,105 @@ void TextArea::ExchangeSelections() {
 #endif
 }
 
+/*
+** Returns the absolute (non-wrapped) line number of the first line displayed.
+** Returns 0 if the absolute top line number is not being maintained.
+*/
+int TextArea::getAbsTopLineNum() {
 
-//void TextArea::wheelEvent(QWheelEvent *event) {
-//}
+	if (!P_continuousWrap) {
+		return topLineNum_;
+	}
+
+	if (maintainingAbsTopLineNum()) {
+		return absTopLineNum_;
+	}
+
+	return 0;
+}
+
+void TextArea::setForegroundPixel(Pixel pixel) {
+	QPalette pal = viewport()->palette();
+	pal.setColor(QPalette::Text, toQColor(pixel));
+	viewport()->setPalette(pal);
+}
+
+void TextArea::setBackgroundPixel(Pixel pixel) {
+	QPalette pal = viewport()->palette();
+	pal.setColor(QPalette::Base, toQColor(pixel));
+	viewport()->setPalette(pal);
+}
+
+void TextArea::setReadOnly(bool value) {
+	P_readOnly = value;
+}
+
+void TextArea::setOverstrike(bool value) {
+	P_overstrike = value;
+
+	switch(getCursorStyle()) {
+	case BLOCK_CURSOR:
+		TextDSetCursorStyle(P_heavyCursor ? HEAVY_CURSOR : NORMAL_CURSOR);
+		break;
+	case NORMAL_CURSOR:
+	case HEAVY_CURSOR:
+		TextDSetCursorStyle(BLOCK_CURSOR);
+	default:
+		// NOTE(eteran): wasn't handled in the original code
+		break;
+	}
+}
+
+CursorStyles TextArea::getCursorStyle() const {
+	return cursorStyle_;
+}
+
+void TextArea::setCursorVPadding(int value) {
+	P_cursorVPadding = value;
+}
+
+void TextArea::setFont(XFontStruct *font) {
+
+	Q_UNUSED(font);
+	// TODO(eteran): implement
+#if 0
+	bool reconfigure = false;
+	P_fontStruct = font;
+
+	// did the font change?
+	if (P_lineNumCols != 0) {
+		reconfigure = true;
+	}
+
+	TextDSetFont(P_fontStruct);
+
+	/* Setting the lineNumCols resource tells the text widget to hide or
+	   show, or change the number of columns of the line number display,
+	   which requires re-organizing the x coordinates of both the line
+	   number display and the main text display */
+	if(reconfigure) {
+		setLineNumCols(getLineNumCols());
+	}
+#endif
+}
+
+int TextArea::getLineNumCols() const {
+	return P_lineNumCols;
+}
+
+void TextArea::setAutoWrap(bool value) {
+	P_autoWrap = value;
+}
+
+void TextArea::setContinuousWrap(bool value) {
+	TextDSetWrapMode(value, P_wrapMargin);
+}
+
+void TextArea::setAutoIndent(bool value) {
+	P_autoIndent = value;
+}
+
+void TextArea::setSmartIndent(bool value) {
+	P_smartIndent = value;
+}
+

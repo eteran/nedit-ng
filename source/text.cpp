@@ -135,8 +135,8 @@ static char defaultTranslations[] =
 /*X*/            "<KeyPress>osfBackSpace: delete_previous_character()\n"
 
             // Delete
-            "Alt Shift Ctrl<KeyPress>osfDelete: cut_primary(\"rect\")\n"
-            "Meta Shift Ctrl<KeyPress>osfDelete: cut_primary(\"rect\")\n"
+/*X*/            "Alt Shift Ctrl<KeyPress>osfDelete: cut_primary(\"rect\")\n"
+/*X*/            "Meta Shift Ctrl<KeyPress>osfDelete: cut_primary(\"rect\")\n"
 /*X*/            "Shift Ctrl<KeyPress>osfDelete: cut_primary()\n"
 /*X*/            "Ctrl<KeyPress>osfDelete: delete_to_end_of_line()\n"
 /*X*/            "Shift<KeyPress>osfDelete: cut_clipboard()\n"

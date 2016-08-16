@@ -95,7 +95,6 @@ public:
 	void setSmartIndent(bool value);
 
 protected:
-	//virtual void wheelEvent(QWheelEvent *event) override;
 	virtual void contextMenuEvent(QContextMenuEvent *event) override;
 	virtual void dragEnterEvent(QDragEnterEvent *event) override;
 	virtual void dragLeaveEvent(QDragLeaveEvent *event) override;
@@ -158,10 +157,9 @@ private Q_SLOTS:
 	void deleteToEndOfLineAP(EventFlags flags = NoneFlag);
 	void cutPrimaryAP(EventFlags flags = NoneFlag);
 
+
 private Q_SLOTS:
-	void keySelectRectAP(EventFlags flags = NoneFlag);
-	void keySelectLeftAP(EventFlags flags = NoneFlag);
-	void keySelectRightAP(EventFlags flags = NoneFlag);
+	// mouse related events
 	void moveDestinationAP(QMouseEvent *event);
 	void extendStartAP(QMouseEvent *event, EventFlags flags = NoneFlag);
 	void extendAdjustAP(QMouseEvent *event, EventFlags flags = NoneFlag);
@@ -175,6 +173,14 @@ private Q_SLOTS:
 	void moveToOrEndDragAP(QMouseEvent *event, EventFlags flags = NoneFlag);
 	void moveToAP(QMouseEvent *event, EventFlags flags = NoneFlag);
 	void exchangeAP(QMouseEvent *event, EventFlags flags = NoneFlag);
+
+private Q_SLOTS:
+	// shotcuts with parameters
+	void cutPrimaryRectAP(EventFlags flags = NoneFlag);
+	void keySelectRectAP(EventFlags flags = NoneFlag);
+	void keySelectLeftAP(EventFlags flags = NoneFlag);
+	void keySelectRightAP(EventFlags flags = NoneFlag);
+
 
 public:
 	int TextDStartOfLine(int pos) const;
@@ -220,6 +226,7 @@ private:
 	void TextPasteClipboard();
 	void TextColPasteClipboard();
 	int TextDOffsetWrappedRow(int row) const;
+	void TextDSetLineNumberArea(int lineNumLeft, int lineNumWidth, int textLeft);
 
 public:
 	void bufPreDeleteCallback(int pos, int nDeleted);
@@ -299,6 +306,9 @@ private:
 	void adjustSecondarySelection(const Point &coord);
 	void MovePrimarySelection(bool isColumnar);
 	void ExchangeSelections();
+	int getAbsTopLineNum();
+	CursorStyles getCursorStyle() const;
+	int getLineNumCols() const;
 
 private:
 #if 1
