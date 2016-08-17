@@ -176,6 +176,8 @@ private Q_SLOTS:
 
 private Q_SLOTS:
 	// shotcuts with parameters
+	void forwardWordExtendAP(EventFlags flags = NoneFlag);
+	void forwardWordExtendRectAP(EventFlags flags = NoneFlag);
 	void keySelectLeftRectAP(EventFlags flags = NoneFlag);
 	void keySelectRightRectAP(EventFlags flags = NoneFlag);
 	void backwardWordExtendAP(EventFlags flags = NoneFlag);
@@ -193,6 +195,12 @@ private Q_SLOTS:
 	void keySelectRectAP(EventFlags flags = NoneFlag);
 	void keySelectLeftAP(EventFlags flags = NoneFlag);
 	void keySelectRightAP(EventFlags flags = NoneFlag);
+	void forwardParagraphExtendAP(EventFlags flags = NoneFlag);
+	void forwardParagraphExtendRectAP(EventFlags flags = NoneFlag);
+	void backwardParagraphExtendAP(EventFlags flags = NoneFlag);
+	void backwardParagraphExtendRectAP(EventFlags flags = NoneFlag);
+	void processShiftUpRectAP(EventFlags flags = NoneFlag);
+	void processShiftDownRectAP(EventFlags flags = NoneFlag);
 
 
 public:

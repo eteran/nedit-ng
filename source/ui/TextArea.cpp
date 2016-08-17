@@ -448,71 +448,122 @@ TextArea::TextArea(QWidget *parent,
 	motifDestOwner_     = false;
 	emTabsBeforeCursor_ = 0;
 
-	resize(width, height);
+	setGeometry(0, 0, width, height);
 
-	createShortcut(tr("-alt1-backward_word"),      QKeySequence(Qt::CTRL + Qt::ALT + Qt::SHIFT + Qt::Key_Left),    SLOT(backwardWordExtendRectAP()));
-	createShortcut(tr("-alt2-backward_word"),      QKeySequence(Qt::CTRL + Qt::META + Qt::SHIFT + Qt::Key_Left),   SLOT(backwardWordExtendRectAP()));
-	createShortcut(tr("-alt2-key_select"),         QKeySequence(Qt::ALT + Qt::SHIFT + Qt::Key_Left),               SLOT(keySelectLeftRectAP()));
-	createShortcut(tr("-alt3-key_select"),         QKeySequence(Qt::META + Qt::SHIFT + Qt::Key_Left),              SLOT(keySelectLeftRectAP()));
-	createShortcut(tr("-alt3-backward_word"),      QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Left),              SLOT(backwardWordExtendAP()));
-	createShortcut(tr("-alt1-end_of_line"),        QKeySequence(Qt::ALT + Qt::SHIFT + Qt::Key_End),                SLOT(beginningOfLineExtendRectAP()));
-	createShortcut(tr("-alt2-end_of_line"),        QKeySequence(Qt::META + Qt::SHIFT + Qt::Key_Home),              SLOT(beginningOfLineExtendRectAP()));
-	createShortcut(tr("-alt3-end_of_line"),        QKeySequence(Qt::SHIFT + Qt::Key_Home),                         SLOT(beginningOfLineExtendAP()));
-	createShortcut(tr("-alt1-end_of_file"),        QKeySequence(Qt::CTRL + Qt::ALT + Qt::SHIFT + Qt::Key_Home),    SLOT(beginningOfFileExtendRectAP()));
-	createShortcut(tr("-alt2-end_of_file"),        QKeySequence(Qt::CTRL + Qt::META + Qt::SHIFT + Qt::Key_Home),   SLOT(beginningOfFileExtendRectAP()));
-	createShortcut(tr("-alt3-end_of_file"),        QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Home),              SLOT(beginningOfFileExtendAP()));
-	createShortcut(tr("-alt1-beginning_of_line"),  QKeySequence(Qt::ALT + Qt::SHIFT + Qt::Key_Home),               SLOT(beginningOfLineExtendRectAP()));
-	createShortcut(tr("-alt2-beginning_of_file"),  QKeySequence(Qt::META + Qt::SHIFT + Qt::Key_Home),              SLOT(beginningOfLineExtendRectAP()));
-	createShortcut(tr("-alt3-beginning_of_file"),  QKeySequence(Qt::SHIFT + Qt::Key_Home),                         SLOT(beginningOfLineExtendAP()));
-	createShortcut(tr("-alt1-beginning_of_file"),  QKeySequence(Qt::CTRL + Qt::ALT + Qt::SHIFT + Qt::Key_Home),    SLOT(beginningOfFileExtendRectAP()));
-	createShortcut(tr("-alt2-beginning_of_file"),  QKeySequence(Qt::CTRL + Qt::META + Qt::SHIFT + Qt::Key_Home),   SLOT(beginningOfFileExtendRectAP()));
-	createShortcut(tr("-alt3-beginning_of_file"),  QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Home),              SLOT(beginningOfFileExtendAP()));
-	createShortcut(tr("-alt1-copy_primary"),       QKeySequence(Qt::CTRL + Qt::ALT + Qt::SHIFT + Qt::Key_Insert),  SLOT(copyPrimaryRectAP()));
-	createShortcut(tr("-alt2-copy_primary"),       QKeySequence(Qt::CTRL + Qt::META + Qt::SHIFT + Qt::Key_Insert), SLOT(copyPrimaryRectAP()));
-	createShortcut(tr("-alt1-cut_primary"),        QKeySequence(Qt::CTRL + Qt::ALT + Qt::SHIFT + Qt::Key_Delete),  SLOT(cutPrimaryRectAP()));
-	createShortcut(tr("-alt2-cut_primary"),        QKeySequence(Qt::CTRL + Qt::META + Qt::SHIFT + Qt::Key_Delete), SLOT(cutPrimaryRectAP()));
-	createShortcut(tr("key_select"),               QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Space),             SLOT(keySelectAP()));
-	createShortcut(tr("-alt1-key_select"),         QKeySequence(Qt::CTRL + Qt::ALT + Qt::SHIFT + Qt::Key_Space),   SLOT(keySelectRectAP()));
-	createShortcut(tr("-alt2-key_select"),         QKeySequence(Qt::CTRL + Qt::META + Qt::SHIFT + Qt::Key_Space),  SLOT(keySelectRectAP()));
-	createShortcut(tr("cut_primary"),              QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Delete),            SLOT(cutPrimaryAP()));
-	createShortcut(tr("delete_to_end_of_line"),    QKeySequence(Qt::CTRL + Qt::Key_Delete),                        SLOT(deleteToEndOfLineAP()));
-	createShortcut(tr("delete_to_start_of_line"),  QKeySequence(Qt::CTRL + Qt::Key_U),                             SLOT(deleteToStartOfLineAP()));
-	createShortcut(tr("select_all"),               QKeySequence(Qt::CTRL + Qt::Key_Slash),                         SLOT(selectAllAP()));
-	createShortcut(tr("deselect_all"),             QKeySequence(Qt::CTRL + Qt::Key_Backslash),                     SLOT(deselectAllAP()));
-	createShortcut(tr("process_tab"),              QKeySequence(Qt::Key_Tab),                                      SLOT(processTabAP()));
-	createShortcut(tr("forward_character"),        QKeySequence(Qt::Key_Right),                                    SLOT(forwardCharacterAP()));
-	createShortcut(tr("backward_character"),       QKeySequence(Qt::Key_Left),                                     SLOT(backwardCharacterAP()));
-	createShortcut(tr("process_up"),               QKeySequence(Qt::Key_Up),                                       SLOT(processUpAP()));
-	createShortcut(tr("process_down"),             QKeySequence(Qt::Key_Down),                                     SLOT(processDownAP()));
-	createShortcut(tr("newline"),                  QKeySequence(Qt::Key_Return),                                   SLOT(newlineAP()));
-	createShortcut(tr("-alt-newline"),             QKeySequence(Qt::Key_Enter),                                    SLOT(newlineAP()));
-	createShortcut(tr("delete_previous_character"),QKeySequence(Qt::Key_Backspace),                                SLOT(deletePreviousCharacterAP()));
-	createShortcut(tr("process_cancel"),           QKeySequence(Qt::Key_Escape),                                   SLOT(processCancelAP()));
-	createShortcut(tr("newline_and_indent"),       QKeySequence(Qt::CTRL + Qt::Key_Return),                        SLOT(newlineAndIndentAP()));
-	createShortcut(tr("newline_no_indent"),        QKeySequence(Qt::SHIFT + Qt::Key_Return),                       SLOT(newlineNoIndentAP()));
-	createShortcut(tr("-alt-newline_no_indent"),   QKeySequence(Qt::SHIFT + Qt::Key_Enter),                        SLOT(newlineNoIndentAP()));
-	createShortcut(tr("process_home"),             QKeySequence(Qt::Key_Home),                                     SLOT(beginningOfLineAP()));
-	createShortcut(tr("delete_previous_word"),     QKeySequence(Qt::CTRL + Qt::Key_Backspace),                     SLOT(deletePreviousWordAP()));
-	createShortcut(tr("end_of_line"),              QKeySequence(Qt::Key_End),                                      SLOT(endOfLineAP()));
-	createShortcut(tr("delete_next_character"),    QKeySequence(Qt::Key_Delete),                                   SLOT(deleteNextCharacterAP()));
-	createShortcut(tr("toggle_overstrike"),        QKeySequence(Qt::Key_Insert),                                   SLOT(toggleOverstrikeAP()));
-	createShortcut(tr("process_shift_up"),         QKeySequence(Qt::SHIFT + Qt::Key_Up),                           SLOT(processShiftUpAP()));
-	createShortcut(tr("process_shift_down"),       QKeySequence(Qt::SHIFT + Qt::Key_Down),                         SLOT(processShiftDownAP()));
-	createShortcut(tr("-alt-key_select-left"),         QKeySequence(Qt::SHIFT + Qt::Key_Left),                         SLOT(keySelectLeftAP()));
-	createShortcut(tr("-alt-key_select_right"),        QKeySequence(Qt::SHIFT + Qt::Key_Right),                        SLOT(keySelectRightAP()));
-	createShortcut(tr("cut_clipboard"),            QKeySequence(Qt::SHIFT + Qt::Key_Delete),                       SLOT(cutClipboardAP()));
-	createShortcut(tr("copy_clipboard"),           QKeySequence(Qt::CTRL + Qt::Key_Insert),                        SLOT(copyClipboardAP()));
-	createShortcut(tr("paste_clipboard"),          QKeySequence(Qt::SHIFT + Qt::Key_Insert),                       SLOT(pasteClipboardAP()));
-	createShortcut(tr("-alt-cut_clipboard"),       QKeySequence(Qt::CTRL + Qt::Key_X),                             SLOT(cutClipboardAP()));
-	createShortcut(tr("-alt-copy_clipboard"),      QKeySequence(Qt::CTRL + Qt::Key_C),                             SLOT(copyClipboardAP()));
-	createShortcut(tr("-alt-paste_clipboard"),     QKeySequence(Qt::CTRL + Qt::Key_V),                             SLOT(pasteClipboardAP()));
-	createShortcut(tr("copy_primary"),             QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Insert),            SLOT(copyPrimaryAP()));
-	createShortcut(tr("beginning_of_file"),        QKeySequence(Qt::CTRL + Qt::Key_Home),                          SLOT(beginningOfFileAP()));
-	createShortcut(tr("end_of_file"),              QKeySequence(Qt::CTRL + Qt::Key_End),                           SLOT(endOfFileAP()));
-	createShortcut(tr("backward_word"),            QKeySequence(Qt::CTRL + Qt::Key_Left),                          SLOT(backwardWordAP()));
-	createShortcut(tr("forward_word"),             QKeySequence(Qt::CTRL + Qt::Key_Right),                         SLOT(forwardWordAP()));
-	createShortcut(tr("backward_paragraph"),       QKeySequence(Qt::CTRL + Qt::Key_Up),                            SLOT(backwardParagraphAP()));
-	createShortcut(tr("forward_paragraph"),        QKeySequence(Qt::CTRL + Qt::Key_Down),                          SLOT(forwardParagraphAP()));
+#if 0
+    "Alt Shift Ctrl<KeyPress>osfPageUp: page_left(\"extend\", \"rect\")\n"
+    "Meta Shift Ctrl<KeyPress>osfPageUp: page_left(\"extend\", \"rect\")\n"
+    "Alt Shift<KeyPress>osfPageUp: previous_page(\"extend\", \"rect\")\n"
+    "Meta Shift<KeyPress>osfPageUp: previous_page(\"extend\", \"rect\")\n"
+    "Shift Ctrl<KeyPress>osfPageUp: page_left(\"extend\")\n"
+    "Ctrl<KeyPress>osfPageUp: previous_document()\n"
+    "Shift<KeyPress>osfPageUp: previous_page(\"extend\")\n"
+    "~Alt ~Shift ~Ctrl ~Meta<KeyPress>osfPageUp: previous_page()\n"
+    "Alt Shift Ctrl<KeyPress>osfPageDown: page_right(\"extend\", \"rect\")\n"
+    "Meta Shift Ctrl<KeyPress>osfPageDown: page_right(\"extend\", \"rect\")\n"
+    "Alt Shift<KeyPress>osfPageDown: next_page(\"extend\", \"rect\")\n"
+    "Meta Shift<KeyPress>osfPageDown: next_page(\"extend\", \"rect\")\n"
+    "Shift Ctrl<KeyPress>osfPageDown: page_right(\"extend\")\n"
+    "Ctrl<KeyPress>osfPageDown: next_document()\n"
+    "Shift<KeyPress>osfPageDown: next_page(\"extend\")\n"
+    "~Alt ~Shift ~Ctrl ~Meta<KeyPress>osfPageDown: next_page()\n"
+
+    /* PageLeft and PageRight are placed later than the PageUp/PageDown
+       bindings.  Some systems map osfPageLeft to Ctrl-PageUp.
+       Overloading this single key gives problems, and we want to give
+       priority to the normal version. */
+
+    // PageLeft
+    "Alt Shift<KeyPress>osfPageLeft: page_left(\"extend\", \"rect\")\n"
+    "Meta Shift<KeyPress>osfPageLeft: page_left(\"extend\", \"rect\")\n"
+    "Shift<KeyPress>osfPageLeft: page_left(\"extend\")\n"
+    "~Alt ~Shift ~Ctrl ~Meta<KeyPress>osfPageLeft: page_left()\n"
+
+    // PageRight
+    "Alt Shift<KeyPress>osfPageRight: page_right(\"extend\", \"rect\")\n"
+    "Meta Shift<KeyPress>osfPageRight: page_right(\"extend\", \"rect\")\n"
+    "Shift<KeyPress>osfPageRight: page_right(\"extend\")\n"
+    "~Alt ~Shift ~Ctrl ~Meta<KeyPress>osfPageRight: page_right()\n"
+#endif
+
+    createShortcut(tr("process_shift_up"),          QKeySequence(Qt::ALT + Qt::SHIFT + Qt::Key_Up),                 SLOT(processShiftUpRectAP()));
+    createShortcut(tr("-alt-process_shift_up"),     QKeySequence(Qt::META + Qt::SHIFT + Qt::Key_Up),                SLOT(processShiftUpRectAP()));
+    createShortcut(tr("process_shift_down"),        QKeySequence(Qt::ALT + Qt::SHIFT + Qt::Key_Down),               SLOT(processShiftDownRectAP()));
+    createShortcut(tr("-alt-process_shift_down"),   QKeySequence(Qt::META + Qt::SHIFT + Qt::Key_Down),              SLOT(processShiftDownRectAP()));
+    createShortcut(tr("-alt1-backward_paragraph"),  QKeySequence(Qt::CTRL + Qt::ALT + Qt::SHIFT + Qt::Key_Up),      SLOT(backwardParagraphExtendRectAP()));
+    createShortcut(tr("-alt2-backward_paragraph"),  QKeySequence(Qt::CTRL + Qt::META + Qt::SHIFT + Qt::Key_Up),     SLOT(backwardParagraphExtendRectAP()));
+    createShortcut(tr("-alt3-backward_paragraph"),  QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Up),                SLOT(backwardParagraphExtendAP()));
+    createShortcut(tr("-alt1-forward_paragraph"),   QKeySequence(Qt::CTRL + Qt::ALT + Qt::SHIFT + Qt::Key_Down),    SLOT(forwardParagraphExtendRectAP()));
+    createShortcut(tr("-alt2-forward_paragraph"),   QKeySequence(Qt::CTRL + Qt::META + Qt::SHIFT + Qt::Key_Down),   SLOT(forwardParagraphExtendRectAP()));
+    createShortcut(tr("-alt3-forward_paragraph"),   QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Down),              SLOT(forwardParagraphExtendAP()));
+    createShortcut(tr("-alt1-forward_word"),        QKeySequence(Qt::CTRL + Qt::ALT + Qt::SHIFT + Qt::Key_Right),   SLOT(forwardWordExtendRectAP()));
+    createShortcut(tr("-alt2-forward_word"),        QKeySequence(Qt::CTRL + Qt::META + Qt::SHIFT + Qt::Key_Right),  SLOT(forwardWordExtendRectAP()));
+    createShortcut(tr("-alt4-key_select"),          QKeySequence(Qt::ALT + Qt::SHIFT + Qt::Key_Right),              SLOT(keySelectRightRectAP()));
+    createShortcut(tr("-alt5-key_select"),          QKeySequence(Qt::META + Qt::SHIFT + Qt::Key_Right),             SLOT(keySelectRightRectAP()));
+    createShortcut(tr("-alt3-forward_word"),        QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Right),             SLOT(forwardWordExtendAP()));
+    createShortcut(tr("-alt1-backward_word"),       QKeySequence(Qt::CTRL + Qt::ALT + Qt::SHIFT + Qt::Key_Left),    SLOT(backwardWordExtendRectAP()));
+    createShortcut(tr("-alt2-backward_word"),       QKeySequence(Qt::CTRL + Qt::META + Qt::SHIFT + Qt::Key_Left),   SLOT(backwardWordExtendRectAP()));
+    createShortcut(tr("-alt2-key_select"),          QKeySequence(Qt::ALT + Qt::SHIFT + Qt::Key_Left),               SLOT(keySelectLeftRectAP()));
+    createShortcut(tr("-alt3-key_select"),          QKeySequence(Qt::META + Qt::SHIFT + Qt::Key_Left),              SLOT(keySelectLeftRectAP()));
+    createShortcut(tr("-alt3-backward_word"),       QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Left),              SLOT(backwardWordExtendAP()));
+    createShortcut(tr("-alt1-end_of_line"),         QKeySequence(Qt::ALT + Qt::SHIFT + Qt::Key_End),                SLOT(beginningOfLineExtendRectAP()));
+    createShortcut(tr("-alt2-end_of_line"),         QKeySequence(Qt::META + Qt::SHIFT + Qt::Key_Home),              SLOT(beginningOfLineExtendRectAP()));
+    createShortcut(tr("-alt3-end_of_line"),         QKeySequence(Qt::SHIFT + Qt::Key_Home),                         SLOT(beginningOfLineExtendAP()));
+    createShortcut(tr("-alt1-end_of_file"),         QKeySequence(Qt::CTRL + Qt::ALT + Qt::SHIFT + Qt::Key_Home),    SLOT(beginningOfFileExtendRectAP()));
+    createShortcut(tr("-alt2-end_of_file"),         QKeySequence(Qt::CTRL + Qt::META + Qt::SHIFT + Qt::Key_Home),   SLOT(beginningOfFileExtendRectAP()));
+    createShortcut(tr("-alt3-end_of_file"),         QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Home),              SLOT(beginningOfFileExtendAP()));
+    createShortcut(tr("-alt1-beginning_of_line"),   QKeySequence(Qt::ALT + Qt::SHIFT + Qt::Key_Home),               SLOT(beginningOfLineExtendRectAP()));
+    createShortcut(tr("-alt2-beginning_of_file"),   QKeySequence(Qt::META + Qt::SHIFT + Qt::Key_Home),              SLOT(beginningOfLineExtendRectAP()));
+    createShortcut(tr("-alt3-beginning_of_file"),   QKeySequence(Qt::SHIFT + Qt::Key_Home),                         SLOT(beginningOfLineExtendAP()));
+    createShortcut(tr("-alt1-beginning_of_file"),   QKeySequence(Qt::CTRL + Qt::ALT + Qt::SHIFT + Qt::Key_Home),    SLOT(beginningOfFileExtendRectAP()));
+    createShortcut(tr("-alt2-beginning_of_file"),   QKeySequence(Qt::CTRL + Qt::META + Qt::SHIFT + Qt::Key_Home),   SLOT(beginningOfFileExtendRectAP()));
+    createShortcut(tr("-alt3-beginning_of_file"),   QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Home),              SLOT(beginningOfFileExtendAP()));
+    createShortcut(tr("-alt1-copy_primary"),        QKeySequence(Qt::CTRL + Qt::ALT + Qt::SHIFT + Qt::Key_Insert),  SLOT(copyPrimaryRectAP()));
+    createShortcut(tr("-alt2-copy_primary"),        QKeySequence(Qt::CTRL + Qt::META + Qt::SHIFT + Qt::Key_Insert), SLOT(copyPrimaryRectAP()));
+    createShortcut(tr("-alt1-cut_primary"),         QKeySequence(Qt::CTRL + Qt::ALT + Qt::SHIFT + Qt::Key_Delete),  SLOT(cutPrimaryRectAP()));
+    createShortcut(tr("-alt2-cut_primary"),         QKeySequence(Qt::CTRL + Qt::META + Qt::SHIFT + Qt::Key_Delete), SLOT(cutPrimaryRectAP()));
+    createShortcut(tr("key_select"),                QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Space),             SLOT(keySelectAP()));
+    createShortcut(tr("-alt1-key_select"),          QKeySequence(Qt::CTRL + Qt::ALT + Qt::SHIFT + Qt::Key_Space),   SLOT(keySelectRectAP()));
+    createShortcut(tr("-alt2-key_select"),          QKeySequence(Qt::CTRL + Qt::META + Qt::SHIFT + Qt::Key_Space),  SLOT(keySelectRectAP()));
+    createShortcut(tr("cut_primary"),               QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Delete),            SLOT(cutPrimaryAP()));
+    createShortcut(tr("delete_to_end_of_line"),     QKeySequence(Qt::CTRL + Qt::Key_Delete),                        SLOT(deleteToEndOfLineAP()));
+    createShortcut(tr("delete_to_start_of_line"),   QKeySequence(Qt::CTRL + Qt::Key_U),                             SLOT(deleteToStartOfLineAP()));
+    createShortcut(tr("select_all"),                QKeySequence(Qt::CTRL + Qt::Key_Slash),                         SLOT(selectAllAP()));
+    createShortcut(tr("deselect_all"),              QKeySequence(Qt::CTRL + Qt::Key_Backslash),                     SLOT(deselectAllAP()));
+    createShortcut(tr("process_tab"),               QKeySequence(Qt::Key_Tab),                                      SLOT(processTabAP()));
+    createShortcut(tr("forward_character"),         QKeySequence(Qt::Key_Right),                                    SLOT(forwardCharacterAP()));
+    createShortcut(tr("backward_character"),        QKeySequence(Qt::Key_Left),                                     SLOT(backwardCharacterAP()));
+    createShortcut(tr("process_up"),                QKeySequence(Qt::Key_Up),                                       SLOT(processUpAP()));
+    createShortcut(tr("process_down"),              QKeySequence(Qt::Key_Down),                                     SLOT(processDownAP()));
+    createShortcut(tr("newline"),                   QKeySequence(Qt::Key_Return),                                   SLOT(newlineAP()));
+    createShortcut(tr("-alt-newline"),              QKeySequence(Qt::Key_Enter),                                    SLOT(newlineAP()));
+    createShortcut(tr("delete_previous_character"), QKeySequence(Qt::Key_Backspace),                                SLOT(deletePreviousCharacterAP()));
+    createShortcut(tr("process_cancel"),            QKeySequence(Qt::Key_Escape),                                   SLOT(processCancelAP()));
+    createShortcut(tr("newline_and_indent"),        QKeySequence(Qt::CTRL + Qt::Key_Return),                        SLOT(newlineAndIndentAP()));
+    createShortcut(tr("newline_no_indent"),         QKeySequence(Qt::SHIFT + Qt::Key_Return),                       SLOT(newlineNoIndentAP()));
+    createShortcut(tr("-alt-newline_no_indent"),    QKeySequence(Qt::SHIFT + Qt::Key_Enter),                        SLOT(newlineNoIndentAP()));
+    createShortcut(tr("process_home"),              QKeySequence(Qt::Key_Home),                                     SLOT(beginningOfLineAP()));
+    createShortcut(tr("delete_previous_word"),      QKeySequence(Qt::CTRL + Qt::Key_Backspace),                     SLOT(deletePreviousWordAP()));
+    createShortcut(tr("end_of_line"),               QKeySequence(Qt::Key_End),                                      SLOT(endOfLineAP()));
+    createShortcut(tr("delete_next_character"),     QKeySequence(Qt::Key_Delete),                                   SLOT(deleteNextCharacterAP()));
+    createShortcut(tr("toggle_overstrike"),         QKeySequence(Qt::Key_Insert),                                   SLOT(toggleOverstrikeAP()));
+    createShortcut(tr("process_shift_up"),          QKeySequence(Qt::SHIFT + Qt::Key_Up),                           SLOT(processShiftUpAP()));
+    createShortcut(tr("process_shift_down"),        QKeySequence(Qt::SHIFT + Qt::Key_Down),                         SLOT(processShiftDownAP()));
+    createShortcut(tr("-alt-key_select-left"),      QKeySequence(Qt::SHIFT + Qt::Key_Left),                         SLOT(keySelectLeftAP()));
+    createShortcut(tr("-alt-key_select_right"),     QKeySequence(Qt::SHIFT + Qt::Key_Right),                        SLOT(keySelectRightAP()));
+    createShortcut(tr("cut_clipboard"),             QKeySequence(Qt::SHIFT + Qt::Key_Delete),                       SLOT(cutClipboardAP()));
+    createShortcut(tr("copy_clipboard"),            QKeySequence(Qt::CTRL + Qt::Key_Insert),                        SLOT(copyClipboardAP()));
+    createShortcut(tr("paste_clipboard"),           QKeySequence(Qt::SHIFT + Qt::Key_Insert),                       SLOT(pasteClipboardAP()));
+    createShortcut(tr("-alt-cut_clipboard"),        QKeySequence(Qt::CTRL + Qt::Key_X),                             SLOT(cutClipboardAP()));
+    createShortcut(tr("-alt-copy_clipboard"),       QKeySequence(Qt::CTRL + Qt::Key_C),                             SLOT(copyClipboardAP()));
+    createShortcut(tr("-alt-paste_clipboard"),      QKeySequence(Qt::CTRL + Qt::Key_V),                             SLOT(pasteClipboardAP()));
+    createShortcut(tr("copy_primary"),              QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Insert),            SLOT(copyPrimaryAP()));
+    createShortcut(tr("beginning_of_file"),         QKeySequence(Qt::CTRL + Qt::Key_Home),                          SLOT(beginningOfFileAP()));
+    createShortcut(tr("end_of_file"),               QKeySequence(Qt::CTRL + Qt::Key_End),                           SLOT(endOfFileAP()));
+    createShortcut(tr("backward_word"),             QKeySequence(Qt::CTRL + Qt::Key_Left),                          SLOT(backwardWordAP()));
+    createShortcut(tr("forward_word"),              QKeySequence(Qt::CTRL + Qt::Key_Right),                         SLOT(forwardWordAP()));
+    createShortcut(tr("backward_paragraph"),        QKeySequence(Qt::CTRL + Qt::Key_Up),                            SLOT(backwardParagraphAP()));
+    createShortcut(tr("forward_paragraph"),         QKeySequence(Qt::CTRL + Qt::Key_Down),                          SLOT(forwardParagraphAP()));
 
 #if 1
 	/* Add mandatory delimiters blank, tab, and newline to the list of
@@ -550,12 +601,44 @@ QShortcut *TextArea::createShortcut(const QString &name, const QKeySequence &key
 }
 
 
+void TextArea::processShiftUpRectAP(EventFlags flags) {
+	processShiftUpAP(flags | RectFlag);
+}
+
+void TextArea::processShiftDownRectAP(EventFlags flags) {
+	processShiftDownAP(flags | RectFlag);
+}
+
+void TextArea::forwardParagraphExtendAP(EventFlags flags) {
+	forwardParagraphAP(flags | ExtendFlag);
+}
+
+void TextArea::forwardParagraphExtendRectAP(EventFlags flags) {
+	forwardParagraphAP(flags | ExtendFlag | RectFlag);
+}
+
+void TextArea::backwardParagraphExtendAP(EventFlags flags) {
+	backwardParagraphAP(flags | ExtendFlag);
+}
+
+void TextArea::backwardParagraphExtendRectAP(EventFlags flags) {
+	backwardParagraphAP(flags | ExtendFlag | RectFlag);
+}
+
 void TextArea::backwardWordExtendAP(EventFlags flags) {
 	backwardWordAP(flags | ExtendFlag);
 }
 
 void TextArea::backwardWordExtendRectAP(EventFlags flags) {
 	backwardWordAP(flags | ExtendFlag | RectFlag);
+}
+
+void TextArea::forwardWordExtendAP(EventFlags flags) {
+	forwardWordAP(flags | ExtendFlag);
+}
+
+void TextArea::forwardWordExtendRectAP(EventFlags flags) {
+	forwardWordAP(flags | ExtendFlag | RectFlag);
 }
 
 void TextArea::endOfLineExtendAP(EventFlags flags) {
