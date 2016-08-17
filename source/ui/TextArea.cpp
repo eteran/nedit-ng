@@ -450,17 +450,23 @@ TextArea::TextArea(QWidget *parent,
 
 	resize(width, height);
 
-#if 0
-	"Shift Ctrl<KeyPress>osfBeginLine: beginning_of_file(\"extend\")\n"
-
-	"Alt Shift<KeyPress>osfBeginLine: beginning_of_line(\"extend\", \"rect\")\n"
-	"Meta Shift<KeyPress>osfBeginLine: beginning_of_line(\"extend\", \"rect\")\n"
-	"Shift<KeyPress>osfBeginLine: beginning_of_line(\"extend\")\n"
-#endif
-
+	createShortcut(tr("-alt1-backward_word"),      QKeySequence(Qt::CTRL + Qt::ALT + Qt::SHIFT + Qt::Key_Left),    SLOT(backwardWordExtendRectAP()));
+	createShortcut(tr("-alt2-backward_word"),      QKeySequence(Qt::CTRL + Qt::META + Qt::SHIFT + Qt::Key_Left),   SLOT(backwardWordExtendRectAP()));
+	createShortcut(tr("-alt2-key_select"),         QKeySequence(Qt::ALT + Qt::SHIFT + Qt::Key_Left),               SLOT(keySelectLeftRectAP()));
+	createShortcut(tr("-alt3-key_select"),         QKeySequence(Qt::META + Qt::SHIFT + Qt::Key_Left),              SLOT(keySelectLeftRectAP()));
+	createShortcut(tr("-alt3-backward_word"),      QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Left),              SLOT(backwardWordExtendAP()));
+	createShortcut(tr("-alt1-end_of_line"),        QKeySequence(Qt::ALT + Qt::SHIFT + Qt::Key_End),                SLOT(beginningOfLineExtendRectAP()));
+	createShortcut(tr("-alt2-end_of_line"),        QKeySequence(Qt::META + Qt::SHIFT + Qt::Key_Home),              SLOT(beginningOfLineExtendRectAP()));
+	createShortcut(tr("-alt3-end_of_line"),        QKeySequence(Qt::SHIFT + Qt::Key_Home),                         SLOT(beginningOfLineExtendAP()));
+	createShortcut(tr("-alt1-end_of_file"),        QKeySequence(Qt::CTRL + Qt::ALT + Qt::SHIFT + Qt::Key_Home),    SLOT(beginningOfFileExtendRectAP()));
+	createShortcut(tr("-alt2-end_of_file"),        QKeySequence(Qt::CTRL + Qt::META + Qt::SHIFT + Qt::Key_Home),   SLOT(beginningOfFileExtendRectAP()));
+	createShortcut(tr("-alt3-end_of_file"),        QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Home),              SLOT(beginningOfFileExtendAP()));
+	createShortcut(tr("-alt1-beginning_of_line"),  QKeySequence(Qt::ALT + Qt::SHIFT + Qt::Key_Home),               SLOT(beginningOfLineExtendRectAP()));
+	createShortcut(tr("-alt2-beginning_of_file"),  QKeySequence(Qt::META + Qt::SHIFT + Qt::Key_Home),              SLOT(beginningOfLineExtendRectAP()));
+	createShortcut(tr("-alt3-beginning_of_file"),  QKeySequence(Qt::SHIFT + Qt::Key_Home),                         SLOT(beginningOfLineExtendAP()));
 	createShortcut(tr("-alt1-beginning_of_file"),  QKeySequence(Qt::CTRL + Qt::ALT + Qt::SHIFT + Qt::Key_Home),    SLOT(beginningOfFileExtendRectAP()));
 	createShortcut(tr("-alt2-beginning_of_file"),  QKeySequence(Qt::CTRL + Qt::META + Qt::SHIFT + Qt::Key_Home),   SLOT(beginningOfFileExtendRectAP()));
-	createShortcut(tr("-alt2-beginning_of_file"),  QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Home),              SLOT(beginningOfFileExtendAP()));
+	createShortcut(tr("-alt3-beginning_of_file"),  QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Home),              SLOT(beginningOfFileExtendAP()));
 	createShortcut(tr("-alt1-copy_primary"),       QKeySequence(Qt::CTRL + Qt::ALT + Qt::SHIFT + Qt::Key_Insert),  SLOT(copyPrimaryRectAP()));
 	createShortcut(tr("-alt2-copy_primary"),       QKeySequence(Qt::CTRL + Qt::META + Qt::SHIFT + Qt::Key_Insert), SLOT(copyPrimaryRectAP()));
 	createShortcut(tr("-alt1-cut_primary"),        QKeySequence(Qt::CTRL + Qt::ALT + Qt::SHIFT + Qt::Key_Delete),  SLOT(cutPrimaryRectAP()));
@@ -492,8 +498,8 @@ TextArea::TextArea(QWidget *parent,
 	createShortcut(tr("toggle_overstrike"),        QKeySequence(Qt::Key_Insert),                                   SLOT(toggleOverstrikeAP()));
 	createShortcut(tr("process_shift_up"),         QKeySequence(Qt::SHIFT + Qt::Key_Up),                           SLOT(processShiftUpAP()));
 	createShortcut(tr("process_shift_down"),       QKeySequence(Qt::SHIFT + Qt::Key_Down),                         SLOT(processShiftDownAP()));
-	createShortcut(tr("-key_select-left"),         QKeySequence(Qt::SHIFT + Qt::Key_Left),                         SLOT(keySelectLeftAP()));
-	createShortcut(tr("-key_select_right"),        QKeySequence(Qt::SHIFT + Qt::Key_Right),                        SLOT(keySelectRightAP()));
+	createShortcut(tr("-alt-key_select-left"),         QKeySequence(Qt::SHIFT + Qt::Key_Left),                         SLOT(keySelectLeftAP()));
+	createShortcut(tr("-alt-key_select_right"),        QKeySequence(Qt::SHIFT + Qt::Key_Right),                        SLOT(keySelectRightAP()));
 	createShortcut(tr("cut_clipboard"),            QKeySequence(Qt::SHIFT + Qt::Key_Delete),                       SLOT(cutClipboardAP()));
 	createShortcut(tr("copy_clipboard"),           QKeySequence(Qt::CTRL + Qt::Key_Insert),                        SLOT(copyClipboardAP()));
 	createShortcut(tr("paste_clipboard"),          QKeySequence(Qt::SHIFT + Qt::Key_Insert),                       SLOT(pasteClipboardAP()));
@@ -543,6 +549,31 @@ QShortcut *TextArea::createShortcut(const QString &name, const QKeySequence &key
 	return shortcut;
 }
 
+
+void TextArea::backwardWordExtendAP(EventFlags flags) {
+	backwardWordAP(flags | ExtendFlag);
+}
+
+void TextArea::backwardWordExtendRectAP(EventFlags flags) {
+	backwardWordAP(flags | ExtendFlag | RectFlag);
+}
+
+void TextArea::endOfLineExtendAP(EventFlags flags) {
+	endOfLineAP(flags | ExtendFlag);
+}
+
+void TextArea::endOfLineExtendRectAP(EventFlags flags) {
+	endOfLineAP(flags | ExtendFlag | RectFlag);
+}
+
+void TextArea::endOfFileExtendAP(EventFlags flags) {
+	endOfFileAP(flags | ExtendFlag);
+}
+
+void TextArea::endOfFileExtendRectAP(EventFlags flags) {
+	endOfFileAP(flags | ExtendFlag | RectFlag);
+}
+
 void TextArea::beginningOfFileExtendAP(EventFlags flags) {
 		beginningOfFileAP(flags | ExtendFlag);
 }
@@ -565,6 +596,14 @@ void TextArea::copyPrimaryRectAP(EventFlags flags) {
 
 void TextArea::cutPrimaryRectAP(EventFlags flags) {
 	cutPrimaryAP(flags | RectFlag);
+}
+
+void TextArea::keySelectLeftRectAP(EventFlags flags) {
+	keySelectAP(flags | LeftFlag | RectFlag);
+}
+
+void TextArea::keySelectRightRectAP(EventFlags flags) {
+	keySelectAP(flags | RightFlag | RectFlag);
 }
 
 void TextArea::keySelectRectAP(EventFlags flags) {
