@@ -218,24 +218,24 @@ static char defaultTranslations[] =
 /*X*/            "~Alt~Shift~Ctrl~Meta<KeyPress>osfDown: process_down()\n"
 
             // PageUp
-            "Alt Shift Ctrl<KeyPress>osfPageUp: page_left(\"extend\", \"rect\")\n"
-            "Meta Shift Ctrl<KeyPress>osfPageUp: page_left(\"extend\", \"rect\")\n"
-            "Alt Shift<KeyPress>osfPageUp: previous_page(\"extend\", \"rect\")\n"
-            "Meta Shift<KeyPress>osfPageUp: previous_page(\"extend\", \"rect\")\n"
-            "Shift Ctrl<KeyPress>osfPageUp: page_left(\"extend\")\n"
-            "Ctrl<KeyPress>osfPageUp: previous_document()\n"
-            "Shift<KeyPress>osfPageUp: previous_page(\"extend\")\n"
-            "~Alt ~Shift ~Ctrl ~Meta<KeyPress>osfPageUp: previous_page()\n"
+/*D*/            "Alt Shift Ctrl<KeyPress>osfPageUp: page_left(\"extend\", \"rect\")\n"
+/*D*/            "Meta Shift Ctrl<KeyPress>osfPageUp: page_left(\"extend\", \"rect\")\n"
+/*X*/            "Alt Shift<KeyPress>osfPageUp: previous_page(\"extend\", \"rect\")\n"
+/*X*/            "Meta Shift<KeyPress>osfPageUp: previous_page(\"extend\", \"rect\")\n"
+/*D*/            "Shift Ctrl<KeyPress>osfPageUp: page_left(\"extend\")\n"
+/*X*/            "Ctrl<KeyPress>osfPageUp: previous_document()\n"
+/*X*/            "Shift<KeyPress>osfPageUp: previous_page(\"extend\")\n"
+/*X*/            "~Alt ~Shift ~Ctrl ~Meta<KeyPress>osfPageUp: previous_page()\n"
 
             // PageDown
-            "Alt Shift Ctrl<KeyPress>osfPageDown: page_right(\"extend\", \"rect\")\n"
-            "Meta Shift Ctrl<KeyPress>osfPageDown: page_right(\"extend\", \"rect\")\n"
-            "Alt Shift<KeyPress>osfPageDown: next_page(\"extend\", \"rect\")\n"
-            "Meta Shift<KeyPress>osfPageDown: next_page(\"extend\", \"rect\")\n"
-            "Shift Ctrl<KeyPress>osfPageDown: page_right(\"extend\")\n"
-            "Ctrl<KeyPress>osfPageDown: next_document()\n"
-            "Shift<KeyPress>osfPageDown: next_page(\"extend\")\n"
-            "~Alt ~Shift ~Ctrl ~Meta<KeyPress>osfPageDown: next_page()\n"
+/*D*/            "Alt Shift Ctrl<KeyPress>osfPageDown: page_right(\"extend\", \"rect\")\n"
+/*D*/            "Meta Shift Ctrl<KeyPress>osfPageDown: page_right(\"extend\", \"rect\")\n"
+/*X*/            "Alt Shift<KeyPress>osfPageDown: next_page(\"extend\", \"rect\")\n"
+/*X*/            "Meta Shift<KeyPress>osfPageDown: next_page(\"extend\", \"rect\")\n"
+/*D*/            "Shift Ctrl<KeyPress>osfPageDown: page_right(\"extend\")\n"
+/*?*/            "Ctrl<KeyPress>osfPageDown: next_document()\n"
+/*X*/            "Shift<KeyPress>osfPageDown: next_page(\"extend\")\n"
+/*X*/            "~Alt ~Shift ~Ctrl ~Meta<KeyPress>osfPageDown: next_page()\n"
 
             /* PageLeft and PageRight are placed later than the PageUp/PageDown
                bindings.  Some systems map osfPageLeft to Ctrl-PageUp.
@@ -243,16 +243,16 @@ static char defaultTranslations[] =
                priority to the normal version. */
 
             // PageLeft
-            "Alt Shift<KeyPress>osfPageLeft: page_left(\"extend\", \"rect\")\n"
-            "Meta Shift<KeyPress>osfPageLeft: page_left(\"extend\", \"rect\")\n"
-            "Shift<KeyPress>osfPageLeft: page_left(\"extend\")\n"
-            "~Alt ~Shift ~Ctrl ~Meta<KeyPress>osfPageLeft: page_left()\n"
+/*X*/            "Alt Shift<KeyPress>osfPageLeft: page_left(\"extend\", \"rect\")\n"
+/*X*/            "Meta Shift<KeyPress>osfPageLeft: page_left(\"extend\", \"rect\")\n"
+/*X*/            "Shift<KeyPress>osfPageLeft: page_left(\"extend\")\n"
+/*?*/            "~Alt ~Shift ~Ctrl ~Meta<KeyPress>osfPageLeft: page_left()\n"
 
             // PageRight
-            "Alt Shift<KeyPress>osfPageRight: page_right(\"extend\", \"rect\")\n"
-            "Meta Shift<KeyPress>osfPageRight: page_right(\"extend\", \"rect\")\n"
-            "Shift<KeyPress>osfPageRight: page_right(\"extend\")\n"
-            "~Alt ~Shift ~Ctrl ~Meta<KeyPress>osfPageRight: page_right()\n"
+/*X*/            "Alt Shift<KeyPress>osfPageRight: page_right(\"extend\", \"rect\")\n"
+/*X*/            "Meta Shift<KeyPress>osfPageRight: page_right(\"extend\", \"rect\")\n"
+/*X*/            "Shift<KeyPress>osfPageRight: page_right(\"extend\")\n"
+/*?*/            "~Alt ~Shift ~Ctrl ~Meta<KeyPress>osfPageRight: page_right()\n"
 
 /*?*/            "Shift<KeyPress>osfSelect: key_select()\n"
 /*X*/            "<KeyPress>osfCancel: process_cancel()\n"

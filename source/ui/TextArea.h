@@ -156,6 +156,10 @@ private Q_SLOTS:
 	void deleteToStartOfLineAP(EventFlags flags = NoneFlag);
 	void deleteToEndOfLineAP(EventFlags flags = NoneFlag);
 	void cutPrimaryAP(EventFlags flags = NoneFlag);
+	void pageLeftAP(EventFlags flags = NoneFlag);
+	void pageRightAP(EventFlags flags = NoneFlag);
+	void nextPageAP(EventFlags flags = NoneFlag);
+	void previousPageAP(EventFlags flags = NoneFlag);
 
 
 private Q_SLOTS:
@@ -201,6 +205,14 @@ private Q_SLOTS:
 	void backwardParagraphExtendRectAP(EventFlags flags = NoneFlag);
 	void processShiftUpRectAP(EventFlags flags = NoneFlag);
 	void processShiftDownRectAP(EventFlags flags = NoneFlag);
+	void pageLeftExtendRectAP(EventFlags flags = NoneFlag);
+	void pageLeftExtendAP(EventFlags flags = NoneFlag);
+	void pageRightExtendRectAP(EventFlags flags = NoneFlag);
+	void pageRightExtendAP(EventFlags flags = NoneFlag);
+	void nextPageExtendRectAP(EventFlags flags = NoneFlag);
+	void nextPageExtendAP(EventFlags flags = NoneFlag);
+	void previousPageExtendRectAP(EventFlags flags = NoneFlag);
+	void previousPageExtendAP(EventFlags flags = NoneFlag);
 
 
 public:
@@ -248,6 +260,8 @@ private:
 	void TextColPasteClipboard();
 	int TextDOffsetWrappedRow(int row) const;
 	void TextDSetLineNumberArea(int lineNumLeft, int lineNumWidth, int textLeft);
+	int TextDPreferredColumn(int *visLineNum, int *lineStartPos);
+	int TextDPosOfPreferredCol(int column, int lineStartPos);
 
 public:
 	void bufPreDeleteCallback(int pos, int nDeleted);
