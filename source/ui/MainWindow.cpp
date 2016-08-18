@@ -1,10 +1,12 @@
 
+#include <QtDebug>
 #include <QToolButton>
 #include "MainWindow.h"
 #include "DialogAbout.h"
 #include "DocumentWidget.h"
 #include "file.h"
 #include "preferences.h"
+
 
 //------------------------------------------------------------------------------
 // Name: MainWindow
@@ -150,4 +152,8 @@ void MainWindow::on_action_New_triggered() {
 void MainWindow::on_action_About_triggered() {
 	auto dialog = new DialogAbout(this);
 	dialog->exec();
+}
+
+void MainWindow::on_action_Select_All_triggered() {
+	qDebug() << "HERE";
 }

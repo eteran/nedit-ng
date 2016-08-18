@@ -22,6 +22,7 @@ private:
 public Q_SLOTS:
 	void on_action_New_triggered();
 	void on_action_About_triggered();
+	void on_action_Select_All_triggered();
 #if 0
 	void on_action_New_Window_triggered();
 	void on_action_Open_triggered();
@@ -46,8 +47,7 @@ public Q_SLOTS:
 	void on_action_Copy_triggered();
 	void on_action_Paste_triggered();
 	void on_action_Paste_Column_triggered();
-	void on_action_Delete_triggered();
-	void on_action_Select_All_triggered();
+	void on_action_Delete_triggered();	
 	void on_action_Shift_Left_triggered();
 	void on_action_Shift_Right_triggered();
 	void on_action_Lower_case_triggered();

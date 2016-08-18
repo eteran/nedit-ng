@@ -106,7 +106,7 @@ Document *EditNewFile(Document *inWindow, char *geometry, int iconic, const char
 #endif
 	} else {
 		window = new Document(name, geometry, iconic);
-#if 0
+#if 1
 		// TODO(eteran): this is an experiement in making a Qt main window along side
 		// the typical one...
 		auto win = new MainWindow();

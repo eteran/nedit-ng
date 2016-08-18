@@ -4,6 +4,14 @@
 #include <QBoxLayout>
 #include <QSplitter>
 #include "preferences.h"
+#include "TextBuffer.h"
+#include "nedit.h"
+#include "Color.h"
+#include "highlight.h"
+
+namespace {
+
+}
 
 //------------------------------------------------------------------------------
 // Name: DocumentWidget
@@ -14,8 +22,61 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 	auto layout   = new QBoxLayout(QBoxLayout::TopToBottom);
 	auto splitter = new QSplitter(Qt::Vertical, this);
 
-#if 0
-	splitter->addWidget(new TextArea(this));
+#if 1
+
+	int P_marginWidth  = 5;
+	int P_marginHeight = 5;
+	int lineNumCols    = 0;
+	int marginWidth    = 0;
+	int charWidth      = 0;
+	int l = P_marginWidth + ((lineNumCols == 0) ? 0 : marginWidth + charWidth * lineNumCols);
+	int h = P_marginHeight;
+
+	auto buffer = new TextBuffer();
+	auto area = new TextArea(this,
+							 l,
+							 h,
+							 100,
+							 100,
+							 0,
+							 0,
+							 buffer,
+							 QFont(tr("Monospace"), 12),
+							 Qt::white,
+							 Qt::black,
+							 Qt::white,
+							 Qt::blue,
+							 Qt::black, //QColor highlightFGPixel,
+							 Qt::black, //QColor highlightBGPixel,
+							 Qt::black, //QColor cursorFGPixel,
+							 Qt::black, //QColor lineNumFGPixel,
+							 Qt::black, //QColor calltipFGPixel,
+							 Qt::black //QColor calltipBGPixel;
+							 );
+
+	Pixel textFgPix   = AllocColor(GetPrefColorName(TEXT_FG_COLOR));
+	Pixel textBgPix   = AllocColor(GetPrefColorName(TEXT_BG_COLOR));
+	Pixel selectFgPix = AllocColor(GetPrefColorName(SELECT_FG_COLOR));
+	Pixel selectBgPix = AllocColor(GetPrefColorName(SELECT_BG_COLOR));
+	Pixel hiliteFgPix = AllocColor(GetPrefColorName(HILITE_FG_COLOR));
+	Pixel hiliteBgPix = AllocColor(GetPrefColorName(HILITE_BG_COLOR));
+	Pixel lineNoFgPix = AllocColor(GetPrefColorName(LINENO_FG_COLOR));
+	Pixel cursorFgPix = AllocColor(GetPrefColorName(CURSOR_FG_COLOR));
+
+	area->TextDSetColors(
+		toQColor(textFgPix),
+		toQColor(textBgPix),
+		toQColor(selectFgPix),
+		toQColor(selectBgPix),
+		toQColor(hiliteFgPix),
+		toQColor(hiliteBgPix),
+		toQColor(lineNoFgPix),
+		toQColor(cursorFgPix));
+
+	splitter->addWidget(area);
+
+
+
 #endif
 	splitter->setChildrenCollapsible(false);
 	layout->addWidget(splitter);
