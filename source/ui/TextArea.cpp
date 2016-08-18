@@ -474,7 +474,7 @@ TextArea::TextArea(QWidget *parent,
 
     createShortcut(tr("-alt2-page_left"),           QKeySequence(Qt::CTRL + Qt::ALT + Qt::SHIFT + Qt::Key_PageUp),    SLOT(pageLeftExtendRectAP()));
     createShortcut(tr("-alt3-page_left"),           QKeySequence(Qt::CTRL + Qt::META + Qt::SHIFT + Qt::Key_PageUp),   SLOT(pageLeftExtendRectAP()));
-    createShortcut(tr("-alt1-page_left"),           QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_PageUp),              SLOT(pageleftExtendAP()));
+    createShortcut(tr("-alt1-page_left"),           QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_PageUp),              SLOT(pageLeftExtendAP()));
 #if 0 // NOTE(eteran): no page left/right on most keyboards, so conflict here :-/
     createShortcut(tr("page_left"),                 QKeySequence(Qt::CTRL + Qt::Key_PageUp),                          SLOT(pageLeftAP()));
 #endif
@@ -1143,13 +1143,19 @@ void TextArea::contextMenuEvent(QContextMenuEvent *e) {
 	if(e->modifiers() != Qt::ControlModifier) {
 		auto menu = new QMenu(this);
 	#if 1 // TODO(eteran): replace with dynamically generated menu like Motif based widget
-		menu->addAction(tr("Undo"));
-		menu->addAction(tr("Redo"));
-		menu->addAction(tr("Cut"));
-		menu->addAction(tr("Copy"));
-		menu->addAction(tr("Paste"));
+		auto undo  = menu->addAction(tr("Undo"));
+		auto redo  = menu->addAction(tr("Redo"));
+		auto cut   = menu->addAction(tr("Cut"));
+		auto copy  = menu->addAction(tr("Copy"));
+		auto paste = menu->addAction(tr("Paste"));
+
+		undo->setIcon(QIcon::fromTheme(tr("edit-undo")));
+		redo->setIcon(QIcon::fromTheme(tr("edit-redo")));
+		cut->setIcon(QIcon::fromTheme(tr("edit-cut")));
+		copy->setIcon(QIcon::fromTheme(tr("edit-copy")));
+		paste->setIcon(QIcon::fromTheme(tr("edit-paste")));
 	#endif
-		menu->exec(mapToParent(e->pos()));
+		menu->exec(mapToGlobal(e->pos()));
 	}
 }
 
