@@ -4583,7 +4583,6 @@ std::tuple<Widget, TextArea *>  Document::createTextArea(Widget parent, Document
     XGetFontProperty(fi, XA_FONT, &ret);
     const char *name = XGetAtomName(QX11Info::display(), (Atom)ret);
 
-    //QFont f(QLatin1String("Monospace"), 12);
     QFont f;
     f.setRawName(QLatin1String(name));
 	auto textArea = new TextArea(
