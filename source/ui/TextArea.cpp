@@ -505,12 +505,12 @@ TextArea::TextArea(QWidget *parent,
     createShortcut(tr("-alt2-key_select"),          QKeySequence(Qt::ALT + Qt::SHIFT + Qt::Key_Left),                 SLOT(keySelectLeftRectAP()));
     createShortcut(tr("-alt3-key_select"),          QKeySequence(Qt::META + Qt::SHIFT + Qt::Key_Left),                SLOT(keySelectLeftRectAP()));
     createShortcut(tr("-alt3-backward_word"),       QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Left),                SLOT(backwardWordExtendAP()));
-    createShortcut(tr("-alt1-end_of_line"),         QKeySequence(Qt::ALT + Qt::SHIFT + Qt::Key_End),                  SLOT(beginningOfLineExtendRectAP()));
-    createShortcut(tr("-alt2-end_of_line"),         QKeySequence(Qt::META + Qt::SHIFT + Qt::Key_Home),                SLOT(beginningOfLineExtendRectAP()));
-    createShortcut(tr("-alt3-end_of_line"),         QKeySequence(Qt::SHIFT + Qt::Key_Home),                           SLOT(beginningOfLineExtendAP()));
-    createShortcut(tr("-alt1-end_of_file"),         QKeySequence(Qt::CTRL + Qt::ALT + Qt::SHIFT + Qt::Key_Home),      SLOT(beginningOfFileExtendRectAP()));
-    createShortcut(tr("-alt2-end_of_file"),         QKeySequence(Qt::CTRL + Qt::META + Qt::SHIFT + Qt::Key_Home),     SLOT(beginningOfFileExtendRectAP()));
-    createShortcut(tr("-alt3-end_of_file"),         QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Home),                SLOT(beginningOfFileExtendAP()));
+    createShortcut(tr("-alt1-end_of_line"),         QKeySequence(Qt::ALT + Qt::SHIFT + Qt::Key_End),                  SLOT(endOfLineExtendRectAP()));
+    createShortcut(tr("-alt2-end_of_line"),         QKeySequence(Qt::META + Qt::SHIFT + Qt::Key_End),                 SLOT(endOfLineExtendRectAP()));
+    createShortcut(tr("-alt3-end_of_line"),         QKeySequence(Qt::SHIFT + Qt::Key_End),                            SLOT(endOfLineExtendAP()));
+    createShortcut(tr("-alt1-end_of_file"),         QKeySequence(Qt::CTRL + Qt::ALT + Qt::SHIFT + Qt::Key_End),       SLOT(endOfFileExtendRectAP()));
+    createShortcut(tr("-alt2-end_of_file"),         QKeySequence(Qt::CTRL + Qt::META + Qt::SHIFT + Qt::Key_End),      SLOT(endOfFileExtendRectAP()));
+    createShortcut(tr("-alt3-end_of_file"),         QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_End),                 SLOT(endOfFileExtendAP()));
     createShortcut(tr("-alt1-beginning_of_line"),   QKeySequence(Qt::ALT + Qt::SHIFT + Qt::Key_Home),                 SLOT(beginningOfLineExtendRectAP()));
     createShortcut(tr("-alt2-beginning_of_file"),   QKeySequence(Qt::META + Qt::SHIFT + Qt::Key_Home),                SLOT(beginningOfLineExtendRectAP()));
     createShortcut(tr("-alt3-beginning_of_file"),   QKeySequence(Qt::SHIFT + Qt::Key_Home),                           SLOT(beginningOfLineExtendAP()));
@@ -553,9 +553,11 @@ TextArea::TextArea(QWidget *parent,
     createShortcut(tr("cut_clipboard"),             QKeySequence(Qt::SHIFT + Qt::Key_Delete),                         SLOT(cutClipboardAP()));
     createShortcut(tr("copy_clipboard"),            QKeySequence(Qt::CTRL + Qt::Key_Insert),                          SLOT(copyClipboardAP()));
     createShortcut(tr("paste_clipboard"),           QKeySequence(Qt::SHIFT + Qt::Key_Insert),                         SLOT(pasteClipboardAP()));
+#if 0
     createShortcut(tr("-alt-cut_clipboard"),        QKeySequence(Qt::CTRL + Qt::Key_X),                               SLOT(cutClipboardAP()));
     createShortcut(tr("-alt-copy_clipboard"),       QKeySequence(Qt::CTRL + Qt::Key_C),                               SLOT(copyClipboardAP()));
     createShortcut(tr("-alt-paste_clipboard"),      QKeySequence(Qt::CTRL + Qt::Key_V),                               SLOT(pasteClipboardAP()));
+#endif
     createShortcut(tr("copy_primary"),              QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Insert),              SLOT(copyPrimaryAP()));
     createShortcut(tr("beginning_of_file"),         QKeySequence(Qt::CTRL + Qt::Key_Home),                            SLOT(beginningOfFileAP()));
     createShortcut(tr("end_of_file"),               QKeySequence(Qt::CTRL + Qt::Key_End),                             SLOT(endOfFileAP()));
@@ -1112,10 +1114,8 @@ void TextArea::focusInEvent(QFocusEvent *event) {
 
 	TextDUnblankCursor();
 
-#if 0
 	// Call any registered focus-in callbacks
-	XtCallCallbacks(w_, textNfocusCallback, (XtPointer)event);
-#endif
+	Q_EMIT focusIn(this);
 }
 void TextArea::focusOutEvent(QFocusEvent *event) {
 
@@ -1130,10 +1130,9 @@ void TextArea::focusOutEvent(QFocusEvent *event) {
 #if 0
 	// If there's a calltip displayed, kill it.
 	TextDKillCalltip(0);
-
-	// Call any registered focus-out callbacks
-	XtCallCallbacks(w_, textNlosingFocusCallback, (XtPointer)event);
 #endif
+	// Call any registered focus-out callbacks
+	Q_EMIT focusOut(this);
 }
 
 //------------------------------------------------------------------------------
@@ -7793,4 +7792,44 @@ int TextArea::TextDPosOfPreferredCol(int column, int lineStartPos) {
 	}
 
 	return newPos;
+}
+
+/*
+** Return the cursor position
+*/
+int TextArea::TextGetCursorPos() const {
+	return TextDGetInsertPosition();
+}
+
+int TextArea::TextDGetInsertPosition() const {
+	return cursorPos_;
+}
+
+/*
+** If the text widget is maintaining a line number count appropriate to "pos"
+** return the line and column numbers of pos, otherwise return False.  If
+** continuous wrap mode is on, returns the absolute line number (as opposed to
+** the wrapped line number which is used for scrolling).  THIS ROUTINE ONLY
+** WORKS FOR DISPLAYED LINES AND, IN CONTINUOUS WRAP MODE, ONLY WHEN THE
+** ABSOLUTE LINE NUMBER IS BEING MAINTAINED.  Otherwise, it returns False.
+*/
+int TextArea::TextDPosToLineAndCol(int pos, int *lineNum, int *column) {
+
+	/* In continuous wrap mode, the absolute (non-wrapped) line count is
+	   maintained separately, as needed.  Only return it if we're actually
+	   keeping track of it and pos is in the displayed text */
+	if (P_continuousWrap) {
+		if (!maintainingAbsTopLineNum() || pos < firstChar_ || pos > lastChar_)
+			return false;
+		*lineNum = absTopLineNum_ + buffer_->BufCountLines(firstChar_, pos);
+		*column = buffer_->BufCountDispChars(buffer_->BufStartOfLine(pos), pos);
+		return true;
+	}
+
+	// Only return the data if pos is within the displayed text
+	if (!posToVisibleLineNum(pos, lineNum))
+		return false;
+	*column = buffer_->BufCountDispChars(lineStarts_[*lineNum], pos);
+	*lineNum += topLineNum_;
+	return true;
 }

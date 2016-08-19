@@ -15,7 +15,16 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
-    <property name="margin">
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
      <number>0</number>
     </property>
     <item>
@@ -24,7 +33,16 @@
        <enum>QFrame::NoFrame</enum>
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout">
-       <property name="margin">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
         <number>0</number>
        </property>
        <item>
@@ -34,8 +52,7 @@
          </property>
          <property name="icon">
           <iconset theme="edit-find">
-           <normaloff/>
-          </iconset>
+           <normaloff>.</normaloff>.</iconset>
          </property>
          <property name="autoRaise">
           <bool>true</bool>
@@ -86,19 +103,12 @@
         <number>0</number>
        </property>
        <item>
-        <widget class="QLabel" name="labelFilename">
+        <widget class="QLabel" name="labelFileAndSize">
          <property name="text">
-          <string>/a/very/long/path/used/as/example/</string>
+          <string>/a/very/long/path/used/as/example/ 0 bytes</string>
          </property>
          <property name="textInteractionFlags">
           <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="labelBytes">
-         <property name="text">
-          <string>0 bytes</string>
          </property>
         </widget>
        </item>
@@ -484,8 +494,7 @@
   <action name="action_New">
    <property name="icon">
     <iconset theme="tab-new">
-     <normaloff/>
-    </iconset>
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>&amp;New</string>
@@ -497,8 +506,7 @@
   <action name="action_New_Window">
    <property name="icon">
     <iconset theme="document-new">
-     <normaloff/>
-    </iconset>
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>New &amp;Window</string>
@@ -510,8 +518,7 @@
   <action name="action_Open">
    <property name="icon">
     <iconset theme="document-open">
-     <normaloff/>
-    </iconset>
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>&amp;Open...</string>
@@ -530,14 +537,13 @@
   </action>
   <action name="action_Open_Previous">
    <property name="text">
-    <string>Open &amp;Previous</string>
+    <string>Open Pre&amp;vious</string>
    </property>
   </action>
   <action name="action_Close">
    <property name="icon">
     <iconset theme="document-close">
-     <normaloff/>
-    </iconset>
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>&amp;Close</string>
@@ -549,8 +555,7 @@
   <action name="action_Save">
    <property name="icon">
     <iconset theme="document-save">
-     <normaloff/>
-    </iconset>
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>&amp;Save</string>
@@ -562,8 +567,7 @@
   <action name="action_Save_As">
    <property name="icon">
     <iconset theme="document-save-as">
-     <normaloff/>
-    </iconset>
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Save &amp;As...</string>
@@ -572,8 +576,7 @@
   <action name="action_Revert_to_Saved">
    <property name="icon">
     <iconset theme="document-revert">
-     <normaloff/>
-    </iconset>
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>&amp;Revert to Saved</string>
@@ -618,8 +621,7 @@
   <action name="action_Print">
    <property name="icon">
     <iconset theme="document-print">
-     <normaloff/>
-    </iconset>
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>&amp;Print...</string>
@@ -639,8 +641,7 @@
   <action name="action_Exit">
    <property name="icon">
     <iconset theme="application-exit">
-     <normaloff/>
-    </iconset>
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>E&amp;xit</string>
@@ -652,8 +653,7 @@
   <action name="action_Undo">
    <property name="icon">
     <iconset theme="edit-undo">
-     <normaloff/>
-    </iconset>
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>&amp;Undo</string>
@@ -665,8 +665,7 @@
   <action name="action_Redo">
    <property name="icon">
     <iconset theme="edit-redo">
-     <normaloff/>
-    </iconset>
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>&amp;Redo</string>
@@ -678,8 +677,7 @@
   <action name="action_Cut">
    <property name="icon">
     <iconset theme="edit-cut">
-     <normaloff/>
-    </iconset>
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Cu&amp;t</string>
@@ -691,8 +689,7 @@
   <action name="action_Copy">
    <property name="icon">
     <iconset theme="edit-copy">
-     <normaloff/>
-    </iconset>
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>&amp;Copy</string>
@@ -704,8 +701,7 @@
   <action name="action_Paste">
    <property name="icon">
     <iconset theme="edit-paste">
-     <normaloff/>
-    </iconset>
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>&amp;Paste</string>
@@ -728,8 +724,7 @@
    </property>
    <property name="icon">
     <iconset theme="edit-delete">
-     <normaloff/>
-    </iconset>
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>&amp;Delete</string>
@@ -741,8 +736,7 @@
   <action name="action_Select_All">
    <property name="icon">
     <iconset theme="edit-select-all">
-     <normaloff/>
-    </iconset>
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Select &amp;All</string>
@@ -754,8 +748,7 @@
   <action name="action_Shift_Left">
    <property name="icon">
     <iconset theme="format-indent-less">
-     <normaloff/>
-    </iconset>
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Shift &amp;Left</string>
@@ -767,8 +760,7 @@
   <action name="action_Shift_Right">
    <property name="icon">
     <iconset theme="format-indent-more">
-     <normaloff/>
-    </iconset>
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Shift Ri&amp;ght</string>
@@ -780,8 +772,7 @@
   <action name="action_Lower_case">
    <property name="icon">
     <iconset theme="format-text-lowercase">
-     <normaloff/>
-    </iconset>
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Lo&amp;wer-case</string>
@@ -793,8 +784,7 @@
   <action name="action_Upper_case">
    <property name="icon">
     <iconset theme="format-text-uppercase">
-     <normaloff/>
-    </iconset>
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Upp&amp;er-case</string>
@@ -830,8 +820,7 @@
   <action name="action_Find">
    <property name="icon">
     <iconset theme="edit-find">
-     <normaloff/>
-    </iconset>
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>&amp;Find...</string>
@@ -867,8 +856,7 @@
   <action name="action_Replace">
    <property name="icon">
     <iconset theme="edit-find-replace">
-     <normaloff/>
-    </iconset>
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>&amp;Replace...</string>
@@ -896,8 +884,7 @@
   <action name="action_Goto_Line_Number">
    <property name="icon">
     <iconset theme="go-jump">
-     <normaloff/>
-    </iconset>
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Goto &amp;Line Number...</string>
@@ -917,8 +904,7 @@
   <action name="action_Mark">
    <property name="icon">
     <iconset theme="bookmark-new">
-     <normaloff/>
-    </iconset>
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Mar&amp;k</string>
@@ -968,8 +954,7 @@
   <action name="action_Execute_Command">
    <property name="icon">
     <iconset theme="utilities-terminal">
-     <normaloff/>
-    </iconset>
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>&amp;Execute Command</string>
@@ -992,8 +977,7 @@
    </property>
    <property name="icon">
     <iconset theme="view-filter">
-     <normaloff/>
-    </iconset>
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>&amp;Filter Selection...</string>
@@ -1016,8 +1000,7 @@
   <action name="action_Split_Pane">
    <property name="icon">
     <iconset theme="view-split-top-bottom">
-     <normaloff/>
-    </iconset>
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>&amp;Split Pane</string>
@@ -1029,8 +1012,7 @@
   <action name="action_Close_Pane">
    <property name="icon">
     <iconset theme="view-close">
-     <normaloff/>
-    </iconset>
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>&amp;Close Pane</string>
@@ -1042,8 +1024,7 @@
   <action name="action_Detach_Tab">
    <property name="icon">
     <iconset theme="tab-detach">
-     <normaloff/>
-    </iconset>
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>&amp;Detach Tab</string>
@@ -1299,8 +1280,7 @@
   <action name="action_Repeat">
    <property name="icon">
     <iconset theme="repeat">
-     <normaloff/>
-    </iconset>
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>&amp;Repeat...</string>
@@ -1320,8 +1300,7 @@
   <action name="action_About">
    <property name="icon">
     <iconset theme="help-about">
-     <normaloff/>
-    </iconset>
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>&amp;About NEdit-ng</string>
@@ -1411,7 +1390,7 @@
   </action>
   <action name="action_Default_Command_Shell">
    <property name="text">
-    <string>Command Shell...</string>
+    <string>C&amp;ommand Shell...</string>
    </property>
   </action>
   <action name="action_Default_Tab_Stops">
@@ -1439,7 +1418,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Apply Backli&amp;ghting</string>
+    <string>Apply Bac&amp;klighting</string>
    </property>
   </action>
   <action name="action_Default_Show_Tooltips">
@@ -1672,7 +1651,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>L&amp;iteral, Case Sensitive, Whole Word</string>
+    <string>Literal, Case &amp;Sensitive, Whole Word</string>
    </property>
   </action>
   <action name="action_Default_Search_Regular_Expression">

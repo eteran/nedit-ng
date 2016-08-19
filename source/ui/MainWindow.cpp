@@ -2,6 +2,8 @@
 #include <QtDebug>
 #include <QToolButton>
 #include "MainWindow.h"
+#include "TextArea.h"
+#include "TextBuffer.h"
 #include "DialogAbout.h"
 #include "DocumentWidget.h"
 #include "file.h"
@@ -18,9 +20,10 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(par
 	setupTabBar();
 	setupMenuStrings();
 	
-	showStats_       = GetPrefStatsLine();
-	showISearchLine_ = GetPrefISearchLine();
-	showLineNumbers_ = GetPrefLineNums();
+	showStats_            = GetPrefStatsLine();
+	showISearchLine_      = GetPrefISearchLine();
+	showLineNumbers_      = GetPrefLineNums();
+	modeMessageDisplayed_ = false;
 	
 	// default to hiding the optional panels
 	ui.statusFrame->setVisible(showStats_);
@@ -136,12 +139,35 @@ void MainWindow::deleteTabButtonClicked() {
 }
 
 //------------------------------------------------------------------------------
+// Name: onFocusChanged
+//------------------------------------------------------------------------------
+void MainWindow::onFocusIn(QWidget *now) {
+	if(auto w = qobject_cast<TextArea *>(now)) {
+		// record which window pane last had the keyboard focus
+		lastFocus_ = w;
+
+		// update line number statistic to reflect current focus pane
+		UpdateStatsLine();
+
+		// finish off the current incremental search
+		EndISearch();
+#if 0
+		// Check for changes to read-only status and/or file modifications
+		CheckForChangesToFile(window);
+#endif
+	}
+}
+
+void MainWindow::onFocusOut(QWidget *was) {
+	Q_UNUSED(was);
+}
+
+//------------------------------------------------------------------------------
 // Name: on_action_New_triggered
 //------------------------------------------------------------------------------
 void MainWindow::on_action_New_triggered() {
 
 	QString name = UniqueUntitledName();
-
 	auto newTab = new DocumentWidget(name, this);
 	ui.tabWidget->addTab(newTab, name);
 }
@@ -154,6 +180,126 @@ void MainWindow::on_action_About_triggered() {
 	dialog->exec();
 }
 
+//------------------------------------------------------------------------------
+// Name: on_action_Select_All_triggered
+//------------------------------------------------------------------------------
 void MainWindow::on_action_Select_All_triggered() {
-	qDebug() << "HERE";
+	if(TextArea *w = lastFocus_) {
+		w->selectAllAP();
+	}
+}
+
+//------------------------------------------------------------------------------
+// Name: on_action_Cut_triggered
+//------------------------------------------------------------------------------
+void MainWindow::on_action_Cut_triggered() {
+	if(TextArea *w = lastFocus_) {
+		w->cutClipboardAP();
+	}
+}
+
+//------------------------------------------------------------------------------
+// Name: on_action_Copy_triggered
+//------------------------------------------------------------------------------
+void MainWindow::on_action_Copy_triggered() {
+	if(TextArea *w = lastFocus_) {
+		w->copyClipboardAP();
+	}
+}
+
+//------------------------------------------------------------------------------
+// Name: on_action_Paste_triggered
+//------------------------------------------------------------------------------
+void MainWindow::on_action_Paste_triggered() {
+	if(TextArea *w = lastFocus_) {
+		w->pasteClipboardAP();
+	}
+}
+
+/*
+** Update the optional statistics line.
+*/
+void MainWindow::UpdateStatsLine() {
+#if 0
+	if (!IsTopDocument()) {
+		return;
+	}
+#endif
+
+	/* This routine is called for each character typed, so its performance
+	   affects overall editor perfomance.  Only update if the line is on. */
+	if (!showStats_) {
+		return;
+	}
+
+	auto textD = lastFocus_;
+
+	// MainWindow -> DocumentWidget -> QSplitter -> TextArea
+	//               ^------------------------------|
+	if(auto doc = qobject_cast<DocumentWidget *>(textD->parent()->parent())) {
+
+		// Compose the string to display. If line # isn't available, leave it off
+		int pos            = textD->TextGetCursorPos();
+
+		QString format;
+		switch(doc->fileFormat_) {
+		case DOS_FILE_FORMAT:
+			format = tr(" DOS");
+			break;
+		case MAC_FILE_FORMAT:
+			format = tr(" Mac");
+			break;
+		default:
+			format = tr("");
+			break;
+		}
+
+		QString string;
+		QString slinecol;
+		int line;
+		int colNum;
+		if (!textD->TextDPosToLineAndCol(pos, &line, &colNum)) {
+			string   = tr("%1%2%3 %4 bytes").arg(doc->path_, doc->filename_, format).arg(doc->buffer_->BufGetLength());
+			slinecol = tr("L: ---  C: ---");
+		} else {
+			slinecol = tr("L: %1  C: %2").arg(line).arg(colNum);
+			if (showLineNumbers_) {
+				string = tr("%1%2%3 byte %4 of %5").arg(doc->path_, doc->filename_, format).arg(pos).arg(doc->buffer_->BufGetLength());
+			} else {
+				string = tr("%1%2%3 %4 bytes").arg(doc->path_, doc->filename_, format).arg(doc->buffer_->BufGetLength());
+			}
+		}
+
+		// Update the line/column number
+		ui.labelStats->setText(slinecol);
+
+		// Don't clobber the line if there's a special message being displayed
+		if(!modeMessageDisplayed_) {
+			ui.labelFileAndSize->setText(string);
+		}
+	}
+}
+
+/*
+** Incremental searching is anchored at the position where the cursor
+** was when the user began typing the search string.  Call this routine
+** to forget about this original anchor, and if the search bar is not
+** permanently up, pop it down.
+*/
+void MainWindow::EndISearch() {
+#if 0
+	/* Note: Please maintain this such that it can be freely peppered in
+	   mainline code, without callers having to worry about performance
+	   or visual glitches.  */
+
+	// Forget the starting position used for the current run of searches
+	window->iSearchStartPos_ = -1;
+
+	// Mark the end of incremental search history overwriting
+	saveSearchHistory("", nullptr, SEARCH_LITERAL, FALSE);
+
+	// Pop down the search line (if it's not pegged up in Preferences)
+	window->TempShowISearch(FALSE);
+#endif
+	// incrementalSearchFrame
 }

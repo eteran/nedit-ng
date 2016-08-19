@@ -1,22 +1,21 @@
 
-#include "DocumentWidget.h"
-#include "TextArea.h"
 #include <QBoxLayout>
 #include <QSplitter>
+#include "MainWindow.h"
+#include "DocumentWidget.h"
+#include "TextArea.h"
 #include "preferences.h"
 #include "TextBuffer.h"
 #include "nedit.h"
 #include "Color.h"
 #include "highlight.h"
 
-namespace {
-
-}
-
 //------------------------------------------------------------------------------
 // Name: DocumentWidget
 //------------------------------------------------------------------------------
-DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowFlags f) : QWidget(parent, f) {
+DocumentWidget::DocumentWidget(const QString &name, MainWindow *window, QWidget *parent, Qt::WindowFlags f) : QWidget(parent, f) {
+
+	buffer_ = new TextBuffer();
 
 	// create the text widget
 	auto layout   = new QBoxLayout(QBoxLayout::TopToBottom);
@@ -32,7 +31,6 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 	int l = P_marginWidth + ((lineNumCols == 0) ? 0 : marginWidth + charWidth * lineNumCols);
 	int h = P_marginHeight;
 
-	auto buffer = new TextBuffer();
 	auto area = new TextArea(this,
 							 l,
 							 h,
@@ -40,7 +38,7 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 							 100,
 							 0,
 							 0,
-							 buffer,
+							 buffer_,
 							 QFont(tr("Monospace"), 12),
 							 Qt::white,
 							 Qt::black,
@@ -75,6 +73,16 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 
 	splitter->addWidget(area);
 
+	// add focus, drag, cursor tracking, and smart indent callbacks
+#if 0
+	textD->addCursorMovementCallback(movedCB, window);
+	textD->addDragStartCallback(dragStartCB, window);
+	textD->addDragEndCallback(dragEndCB, window);
+	textD->addsmartIndentCallback(SmartIndentCB, window);
+#endif
+
+	connect(area, SIGNAL(focusIn(QWidget*)), window, SLOT(onFocusIn(QWidget*)));
+	connect(area, SIGNAL(focusOut(QWidget*)), window, SLOT(onFocusOut(QWidget*)));
 
 
 #endif

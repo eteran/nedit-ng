@@ -1518,8 +1518,6 @@ bool PromptForNewFile(Document *window, const char *prompt, char *fullname, File
 QString UniqueUntitledName() {
 	
 	for (int i = 0; i < INT_MAX; i++) {
-	
-	
 		QString name;
 	
 		if (i == 0) {

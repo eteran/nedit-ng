@@ -3710,24 +3710,26 @@ Document::Document(const QString &name, char *geometry, bool iconic) {
 
 #if 1
 
-	Pixel textFgPix   = AllocColor(GetPrefColorName(TEXT_FG_COLOR));
-	Pixel textBgPix   = AllocColor(GetPrefColorName(TEXT_BG_COLOR));
-	Pixel selectFgPix = AllocColor(GetPrefColorName(SELECT_FG_COLOR));
-	Pixel selectBgPix = AllocColor(GetPrefColorName(SELECT_BG_COLOR));
-	Pixel hiliteFgPix = AllocColor(GetPrefColorName(HILITE_FG_COLOR));
-	Pixel hiliteBgPix = AllocColor(GetPrefColorName(HILITE_BG_COLOR));
-	Pixel lineNoFgPix = AllocColor(GetPrefColorName(LINENO_FG_COLOR));
-	Pixel cursorFgPix = AllocColor(GetPrefColorName(CURSOR_FG_COLOR));
+	if(area) {
+		Pixel textFgPix   = AllocColor(GetPrefColorName(TEXT_FG_COLOR));
+		Pixel textBgPix   = AllocColor(GetPrefColorName(TEXT_BG_COLOR));
+		Pixel selectFgPix = AllocColor(GetPrefColorName(SELECT_FG_COLOR));
+		Pixel selectBgPix = AllocColor(GetPrefColorName(SELECT_BG_COLOR));
+		Pixel hiliteFgPix = AllocColor(GetPrefColorName(HILITE_FG_COLOR));
+		Pixel hiliteBgPix = AllocColor(GetPrefColorName(HILITE_BG_COLOR));
+		Pixel lineNoFgPix = AllocColor(GetPrefColorName(LINENO_FG_COLOR));
+		Pixel cursorFgPix = AllocColor(GetPrefColorName(CURSOR_FG_COLOR));
 
-	area->TextDSetColors(
-		toQColor(textFgPix),
-		toQColor(textBgPix),
-		toQColor(selectFgPix),
-		toQColor(selectBgPix),
-		toQColor(hiliteFgPix),
-		toQColor(hiliteBgPix),
-		toQColor(lineNoFgPix),
-		toQColor(cursorFgPix));
+		area->TextDSetColors(
+			toQColor(textFgPix),
+			toQColor(textBgPix),
+			toQColor(selectFgPix),
+			toQColor(selectBgPix),
+			toQColor(hiliteFgPix),
+			toQColor(hiliteBgPix),
+			toQColor(lineNoFgPix),
+			toQColor(cursorFgPix));
+	}
 
 #endif
 
@@ -3770,7 +3772,9 @@ Document::Document(const QString &name, char *geometry, bool iconic) {
 	textD->TextSetBuffer(buffer_);
 
 #if 1
-	area->TextSetBuffer(buffer_);
+	if(area) {
+		area->TextSetBuffer(buffer_);
+	}
 #endif
 
 
@@ -4576,7 +4580,7 @@ std::tuple<Widget, TextArea *>  Document::createTextArea(Widget parent, Document
 	textD->addDragEndCallback(dragEndCB, window);
 	textD->addsmartIndentCallback(SmartIndentCB, window);
 
-#if 1
+#if 0
 
     XFontStruct *fi = textD->getFont();
     unsigned long ret;
@@ -4618,6 +4622,7 @@ std::tuple<Widget, TextArea *>  Document::createTextArea(Widget parent, Document
 	textArea->addsmartIndentCallback(SmartIndentCB, window);
 #endif
 	textArea->show();
+#else
 #endif
 	/* This makes sure the text area initially has a the insert point shown
 	   ... (check if still true with the nedit text widget, probably not) */
@@ -4634,7 +4639,7 @@ std::tuple<Widget, TextArea *>  Document::createTextArea(Widget parent, Document
 	   operation and performance will be better without it) */
 	textD->TextDMaintainAbsLineNum(window->showStats_);
 
-	return std::make_tuple(text, textArea);
+	return std::make_tuple(text, (TextArea *)nullptr);
 }
 
 

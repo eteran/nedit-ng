@@ -5,6 +5,8 @@
 #include <QMainWindow>
 #include <QPointer>
 
+class TextArea;
+
 #include "ui_MainWindow.h"
 
 class MainWindow : public QMainWindow {
@@ -18,6 +20,10 @@ private:
 	void setupMenuGroups();
 	void setupMenuStrings();
 	void setupTabBar();
+
+private:
+	void UpdateStatsLine();
+	void EndISearch();
 
 public Q_SLOTS:
 	void on_action_New_triggered();
@@ -43,9 +49,11 @@ public Q_SLOTS:
 	void on_action_Exit_triggered();
 	void on_action_Undo_triggered();
 	void on_action_Redo_triggered();
+#endif
 	void on_action_Cut_triggered();
 	void on_action_Copy_triggered();
 	void on_action_Paste_triggered();
+#if 0
 	void on_action_Paste_Column_triggered();
 	void on_action_Delete_triggered();	
 	void on_action_Shift_Left_triggered();
@@ -183,13 +191,17 @@ public Q_SLOTS:
 
 private Q_SLOTS:
 	void deleteTabButtonClicked();
+	void onFocusIn(QWidget *now);
+	void onFocusOut(QWidget *was);
 
 private:
-	QPointer<QDialog> dialogFind_;
-	QPointer<QDialog> dialogReplace_;
-	bool              showLineNumbers_; // is the line number display shown
-	bool              showStats_;       // is stats line supposed to be shown
-	bool              showISearchLine_; // is incr. search line to be shown
+	QPointer<QDialog>  dialogFind_;
+	QPointer<QDialog>  dialogReplace_;
+	QPointer<TextArea> lastFocus_;
+	bool               showLineNumbers_; // is the line number display shown
+	bool               showStats_;       // is stats line supposed to be shown
+	bool               showISearchLine_; // is incr. search line to be shown
+	bool               modeMessageDisplayed_;
 
 private:
 	Ui::MainWindow ui;

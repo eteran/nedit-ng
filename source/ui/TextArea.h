@@ -75,6 +75,10 @@ public:
 	TextArea& operator=(const TextArea &) = delete;
 	virtual ~TextArea();
 
+Q_SIGNALS:
+	void focusIn(QWidget *now);
+	void focusOut(QWidget *now);
+
 public:
 	// resource setters
 	void setWordDelimiters(const QString &delimiters);
@@ -122,7 +126,7 @@ private Q_SLOTS:
 private:
 	bool clickTracker(QMouseEvent *event, bool inDoubleClickHandler);
 
-private Q_SLOTS:
+public Q_SLOTS:
 	void forwardCharacterAP(EventFlags flags = NoneFlag);
 	void backwardCharacterAP(EventFlags flags = NoneFlag);
 	void processUpAP(EventFlags flags = NoneFlag);
@@ -231,6 +235,9 @@ public:
 	int TextDOffsetWrappedColumn(int row, int column);
 	void TextDGetScroll(int *topLineNum, int *horizOffset);
 	int TextDInSelection(Point p);
+	int TextGetCursorPos() const;
+	int TextDGetInsertPosition() const;
+	int TextDPosToLineAndCol(int pos, int *lineNum, int *column);
 
 private:
 	void TextDSetWrapMode(int wrap, int wrapMargin);

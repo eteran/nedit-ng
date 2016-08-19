@@ -17,19 +17,20 @@
 class UndoInfo;
 class TextBuffer;
 class Document;
+class MainWindow;
 
 class DocumentWidget : public QWidget {
 	Q_OBJECT
 public:
-	DocumentWidget(const QString &name, QWidget *parent = 0, Qt::WindowFlags f = 0);
-	~DocumentWidget();
+	DocumentWidget(const QString &name, MainWindow *window, QWidget *parent = 0, Qt::WindowFlags f = 0);
+	virtual ~DocumentWidget();
 
 private:
 	// TODO(eteran): are these dialog's per window or per text document?
 	QPointer<QDialog> dialogColors_;
 	QPointer<QDialog> dialogFonts_; /* nullptr, unless font dialog is up */	
 
-private:
+public:
 	Atom fileClosedAtom_;              // Atom used to tell nc that the file is closed
 	Bookmark markTable_[MAX_MARKS];    // marked locations in window
 	Document ** writableWindows_;      // temporary list of writable windows, used during multi-file replacements
