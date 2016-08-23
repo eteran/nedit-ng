@@ -212,7 +212,7 @@ void MainWindow::UpdateStatsLine(DocumentWidget *doc) {
 
 
 	// Compose the string to display. If line # isn't available, leave it off
-	int pos            = textD->TextGetCursorPos();
+	int pos = textD->TextGetCursorPos();
 
 	QString format;
 	switch(doc->fileFormat_) {
