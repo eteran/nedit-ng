@@ -6,11 +6,13 @@
 #include <QPointer>
 
 class TextArea;
+class DocumentWidget;
 
 #include "ui_MainWindow.h"
 
 class MainWindow : public QMainWindow {
 	Q_OBJECT
+	friend class DocumentWidget;
 
 public:
 	MainWindow (QWidget *parent = 0, Qt::WindowFlags flags = 0);
@@ -22,8 +24,7 @@ private:
 	void setupTabBar();
 
 private:
-	void UpdateStatsLine();
-	void EndISearch();
+	void UpdateStatsLine(DocumentWidget *doc);
 
 public Q_SLOTS:
 	void on_action_New_triggered();
@@ -191,8 +192,6 @@ public Q_SLOTS:
 
 private Q_SLOTS:
 	void deleteTabButtonClicked();
-	void onFocusIn(QWidget *now);
-	void onFocusOut(QWidget *was);
 
 private:
 	QPointer<QDialog>  dialogFind_;

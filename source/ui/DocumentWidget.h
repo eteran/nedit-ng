@@ -22,8 +22,15 @@ class MainWindow;
 class DocumentWidget : public QWidget {
 	Q_OBJECT
 public:
-	DocumentWidget(const QString &name, MainWindow *window, QWidget *parent = 0, Qt::WindowFlags f = 0);
+	DocumentWidget(const QString &name, QWidget *parent = 0, Qt::WindowFlags f = 0);
 	virtual ~DocumentWidget();
+
+private Q_SLOTS:
+	void onFocusIn(QWidget *now);
+	void onFocusOut(QWidget *was);
+
+private:
+	void EndISearch();
 
 private:
 	// TODO(eteran): are these dialog's per window or per text document?

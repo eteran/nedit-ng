@@ -13,7 +13,7 @@
 //------------------------------------------------------------------------------
 // Name: DocumentWidget
 //------------------------------------------------------------------------------
-DocumentWidget::DocumentWidget(const QString &name, MainWindow *window, QWidget *parent, Qt::WindowFlags f) : QWidget(parent, f) {
+DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowFlags f) : QWidget(parent, f) {
 
 	buffer_ = new TextBuffer();
 
@@ -81,8 +81,8 @@ DocumentWidget::DocumentWidget(const QString &name, MainWindow *window, QWidget 
 	textD->addsmartIndentCallback(SmartIndentCB, window);
 #endif
 
-	connect(area, SIGNAL(focusIn(QWidget*)), window, SLOT(onFocusIn(QWidget*)));
-	connect(area, SIGNAL(focusOut(QWidget*)), window, SLOT(onFocusOut(QWidget*)));
+	connect(area, SIGNAL(focusIn(QWidget*)), this, SLOT(onFocusIn(QWidget*)));
+	connect(area, SIGNAL(focusOut(QWidget*)), this, SLOT(onFocusOut(QWidget*)));
 
 
 #endif
@@ -169,9 +169,61 @@ DocumentWidget::DocumentWidget(const QString &name, MainWindow *window, QWidget 
 
 }
 
+
 //------------------------------------------------------------------------------
 // Name: ~DocumentWidget
 //------------------------------------------------------------------------------
 DocumentWidget::~DocumentWidget() {
 }
 
+//------------------------------------------------------------------------------
+// Name: onFocusChanged
+//------------------------------------------------------------------------------
+void DocumentWidget::onFocusIn(QWidget *now) {
+	if(auto w = qobject_cast<TextArea *>(now)) {
+		if(auto window = qobject_cast<MainWindow *>(w->window())) {
+
+			// record which window pane last had the keyboard focus
+			window->lastFocus_ = w;
+
+			// update line number statistic to reflect current focus pane
+			window->UpdateStatsLine(this);
+
+			// finish off the current incremental search
+			EndISearch();
+	#if 0
+			// Check for changes to read-only status and/or file modifications
+			CheckForChangesToFile(window);
+	#endif
+		}
+	}
+}
+
+void DocumentWidget::onFocusOut(QWidget *was) {
+	Q_UNUSED(was);
+}
+
+/*
+** Incremental searching is anchored at the position where the cursor
+** was when the user began typing the search string.  Call this routine
+** to forget about this original anchor, and if the search bar is not
+** permanently up, pop it down.
+*/
+void DocumentWidget::EndISearch() {
+
+	/* Note: Please maintain this such that it can be freely peppered in
+	   mainline code, without callers having to worry about performance
+	   or visual glitches.  */
+
+	// Forget the starting position used for the current run of searches
+	iSearchStartPos_ = -1;
+
+#if 0
+	// Mark the end of incremental search history overwriting
+	saveSearchHistory("", nullptr, SEARCH_LITERAL, FALSE);
+
+	// Pop down the search line (if it's not pegged up in Preferences)
+	window->TempShowISearch(FALSE);
+#endif
+	// incrementalSearchFrame
+}
