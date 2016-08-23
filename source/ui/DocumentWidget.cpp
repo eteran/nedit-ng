@@ -47,9 +47,7 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 							 Qt::black, //QColor highlightFGPixel,
 							 Qt::black, //QColor highlightBGPixel,
 							 Qt::black, //QColor cursorFGPixel,
-							 Qt::black, //QColor lineNumFGPixel,
-							 Qt::black, //QColor calltipFGPixel,
-							 Qt::black //QColor calltipBGPixel;
+							 Qt::black  //QColor lineNumFGPixel,
 							 );
 
 	Pixel textFgPix   = AllocColor(GetPrefColorName(TEXT_FG_COLOR));

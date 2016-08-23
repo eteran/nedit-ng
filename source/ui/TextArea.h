@@ -67,9 +67,7 @@ public:
 		QColor highlightFGPixel,
 		QColor highlightBGPixel,
 		QColor cursorFGPixel,
-		QColor lineNumFGPixel,
-		QColor calltipFGPixel,
-		QColor calltipBGPixel);
+		QColor lineNumFGPixel);
 
 	TextArea(const TextArea &) = delete;
 	TextArea& operator=(const TextArea &) = delete;

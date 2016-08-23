@@ -266,9 +266,7 @@ TextArea::TextArea(QWidget *parent,
 	QColor highlightFGPixel,
 	QColor highlightBGPixel,
 	QColor cursorFGPixel,
-	QColor lineNumFGPixel,
-	QColor calltipFGPixel,
-	QColor calltipBGPixel) : QAbstractScrollArea(parent) {
+	QColor lineNumFGPixel) : QAbstractScrollArea(parent) {
 
 	setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 	setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
@@ -360,8 +358,6 @@ TextArea::TextArea(QWidget *parent,
 	pal.setColor(QPalette::Base, bgPixel);                  // background
 	pal.setColor(QPalette::Highlight, selectBGPixel);       // highlight background
 	pal.setColor(QPalette::HighlightedText, selectFGPixel); // highlight foreground
-	pal.setColor(QPalette::ToolTipBase, calltipBGPixel);    // calltip base
-	pal.setColor(QPalette::ToolTipText, calltipFGPixel);    // calltip text
 	viewport()->setPalette(pal);
 #endif
 	QFontMetrics fm(fontStruct);
