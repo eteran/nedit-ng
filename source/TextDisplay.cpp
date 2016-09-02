@@ -6661,8 +6661,6 @@ void TextDisplay::processCancelAP(XEvent *event, String *args, Cardinal *nArgs) 
 	(void)nArgs;
 	(void)event;
 
-	qDebug("PROCESS_CANCEL");
-
 	int dragState = dragState_;
 
 	// If there's a calltip displayed, kill it.
