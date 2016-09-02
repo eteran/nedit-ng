@@ -104,7 +104,6 @@ static void iSearchTextKeyEH(Widget w, XtPointer clientData, XEvent *Event, Bool
 static void iSearchTextValueChangedCB(Widget w, XtPointer clientData, XtPointer call_data);
 static void iSearchTryBeepOnWrap(Document *window, SearchDirection direction, int beginPos, int startPos);
 static void removeDoomedWindowFromList(Document *window, int index);
-static void saveSearchHistory(const char *searchString, const char *replaceString, SearchType searchType, int isIncremental);
 static void selectedSearchCB(Widget w, XtPointer callData, Atom *selection, Atom *type, char *value, int *length, int *format);
 static std::string upCaseStringEx(view::string_view inString);
 static std::string downCaseStringEx(view::string_view inString);
@@ -2615,7 +2614,7 @@ static bool replaceUsingREEx(view::string_view searchStr, const char *replaceStr
 ** is made.  To mark the end of an incremental search, call saveSearchHistory
 ** again with an empty search string and isIncremental==False.
 */
-static void saveSearchHistory(const char *searchString, const char *replaceString, SearchType searchType, int isIncremental) {
+void saveSearchHistory(const char *searchString, const char *replaceString, SearchType searchType, int isIncremental) {
 	char *sStr, *rStr;
 	static int currentItemIsIncremental = FALSE;
 

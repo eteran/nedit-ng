@@ -64,7 +64,6 @@ void SelectToMatchingCharacter(Document *window);
 void SetISearchTextCallbacks(Document *window);
 
 
-
 /* Default scope if selection exists when replace dialog pops up.
    "Smart" means "In Selection" if the selection spans more than
    one line; "In Window" otherwise. */
@@ -104,6 +103,7 @@ int countWritableWindows(void);
 int historyIndex(int nCycles);
 int isRegexType(SearchType searchType);
 void unmanageReplaceDialogs(const Document *window);
+void saveSearchHistory(const char *searchString, const char *replaceString, SearchType searchType, int isIncremental);
 
 extern char *SearchHistory[MAX_SEARCH_HISTORY];
 extern char *ReplaceHistory[MAX_SEARCH_HISTORY];
