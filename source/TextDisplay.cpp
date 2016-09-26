@@ -1810,8 +1810,8 @@ void TextDisplay::bufModifiedCallback(int pos, int nInserted, int nDeleted, int 
 	int oldFirstChar = firstChar_;
 	int scrolled;
 	int origCursorPos = cursorPos_;
-	int wrapModStart;
-	int wrapModEnd;
+    int wrapModStart = 0;
+    int wrapModEnd   = 0;
 
 	// buffer modification cancels vertical cursor motion column
 	if (nInserted != 0 || nDeleted != 0)
