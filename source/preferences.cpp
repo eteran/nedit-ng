@@ -800,7 +800,7 @@ static char *ImportedFile = nullptr;
 static void translatePrefFormats(int convertOld, int fileVer);
 static void setIntPref(int *prefDataField, int newValue);
 static void setStringPref(char *prefDataField, const char *newValue);
-static void reapplyLanguageMode(Document *window, int mode, int forceDefaults);
+static void reapplyLanguageMode(Document *window, int mode, bool forceDefaults);
 
 static bool stringReplaceEx(std::string *inString, const char *expr, const char *replaceWith, SearchType searchType, int replaceLen);
 static QStringList readExtensionList(const char **inPtr);
@@ -1796,9 +1796,9 @@ void SelectShellDialog(Widget parent, Document *forWindow) {
 ** Change the language mode to the one indexed by "mode", reseting word
 ** delimiters, syntax highlighting and other mode specific parameters
 */
-static void reapplyLanguageMode(Document *window, int mode, int forceDefaults) {
+static void reapplyLanguageMode(Document *window, int mode, bool forceDefaults) {
 
-	int i, wrapMode, indentStyle, tabDist, emTabDist, highlight, oldEmTabDist;
+    int wrapMode, indentStyle, tabDist, emTabDist, highlight, oldEmTabDist;
 	int wrapModeIsDef, tabDistIsDef, emTabDistIsDef, indentStyleIsDef;
 	int highlightIsDef, haveHighlightPatterns, haveSmartIndentMacros;
 	int oldMode = window->languageMode_;
@@ -1826,7 +1826,7 @@ static void reapplyLanguageMode(Document *window, int mode, int forceDefaults) {
 	
 	
 	textD_of(window->textArea_)->setWordDelimiters(delimiters);
-	for (i = 0; i < window->textPanes_.size(); i++) {
+    for (int i = 0; i < window->textPanes_.size(); i++) {
 		textD_of(window->textPanes_[i])->setWordDelimiters(delimiters);
 	}
 

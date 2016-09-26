@@ -39,7 +39,7 @@ class QString;
 class Document;
 class LanguageMode;
 
-#define PLAIN_LANGUAGE_MODE -1
+constexpr int PLAIN_LANGUAGE_MODE = -1;
 
 /* maximum number of language modes allowed */
 #define MAX_LANGUAGE_MODES 127
