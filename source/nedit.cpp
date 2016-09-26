@@ -630,11 +630,13 @@ static int checkDoMacroArg(const char *macro) {
 
 	// Do a test parse 
 	Program *const prog = ParseMacro(tMacro, &errMsg, &stoppedAt);
-	delete [] tMacro;
-	if(!prog) {
+
+	if(!prog) {        
 		ParseError(nullptr, tMacro, stoppedAt, "argument to -do", errMsg);
+        delete [] tMacro;
 		return False;
 	}
+    delete [] tMacro;
 	FreeProgram(prog);
 	return True;
 }
@@ -840,7 +842,7 @@ static int virtKeyBindingsAreInvalid(const uint8_t *bindings) {
 	for (i = 1; i < count; ++i) {
 		if (!strcmp(keys[i - 1], keys[i])) {
 			// Duplicate detected 
-			free(keys);
+            delete [] keys;
 			XtFree(copy);
 			return True;
 		}
