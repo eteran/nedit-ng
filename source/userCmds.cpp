@@ -543,8 +543,9 @@ static void updateMenu(Document *window, int menuType) {
 	applyLangModeToUserMenuInfo(menu.sumDataList, window->languageMode_);
 
 	// create user menu items, if not done before 
-	if (!*menu.sumMenuCreated)
+    if (!*menu.sumMenuCreated) {
 		createMenuItems(window, &menu);
+    }
 
 	// manage user menu items depending on current language mode 
 	manageUserMenu(&menu, window);
@@ -1706,8 +1707,8 @@ UserMenuCache *CreateUserMenuCache(void) {
 	auto cache = new UserMenuCache;
 
 	cache->umcLanguageMode = -2;
-	cache->umcShellMenuCreated = False;
-	cache->umcMacroMenuCreated = False;
+    cache->umcShellMenuCreated = false;
+    cache->umcMacroMenuCreated = false;
 	cache->umcShellMenuList.clear();
 	cache->umcMacroMenuList.clear();
 
@@ -1727,7 +1728,7 @@ void FreeUserMenuCache(UserMenuCache *cache) {
 */
 void InitUserBGMenuCache(UserBGMenuCache *cache) {
 	cache->ubmcLanguageMode = -2;
-	cache->ubmcMenuCreated = False;
+    cache->ubmcMenuCreated = false;
 	cache->ubmcMenuList.clear();
 }
 
@@ -1804,11 +1805,11 @@ static userMenuInfo *parseMenuItemRec(MenuItem *item) {
 
 	// init. remaining parts of user menu info element 
 	newInfo->umiIdLen = 0;
-	newInfo->umiIsDefault = False;
+    newInfo->umiIsDefault = false;
 	newInfo->umiNbrOfLanguageModes = 0;
 	newInfo->umiLanguageMode = nullptr;
 	newInfo->umiDefaultIndex = -1;
-	newInfo->umiToBeManaged = False;
+    newInfo->umiToBeManaged = false;
 
 	// assign language mode info to new user menu info element 
 	parseMenuItemName(item->name.toLatin1().data(), newInfo);
@@ -1833,7 +1834,7 @@ static void parseMenuItemName(char *menuItemName, userMenuInfo *info) {
 		if (!strcmp(atPtr + 1, "*")) {
 			/* only language is "*": this is for all but language specific
 			   macros */
-			info->umiIsDefault = True;
+            info->umiIsDefault = true;
 			return;
 		}
 
