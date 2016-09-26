@@ -4425,7 +4425,16 @@ static int rangesetInfoMS(Document *window, DataValue *argList, int nArgs, DataV
 		rangeset = rangesetTable->RangesetFetch(label);
 	}
 
-	rangeset->RangesetGetInfo(&defined, &label, &count, &color, &name, &mode);
+    if(rangeset) {
+        rangeset->RangesetGetInfo(&defined, &label, &count, &color, &name, &mode);
+    } else {
+        defined = false;
+        label = 0;
+        count = 0;
+        color = "";
+        name  = "";
+        mode  = "";
+    }
 
 	// set up result 
 	result->tag = ARRAY_TAG;
