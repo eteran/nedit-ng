@@ -1165,21 +1165,12 @@ void Rangeset::RangesetEmpty() {
 ** Get information about rangeset.
 */
 void Rangeset::RangesetGetInfo(bool *defined, int *label, int *count, const char **color, const char **name, const char **mode) {
-	if(!this) {
-		*defined = false;
-		*label = 0;
-		*count = 0;
-		*color = "";
-		*name  = "";
-		*mode  = "";
-	} else {
-		*defined = true;
-		*label = (int)this->label;
-		*count = this->n_ranges;
-		*color = this->color_name ? this->color_name : "";
-		*name  = this->name       ? this->name : "";
-		*mode  = this->update_name;
-	}
+    *defined = true;
+    *label = static_cast<int>(this->label);
+    *count = this->n_ranges;
+    *color = this->color_name ? this->color_name : "";
+    *name  = this->name       ? this->name : "";
+    *mode  = this->update_name;
 }
 
 /*
