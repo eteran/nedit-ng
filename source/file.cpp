@@ -101,9 +101,6 @@ Document *EditNewFile(Document *inWindow, char *geometry, int iconic, const char
 	// create new window/document 
 	if (inWindow) {
 		window = inWindow->CreateDocument(name);
-#if 0
-		// TODO(eteran): to the tab one too
-#endif
 	} else {
 		window = new Document(name, geometry, iconic);
 #if 1
@@ -272,14 +269,17 @@ void RevertToSaved(Document *window) {
 	int horizOffsets[MAX_PANES];
 	int openFlags = 0;
 
+
 	// Can't revert untitled windows 
 	if (!window->filenameSet_) {
 		QMessageBox::warning(nullptr /*parent*/, QLatin1String("Error"), QString(QLatin1String("Window '%1' was never saved, can't re-read")).arg(window->filename_));
 		return;
 	}
 
+    const int panesCount = window->textPanes_.size();
+
 	// save insert & scroll positions of all of the panes to restore later 
-	for (int i = 0; i <= window->textPanes_.size(); i++) {
+    for (int i = 0; i <= panesCount; i++) {
 		Widget text = window->GetPaneByIndex(i);
 		
 		auto textD = textD_of(text);
@@ -313,7 +313,7 @@ void RevertToSaved(Document *window) {
 	window->UpdateWindowReadOnly();
 
 	// restore the insert and scroll positions of each pane 
-	for (int i = 0; i <= window->textPanes_.size(); i++) {
+    for (int i = 0; i <= panesCount; i++) {
 		Widget text = window->GetPaneByIndex(i);
 		auto textD = textD_of(text);
 		textD->TextSetCursorPos(insertPositions[i]);
