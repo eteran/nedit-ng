@@ -122,6 +122,7 @@ bool LoadStylesStringEx(const std::string &string) {
 		// read style name 
 		QString name = ReadSymbolicFieldEx(&inPtr);
 		if (name.isNull()) {
+            delete hs;
 			return styleError(inString, inPtr, "style name required");
 		}		
 		hs->name = name;
@@ -256,6 +257,7 @@ bool LoadHighlightStringEx(const std::string &string, int convertOld) {
 				break;
 			}
 		}
+
 		if (i == NPatternSets) {
 			PatternSets[NPatternSets++] = patSet;
 			if (NPatternSets > MAX_LANGUAGE_MODES) {
@@ -265,7 +267,7 @@ bool LoadHighlightStringEx(const std::string &string, int convertOld) {
 
 		// if the string ends here, we're done 
 		inPtr += strspn(inPtr, " \t\n");
-		if (*inPtr == '\0') {
+        if (*inPtr == '\0') {
 			return true;
 		}
 	}
