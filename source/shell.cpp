@@ -34,7 +34,6 @@
 #include "TextDisplay.h"
 #include "shell.h"
 #include "Document.h"
-#include "MenuItem.h"
 #include "util/MotifHelper.h"
 #include "TextBuffer.h"
 #include "file.h"
@@ -273,7 +272,7 @@ void ExecCursorLine(Document *window, int fromMacro) {
 ** output destination, save first and load after) in the shell commands
 ** menu.
 */
-void DoShellMenuCmd(Document *window, const std::string &command, int input, int output, int outputReplacesInput, int saveFirst, int loadAfter, int fromMacro) {
+void DoShellMenuCmd(Document *window, const std::string &command, InSrcs input, OutDests output, int outputReplacesInput, int saveFirst, int loadAfter, int fromMacro) {
 	int flags = 0;
 	char *subsCommand;
 	int left = 0;
@@ -306,27 +305,32 @@ void DoShellMenuCmd(Document *window, const std::string &command, int input, int
 	/* Get the command input as a text string.  If there is input, errors
 	  shouldn't be mixed in with output, so set flags to ERROR_DIALOGS */
 	std::string text;
-	if (input == FROM_SELECTION) {
-		text = window->buffer_->BufGetSelectionTextEx();
-		if (text.empty()) {
-			delete [] subsCommand;
-			QApplication::beep();
-			return;
-		}
-		flags |= ACCUMULATE | ERROR_DIALOGS;
-	} else if (input == FROM_WINDOW) {
-		text = window->buffer_->BufGetAllEx();
-		flags |= ACCUMULATE | ERROR_DIALOGS;
-	} else if (input == FROM_EITHER) {
-		text = window->buffer_->BufGetSelectionTextEx();
-		if (text.empty()) {
-			text = window->buffer_->BufGetAllEx();
-		}
-		flags |= ACCUMULATE | ERROR_DIALOGS;
-	} else {
-		// FROM_NONE 
-		text = std::string();
-	}
+    switch(input) {
+    case FROM_SELECTION:
+        text = window->buffer_->BufGetSelectionTextEx();
+        if (text.empty()) {
+            delete [] subsCommand;
+            QApplication::beep();
+            return;
+        }
+        flags |= ACCUMULATE | ERROR_DIALOGS;
+        break;
+    case FROM_WINDOW:
+        text = window->buffer_->BufGetAllEx();
+        flags |= ACCUMULATE | ERROR_DIALOGS;
+        break;
+    case FROM_EITHER:
+        text = window->buffer_->BufGetSelectionTextEx();
+        if (text.empty()) {
+            text = window->buffer_->BufGetAllEx();
+        }
+        flags |= ACCUMULATE | ERROR_DIALOGS;
+        break;
+    case FROM_NONE:
+    default:
+        text = std::string();
+        break;
+    }
 
 	/* If the buffer was substituting another character for ascii-nuls,
 	   put the nuls back in before exporting the text */
