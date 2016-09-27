@@ -41,12 +41,14 @@ enum {
 
 // Don't use plain 'A' or 'B' for style indices, it causes problems
 // with EBCDIC coding (possibly negative offsets when subtracting 'A').
-#define ASCII_A static_cast<char>(65)
+constexpr auto ASCII_A = static_cast<char>(65);
 
 class PatternSet;
 class HighlightPattern;
 class WindowHighlightData;
 class Document;
+class TextArea;
+class DocumentWidget;
 
 HighlightPattern *FindPatternOfWindow(Document *window, const char *name);
 int HighlightCodeOfPos(Document *window, int pos);
@@ -71,5 +73,8 @@ void SyntaxHighlightModifyCB(int pos, int nInserted, int nDeleted, int nRestyled
 void UpdateHighlightStyles(Document *window);
 WindowHighlightData *createHighlightData(Document *window, PatternSet *patSet);
 void freeHighlightData(WindowHighlightData *hd);
+
+void RemoveWidgetHighlightEx(TextArea *area);
+void *GetHighlightInfoEx(DocumentWidget *window, int pos);
 
 #endif

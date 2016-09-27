@@ -31,6 +31,8 @@
 #include "ui/DialogFind.h"
 #include "ui/DialogReplace.h"
 #include "ui/DialogMultiReplace.h"
+#include "ui/DocumentWidget.h"
+#include "ui/TextArea.h"
 #include "util/memory.h"
 #include "WrapStyle.h"
 #include "TextDisplay.h"
@@ -107,9 +109,9 @@ static void removeDoomedWindowFromList(Document *window, int index);
 static void selectedSearchCB(Widget w, XtPointer callData, Atom *selection, Atom *type, char *value, int *length, int *format);
 static std::string upCaseStringEx(view::string_view inString);
 static std::string downCaseStringEx(view::string_view inString);
+static bool findMatchingCharEx(DocumentWidget *window, char toMatch, void *styleToMatch, int charPos, int startLimit, int endLimit, int *matchPos);
 
-
-struct charMatchTable {
+struct CharMatchTable {
 	char c;
 	char match;
 	char direction;
@@ -117,7 +119,7 @@ struct charMatchTable {
 
 #define N_MATCH_CHARS 13
 #define N_FLASH_CHARS 6
-static charMatchTable MatchingChars[N_MATCH_CHARS] = {
+static CharMatchTable MatchingChars[N_MATCH_CHARS] = {
     {'{', '}', SEARCH_FORWARD},
     {'}', '{', SEARCH_BACKWARD},
     {'(', ')', SEARCH_FORWARD},
@@ -590,7 +592,7 @@ bool SearchAndSelect(Document *window, SearchDirection direction, const char *se
 	int movedFwd = 0;
 
 	// Save a copy of searchString in the search history 
-	saveSearchHistory(searchString, nullptr, searchType, FALSE);
+    saveSearchHistory(searchString, nullptr, searchType, false);
 
 	/* set the position to start the search so we don't find the same
 	   string that was found on the last search	*/
@@ -758,7 +760,7 @@ void EndISearch(Document *window) {
 	window->iSearchStartPos_ = -1;
 
 	// Mark the end of incremental search history overwriting 
-	saveSearchHistory("", nullptr, SEARCH_LITERAL, FALSE);
+    saveSearchHistory("", nullptr, SEARCH_LITERAL, false);
 
 	// Pop down the search line (if it's not pegged up in Preferences) 
 	window->TempShowISearch(FALSE);
@@ -814,7 +816,7 @@ bool SearchAndSelectIncremental(Document *window, SearchDirection direction, con
 	   the search history itself, which can be detected by matching the
 	   search string with the search string of the current history index. */
 	if (!(window->iSearchHistIndex_ > 1 && !strcmp(searchString, SearchHistory[historyIndex(window->iSearchHistIndex_)]))) {
-		saveSearchHistory(searchString, nullptr, searchType, TRUE);
+        saveSearchHistory(searchString, nullptr, searchType, true);
 		// Reset the incremental search history pointer to the beginning 
 		window->iSearchHistIndex_ = 1;
 	}
@@ -1136,6 +1138,87 @@ static void iSearchTextKeyEH(Widget w, XtPointer clientData, XEvent *Event, Bool
 ** the matching character (a timer procedure is scheduled for removing the
 ** highlights)
 */
+void FlashMatchingEx(DocumentWidget *document, TextArea *area) {
+
+    // if a marker is already drawn, erase it and cancel the timeout
+    if (document->flashTimer_->isActive()) {
+        eraseFlashEx(document);
+        document->flashTimer_->stop();
+    }
+
+    // no flashing required
+    if (document->showMatchingStyle_ == NO_FLASH) {
+        return;
+    }
+
+    // don't flash matching characters if there's a selection
+    if (document->buffer_->primary_.selected) {
+        return;
+    }
+
+    // get the character to match and the position to start from
+    int pos = area->TextGetCursorPos() - 1;
+    if (pos < 0) {
+        return;
+    }
+
+    char c = document->buffer_->BufGetCharacter(pos);
+
+    void *style = GetHighlightInfoEx(document, pos);
+
+    int matchIndex;
+    int matchPos;
+
+    // is the character one we want to flash?
+    for (matchIndex = 0; matchIndex < N_FLASH_CHARS; matchIndex++) {
+        if (MatchingChars[matchIndex].c == c)
+            break;
+    }
+
+    if (matchIndex == N_FLASH_CHARS) {
+        return;
+    }
+
+    /* constrain the search to visible text only when in single-pane mode
+       AND using delimiter flashing (otherwise search the whole buffer) */
+    int constrain = ((document->textPanes().size() == 0) && (document->showMatchingStyle_ == FLASH_DELIMIT));
+
+    int startPos;
+    int endPos;
+    int searchPos;
+
+    if (MatchingChars[matchIndex].direction == SEARCH_BACKWARD) {
+        startPos = constrain ? area->TextFirstVisiblePos() : 0;
+        endPos = pos;
+        searchPos = endPos;
+    } else {
+        startPos = pos;
+        endPos = constrain ? area->TextLastVisiblePos() : document->buffer_->BufGetLength();
+        searchPos = startPos;
+    }
+
+    // do the search
+    if (!findMatchingCharEx(document, c, style, searchPos, startPos, endPos, &matchPos)) {
+        return;
+    }
+
+
+    if (document->showMatchingStyle_ == FLASH_DELIMIT) {
+        // Highlight either the matching character ...
+        document->buffer_->BufHighlight(matchPos, matchPos + 1);
+    } else {
+        // ... or the whole range.
+        if (MatchingChars[matchIndex].direction == SEARCH_BACKWARD) {
+            document->buffer_->BufHighlight(matchPos, pos + 1);
+        } else {
+            document->buffer_->BufHighlight(matchPos + 1, pos);
+        }
+    }
+
+    document->flashTimer_->start();
+    document->flashPos_ = matchPos;
+}
+
 void FlashMatching(Document *window, Widget textW) {
 	char c;
 	void *style;
@@ -1312,6 +1395,76 @@ void GotoMatchingCharacter(Document *window) {
 	textD_of(window->lastFocus_)->setAutoShowInsertPos(true);
 }
 
+static bool findMatchingCharEx(DocumentWidget *window, char toMatch, void *styleToMatch, int charPos, int startLimit, int endLimit, int *matchPos) {
+    int nestDepth, matchIndex, direction, beginPos, pos;
+    char matchChar, c;
+    void *style = nullptr;
+    TextBuffer *buf = window->buffer_;
+    int matchSyntaxBased = window->matchSyntaxBased_;
+
+    // If we don't match syntax based, fake a matching style.
+    if (!matchSyntaxBased)
+        style = styleToMatch;
+
+    // Look up the matching character and match direction
+    for (matchIndex = 0; matchIndex < N_MATCH_CHARS; matchIndex++) {
+        if (MatchingChars[matchIndex].c == toMatch)
+            break;
+    }
+    if (matchIndex == N_MATCH_CHARS) {
+        return false;
+    }
+
+    matchChar = MatchingChars[matchIndex].match;
+    direction = MatchingChars[matchIndex].direction;
+
+    // find it in the buffer
+    beginPos = (direction == SEARCH_FORWARD) ? charPos + 1 : charPos - 1;
+    nestDepth = 1;
+    if (direction == SEARCH_FORWARD) {
+        for (pos = beginPos; pos < endLimit; pos++) {
+            c = buf->BufGetCharacter(pos);
+            if (c == matchChar) {
+                if (matchSyntaxBased)
+                    style = GetHighlightInfoEx(window, pos);
+                if (style == styleToMatch) {
+                    nestDepth--;
+                    if (nestDepth == 0) {
+                        *matchPos = pos;
+                        return true;
+                    }
+                }
+            } else if (c == toMatch) {
+                if (matchSyntaxBased)
+                    style = GetHighlightInfoEx(window, pos);
+                if (style == styleToMatch)
+                    nestDepth++;
+            }
+        }
+    } else { // SEARCH_BACKWARD
+        for (pos = beginPos; pos >= startLimit; pos--) {
+            c = buf->BufGetCharacter(pos);
+            if (c == matchChar) {
+                if (matchSyntaxBased)
+                    style = GetHighlightInfoEx(window, pos);
+                if (style == styleToMatch) {
+                    nestDepth--;
+                    if (nestDepth == 0) {
+                        *matchPos = pos;
+                        return true;
+                    }
+                }
+            } else if (c == toMatch) {
+                if (matchSyntaxBased)
+                    style = GetHighlightInfoEx(window, pos);
+                if (style == styleToMatch)
+                    nestDepth++;
+            }
+        }
+    }
+    return false;
+}
+
 static int findMatchingChar(Document *window, char toMatch, void *styleToMatch, int charPos, int startLimit, int endLimit, int *matchPos) {
 	int nestDepth, matchIndex, direction, beginPos, pos;
 	char matchChar, c;
@@ -1400,6 +1553,14 @@ static void eraseFlash(Document *window) {
 }
 
 /*
+** Erase the marker drawn on a matching parenthesis bracket or brace
+** character.
+*/
+void eraseFlashEx(DocumentWidget *document) {
+    document->buffer_->BufUnhighlight();
+}
+
+/*
 ** Search and replace using previously entered search strings (from dialog
 ** or selection).
 */
@@ -1437,7 +1598,7 @@ bool ReplaceAndSearch(Document *window, SearchDirection direction, const char *s
 	int searchExtentFW;
 
 	// Save a copy of search and replace strings in the search history 
-	saveSearchHistory(searchString, replaceString, searchType, FALSE);
+    saveSearchHistory(searchString, replaceString, searchType, false);
 
 	bool replaced = false;
 
@@ -1495,7 +1656,7 @@ bool SearchAndReplace(Document *window, SearchDirection direction, const char *s
 	int cursorPos;
 
 	// Save a copy of search and replace strings in the search history 
-	saveSearchHistory(searchString, replaceString, searchType, FALSE);
+    saveSearchHistory(searchString, replaceString, searchType, false);
 
 	// If the text selected in the window matches the search string, 	
 	// the user is probably using search then replace method, so	
@@ -1654,7 +1815,7 @@ void ReplaceInSelection(const Document *window, const char *searchString, const 
 	bool cancelSubst  = true;
 
 	// save a copy of search and replace strings in the search history 
-	saveSearchHistory(searchString, replaceString, searchType, FALSE);
+    saveSearchHistory(searchString, replaceString, searchType, false);
 
 	// find out where the selection is 
 	if (!window->buffer_->BufGetSelectionPos(&selStart, &selEnd, &isRect, &rectStart, &rectEnd)) {
@@ -2614,14 +2775,15 @@ static bool replaceUsingREEx(view::string_view searchStr, const char *replaceStr
 ** is made.  To mark the end of an incremental search, call saveSearchHistory
 ** again with an empty search string and isIncremental==False.
 */
-void saveSearchHistory(const char *searchString, const char *replaceString, SearchType searchType, int isIncremental) {
+void saveSearchHistory(const char *searchString, const char *replaceString, SearchType searchType, bool isIncremental) {
 	char *sStr, *rStr;
 	static int currentItemIsIncremental = FALSE;
 
 	/* Cancel accumulation of contiguous incremental searches (even if the
 	   information is not worthy of saving) if search is not incremental */
-	if (!isIncremental)
+    if (!isIncremental) {
 		currentItemIsIncremental = FALSE;
+    }
 
 	// Don't save empty search strings 
 	if (searchString[0] == '\0')

@@ -64,6 +64,7 @@ qt4_wrap_cpp(MOC_SOURCES
 	ui/TabWidget.h
 	ui/DialogOutput.h
 	ui/Calltip.h
+	ui/TabWidget.h
 )
 
 set(UI_FILES
@@ -99,6 +100,7 @@ set(UI_FILES
 	ui/DialogRepeat.ui
 	ui/MainWindow.ui
 	ui/DialogOutput.ui
+	ui/DocumentWidget.ui
 )
 
 qt4_wrap_ui(UI_H ${UI_FILES})
@@ -192,6 +194,7 @@ add_executable(nedit
 	ui/TabWidget.cpp
 	ui/DialogOutput.cpp
 	ui/Calltip.cpp
+	ui/TabWidget.cpp
 		
 	${BISON_parser_OUTPUT_SOURCE}
 )

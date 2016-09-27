@@ -7,7 +7,7 @@
 //------------------------------------------------------------------------------
 // Name: TabWidget
 //------------------------------------------------------------------------------
-TabWidget::TabWidget(QWidget *parent) : QTabWidget(parent), hideSingleTab_(true) {
+TabWidget::TabWidget(QWidget *parent) : QTabWidget(parent), hideSingleTab_(true), hideTabBar_(false) {
 }
 
 //------------------------------------------------------------------------------
@@ -17,7 +17,7 @@ void TabWidget::tabInserted(int index) {
 
 	Q_UNUSED(index);
 
-	if(hideSingleTab_) {
+	if(hideSingleTab_ && !hideTabBar_) {
 		tabBar()->setVisible(count() >= 2);
 	}
 
@@ -31,7 +31,7 @@ void TabWidget::tabRemoved(int index) {
 
 	Q_UNUSED(index);
 
-	if(hideSingleTab_) {
+	if(hideSingleTab_ && !hideTabBar_) {
 		tabBar()->setVisible(count() >= 2);
 	}
 
@@ -52,4 +52,30 @@ void TabWidget::mousePressEvent(QMouseEvent *event) {
 			Q_EMIT customContextMenuRequested(tab, event->pos());
 		}
 	}
+}
+
+//------------------------------------------------------------------------------
+// Name: hideTabBar
+//------------------------------------------------------------------------------
+bool TabWidget::hideTabBar() const {
+	return hideTabBar_;
+}
+
+//------------------------------------------------------------------------------
+// Name: setHideTabBar
+//------------------------------------------------------------------------------
+void TabWidget::setHideTabBar(bool value) {
+	hideTabBar_ = value;
+
+	if(hideTabBar_) {
+		tabBar()->setVisible(false);
+	} else if(hideSingleTab_) {
+		tabBar()->setVisible(count() >= 2);
+	} else {
+		tabBar()->setVisible(true);
+	}
+}
+
+QTabBar *TabWidget::getTabBar() const {
+	return tabBar();
 }

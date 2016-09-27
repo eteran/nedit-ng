@@ -20,11 +20,18 @@ protected:
 	virtual void mousePressEvent(QMouseEvent *event) override;
 
 public:
+	QTabBar *getTabBar() const;
+
+public:
 	bool hideSingleTab() const        { return hideSingleTab_; }
 	void setHideSingleTab(bool value) { hideSingleTab_ = value; }
 
+	bool hideTabBar() const;
+	void setHideTabBar(bool value);
+
 private:
 	bool hideSingleTab_;
+	bool hideTabBar_;
 };
 
 #endif

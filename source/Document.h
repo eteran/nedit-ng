@@ -159,7 +159,7 @@ private:
 	void showTabBar(int state);
 
 public:
-	static std::tuple<Widget, TextArea *> createTextArea(Widget parent, Document *window, int rows, int cols, int emTabDist, char *delimiters, int wrapMargin, int lineNumCols);
+    static Widget createTextArea(Widget parent, Document *window, int rows, int cols, int emTabDist, char *delimiters, int wrapMargin, int lineNumCols);
 
 public:
 	DialogReplace *getDialogReplace() const;

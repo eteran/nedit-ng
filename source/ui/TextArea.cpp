@@ -138,8 +138,8 @@ int findRelativeLineStart(const TextBuffer *buf, int referencePos, int reference
 */
 void bufPreDeleteCB(int pos, int nDeleted, void *cbArg) {
 
-	auto textD = static_cast<TextArea *>(cbArg);
-	textD->bufPreDeleteCallback(pos, nDeleted);
+    auto area = static_cast<TextArea *>(cbArg);
+    area->bufPreDeleteCallback(pos, nDeleted);
 }
 
 /*
@@ -147,8 +147,8 @@ void bufPreDeleteCB(int pos, int nDeleted, void *cbArg) {
 */
 void bufModifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *cbArg) {
 
-	auto textD = static_cast<TextArea *>(cbArg);
-	textD->bufModifiedCallback(pos, nInserted, nDeleted, nRestyled, deletedText);
+    auto area = static_cast<TextArea *>(cbArg);
+    area->bufModifiedCallback(pos, nInserted, nDeleted, nRestyled, deletedText);
 }
 
 /*
@@ -418,6 +418,7 @@ TextArea::TextArea(QWidget *parent,
 	modifyingTabDist_    = 0;
 	pointerHidden_       = false;
 	graphicsExposeQueue_ = nullptr;
+    bgMenu_              = nullptr;
 
 	/* Attach the callback to the text buffer for receiving modification
 	   information */
@@ -446,122 +447,6 @@ TextArea::TextArea(QWidget *parent,
 
 	setGeometry(0, 0, width, height);
 
-#if 0
-    createShortcut(tr("previous_document"),         QKeySequence(Qt::CTRL + Qt::Key_PageUp),                         SLOT(previousDocumentAP()));
-#endif
-    createShortcut(tr("alt1-previous_page"),       QKeySequence(Qt::SHIFT + Qt::ALT + Qt::Key_PageUp),                SLOT(previousPageExtendRectAP()));
-    createShortcut(tr("alt2-previous_page"),       QKeySequence(Qt::SHIFT + Qt::META + Qt::Key_PageUp),               SLOT(previousPageExtendRectAP()));
-    createShortcut(tr("alt3-previous_page"),       QKeySequence(Qt::SHIFT + Qt::Key_PageUp),                          SLOT(previousPageExtendAP()));
-    createShortcut(tr("previous_page"),            QKeySequence(Qt::Key_PageUp),                                      SLOT(previousPageAP()));
-
-#if 0
-    createShortcut(tr("next_document"),            QKeySequence(Qt::CTRL + Qt::Key_PageDown),                         SLOT(nextDocumentAP()));
-#endif
-    createShortcut(tr("alt1-next_page"),           QKeySequence(Qt::SHIFT + Qt::ALT + Qt::Key_PageDown),              SLOT(nextPageExtendRectAP()));
-    createShortcut(tr("alt2-next_page"),           QKeySequence(Qt::SHIFT + Qt::META + Qt::Key_PageDown),             SLOT(nextPageExtendRectAP()));
-    createShortcut(tr("alt3-next_page"),           QKeySequence(Qt::SHIFT + Qt::Key_PageDown),                        SLOT(nextPageExtendAP()));
-    createShortcut(tr("next_page"),                QKeySequence(Qt::Key_PageDown),                                    SLOT(nextPageAP()));
-
-
-    /* PageLeft and PageRight are placed later than the PageUp/PageDown
-       bindings.  Some systems map osfPageLeft to Ctrl-PageUp.
-       Overloading this single key gives problems, and we want to give
-       priority to the normal version. */
-
-    createShortcut(tr("-alt2-page_left"),           QKeySequence(Qt::CTRL + Qt::ALT + Qt::SHIFT + Qt::Key_PageUp),    SLOT(pageLeftExtendRectAP()));
-    createShortcut(tr("-alt3-page_left"),           QKeySequence(Qt::CTRL + Qt::META + Qt::SHIFT + Qt::Key_PageUp),   SLOT(pageLeftExtendRectAP()));
-    createShortcut(tr("-alt1-page_left"),           QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_PageUp),              SLOT(pageLeftExtendAP()));
-#if 0 // NOTE(eteran): no page left/right on most keyboards, so conflict here :-/
-    createShortcut(tr("page_left"),                 QKeySequence(Qt::CTRL + Qt::Key_PageUp),                          SLOT(pageLeftAP()));
-#endif
-
-    createShortcut(tr("-alt2-page_right"),          QKeySequence(Qt::CTRL + Qt::ALT + Qt::SHIFT + Qt::Key_PageDown),  SLOT(pageRightExtendRectAP()));
-    createShortcut(tr("-alt3-page_right"),          QKeySequence(Qt::CTRL + Qt::META + Qt::SHIFT + Qt::Key_PageDown), SLOT(pageRightExtendRectAP()));
-    createShortcut(tr("-alt1-page_right"),          QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_PageDown),            SLOT(pageRightExtendAP()));
-#if 0 // NOTE(eteran): no page left/right on most keyboards, so conflict here :-/
-    createShortcut(tr("page_right"),                QKeySequence(Qt::CTRL + Qt::Key_PageDown),                        SLOT(pageRightAP()));
-#endif
-    createShortcut(tr("process_shift_up"),          QKeySequence(Qt::ALT + Qt::SHIFT + Qt::Key_Up),                   SLOT(processShiftUpRectAP()));
-    createShortcut(tr("-alt-process_shift_up"),     QKeySequence(Qt::META + Qt::SHIFT + Qt::Key_Up),                  SLOT(processShiftUpRectAP()));
-    createShortcut(tr("process_shift_down"),        QKeySequence(Qt::ALT + Qt::SHIFT + Qt::Key_Down),                 SLOT(processShiftDownRectAP()));
-    createShortcut(tr("-alt-process_shift_down"),   QKeySequence(Qt::META + Qt::SHIFT + Qt::Key_Down),                SLOT(processShiftDownRectAP()));
-    createShortcut(tr("-alt1-backward_paragraph"),  QKeySequence(Qt::CTRL + Qt::ALT + Qt::SHIFT + Qt::Key_Up),        SLOT(backwardParagraphExtendRectAP()));
-    createShortcut(tr("-alt2-backward_paragraph"),  QKeySequence(Qt::CTRL + Qt::META + Qt::SHIFT + Qt::Key_Up),       SLOT(backwardParagraphExtendRectAP()));
-    createShortcut(tr("-alt3-backward_paragraph"),  QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Up),                  SLOT(backwardParagraphExtendAP()));
-    createShortcut(tr("-alt1-forward_paragraph"),   QKeySequence(Qt::CTRL + Qt::ALT + Qt::SHIFT + Qt::Key_Down),      SLOT(forwardParagraphExtendRectAP()));
-    createShortcut(tr("-alt2-forward_paragraph"),   QKeySequence(Qt::CTRL + Qt::META + Qt::SHIFT + Qt::Key_Down),     SLOT(forwardParagraphExtendRectAP()));
-    createShortcut(tr("-alt3-forward_paragraph"),   QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Down),                SLOT(forwardParagraphExtendAP()));
-    createShortcut(tr("-alt1-forward_word"),        QKeySequence(Qt::CTRL + Qt::ALT + Qt::SHIFT + Qt::Key_Right),     SLOT(forwardWordExtendRectAP()));
-    createShortcut(tr("-alt2-forward_word"),        QKeySequence(Qt::CTRL + Qt::META + Qt::SHIFT + Qt::Key_Right),    SLOT(forwardWordExtendRectAP()));
-    createShortcut(tr("-alt4-key_select"),          QKeySequence(Qt::ALT + Qt::SHIFT + Qt::Key_Right),                SLOT(keySelectRightRectAP()));
-    createShortcut(tr("-alt5-key_select"),          QKeySequence(Qt::META + Qt::SHIFT + Qt::Key_Right),               SLOT(keySelectRightRectAP()));
-    createShortcut(tr("-alt3-forward_word"),        QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Right),               SLOT(forwardWordExtendAP()));
-    createShortcut(tr("-alt1-backward_word"),       QKeySequence(Qt::CTRL + Qt::ALT + Qt::SHIFT + Qt::Key_Left),      SLOT(backwardWordExtendRectAP()));
-    createShortcut(tr("-alt2-backward_word"),       QKeySequence(Qt::CTRL + Qt::META + Qt::SHIFT + Qt::Key_Left),     SLOT(backwardWordExtendRectAP()));
-    createShortcut(tr("-alt2-key_select"),          QKeySequence(Qt::ALT + Qt::SHIFT + Qt::Key_Left),                 SLOT(keySelectLeftRectAP()));
-    createShortcut(tr("-alt3-key_select"),          QKeySequence(Qt::META + Qt::SHIFT + Qt::Key_Left),                SLOT(keySelectLeftRectAP()));
-    createShortcut(tr("-alt3-backward_word"),       QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Left),                SLOT(backwardWordExtendAP()));
-    createShortcut(tr("-alt1-end_of_line"),         QKeySequence(Qt::ALT + Qt::SHIFT + Qt::Key_End),                  SLOT(endOfLineExtendRectAP()));
-    createShortcut(tr("-alt2-end_of_line"),         QKeySequence(Qt::META + Qt::SHIFT + Qt::Key_End),                 SLOT(endOfLineExtendRectAP()));
-    createShortcut(tr("-alt3-end_of_line"),         QKeySequence(Qt::SHIFT + Qt::Key_End),                            SLOT(endOfLineExtendAP()));
-    createShortcut(tr("-alt1-end_of_file"),         QKeySequence(Qt::CTRL + Qt::ALT + Qt::SHIFT + Qt::Key_End),       SLOT(endOfFileExtendRectAP()));
-    createShortcut(tr("-alt2-end_of_file"),         QKeySequence(Qt::CTRL + Qt::META + Qt::SHIFT + Qt::Key_End),      SLOT(endOfFileExtendRectAP()));
-    createShortcut(tr("-alt3-end_of_file"),         QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_End),                 SLOT(endOfFileExtendAP()));
-    createShortcut(tr("-alt1-beginning_of_line"),   QKeySequence(Qt::ALT + Qt::SHIFT + Qt::Key_Home),                 SLOT(beginningOfLineExtendRectAP()));
-    createShortcut(tr("-alt2-beginning_of_file"),   QKeySequence(Qt::META + Qt::SHIFT + Qt::Key_Home),                SLOT(beginningOfLineExtendRectAP()));
-    createShortcut(tr("-alt3-beginning_of_file"),   QKeySequence(Qt::SHIFT + Qt::Key_Home),                           SLOT(beginningOfLineExtendAP()));
-    createShortcut(tr("-alt1-beginning_of_file"),   QKeySequence(Qt::CTRL + Qt::ALT + Qt::SHIFT + Qt::Key_Home),      SLOT(beginningOfFileExtendRectAP()));
-    createShortcut(tr("-alt2-beginning_of_file"),   QKeySequence(Qt::CTRL + Qt::META + Qt::SHIFT + Qt::Key_Home),     SLOT(beginningOfFileExtendRectAP()));
-    createShortcut(tr("-alt3-beginning_of_file"),   QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Home),                SLOT(beginningOfFileExtendAP()));
-    createShortcut(tr("-alt1-copy_primary"),        QKeySequence(Qt::CTRL + Qt::ALT + Qt::SHIFT + Qt::Key_Insert),    SLOT(copyPrimaryRectAP()));
-    createShortcut(tr("-alt2-copy_primary"),        QKeySequence(Qt::CTRL + Qt::META + Qt::SHIFT + Qt::Key_Insert),   SLOT(copyPrimaryRectAP()));
-    createShortcut(tr("-alt1-cut_primary"),         QKeySequence(Qt::CTRL + Qt::ALT + Qt::SHIFT + Qt::Key_Delete),    SLOT(cutPrimaryRectAP()));
-    createShortcut(tr("-alt2-cut_primary"),         QKeySequence(Qt::CTRL + Qt::META + Qt::SHIFT + Qt::Key_Delete),   SLOT(cutPrimaryRectAP()));
-    createShortcut(tr("key_select"),                QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Space),               SLOT(keySelectAP()));
-    createShortcut(tr("-alt1-key_select"),          QKeySequence(Qt::CTRL + Qt::ALT + Qt::SHIFT + Qt::Key_Space),     SLOT(keySelectRectAP()));
-    createShortcut(tr("-alt2-key_select"),          QKeySequence(Qt::CTRL + Qt::META + Qt::SHIFT + Qt::Key_Space),    SLOT(keySelectRectAP()));
-    createShortcut(tr("cut_primary"),               QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Delete),              SLOT(cutPrimaryAP()));
-    createShortcut(tr("delete_to_end_of_line"),     QKeySequence(Qt::CTRL + Qt::Key_Delete),                          SLOT(deleteToEndOfLineAP()));
-    createShortcut(tr("delete_to_start_of_line"),   QKeySequence(Qt::CTRL + Qt::Key_U),                               SLOT(deleteToStartOfLineAP()));
-    createShortcut(tr("select_all"),                QKeySequence(Qt::CTRL + Qt::Key_Slash),                           SLOT(selectAllAP()));
-    createShortcut(tr("deselect_all"),              QKeySequence(Qt::CTRL + Qt::Key_Backslash),                       SLOT(deselectAllAP()));
-    createShortcut(tr("process_tab"),               QKeySequence(Qt::Key_Tab),                                        SLOT(processTabAP()));
-    createShortcut(tr("forward_character"),         QKeySequence(Qt::Key_Right),                                      SLOT(forwardCharacterAP()));
-    createShortcut(tr("backward_character"),        QKeySequence(Qt::Key_Left),                                       SLOT(backwardCharacterAP()));
-    createShortcut(tr("process_up"),                QKeySequence(Qt::Key_Up),                                         SLOT(processUpAP()));
-    createShortcut(tr("process_down"),              QKeySequence(Qt::Key_Down),                                       SLOT(processDownAP()));
-    createShortcut(tr("newline"),                   QKeySequence(Qt::Key_Return),                                     SLOT(newlineAP()));
-    createShortcut(tr("-alt-newline"),              QKeySequence(Qt::Key_Enter),                                      SLOT(newlineAP()));
-    createShortcut(tr("delete_previous_character"), QKeySequence(Qt::Key_Backspace),                                  SLOT(deletePreviousCharacterAP()));
-    createShortcut(tr("process_cancel"),            QKeySequence(Qt::Key_Escape),                                     SLOT(processCancelAP()));
-    createShortcut(tr("newline_and_indent"),        QKeySequence(Qt::CTRL + Qt::Key_Return),                          SLOT(newlineAndIndentAP()));
-    createShortcut(tr("newline_no_indent"),         QKeySequence(Qt::SHIFT + Qt::Key_Return),                         SLOT(newlineNoIndentAP()));
-    createShortcut(tr("-alt-newline_no_indent"),    QKeySequence(Qt::SHIFT + Qt::Key_Enter),                          SLOT(newlineNoIndentAP()));
-    createShortcut(tr("process_home"),              QKeySequence(Qt::Key_Home),                                       SLOT(beginningOfLineAP()));
-    createShortcut(tr("delete_previous_word"),      QKeySequence(Qt::CTRL + Qt::Key_Backspace),                       SLOT(deletePreviousWordAP()));
-    createShortcut(tr("end_of_line"),               QKeySequence(Qt::Key_End),                                        SLOT(endOfLineAP()));
-    createShortcut(tr("delete_next_character"),     QKeySequence(Qt::Key_Delete),                                     SLOT(deleteNextCharacterAP()));
-    createShortcut(tr("toggle_overstrike"),         QKeySequence(Qt::Key_Insert),                                     SLOT(toggleOverstrikeAP()));
-    createShortcut(tr("process_shift_up"),          QKeySequence(Qt::SHIFT + Qt::Key_Up),                             SLOT(processShiftUpAP()));
-    createShortcut(tr("process_shift_down"),        QKeySequence(Qt::SHIFT + Qt::Key_Down),                           SLOT(processShiftDownAP()));
-    createShortcut(tr("-alt-key_select-left"),      QKeySequence(Qt::SHIFT + Qt::Key_Left),                           SLOT(keySelectLeftAP()));
-    createShortcut(tr("-alt-key_select_right"),     QKeySequence(Qt::SHIFT + Qt::Key_Right),                          SLOT(keySelectRightAP()));
-    createShortcut(tr("cut_clipboard"),             QKeySequence(Qt::SHIFT + Qt::Key_Delete),                         SLOT(cutClipboardAP()));
-    createShortcut(tr("copy_clipboard"),            QKeySequence(Qt::CTRL + Qt::Key_Insert),                          SLOT(copyClipboardAP()));
-    createShortcut(tr("paste_clipboard"),           QKeySequence(Qt::SHIFT + Qt::Key_Insert),                         SLOT(pasteClipboardAP()));
-#if 0
-    createShortcut(tr("-alt-cut_clipboard"),        QKeySequence(Qt::CTRL + Qt::Key_X),                               SLOT(cutClipboardAP()));
-    createShortcut(tr("-alt-copy_clipboard"),       QKeySequence(Qt::CTRL + Qt::Key_C),                               SLOT(copyClipboardAP()));
-    createShortcut(tr("-alt-paste_clipboard"),      QKeySequence(Qt::CTRL + Qt::Key_V),                               SLOT(pasteClipboardAP()));
-#endif
-    createShortcut(tr("copy_primary"),              QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Insert),              SLOT(copyPrimaryAP()));
-    createShortcut(tr("beginning_of_file"),         QKeySequence(Qt::CTRL + Qt::Key_Home),                            SLOT(beginningOfFileAP()));
-    createShortcut(tr("end_of_file"),               QKeySequence(Qt::CTRL + Qt::Key_End),                             SLOT(endOfFileAP()));
-    createShortcut(tr("backward_word"),             QKeySequence(Qt::CTRL + Qt::Key_Left),                            SLOT(backwardWordAP()));
-    createShortcut(tr("forward_word"),              QKeySequence(Qt::CTRL + Qt::Key_Right),                           SLOT(forwardWordAP()));
-    createShortcut(tr("backward_paragraph"),        QKeySequence(Qt::CTRL + Qt::Key_Up),                              SLOT(backwardParagraphAP()));
-    createShortcut(tr("forward_paragraph"),         QKeySequence(Qt::CTRL + Qt::Key_Down),                            SLOT(forwardParagraphAP()));
-
 #if 1
 	/* Add mandatory delimiters blank, tab, and newline to the list of
 	   delimiters.  The memory use scheme here is that new values are
@@ -589,136 +474,6 @@ TextArea::TextArea(QWidget *parent,
 	setMinimumWidth(fm.maxWidth() + (marginWidth * 2) + lineNumAreaWidth);
 	setMinimumHeight(fm.ascent() + fm.descent() + (marginHeight * 2));
 #endif
-}
-
-QShortcut *TextArea::createShortcut(const QString &name, const QKeySequence &keySequence, const char *member) {
-	auto shortcut = new QShortcut(keySequence, this, member);
-	shortcut->setObjectName(name);
-	return shortcut;
-}
-
-void TextArea::nextPageExtendRectAP(EventFlags flags) {
-	nextPageAP(flags | ExtendFlag | RectFlag);
-}
-
-void TextArea::nextPageExtendAP(EventFlags flags) {
-	nextPageAP(flags | ExtendFlag);
-}
-
-void TextArea::previousPageExtendRectAP(EventFlags flags) {
-	previousPageAP(flags | ExtendFlag | RectFlag);
-}
-
-void TextArea::previousPageExtendAP(EventFlags flags) {
-	previousPageAP(flags | ExtendFlag);
-}
-
-void TextArea::pageLeftExtendRectAP(EventFlags flags) {
-	pageLeftAP(flags | ExtendFlag | RectFlag);
-}
-
-void TextArea::pageLeftExtendAP(EventFlags flags) {
-	pageLeftAP(flags | ExtendFlag);
-}
-
-void TextArea::pageRightExtendRectAP(EventFlags flags) {
-	pageRightAP(flags | ExtendFlag | RectFlag);
-}
-
-void TextArea::pageRightExtendAP(EventFlags flags) {
-	pageRightAP(flags | ExtendFlag);
-}
-
-void TextArea::processShiftUpRectAP(EventFlags flags) {
-	processShiftUpAP(flags | RectFlag);
-}
-
-void TextArea::processShiftDownRectAP(EventFlags flags) {
-	processShiftDownAP(flags | RectFlag);
-}
-
-void TextArea::forwardParagraphExtendAP(EventFlags flags) {
-	forwardParagraphAP(flags | ExtendFlag);
-}
-
-void TextArea::forwardParagraphExtendRectAP(EventFlags flags) {
-	forwardParagraphAP(flags | ExtendFlag | RectFlag);
-}
-
-void TextArea::backwardParagraphExtendAP(EventFlags flags) {
-	backwardParagraphAP(flags | ExtendFlag);
-}
-
-void TextArea::backwardParagraphExtendRectAP(EventFlags flags) {
-	backwardParagraphAP(flags | ExtendFlag | RectFlag);
-}
-
-void TextArea::backwardWordExtendAP(EventFlags flags) {
-	backwardWordAP(flags | ExtendFlag);
-}
-
-void TextArea::backwardWordExtendRectAP(EventFlags flags) {
-	backwardWordAP(flags | ExtendFlag | RectFlag);
-}
-
-void TextArea::forwardWordExtendAP(EventFlags flags) {
-	forwardWordAP(flags | ExtendFlag);
-}
-
-void TextArea::forwardWordExtendRectAP(EventFlags flags) {
-	forwardWordAP(flags | ExtendFlag | RectFlag);
-}
-
-void TextArea::endOfLineExtendAP(EventFlags flags) {
-	endOfLineAP(flags | ExtendFlag);
-}
-
-void TextArea::endOfLineExtendRectAP(EventFlags flags) {
-	endOfLineAP(flags | ExtendFlag | RectFlag);
-}
-
-void TextArea::endOfFileExtendAP(EventFlags flags) {
-	endOfFileAP(flags | ExtendFlag);
-}
-
-void TextArea::endOfFileExtendRectAP(EventFlags flags) {
-	endOfFileAP(flags | ExtendFlag | RectFlag);
-}
-
-void TextArea::beginningOfFileExtendAP(EventFlags flags) {
-		beginningOfFileAP(flags | ExtendFlag);
-}
-
-void TextArea::beginningOfFileExtendRectAP(EventFlags flags) {
-	beginningOfFileAP(flags | ExtendFlag | RectFlag);
-}
-
-void TextArea::beginningOfLineExtendAP(EventFlags flags) {
-		beginningOfLineAP(flags | ExtendFlag);
-}
-
-void TextArea::beginningOfLineExtendRectAP(EventFlags flags) {
-	beginningOfLineAP(flags | ExtendFlag | RectFlag);
-}
-
-void TextArea::copyPrimaryRectAP(EventFlags flags) {
-	copyPrimaryAP(flags | RectFlag);
-}
-
-void TextArea::cutPrimaryRectAP(EventFlags flags) {
-	cutPrimaryAP(flags | RectFlag);
-}
-
-void TextArea::keySelectLeftRectAP(EventFlags flags) {
-	keySelectAP(flags | LeftFlag | RectFlag);
-}
-
-void TextArea::keySelectRightRectAP(EventFlags flags) {
-	keySelectAP(flags | RightFlag | RectFlag);
-}
-
-void TextArea::keySelectRectAP(EventFlags flags) {
-	keySelectAP(flags | RectFlag);
 }
 
 void TextArea::pasteClipboardAP(EventFlags flags) {
@@ -1095,7 +850,6 @@ void TextArea::focusInEvent(QFocusEvent *event) {
 
 	Q_UNUSED(event);
 
-
 	// If the timer is not already started, start it
 	if(!cursorBlinkTimer_->isActive()) {
 		cursorBlinkTimer_->start(P_cursorBlinkRate);
@@ -1136,8 +890,13 @@ void TextArea::focusOutEvent(QFocusEvent *event) {
 //------------------------------------------------------------------------------
 void TextArea::contextMenuEvent(QContextMenuEvent *e) {
 	if(e->modifiers() != Qt::ControlModifier) {
+        if(bgMenu_) {
+            bgMenu_->exec(mapToGlobal(e->pos()));
+        }
+
+#if 1 // TODO(eteran): replace with dynamically generated menu like Motif based widget
 		auto menu = new QMenu(this);
-	#if 1 // TODO(eteran): replace with dynamically generated menu like Motif based widget
+
 		auto undo  = menu->addAction(tr("Undo"));
 		auto redo  = menu->addAction(tr("Redo"));
 		auto cut   = menu->addAction(tr("Cut"));
@@ -1150,7 +909,7 @@ void TextArea::contextMenuEvent(QContextMenuEvent *e) {
 		copy->setIcon(QIcon::fromTheme(tr("edit-copy")));
 		paste->setIcon(QIcon::fromTheme(tr("edit-paste")));
 	#endif
-		menu->exec(mapToGlobal(e->pos()));
+
 	}
 }
 
@@ -1186,13 +945,311 @@ void TextArea::dropEvent(QDropEvent *event) {
 // Name: keyPressEvent
 // Note: "self-insert"
 //------------------------------------------------------------------------------
-void TextArea::keyPressEvent(QKeyEvent *e) {
+void TextArea::keyPressEvent(QKeyEvent *event) {
 
-    if (isModifier(e)) {
+    if (isModifier(event)) {
         return;
     }
 
-    QString text = e->text();
+    /* PageLeft and PageRight are placed later than the PageUp/PageDown
+       bindings.  Some systems map osfPageLeft to Ctrl-PageUp.
+       Overloading this single key gives problems, and we want to give
+       priority to the normal version. */
+    if ((event->key() == Qt::Key_PageUp) && (event->modifiers() == (Qt::ControlModifier))) {
+#if 0
+        previousDocumentAP(); // "previous-document"
+        return;
+#endif
+    } else if ((event->key() == Qt::Key_PageUp) && (event->modifiers() == (Qt::ShiftModifier | Qt::AltModifier))) {
+        previousPageAP(ExtendFlag | RectFlag); // "previous-page(extend, rect)"
+        return;
+    } else if ((event->key() == Qt::Key_PageUp) && (event->modifiers() == (Qt::ShiftModifier | Qt::MetaModifier))) {
+        previousPageAP(ExtendFlag | RectFlag); // "previous-page(extend, rect)"
+        return;
+    } else if ((event->key() == Qt::Key_PageUp) && (event->modifiers() == (Qt::ShiftModifier))) {
+        previousPageAP(ExtendFlag); // "previous-page(extend)"
+        return;
+    } else if ((event->key() == Qt::Key_PageUp) && (event->modifiers() == (Qt::NoModifier))) {
+        previousPageAP(); // "previous-page()"
+        return;
+    } else if ((event->key() == Qt::Key_PageDown) && (event->modifiers() == (Qt::ControlModifier))) {
+#if 0
+        nextDocumentAP(); // "next-document"
+        return;
+#endif
+    } else if ((event->key() == Qt::Key_PageDown) && (event->modifiers() == (Qt::ShiftModifier | Qt::AltModifier))) {
+        nextPageAP(ExtendFlag | RectFlag); // "next-page(extend, rect)"
+        return;
+    } else if ((event->key() == Qt::Key_PageDown) && (event->modifiers() == (Qt::ShiftModifier | Qt::MetaModifier))) {
+        nextPageAP(ExtendFlag | RectFlag); // "next-page(extend, rect)"
+        return;
+    } else if ((event->key() == Qt::Key_PageDown) && (event->modifiers() == (Qt::ShiftModifier))) {
+        nextPageAP(ExtendFlag); // "next-page(extend)"
+        return;
+    } else if ((event->key() == Qt::Key_PageDown) && (event->modifiers() == (Qt::NoModifier))) {
+        nextPageAP(); // "next-page()"
+        return;
+    } else if ((event->key() == Qt::Key_PageUp) && (event->modifiers() == (Qt::ControlModifier | Qt::ShiftModifier | Qt::AltModifier))) {
+        pageLeftAP(ExtendFlag | RectFlag); // page-left(extent, rect);
+        return;
+    } else if ((event->key() == Qt::Key_PageUp) && (event->modifiers() == (Qt::ControlModifier | Qt::MetaModifier | Qt::AltModifier))) {
+        pageLeftAP(ExtendFlag | RectFlag); // page-left(extent, rect);
+        return;
+    } else if ((event->key() == Qt::Key_PageUp) && (event->modifiers() == (Qt::ControlModifier | Qt::ShiftModifier))) {
+        pageLeftAP(ExtendFlag); // page-left(extent);
+        return;
+    } else if ((event->key() == Qt::Key_PageUp) && (event->modifiers() == (Qt::ControlModifier))) {
+#if 0
+        // NOTE(eteran): no page left/right on most keyboards, so conflict here :-/
+        pageLeftAP(); // page-left()
+        return;
+#endif
+    } else if ((event->key() == Qt::Key_PageDown) && (event->modifiers() == (Qt::ControlModifier | Qt::ShiftModifier | Qt::AltModifier))) {
+        pageRightAP(ExtendFlag | RectFlag); // page-right(extent, rect);
+        return;
+    } else if ((event->key() == Qt::Key_PageDown) && (event->modifiers() == (Qt::ControlModifier | Qt::MetaModifier | Qt::AltModifier))) {
+        pageRightAP(ExtendFlag | RectFlag); // page-right(extent, rect);
+        return;
+    } else if ((event->key() == Qt::Key_PageDown) && (event->modifiers() == (Qt::ControlModifier | Qt::ShiftModifier))) {
+        pageRightAP(ExtendFlag); // page-right(extent);
+        return;
+    } else if ((event->key() == Qt::Key_PageDown) && (event->modifiers() == (Qt::ControlModifier))) {
+#if 0
+        // NOTE(eteran): no page left/right on most keyboards, so conflict here :-/
+        pageRightAP(); // page-right()
+        return;
+#endif
+    } else if ((event->key() == Qt::Key_Up) && (event->modifiers() == (Qt::AltModifier | Qt::ShiftModifier))) {
+        processShiftUpAP(RectFlag); // process-shift-up(rect)
+        return;
+    } else if ((event->key() == Qt::Key_Up) && (event->modifiers() == (Qt::MetaModifier | Qt::ShiftModifier))) {
+        processShiftUpAP(RectFlag); // process-shift-up(rect)
+        return;
+    } else if ((event->key() == Qt::Key_Down) && (event->modifiers() == (Qt::AltModifier | Qt::ShiftModifier))) {
+        processShiftDownAP(RectFlag); // process-shift-down(rect)
+        return;
+    } else if ((event->key() == Qt::Key_Down) && (event->modifiers() == (Qt::MetaModifier | Qt::ShiftModifier))) {
+        processShiftDownAP(RectFlag); // process-shift-down(rect)
+        return;
+    } else if ((event->key() == Qt::Key_Up) && (event->modifiers() == (Qt::ControlModifier | Qt::AltModifier | Qt::ShiftModifier))) {
+        backwardParagraphAP(ExtendFlag | RectFlag); // backward-paragraph(extent, rect)
+        return;
+    } else if ((event->key() == Qt::Key_Up) && (event->modifiers() == (Qt::ControlModifier | Qt::MetaModifier | Qt::ShiftModifier))) {
+        backwardParagraphAP(ExtendFlag | RectFlag); // backward-paragraph(extend, rect)
+        return;
+    } else if ((event->key() == Qt::Key_Up) && (event->modifiers() == (Qt::ControlModifier  | Qt::ShiftModifier))) {
+        backwardParagraphAP(ExtendFlag); // backward-paragraph(extend)
+        return;
+    } else if ((event->key() == Qt::Key_Down) && (event->modifiers() == (Qt::ControlModifier | Qt::AltModifier | Qt::ShiftModifier))) {
+        forwardParagraphAP(ExtendFlag | RectFlag); // forward-paragraph(extent, rect)
+        return;
+    } else if ((event->key() == Qt::Key_Down) && (event->modifiers() == (Qt::ControlModifier | Qt::MetaModifier | Qt::ShiftModifier))) {
+        forwardParagraphAP(ExtendFlag | RectFlag); // forward-paragraph(extend, rect)
+        return;
+    } else if ((event->key() == Qt::Key_Down) && (event->modifiers() == (Qt::ControlModifier  | Qt::ShiftModifier))) {
+        forwardParagraphAP(ExtendFlag); // forward-paragraph(extend)
+        return;
+    } else if ((event->key() == Qt::Key_Right) && (event->modifiers() == (Qt::ControlModifier  | Qt::AltModifier | Qt::ShiftModifier))) {
+        forwardWordAP(ExtendFlag | RectFlag); // forward-word(extend, rect)
+        return;
+    } else if ((event->key() == Qt::Key_Right) && (event->modifiers() == (Qt::ControlModifier  | Qt::MetaModifier | Qt::ShiftModifier))) {
+        forwardWordAP(ExtendFlag | RectFlag); // forward-word(extend, rect)
+        return;
+    } else if ((event->key() == Qt::Key_Right) && (event->modifiers() == (Qt::AltModifier | Qt::ShiftModifier))) {
+        keySelectAP(RightFlag | RectFlag); // key-select(right, rect)
+        return;
+    } else if ((event->key() == Qt::Key_Right) && (event->modifiers() == (Qt::MetaModifier | Qt::ShiftModifier))) {
+        keySelectAP(RightFlag | RectFlag); // key-select(right, rect)
+        return;
+    } else if ((event->key() == Qt::Key_Right) && (event->modifiers() == (Qt::ControlModifier | Qt::ShiftModifier))) {
+        forwardWordAP(ExtendFlag); // forward-word(extend)
+        return;
+    } else if ((event->key() == Qt::Key_Left) && (event->modifiers() == (Qt::ControlModifier  | Qt::AltModifier | Qt::ShiftModifier))) {
+        backwardWordAP(ExtendFlag | RectFlag); // backward-word(extend, rect)
+        return;
+    } else if ((event->key() == Qt::Key_Left) && (event->modifiers() == (Qt::ControlModifier  | Qt::MetaModifier | Qt::ShiftModifier))) {
+        backwardWordAP(ExtendFlag | RectFlag); // backward-word(extend, rect)
+        return;
+    } else if ((event->key() == Qt::Key_Left) && (event->modifiers() == (Qt::AltModifier | Qt::ShiftModifier))) {
+        keySelectAP(LeftFlag | RectFlag); // key-select(left, rect)
+        return;
+    } else if ((event->key() == Qt::Key_Left) && (event->modifiers() == (Qt::MetaModifier | Qt::ShiftModifier))) {
+        keySelectAP(LeftFlag | RectFlag); // key-select(left, rect)
+        return;
+    } else if ((event->key() == Qt::Key_Left) && (event->modifiers() == (Qt::ControlModifier | Qt::ShiftModifier))) {
+        backwardWordAP(ExtendFlag); // backward-word(extend)
+        return;
+    } else if ((event->key() == Qt::Key_End) && (event->modifiers() == (Qt::AltModifier | Qt::ShiftModifier))) {
+        endOfLineAP(ExtendFlag | RectFlag); // end-of-line(extend, rect)
+        return;
+    } else if ((event->key() == Qt::Key_End) && (event->modifiers() == (Qt::MetaModifier | Qt::ShiftModifier))) {
+        endOfLineAP(ExtendFlag | RectFlag); // end-of-line(extend, rect)
+        return;
+    } else if ((event->key() == Qt::Key_End) && (event->modifiers() == (Qt::ShiftModifier))) {
+        endOfLineAP(ExtendFlag); // end-of-line(extend)
+        return;
+    } else if ((event->key() == Qt::Key_End) && (event->modifiers() == (Qt::ControlModifier | Qt::AltModifier | Qt::ShiftModifier))) {
+        endOfFileAP(ExtendFlag | RectFlag); // end-of-file(extend, rect)
+        return;
+    } else if ((event->key() == Qt::Key_End) && (event->modifiers() == (Qt::ControlModifier | Qt::MetaModifier | Qt::ShiftModifier))) {
+        endOfFileAP(ExtendFlag | RectFlag); // end-of-file(extend, rect)
+        return;
+    } else if ((event->key() == Qt::Key_End) && (event->modifiers() == (Qt::ControlModifier | Qt::ShiftModifier))) {
+        endOfFileAP(ExtendFlag); // end-of-file(extend)
+        return;
+    } else if ((event->key() == Qt::Key_Home) && (event->modifiers() == (Qt::AltModifier | Qt::ShiftModifier))) {
+        beginningOfLineAP(ExtendFlag | RectFlag); // beginning-of-line(extend, rect)
+        return;
+    } else if ((event->key() == Qt::Key_Home) && (event->modifiers() == (Qt::MetaModifier | Qt::ShiftModifier))) {
+        beginningOfLineAP(ExtendFlag | RectFlag); // beginning-of-line(extend, rect)
+        return;
+    } else if ((event->key() == Qt::Key_Home) && (event->modifiers() == (Qt::ShiftModifier))) {
+        beginningOfLineAP(ExtendFlag); // beginning-of-line(extend)
+        return;
+    } else if ((event->key() == Qt::Key_Home) && (event->modifiers() == (Qt::ControlModifier | Qt::AltModifier | Qt::ShiftModifier))) {
+        beginningOfFileAP(ExtendFlag | RectFlag); // beginning-of-file(extend, rect)
+        return;
+    } else if ((event->key() == Qt::Key_Home) && (event->modifiers() == (Qt::ControlModifier | Qt::MetaModifier | Qt::ShiftModifier))) {
+        beginningOfFileAP(ExtendFlag | RectFlag); // beginning-of-file(extend, rect)
+        return;
+    } else if ((event->key() == Qt::Key_Home) && (event->modifiers() == (Qt::ControlModifier | Qt::ShiftModifier))) {
+        beginningOfFileAP(ExtendFlag); // beginning-of-file(extend)
+        return;
+    } else if ((event->key() == Qt::Key_Insert) && (event->modifiers() == (Qt::ControlModifier | Qt::AltModifier | Qt::ShiftModifier))) {
+        copyPrimaryAP(RectFlag); // copy-primary(rect)
+        return;
+    } else if ((event->key() == Qt::Key_Insert) && (event->modifiers() == (Qt::ControlModifier | Qt::MetaModifier | Qt::ShiftModifier))) {
+        copyPrimaryAP(RectFlag); // copy-primary(rect)
+        return;
+    } else if ((event->key() == Qt::Key_Delete) && (event->modifiers() == (Qt::ControlModifier | Qt::AltModifier | Qt::ShiftModifier))) {
+        cutPrimaryAP(RectFlag); // cut-primary(rect)
+        return;
+    } else if ((event->key() == Qt::Key_Delete) && (event->modifiers() == (Qt::ControlModifier | Qt::MetaModifier | Qt::ShiftModifier))) {
+        cutPrimaryAP(RectFlag); // cut-primary(rect)
+        return;
+    } else if ((event->key() == Qt::Key_Space) && (event->modifiers() == (Qt::ControlModifier | Qt::ShiftModifier))) {
+        keySelectAP(); // key-select()
+        return;
+    } else if ((event->key() == Qt::Key_Space) && (event->modifiers() == (Qt::ControlModifier | Qt::AltModifier | Qt::ShiftModifier))) {
+        keySelectAP(RectFlag); // key-select(rect)
+        return;
+    } else if ((event->key() == Qt::Key_Space) && (event->modifiers() == (Qt::ControlModifier | Qt::MetaModifier | Qt::ShiftModifier))) {
+        keySelectAP(RectFlag); // key-select(rect)
+        return;
+    } else if ((event->key() == Qt::Key_Delete) && (event->modifiers() == (Qt::ControlModifier | Qt::ShiftModifier))) {
+        cutPrimaryAP(); // cut-primary()
+        return;
+    } else if ((event->key() == Qt::Key_Delete) && (event->modifiers() == (Qt::ControlModifier))) {
+        deleteToEndOfLineAP(); // delete-to-end-of-line()
+        return;
+    } else if ((event->key() == Qt::Key_U) && (event->modifiers() == (Qt::ControlModifier))) {
+        deleteToStartOfLineAP(); // delete-to-start-of-line()
+        return;
+    } else if ((event->key() == Qt::Key_Slash) && (event->modifiers() == (Qt::ControlModifier))) {
+        selectAllAP(); // select-all()
+        return;
+    } else if ((event->key() == Qt::Key_Backslash) && (event->modifiers() == (Qt::ControlModifier))) {
+        deselectAllAP(); // deselect-all()
+        return;
+    } else if ((event->key() == Qt::Key_Tab) && (event->modifiers() == (Qt::NoModifier))) {
+        processTabAP(); // process-tab()
+        return;
+    } else if ((event->key() == Qt::Key_Right) && (event->modifiers() == (Qt::NoModifier))) {
+        forwardCharacterAP(); // forward-character()
+        return;
+    } else if ((event->key() == Qt::Key_Left) && (event->modifiers() == (Qt::NoModifier))) {
+        backwardCharacterAP(); // backward-character()
+        return;
+    } else if ((event->key() == Qt::Key_Up) && (event->modifiers() == (Qt::NoModifier))) {
+        processUpAP(); // process-up()
+        return;
+    } else if ((event->key() == Qt::Key_Down) && (event->modifiers() == (Qt::NoModifier))) {
+        processDownAP(); // process-down()
+        return;
+    } else if ((event->key() == Qt::Key_Return) && (event->modifiers() == (Qt::NoModifier))) {
+        newlineAP(); // newline()
+        return;
+    } else if ((event->key() == Qt::Key_Enter) && (event->modifiers() == (Qt::KeypadModifier))) {
+        newlineAP(); // newline()
+        return;
+    } else if ((event->key() == Qt::Key_Backspace) && (event->modifiers() == (Qt::NoModifier))) {
+        deletePreviousCharacterAP(); // delete-previous-character()
+        return;
+    } else if ((event->key() == Qt::Key_Escape) && (event->modifiers() == (Qt::NoModifier))) {
+        processCancelAP(); // process-cancel()
+        return;
+    } else if ((event->key() == Qt::Key_Return) && (event->modifiers() == (Qt::ControlModifier))) {
+        newlineAndIndentAP(); // newline-and-indent()
+        return;
+    } else if ((event->key() == Qt::Key_Enter) && (event->modifiers() == (Qt::KeypadModifier | Qt::ControlModifier))) {
+        newlineAndIndentAP(); // newline-and-indent()
+        return;
+    } else if ((event->key() == Qt::Key_Return) && (event->modifiers() == (Qt::ShiftModifier))) {
+        newlineNoIndentAP(); // newline-no-indent()
+        return;
+    } else if ((event->key() == Qt::Key_Enter) && (event->modifiers() == (Qt::KeypadModifier | Qt::ShiftModifier))) {
+        newlineNoIndentAP(); // newline-no-indent()
+        return;
+    } else if ((event->key() == Qt::Key_Home) && (event->modifiers() == (Qt::NoModifier))) {
+        beginningOfLineAP(); // process-home()
+        return;
+    } else if ((event->key() == Qt::Key_Backspace) && (event->modifiers() == (Qt::ControlModifier))) {
+        deletePreviousWordAP(); // delete-previous-word()
+        return;
+    } else if ((event->key() == Qt::Key_End) && (event->modifiers() == (Qt::NoModifier))) {
+        endOfLineAP(); // end-of-line()
+        return;
+    } else if ((event->key() == Qt::Key_Delete) && (event->modifiers() == (Qt::NoModifier))) {
+        deleteNextCharacterAP(); // delete-next-character()
+        return;
+    } else if ((event->key() == Qt::Key_Insert) && (event->modifiers() == (Qt::NoModifier))) {
+        toggleOverstrikeAP(); // toggle-overstrike()
+        return;
+    } else if ((event->key() == Qt::Key_Up) && (event->modifiers() == (Qt::ShiftModifier))) {
+        processShiftUpAP(); // process-shift-up()
+        return;
+    } else if ((event->key() == Qt::Key_Down) && (event->modifiers() == (Qt::ShiftModifier))) {
+        processShiftDownAP(); // process-shift-down()
+        return;
+    } else if ((event->key() == Qt::Key_Left) && (event->modifiers() == (Qt::ShiftModifier))) {
+        keySelectAP(LeftFlag); // key-select(left)
+        return;
+    } else if ((event->key() == Qt::Key_Right) && (event->modifiers() == (Qt::ShiftModifier))) {
+        keySelectAP(RightFlag); // key-select(right)
+        return;
+    } else if ((event->key() == Qt::Key_Delete) && (event->modifiers() == (Qt::ShiftModifier))) {
+        cutClipboardAP(); // cut-clipboard()
+        return;
+    } else if ((event->key() == Qt::Key_Insert) && (event->modifiers() == (Qt::ControlModifier))) {
+        copyClipboardAP(); // copy-clipboard()
+        return;
+    } else if ((event->key() == Qt::Key_Insert) && (event->modifiers() == (Qt::ShiftModifier))) {
+        pasteClipboardAP(); // paste-clipboard()
+        return;
+    } else if ((event->key() == Qt::Key_Insert) && (event->modifiers() == (Qt::ControlModifier | Qt::ShiftModifier))) {
+        copyPrimaryAP(); // copy-primary()
+        return;
+    } else if ((event->key() == Qt::Key_Home) && (event->modifiers() == (Qt::ControlModifier))) {
+        beginningOfFileAP(); // begining-of-file()
+        return;
+    } else if ((event->key() == Qt::Key_End) && (event->modifiers() == (Qt::ControlModifier))) {
+        endOfFileAP(); // end-of-file()
+        return;
+    } else if ((event->key() == Qt::Key_Left) && (event->modifiers() == (Qt::ControlModifier))) {
+        backwardWordAP(); // backward-word()
+        return;
+    } else if ((event->key() == Qt::Key_Right) && (event->modifiers() == (Qt::ControlModifier))) {
+        forwardWordAP(); // forward-word()
+        return;
+    } else if ((event->key() == Qt::Key_Up) && (event->modifiers() == (Qt::ControlModifier))) {
+        backwardParagraphAP(); // backward-paragraph()
+        return;
+    } else if ((event->key() == Qt::Key_Down) && (event->modifiers() == (Qt::ControlModifier))) {
+        forwardParagraphAP(); // forward-paragraph()
+        return;
+    }
+
+    QString text = event->text();
     if(text.size() == 0) {
         return;
     }
@@ -1220,10 +1277,9 @@ void TextArea::keyPressEvent(QKeyEvent *e) {
 		smartIndent.indentRequest = 0;
 		smartIndent.charsTyped    = s.c_str(); // TODO(eteran): is this safe?
 
-		Q_UNUSED(smartIndent);
-#if 0
-		XtCallCallbacks(w_, textNsmartIndentCallback, &smartIndent);
-#endif
+		for(auto &c : smartIndentCallbacks_) {
+			c.first(this, &smartIndent, c.second);
+		}
 	}
 	TextInsertAtCursorEx(s, true, true);
 	buffer_->BufUnselect();
@@ -1498,8 +1554,8 @@ void TextArea::bufModifiedCallback(int pos, int nInserted, int nDeleted, int nRe
 	int oldFirstChar = firstChar_;
 	int scrolled;
 	int origCursorPos = cursorPos_;
-	int wrapModStart;
-	int wrapModEnd;
+    int wrapModStart = 0;
+    int wrapModEnd   = 0;
 
 	// buffer modification cancels vertical cursor motion column
 	if (nInserted != 0 || nDeleted != 0)
@@ -3303,6 +3359,9 @@ void TextArea::drawString(QPainter *painter, int style, int x, int y, int toX, c
 #endif
 	} else if (style & HIGHLIGHT_MASK) {
 		drawType = DrawHighlight;
+
+        fground = highlightFGPixel_;
+        bground = highlightBGPixel_;
 #if 0
 		gc = highlightGC_;
 		bgGC = highlightBGGC_;
@@ -3393,9 +3452,6 @@ void TextArea::drawString(QPainter *painter, int style, int x, int y, int toX, c
 
 		return;
 	}
-
-	QFontMetrics fm(X_font);
-
 
 #if 0
 	/* If any space around the character remains unfilled (due to use of
@@ -4011,8 +4067,6 @@ void TextArea::TextDSetScroll(int topLineNum, int horizOffset) {
 void TextArea::TextDRedrawCalltip(int calltipID) {
 	Q_UNUSED(calltipID);
 
-
-
 	if (calltip_.ID == 0) {
 		return;
 	}
@@ -4020,8 +4074,6 @@ void TextArea::TextDRedrawCalltip(int calltipID) {
 	if (calltipID != 0 && calltipID != calltip_.ID) {
 		return;
 	}
-
-
 
 	// Get the location/dimensions of the text area
 #if 0
@@ -4496,14 +4548,17 @@ void TextArea::CancelBlockDrag() {
 	buffer_->BufReplaceEx(modRangeStart, bufModRangeEnd, repText);
 
 	// Reset the selection and cursor position
-	if (origSel->rectangular)
+	if (origSel->rectangular) {
 		buffer_->BufRectSelect(origSel->start, origSel->end, origSel->rectStart, origSel->rectEnd);
-	else
+	} else {
 		buffer_->BufSelect(origSel->start, origSel->end);
+	}
 	TextDSetInsertPosition(buffer_->cursorPosHint_);
-#if 0
-	XtCallCallbacks(w_, textNcursorMovementCallback, nullptr);
-#endif
+
+	for(auto &c : movedCallbacks_) {
+		c.first(this, c.second);
+	}
+
 	emTabsBeforeCursor_ = 0;
 
 	// Free the backup buffer
@@ -4517,9 +4572,10 @@ void TextArea::CancelBlockDrag() {
 	endStruct.startPos       = 0;
 	endStruct.nCharsDeleted  = 0;
 	endStruct.nCharsInserted = 0;
-#if 0
-	XtCallCallbacks(w_, textNdragEndCallback, &endStruct);
-#endif
+
+	for(auto &c : dragEndCallbacks_) {
+		c.first(this, &endStruct, c.second);
+	}
 }
 
 /*
@@ -4529,9 +4585,9 @@ void TextArea::CancelBlockDrag() {
 */
 void TextArea::callCursorMovementCBs() {
 	emTabsBeforeCursor_ = 0;
-#if 0
-	XtCallCallbacks(w_, textNcursorMovementCallback, (XtPointer)event);
-#endif
+	for(auto &c : movedCallbacks_) {
+		c.first(this, c.second);
+	}
 }
 
 /*
@@ -4971,6 +5027,8 @@ void TextArea::TextDOverstrikeEx(view::string_view text) {
 				p++;
 
 				std::string padded;
+				padded.reserve(text.size() + (indent - endIndent));
+
 				padded.append(text.begin(), text.end());
 				padded.append(indent - endIndent, ' ');
 				paddedText = std::move(padded);
@@ -5083,9 +5141,11 @@ std::string TextArea::createIndentStringEx(TextBuffer *buf, int bufOffset, int l
 		smartIndent.pos           = lineEndPos + bufOffset;
 		smartIndent.indentRequest = 0;
 		smartIndent.charsTyped    = nullptr;
-#if 0
-		XtCallCallbacks((Widget)tw, textNsmartIndentCallback, &smartIndent);
-#endif
+
+		for(auto &c : smartIndentCallbacks_) {
+			c.first(this, &smartIndent, c.second);
+		}
+
 		indent = smartIndent.indentRequest;
 	}
 
@@ -5210,9 +5270,11 @@ std::string TextArea::createIndentStringEx(TextBuffer *buf, int bufOffset, int l
 		smartIndent.pos           = lineEndPos + bufOffset;
 		smartIndent.indentRequest = 0;
 		smartIndent.charsTyped    = nullptr;
-#if 0
-		XtCallCallbacks(w_, textNsmartIndentCallback, &smartIndent);
-#endif
+
+		for(auto &c : smartIndentCallbacks_) {
+			c.first(this, &smartIndent, c.second);
+		}
+
 		indent = smartIndent.indentRequest;
 	}
 
@@ -5479,14 +5541,6 @@ void TextArea::processShiftDownAP(EventFlags flags) {
 	callCursorMovementCBs();
 }
 
-void TextArea::keySelectLeftAP(EventFlags flags) {
-	keySelectAP(flags | LeftFlag);
-}
-
-void TextArea::keySelectRightAP(EventFlags flags) {
-	keySelectAP(flags | RightFlag);
-}
-
 void TextArea::keySelectAP(EventFlags flags) {
 
 	int stat;
@@ -5712,7 +5766,6 @@ void TextArea::InsertPrimarySelection(bool isColumnar) {
 	XtGetSelectionValue(w_, XA_PRIMARY, XA_STRING, getSelectionCB, &isColFlag, time);
 #else
 
-	(void)time;
 	int cursorLineStart;
 	int cursorPos;
 	int column;
@@ -6535,9 +6588,9 @@ void TextArea::FinishBlockDrag() {
 	endStruct.nCharsInserted = bufModRangeEnd  - modRangeStart;
 	endStruct.deletedText    = deletedText;
 
-#if 0
-	XtCallCallbacks(w_, textNdragEndCallback, &endStruct);
-#endif
+	for(auto &c : dragEndCallbacks_) {
+		c.first(this, &endStruct, c.second);
+	}
 }
 
 /*
@@ -6778,10 +6831,10 @@ void TextArea::BeginBlockDrag() {
 	// Set the drag state to announce an ongoing block-drag
 	dragState_ = PRIMARY_BLOCK_DRAG;
 
-#if 0
 	// Call the callback announcing the start of a block drag
-	XtCallCallbacks(w_, textNdragStartCallback, nullptr);
-#endif
+	for(auto &c : dragStartCallbacks_) {
+		c.first(this, c.second);
+	}
 }
 
 /*
@@ -6998,9 +7051,6 @@ void TextArea::BlockDragSelection(Point pos, BlockDragTypes dragType) {
 	std::string repText = tempBuf->BufGetRangeEx(modRangeStart - tempStart, tempModRangeEnd - tempStart);
 	delete tempBuf;
 
-	auto temp2 = QString::fromStdString(repText);
-	//qDebug() << "HERE2" << temp2;
-
 	TextDBlankCursor();
 	buffer_->BufReplaceEx(modRangeStart, bufModRangeEnd, repText);
 
@@ -7025,8 +7075,10 @@ void TextArea::BlockDragSelection(Point pos, BlockDragTypes dragType) {
 	}
 
 	TextDUnblankCursor();
-#if 0
-	XtCallCallbacks(w_, textNcursorMovementCallback, nullptr);
+#if 1
+	for(auto &c : movedCallbacks_) {
+		c.first(this, c.second);
+	}
 #endif
 	emTabsBeforeCursor_ = 0;
 }
@@ -7828,4 +7880,111 @@ int TextArea::TextDPosToLineAndCol(int pos, int *lineNum, int *column) {
 	*column = buffer_->BufCountDispChars(lineStarts_[*lineNum], pos);
 	*lineNum += topLineNum_;
 	return true;
+}
+
+void TextArea::addCursorMovementCallback(cursorMovedCBEx callback, void *arg) {
+	movedCallbacks_.push_back(qMakePair(callback, arg));
+}
+
+void TextArea::addDragStartCallback(dragStartCBEx callback, void *arg) {
+	dragStartCallbacks_.push_back(qMakePair(callback, arg));
+}
+
+void TextArea::addDragEndCallback(dragEndCBEx callback, void *arg) {
+	dragEndCallbacks_.push_back(qMakePair(callback, arg));
+}
+
+void TextArea::addSmartIndentCallback(smartIndentCBEx callback, void *arg) {
+	smartIndentCallbacks_.push_back(qMakePair(callback, arg));
+}
+
+bool TextArea::focusNextPrevChild(bool next) {
+	if(true) { // !tabChangesFocus()
+		return false;
+	} else {
+		return QAbstractScrollArea::focusNextPrevChild(next);
+	}
+}
+
+
+int TextArea::getEmulateTabs() const {
+    return P_emulateTabs;
+}
+
+/*
+** Set the cursor position
+*/
+void TextArea::TextSetCursorPos(int pos) {
+    TextDSetInsertPosition(pos);
+    checkAutoShowInsertPos();
+    callCursorMovementCBs();
+}
+
+void TextArea::setModifyingTabDist(int tabDist) {
+    modifyingTabDist_ = tabDist;
+}
+
+int TextArea::getBufferLinesCount() const {
+    return nBufferLines_;
+}
+
+int TextArea::fontAscent() const {
+    return ascent_;
+}
+
+int TextArea::fontDescent() const {
+    return descent_;
+}
+
+/*
+** Find the height currently being used to display text, which is
+** a composite of all of the active highlighting fonts as determined by the
+** text display component
+*/
+int TextArea::getFontHeight() const {
+    return fontAscent() + fontDescent();
+}
+
+/*
+** Attach (or remove) highlight information in text display and redisplay.
+** Highlighting information consists of a style buffer which parallels the
+** normal text buffer, but codes font and color information for the display;
+** a style table which translates style buffer codes (indexed by buffer
+** character - 65 (ASCII code for 'A')) into fonts and colors; and a callback
+** mechanism for as-needed highlighting, triggered by a style buffer entry of
+** "unfinishedStyle".  Style buffer can trigger additional redisplay during
+** a normal buffer modification if the buffer contains a primary selection
+** (see extendRangeForStyleMods for more information on this protocol).
+**
+** Style buffers, tables and their associated memory are managed by the caller.
+*/
+void TextArea::TextDAttachHighlightData(TextBuffer *styleBuffer, StyleTableEntry *styleTable, int nStyles, char unfinishedStyle, unfinishedStyleCBProcEx unfinishedHighlightCB, void *cbArg) {
+    styleBuffer_           = styleBuffer;
+    styleTable_            = styleTable;
+    nStyles_               = nStyles;
+    unfinishedStyle_       = unfinishedStyle;
+    unfinishedHighlightCB_ = unfinishedHighlightCB;
+    highlightCBArg_        = cbArg;
+
+#if 0
+    /* Call TextDSetFont to combine font information from style table and
+       primary font, adjust font-related parameters, and then redisplay */
+    TextDSetFont(fontStruct_);
+#endif
+}
+
+QTimer *TextArea::cursorBlinkTimer() const {
+    return cursorBlinkTimer_;
+}
+
+int TextArea::TextFirstVisiblePos() const {
+    return firstChar_;
+}
+
+int TextArea::TextLastVisiblePos() const {
+    return lastChar_;
+}
+
+void TextArea::setContextMenu(QMenu *menu) {
+    bgMenu_ = menu;
 }

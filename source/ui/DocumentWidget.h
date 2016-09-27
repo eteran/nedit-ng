@@ -6,6 +6,8 @@
 #include <QPointer>
 #include <QWidget>
 
+
+#include "ui_DocumentWidget.h"
 #include "Bookmark.h"
 #include "LockReasons.h"
 #include "UserBGMenuCache.h"
@@ -18,9 +20,19 @@ class UndoInfo;
 class TextBuffer;
 class Document;
 class MainWindow;
+class QFrame;
+class QLabel;
+class QSplitter;
+class QTimer;
+class TextArea;
+struct dragEndCBStruct;
+struct smartIndentCBStruct;
+struct WindowHighlightData;
+struct HighlightData;
 
 class DocumentWidget : public QWidget {
 	Q_OBJECT
+	friend class MainWindow;
 public:
 	DocumentWidget(const QString &name, QWidget *parent = 0, Qt::WindowFlags f = 0);
 	virtual ~DocumentWidget();
@@ -28,9 +40,48 @@ public:
 private Q_SLOTS:
 	void onFocusIn(QWidget *now);
 	void onFocusOut(QWidget *was);
+    void flashTimerTimeout();
+
+public Q_SLOTS:
+    void setLanguageMode(const QString &mode);
+
+public:
+	void movedCallback(TextArea *area);
+	void dragStartCallback(TextArea *area);
+	void dragEndCallback(TextArea *area, dragEndCBStruct *data);
+	void smartIndentCallback(TextArea *area, smartIndentCBStruct *data);
+    void modifiedCallback(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText);
 
 private:
 	void EndISearch();
+
+public:
+    TextArea *createTextArea(TextBuffer *buffer);
+    QList<TextArea *> textPanes() const;
+    TextArea *firstPane() const;
+	void SetWindowModified(bool modified);
+	void RefreshTabState();
+	void DetermineLanguageMode(bool forceNewDefaults);
+	void SetLanguageMode(int mode, bool forceNewDefaults);
+	int matchLanguageMode();
+	void UpdateStatsLine(TextArea *area);
+    void RaiseDocument();
+    void reapplyLanguageMode(int mode, bool forceDefaults);
+    void SetAutoWrap(int state);
+    void SetAutoIndent(int state);
+    void SetEmTabDist(int emTabDist);
+    void SetTabDist(int tabDist);
+    bool IsTopDocument() const;
+    void updateWindowMenu();
+    QString getWindowsMenuEntry();
+    void UpdateUserMenus();
+    QMenu *createUserMenu(const QVector<MenuData> &menuData);
+    MainWindow *toWindow() const;
+    void UpdateMarkTable(int pos, int nInserted, int nDeleted);
+    void StopHighlighting();
+    void freeHighlightData(WindowHighlightData *hd);
+    void freePatterns(HighlightData *patterns);
+    QString GetWindowDelimiters() const;
 
 private:
 	// TODO(eteran): are these dialog's per window or per text document?
@@ -51,14 +102,16 @@ public:
 	QString italicFontName_;
 	QString path_;                     // path component of file being edited
 	TextBuffer *buffer_;               // holds the text being edited
-	UserBGMenuCache userBGMenuCache_;  // shell & macro menu are shared over all "tabbed" documents, while each document has its own background menu.
-	UserMenuCache *userMenuCache_;     // cache user menus:
+
 	XFontStruct *boldFontStruct_;
 	XFontStruct *boldItalicFontStruct_;
 	XFontStruct *italicFontStruct_;    // fontStructs for highlighting fonts
 	XmFontList fontList_;              // fontList for the primary font
-	XtIntervalId flashTimeoutID_;      // timer procedure id for getting rid of highlighted matching paren.  Non-zero val. means highlight is drawn
+
+    QTimer *flashTimer_;               // timer for getting rid of highlighted matching paren.
+
 	XtIntervalId markTimeoutID_;       // backup timer for mark event handler
+
 	bool autoSave_;                    // is autosave turned on?
 	bool backlightChars_;              // is char backlighting turned on?
 	bool fileChanged_;                 // has window been modified?
@@ -101,10 +154,14 @@ public:
 	time_t lastModTime_;               // time of last modification to file
 	uid_t fileUid_;                    // last recorded user id of the file
 	unsigned fileMode_;                // permissions of file being edited
-	void *highlightData_;              // info for syntax highlighting
-	void *macroCmdData_;               // same for macro commands
-	void *shellCmdData_;               // when a shell command is executing, info. about it, otherwise, nullptr
-	void *smartIndentData_;            // compiled macros for smart indent
+    void *highlightData_;              // info for syntax highlighting                                          // TODO(eteran): why void* ?
+    void *macroCmdData_;               // same for macro commands                                               // TODO(eteran): why void* ?
+    void *shellCmdData_;               // when a shell command is executing, info. about it, otherwise, nullptr // TODO(eteran): why void* ?
+    void *smartIndentData_;            // compiled macros for smart indent                                      // TODO(eteran): why void* ?
+
+private:
+	QSplitter *splitter_;
+	Ui::DocumentWidget ui;
 };
 
 #endif

@@ -22,9 +22,15 @@
 class TextBuffer;
 class TextArea;
 class QShortcut;
-
+class QMenu;
+struct smartIndentCBStruct;
+struct dragEndCBStruct;
 
 typedef void (*unfinishedStyleCBProcEx)(const TextArea *, int, const void *);
+typedef void (*cursorMovedCBEx)(TextArea *, void *);
+typedef void (*dragStartCBEx)(TextArea *, void *);
+typedef void (*dragEndCBEx)(TextArea *, dragEndCBStruct *, void *);
+typedef void (*smartIndentCBEx)(TextArea *, smartIndentCBStruct *, void *);
 
 class TextArea : public QAbstractScrollArea {
 	Q_OBJECT
@@ -78,6 +84,14 @@ Q_SIGNALS:
 	void focusOut(QWidget *now);
 
 public:
+	// TODO(eteran): if these aren't expected to have side effects, then some
+	// of them may be able to be replaced with signals
+	void addCursorMovementCallback(cursorMovedCBEx callback, void *arg);
+	void addDragStartCallback(dragStartCBEx callback, void *arg);
+	void addDragEndCallback(dragEndCBEx callback, void *arg);
+	void addSmartIndentCallback(smartIndentCBEx callback, void *arg);
+
+public:
 	// resource setters
 	void setWordDelimiters(const QString &delimiters);
 	void setBacklightCharTypes(const QString &charTypes);
@@ -95,8 +109,20 @@ public:
 	void setAutoWrap(bool value);
 	void setAutoIndent(bool value);
 	void setSmartIndent(bool value);
+    void setModifyingTabDist(int tabDist);
+    void setContextMenu(QMenu *menu);
+
+public:
+    int getEmulateTabs() const;
+    int getLineNumCols() const;
+    int getBufferLinesCount() const;
+    int getFontHeight() const;
+    int fontDescent() const;
+    int fontAscent() const;
+    QTimer *cursorBlinkTimer() const;
 
 protected:
+	virtual bool focusNextPrevChild(bool next) override;
 	virtual void contextMenuEvent(QContextMenuEvent *event) override;
 	virtual void dragEnterEvent(QDragEnterEvent *event) override;
 	virtual void dragLeaveEvent(QDragLeaveEvent *event) override;
@@ -180,43 +206,6 @@ private Q_SLOTS:
 	void moveToAP(QMouseEvent *event, EventFlags flags = NoneFlag);
 	void exchangeAP(QMouseEvent *event, EventFlags flags = NoneFlag);
 
-private Q_SLOTS:
-	// shotcuts with parameters
-	void forwardWordExtendAP(EventFlags flags = NoneFlag);
-	void forwardWordExtendRectAP(EventFlags flags = NoneFlag);
-	void keySelectLeftRectAP(EventFlags flags = NoneFlag);
-	void keySelectRightRectAP(EventFlags flags = NoneFlag);
-	void backwardWordExtendAP(EventFlags flags = NoneFlag);
-	void backwardWordExtendRectAP(EventFlags flags = NoneFlag);
-	void endOfLineExtendAP(EventFlags flags = NoneFlag);
-	void endOfLineExtendRectAP(EventFlags flags = NoneFlag);
-	void endOfFileExtendAP(EventFlags flags = NoneFlag);
-	void endOfFileExtendRectAP(EventFlags flags = NoneFlag);
-	void beginningOfLineExtendAP(EventFlags flags = NoneFlag);
-	void beginningOfLineExtendRectAP(EventFlags flags = NoneFlag);
-	void beginningOfFileExtendAP(EventFlags flags = NoneFlag);
-	void beginningOfFileExtendRectAP(EventFlags flags = NoneFlag);
-	void cutPrimaryRectAP(EventFlags flags = NoneFlag);
-	void copyPrimaryRectAP(EventFlags flags = NoneFlag);
-	void keySelectRectAP(EventFlags flags = NoneFlag);
-	void keySelectLeftAP(EventFlags flags = NoneFlag);
-	void keySelectRightAP(EventFlags flags = NoneFlag);
-	void forwardParagraphExtendAP(EventFlags flags = NoneFlag);
-	void forwardParagraphExtendRectAP(EventFlags flags = NoneFlag);
-	void backwardParagraphExtendAP(EventFlags flags = NoneFlag);
-	void backwardParagraphExtendRectAP(EventFlags flags = NoneFlag);
-	void processShiftUpRectAP(EventFlags flags = NoneFlag);
-	void processShiftDownRectAP(EventFlags flags = NoneFlag);
-	void pageLeftExtendRectAP(EventFlags flags = NoneFlag);
-	void pageLeftExtendAP(EventFlags flags = NoneFlag);
-	void pageRightExtendRectAP(EventFlags flags = NoneFlag);
-	void pageRightExtendAP(EventFlags flags = NoneFlag);
-	void nextPageExtendRectAP(EventFlags flags = NoneFlag);
-	void nextPageExtendAP(EventFlags flags = NoneFlag);
-	void previousPageExtendRectAP(EventFlags flags = NoneFlag);
-	void previousPageExtendAP(EventFlags flags = NoneFlag);
-
-
 public:
 	int TextDStartOfLine(int pos) const;
 	int TextDEndOfLine(int pos, bool startPosIsLineStart);
@@ -236,6 +225,11 @@ public:
 	int TextGetCursorPos() const;
 	int TextDGetInsertPosition() const;
 	int TextDPosToLineAndCol(int pos, int *lineNum, int *column);
+    void TextDSetScroll(int topLineNum, int horizOffset);
+    void TextSetCursorPos(int pos);
+    void TextDAttachHighlightData(TextBuffer *styleBuffer, StyleTableEntry *styleTable, int nStyles, char unfinishedStyle, unfinishedStyleCBProcEx unfinishedHighlightCB, void *cbArg);
+    int TextFirstVisiblePos() const;
+    int TextLastVisiblePos() const;
 
 private:
 	void TextDSetWrapMode(int wrap, int wrapMargin);
@@ -246,7 +240,6 @@ private:
 	void TextDSetCursorStyle(CursorStyles style);
 	void TextDUnblankCursor();
 	void TextDBlankCursor();
-	void TextDSetScroll(int topLineNum, int horizOffset);
 	void TextDRedrawCalltip(int calltipID);
 	void TextDSetupBGClassesEx(const QString &str);
 	void TextDSetupBGClasses(const QString &s, QVector<QColor> *pp_bgClassPixel, QVector<uint8_t> *pp_bgClass, QColor bgPixelDefault);
@@ -348,7 +341,6 @@ private:
 	void ExchangeSelections();
 	int getAbsTopLineNum();
 	CursorStyles getCursorStyle() const;
-	int getLineNumCols() const;
 
 private:
 #if 1
@@ -421,7 +413,7 @@ private:
 	int clickCount_;
 	QPoint clickPos_;
 	int            emTabsBeforeCursor_; // If non-zero, number of consecutive emulated tabs just entered.  Saved so chars can be deleted as a unit
-
+    QMenu *bgMenu_;
 private:
 	QColor highlightFGPixel_;   // Highlight colors are used when flashing matching parens
 	QColor highlightBGPixel_;
@@ -450,6 +442,12 @@ private:
 	int         P_lineNumCols;
 	const char *P_delimiters;
 	int         P_cursorVPadding;
+
+private:
+	QVector<QPair<cursorMovedCBEx, void *>> movedCallbacks_;
+	QVector<QPair<dragStartCBEx, void *>>   dragStartCallbacks_;
+	QVector<QPair<dragEndCBEx, void *>>     dragEndCallbacks_;
+	QVector<QPair<smartIndentCBEx, void *>> smartIndentCallbacks_;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(TextArea::EventFlags)

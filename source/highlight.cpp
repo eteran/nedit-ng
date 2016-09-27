@@ -29,6 +29,7 @@
 
 #include <QMessageBox>
 
+#include "DocumentWidget.h"
 #include "highlight.h"
 #include "TextHelper.h"
 #include "Document.h"
@@ -48,6 +49,7 @@
 #include "regularExp.h"
 #include "text.h"
 #include "window.h"
+#include "TextArea.h"
 
 #include <algorithm>
 #include <climits>
@@ -117,13 +119,14 @@ static int parseBufferRange(HighlightData *pass1Patterns, HighlightData *pass2Pa
 static regexp *compileREAndWarn(Widget parent, view::string_view re);
 static void fillStyleString(const char **stringPtr, char **stylePtr, const char *toPtr, char style, char *prevChar);
 static void freePatterns(HighlightData *patterns);
-static void handleUnparsedRegion(const Document *win, TextBuffer *styleBuf, const int pos);
-static void handleUnparsedRegionCB(const TextDisplay *textD, const int pos, const void *cbArg);
+static void handleUnparsedRegion(const Document *win, TextBuffer *styleBuf, int pos);
+static void handleUnparsedRegionCB(const TextDisplay *textD, int pos, const void *cbArg);
 static void incrementalReparse(WindowHighlightData *highlightData, TextBuffer *buf, int pos, int nInserted, const char *delimiters);
 static void modifyStyleBuf(TextBuffer *styleBuf, char *styleString, int startPos, int endPos, int firstPass2Style);
 static void passTwoParseString(HighlightData *pattern, const char *string, char *styleString, int length, char *prevChar, const char *delimiters, const char *lookBehindTo, const char *match_till);
 static void recolorSubexpr(regexp *re, int subexpr, int style, const char *string, char *styleString);
 static void updateWindowHeight(Document *window, int oldFontHeight);
+static void handleUnparsedRegionEx(const DocumentWidget *window, TextBuffer *styleBuf, int pos);
 
 /*
 ** Buffer modification callback for triggering re-parsing of modified
@@ -350,6 +353,13 @@ void RemoveWidgetHighlight(Widget widget) {
 }
 
 /*
+** Remove style information from a text widget and redisplay it.
+*/
+void RemoveWidgetHighlightEx(TextArea *area) {
+    area->TextDAttachHighlightData(nullptr, nullptr, 0, UNFINISHED_STYLE, nullptr, nullptr);
+}
+
+/*
 ** Change highlight fonts and/or styles in a highlighted window, without
 ** re-parsing.
 */
@@ -392,6 +402,47 @@ void UpdateHighlightStyles(Document *window) {
 	for (int i = 0; i < window->textPanes_.size(); i++) {
 		AttachHighlightToWidget(window->textPanes_[i], window);
 	}
+}
+
+/*
+** Returns the highlight style of the character at a given position of a
+** window. To avoid breaking encapsulation, the highlight style is converted
+** to a void* pointer (no other module has to know that characters are used
+** to represent highlight styles; that would complicate future extensions).
+** Returns nullptr if the window has highlighting turned off.
+** The only guarantee that this function offers, is that when the same
+** pointer is returned for two positions, the corresponding characters have
+** the same highlight style.
+**/
+void *GetHighlightInfoEx(DocumentWidget *window, int pos) {
+
+    HighlightData *pattern = nullptr;
+    auto highlightData = static_cast<WindowHighlightData *>(window->highlightData_);
+    if (!highlightData) {
+        return nullptr;
+    }
+
+    // Be careful with signed/unsigned conversions. NO conversion here!
+    int style = (int)highlightData->styleBuffer->BufGetCharacter(pos);
+
+    // Beware of unparsed regions.
+    if (style == UNFINISHED_STYLE) {
+        handleUnparsedRegionEx(window, highlightData->styleBuffer, pos);
+        style = (int)highlightData->styleBuffer->BufGetCharacter(pos);
+    }
+
+    if (highlightData->pass1Patterns) {
+        pattern = patternOfStyle(highlightData->pass1Patterns, style);
+    }
+
+    if (!pattern && highlightData->pass2Patterns) {
+        pattern = patternOfStyle(highlightData->pass2Patterns, style);
+    }
+
+    if (!pattern) {
+        return nullptr;
+    }
+    return reinterpret_cast<void *>(pattern->userStyleIndex);
 }
 
 /*
@@ -1165,6 +1216,99 @@ Pixel GetHighlightBGColorOfCode(Document *window, int hCode, Color *color) {
 ** needs re-parsing.  This routine applies pass 2 patterns to a chunk of
 ** the buffer of size PASS_2_REPARSE_CHUNK_SIZE beyond pos.
 */
+static void handleUnparsedRegionEx(const DocumentWidget *window, TextBuffer *styleBuf, const int pos) {
+    TextBuffer *buf = window->buffer_;
+    int beginParse, endParse, beginSafety, endSafety, p;
+    auto highlightData = static_cast<WindowHighlightData *>(window->highlightData_);
+
+    ReparseContext *context = &highlightData->contextRequirements;
+    HighlightData *pass2Patterns = highlightData->pass2Patterns;
+    char c, prevChar;
+    int firstPass2Style = (uint8_t)pass2Patterns[1].style;
+
+    /* If there are no pass 2 patterns to process, do nothing (but this
+       should never be triggered) */
+    if (!pass2Patterns)
+        return;
+
+    /* Find the point at which to begin parsing to ensure that the character at
+       pos is parsed correctly (beginSafety), at most one context distance back
+       from pos, unless there is a pass 1 section from which to start */
+    beginParse = pos;
+    beginSafety = backwardOneContext(buf, context, beginParse);
+    for (p = beginParse; p >= beginSafety; p--) {
+        c = styleBuf->BufGetCharacter(p);
+        if (c != UNFINISHED_STYLE && c != PLAIN_STYLE && (uint8_t)c < firstPass2Style) {
+            beginSafety = p + 1;
+            break;
+        }
+    }
+
+    /* Decide where to stop (endParse), and the extra distance (endSafety)
+       necessary to ensure that the changes at endParse are correct.  Stop at
+       the end of the unfinished region, or a max. of PASS_2_REPARSE_CHUNK_SIZE
+       characters forward from the requested position */
+    endParse = std::min<int>(buf->BufGetLength(), pos + PASS_2_REPARSE_CHUNK_SIZE);
+    endSafety = forwardOneContext(buf, context, endParse);
+    for (p = pos; p < endSafety; p++) {
+        c = styleBuf->BufGetCharacter(p);
+        if (c != UNFINISHED_STYLE && c != PLAIN_STYLE && (uint8_t)c < firstPass2Style) {
+            endParse = std::min<int>(endParse, p);
+            endSafety = p;
+            break;
+        } else if (c != UNFINISHED_STYLE && p < endParse) {
+            endParse = p;
+            if ((uint8_t)c < firstPass2Style)
+                endSafety = p;
+            else
+                endSafety = forwardOneContext(buf, context, endParse);
+            break;
+        }
+    }
+
+    // Copy the buffer range into a string
+    /* printf("callback pass2 parsing from %d thru %d w/ safety from %d thru %d\n",
+            beginParse, endParse, beginSafety, endSafety); */
+
+    std::string str       = buf->BufGetRangeEx(beginSafety, endSafety);
+    char *string          = &str[0];
+    const char *stringPtr = &str[0];
+    char *const match_to  = string + str.size();
+
+
+    std::string styleStr  = styleBuf->BufGetRangeEx(beginSafety, endSafety);
+    char *styleString     = &styleStr[0];
+    char *stylePtr        = &styleStr[0];
+
+    // Parse it with pass 2 patterns
+    prevChar = getPrevChar(buf, beginSafety);
+
+    parseString(
+        pass2Patterns,
+        &stringPtr,
+        &stylePtr,
+        endParse - beginSafety,
+        &prevChar,
+        false,
+        window->GetWindowDelimiters(),
+        string,
+        match_to);
+
+    /* Update the style buffer the new style information, but only between
+       beginParse and endParse.  Skip the safety region */
+    styleString[endParse - beginSafety] = '\0';
+    styleBuf->BufReplaceEx(beginParse, endParse, &styleString[beginParse - beginSafety]);
+}
+
+/*
+** Callback to parse an "unfinished" region of the buffer.  "unfinished" means
+** that the buffer has been parsed with pass 1 patterns, but this section has
+** not yet been exposed, and thus never had pass 2 patterns applied.  This
+** callback is invoked when the text widget's display routines encounter one
+** of these unfinished regions.  "pos" is the first position encountered which
+** needs re-parsing.  This routine applies pass 2 patterns to a chunk of
+** the buffer of size PASS_2_REPARSE_CHUNK_SIZE beyond pos.
+*/
 static void handleUnparsedRegion(const Document *window, TextBuffer *styleBuf, const int pos) {
 	TextBuffer *buf = window->buffer_;
 	int beginParse, endParse, beginSafety, endSafety, p;
@@ -1252,7 +1396,7 @@ static void handleUnparsedRegion(const Document *window, TextBuffer *styleBuf, c
 /*
 ** Callback wrapper around the above function.
 */
-static void handleUnparsedRegionCB(const TextDisplay *textD, const int pos, const void *cbArg) {
+static void handleUnparsedRegionCB(const TextDisplay *textD, int pos, const void *cbArg) {
 	handleUnparsedRegion((Document *)cbArg, textD->getStyleBuffer(), pos);
 }
 

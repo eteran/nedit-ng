@@ -7,6 +7,7 @@
 
 class TextArea;
 class DocumentWidget;
+class DialogReplace;
 
 #include "ui_MainWindow.h"
 
@@ -22,17 +23,46 @@ private:
 	void setupMenuGroups();
 	void setupMenuStrings();
 	void setupTabBar();
+	void setupMenuAlternativeMenus();
+    void CreateLanguageModeSubMenu();
+    void updateLanguageModeSubmenu();
 
-private:
-	void UpdateStatsLine(DocumentWidget *doc);
+public:
+	void UpdateWindowTitle(DocumentWidget *doc);
+	DialogReplace *getDialogReplace() const;
+	void InvalidateWindowMenus();
+	void UpdateWindowReadOnly(DocumentWidget *doc);
+	void ShowTabBar(bool state);
+	bool GetShowTabBar();
+	void SortTabBar();
+	int TabCount();
+    void CheckCloseDim();
+    QList<DocumentWidget *> openDocuments() const;
+    int updateLineNumDisp();
+    int updateGutterWidth();
+    void TempShowISearch(bool state);
+
+public:
+    static QList<MainWindow *> allWindows();
+    static QList<DocumentWidget *> allDocuments();
+
+public:
+	DocumentWidget *CreateDocument(QString name);
+
+public Q_SLOTS:
+	// internal variants
+    void action_New(const QString &mode = QString());
+    void action_Shift_Left_Tabs();
+    void action_Shift_Right_Tabs();
 
 public Q_SLOTS:
 	void on_action_New_triggered();
+	void on_action_New_Window_triggered();
+	void on_action_Open_triggered();
 	void on_action_About_triggered();
 	void on_action_Select_All_triggered();
 #if 0
-	void on_action_New_Window_triggered();
-	void on_action_Open_triggered();
+
 	void on_action_Open_Selected_triggered();
 	void on_action_Open_Previous_triggered();
 	void on_action_Close_triggered();
@@ -54,6 +84,8 @@ public Q_SLOTS:
 	void on_action_Cut_triggered();
 	void on_action_Copy_triggered();
 	void on_action_Paste_triggered();
+	void on_action_Execute_Command_Line_triggered();
+
 #if 0
 	void on_action_Paste_Column_triggered();
 	void on_action_Delete_triggered();	
@@ -78,8 +110,7 @@ public Q_SLOTS:
 	void on_action_Goto_Matching_triggered();
 	void on_action_Find_Definition_triggered();
 	void on_action_Show_Calltip_triggered();
-	void on_action_Execute_Command_triggered();
-	void on_action_Execute_Command_Line_triggered();
+	void on_action_Execute_Command_triggered();	
 	void on_action_Filter_Selection_triggered();
 	void on_action_Cancel_Shell_Command_triggered();
 	void on_action_Split_Pane_triggered();
@@ -192,6 +223,8 @@ public Q_SLOTS:
 
 private Q_SLOTS:
 	void deleteTabButtonClicked();
+    void raiseCB();
+    void setLangModeCB();
 
 private:
 	QPointer<QDialog>  dialogFind_;
@@ -200,9 +233,9 @@ private:
 	bool               showLineNumbers_; // is the line number display shown
 	bool               showStats_;       // is stats line supposed to be shown
 	bool               showISearchLine_; // is incr. search line to be shown
-	bool               modeMessageDisplayed_;
+    bool               modeMessageDisplayed_;
 
-private:
+public:
 	Ui::MainWindow ui;
 };
 

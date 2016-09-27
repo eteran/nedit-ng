@@ -27,7 +27,7 @@
 #ifndef SEARCH_H_
 #define SEARCH_H_
 
-#define MAX_SEARCH_HISTORY 100 /* Maximum length of search string history */
+constexpr int MAX_SEARCH_HISTORY = 100; /* Maximum length of search string history */
 
 #include "SearchDirection.h"
 #include "SearchType.h"
@@ -35,6 +35,9 @@
 
 #include <X11/Intrinsic.h>
 #include <X11/X.h>
+
+class TextArea;
+class DocumentWidget;
 
 Boolean WindowCanBeClosed(Document *window);
 bool ReplaceAll(Document *window, const char *searchString, const char *replaceString, SearchType searchType);
@@ -56,12 +59,14 @@ void DoFindDlog(Document *window, SearchDirection direction, int keepDialogs, Se
 void DoFindReplaceDlog(Document *window, SearchDirection direction, int keepDialogs, SearchType searchType, Time time);
 void EndISearch(Document *window);
 void FlashMatching(Document *window, Widget textW);
+void FlashMatchingEx(DocumentWidget *document, TextArea *area);
 void GotoMatchingCharacter(Document *window);
 void RemoveFromMultiReplaceDialog(Document *window);
 void ReplaceInSelection(const Document *window, const char *searchString, const char *replaceString, SearchType searchType);
 void SearchForSelected(Document *window, SearchDirection direction, SearchType searchType, int searchWrap, Time time);
 void SelectToMatchingCharacter(Document *window);
 void SetISearchTextCallbacks(Document *window);
+void eraseFlashEx(DocumentWidget *document);
 
 
 /* Default scope if selection exists when replace dialog pops up.
@@ -103,7 +108,7 @@ int countWritableWindows(void);
 int historyIndex(int nCycles);
 int isRegexType(SearchType searchType);
 void unmanageReplaceDialogs(const Document *window);
-void saveSearchHistory(const char *searchString, const char *replaceString, SearchType searchType, int isIncremental);
+void saveSearchHistory(const char *searchString, const char *replaceString, SearchType searchType, bool isIncremental);
 
 extern char *SearchHistory[MAX_SEARCH_HISTORY];
 extern char *ReplaceHistory[MAX_SEARCH_HISTORY];
