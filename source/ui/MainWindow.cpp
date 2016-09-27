@@ -524,7 +524,13 @@ QList<MainWindow *> MainWindow::allWindows() {
 }
 
 QList<DocumentWidget *> MainWindow::openDocuments() const {
-    return findChildren<DocumentWidget *>();
+    QList<DocumentWidget *> list;
+    for(int i = 0; i < ui.tabWidget->count(); ++i) {
+        if(auto document = qobject_cast<DocumentWidget *>(ui.tabWidget->widget(i))) {
+            list.push_back(document);
+        }
+    }
+    return list;
 }
 
 QList<DocumentWidget *> MainWindow::allDocuments() {

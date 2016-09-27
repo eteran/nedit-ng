@@ -1084,7 +1084,17 @@ void DocumentWidget::SetAutoWrap(int state) {
 }
 
 QList<TextArea *> DocumentWidget::textPanes() const {
-    return findChildren<TextArea *>();
+
+    QList<TextArea *> list;
+    list.reserve(splitter_->count());
+
+    for(int i = 0; i < splitter_->count(); ++i) {
+        if(auto area = qobject_cast<TextArea *>(splitter_->widget(i))) {
+            list.push_back(area);
+        }
+    }
+
+    return list;
 }
 
 bool DocumentWidget::IsTopDocument() const {
