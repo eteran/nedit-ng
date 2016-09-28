@@ -36,6 +36,7 @@
 #include "ui/DialogSyntaxPatterns.h"
 #include "ui/DocumentWidget.h"
 
+#include "Font.h"
 #include "highlightData.h"
 #include "FontType.h"
 #include "TextBuffer.h"
@@ -366,23 +367,38 @@ static QString convertPatternExprEx(const QString &patternRE, const char *patSet
 ** NamedStyleExists to find out whether styleName is valid).
 */
 XFontStruct *FontOfNamedStyle(Document *window, view::string_view styleName) {
-	int styleNo = lookupNamedStyle(styleName), fontNum;
-	XFontStruct *font;
+    int styleNo = lookupNamedStyle(styleName), fontNum;
+    XFontStruct *font;
 
-	if (styleNo < 0)
-		return GetDefaultFontStruct(window->fontList_);
-	fontNum = HighlightStyles[styleNo]->font;
-	if (fontNum == BOLD_FONT)
-		font = window->boldFontStruct_;
-	else if (fontNum == ITALIC_FONT)
-        font = window->italicFontStruct_;
-	else if (fontNum == BOLD_ITALIC_FONT)
-		font = window->boldItalicFontStruct_;
-	else // fontNum == PLAIN_FONT 
-		font = GetDefaultFontStruct(window->fontList_);
+    if (styleNo < 0) {
+        font = GetDefaultFontStruct(window->fontList_);
+    } else {
 
-	// If font isn't loaded, silently substitute primary font 
-	return font == nullptr ? GetDefaultFontStruct(window->fontList_) : font;
+        fontNum = HighlightStyles[styleNo]->font;
+
+        switch(fontNum) {
+        case BOLD_FONT:
+            font = window->boldFontStruct_;
+            break;
+        case ITALIC_FONT:
+            font = window->italicFontStruct_;
+            break;
+        case BOLD_ITALIC_FONT:
+            font = window->boldItalicFontStruct_;
+            break;
+        case PLAIN_FONT:
+        default:
+            font = GetDefaultFontStruct(window->fontList_);
+            break;
+        }
+
+        // If font isn't loaded, silently substitute primary font
+        if(!font) {
+            font = GetDefaultFontStruct(window->fontList_);
+        }
+    }
+
+    return font;
 }
 
 /*
@@ -391,67 +407,39 @@ XFontStruct *FontOfNamedStyle(Document *window, view::string_view styleName) {
 ** NamedStyleExists to find out whether styleName is valid).
 */
 QFont FontOfNamedStyleEx(DocumentWidget *document, view::string_view styleName) {
-    int styleNo = lookupNamedStyle(styleName);
 
-#if 1
-    Q_UNUSED(document);
+    int styleNo = lookupNamedStyle(styleName), fontNum;
+    XFontStruct *font;
+
     if (styleNo < 0) {
-        return QFont(QLatin1String("Monospace"), 10);
-    }
-
-    int fontNum = HighlightStyles[styleNo]->font;
-
-    switch(fontNum) {
-    case BOLD_FONT: {
-        QFont font(QLatin1String("Monospace"), 10);
-        font.setBold(true);
-        return font;
-    }
-    case ITALIC_FONT: {
-        QFont font(QLatin1String("Monospace"), 10);
-        font.setItalic(true);
-        return font;
-    }
-    case BOLD_ITALIC_FONT: {
-        QFont font(QLatin1String("Monospace"), 10);
-        font.setItalic(true);
-    font.setBold(true);
-        return font;
-    }
-    case PLAIN_FONT:
-    default:
-        return QFont(QLatin1String("Monospace"), 10);
-        break;
-    }
-
-    return QFont(QLatin1String("Monospace"), 10);
-#endif
-#if 0
-    if (styleNo < 0) {
-        return GetDefaultFontStruct(document->fontList_);
-    }
-
-    int fontNum = HighlightStyles[styleNo]->font;
-
-    switch(fontNum) {
-    case BOLD_FONT:
-        font = document->boldFontStruct_;
-        break;
-    case ITALIC_FONT:
-        font = document->italicFontStruct_;
-        break;
-    case BOLD_ITALIC_FONT:
-        font = document->boldItalicFontStruct_;
-        break;
-    case PLAIN_FONT:
-    default:
         font = GetDefaultFontStruct(document->fontList_);
-        break;
+    } else {
+
+        fontNum = HighlightStyles[styleNo]->font;
+
+        switch(fontNum) {
+        case BOLD_FONT:
+            font = document->boldFontStruct_;
+            break;
+        case ITALIC_FONT:
+            font = document->italicFontStruct_;
+            break;
+        case BOLD_ITALIC_FONT:
+            font = document->boldItalicFontStruct_;
+            break;
+        case PLAIN_FONT:
+        default:
+            font = GetDefaultFontStruct(document->fontList_);
+            break;
+        }
+
+        // If font isn't loaded, silently substitute primary font
+        if(!font) {
+            font = GetDefaultFontStruct(document->fontList_);
+        }
     }
 
-    // If font isn't loaded, silently substitute primary font
-    return (!font) ? GetDefaultFontStruct(document->fontList_) : font;
-#endif
+    return toQFont(font);
 }
 
 int FontOfNamedStyleIsBold(view::string_view styleName) {
