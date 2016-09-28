@@ -29,7 +29,7 @@ DocumentWidget *EditNewFile(MainWindow *inWindow, char *geometry, bool iconic, c
 	/*... test for creatability? */
 
 	// Find a (relatively) unique name for the new file
-	QString name = UniqueUntitledName();
+    QString name = MainWindow::UniqueUntitledNameEx();
 
 	// create new window/document
 	if (inWindow) {
@@ -76,13 +76,12 @@ DocumentWidget *EditNewFile(MainWindow *inWindow, char *geometry, bool iconic, c
 
 	inWindow->ShowTabBar(inWindow->GetShowTabBar());
 
-    if (!iconic || !inWindow->isMinimized()) {
-        if(!inWindow->isMaximized()) {
-            inWindow->showNormal();
-        }
-	}
+    if (iconic && inWindow->isMinimized()) {
+        window->RaiseDocument();
+    } else {
+        window->RaiseDocumentWindow();
+    }
 
-    window->RaiseDocument();
 	inWindow->SortTabBar();
 	return window;
 }
@@ -102,9 +101,6 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(par
 	setupMenuAlternativeMenus();
     CreateLanguageModeSubMenu();
 
-#if 0
-    userMenuCache_ = CreateUserMenuCache();
-#endif
 	showStats_            = GetPrefStatsLine();
 	showISearchLine_      = GetPrefISearchLine();
 	showLineNumbers_      = GetPrefLineNums();
@@ -581,6 +577,8 @@ void MainWindow::CheckCloseDim() {
 void MainWindow::raiseCB() {
     if(const auto action = qobject_cast<QAction *>(sender())) {
         if(const auto ptr = reinterpret_cast<DocumentWidget *>(action->data().value<qulonglong>())) {
+
+            //static_cast<Document *>(clientData)->RaiseFocusDocumentWindow(True /* always focus */);
 #if 0
             ui.tabWidget->setCurrentWidget(ptr);
 #endif
@@ -738,4 +736,34 @@ void MainWindow::TempShowISearch(bool state) {
     if(ui.incrementalSearchFrame->isVisible() != state) {
         ui.incrementalSearchFrame->setVisible(state);
     }
+}
+
+/*
+** Find a name for an untitled file, unique in the name space of in the opened
+** files in this session, i.e. Untitled or Untitled_nn, and write it into
+** the string "name".
+*/
+QString MainWindow::UniqueUntitledNameEx() {
+
+    for (int i = 0; i < INT_MAX; i++) {
+        QString name;
+
+        if (i == 0) {
+            name = tr("Untitled");
+        } else {
+            name = tr("Untitled_%1").arg(i);
+        }
+
+        QList<DocumentWidget *> documents = allDocuments();
+
+        auto it = std::find_if(documents.begin(), documents.end(), [name](DocumentWidget *window) {
+            return window->filename_ == name;
+        });
+
+        if(it == documents.end()) {
+            return name;
+        }
+    }
+
+    return QString();
 }

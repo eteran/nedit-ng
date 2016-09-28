@@ -3536,7 +3536,11 @@ void TextArea::drawCursor(QPainter *painter, int x, int y) {
 	QFontMetrics fm(viewport()->font());
 
 	int midY;
-	int fontWidth  = fm.maxWidth(); //fontStruct_->min_bounds.width;
+    // TODO(eteran): the original code used fontStruct_->min_bounds.width
+    // this doesn't matter for fixed sized fonts, but for variable sized ones
+    // we aren't quite right. I've approximated this with the width of 'i', but
+    // in some fonts, maybe that's not right?
+    int fontWidth  = fm.width(QLatin1Char('i'));
 	int fontHeight = ascent_ + descent_;
 	int bot        = y + fontHeight - 1;
 
@@ -7529,20 +7533,20 @@ void TextArea::setCursorVPadding(int value) {
 	P_cursorVPadding = value;
 }
 
-void TextArea::setFont(XFontStruct *font) {
+void TextArea::setFont(const QFont &font) {
 
-	Q_UNUSED(font);
-	// TODO(eteran): implement
-#if 0
 	bool reconfigure = false;
-	P_fontStruct = font;
+
+    // TODO(eteran): i beleive that this set font is redundant to one
+    // that gets called in TextDSetFont
+    viewport()->setFont(font);
 
 	// did the font change?
 	if (P_lineNumCols != 0) {
 		reconfigure = true;
 	}
 
-	TextDSetFont(P_fontStruct);
+    TextDSetFont(font);
 
 	/* Setting the lineNumCols resource tells the text widget to hide or
 	   show, or change the number of columns of the line number display,
@@ -7551,7 +7555,6 @@ void TextArea::setFont(XFontStruct *font) {
 	if(reconfigure) {
 		setLineNumCols(getLineNumCols());
 	}
-#endif
 }
 
 int TextArea::getLineNumCols() const {
@@ -8014,4 +8017,86 @@ QMenu *TextArea::contextMenu() const {
 
 TextBuffer *TextArea::getStyleBuffer() const {
     return styleBuffer_;
+}
+
+/*
+** Change the (non highlight) font
+*/
+void TextArea::TextDSetFont(const QFont &font) {
+
+    QFontMetrics fm(font);
+    QFontInfo fi(font);
+
+    int i;
+    int maxAscent  = fm.ascent();
+    int maxDescent = fm.descent();
+    int width;
+    int height;
+
+    // If font size changes, cursor will be redrawn in a new position
+    blankCursorProtrusions();
+
+    /* If there is a (syntax highlighting) style table in use, find the new
+       maximum font height for this text display */
+    for (int i = 0; i < nStyles_; i++) {
+        // NOTE(eteran): old code tested for nullptr? can this still be null?
+        QFontMetrics styleFM(styleTable_[i].fontEx);
+
+        maxAscent  = qMax(maxAscent, styleFM.ascent());
+        maxDescent = qMax(maxDescent, styleFM.descent());
+    }
+
+    ascent_  = maxAscent;
+    descent_ = maxDescent;
+
+    // If all of the current fonts are fixed and match in width, compute
+    int fontWidth = fm.maxWidth();
+    if(!fi.fixedPitch()) {
+        fontWidth = -1;
+    } else {
+        for (i = 0; i < nStyles_; i++) {
+
+            // NOTE(eteran): old code tested for nullptr? can this still be null?
+            QFontMetrics styleFM(styleTable_[i].fontEx);
+            QFontInfo    styleFI(styleTable_[i].fontEx);
+
+            if ((styleFM.maxWidth() != fontWidth || !styleFI.fixedPitch())) {
+                fontWidth = -1;
+            }
+        }
+    }
+    fixedFontWidth_ = fontWidth;
+
+    // Don't let the height dip below one line, or bad things can happen
+    if (rect_.height < maxAscent + maxDescent) {
+        rect_.height = maxAscent + maxDescent;
+    }
+
+
+    /* Change the font.  In most cases, this means re-allocating the
+       affected GCs (they are shared with other widgets, and if the primary
+       font changes, must be re-allocated to change it). Unfortunately,
+       this requres recovering all of the colors from the existing GCs */
+    viewport()->setFont(font);
+
+    // Do a full resize to force recalculation of font related parameters
+    width  = rect_.width;
+    height = rect_.height;
+
+    rect_.width  = 0;
+    rect_.height = 0;
+
+    TextDResize(width, height);
+
+#if 0
+    /* if the shell window doesn't get resized, and the new fonts are
+       of smaller sizes, sometime we get some residual text on the
+       blank space at the bottom part of text area. Clear it here. */
+    clearRect(gc_, rect_.left, rect_.top + rect_.height - maxAscent - maxDescent, rect_.width, maxAscent + maxDescent);
+#endif
+    // Redisplay
+    TextDRedisplayRect(rect_);
+
+    // Clean up line number area in case spacing has changed
+    redrawLineNumbersEx(true);
 }

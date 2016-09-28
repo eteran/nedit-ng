@@ -721,10 +721,120 @@ void DocumentWidget::smartIndentCallback(TextArea *area, smartIndentCBStruct *da
 	}
 }
 
+/*
+** raise the document and its shell window and optionally focus.
+*/
+void DocumentWidget::RaiseFocusDocumentWindow(bool focus) {
+    RaiseDocument();
+    if(auto win = toWindow()) {
+        if(!win->isMaximized()) {
+            win->showNormal();
+        }
+    }
+
+    if(focus) {
+        setFocus();
+    }
+}
+
+/*
+** raise the document and its shell window and focus depending on pref.
+*/
+void DocumentWidget::RaiseDocumentWindow() {
+    RaiseDocument();
+    if(auto win = toWindow()) {
+        if(!win->isMaximized()) {
+            win->showNormal();
+        }
+    }
+
+    if(GetPrefFocusOnRaise()) {
+        setFocus();
+    }
+}
+
 void DocumentWidget::RaiseDocument() {
+    if(auto win = toWindow()) {
+        win->ui.tabWidget->setCurrentWidget(this);
 #if 0
-    // TODO(eteran): implement
+    if (WindowList.empty()) {
+        return;
+    }
+
+    Document *win;
+
+    Document *lastwin = MarkActiveDocument();
+    if (lastwin != this && lastwin->IsValidWindow()) {
+        lastwin->MarkLastDocument();
+    }
+
+    // document already on top?
+    XtVaGetValues(mainWin_, XmNuserData, &win, nullptr);
+    if (win == this) {
+        return;
+    }
+
+    // set the document as top document
+    XtVaSetValues(mainWin_, XmNuserData, this, nullptr);
+
+    // show the new top document
+    XtVaSetValues(mainWin_, XmNworkWindow, splitPane_, nullptr);
+    XtManageChild(splitPane_);
+    XRaiseWindow(TheDisplay, XtWindow(splitPane_));
+
+    /* Turn on syntax highlight that might have been deferred.
+       NB: this must be done after setting the document as
+           XmNworkWindow and managed, else the parent shell
+       this may shrink on some this-managers such as
+       metacity, due to changes made in UpdateWMSizeHints().*/
+    if (highlightSyntax_ && highlightData_ == nullptr)
+        StartHighlighting(this, false);
+
+    // put away the bg menu tearoffs of last active document
+    hideTearOffs(win->bgMenuPane_);
+
+    // restore the bg menu tearoffs of active document
+    redisplayTearOffs(bgMenuPane_);
+
+    // set tab as active
+    XmLFolderSetActiveTab(tabBar_, getTabPosition(tab_), false);
+
+    /* set keyboard focus. Must be done before unmanaging previous
+       top document, else lastFocus will be reset to textArea */
+    XmProcessTraversal(lastFocus_, XmTRAVERSE_CURRENT);
+
+    /* we only manage the top document, else the next time a document
+       is raised again, it's textpane might not resize properly.
+       Also, somehow (bug?) XtUnmanageChild() doesn't hide the
+       splitPane, which obscure lower part of the statsform when
+       we toggle its components, so we need to put the document at
+       the back */
+    XLowerWindow(TheDisplay, XtWindow(win->splitPane_));
+    XtUnmanageChild(win->splitPane_);
+    win->RefreshTabState();
+
+    /* now refresh this state/info. RefreshWindowStates()
+       has a lot of work to do, so we update the screen first so
+       the document appears to switch swiftly. */
+    XmUpdateDisplay(splitPane_);
+    RefreshWindowStates();
+    RefreshTabState();
+
+    // put away the bg menu tearoffs of last active document
+    hideTearOffs(win->bgMenuPane_);
+
+    // restore the bg menu tearoffs of active document
+    redisplayTearOffs(bgMenuPane_);
+
+    /* Make sure that the "In Selection" button tracks the presence of a
+       selection and that the this inherits the proper search scope. */
+    if(auto dialog = getDialogReplace()) {
+        dialog->UpdateReplaceActionButtons();
+    }
+
+    UpdateWMSizeHints();
 #endif
+    }
 }
 
 /*

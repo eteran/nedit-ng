@@ -104,7 +104,7 @@ public:
 	void setReadOnly(bool value);
 	void setOverstrike(bool value);
 	void setCursorVPadding(int value);
-	void setFont(XFontStruct *font);
+    void setFont(const QFont &font);
 	void setContinuousWrap(bool value);
 	void setAutoWrap(bool value);
 	void setAutoIndent(bool value);
@@ -233,6 +233,7 @@ public:
     void TextDAttachHighlightData(TextBuffer *styleBuffer, StyleTableEntry *styleTable, int nStyles, char unfinishedStyle, unfinishedStyleCBProcEx unfinishedHighlightCB, void *cbArg);
     int TextFirstVisiblePos() const;
     int TextLastVisiblePos() const;
+    void TextDSetFont(const QFont &font);
 
 private:
 	void TextDSetWrapMode(int wrap, int wrapMargin);

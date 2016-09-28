@@ -84,6 +84,8 @@ public:
     QString GetWindowDelimiters() const;
     void DimSelectionDepUserMenuItems(bool sensitive);
     void dimSelDepItemsInMenu(QMenu *menuPane, const QVector<MenuData> &menuList, bool sensitive);
+    void RaiseFocusDocumentWindow(bool focus);
+    void RaiseDocumentWindow();
 
 private:
 	// TODO(eteran): are these dialog's per window or per text document?

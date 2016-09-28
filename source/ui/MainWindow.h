@@ -45,6 +45,7 @@ public:
 public:
     static QList<MainWindow *> allWindows();
     static QList<DocumentWidget *> allDocuments();
+    static QString UniqueUntitledNameEx();
 
 public:
 	DocumentWidget *CreateDocument(QString name);
