@@ -111,25 +111,26 @@ add_executable(nedit
 	${QRC_SOURCES}
 	${UI_H}
 
-
-
 	QtMotif.cpp
 	QtMotifDialog.cpp
 	QtMotifWidget.cpp
 	QtXtWidget.cpp
 	
-	UserMenuListElement.cpp
+	Color.cpp
+	Document.cpp
+	Font.cpp
+	HighlightPattern.cpp
 	LanguageMode.cpp
 	MenuItem.cpp
-	Color.cpp
-	SmartIndent.cpp
-	Document.cpp
 	PatternSet.cpp
 	Rangeset.cpp
 	RangesetTable.cpp
+	SmartIndent.cpp
 	TextBuffer.cpp
+	TextDisplay.cpp
 	TextSelection.cpp
 	UndoInfo.cpp
+	UserMenuListElement.cpp
 	file.cpp
 	help.cpp
 	highlight.cpp
@@ -151,11 +152,8 @@ add_executable(nedit
 	smartIndent.cpp
 	tags.cpp
 	text.cpp
-	TextDisplay.cpp
 	userCmds.cpp
 	window.cpp
-	HighlightPattern.cpp
-	
 	
 	ui/DialogDuplicateTags.cpp
 	ui/DialogAbout.cpp
