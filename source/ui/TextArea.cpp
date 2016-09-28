@@ -7988,3 +7988,7 @@ int TextArea::TextLastVisiblePos() const {
 void TextArea::setContextMenu(QMenu *menu) {
     bgMenu_ = menu;
 }
+
+QMenu *TextArea::contextMenu() const {
+    return bgMenu_;
+}

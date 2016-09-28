@@ -120,6 +120,7 @@ public:
     int fontDescent() const;
     int fontAscent() const;
     QTimer *cursorBlinkTimer() const;
+    QMenu *contextMenu() const;
 
 protected:
 	virtual bool focusNextPrevChild(bool next) override;
