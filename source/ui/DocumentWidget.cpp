@@ -20,9 +20,11 @@
 #include "smartIndent.h"
 #include "highlightData.h"
 #include "MenuItem.h"
+#include "Font.h"
 #include "tags.h"
 #include "HighlightData.h"
 #include "WindowHighlightData.h"
+#include "misc.h"
 
 namespace {
 
@@ -109,19 +111,6 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 	ui.verticalLayout->addWidget(splitter_);
 	ui.verticalLayout->setContentsMargins(0, 0, 0, 0);
 
-#if 1
-	{
-        auto area = createTextArea(buffer_);
-        splitter_->addWidget(area);
-	}
-#if 0
-	{
-        auto area = createTextArea(buffer_);
-        splitter_->addWidget(area);
-    }
-#endif
-#endif
-	
 	// initialize the members
 	multiFileReplSelected_ = false;
 	multiFileBusy_         = false;
@@ -193,7 +182,7 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 	iSearchLastRegexCase_  = true;
 	iSearchLastLiteralCase_= false;
 	device_                = 0;
-	inode_                 = 0;	
+    inode_                 = 0;
 	
     if(auto win = toWindow()) {
 		ui.statusFrame->setVisible(win->showStats_);
@@ -202,6 +191,19 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
     flashTimer_->setInterval(1500);
     flashTimer_->setSingleShot(true);
     connect(flashTimer_, SIGNAL(timeout()), this, SLOT(flashTimerTimeout()));
+
+#if 1
+    {
+        auto area = createTextArea(buffer_);
+        splitter_->addWidget(area);
+    }
+#if 0
+    {
+        auto area = createTextArea(buffer_);
+        splitter_->addWidget(area);
+    }
+#endif
+#endif
 }
 
 
@@ -232,7 +234,7 @@ TextArea *DocumentWidget::createTextArea(TextBuffer *buffer) {
                              0,
                              0,
                              buffer,
-                             QFont(tr("Monospace"), 10),
+                             toQFont(GetDefaultFontStruct(fontList_)),
                              Qt::white,
                              Qt::black,
                              Qt::white,
