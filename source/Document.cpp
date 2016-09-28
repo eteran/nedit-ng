@@ -2637,7 +2637,7 @@ void Document::SetFonts(const char *fontName, const char *italicName, const char
 
 	if (highlightChanged) {
 		italicFontName_   = QLatin1String(italicName);
-		italicFontStruct_ = XLoadQueryFont(TheDisplay, italicName);
+        italicFontStruct_ = XLoadQueryFont(TheDisplay, italicName);
 
 		boldFontName_   = QLatin1String(boldName);
 		boldFontStruct_ = XLoadQueryFont(TheDisplay, boldName);

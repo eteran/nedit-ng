@@ -342,9 +342,11 @@ public:
 	QString boldFontName_;
 	QString boldItalicFontName_;
 	XmFontList fontList_;           /* fontList for the primary font */
-	XFontStruct *italicFontStruct_; /* fontStructs for highlighting fonts */
+
+    XFontStruct *italicFontStruct_; /* fontStructs for highlighting fonts */
 	XFontStruct *boldFontStruct_;
 	XFontStruct *boldItalicFontStruct_;
+
 	XtIntervalId flashTimeoutID_;   /* timer procedure id for getting rid of highlighted matching paren.  Non-zero val. means highlight is drawn */
 	int flashPos_;                  /* position saved for erasing matching paren highlight (if one is drawn) */
 	bool wasSelected_;              /* last selection state (for dim/undim of selection related menu items */

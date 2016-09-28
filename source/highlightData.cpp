@@ -375,7 +375,7 @@ XFontStruct *FontOfNamedStyle(Document *window, view::string_view styleName) {
 	if (fontNum == BOLD_FONT)
 		font = window->boldFontStruct_;
 	else if (fontNum == ITALIC_FONT)
-		font = window->italicFontStruct_;
+        font = window->italicFontStruct_;
 	else if (fontNum == BOLD_ITALIC_FONT)
 		font = window->boldItalicFontStruct_;
 	else // fontNum == PLAIN_FONT 
