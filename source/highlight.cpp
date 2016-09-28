@@ -152,6 +152,72 @@ static void handleUnparsedRegionCBEx(const TextArea *area, int pos, const void *
 ** Note: This routine must be kept efficient.  It is called for every
 ** character typed.
 */
+void SyntaxHighlightModifyCBEx(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *cbArg) {
+
+    (void)nRestyled;
+    (void)deletedText;
+
+    auto window = static_cast<DocumentWidget *>(cbArg);
+    auto highlightData = static_cast<WindowHighlightData *>(window->highlightData_);
+
+    if(!highlightData)
+        return;
+
+    /* Restyling-only modifications (usually a primary or secondary  selection)
+       don't require any processing, but clear out the style buffer selection
+       so the widget doesn't think it has to keep redrawing the old area */
+    if (nInserted == 0 && nDeleted == 0) {
+        highlightData->styleBuffer->BufUnselect();
+        return;
+    }
+
+    /* First and foremost, the style buffer must track the text buffer
+       accurately and correctly */
+    if (nInserted > 0) {
+        auto insStyle = new char[nInserted + 1];
+        std::fill_n(insStyle, nInserted, UNFINISHED_STYLE);
+        insStyle[nInserted] = '\0';
+
+        highlightData->styleBuffer->BufReplaceEx(pos, pos + nDeleted, insStyle);
+
+        delete [] insStyle;
+    } else {
+        highlightData->styleBuffer->BufRemove(pos, pos + nDeleted);
+    }
+
+    /* Mark the changed region in the style buffer as requiring redraw.  This
+       is not necessary for getting it redrawn, it will be redrawn anyhow by
+       the text display callback, but it clears the previous selection and
+       saves the modifyStyleBuf routine from unnecessary work in tracking
+       changes that are already scheduled for redraw */
+    highlightData->styleBuffer->BufSelect(pos, pos + nInserted);
+
+    // Re-parse around the changed region
+    if (highlightData->pass1Patterns) {
+        incrementalReparse(highlightData, window->buffer_, pos, nInserted, window->GetWindowDelimiters().toLatin1().data());
+    }
+}
+
+/*
+** Buffer modification callback for triggering re-parsing of modified
+** text and keeping the style buffer synchronized with the text buffer.
+** This must be attached to the the text buffer BEFORE any widget text
+** display callbacks, so it can get the style buffer ready to be used
+** by the text display routines.
+**
+** Update the style buffer for changes to the text, and mark any style
+** changes by selecting the region in the style buffer.  This strange
+** protocol of informing the text display to redraw style changes by
+** making selections in the style buffer is used because this routine
+** is intended to be called BEFORE the text display callback paints the
+** text (to minimize redraws and, most importantly, to synchronize the
+** style buffer with the text buffer).  If we redraw now, the text
+** display hasn't yet processed the modification, redrawing later is
+** not only complicated, it will double-draw almost everything typed.
+**
+** Note: This routine must be kept efficient.  It is called for every
+** character typed.
+*/
 void SyntaxHighlightModifyCB(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *cbArg) {
 
 	(void)nRestyled;
@@ -882,7 +948,10 @@ WindowHighlightData *createHighlightDataEx(DocumentWidget *document, PatternSet 
             p->bgColor = p->color;
         }
 
-        p->font = FontOfNamedStyleEx(document, pat->style.toStdString());
+        p->fontEx = FontOfNamedStyleEx(document, pat->style.toStdString());
+#if 1
+        p->font = nullptr;
+#endif
     };
 
     // PLAIN_STYLE (pass 1)
@@ -1126,8 +1195,8 @@ WindowHighlightData *createHighlightData(Document *window, PatternSet *patSet) {
 			p->bgColor = p->color;
 		}
 
-		p->font = FontOfNamedStyle(window, pat->style.toStdString());
-	};
+        p->font = FontOfNamedStyle(window, pat->style.toStdString());
+    };
 
 	// PLAIN_STYLE (pass 1) 
 	styleTablePtr->underline = false;
@@ -1992,7 +2061,7 @@ static void handleUnparsedRegionCB(const TextDisplay *textD, int pos, const void
 }
 
 static void handleUnparsedRegionCBEx(const TextArea *area, int pos, const void *cbArg) {
-    auto document = reinterpret_cast<const DocumentWidget *>(cbArg);
+    auto document = static_cast<const DocumentWidget *>(cbArg);
     handleUnparsedRegionEx(document, area->getStyleBuffer(), pos);
 }
 

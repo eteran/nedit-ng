@@ -1965,8 +1965,13 @@ int TextArea::stringWidth(const char *string, const int length, const int style)
 
 
 	if (style & STYLE_LOOKUP_MASK) {
-		XFontStruct *fs = styleTable_[(style & STYLE_LOOKUP_MASK) - ASCII_A].font;
-		return XTextWidth(fs, (char *)string, (int)length);
+        if(XFontStruct *fs = styleTable_[(style & STYLE_LOOKUP_MASK) - ASCII_A].font) {
+            return XTextWidth(fs, (char *)string, (int)length);
+        } else {
+            QFontMetrics fm(styleTable_[(style & STYLE_LOOKUP_MASK) - ASCII_A].fontEx);
+            int ret = fm.width(QString::fromLatin1(string, length));
+            return ret;
+        }
 	} else {
 		QFontMetrics fm(viewport()->font());
 		int ret = fm.width(QString::fromLatin1(string, length));
@@ -2754,8 +2759,16 @@ int TextArea::measureVisLine(int visLineNum) {
 		for (i = 0; i < lineLen; i++) {
 			len = buffer_->BufGetExpandedChar(lineStartPos + i, charCount, expandedChar);
             auto styleChar = styleBuffer_->BufGetCharacter(lineStartPos + i);
-            int style = (uint8_t)styleChar - ASCII_A;
-			width += XTextWidth(styleTable_[style].font, expandedChar, len);
+            int style = static_cast<uint8_t>(styleChar) - ASCII_A;
+
+
+            if(styleTable_[style].font) {
+                width += XTextWidth(styleTable_[style].font, expandedChar, len);
+            } else {
+                QFontMetrics styleFm(styleTable_[style].fontEx);
+                width += styleFm.width(QString::fromLatin1(expandedChar, len));
+
+            }
 			charCount += len;
 		}
 	}
@@ -3285,7 +3298,6 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 //------------------------------------------------------------------------------
 int TextArea::styleOfPos(int lineStartPos, int lineLen, int lineIndex, int dispIndex, int thisChar) {
 
-	TextBuffer *styleBuf = styleBuffer_;
     int style = 0;
 
     if (lineStartPos == -1 || !buffer_) {
@@ -3296,12 +3308,12 @@ int TextArea::styleOfPos(int lineStartPos, int lineLen, int lineIndex, int dispI
 
 	if (lineIndex >= lineLen) {
 		style = FILL_MASK;
-	} else if (styleBuf) {
-		style = (uint8_t)styleBuf->BufGetCharacter(pos);
+    } else if (styleBuffer_) {
+        style = (uint8_t)styleBuffer_->BufGetCharacter(pos);
 		if (style == unfinishedStyle_) {
 			// encountered "unfinished" style, trigger parsing
 			(unfinishedHighlightCB_)(this, pos, highlightCBArg_);
-			style = (uint8_t)styleBuf->BufGetCharacter(pos);
+            style = (uint8_t)styleBuffer_->BufGetCharacter(pos);
 		}
 	}
 
@@ -3397,12 +3409,15 @@ void TextArea::drawString(QPainter *painter, int style, int x, int y, int toX, c
 			styleRec = &styleTable_[(style & STYLE_LOOKUP_MASK) - ASCII_A];
 			underlineStyle = styleRec->underline;
 
-			XFontStruct *fi = styleRec->font;
-			unsigned long ret;
-			XGetFontProperty(fi, XA_FONT, &ret);
-			const char *name = XGetAtomName(QX11Info::display(), (Atom)ret);
+            if(XFontStruct *fi = styleRec->font) {
+                unsigned long ret;
+                XGetFontProperty(fi, XA_FONT, &ret);
+                const char *name = XGetAtomName(QX11Info::display(), (Atom)ret);
 
-			X_font.setRawName(QLatin1String(name));
+                X_font.setRawName(QLatin1String(name));
+            } else {
+                X_font = styleRec->fontEx;
+            }
 
 			fground = toQColor(styleRec->color);
 			// here you could pick up specific select and highlight fground

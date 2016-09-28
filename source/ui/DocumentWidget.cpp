@@ -101,6 +101,7 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 	ui.setupUi(this);
 
 	buffer_ = new TextBuffer();
+    buffer_->BufAddModifyCB(SyntaxHighlightModifyCBEx, this);
 
 	// create the text widget
 	splitter_ = new QSplitter(Qt::Vertical, this);
@@ -271,6 +272,11 @@ TextArea *DocumentWidget::createTextArea(TextBuffer *buffer) {
     connect(area, SIGNAL(focusOut(QWidget*)), this, SLOT(onFocusOut(QWidget*)));
 
     buffer_->BufAddModifyCB(modifiedCB, this);
+
+    // Set the requested hardware tab distance and useTabs in the text buffer
+    buffer_->BufSetTabDistance(GetPrefTabDist(PLAIN_LANGUAGE_MODE));
+    buffer_->useTabs_ = GetPrefInsertTabs();
+
     return area;
 }
 
