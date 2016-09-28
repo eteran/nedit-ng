@@ -264,7 +264,7 @@ void DialogFontSelector::on_checkShowInPoints_toggled(bool checked) {
 	//               but instead, we just clear all selections
 	ui.listFonts->clear();
 	ui.listStyles->clear();
-	ui.listFonts->clear();
+    ui.listSizes->clear();
 
 	setupScrollLists(NONE);
 }
@@ -277,7 +277,7 @@ void DialogFontSelector::on_checkShowProportional_toggled(bool checked) {
 
 	ui.listFonts->clear();
 	ui.listStyles->clear();
-	ui.listFonts->clear();
+    ui.listSizes->clear();
 
 	setupScrollLists(NONE);
 }
