@@ -7988,11 +7988,9 @@ void TextArea::TextDAttachHighlightData(TextBuffer *styleBuffer, StyleTableEntry
     unfinishedHighlightCB_ = unfinishedHighlightCB;
     highlightCBArg_        = cbArg;
 
-#if 0
     /* Call TextDSetFont to combine font information from style table and
        primary font, adjust font-related parameters, and then redisplay */
-    TextDSetFont(fontStruct_);
-#endif
+    TextDSetFont(viewport()->font());
 }
 
 QTimer *TextArea::cursorBlinkTimer() const {
