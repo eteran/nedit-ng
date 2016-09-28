@@ -76,5 +76,8 @@ void freeHighlightData(WindowHighlightData *hd);
 
 void RemoveWidgetHighlightEx(TextArea *area);
 void *GetHighlightInfoEx(DocumentWidget *window, int pos);
+void StartHighlightingEx(DocumentWidget *window, bool warn);
+WindowHighlightData *createHighlightDataEx(DocumentWidget *window, PatternSet *patSet);
+void AttachHighlightToWidgetEx(TextArea *area, DocumentWidget *window);
 
 #endif

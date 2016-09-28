@@ -103,6 +103,7 @@ bool can_cross_line_boundaries(const ReparseContext *contextRequirements) {
 static HighlightData *compilePatterns(Widget dialogParent, HighlightPattern *patternSrc, int nPatterns);
 static HighlightData *patternOfStyle(HighlightData *patterns, int style);
 static PatternSet *findPatternsForWindow(Document *window, int warn);
+static PatternSet *findPatternsForWindowEx(DocumentWidget *document, int warn);
 static StyleTableEntry *styleTableEntryOfCode(Document *window, int hCode);
 static bool parseString(HighlightData *pattern, const char **string, char **styleString, int length, char *prevChar, bool anchored, const QString &delimiters, const char *lookBehindTo, const char *match_till);
 static char getPrevChar(TextBuffer *buf, int pos);
@@ -127,6 +128,9 @@ static void passTwoParseString(HighlightData *pattern, const char *string, char 
 static void recolorSubexpr(regexp *re, int subexpr, int style, const char *string, char *styleString);
 static void updateWindowHeight(Document *window, int oldFontHeight);
 static void handleUnparsedRegionEx(const DocumentWidget *window, TextBuffer *styleBuf, int pos);
+static HighlightData *compilePatternsEx(DocumentWidget *dialogParent, HighlightPattern *patternSrc, int nPatterns);
+static regexp *compileREAndWarnEx(DocumentWidget *parent, view::string_view re);
+static void handleUnparsedRegionCBEx(const TextArea *area, int pos, const void *cbArg);
 
 /*
 ** Buffer modification callback for triggering re-parsing of modified
@@ -191,6 +195,92 @@ void SyntaxHighlightModifyCB(int pos, int nInserted, int nDeleted, int nRestyled
 	// Re-parse around the changed region 
 	if (highlightData->pass1Patterns)
 		incrementalReparse(highlightData, window->buffer_, pos, nInserted, GetWindowDelimiters(window).toLatin1().data());
+}
+
+/*
+** Turn on syntax highlighting.  If "warn" is true, warn the user when it
+** can't be done, otherwise, just return.
+*/
+void StartHighlightingEx(DocumentWidget *document, bool warn) {
+
+    char prevChar = '\0';
+    int i;
+
+    /* Find the pattern set matching the window's current
+       language mode, tell the user if it can't be done */
+    PatternSet *patterns = findPatternsForWindowEx(document, warn);
+    if(!patterns) {
+        return;
+    }
+
+    // Compile the patterns
+    WindowHighlightData *highlightData = createHighlightDataEx(document, patterns);
+    if(!highlightData) {
+        return;
+    }
+
+    // Prepare for a long delay, refresh display and put up a watch cursor
+    const QCursor cursor = document->cursor();
+    document->setCursor(Qt::WaitCursor);
+
+    const int bufLength = document->buffer_->BufGetLength();
+
+    /* Parse the buffer with pass 1 patterns.  If there are none, initialize
+       the style buffer to all UNFINISHED_STYLE to trigger parsing later */
+    auto styleString = new char[bufLength + 1];
+    char *stylePtr = styleString;
+
+    if (!highlightData->pass1Patterns) {
+        for (i = 0; i < bufLength; i++) {
+            *stylePtr++ = UNFINISHED_STYLE;
+        }
+    } else {
+
+        const char *const bufString = document->buffer_->BufAsString();
+        const char *const match_to  = bufString + bufLength;
+        const char *stringPtr = bufString;
+
+        parseString(
+            highlightData->pass1Patterns,
+            &stringPtr,
+            &stylePtr,
+            bufLength,
+            &prevChar,
+            false,
+            document->GetWindowDelimiters(),
+            bufString,
+            match_to);
+    }
+
+    highlightData->styleBuffer->BufSetAllEx(view::string_view(styleString, std::distance(styleString, stylePtr)));
+    delete [] styleString;
+
+    // install highlight pattern data in the window data structure
+    document->highlightData_ = highlightData;
+
+#if 0
+    int oldFontHeight;
+    /* Get the height of the current font in the window, to be used after
+       highlighting is turned on to resize the window to make room for
+       additional highlight fonts which may be sized differently */
+    oldFontHeight = getFontHeight(window);
+#endif
+
+    // Attach highlight information to text widgets in each pane
+    QList<TextArea *> panes = document->textPanes();
+    for(TextArea *area : panes) {
+        AttachHighlightToWidgetEx(area, document);
+    }
+
+#if 0
+    /* Re-size the window to fit the highlight fonts properly & tell the
+       window manager about the potential line-height change as well */
+    updateWindowHeight(window, oldFontHeight);
+    window->UpdateWMSizeHints();
+    window->UpdateMinPaneHeights();
+#endif
+
+    document->setCursor(cursor);
 }
 
 /*
@@ -343,6 +433,22 @@ void AttachHighlightToWidget(Widget widget, Document *window) {
 	auto highlightData = static_cast<WindowHighlightData *>(window->highlightData_);
 
 	textD_of(widget)->TextDAttachHighlightData(highlightData->styleBuffer, highlightData->styleTable, highlightData->nStyles, UNFINISHED_STYLE, handleUnparsedRegionCB, window);
+}
+
+/*
+** Attach style information from a window's highlight data to a
+** text widget and redisplay.
+*/
+void AttachHighlightToWidgetEx(TextArea *area, DocumentWidget *window) {
+    auto highlightData = static_cast<WindowHighlightData *>(window->highlightData_);
+
+    area->TextDAttachHighlightData(
+                highlightData->styleBuffer,
+                highlightData->styleTable,
+                highlightData->nStyles,
+                UNFINISHED_STYLE,
+                handleUnparsedRegionCBEx,
+                window);
 }
 
 /*
@@ -507,6 +613,43 @@ void freeHighlightData(WindowHighlightData *hd) {
 ** Find the pattern set matching the window's current language mode, or
 ** tell the user if it can't be done (if warn is true) and return nullptr.
 */
+static PatternSet *findPatternsForWindowEx(DocumentWidget *document, int warn) {
+    PatternSet *patterns;
+
+    // Find the window's language mode.  If none is set, warn user
+    QString modeName = LanguageModeName(document->languageMode_);
+    if(modeName.isNull()) {
+        if (warn)
+            QMessageBox::warning(document, QLatin1String("Language Mode"), QLatin1String("No language-specific mode has been set for this file.\n\n"
+                                                                "To use syntax highlighting in this window, please select a\n"
+                                                                "language from the Preferences -> Language Modes menu.\n\n"
+                                                                "New language modes and syntax highlighting patterns can be\n"
+                                                                "added via Preferences -> Default Settings -> Language Modes,\n"
+                                                                "and Preferences -> Default Settings -> Syntax Highlighting."));
+        return nullptr;
+    }
+
+    // Look up the appropriate pattern for the language
+    patterns = FindPatternSet(modeName);
+    if(!patterns) {
+        if (warn) {
+            QMessageBox::warning(document, QLatin1String("Language Mode"), QString(QLatin1String("Syntax highlighting is not available in language\n"
+                                                                "mode %1.\n\n"
+                                                                "You can create new syntax highlight patterns in the\n"
+                                                                "Preferences -> Default Settings -> Syntax Highlighting\n"
+                                                                "dialog, or choose a different language mode from:\n"
+                                                                "Preferences -> Language Mode.")).arg(modeName));
+            return nullptr;
+        }
+    }
+
+    return patterns;
+}
+
+/*
+** Find the pattern set matching the window's current language mode, or
+** tell the user if it can't be done (if warn is true) and return nullptr.
+*/
 static PatternSet *findPatternsForWindow(Document *window, int warn) {
 	PatternSet *patterns;
 
@@ -538,6 +681,250 @@ static PatternSet *findPatternsForWindow(Document *window, int warn) {
 	}
 
 	return patterns;
+}
+
+/*
+** Create complete syntax highlighting information from "patternSrc", using
+** highlighting fonts from "window", includes pattern compilation.  If errors
+** are encountered, warns user with a dialog and returns nullptr.  To free the
+** allocated components of the returned data structure, use freeHighlightData.
+*/
+WindowHighlightData *createHighlightDataEx(DocumentWidget *document, PatternSet *patSet) {
+
+    HighlightPattern *patternSrc = &patSet->patterns[0];
+    int nPatterns    = patSet->patterns.size();
+    int contextLines = patSet->lineContext;
+    int contextChars = patSet->charContext;
+    int i;
+    HighlightData *pass1Pats;
+    HighlightData *pass2Pats;
+
+    // The highlighting code can't handle empty pattern sets, quietly say no
+    if (nPatterns == 0) {
+        return nullptr;
+    }
+
+    // Check that the styles and parent pattern names actually exist
+    if (!NamedStyleExists("Plain")) {
+        QMessageBox::warning(document, QLatin1String("Highlight Style"), QLatin1String("Highlight style \"Plain\" is missing"));
+        return nullptr;
+    }
+
+    for (int i = 0; i < nPatterns; i++) {
+        if (!patternSrc[i].subPatternOf.isNull() && indexOfNamedPattern(patternSrc, nPatterns, patternSrc[i].subPatternOf.toLatin1().data()) == -1) {
+            QMessageBox::warning(document, QLatin1String("Parent Pattern"), QString(QLatin1String("Parent field \"%1\" in pattern \"%2\"\ndoes not match any highlight patterns in this set")).arg(patternSrc[i].subPatternOf).arg(patternSrc[i].name));
+            return nullptr;
+        }
+    }
+
+    for (int i = 0; i < nPatterns; i++) {
+        if (!NamedStyleExists(patternSrc[i].style.toStdString())) {
+            QMessageBox::warning(document, QLatin1String("Highlight Style"), QString(QLatin1String("Style \"%1\" named in pattern \"%2\"\ndoes not match any existing style")).arg(patternSrc[i].style).arg(patternSrc[i].name));
+            return nullptr;
+        }
+    }
+
+    /* Make DEFER_PARSING flags agree with top level patterns (originally,
+       individual flags had to be correct and were checked here, but dialog now
+       shows this setting only on top patterns which is much less confusing) */
+    for (int i = 0; i < nPatterns; i++) {
+        if (!patternSrc[i].subPatternOf.isNull()) {
+
+            int parentindex = findTopLevelParentIndex(patternSrc, nPatterns, i);
+            if (parentindex == -1) {
+                QMessageBox::warning(nullptr /*window->shell_*/, QLatin1String("Parent Pattern"), QString(QLatin1String("Pattern \"%1\" does not have valid parent")).arg(patternSrc[i].name));
+                return nullptr;
+            }
+
+            if (patternSrc[parentindex].flags & DEFER_PARSING) {
+                patternSrc[i].flags |= DEFER_PARSING;
+            } else {
+                patternSrc[i].flags &= ~DEFER_PARSING;
+            }
+        }
+    }
+
+    /* Sort patterns into those to be used in pass 1 parsing, and those to
+       be used in pass 2, and add default pattern (0) to each list */
+    int nPass1Patterns = 1;
+    int nPass2Patterns = 1;
+    for (int i = 0; i < nPatterns; i++) {
+        if (patternSrc[i].flags & DEFER_PARSING) {
+            nPass2Patterns++;
+        } else {
+            nPass1Patterns++;
+        }
+    }
+
+    auto pass1PatternSrc = new HighlightPattern[nPass1Patterns];
+    auto pass2PatternSrc = new HighlightPattern[nPass2Patterns];
+
+
+    HighlightPattern *p1Ptr = pass1PatternSrc;
+    HighlightPattern *p2Ptr = pass2PatternSrc;
+
+    p1Ptr->name         = QString();
+    p1Ptr->startRE      = QString();
+    p1Ptr->endRE        = QString();
+    p1Ptr->errorRE      = QString();
+    p1Ptr->style        = QLatin1String("Plain");
+    p1Ptr->flags        = 0;
+
+    p2Ptr->name 		= QString();
+    p2Ptr->startRE  	= QString();
+    p2Ptr->endRE		= QString();
+    p2Ptr->errorRE  	= QString();
+    p2Ptr->style		= QLatin1String("Plain");
+    p2Ptr->flags		= 0;
+
+    p1Ptr++;
+    p2Ptr++;
+
+    for (int i = 0; i < nPatterns; i++) {
+        if (patternSrc[i].flags & DEFER_PARSING) {
+            *p2Ptr++ = patternSrc[i];
+        } else {
+            *p1Ptr++ = patternSrc[i];
+        }
+    }
+
+    /* If a particular pass is empty except for the default pattern, don't
+       bother compiling it or setting up styles */
+    if (nPass1Patterns == 1) {
+        nPass1Patterns = 0;
+    }
+
+    if (nPass2Patterns == 1) {
+        nPass2Patterns = 0;
+    }
+
+    // Compile patterns
+    if (nPass1Patterns == 0) {
+        pass1Pats = nullptr;
+    } else {
+        pass1Pats = compilePatternsEx(document, pass1PatternSrc, nPass1Patterns);
+        if (!pass1Pats) {
+            return nullptr;
+        }
+    }
+
+    if (nPass2Patterns == 0) {
+        pass2Pats = nullptr;
+    } else {
+        pass2Pats = compilePatternsEx(document, pass2PatternSrc, nPass2Patterns);
+        if (!pass2Pats) {
+            return nullptr;
+        }
+    }
+
+    /* Set pattern styles.  If there are pass 2 patterns, pass 1 pattern
+       0 should have a default style of UNFINISHED_STYLE.  With no pass 2
+       patterns, unstyled areas of pass 1 patterns should be PLAIN_STYLE
+       to avoid triggering re-parsing every time they are encountered */
+    int noPass1 = nPass1Patterns == 0;
+    int noPass2 = nPass2Patterns == 0;
+
+    if (noPass2) {
+        pass1Pats[0].style = PLAIN_STYLE;
+    } else if (noPass1) {
+        pass2Pats[0].style = PLAIN_STYLE;
+    } else {
+        pass1Pats[0].style = UNFINISHED_STYLE;
+        pass2Pats[0].style = PLAIN_STYLE;
+    }
+
+    for (i = 1; i < nPass1Patterns; i++) {
+        pass1Pats[i].style = PLAIN_STYLE + i;
+    }
+
+    for (i = 1; i < nPass2Patterns; i++) {
+        pass2Pats[i].style = PLAIN_STYLE + (noPass1 ? 0 : nPass1Patterns - 1) + i;
+    }
+
+    // Create table for finding parent styles
+    QByteArray parentStyles;
+    parentStyles.reserve(nPass1Patterns + nPass2Patterns + 2);
+
+    auto parentStylesPtr = std::back_inserter(parentStyles);
+
+    *parentStylesPtr++ = '\0';
+    *parentStylesPtr++ = '\0';
+
+    for (int i = 1; i < nPass1Patterns; i++) {
+        *parentStylesPtr++ = pass1PatternSrc[i].subPatternOf.isNull() ? PLAIN_STYLE : pass1Pats[indexOfNamedPattern(pass1PatternSrc, nPass1Patterns, pass1PatternSrc[i].subPatternOf.toLatin1().data())].style;
+    }
+
+    for (int i = 1; i < nPass2Patterns; i++) {
+        *parentStylesPtr++ = pass2PatternSrc[i].subPatternOf.isNull() ? PLAIN_STYLE : pass2Pats[indexOfNamedPattern(pass2PatternSrc, nPass2Patterns, pass2PatternSrc[i].subPatternOf.toLatin1().data())].style;
+    }
+
+    // Set up table for mapping colors and fonts to syntax
+    const auto styleTable = new StyleTableEntry[nPass1Patterns + nPass2Patterns + 1];
+
+    StyleTableEntry *styleTablePtr = styleTable;
+
+    auto setStyleTablePtr = [document](StyleTableEntry *p, HighlightPattern *pat) {
+        Color c;
+
+        p->highlightName = pat->name;
+        p->styleName     = pat->style;
+        p->colorName     = ColorOfNamedStyleEx     (pat->style.toStdString());
+        p->bgColorName   = BgColorOfNamedStyleEx   (pat->style.toStdString());
+        p->isBold        = FontOfNamedStyleIsBold  (pat->style.toStdString());
+        p->isItalic      = FontOfNamedStyleIsItalic(pat->style.toStdString());
+
+        // And now for the more physical stuff
+        p->color = AllocColor(p->colorName, &c);
+
+        if (!p->bgColorName.isNull()) {
+            p->bgColor = AllocColor(p->bgColorName, &c);
+        } else {
+            p->bgColor = p->color;
+        }
+
+        p->font = FontOfNamedStyleEx(document, pat->style.toStdString());
+    };
+
+    // PLAIN_STYLE (pass 1)
+    styleTablePtr->underline = false;
+    setStyleTablePtr(styleTablePtr++, noPass1 ? &pass2PatternSrc[0] : &pass1PatternSrc[0]);
+
+    // PLAIN_STYLE (pass 2)
+    styleTablePtr->underline = false;
+    setStyleTablePtr(styleTablePtr++, noPass2 ? &pass1PatternSrc[0] : &pass2PatternSrc[0]);
+
+    // explicit styles (pass 1)
+    for (int i = 1; i < nPass1Patterns; i++) {
+        styleTablePtr->underline = false;
+        setStyleTablePtr(styleTablePtr++, &pass1PatternSrc[i]);
+    }
+
+    // explicit styles (pass 2)
+    for (int i = 1; i < nPass2Patterns; i++) {
+        styleTablePtr->underline = false;
+        setStyleTablePtr(styleTablePtr++, &pass2PatternSrc[i]);
+    }
+
+    // Free the temporary sorted pattern source list
+    delete[] pass1PatternSrc;
+    delete[] pass2PatternSrc;
+
+    // Create the style buffer
+    auto styleBuf = new TextBuffer;
+
+    // Collect all of the highlighting information in a single structure
+    auto highlightData = new WindowHighlightData;
+    highlightData->pass1Patterns              = pass1Pats;
+    highlightData->pass2Patterns              = pass2Pats;
+    highlightData->parentStyles               = parentStyles;
+    highlightData->styleTable                 = styleTable;
+    highlightData->nStyles                    = styleTablePtr - styleTable;
+    highlightData->styleBuffer                = styleBuf;
+    highlightData->contextRequirements.nLines = contextLines;
+    highlightData->contextRequirements.nChars = contextChars;
+    highlightData->patternSetForWindow        = patSet;
+
+    return highlightData;
 }
 
 /*
@@ -989,6 +1376,210 @@ static HighlightData *compilePatterns(Widget dialogParent, HighlightPattern *pat
 }
 
 /*
+** Transform pattern sources into the compiled highlight information
+** actually used by the code.  Output is a tree of HighlightData structures
+** containing compiled regular expressions and style information.
+*/
+static HighlightData *compilePatternsEx(DocumentWidget *dialogParent, HighlightPattern *patternSrc, int nPatterns) {
+    int length;
+    int subPatIndex;
+    int subExprNum;
+    int charsRead;
+    int parentIndex;
+
+    /* Allocate memory for the compiled patterns.  The list is terminated
+       by a record with style == 0. */
+    auto compiledPats = new HighlightData[nPatterns + 1];
+    compiledPats[nPatterns].style = 0;
+
+    // Build the tree of parse expressions
+    for (int i = 0; i < nPatterns; i++) {
+        compiledPats[i].nSubPatterns = 0;
+        compiledPats[i].nSubBranches = 0;
+    }
+
+    for (int i = 1; i < nPatterns; i++) {
+        if (patternSrc[i].subPatternOf.isNull()) {
+            compiledPats[0].nSubPatterns++;
+        } else {
+            compiledPats[indexOfNamedPattern(patternSrc, nPatterns, patternSrc[i].subPatternOf.toLatin1().data())].nSubPatterns++;
+        }
+    }
+
+    for (int i = 0; i < nPatterns; i++) {
+        compiledPats[i].subPatterns = (compiledPats[i].nSubPatterns == 0) ? nullptr : new HighlightData *[compiledPats[i].nSubPatterns];
+    }
+
+    for (int i = 0; i < nPatterns; i++) {
+        compiledPats[i].nSubPatterns = 0;
+    }
+
+    for (int i = 1; i < nPatterns; i++) {
+        if (patternSrc[i].subPatternOf.isNull()) {
+            compiledPats[0].subPatterns[compiledPats[0].nSubPatterns++] = &compiledPats[i];
+        } else {
+            parentIndex = indexOfNamedPattern(patternSrc, nPatterns, patternSrc[i].subPatternOf.toLatin1().data());
+            compiledPats[parentIndex].subPatterns[compiledPats[parentIndex].nSubPatterns++] = &compiledPats[i];
+        }
+    }
+
+    /* Process color-only sub patterns (no regular expressions to match,
+       just colors and fonts for sub-expressions of the parent pattern */
+    for (int i = 0; i < nPatterns; i++) {
+        compiledPats[i].colorOnly      = patternSrc[i].flags & COLOR_ONLY;
+        compiledPats[i].userStyleIndex = IndexOfNamedStyle(patternSrc[i].style.toStdString());
+
+        if (compiledPats[i].colorOnly && compiledPats[i].nSubPatterns != 0) {
+            QMessageBox::warning(nullptr /*window->shell_*/, QLatin1String("Color-only Pattern"), QString(QLatin1String("Color-only pattern \"%1\" may not have subpatterns")).arg(patternSrc[i].name));
+            return nullptr;
+        }
+
+        int nSubExprs = 0;
+        if (!patternSrc[i].startRE.isNull()) {
+            QByteArray bytes = patternSrc[i].startRE.toLatin1();
+            const char *s = bytes.data();
+            const char *ptr = s;
+            while (true) {
+                if (*ptr == '&') {
+                    compiledPats[i].startSubexprs[nSubExprs++] = 0;
+                    ptr++;
+                } else if (sscanf(ptr, "\\%d%n", &subExprNum, &charsRead) == 1) {
+                    compiledPats[i].startSubexprs[nSubExprs++] = subExprNum;
+                    ptr += charsRead;
+                } else {
+                    break;
+                }
+            }
+        }
+        compiledPats[i].startSubexprs[nSubExprs] = -1;
+        nSubExprs = 0;
+        if (!patternSrc[i].endRE.isNull()) {
+            QByteArray bytes = patternSrc[i].endRE.toLatin1();
+            const char *s = bytes.data();
+            const char *ptr = s;
+            while (true) {
+                if (*ptr == '&') {
+                    compiledPats[i].endSubexprs[nSubExprs++] = 0;
+                    ptr++;
+                } else if (sscanf(ptr, "\\%d%n", &subExprNum, &charsRead) == 1) {
+                    compiledPats[i].endSubexprs[nSubExprs++] = subExprNum;
+                    ptr += charsRead;
+                } else {
+                    break;
+                }
+            }
+        }
+        compiledPats[i].endSubexprs[nSubExprs] = -1;
+    }
+
+    // Compile regular expressions for all highlight patterns
+    for (int i = 0; i < nPatterns; i++) {
+
+        if (patternSrc[i].startRE.isNull() || compiledPats[i].colorOnly) {
+            compiledPats[i].startRE = nullptr;
+        } else {
+            if ((compiledPats[i].startRE = compileREAndWarnEx(dialogParent, patternSrc[i].startRE.toStdString())) == nullptr) {
+                return nullptr;
+            }
+        }
+
+        if (patternSrc[i].endRE.isNull() || compiledPats[i].colorOnly) {
+            compiledPats[i].endRE = nullptr;
+        } else {
+            if ((compiledPats[i].endRE = compileREAndWarnEx(dialogParent, patternSrc[i].endRE.toStdString())) == nullptr) {
+                return nullptr;
+            }
+        }
+
+        if (patternSrc[i].errorRE.isNull()) {
+            compiledPats[i].errorRE = nullptr;
+        } else {
+            if ((compiledPats[i].errorRE = compileREAndWarnEx(dialogParent, patternSrc[i].errorRE.toStdString())) == nullptr) {
+                return nullptr;
+            }
+        }
+    }
+
+    /* Construct and compile the great hairy pattern to match the OR of the
+       end pattern, the error pattern, and all of the start patterns of the
+       sub-patterns */
+    for (int patternNum = 0; patternNum < nPatterns; patternNum++) {
+        if (patternSrc[patternNum].endRE.isNull() && patternSrc[patternNum].errorRE.isNull() && compiledPats[patternNum].nSubPatterns == 0) {
+            compiledPats[patternNum].subPatternRE = nullptr;
+            continue;
+        }
+
+        length  = (compiledPats[patternNum].colorOnly || patternSrc[patternNum].endRE.isNull())   ? 0 : patternSrc[patternNum].endRE.size()   + 5;
+        length += (compiledPats[patternNum].colorOnly || patternSrc[patternNum].errorRE.isNull()) ? 0 : patternSrc[patternNum].errorRE.size() + 5;
+
+        for (int i = 0; i < compiledPats[patternNum].nSubPatterns; i++) {
+            subPatIndex = compiledPats[patternNum].subPatterns[i] - compiledPats;
+            length += compiledPats[subPatIndex].colorOnly ? 0 : patternSrc[subPatIndex].startRE.size() + 5;
+        }
+
+        if (length == 0) {
+            compiledPats[patternNum].subPatternRE = nullptr;
+            continue;
+        }
+
+        std::string bigPattern;
+        bigPattern.reserve(length);
+
+        if (!patternSrc[patternNum].endRE.isNull()) {
+            bigPattern += '(';
+            bigPattern += '?';
+            bigPattern += ':';
+            bigPattern += patternSrc[patternNum].endRE.toStdString();
+            bigPattern += ')';
+            bigPattern += '|';
+            compiledPats[patternNum].nSubBranches++;
+        }
+
+        if (!patternSrc[patternNum].errorRE.isNull()) {
+            bigPattern += '(';
+            bigPattern += '?';
+            bigPattern += ':';
+            bigPattern += patternSrc[patternNum].errorRE.toStdString();
+            bigPattern += ')';
+            bigPattern += '|';
+            compiledPats[patternNum].nSubBranches++;
+        }
+
+        for (int i = 0; i < compiledPats[patternNum].nSubPatterns; i++) {
+            subPatIndex = compiledPats[patternNum].subPatterns[i] - compiledPats;
+
+            if (compiledPats[subPatIndex].colorOnly) {
+                continue;
+            }
+
+            bigPattern += '(';
+            bigPattern += '?';
+            bigPattern += ':';
+            bigPattern += patternSrc[subPatIndex].startRE.toStdString();
+            bigPattern += ')';
+            bigPattern += '|';
+            compiledPats[patternNum].nSubBranches++;
+        }
+
+        bigPattern.pop_back(); // remove last '|' character
+
+        try {
+            compiledPats[patternNum].subPatternRE = new regexp(bigPattern, REDFLT_STANDARD);
+        } catch(const regex_error &e) {
+            fprintf(stderr, "Error compiling syntax highlight patterns:\n%s", e.what());
+            return nullptr;
+        }
+    }
+
+    // Copy remaining parameters from pattern template to compiled tree
+    for (int i = 0; i < nPatterns; i++) {
+        compiledPats[i].flags = patternSrc[i].flags;
+    }
+
+    return compiledPats;
+}
+
+/*
 ** Free a pattern list and all of its allocated components
 */
 static void freePatterns(HighlightData *patterns) {
@@ -1398,6 +1989,11 @@ static void handleUnparsedRegion(const Document *window, TextBuffer *styleBuf, c
 */
 static void handleUnparsedRegionCB(const TextDisplay *textD, int pos, const void *cbArg) {
 	handleUnparsedRegion((Document *)cbArg, textD->getStyleBuffer(), pos);
+}
+
+static void handleUnparsedRegionCBEx(const TextArea *area, int pos, const void *cbArg) {
+    auto document = reinterpret_cast<const DocumentWidget *>(cbArg);
+    handleUnparsedRegionEx(document, area->getStyleBuffer(), pos);
 }
 
 /*
@@ -2123,6 +2719,34 @@ Pixel AllocColor(const char *colorName) {
 */
 static char getPrevChar(TextBuffer *buf, int pos) {
 	return pos == 0 ? '\0' : buf->BufGetCharacter(pos - 1);
+}
+
+/*
+** compile a regular expression and present a user friendly dialog on failure.
+*/
+static regexp *compileREAndWarnEx(DocumentWidget *parent, view::string_view re) {
+
+    Q_UNUSED(parent);
+
+    try {
+        return new regexp(re, REDFLT_STANDARD);
+    } catch(const regex_error &e) {
+
+        // NOTE(eteran): was DF_MAX_MSG_LENGTH (2047 + 1024)
+        const size_t maxLength = 4096;
+
+        /* Prevent buffer overflow. If the re is too long, truncate it and append ... */
+        std::string boundedRe = re.to_string();
+
+        if (boundedRe.size() > maxLength) {
+            boundedRe.resize(maxLength - 3);
+            boundedRe.append("...");
+        }
+
+        QMessageBox::warning(parent, QLatin1String("Error in Regex"), QString(QLatin1String("Error in syntax highlighting regular expression:\n%1\n%2")).arg(QString::fromStdString(boundedRe)).arg(QLatin1String(e.what())));
+        return nullptr;
+    }
+
 }
 
 /*

@@ -82,6 +82,8 @@ public:
     void freeHighlightData(WindowHighlightData *hd);
     void freePatterns(HighlightData *patterns);
     QString GetWindowDelimiters() const;
+    void DimSelectionDepUserMenuItems(bool sensitive);
+    void dimSelDepItemsInMenu(QMenu *menuPane, const QVector<MenuData> &menuList, bool sensitive);
 
 private:
 	// TODO(eteran): are these dialog's per window or per text document?
@@ -109,6 +111,7 @@ public:
 	XmFontList fontList_;              // fontList for the primary font
 
     QTimer *flashTimer_;               // timer for getting rid of highlighted matching paren.
+    QMenu *contextMenu_;
 
 	XtIntervalId markTimeoutID_;       // backup timer for mark event handler
 

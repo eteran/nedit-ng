@@ -121,6 +121,8 @@ public:
     int fontAscent() const;
     QTimer *cursorBlinkTimer() const;
     QMenu *contextMenu() const;
+    TextBuffer *getStyleBuffer() const;
+
 
 protected:
 	virtual bool focusNextPrevChild(bool next) override;

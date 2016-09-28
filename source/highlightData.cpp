@@ -34,6 +34,7 @@
 #include "ui/DialogLanguageModes.h"
 #include "ui/DialogDrawingStyles.h"
 #include "ui/DialogSyntaxPatterns.h"
+#include "ui/DocumentWidget.h"
 
 #include "highlightData.h"
 #include "FontType.h"
@@ -382,6 +383,31 @@ XFontStruct *FontOfNamedStyle(Document *window, view::string_view styleName) {
 
 	// If font isn't loaded, silently substitute primary font 
 	return font == nullptr ? GetDefaultFontStruct(window->fontList_) : font;
+}
+
+/*
+** Find the font (font struct) associated with a named style.
+** This routine must only be called with a valid styleName (call
+** NamedStyleExists to find out whether styleName is valid).
+*/
+XFontStruct *FontOfNamedStyleEx(DocumentWidget *document, view::string_view styleName) {
+    int styleNo = lookupNamedStyle(styleName), fontNum;
+    XFontStruct *font;
+
+    if (styleNo < 0)
+        return GetDefaultFontStruct(document->fontList_);
+    fontNum = HighlightStyles[styleNo]->font;
+    if (fontNum == BOLD_FONT)
+        font = document->boldFontStruct_;
+    else if (fontNum == ITALIC_FONT)
+        font = document->italicFontStruct_;
+    else if (fontNum == BOLD_ITALIC_FONT)
+        font = document->boldItalicFontStruct_;
+    else // fontNum == PLAIN_FONT
+        font = GetDefaultFontStruct(document->fontList_);
+
+    // If font isn't loaded, silently substitute primary font
+    return font == nullptr ? GetDefaultFontStruct(document->fontList_) : font;
 }
 
 int FontOfNamedStyleIsBold(view::string_view styleName) {

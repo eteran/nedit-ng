@@ -1584,10 +1584,11 @@ void TextArea::bufModifiedCallback(int pos, int nInserted, int nDeleted, int nRe
 	/* If we're counting non-wrapped lines as well, maintain the absolute
 	   (non-wrapped) line number of the text displayed */
 	if (maintainingAbsTopLineNum() && (nInserted != 0 || nDeleted != 0)) {
-		if (pos + nDeleted < oldFirstChar)
+        if (pos + nDeleted < oldFirstChar) {
 			absTopLineNum_ = absTopLineNum_ + buffer_->BufCountLines(pos, pos + nInserted) - countLinesEx(deletedText);
-		else if (pos < oldFirstChar)
+        } else if (pos < oldFirstChar) {
 			resetAbsLineNum();
+        }
 	}
 
 	// Update the line count for the whole buffer
@@ -2752,7 +2753,8 @@ int TextArea::measureVisLine(int visLineNum) {
 	} else {
 		for (i = 0; i < lineLen; i++) {
 			len = buffer_->BufGetExpandedChar(lineStartPos + i, charCount, expandedChar);
-			int style = (uint8_t)styleBuffer_->BufGetCharacter(lineStartPos + i) - ASCII_A;
+            auto styleChar = styleBuffer_->BufGetCharacter(lineStartPos + i);
+            int style = (uint8_t)styleChar - ASCII_A;
 			width += XTextWidth(styleTable_[style].font, expandedChar, len);
 			charCount += len;
 		}
@@ -2851,8 +2853,9 @@ void TextArea::extendRangeForStyleMods(int *start, int *end) {
 	/* If the selection was extended due to a style change, and some of the
 	   fonts don't match in spacing, extend redraw area to end of line to
 	   redraw characters exposed by possible font size changes */
-	if (fixedFontWidth_ == -1 && extended)
+    if (fixedFontWidth_ == -1 && extended) {
 		*end = buffer_->BufEndOfLine(*end) + 1;
+    }
 }
 
 /*
@@ -3283,12 +3286,13 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 int TextArea::styleOfPos(int lineStartPos, int lineLen, int lineIndex, int dispIndex, int thisChar) {
 
 	TextBuffer *styleBuf = styleBuffer_;
-	int pos, style = 0;
+    int style = 0;
 
-	if (lineStartPos == -1 || !buffer_)
+    if (lineStartPos == -1 || !buffer_) {
 		return FILL_MASK;
+    }
 
-	pos = lineStartPos + std::min(lineIndex, lineLen);
+    int pos = lineStartPos + std::min(lineIndex, lineLen);
 
 	if (lineIndex >= lineLen) {
 		style = FILL_MASK;
@@ -7991,4 +7995,8 @@ void TextArea::setContextMenu(QMenu *menu) {
 
 QMenu *TextArea::contextMenu() const {
     return bgMenu_;
+}
+
+TextBuffer *TextArea::getStyleBuffer() const {
+    return styleBuffer_;
 }

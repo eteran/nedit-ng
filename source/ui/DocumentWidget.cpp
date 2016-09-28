@@ -167,7 +167,7 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 	windowMenuValid_       = false;
 
     flashTimer_            = new QTimer(this);
-
+    contextMenu_           = nullptr;
 	fileClosedAtom_        = None;
 	wasSelected_           = false;
 	fontName_              = GetPrefFontName();
@@ -622,9 +622,8 @@ void DocumentWidget::modifiedCallback(int pos, int nInserted, int nDeleted, int 
 
                 win->ui.action_Filter_Selection->setEnabled(selected);
 
-    #if 0
-                DimSelectionDepUserMenuItems(window, selected);
-    #endif
+                DimSelectionDepUserMenuItems(selected);
+
                 if(auto dialog = win->getDialogReplace()) {
                     dialog->UpdateReplaceActionButtons();
                 }
@@ -800,18 +799,17 @@ void DocumentWidget::reapplyLanguageMode(int mode, bool forceDefaults) {
         win->ui.action_Highlight_Syntax->blockSignals(false);
 
         StopHighlighting();
-    #if 0
+
         // we defer highlighting to RaiseDocument() if doc is hidden
         if (IsTopDocument() && highlight) {
-            StartHighlighting(window, false);
+            StartHighlightingEx(this, false);
         }
-    #endif
 
         // Force a change of smart indent macros (SetAutoIndent will re-start)
         if (indentStyle_ == SMART_INDENT) {
-    #if 0
-            EndSmartIndent(window);
-    #endif
+#if 0
+            EndSmartIndentEx(this);
+#endif
             indentStyle_ = AUTO_INDENT;
         }
 
@@ -955,10 +953,10 @@ void DocumentWidget::UpdateUserMenus() {
 
         /* update background menu, which is owned by a single document, only
            if language mode was changed */
-        auto bgMenu = createUserMenu(BGMenuData);
+        contextMenu_ = createUserMenu(BGMenuData);
         const QList<TextArea *> textAreas = textPanes();
         for(TextArea *area : textAreas) {
-            area->setContextMenu(bgMenu);
+            area->setContextMenu(contextMenu_);
         }
     }
 }
@@ -1018,11 +1016,11 @@ void DocumentWidget::SetAutoIndent(int state) {
 
     if (indentStyle_ == SMART_INDENT && !smartIndent) {
 #if 0
-        EndSmartIndent(this);
+        EndSmartIndentEx(this);
 #endif
     } else if (smartIndent && indentStyle_ != SMART_INDENT) {
 #if 0
-        BeginSmartIndent(this, true);
+        BeginSmartIndentEx(this, true);
 #endif
     }
 
@@ -1275,4 +1273,40 @@ QString DocumentWidget::GetWindowDelimiters() const {
 
 void DocumentWidget::flashTimerTimeout() {
     eraseFlashEx(this);
+}
+
+/*
+** Dim/undim user programmable menu items which depend on there being
+** a selection in their associated window.
+*/
+void DocumentWidget::DimSelectionDepUserMenuItems(bool sensitive) {
+    if(auto win = toWindow()) {
+        if (!IsTopDocument()) {
+            return;
+        }
+
+        dimSelDepItemsInMenu(win->ui.menu_Shell, ShellMenuData, sensitive);
+        dimSelDepItemsInMenu(win->ui.menu_Macro, MacroMenuData, sensitive);
+        dimSelDepItemsInMenu(contextMenu_,       BGMenuData,    sensitive);
+
+    }
+}
+
+void DocumentWidget::dimSelDepItemsInMenu(QMenu *menuPane, const QVector<MenuData> &menuList, bool sensitive) {
+
+    const QList<QAction *> actions = menuPane->actions();
+    for(QAction *action : actions) {
+        if(QMenu *subMenu = action->menu()) {
+            dimSelDepItemsInMenu(subMenu, menuList, sensitive);
+        } else {
+            int index = action->data().value<int>();
+            if (index < 0 || index >= menuList.size()) {
+                return;
+            }
+
+            if (menuList[index].item->input == FROM_SELECTION) {
+                action->setEnabled(sensitive);
+            }
+        }
+    }
 }
