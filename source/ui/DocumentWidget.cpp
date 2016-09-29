@@ -628,8 +628,8 @@ void DocumentWidget::dragStartCallback(TextArea *area) {
 void DocumentWidget::UpdateMarkTable(int pos, int nInserted, int nDeleted) {
 
     for (int i = 0; i < nMarks_; i++) {
-        maintainSelection(&markTable_[i].sel, pos, nInserted, nDeleted);
-        maintainPosition(&markTable_[i].cursorPos, pos, nInserted, nDeleted);
+        maintainSelection(&markTable_[i].sel,       pos, nInserted, nDeleted);
+        maintainPosition (&markTable_[i].cursorPos, pos, nInserted, nDeleted);
     }
 }
 
@@ -638,6 +638,8 @@ void DocumentWidget::UpdateMarkTable(int pos, int nInserted, int nDeleted) {
 **
 */
 void DocumentWidget::modifiedCallback(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText) {
+
+    Q_UNUSED(nRestyled);
 
     bool selected = buffer_->primary_.selected;
 
