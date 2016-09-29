@@ -955,7 +955,27 @@ void TextArea::keyPressEvent(QKeyEvent *event) {
        bindings.  Some systems map osfPageLeft to Ctrl-PageUp.
        Overloading this single key gives problems, and we want to give
        priority to the normal version. */
-    if ((event->key() == Qt::Key_PageUp) && (event->modifiers() == (Qt::ControlModifier))) {
+    if ((event->key() == Qt::Key_Z) && (event->modifiers() == (Qt::ControlModifier))) {
+        // higher lever should capture this, so let's avoid inserting chars from this event
+        QApplication::beep();
+        return;
+    } else if ((event->key() == Qt::Key_Z) && (event->modifiers() == (Qt::ShiftModifier | Qt::ControlModifier))) {
+        // higher lever should capture this, so let's avoid inserting chars from this event
+        QApplication::beep();
+        return;
+    } else if ((event->key() == Qt::Key_X) && (event->modifiers() == (Qt::ShiftModifier | Qt::ControlModifier))) {
+        // higher lever should capture this, so let's avoid inserting chars from this event
+        QApplication::beep();
+        return;
+    } else if ((event->key() == Qt::Key_C) && (event->modifiers() == (Qt::ControlModifier))) {
+        // higher lever should capture this, so let's avoid inserting chars from this event
+        QApplication::beep();
+        return;
+    } else if ((event->key() == Qt::Key_B) && (event->modifiers() == (Qt::ControlModifier))) {
+        // higher lever should capture this, so let's avoid inserting chars from this event
+        QApplication::beep();
+        return;
+    } else if ((event->key() == Qt::Key_PageUp) && (event->modifiers() == (Qt::ControlModifier))) {
 #if 0
         previousDocumentAP(); // "previous-document"
         return;
@@ -8097,4 +8117,24 @@ void TextArea::TextDSetFont(const QFont &font) {
 
     // Clean up line number area in case spacing has changed
     redrawLineNumbersEx(true);
+}
+
+int TextArea::getLineNumWidth() const {
+    return lineNumWidth_;
+}
+
+int TextArea::getLineNumLeft() const {
+    return lineNumLeft_;
+}
+
+int TextArea::getRows() const {
+    return P_rows;
+}
+
+int TextArea::getMarginHeight() const {
+    return P_marginHeight;
+}
+
+int TextArea::getMarginWidth() const {
+    return P_marginWidth;
 }

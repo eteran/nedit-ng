@@ -577,11 +577,7 @@ void MainWindow::CheckCloseDim() {
 void MainWindow::raiseCB() {
     if(const auto action = qobject_cast<QAction *>(sender())) {
         if(const auto ptr = reinterpret_cast<DocumentWidget *>(action->data().value<qulonglong>())) {
-
-            //static_cast<Document *>(clientData)->RaiseFocusDocumentWindow(True /* always focus */);
-#if 0
-            ui.tabWidget->setCurrentWidget(ptr);
-#endif
+            ptr->RaiseFocusDocumentWindow(true);
         }
     }
 }
@@ -766,4 +762,28 @@ QString MainWindow::UniqueUntitledNameEx() {
     }
 
     return QString();
+}
+
+void MainWindow::on_action_Undo_triggered() {
+    if(TextArea *w = lastFocus_) {
+        if(auto doc = qobject_cast<DocumentWidget *>(w->parent()->parent())) {
+            if (doc->CheckReadOnly()) {
+                return;
+            }
+            doc->Undo();
+        }
+    }
+}
+
+void MainWindow::on_action_Redo_triggered() {
+
+    if(TextArea *w = lastFocus_) {
+        if(auto doc = qobject_cast<DocumentWidget *>(w->parent()->parent())) {
+
+            if (doc->CheckReadOnly()) {
+                return;
+            }
+            doc->Redo();
+        }
+    }
 }

@@ -122,6 +122,11 @@ public:
     QTimer *cursorBlinkTimer() const;
     QMenu *contextMenu() const;
     TextBuffer *getStyleBuffer() const;
+    int getLineNumWidth() const;
+    int getLineNumLeft() const;
+    int getRows() const;
+    int getMarginHeight() const;
+    int getMarginWidth() const;
 
 
 protected:
@@ -234,8 +239,6 @@ public:
     int TextFirstVisiblePos() const;
     int TextLastVisiblePos() const;
     void TextDSetFont(const QFont &font);
-
-private:
 	void TextDSetWrapMode(int wrap, int wrapMargin);
 	void textDRedisplayRange(int start, int end);
 	void TextDResize(int width, int height);

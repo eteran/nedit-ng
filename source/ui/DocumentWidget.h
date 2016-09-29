@@ -86,6 +86,21 @@ public:
     void dimSelDepItemsInMenu(QMenu *menuPane, const QVector<MenuData> &menuList, bool sensitive);
     void RaiseFocusDocumentWindow(bool focus);
     void RaiseDocumentWindow();
+    void SaveUndoInformation(int pos, int nInserted, int nDeleted, view::string_view deletedText);
+    void ClearRedoList();
+    void ClearUndoList();
+    void appendDeletedText(view::string_view deletedText, int deletedLen, int direction);
+    void removeRedoItem();
+    void removeUndoItem();
+    void addRedoItem(UndoInfo *redo);
+    void addUndoItem(UndoInfo *undo);
+    void trimUndoList(int maxLength);
+    void Undo();
+    void Redo();
+    bool CheckReadOnly() const;
+    void MakeSelectionVisible(TextArea *textPane);
+    void RemoveBackupFile();
+    QString backupFileNameEx();
 
 private:
 	// TODO(eteran): are these dialog's per window or per text document?

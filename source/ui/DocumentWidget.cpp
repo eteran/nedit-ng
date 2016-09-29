@@ -25,8 +25,14 @@
 #include "HighlightData.h"
 #include "WindowHighlightData.h"
 #include "misc.h"
+#include "UndoInfo.h"
+#include "utils.h"
 
 namespace {
+
+// TODO(eteran): use an enum for this
+const int FORWARD = 1;
+const int REVERSE = 2;
 
 void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *user) {
     if(auto w = static_cast<DocumentWidget *>(user)) {
@@ -89,6 +95,39 @@ void maintainSelection(TextSelection *sel, int pos, int nInserted, int nDeleted)
     maintainPosition(&sel->end, pos, nInserted, nDeleted);
     if (sel->end <= sel->start) {
         sel->selected = false;
+    }
+}
+
+/*
+**
+*/
+UndoTypes determineUndoType(int nInserted, int nDeleted) {
+    int textDeleted, textInserted;
+
+    textDeleted = (nDeleted > 0);
+    textInserted = (nInserted > 0);
+
+    if (textInserted && !textDeleted) {
+        // Insert
+        if (nInserted == 1)
+            return ONE_CHAR_INSERT;
+        else
+            return BLOCK_INSERT;
+    } else if (textInserted && textDeleted) {
+        // Replace
+        if (nInserted == 1)
+            return ONE_CHAR_REPLACE;
+        else
+            return BLOCK_REPLACE;
+    } else if (!textInserted && textDeleted) {
+        // Delete
+        if (nDeleted == 1)
+            return ONE_CHAR_DELETE;
+        else
+            return BLOCK_DELETE;
+    } else {
+        // Nothing deleted or inserted
+        return UNDO_NOOP;
     }
 }
 
@@ -600,8 +639,6 @@ void DocumentWidget::UpdateMarkTable(int pos, int nInserted, int nDeleted) {
 */
 void DocumentWidget::modifiedCallback(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText) {
 
-    Q_UNUSED(nRestyled);
-
     bool selected = buffer_->primary_.selected;
 
     // update the table of bookmarks
@@ -647,11 +684,11 @@ void DocumentWidget::modifiedCallback(int pos, int nInserted, int nDeleted, int 
 
         // Make sure line number display is sufficient for new data
         win->updateLineNumDisp();
-#if 0
+
         /* Save information for undoing this operation (this call also counts
            characters and editing operations for triggering autosave */
-        window->SaveUndoInformation(pos, nInserted, nDeleted, deletedText);
-#endif
+        SaveUndoInformation(pos, nInserted, nDeleted, deletedText);
+
 
         // Trigger automatic backup if operation or character limits reached
         if (autoSave_ && (autoSaveCharCount_ > AUTOSAVE_CHAR_LIMIT || autoSaveOpCount_ > AUTOSAVE_OP_LIMIT)) {
@@ -1426,5 +1463,535 @@ void DocumentWidget::dimSelDepItemsInMenu(QMenu *menuPane, const QVector<MenuDat
                 action->setEnabled(sensitive);
             }
         }
+    }
+}
+
+/*
+** SaveUndoInformation stores away the changes made to the text buffer.  As a
+** side effect, it also increments the autoSave operation and character counts
+** since it needs to do the classification anyhow.
+**
+** Note: This routine must be kept efficient.  It is called for every
+**       character typed.
+*/
+void DocumentWidget::SaveUndoInformation(int pos, int nInserted, int nDeleted, view::string_view deletedText) {
+
+    const int isUndo = (!undo_.empty() && undo_.front()->inUndo);
+    const int isRedo = (!redo_.empty() && redo_.front()->inUndo);
+
+    /* redo operations become invalid once the user begins typing or does
+       other editing.  If this is not a redo or undo operation and a redo
+       list still exists, clear it and dim the redo menu item */
+    if (!(isUndo || isRedo) && !redo_.empty()) {
+        ClearRedoList();
+    }
+
+    /* figure out what kind of editing operation this is, and recall
+       what the last one was */
+    const UndoTypes newType = determineUndoType(nInserted, nDeleted);
+    if (newType == UNDO_NOOP) {
+        return;
+    }
+
+    UndoInfo *const currentUndo = undo_.empty() ? nullptr : undo_.front();
+
+    const UndoTypes oldType = (!currentUndo || isUndo) ? UNDO_NOOP : currentUndo->type;
+
+    /*
+    ** Check for continuations of single character operations.  These are
+    ** accumulated so a whole insertion or deletion can be undone, rather
+    ** than just the last character that the user typed.  If the this
+    ** is currently in an unmodified state, don't accumulate operations
+    ** across the save, so the user can undo back to the unmodified state.
+    */
+    if (fileChanged_) {
+
+        // normal sequential character insertion
+        if (((oldType == ONE_CHAR_INSERT || oldType == ONE_CHAR_REPLACE) && newType == ONE_CHAR_INSERT) && (pos == currentUndo->endPos)) {
+            currentUndo->endPos++;
+            autoSaveCharCount_++;
+            return;
+        }
+
+        // overstrike mode replacement
+        if ((oldType == ONE_CHAR_REPLACE && newType == ONE_CHAR_REPLACE) && (pos == currentUndo->endPos)) {
+            appendDeletedText(deletedText, nDeleted, FORWARD);
+            currentUndo->endPos++;
+            autoSaveCharCount_++;
+            return;
+        }
+
+        // forward delete
+        if ((oldType == ONE_CHAR_DELETE && newType == ONE_CHAR_DELETE) && (pos == currentUndo->startPos)) {
+            appendDeletedText(deletedText, nDeleted, FORWARD);
+            return;
+        }
+
+        // reverse delete
+        if ((oldType == ONE_CHAR_DELETE && newType == ONE_CHAR_DELETE) && (pos == currentUndo->startPos - 1)) {
+            appendDeletedText(deletedText, nDeleted, REVERSE);
+            currentUndo->startPos--;
+            currentUndo->endPos--;
+            return;
+        }
+    }
+
+    /*
+    ** The user has started a new operation, create a new undo record
+    ** and save the new undo data.
+    */
+    auto undo = new UndoInfo(newType, pos, pos + nInserted);
+
+    // if text was deleted, save it
+    if (nDeleted > 0) {
+        undo->oldLen = nDeleted + 1; // +1 is for null at end
+        undo->oldText = deletedText.to_string();
+    }
+
+    // increment the operation count for the autosave feature
+    autoSaveOpCount_++;
+
+    /* if the this is currently unmodified, remove the previous
+       restoresToSaved marker, and set it on this record */
+    if (!fileChanged_) {
+        undo->restoresToSaved = true;
+
+        for(UndoInfo *u : undo_) {
+            u->restoresToSaved = false;
+        }
+
+        for(UndoInfo *u : redo_) {
+            u->restoresToSaved = false;
+        }
+    }
+
+    /* Add the new record to the undo list  unless SaveUndoInfo is
+       saving information generated by an Undo operation itself, in
+       which case, add the new record to the redo list. */
+    if (isUndo) {
+        addRedoItem(undo);
+    } else {
+        addUndoItem(undo);
+    }
+}
+
+/*
+** ClearUndoList, ClearRedoList
+**
+** Functions for clearing all of the information off of the undo or redo
+** lists and adjusting the edit menu accordingly
+*/
+void DocumentWidget::ClearUndoList() {
+    while (!undo_.empty()) {
+        removeUndoItem();
+    }
+}
+void DocumentWidget::ClearRedoList() {
+    while (!redo_.empty()) {
+        removeRedoItem();
+    }
+}
+
+/*
+** Add deleted text to the beginning or end
+** of the text saved for undoing the last operation.  This routine is intended
+** for continuing of a string of one character deletes or replaces, but will
+** work with more than one character.
+*/
+void DocumentWidget::appendDeletedText(view::string_view deletedText, int deletedLen, int direction) {
+    UndoInfo *undo = undo_.front();
+
+    // re-allocate, adding space for the new character(s)
+    std::string comboText;
+    comboText.reserve(undo->oldLen + deletedLen);
+
+    // copy the new character and the already deleted text to the new memory
+    if (direction == FORWARD) {
+        comboText.append(undo->oldText);
+        comboText.append(deletedText.begin(), deletedText.end());
+    } else {
+        comboText.append(deletedText.begin(), deletedText.end());
+        comboText.append(undo->oldText);
+    }
+
+    // keep track of the additional memory now used by the undo list
+    undoMemUsed_++;
+
+    // free the old saved text and attach the new
+    undo->oldText = comboText;
+    undo->oldLen += deletedLen;
+}
+
+/*
+** Add an undo record (already allocated by the caller) to the this's undo
+** list if the item pushes the undo operation or character counts past the
+** limits, trim the undo list to an acceptable length.
+*/
+void DocumentWidget::addUndoItem(UndoInfo *undo) {
+
+    // Make the undo menu item sensitive now that there's something to undo
+    if (undo_.empty()) {
+        if(auto win = toWindow()) {
+            win->ui.action_Undo->setEnabled(true);
+        }
+    }
+
+    // Add the item to the beginning of the list
+    undo_.push_front(undo);
+
+    // Increment the operation and memory counts
+    undoMemUsed_ += undo->oldLen;
+
+    // Trim the list if it exceeds any of the limits
+    if (undo_.size() > UNDO_OP_LIMIT) {
+        trimUndoList(UNDO_OP_TRIMTO);
+    }
+
+    if (undoMemUsed_ > UNDO_WORRY_LIMIT) {
+        trimUndoList(UNDO_WORRY_TRIMTO);
+    }
+
+    if (undoMemUsed_ > UNDO_PURGE_LIMIT) {
+        trimUndoList(UNDO_PURGE_TRIMTO);
+    }
+}
+
+/*
+** Add an item (already allocated by the caller) to the this's redo list.
+*/
+void DocumentWidget::addRedoItem(UndoInfo *redo) {
+    // Make the redo menu item sensitive now that there's something to redo
+    if (redo_.empty()) {
+        if(auto win = toWindow()) {
+            win->ui.action_Redo->setEnabled(true);
+        }
+    }
+
+    // Add the item to the beginning of the list
+    redo_.push_front(redo);
+}
+
+/*
+** Pop (remove and free) the current (front) undo record from the undo list
+*/
+void DocumentWidget::removeUndoItem() {
+
+    if (undo_.empty()) {
+        return;
+    }
+
+    UndoInfo *undo = undo_.front();
+
+
+    // Decrement the operation and memory counts
+    undoMemUsed_ -= undo->oldLen;
+
+    // Remove and free the item
+    undo_.pop_front();
+    delete undo;
+
+    // if there are no more undo records left, dim the Undo menu item
+    if (undo_.empty()) {
+        if(auto win = toWindow()) {
+            win->ui.action_Undo->setEnabled(false);
+        }
+    }
+}
+
+/*
+** Pop (remove and free) the current (front) redo record from the redo list
+*/
+void DocumentWidget::removeRedoItem() {
+    UndoInfo *redo = redo_.front();
+
+    // Remove and free the item
+    redo_.pop_front();
+    delete redo;
+
+    // if there are no more redo records left, dim the Redo menu item
+    if (redo_.empty()) {
+        if(auto win = toWindow()) {
+            win->ui.action_Redo->setEnabled(false);
+        }
+    }
+}
+
+
+/*
+** Trim records off of the END of the undo list to reduce it to length
+** maxLength
+*/
+void DocumentWidget::trimUndoList(int maxLength) {
+
+    if (undo_.empty()) {
+        return;
+    }
+
+    auto it = undo_.begin();
+    int i   = 1;
+
+    // Find last item on the list to leave intact
+    while(it != undo_.end() && i < maxLength) {
+        ++it;
+        ++i;
+    }
+
+    // Trim off all subsequent entries
+    while(it != undo_.end()) {
+        UndoInfo *u = *it;
+
+        undoMemUsed_ -= u->oldLen;
+        delete u;
+
+        it = undo_.erase(it);
+    }
+}
+
+void DocumentWidget::Undo() {
+
+    if(auto win = toWindow()) {
+        int restoredTextLength;
+
+        // return if nothing to undo
+        if (undo_.empty()) {
+            return;
+        }
+
+        UndoInfo *undo = undo_.front();
+
+        /* BufReplaceEx will eventually call SaveUndoInformation.  This is mostly
+           good because it makes accumulating redo operations easier, however
+           SaveUndoInformation needs to know that it is being called in the context
+           of an undo.  The inUndo field in the undo record indicates that this
+           record is in the process of being undone. */
+        undo->inUndo = true;
+
+        // use the saved undo information to reverse changes
+        buffer_->BufReplaceEx(undo->startPos, undo->endPos, undo->oldText);
+
+        restoredTextLength = undo->oldText.size();
+        if (!buffer_->primary_.selected || GetPrefUndoModifiesSelection()) {
+            /* position the cursor in the focus pane after the changed text
+               to show the user where the undo was done */
+            auto area = win->lastFocus_;
+            area->TextSetCursorPos(undo->startPos + restoredTextLength);
+        }
+
+        if (GetPrefUndoModifiesSelection()) {
+            if (restoredTextLength > 0) {
+                buffer_->BufSelect(undo->startPos, undo->startPos + restoredTextLength);
+            } else {
+                buffer_->BufUnselect();
+            }
+        }
+        MakeSelectionVisible(win->lastFocus_);
+
+        /* restore the file's unmodified status if the file was unmodified
+           when the change being undone was originally made.  Also, remove
+           the backup file, since the text in the buffer is now identical to
+           the original file */
+        if (undo->restoresToSaved) {
+            SetWindowModified(false);
+            RemoveBackupFile();
+        }
+
+        // free the undo record and remove it from the chain
+        removeUndoItem();
+    }
+}
+
+void DocumentWidget::Redo() {
+
+    if(auto win = toWindow()) {
+        int restoredTextLength;
+
+        // return if nothing to redo
+        if (redo_.empty()) {
+            return;
+        }
+
+        UndoInfo *redo = redo_.front();
+
+        /* BufReplaceEx will eventually call SaveUndoInformation.  To indicate
+           to SaveUndoInformation that this is the context of a redo operation,
+           we set the inUndo indicator in the redo record */
+        redo->inUndo = true;
+
+        // use the saved redo information to reverse changes
+        buffer_->BufReplaceEx(redo->startPos, redo->endPos, redo->oldText);
+
+        restoredTextLength = redo->oldText.size();
+        if (!buffer_->primary_.selected || GetPrefUndoModifiesSelection()) {
+            /* position the cursor in the focus pane after the changed text
+               to show the user where the undo was done */
+            auto area = win->lastFocus_;
+            area->TextSetCursorPos(redo->startPos + restoredTextLength);
+        }
+        if (GetPrefUndoModifiesSelection()) {
+
+            if (restoredTextLength > 0) {
+                buffer_->BufSelect(redo->startPos, redo->startPos + restoredTextLength);
+            } else {
+                buffer_->BufUnselect();
+            }
+        }
+        MakeSelectionVisible(win->lastFocus_);
+
+        /* restore the file's unmodified status if the file was unmodified
+           when the change being redone was originally made. Also, remove
+           the backup file, since the text in the buffer is now identical to
+           the original file */
+        if (redo->restoresToSaved) {
+            SetWindowModified(false);
+            RemoveBackupFile();
+        }
+
+        // remove the redo record from the chain and free it
+        removeRedoItem();
+    }
+}
+
+/*
+** Check the read-only or locked status of the window and beep and return
+** false if the window should not be written in.
+*/
+bool DocumentWidget::CheckReadOnly() const {
+    if (lockReasons_.isAnyLocked()) {
+        QApplication::beep();
+        return true;
+    }
+    return false;
+}
+
+/*
+** If the selection (or cursor position if there's no selection) is not
+** fully shown, scroll to bring it in to view.  Note that as written,
+** this won't work well with multi-line selections.  Modest re-write
+** of the horizontal scrolling part would be quite easy to make it work
+** well with rectangular selections.
+*/
+void DocumentWidget::MakeSelectionVisible(TextArea *area) {
+
+    int width;
+    bool isRect;
+    int horizOffset;
+    int lastLineNum;
+    int left;
+    int leftLineNum;
+    int leftX;
+    int linesToScroll;
+    int margin;
+    int rectEnd;
+    int rectStart;
+    int right;
+    int rightLineNum;
+    int rightX;
+    int rows;
+    int scrollOffset;
+    int targetLineNum;
+    int topLineNum;
+    int y;
+
+    int topChar  = area->TextFirstVisiblePos();
+    int lastChar = area->TextLastVisiblePos();
+
+    // find out where the selection is
+    if (!buffer_->BufGetSelectionPos(&left, &right, &isRect, &rectStart, &rectEnd)) {
+        left = right = area->TextGetCursorPos();
+        isRect = false;
+    }
+
+    /* Check vertical positioning unless the selection is already shown or
+       already covers the display.  If the end of the selection is below
+       bottom, scroll it in to view until the end selection is scrollOffset
+       lines from the bottom of the display or the start of the selection
+       scrollOffset lines from the top.  Calculate a pleasing distance from the
+       top or bottom of the window, to scroll the selection to (if scrolling is
+       necessary), around 1/3 of the height of the window */
+    if (!((left >= topChar && right <= lastChar) || (left <= topChar && right >= lastChar))) {
+
+        rows = area->getRows();
+
+        scrollOffset = rows / 3;
+        area->TextDGetScroll(&topLineNum, &horizOffset);
+        if (right > lastChar) {
+            // End of sel. is below bottom of screen
+            leftLineNum = topLineNum + area->TextDCountLines(topChar, left, false);
+            targetLineNum = topLineNum + scrollOffset;
+            if (leftLineNum >= targetLineNum) {
+                // Start of sel. is not between top & target
+                linesToScroll = area->TextDCountLines(lastChar, right, false) + scrollOffset;
+                if (leftLineNum - linesToScroll < targetLineNum)
+                    linesToScroll = leftLineNum - targetLineNum;
+                // Scroll start of selection to the target line
+                area->TextDSetScroll(topLineNum + linesToScroll, horizOffset);
+            }
+        } else if (left < topChar) {
+            // Start of sel. is above top of screen
+            lastLineNum = topLineNum + rows;
+            rightLineNum = lastLineNum - area->TextDCountLines(right, lastChar, false);
+            targetLineNum = lastLineNum - scrollOffset;
+            if (rightLineNum <= targetLineNum) {
+                // End of sel. is not between bottom & target
+                linesToScroll = area->TextDCountLines(left, topChar, false) + scrollOffset;
+                if (rightLineNum + linesToScroll > targetLineNum)
+                    linesToScroll = targetLineNum - rightLineNum;
+                // Scroll end of selection to the target line
+                area->TextDSetScroll(topLineNum - linesToScroll, horizOffset);
+            }
+        }
+    }
+
+    /* If either end of the selection off screen horizontally, try to bring it
+       in view, by making sure both end-points are visible.  Using only end
+       points of a multi-line selection is not a great idea, and disaster for
+       rectangular selections, so this part of the routine should be re-written
+       if it is to be used much with either.  Note also that this is a second
+       scrolling operation, causing the display to jump twice.  It's done after
+       vertical scrolling to take advantage of TextDPosToXY which requires it's
+       reqested position to be vertically on screen) */
+    if (area->TextDPositionToXY(left, &leftX, &y) && area->TextDPositionToXY(right, &rightX, &y) && leftX <= rightX) {
+        area->TextDGetScroll(&topLineNum, &horizOffset);
+
+        margin = area->getMarginWidth();
+        width  = area->width();
+
+        if (leftX < margin + area->getLineNumLeft() + area->getLineNumWidth())
+            horizOffset -= margin + area->getLineNumLeft() + area->getLineNumWidth() - leftX;
+        else if (rightX > width - margin)
+            horizOffset += rightX - (width - margin);
+
+        area->TextDSetScroll(topLineNum, horizOffset);
+    }
+
+    // make sure that the statistics line is up to date
+    UpdateStatsLine(area);
+}
+
+
+
+/*
+** Remove the backup file associated with this window
+*/
+void DocumentWidget::RemoveBackupFile() {
+
+    // Don't delete backup files when backups aren't activated.
+    if (autoSave_ == false)
+        return;
+
+    QString name = backupFileNameEx();
+    ::remove(name.toLatin1().data());
+}
+
+/*
+** Generate the name of the backup file for this window from the filename
+** and path in the window data structure & write into name
+*/
+QString DocumentWidget::backupFileNameEx() {
+
+    if (filenameSet_) {
+        return tr("%1~%2").arg(path_, filename_);
+    } else {
+        return PrependHomeEx(tr("~%1").arg(filename_));
     }
 }

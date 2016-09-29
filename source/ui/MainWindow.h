@@ -79,9 +79,9 @@ public Q_SLOTS:
 	void on_action_Print_triggered();
 	void on_action_Print_Selection_triggered();
 	void on_action_Exit_triggered();
-	void on_action_Undo_triggered();
-	void on_action_Redo_triggered();
 #endif
+    void on_action_Undo_triggered();
+    void on_action_Redo_triggered();
 	void on_action_Cut_triggered();
 	void on_action_Copy_triggered();
 	void on_action_Paste_triggered();
