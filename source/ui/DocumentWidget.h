@@ -101,6 +101,11 @@ public:
     void MakeSelectionVisible(TextArea *textPane);
     void RemoveBackupFile();
     QString backupFileNameEx();
+    void CheckForChangesToFile();
+    QString FullPath() const;
+    void UpdateWindowReadOnly();
+    int cmpWinAgainstFile(const QString &fileName);
+    void RevertToSaved();
 
 private:
 	// TODO(eteran): are these dialog's per window or per text document?

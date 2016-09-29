@@ -2,12 +2,15 @@
 #include <QBoxLayout>
 #include <QSplitter>
 #include <QLabel>
+#include <QDateTime>
 #include <QtDebug>
+#include <QMessageBox>
 #include "MainWindow.h"
 #include "DocumentWidget.h"
 #include "DialogReplace.h"
 #include "TextArea.h"
 #include "preferences.h"
+#include "fileUtils.h"
 #include "TextBuffer.h"
 #include "nedit.h"
 #include "Color.h"
@@ -25,14 +28,31 @@
 #include "HighlightData.h"
 #include "WindowHighlightData.h"
 #include "misc.h"
+#include "file.h"
 #include "UndoInfo.h"
 #include "utils.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/param.h>
+#include <unistd.h>
+
 
 namespace {
+
+/*
+ * Number of bytes read at once by cmpWinAgainstFile
+ */
+const int PREFERRED_CMPBUF_LEN = 32768;
 
 // TODO(eteran): use an enum for this
 const int FORWARD = 1;
 const int REVERSE = 2;
+
+/* Maximum frequency in miliseconds of checking for external modifications.
+   The periodic check is only performed on buffer modification, and the check
+   interval is only to prevent checking on every keystroke in case of a file
+   system which is slow to process stat requests (which I'm not sure exists) */
+const int MOD_CHECK_INTERVAL = 3000;
 
 void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *user) {
     if(auto w = static_cast<DocumentWidget *>(user)) {
@@ -336,10 +356,9 @@ void DocumentWidget::onFocusIn(QWidget *now) {
 
 			// finish off the current incremental search
 			EndISearch();
-	#if 0
+
 			// Check for changes to read-only status and/or file modifications
-			CheckForChangesToFile(window);
-	#endif
+            CheckForChangesToFile();
 		}
 	}
 }
@@ -598,10 +617,10 @@ void DocumentWidget::movedCallback(TextArea *area) {
 	// Check the character before the cursor for matchable characters
     FlashMatchingEx(this, area);
 
-#if 0
+
 	// Check for changes to read-only status and/or file modifications
-	CheckForChangesToFile(window);
-#endif
+    CheckForChangesToFile();
+
 	/*  This callback is not only called for focussed panes, but for newly
 		created panes as well. So make sure that the cursor is left alone
 		for unfocussed panes.
@@ -707,10 +726,9 @@ void DocumentWidget::modifiedCallback(int pos, int nInserted, int nDeleted, int 
         // Update # of bytes, and line and col statistics
         UpdateStatsLine(nullptr);
 
-#if 0
         // Check if external changes have been made to file and warn user
-        CheckForChangesToFile(window);
-#endif
+        CheckForChangesToFile();
+
     }
 }
 
@@ -1995,5 +2013,398 @@ QString DocumentWidget::backupFileNameEx() {
         return tr("%1~%2").arg(path_, filename_);
     } else {
         return PrependHomeEx(tr("~%1").arg(filename_));
+    }
+}
+
+/*
+** Check if the file in the window was changed by an external source.
+** and put up a warning dialog if it has.
+*/
+void DocumentWidget::CheckForChangesToFile() {
+
+    static DocumentWidget *lastCheckWindow = nullptr;
+    static qint64 lastCheckTime = 0;
+
+    if (!filenameSet_) {
+        return;
+    }
+
+    // If last check was very recent, don't impact performance
+    const qint64 timestamp = QDateTime::currentMSecsSinceEpoch();
+    if (this == lastCheckWindow && (timestamp - lastCheckTime) < MOD_CHECK_INTERVAL) {
+        return;
+    }
+
+
+    lastCheckWindow = this;
+    lastCheckTime   = timestamp;
+
+    bool silent = false;
+
+
+    /* Update the status, but don't pop up a dialog if we're called
+       from a place where the window might be iconic (e.g., from the
+       replace dialog) or on another desktop.
+
+       This works, but I bet it costs a round-trip to the server.
+       Might be better to capture MapNotify/Unmap events instead.
+
+       For tabs that are not on top, we don't want the dialog either,
+       and we don't even need to contact the server to find out. By
+       performing this check first, we avoid a server round-trip for
+       most files in practice. */
+    if (!IsTopDocument()) {
+        silent = true;
+    } else {
+        MainWindow *win = toWindow();
+        if(!win->isVisible()) {
+            silent = true;
+        }
+    }
+
+    if(auto win = toWindow()) {
+        // Get the file mode and modification time
+        QString fullname = FullPath();
+
+        struct stat statbuf;
+        if (::stat(fullname.toLatin1().data(), &statbuf) != 0) {
+
+            // Return if we've already warned the user or we can't warn him now
+            if (fileMissing_ || silent) {
+                return;
+            }
+
+            /* Can't stat the file -- maybe it's been deleted.
+               The filename is now invalid */
+            fileMissing_ = true;
+            lastModTime_ = 1;
+            device_      = 0;
+            inode_       = 0;
+
+            /* Warn the user, if they like to be warned (Maybe this should be its
+                own preference setting: GetPrefWarnFileDeleted()) */
+            if (GetPrefWarnFileMods()) {
+                bool save = false;
+
+                //  Set title, message body and button to match stat()'s error.
+                switch (errno) {
+                case ENOENT:
+                    {
+                        // A component of the path file_name does not exist.
+                        int resp = QMessageBox::critical(this, tr("File not Found"), tr("File '%1' (or directory in its path)\nno longer exists.\nAnother program may have deleted or moved it.").arg(filename_), QMessageBox::Save | QMessageBox::Cancel);
+                        save = (resp == QMessageBox::Save);
+                    }
+                    break;
+                case EACCES:
+                    {
+                        // Search permission denied for a path component. We add one to the response because Re-Save wouldn't really make sense here.
+                        int resp = QMessageBox::critical(this, tr("Permission Denied"), tr("You no longer have access to file '%1'.\nAnother program may have changed the permissions of one of its parent directories.").arg(filename_), QMessageBox::Save | QMessageBox::Cancel);
+                        save = (resp == QMessageBox::Save);
+                    }
+                    break;
+                default:
+                    {
+                        // Everything else. This hints at an internal error (eg. ENOTDIR) or at some bad state at the host.
+                        int resp = QMessageBox::critical(this, tr("File not Accessible"), tr("Error while checking the status of file '%1':\n    '%2'\nPlease make sure that no data is lost before closing this window.").arg(filename_).arg(QLatin1String(strerror(errno))), QMessageBox::Save | QMessageBox::Cancel);
+                        save = (resp == QMessageBox::Save);
+                    }
+                    break;
+                }
+    #if 0
+                if(save) {
+                    SaveWindow(window);
+                }
+    #endif
+            }
+
+            // A missing or (re-)saved file can't be read-only.
+            //  TODO: A document without a file can be locked though.
+            // Make sure that the window was not destroyed behind our back!
+            lockReasons_.setPermLocked(false);
+            win->UpdateWindowTitle(this);
+            UpdateWindowReadOnly();
+
+            return;
+        }
+
+
+        /* Check that the file's read-only status is still correct (but
+           only if the file can still be opened successfully in read mode) */
+        if (fileMode_ != statbuf.st_mode || fileUid_ != statbuf.st_uid || fileGid_ != statbuf.st_gid) {
+
+            fileMode_ = statbuf.st_mode;
+            fileUid_  = statbuf.st_uid;
+            fileGid_  = statbuf.st_gid;
+
+            FILE *fp;
+            if ((fp = fopen(fullname.toLatin1().data(), "r"))) {
+                fclose(fp);
+
+                bool readOnly = access(fullname.toLatin1().data(), W_OK) != 0;
+
+                if (lockReasons_.isPermLocked() != readOnly) {
+                    lockReasons_.setPermLocked(readOnly);
+                    win->UpdateWindowTitle(this);
+                    UpdateWindowReadOnly();
+                }
+            }
+        }
+
+
+        /* Warn the user if the file has been modified, unless checking is
+           turned off or the user has already been warned.  Popping up a dialog
+           from a focus callback (which is how this routine is usually called)
+           seems to catch Motif off guard, and if the timing is just right, the
+           dialog can be left with a still active pointer grab from a Motif menu
+           which is still in the process of popping down.  The workaround, below,
+           of calling XUngrabPointer is inelegant but seems to fix the problem. */
+        if (!silent && ((lastModTime_ != 0 && lastModTime_ != statbuf.st_mtime) || fileMissing_)) {
+
+            lastModTime_ = 0; // Inhibit further warnings
+            fileMissing_ = false;
+            if (!GetPrefWarnFileMods()) {
+                return;
+            }
+
+            if (GetPrefWarnRealFileMods() && !cmpWinAgainstFile(fullname)) {
+                // Contents hasn't changed. Update the modification time.
+                lastModTime_ = statbuf.st_mtime;
+                return;
+            }
+
+
+            QMessageBox messageBox(this);
+            messageBox.setIcon(QMessageBox::Warning);
+            messageBox.setWindowTitle(tr("File modified externally"));
+            QPushButton *buttonReload = messageBox.addButton(tr("Reload"), QMessageBox::AcceptRole);
+            QPushButton *buttonCancel = messageBox.addButton(QMessageBox::Cancel);
+
+            Q_UNUSED(buttonCancel);
+
+            if (fileChanged_) {
+                messageBox.setText(tr("%1 has been modified by another program.  Reload?\n\nWARNING: Reloading will discard changes made in this editing session!").arg(filename_));
+            } else {
+                messageBox.setText(tr("%1 has been modified by another program.  Reload?").arg(filename_));
+            }
+
+            messageBox.exec();
+            if(messageBox.clickedButton() == buttonReload) {
+                RevertToSaved();
+            }
+        }
+    }
+}
+
+QString DocumentWidget::FullPath() const {
+    return QString(QLatin1String("%1%2")).arg(path_, filename_);
+}
+
+/*
+** Update the read-only state of the text area(s) in the window, and
+** the ReadOnly toggle button in the File menu to agree with the state in
+** the window data structure.
+*/
+void DocumentWidget::UpdateWindowReadOnly() {
+
+    if (!IsTopDocument()) {
+        return;
+    }
+
+    if(auto win = toWindow()) {
+        bool state = lockReasons_.isAnyLocked();
+
+        const QList<TextArea *> textAreas = textPanes();
+        for(TextArea *area : textAreas) {
+            area->setReadOnly(state);
+        }
+
+        win->ui.action_Read_Only->blockSignals(true);
+        win->ui.action_Read_Only->setChecked(state);
+        win->ui.action_Read_Only->blockSignals(false);
+
+        win->ui.action_Read_Only->setEnabled(!lockReasons_.isAnyLockedIgnoringUser());
+    }
+}
+
+/*
+ * Check if the contens of the TextBuffer *buf is equal
+ * the contens of the file named fileName. The format of
+ * the file (UNIX/DOS/MAC) is handled properly.
+ *
+ * Return values
+ *   0: no difference found
+ *  !0: difference found or could not compare contents.
+ */
+int DocumentWidget::cmpWinAgainstFile(const QString &fileName) {
+
+    char fileString[PREFERRED_CMPBUF_LEN + 2];
+    struct stat statbuf;
+    int rv;
+    int offset;
+    char pendingCR         = 0;
+    FileFormats fileFormat = fileFormat_;
+    TextBuffer *buf        = buffer_;
+
+    FILE *fp = fopen(fileName.toLatin1().data(), "r");
+    if (!fp) {
+        return 1;
+    }
+
+    if (fstat(fileno(fp), &statbuf) != 0) {
+        fclose(fp);
+        return 1;
+    }
+
+    int fileLen = statbuf.st_size;
+    // For DOS files, we can't simply check the length
+    if (fileFormat != DOS_FILE_FORMAT) {
+        if (fileLen != buf->BufGetLength()) {
+            fclose(fp);
+            return 1;
+        }
+    } else {
+        // If a DOS file is smaller on disk, it's certainly different
+        if (fileLen < buf->BufGetLength()) {
+            fclose(fp);
+            return 1;
+        }
+    }
+
+    /* For large files, the comparison can take a while. If it takes too long,
+       the user should be given a clue about what is happening. */
+    char message[MAXPATHLEN + 50];
+    snprintf(message, sizeof(message), "Comparing externally modified %s ...", filename_.toLatin1().data());
+
+    int restLen = std::min<int>(PREFERRED_CMPBUF_LEN, fileLen);
+    int bufPos  = 0;
+    int filePos = 0;
+
+    while (restLen > 0) {
+#if 0
+        AllWindowsBusy(message);
+#endif
+        if (pendingCR) {
+            fileString[0] = pendingCR;
+            offset = 1;
+        } else {
+            offset = 0;
+        }
+
+        int nRead = fread(fileString + offset, sizeof(char), restLen, fp);
+        if (nRead != restLen) {
+            fclose(fp);
+#if 0
+            AllWindowsUnbusy();
+#endif
+            return 1;
+        }
+        filePos += nRead;
+
+        nRead += offset;
+
+        // check for on-disk file format changes, but only for the first hunk
+        if (bufPos == 0 && fileFormat != FormatOfFileEx(view::string_view(fileString, nRead))) {
+            fclose(fp);
+#if 0
+            AllWindowsUnbusy();
+#endif
+            return 1;
+        }
+
+        if (fileFormat == MAC_FILE_FORMAT) {
+            ConvertFromMacFileString(fileString, nRead);
+        } else if (fileFormat == DOS_FILE_FORMAT) {
+            ConvertFromDosFileString(fileString, &nRead, &pendingCR);
+        }
+
+        // Beware of 0 chars !
+        buf->BufSubstituteNullChars(fileString, nRead);
+        rv = buf->BufCmpEx(bufPos, nRead, fileString);
+        if (rv) {
+            fclose(fp);
+#if 0
+            AllWindowsUnbusy();
+#endif
+            return rv;
+        }
+        bufPos += nRead;
+        restLen = std::min<int>(fileLen - filePos, PREFERRED_CMPBUF_LEN);
+    }
+
+#if 0
+    AllWindowsUnbusy();
+#endif
+    fclose(fp);
+    if (pendingCR) {
+        rv = buf->BufCmpEx(bufPos, 1, &pendingCR);
+        if (rv) {
+            return rv;
+        }
+        bufPos += 1;
+    }
+
+    if (bufPos != buf->BufGetLength()) {
+        return 1;
+    }
+    return 0;
+}
+
+void DocumentWidget::RevertToSaved() {
+
+    if(auto win = toWindow()) {
+        int insertPositions[MAX_PANES];
+        int topLines[MAX_PANES];
+        int horizOffsets[MAX_PANES];
+        int openFlags = 0;
+
+        // Can't revert untitled windows
+        if (!filenameSet_) {
+            QMessageBox::warning(this, tr("Error"), tr("Window '%1' was never saved, can't re-read").arg(filename_));
+            return;
+        }
+
+        const QList<TextArea *> textAreas = textPanes();
+        const int panesCount = textAreas.size();
+
+        // save insert & scroll positions of all of the panes to restore later
+        for (int i = 0; i < panesCount; i++) {
+            TextArea *area = textAreas[i];
+            insertPositions[i] = area->TextGetCursorPos();
+            area->TextDGetScroll(&topLines[i], &horizOffsets[i]);
+        }
+
+        // re-read the file, update the window title if new file is different
+        QString name = filename_;
+        QString path = path_;
+
+        RemoveBackupFile();
+        ClearUndoList();
+        openFlags |= lockReasons_.isUserLocked() ? PREF_READ_ONLY : 0;
+#if 0
+        if (!doOpen(window, name.toLatin1().data(), path.toLatin1().data(), openFlags)) {
+            /* This is a bit sketchy.  The only error in doOpen that irreperably
+                    damages the window is "too much binary data".  It should be
+                    pretty rare to be reverting something that was fine only to find
+                    that now it has too much binary data. */
+            if (!window->fileMissing_)
+                safeClose(window);
+            else {
+                // Treat it like an externally modified file
+                window->lastModTime_ = 0;
+                window->fileMissing_ = false;
+            }
+            return;
+        }
+        forceShowLineNumbers(window);
+    #endif
+        win->UpdateWindowTitle(this);
+        UpdateWindowReadOnly();
+
+        // restore the insert and scroll positions of each pane
+        for (int i = 0; i < panesCount; i++) {
+            TextArea *area = textAreas[i];
+            area->TextSetCursorPos(insertPositions[i]);
+            area->TextDSetScroll(topLines[i], horizOffsets[i]);
+        }
     }
 }
