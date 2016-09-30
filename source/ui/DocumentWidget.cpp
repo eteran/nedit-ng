@@ -5,6 +5,8 @@
 #include <QDateTime>
 #include <QtDebug>
 #include <QMessageBox>
+#include <QFileDialog>
+#include <QRadioButton>
 #include "MainWindow.h"
 #include "DocumentWidget.h"
 #include "DialogReplace.h"
@@ -31,10 +33,13 @@
 #include "file.h"
 #include "UndoInfo.h"
 #include "utils.h"
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/param.h>
 #include <unistd.h>
+#include <fcntl.h>
+
 
 
 namespace {
@@ -713,11 +718,9 @@ void DocumentWidget::modifiedCallback(int pos, int nInserted, int nDeleted, int 
 
         // Trigger automatic backup if operation or character limits reached
         if (autoSave_ && (autoSaveCharCount_ > AUTOSAVE_CHAR_LIMIT || autoSaveOpCount_ > AUTOSAVE_OP_LIMIT)) {
-#if 0
-            WriteBackupFile(window);
-#endif
+            WriteBackupFile();
             autoSaveCharCount_ = 0;
-            autoSaveOpCount_ = 0;
+            autoSaveOpCount_   = 0;
         }
 
         // Indicate that the window has now been modified
@@ -2110,11 +2113,10 @@ void DocumentWidget::CheckForChangesToFile() {
                     }
                     break;
                 }
-    #if 0
+
                 if(save) {
-                    SaveWindow(window);
+                    SaveWindow();
                 }
-    #endif
             }
 
             // A missing or (re-)saved file can't be read-only.
@@ -2386,12 +2388,12 @@ void DocumentWidget::RevertToSaved() {
                     damages the window is "too much binary data".  It should be
                     pretty rare to be reverting something that was fine only to find
                     that now it has too much binary data. */
-            if (!window->fileMissing_)
+            if (!fileMissing_) {
                 safeClose(window);
-            else {
+        } else {
                 // Treat it like an externally modified file
-                window->lastModTime_ = 0;
-                window->fileMissing_ = false;
+                lastModTime_ = 0;
+                fileMissing_ = false;
             }
             return;
         }
@@ -2407,4 +2409,875 @@ void DocumentWidget::RevertToSaved() {
             area->TextDSetScroll(topLines[i], horizOffsets[i]);
         }
     }
+}
+
+/*
+** Create a backup file for the current window.  The name for the backup file
+** is generated using the name and path stored in the window and adding a
+** tilde (~) on UNIX and underscore (_) on VMS to the beginning of the name.
+*/
+int DocumentWidget::WriteBackupFile() {
+    FILE *fp;
+
+    // Generate a name for the autoSave file
+    QString name = backupFileNameEx();
+
+    // remove the old backup file. Well, this might fail - we'll notice later however.
+    ::remove(name.toLatin1().data());
+
+    /* open the file, set more restrictive permissions (using default
+        permissions was somewhat of a security hole, because permissions were
+        independent of those of the original file being edited */
+    int fd = ::open(name.toLatin1().data(), O_CREAT | O_EXCL | O_WRONLY, S_IRUSR | S_IWUSR);
+    if (fd < 0 || (fp = fdopen(fd, "w")) == nullptr) {
+
+        QMessageBox::warning(this, tr("Error writing Backup"), tr("Unable to save backup for %1:\n%2\nAutomatic backup is now off").arg(filename_).arg(QLatin1String(strerror(errno))));
+        autoSave_ = false;
+
+        if(auto win = toWindow()) {
+            win->ui.action_Incremental_Backup->blockSignals(true);
+            win->ui.action_Incremental_Backup->setChecked(false);
+            win->ui.action_Incremental_Backup->blockSignals(false);
+        }
+        return false;
+    }
+
+    // get the text buffer contents and its length
+    std::string fileString = buffer_->BufGetAllEx();
+
+    // If null characters are substituted for, put them back
+    buffer_->BufUnsubstituteNullCharsEx(fileString);
+
+    // add a terminating newline if the file doesn't already have one
+    if (!fileString.empty() && fileString.back() != '\n') {
+        fileString.append("\n"); // null terminator no longer needed
+    }
+
+    // write out the file
+    ::fwrite(fileString.data(), sizeof(char), fileString.size(), fp);
+    if (::ferror(fp)) {
+        QMessageBox::critical(this, tr("Error saving Backup"), tr("Error while saving backup for %1:\n%2\nAutomatic backup is now off").arg(filename_).arg(QLatin1String(strerror(errno))));
+        ::fclose(fp);
+        ::remove(name.toLatin1().data());
+        autoSave_ = false;
+        return false;
+    }
+
+    // close the backup file
+    if (fclose(fp) != 0) {
+        return false;
+    }
+
+    return true;
+}
+
+int DocumentWidget::SaveWindow() {
+
+    // Try to ensure our information is up-to-date
+    CheckForChangesToFile();
+
+    /* Return success if the file is normal & unchanged or is a
+        read-only file. */
+    if ((!fileChanged_ && !fileMissing_ && lastModTime_ > 0) || lockReasons_.isAnyLockedIgnoringPerm()) {
+        return true;
+    }
+
+    // Prompt for a filename if this is an Untitled window
+    if (!filenameSet_) {
+        return SaveWindowAs(nullptr, false);
+    }
+
+
+    // Check for external modifications and warn the user
+    if (GetPrefWarnFileMods() && fileWasModifiedExternally()) {
+
+        QMessageBox messageBox(this);
+        messageBox.setWindowTitle(tr("Save File"));
+        messageBox.setIcon(QMessageBox::Warning);
+        messageBox.setText(tr("%1 has been modified by another program.\n\n"
+                                                 "Continuing this operation will overwrite any external\n"
+                                                 "modifications to the file since it was opened in NEdit,\n"
+                                                 "and your work or someone else's may potentially be lost.\n\n"
+                                                 "To preserve the modified file, cancel this operation and\n"
+                                                 "use Save As... to save this file under a different name,\n"
+                                                 "or Revert to Saved to revert to the modified version.").arg(filename_));
+
+        QPushButton *buttonContinue = messageBox.addButton(tr("Continue"), QMessageBox::AcceptRole);
+        QPushButton *buttonCancel   = messageBox.addButton(QMessageBox::Cancel);
+        Q_UNUSED(buttonContinue);
+
+        messageBox.exec();
+        if(messageBox.clickedButton() == buttonCancel) {
+            // Cancel and mark file as externally modified
+            lastModTime_ = 0;
+            fileMissing_ = false;
+            return false;
+        }
+    }
+
+    if (writeBckVersion()) {
+        return false;
+    }
+
+    bool stat = doSave();
+    if (stat) {
+        RemoveBackupFile();
+    }
+
+    return stat;
+}
+
+bool DocumentWidget::doSave() {
+    struct stat statbuf;
+    FILE *fp;
+
+    // Get the full name of the file
+
+    QString fullname = FullPath();
+
+    /*  Check for root and warn him if he wants to write to a file with
+        none of the write bits set.  */
+    if ((getuid() == 0) && (stat(fullname.toLatin1().data(), &statbuf) == 0) && !(statbuf.st_mode & (S_IWUSR | S_IWGRP | S_IWOTH))) {
+
+        int result = QMessageBox::warning(this, tr("Writing Read-only File"), tr("File '%1' is marked as read-only.\nDo you want to save anyway?").arg(filename_), QMessageBox::Save | QMessageBox::Cancel);
+        if (result != QMessageBox::Save) {
+            return true;
+        }
+    }
+
+    /* add a terminating newline if the file doesn't already have one for
+       Unix utilities which get confused otherwise
+       NOTE: this must be done _before_ we create/open the file, because the
+             (potential) buffer modification can trigger a check for file
+             changes. If the file is created for the first time, it has
+             zero size on disk, and the check would falsely conclude that the
+             file has changed on disk, and would pop up a warning dialog */
+    // TODO(eteran): this seems to be broken for an empty buffer
+    //               it is going to read the buffer at index -1 :-/
+    if (buffer_->BufGetCharacter(buffer_->BufGetLength() - 1) != '\n' && !buffer_->BufIsEmpty() && GetPrefAppendLF()) {
+        buffer_->BufAppendEx("\n");
+    }
+
+    // open the file
+    fp = ::fopen(fullname.toLatin1().data(), "wb");
+    if(!fp) {
+
+        QMessageBox messageBox(this);
+        messageBox.setWindowTitle(tr("Error saving File"));
+        messageBox.setIcon(QMessageBox::Warning);
+        messageBox.setText(tr("Unable to save %1:\n%1\n\nSave as a new file?").arg(filename_).arg(QLatin1String(strerror(errno))));
+
+        QPushButton *buttonSaveAs = messageBox.addButton(tr("Save As..."), QMessageBox::AcceptRole);
+        QPushButton *buttonCancel = messageBox.addButton(QMessageBox::Cancel);
+        Q_UNUSED(buttonCancel);
+
+        messageBox.exec();
+        if(messageBox.clickedButton() == buttonSaveAs) {
+#if 0
+            return SaveWindowAs(window, nullptr, 0);
+#endif
+        }
+
+        return false;
+    }
+
+    // get the text buffer contents and its length
+    std::string fileString = buffer_->BufGetAllEx();
+
+    // If null characters are substituted for, put them back
+    buffer_->BufUnsubstituteNullCharsEx(fileString);
+
+    // If the file is to be saved in DOS or Macintosh format, reconvert
+    if (fileFormat_ == DOS_FILE_FORMAT) {
+        if (!ConvertToDosFileStringEx(fileString)) {
+            QMessageBox::critical(this, tr("Out of Memory"), tr("Out of memory!  Try\nsaving in Unix format"));
+
+            // NOTE(eteran): fixes resource leak error
+            fclose(fp);
+            return false;
+        }
+    } else if (fileFormat_ == MAC_FILE_FORMAT) {
+        ConvertToMacFileStringEx(fileString);
+    }
+
+    // write to the file
+    fwrite(fileString.data(), sizeof(char), fileString.size(), fp);
+
+
+    if (ferror(fp)) {
+        QMessageBox::critical(this, tr("Error saving File"), tr("%2 not saved:\n%2").arg(filename_).arg(QLatin1String(strerror(errno))));
+        fclose(fp);
+        remove(fullname.toLatin1().data());
+        return false;
+    }
+
+    // close the file
+    if (fclose(fp) != 0) {
+        QMessageBox::critical(nullptr /*window->shell_*/, QLatin1String("Error closing File"), QString(QLatin1String("Error closing file:\n%1")).arg(QLatin1String(strerror(errno))));
+        return false;
+    }
+
+    // success, file was written
+    SetWindowModified(false);
+
+    // update the modification time
+    if (::stat(fullname.toLatin1().data(), &statbuf) == 0) {
+        lastModTime_ = statbuf.st_mtime;
+        fileMissing_ = false;
+        device_      = statbuf.st_dev;
+        inode_       = statbuf.st_ino;
+    } else {
+        // This needs to produce an error message -- the file can't be accessed!
+        lastModTime_ = 0;
+        fileMissing_ = true;
+        device_      = 0;
+        inode_       = 0;
+    }
+
+    return true;
+}
+
+int DocumentWidget::SaveWindowAs(const char *newName, bool addWrap) {
+
+    if(auto win = toWindow()) {
+
+        int  retVal;
+        char fullname[MAXPATHLEN];
+        char filename[MAXPATHLEN];
+        char pathname[MAXPATHLEN];
+
+        if(!newName) {
+            QFileDialog dialog(this, tr("Save File As"));
+            dialog.setFileMode(QFileDialog::AnyFile);
+            dialog.setAcceptMode(QFileDialog::AcceptSave);
+            dialog.setDirectory((!path_.isEmpty()) ? path_ : QString());
+            dialog.setOptions(QFileDialog::DontUseNativeDialog);
+
+            if(QGridLayout* const layout = qobject_cast<QGridLayout*>(dialog.layout())) {
+                if(layout->rowCount() == 4 && layout->columnCount() == 3) {
+                    auto boxLayout = new QBoxLayout(QBoxLayout::LeftToRight);
+
+                    auto unixCheck = new QRadioButton(tr("&Unix"));
+                    auto dosCheck  = new QRadioButton(tr("D&OS"));
+                    auto macCheck  = new QRadioButton(tr("&Macintosh"));
+
+                    switch(fileFormat_) {
+                    case DOS_FILE_FORMAT:
+                        dosCheck->setChecked(true);
+                        break;
+                    case MAC_FILE_FORMAT:
+                        macCheck->setChecked(true);
+                        break;
+                    case UNIX_FILE_FORMAT:
+                        unixCheck->setChecked(true);
+                        break;
+                    }
+
+                    auto group = new QButtonGroup();
+                    group->addButton(unixCheck);
+                    group->addButton(dosCheck);
+                    group->addButton(macCheck);
+
+                    boxLayout->addWidget(unixCheck);
+                    boxLayout->addWidget(dosCheck);
+                    boxLayout->addWidget(macCheck);
+
+                    int row = layout->rowCount();
+
+                    layout->addWidget(new QLabel(tr("Format: ")), row, 0, 1, 1);
+                    layout->addLayout(boxLayout, row, 1, 1, 1, Qt::AlignLeft);
+
+                    ++row;
+
+                    auto wrapCheck = new QCheckBox(tr("&Add line breaks where wrapped"));
+                    if(addWrap) {
+                        wrapCheck->setChecked(true);
+                    }
+    #if 0
+                    // TODO(eteran): implement this once this is hoisted into a QObject
+                    //               since Qt4 doesn't support lambda based connections
+                    connect(wrapCheck, &QCheckBox::toggled, [&wrapCheck](bool checked) {
+                        if(checked) {
+                            int ret = QMessageBox::information(this, tr("Add Wrap"),
+                                tr("This operation adds permanent line breaks to\n"
+                                "match the automatic wrapping done by the\n"
+                                "Continuous Wrap mode Preferences Option.\n\n"
+                                "*** This Option is Irreversable ***\n\n"
+                                "Once newlines are inserted, continuous wrapping\n"
+                                "will no longer work automatically on these lines"),
+                                QMessageBox::Ok, QMessageBox::Cancel);
+
+                            if(ret != QMessageBox::Ok) {
+                                wrapCheck->setChecked(false);
+                            }
+                        }
+                    });
+    #endif
+
+                    if (wrapMode_ == CONTINUOUS_WRAP) {
+                        layout->addWidget(wrapCheck, row, 1, 1, 1);
+                    }
+
+                    if(dialog.exec()) {
+                        if(dosCheck->isChecked()) {
+                            fileFormat_ = DOS_FILE_FORMAT;
+                        } else if(macCheck->isChecked()) {
+                            fileFormat_ = MAC_FILE_FORMAT;
+                        } else if(unixCheck->isChecked()) {
+                            fileFormat_ = UNIX_FILE_FORMAT;
+                        }
+
+                        addWrap = wrapCheck->isChecked();
+                        strcpy(fullname, dialog.selectedFiles()[0].toLocal8Bit().data());
+                    } else {
+                        return false;
+                    }
+
+                }
+            }
+        } else {
+            strcpy(fullname, newName);
+        }
+
+        // Add newlines if requested
+        if (addWrap) {
+            addWrapNewlines();
+        }
+
+        if (ParseFilename(fullname, filename, pathname) != 0) {
+            return false;
+        }
+
+        // If the requested file is this file, just save it and return
+        if (filename_ == QLatin1String(filename) && path_ == QLatin1String(pathname)) {
+            if (writeBckVersion()) {
+                return false;
+            }
+
+            return doSave();
+        }
+
+        /* If the file is open in another window, make user close it.  Note that
+           it is possible for user to close the window by hand while the dialog
+           is still up, because the dialog is not application modal, so after
+           doing the dialog, check again whether the window still exists. */
+
+        DocumentWidget *otherWindow = MainWindow::FindWindowWithFile(QLatin1String(filename), QLatin1String(pathname));
+        if (otherWindow) {
+
+            QMessageBox messageBox(this);
+            messageBox.setWindowTitle(tr("File open"));
+            messageBox.setIcon(QMessageBox::Warning);
+            messageBox.setText(tr("%1 is open in another NEdit window").arg(QLatin1String(filename)));
+            QPushButton *buttonCloseOther = messageBox.addButton(tr("Close Other Window"), QMessageBox::AcceptRole);
+            QPushButton *buttonCancel     = messageBox.addButton(QMessageBox::Cancel);
+            Q_UNUSED(buttonCloseOther);
+
+            messageBox.exec();
+            if(messageBox.clickedButton() == buttonCancel) {
+                return false;
+            }
+
+            if (otherWindow == MainWindow::FindWindowWithFile(QLatin1String(filename), QLatin1String(pathname))) {
+#if 0
+                if (!CloseFileAndWindow(otherWindow, PROMPT_SBC_DIALOG_RESPONSE)) {
+                    return false;
+                }
+#endif
+            }
+        }
+
+
+        // Destroy the file closed property for the original file
+#if 0
+        DeleteFileClosedProperty(window);
+#endif
+
+        // Change the name of the file and save it under the new name
+        RemoveBackupFile();
+        filename_ = QLatin1String(filename);
+        path_     = QLatin1String(pathname);
+        fileMode_ = 0;
+        fileUid_  = 0;
+        fileGid_  = 0;
+
+        lockReasons_.clear();
+        retVal = doSave();
+        UpdateWindowReadOnly();
+        RefreshTabState();
+
+        // Add the name to the convenience menu of previously opened files
+#if 0
+        AddToPrevOpenMenu(fullname);
+#endif
+
+        /*  If name has changed, language mode may have changed as well, unless
+            it's an Untitled window for which the user already set a language
+            mode; it's probably the right one.  */
+        if (languageMode_ == PLAIN_LANGUAGE_MODE || filenameSet_) {
+            DetermineLanguageMode(false);
+        }
+        filenameSet_ = true;
+
+        // Update the stats line and window title with the new filename
+        win->UpdateWindowTitle(this);
+        UpdateStatsLine(nullptr);
+
+        win->SortTabBar();
+        return retVal;
+    }
+    return 0;
+
+}
+
+/*
+** Change a window created in NEdit's continuous wrap mode to the more
+** conventional Unix format of embedded newlines.  Indicate to the user
+** by turning off Continuous Wrap mode.
+*/
+void DocumentWidget::addWrapNewlines() {
+
+    int insertPositions[MAX_PANES];
+    int topLines[MAX_PANES];
+    int horizOffset;
+
+    const QList<TextArea *> textAreas = textPanes();
+
+    // save the insert and scroll positions of each pane
+    for(int i = 0; i < textAreas.size(); ++i) {
+        TextArea *area = textAreas[i];
+        insertPositions[i] = area->TextGetCursorPos();
+        area->TextDGetScroll(&topLines[i], &horizOffset);
+    }
+
+    // Modify the buffer to add wrapping
+    TextArea *area = textAreas[0];
+    std::string fileString = area->TextGetWrappedEx(0, buffer_->BufGetLength());
+
+    buffer_->BufSetAllEx(fileString);
+
+    // restore the insert and scroll positions of each pane
+    for(int i = 0; i < textAreas.size(); ++i) {
+        TextArea *area = textAreas[i];
+        area->TextSetCursorPos(insertPositions[i]);
+        area->TextDSetScroll(topLines[i], 0);
+    }
+
+    /* Show the user that something has happened by turning off
+       Continuous Wrap mode */
+    if(auto win = toWindow()) {
+        win->ui.action_Wrap_Continuous->blockSignals(true);
+        win->ui.action_Wrap_Continuous->setChecked(false);
+        win->ui.action_Wrap_Continuous->blockSignals(false);
+    }
+}
+
+/*
+** If saveOldVersion is on, copies the existing version of the file to
+** <filename>.bck in anticipation of a new version being saved.  Returns
+** true if backup fails and user requests that the new file not be written.
+*/
+bool DocumentWidget::writeBckVersion() {
+
+    char bckname[MAXPATHLEN];
+    struct stat statbuf;
+
+    static const size_t IO_BUFFER_SIZE = (1024 * 1024);
+
+    // Do only if version backups are turned on
+    if (!saveOldVersion_) {
+        return false;
+    }
+
+    // Get the full name of the file
+    QString fullname = FullPath();
+
+    // Generate name for old version
+    if (fullname.size() >= MAXPATHLEN) {
+        return bckError(tr("file name too long"), filename_);
+    }
+    snprintf(bckname, sizeof(bckname), "%s.bck", fullname.toLatin1().data());
+
+    // Delete the old backup file
+    // Errors are ignored; we'll notice them later.
+    ::remove(bckname);
+
+    /* open the file being edited.  If there are problems with the
+       old file, don't bother the user, just skip the backup */
+    int in_fd = ::open(fullname.toLatin1().data(), O_RDONLY);
+    if (in_fd < 0) {
+        return false;
+    }
+
+    /* Get permissions of the file.
+       We preserve the normal permissions but not ownership, extended
+       attributes, et cetera. */
+    if (::fstat(in_fd, &statbuf) != 0) {
+        return false;
+    }
+
+    // open the destination file exclusive and with restrictive permissions.
+    int out_fd = ::open(bckname, O_CREAT | O_EXCL | O_TRUNC | O_WRONLY, S_IRUSR | S_IWUSR);
+    if (out_fd < 0) {
+        return bckError(tr("Error open backup file"), QLatin1String(bckname));
+    }
+
+    // Set permissions on new file
+    if (::fchmod(out_fd, statbuf.st_mode) != 0) {
+        ::close(in_fd);
+        ::close(out_fd);
+        ::remove(bckname);
+        return bckError(tr("fchmod() failed"), QLatin1String(bckname));
+    }
+
+    // Allocate I/O buffer
+    auto io_buffer = new char[IO_BUFFER_SIZE];
+
+    // copy loop
+    for (;;) {
+        ssize_t bytes_read;
+        ssize_t bytes_written;
+        bytes_read = ::read(in_fd, io_buffer, IO_BUFFER_SIZE);
+
+        if (bytes_read < 0) {
+            ::close(in_fd);
+            ::close(out_fd);
+            ::remove(bckname);
+            delete [] io_buffer;
+            return bckError(tr("read() error"), filename_);
+        }
+
+        if (bytes_read == 0) {
+            break; // EOF
+        }
+
+        // write to the file
+        bytes_written = write(out_fd, io_buffer, (size_t)bytes_read);
+        if (bytes_written != bytes_read) {
+            ::close(in_fd);
+            ::close(out_fd);
+            ::remove(bckname);
+            delete [] io_buffer;
+            return bckError(QLatin1String(strerror(errno)), QLatin1String(bckname));
+        }
+    }
+
+    // close the input and output files
+    ::close(in_fd);
+    ::close(out_fd);
+
+    delete [] io_buffer;
+
+    return false;
+}
+
+/*
+** Error processing for writeBckVersion, gives the user option to cancel
+** the subsequent save, or continue and optionally turn off versioning
+*/
+bool DocumentWidget::bckError(const QString &errString, const QString &file) {
+
+    QMessageBox messageBox(this);
+    messageBox.setWindowTitle(tr("Error writing Backup"));
+    messageBox.setIcon(QMessageBox::Critical);
+    messageBox.setText(tr("Couldn't write .bck (last version) file.\n%1: %2").arg(file).arg(errString));
+
+    QPushButton *buttonCancelSave = messageBox.addButton(tr("Cancel Save"),      QMessageBox::RejectRole);
+    QPushButton *buttonTurnOff    = messageBox.addButton(tr("Turn off Backups"), QMessageBox::AcceptRole);
+    QPushButton *buttonContinue   = messageBox.addButton(tr("Continue"),         QMessageBox::AcceptRole);
+
+    Q_UNUSED(buttonContinue);
+
+    messageBox.exec();
+    if(messageBox.clickedButton() == buttonCancelSave) {
+        return true;
+    }
+
+    if(messageBox.clickedButton() == buttonTurnOff) {
+        saveOldVersion_ = false;
+
+        if(auto win = toWindow()) {
+            win->ui.action_Make_Backup_Copy->blockSignals(true);
+            win->ui.action_Make_Backup_Copy->setChecked(false);
+            win->ui.action_Make_Backup_Copy->blockSignals(false);
+        }
+    }
+
+    return false;
+}
+
+/*
+** Return true if the file displayed in window has been modified externally
+** to nedit.  This should return false if the file has been deleted or is
+** unavailable.
+*/
+int DocumentWidget::fileWasModifiedExternally() {
+    struct stat statbuf;
+
+    if (!filenameSet_) {
+        return false;
+    }
+
+    QString fullname = FullPath();
+
+    if (::stat(fullname.toLatin1().data(), &statbuf) != 0) {
+        return false;
+    }
+
+    if (lastModTime_ == statbuf.st_mtime) {
+        return false;
+    }
+
+    if (GetPrefWarnRealFileMods() && !cmpWinAgainstFile(fullname)) {
+        return false;
+    }
+
+    return true;
+}
+
+int DocumentWidget::CloseFileAndWindow(int preResponse) {
+    int response, stat;
+
+    // Make sure that the window is not in iconified state
+    if (fileChanged_) {
+        RaiseDocumentWindow();
+    }
+
+    /* If the window is a normal & unmodified file or an empty new file,
+       or if the user wants to ignore external modifications then
+       just close it.  Otherwise ask for confirmation first. */
+    if (!fileChanged_ &&
+        // Normal File
+        ((!fileMissing_ && lastModTime_ > 0) ||
+         // New File
+         (fileMissing_ && lastModTime_ == 0) ||
+         // File deleted/modified externally, ignored by user.
+         !GetPrefWarnFileMods())) {
+        CloseWindow();
+        // up-to-date windows don't have outstanding backup files to close
+    } else {
+        if (preResponse == PROMPT_SBC_DIALOG_RESPONSE) {
+
+            int resp = QMessageBox::warning(this, tr("Save File"), tr("Save %1 before closing?").arg(filename_), QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+
+            // TODO(eteran): factor out the need for this mapping...
+            switch(resp) {
+            case QMessageBox::Yes:
+                response = 1;
+                break;
+            case QMessageBox::No:
+                response = 2;
+                break;
+            case QMessageBox::Cancel:
+            default:
+                response = 3;
+                break;
+            }
+
+        } else {
+            response = preResponse;
+        }
+
+        switch(response) {
+        case YES_SBC_DIALOG_RESPONSE:
+            // Save
+            stat = SaveWindow();
+            if (stat) {
+                CloseWindow();
+            } else {
+                return false;
+            }
+            break;
+
+        case NO_SBC_DIALOG_RESPONSE:
+            // Don't Save
+            RemoveBackupFile();
+            CloseWindow();
+            break;
+        default:
+            return false;
+        }
+    }
+    return true;
+}
+
+/*
+** Close a document, or an editor window
+*/
+void DocumentWidget::CloseWindow() {
+
+
+    int state;
+    DocumentWidget *win;
+    DocumentWidget *topBuf = nullptr;
+    DocumentWidget *nextBuf = nullptr;
+#if 0
+    // Free smart indent macro programs
+    EndSmartIndent(this);
+
+    /* Clean up macro references to the doomed window.  If a macro is
+       executing, stop it.  If macro is calling this (closing its own
+       window), leave the window alive until the macro completes */
+    int keepWindow = !MacroWindowCloseActions(this);
+
+    // Kill shell sub-process and free related memory
+    AbortShellCommand(this);
+
+    // Unload the default tips files for this language mode if necessary
+    UnloadLanguageModeTipsFile(this);
+
+    /* If a window is closed while it is on the multi-file replace dialog
+       list of any other window (or even the same one), we must update those
+       lists or we end up with dangling references. Normally, there can
+       be only one of those dialogs at the same time (application modal),
+       but LessTif doesn't even (always) honor application modalness, so
+       there can be more than one dialog. */
+    RemoveFromMultiReplaceDialog(this);
+
+    // Destroy the file closed property for this file
+    DeleteFileClosedProperty(this);
+
+    /* Remove any possibly pending callback which might fire after the
+       widget is gone. */
+    cancelTimeOut(&flashTimeoutID_);
+    cancelTimeOut(&markTimeoutID_);
+
+    /* if this is the last window, or must be kept alive temporarily because
+       it's running the macro calling us, don't close it, make it Untitled */
+    if (keepWindow || (WindowList.size() == 1 && this == WindowList.front())) {
+        filename_ = QLatin1String("");
+
+        QString name = UniqueUntitledName();
+        lockReasons_.clear();
+
+        fileMode_     = 0;
+        fileUid_      = 0;
+        fileGid_      = 0;
+        filename_     = name;
+        path_         = QLatin1String("");
+        ignoreModify_ = true;
+
+        buffer_->BufSetAllEx("");
+
+        ignoreModify_ = false;
+        nMarks_       = 0;
+        filenameSet_  = false;
+        fileMissing_  = true;
+        fileChanged_  = false;
+        fileFormat_   = UNIX_FILE_FORMAT;
+        lastModTime_  = 0;
+        device_       = 0;
+        inode_        = 0;
+
+        StopHighlighting(this);
+        EndSmartIndent(this);
+        UpdateWindowTitle();
+        UpdateWindowReadOnly();
+        XtSetSensitive(closeItem_, false);
+        XtSetSensitive(readOnlyItem_, true);
+        XmToggleButtonSetState(readOnlyItem_, false, false);
+        ClearUndoList();
+        ClearRedoList();
+        XmTextSetStringEx(statsLine_, ""); // resets scroll pos of stats line from long file names
+        UpdateStatsLine();
+        DetermineLanguageMode(this, true);
+        RefreshTabState();
+        updateLineNumDisp();
+        return;
+    }
+
+    // Free syntax highlighting patterns, if any. w/o redisplaying
+    FreeHighlightingData(this);
+
+    /* remove the buffer modification callbacks so the buffer will be
+       deallocated when the last text widget is destroyed */
+    buffer_->BufRemoveModifyCB(modifiedCB, this);
+    buffer_->BufRemoveModifyCB(SyntaxHighlightModifyCB, this);
+
+
+    // free the undo and redo lists
+    ClearUndoList();
+    ClearRedoList();
+
+    // close the document/window
+    if (TabCount() > 1) {
+        if (MacroRunWindow() && MacroRunWindow() != this && MacroRunWindow()->shell_ == shell_) {
+            nextBuf = MacroRunWindow();
+            if(nextBuf) {
+                nextBuf->RaiseDocument();
+            }
+        } else if (IsTopDocument()) {
+            // need to find a successor before closing a top document
+            nextBuf = getNextTabWindow(1, 0, 0);
+            if(nextBuf) {
+                nextBuf->RaiseDocument();
+            }
+        } else {
+            topBuf = GetTopDocument(shell_);
+        }
+    }
+
+    // remove the window from the global window list, update window menus
+    removeFromWindowList();
+    InvalidateWindowMenus();
+    CheckCloseDim(); // Close of window running a macro may have been disabled.
+
+    // remove the tab of the closing document from tab bar
+    XtDestroyWidget(tab_);
+
+    // refresh tab bar after closing a document
+    if (nextBuf) {
+        nextBuf->ShowWindowTabBar();
+        nextBuf->updateLineNumDisp();
+    } else if (topBuf) {
+        topBuf->ShowWindowTabBar();
+        topBuf->updateLineNumDisp();
+    }
+
+    // dim/undim Detach_Tab menu items
+    win = nextBuf ? nextBuf : topBuf;
+    if (win) {
+        state = win->TabCount() > 1;
+        XtSetSensitive(win->detachDocumentItem_, state);
+        XtSetSensitive(win->contextDetachDocumentItem_, state);
+    }
+
+    // dim/undim Attach_Tab menu items
+    state = WindowList.front()->TabCount() < WindowCount();
+
+    for(Document *win: WindowList) {
+        if (win->IsTopDocument()) {
+            XtSetSensitive(win->moveDocumentItem_, state);
+            XtSetSensitive(win->contextMoveDocumentItem_, state);
+        }
+    }
+
+    // free background menu cache for document
+    FreeUserBGMenuCache(&userBGMenuCache_);
+
+    // destroy the document's pane, or the window
+    if (nextBuf || topBuf) {
+        deleteDocument();
+    } else {
+        // free user menu cache for window
+        FreeUserMenuCache(userMenuCache_);
+
+        // remove and deallocate all of the widgets associated with window
+        CloseAllPopupsFor(shell_);
+        XtDestroyWidget(shell_);
+    }
+
+
+#if 1
+    // TODO(eteran): why did I need to add this?!?
+    //               looking above, RaiseDocument (which triggers the update)
+    //               is called before removeFromWindowList, so I'm not 100% sure
+    //               it ever worked without this...
+    if(auto dialog = getDialogReplace()) {
+        dialog->UpdateReplaceActionButtons();
+    }
+#endif
+#endif
+    // deallocate the window data structure
+    delete this;
 }

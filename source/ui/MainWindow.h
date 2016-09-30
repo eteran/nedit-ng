@@ -46,6 +46,7 @@ public:
     static QList<MainWindow *> allWindows();
     static QList<DocumentWidget *> allDocuments();
     static QString UniqueUntitledNameEx();
+    static DocumentWidget *FindWindowWithFile(const QString &name, const QString &path);
 
 public:
 	DocumentWidget *CreateDocument(QString name);

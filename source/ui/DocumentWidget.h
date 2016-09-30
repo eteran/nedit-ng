@@ -106,6 +106,16 @@ public:
     void UpdateWindowReadOnly();
     int cmpWinAgainstFile(const QString &fileName);
     void RevertToSaved();
+    int WriteBackupFile();
+    int SaveWindow();
+    bool doSave();
+    int SaveWindowAs(const char *newName, bool addWrap);
+    void addWrapNewlines();
+    bool writeBckVersion();
+    bool bckError(const QString &errString, const QString &file);
+    int fileWasModifiedExternally();
+    int CloseFileAndWindow(int preResponse);
+    void CloseWindow();
 
 private:
 	// TODO(eteran): are these dialog's per window or per text document?

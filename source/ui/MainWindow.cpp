@@ -16,6 +16,11 @@
 #include "utils.h"
 #include "LanguageMode.h"
 #include "nedit.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
+
 
 namespace {
 
@@ -786,4 +791,42 @@ void MainWindow::on_action_Redo_triggered() {
             doc->Redo();
         }
     }
+}
+
+/*
+** Check if there is already a window open for a given file
+*/
+DocumentWidget *MainWindow::FindWindowWithFile(const QString &name, const QString &path) {
+
+    QList<DocumentWidget *> documents = allDocuments();
+
+    /* I don't think this algorithm will work on vms so I am disabling it for now */
+    if (!GetPrefHonorSymlinks()) {
+
+        QString fullname = QString(QLatin1String("%1%2")).arg(path, name);
+
+        struct stat attribute;
+        if (::stat(fullname.toLatin1().data(), &attribute) == 0) {
+            auto it = std::find_if(documents.begin(), documents.end(), [attribute](DocumentWidget *document){
+                return attribute.st_dev == document->device_ && attribute.st_ino == document->inode_;
+            });
+
+            if(it != documents.end()) {
+                return *it;
+            }
+        } /*  else:  Not an error condition, just a new file. Continue to check
+              whether the filename is already in use for an unsaved document.  */
+
+    }
+
+
+    auto it = std::find_if(documents.begin(), documents.end(), [name, path](DocumentWidget *document) {
+        return (document->filename_ == name) && (document->path_ == path);
+    });
+
+    if(it != documents.end()) {
+        return *it;
+    }
+
+    return nullptr;
 }

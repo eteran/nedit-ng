@@ -267,6 +267,7 @@ public:
 	void TextDSetLineNumberArea(int lineNumLeft, int lineNumWidth, int textLeft);
 	int TextDPreferredColumn(int *visLineNum, int *lineStartPos);
 	int TextDPosOfPreferredCol(int column, int lineStartPos);
+    std::string TextGetWrappedEx(int startPos, int endPos);
 
 public:
 	void bufPreDeleteCallback(int pos, int nDeleted);

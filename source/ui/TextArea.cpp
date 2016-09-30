@@ -8138,3 +8138,43 @@ int TextArea::getMarginHeight() const {
 int TextArea::getMarginWidth() const {
     return P_marginWidth;
 }
+
+/*
+** Fetch text from the widget's buffer, adding wrapping newlines to emulate
+** effect acheived by wrapping in the text display in continuous wrap mode.
+*/
+std::string TextArea::TextGetWrappedEx(int startPos, int endPos) {
+
+    if (!P_continuousWrap || startPos == endPos) {
+        return buffer_->BufGetRangeEx(startPos, endPos);
+    }
+
+    /* Create a text buffer with a good estimate of the size that adding
+       newlines will expand it to.  Since it's a text buffer, if we guess
+       wrong, it will fail softly, and simply expand the size */
+    auto outBuf = mem::make_unique<TextBuffer>((endPos - startPos) + (endPos - startPos) / 5);
+    int outPos = 0;
+
+    /* Go (displayed) line by line through the buffer, adding newlines where
+       the text is wrapped at some character other than an existing newline */
+    int fromPos = startPos;
+    int toPos = TextDCountForwardNLines(startPos, 1, false);
+    while (toPos < endPos) {
+        outBuf->BufCopyFromBuf(buffer_, fromPos, toPos, outPos);
+        outPos += toPos - fromPos;
+        char c = outBuf->BufGetCharacter(outPos - 1);
+        if (c == ' ' || c == '\t')
+            outBuf->BufReplaceEx(outPos - 1, outPos, "\n");
+        else if (c != '\n') {
+            outBuf->BufInsertEx(outPos, "\n");
+            outPos++;
+        }
+        fromPos = toPos;
+        toPos = TextDCountForwardNLines(fromPos, 1, true);
+    }
+    outBuf->BufCopyFromBuf(buffer_, fromPos, endPos, outPos);
+
+    // return the contents of the output buffer as a string
+    std::string outString = outBuf->BufGetAllEx();
+    return outString;
+}
