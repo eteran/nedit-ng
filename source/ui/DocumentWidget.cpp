@@ -156,6 +156,126 @@ UndoTypes determineUndoType(int nInserted, int nDeleted) {
     }
 }
 
+/*
+** Open an existing file specified by name and path.  Use the window inWindow
+** unless inWindow is nullptr or points to a window which is already in use
+** (displays a file other than Untitled, or is Untitled but modified).  Flags
+** can be any of:
+**
+**	CREATE: 		If file is not found, (optionally) prompt the
+**				user whether to create
+**	SUPPRESS_CREATE_WARN	When creating a file, don't ask the user
+**	PREF_READ_ONLY		Make the file read-only regardless
+**
+** If languageMode is passed as nullptr, it will be determined automatically
+** from the file extension or file contents.
+**
+** If bgOpen is true, then the file will be open in background. This
+** works in association with the SetLanguageMode() function that has
+** the syntax highlighting deferred, in order to speed up the file-
+** opening operation when multiple files are being opened in succession.
+*/
+DocumentWidget *EditExistingFileEx(DocumentWidget *inWindow, const QString &name, const QString &path, int flags, char *geometry, int iconic, const char *languageMode, int tabbed, int bgOpen) {
+
+    // first look to see if file is already displayed in a window
+    if(DocumentWidget *window = MainWindow::FindWindowWithFile(name, path)) {
+        if (!bgOpen) {
+            if (iconic) {
+                window->RaiseDocument();
+            } else {
+                window->RaiseDocumentWindow();
+            }
+        }
+        return window;
+    }
+
+
+
+    /* If an existing window isn't specified; or the window is already
+       in use (not Untitled or Untitled and modified), or is currently
+       busy running a macro; create the window */
+    DocumentWidget *window = nullptr;
+    if(!inWindow) {
+        // TODO(eteran): implement geometry stuff
+        auto win = new MainWindow();
+        window = win->CreateDocument(name);
+        if(iconic) {
+            win->showMinimized();
+        } else {
+            win->showNormal();
+        }
+    } else if (inWindow->filenameSet_ || inWindow->fileChanged_ || inWindow->macroCmdData_) {
+        if (tabbed) {
+            if(auto win = inWindow->toWindow()) {
+                window = win->CreateDocument(name);
+            }
+        } else {
+            // TODO(eteran): implement geometry stuff
+            auto win = new MainWindow();
+            window = win->CreateDocument(name);
+            if(iconic) {
+                win->showMinimized();
+            } else {
+                win->showNormal();
+            }
+        }
+    } else {
+        // open file in untitled document
+        window            = inWindow;
+        window->path_     = path;
+        window->filename_ = name;
+
+        if (!iconic && !bgOpen) {
+            window->RaiseDocumentWindow();
+        }
+    }
+
+    // Open the file
+    if (!window->doOpen(name, path, flags)) {
+#if 0
+        /* The user may have destroyed the window instead of closing the
+           warning dialog; don't close it twice */
+        safeClose(window);
+#endif
+        return nullptr;
+    }
+
+    if(auto win = window->toWindow()) {
+        win->forceShowLineNumbers();
+    }
+#if 0
+    // Decide what language mode to use, trigger language specific actions
+    if(!languageMode)
+        DetermineLanguageMode(window, true);
+    else
+        SetLanguageMode(window, FindLanguageMode(languageMode), true);
+
+    // update tab label and tooltip
+    window->RefreshTabState();
+    window->SortTabBar();
+    window->ShowTabBar(window->GetShowTabBar());
+
+    if (!bgOpen)
+        window->RaiseDocument();
+
+    /* Bring the title bar and statistics line up to date, doOpen does
+       not necessarily set the window title or read-only status */
+    window->UpdateWindowTitle();
+    window->UpdateWindowReadOnly();
+    window->UpdateStatsLine();
+
+    // Add the name to the convenience menu of previously opened files
+    char fullname[MAXPATHLEN];
+    snprintf(fullname, sizeof(fullname), "%s%s", path.toLatin1().data(), name.toLatin1().data());
+
+    if (GetPrefAlwaysCheckRelTagsSpecs()) {
+        AddRelTagsFile(GetPrefTagFile(), path.toLatin1().data(), TAG);
+    }
+
+    AddToPrevOpenMenu(fullname);
+#endif
+    return window;
+}
 
 }
 
@@ -260,11 +380,13 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
     {
         auto area = createTextArea(buffer_);
         splitter_->addWidget(area);
+        area->setFocus();
     }
 #if 0
     {
         auto area = createTextArea(buffer_);
         splitter_->addWidget(area);
+        area->setFocus();
     }
 #endif
 #endif
@@ -817,82 +939,83 @@ void DocumentWidget::RaiseDocument() {
     if(auto win = toWindow()) {
         win->ui.tabWidget->setCurrentWidget(this);
 #if 0
-    if (WindowList.empty()) {
-        return;
-    }
+        if (WindowList.empty()) {
+            return;
+        }
+#endif
 
-    Document *win;
+#if 0
+        Document *win;
+        Document *lastwin = MarkActiveDocument();
+        if (lastwin != this && lastwin->IsValidWindow()) {
+            lastwin->MarkLastDocument();
+        }
 
-    Document *lastwin = MarkActiveDocument();
-    if (lastwin != this && lastwin->IsValidWindow()) {
-        lastwin->MarkLastDocument();
-    }
+        // document already on top?
+        XtVaGetValues(mainWin_, XmNuserData, &win, nullptr);
+        if (win == this) {
+            return;
+        }
 
-    // document already on top?
-    XtVaGetValues(mainWin_, XmNuserData, &win, nullptr);
-    if (win == this) {
-        return;
-    }
+        // set the document as top document
+        XtVaSetValues(mainWin_, XmNuserData, this, nullptr);
 
-    // set the document as top document
-    XtVaSetValues(mainWin_, XmNuserData, this, nullptr);
+        // show the new top document
+        XtVaSetValues(mainWin_, XmNworkWindow, splitPane_, nullptr);
+        XtManageChild(splitPane_);
+        XRaiseWindow(TheDisplay, XtWindow(splitPane_));
 
-    // show the new top document
-    XtVaSetValues(mainWin_, XmNworkWindow, splitPane_, nullptr);
-    XtManageChild(splitPane_);
-    XRaiseWindow(TheDisplay, XtWindow(splitPane_));
+        /* Turn on syntax highlight that might have been deferred.
+           NB: this must be done after setting the document as
+               XmNworkWindow and managed, else the parent shell
+           this may shrink on some this-managers such as
+           metacity, due to changes made in UpdateWMSizeHints().*/
+        if (highlightSyntax_ && highlightData_ == nullptr)
+            StartHighlighting(this, false);
 
-    /* Turn on syntax highlight that might have been deferred.
-       NB: this must be done after setting the document as
-           XmNworkWindow and managed, else the parent shell
-       this may shrink on some this-managers such as
-       metacity, due to changes made in UpdateWMSizeHints().*/
-    if (highlightSyntax_ && highlightData_ == nullptr)
-        StartHighlighting(this, false);
+        // put away the bg menu tearoffs of last active document
+        hideTearOffs(win->bgMenuPane_);
 
-    // put away the bg menu tearoffs of last active document
-    hideTearOffs(win->bgMenuPane_);
+        // restore the bg menu tearoffs of active document
+        redisplayTearOffs(bgMenuPane_);
 
-    // restore the bg menu tearoffs of active document
-    redisplayTearOffs(bgMenuPane_);
+        // set tab as active
+        XmLFolderSetActiveTab(tabBar_, getTabPosition(tab_), false);
 
-    // set tab as active
-    XmLFolderSetActiveTab(tabBar_, getTabPosition(tab_), false);
+        /* set keyboard focus. Must be done before unmanaging previous
+           top document, else lastFocus will be reset to textArea */
+        XmProcessTraversal(lastFocus_, XmTRAVERSE_CURRENT);
 
-    /* set keyboard focus. Must be done before unmanaging previous
-       top document, else lastFocus will be reset to textArea */
-    XmProcessTraversal(lastFocus_, XmTRAVERSE_CURRENT);
+        /* we only manage the top document, else the next time a document
+           is raised again, it's textpane might not resize properly.
+           Also, somehow (bug?) XtUnmanageChild() doesn't hide the
+           splitPane, which obscure lower part of the statsform when
+           we toggle its components, so we need to put the document at
+           the back */
+        XLowerWindow(TheDisplay, XtWindow(win->splitPane_));
+        XtUnmanageChild(win->splitPane_);
+        win->RefreshTabState();
 
-    /* we only manage the top document, else the next time a document
-       is raised again, it's textpane might not resize properly.
-       Also, somehow (bug?) XtUnmanageChild() doesn't hide the
-       splitPane, which obscure lower part of the statsform when
-       we toggle its components, so we need to put the document at
-       the back */
-    XLowerWindow(TheDisplay, XtWindow(win->splitPane_));
-    XtUnmanageChild(win->splitPane_);
-    win->RefreshTabState();
+        /* now refresh this state/info. RefreshWindowStates()
+           has a lot of work to do, so we update the screen first so
+           the document appears to switch swiftly. */
+        XmUpdateDisplay(splitPane_);
+        RefreshWindowStates();
+        RefreshTabState();
 
-    /* now refresh this state/info. RefreshWindowStates()
-       has a lot of work to do, so we update the screen first so
-       the document appears to switch swiftly. */
-    XmUpdateDisplay(splitPane_);
-    RefreshWindowStates();
-    RefreshTabState();
+        // put away the bg menu tearoffs of last active document
+        hideTearOffs(win->bgMenuPane_);
 
-    // put away the bg menu tearoffs of last active document
-    hideTearOffs(win->bgMenuPane_);
+        // restore the bg menu tearoffs of active document
+        redisplayTearOffs(bgMenuPane_);
 
-    // restore the bg menu tearoffs of active document
-    redisplayTearOffs(bgMenuPane_);
+        /* Make sure that the "In Selection" button tracks the presence of a
+           selection and that the this inherits the proper search scope. */
+        if(auto dialog = getDialogReplace()) {
+            dialog->UpdateReplaceActionButtons();
+        }
 
-    /* Make sure that the "In Selection" button tracks the presence of a
-       selection and that the this inherits the proper search scope. */
-    if(auto dialog = getDialogReplace()) {
-        dialog->UpdateReplaceActionButtons();
-    }
-
-    UpdateWMSizeHints();
+        UpdateWMSizeHints();
 #endif
     }
 }
@@ -985,9 +1108,7 @@ void DocumentWidget::reapplyLanguageMode(int mode, bool forceDefaults) {
 
         // Force a change of smart indent macros (SetAutoIndent will re-start)
         if (indentStyle_ == SMART_INDENT) {
-#if 0
             EndSmartIndentEx(this);
-#endif
             indentStyle_ = AUTO_INDENT;
         }
 
@@ -1193,9 +1314,7 @@ void DocumentWidget::SetAutoIndent(int state) {
     bool smartIndent = (state == SMART_INDENT);
 
     if (indentStyle_ == SMART_INDENT && !smartIndent) {
-#if 0
         EndSmartIndentEx(this);
-#endif
     } else if (smartIndent && indentStyle_ != SMART_INDENT) {
 #if 0
         BeginSmartIndentEx(this, true);
@@ -1472,18 +1591,20 @@ void DocumentWidget::DimSelectionDepUserMenuItems(bool sensitive) {
 
 void DocumentWidget::dimSelDepItemsInMenu(QMenu *menuPane, const QVector<MenuData> &menuList, bool sensitive) {
 
-    const QList<QAction *> actions = menuPane->actions();
-    for(QAction *action : actions) {
-        if(QMenu *subMenu = action->menu()) {
-            dimSelDepItemsInMenu(subMenu, menuList, sensitive);
-        } else {
-            int index = action->data().value<int>();
-            if (index < 0 || index >= menuList.size()) {
-                return;
-            }
+    if(menuPane) {
+        const QList<QAction *> actions = menuPane->actions();
+        for(QAction *action : actions) {
+            if(QMenu *subMenu = action->menu()) {
+                dimSelDepItemsInMenu(subMenu, menuList, sensitive);
+            } else {
+                int index = action->data().value<int>();
+                if (index < 0 || index >= menuList.size()) {
+                    return;
+                }
 
-            if (menuList[index].item->input == FROM_SELECTION) {
-                action->setEnabled(sensitive);
+                if (menuList[index].item->input == FROM_SELECTION) {
+                    action->setEnabled(sensitive);
+                }
             }
         }
     }
@@ -2382,23 +2503,26 @@ void DocumentWidget::RevertToSaved() {
         RemoveBackupFile();
         ClearUndoList();
         openFlags |= lockReasons_.isUserLocked() ? PREF_READ_ONLY : 0;
-#if 0
-        if (!doOpen(window, name.toLatin1().data(), path.toLatin1().data(), openFlags)) {
+
+        if (!doOpen(name, path, openFlags)) {
             /* This is a bit sketchy.  The only error in doOpen that irreperably
                     damages the window is "too much binary data".  It should be
                     pretty rare to be reverting something that was fine only to find
                     that now it has too much binary data. */
             if (!fileMissing_) {
+#if 0
                 safeClose(window);
-        } else {
+#endif
+            } else {
                 // Treat it like an externally modified file
                 lastModTime_ = 0;
                 fileMissing_ = false;
             }
             return;
         }
-        forceShowLineNumbers(window);
-    #endif
+
+
+        win->forceShowLineNumbers();
         win->UpdateWindowTitle(this);
         UpdateWindowReadOnly();
 
@@ -2573,9 +2697,7 @@ bool DocumentWidget::doSave() {
 
         messageBox.exec();
         if(messageBox.clickedButton() == buttonSaveAs) {
-#if 0
-            return SaveWindowAs(window, nullptr, 0);
-#endif
+            return SaveWindowAs(nullptr, 0);
         }
 
         return false;
@@ -3111,10 +3233,11 @@ void DocumentWidget::CloseWindow() {
     DocumentWidget *win;
     DocumentWidget *topBuf = nullptr;
     DocumentWidget *nextBuf = nullptr;
-#if 0
-    // Free smart indent macro programs
-    EndSmartIndent(this);
 
+    // Free smart indent macro programs
+    EndSmartIndentEx(this);
+
+#if 0
     /* Clean up macro references to the doomed window.  If a macro is
        executing, stop it.  If macro is calling this (closing its own
        window), leave the window alive until the macro completes */
@@ -3185,9 +3308,9 @@ void DocumentWidget::CloseWindow() {
         updateLineNumDisp();
         return;
     }
-
+#endif
     // Free syntax highlighting patterns, if any. w/o redisplaying
-    FreeHighlightingData(this);
+    FreeHighlightingDataEx(this);
 
     /* remove the buffer modification callbacks so the buffer will be
        deallocated when the last text widget is destroyed */
@@ -3198,7 +3321,7 @@ void DocumentWidget::CloseWindow() {
     // free the undo and redo lists
     ClearUndoList();
     ClearRedoList();
-
+#if 0
     // close the document/window
     if (TabCount() > 1) {
         if (MacroRunWindow() && MacroRunWindow() != this && MacroRunWindow()->shell_ == shell_) {
@@ -3281,3 +3404,277 @@ void DocumentWidget::CloseWindow() {
     // deallocate the window data structure
     delete this;
 }
+
+DocumentWidget *DocumentWidget::documentFrom(TextArea *area) {
+
+    if(!area) {
+        return nullptr;
+    }
+
+    QObject *p = area->parent();
+    while(p) {
+        if(auto document = qobject_cast<DocumentWidget *>(p)) {
+            return document;
+        }
+
+        p = p->parent();
+    }
+
+    return nullptr;
+}
+
+void DocumentWidget::open(const char *fullpath) {
+
+    char filename[MAXPATHLEN];
+    char pathname[MAXPATHLEN];
+
+    if (ParseFilename(fullpath, filename, pathname) != 0 || strlen(filename) + strlen(pathname) > MAXPATHLEN - 1) {
+        fprintf(stderr, "nedit: invalid file name for open action: %s\n", fullpath);
+        return;
+    }
+    EditExistingFileEx(this, QLatin1String(filename), QLatin1String(pathname), 0, nullptr, false, nullptr, GetPrefOpenInTab(), false);
+    if(auto win = toWindow()) {
+        win->CheckCloseDim();
+    }
+}
+
+int DocumentWidget::doOpen(const QString &name, const QString &path, int flags) {
+
+    // initialize lock reasons
+    lockReasons_.clear();
+
+    // Update the window data structure
+    filename_    = name;
+    path_        = path;
+    filenameSet_ = true;
+    fileMissing_ = true;
+
+    struct stat statbuf;
+    FILE *fp = nullptr;
+
+    // Get the full name of the file
+    const QString fullname = FullPath();
+
+    // Open the file
+    /* The only advantage of this is if you use clearcase,
+       which messes up the mtime of files opened with r+,
+       even if they're never actually written.
+       To avoid requiring special builds for clearcase users,
+       this is now the default.
+    */
+    {
+        if ((fp = ::fopen(fullname.toLatin1().data(), "r"))) {
+            if (::access(fullname.toLatin1().data(), W_OK) != 0) {
+                lockReasons_.setPermLocked(true);
+            }
+
+        } else if (flags & CREATE && errno == ENOENT) {
+            // Give option to create (or to exit if this is the only window)
+            if (!(flags & SUPPRESS_CREATE_WARN)) {
+#if 0
+                /* on Solaris 2.6, and possibly other OSes, dialog won't
+                   show if parent window is iconized. */
+                RaiseShellWindow(window->shell_, false);
+#endif
+                QMessageBox msgbox(this);
+                QAbstractButton  *exitButton;
+
+                // ask user for next action if file not found
+
+                QList<DocumentWidget *> documents = MainWindow::allDocuments();
+                int resp;
+                if (this == documents.front() && documents.size() == 1) {
+
+                    msgbox.setIcon(QMessageBox::Warning);
+                    msgbox.setWindowTitle(tr("New File"));
+                    msgbox.setText(tr("Can't open %1:\n%2").arg(fullname, QLatin1String(strerror(errno))));
+                    msgbox.addButton(tr("New File"), QMessageBox::AcceptRole);
+                    msgbox.addButton(QMessageBox::Cancel);
+                    exitButton = msgbox.addButton(tr("Exit NEdit"), QMessageBox::RejectRole);
+                    resp = msgbox.exec();
+
+                } else {
+
+                    msgbox.setIcon(QMessageBox::Warning);
+                    msgbox.setWindowTitle(tr("New File"));
+                    msgbox.setText(tr("Can't open %1:\n%2").arg(fullname, QLatin1String(strerror(errno))));
+                    msgbox.addButton(tr("New File"), QMessageBox::AcceptRole);
+                    msgbox.addButton(QMessageBox::Cancel);
+                    exitButton = nullptr;
+                    resp = msgbox.exec();
+                }
+
+                if (resp == QMessageBox::Cancel) {
+                    return false;
+                } else if (msgbox.clickedButton() == exitButton) {
+                    exit(EXIT_SUCCESS);
+                }
+            }
+
+            // Test if new file can be created
+            int fd = ::creat(fullname.toLatin1().data(), 0666);
+            if (fd == -1) {
+                QMessageBox::critical(this, tr("Error creating File"), tr("Can't create %1:\n%2").arg(fullname, QLatin1String(strerror(errno))));
+                return false;
+            } else {
+                ::close(fd);
+                ::remove(fullname.toLatin1().data());
+            }
+
+            SetWindowModified(false);
+            if ((flags & PREF_READ_ONLY) != 0) {
+                lockReasons_.setUserLocked(true);
+            }
+            UpdateWindowReadOnly();
+            return true;
+        } else {
+            // A true error
+            QMessageBox::critical(this, tr("Error opening File"), tr("Could not open %1%2:\n%3").arg(path, name, QLatin1String(strerror(errno))));
+            return false;
+        }
+    }
+
+    /* Get the length of the file, the protection mode, and the time of the
+       last modification to the file */
+    if (::fstat(fileno(fp), &statbuf) != 0) {
+        ::fclose(fp);
+        filenameSet_ = false; // Temp. prevent check for changes.
+        QMessageBox::critical(this, tr("Error opening File"), tr("Error opening %1").arg(name));
+        filenameSet_ = true;
+        return false;
+    }
+
+    if (S_ISDIR(statbuf.st_mode)) {
+        ::fclose(fp);
+        filenameSet_ = false; // Temp. prevent check for changes.
+        QMessageBox::critical(this, tr("Error opening File"), tr("Can't open directory %1").arg(name));
+        filenameSet_ = true;
+        return false;
+    }
+
+#ifdef S_ISBLK
+    if (S_ISBLK(statbuf.st_mode)) {
+        ::fclose(fp);
+        filenameSet_ = false; // Temp. prevent check for changes.
+        QMessageBox::critical(this, tr("Error opening File"), tr("Can't open block device %1").arg(name));
+        filenameSet_ = true;
+        return false;
+    }
+#endif
+
+    int fileLen = statbuf.st_size;
+
+    // Allocate space for the whole contents of the file (unfortunately)
+    auto fileString = new char[fileLen + 1]; // +1 = space for null
+    if(!fileString) {
+        ::fclose(fp);
+        filenameSet_ = false; // Temp. prevent check for changes.
+        QMessageBox::critical(this, tr("Error while opening File"), tr("File is too large to edit"));
+        filenameSet_ = true;
+        return false;
+    }
+
+    // Read the file into fileString and terminate with a null
+    int readLen = ::fread(fileString, sizeof(char), fileLen, fp);
+    if (ferror(fp)) {
+        ::fclose(fp);
+        filenameSet_ = false; // Temp. prevent check for changes.
+        QMessageBox::critical(this, tr("Error while opening File"), tr("Error reading %1:\n%2").arg(name, QLatin1String(strerror(errno))));
+        filenameSet_ = true;
+        delete [] fileString;
+        return false;
+    }
+    fileString[readLen] = '\0';
+
+    // Close the file
+    if (::fclose(fp) != 0) {
+        // unlikely error
+        QMessageBox::warning(this, tr("Error while opening File"), tr("Unable to close file"));
+        // we read it successfully, so continue
+    }
+
+    /* Any errors that happen after this point leave the window in a
+        "broken" state, and thus RevertToSaved will abandon the window if
+        window->fileMissing_ is false and doOpen fails. */
+    fileMode_    = statbuf.st_mode;
+    fileUid_     = statbuf.st_uid;
+    fileGid_     = statbuf.st_gid;
+    lastModTime_ = statbuf.st_mtime;
+    device_      = statbuf.st_dev;
+    inode_       = statbuf.st_ino;
+    fileMissing_ = false;
+
+    // Detect and convert DOS and Macintosh format files
+    if (GetPrefForceOSConversion()) {
+        fileFormat_ = FormatOfFileEx(view::string_view(fileString, readLen));
+        if (fileFormat_ == DOS_FILE_FORMAT) {
+            ConvertFromDosFileString(fileString, &readLen, nullptr);
+        } else if (fileFormat_ == MAC_FILE_FORMAT) {
+            ConvertFromMacFileString(fileString, readLen);
+        }
+    }
+
+    // Display the file contents in the text widget
+    ignoreModify_ = true;
+    buffer_->BufSetAllEx(view::string_view(fileString, readLen));
+    ignoreModify_ = false;
+
+    /* Check that the length that the buffer thinks it has is the same
+       as what we gave it.  If not, there were probably nuls in the file.
+       Substitute them with another character.  If that is impossible, warn
+       the user, make the file read-only, and force a substitution */
+    if (buffer_->BufGetLength() != readLen) {
+        if (!buffer_->BufSubstituteNullChars(fileString, readLen)) {
+
+            QMessageBox msgbox(this);
+            msgbox.setIcon(QMessageBox::Critical);
+            msgbox.setWindowTitle(tr("Error while opening File"));
+            msgbox.setText(tr("Too much binary data in file.  You may view\nit, but not modify or re-save its contents."));
+            msgbox.addButton(tr("View"), QMessageBox::AcceptRole);
+            msgbox.addButton(QMessageBox::Cancel);
+            int resp = msgbox.exec();
+
+            if (resp == QMessageBox::Cancel) {
+                return false;
+            }
+
+            lockReasons_.setTMBDLocked(true);
+            for (char *c = fileString; c < &fileString[readLen]; c++) {
+                if (*c == '\0') {
+                    *c = (char)0xfe;
+                }
+            }
+            buffer_->nullSubsChar_ = (char)0xfe;
+        }
+        ignoreModify_ = true;
+        buffer_->BufSetAllEx(fileString);
+        ignoreModify_ = false;
+    }
+
+    // Release the memory that holds fileString
+    delete [] fileString;
+
+    // Set window title and file changed flag
+    if ((flags & PREF_READ_ONLY) != 0) {
+        lockReasons_.setUserLocked(true);
+    }
+
+    if (lockReasons_.isPermLocked()) {
+        fileChanged_ = false;
+       if(auto win = toWindow()) {
+            win->UpdateWindowTitle(this);
+       }
+    } else {
+        SetWindowModified(false);
+        if (lockReasons_.isAnyLocked()) {
+            if(auto win = toWindow()) {
+                 win->UpdateWindowTitle(this);
+            }
+        }
+    }
+    UpdateWindowReadOnly();
+
+    return true;
+}
+
+

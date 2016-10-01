@@ -34,6 +34,7 @@
 class QString;
 class QByteArray;
 class SmartIndent;
+class DocumentWidget;
 
 Boolean InSmartIndentMacros(Document *window);
 int LMHasSmartIndentMacros(const char *languageMode);
@@ -46,6 +47,7 @@ void BeginSmartIndent(Document *window, int warn);
 void EditCommonSmartIndentMacro();
 void EditSmartIndentMacros(Document *window);
 void EndSmartIndent(Document *window);
+void EndSmartIndentEx(DocumentWidget *window);
 void RenameSmartIndentMacros(const char *oldName, const char *newName);
 void SmartIndentCB(Widget w, XtPointer clientData, XtPointer callData);
 void UpdateLangModeMenuSmartIndent();

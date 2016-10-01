@@ -41,6 +41,9 @@ public:
     int updateLineNumDisp();
     int updateGutterWidth();
     void TempShowISearch(bool state);
+    QString PromptForExistingFileEx(const QString &path, const QString &prompt);
+    void forceShowLineNumbers();
+
 
 public:
     static QList<MainWindow *> allWindows();

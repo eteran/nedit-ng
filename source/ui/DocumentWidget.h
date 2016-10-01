@@ -44,6 +44,7 @@ private Q_SLOTS:
 
 public Q_SLOTS:
     void setLanguageMode(const QString &mode);
+    void open(const char *fullpath);
 
 public:
 	void movedCallback(TextArea *area);
@@ -51,6 +52,9 @@ public:
 	void dragEndCallback(TextArea *area, dragEndCBStruct *data);
 	void smartIndentCallback(TextArea *area, smartIndentCBStruct *data);
     void modifiedCallback(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText);
+
+public:
+    static DocumentWidget *documentFrom(TextArea *area);
 
 private:
 	void EndISearch();
@@ -116,6 +120,8 @@ public:
     int fileWasModifiedExternally();
     int CloseFileAndWindow(int preResponse);
     void CloseWindow();
+    int doOpen(const QString &name, const QString &path, int flags);
+
 
 private:
 	// TODO(eteran): are these dialog's per window or per text document?

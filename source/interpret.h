@@ -168,9 +168,12 @@ struct RestartData {
 	DataValue *stack;
 	DataValue *stackP;
 	DataValue *frameP;
-	Inst *pc;
-	Document *runWindow;
-	Document *focusWindow;
+    Inst *pc;
+
+    // TODO(eteran): made this type unsafe so that we can try to use it for
+    //               both Document* and DocumentWidget*
+    void *runWindow;
+    void *focusWindow;
 };
 
 void InitMacroGlobals();

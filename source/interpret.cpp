@@ -966,8 +966,8 @@ static void restoreContext(RestartData *context) {
 	StackP           = context->stackP;
 	FrameP           = context->frameP;
 	PC               = context->pc;
-	InitiatingWindow = context->runWindow;
-	FocusWindow      = context->focusWindow;
+    InitiatingWindow = static_cast<Document *>(context->runWindow);
+    FocusWindow      = static_cast<Document *>(context->focusWindow);
 }
 
 static void freeSymbolTable(std::list<Symbol *> &symTab) {
@@ -1878,9 +1878,9 @@ static int returnValOrNone(int valOnStack) {
 	}
 
 	// get stored return information 
-	nArgs = FP_GET_ARG_COUNT(FrameP);
+    nArgs     = FP_GET_ARG_COUNT(FrameP);
 	newFrameP = FP_GET_OLD_FP(FrameP);
-	PC = FP_GET_RET_PC(FrameP);
+    PC        = FP_GET_RET_PC(FrameP);
 
 	// pop past local variables 
 	StackP = FrameP;

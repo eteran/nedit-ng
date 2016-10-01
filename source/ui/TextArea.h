@@ -111,6 +111,7 @@ public:
 	void setSmartIndent(bool value);
     void setModifyingTabDist(int tabDist);
     void setContextMenu(QMenu *menu);
+    void setStyleBuffer(TextBuffer *buffer);
 
 public:
     int getEmulateTabs() const;
@@ -349,6 +350,7 @@ private:
 	void ExchangeSelections();
 	int getAbsTopLineNum();
 	CursorStyles getCursorStyle() const;
+
 
 private:
 #if 1

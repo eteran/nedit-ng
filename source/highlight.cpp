@@ -472,6 +472,28 @@ void StopHighlighting(Document *window) {
 ** Free highlighting data from a window destined for destruction, without
 ** redisplaying.
 */
+void FreeHighlightingDataEx(DocumentWidget *window) {
+
+    if (!window->highlightData_) {
+        return;
+    }
+
+    // Free and remove the highlight data from the window
+    freeHighlightData(static_cast<WindowHighlightData *>(window->highlightData_));
+    window->highlightData_ = nullptr;
+
+    /* The text display may make a last desperate attempt to access highlight
+       information when it is destroyed, which would be a disaster. */
+    QList<TextArea *> areas = window->textPanes();
+    for(TextArea *area : areas) {
+        area->setStyleBuffer(nullptr);
+    }
+}
+
+/*
+** Free highlighting data from a window destined for destruction, without
+** redisplaying.
+*/
 void FreeHighlightingData(Document *window) {
 
 	if (!window->highlightData_) {

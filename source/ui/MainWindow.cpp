@@ -2,6 +2,7 @@
 #include <QtDebug>
 #include <QToolButton>
 #include <QShortcut>
+#include <QFileDialog>
 #include "MainWindow.h"
 #include "TextArea.h"
 #include "TextBuffer.h"
@@ -42,7 +43,6 @@ DocumentWidget *EditNewFile(MainWindow *inWindow, char *geometry, bool iconic, c
 	} else {
 		// TODO(eteran): implement geometry stuff
 		auto win = new MainWindow();
-
 		window = win->CreateDocument(name);
 
 		//win->resize(...);
@@ -302,11 +302,36 @@ void MainWindow::action_New(const QString &mode) {
 	CheckCloseDim();
 }
 
+QString MainWindow::PromptForExistingFileEx(const QString &path, const QString &prompt) {
+    QFileDialog dialog(this, prompt);
+    dialog.setOptions(QFileDialog::DontUseNativeDialog);
+    dialog.setFileMode(QFileDialog::ExistingFile);
+    if(!path.isEmpty()) {
+        dialog.setDirectory(path);
+    }
+
+    if(dialog.exec()) {
+        return dialog.selectedFiles()[0];
+    }
+
+    return QString();
+}
+
 //------------------------------------------------------------------------------
 // Name: on_action_Open_triggered
 //------------------------------------------------------------------------------
 void MainWindow::on_action_Open_triggered() {
 
+    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+        QString filename = PromptForExistingFileEx(doc->path_, tr("Open File"));
+        if (filename.isNull()) {
+            return;
+        }
+
+        doc->open(filename.toLatin1().data());
+    }
+
+    CheckCloseDim();
 }
 
 //------------------------------------------------------------------------------
@@ -829,4 +854,18 @@ DocumentWidget *MainWindow::FindWindowWithFile(const QString &name, const QStrin
     }
 
     return nullptr;
+}
+
+/*
+** Force ShowLineNumbers() to re-evaluate line counts for the window if line
+** counts are required.
+*/
+void MainWindow::forceShowLineNumbers() {
+    bool showLineNum = showLineNumbers_;
+    if (showLineNum) {
+        showLineNumbers_ = false;
+#if 0
+        ShowLineNumbers(showLineNum);
+#endif
+    }
 }

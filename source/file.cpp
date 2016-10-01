@@ -190,20 +190,11 @@ Document *EditExistingFile(Document *inWindow, const QString &name, const QStrin
 	Document *window;
 	if(!inWindow) {
 		window = new Document(name, geometry, iconic);
-#if 0
-		// TODO(eteran): implement this using Qt MainWindow
-#endif
 	} else if (inWindow->filenameSet_ || inWindow->fileChanged_ || inWindow->macroCmdData_) {
 		if (tabbed) {
-			window = inWindow->CreateDocument(name);
-#if 0
-		// TODO(eteran): implement this using Qt MainWindow
-#endif			
+			window = inWindow->CreateDocument(name);		
 		} else {
 			window = new Document(name, geometry, iconic);
-#if 0
-		// TODO(eteran): implement this using Qt MainWindow
-#endif
 		}
 	} else {
 		// open file in untitled document 
@@ -213,10 +204,7 @@ Document *EditExistingFile(Document *inWindow, const QString &name, const QStrin
 		
 		if (!iconic && !bgOpen) {
 			window->RaiseDocumentWindow();
-		}
-#if 0
-		// TODO(eteran): implement this using Qt MainWindow
-#endif		
+		}		
 	}
 
 	// Open the file 

@@ -65,6 +65,7 @@ QString HighlightNameOfCode(Document *window, int hCode);
 QString HighlightStyleOfCode(Document *window, int hCode);
 void AttachHighlightToWidget(Widget widget, Document *window);
 void FreeHighlightingData(Document *window);
+void FreeHighlightingDataEx(DocumentWidget *window);
 void *GetHighlightInfo(Document *window, int pos);
 void RemoveWidgetHighlight(Widget widget);
 void StartHighlighting(Document *window, int warn);

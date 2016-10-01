@@ -11,6 +11,7 @@
 #include <QResizeEvent>
 #include <QFocusEvent>
 #include <QtDebug>
+#include <QTextCodec>
 #include "TextArea.h"
 #include "Document.h"
 #include "preferences.h"
@@ -23,6 +24,49 @@
 #include "smartIndentCBStruct.h"
 #include "BlockDragTypes.h"
 #include "memory.h"
+
+
+// NOTE(eteran): this is a bit of a hack to covert the raw c-strings to unicode
+// in a way that is comparaable to how the original nedit works
+class AsciiTextCodec : public QTextCodec {
+public:
+    virtual QByteArray name() const {
+        return "US_ASCII";
+    }
+
+    virtual QList<QByteArray> aliases() const {
+        QList<QByteArray> ret;
+        return ret;
+    }
+
+    virtual int mibEnum () const {
+        return 3;
+    }
+protected:
+    virtual QByteArray convertFromUnicode(const QChar *input, int number, ConverterState *state) const {
+        Q_UNUSED(input);
+        Q_UNUSED(number);
+        Q_UNUSED(state);
+        QByteArray b;
+        return b;
+    }
+
+    virtual QString convertToUnicode(const char *chars, int len, ConverterState *state) const {
+
+        Q_UNUSED(state);
+
+        QString s;
+        for(int i = 0; i < len; ++i) {
+            quint32 ch = chars[i] & 0xff;
+            if(ch < 0x80 || ch >= 0xa0) {
+                s.append(QChar(ch));
+            } else {
+                s.append(QChar::Null);
+            }
+        }
+        return s;
+    }
+};
 
 namespace {
 
@@ -270,7 +314,8 @@ TextArea::TextArea(QWidget *parent,
 
 	setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 	setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-	setMouseTracking(false);
+    setMouseTracking(false);
+	setFocusPolicy(Qt::WheelFocus);
 
     connect(verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(verticalScrollBar_valueChanged(int)));
     connect(horizontalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(horizontalScrollBar_valueChanged(int)));
@@ -866,6 +911,7 @@ void TextArea::focusInEvent(QFocusEvent *event) {
 
 	// Call any registered focus-in callbacks
 	Q_EMIT focusIn(this);
+    QAbstractScrollArea::focusInEvent(event);
 }
 void TextArea::focusOutEvent(QFocusEvent *event) {
 
@@ -883,6 +929,7 @@ void TextArea::focusOutEvent(QFocusEvent *event) {
 #endif
 	// Call any registered focus-out callbacks
 	Q_EMIT focusOut(this);
+    QAbstractScrollArea::focusOutEvent(event);
 }
 
 //------------------------------------------------------------------------------
@@ -1989,12 +2036,12 @@ int TextArea::stringWidth(const char *string, const int length, const int style)
             return XTextWidth(fs, (char *)string, (int)length);
         } else {
             QFontMetrics fm(styleTable_[(style & STYLE_LOOKUP_MASK) - ASCII_A].fontEx);
-            int ret = fm.width(QString::fromLatin1(string, length));
+            int ret = fm.width(QString::fromAscii(string, length));
             return ret;
         }
 	} else {
 		QFontMetrics fm(viewport()->font());
-		int ret = fm.width(QString::fromLatin1(string, length));
+        int ret = fm.width(QString::fromAscii(string, length));
 		return ret;
 	}
 }
@@ -2772,7 +2819,7 @@ int TextArea::measureVisLine(int visLineNum) {
 	if (!styleBuffer_) {
 		for (i = 0; i < lineLen; i++) {
 			len = buffer_->BufGetExpandedChar(lineStartPos + i, charCount, expandedChar);
-			width += fm.width(QString::fromLatin1(expandedChar, len));
+            width += fm.width(QString::fromAscii(expandedChar, len));
 			charCount += len;
 		}
 	} else {
@@ -2786,7 +2833,7 @@ int TextArea::measureVisLine(int visLineNum) {
                 width += XTextWidth(styleTable_[style].font, expandedChar, len);
             } else {
                 QFontMetrics styleFm(styleTable_[style].fontEx);
-                width += styleFm.width(QString::fromLatin1(expandedChar, len));
+                width += styleFm.width(QString::fromAscii(expandedChar, len));
 
             }
 			charCount += len;
@@ -3527,7 +3574,11 @@ void TextArea::drawString(QPainter *painter, int style, int x, int y, int toX, c
 	QRect rect(x, y, toX - x, ascent_ + descent_);
 	// Draw the string using gc and font set above
 	painter->setPen(fground);
-	auto s = QString::fromLatin1(string, nChars);
+
+    static AsciiTextCodec asciiCodec;
+    QTextCodec::setCodecForCStrings(&asciiCodec);
+
+    auto s = QString::fromAscii(string, nChars);
 
 	// TODO(eteran): OPTIMIZATTION: since Qt will auto-fill the BG with the
 	//               default base color we only need to play with the
@@ -8177,4 +8228,8 @@ std::string TextArea::TextGetWrappedEx(int startPos, int endPos) {
     // return the contents of the output buffer as a string
     std::string outString = outBuf->BufGetAllEx();
     return outString;
+}
+
+void TextArea::setStyleBuffer(TextBuffer *buffer) {
+    styleBuffer_ = buffer;
 }

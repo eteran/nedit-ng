@@ -32,6 +32,7 @@
 #include "ui/DialogLanguageModes.h"
 #include "ui/DialogSmartIndentCommon.h"
 #include "ui/DialogSmartIndent.h"
+#include "ui/DocumentWidget.h"
 #include "IndentStyle.h"
 #include "WrapStyle.h"
 #include "SmartIndent.h"
@@ -289,8 +290,8 @@ void BeginSmartIndent(Document *window, int warn) {
 	// Compile the newline and modify macros and attach them to the window 
 	auto winData = new SmartIndentData;
 	winData->inNewLineMacro = false;
-	winData->inModMacro = false;
-	winData->newlineMacro = ParseMacro(indentMacros->newlineMacro.toLatin1().data(), &errMsg, &stoppedAt);
+    winData->inModMacro     = false;
+    winData->newlineMacro   = ParseMacro(indentMacros->newlineMacro.toLatin1().data(), &errMsg, &stoppedAt);
 	if (!winData->newlineMacro) {
 		delete winData;
 		ParseError(window->shell_, indentMacros->newlineMacro.toLatin1().data(), stoppedAt, "newline macro", errMsg);
@@ -325,6 +326,23 @@ void EndSmartIndent(Document *window) {
 	
 	delete winData;
 	window->smartIndentData_ = nullptr;
+}
+
+void EndSmartIndentEx(DocumentWidget *window) {
+    auto winData = static_cast<SmartIndentData *>(window->smartIndentData_);
+
+    if(!winData)
+        return;
+
+    // Free programs and allocated data
+    if (winData->modMacro) {
+        FreeProgram(winData->modMacro);
+    }
+
+    FreeProgram(winData->newlineMacro);
+
+    delete winData;
+    window->smartIndentData_ = nullptr;
 }
 
 /*

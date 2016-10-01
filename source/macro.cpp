@@ -886,11 +886,11 @@ static void runMacro(Document *window, Program *prog) {
 	/* Create a data structure for passing macro execution information around
 	   amongst the callback routines which will process i/o and completion */
 	auto cmdData = new macroCmdInfo;
-	window->macroCmdData_ = cmdData;
-	cmdData->bannerIsUp = False;
-	cmdData->closeOnCompletion = False;
-	cmdData->program = prog;
-	cmdData->context = nullptr;
+    window->macroCmdData_       = cmdData;
+    cmdData->bannerIsUp         = False;
+    cmdData->closeOnCompletion  = False;
+    cmdData->program            = prog;
+    cmdData->context            = nullptr;
 	cmdData->continueWorkProcID = 0;
 
 	// Set up timer proc for putting up banner when macro takes too long 
