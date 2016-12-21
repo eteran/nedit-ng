@@ -3,6 +3,7 @@
 #include <QToolButton>
 #include <QShortcut>
 #include <QFileDialog>
+#include <QFile>
 #include "MainWindow.h"
 #include "TextArea.h"
 #include "TextBuffer.h"
@@ -19,11 +20,15 @@
 #include "nedit.h"
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/param.h>
 #include <unistd.h>
-
-
+#include <cmath>
 
 namespace {
+
+const char neditDBBadFilenameChars[] = "\n";
+
+QList<QString> PrevOpen;
 
 DocumentWidget *EditNewFile(MainWindow *inWindow, char *geometry, bool iconic, const char *languageMode, const QString &defaultPath) {
 
@@ -106,6 +111,12 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(par
 	setupMenuAlternativeMenus();
     CreateLanguageModeSubMenu();
 
+    // NOTE(eteran): in the original nedit, the previous menu was populated
+    // when the user actually tried to look at the menu. It is simpler (but
+    // perhaps marginally less efficient) to just populate it when we construct
+    // the window
+    updatePrevOpenMenu();
+
 	showStats_            = GetPrefStatsLine();
 	showISearchLine_      = GetPrefISearchLine();
 	showLineNumbers_      = GetPrefLineNums();
@@ -168,6 +179,10 @@ void MainWindow::setupMenuAlternativeMenus() {
 	if(!GetPrefOpenInTab()) {
 		ui.action_New_Window->setText(tr("New &Tab"));
 	}
+
+    if (GetPrefMaxPrevOpenFiles() <= 0) {
+        ui.action_Open_Previous->setEnabled(false);
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -292,11 +307,11 @@ void MainWindow::action_New(const QString &mode) {
 	}
 
 	QString path;
-	if(TextArea *w = lastFocus_) {
-		if(auto doc = qobject_cast<DocumentWidget *>(w->parent()->parent())) {
-			path = doc->path_;
-		}
-	}
+
+    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+        path = doc->path_;
+    }
+
 
 	EditNewFile(openInTab ? this : nullptr, nullptr, false, nullptr, path);
 	CheckCloseDim();
@@ -620,7 +635,7 @@ void MainWindow::updateLanguageModeSubmenu() {
 
     auto languageGroup = new QActionGroup(this);
     auto languageMenu = new QMenu(this);
-    QAction *action = languageMenu->addAction(tr("Plain"), this, SLOT(setLangModeCB()));
+    QAction *action = languageMenu->addAction(tr("Plain"));
     action->setData(PLAIN_LANGUAGE_MODE);
     action->setCheckable(true);
     action->setChecked(true);
@@ -628,13 +643,14 @@ void MainWindow::updateLanguageModeSubmenu() {
 
 
     for (int i = 0; i < NLanguageModes; i++) {
-        QAction *action = languageMenu->addAction(LanguageModes[i]->name, this, SLOT(setLangModeCB()));
+        QAction *action = languageMenu->addAction(LanguageModes[i]->name);
         action->setData(i);
         action->setCheckable(true);
         languageGroup->addAction(action);
     }
 
     ui.action_Language_Mode->setMenu(languageMenu);
+    connect(languageMenu, SIGNAL(triggered(QAction *)), this, SLOT(setLangModeCB(QAction *)));
 }
 
 /*
@@ -644,23 +660,20 @@ void MainWindow::CreateLanguageModeSubMenu() {
     updateLanguageModeSubmenu();
 }
 
-void MainWindow::setLangModeCB() {
+void MainWindow::setLangModeCB(QAction *action) {
 
     if(auto document = qobject_cast<DocumentWidget *>(ui.tabWidget->currentWidget())) {
+        const int mode = action->data().value<int>();
 
-        if(const auto action = qobject_cast<QAction *>(sender())) {
-            const int mode = action->data().value<int>();
+        // If the mode didn't change, do nothing
+        if (document->languageMode_ == mode) {
+            return;
+        }
 
-            // If the mode didn't change, do nothing
-            if (document->languageMode_ == mode) {
-                return;
-            }
-
-            if(mode == PLAIN_LANGUAGE_MODE) {
-                document->setLanguageMode(QString());
-            } else {
-                document->setLanguageMode(LanguageModes[mode]->name);
-            }
+        if(mode == PLAIN_LANGUAGE_MODE) {
+            document->setLanguageMode(QString());
+        } else {
+            document->setLanguageMode(LanguageModes[mode]->name);
         }
     }
 }
@@ -795,26 +808,20 @@ QString MainWindow::UniqueUntitledNameEx() {
 }
 
 void MainWindow::on_action_Undo_triggered() {
-    if(TextArea *w = lastFocus_) {
-        if(auto doc = qobject_cast<DocumentWidget *>(w->parent()->parent())) {
-            if (doc->CheckReadOnly()) {
-                return;
-            }
-            doc->Undo();
+    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+        if (doc->CheckReadOnly()) {
+            return;
         }
+        doc->Undo();
     }
 }
 
 void MainWindow::on_action_Redo_triggered() {
-
-    if(TextArea *w = lastFocus_) {
-        if(auto doc = qobject_cast<DocumentWidget *>(w->parent()->parent())) {
-
-            if (doc->CheckReadOnly()) {
-                return;
-            }
-            doc->Redo();
+    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+        if (doc->CheckReadOnly()) {
+            return;
         }
+        doc->Redo();
     }
 }
 
@@ -864,8 +871,322 @@ void MainWindow::forceShowLineNumbers() {
     bool showLineNum = showLineNumbers_;
     if (showLineNum) {
         showLineNumbers_ = false;
-#if 0
         ShowLineNumbers(showLineNum);
-#endif
     }
+}
+
+/*
+** Turn on and off the display of line numbers
+*/
+void MainWindow::ShowLineNumbers(bool state) {
+
+    if (showLineNumbers_ == state) {
+        return;
+    }
+
+    showLineNumbers_ = state;
+
+    /* Just setting showLineNumbers_ is sufficient to tell
+       updateLineNumDisp() to expand the line number areas and the this
+       size for the number of lines required.  To hide the line number
+       display, set the width to zero, and contract the this width. */
+    int reqCols = 0;
+    if (state) {
+        reqCols = updateLineNumDisp();
+    } else {
+        // NOTE(eteran): here reqCols is 0, so the code at the bottom of this
+        // branch seems redundant to the code at the very bottom of this branch
+#if 0
+        Dimension windowWidth;
+        XtVaGetValues(shell_, XmNwidth, &windowWidth, nullptr);
+        int marginWidth = textD_of(textArea_)->getMarginWidth();
+        XtVaSetValues(shell_, XmNwidth, windowWidth - textD->getRect().left + marginWidth, nullptr);
+#endif
+
+        if(DocumentWidget *doc = DocumentWidget::documentFrom(lastFocus_)) {
+            QList<TextArea *> areas = doc->textPanes();
+            for(TextArea *area : areas) {
+                area->setLineNumCols(0);
+            }
+        }
+    }
+
+    /* line numbers panel is shell-level, hence other
+       tabbed documents in the this should synch */
+    QList<DocumentWidget *> docs = openDocuments();
+    for(DocumentWidget *doc : docs) {
+
+        // TODO(eteran): seems redundant now...
+        showLineNumbers_ = state;
+
+        QList<TextArea *> areas = doc->textPanes();
+        for(TextArea *area : areas) {
+            //  reqCols should really be cast here, but into what? XmRInt?
+            area->setLineNumCols(reqCols);
+        }
+
+    }
+#if 0
+    // Tell WM that the non-expandable part of the this has changed size
+    UpdateWMSizeHints();
+#endif
+}
+
+/*
+** Add a file to the list of previously opened files for display in the
+** File menu.
+*/
+void MainWindow::AddToPrevOpenMenu(const QString &filename) {
+
+    // If the Open Previous command is disabled, just return
+    if (GetPrefMaxPrevOpenFiles() < 1) {
+        return;
+    }
+
+    /*  Refresh list of previously opened files to avoid Big Race Condition,
+        where two sessions overwrite each other's changes in NEdit's
+        history file.
+        Of course there is still Little Race Condition, which occurs if a
+        Session A reads the list, then Session B reads the list and writes
+        it before Session A gets a chance to write.  */
+    ReadNEditDB();
+
+    // If the name is already in the list, move it to the start
+    int index = PrevOpen.indexOf(filename);
+    if(index != -1) {
+        PrevOpen.move(index, 0);
+        invalidatePrevOpenMenus();
+        WriteNEditDB();
+        return;
+    }
+
+    // If the list is already full, make room
+    if (PrevOpen.size() >= GetPrefMaxPrevOpenFiles()) {
+        //  This is only safe if GetPrefMaxPrevOpenFiles() > 0.
+        PrevOpen.pop_back();
+    }
+
+    // Add it to the list
+    PrevOpen.push_front(filename);
+
+    // Mark the Previously Opened Files menu as invalid in all windows
+    invalidatePrevOpenMenus();
+
+    // Undim the menu in all windows if it was previously empty
+    if (PrevOpen.size() > 0) {
+        QList<MainWindow *> windows = allWindows();
+        for(MainWindow *window : windows) {
+            window->ui.action_Open_Previous->setEnabled(true);
+        }
+    }
+
+    // Write the menu contents to disk to restore in later sessions
+    WriteNEditDB();
+}
+
+/*
+**  Read database of file names for 'Open Previous' submenu.
+**
+**  Eventually, this may hold window positions, and possibly file marks (in
+**  which case it should be moved to a different module) but for now it's
+**  just a list of previously opened files.
+**
+**  This list is read once at startup and potentially refreshed before a
+**  new entry is about to be written to the file or before the menu is
+**  displayed. If the file is modified since the last read (or not read
+**  before), it is read in, otherwise nothing is done.
+*/
+void MainWindow::ReadNEditDB() {
+
+    char line[MAXPATHLEN + 2];
+    struct stat attribute;
+    FILE *fp;
+    size_t lineLen;
+    static time_t lastNeditdbModTime = 0;
+
+    /*  If the Open Previous command is disabled or the user set the
+        resource to an (invalid) negative value, just return.  */
+    if (GetPrefMaxPrevOpenFiles() < 1) {
+        return;
+    }
+
+    /* Don't move this check ahead of the previous statements. PrevOpen
+       must be initialized at all times. */
+    QString fullName = GetRCFileNameEx(NEDIT_HISTORY);
+    if(fullName.isNull()) {
+        return;
+    }
+
+    /*  Stat history file to see whether someone touched it after this
+        session last changed it.  */
+    if (stat(fullName.toLatin1().data(), &attribute) == 0) {
+        if (lastNeditdbModTime >= attribute.st_mtime) {
+            //  Do nothing, history file is unchanged.
+            return;
+        } else {
+            //  Memorize modtime to compare to next time.
+            lastNeditdbModTime = attribute.st_mtime;
+        }
+    } else {
+        //  stat() failed, probably for non-exiting history database.
+        if (ENOENT != errno) {
+            perror("nedit: Error reading history database");
+        }
+        return;
+    }
+
+    // open the file
+    if ((fp = fopen(fullName.toLatin1().data(), "r")) == nullptr) {
+        return;
+    }
+
+    //  Clear previous list.
+    PrevOpen.clear();
+
+    /* read lines of the file, lines beginning with # are considered to be
+       comments and are thrown away.  Lines are subject to cursory checking,
+       then just copied to the Open Previous file menu list */
+    while (true) {
+        if (fgets(line, sizeof(line), fp) == nullptr) {
+            // end of file
+            fclose(fp);
+            return;
+        }
+        if (line[0] == '#') {
+            // comment
+            continue;
+        }
+        lineLen = strlen(line);
+        if (lineLen == 0) {
+            // blank line
+            continue;
+        }
+        if (line[lineLen - 1] != '\n') {
+            // no newline, probably truncated
+            fprintf(stderr, "nedit: Line too long in history file\n");
+            while (fgets(line, sizeof(line), fp)) {
+                lineLen = strlen(line);
+                if (lineLen > 0 && line[lineLen - 1] == '\n') {
+                    break;
+                }
+            }
+            continue;
+        }
+        line[--lineLen] = '\0';
+        if (strcspn(line, neditDBBadFilenameChars) != lineLen) {
+            // non-filename characters
+            fprintf(stderr, "nedit: History file may be corrupted\n");
+            continue;
+        }
+
+        auto nameCopy = QString::fromLatin1(line);
+        PrevOpen.push_back(nameCopy);
+
+        if (PrevOpen.size() >= GetPrefMaxPrevOpenFiles()) {
+            // too many entries
+            fclose(fp);
+            return;
+        }
+    }
+
+    // NOTE(eteran): fixes resource leak
+    fclose(fp);
+}
+
+/*
+** Mark the Previously Opened Files menus of all NEdit windows as invalid.
+** Since actually changing the menus is slow, they're just marked and updated
+** when the user pulls one down.
+*/
+void MainWindow::invalidatePrevOpenMenus() {
+
+    /* Mark the menus invalid (to be updated when the user pulls one
+       down), unless the menu is torn off, meaning it is visible to the user
+       and should be updated immediately */
+    QList<MainWindow *> windows = allWindows();
+    for(MainWindow *window : windows) {
+        window->updatePrevOpenMenu();
+    }
+}
+
+/*
+** Write dynamic database of file names for "Open Previous".  Eventually,
+** this may hold window positions, and possibly file marks, in which case,
+** it should be moved to a different module, but for now it's just a list
+** of previously opened files.
+*/
+void MainWindow::WriteNEditDB() {
+
+
+    QString fullName = GetRCFileNameEx(NEDIT_HISTORY);
+    if(fullName.isNull()) {
+        return;
+    }
+
+    // If the Open Previous command is disabled, just return
+    if (GetPrefMaxPrevOpenFiles() < 1) {
+        return;
+    }
+
+    QFile file(fullName);
+    if(file.open(QIODevice::WriteOnly)) {
+        QTextStream ts(&file);
+
+        static const QString fileHeader = tr("# File name database for NEdit Open Previous command");
+        ts << fileHeader << tr("\n");
+
+        // Write the list of file names
+        for(const QString &line : PrevOpen) {
+            const size_t lineLen = line.size();
+
+            if (!line.isEmpty() && !line.startsWith(QLatin1Char('#')) && strcspn(line.toLatin1().data(), neditDBBadFilenameChars) == lineLen) {
+                ts << line << tr("\n");
+            }
+        }
+    }
+}
+
+/*
+** Update the Previously Opened Files menu of a single window to reflect the
+** current state of the list as retrieved from FIXME.
+** Thanks to Markus Schwarzenberg for the sorting part.
+*/
+void MainWindow::updatePrevOpenMenu() {
+
+    //  Read history file to get entries written by other sessions.
+    ReadNEditDB();
+
+    // Sort the previously opened file list if requested
+    QList<QString> prevOpenSorted = PrevOpen;
+    if (GetPrefSortOpenPrevMenu()) {
+        qSort(prevOpenSorted);
+    }
+
+    delete ui.action_Open_Previous->menu();
+
+    auto prevOpenMenu = new QMenu(this);
+
+    for(const QString &item :prevOpenSorted) {
+        QAction *action = prevOpenMenu->addAction(item);
+        action->setData(item);
+    }
+
+    connect(prevOpenMenu, SIGNAL(triggered(QAction *)), this, SLOT(openPrevCB(QAction *)));
+
+    ui.action_Open_Previous->setMenu(prevOpenMenu);
+}
+
+void MainWindow::openPrevCB(QAction *action) {
+
+    QString filename = action->data().toString();
+
+    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+        if (filename.isNull()) {
+            return;
+        }
+
+        doc->open(filename.toLatin1().data());
+    }
+
+    CheckCloseDim();
 }

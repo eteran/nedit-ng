@@ -4,6 +4,7 @@
 #include <QX11Info>
 #include <QRegExp>
 #include <QRegExpValidator>
+#include "SignalBlocker.h"
 #include "DialogDrawingStyles.h"
 #include "HighlightStyle.h"
 #include "highlightData.h"
@@ -212,9 +213,7 @@ void DialogDrawingStyles::on_listItems_itemSelectionChanged() {
 				checkCurrent(false);
 				
 				// reselect the old item
-				ui.listItems->blockSignals(true);
-				ui.listItems->setCurrentItem(previous_);
-				ui.listItems->blockSignals(false);
+                no_signals(ui.listItems)->setCurrentItem(previous_);
 				return;
 			}
 

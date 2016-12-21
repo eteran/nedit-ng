@@ -36,6 +36,8 @@
 #include "Xlt/BubbleButton.h"
 #include "Xlt/BubbleButtonP.h"
 
+#include <cmath>
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>

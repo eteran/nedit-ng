@@ -7,6 +7,7 @@
 #include <QRegExp>
 #include <QMessageBox>
 #include "DialogLanguageModes.h"
+#include "SignalBlocker.h"
 #include "util/memory.h"
 #include "LanguageMode.h"
 #include "preferences.h"
@@ -111,9 +112,7 @@ void DialogLanguageModes::on_listItems_itemSelectionChanged() {
 #endif
 				
 				// reselect the old item
-				ui.listItems->blockSignals(true);
-				ui.listItems->setCurrentItem(previous_);
-				ui.listItems->blockSignals(false);
+                no_signals(ui.listItems)->setCurrentItem(previous_);
 				return;
 			}
 

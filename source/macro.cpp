@@ -92,7 +92,7 @@ const int BANNER_WAIT_TIME = 6000;
 	do {                                                                                                                                                                                                                                       \
 		if (xDV.tag == STRING_TAG && !xDV.val.str.rep) {                                                                                                                                                                                       \
 			*errMsg = "Failed to allocate value: %s";                                                                                                                                                                                          \
-			return (False);                                                                                                                                                                                                                    \
+            return false;                                                                                                                                                                                                                    \
 		}                                                                                                                                                                                                                                      \
 	} while (0)
 	
@@ -1433,7 +1433,7 @@ static Boolean continueWorkProc(XtPointer clientData) {
 ** of characters to which the string expanded.
 */
 static int escapeStringChars(char *fromString, char *toString) {
-	char *e, *c, *outPtr = toString;
+    char *e, *c, *outPtr = toString;
 
 	// substitute escape sequences 
 	for (c = fromString; *c != '\0'; c++) {
@@ -1456,7 +1456,7 @@ static int escapeStringChars(char *fromString, char *toString) {
 ** special characters replaced with escape sequences by escapeStringChars.
 */
 static int escapedStringLength(char *string) {
-	char *c, *e;
+    char *c, *e;
 	int length = 0;
 
 	// calculate length and allocate returned string 
@@ -3965,14 +3965,18 @@ static int rangesetListMV(Document *window, DataValue *argList, int nArgs, DataV
 		element.tag = INT_TAG;
 		element.val.n = rangesetList[i];
 
-		sprintf(indexStr, "%d", nRangesets - i - 1);
+        snprintf(indexStr, sizeof(indexStr), "%d", nRangesets - i - 1);
 		allocIndexStr = AllocString(strlen(indexStr) + 1);
-		if(!allocIndexStr)
+
+        if(!allocIndexStr) {
 			M_FAILURE("Failed to allocate array key in %s");
+        }
+
 		strcpy(allocIndexStr, indexStr);
 
-		if (!ArrayInsert(result, allocIndexStr, &element))
+        if (!ArrayInsert(result, allocIndexStr, &element)) {
 			M_FAILURE("Failed to insert array element in %s");
+        }
 	}
 
 	return true;

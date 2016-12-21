@@ -2,7 +2,7 @@
 #include <QMessageBox>
 #include <QPushButton>
 #include "DialogShellMenu.h"
-
+#include "SignalBlocker.h"
 #include "MenuItem.h"
 #include "interpret.h"
 #include "macro.h"
@@ -191,9 +191,7 @@ void DialogShellMenu::on_listItems_itemSelectionChanged() {
 				checkCurrent(false);
 				
 				// reselect the old item
-				ui.listItems->blockSignals(true);
-				ui.listItems->setCurrentItem(previous_);
-				ui.listItems->blockSignals(false);
+                no_signals(ui.listItems)->setCurrentItem(previous_);
 				return;
 			}
 

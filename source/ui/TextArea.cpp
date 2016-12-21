@@ -940,24 +940,7 @@ void TextArea::contextMenuEvent(QContextMenuEvent *e) {
         if(bgMenu_) {
             bgMenu_->exec(mapToGlobal(e->pos()));
         }
-
-#if 1 // TODO(eteran): replace with dynamically generated menu like Motif based widget
-		auto menu = new QMenu(this);
-
-		auto undo  = menu->addAction(tr("Undo"));
-		auto redo  = menu->addAction(tr("Redo"));
-		auto cut   = menu->addAction(tr("Cut"));
-		auto copy  = menu->addAction(tr("Copy"));
-		auto paste = menu->addAction(tr("Paste"));
-
-		undo->setIcon(QIcon::fromTheme(tr("edit-undo")));
-		redo->setIcon(QIcon::fromTheme(tr("edit-redo")));
-		cut->setIcon(QIcon::fromTheme(tr("edit-cut")));
-		copy->setIcon(QIcon::fromTheme(tr("edit-copy")));
-		paste->setIcon(QIcon::fromTheme(tr("edit-paste")));
-	#endif
-
-	}
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -3575,10 +3558,15 @@ void TextArea::drawString(QPainter *painter, int style, int x, int y, int toX, c
 	// Draw the string using gc and font set above
 	painter->setPen(fground);
 
+
+    // temporarily use a custom converter
     static AsciiTextCodec asciiCodec;
     QTextCodec::setCodecForCStrings(&asciiCodec);
 
     auto s = QString::fromAscii(string, nChars);
+
+    // restore it, because otherwise it messes up QString::toStdString
+    QTextCodec::setCodecForCStrings(nullptr);
 
 	// TODO(eteran): OPTIMIZATTION: since Qt will auto-fill the BG with the
 	//               default base color we only need to play with the

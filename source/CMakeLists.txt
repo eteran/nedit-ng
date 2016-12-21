@@ -27,6 +27,7 @@ qt4_wrap_cpp(MOC_SOURCES
 	QtMotifWidget.h
 	QtXtWidget.h
 
+	ui/ElidedLabel.h
 	ui/DialogDuplicateTags.h
 	ui/DialogAbout.h
 	ui/DialogColors.h
@@ -65,6 +66,7 @@ qt4_wrap_cpp(MOC_SOURCES
 	ui/DialogOutput.h
 	ui/Calltip.h
 	ui/TabWidget.h
+	ui/SignalBlocker.h
 )
 
 set(UI_FILES
@@ -116,6 +118,7 @@ add_executable(nedit
 	QtMotifWidget.cpp
 	QtXtWidget.cpp
 	
+	ui/ElidedLabel.cpp
 	Color.cpp
 	Document.cpp
 	Font.cpp

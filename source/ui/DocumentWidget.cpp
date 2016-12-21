@@ -7,6 +7,7 @@
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QRadioButton>
+#include "SignalBlocker.h"
 #include "MainWindow.h"
 #include "DocumentWidget.h"
 #include "DialogReplace.h"
@@ -33,6 +34,7 @@
 #include "file.h"
 #include "UndoInfo.h"
 #include "utils.h"
+#include "interpret.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -40,9 +42,14 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-
-
 namespace {
+
+struct SmartIndentData {
+    Program *newlineMacro;
+    int inNewLineMacro;
+    Program *modMacro;
+    int inModMacro;
+};
 
 /*
  * Number of bytes read at once by cmpWinAgainstFile
@@ -211,6 +218,7 @@ DocumentWidget *EditExistingFileEx(DocumentWidget *inWindow, const QString &name
             }
         } else {
             // TODO(eteran): implement geometry stuff
+            Q_UNUSED(geometry);
             auto win = new MainWindow();
             window = win->CreateDocument(name);
             if(iconic) {
@@ -243,37 +251,47 @@ DocumentWidget *EditExistingFileEx(DocumentWidget *inWindow, const QString &name
     if(auto win = window->toWindow()) {
         win->forceShowLineNumbers();
     }
-#if 0
+
     // Decide what language mode to use, trigger language specific actions
-    if(!languageMode)
-        DetermineLanguageMode(window, true);
-    else
-        SetLanguageMode(window, FindLanguageMode(languageMode), true);
+    if(!languageMode) {
+        window->DetermineLanguageMode(true);
+    } else {
+        window->SetLanguageMode(FindLanguageMode(languageMode), true);
+    }
 
-    // update tab label and tooltip
-    window->RefreshTabState();
-    window->SortTabBar();
-    window->ShowTabBar(window->GetShowTabBar());
+    if(auto win = window->toWindow()) {
+        // update tab label and tooltip
+        window->RefreshTabState();
+        win->SortTabBar();
+        win->ShowTabBar(win->GetShowTabBar());
+    }
 
-    if (!bgOpen)
+
+    if (!bgOpen) {
         window->RaiseDocument();
+    }
+
 
     /* Bring the title bar and statistics line up to date, doOpen does
        not necessarily set the window title or read-only status */
-    window->UpdateWindowTitle();
-    window->UpdateWindowReadOnly();
-    window->UpdateStatsLine();
+    if(auto win = window->toWindow()) {
+        win->UpdateWindowTitle(window);
+        window->UpdateWindowReadOnly();
+        window->UpdateStatsLine(nullptr);
+    }
 
     // Add the name to the convenience menu of previously opened files
-    char fullname[MAXPATHLEN];
-    snprintf(fullname, sizeof(fullname), "%s%s", path.toLatin1().data(), name.toLatin1().data());
+    QString fullname = QString(QLatin1String("%1%2")).arg(path, name);
+
 
     if (GetPrefAlwaysCheckRelTagsSpecs()) {
         AddRelTagsFile(GetPrefTagFile(), path.toLatin1().data(), TAG);
     }
 
-    AddToPrevOpenMenu(fullname);
-#endif
+    if(auto win = window->toWindow()) {
+        win->AddToPrevOpenMenu(fullname);
+    }
+
     return window;
 }
 
@@ -285,6 +303,8 @@ DocumentWidget *EditExistingFileEx(DocumentWidget *inWindow, const QString &name
 DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowFlags f) : QWidget(parent, f) {
 
 	ui.setupUi(this);
+
+    ui.labelFileAndSize->setElideMode(Qt::ElideLeft);
 
 	buffer_ = new TextBuffer();
     buffer_->BufAddModifyCB(SyntaxHighlightModifyCBEx, this);
@@ -322,7 +342,7 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 	saveOldVersion_        = GetPrefSaveOldVersion();
 	wrapMode_              = GetPrefWrap(PLAIN_LANGUAGE_MODE);
 	overstrike_            = false;
-	showMatchingStyle_     = GetPrefShowMatching();
+    showMatchingStyle_     = static_cast<ShowMatchingStyle>(GetPrefShowMatching());
 	matchSyntaxBased_      = GetPrefMatchSyntaxBased();
 	highlightSyntax_       = GetPrefHighlightSyntax();
 	backlightCharTypes_    = QString();
@@ -336,7 +356,7 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 	}
 	
 	modeMessageDisplayed_  = false;
-	modeMessage_           = nullptr;
+    modeMessage_           = QString();
 	ignoreModify_          = false;
 	windowMenuValid_       = false;
 
@@ -896,10 +916,10 @@ void DocumentWidget::smartIndentCallback(TextArea *area, smartIndentCBStruct *da
 #endif
 		break;
 	case NEWLINE_INDENT_NEEDED:
-#if 0
-		executeNewlineMacro(window, data);
+#if 1
+        executeNewlineMacroEx(data);
 #endif
-		break;
+        break;
 	}
 }
 
@@ -937,7 +957,7 @@ void DocumentWidget::RaiseDocumentWindow() {
 
 void DocumentWidget::RaiseDocument() {
     if(auto win = toWindow()) {
-        win->ui.tabWidget->setCurrentWidget(this);
+
 #if 0
         if (WindowList.empty()) {
             return;
@@ -950,71 +970,43 @@ void DocumentWidget::RaiseDocument() {
         if (lastwin != this && lastwin->IsValidWindow()) {
             lastwin->MarkLastDocument();
         }
+#endif
 
         // document already on top?
-        XtVaGetValues(mainWin_, XmNuserData, &win, nullptr);
-        if (win == this) {
+        if(win->ui.tabWidget->currentWidget() == this) {
             return;
         }
 
         // set the document as top document
-        XtVaSetValues(mainWin_, XmNuserData, this, nullptr);
-
         // show the new top document
-        XtVaSetValues(mainWin_, XmNworkWindow, splitPane_, nullptr);
-        XtManageChild(splitPane_);
-        XRaiseWindow(TheDisplay, XtWindow(splitPane_));
+        win->ui.tabWidget->setCurrentWidget(this);
 
         /* Turn on syntax highlight that might have been deferred.
            NB: this must be done after setting the document as
                XmNworkWindow and managed, else the parent shell
            this may shrink on some this-managers such as
            metacity, due to changes made in UpdateWMSizeHints().*/
-        if (highlightSyntax_ && highlightData_ == nullptr)
-            StartHighlighting(this, false);
+        if (highlightSyntax_ && highlightData_ == nullptr) {
+            StartHighlightingEx(this, false);
+        }
 
-        // put away the bg menu tearoffs of last active document
-        hideTearOffs(win->bgMenuPane_);
-
-        // restore the bg menu tearoffs of active document
-        redisplayTearOffs(bgMenuPane_);
-
-        // set tab as active
-        XmLFolderSetActiveTab(tabBar_, getTabPosition(tab_), false);
-
-        /* set keyboard focus. Must be done before unmanaging previous
-           top document, else lastFocus will be reset to textArea */
-        XmProcessTraversal(lastFocus_, XmTRAVERSE_CURRENT);
-
-        /* we only manage the top document, else the next time a document
-           is raised again, it's textpane might not resize properly.
-           Also, somehow (bug?) XtUnmanageChild() doesn't hide the
-           splitPane, which obscure lower part of the statsform when
-           we toggle its components, so we need to put the document at
-           the back */
-        XLowerWindow(TheDisplay, XtWindow(win->splitPane_));
-        XtUnmanageChild(win->splitPane_);
-        win->RefreshTabState();
+        RefreshTabState();
 
         /* now refresh this state/info. RefreshWindowStates()
            has a lot of work to do, so we update the screen first so
            the document appears to switch swiftly. */
-        XmUpdateDisplay(splitPane_);
         RefreshWindowStates();
+
         RefreshTabState();
 
-        // put away the bg menu tearoffs of last active document
-        hideTearOffs(win->bgMenuPane_);
-
-        // restore the bg menu tearoffs of active document
-        redisplayTearOffs(bgMenuPane_);
 
         /* Make sure that the "In Selection" button tracks the presence of a
            selection and that the this inherits the proper search scope. */
-        if(auto dialog = getDialogReplace()) {
+        if(auto dialog = win->getDialogReplace()) {
             dialog->UpdateReplaceActionButtons();
         }
 
+#if 0
         UpdateWMSizeHints();
 #endif
     }
@@ -1095,9 +1087,7 @@ void DocumentWidget::reapplyLanguageMode(int mode, bool forceDefaults) {
         // Change highlighting
         highlightSyntax_ = highlight;
 
-        win->ui.action_Highlight_Syntax->blockSignals(true);
-        win->ui.action_Highlight_Syntax->setChecked(highlight);
-        win->ui.action_Highlight_Syntax->blockSignals(false);
+        no_signals(win->ui.action_Highlight_Syntax)->setChecked(highlight);
 
         StopHighlighting();
 
@@ -1331,17 +1321,9 @@ void DocumentWidget::SetAutoIndent(int state) {
 
     if (IsTopDocument()) {
         if(auto win = toWindow()) {
-            win->ui.action_Indent_Smart->blockSignals(true);
-            win->ui.action_Indent_Smart->setChecked(smartIndent);
-            win->ui.action_Indent_Smart->blockSignals(false);
-
-            win->ui.action_Indent_On->blockSignals(true);
-            win->ui.action_Indent_On->setChecked(autoIndent);
-            win->ui.action_Indent_On->blockSignals(false);
-
-            win->ui.action_Indent_Off->blockSignals(true);
-            win->ui.action_Indent_Off->setChecked(state == NO_AUTO_INDENT);
-            win->ui.action_Indent_Off->blockSignals(false);
+            no_signals(win->ui.action_Indent_Smart)->setChecked(smartIndent);
+            no_signals(win->ui.action_Indent_On)->setChecked(autoIndent);
+            no_signals(win->ui.action_Indent_Off)->setChecked(state == NO_AUTO_INDENT);
         }
     }
 }
@@ -1363,19 +1345,15 @@ void DocumentWidget::SetAutoWrap(int state) {
 
     if (IsTopDocument()) {
         if(auto win = toWindow()) {
-            win->ui.action_Wrap_Auto_Newline->blockSignals(true);
-            win->ui.action_Wrap_Auto_Newline->setChecked(autoWrap);
-            win->ui.action_Wrap_Auto_Newline->blockSignals(false);
-
-            win->ui.action_Wrap_Continuous->blockSignals(true);
-            win->ui.action_Wrap_Continuous->setChecked(contWrap);
-            win->ui.action_Wrap_Continuous->blockSignals(false);
-
-            win->ui.action_Wrap_None->blockSignals(true);
-            win->ui.action_Wrap_None->setChecked(state == NO_WRAP);
-            win->ui.action_Wrap_None->blockSignals(false);
+            no_signals(win->ui.action_Wrap_Auto_Newline)->setChecked(autoWrap);
+            no_signals(win->ui.action_Wrap_Continuous)->setChecked(contWrap);
+            no_signals(win->ui.action_Wrap_None)->setChecked(state == NO_WRAP);
         }
     }
+}
+
+int DocumentWidget::textPanesCount() const {
+    return splitter_->count();
 }
 
 QList<TextArea *> DocumentWidget::textPanes() const {
@@ -1495,7 +1473,8 @@ void DocumentWidget::StopHighlighting() {
             RemoveWidgetHighlightEx(area);
         }
 
-#if 0
+        Q_UNUSED(oldFontHeight);
+    #if 0
         /* Re-size the window to fit the primary font properly & tell the window
            manager about the potential line-height change as well */
         updateWindowHeight(window, oldFontHeight);
@@ -2341,9 +2320,7 @@ void DocumentWidget::UpdateWindowReadOnly() {
             area->setReadOnly(state);
         }
 
-        win->ui.action_Read_Only->blockSignals(true);
-        win->ui.action_Read_Only->setChecked(state);
-        win->ui.action_Read_Only->blockSignals(false);
+        no_signals(win->ui.action_Read_Only)->setChecked(state);
 
         win->ui.action_Read_Only->setEnabled(!lockReasons_.isAnyLockedIgnoringUser());
     }
@@ -2559,9 +2536,7 @@ int DocumentWidget::WriteBackupFile() {
         autoSave_ = false;
 
         if(auto win = toWindow()) {
-            win->ui.action_Incremental_Backup->blockSignals(true);
-            win->ui.action_Incremental_Backup->setChecked(false);
-            win->ui.action_Incremental_Backup->blockSignals(false);
+            no_signals(win->ui.action_Incremental_Backup)->setChecked(false);
         }
         return false;
     }
@@ -2988,9 +2963,7 @@ void DocumentWidget::addWrapNewlines() {
     /* Show the user that something has happened by turning off
        Continuous Wrap mode */
     if(auto win = toWindow()) {
-        win->ui.action_Wrap_Continuous->blockSignals(true);
-        win->ui.action_Wrap_Continuous->setChecked(false);
-        win->ui.action_Wrap_Continuous->blockSignals(false);
+        no_signals(win->ui.action_Wrap_Continuous)->setChecked(false);
     }
 }
 
@@ -3119,9 +3092,7 @@ bool DocumentWidget::bckError(const QString &errString, const QString &file) {
         saveOldVersion_ = false;
 
         if(auto win = toWindow()) {
-            win->ui.action_Make_Backup_Copy->blockSignals(true);
-            win->ui.action_Make_Backup_Copy->setChecked(false);
-            win->ui.action_Make_Backup_Copy->blockSignals(false);
+            no_signals(win->ui.action_Make_Backup_Copy)->setChecked(false);
         }
     }
 
@@ -3233,6 +3204,11 @@ void DocumentWidget::CloseWindow() {
     DocumentWidget *win;
     DocumentWidget *topBuf = nullptr;
     DocumentWidget *nextBuf = nullptr;
+
+    Q_UNUSED(state);
+    Q_UNUSED(win);
+    Q_UNUSED(topBuf);
+    Q_UNUSED(nextBuf);
 
     // Free smart indent macro programs
     EndSmartIndentEx(this);
@@ -3432,7 +3408,9 @@ void DocumentWidget::open(const char *fullpath) {
         fprintf(stderr, "nedit: invalid file name for open action: %s\n", fullpath);
         return;
     }
+
     EditExistingFileEx(this, QLatin1String(filename), QLatin1String(pathname), 0, nullptr, false, nullptr, GetPrefOpenInTab(), false);
+
     if(auto win = toWindow()) {
         win->CheckCloseDim();
     }
@@ -3678,3 +3656,194 @@ int DocumentWidget::doOpen(const QString &name, const QString &path, int flags) 
 }
 
 
+
+/*
+** refresh window state for this document
+*/
+void DocumentWidget::RefreshWindowStates() {
+
+    if (!IsTopDocument()) {
+        return;
+    }
+
+    if(auto win = toWindow()) {
+
+
+        if (modeMessageDisplayed_) {
+            ui.labelFileAndSize->setText(modeMessage_);
+        } else {
+            UpdateStatsLine(nullptr);
+        }
+
+        UpdateWindowReadOnly();
+        win->UpdateWindowTitle(this);
+    #if 0
+        // show/hide statsline as needed
+        if (modeMessageDisplayed_ && !XtIsManaged(statsLineForm_)) {
+            // turn on statline to display mode message
+            showStatistics(true);
+        } else if (showStats_ && !XtIsManaged(statsLineForm_)) {
+            // turn on statsline since it is enabled
+            showStatistics(true);
+        } else if (!showStats_ && !modeMessageDisplayed_ && XtIsManaged(statsLineForm_)) {
+            // turn off statsline since there's nothing to show
+            showStatistics(false);
+        }
+
+        // signal if macro/shell is running
+        if (shellCmdData_ || macroCmdData_)
+            BeginWait(shell_);
+        else
+            EndWait(shell_);
+
+        XmUpdateDisplay(statsLine_);
+#endif
+        refreshMenuBar();
+
+        win->updateLineNumDisp();
+
+    }
+}
+
+/*
+** Refresh the various settings/state of the shell window per the
+** settings of the top document.
+*/
+void DocumentWidget::refreshMenuBar() {
+    RefreshMenuToggleStates();
+
+    // Add/remove language specific menu items
+    UpdateUserMenus();
+
+    // refresh selection-sensitive menus
+    DimSelectionDepUserMenuItems(wasSelected_);
+}
+
+/*
+** Refresh the menu entries per the settings of the
+** top document.
+*/
+void DocumentWidget::RefreshMenuToggleStates() {
+
+    if (!IsTopDocument()) {
+        return;
+    }
+
+    if(auto win = toWindow()) {
+        // File menu
+        win->ui.action_Print_Selection->setEnabled(wasSelected_);
+
+        // Edit menu
+        win->ui.action_Undo->setEnabled(!undo_.empty());
+        win->ui.action_Redo->setEnabled(!redo_.empty());
+        win->ui.action_Cut->setEnabled(wasSelected_);
+        win->ui.action_Copy->setEnabled(wasSelected_);
+        win->ui.action_Delete->setEnabled(wasSelected_);
+
+        // Preferences menu
+        no_signals(win->ui.action_Statistics_Line)->setChecked(win->showStats_);
+        no_signals(win->ui.action_Incremental_Search_Line)->setChecked(win->showISearchLine_);
+        no_signals(win->ui.action_Show_Line_Numbers)->setChecked(win->showLineNumbers_);
+        no_signals(win->ui.action_Highlight_Syntax)->setChecked(highlightSyntax_);
+        no_signals(win->ui.action_Highlight_Syntax)->setEnabled(languageMode_ != PLAIN_LANGUAGE_MODE);
+        no_signals(win->ui.action_Apply_Backlighting)->setChecked(backlightChars_);
+        no_signals(win->ui.action_Make_Backup_Copy)->setChecked(saveOldVersion_);
+        no_signals(win->ui.action_Incremental_Backup)->setChecked(autoSave_);
+        no_signals(win->ui.action_Overtype)->setChecked(overstrike_);
+        no_signals(win->ui.action_Matching_Syntax)->setChecked(matchSyntaxBased_);
+        no_signals(win->ui.action_Read_Only)->setChecked(lockReasons_.isUserLocked());
+        no_signals(win->ui.action_Indent_Smart)->setEnabled(SmartIndentMacrosAvailable(LanguageModeName(languageMode_).toLatin1().data()));
+
+        SetAutoIndent(indentStyle_);
+        SetAutoWrap(wrapMode_);
+        SetShowMatching(showMatchingStyle_);
+        SetLanguageMode(languageMode_, false);
+
+        // Windows Menu
+        no_signals(win->ui.action_Split_Pane)->setEnabled(textPanesCount() < MAX_PANES);
+        no_signals(win->ui.action_Close_Pane)->setEnabled(textPanesCount() > 0);
+        no_signals(win->ui.action_Detach_Tab)->setEnabled(win->ui.tabWidget->count() > 1);
+#if 0
+        XtSetSensitive(contextDetachDocumentItem_, TabCount() > 1);
+
+        auto it = std::find_if(WindowList.begin(), WindowList.end(), [this](Document *win) {
+            return win->shell_ != shell_;
+        });
+
+        XtSetSensitive(moveDocumentItem_, it != WindowList.end());
+#endif
+    }
+}
+
+/*
+** Run the newline macro with information from the smart-indent callback
+** structure passed by the widget
+*/
+void DocumentWidget::executeNewlineMacroEx(smartIndentCBStruct *cbInfo) {
+    auto winData = static_cast<SmartIndentData *>(smartIndentData_);
+    // posValue probably shouldn't be static due to re-entrance issues <slobasso>
+    static DataValue posValue = INIT_DATA_VALUE;
+    DataValue result;
+    RestartData *continuation;
+    const char *errMsg;
+    int stat;
+
+    /* Beware of recursion: the newline macro may insert a string which
+       triggers the newline macro to be called again and so on. Newline
+       macros shouldn't insert strings, but nedit must not crash either if
+       they do. */
+    if (winData->inNewLineMacro) {
+        return;
+    }
+
+    // Call newline macro with the position at which to add newline/indent
+    posValue.val.n = cbInfo->pos;
+    ++(winData->inNewLineMacro);
+#if 0
+    stat = ExecuteMacro(window, winData->newlineMacro, 1, &posValue, &result, &continuation, &errMsg);
+#endif
+
+    // Don't allow preemption or time limit.  Must get return value
+    while (stat == MACRO_TIME_LIMIT) {
+        stat = ContinueMacro(continuation, &result, &errMsg);
+    }
+
+    --(winData->inNewLineMacro);
+    /* Collect Garbage.  Note that the mod macro does not collect garbage,
+       (because collecting per-line is more efficient than per-character)
+       but GC now depends on the newline macro being mandatory */
+#if 0
+    SafeGC();
+#endif
+
+    // Process errors in macro execution
+    if (stat == MACRO_PREEMPT || stat == MACRO_ERROR) {
+        QMessageBox::critical(this, tr("Smart Indent"), tr("Error in smart indent macro:\n%1").arg(QLatin1String(stat == MACRO_ERROR ? errMsg : "dialogs and shell commands not permitted")));
+        EndSmartIndentEx(this);
+        return;
+    }
+
+    // Validate and return the result
+    if (result.tag != INT_TAG || result.val.n < -1 || result.val.n > 1000) {
+        QMessageBox::critical(this, tr("Smart Indent"), tr("Smart indent macros must return\ninteger indent distance"));
+        EndSmartIndentEx(this);
+        return;
+    }
+
+    cbInfo->indentRequest = result.val.n;
+}
+
+/*
+** Set showMatching state to one of NO_FLASH, FLASH_DELIMIT or FLASH_RANGE.
+** Update the menu to reflect the change of state.
+*/
+void DocumentWidget::SetShowMatching(ShowMatchingStyle state) {
+    showMatchingStyle_ = state;
+    if (IsTopDocument()) {
+        if(auto win = toWindow()) {
+            no_signals(win->ui.action_Matching_Off)->setChecked(state == NO_FLASH);
+            no_signals(win->ui.action_Matching_Delimiter)->setChecked(state == FLASH_DELIMIT);
+            no_signals(win->ui.action_Matching_Range)->setChecked(state == FLASH_RANGE);
+        }
+    }
+}

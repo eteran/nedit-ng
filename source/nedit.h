@@ -29,6 +29,7 @@
 
 #include "TextSelection.h"
 #include "UserMenuListElement.h"
+#include "ShowMatchingStyle.h"
 #include <QLinkedList>
 #include <X11/Intrinsic.h>
 
@@ -58,7 +59,6 @@
 #define APP_CLASS "NEdit"   /* application class for loading resources */
 
 
-enum ShowMatchingStyle { NO_FLASH, FLASH_DELIMIT, FLASH_RANGE };
 enum VirtKeyOverride   { VIRT_KEY_OVERRIDE_NEVER, VIRT_KEY_OVERRIDE_AUTO, VIRT_KEY_OVERRIDE_ALWAYS };
 
 /*  This enum must be kept in parallel to the array TruncSubstitutionModes[]

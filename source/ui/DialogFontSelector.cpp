@@ -4,6 +4,7 @@
 #include "DialogFontSelector.h"
 
 #include <set>
+#include <cmath>
 #include <QStringList>
 #include <QString>
 #include "util/MotifHelper.h"

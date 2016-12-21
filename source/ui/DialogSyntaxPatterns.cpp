@@ -2,6 +2,7 @@
 #include <QtDebug>
 #include <QMessageBox>
 #include <QIntValidator>
+#include "SignalBlocker.h"
 #include "DialogSyntaxPatterns.h"
 #include "DialogLanguageModes.h"
 #include "PatternSet.h"
@@ -34,14 +35,12 @@ DialogSyntaxPatterns::DialogSyntaxPatterns(QWidget *parent, Qt::WindowFlags f) :
 		ui.comboHighlightStyle->addItem(style->name);
 	}
 
-	ui.comboLanguageMode->blockSignals(true);
+    auto blocker = no_signals(ui.comboLanguageMode);
 
 	// populate language mode combo
 	for (int i = 0; i < NLanguageModes; i++) {
 		ui.comboLanguageMode->addItem(LanguageModes[i]->name);
 	}
-
-	ui.comboLanguageMode->blockSignals(false);
 }
 
 //------------------------------------------------------------------------------
@@ -106,9 +105,8 @@ void DialogSyntaxPatterns::setLanguageName(const QString &name) {
 			if (messageBox.clickedButton() == buttonKeep) {
 
 				// reselect the old item
-				ui.comboLanguageMode->blockSignals(true);
+                auto blocker = no_signals(ui.comboLanguageMode);
 				setLanguageMenu(previousLanguage_);
-				ui.comboLanguageMode->blockSignals(false);
 				return;
 			}
 		} else if (*oldPatSet != *newPatSet) {
@@ -129,10 +127,8 @@ void DialogSyntaxPatterns::setLanguageName(const QString &name) {
 
 
 				// reselect the old item
-				ui.comboLanguageMode->blockSignals(true);
+                auto blocker = no_signals(ui.comboLanguageMode);
 				setLanguageMenu(previousLanguage_);
-				ui.comboLanguageMode->blockSignals(false);
-
 				return;
 			} else if (messageBox.clickedButton() == buttonApply) {
 				updatePatternSet();
@@ -620,9 +616,7 @@ void DialogSyntaxPatterns::on_listItems_itemSelectionChanged() {
 				checkCurrentPattern(false);
 
 				// reselect the old item
-				ui.listItems->blockSignals(true);
-				ui.listItems->setCurrentItem(previous_);
-				ui.listItems->blockSignals(false);
+                no_signals(ui.listItems)->setCurrentItem(previous_);
 				return;
 			}
 

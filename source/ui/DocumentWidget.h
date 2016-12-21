@@ -6,7 +6,7 @@
 #include <QPointer>
 #include <QWidget>
 
-
+#include "ShowMatchingStyle.h"
 #include "ui_DocumentWidget.h"
 #include "Bookmark.h"
 #include "LockReasons.h"
@@ -121,6 +121,12 @@ public:
     int CloseFileAndWindow(int preResponse);
     void CloseWindow();
     int doOpen(const QString &name, const QString &path, int flags);
+    void RefreshWindowStates();
+    void refreshMenuBar();
+    void RefreshMenuToggleStates();
+    void executeNewlineMacroEx(smartIndentCBStruct *cbInfo);
+    void SetShowMatching(ShowMatchingStyle state);
+    int textPanesCount() const;
 
 
 private:
@@ -170,10 +176,10 @@ public:
 	bool saveOldVersion_;              // keep old version in filename.bck
 	bool wasSelected_;                 // last selection state (for dim/undim of selection related menu items
 	bool windowMenuValid_;             // is window menu up to date?
-	char *modeMessage_;                // stats line banner content for learn and shell command executing modes
+    QString modeMessage_;              // stats line banner content for learn and shell command executing modes
 	char indentStyle_;                 // whether/how to auto indent
 	char matchSyntaxBased_;            // Use syntax info to show matching
-	char showMatchingStyle_;           // How to show matching parens: NO_FLASH, FLASH_DELIMIT, or FLASH_RANGE
+    ShowMatchingStyle showMatchingStyle_;           // How to show matching parens: NO_FLASH, FLASH_DELIMIT, or FLASH_RANGE
 	char wrapMode_;                    // line wrap style: NO_WRAP, NEWLINE_WRAP or CONTINUOUS_WRAP
 	dev_t device_;                     // device where the file resides
 	gid_t fileGid_;                    // last recorded group id of the file

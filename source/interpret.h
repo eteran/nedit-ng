@@ -231,6 +231,6 @@ Document *MacroRunWindow();
 Document *MacroFocusWindow();
 void SetMacroFocusWindow(Document *window);
 /* function used for implicit conversion from string to number */
-int StringToNum(const char *string, int *number);
+bool StringToNum(const char *string, int *number);
 
 #endif

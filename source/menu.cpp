@@ -4563,7 +4563,7 @@ static void updateTipsFileMenu(Document *window) {
 	}
 }
 
-static char neditDBBadFilenameChars[] = "\n";
+static const char neditDBBadFilenameChars[] = "\n";
 
 /*
 ** Write dynamic database of file names for "Open Previous".  Eventually,

@@ -30,8 +30,26 @@
 #include "Document.h"
 #include "menu.h"
 #include "text.h"
+#include <cmath>
 
 namespace {
+
+class MacroException : public std::exception {
+public:
+    MacroException(const char *fmt, ...) {
+        va_list args;
+        va_start(args, fmt);
+        vsnprintf(buf_, sizeof(buf_), fmt, args);
+        va_end(args);
+    }
+
+    const char *what() const noexcept {
+        return buf_;
+    }
+
+private:
+    char buf_[1024];
+};
 
 const int PROGRAM_SIZE      = 4096; // Maximum program size
 const int MAX_ERR_MSG_LEN   = 256;  // Max. length for error messages
@@ -505,27 +523,39 @@ int ContinueMacro(RestartData *continuation, DataValue *result, const char **msg
 
 		// Execute an instruction 
 		inst = PC++;
-		status = (inst->func)();
+
+        try {
+            status = (inst->func)();
+        } catch(const MacroException &ex) {
+            static char error_buffer[4096];
+            strcpy(error_buffer, ex.what());
+            *msg = error_buffer;
+            FreeRestartData(continuation);
+            restoreContext(&oldContext);
+            return MACRO_ERROR;
+        }
 
 		// If error return was not STAT_OK, return to caller 
-		if (status != STAT_OK) {
-			if (status == STAT_PREEMPT) {
-				saveContext(continuation);
-				restoreContext(&oldContext);
-				return MACRO_PREEMPT;
-			} else if (status == STAT_ERROR) {
-				*msg = ErrMsg;
-				FreeRestartData(continuation);
-				restoreContext(&oldContext);
-				return MACRO_ERROR;
-			} else if (status == STAT_DONE) {
-				*msg = "";
-				*result = *--StackP;
-				FreeRestartData(continuation);
-				restoreContext(&oldContext);
-				return MACRO_DONE;
-			}
-		}
+        switch(status) {
+        case STAT_PREEMPT:
+            saveContext(continuation);
+            restoreContext(&oldContext);
+            return MACRO_PREEMPT;
+        case STAT_ERROR:
+            *msg = ErrMsg;
+            FreeRestartData(continuation);
+            restoreContext(&oldContext);
+            return MACRO_ERROR;
+        case STAT_DONE:
+            *msg = "";
+            *result = *--StackP;
+            FreeRestartData(continuation);
+            restoreContext(&oldContext);
+            return MACRO_DONE;
+        case STAT_OK:
+        default:
+            break;
+        }
 
 		/* Count instructions executed.  If the instruction limit is hit,
 		   preempt, store re-start information in continuation and give
@@ -1724,7 +1754,7 @@ static int concat(void) {
 **    or:  Prog->  (in called)next, ... -- (macro code called subr)
 **         TheStack-> symN-sym1(FP), argArray, nArgs, oldFP, retPC, argN-arg1, next, ...
 */
-static int callSubroutine(void) {
+static int callSubroutine() {
 	Symbol *sym;
 	int i, nArgs;
 	static DataValue noValue = INIT_DATA_VALUE;
@@ -1750,8 +1780,10 @@ static int callSubroutine(void) {
 
 		// Call the function and check for preemption 
 		PreemptRequest = false;
-		if (!sym->value.val.subr(FocusWindow, StackP, nArgs, &result, &errMsg))
+        if (!sym->value.val.subr(FocusWindow, StackP, nArgs, &result, &errMsg)) {
 			return execError(errMsg, sym->name.c_str());
+        }
+
 		if (PC->func == fetchRetVal) {
 			if (result.tag == NO_TAG) {
 				return execError("%s does not return a value", sym->name.c_str());
@@ -2056,7 +2088,7 @@ static int makeArrayKeyFromArgs(int nArgs, char **keyString, int leaveParams) {
 			POP(tmpVal)
 		}
 	}
-	return (STAT_OK);
+    return STAT_OK;
 }
 
 /*
@@ -2593,12 +2625,12 @@ static int errCheck(const char *s) {
 static int execError(const char *s1, const char *s2) {
 	static char msg[MAX_ERR_MSG_LEN];
 
-	sprintf(msg, s1, s2);
+    snprintf(msg, sizeof(msg), s1, s2);
 	ErrMsg = msg;
 	return STAT_ERROR;
 }
 
-int StringToNum(const char *string, int *number) {
+bool StringToNum(const char *string, int *number) {
 	const char *c = string;
 
 	while (*c == ' ' || *c == '\t') {
@@ -2613,9 +2645,9 @@ int StringToNum(const char *string, int *number) {
 	while (*c == ' ' || *c == '\t') {
 		++c;
 	}
-	if (*c) {
+    if (*c != '\0') {
 		// if everything went as expected, we should be at end, but we're not 
-		return False;
+        return false;
 	}
 	if (number) {
 		if (sscanf(string, "%d", number) != 1) {
@@ -2623,7 +2655,7 @@ int StringToNum(const char *string, int *number) {
 			*number = 0;
 		}
 	}
-	return True;
+    return true;
 }
 
 #ifdef DEBUG_DISASSEMBLER // dumping values in disassembly or stack dump 

@@ -2,6 +2,7 @@
 #ifndef MAIN_WINDOW_H_
 #define MAIN_WINDOW_H_
 
+#include "smartIndentCBStruct.h"
 #include <QMainWindow>
 #include <QPointer>
 
@@ -43,6 +44,12 @@ public:
     void TempShowISearch(bool state);
     QString PromptForExistingFileEx(const QString &path, const QString &prompt);
     void forceShowLineNumbers();
+    void ShowLineNumbers(bool state);
+    void AddToPrevOpenMenu(const QString &filename);
+    void ReadNEditDB();
+    void WriteNEditDB();
+    void invalidatePrevOpenMenus();
+    void updatePrevOpenMenu();
 
 
 public:
@@ -229,7 +236,8 @@ public Q_SLOTS:
 private Q_SLOTS:
 	void deleteTabButtonClicked();
     void raiseCB();
-    void setLangModeCB();
+    void setLangModeCB(QAction *action);
+    void openPrevCB(QAction *action);
 
 private:
 	QPointer<QDialog>  dialogFind_;
@@ -241,7 +249,7 @@ private:
     bool               modeMessageDisplayed_;
 
 public:
-	Ui::MainWindow ui;
+    Ui::MainWindow ui;
 };
 
 #endif

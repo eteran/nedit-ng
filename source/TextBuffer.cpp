@@ -863,7 +863,6 @@ void TextBuffer::BufInsertColEx(int column, int startPos, view::string_view text
 */
 void TextBuffer::overlayRectEx(int startPos, int rectStart, int rectEnd, view::string_view insText, int *nDeleted, int *nInserted, int *endPos)
 {
-    int lineEnd;
     int expInsLen;
     int len;
     int endOffset;
@@ -891,7 +890,7 @@ void TextBuffer::overlayRectEx(int startPos, int rectStart, int rectEnd, view::s
     int lineStart = start;
     auto insPtr = insText.begin();
     while (true) {
-        lineEnd = BufEndOfLine(lineStart);
+        int lineEnd = BufEndOfLine(lineStart);
         std::string line = BufGetRangeEx(lineStart, lineEnd);
 
         std::string insLine = copyLineEx(insPtr, insText.end());

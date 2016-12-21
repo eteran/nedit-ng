@@ -68,7 +68,9 @@
 #include <X11/cursorfont.h>
 
 // NOTE(eteran): TEST
+#if 0
 static Calltip *g_CallTip = nullptr;
+#endif
 
 namespace {
 
@@ -246,10 +248,11 @@ void trackModifyRange(int *rangeStart, int *modRangeEnd, int *unmodRangeEnd, int
 */
 // TODO(eteran): make this a member of TextBuffer?
 int findRelativeLineStart(const TextBuffer *buf, int referencePos, int referenceLineNum, int newLineNum) {
-	if (newLineNum < referenceLineNum)
+    if (newLineNum < referenceLineNum) {
 		return buf->BufCountBackwardNLines(referencePos, referenceLineNum - newLineNum);
-	else if (newLineNum > referenceLineNum)
+    } else if (newLineNum > referenceLineNum) {
 		return buf->BufCountForwardNLines(referencePos, newLineNum - referenceLineNum);
+    }
 	return buf->BufStartOfLine(referencePos);
 }
 
