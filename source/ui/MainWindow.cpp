@@ -1190,3 +1190,36 @@ void MainWindow::openPrevCB(QAction *action) {
 
     CheckCloseDim();
 }
+
+void MainWindow::on_tabWidget_currentChanged(int index) {
+    if(auto document = qobject_cast<DocumentWidget *>(ui.tabWidget->widget(index))) {
+        document->documentRaised();
+    }
+}
+
+void MainWindow::on_tabWidget_customContextMenuRequested(int index, const QPoint &pos) {
+
+    auto *menu = new QMenu(this);
+    QAction *const newTab    = menu->addAction(tr("New Tab"));
+    QAction *const closeTab  = menu->addAction(tr("Close Tab"));
+    menu->addSeparator();
+    QAction *const detachTab = menu->addAction(tr("Detach Tab"));
+    QAction *const moveTab   = menu->addAction(tr("Move Tab To..."));
+
+    // make sure that these are always in sync with the primary UI
+    detachTab->setEnabled(ui.action_Detach_Tab->isEnabled());
+    moveTab->setEnabled(ui.action_Move_Tab_To->isEnabled());
+
+    if(QAction *const selected = menu->exec(mapToGlobal(pos))) {
+
+        // TODO(eteran): implement this logic
+        if(selected == newTab) {
+        } else if(selected == closeTab) {
+            Q_UNUSED(index);
+        } else if(selected == detachTab) {
+            Q_UNUSED(index);
+        } else if(selected == moveTab) {
+            Q_UNUSED(index);
+        }
+    }
+}

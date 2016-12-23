@@ -955,6 +955,40 @@ void DocumentWidget::RaiseDocumentWindow() {
     }
 }
 
+
+void DocumentWidget::documentRaised() {
+    /* Turn on syntax highlight that might have been deferred.
+       NB: this must be done after setting the document as
+           XmNworkWindow and managed, else the parent shell
+       this may shrink on some this-managers such as
+       metacity, due to changes made in UpdateWMSizeHints().*/
+    if (highlightSyntax_ && highlightData_ == nullptr) {
+        StartHighlightingEx(this, false);
+    }
+
+    RefreshTabState();
+
+    /* now refresh this state/info. RefreshWindowStates()
+       has a lot of work to do, so we update the screen first so
+       the document appears to switch swiftly. */
+    RefreshWindowStates();
+
+    RefreshTabState();
+
+
+    /* Make sure that the "In Selection" button tracks the presence of a
+       selection and that the this inherits the proper search scope. */
+    if(auto win = toWindow()) {
+        if(auto dialog = win->getDialogReplace()) {
+            dialog->UpdateReplaceActionButtons();
+        }
+    }
+
+#if 0
+    UpdateWMSizeHints();
+#endif
+}
+
 void DocumentWidget::RaiseDocument() {
     if(auto win = toWindow()) {
 
@@ -979,36 +1013,8 @@ void DocumentWidget::RaiseDocument() {
 
         // set the document as top document
         // show the new top document
+        // NOTE(eteran): indirectly triggers a call to documentRaised()
         win->ui.tabWidget->setCurrentWidget(this);
-
-        /* Turn on syntax highlight that might have been deferred.
-           NB: this must be done after setting the document as
-               XmNworkWindow and managed, else the parent shell
-           this may shrink on some this-managers such as
-           metacity, due to changes made in UpdateWMSizeHints().*/
-        if (highlightSyntax_ && highlightData_ == nullptr) {
-            StartHighlightingEx(this, false);
-        }
-
-        RefreshTabState();
-
-        /* now refresh this state/info. RefreshWindowStates()
-           has a lot of work to do, so we update the screen first so
-           the document appears to switch swiftly. */
-        RefreshWindowStates();
-
-        RefreshTabState();
-
-
-        /* Make sure that the "In Selection" button tracks the presence of a
-           selection and that the this inherits the proper search scope. */
-        if(auto dialog = win->getDialogReplace()) {
-            dialog->UpdateReplaceActionButtons();
-        }
-
-#if 0
-        UpdateWMSizeHints();
-#endif
     }
 }
 
@@ -3763,15 +3769,9 @@ void DocumentWidget::RefreshMenuToggleStates() {
         no_signals(win->ui.action_Split_Pane)->setEnabled(textPanesCount() < MAX_PANES);
         no_signals(win->ui.action_Close_Pane)->setEnabled(textPanesCount() > 0);
         no_signals(win->ui.action_Detach_Tab)->setEnabled(win->ui.tabWidget->count() > 1);
-#if 0
-        XtSetSensitive(contextDetachDocumentItem_, TabCount() > 1);
 
-        auto it = std::find_if(WindowList.begin(), WindowList.end(), [this](Document *win) {
-            return win->shell_ != shell_;
-        });
-
-        XtSetSensitive(moveDocumentItem_, it != WindowList.end());
-#endif
+        QList<MainWindow *> windows = MainWindow::allWindows();
+        no_signals(win->ui.action_Move_Tab_To)->setEnabled(windows.size() > 1);
     }
 }
 

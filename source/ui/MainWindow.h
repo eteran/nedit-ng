@@ -68,6 +68,10 @@ public Q_SLOTS:
     void action_Shift_Right_Tabs();
 
 public Q_SLOTS:
+    void on_tabWidget_currentChanged(int index);
+    void on_tabWidget_customContextMenuRequested(int index, const QPoint &pos);
+
+public Q_SLOTS:
 	void on_action_New_triggered();
 	void on_action_New_Window_triggered();
 	void on_action_Open_triggered();

@@ -4,6 +4,9 @@
 #include <QDebug>
 #include <QMouseEvent>
 
+// TODO(eteran): when we switch to Qt5, leverage the tabBarAutoHide property
+// instead of the manually rolled implementation we have here
+
 //------------------------------------------------------------------------------
 // Name: TabWidget
 //------------------------------------------------------------------------------
@@ -49,7 +52,7 @@ void TabWidget::mousePressEvent(QMouseEvent *event) {
 	if(contextMenuPolicy() == Qt::CustomContextMenu) {
 		const int tab = tabBar()->tabAt(event->pos());
 		if(tab != -1) {
-			Q_EMIT customContextMenuRequested(tab, event->pos());
+            Q_EMIT customContextMenuRequested(tab, event->pos());
 		}
 	}
 }

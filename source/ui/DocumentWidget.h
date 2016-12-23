@@ -70,6 +70,7 @@ public:
 	int matchLanguageMode();
 	void UpdateStatsLine(TextArea *area);
     void RaiseDocument();
+    void documentRaised();
     void reapplyLanguageMode(int mode, bool forceDefaults);
     void SetAutoWrap(int state);
     void SetAutoIndent(int state);
