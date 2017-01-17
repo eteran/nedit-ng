@@ -98,9 +98,6 @@ extern "C" void _XmDismissTearOff(Widget, XtPointer, XtPointer);
 
 static void doActionCB(Widget w, XtPointer clientData, XtPointer callData);
 static void doTabActionCB(Widget w, XtPointer clientData, XtPointer callData);
-static void pasteColCB(Widget w, XtPointer clientData, XtPointer callData);
-static void shiftLeftCB(Widget w, XtPointer clientData, XtPointer callData);
-static void shiftRightCB(Widget w, XtPointer clientData, XtPointer callData);
 static void findCB(Widget w, XtPointer clientData, XtPointer callData);
 static void findSameCB(Widget w, XtPointer clientData, XtPointer callData);
 static void findSelCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -196,7 +193,6 @@ static void size60x80CB(Widget w, XtPointer clientData, XtPointer callData);
 static void size80x80CB(Widget w, XtPointer clientData, XtPointer callData);
 static void sizeCustomCB(Widget w, XtPointer clientData, XtPointer callData);
 static void savePrefCB(Widget w, XtPointer clientData, XtPointer callData);
-static void formFeedCB(Widget w, XtPointer clientData, XtPointer callData);
 static void cancelShellCB(Widget w, XtPointer clientData, XtPointer callData);
 static void learnCB(Widget w, XtPointer clientData, XtPointer callData);
 static void finishLearnCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -233,12 +229,6 @@ static void printSelAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void exitAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void undoAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void redoAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void clearAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void selAllAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void shiftLeftAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void shiftLeftTabAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void shiftRightAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void shiftRightTabAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void findDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void findAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void findSameAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
@@ -273,10 +263,6 @@ static void nextDocumentAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 static void prevDocumentAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void lastDocumentAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void closePaneAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void capitalizeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void lowercaseAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void fillAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void controlDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 
 static void filterDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void shellFilterAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
@@ -376,17 +362,17 @@ static XtActionsRec Actions[] = {{(String) "new", newAP},
                                  {(String) "exit", exitAP},
                                  {(String) "undo", undoAP},
                                  {(String) "redo", redoAP},
-                                 {(String) "delete", clearAP},
-                                 {(String) "select-all", selAllAP},
-                                 {(String) "select_all", selAllAP},
-                                 {(String) "shift-left", shiftLeftAP},
-                                 {(String) "shift_left", shiftLeftAP},
-                                 {(String) "shift-left-by-tab", shiftLeftTabAP},
-                                 {(String) "shift_left_by_tab", shiftLeftTabAP},
-                                 {(String) "shift-right", shiftRightAP},
-                                 {(String) "shift_right", shiftRightAP},
-                                 {(String) "shift-right-by-tab", shiftRightTabAP},
-                                 {(String) "shift_right_by_tab", shiftRightTabAP},
+                                 //{(String) "delete", clearAP},
+                                 //{(String) "select-all", selAllAP},
+                                 //{(String) "select_all", selAllAP},
+                                 //{(String) "shift-left", shiftLeftAP},
+                                 //{(String) "shift_left", shiftLeftAP},
+                                 //{(String) "shift-left-by-tab", shiftLeftTabAP},
+                                 //{(String) "shift_left_by_tab", shiftLeftTabAP},
+                                 //{(String) "shift-right", shiftRightAP},
+                                 //{(String) "shift_right", shiftRightAP},
+                                 //{(String) "shift-right-by-tab", shiftRightTabAP},
+                                 //{(String) "shift_right_by_tab", shiftRightTabAP},
                                  {(String) "find", findAP},
                                  {(String) "find-dialog", findDialogAP},
                                  {(String) "find_dialog", findDialogAP},
@@ -437,12 +423,12 @@ static XtActionsRec Actions[] = {{(String) "new", newAP},
                                  {(String) "next_document", nextDocumentAP},
                                  {(String) "previous_document", prevDocumentAP},
                                  {(String) "last_document", lastDocumentAP},
-                                 {(String) "uppercase", capitalizeAP},
-                                 {(String) "lowercase", lowercaseAP},
-                                 {(String) "fill-paragraph", fillAP},
-                                 {(String) "fill_paragraph", fillAP},
-                                 {(String) "control-code-dialog", controlDialogAP},
-                                 {(String) "control_code_dialog", controlDialogAP},
+                                 //{(String) "uppercase", capitalizeAP },
+                                 //{(String) "lowercase", lowercaseAP },
+                                 //{(String) "fill-paragraph", fillAP },
+                                 //{(String) "fill_paragraph", fillAP },
+                                 //{(String) "control-code-dialog", controlDialogAP},
+                                 //{(String) "control_code_dialog", controlDialogAP},
 
                                  {(String) "filter-selection-dialog", filterDialogAP},
                                  {(String) "filter_selection_dialog", filterDialogAP},
@@ -589,21 +575,6 @@ Widget CreateMenuBar(Widget parent, Document *window) {
 	window->copyItem_ = createMenuItem(menuPane, "copy", "Copy", 'C', doActionCB, "copy_clipboard", SHORT);
 	XtSetSensitive(window->copyItem_, window->wasSelected_);
 	createMenuItem(menuPane, "paste", "Paste", 'P', doActionCB, "paste_clipboard", SHORT);
-	createMenuItem(menuPane, "pasteColumn", "Paste Column", 's', pasteColCB, window, SHORT);
-	window->delItem_ = createMenuItem(menuPane, "delete", "Delete", 'D', doActionCB, "delete_selection", SHORT);
-	XtSetSensitive(window->delItem_, window->wasSelected_);
-	createMenuItem(menuPane, "selectAll", "Select All", 'A', doActionCB, "select_all", SHORT);
-	createMenuSeparator(menuPane, "sep2", SHORT);
-	createMenuItem(menuPane, "shiftLeft", "Shift Left", 'L', shiftLeftCB, window, SHORT);
-	createFakeMenuItem(menuPane, "shiftLeftShift", shiftLeftCB, window);
-	createMenuItem(menuPane, "shiftRight", "Shift Right", 'g', shiftRightCB, window, SHORT);
-	createFakeMenuItem(menuPane, "shiftRightShift", shiftRightCB, window);
-	window->lowerItem_ = createMenuItem(menuPane, "lowerCase", "Lower-case", 'w', doActionCB, "lowercase", SHORT);
-	window->upperItem_ = createMenuItem(menuPane, "upperCase", "Upper-case", 'e', doActionCB, "uppercase", SHORT);
-	createMenuItem(menuPane, "fillParagraph", "Fill Paragraph", 'F', doActionCB, "fill_paragraph", SHORT);
-	createMenuSeparator(menuPane, "sep3", FULL);
-	createMenuItem(menuPane, "insertFormFeed", "Insert Form Feed", 'I', formFeedCB, window, FULL);
-	createMenuItem(menuPane, "insertCtrlCode", "Insert Ctrl Code...", 'n', doActionCB, "control_code_dialog", FULL);
 
 	/*
 	** "Search" pull down menu.
@@ -896,32 +867,6 @@ static void doActionCB(Widget w, XtPointer clientData, XtPointer callData) {
 	HidePointerOnKeyedEvent(widget, event);
 
 	XtCallActionProc(widget, action, event, nullptr, 0);
-}
-
-static void pasteColCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	Q_UNUSED(clientData);
-
-	static const char *params[1] = {"rect"};
-
-	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, "paste_clipboard", static_cast<XmAnyCallbackStruct *>(callData)->event, const_cast<char **>(params), 1);
-}
-
-static void shiftLeftCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	Q_UNUSED(clientData);
-
-	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event->xbutton.state & ShiftMask ? "shift_left_by_tab" : "shift_left", static_cast<XmAnyCallbackStruct *>(callData)->event, nullptr, 0);
-}
-
-static void shiftRightCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	Q_UNUSED(clientData);
-
-	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event->xbutton.state & ShiftMask ? "shift_right_by_tab" : "shift_right", static_cast<XmAnyCallbackStruct *>(callData)->event, nullptr, 0);
 }
 
 static void findCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -2227,16 +2172,6 @@ static void savePrefCB(Widget w, XtPointer clientData, XtPointer callData) {
 	SaveNEditPrefs(Document::WidgetToWindow(MENU_WIDGET(w))->shell_, False);
 }
 
-static void formFeedCB(Widget w, XtPointer clientData, XtPointer callData) {
-	Q_UNUSED(clientData);
-	Q_UNUSED(callData);
-
-	static const char *params[1] = {"\f"};
-
-	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, "insert_string", static_cast<XmAnyCallbackStruct *>(callData)->event, const_cast<char **>(params), 1);
-}
-
 static void cancelShellCB(Widget w, XtPointer clientData, XtPointer callData) {
 	Q_UNUSED(clientData);
 	Q_UNUSED(callData);
@@ -2845,82 +2780,6 @@ static void redoAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	window->Redo();
 }
 
-static void clearAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(event);
-	Q_UNUSED(args);
-	Q_UNUSED(nArgs)
-
-	Document *window = Document::WidgetToWindow(w);
-
-	if (CheckReadOnly(window))
-		return;
-	window->buffer_->BufRemoveSelected();
-}
-
-static void selAllAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(event);
-	Q_UNUSED(args);
-	Q_UNUSED(nArgs)
-
-	Document *window = Document::WidgetToWindow(w);
-
-	window->buffer_->BufSelect(0, window->buffer_->BufGetLength());
-}
-
-static void shiftLeftAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(event);
-	Q_UNUSED(args);
-	Q_UNUSED(nArgs)
-
-	Document *window = Document::WidgetToWindow(w);
-
-	if (CheckReadOnly(window))
-		return;
-	ShiftSelection(window, SHIFT_LEFT, False);
-}
-
-static void shiftLeftTabAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(event);
-	Q_UNUSED(args);
-	Q_UNUSED(nArgs)
-
-	Document *window = Document::WidgetToWindow(w);
-
-	if (CheckReadOnly(window))
-		return;
-	ShiftSelection(window, SHIFT_LEFT, True);
-}
-
-static void shiftRightAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(event);
-	Q_UNUSED(args);
-	Q_UNUSED(nArgs)
-
-	Document *window = Document::WidgetToWindow(w);
-
-	if (CheckReadOnly(window))
-		return;
-	ShiftSelection(window, SHIFT_RIGHT, False);
-}
-
-static void shiftRightTabAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(event);
-	Q_UNUSED(args);
-	Q_UNUSED(nArgs)
-
-	Document *window = Document::WidgetToWindow(w);
-
-	if (CheckReadOnly(window))
-		return;
-	ShiftSelection(window, SHIFT_RIGHT, True);
-}
-
 static void findDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	Q_UNUSED(event);
@@ -3340,74 +3199,6 @@ static void lastDocumentAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 	Q_UNUSED(event);
 
 	Document::WidgetToWindow(w)->LastDocument();
-}
-
-static void capitalizeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(args);
-	Q_UNUSED(nArgs)
-	Q_UNUSED(event);
-
-	Document *window = Document::WidgetToWindow(w);
-
-	if (CheckReadOnly(window))
-		return;
-	UpcaseSelection(window);
-}
-
-static void lowercaseAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(args);
-	Q_UNUSED(nArgs)
-	Q_UNUSED(event);
-
-	Document *window = Document::WidgetToWindow(w);
-
-	if (CheckReadOnly(window))
-		return;
-	DowncaseSelection(window);
-}
-
-static void fillAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(args);
-	Q_UNUSED(nArgs)
-	Q_UNUSED(event);
-
-	Document *window = Document::WidgetToWindow(w);
-
-	if (CheckReadOnly(window))
-		return;
-	FillSelection(window);
-}
-
-static void controlDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(args);
-	Q_UNUSED(nArgs)
-
-	Document *window = Document::WidgetToWindow(w);
-	char charCodeString[2];
-	char *params[1];
-
-	if (CheckReadOnly(window))
-		return;
-		
-		
-	bool ok;
-	int n = QInputDialog::getInt(nullptr /*parent */, QLatin1String("Insert Ctrl Code"), QLatin1String("ASCII Character Code:"), 0, 0, 255, 1, &ok);
-	if(ok) {
-		charCodeString[0] = static_cast<uint8_t>(n);
-		charCodeString[1] = '\0';
-		params[0] = charCodeString;
-
-		if (!window->buffer_->BufSubstituteNullChars(charCodeString, 1)) {
-			QMessageBox::critical(nullptr /* parent */, QLatin1String("Error"), QLatin1String("Too much binary data"));
-			return;
-		}
-
-		XtCallActionProc(w, "insert_string", event, params, 1);
-	}
 }
 
 static void filterDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {

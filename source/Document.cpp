@@ -238,7 +238,9 @@ void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view::strin
 			XtSetSensitive(window->printSelItem_, selected);
 			XtSetSensitive(window->cutItem_, selected);
 			XtSetSensitive(window->copyItem_, selected);
-			XtSetSensitive(window->delItem_, selected);
+#if 0 // NOTE(eteran): transitioned
+            XtSetSensitive(window->delItem_, selected);
+#endif
 			/* Note we don't change the selection for items like
 			   "Open Selected" and "Find Selected".  That's because
 			   it works on selections in external applications.
@@ -1320,8 +1322,9 @@ void Document::RefreshMenuToggleStates() {
 	XtSetSensitive(printSelItem_, wasSelected_);
 	XtSetSensitive(cutItem_, wasSelected_);
 	XtSetSensitive(copyItem_, wasSelected_);
+#if 0 // NOTE(eteran): transitioned
 	XtSetSensitive(delItem_, wasSelected_);
-
+#endif
 	// Preferences menu
 	XmToggleButtonSetState(statsLineItem_, showStats_, false);
 	XmToggleButtonSetState(iSearchLineItem_, showISearchLine_, false);

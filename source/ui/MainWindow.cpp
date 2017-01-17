@@ -4,6 +4,8 @@
 #include <QShortcut>
 #include <QFileDialog>
 #include <QFile>
+#include <QInputDialog>
+#include <QMessageBox>
 #include "MainWindow.h"
 #include "TextArea.h"
 #include "TextBuffer.h"
@@ -125,7 +127,9 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(par
 	modeMessageDisplayed_ = false;
 	
 	// default to hiding the optional panels
-	ui.incrementalSearchFrame->setVisible(showISearchLine_);	
+    ui.incrementalSearchFrame->setVisible(showISearchLine_);
+
+    ui.action_Delete->setEnabled(false);
 }
 
 //------------------------------------------------------------------------------
@@ -1436,3 +1440,32 @@ void MainWindow::on_action_Insert_Form_Feed_triggered() {
     }
 }
 
+//------------------------------------------------------------------------------
+// Name:
+//------------------------------------------------------------------------------
+void MainWindow::on_action_Insert_Ctrl_Code_triggered() {
+
+    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+
+        if (doc->CheckReadOnly()) {
+            return;
+        }
+
+        bool ok;
+        int n = QInputDialog::getInt(this, tr("Insert Ctrl Code"), tr("ASCII Character Code:"), 0, 0, 255, 1, &ok);
+        if(ok) {
+            char charCodeString[2];
+            charCodeString[0] = static_cast<uint8_t>(n);
+            charCodeString[1] = '\0';
+
+            if (!doc->buffer_->BufSubstituteNullChars(charCodeString, 1)) {
+                QMessageBox::critical(this, tr("Error"), tr("Too much binary data"));
+                return;
+            }
+
+            if(TextArea *w = lastFocus_) {
+                w->insertStringAP(QString::fromLatin1(charCodeString));
+            }
+        }
+    }
+}

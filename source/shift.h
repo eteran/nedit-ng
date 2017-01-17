@@ -30,17 +30,12 @@
 #include "util/string_view.h"
 #include "ShiftDirection.h"
 
-class Document;
 class DocumentWidget;
 class TextArea;
 
-void ShiftSelection(Document *window, ShiftDirection direction, int byTab);
 void ShiftSelectionEx(DocumentWidget *window, TextArea *area, ShiftDirection direction, bool byTab);
-void UpcaseSelection(Document *window);
 void UpcaseSelectionEx(DocumentWidget *window, TextArea *area);
 void DowncaseSelectionEx(DocumentWidget *window, TextArea *area);
-void DowncaseSelection(Document *window);
-void FillSelection(Document *window);
 void FillSelectionEx(DocumentWidget *window, TextArea *area);
 char *ShiftText(const char *text, ShiftDirection direction, int tabsAllowed, int tabDist, int nChars, int *newLen);
 std::string ShiftTextEx(view::string_view text, ShiftDirection direction, int tabsAllowed, int tabDist, int nChars);

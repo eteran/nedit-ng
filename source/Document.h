@@ -212,7 +212,7 @@ public:
 	Widget undoItem_;
 	Widget redoItem_;
 	Widget cutItem_;
-	Widget delItem_;
+    Widget delItem_;  // NOTE(eteran): transitioned
 	Widget copyItem_;
 	Widget lowerItem_;
 	Widget upperItem_;

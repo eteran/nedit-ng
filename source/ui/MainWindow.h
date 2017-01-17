@@ -112,11 +112,9 @@ public Q_SLOTS:
     void on_action_Upper_case_triggered();
     void on_action_Fill_Paragraph_triggered();
     void on_action_Insert_Form_Feed_triggered();
+    void on_action_Insert_Ctrl_Code_triggered();
 
 #if 0
-
-
-	void on_action_Insert_Ctrl_Code_triggered();
 	void on_action_Find_triggered();
 	void on_action_Find_Again_triggered();
 	void on_action_Find_Selection_triggered();
