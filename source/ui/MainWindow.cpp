@@ -129,7 +129,12 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(par
 	// default to hiding the optional panels
     ui.incrementalSearchFrame->setVisible(showISearchLine_);
 
+    // these default to disabled.
+    // TODO(eteran): we can probably (if we haven't already) enforce this
+    // in the UIC file directly instead of in code
     ui.action_Delete->setEnabled(false);
+    ui.action_Undo->setEnabled(false);
+    ui.action_Redo->setEnabled(false);
 }
 
 //------------------------------------------------------------------------------
