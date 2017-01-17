@@ -197,6 +197,7 @@ public Q_SLOTS:
 	void pageRightAP(EventFlags flags = NoneFlag);
 	void nextPageAP(EventFlags flags = NoneFlag);
 	void previousPageAP(EventFlags flags = NoneFlag);
+    void insertStringAP(const QString &string, EventFlags flags = NoneFlag);
 
 
 private Q_SLOTS:
@@ -269,6 +270,8 @@ public:
 	int TextDPreferredColumn(int *visLineNum, int *lineStartPos);
 	int TextDPosOfPreferredCol(int column, int lineStartPos);
     std::string TextGetWrappedEx(int startPos, int endPos);
+    int getWrapMargin() const;
+    int getColumns() const;
 
 public:
 	void bufPreDeleteCallback(int pos, int nDeleted);

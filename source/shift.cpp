@@ -29,8 +29,11 @@
 #include <QApplication>
 
 #include "shift.h"
+#include "DocumentWidget.h"
 #include "TextHelper.h"
 #include "TextBuffer.h"
+#include "TextArea.h"
+
 #include "text.h"
 #include "nedit.h"
 #include "Document.h"
@@ -63,7 +66,75 @@ static int nextTab(int pos, int tabDist);
 static std::string fillParagraphEx(view::string_view text, int leftMargin, int firstLineIndent, int rightMargin, int tabDist, int allowTabs, char nullSubsChar, int *filledLen);
 static std::string fillParagraphsEx(view::string_view text, int rightMargin, int tabDist, int useTabs, char nullSubsChar, int *filledLen, int alignWithFirst);
 static void changeCase(Document *window, int makeUpper);
+static void changeCaseEx(DocumentWidget *window, TextArea *area, bool makeUpper);
 static void shiftRect(Document *window, int direction, int byTab, int selStart, int selEnd, int rectStart, int rectEnd);
+static void shiftRectEx(DocumentWidget *window, TextArea *area, int direction, int byTab, int selStart, int selEnd, int rectStart, int rectEnd);
+
+
+/*
+** Shift the selection left or right by a single character, or by one tab stop
+** if "byTab" is true.  (The length of a tab stop is the size of an emulated
+** tab if emulated tabs are turned on, or a hardware tab if not).
+*/
+void ShiftSelectionEx(DocumentWidget *window, TextArea *area, ShiftDirection direction, bool byTab) {
+    int selStart;
+    int selEnd;
+    bool isRect;
+    int rectStart;
+    int rectEnd;
+    int newEndPos;
+    int cursorPos;
+    int origLength;
+    int emTabDist;
+    int shiftDist;
+    TextBuffer *buf = window->buffer_;
+    std::string text;
+
+    auto textD = area;
+
+    // get selection, if no text selected, use current insert position
+    if (!buf->BufGetSelectionPos(&selStart, &selEnd, &isRect, &rectStart, &rectEnd)) {
+        cursorPos = textD->TextGetCursorPos();
+        selStart = buf->BufStartOfLine(cursorPos);
+        selEnd = buf->BufEndOfLine(cursorPos);
+        if (selEnd < buf->BufGetLength())
+            selEnd++;
+        buf->BufSelect(selStart, selEnd);
+        isRect = False;
+        text = buf->BufGetRangeEx(selStart, selEnd);
+    } else if (isRect) {
+        cursorPos = textD->TextGetCursorPos();
+        origLength = buf->BufGetLength();
+        shiftRectEx(window, area, direction, byTab, selStart, selEnd, rectStart, rectEnd);
+
+        auto textD = area;
+        textD->TextSetCursorPos((cursorPos < (selEnd + selStart) / 2) ? selStart : cursorPos + (buf->BufGetLength() - origLength));
+        return;
+    } else {
+        selStart = buf->BufStartOfLine(selStart);
+        if (selEnd != 0 && buf->BufGetCharacter(selEnd - 1) != '\n') {
+            selEnd = buf->BufEndOfLine(selEnd);
+            if (selEnd < buf->BufGetLength())
+                selEnd++;
+        }
+        buf->BufSelect(selStart, selEnd);
+        text = buf->BufGetRangeEx(selStart, selEnd);
+    }
+
+    // shift the text by the appropriate distance
+    if (byTab) {
+        emTabDist = area->getEmulateTabs();
+        shiftDist = emTabDist == 0 ? buf->tabDist_ : emTabDist;
+    } else
+        shiftDist = 1;
+
+    std::string shiftedText = ShiftTextEx(text, direction, buf->useTabs_, buf->tabDist_, shiftDist);
+
+    buf->BufReplaceSelectedEx(shiftedText);
+
+    newEndPos = selStart + shiftedText.size();
+    buf->BufSelect(selStart, newEndPos);
+}
 
 /*
 ** Shift the selection left or right by a single character, or by one tab stop
@@ -130,6 +201,43 @@ void ShiftSelection(Document *window, ShiftDirection direction, int byTab) {
 	buf->BufSelect(selStart, newEndPos);
 }
 
+static void shiftRectEx(DocumentWidget *window, TextArea *area, int direction, int byTab, int selStart, int selEnd, int rectStart, int rectEnd) {
+    int offset, emTabDist;
+    TextBuffer *buf = window->buffer_;
+
+    // Make sure selStart and SelEnd refer to whole lines
+    selStart = buf->BufStartOfLine(selStart);
+    selEnd   = buf->BufEndOfLine(selEnd);
+
+    // Calculate the the left/right offset for the new rectangle
+    if (byTab) {
+        emTabDist = area->getEmulateTabs();
+        offset = emTabDist == 0 ? buf->tabDist_ : emTabDist;
+    } else
+        offset = 1;
+    offset *= direction == SHIFT_LEFT ? -1 : 1;
+    if (rectStart + offset < 0)
+        offset = -rectStart;
+
+    /* Create a temporary buffer for the lines containing the selection, to
+       hide the intermediate steps from the display update routines */
+    auto tempBuf = new TextBuffer;
+    tempBuf->tabDist_ = buf->tabDist_;
+    tempBuf->useTabs_ = buf->useTabs_;
+    std::string text = buf->BufGetRangeEx(selStart, selEnd);
+    tempBuf->BufSetAllEx(text);
+
+    // Do the shift in the temporary buffer
+    text = buf->BufGetTextInRectEx(selStart, selEnd, rectStart, rectEnd);
+    tempBuf->BufRemoveRect(0, selEnd - selStart, rectStart, rectEnd);
+    tempBuf->BufInsertColEx(rectStart + offset, 0, text, nullptr, nullptr);
+
+    // Make the change in the real buffer
+    buf->BufReplaceEx(selStart, selEnd, tempBuf->BufAsStringEx());
+    buf->BufRectSelect(selStart, selStart + tempBuf->BufGetLength(), rectStart + offset, rectEnd + offset);
+    delete tempBuf;
+}
+
 static void shiftRect(Document *window, int direction, int byTab, int selStart, int selEnd, int rectStart, int rectEnd) {
 	int offset, emTabDist;
 	TextBuffer *buf = window->buffer_;
@@ -167,12 +275,70 @@ static void shiftRect(Document *window, int direction, int byTab, int selStart, 
 	delete tempBuf;
 }
 
+void UpcaseSelectionEx(DocumentWidget *window, TextArea *area) {
+    changeCaseEx(window, area, true);
+}
+
 void UpcaseSelection(Document *window) {
-	changeCase(window, True);
+    changeCase(window, True);
+}
+
+void DowncaseSelectionEx(DocumentWidget *window, TextArea *area) {
+    changeCaseEx(window, area, false);
 }
 
 void DowncaseSelection(Document *window) {
 	changeCase(window, False);
+}
+
+/*
+** Capitalize or lowercase the contents of the selection (or of the character
+** before the cursor if there is no selection).  If "makeUpper" is true,
+** change to upper case, otherwise, change to lower case.
+*/
+static void changeCaseEx(DocumentWidget *window, TextArea *area, bool makeUpper) {
+    TextBuffer *buf = window->buffer_;
+    int start;
+    int end;
+    int rectStart;
+    int rectEnd;
+    bool isRect;
+
+    auto textD = area;
+
+    // Get the selection.  Use character before cursor if no selection
+    if (!buf->BufGetSelectionPos(&start, &end, &isRect, &rectStart, &rectEnd)) {
+        char bufChar[2] = " ";
+        int cursorPos = textD->TextGetCursorPos();
+        if (cursorPos == 0) {
+            QApplication::beep();
+            return;
+        }
+        *bufChar = buf->BufGetCharacter(cursorPos - 1);
+        *bufChar = makeUpper ? toupper((uint8_t)*bufChar) : tolower((uint8_t)*bufChar);
+        buf->BufReplaceEx(cursorPos - 1, cursorPos, bufChar);
+    } else {
+        bool modified = false;
+
+        std::string text = buf->BufGetSelectionTextEx();
+
+        for(char &ch: text) {
+            char oldChar = ch;
+            ch = makeUpper ? toupper((uint8_t)ch) : tolower((uint8_t)ch);
+            if (ch != oldChar) {
+                modified = true;
+            }
+        }
+
+        if (modified) {
+            buf->BufReplaceSelectedEx(text);
+        }
+
+        if (isRect)
+            buf->BufRectSelect(start, end, rectStart, rectEnd);
+        else
+            buf->BufSelect(start, end);
+    }
 }
 
 /*
@@ -223,6 +389,85 @@ static void changeCase(Document *window, int makeUpper) {
 		else
 			buf->BufSelect(start, end);
 	}
+}
+
+void FillSelectionEx(DocumentWidget *window, TextArea *area) {
+    TextBuffer *buf = window->buffer_;
+    int left;
+    int right;
+    int nCols;
+    int len;
+    int rectStart;
+    int rectEnd;
+    bool isRect;
+    int rightMargin;
+    int wrapMargin;
+
+    auto textD = area;
+
+    int insertPos = textD->TextGetCursorPos();
+    int hasSelection = window->buffer_->primary_.selected;
+    std::string text;
+
+    /* Find the range of characters and get the text to fill.  If there is a
+       selection, use it but extend non-rectangular selections to encompass
+       whole lines.  If there is no selection, find the paragraph containing
+       the insertion cursor */
+    if (!buf->BufGetSelectionPos(&left, &right, &isRect, &rectStart, &rectEnd)) {
+        left = findParagraphStart(buf, insertPos);
+        right = findParagraphEnd(buf, insertPos);
+        if (left == right) {
+            QApplication::beep();
+            return;
+        }
+        text = buf->BufGetRangeEx(left, right);
+    } else if (isRect) {
+        left  = buf->BufStartOfLine(left);
+        right = buf->BufEndOfLine(right);
+        text  = buf->BufGetTextInRectEx(left, right, rectStart, INT_MAX);
+    } else {
+        left = buf->BufStartOfLine(left);
+        if (right != 0 && buf->BufGetCharacter(right - 1) != '\n') {
+            right = buf->BufEndOfLine(right);
+            if (right < buf->BufGetLength())
+                right++;
+        }
+        buf->BufSelect(left, right);
+        text = buf->BufGetRangeEx(left, right);
+    }
+
+    /* Find right margin either as specified in the rectangular selection, or
+       by measuring the text and querying the window's wrap margin (or width) */
+    if (hasSelection && isRect) {
+        rightMargin = rectEnd - rectStart;
+    } else {
+
+        wrapMargin = area->getWrapMargin();
+        nCols      = area->getColumns();
+
+        rightMargin = (wrapMargin == 0) ? nCols : wrapMargin;
+    }
+
+    // Fill the text
+    std::string filledText = fillParagraphsEx(text, rightMargin, buf->tabDist_, buf->useTabs_, buf->nullSubsChar_, &len, False);
+
+    // Replace the text in the window
+    if (hasSelection && isRect) {
+        buf->BufReplaceRectEx(left, right, rectStart, INT_MAX, filledText);
+        buf->BufRectSelect(left, buf->BufEndOfLine(buf->BufCountForwardNLines(left, countLinesEx(filledText) - 1)), rectStart, rectEnd);
+    } else {
+        buf->BufReplaceEx(left, right, filledText);
+        if (hasSelection)
+            buf->BufSelect(left, left + len);
+    }
+
+    /* Find a reasonable cursor position.  Usually insertPos is best, but
+       if the text was indented, positions can shift */
+    if (hasSelection && isRect) {
+        textD->TextSetCursorPos(buf->cursorPosHint_);
+    } else {
+        textD->TextSetCursorPos(insertPos < left ? left : (insertPos > left + len ? left + len : insertPos));
+    }
 }
 
 void FillSelection(Document *window) {

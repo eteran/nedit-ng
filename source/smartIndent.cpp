@@ -230,6 +230,88 @@ SmartIndent DefaultIndentSpecs[N_DEFAULT_INDENT_SPECS] = {
 	}
 };
 
+/*
+** Turn on smart-indent (well almost).  Unfortunately, this doesn't do
+** everything.  It requires that the smart indent callback (SmartIndentCB)
+** is already attached to all of the text widgets in the window, and that the
+** smartIndent resource must be turned on in the widget.  These are done
+** separately, because they are required per-text widget, and therefore must
+** be repeated whenever a new text widget is created within this window
+** (a split-window command).
+*/
+void BeginSmartIndentEx(DocumentWidget *window, int warn) {
+
+    SmartIndent *indentMacros;
+    const char *stoppedAt;
+    const char *errMsg;
+    static bool initialized = false;
+
+    // Find the window's language mode.  If none is set, warn the user
+    QString modeName = LanguageModeName(window->languageMode_);
+    if(modeName.isNull()) {
+        if (warn) {
+            QMessageBox::warning(window, QLatin1String("Smart Indent"), QLatin1String("No language-specific mode has been set for this file.\n\nTo use smart indent in this window, please select a\nlanguage from the Preferences -> Language Modes menu."));
+        }
+        return;
+    }
+
+    // Look up the appropriate smart-indent macros for the language
+    indentMacros = findIndentSpec(modeName.toLatin1().data());
+    if(!indentMacros) {
+        if (warn) {
+            QMessageBox::warning(window, QLatin1String("Smart Indent"), QString(QLatin1String("Smart indent is not available in languagemode\n%1.\n\nYou can create new smart indent macros in the\nPreferences -> Default Settings -> Smart Indent\ndialog, or choose a different language mode from:\nPreferences -> Language Mode.")).arg(modeName));
+        }
+        return;
+    }
+
+
+    /* Make sure that the initial macro file is loaded before we execute
+       any of the smart-indent macros. Smart-indent macros may reference
+       routines defined in that file. */
+    ReadMacroInitFileEx(window);
+
+    /* Compile and run the common and language-specific initialization macros
+       (Note that when these return, the immediate commands in the file have not
+       necessarily been executed yet.  They are only SCHEDULED for execution) */
+    if (!initialized) {
+        if (!ReadMacroStringEx(window, CommonMacros, "smart indent common initialization macros")) {
+            return;
+        }
+
+        initialized = true;
+    }
+#if 0
+    if (!indentMacros->initMacro.isNull()) {
+        if (!ReadMacroStringEx(window, indentMacros->initMacro, "smart indent initialization macro")) {
+            return;
+        }
+    }
+
+    // Compile the newline and modify macros and attach them to the window
+    auto winData = new SmartIndentData;
+    winData->inNewLineMacro = false;
+    winData->inModMacro     = false;
+    winData->newlineMacro   = ParseMacro(indentMacros->newlineMacro.toLatin1().data(), &errMsg, &stoppedAt);
+    if (!winData->newlineMacro) {
+        delete winData;
+        ParseError(window->shell_, indentMacros->newlineMacro.toLatin1().data(), stoppedAt, "newline macro", errMsg);
+        return;
+    }
+    if (indentMacros->modMacro.isNull())
+        winData->modMacro = nullptr;
+    else {
+        winData->modMacro = ParseMacro(indentMacros->modMacro.toLatin1().data(), &errMsg, &stoppedAt);
+        if (!winData->modMacro) {
+            FreeProgram(winData->newlineMacro);
+            delete winData;
+            ParseError(window->shell_, indentMacros->modMacro.toLatin1().data(), stoppedAt, "smart indent modify macro", errMsg);
+            return;
+        }
+    }
+
+    window->smartIndentData_ = winData;
+#endif
+}
 
 /*
 ** Turn on smart-indent (well almost).  Unfortunately, this doesn't do
@@ -384,7 +466,7 @@ static void executeNewlineMacro(Document *window, smartIndentCBStruct *cbInfo) {
 	// posValue probably shouldn't be static due to re-entrance issues <slobasso> 
 	static DataValue posValue = INIT_DATA_VALUE;
 	DataValue result;
-	RestartData *continuation;
+    RestartData<Document> *continuation;
 	const char *errMsg;
 	int stat;
 
@@ -442,9 +524,9 @@ static void executeModMacro(Document *window, smartIndentCBStruct *cbInfo) {
 	// args probably shouldn't be static due to future re-entrance issues <slobasso> 
 	static DataValue args[2] = {INIT_DATA_VALUE, INIT_DATA_VALUE};
 	// after 5.2 release remove inModCB and use new winData->inModMacro value 
-	static int inModCB = False;
+    static bool inModCB = false;
 	DataValue result;
-	RestartData *continuation;
+    RestartData<Document> *continuation;
 	const char *errMsg;
 	int stat;
 
@@ -459,7 +541,7 @@ static void executeModMacro(Document *window, smartIndentCBStruct *cbInfo) {
 	args[0].val.n = cbInfo->pos;
 	AllocNStringCpy(&args[1].val.str, cbInfo->charsTyped);
 
-	inModCB = True;
+    inModCB = true;
 	++(winData->inModMacro);
 
 	stat = ExecuteMacro(window, winData->modMacro, 2, args, &result, &continuation, &errMsg);
@@ -467,7 +549,7 @@ static void executeModMacro(Document *window, smartIndentCBStruct *cbInfo) {
 		stat = ContinueMacro(continuation, &result, &errMsg);
 
 	--(winData->inModMacro);
-	inModCB = False;
+    inModCB = false;
 
 	// Process errors in macro execution 
 	if (stat == MACRO_PREEMPT || stat == MACRO_ERROR) {

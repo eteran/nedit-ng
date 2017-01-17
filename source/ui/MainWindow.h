@@ -50,6 +50,7 @@ public:
     void WriteNEditDB();
     void invalidatePrevOpenMenus();
     void updatePrevOpenMenu();
+    void fileCB(DocumentWidget *window, const std::string &value);
 
 
 public:
@@ -77,15 +78,17 @@ public Q_SLOTS:
 	void on_action_Open_triggered();
 	void on_action_About_triggered();
 	void on_action_Select_All_triggered();
+    void on_action_Open_Selected_triggered();
+    void on_action_Close_triggered();
+    void on_action_Include_File_triggered();
 #if 0
 
-	void on_action_Open_Selected_triggered();
+
 	void on_action_Open_Previous_triggered();
-	void on_action_Close_triggered();
 	void on_action_Save_triggered();
 	void on_action_Save_As_triggered();
 	void on_action_Revert_to_Saved_triggered();
-	void on_action_Include_File_triggered();
+
 	void on_action_Load_Macro_File_triggered();
 	void on_action_Load_Tags_File_triggered();
 	void on_action_Unload_Tags_File_triggered();
@@ -101,16 +104,18 @@ public Q_SLOTS:
 	void on_action_Copy_triggered();
 	void on_action_Paste_triggered();
 	void on_action_Execute_Command_Line_triggered();
+    void on_action_Paste_Column_triggered();
+    void on_action_Delete_triggered();
+    void on_action_Shift_Left_triggered();
+    void on_action_Shift_Right_triggered();
+    void on_action_Lower_case_triggered();
+    void on_action_Upper_case_triggered();
+    void on_action_Fill_Paragraph_triggered();
+    void on_action_Insert_Form_Feed_triggered();
 
 #if 0
-	void on_action_Paste_Column_triggered();
-	void on_action_Delete_triggered();	
-	void on_action_Shift_Left_triggered();
-	void on_action_Shift_Right_triggered();
-	void on_action_Lower_case_triggered();
-	void on_action_Upper_case_triggered();
-	void on_action_Fill_Paragraph_triggered();
-	void on_action_Insert_Form_Feed_triggered();
+
+
 	void on_action_Insert_Ctrl_Code_triggered();
 	void on_action_Find_triggered();
 	void on_action_Find_Again_triggered();

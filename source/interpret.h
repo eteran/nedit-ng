@@ -33,6 +33,8 @@
 #include <map>
 #include <list>
 
+class DocumentWidget;
+
 #define STACK_SIZE         1024  // Maximum stack size
 #define MAX_SYM_LEN        100   // Max. symbol name length
 #define MACRO_EVENT_MARKER 2     // Special value for the send_event field of events passed to action routines.  Tells them that they were called from a macro
@@ -164,16 +166,15 @@ public:
 };
 
 /* Information needed to re-start a preempted macro */
+template <class Doc>
 struct RestartData {
 	DataValue *stack;
 	DataValue *stackP;
 	DataValue *frameP;
     Inst *pc;
 
-    // TODO(eteran): made this type unsafe so that we can try to use it for
-    //               both Document* and DocumentWidget*
-    void *runWindow;
-    void *focusWindow;
+    Doc *runWindow;
+    Doc *focusWindow;
 };
 
 void InitMacroGlobals();
@@ -212,8 +213,10 @@ void FillLoopAddrs(Inst *breakAddr, Inst *continueAddr);
 #define PERM_ALLOC_STR(xStr) (((char *)("\001" xStr)) + 1)
 
 /* Routines for executing programs */
-int ExecuteMacro(Document *window, Program *prog, int nArgs, DataValue *args, DataValue *result, RestartData **continuation, const char **msg);
-int ContinueMacro(RestartData *continuation, DataValue *result, const char **msg);
+int ExecuteMacroEx(DocumentWidget *window, Program *prog, int nArgs, DataValue *args, DataValue *result, RestartData<DocumentWidget> **continuation, const char **msg);
+int ExecuteMacro(Document *window, Program *prog, int nArgs, DataValue *args, DataValue *result, RestartData<Document> **continuation, const char **msg);
+int ContinueMacro(RestartData<Document> *continuation, DataValue *result, const char **msg);
+int ContinueMacroEx(RestartData<DocumentWidget> *continuation, DataValue *result, const char **msg);
 void RunMacroAsSubrCall(Program *prog);
 void PreemptMacro();
 char *AllocString(int length);
@@ -223,13 +226,18 @@ int AllocNString(NString *string, int length);
 int AllocNStringNCpy(NString *string, const char *s, int length);
 int AllocNStringCpy(NString *string, const char *s);
 void GarbageCollectStrings();
-void FreeRestartData(RestartData *context);
+void FreeRestartData(RestartData<Document> *context);
+void FreeRestartDataEx(RestartData<DocumentWidget> *context);
 Symbol *PromoteToGlobal(Symbol *sym);
 void FreeProgram(Program *prog);
-void ModifyReturnedValue(RestartData *context, DataValue dv);
+void ModifyReturnedValue(RestartData<Document> *context, DataValue dv);
 Document *MacroRunWindow();
 Document *MacroFocusWindow();
+DocumentWidget *MacroRunWindowEx();
+DocumentWidget *MacroFocusWindowEx();
 void SetMacroFocusWindow(Document *window);
+void SetMacroFocusWindowEx(DocumentWidget *window);
+
 /* function used for implicit conversion from string to number */
 bool StringToNum(const char *string, int *number);
 

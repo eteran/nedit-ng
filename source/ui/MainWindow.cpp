@@ -15,6 +15,7 @@
 #include "clearcase.h"
 #include "file.h"
 #include "preferences.h"
+#include "shift.h"
 #include "utils.h"
 #include "LanguageMode.h"
 #include "nedit.h"
@@ -23,6 +24,7 @@
 #include <sys/param.h>
 #include <unistd.h>
 #include <cmath>
+#include <glob.h>
 
 namespace {
 
@@ -272,20 +274,6 @@ void MainWindow::on_action_Execute_Command_Line_triggered() {
 }
 
 //------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
-void MainWindow::action_Shift_Left_Tabs() {
-    qDebug("[action_Shift_Left_Tabs]");
-}
-
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
-void MainWindow::action_Shift_Right_Tabs() {
-    qDebug("[action_Shift_Right_Tabs]");
-}
-
-//------------------------------------------------------------------------------
 // Name: on_action_New_triggered
 //------------------------------------------------------------------------------
 void MainWindow::action_New(const QString &mode) {
@@ -349,11 +337,17 @@ void MainWindow::on_action_Open_triggered() {
     CheckCloseDim();
 }
 
+void MainWindow::on_action_Close_triggered() {
+    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+        doc->actionClose(QLatin1String(""));
+    }
+}
+
 //------------------------------------------------------------------------------
 // Name: on_action_About_triggered
 //------------------------------------------------------------------------------
 void MainWindow::on_action_About_triggered() {
-	auto dialog = new DialogAbout(this);
+    static auto dialog = new DialogAbout(this);
 	dialog->exec();
 }
 
@@ -364,6 +358,28 @@ void MainWindow::on_action_Select_All_triggered() {
 	if(TextArea *w = lastFocus_) {
 		w->selectAllAP();
 	}
+}
+
+//------------------------------------------------------------------------------
+// Name: on_action_Include_File_triggered
+//------------------------------------------------------------------------------
+void MainWindow::on_action_Include_File_triggered() {
+
+
+    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+
+        if (doc->CheckReadOnly()) {
+            return;
+        }
+
+        QString filename = PromptForExistingFileEx(doc->path_, tr("Include File"));
+
+        if (filename.isNull()) {
+            return;
+        }
+
+        doc->includeFile(filename);
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -391,6 +407,28 @@ void MainWindow::on_action_Paste_triggered() {
 	if(TextArea *w = lastFocus_) {
 		w->pasteClipboardAP();
 	}
+}
+
+//------------------------------------------------------------------------------
+// Name: on_action_Paste_Column_triggered
+//------------------------------------------------------------------------------
+void MainWindow::on_action_Paste_Column_triggered() {
+    if(TextArea *w = lastFocus_) {
+        w->pasteClipboardAP(TextArea::RectFlag);
+    }
+}
+
+//------------------------------------------------------------------------------
+// Name: on_action_Delete_triggered
+//------------------------------------------------------------------------------
+void MainWindow::on_action_Delete_triggered() {
+    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+        if (doc->CheckReadOnly()) {
+            return;
+        }
+
+        doc->buffer_->BufRemoveSelected();
+    }
 }
 
 DocumentWidget *MainWindow::CreateDocument(QString name) {
@@ -1223,3 +1261,178 @@ void MainWindow::on_tabWidget_customContextMenuRequested(int index, const QPoint
         }
     }
 }
+
+void MainWindow::on_action_Open_Selected_triggered() {
+
+    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+        // Get the selected text, if there's no selection, do nothing
+        std::string text = doc->buffer_->BufGetSelectionTextEx();
+        fileCB(doc, text);
+    }
+
+    CheckCloseDim();
+}
+
+//------------------------------------------------------------------------------
+// Name: fileCB
+// Desc: opens a "selected file"
+//------------------------------------------------------------------------------
+void MainWindow::fileCB(DocumentWidget *window, const std::string &text) {
+
+    char nameText[MAXPATHLEN];
+    char includeName[MAXPATHLEN];
+    char filename[MAXPATHLEN];
+    char pathname[MAXPATHLEN];
+    char *inPtr;
+    char *outPtr;
+
+    static const char includeDir[] = "/usr/include/";
+
+    /* get the string, or skip if we can't get the selection data, or it's
+       obviously not a file name */
+    if (text.size() > MAXPATHLEN || text.empty()) {
+        QApplication::beep();
+        return;
+    }
+
+    snprintf(nameText, sizeof(nameText), "%s", text.c_str());
+
+    // extract name from #include syntax
+    if (sscanf(nameText, "#include \"%[^\"]\"", includeName) == 1) {
+        strcpy(nameText, includeName);
+    } else if (sscanf(nameText, "#include <%[^<>]>", includeName) == 1) {
+        sprintf(nameText, "%s%s", includeDir, includeName);
+    }
+
+    // strip whitespace from name
+    for (inPtr = nameText, outPtr = nameText; *inPtr != '\0'; inPtr++) {
+        if (*inPtr != ' ' && *inPtr != '\t' && *inPtr != '\n') {
+            *outPtr++ = *inPtr;
+        }
+    }
+    *outPtr = '\0';
+
+    // Process ~ characters in name
+    ExpandTilde(nameText);
+
+    // If path name is relative, make it refer to current window's directory
+    if (nameText[0] != '/') {
+        snprintf(filename, sizeof(filename), "%s%s", window->path_.toLatin1().data(), nameText);
+        strcpy(nameText, filename);
+    }
+
+    // Expand wildcards in file name.
+    {
+        glob_t globbuf;
+        glob(nameText, GLOB_NOCHECK, nullptr, &globbuf);
+        for (size_t i = 0; i < globbuf.gl_pathc; i++) {
+            if (ParseFilename(globbuf.gl_pathv[i], filename, pathname) != 0) {
+                QApplication::beep();
+            } else {
+                DocumentWidget::EditExistingFileEx(GetPrefOpenInTab() ? window : nullptr, QLatin1String(filename), QLatin1String(pathname), 0, nullptr, false, nullptr, GetPrefOpenInTab(), false);
+            }
+        }
+        globfree(&globbuf);
+    }
+
+    CheckCloseDim();
+}
+
+//------------------------------------------------------------------------------
+// Name:
+//------------------------------------------------------------------------------
+void MainWindow::on_action_Shift_Left_triggered() {
+    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+        if (doc->CheckReadOnly()) {
+            return;
+        }
+        ShiftSelectionEx(doc, lastFocus_, SHIFT_LEFT, false);
+    }
+}
+
+//------------------------------------------------------------------------------
+// Name:
+//------------------------------------------------------------------------------
+void MainWindow::on_action_Shift_Right_triggered() {
+
+    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+        if (doc->CheckReadOnly()) {
+            return;
+        }
+        ShiftSelectionEx(doc, lastFocus_, SHIFT_RIGHT, false);
+    }
+}
+
+//------------------------------------------------------------------------------
+// Name:
+//------------------------------------------------------------------------------
+void MainWindow::action_Shift_Left_Tabs() {
+    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+        if (doc->CheckReadOnly()) {
+            return;
+        }
+        ShiftSelectionEx(doc, lastFocus_, SHIFT_LEFT, true);
+    }
+}
+
+//------------------------------------------------------------------------------
+// Name:
+//------------------------------------------------------------------------------
+void MainWindow::action_Shift_Right_Tabs() {
+    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+        if (doc->CheckReadOnly()) {
+            return;
+        }
+        ShiftSelectionEx(doc, lastFocus_, SHIFT_RIGHT, true);
+    }
+}
+
+//------------------------------------------------------------------------------
+// Name:
+//------------------------------------------------------------------------------
+void MainWindow::on_action_Lower_case_triggered() {
+    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+        if (doc->CheckReadOnly()) {
+            return;
+        }
+
+        DowncaseSelectionEx(doc, lastFocus_);
+    }
+}
+
+//------------------------------------------------------------------------------
+// Name:
+//------------------------------------------------------------------------------
+void MainWindow::on_action_Upper_case_triggered() {
+    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+        if (doc->CheckReadOnly()) {
+            return;
+        }
+
+        UpcaseSelectionEx(doc, lastFocus_);
+    }
+}
+
+//------------------------------------------------------------------------------
+// Name:
+//------------------------------------------------------------------------------
+void MainWindow::on_action_Fill_Paragraph_triggered() {
+
+    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+        if (doc->CheckReadOnly()) {
+            return;
+        }
+        FillSelectionEx(doc, lastFocus_);
+    }
+}
+
+//------------------------------------------------------------------------------
+// Name:
+//------------------------------------------------------------------------------
+void MainWindow::on_action_Insert_Form_Feed_triggered() {
+
+    if(TextArea *w = lastFocus_) {
+        w->insertStringAP(QLatin1String("\f"));
+    }
+}
+

@@ -26,6 +26,7 @@
 *                                                                              *
 *******************************************************************************/
 
+#include "DocumentWidget.h"
 #include "interpret.h"
 #include "Document.h"
 #include "menu.h"
@@ -74,8 +75,12 @@ enum OpStatusCodes {
 }
 
 static void addLoopAddr(Inst *addr);
-static void saveContext(RestartData *context);
-static void restoreContext(RestartData *context);
+static void saveContext(RestartData<Document> *context);
+static void restoreContext(RestartData<Document> *context);
+
+static void saveContextEx(RestartData<DocumentWidget> *context);
+static void restoreContextEx(RestartData<DocumentWidget> *context);
+
 static int returnNoVal(void);
 static int returnVal(void);
 static int returnValOrNone(int valOnStack);
@@ -181,8 +186,12 @@ static DataValue *StackP;                      // next free spot on stack
 static DataValue *FrameP;                      // frame pointer (start of local variables for the current subroutine invocation)
 static Inst *PC;                               // program counter during execution
 static char *ErrMsg;                           // global for returning error messages from executing functions
-static Document *InitiatingWindow = nullptr; // window from which macro was run
-static Document *FocusWindow;                // window on which macro commands operate
+
+static Document *InitiatingWindow = nullptr;   // window from which macro was run
+static Document *FocusWindow;                  // window on which macro commands operate
+static DocumentWidget *InitiatingWindowEx = nullptr;   // window from which macro was run
+static DocumentWidget *FocusWindowEx;                  // window on which macro commands operate
+
 static bool PreemptRequest;                    // passes preemption requests from called routines back up to the interpreter
 
 /* Array for mapping operations to functions for performing the operations
@@ -454,7 +463,59 @@ void FillLoopAddrs(Inst *breakAddr, Inst *continueAddr) {
 ** (if any) can be read from "result".  If MACRO_PREEMPT is returned, the
 ** macro exceeded its alotted time-slice and scheduled...
 */
-int ExecuteMacro(Document *window, Program *prog, int nArgs, DataValue *args, DataValue *result, RestartData **continuation, const char **msg) {
+int ExecuteMacroEx(DocumentWidget *window, Program *prog, int nArgs, DataValue *args, DataValue *result, RestartData<DocumentWidget> **continuation, const char **msg) {
+
+    static DataValue noValue = INIT_DATA_VALUE;
+    int i;
+
+    /* Create an execution context (a stack, a stack pointer, a frame pointer,
+       and a program counter) which will retain the program state across
+       preemption and resumption of execution */
+    auto context         = new RestartData<DocumentWidget>;
+    context->stack       = new DataValue[STACK_SIZE];
+    *continuation        = context;
+    context->stackP      = context->stack;
+    context->pc          = prog->code;
+    context->runWindow   = window;
+    context->focusWindow = window;
+
+    // Push arguments and call information onto the stack
+    for (i = 0; i < nArgs; i++) {
+        *(context->stackP++) = args[i];
+    }
+
+    context->stackP->val.subr = nullptr; // return PC
+    context->stackP->tag = NO_TAG;
+    context->stackP++;
+
+    *(context->stackP++) = noValue; // old FrameP
+
+    context->stackP->tag = NO_TAG; // nArgs
+    context->stackP->val.n = nArgs;
+    context->stackP++;
+
+    *(context->stackP++) = noValue; // cached arg array
+
+    context->frameP = context->stackP;
+
+    // Initialize and make room on the stack for local variables
+    for(Symbol *s : prog->localSymList) {
+        FP_GET_SYM_VAL(context->frameP, s) = noValue;
+        context->stackP++;
+    }
+
+    // Begin execution, return on error or preemption
+    return ContinueMacroEx(context, result, msg);
+}
+
+/*
+** Execute a compiled macro, "prog", using the arguments in the array
+** "args".  Returns one of MACRO_DONE, MACRO_PREEMPT, or MACRO_ERROR.
+** if MACRO_DONE is returned, the macro completed, and the returned value
+** (if any) can be read from "result".  If MACRO_PREEMPT is returned, the
+** macro exceeded its alotted time-slice and scheduled...
+*/
+int ExecuteMacro(Document *window, Program *prog, int nArgs, DataValue *args, DataValue *result, RestartData<Document> **continuation, const char **msg) {
 
 	static DataValue noValue = INIT_DATA_VALUE;
 	int i;
@@ -462,7 +523,7 @@ int ExecuteMacro(Document *window, Program *prog, int nArgs, DataValue *args, Da
 	/* Create an execution context (a stack, a stack pointer, a frame pointer,
 	   and a program counter) which will retain the program state across
 	   preemption and resumption of execution */
-	auto context         = new RestartData;
+    auto context         = new RestartData<Document>;
 	context->stack       = new DataValue[STACK_SIZE];
 	*continuation        = context;
 	context->stackP      = context->stack;
@@ -503,10 +564,80 @@ int ExecuteMacro(Document *window, Program *prog, int nArgs, DataValue *args, Da
 ** Continue the execution of a suspended macro whose state is described in
 ** "continuation"
 */
-int ContinueMacro(RestartData *continuation, DataValue *result, const char **msg) {
+int ContinueMacroEx(RestartData<DocumentWidget> *continuation, DataValue *result, const char **msg) {
+    int status, instCount = 0;
+    Inst *inst;
+    RestartData<DocumentWidget> oldContext;
+
+    /* To allow macros to be invoked arbitrarily (such as those automatically
+       triggered within smart-indent) within executing macros, this call is
+       reentrant. */
+    saveContextEx(&oldContext);
+
+    /*
+    ** Execution Loop:  Call the succesive routine addresses in the program
+    ** until one returns something other than STAT_OK, then take action
+    */
+    restoreContextEx(continuation);
+    ErrMsg = nullptr;
+    for (;;) {
+
+        // Execute an instruction
+        inst = PC++;
+
+        try {
+            status = (inst->func)();
+        } catch(const MacroException &ex) {
+            static char error_buffer[4096];
+            strcpy(error_buffer, ex.what());
+            *msg = error_buffer;
+            FreeRestartDataEx(continuation);
+            restoreContextEx(&oldContext);
+            return MACRO_ERROR;
+        }
+
+        // If error return was not STAT_OK, return to caller
+        switch(status) {
+        case STAT_PREEMPT:
+            saveContextEx(continuation);
+            restoreContextEx(&oldContext);
+            return MACRO_PREEMPT;
+        case STAT_ERROR:
+            *msg = ErrMsg;
+            FreeRestartDataEx(continuation);
+            restoreContextEx(&oldContext);
+            return MACRO_ERROR;
+        case STAT_DONE:
+            *msg = "";
+            *result = *--StackP;
+            FreeRestartDataEx(continuation);
+            restoreContextEx(&oldContext);
+            return MACRO_DONE;
+        case STAT_OK:
+        default:
+            break;
+        }
+
+        /* Count instructions executed.  If the instruction limit is hit,
+           preempt, store re-start information in continuation and give
+           X, other macros, and other shell scripts a chance to execute */
+        instCount++;
+        if (instCount >= INSTRUCTION_LIMIT) {
+            saveContextEx(continuation);
+            restoreContextEx(&oldContext);
+            return MACRO_TIME_LIMIT;
+        }
+    }
+}
+
+/*
+** Continue the execution of a suspended macro whose state is described in
+** "continuation"
+*/
+int ContinueMacro(RestartData<Document> *continuation, DataValue *result, const char **msg) {
 	int status, instCount = 0;
 	Inst *inst;
-	RestartData oldContext;
+    RestartData<Document> oldContext;
 
 	/* To allow macros to be invoked arbitrarily (such as those automatically
 	   triggered within smart-indent) within executing macros, this call is
@@ -603,7 +734,12 @@ void RunMacroAsSubrCall(Program *prog) {
 	}
 }
 
-void FreeRestartData(RestartData *context) {
+void FreeRestartDataEx(RestartData<DocumentWidget> *context) {
+    delete [] context->stack;
+    delete context;
+}
+
+void FreeRestartData(RestartData<Document> *context) {
 	delete [] context->stack;
 	delete context;
 }
@@ -622,9 +758,26 @@ void PreemptMacro(void) {
 ** how to return a value from a routine which preempts instead of returning
 ** a value directly).
 */
-void ModifyReturnedValue(RestartData *context, DataValue dv) {
+void ModifyReturnedValue(RestartData<Document> *context, DataValue dv) {
 	if ((context->pc - 1)->func == fetchRetVal)
 		*(context->stackP - 1) = dv;
+}
+
+/*
+** Called within a routine invoked from a macro, returns the window in
+** which the macro is executing (where the banner is, not where it is focused)
+*/
+DocumentWidget *MacroRunWindowEx(void) {
+    return InitiatingWindowEx;
+}
+
+/*
+** Called within a routine invoked from a macro, returns the window to which
+** the currently executing macro is focused (the window which macro commands
+** modify, not the window from which the macro is being run)
+*/
+DocumentWidget *MacroFocusWindowEx(void) {
+    return FocusWindowEx;
 }
 
 /*
@@ -650,6 +803,14 @@ Document *MacroFocusWindow(void) {
 */
 void SetMacroFocusWindow(Document *window) {
 	FocusWindow = window;
+}
+
+/*
+** Set the window to which macro subroutines and actions which operate on an
+** implied window are directed.
+*/
+void SetMacroFocusWindowEx(DocumentWidget *window) {
+    FocusWindowEx = window;
 }
 
 /*
@@ -982,7 +1143,28 @@ void GarbageCollectStrings(void) {
 /*
 ** Save and restore execution context to data structure "context"
 */
-static void saveContext(RestartData *context) {
+static void saveContextEx(RestartData<DocumentWidget> *context) {
+    context->stack       = TheStack;
+    context->stackP      = StackP;
+    context->frameP      = FrameP;
+    context->pc          = PC;
+    context->runWindow   = InitiatingWindowEx;
+    context->focusWindow = FocusWindowEx;
+}
+
+static void restoreContextEx(RestartData<DocumentWidget> *context) {
+    TheStack           = context->stack;
+    StackP             = context->stackP;
+    FrameP             = context->frameP;
+    PC                 = context->pc;
+    InitiatingWindowEx = context->runWindow;
+    FocusWindowEx      = context->focusWindow;
+}
+
+/*
+** Save and restore execution context to data structure "context"
+*/
+static void saveContext(RestartData<Document> *context) {
 	context->stack       = TheStack;
 	context->stackP      = StackP;
 	context->frameP      = FrameP;
@@ -991,13 +1173,13 @@ static void saveContext(RestartData *context) {
 	context->focusWindow = FocusWindow;
 }
 
-static void restoreContext(RestartData *context) {
+static void restoreContext(RestartData<Document> *context) {
 	TheStack         = context->stack;
 	StackP           = context->stackP;
 	FrameP           = context->frameP;
 	PC               = context->pc;
-    InitiatingWindow = static_cast<Document *>(context->runWindow);
-    FocusWindow      = static_cast<Document *>(context->focusWindow);
+    InitiatingWindow = context->runWindow;
+    FocusWindow      = context->focusWindow;
 }
 
 static void freeSymbolTable(std::list<Symbol *> &symTab) {

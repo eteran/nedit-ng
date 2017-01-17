@@ -7,10 +7,10 @@
 #include <QMessageBox>
 
 #include "smartIndent.h"
+#include "macro.h"
 #include "Document.h"
 #include "preferences.h"
 #include "util/MotifHelper.h"
-#include "macro.h"
 #include "interpret.h"
 
 
@@ -282,7 +282,7 @@ bool DialogSmartIndent::checkSmartIndentDialogData() {
 	if (!initText.isEmpty()) {
 		QString widgetText = ensureNewline(initText);
 		int stoppedAt = 0;
-		if (!CheckMacroStringEx(this, widgetText, tr("initialization macro"), &stoppedAt)) {
+        if (!CheckMacroStringEx(this, widgetText, tr("initialization macro"), &stoppedAt)) {
 			QTextCursor cursor = ui.editInit->textCursor();
 			cursor.setPosition(stoppedAt);
 			ui.editInit->setTextCursor(cursor);

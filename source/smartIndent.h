@@ -44,6 +44,7 @@ int SmartIndentMacrosAvailable(char *languageMode);
 QString  WriteSmartIndentCommonStringEx();
 QString WriteSmartIndentStringEx();
 void BeginSmartIndent(Document *window, int warn);
+void BeginSmartIndentEx(DocumentWidget *window, int warn);
 void EditCommonSmartIndentMacro();
 void EditSmartIndentMacros(Document *window);
 void EndSmartIndent(Document *window);

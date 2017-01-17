@@ -29,6 +29,7 @@
 #include <QApplication>
 #include <QMessageBox>
 #include <QPushButton>
+#include <QProcess>
 #include "ui/DialogOutput.h"
 #include "TextHelper.h"
 #include "TextDisplay.h"
@@ -97,8 +98,9 @@ struct shellCmdInfo {
 	int leftPos;
 	int rightPos;
 	int inLength;
-	XtIntervalId bannerTimeoutID, flushTimeoutID;
-	char bannerIsUp;
+    XtIntervalId bannerTimeoutID;
+    XtIntervalId flushTimeoutID;
+    bool bannerIsUp;
 	char fromMacro;
 };
 
@@ -169,7 +171,6 @@ void ExecShellCommand(Document *window, const std::string &command, int fromMacr
 	}
 	
 	auto textD = window->lastFocus();
-	
 
 	// get the selection or the insert position 
 	pos = textD->TextGetCursorPos();
@@ -463,6 +464,7 @@ static void issueCommand(Document *window, const std::string &command, const std
 	if (!fromMacro)
 		window->SetSensitive(window->cancelShellItem_, True);
 
+#if 1
 	// fork the subprocess and issue the command 
 	childPid = forkCommand(window->shell_, command, window->path_.toLatin1().data(), &stdinFD, &stdoutFD, (flags & ERROR_DIALOGS) ? &stderrFD : nullptr);
 
@@ -480,6 +482,19 @@ static void issueCommand(Document *window, const std::string &command, const std
 	if(input.empty()) {
 		close(stdinFD);
 	}
+#else
+    QString program = QString::fromLatin1(GetPrefShell());
+    QStringList arguments;
+    arguments << QLatin1String("-c") << QString::fromStdString(command);
+
+    auto process = new QProcess();
+    process->setWorkingDirectory(window->path_);
+    process->start(program, arguments);
+
+    if(input.empty()) {
+        process->closeWriteChannel();
+    }
+#endif
 
 	/* Create a data structure for passing process information around
 	   amongst the callback routines which will process i/o and completion */

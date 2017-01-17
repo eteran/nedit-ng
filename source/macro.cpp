@@ -35,11 +35,16 @@
 #include <QString>
 #include <QWidget>
 #include <QtDebug>
+#include <QTimer>
+#include <QFuture>
+#include <QtConcurrentRun>
 
 #include "ui/DialogPrompt.h"
 #include "ui/DialogPromptList.h"
 #include "ui/DialogPromptString.h"
 #include "ui/DialogRepeat.h"
+#include "ui/DocumentWidget.h"
+#include "ui/MainWindow.h"
 
 #include "macro.h"
 #include "Document.h"
@@ -106,13 +111,26 @@ struct macroCmdInfo {
 	char bannerIsUp;
 	char closeOnCompletion;
 	Program *program;
-	RestartData *context;
+    RestartData<Document> *context;
+};
+
+/* Data attached to window during shell command execution with
+   information for controling and communicating with the process */
+struct macroCmdInfoEx {
+    QTimer *bannerTimeoutID;
+    QFuture<bool> continueWorkProcID;
+    bool bannerIsUp;
+    bool closeOnCompletion;
+    Program *program;
+    RestartData<DocumentWidget> *context;
 };
 
 
 static void cancelLearn(void);
 static void runMacro(Document *window, Program *prog);
+static void runMacroEx(DocumentWidget *window, Program *prog);
 static void finishMacroCmdExecution(Document *window);
+static void finishMacroCmdExecutionEx(DocumentWidget *window);
 static void learnActionHook(Widget w, XtPointer clientData, String actionName, XEvent *event, String *params, Cardinal *numParams);
 static void lastActionHook(Widget w, XtPointer clientData, String actionName, XEvent *event, String *params, Cardinal *numParams);
 static char *actionToString(Widget w, const char *actionName, XEvent *event, String *params, Cardinal numParams);
@@ -120,9 +138,10 @@ static int isMouseAction(const char *action);
 static int isRedundantAction(const char *action);
 static int isIgnoredAction(const char *action);
 static int readCheckMacroString(Widget dialogParent, const char *string, Document *runWindow, const char *errIn, const char **errPos);
-static bool readCheckMacroStringEx(QWidget *dialogParent, const QString &string, Document *runWindow, const QString &errIn, int *errPos);
+static int readCheckMacroStringEx(QWidget *dialogParent, const char *string, DocumentWidget *runWindow, const char *errIn, const char **errPos);
 static void bannerTimeoutProc(XtPointer clientData, XtIntervalId *id);
 static Boolean continueWorkProc(XtPointer clientData);
+static bool continueWorkProcEx(DocumentWidget *clientData);
 static int escapeStringChars(char *fromString, char *toString);
 static int escapedStringLength(char *string);
 static int lengthMS(Document *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
@@ -522,6 +541,24 @@ void Replay(Document *window) {
 /*
 **  Read the initial NEdit macro file if one exists.
 */
+void ReadMacroInitFileEx(DocumentWidget *window) {
+
+    const QString autoloadName = GetRCFileNameEx(AUTOLOAD_NM);
+    if(autoloadName.isNull()) {
+        return;
+    }
+
+    static bool initFileLoaded = false;
+
+    if (!initFileLoaded) {
+        ReadMacroFileEx(window, autoloadName.toStdString(), False);
+        initFileLoaded = true;
+    }
+}
+
+/*
+**  Read the initial NEdit macro file if one exists.
+*/
 void ReadMacroInitFile(Document *window) {
 
 	const QString autoloadName = GetRCFileNameEx(AUTOLOAD_NM);
@@ -535,6 +572,29 @@ void ReadMacroInitFile(Document *window) {
 		ReadMacroFileEx(window, autoloadName.toStdString(), False);
 		initFileLoaded = true;
 	}
+}
+
+
+/*
+** Read an NEdit macro file.  Extends the syntax of the macro parser with
+** define keyword, and allows intermixing of defines with immediate actions.
+*/
+int ReadMacroFileEx(DocumentWidget *window, const std::string &fileName, int warnNotExist) {
+
+    /* read-in macro file and force a terminating \n, to prevent syntax
+    ** errors with statements on the last line
+    */
+    QString fileString = ReadAnyTextFileEx(fileName, True);
+    if (fileString.isNull()) {
+        if (errno != ENOENT || warnNotExist) {
+            QMessageBox::critical(window, QLatin1String("Read Macro"), QString(QLatin1String("Error reading macro file %1: %2")).arg(QString::fromStdString(fileName), QLatin1String(strerror(errno))));
+        }
+        return false;
+    }
+
+
+    // Parse fileString
+    return readCheckMacroStringEx(window, fileString.toLatin1().data(), window, fileName.c_str(), nullptr);
 }
 
 /*
@@ -574,6 +634,32 @@ int ReadMacroStringEx(Document *window, const QString &string, const char *errIn
 	}
 }
 
+int ReadMacroStringEx(DocumentWidget *window, const QString &string, const char *errIn) {
+    if(!string.isNull()) {
+        return readCheckMacroStringEx(window, string.toLatin1().data(), window, errIn, nullptr);
+    } else {
+        return readCheckMacroStringEx(window, nullptr, window, errIn, nullptr);
+    }
+}
+
+/*
+** Check a macro string containing definitions for errors.  Returns True
+** if macro compiled successfully.  Returns False and puts up
+** a dialog explaining if macro did not compile successfully.
+*/
+bool CheckMacroStringEx(QWidget *dialogParent, const QString &string, const QString &errIn, int *errPos) {
+
+    Q_ASSERT(errPos);
+
+    QByteArray errorArray = errIn.toLatin1();
+    const char *errorString = errorArray.data();
+    const char *errorPosition;
+
+    int r = readCheckMacroStringEx(dialogParent, string.toLatin1().data(), nullptr, errorString, &errorPosition);
+    *errPos = std::distance(errorString, errorPosition);
+    return r;
+}
+
 /*
 ** Check a macro string containing definitions for errors.  Returns True
 ** if macro compiled successfully.  Returns False and puts up
@@ -583,9 +669,6 @@ int CheckMacroString(Widget dialogParent, const char *string, const char *errIn,
 	return readCheckMacroString(dialogParent, string, nullptr, errIn, errPos);
 }
 
-bool CheckMacroStringEx(QWidget *dialogParent, const QString &string, const QString &errIn, int *errPos) {
-	return readCheckMacroStringEx(dialogParent, string, nullptr, errIn, errPos);
-}
 
 /*
 ** Parse and optionally execute a macro string including macro definitions.
@@ -607,135 +690,131 @@ Program *ParseMacroEx(const QString &expr, int index, QString *message, int *sto
 	return p;
 }
 
+static int readCheckMacroStringEx(QWidget *dialogParent, const char *string, DocumentWidget *runWindow, const char *errIn, const char **errPos) {
+    const char *stoppedAt;
+    const char *inPtr;
+    char *namePtr;
+    const char *errMsg;
+    char subrName[MAX_SYM_LEN];
+    Program *prog;
+    Symbol *sym;
+    DataValue subrPtr;
+    QStack<Program *> progStack;
 
-static bool readCheckMacroStringEx(QWidget *dialogParent, const QString &string, Document *runWindow, const QString &errIn, int *errPos) {
+    // TODO(eteran): use this for ParseError again/switch to ParseErrorEx
+    (void)dialogParent;
 
-	int stoppedAt;
-	QString errMsg;
-	Program *prog;
-	Symbol *sym;
-	DataValue subrPtr;
-	QStack<Program *> progStack;
+    inPtr = string;
+    while (*inPtr != '\0') {
 
-	int inPtr = 0;
-	while (inPtr != string.size()) {
+        // skip over white space and comments
+        while (*inPtr == ' ' || *inPtr == '\t' || *inPtr == '\n' || *inPtr == '#') {
+            if (*inPtr == '#')
+                while (*inPtr != '\n' && *inPtr != '\0')
+                    inPtr++;
+            else
+                inPtr++;
+        }
+        if (*inPtr == '\0')
+            break;
 
-		// skip over white space and comments 
-		while (inPtr != string.size() && (string[inPtr] == QLatin1Char(' ') || string[inPtr] == QLatin1Char('\t') || string[inPtr] == QLatin1Char('\n') || string[inPtr] == QLatin1Char('#'))) {
-			if (string[inPtr] == QLatin1Char('#')) {
-				while (inPtr != string.size() && string[inPtr] != QLatin1Char('\n')) {
-					inPtr++;
-				}
-			} else {
-				inPtr++;
-			}
-		}
-		
-		if (inPtr == string.size()) {
-			break;
-		}
+        // look for define keyword, and compile and store defined routines
+        if (!strncmp(inPtr, "define", 6) && (inPtr[6] == ' ' || inPtr[6] == '\t')) {
+            inPtr += 6;
+            inPtr += strspn(inPtr, " \t\n");
+            namePtr = subrName;
+            while ((namePtr < &subrName[MAX_SYM_LEN - 1]) && (isalnum((uint8_t)*inPtr) || *inPtr == '_')) {
+                *namePtr++ = *inPtr++;
+            }
+            *namePtr = '\0';
+            if (isalnum((uint8_t)*inPtr) || *inPtr == '_') {
+                return ParseError(nullptr /* dialogParent */, string, inPtr, errIn, "subroutine name too long");
+            }
 
-		// look for define keyword, and compile and store defined routines 
-		if (string.mid(inPtr, 6) == QLatin1String("define") && (string[inPtr + 6] == QLatin1Char(' ') || string[inPtr + 6] == QLatin1Char('\t'))) {
-			
-			inPtr += 6;                                                         // skip "define"
-			inPtr = string.indexOf(QRegExp(QLatin1String("[^ \t\n]")), inPtr); // skip whitespace
-			
-			QString subrName;
-			auto namePtr = std::back_inserter(subrName);
-			
-			while ((isalnum(static_cast<uint8_t>(string[inPtr].toLatin1())) || string[inPtr] == QLatin1Char('_'))) {
-				*namePtr++ = string[inPtr++];
-			}
-			
-			if (isalnum(static_cast<uint8_t>(string[inPtr].toLatin1())) || string[inPtr] == QLatin1Char('_')) {
-				return ParseErrorEx(dialogParent, string, inPtr, errIn, QLatin1String("subroutine name too long"));
-			}
-			
-			
-			inPtr = string.indexOf(QRegExp(QLatin1String("[^ \t\n]")), inPtr); // skip whitespace
-			if (string[inPtr] != QLatin1Char('{')) {
-				if(errPos) {
-					*errPos = stoppedAt;
-				}
-				
-				return ParseErrorEx(dialogParent, string, inPtr, errIn, QLatin1String("expected '{'"));
-			}
-			
-			
-			prog = ParseMacroEx(string, inPtr, &errMsg, &stoppedAt);
-			if(!prog) {
-				if(errPos)
-					*errPos = stoppedAt;
-				return ParseErrorEx(dialogParent, string, stoppedAt, errIn, errMsg);
-			}
-			if (runWindow) {
-				sym = LookupSymbol(subrName.toLatin1().data());
-				if(!sym) {
-					subrPtr.val.prog = prog;
-					subrPtr.tag = NO_TAG;
-					sym = InstallSymbol(subrName.toLatin1().data(), MACRO_FUNCTION_SYM, subrPtr);
-				} else {
-					if (sym->type == MACRO_FUNCTION_SYM)
-						FreeProgram(sym->value.val.prog);
-					else
-						sym->type = MACRO_FUNCTION_SYM;
-					sym->value.val.prog = prog;
-				}
-			}
-			inPtr = stoppedAt;
+            inPtr += strspn(inPtr, " \t\n");
+            if (*inPtr != '{') {
+                if(errPos)
+                    *errPos = stoppedAt;
+                return ParseError(nullptr /* dialogParent */, string, inPtr, errIn, "expected '{'");
+            }
+            prog = ParseMacro(inPtr, &errMsg, &stoppedAt);
+            if(!prog) {
+                if(errPos)
+                    *errPos = stoppedAt;
+                return ParseError(nullptr /* dialogParent */, string, stoppedAt, errIn, errMsg);
+            }
+            if (runWindow) {
+                sym = LookupSymbol(subrName);
+                if(!sym) {
+                    subrPtr.val.prog = prog;
+                    subrPtr.tag = NO_TAG;
+                    sym = InstallSymbol(subrName, MACRO_FUNCTION_SYM, subrPtr);
+                } else {
+                    if (sym->type == MACRO_FUNCTION_SYM)
+                        FreeProgram(sym->value.val.prog);
+                    else
+                        sym->type = MACRO_FUNCTION_SYM;
+                    sym->value.val.prog = prog;
+                }
+            }
+            inPtr = stoppedAt;
 
-			/* Parse and execute immediate (outside of any define) macro commands
-			   and WAIT for them to finish executing before proceeding.  Note that
-			   the code below is not perfect.  If you interleave code blocks with
-			   definitions in a file which is loaded from another macro file, it
-			   will probably run the code blocks in reverse order! */
-		} else {
-			prog = ParseMacroEx(string, inPtr, &errMsg, &stoppedAt);
-			if(!prog) {
-				if (errPos) {
-					*errPos = stoppedAt;
-				}
+            /* Parse and execute immediate (outside of any define) macro commands
+               and WAIT for them to finish executing before proceeding.  Note that
+               the code below is not perfect.  If you interleave code blocks with
+               definitions in a file which is loaded from another macro file, it
+               will probably run the code blocks in reverse order! */
+        } else {
+            prog = ParseMacro(inPtr, &errMsg, &stoppedAt);
+            if(!prog) {
+                if (errPos) {
+                    *errPos = stoppedAt;
+                }
 
-				return ParseErrorEx(dialogParent, string, stoppedAt, errIn, errMsg);
-			}
+                return ParseError(nullptr /* dialogParent */, string, stoppedAt, errIn, errMsg);
+            }
 
-			if (runWindow) {
-				XEvent nextEvent;
-				if (!runWindow->macroCmdData_) {
-					runMacro(runWindow, prog);
-					while (runWindow->macroCmdData_) {
-						XtAppNextEvent(XtWidgetToApplicationContext(runWindow->shell_), &nextEvent);
-						ServerDispatchEvent(&nextEvent);
-					}
-				} else {
-					/*  If we come here this means that the string was parsed
-					    from within another macro via load_macro_file(). In
-					    this case, plain code segments outside of define
-					    blocks are rolled into one Program each and put on
-					    the stack. At the end, the stack is unrolled, so the
-					    plain Programs would be executed in the wrong order.
+            if (runWindow) {
 
-					    So we don't hand the Programs over to the interpreter
-					    just yet (via RunMacroAsSubrCall()), but put it on a
-					    stack of our own, reversing order once again.   */
-					progStack.push(prog);
-				}
-			}
-			inPtr = stoppedAt;
-		}
-	}
+                if (!runWindow->macroCmdData_) {
+                    runMacroEx(runWindow, prog);
 
-	//  Unroll reversal stack for macros loaded from macros.  
-	while (!progStack.empty()) {
+#if 0
+                    // TODO(eteran): is this the same as like QApplication::processEvents() ?
+                    XEvent nextEvent;
+                    while (runWindow->macroCmdData_) {
+                        XtAppNextEvent(XtWidgetToApplicationContext(runWindow->shell_), &nextEvent);
+                        ServerDispatchEvent(&nextEvent);
+                    }
+#endif
+                } else {
+                    /*  If we come here this means that the string was parsed
+                        from within another macro via load_macro_file(). In
+                        this case, plain code segments outside of define
+                        blocks are rolled into one Program each and put on
+                        the stack. At the end, the stack is unrolled, so the
+                        plain Programs would be executed in the wrong order.
 
-		prog = progStack.top();
-		progStack.pop();
+                        So we don't hand the Programs over to the interpreter
+                        just yet (via RunMacroAsSubrCall()), but put it on a
+                        stack of our own, reversing order once again.   */
+                    progStack.push(prog);
+                }
+            }
+            inPtr = stoppedAt;
+        }
+    }
 
-		RunMacroAsSubrCall(prog);
-	}
+    //  Unroll reversal stack for macros loaded from macros.
+    while (!progStack.empty()) {
 
-	return true;
+        prog = progStack.top();
+        progStack.pop();
+
+        RunMacroAsSubrCall(prog);
+    }
+
+    return true;
 }
 
 static int readCheckMacroString(Widget dialogParent, const char *string, Document *runWindow, const char *errIn, const char **errPos) {
@@ -861,6 +940,68 @@ static int readCheckMacroString(Widget dialogParent, const char *string, Documen
 ** a macro is running, and handling preemption, resumption, and cancellation.
 ** frees prog when macro execution is complete;
 */
+static void runMacroEx(DocumentWidget *window, Program *prog) {
+    DataValue result;
+    const char *errMsg;
+    int stat;
+
+    /* If a macro is already running, just call the program as a subroutine,
+       instead of starting a new one, so we don't have to keep a separate
+       context, and the macros will serialize themselves automatically */
+    if (window->macroCmdData_) {
+        RunMacroAsSubrCall(prog);
+        return;
+    }
+
+    // put up a watch cursor over the waiting window
+    window->setCursor(Qt::BusyCursor);
+
+    // enable the cancel menu item
+    if(MainWindow *win = window->toWindow()) {
+        win->ui.action_Cancel_Learn->setText(QLatin1String("Cancel Macro"));
+        win->ui.action_Cancel_Learn->setEnabled(true);
+    }
+
+    /* Create a data structure for passing macro execution information around
+       amongst the callback routines which will process i/o and completion */
+    auto cmdData = new macroCmdInfoEx;
+    window->macroCmdData_       = cmdData;
+    cmdData->bannerIsUp         = false;
+    cmdData->closeOnCompletion  = false;
+    cmdData->program            = prog;
+    cmdData->context            = nullptr;
+
+    // Set up timer proc for putting up banner when macro takes too long
+    cmdData->bannerTimeoutID = new QTimer(window);
+    cmdData->bannerTimeoutID->setInterval(BANNER_WAIT_TIME);
+    cmdData->bannerTimeoutID->setSingleShot(true);
+    QObject::connect(cmdData->bannerTimeoutID, SIGNAL(timeout()), window, SLOT(bannerTimeoutProc()));
+
+    // Begin macro execution
+    stat = ExecuteMacroEx(window, prog, 0, nullptr, &result, &cmdData->context, &errMsg);
+
+    if (stat == MACRO_ERROR) {
+        finishMacroCmdExecutionEx(window);
+        QMessageBox::critical(window, QLatin1String("Macro Error"), QString(QLatin1String("Error executing macro: %1")).arg(QLatin1String(errMsg)));
+        return;
+    }
+
+    if (stat == MACRO_DONE) {
+        finishMacroCmdExecutionEx(window);
+        return;
+    }
+    if (stat == MACRO_TIME_LIMIT) {
+        ResumeMacroExecutionEx(window);
+        return;
+    }
+    // (stat == MACRO_PREEMPT) Macro was preempted
+}
+
+/*
+** Run a pre-compiled macro, changing the interface state to reflect that
+** a macro is running, and handling preemption, resumption, and cancellation.
+** frees prog when macro execution is complete;
+*/
 static void runMacro(Document *window, Program *prog) {
 	DataValue result;
 	const char *errMsg;
@@ -914,6 +1055,23 @@ static void runMacro(Document *window, Program *prog) {
 		return;
 	}
 	// (stat == MACRO_PREEMPT) Macro was preempted 
+}
+
+/*
+** Continue with macro execution after preemption.  Called by the routines
+** whose actions cause preemption when they have completed their lengthy tasks.
+** Re-establishes macro execution work proc.  Window must be the window in
+** which the macro is executing (the window to which macroCmdData is attached),
+** and not the window to which operations are focused.
+*/
+void ResumeMacroExecutionEx(DocumentWidget *window) {
+    auto cmdData = static_cast<macroCmdInfoEx *>(window->macroCmdData_);
+
+    if(cmdData) {
+        cmdData->continueWorkProcID = QtConcurrent::run([window]() {
+            return continueWorkProcEx(window);
+        });
+    }
 }
 
 /*
@@ -998,6 +1156,65 @@ int MacroWindowCloseActions(Document *window) {
 	// Kill the macro command 
 	finishMacroCmdExecution(window);
 	return true;
+}
+
+/*
+** Clean up after the execution of a macro command: free memory, and restore
+** the user interface state.
+*/
+static void finishMacroCmdExecutionEx(DocumentWidget *window) {
+    auto cmdData = static_cast<macroCmdInfoEx *>(window->macroCmdData_);
+    int closeOnCompletion = cmdData->closeOnCompletion;
+
+    // Cancel pending timeout and work proc
+    cmdData->bannerTimeoutID->stop();
+    cmdData->continueWorkProcID.cancel();
+
+    // Clean up waiting-for-macro-command-to-complete mode
+    window->setCursor(Qt::ArrowCursor);
+
+    // enable the cancel menu item
+    if(MainWindow *win = window->toWindow()) {
+        win->ui.action_Cancel_Learn->setText(QLatin1String("Cancel Learn"));
+        win->ui.action_Cancel_Learn->setEnabled(false);
+    }
+
+    if (cmdData->bannerIsUp) {
+#if 0
+        // TODO(eteran): implement banners and all that...
+        window->ClearModeMessage();
+#endif
+    }
+
+    // Free execution information
+    FreeProgram(cmdData->program);
+    delete cmdData;
+    window->macroCmdData_ = nullptr;
+
+    /* If macro closed its own window, window was made empty and untitled,
+       but close was deferred until completion.  This is completion, so if
+       the window is still empty, do the close */
+    if (closeOnCompletion && !window->filenameSet_ && !window->fileChanged_) {
+        window->CloseWindow();
+        window = nullptr;
+    }
+
+    // If no other macros are executing, do garbage collection
+    SafeGC();
+
+    /* In processing the .neditmacro file (and possibly elsewhere), there
+       is an event loop which waits for macro completion.  Send an event
+       to wake up that loop, otherwise execution will stall until the user
+       does something to the window. */
+    if (!closeOnCompletion) {
+#if 0
+        XClientMessageEvent event;
+        // TODO(eteran): find the equivalent to this...
+        event.format = 8;
+        event.type = ClientMessage;
+        XSendEvent(XtDisplay(window->shell_), XtWindow(window->shell_), False, NoEventMask, (XEvent *)&event);
+#endif
+    }
 }
 
 /*
@@ -1396,6 +1613,48 @@ static void bannerTimeoutProc(XtPointer clientData, XtIntervalId *id) {
 ** interested in making the macros cancelable, and in continuing other work
 ** than having users run a bunch of them at once together.
 */
+// NOTE(eteran): we are using a QFuture to simulate this, but I'm not 100% sure
+//               that it is a perfect match. We can also try something like a
+//               sinle shot QTimer with a timeout of zero.
+bool continueWorkProcEx(DocumentWidget *window) {
+
+    auto cmdData = static_cast<macroCmdInfoEx *>(window->macroCmdData_);
+    const char *errMsg;
+    DataValue result;
+
+    const int stat = ContinueMacroEx(cmdData->context, &result, &errMsg);
+
+    if (stat == MACRO_ERROR) {
+        finishMacroCmdExecutionEx(window);
+        QMessageBox::critical(window, QLatin1String("Macro Error"), QString(QLatin1String("Error executing macro: %1")).arg(QLatin1String(errMsg)));
+        return true;
+    } else if (stat == MACRO_DONE) {
+        finishMacroCmdExecutionEx(window);
+        return true;
+    } else if (stat == MACRO_PREEMPT) {
+        cmdData->continueWorkProcID = QFuture<bool>();
+        return true;
+    }
+
+    // Macro exceeded time slice, re-schedule it
+    if (stat != MACRO_TIME_LIMIT) {
+        return true; // shouldn't happen
+    }
+
+    return false;
+}
+
+/*
+** Work proc for continuing execution of a preempted macro.
+**
+** Xt WorkProcs are designed to run first-in first-out, which makes them
+** very bad at sharing time between competing tasks.  For this reason, it's
+** usually bad to use work procs anywhere where their execution is likely to
+** overlap.  Using a work proc instead of a timer proc (which I usually
+** prefer) here means macros will probably share time badly, but we're more
+** interested in making the macros cancelable, and in continuing other work
+** than having users run a bunch of them at once together.
+*/
 static Boolean continueWorkProc(XtPointer clientData) {
 	auto window = static_cast<Document *>(clientData);
 	auto cmdData = static_cast<macroCmdInfo *>(window->macroCmdData_);
@@ -1419,7 +1678,7 @@ static Boolean continueWorkProc(XtPointer clientData) {
 	// Macro exceeded time slice, re-schedule it 
 	if (stat != MACRO_TIME_LIMIT)
 		return true; // shouldn't happen 
-	return false;
+    return false;
 }
 
 /*

@@ -163,6 +163,8 @@ UndoTypes determineUndoType(int nInserted, int nDeleted) {
     }
 }
 
+}
+
 /*
 ** Open an existing file specified by name and path.  Use the window inWindow
 ** unless inWindow is nullptr or points to a window which is already in use
@@ -182,7 +184,7 @@ UndoTypes determineUndoType(int nInserted, int nDeleted) {
 ** the syntax highlighting deferred, in order to speed up the file-
 ** opening operation when multiple files are being opened in succession.
 */
-DocumentWidget *EditExistingFileEx(DocumentWidget *inWindow, const QString &name, const QString &path, int flags, char *geometry, int iconic, const char *languageMode, int tabbed, int bgOpen) {
+DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inWindow, const QString &name, const QString &path, int flags, char *geometry, int iconic, const char *languageMode, int tabbed, int bgOpen) {
 
     // first look to see if file is already displayed in a window
     if(DocumentWidget *window = MainWindow::FindWindowWithFile(name, path)) {
@@ -293,8 +295,6 @@ DocumentWidget *EditExistingFileEx(DocumentWidget *inWindow, const QString &name
     }
 
     return window;
-}
-
 }
 
 //------------------------------------------------------------------------------
@@ -911,14 +911,10 @@ void DocumentWidget::smartIndentCallback(TextArea *area, smartIndentCBStruct *da
 
 	switch(data->reason) {
 	case CHAR_TYPED:
-#if 0
-		executeModMacro(window, data);
-#endif
+        executeModMacro(data);
 		break;
 	case NEWLINE_INDENT_NEEDED:
-#if 1
         executeNewlineMacroEx(data);
-#endif
         break;
 	}
 }
@@ -1312,9 +1308,7 @@ void DocumentWidget::SetAutoIndent(int state) {
     if (indentStyle_ == SMART_INDENT && !smartIndent) {
         EndSmartIndentEx(this);
     } else if (smartIndent && indentStyle_ != SMART_INDENT) {
-#if 0
         BeginSmartIndentEx(this, true);
-#endif
     }
 
     indentStyle_ = state;
@@ -2910,9 +2904,7 @@ int DocumentWidget::SaveWindowAs(const char *newName, bool addWrap) {
         RefreshTabState();
 
         // Add the name to the convenience menu of previously opened files
-#if 0
-        AddToPrevOpenMenu(fullname);
-#endif
+        win->AddToPrevOpenMenu(QLatin1String(fullname));
 
         /*  If name has changed, language mode may have changed as well, unless
             it's an Untitled window for which the user already set a language
@@ -3135,7 +3127,8 @@ int DocumentWidget::fileWasModifiedExternally() {
 }
 
 int DocumentWidget::CloseFileAndWindow(int preResponse) {
-    int response, stat;
+    int response;
+    int stat;
 
     // Make sure that the window is not in iconified state
     if (fileChanged_) {
@@ -3784,7 +3777,7 @@ void DocumentWidget::executeNewlineMacroEx(smartIndentCBStruct *cbInfo) {
     // posValue probably shouldn't be static due to re-entrance issues <slobasso>
     static DataValue posValue = INIT_DATA_VALUE;
     DataValue result;
-    RestartData *continuation;
+    RestartData<DocumentWidget> *continuation;
     const char *errMsg;
     int stat;
 
@@ -3799,13 +3792,11 @@ void DocumentWidget::executeNewlineMacroEx(smartIndentCBStruct *cbInfo) {
     // Call newline macro with the position at which to add newline/indent
     posValue.val.n = cbInfo->pos;
     ++(winData->inNewLineMacro);
-#if 0
-    stat = ExecuteMacro(window, winData->newlineMacro, 1, &posValue, &result, &continuation, &errMsg);
-#endif
+    stat = ExecuteMacroEx(this, winData->newlineMacro, 1, &posValue, &result, &continuation, &errMsg);
 
     // Don't allow preemption or time limit.  Must get return value
     while (stat == MACRO_TIME_LIMIT) {
-        stat = ContinueMacro(continuation, &result, &errMsg);
+        stat = ContinueMacroEx(continuation, &result, &errMsg);
     }
 
     --(winData->inNewLineMacro);
@@ -3846,4 +3837,169 @@ void DocumentWidget::SetShowMatching(ShowMatchingStyle state) {
             no_signals(win->ui.action_Matching_Range)->setChecked(state == FLASH_RANGE);
         }
     }
+}
+
+/*
+** Run the modification macro with information from the smart-indent callback
+** structure passed by the widget
+*/
+void DocumentWidget::executeModMacro(smartIndentCBStruct *cbInfo) {
+
+    auto winData = static_cast<SmartIndentData *>(smartIndentData_);
+
+    // args probably shouldn't be static due to future re-entrance issues <slobasso>
+    static DataValue args[2] = {INIT_DATA_VALUE, INIT_DATA_VALUE};
+
+    // after 5.2 release remove inModCB and use new winData->inModMacro value
+    static bool inModCB = false;
+
+    DataValue result;
+    RestartData<DocumentWidget> *continuation;
+    const char *errMsg;
+    int stat;
+
+    /* Check for inappropriate calls and prevent re-entering if the macro
+       makes a buffer modification */
+    if (winData == nullptr || winData->modMacro == nullptr || inModCB)
+        return;
+
+    /* Call modification macro with the position of the modification,
+       and the character(s) inserted.  Don't allow
+       preemption or time limit.  Execution must not overlap or re-enter */
+    args[0].val.n = cbInfo->pos;
+    AllocNStringCpy(&args[1].val.str, cbInfo->charsTyped);
+
+    inModCB = true;
+    ++(winData->inModMacro);
+
+    stat = ExecuteMacroEx(this, winData->modMacro, 2, args, &result, &continuation, &errMsg);
+
+    while (stat == MACRO_TIME_LIMIT) {
+        stat = ContinueMacroEx(continuation, &result, &errMsg);
+    }
+
+    --(winData->inModMacro);
+    inModCB = false;
+
+    // Process errors in macro execution
+    if (stat == MACRO_PREEMPT || stat == MACRO_ERROR) {
+        QMessageBox::critical(this, tr("Smart Indent"), tr("Error in smart indent modification macro:\n%1").arg(stat == MACRO_ERROR ? QLatin1String(errMsg) : tr("dialogs and shell commands not permitted")));
+        EndSmartIndentEx(this);
+        return;
+    }
+}
+
+void DocumentWidget::bannerTimeoutProc() {
+    // TODO(eteran): implement this
+#if 0
+
+#endif
+}
+
+void DocumentWidget::actionClose(const QString &mode) {
+
+    int preResponse = PROMPT_SBC_DIALOG_RESPONSE;
+
+    if (mode == QLatin1String("prompt")) {
+        preResponse = PROMPT_SBC_DIALOG_RESPONSE;
+    } else if (mode == QLatin1String("save")) {
+        preResponse = YES_SBC_DIALOG_RESPONSE;
+    } else if (mode == QLatin1String("nosave")) {
+        preResponse = NO_SBC_DIALOG_RESPONSE;
+    }
+
+    if(auto win = toWindow()) {
+        CloseFileAndWindow(preResponse);
+        win->CheckCloseDim();
+    }
+}
+
+bool DocumentWidget::includeFile(const QString &name) {
+
+    if (CheckReadOnly()) {
+        return false;
+    }
+
+    // Open the file
+    FILE *fp = fopen(name.toLatin1().data(), "rb");
+    if(!fp) {
+        QMessageBox::critical(this, tr("Error opening File"), tr("Could not open %1:\n%2").arg(name, QLatin1String(strerror(errno))));
+        return false;
+    }
+
+    struct stat statbuf;
+
+    // Get the length of the file
+    if (fstat(fileno(fp), &statbuf) != 0) {
+        QMessageBox::critical(this, tr("Error opening File"), tr("Error opening %1").arg(name));
+        fclose(fp);
+        return false;
+    }
+
+    if (S_ISDIR(statbuf.st_mode)) {
+        QMessageBox::critical(this, tr("Error opening File"), tr("Can't open directory %1").arg(name));
+        fclose(fp);
+        return false;
+    }
+    int fileLen = statbuf.st_size;
+
+    // allocate space for the whole contents of the file
+    try {
+        auto fileString = new char[fileLen + 1]; // +1 = space for null
+
+        // read the file into fileString and terminate with a null
+        int readLen = fread(fileString, sizeof(char), fileLen, fp);
+        if (ferror(fp)) {
+            QMessageBox::critical(this, tr("Error opening File"), tr("Error reading %1:\n%2").arg(name, QLatin1String(strerror(errno))));
+            fclose(fp);
+            delete [] fileString;
+            return false;
+        }
+        fileString[readLen] = '\0';
+
+        // Detect and convert DOS and Macintosh format files
+        switch (FormatOfFileEx(view::string_view(fileString, readLen))) {
+        case DOS_FILE_FORMAT:
+            ConvertFromDosFileString(fileString, &readLen, nullptr);
+            break;
+        case MAC_FILE_FORMAT:
+            ConvertFromMacFileString(fileString, readLen);
+            break;
+        default:
+            //  Default is Unix, no conversion necessary.
+            break;
+        }
+
+        // If the file contained ascii nulls, re-map them
+        if (!buffer_->BufSubstituteNullChars(fileString, readLen)) {
+            QMessageBox::critical(this, tr("Error opening File"), tr("Too much binary data in file"));
+        }
+
+        // close the file
+        if (fclose(fp) != 0) {
+            // unlikely error
+            QMessageBox::warning(this, tr("Error opening File"), tr("Unable to close file"));
+            // we read it successfully, so continue
+        }
+
+        /* insert the contents of the file in the selection or at the insert
+           position in the window if no selection exists */
+        if (buffer_->primary_.selected) {
+            buffer_->BufReplaceSelectedEx(view::string_view(fileString, readLen));
+        } else {
+            if(auto win = toWindow()) {
+                auto textD = win->lastFocus_;
+                buffer_->BufInsertEx(textD->TextGetCursorPos(), view::string_view(fileString, readLen));
+            }
+        }
+
+        // release the memory that holds fileString
+        delete [] fileString;
+    } catch(const std::bad_alloc &) {
+        QMessageBox::critical(this, tr("Error opening File"), tr("File is too large to include"));
+        fclose(fp);
+        return false;
+    }
+
+    return true;
 }

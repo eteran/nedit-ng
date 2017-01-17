@@ -2,9 +2,9 @@
 #include <QMessageBox>
 #include "DialogMacros.h"
 #include "SignalBlocker.h"
+#include "macro.h"
 #include "MenuItem.h"
 #include "interpret.h"
-#include "macro.h"
 #include "preferences.h"
 #include "shell.h"
 #include "userCmds.h"

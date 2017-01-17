@@ -45,6 +45,7 @@ private Q_SLOTS:
 public Q_SLOTS:
     void setLanguageMode(const QString &mode);
     void open(const char *fullpath);
+    void bannerTimeoutProc();
 
 public:
 	void movedCallback(TextArea *area);
@@ -128,7 +129,12 @@ public:
     void executeNewlineMacroEx(smartIndentCBStruct *cbInfo);
     void SetShowMatching(ShowMatchingStyle state);
     int textPanesCount() const;
+    void executeModMacro(smartIndentCBStruct *cbInfo);
+    void actionClose(const QString &mode);
+    bool includeFile(const QString &name);
 
+public:
+    static DocumentWidget *EditExistingFileEx(DocumentWidget *inWindow, const QString &name, const QString &path, int flags, char *geometry, int iconic, const char *languageMode, int tabbed, int bgOpen);
 
 private:
 	// TODO(eteran): are these dialog's per window or per text document?

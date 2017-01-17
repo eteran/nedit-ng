@@ -33,6 +33,7 @@
 class QString;
 class QWidget;
 class Program;
+class DocumentWidget;
 
 #define REPEAT_TO_END -1
 #define REPEAT_IN_SEL -2
@@ -42,8 +43,10 @@ bool CheckMacroStringEx(QWidget *dialogParent, const QString &string, const QStr
 int CheckMacroString(Widget dialogParent, const char *string, const char *errIn, const char **errPos);
 int MacroWindowCloseActions(Document *window);
 int ReadMacroFileEx(Document *window, const std::string &fileName, int warnNotExist);
+int ReadMacroFileEx(DocumentWidget *window, const std::string &fileName, int warnNotExist);
 int ReadMacroString(Document *window, const char *string, const char *errIn);
 int ReadMacroStringEx(Document *window, const QString &string, const char *errIn);
+int ReadMacroStringEx(DocumentWidget *window, const QString &string, const char *errIn);
 std::string GetReplayMacro();
 void AbortMacroCommand(Document *window);
 void AddLastCommandActionHook(XtAppContext context);
@@ -52,11 +55,13 @@ void CancelMacroOrLearn(Document *window);
 void DoMacro(Document *window, view::string_view macro, const char *errInName);
 void FinishLearn();
 void ReadMacroInitFile(Document *window);
+void ReadMacroInitFileEx(DocumentWidget *window);
 void RegisterMacroSubroutines();
 void RepeatDialog(Document *window);
 void RepeatMacro(Document *window, const char *command, int how);
 void Replay(Document *window);
 void ResumeMacroExecution(Document *window);
+void ResumeMacroExecutionEx(DocumentWidget *window);
 void ReturnShellCommandOutput(Document *window, const std::string &outText, int status);
 void SafeGC();
 

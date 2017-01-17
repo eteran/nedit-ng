@@ -7260,7 +7260,7 @@ void TextArea::TextDSetWrapMode(int wrap, int wrapMargin) {
 	P_continuousWrap = wrap;
 	P_wrapMargin     = wrapMargin;
 
-	// NOTE(eteran): things are bit backwards from what i'd like
+    // TODO(eteran): things are bit backwards from what i'd like
 	//               this is triggered by setting the resource based
 	//               version of these values which eventually triggers
 	//               setValues(...) to call this function.
@@ -8220,4 +8220,40 @@ std::string TextArea::TextGetWrappedEx(int startPos, int endPos) {
 
 void TextArea::setStyleBuffer(TextBuffer *buffer) {
     styleBuffer_ = buffer;
+}
+
+
+int TextArea::getWrapMargin() const {
+    return P_wrapMargin;
+}
+
+int TextArea::getColumns() const {
+    return P_columns;
+}
+
+void TextArea::insertStringAP(const QString &string, EventFlags flags) {
+
+    Q_UNUSED(flags);
+
+    cancelDrag();
+    if (checkReadOnly()) {
+        return;
+    }
+
+    QByteArray array = string.toLatin1();
+
+    if (P_smartIndent) {
+        smartIndentCBStruct smartIndent;
+        smartIndent.reason        = CHAR_TYPED;
+        smartIndent.pos           = cursorPos_;
+        smartIndent.indentRequest = 0;
+        smartIndent.charsTyped    = array.data();
+
+        for(auto &c : smartIndentCallbacks_) {
+            c.first(this, &smartIndent, c.second);
+        }
+    }
+
+    TextInsertAtCursorEx(array.data(), true, true);
+    buffer_->BufUnselect();
 }
