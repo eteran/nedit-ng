@@ -37,7 +37,6 @@ void ShiftSelectionEx(DocumentWidget *window, TextArea *area, ShiftDirection dir
 void UpcaseSelectionEx(DocumentWidget *window, TextArea *area);
 void DowncaseSelectionEx(DocumentWidget *window, TextArea *area);
 void FillSelectionEx(DocumentWidget *window, TextArea *area);
-char *ShiftText(const char *text, ShiftDirection direction, int tabsAllowed, int tabDist, int nChars, int *newLen);
 std::string ShiftTextEx(view::string_view text, ShiftDirection direction, int tabsAllowed, int tabDist, int nChars);
 
 #endif

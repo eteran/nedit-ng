@@ -707,11 +707,10 @@ int LoadSmartIndentCommonString(char *inString) {
 ** allocated copy of the string, and advance *inPtr to the end of the macro.
 ** Returns nullptr if the macro end boundary string is not found.
 */
-
 static QString readSIMacroEx(const char **inPtr) {
 	if(char *s = readSIMacro(inPtr)) {
 		QString ret = QLatin1String(s);
-		XtFree(s);
+        delete s;
 		return ret;
 	}
 	
@@ -738,8 +737,12 @@ static char *readSIMacro(const char **inPtr) {
 
 	// Remove leading tabs added by writer routine 
 	*inPtr = macroEnd + strlen(MacroEndBoundary);
-	int shiftedLen;
-	char *retStr = ShiftText(macroStr, SHIFT_LEFT, True, 8, 8, &shiftedLen);
+
+    std::string shiftedText = ShiftTextEx(macroStr, SHIFT_LEFT, True, 8, 8);
+
+    auto retStr = new char[shiftedText.size() + 1];
+    strcpy(retStr, shiftedText.c_str());
+
 	delete [] macroStr;
 	return retStr;
 }

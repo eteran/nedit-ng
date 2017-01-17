@@ -26,28 +26,19 @@
 *                                                                              *
 *******************************************************************************/
 
-#include <QApplication>
-
 #include "shift.h"
 #include "DocumentWidget.h"
-#include "TextHelper.h"
 #include "TextBuffer.h"
 #include "TextArea.h"
-#include "util/memory.h"
-#include <cstring>
-#include <climits>
-#include <cctype>
-#include <algorithm>
+
 
 static char *makeIndentString(int indent, int tabDist, int allowTabs, int *nChars);
 static char *shiftLineLeft(const char *line, int lineLen, int tabDist, int nChars);
-static char *shiftLineRight(const char *line, int lineLen, int tabsAllowed, int tabDist, int nChars);
 
 static std::string shiftLineLeftEx(view::string_view line, int lineLen, int tabDist, int nChars);
 static std::string shiftLineRightEx(view::string_view line, int lineLen, int tabsAllowed, int tabDist, int nChars);
 
 static int atTabStop(int pos, int tabDist);
-static int countLines(const char *text);
 static int countLinesEx(view::string_view text);
 
 template <class In>
@@ -308,63 +299,8 @@ void FillSelectionEx(DocumentWidget *window, TextArea *area) {
     }
 }
 
-
 /*
-** shift lines left and right in a multi-line text string.  Returns the
-** shifted text in memory that must be freed by the caller with XtFree.
-*/
-char *ShiftText(const char *text, ShiftDirection direction, int tabsAllowed, int tabDist, int nChars, int *newLen) {
-	char *shiftedText, *shiftedLine;
-	char *shiftedPtr;
-	const char *textPtr;
-	int bufLen;
-
-	/*
-	** Allocate memory for shifted string.  Shift left adds a maximum of
-	** tabDist-2 characters per line (remove one tab, add tabDist-1 spaces).
-	** Shift right adds a maximum of nChars character per line.
-	*/
-	if (direction == SHIFT_RIGHT) {
-		bufLen = strlen(text) + countLines(text) * nChars;
-	} else {
-		bufLen = strlen(text) + countLines(text) * tabDist;
-	}
-	
-	shiftedText = XtMalloc(bufLen + 1);
-
-	/*
-	** break into lines and call shiftLine(Left/Right) on each
-	*/
-	const char *lineStartPtr = text;
-	textPtr = text;
-	shiftedPtr = shiftedText;
-	while (true) {
-		if (*textPtr == '\n' || *textPtr == '\0') {
-			shiftedLine = (direction == SHIFT_RIGHT) ? shiftLineRight(lineStartPtr, textPtr - lineStartPtr, tabsAllowed, tabDist, nChars) 
-			                                         : shiftLineLeft (lineStartPtr, textPtr - lineStartPtr,              tabDist, nChars);
-			strcpy(shiftedPtr, shiftedLine);
-			shiftedPtr += strlen(shiftedLine);
-			XtFree(shiftedLine);
-			if (*textPtr == '\0') {
-				// terminate string & exit loop at end of text 
-				*shiftedPtr = '\0';
-				break;
-			} else {
-				// move the newline from text to shifted text 
-				*shiftedPtr++ = *textPtr++;
-			}
-			// start line over 
-			lineStartPtr = textPtr;
-		} else
-			textPtr++;
-	}
-	*newLen = shiftedPtr - shiftedText;
-	return shiftedText;
-}
-
-/*
-** shift lines left and right in a multi-line text string.  Returns the
-** shifted text in memory that must be freed by the caller with XtFree.
+** shift lines left and right in a multi-line text string.
 */
 std::string ShiftTextEx(view::string_view text, ShiftDirection direction, int tabsAllowed, int tabDist, int nChars) {
 	int bufLen;
@@ -419,50 +355,6 @@ std::string ShiftTextEx(view::string_view text, ShiftDirection direction, int ta
 
 	return shiftedText;
 }
-
-static char *shiftLineRight(const char *line, int lineLen, int tabsAllowed, int tabDist, int nChars) {
-	char *lineOut;
-	const char *lineInPtr;
-	char *lineOutPtr;
-	int whiteWidth, i;
-
-	lineInPtr = line;
-	lineOut = XtMalloc(lineLen + nChars + 1);
-	lineOutPtr = lineOut;
-	whiteWidth = 0;
-	while (true) {
-		if (*lineInPtr == '\0' || (lineInPtr - line) >= lineLen) {
-			// nothing on line, wipe it out 
-			*lineOut = '\0';
-			return lineOut;
-		} else if (*lineInPtr == ' ') {
-			// white space continues with tab, advance to next tab stop 
-			whiteWidth++;
-			*lineOutPtr++ = *lineInPtr++;
-		} else if (*lineInPtr == '\t') {
-			// white space continues with tab, advance to next tab stop 
-			whiteWidth = nextTab(whiteWidth, tabDist);
-			*lineOutPtr++ = *lineInPtr++;
-		} else {
-			// end of white space, add nChars of space 
-			for (i = 0; i < nChars; i++) {
-				*lineOutPtr++ = ' ';
-				whiteWidth++;
-				// if we're now at a tab stop, change last 8 spaces to a tab 
-				if (tabsAllowed && atTabStop(whiteWidth, tabDist)) {
-					lineOutPtr -= tabDist;
-					*lineOutPtr++ = '\t';
-				}
-			}
-			// move remainder of line 
-			while (*lineInPtr != '\0' && (lineInPtr - line) < lineLen)
-				*lineOutPtr++ = *lineInPtr++;
-			*lineOutPtr = '\0';
-			return lineOut;
-		}
-	}
-}
-
 
 static std::string shiftLineRightEx(view::string_view line, int lineLen, int tabsAllowed, int tabDist, int nChars) {
 	int whiteWidth, i;
@@ -584,17 +476,6 @@ static int atTabStop(int pos, int tabDist) {
 
 static int nextTab(int pos, int tabDist) {
 	return (pos / tabDist) * tabDist + tabDist;
-}
-
-static int countLines(const char *text) {
-	int count = 1;
-
-	while (*text != '\0') {
-		if (*text++ == '\n') {
-			count++;
-		}
-	}
-	return count;
 }
 
 static int countLinesEx(view::string_view text) {
