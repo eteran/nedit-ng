@@ -49,7 +49,7 @@ int TextSelection::getSelectionPos(int *start, int *end, bool *isRect, int *rect
 }
 
 //------------------------------------------------------------------------------
-// Name: 
+// Name: updateSelection
 // Desc: Update an individual selection for changes in the corresponding text
 //------------------------------------------------------------------------------
 void TextSelection::updateSelection(int pos, int nDeleted, int nInserted) {

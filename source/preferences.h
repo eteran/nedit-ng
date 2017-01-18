@@ -38,8 +38,9 @@ class QWidget;
 class QString;
 class Document;
 class LanguageMode;
+class DocumentWidget;
 
-constexpr int PLAIN_LANGUAGE_MODE = -1;
+constexpr const int PLAIN_LANGUAGE_MODE = -1;
 
 /* maximum number of language modes allowed */
 #define MAX_LANGUAGE_MODES 127
@@ -87,6 +88,7 @@ char *GetPrefServerName();
 char *GetPrefTagFile();
 char *GetPrefTooltipBgColor();
 QString GetWindowDelimiters(const Document *window);
+QString GetWindowDelimitersEx(const DocumentWidget *window);
 QString LanguageModeName(int mode);
 char *ReadSymbolicField(const char **inPtr);
 char *ReadSymbolicFieldTextWidget(Widget textW, const char *fieldName, int silent);

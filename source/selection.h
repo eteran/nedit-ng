@@ -29,6 +29,8 @@
 
 class QString;
 class Document;
+class DocumentWidget;
+class TextArea;
 
 #include <X11/Intrinsic.h>
 
@@ -44,6 +46,7 @@ void GotoSelectedLineNumber(Document *window, Time time);
 void MarkDialog(Document *window);
 void OpenSelectedFile(Document *window, Time time);
 void SelectNumberedLine(Document *window, int lineNum);
+void SelectNumberedLineEx(DocumentWidget *document, TextArea *area, int lineNum);
 void UpdateMarkTable(Document *window, int pos, int nInserted, int nDeleted);
 
 #endif

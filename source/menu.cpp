@@ -98,10 +98,6 @@ extern "C" void _XmDismissTearOff(Widget, XtPointer, XtPointer);
 
 static void doActionCB(Widget w, XtPointer clientData, XtPointer callData);
 static void doTabActionCB(Widget w, XtPointer clientData, XtPointer callData);
-static void findCB(Widget w, XtPointer clientData, XtPointer callData);
-static void findSameCB(Widget w, XtPointer clientData, XtPointer callData);
-static void findSelCB(Widget w, XtPointer clientData, XtPointer callData);
-static void findIncrCB(Widget w, XtPointer clientData, XtPointer callData);
 static void replaceCB(Widget w, XtPointer clientData, XtPointer callData);
 static void replaceSameCB(Widget w, XtPointer clientData, XtPointer callData);
 static void replaceFindSameCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -227,14 +223,7 @@ static void unloadTipsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 static void printAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void printSelAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void exitAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void undoAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void redoAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void findDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void findAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void findSameAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void findSelAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void findIncrAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void startIncrFindAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void replaceDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void replaceAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void replaceAllAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
@@ -243,8 +232,6 @@ static void replaceSameAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 static void replaceFindAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void replaceFindSameAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void gotoAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void gotoDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void gotoSelectedAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void repeatDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void repeatMacroAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void markAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
@@ -360,8 +347,8 @@ static XtActionsRec Actions[] = {{(String) "new", newAP},
                                  {(String) "print-selection", printSelAP},
                                  {(String) "print_selection", printSelAP},
                                  {(String) "exit", exitAP},
-                                 {(String) "undo", undoAP},
-                                 {(String) "redo", redoAP},
+                                 //{(String) "undo", undoAP},
+                                 //{(String) "redo", redoAP},
                                  //{(String) "delete", clearAP},
                                  //{(String) "select-all", selAllAP},
                                  //{(String) "select_all", selAllAP},
@@ -374,14 +361,14 @@ static XtActionsRec Actions[] = {{(String) "new", newAP},
                                  //{(String) "shift-right-by-tab", shiftRightTabAP},
                                  //{(String) "shift_right_by_tab", shiftRightTabAP},
                                  {(String) "find", findAP},
-                                 {(String) "find-dialog", findDialogAP},
-                                 {(String) "find_dialog", findDialogAP},
-                                 {(String) "find-again", findSameAP},
-                                 {(String) "find_again", findSameAP},
-                                 {(String) "find-selection", findSelAP},
-                                 {(String) "find_selection", findSelAP},
-                                 {(String) "find_incremental", findIncrAP},
-                                 {(String) "start_incremental_find", startIncrFindAP},
+                                 //{(String) "find-dialog", findDialogAP},
+                                 //{(String) "find_dialog", findDialogAP},
+                                 //{(String) "find-again", findSameAP},
+                                 //{(String) "find_again", findSameAP},
+                                 //{(String) "find-selection", findSelAP},
+                                 //{(String) "find_selection", findSelAP},
+                                 //{(String) "find_incremental", findIncrAP},
+                                 //{(String) "start_incremental_find", startIncrFindAP},
                                  {(String) "replace", replaceAP},
                                  {(String) "replace-dialog", replaceDialogAP},
                                  {(String) "replace_dialog", replaceDialogAP},
@@ -396,10 +383,10 @@ static XtActionsRec Actions[] = {{(String) "new", newAP},
                                  {(String) "replace_find_again", replaceFindSameAP},
                                  {(String) "goto-line-number", gotoAP},
                                  {(String) "goto_line_number", gotoAP},
-                                 {(String) "goto-line-number-dialog", gotoDialogAP},
-                                 {(String) "goto_line_number_dialog", gotoDialogAP},
-                                 {(String) "goto-selected", gotoSelectedAP},
-                                 {(String) "goto_selected", gotoSelectedAP},
+                                 //{(String) "goto-line-number-dialog", gotoDialogAP},
+                                 //{(String) "goto_line_number_dialog", gotoDialogAP},
+                                 //{(String) "goto-selected", gotoSelectedAP},
+                                 //{(String) "goto_selected", gotoSelectedAP},
                                  {(String) "mark", markAP},
                                  {(String) "mark-dialog", markDialogAP},
                                  {(String) "mark_dialog", markDialogAP},
@@ -565,30 +552,11 @@ Widget CreateMenuBar(Widget parent, Document *window) {
 	** "Edit" pull down menu.
 	*/
 	menuPane = createMenu(menuBar, "editMenu", "Edit", 0, nullptr, SHORT);
-	window->undoItem_ = createMenuItem(menuPane, "undo", "Undo", 'U', doActionCB, "undo", SHORT);
-	XtSetSensitive(window->undoItem_, False);
-	window->redoItem_ = createMenuItem(menuPane, "redo", "Redo", 'R', doActionCB, "redo", SHORT);
-	XtSetSensitive(window->redoItem_, False);
-	createMenuSeparator(menuPane, "sep1", SHORT);
-	window->cutItem_ = createMenuItem(menuPane, "cut", "Cut", 't', doActionCB, "cut_clipboard", SHORT);
-	XtSetSensitive(window->cutItem_, window->wasSelected_);
-	window->copyItem_ = createMenuItem(menuPane, "copy", "Copy", 'C', doActionCB, "copy_clipboard", SHORT);
-	XtSetSensitive(window->copyItem_, window->wasSelected_);
-	createMenuItem(menuPane, "paste", "Paste", 'P', doActionCB, "paste_clipboard", SHORT);
 
 	/*
 	** "Search" pull down menu.
 	*/
 	menuPane = createMenu(menuBar, "searchMenu", "Search", 0, nullptr, SHORT);
-	createMenuItem(menuPane, "find", "Find...", 'F', findCB, window, SHORT);
-	createFakeMenuItem(menuPane, "findShift", findCB, window);
-	window->findAgainItem_ = createMenuItem(menuPane, "findAgain", "Find Again", 'i', findSameCB, window, SHORT);
-	XtSetSensitive(window->findAgainItem_, NHist);
-	createFakeMenuItem(menuPane, "findAgainShift", findSameCB, window);
-	window->findSelItem_ = createMenuItem(menuPane, "findSelection", "Find Selection", 'S', findSelCB, window, SHORT);
-	createFakeMenuItem(menuPane, "findSelectionShift", findSelCB, window);
-	createMenuItem(menuPane, "findIncremental", "Find Incremental", 'n', findIncrCB, window, SHORT);
-	createFakeMenuItem(menuPane, "findIncrementalShift", findIncrCB, window);
 	createMenuItem(menuPane, "replace", "Replace...", 'R', replaceCB, window, SHORT);
 	createFakeMenuItem(menuPane, "replaceShift", replaceCB, window);
 	window->replaceFindAgainItem_ = createMenuItem(menuPane, "replaceFindAgain", "Replace Find Again", 'A', replaceFindSameCB, window, SHORT);
@@ -598,10 +566,7 @@ Widget CreateMenuBar(Widget parent, Document *window) {
 	XtSetSensitive(window->replaceAgainItem_, NHist);
 	createFakeMenuItem(menuPane, "replaceAgainShift", replaceSameCB, window);
 	createMenuSeparator(menuPane, "sep1", FULL);
-	createMenuItem(menuPane, "gotoLineNumber", "Goto Line Number...", 'L', doActionCB, "goto_line_number_dialog", FULL);
-	window->gotoSelItem_ = createMenuItem(menuPane, "gotoSelected", "Goto Selected", 'G', doActionCB, "goto_selected", FULL);
-	createMenuSeparator(menuPane, "sep2", FULL);
-	createMenuItem(menuPane, "mark", "Mark", 'k', markCB, window, FULL);
+    createMenuItem(menuPane, "mark", "Mark", 'k', markCB, window, FULL);
 	createMenuItem(menuPane, "gotoMark", "Goto Mark", 'o', gotoMarkCB, window, FULL);
 	createFakeMenuItem(menuPane, "gotoMarkShift", gotoMarkCB, window);
 	createMenuSeparator(menuPane, "sep3", FULL);
@@ -867,38 +832,6 @@ static void doActionCB(Widget w, XtPointer clientData, XtPointer callData) {
 	HidePointerOnKeyedEvent(widget, event);
 
 	XtCallActionProc(widget, action, event, nullptr, 0);
-}
-
-static void findCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	Q_UNUSED(clientData);
-
-	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, "find_dialog", static_cast<XmAnyCallbackStruct *>(callData)->event, shiftKeyToDir(callData), 1);
-}
-
-static void findSameCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	Q_UNUSED(clientData);
-
-	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, "find_again", static_cast<XmAnyCallbackStruct *>(callData)->event, shiftKeyToDir(callData), 1);
-}
-
-static void findSelCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	Q_UNUSED(clientData);
-
-	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, "find_selection", static_cast<XmAnyCallbackStruct *>(callData)->event, shiftKeyToDir(callData), 1);
-}
-
-static void findIncrCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	Q_UNUSED(clientData);
-
-	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, "start_incremental_find", static_cast<XmAnyCallbackStruct *>(callData)->event, shiftKeyToDir(callData), 1);
 }
 
 static void replaceCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -2754,41 +2687,6 @@ static void exitAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 		exit(EXIT_SUCCESS);
 }
 
-static void undoAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(event);
-	Q_UNUSED(args);
-	Q_UNUSED(nArgs)
-
-	Document *window = Document::WidgetToWindow(w);
-
-	if (CheckReadOnly(window))
-		return;
-	window->Undo();
-}
-
-static void redoAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(event);
-	Q_UNUSED(args);
-	Q_UNUSED(nArgs)
-
-	Document *window = Document::WidgetToWindow(w);
-
-	if (CheckReadOnly(window))
-		return;
-	window->Redo();
-}
-
-static void findDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(event);
-	Q_UNUSED(args);
-	Q_UNUSED(nArgs)
-
-	DoFindDlog(Document::WidgetToWindow(w), searchDirection(0, args, nArgs), searchKeepDialogs(0, args, nArgs), searchType(0, args, nArgs), event->xbutton.time);
-}
-
 static void findAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	Q_UNUSED(event);
@@ -2798,48 +2696,6 @@ static void findAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 		return;
 	}
 	SearchAndSelect(Document::WidgetToWindow(w), searchDirection(1, args, nArgs), args[0], searchType(1, args, nArgs), searchWrap(1, args, nArgs));
-}
-
-static void findSameAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(event);
-
-	SearchAndSelectSame(
-		Document::WidgetToWindow(w), 
-		searchDirection(0, args, nArgs), 
-		searchWrap(0, args, nArgs));
-}
-
-static void findSelAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-	Q_UNUSED(event);
-
-	SearchForSelected(
-		Document::WidgetToWindow(w), 
-		searchDirection(0, args, nArgs), 
-		searchType(0, args, nArgs),		
-		searchWrap(0, args, nArgs), 		
-		event->xbutton.time);
-}
-
-static void startIncrFindAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(event);
-
-	BeginISearch(Document::WidgetToWindow(w), searchDirection(0, args, nArgs));
-}
-
-static void findIncrAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-	Q_UNUSED(event);
-
-	int i, continued = FALSE;
-	if (*nArgs == 0) {
-		fprintf(stderr, "nedit: find action requires search string argument\n");
-		return;
-	}
-	for (i = 1; i < (int)*nArgs; i++)
-		if (!strCaseCmp(args[i], "continued"))
-			continued = TRUE;
-	SearchAndSelectIncremental(Document::WidgetToWindow(w), searchDirection(1, args, nArgs), args[0], searchType(1, args, nArgs), searchWrap(1, args, nArgs), continued);
 }
 
 static void replaceDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -2976,22 +2832,6 @@ static void gotoAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	textD->TextSetCursorPos(position);
 	return;
-}
-
-static void gotoDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-	Q_UNUSED(event);
-	Q_UNUSED(args);
-	Q_UNUSED(nArgs)
-
-	GotoLineNumber(Document::WidgetToWindow(w));
-}
-
-static void gotoSelectedAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-	Q_UNUSED(event);
-	Q_UNUSED(args);
-	Q_UNUSED(nArgs)
-
-	GotoSelectedLineNumber(Document::WidgetToWindow(w), event->xbutton.time);
 }
 
 static void repeatDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {

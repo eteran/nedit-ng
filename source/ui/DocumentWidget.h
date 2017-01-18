@@ -57,9 +57,6 @@ public:
 public:
     static DocumentWidget *documentFrom(TextArea *area);
 
-private:
-	void EndISearch();
-
 public:
     TextArea *createTextArea(TextBuffer *buffer);
     QList<TextArea *> textPanes() const;
@@ -172,8 +169,6 @@ public:
 	bool fileMissing_;                 // is the window's file gone?
 	bool filenameSet_;                 // is the window still "Untitled"?
 	bool highlightSyntax_;             // is syntax highlighting turned on?
-	bool iSearchLastLiteralCase_;      // idem, for literal mode
-	bool iSearchLastRegexCase_;        // idem, for regex mode in incremental search bar
 	bool ignoreModify_;                // ignore modifications to text area
 	bool modeMessageDisplayed_;        // special stats line banner for learn and shell command executing modes
 	bool multiFileBusy_;               // suppresses multiple beeps/dialogs during multi-file replacements
@@ -192,16 +187,12 @@ public:
 	gid_t fileGid_;                    // last recorded group id of the file
 	ino_t inode_;                      // file's inode
 	int autoSaveCharCount_;            // count of single characters typed since last backup file generated
-	int autoSaveOpCount_;              // count of editing operations ""
-	int fHistIndex_;                   // history placeholders for
+	int autoSaveOpCount_;              // count of editing operations ""    
 	int flashPos_;                     // position saved for erasing matching paren highlight (if one is drawn)
-	int iSearchHistIndex_;             //   find and replace dialogs
-	int iSearchLastBeginPos_;          // beg. pos. last match of current i.s.
-	int iSearchStartPos_;              // start pos. of current incr. search
 	int languageMode_;                 // identifies language mode currently selected in the window
 	int nMarks_;                       // number of active bookmarks
 	int nWritableWindows_;             // number of elements in the list
-	int rHistIndex_;
+    int rHistIndex_;
 	int undoMemUsed_;                  // amount of memory (in bytes) dedicated to the undo list
 	std::list<UndoInfo *> redo_;       // info for redoing last undone op
 	std::list<UndoInfo *> undo_;       // info for undoing last operation

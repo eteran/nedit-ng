@@ -3,6 +3,8 @@
 #define MAIN_WINDOW_H_
 
 #include "smartIndentCBStruct.h"
+#include "SearchDirection.h"
+#include "SearchType.h"
 #include <QMainWindow>
 #include <QPointer>
 
@@ -28,6 +30,9 @@ private:
     void CreateLanguageModeSubMenu();
     void updateLanguageModeSubmenu();
 
+private:
+    virtual void keyPressEvent(QKeyEvent *event) override;
+
 public:
 	void UpdateWindowTitle(DocumentWidget *doc);
 	DialogReplace *getDialogReplace() const;
@@ -51,6 +56,9 @@ public:
     void invalidatePrevOpenMenus();
     void updatePrevOpenMenu();
     void fileCB(DocumentWidget *window, const std::string &value);
+    void initToggleButtonsiSearch(SearchType searchType);
+    void EndISearchEx();
+    void BeginISearchEx(SearchDirection direction);
 
 
 public:
@@ -67,10 +75,17 @@ public Q_SLOTS:
     void action_New(const QString &mode = QString());
     void action_Shift_Left_Tabs();
     void action_Shift_Right_Tabs();
+    void action_Shift_Find();
+    void action_Shift_Find_Again();
+    void action_Shift_Find_Selection_triggered();
+    void action_Shift_Find_Incremental_triggered();
 
 public Q_SLOTS:
     void on_tabWidget_currentChanged(int index);
     void on_tabWidget_customContextMenuRequested(int index, const QPoint &pos);
+    void on_editIFind_textChanged(const QString &text);
+    void on_editIFind_returnPressed();
+    void on_buttonIFind_clicked();
 
 public Q_SLOTS:
 	void on_action_New_triggered();
@@ -114,16 +129,22 @@ public Q_SLOTS:
     void on_action_Insert_Form_Feed_triggered();
     void on_action_Insert_Ctrl_Code_triggered();
 
+    void on_action_Goto_Line_Number_triggered();
+    void on_action_Goto_Selected_triggered();
+    void on_action_Find_triggered();
+    void on_action_Find_Again_triggered();
+    void on_action_Find_Selection_triggered();
+    void on_action_Find_Incremental_triggered();
 #if 0
-	void on_action_Find_triggered();
-	void on_action_Find_Again_triggered();
-	void on_action_Find_Selection_triggered();
-	void on_action_Find_Incremental_triggered();
+
+
+
+
 	void on_action_Replace_triggered();
 	void on_action_Replace_Find_Again_triggered();
 	void on_action_Replace_Again_triggered();
-	void on_action_Goto_Line_Number_triggered();
-	void on_action_Goto_Selected_triggered();
+
+
 	void on_action_Mark_triggered();
 	void on_action_Goto_Mark_triggered();
 	void on_action_Goto_Matching_triggered();
@@ -245,8 +266,10 @@ private Q_SLOTS:
     void raiseCB();
     void setLangModeCB(QAction *action);
     void openPrevCB(QAction *action);
+    void findIncrAP(const QString &searchString, SearchDirection direction, SearchType searchType, bool searchWraps, bool isContinue);
+    void findAP(const QString &searchString, SearchDirection direction, SearchType searchType, bool searchWraps);
 
-private:
+public:
 	QPointer<QDialog>  dialogFind_;
 	QPointer<QDialog>  dialogReplace_;
 	QPointer<TextArea> lastFocus_;
@@ -254,6 +277,12 @@ private:
 	bool               showStats_;       // is stats line supposed to be shown
 	bool               showISearchLine_; // is incr. search line to be shown
     bool               modeMessageDisplayed_;
+    int fHistIndex_;                   // history placeholders for
+    bool iSearchLastLiteralCase_;      // idem, for literal mode
+    bool iSearchLastRegexCase_;        // idem, for regex mode in incremental search bar
+    int iSearchHistIndex_;             //   find and replace dialogs
+    int iSearchLastBeginPos_;          // beg. pos. last match of current i.s.
+    int iSearchStartPos_;              // start pos. of current incr. search
 
 public:
     Ui::MainWindow ui;

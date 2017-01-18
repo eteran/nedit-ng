@@ -25,10 +25,14 @@
 * Written by Mark Edel                                                         *
 *                                                                              *
 *******************************************************************************/
+#include <QApplication>
+#include <QClipboard>
 
 #include "TextBuffer.h"
 #include "Rangeset.h"
 #include "RangesetTable.h"
+
+
 
 #include <algorithm>
 #include <cctype>
@@ -1122,6 +1126,10 @@ void TextBuffer::BufSelect(int start, int end) {
 
 	primary_.setSelection(start, end);
 	redisplaySelection(&oldSelection, &primary_);
+
+    // TODO(eteran): find a better way to ensure that the X11 selection
+    //               tracks this! Perhaps a callback we can register for?
+    QApplication::clipboard()->setText(QString::fromStdString(BufGetSelectionTextEx()), QClipboard::Selection);
 }
 
 void TextBuffer::BufUnselect() {
@@ -1137,6 +1145,10 @@ void TextBuffer::BufRectSelect(int start, int end, int rectStart, int rectEnd) {
 
 	primary_.setRectSelect(start, end, rectStart, rectEnd);
 	redisplaySelection(&oldSelection, &primary_);
+
+    // TODO(eteran): find a better way to ensure that the X11 selection
+    //               tracks this! Perhaps a callback we can register for?
+    QApplication::clipboard()->setText(QString::fromStdString(BufGetSelectionTextEx()), QClipboard::Selection);
 }
 
 int TextBuffer::BufGetSelectionPos(int *start, int *end, bool *isRect, int *rectStart, int *rectEnd) {

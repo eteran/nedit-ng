@@ -10,11 +10,13 @@
 
 
 class Document;
+class MainWindow;
+class DocumentWidget;
 
 class DialogFind : public QDialog {
 	Q_OBJECT
 public:
-	DialogFind(Document *window, QWidget *parent = 0, Qt::WindowFlags f = 0);
+    DialogFind(MainWindow *window, DocumentWidget *document, QWidget *parent = 0, Qt::WindowFlags f = 0);
 	virtual ~DialogFind();
 	
 protected:
@@ -22,7 +24,7 @@ protected:
 	virtual void showEvent(QShowEvent *event) override;
 
 public:
-	void setTextField(Document *window, time_t time);
+    void setTextField(DocumentWidget *document);
 	void initToggleButtons(SearchType searchType);
 	void fUpdateActionButtons();
 	
@@ -41,7 +43,8 @@ private Q_SLOTS:
 	void on_buttonFind_clicked();
 	
 public:
-	Document *window_;
+    MainWindow *window_;
+    DocumentWidget *document_;
 	Ui::DialogFind ui;
 	bool lastRegexCase_;        /* idem, for regex mode in find dialog */
 	bool lastLiteralCase_;      /* idem, for literal mode */	

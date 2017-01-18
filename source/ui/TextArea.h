@@ -261,7 +261,7 @@ public:
 	void TextInsertAtCursorEx(view::string_view chars, bool allowPendingDelete, bool allowWrap);
 	void TextDOverstrikeEx(view::string_view text);
 	void TextDInsertEx(view::string_view text);
-	void TextCutClipboard(Time time);
+    void TextCutClipboard();
 	void TextCopyClipboard();
 	void TextPasteClipboard();
 	void TextColPasteClipboard();
@@ -272,6 +272,7 @@ public:
     std::string TextGetWrappedEx(int startPos, int endPos);
     int getWrapMargin() const;
     int getColumns() const;
+    int TextDLineAndColToPos(int lineNum, int column);
 
 public:
 	void bufPreDeleteCallback(int pos, int nDeleted);
@@ -319,7 +320,7 @@ private:
 	void callCursorMovementCBs();
 	void checkMoveSelectionChange(EventFlags flags, int startPos);
 	void keyMoveExtendSelection(int origPos, bool rectangular);
-	void TakeMotifDestination(Time time);
+    void TakeMotifDestination();
 	bool checkReadOnly() const;
 	void simpleInsertAtCursorEx(view::string_view chars, bool allowPendingDelete);
 	int pendingSelection();
@@ -397,7 +398,6 @@ private:
 	int nLinesDeleted_;                           // Number of lines deleted during buffer modification (only used when resynchronization is suppressed)
 	int modifyingTabDist_;                        // Whether tab distance is being modified
 	bool pointerHidden_;                          // true if the mouse pointer is hidden
-	graphicExposeTranslationEntry *graphicsExposeQueue_;
 
 	// NOTE(eteran): moved from textP
 	TextBuffer *dragOrigBuf_;        // backup buffer copy used during block dragging of selections

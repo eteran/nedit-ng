@@ -4,9 +4,14 @@
 #include <QKeyEvent>
 #include <QtDebug>
 #include <QMessageBox>
+#include <QClipboard>
 
 #include "util/memory.h"
 #include "DialogFind.h"
+#include "MainWindow.h"
+#include "DocumentWidget.h"
+#include "TextBuffer.h"
+#include "TextArea.h"
 #include "Document.h"
 #include "search.h" // for the search type enum
 #include "server.h"
@@ -14,48 +19,14 @@
 #include "util/MotifHelper.h"
 #include "regularExp.h"
 
-namespace {
-
-void getSelectionCB(Widget w, SelectionInfo *selectionInfo, Atom *selection, Atom *type, char *value, int *length, int *format) {
-
-	Q_UNUSED(w);
-	Q_UNUSED(selection);
-
-
-	// return an empty string if we can't get the selection data 
-	if (*type == XT_CONVERT_FAIL || *type != XA_STRING || value == nullptr || *length == 0) {
-		XtFree(value);
-		selectionInfo->selection = nullptr;
-		selectionInfo->done = 1;
-		return;
-	}
-
-	// return an empty string if the data is not of the correct format. 
-	if (*format != 8) {
-		QMessageBox::warning(nullptr /*parent*/, QLatin1String("Invalid Format"), QLatin1String("NEdit can't handle non 8-bit text"));
-		XtFree(value);
-		selectionInfo->selection = nullptr;
-		selectionInfo->done = 1;
-		return;
-	}
-	
-	selectionInfo->selection = XtMalloc(*length + 1);
-	memcpy(selectionInfo->selection, value, *length);
-	selectionInfo->selection[*length] = 0;
-	XtFree(value);
-	selectionInfo->done = 1;
-}
-
-}
-
 //------------------------------------------------------------------------------
-// name: 
+// name:
 //------------------------------------------------------------------------------
-DialogFind::DialogFind(Document *window, QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f), window_(window) {
-	ui.setupUi(this);
-	
-	lastRegexCase_   = true;
-	lastLiteralCase_ = false;
+DialogFind::DialogFind(MainWindow *window, DocumentWidget *document, QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f), window_(window), document_(document) {
+    ui.setupUi(this);
+
+    lastRegexCase_   = true;
+    lastLiteralCase_ = false;
 }
 
 //------------------------------------------------------------------------------
@@ -134,7 +105,7 @@ void DialogFind::on_checkBackward_toggled(bool checked) {
 //------------------------------------------------------------------------------
 void DialogFind::on_checkKeep_toggled(bool checked) {
 	if (checked) {
-		setWindowTitle(tr("Find (in %1)").arg(window_->filename_));
+        setWindowTitle(tr("Find (in %1)").arg(document_->filename_));
 	} else {
 		setWindowTitle(tr("Find"));
 	}
@@ -231,38 +202,24 @@ void DialogFind::initToggleButtons(SearchType searchType) {
 }
 
 //------------------------------------------------------------------------------
-// name: 
+// name:
 //------------------------------------------------------------------------------
-void DialogFind::setTextField(Document *window, time_t time) {
+void DialogFind::setTextField(DocumentWidget *document) {
 
-	char *primary_selection = nullptr;
-	auto selectionInfo = new SelectionInfo;
+    Q_UNUSED(document);
 
-	if (GetPrefFindReplaceUsesSelection()) {
-		selectionInfo->done      = 0;
-		selectionInfo->window    = window;
-		selectionInfo->selection = nullptr;
-		XtGetSelectionValue(window->textArea_, XA_PRIMARY, XA_STRING, (XtSelectionCallbackProc)getSelectionCB, selectionInfo, time);
+    QString initialText;
 
-		XEvent nextEvent;
-		while (selectionInfo->done == 0) {
-			XtAppNextEvent(XtWidgetToApplicationContext(window->textArea_), &nextEvent);
-			ServerDispatchEvent(&nextEvent);
-		}
+    if (GetPrefFindReplaceUsesSelection()) {
+        const QMimeData *mimeData = QApplication::clipboard()->mimeData(QClipboard::Selection);
+        if(mimeData->hasText()) {
+            initialText = mimeData->text();
+        }
+    }
 
-		primary_selection = selectionInfo->selection;
-	}
 
-	if (primary_selection == nullptr) {
-		primary_selection = XtNewStringEx("");
-	}
-
-	// Update the field 
-	ui.textFind->setText(QLatin1String(primary_selection));
-
-	XtFree(primary_selection);
-
-	delete selectionInfo;
+    // Update the field
+    ui.textFind->setText(initialText);
 }
 
 //------------------------------------------------------------------------------
@@ -283,26 +240,16 @@ void DialogFind::on_buttonFind_clicked() {
 	ui.textFind->setFocus();
 
 	// find the text and mark it 
-	windowNotToClose = window_;
-#if 1
-	const char *params[4];
-	params[0] = searchString.c_str(); // TODO(eteran): is this OK?
-	params[1] = directionArg(direction);
-	params[2] = searchTypeArg(searchType);
-	params[3] = searchWrapArg(GetPrefSearchWraps());
-	XtCallActionProc(window_->lastFocus_, "find", nullptr/* callData->event*/, const_cast<char **>(params), 4);
-#else
-	// TODO(eteran): replace this with signal/slots eventually
-	//               the original code would end up calling menu.cpp:findAP
-	//               which eventually calls search.cpp:SearchAndSelect
-	//               I suppose this indirection implicitly handles searching
-	//               being enabled or disabled (ever?), but we'll replace that 
-	//               with a QAction eventually anyway
-	//               this also is likely reusing the code used to support the scripting
-	//               language
-	SearchAndSelect(window_->lastFocus_, direction, searchString.c_str(), searchType, GetPrefSearchWraps());
+
+#if 0 // TODO(eteran): not sure we need this concept in Qt
+    windowNotToClose = window_;
 #endif
+
+    SearchAndSelectEx(window_, document_, window_->lastFocus_, direction, searchString.c_str(), searchType, GetPrefSearchWraps());
+
+#if 0 // TODO(eteran): not sure we need this concept in Qt
 	windowNotToClose = nullptr;
+#endif
 
 	// pop down the dialog 
 	if (!keepDialog()) {

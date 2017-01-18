@@ -462,7 +462,6 @@ TextArea::TextArea(QWidget *parent,
 	nLinesDeleted_       = 0;
 	modifyingTabDist_    = 0;
 	pointerHidden_       = false;
-	graphicsExposeQueue_ = nullptr;
     bgMenu_              = nullptr;
 
 	/* Attach the callback to the text buffer for receiving modification
@@ -532,7 +531,7 @@ void TextArea::pasteClipboardAP(EventFlags flags) {
 
 void TextArea::cutClipboardAP(EventFlags flags) {
 	Q_UNUSED(flags);
-	TextCutClipboard(0);
+    TextCutClipboard();
 }
 
 void TextArea::toggleOverstrikeAP(EventFlags flags) {
@@ -575,7 +574,7 @@ void TextArea::deleteNextCharacterAP(EventFlags flags) {
 		return;
 	}
 
-	TakeMotifDestination(0);
+    TakeMotifDestination();
 
 	if (deletePendingSelection()) {
 		return;
@@ -609,7 +608,7 @@ void TextArea::deletePreviousWordAP(EventFlags flags) {
 		return;
 	}
 
-	TakeMotifDestination(0);
+    TakeMotifDestination();
 	if (deletePendingSelection()) {
 		return;
 	}
@@ -672,7 +671,7 @@ void TextArea::deletePreviousCharacterAP(EventFlags flags) {
 	if (checkReadOnly())
 		return;
 
-	TakeMotifDestination(0);
+    TakeMotifDestination();
 	if (deletePendingSelection())
 		return;
 
@@ -1311,7 +1310,7 @@ void TextArea::keyPressEvent(QKeyEvent *event) {
 		return;
 	}
 
-	TakeMotifDestination(0);
+    TakeMotifDestination();
 
 	if (!buffer_->BufSubstituteNullCharsEx(s)) {
 		QMessageBox::critical(this, tr("Error"), tr("Too much binary data"));
@@ -1439,7 +1438,7 @@ void TextArea::mousePressEvent(QMouseEvent *event) {
 		/* Become owner of the MOTIF_DESTINATION selection, making this widget
 		   the designated recipient of secondary quick actions in Motif XmText
 		   widgets and in other NEdit text widgets */
-		TakeMotifDestination(0);
+        TakeMotifDestination();
 
 		// Check for possible multi-click sequence in progress
 		if(!clickTracker(event, false)) {
@@ -4790,13 +4789,13 @@ void TextArea::keyMoveExtendSelection(int origPos, bool rectangular) {
 ** secondary quick action requests.  The NEdit text widget uses this also
 ** for compatibility with Motif text widgets.
 */
-void TextArea::TakeMotifDestination(Time time) {
+void TextArea::TakeMotifDestination() {
 
 	Q_UNUSED(time);
 
-	if (motifDestOwner_ || P_readOnly) {
-		return;
-	}
+    //if (motifDestOwner_ || P_readOnly) {
+    //	return;
+    //}
 
 	// Take ownership of the MOTIF_DESTINATION selection
 #if 0
@@ -5282,7 +5281,7 @@ void TextArea::newlineNoIndentAP(EventFlags flags) {
 		return;
 	}
 
-	TakeMotifDestination(0);
+    TakeMotifDestination();
 	simpleInsertAtCursorEx("\n", true);
 	buffer_->BufUnselect();
 }
@@ -5299,7 +5298,7 @@ void TextArea::newlineAndIndentAP(EventFlags flags) {
 	}
 
 	cancelDrag();
-	TakeMotifDestination(0);
+    TakeMotifDestination();
 
 	/* Create a string containing a newline followed by auto or smart
 	   indent string */
@@ -5653,7 +5652,7 @@ void TextArea::keySelectAP(EventFlags flags) {
 	}
 }
 
-void TextArea::TextCutClipboard(Time time) {
+void TextArea::TextCutClipboard() {
 
 	cancelDrag();
 	if (checkReadOnly()) {
@@ -5665,7 +5664,7 @@ void TextArea::TextCutClipboard(Time time) {
 		return;
 	}
 
-	TakeMotifDestination(time);
+    TakeMotifDestination();
 	CopyToClipboard();
 	buffer_->BufRemoveSelected();
 	TextDSetInsertPosition(buffer_->cursorPosHint_);
@@ -5676,7 +5675,6 @@ void TextArea::TextCutClipboard(Time time) {
 ** Copy the primary selection to the clipboard
 */
 void TextArea::CopyToClipboard() {
-
 
 	// Get the selected text, if there's no selection, do nothing
 	std::string text = buffer_->BufGetSelectionTextEx();
@@ -5708,7 +5706,7 @@ void TextArea::TextPasteClipboard() {
 		return;
 	}
 
-	TakeMotifDestination(0);
+    TakeMotifDestination();
 	InsertClipboard(false);
 	callCursorMovementCBs();
 }
@@ -5719,7 +5717,7 @@ void TextArea::TextColPasteClipboard() {
 		return;
 	}
 
-	TakeMotifDestination(0);
+    TakeMotifDestination();
 	InsertClipboard(true);
 	callCursorMovementCBs();
 }
@@ -6095,7 +6093,7 @@ void TextArea::processTabAP(EventFlags flags) {
 	}
 
 	cancelDrag();
-	TakeMotifDestination(0);
+    TakeMotifDestination();
 
 	// If emulated tabs are off, just insert a tab
 	if (emTabDist <= 0) {
@@ -6527,7 +6525,7 @@ void TextArea::deleteToStartOfLineAP(EventFlags flags) {
 		return;
 	}
 
-	TakeMotifDestination(0);
+    TakeMotifDestination();
 	if (deletePendingSelection()) {
 		return;
 	}
@@ -7307,7 +7305,7 @@ void TextArea::deleteToEndOfLineAP(EventFlags flags) {
 	cancelDrag();
 	if (checkReadOnly())
 		return;
-	TakeMotifDestination(0);
+    TakeMotifDestination();
 	if (deletePendingSelection()) {
 		return;
 	}
@@ -8256,4 +8254,67 @@ void TextArea::insertStringAP(const QString &string, EventFlags flags) {
 
     TextInsertAtCursorEx(array.data(), true, true);
     buffer_->BufUnselect();
+}
+
+/*
+** Translate line and column to the nearest row and column number for
+** positioning the cursor.  This, of course, makes no sense when the font
+** is proportional, since there are no absolute columns.
+*/
+int TextArea::TextDLineAndColToPos(int lineNum, int column) {
+    int i;
+    int lineEnd;
+    int lineStart = 0;
+
+    // Count lines
+    if (lineNum < 1) {
+        lineNum = 1;
+    }
+
+    lineEnd = -1;
+    for (i = 1; i <= lineNum && lineEnd < buffer_->BufGetLength(); i++) {
+        lineStart = lineEnd + 1;
+        lineEnd = buffer_->BufEndOfLine(lineStart);
+    }
+
+    // If line is beyond end of buffer, position at last character in buffer
+    if (lineNum >= i) {
+        return lineEnd;
+    }
+
+    // Start character index at zero
+    int charIndex = 0;
+
+    // Only have to count columns if column isn't zero (or negative)
+    if (column > 0) {
+
+        int charLen = 0;
+
+        // Count columns, expanding each character
+        std::string lineStr = buffer_->BufGetRangeEx(lineStart, lineEnd);
+        int outIndex = 0;
+        for (i = lineStart; i < lineEnd; i++, charIndex++) {
+            char expandedChar[MAX_EXP_CHAR_LEN];
+            charLen = TextBuffer::BufExpandCharacter(lineStr[charIndex], outIndex, expandedChar, buffer_->tabDist_, buffer_->nullSubsChar_);
+            if (outIndex + charLen >= column)
+                break;
+            outIndex += charLen;
+
+            // NOTE(eteran): previous code leaked here lineStr here!
+        }
+
+        /* If the column is in the middle of an expanded character, put cursor
+         * in front of character if in first half of character, and behind
+         * character if in last half of character
+         */
+        if (column >= outIndex + (charLen / 2))
+            charIndex++;
+
+        // If we are beyond the end of the line, back up one space
+        if ((i >= lineEnd) && (charIndex > 0))
+            charIndex--;
+    }
+
+    // Position is the start of the line plus the index into line buffer
+    return lineStart + charIndex;
 }

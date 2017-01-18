@@ -27,7 +27,7 @@
 #ifndef SEARCH_H_
 #define SEARCH_H_
 
-constexpr int MAX_SEARCH_HISTORY = 100; /* Maximum length of search string history */
+constexpr const int MAX_SEARCH_HISTORY = 100; /* Maximum length of search string history */
 
 #include "SearchDirection.h"
 #include "SearchType.h"
@@ -38,6 +38,7 @@ constexpr int MAX_SEARCH_HISTORY = 100; /* Maximum length of search string histo
 
 class TextArea;
 class DocumentWidget;
+class MainWindow;
 
 Boolean WindowCanBeClosed(Document *window);
 bool ReplaceAll(Document *window, const char *searchString, const char *replaceString, SearchType searchType);
@@ -45,17 +46,18 @@ bool ReplaceAndSearch(Document *window, SearchDirection direction, const char *s
 bool ReplaceFindSame(Document *window, SearchDirection direction, int searchWrap);
 bool ReplaceSame(Document *window, SearchDirection direction, int searchWrap);
 bool SearchAndReplace(Document *window, SearchDirection direction, const char *searchString, const char *replaceString, SearchType searchType, int searchWrap);
-bool SearchAndSelectIncremental(Document *window, SearchDirection direction, const char *searchString, SearchType searchType, int searchWrap, int continued);
-bool SearchAndSelectSame(Document *window, SearchDirection direction, int searchWrap);
+bool SearchAndSelectIncrementalEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, const char *searchString, SearchType searchType, bool searchWrap, bool continued);
+bool SearchAndSelectSameEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, bool searchWrap);
 bool SearchAndSelect(Document *window, SearchDirection direction, const char *searchString, SearchType searchType, int searchWrap);
+bool SearchAndSelectEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, const char *searchString, SearchType searchType, int searchWrap);
 bool SearchString(view::string_view string, const char *searchString, SearchDirection direction, SearchType searchType, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters);
 bool SearchWindow(Document *window, SearchDirection direction, const char *searchString, SearchType searchType, int searchWrap, int beginPos, int *startPos, int *endPos, int *extentBW, int *extentFW);
+bool SearchWindowEx(MainWindow *window, DocumentWidget *document, SearchDirection direction, const char *searchString, SearchType searchType, int searchWrap, int beginPos, int *startPos, int *endPos, int *extentBW, int *extentFW);
 char *ReplaceAllInString(view::string_view inString, const char *searchString, const char *replaceString, SearchType searchType, int *copyStart, int *copyEnd, int *replacementLength, const char *delimiters);
-void BeginISearch(Document *window, SearchDirection direction);
-void CreateFindDlog(Widget parent, Document *window);
+void BeginISearchEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction);
 void CreateReplaceDlog(Widget parent, Document *window);
 void CreateReplaceMultiFileDlog(Document *window);
-void DoFindDlog(Document *window, SearchDirection direction, int keepDialogs, SearchType searchType, Time time);
+void DoFindDlogEx(MainWindow *window, DocumentWidget *document, SearchDirection direction, int keepDialogs, SearchType searchType);
 void DoFindReplaceDlog(Document *window, SearchDirection direction, int keepDialogs, SearchType searchType, Time time);
 void EndISearch(Document *window);
 void FlashMatching(Document *window, Widget textW);
@@ -64,6 +66,7 @@ void GotoMatchingCharacter(Document *window);
 void RemoveFromMultiReplaceDialog(Document *window);
 void ReplaceInSelection(const Document *window, const char *searchString, const char *replaceString, SearchType searchType);
 void SearchForSelected(Document *window, SearchDirection direction, SearchType searchType, int searchWrap, Time time);
+void SearchForSelectedEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, SearchType searchType, int searchWrap);
 void SelectToMatchingCharacter(Document *window);
 void SetISearchTextCallbacks(Document *window);
 void eraseFlashEx(DocumentWidget *document);
@@ -109,6 +112,7 @@ int historyIndex(int nCycles);
 int isRegexType(SearchType searchType);
 void unmanageReplaceDialogs(const Document *window);
 void saveSearchHistory(const char *searchString, const char *replaceString, SearchType searchType, bool isIncremental);
+int defaultRegexFlags(SearchType searchType);
 
 extern char *SearchHistory[MAX_SEARCH_HISTORY];
 extern char *ReplaceHistory[MAX_SEARCH_HISTORY];

@@ -28,11 +28,15 @@
 
 #include <QApplication>
 #include <QMessageBox>
+#include <QClipboard>
+#include <QMimeData>
+#include "SignalBlocker.h"
 #include "ui/DialogFind.h"
 #include "ui/DialogReplace.h"
 #include "ui/DialogMultiReplace.h"
 #include "ui/DocumentWidget.h"
 #include "ui/TextArea.h"
+#include "ui/MainWindow.h"
 #include "util/memory.h"
 #include "WrapStyle.h"
 #include "TextDisplay.h"
@@ -88,16 +92,17 @@ static bool replaceUsingREEx(view::string_view searchStr, const char *replaceStr
 static bool forwardRegexSearch(view::string_view string, view::string_view searchString, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags);
 static bool searchRegex(view::string_view string, view::string_view searchString, SearchDirection direction, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags);
 static int countWindows(void);
-static int defaultRegexFlags(SearchType searchType);
 static int findMatchingChar(Document *window, char toMatch, void *toMatchStyle, int charPos, int startLimit, int endLimit, int *matchPos);
 static bool searchLiteral(view::string_view string, view::string_view searchString, bool caseSense, SearchDirection direction, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW);
 static bool searchLiteralWord(view::string_view string, view::string_view searchString, bool caseSense, SearchDirection direction, bool wrap, int beginPos, int *startPos, int *endPos, const char *delimiters);
 static bool searchMatchesSelection(Document *window, const char *searchString, SearchType searchType, int *left, int *right, int *searchExtentBW, int *searchExtentFW);
+static bool searchMatchesSelectionEx(DocumentWidget *window, const char *searchString, SearchType searchType, int *left, int *right, int *searchExtentBW, int *searchExtentFW);
 static void checkMultiReplaceListForDoomedW(Document *window, Document *doomedWindow);
 static void eraseFlash(Document *window);
 static void flashTimeoutProc(XtPointer clientData, XtIntervalId *id);
 static void iSearchCaseToggleCB(Widget w, XtPointer clientData, XtPointer callData);
 static void iSearchRecordLastBeginPos(Document *window, SearchDirection direction, int initPos);
+static void iSearchRecordLastBeginPosEx(MainWindow *window, SearchDirection direction, int initPos);
 static void iSearchRegExpToggleCB(Widget w, XtPointer clientData, XtPointer callData);
 static void iSearchTextActivateCB(Widget w, XtPointer clientData, XtPointer call_data);
 static void iSearchTextClearAndPasteAP(Widget w, XEvent *event, String *args, Cardinal *nArg);
@@ -105,6 +110,7 @@ static void iSearchTextClearCB(Widget w, XtPointer clientData, XtPointer call_da
 static void iSearchTextKeyEH(Widget w, XtPointer clientData, XEvent *Event, Boolean *continueDispatch);
 static void iSearchTextValueChangedCB(Widget w, XtPointer clientData, XtPointer call_data);
 static void iSearchTryBeepOnWrap(Document *window, SearchDirection direction, int beginPos, int startPos);
+static void iSearchTryBeepOnWrapEx(MainWindow *window, SearchDirection direction, int beginPos, int startPos);
 static void removeDoomedWindowFromList(Document *window, int index);
 static void selectedSearchCB(Widget w, XtPointer callData, Atom *selection, Atom *type, char *value, int *length, int *format);
 static std::string upCaseStringEx(view::string_view inString);
@@ -384,39 +390,39 @@ void DoFindReplaceDlog(Document *window, SearchDirection direction, int keepDial
 	dialog->show();
 }
 
-void DoFindDlog(Document *window, SearchDirection direction, int keepDialogs, SearchType searchType, Time time) {
+void DoFindDlogEx(MainWindow *window, DocumentWidget *document, SearchDirection direction, int keepDialogs, SearchType searchType) {
 
-	if(!window->dialogFind_) {
-		window->dialogFind_ = new DialogFind(window, nullptr /*parent*/);
-	}
-	
-	auto dialog = qobject_cast<DialogFind *>(window->dialogFind_);
-	
-	dialog->setTextField(window, time);
-	
-	if(dialog->isVisible()) {
-		dialog->raise();
-		dialog->activateWindow();
-		return;
-	}
-	
-	// Set the initial search type 
-	dialog->initToggleButtons(searchType);
-	
-	// Set the initial direction based on the direction argument 
-	dialog->ui.checkBackward->setChecked(direction == SEARCH_FORWARD ? false : true);
-	
-	// Set the state of the Keep Dialog Up button 
-	dialog->ui.checkKeep->setChecked(keepDialogs);
-	
-	// Set the state of the Find button 
-	dialog->fUpdateActionButtons();
+    if(!window->dialogFind_) {
+        window->dialogFind_ = new DialogFind(window, document, window);
+    }
 
-	// start the search history mechanism at the current history item 
-	window->fHistIndex_ = 0;
+    auto dialog = qobject_cast<DialogFind *>(window->dialogFind_);
 
-	// TODO(eteran): center it on the cursor if settings say so
-	dialog->show();
+    dialog->setTextField(document);
+
+    if(dialog->isVisible()) {
+        dialog->raise();
+        dialog->activateWindow();
+        return;
+    }
+
+    // Set the initial search type
+    dialog->initToggleButtons(searchType);
+
+    // Set the initial direction based on the direction argument
+    dialog->ui.checkBackward->setChecked(direction == SEARCH_FORWARD ? false : true);
+
+    // Set the state of the Keep Dialog Up button
+    dialog->ui.checkKeep->setChecked(keepDialogs);
+
+    // Set the state of the Find button
+    dialog->fUpdateActionButtons();
+
+    // start the search history mechanism at the current history item
+    window->fHistIndex_ = 0;
+
+    // TODO(eteran): center it on the cursor if settings say so
+    dialog->show();
 }
 
 /*
@@ -442,11 +448,7 @@ void CreateReplaceDlog(Widget parent, Document *window) {
 	window->dialogReplace_ = new DialogReplace(window, nullptr /*parent*/);		
 }
 
-void CreateFindDlog(Widget parent, Document *window) {
 
-	Q_UNUSED(parent);
-	window->dialogFind_ = new DialogFind(window, nullptr /*parent*/);
-}
 
 /*
 ** Iterates through the list of writable windows of a window, and removes
@@ -568,13 +570,13 @@ void unmanageReplaceDialogs(const Document *window) {
 ** in "searchType", and return TRUE as the function value.  Otherwise,
 ** return FALSE.
 */
-bool SearchAndSelectSame(Document *window, SearchDirection direction, int searchWrap) {
-	if (NHist < 1) {
-		QApplication::beep();
-		return FALSE;
-	}
+bool SearchAndSelectSameEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, bool searchWrap) {
+    if (NHist < 1) {
+        QApplication::beep();
+        return false;
+    }
 
-	return SearchAndSelect(window, direction, SearchHistory[historyIndex(1)], SearchTypeHistory[historyIndex(1)], searchWrap);
+    return SearchAndSelectEx(window, document, area, direction, SearchHistory[historyIndex(1)], SearchTypeHistory[historyIndex(1)], searchWrap);
 }
 
 /*
@@ -582,6 +584,79 @@ bool SearchAndSelectSame(Document *window, SearchDirection direction, int search
 ** the window when found (or beep or put up a dialog if not found).  Also
 ** adds the search string to the global search history.
 */
+bool SearchAndSelectEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, const char *searchString, SearchType searchType, int searchWrap) {
+    int startPos;
+    int endPos;
+    int beginPos;
+    int cursorPos;
+    int selStart;
+    int selEnd;
+    int movedFwd = 0;
+
+    // Save a copy of searchString in the search history
+    saveSearchHistory(searchString, nullptr, searchType, false);
+
+    /* set the position to start the search so we don't find the same
+       string that was found on the last search	*/
+    if (searchMatchesSelectionEx(document, searchString, searchType, &selStart, &selEnd, nullptr, nullptr)) {
+        // selection matches search string, start before or after sel.
+        if (direction == SEARCH_BACKWARD) {
+            beginPos = selStart - 1;
+        } else {
+            beginPos = selStart + 1;
+            movedFwd = 1;
+        }
+    } else {
+        selStart = -1;
+        selEnd = -1;
+        // no selection, or no match, search relative cursor
+
+        cursorPos = area->TextGetCursorPos();
+        if (direction == SEARCH_BACKWARD) {
+            // use the insert position - 1 for backward searches
+            beginPos = cursorPos - 1;
+        } else {
+            // use the insert position for forward searches
+            beginPos = cursorPos;
+        }
+    }
+
+    /* when the i-search bar is active and search is repeated there
+       (Return), the action "find" is called (not: "find_incremental").
+       "find" calls this function SearchAndSelect.
+       To keep track of the iSearchLastBeginPos correctly in the
+       repeated i-search case it is necessary to call the following
+       function here, otherwise there are no beeps on the repeated
+       incremental search wraps.  */
+    iSearchRecordLastBeginPosEx(window, direction, beginPos);
+
+    // do the search.  SearchWindow does appropriate dialogs and beeps
+    if (!SearchWindowEx(window, document, direction, searchString, searchType, searchWrap, beginPos, &startPos, &endPos, nullptr, nullptr))
+        return false;
+
+    /* if the search matched an empty string (possible with regular exps)
+       beginning at the start of the search, go to the next occurrence,
+       otherwise repeated finds will get "stuck" at zero-length matches */
+    if (direction == SEARCH_FORWARD && beginPos == startPos && beginPos == endPos) {
+        if (!movedFwd && !SearchWindowEx(window, document, direction, searchString, searchType, searchWrap, beginPos + 1, &startPos, &endPos, nullptr, nullptr))
+            return false;
+    }
+
+    // if matched text is already selected, just beep
+    if (selStart == startPos && selEnd == endPos) {
+        QApplication::beep();
+        return false;
+    }
+
+    // select the text found string
+    document->buffer_->BufSelect(startPos, endPos);
+    document->MakeSelectionVisible(area);
+
+    area->TextSetCursorPos(endPos);
+
+    return true;
+}
+
 bool SearchAndSelect(Document *window, SearchDirection direction, const char *searchString, SearchType searchType, int searchWrap) {
 	int startPos;
 	int endPos;
@@ -659,6 +734,58 @@ bool SearchAndSelect(Document *window, SearchDirection direction, const char *se
 	return TRUE;
 }
 
+
+
+void SearchForSelectedEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, SearchType searchType, int searchWrap) {
+
+    // skip if we can't get the selection data or it's too long
+    // should be of type text???
+    const QMimeData *mimeData = QApplication::clipboard()->mimeData(QClipboard::Selection);
+    if(!mimeData->hasText()) {
+        if (GetPrefSearchDlogs()) {
+            QMessageBox::warning(document, QLatin1String("Wrong Selection"), QLatin1String("Selection not appropriate for searching"));
+        } else {
+            QApplication::beep();
+        }
+        return;
+    }
+
+    // make the selection the current search string
+    QString searchString = mimeData->text();
+
+    if (searchString.size() > SEARCHMAX) {
+        if (GetPrefSearchDlogs()) {
+            QMessageBox::warning(document, QLatin1String("Selection too long"), QLatin1String("Selection too long"));
+        } else {
+            QApplication::beep();
+        }
+        return;
+    }
+
+    if (searchString.size() == 0) {
+        QApplication::beep();
+        return;
+    }
+
+    /* Use the passed method for searching, unless it is regex, since this
+       kind of search is by definition a literal search */
+    if (searchType == SEARCH_REGEX) {
+        searchType = SEARCH_CASE_SENSE;
+    } else if (searchType == SEARCH_REGEX_NOCASE) {
+        searchType = SEARCH_LITERAL;
+    }
+
+    // search for it in the window
+    SearchAndSelectEx(
+                window,
+                document,
+                area,
+                direction,
+                searchString.toLatin1().data(),
+                searchType,
+                searchWrap);
+}
+
 void SearchForSelected(Document *window, SearchDirection direction, SearchType searchType, int searchWrap, Time time) {
 	SearchSelectedCallData *callData = XtNew(SearchSelectedCallData);
 	callData->direction = direction;
@@ -728,22 +855,7 @@ static void selectedSearchCB(Widget w, XtPointer callData, Atom *selection, Atom
 	XtFree((char *)callData);
 }
 
-/*
-** Pop up and clear the incremental search line and prepare to search.
-*/
-void BeginISearch(Document *window, SearchDirection direction) {
-	window->iSearchStartPos_ = -1;
-	XmTextSetStringEx(window->iSearchText_, (String) "");
-	XmToggleButtonSetState(window->iSearchRevToggle_, direction == SEARCH_BACKWARD, FALSE);
-	/* Note: in contrast to the replace and find dialogs, the regex and
-	   case toggles are not reset to their default state when the incremental
-	   search bar is redisplayed. I'm not sure whether this is the best
-	   choice. If not, an initToggleButtons() call should be inserted
-	   here. But in that case, it might be appropriate to have different
-	   default search modes for i-search and replace/find. */
-	window->TempShowISearch(TRUE);
-	XmProcessTraversal(window->iSearchText_, XmTRAVERSE_CURRENT);
-}
+
 
 /*
 ** Incremental searching is anchored at the position where the cursor
@@ -776,6 +888,12 @@ static void iSearchRecordLastBeginPos(Document *window, SearchDirection directio
 		window->iSearchLastBeginPos_--;
 }
 
+static void iSearchRecordLastBeginPosEx(MainWindow *window, SearchDirection direction, int initPos) {
+    window->iSearchLastBeginPos_ = initPos;
+    if (direction == SEARCH_BACKWARD)
+        window->iSearchLastBeginPos_--;
+}
+
 /*
 ** Search for "searchString" in "window", and select the matching text in
 ** the window when found (or beep or put up a dialog if not found).  If
@@ -783,71 +901,69 @@ static void iSearchRecordLastBeginPos(Document *window, SearchDirection directio
 ** recorded, search from that original position, otherwise, search from the
 ** current cursor position.
 */
-bool SearchAndSelectIncremental(Document *window, SearchDirection direction, const char *searchString, SearchType searchType, int searchWrap, int continued) {
-	int beginPos, startPos, endPos;
+bool SearchAndSelectIncrementalEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, const char *searchString, SearchType searchType, bool searchWrap, bool continued) {
+    int beginPos;
+    int startPos;
+    int endPos;
 
-	/* If there's a search in progress, start the search from the original
-	   starting position, otherwise search from the cursor position. */
-	if (!continued || window->iSearchStartPos_ == -1) {
-		
-		auto textD = window->lastFocus();
-		
-		window->iSearchStartPos_ = textD->TextGetCursorPos();
-		iSearchRecordLastBeginPos(window, direction, window->iSearchStartPos_);
-	}
-	beginPos = window->iSearchStartPos_;
+    /* If there's a search in progress, start the search from the original
+       starting position, otherwise search from the cursor position. */
+    if (!continued || window->iSearchStartPos_ == -1) {
+        window->iSearchStartPos_ = area->TextGetCursorPos();
+        iSearchRecordLastBeginPosEx(window, direction, window->iSearchStartPos_);
+    }
 
-	/* If the search string is empty, beep eventually if text wrapped
-	   back to the initial position, re-init iSearchLastBeginPos,
-	   clear the selection, set the cursor back to what would be the
-	   beginning of the search, and return. */
-	if (searchString[0] == 0) {
-		int beepBeginPos = (direction == SEARCH_BACKWARD) ? beginPos - 1 : beginPos;
-		iSearchTryBeepOnWrap(window, direction, beepBeginPos, beepBeginPos);
-		iSearchRecordLastBeginPos(window, direction, window->iSearchStartPos_);
-		window->buffer_->BufUnselect();
-		
-		auto textD = window->lastFocus();
-		textD->TextSetCursorPos(beginPos);
-		return true;
-	}
+    beginPos = window->iSearchStartPos_;
 
-	/* Save the string in the search history, unless we're cycling thru
-	   the search history itself, which can be detected by matching the
-	   search string with the search string of the current history index. */
-	if (!(window->iSearchHistIndex_ > 1 && !strcmp(searchString, SearchHistory[historyIndex(window->iSearchHistIndex_)]))) {
+    /* If the search string is empty, beep eventually if text wrapped
+       back to the initial position, re-init iSearchLastBeginPos,
+       clear the selection, set the cursor back to what would be the
+       beginning of the search, and return. */
+    if (searchString[0] == '\0') {
+        int beepBeginPos = (direction == SEARCH_BACKWARD) ? beginPos - 1 : beginPos;
+        iSearchTryBeepOnWrapEx(window, direction, beepBeginPos, beepBeginPos);
+        iSearchRecordLastBeginPosEx(window, direction, window->iSearchStartPos_);
+        document->buffer_->BufUnselect();
+
+        area->TextSetCursorPos(beginPos);
+        return true;
+    }
+
+    /* Save the string in the search history, unless we're cycling thru
+       the search history itself, which can be detected by matching the
+       search string with the search string of the current history index. */
+    if (!(window->iSearchHistIndex_ > 1 && !strcmp(searchString, SearchHistory[historyIndex(window->iSearchHistIndex_)]))) {
         saveSearchHistory(searchString, nullptr, searchType, true);
-		// Reset the incremental search history pointer to the beginning 
-		window->iSearchHistIndex_ = 1;
-	}
+        // Reset the incremental search history pointer to the beginning
+        window->iSearchHistIndex_ = 1;
+    }
 
-	// begin at insert position - 1 for backward searches 
-	if (direction == SEARCH_BACKWARD)
-		beginPos--;
+    // begin at insert position - 1 for backward searches
+    if (direction == SEARCH_BACKWARD)
+        beginPos--;
 
-	// do the search.  SearchWindow does appropriate dialogs and beeps 
-	if (!SearchWindow(window, direction, searchString, searchType, searchWrap, beginPos, &startPos, &endPos, nullptr, nullptr))
-		return false;
+    // do the search.  SearchWindow does appropriate dialogs and beeps
+    if (!SearchWindowEx(window, document, direction, searchString, searchType, searchWrap, beginPos, &startPos, &endPos, nullptr, nullptr))
+        return false;
 
-	window->iSearchLastBeginPos_ = startPos;
+    window->iSearchLastBeginPos_ = startPos;
 
-	/* if the search matched an empty string (possible with regular exps)
-	   beginning at the start of the search, go to the next occurrence,
-	   otherwise repeated finds will get "stuck" at zero-length matches */
-	if (direction == SEARCH_FORWARD && beginPos == startPos && beginPos == endPos)
-		if (!SearchWindow(window, direction, searchString, searchType, searchWrap, beginPos + 1, &startPos, &endPos, nullptr, nullptr))
-			return false;
+    /* if the search matched an empty string (possible with regular exps)
+       beginning at the start of the search, go to the next occurrence,
+       otherwise repeated finds will get "stuck" at zero-length matches */
+    if (direction == SEARCH_FORWARD && beginPos == startPos && beginPos == endPos)
+        if (!SearchWindowEx(window, document, direction, searchString, searchType, searchWrap, beginPos + 1, &startPos, &endPos, nullptr, nullptr))
+            return false;
 
-	window->iSearchLastBeginPos_ = startPos;
+    window->iSearchLastBeginPos_ = startPos;
 
-	// select the text found string 
-	window->buffer_->BufSelect(startPos, endPos);
-	window->MakeSelectionVisible(window->lastFocus_);
-	
-	auto textD = window->lastFocus();
-	textD->TextSetCursorPos(endPos);
+    // select the text found string
+    document->buffer_->BufSelect(startPos, endPos);
+    document->MakeSelectionVisible(area);
 
-	return true;
+    area->TextSetCursorPos(endPos);
+
+    return true;
 }
 
 /*
@@ -2128,6 +2244,25 @@ char *ReplaceAllInString(view::string_view inString, const char *searchString, c
 ** Emit a beep if the search wrapped over BOF/EOF compared to
 ** the last startPos of the current incremental search.
 */
+static void iSearchTryBeepOnWrapEx(MainWindow *window, SearchDirection direction, int beginPos, int startPos) {
+    if (GetPrefBeepOnSearchWrap()) {
+        if (direction == SEARCH_FORWARD) {
+            if ((startPos >= beginPos && window->iSearchLastBeginPos_ < beginPos) || (startPos < beginPos && window->iSearchLastBeginPos_ >= beginPos)) {
+                QApplication::beep();
+            }
+        } else {
+            if ((startPos <= beginPos && window->iSearchLastBeginPos_ > beginPos) || (startPos > beginPos && window->iSearchLastBeginPos_ <= beginPos)) {
+                QApplication::beep();
+            }
+        }
+    }
+}
+
+/*
+** If this is an incremental search and BeepOnSearchWrap is on:
+** Emit a beep if the search wrapped over BOF/EOF compared to
+** the last startPos of the current incremental search.
+*/
 static void iSearchTryBeepOnWrap(Document *window, SearchDirection direction, int beginPos, int startPos) {
 	if (GetPrefBeepOnSearchWrap()) {
 		if (direction == SEARCH_FORWARD) {
@@ -2140,6 +2275,116 @@ static void iSearchTryBeepOnWrap(Document *window, SearchDirection direction, in
 			}
 		}
 	}
+}
+
+/*
+** Search the text in "window", attempting to match "searchString"
+*/
+bool SearchWindowEx(MainWindow *window, DocumentWidget *document, SearchDirection direction, const char *searchString, SearchType searchType, int searchWrap, int beginPos, int *startPos, int *endPos, int *extentBW, int *extentFW) {
+    bool found;
+    int fileEnd = document->buffer_->BufGetLength() - 1;
+    bool outsideBounds;
+
+    // reject empty string
+    if (*searchString == '\0')
+        return false;
+
+    // get the entire text buffer from the text area widget
+    view::string_view fileString = document->buffer_->BufAsStringEx();
+
+    /* If we're already outside the boundaries, we must consider wrapping
+       immediately (Note: fileEnd+1 is a valid starting position. Consider
+       searching for $ at the end of a file ending with \n.) */
+    if ((direction == SEARCH_FORWARD && beginPos > fileEnd + 1) || (direction == SEARCH_BACKWARD && beginPos < 0)) {
+        outsideBounds = true;
+    } else {
+        outsideBounds = false;
+    }
+
+    /* search the string copied from the text area widget, and present
+       dialogs, or just beep.  iSearchStartPos is not a perfect indicator that
+       an incremental search is in progress.  A parameter would be better. */
+    if (window->iSearchStartPos_ == -1) { // normal search
+        found = !outsideBounds && SearchString(fileString, searchString, direction, searchType, FALSE, beginPos, startPos, endPos, extentBW, extentFW, GetWindowDelimitersEx(document).toLatin1().data());
+
+        // Avoid Motif 1.1 bug by putting away search dialog before Dialogs
+        if (auto dialog = qobject_cast<DialogFind *>(window->dialogFind_)) {
+            if(!dialog->keepDialog()) {
+                dialog->hide();
+            }
+        }
+
+        auto dialog = window->getDialogReplace();
+        if (dialog && !dialog->keepDialog()) {
+            dialog->hide();
+        }
+
+        if (!found) {
+            if (searchWrap) {
+                if (direction == SEARCH_FORWARD && beginPos != 0) {
+                    if (GetPrefBeepOnSearchWrap()) {
+                        QApplication::beep();
+                    } else if (GetPrefSearchDlogs()) {
+
+                        QMessageBox messageBox(nullptr /*window->shell_*/);
+                        messageBox.setWindowTitle(QLatin1String("Wrap Search"));
+                        messageBox.setIcon(QMessageBox::Question);
+                        messageBox.setText(QLatin1String("Continue search from\nbeginning of file?"));
+                        QPushButton *buttonContinue = messageBox.addButton(QLatin1String("Continue"), QMessageBox::AcceptRole);
+                        QPushButton *buttonCancel   = messageBox.addButton(QMessageBox::Cancel);
+                        Q_UNUSED(buttonContinue);
+
+                        messageBox.exec();
+                        if(messageBox.clickedButton() == buttonCancel) {
+                            return false;
+                        }
+                    }
+                    found = SearchString(fileString, searchString, direction, searchType, FALSE, 0, startPos, endPos, extentBW, extentFW, GetWindowDelimitersEx(document).toLatin1().data());
+                } else if (direction == SEARCH_BACKWARD && beginPos != fileEnd) {
+                    if (GetPrefBeepOnSearchWrap()) {
+                        QApplication::beep();
+                    } else if (GetPrefSearchDlogs()) {
+
+                        QMessageBox messageBox(nullptr /*window->shell_*/);
+                        messageBox.setWindowTitle(QLatin1String("Wrap Search"));
+                        messageBox.setIcon(QMessageBox::Question);
+                        messageBox.setText(QLatin1String("Continue search\nfrom end of file?"));
+                        QPushButton *buttonContinue = messageBox.addButton(QLatin1String("Continue"), QMessageBox::AcceptRole);
+                        QPushButton *buttonCancel   = messageBox.addButton(QMessageBox::Cancel);
+                        Q_UNUSED(buttonContinue);
+
+                        messageBox.exec();
+                        if(messageBox.clickedButton() == buttonCancel) {
+                            return false;
+                        }
+                    }
+                    found = SearchString(fileString, searchString, direction, searchType, FALSE, fileEnd + 1, startPos, endPos, extentBW, extentFW, GetWindowDelimitersEx(document).toLatin1().data());
+                }
+            }
+            if (!found) {
+                if (GetPrefSearchDlogs()) {
+                    QMessageBox::information(nullptr /*parent*/, QLatin1String("String not found"), QLatin1String("String was not found"));
+                } else {
+                    QApplication::beep();
+                }
+            }
+        }
+    } else { // incremental search
+        if (outsideBounds && searchWrap) {
+            if (direction == SEARCH_FORWARD)
+                beginPos = 0;
+            else
+                beginPos = fileEnd + 1;
+            outsideBounds = FALSE;
+        }
+        found = !outsideBounds && SearchString(fileString, searchString, direction, searchType, searchWrap, beginPos, startPos, endPos, extentBW, extentFW, GetWindowDelimitersEx(document).toLatin1().data());
+        if (found) {
+            iSearchTryBeepOnWrapEx(window, direction, beginPos, *startPos);
+        } else
+            QApplication::beep();
+    }
+
+    return found;
 }
 
 /*
@@ -2665,6 +2910,93 @@ static std::string downCaseStringEx(view::string_view inString) {
 ** current primary selection using search algorithm "searchType".  If true,
 ** also return the position of the selection in "left" and "right".
 */
+static bool searchMatchesSelectionEx(DocumentWidget *window, const char *searchString, SearchType searchType, int *left, int *right, int *searchExtentBW, int *searchExtentFW) {
+    int selLen, selStart, selEnd, startPos, endPos, extentBW, extentFW, beginPos;
+    int regexLookContext = isRegexType(searchType) ? 1000 : 0;
+    std::string string;
+    int rectStart, rectEnd, lineStart = 0;
+    bool isRect;
+
+    // find length of selection, give up on no selection or too long
+    if (!window->buffer_->BufGetEmptySelectionPos(&selStart, &selEnd, &isRect, &rectStart, &rectEnd)) {
+        return false;
+    }
+
+    if (selEnd - selStart > SEARCHMAX) {
+        return false;
+    }
+
+    // if the selection is rectangular, don't match if it spans lines
+    if (isRect) {
+        lineStart = window->buffer_->BufStartOfLine(selStart);
+        if (lineStart != window->buffer_->BufStartOfLine(selEnd)) {
+            return false;
+        }
+    }
+
+    /* get the selected text plus some additional context for regular
+       expression lookahead */
+    if (isRect) {
+        int stringStart = lineStart + rectStart - regexLookContext;
+        if (stringStart < 0) {
+            stringStart = 0;
+        }
+
+        string = window->buffer_->BufGetRangeEx(stringStart, lineStart + rectEnd + regexLookContext);
+        selLen = rectEnd - rectStart;
+        beginPos = lineStart + rectStart - stringStart;
+    } else {
+        int stringStart = selStart - regexLookContext;
+        if (stringStart < 0) {
+            stringStart = 0;
+        }
+
+        string = window->buffer_->BufGetRangeEx(stringStart, selEnd + regexLookContext);
+        selLen = selEnd - selStart;
+        beginPos = selStart - stringStart;
+    }
+    if (string.empty()) {
+        return false;
+    }
+
+    // search for the string in the selection (we are only interested
+    // in an exact match, but the procedure SearchString does important
+    // stuff like applying the correct matching algorithm)
+    bool found = SearchString(string, searchString, SEARCH_FORWARD, searchType, FALSE, beginPos, &startPos, &endPos, &extentBW, &extentFW, GetWindowDelimitersEx(window).toLatin1().data());
+
+    // decide if it is an exact match
+    if (!found) {
+        return false;
+    }
+
+    if (startPos != beginPos || endPos - beginPos != selLen) {
+        return false;
+    }
+
+    // return the start and end of the selection
+    if (isRect) {
+        window->buffer_->GetSimpleSelection(left, right);
+    } else {
+        *left  = selStart;
+        *right = selEnd;
+    }
+
+    if(searchExtentBW) {
+        *searchExtentBW = *left - (startPos - extentBW);
+    }
+
+    if(searchExtentFW) {
+        *searchExtentFW = *right + extentFW - endPos;
+    }
+
+    return true;
+}
+
+/*
+** Return TRUE if "searchString" exactly matches the text in the window's
+** current primary selection using search algorithm "searchType".  If true,
+** also return the position of the selection in "left" and "right".
+*/
 static bool searchMatchesSelection(Document *window, const char *searchString, SearchType searchType, int *left, int *right, int *searchExtentBW, int *searchExtentFW) {
 	int selLen, selStart, selEnd, startPos, endPos, extentBW, extentFW, beginPos;
 	int regexLookContext = isRegexType(searchType) ? 1000 : 0;
@@ -2812,7 +3144,9 @@ void saveSearchHistory(const char *searchString, const char *replaceString, Sear
 	if (NHist == 0) {
 		for(Document *w: WindowList) {
 			if (w->IsTopDocument()) {
+#if 0 // NOTE(eteran): transitioned
 				XtSetSensitive(w->findAgainItem_, True);
+#endif
 				XtSetSensitive(w->replaceFindAgainItem_, True);
 				XtSetSensitive(w->replaceAgainItem_, True);
 			}
@@ -2901,7 +3235,7 @@ int isRegexType(SearchType searchType) {
 ** Returns the default flags for regular expression matching, given a
 ** regular expression search mode.
 */
-static int defaultRegexFlags(SearchType searchType) {
+int defaultRegexFlags(SearchType searchType) {
 	switch (searchType) {
 	case SEARCH_REGEX:
 		return REDFLT_STANDARD;

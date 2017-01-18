@@ -5,8 +5,10 @@
 #include <QFileDialog>
 #include <QFile>
 #include <QInputDialog>
+#include <QClipboard>
 #include <QMessageBox>
 #include "MainWindow.h"
+#include "SignalBlocker.h"
 #include "TextArea.h"
 #include "TextBuffer.h"
 #include "DialogAbout.h"
@@ -19,8 +21,12 @@
 #include "preferences.h"
 #include "shift.h"
 #include "utils.h"
+#include "memory.h"
+#include "regularExp.h"
 #include "LanguageMode.h"
 #include "nedit.h"
+#include "selection.h"
+#include "search.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/param.h>
@@ -33,6 +39,78 @@ namespace {
 const char neditDBBadFilenameChars[] = "\n";
 
 QList<QString> PrevOpen;
+
+bool StringToNum(const char *string, int *number) {
+    const char *c = string;
+
+    while (*c == ' ' || *c == '\t') {
+        ++c;
+    }
+    if (*c == '+' || *c == '-') {
+        ++c;
+    }
+    while (isdigit((uint8_t)*c)) {
+        ++c;
+    }
+    while (*c == ' ' || *c == '\t') {
+        ++c;
+    }
+    if (*c != '\0') {
+        // if everything went as expected, we should be at end, but we're not
+        return false;
+    }
+    if (number) {
+        if (sscanf(string, "%d", number) != 1) {
+            // This case is here to support old behavior
+            *number = 0;
+        }
+    }
+    return true;
+}
+
+void gotoAP(DocumentWidget *document, TextArea *w, QStringList args) {
+
+    int lineNum;
+    int column;
+    int position;
+    int curCol;
+
+    /* Accept various formats:
+          [line]:[column]   (menu action)
+          line              (macro call)
+          line, column      (macro call) */
+    if (args.size() == 0 ||
+            args.size() > 2 ||
+            (args.size() == 1 && StringToLineAndCol(args[0].toLatin1().data(), &lineNum, &column) == -1) ||
+            (args.size() == 2 && (!StringToNum(args[0].toLatin1().data(), &lineNum) || !StringToNum(args[1].toLatin1().data(), &column)))) {
+        fprintf(stderr, "nedit: goto_line_number action requires line and/or column number\n");
+        return;
+    }
+
+    auto textD = w;
+
+    // User specified column, but not line number
+    if (lineNum == -1) {
+        position = textD->TextGetCursorPos();
+        if (textD->TextDPosToLineAndCol(position, &lineNum, &curCol) == False) {
+            return;
+        }
+    } else if (column == -1) {
+        // User didn't specify a column
+        SelectNumberedLineEx(document, w, lineNum);
+        return;
+    }
+
+    position = textD->TextDLineAndColToPos(lineNum, column);
+    if (position == -1) {
+        return;
+    }
+
+    textD->TextSetCursorPos(position);
+    return;
+}
+
+
 
 DocumentWidget *EditNewFile(MainWindow *inWindow, char *geometry, bool iconic, const char *languageMode, const QString &defaultPath) {
 
@@ -121,10 +199,14 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(par
     // the window
     updatePrevOpenMenu();
 
-	showStats_            = GetPrefStatsLine();
-	showISearchLine_      = GetPrefISearchLine();
-	showLineNumbers_      = GetPrefLineNums();
-	modeMessageDisplayed_ = false;
+    showStats_             = GetPrefStatsLine();
+    showISearchLine_       = GetPrefISearchLine();
+    showLineNumbers_       = GetPrefLineNums();
+    modeMessageDisplayed_  = false;
+    iSearchHistIndex_      = 0;
+    iSearchStartPos_       = -1;
+    iSearchLastRegexCase_  = true;
+    iSearchLastLiteralCase_= false;
 	
 	// default to hiding the optional panels
     ui.incrementalSearchFrame->setVisible(showISearchLine_);
@@ -180,6 +262,11 @@ void MainWindow::setupMenuStrings() {
 
     new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_9), this, SLOT(action_Shift_Left_Tabs()));
     new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_0), this, SLOT(action_Shift_Right_Tabs()));
+
+    new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_F), this, SLOT(action_Shift_Find()));
+    new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_G), this, SLOT(action_Shift_Find_Again()));
+    new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_H), this, SLOT(action_Shift_Find_Selection_triggered()));
+    new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_I), this, SLOT(action_Shift_Find_Incremental_triggered()));
 }
 
 //------------------------------------------------------------------------------
@@ -1274,9 +1361,14 @@ void MainWindow::on_tabWidget_customContextMenuRequested(int index, const QPoint
 void MainWindow::on_action_Open_Selected_triggered() {
 
     if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+
         // Get the selected text, if there's no selection, do nothing
-        std::string text = doc->buffer_->BufGetSelectionTextEx();
-        fileCB(doc, text);
+        const QMimeData *mimeData = QApplication::clipboard()->mimeData(QClipboard::Selection);
+        if(mimeData->hasText()) {
+            fileCB(doc, mimeData->text().toStdString());
+        } else {
+            QApplication::beep();
+        }
     }
 
     CheckCloseDim();
@@ -1473,4 +1565,415 @@ void MainWindow::on_action_Insert_Ctrl_Code_triggered() {
             }
         }
     }
+}
+
+//------------------------------------------------------------------------------
+// Name:
+//------------------------------------------------------------------------------
+void MainWindow::on_action_Goto_Line_Number_triggered() {
+    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+
+        int lineNum;
+        int column;
+
+        bool ok;
+        QString text = QInputDialog::getText(this, tr("Goto Line Number"), tr("Goto Line (and/or Column)  Number:"), QLineEdit::Normal, QString(), &ok);
+
+        if (!ok) {
+            return;
+        }
+
+        if (StringToLineAndCol(text.toLatin1().data(), &lineNum, &column) == -1) {
+            QApplication::beep();
+            return;
+        }
+
+        if(TextArea *w = lastFocus_) {
+            gotoAP(doc, w, QStringList() << text);
+        }
+    }
+}
+
+//------------------------------------------------------------------------------
+// Name:
+//------------------------------------------------------------------------------
+void MainWindow::on_action_Goto_Selected_triggered() {
+    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+
+        const QMimeData *mimeData = QApplication::clipboard()->mimeData(QClipboard::Selection);
+        if(mimeData->hasText()) {
+            if(TextArea *w = lastFocus_) {
+                gotoAP(doc, w, QStringList() << mimeData->text());
+            }
+        } else {
+            QApplication::beep();
+        }
+    }
+}
+
+//------------------------------------------------------------------------------
+// Name:
+//------------------------------------------------------------------------------
+void MainWindow::on_action_Find_triggered() {
+    DoFindDlogEx(
+        this,
+        DocumentWidget::documentFrom(lastFocus_),
+        SEARCH_FORWARD,
+        GetPrefKeepSearchDlogs(),
+        GetPrefSearch());
+}
+
+//------------------------------------------------------------------------------
+// Name:
+//------------------------------------------------------------------------------
+void MainWindow::action_Shift_Find() {
+    DoFindDlogEx(
+        this,
+        DocumentWidget::documentFrom(lastFocus_),
+        SEARCH_BACKWARD,
+        GetPrefKeepSearchDlogs(),
+        GetPrefSearch());
+}
+
+//------------------------------------------------------------------------------
+// Name:
+//------------------------------------------------------------------------------
+void MainWindow::on_action_Find_Again_triggered() {
+
+    SearchAndSelectSameEx(
+        this,
+        DocumentWidget::documentFrom(lastFocus_),
+        lastFocus_,
+        SEARCH_FORWARD,
+        GetPrefSearchWraps());
+}
+
+//------------------------------------------------------------------------------
+// Name:
+//------------------------------------------------------------------------------
+void MainWindow::action_Shift_Find_Again() {
+    SearchAndSelectSameEx(
+        this,
+        DocumentWidget::documentFrom(lastFocus_),
+        lastFocus_,
+        SEARCH_BACKWARD,
+        GetPrefSearchWraps());
+}
+
+//------------------------------------------------------------------------------
+// Name:
+//------------------------------------------------------------------------------
+void MainWindow::on_action_Find_Selection_triggered() {
+
+    SearchForSelectedEx(
+        this,
+        DocumentWidget::documentFrom(lastFocus_),
+        lastFocus_,
+        SEARCH_FORWARD,
+        GetPrefSearch(),
+        GetPrefSearchWraps());
+}
+
+//------------------------------------------------------------------------------
+// Name:
+//------------------------------------------------------------------------------
+void MainWindow::action_Shift_Find_Selection_triggered() {
+    SearchForSelectedEx(
+        this,
+        DocumentWidget::documentFrom(lastFocus_),
+        lastFocus_,
+        SEARCH_BACKWARD,
+        GetPrefSearch(),
+        GetPrefSearchWraps());
+}
+
+//------------------------------------------------------------------------------
+// Name:
+//------------------------------------------------------------------------------
+void MainWindow::on_action_Find_Incremental_triggered() {
+    BeginISearchEx(SEARCH_FORWARD);
+}
+
+void MainWindow::action_Shift_Find_Incremental_triggered() {
+    BeginISearchEx(SEARCH_BACKWARD);
+}
+
+//------------------------------------------------------------------------------
+// Name: on_editIFind_textChanged
+//------------------------------------------------------------------------------
+/*
+** Called when user types in the incremental search line.  Redoes the
+** search for the new search string.
+*/
+void MainWindow::on_editIFind_textChanged(const QString &searchString) {
+
+    SearchType searchType;
+
+    if(ui.checkIFindCase->isChecked()) {
+        if (ui.checkIFindRegex->isChecked()) {
+            searchType = SEARCH_REGEX;
+        } else {
+            searchType = SEARCH_CASE_SENSE;
+        }
+    } else {
+        if (ui.checkIFindRegex->isChecked()) {
+            searchType = SEARCH_REGEX_NOCASE;
+        } else {
+            searchType = SEARCH_LITERAL;
+        }
+    }
+
+    const SearchDirection direction = ui.checkIFindReverse->isChecked() ? SEARCH_BACKWARD : SEARCH_FORWARD;
+
+    /* If the search type is a regular expression, test compile it.  If it
+       fails, silently skip it.  (This allows users to compose the expression
+       in peace when they have unfinished syntax, but still get beeps when
+       correct syntax doesn't match) */
+    if (isRegexType(searchType)) {
+        try {
+            auto compiledRE = mem::make_unique<regexp>(searchString.toStdString(), defaultRegexFlags(searchType));
+        } catch(const regex_error &) {
+            return;
+        }
+    }
+
+    /* Call the incremental search action proc to do the searching and
+       selecting (this allows it to be recorded for learn/replay).  If
+       there's an incremental search already in progress, mark the operation
+       as "continued" so the search routine knows to re-start the search
+       from the original starting position */
+    findIncrAP(searchString, direction, searchType, GetPrefSearchWraps(), iSearchStartPos_ != -1);
+}
+
+//------------------------------------------------------------------------------
+// Name: on_buttonIFind_clicked
+//------------------------------------------------------------------------------
+void MainWindow::on_buttonIFind_clicked() {
+    // NOTE(eteran): same as pressing return
+    Q_EMIT on_editIFind_returnPressed();
+}
+
+//------------------------------------------------------------------------------
+// Name: on_editIFind_returnPressed
+// Desc: User pressed return in the incremental search bar.  Do a new search with
+//       the search string displayed.  The direction of the search is toggled if
+//       the Ctrl key or the Shift key is pressed when the text field is activated.
+//------------------------------------------------------------------------------
+void MainWindow::on_editIFind_returnPressed() {
+
+    SearchType searchType;
+
+    /* Fetch the string, search type and direction from the incremental
+       search bar widgets at the top of the window */
+    QString searchString = ui.editIFind->text();
+
+    if (ui.checkIFindCase->isChecked()) {
+        if (ui.checkIFindRegex->isChecked())
+            searchType = SEARCH_REGEX;
+        else
+            searchType = SEARCH_CASE_SENSE;
+    } else {
+        if (ui.checkIFindRegex->isChecked())
+            searchType = SEARCH_REGEX_NOCASE;
+        else
+            searchType = SEARCH_LITERAL;
+    }
+
+    SearchDirection direction = ui.checkIFindReverse ? SEARCH_BACKWARD : SEARCH_FORWARD;
+
+    // Reverse the search direction if the Ctrl or Shift key was pressed
+    if(QApplication::keyboardModifiers() & (Qt::CTRL | Qt::SHIFT)) {
+        direction = direction == SEARCH_FORWARD ? SEARCH_BACKWARD : SEARCH_FORWARD;
+    }
+
+    // find the text and mark it
+    findAP(searchString, direction, searchType, GetPrefSearchWraps());
+}
+
+void MainWindow::keyPressEvent(QKeyEvent *event) {
+
+    int index;
+
+    // only process up and down arrow keys
+    if (event->key() != Qt::Key_Up && event->key() != Qt::Key_Down && event->key() != Qt::Key_Escape) {
+        QMainWindow::keyPressEvent(event);
+        return;
+    }
+
+    index = iSearchHistIndex_;
+
+    // allow escape key to cancel search
+    if (event->key() == Qt::Key_Escape) {
+        EndISearchEx();
+        return;
+    }
+
+    // increment or decrement the index depending on which arrow was pressed
+    index += (event->key() == Qt::Key_Up) ? 1 : -1;
+
+    // if the index is out of range, beep and return
+    if (index != 0 && historyIndex(index) == -1) {
+        QApplication::beep();
+        return;
+    }
+
+    const char *searchStr;
+    SearchType searchType;
+
+    // determine the strings and button settings to use
+    if (index == 0) {
+        searchStr = "";
+        searchType = GetPrefSearch();
+    } else {
+        searchStr = SearchHistory[historyIndex(index)];
+        searchType = SearchTypeHistory[historyIndex(index)];
+    }
+
+    /* Set the info used in the value changed callback before calling XmTextSetStringEx(). */
+    iSearchHistIndex_ = index;
+    initToggleButtonsiSearch(searchType);
+
+    // Beware the value changed callback is processed as part of this call
+    int previousPosition = ui.editIFind->cursorPosition();
+    ui.editIFind->setText(QLatin1String(searchStr));
+    ui.editIFind->setCursorPosition(previousPosition);
+}
+
+void MainWindow::findAP(const QString &searchString, SearchDirection direction, SearchType searchType, bool searchWraps) {
+    SearchAndSelectEx(
+                this,
+                DocumentWidget::documentFrom(lastFocus_),
+                lastFocus_,
+                direction,
+                searchString.toLatin1().data(),
+                searchType,
+                searchWraps);
+}
+
+void MainWindow::findIncrAP(const QString &searchString, SearchDirection direction, SearchType searchType, bool searchWraps, bool continued) {
+
+    SearchAndSelectIncrementalEx(
+                this,
+                DocumentWidget::documentFrom(lastFocus_),
+                lastFocus_,
+                direction,
+                searchString.toLatin1().data(),
+                searchType,
+                searchWraps,
+                continued);
+
+}
+
+
+#if 0
+
+/* Attach callbacks to deal with the optional sticky case sensitivity
+   behaviour. Do this before installing the search callbacks to make
+   sure that the proper search parameters are taken into account. */
+XtAddCallback(window->iSearchCaseToggle_, XmNvalueChangedCallback, iSearchCaseToggleCB, window);
+XtAddCallback(window->iSearchRegexToggle_, XmNvalueChangedCallback, iSearchRegExpToggleCB, window);
+
+// When search parameters (direction or search type), redo the search
+XtAddCallback(window->iSearchCaseToggle_, XmNvalueChangedCallback, iSearchTextValueChangedCB, window);
+XtAddCallback(window->iSearchRegexToggle_, XmNvalueChangedCallback, iSearchTextValueChangedCB, window);
+XtAddCallback(window->iSearchRevToggle_, XmNvalueChangedCallback, iSearchTextValueChangedCB, window);
+
+// find button: just like pressing return
+XtAddCallback(window->iSearchFindButton_, XmNactivateCallback, iSearchTextActivateCB, window);
+// clear button: empty the search text widget
+XtAddCallback(window->iSearchClearButton_, XmNactivateCallback, iSearchTextClearCB, window);
+#endif
+
+/*
+** Shared routine for replace and find dialogs and i-search bar to initialize
+** the state of the regex/case/word toggle buttons, and the sticky case
+** sensitivity states.
+*/
+void MainWindow::initToggleButtonsiSearch(SearchType searchType) {
+    /* Set the initial search type and remember the corresponding case
+       sensitivity states in case sticky case sensitivity is required. */
+
+    switch (searchType) {
+    case SEARCH_LITERAL:
+        iSearchLastLiteralCase_ = false;
+        iSearchLastRegexCase_   = true;
+        ui.checkIFindRegex->setChecked(false);
+        ui.checkIFindCase->setChecked(false);
+        break;
+    case SEARCH_CASE_SENSE:
+        iSearchLastLiteralCase_ = true;
+        iSearchLastRegexCase_   = true;
+        ui.checkIFindRegex->setChecked(false);
+        ui.checkIFindCase->setChecked(true);
+        break;
+    case SEARCH_LITERAL_WORD:
+        iSearchLastLiteralCase_ = false;
+        iSearchLastRegexCase_   = true;
+        ui.checkIFindRegex->setChecked(false);
+        ui.checkIFindCase->setChecked(false);
+        break;
+    case SEARCH_CASE_SENSE_WORD:
+        iSearchLastLiteralCase_ = true;
+        iSearchLastRegexCase_   = true;
+        ui.checkIFindRegex->setChecked(false);
+        ui.checkIFindCase->setChecked(true);
+        break;
+    case SEARCH_REGEX:
+        iSearchLastLiteralCase_ = false;
+        iSearchLastRegexCase_   = true;
+        ui.checkIFindRegex->setChecked(true);
+        ui.checkIFindCase->setChecked(true);
+        break;
+    case SEARCH_REGEX_NOCASE:
+        iSearchLastLiteralCase_ = false;
+        iSearchLastRegexCase_   = false;
+        ui.checkIFindRegex->setChecked(true);
+        ui.checkIFindCase->setChecked(false);
+        break;
+    default:
+        Q_ASSERT(0);
+    }
+}
+
+/*
+** Pop up and clear the incremental search line and prepare to search.
+*/
+void MainWindow::BeginISearchEx(SearchDirection direction) {
+
+    iSearchStartPos_ = -1;
+    ui.editIFind->setText(QLatin1String(""));
+    no_signals(ui.checkIFindReverse)->setChecked(direction == SEARCH_BACKWARD);
+
+
+    /* Note: in contrast to the replace and find dialogs, the regex and
+       case toggles are not reset to their default state when the incremental
+       search bar is redisplayed. I'm not sure whether this is the best
+       choice. If not, an initToggleButtons() call should be inserted
+       here. But in that case, it might be appropriate to have different
+       default search modes for i-search and replace/find. */
+
+    TempShowISearch(true);
+    ui.editIFind->setFocus();
+}
+
+/*
+** Incremental searching is anchored at the position where the cursor
+** was when the user began typing the search string.  Call this routine
+** to forget about this original anchor, and if the search bar is not
+** permanently up, pop it down.
+*/
+void MainWindow::EndISearchEx() {
+
+    /* Note: Please maintain this such that it can be freely peppered in
+       mainline code, without callers having to worry about performance
+       or visual glitches.  */
+
+    // Forget the starting position used for the current run of searches
+    iSearchStartPos_ = -1;
+
+    // Mark the end of incremental search history overwriting
+    saveSearchHistory("", nullptr, SEARCH_LITERAL, false);
+
+    // Pop down the search line (if it's not pegged up in Preferences)
+    TempShowISearch(false);
 }

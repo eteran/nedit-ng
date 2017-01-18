@@ -28,6 +28,8 @@
 #include <QInputDialog>
 #include <QString>
 
+#include "DocumentWidget.h"
+#include "TextArea.h"
 #include "TextHelper.h"
 #include "TextDisplay.h"
 #include "selection.h"
@@ -114,37 +116,6 @@ int StringToLineAndCol(const char *text, int *lineNum, int *column) {
 	}
 
 	return *lineNum == -1 && *column == -1 ? -1 : 0;
-}
-
-void GotoLineNumber(Document *window) {
-
-	const int DF_MAX_PROMPT_LENGTH = 2048;
-
-	char lineNumText[DF_MAX_PROMPT_LENGTH];
-	char *params[1];
-	int lineNum;
-	int column;
-
-
-	bool ok;
-	QString text = QInputDialog::getText(nullptr /*parent*/, QLatin1String("Goto Line Number"), QLatin1String("Goto Line (and/or Column)  Number:"), QLineEdit::Normal, QString(), &ok);
-
-	if (!ok) {
-		return;
-	}
-	
-	// TODO(eteran): this is temporary, until we have a better mechanism for this
-	snprintf(lineNumText, sizeof(lineNumText), "%s", text.toLatin1().data());	
-	
-	if (StringToLineAndCol(lineNumText, &lineNum, &column) == -1) {
-		QApplication::beep();
-		return;
-	}
-	params[0] = lineNumText;
-	
-	// NOTE(eteran): XtCallActionProc seems to be roughly equivalent to Q_EMIT
-	//               given a similarly connected signal/slot
-	XtCallActionProc(window->lastFocus_, "goto_line_number", nullptr, params, 1);
 }
 
 void GotoSelectedLineNumber(Document *window, Time time) {
@@ -343,6 +314,39 @@ static void getAnySelectionCB(Widget widget, XtPointer client_data, Atom *select
 	strncpy(*result, (char *)value, *length);
 	XtFree((char *)value);
 	(*result)[*length] = '\0';
+}
+
+void SelectNumberedLineEx(DocumentWidget *document, TextArea *area, int lineNum) {
+    int i, lineStart = 0, lineEnd;
+
+    // count lines to find the start and end positions for the selection
+    if (lineNum < 1)
+        lineNum = 1;
+    lineEnd = -1;
+    for (i = 1; i <= lineNum && lineEnd < document->buffer_->BufGetLength(); i++) {
+        lineStart = lineEnd + 1;
+        lineEnd = document->buffer_->BufEndOfLine( lineStart);
+    }
+
+    // highlight the line
+    if (i > lineNum) {
+        // Line was found
+        if (lineEnd < document->buffer_->BufGetLength()) {
+            document->buffer_->BufSelect(lineStart, lineEnd + 1);
+        } else {
+            // Don't select past the end of the buffer !
+            document->buffer_->BufSelect(lineStart, document->buffer_->BufGetLength());
+        }
+    } else {
+        /* Line was not found -> position the selection & cursor at the end
+           without making a real selection and beep */
+        lineStart = document->buffer_->BufGetLength();
+        document->buffer_->BufSelect(lineStart, lineStart);
+        QApplication::beep();
+    }
+    document->MakeSelectionVisible(area);
+
+    area->TextSetCursorPos(lineStart);
 }
 
 void SelectNumberedLine(Document *window, int lineNum) {

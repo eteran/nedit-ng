@@ -236,9 +236,9 @@ void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view::strin
 		   when motifying non-top document */
 		if (window->IsTopDocument()) {
 			XtSetSensitive(window->printSelItem_, selected);
-			XtSetSensitive(window->cutItem_, selected);
-			XtSetSensitive(window->copyItem_, selected);
 #if 0 // NOTE(eteran): transitioned
+            XtSetSensitive(window->cutItem_, selected);
+			XtSetSensitive(window->copyItem_, selected);
             XtSetSensitive(window->delItem_, selected);
 #endif
 			/* Note we don't change the selection for items like
@@ -1317,12 +1317,12 @@ void Document::RefreshMenuToggleStates() {
 	XtSetSensitive(printSelItem_, wasSelected_);
 
 	// Edit menu
+#if 0 // NOTE(eteran): transitioned
 	XtSetSensitive(undoItem_, !undo_.empty());
 	XtSetSensitive(redoItem_, !redo_.empty());
 	XtSetSensitive(printSelItem_, wasSelected_);
 	XtSetSensitive(cutItem_, wasSelected_);
 	XtSetSensitive(copyItem_, wasSelected_);
-#if 0 // NOTE(eteran): transitioned
 	XtSetSensitive(delItem_, wasSelected_);
 #endif
 	// Preferences menu
@@ -4153,7 +4153,9 @@ void Document::addUndoItem(UndoInfo *undo) {
 
 	// Make the undo menu item sensitive now that there's something to undo
 	if (undo_.empty()) {
+#if 0 // NOTE(eteran): transitioned
 		SetSensitive(undoItem_, true);
+#endif
 		SetBGMenuUndoSensitivity(this, true);
 	}
 
@@ -4212,7 +4214,9 @@ void Document::removeUndoItem() {
 
 	// if there are no more undo records left, dim the Undo menu item
 	if (undo_.empty()) {
+#if 0 // NOTE(eteran): transitioned
 		SetSensitive(undoItem_, false);
+#endif
 		SetBGMenuUndoSensitivity(this, false);
 	}
 }

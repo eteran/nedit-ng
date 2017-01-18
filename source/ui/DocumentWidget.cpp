@@ -381,10 +381,6 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 	macroCmdData_          = nullptr;
 	smartIndentData_       = nullptr;
 	languageMode_          = PLAIN_LANGUAGE_MODE;
-	iSearchHistIndex_      = 0;
-	iSearchStartPos_       = -1;
-	iSearchLastRegexCase_  = true;
-	iSearchLastLiteralCase_= false;
 	device_                = 0;
     inode_                 = 0;
 	
@@ -490,6 +486,9 @@ TextArea *DocumentWidget::createTextArea(TextBuffer *buffer) {
 
 //------------------------------------------------------------------------------
 // Name: onFocusChanged
+// TODO(eteran): we need to do something similar for tab change events
+//               because Qt doesn't trigger spurious focus change events
+//               when switching tabs
 //------------------------------------------------------------------------------
 void DocumentWidget::onFocusIn(QWidget *now) {
 	if(auto w = qobject_cast<TextArea *>(now)) {
@@ -502,7 +501,7 @@ void DocumentWidget::onFocusIn(QWidget *now) {
 			UpdateStatsLine(w);
 
 			// finish off the current incremental search
-			EndISearch();
+            window->EndISearchEx();
 
 			// Check for changes to read-only status and/or file modifications
             CheckForChangesToFile();
@@ -512,30 +511,6 @@ void DocumentWidget::onFocusIn(QWidget *now) {
 
 void DocumentWidget::onFocusOut(QWidget *was) {
 	Q_UNUSED(was);
-}
-
-/*
-** Incremental searching is anchored at the position where the cursor
-** was when the user began typing the search string.  Call this routine
-** to forget about this original anchor, and if the search bar is not
-** permanently up, pop it down.
-*/
-void DocumentWidget::EndISearch() {
-
-	/* Note: Please maintain this such that it can be freely peppered in
-	   mainline code, without callers having to worry about performance
-	   or visual glitches.  */
-
-	// Forget the starting position used for the current run of searches
-	iSearchStartPos_ = -1;
-
-	// Mark the end of incremental search history overwriting
-    saveSearchHistory("", nullptr, SEARCH_LITERAL, false);
-
-	// Pop down the search line (if it's not pegged up in Preferences)
-    if(auto win = toWindow()) {
-        win->TempShowISearch(false);
-    }
 }
 
 MainWindow *DocumentWidget::toWindow() const {

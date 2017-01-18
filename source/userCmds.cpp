@@ -552,8 +552,10 @@ static void updateMenu(Document *window, int menuType) {
 
 	if (menuType == BG_MENU_CMDS) {
 		// Set the proper sensitivity of items which may be dimmed 
+#if 0 // NOTE(eteran): transitioned
 		SetBGMenuUndoSensitivity(window, XtIsSensitive(window->undoItem_));
 		SetBGMenuRedoSensitivity(window, XtIsSensitive(window->redoItem_));
+#endif
 	}
 
 	DimSelectionDepUserMenuItems(window, window->buffer_->primary_.selected);
