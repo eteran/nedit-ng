@@ -6,6 +6,8 @@
 #include <QPointer>
 #include <QWidget>
 
+#include "SearchDirection.h"
+#include "SearchType.h"
 #include "ShowMatchingStyle.h"
 #include "ui_DocumentWidget.h"
 #include "Bookmark.h"
@@ -46,6 +48,12 @@ public Q_SLOTS:
     void setLanguageMode(const QString &mode);
     void open(const char *fullpath);
     void bannerTimeoutProc();
+    void findIncrAP(const QString &searchString, SearchDirection direction, SearchType searchType, bool searchWraps, bool isContinue);
+    void findAP(const QString &searchString, SearchDirection direction, SearchType searchType, bool searchWraps);
+    void replaceAP(const QString &searchString, const QString &replaceString, SearchDirection direction, SearchType searchType, bool searchWraps);
+    void replaceFindAP(const QString &searchString, const QString &replaceString, SearchDirection direction, SearchType searchType, bool searchWraps);
+    void replaceAllAP(const QString &searchString, const QString &replaceString, SearchType searchType);
+    void replaceInSelAP(const QString &searchString, const QString &replaceString, SearchType searchType);
 
 public:
 	void movedCallback(TextArea *area);
@@ -104,7 +112,7 @@ public:
     void MakeSelectionVisible(TextArea *textPane);
     void RemoveBackupFile();
     QString backupFileNameEx();
-    void CheckForChangesToFile();
+    void CheckForChangesToFileEx();
     QString FullPath() const;
     void UpdateWindowReadOnly();
     int cmpWinAgainstFile(const QString &fileName);
@@ -141,7 +149,6 @@ private:
 public:
 	Atom fileClosedAtom_;              // Atom used to tell nc that the file is closed
 	Bookmark markTable_[MAX_MARKS];    // marked locations in window
-	Document ** writableWindows_;      // temporary list of writable windows, used during multi-file replacements
 	FileFormats fileFormat_;           // whether to save the file straight (Unix format), or convert it to MS DOS style with \r\n line breaks
 	LockReasons lockReasons_;          // all ways a file can be locked
 	QString backlightCharTypes_;       // what backlighting to use
@@ -176,7 +183,6 @@ public:
 	bool overstrike_;                  // is overstrike mode turned on ?
 	bool replaceFailed_;               // flags replacements failures during multi-file replacements
 	bool saveOldVersion_;              // keep old version in filename.bck
-	bool wasSelected_;                 // last selection state (for dim/undim of selection related menu items
 	bool windowMenuValid_;             // is window menu up to date?
     QString modeMessage_;              // stats line banner content for learn and shell command executing modes
 	char indentStyle_;                 // whether/how to auto indent
@@ -191,8 +197,6 @@ public:
 	int flashPos_;                     // position saved for erasing matching paren highlight (if one is drawn)
 	int languageMode_;                 // identifies language mode currently selected in the window
 	int nMarks_;                       // number of active bookmarks
-	int nWritableWindows_;             // number of elements in the list
-    int rHistIndex_;
 	int undoMemUsed_;                  // amount of memory (in bytes) dedicated to the undo list
 	std::list<UndoInfo *> redo_;       // info for redoing last undone op
 	std::list<UndoInfo *> undo_;       // info for undoing last operation

@@ -318,8 +318,6 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 	// initialize the members
 	multiFileReplSelected_ = false;
 	multiFileBusy_         = false;
-	writableWindows_       = nullptr;
-	nWritableWindows_      = 0;
 	fileChanged_           = false;
 	fileMissing_           = true;
 	fileMode_              = 0;
@@ -363,7 +361,6 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
     flashTimer_            = new QTimer(this);
     contextMenu_           = nullptr;
 	fileClosedAtom_        = None;
-	wasSelected_           = false;
 	fontName_              = GetPrefFontName();
 	italicFontName_        = GetPrefItalicFontName();
 	boldFontName_          = GetPrefBoldFontName();
@@ -504,7 +501,7 @@ void DocumentWidget::onFocusIn(QWidget *now) {
             window->EndISearchEx();
 
 			// Check for changes to read-only status and/or file modifications
-            CheckForChangesToFile();
+            CheckForChangesToFileEx();
 		}
 	}
 }
@@ -741,7 +738,7 @@ void DocumentWidget::movedCallback(TextArea *area) {
 
 
 	// Check for changes to read-only status and/or file modifications
-    CheckForChangesToFile();
+    CheckForChangesToFileEx();
 
 	/*  This callback is not only called for focussed panes, but for newly
 		created panes as well. So make sure that the cursor is left alone
@@ -791,8 +788,8 @@ void DocumentWidget::modifiedCallback(int pos, int nInserted, int nDeleted, int 
 
     if(auto win = toWindow()) {
         // Check and dim/undim selection related menu items
-        if ((wasSelected_ && !selected) || (!wasSelected_ && selected)) {
-            wasSelected_ = selected;
+        if ((win->wasSelected_ && !selected) || (!win->wasSelected_ && selected)) {
+            win->wasSelected_ = selected;
 
             /* do not refresh shell-level items (window, menu-bar etc)
                when motifying non-top document */
@@ -847,7 +844,7 @@ void DocumentWidget::modifiedCallback(int pos, int nInserted, int nDeleted, int 
         UpdateStatsLine(nullptr);
 
         // Check if external changes have been made to file and warn user
-        CheckForChangesToFile();
+        CheckForChangesToFileEx();
 
     }
 }
@@ -2098,7 +2095,7 @@ QString DocumentWidget::backupFileNameEx() {
 ** Check if the file in the window was changed by an external source.
 ** and put up a warning dialog if it has.
 */
-void DocumentWidget::CheckForChangesToFile() {
+void DocumentWidget::CheckForChangesToFileEx() {
 
     static DocumentWidget *lastCheckWindow = nullptr;
     static qint64 lastCheckTime = 0;
@@ -2118,7 +2115,6 @@ void DocumentWidget::CheckForChangesToFile() {
     lastCheckTime   = timestamp;
 
     bool silent = false;
-
 
     /* Update the status, but don't pop up a dialog if we're called
        from a place where the window might be iconic (e.g., from the
@@ -2548,7 +2544,7 @@ int DocumentWidget::WriteBackupFile() {
 int DocumentWidget::SaveWindow() {
 
     // Try to ensure our information is up-to-date
-    CheckForChangesToFile();
+    CheckForChangesToFileEx();
 
     /* Return success if the file is normal & unchanged or is a
         read-only file. */
@@ -3684,13 +3680,15 @@ void DocumentWidget::RefreshWindowStates() {
 ** settings of the top document.
 */
 void DocumentWidget::refreshMenuBar() {
-    RefreshMenuToggleStates();
+    if(auto win = toWindow()) {
+        RefreshMenuToggleStates();
 
-    // Add/remove language specific menu items
-    UpdateUserMenus();
+        // Add/remove language specific menu items
+        UpdateUserMenus();
 
-    // refresh selection-sensitive menus
-    DimSelectionDepUserMenuItems(wasSelected_);
+        // refresh selection-sensitive menus
+        DimSelectionDepUserMenuItems(win->wasSelected_);
+    }
 }
 
 /*
@@ -3705,14 +3703,14 @@ void DocumentWidget::RefreshMenuToggleStates() {
 
     if(auto win = toWindow()) {
         // File menu
-        win->ui.action_Print_Selection->setEnabled(wasSelected_);
+        win->ui.action_Print_Selection->setEnabled(win->wasSelected_);
 
         // Edit menu
         win->ui.action_Undo->setEnabled(!undo_.empty());
         win->ui.action_Redo->setEnabled(!redo_.empty());
-        win->ui.action_Cut->setEnabled(wasSelected_);
-        win->ui.action_Copy->setEnabled(wasSelected_);
-        win->ui.action_Delete->setEnabled(wasSelected_);
+        win->ui.action_Cut->setEnabled(win->wasSelected_);
+        win->ui.action_Copy->setEnabled(win->wasSelected_);
+        win->ui.action_Delete->setEnabled(win->wasSelected_);
 
         // Preferences menu
         no_signals(win->ui.action_Statistics_Line)->setChecked(win->showStats_);
@@ -3978,3 +3976,93 @@ bool DocumentWidget::includeFile(const QString &name) {
 
     return true;
 }
+
+void DocumentWidget::replaceAllAP(const QString &searchString, const QString &replaceString, SearchType searchType) {
+
+    if (CheckReadOnly()) {
+        return;
+    }
+
+    ReplaceAllEx(
+                toWindow(),
+                this,
+                toWindow()->lastFocus_,
+                searchString.toLatin1().data(),
+                replaceString.toLatin1().data(),
+                searchType);
+}
+
+void DocumentWidget::replaceInSelAP(const QString &searchString, const QString &replaceString, SearchType searchType) {
+
+    if (CheckReadOnly()) {
+        return;
+    }
+
+    ReplaceInSelectionEx(
+                toWindow(),
+                this,
+                toWindow()->lastFocus_,
+                searchString.toLatin1().data(),
+                replaceString.toLatin1().data(),
+                searchType);
+}
+
+void DocumentWidget::replaceFindAP(const QString &searchString, const QString &replaceString, SearchDirection direction, SearchType searchType, bool searchWraps) {
+
+    if (CheckReadOnly()) {
+        return;
+    }
+
+    ReplaceAndSearchEx(
+                toWindow(),
+                this,
+                toWindow()->lastFocus_,
+                direction,
+                searchString.toLatin1().data(),
+                replaceString.toLatin1().data(),
+                searchType,
+                searchWraps);
+}
+
+void DocumentWidget::findAP(const QString &searchString, SearchDirection direction, SearchType searchType, bool searchWraps) {
+    SearchAndSelectEx(
+                toWindow(),
+                this,
+                toWindow()->lastFocus_,
+                direction,
+                searchString.toLatin1().data(),
+                searchType,
+                searchWraps);
+}
+
+void DocumentWidget::findIncrAP(const QString &searchString, SearchDirection direction, SearchType searchType, bool searchWraps, bool continued) {
+
+    SearchAndSelectIncrementalEx(
+                toWindow(),
+                this,
+                toWindow()->lastFocus_,
+                direction,
+                searchString.toLatin1().data(),
+                searchType,
+                searchWraps,
+                continued);
+
+}
+
+void DocumentWidget::replaceAP(const QString &searchString, const QString &replaceString, SearchDirection direction, SearchType searchType, bool searchWraps) {
+
+    if (CheckReadOnly()) {
+        return;
+    }
+
+    SearchAndReplaceEx(
+                toWindow(),
+                this,
+                toWindow()->lastFocus_,
+                direction,
+                searchString.toLatin1().data(),
+                replaceString.toLatin1().data(),
+                searchType,
+                searchWraps);
+}
+

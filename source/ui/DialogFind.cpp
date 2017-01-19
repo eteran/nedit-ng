@@ -363,3 +363,13 @@ void DialogFind::on_checkCase_toggled(bool checked) {
 bool DialogFind::keepDialog() const {
 	return ui.checkKeep->isChecked();
 }
+
+//------------------------------------------------------------------------------
+// name:
+//------------------------------------------------------------------------------
+void DialogFind::setDocument(DocumentWidget *document) {
+    document_ = document;
+    if(keepDialog()) {
+        setWindowTitle(tr("Find (in %1)").arg(document_->filename_));
+    }
+}

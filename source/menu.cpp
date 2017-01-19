@@ -98,7 +98,6 @@ extern "C" void _XmDismissTearOff(Widget, XtPointer, XtPointer);
 
 static void doActionCB(Widget w, XtPointer clientData, XtPointer callData);
 static void doTabActionCB(Widget w, XtPointer clientData, XtPointer callData);
-static void replaceCB(Widget w, XtPointer clientData, XtPointer callData);
 static void replaceSameCB(Widget w, XtPointer clientData, XtPointer callData);
 static void replaceFindSameCB(Widget w, XtPointer clientData, XtPointer callData);
 static void markCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -223,13 +222,7 @@ static void unloadTipsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 static void printAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void printSelAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void exitAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void findAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void replaceDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void replaceAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void replaceAllAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void replaceInSelAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void replaceSameAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void replaceFindAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void replaceFindSameAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void gotoAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void repeatDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
@@ -275,8 +268,6 @@ static void updateTagsFileMenu(Document *window);
 static void updateTipsFileMenu(Document *window);
 static SearchDirection searchDirection(int ignoreArgs, String *args, Cardinal *nArgs);
 static bool searchWrap(int ignoreArgs, String *args, Cardinal *nArgs);
-static int searchKeepDialogs(int ignoreArgs, String *args, Cardinal *nArgs);
-static SearchType searchType(int ignoreArgs, String *args, Cardinal *nArgs);
 static char **shiftKeyToDir(XtPointer callData);
 static void raiseCB(Widget w, XtPointer clientData, XtPointer callData);
 static void openPrevCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -360,7 +351,7 @@ static XtActionsRec Actions[] = {{(String) "new", newAP},
                                  //{(String) "shift_right", shiftRightAP},
                                  //{(String) "shift-right-by-tab", shiftRightTabAP},
                                  //{(String) "shift_right_by_tab", shiftRightTabAP},
-                                 {(String) "find", findAP},
+                                 //{(String) "find", findAP},
                                  //{(String) "find-dialog", findDialogAP},
                                  //{(String) "find_dialog", findDialogAP},
                                  //{(String) "find-again", findSameAP},
@@ -369,16 +360,16 @@ static XtActionsRec Actions[] = {{(String) "new", newAP},
                                  //{(String) "find_selection", findSelAP},
                                  //{(String) "find_incremental", findIncrAP},
                                  //{(String) "start_incremental_find", startIncrFindAP},
-                                 {(String) "replace", replaceAP},
-                                 {(String) "replace-dialog", replaceDialogAP},
-                                 {(String) "replace_dialog", replaceDialogAP},
-                                 {(String) "replace-all", replaceAllAP},
-                                 {(String) "replace_all", replaceAllAP},
-                                 {(String) "replace-in-selection", replaceInSelAP},
-                                 {(String) "replace_in_selection", replaceInSelAP},
+                                 //{(String) "replace", replaceAP},
+                                 //{(String) "replace-dialog", replaceDialogAP},
+                                 //{(String) "replace_dialog", replaceDialogAP},
+                                 //{(String) "replace-all", replaceAllAP},
+                                 //{(String) "replace_all", replaceAllAP},
+                                 //{(String) "replace-in-selection", replaceInSelAP},
+                                 //{(String) "replace_in_selection", replaceInSelAP},
                                  {(String) "replace-again", replaceSameAP},
                                  {(String) "replace_again", replaceSameAP},
-                                 {(String) "replace_find", replaceFindAP},
+                                 //{(String) "replace_find", replaceFindAP},
                                  {(String) "replace_find_same", replaceFindSameAP},
                                  {(String) "replace_find_again", replaceFindSameAP},
                                  {(String) "goto-line-number", gotoAP},
@@ -557,8 +548,6 @@ Widget CreateMenuBar(Widget parent, Document *window) {
 	** "Search" pull down menu.
 	*/
 	menuPane = createMenu(menuBar, "searchMenu", "Search", 0, nullptr, SHORT);
-	createMenuItem(menuPane, "replace", "Replace...", 'R', replaceCB, window, SHORT);
-	createFakeMenuItem(menuPane, "replaceShift", replaceCB, window);
 	window->replaceFindAgainItem_ = createMenuItem(menuPane, "replaceFindAgain", "Replace Find Again", 'A', replaceFindSameCB, window, SHORT);
 	XtSetSensitive(window->replaceFindAgainItem_, NHist);
 	createFakeMenuItem(menuPane, "replaceFindAgainShift", replaceFindSameCB, window);
@@ -832,14 +821,6 @@ static void doActionCB(Widget w, XtPointer clientData, XtPointer callData) {
 	HidePointerOnKeyedEvent(widget, event);
 
 	XtCallActionProc(widget, action, event, nullptr, 0);
-}
-
-static void replaceCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	Q_UNUSED(clientData);
-
-	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, "replace_dialog", static_cast<XmAnyCallbackStruct *>(callData)->event, shiftKeyToDir(callData), 1);
 }
 
 static void replaceSameCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -2687,72 +2668,6 @@ static void exitAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 		exit(EXIT_SUCCESS);
 }
 
-static void findAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(event);
-
-	if (*nArgs == 0) {
-		fprintf(stderr, "nedit: find action requires search string argument\n");
-		return;
-	}
-	SearchAndSelect(Document::WidgetToWindow(w), searchDirection(1, args, nArgs), args[0], searchType(1, args, nArgs), searchWrap(1, args, nArgs));
-}
-
-static void replaceDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(event);
-
-	Document *window = Document::WidgetToWindow(w);
-
-	if (CheckReadOnly(window))
-		return;
-	DoFindReplaceDlog(window, searchDirection(0, args, nArgs), searchKeepDialogs(0, args, nArgs), searchType(0, args, nArgs), event->xbutton.time);
-}
-
-static void replaceAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(event);
-
-	Document *window = Document::WidgetToWindow(w);
-
-	if (CheckReadOnly(window))
-		return;
-	if (*nArgs < 2) {
-		fprintf(stderr, "nedit: replace action requires search and replace string arguments\n");
-		return;
-	}
-	SearchAndReplace(window, searchDirection(2, args, nArgs), args[0], args[1], searchType(2, args, nArgs), searchWrap(2, args, nArgs));
-}
-
-static void replaceAllAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-	Q_UNUSED(event);
-
-	Document *window = Document::WidgetToWindow(w);
-
-	if (CheckReadOnly(window))
-		return;
-	if (*nArgs < 2) {
-		fprintf(stderr, "nedit: replace_all action requires search and replace string arguments\n");
-		return;
-	}
-	ReplaceAll(window, args[0], args[1], searchType(2, args, nArgs));
-}
-
-static void replaceInSelAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(event);
-
-	Document *window = Document::WidgetToWindow(w);
-
-	if (CheckReadOnly(window))
-		return;
-	if (*nArgs < 2) {
-		fprintf(stderr, "nedit: replace_in_selection requires search and replace string arguments\n");
-		return;
-	}
-	ReplaceInSelection(window, args[0], args[1], searchType(2, args, nArgs));
-}
-
 static void replaceSameAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	Q_UNUSED(event);
@@ -2762,24 +2677,6 @@ static void replaceSameAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 	if (CheckReadOnly(window))
 		return;
 	ReplaceSame(window, searchDirection(0, args, nArgs), searchWrap(0, args, nArgs));
-}
-
-static void replaceFindAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(event);
-
-	Document *window = Document::WidgetToWindow(w);
-
-	if (CheckReadOnly(window)) {
-		return;
-	}
-
-	if (*nArgs < 2) {
-		QMessageBox::warning(nullptr /*window->shell_*/, QLatin1String("Error in replace_find"), QLatin1String("replace_find action requires search and replace string arguments"));
-		return;
-	}
-
-	ReplaceAndSearch(window, searchDirection(2, args, nArgs), args[0], args[1], searchType(2, args, nArgs), searchWrap(0, args, nArgs));
 }
 
 static void replaceFindSameAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -4411,24 +4308,6 @@ static SearchDirection searchDirection(int ignoreArgs, String *args, Cardinal *n
 }
 
 /*
-** Scans action argument list for arguments "keep" or "nokeep" to
-** determine whether to keep dialogs up for search and replace.  "ignoreArgs"
-** tells the routine how many required arguments there are to ignore before
-** looking for keywords
-*/
-static int searchKeepDialogs(int ignoreArgs, String *args, Cardinal *nArgs) {
-	int i;
-
-	for (i = ignoreArgs; i < (int)*nArgs; i++) {
-		if (!strCaseCmp(args[i], "keep"))
-			return TRUE;
-		if (!strCaseCmp(args[i], "nokeep"))
-			return FALSE;
-	}
-	return GetPrefKeepSearchDlogs();
-}
-
-/*
 ** Scans action argument list for arguments "wrap" or "nowrap" to
 ** determine search direction for search and replace actions.  "ignoreArgs"
 ** tells the routine how many required arguments there are to ignore before
@@ -4444,23 +4323,6 @@ static bool searchWrap(int ignoreArgs, String *args, Cardinal *nArgs) {
 			return false;
 	}
 	return GetPrefSearchWraps();
-}
-
-/*
-** Scans action argument list for arguments "literal", "case" or "regex" to
-** determine search type for search and replace actions.  "ignoreArgs"
-** tells the routine how many required arguments there are to ignore before
-** looking for keywords
-*/
-static SearchType searchType(int ignoreArgs, String *args, Cardinal *nArgs) {
-	int i;
-	SearchType tmpSearchType;
-
-	for (i = ignoreArgs; i < (int)*nArgs; i++) {
-		if (StringToSearchType(args[i], &tmpSearchType))
-			return tmpSearchType;
-	}
-	return GetPrefSearch();
 }
 
 /*

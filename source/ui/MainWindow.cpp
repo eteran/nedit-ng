@@ -207,6 +207,7 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(par
     iSearchStartPos_       = -1;
     iSearchLastRegexCase_  = true;
     iSearchLastLiteralCase_= false;
+    wasSelected_           = false;
 	
 	// default to hiding the optional panels
     ui.incrementalSearchFrame->setVisible(showISearchLine_);
@@ -267,6 +268,7 @@ void MainWindow::setupMenuStrings() {
     new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_G), this, SLOT(action_Shift_Find_Again()));
     new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_H), this, SLOT(action_Shift_Find_Selection_triggered()));
     new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_I), this, SLOT(action_Shift_Find_Incremental_triggered()));
+    new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_R), this, SLOT(action_Shift_Replace_triggered()));
 }
 
 //------------------------------------------------------------------------------
@@ -561,17 +563,11 @@ void MainWindow::UpdateWindowTitle(DocumentWidget *doc) {
 	/* If there's a find or replace dialog up in "Keep Up" mode, with a
 	   file name in the title, update it too */
 	if (auto dialog = qobject_cast<DialogFind *>(dialogFind_)) {
-		if(dialog->keepDialog()) {
-			title = QString(tr("Find (in %1)")).arg(doc->filename_);
-			dialog->setWindowTitle(title);
-		}
+        dialog->setDocument(doc);
 	}
 
 	if(auto dialog = getDialogReplace()) {
-		if(dialog->keepDialog()) {
-			title = QString(tr("Replace (in %1)")).arg(doc->filename_);
-			dialog->setWindowTitle(title);
-		}
+        dialog->setDocument(doc);
 	}
 
 	// Update the Windows menus with the new name
@@ -1742,7 +1738,9 @@ void MainWindow::on_editIFind_textChanged(const QString &searchString) {
        there's an incremental search already in progress, mark the operation
        as "continued" so the search routine knows to re-start the search
        from the original starting position */
-    findIncrAP(searchString, direction, searchType, GetPrefSearchWraps(), iSearchStartPos_ != -1);
+    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+        doc->findIncrAP(searchString, direction, searchType, GetPrefSearchWraps(), iSearchStartPos_ != -1);
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -1787,7 +1785,9 @@ void MainWindow::on_editIFind_returnPressed() {
     }
 
     // find the text and mark it
-    findAP(searchString, direction, searchType, GetPrefSearchWraps());
+    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+        doc->findAP(searchString, direction, searchType, GetPrefSearchWraps());
+    }
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event) {
@@ -1838,32 +1838,6 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
     ui.editIFind->setText(QLatin1String(searchStr));
     ui.editIFind->setCursorPosition(previousPosition);
 }
-
-void MainWindow::findAP(const QString &searchString, SearchDirection direction, SearchType searchType, bool searchWraps) {
-    SearchAndSelectEx(
-                this,
-                DocumentWidget::documentFrom(lastFocus_),
-                lastFocus_,
-                direction,
-                searchString.toLatin1().data(),
-                searchType,
-                searchWraps);
-}
-
-void MainWindow::findIncrAP(const QString &searchString, SearchDirection direction, SearchType searchType, bool searchWraps, bool continued) {
-
-    SearchAndSelectIncrementalEx(
-                this,
-                DocumentWidget::documentFrom(lastFocus_),
-                lastFocus_,
-                direction,
-                searchString.toLatin1().data(),
-                searchType,
-                searchWraps,
-                continued);
-
-}
-
 
 #if 0
 
@@ -1976,4 +1950,36 @@ void MainWindow::EndISearchEx() {
 
     // Pop down the search line (if it's not pegged up in Preferences)
     TempShowISearch(false);
+}
+
+void MainWindow::on_action_Replace_triggered() {
+    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+        if (doc->CheckReadOnly()) {
+            return;
+        }
+
+        DoFindReplaceDlogEx(
+                    this,
+                    DocumentWidget::documentFrom(lastFocus_),
+                    lastFocus_,
+                    SEARCH_FORWARD,
+                    GetPrefKeepSearchDlogs(),
+                    GetPrefSearch());
+    }
+}
+
+void MainWindow::action_Shift_Replace_triggered() {
+    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+        if (doc->CheckReadOnly()) {
+            return;
+        }
+
+        DoFindReplaceDlogEx(
+                    this,
+                    DocumentWidget::documentFrom(lastFocus_),
+                    lastFocus_,
+                    SEARCH_BACKWARD,
+                    GetPrefKeepSearchDlogs(),
+                    GetPrefSearch());
+    }
 }

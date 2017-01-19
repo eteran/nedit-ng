@@ -314,80 +314,82 @@ static bool selectionSpansMultipleLines(Document *window) {
 }
 #endif
 
-void DoFindReplaceDlog(Document *window, SearchDirection direction, int keepDialogs, SearchType searchType, Time time) {
+void DoFindReplaceDlogEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, int keepDialogs, SearchType searchType) {
 
-	// Create the dialog if it doesn't already exist 
-	if (!window->dialogReplace_) {
-		CreateReplaceDlog(window->shell_, window);
-	}
+    Q_UNUSED(area);
 
-	auto dialog = window->getDialogReplace();
-	
-	dialog->setTextField(window, time);
-	
-	// If the window is already up, just pop it to the top 
-	if(dialog->isVisible()) {
-		dialog->raise();
-		dialog->activateWindow();
-		return;
-	}
-	
-	// Blank the Replace with field 
-	dialog->ui.textReplace->setText(QString());
-	
-	// Set the initial search type 
-	dialog->initToggleButtons(searchType);	
-	
-	// Set the initial direction based on the direction argument 
-	dialog->ui.checkBackward->setChecked(direction == SEARCH_FORWARD ? false : true);	
-	
-	// Set the state of the Keep Dialog Up button 
-	dialog->ui.checkKeep->setChecked(keepDialogs);	
+    // Create the dialog if it doesn't already exist
+    if (!window->dialogReplace_) {
+        window->dialogReplace_ = new DialogReplace(window, document, window);
+    }
 
-#ifdef REPLACE_SCOPE
-	/* Set the state of the scope radio buttons to "In Window".
-	   Notify to make sure that callbacks are called.
-	   NOTE: due to an apparent bug in OpenMotif, the radio buttons may
-	   get stuck after resetting the scope to "In Window". Therefore we must
-	   use RadioButtonChangeState(), which contains a workaround. */
-	if (window->wasSelected_) {
-		/* If a selection exists, the default scope depends on the preference
-		       of the user. */
-		switch (GetPrefReplaceDefScope()) {
-		case REPL_DEF_SCOPE_SELECTION:
-			/* The user prefers selection scope, no matter what the
-			   size of the selection is. */
-			dialog->ui.radioSelection->setChecked(true);
-			break;
-		case REPL_DEF_SCOPE_SMART:
-			if (selectionSpansMultipleLines(window)) {
-				/* If the selection spans multiple lines, the user most
-				   likely wants to perform a replacement in the selection */
-				dialog->ui.radioSelection->setChecked(true);
-			} else {
-				/* It's unlikely that the user wants a replacement in a
-				   tiny selection only. */
-				dialog->ui.radioWindow->setChecked(true);
-			}
-			break;
-		default:
-			// The user always wants window scope as default. 
-			dialog->ui.radioWindow->setChecked(true);
-			break;
-		}
-	} else {
-		// No selection -> always choose "In Window" as default. 
-		dialog->ui.radioWindow->setChecked(true);
-	}
+    auto dialog = window->getDialogReplace();
+
+    dialog->setTextField(document);
+
+    // If the window is already up, just pop it to the top
+    if(dialog->isVisible()) {
+        dialog->raise();
+        dialog->activateWindow();
+        return;
+    }
+
+    // Blank the Replace with field
+    dialog->ui.textReplace->setText(QString());
+
+    // Set the initial search type
+    dialog->initToggleButtons(searchType);
+
+    // Set the initial direction based on the direction argument
+    dialog->ui.checkBackward->setChecked(direction == SEARCH_FORWARD ? false : true);
+
+    // Set the state of the Keep Dialog Up button
+    dialog->ui.checkKeep->setChecked(keepDialogs);
+
+#if defined(REPLACE_SCOPE) || 0
+    /* Set the state of the scope radio buttons to "In Window".
+       Notify to make sure that callbacks are called.
+       NOTE: due to an apparent bug in OpenMotif, the radio buttons may
+       get stuck after resetting the scope to "In Window". Therefore we must
+       use RadioButtonChangeState(), which contains a workaround. */
+    if (document->wasSelected_) {
+        /* If a selection exists, the default scope depends on the preference
+               of the user. */
+        switch (GetPrefReplaceDefScope()) {
+        case REPL_DEF_SCOPE_SELECTION:
+            /* The user prefers selection scope, no matter what the
+               size of the selection is. */
+            dialog->ui.radioSelection->setChecked(true);
+            break;
+        case REPL_DEF_SCOPE_SMART:
+            if (selectionSpansMultipleLines(window)) {
+                /* If the selection spans multiple lines, the user most
+                   likely wants to perform a replacement in the selection */
+                dialog->ui.radioSelection->setChecked(true);
+            } else {
+                /* It's unlikely that the user wants a replacement in a
+                   tiny selection only. */
+                dialog->ui.radioWindow->setChecked(true);
+            }
+            break;
+        default:
+            // The user always wants window scope as default.
+            dialog->ui.radioWindow->setChecked(true);
+            break;
+        }
+    } else {
+        // No selection -> always choose "In Window" as default.
+        dialog->ui.radioWindow->setChecked(true);
+    }
 #endif
 
-	dialog->UpdateReplaceActionButtons();
+    dialog->UpdateReplaceActionButtons();
 
-	// Start the search history mechanism at the current history item 
-	window->rHistIndex_ = 0;
+    // Start the search history mechanism at the current history item
+    window->rHistIndex_ = 0;
 
-	// TODO(eteran): center it on the cursor if settings say so
-	dialog->show();
+    // TODO(eteran): center it on the cursor if settings say so
+    dialog->show();
 }
 
 void DoFindDlogEx(MainWindow *window, DocumentWidget *document, SearchDirection direction, int keepDialogs, SearchType searchType) {
@@ -442,13 +444,6 @@ void RemoveFromMultiReplaceDialog(Document *doomedWindow) {
 		}
 	}
 }
-
-void CreateReplaceDlog(Widget parent, Document *window) {
-	Q_UNUSED(parent);
-	window->dialogReplace_ = new DialogReplace(window, nullptr /*parent*/);		
-}
-
-
 
 /*
 ** Iterates through the list of writable windows of a window, and removes
@@ -513,7 +508,7 @@ static void removeDoomedWindowFromList(Document *window, int index) {
 ** Count no. of windows
 */
 static int countWindows() {
-	return Document::WindowCount();
+    return MainWindow::allDocuments().size();
 }
 
 /*
@@ -523,21 +518,29 @@ int countWritableWindows() {
 	int nAfter;
 
 	int nBefore = countWindows();
-	int nWritable = 0;
-	
-	for(auto it = WindowList.begin(); it != WindowList.end(); ++it) {
-	
-		Document *w = *it;
-	
+    int nWritable = 0;
+
+    QList<DocumentWidget *> documents = MainWindow::allDocuments();
+    auto first = documents.begin();
+    auto last = documents.end();
+
+    for(auto it = first; it != last; ++it) {
+        DocumentWidget *w = *it;
+
 		/* We must be very careful! The status check may trigger a pop-up
 		   dialog when the file has changed on disk, and the user may destroy
 		   arbitrary windows in response. */
-		CheckForChangesToFile(w);
-		nAfter = countWindows();
+        w->CheckForChangesToFileEx();
+        nAfter = countWindows();
+
 		if (nAfter != nBefore) {
 			// The user has destroyed a file; start counting all over again 
 			nBefore = nAfter;
-			it = WindowList.begin();
+
+            documents = MainWindow::allDocuments();
+            first = documents.begin();
+            last = documents.end();
+            it = first;
 			nWritable = 0;
 			continue;
 		}
@@ -1706,6 +1709,58 @@ bool ReplaceFindSame(Document *window, SearchDirection direction, int searchWrap
 ** Replace selection with "replaceString" and search for string "searchString" in window "window",
 ** using algorithm "searchType" and direction "direction"
 */
+bool ReplaceAndSearchEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, const char *searchString, const char *replaceString, SearchType searchType, int searchWrap) {
+    int startPos = 0;
+    int endPos = 0;
+    int replaceLen = 0;
+    int searchExtentBW;
+    int searchExtentFW;
+
+    // Save a copy of search and replace strings in the search history
+    saveSearchHistory(searchString, replaceString, searchType, false);
+
+    bool replaced = false;
+
+    // Replace the selected text only if it matches the search string
+    if (searchMatchesSelectionEx(document, searchString, searchType, &startPos, &endPos, &searchExtentBW, &searchExtentFW)) {
+        // replace the text
+        if (isRegexType(searchType)) {
+            char replaceResult[SEARCHMAX + 1];
+            const std::string foundString = document->buffer_->BufGetRangeEx(searchExtentBW, searchExtentFW + 1);
+
+            replaceUsingREEx(
+                searchString,
+                replaceString,
+                foundString,
+                startPos - searchExtentBW,
+                replaceResult,
+                SEARCHMAX,
+                startPos == 0 ? '\0' : document->buffer_->BufGetCharacter(startPos - 1),
+                GetWindowDelimitersEx(document).toLatin1().data(),
+                defaultRegexFlags(searchType));
+
+            document->buffer_->BufReplaceEx(startPos, endPos, replaceResult);
+            replaceLen = strlen(replaceResult);
+        } else {
+            document->buffer_->BufReplaceEx(startPos, endPos, replaceString);
+            replaceLen = strlen(replaceString);
+        }
+
+        // Position the cursor so the next search will work correctly based
+        // on the direction of the search
+        area->TextSetCursorPos(startPos + ((direction == SEARCH_FORWARD) ? replaceLen : 0));
+        replaced = true;
+    }
+
+    // do the search; beeps/dialogs are taken care of
+    SearchAndSelectEx(window, document, area, direction, searchString, searchType, searchWrap);
+    return replaced;
+}
+
+/*
+** Replace selection with "replaceString" and search for string "searchString" in window "window",
+** using algorithm "searchType" and direction "direction"
+*/
 bool ReplaceAndSearch(Document *window, SearchDirection direction, const char *searchString, const char *replaceString, SearchType searchType, int searchWrap) {
 	int startPos = 0;
 	int endPos = 0;
@@ -1754,6 +1809,86 @@ bool ReplaceAndSearch(Document *window, SearchDirection direction, const char *s
 	SearchAndSelect(window, direction, searchString, searchType, searchWrap);
 
 	return replaced;
+}
+
+/*
+** Search for string "searchString" in window "window", using algorithm
+** "searchType" and direction "direction", and replace it with "replaceString"
+** Also adds the search and replace strings to the global search history.
+*/
+bool SearchAndReplaceEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, const char *searchString, const char *replaceString, SearchType searchType, bool searchWrap) {
+    int startPos;
+    int endPos;
+    int replaceLen;
+    int searchExtentBW;
+    int searchExtentFW;
+    int found;
+    int beginPos;
+    int cursorPos;
+
+    // Save a copy of search and replace strings in the search history
+    saveSearchHistory(searchString, replaceString, searchType, false);
+
+    // If the text selected in the window matches the search string,
+    // the user is probably using search then replace method, so
+    // replace the selected text regardless of where the cursor is.
+    // Otherwise, search for the string.
+    if (!searchMatchesSelectionEx(document, searchString, searchType, &startPos, &endPos, &searchExtentBW, &searchExtentFW)) {
+        // get the position to start the search
+
+        cursorPos = area->TextGetCursorPos();
+        if (direction == SEARCH_BACKWARD) {
+            // use the insert position - 1 for backward searches
+            beginPos = cursorPos - 1;
+        } else {
+            // use the insert position for forward searches
+            beginPos = cursorPos;
+        }
+        // do the search
+        found = SearchWindowEx(window, document, direction, searchString, searchType, searchWrap, beginPos, &startPos, &endPos, &searchExtentBW, &searchExtentFW);
+        if (!found)
+            return false;
+    }
+
+    // replace the text
+    if (isRegexType(searchType)) {
+        char replaceResult[SEARCHMAX];
+        const std::string foundString = document->buffer_->BufGetRangeEx(searchExtentBW, searchExtentFW + 1);
+        replaceUsingREEx(
+            searchString,
+            replaceString,
+            foundString,
+            startPos - searchExtentBW,
+            replaceResult,
+            SEARCHMAX,
+            startPos == 0 ? '\0' : document->buffer_->BufGetCharacter(startPos - 1),
+            GetWindowDelimitersEx(document).toLatin1().data(),
+            defaultRegexFlags(searchType));
+
+        document->buffer_->BufReplaceEx(startPos, endPos, replaceResult);
+        replaceLen = strlen(replaceResult);
+    } else {
+        document->buffer_->BufReplaceEx(startPos, endPos, replaceString);
+        replaceLen = strlen(replaceString);
+    }
+
+    /* after successfully completing a replace, selected text attracts
+       attention away from the area of the replacement, particularly
+       when the selection represents a previous search. so deselect */
+    document->buffer_->BufUnselect();
+
+    /* temporarily shut off autoShowInsertPos before setting the cursor
+       position so MakeSelectionVisible gets a chance to place the replaced
+       string at a pleasing position on the screen (otherwise, the cursor would
+       be automatically scrolled on screen and MakeSelectionVisible would do
+       nothing) */
+    area->setAutoShowInsertPos(false);
+
+    area->TextSetCursorPos(startPos + ((direction == SEARCH_FORWARD) ? replaceLen : 0));
+    document->MakeSelectionVisible(area);
+    area->setAutoShowInsertPos(true);
+
+    return true;
 }
 
 /*
@@ -1840,6 +1975,72 @@ bool SearchAndReplace(Document *window, SearchDirection direction, const char *s
 	return true;
 }
 
+
+/*
+**  Uses the resource nedit.truncSubstitution to determine how to deal with
+**  regex failures. This function only knows about the resource (via the usual
+**  setting getter) and asks or warns the user depending on that.
+**
+**  One could argue that the dialoging should be determined by the setting
+**  'searchDlogs'. However, the incomplete substitution is not just a question
+**  of verbosity, but of data loss. The search is successful, only the
+**  replacement fails due to an internal limitation of NEdit.
+**
+**  The parameters 'parent' and 'display' are only used to put dialogs and
+**  beeps at the right place.
+**
+**  The result is either predetermined by the resource or the user's choice.
+*/
+static bool prefOrUserCancelsSubstEx(MainWindow *window, DocumentWidget *document) {
+
+    Q_UNUSED(window);
+
+    bool cancel = true;
+
+    switch (GetPrefTruncSubstitution()) {
+    case TRUNCSUBST_SILENT:
+        //  silently fail the operation
+        cancel = true;
+        break;
+
+    case TRUNCSUBST_FAIL:
+        //  fail the operation and pop up a dialog informing the user
+        QApplication::beep();
+
+        QMessageBox::information(document, QLatin1String("Substitution Failed"), QLatin1String("The result length of the substitution exceeded an internal limit.\n"
+                                                                                                           "The substitution is canceled."));
+
+        cancel = true;
+        break;
+
+    case TRUNCSUBST_WARN:
+        //  pop up dialog and ask for confirmation
+        QApplication::beep();
+
+        {
+            QMessageBox messageBox(document);
+            messageBox.setWindowTitle(QLatin1String("Substitution Failed"));
+            messageBox.setIcon(QMessageBox::Warning);
+            messageBox.setText(QLatin1String("The result length of the substitution exceeded an internal limit.\nExecuting the substitution will result in loss of data."));
+            QPushButton *buttonLose   = messageBox.addButton(QLatin1String("Lose Data"), QMessageBox::AcceptRole);
+            QPushButton *buttonCancel = messageBox.addButton(QMessageBox::Cancel);
+            Q_UNUSED(buttonLose);
+
+            messageBox.exec();
+            cancel = (messageBox.clickedButton() == buttonCancel);
+        }
+        break;
+
+    case TRUNCSUBST_IGNORE:
+        //  silently conclude the operation; THIS WILL DESTROY DATA.
+        cancel = false;
+        break;
+    }
+
+    return cancel;
+}
+
+
 /*
 **  Uses the resource nedit.truncSubstitution to determine how to deal with
 **  regex failures. This function only knows about the resource (via the usual
@@ -1902,6 +2103,178 @@ static bool prefOrUserCancelsSubst(const Widget parent, const Display *display) 
 	}
 
 	return cancel;
+}
+
+/*
+** Replace all occurences of "searchString" in "window" with "replaceString"
+** within the current primary selection in "window". Also adds the search and
+** replace strings to the global search history.
+*/
+void ReplaceInSelectionEx(MainWindow *window, DocumentWidget *document, TextArea *area, const char *searchString, const char *replaceString, SearchType searchType) {
+    int selStart;
+    int selEnd;
+    int beginPos;
+    int startPos;
+    int endPos;
+    int realOffset;
+    int replaceLen;
+    bool found;
+    bool isRect;
+    int rectStart;
+    int rectEnd;
+    int lineStart;
+    int cursorPos;
+    int extentBW;
+    int extentFW;
+    std::string fileString;
+    bool substSuccess = false;
+    bool anyFound     = false;
+    bool cancelSubst  = true;
+
+    // save a copy of search and replace strings in the search history
+    saveSearchHistory(searchString, replaceString, searchType, false);
+
+    // find out where the selection is
+    if (!document->buffer_->BufGetSelectionPos(&selStart, &selEnd, &isRect, &rectStart, &rectEnd)) {
+        return;
+    }
+
+    // get the selected text
+    if (isRect) {
+        selStart = document->buffer_->BufStartOfLine(selStart);
+        selEnd = document->buffer_->BufEndOfLine( selEnd);
+        fileString = document->buffer_->BufGetRangeEx(selStart, selEnd);
+    } else {
+        fileString = document->buffer_->BufGetSelectionTextEx();
+    }
+
+    /* create a temporary buffer in which to do the replacements to hide the
+       intermediate steps from the display routines, and so everything can
+       be undone in a single operation */
+    auto tempBuf = mem::make_unique<TextBuffer>();
+    tempBuf->BufSetAllEx(fileString);
+
+    // search the string and do the replacements in the temporary buffer
+    replaceLen = strlen(replaceString);
+    found = true;
+    beginPos = 0;
+    cursorPos = 0;
+    realOffset = 0;
+    while (found) {
+        found = SearchString(fileString, searchString, SEARCH_FORWARD, searchType, FALSE, beginPos, &startPos, &endPos, &extentBW, &extentFW, GetWindowDelimitersEx(document).toLatin1().data());
+        if (!found)
+            break;
+
+        anyFound = True;
+        /* if the selection is rectangular, verify that the found
+           string is in the rectangle */
+        if (isRect) {
+            lineStart = document->buffer_->BufStartOfLine(selStart + startPos);
+            if (document->buffer_->BufCountDispChars(lineStart, selStart + startPos) < rectStart || document->buffer_->BufCountDispChars(lineStart, selStart + endPos) > rectEnd) {
+                if (fileString[endPos] == '\0')
+                    break;
+                /* If the match starts before the left boundary of the
+                   selection, and extends past it, we should not continue
+                   search after the end of the (false) match, because we
+                   could miss a valid match starting between the left boundary
+                   and the end of the false match. */
+                if (document->buffer_->BufCountDispChars(lineStart, selStart + startPos) < rectStart && document->buffer_->BufCountDispChars(lineStart, selStart + endPos) > rectStart)
+                    beginPos += 1;
+                else
+                    beginPos = (startPos == endPos) ? endPos + 1 : endPos;
+                continue;
+            }
+        }
+
+        /* Make sure the match did not start past the end (regular expressions
+           can consider the artificial end of the range as the end of a line,
+           and match a fictional whole line beginning there) */
+        if (startPos == (selEnd - selStart)) {
+            found = false;
+            break;
+        }
+
+        // replace the string and compensate for length change
+        if (isRegexType(searchType)) {
+            char replaceResult[SEARCHMAX];
+            const std::string foundString = tempBuf->BufGetRangeEx(extentBW + realOffset, extentFW + realOffset + 1);
+            substSuccess = replaceUsingREEx(
+                            searchString,
+                            replaceString,
+                            foundString,
+                            startPos - extentBW,
+                            replaceResult,
+                            SEARCHMAX,
+                            (startPos + realOffset) == 0 ? '\0' : tempBuf->BufGetCharacter(startPos + realOffset - 1),
+                            GetWindowDelimitersEx(document).toLatin1().data(),
+                            defaultRegexFlags(searchType));
+
+            if (!substSuccess) {
+                /*  The substitution failed. Primary reason for this would be
+                    a result string exceeding SEARCHMAX. */
+
+                cancelSubst = prefOrUserCancelsSubstEx(window, document);
+
+                if (cancelSubst) {
+                    //  No point in trying other substitutions.
+                    break;
+                }
+            }
+
+            tempBuf->BufReplaceEx(startPos + realOffset, endPos + realOffset, replaceResult);
+            replaceLen = strlen(replaceResult);
+        } else {
+            // at this point plain substitutions (should) always work
+            tempBuf->BufReplaceEx(startPos + realOffset, endPos + realOffset, replaceString);
+            substSuccess = True;
+        }
+
+        realOffset += replaceLen - (endPos - startPos);
+        // start again after match unless match was empty, then endPos+1
+        beginPos = (startPos == endPos) ? endPos + 1 : endPos;
+        cursorPos = endPos;
+        if (fileString[endPos] == '\0')
+            break;
+    }
+
+    if (anyFound) {
+        if (substSuccess || !cancelSubst) {
+            /*  Either the substitution was successful (the common case) or the
+                user does not care and wants to have a faulty replacement.  */
+
+            // replace the selected range in the real buffer
+            document->buffer_->BufReplaceEx(selStart, selEnd, tempBuf->BufAsStringEx());
+
+            // set the insert point at the end of the last replacement
+            area->TextSetCursorPos(selStart + cursorPos + realOffset);
+
+            /* leave non-rectangular selections selected (rect. ones after replacement
+               are less useful since left/right positions are randomly adjusted) */
+            if (!isRect) {
+                document->buffer_->BufSelect(selStart, selEnd + realOffset);
+            }
+        }
+    } else {
+        //  Nothing found, tell the user about it
+        if (GetPrefSearchDlogs()) {
+
+            // Avoid bug in Motif 1.1 by putting away search dialog before Dialogs
+            if (auto dialog = qobject_cast<DialogFind *>(window->dialogFind_)) {
+                if(!dialog->keepDialog()) {
+                    dialog->hide();
+                }
+            }
+
+            auto dialog = window->getDialogReplace();
+            if (dialog && !dialog->keepDialog()) {
+                dialog->hide();
+            }
+
+            QMessageBox::information(document, QLatin1String("String not found"), QLatin1String("String was not found"));
+        } else {
+            QApplication::beep();
+        }
+    }
 }
 
 /*
@@ -2076,6 +2449,59 @@ void ReplaceInSelection(const Document *window, const char *searchString, const 
 			QApplication::beep();
 		}
 	}
+}
+
+/*
+** Replace all occurences of "searchString" in "window" with "replaceString".
+** Also adds the search and replace strings to the global search history.
+*/
+bool ReplaceAllEx(MainWindow *window, DocumentWidget *document, TextArea *area, const char *searchString, const char *replaceString, SearchType searchType) {
+    char *newFileString;
+    int copyStart, copyEnd, replacementLen;
+
+    // reject empty string
+    if (*searchString == '\0')
+        return false;
+
+    // save a copy of search and replace strings in the search history
+    saveSearchHistory(searchString, replaceString, searchType, false);
+
+    // view the entire text buffer from the text area widget as a string
+    view::string_view fileString = document->buffer_->BufAsStringEx();
+
+    newFileString = ReplaceAllInString(fileString, searchString, replaceString, searchType, &copyStart, &copyEnd, &replacementLen, GetWindowDelimitersEx(document).toLatin1().data());
+
+    if(!newFileString) {
+        if (document->multiFileBusy_) {
+            document->replaceFailed_ = true; /* only needed during multi-file
+                                             replacements */
+        } else if (GetPrefSearchDlogs()) {
+
+            if (auto dialog = qobject_cast<DialogFind *>(window->dialogFind_)) {
+                if(!dialog->keepDialog()) {
+                    dialog->hide();
+                }
+            }
+
+            auto dialog = window->getDialogReplace();
+            if (dialog && !dialog->keepDialog()) {
+                dialog->hide();
+            }
+
+            QMessageBox::information(document, QLatin1String("String not found"), QLatin1String("String was not found"));
+        } else
+            QApplication::beep();
+        return false;
+    }
+
+    // replace the contents of the text widget with the substituted text
+    document->buffer_->BufReplaceEx(copyStart, copyEnd, newFileString);
+
+    // Move the cursor to the end of the last replacement
+    area->TextSetCursorPos(copyStart + replacementLen);
+
+    XtFree(newFileString);
+    return true;
 }
 
 /*

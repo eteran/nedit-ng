@@ -39,13 +39,17 @@ constexpr const int MAX_SEARCH_HISTORY = 100; /* Maximum length of search string
 class TextArea;
 class DocumentWidget;
 class MainWindow;
+class Document;
 
 Boolean WindowCanBeClosed(Document *window);
 bool ReplaceAll(Document *window, const char *searchString, const char *replaceString, SearchType searchType);
+bool ReplaceAllEx(MainWindow *window, DocumentWidget *document, TextArea *area, const char *searchString, const char *replaceString, SearchType searchType);
 bool ReplaceAndSearch(Document *window, SearchDirection direction, const char *searchString, const char *replaceString, SearchType searchType, int searchWrap);
+bool ReplaceAndSearchEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, const char *searchString, const char *replaceString, SearchType searchType, int searchWrap);
 bool ReplaceFindSame(Document *window, SearchDirection direction, int searchWrap);
 bool ReplaceSame(Document *window, SearchDirection direction, int searchWrap);
 bool SearchAndReplace(Document *window, SearchDirection direction, const char *searchString, const char *replaceString, SearchType searchType, int searchWrap);
+bool SearchAndReplaceEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, const char *searchString, const char *replaceString, SearchType searchType, bool searchWrap);
 bool SearchAndSelectIncrementalEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, const char *searchString, SearchType searchType, bool searchWrap, bool continued);
 bool SearchAndSelectSameEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, bool searchWrap);
 bool SearchAndSelect(Document *window, SearchDirection direction, const char *searchString, SearchType searchType, int searchWrap);
@@ -58,13 +62,15 @@ void BeginISearchEx(MainWindow *window, DocumentWidget *document, TextArea *area
 void CreateReplaceDlog(Widget parent, Document *window);
 void CreateReplaceMultiFileDlog(Document *window);
 void DoFindDlogEx(MainWindow *window, DocumentWidget *document, SearchDirection direction, int keepDialogs, SearchType searchType);
-void DoFindReplaceDlog(Document *window, SearchDirection direction, int keepDialogs, SearchType searchType, Time time);
+void DoFindReplaceDlog(Document *document, SearchDirection direction, int keepDialogs, SearchType searchType);
+void DoFindReplaceDlogEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, int keepDialogs, SearchType searchType);
 void EndISearch(Document *window);
 void FlashMatching(Document *window, Widget textW);
 void FlashMatchingEx(DocumentWidget *document, TextArea *area);
 void GotoMatchingCharacter(Document *window);
 void RemoveFromMultiReplaceDialog(Document *window);
 void ReplaceInSelection(const Document *window, const char *searchString, const char *replaceString, SearchType searchType);
+void ReplaceInSelectionEx(MainWindow *window, DocumentWidget *document, TextArea *area, const char *searchString, const char *replaceString, SearchType searchType);
 void SearchForSelected(Document *window, SearchDirection direction, SearchType searchType, int searchWrap, Time time);
 void SearchForSelectedEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, SearchType searchType, int searchWrap);
 void SelectToMatchingCharacter(Document *window);

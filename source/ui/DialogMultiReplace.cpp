@@ -1,12 +1,14 @@
 
 #include <QMessageBox>
 #include "DialogMultiReplace.h"
+#include "MainWindow.h"
+#include "DocumentWidget.h"
 #include "DialogReplace.h"
 #include "search.h"
 #include "Document.h"
 #include "preferences.h"
 
-DialogMultiReplace::DialogMultiReplace(Document *window, DialogReplace *replace, QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f), window_(window), replace_(replace) {
+DialogMultiReplace::DialogMultiReplace(MainWindow *window, DocumentWidget *document, DialogReplace *replace, QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f), window_(window), document_(document), replace_(replace) {
 	ui.setupUi(this);
 }
 
@@ -66,18 +68,13 @@ void DialogMultiReplace::on_buttonReplace_clicked() {
 	// Set the initial focus of the dialog back to the search string 
 	replace_->ui.textFind->setFocus();
 
-	const char *params[4];
-	params[0] = searchString;
-	params[1] = replaceString;
-	params[2] = searchTypeArg(searchType);
-
 	bool replaceFailed = true;
 	bool noWritableLeft = true;
 
-	// Perform the replacements and mark the selected files (history) 
-	for (int i = 0; i < window_->nWritableWindows_; ++i) {
-		Document *writableWin = window_->writableWindows_[i];
-		
+    // Perform the replacements and mark the selected files (history)
+    for (int i = 0; i < window_->writableWindows_.size(); ++i) {
+        DocumentWidget *writableWin = window_->writableWindows_[i];
+
 		if(ui.listFiles->item(i)->isSelected()) {
 		
 			/* First check again whether the file is still writable. If the
@@ -89,7 +86,7 @@ void DialogMultiReplace::on_buttonReplace_clicked() {
 				writableWin->multiFileReplSelected_ = true;
 				writableWin->multiFileBusy_ = true; // Avoid multi-beep/dialog 
 				writableWin->replaceFailed_ = false;
-				XtCallActionProc(writableWin->lastFocus_, "replace_all", nullptr /*callData->event*/, const_cast<char **>(params), 3);
+                writableWin->replaceAllAP(QString::fromLatin1(searchString), QString::fromLatin1(replaceString), searchType);
 				writableWin->multiFileBusy_ = false;
 				if (!writableWin->replaceFailed_) {
 					replaceFailed = false;
@@ -136,8 +133,6 @@ void DialogMultiReplace::on_buttonReplace_clicked() {
  */
 void DialogMultiReplace::uploadFileListItems(bool replace) {
 
-	int nWritable = window_->nWritableWindows_;
-
 	QStringList names;
 
 	bool usePathNames = ui.checkShowPaths->isChecked();
@@ -149,8 +144,8 @@ void DialogMultiReplace::uploadFileListItems(bool replace) {
 		// updated names
 		for(int i = 0; i < ui.listFiles->count(); ++i) {
 	    	QListWidgetItem* item = ui.listFiles->item(i);
-			auto w = reinterpret_cast<Document *>(item->data(Qt::UserRole).toULongLong());
-			if (usePathNames && window_->filenameSet_) {
+            auto w = reinterpret_cast<DocumentWidget *>(item->data(Qt::UserRole).toULongLong());
+            if (usePathNames && w->filenameSet_) {
 				item->setText(w->FullPath());
 			} else {
 				item->setText(w->filename_);
@@ -162,11 +157,11 @@ void DialogMultiReplace::uploadFileListItems(bool replace) {
 	        	 order is _not_ changed when we switch to path names. That
 	        	 would be confusing for the user */
 
-		for (int i = 0; i < nWritable; ++i) {
-			Document *w = window_->writableWindows_[i];
+        for (int i = 0; i < window_->writableWindows_.size(); ++i) {
+            DocumentWidget *w = window_->writableWindows_[i];
 
 			QListWidgetItem *item;
-			if (usePathNames && window_->filenameSet_) {
+            if (usePathNames && w->filenameSet_) {
 				item = new QListWidgetItem(w->FullPath());
 			} else {
 				item = new QListWidgetItem(w->filename_);
@@ -180,5 +175,4 @@ void DialogMultiReplace::uploadFileListItems(bool replace) {
 			ui.listFiles->selectAll();
 		}		
 	}
-
 }

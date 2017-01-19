@@ -17,6 +17,7 @@ class DialogReplace;
 class MainWindow : public QMainWindow {
 	Q_OBJECT
 	friend class DocumentWidget;
+    friend class DialogReplace;
 
 public:
 	MainWindow (QWidget *parent = 0, Qt::WindowFlags flags = 0);
@@ -79,6 +80,7 @@ public Q_SLOTS:
     void action_Shift_Find_Again();
     void action_Shift_Find_Selection_triggered();
     void action_Shift_Find_Incremental_triggered();
+    void action_Shift_Replace_triggered();
 
 public Q_SLOTS:
     void on_tabWidget_currentChanged(int index);
@@ -135,12 +137,13 @@ public Q_SLOTS:
     void on_action_Find_Again_triggered();
     void on_action_Find_Selection_triggered();
     void on_action_Find_Incremental_triggered();
+    void on_action_Replace_triggered();
 #if 0
 
 
 
 
-	void on_action_Replace_triggered();
+
 	void on_action_Replace_Find_Again_triggered();
 	void on_action_Replace_Again_triggered();
 
@@ -266,8 +269,6 @@ private Q_SLOTS:
     void raiseCB();
     void setLangModeCB(QAction *action);
     void openPrevCB(QAction *action);
-    void findIncrAP(const QString &searchString, SearchDirection direction, SearchType searchType, bool searchWraps, bool isContinue);
-    void findAP(const QString &searchString, SearchDirection direction, SearchType searchType, bool searchWraps);
 
 public:
 	QPointer<QDialog>  dialogFind_;
@@ -278,11 +279,14 @@ public:
 	bool               showISearchLine_; // is incr. search line to be shown
     bool               modeMessageDisplayed_;
     int fHistIndex_;                   // history placeholders for
+    int rHistIndex_;
     bool iSearchLastLiteralCase_;      // idem, for literal mode
     bool iSearchLastRegexCase_;        // idem, for regex mode in incremental search bar
     int iSearchHistIndex_;             //   find and replace dialogs
     int iSearchLastBeginPos_;          // beg. pos. last match of current i.s.
     int iSearchStartPos_;              // start pos. of current incr. search
+    QVector<DocumentWidget *> writableWindows_;      // temporary list of writable documents, used during multi-file replacements
+    bool wasSelected_;                 // last selection state (for dim/undim of selection related menu items
 
 public:
     Ui::MainWindow ui;

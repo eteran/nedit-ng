@@ -5,13 +5,14 @@
 #include <QDialog>
 #include "ui_DialogMultiReplace.h"
 
-class Document;
+class MainWindow;
+class DocumentWidget;
 class DialogReplace;
 
 class DialogMultiReplace : public QDialog {
 	Q_OBJECT
 public:
-	DialogMultiReplace(Document *window, DialogReplace *replace, QWidget *parent = 0, Qt::WindowFlags f = 0);
+    DialogMultiReplace(MainWindow *window, DocumentWidget *document, DialogReplace *replace, QWidget *parent = 0, Qt::WindowFlags f = 0);
 	virtual ~DialogMultiReplace();
 	
 public Q_SLOTS:
@@ -25,7 +26,8 @@ public:
 	
 public:
 	Ui::DialogMultiReplace ui;
-	Document *window_;
+    MainWindow *window_;
+    DocumentWidget *document_;
 	DialogReplace *replace_;
 
 };

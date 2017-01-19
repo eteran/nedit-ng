@@ -24,6 +24,7 @@ protected:
 	virtual void showEvent(QShowEvent *event) override;
 
 public:
+    void setDocument(DocumentWidget *document);
     void setTextField(DocumentWidget *document);
 	void initToggleButtons(SearchType searchType);
 	void fUpdateActionButtons();

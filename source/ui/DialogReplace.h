@@ -17,13 +17,14 @@
 
 
 
-class Document;
+class MainWindow;
+class DocumentWidget;
 class DialogMultiReplace;
 
 class DialogReplace : public QDialog {
 	Q_OBJECT
 public:
-	DialogReplace(Document *window, QWidget *parent = 0, Qt::WindowFlags f = 0);
+    DialogReplace(MainWindow *window, DocumentWidget *document, QWidget *parent = 0, Qt::WindowFlags f = 0);
 	virtual ~DialogReplace();
 	
 protected:
@@ -31,7 +32,8 @@ protected:
 	virtual void showEvent(QShowEvent *event) override;
 	
 public:
-	void setTextField(Document *window, time_t time);
+    void setDocument(DocumentWidget *document);
+    void setTextField(DocumentWidget *document);
 	void initToggleButtons(SearchType searchType);
 	void fUpdateActionButtons();
 #ifdef REPLACE_SCOPE
@@ -67,7 +69,8 @@ private Q_SLOTS:
 #endif
 	
 public:
-	Document *window_;
+    MainWindow *window_;
+    DocumentWidget *document_;
 #ifdef REPLACE_SCOPE
 	Ui::DialogReplaceScope ui;
 	ReplaceScope replaceScope_;
