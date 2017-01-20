@@ -98,8 +98,6 @@ extern "C" void _XmDismissTearOff(Widget, XtPointer, XtPointer);
 
 static void doActionCB(Widget w, XtPointer clientData, XtPointer callData);
 static void doTabActionCB(Widget w, XtPointer clientData, XtPointer callData);
-static void markCB(Widget w, XtPointer clientData, XtPointer callData);
-static void gotoMarkCB(Widget w, XtPointer clientData, XtPointer callData);
 static void gotoMatchingCB(Widget w, XtPointer clientData, XtPointer callData);
 static void autoIndentOffCB(Widget w, XtPointer clientData, XtPointer callData);
 static void autoIndentCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -222,9 +220,6 @@ static void printSelAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void exitAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void repeatDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void repeatMacroAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void markAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void gotoMarkAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void gotoMarkDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void selectToMatchingAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void gotoMatchingAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void findDefAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
@@ -369,13 +364,13 @@ static XtActionsRec Actions[] = {{(String) "new", newAP},
                                  //{(String) "goto_line_number_dialog", gotoDialogAP},
                                  //{(String) "goto-selected", gotoSelectedAP},
                                  //{(String) "goto_selected", gotoSelectedAP},
-                                 {(String) "mark", markAP},
+                                 //{(String) "mark", markAP},
                                  //{(String) "mark-dialog", markDialogAP},
                                  //{(String) "mark_dialog", markDialogAP},
-                                 {(String) "goto-mark", gotoMarkAP},
-                                 {(String) "goto_mark", gotoMarkAP},
-                                 {(String) "goto-mark-dialog", gotoMarkDialogAP},
-                                 {(String) "goto_mark_dialog", gotoMarkDialogAP},
+                                 //{(String) "goto-mark", gotoMarkAP},
+                                 //{(String) "goto_mark", gotoMarkAP},
+                                 //{(String) "goto-mark-dialog", gotoMarkDialogAP},
+                                 //{(String) "goto_mark_dialog", gotoMarkDialogAP},
                                  {(String) "match", selectToMatchingAP},
                                  {(String) "select_to_matching", selectToMatchingAP},
                                  {(String) "goto_matching", gotoMatchingAP},
@@ -539,10 +534,6 @@ Widget CreateMenuBar(Widget parent, Document *window) {
 	** "Search" pull down menu.
 	*/
 	menuPane = createMenu(menuBar, "searchMenu", "Search", 0, nullptr, SHORT);
-    createMenuItem(menuPane, "mark", "Mark", 'k', markCB, window, FULL);
-	createMenuItem(menuPane, "gotoMark", "Goto Mark", 'o', gotoMarkCB, window, FULL);
-	createFakeMenuItem(menuPane, "gotoMarkShift", gotoMarkCB, window);
-	createMenuSeparator(menuPane, "sep3", FULL);
 	createMenuItem(menuPane, "gotoMatching", "Goto Matching (..)", 'M', gotoMatchingCB, window, FULL);
 	createFakeMenuItem(menuPane, "gotoMatchingShift", gotoMatchingCB, window);
 	window->findDefItem_ = createMenuItem(menuPane, "findDefinition", "Find Definition", 'D', doActionCB, "find_definition", FULL);
@@ -805,36 +796,6 @@ static void doActionCB(Widget w, XtPointer clientData, XtPointer callData) {
 	HidePointerOnKeyedEvent(widget, event);
 
 	XtCallActionProc(widget, action, event, nullptr, 0);
-}
-
-static void markCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	Q_UNUSED(clientData);
-
-	XEvent *event = static_cast<XmAnyCallbackStruct *>(callData)->event;
-	Document *window = Document::WidgetToWindow(MENU_WIDGET(w));
-
-	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	if (event->type == KeyPress || event->type == KeyRelease)
-		BeginMarkCommand(window);
-	else
-		XtCallActionProc(window->lastFocus_, "mark_dialog", event, nullptr, 0);
-}
-
-static void gotoMarkCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	Q_UNUSED(clientData);
-
-	XEvent *event = static_cast<XmAnyCallbackStruct *>(callData)->event;
-	Document *window = Document::WidgetToWindow(MENU_WIDGET(w));
-	int extend = event->xbutton.state & ShiftMask;
-	static const char *params[1] = {"extend"};
-
-	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	if (event->type == KeyPress || event->type == KeyRelease)
-		BeginGotoMarkCommand(window, extend);
-	else
-		XtCallActionProc(window->lastFocus_, "goto_mark_dialog", event, const_cast<char **>(params), extend ? 1 : 0);
 }
 
 static void gotoMatchingCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -2662,34 +2623,6 @@ static void repeatMacroAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 		return;
 	}
 	RepeatMacro(Document::WidgetToWindow(w), args[1], how);
-}
-
-static void markAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-	Q_UNUSED(event);
-
-	if (*nArgs == 0 || strlen(args[0]) != 1 || !isalnum((uint8_t)args[0][0])) {
-		fprintf(stderr, "nedit: mark action requires a single-letter label\n");
-		return;
-	}
-	AddMark(Document::WidgetToWindow(w), w, args[0][0]);
-}
-
-static void gotoMarkAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(event);
-
-	if (*nArgs == 0 || strlen(args[0]) != 1 || !isalnum((uint8_t)args[0][0])) {
-		fprintf(stderr, "nedit: goto_mark action requires a single-letter label\n");
-		return;
-	}
-	GotoMark(Document::WidgetToWindow(w), w, args[0][0], *nArgs > 1 && !strcmp(args[1], "extend"));
-}
-
-static void gotoMarkDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(event);
-
-	GotoMarkDialog(Document::WidgetToWindow(w), *nArgs != 0 && !strcmp(args[0], "extend"));
 }
 
 static void selectToMatchingAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {

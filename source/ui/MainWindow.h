@@ -83,7 +83,12 @@ public Q_SLOTS:
     void action_Shift_Replace_triggered();
     void action_Shift_Replace_Find_Again_triggered();
     void action_Shift_Replace_Again_triggered();
-    void action_Mark_triggered_triggered();
+
+    // These are a bit weird as they are multi-key shortcuts
+    // and act a bit differently from the menu
+    void action_Mark_Shortcut_triggered();
+    void action_Shift_Goto_Mark_Shortcut_triggered();
+    void action_Goto_Mark_Shortcut_triggered();
 
 public Q_SLOTS:
     void on_tabWidget_currentChanged(int index);
@@ -147,11 +152,12 @@ public Q_SLOTS:
     void on_action_Replace_Find_Again_triggered();
     void on_action_Replace_Again_triggered();
     void on_action_Mark_triggered();
+    void on_action_Goto_Mark_triggered();
 
 
 #if 0
 
-	void on_action_Goto_Mark_triggered();
+
 	void on_action_Goto_Matching_triggered();
 	void on_action_Find_Definition_triggered();
 	void on_action_Show_Calltip_triggered();

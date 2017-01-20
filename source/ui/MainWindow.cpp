@@ -275,9 +275,9 @@ void MainWindow::setupMenuStrings() {
     // NOTE(eteran): this assumes that the Qt::Key constants are
     // in numerical order!
     for(int i = Qt::Key_A; i <= Qt::Key_Z; ++i) {
-        new QShortcut(QKeySequence(Qt::ALT + Qt::Key_M, i), this, SLOT(action_Mark_triggered_triggered()));
-        //new QShortcut(QKeySequence(Qt::ALT + Qt::Key_G, Qt::Key_A), this, SLOT(action_Mark_triggered_triggered()));
-        //new QShortcut(QKeySequence(Qt::SHIFT + Qt::ALT + Qt::Key_G, Qt::Key_A), this, SLOT(action_Mark_triggered_triggered()));
+        new QShortcut(QKeySequence(Qt::ALT + Qt::Key_M, i),             this, SLOT(action_Mark_Shortcut_triggered()));
+        new QShortcut(QKeySequence(Qt::ALT + Qt::Key_G, i),             this, SLOT(action_Goto_Mark_Shortcut_triggered()));
+        new QShortcut(QKeySequence(Qt::SHIFT + Qt::ALT + Qt::Key_G, i), this, SLOT(action_Shift_Goto_Mark_Shortcut_triggered()));
     }
 }
 
@@ -2115,7 +2115,7 @@ void MainWindow::on_action_Mark_triggered() {
         return;
     }
 
-    if (result.size() != 1 || !isalpha((uint8_t)result[0].toLatin1())) {
+    if (result.size() != 1 || !isalpha(static_cast<uint8_t>(result[0].toLatin1()))) {
         QApplication::beep();
         return;
     }
@@ -2125,7 +2125,7 @@ void MainWindow::on_action_Mark_triggered() {
     }
 }
 
-void MainWindow::action_Mark_triggered_triggered() {
+void MainWindow::action_Mark_Shortcut_triggered() {
 
     if(auto shortcut = qobject_cast<QShortcut *>(sender())) {
         QKeySequence sequence = shortcut->key();
@@ -2158,6 +2158,117 @@ void MainWindow::action_Mark_triggered_triggered() {
             case Qt::Key_X: doc->markAP(QLatin1Char('X')); break;
             case Qt::Key_Y: doc->markAP(QLatin1Char('Y')); break;
             case Qt::Key_Z: doc->markAP(QLatin1Char('Z')); break;
+            default:
+                QApplication::beep();
+                break;
+            }
+        }
+    }
+}
+
+void MainWindow::on_action_Goto_Mark_triggered() {
+
+    bool extend = (QApplication::keyboardModifiers() & Qt::SHIFT);
+
+    bool ok;
+    QString result = QInputDialog::getText(
+        this,
+        tr("Goto Mark"),
+        tr("Enter the single letter label used to mark\n"
+                      "the selection and/or cursor position.\n\n"
+                      "(To skip this dialog, use the accelerator\n"
+                      "key, followed immediately by the letter)"),
+        QLineEdit::Normal,
+        QString(),
+        &ok);
+
+    if(!ok) {
+        return;
+    }
+
+    if (result.size() != 1 || !isalpha(static_cast<uint8_t>(result[0].toLatin1()))) {
+        QApplication::beep();
+        return;
+    }
+
+    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+        doc->gotoMarkAP(result[0], extend);
+    }
+}
+
+
+void MainWindow::action_Shift_Goto_Mark_Shortcut_triggered() {
+    if(auto shortcut = qobject_cast<QShortcut *>(sender())) {
+        QKeySequence sequence = shortcut->key();
+
+        if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+            switch(sequence[1]) {
+            case Qt::Key_A: doc->gotoMarkAP(QLatin1Char('A'), true); break;
+            case Qt::Key_B: doc->gotoMarkAP(QLatin1Char('B'), true); break;
+            case Qt::Key_C: doc->gotoMarkAP(QLatin1Char('C'), true); break;
+            case Qt::Key_D: doc->gotoMarkAP(QLatin1Char('D'), true); break;
+            case Qt::Key_E: doc->gotoMarkAP(QLatin1Char('E'), true); break;
+            case Qt::Key_F: doc->gotoMarkAP(QLatin1Char('F'), true); break;
+            case Qt::Key_G: doc->gotoMarkAP(QLatin1Char('G'), true); break;
+            case Qt::Key_H: doc->gotoMarkAP(QLatin1Char('H'), true); break;
+            case Qt::Key_I: doc->gotoMarkAP(QLatin1Char('I'), true); break;
+            case Qt::Key_J: doc->gotoMarkAP(QLatin1Char('J'), true); break;
+            case Qt::Key_K: doc->gotoMarkAP(QLatin1Char('K'), true); break;
+            case Qt::Key_L: doc->gotoMarkAP(QLatin1Char('L'), true); break;
+            case Qt::Key_M: doc->gotoMarkAP(QLatin1Char('M'), true); break;
+            case Qt::Key_N: doc->gotoMarkAP(QLatin1Char('N'), true); break;
+            case Qt::Key_O: doc->gotoMarkAP(QLatin1Char('O'), true); break;
+            case Qt::Key_P: doc->gotoMarkAP(QLatin1Char('P'), true); break;
+            case Qt::Key_Q: doc->gotoMarkAP(QLatin1Char('Q'), true); break;
+            case Qt::Key_R: doc->gotoMarkAP(QLatin1Char('R'), true); break;
+            case Qt::Key_S: doc->gotoMarkAP(QLatin1Char('S'), true); break;
+            case Qt::Key_T: doc->gotoMarkAP(QLatin1Char('T'), true); break;
+            case Qt::Key_U: doc->gotoMarkAP(QLatin1Char('U'), true); break;
+            case Qt::Key_V: doc->gotoMarkAP(QLatin1Char('V'), true); break;
+            case Qt::Key_W: doc->gotoMarkAP(QLatin1Char('W'), true); break;
+            case Qt::Key_X: doc->gotoMarkAP(QLatin1Char('X'), true); break;
+            case Qt::Key_Y: doc->gotoMarkAP(QLatin1Char('Y'), true); break;
+            case Qt::Key_Z: doc->gotoMarkAP(QLatin1Char('Z'), true); break;
+            default:
+                QApplication::beep();
+                break;
+            }
+        }
+    }
+}
+
+void MainWindow::action_Goto_Mark_Shortcut_triggered() {
+    if(auto shortcut = qobject_cast<QShortcut *>(sender())) {
+        QKeySequence sequence = shortcut->key();
+
+        if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+            switch(sequence[1]) {
+            case Qt::Key_A: doc->gotoMarkAP(QLatin1Char('A'), false); break;
+            case Qt::Key_B: doc->gotoMarkAP(QLatin1Char('B'), false); break;
+            case Qt::Key_C: doc->gotoMarkAP(QLatin1Char('C'), false); break;
+            case Qt::Key_D: doc->gotoMarkAP(QLatin1Char('D'), false); break;
+            case Qt::Key_E: doc->gotoMarkAP(QLatin1Char('E'), false); break;
+            case Qt::Key_F: doc->gotoMarkAP(QLatin1Char('F'), false); break;
+            case Qt::Key_G: doc->gotoMarkAP(QLatin1Char('G'), false); break;
+            case Qt::Key_H: doc->gotoMarkAP(QLatin1Char('H'), false); break;
+            case Qt::Key_I: doc->gotoMarkAP(QLatin1Char('I'), false); break;
+            case Qt::Key_J: doc->gotoMarkAP(QLatin1Char('J'), false); break;
+            case Qt::Key_K: doc->gotoMarkAP(QLatin1Char('K'), false); break;
+            case Qt::Key_L: doc->gotoMarkAP(QLatin1Char('L'), false); break;
+            case Qt::Key_M: doc->gotoMarkAP(QLatin1Char('M'), false); break;
+            case Qt::Key_N: doc->gotoMarkAP(QLatin1Char('N'), false); break;
+            case Qt::Key_O: doc->gotoMarkAP(QLatin1Char('O'), false); break;
+            case Qt::Key_P: doc->gotoMarkAP(QLatin1Char('P'), false); break;
+            case Qt::Key_Q: doc->gotoMarkAP(QLatin1Char('Q'), false); break;
+            case Qt::Key_R: doc->gotoMarkAP(QLatin1Char('R'), false); break;
+            case Qt::Key_S: doc->gotoMarkAP(QLatin1Char('S'), false); break;
+            case Qt::Key_T: doc->gotoMarkAP(QLatin1Char('T'), false); break;
+            case Qt::Key_U: doc->gotoMarkAP(QLatin1Char('U'), false); break;
+            case Qt::Key_V: doc->gotoMarkAP(QLatin1Char('V'), false); break;
+            case Qt::Key_W: doc->gotoMarkAP(QLatin1Char('W'), false); break;
+            case Qt::Key_X: doc->gotoMarkAP(QLatin1Char('X'), false); break;
+            case Qt::Key_Y: doc->gotoMarkAP(QLatin1Char('Y'), false); break;
+            case Qt::Key_Z: doc->gotoMarkAP(QLatin1Char('Z'), false); break;
             default:
                 QApplication::beep();
                 break;

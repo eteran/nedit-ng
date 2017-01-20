@@ -870,16 +870,10 @@
    <property name="text">
     <string>Mar&amp;k</string>
    </property>
-   <property name="shortcut">
-    <string>Ctrl+S</string>
-   </property>
   </action>
   <action name="action_Goto_Mark">
    <property name="text">
     <string>G&amp;oto Mark</string>
-   </property>
-   <property name="shortcut">
-    <string>Alt+G</string>
    </property>
   </action>
   <action name="action_Goto_Matching">

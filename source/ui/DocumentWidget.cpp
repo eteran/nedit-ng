@@ -4080,3 +4080,62 @@ void DocumentWidget::markAP(QChar ch) {
             toWindow()->lastFocus_,
             ch);
 }
+
+void DocumentWidget::gotoMarkAP(QChar label, bool extendSel) {
+
+    if(MainWindow *win = toWindow()) {
+
+        if(TextArea *area = win->lastFocus_) {
+
+            int index;
+
+            // look up the mark in the mark table
+            label = label.toUpper();
+            for (index = 0; index < nMarks_; index++) {
+                if (markTable_[index].label == label.toLatin1())
+                    break;
+            }
+
+            if (index == nMarks_) {
+                QApplication::beep();
+                return;
+            }
+
+            // reselect marked the selection, and move the cursor to the marked pos
+            TextSelection *sel    = &markTable_[index].sel;
+            TextSelection *oldSel = &buffer_->primary_;
+
+            int cursorPos = markTable_[index].cursorPos;
+            if (extendSel) {
+
+                int oldStart = oldSel->selected ? oldSel->start : area->TextGetCursorPos();
+                int oldEnd   = oldSel->selected ? oldSel->end   : area->TextGetCursorPos();
+                int newStart = sel->selected    ? sel->start    : cursorPos;
+                int newEnd   = sel->selected    ? sel->end      : cursorPos;
+
+                buffer_->BufSelect(oldStart < newStart ? oldStart : newStart, oldEnd > newEnd ? oldEnd : newEnd);
+            } else {
+                if (sel->selected) {
+                    if (sel->rectangular) {
+                        buffer_->BufRectSelect(sel->start, sel->end, sel->rectStart, sel->rectEnd);
+                    } else {
+                        buffer_->BufSelect(sel->start, sel->end);
+                    }
+                } else {
+                    buffer_->BufUnselect();
+                }
+            }
+
+            /* Move the window into a pleasing position relative to the selection
+               or cursor.   MakeSelectionVisible is not great with multi-line
+               selections, and here we will sometimes give it one.  And to set the
+               cursor position without first using the less pleasing capability
+               of the widget itself for bringing the cursor in to view, you have to
+               first turn it off, set the position, then turn it back on. */
+            area->setAutoShowInsertPos(false);
+            area->TextSetCursorPos(cursorPos);
+            MakeSelectionVisible(area);
+            area->setAutoShowInsertPos(true);
+        }
+    }
+}
