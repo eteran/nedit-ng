@@ -17,6 +17,7 @@
 #include "TextBuffer.h"
 #include "nedit.h"
 #include "Color.h"
+#include "selection.h"
 #include "highlight.h"
 #include "LanguageMode.h"
 #include "search.h"
@@ -4066,3 +4067,16 @@ void DocumentWidget::replaceAP(const QString &searchString, const QString &repla
                 searchWraps);
 }
 
+void DocumentWidget::markAP(QChar ch) {
+
+    if (!ch.isLetterOrNumber()) {
+        qDebug("nedit: mark action requires a single-letter label");
+        return;
+    }
+
+    AddMarkEx(
+            toWindow(),
+            this,
+            toWindow()->lastFocus_,
+            ch);
+}

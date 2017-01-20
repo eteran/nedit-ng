@@ -31,12 +31,14 @@ class QString;
 class Document;
 class DocumentWidget;
 class TextArea;
+class MainWindow;
 
 #include <X11/Intrinsic.h>
 
 int StringToLineAndCol(const char *text, int *lineNum, int *column);
 QString GetAnySelectionEx(Document *window);
 void AddMark(Document *window, Widget widget, char label);
+void AddMarkEx(MainWindow *window, DocumentWidget *document, TextArea *area, QChar label);
 void BeginGotoMarkCommand(Document *window, int extend);
 void BeginMarkCommand(Document *window);
 void GotoLineNumber(Document *window);

@@ -54,6 +54,7 @@ public Q_SLOTS:
     void replaceFindAP(const QString &searchString, const QString &replaceString, SearchDirection direction, SearchType searchType, bool searchWraps);
     void replaceAllAP(const QString &searchString, const QString &replaceString, SearchType searchType);
     void replaceInSelAP(const QString &searchString, const QString &replaceString, SearchType searchType);
+    void markAP(QChar ch);
 
 public:
 	void movedCallback(TextArea *area);

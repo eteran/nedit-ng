@@ -114,7 +114,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>31</height>
+     <height>30</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -409,7 +409,7 @@
      <bool>true</bool>
     </property>
     <property name="title">
-     <string>&amp;Macro</string>
+     <string>Ma&amp;cro</string>
     </property>
     <addaction name="action_Learn_Keystrokes"/>
     <addaction name="action_Finish_Learn"/>
@@ -871,7 +871,7 @@
     <string>Mar&amp;k</string>
    </property>
    <property name="shortcut">
-    <string>Alt+M</string>
+    <string>Ctrl+S</string>
    </property>
   </action>
   <action name="action_Goto_Mark">

@@ -81,6 +81,9 @@ public Q_SLOTS:
     void action_Shift_Find_Selection_triggered();
     void action_Shift_Find_Incremental_triggered();
     void action_Shift_Replace_triggered();
+    void action_Shift_Replace_Find_Again_triggered();
+    void action_Shift_Replace_Again_triggered();
+    void action_Mark_triggered_triggered();
 
 public Q_SLOTS:
     void on_tabWidget_currentChanged(int index);
@@ -88,6 +91,9 @@ public Q_SLOTS:
     void on_editIFind_textChanged(const QString &text);
     void on_editIFind_returnPressed();
     void on_buttonIFind_clicked();
+    void on_checkIFindCase_toggled(bool searchCaseSense);
+    void on_checkIFindRegex_toggled(bool value);
+    void on_checkIFindReverse_toggled(bool value);
 
 public Q_SLOTS:
 	void on_action_New_triggered();
@@ -138,17 +144,13 @@ public Q_SLOTS:
     void on_action_Find_Selection_triggered();
     void on_action_Find_Incremental_triggered();
     void on_action_Replace_triggered();
+    void on_action_Replace_Find_Again_triggered();
+    void on_action_Replace_Again_triggered();
+    void on_action_Mark_triggered();
+
+
 #if 0
 
-
-
-
-
-	void on_action_Replace_Find_Again_triggered();
-	void on_action_Replace_Again_triggered();
-
-
-	void on_action_Mark_triggered();
 	void on_action_Goto_Mark_triggered();
 	void on_action_Goto_Matching_triggered();
 	void on_action_Find_Definition_triggered();
@@ -186,8 +188,8 @@ public Q_SLOTS:
 	void on_action_Wrap_Margin_triggered();
 	void on_action_Indent_Off_triggered();
 	void on_action_Indent_On_triggered();
-	void on_action_Indent_Smart_triggered();
-	void on_action_Learn_Keystrokes_triggered();
+	void on_action_Indent_Smart_triggered();	
+    void on_action_Learn_Keystrokes_triggered();
 	void on_action_Finish_Learn_triggered();
 	void on_action_Cancel_Learn_triggered();
 	void on_action_Replay_Keystrokes_triggered();

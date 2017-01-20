@@ -98,8 +98,6 @@ extern "C" void _XmDismissTearOff(Widget, XtPointer, XtPointer);
 
 static void doActionCB(Widget w, XtPointer clientData, XtPointer callData);
 static void doTabActionCB(Widget w, XtPointer clientData, XtPointer callData);
-static void replaceSameCB(Widget w, XtPointer clientData, XtPointer callData);
-static void replaceFindSameCB(Widget w, XtPointer clientData, XtPointer callData);
 static void markCB(Widget w, XtPointer clientData, XtPointer callData);
 static void gotoMarkCB(Widget w, XtPointer clientData, XtPointer callData);
 static void gotoMatchingCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -222,13 +220,9 @@ static void unloadTipsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 static void printAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void printSelAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void exitAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void replaceSameAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void replaceFindSameAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void gotoAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void repeatDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void repeatMacroAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void markAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void markDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void gotoMarkAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void gotoMarkDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void selectToMatchingAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
@@ -266,9 +260,6 @@ static void updateWindowMenu(const Document *window);
 static void updatePrevOpenMenu(Document *window);
 static void updateTagsFileMenu(Document *window);
 static void updateTipsFileMenu(Document *window);
-static SearchDirection searchDirection(int ignoreArgs, String *args, Cardinal *nArgs);
-static bool searchWrap(int ignoreArgs, String *args, Cardinal *nArgs);
-static char **shiftKeyToDir(XtPointer callData);
 static void raiseCB(Widget w, XtPointer clientData, XtPointer callData);
 static void openPrevCB(Widget w, XtPointer clientData, XtPointer callData);
 static void unloadTagsFileCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -367,20 +358,20 @@ static XtActionsRec Actions[] = {{(String) "new", newAP},
                                  //{(String) "replace_all", replaceAllAP},
                                  //{(String) "replace-in-selection", replaceInSelAP},
                                  //{(String) "replace_in_selection", replaceInSelAP},
-                                 {(String) "replace-again", replaceSameAP},
-                                 {(String) "replace_again", replaceSameAP},
+                                 //{(String) "replace-again", replaceSameAP},
+                                 //{(String) "replace_again", replaceSameAP},
                                  //{(String) "replace_find", replaceFindAP},
-                                 {(String) "replace_find_same", replaceFindSameAP},
-                                 {(String) "replace_find_again", replaceFindSameAP},
-                                 {(String) "goto-line-number", gotoAP},
-                                 {(String) "goto_line_number", gotoAP},
+                                 //{(String) "replace_find_same", replaceFindSameAP},
+                                 //{(String) "replace_find_again", replaceFindSameAP},
+                                 //{(String) "goto-line-number", gotoAP},
+                                 //{(String) "goto_line_number", gotoAP},
                                  //{(String) "goto-line-number-dialog", gotoDialogAP},
                                  //{(String) "goto_line_number_dialog", gotoDialogAP},
                                  //{(String) "goto-selected", gotoSelectedAP},
                                  //{(String) "goto_selected", gotoSelectedAP},
                                  {(String) "mark", markAP},
-                                 {(String) "mark-dialog", markDialogAP},
-                                 {(String) "mark_dialog", markDialogAP},
+                                 //{(String) "mark-dialog", markDialogAP},
+                                 //{(String) "mark_dialog", markDialogAP},
                                  {(String) "goto-mark", gotoMarkAP},
                                  {(String) "goto_mark", gotoMarkAP},
                                  {(String) "goto-mark-dialog", gotoMarkDialogAP},
@@ -548,13 +539,6 @@ Widget CreateMenuBar(Widget parent, Document *window) {
 	** "Search" pull down menu.
 	*/
 	menuPane = createMenu(menuBar, "searchMenu", "Search", 0, nullptr, SHORT);
-	window->replaceFindAgainItem_ = createMenuItem(menuPane, "replaceFindAgain", "Replace Find Again", 'A', replaceFindSameCB, window, SHORT);
-	XtSetSensitive(window->replaceFindAgainItem_, NHist);
-	createFakeMenuItem(menuPane, "replaceFindAgainShift", replaceFindSameCB, window);
-	window->replaceAgainItem_ = createMenuItem(menuPane, "replaceAgain", "Replace Again", 'p', replaceSameCB, window, SHORT);
-	XtSetSensitive(window->replaceAgainItem_, NHist);
-	createFakeMenuItem(menuPane, "replaceAgainShift", replaceSameCB, window);
-	createMenuSeparator(menuPane, "sep1", FULL);
     createMenuItem(menuPane, "mark", "Mark", 'k', markCB, window, FULL);
 	createMenuItem(menuPane, "gotoMark", "Goto Mark", 'o', gotoMarkCB, window, FULL);
 	createFakeMenuItem(menuPane, "gotoMarkShift", gotoMarkCB, window);
@@ -821,22 +805,6 @@ static void doActionCB(Widget w, XtPointer clientData, XtPointer callData) {
 	HidePointerOnKeyedEvent(widget, event);
 
 	XtCallActionProc(widget, action, event, nullptr, 0);
-}
-
-static void replaceSameCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	Q_UNUSED(clientData);
-
-	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, "replace_again", static_cast<XmAnyCallbackStruct *>(callData)->event, shiftKeyToDir(callData), 1);
-}
-
-static void replaceFindSameCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	Q_UNUSED(clientData);
-
-	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, "replace_find_same", static_cast<XmAnyCallbackStruct *>(callData)->event, shiftKeyToDir(callData), 1);
 }
 
 static void markCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -2668,69 +2636,6 @@ static void exitAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 		exit(EXIT_SUCCESS);
 }
 
-static void replaceSameAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(event);
-
-	Document *window = Document::WidgetToWindow(w);
-
-	if (CheckReadOnly(window))
-		return;
-	ReplaceSame(window, searchDirection(0, args, nArgs), searchWrap(0, args, nArgs));
-}
-
-static void replaceFindSameAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(event);
-
-	Document *window = Document::WidgetToWindow(w);
-
-	if (CheckReadOnly(window))
-		return;
-	ReplaceFindSame(window, searchDirection(0, args, nArgs), searchWrap(0, args, nArgs));
-}
-
-static void gotoAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(event);
-
-	int lineNum;
-	int column;
-	int position;
-	int curCol;
-
-	/* Accept various formats:
-	      [line]:[column]   (menu action)
-	      line              (macro call)
-	      line, column      (macro call) */
-	if (*nArgs == 0 || *nArgs > 2 || (*nArgs == 1 && StringToLineAndCol(args[0], &lineNum, &column) == -1) || (*nArgs == 2 && (!StringToNum(args[0], &lineNum) || !StringToNum(args[1], &column)))) {
-		fprintf(stderr, "nedit: goto_line_number action requires line and/or column number\n");
-		return;
-	}
-	
-	auto textD = textD_of(w);
-
-	// User specified column, but not line number 
-	if (lineNum == -1) {
-		position = textD->TextGetCursorPos();		
-		if (textD->TextDPosToLineAndCol(position, &lineNum, &curCol) == False) {
-			return;
-		}
-	} else if (column == -1) {
-		// User didn't specify a column 
-		SelectNumberedLine(Document::WidgetToWindow(w), lineNum);
-		return;
-	}
-
-	position = textD->TextDLineAndColToPos(lineNum, column);
-	if (position == -1) {
-		return;
-	}
-
-	textD->TextSetCursorPos(position);
-	return;
-}
-
 static void repeatDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	Q_UNUSED(event);
 	Q_UNUSED(args);
@@ -2767,15 +2672,6 @@ static void markAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 		return;
 	}
 	AddMark(Document::WidgetToWindow(w), w, args[0][0]);
-}
-
-static void markDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(event);
-	Q_UNUSED(args);
-	Q_UNUSED(nArgs)
-
-	MarkDialog(Document::WidgetToWindow(w));
 }
 
 static void gotoMarkAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -4287,55 +4183,6 @@ static void updateWindowSizeMenu(Document *win) {
 		XtVaSetValues(win->sizeCustomDefItem_, XmNlabelString, st1 = XmStringCreateSimpleEx("Custom..."), nullptr);
 		XmStringFree(st1);
 	}
-}
-
-/*
-** Scans action argument list for arguments "forward" or "backward" to
-** determine search direction for search and replace actions.  "ignoreArgs"
-** tells the routine how many required arguments there are to ignore before
-** looking for keywords
-*/
-static SearchDirection searchDirection(int ignoreArgs, String *args, Cardinal *nArgs) {
-	int i;
-
-	for (i = ignoreArgs; i < (int)*nArgs; i++) {
-		if (!strCaseCmp(args[i], "forward"))
-			return SEARCH_FORWARD;
-		if (!strCaseCmp(args[i], "backward"))
-			return SEARCH_BACKWARD;
-	}
-	return SEARCH_FORWARD;
-}
-
-/*
-** Scans action argument list for arguments "wrap" or "nowrap" to
-** determine search direction for search and replace actions.  "ignoreArgs"
-** tells the routine how many required arguments there are to ignore before
-** looking for keywords
-*/
-static bool searchWrap(int ignoreArgs, String *args, Cardinal *nArgs) {
-	int i;
-
-	for (i = ignoreArgs; i < (int)*nArgs; i++) {
-		if (!strCaseCmp(args[i], "wrap"))
-			return true;
-		if (!strCaseCmp(args[i], "nowrap"))
-			return false;
-	}
-	return GetPrefSearchWraps();
-}
-
-/*
-** Return a pointer to the string describing search direction for search action
-** routine parameters given a callback XmAnyCallbackStruct pointed to by
-** "callData", by checking if the shift key is pressed (for search callbacks).
-*/
-static char **shiftKeyToDir(XtPointer callData) {
-	static const char *backwardParam[1] = {"backward"};
-	static const char *forwardParam[1] = {"forward"};
-	if (static_cast<XmAnyCallbackStruct *>(callData)->event->xbutton.state & ShiftMask)
-		return (char **)backwardParam;
-	return (char **)forwardParam;
 }
 
 static void raiseCB(Widget w, XtPointer clientData, XtPointer callData) {

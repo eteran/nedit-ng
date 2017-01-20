@@ -16,6 +16,7 @@
 #include "DialogWindowTitle.h"
 #include "DialogReplace.h"
 #include "DialogFind.h"
+#include "selection.h"
 #include "clearcase.h"
 #include "file.h"
 #include "preferences.h"
@@ -269,6 +270,15 @@ void MainWindow::setupMenuStrings() {
     new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_H), this, SLOT(action_Shift_Find_Selection_triggered()));
     new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_I), this, SLOT(action_Shift_Find_Incremental_triggered()));
     new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_R), this, SLOT(action_Shift_Replace_triggered()));
+
+    // This is an annoying solution... we can probably do better...
+    // NOTE(eteran): this assumes that the Qt::Key constants are
+    // in numerical order!
+    for(int i = Qt::Key_A; i <= Qt::Key_Z; ++i) {
+        new QShortcut(QKeySequence(Qt::ALT + Qt::Key_M, i), this, SLOT(action_Mark_triggered_triggered()));
+        //new QShortcut(QKeySequence(Qt::ALT + Qt::Key_G, Qt::Key_A), this, SLOT(action_Mark_triggered_triggered()));
+        //new QShortcut(QKeySequence(Qt::SHIFT + Qt::ALT + Qt::Key_G, Qt::Key_A), this, SLOT(action_Mark_triggered_triggered()));
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -1839,24 +1849,66 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
     ui.editIFind->setCursorPosition(previousPosition);
 }
 
-#if 0
+/*
+** The next few callbacks handle the states of find/replace toggle
+** buttons, which depend on the state of the "Regex" button, and the
+** sensitivity of the Whole Word buttons.
+** Callbacks are necessary for both "Regex" and "Case Sensitive"
+** buttons to make sure the states are saved even after a cancel operation.
+**
+** If sticky case sensitivity is requested, the behaviour is as follows:
+**   The first time "Regular expression" is checked, "Match case" gets
+**   checked too. Thereafter, checking or unchecking "Regular expression"
+**   restores the "Match case" button to the setting it had the last
+**   time when literals or REs where used.
+** Without sticky behaviour, the state of the Regex button doesn't influence
+** the state of the Case Sensitive button.
+**
+** Independently, the state of the buttons is always restored to the
+** default state when a dialog is popped up, and when the user returns
+** from stepping through the search history.
+*/
+void MainWindow::on_checkIFindCase_toggled(bool searchCaseSense) {
 
-/* Attach callbacks to deal with the optional sticky case sensitivity
-   behaviour. Do this before installing the search callbacks to make
-   sure that the proper search parameters are taken into account. */
-XtAddCallback(window->iSearchCaseToggle_, XmNvalueChangedCallback, iSearchCaseToggleCB, window);
-XtAddCallback(window->iSearchRegexToggle_, XmNvalueChangedCallback, iSearchRegExpToggleCB, window);
+    /* Save the state of the Case Sensitive button
+       depending on the state of the Regex button*/
+    if (ui.checkIFindRegex->isChecked()) {
+        iSearchLastRegexCase_ = searchCaseSense;
+    } else {
+        iSearchLastLiteralCase_ = searchCaseSense;
+    }
 
-// When search parameters (direction or search type), redo the search
-XtAddCallback(window->iSearchCaseToggle_, XmNvalueChangedCallback, iSearchTextValueChangedCB, window);
-XtAddCallback(window->iSearchRegexToggle_, XmNvalueChangedCallback, iSearchTextValueChangedCB, window);
-XtAddCallback(window->iSearchRevToggle_, XmNvalueChangedCallback, iSearchTextValueChangedCB, window);
+    // When search parameters (direction or search type), redo the search
+    Q_EMIT on_editIFind_returnPressed();
+}
 
-// find button: just like pressing return
-XtAddCallback(window->iSearchFindButton_, XmNactivateCallback, iSearchTextActivateCB, window);
-// clear button: empty the search text widget
-XtAddCallback(window->iSearchClearButton_, XmNactivateCallback, iSearchTextClearCB, window);
-#endif
+void MainWindow::on_checkIFindRegex_toggled(bool searchRegex) {
+
+    bool searchCaseSense = ui.checkIFindCase->isChecked();
+
+    // In sticky mode, restore the state of the Case Sensitive button
+    if (GetPrefStickyCaseSenseBtn()) {
+        if (searchRegex) {
+            iSearchLastLiteralCase_ = searchCaseSense;
+            no_signals(ui.checkIFindCase)->setChecked(iSearchLastRegexCase_);
+        } else {
+            iSearchLastRegexCase_ = searchCaseSense;
+            no_signals(ui.checkIFindCase)->setChecked(iSearchLastLiteralCase_);
+        }
+    }
+    // The iSearch bar has no Whole Word button to enable/disable.
+
+    // When search parameters (direction or search type), redo the search
+    Q_EMIT on_editIFind_returnPressed();
+}
+
+void MainWindow::on_checkIFindReverse_toggled(bool value) {
+
+    Q_UNUSED(value);
+
+    // When search parameters (direction or search type), redo the search
+    Q_EMIT on_editIFind_returnPressed();
+}
 
 /*
 ** Shared routine for replace and find dialogs and i-search bar to initialize
@@ -1981,5 +2033,135 @@ void MainWindow::action_Shift_Replace_triggered() {
                     SEARCH_BACKWARD,
                     GetPrefKeepSearchDlogs(),
                     GetPrefSearch());
+    }
+}
+
+void MainWindow::on_action_Replace_Find_Again_triggered() {
+
+    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+        if (doc->CheckReadOnly()) {
+            return;
+        }
+
+        ReplaceFindSameEx(
+                    this,
+                    DocumentWidget::documentFrom(lastFocus_),
+                    lastFocus_,
+                    SEARCH_FORWARD,
+                    GetPrefSearchWraps());
+    }
+}
+
+void MainWindow::action_Shift_Replace_Find_Again_triggered() {
+    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+        if (doc->CheckReadOnly()) {
+            return;
+        }
+
+        ReplaceFindSameEx(
+                    this,
+                    DocumentWidget::documentFrom(lastFocus_),
+                    lastFocus_,
+                    SEARCH_BACKWARD,
+                    GetPrefSearchWraps());
+    }
+}
+
+void MainWindow::on_action_Replace_Again_triggered() {
+    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+        if (doc->CheckReadOnly()) {
+            return;
+        }
+
+        ReplaceSameEx(
+                    this,
+                    DocumentWidget::documentFrom(lastFocus_),
+                    lastFocus_,
+                    SEARCH_FORWARD,
+                    GetPrefSearchWraps());
+    }
+}
+
+void MainWindow::action_Shift_Replace_Again_triggered() {
+    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+        if (doc->CheckReadOnly()) {
+            return;
+        }
+
+        ReplaceSameEx(
+                    this,
+                    DocumentWidget::documentFrom(lastFocus_),
+                    lastFocus_,
+                    SEARCH_BACKWARD,
+                    GetPrefSearchWraps());
+    }
+}
+
+void MainWindow::on_action_Mark_triggered() {
+
+    bool ok;
+    QString result = QInputDialog::getText(
+        this,
+        tr("Mark"),
+        tr("Enter a single letter label to use for recalling\n"
+              "the current selection and cursor position.\n\n"
+              "(To skip this dialog, use the accelerator key,\n"
+              "followed immediately by a letter key (a-z))"),
+        QLineEdit::Normal,
+        QString(),
+        &ok);
+
+    if(!ok) {
+        return;
+    }
+
+    if (result.size() != 1 || !isalpha((uint8_t)result[0].toLatin1())) {
+        QApplication::beep();
+        return;
+    }
+
+    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+        doc->markAP(result[0]);
+    }
+}
+
+void MainWindow::action_Mark_triggered_triggered() {
+
+    if(auto shortcut = qobject_cast<QShortcut *>(sender())) {
+        QKeySequence sequence = shortcut->key();
+
+        if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+            switch(sequence[1]) {
+            case Qt::Key_A: doc->markAP(QLatin1Char('A')); break;
+            case Qt::Key_B: doc->markAP(QLatin1Char('B')); break;
+            case Qt::Key_C: doc->markAP(QLatin1Char('C')); break;
+            case Qt::Key_D: doc->markAP(QLatin1Char('D')); break;
+            case Qt::Key_E: doc->markAP(QLatin1Char('E')); break;
+            case Qt::Key_F: doc->markAP(QLatin1Char('F')); break;
+            case Qt::Key_G: doc->markAP(QLatin1Char('G')); break;
+            case Qt::Key_H: doc->markAP(QLatin1Char('H')); break;
+            case Qt::Key_I: doc->markAP(QLatin1Char('I')); break;
+            case Qt::Key_J: doc->markAP(QLatin1Char('J')); break;
+            case Qt::Key_K: doc->markAP(QLatin1Char('K')); break;
+            case Qt::Key_L: doc->markAP(QLatin1Char('L')); break;
+            case Qt::Key_M: doc->markAP(QLatin1Char('M')); break;
+            case Qt::Key_N: doc->markAP(QLatin1Char('N')); break;
+            case Qt::Key_O: doc->markAP(QLatin1Char('O')); break;
+            case Qt::Key_P: doc->markAP(QLatin1Char('P')); break;
+            case Qt::Key_Q: doc->markAP(QLatin1Char('Q')); break;
+            case Qt::Key_R: doc->markAP(QLatin1Char('R')); break;
+            case Qt::Key_S: doc->markAP(QLatin1Char('S')); break;
+            case Qt::Key_T: doc->markAP(QLatin1Char('T')); break;
+            case Qt::Key_U: doc->markAP(QLatin1Char('U')); break;
+            case Qt::Key_V: doc->markAP(QLatin1Char('V')); break;
+            case Qt::Key_W: doc->markAP(QLatin1Char('W')); break;
+            case Qt::Key_X: doc->markAP(QLatin1Char('X')); break;
+            case Qt::Key_Y: doc->markAP(QLatin1Char('Y')); break;
+            case Qt::Key_Z: doc->markAP(QLatin1Char('Z')); break;
+            default:
+                QApplication::beep();
+                break;
+            }
+        }
     }
 }

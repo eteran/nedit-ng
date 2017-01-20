@@ -29,6 +29,7 @@
 #include <QString>
 
 #include "DocumentWidget.h"
+#include "MainWindow.h"
 #include "TextArea.h"
 #include "TextHelper.h"
 #include "TextDisplay.h"
@@ -529,6 +530,36 @@ static void gotoMarkKeyCB(Widget w, XtPointer clientData, XEvent *event, Boolean
 }
 static void gotoMarkExtendKeyCB(Widget w, XtPointer clientData, XEvent *event, Boolean *continueDispatch) {
 	processMarkEvent(w, clientData, event, continueDispatch, (String) "goto_mark", True);
+}
+
+void AddMarkEx(MainWindow *window, DocumentWidget *document, TextArea *area, QChar label) {
+
+    Q_UNUSED(window);
+
+    int index;
+
+    /* look for a matching mark to re-use, or advance
+       nMarks to create a new one */
+    label = label.toUpper();
+
+    for (index = 0; index < document->nMarks_; index++) {
+        if (document->markTable_[index].label == label.toLatin1())
+            break;
+    }
+    if (index >= MAX_MARKS) {
+        fprintf(stderr, "no more marks allowed\n"); // shouldn't happen
+        return;
+    }
+
+    if (index == document->nMarks_) {
+        document->nMarks_++;
+    }
+
+    // store the cursor location and selection position in the table
+    document->markTable_[index].label = label.toLatin1();
+    memcpy(&document->markTable_[index].sel, &document->buffer_->primary_, sizeof(TextSelection));
+
+    document->markTable_[index].cursorPos = area->TextGetCursorPos();
 }
 
 void AddMark(Document *window, Widget widget, char label) {
