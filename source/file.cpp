@@ -1394,7 +1394,6 @@ QString PromptForExistingFile(Document *window, const QString &prompt) {
 	}
 
 	return QString();
-
 }
 
 /*

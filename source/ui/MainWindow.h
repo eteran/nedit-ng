@@ -60,7 +60,8 @@ public:
     void initToggleButtonsiSearch(SearchType searchType);
     void EndISearchEx();
     void BeginISearchEx(SearchDirection direction);
-
+    QString PromptForExistingFileEx(const QString &prompt);
+    void updateTipsFileMenuEx();
 
 public:
     static QList<MainWindow *> allWindows();
@@ -83,6 +84,7 @@ public Q_SLOTS:
     void action_Shift_Replace_triggered();
     void action_Shift_Replace_Find_Again_triggered();
     void action_Shift_Replace_Again_triggered();
+    void action_Shift_Goto_Matching_triggered();
 
     // These are a bit weird as they are multi-key shortcuts
     // and act a bit differently from the menu
@@ -109,6 +111,7 @@ public Q_SLOTS:
     void on_action_Open_Selected_triggered();
     void on_action_Close_triggered();
     void on_action_Include_File_triggered();
+    void on_action_Load_Calltips_File_triggered();
 #if 0
 
 
@@ -120,7 +123,7 @@ public Q_SLOTS:
 	void on_action_Load_Macro_File_triggered();
 	void on_action_Load_Tags_File_triggered();
 	void on_action_Unload_Tags_File_triggered();
-	void on_action_Load_Calltips_File_triggered();
+
 	void on_action_Unload_Calltips_File_triggered();
 	void on_action_Print_triggered();
 	void on_action_Print_Selection_triggered();
@@ -153,12 +156,9 @@ public Q_SLOTS:
     void on_action_Replace_Again_triggered();
     void on_action_Mark_triggered();
     void on_action_Goto_Mark_triggered();
-
+    void on_action_Goto_Matching_triggered();
 
 #if 0
-
-
-	void on_action_Goto_Matching_triggered();
 	void on_action_Find_Definition_triggered();
 	void on_action_Show_Calltip_triggered();
 	void on_action_Execute_Command_triggered();	
@@ -272,11 +272,15 @@ public Q_SLOTS:
 	void on_action_Default_Size_Custom_triggered();
 #endif
 
+public Q_SLOTS:
+    void unloadTipsAP(const QString &filename);
+
 private Q_SLOTS:
 	void deleteTabButtonClicked();
     void raiseCB();
     void setLangModeCB(QAction *action);
     void openPrevCB(QAction *action);
+    void unloadTipsFileCB(QAction *action);
 
 public:
 	QPointer<QDialog>  dialogFind_;

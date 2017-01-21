@@ -56,6 +56,10 @@ public Q_SLOTS:
     void replaceInSelAP(const QString &searchString, const QString &replaceString, SearchType searchType);
     void markAP(QChar ch);
     void gotoMarkAP(QChar label, bool extendSel);
+    void GotoMatchingCharacter(TextArea *area);
+    void SelectToMatchingCharacter(TextArea *area);
+    void loadTipsAP(const QString &filename);
+    QString PromptForExistingFileEx(const QString &prompt);
 
 public:
 	void movedCallback(TextArea *area);
@@ -139,6 +143,7 @@ public:
     void executeModMacro(smartIndentCBStruct *cbInfo);
     void actionClose(const QString &mode);
     bool includeFile(const QString &name);
+    bool findMatchingCharEx(char toMatch, void *styleToMatch, int charPos, int startLimit, int endLimit, int *matchPos);
 
 public:
     static DocumentWidget *EditExistingFileEx(DocumentWidget *inWindow, const QString &name, const QString &path, int flags, char *geometry, int iconic, const char *languageMode, int tabbed, int bgOpen);

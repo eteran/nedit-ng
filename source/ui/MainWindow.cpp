@@ -24,6 +24,7 @@
 #include "utils.h"
 #include "memory.h"
 #include "regularExp.h"
+#include "tags.h"
 #include "LanguageMode.h"
 #include "nedit.h"
 #include "selection.h"
@@ -270,6 +271,9 @@ void MainWindow::setupMenuStrings() {
     new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_H), this, SLOT(action_Shift_Find_Selection_triggered()));
     new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_I), this, SLOT(action_Shift_Find_Incremental_triggered()));
     new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_R), this, SLOT(action_Shift_Replace_triggered()));
+    new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_M), this, SLOT(action_Shift_Goto_Matching_triggered()));
+
+
 
     // This is an annoying solution... we can probably do better...
     // NOTE(eteran): this assumes that the Qt::Key constants are
@@ -2273,6 +2277,69 @@ void MainWindow::action_Goto_Mark_Shortcut_triggered() {
                 QApplication::beep();
                 break;
             }
+        }
+    }
+}
+
+void MainWindow::on_action_Goto_Matching_triggered() {
+    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+        doc->GotoMatchingCharacter(lastFocus_);
+    }
+}
+
+void MainWindow::action_Shift_Goto_Matching_triggered() {
+    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+        doc->SelectToMatchingCharacter(lastFocus_);
+    }
+}
+
+void MainWindow::on_action_Load_Calltips_File_triggered() {
+
+    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+        QString filename = doc->PromptForExistingFileEx(tr("Load Calltips File"));
+        if (filename.isNull()) {
+            return;
+        }
+
+        doc->loadTipsAP(filename);
+        updateTipsFileMenuEx();
+    }
+}
+
+
+void MainWindow::updateTipsFileMenuEx() {
+
+    auto tipsMenu = new QMenu(this);
+
+    const tagFile *tf = TipsFileList;
+    while(tf) {
+
+        auto filename = QString::fromStdString(tf->filename);
+        QAction *action = tipsMenu->addAction(filename);
+        action->setData(filename);
+
+        tf = tf->next;
+    }
+
+    ui.action_Unload_Calltips_File->setMenu(tipsMenu);
+    connect(tipsMenu, SIGNAL(triggered(QAction *)), this, SLOT(unloadTipsFileCB(QAction *)));
+}
+
+void MainWindow::unloadTipsFileCB(QAction *action) {
+    const QString filename = action->data().value<QString>();
+    if(!filename.isEmpty()) {
+        unloadTipsAP(filename);
+    }
+}
+
+void MainWindow::unloadTipsAP(const QString &filename) {
+
+    /* refresh the "Unload Calltips File" tear-offs after unloading, or
+       close the tear-offs if all tips files have been unloaded */
+    if (DeleteTagsFile(filename.toLatin1().data(), TIP, true)) {
+
+        for(MainWindow *window : MainWindow::allWindows()) {
+            window->updateTipsFileMenuEx();
         }
     }
 }

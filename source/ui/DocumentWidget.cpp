@@ -45,11 +45,35 @@
 
 namespace {
 
+struct CharMatchTable {
+    char c;
+    char match;
+    char direction;
+};
+
 struct SmartIndentData {
     Program *newlineMacro;
     int inNewLineMacro;
     Program *modMacro;
     int inModMacro;
+};
+
+const int N_MATCH_CHARS = 13;
+
+static const CharMatchTable MatchingChars[N_MATCH_CHARS] = {
+    {'{', '}', SEARCH_FORWARD},
+    {'}', '{', SEARCH_BACKWARD},
+    {'(', ')', SEARCH_FORWARD},
+    {')', '(', SEARCH_BACKWARD},
+    {'[', ']', SEARCH_FORWARD},
+    {']', '[', SEARCH_BACKWARD},
+    {'<', '>', SEARCH_FORWARD},
+    {'>', '<', SEARCH_BACKWARD},
+    {'/', '/', SEARCH_FORWARD},
+    {'"', '"', SEARCH_FORWARD},
+    {'\'', '\'', SEARCH_FORWARD},
+    {'`', '`', SEARCH_FORWARD},
+    {'\\', '\\', SEARCH_FORWARD},
 };
 
 /*
@@ -4138,4 +4162,190 @@ void DocumentWidget::gotoMarkAP(QChar label, bool extendSel) {
             area->setAutoShowInsertPos(true);
         }
     }
+}
+
+void DocumentWidget::GotoMatchingCharacter(TextArea *area) {
+    int selStart;
+    int selEnd;
+    int matchPos;
+    TextBuffer *buf = buffer_;
+
+    /* get the character to match and its position from the selection, or
+       the character before the insert point if nothing is selected.
+       Give up if too many characters are selected */
+    if (!buf->GetSimpleSelection(&selStart, &selEnd)) {
+
+        selEnd = area->TextGetCursorPos();
+
+        if (overstrike_) {
+            selEnd += 1;
+        }
+
+        selStart = selEnd - 1;
+        if (selStart < 0) {
+            QApplication::beep();
+            return;
+        }
+    }
+    if ((selEnd - selStart) != 1) {
+        QApplication::beep();
+        return;
+    }
+
+    // Search for it in the buffer
+    if (!findMatchingCharEx(buf->BufGetCharacter(selStart), GetHighlightInfoEx(this, selStart), selStart, 0, buf->BufGetLength(), &matchPos)) {
+        QApplication::beep();
+        return;
+    }
+
+    /* temporarily shut off autoShowInsertPos before setting the cursor
+       position so MakeSelectionVisible gets a chance to place the cursor
+       string at a pleasing position on the screen (otherwise, the cursor would
+       be automatically scrolled on screen and MakeSelectionVisible would do
+       nothing) */
+    area->setAutoShowInsertPos(false);
+
+    area->TextSetCursorPos(matchPos + 1);
+    MakeSelectionVisible(area);
+    area->setAutoShowInsertPos(true);
+}
+
+bool DocumentWidget::findMatchingCharEx(char toMatch, void *styleToMatch, int charPos, int startLimit, int endLimit, int *matchPos) {
+    int nestDepth, matchIndex, direction, beginPos, pos;
+    char matchChar, c;
+    void *style = nullptr;
+    TextBuffer *buf = buffer_;
+    bool matchSyntaxBased = matchSyntaxBased_;
+
+    // If we don't match syntax based, fake a matching style.
+    if (!matchSyntaxBased) {
+        style = styleToMatch;
+    }
+
+    // Look up the matching character and match direction
+    for (matchIndex = 0; matchIndex < N_MATCH_CHARS; matchIndex++) {
+        if (MatchingChars[matchIndex].c == toMatch)
+            break;
+    }
+    if (matchIndex == N_MATCH_CHARS)
+        return false;
+    matchChar = MatchingChars[matchIndex].match;
+    direction = MatchingChars[matchIndex].direction;
+
+    // find it in the buffer
+    beginPos = (direction == SEARCH_FORWARD) ? charPos + 1 : charPos - 1;
+    nestDepth = 1;
+    if (direction == SEARCH_FORWARD) {
+        for (pos = beginPos; pos < endLimit; pos++) {
+            c = buf->BufGetCharacter(pos);
+            if (c == matchChar) {
+                if (matchSyntaxBased)
+                    style = GetHighlightInfoEx(this, pos);
+                if (style == styleToMatch) {
+                    nestDepth--;
+                    if (nestDepth == 0) {
+                        *matchPos = pos;
+                        return TRUE;
+                    }
+                }
+            } else if (c == toMatch) {
+                if (matchSyntaxBased)
+                    style = GetHighlightInfoEx(this, pos);
+                if (style == styleToMatch)
+                    nestDepth++;
+            }
+        }
+    } else { // SEARCH_BACKWARD
+        for (pos = beginPos; pos >= startLimit; pos--) {
+            c = buf->BufGetCharacter(pos);
+            if (c == matchChar) {
+                if (matchSyntaxBased)
+                    style = GetHighlightInfoEx(this, pos);
+                if (style == styleToMatch) {
+                    nestDepth--;
+                    if (nestDepth == 0) {
+                        *matchPos = pos;
+                        return true;
+                    }
+                }
+            } else if (c == toMatch) {
+                if (matchSyntaxBased)
+                    style = GetHighlightInfoEx(this, pos);
+                if (style == styleToMatch)
+                    nestDepth++;
+            }
+        }
+    }
+    return false;
+}
+
+void DocumentWidget::SelectToMatchingCharacter(TextArea *area) {
+    int selStart;
+    int selEnd;
+    int startPos;
+    int endPos;
+    int matchPos;
+    TextBuffer *buf = buffer_;
+
+    /* get the character to match and its position from the selection, or
+       the character before the insert point if nothing is selected.
+       Give up if too many characters are selected */
+    if (!buf->GetSimpleSelection(&selStart, &selEnd)) {
+
+        selEnd = area->TextGetCursorPos();
+        if (overstrike_)
+            selEnd += 1;
+        selStart = selEnd - 1;
+        if (selStart < 0) {
+            QApplication::beep();
+            return;
+        }
+    }
+    if ((selEnd - selStart) != 1) {
+        QApplication::beep();
+        return;
+    }
+
+    // Search for it in the buffer
+    if (!findMatchingCharEx(buf->BufGetCharacter(selStart), GetHighlightInfoEx(this, selStart), selStart, 0, buf->BufGetLength(), &matchPos)) {
+        QApplication::beep();
+        return;
+    }
+
+    startPos = (matchPos > selStart) ? selStart : matchPos;
+    endPos   = (matchPos > selStart) ? matchPos : selStart;
+
+    /* temporarily shut off autoShowInsertPos before setting the cursor
+       position so MakeSelectionVisible gets a chance to place the cursor
+       string at a pleasing position on the screen (otherwise, the cursor would
+       be automatically scrolled on screen and MakeSelectionVisible would do
+       nothing) */
+    area->setAutoShowInsertPos(false);
+    // select the text between the matching characters
+    buf->BufSelect(startPos, endPos + 1);
+    MakeSelectionVisible(area);
+    area->setAutoShowInsertPos(true);
+}
+
+void DocumentWidget::loadTipsAP(const QString &filename) {
+
+    if (!AddTagsFileEx(filename, TIP)) {
+        QMessageBox::warning(this, tr("Error Reading File"), tr("Error reading tips file:\n'%1'\ntips not loaded").arg(filename));
+    }
+}
+
+QString DocumentWidget::PromptForExistingFileEx(const QString &prompt) {
+
+    QFileDialog dialog(this, prompt);
+    dialog.setOptions(QFileDialog::DontUseNativeDialog);
+    dialog.setFileMode(QFileDialog::ExistingFile);
+    if(!path_.isEmpty()) {
+        dialog.setDirectory(path_);
+    }
+
+    if(dialog.exec()) {
+        return dialog.selectedFiles()[0];
+    }
+
+    return QString();
 }

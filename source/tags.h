@@ -57,7 +57,7 @@ enum Mode {
 int AddRelTagsFile(const char *tagSpec, const char *windowPath, int file_type);
 // tagSpec is a colon-delimited list of filenames 
 int AddTagsFile(const char *tagSpec, int file_type);
-int DeleteTagsFile(const char *tagSpec, int file_type, Boolean force_unload);
+int DeleteTagsFile(const char *tagSpec, int file_type, bool force_unload);
 
 int AddTagsFileEx(const QString &tagSpec, int file_type);
 int DeleteTagsFileEx(const QString &tagSpec, int file_type, Boolean force_unload);

@@ -28,6 +28,7 @@
 
 #include <QApplication>
 #include <QMessageBox>
+#include "ui/MainWindow.h"
 #include "ui/DialogDuplicateTags.h"
 
 #include "tags.h"
@@ -455,14 +456,18 @@ int AddTagsFile(const char *tagSpec, int file_type) {
 	}
 
 	searchMode = file_type;
-	if (searchMode == TAG) {
-		FileList = TagsFileList;
-	} else {
-		FileList = TipsFileList;
-	}
+    switch(searchMode) {
+    case TAG:
+        FileList = TagsFileList;
+        break;
+    case TIP:
+        FileList = TipsFileList;
+        break;
+    }
 
 	auto tmptagSpec = new char[strlen(tagSpec) + 1];
 	strcpy(tmptagSpec, tagSpec);
+
 	for (char *filename = strtok(tmptagSpec, ":"); filename; filename = strtok(nullptr, ":")) {
 		if (*filename != '/') {
 			snprintf(pathName, sizeof(pathName), "%s/%s", GetCurrentDirEx().toLatin1().data(), filename);
@@ -486,6 +491,7 @@ int AddTagsFile(const char *tagSpec, int file_type) {
 			added = 0;
 			continue;
 		}
+
 		t = new tagFile;
 		t->filename = pathName;
 		t->loaded   = false;
@@ -512,7 +518,7 @@ int AddTagsFile(const char *tagSpec, int file_type) {
  * If "force_unload" is true, a calltips file will be deleted even if its
  * refcount is nonzero.
  */
-int DeleteTagsFile(const char *tagSpec, int file_type, Boolean force_unload) {
+int DeleteTagsFile(const char *tagSpec, int file_type, bool force_unload) {
 	tagFile *t, *last;
 	tagFile *FileList;
 	char pathName[MAXPATHLEN];
@@ -581,21 +587,30 @@ int DeleteTagsFile(const char *tagSpec, int file_type, Boolean force_unload) {
 ** and "Unload Calltips File" menu items in the existing windows.
 */
 static void updateMenuItems() {
-	Boolean tipStat = FALSE, tagStat = FALSE;
+    bool tipStat = false;
+    bool tagStat = false;
 
 	if (TipsFileList)
-		tipStat = TRUE;
+        tipStat = true;
+
 	if (TagsFileList)
-		tagStat = TRUE;
+        tagStat = true;
 
 	for(Document *w: WindowList) {
 		if (w->IsTopDocument()) {
 			XtSetSensitive(w->showTipItem_, tipStat || tagStat);
+#if 0 // NOTE(eteran): transitions
 			XtSetSensitive(w->unloadTipsMenuItem_, tipStat);
+#endif
 			XtSetSensitive(w->findDefItem_, tagStat);
 			XtSetSensitive(w->unloadTagsMenuItem_, tagStat);
 		}
 	}
+
+    for(MainWindow *window : MainWindow::allWindows()) {
+        window->ui.action_Unload_Calltips_File->setEnabled(tipStat);
+        window->ui.action_Show_Calltip->setEnabled(tipStat || tagStat);
+    }
 }
 
 /*

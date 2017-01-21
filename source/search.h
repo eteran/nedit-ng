@@ -60,12 +60,10 @@ void DoFindReplaceDlogEx(MainWindow *window, DocumentWidget *document, TextArea 
 void EndISearch(Document *window);
 void FlashMatching(Document *window, Widget textW);
 void FlashMatchingEx(DocumentWidget *document, TextArea *area);
-void GotoMatchingCharacter(Document *window);
 void RemoveFromMultiReplaceDialog(Document *window);
-void ReplaceInSelection(const Document *window, const char *searchString, const char *replaceString, SearchType searchType);
 void ReplaceInSelectionEx(MainWindow *window, DocumentWidget *document, TextArea *area, const char *searchString, const char *replaceString, SearchType searchType);
 void SearchForSelectedEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, SearchType searchType, int searchWrap);
-void SelectToMatchingCharacter(Document *window);
+
 void SetISearchTextCallbacks(Document *window);
 void eraseFlashEx(DocumentWidget *document);
 

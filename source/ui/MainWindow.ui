@@ -575,6 +575,9 @@
    </property>
   </action>
   <action name="action_Unload_Calltips_File">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Unload Calltips Fil&amp;e</string>
    </property>

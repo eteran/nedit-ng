@@ -86,7 +86,6 @@ SearchType SearchTypeHistory[MAX_SEARCH_HISTORY];
 static int HistStart = 0;
 
 static bool backwardRegexSearch(view::string_view string, view::string_view searchString, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags);
-static bool prefOrUserCancelsSubst(const Widget parent, const Display *display);
 static bool replaceUsingREEx(view::string_view searchStr, const char *replaceStr, view::string_view sourceStr, int beginPos, char *destStr, int maxDestLen, int prevChar, const char *delimiters, int defaultFlags);
 
 static bool forwardRegexSearch(view::string_view string, view::string_view searchString, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags);
@@ -164,9 +163,9 @@ Document *windowNotToClose = nullptr;
 
 Boolean WindowCanBeClosed(Document *window) {
 	if (windowNotToClose && Document::GetTopDocument(window->shell_) == Document::GetTopDocument(windowNotToClose->shell_)) {
-		return False;
+        return false;
 	}
-	return True; // It's safe 
+    return true; // It's safe
 }
 
 /*
@@ -1257,103 +1256,7 @@ void FlashMatching(Document *window, Widget textW) {
 	window->flashPos_ = matchPos;
 }
 
-void SelectToMatchingCharacter(Document *window) {
-	int selStart;
-	int selEnd;
-	int startPos;
-	int endPos;
-	int matchPos;
-	TextBuffer *buf = window->buffer_;
 
-	/* get the character to match and its position from the selection, or
-	   the character before the insert point if nothing is selected.
-	   Give up if too many characters are selected */
-	if (!buf->GetSimpleSelection(&selStart, &selEnd)) {
-		
-		auto textD = window->lastFocus();
-		
-		selEnd = textD->TextGetCursorPos();
-		if (window->overstrike_)
-			selEnd += 1;
-		selStart = selEnd - 1;
-		if (selStart < 0) {
-			QApplication::beep();
-			return;
-		}
-	}
-	if ((selEnd - selStart) != 1) {
-		QApplication::beep();
-		return;
-	}
-
-	// Search for it in the buffer 
-	if (!findMatchingChar(window, buf->BufGetCharacter(selStart), GetHighlightInfo(window, selStart), selStart, 0, buf->BufGetLength(), &matchPos)) {
-		QApplication::beep();
-		return;
-	}
-	startPos = (matchPos > selStart) ? selStart : matchPos;
-	endPos = (matchPos > selStart) ? matchPos : selStart;
-
-	/* temporarily shut off autoShowInsertPos before setting the cursor
-	   position so MakeSelectionVisible gets a chance to place the cursor
-	   string at a pleasing position on the screen (otherwise, the cursor would
-	   be automatically scrolled on screen and MakeSelectionVisible would do
-	   nothing) */
-	textD_of(window->lastFocus_)->setAutoShowInsertPos(false);
-	// select the text between the matching characters 
-	buf->BufSelect(startPos, endPos + 1);
-	window->MakeSelectionVisible(window->lastFocus_);
-	textD_of(window->lastFocus_)->setAutoShowInsertPos(true);
-}
-
-void GotoMatchingCharacter(Document *window) {
-	int selStart, selEnd;
-	int matchPos;
-	TextBuffer *buf = window->buffer_;
-
-	/* get the character to match and its position from the selection, or
-	   the character before the insert point if nothing is selected.
-	   Give up if too many characters are selected */
-	if (!buf->GetSimpleSelection(&selStart, &selEnd)) {
-		
-		auto textD = window->lastFocus();
-		
-		selEnd = textD->TextGetCursorPos();
-		
-		if (window->overstrike_) {
-			selEnd += 1;
-		}
-		
-		selStart = selEnd - 1;
-		if (selStart < 0) {
-			QApplication::beep();
-			return;
-		}
-	}
-	if ((selEnd - selStart) != 1) {
-		QApplication::beep();
-		return;
-	}
-
-	// Search for it in the buffer 
-	if (!findMatchingChar(window, buf->BufGetCharacter(selStart), GetHighlightInfo(window, selStart), selStart, 0, buf->BufGetLength(), &matchPos)) {
-		QApplication::beep();
-		return;
-	}
-
-	/* temporarily shut off autoShowInsertPos before setting the cursor
-	   position so MakeSelectionVisible gets a chance to place the cursor
-	   string at a pleasing position on the screen (otherwise, the cursor would
-	   be automatically scrolled on screen and MakeSelectionVisible would do
-	   nothing) */
-	textD_of(window->lastFocus_)->setAutoShowInsertPos(false);
-
-	auto textD = window->lastFocus();
-	
-	textD->TextSetCursorPos(matchPos + 1);
-	window->MakeSelectionVisible(window->lastFocus_);
-	textD_of(window->lastFocus_)->setAutoShowInsertPos(true);
-}
 
 static bool findMatchingCharEx(DocumentWidget *window, char toMatch, void *styleToMatch, int charPos, int startLimit, int endLimit, int *matchPos) {
     int nestDepth, matchIndex, direction, beginPos, pos;
@@ -1742,71 +1645,6 @@ static bool prefOrUserCancelsSubstEx(MainWindow *window, DocumentWidget *documen
     return cancel;
 }
 
-
-/*
-**  Uses the resource nedit.truncSubstitution to determine how to deal with
-**  regex failures. This function only knows about the resource (via the usual
-**  setting getter) and asks or warns the user depending on that.
-**
-**  One could argue that the dialoging should be determined by the setting
-**  'searchDlogs'. However, the incomplete substitution is not just a question
-**  of verbosity, but of data loss. The search is successful, only the
-**  replacement fails due to an internal limitation of NEdit.
-**
-**  The parameters 'parent' and 'display' are only used to put dialogs and
-**  beeps at the right place.
-**
-**  The result is either predetermined by the resource or the user's choice.
-*/
-static bool prefOrUserCancelsSubst(const Widget parent, const Display *display) {
-
-	Q_UNUSED(parent);
-	
-	bool cancel = true;
-
-	switch (GetPrefTruncSubstitution()) {
-	case TRUNCSUBST_SILENT:
-		//  silently fail the operation  
-		cancel = true;
-		break;
-
-	case TRUNCSUBST_FAIL:
-		//  fail the operation and pop up a dialog informing the user  
-		XBell((Display *)display, 0);
-		
-		QMessageBox::information(nullptr /* parent */, QLatin1String("Substitution Failed"), QLatin1String("The result length of the substitution exceeded an internal limit.\n"
-		                                                                                                   "The substitution is canceled."));
-
-		cancel = true;
-		break;
-
-	case TRUNCSUBST_WARN:
-		//  pop up dialog and ask for confirmation  
-		XBell((Display *)display, 0);
-				
-		{		
-			QMessageBox messageBox(nullptr /*parent*/);
-			messageBox.setWindowTitle(QLatin1String("Substitution Failed"));
-			messageBox.setIcon(QMessageBox::Warning);
-			messageBox.setText(QLatin1String("The result length of the substitution exceeded an internal limit.\nExecuting the substitution will result in loss of data."));
-			QPushButton *buttonLose   = messageBox.addButton(QLatin1String("Lose Data"), QMessageBox::AcceptRole);
-			QPushButton *buttonCancel = messageBox.addButton(QMessageBox::Cancel);
-			Q_UNUSED(buttonLose);
-
-			messageBox.exec();
-			cancel = (messageBox.clickedButton() == buttonCancel);		
-		}				
-		break;
-
-	case TRUNCSUBST_IGNORE:
-		//  silently conclude the operation; THIS WILL DESTROY DATA.  
-		cancel = false;
-		break;
-	}
-
-	return cancel;
-}
-
 /*
 ** Replace all occurences of "searchString" in "window" with "replaceString"
 ** within the current primary selection in "window". Also adds the search and
@@ -1979,179 +1817,6 @@ void ReplaceInSelectionEx(MainWindow *window, DocumentWidget *document, TextArea
     }
 }
 
-/*
-** Replace all occurences of "searchString" in "window" with "replaceString"
-** within the current primary selection in "window". Also adds the search and
-** replace strings to the global search history.
-*/
-void ReplaceInSelection(const Document *window, const char *searchString, const char *replaceString, SearchType searchType) {
-	int selStart;
-	int selEnd;
-	int beginPos;
-	int startPos;
-	int endPos;
-	int realOffset;
-	int replaceLen;
-	bool found;
-	bool isRect;
-	int rectStart;
-	int rectEnd;
-	int lineStart;
-	int cursorPos;
-	int extentBW;
-	int extentFW;
-	std::string fileString;
-	bool substSuccess = false;
-	bool anyFound     = false;
-	bool cancelSubst  = true;
-
-	// save a copy of search and replace strings in the search history 
-    saveSearchHistory(searchString, replaceString, searchType, false);
-
-	// find out where the selection is 
-	if (!window->buffer_->BufGetSelectionPos(&selStart, &selEnd, &isRect, &rectStart, &rectEnd)) {
-		return;
-	}
-
-	// get the selected text 
-	if (isRect) {
-		selStart = window->buffer_->BufStartOfLine(selStart);
-		selEnd = window->buffer_->BufEndOfLine( selEnd);
-		fileString = window->buffer_->BufGetRangeEx(selStart, selEnd);
-	} else {
-		fileString = window->buffer_->BufGetSelectionTextEx();
-	}
-
-	/* create a temporary buffer in which to do the replacements to hide the
-	   intermediate steps from the display routines, and so everything can
-	   be undone in a single operation */
-	auto tempBuf = mem::make_unique<TextBuffer>();
-	tempBuf->BufSetAllEx(fileString);
-
-	// search the string and do the replacements in the temporary buffer 
-	replaceLen = strlen(replaceString);
-	found = true;
-	beginPos = 0;
-	cursorPos = 0;
-	realOffset = 0;
-	while (found) {
-		found = SearchString(fileString, searchString, SEARCH_FORWARD, searchType, FALSE, beginPos, &startPos, &endPos, &extentBW, &extentFW, GetWindowDelimiters(window).toLatin1().data());
-		if (!found)
-			break;
-
-		anyFound = True;
-		/* if the selection is rectangular, verify that the found
-		   string is in the rectangle */
-		if (isRect) {
-			lineStart = window->buffer_->BufStartOfLine(selStart + startPos);
-			if (window->buffer_->BufCountDispChars(lineStart, selStart + startPos) < rectStart || window->buffer_->BufCountDispChars(lineStart, selStart + endPos) > rectEnd) {
-				if (fileString[endPos] == '\0')
-					break;
-				/* If the match starts before the left boundary of the
-				   selection, and extends past it, we should not continue
-				   search after the end of the (false) match, because we
-				   could miss a valid match starting between the left boundary
-				   and the end of the false match. */
-				if (window->buffer_->BufCountDispChars(lineStart, selStart + startPos) < rectStart && window->buffer_->BufCountDispChars(lineStart, selStart + endPos) > rectStart)
-					beginPos += 1;
-				else
-					beginPos = (startPos == endPos) ? endPos + 1 : endPos;
-				continue;
-			}
-		}
-
-		/* Make sure the match did not start past the end (regular expressions
-		   can consider the artificial end of the range as the end of a line,
-		   and match a fictional whole line beginning there) */
-		if (startPos == (selEnd - selStart)) {
-			found = false;
-			break;
-		}
-
-		// replace the string and compensate for length change 
-		if (isRegexType(searchType)) {
-			char replaceResult[SEARCHMAX];
-			const std::string foundString = tempBuf->BufGetRangeEx(extentBW + realOffset, extentFW + realOffset + 1);
-			substSuccess = replaceUsingREEx(
-							searchString,
-							replaceString,
-							foundString,
-							startPos - extentBW,
-							replaceResult,
-							SEARCHMAX,
-							(startPos + realOffset) == 0 ? '\0' : tempBuf->BufGetCharacter(startPos + realOffset - 1),
-							GetWindowDelimiters(window).toLatin1().data(),
-							defaultRegexFlags(searchType));
-
-			if (!substSuccess) {
-				/*  The substitution failed. Primary reason for this would be
-				    a result string exceeding SEARCHMAX. */
-
-				cancelSubst = prefOrUserCancelsSubst(window->shell_, TheDisplay);
-
-				if (cancelSubst) {
-					//  No point in trying other substitutions.  
-					break;
-				}
-			}
-
-			tempBuf->BufReplaceEx(startPos + realOffset, endPos + realOffset, replaceResult);
-			replaceLen = strlen(replaceResult);
-		} else {
-			// at this point plain substitutions (should) always work 
-			tempBuf->BufReplaceEx(startPos + realOffset, endPos + realOffset, replaceString);
-			substSuccess = True;
-		}
-
-		realOffset += replaceLen - (endPos - startPos);
-		// start again after match unless match was empty, then endPos+1 
-		beginPos = (startPos == endPos) ? endPos + 1 : endPos;
-		cursorPos = endPos;
-		if (fileString[endPos] == '\0')
-			break;
-	}
-
-	if (anyFound) {
-		if (substSuccess || !cancelSubst) {
-			/*  Either the substitution was successful (the common case) or the
-			    user does not care and wants to have a faulty replacement.  */
-
-			// replace the selected range in the real buffer 
-			window->buffer_->BufReplaceEx(selStart, selEnd, tempBuf->BufAsStringEx());
-
-			// set the insert point at the end of the last replacement 
-			auto textD = window->lastFocus();
-			
-			textD->TextSetCursorPos(selStart + cursorPos + realOffset);
-
-			/* leave non-rectangular selections selected (rect. ones after replacement
-			   are less useful since left/right positions are randomly adjusted) */
-			if (!isRect) {
-				window->buffer_->BufSelect(selStart, selEnd + realOffset);
-			}
-		}
-	} else {
-		//  Nothing found, tell the user about it  
-		if (GetPrefSearchDlogs()) {
-
-			// Avoid bug in Motif 1.1 by putting away search dialog before Dialogs
-			if (auto dialog = qobject_cast<DialogFind *>(window->dialogFind_)) {
-				if(!dialog->keepDialog()) {
-					dialog->hide();
-				}
-			}
-			
-			auto dialog = window->getDialogReplace();
-			if (dialog && !dialog->keepDialog()) {			
-				unmanageReplaceDialogs(window);
-			}
-			
-			QMessageBox::information(nullptr /*parent*/, QLatin1String("String not found"), QLatin1String("String was not found"));
-		} else {
-			QApplication::beep();
-		}
-	}
-}
 
 /*
 ** Replace all occurences of "searchString" in "window" with "replaceString".

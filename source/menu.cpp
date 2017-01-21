@@ -32,6 +32,7 @@
 #include <QStringList>
 #include <QPushButton>
 #include <QMenu>
+#include "ui/MainWindow.h"
 #include "ui/DialogExecuteCommand.h"
 #include "ui/DialogFilter.h"
 #include "ui/DialogTabs.h"
@@ -98,7 +99,6 @@ extern "C" void _XmDismissTearOff(Widget, XtPointer, XtPointer);
 
 static void doActionCB(Widget w, XtPointer clientData, XtPointer callData);
 static void doTabActionCB(Widget w, XtPointer clientData, XtPointer callData);
-static void gotoMatchingCB(Widget w, XtPointer clientData, XtPointer callData);
 static void autoIndentOffCB(Widget w, XtPointer clientData, XtPointer callData);
 static void autoIndentCB(Widget w, XtPointer clientData, XtPointer callData);
 static void smartIndentCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -192,7 +192,6 @@ static void replayCB(Widget w, XtPointer clientData, XtPointer callData);
 static void windowMenuCB(Widget w, XtPointer clientData, XtPointer callData);
 static void prevOpenMenuCB(Widget w, XtPointer clientData, XtPointer callData);
 static void unloadTagsFileMenuCB(Widget w, XtPointer clientData, XtPointer callData);
-static void unloadTipsFileMenuCB(Widget w, XtPointer clientData, XtPointer callData);
 static void newAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void newOppositeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void newTabAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
@@ -212,16 +211,11 @@ static void loadMacroAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void loadTagsDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void loadTagsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void unloadTagsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void loadTipsDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void loadTipsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void unloadTipsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void printAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void printSelAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void exitAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void repeatDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void repeatMacroAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void selectToMatchingAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void gotoMatchingAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void findDefAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void showTipAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void splitPaneAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
@@ -246,7 +240,6 @@ static void beginningOfSelectionAP(Widget w, XEvent *event, String *args, Cardin
 static void endOfSelectionAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static Widget createMenu(Widget parent, const char *name, const char *label, char mnemonic, Widget *cascadeBtn, int mode);
 static Widget createMenuItem(Widget parent, const char *name, const char *label, char mnemonic, menuCallbackProc callback, const void *cbArg, int mode);
-static Widget createFakeMenuItem(Widget parent, const char *name, menuCallbackProc callback, const void *cbArg);
 static Widget createMenuToggle(Widget parent, const char *name, const char *label, char mnemonic, menuCallbackProc callback, const void *cbArg, int set, int mode);
 static Widget createMenuRadioToggle(Widget parent, const char *name, const char *label, char mnemonic, menuCallbackProc callback, const void *cbArg, int set, int mode);
 static Widget createMenuSeparator(Widget parent, const char *name, int mode);
@@ -254,11 +247,9 @@ static void invalidatePrevOpenMenus(void);
 static void updateWindowMenu(const Document *window);
 static void updatePrevOpenMenu(Document *window);
 static void updateTagsFileMenu(Document *window);
-static void updateTipsFileMenu(Document *window);
 static void raiseCB(Widget w, XtPointer clientData, XtPointer callData);
 static void openPrevCB(Widget w, XtPointer clientData, XtPointer callData);
 static void unloadTagsFileCB(Widget w, XtPointer clientData, XtPointer callData);
-static void unloadTipsFileCB(Widget w, XtPointer clientData, XtPointer callData);
 static void setWindowSizeDefault(int rows, int cols);
 static void updateWindowSizeMenus(void);
 static void updateWindowSizeMenu(Document *win);
@@ -317,9 +308,9 @@ static XtActionsRec Actions[] = {{(String) "new", newAP},
                                  {(String) "load-tags-file-dialog", loadTagsDialogAP},
                                  {(String) "load_tags_file_dialog", loadTagsDialogAP},
                                  {(String) "unload_tags_file", unloadTagsAP},
-                                 {(String) "load_tips_file", loadTipsAP},
-                                 {(String) "load_tips_file_dialog", loadTipsDialogAP},
-                                 {(String) "unload_tips_file", unloadTipsAP},
+                                 //{(String) "load_tips_file", loadTipsAP},
+                                 //{(String) "load_tips_file_dialog", loadTipsDialogAP},
+                                 //{(String) "unload_tips_file", unloadTipsAP},
                                  {(String) "print", printAP},
                                  {(String) "print-selection", printSelAP},
                                  {(String) "print_selection", printSelAP},
@@ -371,9 +362,9 @@ static XtActionsRec Actions[] = {{(String) "new", newAP},
                                  //{(String) "goto_mark", gotoMarkAP},
                                  //{(String) "goto-mark-dialog", gotoMarkDialogAP},
                                  //{(String) "goto_mark_dialog", gotoMarkDialogAP},
-                                 {(String) "match", selectToMatchingAP},
-                                 {(String) "select_to_matching", selectToMatchingAP},
-                                 {(String) "goto_matching", gotoMatchingAP},
+                                 //{(String) "match", selectToMatchingAP},
+                                 //{(String) "select_to_matching", selectToMatchingAP},
+                                 //{(String) "goto_matching", gotoMatchingAP},
                                  {(String) "find-definition", findDefAP},
                                  {(String) "find_definition", findDefAP},
                                  {(String) "show_tip", showTipAP},
@@ -513,10 +504,7 @@ Widget CreateMenuBar(Widget parent, Document *window) {
 	window->unloadTagsMenuPane_ = createMenu(menuPane, "unloadTagsFiles", "Unload Tags File", 'U', &window->unloadTagsMenuItem_, FULL);
 	XtSetSensitive(window->unloadTagsMenuItem_, TagsFileList != nullptr);
 	XtAddCallback(window->unloadTagsMenuItem_, XmNcascadingCallback, unloadTagsFileMenuCB, window);
-	createMenuItem(menuPane, "loadTipsFile", "Load Calltips File...", 'F', doActionCB, "load_tips_file_dialog", FULL);
-	window->unloadTipsMenuPane_ = createMenu(menuPane, "unloadTipsFiles", "Unload Calltips File", 'e', &window->unloadTipsMenuItem_, FULL);
-	XtSetSensitive(window->unloadTipsMenuItem_, TipsFileList != nullptr);
-	XtAddCallback(window->unloadTipsMenuItem_, XmNcascadingCallback, unloadTipsFileMenuCB, window);
+
 	createMenuSeparator(menuPane, "sep3", SHORT);
 	createMenuItem(menuPane, "print", "Print...", 'P', doActionCB, "print", SHORT);
 	window->printSelItem_ = createMenuItem(menuPane, "printSelection", "Print Selection...", 'l', doActionCB, "print_selection", SHORT);
@@ -534,8 +522,6 @@ Widget CreateMenuBar(Widget parent, Document *window) {
 	** "Search" pull down menu.
 	*/
 	menuPane = createMenu(menuBar, "searchMenu", "Search", 0, nullptr, SHORT);
-	createMenuItem(menuPane, "gotoMatching", "Goto Matching (..)", 'M', gotoMatchingCB, window, FULL);
-	createFakeMenuItem(menuPane, "gotoMatchingShift", gotoMatchingCB, window);
 	window->findDefItem_ = createMenuItem(menuPane, "findDefinition", "Find Definition", 'D', doActionCB, "find_definition", FULL);
 	XtSetSensitive(window->findDefItem_, TagsFileList != nullptr);
 	window->showTipItem_ = createMenuItem(menuPane, "showCalltip", "Show Calltip", 'C', doActionCB, "show_tip", FULL);
@@ -796,14 +782,6 @@ static void doActionCB(Widget w, XtPointer clientData, XtPointer callData) {
 	HidePointerOnKeyedEvent(widget, event);
 
 	XtCallActionProc(widget, action, event, nullptr, 0);
-}
-
-static void gotoMatchingCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	Q_UNUSED(clientData);
-
-	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event->xbutton.state & ShiftMask ? "select_to_matching" : "goto_matching", static_cast<XmAnyCallbackStruct *>(callData)->event, nullptr, 0);
 }
 
 static void autoIndentOffCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -2083,13 +2061,6 @@ static void unloadTagsFileMenuCB(Widget w, XtPointer clientData, XtPointer callD
 	updateTagsFileMenu(Document::WidgetToWindow(MENU_WIDGET(w)));
 }
 
-static void unloadTipsFileMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
-	Q_UNUSED(clientData);
-	Q_UNUSED(callData);
-
-	updateTipsFileMenu(Document::WidgetToWindow(MENU_WIDGET(w)));
-}
-
 /*
 ** open a new tab or window.
 */
@@ -2456,62 +2427,7 @@ static void unloadTagsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 	}
 }
 
-static void loadTipsDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
-	Q_UNUSED(event);
-	Q_UNUSED(args);
-	Q_UNUSED(nArgs)
-
-	Document *window = Document::WidgetToWindow(w);
-	char *params[1];
-
-	QString filename = PromptForExistingFile(window, QLatin1String("Load Calltips File"));
-	if (filename.isNull()) {
-		return;
-	}
-	
-	QByteArray fileStr = filename.toLatin1();
-	params[0] = fileStr.data();
-	XtCallActionProc(window->lastFocus_, "load_tips_file", event, params, 1);
-}
-
-static void loadTipsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(event);
-	(void)w;
-
-	if (*nArgs == 0) {
-		fprintf(stderr, "nedit: load_tips_file action requires file argument\n");
-		return;
-	}
-
-	if (!AddTagsFile(args[0], TIP)) {
-		QMessageBox::warning(nullptr /*Document::WidgetToWindow(w)->shell_*/, QLatin1String("Error Reading File"), QString(QLatin1String("Error reading tips file:\n'%1'\ntips not loaded")).arg(QLatin1String(args[0])));
-	}
-}
-
-static void unloadTipsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-	Q_UNUSED(w);
-	Q_UNUSED(event);
-
-	if (*nArgs == 0) {
-		fprintf(stderr, "nedit: unload_tips_file action requires file argument\n");
-		return;
-	}
-	/* refresh the "Unload Calltips File" tear-offs after unloading, or
-	   close the tear-offs if all tips files have been unloaded */
-	if (DeleteTagsFile(args[0], TIP, True)) {
-
-		for(Document *win: WindowList) {
-			if (win->IsTopDocument() && !XmIsMenuShell(XtParent(win->unloadTipsMenuPane_))) {
-				if (XtIsSensitive(win->unloadTipsMenuItem_))
-					updateTipsFileMenu(win);
-				else
-					_XmDismissTearOff(XtParent(win->unloadTipsMenuPane_), nullptr, nullptr);
-			}
-		}
-	}
-}
 
 static void printAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	Q_UNUSED(event);
@@ -2623,24 +2539,6 @@ static void repeatMacroAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 		return;
 	}
 	RepeatMacro(Document::WidgetToWindow(w), args[1], how);
-}
-
-static void selectToMatchingAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(args);
-	Q_UNUSED(nArgs)
-	Q_UNUSED(event);
-
-	SelectToMatchingCharacter(Document::WidgetToWindow(w));
-}
-
-static void gotoMatchingAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(args);
-	Q_UNUSED(nArgs)
-	Q_UNUSED(event);
-
-	GotoMatchingCharacter(Document::WidgetToWindow(w));
 }
 
 static void findDefAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -3490,25 +3388,6 @@ static Widget createMenuItem(Widget parent, const char *name, const char *label,
 }
 
 /*
-** "fake" menu items allow accelerators to be attached, but don't show up
-** in the menu.  They are necessary to process the shifted menu items because
-** Motif does not properly process the event descriptions in accelerator
-** resources, and you can't specify "shift key is optional"
-*/
-static Widget createFakeMenuItem(Widget parent, const char *name, menuCallbackProc callback, const void *cbArg) {
-
-	XmString st1 = XmStringCreateSimpleEx("");
-
-	Widget button = XtVaCreateManagedWidget(name, xmPushButtonWidgetClass, parent, XmNlabelString, st1, XmNshadowThickness, 0, XmNmarginHeight, 0, XmNheight, 0, nullptr);
-	XtAddCallback(button, XmNactivateCallback, callback, const_cast<void *>(cbArg));
-	
-	XmStringFree(st1);
-	XtVaSetValues(button, XmNtraversalOn, False, nullptr);
-
-	return button;
-}
-
-/*
 ** Add a toggle button item to an already established pull-down or pop-up
 ** menu, including mnemonics, accelerators and callbacks.
 */
@@ -3877,48 +3756,6 @@ static void updateTagsFileMenu(Document *window) {
 	}
 }
 
-/*
-** This function manages the display of the Tips File Menu, which is displayed
-** when the user selects Un-load Calltips File.
-*/
-static void updateTipsFileMenu(Document *window) {
-	tagFile *tf;
-	Widget btn;
-	WidgetList items;
-	Cardinal nItems;
-	int n;
-	XmString st1;
-
-	/* Go thru all of the items in the menu and rename them to match the file
-	   list.  In older Motifs (particularly ibm), it was dangerous to replace
-	   a whole menu pane, which would be much simpler.  However, since the
-	   code was already written for the Windows menu and is well tested, I'll
-	   stick with this weird method of re-naming the items */
-	XtVaGetValues(window->unloadTipsMenuPane_, XmNchildren, &items, XmNnumChildren, &nItems, nullptr);
-	tf = TipsFileList;
-	for (n = 0; n < (int)nItems; n++) {
-		if (!tf) {
-			// unmanaging before destroying stops parent from displaying 
-			XtUnmanageChild(items[n]);
-			XtDestroyWidget(items[n]);
-		} else {
-			XtVaSetValues(items[n], XmNlabelString, st1 = XmStringCreateSimpleEx(tf->filename), nullptr);
-			XtRemoveAllCallbacks(items[n], XmNactivateCallback);
-			XtAddCallback(items[n], XmNactivateCallback, unloadTipsFileCB, const_cast<char *>(tf->filename.c_str()));
-			XmStringFree(st1);
-			tf = tf->next;
-		}
-	}
-
-	// Add new items for the remaining file names to the menu 
-	while (tf) {
-		btn = XtVaCreateManagedWidget("win", xmPushButtonWidgetClass, window->unloadTipsMenuPane_, XmNlabelString, st1 = XmStringCreateSimpleEx(tf->filename), XmNmarginHeight, 0, XmNuserData, TEMPORARY_MENU_ITEM, nullptr);
-		XtAddCallback(btn, XmNactivateCallback, unloadTipsFileCB, const_cast<char *>(tf->filename.c_str()));
-		XmStringFree(st1);
-		tf = tf->next;
-	}
-}
-
 static const char neditDBBadFilenameChars[] = "\n";
 
 /*
@@ -4146,17 +3983,6 @@ static void unloadTagsFileCB(Widget w, XtPointer clientData, XtPointer callData)
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	params[0] = name;
 	XtCallActionProc(Document::WidgetToWindow(menu)->lastFocus_, "unload_tags_file", static_cast<XmAnyCallbackStruct *>(callData)->event, const_cast<char **>(params), 1);
-}
-
-static void unloadTipsFileCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	auto name = (const char *)clientData;
-
-	const char *params[1];
-	Widget menu = XmGetPostedFromWidget(XtParent(w)); // If menu is torn off 
-
-	params[0] = name;
-	XtCallActionProc(Document::WidgetToWindow(menu)->lastFocus_, "unload_tips_file", static_cast<XmAnyCallbackStruct *>(callData)->event, const_cast<char **>(params), 1);
 }
 
 /*
