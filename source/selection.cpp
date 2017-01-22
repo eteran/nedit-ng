@@ -57,14 +57,11 @@
 #include <Xm/Xm.h>
 #include <X11/Xatom.h>
 
-
 static void getAnySelectionCB(Widget widget, XtPointer client_data, Atom *selection, Atom *type, XtPointer value, unsigned long *length, int *format);
 
-static void gotoCB(Widget widget, Document *window, Atom *sel, Atom *type, char *value, int *length, int *format);
 static void fileCB(Widget widget, Document *window, Atom *sel, Atom *type, char *value, int *length, int *format);
 
 static void processMarkEvent(Widget w, XtPointer clientData, XEvent *event, Boolean *continueDispatch, char *action, int extend);
-static void markTimeoutProc(XtPointer clientData, XtIntervalId *id);
 static void markKeyCB(Widget w, XtPointer clientData, XEvent *event, Boolean *continueDispatch);
 static void gotoMarkKeyCB(Widget w, XtPointer clientData, XEvent *event, Boolean *continueDispatch);
 static void gotoMarkExtendKeyCB(Widget w, XtPointer clientData, XEvent *event, Boolean *continueDispatch);
@@ -119,10 +116,6 @@ int StringToLineAndCol(const char *text, int *lineNum, int *column) {
 	return *lineNum == -1 && *column == -1 ? -1 : 0;
 }
 
-void GotoSelectedLineNumber(Document *window, Time time) {
-	XtGetSelectionValue(window->textArea_, XA_PRIMARY, XA_STRING, (XtSelectionCallbackProc)gotoCB, window, time);
-}
-
 void OpenSelectedFile(Document *window, Time time) {
 	XtGetSelectionValue(window->textArea_, XA_PRIMARY, XA_STRING, (XtSelectionCallbackProc)fileCB, window, time);
 }
@@ -161,65 +154,6 @@ QString GetAnySelectionEx(Document *window) {
 	QString s = QLatin1String(selText);
 	XtFree(selText);
 	return s;
-}
-
-static void gotoCB(Widget widget, Document *window, Atom *sel, Atom *type, char *value, int *length, int *format) {
-
-	(void)sel;
-
-	// two integers and some space in between 
-	char lineText[(TYPE_INT_STR_SIZE(int)*2) + 5];
-	int rc, lineNum, column, position, curCol;
-
-	// skip if we can't get the selection data, or it's obviously not a number 
-	if (*type == XT_CONVERT_FAIL || value == nullptr) {
-		QApplication::beep();
-		return;
-	}
-	if (((size_t)*length) > sizeof(lineText) - 1) {
-		QApplication::beep();
-		XtFree(value);
-		return;
-	}
-	// should be of type text??? 
-	if (*format != 8) {
-		fprintf(stderr, "NEdit: Can't handle non 8-bit text\n");
-		QApplication::beep();
-		XtFree(value);
-		return;
-	}
-	strncpy(lineText, value, sizeof(lineText));
-	lineText[sizeof(lineText) - 1] = '\0';
-
-	rc = StringToLineAndCol(lineText, &lineNum, &column);
-	XtFree(value);
-	if (rc == -1) {
-		QApplication::beep();
-		return;
-	}
-
-	// User specified column, but not line number 
-	auto textD = textD_of(widget);
-	if (lineNum == -1) {
-		position = textD->TextGetCursorPos();
-		if (textD->TextDPosToLineAndCol(position, &lineNum, &curCol) == False) {
-			QApplication::beep();
-			return;
-		}
-	}
-	// User didn't specify a column 
-	else if (column == -1) {
-		SelectNumberedLine(window, lineNum);
-		return;
-	}
-
-	position = textD->TextDLineAndColToPos(lineNum, column);
-	if (position == -1) {
-		QApplication::beep();
-		return;
-	}
-	
-	textD->TextSetCursorPos(position);
 }
 
 static void fileCB(Widget widget, Document *window, Atom *sel, Atom *type, char *value, int *length, int *format) {
@@ -384,113 +318,6 @@ void SelectNumberedLine(Document *window, int lineNum) {
 	textD->TextSetCursorPos(lineStart);
 }
 
-void MarkDialog(Document *window) {
-
-	const int DF_MAX_PROMPT_LENGTH = 2048;
-
-	char letterText[DF_MAX_PROMPT_LENGTH];
-	char *params[1];
-		
-	bool ok;
-	QString result = QInputDialog::getText(
-		nullptr /*window->shell_*/, 
-		QLatin1String("Mark"), 
-		QLatin1String("Enter a single letter label to use for recalling\n"
-		              "the current selection and cursor position.\n\n"
-		              "(To skip this dialog, use the accelerator key,\n"
-		              "followed immediately by a letter key (a-z))"), 
-		QLineEdit::Normal, 
-		QString(),
-		&ok);
-		
-	if(!ok) {
-		return;
-	}
-	
-	strcpy(letterText, result.toLatin1().data());
-
-	if (strlen(letterText) != 1 || !isalpha((uint8_t)letterText[0])) {
-		QApplication::beep();
-		return;
-	}
-	
-	params[0] = letterText;
-	XtCallActionProc(window->lastFocus_, "mark", nullptr, params, 1);
-}
-
-void GotoMarkDialog(Document *window, int extend) {
-
-	const int DF_MAX_PROMPT_LENGTH = 2048;
-
-	char letterText[DF_MAX_PROMPT_LENGTH];
-	const char *params[2];
-	
-	bool ok;
-	QString result = QInputDialog::getText(
-		nullptr /*window->shell_*/, 
-		QLatin1String("Goto Mark"), 
-		QLatin1String("Enter the single letter label used to mark\n"
-		              "the selection and/or cursor position.\n\n"
-		              "(To skip this dialog, use the accelerator\n"
-		              "key, followed immediately by the letter)"), 
-		QLineEdit::Normal, 
-		QString(),
-		&ok);
-		
-	if(!ok) {
-		return;
-	}
-	
-	strcpy(letterText, result.toLatin1().data());	
-
-	if (strlen(letterText) != 1 || !isalpha((uint8_t)letterText[0])) {
-		QApplication::beep();
-		return;
-	}
-	
-	params[0] = letterText;
-	params[1] = "extend";
-	XtCallActionProc(window->lastFocus_, "goto_mark", nullptr, const_cast<char **>(params), extend ? 2 : 1);
-}
-
-/*
-** Process a command to mark a selection.  Expects the user to continue
-** the command by typing a label character.  Handles both correct user
-** behavior (type a character a-z) or bad behavior (do nothing or type
-** something else).
-*/
-void BeginMarkCommand(Document *window) {
-	XtInsertEventHandler(window->lastFocus_, KeyPressMask, False, markKeyCB, window, XtListHead);
-	window->markTimeoutID_ = XtAppAddTimeOut(XtWidgetToApplicationContext(window->shell_), 4000, markTimeoutProc, window->lastFocus_);
-}
-
-/*
-** Process a command to go to a marked selection.  Expects the user to
-** continue the command by typing a label character.  Handles both correct
-** user behavior (type a character a-z) or bad behavior (do nothing or type
-** something else).
-*/
-void BeginGotoMarkCommand(Document *window, int extend) {
-	XtInsertEventHandler(window->lastFocus_, KeyPressMask, False, extend ? gotoMarkExtendKeyCB : gotoMarkKeyCB, window, XtListHead);
-	window->markTimeoutID_ = XtAppAddTimeOut(XtWidgetToApplicationContext(window->shell_), 4000, markTimeoutProc, window->lastFocus_);
-}
-
-/*
-** Xt timer procedure for removing event handler if user failed to type a
-** mark character withing the allowed time
-*/
-static void markTimeoutProc(XtPointer clientData, XtIntervalId *id) {
-	(void)id;
-
-	Widget w = static_cast<Widget>(clientData);
-	Document *window = Document::WidgetToWindow(w);
-
-	XtRemoveEventHandler(w, KeyPressMask, False, markKeyCB, window);
-	XtRemoveEventHandler(w, KeyPressMask, False, gotoMarkKeyCB, window);
-	XtRemoveEventHandler(w, KeyPressMask, False, gotoMarkExtendKeyCB, window);
-	window->markTimeoutID_ = 0;
-}
-
 /*
 ** Temporary event handlers for keys pressed after the mark or goto-mark
 ** commands, If the key is valid, grab the key event and call the action
@@ -560,90 +387,6 @@ void AddMarkEx(MainWindow *window, DocumentWidget *document, TextArea *area, QCh
     memcpy(&document->markTable_[index].sel, &document->buffer_->primary_, sizeof(TextSelection));
 
     document->markTable_[index].cursorPos = area->TextGetCursorPos();
-}
-
-void AddMark(Document *window, Widget widget, char label) {
-	int index;
-
-	/* look for a matching mark to re-use, or advance
-	   nMarks to create a new one */
-	label = toupper(label);
-	for (index = 0; index < window->nMarks_; index++) {
-		if (window->markTable_[index].label == label)
-			break;
-	}
-	if (index >= MAX_MARKS) {
-		fprintf(stderr, "no more marks allowed\n"); // shouldn't happen 
-		return;
-	}
-	if (index == window->nMarks_)
-		window->nMarks_++;
-
-	// store the cursor location and selection position in the table 
-	window->markTable_[index].label = label;
-	memcpy(&window->markTable_[index].sel, &window->buffer_->primary_, sizeof(TextSelection));
-	
-	
-	auto textD = textD_of(widget);
-		
-	window->markTable_[index].cursorPos = textD->TextGetCursorPos();
-}
-
-void GotoMark(Document *window, Widget w, char label, int extendSel) {
-	
-	int index;
-
-	// look up the mark in the mark table 
-	label = toupper(label);
-	for (index = 0; index < window->nMarks_; index++) {
-		if (window->markTable_[index].label == label)
-			break;
-	}
-
-	if (index == window->nMarks_) {
-		QApplication::beep();
-		return;
-	}
-
-	// reselect marked the selection, and move the cursor to the marked pos 
-	TextSelection *sel    = &window->markTable_[index].sel;
-	TextSelection *oldSel = &window->buffer_->primary_;
-	
-	auto textD = textD_of(w);
-	
-	int cursorPos = window->markTable_[index].cursorPos;
-	if (extendSel) {
-		
-		
-		
-		int oldStart = oldSel->selected ? oldSel->start : textD->TextGetCursorPos();
-		int oldEnd   = oldSel->selected ? oldSel->end   : textD->TextGetCursorPos();
-		int newStart = sel->selected    ? sel->start    : cursorPos;
-		int newEnd   = sel->selected    ? sel->end      : cursorPos;
-		
-		window->buffer_->BufSelect(oldStart < newStart ? oldStart : newStart, oldEnd > newEnd ? oldEnd : newEnd);
-	} else {
-		if (sel->selected) {
-			if (sel->rectangular) {
-				window->buffer_->BufRectSelect(sel->start, sel->end, sel->rectStart, sel->rectEnd);
-			} else {
-				window->buffer_->BufSelect(sel->start, sel->end);
-			}
-		} else {
-			window->buffer_->BufUnselect();
-		}
-	}
-
-	/* Move the window into a pleasing position relative to the selection
-	   or cursor.   MakeSelectionVisible is not great with multi-line
-	   selections, and here we will sometimes give it one.  And to set the
-	   cursor position without first using the less pleasing capability
-	   of the widget itself for bringing the cursor in to view, you have to
-	   first turn it off, set the position, then turn it back on. */
-	textD->setAutoShowInsertPos(false);
-	textD->TextSetCursorPos(cursorPos);
-	window->MakeSelectionVisible(window->lastFocus_);
-	textD->setAutoShowInsertPos(true);
 }
 
 /*

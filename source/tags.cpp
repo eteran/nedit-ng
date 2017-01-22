@@ -61,6 +61,7 @@
 #include <unistd.h>
 #include <sys/param.h>
 
+static int LookupTag(const char *name, const char **file, int *lang, const char **searchString, int *pos, const char **path, int search_type);
 
 namespace {
 
@@ -89,7 +90,6 @@ struct Tag;
 enum searchDirection { FORWARD, BACKWARD };
 
 static int loadTagsFile(const std::string &tagSpec, int index, int recLevel);
-static void findDefCB(Widget widget, Document *window, Atom *sel, Atom *type, char *value, int *length, int *format);
 static int fakeRegExSearchEx(view::string_view buffer, const char *searchString, int *startPos, int *endPos);
 static size_t hashAddr(const char *key);
 static void updateMenuItems(void);
@@ -610,9 +610,9 @@ static void updateMenuItems() {
 
 	for(Document *w: WindowList) {
 		if (w->IsTopDocument()) {
-			XtSetSensitive(w->showTipItem_, tipStat || tagStat);
-            XtSetSensitive(w->findDefItem_, tagStat);
 #if 0 // NOTE(eteran): transitioned
+            XtSetSensitive(w->showTipItem_, tipStat || tagStat);
+            XtSetSensitive(w->findDefItem_, tagStat);
 			XtSetSensitive(w->unloadTipsMenuItem_, tipStat);
 			XtSetSensitive(w->unloadTagsMenuItem_, tagStat);
 #endif
@@ -912,7 +912,7 @@ static bool LookupTagFromList(tagFile *FileList, const char *name, const char **
 ** Return Value: TRUE:  tag spec found
 **               FALSE: no (more) definitions found.
 */
-int LookupTag(const char *name, const char **file, int *language, const char **searchString, int *pos, const char **path, int search_type) {
+static int LookupTag(const char *name, const char **file, int *language, const char **searchString, int *pos, const char **path, int search_type) {
 
 	searchMode = search_type;
 	if (searchMode == TIP) {
@@ -972,58 +972,6 @@ static int findDef(Document *window, const char *value, int search_type) {
 		QApplication::beep();
 	}
 	return status;
-}
-
-/*
-** Lookup the definition for the current primary selection the currently
-** loaded tags file and bring up the file and line that the tags file
-** indicates.
-*/
-static void findDefinitionHelper(Document *window, Time time, const char *arg, int search_type) {
-	if (arg) {
-		findDef(window, arg, search_type);
-	} else {
-		searchMode = search_type;
-		XtGetSelectionValue(window->textArea_, XA_PRIMARY, XA_STRING, (XtSelectionCallbackProc)findDefCB, window, time);
-	}
-}
-
-/*
-** See findDefHelper
-*/
-void FindDefinition(Document *window, Time time, const char *arg) {
-	findDefinitionHelper(window, time, arg, TAG);
-}
-
-/*
-** See findDefHelper
-*/
-void FindDefCalltip(Document *window, Time time, const char *arg) {
-	// Reset calltip parameters to reasonable defaults 
-	globAnchored = False;
-	globPos = -1;
-	globHAlign = TIP_LEFT;
-	globVAlign = TIP_BELOW;
-	globAlignMode = TIP_SLOPPY;
-
-	findDefinitionHelper(window, time, arg, TIP);
-}
-
-// Callback function for FindDefinition 
-static void findDefCB(Widget widget, Document *window, Atom *sel, Atom *type, char *value, int *length, int *format) {
-
-	(void)widget;
-	(void)sel;
-	(void)length;
-	(void)format;
-
-	// skip if we can't get the selection data, or it's obviously too long 
-	if (*type == XT_CONVERT_FAIL || value == nullptr) {
-		QApplication::beep();
-	} else {
-		findDef(window, value, searchMode);
-	}
-	XtFree(value);
 }
 
 /*
@@ -1287,9 +1235,7 @@ int findAllMatchesEx(DocumentWidget *document, TextArea *area, const char *strin
     **  Go directly to the tag
     */
     if (searchMode == TAG) {
-#if 0
-        editTaggedLocation(dialogParent, 0);
-#endif
+        editTaggedLocationEx(area, 0);
     } else {
         showMatchingCalltipEx(area, 0);
     }
@@ -1677,6 +1623,58 @@ void showMatchingCalltip(Widget parent, int i) {
 	}
 	
 	delete [] fileString;
+}
+
+
+/*  Open a new (or existing) editor window to the location specified in
+    tagFiles[i], tagSearch[i], tagPosInf[i] */
+void editTaggedLocationEx(TextArea *area, int i) {
+
+    /* Globals: tagSearch, tagPosInf, tagFiles, tagName, textNrows, WindowList */
+    int startPos;
+    int endPos;
+    int lineNum;
+    int rows;
+    char filename[MAXPATHLEN];
+    char pathname[MAXPATHLEN];
+    DocumentWidget *windowToSearch;
+    auto document = DocumentWidget::documentFrom(area);
+
+    ParseFilename(tagFiles[i], filename, pathname);
+    // open the file containing the definition
+    DocumentWidget::EditExistingFileEx(document, QLatin1String(filename), QLatin1String(pathname), 0, nullptr, false, nullptr, GetPrefOpenInTab(), false);
+    windowToSearch = MainWindow::FindWindowWithFile(QLatin1String(filename), QLatin1String(pathname));
+    if(!windowToSearch) {
+        QMessageBox::warning(nullptr /*parent*/, QLatin1String("File not found"), QString(QLatin1String("File %1 not found")).arg(QLatin1String(tagFiles[i])));
+        return;
+    }
+
+    startPos = tagPosInf[i];
+
+    if (!*(tagSearch[i])) {
+        // if the search string is empty, select the numbered line
+        SelectNumberedLineEx(document, area, startPos);
+        return;
+    }
+
+    // search for the tags file search string in the newly opened file
+    if (!fakeRegExSearchEx(windowToSearch->buffer_->BufAsStringEx(), tagSearch[i], &startPos, &endPos)) {
+        QMessageBox::warning(nullptr /*parent*/, QLatin1String("Tag Error"), QString(QLatin1String("Definition for %1\nnot found in %2")).arg(QLatin1String(tagName)).arg(QLatin1String(tagFiles[i])));
+        return;
+    }
+
+    // select the matched string
+    windowToSearch->buffer_->BufSelect(startPos, endPos);
+    windowToSearch->RaiseFocusDocumentWindow(True);
+
+    /* Position it nicely in the window,
+       about 1/4 of the way down from the top */
+    lineNum = windowToSearch->buffer_->BufCountLines(0, startPos);
+
+    rows = area->getRows();
+
+    area->TextDSetScroll(lineNum - rows / 4, 0);
+    area->TextSetCursorPos(endPos);
 }
 
 /*  Open a new (or existing) editor window to the location specified in

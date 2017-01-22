@@ -70,16 +70,14 @@ int DeleteTagsFile(const char *tagSpec, int file_type, bool force_unload);
 int AddTagsFileEx(const QString &tagSpec, int file_type);
 int DeleteTagsFileEx(const QString &tagSpec, int file_type, Boolean force_unload);
 int tagsShowCalltipEx(TextArea *area, const char *text);
-int LookupTag(const char *name, const char **file, int *lang, const char **searchString, int *pos, const char **path, int search_type);
 
 // Routines for handling tags or tips from the current selection
-void FindDefinition(Document *window, Time time, const char *arg);
-void FindDefCalltip(Document *window, Time time, const char *arg);
 
 //  Display (possibly finding first) a calltip.  Search type can only be TIP or TIP_FROM_TAG here.
 int ShowTipString(Document *window, char *text, Boolean anchored, int pos, Boolean lookup, int search_type, int hAlign, int vAlign, int alignMode);
 
 void editTaggedLocation(Widget parent, int i);
+void editTaggedLocationEx(TextArea *area, int i);
 void showMatchingCalltip(Widget parent, int i);
 void showMatchingCalltipEx(TextArea *area, int i);
 

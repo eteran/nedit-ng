@@ -8,6 +8,7 @@
 #include <QClipboard>
 #include <QMessageBox>
 #include "MainWindow.h"
+#include "DialogExecuteCommand.h"
 #include "SignalBlocker.h"
 #include "TextArea.h"
 #include "TextBuffer.h"
@@ -1298,6 +1299,11 @@ void MainWindow::WriteNEditDB() {
 */
 void MainWindow::updatePrevOpenMenu() {
 
+    if (GetPrefMaxPrevOpenFiles() == 0) {
+        delete ui.action_Open_Previous;
+        return;
+    }
+
     //  Read history file to get entries written by other sessions.
     ReadNEditDB();
 
@@ -2425,5 +2431,44 @@ void MainWindow::on_action_Show_Calltip_triggered() {
     if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
         doc->FindDefCalltip(lastFocus_, nullptr); // TODO(eteran): there was an optional arg?
     }
+}
 
+void MainWindow::on_action_Find_Definition_triggered() {
+    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+        doc->FindDefinition(lastFocus_, nullptr); // TODO(eteran): there was an optional arg?
+    }
+}
+
+void MainWindow::on_action_Execute_Command_triggered() {
+    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+        static DialogExecuteCommand *dialog = nullptr;
+
+        if (doc->CheckReadOnly())
+            return;
+
+        if(!dialog) {
+            dialog = new DialogExecuteCommand(this);
+        }
+
+        int r = dialog->exec();
+        if(!r) {
+            return;
+        }
+
+        QString commandText = dialog->ui.textCommand->text();
+        if(!commandText.isEmpty()) {
+            doc->execAP(lastFocus_, commandText);
+        }
+    }
+}
+
+void MainWindow::on_action_Detach_Tab_triggered() {
+    if(ui.tabWidget->count() > 1) {
+        if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+            auto new_window = new MainWindow();
+
+            new_window->ui.tabWidget->addTab(doc, doc->filename_);
+            new_window->show();
+        }
+    }
 }

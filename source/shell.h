@@ -30,6 +30,9 @@
 #include "MenuItem.h"
 #include <string>
 class Document;
+class DocumentWidget;
+class TextArea;
+class MainWindow;
 
 void FilterSelection(Document *window, const std::string &command, int fromMacro);
 void ExecShellCommand(Document *window, const std::string &command, int fromMacro);

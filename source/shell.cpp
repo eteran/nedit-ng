@@ -31,6 +31,9 @@
 #include <QPushButton>
 #include <QProcess>
 #include "ui/DialogOutput.h"
+#include "ui/DocumentWidget.h"
+#include "ui/MainWindow.h"
+#include "ui/TextArea.h"
 #include "TextHelper.h"
 #include "TextDisplay.h"
 #include "shell.h"
@@ -81,6 +84,32 @@ struct bufElem {
 
 /* data attached to window during shell command execution with
    information for controling and communicating with the process */
+struct shellCmdInfoEx {
+    int flags;
+    int stdinFD;
+    int stdoutFD;
+    int stderrFD;
+    pid_t childPid;
+    XtInputId stdinInputID;
+    XtInputId stdoutInputID;
+    XtInputId stderrInputID;
+
+    std::list<bufElem *> outBufs;
+    std::list<bufElem *> errBufs;
+    std::string input;
+    int inIndex;
+    TextArea *area;
+    int leftPos;
+    int rightPos;
+    int inLength;
+    QTimer *bannerTimeoutID;
+    QTimer *flushTimeoutID;
+    bool bannerIsUp;
+    char fromMacro;
+};
+
+/* data attached to window during shell command execution with
+   information for controling and communicating with the process */
 struct shellCmdInfo {
 	int flags;
 	int stdinFD;
@@ -104,6 +133,7 @@ struct shellCmdInfo {
 	char fromMacro;
 };
 
+static char *shellCommandSubstitutes(const char *inStr, const char *fileStr, const char *lineStr);
 static void issueCommand(Document *window, const std::string &command, const std::string &input, int flags, Widget textW, int replaceLeft, int replaceRight, int fromMacro);
 static void stdoutReadProc(XtPointer clientData, int *source, XtInputId *id);
 static void stderrReadProc(XtPointer clientData, int *source, XtInputId *id);
@@ -118,7 +148,6 @@ static void truncateString(std::string &string, int length);
 static void bannerTimeoutProc(XtPointer clientData, XtIntervalId *id);
 static void flushTimeoutProc(XtPointer clientData, XtIntervalId *id);
 static void safeBufReplace(TextBuffer *buf, int *start, int *end, const std::string &text);
-static char *shellCommandSubstitutes(const char *inStr, const char *fileStr, const char *lineStr);
 static int shellSubstituter(char *outStr, const char *inStr, const char *fileStr, const char *lineStr, int outLen, int predictOnly);
 
 /*
@@ -464,7 +493,6 @@ static void issueCommand(Document *window, const std::string &command, const std
 	if (!fromMacro)
 		window->SetSensitive(window->cancelShellItem_, True);
 
-#if 1
 	// fork the subprocess and issue the command 
 	childPid = forkCommand(window->shell_, command, window->path_.toLatin1().data(), &stdinFD, &stdoutFD, (flags & ERROR_DIALOGS) ? &stderrFD : nullptr);
 
@@ -482,19 +510,7 @@ static void issueCommand(Document *window, const std::string &command, const std
 	if(input.empty()) {
 		close(stdinFD);
 	}
-#else
-    QString program = QString::fromLatin1(GetPrefShell());
-    QStringList arguments;
-    arguments << QLatin1String("-c") << QString::fromStdString(command);
 
-    auto process = new QProcess();
-    process->setWorkingDirectory(window->path_);
-    process->start(program, arguments);
-
-    if(input.empty()) {
-        process->closeWriteChannel();
-    }
-#endif
 
 	/* Create a data structure for passing process information around
 	   amongst the callback routines which will process i/o and completion */

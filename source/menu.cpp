@@ -190,13 +190,11 @@ static void finishLearnCB(Widget w, XtPointer clientData, XtPointer callData);
 static void cancelLearnCB(Widget w, XtPointer clientData, XtPointer callData);
 static void replayCB(Widget w, XtPointer clientData, XtPointer callData);
 static void windowMenuCB(Widget w, XtPointer clientData, XtPointer callData);
-static void prevOpenMenuCB(Widget w, XtPointer clientData, XtPointer callData);
 static void newAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void newOppositeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void newTabAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void openDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void openAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void openSelectedAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void closeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void saveAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void saveAsDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
@@ -208,10 +206,7 @@ static void printSelAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void exitAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void repeatDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void repeatMacroAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void findDefAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void splitPaneAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void detachDocumentDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void detachDocumentAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void moveDocumentDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void nextDocumentAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void prevDocumentAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
@@ -273,8 +268,8 @@ static XtActionsRec Actions[] = {{(String) "new", newAP},
                                  {(String) "open", openAP},
                                  {(String) "open-dialog", openDialogAP},
                                  {(String) "open_dialog", openDialogAP},
-                                 {(String) "open-selected", openSelectedAP},
-                                 {(String) "open_selected", openSelectedAP},
+                                 //{(String) "open-selected", openSelectedAP},
+                                 //{(String) "open_selected", openSelectedAP},
                                  {(String) "close", closeAP},
                                  {(String) "save", saveAP},
                                  {(String) "save-as", saveAsAP},
@@ -354,15 +349,15 @@ static XtActionsRec Actions[] = {{(String) "new", newAP},
                                  //{(String) "match", selectToMatchingAP},
                                  //{(String) "select_to_matching", selectToMatchingAP},
                                  //{(String) "goto_matching", gotoMatchingAP},
-                                 {(String) "find-definition", findDefAP},
-                                 {(String) "find_definition", findDefAP},
+                                 //{(String) "find-definition", findDefAP},
+                                 //{(String) "find_definition", findDefAP},
                                  //{(String) "show_tip", showTipAP},
                                  {(String) "split-pane", splitPaneAP},
                                  {(String) "split_pane", splitPaneAP},
                                  {(String) "close-pane", closePaneAP},
                                  {(String) "close_pane", closePaneAP},
-                                 {(String) "detach_document", detachDocumentAP},
-                                 {(String) "detach_document_dialog", detachDocumentDialogAP},
+                                 //{(String) "detach_document", detachDocumentAP},
+                                 //{(String) "detach_document_dialog", detachDocumentDialogAP},
                                  {(String) "move_document_dialog", moveDocumentDialogAP},
                                  {(String) "next_document", nextDocumentAP},
                                  {(String) "previous_document", prevDocumentAP},
@@ -475,12 +470,6 @@ Widget CreateMenuBar(Widget parent, Document *window) {
 	else
 		window->newOppositeItem_ = createMenuItem(menuPane, "newOpposite", "New Tab", 'T', doActionCB, "new_opposite", SHORT);
 	createMenuItem(menuPane, "open", "Open...", 'O', doActionCB, "open_dialog", SHORT);
-	window->openSelItem_ = createMenuItem(menuPane, "openSelected", "Open Selected", 'd', doActionCB, "open_selected", FULL);
-	if (GetPrefMaxPrevOpenFiles() > 0) {
-		window->prevOpenMenuPane_ = createMenu(menuPane, "openPrevious", "Open Previous", 'v', &window->prevOpenMenuItem_, SHORT);
-		XtSetSensitive(window->prevOpenMenuItem_, NPrevOpen != 0);
-		XtAddCallback(window->prevOpenMenuItem_, XmNcascadingCallback, prevOpenMenuCB, window);
-	}
 	createMenuSeparator(menuPane, "sep1", SHORT);
 	window->closeItem_ = createMenuItem(menuPane, "close", "Close", 'C', doActionCB, "close", SHORT);
 	createMenuItem(menuPane, "save", "Save", 'S', doActionCB, "save", SHORT);
@@ -503,8 +492,6 @@ Widget CreateMenuBar(Widget parent, Document *window) {
 	** "Search" pull down menu.
 	*/
 	menuPane = createMenu(menuBar, "searchMenu", "Search", 0, nullptr, SHORT);
-	window->findDefItem_ = createMenuItem(menuPane, "findDefinition", "Find Definition", 'D', doActionCB, "find_definition", FULL);
-	XtSetSensitive(window->findDefItem_, TagsFileList != nullptr);
 
 	/*
 	** Preferences menu, Default Settings sub menu
@@ -2024,15 +2011,6 @@ static void windowMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
 	}
 }
 
-static void prevOpenMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
-	Q_UNUSED(clientData);
-	Q_UNUSED(callData);
-
-	Document *window = Document::WidgetToWindow(MENU_WIDGET(w));
-
-	updatePrevOpenMenu(window);
-}
-
 /*
 ** open a new tab or window.
 */
@@ -2131,16 +2109,6 @@ static void openAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 		return;
 	}
 	EditExistingFile(window, QLatin1String(filename), QLatin1String(pathname), 0, nullptr, False, nullptr, GetPrefOpenInTab(), False);
-	CheckCloseDim();
-}
-
-static void openSelectedAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(event);
-	Q_UNUSED(args);
-	Q_UNUSED(nArgs)
-
-	OpenSelectedFile(Document::WidgetToWindow(w), event->xbutton.time);
 	CheckCloseDim();
 }
 
@@ -2377,14 +2345,6 @@ static void repeatMacroAP(Widget w, XEvent *event, String *args, Cardinal *nArgs
 	RepeatMacro(Document::WidgetToWindow(w), args[1], how);
 }
 
-static void findDefAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(args);
-	Q_UNUSED(nArgs)
-	Q_UNUSED(event);
-	FindDefinition(Document::WidgetToWindow(w), event->xbutton.time, *nArgs == 0 ? nullptr : args[0]);
-}
-
 static void splitPaneAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	Q_UNUSED(args);
@@ -2413,47 +2373,6 @@ static void closePaneAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 		XtSetSensitive(window->splitPaneItem_, window->textPanes_.size() < MAX_PANES);
 		XtSetSensitive(window->closePaneItem_, window->textPanes_.size() > 0);
 	}
-}
-
-static void detachDocumentDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(args);
-	Q_UNUSED(nArgs)
-	Q_UNUSED(event);
-
-	Document *window = Document::WidgetToWindow(w);
-
-	if (window->TabCount() < 2)
-		return;
-
-	QMessageBox messageBox(nullptr /*window->shell_*/);
-	messageBox.setWindowTitle(QLatin1String("Detach"));
-	messageBox.setIcon(QMessageBox::Question);
-	messageBox.setText(QString(QLatin1String("Detach %1?")).arg(window->filename_));
-	QPushButton *buttonDetach = messageBox.addButton(QLatin1String("Detach"), QMessageBox::AcceptRole);
-	QPushButton *buttonCancel = messageBox.addButton(QMessageBox::Cancel);
-	Q_UNUSED(buttonDetach);
-
-	messageBox.exec();
-	if(messageBox.clickedButton() == buttonCancel) {
-		return;
-	}
-
-	window->DetachDocument();
-}
-
-static void detachDocumentAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(args);
-	Q_UNUSED(nArgs)
-	Q_UNUSED(event);
-
-	Document *window = Document::WidgetToWindow(w);
-
-	if (window->TabCount() < 2)
-		return;
-
-	window->DetachDocument();
 }
 
 static void moveDocumentDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {

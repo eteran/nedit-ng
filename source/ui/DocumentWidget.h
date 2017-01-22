@@ -61,6 +61,9 @@ public Q_SLOTS:
     void FindDefCalltip(TextArea *area, const char *arg);
     void findDefinitionHelper(TextArea *area, const char *arg, int search_type);
     int findDef(TextArea *area, const char *value, int search_type);
+    void FindDefinition(TextArea *area, const char *arg);
+    void execAP(TextArea *area, const QString &command);
+    void ExecShellCommandEx(TextArea *area, const QString &command, bool fromMacro);
 
 public:
 	void movedCallback(TextArea *area);

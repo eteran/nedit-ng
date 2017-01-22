@@ -37,15 +37,7 @@ class MainWindow;
 
 int StringToLineAndCol(const char *text, int *lineNum, int *column);
 QString GetAnySelectionEx(Document *window);
-void AddMark(Document *window, Widget widget, char label);
 void AddMarkEx(MainWindow *window, DocumentWidget *document, TextArea *area, QChar label);
-void BeginGotoMarkCommand(Document *window, int extend);
-void BeginMarkCommand(Document *window);
-void GotoLineNumber(Document *window);
-void GotoMarkDialog(Document *window, int extend);
-void GotoMark(Document *window, Widget w, char label, int extendSel);
-void GotoSelectedLineNumber(Document *window, Time time);
-void MarkDialog(Document *window);
 void OpenSelectedFile(Document *window, Time time);
 void SelectNumberedLine(Document *window, int lineNum);
 void SelectNumberedLineEx(DocumentWidget *document, TextArea *area, int lineNum);

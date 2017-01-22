@@ -159,15 +159,18 @@ public Q_SLOTS:
     void on_action_Goto_Mark_triggered();
     void on_action_Goto_Matching_triggered();
     void on_action_Show_Calltip_triggered();
+    void on_action_Find_Definition_triggered();
+    void on_action_Execute_Command_triggered();
+
+    void on_action_Detach_Tab_triggered();
 
 #if 0
-	void on_action_Find_Definition_triggered();
-	void on_action_Execute_Command_triggered();	
+
+
 	void on_action_Filter_Selection_triggered();
 	void on_action_Cancel_Shell_Command_triggered();
 	void on_action_Split_Pane_triggered();
 	void on_action_Close_Pane_triggered();
-	void on_action_Detach_Tab_triggered();
 	void on_action_Move_Tab_To_triggered();
 	void on_action_About_Qt_triggered();
 	void on_action_Indent_triggered();

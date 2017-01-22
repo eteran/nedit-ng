@@ -39,6 +39,7 @@
 #include "UndoInfo.h"
 #include "utils.h"
 #include "interpret.h"
+#include "shell.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -47,6 +48,21 @@
 #include <fcntl.h>
 
 namespace {
+
+// Tuning parameters
+const int IO_BUF_SIZE         = 4096; // size of buffers for collecting cmd output
+const int OUTPUT_FLUSH_FREQ	  = 1000; // how often (msec) to flush output buffers when process is taking too long
+const int BANNER_WAIT_TIME	  = 6000; // how long to wait (msec) before putting up Shell Command Executing... banner
+
+// flags for issueCommand
+enum {
+    ACCUMULATE  	  = 1,
+    ERROR_DIALOGS	  = 2,
+    REPLACE_SELECTION = 4,
+    RELOAD_FILE_AFTER = 8,
+    OUTPUT_TO_DIALOG  = 16,
+    OUTPUT_TO_STRING  = 32
+};
 
 const int MAX_TAG_LEN = 256;
 
@@ -4423,4 +4439,74 @@ int DocumentWidget::findDef(TextArea *area, const char *value, int search_type) 
     }
 
     return status;
+}
+
+void DocumentWidget::FindDefinition(TextArea *area, const char *arg) {
+    findDefinitionHelper(area, arg, TAG);
+}
+
+void DocumentWidget::execAP(TextArea *area, const QString &command) {
+
+    if (CheckReadOnly()) {
+        return;
+    }
+
+    ExecShellCommandEx(area, command, false);
+}
+
+/*
+** Execute shell command "command", depositing the result at the current
+** insert position or in the current selection if the window has a
+** selection.
+*/
+void DocumentWidget::ExecShellCommandEx(TextArea *area, const QString &command, bool fromMacro) {
+    if(auto win = toWindow()) {
+        int flags = 0;
+        char lineNumber[11];
+
+        // Can't do two shell commands at once in the same window
+        if (shellCmdData_) {
+            QApplication::beep();
+            return;
+        }
+
+        // get the selection or the insert position
+        const int pos = area->TextGetCursorPos();
+
+        int left;
+        int right;
+        if (buffer_->GetSimpleSelection(&left, &right)) {
+            flags = ACCUMULATE | REPLACE_SELECTION;
+        } else {
+            left = right = pos;
+        }
+
+        /* Substitute the current file name for % and the current line number
+           for # in the shell command */
+        QString fullName = FullPath();
+
+        int line;
+        int column;
+        area->TextDPosToLineAndCol(pos, &line, &column);
+
+        QString substitutedCommand = command;
+        substitutedCommand.replace(QLatin1Char('%'), fullName);
+        substitutedCommand.replace(QLatin1Char('#'), tr("%1").arg(line));
+
+
+        // NOTE(eteran): this used to be a nullptr check because the old code would
+        // produce a null string pointer if it failed to allocate.
+        if(substitutedCommand.size() > INT_MAX) {
+            QMessageBox::critical(this, tr("Shell Command"), tr("Shell command is too long due to\n"
+                                                               "filename substitutions with '%%' or\n"
+                                                               "line number substitutions with '#'"));
+            return;
+        }
+
+        // issue the command
+#if 0   // TODO(eteran): implement this!
+        issueCommandEx(win, this, area, subsCommand, std::string(), flags, left, right, fromMacro);
+#endif
+    }
+
 }
