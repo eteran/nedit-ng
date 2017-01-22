@@ -32,6 +32,8 @@
 #include <string>
 
 class Document;
+class DocumentWidget;
+class TextArea;
 
 struct tagFile {
 	tagFile     *next;
@@ -45,6 +47,12 @@ struct tagFile {
 extern tagFile *TagsFileList; // list of loaded tags files
 extern tagFile *TipsFileList; // list of loaded calltips tag files
 extern int searchMode;
+extern const char *tagName;
+extern bool globAnchored;
+extern int globPos;
+extern int globHAlign;
+extern int globVAlign;
+extern int globAlignMode;
 
 // file_type and search_type arguments are to select between tips and tags,
 // and should be one of TAG or TIP.  TIP_FROM_TAG is for ShowTipString.
@@ -61,7 +69,7 @@ int DeleteTagsFile(const char *tagSpec, int file_type, bool force_unload);
 
 int AddTagsFileEx(const QString &tagSpec, int file_type);
 int DeleteTagsFileEx(const QString &tagSpec, int file_type, Boolean force_unload);
-
+int tagsShowCalltipEx(TextArea *area, const char *text);
 int LookupTag(const char *name, const char **file, int *lang, const char **searchString, int *pos, const char **path, int search_type);
 
 // Routines for handling tags or tips from the current selection
@@ -73,5 +81,10 @@ int ShowTipString(Document *window, char *text, Boolean anchored, int pos, Boole
 
 void editTaggedLocation(Widget parent, int i);
 void showMatchingCalltip(Widget parent, int i);
+void showMatchingCalltipEx(TextArea *area, int i);
+
+int findAllMatchesEx(DocumentWidget *document, TextArea *area, const char *string);
+
+
 
 #endif

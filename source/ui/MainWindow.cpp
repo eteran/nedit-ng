@@ -29,6 +29,7 @@
 #include "nedit.h"
 #include "selection.h"
 #include "search.h"
+#include "macro.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/param.h>
@@ -2293,20 +2294,6 @@ void MainWindow::action_Shift_Goto_Matching_triggered() {
     }
 }
 
-void MainWindow::on_action_Load_Calltips_File_triggered() {
-
-    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
-        QString filename = doc->PromptForExistingFileEx(tr("Load Calltips File"));
-        if (filename.isNull()) {
-            return;
-        }
-
-        doc->loadTipsAP(filename);
-        updateTipsFileMenuEx();
-    }
-}
-
-
 void MainWindow::updateTipsFileMenuEx() {
 
     auto tipsMenu = new QMenu(this);
@@ -2325,6 +2312,23 @@ void MainWindow::updateTipsFileMenuEx() {
     connect(tipsMenu, SIGNAL(triggered(QAction *)), this, SLOT(unloadTipsFileCB(QAction *)));
 }
 
+void MainWindow::updateTagsFileMenuEx() {
+    auto tagsMenu = new QMenu(this);
+
+    const tagFile *tf = TagsFileList;
+    while(tf) {
+
+        auto filename = QString::fromStdString(tf->filename);
+        QAction *action = tagsMenu->addAction(filename);
+        action->setData(filename);
+
+        tf = tf->next;
+    }
+
+    ui.action_Unload_Tags_File->setMenu(tagsMenu);
+    connect(tagsMenu, SIGNAL(triggered(QAction *)), this, SLOT(unloadTagsFileCB(QAction *)));
+}
+
 void MainWindow::unloadTipsFileCB(QAction *action) {
     const QString filename = action->data().value<QString>();
     if(!filename.isEmpty()) {
@@ -2332,14 +2336,94 @@ void MainWindow::unloadTipsFileCB(QAction *action) {
     }
 }
 
+void MainWindow::unloadTagsFileCB(QAction *action) {
+    const QString filename = action->data().value<QString>();
+    if(!filename.isEmpty()) {
+        unloadTagsAP(filename);
+    }
+}
+
 void MainWindow::unloadTipsAP(const QString &filename) {
 
-    /* refresh the "Unload Calltips File" tear-offs after unloading, or
-       close the tear-offs if all tips files have been unloaded */
     if (DeleteTagsFile(filename.toLatin1().data(), TIP, true)) {
 
         for(MainWindow *window : MainWindow::allWindows()) {
             window->updateTipsFileMenuEx();
         }
     }
+}
+
+void MainWindow::unloadTagsAP(const QString &filename) {
+
+    if (DeleteTagsFile(filename.toLatin1().data(), TAG, true)) {
+
+        for(MainWindow *window : MainWindow::allWindows()) {
+             window->updateTagsFileMenuEx();
+        }
+    }
+}
+
+
+void MainWindow::loadTipsAP(const QString &filename) {
+
+    if (!AddTagsFileEx(filename, TIP)) {
+        QMessageBox::warning(this, tr("Error Reading File"), tr("Error reading tips file:\n'%1'\ntips not loaded").arg(filename));
+    }
+}
+
+void MainWindow::loadTagsAP(const QString &filename) {
+
+    if (!AddTagsFileEx(filename, TAG)) {
+        QMessageBox::warning(this, tr("Error Reading File"), tr("Error reading ctags file:\n'%1'\ntags not loaded").arg(filename));
+    }
+}
+
+void MainWindow::on_action_Load_Calltips_File_triggered() {
+
+    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+        QString filename = PromptForExistingFileEx(doc->path_, tr("Load Calltips File"));
+        if (filename.isNull()) {
+            return;
+        }
+
+        loadTipsAP(filename);
+        updateTipsFileMenuEx();
+    }
+}
+
+void MainWindow::on_action_Load_Tags_File_triggered() {
+
+    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+        QString filename = PromptForExistingFileEx(doc->path_, tr("Load Tags File"));
+        if (filename.isNull()) {
+            return;
+        }
+
+        loadTagsAP(filename);
+        updateTagsFileMenuEx();
+    }
+}
+
+void MainWindow::on_action_Load_Macro_File_triggered() {
+    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+        QString filename = PromptForExistingFileEx(doc->path_, tr("Load Macro File"));
+        if (filename.isNull()) {
+            return;
+        }
+
+        loadMacroAP(filename);
+    }
+}
+
+void MainWindow::loadMacroAP(const QString &filename) {
+    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+        ReadMacroFileEx(doc, filename.toStdString(), true);
+    }
+}
+
+void MainWindow::on_action_Show_Calltip_triggered() {
+    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+        doc->FindDefCalltip(lastFocus_, nullptr); // TODO(eteran): there was an optional arg?
+    }
+
 }

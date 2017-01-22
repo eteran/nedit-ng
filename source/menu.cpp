@@ -191,7 +191,6 @@ static void cancelLearnCB(Widget w, XtPointer clientData, XtPointer callData);
 static void replayCB(Widget w, XtPointer clientData, XtPointer callData);
 static void windowMenuCB(Widget w, XtPointer clientData, XtPointer callData);
 static void prevOpenMenuCB(Widget w, XtPointer clientData, XtPointer callData);
-static void unloadTagsFileMenuCB(Widget w, XtPointer clientData, XtPointer callData);
 static void newAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void newOppositeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void newTabAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
@@ -204,20 +203,12 @@ static void saveAsDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 static void saveAsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void revertDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void revertAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void includeDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void includeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void loadMacroDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void loadMacroAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void loadTagsDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void loadTagsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void unloadTagsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void printAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void printSelAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void exitAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void repeatDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void repeatMacroAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void findDefAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void showTipAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void splitPaneAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void detachDocumentDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void detachDocumentAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
@@ -246,10 +237,8 @@ static Widget createMenuSeparator(Widget parent, const char *name, int mode);
 static void invalidatePrevOpenMenus(void);
 static void updateWindowMenu(const Document *window);
 static void updatePrevOpenMenu(Document *window);
-static void updateTagsFileMenu(Document *window);
 static void raiseCB(Widget w, XtPointer clientData, XtPointer callData);
 static void openPrevCB(Widget w, XtPointer clientData, XtPointer callData);
-static void unloadTagsFileCB(Widget w, XtPointer clientData, XtPointer callData);
 static void setWindowSizeDefault(int rows, int cols);
 static void updateWindowSizeMenus(void);
 static void updateWindowSizeMenu(Document *win);
@@ -295,19 +284,19 @@ static XtActionsRec Actions[] = {{(String) "new", newAP},
                                  {(String) "revert-to-saved", revertAP},
                                  {(String) "revert_to_saved", revertAP},
                                  {(String) "revert_to_saved_dialog", revertDialogAP},
-                                 {(String) "include-file", includeAP},
-                                 {(String) "include_file", includeAP},
-                                 {(String) "include-file-dialog", includeDialogAP},
-                                 {(String) "include_file_dialog", includeDialogAP},
-                                 {(String) "load-macro-file", loadMacroAP},
-                                 {(String) "load_macro_file", loadMacroAP},
-                                 {(String) "load-macro-file-dialog", loadMacroDialogAP},
-                                 {(String) "load_macro_file_dialog", loadMacroDialogAP},
-                                 {(String) "load-tags-file", loadTagsAP},
-                                 {(String) "load_tags_file", loadTagsAP},
-                                 {(String) "load-tags-file-dialog", loadTagsDialogAP},
-                                 {(String) "load_tags_file_dialog", loadTagsDialogAP},
-                                 {(String) "unload_tags_file", unloadTagsAP},
+                                 //{(String) "include-file", includeAP},
+                                 //{(String) "include_file", includeAP},
+                                 //{(String) "include-file-dialog", includeDialogAP},
+                                 //{(String) "include_file_dialog", includeDialogAP},
+                                 //{(String) "load-macro-file", loadMacroAP},
+                                 //{(String) "load_macro_file", loadMacroAP},
+                                 //{(String) "load-macro-file-dialog", loadMacroDialogAP},
+                                 //{(String) "load_macro_file_dialog", loadMacroDialogAP},
+                                 //{(String) "load-tags-file", loadTagsAP},
+                                 //{(String) "load_tags_file", loadTagsAP},
+                                 //{(String) "load-tags-file-dialog", loadTagsDialogAP},
+                                 //{(String) "load_tags_file_dialog", loadTagsDialogAP},
+                                 //{(String) "unload_tags_file", unloadTagsAP},
                                  //{(String) "load_tips_file", loadTipsAP},
                                  //{(String) "load_tips_file_dialog", loadTipsDialogAP},
                                  //{(String) "unload_tips_file", unloadTipsAP},
@@ -367,7 +356,7 @@ static XtActionsRec Actions[] = {{(String) "new", newAP},
                                  //{(String) "goto_matching", gotoMatchingAP},
                                  {(String) "find-definition", findDefAP},
                                  {(String) "find_definition", findDefAP},
-                                 {(String) "show_tip", showTipAP},
+                                 //{(String) "show_tip", showTipAP},
                                  {(String) "split-pane", splitPaneAP},
                                  {(String) "split_pane", splitPaneAP},
                                  {(String) "close-pane", closePaneAP},
@@ -498,14 +487,6 @@ Widget CreateMenuBar(Widget parent, Document *window) {
 	createMenuItem(menuPane, "saveAs", "Save As...", 'A', doActionCB, "save_as_dialog", SHORT);
 	createMenuItem(menuPane, "revertToSaved", "Revert to Saved", 'R', doActionCB, "revert_to_saved_dialog", SHORT);
 	createMenuSeparator(menuPane, "sep2", SHORT);
-	createMenuItem(menuPane, "includeFile", "Include File...", 'I', doActionCB, "include_file_dialog", SHORT);
-	createMenuItem(menuPane, "loadMacroFile", "Load Macro File...", 'M', doActionCB, "load_macro_file_dialog", FULL);
-	createMenuItem(menuPane, "loadTagsFile", "Load Tags File...", 'g', doActionCB, "load_tags_file_dialog", FULL);
-	window->unloadTagsMenuPane_ = createMenu(menuPane, "unloadTagsFiles", "Unload Tags File", 'U', &window->unloadTagsMenuItem_, FULL);
-	XtSetSensitive(window->unloadTagsMenuItem_, TagsFileList != nullptr);
-	XtAddCallback(window->unloadTagsMenuItem_, XmNcascadingCallback, unloadTagsFileMenuCB, window);
-
-	createMenuSeparator(menuPane, "sep3", SHORT);
 	createMenuItem(menuPane, "print", "Print...", 'P', doActionCB, "print", SHORT);
 	window->printSelItem_ = createMenuItem(menuPane, "printSelection", "Print Selection...", 'l', doActionCB, "print_selection", SHORT);
 	XtSetSensitive(window->printSelItem_, window->wasSelected_);
@@ -524,8 +505,6 @@ Widget CreateMenuBar(Widget parent, Document *window) {
 	menuPane = createMenu(menuBar, "searchMenu", "Search", 0, nullptr, SHORT);
 	window->findDefItem_ = createMenuItem(menuPane, "findDefinition", "Find Definition", 'D', doActionCB, "find_definition", FULL);
 	XtSetSensitive(window->findDefItem_, TagsFileList != nullptr);
-	window->showTipItem_ = createMenuItem(menuPane, "showCalltip", "Show Calltip", 'C', doActionCB, "show_tip", FULL);
-	XtSetSensitive(window->showTipItem_, (TagsFileList != nullptr || TipsFileList != nullptr));
 
 	/*
 	** Preferences menu, Default Settings sub menu
@@ -2054,13 +2033,6 @@ static void prevOpenMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
 	updatePrevOpenMenu(window);
 }
 
-static void unloadTagsFileMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
-	Q_UNUSED(clientData);
-	Q_UNUSED(callData);
-
-	updateTagsFileMenu(Document::WidgetToWindow(MENU_WIDGET(w)));
-}
-
 /*
 ** open a new tab or window.
 */
@@ -2293,142 +2265,6 @@ static void revertAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	RevertToSaved(Document::WidgetToWindow(w));
 }
 
-static void includeDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(event);
-	Q_UNUSED(args);
-	Q_UNUSED(nArgs)
-
-	Document *window = Document::WidgetToWindow(w);
-	char *params[1];
-
-	if (CheckReadOnly(window)) {
-		return;
-	}
-
-	QString filename = PromptForExistingFile(window, QLatin1String("Include File"));
-
-	if (filename.isNull()) {
-		return;
-	}
-	
-	QByteArray fileStr = filename.toLatin1();
-	
-	params[0] = fileStr.data();
-	XtCallActionProc(window->lastFocus_, "include_file", event, params, 1);
-}
-
-static void includeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(event);
-	Q_UNUSED(args);
-	Q_UNUSED(nArgs)
-
-	Document *window = Document::WidgetToWindow(w);
-
-	if (CheckReadOnly(window))
-		return;
-	if (*nArgs == 0) {
-		fprintf(stderr, "nedit: include action requires file argument\n");
-		return;
-	}
-	IncludeFile(Document::WidgetToWindow(w), args[0]);
-}
-
-static void loadMacroDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(event);
-	Q_UNUSED(args);
-	Q_UNUSED(nArgs)
-
-	Document *window = Document::WidgetToWindow(w);
-	char *params[1];
-
-	QString filename = PromptForExistingFile(window, QLatin1String("Load Macro File"));
-	if (filename.isNull()) {
-		return;
-	}
-	
-	QByteArray fileStr = filename.toLatin1();
-	
-	params[0] = fileStr.data();
-	XtCallActionProc(window->lastFocus_, "load_macro_file", event, params, 1);
-}
-
-static void loadMacroAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(event);
-
-	if (*nArgs == 0) {
-		fprintf(stderr, "nedit: load_macro_file action requires file argument\n");
-		return;
-	}
-	ReadMacroFileEx(Document::WidgetToWindow(w), args[0], True);
-}
-
-static void loadTagsDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(event);
-	Q_UNUSED(args);
-	Q_UNUSED(nArgs)
-
-	Document *window = Document::WidgetToWindow(w);
-	char *params[1];
-	
-
-	QString filename = PromptForExistingFile(window, QLatin1String("Load Tags File"));
-	if (filename.isNull()) {
-		return;
-	}
-	
-	QByteArray fileStr = filename.toLatin1();
-	
-	params[0] = fileStr.data();
-	XtCallActionProc(window->lastFocus_, "load_tags_file", event, params, 1);
-}
-
-static void loadTagsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(event);
-	Q_UNUSED(w);
-
-	if (*nArgs == 0) {
-		fprintf(stderr, "nedit: load_tags_file action requires file argument\n");
-		return;
-	}
-
-	if (!AddTagsFile(args[0], TAG)) {
-		QMessageBox::warning(nullptr /*Document::WidgetToWindow(w)->shell_*/, QLatin1String("Error Reading File"), QString(QLatin1String("Error reading ctags file:\n'%1'\ntags not loaded")).arg(QLatin1String(args[0])));
-	}
-}
-
-static void unloadTagsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(event);
-	Q_UNUSED(w);
-
-	if (*nArgs == 0) {
-		fprintf(stderr, "nedit: unload_tags_file action requires file argument\n");
-		return;
-	}
-
-	if (DeleteTagsFile(args[0], TAG, True)) {
-
-		/* refresh the "Unload Tags File" tear-offs after unloading, or
-		   close the tear-offs if all tags files have been unloaded */
-		for(Document *win: WindowList) {
-			if (win->IsTopDocument() && !XmIsMenuShell(XtParent(win->unloadTagsMenuPane_))) {
-				if (XtIsSensitive(win->unloadTagsMenuItem_))
-					updateTagsFileMenu(win);
-				else
-					_XmDismissTearOff(XtParent(win->unloadTagsMenuPane_), nullptr, nullptr);
-			}
-		}
-	}
-}
-
-
-
 static void printAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	Q_UNUSED(event);
 	Q_UNUSED(args);
@@ -2547,15 +2383,6 @@ static void findDefAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	Q_UNUSED(nArgs)
 	Q_UNUSED(event);
 	FindDefinition(Document::WidgetToWindow(w), event->xbutton.time, *nArgs == 0 ? nullptr : args[0]);
-}
-
-static void showTipAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(args);
-	Q_UNUSED(nArgs)
-	Q_UNUSED(event);
-
-	FindDefCalltip(Document::WidgetToWindow(w), event->xbutton.time, *nArgs == 0 ? nullptr : args[0]);
 }
 
 static void splitPaneAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -3714,48 +3541,6 @@ static void updatePrevOpenMenu(Document *window) {
 	delete [] prevOpenSorted;
 }
 
-/*
-** This function manages the display of the Tags File Menu, which is displayed
-** when the user selects Un-load Tags File.
-*/
-static void updateTagsFileMenu(Document *window) {
-	tagFile *tf;
-	Widget btn;
-	WidgetList items;
-	Cardinal nItems;
-	int n;
-	XmString st1;
-
-	/* Go thru all of the items in the menu and rename them to match the file
-	   list.  In older Motifs (particularly ibm), it was dangerous to replace
-	   a whole menu pane, which would be much simpler.  However, since the
-	   code was already written for the Windows menu and is well tested, I'll
-	   stick with this weird method of re-naming the items */
-	XtVaGetValues(window->unloadTagsMenuPane_, XmNchildren, &items, XmNnumChildren, &nItems, nullptr);
-	tf = TagsFileList;
-	for (n = 0; n < (int)nItems; n++) {
-		if (!tf) {
-			// unmanaging before destroying stops parent from displaying 
-			XtUnmanageChild(items[n]);
-			XtDestroyWidget(items[n]);
-		} else {
-			XtVaSetValues(items[n], XmNlabelString, st1 = XmStringCreateSimpleEx(tf->filename), nullptr);
-			XtRemoveAllCallbacks(items[n], XmNactivateCallback);
-			XtAddCallback(items[n], XmNactivateCallback, unloadTagsFileCB, const_cast<char *>(tf->filename.c_str()));
-			XmStringFree(st1);
-			tf = tf->next;
-		}
-	}
-
-	// Add new items for the remaining file names to the menu 
-	while (tf) {
-		btn = XtVaCreateManagedWidget("win", xmPushButtonWidgetClass, window->unloadTagsMenuPane_, XmNlabelString, st1 = XmStringCreateSimpleEx(tf->filename), XmNmarginHeight, 0, XmNuserData, TEMPORARY_MENU_ITEM, nullptr);
-		XtAddCallback(btn, XmNactivateCallback, unloadTagsFileCB, const_cast<char *>(tf->filename.c_str()));
-		XmStringFree(st1);
-		tf = tf->next;
-	}
-}
-
 static const char neditDBBadFilenameChars[] = "\n";
 
 /*
@@ -3971,18 +3756,6 @@ static void openPrevCB(Widget w, XtPointer clientData, XtPointer callData) {
 	params[0] = name;
 	XtCallActionProc(Document::WidgetToWindow(menu)->lastFocus_, "open", static_cast<XmAnyCallbackStruct *>(callData)->event, const_cast<char **>(params), 1);
 	CheckCloseDim();
-}
-
-static void unloadTagsFileCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	auto name = (const char *)clientData;
-	
-	const char *params[1];
-	Widget menu = MENU_WIDGET(w);
-
-	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	params[0] = name;
-	XtCallActionProc(Document::WidgetToWindow(menu)->lastFocus_, "unload_tags_file", static_cast<XmAnyCallbackStruct *>(callData)->event, const_cast<char **>(params), 1);
 }
 
 /*

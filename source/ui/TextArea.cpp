@@ -8,10 +8,12 @@
 #include <QPaintEvent>
 #include <QPainter>
 #include <QX11Info>
+#include <QDesktopWidget>
 #include <QResizeEvent>
 #include <QFocusEvent>
 #include <QtDebug>
 #include <QTextCodec>
+#include "CallTipWidget.h"
 #include "TextArea.h"
 #include "Document.h"
 #include "preferences.h"
@@ -77,6 +79,8 @@ enum positionTypes {
 
 const int NO_HINT = -1;
 
+const int CALLTIP_EDGE_GUARD = 5;
+
 /* Number of pixels of motion from the initial (grab-focus) button press
    required to begin recognizing a mouse drag for the purpose of making a
    selection */
@@ -131,6 +135,54 @@ int min3(int i1, int i2, int i3) {
 
 int max3(int i1, int i2, int i3) {
     return std::max(i1, std::max(i2, i3));
+}
+
+bool offscreenV(QDesktopWidget *desktop, int top, int height) {
+    return (top < CALLTIP_EDGE_GUARD || top + height >= desktop->height() - CALLTIP_EDGE_GUARD);
+}
+
+/*
+** Returns a new string with each \t replaced with tab_width spaces or
+** a pointer to text if there were no tabs.
+** Note that this is dumb replacement, not smart tab-like behavior!  The goal
+** is to prevent tabs from turning into squares in calltips, not to get the
+** formatting just right.
+*/
+std::string expandAllTabsEx(view::string_view text, int tab_width) {
+    int nTabs = 0;
+
+    // First count 'em
+    for(char ch : text) {
+        if (ch == '\t') {
+            ++nTabs;
+        }
+    }
+
+    if (nTabs == 0) {
+        return text.to_string();
+    }
+
+    // Allocate the new string
+    size_t len = text.size() + (tab_width - 1) * nTabs;
+
+    std::string textCpy;
+    textCpy.reserve(len);
+
+    auto cCpy = std::back_inserter(textCpy);
+
+    // Now replace 'em
+    for(char ch : text) {
+        if (ch == '\t') {
+            for (int i = 0; i < tab_width; ++i) {
+                *cCpy++ = ' ';
+            }
+        } else {
+            *cCpy++ = ch;
+        }
+    }
+
+
+    return textCpy;
 }
 
 /*
@@ -445,9 +497,8 @@ TextArea::TextArea(QWidget *parent,
 
 	lineStarts_        = new int[nVisibleLines_];
 	lineStarts_[0]     = 0;
-	calltipW_          = nullptr;
-	calltipShell_      = nullptr;
 	calltip_.ID        = 0;
+    calltipWidget_     = nullptr;
 
 	for (int i = 1; i < nVisibleLines_; i++) {
 		lineStarts_[i] = -1;
@@ -4146,7 +4197,6 @@ void TextArea::TextDSetScroll(int topLineNum, int horizOffset) {
 ** Update the position of the current calltip if one exists, else do nothing
 */
 void TextArea::TextDRedrawCalltip(int calltipID) {
-	Q_UNUSED(calltipID);
 
 	if (calltip_.ID == 0) {
 		return;
@@ -4155,6 +4205,10 @@ void TextArea::TextDRedrawCalltip(int calltipID) {
 	if (calltipID != 0 && calltipID != calltip_.ID) {
 		return;
 	}
+
+    if(!calltipWidget_) {
+        return;
+    }
 
 	// Get the location/dimensions of the text area
 #if 0
@@ -4188,17 +4242,12 @@ void TextArea::TextDRedrawCalltip(int calltipID) {
 		}
 		rel_x = calltip_.pos;
 	}
-#if 0
-	int lineHeight = ascent_ + descent_;
-	Position borderWidth;
-	Position abs_x;
-	Position abs_y;
-	Position tipWidth;
-	Position tipHeight;
-	XWindowAttributes screenAttr;
-	int flip_delta;
 
-	XtVaGetValues(calltipShell_, XmNwidth, &tipWidth, XmNheight, &tipHeight, XmNborderWidth, &borderWidth, nullptr);
+	int lineHeight = ascent_ + descent_;
+    int tipWidth    = calltipWidget_->width();
+    int tipHeight   = calltipWidget_->height();
+    int borderWidth = 1; // TODO(eteran): get the actual border width!
+	int flip_delta;
 
 	rel_x += borderWidth;
 	rel_y += lineHeight / 2 + borderWidth;
@@ -4216,34 +4265,43 @@ void TextArea::TextDRedrawCalltip(int calltipID) {
 	} else
 		flip_delta = -(tipHeight + lineHeight + 2 * borderWidth);
 
-	XtTranslateCoords(w_, rel_x, rel_y, &abs_x, &abs_y);
+    QPoint abs = mapToGlobal(QPoint(rel_x, rel_y));
+
 
 	// If we're not in strict mode try to keep the tip on-screen
 	if (calltip_.alignMode == TIP_SLOPPY) {
-		XGetWindowAttributes(XtDisplay(w_), RootWindowOfScreen(XtScreen(w_)), &screenAttr);
+
+        QDesktopWidget *desktop = QApplication::desktop();
+
 
 		// make sure tip doesn't run off right or left side of screen
-		if (abs_x + tipWidth >= screenAttr.width - CALLTIP_EDGE_GUARD)
-			abs_x = screenAttr.width - tipWidth - CALLTIP_EDGE_GUARD;
-		if (abs_x < CALLTIP_EDGE_GUARD)
-			abs_x = CALLTIP_EDGE_GUARD;
+        if (abs.x() + tipWidth >= desktop->width() - CALLTIP_EDGE_GUARD) {
+            abs.setX(desktop->width() - tipWidth - CALLTIP_EDGE_GUARD);
+        }
+
+        if (abs.x() < CALLTIP_EDGE_GUARD) {
+            abs.setX(CALLTIP_EDGE_GUARD);
+        }
 
 		// Try to keep the tip onscreen vertically if possible
-		if (screenAttr.height > tipHeight && offscreenV(&screenAttr, abs_y, tipHeight)) {
+        if (desktop->height() > tipHeight && offscreenV(desktop, abs.y(), tipHeight)) {
 			// Maybe flipping from below to above (or vice-versa) will help
-			if (!offscreenV(&screenAttr, abs_y + flip_delta, tipHeight))
-				abs_y += flip_delta;
+            if (!offscreenV(desktop, abs.y() + flip_delta, tipHeight)) {
+                abs.setY(abs.y() + flip_delta);
+            }
+
 			// Make sure the tip doesn't end up *totally* offscreen
-			else if (abs_y + tipHeight < 0)
-				abs_y = CALLTIP_EDGE_GUARD;
-			else if (abs_y >= screenAttr.height)
-				abs_y = screenAttr.height - tipHeight - CALLTIP_EDGE_GUARD;
+            else if (abs.y() + tipHeight < 0) {
+                abs.setY(CALLTIP_EDGE_GUARD);
+            } else if (abs.y() >= desktop->height()) {
+                abs.setY(desktop->height() - tipHeight - CALLTIP_EDGE_GUARD);
+            }
 			// If no case applied, just go with the default placement.
 		}
 	}
 
-	XtVaSetValues(calltipShell_, XmNx, abs_x, XmNy, abs_y, nullptr);
-#endif
+    calltipWidget_->move(abs);
+    calltipWidget_->show();
 }
 
 /*
@@ -4413,17 +4471,6 @@ int TextArea::TextDPositionToXY(int pos, int *x, int *y) {
 	}
 	*x = xStep;
 	return true;
-}
-
-void TextArea::TextDKillCalltip(int calltipID) {
-	if (calltip_.ID == 0) {
-		return;
-	}
-
-	if (calltipID == 0 || calltipID == calltip_.ID) {
-		XtPopdown(calltipShell_);
-		calltip_.ID = 0;
-	}
 }
 
 // Change the (non syntax-highlit) colors
@@ -8317,4 +8364,79 @@ int TextArea::TextDLineAndColToPos(int lineNum, int column) {
 
     // Position is the start of the line plus the index into line buffer
     return lineStart + charIndex;
+}
+
+void TextArea::TextDKillCalltip(int calltipID) {
+    if (calltip_.ID == 0) {
+        return;
+    }
+
+    if (calltipID == 0 || calltipID == calltip_.ID) {
+
+        if(calltipWidget_) {
+            calltipWidget_->hide();
+        }
+
+        calltip_.ID = 0;
+    }
+}
+
+int TextArea::TextDShowCalltip(view::string_view text, bool anchored, int pos, int hAlign, int vAlign, int alignMode) {
+    static int StaticCalltipID = 1;
+
+    int rel_x;
+    int rel_y;
+
+    // Destroy any previous calltip
+    TextDKillCalltip(0);
+
+    if(!calltipWidget_) {
+        calltipWidget_ = new CallTipWidget(this, Qt::Tool | Qt::FramelessWindowHint);
+    }
+
+    // Expand any tabs in the calltip and make it an XmString
+    std::string textCpy = expandAllTabsEx(text, buffer_->BufGetTabDistance());
+    std::string str = textCpy;
+
+
+    // Figure out where to put the tip
+    if (anchored) {
+        // Put it at the specified position
+        // If position is not displayed, return 0
+        if (pos < firstChar_ || pos > lastChar_) {
+            QApplication::beep();
+            return 0;
+        }
+        calltip_.pos = pos;
+    } else {
+        /* Put it next to the cursor, or in the center of the window if the
+            cursor is offscreen and mode != strict */
+        if (!TextDPositionToXY(TextGetCursorPos(), &rel_x, &rel_y)) {
+            if (alignMode == TIP_STRICT) {
+                QApplication::beep();
+                return 0;
+            }
+            calltip_.pos = -1;
+        } else
+            // Store the x-offset for use when redrawing
+            calltip_.pos = rel_x;
+    }
+
+    // Should really bounds-check these enumerations...
+    calltip_.ID        = StaticCalltipID;
+    calltip_.anchored  = anchored;
+    calltip_.hAlign    = hAlign;
+    calltip_.vAlign    = vAlign;
+    calltip_.alignMode = alignMode;
+
+    /* Increment the static calltip ID.  Macro variables can only be int,
+        not unsigned, so have to work to keep it > 0 on overflow */
+    if (++StaticCalltipID <= 0) {
+        StaticCalltipID = 1;
+    }
+
+    calltipWidget_->setText(QString::fromStdString(str));
+    TextDRedrawCalltip(0);
+
+    return calltip_.ID;
 }

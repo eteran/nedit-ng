@@ -30,6 +30,8 @@
 #include <QMessageBox>
 #include "ui/MainWindow.h"
 #include "ui/DialogDuplicateTags.h"
+#include "ui/DocumentWidget.h"
+#include "ui/TextArea.h"
 
 #include "tags.h"
 #include "TextHelper.h"
@@ -152,15 +154,16 @@ tagFile *TipsFileList = nullptr;
 /* These are all transient global variables -- they don't hold any state
     between tag/tip lookups */
 int searchMode = TAG;
-static const char *tagName;
+const char *tagName;
 static char tagFiles[MAXDUPTAGS][MAXPATHLEN];
 static char tagSearch[MAXDUPTAGS][MAXPATHLEN];
 static int tagPosInf[MAXDUPTAGS];
-static Boolean globAnchored;
-static int globPos;
-static int globHAlign;
-static int globVAlign;
-static int globAlignMode;
+
+bool globAnchored;
+int globPos;
+int globHAlign;
+int globVAlign;
+int globAlignMode;
 
 // A wrapper for calling TextDShowCalltip 
 static int tagsShowCalltip(Document *window, char *text) {
@@ -168,6 +171,15 @@ static int tagsShowCalltip(Document *window, char *text) {
 		return window->ShowCalltip(text, globAnchored, globPos, globHAlign, globVAlign, globAlignMode);
 	else
 		return 0;
+}
+
+
+// A wrapper for calling TextDShowCalltip
+int tagsShowCalltipEx(TextArea *area, const char *text) {
+    if (text)
+        return area->TextDShowCalltip(text, globAnchored, globPos, globHAlign, globVAlign, globAlignMode);
+    else
+        return 0;
 }
 
 // Set the head of the proper file list (Tags or Tips) to t 
@@ -599,17 +611,19 @@ static void updateMenuItems() {
 	for(Document *w: WindowList) {
 		if (w->IsTopDocument()) {
 			XtSetSensitive(w->showTipItem_, tipStat || tagStat);
-#if 0 // NOTE(eteran): transitions
+            XtSetSensitive(w->findDefItem_, tagStat);
+#if 0 // NOTE(eteran): transitioned
 			XtSetSensitive(w->unloadTipsMenuItem_, tipStat);
-#endif
-			XtSetSensitive(w->findDefItem_, tagStat);
 			XtSetSensitive(w->unloadTagsMenuItem_, tagStat);
+#endif
 		}
 	}
 
     for(MainWindow *window : MainWindow::allWindows()) {
         window->ui.action_Unload_Calltips_File->setEnabled(tipStat);
+        window->ui.action_Unload_Tags_File->setEnabled(tagStat);
         window->ui.action_Show_Calltip->setEnabled(tipStat || tagStat);
+        window->ui.action_Find_Definition->setEnabled(tagStat);
     }
 }
 
@@ -1135,6 +1149,156 @@ static int fakeRegExSearchEx(view::string_view in_buffer, const char *searchStri
 /*      Finds all matches and handles tag "collisions". Prompts user with a
         list of collided tags in the hash table and allows the user to select
         the correct one. */
+int findAllMatchesEx(DocumentWidget *document, TextArea *area, const char *string) {
+
+    char filename[MAXPATHLEN];
+    char pathname[MAXPATHLEN];
+    const char *fileToSearch;
+    const char *searchString;
+    const char *tagPath;
+    int startPos;
+    int i;
+    int pathMatch = 0;
+    int samePath = 0;
+    int langMode;
+    int nMatches = 0;
+
+    // verify that the string is reasonable as a tag
+    if (*string == '\0' || strlen(string) > MAX_TAG_LEN) {
+        QApplication::beep();
+        return -1;
+    }
+    tagName = string;
+
+    // First look up all of the matching tags
+    while (LookupTag(string, &fileToSearch, &langMode, &searchString, &startPos, &tagPath, searchMode)) {
+
+
+        /*
+        ** Skip this tag if it has a language mode that doesn't match the
+        ** current language mode, but don't skip anything if the window is in
+        ** PLAIN_LANGUAGE_MODE.
+        */
+        if (document->languageMode_ != PLAIN_LANGUAGE_MODE && GetPrefSmartTags() && langMode != PLAIN_LANGUAGE_MODE && langMode != document->languageMode_) {
+            string = nullptr;
+            continue;
+        }
+
+        if (*fileToSearch == '/') {
+            strcpy(tagFiles[nMatches], fileToSearch);
+        } else {
+            sprintf(tagFiles[nMatches], "%s%s", tagPath, fileToSearch);
+        }
+
+        strcpy(tagSearch[nMatches], searchString);
+        tagPosInf[nMatches] = startPos;
+        ParseFilename(tagFiles[nMatches], filename, pathname);
+
+        // Is this match in the current file?  If so, use it!
+        if (GetPrefSmartTags() && document->filename_ == QLatin1String(filename) && document->path_ == QLatin1String(pathname)) {
+            if (nMatches) {
+                strcpy(tagFiles[0],  tagFiles[nMatches]);
+                strcpy(tagSearch[0], tagSearch[nMatches]);
+                tagPosInf[0] = tagPosInf[nMatches];
+            }
+            nMatches = 1;
+            break;
+        }
+
+        // Is this match in the same dir. as the current file?
+        if (document->path_ == QLatin1String(pathname)) {
+            samePath++;
+            pathMatch = nMatches;
+        }
+
+        if (++nMatches >= MAXDUPTAGS) {
+            QMessageBox::warning(nullptr /*parent*/, QLatin1String("Tags"), QString(QLatin1String("Too many duplicate tags, first %1 shown")).arg(MAXDUPTAGS));
+            break;
+        }
+        // Tell LookupTag to look for more definitions of the same tag:
+        string = nullptr;
+    }
+
+    // Did we find any matches?
+    if (!nMatches) {
+        return 0;
+    }
+
+    // Only one of the matches is in the same dir. as this file.  Use it.
+    if (GetPrefSmartTags() && samePath == 1 && nMatches > 1) {
+        strcpy(tagFiles[0], tagFiles[pathMatch]);
+        strcpy(tagSearch[0], tagSearch[pathMatch]);
+        tagPosInf[0] = tagPosInf[pathMatch];
+        nMatches = 1;
+    }
+
+    /*  If all of the tag entries are the same file, just use the first.
+     */
+    if (GetPrefSmartTags()) {
+        for (i = 1; i < nMatches; i++) {
+            if (strcmp(tagFiles[i], tagFiles[i - 1])) {
+                break;
+            }
+        }
+
+        if (i == nMatches) {
+            nMatches = 1;
+        }
+    }
+
+    if (nMatches > 1) {
+
+        QVector<char *> dupTagsList;
+
+        for (i = 0; i < nMatches; i++) {
+
+            char temp[32 + 2 * MAXPATHLEN + MAXLINE];
+
+            ParseFilename(tagFiles[i], filename, pathname);
+            if ((i < nMatches - 1 && !strcmp(tagFiles[i], tagFiles[i + 1])) || (i > 0 && !strcmp(tagFiles[i], tagFiles[i - 1]))) {
+
+
+                if (*(tagSearch[i]) && (tagPosInf[i] != -1)) { // etags
+                    sprintf(temp, "%2d. %s%s %8i %s", i + 1, pathname, filename, tagPosInf[i], tagSearch[i]);
+                } else if (*(tagSearch[i])) { // ctags search expr
+                    sprintf(temp, "%2d. %s%s          %s", i + 1, pathname, filename, tagSearch[i]);
+                } else { // line number only
+                    sprintf(temp, "%2d. %s%s %8i", i + 1, pathname, filename, tagPosInf[i]);
+                }
+            } else {
+                sprintf(temp, "%2d. %s%s", i + 1, pathname, filename);
+            }
+
+            auto str = new char[strlen(temp) + 1];
+            strcpy(str, temp);
+            dupTagsList.push_back(str);
+        }
+
+#if 0
+        createSelectMenu(dialogParent, dupTagsList);
+#endif
+
+        qDeleteAll(dupTagsList);
+        return 1;
+    }
+
+    /*
+    **  No need for a dialog list, there is only one tag matching --
+    **  Go directly to the tag
+    */
+    if (searchMode == TAG) {
+#if 0
+        editTaggedLocation(dialogParent, 0);
+#endif
+    } else {
+        showMatchingCalltipEx(area, 0);
+    }
+    return 1;
+}
+
+/*      Finds all matches and handles tag "collisions". Prompts user with a
+        list of collided tags in the hash table and allows the user to select
+        the correct one. */
 static int findAllMatches(Document *window, const char *string) {
 
 	Widget dialogParent = window->textArea_;
@@ -1295,6 +1459,115 @@ static int moveAheadNLines(char *str, int *pos, int n) {
 		return -1;
 	else
 		return i - n;
+}
+
+/*
+** Show the calltip specified by tagFiles[i], tagSearch[i], tagPosInf[i]
+** This reads from either a source code file (if searchMode == TIP_FROM_TAG)
+** or a calltips file (if searchMode == TIP).
+*/
+void showMatchingCalltipEx(TextArea *area, int i) {
+    int startPos = 0, fileLen, readLen, tipLen;
+    int endPos = 0;
+    FILE *fp;
+    struct stat statbuf;
+
+    // 1. Open the target file
+    NormalizePathname(tagFiles[i]);
+    fp = fopen(tagFiles[i], "r");
+    if(!fp) {
+        QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error opening File"), QString(QLatin1String("Error opening %1")).arg(QLatin1String(tagFiles[i])));
+        return;
+    }
+    if (fstat(fileno(fp), &statbuf) != 0) {
+        fclose(fp);
+        QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error opening File"), QString(QLatin1String("Error opening %1")).arg(QLatin1String(tagFiles[i])));
+        return;
+    }
+
+    // 2. Read the target file
+    // Allocate space for the whole contents of the file (unfortunately)
+    fileLen = statbuf.st_size;
+    auto fileString = new char[fileLen + 1]; // +1 = space for null
+
+    // TODO(eteran): catch the allocation failure!
+    if(!fileString) {
+        fclose(fp);
+        QMessageBox::critical(nullptr /*parent*/, QLatin1String("File too large"), QLatin1String("File is too large to load"));
+        return;
+    }
+
+    // Read the file into fileString and terminate with a null
+    readLen = fread(fileString, 1, fileLen, fp);
+    if (ferror(fp)) {
+        fclose(fp);
+        QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error reading File"), QString(QLatin1String("Error reading %1")).arg(QLatin1String(tagFiles[i])));
+        delete [] fileString;
+        return;
+    }
+    fileString[readLen] = '\0';
+
+    // Close the file
+    if (fclose(fp) != 0) {
+        // unlikely error
+        QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error closing File"), QLatin1String("Unable to close file"));
+        // we read it successfully, so continue
+    }
+
+    // 3. Search for the tagged location (set startPos)
+    if (!*(tagSearch[i])) {
+        // It's a line number, just go for it
+        if ((moveAheadNLines(fileString, &startPos, tagPosInf[i] - 1)) >= 0) {
+            QMessageBox::critical(nullptr /*parent*/, QLatin1String("Tags Error"), QString(QLatin1String("%1\n not long enough for definition to be on line %2")).arg(QLatin1String(tagFiles[i])).arg(tagPosInf[i]));
+            delete [] fileString;
+            return;
+        }
+    } else {
+        startPos = tagPosInf[i];
+        if (!fakeRegExSearchEx(view::string_view(fileString, readLen), tagSearch[i], &startPos, &endPos)) {
+            QMessageBox::critical(nullptr /*parent*/, QLatin1String("Tag not found"), QString(QLatin1String("Definition for %1\nnot found in %2")).arg(QLatin1String(tagName)).arg(QLatin1String(tagFiles[i])));
+            delete [] fileString;
+            return;
+        }
+    }
+
+    if (searchMode == TIP) {
+        int dummy, found;
+
+        // 4. Find the end of the calltip (delimited by an empty line)
+        endPos = startPos;
+        found = SearchString(fileString, "\\n\\s*\\n", SEARCH_FORWARD, SEARCH_REGEX, False, startPos, &endPos, &dummy, nullptr, nullptr, nullptr);
+        if (!found) {
+            // Just take 4 lines
+            moveAheadNLines(fileString, &endPos, TIP_DEFAULT_LINES);
+            --endPos; // Lose the last \n
+        }
+    } else { // Mode = TIP_FROM_TAG
+        // 4. Copy TIP_DEFAULT_LINES lines of text to the calltip string
+        endPos = startPos;
+        moveAheadNLines(fileString, &endPos, TIP_DEFAULT_LINES);
+        // Make sure not to overrun the fileString with ". . ."
+        if (((size_t)endPos) <= (strlen(fileString) - 5)) {
+            sprintf(&fileString[endPos], ". . .");
+            endPos += 5;
+        }
+    }
+    // 5. Copy the calltip to a string
+    tipLen = endPos - startPos;
+    try {
+        auto message = new char[tipLen + 1]; // +1 = space for null
+        strncpy(message, &fileString[startPos], tipLen);
+        message[tipLen] = '\0';
+
+        // 6. Display it
+        tagsShowCalltipEx(area, message);
+
+        delete [] message;
+    } catch(const std::bad_alloc &) {
+        QMessageBox::critical(nullptr /*parent*/, QLatin1String("Out of Memory"), QLatin1String("Can't allocate memory for calltip message"));
+    }
+
+    delete [] fileString;
 }
 
 /*

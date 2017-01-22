@@ -58,8 +58,9 @@ public Q_SLOTS:
     void gotoMarkAP(QChar label, bool extendSel);
     void GotoMatchingCharacter(TextArea *area);
     void SelectToMatchingCharacter(TextArea *area);
-    void loadTipsAP(const QString &filename);
-    QString PromptForExistingFileEx(const QString &prompt);
+    void FindDefCalltip(TextArea *area, const char *arg);
+    void findDefinitionHelper(TextArea *area, const char *arg, int search_type);
+    int findDef(TextArea *area, const char *value, int search_type);
 
 public:
 	void movedCallback(TextArea *area);

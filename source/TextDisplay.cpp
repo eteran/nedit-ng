@@ -32,7 +32,6 @@
 #include <QClipboard>
 #include <QMimeData>
 #include <QtDebug>
-#include "ui/Calltip.h"
 #include "TextDisplay.h"
 
 #include "Document.h"

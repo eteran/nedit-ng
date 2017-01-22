@@ -39,6 +39,7 @@
 #include <QFuture>
 #include <QtConcurrentRun>
 
+#include "ui/MainWindow.h"
 #include "ui/DialogPrompt.h"
 #include "ui/DialogPromptList.h"
 #include "ui/DialogPromptString.h"

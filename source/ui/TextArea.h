@@ -25,6 +25,7 @@ class QShortcut;
 class QMenu;
 struct smartIndentCBStruct;
 struct dragEndCBStruct;
+class CallTipWidget;
 
 typedef void (*unfinishedStyleCBProcEx)(const TextArea *, int, const void *);
 typedef void (*cursorMovedCBEx)(TextArea *, void *);
@@ -217,6 +218,7 @@ private Q_SLOTS:
 	void exchangeAP(QMouseEvent *event, EventFlags flags = NoneFlag);
 
 public:
+    int TextDShowCalltip(view::string_view text, bool anchored, int pos, int hAlign, int vAlign, int alignMode);
 	int TextDStartOfLine(int pos) const;
 	int TextDEndOfLine(int pos, bool startPosIsLineStart);
 	int TextDCountBackwardNLines(int startPos, int nLines);
@@ -357,10 +359,6 @@ private:
 
 
 private:
-#if 1
-	Widget calltipW_;                             // The Label widget for the calltip
-	Widget calltipShell_;                         // The Shell that holds the calltip
-#endif
 	QVector<QColor> bgClassPixel_;                 // table of colors for each BG class
 	QVector<uint8_t> bgClass_;                    // obtains index into bgClassPixel[]
 	Rect rect_;
@@ -392,7 +390,7 @@ private:
 	int ascent_;                                  // Composite ascent and descent for primary font + all-highlight fonts
 	int descent_;
 	int fixedFontWidth_;                          // Font width if all current fonts are fixed and match in width, else -1
-
+    CallTipWidget *calltipWidget_;
 	CallTip calltip_;                       // The info for the calltip itself
 	bool suppressResync_;                          // Suppress resynchronization of line starts during buffer updates
 	int nLinesDeleted_;                           // Number of lines deleted during buffer modification (only used when resynchronization is suppressed)

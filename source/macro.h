@@ -34,6 +34,7 @@ class QString;
 class QWidget;
 class Program;
 class DocumentWidget;
+class MainWindow;
 
 #define REPEAT_TO_END -1
 #define REPEAT_IN_SEL -2

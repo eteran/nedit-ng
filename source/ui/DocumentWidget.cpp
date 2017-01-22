@@ -7,11 +7,14 @@
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QRadioButton>
+#include <QClipboard>
+#include <QMimeData>
 #include "SignalBlocker.h"
 #include "MainWindow.h"
 #include "DocumentWidget.h"
 #include "DialogReplace.h"
 #include "TextArea.h"
+#include "calltips.h"
 #include "preferences.h"
 #include "fileUtils.h"
 #include "TextBuffer.h"
@@ -44,6 +47,8 @@
 #include <fcntl.h>
 
 namespace {
+
+const int MAX_TAG_LEN = 256;
 
 struct CharMatchTable {
     char c;
@@ -4327,25 +4332,95 @@ void DocumentWidget::SelectToMatchingCharacter(TextArea *area) {
     area->setAutoShowInsertPos(true);
 }
 
-void DocumentWidget::loadTipsAP(const QString &filename) {
+/*
+** See findDefHelper
+*/
+void DocumentWidget::FindDefCalltip(TextArea *area, const char *arg) {
+    // Reset calltip parameters to reasonable defaults
+    globAnchored  = false;
+    globPos       = -1;
+    globHAlign    = TIP_LEFT;
+    globVAlign    = TIP_BELOW;
+    globAlignMode = TIP_SLOPPY;
 
-    if (!AddTagsFileEx(filename, TIP)) {
-        QMessageBox::warning(this, tr("Error Reading File"), tr("Error reading tips file:\n'%1'\ntips not loaded").arg(filename));
+    findDefinitionHelper(area, arg, TIP);
+}
+
+/*
+** Lookup the definition for the current primary selection the currently
+** loaded tags file and bring up the file and line that the tags file
+** indicates.
+*/
+void DocumentWidget::findDefinitionHelper(TextArea *area, const char *arg, int search_type) {
+    if (arg) {
+        findDef(area, arg, search_type);
+    } else {
+        searchMode = search_type;
+
+        const QMimeData *mimeData = QApplication::clipboard()->mimeData(QClipboard::Selection);
+        if(!mimeData->hasText()) {
+            return;
+        }
+
+        QString string = mimeData->text();
+        findDef(area, string.toLatin1().data(), search_type);
     }
 }
 
-QString DocumentWidget::PromptForExistingFileEx(const QString &prompt) {
+/*
+** This code path is followed if the request came from either
+** FindDefinition or FindDefCalltip.  This should probably be refactored.
+*/
+int DocumentWidget::findDef(TextArea *area, const char *value, int search_type) {
+    int status = 0;
 
-    QFileDialog dialog(this, prompt);
-    dialog.setOptions(QFileDialog::DontUseNativeDialog);
-    dialog.setFileMode(QFileDialog::ExistingFile);
-    if(!path_.isEmpty()) {
-        dialog.setDirectory(path_);
+    static char tagText[MAX_TAG_LEN + 1];
+    const char *p;
+    char message[MAX_TAG_LEN + 40];
+    int l;
+
+    searchMode = search_type;
+    l = strlen(value);
+    if (l <= MAX_TAG_LEN) {
+
+        // should be of type text???
+        for (p = value; *p && isascii(*p); p++) {
+        }
+
+        if (!*p) {
+
+            int ml = ((l < MAX_TAG_LEN) ? (l) : (MAX_TAG_LEN));
+            strncpy(tagText, value, ml);
+            tagText[ml] = '\0';
+
+            // See if we can find the tip/tag
+            status = findAllMatchesEx(this, area, tagText);
+
+            // If we didn't find a requested calltip, see if we can use a tag
+            if (status == 0 && search_type == TIP && TagsFileList) {
+                searchMode = TIP_FROM_TAG;
+                status = findAllMatchesEx(this, area, tagText);
+            }
+
+            if (status == 0) {
+                // Didn't find any matches
+                if (searchMode == TIP_FROM_TAG || searchMode == TIP) {
+                    sprintf(message, "No match for \"%s\" in calltips or tags.", tagName);
+                    tagsShowCalltipEx(area, message);
+                } else {
+                    QMessageBox::warning(this, tr("Tags"), tr("\"%1\" not found in tags file%2").arg(QLatin1String(tagName), QLatin1String((TagsFileList && TagsFileList->next) ? "s" : "")));
+                }
+            }
+
+        } else {
+            fprintf(stderr, "NEdit: Can't handle non 8-bit text\n");
+            QApplication::beep();
+        }
+
+    } else {
+        fprintf(stderr, "NEdit: Tag Length too long.\n");
+        QApplication::beep();
     }
 
-    if(dialog.exec()) {
-        return dialog.selectedFiles()[0];
-    }
-
-    return QString();
+    return status;
 }

@@ -64,13 +64,13 @@ qt4_wrap_cpp(MOC_SOURCES
 	ui/DocumentWidget.h
 	ui/TabWidget.h
 	ui/DialogOutput.h
-	ui/Calltip.h
+	ui/CallTipWidget.h
 	ui/TabWidget.h
 	ui/SignalBlocker.h
 )
 
 set(UI_FILES
-	ui/Calltip.ui
+	ui/CallTipWidget.ui
 	ui/DialogDuplicateTags.ui
 	ui/DialogAbout.ui
 	ui/DialogColors.ui
@@ -194,7 +194,7 @@ add_executable(nedit
 	ui/DocumentWidget.cpp
 	ui/TabWidget.cpp
 	ui/DialogOutput.cpp
-	ui/Calltip.cpp
+	ui/CallTipWidget.cpp
 	ui/TabWidget.cpp
 		
 	${BISON_parser_OUTPUT_SOURCE}

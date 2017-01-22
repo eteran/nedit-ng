@@ -62,6 +62,7 @@ public:
     void BeginISearchEx(SearchDirection direction);
     QString PromptForExistingFileEx(const QString &prompt);
     void updateTipsFileMenuEx();
+    void updateTagsFileMenuEx();
 
 public:
     static QList<MainWindow *> allWindows();
@@ -112,6 +113,9 @@ public Q_SLOTS:
     void on_action_Close_triggered();
     void on_action_Include_File_triggered();
     void on_action_Load_Calltips_File_triggered();
+    void on_action_Load_Tags_File_triggered();
+    void on_action_Load_Macro_File_triggered();
+
 #if 0
 
 
@@ -120,11 +124,8 @@ public Q_SLOTS:
 	void on_action_Save_As_triggered();
 	void on_action_Revert_to_Saved_triggered();
 
-	void on_action_Load_Macro_File_triggered();
-	void on_action_Load_Tags_File_triggered();
-	void on_action_Unload_Tags_File_triggered();
 
-	void on_action_Unload_Calltips_File_triggered();
+
 	void on_action_Print_triggered();
 	void on_action_Print_Selection_triggered();
 	void on_action_Exit_triggered();
@@ -157,10 +158,10 @@ public Q_SLOTS:
     void on_action_Mark_triggered();
     void on_action_Goto_Mark_triggered();
     void on_action_Goto_Matching_triggered();
+    void on_action_Show_Calltip_triggered();
 
 #if 0
 	void on_action_Find_Definition_triggered();
-	void on_action_Show_Calltip_triggered();
 	void on_action_Execute_Command_triggered();	
 	void on_action_Filter_Selection_triggered();
 	void on_action_Cancel_Shell_Command_triggered();
@@ -274,6 +275,10 @@ public Q_SLOTS:
 
 public Q_SLOTS:
     void unloadTipsAP(const QString &filename);
+    void unloadTagsAP(const QString &filename);
+    void loadTipsAP(const QString &filename);
+    void loadTagsAP(const QString &filename);
+    void loadMacroAP(const QString &filename);
 
 private Q_SLOTS:
 	void deleteTabButtonClicked();
@@ -281,6 +286,7 @@ private Q_SLOTS:
     void setLangModeCB(QAction *action);
     void openPrevCB(QAction *action);
     void unloadTipsFileCB(QAction *action);
+    void unloadTagsFileCB(QAction *action);
 
 public:
 	QPointer<QDialog>  dialogFind_;
