@@ -5,7 +5,7 @@
 #include <QDialog>
 #include "ui_DialogFonts.h"
 
-class Document;
+class DocumentWidget;
 
 class DialogFonts : public QDialog {
 	Q_OBJECT
@@ -20,7 +20,7 @@ private:
 	};
 	
 public:
-	DialogFonts(Document *window, bool forWindow, QWidget *parent = 0, Qt::WindowFlags f = 0);
+    DialogFonts(DocumentWidget *window, bool forWindow, QWidget *parent = 0, Qt::WindowFlags f = 0);
 	virtual ~DialogFonts();
 
 private Q_SLOTS:
@@ -43,7 +43,7 @@ private:
 
 private:
 	Ui::DialogFonts ui;
-	Document *window_;
+    DocumentWidget *document_;
 	int forWindow_;
 };
 

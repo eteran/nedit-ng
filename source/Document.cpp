@@ -1624,6 +1624,7 @@ void Document::ShowISearchLine(bool state) {
 	if (showISearchLine_ == state)
 		return;
 	showISearchLine_ = state;
+
 #if 0
 	showISearch(state);
 #endif
@@ -1973,9 +1974,11 @@ void Document::SetAutoWrap(int state) {
 	wrapMode_ = state;
 
 	if (IsTopDocument()) {
+#if 0 // NOTE(eteran): transitioned
 		XmToggleButtonSetState(newlineWrapItem_, autoWrap, false);
 		XmToggleButtonSetState(continuousWrapItem_, contWrap, false);
 		XmToggleButtonSetState(noWrapItem_, state == NO_WRAP, false);
+#endif
 	}
 }
 
@@ -2428,9 +2431,11 @@ void Document::SetAutoIndent(int state) {
 	}
 
 	if (IsTopDocument()) {
+#if 0 // NOTE(eteran): transitioned
 		XmToggleButtonSetState(smartIndentItem_, smartIndent, false);
 		XmToggleButtonSetState(autoIndentItem_, autoIndent, false);
 		XmToggleButtonSetState(autoIndentOffItem_, state == NO_AUTO_INDENT, false);
+#endif
 	}
 }
 

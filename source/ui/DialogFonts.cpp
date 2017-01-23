@@ -1,17 +1,20 @@
 
 #include <QPushButton>
 #include <QRegExp>
+#include <QX11Info>
 #include "DialogFonts.h"
 #include "DialogFontSelector.h"
+#include "DocumentWidget.h"
 #include "Document.h"
 #include "preferences.h"
+#include "TextArea.h"
 #include "Color.h"
 #include "highlight.h" // for AllocColor
 
 //------------------------------------------------------------------------------
 // Name:
 //------------------------------------------------------------------------------
-DialogFonts::DialogFonts(Document *window, bool forWindow, QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f), window_(window), forWindow_(forWindow) {
+DialogFonts::DialogFonts(DocumentWidget *document, bool forWindow, QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f), document_(document), forWindow_(forWindow) {
 	ui.setupUi(this);
 
 	if(!forWindow) {
@@ -22,10 +25,10 @@ DialogFonts::DialogFonts(Document *window, bool forWindow, QWidget *parent, Qt::
 
 	// Set initial values
 	if (forWindow) {
-		ui.editFontPrimary->setText(window->fontName_);
-		ui.editFontBold->setText(window->boldFontName_);
-		ui.editFontItalic->setText(window->italicFontName_);
-		ui.editFontBoldItalic->setText(window->boldItalicFontName_);
+        ui.editFontPrimary->setText(document->fontName_);
+        ui.editFontBold->setText(document->boldFontName_);
+        ui.editFontItalic->setText(document->italicFontName_);
+        ui.editFontBoldItalic->setText(document->boldItalicFontName_);
 	} else {
 		ui.editFontPrimary->setText(GetPrefFontName());
 		ui.editFontBold->setText(GetPrefBoldFontName());
@@ -116,18 +119,7 @@ void DialogFonts::updateFonts() {
 	QString boldItalicName = ui.editFontBoldItalic->text();
 
 	if (forWindow_) {
-		QByteArray fontString       = fontName.toLatin1();
-		QByteArray italicString     = italicName.toLatin1();
-		QByteArray boldString       = boldName.toLatin1();
-		QByteArray boldItalicString = boldItalicName.toLatin1();
-
-		char *params[4];
-		params[0] = fontString.data();
-		params[1] = italicString.data();
-		params[2] = boldString.data();
-		params[3] = boldItalicString.data();
-		XtCallActionProc(window_->textArea_, "set_fonts", nullptr, params, 4);
-
+        document_->SetFonts(fontName, italicName, boldName, boldItalicName);
 	} else {
 		SetPrefFont(fontName.toLatin1().data());
 		SetPrefItalicFont(italicName.toLatin1().data());
@@ -206,7 +198,7 @@ DialogFonts::FontStatus DialogFonts::showFontStatus(const QString &font, QLabel 
 */
 DialogFonts::FontStatus DialogFonts::checkFontStatus(const QString &font) {
 
-	Display *display = XtDisplay(window_->shell_);
+    Display *display = QX11Info::display();
 
 	/* Get width and height of the font to check.  Note the test for empty
 	   name: X11R6 clients freak out X11R5 servers if they ask them to load
@@ -273,7 +265,7 @@ void DialogFonts::browseFont(QLineEdit *lineEdit) {
 	QColor foreground = toQColor(fgColor);
 	QColor background = toQColor(bgColor);
 	
-	auto dialog = new DialogFontSelector(window_->shell_, PREF_FIXED, origFontName.toLatin1().data(), foreground, background, this);
+    auto dialog = new DialogFontSelector(PREF_FIXED, origFontName.toLatin1().data(), foreground, background, this);
 	int r = dialog->exec();
 	
 	QString newFont;

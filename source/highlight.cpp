@@ -557,6 +557,50 @@ void RemoveWidgetHighlightEx(TextArea *area) {
 ** Change highlight fonts and/or styles in a highlighted window, without
 ** re-parsing.
 */
+void UpdateHighlightStylesEx(DocumentWidget *document) {
+
+    auto oldHighlightData = static_cast<WindowHighlightData *>(document->highlightData_);
+
+    // Do nothing if window not highlighted
+    if (!document->highlightData_) {
+        return;
+    }
+
+    // Find the pattern set for the window's current language mode
+    PatternSet *patterns = findPatternsForWindowEx(document, false);
+    if(!patterns) {
+        document->StopHighlightingEx();
+        return;
+    }
+
+    // Build new patterns
+    WindowHighlightData *highlightData = createHighlightDataEx(document, patterns);
+    if(!highlightData) {
+        document->StopHighlightingEx();
+        return;
+    }
+
+    /* Update highlight pattern data in the window data structure, but
+       preserve all of the effort that went in to parsing the buffer
+       by swapping it with the empty one in highlightData (which is then
+       freed in freeHighlightData) */
+    TextBuffer *styleBuffer = oldHighlightData->styleBuffer;
+    oldHighlightData->styleBuffer = highlightData->styleBuffer;
+    freeHighlightData(oldHighlightData);
+    highlightData->styleBuffer = styleBuffer;
+    document->highlightData_ = highlightData;
+
+    /* Attach new highlight information to text widgets in each pane
+       (and redraw) */
+    for (TextArea *area : document->textPanes()) {
+        AttachHighlightToWidgetEx(area, document);
+    }
+}
+
+/*
+** Change highlight fonts and/or styles in a highlighted window, without
+** re-parsing.
+*/
 void UpdateHighlightStyles(Document *window) {
 
 	auto oldHighlightData = static_cast<WindowHighlightData *>(window->highlightData_);

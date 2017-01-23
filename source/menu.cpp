@@ -99,23 +99,13 @@ extern "C" void _XmDismissTearOff(Widget, XtPointer, XtPointer);
 
 static void doActionCB(Widget w, XtPointer clientData, XtPointer callData);
 static void doTabActionCB(Widget w, XtPointer clientData, XtPointer callData);
-static void autoIndentOffCB(Widget w, XtPointer clientData, XtPointer callData);
-static void autoIndentCB(Widget w, XtPointer clientData, XtPointer callData);
-static void smartIndentCB(Widget w, XtPointer clientData, XtPointer callData);
 static void preserveCB(Widget w, XtPointer clientData, XtPointer callData);
 static void autoSaveCB(Widget w, XtPointer clientData, XtPointer callData);
-static void newlineWrapCB(Widget w, XtPointer clientData, XtPointer callData);
-static void noWrapCB(Widget w, XtPointer clientData, XtPointer callData);
-static void continuousWrapCB(Widget w, XtPointer clientData, XtPointer callData);
-static void wrapMarginCB(Widget w, XtPointer clientData, XtPointer callData);
-static void fontCB(Widget w, XtPointer clientData, XtPointer callData);
-static void tabsCB(Widget w, XtPointer clientData, XtPointer callData);
 static void backlightCharsCB(Widget w, XtPointer clientData, XtPointer callData);
 static void showMatchingOffCB(Widget w, XtPointer clientData, XtPointer callData);
 static void showMatchingDelimitCB(Widget w, XtPointer clientData, XtPointer callData);
 static void showMatchingRangeCB(Widget w, XtPointer clientData, XtPointer callData);
 static void matchSyntaxBasedCB(Widget w, XtPointer clientData, XtPointer callData);
-static void statsCB(Widget w, XtPointer clientData, XtPointer callData);
 static void autoIndentOffDefCB(Widget w, XtPointer clientData, XtPointer callData);
 static void autoIndentDefCB(Widget w, XtPointer clientData, XtPointer callData);
 static void smartIndentDefCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -238,13 +228,6 @@ static void bgMenuPostAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 static void tabMenuPostAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void raiseWindowAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void focusPaneAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void setStatisticsLineAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void setIncrementalSearchLineAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void setShowLineNumbersAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void setAutoIndentAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void setWrapTextAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void setWrapMarginAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void setHighlightSyntaxAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void setMakeBackupCopyAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void setIncrementalBackupAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void setShowMatchingAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
@@ -391,13 +374,13 @@ static XtActionsRec Actions[] = {{(String) "new", newAP},
                                  {(String) "repeat_dialog", repeatDialogAP},
                                  {(String) "raise_window", raiseWindowAP},
                                  {(String) "focus_pane", focusPaneAP},
-                                 {(String) "set_statistics_line", setStatisticsLineAP},
-                                 {(String) "set_incremental_search_line", setIncrementalSearchLineAP},
-                                 {(String) "set_show_line_numbers", setShowLineNumbersAP},
-                                 {(String) "set_auto_indent", setAutoIndentAP},
-                                 {(String) "set_wrap_text", setWrapTextAP},
-                                 {(String) "set_wrap_margin", setWrapMarginAP},
-                                 {(String) "set_highlight_syntax", setHighlightSyntaxAP},
+                                 //{(String) "set_statistics_line", setStatisticsLineAP},
+                                 //{(String) "set_incremental_search_line", setIncrementalSearchLineAP},
+                                 //{(String) "set_show_line_numbers", setShowLineNumbersAP},
+                                 //{(String) "set_auto_indent", setAutoIndentAP},
+                                 //{(String) "set_wrap_text", setWrapTextAP},
+                                 //{(String) "set_wrap_margin", setWrapMarginAP},
+                                 //{(String) "set_highlight_syntax", setHighlightSyntaxAP},
 
                                  {(String) "set_make_backup_copy", setMakeBackupCopyAP},
 
@@ -616,23 +599,7 @@ Widget CreateMenuBar(Widget parent, Document *window) {
 	*/
 	createMenuItem(menuPane, "saveDefaults", "Save Defaults...", 'v', savePrefCB, window, FULL);
 
-	createMenuSeparator(menuPane, "sep1", SHORT);
-	window->statsLineItem_ = createMenuToggle(menuPane, "statisticsLine", "Statistics Line", 'S', statsCB, window, GetPrefStatsLine(), SHORT);
-	window->iSearchLineItem_ = createMenuToggle(menuPane, "incrementalSearchLine", "Incremental Search Line", 'I', doActionCB, "set_incremental_search_line", GetPrefISearchLine(), FULL);
-	window->lineNumsItem_ = createMenuToggle(menuPane, "lineNumbers", "Show Line Numbers", 'N', doActionCB, "set_show_line_numbers", GetPrefLineNums(), SHORT);
-	CreateLanguageModeSubMenu(window, menuPane, "languageMode", "Language Mode", 'L');
-	subPane = createMenu(menuPane, "autoIndent", "Auto Indent", 'A', nullptr, FULL);
-	window->autoIndentOffItem_ = createMenuRadioToggle(subPane, "off", "Off", 'O', autoIndentOffCB, window, window->indentStyle_ == NO_AUTO_INDENT, SHORT);
-	window->autoIndentItem_ = createMenuRadioToggle(subPane, "on", "On", 'n', autoIndentCB, window, window->indentStyle_ == AUTO_INDENT, SHORT);
-	window->smartIndentItem_ = createMenuRadioToggle(subPane, "smart", "Smart", 'S', smartIndentCB, window, window->indentStyle_ == SMART_INDENT, SHORT);
-	subPane = createMenu(menuPane, "wrap", "Wrap", 'W', nullptr, FULL);
-	window->noWrapItem_ = createMenuRadioToggle(subPane, "none", "None", 'N', noWrapCB, window, window->wrapMode_ == NO_WRAP, SHORT);
-	window->newlineWrapItem_ = createMenuRadioToggle(subPane, "autoNewlineWrap", "Auto Newline", 'A', newlineWrapCB, window, window->wrapMode_ == NEWLINE_WRAP, SHORT);
-	window->continuousWrapItem_ = createMenuRadioToggle(subPane, "continuousWrap", "Continuous", 'C', continuousWrapCB, window, window->wrapMode_ == CONTINUOUS_WRAP, SHORT);
 	createMenuSeparator(subPane, "sep1", SHORT);
-	createMenuItem(subPane, "wrapMargin", "Wrap Margin...", 'W', wrapMarginCB, window, SHORT);
-	createMenuItem(menuPane, "tabs", "Tab Stops...", 'T', tabsCB, window, SHORT);
-	createMenuItem(menuPane, "textFont", "Text Fonts...", 'F', fontCB, window, FULL);
 	window->highlightItem_ = createMenuToggle(menuPane, "highlightSyntax", "Highlight Syntax", 'H', doActionCB, "set_highlight_syntax", GetPrefHighlightSyntax(), SHORT);
 	window->backlightCharsItem_ = createMenuToggle(menuPane, "backlightChars", "Apply Backlighting", 'g', backlightCharsCB, window, window->backlightChars_, FULL);
 
@@ -738,48 +705,6 @@ static void doActionCB(Widget w, XtPointer clientData, XtPointer callData) {
 	XtCallActionProc(widget, action, event, nullptr, 0);
 }
 
-static void autoIndentOffCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	Q_UNUSED(clientData);
-
-	static const char *params[1] = {"off"};
-	Widget menu = MENU_WIDGET(w);
-
-	Document *window = Document::WidgetToWindow(menu);
-	(void)window;
-
-	HidePointerOnKeyedEvent(Document::WidgetToWindow(menu)->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(Document::WidgetToWindow(menu)->lastFocus_, "set_auto_indent", static_cast<XmAnyCallbackStruct *>(callData)->event, const_cast<char **>(params), 1);
-}
-
-static void autoIndentCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	Q_UNUSED(clientData);
-
-	static const char *params[1] = {"on"};
-	Widget menu = MENU_WIDGET(w);
-
-	Document *window = Document::WidgetToWindow(menu);
-	(void)window;
-
-	HidePointerOnKeyedEvent(Document::WidgetToWindow(menu)->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(Document::WidgetToWindow(menu)->lastFocus_, "set_auto_indent", static_cast<XmAnyCallbackStruct *>(callData)->event, const_cast<char **>(params), 1);
-}
-
-static void smartIndentCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	Q_UNUSED(clientData);
-
-	static const char *params[1] = {"smart"};
-	Widget menu = MENU_WIDGET(w);
-
-	Document *window = Document::WidgetToWindow(menu);
-	(void)window;
-
-	HidePointerOnKeyedEvent(Document::WidgetToWindow(menu)->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(Document::WidgetToWindow(menu)->lastFocus_, "set_auto_indent", static_cast<XmAnyCallbackStruct *>(callData)->event, const_cast<char **>(params), 1);
-}
-
 static void autoSaveCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	Q_UNUSED(clientData);
@@ -860,69 +785,6 @@ static void matchSyntaxBasedCB(Widget w, XtPointer clientData, XtPointer callDat
 	XtCallActionProc(Document::WidgetToWindow(menu)->lastFocus_, "set_match_syntax_based", static_cast<XmAnyCallbackStruct *>(callData)->event, nullptr, 0);
 }
 
-static void fontCB(Widget w, XtPointer clientData, XtPointer callData) {
-	Q_UNUSED(clientData);
-	Q_UNUSED(callData);
-	
-	Document *window = Document::WidgetToWindow(MENU_WIDGET(w));
-	window->dialogFonts_ = new DialogFonts(window, true);
-	window->dialogFonts_->exec();
-	delete window->dialogFonts_;
-	window->dialogFonts_ = nullptr;
-}
-
-static void noWrapCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	Q_UNUSED(clientData);
-
-	static const char *params[1] = {"none"};
-	Widget menu = MENU_WIDGET(w);
-
-	Document *window = Document::WidgetToWindow(menu);
-	(void)window;
-
-	HidePointerOnKeyedEvent(Document::WidgetToWindow(menu)->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(Document::WidgetToWindow(menu)->lastFocus_, "set_wrap_text", static_cast<XmAnyCallbackStruct *>(callData)->event, const_cast<char **>(params), 1);
-}
-
-static void newlineWrapCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	Q_UNUSED(clientData);
-
-	static const char *params[1] = {"auto"};
-	Widget menu = MENU_WIDGET(w);
-
-	Document *window = Document::WidgetToWindow(menu);
-	(void)window;
-
-	HidePointerOnKeyedEvent(Document::WidgetToWindow(menu)->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(Document::WidgetToWindow(menu)->lastFocus_, "set_wrap_text", static_cast<XmAnyCallbackStruct *>(callData)->event, const_cast<char **>(params), 1);
-}
-
-static void continuousWrapCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	Q_UNUSED(clientData);
-
-	static const char *params[1] = {"continuous"};
-	Widget menu = MENU_WIDGET(w);
-
-	Document *window = Document::WidgetToWindow(menu);
-	(void)window;
-
-	HidePointerOnKeyedEvent(Document::WidgetToWindow(menu)->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(Document::WidgetToWindow(menu)->lastFocus_, "set_wrap_text", static_cast<XmAnyCallbackStruct *>(callData)->event, const_cast<char **>(params), 1);
-}
-
-static void wrapMarginCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	Q_UNUSED(clientData);
-
-	Document *window = Document::WidgetToWindow(MENU_WIDGET(w));
-
-	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	WrapMarginDialog(window->shell_, window);
-}
-
 static void backlightCharsCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	Q_UNUSED(clientData);
@@ -931,32 +793,6 @@ static void backlightCharsCB(Widget w, XtPointer clientData, XtPointer callData)
 	bool applyBacklight = XmToggleButtonGetState(w);
 	Document *window = Document::WidgetToWindow(MENU_WIDGET(w));
 	window->SetBacklightChars(applyBacklight ? GetPrefBacklightCharTypes() : nullptr);
-}
-
-static void tabsCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	Q_UNUSED(clientData);
-
-	Document *window = Document::WidgetToWindow(MENU_WIDGET(w));
-
-	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-
-	auto dialog = new DialogTabs(window);
-	dialog->exec();
-	delete dialog;
-}
-
-static void statsCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	Q_UNUSED(clientData);
-
-	Widget menu = MENU_WIDGET(w);
-
-	Document *window = Document::WidgetToWindow(menu);
-	(void)window;
-
-	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(Document::WidgetToWindow(menu)->lastFocus_, "set_statistics_line", static_cast<XmAnyCallbackStruct *>(callData)->event, nullptr, 0);
 }
 
 static void autoIndentOffDefCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -1051,11 +887,12 @@ static void fontDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 	Document *window = Document::WidgetToWindow(MENU_WIDGET(w));
 
 	HidePointerOnKeyedEvent(window->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	
+#if 0 // NOTE(eteran): transitioned
 	window->dialogFonts_ = new DialogFonts(window, false);
 	window->dialogFonts_->exec();
 	delete window->dialogFonts_;
 	window->dialogFonts_ = nullptr;
+#endif
 }
 
 static void colorDefCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -1126,7 +963,9 @@ static void wrapMarginDefCB(Widget w, XtPointer clientData, XtPointer callData) 
 	Q_UNUSED(w);
 
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
+#if 0 // NOTE(eteran): transitioned (nullptr means set preferences, not in for a specific window!
 	WrapMarginDialog(Document::WidgetToWindow(MENU_WIDGET(w))->shell_, nullptr);
+#endif
 }
 
 static void smartTagsDefCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -2723,131 +2562,6 @@ static void ACTION_BOOL_PARAM_OR_TOGGLE(Boolean &newState, Cardinal numArgs, Str
 		}
 	} else {
 		newState = !oValue;
-	}
-}
-
-static void setStatisticsLineAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(event);
-
-	Document *window = Document::WidgetToWindow(w);
-	Boolean newState;
-
-	/* stats line is a shell-level item, so we toggle the button
-	   state regardless of it's 'topness' */
-	ACTION_BOOL_PARAM_OR_TOGGLE(newState, *nArgs, args, window->showStats_, "set_statistics_line");
-	XmToggleButtonSetState(window->statsLineItem_, newState, False);
-	window->ShowStatsLine(newState);
-}
-
-static void setIncrementalSearchLineAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(event);
-
-	Document *window = Document::WidgetToWindow(w);
-	Boolean newState;
-
-	/* i-search line is a shell-level item, so we toggle the button
-	   state regardless of it's 'topness' */
-	ACTION_BOOL_PARAM_OR_TOGGLE(newState, *nArgs, args, window->showISearchLine_, "set_incremental_search_line");
-	XmToggleButtonSetState(window->iSearchLineItem_, newState, False);
-	window->ShowISearchLine(newState);
-}
-
-static void setShowLineNumbersAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(event);
-
-	Document *window = Document::WidgetToWindow(w);
-	Boolean newState;
-
-	/* line numbers panel is a shell-level item, so we toggle the button
-	   state regardless of it's 'topness' */
-	ACTION_BOOL_PARAM_OR_TOGGLE(newState, *nArgs, args, window->showLineNumbers_, "set_show_line_numbers");
-	XmToggleButtonSetState(window->lineNumsItem_, newState, False);
-	window->ShowLineNumbers(newState);
-}
-
-static void setAutoIndentAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(event);
-
-	Document *window = Document::WidgetToWindow(w);
-	if (*nArgs > 0) {
-		if (strcmp(args[0], "off") == 0) {
-			window->SetAutoIndent(NO_AUTO_INDENT);
-		} else if (strcmp(args[0], "on") == 0) {
-			window->SetAutoIndent(AUTO_INDENT);
-		} else if (strcmp(args[0], "smart") == 0) {
-			window->SetAutoIndent(SMART_INDENT);
-		} else {
-			fprintf(stderr, "nedit: set_auto_indent invalid argument\n");
-		}
-	} else {
-		fprintf(stderr, "nedit: set_auto_indent requires argument\n");
-	}
-}
-
-static void setWrapTextAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(event);
-
-	Document *window = Document::WidgetToWindow(w);
-	if (*nArgs > 0) {
-		if (strcmp(args[0], "none") == 0) {
-			window->SetAutoWrap(NO_WRAP);
-		} else if (strcmp(args[0], "auto") == 0) {
-			window->SetAutoWrap(NEWLINE_WRAP);
-		} else if (strcmp(args[0], "continuous") == 0) {
-			window->SetAutoWrap(CONTINUOUS_WRAP);
-		} else {
-			fprintf(stderr, "nedit: set_wrap_text invalid argument\n");
-		}
-	} else {
-		fprintf(stderr, "nedit: set_wrap_text requires argument\n");
-	}
-}
-
-static void setWrapMarginAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(event);
-
-	Document *window = Document::WidgetToWindow(w);
-
-	if (*nArgs > 0) {
-		int newMargin = 0;
-		if (sscanf(args[0], "%d", &newMargin) == 1 && newMargin >= 0 && newMargin < 1000) {
-			int i;
-
-			textD_of(window->textArea_)->setWrapMargin(newMargin);
-
-			for (i = 0; i < window->textPanes_.size(); ++i) {
-				textD_of(window->textPanes_[i])->setWrapMargin(newMargin);
-			}
-		} else {
-			fprintf(stderr, "nedit: set_wrap_margin requires integer argument >= 0 and < 1000\n");
-		}
-	} else {
-		fprintf(stderr, "nedit: set_wrap_margin requires argument\n");
-	}
-}
-
-static void setHighlightSyntaxAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(event);
-
-	Document *window = Document::WidgetToWindow(w);
-	Boolean newState;
-
-	ACTION_BOOL_PARAM_OR_TOGGLE(newState, *nArgs, args, window->highlightSyntax_, "set_highlight_syntax");
-
-	if (window->IsTopDocument())
-		XmToggleButtonSetState(window->highlightItem_, newState, False);
-	window->highlightSyntax_ = newState;
-	if (window->highlightSyntax_) {
-		StartHighlighting(window, True);
-	} else {
-		StopHighlighting(window);
 	}
 }
 

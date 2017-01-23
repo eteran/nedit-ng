@@ -72,6 +72,7 @@ void StartHighlighting(Document *window, int warn);
 void StopHighlighting(Document *window);
 void SyntaxHighlightModifyCB(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *cbArg);
 void UpdateHighlightStyles(Document *window);
+void UpdateHighlightStylesEx(DocumentWidget *document);
 WindowHighlightData *createHighlightData(Document *window, PatternSet *patSet);
 void freeHighlightData(WindowHighlightData *hd);
 

@@ -95,6 +95,21 @@ public Q_SLOTS:
     void action_Goto_Mark_Shortcut_triggered();
 
 public Q_SLOTS:
+    // groups
+    void indentGroupTriggered(QAction *action);
+    void wrapGroupTriggered(QAction *action);
+#if 0
+
+    void matchingGroupTriggered(QAction *action);
+    void defaultIndentGroupTriggered(QAction *action);
+    void defaultWrapGroupTriggered(QAction *action);
+    void defaultTagCollisionsGroupTriggered(QAction *action);
+    void defaultSearchGroupTriggered(QAction *action);
+    void defaultSyntaxGroupTriggered(QAction *action);
+    void defaultMatchingGroupTriggered(QAction *action);
+    void defaultSizeGroupTriggered(QAction *action);
+#endif
+public Q_SLOTS:
     void on_tabWidget_currentChanged(int index);
     void on_tabWidget_customContextMenuRequested(int index, const QPoint &pos);
     void on_editIFind_textChanged(const QString &text);
@@ -165,6 +180,14 @@ public Q_SLOTS:
     void on_action_Close_Pane_triggered();
     void on_action_Move_Tab_To_triggered();
 
+    void on_action_Statistics_Line_toggled(bool state);
+    void on_action_Incremental_Search_Line_toggled(bool state);
+    void on_action_Show_Line_Numbers_toggled(bool state);
+    void on_action_Wrap_Margin_triggered();
+    void on_action_Tab_Stops_triggered();
+    void on_action_Text_Fonts_triggered();
+    void on_action_Highlight_Syntax_toggled(bool state);
+
 #if 0
 
 
@@ -173,13 +196,7 @@ public Q_SLOTS:
 	void on_action_Indent_triggered();
 	void on_action_Unindent_triggered();
 	void on_action_Save_Defaults_triggered();
-	void on_action_Statistics_Line_triggered();
-	void on_action_Incremental_Search_Line_triggered();
-	void on_action_Show_Line_Numbers_triggered();
-	void on_action_Language_Mode_triggered();
-	void on_action_Tab_Stops_triggered();
-	void on_action_Text_Fonts_triggered();
-	void on_action_Highlight_Syntax_triggered();
+
 	void on_action_Apply_Backlighting_triggered();
 	void on_action_Make_Backup_Copy_triggered();
 	void on_action_Incremental_Backup_triggered();
@@ -189,13 +206,7 @@ public Q_SLOTS:
 	void on_action_Matching_Delimiter_triggered();
 	void on_action_Matching_Range_triggered();
 	void on_action_Matching_Syntax_triggered();
-	void on_action_Wrap_None_triggered();
-	void on_action_Wrap_Auto_Newline_triggered();
-	void on_action_Wrap_Continuous_triggered();
-	void on_action_Wrap_Margin_triggered();
-	void on_action_Indent_Off_triggered();
-	void on_action_Indent_On_triggered();
-	void on_action_Indent_Smart_triggered();	
+
     void on_action_Learn_Keystrokes_triggered();
 	void on_action_Finish_Learn_triggered();
 	void on_action_Cancel_Learn_triggered();
@@ -293,8 +304,7 @@ public:
 	QPointer<QDialog>  dialogFind_;
 	QPointer<QDialog>  dialogReplace_;
 	QPointer<TextArea> lastFocus_;
-	bool               showLineNumbers_; // is the line number display shown
-	bool               showStats_;       // is stats line supposed to be shown
+    bool               showLineNumbers_; // is the line number display shown
 	bool               showISearchLine_; // is incr. search line to be shown
     bool               modeMessageDisplayed_;
     int fHistIndex_;                   // history placeholders for

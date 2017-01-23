@@ -22,7 +22,7 @@ private:
 	};
 
 public:
-	DialogFontSelector(Widget parentWidget, int showPropFont, const char *originalFont, QColor foreground, QColor background, QWidget *parent = 0, Qt::WindowFlags f = 0);
+    DialogFontSelector(int showPropFont, const char *originalFont, QColor foreground, QColor background, QWidget *parent = 0, Qt::WindowFlags f = 0);
 	virtual ~DialogFontSelector();
 
 private Q_SLOTS:

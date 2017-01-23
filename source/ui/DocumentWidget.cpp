@@ -425,10 +425,11 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 	languageMode_          = PLAIN_LANGUAGE_MODE;
 	device_                = 0;
     inode_                 = 0;
+
+    // TODO(eteran): inherit from current value, not default state
+    showStats_             = GetPrefStatsLine();
 	
-    if(auto win = toWindow()) {
-		ui.statusFrame->setVisible(win->showStats_);
-	}
+    ui.statusFrame->setVisible(showStats_);
 
     flashTimer_->setInterval(1500);
     flashTimer_->setSingleShot(true);
@@ -716,14 +717,14 @@ void DocumentWidget::UpdateStatsLine(TextArea *area) {
 
         /* This routine is called for each character typed, so its performance
            affects overall editor perfomance.  Only update if the line is on. */
-        if (!win->showStats_) {
+        if (!showStats_) {
             return;
         }
 
         if(!area) {
             area = win->lastFocus_;
             if(!area) {
-                area = qobject_cast<TextArea *>(splitter_->widget(0));
+                area = firstPane();
             }
 		}
 
@@ -1108,7 +1109,7 @@ void DocumentWidget::reapplyLanguageMode(int mode, bool forceDefaults) {
 
         no_signals(win->ui.action_Highlight_Syntax)->setChecked(highlight);
 
-        StopHighlighting();
+        StopHighlightingEx();
 
         // we defer highlighting to RaiseDocument() if doc is hidden
         if (IsTopDocument() && highlight) {
@@ -1467,7 +1468,7 @@ void DocumentWidget::setLanguageMode(const QString &mode) {
 ** Turn off syntax highlighting and free style buffer, compiled patterns, and
 ** related data.
 */
-void DocumentWidget::StopHighlighting() {
+void DocumentWidget::StopHighlightingEx() {
     if (!highlightData_) {
         return;
     }
@@ -3758,7 +3759,7 @@ void DocumentWidget::RefreshMenuToggleStates() {
         win->ui.action_Delete->setEnabled(win->wasSelected_);
 
         // Preferences menu
-        no_signals(win->ui.action_Statistics_Line)->setChecked(win->showStats_);
+        no_signals(win->ui.action_Statistics_Line)->setChecked(showStats_);
         no_signals(win->ui.action_Incremental_Search_Line)->setChecked(win->showISearchLine_);
         no_signals(win->ui.action_Show_Line_Numbers)->setChecked(win->showLineNumbers_);
         no_signals(win->ui.action_Highlight_Syntax)->setChecked(highlightSyntax_);
@@ -4759,4 +4760,159 @@ void DocumentWidget::moveDocument(MainWindow *fromWindow) {
     }
 
     delete dialog;
+}
+
+/*
+** Turn on and off the display of the statistics line
+*/
+void DocumentWidget::ShowStatsLine(bool state) {
+
+    /* In continuous wrap mode, text widgets must be told to keep track of
+       the top line number in absolute (non-wrapped) lines, because it can
+       be a costly calculation, and is only needed for displaying line
+       numbers, either in the stats line, or along the left margin */
+    for(TextArea *area : textPanes()) {
+        area->TextDMaintainAbsLineNum(state);
+    }
+
+    showStats_ = state;
+    ui.statusFrame->setVisible(state);
+}
+
+void DocumentWidget::setWrapMargin(int margin) {
+    for(TextArea *area : textPanes()) {
+        area->setWrapMargin(margin);
+    }
+}
+
+
+/*
+** Set the fonts for "window" from a font name, and updates the display.
+** Also updates window->fontList_ which is used for statistics line.
+**
+** Note that this leaks memory and server resources.  In previous NEdit
+** versions, fontLists were carefully tracked and freed, but X and Motif
+** have some kind of timing problem when widgets are distroyed, such that
+** fonts may not be freed immediately after widget destruction with 100%
+** safety.  Rather than kludge around this with timerProcs, I have chosen
+** to create new fontLists only when the user explicitly changes the font
+** (which shouldn't happen much in normal NEdit operation), and skip the
+** futile effort of freeing them.
+*/
+void DocumentWidget::SetFonts(const QString &fontName, const QString &italicName, const QString &boldName, const QString &boldItalicName) {
+
+
+    int textHeight;
+
+    auto textD = firstPane();
+
+    // Check which fonts have changed
+    bool primaryChanged = fontName != fontName_;
+
+    bool highlightChanged = false;
+    if (italicName != italicFontName_) {
+        highlightChanged = true;
+    }
+
+    if (boldName != boldFontName_) {
+        highlightChanged = true;
+    }
+
+    if (boldItalicName != boldItalicFontName_) {
+        highlightChanged = true;
+    }
+
+    if (!primaryChanged && !highlightChanged)
+        return;
+
+    /* Get information about the current this sizing, to be used to
+       determine the correct this size after the font is changed */
+
+    // TODO(eteran): do we want the WINDOW width/height? or the widget's?
+    int oldWindowWidth  = textD->width();
+    int oldWindowHeight = textD->height();
+
+    int marginHeight     = textD->getMarginHeight();
+#if 0
+    int marginWidth      = textD->getMarginWidth();
+#endif
+    QFont oldFont = textD->getFont();
+    textHeight    = textD->height();
+
+    int oldTextWidth = textD->getRect().width + textD->getLineNumWidth();
+    int oldTextHeight = 0;
+
+    for(TextArea *area : textPanes()) {
+        textHeight = area->height();
+        oldTextHeight += textHeight - 2 * marginHeight;
+    }
+
+    QFontMetricsF fm(oldFont);
+
+    int borderWidth   = oldWindowWidth - oldTextWidth;
+    int borderHeight  = oldWindowHeight - oldTextHeight;
+    int oldFontWidth  = fm.maxWidth();
+    int oldFontHeight = textD->fontAscent() + textD->fontDescent();
+
+    if (primaryChanged) {
+        fontName_ = fontName;
+        XFontStruct *font = XLoadQueryFont(TheDisplay, fontName.toLatin1().data());
+        if(font) {
+            fontList_ = XmFontListCreate(font, XmSTRING_DEFAULT_CHARSET);
+        } else {
+            qDebug("nedit: Failed to load primary font!");
+        }
+    }
+
+    if (highlightChanged) {
+        italicFontName_       = italicName;
+        italicFontStruct_     = XLoadQueryFont(TheDisplay, italicName.toLatin1().data());
+
+        boldFontName_         = boldName;
+        boldFontStruct_       = XLoadQueryFont(TheDisplay, boldName.toLatin1().data());
+
+        boldItalicFontName_   = boldItalicName;
+        boldItalicFontStruct_ = XLoadQueryFont(TheDisplay, boldItalicName.toLatin1().data());
+    }
+
+    // Change the primary font in all the widgets
+    if (primaryChanged) {
+        XFontStruct *font = GetDefaultFontStruct(fontList_);
+
+        for(TextArea *area : textPanes()) {
+            area->setFont(toQFont(font));
+        }
+    }
+
+    /* Change the highlight fonts, even if they didn't change, because
+       primary font is read through the style table for syntax highlighting */
+    if (highlightData_) {
+        UpdateHighlightStylesEx(this);
+    }
+
+    /* Change the this manager size hints.
+       Note: this has to be done _before_ we set the new sizes. ICCCM2
+       compliant this managers (such as fvwm2) would otherwise resize
+       the this twice: once because of the new sizes requested, and once
+       because of the new size increments, resulting in an overshoot. */
+#if 0
+    UpdateWMSizeHints();
+#endif
+
+
+#if 0 // TODO(eteran): do we need to worry about these things explicitly anymore ?
+    /* Use the information from the old this to re-size the this to a
+       size appropriate for the new font, but only do so if there's only
+       _one_ document in the this, in order to avoid growing-this bug */
+    if (TabCount() == 1) {
+        fontWidth = GetDefaultFontStruct(fontList_)->max_bounds.width;
+        fontHeight = textD->fontAscent() + textD->fontDescent();
+        newWindowWidth = (oldTextWidth * fontWidth) / oldFontWidth + borderWidth;
+        newWindowHeight = (oldTextHeight * fontHeight) / oldFontHeight + borderHeight;
+        XtVaSetValues(shell_, XmNwidth, newWindowWidth, XmNheight, newWindowHeight, nullptr);
+    }
+
+    // Change the minimum pane height
+    UpdateMinPaneHeights();
+#endif
 }

@@ -1,6 +1,7 @@
 
 #include <QtDebug>
 #include <QMessageBox>
+#include <QX11Info>
 #include "DialogFontSelector.h"
 
 #include <set>
@@ -139,7 +140,7 @@ void getSizePart(const char *font, char *buff1, int inPixels) {
 //------------------------------------------------------------------------------
 // Name:
 //------------------------------------------------------------------------------
-DialogFontSelector::DialogFontSelector(Widget parentWidget, int showPropFont, const char *originalFont, QColor foreground, QColor background, QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f), fontData_(nullptr), numFonts_(0) {
+DialogFontSelector::DialogFontSelector(int showPropFont, const char *originalFont, QColor foreground, QColor background, QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f), fontData_(nullptr), numFonts_(0) {
 	ui.setupUi(this);
 	
 	switch(showPropFont) {
@@ -158,7 +159,7 @@ DialogFontSelector::DialogFontSelector(Widget parentWidget, int showPropFont, co
 	}
 	
 
-	fontData_ = XListFonts(XtDisplay(parentWidget), "-*-*-*-*-*-*-*-*-*-*-*-*-*-*", MAX_NUM_FONTS, &numFonts_);
+    fontData_ = XListFonts(QX11Info::display(), "-*-*-*-*-*-*-*-*-*-*-*-*-*-*", MAX_NUM_FONTS, &numFonts_);
 
 	setupScrollLists(NONE); // update scroll lists
 

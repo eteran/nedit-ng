@@ -215,7 +215,6 @@ void SetPrefWarnRealFileMods(int state);
 void SetPrefWrap(int state);
 void SetPrefWrapMargin(int margin);
 void UnloadLanguageModeTipsFile(Document *window);
-void WrapMarginDialog(Widget parent, Document *forWindow);
 Widget CreateLanguageModeMenu(Widget parent, XtCallbackProc cbProc, void *cbArg);
 XFontStruct *GetPrefBoldFont();
 XFontStruct *GetPrefBoldItalicFont();

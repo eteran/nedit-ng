@@ -70,6 +70,7 @@ public Q_SLOTS:
     void closePane();
     void BeginSmartIndentEx(int warn);
     void moveDocument(MainWindow *fromWindow);
+    void ShowStatsLine(bool state);
 
 public:
 	void movedCallback(TextArea *area);
@@ -94,6 +95,7 @@ public:
     void RaiseDocument();
     void documentRaised();
     void reapplyLanguageMode(int mode, bool forceDefaults);
+    void setWrapMargin(int margn);
     void SetAutoWrap(int state);
     void SetAutoIndent(int state);
     void SetEmTabDist(int emTabDist);
@@ -105,7 +107,7 @@ public:
     QMenu *createUserMenu(const QVector<MenuData> &menuData);
     MainWindow *toWindow() const;
     void UpdateMarkTable(int pos, int nInserted, int nDeleted);
-    void StopHighlighting();
+    void StopHighlightingEx();
     void freeHighlightData(WindowHighlightData *hd);
     void freePatterns(HighlightData *patterns);
     QString GetWindowDelimiters() const;
@@ -154,6 +156,7 @@ public:
     void actionClose(const QString &mode);
     bool includeFile(const QString &name);
     bool findMatchingCharEx(char toMatch, void *styleToMatch, int charPos, int startLimit, int endLimit, int *matchPos);
+    void SetFonts(const QString &fontName, const QString &italicName, const QString &boldName, const QString &boldItalicName);
 
 public:
     static DocumentWidget *EditExistingFileEx(DocumentWidget *inWindow, const QString &name, const QString &path, int flags, char *geometry, int iconic, const char *languageMode, int tabbed, int bgOpen);
@@ -224,6 +227,7 @@ public:
     void *macroCmdData_;               // same for macro commands                                               // TODO(eteran): why void* ?
     void *shellCmdData_;               // when a shell command is executing, info. about it, otherwise, nullptr // TODO(eteran): why void* ?
     void *smartIndentData_;            // compiled macros for smart indent                                      // TODO(eteran): why void* ?
+    bool  showStats_;       // is stats line supposed to be shown
 
 private:
 	QSplitter *splitter_;

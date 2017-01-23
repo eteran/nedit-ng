@@ -2,10 +2,9 @@
 #include "DialogWrapMargin.h"
 #include <QMessageBox>
 #include "preferences.h"
-#include "Document.h"
-#include "util/MotifHelper.h"
+#include "DocumentWidget.h"
 
-DialogWrapMargin::DialogWrapMargin(Document *window, QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f), window_(window) {
+DialogWrapMargin::DialogWrapMargin(DocumentWidget *document, QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f), document_(document) {
 	ui.setupUi(this);
 }
 
@@ -36,12 +35,10 @@ void DialogWrapMargin::on_buttonBox_accepted() {
 	}
 
 	// Set the value in either the requested window or default preferences 
-	if(!window_) {
+    if(!document_) {
 		SetPrefWrapMargin(margin);
 	} else {
-		char marginStr[25];
-		snprintf(marginStr, sizeof(marginStr), "%d", margin);
-		XtCallActionProcEx(window_->textArea_, "set_wrap_margin", nullptr, marginStr);
+        document_->setWrapMargin(margin);
 	}
 
 	accept();

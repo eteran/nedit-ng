@@ -1674,6 +1674,7 @@ void SetLanguageMode(Document *window, int mode, int forceNewDefaults) {
 
 	// Select the correct language mode in the sub-menu 
 	if (window->IsTopDocument()) {
+#if 0 // NOTE(eteran): transitioned
 		XtVaGetValues(window->langModeCascade_, XmNsubMenuId, &menu, nullptr);
 		XtVaGetValues(menu, XmNchildren, &items, XmNnumChildren, &nItems, nullptr);
 		
@@ -1681,6 +1682,7 @@ void SetLanguageMode(Document *window, int mode, int forceNewDefaults) {
 			XtVaGetValues(items[n], XmNuserData, &userData, nullptr);
 			XmToggleButtonSetState(items[n], (long)userData == mode, False);
 		}
+#endif
 	}
 }
 
@@ -1753,29 +1755,6 @@ QString GetWindowDelimitersEx(const DocumentWidget *window) {
         return LanguageModes[window->languageMode_]->delimiters;
 }
 
-/*
-** Present the user a dialog for setting wrap margin.
-*/
-void WrapMarginDialog(Widget parent, Document *forWindow) {
-
-	Q_UNUSED(parent);
-
-	auto dialog = new DialogWrapMargin(forWindow, nullptr /*parent*/);
-	
-	int margin;
-	// Set default value 
-	if(!forWindow) {
-		margin = GetPrefWrapMargin();
-	} else {
-		margin = textD_of(forWindow->textArea_)->getWrapMargin();
-	}
-	
-	dialog->ui.checkWrapAndFill->setChecked(margin == 0);
-	dialog->ui.spinWrapAndFill->setValue(margin);
-	
-	dialog->exec();
-	delete dialog;
-}
 
 /*
 **  Create and show a dialog for selecting the shell
@@ -1872,7 +1851,9 @@ static void reapplyLanguageMode(Document *window, int mode, bool forceDefaults) 
 	haveSmartIndentMacros = SmartIndentMacrosAvailable(LanguageModeName(mode).toLatin1().data());
 	if (window->IsTopDocument()) {
 		XtSetSensitive(window->highlightItem_, haveHighlightPatterns);
+#if 0 // NOTE(eteran): transitioned
 		XtSetSensitive(window->smartIndentItem_, haveSmartIndentMacros);
+#endif
 	}
 
 	// Turn off requested options which are not available 

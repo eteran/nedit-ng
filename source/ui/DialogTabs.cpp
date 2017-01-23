@@ -3,14 +3,13 @@
 #include <QtDebug>
 #include "TextBuffer.h"
 #include "DialogTabs.h"
-#include "Document.h"
+#include "DocumentWidget.h"
 #include "preferences.h"
-#include "util/MotifHelper.h"
 
 //------------------------------------------------------------------------------
 // Name: 
 //------------------------------------------------------------------------------
-DialogTabs::DialogTabs(Document *forWindow, QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f), forWindow_(forWindow) {
+DialogTabs::DialogTabs(DocumentWidget *document, QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f), document_(document) {
 
 	ui.setupUi(this);
 	
@@ -20,14 +19,14 @@ DialogTabs::DialogTabs(Document *forWindow, QWidget *parent, Qt::WindowFlags f) 
 
 
 	// Set default values 
-	if(!forWindow) {
+    if(!document) {
 		emTabDist = GetPrefEmTabDist(PLAIN_LANGUAGE_MODE);
 		useTabs   = GetPrefInsertTabs();
 		tabDist   = GetPrefTabDist(PLAIN_LANGUAGE_MODE);
 	} else {
 		emTabDist = ui.editEmulatedTabSpacing->text().toInt();
-		useTabs   = forWindow->buffer_->useTabs_;
-		tabDist   = forWindow->buffer_->BufGetTabDistance();
+        useTabs   = document->buffer_->useTabs_;
+        tabDist   = document->buffer_->BufGetTabDistance();
 	}
 	
 	const bool emulate = emTabDist != 0;
@@ -109,21 +108,16 @@ void DialogTabs::on_buttonBox_accepted() {
 
 
 	// Set the value in either the requested window or default preferences 
-	if(!forWindow_) {
+    if(!document_) {
 		SetPrefTabDist(tabDist);
 		SetPrefEmTabDist(emTabDist);
 		SetPrefInsertTabs(useTabs);
 	} else {
-		char numStr[25];
 
-		sprintf(numStr, "%d", tabDist);
-		XtCallActionProcEx(forWindow_->textArea_, "set_tab_dist", nullptr, numStr);
-		
-		sprintf(numStr, "%d", emTabDist);
-		XtCallActionProcEx(forWindow_->textArea_, "set_em_tab_dist", nullptr, numStr);
-		
-		sprintf(numStr, "%d", useTabs);
-		XtCallActionProcEx(forWindow_->textArea_, "set_use_tabs", nullptr, numStr);
+
+        document_->SetTabDist(tabDist);
+        document_->SetEmTabDist(emTabDist);
+        document_->buffer_->useTabs_ = useTabs;
 	}
 	
 	accept();

@@ -7639,6 +7639,10 @@ void TextArea::setCursorVPadding(int value) {
 	P_cursorVPadding = value;
 }
 
+QFont TextArea::getFont() const {
+    return viewport()->font();
+}
+
 void TextArea::setFont(const QFont &font) {
 
 	bool reconfigure = false;
@@ -7661,6 +7665,10 @@ void TextArea::setFont(const QFont &font) {
 	if(reconfigure) {
 		setLineNumCols(getLineNumCols());
 	}
+}
+
+Rect TextArea::getRect() const {
+    return rect_;
 }
 
 int TextArea::getLineNumCols() const {
@@ -8441,4 +8449,19 @@ int TextArea::TextDShowCalltip(view::string_view text, bool anchored, int pos, i
     TextDRedrawCalltip(0);
 
     return calltip_.ID;
+}
+
+/*
+** In continuous wrap mode, internal line numbers are calculated after
+** wrapping.  A separate non-wrapped line count is maintained when line
+** numbering is turned on.  There is some performance cost to maintaining this
+** line count, so normally absolute line numbers are not tracked if line
+** numbering is off.  This routine allows callers to specify that they still
+** want this line count maintained (for use via TextDPosToLineAndCol).
+** More specifically, this allows the line number reported in the statistics
+** line to be calibrated in absolute lines, rather than post-wrapped lines.
+*/
+void TextArea::TextDMaintainAbsLineNum(bool state) {
+    needAbsTopLineNum_ = state;
+    resetAbsLineNum();
 }

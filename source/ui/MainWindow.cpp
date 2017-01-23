@@ -9,7 +9,10 @@
 #include <QMessageBox>
 #include "MainWindow.h"
 #include "DialogExecuteCommand.h"
+#include "DialogWrapMargin.h"
 #include "SignalBlocker.h"
+#include "DialogTabs.h"
+#include "DialogFonts.h"
 #include "TextArea.h"
 #include "TextBuffer.h"
 #include "DialogAbout.h"
@@ -31,6 +34,7 @@
 #include "selection.h"
 #include "search.h"
 #include "macro.h"
+#include "highlight.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/param.h>
@@ -203,9 +207,7 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(par
     // the window
     updatePrevOpenMenu();
 
-    showStats_             = GetPrefStatsLine();
     showISearchLine_       = GetPrefISearchLine();
-    showLineNumbers_       = GetPrefLineNums();
     modeMessageDisplayed_  = false;
     iSearchHistIndex_      = 0;
     iSearchStartPos_       = -1;
@@ -222,6 +224,8 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(par
     ui.action_Delete->setEnabled(false);
     ui.action_Undo->setEnabled(false);
     ui.action_Redo->setEnabled(false);
+
+    ui.action_Statistics_Line->setChecked(GetPrefStatsLine());
 }
 
 //------------------------------------------------------------------------------
@@ -310,10 +314,10 @@ void MainWindow::setupMenuGroups() {
 	indentGroup->addAction(ui.action_Indent_On);
 	indentGroup->addAction(ui.action_Indent_Smart);
 	
-	auto indentWrap = new QActionGroup(this);
-	indentWrap->addAction(ui.action_Wrap_None);
-	indentWrap->addAction(ui.action_Wrap_Auto_Newline);
-	indentWrap->addAction(ui.action_Wrap_Continuous);
+    auto wrapGroup = new QActionGroup(this);
+    wrapGroup->addAction(ui.action_Wrap_None);
+    wrapGroup->addAction(ui.action_Wrap_Auto_Newline);
+    wrapGroup->addAction(ui.action_Wrap_Continuous);
 	
 	auto matchingGroup = new QActionGroup(this);
 	matchingGroup->addAction(ui.action_Matching_Off);
@@ -357,6 +361,18 @@ void MainWindow::setupMenuGroups() {
 	defaultSizeGroup->addAction(ui.action_Default_Size_60_x_80);
 	defaultSizeGroup->addAction(ui.action_Default_Size_80_x_80);
 	defaultSizeGroup->addAction(ui.action_Default_Size_Custom);
+
+    connect(indentGroup,               SIGNAL(triggered(QAction *)), this, SLOT(indentGroupTriggered(QAction *)));
+    connect(wrapGroup,                 SIGNAL(triggered(QAction *)), this, SLOT(wrapGroupTriggered(QAction *)));
+    connect(matchingGroup,             SIGNAL(triggered(QAction *)), this, SLOT(matchingGroupTriggered(QAction *)));
+    connect(defaultIndentGroup,        SIGNAL(triggered(QAction *)), this, SLOT(defaultIndentGroupTriggered(QAction *)));
+    connect(defaultWrapGroup,          SIGNAL(triggered(QAction *)), this, SLOT(defaultWrapGroupTriggered(QAction *)));
+    connect(defaultTagCollisionsGroup, SIGNAL(triggered(QAction *)), this, SLOT(defaultTagCollisionsGroupTriggered(QAction *)));
+    connect(defaultSearchGroup,        SIGNAL(triggered(QAction *)), this, SLOT(defaultSearchGroupTriggered(QAction *)));
+    connect(defaultSyntaxGroup,        SIGNAL(triggered(QAction *)), this, SLOT(defaultSyntaxGroupTriggered(QAction *)));
+    connect(defaultMatchingGroup,      SIGNAL(triggered(QAction *)), this, SLOT(defaultMatchingGroupTriggered(QAction *)));
+    connect(defaultSizeGroup,          SIGNAL(triggered(QAction *)), this, SLOT(defaultSizeGroupTriggered(QAction *)));
+
 }
 
 //------------------------------------------------------------------------------
@@ -2511,4 +2527,111 @@ void MainWindow::on_action_About_Qt_triggered() {
 
 DocumentWidget *MainWindow::currentDocument() {
     return qobject_cast<DocumentWidget *>(ui.tabWidget->currentWidget());
+}
+
+void MainWindow::on_action_Statistics_Line_toggled(bool state) {
+    QList<DocumentWidget *> documents = openDocuments();
+    for(DocumentWidget *document : documents) {
+        document->ShowStatsLine(state);
+    }
+}
+
+/*
+** Turn on and off the continuing display of the incremental search line
+** (when off, it is popped up and down as needed via TempShowISearch)
+*/
+void MainWindow::on_action_Incremental_Search_Line_toggled(bool state) {
+    if (showISearchLine_ == state) {
+        return;
+    }
+
+    showISearchLine_ = state;
+
+    ui.incrementalSearchFrame->setVisible(state);
+}
+
+void MainWindow::on_action_Show_Line_Numbers_toggled(bool state) {
+   ShowLineNumbers(state);
+}
+
+void MainWindow::indentGroupTriggered(QAction *action) {
+
+    if(auto document = currentDocument()) {
+        if(action == ui.action_Indent_Off) {
+            document->SetAutoIndent(NO_AUTO_INDENT);
+        } else if(action == ui.action_Indent_Off) {
+            document->SetAutoIndent(AUTO_INDENT);
+        } else if(action == ui.action_Indent_Smart) {
+            document->SetAutoIndent(SMART_INDENT);
+        } else {
+            qDebug("nedit: set_auto_indent invalid argument");
+        }
+    }
+}
+
+void MainWindow::wrapGroupTriggered(QAction *action) {
+    if(auto document = currentDocument()) {
+        if(action == ui.action_Wrap_None) {
+            document->SetAutoWrap(NO_WRAP);
+        } else if(action == ui.action_Wrap_Auto_Newline) {
+            document->SetAutoWrap(NEWLINE_WRAP);
+        } else if(action == ui.action_Wrap_Continuous) {
+            document->SetAutoWrap(CONTINUOUS_WRAP);
+        } else {
+            qDebug("nedit: set_wrap_text invalid argument");
+        }
+    }
+}
+
+void MainWindow::on_action_Wrap_Margin_triggered() {
+    if(auto document = currentDocument()) {
+
+        auto dialog = new DialogWrapMargin(document, this);
+
+        int margin;
+
+        // Set default value
+        if(!document) {
+            margin = GetPrefWrapMargin();
+        } else {
+            margin = document->firstPane()->getWrapMargin();
+        }
+
+        dialog->ui.checkWrapAndFill->setChecked(margin == 0);
+        dialog->ui.spinWrapAndFill->setValue(margin);
+
+        dialog->exec();
+        delete dialog;
+    }
+}
+
+void MainWindow::on_action_Tab_Stops_triggered() {
+    if(auto document = currentDocument()) {
+        auto dialog = new DialogTabs(document, this);
+        dialog->exec();
+        delete dialog;
+    }
+}
+
+void MainWindow::on_action_Text_Fonts_triggered() {
+    if(auto document = currentDocument()) {
+
+        document->dialogFonts_ = new DialogFonts(document, true, this);
+        document->dialogFonts_->exec();
+
+        delete document->dialogFonts_;
+    }
+}
+
+void MainWindow::on_action_Highlight_Syntax_toggled(bool state) {
+    if(auto document = currentDocument()) {
+
+        document->highlightSyntax_ = state;
+
+        if (document->highlightSyntax_) {
+            StartHighlightingEx(document, true);
+        } else {
+            document->StopHighlightingEx();
+        }
+    }
 }

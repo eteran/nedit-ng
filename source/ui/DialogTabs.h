@@ -5,7 +5,7 @@
 #include <QDialog>
 #include "ui_DialogTabs.h"
 
-class Document;
+class DocumentWidget;
 
 /*
 ** Present the user a dialog for setting tab related preferences, either as
@@ -16,7 +16,7 @@ class DialogTabs : public QDialog {
 public:
 	Q_OBJECT
 public:
-	DialogTabs(Document *forWindow, QWidget *parent = 0, Qt::WindowFlags f = 0);
+    DialogTabs(DocumentWidget *document, QWidget *parent = 0, Qt::WindowFlags f = 0);
 	virtual ~DialogTabs();
 	
 private Q_SLOTS:
@@ -26,7 +26,7 @@ private Q_SLOTS:
 	
 private:
 	Ui::DialogTabs ui;
-	Document *forWindow_;
+    DocumentWidget *document_;
 };
 
 #endif

@@ -116,6 +116,7 @@ public:
     void setStyleBuffer(TextBuffer *buffer);
 
 public:
+    QFont getFont() const;
     int getEmulateTabs() const;
     int getLineNumCols() const;
     int getBufferLinesCount() const;
@@ -219,6 +220,7 @@ private Q_SLOTS:
 	void exchangeAP(QMouseEvent *event, EventFlags flags = NoneFlag);
 
 public:
+    void TextDMaintainAbsLineNum(bool state);
     int TextDShowCalltip(view::string_view text, bool anchored, int pos, int hAlign, int vAlign, int alignMode);
 	int TextDStartOfLine(int pos) const;
 	int TextDEndOfLine(int pos, bool startPosIsLineStart);
@@ -276,6 +278,7 @@ public:
     int getWrapMargin() const;
     int getColumns() const;
     int TextDLineAndColToPos(int lineNum, int column);
+    Rect getRect() const;
 
 public:
 	void bufPreDeleteCallback(int pos, int nDeleted);
@@ -357,6 +360,7 @@ private:
 	void ExchangeSelections();
 	int getAbsTopLineNum();
 	CursorStyles getCursorStyle() const;
+
 
 
 private:

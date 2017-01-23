@@ -5,12 +5,12 @@
 #include <QDialog>
 #include "ui_DialogWrapMargin.h"
 
-class Document;
+class DocumentWidget;
 
 class DialogWrapMargin : public QDialog {
 	Q_OBJECT
 public:
-	DialogWrapMargin(Document *window, QWidget *parent = 0, Qt::WindowFlags f = 0);
+    DialogWrapMargin(DocumentWidget *document, QWidget *parent = 0, Qt::WindowFlags f = 0);
 	virtual ~DialogWrapMargin();
 
 private Q_SLOTS:
@@ -19,7 +19,7 @@ private Q_SLOTS:
 
 public:
 	Ui::DialogWrapMargin ui;
-	Document *window_;
+    DocumentWidget *document_;
 };
 
 #endif
