@@ -1,6 +1,8 @@
 
 #include "DialogMoveDocument.h"
-#include "Document.h"
+#include "MainWindow.h"
+#include "DocumentWidget.h"
+#include "TextArea.h"
 
 //------------------------------------------------------------------------------
 // Name: 
@@ -24,12 +26,9 @@ void DialogMoveDocument::on_buttonMove_clicked() {
 //------------------------------------------------------------------------------
 // Name: 
 //------------------------------------------------------------------------------
-void DialogMoveDocument::addItem(Document *document) {
-
-	QString name = tr("%1%2").arg(document->filenameSet_ ? document->path_ : tr("")).arg(document->filename_);
-
-	documents_.push_back(document);
-	ui.listDocuments->addItem(name);
+void DialogMoveDocument::addItem(MainWindow *window) {
+    windows_.push_back(window);
+    ui.listDocuments->addItem(window->windowTitle());
 }
 
 //------------------------------------------------------------------------------

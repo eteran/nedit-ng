@@ -64,6 +64,12 @@ public Q_SLOTS:
     void FindDefinition(TextArea *area, const char *arg);
     void execAP(TextArea *area, const QString &command);
     void ExecShellCommandEx(TextArea *area, const QString &command, bool fromMacro);
+    void PrintWindow(TextArea *area, bool selectedOnly);
+    void PrintStringEx(const std::string &string, const QString &jobName);
+    void splitPane();
+    void closePane();
+    void BeginSmartIndentEx(int warn);
+    void moveDocument(MainWindow *fromWindow);
 
 public:
 	void movedCallback(TextArea *area);

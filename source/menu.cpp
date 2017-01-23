@@ -201,17 +201,13 @@ static void saveAsDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArg
 static void saveAsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void revertDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void revertAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void printAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void printSelAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void exitAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void repeatDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void repeatMacroAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void splitPaneAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void moveDocumentDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void nextDocumentAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void prevDocumentAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void lastDocumentAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void closePaneAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 
 static void filterDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void shellFilterAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
@@ -295,9 +291,9 @@ static XtActionsRec Actions[] = {{(String) "new", newAP},
                                  //{(String) "load_tips_file", loadTipsAP},
                                  //{(String) "load_tips_file_dialog", loadTipsDialogAP},
                                  //{(String) "unload_tips_file", unloadTipsAP},
-                                 {(String) "print", printAP},
-                                 {(String) "print-selection", printSelAP},
-                                 {(String) "print_selection", printSelAP},
+                                 //{(String) "print", printAP},
+                                 //{(String) "print-selection", printSelAP},
+                                 //{(String) "print_selection", printSelAP},
                                  {(String) "exit", exitAP},
                                  //{(String) "undo", undoAP},
                                  //{(String) "redo", redoAP},
@@ -354,11 +350,11 @@ static XtActionsRec Actions[] = {{(String) "new", newAP},
                                  //{(String) "show_tip", showTipAP},
                                  {(String) "split-pane", splitPaneAP},
                                  {(String) "split_pane", splitPaneAP},
-                                 {(String) "close-pane", closePaneAP},
-                                 {(String) "close_pane", closePaneAP},
+                                 //{(String) "close-pane", closePaneAP},
+                                 //{(String) "close_pane", closePaneAP},
                                  //{(String) "detach_document", detachDocumentAP},
                                  //{(String) "detach_document_dialog", detachDocumentDialogAP},
-                                 {(String) "move_document_dialog", moveDocumentDialogAP},
+                                 //{(String) "move_document_dialog", moveDocumentDialogAP},
                                  {(String) "next_document", nextDocumentAP},
                                  {(String) "previous_document", prevDocumentAP},
                                  {(String) "last_document", lastDocumentAP},
@@ -476,10 +472,6 @@ Widget CreateMenuBar(Widget parent, Document *window) {
 	createMenuItem(menuPane, "saveAs", "Save As...", 'A', doActionCB, "save_as_dialog", SHORT);
 	createMenuItem(menuPane, "revertToSaved", "Revert to Saved", 'R', doActionCB, "revert_to_saved_dialog", SHORT);
 	createMenuSeparator(menuPane, "sep2", SHORT);
-	createMenuItem(menuPane, "print", "Print...", 'P', doActionCB, "print", SHORT);
-	window->printSelItem_ = createMenuItem(menuPane, "printSelection", "Print Selection...", 'l', doActionCB, "print_selection", SHORT);
-	XtSetSensitive(window->printSelItem_, window->wasSelected_);
-	createMenuSeparator(menuPane, "sep4", SHORT);
 	createMenuItem(menuPane, "exit", "Exit", 'x', doActionCB, "exit", SHORT);
 	CheckCloseDim();
 
@@ -698,17 +690,13 @@ Widget CreateMenuBar(Widget parent, Document *window) {
 	XtAddCallback(cascade, XmNcascadingCallback, windowMenuCB, window);
 	window->splitPaneItem_ = createMenuItem(menuPane, "splitPane", "Split Pane", 'S', doActionCB, "split_pane", SHORT);
 	XtVaSetValues(window->splitPaneItem_, XmNuserData, PERMANENT_MENU_ITEM, nullptr);
-	window->closePaneItem_ = createMenuItem(menuPane, "closePane", "Close Pane", 'C', doActionCB, "close_pane", SHORT);
-	XtVaSetValues(window->closePaneItem_, XmNuserData, PERMANENT_MENU_ITEM, nullptr);
-	XtSetSensitive(window->closePaneItem_, False);
 
 	btn = createMenuSeparator(menuPane, "sep01", SHORT);
 	XtVaSetValues(btn, XmNuserData, PERMANENT_MENU_ITEM, nullptr);
 	window->detachDocumentItem_ = createMenuItem(menuPane, "detachBuffer", "Detach Tab", 'D', doActionCB, "detach_document", SHORT);
 	XtSetSensitive(window->detachDocumentItem_, False);
 
-	window->moveDocumentItem_ = createMenuItem(menuPane, "moveDocument", "Move Tab To...", 'M', doActionCB, "move_document_dialog", SHORT);
-	XtSetSensitive(window->moveDocumentItem_, False);
+
 	btn = createMenuSeparator(menuPane, "sep1", SHORT);
 	XtVaSetValues(btn, XmNuserData, PERMANENT_MENU_ITEM, nullptr);
 
@@ -2233,21 +2221,6 @@ static void revertAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	RevertToSaved(Document::WidgetToWindow(w));
 }
 
-static void printAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-	Q_UNUSED(event);
-	Q_UNUSED(args);
-	Q_UNUSED(nArgs)
-
-	PrintWindow(Document::WidgetToWindow(w), False);
-}
-
-static void printSelAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-	Q_UNUSED(event);
-	Q_UNUSED(args);
-	Q_UNUSED(nArgs)
-
-	PrintWindow(Document::WidgetToWindow(w), True);
-}
 
 static void exitAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	Q_UNUSED(event);
@@ -2358,30 +2331,6 @@ static void splitPaneAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 		XtSetSensitive(window->splitPaneItem_, window->textPanes_.size() < MAX_PANES);
 		XtSetSensitive(window->closePaneItem_, window->textPanes_.size() > 0);
 	}
-}
-
-static void closePaneAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(args);
-	Q_UNUSED(nArgs)
-	Q_UNUSED(event);
-
-	Document *window = Document::WidgetToWindow(w);
-
-	window->ClosePane();
-	if (window->IsTopDocument()) {
-		XtSetSensitive(window->splitPaneItem_, window->textPanes_.size() < MAX_PANES);
-		XtSetSensitive(window->closePaneItem_, window->textPanes_.size() > 0);
-	}
-}
-
-static void moveDocumentDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(args);
-	Q_UNUSED(nArgs)
-	Q_UNUSED(event);
-
-	Document::WidgetToWindow(w)->MoveDocumentDialog();
 }
 
 static void nextDocumentAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {

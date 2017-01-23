@@ -8,12 +8,15 @@
 #include <QFileDialog>
 #include <QRadioButton>
 #include <QClipboard>
+#include <QDesktopServices>
 #include <QMimeData>
 #include "SignalBlocker.h"
 #include "MainWindow.h"
 #include "DocumentWidget.h"
 #include "DialogReplace.h"
+#include "DialogMoveDocument.h"
 #include "TextArea.h"
+#include "DialogPrint.h"
 #include "calltips.h"
 #include "preferences.h"
 #include "fileUtils.h"
@@ -31,15 +34,18 @@
 #include "highlightData.h"
 #include "MenuItem.h"
 #include "Font.h"
+#include "macro.h"
 #include "tags.h"
 #include "HighlightData.h"
 #include "WindowHighlightData.h"
 #include "misc.h"
 #include "file.h"
 #include "UndoInfo.h"
+#include "SmartIndent.h"
 #include "utils.h"
 #include "interpret.h"
 #include "shell.h"
+#include "parse.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -70,13 +76,6 @@ struct CharMatchTable {
     char c;
     char match;
     char direction;
-};
-
-struct SmartIndentData {
-    Program *newlineMacro;
-    int inNewLineMacro;
-    Program *modMacro;
-    int inModMacro;
 };
 
 const int N_MATCH_CHARS = 13;
@@ -1326,7 +1325,7 @@ void DocumentWidget::SetAutoIndent(int state) {
     if (indentStyle_ == SMART_INDENT && !smartIndent) {
         EndSmartIndentEx(this);
     } else if (smartIndent && indentStyle_ != SMART_INDENT) {
-        BeginSmartIndentEx(this, true);
+        BeginSmartIndentEx(true);
     }
 
     indentStyle_ = state;
@@ -3779,7 +3778,7 @@ void DocumentWidget::RefreshMenuToggleStates() {
 
         // Windows Menu
         no_signals(win->ui.action_Split_Pane)->setEnabled(textPanesCount() < MAX_PANES);
-        no_signals(win->ui.action_Close_Pane)->setEnabled(textPanesCount() > 0);
+        no_signals(win->ui.action_Close_Pane)->setEnabled(textPanesCount() > 1);
         no_signals(win->ui.action_Detach_Tab)->setEnabled(win->ui.tabWidget->count() > 1);
 
         QList<MainWindow *> windows = MainWindow::allWindows();
@@ -4509,4 +4508,255 @@ void DocumentWidget::ExecShellCommandEx(TextArea *area, const QString &command, 
 #endif
     }
 
+}
+
+void DocumentWidget::PrintWindow(TextArea *area, bool selectedOnly) {
+
+    TextBuffer *buf = buffer_;
+    TextSelection *sel = &buf->primary_;
+    std::string fileString;
+
+    /* get the contents of the text buffer from the text area widget.  Add
+       wrapping newlines if necessary to make it match the displayed text */
+    if (selectedOnly) {
+        if (!sel->selected) {
+            QApplication::beep();
+            return;
+        }
+        if (sel->rectangular) {
+            fileString = buf->BufGetSelectionTextEx();
+        } else {
+            fileString = area->TextGetWrappedEx(sel->start, sel->end);
+        }
+    } else {
+        fileString = area->TextGetWrappedEx(0, buf->BufGetLength());
+    }
+
+    // If null characters are substituted for, put them back
+    buf->BufUnsubstituteNullCharsEx(fileString);
+
+    // add a terminating newline if the file doesn't already have one
+    if (!fileString.empty() && fileString.back() != '\n') {
+        fileString.push_back('\n'); // null terminator no longer needed
+    }
+
+    // Print the string
+    PrintStringEx(fileString, filename_);
+}
+
+/*
+** Print a string (length is required).  parent is the dialog parent, for
+** error dialogs, and jobName is the print title.
+*/
+void DocumentWidget::PrintStringEx(const std::string &string, const QString &jobName) {
+
+    QString tempDir = QDesktopServices::storageLocation(QDesktopServices::TempLocation);
+
+    // L_tmpnam defined in stdio.h
+    char tmpFileName[L_tmpnam];
+    snprintf(tmpFileName, sizeof(tmpFileName), "%s/nedit-XXXXXX", qPrintable(tempDir));
+
+    int fd = mkstemp(tmpFileName);
+    if (fd < 0) {
+        QMessageBox::warning(this, tr("Error while Printing"), tr("Unable to write file for printing:\n%1").arg(QLatin1String(strerror(errno))));
+        return;
+    }
+
+    FILE *const fp = fdopen(fd, "w");
+
+    // open the temporary file
+    if (fp == nullptr) {
+        QMessageBox::warning(this, tr("Error while Printing"), tr("Unable to write file for printing:\n%1").arg(QLatin1String(strerror(errno))));
+        return;
+    }
+
+    // write to the file
+    fwrite(string.data(), sizeof(char), string.size(), fp);
+    if (ferror(fp)) {
+        QMessageBox::critical(this, tr("Error while Printing"), tr("%1 not printed:\n%2").arg(jobName).arg(QLatin1String(strerror(errno))));
+        fclose(fp); // should call close(fd) in turn!
+        remove(tmpFileName);
+        return;
+    }
+
+    // close the temporary file
+    if (fclose(fp) != 0) {
+        QMessageBox::warning(this, tr("Error while Printing"), tr("Error closing temp. print file:\n%1").arg(QLatin1String(strerror(errno))));
+        remove(tmpFileName);
+        return;
+    }
+
+    // Print the temporary file, then delete it and return success
+
+    auto dialog = new DialogPrint(QLatin1String(tmpFileName), jobName, this);
+    dialog->exec();
+    delete dialog;
+
+    remove(tmpFileName);
+}
+
+void DocumentWidget::splitPane() {
+
+    // TODO(eteran): copy common state from an existing text area!
+    //               this includes the BGMenu, and the syntax highlighting
+    //               and probably a few other things too!
+    auto area = createTextArea(buffer_);
+    splitter_->addWidget(area);
+    area->setFocus();
+}
+
+/*
+** Close the window pane that last had the keyboard focus.
+*/
+// TODO(eteran): right now, we juse close the last pane, but we should change this
+//               to select the one which currently has the focus.
+void DocumentWidget::closePane() {
+    if(splitter_->count() > 1) {
+        QList<TextArea *> panes = textPanes();
+        delete panes.back();
+    }
+}
+
+/*
+** Turn on smart-indent (well almost).  Unfortunately, this doesn't do
+** everything.  It requires that the smart indent callback (SmartIndentCB)
+** is already attached to all of the text widgets in the window, and that the
+** smartIndent resource must be turned on in the widget.  These are done
+** separately, because they are required per-text widget, and therefore must
+** be repeated whenever a new text widget is created within this window
+** (a split-window command).
+*/
+void DocumentWidget::BeginSmartIndentEx(int warn) {
+
+    SmartIndent *indentMacros;
+    int stoppedAt;
+    QString errMsg;
+    static bool initialized = false;
+
+    // Find the window's language mode.  If none is set, warn the user
+    QString modeName = LanguageModeName(languageMode_);
+    if(modeName.isNull()) {
+        if (warn) {
+            QMessageBox::warning(this, tr("Smart Indent"), tr("No language-specific mode has been set for this file.\n\nTo use smart indent in this window, please select a\nlanguage from the Preferences -> Language Modes menu."));
+        }
+        return;
+    }
+
+    // Look up the appropriate smart-indent macros for the language
+    indentMacros = findIndentSpec(modeName.toLatin1().data());
+    if(!indentMacros) {
+        if (warn) {
+            QMessageBox::warning(this, tr("Smart Indent"), tr("Smart indent is not available in languagemode\n%1.\n\nYou can create new smart indent macros in the\nPreferences -> Default Settings -> Smart Indent\ndialog, or choose a different language mode from:\nPreferences -> Language Mode.").arg(modeName));
+        }
+        return;
+    }
+
+
+    /* Make sure that the initial macro file is loaded before we execute
+       any of the smart-indent macros. Smart-indent macros may reference
+       routines defined in that file. */
+    ReadMacroInitFileEx(this);
+
+    /* Compile and run the common and language-specific initialization macros
+       (Note that when these return, the immediate commands in the file have not
+       necessarily been executed yet.  They are only SCHEDULED for execution) */
+    if (!initialized) {
+        if (!ReadMacroStringEx(this, CommonMacros, "smart indent common initialization macros")) {
+            return;
+        }
+
+        initialized = true;
+    }
+
+    if (!indentMacros->initMacro.isNull()) {
+        if (!ReadMacroStringEx(this, indentMacros->initMacro, "smart indent initialization macro")) {
+            return;
+        }
+    }
+
+    // Compile the newline and modify macros and attach them to the window
+    auto winData = new SmartIndentData;
+    winData->inNewLineMacro = false;
+    winData->inModMacro     = false;
+    winData->newlineMacro   = ParseMacroEx(indentMacros->newlineMacro, 0, &errMsg, &stoppedAt);
+
+
+    if (!winData->newlineMacro) {
+        delete winData;
+        ParseErrorEx(this, indentMacros->newlineMacro, stoppedAt, tr("newline macro"), errMsg);
+        return;
+    }
+
+    if (indentMacros->modMacro.isNull()) {
+        winData->modMacro = nullptr;
+    } else {
+
+        winData->modMacro = ParseMacroEx(indentMacros->modMacro, 0, &errMsg, &stoppedAt);
+        if (!winData->modMacro) {
+
+            FreeProgram(winData->newlineMacro);
+            delete winData;
+            ParseErrorEx(this, indentMacros->modMacro, stoppedAt, tr("smart indent modify macro"), errMsg);
+            return;
+        }
+    }
+
+    smartIndentData_ = winData;
+}
+
+/*
+** present dialog for selecting a target window to move this document
+** into. Do nothing if there is only one shell window opened.
+*/
+void DocumentWidget::moveDocument(MainWindow *fromWindow) {
+    auto dialog = new DialogMoveDocument(this);
+
+    // all windows, except for the source window
+    QList<MainWindow *> shellWinList = MainWindow::allWindows();
+    shellWinList.removeAll(fromWindow);
+
+
+    for(MainWindow *win : shellWinList) {
+        dialog->addItem(win);
+    }
+
+    // stop here if there's no other this to move to
+    if (shellWinList.empty()) {
+        delete dialog;
+        return;
+    }
+
+
+    // reset the dialog and display it
+    dialog->resetSelection();
+    dialog->setLabel(filename_);
+    dialog->setMultipleDocuments(fromWindow->TabCount() > 1);
+    int r = dialog->exec();
+
+    if(r == QDialog::Accepted) {
+
+        int selection = dialog->selectionIndex();
+
+        // get the this to move document into
+        MainWindow *targetWin = shellWinList[selection];
+
+
+        // move top document
+        if (dialog->moveAllSelected()) {
+            // move all documents
+            for(DocumentWidget *document : fromWindow->openDocuments()) {
+                targetWin->ui.tabWidget->addTab(document, document->filename_);
+                targetWin->show();
+            }
+        } else {
+            targetWin->ui.tabWidget->addTab(this, filename_);
+            targetWin->show();
+        }
+
+        if(fromWindow->TabCount() == 0) {
+            delete fromWindow;
+        }
+    }
+
+    delete dialog;
 }

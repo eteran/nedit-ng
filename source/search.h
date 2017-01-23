@@ -57,14 +57,12 @@ char *ReplaceAllInString(view::string_view inString, const char *searchString, c
 void BeginISearchEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction);
 void DoFindDlogEx(MainWindow *window, DocumentWidget *document, SearchDirection direction, int keepDialogs, SearchType searchType);
 void DoFindReplaceDlogEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, int keepDialogs, SearchType searchType);
-void EndISearch(Document *window);
 void FlashMatching(Document *window, Widget textW);
 void FlashMatchingEx(DocumentWidget *document, TextArea *area);
 void RemoveFromMultiReplaceDialog(Document *window);
 void ReplaceInSelectionEx(MainWindow *window, DocumentWidget *document, TextArea *area, const char *searchString, const char *replaceString, SearchType searchType);
 void SearchForSelectedEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, SearchType searchType, int searchWrap);
 
-void SetISearchTextCallbacks(Document *window);
 void eraseFlashEx(DocumentWidget *document);
 
 
@@ -100,9 +98,6 @@ struct SelectionInfo {
 };
 
 // TODO(eteran): temporarily exposing these publically
-const char *directionArg(SearchDirection direction);
-const char *searchTypeArg(SearchType searchType);
-const char *searchWrapArg(int searchWrap);
 int countWritableWindows(void);
 int historyIndex(int nCycles);
 int isRegexType(SearchType searchType);

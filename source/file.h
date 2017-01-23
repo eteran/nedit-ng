@@ -52,8 +52,6 @@ int SaveWindowAs(Document *window, const char *newName, bool addWrap);
 int SaveWindow(Document *window);
 int WriteBackupFile(Document *window);
 void CheckForChangesToFile(Document *window);
-void PrintString(const std::string &string, const std::string &jobName);
-void PrintWindow(Document *window, bool selectedOnly);
 void RemoveBackupFile(Document *window);
 void RevertToSaved(Document *window);
 QString UniqueUntitledName();

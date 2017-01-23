@@ -7,6 +7,7 @@
 #include <QTimer>
 #include <QTime>
 #include <QFlags>
+#include <QPointer>
 #include <QAbstractScrollArea>
 #include <QVector>
 #include "StyleTableEntry.h"
@@ -76,7 +77,7 @@ public:
 		QColor cursorFGPixel,
 		QColor lineNumFGPixel);
 
-	TextArea(const TextArea &) = delete;
+    TextArea(const TextArea &other);
 	TextArea& operator=(const TextArea &) = delete;
 	virtual ~TextArea();
 
@@ -390,7 +391,7 @@ private:
 	int ascent_;                                  // Composite ascent and descent for primary font + all-highlight fonts
 	int descent_;
 	int fixedFontWidth_;                          // Font width if all current fonts are fixed and match in width, else -1
-    CallTipWidget *calltipWidget_;
+    QPointer<CallTipWidget> calltipWidget_;
 	CallTip calltip_;                       // The info for the calltip itself
 	bool suppressResync_;                          // Suppress resynchronization of line starts during buffer updates
 	int nLinesDeleted_;                           // Number of lines deleted during buffer modification (only used when resynchronization is suppressed)

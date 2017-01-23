@@ -63,16 +63,6 @@ const int close_width  = 11;
 const int close_height = 11;
 static uint8_t close_bits[] = {0x00, 0x00, 0x00, 0x00, 0x8c, 0x01, 0xdc, 0x01, 0xf8, 0x00, 0x70, 0x00, 0xf8, 0x00, 0xdc, 0x01, 0x8c, 0x01, 0x00, 0x00, 0x00, 0x00};
 
-// bitmap data for the isearch-find button
-const int isrcFind_width  = 11;
-const int isrcFind_height = 11;
-static uint8_t isrcFind_bits[] = {0xe0, 0x01, 0x10, 0x02, 0xc8, 0x04, 0x08, 0x04, 0x08, 0x04, 0x00, 0x04, 0x18, 0x02, 0xdc, 0x01, 0x0e, 0x00, 0x07, 0x00, 0x03, 0x00};
-
-// bitmap data for the isearch-clear button
-const int isrcClear_width  = 11;
-const int isrcClear_height = 11;
-static uint8_t isrcClear_bits[] = {0x00, 0x00, 0x00, 0x00, 0x04, 0x01, 0x84, 0x01, 0xc4, 0x00, 0x64, 0x00, 0xc4, 0x00, 0x84, 0x01, 0x04, 0x01, 0x00, 0x00, 0x00, 0x00};
-
 /* Thickness of 3D border around statistics and/or incremental search areas
    below the main menu bar */
 const int STAT_SHADOW_THICKNESS = 1;
@@ -235,8 +225,8 @@ void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view::strin
 		/* do not refresh shell-level items (window, menu-bar etc)
 		   when motifying non-top document */
 		if (window->IsTopDocument()) {
-			XtSetSensitive(window->printSelItem_, selected);
 #if 0 // NOTE(eteran): transitioned
+            XtSetSensitive(window->printSelItem_, selected);
             XtSetSensitive(window->cutItem_, selected);
 			XtSetSensitive(window->copyItem_, selected);
             XtSetSensitive(window->delItem_, selected);
@@ -296,10 +286,10 @@ void focusCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	// update line number statistic to reflect current focus pane
 	window->UpdateStatsLine();
-
+#if 0
 	// finish off the current incremental search
 	EndISearch(window);
-
+#endif
 	// Check for changes to read-only status and/or file modifications
 	CheckForChangesToFile(window);
 }
@@ -1056,24 +1046,6 @@ void Document::showStatistics(int state) {
 }
 
 /*
-** Put up or pop-down the incremental search line regardless of settings
-** of showISearchLine or TempShowISearch
-*/
-void Document::showISearch(int state) {
-	if (state) {
-		XtManageChild(iSearchForm_);
-		showStatsForm();
-	} else {
-		XtUnmanageChild(iSearchForm_);
-		showStatsForm();
-	}
-
-	// Tell WM that the non-expandable part of the this has changed size
-	// This is already done in showStatsForm
-	// UpdateWMSizeHints();
-}
-
-/*
 ** Show or hide the extra display area under the main menu bar which
 ** optionally contains the status line and the incremental search bar
 */
@@ -1652,8 +1624,9 @@ void Document::ShowISearchLine(bool state) {
 	if (showISearchLine_ == state)
 		return;
 	showISearchLine_ = state;
+#if 0
 	showISearch(state);
-
+#endif
 	/* i-search line is shell-level, hence other tabbed
 	   documents in the this should synch */
 	for (Document *win: WindowList) {
@@ -1661,17 +1634,6 @@ void Document::ShowISearchLine(bool state) {
 			continue;
 		win->showISearchLine_ = state;
 	}
-}
-
-/*
-** Temporarily show and hide the incremental search line if the line is not
-** already up.
-*/
-void Document::TempShowISearch(int state) {
-	if (showISearchLine_)
-		return;
-	if (XtIsManaged(iSearchForm_) != state)
-		showISearch(state);
 }
 
 /*
@@ -2186,72 +2148,6 @@ Document *Document::DetachDocument() {
 }
 
 /*
-** present dialog for selecting a target window to move this document
-** into. Do nothing if there is only one shell window opened.
-*/
-void Document::MoveDocumentDialog() {
-
-	auto dialog = new DialogMoveDocument();
-
-	std::vector<Document *> shellWinList;
-
-	for (Document *win: WindowList) {
-
-		if (!win->IsTopDocument() || win->shell_ == shell_) {
-			continue;
-		}
-
-		shellWinList.push_back(win);
-		dialog->addItem(win);
-	}
-
-	// stop here if there's no other this to move to
-	if (shellWinList.empty()) {
-		delete dialog;
-		return;
-	}
-
-
-	// reset the dialog and display it
-	dialog->resetSelection();
-	dialog->setLabel(filename_);
-	dialog->setMultipleDocuments(TabCount() > 1);
-	int r = dialog->exec();
-
-	if(r == QDialog::Accepted) {
-
-		int selection = dialog->selectionIndex();
-
-		// get the this to move document into
-		Document *targetWin = shellWinList[selection];
-
-
-		// move top document
-		if (dialog->moveAllSelected()) {
-			// move all documents
-			for (auto it = WindowList.begin(); it != WindowList.end();) {
-				Document *win = *it;
-				if (win != this && win->shell_ == shell_) {
-					auto next = std::next(it);
-					win->MoveDocument(targetWin);
-					it = next;
-				} else {
-					++it;
-				}
-			}
-
-			// invoking document is the last to move
-			MoveDocument(targetWin);
-		} else {
-			MoveDocument(targetWin);
-		}
-
-	}
-
-	delete dialog;
-}
-
-/*
 ** If the selection (or cursor position if there's no selection) is not
 ** fully shown, scroll to bring it in to view.  Note that as written,
 ** this won't work well with multi-line selections.  Modest re-write
@@ -2689,89 +2585,6 @@ void Document::SetFonts(const char *fontName, const char *italicName, const char
 	UpdateMinPaneHeights();
 }
 
-/*
-** Close the window pane that last had the keyboard focus.  (Actually, close
-** the bottom pane and make it look like pane which had focus was closed)
-*/
-void Document::ClosePane() {
-	short paneHeights[MAX_PANES + 1];
-	int insertPositions[MAX_PANES + 1];
-	int topLines[MAX_PANES + 1];
-	int horizOffsets[MAX_PANES + 1];
-	int i;
-
-	// Don't delete the last pane
-	if (textPanes_.isEmpty()) {
-		return;
-	}
-
-	/* Record the current heights, scroll positions, and insert positions
-	   of the existing panes, and the keyboard focus */
-	int focusPane = 0;
-	for (i = 0; i <= textPanes_.size(); i++) {
-		Widget text = GetPaneByIndex(i);
-		auto textD = textD_of(text);
-
-		insertPositions[i] = textD->TextGetCursorPos();
-		XtVaGetValues(containingPane(text), XmNheight, &paneHeights[i], nullptr);
-		textD->TextDGetScroll(&topLines[i], &horizOffsets[i]);
-		if (text == lastFocus_)
-			focusPane = i;
-	}
-
-	// Unmanage & remanage the panedWindow so it recalculates pane heights
-	XtUnmanageChild(splitPane_);
-
-	/* Destroy last pane, and make sure lastFocus points to an existing pane.
-	   Workaround for OM 2.1.30: text widget must be unmanaged for
-	   xmPanedWindowWidget to calculate the correct pane heights for
-	   the remaining panes, simply detroying it didn't seem enough */
-	Widget lastPane = textPanes_.back();
-	textPanes_.pop_back();
-
-	XtUnmanageChild(containingPane(lastPane));
-	XtDestroyWidget(containingPane(lastPane));
-
-	if (textPanes_.isEmpty()) {
-		lastFocus_ = textArea_;
-	} else if (focusPane > textPanes_.size()) {
-		lastFocus_ = textPanes_.back();
-	}
-
-	/* adjust the heights, scroll positions, etc., to make it look
-	   like the pane with the input focus was closed */
-	for (i = focusPane; i <= textPanes_.size(); i++) {
-		insertPositions[i] = insertPositions[i + 1];
-		paneHeights[i]     = paneHeights[i + 1];
-		topLines[i]        = topLines[i + 1];
-		horizOffsets[i]    = horizOffsets[i + 1];
-	}
-
-	/* set the desired heights and re-manage the paned window so it will
-	   recalculate pane heights */
-	for (i = 0; i <= textPanes_.size(); i++) {
-		Widget text = GetPaneByIndex(i);
-		setPaneDesiredHeight(containingPane(text), paneHeights[i]);
-	}
-
-	if (IsTopDocument())
-		XtManageChild(splitPane_);
-
-	// Reset all of the scroll positions, insert positions, etc.
-	for (i = 0; i <= textPanes_.size(); i++) {
-		Widget text = GetPaneByIndex(i);
-
-		auto textD = textD_of(text);
-		textD->TextSetCursorPos(insertPositions[i]);
-		textD->TextDSetScroll(topLines[i], horizOffsets[i]);
-	}
-	XmProcessTraversal(lastFocus_, XmTRAVERSE_CURRENT);
-
-	/* Update the window manager size hints after the sizes of the panes have
-	   been set (the widget heights are not yet readable here, but they will
-	   be by the time the event loop gets around to running this timer proc) */
-	XtAppAddTimeOut(XtWidgetToApplicationContext(shell_), 0, wmSizeUpdateProc, this);
-}
 
 /*
 ** Close a document, or an editor window
@@ -3376,8 +3189,6 @@ Document::Document(const QString &name, char *geometry, bool iconic) {
 	XmString s1;
 	XmFontList statsFontList;
 
-	static Pixmap isrcFind = 0;
-	static Pixmap isrcClear = 0;
 	static Pixmap closeTabPixmap = 0;
 
 	dialogFind_            = nullptr;
@@ -3554,6 +3365,8 @@ Document::Document(const QString &name, char *geometry, bool iconic) {
 		XtManageChild(iSearchForm_);
 	}
 
+
+#if 0
 	/* Disable keyboard traversal of the find, clear and toggle buttons.  We
 	   were doing this previously by forcing the keyboard focus back to the
 	   text widget whenever a toggle changed.  That causes an ugly focus flash
@@ -3609,7 +3422,7 @@ Document::Document(const QString &name, char *geometry, bool iconic) {
 	RemapDeleteKey(iSearchText_);
 
 	SetISearchTextCallbacks(this);
-
+#endif
 	// create the a form to house the tab bar and close-tab button
 	Widget tabForm = XtVaCreateWidget("tabForm", xmFormWidgetClass, statsAreaForm, XmNmarginHeight, 0, XmNmarginWidth, 0, XmNspacing, 0, XmNresizable, false, XmNleftAttachment, XmATTACH_FORM, XmNrightAttachment, XmATTACH_FORM, XmNshadowThickness, 0, nullptr);
 
@@ -3780,13 +3593,16 @@ Document::Document(const QString &name, char *geometry, bool iconic) {
 	UpdateMinPaneHeights();
 
 	// dim/undim Attach_Tab menu items
+#if 0 // NOTE(eteran): transitioned
 	int state = TabCount() < WindowCount();
-
+#endif
 
 	for(Document *win: WindowList) {
 		if (win->IsTopDocument()) {
+#if 0 // NOTE(eteran): transitioned
 			XtSetSensitive(win->moveDocumentItem_, state);
 			XtSetSensitive(win->contextMoveDocumentItem_, state);
+#endif
 		}
 	}
 }

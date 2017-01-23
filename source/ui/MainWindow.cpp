@@ -2472,3 +2472,35 @@ void MainWindow::on_action_Detach_Tab_triggered() {
         }
     }
 }
+
+void MainWindow::on_action_Print_triggered() {
+    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+        doc->PrintWindow(lastFocus_, false);
+    }
+}
+
+void MainWindow::on_action_Print_Selection_triggered() {
+    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+        doc->PrintWindow(lastFocus_, true);
+    }
+}
+
+void MainWindow::on_action_Split_Pane_triggered() {
+    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+        doc->splitPane();
+        ui.action_Close_Pane->setEnabled(doc->textPanesCount() > 1);
+    }
+}
+
+void MainWindow::on_action_Close_Pane_triggered() {
+    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+        doc->closePane();
+        ui.action_Close_Pane->setEnabled(doc->textPanesCount() > 1);
+    }
+}
+
+void MainWindow::on_action_Move_Tab_To_triggered() {
+    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+        doc->moveDocument(this);
+    }
+}

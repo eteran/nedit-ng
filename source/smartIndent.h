@@ -61,4 +61,14 @@ extern QString CommonMacros;
 extern int NSmartIndentSpecs;
 extern SmartIndent DefaultIndentSpecs[N_DEFAULT_INDENT_SPECS];
 extern SmartIndent *SmartIndentSpecs[MAX_LANGUAGE_MODES];
+
+struct Program;
+
+struct SmartIndentData {
+    Program *newlineMacro;
+    int inNewLineMacro;
+    Program *modMacro;
+    int inModMacro;
+};
+
 #endif 

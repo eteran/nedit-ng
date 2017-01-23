@@ -69,11 +69,9 @@ public:
 	int TabCount() const;
 	void CleanUpTabBarExposeQueue();
 	void ClearModeMessage();
-	void ClosePane();
 	void CloseWindow();	
 	void LastDocument() const;
 	void MakeSelectionVisible(Widget textPane);
-	void MoveDocumentDialog();
 	void NextDocument();
 	void PreviousDocument();
 	void RaiseDocument();
@@ -103,7 +101,6 @@ public:
 	void ShowWindowTabBar();
 	void SortTabBar();
 	void SplitPane();
-	void TempShowISearch(int state);
 	void UpdateMinPaneHeights();
 	void UpdateNewOppositeMenu(int openInTab);
 	void UpdateStatsLine();
@@ -141,7 +138,7 @@ public:
 private:
 	Document *getNextTabWindow(int direction, int crossWin, int wrap);
 	void showStatistics(int state);
-	void showISearch(int state);
+
 	void showStatsForm();
 	void addToWindowList();
 	void removeFromWindowList();
@@ -189,12 +186,14 @@ public:
 	Widget statsLineForm_;
 	Widget statsLineColNo_; /* Line/Column information display */
 	Widget iSearchForm_;    /* incremental search line widgets */
+#if 0
 	Widget iSearchFindButton_;
 	Widget iSearchText_;
 	Widget iSearchClearButton_;
 	Widget iSearchRegexToggle_;
 	Widget iSearchCaseToggle_;
 	Widget iSearchRevToggle_;
+#endif
 	Widget menuBar_;     /* the main menu bar */
 	Widget tabBar_;      /* tab bar for tabbed window */
 	Widget tab_;         /* tab for this document */

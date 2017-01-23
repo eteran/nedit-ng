@@ -968,6 +968,9 @@
    </property>
   </action>
   <action name="action_Close_Pane">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset theme="view-close">
      <normaloff>.</normaloff>.</iconset>

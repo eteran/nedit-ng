@@ -115,6 +115,8 @@ public Q_SLOTS:
     void on_action_Load_Calltips_File_triggered();
     void on_action_Load_Tags_File_triggered();
     void on_action_Load_Macro_File_triggered();
+    void on_action_Print_triggered();
+    void on_action_Print_Selection_triggered();
 
 #if 0
 
@@ -123,11 +125,6 @@ public Q_SLOTS:
 	void on_action_Save_triggered();
 	void on_action_Save_As_triggered();
 	void on_action_Revert_to_Saved_triggered();
-
-
-
-	void on_action_Print_triggered();
-	void on_action_Print_Selection_triggered();
 	void on_action_Exit_triggered();
 #endif
     void on_action_Undo_triggered();
@@ -163,15 +160,18 @@ public Q_SLOTS:
     void on_action_Execute_Command_triggered();
 
     void on_action_Detach_Tab_triggered();
+    void on_action_Split_Pane_triggered();
+    void on_action_Close_Pane_triggered();
+    void on_action_Move_Tab_To_triggered();
 
 #if 0
 
 
 	void on_action_Filter_Selection_triggered();
 	void on_action_Cancel_Shell_Command_triggered();
-	void on_action_Split_Pane_triggered();
-	void on_action_Close_Pane_triggered();
-	void on_action_Move_Tab_To_triggered();
+
+
+
 	void on_action_About_Qt_triggered();
 	void on_action_Indent_triggered();
 	void on_action_Unindent_triggered();

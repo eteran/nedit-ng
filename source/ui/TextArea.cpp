@@ -838,6 +838,8 @@ void TextArea::backwardCharacterAP(EventFlags flags) {
 // Name: ~TextArea
 //------------------------------------------------------------------------------
 TextArea::~TextArea() {
+    buffer_->BufRemoveModifyCB(bufModifiedCB, this);
+    buffer_->BufRemovePreDeleteCB(bufPreDeleteCB, this);
 	delete[] lineStarts_;
 }
 

@@ -6,7 +6,7 @@
 #include <QList>
 #include "ui_DialogMoveDocument.h"
 
-class Document;
+class MainWindow;
 
 class DialogMoveDocument : public QDialog {
 public:
@@ -16,7 +16,7 @@ public:
 	virtual ~DialogMoveDocument();
 	
 public:
-	void addItem(Document *document);
+    void addItem(MainWindow *window);
 	void resetSelection();
 	void setLabel(const QString &label);
 	void setMultipleDocuments(bool value);
@@ -30,7 +30,7 @@ private Q_SLOTS:
 	
 private:
 	Ui::DialogMoveDocument ui;
-	QList<Document *>      documents_;
+    QList<MainWindow *>    windows_;
 	
 };
 
