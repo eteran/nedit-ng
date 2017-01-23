@@ -410,7 +410,7 @@ void MainWindow::action_New(const QString &mode) {
 
 	QString path;
 
-    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+    if(auto doc = currentDocument()) {
         path = doc->path_;
     }
 
@@ -439,7 +439,7 @@ QString MainWindow::PromptForExistingFileEx(const QString &path, const QString &
 //------------------------------------------------------------------------------
 void MainWindow::on_action_Open_triggered() {
 
-    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+    if(auto doc = currentDocument()) {
         QString filename = PromptForExistingFileEx(doc->path_, tr("Open File"));
         if (filename.isNull()) {
             return;
@@ -452,7 +452,7 @@ void MainWindow::on_action_Open_triggered() {
 }
 
 void MainWindow::on_action_Close_triggered() {
-    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+    if(auto doc = currentDocument()) {
         doc->actionClose(QLatin1String(""));
     }
 }
@@ -480,7 +480,7 @@ void MainWindow::on_action_Select_All_triggered() {
 void MainWindow::on_action_Include_File_triggered() {
 
 
-    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+    if(auto doc = currentDocument()) {
 
         if (doc->CheckReadOnly()) {
             return;
@@ -536,7 +536,7 @@ void MainWindow::on_action_Paste_Column_triggered() {
 // Name: on_action_Delete_triggered
 //------------------------------------------------------------------------------
 void MainWindow::on_action_Delete_triggered() {
-    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+    if(auto doc = currentDocument()) {
         if (doc->CheckReadOnly()) {
             return;
         }
@@ -954,7 +954,7 @@ QString MainWindow::UniqueUntitledNameEx() {
 }
 
 void MainWindow::on_action_Undo_triggered() {
-    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+    if(auto doc = currentDocument()) {
         if (doc->CheckReadOnly()) {
             return;
         }
@@ -963,7 +963,7 @@ void MainWindow::on_action_Undo_triggered() {
 }
 
 void MainWindow::on_action_Redo_triggered() {
-    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+    if(auto doc = currentDocument()) {
         if (doc->CheckReadOnly()) {
             return;
         }
@@ -1049,7 +1049,7 @@ void MainWindow::ShowLineNumbers(bool state) {
         XtVaSetValues(shell_, XmNwidth, windowWidth - textD->getRect().left + marginWidth, nullptr);
 #endif
 
-        if(DocumentWidget *doc = DocumentWidget::documentFrom(lastFocus_)) {
+        if(DocumentWidget *doc = currentDocument()) {
             QList<TextArea *> areas = doc->textPanes();
             for(TextArea *area : areas) {
                 area->setLineNumCols(0);
@@ -1331,7 +1331,7 @@ void MainWindow::openPrevCB(QAction *action) {
 
     QString filename = action->data().toString();
 
-    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+    if(auto doc = currentDocument()) {
         if (filename.isNull()) {
             return;
         }
@@ -1377,7 +1377,7 @@ void MainWindow::on_tabWidget_customContextMenuRequested(int index, const QPoint
 
 void MainWindow::on_action_Open_Selected_triggered() {
 
-    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+    if(auto doc = currentDocument()) {
 
         // Get the selected text, if there's no selection, do nothing
         const QMimeData *mimeData = QApplication::clipboard()->mimeData(QClipboard::Selection);
@@ -1460,7 +1460,7 @@ void MainWindow::fileCB(DocumentWidget *window, const std::string &text) {
 // Name:
 //------------------------------------------------------------------------------
 void MainWindow::on_action_Shift_Left_triggered() {
-    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+    if(auto doc = currentDocument()) {
         if (doc->CheckReadOnly()) {
             return;
         }
@@ -1473,7 +1473,7 @@ void MainWindow::on_action_Shift_Left_triggered() {
 //------------------------------------------------------------------------------
 void MainWindow::on_action_Shift_Right_triggered() {
 
-    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+    if(auto doc = currentDocument()) {
         if (doc->CheckReadOnly()) {
             return;
         }
@@ -1485,7 +1485,7 @@ void MainWindow::on_action_Shift_Right_triggered() {
 // Name:
 //------------------------------------------------------------------------------
 void MainWindow::action_Shift_Left_Tabs() {
-    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+    if(auto doc = currentDocument()) {
         if (doc->CheckReadOnly()) {
             return;
         }
@@ -1497,7 +1497,7 @@ void MainWindow::action_Shift_Left_Tabs() {
 // Name:
 //------------------------------------------------------------------------------
 void MainWindow::action_Shift_Right_Tabs() {
-    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+    if(auto doc = currentDocument()) {
         if (doc->CheckReadOnly()) {
             return;
         }
@@ -1509,7 +1509,7 @@ void MainWindow::action_Shift_Right_Tabs() {
 // Name:
 //------------------------------------------------------------------------------
 void MainWindow::on_action_Lower_case_triggered() {
-    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+    if(auto doc = currentDocument()) {
         if (doc->CheckReadOnly()) {
             return;
         }
@@ -1522,7 +1522,7 @@ void MainWindow::on_action_Lower_case_triggered() {
 // Name:
 //------------------------------------------------------------------------------
 void MainWindow::on_action_Upper_case_triggered() {
-    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+    if(auto doc = currentDocument()) {
         if (doc->CheckReadOnly()) {
             return;
         }
@@ -1536,7 +1536,7 @@ void MainWindow::on_action_Upper_case_triggered() {
 //------------------------------------------------------------------------------
 void MainWindow::on_action_Fill_Paragraph_triggered() {
 
-    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+    if(auto doc = currentDocument()) {
         if (doc->CheckReadOnly()) {
             return;
         }
@@ -1559,7 +1559,7 @@ void MainWindow::on_action_Insert_Form_Feed_triggered() {
 //------------------------------------------------------------------------------
 void MainWindow::on_action_Insert_Ctrl_Code_triggered() {
 
-    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+    if(auto doc = currentDocument()) {
 
         if (doc->CheckReadOnly()) {
             return;
@@ -1588,7 +1588,7 @@ void MainWindow::on_action_Insert_Ctrl_Code_triggered() {
 // Name:
 //------------------------------------------------------------------------------
 void MainWindow::on_action_Goto_Line_Number_triggered() {
-    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+    if(auto doc = currentDocument()) {
 
         int lineNum;
         int column;
@@ -1615,7 +1615,7 @@ void MainWindow::on_action_Goto_Line_Number_triggered() {
 // Name:
 //------------------------------------------------------------------------------
 void MainWindow::on_action_Goto_Selected_triggered() {
-    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+    if(auto doc = currentDocument()) {
 
         const QMimeData *mimeData = QApplication::clipboard()->mimeData(QClipboard::Selection);
         if(mimeData->hasText()) {
@@ -1634,7 +1634,7 @@ void MainWindow::on_action_Goto_Selected_triggered() {
 void MainWindow::on_action_Find_triggered() {
     DoFindDlogEx(
         this,
-        DocumentWidget::documentFrom(lastFocus_),
+        currentDocument(),
         SEARCH_FORWARD,
         GetPrefKeepSearchDlogs(),
         GetPrefSearch());
@@ -1646,7 +1646,7 @@ void MainWindow::on_action_Find_triggered() {
 void MainWindow::action_Shift_Find() {
     DoFindDlogEx(
         this,
-        DocumentWidget::documentFrom(lastFocus_),
+        currentDocument(),
         SEARCH_BACKWARD,
         GetPrefKeepSearchDlogs(),
         GetPrefSearch());
@@ -1659,7 +1659,7 @@ void MainWindow::on_action_Find_Again_triggered() {
 
     SearchAndSelectSameEx(
         this,
-        DocumentWidget::documentFrom(lastFocus_),
+        currentDocument(),
         lastFocus_,
         SEARCH_FORWARD,
         GetPrefSearchWraps());
@@ -1671,7 +1671,7 @@ void MainWindow::on_action_Find_Again_triggered() {
 void MainWindow::action_Shift_Find_Again() {
     SearchAndSelectSameEx(
         this,
-        DocumentWidget::documentFrom(lastFocus_),
+        currentDocument(),
         lastFocus_,
         SEARCH_BACKWARD,
         GetPrefSearchWraps());
@@ -1684,7 +1684,7 @@ void MainWindow::on_action_Find_Selection_triggered() {
 
     SearchForSelectedEx(
         this,
-        DocumentWidget::documentFrom(lastFocus_),
+        currentDocument(),
         lastFocus_,
         SEARCH_FORWARD,
         GetPrefSearch(),
@@ -1697,7 +1697,7 @@ void MainWindow::on_action_Find_Selection_triggered() {
 void MainWindow::action_Shift_Find_Selection_triggered() {
     SearchForSelectedEx(
         this,
-        DocumentWidget::documentFrom(lastFocus_),
+        currentDocument(),
         lastFocus_,
         SEARCH_BACKWARD,
         GetPrefSearch(),
@@ -1759,7 +1759,7 @@ void MainWindow::on_editIFind_textChanged(const QString &searchString) {
        there's an incremental search already in progress, mark the operation
        as "continued" so the search routine knows to re-start the search
        from the original starting position */
-    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+    if(auto doc = currentDocument()) {
         doc->findIncrAP(searchString, direction, searchType, GetPrefSearchWraps(), iSearchStartPos_ != -1);
     }
 }
@@ -1806,7 +1806,7 @@ void MainWindow::on_editIFind_returnPressed() {
     }
 
     // find the text and mark it
-    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+    if(auto doc = currentDocument()) {
         doc->findAP(searchString, direction, searchType, GetPrefSearchWraps());
     }
 }
@@ -2016,14 +2016,14 @@ void MainWindow::EndISearchEx() {
 }
 
 void MainWindow::on_action_Replace_triggered() {
-    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+    if(auto doc = currentDocument()) {
         if (doc->CheckReadOnly()) {
             return;
         }
 
         DoFindReplaceDlogEx(
                     this,
-                    DocumentWidget::documentFrom(lastFocus_),
+                    currentDocument(),
                     lastFocus_,
                     SEARCH_FORWARD,
                     GetPrefKeepSearchDlogs(),
@@ -2032,14 +2032,14 @@ void MainWindow::on_action_Replace_triggered() {
 }
 
 void MainWindow::action_Shift_Replace_triggered() {
-    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+    if(auto doc = currentDocument()) {
         if (doc->CheckReadOnly()) {
             return;
         }
 
         DoFindReplaceDlogEx(
                     this,
-                    DocumentWidget::documentFrom(lastFocus_),
+                    currentDocument(),
                     lastFocus_,
                     SEARCH_BACKWARD,
                     GetPrefKeepSearchDlogs(),
@@ -2049,14 +2049,14 @@ void MainWindow::action_Shift_Replace_triggered() {
 
 void MainWindow::on_action_Replace_Find_Again_triggered() {
 
-    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+    if(auto doc = currentDocument()) {
         if (doc->CheckReadOnly()) {
             return;
         }
 
         ReplaceFindSameEx(
                     this,
-                    DocumentWidget::documentFrom(lastFocus_),
+                    currentDocument(),
                     lastFocus_,
                     SEARCH_FORWARD,
                     GetPrefSearchWraps());
@@ -2064,14 +2064,14 @@ void MainWindow::on_action_Replace_Find_Again_triggered() {
 }
 
 void MainWindow::action_Shift_Replace_Find_Again_triggered() {
-    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+    if(auto doc = currentDocument()) {
         if (doc->CheckReadOnly()) {
             return;
         }
 
         ReplaceFindSameEx(
                     this,
-                    DocumentWidget::documentFrom(lastFocus_),
+                    currentDocument(),
                     lastFocus_,
                     SEARCH_BACKWARD,
                     GetPrefSearchWraps());
@@ -2079,14 +2079,14 @@ void MainWindow::action_Shift_Replace_Find_Again_triggered() {
 }
 
 void MainWindow::on_action_Replace_Again_triggered() {
-    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+    if(auto doc = currentDocument()) {
         if (doc->CheckReadOnly()) {
             return;
         }
 
         ReplaceSameEx(
                     this,
-                    DocumentWidget::documentFrom(lastFocus_),
+                    currentDocument(),
                     lastFocus_,
                     SEARCH_FORWARD,
                     GetPrefSearchWraps());
@@ -2094,14 +2094,14 @@ void MainWindow::on_action_Replace_Again_triggered() {
 }
 
 void MainWindow::action_Shift_Replace_Again_triggered() {
-    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+    if(auto doc = currentDocument()) {
         if (doc->CheckReadOnly()) {
             return;
         }
 
         ReplaceSameEx(
                     this,
-                    DocumentWidget::documentFrom(lastFocus_),
+                    currentDocument(),
                     lastFocus_,
                     SEARCH_BACKWARD,
                     GetPrefSearchWraps());
@@ -2131,7 +2131,7 @@ void MainWindow::on_action_Mark_triggered() {
         return;
     }
 
-    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+    if(auto doc = currentDocument()) {
         doc->markAP(result[0]);
     }
 }
@@ -2141,7 +2141,7 @@ void MainWindow::action_Mark_Shortcut_triggered() {
     if(auto shortcut = qobject_cast<QShortcut *>(sender())) {
         QKeySequence sequence = shortcut->key();
 
-        if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+        if(auto doc = currentDocument()) {
             switch(sequence[1]) {
             case Qt::Key_A: doc->markAP(QLatin1Char('A')); break;
             case Qt::Key_B: doc->markAP(QLatin1Char('B')); break;
@@ -2202,7 +2202,7 @@ void MainWindow::on_action_Goto_Mark_triggered() {
         return;
     }
 
-    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+    if(auto doc = currentDocument()) {
         doc->gotoMarkAP(result[0], extend);
     }
 }
@@ -2212,7 +2212,7 @@ void MainWindow::action_Shift_Goto_Mark_Shortcut_triggered() {
     if(auto shortcut = qobject_cast<QShortcut *>(sender())) {
         QKeySequence sequence = shortcut->key();
 
-        if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+        if(auto doc = currentDocument()) {
             switch(sequence[1]) {
             case Qt::Key_A: doc->gotoMarkAP(QLatin1Char('A'), true); break;
             case Qt::Key_B: doc->gotoMarkAP(QLatin1Char('B'), true); break;
@@ -2252,7 +2252,7 @@ void MainWindow::action_Goto_Mark_Shortcut_triggered() {
     if(auto shortcut = qobject_cast<QShortcut *>(sender())) {
         QKeySequence sequence = shortcut->key();
 
-        if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+        if(auto doc = currentDocument()) {
             switch(sequence[1]) {
             case Qt::Key_A: doc->gotoMarkAP(QLatin1Char('A'), false); break;
             case Qt::Key_B: doc->gotoMarkAP(QLatin1Char('B'), false); break;
@@ -2289,13 +2289,13 @@ void MainWindow::action_Goto_Mark_Shortcut_triggered() {
 }
 
 void MainWindow::on_action_Goto_Matching_triggered() {
-    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+    if(auto doc = currentDocument()) {
         doc->GotoMatchingCharacter(lastFocus_);
     }
 }
 
 void MainWindow::action_Shift_Goto_Matching_triggered() {
-    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+    if(auto doc = currentDocument()) {
         doc->SelectToMatchingCharacter(lastFocus_);
     }
 }
@@ -2386,7 +2386,7 @@ void MainWindow::loadTagsAP(const QString &filename) {
 
 void MainWindow::on_action_Load_Calltips_File_triggered() {
 
-    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+    if(auto doc = currentDocument()) {
         QString filename = PromptForExistingFileEx(doc->path_, tr("Load Calltips File"));
         if (filename.isNull()) {
             return;
@@ -2399,7 +2399,7 @@ void MainWindow::on_action_Load_Calltips_File_triggered() {
 
 void MainWindow::on_action_Load_Tags_File_triggered() {
 
-    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+    if(auto doc = currentDocument()) {
         QString filename = PromptForExistingFileEx(doc->path_, tr("Load Tags File"));
         if (filename.isNull()) {
             return;
@@ -2411,7 +2411,7 @@ void MainWindow::on_action_Load_Tags_File_triggered() {
 }
 
 void MainWindow::on_action_Load_Macro_File_triggered() {
-    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+    if(auto doc = currentDocument()) {
         QString filename = PromptForExistingFileEx(doc->path_, tr("Load Macro File"));
         if (filename.isNull()) {
             return;
@@ -2422,25 +2422,25 @@ void MainWindow::on_action_Load_Macro_File_triggered() {
 }
 
 void MainWindow::loadMacroAP(const QString &filename) {
-    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+    if(auto doc = currentDocument()) {
         ReadMacroFileEx(doc, filename.toStdString(), true);
     }
 }
 
 void MainWindow::on_action_Show_Calltip_triggered() {
-    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+    if(auto doc = currentDocument()) {
         doc->FindDefCalltip(lastFocus_, nullptr); // TODO(eteran): there was an optional arg?
     }
 }
 
 void MainWindow::on_action_Find_Definition_triggered() {
-    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+    if(auto doc = currentDocument()) {
         doc->FindDefinition(lastFocus_, nullptr); // TODO(eteran): there was an optional arg?
     }
 }
 
 void MainWindow::on_action_Execute_Command_triggered() {
-    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+    if(auto doc = currentDocument()) {
         static DialogExecuteCommand *dialog = nullptr;
 
         if (doc->CheckReadOnly())
@@ -2463,8 +2463,8 @@ void MainWindow::on_action_Execute_Command_triggered() {
 }
 
 void MainWindow::on_action_Detach_Tab_triggered() {
-    if(ui.tabWidget->count() > 1) {
-        if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+    if(TabCount() > 1) {
+        if(auto doc = currentDocument()) {
             auto new_window = new MainWindow();
 
             new_window->ui.tabWidget->addTab(doc, doc->filename_);
@@ -2474,33 +2474,41 @@ void MainWindow::on_action_Detach_Tab_triggered() {
 }
 
 void MainWindow::on_action_Print_triggered() {
-    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+    if(auto doc = currentDocument()) {
         doc->PrintWindow(lastFocus_, false);
     }
 }
 
 void MainWindow::on_action_Print_Selection_triggered() {
-    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+    if(auto doc = currentDocument()) {
         doc->PrintWindow(lastFocus_, true);
     }
 }
 
 void MainWindow::on_action_Split_Pane_triggered() {
-    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+    if(auto doc = currentDocument()) {
         doc->splitPane();
         ui.action_Close_Pane->setEnabled(doc->textPanesCount() > 1);
     }
 }
 
 void MainWindow::on_action_Close_Pane_triggered() {
-    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+    if(auto doc = currentDocument()) {
         doc->closePane();
         ui.action_Close_Pane->setEnabled(doc->textPanesCount() > 1);
     }
 }
 
 void MainWindow::on_action_Move_Tab_To_triggered() {
-    if(auto doc = DocumentWidget::documentFrom(lastFocus_)) {
+    if(auto doc = currentDocument()) {
         doc->moveDocument(this);
     }
+}
+
+void MainWindow::on_action_About_Qt_triggered() {
+    QMessageBox::aboutQt(this);
+}
+
+DocumentWidget *MainWindow::currentDocument() {
+    return qobject_cast<DocumentWidget *>(ui.tabWidget->currentWidget());
 }

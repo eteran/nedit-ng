@@ -63,6 +63,7 @@ public:
     QString PromptForExistingFileEx(const QString &prompt);
     void updateTipsFileMenuEx();
     void updateTagsFileMenuEx();
+    DocumentWidget *currentDocument();
 
 public:
     static QList<MainWindow *> allWindows();
@@ -169,10 +170,6 @@ public Q_SLOTS:
 
 	void on_action_Filter_Selection_triggered();
 	void on_action_Cancel_Shell_Command_triggered();
-
-
-
-	void on_action_About_Qt_triggered();
 	void on_action_Indent_triggered();
 	void on_action_Unindent_triggered();
 	void on_action_Save_Defaults_triggered();
@@ -275,6 +272,7 @@ public Q_SLOTS:
 	void on_action_Default_Size_80_x_80_triggered();
 	void on_action_Default_Size_Custom_triggered();
 #endif
+    void on_action_About_Qt_triggered();
 
 public Q_SLOTS:
     void unloadTipsAP(const QString &filename);
