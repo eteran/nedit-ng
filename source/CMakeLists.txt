@@ -66,7 +66,6 @@ qt4_wrap_cpp(MOC_SOURCES
 	ui/DialogOutput.h
 	ui/CallTipWidget.h
 	ui/TabWidget.h
-	ui/SignalBlocker.h
 )
 
 set(UI_FILES
@@ -196,6 +195,7 @@ add_executable(nedit
 	ui/DialogOutput.cpp
 	ui/CallTipWidget.cpp
 	ui/TabWidget.cpp
+	ui/SignalBlocker.h
 		
 	${BISON_parser_OUTPUT_SOURCE}
 )
