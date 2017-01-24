@@ -2664,8 +2664,10 @@ void Document::CloseWindow() {
 		UpdateWindowTitle();
 		UpdateWindowReadOnly();
 		XtSetSensitive(closeItem_, false);
+#if 0 // NOTE(eteran): transitioned
 		XtSetSensitive(readOnlyItem_, true);
 		XmToggleButtonSetState(readOnlyItem_, false, false);
+#endif
 		ClearUndoList();
 		ClearRedoList();
 		XmTextSetStringEx(statsLine_, ""); // resets scroll pos of stats line from long file names

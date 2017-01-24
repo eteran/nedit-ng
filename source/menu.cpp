@@ -120,9 +120,6 @@ static void highlightDefCB(Widget w, XtPointer clientData, XtPointer callData);
 static void backlightCharsDefCB(Widget w, XtPointer clientData, XtPointer callData);
 static void highlightingDefCB(Widget w, XtPointer clientData, XtPointer callData);
 static void stylesDefCB(Widget w, XtPointer clientData, XtPointer callData);
-static void shellDefCB(Widget w, XtPointer clientData, XtPointer callData);
-static void macroDefCB(Widget w, XtPointer clientData, XtPointer callData);
-static void bgMenuDefCB(Widget w, XtPointer clientData, XtPointer callData);
 static void searchDlogsDefCB(Widget w, XtPointer clientData, XtPointer callData);
 static void beepOnSearchWrapDefCB(Widget w, XtPointer clientData, XtPointer callData);
 static void keepSearchDlogsDefCB(Widget w, XtPointer clientData, XtPointer callDat);
@@ -443,10 +440,6 @@ Widget CreateMenuBar(Widget parent, Document *window) {
 	// Customize Menus sub menu 
 	subSubPane = createMenu(subPane, "customizeMenus", "Customize Menus", 'u', nullptr, FULL);
 
-	createMenuItem(subSubPane, "shellMenu", "Shell Menu...", 'S', shellDefCB, window, FULL);
-
-	createMenuItem(subSubPane, "macroMenu", "Macro Menu...", 'M', macroDefCB, window, FULL);
-	createMenuItem(subSubPane, "windowBackgroundMenu", "Window Background Menu...", 'W', bgMenuDefCB, window, FULL);
 	createMenuSeparator(subSubPane, "sep1", SHORT);
 	window->sortOpenPrevDefItem_ = createMenuToggle(subSubPane, "sortOpenPrevMenu", "Sort Open Prev. Menu", 'o', sortOpenPrevDefCB, window, GetPrefSortOpenPrevMenu(), FULL);
 	window->pathInWindowsMenuDefItem_ = createMenuToggle(subSubPane, "pathInWindowsMenu", "Show Path In Windows Menu", 'P', pathInWindowsMenuDefCB, window, GetPrefShowPathInWindowsMenu(), SHORT);
@@ -794,33 +787,6 @@ static void stylesDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	EditHighlightStyles(nullptr);
-}
-
-static void shellDefCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	Q_UNUSED(clientData);
-	Q_UNUSED(callData);
-
-	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	EditShellMenu(Document::WidgetToWindow(MENU_WIDGET(w)));
-}
-
-static void macroDefCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	Q_UNUSED(clientData);
-	Q_UNUSED(callData);
-
-	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	EditMacroMenu(Document::WidgetToWindow(MENU_WIDGET(w)));
-}
-
-static void bgMenuDefCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	Q_UNUSED(clientData);
-	Q_UNUSED(callData);
-
-	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	EditBGMenu(Document::WidgetToWindow(MENU_WIDGET(w)));
 }
 
 static void customizeTitleDefCB(Widget w, XtPointer clientData, XtPointer callData) {

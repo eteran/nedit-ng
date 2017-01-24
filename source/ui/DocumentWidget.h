@@ -105,8 +105,6 @@ public:
     bool IsTopDocument() const;
     void updateWindowMenu();
     QString getWindowsMenuEntry();
-    void UpdateUserMenus();
-    QMenu *createUserMenu(const QVector<MenuData> &menuData);
     MainWindow *toWindow() const;
     void UpdateMarkTable(int pos, int nInserted, int nDeleted);
     void StopHighlightingEx();

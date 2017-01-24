@@ -59,7 +59,7 @@ Widget MENU_WIDGET(Widget w) {
 
 DialogWindowBackgroundMenu *WindowBackgroundMenu = nullptr;
 DialogMacros               *WindowMacros         = nullptr;
-DialogShellMenu            *WindowShellMenu      = nullptr;
+
 
 /* indicates, that an unknown (i.e. not existing) language mode
    is bound to an user menu item */
@@ -139,47 +139,6 @@ static QString writeMenuItemStringEx(const QVector<MenuData> &menuItems, int lis
 static char *writeMenuItemString(const QVector<MenuData> &menuItems, int listType);
 static void dimSelDepItemsInMenu(Widget menuPane, const QVector<MenuData> &menuList, int sensitive);
 
-/*
-** Present a dialog for editing the user specified commands in the shell menu
-*/
-void EditShellMenu(Document *window) {
-	Q_UNUSED(window);
-
-	if(!WindowShellMenu) {
-		WindowShellMenu = new DialogShellMenu();
-	}
-	
-	WindowShellMenu->show();
-	WindowShellMenu->raise();
-}
-
-/*
-** Present a dialogs for editing the user specified commands in the Macro
-** and background menus
-*/
-void EditMacroMenu(Document *window) {
-	(void)window;
-	
-	if(!WindowMacros) {
-		WindowMacros = new DialogMacros();
-	}
-
-	WindowMacros->show();
-	WindowMacros->raise();
-}
-
-
-
-void EditBGMenu(Document *window) {
-	(void)window;
-
-	if(!WindowBackgroundMenu) {
-		WindowBackgroundMenu = new DialogWindowBackgroundMenu();
-	}
-	
-	WindowBackgroundMenu->show();
-	WindowBackgroundMenu->raise();
-}
 
 /*
 ** Update the Shell, Macro, and Window Background menus of window

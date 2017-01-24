@@ -11,6 +11,9 @@
 #include "DialogExecuteCommand.h"
 #include "DialogSmartIndent.h"
 #include "DialogWrapMargin.h"
+#include "DialogMacros.h"
+#include "DialogWindowBackgroundMenu.h"
+#include "DialogShellMenu.h"
 #include "SignalBlocker.h"
 #include "DialogLanguageModes.h"
 #include "DialogTabs.h"
@@ -25,6 +28,7 @@
 #include "DialogFind.h"
 #include "selection.h"
 #include "clearcase.h"
+#include "MenuItem.h"
 #include "file.h"
 #include "preferences.h"
 #include "shift.h"
@@ -47,6 +51,9 @@
 
 namespace {
 
+DialogShellMenu *WindowShellMenu = nullptr;
+DialogWindowBackgroundMenu *WindowBackgroundMenu = nullptr;
+DialogMacros *WindowMacros = nullptr;
 DialogSmartIndent *SmartIndentDlg = nullptr;
 
 const char neditDBBadFilenameChars[] = "\n";
@@ -811,6 +818,140 @@ void MainWindow::raiseCB() {
         if(const auto ptr = reinterpret_cast<DocumentWidget *>(action->data().value<qulonglong>())) {
             ptr->RaiseFocusDocumentWindow(true);
         }
+    }
+}
+
+/*
+** Create either the variable Shell menu, Macro menu or Background menu
+** items of "window" (driven by value of "menuType")
+*/
+QMenu *MainWindow::createUserMenu(DocumentWidget *document, const QVector<MenuData> &data) {
+
+    auto rootMenu = new QMenu(this);
+    for(int i = 0; i < data.size(); ++i) {
+        const MenuData &menuData = data[i];
+
+        bool found = menuData.info->umiNbrOfLanguageModes == 0;
+        for(int language = 0; language < menuData.info->umiNbrOfLanguageModes; ++language) {
+            if(menuData.info->umiLanguageMode[language] == document->languageMode_) {
+                found = true;
+            }
+        }
+
+        if(!found) {
+            continue;
+        }
+
+        QMenu *parentMenu = rootMenu;
+        QString name = QLatin1String(menuData.info->umiName);
+
+        int index = 0;
+        for (;;) {
+            int subSep = name.indexOf(QLatin1Char('>'), index);
+            if(subSep == -1) {
+                name = name.mid(index);
+
+                // add the mnemonic to the string in the appropriate place
+                int pos = name.indexOf(QLatin1Char(menuData.item->mnemonic));
+                if(pos != -1) {
+                    name.insert(pos, QLatin1String("&"));
+                }
+
+                // create the actual action or, if it represents one of our
+                // *very* common entries make it equivalent to the global
+                // QAction representing that task
+                if(menuData.item->cmd.trimmed() == QLatin1String("cut_clipboard()")) {
+                    parentMenu->addAction(ui.action_Cut);
+                } else if(menuData.item->cmd.trimmed() == QLatin1String("copy_clipboard()")) {
+                    parentMenu->addAction(ui.action_Copy);
+                } else if(menuData.item->cmd.trimmed() == QLatin1String("paste_clipboard()")) {
+                    parentMenu->addAction(ui.action_Paste);
+                } else if(menuData.item->cmd.trimmed() == QLatin1String("undo()")) {
+                    parentMenu->addAction(ui.action_Undo);
+                } else if(menuData.item->cmd.trimmed() == QLatin1String("redo()")) {
+                    parentMenu->addAction(ui.action_Redo);
+                } else {
+                    QAction *action = parentMenu->addAction(name);
+                    action->setData(i);
+
+                    // TODO(eteran): do this with native Qt QKeySequences instead
+                    // of this string conversion
+                    char accText[128] = {};
+                    generateAcceleratorString(accText, menuData.item->modifiers, menuData.item->keysym);
+                    if(accText[0] != '\0') {
+                        action->setShortcut(QKeySequence(QLatin1String(accText)));
+                    }
+                }
+
+                break;
+            }
+
+            QString parentName = name.mid(index, subSep);
+            int subSubSep = parentName.indexOf(QLatin1Char('>'));
+            if(subSubSep != -1) {
+                parentName = parentName.mid(0, subSubSep);
+            }
+
+            QList<QAction*> actions = parentMenu->actions();
+            QAction *parentAction = nullptr;
+            for(QAction *action : actions) {
+                if(action->text() == parentName) {
+                    parentAction = action;
+                    break;
+                }
+            }
+
+            if(!parentAction) {
+                auto newMenu = new QMenu(parentName, this);
+                parentMenu->addMenu(newMenu);
+                parentMenu = newMenu;
+            } else {
+                parentMenu = parentAction->menu();
+            }
+
+            index = subSep + 1;
+        }
+    }
+    return rootMenu;
+}
+
+/*
+** Update the Shell, Macro, and Window Background menus of window
+** "window" from the currently loaded command descriptions.
+*/
+void MainWindow::UpdateUserMenus(DocumentWidget *document) {
+
+
+    // TODO(eteran): the old code used to only do this if the language mode changed
+    //               we should probably restore that behavior
+
+    /* update user menus, which are shared over all documents, only
+       if language mode was changed */
+    auto shellMenu = createUserMenu(document, ShellMenuData);
+    ui.menu_Shell->clear();
+    ui.menu_Shell->addAction(ui.action_Execute_Command);
+    ui.menu_Shell->addAction(ui.action_Execute_Command_Line);
+    ui.menu_Shell->addAction(ui.action_Filter_Selection);
+    ui.menu_Shell->addAction(ui.action_Cancel_Shell_Command);
+    ui.menu_Shell->addSeparator();
+    ui.menu_Shell->addActions(shellMenu->actions());
+
+    auto macroMenu = createUserMenu(document, MacroMenuData);
+    ui.menu_Macro->clear();
+    ui.menu_Macro->addAction(ui.action_Learn_Keystrokes);
+    ui.menu_Macro->addAction(ui.action_Finish_Learn);
+    ui.menu_Macro->addAction(ui.action_Cancel_Learn);
+    ui.menu_Macro->addAction(ui.action_Replay_Keystrokes);
+    ui.menu_Macro->addAction(ui.action_Repeat);
+    ui.menu_Macro->addSeparator();
+    ui.menu_Macro->addActions(macroMenu->actions());
+
+    /* update background menu, which is owned by a single document, only
+       if language mode was changed */
+    document->contextMenu_ = createUserMenu(document, BGMenuData);
+    const QList<TextArea *> textAreas = document->textPanes();
+    for(TextArea *area : textAreas) {
+        area->setContextMenu(document->contextMenu_);
     }
 }
 
@@ -2826,7 +2967,7 @@ void MainWindow::on_action_Default_Tab_Stops_triggered() {
 
 void MainWindow::on_action_Default_Text_Fonts_triggered() {
     if(auto document = currentDocument()) {
-        document->dialogFonts_ = new DialogFonts(false, this);
+        document->dialogFonts_ = new DialogFonts(nullptr, false, this);
         document->dialogFonts_->exec();
         delete document->dialogFonts_;
     }
@@ -2841,4 +2982,41 @@ void MainWindow::on_action_Default_Colors_triggered() {
         document->dialogColors_->show();
         document->dialogColors_->raise();
     }
+}
+
+/*
+** Present a dialog for editing the user specified commands in the shell menu
+*/
+void MainWindow::on_action_Default_Shell_Menu_triggered() {
+
+    if(!WindowShellMenu) {
+        WindowShellMenu = new DialogShellMenu(this);
+    }
+
+    WindowShellMenu->show();
+    WindowShellMenu->raise();
+}
+
+/*
+** Present a dialogs for editing the user specified commands in the Macro
+** and background menus
+*/
+void MainWindow::on_action_Default_Macro_Menu_triggered() {
+
+    if(!WindowMacros) {
+        WindowMacros = new DialogMacros(this);
+    }
+
+    WindowMacros->show();
+    WindowMacros->raise();
+}
+
+void MainWindow::on_action_Default_Window_Background_Menu_triggered() {
+
+    if(!WindowBackgroundMenu) {
+        WindowBackgroundMenu = new DialogWindowBackgroundMenu(this);
+    }
+
+    WindowBackgroundMenu->show();
+    WindowBackgroundMenu->raise();
 }

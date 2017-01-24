@@ -11,6 +11,7 @@
 class TextArea;
 class DocumentWidget;
 class DialogReplace;
+class MenuData;
 
 #include "ui_MainWindow.h"
 
@@ -30,9 +31,11 @@ private:
 	void setupMenuAlternativeMenus();
     void CreateLanguageModeSubMenu();
     void setupMenuDefaults();
+    QMenu *createUserMenu(DocumentWidget *document, const QVector<MenuData> &data);
 
 public:
     void updateLanguageModeSubmenu();
+    void UpdateUserMenus(DocumentWidget *document);
 
 private:
     virtual void keyPressEvent(QKeyEvent *event) override;
@@ -208,6 +211,10 @@ public Q_SLOTS:
     void on_action_Default_Tab_Stops_triggered();
     void on_action_Default_Text_Fonts_triggered();
     void on_action_Default_Colors_triggered();
+    void on_action_Default_Shell_Menu_triggered();
+    void on_action_Default_Macro_Menu_triggered();
+    void on_action_Default_Window_Background_Menu_triggered();
+
 #if 0
 	void on_action_Default_Customize_Window_Title_triggered();
 	void on_action_Default_Apply_Backlighting_triggered();
@@ -219,9 +226,9 @@ public Q_SLOTS:
 	void on_action_Default_Terminate_with_Line_Break_on_Save_triggered();
 	void on_action_Default_Popups_Under_Pointer_triggered();
 	void on_action_Default_Auto_Scroll_Near_Window_Top_Bottom_triggered();
-    void on_action_Default_Shell_Menu_triggered();
-	void on_action_Default_Macro_Menu_triggered();
-	void on_action_Default_Window_Background_Menu_triggered();
+
+
+
 	void on_action_Default_Sort_Open_Prev_Menu_triggered();
 	void on_action_Default_Show_Path_In_Windows_Menu_triggered();
 	void on_action_Default_Search_Verbose_triggered();

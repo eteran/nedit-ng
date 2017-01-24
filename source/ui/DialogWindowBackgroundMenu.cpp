@@ -6,8 +6,8 @@
 #include "interpret.h"
 #include "macro.h"
 #include "preferences.h"
-#include "shell.h"
 #include "userCmds.h"
+#include "MainWindow.h"
 
 //------------------------------------------------------------------------------
 // Name: DialogWindowBackgroundMenu
@@ -469,11 +469,12 @@ bool DialogWindowBackgroundMenu::applyDialogChanges() {
 		BGMenuData.push_back({ new MenuItem(*ptr), nullptr });
 	}
 
-
 	parseMenuItemList(BGMenuData, &BGSubMenus);
 
-	// Update the menus themselves in all of the NEdit windows
-	rebuildMenuOfAllWindows(BG_MENU_CMDS);
+    // Update the menus themselves in all of the NEdit windows
+    for(MainWindow *window : MainWindow::allWindows()) {
+        window->UpdateUserMenus(window->currentDocument());
+    }
 
 	// Note that preferences have been changed
 	MarkPrefsChanged();

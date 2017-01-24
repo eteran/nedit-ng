@@ -32,7 +32,6 @@
 #include "smartIndentCBStruct.h"
 #include "smartIndent.h"
 #include "highlightData.h"
-#include "MenuItem.h"
 #include "Font.h"
 #include "macro.h"
 #include "tags.h"
@@ -1137,139 +1136,11 @@ void DocumentWidget::reapplyLanguageMode(int mode, bool forceDefaults) {
         }
 
         // Add/remove language specific menu items
-        UpdateUserMenus();
+        win->UpdateUserMenus(this);
     }
 }
 
-/*
-** Create either the variable Shell menu, Macro menu or Background menu
-** items of "window" (driven by value of "menuType")
-*/
-QMenu *DocumentWidget::createUserMenu(const QVector<MenuData> &data) {
 
-    auto rootMenu = new QMenu(this);
-    for(int i = 0; i < data.size(); ++i) {
-        const MenuData &menuData = data[i];
-
-        bool found = menuData.info->umiNbrOfLanguageModes == 0;
-        for(int language = 0; language < menuData.info->umiNbrOfLanguageModes; ++language) {
-            if(menuData.info->umiLanguageMode[language] == languageMode_) {
-                found = true;
-            }
-        }
-
-        if(!found) {
-            continue;
-        }
-
-        QMenu *parentMenu = rootMenu;
-        QString name = QLatin1String(menuData.info->umiName);
-
-        int index = 0;
-        for (;;) {
-            int subSep = name.indexOf(QLatin1Char('>'), index);
-            if(subSep == -1) {
-                name = name.mid(index);
-
-                // add the mnemonic to the string in the appropriate place
-                int pos = name.indexOf(QLatin1Char(menuData.item->mnemonic));
-                if(pos != -1) {
-                    name.insert(pos, QLatin1String("&"));
-                }
-
-                // create the actual action or, if it represents one of our
-                // *very* common entries make it equivalent to the global
-                // QAction representing that task
-                if(menuData.item->cmd.trimmed() == QLatin1String("cut_clipboard()")) {
-                    parentMenu->addAction(toWindow()->ui.action_Cut);
-                } else if(menuData.item->cmd.trimmed() == QLatin1String("copy_clipboard()")) {
-                    parentMenu->addAction(toWindow()->ui.action_Copy);
-                } else if(menuData.item->cmd.trimmed() == QLatin1String("paste_clipboard()")) {
-                    parentMenu->addAction(toWindow()->ui.action_Paste);
-                } else if(menuData.item->cmd.trimmed() == QLatin1String("undo()")) {
-                    parentMenu->addAction(toWindow()->ui.action_Undo);
-                } else if(menuData.item->cmd.trimmed() == QLatin1String("redo()")) {
-                    parentMenu->addAction(toWindow()->ui.action_Redo);
-                } else {
-                    QAction *action = parentMenu->addAction(name);
-                    action->setData(i);
-                }
-
-                break;
-            }
-
-            QString parentName = name.mid(index, subSep);
-            int subSubSep = parentName.indexOf(QLatin1Char('>'));
-            if(subSubSep != -1) {
-                parentName = parentName.mid(0, subSubSep);
-            }
-
-            QList<QAction*> actions = parentMenu->actions();
-            QAction *parentAction = nullptr;
-            for(QAction *action : actions) {
-                if(action->text() == parentName) {
-                    parentAction = action;
-                    break;
-                }
-            }
-
-            if(!parentAction) {
-                auto newMenu = new QMenu(parentName, this);
-                parentMenu->addMenu(newMenu);
-                parentMenu = newMenu;
-            } else {
-                parentMenu = parentAction->menu();
-            }
-
-            index = subSep + 1;
-        }
-    }
-    return rootMenu;
-}
-
-/*
-** Update the Shell, Macro, and Window Background menus of window
-** "window" from the currently loaded command descriptions.
-*/
-void DocumentWidget::UpdateUserMenus() {
-
-    if (!IsTopDocument()) {
-        return;
-    }
-
-    // TODO(eteran): the old code used to only do this if the language mode changed
-    //               we should probably restore that behavior
-    if(auto win = toWindow()) {
-        /* update user menus, which are shared over all documents, only
-           if language mode was changed */
-        auto shellMenu = createUserMenu(ShellMenuData);
-        win->ui.menu_Shell->clear();
-        win->ui.menu_Shell->addAction(win->ui.action_Execute_Command);
-        win->ui.menu_Shell->addAction(win->ui.action_Execute_Command_Line);
-        win->ui.menu_Shell->addAction(win->ui.action_Filter_Selection);
-        win->ui.menu_Shell->addAction(win->ui.action_Cancel_Shell_Command);
-        win->ui.menu_Shell->addSeparator();
-        win->ui.menu_Shell->addActions(shellMenu->actions());
-
-        auto macroMenu = createUserMenu(MacroMenuData);
-        win->ui.menu_Macro->clear();
-        win->ui.menu_Macro->addAction(win->ui.action_Learn_Keystrokes);
-        win->ui.menu_Macro->addAction(win->ui.action_Finish_Learn);
-        win->ui.menu_Macro->addAction(win->ui.action_Cancel_Learn);
-        win->ui.menu_Macro->addAction(win->ui.action_Replay_Keystrokes);
-        win->ui.menu_Macro->addAction(win->ui.action_Repeat);
-        win->ui.menu_Macro->addSeparator();
-        win->ui.menu_Macro->addActions(macroMenu->actions());
-
-        /* update background menu, which is owned by a single document, only
-           if language mode was changed */
-        contextMenu_ = createUserMenu(BGMenuData);
-        const QList<TextArea *> textAreas = textPanes();
-        for(TextArea *area : textAreas) {
-            area->setContextMenu(contextMenu_);
-        }
-    }
-}
 
 /*
 **
@@ -3731,7 +3602,7 @@ void DocumentWidget::refreshMenuBar() {
         RefreshMenuToggleStates();
 
         // Add/remove language specific menu items
-        UpdateUserMenus();
+        win->UpdateUserMenus(this);
 
         // refresh selection-sensitive menus
         DimSelectionDepUserMenuItems(win->wasSelected_);
