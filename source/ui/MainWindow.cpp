@@ -244,6 +244,61 @@ void MainWindow::setupMenuDefaults() {
     // TODO(eteran): make sure that the various menus default to the current
     //               settings based on the preferences!
 
+    // active settings
+    ui.action_Statistics_Line->setChecked(GetPrefStatsLine());
+    ui.action_Incremental_Search_Line->setChecked(GetPrefISearchLine());
+    ui.action_Show_Line_Numbers->setChecked(GetPrefLineNums());
+    ui.action_Highlight_Syntax->setChecked(GetPrefHighlightSyntax());
+    ui.action_Apply_Backlighting->setChecked(false); // TODO(eteran)
+    ui.action_Make_Backup_Copy->setChecked(GetPrefAutoSave());
+    ui.action_Incremental_Backup->setChecked(GetPrefSaveOldVersion());
+    ui.action_Matching_Syntax->setChecked(GetPrefMatchSyntaxBased());
+
+
+    // based on document, which defaults to this
+    switch(GetPrefAutoIndent(PLAIN_LANGUAGE_MODE)) {
+    case NO_AUTO_INDENT:
+        ui.action_Indent_Off->setChecked(true);
+        break;
+    case AUTO_INDENT:
+        ui.action_Indent_On->setChecked(true);
+        break;
+    case SMART_INDENT:
+        ui.action_Indent_Smart->setChecked(true);
+        break;
+    default:
+        break;
+    }
+
+    // based on document, which defaults to this
+    switch(GetPrefWrap(PLAIN_LANGUAGE_MODE)) {
+    case NO_WRAP:
+        ui.action_Wrap_None->setChecked(true);
+        break;
+    case NEWLINE_WRAP:
+        ui.action_Wrap_Auto_Newline->setChecked(true);
+        break;
+    case CONTINUOUS_WRAP:
+        ui.action_Wrap_Continuous->setChecked(true);
+        break;
+    default:
+        break;
+    }
+
+    switch(static_cast<ShowMatchingStyle>(GetPrefShowMatching())) {
+    case NO_FLASH:
+        ui.action_Matching_Off->setChecked(true);
+        break;
+    case FLASH_DELIMIT:
+        ui.action_Matching_Delimiter->setChecked(true);
+        break;
+    case FLASH_RANGE:
+        ui.action_Matching_Range->setChecked(true);
+        break;
+    default:
+        break;
+    }
+
     // Default Indent
     switch(GetPrefAutoIndent(PLAIN_LANGUAGE_MODE)) {
     case NO_AUTO_INDENT:
@@ -3019,4 +3074,83 @@ void MainWindow::on_action_Default_Window_Background_Menu_triggered() {
 
     WindowBackgroundMenu->show();
     WindowBackgroundMenu->raise();
+}
+
+void MainWindow::on_action_Default_Sort_Open_Prev_Menu_toggled(bool state) {
+    /* Set the preference, make the other windows' menus agree,
+       and invalidate their Open Previous menus */
+    SetPrefSortOpenPrevMenu(state);
+    for(MainWindow *window : allWindows()) {
+        no_signals(window->ui.action_Default_Sort_Open_Prev_Menu)->setChecked(state);
+    }
+}
+
+void MainWindow::on_action_Default_Show_Path_In_Windows_Menu_toggled(bool state) {
+
+    // Set the preference and make the other windows' menus agree
+    SetPrefShowPathInWindowsMenu(state);
+    for(MainWindow *window : allWindows()) {
+        no_signals(window->ui.action_Default_Show_Path_In_Windows_Menu)->setChecked(state);
+    }
+#if 0
+    InvalidateWindowMenus();
+#endif
+}
+
+void MainWindow::on_action_Default_Customize_Window_Title_triggered() {
+    if(auto document = currentDocument()) {
+        auto dialog = new DialogWindowTitle(document, this);
+        dialog->exec();
+        delete dialog;
+    }
+}
+
+/*
+** Update the window title to reflect the filename, read-only, and modified
+** status of the window data structure
+*/
+void MainWindow::UpdateWindowTitle() {
+
+    if(auto document = currentDocument()) {
+        QString clearCaseTag = GetClearCaseViewTag();
+
+        QString title = DialogWindowTitle::FormatWindowTitle(
+            document->filename_,
+            document->path_,
+            clearCaseTag,
+            QLatin1String(GetPrefServerName()),
+            IsServer,
+            document->filenameSet_,
+            document->lockReasons_,
+            document->fileChanged_,
+            QLatin1String(GetPrefTitleFormat()));
+
+
+        QString iconTitle = document->filename_;
+        if (document->fileChanged_) {
+            iconTitle.append(QLatin1String("*"));
+        }
+
+        setWindowTitle(title);
+        setWindowIconText(iconTitle); // NOTE(eteran): is the functional equivalent to "XmNiconName"?
+
+        /* If there's a find or replace dialog up in "Keep Up" mode, with a
+           file name in the title, update it too */
+        if (auto dialog = qobject_cast<DialogFind *>(dialogFind_)) {
+            if(dialog->keepDialog()) {
+                title = tr("Find (in %1)").arg(document->filename_);
+                dialog->setWindowTitle(title);
+            }
+        }
+
+        if(auto dialog = getDialogReplace()) {
+            if(dialog->keepDialog()) {
+                title = tr("Replace (in %1)").arg(document->filename_);
+                dialog->setWindowTitle(title);
+            }
+        }
+
+        // Update the Windows menus with the new name
+        InvalidateWindowMenus();
+    }
 }

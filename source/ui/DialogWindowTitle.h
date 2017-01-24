@@ -7,13 +7,14 @@
 #include "LockReasons.h"
 #include "ui_DialogWindowTitle.h"
 
-class Document;
+class MainWindow;
+class DocumentWidget;
 struct UpdateState;
 
 class DialogWindowTitle : public QDialog {
 	Q_OBJECT
 public:
-	DialogWindowTitle(Document *window, QWidget *parent = 0, Qt::WindowFlags f = 0);
+    DialogWindowTitle(DocumentWidget *document, QWidget *parent = 0, Qt::WindowFlags f = 0);
 	virtual ~DialogWindowTitle();
 
 private Q_SLOTS:

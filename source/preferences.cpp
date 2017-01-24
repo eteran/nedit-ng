@@ -37,6 +37,7 @@
 #include "ui/DialogLanguageModes.h"
 #include "ui/DocumentWidget.h"
 #include "ui/DialogColors.h"
+#include "ui/MainWindow.h"
 #include "LanguageMode.h"
 
 #include "util/memory.h"
@@ -1604,8 +1605,8 @@ int GetPrefTypingHidesPointer() {
 void SetPrefTitleFormat(const char *format) {
 	setStringPref(PrefData.titleFormat, format);
 
-	// update all windows 
-	for(Document *window: WindowList) {
+    // update all windows
+    for(MainWindow *window : MainWindow::allWindows()) {
 		window->UpdateWindowTitle();
 	}
 }

@@ -71,6 +71,7 @@ public:
     void updateTipsFileMenuEx();
     void updateTagsFileMenuEx();
     DocumentWidget *currentDocument();
+    void UpdateWindowTitle();
 
 public:
     static QList<MainWindow *> allWindows();
@@ -214,9 +215,12 @@ public Q_SLOTS:
     void on_action_Default_Shell_Menu_triggered();
     void on_action_Default_Macro_Menu_triggered();
     void on_action_Default_Window_Background_Menu_triggered();
+    void on_action_Default_Sort_Open_Prev_Menu_toggled(bool state);
+    void on_action_Default_Show_Path_In_Windows_Menu_toggled(bool state);
+    void on_action_Default_Customize_Window_Title_triggered();
 
 #if 0
-	void on_action_Default_Customize_Window_Title_triggered();
+
 	void on_action_Default_Apply_Backlighting_triggered();
 	void on_action_Default_Show_Tooltips_triggered();
 	void on_action_Default_Statistics_Line_triggered();
@@ -229,8 +233,8 @@ public Q_SLOTS:
 
 
 
-	void on_action_Default_Sort_Open_Prev_Menu_triggered();
-	void on_action_Default_Show_Path_In_Windows_Menu_triggered();
+
+
 	void on_action_Default_Search_Verbose_triggered();
 	void on_action_Default_Search_Wrap_Around_triggered();
 	void on_action_Default_Search_Beep_On_Search_Wrap_triggered();

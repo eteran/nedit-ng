@@ -109,8 +109,6 @@ static void tabNavigateDefCB(Widget w, XtPointer clientData, XtPointer callData)
 static void statsLineDefCB(Widget w, XtPointer clientData, XtPointer callData);
 static void iSearchLineDefCB(Widget w, XtPointer clientData, XtPointer callData);
 static void lineNumsDefCB(Widget w, XtPointer clientData, XtPointer callData);
-static void pathInWindowsMenuDefCB(Widget w, XtPointer clientData, XtPointer callData);
-static void customizeTitleDefCB(Widget w, XtPointer clientData, XtPointer callData);
 static void showMatchingOffDefCB(Widget w, XtPointer clientData, XtPointer callData);
 static void showMatchingDelimitDefCB(Widget w, XtPointer clientData, XtPointer callData);
 static void showMatchingRangeDefCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -125,7 +123,6 @@ static void beepOnSearchWrapDefCB(Widget w, XtPointer clientData, XtPointer call
 static void keepSearchDlogsDefCB(Widget w, XtPointer clientData, XtPointer callDat);
 static void searchWrapsDefCB(Widget w, XtPointer clientData, XtPointer callData);
 static void appendLFCB(Widget w, XtPointer clientData, XtPointer callData);
-static void sortOpenPrevDefCB(Widget w, XtPointer clientData, XtPointer callData);
 static void reposDlogsDefCB(Widget w, XtPointer clientData, XtPointer callData);
 static void autoScrollDefCB(Widget w, XtPointer clientData, XtPointer callData);
 static void modWarnDefCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -190,9 +187,7 @@ static Widget createMenuRadioToggle(Widget parent, const char *name, const char 
 static Widget createMenuSeparator(Widget parent, const char *name, int mode);
 static void invalidatePrevOpenMenus(void);
 static void updateWindowMenu(const Document *window);
-static void updatePrevOpenMenu(Document *window);
 static void raiseCB(Widget w, XtPointer clientData, XtPointer callData);
-static void openPrevCB(Widget w, XtPointer clientData, XtPointer callData);
 static void setWindowSizeDefault(int rows, int cols);
 static void updateWindowSizeMenus(void);
 static void updateWindowSizeMenu(Document *win);
@@ -438,13 +433,6 @@ Widget CreateMenuBar(Widget parent, Document *window) {
 	subPane = createMenu(menuPane, "defaultSettings", "Default Settings", 'D', nullptr, FULL);
 
 	// Customize Menus sub menu 
-	subSubPane = createMenu(subPane, "customizeMenus", "Customize Menus", 'u', nullptr, FULL);
-
-	createMenuSeparator(subSubPane, "sep1", SHORT);
-	window->sortOpenPrevDefItem_ = createMenuToggle(subSubPane, "sortOpenPrevMenu", "Sort Open Prev. Menu", 'o', sortOpenPrevDefCB, window, GetPrefSortOpenPrevMenu(), FULL);
-	window->pathInWindowsMenuDefItem_ = createMenuToggle(subSubPane, "pathInWindowsMenu", "Show Path In Windows Menu", 'P', pathInWindowsMenuDefCB, window, GetPrefShowPathInWindowsMenu(), SHORT);
-
-	createMenuItem(subPane, "custimizeTitle", "Customize Window Title...", 'd', customizeTitleDefCB, window, FULL);
 
 	// Search sub menu 
 	subSubPane = createMenu(subPane, "searching", "Searching", 'g', nullptr, FULL);
@@ -789,17 +777,6 @@ static void stylesDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 	EditHighlightStyles(nullptr);
 }
 
-static void customizeTitleDefCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	Q_UNUSED(clientData);
-	Q_UNUSED(callData);
-
-	Document *window = Document::WidgetToWindow(MENU_WIDGET(w));
-
-	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	window->EditCustomTitleFormat();
-}
-
 static void searchDlogsDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	Q_UNUSED(clientData);
@@ -871,22 +848,6 @@ static void appendLFCB(Widget w, XtPointer clientData, XtPointer callData) {
 	for(Document *win: WindowList) {
 		if (win->IsTopDocument())
 			XmToggleButtonSetState(win->appendLFItem_, state, False);
-	}
-}
-
-static void sortOpenPrevDefCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	Q_UNUSED(clientData);
-	Q_UNUSED(callData);
-
-	bool state = XmToggleButtonGetState(w);
-
-	/* Set the preference, make the other windows' menus agree,
-	   and invalidate their Open Previous menus */
-	SetPrefSortOpenPrevMenu(state);
-	for(Document *win: WindowList) {
-		if (win->IsTopDocument())
-			XmToggleButtonSetState(win->sortOpenPrevDefItem_, state, False);
 	}
 }
 
@@ -1122,22 +1083,6 @@ static void lineNumsDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 		if (win->IsTopDocument())
 			XmToggleButtonSetState(win->lineNumsDefItem_, state, False);
 	}
-}
-
-static void pathInWindowsMenuDefCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	Q_UNUSED(clientData);
-	Q_UNUSED(callData);
-
-	bool state = XmToggleButtonGetState(w);
-
-	// Set the preference and make the other windows' menus agree 
-	SetPrefShowPathInWindowsMenu(state);
-	for(Document *win: WindowList) {
-		if (win->IsTopDocument())
-			XmToggleButtonSetState(win->pathInWindowsMenuDefItem_, state, False);
-	}
-	InvalidateWindowMenus();
 }
 
 static void searchLiteralCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -2277,11 +2222,13 @@ static void invalidatePrevOpenMenus(void) {
 	/* Mark the menus invalid (to be updated when the user pulls one
 	   down), unless the menu is torn off, meaning it is visible to the user
 	   and should be updated immediately */
+#if 0 // TODO(eteran): transitioned
 	for(Document *w: WindowList) {
 		if (!XmIsMenuShell(XtParent(w->prevOpenMenuPane_))) {
 			updatePrevOpenMenu(w);
 		}
-	};
+    }
+#endif
 }
 
 /*
@@ -2451,61 +2398,6 @@ static void updateWindowMenu(const Document *window) {
 		XtVaSetValues(XtParent(window->windowMenuPane_), XmNwidth, width, XmNheight, height, nullptr);
 		XtManageChild(window->windowMenuPane_);
 	}
-}
-
-/*
-** Update the Previously Opened Files menu of a single window to reflect the
-** current state of the list as retrieved from FIXME.
-** Thanks to Markus Schwarzenberg for the sorting part.
-*/
-static void updatePrevOpenMenu(Document *window) {
-	Widget btn;
-	WidgetList items;
-	Cardinal nItems;
-	XmString st1;
-
-	//  Read history file to get entries written by other sessions.  
-	ReadNEditDB();
-
-	// Sort the previously opened file list if requested 
-	auto prevOpenSorted = new char *[NPrevOpen];
-	memcpy(prevOpenSorted, PrevOpen, NPrevOpen * sizeof(char *));
-	if (GetPrefSortOpenPrevMenu()) {
-		std::sort(prevOpenSorted, prevOpenSorted + NPrevOpen, [](const char *lhs, const char *rhs) {
-			return strcmp(lhs, rhs) < 0; 		
-		});
-	}
-	
-
-	/* Go thru all of the items in the menu and rename them to match the file
-	   list.  In older Motifs (particularly ibm), it was dangerous to replace
-	   a whole menu pane, which would be much simpler.  However, since the
-	   code was already written for the Windows menu and is well tested, I'll
-	   stick with this weird method of re-naming the items */
-	XtVaGetValues(window->prevOpenMenuPane_, XmNchildren, &items, XmNnumChildren, &nItems, nullptr);
-	int index = 0;
-	for (int n = 0; n < (int)nItems; n++) {
-		if (index >= NPrevOpen) {
-			// unmanaging before destroying stops parent from displaying 
-			XtUnmanageChild(items[n]);
-			XtDestroyWidget(items[n]);
-		} else {
-			XtVaSetValues(items[n], XmNlabelString, st1 = XmStringCreateSimpleEx(prevOpenSorted[index]), nullptr);
-			XtRemoveAllCallbacks(items[n], XmNactivateCallback);
-			XtAddCallback(items[n], XmNactivateCallback, openPrevCB, prevOpenSorted[index]);
-			XmStringFree(st1);
-			index++;
-		}
-	}
-
-	// Add new items for the remaining file names to the menu 
-	for (; index < NPrevOpen; index++) {
-		btn = XtVaCreateManagedWidget("win", xmPushButtonWidgetClass, window->prevOpenMenuPane_, XmNlabelString, st1 = XmStringCreateSimpleEx(prevOpenSorted[index]), XmNmarginHeight, 0, XmNuserData, TEMPORARY_MENU_ITEM, nullptr);
-		XtAddCallback(btn, XmNactivateCallback, openPrevCB, prevOpenSorted[index]);
-		XmStringFree(st1);
-	}
-
-	delete [] prevOpenSorted;
 }
 
 static const char neditDBBadFilenameChars[] = "\n";
@@ -2710,19 +2602,6 @@ static void updateWindowSizeMenu(Document *win) {
 static void raiseCB(Widget w, XtPointer clientData, XtPointer callData) {
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	static_cast<Document *>(clientData)->RaiseFocusDocumentWindow(True /* always focus */);
-}
-
-static void openPrevCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	auto name = (const char *)clientData;
-
-	const char *params[1];
-	Widget menu = MENU_WIDGET(w);
-
-	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	params[0] = name;
-	XtCallActionProc(Document::WidgetToWindow(menu)->lastFocus_, "open", static_cast<XmAnyCallbackStruct *>(callData)->event, const_cast<char **>(params), 1);
-	CheckCloseDim();
 }
 
 /*

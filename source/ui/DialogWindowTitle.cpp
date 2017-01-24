@@ -2,11 +2,13 @@
 #include <QRegExp>
 #include <QRegExpValidator>
 #include "DialogWindowTitle.h"
-#include "Document.h"
+#include "MainWindow.h"
+#include "DocumentWidget.h"
 #include "util/clearcase.h"
 #include "preferences.h"
 #include "nedit.h"
 #include "util/utils.h"
+#include "util/fileUtils.h"
 
 struct UpdateState {
 	bool fileNamePresent;
@@ -23,7 +25,7 @@ struct UpdateState {
 //------------------------------------------------------------------------------
 // Name: 
 //------------------------------------------------------------------------------
-DialogWindowTitle::DialogWindowTitle(Document *window, QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f) {
+DialogWindowTitle::DialogWindowTitle(DocumentWidget *document, QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f) {
 	ui.setupUi(this);
 	
 	inConstructor_ = true;
@@ -33,18 +35,18 @@ DialogWindowTitle::DialogWindowTitle(Document *window, QWidget *parent, Qt::Wind
 	/* copy attributes from current this so that we can use as many
 	 * 'real world' defaults as possible when testing the effect
 	 * of different formatting strings.
-	 */	
-	path_        = window->path_;
-	filename_    = window->filename_;
+     */
+    path_        = document->path_;
+    filename_    = document->filename_;
 	
 	QString clearCase = GetClearCaseViewTag();
 	
-	viewTag_     = !clearCase.isNull() ? clearCase : QLatin1String("viewtag");
-	serverName_  = IsServer ? QLatin1String(GetPrefServerName()) : QLatin1String("servername");
+    viewTag_     = !clearCase.isNull() ? clearCase : tr("viewtag");
+    serverName_  = IsServer ? QLatin1String(GetPrefServerName()) : tr("servername");
 	isServer_    = IsServer;
-	filenameSet_ = window->filenameSet_;
-	lockReasons_ = window->lockReasons_;
-	fileChanged_ = window->fileChanged_;
+    filenameSet_ = document->filenameSet_;
+    lockReasons_ = document->lockReasons_;
+    fileChanged_ = document->fileChanged_;
 	
 	ui.checkClearCasePresent->setChecked(!clearCase.isNull());
 	

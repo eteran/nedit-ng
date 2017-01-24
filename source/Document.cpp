@@ -4260,10 +4260,6 @@ DialogReplace *Document::getDialogReplace() const {
 
 
 void Document::EditCustomTitleFormat() {
-
-	auto dialog = new DialogWindowTitle(this);
-	dialog->exec();
-	delete dialog;
 }
 
 /*
