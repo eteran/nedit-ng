@@ -7,14 +7,17 @@
 #include <QRegExp>
 #include <QMessageBox>
 #include "DialogLanguageModes.h"
+#include "MainWindow.h"
+#include "TextArea.h"
+#include "DocumentWidget.h"
 #include "SignalBlocker.h"
 #include "util/memory.h"
 #include "LanguageMode.h"
 #include "preferences.h"
-#include "Document.h"
 #include "regularExp.h"
 #include "tags.h"
-#include "text.h" // for textNwordDelimiters
+//#include "Document.h"
+//#include "text.h" // for textNwordDelimiters
 #include "highlightData.h"
 #include "smartIndent.h"
 #include "userCmds.h"
@@ -422,104 +425,110 @@ bool DialogLanguageModes::updateLanguageList(bool silent) {
 //------------------------------------------------------------------------------
 bool DialogLanguageModes::updateLMList(bool silent) {
 
-	int oldLanguageMode;
 
 	// Get the current contents of the dialog fields 
 	if(!updateLanguageList(silent)) {
 		return false;
 	}
 
-	/* Fix up language mode indices in all open windows (which may change
-	   if the currently selected mode is deleted or has changed position),
-	   and update word delimiters */
-	for(Document *window: WindowList) {
-		if (window->languageMode_ != PLAIN_LANGUAGE_MODE) {
-			oldLanguageMode = window->languageMode_;
-			QString oldModeName = LanguageModes[window->languageMode_]->name;
-			window->languageMode_ = PLAIN_LANGUAGE_MODE;
+    if(auto window = qobject_cast<MainWindow *>(parent())) {
 
-			for (int i = 0; i < ui.listItems->count(); i++) {
+        /* Fix up language mode indices in all open windows (which may change
+           if the currently selected mode is deleted or has changed position),
+           and update word delimiters */
+        for(DocumentWidget *document: MainWindow::allDocuments()) {
+            if (document->languageMode_ != PLAIN_LANGUAGE_MODE) {
 
-				if (oldModeName == itemFromIndex(i)->name) {
-					QString newDelimiters = itemFromIndex(i)->delimiters;
-					
-					// TODO(eteran): should this include empty string?
-					if(newDelimiters.isNull()) {
-						newDelimiters = GetPrefDelimiters();
-					}
-					
-					textD_of(window->textArea_)->setWordDelimiters(newDelimiters);
-					for(Widget tw : window->textPanes_) {
-						textD_of(tw)->setWordDelimiters(newDelimiters);
-					}
-					
-					// don't forget to adapt the LM stored within the user menu cache 
-					if (window->userMenuCache_->umcLanguageMode == oldLanguageMode) {
-						window->userMenuCache_->umcLanguageMode = i;
-					}
-					
-					if (window->userBGMenuCache_.ubmcLanguageMode == oldLanguageMode) {
-						window->userBGMenuCache_.ubmcLanguageMode = i;
-					}
-					
-					// update the language mode of this window (document) 
-					window->languageMode_ = i;
-					break;
-				}
-			}
-		}
-	}
+                QString oldModeName = LanguageModes[document->languageMode_]->name;
+                document->languageMode_ = PLAIN_LANGUAGE_MODE;
+
+                for (int i = 0; i < ui.listItems->count(); i++) {
+
+                    if (oldModeName == itemFromIndex(i)->name) {
+                        QString newDelimiters = itemFromIndex(i)->delimiters;
+
+                        // TODO(eteran): should this include empty string?
+                        if(newDelimiters.isNull()) {
+                            newDelimiters = GetPrefDelimiters();
+                        }
+
+                        for(TextArea *area : document->textPanes()) {
+                            area->setWordDelimiters(newDelimiters);
+                        }
+
+                        // don't forget to adapt the LM stored within the user menu cache
+                        window->updateLanguageModeSubmenu();
+
+                        // update the language mode of this window (document)
+                        document->languageMode_ = i;
+                        break;
+                    }
+                }
+            }
+        }
 
 
-	/* If there were any name changes, re-name dependent highlight patterns
-	   and smart-indent macros and fix up the weird rename-format names */	   
-	// naming causes the name to be set to the format of "Old:New"
-	// update names appropriately
-	for (int i = 0; i < ui.listItems->count(); i++) {
-		QStringList parts = itemFromIndex(i)->name.split(QLatin1Char(':'));
-	
-		if (parts.size() == 2) {
-			QString oldName = parts[0];
-			QString newName = parts[1];
+        /* If there were any name changes, re-name dependent highlight patterns
+           and smart-indent macros and fix up the weird rename-format names */
+        // naming causes the name to be set to the format of "Old:New"
+        // update names appropriately
+        for (int i = 0; i < ui.listItems->count(); i++) {
+            QStringList parts = itemFromIndex(i)->name.split(QLatin1Char(':'));
 
-			RenameHighlightPattern(oldName.toLatin1().data(), newName.toLatin1().data());
-			RenameSmartIndentMacros(oldName.toLatin1().data(), newName.toLatin1().data());
-			itemFromIndex(i)->name = newName;
-		}
-	}
+            if (parts.size() == 2) {
+                QString oldName = parts[0];
+                QString newName = parts[1];
 
-	// Replace the old language mode list with the new one from the dialog 
-	for (int i = 0; i < NLanguageModes; i++) {
-		delete LanguageModes[i];
-	}
-	
+                RenameHighlightPattern(oldName.toLatin1().data(), newName.toLatin1().data());
+                RenameSmartIndentMacros(oldName.toLatin1().data(), newName.toLatin1().data());
+                itemFromIndex(i)->name = newName;
+            }
+        }
 
-	for (int i = 0; i < ui.listItems->count(); i++) {
-		LanguageModes[i] = new LanguageMode(*itemFromIndex(i));
-	}
-	
-	NLanguageModes = ui.listItems->count();
-	
-	/* Update user menu info to update language mode dependencies of
-	   user menu items */
-	UpdateUserMenuInfo();
+        // Replace the old language mode list with the new one from the dialog
+        for (int i = 0; i < NLanguageModes; i++) {
+            delete LanguageModes[i];
+        }
 
-	/* Update the menus in the window menu bars and load any needed
-	    calltips files */
-	for(Document *window: WindowList) {
-		updateLanguageModeSubmenu(window);
-		if (window->languageMode_ != PLAIN_LANGUAGE_MODE && !LanguageModes[window->languageMode_]->defTipsFile.isNull())
-			AddTagsFileEx(LanguageModes[window->languageMode_]->defTipsFile, TIP);
-		// cache user menus: Rebuild all user menus of this window 
-		RebuildAllMenus(window);
-	}
 
-	// If a syntax highlighting dialog is up, update its menu 
-	UpdateLanguageModeMenu();
-	// The same for the smart indent macro dialog 
-	UpdateLangModeMenuSmartIndent();
-	// Note that preferences have been changed 
-	MarkPrefsChanged();
+        for (int i = 0; i < ui.listItems->count(); i++) {
+            LanguageModes[i] = new LanguageMode(*itemFromIndex(i));
+        }
+
+        NLanguageModes = ui.listItems->count();
+
+        /* Update user menu info to update language mode dependencies of
+           user menu items */
+        UpdateUserMenuInfo();
+
+        /* Update the menus in the window menu bars and load any needed
+            calltips files */
+        for(MainWindow *win : MainWindow::allWindows()) {
+            win->updateLanguageModeSubmenu();
+
+        }
+
+        /* Update the menus in the window menu bars and load any needed
+            calltips files */
+        for(DocumentWidget *document: window->allDocuments()) {
+
+            if (document->languageMode_ != PLAIN_LANGUAGE_MODE && !LanguageModes[document->languageMode_]->defTipsFile.isNull()) {
+                AddTagsFileEx(LanguageModes[document->languageMode_]->defTipsFile, TIP);
+            }
+
+#if 0 // TODO(eteran)
+            // cache user menus: Rebuild all user menus of this window
+            RebuildAllMenus(document);
+#endif
+        }
+
+        // If a syntax highlighting dialog is up, update its menu
+        UpdateLanguageModeMenu();
+        // The same for the smart indent macro dialog
+        UpdateLangModeMenuSmartIndent();
+        // Note that preferences have been changed
+        MarkPrefsChanged();
+    }
 
 	return true;
 }

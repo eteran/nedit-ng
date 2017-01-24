@@ -248,45 +248,46 @@ DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inWindow, con
     /* If an existing window isn't specified; or the window is already
        in use (not Untitled or Untitled and modified), or is currently
        busy running a macro; create the window */
-    DocumentWidget *window = nullptr;
+    DocumentWidget *document = nullptr;
     if(!inWindow) {
         // TODO(eteran): implement geometry stuff
         auto win = new MainWindow();
-        window = win->CreateDocument(name);
+        document = win->CreateDocument(name);
         if(iconic) {
             win->showMinimized();
         } else {
             win->showNormal();
         }
+        win->setDimmensions(geometry);
     } else if (inWindow->filenameSet_ || inWindow->fileChanged_ || inWindow->macroCmdData_) {
         if (tabbed) {
             if(auto win = inWindow->toWindow()) {
-                window = win->CreateDocument(name);
+                document = win->CreateDocument(name);
             }
         } else {
-            // TODO(eteran): implement geometry stuff
-            Q_UNUSED(geometry);
+
             auto win = new MainWindow();
-            window = win->CreateDocument(name);
+            document = win->CreateDocument(name);
             if(iconic) {
                 win->showMinimized();
             } else {
                 win->showNormal();
             }
+            win->setDimmensions(geometry);
         }
     } else {
         // open file in untitled document
-        window            = inWindow;
-        window->path_     = path;
-        window->filename_ = name;
+        document            = inWindow;
+        document->path_     = path;
+        document->filename_ = name;
 
         if (!iconic && !bgOpen) {
-            window->RaiseDocumentWindow();
+            document->RaiseDocumentWindow();
         }
     }
 
     // Open the file
-    if (!window->doOpen(name, path, flags)) {
+    if (!document->doOpen(name, path, flags)) {
 #if 0
         /* The user may have destroyed the window instead of closing the
            warning dialog; don't close it twice */
@@ -295,36 +296,36 @@ DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inWindow, con
         return nullptr;
     }
 
-    if(auto win = window->toWindow()) {
+    if(auto win = document->toWindow()) {
         win->forceShowLineNumbers();
     }
 
     // Decide what language mode to use, trigger language specific actions
     if(!languageMode) {
-        window->DetermineLanguageMode(true);
+        document->DetermineLanguageMode(true);
     } else {
-        window->SetLanguageMode(FindLanguageMode(languageMode), true);
+        document->SetLanguageMode(FindLanguageMode(languageMode), true);
     }
 
-    if(auto win = window->toWindow()) {
+    if(auto win = document->toWindow()) {
         // update tab label and tooltip
-        window->RefreshTabState();
+        document->RefreshTabState();
         win->SortTabBar();
         win->ShowTabBar(win->GetShowTabBar());
     }
 
 
     if (!bgOpen) {
-        window->RaiseDocument();
+        document->RaiseDocument();
     }
 
 
     /* Bring the title bar and statistics line up to date, doOpen does
        not necessarily set the window title or read-only status */
-    if(auto win = window->toWindow()) {
-        win->UpdateWindowTitle(window);
-        window->UpdateWindowReadOnly();
-        window->UpdateStatsLine(nullptr);
+    if(auto win = document->toWindow()) {
+        win->UpdateWindowTitle(document);
+        document->UpdateWindowReadOnly();
+        document->UpdateStatsLine(nullptr);
     }
 
     // Add the name to the convenience menu of previously opened files
@@ -335,11 +336,11 @@ DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inWindow, con
         AddRelTagsFile(GetPrefTagFile(), path.toLatin1().data(), TAG);
     }
 
-    if(auto win = window->toWindow()) {
+    if(auto win = document->toWindow()) {
         win->AddToPrevOpenMenu(fullname);
     }
 
-    return window;
+    return document;
 }
 
 //------------------------------------------------------------------------------
@@ -4829,17 +4830,20 @@ void DocumentWidget::SetFonts(const QString &fontName, const QString &italicName
        determine the correct this size after the font is changed */
 
     // TODO(eteran): do we want the WINDOW width/height? or the widget's?
+#if 0
     int oldWindowWidth  = textD->width();
     int oldWindowHeight = textD->height();
-
+#endif
     int marginHeight     = textD->getMarginHeight();
 #if 0
     int marginWidth      = textD->getMarginWidth();
-#endif
     QFont oldFont = textD->getFont();
+#endif
     textHeight    = textD->height();
 
+#if 0
     int oldTextWidth = textD->getRect().width + textD->getLineNumWidth();
+#endif
     int oldTextHeight = 0;
 
     for(TextArea *area : textPanes()) {
@@ -4847,13 +4851,13 @@ void DocumentWidget::SetFonts(const QString &fontName, const QString &italicName
         oldTextHeight += textHeight - 2 * marginHeight;
     }
 
+#if 0
     QFontMetricsF fm(oldFont);
-
     int borderWidth   = oldWindowWidth - oldTextWidth;
     int borderHeight  = oldWindowHeight - oldTextHeight;
     int oldFontWidth  = fm.maxWidth();
     int oldFontHeight = textD->fontAscent() + textD->fontDescent();
-
+#endif
     if (primaryChanged) {
         fontName_ = fontName;
         XFontStruct *font = XLoadQueryFont(TheDisplay, fontName.toLatin1().data());
@@ -4915,4 +4919,104 @@ void DocumentWidget::SetFonts(const QString &fontName, const QString &italicName
     // Change the minimum pane height
     UpdateMinPaneHeights();
 #endif
+}
+
+/*
+** Set the backlight character class string
+*/
+void DocumentWidget::SetBacklightChars(char *applyBacklightTypes) {
+
+    const bool do_apply = applyBacklightTypes ? true : false;
+
+    backlightChars_ = do_apply;
+
+    if(backlightChars_) {
+        backlightCharTypes_ = QLatin1String(applyBacklightTypes);
+    } else {
+        backlightCharTypes_ = QString();
+    }
+
+    for (TextArea *area : textPanes()) {
+        area->setBacklightCharTypes(backlightCharTypes_);
+    }
+}
+
+/*
+** Set insert/overstrike mode
+*/
+void DocumentWidget::SetOverstrike(bool overstrike) {
+
+    for (TextArea *area : textPanes()) {
+        area->setOverstrike(overstrike);
+    }
+
+    overstrike_ = overstrike;
+}
+
+void DocumentWidget::gotoAP(TextArea *area, QStringList args) {
+
+    int lineNum;
+    int column;
+    int position;
+    int curCol;
+
+    /* Accept various formats:
+          [line]:[column]   (menu action)
+          line              (macro call)
+          line, column      (macro call) */
+    if (args.size() == 0 ||
+            args.size() > 2 ||
+            (args.size() == 1 && StringToLineAndCol(args[0].toLatin1().data(), &lineNum, &column) == -1) ||
+            (args.size() == 2 && (!StringToNum(args[0].toLatin1().data(), &lineNum) || !StringToNum(args[1].toLatin1().data(), &column)))) {
+        fprintf(stderr, "nedit: goto_line_number action requires line and/or column number\n");
+        return;
+    }
+
+    // User specified column, but not line number
+    if (lineNum == -1) {
+        position = area->TextGetCursorPos();
+        if (area->TextDPosToLineAndCol(position, &lineNum, &curCol) == False) {
+            return;
+        }
+    } else if (column == -1) {
+        // User didn't specify a column
+        SelectNumberedLineEx(this, area, lineNum);
+        return;
+    }
+
+    position = area->TextDLineAndColToPos(lineNum, column);
+    if (position == -1) {
+        return;
+    }
+
+    area->TextSetCursorPos(position);
+    return;
+}
+
+/*
+**
+*/
+void DocumentWidget::SetColors(const char *textFg, const char *textBg, const char *selectFg, const char *selectBg, const char *hiliteFg, const char *hiliteBg, const char *lineNoFg, const char *cursorFg) {
+
+    Pixel textFgPix   = AllocColor(textFg);
+    Pixel textBgPix   = AllocColor(textBg);
+    Pixel selectFgPix = AllocColor(selectFg);
+    Pixel selectBgPix = AllocColor(selectBg);
+    Pixel hiliteFgPix = AllocColor(hiliteFg);
+    Pixel hiliteBgPix = AllocColor(hiliteBg);
+    Pixel lineNoFgPix = AllocColor(lineNoFg);
+    Pixel cursorFgPix = AllocColor(cursorFg);
+
+
+    // Update all panes
+    for(TextArea *area : textPanes()) {
+        area->setForegroundPixel(textFgPix);
+        area->setBackgroundPixel(textBgPix);
+        area->TextDSetColors(textFgPix, textBgPix, selectFgPix, selectBgPix, hiliteFgPix, hiliteBgPix, lineNoFgPix, cursorFgPix);
+    }
+
+    // Redo any syntax highlighting
+    if (highlightData_) {
+        UpdateHighlightStylesEx(this);
+    }
 }

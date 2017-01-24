@@ -132,6 +132,10 @@ public:
     int getMarginHeight() const;
     int getMarginWidth() const;
 
+public:
+    virtual QSize sizeHint() const override;
+    void setSizeHint(QSize sizeHint);
+    void setSizeHint(qreal w, qreal h);
 
 protected:
 	virtual bool focusNextPrevChild(bool next) override;
@@ -458,6 +462,7 @@ private:
 	int         P_lineNumCols;
 	const char *P_delimiters;
 	int         P_cursorVPadding;
+    QSize       sizeHint_;
 
 private:
 	QVector<QPair<cursorMovedCBEx, void *>> movedCallbacks_;

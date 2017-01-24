@@ -38,7 +38,6 @@
 #include "ui/DialogTabs.h"
 #include "ui/DialogFonts.h"
 #include "ui/DialogWindowSize.h"
-#include "ui/DialogLanguageModes.h"
 #include "macro.h"
 #include "IndentStyle.h"
 #include "WrapStyle.h"
@@ -99,23 +98,8 @@ extern "C" void _XmDismissTearOff(Widget, XtPointer, XtPointer);
 
 static void doActionCB(Widget w, XtPointer clientData, XtPointer callData);
 static void doTabActionCB(Widget w, XtPointer clientData, XtPointer callData);
-static void preserveCB(Widget w, XtPointer clientData, XtPointer callData);
-static void autoSaveCB(Widget w, XtPointer clientData, XtPointer callData);
-static void backlightCharsCB(Widget w, XtPointer clientData, XtPointer callData);
-static void showMatchingOffCB(Widget w, XtPointer clientData, XtPointer callData);
-static void showMatchingDelimitCB(Widget w, XtPointer clientData, XtPointer callData);
-static void showMatchingRangeCB(Widget w, XtPointer clientData, XtPointer callData);
-static void matchSyntaxBasedCB(Widget w, XtPointer clientData, XtPointer callData);
-static void autoIndentOffDefCB(Widget w, XtPointer clientData, XtPointer callData);
-static void autoIndentDefCB(Widget w, XtPointer clientData, XtPointer callData);
-static void smartIndentDefCB(Widget w, XtPointer clientData, XtPointer callData);
 static void autoSaveDefCB(Widget w, XtPointer clientData, XtPointer callData);
 static void preserveDefCB(Widget w, XtPointer clientData, XtPointer callData);
-static void noWrapDefCB(Widget w, XtPointer clientData, XtPointer callData);
-static void newlineWrapDefCB(Widget w, XtPointer clientData, XtPointer callData);
-static void contWrapDefCB(Widget w, XtPointer clientData, XtPointer callData);
-static void wrapMarginDefCB(Widget w, XtPointer clientData, XtPointer callData);
-static void shellSelDefCB(Widget w, XtPointer clientData, XtPointer callData);
 static void openInTabDefCB(Widget w, XtPointer clientData, XtPointer callData);
 static void tabBarDefCB(Widget w, XtPointer clientData, XtPointer callData);
 static void tabBarHideDefCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -127,7 +111,6 @@ static void iSearchLineDefCB(Widget w, XtPointer clientData, XtPointer callData)
 static void lineNumsDefCB(Widget w, XtPointer clientData, XtPointer callData);
 static void pathInWindowsMenuDefCB(Widget w, XtPointer clientData, XtPointer callData);
 static void customizeTitleDefCB(Widget w, XtPointer clientData, XtPointer callData);
-static void tabsDefCB(Widget w, XtPointer clientData, XtPointer callData);
 static void showMatchingOffDefCB(Widget w, XtPointer clientData, XtPointer callData);
 static void showMatchingDelimitDefCB(Widget w, XtPointer clientData, XtPointer callData);
 static void showMatchingRangeDefCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -135,13 +118,7 @@ static void matchSyntaxBasedDefCB(Widget w, XtPointer clientData, XtPointer call
 static void highlightOffDefCB(Widget w, XtPointer clientData, XtPointer callData);
 static void highlightDefCB(Widget w, XtPointer clientData, XtPointer callData);
 static void backlightCharsDefCB(Widget w, XtPointer clientData, XtPointer callData);
-static void fontDefCB(Widget w, XtPointer clientData, XtPointer callData);
-static void colorDefCB(Widget w, XtPointer clientData, XtPointer callData);
-static void smartTagsDefCB(Widget parent, XtPointer client_data, XtPointer call_data);
-static void showAllTagsDefCB(Widget parent, XtPointer client_data, XtPointer call_data);
-static void languageDefCB(Widget w, XtPointer clientData, XtPointer callData);
 static void highlightingDefCB(Widget w, XtPointer clientData, XtPointer callData);
-static void smartMacrosDefCB(Widget w, XtPointer clientData, XtPointer callData);
 static void stylesDefCB(Widget w, XtPointer clientData, XtPointer callData);
 static void shellDefCB(Widget w, XtPointer clientData, XtPointer callData);
 static void macroDefCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -173,7 +150,6 @@ static void size40x80CB(Widget w, XtPointer clientData, XtPointer callData);
 static void size60x80CB(Widget w, XtPointer clientData, XtPointer callData);
 static void size80x80CB(Widget w, XtPointer clientData, XtPointer callData);
 static void sizeCustomCB(Widget w, XtPointer clientData, XtPointer callData);
-static void savePrefCB(Widget w, XtPointer clientData, XtPointer callData);
 static void cancelShellCB(Widget w, XtPointer clientData, XtPointer callData);
 static void learnCB(Widget w, XtPointer clientData, XtPointer callData);
 static void finishLearnCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -228,17 +204,6 @@ static void bgMenuPostAP(Widget w, XEvent *event, String *args, Cardinal *nArgs)
 static void tabMenuPostAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void raiseWindowAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void focusPaneAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void setMakeBackupCopyAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void setIncrementalBackupAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void setShowMatchingAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void setMatchSyntaxBasedAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void setOvertypeModeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void setLockedAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void setUseTabsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void setEmTabDistAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void setTabDistAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void setFontsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void setLanguageModeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 
 // Application action table 
 static XtActionsRec Actions[] = {{(String) "new", newAP},
@@ -382,18 +347,19 @@ static XtActionsRec Actions[] = {{(String) "new", newAP},
                                  //{(String) "set_wrap_margin", setWrapMarginAP},
                                  //{(String) "set_highlight_syntax", setHighlightSyntaxAP},
 
-                                 {(String) "set_make_backup_copy", setMakeBackupCopyAP},
+                                 //{(String) "set_make_backup_copy", setMakeBackupCopyAP},
 
-                                 {(String) "set_incremental_backup", setIncrementalBackupAP},
-                                 {(String) "set_show_matching", setShowMatchingAP},
-                                 {(String) "set_match_syntax_based", setMatchSyntaxBasedAP},
-                                 {(String) "set_overtype_mode", setOvertypeModeAP},
-                                 {(String) "set_locked", setLockedAP},
-                                 {(String) "set_tab_dist", setTabDistAP},
-                                 {(String) "set_em_tab_dist", setEmTabDistAP},
-                                 {(String) "set_use_tabs", setUseTabsAP},
-                                 {(String) "set_fonts", setFontsAP},
-                                 {(String) "set_language_mode", setLanguageModeAP}};
+                                 //{(String) "set_incremental_backup", setIncrementalBackupAP},
+                                 //{(String) "set_show_matching", setShowMatchingAP},
+                                 //{(String) "set_match_syntax_based", setMatchSyntaxBasedAP},
+                                 //{(String) "set_overtype_mode", setOvertypeModeAP},
+                                 //{(String) "set_locked", setLockedAP},
+                                 //{(String) "set_tab_dist", setTabDistAP},
+                                 //{(String) "set_em_tab_dist", setEmTabDistAP},
+                                 //{(String) "set_use_tabs", setUseTabsAP},
+                                 //{(String) "set_fonts", setFontsAP},
+                                 //{(String) "set_language_mode", setLanguageModeAP}
+                                };
 
 // List of previously opened files for File menu 
 static int NPrevOpen = 0;
@@ -473,33 +439,6 @@ Widget CreateMenuBar(Widget parent, Document *window) {
 	*/
 	menuPane = createMenu(menuBar, "preferencesMenu", "Preferences", 0, nullptr, SHORT);
 	subPane = createMenu(menuPane, "defaultSettings", "Default Settings", 'D', nullptr, FULL);
-	createMenuItem(subPane, "languageModes", "Language Modes...", 'L', languageDefCB, window, FULL);
-
-	// Auto Indent sub menu 
-	subSubPane = createMenu(subPane, "autoIndent", "Auto Indent", 'A', nullptr, FULL);
-	window->autoIndentOffDefItem_ = createMenuRadioToggle(subSubPane, "off", "Off", 'O', autoIndentOffDefCB, window, GetPrefAutoIndent(PLAIN_LANGUAGE_MODE) == NO_AUTO_INDENT, SHORT);
-	window->autoIndentDefItem_ = createMenuRadioToggle(subSubPane, "on", "On", 'n', autoIndentDefCB, window, GetPrefAutoIndent(PLAIN_LANGUAGE_MODE) == AUTO_INDENT, SHORT);
-	window->smartIndentDefItem_ = createMenuRadioToggle(subSubPane, "smart", "Smart", 'S', smartIndentDefCB, window, GetPrefAutoIndent(PLAIN_LANGUAGE_MODE) == SMART_INDENT, SHORT);
-	createMenuSeparator(subSubPane, "sep1", SHORT);
-	createMenuItem(subSubPane, "ProgramSmartIndent", "Program Smart Indent...", 'P', smartMacrosDefCB, window, FULL);
-
-	// Wrap sub menu 
-	subSubPane = createMenu(subPane, "wrap", "Wrap", 'W', nullptr, FULL);
-	window->noWrapDefItem_ = createMenuRadioToggle(subSubPane, "none", "None", 'N', noWrapDefCB, window, GetPrefWrap(PLAIN_LANGUAGE_MODE) == NO_WRAP, SHORT);
-	window->newlineWrapDefItem_ = createMenuRadioToggle(subSubPane, "autoNewline", "Auto Newline", 'A', newlineWrapDefCB, window, GetPrefWrap(PLAIN_LANGUAGE_MODE) == NEWLINE_WRAP, SHORT);
-	window->contWrapDefItem_ = createMenuRadioToggle(subSubPane, "continuous", "Continuous", 'C', contWrapDefCB, window, GetPrefWrap(PLAIN_LANGUAGE_MODE) == CONTINUOUS_WRAP, SHORT);
-	createMenuSeparator(subSubPane, "sep1", SHORT);
-	createMenuItem(subSubPane, "wrapMargin", "Wrap Margin...", 'W', wrapMarginDefCB, window, SHORT);
-
-	// Smart Tags sub menu 
-	subSubPane = createMenu(subPane, "smartTags", "Tag Collisions", 'l', nullptr, FULL);
-	window->allTagsDefItem_ = createMenuRadioToggle(subSubPane, "showall", "Show All", 'A', showAllTagsDefCB, window, !GetPrefSmartTags(), FULL);
-	window->smartTagsDefItem_ = createMenuRadioToggle(subSubPane, "smart", "Smart", 'S', smartTagsDefCB, window, GetPrefSmartTags(), FULL);
-
-	createMenuItem(subPane, "shellSel", "Command Shell...", 's', shellSelDefCB, window, SHORT);
-	createMenuItem(subPane, "tabDistance", "Tab Stops...", 'T', tabsDefCB, window, SHORT);
-	createMenuItem(subPane, "textFont", "Text Fonts...", 'F', fontDefCB, window, FULL);
-	createMenuItem(subPane, "colors", "Colors...", 'C', colorDefCB, window, FULL);
 
 	// Customize Menus sub menu 
 	subSubPane = createMenu(subPane, "customizeMenus", "Customize Menus", 'u', nullptr, FULL);
@@ -597,26 +536,7 @@ Widget CreateMenuBar(Widget parent, Document *window) {
 	/*
 	** Remainder of Preferences menu
 	*/
-	createMenuItem(menuPane, "saveDefaults", "Save Defaults...", 'v', savePrefCB, window, FULL);
-
-	createMenuSeparator(subPane, "sep1", SHORT);
-	window->highlightItem_ = createMenuToggle(menuPane, "highlightSyntax", "Highlight Syntax", 'H', doActionCB, "set_highlight_syntax", GetPrefHighlightSyntax(), SHORT);
-	window->backlightCharsItem_ = createMenuToggle(menuPane, "backlightChars", "Apply Backlighting", 'g', backlightCharsCB, window, window->backlightChars_, FULL);
-
-	window->saveLastItem_ = createMenuToggle(menuPane, "makeBackupCopy", "Make Backup Copy (*.bck)", 'e', preserveCB, window, window->saveOldVersion_, SHORT);
-
-	window->autoSaveItem_ = createMenuToggle(menuPane, "incrementalBackup", "Incremental Backup", 'B', autoSaveCB, window, window->autoSave_, SHORT);
-
-	subPane = createMenu(menuPane, "showMatching", "Show Matching (..)", 'M', nullptr, FULL);
-	window->showMatchingOffItem_ = createMenuRadioToggle(subPane, "off", "Off", 'O', showMatchingOffCB, window, window->showMatchingStyle_ == NO_FLASH, SHORT);
-	window->showMatchingDelimitItem_ = createMenuRadioToggle(subPane, "delimiter", "Delimiter", 'D', showMatchingDelimitCB, window, window->showMatchingStyle_ == FLASH_DELIMIT, SHORT);
-	window->showMatchingRangeItem_ = createMenuRadioToggle(subPane, "range", "Range", 'R', showMatchingRangeCB, window, window->showMatchingStyle_ == FLASH_RANGE, SHORT);
-	createMenuSeparator(subPane, "sep", SHORT);
-	window->matchSyntaxBasedItem_ = createMenuToggle(subPane, "matchSyntax", "Syntax Based", 'S', matchSyntaxBasedCB, window, window->matchSyntaxBased_, SHORT);
-
-	createMenuSeparator(menuPane, "sep2", SHORT);
-	window->overtypeModeItem_ = createMenuToggle(menuPane, "overtype", "Overtype", 'O', doActionCB, "set_overtype_mode", False, SHORT);
-	window->readOnlyItem_ = createMenuToggle(menuPane, "readOnly", "Read Only", 'y', doActionCB, "set_locked", window->lockReasons_.isUserLocked(), FULL);
+	createMenuSeparator(subPane, "sep1", SHORT);	
 
 	/*
 	** Create the Shell menu
@@ -705,146 +625,10 @@ static void doActionCB(Widget w, XtPointer clientData, XtPointer callData) {
 	XtCallActionProc(widget, action, event, nullptr, 0);
 }
 
-static void autoSaveCB(Widget w, XtPointer clientData, XtPointer callData) {
 
-	Q_UNUSED(clientData);
 
-	Widget menu = MENU_WIDGET(w);
 
-	Document *window = Document::WidgetToWindow(menu);
-	(void)window;
 
-	HidePointerOnKeyedEvent(Document::WidgetToWindow(menu)->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(Document::WidgetToWindow(menu)->lastFocus_, "set_incremental_backup", static_cast<XmAnyCallbackStruct *>(callData)->event, nullptr, 0);
-}
-
-static void preserveCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	Q_UNUSED(clientData);
-
-	Widget menu = MENU_WIDGET(w);
-
-	Document *window = Document::WidgetToWindow(menu);
-	(void)window;
-
-	HidePointerOnKeyedEvent(Document::WidgetToWindow(menu)->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(Document::WidgetToWindow(menu)->lastFocus_, "set_make_backup_copy", static_cast<XmAnyCallbackStruct *>(callData)->event, nullptr, 0);
-}
-
-static void showMatchingOffCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	Q_UNUSED(clientData);
-
-	static const char *params[1] = {NO_FLASH_STRING};
-	Widget menu = MENU_WIDGET(w);
-
-	Document *window = Document::WidgetToWindow(menu);
-	(void)window;
-
-	HidePointerOnKeyedEvent(Document::WidgetToWindow(menu)->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(Document::WidgetToWindow(menu)->lastFocus_, "set_show_matching", static_cast<XmAnyCallbackStruct *>(callData)->event, const_cast<char **>(params), 1);
-}
-
-static void showMatchingDelimitCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	Q_UNUSED(clientData);
-
-	static const char *params[1] = {FLASH_DELIMIT_STRING};
-	Widget menu = MENU_WIDGET(w);
-
-	Document *window = Document::WidgetToWindow(menu);
-	(void)window;
-
-	HidePointerOnKeyedEvent(Document::WidgetToWindow(menu)->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(Document::WidgetToWindow(menu)->lastFocus_, "set_show_matching", static_cast<XmAnyCallbackStruct *>(callData)->event, const_cast<char **>(params), 1);
-}
-
-static void showMatchingRangeCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	Q_UNUSED(clientData);
-	static const char *params[1] = {FLASH_RANGE_STRING};
-	Widget menu = MENU_WIDGET(w);
-
-	Document *window = Document::WidgetToWindow(menu);
-	(void)window;
-
-	HidePointerOnKeyedEvent(Document::WidgetToWindow(menu)->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(Document::WidgetToWindow(menu)->lastFocus_, "set_show_matching", static_cast<XmAnyCallbackStruct *>(callData)->event, const_cast<char **>(params), 1);
-}
-
-static void matchSyntaxBasedCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	Q_UNUSED(clientData);
-
-	Widget menu = MENU_WIDGET(w);
-
-	Document *window = Document::WidgetToWindow(menu);
-	(void)window;
-
-	HidePointerOnKeyedEvent(Document::WidgetToWindow(menu)->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(Document::WidgetToWindow(menu)->lastFocus_, "set_match_syntax_based", static_cast<XmAnyCallbackStruct *>(callData)->event, nullptr, 0);
-}
-
-static void backlightCharsCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	Q_UNUSED(clientData);
-	Q_UNUSED(callData);
-
-	bool applyBacklight = XmToggleButtonGetState(w);
-	Document *window = Document::WidgetToWindow(MENU_WIDGET(w));
-	window->SetBacklightChars(applyBacklight ? GetPrefBacklightCharTypes() : nullptr);
-}
-
-static void autoIndentOffDefCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	Q_UNUSED(clientData);
-	Q_UNUSED(callData);
-	Q_UNUSED(w);
-
-	// Set the preference and make the other windows' menus agree 
-	SetPrefAutoIndent(NO_AUTO_INDENT);
-	for(Document *win: WindowList) {
-		if (win->IsTopDocument()) {
-			XmToggleButtonSetState(win->autoIndentOffDefItem_, True, False);
-			XmToggleButtonSetState(win->autoIndentDefItem_, False, False);
-			XmToggleButtonSetState(win->smartIndentDefItem_, False, False);
-		}
-	}
-}
-
-static void autoIndentDefCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	Q_UNUSED(clientData);
-	Q_UNUSED(callData);
-	Q_UNUSED(w);
-
-	// Set the preference and make the other windows' menus agree 
-	SetPrefAutoIndent(AUTO_INDENT);
-	for(Document *win: WindowList) {
-		if (win->IsTopDocument()) {
-			XmToggleButtonSetState(win->autoIndentDefItem_, True, False);
-			XmToggleButtonSetState(win->autoIndentOffDefItem_, False, False);
-			XmToggleButtonSetState(win->smartIndentDefItem_, False, False);
-		}
-	}
-}
-
-static void smartIndentDefCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	Q_UNUSED(clientData);
-	Q_UNUSED(callData);
-	Q_UNUSED(w);
-
-	// Set the preference and make the other windows' menus agree 
-	SetPrefAutoIndent(SMART_INDENT);
-	for(Document *win: WindowList) {
-		if (win->IsTopDocument()) {
-			XmToggleButtonSetState(win->smartIndentDefItem_, True, False);
-			XmToggleButtonSetState(win->autoIndentOffDefItem_, False, False);
-			XmToggleButtonSetState(win->autoIndentDefItem_, False, False);
-		}
-	}
-}
 
 static void autoSaveDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
@@ -880,144 +664,6 @@ static void preserveDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 	}
 }
 
-static void fontDefCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	Q_UNUSED(clientData);
-
-	Document *window = Document::WidgetToWindow(MENU_WIDGET(w));
-
-	HidePointerOnKeyedEvent(window->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-#if 0 // NOTE(eteran): transitioned
-	window->dialogFonts_ = new DialogFonts(window, false);
-	window->dialogFonts_->exec();
-	delete window->dialogFonts_;
-	window->dialogFonts_ = nullptr;
-#endif
-}
-
-static void colorDefCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	Q_UNUSED(clientData);
-	Q_UNUSED(callData);
-	Q_UNUSED(w);
-
-	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	ChooseColors(Document::WidgetToWindow(MENU_WIDGET(w)));
-}
-
-static void noWrapDefCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	Q_UNUSED(clientData);
-	Q_UNUSED(callData);
-	Q_UNUSED(w);
-
-	// Set the preference and make the other windows' menus agree 
-	SetPrefWrap(NO_WRAP);
-	for(Document *win: WindowList) {
-		if (win->IsTopDocument()) {
-			XmToggleButtonSetState(win->noWrapDefItem_, True, False);
-			XmToggleButtonSetState(win->newlineWrapDefItem_, False, False);
-			XmToggleButtonSetState(win->contWrapDefItem_, False, False);
-		}
-	}
-}
-
-static void newlineWrapDefCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	Q_UNUSED(clientData);
-	Q_UNUSED(callData);
-	Q_UNUSED(w);
-
-	// Set the preference and make the other windows' menus agree 
-	SetPrefWrap(NEWLINE_WRAP);
-	for(Document *win: WindowList) {
-		if (win->IsTopDocument()) {
-			XmToggleButtonSetState(win->newlineWrapDefItem_, True, False);
-			XmToggleButtonSetState(win->contWrapDefItem_, False, False);
-			XmToggleButtonSetState(win->noWrapDefItem_, False, False);
-		}
-	}
-}
-
-static void contWrapDefCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	Q_UNUSED(clientData);
-	Q_UNUSED(callData);
-	Q_UNUSED(w);
-
-	// Set the preference and make the other windows' menus agree 
-	SetPrefWrap(CONTINUOUS_WRAP);
-	for(Document *win: WindowList) {
-		if (win->IsTopDocument()) {
-			XmToggleButtonSetState(win->contWrapDefItem_, True, False);
-			XmToggleButtonSetState(win->newlineWrapDefItem_, False, False);
-			XmToggleButtonSetState(win->noWrapDefItem_, False, False);
-		}
-	}
-}
-
-static void wrapMarginDefCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	Q_UNUSED(clientData);
-	Q_UNUSED(callData);
-	Q_UNUSED(w);
-
-	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-#if 0 // NOTE(eteran): transitioned (nullptr means set preferences, not in for a specific window!
-	WrapMarginDialog(Document::WidgetToWindow(MENU_WIDGET(w))->shell_, nullptr);
-#endif
-}
-
-static void smartTagsDefCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	Q_UNUSED(clientData);
-	Q_UNUSED(callData);
-	Q_UNUSED(w);
-
-	SetPrefSmartTags(True);
-	for(Document *win: WindowList) {
-		if (win->IsTopDocument()) {
-			XmToggleButtonSetState(win->smartTagsDefItem_, True, False);
-			XmToggleButtonSetState(win->allTagsDefItem_, False, False);
-		}
-	}
-}
-
-static void showAllTagsDefCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	Q_UNUSED(clientData);
-	Q_UNUSED(callData);
-	Q_UNUSED(w);
-
-	SetPrefSmartTags(False);
-	for(Document *win: WindowList) {
-		if (win->IsTopDocument()) {
-			XmToggleButtonSetState(win->smartTagsDefItem_, False, False);
-			XmToggleButtonSetState(win->allTagsDefItem_, True, False);
-		}
-	}
-}
-
-static void shellSelDefCB(Widget widget, XtPointer clientData, XtPointer callData) {
-
-	Q_UNUSED(clientData);
-	Q_UNUSED(callData);
-
-	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(widget))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	SelectShellDialog(Document::WidgetToWindow(MENU_WIDGET(widget))->shell_, nullptr);
-}
-
-static void tabsDefCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	Q_UNUSED(clientData);
-	Q_UNUSED(callData);
-
-	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	
-	auto dialog = new DialogTabs(nullptr);
-	dialog->exec();
-	delete dialog;
-}
 
 static void showMatchingOffDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
@@ -1141,15 +787,6 @@ static void highlightingDefCB(Widget w, XtPointer clientData, XtPointer callData
 	EditHighlightPatterns(Document::WidgetToWindow(MENU_WIDGET(w)));
 }
 
-static void smartMacrosDefCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	Q_UNUSED(clientData);
-	Q_UNUSED(callData);
-
-	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	EditSmartIndentMacros(Document::WidgetToWindow(MENU_WIDGET(w)));
-}
-
 static void stylesDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	Q_UNUSED(clientData);
@@ -1157,18 +794,6 @@ static void stylesDefCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	EditHighlightStyles(nullptr);
-}
-
-static void languageDefCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	Q_UNUSED(clientData);
-	Q_UNUSED(callData);
-
-	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-
-	auto dialog = new DialogLanguageModes(nullptr /*parent*/);
-	dialog->show();
-
 }
 
 static void shellDefCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -1776,14 +1401,6 @@ static void sizeCustomCB(Widget w, XtPointer clientData, XtPointer callData) {
 	delete dialog;
 	
 	updateWindowSizeMenus();
-}
-
-static void savePrefCB(Widget w, XtPointer clientData, XtPointer callData) {
-	Q_UNUSED(clientData);
-	Q_UNUSED(callData);
-
-	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	SaveNEditPrefs(Document::WidgetToWindow(MENU_WIDGET(w))->shell_, False);
 }
 
 static void cancelShellCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -2545,204 +2162,6 @@ static void focusPaneAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 		}
 	} else {
 		fprintf(stderr, "nedit: focus_pane requires argument\n");
-	}
-}
-
-static void ACTION_BOOL_PARAM_OR_TOGGLE(Boolean &newState, Cardinal numArgs, String *argvVal, Boolean oValue, const char *actionName) {
-	
-	if (numArgs > 0) {
-		int intState;
-
-		if (sscanf(argvVal[0], "%d", &intState) == 1) {
-			newState = (intState != 0);
-		} else {
-			fprintf(stderr, "nedit: %s requires 0 or 1 argument\n", actionName);
-			newState = false;
-			return;
-		}
-	} else {
-		newState = !oValue;
-	}
-}
-
-static void setMakeBackupCopyAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(event);
-
-	Document *window = Document::WidgetToWindow(w);
-	Boolean newState;
-
-	ACTION_BOOL_PARAM_OR_TOGGLE(newState, *nArgs, args, window->saveOldVersion_, "set_make_backup_copy");
-
-	if (window->IsTopDocument())
-		XmToggleButtonSetState(window->saveLastItem_, newState, False);
-
-	window->saveOldVersion_ = newState;
-}
-
-static void setIncrementalBackupAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(event);
-
-	Document *window = Document::WidgetToWindow(w);
-	Boolean newState;
-
-	ACTION_BOOL_PARAM_OR_TOGGLE(newState, *nArgs, args, window->autoSave_, "set_incremental_backup");
-
-	if (window->IsTopDocument())
-		XmToggleButtonSetState(window->autoSaveItem_, newState, False);
-	window->autoSave_ = newState;
-}
-
-static void setShowMatchingAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(event);
-
-	Document *window = Document::WidgetToWindow(w);
-	if (*nArgs > 0) {
-		if (strcmp(args[0], NO_FLASH_STRING) == 0) {
-			window->SetShowMatching(NO_FLASH);
-		} else if (strcmp(args[0], FLASH_DELIMIT_STRING) == 0) {
-			window->SetShowMatching(FLASH_DELIMIT);
-		} else if (strcmp(args[0], FLASH_RANGE_STRING) == 0) {
-			window->SetShowMatching(FLASH_RANGE);
-		}
-		/* For backward compatibility with pre-5.2 versions, we also
-		   accept 0 and 1 as aliases for NO_FLASH and FLASH_DELIMIT.
-		   It is quite unlikely, though, that anyone ever used this
-		   action procedure via the macro language or a key binding,
-		   so this can probably be left out safely. */
-		else if (strcmp(args[0], "0") == 0) {
-			window->SetShowMatching(NO_FLASH);
-		} else if (strcmp(args[0], "1") == 0) {
-			window->SetShowMatching(FLASH_DELIMIT);
-		} else {
-			fprintf(stderr, "nedit: Invalid argument for set_show_matching\n");
-		}
-	} else {
-		fprintf(stderr, "nedit: set_show_matching requires argument\n");
-	}
-}
-
-static void setMatchSyntaxBasedAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(event);
-
-	Document *window = Document::WidgetToWindow(w);
-	Boolean newState;
-
-	ACTION_BOOL_PARAM_OR_TOGGLE(newState, *nArgs, args, window->matchSyntaxBased_, "set_match_syntax_based");
-
-	if (window->IsTopDocument())
-		XmToggleButtonSetState(window->matchSyntaxBasedItem_, newState, False);
-	window->matchSyntaxBased_ = newState;
-}
-
-static void setOvertypeModeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(event);
-
-	Document *window = Document::WidgetToWindow(w);
-	Boolean newState;
-
-	if(!window)
-		return;
-
-	ACTION_BOOL_PARAM_OR_TOGGLE(newState, *nArgs, args, window->overstrike_, "set_overtype_mode");
-
-	if (window->IsTopDocument())
-		XmToggleButtonSetState(window->overtypeModeItem_, newState, False);
-	window->SetOverstrike(newState);
-}
-
-static void setLockedAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(event);
-
-	Document *window = Document::WidgetToWindow(w);
-	Boolean newState;
-
-	ACTION_BOOL_PARAM_OR_TOGGLE(newState, *nArgs, args, window->lockReasons_.isUserLocked(), "set_locked");
-
-	window->lockReasons_.setUserLocked(newState);
-	if (window->IsTopDocument())
-		XmToggleButtonSetState(window->readOnlyItem_, window->lockReasons_.isAnyLocked(), False);
-	window->UpdateWindowTitle();
-	window->UpdateWindowReadOnly();
-}
-
-static void setTabDistAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(event);
-
-	Document *window = Document::WidgetToWindow(w);
-
-	if (*nArgs > 0) {
-		int newTabDist = 0;
-		if (sscanf(args[0], "%d", &newTabDist) == 1 && newTabDist > 0 && newTabDist <= MAX_EXP_CHAR_LEN) {
-			window->SetTabDist(newTabDist);
-		} else {
-			fprintf(stderr, "nedit: set_tab_dist requires integer argument > 0 and <= %d\n", MAX_EXP_CHAR_LEN);
-		}
-	} else {
-		fprintf(stderr, "nedit: set_tab_dist requires argument\n");
-	}
-}
-
-static void setEmTabDistAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(event);
-
-	Document *window = Document::WidgetToWindow(w);
-
-	if (*nArgs > 0) {
-		int newEmTabDist = 0;
-		if (sscanf(args[0], "%d", &newEmTabDist) == 1 && newEmTabDist < 1000) {
-			if (newEmTabDist < 0) {
-				newEmTabDist = 0;
-			}
-			window->SetEmTabDist(newEmTabDist);
-		} else {
-			fprintf(stderr, "nedit: set_em_tab_dist requires integer argument >= -1 and < 1000\n");
-		}
-	} else {
-		fprintf(stderr, "nedit: set_em_tab_dist requires integer argument\n");
-	}
-}
-
-static void setUseTabsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(event);
-
-	Document *window = Document::WidgetToWindow(w);
-	Boolean newState;
-
-	ACTION_BOOL_PARAM_OR_TOGGLE(newState, *nArgs, args, window->buffer_->useTabs_, "set_use_tabs");
-
-	window->buffer_->useTabs_ = newState;
-}
-
-static void setFontsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(event);
-	Document *window = Document::WidgetToWindow(w);
-	if (*nArgs >= 4) {
-		window->SetFonts(args[0], args[1], args[2], args[3]);
-	} else {
-		fprintf(stderr, "nedit: set_fonts requires 4 arguments\n");
-	}
-}
-
-static void setLanguageModeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(event);
-
-	Document *window = Document::WidgetToWindow(w);
-
-	if (*nArgs > 0) {
-		SetLanguageMode(window, FindLanguageMode(args[0]), FALSE);
-	} else {
-		fprintf(stderr, "nedit: set_language_mode requires argument\n");
 	}
 }
 

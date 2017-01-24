@@ -9,10 +9,13 @@
 #include <QMessageBox>
 #include "MainWindow.h"
 #include "DialogExecuteCommand.h"
+#include "DialogSmartIndent.h"
 #include "DialogWrapMargin.h"
 #include "SignalBlocker.h"
+#include "DialogLanguageModes.h"
 #include "DialogTabs.h"
 #include "DialogFonts.h"
+#include "DialogColors.h"
 #include "TextArea.h"
 #include "TextBuffer.h"
 #include "DialogAbout.h"
@@ -44,86 +47,15 @@
 
 namespace {
 
+DialogSmartIndent *SmartIndentDlg = nullptr;
+
 const char neditDBBadFilenameChars[] = "\n";
 
 QList<QString> PrevOpen;
 
-bool StringToNum(const char *string, int *number) {
-    const char *c = string;
-
-    while (*c == ' ' || *c == '\t') {
-        ++c;
-    }
-    if (*c == '+' || *c == '-') {
-        ++c;
-    }
-    while (isdigit((uint8_t)*c)) {
-        ++c;
-    }
-    while (*c == ' ' || *c == '\t') {
-        ++c;
-    }
-    if (*c != '\0') {
-        // if everything went as expected, we should be at end, but we're not
-        return false;
-    }
-    if (number) {
-        if (sscanf(string, "%d", number) != 1) {
-            // This case is here to support old behavior
-            *number = 0;
-        }
-    }
-    return true;
-}
-
-void gotoAP(DocumentWidget *document, TextArea *w, QStringList args) {
-
-    int lineNum;
-    int column;
-    int position;
-    int curCol;
-
-    /* Accept various formats:
-          [line]:[column]   (menu action)
-          line              (macro call)
-          line, column      (macro call) */
-    if (args.size() == 0 ||
-            args.size() > 2 ||
-            (args.size() == 1 && StringToLineAndCol(args[0].toLatin1().data(), &lineNum, &column) == -1) ||
-            (args.size() == 2 && (!StringToNum(args[0].toLatin1().data(), &lineNum) || !StringToNum(args[1].toLatin1().data(), &column)))) {
-        fprintf(stderr, "nedit: goto_line_number action requires line and/or column number\n");
-        return;
-    }
-
-    auto textD = w;
-
-    // User specified column, but not line number
-    if (lineNum == -1) {
-        position = textD->TextGetCursorPos();
-        if (textD->TextDPosToLineAndCol(position, &lineNum, &curCol) == False) {
-            return;
-        }
-    } else if (column == -1) {
-        // User didn't specify a column
-        SelectNumberedLineEx(document, w, lineNum);
-        return;
-    }
-
-    position = textD->TextDLineAndColToPos(lineNum, column);
-    if (position == -1) {
-        return;
-    }
-
-    textD->TextSetCursorPos(position);
-    return;
-}
-
-
-
 DocumentWidget *EditNewFile(MainWindow *inWindow, char *geometry, bool iconic, const char *languageMode, const QString &defaultPath) {
 
 	Q_UNUSED(geometry);
-	Q_UNUSED(languageMode);
 
 	DocumentWidget *window;
 
@@ -137,16 +69,15 @@ DocumentWidget *EditNewFile(MainWindow *inWindow, char *geometry, bool iconic, c
 		window = inWindow->CreateDocument(name);
 	} else {
 		// TODO(eteran): implement geometry stuff
-		auto win = new MainWindow();
+        auto win = new MainWindow();
 		window = win->CreateDocument(name);
-
-		//win->resize(...);
 
 		if(iconic) {
 			win->showMinimized();
 		} else {
             win->show();
 		}
+        win->setDimmensions(geometry);
 
 		inWindow = win;
 	}
@@ -200,6 +131,7 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(par
 	setupMenuStrings();
 	setupMenuAlternativeMenus();
     CreateLanguageModeSubMenu();
+    setupMenuDefaults();
 
     // NOTE(eteran): in the original nedit, the previous menu was populated
     // when the user actually tried to look at the menu. It is simpler (but
@@ -218,14 +150,12 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(par
 	// default to hiding the optional panels
     ui.incrementalSearchFrame->setVisible(showISearchLine_);
 
-    // these default to disabled.
-    // TODO(eteran): we can probably (if we haven't already) enforce this
-    // in the UIC file directly instead of in code
-    ui.action_Delete->setEnabled(false);
-    ui.action_Undo->setEnabled(false);
-    ui.action_Redo->setEnabled(false);
-
     ui.action_Statistics_Line->setChecked(GetPrefStatsLine());
+
+#if 1
+
+#endif
+
 }
 
 //------------------------------------------------------------------------------
@@ -233,6 +163,57 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(par
 //------------------------------------------------------------------------------
 MainWindow::~MainWindow() {
 
+}
+
+//------------------------------------------------------------------------------
+// Name: setDimmensions
+//------------------------------------------------------------------------------
+void MainWindow::setDimmensions(const char *geometry) {
+    int rows = -1;
+    int cols = -1;
+
+    /* If window geometry was specified, split it apart into a window position
+       component and a window size component.  Create a new geometry string
+       containing the position component only.  Rows and cols are stripped off
+       because we can't easily calculate the size in pixels from them until the
+       whole window is put together.  Note that the preference resource is only
+       for clueless users who decide to specify the standard X geometry
+       application resource, which is pretty useless because width and height
+       are the same as the rows and cols preferences, and specifying a window
+       location will force all the windows to pile on top of one another */
+    if (geometry == nullptr || geometry[0] == '\0') {
+        geometry = GetPrefGeometry();
+    }
+
+    if (geometry == nullptr || geometry[0] == '\0') {
+        rows = GetPrefRows();
+        cols = GetPrefCols();
+    } else {
+
+        QRegExp regex(QLatin1String("(?:([0-9]+)(?:[xX]([0-9]+)(?:([\\+-][0-9]+)(?:([\\+-][0-9]+))?)?)?)?"));
+        if(regex.exactMatch(QLatin1String(geometry))) {
+            cols = regex.capturedTexts()[1].toInt();
+            rows = regex.capturedTexts()[2].toInt();
+        }
+    }
+
+    // TODO(eteran): implement this ... somehow
+#if 0
+    TextArea *area = currentDocument()->firstPane();
+    QFont font = area->font();
+    QFontMetricsF fm(font);
+
+    if(cols > 0 && rows > 0) {
+
+        area->setSizeHint(cols * fm.maxWidth() / 2, rows * fm.height() / 2);
+
+        QWidget *w = area;
+        while (w) {
+            w->adjustSize();
+            w = w->parentWidget();
+        }
+    }
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -247,6 +228,50 @@ void MainWindow::setupTabBar() {
 	ui.tabWidget->setCornerWidget(deleteTabButton);
 	
 	connect(deleteTabButton, SIGNAL(clicked()), this, SLOT(deleteTabButtonClicked()));
+}
+
+//------------------------------------------------------------------------------
+// Name: setupMenuDefaults
+//------------------------------------------------------------------------------
+void MainWindow::setupMenuDefaults() {
+    // TODO(eteran): make sure that the various menus default to the current
+    //               settings based on the preferences!
+
+    // Default Indent
+    switch(GetPrefAutoIndent(PLAIN_LANGUAGE_MODE)) {
+    case NO_AUTO_INDENT:
+        ui.action_Default_Indent_Off->setChecked(true);
+        break;
+    case AUTO_INDENT:
+        ui.action_Default_Indent_On->setChecked(true);
+        break;
+    case SMART_INDENT:
+        ui.action_Default_Indent_Smart->setChecked(true);
+        break;
+    default:
+        break;
+    }
+
+    // Default Wrap
+    switch(GetPrefWrap(PLAIN_LANGUAGE_MODE)) {
+    case NO_WRAP:
+        ui.action_Default_Wrap_None->setChecked(true);
+        break;
+    case NEWLINE_WRAP:
+        ui.action_Default_Wrap_Auto_Newline->setChecked(true);
+        break;
+    case CONTINUOUS_WRAP:
+        ui.action_Default_Wrap_Continuous->setChecked(true);
+        break;
+    default:
+        break;
+    }
+
+    if(GetPrefSmartTags()) {
+        ui.action_Default_Tag_Smart->setChecked(true);
+    } else {
+        ui.action_Default_Tag_Show_All->setChecked(true);
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -1622,7 +1647,7 @@ void MainWindow::on_action_Goto_Line_Number_triggered() {
         }
 
         if(TextArea *w = lastFocus_) {
-            gotoAP(doc, w, QStringList() << text);
+            doc->gotoAP(w, QStringList() << text);
         }
     }
 }
@@ -1636,7 +1661,7 @@ void MainWindow::on_action_Goto_Selected_triggered() {
         const QMimeData *mimeData = QApplication::clipboard()->mimeData(QClipboard::Selection);
         if(mimeData->hasText()) {
             if(TextArea *w = lastFocus_) {
-                gotoAP(doc, w, QStringList() << mimeData->text());
+                doc->gotoAP(w, QStringList() << mimeData->text());
             }
         } else {
             QApplication::beep();
@@ -2481,7 +2506,7 @@ void MainWindow::on_action_Execute_Command_triggered() {
 void MainWindow::on_action_Detach_Tab_triggered() {
     if(TabCount() > 1) {
         if(auto doc = currentDocument()) {
-            auto new_window = new MainWindow();
+            auto new_window = new MainWindow(nullptr);
 
             new_window->ui.tabWidget->addTab(doc, doc->filename_);
             new_window->show();
@@ -2588,14 +2613,8 @@ void MainWindow::on_action_Wrap_Margin_triggered() {
 
         auto dialog = new DialogWrapMargin(document, this);
 
-        int margin;
-
         // Set default value
-        if(!document) {
-            margin = GetPrefWrapMargin();
-        } else {
-            margin = document->firstPane()->getWrapMargin();
-        }
+        int margin = document->firstPane()->getWrapMargin();
 
         dialog->ui.checkWrapAndFill->setChecked(margin == 0);
         dialog->ui.spinWrapAndFill->setValue(margin);
@@ -2633,5 +2652,193 @@ void MainWindow::on_action_Highlight_Syntax_toggled(bool state) {
         } else {
             document->StopHighlightingEx();
         }
+    }
+}
+
+void MainWindow::on_action_Apply_Backlighting_toggled(bool state) {
+    if(auto document = currentDocument()) {
+        document->SetBacklightChars(state ? GetPrefBacklightCharTypes() : nullptr);
+    }
+}
+
+void MainWindow::on_action_Make_Backup_Copy_toggled(bool state) {
+    if(auto document = currentDocument()) {
+        document->saveOldVersion_ = state;
+    }
+}
+
+void MainWindow::on_action_Incremental_Backup_toggled(bool state) {
+    if(auto document = currentDocument()) {
+        document->autoSave_ = state;
+    }
+}
+
+void MainWindow::matchingGroupTriggered(QAction *action) {
+
+    // TODO(eteran): implement the backwards compatibility at the macro level
+    /* For backward compatibility with pre-5.2 versions, we also
+       accept 0 and 1 as aliases for NO_FLASH and FLASH_DELIMIT.
+       It is quite unlikely, though, that anyone ever used this
+       action procedure via the macro language or a key binding,
+       so this can probably be left out safely. */
+
+    if(auto document = currentDocument()) {
+        if(action == ui.action_Matching_Off) {
+            document->SetShowMatching(NO_FLASH);
+        } else if(action == ui.action_Matching_Delimiter) {
+            document->SetShowMatching(FLASH_DELIMIT);
+        } else if(action == ui.action_Matching_Range) {
+            document->SetShowMatching(FLASH_RANGE);
+        } else {
+            qDebug("nedit: Invalid argument for set_show_matching");
+        }
+    }
+}
+
+void MainWindow::on_action_Matching_Syntax_toggled(bool state) {
+    if(auto document = currentDocument()) {
+        document->matchSyntaxBased_ = state;
+    }
+}
+
+void MainWindow::on_action_Overtype_toggled(bool state) {
+    if(auto document = currentDocument()) {
+        document->SetOverstrike(state);
+    }
+}
+
+void MainWindow::on_action_Read_Only_toggled(bool state) {
+    if(auto document = currentDocument()) {
+        document->lockReasons_.setUserLocked(state);
+        UpdateWindowTitle(document);
+        UpdateWindowReadOnly(document);
+    }
+}
+
+void MainWindow::on_action_Save_Defaults_triggered() {
+    SaveNEditPrefsEx(this, false);
+}
+
+void MainWindow::on_action_Default_Language_Modes_triggered() {
+    auto dialog = new DialogLanguageModes(this);
+    dialog->show();
+}
+
+void MainWindow::defaultIndentGroupTriggered(QAction *action) {
+
+    if(action == ui.action_Default_Indent_Off) {
+        SetPrefAutoIndent(NO_AUTO_INDENT);
+    } else if(action == ui.action_Default_Indent_On) {
+        SetPrefAutoIndent(AUTO_INDENT);
+    } else if(action == ui.action_Default_Indent_Smart) {
+        SetPrefAutoIndent(SMART_INDENT);
+    } else {
+        qDebug("nedit: invalid default indent");
+    }
+}
+
+void MainWindow::on_action_Default_Program_Smart_Indent_triggered() {
+
+
+    if (!SmartIndentDlg) {
+        // TODO(eteran): do we really want this to be associated with THIS document?
+        if(auto document = currentDocument()) {
+            SmartIndentDlg = new DialogSmartIndent(document, this);
+        }
+    }
+
+    if (LanguageModeName(0).isNull()) {
+        QMessageBox::warning(this, tr("Language Mode"), tr("No Language Modes defined"));
+        return;
+    }
+
+    SmartIndentDlg->show();
+    SmartIndentDlg->raise();
+}
+
+void MainWindow::defaultWrapGroupTriggered(QAction *action) {
+
+    if(action == ui.action_Default_Wrap_None) {
+        SetPrefWrap(NO_WRAP);
+    } else if(action == ui.action_Default_Wrap_Auto_Newline) {
+        SetPrefWrap(NEWLINE_WRAP);
+    } else if(action == ui.action_Default_Wrap_Continuous) {
+        SetPrefWrap(CONTINUOUS_WRAP);
+    } else {
+        qDebug("nedit: invalid default wrap");
+    }
+}
+
+void MainWindow::on_action_Default_Wrap_Margin_triggered() {
+
+    auto dialog = new DialogWrapMargin(nullptr, this);
+
+    // Set default value
+    int margin = GetPrefWrapMargin();
+
+    dialog->ui.checkWrapAndFill->setChecked(margin == 0);
+    dialog->ui.spinWrapAndFill->setValue(margin);
+
+    dialog->exec();
+    delete dialog;
+}
+
+void MainWindow::defaultTagCollisionsGroupTriggered(QAction *action) {
+    if(action == ui.action_Default_Tag_Show_All) {
+        SetPrefSmartTags(false);
+    } else if(action == ui.action_Default_Tag_Smart) {
+        SetPrefSmartTags(true);
+    } else {
+        qDebug("nedit: invalid default collisions");
+    }
+}
+
+void MainWindow::on_action_Default_Command_Shell_triggered() {
+    bool ok;
+    QString shell = QInputDialog::getText(this,
+        tr("Command Shell"),
+        tr("Enter shell path:"),
+        QLineEdit::Normal,
+        QLatin1String(GetPrefShell()),
+        &ok);
+
+    if (ok && !shell.isEmpty()) {
+
+        struct stat attribute;
+        if (stat(shell.toLatin1().data(), &attribute) == -1) {
+            int resp = QMessageBox::warning(this, tr("Command Shell"), tr("The selected shell is not available.\nDo you want to use it anyway?"), QMessageBox::Ok | QMessageBox::Cancel);
+            if(resp == QMessageBox::Cancel) {
+                return;
+            }
+        }
+
+        SetPrefShell(shell.toLatin1().data());
+    }
+}
+
+void MainWindow::on_action_Default_Tab_Stops_triggered() {
+    if(auto document = currentDocument()) {
+        auto dialog = new DialogTabs(document, this);
+        dialog->exec();
+        delete dialog;
+    }
+}
+
+void MainWindow::on_action_Default_Text_Fonts_triggered() {
+    if(auto document = currentDocument()) {
+        document->dialogFonts_ = new DialogFonts(false, this);
+        document->dialogFonts_->exec();
+        delete document->dialogFonts_;
+    }
+}
+
+void MainWindow::on_action_Default_Colors_triggered() {
+    if(auto document = currentDocument()) {
+        if(!document->dialogColors_) {
+            document->dialogColors_ = new DialogColors(this);
+        }
+
+        document->dialogColors_->show();
+        document->dialogColors_->raise();
     }
 }

@@ -1734,8 +1734,10 @@ void Document::UpdateWindowReadOnly() {
 		textD_of(textPanes_[i])->setReadOnly(state);
 	}
 
+#if 0 // NOTE(eteran): transitioned
 	XmToggleButtonSetState(readOnlyItem_, state, false);
 	XtSetSensitive(readOnlyItem_, !lockReasons_.isAnyLockedIgnoringUser());
+#endif
 }
 
 /*
@@ -3371,7 +3373,7 @@ Document::Document(const QString &name, char *geometry, bool iconic) {
 	}
 
 
-#if 0
+#if 0 // NOTE(eteran): transitioned
 	/* Disable keyboard traversal of the find, clear and toggle buttons.  We
 	   were doing this previously by forcing the keyboard focus back to the
 	   text widget whenever a toggle changed.  That causes an ugly focus flash

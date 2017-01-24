@@ -71,6 +71,8 @@ public Q_SLOTS:
     void BeginSmartIndentEx(int warn);
     void moveDocument(MainWindow *fromWindow);
     void ShowStatsLine(bool state);
+    void gotoAP(TextArea *area, QStringList args);
+    void SetColors(const char *textFg, const char *textBg, const char *selectFg, const char *selectBg, const char *hiliteFg, const char *hiliteBg, const char *lineNoFg, const char *cursorFg);
 
 public:
 	void movedCallback(TextArea *area);
@@ -108,6 +110,7 @@ public:
     MainWindow *toWindow() const;
     void UpdateMarkTable(int pos, int nInserted, int nDeleted);
     void StopHighlightingEx();
+    void SetBacklightChars(char *applyBacklightTypes);
     void freeHighlightData(WindowHighlightData *hd);
     void freePatterns(HighlightData *patterns);
     QString GetWindowDelimiters() const;
@@ -157,6 +160,7 @@ public:
     bool includeFile(const QString &name);
     bool findMatchingCharEx(char toMatch, void *styleToMatch, int charPos, int startLimit, int endLimit, int *matchPos);
     void SetFonts(const QString &fontName, const QString &italicName, const QString &boldName, const QString &boldItalicName);
+    void SetOverstrike(bool overstrike);
 
 public:
     static DocumentWidget *EditExistingFileEx(DocumentWidget *inWindow, const QString &name, const QString &path, int flags, char *geometry, int iconic, const char *languageMode, int tabbed, int bgOpen);

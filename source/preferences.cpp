@@ -30,6 +30,7 @@
 #include <QString>
 #include <QPushButton>
 #include <QInputDialog>
+#include <QX11Info>
 #include <QtDebug>
 #include "ui/DialogFontSelector.h"
 #include "ui/DialogWrapMargin.h"
@@ -1005,6 +1006,50 @@ static void translatePrefFormats(int convertOld, int fileVer) {
 	SetupUserMenuInfo();
 }
 
+void SaveNEditPrefsEx(QWidget *parent, bool quietly) {
+
+    QString prefFileName = GetRCFileNameEx(NEDIT_RC);
+    if(prefFileName.isNull()) {
+        QMessageBox::warning(parent, QLatin1String("Error saving Preferences"), QLatin1String("Unable to save preferences: Cannot determine filename."));
+        return;
+    }
+
+    if (!quietly) {
+
+
+        int resp = QMessageBox::information(parent, QLatin1String("Save Preferences"),
+            ImportedFile == nullptr ? QString(QLatin1String("Default preferences will be saved in the file:\n%1\nNEdit automatically loads this file\neach time it is started.")).arg(prefFileName)
+                                    : QString(QLatin1String("Default preferences will be saved in the file:\n%1\nSAVING WILL INCORPORATE SETTINGS\nFROM FILE: %2")).arg(prefFileName).arg(QLatin1String(ImportedFile)),
+                QMessageBox::Ok | QMessageBox::Cancel);
+
+
+
+        if(resp == QMessageBox::Cancel) {
+            return;
+        }
+    }
+
+    /*  Write the more dynamic settings into TempStringPrefs.
+        These locations are set in PrefDescrip, so this is where
+        SavePreferences() will look for them.  */
+
+    TempStringPrefs.shellCmds         = WriteShellCmdsStringEx();
+    TempStringPrefs.macroCmds         = WriteMacroCmdsStringEx();
+    TempStringPrefs.bgMenuCmds        = WriteBGMenuCmdsStringEx();
+    TempStringPrefs.highlight         = WriteHighlightStringEx();
+    TempStringPrefs.language          = WriteLanguageModesStringEx();
+    TempStringPrefs.styles            = WriteStylesStringEx();
+    TempStringPrefs.smartIndent       = WriteSmartIndentStringEx();
+    TempStringPrefs.smartIndentCommon = WriteSmartIndentCommonStringEx();
+    strcpy(PrefData.fileVersion, PREF_FILE_VERSION);
+
+    if (!SavePreferences(QX11Info::display(), prefFileName.toLatin1().data(), HeaderText, PrefDescrip, XtNumber(PrefDescrip))) {
+        QMessageBox::warning(parent, QLatin1String("Save Preferences"), QString(QLatin1String("Unable to save preferences in %1")).arg(prefFileName));
+    }
+
+    PrefsHaveChanged = false;
+}
+
 void SaveNEditPrefs(Widget parent, int quietly) {
 
 	QString prefFileName = GetRCFileNameEx(NEDIT_RC);
@@ -1664,11 +1709,12 @@ static void setStringPref(char *prefDataField, const char *newValue) {
 ** regardless of whether they were previously set by the user.
 */
 void SetLanguageMode(Document *window, int mode, int forceNewDefaults) {
+#if 0 // NOTE(eteran): transitioned
 	Widget menu;
 	WidgetList items;
 	Cardinal nItems;
 	void *userData;
-
+#endif
 	// Do mode-specific actions 
 	reapplyLanguageMode(window, mode, forceNewDefaults);
 
@@ -1850,8 +1896,8 @@ static void reapplyLanguageMode(Document *window, int mode, bool forceDefaults) 
 	haveHighlightPatterns = FindPatternSet(!languageModeName.isNull() ? languageModeName : QLatin1String("")) != nullptr;
 	haveSmartIndentMacros = SmartIndentMacrosAvailable(LanguageModeName(mode).toLatin1().data());
 	if (window->IsTopDocument()) {
-		XtSetSensitive(window->highlightItem_, haveHighlightPatterns);
 #if 0 // NOTE(eteran): transitioned
+		XtSetSensitive(window->highlightItem_, haveHighlightPatterns);
 		XtSetSensitive(window->smartIndentItem_, haveSmartIndentMacros);
 #endif
 	}
@@ -1863,7 +1909,9 @@ static void reapplyLanguageMode(Document *window, int mode, bool forceDefaults) 
 
 	// Change highlighting 
 	window->highlightSyntax_ = highlight;
+#if 0 // NOTE(eteran): transitioned
 	window->SetToggleButtonState(window->highlightItem_, highlight, False);
+#endif
 	StopHighlighting(window);
 
 	// we defer highlighting to RaiseDocument() if doc is hidden 
@@ -3525,20 +3573,6 @@ void UnloadLanguageModeTipsFile(Document *window) {
 	if (mode != PLAIN_LANGUAGE_MODE && !LanguageModes[mode]->defTipsFile.isNull()) {
 		DeleteTagsFileEx(LanguageModes[mode]->defTipsFile, TIP, False);
 	}
-}
-
-/*
- * Code for the dialog itself
- */
-void ChooseColors(Document *window) {
-
-	if(!window->dialogColors_) {
-		window->dialogColors_ = new DialogColors(window);
-	}
-
-	window->dialogColors_->show();
-	window->dialogColors_->raise();
-
 }
 
 /*

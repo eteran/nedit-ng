@@ -472,23 +472,6 @@ static void executeModMacro(Document *window, smartIndentCBStruct *cbInfo) {
 	}
 }
 
-void EditSmartIndentMacros(Document *window) {
-
-
-	if (!SmartIndentDlg) {
-		SmartIndentDlg = new DialogSmartIndent(window, nullptr /*parent*/);
-	}
-
-	if (LanguageModeName(0).isNull()) {
-		QMessageBox::warning(nullptr /*parent*/, QLatin1String("Language Mode"), QLatin1String("No Language Modes defined"));
-		return;
-	}	
-	
-	SmartIndentDlg->show();
-	SmartIndentDlg->raise();
-	return;
-}
-
 static bool loadDefaultIndentSpec(const char *lmName) {
 
 	for (int i = 0; i < N_DEFAULT_INDENT_SPECS; i++) {

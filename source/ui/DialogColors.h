@@ -5,13 +5,13 @@
 #include <QDialog>
 #include "ui_DialogColors.h"
 
-class Document;
+class DocumentWidget;
 class QLabel;
 
 class DialogColors : public QDialog {
 	Q_OBJECT
 public:
-	DialogColors(Document *window, QWidget *parent = 0, Qt::WindowFlags f = 0);
+    DialogColors(QWidget *parent = 0, Qt::WindowFlags f = 0);
 	virtual ~DialogColors();
 
 private Q_SLOTS:
@@ -45,7 +45,6 @@ private:
 
 private:
 	Ui::DialogColors ui;
-	Document *window_;
 };
 
 #endif

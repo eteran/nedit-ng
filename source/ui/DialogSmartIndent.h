@@ -5,13 +5,13 @@
 #include <QDialog>
 #include "ui_DialogSmartIndent.h"
 
-class Document;
+class DocumentWidget;
 class SmartIndent;
 
 class DialogSmartIndent : public QDialog {
 	Q_OBJECT
 public:
-	DialogSmartIndent(Document *window, QWidget *parent = 0, Qt::WindowFlags f = 0);
+    DialogSmartIndent(DocumentWidget *document, QWidget *parent = 0, Qt::WindowFlags f = 0);
 	virtual ~DialogSmartIndent();
 
 public:

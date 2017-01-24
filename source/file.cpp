@@ -91,7 +91,7 @@ static void modifiedWindowDestroyedCB(Widget w, XtPointer clientData, XtPointer 
 static void safeClose(Document *window);
 
 Document *EditNewFile(Document *inWindow, char *geometry, int iconic, const char *languageMode, const char *defaultPath) {
-	Document *window;
+    Document *document;
 
 	/*... test for creatability? */
 
@@ -100,16 +100,16 @@ Document *EditNewFile(Document *inWindow, char *geometry, int iconic, const char
 
 	// create new window/document 
 	if (inWindow) {
-		window = inWindow->CreateDocument(name);
+        document = inWindow->CreateDocument(name);
 	} else {
-		window = new Document(name, geometry, iconic);
+        document = new Document(name, geometry, iconic);
 #if 1
 		// TODO(eteran): this is an experiement in making a Qt main window along side
 		// the typical one...
-		auto win = new MainWindow();
+        auto win = new MainWindow();
 		win->on_action_New_triggered();
 		win->setWindowTitle(name);
-		//win->resize(...);
+        win->setDimmensions(geometry);
 		if(iconic) {
 			win->showMinimized();
 		} else {
@@ -118,37 +118,37 @@ Document *EditNewFile(Document *inWindow, char *geometry, int iconic, const char
 #endif			
 	}
 
-	window->filename_ = name;
-	window->path_     = (defaultPath && *defaultPath) ? QLatin1String(defaultPath) : GetCurrentDirEx();
+    document->filename_ = name;
+    document->path_     = (defaultPath && *defaultPath) ? QLatin1String(defaultPath) : GetCurrentDirEx();
 	
 	// do we have a "/" at the end? if not, add one 
-	if (!window->path_.isEmpty() && !window->path_.endsWith(QLatin1Char('/'))) {
-		window->path_.append(QLatin1Char('/'));
+    if (!document->path_.isEmpty() && !document->path_.endsWith(QLatin1Char('/'))) {
+        document->path_.append(QLatin1Char('/'));
 	}
 
-	window->SetWindowModified(false);
-	window->lockReasons_.clear();
-	window->UpdateWindowReadOnly();
-	window->UpdateStatsLine();
-	window->UpdateWindowTitle();
-	window->RefreshTabState();
+    document->SetWindowModified(false);
+    document->lockReasons_.clear();
+    document->UpdateWindowReadOnly();
+    document->UpdateStatsLine();
+    document->UpdateWindowTitle();
+    document->RefreshTabState();
 
 	if(!languageMode) {
-		DetermineLanguageMode(window, true);
+        DetermineLanguageMode(document, true);
 	} else {
-		SetLanguageMode(window, FindLanguageMode(languageMode), true);
+        SetLanguageMode(document, FindLanguageMode(languageMode), true);
 	}
 
-	window->ShowTabBar(window->GetShowTabBar());
+    document->ShowTabBar(document->GetShowTabBar());
 
-	if (iconic && window->IsIconic()) {
-		window->RaiseDocument();
+    if (iconic && document->IsIconic()) {
+        document->RaiseDocument();
 	} else {
-		window->RaiseDocumentWindow();
+        document->RaiseDocumentWindow();
 	}
 
-	window->SortTabBar();
-	return window;
+    document->SortTabBar();
+    return document;
 }
 
 /*

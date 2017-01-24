@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>800</width>
-    <height>550</height>
+    <height>409</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -615,6 +615,9 @@
    </property>
   </action>
   <action name="action_Undo">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset theme="edit-undo">
      <normaloff>.</normaloff>.</iconset>
@@ -627,6 +630,9 @@
    </property>
   </action>
   <action name="action_Redo">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset theme="edit-redo">
      <normaloff>.</normaloff>.</iconset>
@@ -1250,14 +1256,6 @@
     <string>Ctrl+,</string>
    </property>
   </action>
-  <action name="action_Complete_Word">
-   <property name="text">
-    <string>Complete Word</string>
-   </property>
-   <property name="shortcut">
-    <string>Alt+D</string>
-   </property>
-  </action>
   <action name="action_About">
    <property name="icon">
     <iconset theme="help-about">
@@ -1265,83 +1263,6 @@
    </property>
    <property name="text">
     <string>&amp;About NEdit-ng</string>
-   </property>
-  </action>
-  <action name="action_Find_Again_Backwards">
-   <property name="text">
-    <string>Find Again Backwards</string>
-   </property>
-   <property name="toolTip">
-    <string>Find Again Backwards</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+Shift+G</string>
-   </property>
-  </action>
-  <action name="action_Find_Selection_Backwards">
-   <property name="text">
-    <string>Find Selection Backwards</string>
-   </property>
-   <property name="toolTip">
-    <string>Find Selection Backwards</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+Shift+H</string>
-   </property>
-  </action>
-  <action name="action_Highlight_To_Matching">
-   <property name="text">
-    <string>Highlight_To_Matching</string>
-   </property>
-   <property name="toolTip">
-    <string>Highlight_To_Matching</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+Shift+M</string>
-   </property>
-  </action>
-  <action name="action_Find_Backwards">
-   <property name="text">
-    <string>Find Backwards</string>
-   </property>
-   <property name="toolTip">
-    <string>Find Backwards</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+Shift+F</string>
-   </property>
-  </action>
-  <action name="action_Replace_Backwards">
-   <property name="text">
-    <string>Replace Backwards</string>
-   </property>
-   <property name="toolTip">
-    <string>Replace Backwards</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+Shift+R</string>
-   </property>
-  </action>
-  <action name="action_Replace_Again_Backwards">
-   <property name="text">
-    <string>Replace Again Backwards</string>
-   </property>
-   <property name="toolTip">
-    <string>Replace Again Backwards</string>
-   </property>
-   <property name="shortcut">
-    <string>Alt+Shift+T</string>
-   </property>
-  </action>
-  <action name="action_Replace_Find_Again_Backwards">
-   <property name="text">
-    <string>Replace Find Again Backwards</string>
-   </property>
-   <property name="toolTip">
-    <string>Replace Find Again Backwards</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+Shift+T</string>
    </property>
   </action>
   <action name="action_Default_Language_Modes">

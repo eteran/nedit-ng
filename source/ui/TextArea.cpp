@@ -8465,3 +8465,15 @@ void TextArea::TextDMaintainAbsLineNum(bool state) {
     needAbsTopLineNum_ = state;
     resetAbsLineNum();
 }
+
+void TextArea::setSizeHint(QSize sizeHint) {
+    sizeHint_ = sizeHint;
+}
+
+void TextArea::setSizeHint(qreal w, qreal h) {
+    setSizeHint(QSize(w, h));
+}
+
+QSize TextArea::sizeHint() const {
+    return sizeHint_;
+}

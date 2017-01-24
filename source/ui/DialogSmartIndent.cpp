@@ -4,23 +4,23 @@
 #include "DialogLanguageModes.h"
 #include "SmartIndent.h"
 #include "LanguageMode.h"
+#include "MainWindow.h"
 #include <QMessageBox>
 
 #include "smartIndent.h"
 #include "macro.h"
-#include "Document.h"
+#include "DocumentWidget.h"
 #include "preferences.h"
-#include "util/MotifHelper.h"
 #include "interpret.h"
 
 
 //------------------------------------------------------------------------------
 // Name: 
 //------------------------------------------------------------------------------
-DialogSmartIndent::DialogSmartIndent(Document *window, QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f) {
+DialogSmartIndent::DialogSmartIndent(DocumentWidget *document, QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f) {
 	ui.setupUi(this);
 		
-	QString languageMode = LanguageModeName(window->languageMode_ == PLAIN_LANGUAGE_MODE ? 0 : window->languageMode_);
+    QString languageMode = LanguageModeName(document->languageMode_ == PLAIN_LANGUAGE_MODE ? 0 : document->languageMode_);
 
 	updateLanguageModes();
 	setLanguageMode(languageMode);
@@ -249,16 +249,19 @@ bool DialogSmartIndent::updateSmartIndentData() {
 
 	/* Find windows that are currently using this indent specification and
 	   re-do the smart indent macros */
-	for(Document *window: WindowList) {
+    for(DocumentWidget *document: MainWindow::allDocuments()) {
 
-		QString lmName = LanguageModeName(window->languageMode_);
+        QString lmName = LanguageModeName(document->languageMode_);
 		if(!lmName.isNull()) {
 			if (lmName == newMacros->lmName) {
 
-				window->SetSensitive(window->smartIndentItem_, true);
-				if (window->indentStyle_ == SMART_INDENT && window->languageMode_ != PLAIN_LANGUAGE_MODE) {
-					EndSmartIndent(window);
-					BeginSmartIndent(window, false);
+                if(auto window = document->toWindow()) {
+                    window->ui.action_Indent_Smart->setEnabled(true);
+                }
+
+                if (document->indentStyle_ == SMART_INDENT && document->languageMode_ != PLAIN_LANGUAGE_MODE) {
+                    EndSmartIndentEx(document);
+                    document->BeginSmartIndentEx(false);
 				}
 			}
 		}

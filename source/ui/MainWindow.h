@@ -20,7 +20,7 @@ class MainWindow : public QMainWindow {
     friend class DialogReplace;
 
 public:
-	MainWindow (QWidget *parent = 0, Qt::WindowFlags flags = 0);
+    MainWindow (QWidget *parent = 0, Qt::WindowFlags flags = 0);
 	virtual ~MainWindow();
 	
 private:
@@ -29,12 +29,16 @@ private:
 	void setupTabBar();
 	void setupMenuAlternativeMenus();
     void CreateLanguageModeSubMenu();
+    void setupMenuDefaults();
+
+public:
     void updateLanguageModeSubmenu();
 
 private:
     virtual void keyPressEvent(QKeyEvent *event) override;
 
 public:
+    void setDimmensions(const char *geometry);
 	void UpdateWindowTitle(DocumentWidget *doc);
 	DialogReplace *getDialogReplace() const;
 	void InvalidateWindowMenus();
@@ -98,17 +102,18 @@ public Q_SLOTS:
     // groups
     void indentGroupTriggered(QAction *action);
     void wrapGroupTriggered(QAction *action);
-#if 0
-
     void matchingGroupTriggered(QAction *action);
     void defaultIndentGroupTriggered(QAction *action);
     void defaultWrapGroupTriggered(QAction *action);
     void defaultTagCollisionsGroupTriggered(QAction *action);
+#if 0
+
     void defaultSearchGroupTriggered(QAction *action);
     void defaultSyntaxGroupTriggered(QAction *action);
     void defaultMatchingGroupTriggered(QAction *action);
     void defaultSizeGroupTriggered(QAction *action);
 #endif
+
 public Q_SLOTS:
     void on_tabWidget_currentChanged(int index);
     void on_tabWidget_customContextMenuRequested(int index, const QPoint &pos);
@@ -187,44 +192,23 @@ public Q_SLOTS:
     void on_action_Tab_Stops_triggered();
     void on_action_Text_Fonts_triggered();
     void on_action_Highlight_Syntax_toggled(bool state);
+    void on_action_Apply_Backlighting_toggled(bool state);
+    void on_action_Make_Backup_Copy_toggled(bool state);
+    void on_action_Incremental_Backup_toggled(bool state);
+    void on_action_Matching_Syntax_toggled(bool state);
+    void on_action_Overtype_toggled(bool state);
+    void on_action_Read_Only_toggled(bool state);
+    void on_action_Save_Defaults_triggered();
 
+    // Preferences Defaults
+    void on_action_Default_Language_Modes_triggered();
+    void on_action_Default_Program_Smart_Indent_triggered();
+    void on_action_Default_Wrap_Margin_triggered();
+    void on_action_Default_Command_Shell_triggered();
+    void on_action_Default_Tab_Stops_triggered();
+    void on_action_Default_Text_Fonts_triggered();
+    void on_action_Default_Colors_triggered();
 #if 0
-
-
-	void on_action_Filter_Selection_triggered();
-	void on_action_Cancel_Shell_Command_triggered();
-	void on_action_Indent_triggered();
-	void on_action_Unindent_triggered();
-	void on_action_Save_Defaults_triggered();
-
-	void on_action_Apply_Backlighting_triggered();
-	void on_action_Make_Backup_Copy_triggered();
-	void on_action_Incremental_Backup_triggered();
-	void on_action_Overtype_triggered();
-	void on_action_Read_Only_triggered();
-	void on_action_Matching_Off_triggered();
-	void on_action_Matching_Delimiter_triggered();
-	void on_action_Matching_Range_triggered();
-	void on_action_Matching_Syntax_triggered();
-
-    void on_action_Learn_Keystrokes_triggered();
-	void on_action_Finish_Learn_triggered();
-	void on_action_Cancel_Learn_triggered();
-	void on_action_Replay_Keystrokes_triggered();
-	void on_action_Repeat_triggered();
-	void on_action_Complete_Word_triggered();	
-	void on_action_Find_Again_Backwards_triggered();
-	void on_action_Find_Selection_Backwards_triggered();
-	void on_action_Highlight_To_Matching_triggered();
-	void on_action_Find_Backwards_triggered();
-	void on_action_Replace_Backwards_triggered();
-	void on_action_Replace_Again_Backwards_triggered();
-	void on_action_Replace_Find_Again_Backwards_triggered();
-	void on_action_Default_Language_Modes_triggered();
-	void on_action_Default_Command_Shell_triggered();
-	void on_action_Default_Tab_Stops_triggered();
-	void on_action_Default_Text_Fonts_triggered();
-	void on_action_Default_Colors_triggered();
 	void on_action_Default_Customize_Window_Title_triggered();
 	void on_action_Default_Apply_Backlighting_triggered();
 	void on_action_Default_Show_Tooltips_triggered();
@@ -235,17 +219,7 @@ public Q_SLOTS:
 	void on_action_Default_Terminate_with_Line_Break_on_Save_triggered();
 	void on_action_Default_Popups_Under_Pointer_triggered();
 	void on_action_Default_Auto_Scroll_Near_Window_Top_Bottom_triggered();
-	void on_action_Default_Indent_Off_triggered();
-	void on_action_Default_Indent_On_triggered();
-	void on_action_Default_Indent_Smart_triggered();
-	void on_action_Default_Program_Smart_Indent_triggered();
-	void on_action_Default_Wrap_None_triggered();
-	void on_action_Default_Wrap_Auto_Newline_triggered();
-	void on_action_Default_Wrap_Continuous_triggered();
-	void on_action_Default_Wrap_Margin_triggered();
-	void on_action_Default_Tag_Show_All_triggered();
-	void on_action_Default_Tag_Smart_triggered();
-	void on_action_Default_Shell_Menu_triggered();
+    void on_action_Default_Shell_Menu_triggered();
 	void on_action_Default_Macro_Menu_triggered();
 	void on_action_Default_Window_Background_Menu_triggered();
 	void on_action_Default_Sort_Open_Prev_Menu_triggered();
@@ -282,6 +256,20 @@ public Q_SLOTS:
 	void on_action_Default_Size_60_x_80_triggered();
 	void on_action_Default_Size_80_x_80_triggered();
 	void on_action_Default_Size_Custom_triggered();
+#endif
+
+#if 0
+    void on_action_Filter_Selection_triggered();
+    void on_action_Cancel_Shell_Command_triggered();
+    void on_action_Indent_triggered();
+    void on_action_Unindent_triggered();
+
+    void on_action_Learn_Keystrokes_triggered();
+    void on_action_Finish_Learn_triggered();
+    void on_action_Cancel_Learn_triggered();
+    void on_action_Replay_Keystrokes_triggered();
+    void on_action_Repeat_triggered();
+    void on_action_Complete_Word_triggered();
 #endif
     void on_action_About_Qt_triggered();
 

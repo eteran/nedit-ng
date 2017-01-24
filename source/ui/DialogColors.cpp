@@ -2,17 +2,19 @@
 #include "DialogColors.h"
 #include <QColorDialog>
 #include <QMessageBox>
-
+#include <QX11Info>
+#include "MainWindow.h"
 #include "preferences.h"
-#include "Document.h"
+#include "DocumentWidget.h"
 #include "highlight.h"
+#include "nedit.h" // (for some constants)
 
 // TODO(eteran): use QColor for all the validation and all that... eventually
 
 //------------------------------------------------------------------------------
 // Name: 
 //------------------------------------------------------------------------------
-DialogColors::DialogColors(Document *window, QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f), window_(window) {
+DialogColors::DialogColors(QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f) {
 	ui.setupUi(this);
 	
     ui.labelErrorFG->setVisible(false);
@@ -46,14 +48,12 @@ DialogColors::~DialogColors() {
 // Desc: Returns True if the color is valid, False if it's not 
 //------------------------------------------------------------------------------
 bool DialogColors::checkColorStatus(const QString &text) {
-	Colormap cMap;
+
+    QX11Info x11Info;
+    Display *display = QX11Info::display();
+    Colormap cMap = x11Info.colormap();
 	XColor colorDef;
-	Status status;
-	Display *display = XtDisplay(window_->shell_);
-
-	XtVaGetValues(window_->shell_, XtNcolormap, &cMap, nullptr);
-	status = XParseColor(display, cMap, text.toLatin1().data(), &colorDef);
-
+    Status status = XParseColor(display, cMap, text.toLatin1().data(), &colorDef);
 	return (status != 0);
 }
 
@@ -248,8 +248,8 @@ void DialogColors::updateColors() {
 	QString lineNoFg = ui.editLineNumbers->text();
 	QString cursorFg = ui.editCursor->text();
 
-	for(Document *window: WindowList) {
-		window->SetColors(
+    for(DocumentWidget *document : MainWindow::allDocuments()) {
+        document->SetColors(
 			textFg.toLatin1().data(),
 			textBg.toLatin1().data(),
 			selectFg.toLatin1().data(),
