@@ -320,7 +320,7 @@
       <property name="title">
        <string>Initial Window Si&amp;ze</string>
       </property>
-      <addaction name="action_Default_Size_24_x_24"/>
+      <addaction name="action_Default_Size_24_x_80"/>
       <addaction name="action_Default_Size_40_x_80"/>
       <addaction name="action_Default_Size_60_x_80"/>
       <addaction name="action_Default_Size_80_x_80"/>
@@ -1682,7 +1682,7 @@
     <string>&amp;On Exit</string>
    </property>
   </action>
-  <action name="action_Default_Size_24_x_24">
+  <action name="action_Default_Size_24_x_80">
    <property name="checkable">
     <bool>true</bool>
    </property>

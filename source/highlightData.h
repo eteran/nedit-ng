@@ -37,6 +37,7 @@
 class PatternSet;
 class QString;
 class HighlightStyle;
+class MainWindow;
 
 #include <X11/Intrinsic.h>
 
@@ -52,8 +53,8 @@ QString BgColorOfNamedStyleEx(view::string_view styleName);
 QString ColorOfNamedStyleEx(view::string_view styleName);
 QString WriteHighlightStringEx();
 QString WriteStylesStringEx();
-void EditHighlightPatterns(Document *window);
-void EditHighlightStyles(const char *initialStyle);
+void EditHighlightPatterns(MainWindow *window);
+void EditHighlightStyles(QWidget *parent, const char *initialStyle);
 void RenameHighlightPattern(view::string_view oldName, view::string_view newName);
 void UpdateLanguageModeMenu();
 XFontStruct *FontOfNamedStyle(Document *window, view::string_view styleName);

@@ -35,6 +35,7 @@
 #include "ui/DialogDrawingStyles.h"
 #include "ui/DialogSyntaxPatterns.h"
 #include "ui/DocumentWidget.h"
+#include "ui/MainWindow.h"
 
 #include "Font.h"
 #include "highlightData.h"
@@ -859,10 +860,10 @@ static bool styleError(const char *stringStart, const char *stoppedAt, const cha
 /*
 ** Present a dialog for editing highlight style information
 */
-void EditHighlightStyles(const char *initialStyle) {
+void EditHighlightStyles(QWidget *parent, const char *initialStyle) {
 
 	if(!DrawingStyles) {
-		DrawingStyles = new DialogDrawingStyles();
+        DrawingStyles = new DialogDrawingStyles(parent);
 	}
 	
 	DrawingStyles->setStyleByName(QLatin1String(initialStyle));
@@ -873,7 +874,7 @@ void EditHighlightStyles(const char *initialStyle) {
 /*
 ** Present a dialog for editing highlight pattern information
 */
-void EditHighlightPatterns(Document *window) {
+void EditHighlightPatterns(MainWindow *window) {
 
 	if(SyntaxPatterns) {
 		SyntaxPatterns->show();
@@ -883,14 +884,16 @@ void EditHighlightPatterns(Document *window) {
 	
 	if (LanguageModeName(0).isNull()) {
 	
-		QMessageBox::warning(nullptr /* window->shell_ */, QLatin1String("No Language Modes"), 
+        QMessageBox::warning(window, QLatin1String("No Language Modes"),
 			QLatin1String("No Language Modes available for syntax highlighting\n"
 			              "Add language modes under Preferenses->Language Modes"));
 		return;
-	}	
+    }
+
+    DocumentWidget *document = window->currentDocument();
 	
-	QString languageName = LanguageModeName(window->languageMode_ == PLAIN_LANGUAGE_MODE ? 0 : window->languageMode_);
-	SyntaxPatterns = new DialogSyntaxPatterns();
+    QString languageName = LanguageModeName(document->languageMode_ == PLAIN_LANGUAGE_MODE ? 0 : document->languageMode_);
+    SyntaxPatterns = new DialogSyntaxPatterns(window);
 	SyntaxPatterns->setLanguageName(languageName);
 	SyntaxPatterns->show();
 	SyntaxPatterns->raise();	

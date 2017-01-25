@@ -14,6 +14,7 @@
 #include "DialogMacros.h"
 #include "DialogWindowBackgroundMenu.h"
 #include "DialogShellMenu.h"
+#include "DialogWindowSize.h"
 #include "SignalBlocker.h"
 #include "DialogLanguageModes.h"
 #include "DialogTabs.h"
@@ -41,7 +42,9 @@
 #include "selection.h"
 #include "search.h"
 #include "macro.h"
+#include "misc.h"
 #include "highlight.h"
+#include "highlightData.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/param.h>
@@ -220,6 +223,9 @@ void MainWindow::setDimmensions(const char *geometry) {
             w = w->parentWidget();
         }
     }
+#else
+    Q_UNUSED(cols);
+    Q_UNUSED(rows);
 #endif
 }
 
@@ -334,6 +340,81 @@ void MainWindow::setupMenuDefaults() {
     } else {
         ui.action_Default_Tag_Show_All->setChecked(true);
     }
+
+    // Default Search Settings
+    ui.action_Default_Search_Verbose->setChecked(GetPrefSearchDlogs());
+    ui.action_Default_Search_Wrap_Around->setChecked(GetPrefSearchWraps());
+    ui.action_Default_Search_Beep_On_Search_Wrap->setChecked(GetPrefBeepOnSearchWrap());
+    ui.action_Default_Search_Keep_Dialogs_Up->setChecked(GetPrefKeepSearchDlogs());
+
+    switch(GetPrefSearch()) {
+    case SEARCH_LITERAL:
+        ui.action_Default_Search_Literal->setChecked(true);
+        break;
+    case SEARCH_CASE_SENSE:
+        ui.action_Default_Search_Literal_Case_Sensitive->setChecked(true);
+        break;
+    case SEARCH_LITERAL_WORD:
+        ui.action_Default_Search_Literal_Whole_Word->setChecked(true);
+        break;
+    case SEARCH_CASE_SENSE_WORD:
+        ui.action_Default_Search_Literal_Case_Sensitive_Whole_Word->setChecked(true);
+        break;
+    case SEARCH_REGEX:
+        ui.action_Default_Search_Regular_Expression->setChecked(true);
+        break;
+    case SEARCH_REGEX_NOCASE:
+        ui.action_Default_Search_Regular_Expresison_Case_Insensitive->setChecked(true);
+        break;
+    default:
+        break;
+    }
+
+    // Default syntax
+    if(GetPrefHighlightSyntax()) {
+        ui.action_Default_Syntax_On->setChecked(true);
+    } else {
+        ui.action_Default_Syntax_Off->setChecked(true);
+    }
+
+    ui.action_Default_Apply_Backlighting->setChecked(GetPrefBacklightChars());
+
+    // Default tab settings
+    ui.action_Default_Tab_Open_File_In_New_Tab->setChecked(GetPrefOpenInTab());
+    ui.action_Default_Tab_Show_Tab_Bar->setChecked(GetPrefTabBar());
+    ui.action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Open->setChecked(GetPrefTabBarHideOne());
+    ui.action_Default_Tab_Next_Prev_Tabs_Across_Windows->setChecked(GetPrefGlobalTabNavigate());
+    ui.action_Default_Tab_Sort_Tabs_Alphabetically->setChecked(GetPrefSortTabs());
+
+    ui.action_Default_Show_Tooltips->setChecked(GetPrefToolTips());
+    ui.action_Default_Statistics_Line->setChecked(GetPrefStatsLine());
+    ui.action_Default_Incremental_Search_Line->setChecked(GetPrefISearchLine());
+    ui.action_Default_Show_Line_Numbers->setChecked(GetPrefLineNums());
+    ui.action_Default_Make_Backup_Copy->setChecked(GetPrefSaveOldVersion());
+    ui.action_Default_Incremental_Backup->setChecked(GetPrefAutoSave());
+
+    switch(GetPrefShowMatching()) {
+    case NO_FLASH:
+        ui.action_Default_Matching_Off->setChecked(true);
+        break;
+    case FLASH_DELIMIT:
+        ui.action_Default_Matching_Delimiter->setChecked(true);
+        break;
+    case FLASH_RANGE:
+        ui.action_Default_Matching_Range->setChecked(true);
+        break;
+    }
+
+    ui.action_Default_Matching_Syntax_Based->setChecked(GetPrefMatchSyntaxBased());
+    ui.action_Default_Terminate_with_Line_Break_on_Save->setChecked(GetPrefAppendLF());
+    ui.action_Default_Popups_Under_Pointer->setChecked(GetPrefRepositionDialogs());
+    ui.action_Default_Auto_Scroll_Near_Window_Top_Bottom->setChecked(GetPrefAutoScroll());
+    ui.action_Default_Warnings_Files_Modified_Externally->setChecked(GetPrefWarnFileMods());
+    ui.action_Default_Warnings_Check_Modified_File_Contents->setChecked(GetPrefWarnRealFileMods());
+    ui.action_Default_Warnings_On_Exit->setChecked(GetPrefWarnExit());
+    ui.action_Default_Warnings_Check_Modified_File_Contents->setEnabled(GetPrefWarnFileMods());
+
+    updateWindowSizeMenu();
 }
 
 //------------------------------------------------------------------------------
@@ -443,7 +524,7 @@ void MainWindow::setupMenuGroups() {
 	defaultMatchingGroup->addAction(ui.action_Default_Matching_Range);
 
 	auto defaultSizeGroup = new QActionGroup(this);
-	defaultSizeGroup->addAction(ui.action_Default_Size_24_x_24);
+    defaultSizeGroup->addAction(ui.action_Default_Size_24_x_80);
 	defaultSizeGroup->addAction(ui.action_Default_Size_40_x_80);
 	defaultSizeGroup->addAction(ui.action_Default_Size_60_x_80);
 	defaultSizeGroup->addAction(ui.action_Default_Size_80_x_80);
@@ -3152,5 +3233,339 @@ void MainWindow::UpdateWindowTitle() {
 
         // Update the Windows menus with the new name
         InvalidateWindowMenus();
+    }
+}
+
+void MainWindow::on_action_Default_Search_Verbose_toggled(bool state) {
+    // Set the preference and make the other windows' menus agree
+    SetPrefSearchDlogs(state);
+    for(MainWindow *window : allWindows()) {
+        no_signals(window->ui.action_Default_Search_Verbose)->setChecked(state);
+    }
+}
+
+void MainWindow::on_action_Default_Search_Wrap_Around_toggled(bool state) {
+    // Set the preference and make the other windows' menus agree
+    SetPrefSearchWraps(state);
+    for(MainWindow *window : allWindows()) {
+        no_signals(window->ui.action_Default_Search_Wrap_Around)->setChecked(state);
+    }
+}
+
+void MainWindow::on_action_Default_Search_Beep_On_Search_Wrap_toggled(bool state) {
+    // Set the preference and make the other windows' menus agree
+    SetPrefBeepOnSearchWrap(state);
+    for(MainWindow *window : allWindows()) {
+        no_signals(window->ui.action_Default_Search_Beep_On_Search_Wrap)->setChecked(state);
+    }
+}
+
+void MainWindow::on_action_Default_Search_Keep_Dialogs_Up_toggled(bool state) {
+    // Set the preference and make the other windows' menus agree
+    SetPrefKeepSearchDlogs(state);
+    for(MainWindow *window : allWindows()) {
+        no_signals(window->ui.action_Default_Search_Keep_Dialogs_Up)->setChecked(state);
+    }
+}
+
+void MainWindow::defaultSearchGroupTriggered(QAction *action) {
+
+    if(action == ui.action_Default_Search_Literal) {
+        SetPrefSearch(SEARCH_LITERAL);
+        for(MainWindow *window : allWindows()) {
+            no_signals(window->ui.action_Default_Search_Literal)->setChecked(true);
+        }
+    } else if(action == ui.action_Default_Search_Literal_Case_Sensitive) {
+        SetPrefSearch(SEARCH_CASE_SENSE);
+        for(MainWindow *window : allWindows()) {
+            no_signals(window->ui.action_Default_Search_Literal_Case_Sensitive)->setChecked(true);
+        }
+    } else if(action == ui.action_Default_Search_Literal_Whole_Word) {
+        SetPrefSearch(SEARCH_LITERAL_WORD);
+        for(MainWindow *window : allWindows()) {
+            no_signals(window->ui.action_Default_Search_Literal_Whole_Word)->setChecked(true);
+        }
+    } else if(action == ui.action_Default_Search_Literal_Case_Sensitive_Whole_Word) {
+        SetPrefSearch(SEARCH_CASE_SENSE_WORD);
+        for(MainWindow *window : allWindows()) {
+            no_signals(window->ui.action_Default_Search_Literal_Case_Sensitive_Whole_Word)->setChecked(true);
+        }
+    } else if(action == ui.action_Default_Search_Regular_Expression) {
+        SetPrefSearch(SEARCH_REGEX);
+        for(MainWindow *window : allWindows()) {
+            no_signals(window->ui.action_Default_Search_Regular_Expression)->setChecked(true);
+        }
+    } else if(action == ui.action_Default_Search_Regular_Expresison_Case_Insensitive) {
+        SetPrefSearch(SEARCH_REGEX_NOCASE);
+        for(MainWindow *window : allWindows()) {
+            no_signals(window->ui.action_Default_Search_Regular_Expresison_Case_Insensitive)->setChecked(true);
+        }
+    }
+}
+
+void MainWindow::defaultSyntaxGroupTriggered(QAction *action) {
+    if(action == ui.action_Default_Syntax_Off) {
+        SetPrefHighlightSyntax(false);
+        for(MainWindow *window : allWindows()) {
+            no_signals(window->ui.action_Default_Syntax_Off)->setChecked(true);
+        }
+    } else if(action == ui.action_Default_Syntax_On) {
+        SetPrefHighlightSyntax(true);
+        for(MainWindow *window : allWindows()) {
+            no_signals(window->ui.action_Default_Syntax_On)->setChecked(true);
+        }
+    }
+}
+
+void MainWindow::on_action_Default_Syntax_Recognition_Patterns_triggered() {
+    // TODO(eteran): eventually move this logic to be local
+    EditHighlightPatterns(this);
+}
+
+void MainWindow::on_action_Default_Syntax_Text_Drawing_Styles_triggered() {
+    // TODO(eteran): eventually move this logic to be local
+    EditHighlightStyles(this, nullptr);
+}
+
+void MainWindow::on_action_Default_Apply_Backlighting_toggled(bool state) {
+    // Set the preference and make the other windows' menus agree
+    SetPrefBacklightChars(state);
+    for(MainWindow *window : allWindows()) {
+        no_signals(window->ui.action_Default_Apply_Backlighting)->setChecked(state);
+    }
+}
+
+void MainWindow::on_action_Default_Tab_Open_File_In_New_Tab_toggled(bool state) {
+    // Set the preference and make the other windows' menus agree
+    SetPrefOpenInTab(state);
+    for(MainWindow *window : allWindows()) {
+        no_signals(window->ui.action_Default_Tab_Open_File_In_New_Tab)->setChecked(state);
+    }
+}
+
+void MainWindow::on_action_Default_Tab_Show_Tab_Bar_toggled(bool state) {
+    // Set the preference and make the other windows' menus agree
+    SetPrefTabBar(state);
+    for(MainWindow *window : allWindows()) {
+        no_signals(window->ui.action_Default_Tab_Show_Tab_Bar)->setChecked(state);
+        window->ShowWindowTabBar();
+    }
+}
+
+void MainWindow::on_action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Open_toggled(bool state) {
+    // Set the preference and make the other windows' menus agree
+    SetPrefTabBarHideOne(state);
+    for(MainWindow *window : allWindows()) {
+        no_signals(window->ui.action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Open)->setChecked(state);
+        window->ShowWindowTabBar();
+    }
+}
+
+void MainWindow::on_action_Default_Tab_Next_Prev_Tabs_Across_Windows_toggled(bool state) {
+    // Set the preference and make the other windows' menus agree
+    SetPrefGlobalTabNavigate(state);
+    for(MainWindow *window : allWindows()) {
+        no_signals(window->ui.action_Default_Tab_Next_Prev_Tabs_Across_Windows)->setChecked(state);
+    }
+}
+
+void MainWindow::on_action_Default_Tab_Sort_Tabs_Alphabetically_toggled(bool state) {
+    // Set the preference and make the other windows' menus agree
+    SetPrefSortTabs(state);
+    for(MainWindow *window : allWindows()) {
+        no_signals(window->ui.action_Default_Tab_Sort_Tabs_Alphabetically)->setChecked(state);
+    }
+
+    /* If we just enabled sorting, sort all tabs.  Note that this reorders
+       the next pointers underneath us, which is scary, but SortTabBar never
+       touches windows that are earlier in the WindowList so it's ok. */
+    if (state) {
+        for(MainWindow *window : allWindows()) {
+            window->SortTabBar();
+        }
+    }
+}
+
+void MainWindow::ShowWindowTabBar() {
+    if (GetPrefTabBar()) {
+        if (GetPrefTabBarHideOne()) {
+            ShowTabBar(TabCount() > 1);
+        } else {
+            ShowTabBar(true);
+        }
+    } else {
+        ShowTabBar(false);
+    }
+}
+
+void MainWindow::on_action_Default_Show_Tooltips_toggled(bool state) {
+    // Set the preference and make the other windows' menus agree
+    SetPrefToolTips(state);
+    for(MainWindow *window : allWindows()) {
+        // TODO(eteran): actually disable tooltips (on the tabbar?)
+        no_signals(window->ui.action_Default_Show_Tooltips)->setChecked(state);
+    }
+}
+
+void MainWindow::on_action_Default_Statistics_Line_toggled(bool state) {
+    // Set the preference and make the other windows' menus agree
+    SetPrefStatsLine(state);
+    for(MainWindow *window : allWindows()) {
+        no_signals(window->ui.action_Default_Statistics_Line)->setChecked(state);
+    }
+}
+
+void MainWindow::on_action_Default_Incremental_Search_Line_toggled(bool state) {
+    // Set the preference and make the other windows' menus agree
+    SetPrefISearchLine(state);
+    for(MainWindow *window : allWindows()) {
+        no_signals(window->ui.action_Default_Incremental_Search_Line)->setChecked(state);
+    }
+}
+
+void MainWindow::on_action_Default_Show_Line_Numbers_toggled(bool state) {
+    // Set the preference and make the other windows' menus agree
+    SetPrefLineNums(state);
+    for(MainWindow *window : allWindows()) {
+        no_signals(window->ui.action_Default_Show_Line_Numbers)->setChecked(state);
+    }
+}
+
+void MainWindow::on_action_Default_Make_Backup_Copy_toggled(bool state) {
+    // Set the preference and make the other windows' menus agree
+    SetPrefSaveOldVersion(state);
+    for(MainWindow *window : allWindows()) {
+        no_signals(window->ui.action_Default_Make_Backup_Copy)->setChecked(state);
+    }
+}
+
+void MainWindow::on_action_Default_Incremental_Backup_toggled(bool state) {
+    // Set the preference and make the other windows' menus agree
+    SetPrefAutoSave(state);
+    for(MainWindow *window : allWindows()) {
+        no_signals(window->ui.action_Default_Incremental_Backup)->setChecked(state);
+    }
+}
+
+void MainWindow::defaultMatchingGroupTriggered(QAction *action) {
+    if(action == ui.action_Default_Matching_Off) {
+        SetPrefShowMatching(NO_FLASH);
+        for(MainWindow *window : allWindows()) {
+            no_signals(window->ui.action_Default_Matching_Off)->setChecked(true);
+        }
+    } else if(action == ui.action_Default_Matching_Delimiter) {
+        SetPrefShowMatching(FLASH_DELIMIT);
+        for(MainWindow *window : allWindows()) {
+            no_signals(window->ui.action_Default_Matching_Delimiter)->setChecked(true);
+        }
+    } else if(action == ui.action_Default_Matching_Range) {
+        SetPrefShowMatching(FLASH_RANGE);
+        for(MainWindow *window : allWindows()) {
+            no_signals(window->ui.action_Default_Matching_Range)->setChecked(true);
+        }
+    }
+}
+
+void MainWindow::on_action_Default_Matching_Syntax_Based_toggled(bool state) {
+    // Set the preference and make the other windows' menus agree
+    SetPrefMatchSyntaxBased(state);
+    for(MainWindow *window : allWindows()) {
+        no_signals(window->ui.action_Default_Matching_Syntax_Based)->setChecked(state);
+    }
+}
+
+void MainWindow::on_action_Default_Terminate_with_Line_Break_on_Save_toggled(bool state) {
+    // Set the preference and make the other windows' menus agree
+    SetPrefAppendLF(state);
+    for(MainWindow *window : allWindows()) {
+        no_signals(window->ui.action_Default_Terminate_with_Line_Break_on_Save)->setChecked(state);
+    }
+}
+
+void MainWindow::on_action_Default_Popups_Under_Pointer_toggled(bool state) {
+    // Set the preference and make the other windows' menus agree
+    SetPrefRepositionDialogs(state);
+    SetPointerCenteredDialogs(state);
+    for(MainWindow *window : allWindows()) {
+        no_signals(window->ui.action_Default_Popups_Under_Pointer)->setChecked(state);
+    }
+}
+
+void MainWindow::on_action_Default_Auto_Scroll_Near_Window_Top_Bottom_toggled(bool state) {
+    // Set the preference and make the other windows' menus agree
+    SetPrefAutoScroll(state);
+    for(MainWindow *window : allWindows()) {
+        no_signals(window->ui.action_Default_Auto_Scroll_Near_Window_Top_Bottom)->setChecked(state);
+    }
+}
+
+void MainWindow::on_action_Default_Warnings_Files_Modified_Externally_toggled(bool state) {
+    // Set the preference and make the other windows' menus agree
+    SetPrefWarnFileMods(state);
+    for(MainWindow *window : allWindows()) {
+        no_signals(window->ui.action_Default_Warnings_Files_Modified_Externally)->setChecked(state);
+        no_signals(window->ui.action_Default_Warnings_Check_Modified_File_Contents)->setEnabled(GetPrefWarnFileMods());
+    }
+}
+
+void MainWindow::on_action_Default_Warnings_Check_Modified_File_Contents_toggled(bool state) {
+    // Set the preference and make the other windows' menus agree
+    SetPrefWarnRealFileMods(state);
+    for(MainWindow *window : allWindows()) {
+        no_signals(window->ui.action_Default_Warnings_Check_Modified_File_Contents)->setChecked(state);
+    }
+}
+
+void MainWindow::on_action_Default_Warnings_On_Exit_toggled(bool state) {
+    // Set the preference and make the other windows' menus agree
+    SetPrefWarnExit(state);
+    for(MainWindow *window : allWindows()) {
+        no_signals(window->ui.action_Default_Warnings_On_Exit)->setChecked(state);
+    }
+}
+
+void MainWindow::defaultSizeGroupTriggered(QAction *action) {
+    if(action == ui.action_Default_Size_24_x_80) {
+        setWindowSizeDefault(24, 80);
+    } else if(action == ui.action_Default_Size_40_x_80) {
+        setWindowSizeDefault(40, 80);
+    } else if(action == ui.action_Default_Size_60_x_80) {
+        setWindowSizeDefault(60, 80);
+    } else if(action == ui.action_Default_Size_80_x_80) {
+        setWindowSizeDefault(80, 80);
+    } else if(action == ui.action_Default_Size_Custom) {
+        auto dialog = new DialogWindowSize(this);
+        dialog->exec();
+        delete dialog;
+        updateWindowSizeMenus();
+    }
+}
+
+void MainWindow::setWindowSizeDefault(int rows, int cols) {
+    SetPrefRows(rows);
+    SetPrefCols(cols);
+    updateWindowSizeMenus();
+}
+
+void MainWindow::updateWindowSizeMenus() {
+    for(MainWindow *window : allWindows()) {
+        window->updateWindowSizeMenu();
+    }
+}
+
+void MainWindow::updateWindowSizeMenu() {
+    const int rows = GetPrefRows();
+    const int cols = GetPrefCols();
+
+    no_signals(ui.action_Default_Size_24_x_80)->setChecked(rows == 24 && cols == 80);
+    no_signals(ui.action_Default_Size_40_x_80)->setChecked(rows == 40 && cols == 80);
+    no_signals(ui.action_Default_Size_60_x_80)->setChecked(rows == 60 && cols == 80);
+    no_signals(ui.action_Default_Size_80_x_80)->setChecked(rows == 80 && cols == 80);
+
+    if ((rows != 24 && rows != 40 && rows != 60 && rows != 80) || cols != 80) {
+        no_signals(ui.action_Default_Size_Custom)->setChecked(true);
+        ui.action_Default_Size_Custom->setText(tr("Custom... (%1 x %2)").arg(rows).arg(cols));
+    } else {
+        ui.action_Default_Size_Custom->setText(tr("Custom..."));
     }
 }

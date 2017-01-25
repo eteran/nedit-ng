@@ -72,6 +72,10 @@ public:
     void updateTagsFileMenuEx();
     DocumentWidget *currentDocument();
     void UpdateWindowTitle();
+    void ShowWindowTabBar();
+    void setWindowSizeDefault(int rows, int cols);
+    void updateWindowSizeMenus();
+    void updateWindowSizeMenu();
 
 public:
     static QList<MainWindow *> allWindows();
@@ -110,13 +114,10 @@ public Q_SLOTS:
     void defaultIndentGroupTriggered(QAction *action);
     void defaultWrapGroupTriggered(QAction *action);
     void defaultTagCollisionsGroupTriggered(QAction *action);
-#if 0
-
     void defaultSearchGroupTriggered(QAction *action);
     void defaultSyntaxGroupTriggered(QAction *action);
     void defaultMatchingGroupTriggered(QAction *action);
     void defaultSizeGroupTriggered(QAction *action);
-#endif
 
 public Q_SLOTS:
     void on_tabWidget_currentChanged(int index);
@@ -218,56 +219,31 @@ public Q_SLOTS:
     void on_action_Default_Sort_Open_Prev_Menu_toggled(bool state);
     void on_action_Default_Show_Path_In_Windows_Menu_toggled(bool state);
     void on_action_Default_Customize_Window_Title_triggered();
-
-#if 0
-
-	void on_action_Default_Apply_Backlighting_triggered();
-	void on_action_Default_Show_Tooltips_triggered();
-	void on_action_Default_Statistics_Line_triggered();
-	void on_action_Default_Incremental_Search_Line_triggered();
-	void on_action_Default_Make_Backup_Copy_triggered();
-	void on_action_Default_Incremental_Backup_triggered();
-	void on_action_Default_Terminate_with_Line_Break_on_Save_triggered();
-	void on_action_Default_Popups_Under_Pointer_triggered();
-	void on_action_Default_Auto_Scroll_Near_Window_Top_Bottom_triggered();
-
-
-
-
-
-	void on_action_Default_Search_Verbose_triggered();
-	void on_action_Default_Search_Wrap_Around_triggered();
-	void on_action_Default_Search_Beep_On_Search_Wrap_triggered();
-	void on_action_Default_Search_Keep_Dialogs_Up_triggered();
-	void on_action_Default_Search_Literal_triggered();
-	void on_action_Default_Search_Literal_Case_Sensitive_triggered();
-	void on_action_Default_Search_Literal_Whole_Word_triggered();
-	void on_action_Default_Search_Literal_Case_Sensitive_Whole_Word_triggered();
-	void on_action_Default_Search_Regular_Expression_triggered();
-	void on_action_Default_Search_Regular_Expresison_Case_Insensitive_triggered();
-	void on_action_Default_Syntax_Off_triggered();
-	void on_action_Default_Syntax_On_triggered();
-	void on_action_Default_Syntax_Recognition_Patterns_triggered();
-	void on_action_Default_Syntax_Text_Drawing_Styles_triggered();
-	void on_action_Default_Tab_Open_File_In_New_Tab_triggered();
-	void on_action_Default_Tab_Show_Tab_Bar_triggered();
-	void on_action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Open_triggered();
-	void on_action_Default_Tab_Next_Prev_Tabs_Across_Windows_triggered();
-	void on_action_Default_Tab_Sort_Tabs_Alphabetically_triggered();
-	void on_action_Default_Show_Line_Numbers_triggered();
-	void on_action_Default_Matching_Off_triggered();
-	void on_action_Default_Matching_Delimiter_triggered();
-	void on_action_Default_Matching_Range_triggered();
-	void on_action_Default_Matching_Syntax_Based_triggered();
-	void on_action_Default_Warnings_Files_Modified_Externally_triggered();
-	void on_action_Default_Warnings_Check_Modified_File_Contents_triggered();
-	void on_action_Default_Warnings_On_Exit_triggered();
-	void on_action_Default_Size_24_x_24_triggered();
-	void on_action_Default_Size_40_x_80_triggered();
-	void on_action_Default_Size_60_x_80_triggered();
-	void on_action_Default_Size_80_x_80_triggered();
-	void on_action_Default_Size_Custom_triggered();
-#endif
+    void on_action_Default_Search_Verbose_toggled(bool state);
+    void on_action_Default_Search_Wrap_Around_toggled(bool state);
+    void on_action_Default_Search_Beep_On_Search_Wrap_toggled(bool state);
+    void on_action_Default_Search_Keep_Dialogs_Up_toggled(bool state);
+    void on_action_Default_Syntax_Recognition_Patterns_triggered();
+    void on_action_Default_Syntax_Text_Drawing_Styles_triggered();
+    void on_action_Default_Apply_Backlighting_toggled(bool state);
+    void on_action_Default_Tab_Open_File_In_New_Tab_toggled(bool state);
+    void on_action_Default_Tab_Show_Tab_Bar_toggled(bool state);
+    void on_action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Open_toggled(bool state);
+    void on_action_Default_Tab_Next_Prev_Tabs_Across_Windows_toggled(bool state);
+    void on_action_Default_Tab_Sort_Tabs_Alphabetically_toggled(bool state);
+    void on_action_Default_Show_Tooltips_toggled(bool state);
+    void on_action_Default_Statistics_Line_toggled(bool state);
+    void on_action_Default_Incremental_Search_Line_toggled(bool state);
+    void on_action_Default_Show_Line_Numbers_toggled(bool state);
+    void on_action_Default_Make_Backup_Copy_toggled(bool state);
+    void on_action_Default_Incremental_Backup_toggled(bool state);
+    void on_action_Default_Matching_Syntax_Based_toggled(bool state);
+    void on_action_Default_Terminate_with_Line_Break_on_Save_toggled(bool state);
+    void on_action_Default_Popups_Under_Pointer_toggled(bool state);
+    void on_action_Default_Auto_Scroll_Near_Window_Top_Bottom_toggled(bool state);
+    void on_action_Default_Warnings_Files_Modified_Externally_toggled(bool state);
+    void on_action_Default_Warnings_Check_Modified_File_Contents_toggled(bool state);
+    void on_action_Default_Warnings_On_Exit_toggled(bool state);
 
 #if 0
     void on_action_Filter_Selection_triggered();

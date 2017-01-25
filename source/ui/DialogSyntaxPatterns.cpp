@@ -286,7 +286,7 @@ void DialogSyntaxPatterns::on_buttonLanguageMode_clicked() {
 void DialogSyntaxPatterns::on_buttonHighlightStyle_clicked() {
 	QString style = ui.comboHighlightStyle->currentText();
 	if(!style.isEmpty()) {
-		EditHighlightStyles(style.toLatin1().data());
+        EditHighlightStyles(this, style.toLatin1().data());
 	}
 }
 
