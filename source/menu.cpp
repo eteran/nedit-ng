@@ -122,9 +122,6 @@ static void exitAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void repeatDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void repeatMacroAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void splitPaneAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void nextDocumentAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void prevDocumentAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void lastDocumentAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 
 static void filterDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void shellFilterAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
@@ -247,9 +244,9 @@ static XtActionsRec Actions[] = {{(String) "new", newAP},
                                  //{(String) "detach_document", detachDocumentAP},
                                  //{(String) "detach_document_dialog", detachDocumentDialogAP},
                                  //{(String) "move_document_dialog", moveDocumentDialogAP},
-                                 {(String) "next_document", nextDocumentAP},
-                                 {(String) "previous_document", prevDocumentAP},
-                                 {(String) "last_document", lastDocumentAP},
+                                 //{(String) "next_document", nextDocumentAP},
+                                 //{(String) "previous_document", prevDocumentAP},
+                                 //{(String) "last_document", lastDocumentAP},
                                  //{(String) "uppercase", capitalizeAP },
                                  //{(String) "lowercase", lowercaseAP },
                                  //{(String) "fill-paragraph", fillAP },
@@ -928,33 +925,6 @@ static void splitPaneAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 		XtSetSensitive(window->splitPaneItem_, window->textPanes_.size() < MAX_PANES);
 		XtSetSensitive(window->closePaneItem_, window->textPanes_.size() > 0);
 	}
-}
-
-static void nextDocumentAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(args);
-	Q_UNUSED(nArgs)
-	Q_UNUSED(event);
-
-	Document::WidgetToWindow(w)->NextDocument();
-}
-
-static void prevDocumentAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(args);
-	Q_UNUSED(nArgs)
-	Q_UNUSED(event);
-
-	Document::WidgetToWindow(w)->PreviousDocument();
-}
-
-static void lastDocumentAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(args);
-	Q_UNUSED(nArgs)
-	Q_UNUSED(event);
-
-	Document::WidgetToWindow(w)->LastDocument();
 }
 
 static void filterDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {

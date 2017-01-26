@@ -447,8 +447,6 @@ void MainWindow::setupMenuStrings() {
     new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_R), this, SLOT(action_Shift_Replace_triggered()));
     new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_M), this, SLOT(action_Shift_Goto_Matching_triggered()));
 
-
-
     // This is an annoying solution... we can probably do better...
     // NOTE(eteran): this assumes that the Qt::Key constants are
     // in numerical order!
@@ -457,6 +455,10 @@ void MainWindow::setupMenuStrings() {
         new QShortcut(QKeySequence(Qt::ALT + Qt::Key_G, i),             this, SLOT(action_Goto_Mark_Shortcut_triggered()));
         new QShortcut(QKeySequence(Qt::SHIFT + Qt::ALT + Qt::Key_G, i), this, SLOT(action_Shift_Goto_Mark_Shortcut_triggered()));
     }
+
+    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_PageDown), this, SLOT(action_Next_Document()));
+    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_PageUp), this, SLOT(action_Prev_Document()));
+    new QShortcut(QKeySequence(Qt::ALT + Qt::Key_Home), this, SLOT(action_Last_Document()));
 }
 
 //------------------------------------------------------------------------------
@@ -547,7 +549,7 @@ void MainWindow::setupMenuGroups() {
 // Name: deleteTabButtonClicked
 //------------------------------------------------------------------------------
 void MainWindow::deleteTabButtonClicked() {
-	ui.tabWidget->removeTab(ui.tabWidget->currentIndex());
+    Q_EMIT on_action_Close_triggered();
 }
 
 //------------------------------------------------------------------------------
@@ -3568,4 +3570,42 @@ void MainWindow::updateWindowSizeMenu() {
     } else {
         ui.action_Default_Size_Custom->setText(tr("Custom..."));
     }
+}
+
+void MainWindow::action_Next_Document() {
+
+    bool crossWindows = GetPrefGlobalTabNavigate();
+    int currentIndex  = ui.tabWidget->currentIndex();
+    int nextIndex     = currentIndex + 1;
+    int tabCount      = ui.tabWidget->count();
+
+    // TODO(eteran): implement crossing windows supports
+    if(!crossWindows) {
+        if(nextIndex == tabCount) {
+            ui.tabWidget->setCurrentIndex(0);
+        } else {
+            ui.tabWidget->setCurrentIndex(nextIndex);
+        }
+    }
+}
+
+void MainWindow::action_Prev_Document() {
+    bool crossWindows = GetPrefGlobalTabNavigate();
+    int currentIndex  = ui.tabWidget->currentIndex();
+    int prevIndex     = currentIndex - 1;
+    int tabCount      = ui.tabWidget->count();
+
+    // TODO(eteran): implement crossing windows supports
+    if(!crossWindows) {
+        if(currentIndex == 0) {
+            ui.tabWidget->setCurrentIndex(tabCount - 1);
+        } else {
+            ui.tabWidget->setCurrentIndex(prevIndex);
+        }
+    }
+}
+
+void MainWindow::action_Last_Document() {
+    // this will put the focus on whatever document last had the focus
+    // TODO(eteran): implement!
 }

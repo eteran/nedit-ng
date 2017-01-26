@@ -1445,26 +1445,26 @@ void DocumentWidget::flashTimerTimeout() {
 ** Dim/undim user programmable menu items which depend on there being
 ** a selection in their associated window.
 */
-void DocumentWidget::DimSelectionDepUserMenuItems(bool sensitive) {
+void DocumentWidget::DimSelectionDepUserMenuItems(bool enabled) {
     if(auto win = toWindow()) {
         if (!IsTopDocument()) {
             return;
         }
 
-        dimSelDepItemsInMenu(win->ui.menu_Shell, ShellMenuData, sensitive);
-        dimSelDepItemsInMenu(win->ui.menu_Macro, MacroMenuData, sensitive);
-        dimSelDepItemsInMenu(contextMenu_,       BGMenuData,    sensitive);
+        dimSelDepItemsInMenu(win->ui.menu_Shell, ShellMenuData, enabled);
+        dimSelDepItemsInMenu(win->ui.menu_Macro, MacroMenuData, enabled);
+        dimSelDepItemsInMenu(contextMenu_,       BGMenuData,    enabled);
 
     }
 }
 
-void DocumentWidget::dimSelDepItemsInMenu(QMenu *menuPane, const QVector<MenuData> &menuList, bool sensitive) {
+void DocumentWidget::dimSelDepItemsInMenu(QMenu *menuPane, const QVector<MenuData> &menuList, bool enabled) {
 
     if(menuPane) {
         const QList<QAction *> actions = menuPane->actions();
         for(QAction *action : actions) {
             if(QMenu *subMenu = action->menu()) {
-                dimSelDepItemsInMenu(subMenu, menuList, sensitive);
+                dimSelDepItemsInMenu(subMenu, menuList, enabled);
             } else {
                 int index = action->data().value<int>();
                 if (index < 0 || index >= menuList.size()) {
@@ -1472,7 +1472,7 @@ void DocumentWidget::dimSelDepItemsInMenu(QMenu *menuPane, const QVector<MenuDat
                 }
 
                 if (menuList[index].item->input == FROM_SELECTION) {
-                    action->setEnabled(sensitive);
+                    action->setEnabled(enabled);
                 }
             }
         }
@@ -2201,14 +2201,14 @@ void DocumentWidget::UpdateWindowReadOnly() {
         return;
     }
 
+    bool state = lockReasons_.isAnyLocked();
+
+    const QList<TextArea *> textAreas = textPanes();
+    for(TextArea *area : textAreas) {
+        area->setReadOnly(state);
+    }
+
     if(auto win = toWindow()) {
-        bool state = lockReasons_.isAnyLocked();
-
-        const QList<TextArea *> textAreas = textPanes();
-        for(TextArea *area : textAreas) {
-            area->setReadOnly(state);
-        }
-
         no_signals(win->ui.action_Read_Only)->setChecked(state);
 
         win->ui.action_Read_Only->setEnabled(!lockReasons_.isAnyLockedIgnoringUser());

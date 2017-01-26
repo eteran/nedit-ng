@@ -106,6 +106,11 @@ public Q_SLOTS:
     void action_Shift_Goto_Mark_Shortcut_triggered();
     void action_Goto_Mark_Shortcut_triggered();
 
+    // has no visual shortcut at all
+    void action_Next_Document();
+    void action_Prev_Document();
+    void action_Last_Document();
+
 public Q_SLOTS:
     // groups
     void indentGroupTriggered(QAction *action);

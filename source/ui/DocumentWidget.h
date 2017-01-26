@@ -112,8 +112,8 @@ public:
     void freeHighlightData(WindowHighlightData *hd);
     void freePatterns(HighlightData *patterns);
     QString GetWindowDelimiters() const;
-    void DimSelectionDepUserMenuItems(bool sensitive);
-    void dimSelDepItemsInMenu(QMenu *menuPane, const QVector<MenuData> &menuList, bool sensitive);
+    void DimSelectionDepUserMenuItems(bool enabled);
+    void dimSelDepItemsInMenu(QMenu *menuPane, const QVector<MenuData> &menuList, bool enabled);
     void RaiseFocusDocumentWindow(bool focus);
     void RaiseDocumentWindow();
     void SaveUndoInformation(int pos, int nInserted, int nDeleted, view::string_view deletedText);
@@ -229,6 +229,9 @@ public:
     void *macroCmdData_;               // same for macro commands                                               // TODO(eteran): why void* ?
     void *shellCmdData_;               // when a shell command is executing, info. about it, otherwise, nullptr // TODO(eteran): why void* ?
     void *smartIndentData_;            // compiled macros for smart indent                                      // TODO(eteran): why void* ?
+
+public:
+    // TODO(eteran): probably migrate these to MainWindow
     bool  showStats_;       // is stats line supposed to be shown
 
 private:
