@@ -91,6 +91,7 @@ static void modifiedWindowDestroyedCB(Widget w, XtPointer clientData, XtPointer 
 static void safeClose(Document *window);
 
 Document *EditNewFile(Document *inWindow, char *geometry, int iconic, const char *languageMode, const char *defaultPath) {
+
     Document *document;
 
 	/*... test for creatability? */
@@ -102,20 +103,7 @@ Document *EditNewFile(Document *inWindow, char *geometry, int iconic, const char
 	if (inWindow) {
         document = inWindow->CreateDocument(name);
 	} else {
-        document = new Document(name, geometry, iconic);
-#if 1
-		// TODO(eteran): this is an experiement in making a Qt main window along side
-		// the typical one...
-        auto win = new MainWindow();
-		win->on_action_New_triggered();
-		win->setWindowTitle(name);
-        win->setDimmensions(geometry);
-		if(iconic) {
-			win->showMinimized();
-		} else {
-			win->show();
-		}
-#endif			
+        document = new Document(name, geometry, iconic);		
 	}
 
     document->filename_ = name;

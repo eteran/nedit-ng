@@ -74,8 +74,6 @@
     </widget>
    </item>
   </layout>
-  <zorder>statusFrame</zorder>
-  <zorder>labelStats</zorder>
  </widget>
  <customwidgets>
   <customwidget>

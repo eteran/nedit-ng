@@ -77,6 +77,8 @@
 #include <sys/param.h>
 #include <sys/stat.h>
 
+#include <functional>
+
 namespace {
 
 // How long to wait (msec) before putting up Macro Command banner 
@@ -334,9 +336,11 @@ static TextBuffer *MacroRecordBuf = nullptr;
 
 // Action Hook id for recording actions for Learn mode 
 static XtActionHookId MacroRecordActionHook = nullptr;
+static std::function<int(DocumentWidget *document)> MacroRecordActionHookEx;
 
 // Window where macro recording is taking place 
 static Document *MacroRecordWindow = nullptr;
+static DocumentWidget *MacroRecordWindowEx = nullptr;
 
 // Arrays for translating escape characters in escapeStringChars 
 static char ReplaceChars[] = "\\\"ntbrfav";
@@ -432,6 +436,46 @@ void BeginLearn(Document *window) {
 
 void AddLastCommandActionHook(XtAppContext context) {
 	XtAppAddActionHook(context, lastActionHook, nullptr);
+}
+
+void FinishLearnEx() {
+
+    // If we're not in learn mode, return
+    if(!MacroRecordActionHookEx) {
+        return;
+    }
+
+    // Remove the action hook
+    MacroRecordActionHookEx = nullptr;
+
+    // Store the finished action for the replay menu item
+    ReplayMacro = MacroRecordBuf->BufGetAllEx();
+
+    // Free the buffer used to accumulate the macro sequence
+    delete MacroRecordBuf;
+
+    // Undim the menu items dimmed during learn
+    for(MainWindow *window : MainWindow::allWindows()) {
+        window->ui.action_Learn_Keystrokes->setEnabled(true);
+    }
+
+    if (MacroRecordWindowEx->IsTopDocument()) {
+        if(MainWindow *window = MacroRecordWindowEx->toWindow()) {
+            window->ui.action_Learn_Keystrokes->setEnabled(false);
+            window->ui.action_Cancel_Learn->setEnabled(false);
+        }
+    }
+
+    // Undim the replay and paste-macro buttons
+    for(MainWindow *window : MainWindow::allWindows()) {
+        window->ui.action_Replay_Keystrokes->setEnabled(true);
+    }
+
+#if 0 // TODO(eteran): implement
+    DimPasteReplayBtns(true);
+#endif
+    // Clear learn-mode banner
+    MacroRecordWindowEx->ClearModeMessageEx();
 }
 
 void FinishLearn() {
@@ -1120,6 +1164,46 @@ void AbortMacroCommand(Document *window) {
 ** Instead, empty it and make it Untitled, and let the macro completion
 ** process close the window when the macro is finished executing.
 */
+int MacroWindowCloseActionsEx(DocumentWidget *document) {
+    auto cmdData = static_cast<macroCmdInfoEx *>(document->macroCmdData_);
+
+    if (MacroRecordActionHookEx != nullptr && MacroRecordWindowEx == document) {
+        FinishLearnEx();
+    }
+
+    /* If no macro is executing in the window, allow the close, but check
+       if macros executing in other windows have it as focus.  If so, set
+       their focus back to the window from which they were originally run */
+    if(!cmdData) {
+        for(DocumentWidget *w : MainWindow::allDocuments()) {
+            auto mcd = static_cast<macroCmdInfoEx *>(w->macroCmdData_);
+            if (w == MacroRunWindowEx() && MacroFocusWindowEx() == document) {
+                SetMacroFocusWindowEx(MacroRunWindowEx());
+            } else if (mcd != nullptr && mcd->context->focusWindow == document) {
+                mcd->context->focusWindow = mcd->context->runWindow;
+            }
+        }
+
+        return true;
+    }
+
+    /* If the macro currently running (and therefore calling us, because
+       execution must otherwise return to the main loop to execute any
+       commands), is running in this window, tell the caller not to close,
+       and schedule window close on completion of macro */
+    if (document == MacroRunWindowEx()) {
+        cmdData->closeOnCompletion = true;
+        return false;
+    }
+
+    // Free the continuation
+    FreeRestartDataEx(cmdData->context);
+
+    // Kill the macro command
+    finishMacroCmdExecutionEx(document);
+    return true;
+}
+
 int MacroWindowCloseActions(Document *window) {
 	macroCmdInfo *cmdData = static_cast<macroCmdInfo *>(window->macroCmdData_);
 

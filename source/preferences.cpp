@@ -1607,7 +1607,7 @@ void SetPrefTitleFormat(const char *format) {
 
     // update all windows
     for(MainWindow *window : MainWindow::allWindows()) {
-		window->UpdateWindowTitle();
+        window->UpdateWindowTitle(window->currentDocument());
 	}
 }
 const char *GetPrefTitleFormat() {

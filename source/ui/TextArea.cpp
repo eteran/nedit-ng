@@ -368,6 +368,7 @@ TextArea::TextArea(QWidget *parent,
 	setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     setMouseTracking(false);
 	setFocusPolicy(Qt::WheelFocus);
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     connect(verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(verticalScrollBar_valueChanged(int)));
     connect(horizontalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(horizontalScrollBar_valueChanged(int)));
@@ -8466,14 +8467,27 @@ void TextArea::TextDMaintainAbsLineNum(bool state) {
     resetAbsLineNum();
 }
 
-void TextArea::setSizeHint(QSize sizeHint) {
-    sizeHint_ = sizeHint;
-}
+void TextArea::setSize(int columns, int rows) {
 
-void TextArea::setSizeHint(qreal w, qreal h) {
-    setSizeHint(QSize(w, h));
+    const int hScrollBarWidth = horizontalScrollBar()->isVisible() ? horizontalScrollBar()->sizeHint().height() : 0;
+    const int vScrollBarWidth = verticalScrollBar()->isVisible()   ? verticalScrollBar()->sizeHint().width() : 0;
+
+    QFontMetrics fm(viewport()->font());
+    QSize newSize = QSize(
+                columns * fixedFontWidth_ + vScrollBarWidth,
+                rows * fm.height() + hScrollBarWidth);
+
+    if(newSize != size()) {
+        size_ = newSize;
+        updateGeometry();
+    }
+
 }
 
 QSize TextArea::sizeHint() const {
-    return sizeHint_;
+    return size_;
+}
+
+QSize TextArea::minimumSizeHint() const {
+    return size_;
 }

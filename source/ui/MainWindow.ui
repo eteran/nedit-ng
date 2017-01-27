@@ -502,6 +502,9 @@
    </property>
   </action>
   <action name="action_Close">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset theme="document-close">
      <normaloff>.</normaloff>.</iconset>

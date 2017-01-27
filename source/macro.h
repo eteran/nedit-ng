@@ -43,6 +43,7 @@ Program *ParseMacroEx(const QString &expr, int index, QString *message, int *sto
 bool CheckMacroStringEx(QWidget *dialogParent, const QString &string, const QString &errIn, int *errPos);
 int CheckMacroString(Widget dialogParent, const char *string, const char *errIn, const char **errPos);
 int MacroWindowCloseActions(Document *window);
+int MacroWindowCloseActionsEx(DocumentWidget *document);
 int ReadMacroFileEx(Document *window, const std::string &fileName, int warnNotExist);
 int ReadMacroFileEx(DocumentWidget *window, const std::string &fileName, int warnNotExist);
 int ReadMacroString(Document *window, const char *string, const char *errIn);
@@ -55,6 +56,7 @@ void BeginLearn(Document *window);
 void CancelMacroOrLearn(Document *window);
 void DoMacro(Document *window, view::string_view macro, const char *errInName);
 void FinishLearn();
+void FinishLearnEx();
 void ReadMacroInitFile(Document *window);
 void ReadMacroInitFileEx(DocumentWidget *window);
 void RegisterMacroSubroutines();

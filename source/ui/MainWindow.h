@@ -41,7 +41,7 @@ private:
     virtual void keyPressEvent(QKeyEvent *event) override;
 
 public:
-    void setDimmensions(const char *geometry);
+    void parseGeometry(const char *geometry);
 	void UpdateWindowTitle(DocumentWidget *doc);
 	DialogReplace *getDialogReplace() const;
 	void InvalidateWindowMenus();
@@ -71,7 +71,6 @@ public:
     void updateTipsFileMenuEx();
     void updateTagsFileMenuEx();
     DocumentWidget *currentDocument();
-    void UpdateWindowTitle();
     void ShowWindowTabBar();
     void setWindowSizeDefault(int rows, int cols);
     void updateWindowSizeMenus();
@@ -82,6 +81,7 @@ public:
     static QList<DocumentWidget *> allDocuments();
     static QString UniqueUntitledNameEx();
     static DocumentWidget *FindWindowWithFile(const QString &name, const QString &path);
+    static DocumentWidget *EditNewFileEx(MainWindow *inWindow, char *geometry, bool iconic, const char *languageMode, const QString &defaultPath);
 
 public:
 	DocumentWidget *CreateDocument(QString name);
@@ -286,7 +286,6 @@ public:
 	QPointer<TextArea> lastFocus_;
     bool               showLineNumbers_; // is the line number display shown
 	bool               showISearchLine_; // is incr. search line to be shown
-    bool               modeMessageDisplayed_;
     int fHistIndex_;                   // history placeholders for
     int rHistIndex_;
     bool iSearchLastLiteralCase_;      // idem, for literal mode

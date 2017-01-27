@@ -257,7 +257,7 @@ DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inWindow, con
         } else {
             win->showNormal();
         }
-        win->setDimmensions(geometry);
+        win->parseGeometry(geometry);
     } else if (inWindow->filenameSet_ || inWindow->fileChanged_ || inWindow->macroCmdData_) {
         if (tabbed) {
             if(auto win = inWindow->toWindow()) {
@@ -272,7 +272,7 @@ DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inWindow, con
             } else {
                 win->showNormal();
             }
-            win->setDimmensions(geometry);
+            win->parseGeometry(geometry);
         }
     } else {
         // open file in untitled document
@@ -399,7 +399,6 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 	}
 	
 	modeMessageDisplayed_  = false;
-    modeMessage_           = QString();
 	ignoreModify_          = false;
 	windowMenuValid_       = false;
 
@@ -3087,6 +3086,10 @@ int DocumentWidget::CloseFileAndWindow(int preResponse) {
 */
 void DocumentWidget::CloseWindow() {
 
+    MainWindow *window = toWindow();
+    if(!window) {
+        return;
+    }
 
     int state;
     DocumentWidget *win;
@@ -3101,12 +3104,13 @@ void DocumentWidget::CloseWindow() {
     // Free smart indent macro programs
     EndSmartIndentEx(this);
 
-#if 0
+
     /* Clean up macro references to the doomed window.  If a macro is
        executing, stop it.  If macro is calling this (closing its own
        window), leave the window alive until the macro completes */
-    int keepWindow = !MacroWindowCloseActions(this);
+    bool keepWindow = !MacroWindowCloseActionsEx(this);
 
+#if 0
     // Kill shell sub-process and free related memory
     AbortShellCommand(this);
 
@@ -3128,10 +3132,12 @@ void DocumentWidget::CloseWindow() {
        widget is gone. */
     cancelTimeOut(&flashTimeoutID_);
     cancelTimeOut(&markTimeoutID_);
-
+#endif
     /* if this is the last window, or must be kept alive temporarily because
        it's running the macro calling us, don't close it, make it Untitled */
-    if (keepWindow || (WindowList.size() == 1 && this == WindowList.front())) {
+    int windowCount   = MainWindow::allWindows().size();
+    int documentCount = MainWindow::allDocuments().size();
+    if (keepWindow || (windowCount == 1 && documentCount == 1)) {
         filename_ = QLatin1String("");
 
         QString name = UniqueUntitledName();
@@ -3156,23 +3162,22 @@ void DocumentWidget::CloseWindow() {
         device_       = 0;
         inode_        = 0;
 
-        StopHighlighting(this);
-        EndSmartIndent(this);
-        UpdateWindowTitle();
+        StopHighlightingEx();
+        EndSmartIndentEx(this);
+        window->UpdateWindowTitle(this);
         UpdateWindowReadOnly();
-        XtSetSensitive(closeItem_, false);
-        XtSetSensitive(readOnlyItem_, true);
-        XmToggleButtonSetState(readOnlyItem_, false, false);
+        window->ui.action_Close->setEnabled(false);
+        window->ui.action_Read_Only->setEnabled(true);
+        window->ui.action_Read_Only->setChecked(false);
         ClearUndoList();
         ClearRedoList();
-        XmTextSetStringEx(statsLine_, ""); // resets scroll pos of stats line from long file names
-        UpdateStatsLine();
-        DetermineLanguageMode(this, true);
+        UpdateStatsLine(nullptr);
+        DetermineLanguageMode(true);
         RefreshTabState();
-        updateLineNumDisp();
+        window->updateLineNumDisp();
         return;
     }
-#endif
+
     // Free syntax highlighting patterns, if any. w/o redisplaying
     FreeHighlightingDataEx(this);
 
@@ -3555,7 +3560,6 @@ void DocumentWidget::RefreshWindowStates() {
     }
 
     if(auto win = toWindow()) {
-
 
         if (modeMessageDisplayed_) {
             ui.labelFileAndSize->setText(modeMessage_);
@@ -4890,4 +4894,48 @@ void DocumentWidget::SetColors(const char *textFg, const char *textBg, const cha
     if (highlightData_) {
         UpdateHighlightStylesEx(this);
     }
+}
+
+/*
+** Display a special message in the stats line (show the stats line if it
+** is not currently shown).
+*/
+void DocumentWidget::SetModeMessageEx(const QString message) {
+    /* this document may be hidden (not on top) or later made hidden,
+       so we save a copy of the mode message, so we can restore the
+       statsline when the document is raised to top again */
+    modeMessageDisplayed_ = true;
+    modeMessage_          = message;
+
+    ui.labelFileAndSize->setText(message);
+
+    /*
+     * Don't invoke the stats line again, if stats line is already displayed.
+     */
+    if (!showStats_) {
+        ui.statusFrame->setVisible(true);
+    }
+}
+
+/*
+** Clear special statistics line message set in SetModeMessage, returns
+** the statistics line to its original state as set in window->showStats_
+*/
+void DocumentWidget::ClearModeMessageEx() {
+
+    if (!modeMessageDisplayed_) {
+        return;
+    }
+
+    modeMessageDisplayed_ = false;
+    modeMessage_          = QString();
+
+    /*
+     * Remove the stats line only if indicated by it's window state.
+     */
+    if (!showStats_) {
+        ui.statusFrame->setVisible(false);
+    }
+
+    UpdateStatsLine(nullptr);
 }

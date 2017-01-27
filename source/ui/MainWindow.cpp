@@ -63,72 +63,7 @@ const char neditDBBadFilenameChars[] = "\n";
 
 QList<QString> PrevOpen;
 
-DocumentWidget *EditNewFile(MainWindow *inWindow, char *geometry, bool iconic, const char *languageMode, const QString &defaultPath) {
-
-	Q_UNUSED(geometry);
-
-	DocumentWidget *window;
-
-	/*... test for creatability? */
-
-	// Find a (relatively) unique name for the new file
-    QString name = MainWindow::UniqueUntitledNameEx();
-
-	// create new window/document
-	if (inWindow) {
-		window = inWindow->CreateDocument(name);
-	} else {
-		// TODO(eteran): implement geometry stuff
-        auto win = new MainWindow();
-		window = win->CreateDocument(name);
-
-		if(iconic) {
-			win->showMinimized();
-		} else {
-            win->show();
-		}
-        win->setDimmensions(geometry);
-
-		inWindow = win;
-	}
-
-
-	window->filename_ = name;
-	window->path_     = !defaultPath.isEmpty() ? defaultPath : GetCurrentDirEx();
-
-	// do we have a "/" at the end? if not, add one
-    if (!window->path_.isEmpty() && !window->path_.endsWith(QLatin1Char('/'))) {
-        window->path_.append(QLatin1Char('/'));
-	}
-
-	window->SetWindowModified(false);
-	window->lockReasons_.clear();
-	inWindow->UpdateWindowReadOnly(window);
-	window->UpdateStatsLine(nullptr);
-	inWindow->UpdateWindowTitle(window);
-	window->RefreshTabState();
-
-
-	if(!languageMode) {
-		window->DetermineLanguageMode(true);
-	} else {
-		window->SetLanguageMode(FindLanguageMode(languageMode), true);
-	}
-
-	inWindow->ShowTabBar(inWindow->GetShowTabBar());
-
-    if (iconic && inWindow->isMinimized()) {
-        window->RaiseDocument();
-    } else {
-        window->RaiseDocumentWindow();
-    }
-
-	inWindow->SortTabBar();
-	return window;
 }
-
-}
-
 
 //------------------------------------------------------------------------------
 // Name: MainWindow
@@ -150,7 +85,6 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(par
     updatePrevOpenMenu();
 
     showISearchLine_       = GetPrefISearchLine();
-    modeMessageDisplayed_  = false;
     iSearchHistIndex_      = 0;
     iSearchStartPos_       = -1;
     iSearchLastRegexCase_  = true;
@@ -161,11 +95,6 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(par
     ui.incrementalSearchFrame->setVisible(showISearchLine_);
 
     ui.action_Statistics_Line->setChecked(GetPrefStatsLine());
-
-#if 1
-
-#endif
-
 }
 
 //------------------------------------------------------------------------------
@@ -178,7 +107,7 @@ MainWindow::~MainWindow() {
 //------------------------------------------------------------------------------
 // Name: setDimmensions
 //------------------------------------------------------------------------------
-void MainWindow::setDimmensions(const char *geometry) {
+void MainWindow::parseGeometry(const char *geometry) {
     int rows = -1;
     int cols = -1;
 
@@ -207,26 +136,9 @@ void MainWindow::setDimmensions(const char *geometry) {
         }
     }
 
-    // TODO(eteran): implement this ... somehow
-#if 0
+    // TODO(eteran): get this to work!... somehow
     TextArea *area = currentDocument()->firstPane();
-    QFont font = area->font();
-    QFontMetricsF fm(font);
-
-    if(cols > 0 && rows > 0) {
-
-        area->setSizeHint(cols * fm.maxWidth() / 2, rows * fm.height() / 2);
-
-        QWidget *w = area;
-        while (w) {
-            w->adjustSize();
-            w = w->parentWidget();
-        }
-    }
-#else
-    Q_UNUSED(cols);
-    Q_UNUSED(rows);
-#endif
+    area->setSize(cols, rows);
 }
 
 //------------------------------------------------------------------------------
@@ -601,7 +513,7 @@ void MainWindow::action_New(const QString &mode) {
     }
 
 
-	EditNewFile(openInTab ? this : nullptr, nullptr, false, nullptr, path);
+    EditNewFileEx(openInTab ? this : nullptr, nullptr, false, nullptr, path);
 	CheckCloseDim();
 }
 
@@ -637,9 +549,12 @@ void MainWindow::on_action_Open_triggered() {
     CheckCloseDim();
 }
 
+//------------------------------------------------------------------------------
+// Name: on_action_Close_triggered
+//------------------------------------------------------------------------------
 void MainWindow::on_action_Close_triggered() {
     if(auto doc = currentDocument()) {
-        doc->actionClose(QLatin1String(""));
+        doc->actionClose(QString());
     }
 }
 
@@ -760,7 +675,7 @@ void MainWindow::UpdateWindowTitle(DocumentWidget *doc) {
 		iconTitle.append(tr("*"));
 	}
 
-	setWindowIconText(iconTitle);
+    setWindowIconText(iconTitle); // NOTE(eteran): is the functional equivalent to "XmNiconName"?
 
 	/* If there's a find or replace dialog up in "Keep Up" mode, with a
 	   file name in the title, update it too */
@@ -3188,56 +3103,6 @@ void MainWindow::on_action_Default_Customize_Window_Title_triggered() {
     }
 }
 
-/*
-** Update the window title to reflect the filename, read-only, and modified
-** status of the window data structure
-*/
-void MainWindow::UpdateWindowTitle() {
-
-    if(auto document = currentDocument()) {
-        QString clearCaseTag = GetClearCaseViewTag();
-
-        QString title = DialogWindowTitle::FormatWindowTitle(
-            document->filename_,
-            document->path_,
-            clearCaseTag,
-            QLatin1String(GetPrefServerName()),
-            IsServer,
-            document->filenameSet_,
-            document->lockReasons_,
-            document->fileChanged_,
-            QLatin1String(GetPrefTitleFormat()));
-
-
-        QString iconTitle = document->filename_;
-        if (document->fileChanged_) {
-            iconTitle.append(QLatin1String("*"));
-        }
-
-        setWindowTitle(title);
-        setWindowIconText(iconTitle); // NOTE(eteran): is the functional equivalent to "XmNiconName"?
-
-        /* If there's a find or replace dialog up in "Keep Up" mode, with a
-           file name in the title, update it too */
-        if (auto dialog = qobject_cast<DialogFind *>(dialogFind_)) {
-            if(dialog->keepDialog()) {
-                title = tr("Find (in %1)").arg(document->filename_);
-                dialog->setWindowTitle(title);
-            }
-        }
-
-        if(auto dialog = getDialogReplace()) {
-            if(dialog->keepDialog()) {
-                title = tr("Replace (in %1)").arg(document->filename_);
-                dialog->setWindowTitle(title);
-            }
-        }
-
-        // Update the Windows menus with the new name
-        InvalidateWindowMenus();
-    }
-}
-
 void MainWindow::on_action_Default_Search_Verbose_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
     SetPrefSearchDlogs(state);
@@ -3608,4 +3473,66 @@ void MainWindow::action_Prev_Document() {
 void MainWindow::action_Last_Document() {
     // this will put the focus on whatever document last had the focus
     // TODO(eteran): implement!
+}
+
+DocumentWidget *MainWindow::EditNewFileEx(MainWindow *inWindow, char *geometry, bool iconic, const char *languageMode, const QString &defaultPath) {
+
+    DocumentWidget *document;
+
+    /*... test for creatability? */
+
+    // Find a (relatively) unique name for the new file
+    QString name = MainWindow::UniqueUntitledNameEx();
+
+    // create new window/document
+    if (inWindow) {
+        document = inWindow->CreateDocument(name);
+    } else {
+        auto win = new MainWindow();
+        document = win->CreateDocument(name);
+
+        win->parseGeometry(geometry);
+
+        if(iconic) {
+            win->showMinimized();
+        } else {
+            win->show();
+        }
+
+        inWindow = win;
+    }
+
+
+    document->filename_ = name;
+    document->path_     = !defaultPath.isEmpty() ? defaultPath : GetCurrentDirEx();
+
+    // do we have a "/" at the end? if not, add one
+    if (!document->path_.isEmpty() && !document->path_.endsWith(QLatin1Char('/'))) {
+        document->path_.append(QLatin1Char('/'));
+    }
+
+    document->SetWindowModified(false);
+    document->lockReasons_.clear();
+    inWindow->UpdateWindowReadOnly(document);
+    document->UpdateStatsLine(nullptr);
+    inWindow->UpdateWindowTitle(document);
+    document->RefreshTabState();
+
+
+    if(!languageMode) {
+        document->DetermineLanguageMode(true);
+    } else {
+        document->SetLanguageMode(FindLanguageMode(languageMode), true);
+    }
+
+    inWindow->ShowTabBar(inWindow->GetShowTabBar());
+
+    if (iconic && inWindow->isMinimized()) {
+        document->RaiseDocument();
+    } else {
+        document->RaiseDocumentWindow();
+    }
+
+    inWindow->SortTabBar();
+    return document;
 }

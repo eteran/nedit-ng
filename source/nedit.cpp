@@ -33,6 +33,7 @@
 #include <QApplication>
 #include <QX11Info>
 #include "ui/DialogPrint.h"
+#include "ui/MainWindow.h"
 
 #include "nedit.h"
 #include "Document.h"
@@ -571,6 +572,7 @@ int main(int argc, char *argv[]) {
 		}
 	
 		EditNewFile(nullptr, geometry, iconic, langMode, nullptr);
+        MainWindow::EditNewFileEx(nullptr, geometry, iconic, langMode, QString());
 		ReadMacroInitFile(window);
 		CheckCloseDim();
 		if (toDoCommand) {

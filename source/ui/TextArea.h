@@ -134,8 +134,8 @@ public:
 
 public:
     virtual QSize sizeHint() const override;
-    void setSizeHint(QSize sizeHint);
-    void setSizeHint(qreal w, qreal h);
+    virtual QSize minimumSizeHint() const override;
+    void setSize(int columns, int rows);
 
 protected:
 	virtual bool focusNextPrevChild(bool next) override;
@@ -462,7 +462,7 @@ private:
 	int         P_lineNumCols;
 	const char *P_delimiters;
 	int         P_cursorVPadding;
-    QSize       sizeHint_;
+    QSize       size_;
 
 private:
 	QVector<QPair<cursorMovedCBEx, void *>> movedCallbacks_;

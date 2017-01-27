@@ -159,6 +159,8 @@ public:
     bool findMatchingCharEx(char toMatch, void *styleToMatch, int charPos, int startLimit, int endLimit, int *matchPos);
     void SetFonts(const QString &fontName, const QString &italicName, const QString &boldName, const QString &boldItalicName);
     void SetOverstrike(bool overstrike);
+    void SetModeMessageEx(const QString message);
+    void ClearModeMessageEx();
 
 public:
     static DocumentWidget *EditExistingFileEx(DocumentWidget *inWindow, const QString &name, const QString &path, int flags, char *geometry, int iconic, const char *languageMode, int tabbed, int bgOpen);
