@@ -990,9 +990,7 @@ void TextArea::focusOutEvent(QFocusEvent *event) {
 //------------------------------------------------------------------------------
 void TextArea::contextMenuEvent(QContextMenuEvent *e) {
 	if(e->modifiers() != Qt::ControlModifier) {
-        if(bgMenu_) {
-            bgMenu_->exec(mapToGlobal(e->pos()));
-        }
+        Q_EMIT customContextMenuRequested(mapToGlobal(e->pos()));
     }
 }
 
@@ -8118,14 +8116,6 @@ int TextArea::TextFirstVisiblePos() const {
 
 int TextArea::TextLastVisiblePos() const {
     return lastChar_;
-}
-
-void TextArea::setContextMenu(QMenu *menu) {
-    bgMenu_ = menu;
-}
-
-QMenu *TextArea::contextMenu() const {
-    return bgMenu_;
 }
 
 TextBuffer *TextArea::getStyleBuffer() const {

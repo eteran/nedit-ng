@@ -54,10 +54,10 @@
 
 namespace {
 
-DialogShellMenu *WindowShellMenu = nullptr;
+DialogShellMenu            *WindowShellMenu = nullptr;
 DialogWindowBackgroundMenu *WindowBackgroundMenu = nullptr;
-DialogMacros *WindowMacros = nullptr;
-DialogSmartIndent *SmartIndentDlg = nullptr;
+DialogMacros               *WindowMacros = nullptr;
+DialogSmartIndent          *SmartIndentDlg = nullptr;
 
 const char neditDBBadFilenameChars[] = "\n";
 
@@ -1002,10 +1002,6 @@ void MainWindow::UpdateUserMenus(DocumentWidget *document) {
     /* update background menu, which is owned by a single document, only
        if language mode was changed */
     document->contextMenu_ = createUserMenu(document, BGMenuData);
-    const QList<TextArea *> textAreas = document->textPanes();
-    for(TextArea *area : textAreas) {
-        area->setContextMenu(document->contextMenu_);
-    }
 }
 
 /*

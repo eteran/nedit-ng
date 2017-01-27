@@ -43,6 +43,7 @@ private Q_SLOTS:
 	void onFocusIn(QWidget *now);
 	void onFocusOut(QWidget *was);
     void flashTimerTimeout();
+    void customContextMenuRequested(const QPoint &pos);
 
 public Q_SLOTS:
     void setLanguageMode(const QString &mode);
@@ -133,7 +134,6 @@ public:
     QString backupFileNameEx();
     void CheckForChangesToFileEx();
     QString FullPath() const;
-    void UpdateWindowReadOnly();
     int cmpWinAgainstFile(const QString &fileName);
     void RevertToSaved();
     int WriteBackupFile();
@@ -146,7 +146,7 @@ public:
     int fileWasModifiedExternally();
     int CloseFileAndWindow(int preResponse);
     void CloseWindow();
-    int doOpen(const QString &name, const QString &path, int flags);
+    bool doOpen(const QString &name, const QString &path, int flags);
     void RefreshWindowStates();
     void refreshMenuBar();
     void RefreshMenuToggleStates();
@@ -161,9 +161,10 @@ public:
     void SetOverstrike(bool overstrike);
     void SetModeMessageEx(const QString message);
     void ClearModeMessageEx();
+    void safeCloseEx();
 
 public:
-    static DocumentWidget *EditExistingFileEx(DocumentWidget *inWindow, const QString &name, const QString &path, int flags, char *geometry, int iconic, const char *languageMode, int tabbed, int bgOpen);
+    static DocumentWidget *EditExistingFileEx(DocumentWidget *inWindow, const QString &name, const QString &path, int flags, char *geometry, int iconic, const char *languageMode, bool tabbed, bool bgOpen);
 
 private:
 	// TODO(eteran): are these dialog's per window or per text document?

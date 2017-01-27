@@ -92,18 +92,18 @@ struct CharMatchTable {
 const int N_MATCH_CHARS = 13;
 
 static const CharMatchTable MatchingChars[N_MATCH_CHARS] = {
-    {'{', '}', SEARCH_FORWARD},
-    {'}', '{', SEARCH_BACKWARD},
-    {'(', ')', SEARCH_FORWARD},
-    {')', '(', SEARCH_BACKWARD},
-    {'[', ']', SEARCH_FORWARD},
-    {']', '[', SEARCH_BACKWARD},
-    {'<', '>', SEARCH_FORWARD},
-    {'>', '<', SEARCH_BACKWARD},
-    {'/', '/', SEARCH_FORWARD},
-    {'"', '"', SEARCH_FORWARD},
+    {'{', '}',   SEARCH_FORWARD},
+    {'}', '{',   SEARCH_BACKWARD},
+    {'(', ')',   SEARCH_FORWARD},
+    {')', '(',   SEARCH_BACKWARD},
+    {'[', ']',   SEARCH_FORWARD},
+    {']', '[',   SEARCH_BACKWARD},
+    {'<', '>',   SEARCH_FORWARD},
+    {'>', '<',   SEARCH_BACKWARD},
+    {'/', '/',   SEARCH_FORWARD},
+    {'"', '"',   SEARCH_FORWARD},
     {'\'', '\'', SEARCH_FORWARD},
-    {'`', '`', SEARCH_FORWARD},
+    {'`', '`',   SEARCH_FORWARD},
     {'\\', '\\', SEARCH_FORWARD},
 };
 
@@ -123,36 +123,34 @@ const int REVERSE = 2;
 const int MOD_CHECK_INTERVAL = 3000;
 
 void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *user) {
-    if(auto w = static_cast<DocumentWidget *>(user)) {
-        w->modifiedCallback(pos, nInserted, nDeleted, nRestyled, deletedText);
+    if(auto document = static_cast<DocumentWidget *>(user)) {
+        document->modifiedCallback(pos, nInserted, nDeleted, nRestyled, deletedText);
     }
 }
 
 void smartIndentCB(TextArea *area, smartIndentCBStruct *data, void *user) {
-	if(auto w = static_cast<DocumentWidget *>(user)) {
-		w->smartIndentCallback(area, data);
+    if(auto document = static_cast<DocumentWidget *>(user)) {
+        document->smartIndentCallback(area, data);
 	}
 }
 
 void movedCB(TextArea *area, void *user) {
-	if(auto w = static_cast<DocumentWidget *>(user)) {
-		w->movedCallback(area);
+    if(auto document = static_cast<DocumentWidget *>(user)) {
+        document->movedCallback(area);
 	}
 }
 
 void dragStartCB(TextArea *area, void *user) {
-	if(auto w = static_cast<DocumentWidget *>(user)) {
-		w->dragStartCallback(area);
+    if(auto document = static_cast<DocumentWidget *>(user)) {
+        document->dragStartCallback(area);
 	}
 }
 
 void dragEndCB(TextArea *area, dragEndCBStruct *data, void *user) {
-	if(auto w = static_cast<DocumentWidget *>(user)) {
-		w->dragEndCallback(area, data);
+    if(auto document = static_cast<DocumentWidget *>(user)) {
+        document->dragEndCallback(area, data);
 	}
 }
-
-
 
 /*
 ** Update a position across buffer modifications specified by
@@ -240,21 +238,19 @@ UndoTypes determineUndoType(int nInserted, int nDeleted) {
 ** the syntax highlighting deferred, in order to speed up the file-
 ** opening operation when multiple files are being opened in succession.
 */
-DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inWindow, const QString &name, const QString &path, int flags, char *geometry, int iconic, const char *languageMode, int tabbed, int bgOpen) {
+DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inWindow, const QString &name, const QString &path, int flags, char *geometry, int iconic, const char *languageMode, bool tabbed, bool bgOpen) {
 
     // first look to see if file is already displayed in a window
-    if(DocumentWidget *window = MainWindow::FindWindowWithFile(name, path)) {
+    if(DocumentWidget *document = MainWindow::FindWindowWithFile(name, path)) {
         if (!bgOpen) {
             if (iconic) {
-                window->RaiseDocument();
+                document->RaiseDocument();
             } else {
-                window->RaiseDocumentWindow();
+                document->RaiseDocumentWindow();
             }
         }
-        return window;
+        return document;
     }
-
-
 
     /* If an existing window isn't specified; or the window is already
        in use (not Untitled or Untitled and modified), or is currently
@@ -299,11 +295,9 @@ DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inWindow, con
 
     // Open the file
     if (!document->doOpen(name, path, flags)) {
-#if 0
         /* The user may have destroyed the window instead of closing the
            warning dialog; don't close it twice */
-        safeClose(window);
-#endif
+        document->safeCloseEx();
         return nullptr;
     }
 
@@ -325,23 +319,21 @@ DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inWindow, con
         win->ShowTabBar(win->GetShowTabBar());
     }
 
-
     if (!bgOpen) {
         document->RaiseDocument();
     }
-
 
     /* Bring the title bar and statistics line up to date, doOpen does
        not necessarily set the window title or read-only status */
     if(auto win = document->toWindow()) {
         win->UpdateWindowTitle(document);
-        document->UpdateWindowReadOnly();
-        document->UpdateStatsLine(nullptr);
+        win->UpdateWindowReadOnly(document);
     }
+
+    document->UpdateStatsLine(nullptr);
 
     // Add the name to the convenience menu of previously opened files
     QString fullname = QString(QLatin1String("%1%2")).arg(path, name);
-
 
     if (GetPrefAlwaysCheckRelTagsSpecs()) {
         AddRelTagsFile(GetPrefTagFile(), path.toLatin1().data(), TAG);
@@ -446,20 +438,9 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
     flashTimer_->setSingleShot(true);
     connect(flashTimer_, SIGNAL(timeout()), this, SLOT(flashTimerTimeout()));
 
-#if 1
-    {
-        auto area = createTextArea(buffer_);
-        splitter_->addWidget(area);
-        area->setFocus();
-    }
-#if 0
-    {
-        auto area = createTextArea(buffer_);
-        splitter_->addWidget(area);
-        area->setFocus();
-    }
-#endif
-#endif
+    auto area = createTextArea(buffer_);
+    splitter_->addWidget(area);
+    area->setFocus();
 }
 
 
@@ -526,6 +507,14 @@ TextArea *DocumentWidget::createTextArea(TextBuffer *buffer) {
     area->addDragEndCallback(dragEndCB, this);
     area->addSmartIndentCallback(smartIndentCB, this);
 
+    // NOTE(eteran): we kinda cheat here. We want to have a custom context menu
+    // but we don't want it to fire if the user is pressing Ctrl when they right click
+    // so TextArea captures the default context menu event, then if appropriate
+    // fires off a customContextMenuRequested event manually. So no need to set the
+    // policy here, in fact, that would break things.
+    //area->setContextMenuPolicy(Qt::CustomContextMenu);
+
+    connect(area, SIGNAL(customContextMenuRequested(const QPoint &)), SLOT(customContextMenuRequested(const QPoint &)));
     connect(area, SIGNAL(focusIn(QWidget*)), this, SLOT(onFocusIn(QWidget*)));
     connect(area, SIGNAL(focusOut(QWidget*)), this, SLOT(onFocusOut(QWidget*)));
 
@@ -612,10 +601,6 @@ void DocumentWidget::RefreshTabState() {
 			labelString = tr("%1%2").arg(filename_).arg(fileChanged_ ? tr("*") : tr(""));
 		}
 
-        // NOTE(eteran): original code made the tab with focus show in bold
-        // a) There is not *easy* way to do this in Qt (can be done with style sheets)
-        // b) I say, by default let Qt style the tabs as it likes, user can always override with theming
-
 		tabWidget->setTabText(index, labelString);
 
 		QString tipString;
@@ -673,14 +658,13 @@ void DocumentWidget::SetLanguageMode(int mode, bool forceNewDefaults) {
 */
 int DocumentWidget::matchLanguageMode() {
 
-	int fileNameLen;
 	int beginPos;
 	int endPos;
 
 	/*... look for an explicit mode statement first */
 
 	// Do a regular expression search on for recognition pattern
-	std::string first200 = buffer_->BufGetRangeEx(0, 200);
+    const std::string first200 = buffer_->BufGetRangeEx(0, 200);
 	for (int i = 0; i < NLanguageModes; i++) {
 		if (!LanguageModes[i]->recognitionExpr.isNull()) {
             if (SearchString(first200, LanguageModes[i]->recognitionExpr.toLatin1().data(), SEARCH_FORWARD, SEARCH_REGEX, false, 0, &beginPos, &endPos, nullptr, nullptr, nullptr)) {
@@ -692,9 +676,9 @@ int DocumentWidget::matchLanguageMode() {
 	/* Look at file extension ("@@/" starts a ClearCase version extended path,
 	   which gets appended after the file extension, and therefore must be
 	   stripped off to recognize the extension to make ClearCase users happy) */
-	fileNameLen = filename_.size();
+    int fileNameLen = filename_.size();
 
-	int versionExtendedPathIndex = GetClearCaseVersionExtendedPathIndex(filename_);
+    const int versionExtendedPathIndex = GetClearCaseVersionExtendedPathIndex(filename_);
 	if (versionExtendedPathIndex != -1) {
 		fileNameLen = versionExtendedPathIndex;
 	}
@@ -793,7 +777,6 @@ void DocumentWidget::movedCallback(TextArea *area) {
 	// Check the character before the cursor for matchable characters
     FlashMatchingEx(this, area);
 
-
 	// Check for changes to read-only status and/or file modifications
     CheckForChangesToFileEx();
 
@@ -827,7 +810,6 @@ void DocumentWidget::UpdateMarkTable(int pos, int nInserted, int nDeleted) {
         maintainPosition (&markTable_[i].cursorPos, pos, nInserted, nDeleted);
     }
 }
-
 
 /*
 **
@@ -968,16 +950,7 @@ void DocumentWidget::RaiseFocusDocumentWindow(bool focus) {
 ** raise the document and its shell window and focus depending on pref.
 */
 void DocumentWidget::RaiseDocumentWindow() {
-    RaiseDocument();
-    if(auto win = toWindow()) {
-        if(!win->isMaximized()) {
-            win->showNormal();
-        }
-    }
-
-    if(GetPrefFocusOnRaise()) {
-        setFocus();
-    }
+    RaiseFocusDocumentWindow(GetPrefFocusOnRaise());
 }
 
 
@@ -987,7 +960,7 @@ void DocumentWidget::documentRaised() {
            XmNworkWindow and managed, else the parent shell
        this may shrink on some this-managers such as
        metacity, due to changes made in UpdateWMSizeHints().*/
-    if (highlightSyntax_ && highlightData_ == nullptr) {
+    if (highlightSyntax_ && !highlightData_) {
         StartHighlightingEx(this, false);
     }
 
@@ -999,7 +972,6 @@ void DocumentWidget::documentRaised() {
     RefreshWindowStates();
 
     RefreshTabState();
-
 
     /* Make sure that the "In Selection" button tracks the presence of a
        selection and that the this inherits the proper search scope. */
@@ -1017,19 +989,17 @@ void DocumentWidget::documentRaised() {
 void DocumentWidget::RaiseDocument() {
     if(auto win = toWindow()) {
 
-#if 0
-        if (WindowList.empty()) {
+        // NOTE(eteran): not sure if this is even possible anymore
+        //               but it can't hurt too much
+        QList<MainWindow *> windows = MainWindow::allWindows();
+        if(windows.empty()) {
             return;
         }
-#endif
 
-#if 0
-        Document *win;
-        Document *lastwin = MarkActiveDocument();
-        if (lastwin != this && lastwin->IsValidWindow()) {
-            lastwin->MarkLastDocument();
-        }
-#endif
+        // NOTE(eteran): this used to do some tracking for the last active
+        //               window/document here. I think there is likely a better
+        //               approach
+
 
         // document already on top?
         if(win->ui.tabWidget->currentWidget() == this) {
@@ -2124,7 +2094,7 @@ void DocumentWidget::CheckForChangesToFileEx() {
             // Make sure that the window was not destroyed behind our back!
             lockReasons_.setPermLocked(false);
             win->UpdateWindowTitle(this);
-            UpdateWindowReadOnly();
+            win->UpdateWindowReadOnly(this);
 
             return;
         }
@@ -2147,7 +2117,7 @@ void DocumentWidget::CheckForChangesToFileEx() {
                 if (lockReasons_.isPermLocked() != readOnly) {
                     lockReasons_.setPermLocked(readOnly);
                     win->UpdateWindowTitle(this);
-                    UpdateWindowReadOnly();
+                    win->UpdateWindowReadOnly(this);
                 }
             }
         }
@@ -2199,31 +2169,6 @@ void DocumentWidget::CheckForChangesToFileEx() {
 
 QString DocumentWidget::FullPath() const {
     return QString(QLatin1String("%1%2")).arg(path_, filename_);
-}
-
-/*
-** Update the read-only state of the text area(s) in the window, and
-** the ReadOnly toggle button in the File menu to agree with the state in
-** the window data structure.
-*/
-void DocumentWidget::UpdateWindowReadOnly() {
-
-    if (!IsTopDocument()) {
-        return;
-    }
-
-    bool state = lockReasons_.isAnyLocked();
-
-    const QList<TextArea *> textAreas = textPanes();
-    for(TextArea *area : textAreas) {
-        area->setReadOnly(state);
-    }
-
-    if(auto win = toWindow()) {
-        no_signals(win->ui.action_Read_Only)->setChecked(state);
-
-        win->ui.action_Read_Only->setEnabled(!lockReasons_.isAnyLockedIgnoringUser());
-    }
 }
 
 /*
@@ -2401,7 +2346,7 @@ void DocumentWidget::RevertToSaved() {
 
         win->forceShowLineNumbers();
         win->UpdateWindowTitle(this);
-        UpdateWindowReadOnly();
+        win->UpdateWindowReadOnly(this);
 
         // restore the insert and scroll positions of each pane
         for (int i = 0; i < panesCount; i++) {
@@ -2798,7 +2743,7 @@ int DocumentWidget::SaveWindowAs(const char *newName, bool addWrap) {
 
         lockReasons_.clear();
         retVal = doSave();
-        UpdateWindowReadOnly();
+        win->UpdateWindowReadOnly(this);
         RefreshTabState();
 
         // Add the name to the convenience menu of previously opened files
@@ -3175,7 +3120,7 @@ void DocumentWidget::CloseWindow() {
         StopHighlightingEx();
         EndSmartIndentEx(this);
         window->UpdateWindowTitle(this);
-        UpdateWindowReadOnly();
+        window->UpdateWindowReadOnly(this);
         window->ui.action_Close->setEnabled(false);
         window->ui.action_Read_Only->setEnabled(true);
         window->ui.action_Read_Only->setChecked(false);
@@ -3319,7 +3264,13 @@ void DocumentWidget::open(const char *fullpath) {
     }
 }
 
-int DocumentWidget::doOpen(const QString &name, const QString &path, int flags) {
+bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags) {
+
+
+    MainWindow *window = toWindow();
+    if(!window) {
+        return false;
+    }
 
     // initialize lock reasons
     lockReasons_.clear();
@@ -3406,7 +3357,8 @@ int DocumentWidget::doOpen(const QString &name, const QString &path, int flags) 
             if ((flags & PREF_READ_ONLY) != 0) {
                 lockReasons_.setUserLocked(true);
             }
-            UpdateWindowReadOnly();
+
+            window->UpdateWindowReadOnly(this);
             return true;
         } else {
             // A true error
@@ -3542,19 +3494,15 @@ int DocumentWidget::doOpen(const QString &name, const QString &path, int flags) 
 
     if (lockReasons_.isPermLocked()) {
         fileChanged_ = false;
-       if(auto win = toWindow()) {
-            win->UpdateWindowTitle(this);
-       }
+        window->UpdateWindowTitle(this);
     } else {
         SetWindowModified(false);
         if (lockReasons_.isAnyLocked()) {
-            if(auto win = toWindow()) {
-                 win->UpdateWindowTitle(this);
-            }
+            window->UpdateWindowTitle(this);
         }
     }
-    UpdateWindowReadOnly();
 
+    window->UpdateWindowReadOnly(this);
     return true;
 }
 
@@ -3577,7 +3525,7 @@ void DocumentWidget::RefreshWindowStates() {
             UpdateStatsLine(nullptr);
         }
 
-        UpdateWindowReadOnly();
+        win->UpdateWindowReadOnly(this);
         win->UpdateWindowTitle(this);
     #if 0
         // show/hide statsline as needed
@@ -3603,7 +3551,6 @@ void DocumentWidget::RefreshWindowStates() {
         refreshMenuBar();
 
         win->updateLineNumDisp();
-
     }
 }
 
@@ -4969,4 +4916,30 @@ void DocumentWidget::ClearModeMessageEx() {
     }
 
     UpdateStatsLine(nullptr);
+}
+
+void DocumentWidget::customContextMenuRequested(const QPoint &pos) {
+    if(contextMenu_) {
+        contextMenu_->exec(pos);
+    }
+}
+
+/*
+** Checks whether a window is still alive, and closes it only if so.
+** Intended to be used when the file could not be opened for some reason.
+** Normally the window is still alive, but the user may have closed the
+** window instead of the error dialog. In that case, we shouldn't close the
+** window a second time.
+*/
+void DocumentWidget::safeCloseEx() {
+
+    QList<DocumentWidget *> documents = MainWindow::allDocuments();
+
+    auto it = std::find_if(documents.begin(), documents.end(), [this](DocumentWidget *p) {
+        return p == this;
+    });
+
+    if(it != documents.end()) {
+        (*it)->CloseWindow();
+    }
 }

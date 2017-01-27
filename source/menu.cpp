@@ -1451,6 +1451,7 @@ void AddToPrevOpenMenu(const char *filename) {
 	invalidatePrevOpenMenus();
 
 	// Undim the menu in all windows if it was previously empty 
+#if 0 // NOTE(eteran): transitioned
 	if (NPrevOpen > 0) {
 		for(Document *w: WindowList) {
 			if (w->IsTopDocument()) {
@@ -1458,6 +1459,7 @@ void AddToPrevOpenMenu(const char *filename) {
 			}
 		}
 	}
+#endif
 
 	// Write the menu contents to disk to restore in later sessions 
 	WriteNEditDB();

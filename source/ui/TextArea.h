@@ -83,7 +83,7 @@ public:
 
 Q_SIGNALS:
 	void focusIn(QWidget *now);
-	void focusOut(QWidget *now);
+    void focusOut(QWidget *now);
 
 public:
 	// TODO(eteran): if these aren't expected to have side effects, then some
@@ -112,7 +112,6 @@ public:
 	void setAutoIndent(bool value);
 	void setSmartIndent(bool value);
     void setModifyingTabDist(int tabDist);
-    void setContextMenu(QMenu *menu);
     void setStyleBuffer(TextBuffer *buffer);
 
 public:
@@ -124,7 +123,6 @@ public:
     int fontDescent() const;
     int fontAscent() const;
     QTimer *cursorBlinkTimer() const;
-    QMenu *contextMenu() const;
     TextBuffer *getStyleBuffer() const;
     int getLineNumWidth() const;
     int getLineNumLeft() const;
