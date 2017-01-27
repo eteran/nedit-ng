@@ -853,6 +853,7 @@ void EndWait(Widget topCursorWidget) {
 	XUndefineCursor(XtDisplay(topCursorWidget), XtWindow(topCursorWidget));
 }
 
+
 /*
 ** Create an X window geometry string from width, height, x, and y values.
 ** This is a complement to the X routine XParseGeometry, and uses the same

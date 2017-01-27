@@ -7,6 +7,7 @@
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QRadioButton>
+#include <QFuture>
 #include <QClipboard>
 #include <QDesktopServices>
 #include <QMimeData>
@@ -53,6 +54,17 @@
 #include <fcntl.h>
 
 namespace {
+
+/* Data attached to window during shell command execution with
+   information for controling and communicating with the process */
+struct macroCmdInfoEx {
+    QTimer *bannerTimeoutID;
+    QFuture<bool> continueWorkProcID;
+    bool bannerIsUp;
+    bool closeOnCompletion;
+    Program *program;
+    RestartData<DocumentWidget> *context;
+};
 
 // Tuning parameters
 const int IO_BUF_SIZE         = 4096; // size of buffers for collecting cmd output
@@ -2764,11 +2776,9 @@ int DocumentWidget::SaveWindowAs(const char *newName, bool addWrap) {
             }
 
             if (otherWindow == MainWindow::FindWindowWithFile(QLatin1String(filename), QLatin1String(pathname))) {
-#if 0
-                if (!CloseFileAndWindow(otherWindow, PROMPT_SBC_DIALOG_RESPONSE)) {
+                if (!otherWindow->CloseFileAndWindow(PROMPT_SBC_DIALOG_RESPONSE)) {
                     return false;
                 }
-#endif
             }
         }
 
@@ -3500,7 +3510,7 @@ int DocumentWidget::doOpen(const QString &name, const QString &path, int flags) 
             QMessageBox msgbox(this);
             msgbox.setIcon(QMessageBox::Critical);
             msgbox.setWindowTitle(tr("Error while opening File"));
-            msgbox.setText(tr("Too much binary data in file.  You may view\nit, but not modify or re-save its contents."));
+            msgbox.setText(tr("Too much binary data in file.  You may view it, but not modify or re-save its contents."));
             msgbox.addButton(tr("View"), QMessageBox::AcceptRole);
             msgbox.addButton(QMessageBox::Cancel);
             int resp = msgbox.exec();
@@ -3785,9 +3795,30 @@ void DocumentWidget::executeModMacro(smartIndentCBStruct *cbInfo) {
 }
 
 void DocumentWidget::bannerTimeoutProc() {
-    // TODO(eteran): implement this
-#if 0
 
+    MainWindow *window = toWindow();
+    if(!window) {
+        return;
+    }
+
+    QString message;
+    auto cmdData = static_cast<macroCmdInfoEx *>(macroCmdData_);
+
+    cmdData->bannerIsUp = true;
+
+    // Extract accelerator text from menu PushButtons
+    QString cCancel = window->ui.action_Cancel_Learn->shortcut().toString();
+
+    // Create message
+    if (cCancel.isEmpty()) {
+        message = tr("Macro Command in Progress");
+    } else {
+        message = tr("Macro Command in Progress -- Press %1 to Cancel").arg(cCancel);
+    }
+
+    SetModeMessageEx(message);
+#if 0
+    cmdData->bannerTimeoutID = 0;
 #endif
 }
 

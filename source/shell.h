@@ -40,5 +40,6 @@ void ExecCursorLine(Document *window, int fromMacro);
 void ShellCmdToMacroString(Document *window, const std::string &command, const std::string &input);
 void DoShellMenuCmd(Document *window, const std::string &command, InSrcs input, OutDests output, int outputReplaceInput, int saveFirst, int loadAfter, int fromMacro);
 void AbortShellCommand(Document *window);
+void AbortShellCommandEx(DocumentWidget *document);
 
 #endif

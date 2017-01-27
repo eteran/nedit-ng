@@ -8491,3 +8491,7 @@ QSize TextArea::sizeHint() const {
 QSize TextArea::minimumSizeHint() const {
     return size_;
 }
+
+TextBuffer *TextArea::TextGetBuffer() const {
+    return buffer_;
+}

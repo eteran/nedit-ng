@@ -283,6 +283,7 @@ public:
     int getColumns() const;
     int TextDLineAndColToPos(int lineNum, int column);
     Rect getRect() const;
+    TextBuffer *TextGetBuffer() const;
 
 public:
 	void bufPreDeleteCallback(int pos, int nDeleted);

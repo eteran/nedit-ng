@@ -758,6 +758,11 @@ void PreemptMacro(void) {
 ** how to return a value from a routine which preempts instead of returning
 ** a value directly).
 */
+void ModifyReturnedValueEx(RestartData<DocumentWidget> *context, DataValue dv) {
+    if ((context->pc - 1)->func == fetchRetVal)
+        *(context->stackP - 1) = dv;
+}
+
 void ModifyReturnedValue(RestartData<Document> *context, DataValue dv) {
 	if ((context->pc - 1)->func == fetchRetVal)
 		*(context->stackP - 1) = dv;

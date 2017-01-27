@@ -139,11 +139,13 @@ static void stdoutReadProc(XtPointer clientData, int *source, XtInputId *id);
 static void stderrReadProc(XtPointer clientData, int *source, XtInputId *id);
 static void stdinWriteProc(XtPointer clientData, int *source, XtInputId *id);
 static void finishCmdExecution(Document *window, int terminatedOnError);
+static void finishCmdExecutionEx(DocumentWidget *document, int terminatedOnError);
 static pid_t forkCommand(Widget parent, const std::string &command, const std::string &cmdDir, int *stdinFD, int *stdoutFD, int *stderrFD);
 static std::string coalesceOutputEx(std::list<bufElem *> &bufList);
 static void freeBufListEx(std::list<bufElem *> &bufList);
 static void removeTrailingNewlines(std::string &string);
 static void createOutputDialog(Widget parent, const std::string &text);
+static void createOutputDialogEx(QWidget *parent, const QString &text);
 static void truncateString(std::string &string, int length);
 static void bannerTimeoutProc(XtPointer clientData, XtIntervalId *id);
 static void flushTimeoutProc(XtPointer clientData, XtIntervalId *id);
@@ -438,10 +440,17 @@ void DoShellMenuCmd(Document *window, const std::string &command, InSrcs input, 
 /*
 ** Cancel the shell command in progress
 */
+void AbortShellCommandEx(DocumentWidget *document) {
+    if(auto cmdData = static_cast<shellCmdInfoEx *>(document->shellCmdData_)) {
+        kill(-cmdData->childPid, SIGTERM);
+        finishCmdExecutionEx(document, true);
+    }
+}
+
 void AbortShellCommand(Document *window) {
 	if(auto cmdData = static_cast<shellCmdInfo *>(window->shellCmdData_)) {
 		kill(-cmdData->childPid, SIGTERM);
-		finishCmdExecution(window, True);
+        finishCmdExecution(window, true);
 	}
 }
 
@@ -785,7 +794,180 @@ static void flushTimeoutProc(XtPointer clientData, XtIntervalId *id) {
 ** output, just close the i/o descriptors, free the memory, and restore the
 ** user interface state.
 */
+static void finishCmdExecutionEx(DocumentWidget *document, int terminatedOnError) {
+
+    MainWindow *window = document->toWindow();
+    if(!window) {
+        return;
+    }
+
+    auto cmdData = static_cast<shellCmdInfoEx *>(document->shellCmdData_);
+    TextBuffer *buf;
+    int status;
+    int failure;
+    int errorReport;
+    int reselectStart;
+    bool cancel = false;
+    int fromMacro = cmdData->fromMacro;
+    std::string errText;
+    std::string outText;
+
+    // Cancel any pending i/o on the file descriptors
+    if (cmdData->stdoutInputID != 0)
+        XtRemoveInput(cmdData->stdoutInputID);
+    if (cmdData->stdinInputID != 0)
+        XtRemoveInput(cmdData->stdinInputID);
+    if (cmdData->stderrInputID != 0)
+        XtRemoveInput(cmdData->stderrInputID);
+
+    // Close any file descriptors remaining open
+    close(cmdData->stdoutFD);
+    if (cmdData->flags & ERROR_DIALOGS)
+        close(cmdData->stderrFD);
+    if (cmdData->inIndex != -1)
+        close(cmdData->stdinFD);
+
+    // Cancel pending timeouts
+    if (cmdData->flushTimeoutID) {
+        cmdData->flushTimeoutID->stop();
+    }
+
+    if (cmdData->bannerTimeoutID) {
+        cmdData->bannerTimeoutID->stop();
+    }
+
+    // Clean up waiting-for-shell-command-to-complete mode
+    if (!cmdData->fromMacro) {
+        document->setCursor(Qt::ArrowCursor);
+        window->ui.action_Cancel_Learn->setEnabled(false);
+        if (cmdData->bannerIsUp) {
+            document->ClearModeMessageEx();
+        }
+    }
+
+    // If the process was killed or became inaccessable, give up
+    if (terminatedOnError) {
+        freeBufListEx(cmdData->outBufs);
+        freeBufListEx(cmdData->errBufs);
+        waitpid(cmdData->childPid, &status, 0);
+        goto cmdDone;
+    }
+
+    /* Assemble the output from the process' stderr and stdout streams into
+       null terminated strings, and free the buffer lists used to collect it */
+    outText = coalesceOutputEx(cmdData->outBufs);
+
+    if (cmdData->flags & ERROR_DIALOGS) {
+        errText = coalesceOutputEx(cmdData->errBufs);
+    }
+
+    // Wait for the child process to complete and get its return status
+    waitpid(cmdData->childPid, &status, 0);
+
+    /* Present error and stderr-information dialogs.  If a command returned
+       error output, or if the process' exit status indicated failure,
+       present the information to the user. */
+    if (cmdData->flags & ERROR_DIALOGS) {
+        failure = WIFEXITED(status) && WEXITSTATUS(status) != 0;
+        errorReport = !errText.empty();
+
+        static const int DF_MAX_MSG_LENGTH = 4096;
+
+        if (failure && errorReport) {
+            removeTrailingNewlines(errText);
+            truncateString(errText, DF_MAX_MSG_LENGTH);
+
+            QMessageBox msgBox;
+            msgBox.setWindowTitle(QLatin1String("Warning"));
+            msgBox.setText(QString::fromStdString(errText));
+            msgBox.setIcon(QMessageBox::Warning);
+            msgBox.setStandardButtons(QMessageBox::Cancel);
+            auto accept = new QPushButton(QLatin1String("Proceed"));
+            msgBox.addButton(accept, QMessageBox::AcceptRole);
+            msgBox.setDefaultButton(accept);
+            cancel = (msgBox.exec() == QMessageBox::Cancel);
+
+        } else if (failure) {
+            truncateString(outText, DF_MAX_MSG_LENGTH - 70);
+
+            QMessageBox msgBox;
+            msgBox.setWindowTitle(QLatin1String("Command Failure"));
+            msgBox.setText(QString(QLatin1String("Command reported failed exit status.\nOutput from command:\n%1")).arg(QString::fromStdString(outText)));
+            msgBox.setIcon(QMessageBox::Warning);
+            msgBox.setStandardButtons(QMessageBox::Cancel);
+            auto accept = new QPushButton(QLatin1String("Proceed"));
+            msgBox.addButton(accept, QMessageBox::AcceptRole);
+            msgBox.setDefaultButton(accept);
+            cancel = (msgBox.exec() == QMessageBox::Cancel);
+
+        } else if (errorReport) {
+            removeTrailingNewlines(errText);
+            truncateString(errText, DF_MAX_MSG_LENGTH);
+
+            QMessageBox msgBox;
+            msgBox.setWindowTitle(QLatin1String("Information"));
+            msgBox.setText(QString::fromStdString(errText));
+            msgBox.setIcon(QMessageBox::Information);
+            msgBox.setStandardButtons(QMessageBox::Cancel);
+            auto accept = new QPushButton(QLatin1String("Proceed"));
+            msgBox.addButton(accept, QMessageBox::AcceptRole);
+            msgBox.setDefaultButton(accept);
+            cancel = (msgBox.exec() == QMessageBox::Cancel);
+        }
+
+        if (cancel) {
+            goto cmdDone;
+        }
+    }
+
+    {
+
+        /* If output is to a dialog, present the dialog.  Otherwise insert the
+           (remaining) output in the text widget as requested, and move the
+           insert point to the end */
+        if (cmdData->flags & OUTPUT_TO_DIALOG) {
+            removeTrailingNewlines(outText);
+            if (!outText.empty()) {
+                createOutputDialogEx(document, QString::fromStdString(outText));
+            }
+        } else if (cmdData->flags & OUTPUT_TO_STRING) {
+            ReturnShellCommandOutputEx(document, outText, WEXITSTATUS(status));
+        } else {
+            auto textD = cmdData->area;
+            buf = textD->TextGetBuffer();
+            if (!buf->BufSubstituteNullCharsEx(outText)) {
+                fprintf(stderr, "nedit: Too much binary data in shell cmd output\n");
+                outText[0] = '\0';
+            }
+            if (cmdData->flags & REPLACE_SELECTION) {
+                reselectStart = buf->primary_.rectangular ? -1 : buf->primary_.start;
+                buf->BufReplaceSelectedEx(outText);
+
+                textD->TextSetCursorPos(buf->cursorPosHint_);
+                if (reselectStart != -1)
+                    buf->BufSelect(reselectStart, reselectStart + outText.size());
+            } else {
+                safeBufReplace(buf, &cmdData->leftPos, &cmdData->rightPos, outText);
+                textD->TextSetCursorPos(cmdData->leftPos + outText.size());
+            }
+        }
+
+        // If the command requires the file to be reloaded afterward, reload it
+        if (cmdData->flags & RELOAD_FILE_AFTER) {
+            document->RevertToSaved();
+        }
+    }
+
+cmdDone:
+    delete cmdData;
+    document->shellCmdData_ = nullptr;
+    if (fromMacro) {
+        ResumeMacroExecutionEx(document);
+    }
+}
+
 static void finishCmdExecution(Document *window, int terminatedOnError) {
+
 	auto cmdData = static_cast<shellCmdInfo *>(window->shellCmdData_);
 	TextBuffer *buf;
 	int status, failure, errorReport, reselectStart;
@@ -1114,6 +1296,17 @@ static void removeTrailingNewlines(std::string &s) {
 	s.erase(std::find_if(s.rbegin(), s.rend(), [](char ch) {
 		return ch != '\n';
 	}).base(), s.end());
+}
+
+/*
+** Create a dialog for the output of a shell command.  The dialog lives until
+** the user presses the Dismiss button, and is then destroyed
+*/
+static void createOutputDialogEx(QWidget *parent, const QString &text) {
+
+    auto dialog = new DialogOutput(parent);
+    dialog->setText(text);
+    dialog->show();
 }
 
 /*

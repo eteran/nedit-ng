@@ -231,6 +231,7 @@ void FreeRestartDataEx(RestartData<DocumentWidget> *context);
 Symbol *PromoteToGlobal(Symbol *sym);
 void FreeProgram(Program *prog);
 void ModifyReturnedValue(RestartData<Document> *context, DataValue dv);
+void ModifyReturnedValueEx(RestartData<DocumentWidget> *context, DataValue dv);
 Document *MacroRunWindow();
 Document *MacroFocusWindow();
 DocumentWidget *MacroRunWindowEx();

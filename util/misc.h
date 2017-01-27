@@ -32,6 +32,7 @@
 #include <Xm/CutPaste.h>
 #include <string>
 
+
 /* maximum length for a window geometry string */
 #define MAX_GEOM_STRING_LEN 24
 

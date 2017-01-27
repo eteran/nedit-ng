@@ -2945,6 +2945,28 @@ static int shellCmdMS(Document *window, DataValue *argList, int nArgs, DataValue
 ** teaching other modules about macro return globals, since other than this,
 ** they're not used outside of macro.c)
 */
+void ReturnShellCommandOutputEx(DocumentWidget *window, const std::string &outText, int status) {
+    DataValue retVal;
+    auto cmdData = static_cast<macroCmdInfoEx *>(window->macroCmdData_);
+
+    if(!cmdData) {
+        return;
+    }
+
+    retVal.tag = STRING_TAG;
+    AllocNStringCpy(&retVal.val.str, outText.c_str());
+    ModifyReturnedValueEx(cmdData->context, retVal);
+    ReturnGlobals[SHELL_CMD_STATUS]->value.tag = INT_TAG;
+    ReturnGlobals[SHELL_CMD_STATUS]->value.val.n = status;
+}
+
+/*
+** Method used by ShellCmdToMacroString (called by shellCmdMS), for returning
+** macro string and exit status after the execution of a shell command is
+** complete.  (Sorry about the poor modularity here, it's just not worth
+** teaching other modules about macro return globals, since other than this,
+** they're not used outside of macro.c)
+*/
 void ReturnShellCommandOutput(Document *window, const std::string &outText, int status) {
 	DataValue retVal;
 	auto cmdData = static_cast<macroCmdInfo *>(window->macroCmdData_);

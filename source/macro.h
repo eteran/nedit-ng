@@ -66,6 +66,7 @@ void Replay(Document *window);
 void ResumeMacroExecution(Document *window);
 void ResumeMacroExecutionEx(DocumentWidget *window);
 void ReturnShellCommandOutput(Document *window, const std::string &outText, int status);
+void ReturnShellCommandOutputEx(DocumentWidget *window, const std::string &outText, int status);
 void SafeGC();
 
 extern std::string ReplayMacro;
