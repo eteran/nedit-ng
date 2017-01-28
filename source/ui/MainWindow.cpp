@@ -1942,6 +1942,9 @@ void MainWindow::on_action_Find_Incremental_triggered() {
     BeginISearchEx(SEARCH_FORWARD);
 }
 
+//------------------------------------------------------------------------------
+// Name:
+//------------------------------------------------------------------------------
 void MainWindow::action_Shift_Find_Incremental_triggered() {
     BeginISearchEx(SEARCH_BACKWARD);
 }
@@ -2029,11 +2032,11 @@ void MainWindow::on_editIFind_returnPressed() {
             searchType = SEARCH_LITERAL;
     }
 
-    SearchDirection direction = ui.checkIFindReverse ? SEARCH_BACKWARD : SEARCH_FORWARD;
+    SearchDirection direction = ui.checkIFindReverse->isChecked() ? SEARCH_BACKWARD : SEARCH_FORWARD;
 
     // Reverse the search direction if the Ctrl or Shift key was pressed
     if(QApplication::keyboardModifiers() & (Qt::CTRL | Qt::SHIFT)) {
-        direction = direction == SEARCH_FORWARD ? SEARCH_BACKWARD : SEARCH_FORWARD;
+        direction = (direction == SEARCH_FORWARD) ? SEARCH_BACKWARD : SEARCH_FORWARD;
     }
 
     // find the text and mark it
@@ -2141,6 +2144,9 @@ void MainWindow::on_checkIFindRegex_toggled(bool searchRegex) {
     // The iSearch bar has no Whole Word button to enable/disable.
 
     // When search parameters (direction or search type), redo the search
+    // TODO(eteran): original nedit seems to have code to do this @search.c:3071
+    //               but in practice, toggling the case/regex often doesn't seem
+    //               to change the search
     Q_EMIT on_editIFind_returnPressed();
 }
 

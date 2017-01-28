@@ -153,7 +153,7 @@ public:
     void executeNewlineMacroEx(smartIndentCBStruct *cbInfo);
     void SetShowMatching(ShowMatchingStyle state);
     int textPanesCount() const;
-    void executeModMacro(smartIndentCBStruct *cbInfo);
+    void executeModMacroEx(smartIndentCBStruct *cbInfo);
     void actionClose(const QString &mode);
     bool includeFile(const QString &name);
     bool findMatchingCharEx(char toMatch, void *styleToMatch, int charPos, int startLimit, int endLimit, int *matchPos);

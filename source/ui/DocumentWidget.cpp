@@ -238,6 +238,10 @@ UndoTypes determineUndoType(int nInserted, int nDeleted) {
 ** the syntax highlighting deferred, in order to speed up the file-
 ** opening operation when multiple files are being opened in succession.
 */
+
+// TODO(eteran): inWindow is a DocumentWidget, not a MainWindow...
+//               so either rename the parameter, OR rework this in
+//               terms of MainWindow
 DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inWindow, const QString &name, const QString &path, int flags, char *geometry, int iconic, const char *languageMode, bool tabbed, bool bgOpen) {
 
     // first look to see if file is already displayed in a window
@@ -257,7 +261,6 @@ DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inWindow, con
        busy running a macro; create the window */
     DocumentWidget *document = nullptr;
     if(!inWindow) {
-        // TODO(eteran): implement geometry stuff
         auto win = new MainWindow();
         document = win->CreateDocument(name);
         if(iconic) {
@@ -272,7 +275,6 @@ DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inWindow, con
                 document = win->CreateDocument(name);
             }
         } else {
-
             auto win = new MainWindow();
             document = win->CreateDocument(name);
             if(iconic) {
@@ -295,8 +297,8 @@ DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inWindow, con
 
     // Open the file
     if (!document->doOpen(name, path, flags)) {
-        /* The user may have destroyed the window instead of closing the
-           warning dialog; don't close it twice */
+        // The user may have destroyed the window instead of closing
+        // the warning dialog; don't close it twice
         document->safeCloseEx();
         return nullptr;
     }
@@ -429,7 +431,7 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 	device_                = 0;
     inode_                 = 0;
 
-    // TODO(eteran): inherit from current value, not default state
+    // TODO(eteran): inherit from current value, not default state?
     showStats_             = GetPrefStatsLine();
 	
     ui.statusFrame->setVisible(showStats_);
@@ -592,6 +594,10 @@ void DocumentWidget::RefreshTabState() {
 
 		/* Set tab label to document's filename. Position of
 		   "*" (modified) will change per label alignment setting */
+
+        // TODO(eteran): for version 2.0, consider switching the "*" here
+        //               with a "disk" icon, which is more conventional
+        //               and more robust with regard to themeing
 		QStyle *style = tabWidget->getTabBar()->style();
 		int alignment = style->styleHint(QStyle::SH_TabBar_Alignment);
 
@@ -704,18 +710,17 @@ int DocumentWidget::matchLanguageMode() {
 */
 void DocumentWidget::UpdateStatsLine(TextArea *area) {
 
-	if (!IsTopDocument()) {
-		return;
-	}
+    if (!IsTopDocument()) {
+        return;
+    }
+
+    /* This routine is called for each character typed, so its performance
+       affects overall editor perfomance.  Only update if the line is on. */
+    if (!showStats_) {
+        return;
+    }
 
     if(auto win = toWindow()) {
-
-        /* This routine is called for each character typed, so its performance
-           affects overall editor perfomance.  Only update if the line is on. */
-        if (!showStats_) {
-            return;
-        }
-
         if(!area) {
             area = win->lastFocus_;
             if(!area) {
@@ -743,6 +748,7 @@ void DocumentWidget::UpdateStatsLine(TextArea *area) {
 		QString slinecol;
 		int line;
 		int colNum;
+
 		if (!area->TextDPosToLineAndCol(pos, &line, &colNum)) {
 			string   = tr("%1%2%3 %4 bytes").arg(path_, filename_, format).arg(buffer_->BufGetLength());
 			slinecol = tr("L: ---  C: ---");
@@ -868,7 +874,6 @@ void DocumentWidget::modifiedCallback(int pos, int nInserted, int nDeleted, int 
            characters and editing operations for triggering autosave */
         SaveUndoInformation(pos, nInserted, nDeleted, deletedText);
 
-
         // Trigger automatic backup if operation or character limits reached
         if (autoSave_ && (autoSaveCharCount_ > AUTOSAVE_CHAR_LIMIT || autoSaveOpCount_ > AUTOSAVE_OP_LIMIT)) {
             WriteBackupFile();
@@ -922,7 +927,7 @@ void DocumentWidget::smartIndentCallback(TextArea *area, smartIndentCBStruct *da
 
 	switch(data->reason) {
 	case CHAR_TYPED:
-        executeModMacro(data);
+        executeModMacroEx(data);
 		break;
 	case NEWLINE_INDENT_NEEDED:
         executeNewlineMacroEx(data);
@@ -996,7 +1001,7 @@ void DocumentWidget::RaiseDocument() {
             return;
         }
 
-        // NOTE(eteran): this used to do some tracking for the last active
+        // TODO(eteran): this used to do some tracking for the last active
         //               window/document here. I think there is likely a better
         //               approach
 
@@ -1084,7 +1089,6 @@ void DocumentWidget::reapplyLanguageMode(int mode, bool forceDefaults) {
             indentStyle = AUTO_INDENT;
         }
 
-
         // Change highlighting
         highlightSyntax_ = highlight;
 
@@ -1103,13 +1107,11 @@ void DocumentWidget::reapplyLanguageMode(int mode, bool forceDefaults) {
             indentStyle_ = AUTO_INDENT;
         }
 
-
         // set requested wrap, indent, and tabs
         SetAutoWrap(wrapMode);
         SetAutoIndent(indentStyle);
         SetTabDist(tabDist);
         SetEmTabDist(emTabDist);
-
 
         // Load calltips files for new mode
         if (mode != PLAIN_LANGUAGE_MODE && !LanguageModes[mode]->defTipsFile.isNull()) {
@@ -1120,8 +1122,6 @@ void DocumentWidget::reapplyLanguageMode(int mode, bool forceDefaults) {
         win->UpdateUserMenus(this);
     }
 }
-
-
 
 /*
 **
@@ -1242,8 +1242,8 @@ QList<TextArea *> DocumentWidget::textPanes() const {
 }
 
 bool DocumentWidget::IsTopDocument() const {
-    if(auto win = toWindow()) {
-        return win->ui.tabWidget->currentWidget() == this;
+    if(auto window = toWindow()) {
+        return window->currentDocument() == this;
     }
 
     return false;
@@ -1316,7 +1316,6 @@ void DocumentWidget::setLanguageMode(const QString &mode) {
     SetLanguageMode(FindLanguageMode(mode.toLatin1().data()), false);
 }
 
-
 /*
 ** Turn off syntax highlighting and free style buffer, compiled patterns, and
 ** related data.
@@ -1356,9 +1355,11 @@ void DocumentWidget::StopHighlightingEx() {
 }
 
 TextArea *DocumentWidget::firstPane() const {
-    const QList<TextArea *> textAreas = textPanes();
-    if(!textAreas.isEmpty()) {
-        return textAreas[0];
+
+    for(int i = 0; i < splitter_->count(); ++i) {
+        if(auto area = qobject_cast<TextArea *>(splitter_->widget(i))) {
+            return area;
+        }
     }
 
     return nullptr;
@@ -2332,9 +2333,7 @@ void DocumentWidget::RevertToSaved() {
                     pretty rare to be reverting something that was fine only to find
                     that now it has too much binary data. */
             if (!fileMissing_) {
-#if 0
-                safeClose(window);
-#endif
+                safeCloseEx();
             } else {
                 // Treat it like an externally modified file
                 lastModTime_ = 0;
@@ -3695,7 +3694,7 @@ void DocumentWidget::SetShowMatching(ShowMatchingStyle state) {
 ** Run the modification macro with information from the smart-indent callback
 ** structure passed by the widget
 */
-void DocumentWidget::executeModMacro(smartIndentCBStruct *cbInfo) {
+void DocumentWidget::executeModMacroEx(smartIndentCBStruct *cbInfo) {
 
     auto winData = static_cast<SmartIndentData *>(smartIndentData_);
 
