@@ -27,7 +27,7 @@
 *******************************************************************************/
 
 #include <QApplication>
-
+#include "ui/DocumentWidget.h"
 #include "server.h"
 #include "TextBuffer.h"
 #include "nedit.h"
@@ -226,6 +226,12 @@ void DeleteFileClosedProperty(Document *window) {
 	if (window->filenameSet_) {
 		deleteProperty(&window->fileClosedAtom_);
 	}
+}
+
+void DeleteFileClosedPropertyEx(DocumentWidget *document) {
+    if (document->filenameSet_) {
+        deleteProperty(&document->fileClosedAtom_);
+    }
 }
 
 static void deleteFileClosedProperty2(const char *filename, const char *pathname) {

@@ -48,11 +48,16 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/param.h>
+#include <sys/time.h>
 #include <unistd.h>
 #include <cmath>
 #include <glob.h>
 
 namespace {
+
+bool currentlyBusy = false;
+long busyStartTime = 0;
+bool modeMessageSet = false;
 
 DialogShellMenu            *WindowShellMenu = nullptr;
 DialogWindowBackgroundMenu *WindowBackgroundMenu = nullptr;
@@ -62,6 +67,15 @@ DialogSmartIndent          *SmartIndentDlg = nullptr;
 const char neditDBBadFilenameChars[] = "\n";
 
 QList<QString> PrevOpen;
+
+/*
+ * Auxiliary function for measuring elapsed time during busy waits.
+ */
+long getRelTimeInTenthsOfSeconds() {
+    struct timeval current;
+    gettimeofday(&current, nullptr);
+    return (current.tv_sec * 10 + current.tv_usec / 100000) & 0xFFFFFFFL;
+}
 
 }
 
@@ -469,20 +483,6 @@ void MainWindow::deleteTabButtonClicked() {
 //------------------------------------------------------------------------------
 void MainWindow::on_action_New_triggered() {
     action_New(QLatin1String("prefs"));
-}
-
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
-void MainWindow::on_action_New_Window_triggered() {
-	qDebug("[on_action_New_Window_triggered]");
-}
-
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
-void MainWindow::on_action_Execute_Command_Line_triggered() {
-	qDebug("[on_action_Execute_Command_Line_triggered]");
 }
 
 //------------------------------------------------------------------------------
@@ -1591,6 +1591,12 @@ void MainWindow::on_tabWidget_customContextMenuRequested(int index, const QPoint
     // make sure that these are always in sync with the primary UI
     detachTab->setEnabled(ui.action_Detach_Tab->isEnabled());
     moveTab->setEnabled(ui.action_Move_Tab_To->isEnabled());
+
+    // make the icons the same too :-P
+    newTab->setIcon(ui.action_New->icon());
+    closeTab->setIcon(ui.action_Close->icon());
+    detachTab->setIcon(ui.action_Detach_Tab->icon());
+    moveTab->setIcon(ui.action_Move_Tab_To->icon());
 
     if(QAction *const selected = menu->exec(mapToGlobal(pos))) {
 
@@ -3209,6 +3215,12 @@ void MainWindow::on_action_Default_Tab_Open_File_In_New_Tab_toggled(bool state) 
     SetPrefOpenInTab(state);
     for(MainWindow *window : allWindows()) {
         no_signals(window->ui.action_Default_Tab_Open_File_In_New_Tab)->setChecked(state);
+
+        if(!GetPrefOpenInTab()) {
+            window->ui.action_New_Window->setText(tr("New &Tab"));
+        } else {
+            window->ui.action_New_Window->setText(tr("New &Window"));
+        }
     }
 }
 
@@ -3537,4 +3549,242 @@ DocumentWidget *MainWindow::EditNewFileEx(MainWindow *inWindow, char *geometry, 
 
     inWindow->SortTabBar();
     return document;
+}
+
+void MainWindow::AllWindowsBusyEx(const QString &message) {
+
+    if (!currentlyBusy) {
+        busyStartTime = getRelTimeInTenthsOfSeconds();
+        modeMessageSet = false;
+
+        for(DocumentWidget *document : MainWindow::allDocuments()) {
+            /* We don't the display message here yet, but defer it for
+               a while. If the wait is short, we don't want
+               to have it flash on and off the screen.  However,
+               we can't use a time since in generally we are in
+               a tight loop and only processing exposure events, so it's
+               up to the caller to make sure that this routine is called
+               at regular intervals.
+            */
+            document->setCursor(Qt::WaitCursor);
+        }
+
+    } else if (!modeMessageSet && !message.isNull() && getRelTimeInTenthsOfSeconds() - busyStartTime > 10) {
+
+        // Show the mode message when we've been busy for more than a second
+        for(DocumentWidget *document : MainWindow::allDocuments()) {
+            document->SetModeMessageEx(message);
+        }
+        modeMessageSet = true;
+    }
+
+    // NOTE(eteran): this used to be a BusyWait(window->shell)
+    BusyWaitEx();
+    currentlyBusy = true;
+}
+
+
+void MainWindow::AllWindowsUnbusyEx() {
+
+    for(DocumentWidget *document : MainWindow::allDocuments()) {
+        document->ClearModeMessageEx();
+        document->setCursor(Qt::ArrowCursor);
+    }
+
+    currentlyBusy  = false;
+    modeMessageSet = false;
+    busyStartTime  = 0;
+}
+
+void MainWindow::BusyWaitEx() {
+    static const int timeout = 100000; /* 1/10 sec = 100 ms = 100,000 us */
+    static struct timeval last = {0, 0};
+    struct timeval current;
+    gettimeofday(&current, nullptr);
+
+    if ((current.tv_sec != last.tv_sec) || (current.tv_usec - last.tv_usec > timeout)) {
+        QApplication::processEvents();
+        last = current;
+    }
+}
+
+void MainWindow::on_action_Save_triggered() {
+    if(auto document = currentDocument()) {
+        if (document->CheckReadOnly()) {
+            return;
+        }
+
+        document->SaveWindow();
+    }
+}
+
+/*
+** Wrapper for HandleCustomNewFileSB which uses the current window's path
+** (if set) as the default directory, and asks about embedding newlines
+** to make wrapping permanent.
+*/
+bool MainWindow::PromptForNewFileEx(DocumentWidget *document, const QString prompt, char *fullname, FileFormats *fileFormat, bool *addWrap) {
+
+    *fileFormat = document->fileFormat_;
+
+    bool retVal = false;
+
+    QFileDialog dialog(this, prompt);
+
+    dialog.setFileMode(QFileDialog::AnyFile);
+    dialog.setAcceptMode(QFileDialog::AcceptSave);
+    dialog.setDirectory(document->path_);
+    dialog.setOptions(QFileDialog::DontUseNativeDialog);
+
+    if(QGridLayout* const layout = qobject_cast<QGridLayout*>(dialog.layout())) {
+        if(layout->rowCount() == 4 && layout->columnCount() == 3) {
+            auto boxLayout = new QBoxLayout(QBoxLayout::LeftToRight);
+
+            auto unixCheck = new QRadioButton(tr("&Unix"));
+            auto dosCheck  = new QRadioButton(tr("D&OS"));
+            auto macCheck  = new QRadioButton(tr("&Macintosh"));
+
+            switch(document->fileFormat_) {
+            case DOS_FILE_FORMAT:
+                dosCheck->setChecked(true);
+                break;
+            case MAC_FILE_FORMAT:
+                macCheck->setChecked(true);
+                break;
+            case UNIX_FILE_FORMAT:
+                unixCheck->setChecked(true);
+                break;
+            }
+
+            auto group = new QButtonGroup();
+            group->addButton(unixCheck);
+            group->addButton(dosCheck);
+            group->addButton(macCheck);
+
+            boxLayout->addWidget(unixCheck);
+            boxLayout->addWidget(dosCheck);
+            boxLayout->addWidget(macCheck);
+
+            int row = layout->rowCount();
+
+            layout->addWidget(new QLabel(tr("Format: ")), row, 0, 1, 1);
+            layout->addLayout(boxLayout, row, 1, 1, 1, Qt::AlignLeft);
+
+            ++row;
+
+            auto wrapCheck = new QCheckBox(tr("&Add line breaks where wrapped"));
+            if(*addWrap) {
+                wrapCheck->setChecked(true);
+            }
+#if 0
+            // TODO(eteran): implement this once this is hoisted into a QObject
+            //               since Qt4 doesn't support lambda based connections
+            QObject::connect(wrapCheck, &QCheckBox::toggled, [&](bool checked) {
+                if(checked) {
+                    int ret = QMessageBox::information(nullptr, QLatin1String("Add Wrap"),
+                        QLatin1String("This operation adds permanent line breaks to\n"
+                        "match the automatic wrapping done by the\n"
+                        "Continuous Wrap mode Preferences Option.\n\n"
+                        "*** This Option is Irreversable ***\n\n"
+                        "Once newlines are inserted, continuous wrapping\n"
+                        "will no longer work automatically on these lines"),
+                        QMessageBox::Ok, QMessageBox::Cancel);
+
+                    if(ret != QMessageBox::Ok) {
+                        wrapCheck->setChecked(false);
+                    }
+                }
+            });
+#endif
+
+            if (document->wrapMode_ == CONTINUOUS_WRAP) {
+                layout->addWidget(wrapCheck, row, 1, 1, 1);
+            }
+
+            if(dialog.exec()) {
+                if(dosCheck->isChecked()) {
+                    document->fileFormat_ = DOS_FILE_FORMAT;
+                } else if(macCheck->isChecked()) {
+                    document->fileFormat_ = MAC_FILE_FORMAT;
+                } else if(unixCheck->isChecked()) {
+                    document->fileFormat_ = UNIX_FILE_FORMAT;
+                }
+
+                *addWrap = wrapCheck->isChecked();
+                strcpy(fullname, dialog.selectedFiles()[0].toLocal8Bit().data());
+                retVal = true;
+            }
+
+        }
+    }
+
+    return retVal;
+}
+
+void MainWindow::on_action_Save_As_triggered() {
+    if(auto document = currentDocument()) {
+
+        bool addWrap;
+        FileFormats fileFormat;
+        char fullname[MAXPATHLEN];
+
+        bool response = PromptForNewFileEx(document, tr("Save File As"), fullname, &fileFormat, &addWrap);
+        if (!response) {
+            return;
+        }
+
+        document->fileFormat_ = fileFormat;
+        document->SaveWindowAs(fullname, addWrap);
+    }
+}
+
+void MainWindow::on_action_Revert_to_Saved_triggered() {
+
+    if(auto document = currentDocument()) {
+        // re-reading file is irreversible, prompt the user first
+        if (document->fileChanged_) {
+
+            QMessageBox messageBox(this);
+            messageBox.setWindowTitle(tr("Discard Changes"));
+            messageBox.setIcon(QMessageBox::Question);
+            messageBox.setText(tr("Discard changes to\n%1%2?").arg(document->path_).arg(document->filename_));
+            QPushButton *buttonOk     = messageBox.addButton(QMessageBox::Ok);
+            QPushButton *buttonCancel = messageBox.addButton(QMessageBox::Cancel);
+            Q_UNUSED(buttonOk);
+
+            messageBox.exec();
+            if(messageBox.clickedButton() == buttonCancel) {
+                return;
+            }
+
+        } else {
+
+            QMessageBox messageBox(nullptr /*window->shell_*/);
+            messageBox.setWindowTitle(tr("Reload File"));
+            messageBox.setIcon(QMessageBox::Question);
+            messageBox.setText(tr("Re-load file\n%1%2?").arg(document->path_).arg(document->filename_));
+            QPushButton *buttonOk   = messageBox.addButton(tr("Re-read"), QMessageBox::AcceptRole);
+            QPushButton *buttonCancel = messageBox.addButton(QMessageBox::Cancel);
+            Q_UNUSED(buttonOk);
+
+            messageBox.exec();
+            if(messageBox.clickedButton() == buttonCancel) {
+                return;
+            }
+        }
+
+        document->RevertToSaved();
+    }
+}
+
+//------------------------------------------------------------------------------
+// Name: on_action_New_Window_triggered
+// Desc: whatever the setting is for what to do with "New",
+//       this does the opposite
+//------------------------------------------------------------------------------
+void MainWindow::on_action_New_Window_triggered() {
+    if(auto document = currentDocument()) {
+        MainWindow::EditNewFileEx(GetPrefOpenInTab() ? nullptr : this, nullptr, false, nullptr, document->path_);
+        CheckCloseDim();
+    }
 }

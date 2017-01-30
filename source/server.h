@@ -29,6 +29,7 @@
 
 #include <X11/Intrinsic.h>
 class Document;
+class DocumentWidget;
 
 #define NO_CONNECTION -1
 #define COM_OK      1
@@ -38,5 +39,6 @@ void InitServerCommunication();
 void ServerMainLoop(XtAppContext context);
 Boolean ServerDispatchEvent(XEvent *event);
 void DeleteFileClosedProperty(Document *window);
+void DeleteFileClosedPropertyEx(DocumentWidget *document);
 
 #endif

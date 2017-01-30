@@ -109,7 +109,7 @@ public:
     MainWindow *toWindow() const;
     void UpdateMarkTable(int pos, int nInserted, int nDeleted);
     void StopHighlightingEx();
-    void SetBacklightChars(char *applyBacklightTypes);
+    void SetBacklightChars(const char *applyBacklightTypes);
     void freeHighlightData(WindowHighlightData *hd);
     void freePatterns(HighlightData *patterns);
     QString GetWindowDelimiters() const;
@@ -162,6 +162,7 @@ public:
     void SetModeMessageEx(const QString message);
     void ClearModeMessageEx();
     void safeCloseEx();
+    void UnloadLanguageModeTipsFileEx();
 
 public:
     static DocumentWidget *EditExistingFileEx(DocumentWidget *inWindow, const QString &name, const QString &path, int flags, char *geometry, int iconic, const char *languageMode, bool tabbed, bool bgOpen);

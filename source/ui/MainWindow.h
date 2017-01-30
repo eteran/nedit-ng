@@ -5,6 +5,7 @@
 #include "smartIndentCBStruct.h"
 #include "SearchDirection.h"
 #include "SearchType.h"
+#include "FileFormats.h"
 #include <QMainWindow>
 #include <QPointer>
 
@@ -75,6 +76,8 @@ public:
     void setWindowSizeDefault(int rows, int cols);
     void updateWindowSizeMenus();
     void updateWindowSizeMenu();
+    bool PromptForNewFileEx(DocumentWidget *document, const QString prompt, char *fullname, FileFormats *fileFormat, bool *addWrap);
+
 
 public:
     static QList<MainWindow *> allWindows();
@@ -82,6 +85,9 @@ public:
     static QString UniqueUntitledNameEx();
     static DocumentWidget *FindWindowWithFile(const QString &name, const QString &path);
     static DocumentWidget *EditNewFileEx(MainWindow *inWindow, char *geometry, bool iconic, const char *languageMode, const QString &defaultPath);
+    static void AllWindowsBusyEx(const QString &message);
+    static void AllWindowsUnbusyEx();
+    static void BusyWaitEx();
 
 public:
 	DocumentWidget *CreateDocument(QString name);
@@ -148,22 +154,20 @@ public Q_SLOTS:
     void on_action_Load_Macro_File_triggered();
     void on_action_Print_triggered();
     void on_action_Print_Selection_triggered();
+    void on_action_Save_triggered();
+    void on_action_Save_As_triggered();
+    void on_action_Revert_to_Saved_triggered();
 
 #if 0
 
-
-	void on_action_Open_Previous_triggered();
-	void on_action_Save_triggered();
-	void on_action_Save_As_triggered();
-	void on_action_Revert_to_Saved_triggered();
 	void on_action_Exit_triggered();
+
 #endif
     void on_action_Undo_triggered();
     void on_action_Redo_triggered();
 	void on_action_Cut_triggered();
 	void on_action_Copy_triggered();
-	void on_action_Paste_triggered();
-	void on_action_Execute_Command_Line_triggered();
+	void on_action_Paste_triggered();	
     void on_action_Paste_Column_triggered();
     void on_action_Delete_triggered();
     void on_action_Shift_Left_triggered();
@@ -251,6 +255,7 @@ public Q_SLOTS:
     void on_action_Default_Warnings_On_Exit_toggled(bool state);
 
 #if 0
+    void on_action_Execute_Command_Line_triggered();
     void on_action_Filter_Selection_triggered();
     void on_action_Cancel_Shell_Command_triggered();
     void on_action_Indent_triggered();

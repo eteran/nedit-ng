@@ -432,7 +432,7 @@ void DialogReplace::on_buttonMulti_clicked() {
 
 	// Display the dialog 
 	// TODO(eteran): center on pointer
-	dialogMultiReplace_->show();
+    dialogMultiReplace_->exec();
 }
 
 #endif

@@ -1284,19 +1284,19 @@ void Document::RefreshMenuToggleStates() {
 
 	if (!IsTopDocument())
 		return;
-
+#if 0 // NOTE(eteran): transitioned
 	// File menu
 	XtSetSensitive(printSelItem_, wasSelected_);
 
 	// Edit menu
-#if 0 // NOTE(eteran): transitioned
+
 	XtSetSensitive(undoItem_, !undo_.empty());
 	XtSetSensitive(redoItem_, !redo_.empty());
 	XtSetSensitive(printSelItem_, wasSelected_);
 	XtSetSensitive(cutItem_, wasSelected_);
 	XtSetSensitive(copyItem_, wasSelected_);
 	XtSetSensitive(delItem_, wasSelected_);
-#endif
+
 	// Preferences menu
 	XmToggleButtonSetState(statsLineItem_, showStats_, false);
 	XmToggleButtonSetState(iSearchLineItem_, showISearchLine_, false);
@@ -1311,13 +1311,14 @@ void Document::RefreshMenuToggleStates() {
 	XmToggleButtonSetState(readOnlyItem_, lockReasons_.isUserLocked(), false);
 
 	XtSetSensitive(smartIndentItem_, SmartIndentMacrosAvailable(LanguageModeName(languageMode_).toLatin1().data()));
-
+#endif
 	SetAutoIndent(indentStyle_);
 	SetAutoWrap(wrapMode_);
 	SetShowMatching(showMatchingStyle_);
 	SetLanguageMode(this, languageMode_, false);
 
 	// Windows Menu
+#if 0 // NOTE(eteran): transitioned
 	XtSetSensitive(splitPaneItem_, textPanes_.size() < MAX_PANES);
 	XtSetSensitive(closePaneItem_, textPanes_.size() > 0);
 	XtSetSensitive(detachDocumentItem_, TabCount() > 1);
@@ -1328,6 +1329,7 @@ void Document::RefreshMenuToggleStates() {
 	});
 
 	XtSetSensitive(moveDocumentItem_, it != WindowList.end());
+#endif
 }
 
 /*
@@ -1935,12 +1937,15 @@ void Document::UpdateMinPaneHeights() {
 ** Update the "New (in X)" menu item to reflect the preferences
 */
 void Document::UpdateNewOppositeMenu(int openInTab) {
+    Q_UNUSED(openInTab);
+#if 0 // NOTE(eteran): transitioned
 	XmString lbl;
 	if (openInTab)
 		XtVaSetValues(newOppositeItem_, XmNlabelString, lbl = XmStringCreateSimpleEx("New Window"), XmNmnemonic, 'W', nullptr);
 	else
 		XtVaSetValues(newOppositeItem_, XmNlabelString, lbl = XmStringCreateSimpleEx("New Tab"), XmNmnemonic, 'T', nullptr);
 	XmStringFree(lbl);
+#endif
 }
 
 /*
@@ -2448,9 +2453,11 @@ void Document::SetAutoIndent(int state) {
 void Document::SetShowMatching(int state) {
 	showMatchingStyle_ = state;
 	if (IsTopDocument()) {
+#if 0 // NOTE(eteran): transitioned
 		XmToggleButtonSetState(showMatchingOffItem_, state == NO_FLASH, false);
 		XmToggleButtonSetState(showMatchingDelimitItem_, state == FLASH_DELIMIT, false);
 		XmToggleButtonSetState(showMatchingRangeItem_, state == FLASH_RANGE, false);
+#endif
 	}
 }
 
@@ -2663,8 +2670,8 @@ void Document::CloseWindow() {
 		EndSmartIndent(this);
 		UpdateWindowTitle();
 		UpdateWindowReadOnly();
-		XtSetSensitive(closeItem_, false);
 #if 0 // NOTE(eteran): transitioned
+		XtSetSensitive(closeItem_, false);
 		XtSetSensitive(readOnlyItem_, true);
 		XmToggleButtonSetState(readOnlyItem_, false, false);
 #endif
@@ -2737,12 +2744,14 @@ void Document::CloseWindow() {
 	// dim/undim Attach_Tab menu items
 	state = WindowList.front()->TabCount() < WindowCount();
 
+#if 0 // NOTE(eteran): transitioned
 	for(Document *win: WindowList) {
 		if (win->IsTopDocument()) {
 			XtSetSensitive(win->moveDocumentItem_, state);
 			XtSetSensitive(win->contextMoveDocumentItem_, state);
 		}
 	}
+#endif
 
 	// free background menu cache for document
 	FreeUserBGMenuCache(&userBGMenuCache_);

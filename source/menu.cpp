@@ -107,17 +107,6 @@ static void finishLearnCB(Widget w, XtPointer clientData, XtPointer callData);
 static void cancelLearnCB(Widget w, XtPointer clientData, XtPointer callData);
 static void replayCB(Widget w, XtPointer clientData, XtPointer callData);
 static void windowMenuCB(Widget w, XtPointer clientData, XtPointer callData);
-static void newAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void newOppositeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void newTabAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void openDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void openAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void closeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void saveAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void saveAsDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void saveAsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void revertDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void revertAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void exitAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void repeatDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void repeatMacroAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
@@ -140,30 +129,30 @@ static Widget createMenuSeparator(Widget parent, const char *name, int mode);
 static void invalidatePrevOpenMenus(void);
 static void updateWindowMenu(const Document *window);
 static void raiseCB(Widget w, XtPointer clientData, XtPointer callData);
-static int strCaseCmp(const char *str1, const char *str2);
 static void bgMenuPostAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void tabMenuPostAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void raiseWindowAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void focusPaneAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 
 // Application action table 
-static XtActionsRec Actions[] = {{(String) "new", newAP},
-                                 {(String) "new_opposite", newOppositeAP},
-                                 {(String) "new_tab", newTabAP},
-                                 {(String) "open", openAP},
-                                 {(String) "open-dialog", openDialogAP},
-                                 {(String) "open_dialog", openDialogAP},
+static XtActionsRec Actions[] = {
+                                 //{(String) "new", newAP},
+                                 //{(String) "new_opposite", newOppositeAP},
+                                 //{(String) "new_tab", newTabAP},
+                                 //{(String) "open", openAP},
+                                 //{(String) "open-dialog", openDialogAP},
+                                 //{(String) "open_dialog", openDialogAP},
                                  //{(String) "open-selected", openSelectedAP},
                                  //{(String) "open_selected", openSelectedAP},
-                                 {(String) "close", closeAP},
-                                 {(String) "save", saveAP},
-                                 {(String) "save-as", saveAsAP},
-                                 {(String) "save_as", saveAsAP},
-                                 {(String) "save-as-dialog", saveAsDialogAP},
-                                 {(String) "save_as_dialog", saveAsDialogAP},
-                                 {(String) "revert-to-saved", revertAP},
-                                 {(String) "revert_to_saved", revertAP},
-                                 {(String) "revert_to_saved_dialog", revertDialogAP},
+                                 //{(String) "close", closeAP},
+                                 //{(String) "save", saveAP},
+                                 //{(String) "save-as", saveAsAP},
+                                 //{(String) "save_as", saveAsAP},
+                                 //{(String) "save-as-dialog", saveAsDialogAP},
+                                 //{(String) "save_as_dialog", saveAsDialogAP},
+                                 //{(String) "revert-to-saved", revertAP},
+                                 //{(String) "revert_to_saved", revertAP},
+                                 //{(String) "revert_to_saved_dialog", revertDialogAP},
                                  //{(String) "include-file", includeAP},
                                  //{(String) "include_file", includeAP},
                                  //{(String) "include-file-dialog", includeDialogAP},
@@ -333,7 +322,7 @@ XtActionsRec *GetMenuActions(int *nActions) {
 ** Create the menu bar
 */
 Widget CreateMenuBar(Widget parent, Document *window) {
-    Widget menuBar, menuPane, btn, subPane, cascade;
+    Widget menuBar, menuPane, btn, cascade;
 
 	/*
 	** cache user menus:
@@ -350,19 +339,7 @@ Widget CreateMenuBar(Widget parent, Document *window) {
 	** "File" pull down menu.
 	*/
 	menuPane = createMenu(menuBar, "fileMenu", "File", 0, nullptr, SHORT);
-	createMenuItem(menuPane, "new", "New", 'N', doActionCB, "new", SHORT);
-	if (GetPrefOpenInTab())
-		window->newOppositeItem_ = createMenuItem(menuPane, "newOpposite", "New Window", 'W', doActionCB, "new_opposite", SHORT);
-	else
-		window->newOppositeItem_ = createMenuItem(menuPane, "newOpposite", "New Tab", 'T', doActionCB, "new_opposite", SHORT);
-	createMenuItem(menuPane, "open", "Open...", 'O', doActionCB, "open_dialog", SHORT);
-	createMenuSeparator(menuPane, "sep1", SHORT);
-	window->closeItem_ = createMenuItem(menuPane, "close", "Close", 'C', doActionCB, "close", SHORT);
-	createMenuItem(menuPane, "save", "Save", 'S', doActionCB, "save", SHORT);
-	createMenuItem(menuPane, "saveAs", "Save As...", 'A', doActionCB, "save_as_dialog", SHORT);
-	createMenuItem(menuPane, "revertToSaved", "Revert to Saved", 'R', doActionCB, "revert_to_saved_dialog", SHORT);
-	createMenuSeparator(menuPane, "sep2", SHORT);
-	createMenuItem(menuPane, "exit", "Exit", 'x', doActionCB, "exit", SHORT);
+    createMenuItem(menuPane, "exit", "Exit", 'x', doActionCB, "exit", SHORT);
 	CheckCloseDim();
 
 	/*
@@ -379,7 +356,6 @@ Widget CreateMenuBar(Widget parent, Document *window) {
 	** Preferences menu, Default Settings sub menu
 	*/
 	menuPane = createMenu(menuBar, "preferencesMenu", "Preferences", 0, nullptr, SHORT);
-	subPane = createMenu(menuPane, "defaultSettings", "Default Settings", 'D', nullptr, FULL);
 
 	// Customize Menus sub menu 
 
@@ -396,7 +372,6 @@ Widget CreateMenuBar(Widget parent, Document *window) {
 	/*
 	** Remainder of Preferences menu
 	*/
-	createMenuSeparator(subPane, "sep1", SHORT);	
 
 	/*
 	** Create the Shell menu
@@ -438,10 +413,6 @@ Widget CreateMenuBar(Widget parent, Document *window) {
 	window->splitPaneItem_ = createMenuItem(menuPane, "splitPane", "Split Pane", 'S', doActionCB, "split_pane", SHORT);
 	XtVaSetValues(window->splitPaneItem_, XmNuserData, PERMANENT_MENU_ITEM, nullptr);
 
-	btn = createMenuSeparator(menuPane, "sep01", SHORT);
-	XtVaSetValues(btn, XmNuserData, PERMANENT_MENU_ITEM, nullptr);
-	window->detachDocumentItem_ = createMenuItem(menuPane, "detachBuffer", "Detach Tab", 'D', doActionCB, "detach_document", SHORT);
-	XtSetSensitive(window->detachDocumentItem_, False);
 
 
 	btn = createMenuSeparator(menuPane, "sep1", SHORT);
@@ -593,229 +564,6 @@ static void windowMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
 	}
 }
 
-/*
-** open a new tab or window.
-*/
-static void newAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(event);
-
-	Document *window = Document::WidgetToWindow(w);
-	int openInTab = GetPrefOpenInTab();
-
-	if (*nArgs > 0) {
-		if (strcmp(args[0], "prefs") == 0) {
-			/* accept default */;
-		} else if (strcmp(args[0], "tab") == 0) {
-			openInTab = 1;
-		} else if (strcmp(args[0], "window") == 0) {
-			openInTab = 0;
-		} else if (strcmp(args[0], "opposite") == 0) {
-			openInTab = !openInTab;
-		} else {
-			fprintf(stderr, "nedit: Unknown argument to action procedure \"new\": %s\n", args[0]);
-		}
-	}
-
-	EditNewFile(openInTab ? window : nullptr, nullptr, False, nullptr, window->path_.toLatin1().data());
-	CheckCloseDim();
-}
-
-/*
-** These are just here because our techniques make it hard to bind a menu item
-** to an action procedure that takes arguments.  The user doesn't need to know
-** about them -- they can use new( "opposite" ) or new( "tab" ).
-*/
-static void newOppositeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-	Q_UNUSED(event);
-	Q_UNUSED(args);
-	Q_UNUSED(nArgs)
-
-	Document *window = Document::WidgetToWindow(w);
-
-	EditNewFile(GetPrefOpenInTab() ? nullptr : window, nullptr, False, nullptr, window->path_.toLatin1().data());
-	CheckCloseDim();
-}
-static void newTabAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-	Q_UNUSED(event);
-	Q_UNUSED(args);
-	Q_UNUSED(nArgs)
-
-	Document *window = Document::WidgetToWindow(w);
-
-	EditNewFile(window, nullptr, False, nullptr, window->path_.toLatin1().data());
-	CheckCloseDim();
-}
-
-static void openDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(event);
-	Q_UNUSED(args);
-	Q_UNUSED(nArgs)
-
-	Document *window = Document::WidgetToWindow(w);
-	const char *params[2];
-	int n = 1;
-
-	QString filename = PromptForExistingFile(window, QLatin1String("Open File"));
-	if (filename.isNull()) {
-		return;
-	}
-	
-	QByteArray fileStr = filename.toLatin1();
-	params[0] = fileStr.data();
-
-	if (*nArgs > 0 && !strcmp(args[0], "1")) {
-		params[n++] = "1";
-	}
-
-	XtCallActionProc(window->lastFocus_, "open", event, const_cast<char **>(params), n);
-	CheckCloseDim();
-}
-
-static void openAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(event);
-	Q_UNUSED(args);
-	Q_UNUSED(nArgs)
-
-	Document *window = Document::WidgetToWindow(w);
-	char filename[MAXPATHLEN], pathname[MAXPATHLEN];
-
-	if (*nArgs == 0) {
-		fprintf(stderr, "nedit: open action requires file argument\n");
-		return;
-	}
-	if (ParseFilename(args[0], filename, pathname) != 0 || strlen(filename) + strlen(pathname) > MAXPATHLEN - 1) {
-		fprintf(stderr, "nedit: invalid file name for open action: %s\n", args[0]);
-		return;
-	}
-	EditExistingFile(window, QLatin1String(filename), QLatin1String(pathname), 0, nullptr, False, nullptr, GetPrefOpenInTab(), False);
-	CheckCloseDim();
-}
-
-static void closeAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(event);
-	Q_UNUSED(args);
-	Q_UNUSED(nArgs)
-
-	int preResponse = PROMPT_SBC_DIALOG_RESPONSE;
-
-	if (*nArgs > 0) {
-		if (strcmp(args[0], "prompt") == 0) {
-			preResponse = PROMPT_SBC_DIALOG_RESPONSE;
-		} else if (strcmp(args[0], "save") == 0) {
-			preResponse = YES_SBC_DIALOG_RESPONSE;
-		} else if (strcmp(args[0], "nosave") == 0) {
-			preResponse = NO_SBC_DIALOG_RESPONSE;
-		}
-	}
-	CloseFileAndWindow(Document::WidgetToWindow(w), preResponse);
-	CheckCloseDim();
-}
-
-static void saveAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(event);
-	Q_UNUSED(args);
-	Q_UNUSED(nArgs)
-
-	Document *window = Document::WidgetToWindow(w);
-
-	if (CheckReadOnly(window))
-		return;
-	SaveWindow(window);
-}
-
-static void saveAsDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(event);
-	Q_UNUSED(args);
-	Q_UNUSED(nArgs)
-
-	Document *window = Document::WidgetToWindow(w);
-	bool addWrap;
-	FileFormats fileFormat;
-	char fullname[MAXPATHLEN];
-	const char *params[2];
-
-	bool response = PromptForNewFile(window, "Save File As", fullname, &fileFormat, &addWrap);
-	if (!response) {
-		return;
-	}
-	
-	window->fileFormat_ = fileFormat;
-	params[0] = fullname;
-	params[1] = "wrapped";
-	XtCallActionProc(window->lastFocus_, "save_as", event, const_cast<char **>(params), addWrap ? 2 : 1);
-}
-
-static void saveAsAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(event);
-
-	if (*nArgs == 0) {
-		fprintf(stderr, "nedit: save_as action requires file argument\n");
-		return;
-	}
-	SaveWindowAs(Document::WidgetToWindow(w), args[0], *nArgs == 2 && !strCaseCmp(args[1], "wrapped"));
-}
-
-static void revertDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(event);
-	Q_UNUSED(args);
-	Q_UNUSED(nArgs)
-
-	Document *window = Document::WidgetToWindow(w);
-
-	// re-reading file is irreversible, prompt the user first 
-	if (window->fileChanged_) {
-	
-		QMessageBox messageBox(nullptr /*window->shell_*/);
-		messageBox.setWindowTitle(QLatin1String("Discard Changes"));
-		messageBox.setIcon(QMessageBox::Question);
-		messageBox.setText(QString(QLatin1String("Discard changes to\n%1%2?")).arg(window->path_).arg(window->filename_));
-		QPushButton *buttonOk   = messageBox.addButton(QMessageBox::Ok);
-		QPushButton *buttonCancel = messageBox.addButton(QMessageBox::Cancel);
-		Q_UNUSED(buttonOk);
-
-		messageBox.exec();
-		if(messageBox.clickedButton() == buttonCancel) {
-			return;
-		}
-		
-	} else {
-	
-		QMessageBox messageBox(nullptr /*window->shell_*/);
-		messageBox.setWindowTitle(QLatin1String("Reload File"));
-		messageBox.setIcon(QMessageBox::Question);
-		messageBox.setText(QString(QLatin1String("Re-load file\n%1%2?")).arg(window->path_).arg(window->filename_));
-		QPushButton *buttonOk   = messageBox.addButton(QLatin1String("Re-read"), QMessageBox::AcceptRole);
-		QPushButton *buttonCancel = messageBox.addButton(QMessageBox::Cancel);
-		Q_UNUSED(buttonOk);
-
-		messageBox.exec();
-		if(messageBox.clickedButton() == buttonCancel) {
-			return;
-		}	
-	}
-
-	
-	XtCallActionProc(window->lastFocus_, "revert_to_saved", event, nullptr, 0);
-}
-
-static void revertAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(event);
-	Q_UNUSED(args);
-	Q_UNUSED(nArgs)
-
-	RevertToSaved(Document::WidgetToWindow(w));
-}
-
-
 static void exitAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 	Q_UNUSED(event);
 	Q_UNUSED(args);
@@ -922,8 +670,10 @@ static void splitPaneAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 
 	window->SplitPane();
 	if (window->IsTopDocument()) {
+#if 0 // NOTE(eteran): transitioned
 		XtSetSensitive(window->splitPaneItem_, window->textPanes_.size() < MAX_PANES);
 		XtSetSensitive(window->closePaneItem_, window->textPanes_.size() > 0);
+#endif
 	}
 }
 
@@ -1348,6 +1098,7 @@ void CheckCloseDim(void) {
 		return;
 	}
 	
+#if 0 // NOTE(eteran): transitioned
 	// NOTE(eteran): list has a size of 1	
 	if (WindowList.size() == 1 && !WindowList.front()->filenameSet_ && !WindowList.front()->fileChanged_) {
 		Document *doc = WindowList.front();
@@ -1360,6 +1111,7 @@ void CheckCloseDim(void) {
 			XtSetSensitive(window->closeItem_, true);
 		}
 	}
+#endif
 }
 
 /*
@@ -1741,22 +1493,6 @@ static void raiseCB(Widget w, XtPointer clientData, XtPointer callData) {
 	static_cast<Document *>(clientData)->RaiseFocusDocumentWindow(True /* always focus */);
 }
 
-/*
-** strCaseCmp compares its arguments and returns 0 if the two strings
-** are equal IGNORING case differences.  Otherwise returns 1.
-*/
-static int strCaseCmp(const char *str1, const char *str2) {
-	const char *c1, *c2;
-
-	for (c1 = str1, c2 = str2; *c1 != '\0' && *c2 != '\0'; c1++, c2++)
-		if (toupper((uint8_t)*c1) != toupper((uint8_t)*c2))
-			return 1;
-	if (*c1 == *c2) {
-		return (0);
-	} else {
-		return (1);
-	}
-}
 
 /*
 ** Create popup for right button programmable menu
@@ -1789,7 +1525,7 @@ Widget CreateTabContextMenu(Widget parent, Document *window) {
 	menu = CreatePopupMenu(parent, "tabContext", args, n);
 
 	createMenuItem(menu, "new", "New Tab", 0, doTabActionCB, "new_tab", SHORT);
-	createMenuItem(menu, "close", "Close Tab", 0, doTabActionCB, "close", SHORT);
+    createMenuItem(menu, "close", "Close Tab", 0, doTabActionCB, "close", SHORT);
 	createMenuSeparator(menu, "sep1", SHORT);
 	window->contextDetachDocumentItem_ = createMenuItem(menu, "detach", "Detach Tab", 0, doTabActionCB, "detach_document", SHORT);
 	XtSetSensitive(window->contextDetachDocumentItem_, False);

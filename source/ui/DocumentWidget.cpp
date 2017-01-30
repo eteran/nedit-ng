@@ -46,6 +46,8 @@
 #include "interpret.h"
 #include "shell.h"
 #include "parse.h"
+#include "server.h"
+#include <memory>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -434,7 +436,7 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
     // TODO(eteran): inherit from current value, not default state?
     showStats_             = GetPrefStatsLine();
 	
-    ui.statusFrame->setVisible(showStats_);
+    ShowStatsLine(showStats_);
 
     flashTimer_->setInterval(1500);
     flashTimer_->setSingleShot(true);
@@ -1428,11 +1430,12 @@ void DocumentWidget::flashTimerTimeout() {
 ** a selection in their associated window.
 */
 void DocumentWidget::DimSelectionDepUserMenuItems(bool enabled) {
-    if(auto win = toWindow()) {
-        if (!IsTopDocument()) {
-            return;
-        }
 
+    if (!IsTopDocument()) {
+        return;
+    }
+
+    if(auto win = toWindow()) {
         dimSelDepItemsInMenu(win->ui.menu_Shell, ShellMenuData, enabled);
         dimSelDepItemsInMenu(win->ui.menu_Macro, MacroMenuData, enabled);
         dimSelDepItemsInMenu(contextMenu_,       BGMenuData,    enabled);
@@ -1676,7 +1679,6 @@ void DocumentWidget::removeUndoItem() {
     }
 
     UndoInfo *undo = undo_.front();
-
 
     // Decrement the operation and memory counts
     undoMemUsed_ -= undo->oldLen;
@@ -1971,8 +1973,9 @@ void DocumentWidget::MakeSelectionVisible(TextArea *area) {
 void DocumentWidget::RemoveBackupFile() {
 
     // Don't delete backup files when backups aren't activated.
-    if (autoSave_ == false)
+    if (!autoSave_) {
         return;
+    }
 
     QString name = backupFileNameEx();
     ::remove(name.toLatin1().data());
@@ -1997,6 +2000,9 @@ QString DocumentWidget::backupFileNameEx() {
 */
 void DocumentWidget::CheckForChangesToFileEx() {
 
+    // TODO(eteran): this concept can be reworked in terms of QFileSystemWatcher
+    //               but we'll leave that for 2.0
+
     static DocumentWidget *lastCheckWindow = nullptr;
     static qint64 lastCheckTime = 0;
 
@@ -2009,7 +2015,6 @@ void DocumentWidget::CheckForChangesToFileEx() {
     if (this == lastCheckWindow && (timestamp - lastCheckTime) < MOD_CHECK_INTERVAL) {
         return;
     }
-
 
     lastCheckWindow = this;
     lastCheckTime   = timestamp;
@@ -2091,15 +2096,13 @@ void DocumentWidget::CheckForChangesToFileEx() {
             }
 
             // A missing or (re-)saved file can't be read-only.
-            //  TODO: A document without a file can be locked though.
+            // TODO: A document without a file can be locked though.
             // Make sure that the window was not destroyed behind our back!
             lockReasons_.setPermLocked(false);
             win->UpdateWindowTitle(this);
             win->UpdateWindowReadOnly(this);
-
             return;
         }
-
 
         /* Check that the file's read-only status is still correct (but
            only if the file can still be opened successfully in read mode) */
@@ -2123,7 +2126,6 @@ void DocumentWidget::CheckForChangesToFileEx() {
             }
         }
 
-
         /* Warn the user if the file has been modified, unless checking is
            turned off or the user has already been warned.  Popping up a dialog
            from a focus callback (which is how this routine is usually called)
@@ -2144,7 +2146,6 @@ void DocumentWidget::CheckForChangesToFileEx() {
                 lastModTime_ = statbuf.st_mtime;
                 return;
             }
-
 
             QMessageBox messageBox(this);
             messageBox.setIcon(QMessageBox::Warning);
@@ -2169,7 +2170,7 @@ void DocumentWidget::CheckForChangesToFileEx() {
 }
 
 QString DocumentWidget::FullPath() const {
-    return QString(QLatin1String("%1%2")).arg(path_, filename_);
+    return tr("%1%2").arg(path_, filename_);
 }
 
 /*
@@ -2218,17 +2219,16 @@ int DocumentWidget::cmpWinAgainstFile(const QString &fileName) {
 
     /* For large files, the comparison can take a while. If it takes too long,
        the user should be given a clue about what is happening. */
-    char message[MAXPATHLEN + 50];
-    snprintf(message, sizeof(message), "Comparing externally modified %s ...", filename_.toLatin1().data());
+    QString message = tr("Comparing externally modified 1s ...").arg(filename_);
 
-    int restLen = std::min<int>(PREFERRED_CMPBUF_LEN, fileLen);
+    int restLen = std::min(PREFERRED_CMPBUF_LEN, fileLen);
     int bufPos  = 0;
     int filePos = 0;
 
     while (restLen > 0) {
-#if 0
-        AllWindowsBusy(message);
-#endif
+
+        MainWindow::AllWindowsBusyEx(message);
+
         if (pendingCR) {
             fileString[0] = pendingCR;
             offset = 1;
@@ -2239,9 +2239,7 @@ int DocumentWidget::cmpWinAgainstFile(const QString &fileName) {
         int nRead = fread(fileString + offset, sizeof(char), restLen, fp);
         if (nRead != restLen) {
             fclose(fp);
-#if 0
-            AllWindowsUnbusy();
-#endif
+            MainWindow::AllWindowsUnbusyEx();
             return 1;
         }
         filePos += nRead;
@@ -2251,35 +2249,34 @@ int DocumentWidget::cmpWinAgainstFile(const QString &fileName) {
         // check for on-disk file format changes, but only for the first hunk
         if (bufPos == 0 && fileFormat != FormatOfFileEx(view::string_view(fileString, nRead))) {
             fclose(fp);
-#if 0
-            AllWindowsUnbusy();
-#endif
+            MainWindow::AllWindowsUnbusyEx();
             return 1;
         }
 
-        if (fileFormat == MAC_FILE_FORMAT) {
+        switch(fileFormat) {
+        case MAC_FILE_FORMAT:
             ConvertFromMacFileString(fileString, nRead);
-        } else if (fileFormat == DOS_FILE_FORMAT) {
+            break;
+        case DOS_FILE_FORMAT:
             ConvertFromDosFileString(fileString, &nRead, &pendingCR);
+            break;
+        default:
+            break;
         }
 
-        // Beware of 0 chars !
+        // Beware of '\0' chars !
         buf->BufSubstituteNullChars(fileString, nRead);
         rv = buf->BufCmpEx(bufPos, nRead, fileString);
         if (rv) {
             fclose(fp);
-#if 0
-            AllWindowsUnbusy();
-#endif
+            MainWindow::AllWindowsUnbusyEx();
             return rv;
         }
         bufPos += nRead;
-        restLen = std::min<int>(fileLen - filePos, PREFERRED_CMPBUF_LEN);
+        restLen = std::min(fileLen - filePos, PREFERRED_CMPBUF_LEN);
     }
 
-#if 0
-    AllWindowsUnbusy();
-#endif
+    MainWindow::AllWindowsUnbusyEx();
     fclose(fp);
     if (pendingCR) {
         rv = buf->BufCmpEx(bufPos, 1, &pendingCR);
@@ -2329,9 +2326,9 @@ void DocumentWidget::RevertToSaved() {
 
         if (!doOpen(name, path, openFlags)) {
             /* This is a bit sketchy.  The only error in doOpen that irreperably
-                    damages the window is "too much binary data".  It should be
-                    pretty rare to be reverting something that was fine only to find
-                    that now it has too much binary data. */
+               damages the window is "too much binary data".  It should be
+               pretty rare to be reverting something that was fine only to find
+               that now it has too much binary data. */
             if (!fileMissing_) {
                 safeCloseEx();
             } else {
@@ -2341,7 +2338,6 @@ void DocumentWidget::RevertToSaved() {
             }
             return;
         }
-
 
         win->forceShowLineNumbers();
         win->UpdateWindowTitle(this);
@@ -2371,8 +2367,8 @@ int DocumentWidget::WriteBackupFile() {
     ::remove(name.toLatin1().data());
 
     /* open the file, set more restrictive permissions (using default
-        permissions was somewhat of a security hole, because permissions were
-        independent of those of the original file being edited */
+       permissions was somewhat of a security hole, because permissions were
+       independent of those of the original file being edited */
     int fd = ::open(name.toLatin1().data(), O_CREAT | O_EXCL | O_WRONLY, S_IRUSR | S_IWUSR);
     if (fd < 0 || (fp = fdopen(fd, "w")) == nullptr) {
 
@@ -2430,7 +2426,6 @@ int DocumentWidget::SaveWindow() {
         return SaveWindowAs(nullptr, false);
     }
 
-
     // Check for external modifications and warn the user
     if (GetPrefWarnFileMods() && fileWasModifiedExternally()) {
 
@@ -2438,12 +2433,12 @@ int DocumentWidget::SaveWindow() {
         messageBox.setWindowTitle(tr("Save File"));
         messageBox.setIcon(QMessageBox::Warning);
         messageBox.setText(tr("%1 has been modified by another program.\n\n"
-                                                 "Continuing this operation will overwrite any external\n"
-                                                 "modifications to the file since it was opened in NEdit,\n"
-                                                 "and your work or someone else's may potentially be lost.\n\n"
-                                                 "To preserve the modified file, cancel this operation and\n"
-                                                 "use Save As... to save this file under a different name,\n"
-                                                 "or Revert to Saved to revert to the modified version.").arg(filename_));
+                              "Continuing this operation will overwrite any external\n"
+                              "modifications to the file since it was opened in NEdit,\n"
+                              "and your work or someone else's may potentially be lost.\n\n"
+                              "To preserve the modified file, cancel this operation and\n"
+                              "use Save As... to save this file under a different name,\n"
+                              "or Revert to Saved to revert to the modified version.").arg(filename_));
 
         QPushButton *buttonContinue = messageBox.addButton(tr("Continue"), QMessageBox::AcceptRole);
         QPushButton *buttonCancel   = messageBox.addButton(QMessageBox::Cancel);
@@ -2544,7 +2539,6 @@ bool DocumentWidget::doSave() {
     // write to the file
     fwrite(fileString.data(), sizeof(char), fileString.size(), fp);
 
-
     if (ferror(fp)) {
         QMessageBox::critical(this, tr("Error saving File"), tr("%2 not saved:\n%2").arg(filename_).arg(QLatin1String(strerror(errno))));
         fclose(fp);
@@ -2634,9 +2628,11 @@ int DocumentWidget::SaveWindowAs(const char *newName, bool addWrap) {
                     if(addWrap) {
                         wrapCheck->setChecked(true);
                     }
-    #if 0
+
                     // TODO(eteran): implement this once this is hoisted into a QObject
                     //               since Qt4 doesn't support lambda based connections
+#if 0
+
                     connect(wrapCheck, &QCheckBox::toggled, [&wrapCheck](bool checked) {
                         if(checked) {
                             int ret = QMessageBox::information(this, tr("Add Wrap"),
@@ -2653,7 +2649,7 @@ int DocumentWidget::SaveWindowAs(const char *newName, bool addWrap) {
                             }
                         }
                     });
-    #endif
+#endif
 
                     if (wrapMode_ == CONTINUOUS_WRAP) {
                         layout->addWidget(wrapCheck, row, 1, 1, 1);
@@ -2702,9 +2698,7 @@ int DocumentWidget::SaveWindowAs(const char *newName, bool addWrap) {
            it is possible for user to close the window by hand while the dialog
            is still up, because the dialog is not application modal, so after
            doing the dialog, check again whether the window still exists. */
-
-        DocumentWidget *otherWindow = MainWindow::FindWindowWithFile(QLatin1String(filename), QLatin1String(pathname));
-        if (otherWindow) {
+        if (DocumentWidget *otherWindow = MainWindow::FindWindowWithFile(QLatin1String(filename), QLatin1String(pathname))) {
 
             QMessageBox messageBox(this);
             messageBox.setWindowTitle(tr("File open"));
@@ -2726,11 +2720,8 @@ int DocumentWidget::SaveWindowAs(const char *newName, bool addWrap) {
             }
         }
 
-
         // Destroy the file closed property for the original file
-#if 0
-        DeleteFileClosedProperty(window);
-#endif
+        DeleteFileClosedPropertyEx(this);
 
         // Change the name of the file and save it under the new name
         RemoveBackupFile();
@@ -3058,33 +3049,23 @@ void DocumentWidget::CloseWindow() {
     // Free smart indent macro programs
     EndSmartIndentEx(this);
 
-
     /* Clean up macro references to the doomed window.  If a macro is
        executing, stop it.  If macro is calling this (closing its own
        window), leave the window alive until the macro completes */
     bool keepWindow = !MacroWindowCloseActionsEx(this);
 
-#if 0
     // Kill shell sub-process and free related memory
-    AbortShellCommand(this);
+    AbortShellCommandEx(this);
 
     // Unload the default tips files for this language mode if necessary
-    UnloadLanguageModeTipsFile(this);
-
-    /* If a window is closed while it is on the multi-file replace dialog
-       list of any other window (or even the same one), we must update those
-       lists or we end up with dangling references. Normally, there can
-       be only one of those dialogs at the same time (application modal),
-       but LessTif doesn't even (always) honor application modalness, so
-       there can be more than one dialog. */
-    RemoveFromMultiReplaceDialog(this);
+    UnloadLanguageModeTipsFileEx();
 
     // Destroy the file closed property for this file
-    DeleteFileClosedProperty(this);
+    DeleteFileClosedPropertyEx(this);
 
     /* Remove any possibly pending callback which might fire after the
        widget is gone. */
-    cancelTimeOut(&flashTimeoutID_);
+#if 0
     cancelTimeOut(&markTimeoutID_);
 #endif
     /* if this is the last window, or must be kept alive temporarily because
@@ -3132,6 +3113,13 @@ void DocumentWidget::CloseWindow() {
         return;
     }
 
+    // NOTE(eteran): there used to be some logic about syncronizing the multi-file
+    //               replace dialog. It was complex and error prone. Simpler to
+    //               just make the multi-file replace dialog modal and avoid the
+    //               issue all together
+
+    // TODO(eteran): just put this into the destructor and make things simple...
+
     // Free syntax highlighting patterns, if any. w/o redisplaying
     FreeHighlightingDataEx(this);
 
@@ -3140,90 +3128,22 @@ void DocumentWidget::CloseWindow() {
     buffer_->BufRemoveModifyCB(modifiedCB, this);
     buffer_->BufRemoveModifyCB(SyntaxHighlightModifyCB, this);
 
-
     // free the undo and redo lists
     ClearUndoList();
     ClearRedoList();
-#if 0
-    // close the document/window
-    if (TabCount() > 1) {
-        if (MacroRunWindow() && MacroRunWindow() != this && MacroRunWindow()->shell_ == shell_) {
-            nextBuf = MacroRunWindow();
-            if(nextBuf) {
-                nextBuf->RaiseDocument();
-            }
-        } else if (IsTopDocument()) {
-            // need to find a successor before closing a top document
-            nextBuf = getNextTabWindow(1, 0, 0);
-            if(nextBuf) {
-                nextBuf->RaiseDocument();
-            }
-        } else {
-            topBuf = GetTopDocument(shell_);
-        }
-    }
 
     // remove the window from the global window list, update window menus
-    removeFromWindowList();
-    InvalidateWindowMenus();
-    CheckCloseDim(); // Close of window running a macro may have been disabled.
+    window->InvalidateWindowMenus();
+    window->CheckCloseDim(); // Close of window running a macro may have been disabled.
 
-    // remove the tab of the closing document from tab bar
-    XtDestroyWidget(tab_);
+    // NOTE(eteran): No need to explicitly sync this with the tab context menu
+    //               because they are set to be in sync when the context menu is shown
 
-    // refresh tab bar after closing a document
-    if (nextBuf) {
-        nextBuf->ShowWindowTabBar();
-        nextBuf->updateLineNumDisp();
-    } else if (topBuf) {
-        topBuf->ShowWindowTabBar();
-        topBuf->updateLineNumDisp();
-    }
+    // TODO(eteran): I'd like to move this to an event on the tab widget itself,
+    // so it's more automatic
+    window->ui.action_Detach_Tab->setEnabled(window->TabCount() > 1);
+    window->ui.action_Move_Tab_To->setEnabled(MainWindow::allWindows().size() > 1);
 
-    // dim/undim Detach_Tab menu items
-    win = nextBuf ? nextBuf : topBuf;
-    if (win) {
-        state = win->TabCount() > 1;
-        XtSetSensitive(win->detachDocumentItem_, state);
-        XtSetSensitive(win->contextDetachDocumentItem_, state);
-    }
-
-    // dim/undim Attach_Tab menu items
-    state = WindowList.front()->TabCount() < WindowCount();
-
-    for(Document *win: WindowList) {
-        if (win->IsTopDocument()) {
-            XtSetSensitive(win->moveDocumentItem_, state);
-            XtSetSensitive(win->contextMoveDocumentItem_, state);
-        }
-    }
-
-    // free background menu cache for document
-    FreeUserBGMenuCache(&userBGMenuCache_);
-
-    // destroy the document's pane, or the window
-    if (nextBuf || topBuf) {
-        deleteDocument();
-    } else {
-        // free user menu cache for window
-        FreeUserMenuCache(userMenuCache_);
-
-        // remove and deallocate all of the widgets associated with window
-        CloseAllPopupsFor(shell_);
-        XtDestroyWidget(shell_);
-    }
-
-
-#if 1
-    // TODO(eteran): why did I need to add this?!?
-    //               looking above, RaiseDocument (which triggers the update)
-    //               is called before removeFromWindowList, so I'm not 100% sure
-    //               it ever worked without this...
-    if(auto dialog = getDialogReplace()) {
-        dialog->UpdateReplaceActionButtons();
-    }
-#endif
-#endif
     // deallocate the window data structure
     delete this;
 }
@@ -3265,7 +3185,6 @@ void DocumentWidget::open(const char *fullpath) {
 
 bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags) {
 
-
     MainWindow *window = toWindow();
     if(!window) {
         return false;
@@ -3302,7 +3221,8 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
         } else if (flags & CREATE && errno == ENOENT) {
             // Give option to create (or to exit if this is the only window)
             if (!(flags & SUPPRESS_CREATE_WARN)) {
-#if 0
+
+#if 0 // NOTE(eteran): probably not needed
                 /* on Solaris 2.6, and possibly other OSes, dialog won't
                    show if parent window is iconized. */
                 RaiseShellWindow(window->shell_, false);
@@ -3397,7 +3317,8 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
     int fileLen = statbuf.st_size;
 
     // Allocate space for the whole contents of the file (unfortunately)
-    auto fileString = new char[fileLen + 1]; // +1 = space for null
+    std::unique_ptr<char[]> fileString(new char[fileLen + 1]); // +1 = space for null
+
     if(!fileString) {
         ::fclose(fp);
         filenameSet_ = false; // Temp. prevent check for changes.
@@ -3407,13 +3328,12 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
     }
 
     // Read the file into fileString and terminate with a null
-    int readLen = ::fread(fileString, sizeof(char), fileLen, fp);
+    int readLen = ::fread(&fileString[0], sizeof(char), fileLen, fp);
     if (ferror(fp)) {
         ::fclose(fp);
         filenameSet_ = false; // Temp. prevent check for changes.
         QMessageBox::critical(this, tr("Error while opening File"), tr("Error reading %1:\n%2").arg(name, QLatin1String(strerror(errno))));
         filenameSet_ = true;
-        delete [] fileString;
         return false;
     }
     fileString[readLen] = '\0';
@@ -3426,8 +3346,8 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
     }
 
     /* Any errors that happen after this point leave the window in a
-        "broken" state, and thus RevertToSaved will abandon the window if
-        window->fileMissing_ is false and doOpen fails. */
+       "broken" state, and thus RevertToSaved will abandon the window if
+       window->fileMissing_ is false and doOpen fails. */
     fileMode_    = statbuf.st_mode;
     fileUid_     = statbuf.st_uid;
     fileGid_     = statbuf.st_gid;
@@ -3438,17 +3358,17 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
 
     // Detect and convert DOS and Macintosh format files
     if (GetPrefForceOSConversion()) {
-        fileFormat_ = FormatOfFileEx(view::string_view(fileString, readLen));
+        fileFormat_ = FormatOfFileEx(view::string_view(&fileString[0], readLen));
         if (fileFormat_ == DOS_FILE_FORMAT) {
-            ConvertFromDosFileString(fileString, &readLen, nullptr);
+            ConvertFromDosFileString(&fileString[0], &readLen, nullptr);
         } else if (fileFormat_ == MAC_FILE_FORMAT) {
-            ConvertFromMacFileString(fileString, readLen);
+            ConvertFromMacFileString(&fileString[0], readLen);
         }
     }
 
     // Display the file contents in the text widget
     ignoreModify_ = true;
-    buffer_->BufSetAllEx(view::string_view(fileString, readLen));
+    buffer_->BufSetAllEx(view::string_view(&fileString[0], readLen));
     ignoreModify_ = false;
 
     /* Check that the length that the buffer thinks it has is the same
@@ -3456,7 +3376,7 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
        Substitute them with another character.  If that is impossible, warn
        the user, make the file read-only, and force a substitution */
     if (buffer_->BufGetLength() != readLen) {
-        if (!buffer_->BufSubstituteNullChars(fileString, readLen)) {
+        if (!buffer_->BufSubstituteNullChars(&fileString[0], readLen)) {
 
             QMessageBox msgbox(this);
             msgbox.setIcon(QMessageBox::Critical);
@@ -3471,7 +3391,7 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
             }
 
             lockReasons_.setTMBDLocked(true);
-            for (char *c = fileString; c < &fileString[readLen]; c++) {
+            for (char *c = &fileString[0]; c < &fileString[readLen]; c++) {
                 if (*c == '\0') {
                     *c = (char)0xfe;
                 }
@@ -3479,12 +3399,15 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
             buffer_->nullSubsChar_ = (char)0xfe;
         }
         ignoreModify_ = true;
-        buffer_->BufSetAllEx(fileString);
+
+        // NOTE(eteran): this looks correct, but hasn't been tested, so
+        // I'm putting an assert here. I think this code may possibly be
+        // technically unreachable due to proper NUL handling at a different
+        // layer
+        Q_ASSERT(strlen(&fileString[0]) == static_cast<size_t>(readLen));
+        buffer_->BufSetAllEx(view::string_view(&fileString[0], readLen));
         ignoreModify_ = false;
     }
-
-    // Release the memory that holds fileString
-    delete [] fileString;
 
     // Set window title and file changed flag
     if ((flags & PREF_READ_ONLY) != 0) {
@@ -3505,8 +3428,6 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
     return true;
 }
 
-
-
 /*
 ** refresh window state for this document
 */
@@ -3526,29 +3447,27 @@ void DocumentWidget::RefreshWindowStates() {
 
         win->UpdateWindowReadOnly(this);
         win->UpdateWindowTitle(this);
-    #if 0
+
         // show/hide statsline as needed
-        if (modeMessageDisplayed_ && !XtIsManaged(statsLineForm_)) {
+        if (modeMessageDisplayed_ && !ui.statusFrame->isVisible()) {
             // turn on statline to display mode message
-            showStatistics(true);
-        } else if (showStats_ && !XtIsManaged(statsLineForm_)) {
+            ShowStatsLine(true);
+        } else if (showStats_ && !ui.statusFrame->isVisible()) {
             // turn on statsline since it is enabled
-            showStatistics(true);
-        } else if (!showStats_ && !modeMessageDisplayed_ && XtIsManaged(statsLineForm_)) {
+            ShowStatsLine(true);
+        } else if (!showStats_ && !modeMessageDisplayed_ && ui.statusFrame->isVisible()) {
             // turn off statsline since there's nothing to show
-            showStatistics(false);
+            ShowStatsLine(false);
         }
 
         // signal if macro/shell is running
-        if (shellCmdData_ || macroCmdData_)
-            BeginWait(shell_);
-        else
-            EndWait(shell_);
+        if (shellCmdData_ || macroCmdData_) {
+            setCursor(Qt::WaitCursor);
+        } else {
+            setCursor(Qt::ArrowCursor);
+        }
 
-        XmUpdateDisplay(statsLine_);
-#endif
         refreshMenuBar();
-
         win->updateLineNumDisp();
     }
 }
@@ -3654,9 +3573,7 @@ void DocumentWidget::executeNewlineMacroEx(smartIndentCBStruct *cbInfo) {
     /* Collect Garbage.  Note that the mod macro does not collect garbage,
        (because collecting per-line is more efficient than per-character)
        but GC now depends on the newline macro being mandatory */
-#if 0
     SafeGC();
-#endif
 
     // Process errors in macro execution
     if (stat == MACRO_PREEMPT || stat == MACRO_ERROR) {
@@ -3683,9 +3600,17 @@ void DocumentWidget::SetShowMatching(ShowMatchingStyle state) {
     showMatchingStyle_ = state;
     if (IsTopDocument()) {
         if(auto win = toWindow()) {
-            no_signals(win->ui.action_Matching_Off)->setChecked(state == NO_FLASH);
-            no_signals(win->ui.action_Matching_Delimiter)->setChecked(state == FLASH_DELIMIT);
-            no_signals(win->ui.action_Matching_Range)->setChecked(state == FLASH_RANGE);
+            switch(state) {
+            case NO_FLASH:
+                no_signals(win->ui.action_Matching_Off)->setChecked(true);
+                break;
+            case FLASH_DELIMIT:
+                no_signals(win->ui.action_Matching_Delimiter)->setChecked(true);
+                break;
+            case FLASH_RANGE:
+                no_signals(win->ui.action_Matching_Range)->setChecked(true);
+                break;
+            }
         }
     }
 }
@@ -3763,9 +3688,6 @@ void DocumentWidget::bannerTimeoutProc() {
     }
 
     SetModeMessageEx(message);
-#if 0
-    cmdData->bannerTimeoutID = 0;
-#endif
 }
 
 void DocumentWidget::actionClose(const QString &mode) {
@@ -3793,7 +3715,7 @@ bool DocumentWidget::includeFile(const QString &name) {
     }
 
     // Open the file
-    FILE *fp = fopen(name.toLatin1().data(), "rb");
+    FILE *fp = ::fopen(name.toLatin1().data(), "rb");
     if(!fp) {
         QMessageBox::critical(this, tr("Error opening File"), tr("Could not open %1:\n%2").arg(name, QLatin1String(strerror(errno))));
         return false;
@@ -3802,7 +3724,7 @@ bool DocumentWidget::includeFile(const QString &name) {
     struct stat statbuf;
 
     // Get the length of the file
-    if (fstat(fileno(fp), &statbuf) != 0) {
+    if (::fstat(fileno(fp), &statbuf) != 0) {
         QMessageBox::critical(this, tr("Error opening File"), tr("Error opening %1").arg(name));
         fclose(fp);
         return false;
@@ -3817,25 +3739,24 @@ bool DocumentWidget::includeFile(const QString &name) {
 
     // allocate space for the whole contents of the file
     try {
-        auto fileString = new char[fileLen + 1]; // +1 = space for null
+        std::unique_ptr<char[]> fileString(new char[fileLen + 1]); // +1 = space for null
 
         // read the file into fileString and terminate with a null
-        int readLen = fread(fileString, sizeof(char), fileLen, fp);
-        if (ferror(fp)) {
+        int readLen = ::fread(&fileString[0], sizeof(char), fileLen, fp);
+        if (::ferror(fp)) {
             QMessageBox::critical(this, tr("Error opening File"), tr("Error reading %1:\n%2").arg(name, QLatin1String(strerror(errno))));
-            fclose(fp);
-            delete [] fileString;
+            ::fclose(fp);
             return false;
         }
         fileString[readLen] = '\0';
 
         // Detect and convert DOS and Macintosh format files
-        switch (FormatOfFileEx(view::string_view(fileString, readLen))) {
+        switch (FormatOfFileEx(view::string_view(&fileString[0], readLen))) {
         case DOS_FILE_FORMAT:
-            ConvertFromDosFileString(fileString, &readLen, nullptr);
+            ConvertFromDosFileString(&fileString[0], &readLen, nullptr);
             break;
         case MAC_FILE_FORMAT:
-            ConvertFromMacFileString(fileString, readLen);
+            ConvertFromMacFileString(&fileString[0], readLen);
             break;
         default:
             //  Default is Unix, no conversion necessary.
@@ -3843,12 +3764,12 @@ bool DocumentWidget::includeFile(const QString &name) {
         }
 
         // If the file contained ascii nulls, re-map them
-        if (!buffer_->BufSubstituteNullChars(fileString, readLen)) {
+        if (!buffer_->BufSubstituteNullChars(&fileString[0], readLen)) {
             QMessageBox::critical(this, tr("Error opening File"), tr("Too much binary data in file"));
         }
 
         // close the file
-        if (fclose(fp) != 0) {
+        if (::fclose(fp) != 0) {
             // unlikely error
             QMessageBox::warning(this, tr("Error opening File"), tr("Unable to close file"));
             // we read it successfully, so continue
@@ -3857,16 +3778,14 @@ bool DocumentWidget::includeFile(const QString &name) {
         /* insert the contents of the file in the selection or at the insert
            position in the window if no selection exists */
         if (buffer_->primary_.selected) {
-            buffer_->BufReplaceSelectedEx(view::string_view(fileString, readLen));
+            buffer_->BufReplaceSelectedEx(view::string_view(&fileString[0], readLen));
         } else {
             if(auto win = toWindow()) {
                 auto textD = win->lastFocus_;
-                buffer_->BufInsertEx(textD->TextGetCursorPos(), view::string_view(fileString, readLen));
+                buffer_->BufInsertEx(textD->TextGetCursorPos(), view::string_view(&fileString[0], readLen));
             }
         }
 
-        // release the memory that holds fileString
-        delete [] fileString;
     } catch(const std::bad_alloc &) {
         QMessageBox::critical(this, tr("Error opening File"), tr("File is too large to include"));
         fclose(fp);
@@ -3924,6 +3843,7 @@ void DocumentWidget::replaceFindAP(const QString &searchString, const QString &r
 }
 
 void DocumentWidget::findAP(const QString &searchString, SearchDirection direction, SearchType searchType, bool searchWraps) {
+
     SearchAndSelectEx(
                 toWindow(),
                 this,
@@ -4078,15 +3998,17 @@ void DocumentWidget::GotoMatchingCharacter(TextArea *area) {
        be automatically scrolled on screen and MakeSelectionVisible would do
        nothing) */
     area->setAutoShowInsertPos(false);
-
     area->TextSetCursorPos(matchPos + 1);
     MakeSelectionVisible(area);
     area->setAutoShowInsertPos(true);
 }
 
 bool DocumentWidget::findMatchingCharEx(char toMatch, void *styleToMatch, int charPos, int startLimit, int endLimit, int *matchPos) {
-    int nestDepth, matchIndex, direction, beginPos, pos;
-    char matchChar, c;
+    int nestDepth;
+    int matchIndex;
+    int beginPos;
+    int pos;
+    char c;
     void *style = nullptr;
     TextBuffer *buf = buffer_;
     bool matchSyntaxBased = matchSyntaxBased_;
@@ -4098,13 +4020,17 @@ bool DocumentWidget::findMatchingCharEx(char toMatch, void *styleToMatch, int ch
 
     // Look up the matching character and match direction
     for (matchIndex = 0; matchIndex < N_MATCH_CHARS; matchIndex++) {
-        if (MatchingChars[matchIndex].c == toMatch)
+        if (MatchingChars[matchIndex].c == toMatch) {
             break;
+        }
     }
-    if (matchIndex == N_MATCH_CHARS)
+
+    if (matchIndex == N_MATCH_CHARS) {
         return false;
-    matchChar = MatchingChars[matchIndex].match;
-    direction = MatchingChars[matchIndex].direction;
+    }
+
+    char matchChar = MatchingChars[matchIndex].match;
+    int direction  = MatchingChars[matchIndex].direction;
 
     // find it in the buffer
     beginPos = (direction == SEARCH_FORWARD) ? charPos + 1 : charPos - 1;
@@ -4113,13 +4039,15 @@ bool DocumentWidget::findMatchingCharEx(char toMatch, void *styleToMatch, int ch
         for (pos = beginPos; pos < endLimit; pos++) {
             c = buf->BufGetCharacter(pos);
             if (c == matchChar) {
-                if (matchSyntaxBased)
+                if (matchSyntaxBased) {
                     style = GetHighlightInfoEx(this, pos);
+                }
+
                 if (style == styleToMatch) {
                     nestDepth--;
                     if (nestDepth == 0) {
                         *matchPos = pos;
-                        return TRUE;
+                        return true;
                     }
                 }
             } else if (c == toMatch) {
@@ -4462,10 +4390,21 @@ void DocumentWidget::splitPane() {
 /*
 ** Close the window pane that last had the keyboard focus.
 */
-// TODO(eteran): right now, we juse close the last pane, but we should change this
-//               to select the one which currently has the focus.
 void DocumentWidget::closePane() {
+
     if(splitter_->count() > 1) {
+        TextArea *lastFocus = toWindow()->lastFocus_;
+        for(int i = 0; i < splitter_->count(); ++i) {
+            if(auto area = qobject_cast<TextArea *>(splitter_->widget(i))) {
+                if(area == lastFocus) {
+                    delete area;
+                    return;
+                }
+            }
+        }
+
+        // if we got here, that means that the last focus isn't even in this
+        // document, so we'll just nominate the last one
         QList<TextArea *> panes = textPanes();
         delete panes.back();
     }
@@ -4566,20 +4505,19 @@ void DocumentWidget::moveDocument(MainWindow *fromWindow) {
     auto dialog = new DialogMoveDocument(this);
 
     // all windows, except for the source window
-    QList<MainWindow *> shellWinList = MainWindow::allWindows();
-    shellWinList.removeAll(fromWindow);
+    QList<MainWindow *> allWindows = MainWindow::allWindows();
+    allWindows.removeAll(fromWindow);
 
-
-    for(MainWindow *win : shellWinList) {
-        dialog->addItem(win);
-    }
-
-    // stop here if there's no other this to move to
-    if (shellWinList.empty()) {
+    // stop here if there's no other window to move to
+    if (allWindows.empty()) {
         delete dialog;
         return;
     }
 
+    // load them into the dialog
+    for(MainWindow *win : allWindows) {
+        dialog->addItem(win);
+    }
 
     // reset the dialog and display it
     dialog->resetSelection();
@@ -4592,8 +4530,7 @@ void DocumentWidget::moveDocument(MainWindow *fromWindow) {
         int selection = dialog->selectionIndex();
 
         // get the this to move document into
-        MainWindow *targetWin = shellWinList[selection];
-
+        MainWindow *targetWin = allWindows[selection];
 
         // move top document
         if (dialog->moveAllSelected()) {
@@ -4607,6 +4544,7 @@ void DocumentWidget::moveDocument(MainWindow *fromWindow) {
             targetWin->show();
         }
 
+        // if we just emptied the window, then delete it
         if(fromWindow->TabCount() == 0) {
             delete fromWindow;
         }
@@ -4654,9 +4592,7 @@ void DocumentWidget::setWrapMargin(int margin) {
 */
 void DocumentWidget::SetFonts(const QString &fontName, const QString &italicName, const QString &boldName, const QString &boldItalicName) {
 
-
     int textHeight;
-
     auto textD = firstPane();
 
     // Check which fonts have changed
@@ -4682,6 +4618,7 @@ void DocumentWidget::SetFonts(const QString &fontName, const QString &italicName
        determine the correct this size after the font is changed */
 
     // TODO(eteran): do we want the WINDOW width/height? or the widget's?
+    //               I suspect we want the widget
 #if 0
     int oldWindowWidth  = textD->width();
     int oldWindowHeight = textD->height();
@@ -4776,7 +4713,7 @@ void DocumentWidget::SetFonts(const QString &fontName, const QString &italicName
 /*
 ** Set the backlight character class string
 */
-void DocumentWidget::SetBacklightChars(char *applyBacklightTypes) {
+void DocumentWidget::SetBacklightChars(const char *applyBacklightTypes) {
 
     const bool do_apply = applyBacklightTypes ? true : false;
 
@@ -4862,8 +4799,8 @@ void DocumentWidget::SetColors(const char *textFg, const char *textBg, const cha
 
     // Update all panes
     for(TextArea *area : textPanes()) {
-        area->setForegroundPixel(textFgPix);
-        area->setBackgroundPixel(textBgPix);
+        area->setForegroundPixel(textFgPix); // NOTE(eteran): seems redundant
+        area->setBackgroundPixel(textBgPix); // NOTE(eteran): seems redundant
         area->TextDSetColors(textFgPix, textBgPix, selectFgPix, selectBgPix, hiliteFgPix, hiliteBgPix, lineNoFgPix, cursorFgPix);
     }
 
@@ -4890,7 +4827,7 @@ void DocumentWidget::SetModeMessageEx(const QString message) {
      * Don't invoke the stats line again, if stats line is already displayed.
      */
     if (!showStats_) {
-        ui.statusFrame->setVisible(true);
+        ShowStatsLine(true);
     }
 }
 
@@ -4911,7 +4848,7 @@ void DocumentWidget::ClearModeMessageEx() {
      * Remove the stats line only if indicated by it's window state.
      */
     if (!showStats_) {
-        ui.statusFrame->setVisible(false);
+        ShowStatsLine(false);
     }
 
     UpdateStatsLine(nullptr);
@@ -4940,5 +4877,14 @@ void DocumentWidget::safeCloseEx() {
 
     if(it != documents.end()) {
         (*it)->CloseWindow();
+    }
+}
+
+// Decref the default calltips file(s) for this window
+void DocumentWidget::UnloadLanguageModeTipsFileEx() {
+
+    int mode = languageMode_;
+    if (mode != PLAIN_LANGUAGE_MODE && !LanguageModes[mode]->defTipsFile.isNull()) {
+        DeleteTagsFileEx(LanguageModes[mode]->defTipsFile, TIP, False);
     }
 }

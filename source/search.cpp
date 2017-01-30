@@ -361,10 +361,6 @@ void RemoveFromMultiReplaceDialog(Document *doomedWindow) {
 	}
 }
 
-/*
-** Iterates through the list of writable windows of a window, and removes
-** the doomed window if necessary.
-*/
 static void checkMultiReplaceListForDoomedW(Document *window, Document *doomedWindow) {
 
 	/* If the window owning the list and the doomed window are one and the
@@ -386,10 +382,6 @@ static void checkMultiReplaceListForDoomedW(Document *window, Document *doomedWi
 	}
 }
 
-/*
-** Removes a window that is about to be closed from the list of files in
-** which to replace. If the list becomes empty, the dialog is popped down.
-*/
 static void removeDoomedWindowFromList(Document *window, int index) {
 
 	// If the list would become empty, we remove the dialog 
