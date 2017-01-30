@@ -5,6 +5,7 @@
 #include <QDialog>
 #include <QPointer>
 #include <QWidget>
+#include <QProcess>
 
 #include "SearchDirection.h"
 #include "SearchType.h"
@@ -15,6 +16,7 @@
 #include "UserBGMenuCache.h"
 #include "userCmds.h"
 #include "util/FileFormats.h"
+#include "MenuItem.h"
 
 #include <Xm/Xm.h>
 
@@ -44,6 +46,9 @@ private Q_SLOTS:
 	void onFocusOut(QWidget *was);
     void flashTimerTimeout();
     void customContextMenuRequested(const QPoint &pos);
+    void stdoutReadProc();
+    void stderrReadProc();
+    void processFinished(int exitCode, QProcess::ExitStatus exitStatus);
 
 public Q_SLOTS:
     void setLanguageMode(const QString &mode);
@@ -163,6 +168,13 @@ public:
     void ClearModeMessageEx();
     void safeCloseEx();
     void UnloadLanguageModeTipsFileEx();
+    void issueCommandEx(MainWindow *window, TextArea *area, const QString &command, const QString &input, int flags, int replaceLeft, int replaceRight, bool fromMacro);
+    void AbortShellCommandEx();
+    void ExecCursorLineEx(TextArea *area, bool fromMacro);
+    void filterSelection(const QString &filterText);
+    void FilterSelection(const QString &command, bool fromMacro);
+    bool DoNamedShellMenuCmd(TextArea *area, const QString &name, bool fromMacro);
+    void DoShellMenuCmd(MainWindow *inWindow, TextArea *area, const std::string &command, InSrcs input, OutDests output, bool outputReplacesInput, bool saveFirst, bool loadAfter, bool fromMacro);
 
 public:
     static DocumentWidget *EditExistingFileEx(DocumentWidget *inWindow, const QString &name, const QString &path, int flags, char *geometry, int iconic, const char *languageMode, bool tabbed, bool bgOpen);

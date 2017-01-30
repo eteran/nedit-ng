@@ -794,11 +794,11 @@ static const char HeaderText[] = "\
 
 /* Module-global variable set when any preference changes (for asking the
    user about re-saving on exit) */
-static bool PrefsHaveChanged = false;
+bool PrefsHaveChanged = false;
 
 /* Module-global variable set when user uses -import to load additional
    preferences on top of the defaults.  Contains name of file loaded */
-static char *ImportedFile = nullptr;
+char *ImportedFile = nullptr;
 
 static void translatePrefFormats(int convertOld, int fileVer);
 static void setIntPref(int *prefDataField, int newValue);

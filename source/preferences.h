@@ -228,6 +228,8 @@ int GetPrefReplaceDefScope();
 #endif
 
 extern int NLanguageModes;
+extern char *ImportedFile;
+extern bool PrefsHaveChanged;
 extern LanguageMode *LanguageModes[MAX_LANGUAGE_MODES];
 void updateLanguageModeSubmenu(Document *window);
 

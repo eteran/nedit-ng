@@ -10,11 +10,14 @@
 #include <QFuture>
 #include <QClipboard>
 #include <QDesktopServices>
+#include <QTextCodec>
 #include <QMimeData>
+#include <QProcess>
 #include "SignalBlocker.h"
 #include "MainWindow.h"
 #include "DocumentWidget.h"
 #include "DialogReplace.h"
+#include "DialogOutput.h"
 #include "DialogMoveDocument.h"
 #include "TextArea.h"
 #include "DialogPrint.h"
@@ -57,6 +60,34 @@
 
 namespace {
 
+// Tuning parameters
+const int IO_BUF_SIZE         = 4096; // size of buffers for collecting cmd output
+const int OUTPUT_FLUSH_FREQ	  = 1000; // how often (msec) to flush output buffers when process is taking too long
+const int BANNER_WAIT_TIME	  = 6000; // how long to wait (msec) before putting up Shell Command Executing... banner
+
+// element of a buffer list for collecting output from shell processes
+struct bufElem {
+    int length;
+    char contents[IO_BUF_SIZE];
+};
+
+/* data attached to window during shell command execution with
+   information for controling and communicating with the process */
+struct shellCmdInfoEx {
+    QProcess *process;
+    int flags;
+    QByteArray standardOutput;
+    QByteArray standardError;
+    TextArea *area;
+    int leftPos;
+    int rightPos;
+    QTimer *bannerTimeoutID;
+    QTimer *flushTimeoutID;
+    bool bannerIsUp;
+    bool fromMacro;
+};
+
+
 /* Data attached to window during shell command execution with
    information for controling and communicating with the process */
 struct macroCmdInfoEx {
@@ -67,11 +98,6 @@ struct macroCmdInfoEx {
     Program *program;
     RestartData<DocumentWidget> *context;
 };
-
-// Tuning parameters
-const int IO_BUF_SIZE         = 4096; // size of buffers for collecting cmd output
-const int OUTPUT_FLUSH_FREQ	  = 1000; // how often (msec) to flush output buffers when process is taking too long
-const int BANNER_WAIT_TIME	  = 6000; // how long to wait (msec) before putting up Shell Command Executing... banner
 
 // flags for issueCommand
 enum {
@@ -152,6 +178,24 @@ void dragEndCB(TextArea *area, dragEndCBStruct *data, void *user) {
     if(auto document = static_cast<DocumentWidget *>(user)) {
         document->dragEndCallback(area, data);
 	}
+}
+
+/*
+** Buffer replacement wrapper routine to be used for inserting output from
+** a command into the buffer, which takes into account that the buffer may
+** have been shrunken by the user (eg, by Undo). If necessary, the starting
+** and ending positions (part of the state of the command) are corrected.
+*/
+void safeBufReplace(TextBuffer *buf, int *start, int *end, const std::string &text) {
+    if (*start > buf->BufGetLength()) {
+        *start = buf->BufGetLength();
+    }
+
+    if (*end > buf->BufGetLength()) {
+        *end = buf->BufGetLength();
+    }
+
+    buf->BufReplaceEx(*start, *end, text);
 }
 
 /*
@@ -3055,7 +3099,7 @@ void DocumentWidget::CloseWindow() {
     bool keepWindow = !MacroWindowCloseActionsEx(this);
 
     // Kill shell sub-process and free related memory
-    AbortShellCommandEx(this);
+    AbortShellCommandEx();
 
     // Unload the default tips files for this language mode if necessary
     UnloadLanguageModeTipsFileEx();
@@ -4243,7 +4287,6 @@ void DocumentWidget::execAP(TextArea *area, const QString &command) {
 void DocumentWidget::ExecShellCommandEx(TextArea *area, const QString &command, bool fromMacro) {
     if(auto win = toWindow()) {
         int flags = 0;
-        char lineNumber[11];
 
         // Can't do two shell commands at once in the same window
         if (shellCmdData_) {
@@ -4277,7 +4320,7 @@ void DocumentWidget::ExecShellCommandEx(TextArea *area, const QString &command, 
 
         // NOTE(eteran): this used to be a nullptr check because the old code would
         // produce a null string pointer if it failed to allocate.
-        if(substitutedCommand.size() > INT_MAX) {
+        if(substitutedCommand.isNull()) {
             QMessageBox::critical(this, tr("Shell Command"), tr("Shell command is too long due to\n"
                                                                "filename substitutions with '%%' or\n"
                                                                "line number substitutions with '#'"));
@@ -4285,9 +4328,16 @@ void DocumentWidget::ExecShellCommandEx(TextArea *area, const QString &command, 
         }
 
         // issue the command
-#if 0   // TODO(eteran): implement this!
-        issueCommandEx(win, this, area, subsCommand, std::string(), flags, left, right, fromMacro);
-#endif
+        issueCommandEx(
+                    win,
+                    area,
+                    substitutedCommand,
+                    QString(),
+                    flags,
+                    left,
+                    right,
+                    fromMacro);
+
     }
 
 }
@@ -4887,4 +4937,630 @@ void DocumentWidget::UnloadLanguageModeTipsFileEx() {
     if (mode != PLAIN_LANGUAGE_MODE && !LanguageModes[mode]->defTipsFile.isNull()) {
         DeleteTagsFileEx(LanguageModes[mode]->defTipsFile, TIP, False);
     }
+}
+
+/*
+** Issue a shell command and feed it the string "input".  Output can be
+** directed either to text widget "textW" where it replaces the text between
+** the positions "replaceLeft" and "replaceRight", to a separate pop-up dialog
+** (OUTPUT_TO_DIALOG), or to a macro-language string (OUTPUT_TO_STRING).  If
+** "input" is nullptr, no input is fed to the process.  If an input string is
+** provided, it is freed when the command completes.  Flags:
+**
+**   ACCUMULATE     	Causes output from the command to be saved up until
+**  	    	    	the command completes.
+**   ERROR_DIALOGS  	Presents stderr output separately in popup a dialog,
+**  	    	    	and also reports failed exit status as a popup dialog
+**  	    	    	including the command output.
+**   REPLACE_SELECTION  Causes output to replace the selection in textW.
+**   RELOAD_FILE_AFTER  Causes the file to be completely reloaded after the
+**  	    	    	command completes.
+**   OUTPUT_TO_DIALOG   Send output to a pop-up dialog instead of textW
+**   OUTPUT_TO_STRING   Output to a macro-language string instead of a text
+**  	    	    	widget or dialog.
+**
+** REPLACE_SELECTION, ERROR_DIALOGS, and OUTPUT_TO_STRING can only be used
+** along with ACCUMULATE (these operations can't be done incrementally).
+*/
+void DocumentWidget::issueCommandEx(MainWindow *window, TextArea *area, const QString &command, const QString &input, int flags, int replaceLeft, int replaceRight, bool fromMacro) {
+
+    // verify consistency of input parameters
+    if ((flags & ERROR_DIALOGS || flags & REPLACE_SELECTION || flags & OUTPUT_TO_STRING) && !(flags & ACCUMULATE)) {
+        return;
+    }
+
+    DocumentWidget *document = this;
+
+    /* a shell command called from a macro must be executed in the same
+       window as the macro, regardless of where the output is directed,
+       so the user can cancel them as a unit */
+    if (fromMacro) {
+        document = MacroRunWindowEx();
+    }
+
+    // put up a watch cursor over the waiting window
+    if (!fromMacro) {
+        setCursor(Qt::WaitCursor);
+    }
+
+    // enable the cancel menu item
+    if (!fromMacro) {
+        window->ui.action_Cancel_Shell_Command->setEnabled(true);
+    }
+
+    // create the process and connect the output streams to the readyRead events
+    auto process = new QProcess(this);
+    connect(process, SIGNAL(readyReadStandardOutput()), document, SLOT(stdoutReadProc()));
+    connect(process, SIGNAL(finished(int, QProcess::ExitStatus)), document, SLOT(processFinished(int, QProcess::ExitStatus)));
+
+    if (flags & ERROR_DIALOGS) {
+        connect(process, SIGNAL(readyReadStandardError()), document, SLOT(stderrReadProc()));
+    }
+
+    // start it off!
+    process->start(command);
+
+    if (!process->waitForStarted()) {
+        return;
+    }
+
+    // if there's nothing to write to the process' stdin, close it now, otherwise
+    // write it to the process
+    if(input.isEmpty()) {
+        process->closeWriteChannel();
+    } else {
+        process->write(input.toLatin1());
+        process->closeWriteChannel();
+    }
+
+    /* Create a data structure for passing process information around
+       amongst the callback routines which will process i/o and completion */
+    auto cmdData = new shellCmdInfoEx;
+    document->shellCmdData_ = cmdData;
+
+    cmdData->process     = process;
+    cmdData->flags       = flags;
+    cmdData->area        = area;
+    cmdData->bannerIsUp  = false;
+    cmdData->fromMacro   = fromMacro;
+    cmdData->leftPos     = replaceLeft;
+    cmdData->rightPos    = replaceRight;
+
+    // Set up timer proc for putting up banner when process takes too long
+    if (fromMacro) {
+        cmdData->bannerTimeoutID = nullptr;
+    } else {
+        cmdData->bannerTimeoutID = new QTimer(document);
+        QObject::connect(cmdData->bannerTimeoutID, SIGNAL(timeout()), document, SLOT(bannerTimeoutProc()));
+        cmdData->bannerTimeoutID->setSingleShot(true);
+        cmdData->bannerTimeoutID->start(BANNER_WAIT_TIME);
+    }
+
+    // Set up timer proc for flushing output buffers periodically
+    if ((flags & ACCUMULATE) || !area) {
+        cmdData->flushTimeoutID = nullptr;
+    } else {
+        cmdData->flushTimeoutID = new QTimer(document);
+        QObject::connect(cmdData->flushTimeoutID, SIGNAL(timeout()), document, SLOT(flushTimeoutProc()));
+        cmdData->flushTimeoutID->setSingleShot(true);
+        cmdData->flushTimeoutID->start(OUTPUT_FLUSH_FREQ);
+    }
+
+    /* If this was called from a macro, preempt the macro until shell
+       command completes */
+    if (fromMacro) {
+        PreemptMacro();
+    }
+}
+
+/*
+** Called when the shell sub-process stdout stream has data.
+*/
+void DocumentWidget::stdoutReadProc() {
+    if(auto cmdData = static_cast<shellCmdInfoEx *>(shellCmdData_)) {
+        QByteArray data = cmdData->process->readAllStandardOutput();
+        cmdData->standardOutput.append(data);
+    }
+}
+
+/*
+** Called when the shell sub-process stderr stream has data.
+*/
+void DocumentWidget::stderrReadProc() {
+    if(auto cmdData = static_cast<shellCmdInfoEx *>(shellCmdData_)) {
+        QByteArray data = cmdData->process->readAllStandardOutput();
+        cmdData->standardError.append(data);
+    }
+}
+
+/*
+** Clean up after the execution of a shell command sub-process and present
+** the output/errors to the user as requested in the initial issueCommand
+** call.  If "terminatedOnError" is true, don't bother trying to read the
+** output, just close the i/o descriptors, free the memory, and restore the
+** user interface state.
+*/
+void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStatus) {
+
+    MainWindow *window = toWindow();
+    if(!window) {
+        return;
+    }
+
+    auto cmdData = static_cast<shellCmdInfoEx *>(shellCmdData_);
+    TextBuffer *buf;
+    int reselectStart;
+    bool cancel = false;
+    bool fromMacro = cmdData->fromMacro;
+
+    // Cancel pending timeouts
+    if (cmdData->flushTimeoutID) {
+        cmdData->flushTimeoutID->stop();
+        delete cmdData->flushTimeoutID;
+    }
+
+    if (cmdData->bannerTimeoutID) {
+        cmdData->bannerTimeoutID->stop();
+        delete cmdData->bannerTimeoutID;
+    }
+
+    // Clean up waiting-for-shell-command-to-complete mode
+    if (!cmdData->fromMacro) {
+        setCursor(Qt::ArrowCursor);
+        window->ui.action_Cancel_Learn->setEnabled(false);
+        if (cmdData->bannerIsUp) {
+            ClearModeMessageEx();
+        }
+    }
+
+    QString errText;
+    QString outText;
+
+    // If the process was killed or became inaccessable, give up
+    if (exitStatus != QProcess::NormalExit) {
+        goto cmdDone;
+    }
+
+    // if we have terminated the process, let's be 100% sure we've gotten all input
+    cmdData->process->waitForReadyRead();
+
+    /* Assemble the output from the process' stderr and stdout streams into
+       null terminated strings, and free the buffer lists used to collect it */
+    {
+        QByteArray data = cmdData->process->readAllStandardOutput();
+        cmdData->standardOutput.append(data);
+        outText = QString::fromLatin1(cmdData->standardOutput.data(), cmdData->standardOutput.size());
+    }
+
+    if (cmdData->flags & ERROR_DIALOGS) {
+        // make sure we got the rest and convert it to a string
+        QByteArray data = cmdData->process->readAllStandardOutput();
+        cmdData->standardError.append(data);
+        errText = QString::fromLatin1(cmdData->standardError.data(), cmdData->standardError.size());
+    }
+
+    /* Present error and stderr-information dialogs.  If a command returned
+       error output, or if the process' exit status indicated failure,
+       present the information to the user. */
+    if (cmdData->flags & ERROR_DIALOGS) {
+        bool failure = exitStatus != QProcess::NormalExit;
+        bool errorReport = !errText.isEmpty();
+
+        static const int DF_MAX_MSG_LENGTH = 4096;
+
+        if (failure && errorReport) {
+            errText.remove(QRegExp(QLatin1String("\n+$"))); // remove trailing newlines
+            errText.left(DF_MAX_MSG_LENGTH);                // truncate to DF_MAX_MSG_LENGTH characters
+
+            QMessageBox msgBox;
+            msgBox.setWindowTitle(tr("Warning"));
+            msgBox.setText(errText);
+            msgBox.setIcon(QMessageBox::Warning);
+            msgBox.setStandardButtons(QMessageBox::Cancel);
+            auto accept = new QPushButton(tr("Proceed"));
+            msgBox.addButton(accept, QMessageBox::AcceptRole);
+            msgBox.setDefaultButton(accept);
+            cancel = (msgBox.exec() == QMessageBox::Cancel);
+
+        } else if (failure) {
+            outText.left(DF_MAX_MSG_LENGTH - 70); // truncate to ~DF_MAX_MSG_LENGTH characters
+
+            QMessageBox msgBox;
+            msgBox.setWindowTitle(tr("Command Failure"));
+            msgBox.setText(tr("Command reported failed exit status.\nOutput from command:\n%1").arg(outText));
+            msgBox.setIcon(QMessageBox::Warning);
+            msgBox.setStandardButtons(QMessageBox::Cancel);
+            auto accept = new QPushButton(tr("Proceed"));
+            msgBox.addButton(accept, QMessageBox::AcceptRole);
+            msgBox.setDefaultButton(accept);
+            cancel = (msgBox.exec() == QMessageBox::Cancel);
+
+        } else if (errorReport) {
+
+            errText.remove(QRegExp(QLatin1String("\n+$"))); // remove trailing newlines
+            errText.left(DF_MAX_MSG_LENGTH);                // truncate to DF_MAX_MSG_LENGTH characters
+
+            QMessageBox msgBox;
+            msgBox.setWindowTitle(tr("Information"));
+            msgBox.setText(errText);
+            msgBox.setIcon(QMessageBox::Information);
+            msgBox.setStandardButtons(QMessageBox::Cancel);
+            auto accept = new QPushButton(tr("Proceed"));
+            msgBox.addButton(accept, QMessageBox::AcceptRole);
+            msgBox.setDefaultButton(accept);
+            cancel = (msgBox.exec() == QMessageBox::Cancel);
+        }
+
+        if (cancel) {
+            goto cmdDone;
+        }
+    }
+
+    {
+
+        /* If output is to a dialog, present the dialog.  Otherwise insert the
+           (remaining) output in the text widget as requested, and move the
+           insert point to the end */
+        if (cmdData->flags & OUTPUT_TO_DIALOG) {
+            outText.remove(QRegExp(QLatin1String("\n+$"))); // remove trailing newlines
+
+            if (!outText.isEmpty()) {
+                auto dialog = new DialogOutput(this);
+                dialog->setText(outText);
+                dialog->show();
+            }
+        } else if (cmdData->flags & OUTPUT_TO_STRING) {
+            std::string output_string = outText.toStdString();
+            ReturnShellCommandOutputEx(this, output_string, exitCode);
+        } else {
+
+            std::string output_string = outText.toStdString();
+
+            auto area = cmdData->area;
+            buf = area->TextGetBuffer();
+            if (!buf->BufSubstituteNullCharsEx(output_string)) {
+                fprintf(stderr, "nedit: Too much binary data in shell cmd output\n");
+                output_string.clear();
+            }
+
+            if (cmdData->flags & REPLACE_SELECTION) {
+                reselectStart = buf->primary_.rectangular ? -1 : buf->primary_.start;
+                buf->BufReplaceSelectedEx(output_string);
+
+                area->TextSetCursorPos(buf->cursorPosHint_);
+                if (reselectStart != -1) {
+                    buf->BufSelect(reselectStart, reselectStart + output_string.size());
+                }
+            } else {
+                safeBufReplace(buf, &cmdData->leftPos, &cmdData->rightPos, output_string);
+                area->TextSetCursorPos(cmdData->leftPos + outText.size());
+            }
+        }
+
+        // If the command requires the file to be reloaded afterward, reload it
+        if (cmdData->flags & RELOAD_FILE_AFTER) {
+            RevertToSaved();
+        }
+    }
+
+cmdDone:
+    delete cmdData->process;
+    delete cmdData;
+    shellCmdData_ = nullptr;
+    if (fromMacro) {
+        ResumeMacroExecutionEx(this);
+    }
+}
+
+/*
+** Cancel the shell command in progress
+*/
+void DocumentWidget::AbortShellCommandEx() {
+    if(auto cmdData = static_cast<shellCmdInfoEx *>(shellCmdData_)) {
+        if(QProcess *process = cmdData->process) {
+            process->terminate();
+        }
+    }
+}
+
+/*
+** Execute the line of text where the the insertion cursor is positioned
+** as a shell command.
+*/
+void DocumentWidget::ExecCursorLineEx(TextArea *area, bool fromMacro) {
+
+    MainWindow *window = toWindow();
+    if(!window) {
+        return;
+    }
+
+    int left;
+    int right;
+    int insertPos;
+    int line;
+    int column;
+
+    // Can't do two shell commands at once in the same window
+    if (shellCmdData_) {
+        QApplication::beep();
+        return;
+    }
+
+    // get all of the text on the line with the insert position
+    int pos = area->TextGetCursorPos();
+
+    if (!buffer_->GetSimpleSelection(&left, &right)) {
+        left = right = pos;
+        left = buffer_->BufStartOfLine(left);
+        right = buffer_->BufEndOfLine( right);
+        insertPos = right;
+    } else {
+        insertPos = buffer_->BufEndOfLine( right);
+    }
+
+    std::string cmdText = buffer_->BufGetRangeEx(left, right);
+    buffer_->BufUnsubstituteNullCharsEx(cmdText);
+
+    // insert a newline after the entire line
+    buffer_->BufInsertEx(insertPos, "\n");
+
+    /* Substitute the current file name for % and the current line number
+       for # in the shell command */
+    QString fullName = tr("%1%2").arg(path_).arg(filename_);
+    area->TextDPosToLineAndCol(pos, &line, &column);
+
+    QString substitutedCommand = QString::fromStdString(cmdText);
+    substitutedCommand.replace(QLatin1Char('%'), fullName);
+    substitutedCommand.replace(QLatin1Char('#'), tr("%1").arg(line));
+
+    if(substitutedCommand.isNull()) {
+        QMessageBox::critical(this, tr("Shell Command"), tr("Shell command is too long due to\n"
+                                                           "filename substitutions with '%%' or\n"
+                                                           "line number substitutions with '#'"));
+        return;
+    }
+
+    // issue the command
+    issueCommandEx(
+                window,
+                area,
+                substitutedCommand,
+                QString(),
+                0,
+                insertPos + 1,
+                insertPos + 1,
+                fromMacro);
+
+}
+
+void DocumentWidget::filterSelection(const QString &filterText) {
+
+    if (CheckReadOnly()) {
+        return;
+    }
+
+    FilterSelection(filterText, false);
+}
+
+/*
+** Filter the current selection through shell command "command".  The selection
+** is removed, and replaced by the output from the command execution.  Failed
+** command status and output to stderr are presented in dialog form.
+*/
+void DocumentWidget::FilterSelection(const QString &command, bool fromMacro) {
+
+    MainWindow *window = toWindow();
+    if(!window) {
+        return;
+    }
+
+    // Can't do two shell commands at once in the same window
+    if (shellCmdData_) {
+        QApplication::beep();
+        return;
+    }
+
+    /* Get the selection and the range in character positions that it
+       occupies.  Beep and return if no selection */
+    std::string text = buffer_->BufGetSelectionTextEx();
+    if (text.empty()) {
+        QApplication::beep();
+        return;
+    }
+    buffer_->BufUnsubstituteNullCharsEx(text);
+    int left  = buffer_->primary_.start;
+    int right = buffer_->primary_.end;
+
+    // Issue the command and collect its output
+    issueCommandEx(
+                window,
+                window->lastFocus_,
+                command,
+                QString::fromStdString(text),
+                ACCUMULATE | ERROR_DIALOGS | REPLACE_SELECTION,
+                left,
+                right,
+                fromMacro);
+}
+
+/*
+** Search through the shell menu and execute the first command with menu item
+** name "itemName".  Returns True on successs and False on failure.
+*/
+bool DocumentWidget::DoNamedShellMenuCmd(TextArea *area, const QString &name, bool fromMacro) {
+
+    MainWindow *window = toWindow();
+    if(!window) {
+        return false;
+    }
+
+    for(MenuData &data: ShellMenuData) {
+        if (data.item->name == name) {
+            if (data.item->output == TO_SAME_WINDOW && CheckReadOnly()) {
+                return false;
+            }
+
+            DoShellMenuCmd(
+                window,
+                area,
+                data.item->cmd.toStdString(),
+                data.item->input,
+                data.item->output,
+                data.item->repInput,
+                data.item->saveFirst,
+                data.item->loadAfter,
+                fromMacro);
+
+            return true;
+        }
+    }
+    return false;
+}
+
+/*
+** Do a shell command, with the options allowed to users (input source,
+** output destination, save first and load after) in the shell commands
+** menu.
+*/
+void DocumentWidget::DoShellMenuCmd(MainWindow *inWindow, TextArea *area, const std::string &command, InSrcs input, OutDests output, bool outputReplacesInput, bool saveFirst, bool loadAfter, bool fromMacro) {
+    int flags = 0;
+    int left = 0;
+    int right = 0;
+    int line;
+    int column;
+
+    // Can't do two shell commands at once in the same window
+    if (shellCmdData_) {
+        QApplication::beep();
+        return;
+    }
+
+    auto textD = area;
+
+    /* Substitute the current file name for % and the current line number
+       for # in the shell command */
+    QString fullName = tr("%1%2").arg(path_).arg(filename_);
+    int pos = area->TextGetCursorPos();
+    area->TextDPosToLineAndCol(pos, &line, &column);
+
+
+
+    QString substitutedCommand = QString::fromStdString(command);
+    substitutedCommand.replace(QLatin1Char('%'), fullName);
+    substitutedCommand.replace(QLatin1Char('#'), tr("%1").arg(line));
+
+    if(substitutedCommand.isNull()) {
+        QMessageBox::critical(this,
+                              tr("Shell Command"),
+                              tr("Shell command is too long due to filename substitutions with '%%' or line number substitutions with '#'"));
+        return;
+    }
+
+    /* Get the command input as a text string.  If there is input, errors
+      shouldn't be mixed in with output, so set flags to ERROR_DIALOGS */
+    std::string text;
+    switch(input) {
+    case FROM_SELECTION:
+        text = buffer_->BufGetSelectionTextEx();
+        if (text.empty()) {
+            QApplication::beep();
+            return;
+        }
+        flags |= ACCUMULATE | ERROR_DIALOGS;
+        break;
+    case FROM_WINDOW:
+        text = buffer_->BufGetAllEx();
+        flags |= ACCUMULATE | ERROR_DIALOGS;
+        break;
+    case FROM_EITHER:
+        text = buffer_->BufGetSelectionTextEx();
+        if (text.empty()) {
+            text = buffer_->BufGetAllEx();
+        }
+        flags |= ACCUMULATE | ERROR_DIALOGS;
+        break;
+    case FROM_NONE:
+    default:
+        text = std::string();
+        break;
+    }
+
+    /* If the buffer was substituting another character for ascii-nuls,
+       put the nuls back in before exporting the text */
+    buffer_->BufUnsubstituteNullCharsEx(text);
+
+    /* Assign the output destination.  If output is to a new window,
+       create it, and run the command from it instead of the current
+       one, to free the current one from waiting for lengthy execution */
+    TextArea *outWidget = nullptr;
+    switch(output) {
+    case TO_DIALOG:
+        outWidget = nullptr;
+        flags |= OUTPUT_TO_DIALOG;
+        left  = 0;
+        right = 0;
+        break;
+    case TO_NEW_WINDOW:
+        if(DocumentWidget *document = MainWindow::EditNewFileEx(GetPrefOpenInTab() ? inWindow : nullptr, nullptr, false, nullptr, path_)) {
+            inWindow  = document->toWindow();
+            outWidget = document->firstPane();
+            left      = 0;
+            right     = 0;
+            inWindow->CheckCloseDim();
+        }
+        break;
+    case TO_SAME_WINDOW:
+        outWidget = area;
+        if (outputReplacesInput && input != FROM_NONE) {
+            if (input == FROM_WINDOW) {
+                left = 0;
+                right = buffer_->BufGetLength();
+            } else if (input == FROM_SELECTION) {
+                buffer_->GetSimpleSelection(&left, &right);
+                flags |= ACCUMULATE | REPLACE_SELECTION;
+            } else if (input == FROM_EITHER) {
+                if (buffer_->GetSimpleSelection(&left, &right)) {
+                    flags |= ACCUMULATE | REPLACE_SELECTION;
+                } else {
+                    left = 0;
+                    right = buffer_->BufGetLength();
+                }
+            }
+        } else {
+            if (buffer_->GetSimpleSelection(&left, &right)) {
+                flags |= ACCUMULATE | REPLACE_SELECTION;
+            } else {
+                left = right = textD->TextGetCursorPos();
+            }
+        }
+        break;
+    default:
+        Q_ASSERT(0);
+        break;
+    }
+
+    // If the command requires the file be saved first, save it
+    if (saveFirst) {
+        if (!SaveWindow()) {
+            if (input != FROM_NONE)
+            return;
+        }
+    }
+
+    /* If the command requires the file to be reloaded after execution, set
+       a flag for issueCommand to deal with it when execution is complete */
+    if (loadAfter) {
+        flags |= RELOAD_FILE_AFTER;
+    }
+
+    // issue the command
+    issueCommandEx(
+                inWindow,
+                outWidget,
+                substitutedCommand,
+                QString::fromStdString(text),
+                flags,
+                left,
+                right,
+                fromMacro);
 }

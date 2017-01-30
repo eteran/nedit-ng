@@ -101,22 +101,15 @@ static void replaceScopeWindowCB(Widget w, XtPointer clientData, XtPointer callD
 static void replaceScopeSelectionCB(Widget w, XtPointer clientData, XtPointer callData);
 static void replaceScopeSmartCB(Widget w, XtPointer clientData, XtPointer callData);
 #endif
-static void cancelShellCB(Widget w, XtPointer clientData, XtPointer callData);
 static void learnCB(Widget w, XtPointer clientData, XtPointer callData);
 static void finishLearnCB(Widget w, XtPointer clientData, XtPointer callData);
 static void cancelLearnCB(Widget w, XtPointer clientData, XtPointer callData);
 static void replayCB(Widget w, XtPointer clientData, XtPointer callData);
 static void windowMenuCB(Widget w, XtPointer clientData, XtPointer callData);
-static void exitAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void repeatDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void repeatMacroAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void splitPaneAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 
-static void filterDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void shellFilterAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void execDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void execAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void execLineAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void shellMenuAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 
 static void macroMenuAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
@@ -172,7 +165,7 @@ static XtActionsRec Actions[] = {
                                  //{(String) "print", printAP},
                                  //{(String) "print-selection", printSelAP},
                                  //{(String) "print_selection", printSelAP},
-                                 {(String) "exit", exitAP},
+                                 //{(String) "exit", exitAP},
                                  //{(String) "undo", undoAP},
                                  //{(String) "redo", redoAP},
                                  //{(String) "delete", clearAP},
@@ -243,16 +236,16 @@ static XtActionsRec Actions[] = {
                                  //{(String) "control-code-dialog", controlDialogAP},
                                  //{(String) "control_code_dialog", controlDialogAP},
 
-                                 {(String) "filter-selection-dialog", filterDialogAP},
-                                 {(String) "filter_selection_dialog", filterDialogAP},
-                                 {(String) "filter-selection", shellFilterAP},
-                                 {(String) "filter_selection", shellFilterAP},
-                                 {(String) "execute-command", execAP},
-                                 {(String) "execute_command", execAP},
-                                 {(String) "execute-command-dialog", execDialogAP},
-                                 {(String) "execute_command_dialog", execDialogAP},
-                                 {(String) "execute-command-line", execLineAP},
-                                 {(String) "execute_command_line", execLineAP},
+                                 //{(String) "filter-selection-dialog", filterDialogAP},
+                                 //{(String) "filter_selection_dialog", filterDialogAP},
+                                 //{(String) "filter-selection", shellFilterAP},
+                                 //{(String) "filter_selection", shellFilterAP},
+                                 //{(String) "execute-command", execAP},
+                                 //{(String) "execute_command", execAP},
+                                 //{(String) "execute-command-dialog", execDialogAP},
+                                 //{(String) "execute_command_dialog", execDialogAP},
+                                 //{(String) "execute-command-line", execLineAP},
+                                 //{(String) "execute_command_line", execLineAP},
                                  {(String) "shell-menu-command", shellMenuAP},
                                  {(String) "shell_menu_command", shellMenuAP},
 
@@ -339,8 +332,6 @@ Widget CreateMenuBar(Widget parent, Document *window) {
 	** "File" pull down menu.
 	*/
 	menuPane = createMenu(menuBar, "fileMenu", "File", 0, nullptr, SHORT);
-    createMenuItem(menuPane, "exit", "Exit", 'x', doActionCB, "exit", SHORT);
-	CheckCloseDim();
 
 	/*
 	** "Edit" pull down menu.
@@ -377,16 +368,7 @@ Widget CreateMenuBar(Widget parent, Document *window) {
 	** Create the Shell menu
 	*/
 	menuPane = window->shellMenuPane_ = createMenu(menuBar, "shellMenu", "Shell", 0, &cascade, FULL);
-	btn = createMenuItem(menuPane, "executeCommand", "Execute Command...", 'E', doActionCB, "execute_command_dialog", SHORT);
-	XtVaSetValues(btn, XmNuserData, PERMANENT_MENU_ITEM, nullptr);
-	btn = createMenuItem(menuPane, "executeCommandLine", "Execute Command Line", 'x', doActionCB, "execute_command_line", SHORT);
-	XtVaSetValues(btn, XmNuserData, PERMANENT_MENU_ITEM, nullptr);
-	window->filterItem_ = createMenuItem(menuPane, "filterSelection", "Filter Selection...", 'F', doActionCB, "filter_selection_dialog", SHORT);
-	XtVaSetValues(window->filterItem_, XmNuserData, PERMANENT_MENU_ITEM, XmNsensitive, window->wasSelected_, nullptr);
-	window->cancelShellItem_ = createMenuItem(menuPane, "cancelShellCommand", "Cancel Shell Command", 'C', cancelShellCB, window, SHORT);
-	XtVaSetValues(window->cancelShellItem_, XmNuserData, PERMANENT_MENU_ITEM, XmNsensitive, False, nullptr);
-	btn = createMenuSeparator(menuPane, "sep1", SHORT);
-	XtVaSetValues(btn, XmNuserData, PERMANENT_MENU_ITEM, nullptr);
+
 
 	/*
 	** Create the Macro menu
@@ -422,7 +404,6 @@ Widget CreateMenuBar(Widget parent, Document *window) {
 	** Create "Help" pull down menu.
 	*/
 	menuPane = createMenu(menuBar, "helpMenu", "Help", 0, &cascade, SHORT);
-	XtVaSetValues(menuBar, XmNmenuHelpWidget, cascade, nullptr);
 
 	return menuBar;
 }
@@ -512,14 +493,6 @@ static void replaceScopeSmartCB(Widget w, XtPointer clientData, XtPointer callDa
 }
 #endif
 
-static void cancelShellCB(Widget w, XtPointer clientData, XtPointer callData) {
-	Q_UNUSED(clientData);
-	Q_UNUSED(callData);
-
-	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	AbortShellCommand(Document::WidgetToWindow(MENU_WIDGET(w)));
-}
-
 static void learnCB(Widget w, XtPointer clientData, XtPointer callData) {
 	Q_UNUSED(clientData);
 	Q_UNUSED(callData);
@@ -562,74 +535,6 @@ static void windowMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
 		updateWindowMenu(window);
 		window->windowMenuValid_ = True;
 	}
-}
-
-static void exitAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-	Q_UNUSED(event);
-	Q_UNUSED(args);
-	Q_UNUSED(nArgs)
-
-	Document *window = Document::WidgetToWindow(w);
-	
-	const int DF_MAX_MSG_LENGTH = 2048;
-	
-	
-	auto it = std::find_if(WindowList.begin(), WindowList.end(), [window](Document *doc) {
-		return doc == window;
-	});
-	
-	if (!CheckPrefsChangesSaved(window->shell_)) {
-		return;
-	}
-
-	/* If this is not the last window (more than one window is open),
-	   confirm with the user before exiting. */
-	// NOTE(eteran): test if the current window is NOT the only window
-	if (GetPrefWarnExit() && !(it == WindowList.begin() && std::next(it) == WindowList.end())) {
-	
-		QString exitMsg(QLatin1String("Editing: "));
-		
-		/* List the windows being edited and make sure the
-		   user really wants to exit */	
-		// This code assembles a list of document names being edited and elides as necessary
-		for(auto it = WindowList.begin(); it != WindowList.end(); ++it) {
-			
-			Document *win = *it;
-			
-			QString filename = QString(QLatin1String("%1%2")).arg(win->filename_).arg(win->fileChanged_ ? QLatin1String("*") : QLatin1String(""));
-						
-			if (exitMsg.size() + filename.size() + 30 >= DF_MAX_MSG_LENGTH) {
-				exitMsg.append(QLatin1String("..."));
-				break;
-			}
-			
-			// NOTE(eteran): test if this is the last window
-			if (std::next(it) == WindowList.end()) {
-				exitMsg.append(QString(QLatin1String("and %1.")).arg(filename));
-			} else {
-				exitMsg.append(QString(QLatin1String("%1, ")).arg(filename));
-			}
-		}
-		
-		exitMsg.append(QLatin1String("\n\nExit NEdit?"));
-		
-		QMessageBox messageBox(nullptr /*window->shell_*/);
-		messageBox.setWindowTitle(QLatin1String("Exit"));
-		messageBox.setIcon(QMessageBox::Question);
-		messageBox.setText(exitMsg);
-		QPushButton *buttonExit   = messageBox.addButton(QLatin1String("Exit"), QMessageBox::AcceptRole);
-		QPushButton *buttonCancel = messageBox.addButton(QMessageBox::Cancel);
-		Q_UNUSED(buttonExit);
-
-		messageBox.exec();
-		if(messageBox.clickedButton() == buttonCancel) {
-			return;
-		}
-	}
-
-	// Close all files and exit when the last one is closed 
-	if (CloseAllFilesAndWindows())
-		exit(EXIT_SUCCESS);
 }
 
 static void repeatDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -675,112 +580,6 @@ static void splitPaneAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 		XtSetSensitive(window->closePaneItem_, window->textPanes_.size() > 0);
 #endif
 	}
-}
-
-static void filterDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(args);
-	Q_UNUSED(nArgs)
-	
-	static DialogFilter *dialog = nullptr;
-
-	Document *window = Document::WidgetToWindow(w);
-	char *params[1];
-
-	if (CheckReadOnly(window)) {
-		return;
-	}
-	
-	if (!window->buffer_->primary_.selected) {
-		QApplication::beep();
-		return;
-	}	
-		
-	if(!dialog) {
-		dialog = new DialogFilter(nullptr /*window->shell_ */);
-	}
-	
-	int r = dialog->exec();
-	if(!r) {
-		return;
-	}
-	
-	QString filterText = dialog->ui.textFilter->text();
-	if(!filterText.isEmpty()) {
-		QByteArray filterString = filterText.toLatin1();
-		params[0] = filterString.data();
-		XtCallActionProc(w, "filter_selection", event, params, 1);
-	}
-}
-
-static void shellFilterAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-	Document *window = Document::WidgetToWindow(w);
-
-	if (CheckReadOnly(window))
-		return;
-	if (*nArgs == 0) {
-		fprintf(stderr, "nedit: filter_selection requires shell command argument\n");
-		return;
-	}
-	FilterSelection(window, args[0], event->xany.send_event == MACRO_EVENT_MARKER);
-}
-
-static void execDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(args);
-	Q_UNUSED(nArgs)
-	
-	static DialogExecuteCommand *dialog = nullptr;
-
-	Document *window = Document::WidgetToWindow(w);
-	char *params[1];
-
-	if (CheckReadOnly(window))
-		return;
-		
-	if(!dialog) {
-		dialog = new DialogExecuteCommand(nullptr /*window->shell_ */);
-	}
-	
-	int r = dialog->exec();
-	if(!r) {
-		return;
-	}
-	
-	QString commandText = dialog->ui.textCommand->text();
-	if(!commandText.isEmpty()) {
-		QByteArray commandString = commandText.toLatin1();
-		params[0] = commandString.data();
-		XtCallActionProc(w, "execute_command", event, params, 1);	
-	}
-}
-
-static void execAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(args);
-	Q_UNUSED(nArgs)
-
-	Document *window = Document::WidgetToWindow(w);
-
-	if (CheckReadOnly(window))
-		return;
-	if (*nArgs == 0) {
-		fprintf(stderr, "nedit: execute_command requires shell command argument\n");
-		return;
-	}
-	ExecShellCommand(window, args[0], event->xany.send_event == MACRO_EVENT_MARKER);
-}
-
-static void execLineAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(args);
-	Q_UNUSED(nArgs)
-
-	Document *window = Document::WidgetToWindow(w);
-
-	if (CheckReadOnly(window))
-		return;
-	ExecCursorLine(window, event->xany.send_event == MACRO_EVENT_MARKER);
 }
 
 static void shellMenuAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {

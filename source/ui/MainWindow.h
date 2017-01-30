@@ -40,6 +40,7 @@ public:
 
 private:
     virtual void keyPressEvent(QKeyEvent *event) override;
+    virtual void closeEvent(QCloseEvent *event) override;
 
 public:
     void parseGeometry(const char *geometry);
@@ -77,6 +78,8 @@ public:
     void updateWindowSizeMenus();
     void updateWindowSizeMenu();
     bool PromptForNewFileEx(DocumentWidget *document, const QString prompt, char *fullname, FileFormats *fileFormat, bool *addWrap);
+    bool CheckPrefsChangesSavedEx();
+    bool CloseAllDocumentInWindow();
 
 
 public:
@@ -129,6 +132,10 @@ public Q_SLOTS:
     void defaultSyntaxGroupTriggered(QAction *action);
     void defaultMatchingGroupTriggered(QAction *action);
     void defaultSizeGroupTriggered(QAction *action);
+#if 0
+    void macroTriggered(QAction *action);
+#endif
+    void shellTriggered(QAction *action);
 
 public Q_SLOTS:
     void on_tabWidget_currentChanged(int index);
@@ -141,6 +148,7 @@ public Q_SLOTS:
     void on_checkIFindReverse_toggled(bool value);
 
 public Q_SLOTS:
+    // File Menu
 	void on_action_New_triggered();
 	void on_action_New_Window_triggered();
 	void on_action_Open_triggered();
@@ -157,12 +165,9 @@ public Q_SLOTS:
     void on_action_Save_triggered();
     void on_action_Save_As_triggered();
     void on_action_Revert_to_Saved_triggered();
+    void on_action_Exit_triggered();
 
-#if 0
-
-	void on_action_Exit_triggered();
-
-#endif
+    // Edit Menu
     void on_action_Undo_triggered();
     void on_action_Redo_triggered();
 	void on_action_Cut_triggered();
@@ -193,6 +198,9 @@ public Q_SLOTS:
     void on_action_Show_Calltip_triggered();
     void on_action_Find_Definition_triggered();
     void on_action_Execute_Command_triggered();
+    void on_action_Execute_Command_Line_triggered();
+    void on_action_Filter_Selection_triggered();
+    void on_action_Cancel_Shell_Command_triggered();
 
     void on_action_Detach_Tab_triggered();
     void on_action_Split_Pane_triggered();
@@ -255,9 +263,6 @@ public Q_SLOTS:
     void on_action_Default_Warnings_On_Exit_toggled(bool state);
 
 #if 0
-    void on_action_Execute_Command_Line_triggered();
-    void on_action_Filter_Selection_triggered();
-    void on_action_Cancel_Shell_Command_triggered();
     void on_action_Indent_triggered();
     void on_action_Unindent_triggered();
 

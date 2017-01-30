@@ -14,6 +14,7 @@
 #include "DialogMacros.h"
 #include "DialogWindowBackgroundMenu.h"
 #include "DialogShellMenu.h"
+#include "DialogFilter.h"
 #include "DialogWindowSize.h"
 #include "SignalBlocker.h"
 #include "DialogLanguageModes.h"
@@ -109,6 +110,8 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(par
     ui.incrementalSearchFrame->setVisible(showISearchLine_);
 
     ui.action_Statistics_Line->setChecked(GetPrefStatsLine());
+
+    CheckCloseDim();
 }
 
 //------------------------------------------------------------------------------
@@ -974,7 +977,6 @@ QMenu *MainWindow::createUserMenu(DocumentWidget *document, const QVector<MenuDa
 */
 void MainWindow::UpdateUserMenus(DocumentWidget *document) {
 
-
     // TODO(eteran): the old code used to only do this if the language mode changed
     //               we should probably restore that behavior
 
@@ -988,6 +990,13 @@ void MainWindow::UpdateUserMenus(DocumentWidget *document) {
     ui.menu_Shell->addAction(ui.action_Cancel_Shell_Command);
     ui.menu_Shell->addSeparator();
     ui.menu_Shell->addActions(shellMenu->actions());
+    auto shellGroup = new QActionGroup(this);
+    shellGroup->setExclusive(false);
+    for(QAction *action : shellMenu->actions()) {
+        shellGroup->addAction(action);
+    }
+    connect(shellGroup, SIGNAL(triggered(QAction*)), this, SLOT(shellTriggered(QAction *)));
+
 
     auto macroMenu = createUserMenu(document, MacroMenuData);
     ui.menu_Macro->clear();
@@ -998,6 +1007,12 @@ void MainWindow::UpdateUserMenus(DocumentWidget *document) {
     ui.menu_Macro->addAction(ui.action_Repeat);
     ui.menu_Macro->addSeparator();
     ui.menu_Macro->addActions(macroMenu->actions());
+    auto macroGroup = new QActionGroup(this);
+    macroGroup->setExclusive(false);
+    for(QAction *action : macroMenu->actions()) {
+        macroGroup->addAction(action);
+    }
+    connect(macroGroup, SIGNAL(triggered(QAction*)), this, SLOT(macroTriggered(QAction *)));
 
     /* update background menu, which is owned by a single document, only
        if language mode was changed */
@@ -3786,5 +3801,221 @@ void MainWindow::on_action_New_Window_triggered() {
     if(auto document = currentDocument()) {
         MainWindow::EditNewFileEx(GetPrefOpenInTab() ? nullptr : this, nullptr, false, nullptr, document->path_);
         CheckCloseDim();
+    }
+}
+
+//------------------------------------------------------------------------------
+// Name: on_action_Exit_triggered
+//------------------------------------------------------------------------------
+void MainWindow::on_action_Exit_triggered() {
+
+    const int DF_MAX_MSG_LENGTH = 2048;
+
+    QList<DocumentWidget *> documents = MainWindow::allDocuments();
+
+    if (!CheckPrefsChangesSavedEx()) {
+        return;
+    }
+
+    /* If this is not the last window (more than one window is open),
+       confirm with the user before exiting. */
+    // NOTE(eteran): test if the current window is NOT the only window
+    if (GetPrefWarnExit() && !(documents.size() < 2)) {
+
+        QString exitMsg(tr("Editing: "));
+
+        /* List the windows being edited and make sure the
+           user really wants to exit */
+        // This code assembles a list of document names being edited and elides as necessary
+        for(int i = 0; i < documents.size(); ++i) {
+            DocumentWidget *const document  = documents[i];
+
+            QString filename = tr("%1%2").arg(document->filename_).arg(document->fileChanged_ ? tr("*") : tr(""));
+
+            if (exitMsg.size() + filename.size() + 30 >= DF_MAX_MSG_LENGTH) {
+                exitMsg.append(tr("..."));
+                break;
+            }
+
+            // NOTE(eteran): test if this is the last window
+            if (i == (documents.size() - 1)) {
+                exitMsg.append(tr("and %1.").arg(filename));
+            } else {
+                exitMsg.append(tr("%1, ").arg(filename));
+            }
+        }
+
+        exitMsg.append(tr("\n\nExit NEdit?"));
+
+        QMessageBox messageBox(this);
+        messageBox.setWindowTitle(tr("Exit"));
+        messageBox.setIcon(QMessageBox::Question);
+        messageBox.setText(exitMsg);
+        QPushButton *buttonExit   = messageBox.addButton(tr("Exit"), QMessageBox::AcceptRole);
+        QPushButton *buttonCancel = messageBox.addButton(QMessageBox::Cancel);
+        Q_UNUSED(buttonExit);
+
+        messageBox.exec();
+        if(messageBox.clickedButton() == buttonCancel) {
+            return;
+        }
+    }
+
+    // Close all files and exit when the last one is closed
+    if (CloseAllFilesAndWindowsEx()) {
+        QApplication::quit();
+    }
+}
+
+/*
+** Check if preferences have changed, and if so, ask the user if he wants
+** to re-save.  Returns False if user requests cancelation of Exit (or whatever
+** operation triggered this call to be made).
+*/
+bool MainWindow::CheckPrefsChangesSavedEx() {
+
+    if (!PrefsHaveChanged) {
+        return true;
+    }
+
+    QMessageBox messageBox(this);
+    messageBox.setWindowTitle(tr("Default Preferences"));
+    messageBox.setIcon(QMessageBox::Question);
+
+    messageBox.setText((ImportedFile == nullptr)
+        ? tr("Default Preferences have changed.\nSave changes to NEdit preference file?")
+        : tr("Default Preferences have changed.  SAVING \nCHANGES WILL INCORPORATE ADDITIONAL\nSETTINGS FROM FILE: %s").arg(QLatin1String(ImportedFile)));
+
+    QPushButton *buttonSave     = messageBox.addButton(tr("Save"), QMessageBox::AcceptRole);
+    QPushButton *buttonDontSave = messageBox.addButton(tr("Don't Save"), QMessageBox::AcceptRole);
+    QPushButton *buttonCancel   = messageBox.addButton(QMessageBox::Cancel);
+    Q_UNUSED(buttonCancel);
+
+    messageBox.exec();
+    if(messageBox.clickedButton() == buttonSave) {
+        SaveNEditPrefsEx(this, true);
+        return true;
+    } else if(messageBox.clickedButton() == buttonDontSave) {
+        return true;
+    } else {
+        return false;
+    }
+
+}
+
+/*
+** close all the documents in a window
+*/
+bool MainWindow::CloseAllDocumentInWindow() {
+
+    if (TabCount() == 1) {
+        // only one document in the window
+        if(DocumentWidget *document = currentDocument()) {
+            return document->CloseFileAndWindow(PROMPT_SBC_DIALOG_RESPONSE);
+        }
+    } else {
+
+        // close all _modified_ documents belong to this window
+        for(DocumentWidget *document : openDocuments()) {
+            if (document->fileChanged_) {
+                if (!document->CloseFileAndWindow(PROMPT_SBC_DIALOG_RESPONSE)) {
+                    return false;
+                }
+            }
+        }
+
+        // if there's still documents left in the window...
+        for(DocumentWidget *document : openDocuments()) {
+            if (!document->CloseFileAndWindow(PROMPT_SBC_DIALOG_RESPONSE)) {
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+void MainWindow::closeEvent(QCloseEvent *event) {
+
+
+    QList<MainWindow *> windows = MainWindow::allWindows();
+    if(windows.size() == 1) {
+        // this is only window, then this is the same as exit
+        Q_EMIT on_action_Exit_triggered();
+    } else {
+
+        if (TabCount() == 1) {
+            if(DocumentWidget *document = currentDocument()) {
+                document->CloseFileAndWindow(PROMPT_SBC_DIALOG_RESPONSE);
+            }
+        } else {
+            int resp = QMessageBox::Cancel;
+            if (GetPrefWarnExit()) {
+                // TODO(eteran): this is probably better off with "Ok" "Cancel", but we are being consistant with the original UI for now
+                resp = QMessageBox::question(this, tr("Close Window"), tr("Close ALL documents in this window?"), QMessageBox::Cancel, QMessageBox::Close);
+            }
+
+            if (resp == QMessageBox::Close) {
+                CloseAllDocumentInWindow();
+                delete this;
+                event->accept();
+            } else {
+                event->ignore();
+            }
+        }
+    }
+}
+
+void MainWindow::on_action_Execute_Command_Line_triggered() {
+    if(auto doc = currentDocument()) {
+        if (doc->CheckReadOnly()) {
+            return;
+        }
+
+        doc->ExecCursorLineEx(lastFocus_, false);
+    }
+}
+
+void MainWindow::on_action_Filter_Selection_triggered() {
+    if(auto doc = currentDocument()) {
+        static DialogFilter *dialog = nullptr;
+
+        if (doc->CheckReadOnly()) {
+            return;
+        }
+
+        if (!doc->buffer_->primary_.selected) {
+            QApplication::beep();
+            return;
+        }
+
+        if(!dialog) {
+            dialog = new DialogFilter(this);
+        }
+
+        int r = dialog->exec();
+        if(!r) {
+            return;
+        }
+
+        QString filterText = dialog->ui.textFilter->text();
+        if(!filterText.isEmpty()) {
+            doc->filterSelection(filterText);
+        }
+    }
+}
+
+void MainWindow::on_action_Cancel_Shell_Command_triggered() {
+    if(auto doc = currentDocument()) {
+        doc->AbortShellCommandEx();
+    }
+}
+
+
+void MainWindow::shellTriggered(QAction *action) {
+    if(auto doc = currentDocument()) {
+        const int index = action->data().toInt();
+        const QString name = ShellMenuData[index].item->name;
+        doc->DoNamedShellMenuCmd(lastFocus_, name, false);
     }
 }
