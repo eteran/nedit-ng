@@ -151,7 +151,9 @@ void UpdateUserMenus(Document *window) {
 	/* update user menus, which are shared over all documents, only
 	   if language mode was changed */
 	if (window->userMenuCache_->umcLanguageMode != window->languageMode_) {
+#if 0
 		updateMenu(window, SHELL_CMDS);
+#endif
 		updateMenu(window, MACRO_CMDS);
 
 		// remember language mode assigned to shared user menus 
@@ -187,12 +189,16 @@ void DimPasteReplayBtns(int sensitive) {
 ** a selection in their associated window.
 */
 void DimSelectionDepUserMenuItems(Document *window, int sensitive) {
+    Q_UNUSED(window);
+    Q_UNUSED(sensitive);
+#if 0 // NOTE(eteran): transitioned
 	if (!window->IsTopDocument())
 		return;
 
 	dimSelDepItemsInMenu(window->shellMenuPane_, ShellMenuData, sensitive);
 	dimSelDepItemsInMenu(window->macroMenuPane_, MacroMenuData, sensitive);
 	dimSelDepItemsInMenu(window->bgMenuPane_,    BGMenuData,    sensitive);
+#endif
 }
 
 static void dimSelDepItemsInMenu(Widget menuPane, const QVector<MenuData> &menuList, int sensitive) {

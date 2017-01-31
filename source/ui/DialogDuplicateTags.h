@@ -4,12 +4,13 @@
 
 #include <QDialog>
 #include "ui_DialogDuplicateTags.h"
-#include <X11/Intrinsic.h>
+class DocumentWidget;
+class TextArea;
 
 class DialogDuplicateTags : public QDialog {
 	Q_OBJECT
 public:
-	DialogDuplicateTags(Widget motifParent, QWidget *parent = 0, Qt::WindowFlags f = 0);
+    DialogDuplicateTags(DocumentWidget *document, TextArea *area, QWidget *parent = 0, Qt::WindowFlags f = 0);
 	virtual ~DialogDuplicateTags() override;
 	
 public:
@@ -25,7 +26,8 @@ private:
 
 private:
 	Ui::DialogDuplicateTags ui;
-	Widget parent_;
+    DocumentWidget *document_;
+    TextArea *area_;
 };
 
 #endif

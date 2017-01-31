@@ -4998,11 +4998,12 @@ void DocumentWidget::issueCommandEx(MainWindow *window, TextArea *area, const QS
     }
 
     // start it off!
-    process->start(command);
-
-    if (!process->waitForStarted()) {
-        return;
-    }
+    //QString shellCommand = QString(QLatin1String("%1 -c %2")).arg(QLatin1String(GetPrefShell())).arg(command);
+    //QString shellCommand = command;
+    QStringList args;
+    args << QLatin1String("-c");
+    args << command;
+    process->start(QLatin1String(GetPrefShell()), args);
 
     // if there's nothing to write to the process' stdin, close it now, otherwise
     // write it to the process
@@ -5258,7 +5259,7 @@ cmdDone:
 void DocumentWidget::AbortShellCommandEx() {
     if(auto cmdData = static_cast<shellCmdInfoEx *>(shellCmdData_)) {
         if(QProcess *process = cmdData->process) {
-            process->terminate();
+            process->kill();
         }
     }
 }
@@ -5403,7 +5404,7 @@ bool DocumentWidget::DoNamedShellMenuCmd(TextArea *area, const QString &name, bo
             DoShellMenuCmd(
                 window,
                 area,
-                data.item->cmd.toStdString(),
+                data.item->cmd,
                 data.item->input,
                 data.item->output,
                 data.item->repInput,
@@ -5422,9 +5423,10 @@ bool DocumentWidget::DoNamedShellMenuCmd(TextArea *area, const QString &name, bo
 ** output destination, save first and load after) in the shell commands
 ** menu.
 */
-void DocumentWidget::DoShellMenuCmd(MainWindow *inWindow, TextArea *area, const std::string &command, InSrcs input, OutDests output, bool outputReplacesInput, bool saveFirst, bool loadAfter, bool fromMacro) {
+void DocumentWidget::DoShellMenuCmd(MainWindow *inWindow, TextArea *area, const QString &command, InSrcs input, OutDests output, bool outputReplacesInput, bool saveFirst, bool loadAfter, bool fromMacro) {
+
     int flags = 0;
-    int left = 0;
+    int left  = 0;
     int right = 0;
     int line;
     int column;
@@ -5435,17 +5437,13 @@ void DocumentWidget::DoShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
         return;
     }
 
-    auto textD = area;
-
     /* Substitute the current file name for % and the current line number
        for # in the shell command */
     QString fullName = tr("%1%2").arg(path_).arg(filename_);
     int pos = area->TextGetCursorPos();
     area->TextDPosToLineAndCol(pos, &line, &column);
 
-
-
-    QString substitutedCommand = QString::fromStdString(command);
+    QString substitutedCommand = command;
     substitutedCommand.replace(QLatin1Char('%'), fullName);
     substitutedCommand.replace(QLatin1Char('#'), tr("%1").arg(line));
 
@@ -5530,7 +5528,7 @@ void DocumentWidget::DoShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
             if (buffer_->GetSimpleSelection(&left, &right)) {
                 flags |= ACCUMULATE | REPLACE_SELECTION;
             } else {
-                left = right = textD->TextGetCursorPos();
+                left = right = area->TextGetCursorPos();
             }
         }
         break;

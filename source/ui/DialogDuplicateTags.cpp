@@ -6,7 +6,7 @@
 //------------------------------------------------------------------------------
 // Name: DialogDuplicateTags
 //------------------------------------------------------------------------------
-DialogDuplicateTags::DialogDuplicateTags(Widget motifParent, QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f), parent_(motifParent) {
+DialogDuplicateTags::DialogDuplicateTags(DocumentWidget *document, TextArea *area, QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f), document_(document), area_(area) {
 	ui.setupUi(this);
 }
 
@@ -58,9 +58,9 @@ bool DialogDuplicateTags::applySelection() {
 		int i = stoi(eptr) - 1;
 
 		if (searchMode == TAG) {
-			editTaggedLocation(parent_, i); // Open the file with the definition 
+            editTaggedLocationEx(area_, i); // Open the file with the definition
 		} else {
-			showMatchingCalltip(parent_, i);
+            showMatchingCalltipEx(area_, i);
 		}
 
 		return true;

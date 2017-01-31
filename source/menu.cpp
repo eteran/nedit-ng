@@ -367,7 +367,7 @@ Widget CreateMenuBar(Widget parent, Document *window) {
 	/*
 	** Create the Shell menu
 	*/
-	menuPane = window->shellMenuPane_ = createMenu(menuBar, "shellMenu", "Shell", 0, &cascade, FULL);
+    menuPane = window->shellMenuPane_ = createMenu(menuBar, "shellMenu", "Shell", 0, &cascade, FULL);
 
 
 	/*

@@ -174,7 +174,7 @@ public:
     void filterSelection(const QString &filterText);
     void FilterSelection(const QString &command, bool fromMacro);
     bool DoNamedShellMenuCmd(TextArea *area, const QString &name, bool fromMacro);
-    void DoShellMenuCmd(MainWindow *inWindow, TextArea *area, const std::string &command, InSrcs input, OutDests output, bool outputReplacesInput, bool saveFirst, bool loadAfter, bool fromMacro);
+    void DoShellMenuCmd(MainWindow *inWindow, TextArea *area, const QString &command, InSrcs input, OutDests output, bool outputReplacesInput, bool saveFirst, bool loadAfter, bool fromMacro);
 
 public:
     static DocumentWidget *EditExistingFileEx(DocumentWidget *inWindow, const QString &name, const QString &path, int flags, char *geometry, int iconic, const char *languageMode, bool tabbed, bool bgOpen);

@@ -34,6 +34,7 @@
 #include <QX11Info>
 #include "ui/DialogPrint.h"
 #include "ui/MainWindow.h"
+#include "ui/DocumentWidget.h"
 
 #include "nedit.h"
 #include "Document.h"
@@ -257,6 +258,7 @@ int main(int argc, char *argv[]) {
 	int editFlags = CREATE;
 	bool gotoLine = false;
 	bool macroFileRead = false;
+    bool macroFileReadEx = false;
 	bool opts = true;
 	bool iconic = false;
 	int tabbed = -1;
@@ -267,9 +269,9 @@ int main(int argc, char *argv[]) {
 	char *langMode = nullptr;
 	char filename[MAXPATHLEN];
 	char pathname[MAXPATHLEN];
-	Document *window = nullptr;
-	Document *lastFile = nullptr;
 	uint8_t *invalidBindings = nullptr;
+    DocumentWidget *lastFileEx = nullptr;
+    Document *lastFile = nullptr;
 
 	/* Set locale for C library, X, and Motif input functions.
 	   Reverts to "C" if requested locale not available. */
@@ -509,14 +511,25 @@ int main(int argc, char *argv[]) {
 				   items. The current file may also be raised if there're
 				   macros to execute on. */
 
+                DocumentWidget *windowEx = nullptr;
+                Document *window         = nullptr;
+
+                QList<MainWindow *> windows = MainWindow::allWindows();
+                if(!windows.empty()) {
+                    windowEx = DocumentWidget::EditExistingFileEx(windows[0]->currentDocument(), QLatin1String(filename), QLatin1String(pathname), editFlags, geometry, iconic, langMode, isTabbed, true);
+                } else {
+                    windowEx = DocumentWidget::EditExistingFileEx(nullptr,                       QLatin1String(filename), QLatin1String(pathname), editFlags, geometry, iconic, langMode, isTabbed, true);
+                }
+
 				auto it = WindowList.begin();
 				if(it != WindowList.end()) {
-					window = EditExistingFile(*it, QLatin1String(filename), QLatin1String(pathname), editFlags, geometry, iconic, langMode, isTabbed, true);
+                    window = EditExistingFile(*it, QLatin1String(filename), QLatin1String(pathname), editFlags, geometry, iconic, langMode, isTabbed, true);
 				} else {
 					window = EditExistingFile(nullptr, QLatin1String(filename), QLatin1String(pathname), editFlags, geometry, iconic, langMode, isTabbed, true);
 				}
 				
 				fileSpecified = true;
+#if 1
 				if (window) {
 					window->CleanUpTabBarExposeQueue();
 
@@ -546,6 +559,46 @@ int main(int argc, char *argv[]) {
 				if (window) {
 					lastFile = window;
 				}
+#endif
+
+#if 1
+                if (windowEx) {
+
+                    // raise the last tab of previous window
+                    if (lastFileEx && lastFileEx->toWindow() != windowEx->toWindow()) {
+                        lastFileEx->RaiseDocument();
+                    }
+
+                    if (!macroFileReadEx) {
+                        ReadMacroInitFileEx(windowEx);
+                        macroFileReadEx = true;
+                    }
+                    if (gotoLine) {
+                        SelectNumberedLineEx(windowEx, windowEx->firstPane(), lineNum);
+                    }
+
+#if 0 // TODO(eteran): finish macro support
+                    if (toDoCommand) {
+                        DoMacro(window, toDoCommand, "-do macro");
+                        toDoCommand = nullptr;
+
+                        if (!windowEx->IsValidWindow()) {
+                            windowEx = nullptr; // window closed by macro
+                        }
+
+                        if (lastFileEx && !lastFileEx->IsValidWindow()) {
+                            lastFileEx = nullptr; // window closed by macro
+                        }
+                    }
+#endif
+                }
+
+                // register last opened file for later use
+                if (windowEx) {
+                    lastFileEx = windowEx;
+                }
+#endif
+
 			} else {
 				fprintf(stderr, "nedit: file name too long: %s\n", argv[i]);
 			}

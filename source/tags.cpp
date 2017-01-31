@@ -62,6 +62,8 @@
 #include <sys/param.h>
 
 static int LookupTag(const char *name, const char **file, int *lang, const char **searchString, int *pos, const char **path, int search_type);
+static void editTaggedLocation(Widget parent, int i);
+static void showMatchingCalltip(Widget parent, int i);
 
 namespace {
 
@@ -100,6 +102,7 @@ static Tag *getTag(const char *name, int search_type);
 static int findDef(Document *window, const char *value, int search_type);
 static int findAllMatches(Document *window, const char *string);
 static void createSelectMenu(Widget parent, const QVector<char *> &args);
+static void createSelectMenuEx(DocumentWidget *document, TextArea *area, const QVector<char *> &args);
 
 
 static const char *rcs_strdup(const char *str);
@@ -1222,9 +1225,7 @@ int findAllMatchesEx(DocumentWidget *document, TextArea *area, const char *strin
             dupTagsList.push_back(str);
         }
 
-#if 0
-        createSelectMenu(dialogParent, dupTagsList);
-#endif
+        createSelectMenuEx(document, area, dupTagsList);
 
         qDeleteAll(dupTagsList);
         return 1;
@@ -1732,13 +1733,26 @@ void editTaggedLocation(Widget parent, int i) {
 
 //      Create a Menu for user to select from the collided tags 
 static void createSelectMenu(Widget parent, const QVector<char *> &args) {
-
+    Q_UNUSED(parent);
+    Q_UNUSED(args);
+#if 0
 	auto dialog = new DialogDuplicateTags(parent, nullptr);
 	dialog->setTag(QLatin1String(tagName));
 	for(char *arg: args) {
 		dialog->addListItem(QLatin1String(arg));
 	}	
 	dialog->show();
+#endif
+}
+
+static void createSelectMenuEx(DocumentWidget *document, TextArea *area, const QVector<char *> &args) {
+
+    auto dialog = new DialogDuplicateTags(document, area, document);
+    dialog->setTag(QLatin1String(tagName));
+    for(char *arg: args) {
+        dialog->addListItem(QLatin1String(arg));
+    }
+    dialog->show();
 }
 
 /*--------------------------------------------------------------------------

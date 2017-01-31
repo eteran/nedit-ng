@@ -76,9 +76,7 @@ int tagsShowCalltipEx(TextArea *area, const char *text);
 //  Display (possibly finding first) a calltip.  Search type can only be TIP or TIP_FROM_TAG here.
 int ShowTipString(Document *window, char *text, Boolean anchored, int pos, Boolean lookup, int search_type, int hAlign, int vAlign, int alignMode);
 
-void editTaggedLocation(Widget parent, int i);
 void editTaggedLocationEx(TextArea *area, int i);
-void showMatchingCalltip(Widget parent, int i);
 void showMatchingCalltipEx(TextArea *area, int i);
 
 int findAllMatchesEx(DocumentWidget *document, TextArea *area, const char *string);
