@@ -101,11 +101,7 @@ static void replaceScopeWindowCB(Widget w, XtPointer clientData, XtPointer callD
 static void replaceScopeSelectionCB(Widget w, XtPointer clientData, XtPointer callData);
 static void replaceScopeSmartCB(Widget w, XtPointer clientData, XtPointer callData);
 #endif
-static void learnCB(Widget w, XtPointer clientData, XtPointer callData);
-static void finishLearnCB(Widget w, XtPointer clientData, XtPointer callData);
-static void cancelLearnCB(Widget w, XtPointer clientData, XtPointer callData);
 static void replayCB(Widget w, XtPointer clientData, XtPointer callData);
-static void windowMenuCB(Widget w, XtPointer clientData, XtPointer callData);
 static void repeatDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void repeatMacroAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void splitPaneAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
@@ -373,13 +369,6 @@ Widget CreateMenuBar(Widget parent, Document *window) {
 	/*
 	** Create the Macro menu
 	*/
-	menuPane = window->macroMenuPane_ = createMenu(menuBar, "macroMenu", "Macro", 0, &cascade, FULL);
-	window->learnItem_ = createMenuItem(menuPane, "learnKeystrokes", "Learn Keystrokes", 'L', learnCB, window, SHORT);
-	XtVaSetValues(window->learnItem_, XmNuserData, PERMANENT_MENU_ITEM, nullptr);
-	window->finishLearnItem_ = createMenuItem(menuPane, "finishLearn", "Finish Learn", 'F', finishLearnCB, window, SHORT);
-	XtVaSetValues(window->finishLearnItem_, XmNuserData, PERMANENT_MENU_ITEM, XmNsensitive, False, nullptr);
-	window->cancelMacroItem_ = createMenuItem(menuPane, "cancelLearn", "Cancel Learn", 'C', cancelLearnCB, window, SHORT);
-	XtVaSetValues(window->cancelMacroItem_, XmNuserData, PERMANENT_MENU_ITEM, XmNsensitive, False, nullptr);
 	window->replayItem_ = createMenuItem(menuPane, "replayKeystrokes", "Replay Keystrokes", 'K', replayCB, window, SHORT);
 	XtVaSetValues(window->replayItem_, XmNuserData, PERMANENT_MENU_ITEM, XmNsensitive, !GetReplayMacro().empty(), nullptr);
 	window->repeatItem_ = createMenuItem(menuPane, "repeat", "Repeat...", 'R', doActionCB, "repeat_dialog", SHORT);
@@ -391,7 +380,6 @@ Widget CreateMenuBar(Widget parent, Document *window) {
 	** Create the Windows menu
 	*/
 	menuPane = window->windowMenuPane_ = createMenu(menuBar, "windowsMenu", "Windows", 0, &cascade, FULL);
-	XtAddCallback(cascade, XmNcascadingCallback, windowMenuCB, window);
 	window->splitPaneItem_ = createMenuItem(menuPane, "splitPane", "Split Pane", 'S', doActionCB, "split_pane", SHORT);
 	XtVaSetValues(window->splitPaneItem_, XmNuserData, PERMANENT_MENU_ITEM, nullptr);
 
@@ -493,29 +481,9 @@ static void replaceScopeSmartCB(Widget w, XtPointer clientData, XtPointer callDa
 }
 #endif
 
-static void learnCB(Widget w, XtPointer clientData, XtPointer callData) {
-	Q_UNUSED(clientData);
-	Q_UNUSED(callData);
 
-	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	BeginLearn(Document::WidgetToWindow(MENU_WIDGET(w)));
-}
 
-static void finishLearnCB(Widget w, XtPointer clientData, XtPointer callData) {
-	Q_UNUSED(clientData);
-	Q_UNUSED(callData);
 
-	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	FinishLearn();
-}
-
-static void cancelLearnCB(Widget w, XtPointer clientData, XtPointer callData) {
-	Q_UNUSED(clientData);
-	Q_UNUSED(callData);
-
-	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	CancelMacroOrLearn(Document::WidgetToWindow(MENU_WIDGET(w)));
-}
 
 static void replayCB(Widget w, XtPointer clientData, XtPointer callData) {
 	Q_UNUSED(clientData);
@@ -523,18 +491,6 @@ static void replayCB(Widget w, XtPointer clientData, XtPointer callData) {
 
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	Replay(Document::WidgetToWindow(MENU_WIDGET(w)));
-}
-
-static void windowMenuCB(Widget w, XtPointer clientData, XtPointer callData) {
-	Q_UNUSED(clientData);
-	Q_UNUSED(callData);
-
-	Document *window = Document::WidgetToWindow(MENU_WIDGET(w));
-
-	if (!window->windowMenuValid_) {
-		updateWindowMenu(window);
-		window->windowMenuValid_ = True;
-	}
 }
 
 static void repeatDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {

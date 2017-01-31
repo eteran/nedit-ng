@@ -79,6 +79,8 @@
 
 #include <functional>
 
+static void FinishLearn();
+
 namespace {
 
 // How long to wait (msec) before putting up Macro Command banner 
@@ -129,12 +131,12 @@ struct macroCmdInfoEx {
 };
 
 
-static void cancelLearn(void);
+static void cancelLearnEx();
 static void runMacro(Document *window, Program *prog);
 static void runMacroEx(DocumentWidget *window, Program *prog);
 static void finishMacroCmdExecution(Document *window);
 static void finishMacroCmdExecutionEx(DocumentWidget *window);
-static void learnActionHook(Widget w, XtPointer clientData, String actionName, XEvent *event, String *params, Cardinal *numParams);
+void learnActionHook(Widget w, XtPointer clientData, String actionName, XEvent *event, String *params, Cardinal *numParams);
 static void lastActionHook(Widget w, XtPointer clientData, String actionName, XEvent *event, String *params, Cardinal *numParams);
 static char *actionToString(Widget w, const char *actionName, XEvent *event, String *params, Cardinal numParams);
 static int isMouseAction(const char *action);
@@ -372,66 +374,62 @@ void RegisterMacroSubroutines() {
 		ReturnGlobals[i] = InstallSymbol(ReturnGlobalNames[i], GLOBAL_SYM, noValue);
 }
 
-void BeginLearn(Document *window) {
-	XmString s;
-	XmString xmFinish;
-	XmString xmCancel;
+void BeginLearnEx(DocumentWidget *document) {
 
-	// If we're already in learn mode, return 
-	if(MacroRecordActionHook)
-		return;
+    // If we're already in learn mode, return
+    if(MacroRecordActionHook)
+        return;
 
-	// dim the inappropriate menus and items, and undim finish and cancel 
-	for(Document *win: WindowList) {
-		if (win->IsTopDocument()) {
-			XtSetSensitive(win->learnItem_, False);
-		}
-	}
-	
-	window->SetSensitive(window->finishLearnItem_, True);
-	XtVaSetValues(window->cancelMacroItem_, XmNlabelString, s = XmStringCreateSimpleEx("Cancel Learn"), nullptr);
-	XmStringFree(s);
-	window->SetSensitive(window->cancelMacroItem_, True);
+    MainWindow *thisWindow = document->toWindow();
+    if(!thisWindow) {
+        return;
+    }
 
-	// Mark the window where learn mode is happening 
-	MacroRecordWindow = window;
+    // dim the inappropriate menus and items, and undim finish and cancel
+    for(MainWindow *window : MainWindow::allWindows()) {
+        window->ui.action_Learn_Keystrokes->setEnabled(false);
+    }
 
-	// Allocate a text buffer for accumulating the macro strings 
-	MacroRecordBuf = new TextBuffer;
+    thisWindow->ui.action_Finish_Learn->setEnabled(true);
+    thisWindow->ui.action_Cancel_Learn->setText(QLatin1String("Cancel Learn"));
+    thisWindow->ui.action_Cancel_Learn->setEnabled(true);
 
-	// Add the action hook for recording the actions 
-	MacroRecordActionHook = XtAppAddActionHook(XtWidgetToApplicationContext(window->shell_), learnActionHook, window);
+    // Mark the window where learn mode is happening
+    MacroRecordWindowEx = document;
 
-	// Extract accelerator texts from menu PushButtons 
-	XtVaGetValues(window->finishLearnItem_, XmNacceleratorText, &xmFinish, nullptr);
-	XtVaGetValues(window->cancelMacroItem_, XmNacceleratorText, &xmCancel, nullptr);
+    // Allocate a text buffer for accumulating the macro strings
+    MacroRecordBuf = new TextBuffer;
 
-	// Translate Motif strings to char* 
-	std::string cFinish = GetXmStringTextEx(xmFinish);
-	std::string cCancel = GetXmStringTextEx(xmCancel);
+    // Add the action hook for recording the actions
+    MacroRecordActionHookEx = [](DocumentWidget *document) -> int {
+        Q_UNUSED(document);
+        // TODO(eteran): implement this!
+        // it was set to learnActionHook which with an argument of document bound to it!
+        return -1;
+    };
 
-	// Free Motif Strings 
-	XmStringFree(xmFinish);
-	XmStringFree(xmCancel);
+    // Extract accelerator texts from menu PushButtons
+    QString cFinish = thisWindow->ui.action_Finish_Learn->shortcut().toString();
+    QString cCancel = thisWindow->ui.action_Cancel_Learn->shortcut().toString();
 
-	// Create message 
-	QString message;
-	if (cFinish[0] == '\0') {
-		if (cCancel[0] == '\0') {
-			message = QLatin1String("Learn Mode -- Use menu to finish or cancel");
-		} else {
-			message = QString(QLatin1String("Learn Mode -- Use menu to finish, press %1 to cancel")).arg(QString::fromStdString(cCancel));
-		}
-	} else {
-		if (cCancel[0] == '\0') {
-			message = QString(QLatin1String("Learn Mode -- Press %1 to finish, use menu to cancel")).arg(QString::fromStdString(cFinish));
-		} else {
-			message = QString(QLatin1String("Learn Mode -- Press %1 to finish, %2 to cancel")).arg(QString::fromStdString(cFinish)).arg(QString::fromStdString(cCancel));
-		}
-	}
+    // Create message
+    QString message;
+    if (cFinish.isEmpty()) {
+        if (cCancel.isEmpty()) {
+            message = QLatin1String("Learn Mode -- Use menu to finish or cancel");
+        } else {
+            message = QString(QLatin1String("Learn Mode -- Use menu to finish, press %1 to cancel")).arg(cCancel);
+        }
+    } else {
+        if (cCancel.isEmpty()) {
+            message = QString(QLatin1String("Learn Mode -- Press %1 to finish, use menu to cancel")).arg(cFinish);
+        } else {
+            message = QString(QLatin1String("Learn Mode -- Press %1 to finish, %2 to cancel")).arg(cFinish).arg(cCancel);
+        }
+    }
 
-	// Put up the learn-mode banner 
-	window->SetModeMessage(message.toLatin1().data());
+    // Put up the learn-mode banner
+    document->SetModeMessageEx(message);
 }
 
 void AddLastCommandActionHook(XtAppContext context) {
@@ -522,40 +520,37 @@ void FinishLearn() {
 /*
 ** Cancel Learn mode, or macro execution (they're bound to the same menu item)
 */
-void CancelMacroOrLearn(Document *window) {
-	if(MacroRecordActionHook)
-		cancelLearn();
-	else if (window->macroCmdData_)
-		AbortMacroCommand(window);
+void CancelMacroOrLearnEx(DocumentWidget *document) {
+    if(MacroRecordActionHookEx)
+        cancelLearnEx();
+    else if (document->macroCmdData_)
+        AbortMacroCommandEx(document);
 }
 
-static void cancelLearn() {
+static void cancelLearnEx() {
+    // If we're not in learn mode, return
+    if(!MacroRecordActionHookEx)
+        return;
 
-	// If we're not in learn mode, return 
-	if(!MacroRecordActionHook)
-		return;
+    // Remove the action hook
+    MacroRecordActionHookEx = nullptr;
 
-	// Remove the action hook 
-	XtRemoveActionHook(MacroRecordActionHook);
-	MacroRecordActionHook = nullptr;
+    // Free the macro under construction
+    delete MacroRecordBuf;
 
-	// Free the macro under construction 
-	delete MacroRecordBuf;
+    // Undim the menu items dimmed during learn
+    for(MainWindow *window : MainWindow::allWindows()) {
+        window->ui.action_Learn_Keystrokes->setEnabled(true);
+    }
 
-	// Undim the menu items dimmed during learn 
-	for(Document *win: WindowList) {
-		if (win->IsTopDocument()) {
-			XtSetSensitive(win->learnItem_, True);
-		}
-	}
-	
-	if (MacroRecordWindow->IsTopDocument()) {
-		XtSetSensitive(MacroRecordWindow->finishLearnItem_, False);
-		XtSetSensitive(MacroRecordWindow->cancelMacroItem_, False);
-	}
+    if (MacroRecordWindowEx->IsTopDocument()) {
+        MainWindow *win = MacroRecordWindowEx->toWindow();
+        win->ui.action_Finish_Learn->setEnabled(false);
+        win->ui.action_Cancel_Learn->setEnabled(false);
+    }
 
-	// Clear learn-mode banner 
-	MacroRecordWindow->ClearModeMessage();
+    // Clear learn-mode banner
+    MacroRecordWindowEx->ClearModeMessageEx();
 }
 
 /*
@@ -1136,22 +1131,23 @@ void ResumeMacroExecution(Document *window) {
 /*
 ** Cancel the macro command in progress (user cancellation via GUI)
 */
-void AbortMacroCommand(Document *window) {
-	if (!window->macroCmdData_)
-		return;
+void AbortMacroCommandEx(DocumentWidget *document) {
+    if (!document->macroCmdData_)
+        return;
 
-	/* If there's both a macro and a shell command executing, the shell command
-	   must have been called from the macro.  When called from a macro, shell
-	   commands don't put up cancellation controls of their own, but rely
-	   instead on the macro cancellation mechanism (here) */
-	if (window->shellCmdData_)
-		AbortShellCommand(window);
+    /* If there's both a macro and a shell command executing, the shell command
+       must have been called from the macro.  When called from a macro, shell
+       commands don't put up cancellation controls of their own, but rely
+       instead on the macro cancellation mechanism (here) */
+    if (document->shellCmdData_) {
+        document->AbortShellCommandEx();
+    }
 
-	// Free the continuation 
-	FreeRestartData((static_cast<macroCmdInfo *>(window->macroCmdData_))->context);
+    // Free the continuation
+    FreeRestartDataEx((static_cast<macroCmdInfoEx *>(document->macroCmdData_))->context);
 
-	// Kill the macro command 
-	finishMacroCmdExecution(window);
+    // Kill the macro command
+    finishMacroCmdExecutionEx(document);
 }
 
 /*
@@ -1487,7 +1483,7 @@ selEnd += $text_length - startLength\n}\n";
 ** Macro recording action hook for Learn/Replay, added temporarily during
 ** learn.
 */
-static void learnActionHook(Widget w, XtPointer clientData, String actionName, XEvent *event, String *params, Cardinal *numParams) {
+void learnActionHook(Widget w, XtPointer clientData, String actionName, XEvent *event, String *params, Cardinal *numParams) {
 	int i;
 	char *actionString;
 

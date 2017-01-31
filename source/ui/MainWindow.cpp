@@ -111,7 +111,7 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(par
 
     ui.action_Statistics_Line->setChecked(GetPrefStatsLine());
 
-    CheckCloseDim();
+    CheckCloseDimEx();
 }
 
 //------------------------------------------------------------------------------
@@ -517,7 +517,7 @@ void MainWindow::action_New(const QString &mode) {
 
 
     EditNewFileEx(openInTab ? this : nullptr, nullptr, false, nullptr, path);
-	CheckCloseDim();
+    CheckCloseDimEx();
 }
 
 QString MainWindow::PromptForExistingFileEx(const QString &path, const QString &prompt) {
@@ -549,7 +549,7 @@ void MainWindow::on_action_Open_triggered() {
         doc->open(filename.toLatin1().data());
     }
 
-    CheckCloseDim();
+    CheckCloseDimEx();
 }
 
 //------------------------------------------------------------------------------
@@ -840,7 +840,7 @@ QList<DocumentWidget *> MainWindow::allDocuments() {
 ** set of windows.  It should be dim only for the last Untitled, unmodified,
 ** editor window, and sensitive otherwise.
 */
-void MainWindow::CheckCloseDim() {
+void MainWindow::CheckCloseDimEx() {
 
     QList<MainWindow *> windows = MainWindow::allWindows();
 
@@ -852,16 +852,17 @@ void MainWindow::CheckCloseDim() {
     if(windows.size() == 1) {
         // NOTE(eteran): if there is only one window, then *this* must be it...
         // right?
+        MainWindow *window = windows[0];
 
-        QList<DocumentWidget *> documents = openDocuments();
+        QList<DocumentWidget *> documents = window->openDocuments();
 
-        if(TabCount() == 1 && !documents.front()->filenameSet_ && !documents.front()->fileChanged_) {
-            ui.action_Close->setEnabled(false);
+        if(window->TabCount() == 1 && !documents.front()->filenameSet_ && !documents.front()->fileChanged_) {
+            window->ui.action_Close->setEnabled(false);
         } else {
-            ui.action_Close->setEnabled(true);
+            window->ui.action_Close->setEnabled(true);
         }
     } else {
-        // if there is more than one windows, then by definition, more than one
+        // if there is more than one window, then by definition, more than one
         // document is open
         for(MainWindow *window : windows) {
             window->ui.action_Close->setEnabled(true);
@@ -1585,7 +1586,7 @@ void MainWindow::openPrevCB(QAction *action) {
         doc->open(filename.toLatin1().data());
     }
 
-    CheckCloseDim();
+    CheckCloseDimEx();
 }
 
 void MainWindow::on_tabWidget_currentChanged(int index) {
@@ -1640,7 +1641,7 @@ void MainWindow::on_action_Open_Selected_triggered() {
         }
     }
 
-    CheckCloseDim();
+    CheckCloseDimEx();
 }
 
 //------------------------------------------------------------------------------
@@ -1705,7 +1706,7 @@ void MainWindow::fileCB(DocumentWidget *window, const std::string &text) {
         globfree(&globbuf);
     }
 
-    CheckCloseDim();
+    CheckCloseDimEx();
 }
 
 //------------------------------------------------------------------------------
@@ -3274,7 +3275,7 @@ void MainWindow::on_action_Default_Tab_Sort_Tabs_Alphabetically_toggled(bool sta
 
     /* If we just enabled sorting, sort all tabs.  Note that this reorders
        the next pointers underneath us, which is scary, but SortTabBar never
-       touches windows that are earlier in the WindowList so it's ok. */
+       touches windows that are earlier in the window list so it's ok. */
     if (state) {
         for(MainWindow *window : allWindows()) {
             window->SortTabBar();
@@ -3800,7 +3801,7 @@ void MainWindow::on_action_Revert_to_Saved_triggered() {
 void MainWindow::on_action_New_Window_triggered() {
     if(auto document = currentDocument()) {
         MainWindow::EditNewFileEx(GetPrefOpenInTab() ? nullptr : this, nullptr, false, nullptr, document->path_);
-        CheckCloseDim();
+        CheckCloseDimEx();
     }
 }
 
@@ -4017,5 +4018,24 @@ void MainWindow::shellTriggered(QAction *action) {
         const int index = action->data().toInt();
         const QString name = ShellMenuData[index].item->name;
         doc->DoNamedShellMenuCmd(lastFocus_, name, false);
+    }
+}
+
+void MainWindow::on_action_Learn_Keystrokes_triggered() {
+    if(auto doc = currentDocument()) {
+        BeginLearnEx(doc);
+    }
+}
+
+void MainWindow::on_action_Finish_Learn_triggered() {
+    if(auto doc = currentDocument()) {
+        Q_UNUSED(doc);
+        FinishLearnEx();
+    }
+}
+
+void MainWindow::on_action_Cancel_Learn_triggered() {
+    if(auto doc = currentDocument()) {
+        CancelMacroOrLearnEx(doc);
     }
 }

@@ -38,9 +38,7 @@ class MainWindow;
 int StringToLineAndCol(const char *text, int *lineNum, int *column);
 QString GetAnySelectionEx(Document *window);
 void AddMarkEx(MainWindow *window, DocumentWidget *document, TextArea *area, QChar label);
-void OpenSelectedFile(Document *window, Time time);
-void SelectNumberedLine(Document *window, int lineNum);
 void SelectNumberedLineEx(DocumentWidget *document, TextArea *area, int lineNum);
 void UpdateMarkTable(Document *window, int pos, int nInserted, int nDeleted);
-
+void SelectNumberedLine(Document *window, int lineNum);
 #endif

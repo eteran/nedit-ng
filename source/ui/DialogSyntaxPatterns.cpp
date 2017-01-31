@@ -3,6 +3,8 @@
 #include <QMessageBox>
 #include <QIntValidator>
 #include "SignalBlocker.h"
+#include "MainWindow.h"
+#include "DocumentWidget.h"
 #include "DialogSyntaxPatterns.h"
 #include "DialogLanguageModes.h"
 #include "PatternSet.h"
@@ -776,9 +778,9 @@ bool DialogSyntaxPatterns::updatePatternSet() {
 	}
 
 	// Find windows that are currently using this pattern set and re-do the highlighting
-	for(Document *window: WindowList) {
+    for(DocumentWidget *document : MainWindow::allDocuments()) {
 		if (!patSet->patterns.isEmpty()) {
-			if (window->languageMode_ != PLAIN_LANGUAGE_MODE && (LanguageModeName(window->languageMode_) == patSet->languageMode)) {
+            if (document->languageMode_ != PLAIN_LANGUAGE_MODE && (LanguageModeName(document->languageMode_) == patSet->languageMode)) {
 				/*  The user worked on the current document's language mode, so
 				    we have to make some changes immediately. For inactive
 				    modes, the changes will be activated on activation.  */
@@ -786,32 +788,33 @@ bool DialogSyntaxPatterns::updatePatternSet() {
 					/*  Highlighting (including menu entry) was deactivated in
 					    this function or in preferences.c::reapplyLanguageMode()
 					    if the old set had no patterns, so reactivate menu entry. */
-					if (window->IsTopDocument()) {
-						XtSetSensitive(window->highlightItem_, true);
+                    if (document->IsTopDocument()) {
+                        document->toWindow()->ui.action_Highlight_Syntax->setEnabled(true);
 					}
 
 					//  Reactivate highlighting if it's default
-					window->highlightSyntax_ = GetPrefHighlightSyntax();
+                    document->highlightSyntax_ = GetPrefHighlightSyntax();
 				}
 
-				if (window->highlightSyntax_) {
-					StopHighlighting(window);
-					if (window->IsTopDocument()) {
-						XtSetSensitive(window->highlightItem_, true);
-						window->SetToggleButtonState(window->highlightItem_, true, false);
+                if (document->highlightSyntax_) {
+                    document->StopHighlightingEx();
+
+                    if (document->IsTopDocument()) {
+                        document->toWindow()->ui.action_Highlight_Syntax->setEnabled(true);
+                        no_signals(document->toWindow()->ui.action_Highlight_Syntax)->setChecked(true);
 					}
-					StartHighlighting(window, true);
+                    StartHighlightingEx(document, true);
 				}
 			}
 		} else {
 			/*  No pattern in pattern set. This will probably not happen much,
 			    but you never know.  */
-			StopHighlighting(window);
-			window->highlightSyntax_ = false;
+            document->StopHighlightingEx();
+            document->highlightSyntax_ = false;
 
-			if (window->IsTopDocument()) {
-				XtSetSensitive(window->highlightItem_, false);
-				window->SetToggleButtonState(window->highlightItem_, false, false);
+            if (document->IsTopDocument()) {
+                document->toWindow()->ui.action_Highlight_Syntax->setEnabled(false);
+                no_signals(document->toWindow()->ui.action_Highlight_Syntax)->setChecked(false);
 			}
 		}
 	}
@@ -1028,13 +1031,10 @@ bool DialogSyntaxPatterns::TestHighlightPatterns(PatternSet *patSet) {
 
 	/* Compile the patterns (passing a random window as a source for fonts, and
 	   parent for dialogs, since we really don't care what fonts are used) */
+    for(DocumentWidget *document : MainWindow::allDocuments()) {
 
-	auto it = WindowList.begin();
-	if(it != WindowList.end()) {
-		Document *window = *it;
-
-		if(WindowHighlightData *highlightData = createHighlightData(window, patSet)) {
-			freeHighlightData(highlightData);
+        if(WindowHighlightData *highlightData = createHighlightDataEx(document, patSet)) {
+            freeHighlightData(highlightData);
 			return true;
 		}
 	}

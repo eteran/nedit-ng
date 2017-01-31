@@ -59,8 +59,6 @@
 
 static void getAnySelectionCB(Widget widget, XtPointer client_data, Atom *selection, Atom *type, XtPointer value, unsigned long *length, int *format);
 
-static void fileCB(Widget widget, Document *window, Atom *sel, Atom *type, char *value, int *length, int *format);
-
 static void processMarkEvent(Widget w, XtPointer clientData, XEvent *event, Boolean *continueDispatch, char *action, int extend);
 static void markKeyCB(Widget w, XtPointer clientData, XEvent *event, Boolean *continueDispatch);
 static void gotoMarkKeyCB(Widget w, XtPointer clientData, XEvent *event, Boolean *continueDispatch);
@@ -116,10 +114,6 @@ int StringToLineAndCol(const char *text, int *lineNum, int *column) {
 	return *lineNum == -1 && *column == -1 ? -1 : 0;
 }
 
-void OpenSelectedFile(Document *window, Time time) {
-	XtGetSelectionValue(window->textArea_, XA_PRIMARY, XA_STRING, (XtSelectionCallbackProc)fileCB, window, time);
-}
-
 /*
 ** Getting the current selection by making the request, and then blocking
 ** (processing events) while waiting for a reply.  On failure (timeout or
@@ -154,79 +148,6 @@ QString GetAnySelectionEx(Document *window) {
 	QString s = QLatin1String(selText);
 	XtFree(selText);
 	return s;
-}
-
-static void fileCB(Widget widget, Document *window, Atom *sel, Atom *type, char *value, int *length, int *format) {
-
-	(void)widget;
-	(void)sel;
-
-	char nameText[MAXPATHLEN], includeName[MAXPATHLEN];
-	char filename[MAXPATHLEN], pathname[MAXPATHLEN];
-	char *inPtr, *outPtr;
-	static char includeDir[] = "/usr/include/";
-
-	/* get the string, or skip if we can't get the selection data, or it's
-	   obviously not a file name */
-	if (*type == XT_CONVERT_FAIL || value == nullptr) {
-		QApplication::beep();
-		return;
-	}
-	if (*length > MAXPATHLEN || *length == 0) {
-		QApplication::beep();
-		XtFree(value);
-		return;
-	}
-	// should be of type text??? 
-	if (*format != 8) {
-		fprintf(stderr, "NEdit: Can't handle non 8-bit text\n");
-		QApplication::beep();
-		XtFree(value);
-		return;
-	}
-	strncpy(nameText, value, *length);
-	XtFree(value);
-	nameText[*length] = '\0';
-
-	// extract name from #include syntax 
-	if (sscanf(nameText, "#include \"%[^\"]\"", includeName) == 1)
-		strcpy(nameText, includeName);
-	else if (sscanf(nameText, "#include <%[^<>]>", includeName) == 1)
-		sprintf(nameText, "%s%s", includeDir, includeName);
-
-	// strip whitespace from name 
-	for (inPtr = nameText, outPtr = nameText; *inPtr != '\0'; inPtr++)
-		if (*inPtr != ' ' && *inPtr != '\t' && *inPtr != '\n')
-			*outPtr++ = *inPtr;
-	*outPtr = '\0';
-
-	// Process ~ characters in name 
-	ExpandTilde(nameText);
-
-	// If path name is relative, make it refer to current window's directory 
-	if (nameText[0] != '/') {
-		strcpy(filename, window->path_.toLatin1().data());
-		strcat(filename, nameText);
-		strcpy(nameText, filename);
-	}
-
-	// Expand wildcards in file name. 
-
-	{
-		glob_t globbuf;
-		int i;
-
-		glob(nameText, GLOB_NOCHECK, nullptr, &globbuf);
-		for (i = 0; i < (int)globbuf.gl_pathc; i++) {
-			if (ParseFilename(globbuf.gl_pathv[i], filename, pathname) != 0)
-				QApplication::beep();
-			else
-				EditExistingFile(GetPrefOpenInTab() ? window : nullptr, QLatin1String(filename), QLatin1String(pathname), 0, nullptr, False, nullptr, GetPrefOpenInTab(), False);
-		}
-		globfree(&globbuf);
-	}
-
-	CheckCloseDim();
 }
 
 static void getAnySelectionCB(Widget widget, XtPointer client_data, Atom *selection, Atom *type, XtPointer value, unsigned long *length, int *format) {

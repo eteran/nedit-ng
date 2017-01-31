@@ -2,12 +2,11 @@
 #include <QMessageBox>
 #include "DialogSmartIndentCommon.h"
 #include "IndentStyle.h"
-
+#include "DocumentWidget.h"
 #include "smartIndent.h"
-#include "util/MotifHelper.h"
 #include "macro.h"
 #include "preferences.h"
-#include "Document.h"
+#include "MainWindow.h"
 
 
 //------------------------------------------------------------------------------
@@ -131,11 +130,9 @@ bool DialogSmartIndentCommon::updateSmartIndentCommonData() {
 	/* Re-execute initialization macros (macros require a window to function,
 	   since user could theoretically execute an action routine, but it
 	   probably won't be referenced in a smart indent initialization) */
-	   
-	auto it = WindowList.begin();
-	if(it != WindowList.end()) {
-		Document *window = *it;
-		if (!ReadMacroStringEx(window, CommonMacros, "common macros")) {
+    QList<DocumentWidget *> documents = MainWindow::allDocuments();
+    if(!documents.empty()) {
+        if (!ReadMacroStringEx(documents[0], CommonMacros, "common macros")) {
 			return false;
 		}
 	}
@@ -143,10 +140,10 @@ bool DialogSmartIndentCommon::updateSmartIndentCommonData() {
 	/* Find windows that are currently using smart indent and
 	   re-initialize the smart indent macros (in case they have initialization
 	   data which depends on common data) */
-	for(Document *window: WindowList) {
-		if (window->indentStyle_ == SMART_INDENT && window->languageMode_ != PLAIN_LANGUAGE_MODE) {
-			EndSmartIndent(window);
-			BeginSmartIndent(window, False);
+    for(DocumentWidget *document : documents) {
+        if (document->indentStyle_ == SMART_INDENT && document->languageMode_ != PLAIN_LANGUAGE_MODE) {
+            EndSmartIndentEx(document);
+            document->BeginSmartIndentEx(false);
 		}
 	}
 

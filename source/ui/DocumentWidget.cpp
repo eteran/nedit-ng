@@ -1297,7 +1297,7 @@ bool DocumentWidget::IsTopDocument() const {
 
 /*
 ** Update the Window menu of a single window to reflect the current state of
-** all NEdit windows as determined by the global WindowList.
+** all NEdit windows as determined by the global window list.
 */
 void DocumentWidget::updateWindowMenu() {
 
@@ -3178,7 +3178,7 @@ void DocumentWidget::CloseWindow() {
 
     // remove the window from the global window list, update window menus
     window->InvalidateWindowMenus();
-    window->CheckCloseDim(); // Close of window running a macro may have been disabled.
+    window->CheckCloseDimEx(); // Close of window running a macro may have been disabled.
 
     // NOTE(eteran): No need to explicitly sync this with the tab context menu
     //               because they are set to be in sync when the context menu is shown
@@ -3223,7 +3223,7 @@ void DocumentWidget::open(const char *fullpath) {
     EditExistingFileEx(this, QLatin1String(filename), QLatin1String(pathname), 0, nullptr, false, nullptr, GetPrefOpenInTab(), false);
 
     if(auto win = toWindow()) {
-        win->CheckCloseDim();
+        win->CheckCloseDimEx();
     }
 }
 
@@ -3748,7 +3748,7 @@ void DocumentWidget::actionClose(const QString &mode) {
 
     if(auto win = toWindow()) {
         CloseFileAndWindow(preResponse);
-        win->CheckCloseDim();
+        win->CheckCloseDimEx();
     }
 }
 
@@ -5504,7 +5504,7 @@ void DocumentWidget::DoShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
             outWidget = document->firstPane();
             left      = 0;
             right     = 0;
-            inWindow->CheckCloseDim();
+            inWindow->CheckCloseDimEx();
         }
         break;
     case TO_SAME_WINDOW:

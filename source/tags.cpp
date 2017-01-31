@@ -461,7 +461,7 @@ int AddTagsFile(const char *tagSpec, int file_type) {
 	int added = 1;
 	struct stat statbuf;
 	char pathName[MAXPATHLEN];
-	tagFile *FileList;
+    tagFile *FileList = nullptr;
 
 	// To prevent any possible segfault 
 	if(!tagSpec) {

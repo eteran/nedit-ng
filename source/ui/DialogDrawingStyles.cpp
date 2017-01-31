@@ -11,7 +11,7 @@
 #include "preferences.h"
 #include "Document.h"
 #include "FontType.h"
-#include "nedit.h"
+#include "MainWindow.h"
 
 //------------------------------------------------------------------------------
 // Name: DialogDrawingStyles
@@ -440,8 +440,8 @@ bool DialogDrawingStyles::updateHSList() {
 	updateHighlightStyleMenu();
 
 	// Redisplay highlighted windows which use changed style(s) 
-	for(Document *window: WindowList) {
-		UpdateHighlightStyles(window);
+    for(DocumentWidget *document : MainWindow::allDocuments()) {
+        UpdateHighlightStylesEx(document);
 	}
 
 	// Note that preferences have been changed 

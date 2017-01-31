@@ -51,8 +51,7 @@ public:
 	void ShowTabBar(bool state);
 	bool GetShowTabBar();
 	void SortTabBar();
-	int TabCount();
-    void CheckCloseDim();
+	int TabCount();    
     QList<DocumentWidget *> openDocuments() const;
     int updateLineNumDisp();
     int updateGutterWidth();
@@ -91,6 +90,7 @@ public:
     static void AllWindowsBusyEx(const QString &message);
     static void AllWindowsUnbusyEx();
     static void BusyWaitEx();
+    static void CheckCloseDimEx();
 
 public:
 	DocumentWidget *CreateDocument(QString name);
@@ -261,17 +261,13 @@ public Q_SLOTS:
     void on_action_Default_Warnings_Files_Modified_Externally_toggled(bool state);
     void on_action_Default_Warnings_Check_Modified_File_Contents_toggled(bool state);
     void on_action_Default_Warnings_On_Exit_toggled(bool state);
-
-#if 0
-    void on_action_Indent_triggered();
-    void on_action_Unindent_triggered();
-
     void on_action_Learn_Keystrokes_triggered();
     void on_action_Finish_Learn_triggered();
     void on_action_Cancel_Learn_triggered();
+#if 0
+
     void on_action_Replay_Keystrokes_triggered();
     void on_action_Repeat_triggered();
-    void on_action_Complete_Word_triggered();
 #endif
     void on_action_About_Qt_triggered();
 

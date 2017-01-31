@@ -37,8 +37,6 @@
 #include "ui/DocumentWidget.h"
 
 #include "nedit.h"
-#include "Document.h"
-#include "QtMotif.h"
 #include "file.h"
 #include "help.h"
 #include "interpret.h"
@@ -50,10 +48,11 @@
 #include "selection.h"
 #include "server.h"
 #include "tags.h"
-#include "window.h"
-
-#include "util/MotifHelper.h"
-#include "util/fileUtils.h"
+//#include "window.h"
+//#include "Document.h"
+//#include "QtMotif.h"
+//#include "util/MotifHelper.h"
+//#include "util/fileUtils.h"
 #include "util/misc.h"
 
 #include <algorithm>
@@ -64,16 +63,17 @@
 #include <cstring>
 #include <unistd.h>
 
-#include <X11/Xlocale.h>
-#include <X11/Intrinsic.h>
-#include <Xm/Xm.h>
-#include <Xm/XmP.h>
-#include <Xm/RepType.h>
+//#include <X11/Xlocale.h>
+//#include <X11/Intrinsic.h>
+//#include <Xm/Xm.h>
+//#include <Xm/XmP.h>
+//#include <Xm/RepType.h>
 
 #include <sys/param.h>
 
 static void nextArg(int argc, char **argv, int *argIndex);
 static int checkDoMacroArg(const char *macro);
+#if 0
 static String neditLanguageProc(Display *dpy, String xnl, XtPointer closure);
 static void maskArgvKeywords(int argc, char **argv, const char **maskArgs);
 static void unmaskArgvKeywords(int argc, char **argv, const char **maskArgs);
@@ -84,6 +84,7 @@ static int virtKeyBindingsAreInvalid(const uint8_t *bindings);
 static void restoreInsaneVirtualKeyBindings(uint8_t *bindings);
 static void noWarningFilter(String);
 static void showWarningFilter(String);
+#endif
 
 QLinkedList<Document *> WindowList;
 Display *TheDisplay = nullptr;
@@ -122,6 +123,7 @@ Widget TheAppShell;
 	"Ctrl~Alt~Meta<KeyPress>x: cut-clipboard()\\n"                                                                                                                                                                                             \
 	"Ctrl~Alt~Meta<KeyPress>u: delete-to-start-of-line()\\n"
 
+#if 0
 static const char *fallbackResources[] = {
 /* Try to avoid Motif's horrificly ugly default colors and fonts,
    if the user's environment provides no usable defaults.  We try
@@ -236,7 +238,7 @@ Ctrl<Key>G:help-button-action(\"findAgain\")\\n\
 ~Meta~Ctrl~Shift<Btn2Up>:\
     help-hyperlink(\"new\", \"process-cancel\", \"copy-to\")",
     nullptr};
-
+#endif
 static const char cmdLineHelp[] =
     "Usage:  nedit [-read] [-create] [-line n | +n] [-server] [-do command]\n\
 	      [-tags file] [-tabs n] [-wrap] [-nowrap] [-autowrap]\n\
@@ -248,30 +250,31 @@ static const char cmdLineHelp[] =
 	      [-tabbed] [-untabbed] [-group] [-V|-version] [-h|-help]\n\
 	      [--] [file...]\n";
 
-int main(int argc, char *argv[]) {
-
-	static const char *protectedKeywords[] = {"-iconic", "-icon", "-geometry", "-g", "-rv", "-reverse", "-bd", "-bordercolor", "-borderwidth", "-bw", "-title", nullptr};
+int main(int argc, char *argv[]) {	
 
 	int lineNum;
 	int nRead;
 	bool fileSpecified = false;
 	int editFlags = CREATE;
 	bool gotoLine = false;
-	bool macroFileRead = false;
     bool macroFileReadEx = false;
 	bool opts = true;
 	bool iconic = false;
 	int tabbed = -1;
 	int group = 0;
 	int isTabbed;
-	char *toDoCommand = nullptr;
 	char *geometry = nullptr;
 	char *langMode = nullptr;
 	char filename[MAXPATHLEN];
-	char pathname[MAXPATHLEN];
-	uint8_t *invalidBindings = nullptr;
+	char pathname[MAXPATHLEN];	
     DocumentWidget *lastFileEx = nullptr;
+    char *toDoCommand = nullptr;
+#if 0
+    static const char *protectedKeywords[] = {"-iconic", "-icon", "-geometry", "-g", "-rv", "-reverse", "-bd", "-bordercolor", "-borderwidth", "-bw", "-title", nullptr};
+    uint8_t *invalidBindings = nullptr;
     Document *lastFile = nullptr;
+    bool macroFileRead = false;
+
 
 	/* Set locale for C library, X, and Motif input functions.
 	   Reverts to "C" if requested locale not available. */
@@ -282,10 +285,14 @@ int main(int argc, char *argv[]) {
 	XtAppContext context = XtCreateApplicationContext();
 
 	QtMotif integrator(APP_CLASS, context);
-	
+#endif
 	// TODO(eteran): support non-X11 instance for things like -version again
 	QApplication app(argc, argv);
 
+    // temporary hack
+    TheDisplay = QX11Info::display();
+
+#if 0
 	// Set up a warning handler to trap obnoxious Xt grab warnings 
 	SuppressPassiveGrabWarnings();
 
@@ -297,10 +304,12 @@ int main(int argc, char *argv[]) {
 
 	// Allow users to change tear off menus with X resources 
 	XmRepTypeInstallTearOffModelConverter();
+#endif
 
 	// Read the preferences file and command line into a database 
 	XrmDatabase prefDB = CreateNEditPrefDB(&argc, argv);
 
+#if 0
 	/* Open the display and read X database and remaining command line args.
 	   XtOpenDisplay must be allowed to process some of the resource arguments
 	   with its inaccessible internal option table, but others, like -geometry
@@ -326,6 +335,7 @@ int main(int argc, char *argv[]) {
 	TheDisplay = XtOpenDisplay(context, nullptr, APP_NAME, APP_CLASS, nullptr, 0, &argc, argv);
 
 	unmaskArgvKeywords(argc, argv, protectedKeywords);
+#endif
 
 	if (!TheDisplay) {
 		// Respond to -V or -version even if there is no display 
@@ -338,19 +348,24 @@ int main(int argc, char *argv[]) {
 		fputs("NEdit: Can't open display\n", stderr);
 		exit(EXIT_FAILURE);
 	}
-
+#if 0
 	// Must be done before creating widgets 
 	fixupBrokenXKeysymDB();
 	patchResourcesForVisual();
+#endif
 
+    // TODO(eteran): implement this!
+#if 0
 	// Initialize global symbols and subroutines used in the macro language 
 	InitMacroGlobals();
 	RegisterMacroSubroutines();
+#endif
 
 	/* Store preferences from the command line and .nedit file,
 	   and set the appropriate preferences */
 	RestoreNEditPrefs(prefDB, XtDatabase(TheDisplay));
 
+#if 0
 	/* Intercept syntactically invalid virtual key bindings BEFORE we
 	   create any shells. */
 	invalidBindings = sanitizeVirtualKeyBindings();
@@ -366,30 +381,29 @@ int main(int argc, char *argv[]) {
 	XtSetMappedWhenManaged(TheAppShell, false);
 	XtRealizeWidget(TheAppShell);
 
+
 #ifndef NO_SESSION_RESTART
 	AttachSessionMgrHandler(TheAppShell);
 #endif
-
+#endif
 	// More preference stuff 
 	DialogPrint::LoadPrintPreferencesEx(XtDatabase(TheDisplay), APP_NAME, APP_CLASS, true);
 	SetDeleteRemap(GetPrefMapDelete());
 	SetPointerCenteredDialogs(GetPrefRepositionDialogs());
 
-#if 0
-	// TODO(eteran): I think that this feature likely has no equivalent in Qt's dialog
+#if 0 // TODO(eteran): I think that this feature likely has no equivalent in Qt's dialog
 	SetGetEFTextFieldRemoval(!GetPrefStdOpenDialog());
 #endif
+#if 0
 	// Set up action procedures for menu item commands 
 	InstallMenuActions(context);
 
-#if 0
 	// Add Actions for following hyperlinks in the help window 
 	InstallHelpLinkActions(context);
-#endif
 
 	// Add actions for mouse wheel support in scrolled windows (except text area) 
 	InstallMouseWheelActions(context);
-
+#endif
 	// Install word delimiters for regular expression matching 
 	SetREDefaultWordDelimiters(GetPrefDelimiters().toLatin1().data());
 
@@ -467,7 +481,9 @@ int main(int argc, char *argv[]) {
 		} else if (opts && !strcmp(argv[i], "-server")) {
 			IsServer = true;
 		} else if (opts && !strcmp(argv[i], "-xwarn")) {
+#if 0
 			XtAppSetWarningHandler(context, showWarningFilter);
+#endif
 		} else if (opts && (!strcmp(argv[i], "-iconic") || !strcmp(argv[i], "-icon"))) {
 			iconic = true;
 		} else if (opts && !strcmp(argv[i], "-noiconic")) {
@@ -511,25 +527,25 @@ int main(int argc, char *argv[]) {
 				   items. The current file may also be raised if there're
 				   macros to execute on. */
 
-                DocumentWidget *windowEx = nullptr;
-                Document *window         = nullptr;
-
+                DocumentWidget *documentEx = nullptr;
                 QList<MainWindow *> windows = MainWindow::allWindows();
                 if(!windows.empty()) {
-                    windowEx = DocumentWidget::EditExistingFileEx(windows[0]->currentDocument(), QLatin1String(filename), QLatin1String(pathname), editFlags, geometry, iconic, langMode, isTabbed, true);
+                    documentEx = DocumentWidget::EditExistingFileEx(windows[0]->currentDocument(), QLatin1String(filename), QLatin1String(pathname), editFlags, geometry, iconic, langMode, isTabbed, true);
                 } else {
-                    windowEx = DocumentWidget::EditExistingFileEx(nullptr,                       QLatin1String(filename), QLatin1String(pathname), editFlags, geometry, iconic, langMode, isTabbed, true);
+                    documentEx = DocumentWidget::EditExistingFileEx(nullptr,                       QLatin1String(filename), QLatin1String(pathname), editFlags, geometry, iconic, langMode, isTabbed, true);
                 }
 
+#if 0
+                Document *window = nullptr;
 				auto it = WindowList.begin();
 				if(it != WindowList.end()) {
                     window = EditExistingFile(*it, QLatin1String(filename), QLatin1String(pathname), editFlags, geometry, iconic, langMode, isTabbed, true);
 				} else {
 					window = EditExistingFile(nullptr, QLatin1String(filename), QLatin1String(pathname), editFlags, geometry, iconic, langMode, isTabbed, true);
 				}
-				
+#endif
 				fileSpecified = true;
-#if 1
+#if 0
 				if (window) {
 					window->CleanUpTabBarExposeQueue();
 
@@ -562,19 +578,19 @@ int main(int argc, char *argv[]) {
 #endif
 
 #if 1
-                if (windowEx) {
+                if (documentEx) {
 
                     // raise the last tab of previous window
-                    if (lastFileEx && lastFileEx->toWindow() != windowEx->toWindow()) {
+                    if (lastFileEx && lastFileEx->toWindow() != documentEx->toWindow()) {
                         lastFileEx->RaiseDocument();
                     }
 
                     if (!macroFileReadEx) {
-                        ReadMacroInitFileEx(windowEx);
+                        ReadMacroInitFileEx(documentEx);
                         macroFileReadEx = true;
                     }
                     if (gotoLine) {
-                        SelectNumberedLineEx(windowEx, windowEx->firstPane(), lineNum);
+                        SelectNumberedLineEx(documentEx, documentEx->firstPane(), lineNum);
                     }
 
 #if 0 // TODO(eteran): finish macro support
@@ -594,8 +610,8 @@ int main(int argc, char *argv[]) {
                 }
 
                 // register last opened file for later use
-                if (windowEx) {
-                    lastFileEx = windowEx;
+                if (documentEx) {
+                    lastFileEx = documentEx;
                 }
 #endif
 
@@ -609,15 +625,25 @@ int main(int argc, char *argv[]) {
 	}
 
 	// Raise the last file opened 
+#if 0
 	if (lastFile) {
 		lastFile->CleanUpTabBarExposeQueue();
 		lastFile->RaiseDocument();
 	}
 	CheckCloseDim();
+#endif
+
+#if 1
+    if (lastFileEx) {
+        lastFileEx->RaiseDocument();
+    }
+    MainWindow::CheckCloseDimEx();
+#endif
 
 	// If no file to edit was specified, open a window to edit "Untitled" 
 	if (!fileSpecified) {
 
+#if 0
 		Document *window = nullptr;
 		auto it = WindowList.begin();
 		if(it != WindowList.end()) {	
@@ -625,17 +651,30 @@ int main(int argc, char *argv[]) {
 		}
 	
 		EditNewFile(nullptr, geometry, iconic, langMode, nullptr);
-        MainWindow::EditNewFileEx(nullptr, geometry, iconic, langMode, QString());
+
 		ReadMacroInitFile(window);
 		CheckCloseDim();
 		if (toDoCommand) {
 			DoMacro(window, toDoCommand, "-do macro");
 		}
+#endif
+#if 1
+        DocumentWidget *documentEx = MainWindow::EditNewFileEx(nullptr, geometry, iconic, langMode, QString());
+
+        ReadMacroInitFileEx(documentEx);
+        MainWindow::CheckCloseDimEx();
+#if 0 // TODO(eteran): enable this!
+        if (toDoCommand) {
+            DoMacro(window, toDoCommand, "-do macro");
+        }
+#endif
+#endif
 	}
 
+#if 0
 	// Begin remembering last command invoked for "Repeat" menu item 
 	AddLastCommandActionHook(context);
-
+#endif
 	// Set up communication port and write ~/.nedit_server_process file 
 	if (IsServer) {
 		InitServerCommunication();
@@ -643,18 +682,12 @@ int main(int argc, char *argv[]) {
 
 	// Process events. 
 	if (IsServer) {
+#if 0
 		ServerMainLoop(context);
+#endif
 	} else {
 		app.setQuitOnLastWindowClosed(false);
 		return app.exec();
-	#if 0
-		for (;;) {
-			XtAppProcessEvent(context, XtIMAll);
-			if (XtAppGetExitFlag(context)) {
-				break;
-			}
-		}
-	#endif
 	}
 }
 
@@ -696,6 +729,7 @@ static int checkDoMacroArg(const char *macro) {
 	return True;
 }
 
+#if 0
 /*
 ** maskArgvKeywords and unmaskArgvKeywords mangle selected keywords by
 ** replacing the '-' with a space, for the purpose of hiding them from
@@ -732,6 +766,7 @@ static void fixupBrokenXKeysymDB(void) {
 	if (keysym != nullptr && access(keysym, F_OK) != 0)
 		putenv((char *)"XKEYSYMDB");
 }
+
 
 /*
 ** If we're not using the default visual, then some default resources in
@@ -907,6 +942,7 @@ static int virtKeyBindingsAreInvalid(const uint8_t *bindings) {
 	return False;
 }
 
+
 /*
  * Optionally sanitizes the Motif default virtual key bindings.
  * Some applications install invalid bindings (attached to the root window),
@@ -918,6 +954,7 @@ static int virtKeyBindingsAreInvalid(const uint8_t *bindings) {
  */
 
 static Atom virtKeyAtom;
+
 
 static uint8_t *sanitizeVirtualKeyBindings(void) {
 	int overrideBindings = GetPrefOverrideVirtKeyBindings();
@@ -949,6 +986,7 @@ static uint8_t *sanitizeVirtualKeyBindings(void) {
 	}
 	return insaneVirtKeyBindings;
 }
+
 
 /*
  * NEdit should not mess with the bindings installed by other apps, so we
@@ -993,3 +1031,4 @@ static void noWarningFilter(String message) {
 	(void)message;
 	return;
 }
+#endif

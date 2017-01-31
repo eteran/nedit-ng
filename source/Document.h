@@ -60,45 +60,53 @@ public:
 	Document *MarkLastDocument();
 	Document *MoveDocument(Document *toWindow);
 	
+
+private:
+    void LastDocument() const;
+    void NextDocument();
+    void PreviousDocument();
+    void RefreshMenuToggleStates();
+    void RefreshWindowStates();
+    void SetBacklightChars(char *applyBacklightTypes);
+    void SetColors(const char *textFg, const char *textBg, const char *selectFg, const char *selectBg, const char *hiliteFg, const char *hiliteBg, const char *lineNoFg, const char *cursorFg);
+    void ShowStatsLine(int state);
+    void ShowWindowTabBar();
+    void EditCustomTitleFormat();
+    void Undo();
+    void Redo();
+    void ClearRedoList();
+    void ShowISearchLine(bool state);
+    void SetShowMatching(int state);
+    void SetOverstrike(bool overstrike);
+    void SetFonts(const char *fontName, const char *italicName, const char *boldName, const char *boldItalicName);
+
 public:
+    int ShowCalltip(view::string_view text, bool anchored, int pos, int hAlign, int vAlign, int alignMode);
+    bool IsValidWindow();
+    void CleanUpTabBarExposeQueue();
+    void MakeSelectionVisible(Widget textPane);
 	bool IsTopDocument() const;
 	bool CloseAllDocumentInWindow();
 	bool GetShowTabBar();
 	bool IsIconic();
-	bool IsValidWindow();
 	int TabCount() const;
-	void CleanUpTabBarExposeQueue();
 	void ClearModeMessage();
 	void CloseWindow();	
-	void LastDocument() const;
-	void MakeSelectionVisible(Widget textPane);
-	void NextDocument();
-	void PreviousDocument();
 	void RaiseDocument();
 	void RaiseDocumentWindow();
 	void RaiseFocusDocumentWindow(Boolean focus);
-	void RefreshMenuToggleStates();
 	void RefreshTabState();
-	void RefreshWindowStates();
 	void SetAutoIndent(int state);
 	void SetAutoScroll(int margin);
 	void SetAutoWrap(int state);
-	void SetBacklightChars(char *applyBacklightTypes);
-	void SetColors(const char *textFg, const char *textBg, const char *selectFg, const char *selectBg, const char *hiliteFg, const char *hiliteBg, const char *lineNoFg, const char *cursorFg);
 	void SetEmTabDist(int emTabDist);
-	void SetFonts(const char *fontName, const char *italicName, const char *boldName, const char *boldItalicName);
-	void SetModeMessage(const char *message);
-	void SetOverstrike(bool overstrike);
-	void SetSensitive(Widget w, Boolean sensitive) const;
-	void SetShowMatching(int state);
+	void SetModeMessage(const char *message);    
+	void SetSensitive(Widget w, Boolean sensitive) const;    
 	void SetTabDist(int tabDist);
 	void SetToggleButtonState(Widget w, Boolean state, Boolean notify) const;	
-	void SetWindowModified(bool modified);
-	void ShowISearchLine(bool state);
-	void ShowLineNumbers(bool state);
-	void ShowStatsLine(int state);
-	void ShowTabBar(int state);
-	void ShowWindowTabBar();
+	void SetWindowModified(bool modified);    
+	void ShowLineNumbers(bool state);    
+	void ShowTabBar(int state);    
 	void SortTabBar();
 	void SplitPane();
 	void UpdateMinPaneHeights();
@@ -108,20 +116,11 @@ public:
 	void UpdateWindowTitle();
 	void UpdateWMSizeHints();
 	Widget GetPaneByIndex(int index) const;
-	int WidgetToPaneIndex(Widget w) const;
-	void EditCustomTitleFormat();
+	int WidgetToPaneIndex(Widget w) const;    
 	QString FullPath() const;	
-	
-public:
-	void Undo();
-	void Redo();
 	void SaveUndoInformation(int pos, int nInserted, int nDeleted, view::string_view deletedText);
 	void ClearUndoList();
-	void ClearRedoList();
-	
-public:
 	int GetCalltipID(int calltipID);
-	int ShowCalltip(view::string_view text, bool anchored, int pos, int hAlign, int vAlign, int alignMode);
 	void KillCalltip(int calltipID);
 
 public:

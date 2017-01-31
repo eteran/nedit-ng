@@ -22,10 +22,10 @@ qt4_add_resources(QRC_SOURCES
 )
 
 qt4_wrap_cpp(MOC_SOURCES
-	QtMotif.h
-	QtMotifDialog.h
-	QtMotifWidget.h
-	QtXtWidget.h
+	#QtMotif.h
+	#QtMotifDialog.h
+	#QtMotifWidget.h
+	#QtXtWidget.h
 
 	ui/ElidedLabel.h
 	ui/DialogDuplicateTags.h
@@ -112,10 +112,10 @@ add_executable(nedit
 	${QRC_SOURCES}
 	${UI_H}
 
-	QtMotif.cpp
-	QtMotifDialog.cpp
-	QtMotifWidget.cpp
-	QtXtWidget.cpp
+	#QtMotif.cpp
+	#QtMotifDialog.cpp
+	#QtMotifWidget.cpp
+	#QtXtWidget.cpp
 	
 	ui/ElidedLabel.cpp
 	Color.cpp
