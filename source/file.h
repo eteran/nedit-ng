@@ -27,10 +27,6 @@
 #ifndef FILE_H_
 #define FILE_H_
 
-#include "nedit.h"
-#include "util/fileUtils.h"
-#include "util/string_view.h"
-
 /* flags for EditExistingFile */
 enum EditFlags {
 	CREATE               = 1,
@@ -41,22 +37,5 @@ enum EditFlags {
 #define PROMPT_SBC_DIALOG_RESPONSE 0
 #define YES_SBC_DIALOG_RESPONSE    1
 #define NO_SBC_DIALOG_RESPONSE     2
-
-int CheckReadOnly(Document *window);
-int CloseAllFilesAndWindows();
-int CloseAllFilesAndWindowsEx();
-int CloseFileAndWindow(Document *window, int preResponse);
-int IncludeFile(Document *window, const char *name);
-QString PromptForExistingFile(Document *window, const QString &prompt);
-bool PromptForNewFile(Document *window, const char *prompt, char *fullname, FileFormats *fileFormat, bool *addWrap);
-int SaveWindowAs(Document *window, const char *newName, bool addWrap);
-int SaveWindow(Document *window);
-int WriteBackupFile(Document *window);
-void CheckForChangesToFile(Document *window);
-void RemoveBackupFile(Document *window);
-void RevertToSaved(Document *window);
-QString UniqueUntitledName();
-Document *EditExistingFile(Document *inWindow, const QString &name, const QString &path, int flags, char *geometry, int iconic, const char *languageMode, int tabbed, int bgOpen);
-Document *EditNewFile(Document *inWindow, char *geometry, int iconic, const char *languageMode, const char *defaultPath);
 
 #endif

@@ -25,8 +25,7 @@
 #include "dragEndCBStruct.h"
 #include "smartIndentCBStruct.h"
 #include "BlockDragTypes.h"
-#include "memory.h"
-
+#include <memory>
 
 // NOTE(eteran): this is a bit of a hack to covert the raw c-strings to unicode
 // in a way that is comparaable to how the original nedit works
@@ -6923,7 +6922,7 @@ void TextArea::BeginBlockDrag() {
 	dragInsertPos_ = sel->start;
 	dragInserted_ = sel->end - sel->start;
 	if (sel->rectangular) {
-		auto testBuf = mem::make_unique<TextBuffer>();
+        auto testBuf = std::make_unique<TextBuffer>();
 
 		std::string testText = buffer_->BufGetRangeEx(sel->start, sel->end);
 		testBuf->BufSetTabDistance(buffer_->tabDist_);
@@ -7598,6 +7597,16 @@ int TextArea::getAbsTopLineNum() {
 	return 0;
 }
 
+Pixel TextArea::getForegroundPixel() const {
+    QPalette pal = viewport()->palette();
+    return toPixel(pal.color(QPalette::Text));
+}
+
+Pixel TextArea::getBackgroundPixel() const {
+    QPalette pal = viewport()->palette();
+    return toPixel(pal.color(QPalette::Base));
+}
+
 void TextArea::setForegroundPixel(Pixel pixel) {
 	QPalette pal = viewport()->palette();
 	pal.setColor(QPalette::Text, toQColor(pixel));
@@ -8237,7 +8246,7 @@ std::string TextArea::TextGetWrappedEx(int startPos, int endPos) {
     /* Create a text buffer with a good estimate of the size that adding
        newlines will expand it to.  Since it's a text buffer, if we guess
        wrong, it will fail softly, and simply expand the size */
-    auto outBuf = mem::make_unique<TextBuffer>((endPos - startPos) + (endPos - startPos) / 5);
+    auto outBuf = std::make_unique<TextBuffer>((endPos - startPos) + (endPos - startPos) / 5);
     int outPos = 0;
 
     /* Go (displayed) line by line through the buffer, adding newlines where
@@ -8367,13 +8376,23 @@ int TextArea::TextDLineAndColToPos(int lineNum, int column) {
     return lineStart + charIndex;
 }
 
+int TextArea::TextDGetCalltipID(int calltipID) const {
+
+    if (calltipID == 0) {
+        return calltip_.ID;
+    } else if (calltipID == calltip_.ID) {
+        return calltipID;
+    } else {
+        return 0;
+    }
+}
+
 void TextArea::TextDKillCalltip(int calltipID) {
     if (calltip_.ID == 0) {
         return;
     }
 
     if (calltipID == 0 || calltipID == calltip_.ID) {
-
         if(calltipWidget_) {
             calltipWidget_->hide();
         }
@@ -8484,4 +8503,51 @@ QSize TextArea::minimumSizeHint() const {
 
 TextBuffer *TextArea::TextGetBuffer() const {
     return buffer_;
+}
+
+int TextArea::TextDMinFontWidth(bool considerStyles) const {
+
+    QFontMetricsF fm(viewport()->font());
+
+    int fontWidth = fm.maxWidth(); // TODO(eteran) this is max, not min
+                                   // maybe we should use width('i') or something?
+
+    if (considerStyles) {
+        for (int i = 0; i < nStyles_; ++i) {
+            int thisWidth = (styleTable_[i].font)->min_bounds.width;
+            if (thisWidth < fontWidth) {
+                fontWidth = thisWidth;
+            }
+        }
+    }
+    return (fontWidth);
+}
+
+int TextArea::TextDMaxFontWidth(bool considerStyles) const {
+
+    QFontMetricsF fm(viewport()->font());
+
+    int fontWidth = fm.maxWidth();
+
+    if (considerStyles) {
+        for (int i = 0; i < nStyles_; ++i) {
+            int thisWidth = (styleTable_[i].font)->max_bounds.width;
+            if (thisWidth > fontWidth) {
+                fontWidth = thisWidth;
+            }
+        }
+    }
+    return (fontWidth);
+}
+
+int TextArea::TextNumVisibleLines() const {
+    return nVisibleLines_;
+}
+
+int TextArea::TextFirstVisibleLine() const {
+    return topLineNum_;
+}
+
+int TextArea::TextVisibleWidth() const {
+    return rect_.width;
 }

@@ -26,7 +26,9 @@
 
 #include <QApplication>
 #include <QInputDialog>
+#include <QClipboard>
 #include <QString>
+#include <QMimeData>
 
 #include "DocumentWidget.h"
 #include "MainWindow.h"
@@ -56,8 +58,6 @@
 
 #include <Xm/Xm.h>
 #include <X11/Xatom.h>
-
-static void getAnySelectionCB(Widget widget, XtPointer client_data, Atom *selection, Atom *type, XtPointer value, unsigned long *length, int *format);
 
 static void processMarkEvent(Widget w, XtPointer clientData, XEvent *event, Boolean *continueDispatch, char *action, int extend);
 static void markKeyCB(Widget w, XtPointer clientData, XEvent *event, Boolean *continueDispatch);
@@ -119,10 +119,26 @@ int StringToLineAndCol(const char *text, int *lineNum, int *column) {
 ** (processing events) while waiting for a reply.  On failure (timeout or
 ** bad format) returns nullptr, otherwise returns the contents of the selection.
 */
+QString GetAnySelectionEx(DocumentWidget *window) {
+
+    /* If the selection is in the window's own buffer get it from there,
+       but substitute null characters as if it were an external selection */
+    if (window->buffer_->primary_.selected) {
+        std::string text = window->buffer_->BufGetSelectionTextEx();
+        window->buffer_->BufUnsubstituteNullCharsEx(text);
+        return QString::fromStdString(text);
+    }
+
+    const QMimeData *mimeData = QApplication::clipboard()->mimeData(QClipboard::Selection);
+    if(mimeData->hasText()) {
+        return mimeData->text();
+    }
+
+    QApplication::beep();
+    return QString();
+}
+
 QString GetAnySelectionEx(Document *window) {
-	static char waitingMarker[1] = "";
-	char *selText = waitingMarker;
-	XEvent nextEvent;
 
 	/* If the selection is in the window's own buffer get it from there,
 	   but substitute null characters as if it were an external selection */
@@ -132,48 +148,19 @@ QString GetAnySelectionEx(Document *window) {
 		return QString::fromStdString(text);
 	}
 
-	// Request the selection value to be delivered to getAnySelectionCB 
-	XtGetSelectionValue(window->textArea_, XA_PRIMARY, XA_STRING, getAnySelectionCB, &selText, XtLastTimestampProcessed(XtDisplay(window->textArea_)));
+    const QMimeData *mimeData = QApplication::clipboard()->mimeData(QClipboard::Selection);
+    if(mimeData->hasText()) {
+        return mimeData->text();
+    }
 
-	// Wait for the value to appear 
-	while (selText == waitingMarker) {
-		XtAppNextEvent(XtWidgetToApplicationContext(window->textArea_), &nextEvent);
-		ServerDispatchEvent(&nextEvent);
-	}
-	
-	if(!selText) {
-		return QString();
-	}
-	
-	QString s = QLatin1String(selText);
-	XtFree(selText);
-	return s;
-}
-
-static void getAnySelectionCB(Widget widget, XtPointer client_data, Atom *selection, Atom *type, XtPointer value, unsigned long *length, int *format) {
-
-	(void)widget;
-	(void)selection;
-
-	auto result = static_cast<char **>(client_data);
-
-	// Confirm that the returned value is of the correct type 
-	if (*type != XA_STRING || *format != 8) {
-		QApplication::beep();
-		XtFree((char *)value);
-		*result = nullptr;
-		return;
-	}
-
-	// Append a null, and return the string 
-	*result = XtMalloc(*length + 1);
-	strncpy(*result, (char *)value, *length);
-	XtFree((char *)value);
-	(*result)[*length] = '\0';
+    QApplication::beep();
+    return QString();
 }
 
 void SelectNumberedLineEx(DocumentWidget *document, TextArea *area, int lineNum) {
-    int i, lineStart = 0, lineEnd;
+    int i;
+    int lineStart = 0;
+    int lineEnd;
 
     // count lines to find the start and end positions for the selection
     if (lineNum < 1)

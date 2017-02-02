@@ -10,7 +10,26 @@
 //------------------------------------------------------------------------------
 // Name: TabWidget
 //------------------------------------------------------------------------------
-TabWidget::TabWidget(QWidget *parent) : QTabWidget(parent), hideSingleTab_(true), hideTabBar_(false) {
+TabWidget::TabWidget(QWidget *parent) : QTabWidget(parent), hideSingleTab_(true) {
+}
+
+//------------------------------------------------------------------------------
+// Name: hideSingleTab
+//------------------------------------------------------------------------------
+bool TabWidget::hideSingleTab() const {
+    return hideSingleTab_;
+}
+
+//------------------------------------------------------------------------------
+// Name: setHideSingleTab
+//------------------------------------------------------------------------------
+void TabWidget::setHideSingleTab(bool value) {
+    hideSingleTab_ = value;
+    if(hideSingleTab_) {
+        tabBar()->setVisible(count() >= 2);
+    } else {
+        tabBar()->setVisible(true);
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -20,7 +39,7 @@ void TabWidget::tabInserted(int index) {
 
 	Q_UNUSED(index);
 
-	if(hideSingleTab_ && !hideTabBar_) {
+    if(hideSingleTab_) {
 		tabBar()->setVisible(count() >= 2);
 	}
 
@@ -34,7 +53,7 @@ void TabWidget::tabRemoved(int index) {
 
 	Q_UNUSED(index);
 
-	if(hideSingleTab_ && !hideTabBar_) {
+    if(hideSingleTab_) {
 		tabBar()->setVisible(count() >= 2);
 	}
 
@@ -54,28 +73,6 @@ void TabWidget::mousePressEvent(QMouseEvent *event) {
 		if(tab != -1) {
             Q_EMIT customContextMenuRequested(tab, event->pos());
 		}
-	}
-}
-
-//------------------------------------------------------------------------------
-// Name: hideTabBar
-//------------------------------------------------------------------------------
-bool TabWidget::hideTabBar() const {
-	return hideTabBar_;
-}
-
-//------------------------------------------------------------------------------
-// Name: setHideTabBar
-//------------------------------------------------------------------------------
-void TabWidget::setHideTabBar(bool value) {
-	hideTabBar_ = value;
-
-	if(hideTabBar_) {
-		tabBar()->setVisible(false);
-	} else if(hideSingleTab_) {
-		tabBar()->setVisible(count() >= 2);
-	} else {
-		tabBar()->setVisible(true);
 	}
 }
 

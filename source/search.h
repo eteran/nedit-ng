@@ -33,9 +33,6 @@ constexpr const int MAX_SEARCH_HISTORY = 100; /* Maximum length of search string
 #include "SearchType.h"
 #include "util/string_view.h"
 
-#include <X11/Intrinsic.h>
-#include <X11/X.h>
-
 class TextArea;
 class DocumentWidget;
 class MainWindow;
@@ -57,9 +54,7 @@ char *ReplaceAllInString(view::string_view inString, const char *searchString, c
 void BeginISearchEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction);
 void DoFindDlogEx(MainWindow *window, DocumentWidget *document, SearchDirection direction, int keepDialogs, SearchType searchType);
 void DoFindReplaceDlogEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, int keepDialogs, SearchType searchType);
-void FlashMatching(Document *window, Widget textW);
 void FlashMatchingEx(DocumentWidget *document, TextArea *area);
-void RemoveFromMultiReplaceDialog(Document *window);
 void ReplaceInSelectionEx(MainWindow *window, DocumentWidget *document, TextArea *area, const char *searchString, const char *replaceString, SearchType searchType);
 void SearchForSelectedEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, SearchType searchType, int searchWrap);
 
@@ -69,7 +64,11 @@ void eraseFlashEx(DocumentWidget *document);
 /* Default scope if selection exists when replace dialog pops up.
    "Smart" means "In Selection" if the selection spans more than
    one line; "In Window" otherwise. */
-enum ReplaceAllDefaultScope { REPL_DEF_SCOPE_WINDOW, REPL_DEF_SCOPE_SELECTION, REPL_DEF_SCOPE_SMART };
+enum ReplaceAllDefaultScope {
+    REPL_DEF_SCOPE_WINDOW,
+    REPL_DEF_SCOPE_SELECTION,
+    REPL_DEF_SCOPE_SMART
+};
 
 /*
 ** Returns a pointer to the string describing the search type for search
@@ -98,16 +97,14 @@ struct SelectionInfo {
 };
 
 // TODO(eteran): temporarily exposing these publically
-int countWritableWindows(void);
+int countWritableWindows();
 int historyIndex(int nCycles);
 int isRegexType(SearchType searchType);
-void unmanageReplaceDialogs(const Document *window);
 void saveSearchHistory(const char *searchString, const char *replaceString, SearchType searchType, bool isIncremental);
 int defaultRegexFlags(SearchType searchType);
 
 extern char *SearchHistory[MAX_SEARCH_HISTORY];
 extern char *ReplaceHistory[MAX_SEARCH_HISTORY];
 extern SearchType SearchTypeHistory[MAX_SEARCH_HISTORY];
-extern Document *windowNotToClose;
 
 #endif

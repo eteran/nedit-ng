@@ -32,19 +32,8 @@
 #define PERMANENT_MENU_ITEM reinterpret_cast<XtPointer>(1)
 #define TEMPORARY_MENU_ITEM reinterpret_cast<XtPointer>(2)
 
-class Document;
-
-Widget CreateBGMenu(Document *window);
-Widget CreateMenuBar(Widget parent, Document *window);
-Widget CreateTabContextMenu(Widget parent, Document *window);
 XtActionsRec *GetMenuActions(int *nActions);
-void AddBGMenuAction(Widget widget);
-void AddTabContextMenuAction(Widget widget);
-void AddToPrevOpenMenu(const char *filename);
-void CheckCloseDim();
-void HidePointerOnKeyedEvent(Widget w, XEvent *event);
-void InstallMenuActions(XtAppContext context);
-void InvalidateWindowMenus();
+
 void ReadNEditDB();
 void ShowHiddenTearOff(Widget menuPane);
 void WriteNEditDB();

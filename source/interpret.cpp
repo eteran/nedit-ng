@@ -81,56 +81,56 @@ static void restoreContext(RestartData<Document> *context);
 static void saveContextEx(RestartData<DocumentWidget> *context);
 static void restoreContextEx(RestartData<DocumentWidget> *context);
 
-static int returnNoVal(void);
-static int returnVal(void);
+static int returnNoVal();
+static int returnVal();
 static int returnValOrNone(int valOnStack);
-static int pushSymVal(void);
-static int pushArgVal(void);
-static int pushArgCount(void);
-static int pushArgArray(void);
-static int pushArraySymVal(void);
-static int dupStack(void);
-static int add(void);
-static int subtract(void);
-static int multiply(void);
-static int divide(void);
-static int modulo(void);
-static int negate(void);
-static int increment(void);
-static int decrement(void);
-static int gt(void);
-static int lt(void);
-static int ge(void);
-static int le(void);
-static int eq(void);
-static int ne(void);
-static int bitAnd(void);
-static int bitOr(void);
-static int logicalAnd(void);
-static int logicalOr(void);
-static int logicalNot(void);
-static int power(void);
-static int concat(void);
-static int assign(void);
-static int callSubroutine(void);
-static int fetchRetVal(void);
-static int branch(void);
-static int branchTrue(void);
-static int branchFalse(void);
-static int branchNever(void);
-static int arrayRef(void);
-static int arrayAssign(void);
-static int arrayRefAndAssignSetup(void);
-static int beginArrayIter(void);
-static int arrayIter(void);
-static int inArray(void);
-static int deleteArrayElement(void);
+static int pushSymVal();
+static int pushArgVal();
+static int pushArgCount();
+static int pushArgArray();
+static int pushArraySymVal();
+static int dupStack();
+static int add();
+static int subtract();
+static int multiply();
+static int divide();
+static int modulo();
+static int negate();
+static int increment();
+static int decrement();
+static int gt();
+static int lt();
+static int ge();
+static int le();
+static int eq();
+static int ne();
+static int bitAnd();
+static int bitOr();
+static int logicalAnd();
+static int logicalOr();
+static int logicalNot();
+static int power();
+static int concat();
+static int assign();
+static int callSubroutine();
+static int fetchRetVal();
+static int branch();
+static int branchTrue();
+static int branchFalse();
+static int branchNever();
+static int arrayRef();
+static int arrayAssign();
+static int arrayRefAndAssignSetup();
+static int beginArrayIter();
+static int arrayIter();
+static int inArray();
+static int deleteArrayElement();
 static void freeSymbolTable(std::list<Symbol *> &symTab);
 static int errCheck(const char *s);
 static int execError(const char *s1, const char *s2);
 
-static ArrayEntry *allocateSparseArrayEntry(void);
-static rbTreeNode *arrayEmptyAllocator(void);
+static ArrayEntry *allocateSparseArrayEntry();
+static rbTreeNode *arrayEmptyAllocator();
 static rbTreeNode *arrayAllocateNode(rbTreeNode *src);
 static int arrayEntryCopyToNode(rbTreeNode *dst, rbTreeNode *src);
 static int arrayEntryCompare(rbTreeNode *left, rbTreeNode *right);
@@ -1317,7 +1317,7 @@ static int pushSymVal(void) {
 		}
 	} else if (s->type == PROC_VALUE_SYM) {
 		const char *errMsg;
-		if (!(s->value.val.subr)(FocusWindow, nullptr, 0, &symVal, &errMsg)) {
+        if (!(s->value.val.subr)(FocusWindowEx, nullptr, 0, &symVal, &errMsg)) {
 			return execError(errMsg, s->name.c_str());
 		}
 	} else
@@ -1967,7 +1967,7 @@ static int callSubroutine() {
 
 		// Call the function and check for preemption 
 		PreemptRequest = false;
-        if (!sym->value.val.subr(FocusWindow, StackP, nArgs, &result, &errMsg)) {
+        if (!sym->value.val.subr(FocusWindowEx, StackP, nArgs, &result, &errMsg)) {
 			return execError(errMsg, sym->name.c_str());
         }
 

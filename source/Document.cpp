@@ -21,7 +21,6 @@
 #include "search.h"
 #include "selection.h"
 #include "server.h"
-#include "shell.h"
 #include "smartIndent.h"
 #include "TextDisplay.h"
 #include "TextBuffer.h"
@@ -61,7 +60,6 @@ const int REVERSE = 2;
 // bitmap data for the close-tab button
 const int close_width  = 11;
 const int close_height = 11;
-static uint8_t close_bits[] = {0x00, 0x00, 0x00, 0x00, 0x8c, 0x01, 0xdc, 0x01, 0xf8, 0x00, 0x70, 0x00, 0xf8, 0x00, 0xdc, 0x01, 0x8c, 0x01, 0x00, 0x00, 0x00, 0x00};
 
 /* Thickness of 3D border around statistics and/or incremental search areas
    below the main menu bar */
@@ -194,169 +192,6 @@ void wmSizeUpdateProc(XtPointer clientData, XtIntervalId *id) {
 }
 
 /*
-**
-*/
-void cancelTimeOut(XtIntervalId *timer) {
-	if (*timer != 0) {
-		XtRemoveTimeOut(*timer);
-		*timer = 0;
-	}
-}
-
-/*
-**
-*/
-void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *cbArg) {
-
-	(void)nRestyled;
-
-	auto window = static_cast<Document *>(cbArg);
-	int selected = window->buffer_->primary_.selected;
-
-	// update the table of bookmarks
-	if (!window->ignoreModify_) {
-		UpdateMarkTable(window, pos, nInserted, nDeleted);
-	}
-
-	// Check and dim/undim selection related menu items
-	if ((window->wasSelected_ && !selected) || (!window->wasSelected_ && selected)) {
-		window->wasSelected_ = selected;
-
-		/* do not refresh shell-level items (window, menu-bar etc)
-		   when motifying non-top document */
-		if (window->IsTopDocument()) {
-#if 0 // NOTE(eteran): transitioned
-            XtSetSensitive(window->printSelItem_, selected);
-            XtSetSensitive(window->cutItem_, selected);
-			XtSetSensitive(window->copyItem_, selected);
-            XtSetSensitive(window->delItem_, selected);
-#endif
-			/* Note we don't change the selection for items like
-			   "Open Selected" and "Find Selected".  That's because
-			   it works on selections in external applications.
-			   Desensitizing it if there's no NEdit selection
-			   disables this feature. */
-			XtSetSensitive(window->filterItem_, selected);
-
-			DimSelectionDepUserMenuItems(window, selected);
-			if(auto dialog = window->getDialogReplace()) {
-				dialog->UpdateReplaceActionButtons();
-			}
-		}
-	}
-
-	/* When the program needs to make a change to a text area without without
-	   recording it for undo or marking file as changed it sets ignoreModify */
-	if (window->ignoreModify_ || (nDeleted == 0 && nInserted == 0)) {
-		return;
-	}
-
-	// Make sure line number display is sufficient for new data
-	window->updateLineNumDisp();
-
-	/* Save information for undoing this operation (this call also counts
-	   characters and editing operations for triggering autosave */
-	window->SaveUndoInformation(pos, nInserted, nDeleted, deletedText);
-
-	// Trigger automatic backup if operation or character limits reached
-	if (window->autoSave_ && (window->autoSaveCharCount_ > AUTOSAVE_CHAR_LIMIT || window->autoSaveOpCount_ > AUTOSAVE_OP_LIMIT)) {
-		WriteBackupFile(window);
-		window->autoSaveCharCount_ = 0;
-		window->autoSaveOpCount_ = 0;
-	}
-
-	// Indicate that the window has now been modified
-	window->SetWindowModified(true);
-
-	// Update # of bytes, and line and col statistics
-	window->UpdateStatsLine();
-
-	// Check if external changes have been made to file and warn user
-	CheckForChangesToFile(window);
-}
-
-void focusCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	auto window = static_cast<Document *>(clientData);
-
-	(void)callData;
-
-	// record which window pane last had the keyboard focus
-	window->lastFocus_ = w;
-
-	// update line number statistic to reflect current focus pane
-	window->UpdateStatsLine();
-#if 0
-	// finish off the current incremental search
-	EndISearch(window);
-#endif
-	// Check for changes to read-only status and/or file modifications
-	CheckForChangesToFile(window);
-}
-
-void movedCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	auto window = static_cast<Document *>(clientData);
-
-	(void)callData;
-
-	TextDisplay *textD = textD_of(w);
-
-	if (window->ignoreModify_) {
-		return;
-	}
-
-	// update line and column nubers in statistics line
-	window->UpdateStatsLine();
-
-	// Check the character before the cursor for matchable characters
-	FlashMatching(window, w);
-
-	// Check for changes to read-only status and/or file modifications
-	CheckForChangesToFile(window);
-
-	/*  This callback is not only called for focussed panes, but for newly
-	    created panes as well. So make sure that the cursor is left alone
-	    for unfocussed panes.
-	    TextWidget have no state per se about focus, so we use the related
-	    ID for the blink procedure.  */
-	if (textD->getCursorBlinkProcID() != 0) {
-		//  Start blinking the caret again.
-		textD->ResetCursorBlink(false);
-	}
-}
-
-void dragStartCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	auto window = static_cast<Document *>(clientData);
-
-	(void)callData;
-	(void)w;
-
-	// don't record all of the intermediate drag steps for undo
-	window->ignoreModify_ = true;
-}
-
-void dragEndCB(Widget w, XtPointer clientData, XtPointer call_data) {
-
-	(void)w;
-
-	auto window   = static_cast<Document *>(clientData);
-	auto callData = static_cast<dragEndCBStruct *>(call_data);
-
-	// restore recording of undo information
-	window->ignoreModify_ = false;
-
-	// Do nothing if drag operation was canceled
-	if (callData->nCharsInserted == 0)
-		return;
-
-	/* Save information for undoing this operation not saved while
-	   undo recording was off */
-	modifiedCB(callData->startPos, callData->nCharsInserted, callData->nCharsDeleted, 0, callData->deletedText, window);
-}
-
-/*
 ** hide all the tearoffs spawned from this menu.
 ** It works recursively to close the tearoffs of the submenus
 */
@@ -384,6 +219,8 @@ void hideTearOffs(Widget menuPane) {
 ** Redisplay menu tearoffs previously hid by hideTearOffs()
 */
 void redisplayTearOffs(Widget menuPane) {
+    Q_UNUSED(menuPane)
+#if 0 // NOTE(eteran)
 	WidgetList itemList;
 	Widget subMenuID;
 	Cardinal nItems;
@@ -401,6 +238,7 @@ void redisplayTearOffs(Widget menuPane) {
 	// redisplay tearoff for this menu
 	if (!XmIsMenuShell(XtParent(menuPane)))
 		ShowHiddenTearOff(menuPane);
+#endif
 }
 
 /*
@@ -584,183 +422,6 @@ void addWindowIcon(Widget shell) {
 		maskPixmap = XCreateBitmapFromData(TheDisplay, RootWindowOfScreen(XtScreen(shell)), (char *)maskBits, iconBitmapWidth, iconBitmapHeight);
 	}
 	XtVaSetValues(shell, XmNiconPixmap, iconPixmap, XmNiconMask, maskPixmap, nullptr);
-}
-
-void hideTooltip(Widget tab) {
-	if (Widget tooltip = XtNameToWidget(tab, "*BubbleShell"))
-		XtPopdown(tooltip);
-}
-
-/*
-** ButtonPress event handler for tabs.
-*/
-void tabClickEH(Widget w, XtPointer clientData, XEvent *event) {
-
-	(void)clientData;
-	(void)event;
-
-	// hide the tooltip when user clicks with any button.
-	if (BubbleButton_Timer(w)) {
-		XtRemoveTimeOut(BubbleButton_Timer(w));
-		BubbleButton_Timer(w) = (XtIntervalId) nullptr;
-	} else {
-		hideTooltip(w);
-	}
-}
-
-/*
-** add a tab to the tab bar for the new document.
-*/
-Widget addTab(Widget folder, const QString &string) {
-	Widget tooltipLabel, tab;
-	XmString s1;
-
-	s1 = XmStringCreateSimpleEx(string);
-	tab = XtVaCreateManagedWidget("tab", xrwsBubbleButtonWidgetClass, folder,
-	                              // XmNmarginWidth, <default@nedit.c>,
-	                              // XmNmarginHeight, <default@nedit.c>,
-	                              // XmNalignment, <default@nedit.c>,
-	                              XmNlabelString, s1, XltNbubbleString, s1, XltNshowBubble, GetPrefToolTips(), XltNautoParkBubble, true, XltNslidingBubble, false,
-	                              // XltNdelay, 800,
-	                              // XltNbubbleDuration, 8000,
-	                              nullptr);
-	XmStringFree(s1);
-
-	// there's things to do as user click on the tab
-	XtAddEventHandler(tab, ButtonPressMask, false, (XtEventHandler)tabClickEH, nullptr);
-
-	/* BubbleButton simply use reversed video for tooltips,
-	   we try to use the 'standard' color */
-	tooltipLabel = XtNameToWidget(tab, "*BubbleLabel");
-	XtVaSetValues(
-				tooltipLabel,
-				XmNbackground, AllocateColor(GetPrefTooltipBgColor()),
-				XmNforeground, AllocateColor(NEDIT_DEFAULT_FG), nullptr);
-
-	/* put borders around tooltip. BubbleButton use
-	   transientShellWidgetClass as tooltip shell, which
-	   came without borders */
-	XtVaSetValues(XtParent(tooltipLabel), XmNborderWidth, 1, nullptr);
-
-	return tab;
-}
-
-/*
-** Create pixmap per the widget's color depth setting.
-**
-** This fixes a BadMatch (X_CopyArea) error due to mismatching of
-** color depth between the bitmap (depth of 1) and the screen,
-** specifically on when linked to LessTif v1.2 (release 0.93.18
-** & 0.93.94 tested).  LessTif v2.x showed no such problem.
-*/
-Pixmap createBitmapWithDepth(Widget w, char *data, unsigned int width, unsigned int height) {
-	Pixmap pixmap;
-	Pixel fg, bg;
-	int depth;
-
-	XtVaGetValues(w, XmNforeground, &fg, XmNbackground, &bg, XmNdepth, &depth, nullptr);
-	pixmap = XCreatePixmapFromBitmapData(XtDisplay(w), RootWindowOfScreen(XtScreen(w)), (char *)data, width, height, fg, bg, depth);
-
-	return pixmap;
-}
-
-void closeTabProc(XtPointer clientData, XtIntervalId *id) {
-	(void)id;
-	CloseFileAndWindow(static_cast<Document *>(clientData), PROMPT_SBC_DIALOG_RESPONSE);
-}
-
-void CloseDocumentWindow(Widget w, XtPointer clientData, XtPointer callData) {
-
-	(void)w;
-
-	auto window = static_cast<Document *>(clientData);
-
-	int TabCount = window->TabCount();
-
-	if (TabCount == Document::WindowCount()) {
-		// this is only window, then exit
-		auto it = WindowList.begin();
-		if(it != WindowList.end()) {
-			Document *doc = *it;
-			XtCallActionProc(doc->lastFocus_, "exit", static_cast<XmAnyCallbackStruct *>(callData)->event, nullptr, 0);
-		}
-	} else {
-		if (TabCount == 1) {
-			CloseFileAndWindow(window, PROMPT_SBC_DIALOG_RESPONSE);
-		} else {
-			int resp = QMessageBox::Cancel;
-			if (GetPrefWarnExit()) {
-				// TODO(eteran): this is probably better off with "Ok" "Cancel", but we are being consistant with the original UI for now
-				resp = QMessageBox::question(nullptr /*parent*/, QLatin1String("Close Window"), QLatin1String("Close ALL documents in this window?"), QMessageBox::Cancel, QMessageBox::Close);
-			}
-
-			if (resp == QMessageBox::Close) {
-				window->CloseAllDocumentInWindow();
-			}
-		}
-	}
-
-}
-
-
-void closeCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	auto window = static_cast<Document *>(clientData);
-
-	window = Document::WidgetToWindow(w);
-	if (!WindowCanBeClosed(window)) {
-		return;
-	}
-
-	CloseDocumentWindow(w, window, callData);
-}
-
-/*
-** callback to close-tab button.
-*/
-void closeTabCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	auto mainWin = static_cast<Widget>(clientData);
-
-	(void)callData;
-
-	/* FIXME: XtRemoveActionHook() related coredump
-
-	   An unknown bug seems to be associated with the XtRemoveActionHook()
-	   call in FinishLearn(), which resulted in coredump if a tab was
-	   closed, in the middle of keystrokes learning, by clicking on the
-	   close-tab button.
-
-	   As evident to our accusation, the coredump may be surpressed by
-	   simply commenting out the XtRemoveActionHook() call. The bug was
-	   consistent on both Motif and Lesstif on various platforms.
-
-	   Closing the tab through either the "Close" menu or its accel key,
-	   however, was without any trouble.
-
-	   While its actual mechanism is not well understood, we somehow
-	   managed to workaround the bug by delaying the action of closing
-	   the tab. For now. */
-	XtAppAddTimeOut(XtWidgetToApplicationContext(w), 0, closeTabProc, Document::GetTopDocument(mainWin));
-}
-
-/*
-** callback to clicks on a tab to raise it's document.
-*/
-void raiseTabCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	(void)clientData;
-
-	auto cbs = static_cast<XmLFolderCallbackStruct *>(callData);
-	WidgetList tabList;
-	Widget tab;
-
-	XtVaGetValues(w, XmNtabWidgetList, &tabList, nullptr);
-	tab = tabList[cbs->pos];
-
-	if(Document *win = Document::TabToWindow(tab)) {
-		win->RaiseDocument();
-	}
 }
 
 /*
@@ -1807,7 +1468,7 @@ void Document::SetWindowModified(bool modified) {
 ** status of the window data structure
 */
 void Document::UpdateWindowTitle() {
-
+#if 0 // NOTE(eteran)
 	if (!IsTopDocument()) {
 		return;
 	}
@@ -1851,6 +1512,7 @@ void Document::UpdateWindowTitle() {
 
 	// Update the Windows menus with the new name
 	InvalidateWindowMenus();
+#endif
 }
 
 /*
@@ -2041,7 +1703,7 @@ void Document::SetColors(const char *textFg, const char *textBg, const char *sel
 ** close all the documents in a window
 */
 bool Document::CloseAllDocumentInWindow() {
-
+#if 0
 	if (TabCount() == 1) {
 		// only one document in the window
 		return CloseFileAndWindow(this, PROMPT_SBC_DIALOG_RESPONSE);
@@ -2092,7 +1754,7 @@ bool Document::CloseAllDocumentInWindow() {
 			}
 		}
 	}
-
+#endif
 	return true;
 }
 
@@ -2100,6 +1762,7 @@ bool Document::CloseAllDocumentInWindow() {
 ** spin off the document to a new window
 */
 Document *Document::DetachDocument() {
+#if 0
 	Document *win = nullptr;
 
 	if (TabCount() < 2) {
@@ -2155,6 +1818,8 @@ Document *Document::DetachDocument() {
 	cloneWin->SortTabBar();
 
 	return cloneWin;
+#endif
+    return nullptr;
 }
 
 /*
@@ -2270,6 +1935,8 @@ void Document::MakeSelectionVisible(Widget textPane) {
 ** its new host, i.e. the window size, stats and isearch lines.
 */
 Document *Document::MoveDocument(Document *toWindow) {
+    Q_UNUSED(toWindow);
+#if 0
 	Document *win = nullptr, *cloneWin;
 
 	// prepare to move document
@@ -2317,6 +1984,8 @@ Document *Document::MoveDocument(Document *toWindow) {
 	cloneWin->SortTabBar();
 
 	return cloneWin;
+#endif
+    return nullptr;
 }
 
 void Document::ShowWindowTabBar() {
@@ -2417,6 +2086,8 @@ void Document::ShowStatsLine(int state) {
 ** Set autoindent state to one of  NO_AUTO_INDENT, AUTO_INDENT, or SMART_INDENT.
 */
 void Document::SetAutoIndent(int state) {
+    Q_UNUSED(state);
+#if 0 // NOTE(eteran): transitioned
 	bool autoIndent  = (state == AUTO_INDENT);
 	bool smartIndent = (state == SMART_INDENT);
 
@@ -2438,12 +2109,11 @@ void Document::SetAutoIndent(int state) {
 	}
 
 	if (IsTopDocument()) {
-#if 0 // NOTE(eteran): transitioned
 		XmToggleButtonSetState(smartIndentItem_, smartIndent, false);
 		XmToggleButtonSetState(autoIndentItem_, autoIndent, false);
 		XmToggleButtonSetState(autoIndentOffItem_, state == NO_AUTO_INDENT, false);
-#endif
 	}
+#endif
 }
 
 /*
@@ -2604,6 +2274,7 @@ void Document::SetFonts(const char *fontName, const char *italicName, const char
 ** Close a document, or an editor window
 */
 void Document::CloseWindow() {
+#if 0 // NOTE(eteran): transitioned
 	int keepWindow, state;
 	Document *win;
 	Document *topBuf = nullptr;
@@ -2781,6 +2452,7 @@ void Document::CloseWindow() {
 
 	// deallocate the window data structure
 	delete this;
+#endif
 }
 
 /*
@@ -3204,11 +2876,12 @@ void Document::cloneDocument(Document *window) {
 */
 Document::Document(const QString &name, char *geometry, bool iconic) {
 
+#if 0
 	XmString s1;
 	XmFontList statsFontList;
 
 	static Pixmap closeTabPixmap = 0;
-
+#endif
 	dialogFind_            = nullptr;
 	dialogReplace_         = nullptr;
 	dialogColors_          = nullptr;
@@ -3440,7 +3113,7 @@ Document::Document(const QString &name, char *geometry, bool iconic) {
 	RemapDeleteKey(iSearchText_);
 
 	SetISearchTextCallbacks(this);
-#endif
+
 	// create the a form to house the tab bar and close-tab button
 	Widget tabForm = XtVaCreateWidget("tabForm", xmFormWidgetClass, statsAreaForm, XmNmarginHeight, 0, XmNmarginWidth, 0, XmNspacing, 0, XmNresizable, false, XmNleftAttachment, XmATTACH_FORM, XmNrightAttachment, XmATTACH_FORM, XmNshadowThickness, 0, nullptr);
 
@@ -3623,6 +3296,7 @@ Document::Document(const QString &name, char *geometry, bool iconic) {
 #endif
 		}
 	}
+#endif
 }
 
 Document::~Document() {
@@ -3781,6 +3455,7 @@ Document *Document::CreateDocument(const QString &name) {
 		GetPrefColorName(LINENO_FG_COLOR),
 		GetPrefColorName(CURSOR_FG_COLOR));
 
+#if 0 // NOTE(eteran)
 	/* Create the right button popup menu (note: order is important here,
 	   since the translation for popping up this menu was probably already
 	   added in createTextArea, but CreateBGMenu requires window->textArea_
@@ -3820,7 +3495,7 @@ Document *Document::CreateDocument(const QString &name) {
 	XLowerWindow(TheDisplay, XtWindow(window->splitPane_));
 	XtUnmanageChild(window->splitPane_);
 	XtVaSetValues(window->splitPane_, XmNmappedWhenManaged, true, nullptr);
-
+#endif
 	return window;
 }
 
@@ -3878,7 +3553,7 @@ Document *Document::WidgetToWindow(Widget w) {
 }
 
 void Document::Undo() {
-
+#if 0 // NOTE(eteran): transitioned
 	int restoredTextLength;
 
 	// return if nothing to undo
@@ -3926,10 +3601,11 @@ void Document::Undo() {
 
 	// free the undo record and remove it from the chain
 	removeUndoItem();
+#endif
 }
 
 void Document::Redo() {
-
+#if 0 // NOTE(eteran): transitioned
 	int restoredTextLength;
 
 	// return if nothing to redo
@@ -3975,6 +3651,7 @@ void Document::Redo() {
 
 	// remove the redo record from the chain and free it
 	removeRedoItem();
+#endif
 }
 
 
@@ -4364,7 +4041,7 @@ Widget  Document::createTextArea(Widget parent, Document *window, int rows, int 
 		textNhidePointer,        (Boolean)GetPrefTypingHidesPointer(),
 		textNcursorVPadding,     GetVerticalAutoScroll(),
 		nullptr);
-
+#if 0 // NOTE(eteran): transitioned
 	XtVaSetValues(sw, XmNworkWindow, frame, XmNhorizontalScrollBar, hScrollBar, XmNverticalScrollBar, vScrollBar, nullptr);
 
 	TextDisplay *textD = textD_of(text);
@@ -4391,7 +4068,7 @@ Widget  Document::createTextArea(Widget parent, Document *window, int rows, int 
 	   line, tell the widget to maintain them (otherwise, it's a costly
 	   operation and performance will be better without it) */
 	textD->TextDMaintainAbsLineNum(window->showStats_);
-
+#endif
     return text;
 }
 

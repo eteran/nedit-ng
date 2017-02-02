@@ -21,17 +21,11 @@ protected:
 
 public:
 	QTabBar *getTabBar() const;
-
-public:
-	bool hideSingleTab() const        { return hideSingleTab_; }
-	void setHideSingleTab(bool value) { hideSingleTab_ = value; }
-
-	bool hideTabBar() const;
-	void setHideTabBar(bool value);
+    bool hideSingleTab() const;
+    void setHideSingleTab(bool value);
 
 private:
 	bool hideSingleTab_;
-	bool hideTabBar_;
 };
 
 #endif

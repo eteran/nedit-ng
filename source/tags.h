@@ -27,11 +27,9 @@
 #ifndef TAGS_H_
 #define TAGS_H_
 
-#include <X11/Intrinsic.h>
 #include <ctime>
 #include <string>
 
-class Document;
 class DocumentWidget;
 class TextArea;
 
@@ -62,19 +60,19 @@ enum Mode {
 	TIP
 };
 
-int AddRelTagsFile(const char *tagSpec, const char *windowPath, int file_type);
+bool AddRelTagsFile(const char *tagSpec, const char *windowPath, int file_type);
 // tagSpec is a colon-delimited list of filenames 
 int AddTagsFile(const char *tagSpec, int file_type);
 int DeleteTagsFile(const char *tagSpec, int file_type, bool force_unload);
 
 int AddTagsFileEx(const QString &tagSpec, int file_type);
-int DeleteTagsFileEx(const QString &tagSpec, int file_type, Boolean force_unload);
+int DeleteTagsFileEx(const QString &tagSpec, int file_type, bool force_unload);
 int tagsShowCalltipEx(TextArea *area, const char *text);
 
 // Routines for handling tags or tips from the current selection
 
 //  Display (possibly finding first) a calltip.  Search type can only be TIP or TIP_FROM_TAG here.
-int ShowTipString(Document *window, char *text, Boolean anchored, int pos, Boolean lookup, int search_type, int hAlign, int vAlign, int alignMode);
+int ShowTipStringEx(DocumentWidget *window, char *text, bool anchored, int pos, bool lookup, int search_type, int hAlign, int vAlign, int alignMode);
 
 void editTaggedLocationEx(TextArea *area, int i);
 void showMatchingCalltipEx(TextArea *area, int i);

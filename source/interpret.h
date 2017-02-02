@@ -114,7 +114,7 @@ union Inst {
 	Symbol *sym;
 };
 
-typedef int (*BuiltInSubr)(Document *window, struct DataValue *argList, int nArgs, struct DataValue *result, const char **errMsg);
+typedef int (*BuiltInSubrEx)(DocumentWidget *document, struct DataValue *argList, int nArgs, struct DataValue *result, const char **errMsg);
 
 struct NString {
 	char *rep;
@@ -128,17 +128,17 @@ struct DataValue {
 	TypeTags tag;
 	
 	union {
-		int          n;
-		NString      str;
-		BuiltInSubr  subr;
-		Program*     prog;
-		XtActionProc xtproc;
-		Inst*        inst;
-		DataValue*   dataval;
-		ArrayEntry*  arrayPtr;
+        int            n;
+        NString        str;
+        BuiltInSubrEx  subr;
+        Program*       prog;
+        XtActionProc   xtproc;
+        Inst*          inst;
+        DataValue*     dataval;
+        ArrayEntry*    arrayPtr;
 	} val;
 #if 0
-	typedef boost::variant<int, NString, BuiltInSubr, Program*, XtActionProc, Inst*, DataValue*, ArrayEntry*> value_type;
+    typedef boost::variant<int, NString, BuiltInSubrEx, Program*, XtActionProc, Inst*, DataValue*, ArrayEntry*> value_type;
 	value_type value;
 #endif
 };

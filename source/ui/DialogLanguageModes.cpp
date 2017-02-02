@@ -11,18 +11,16 @@
 #include "TextArea.h"
 #include "DocumentWidget.h"
 #include "SignalBlocker.h"
-#include "util/memory.h"
 #include "LanguageMode.h"
 #include "preferences.h"
 #include "regularExp.h"
 #include "tags.h"
-//#include "Document.h"
-//#include "text.h" // for textNwordDelimiters
 #include "highlightData.h"
 #include "smartIndent.h"
 #include "userCmds.h"
 #include "TextHelper.h"
 #include "TextDisplay.h"
+#include <memory>
 
 //------------------------------------------------------------------------------
 // Name: DialogLanguageModes
@@ -261,7 +259,7 @@ LanguageMode *DialogLanguageModes::readLMDialogFields(bool silent) {
 	if(!recognitionExpr.isEmpty()) {
 		try {
 			std::string expression = recognitionExpr.toStdString();
-			auto compiledRE = mem::make_unique<regexp>(expression, REDFLT_STANDARD);
+			auto compiledRE = std::make_unique<regexp>(expression, REDFLT_STANDARD);
 		} catch(const regex_error &e) {
 			if (!silent) {
 				QMessageBox::warning(this, tr("Regex"), tr("Recognition expression:\n%1").arg(QLatin1String(e.what())));

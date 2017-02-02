@@ -37,6 +37,7 @@
 #include "ui/DocumentWidget.h"
 
 #include "nedit.h"
+#include "util/fileUtils.h"
 #include "file.h"
 #include "help.h"
 #include "interpret.h"
@@ -267,8 +268,9 @@ int main(int argc, char *argv[]) {
 	char *langMode = nullptr;
 	char filename[MAXPATHLEN];
 	char pathname[MAXPATHLEN];	
-    DocumentWidget *lastFileEx = nullptr;
+    QPointer<DocumentWidget> lastFileEx = nullptr;
     char *toDoCommand = nullptr;
+
 #if 0
     static const char *protectedKeywords[] = {"-iconic", "-icon", "-geometry", "-g", "-rv", "-reverse", "-bd", "-bordercolor", "-borderwidth", "-bw", "-title", nullptr};
     uint8_t *invalidBindings = nullptr;
@@ -288,9 +290,6 @@ int main(int argc, char *argv[]) {
 #endif
 	// TODO(eteran): support non-X11 instance for things like -version again
 	QApplication app(argc, argv);
-
-    // temporary hack
-    TheDisplay = QX11Info::display();
 
 #if 0
 	// Set up a warning handler to trap obnoxious Xt grab warnings 
@@ -337,6 +336,10 @@ int main(int argc, char *argv[]) {
 	unmaskArgvKeywords(argc, argv, protectedKeywords);
 #endif
 
+#ifdef Q_WS_X11
+    // temporary hack
+    TheDisplay = QX11Info::display();
+
 	if (!TheDisplay) {
 		// Respond to -V or -version even if there is no display 
 		for (int i = 1; i < argc && strcmp(argv[i], "--"); i++) {
@@ -348,18 +351,18 @@ int main(int argc, char *argv[]) {
 		fputs("NEdit: Can't open display\n", stderr);
 		exit(EXIT_FAILURE);
 	}
+#endif
+
 #if 0
 	// Must be done before creating widgets 
 	fixupBrokenXKeysymDB();
 	patchResourcesForVisual();
 #endif
 
-    // TODO(eteran): implement this!
-#if 0
 	// Initialize global symbols and subroutines used in the macro language 
 	InitMacroGlobals();
 	RegisterMacroSubroutines();
-#endif
+
 
 	/* Store preferences from the command line and .nedit file,
 	   and set the appropriate preferences */
@@ -385,6 +388,7 @@ int main(int argc, char *argv[]) {
 #ifndef NO_SESSION_RESTART
 	AttachSessionMgrHandler(TheAppShell);
 #endif
+
 #endif
 	// More preference stuff 
 	DialogPrint::LoadPrintPreferencesEx(XtDatabase(TheDisplay), APP_NAME, APP_CLASS, true);
@@ -394,6 +398,7 @@ int main(int argc, char *argv[]) {
 #if 0 // TODO(eteran): I think that this feature likely has no equivalent in Qt's dialog
 	SetGetEFTextFieldRemoval(!GetPrefStdOpenDialog());
 #endif
+
 #if 0
 	// Set up action procedures for menu item commands 
 	InstallMenuActions(context);
@@ -527,7 +532,7 @@ int main(int argc, char *argv[]) {
 				   items. The current file may also be raised if there're
 				   macros to execute on. */
 
-                DocumentWidget *documentEx = nullptr;
+                QPointer<DocumentWidget> documentEx = nullptr;
                 QList<MainWindow *> windows = MainWindow::allWindows();
                 if(!windows.empty()) {
                     documentEx = DocumentWidget::EditExistingFileEx(windows[0]->currentDocument(), QLatin1String(filename), QLatin1String(pathname), editFlags, geometry, iconic, langMode, isTabbed, true);
@@ -535,49 +540,8 @@ int main(int argc, char *argv[]) {
                     documentEx = DocumentWidget::EditExistingFileEx(nullptr,                       QLatin1String(filename), QLatin1String(pathname), editFlags, geometry, iconic, langMode, isTabbed, true);
                 }
 
-#if 0
-                Document *window = nullptr;
-				auto it = WindowList.begin();
-				if(it != WindowList.end()) {
-                    window = EditExistingFile(*it, QLatin1String(filename), QLatin1String(pathname), editFlags, geometry, iconic, langMode, isTabbed, true);
-				} else {
-					window = EditExistingFile(nullptr, QLatin1String(filename), QLatin1String(pathname), editFlags, geometry, iconic, langMode, isTabbed, true);
-				}
-#endif
-				fileSpecified = true;
-#if 0
-				if (window) {
-					window->CleanUpTabBarExposeQueue();
+                fileSpecified = true;
 
-					// raise the last tab of previous window 
-					if (lastFile && window->shell_ != lastFile->shell_) {
-						lastFile->CleanUpTabBarExposeQueue();
-						lastFile->RaiseDocument();
-					}
-
-					if (!macroFileRead) {
-						ReadMacroInitFile(window);
-						macroFileRead = true;
-					}
-					if (gotoLine)
-						SelectNumberedLine(window, lineNum);
-					if (toDoCommand) {
-						DoMacro(window, toDoCommand, "-do macro");
-						toDoCommand = nullptr;
-						if (!window->IsValidWindow())
-							window = nullptr; // window closed by macro 
-						if (lastFile && !lastFile->IsValidWindow())
-							lastFile = nullptr; // window closed by macro 
-					}
-				}
-
-				// register last opened file for later use 
-				if (window) {
-					lastFile = window;
-				}
-#endif
-
-#if 1
                 if (documentEx) {
 
                     // raise the last tab of previous window
@@ -593,27 +557,16 @@ int main(int argc, char *argv[]) {
                         SelectNumberedLineEx(documentEx, documentEx->firstPane(), lineNum);
                     }
 
-#if 0 // TODO(eteran): finish macro support
                     if (toDoCommand) {
-                        DoMacro(window, toDoCommand, "-do macro");
+                        DoMacroEx(documentEx, toDoCommand, "-do macro");
                         toDoCommand = nullptr;
-
-                        if (!windowEx->IsValidWindow()) {
-                            windowEx = nullptr; // window closed by macro
-                        }
-
-                        if (lastFileEx && !lastFileEx->IsValidWindow()) {
-                            lastFileEx = nullptr; // window closed by macro
-                        }
                     }
-#endif
                 }
 
                 // register last opened file for later use
                 if (documentEx) {
                     lastFileEx = documentEx;
                 }
-#endif
 
 			} else {
 				fprintf(stderr, "nedit: file name too long: %s\n", argv[i]);
@@ -625,50 +578,21 @@ int main(int argc, char *argv[]) {
 	}
 
 	// Raise the last file opened 
-#if 0
-	if (lastFile) {
-		lastFile->CleanUpTabBarExposeQueue();
-		lastFile->RaiseDocument();
-	}
-	CheckCloseDim();
-#endif
-
-#if 1
     if (lastFileEx) {
         lastFileEx->RaiseDocument();
     }
     MainWindow::CheckCloseDimEx();
-#endif
 
-	// If no file to edit was specified, open a window to edit "Untitled" 
+    // If no file to edit was specified, open a window to edit "Untitled"
 	if (!fileSpecified) {
-
-#if 0
-		Document *window = nullptr;
-		auto it = WindowList.begin();
-		if(it != WindowList.end()) {	
-			window = *it;
-		}
-	
-		EditNewFile(nullptr, geometry, iconic, langMode, nullptr);
-
-		ReadMacroInitFile(window);
-		CheckCloseDim();
-		if (toDoCommand) {
-			DoMacro(window, toDoCommand, "-do macro");
-		}
-#endif
-#if 1
         DocumentWidget *documentEx = MainWindow::EditNewFileEx(nullptr, geometry, iconic, langMode, QString());
 
         ReadMacroInitFileEx(documentEx);
         MainWindow::CheckCloseDimEx();
-#if 0 // TODO(eteran): enable this!
+
         if (toDoCommand) {
-            DoMacro(window, toDoCommand, "-do macro");
+            DoMacroEx(documentEx, toDoCommand, "-do macro");
         }
-#endif
-#endif
 	}
 
 #if 0
@@ -686,7 +610,6 @@ int main(int argc, char *argv[]) {
 		ServerMainLoop(context);
 #endif
 	} else {
-		app.setQuitOnLastWindowClosed(false);
 		return app.exec();
 	}
 }

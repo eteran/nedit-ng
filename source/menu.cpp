@@ -54,7 +54,6 @@
 #include "preferences.h"
 #include "tags.h"
 #include "userCmds.h"
-#include "shell.h"
 #include "highlight.h"
 #include "highlightData.h"
 #include "interpret.h"
@@ -94,32 +93,16 @@ typedef void (*menuCallbackProc)(Widget, XtPointer, XtPointer);
 
 extern "C" void _XmDismissTearOff(Widget, XtPointer, XtPointer);
 
-static void doActionCB(Widget w, XtPointer clientData, XtPointer callData);
-static void doTabActionCB(Widget w, XtPointer clientData, XtPointer callData);
 #ifdef REPLACE_SCOPE
 static void replaceScopeWindowCB(Widget w, XtPointer clientData, XtPointer callData);
 static void replaceScopeSelectionCB(Widget w, XtPointer clientData, XtPointer callData);
 static void replaceScopeSmartCB(Widget w, XtPointer clientData, XtPointer callData);
 #endif
-static void replayCB(Widget w, XtPointer clientData, XtPointer callData);
-static void repeatDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void repeatMacroAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
+
 static void splitPaneAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 
-static void shellMenuAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-
-static void macroMenuAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void bgMenuAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void beginningOfSelectionAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void endOfSelectionAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static Widget createMenu(Widget parent, const char *name, const char *label, char mnemonic, Widget *cascadeBtn, int mode);
-static Widget createMenuItem(Widget parent, const char *name, const char *label, char mnemonic, menuCallbackProc callback, const void *cbArg, int mode);
-static Widget createMenuSeparator(Widget parent, const char *name, int mode);
-static void invalidatePrevOpenMenus(void);
-static void updateWindowMenu(const Document *window);
-static void raiseCB(Widget w, XtPointer clientData, XtPointer callData);
-static void bgMenuPostAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void tabMenuPostAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void raiseWindowAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 static void focusPaneAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 
@@ -242,20 +225,19 @@ static XtActionsRec Actions[] = {
                                  //{(String) "execute_command_dialog", execDialogAP},
                                  //{(String) "execute-command-line", execLineAP},
                                  //{(String) "execute_command_line", execLineAP},
-                                 {(String) "shell-menu-command", shellMenuAP},
-                                 {(String) "shell_menu_command", shellMenuAP},
-
-                                 {(String) "macro-menu-command", macroMenuAP},
-                                 {(String) "macro_menu_command", macroMenuAP},
-                                 {(String) "bg_menu_command", bgMenuAP},
-                                 {(String) "post_window_bg_menu", bgMenuPostAP},
-                                 {(String) "post_tab_context_menu", tabMenuPostAP},
+                                 //{(String) "shell-menu-command", shellMenuAP},
+                                 //{(String) "shell_menu_command", shellMenuAP},
+                                 //{(String) "macro-menu-command", macroMenuAP},
+                                 //{(String) "macro_menu_command", macroMenuAP},
+                                 //{(String) "bg_menu_command", bgMenuAP},
+                                 //{(String) "post_window_bg_menu", bgMenuPostAP},
+                                 //{(String) "post_tab_context_menu", tabMenuPostAP},
                                  {(String) "beginning-of-selection", beginningOfSelectionAP},
                                  {(String) "beginning_of_selection", beginningOfSelectionAP},
                                  {(String) "end-of-selection", endOfSelectionAP},
                                  {(String) "end_of_selection", endOfSelectionAP},
-                                 {(String) "repeat_macro", repeatMacroAP},
-                                 {(String) "repeat_dialog", repeatDialogAP},
+                                 //{(String) "repeat_macro", repeatMacroAP},
+                                 //{(String) "repeat_dialog", repeatDialogAP},
                                  {(String) "raise_window", raiseWindowAP},
                                  {(String) "focus_pane", focusPaneAP},
                                  //{(String) "set_statistics_line", setStatisticsLineAP},
@@ -284,21 +266,6 @@ static XtActionsRec Actions[] = {
 static int NPrevOpen = 0;
 static char **PrevOpen = nullptr;
 
-void HidePointerOnKeyedEvent(Widget w, XEvent *event) {
-	if (event && (event->type == KeyPress || event->type == KeyRelease)) {
-		auto textD = textD_of(w);	
-		textD->ShowHidePointer(true);
-	}
-}
-
-/*
-** Install actions for use in translation tables and macro recording, relating
-** to menu item commands
-*/
-void InstallMenuActions(XtAppContext context) {
-	XtAppAddActions(context, Actions, XtNumber(Actions));
-}
-
 /*
 ** Return the (statically allocated) action table for menu item actions.
 */
@@ -310,6 +277,7 @@ XtActionsRec *GetMenuActions(int *nActions) {
 /*
 ** Create the menu bar
 */
+#if 0
 Widget CreateMenuBar(Widget parent, Document *window) {
     Widget menuBar, menuPane, btn, cascade;
 
@@ -395,35 +363,12 @@ Widget CreateMenuBar(Widget parent, Document *window) {
 
 	return menuBar;
 }
+#endif
 
 
 /*----------------------------------------------------------------------------*/
 
-/*
-** handle actions called from the context menus of tabs.
-*/
-static void doTabActionCB(Widget w, XtPointer clientData, XtPointer callData) {
-	Widget menu = MENU_WIDGET(w);
-	Document *win, *window = Document::WidgetToWindow(menu);
 
-	/* extract the window to be acted upon, see comment in
-	   tabMenuPostAP() for detail */
-	XtVaGetValues(window->tabMenuPane_, XmNuserData, &win, nullptr);
-
-	HidePointerOnKeyedEvent(win->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
-	XtCallActionProc(win->lastFocus_, (char *)clientData, static_cast<XmAnyCallbackStruct *>(callData)->event, nullptr, 0);
-}
-
-static void doActionCB(Widget w, XtPointer clientData, XtPointer callData) {
-	Widget menu = MENU_WIDGET(w);
-	Widget widget = Document::WidgetToWindow(menu)->lastFocus_;
-	String action = (String)clientData;
-	XEvent *event = static_cast<XmAnyCallbackStruct *>(callData)->event;
-
-	HidePointerOnKeyedEvent(widget, event);
-
-	XtCallActionProc(widget, action, event, nullptr, 0);
-}
 
 #ifdef REPLACE_SCOPE
 static void replaceScopeWindowCB(Widget w, XtPointer clientData, XtPointer callData) {
@@ -484,7 +429,7 @@ static void replaceScopeSmartCB(Widget w, XtPointer clientData, XtPointer callDa
 
 
 
-
+#if 0
 static void replayCB(Widget w, XtPointer clientData, XtPointer callData) {
 	Q_UNUSED(clientData);
 	Q_UNUSED(callData);
@@ -492,34 +437,8 @@ static void replayCB(Widget w, XtPointer clientData, XtPointer callData) {
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	Replay(Document::WidgetToWindow(MENU_WIDGET(w)));
 }
+#endif
 
-static void repeatDialogAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-	Q_UNUSED(event);
-	Q_UNUSED(args);
-	Q_UNUSED(nArgs)
-
-	RepeatDialog(Document::WidgetToWindow(w));
-}
-
-static void repeatMacroAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-	Q_UNUSED(event);
-
-	int how;
-
-	if (*nArgs != 2) {
-		fprintf(stderr, "nedit: repeat_macro requires two arguments\n");
-		return;
-	}
-	if (!strcmp(args[0], "in_selection"))
-		how = REPEAT_IN_SEL;
-	else if (!strcmp(args[0], "to_end"))
-		how = REPEAT_TO_END;
-	else if (sscanf(args[0], "%d", &how) != 1) {
-		fprintf(stderr, "nedit: repeat_macro requires method/count\n");
-		return;
-	}
-	RepeatMacro(Document::WidgetToWindow(w), args[1], how);
-}
 
 static void splitPaneAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
@@ -536,56 +455,6 @@ static void splitPaneAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 		XtSetSensitive(window->closePaneItem_, window->textPanes_.size() > 0);
 #endif
 	}
-}
-
-static void shellMenuAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-	if (*nArgs == 0) {
-		fprintf(stderr, "nedit: shell_menu_command requires item-name argument\n");
-		return;
-	}
-	HidePointerOnKeyedEvent(w, event);
-	DoNamedShellMenuCmd(Document::WidgetToWindow(w), args[0], event->xany.send_event == MACRO_EVENT_MARKER);
-}
-
-static void macroMenuAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-	if (*nArgs == 0) {
-		fprintf(stderr, "nedit: macro_menu_command requires item-name argument\n");
-		return;
-	}
-	/* Don't allow users to execute a macro command from the menu (or accel)
-	   if there's already a macro command executing, UNLESS the macro is
-	   directly called from another one.  NEdit can't handle
-	   running multiple, independent uncoordinated, macros in the same
-	   window.  Macros may invoke macro menu commands recursively via the
-	   macro_menu_command action proc, which is important for being able to
-	   repeat any operation, and to embed macros within eachother at any
-	   level, however, a call here with a macro running means that THE USER
-	   is explicitly invoking another macro via the menu or an accelerator,
-	   UNLESS the macro event marker is set */
-	if (event->xany.send_event != MACRO_EVENT_MARKER) {
-		if (Document::WidgetToWindow(w)->macroCmdData_) {
-			QApplication::beep();
-			return;
-		}
-	}
-	HidePointerOnKeyedEvent(w, event);
-	DoNamedMacroMenuCmd(Document::WidgetToWindow(w), args[0]);
-}
-
-static void bgMenuAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-	if (*nArgs == 0) {
-		fprintf(stderr, "nedit: bg_menu_command requires item-name argument\n");
-		return;
-	}
-	// Same remark as for macro menu commands (see above). 
-	if (event->xany.send_event != MACRO_EVENT_MARKER) {
-		if (Document::WidgetToWindow(w)->macroCmdData_) {
-			QApplication::beep();
-			return;
-		}
-	}
-	HidePointerOnKeyedEvent(w, event);
-	DoNamedBGMenuCmd(Document::WidgetToWindow(w), args[0]);
 }
 
 static void beginningOfSelectionAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
@@ -781,305 +650,6 @@ static void focusPaneAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 	}
 }
 
-/*
-** Same as AddSubMenu from libNUtil.a but 1) mnemonic is optional (NEdit
-** users like to be able to re-arrange the mnemonics so they can set Alt
-** key combinations as accelerators), 2) supports the short/full option
-** of SGI_CUSTOM mode, 3) optionally returns the cascade button widget
-** in "cascadeBtn" if "cascadeBtn" is non-nullptr.
-*/
-static Widget createMenu(Widget parent, const char *name, const char *label, char mnemonic, Widget *cascadeBtn, int mode) {
-
-	(void)mode;
-
-	XmString st1;
-
-	Widget menu = CreatePulldownMenu(parent, name, nullptr, 0);
-	Widget cascade = XtVaCreateWidget(name, xmCascadeButtonWidgetClass, parent, XmNlabelString, st1 = XmStringCreateSimpleEx(label), XmNsubMenuId, menu, nullptr);
-	XmStringFree(st1);
-	
-	if (mnemonic != 0) {
-		XtVaSetValues(cascade, XmNmnemonic, mnemonic, nullptr);
-	}
-	
-	XtManageChild(cascade);
-
-	if(cascadeBtn) {
-		*cascadeBtn = cascade;
-	}
-	
-	return menu;
-}
-
-/*
-** Same as AddMenuItem from libNUtil.a without setting the accelerator
-** (these are set in the fallback app-defaults so users can change them),
-** and with the short/full option required in SGI_CUSTOM mode.
-*/
-static Widget createMenuItem(Widget parent, const char *name, const char *label, char mnemonic, menuCallbackProc callback, const void *cbArg, int mode) {
-
-	(void)mode;
-
-	Widget button;
-	XmString st1;
-
-	button = XtVaCreateWidget(name, xmPushButtonWidgetClass, parent, XmNlabelString, st1 = XmStringCreateSimpleEx(label), XmNmnemonic, mnemonic, nullptr);
-	XtAddCallback(button, XmNactivateCallback, callback, const_cast<void *>(cbArg));
-	XmStringFree(st1);
-
-	XtManageChild(button);
-	return button;
-}
-
-static Widget createMenuSeparator(Widget parent, const char *name, int mode) {
-
-	(void)mode;
-
-	Widget button;
-
-	button = XmCreateSeparator(parent, (String)name, nullptr, 0);
-	XtManageChild(button);
-	return button;
-}
-
-/*
-** Make sure the close menu item is dimmed appropriately for the current
-** set of windows.  It should be dim only for the last Untitled, unmodified,
-** editor window, and sensitive otherwise.
-*/
-void CheckCloseDim(void) {
-
-	if(WindowList.empty()) {
-		return;
-	}
-	
-#if 0 // NOTE(eteran): transitioned
-	// NOTE(eteran): list has a size of 1	
-	if (WindowList.size() == 1 && !WindowList.front()->filenameSet_ && !WindowList.front()->fileChanged_) {
-		Document *doc = WindowList.front();
-		XtSetSensitive(doc->closeItem_, false);
-		return;
-	}
-
-	for(Document *window: WindowList) {
-		if (window->IsTopDocument()) {
-			XtSetSensitive(window->closeItem_, true);
-		}
-	}
-#endif
-}
-
-/*
-** Invalidate the Window menus of all NEdit windows to but don't change
-** the menus until they're needed (Originally, this was "UpdateWindowMenus",
-** but creating and destroying manu items for every window every time a
-** new window was created or something changed, made things move very
-** slowly with more than 10 or so windows).
-*/
-void InvalidateWindowMenus(void) {
-
-	/* Mark the window menus invalid (to be updated when the user pulls one
-	   down), unless the menu is torn off, meaning it is visible to the user
-	   and should be updated immediately */
-	for(Document *w: WindowList) {
-		if (!XmIsMenuShell(XtParent(w->windowMenuPane_))) {
-			updateWindowMenu(w);
-		} else {
-			w->windowMenuValid_ = false;
-		}
-	}
-}
-
-/*
-** Mark the Previously Opened Files menus of all NEdit windows as invalid.
-** Since actually changing the menus is slow, they're just marked and updated
-** when the user pulls one down.
-*/
-static void invalidatePrevOpenMenus(void) {
-
-	/* Mark the menus invalid (to be updated when the user pulls one
-	   down), unless the menu is torn off, meaning it is visible to the user
-	   and should be updated immediately */
-#if 0 // TODO(eteran): transitioned
-	for(Document *w: WindowList) {
-		if (!XmIsMenuShell(XtParent(w->prevOpenMenuPane_))) {
-			updatePrevOpenMenu(w);
-		}
-    }
-#endif
-}
-
-/*
-** Add a file to the list of previously opened files for display in the
-** File menu.
-*/
-void AddToPrevOpenMenu(const char *filename) {
-	int i;
-	char *nameCopy;
-
-	// If the Open Previous command is disabled, just return 
-	if (GetPrefMaxPrevOpenFiles() < 1) {
-		return;
-	}
-
-	/*  Refresh list of previously opened files to avoid Big Race Condition,
-	    where two sessions overwrite each other's changes in NEdit's
-	    history file.
-	    Of course there is still Little Race Condition, which occurs if a
-	    Session A reads the list, then Session B reads the list and writes
-	    it before Session A gets a chance to write.  */
-	ReadNEditDB();
-
-	// If the name is already in the list, move it to the start 
-	for (i = 0; i < NPrevOpen; i++) {
-		if (!strcmp(filename, PrevOpen[i])) {
-			nameCopy = PrevOpen[i];
-			memmove(&PrevOpen[1], &PrevOpen[0], sizeof(char *) * i);
-			PrevOpen[0] = nameCopy;
-			invalidatePrevOpenMenus();
-			WriteNEditDB();
-			return;
-		}
-	}
-
-	// If the list is already full, make room 
-	if (NPrevOpen >= GetPrefMaxPrevOpenFiles()) {
-		//  This is only safe if GetPrefMaxPrevOpenFiles() > 0.  
-		XtFree(PrevOpen[--NPrevOpen]);
-	}
-
-	// Add it to the list 
-	nameCopy = XtStringDup(filename);
-	memmove(&PrevOpen[1], &PrevOpen[0], sizeof(char *) * NPrevOpen);
-	PrevOpen[0] = nameCopy;
-	NPrevOpen++;
-
-	// Mark the Previously Opened Files menu as invalid in all windows 
-	invalidatePrevOpenMenus();
-
-	// Undim the menu in all windows if it was previously empty 
-#if 0 // NOTE(eteran): transitioned
-	if (NPrevOpen > 0) {
-		for(Document *w: WindowList) {
-			if (w->IsTopDocument()) {
-				XtSetSensitive(w->prevOpenMenuItem_, true);
-			}
-		}
-	}
-#endif
-
-	// Write the menu contents to disk to restore in later sessions 
-	WriteNEditDB();
-}
-
-static QString getWindowsMenuEntry(const Document *window) {
-
-	QString fullTitle = QString(QLatin1String("%1%2")).arg(window->filename_).arg(window->fileChanged_ ? QLatin1String("*") : QLatin1String(""));
-
-	if (GetPrefShowPathInWindowsMenu() && window->filenameSet_) {
-		fullTitle.append(QLatin1String(" - "));
-		fullTitle.append(window->path_);
-	}
-
-	return fullTitle;
-}
-
-/*
-** Update the Window menu of a single window to reflect the current state of
-** all NEdit windows as determined by the global WindowList.
-*/
-static void updateWindowMenu(const Document *window) {
-
-	WidgetList items;
-	Cardinal nItems;
-	int n;
-
-	if (!window->IsTopDocument())
-		return;
-
-	// Make a sorted list of windows 
-	std::vector<Document *> windows;
-	for(Document *w: WindowList) {
-		windows.push_back(w);
-	}
-	
-	std::sort(windows.begin(), windows.end(), [](const Document *a, const Document *b) {
-
-		// Untitled first 
-		int rc = a->filenameSet_ == b->filenameSet_ ? 0 : a->filenameSet_ && !b->filenameSet_ ? 1 : -1;
-		if (rc != 0) {
-			return rc < 0;
-		}
-		
-		if(a->filename_ < b->filename_) {
-			return true;
-		}
-		
-		
-		return a->path_ < b->path_;
-	});
-
-	/* if the menu is torn off, unmanage the menu pane
-	   before updating it to prevent the tear-off menu
-	   from shrinking/expanding as the menu entries
-	   are added */
-	if (!XmIsMenuShell(XtParent(window->windowMenuPane_)))
-		XtUnmanageChild(window->windowMenuPane_);
-
-	/* While it is not possible on some systems (ibm at least) to substitute
-	   a new menu pane, it is possible to substitute menu items, as long as
-	   at least one remains in the menu at all times. This routine assumes
-	   that the menu contains permanent items marked with the value
-	   PERMANENT_MENU_ITEM in the userData resource, and adds and removes items
-	   which it marks with the value TEMPORARY_MENU_ITEM */
-
-	/* Go thru all of the items in the menu and rename them to
-	   match the window list.  Delete any extras */
-	XtVaGetValues(window->windowMenuPane_, XmNchildren, &items, XmNnumChildren, &nItems, nullptr);
-	int windowIndex = 0;
-	int nWindows = Document::WindowCount();
-	for (n = 0; n < (int)nItems; n++) {
-		XtPointer userData;
-		XtVaGetValues(items[n], XmNuserData, &userData, nullptr);
-		if (userData == TEMPORARY_MENU_ITEM) {
-			if (windowIndex >= nWindows) {
-				// unmanaging before destroying stops parent from displaying 
-				XtUnmanageChild(items[n]);
-				XtDestroyWidget(items[n]);
-			} else {
-				XmString st1;
-				QString title = getWindowsMenuEntry(windows[windowIndex]);
-				XtVaSetValues(items[n], XmNlabelString, st1 = XmStringCreateSimpleEx(title), nullptr);
-				XtRemoveAllCallbacks(items[n], XmNactivateCallback);
-				XtAddCallback(items[n], XmNactivateCallback, raiseCB, windows[windowIndex]);
-				XmStringFree(st1);
-				windowIndex++;
-			}
-		}
-	}
-
-	// Add new items for the titles of the remaining windows to the menu 
-	for (; windowIndex < nWindows; windowIndex++) {
-		XmString st1;
-		QString title = getWindowsMenuEntry(windows[windowIndex]);
-		Widget btn = XtVaCreateManagedWidget("win", xmPushButtonWidgetClass, window->windowMenuPane_, XmNlabelString, st1 = XmStringCreateSimpleEx(title), XmNmarginHeight, 0, XmNuserData, TEMPORARY_MENU_ITEM, nullptr);
-		XtAddCallback(btn, XmNactivateCallback, raiseCB, windows[windowIndex]);
-		XmStringFree(st1);
-	}
-	
-	/* if the menu is torn off, we need to manually adjust the
-	   dimension of the menuShell _before_ re-managing the menu
-	   pane, to either expose the hidden menu entries or remove
-	   the empty space */
-	if (!XmIsMenuShell(XtParent(window->windowMenuPane_))) {
-		Dimension width, height;
-
-		XtVaGetValues(window->windowMenuPane_, XmNwidth, &width, XmNheight, &height, nullptr);
-		XtVaSetValues(XtParent(window->windowMenuPane_), XmNwidth, width, XmNheight, height, nullptr);
-		XtManageChild(window->windowMenuPane_);
-	}
-}
-
 static const char neditDBBadFilenameChars[] = "\n";
 
 /*
@@ -1243,159 +813,12 @@ void ReadNEditDB(void) {
 	fclose(fp);
 }
 
+#if 0
 static void raiseCB(Widget w, XtPointer clientData, XtPointer callData) {
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	static_cast<Document *>(clientData)->RaiseFocusDocumentWindow(True /* always focus */);
 }
-
-
-/*
-** Create popup for right button programmable menu
-*/
-Widget CreateBGMenu(Document *window) {
-	Arg args[1];
-
-	/* There is still some mystery here.  It's important to get the XmNmenuPost
-	   resource set to the correct menu button, or the menu will not post
-	   properly, but there's also some danger that it will take over the entire
-	   button and interfere with text widget translations which use the button
-	   with modifiers.  I don't entirely understand why it works properly now
-	   when it failed often in development, and certainly ignores the ~ syntax
-	   in translation event specifications. */
-	XtSetArg(args[0], XmNmenuPost, GetPrefBGMenuBtn());
-	return CreatePopupMenu(window->textArea_, "bgMenu", args, 1);
-}
-
-/*
-** Create context popup menu for tabs & tab bar
-*/
-Widget CreateTabContextMenu(Widget parent, Document *window) {
-	Widget menu;
-	Arg args[8];
-	int n;
-
-	n = 0;
-	XtSetArg(args[n], XmNtearOffModel, XmTEAR_OFF_DISABLED);
-	n++;
-	menu = CreatePopupMenu(parent, "tabContext", args, n);
-
-	createMenuItem(menu, "new", "New Tab", 0, doTabActionCB, "new_tab", SHORT);
-    createMenuItem(menu, "close", "Close Tab", 0, doTabActionCB, "close", SHORT);
-	createMenuSeparator(menu, "sep1", SHORT);
-	window->contextDetachDocumentItem_ = createMenuItem(menu, "detach", "Detach Tab", 0, doTabActionCB, "detach_document", SHORT);
-	XtSetSensitive(window->contextDetachDocumentItem_, False);
-	window->contextMoveDocumentItem_ = createMenuItem(menu, "attach", "Move Tab To...", 0, doTabActionCB, "move_document_dialog", SHORT);
-
-	return menu;
-}
-
-/*
-** Add a translation to the text widget to trigger the background menu using
-** the mouse-button + modifier combination specified in the resource:
-** nedit.bgMenuBtn.
-*/
-void AddBGMenuAction(Widget widget) {
-	static XtTranslations table = nullptr;
-
-	if(!table) {
-		char translations[MAX_ACCEL_LEN + 25];
-		sprintf(translations, "%s: post_window_bg_menu()\n", GetPrefBGMenuBtn());
-		table = XtParseTranslationTable(translations);
-	}
-	XtOverrideTranslations(widget, table);
-}
-
-static void bgMenuPostAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(nArgs)
-	Q_UNUSED(args);
-
-#if 1
-	Document *window = Document::WidgetToWindow(w);
-
-	/* The Motif popup handling code BLOCKS events while the menu is posted,
-	   including the matching btn-up events which complete various dragging
-	   operations which it may interrupt.  Cancel to head off problems */
-	XtCallActionProc(window->lastFocus_, "process_cancel", event, nullptr, 0);
-
-	// Pop up the menu 
-	XmMenuPosition(window->bgMenuPane_, (XButtonPressedEvent *)event);
-	XtManageChild(window->bgMenuPane_);
 #endif
-	/*
-	   These statements have been here for a very long time, but seem
-	   unnecessary and are even dangerous: when any of the lock keys are on,
-	   Motif thinks it shouldn't display the background menu, but this
-	   callback is called anyway. When we then grab the focus and force the
-	   menu to be drawn, bad things can happen (like a total lockup of the X
-	   server).
-
-	   XtPopup(XtParent(window->bgMenuPane_), XtGrabNonexclusive);
-	   XtMapWidget(XtParent(window->bgMenuPane_));
-	   XtMapWidget(window->bgMenuPane_);
-	*/
-#if 0
-	QMenu menu;
-	menu.addAction(QLatin1String("Test 1"));
-	menu.addAction(QLatin1String("Test 2"));
-	menu.addAction(QLatin1String("Test 3"));
-	menu.addAction(QLatin1String("Test 4"));
-	menu.exec(QCursor::pos());
-#endif
-}
-
-void AddTabContextMenuAction(Widget widget) {
-	static XtTranslations table = nullptr;
-
-	if(!table) {
-		const char *translations = "<Btn3Down>: post_tab_context_menu()\n";
-		table = XtParseTranslationTable((String)translations);
-	}
-	XtOverrideTranslations(widget, table);
-}
-
-/*
-** action procedure for posting context menu of tabs
-*/
-static void tabMenuPostAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
-
-	Q_UNUSED(nArgs)
-	Q_UNUSED(args);
-
-	Document *window;
-	auto xbutton = reinterpret_cast<XButtonPressedEvent *>(event);
-	Widget wgt;
-
-	/* Determine if the context menu was called from tabs or gutter,
-	   then stored the corresponding window info as userData of
-	   the popup menu pane, which will later be extracted by
-	   doTabActionCB() to act upon. When the context menu was called
-	   from the gutter, the active doc is assumed.
-
-	   Lesstif requires the action [to pupop the menu] to also be
-	   to the tabs, else nothing happed when right-click on tabs.
-	   Even so, the action procedure sometime appear to be called
-	   from the gutter even if users did right-click on the tabs.
-	   Here we try to cater for the uncertainty. */
-	if (XtClass(w) == xrwsBubbleButtonWidgetClass)
-		window = Document::TabToWindow(w);
-	else if (xbutton->subwindow) {
-		wgt = XtWindowToWidget(XtDisplay(w), xbutton->subwindow);
-		window = Document::TabToWindow(wgt);
-	} else {
-		window = Document::WidgetToWindow(w);
-	}
-	XtVaSetValues(window->tabMenuPane_, XmNuserData, (XtPointer)window, nullptr);
-
-	/* The Motif popup handling code BLOCKS events while the menu is posted,
-	   including the matching btn-up events which complete various dragging
-	   operations which it may interrupt.  Cancel to head off problems */
-	XtCallActionProc(window->lastFocus_, "process_cancel", event, nullptr, 0);
-
-	// Pop up the menu 
-	XmMenuPosition(window->tabMenuPane_, (XButtonPressedEvent *)event);
-	XtManageChild(window->tabMenuPane_);
-}
 
 /*
 ** Event handler for restoring the input hint of menu tearoffs

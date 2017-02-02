@@ -79,65 +79,64 @@ private:
     void SetShowMatching(int state);
     void SetOverstrike(bool overstrike);
     void SetFonts(const char *fontName, const char *italicName, const char *boldName, const char *boldItalicName);
-
-public:
+    bool CloseAllDocumentInWindow();
+    bool GetShowTabBar();
     int ShowCalltip(view::string_view text, bool anchored, int pos, int hAlign, int vAlign, int alignMode);
     bool IsValidWindow();
     void CleanUpTabBarExposeQueue();
+    void RaiseDocumentWindow();
+    void RefreshTabState();
+    void SetAutoIndent(int state);
+    void SetAutoScroll(int margin);
+    void SetAutoWrap(int state);
+    void SetEmTabDist(int emTabDist);
+    void SetTabDist(int tabDist);
+    void SetToggleButtonState(Widget w, Boolean state, Boolean notify) const;
+    void SetWindowModified(bool modified);
+    void ShowLineNumbers(bool state);
+    void ShowTabBar(int state);
+    void SortTabBar();
+    void UpdateStatsLine();
+    void UpdateWindowReadOnly();
+    void UpdateWindowTitle();
+    void SaveUndoInformation(int pos, int nInserted, int nDeleted, view::string_view deletedText);
+    void ClearUndoList();
+    int GetCalltipID(int calltipID);
+    void KillCalltip(int calltipID);
+
+public:
+    QString FullPath() const;
     void MakeSelectionVisible(Widget textPane);
 	bool IsTopDocument() const;
-	bool CloseAllDocumentInWindow();
-	bool GetShowTabBar();
-	bool IsIconic();
 	int TabCount() const;
 	void ClearModeMessage();
 	void CloseWindow();	
 	void RaiseDocument();
-	void RaiseDocumentWindow();
 	void RaiseFocusDocumentWindow(Boolean focus);
-	void RefreshTabState();
-	void SetAutoIndent(int state);
-	void SetAutoScroll(int margin);
-	void SetAutoWrap(int state);
-	void SetEmTabDist(int emTabDist);
 	void SetModeMessage(const char *message);    
 	void SetSensitive(Widget w, Boolean sensitive) const;    
-	void SetTabDist(int tabDist);
-	void SetToggleButtonState(Widget w, Boolean state, Boolean notify) const;	
-	void SetWindowModified(bool modified);    
-	void ShowLineNumbers(bool state);    
-	void ShowTabBar(int state);    
-	void SortTabBar();
 	void SplitPane();
 	void UpdateMinPaneHeights();
 	void UpdateNewOppositeMenu(int openInTab);
-	void UpdateStatsLine();
-	void UpdateWindowReadOnly();
-	void UpdateWindowTitle();
 	void UpdateWMSizeHints();
 	Widget GetPaneByIndex(int index) const;
-	int WidgetToPaneIndex(Widget w) const;    
-	QString FullPath() const;	
-	void SaveUndoInformation(int pos, int nInserted, int nDeleted, view::string_view deletedText);
-	void ClearUndoList();
-	int GetCalltipID(int calltipID);
-	void KillCalltip(int calltipID);
+    int WidgetToPaneIndex(Widget w) const;
+    bool IsIconic();
+    void getGeometryString(char *geomString);
+
+private:
+    static Document *FindWindowWithFile(const QString &name, const QString &path);
 
 public:
 	static Document *GetTopDocument(Widget w);
 	static Document *WidgetToWindow(Widget w);
 	static Document *TabToWindow(Widget tab);
-	static Document *FindWindowWithFile(const QString &name, const QString &path);
 	static int WindowCount();
 	
-public:
-	int updateLineNumDisp();
-	void getGeometryString(char *geomString);	
-
 private:
+	int updateLineNumDisp();
 	Document *getNextTabWindow(int direction, int crossWin, int wrap);
 	void showStatistics(int state);
-
 	void showStatsForm();
 	void addToWindowList();
 	void removeFromWindowList();

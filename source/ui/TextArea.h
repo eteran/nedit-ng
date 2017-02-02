@@ -115,6 +115,13 @@ public:
     void setStyleBuffer(TextBuffer *buffer);
 
 public:
+    int TextDMinFontWidth(bool considerStyles) const;
+    int TextDMaxFontWidth(bool considerStyles) const;
+    int TextNumVisibleLines() const;
+    int TextFirstVisibleLine() const;
+    int TextVisibleWidth() const;
+    Pixel getBackgroundPixel() const;
+    Pixel getForegroundPixel() const;
     QFont getFont() const;
     int getEmulateTabs() const;
     int getLineNumCols() const;
@@ -233,6 +240,7 @@ public:
 	void TextSetBuffer(TextBuffer *buffer);
 	int TextDPositionToXY(int pos, int *x, int *y);
 	void TextDKillCalltip(int calltipID);
+    int TextDGetCalltipID(int calltipID) const;
 	void TextDSetColors(QColor textFgP, QColor textBgP, QColor selectFgP, QColor selectBgP, QColor hiliteFgP, QColor hiliteBgP, QColor lineNoFgP, QColor cursorFgP);
 	void TextDXYToUnconstrainedPosition(Point coord, int *row, int *column);
 	int TextDXYToPosition(Point coord);

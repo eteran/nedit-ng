@@ -28,15 +28,13 @@
 
 #include <QApplication>
 #include "ui/DocumentWidget.h"
+#include "ui/MainWindow.h"
 #include "server.h"
 #include "TextBuffer.h"
 #include "nedit.h"
-#include "window.h"
 #include "file.h"
 #include "selection.h"
-#include "Document.h"
 #include "macro.h"
-#include "menu.h"
 #include "preferences.h"
 #include "server_common.h"
 #include "util/fileUtils.h"
@@ -54,12 +52,12 @@
 #include <unistd.h>
 #include <pwd.h>
 
-static void processServerCommand(void);
-static void cleanUpServerCommunication(void);
+static void processServerCommand();
+static void cleanUpServerCommunication();
 static void processServerCommandString(char *string);
-static void getFileClosedProperty(Document *window);
-static int isLocatedOnDesktop(Document *window, long currentDesktop);
-static Document *findWindowOnDesktop(int tabbed, long currentDesktop);
+static void getFileClosedPropertyEx(DocumentWidget *document);
+static bool isLocatedOnDesktopEx(MainWindow *window, long currentDesktop);
+static MainWindow *findWindowOnDesktopEx(int tabbed, long currentDesktop);
 
 static Atom ServerRequestAtom = 0;
 static Atom ServerExistsAtom = 0;
@@ -104,13 +102,13 @@ static void deleteProperty(Atom *atom) {
 /*
 ** Exit handler.  Removes server-exists property on root window
 */
-static void cleanUpServerCommunication(void) {
+static void cleanUpServerCommunication() {
 
 	/* Delete any per-file properties that still exist
 	 * (and that server knows about)
 	 */
-	for(Document *w: WindowList) {
-		DeleteFileClosedProperty(w);
+    for(DocumentWidget *document : MainWindow::allDocuments()) {
+        DeleteFileClosedPropertyEx(document);
 	}
 
 	/* Delete any per-file properties that still exist
@@ -143,7 +141,8 @@ void ServerMainLoop(XtAppContext context) {
 
 static void processServerCommand(void) {
 	Atom dummyAtom;
-	unsigned long nItems, dummyULong;
+    unsigned long nItems;
+    unsigned long dummyULong;
 	uint8_t *propValue;
 	int getFmt;
 
@@ -188,9 +187,9 @@ static Atom findFileOpenProperty(const char *filename, const char *pathname) {
 /* Destroy the 'FileOpen' atom to inform nc that this file has
 ** been opened.
 */
-static void deleteFileOpenProperty(Document *window) {
-	if (window->filenameSet_) {
-		Atom atom = findFileOpenProperty(window->filename_.toLatin1().data(), window->path_.toLatin1().data());
+static void deleteFileOpenPropertyEx(DocumentWidget *document) {
+    if (document->filenameSet_) {
+        Atom atom = findFileOpenProperty(document->filename_.toLatin1().data(), document->path_.toLatin1().data());
 		deleteProperty(&atom);
 	}
 }
@@ -213,21 +212,15 @@ static Atom findFileClosedProperty(const char *filename, const char *pathname) {
 }
 
 // Get hold of the property to use when closing the file. 
-static void getFileClosedProperty(Document *window) {
-	if (window->filenameSet_) {
-		window->fileClosedAtom_ = findFileClosedProperty(window->filename_.toLatin1().data(), window->path_.toLatin1().data());
-	}
+static void getFileClosedPropertyEx(DocumentWidget *document) {
+    if (document->filenameSet_) {
+        document->fileClosedAtom_ = findFileClosedProperty(document->filename_.toLatin1().data(), document->path_.toLatin1().data());
+    }
 }
 
 /* Delete the 'FileClosed' atom to inform nc that this file has
 ** been closed.
 */
-void DeleteFileClosedProperty(Document *window) {
-	if (window->filenameSet_) {
-		deleteProperty(&window->fileClosedAtom_);
-	}
-}
-
 void DeleteFileClosedPropertyEx(DocumentWidget *document) {
     if (document->filenameSet_) {
         deleteProperty(&document->fileClosedAtom_);
@@ -239,73 +232,82 @@ static void deleteFileClosedProperty2(const char *filename, const char *pathname
 	deleteProperty(&atom);
 }
 
-static int isLocatedOnDesktop(Document *window, long currentDesktop) {
-	long windowDesktop;
-	if (currentDesktop == -1)
-		return True; // No desktop information available 
-
-	windowDesktop = QueryDesktop(TheDisplay, window->shell_);
-	// Sticky windows have desktop 0xFFFFFFFF by convention 
-	if (windowDesktop == currentDesktop || windowDesktop == 0xFFFFFFFFL)
-		return True; // Desktop matches, or window is sticky 
-
-	return False;
+static bool isLocatedOnDesktopEx(MainWindow *window, long currentDesktop) {
+    // TODO(eteran): look into what this is actually doing and if it is even
+    //               possible to do the equivalent using Qt
+    Q_UNUSED(window);
+    Q_UNUSED(currentDesktop);
+    return true;
 }
 
-static Document *findWindowOnDesktop(int tabbed, long currentDesktop) {
+static MainWindow *findWindowOnDesktopEx(int tabbed, long currentDesktop) {
 
-	if (tabbed == 0 || (tabbed == -1 && GetPrefOpenInTab() == 0)) {
-		/* A new window is requested, unless we find an untitled unmodified
-		    document on the current desktop */
-		for (Document *window: WindowList) {
-			if (window->filenameSet_ || window->fileChanged_ || window->macroCmdData_) {
-				continue;
-			}
-			// No check for top document here! 
-			if (isLocatedOnDesktop(window, currentDesktop)) {
-				return window;
-			}
-		}
-	} else {
-		// Find a window on the current desktop to hold the new document 
-		for (Document *window: WindowList) {
-			// Avoid unnecessary property access (server round-trip) 
-			if (!window->IsTopDocument()) {
-				continue;
-			}
-			if (isLocatedOnDesktop(window, currentDesktop)) {
-				return window;
-			}
-		}
-	}
+    if (tabbed == 0 || (tabbed == -1 && GetPrefOpenInTab() == 0)) {
+        /* A new window is requested, unless we find an untitled unmodified
+            document on the current desktop */
+        for(DocumentWidget *document : MainWindow::allDocuments()) {
+            if (document->filenameSet_ || document->fileChanged_ || document->macroCmdData_) {
+                continue;
+            }
 
-	return nullptr; // No window found on current desktop -> create new window 
+            MainWindow *window = document->toWindow();
+
+            // No check for top document here!
+            if (isLocatedOnDesktopEx(window, currentDesktop)) {
+                return window;
+            }
+        }
+    } else {
+        // Find a window on the current desktop to hold the new document
+        for(MainWindow *window : MainWindow::allWindows()) {
+            if (isLocatedOnDesktopEx(window, currentDesktop)) {
+                return window;
+            }
+        }
+    }
+
+    return nullptr; // No window found on current desktop -> create new window
 }
 
 static void processServerCommandString(char *string) {
-	char *fullname, filename[MAXPATHLEN], pathname[MAXPATHLEN];
-	char *doCommand, *geometry, *langMode, *inPtr;
-	int editFlags, stringLen = strlen(string);
-	int lineNum, createFlag, readFlag, iconicFlag, lastIconic = 0, tabbed = -1;
-	int fileLen, doLen, lmLen, geomLen, charsRead, itemsRead;
-	Document *lastFile = nullptr;
-	long currentDesktop = QueryCurrentDesktop(TheDisplay, RootWindow(TheDisplay, DefaultScreen(TheDisplay)));
+    char *fullname;
+    char filename[MAXPATHLEN];
+    char pathname[MAXPATHLEN];
+    char *doCommand;
+    char *geometry;
+    char *langMode;
+    char *inPtr;
+    int stringLen = strlen(string);
+    int lineNum;
+    int createFlag;
+    int readFlag;
+    int iconicFlag;
+    int lastIconic = 0;
+    int tabbed = -1;
+    int fileLen;
+    int doLen;
+    int lmLen;
+    int geomLen;
+    int charsRead;
+    int itemsRead;
+    QPointer<DocumentWidget> lastFileEx = nullptr;
+    const long currentDesktop = -1;
 
 	/* If the command string is empty, put up an empty, Untitled window
 	   (or just pop one up if it already exists) */
 	if (string[0] == '\0') {
 
-		auto it = std::find_if(WindowList.begin(), WindowList.end(), [currentDesktop](Document *w) {
-			return (!w->filenameSet_ && !w->fileChanged_ && isLocatedOnDesktop(w, currentDesktop));
+        QList<DocumentWidget *> documents = MainWindow::allDocuments();
+
+        auto it = std::find_if(documents.begin(), documents.end(), [currentDesktop](DocumentWidget *document) {
+            return (!document->filenameSet_ && !document->fileChanged_ && isLocatedOnDesktopEx(document->toWindow(), currentDesktop));
 		});
 
-		if(it == WindowList.end()) {
-			EditNewFile(findWindowOnDesktop(tabbed, currentDesktop), nullptr, False, nullptr, nullptr);
-			CheckCloseDim();
+        if(it == documents.end()) {
+            MainWindow::EditNewFileEx(findWindowOnDesktopEx(tabbed, currentDesktop), nullptr, false, nullptr, QString());
+            MainWindow::CheckCloseDimEx();
 		} else {
-			(*it)->RaiseDocument();
-			WmClientMsg(TheDisplay, XtWindow((*it)->shell_), "_NET_ACTIVE_WINDOW", 0, 0, 0, 0, 0);
-			XMapRaised(TheDisplay, XtWindow((*it)->shell_));
+            (*it)->RaiseDocument();
 		}
 		return;
 	}
@@ -355,15 +357,16 @@ static void processServerCommandString(char *string) {
 		 */
 		if (fileLen <= 0) {
 			
-			
-			auto it = std::find_if(WindowList.begin(), WindowList.end(), [currentDesktop](Document *w) {
-				return (!w->filenameSet_ && !w->fileChanged_ && isLocatedOnDesktop(w, currentDesktop));
+            QList<DocumentWidget *> documents = MainWindow::allDocuments();
+
+            auto it = std::find_if(documents.begin(), documents.end(), [currentDesktop](DocumentWidget *w) {
+                return (!w->filenameSet_ && !w->fileChanged_ && isLocatedOnDesktopEx(w->toWindow(), currentDesktop));
 			});			
 			
 		
 			if (*doCommand == '\0') {
-				if(it == WindowList.end()) {
-					EditNewFile(findWindowOnDesktop(tabbed, currentDesktop), nullptr, iconicFlag, lmLen == 0 ? nullptr : langMode, nullptr);
+                if(it == documents.end()) {
+                    MainWindow::EditNewFileEx(findWindowOnDesktopEx(tabbed, currentDesktop), nullptr, iconicFlag, lmLen == 0 ? nullptr : langMode, QString());
 				} else {
 					if (iconicFlag) {
 						(*it)->RaiseDocument();
@@ -375,16 +378,11 @@ static void processServerCommandString(char *string) {
 				
 				/* Starting a new command while another one is still running
 				   in the same window is not possible (crashes). */
-				   
-				   
-				// TODO(eteran): I *think* this searches for the first window
-				// where win->macroCmdData_ is nullptr				
-				auto win = WindowList.begin();
-				while (win != WindowList.end() && (*win)->macroCmdData_) {
-					++win;
-				}
+                auto win = std::find_if(documents.begin(), documents.end(), [](DocumentWidget *document) {
+                    return document->macroCmdData_ == nullptr;
+                });
 
-				if (win == WindowList.end()) {
+                if (win == documents.end()) {
 					QApplication::beep();
 				} else {
 					// Raise before -do (macro could close window). 
@@ -393,23 +391,24 @@ static void processServerCommandString(char *string) {
 					} else {
 						(*win)->RaiseDocumentWindow();
 					}
-					DoMacro(*win, doCommand, "-do macro");
+                    DoMacroEx(*win, doCommand, "-do macro");
 				}
 			}
-			CheckCloseDim();
+
+            MainWindow::CheckCloseDimEx();
 			return;
 		}
 
 		/* Process the filename by looking for the files in an
 		   existing window, or opening if they don't exist */
-		editFlags = (readFlag ? PREF_READ_ONLY : 0) | CREATE | (createFlag ? SUPPRESS_CREATE_WARN : 0);
+        int editFlags = (readFlag ? PREF_READ_ONLY : 0) | CREATE | (createFlag ? SUPPRESS_CREATE_WARN : 0);
 		if (ParseFilename(fullname, filename, pathname) != 0) {
 			fprintf(stderr, "NEdit: invalid file name\n");
 			deleteFileClosedProperty2(filename, pathname);
 			break;
 		}
 
-		Document *window = Document::FindWindowWithFile(QLatin1String(filename), QLatin1String(pathname));
+        DocumentWidget *window = MainWindow::FindWindowWithFile(QLatin1String(filename), QLatin1String(pathname));
 		if(!window) {
 			/* Files are opened in background to improve opening speed
 			   by defering certain time  consuiming task such as syntax
@@ -417,13 +416,20 @@ static void processServerCommandString(char *string) {
 			   last file opened will be raised to restore those deferred
 			   items. The current file may also be raised if there're
 			   macros to execute on. */
-			window = EditExistingFile(findWindowOnDesktop(tabbed, currentDesktop), QLatin1String(filename), QLatin1String(pathname), editFlags, geometry, iconicFlag, lmLen == 0 ? nullptr : langMode, tabbed == -1 ? GetPrefOpenInTab() : tabbed, True);
+            window = DocumentWidget::EditExistingFileEx(
+                        findWindowOnDesktopEx(tabbed, currentDesktop)->currentDocument(),
+                        QLatin1String(filename),
+                        QLatin1String(pathname),
+                        editFlags,
+                        geometry,
+                        iconicFlag,
+                        lmLen  ==  0 ? nullptr            : langMode,
+                        tabbed == -1 ? GetPrefOpenInTab() : tabbed,
+                        true);
 
 			if (window) {
-				window->CleanUpTabBarExposeQueue();
-				if (lastFile && window->shell_ != lastFile->shell_) {
-					lastFile->CleanUpTabBarExposeQueue();
-					lastFile->RaiseDocument();
+                if (lastFileEx && window->toWindow() != lastFileEx->toWindow()) {
+                    lastFileEx->RaiseDocument();
 				}
 			}
 		}
@@ -431,38 +437,29 @@ static void processServerCommandString(char *string) {
 		/* Do the actions requested (note DoMacro is last, since the do
 		   command can do anything, including closing the window!) */
 		if (window) {
-			deleteFileOpenProperty(window);
-			getFileClosedProperty(window);
+            deleteFileOpenPropertyEx(window);
+            getFileClosedPropertyEx(window);
 
-			if (lineNum > 0)
-				SelectNumberedLine(window, lineNum);
+            if (lineNum > 0) {
+                // TODO(eteran): how was the TextArea previously determined?
+                SelectNumberedLineEx(window, window->firstPane(), lineNum);
+            }
 
 			if (*doCommand != '\0') {
 				window->RaiseDocument();
-
-				if (!iconicFlag) {
-					WmClientMsg(TheDisplay, XtWindow(window->shell_), "_NET_ACTIVE_WINDOW", 0, 0, 0, 0, 0);
-					XMapRaised(TheDisplay, XtWindow(window->shell_));
-				}
 
 				/* Starting a new command while another one is still running
 				   in the same window is not possible (crashes). */
 				if (window->macroCmdData_) {
 					QApplication::beep();
 				} else {
-					DoMacro(window, doCommand, "-do macro");
-					/* in case window is closed by macro functions
-					   such as close() or detach_document() */
-					if (!window->IsValidWindow())
-						window = nullptr;
-					if (lastFile && !lastFile->IsValidWindow())
-						lastFile = nullptr;
+                    DoMacroEx(window, doCommand, "-do macro");
 				}
 			}
 
 			// register the last file opened for later use 
 			if (window) {
-				lastFile = window;
+                lastFileEx = window;
 				lastIconic = iconicFlag;
 			}
 		} else {
@@ -472,14 +469,13 @@ static void processServerCommandString(char *string) {
 	}
 
 	// Raise the last file opened 
-	if (lastFile) {
-		lastFile->CleanUpTabBarExposeQueue();
+    if (lastFileEx) {
 		if (lastIconic) {
-			lastFile->RaiseDocument();
+            lastFileEx->RaiseDocument();
 		} else {
-			lastFile->RaiseDocumentWindow();
+            lastFileEx->RaiseDocumentWindow();
 		}
-		CheckCloseDim();
+        MainWindow::CheckCloseDimEx();
 	}
 	return;
 

@@ -15,5 +15,6 @@ struct Color {
 
 QColor toQColor(const Color &c);
 QColor toQColor(Pixel pixel);
+Pixel toPixel(const QColor &color);
 
 #endif

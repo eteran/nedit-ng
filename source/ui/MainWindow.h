@@ -48,8 +48,6 @@ public:
 	DialogReplace *getDialogReplace() const;
 	void InvalidateWindowMenus();
 	void UpdateWindowReadOnly(DocumentWidget *doc);
-	void ShowTabBar(bool state);
-	bool GetShowTabBar();
 	void SortTabBar();
 	int TabCount();    
     QList<DocumentWidget *> openDocuments() const;
@@ -71,14 +69,15 @@ public:
     QString PromptForExistingFileEx(const QString &prompt);
     void updateTipsFileMenuEx();
     void updateTagsFileMenuEx();
-    DocumentWidget *currentDocument();
-    void ShowWindowTabBar();
+    DocumentWidget *currentDocument() const;
+    DocumentWidget *documentAt(int index) const;
     void setWindowSizeDefault(int rows, int cols);
     void updateWindowSizeMenus();
     void updateWindowSizeMenu();
     bool PromptForNewFileEx(DocumentWidget *document, const QString prompt, char *fullname, FileFormats *fileFormat, bool *addWrap);
     bool CheckPrefsChangesSavedEx();
     bool CloseAllDocumentInWindow();
+    void addToGroup(QActionGroup *group, QMenu *menu);
 
 
 public:
@@ -91,6 +90,7 @@ public:
     static void AllWindowsUnbusyEx();
     static void BusyWaitEx();
     static void CheckCloseDimEx();
+    static bool CloseAllFilesAndWindowsEx();
 
 public:
 	DocumentWidget *CreateDocument(QString name);
@@ -132,9 +132,7 @@ public Q_SLOTS:
     void defaultSyntaxGroupTriggered(QAction *action);
     void defaultMatchingGroupTriggered(QAction *action);
     void defaultSizeGroupTriggered(QAction *action);
-#if 0
     void macroTriggered(QAction *action);
-#endif
     void shellTriggered(QAction *action);
 
 public Q_SLOTS:
@@ -264,10 +262,11 @@ public Q_SLOTS:
     void on_action_Learn_Keystrokes_triggered();
     void on_action_Finish_Learn_triggered();
     void on_action_Cancel_Learn_triggered();
+    void on_action_Repeat_triggered();
 #if 0
 
     void on_action_Replay_Keystrokes_triggered();
-    void on_action_Repeat_triggered();
+
 #endif
     void on_action_About_Qt_triggered();
 

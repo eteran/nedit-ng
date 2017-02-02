@@ -49,13 +49,13 @@
 #include "TextHelper.h"
 #include "util/misc.h"
 #include "util/MotifHelper.h"
-#include "util/memory.h"
 
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <climits>
 #include <algorithm>
+#include <memory>
 
 #include <Xm/Xm.h>
 #include <X11/Xatom.h>
@@ -4141,7 +4141,7 @@ std::string TextDisplay::TextGetWrappedEx(int startPos, int endPos) {
 	/* Create a text buffer with a good estimate of the size that adding
 	   newlines will expand it to.  Since it's a text buffer, if we guess
 	   wrong, it will fail softly, and simply expand the size */
-	auto outBuf = mem::make_unique<TextBuffer>((endPos - startPos) + (endPos - startPos) / 5);
+    auto outBuf = std::make_unique<TextBuffer>((endPos - startPos) + (endPos - startPos) / 5);
 	int outPos = 0;
 
 	/* Go (displayed) line by line through the buffer, adding newlines where
@@ -5034,7 +5034,7 @@ void TextDisplay::BeginBlockDrag() {
 	dragInsertPos_ = sel->start;
 	dragInserted_ = sel->end - sel->start;
 	if (sel->rectangular) {
-		auto testBuf = mem::make_unique<TextBuffer>();
+        auto testBuf = std::make_unique<TextBuffer>();
 
 		std::string testText = buffer_->BufGetRangeEx(sel->start, sel->end);
 		testBuf->BufSetTabDistance(buffer_->tabDist_);

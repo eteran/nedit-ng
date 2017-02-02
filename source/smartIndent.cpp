@@ -56,6 +56,7 @@
 #include <cstring>
 #include <climits>
 
+
 namespace {
 
 const char MacroEndBoundary[] = "--End-of-Macro--";
@@ -69,8 +70,6 @@ QString CommonMacros;
 
 DialogSmartIndent *SmartIndentDlg = nullptr;
 
-static void executeNewlineMacro(Document *window, smartIndentCBStruct *cbInfo);
-static void executeModMacro(Document *window, smartIndentCBStruct *cbInfo);
 static void insertShiftedMacro(QTextStream &ts, const QString &macro);
 static bool isDefaultIndentSpec(SmartIndent *indentSpec);
 static bool loadDefaultIndentSpec(const char *lmName);
@@ -80,7 +79,6 @@ static char *readSIMacro(const char **inPtr);
 static QString readSIMacroEx(const char **inPtr);
 static int LoadSmartIndentCommonString(char *inString);
 static int LoadSmartIndentString(char *inString);
-
 QByteArray defaultCommonMacros() {
 
 	static bool loaded = false;
@@ -223,106 +221,6 @@ SmartIndent DefaultIndentSpecs[N_DEFAULT_INDENT_SPECS] = {
 	}
 };
 
-
-
-
-/*
-** Turn on smart-indent (well almost).  Unfortunately, this doesn't do
-** everything.  It requires that the smart indent callback (SmartIndentCB)
-** is already attached to all of the text widgets in the window, and that the
-** smartIndent resource must be turned on in the widget.  These are done
-** separately, because they are required per-text widget, and therefore must
-** be repeated whenever a new text widget is created within this window
-** (a split-window command).
-*/
-void BeginSmartIndent(Document *window, int warn) {
-
-	SmartIndent *indentMacros;
-	const char *stoppedAt;
-	const char *errMsg;
-	static bool initialized = false;
-
-	// Find the window's language mode.  If none is set, warn the user 
-	QString modeName = LanguageModeName(window->languageMode_);
-	if(modeName.isNull()) {
-		if (warn) {
-			QMessageBox::warning(nullptr /*window->shell_*/, QLatin1String("Smart Indent"), QLatin1String("No language-specific mode has been set for this file.\n\nTo use smart indent in this window, please select a\nlanguage from the Preferences -> Language Modes menu."));
-		}
-		return;
-	}
-
-	// Look up the appropriate smart-indent macros for the language 
-	indentMacros = findIndentSpec(modeName.toLatin1().data());
-	if(!indentMacros) {
-		if (warn) {
-			QMessageBox::warning(nullptr /*window->shell_*/, QLatin1String("Smart Indent"), QString(QLatin1String("Smart indent is not available in languagemode\n%1.\n\nYou can create new smart indent macros in the\nPreferences -> Default Settings -> Smart Indent\ndialog, or choose a different language mode from:\nPreferences -> Language Mode.")).arg(modeName));
-		}
-		return;
-	}
-
-	/* Make sure that the initial macro file is loaded before we execute
-	   any of the smart-indent macros. Smart-indent macros may reference
-	   routines defined in that file. */
-	ReadMacroInitFile(window);
-
-	/* Compile and run the common and language-specific initialization macros
-	   (Note that when these return, the immediate commands in the file have not
-	   necessarily been executed yet.  They are only SCHEDULED for execution) */
-	if (!initialized) {
-		if (!ReadMacroStringEx(window, CommonMacros, "smart indent common initialization macros")) {
-			return;
-		}
-		
-		initialized = true;
-	}
-	
-	if (!indentMacros->initMacro.isNull()) {
-		if (!ReadMacroStringEx(window, indentMacros->initMacro, "smart indent initialization macro")) {
-			return;
-		}
-	}
-
-	// Compile the newline and modify macros and attach them to the window 
-	auto winData = new SmartIndentData;
-	winData->inNewLineMacro = false;
-    winData->inModMacro     = false;
-    winData->newlineMacro   = ParseMacro(indentMacros->newlineMacro.toLatin1().data(), &errMsg, &stoppedAt);
-	if (!winData->newlineMacro) {
-		delete winData;
-		ParseError(window->shell_, indentMacros->newlineMacro.toLatin1().data(), stoppedAt, "newline macro", errMsg);
-		return;
-	}
-	if (indentMacros->modMacro.isNull())
-		winData->modMacro = nullptr;
-	else {
-		winData->modMacro = ParseMacro(indentMacros->modMacro.toLatin1().data(), &errMsg, &stoppedAt);
-		if (!winData->modMacro) {
-			FreeProgram(winData->newlineMacro);
-			delete winData;
-			ParseError(window->shell_, indentMacros->modMacro.toLatin1().data(), stoppedAt, "smart indent modify macro", errMsg);
-			return;
-		}
-	}
-	window->smartIndentData_ = winData;
-}
-
-void EndSmartIndent(Document *window) {
-	auto winData = static_cast<SmartIndentData *>(window->smartIndentData_);
-
-	if(!winData)
-		return;
-
-	// Free programs and allocated data 
-	if (winData->modMacro) {
-		FreeProgram(winData->modMacro);
-	}
-	
-	FreeProgram(winData->newlineMacro);
-	
-	delete winData;
-	window->smartIndentData_ = nullptr;
-}
-
 void EndSmartIndentEx(DocumentWidget *window) {
     auto winData = static_cast<SmartIndentData *>(window->smartIndentData_);
 
@@ -347,129 +245,10 @@ int SmartIndentMacrosAvailable(char *languageModeName) {
 	return findIndentSpec(languageModeName) != nullptr;
 }
 
-/*
-** Attaches to the text widget's smart-indent callback to invoke a user
-** defined macro when the text widget requires an indent (not just when the
-** user types a newline, but also when the widget does an auto-wrap with
-** auto-indent on), or the user types some other character.
-*/
-void SmartIndentCB(Widget w, XtPointer clientData, XtPointer callData) {
+bool InSmartIndentMacrosEx(DocumentWidget *document) {
+    auto winData = static_cast<SmartIndentData *>(document->smartIndentData_);
 
-	(void)w;
-	(void)clientData;
-	(void)callData;
-
-	Document *window = Document::WidgetToWindow(w);
-	auto cbInfo = static_cast<smartIndentCBStruct *>(callData);
-
-	if (!window->smartIndentData_)
-		return;
-	if (cbInfo->reason == CHAR_TYPED)
-		executeModMacro(window, cbInfo);
-	else if (cbInfo->reason == NEWLINE_INDENT_NEEDED)
-		executeNewlineMacro(window, cbInfo);
-}
-
-/*
-** Run the newline macro with information from the smart-indent callback
-** structure passed by the widget
-*/
-static void executeNewlineMacro(Document *window, smartIndentCBStruct *cbInfo) {
-	auto winData = static_cast<SmartIndentData *>(window->smartIndentData_);
-	// posValue probably shouldn't be static due to re-entrance issues <slobasso> 
-	static DataValue posValue = INIT_DATA_VALUE;
-	DataValue result;
-    RestartData<Document> *continuation;
-	const char *errMsg;
-	int stat;
-
-	/* Beware of recursion: the newline macro may insert a string which
-	   triggers the newline macro to be called again and so on. Newline
-	   macros shouldn't insert strings, but nedit must not crash either if
-	   they do. */
-	if (winData->inNewLineMacro)
-		return;
-
-	// Call newline macro with the position at which to add newline/indent 
-	posValue.val.n = cbInfo->pos;
-	++(winData->inNewLineMacro);
-	stat = ExecuteMacro(window, winData->newlineMacro, 1, &posValue, &result, &continuation, &errMsg);
-
-	// Don't allow preemption or time limit.  Must get return value 
-	while (stat == MACRO_TIME_LIMIT)
-		stat = ContinueMacro(continuation, &result, &errMsg);
-
-	--(winData->inNewLineMacro);
-	/* Collect Garbage.  Note that the mod macro does not collect garbage,
-	   (because collecting per-line is more efficient than per-character)
-	   but GC now depends on the newline macro being mandatory */
-	SafeGC();
-
-	// Process errors in macro execution 
-	if (stat == MACRO_PREEMPT || stat == MACRO_ERROR) {
-		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Smart Indent"), QString(QLatin1String("Error in smart indent macro:\n%1")).arg(QLatin1String(stat == MACRO_ERROR ? errMsg : "dialogs and shell commands not permitted")));
-		EndSmartIndent(window);
-		return;
-	}
-
-	// Validate and return the result 
-	if (result.tag != INT_TAG || result.val.n < -1 || result.val.n > 1000) {
-		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Smart Indent"), QLatin1String("Smart indent macros must return\ninteger indent distance"));
-		EndSmartIndent(window);
-		return;
-	}
-
-	cbInfo->indentRequest = result.val.n;
-}
-
-Boolean InSmartIndentMacros(Document *window) {
-	auto winData = static_cast<SmartIndentData *>(window->smartIndentData_);
-
-	return ((winData && (winData->inModMacro || winData->inNewLineMacro)));
-}
-
-/*
-** Run the modification macro with information from the smart-indent callback
-** structure passed by the widget
-*/
-static void executeModMacro(Document *window, smartIndentCBStruct *cbInfo) {
-	auto winData = static_cast<SmartIndentData *>(window->smartIndentData_);
-	// args probably shouldn't be static due to future re-entrance issues <slobasso> 
-	static DataValue args[2] = {INIT_DATA_VALUE, INIT_DATA_VALUE};
-	// after 5.2 release remove inModCB and use new winData->inModMacro value 
-    static bool inModCB = false;
-	DataValue result;
-    RestartData<Document> *continuation;
-	const char *errMsg;
-	int stat;
-
-	/* Check for inappropriate calls and prevent re-entering if the macro
-	   makes a buffer modification */
-	if (winData == nullptr || winData->modMacro == nullptr || inModCB)
-		return;
-
-	/* Call modification macro with the position of the modification,
-	   and the character(s) inserted.  Don't allow
-	   preemption or time limit.  Execution must not overlap or re-enter */
-	args[0].val.n = cbInfo->pos;
-	AllocNStringCpy(&args[1].val.str, cbInfo->charsTyped);
-
-    inModCB = true;
-	++(winData->inModMacro);
-
-	stat = ExecuteMacro(window, winData->modMacro, 2, args, &result, &continuation, &errMsg);
-	while (stat == MACRO_TIME_LIMIT)
-		stat = ContinueMacro(continuation, &result, &errMsg);
-
-	--(winData->inModMacro);
-    inModCB = false;
-
-	// Process errors in macro execution 
-	if (stat == MACRO_PREEMPT || stat == MACRO_ERROR) {
-		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Smart Indent"), QString(QLatin1String("Error in smart indent modification macro:\n%1")).arg(QLatin1String(stat == MACRO_ERROR ? errMsg : "dialogs and shell commands not permitted")));
-		EndSmartIndent(window);
-		return;
-	}
+    return ((winData && (winData->inModMacro || winData->inNewLineMacro)));
 }
 
 static bool loadDefaultIndentSpec(const char *lmName) {

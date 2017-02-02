@@ -12,6 +12,7 @@
 #include "DialogSmartIndent.h"
 #include "DialogWrapMargin.h"
 #include "DialogMacros.h"
+#include "DialogRepeat.h"
 #include "DialogWindowBackgroundMenu.h"
 #include "DialogShellMenu.h"
 #include "DialogFilter.h"
@@ -46,6 +47,8 @@
 #include "misc.h"
 #include "highlight.h"
 #include "highlightData.h"
+#include "util/fileUtils.h"
+#include <memory>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/param.h>
@@ -314,6 +317,9 @@ void MainWindow::setupMenuDefaults() {
     ui.action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Open->setChecked(GetPrefTabBarHideOne());
     ui.action_Default_Tab_Next_Prev_Tabs_Across_Windows->setChecked(GetPrefGlobalTabNavigate());
     ui.action_Default_Tab_Sort_Tabs_Alphabetically->setChecked(GetPrefSortTabs());
+
+    ui.tabWidget->getTabBar()->setVisible(GetPrefTabBar());
+    ui.tabWidget->setHideSingleTab(GetPrefTabBarHideOne());
 
     ui.action_Default_Show_Tooltips->setChecked(GetPrefToolTips());
     ui.action_Default_Statistics_Line->setChecked(GetPrefStatsLine());
@@ -735,24 +741,11 @@ void MainWindow::UpdateWindowReadOnly(DocumentWidget *doc) {
 	ui.action_Read_Only->setEnabled(!doc->lockReasons_.isAnyLockedIgnoringUser());
 }
 
-void MainWindow::ShowTabBar(bool state) {
-	ui.tabWidget->setHideTabBar(!state);
-}
+
 
 /*
 ** check if tab bar is to be shown on this window
 */
-bool MainWindow::GetShowTabBar() {
-
-	if (!GetPrefTabBar()) {
-		return false;
-	} else if (ui.tabWidget->count()  == 1) {
-		return !GetPrefTabBarHideOne();
-	} else {
-		return true;
-	}
-}
-
 int MainWindow::TabCount() {
 	return ui.tabWidget->count();
 }
@@ -972,6 +965,15 @@ QMenu *MainWindow::createUserMenu(DocumentWidget *document, const QVector<MenuDa
     return rootMenu;
 }
 
+void MainWindow::addToGroup(QActionGroup *group, QMenu *menu) {
+    for(QAction *action : menu->actions()) {
+        if(QMenu *subMenu = action->menu()) {
+            addToGroup(group, subMenu);
+        }
+        group->addAction(action);
+    }
+}
+
 /*
 ** Update the Shell, Macro, and Window Background menus of window
 ** "window" from the currently loaded command descriptions.
@@ -993,11 +995,8 @@ void MainWindow::UpdateUserMenus(DocumentWidget *document) {
     ui.menu_Shell->addActions(shellMenu->actions());
     auto shellGroup = new QActionGroup(this);
     shellGroup->setExclusive(false);
-    for(QAction *action : shellMenu->actions()) {
-        shellGroup->addAction(action);
-    }
+    addToGroup(shellGroup, shellMenu);
     connect(shellGroup, SIGNAL(triggered(QAction*)), this, SLOT(shellTriggered(QAction *)));
-
 
     auto macroMenu = createUserMenu(document, MacroMenuData);
     ui.menu_Macro->clear();
@@ -1010,9 +1009,7 @@ void MainWindow::UpdateUserMenus(DocumentWidget *document) {
     ui.menu_Macro->addActions(macroMenu->actions());
     auto macroGroup = new QActionGroup(this);
     macroGroup->setExclusive(false);
-    for(QAction *action : macroMenu->actions()) {
-        macroGroup->addAction(action);
-    }
+    addToGroup(macroGroup, macroMenu);
     connect(macroGroup, SIGNAL(triggered(QAction*)), this, SLOT(macroTriggered(QAction *)));
 
     /* update background menu, which is owned by a single document, only
@@ -1616,14 +1613,21 @@ void MainWindow::on_tabWidget_customContextMenuRequested(int index, const QPoint
 
     if(QAction *const selected = menu->exec(mapToGlobal(pos))) {
 
-        // TODO(eteran): implement this logic
-        if(selected == newTab) {
-        } else if(selected == closeTab) {
-            Q_UNUSED(index);
-        } else if(selected == detachTab) {
-            Q_UNUSED(index);
-        } else if(selected == moveTab) {
-            Q_UNUSED(index);
+        if(DocumentWidget *document = documentAt(index)) {
+
+            if(selected == newTab) {
+                MainWindow::EditNewFileEx(this, nullptr, false, nullptr, document->path_);
+            } else if(selected == closeTab) {
+                document->actionClose(QString());
+            } else if(selected == detachTab) {
+                if(TabCount() > 1) {
+                    auto new_window = new MainWindow(nullptr);
+                    new_window->ui.tabWidget->addTab(document, document->filename_);
+                    new_window->show();
+                }
+            } else if(selected == moveTab) {
+                document->moveDocument(this);
+            }
         }
     }
 }
@@ -2004,7 +2008,7 @@ void MainWindow::on_editIFind_textChanged(const QString &searchString) {
        correct syntax doesn't match) */
     if (isRegexType(searchType)) {
         try {
-            auto compiledRE = mem::make_unique<regexp>(searchString.toStdString(), defaultRegexFlags(searchType));
+            auto compiledRE = std::make_unique<regexp>(searchString.toStdString(), defaultRegexFlags(searchType));
         } catch(const regex_error &) {
             return;
         }
@@ -2768,8 +2772,12 @@ void MainWindow::on_action_About_Qt_triggered() {
     QMessageBox::aboutQt(this);
 }
 
-DocumentWidget *MainWindow::currentDocument() {
+DocumentWidget *MainWindow::currentDocument() const {
     return qobject_cast<DocumentWidget *>(ui.tabWidget->currentWidget());
+}
+
+DocumentWidget *MainWindow::documentAt(int index) const {
+    return qobject_cast<DocumentWidget *>(ui.tabWidget->widget(index));
 }
 
 void MainWindow::on_action_Statistics_Line_toggled(bool state) {
@@ -3245,7 +3253,7 @@ void MainWindow::on_action_Default_Tab_Show_Tab_Bar_toggled(bool state) {
     SetPrefTabBar(state);
     for(MainWindow *window : allWindows()) {
         no_signals(window->ui.action_Default_Tab_Show_Tab_Bar)->setChecked(state);
-        window->ShowWindowTabBar();
+        window->ui.tabWidget->getTabBar()->setVisible(state);
     }
 }
 
@@ -3254,7 +3262,7 @@ void MainWindow::on_action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Op
     SetPrefTabBarHideOne(state);
     for(MainWindow *window : allWindows()) {
         no_signals(window->ui.action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Open)->setChecked(state);
-        window->ShowWindowTabBar();
+        window->ui.tabWidget->setHideSingleTab(state);
     }
 }
 
@@ -3283,17 +3291,7 @@ void MainWindow::on_action_Default_Tab_Sort_Tabs_Alphabetically_toggled(bool sta
     }
 }
 
-void MainWindow::ShowWindowTabBar() {
-    if (GetPrefTabBar()) {
-        if (GetPrefTabBarHideOne()) {
-            ShowTabBar(TabCount() > 1);
-        } else {
-            ShowTabBar(true);
-        }
-    } else {
-        ShowTabBar(false);
-    }
-}
+
 
 void MainWindow::on_action_Default_Show_Tooltips_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
@@ -3554,8 +3552,6 @@ DocumentWidget *MainWindow::EditNewFileEx(MainWindow *inWindow, char *geometry, 
     } else {
         document->SetLanguageMode(FindLanguageMode(languageMode), true);
     }
-
-    inWindow->ShowTabBar(inWindow->GetShowTabBar());
 
     if (iconic && inWindow->isMinimized()) {
         document->RaiseDocument();
@@ -4038,4 +4034,78 @@ void MainWindow::on_action_Cancel_Learn_triggered() {
     if(auto doc = currentDocument()) {
         CancelMacroOrLearnEx(doc);
     }
+}
+
+void MainWindow::macroTriggered(QAction *action) {
+
+    // TODO(eteran): implement what this comment says!
+    /* Don't allow users to execute a macro command from the menu (or accel)
+       if there's already a macro command executing, UNLESS the macro is
+       directly called from another one.  NEdit can't handle
+       running multiple, independent uncoordinated, macros in the same
+       window.  Macros may invoke macro menu commands recursively via the
+       macro_menu_command action proc, which is important for being able to
+       repeat any operation, and to embed macros within eachother at any
+       level, however, a call here with a macro running means that THE USER
+       is explicitly invoking another macro via the menu or an accelerator,
+       UNLESS the macro event marker is set */
+
+    if(auto doc = currentDocument()) {
+        const int index = action->data().toInt();
+        const QString name = MacroMenuData[index].item->name;
+        doc->DoNamedMacroMenuCmd(lastFocus_, name, false);
+
+    }
+}
+
+/*
+** Close all files and windows, leaving one untitled window
+*/
+bool MainWindow::CloseAllFilesAndWindowsEx() {
+
+    for(MainWindow *window : MainWindow::allWindows()) {
+
+        // NOTE(eteran): the original code took measures to ensure that
+        // if this was being called from a macro, that the window which
+        // the macro was running in would be closed last to avoid an infinite
+        // loop due to closing modifying the list of windows while it was being
+        // iterated. Since this code operates on a COPY of the list of windows
+        // I don't think such measures are necessary anymore. But I will
+        // include the original comment just in case..
+        //
+        /*
+         * When we're exiting through a macro, the document running the
+         * macro does not disappear from the list, so we could get stuck
+         * in an endless loop if we try to close it. Therefore, we close
+         * other documents first. (Note that the document running the macro
+         * may get closed because it is in the same window as another
+         * document that gets closed, but it won't disappear; it becomes
+         * Untitled.)
+         */
+
+        if (!window->CloseAllDocumentInWindow()) {
+            return false;
+        }
+
+        delete window;
+    }
+
+    return true;
+}
+
+void MainWindow::on_action_Repeat_triggered() {
+    if(LastCommand.isNull()) {
+        QMessageBox::warning(this, tr("Repeat Macro"), tr("No previous commands or learn/replay sequences to repeat"));
+        return;
+    }
+
+    // TODO(eteran): redundant to work done in DialogRepeat::setCommand function
+    int index = LastCommand.indexOf(QLatin1Char('('));
+    if(index == -1) {
+        return;
+    }
+
+    auto dialog = new DialogRepeat(currentDocument(), this);
+    dialog->setCommand(LastCommand);
+    dialog->show();
 }

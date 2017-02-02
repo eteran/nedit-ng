@@ -37,7 +37,6 @@
 #include "ui/DocumentWidget.h"
 #include "ui/TextArea.h"
 #include "ui/MainWindow.h"
-#include "util/memory.h"
 #include "WrapStyle.h"
 #include "TextDisplay.h"
 #include "TextHelper.h"
@@ -55,6 +54,7 @@
 #include "highlight.h"
 #include "selection.h"
 #include "util/MotifHelper.h"
+#include <memory>
 
 #ifdef REPLACE_SCOPE
 #include "TextDisplay.h"
@@ -92,16 +92,11 @@ static bool replaceUsingREEx(view::string_view searchStr, const char *replaceStr
 static bool forwardRegexSearch(view::string_view string, view::string_view searchString, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags);
 static bool searchRegex(view::string_view string, view::string_view searchString, SearchDirection direction, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags);
 static int countWindows(void);
-static int findMatchingChar(Document *window, char toMatch, void *toMatchStyle, int charPos, int startLimit, int endLimit, int *matchPos);
 static bool searchLiteral(view::string_view string, view::string_view searchString, bool caseSense, SearchDirection direction, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW);
 static bool searchLiteralWord(view::string_view string, view::string_view searchString, bool caseSense, SearchDirection direction, bool wrap, int beginPos, int *startPos, int *endPos, const char *delimiters);
 static bool searchMatchesSelectionEx(DocumentWidget *window, const char *searchString, SearchType searchType, int *left, int *right, int *searchExtentBW, int *searchExtentFW);
-static void checkMultiReplaceListForDoomedW(Document *window, Document *doomedWindow);
-static void eraseFlash(Document *window);
-static void flashTimeoutProc(XtPointer clientData, XtIntervalId *id);
 static void iSearchRecordLastBeginPosEx(MainWindow *window, SearchDirection direction, int initPos);
 static void iSearchTryBeepOnWrapEx(MainWindow *window, SearchDirection direction, int beginPos, int startPos);
-static void removeDoomedWindowFromList(Document *window, int index);
 static std::string upCaseStringEx(view::string_view inString);
 static std::string downCaseStringEx(view::string_view inString);
 static bool findMatchingCharEx(DocumentWidget *window, char toMatch, void *styleToMatch, int charPos, int startLimit, int endLimit, int *matchPos);
@@ -142,25 +137,6 @@ static const char *searchTypeStrings[] = {"literal",     // SEARCH_LITERAL
                                           "caseWord",    // SEARCH_CASE_SENSE_WORD 
                                           "regexNoCase", // SEARCH_REGEX_NOCASE    
                                           nullptr};
-
-/*
-** Window for which a search dialog callback is currently active. That window
-** cannot be safely closed because the callback would access the armed button
-** after it got destroyed.
-** Note that an attempt to close such a window can only happen if the search
-** action triggers a modal dialog and the user tries to close the window via
-** the window manager without dismissing the dialog first. It is up to the
-** close callback of the window to intercept and reject the request by calling
-** the WindowCanBeClosed() function.
-*/
-Document *windowNotToClose = nullptr;
-
-Boolean WindowCanBeClosed(Document *window) {
-	if (windowNotToClose && Document::GetTopDocument(window->shell_) == Document::GetTopDocument(windowNotToClose->shell_)) {
-        return false;
-	}
-    return true; // It's safe
-}
 
 #ifdef REPLACE_SCOPE
 /*
@@ -344,75 +320,6 @@ void DoFindDlogEx(MainWindow *window, DocumentWidget *document, SearchDirection 
 }
 
 /*
-** If a window is closed (possibly via the window manager) while it is on the
-** multi-file replace dialog list of any other window (or even the same one),
-** we must update those lists or we end up with dangling references.
-** Normally, there can be only one of those dialogs at the same time
-** (application modal), but Lesstif doesn't (always) honor application
-** modalness, so there can be more than one dialog.
-*/
-void RemoveFromMultiReplaceDialog(Document *doomedWindow) {
-
-	for(Document *w: WindowList) {
-		if (w->writableWindows_) {
-			// A multi-file replacement dialog is up for this window 
-			checkMultiReplaceListForDoomedW(w, doomedWindow);
-		}
-	}
-}
-
-static void checkMultiReplaceListForDoomedW(Document *window, Document *doomedWindow) {
-
-	/* If the window owning the list and the doomed window are one and the
-	   same, we just close the multi-file replacement dialog. */
-	if (window == doomedWindow) {
-		if(auto dialog = window->getDialogReplace()) {
-			dialog->dialogMultiReplace_->hide();
-			return;
-		}
-	}
-			
-	// Check whether the doomed window is currently listed 
-	for (int i = 0; i < window->nWritableWindows_; ++i) {
-		Document *w = window->writableWindows_[i];
-		if (w == doomedWindow) {
-			removeDoomedWindowFromList(window, i);
-			break;
-		}
-	}
-}
-
-static void removeDoomedWindowFromList(Document *window, int index) {
-
-	// If the list would become empty, we remove the dialog 
-	if (window->nWritableWindows_ <= 1) {
-		if(auto dialog = window->getDialogReplace()) {
-			dialog->dialogMultiReplace_->hide();
-			return;
-		}
-	}
-
-	int entriesToMove = window->nWritableWindows_ - index - 1;
-	memmove(&(window->writableWindows_[index]), &(window->writableWindows_[index + 1]), (size_t)(entriesToMove * sizeof(Document *)));
-	window->nWritableWindows_ -= 1;
-
-	if(auto dialogReplace = window->getDialogReplace()) {
-		if(auto dialogReplaceMulti = dialogReplace->dialogMultiReplace_) {
-			delete dialogReplaceMulti->ui.listFiles->item(index + 1);
-		}		
-	}
-}
-
-/*
-** These callbacks fix a Motif 1.1 problem that the default button gets the
-** keyboard focus when a dialog is created.  We want the first text field
-** to get the focus, so we don't set the default button until the text field
-** has the focus for sure.  I have tried many other ways and this is by far
-** the least nasty.
-*/
-
-
-/*
 ** Count no. of windows
 */
 static int countWindows() {
@@ -459,18 +366,6 @@ int countWritableWindows() {
 	}
 
 	return nWritable;
-}
-
-/*
-** Unconditionally pops down the replace dialog and the
-** replace-in-multiple-files dialog, if it exists.
-*/
-void unmanageReplaceDialogs(const Document *window) {
-	/* If the replace dialog goes down, the multi-file replace dialog must
-	   go down too */
-	if (auto dialog = window->getDialogReplace()) {
-		dialog->hide();
-	}
 }
 
 /*
@@ -787,89 +682,14 @@ void FlashMatchingEx(DocumentWidget *document, TextArea *area) {
     document->flashPos_ = matchPos;
 }
 
-void FlashMatching(Document *window, Widget textW) {
-	char c;
-	void *style;
-	int matchIndex;
-	int startPos;
-	int endPos;
-	int searchPos;
-	int matchPos;
-	int constrain;
-
-	// if a marker is already drawn, erase it and cancel the timeout 
-	if (window->flashTimeoutID_ != 0) {
-		eraseFlash(window);
-		XtRemoveTimeOut(window->flashTimeoutID_);
-		window->flashTimeoutID_ = 0;
-	}
-
-	// no flashing required 
-	if (window->showMatchingStyle_ == NO_FLASH) {
-		return;
-	}
-
-	// don't flash matching characters if there's a selection 
-	if (window->buffer_->primary_.selected)
-		return;
-
-	// get the character to match and the position to start from 
-	auto textD = textD_of(textW);
-	
-	int pos = textD->TextGetCursorPos() - 1;
-	if (pos < 0)
-		return;
-	c = window->buffer_->BufGetCharacter(pos);
-	style = GetHighlightInfo(window, pos);
-
-	// is the character one we want to flash? 
-	for (matchIndex = 0; matchIndex < N_FLASH_CHARS; matchIndex++) {
-		if (MatchingChars[matchIndex].c == c)
-			break;
-	}
-	if (matchIndex == N_FLASH_CHARS)
-		return;
-
-	/* constrain the search to visible text only when in single-pane mode
-	   AND using delimiter flashing (otherwise search the whole buffer) */
-	constrain = ((window->textPanes_.size() == 0) && (window->showMatchingStyle_ == FLASH_DELIMIT));
-
-	if (MatchingChars[matchIndex].direction == SEARCH_BACKWARD) {
-		startPos = constrain ? textD->TextFirstVisiblePos() : 0;
-		endPos = pos;
-		searchPos = endPos;
-	} else {
-		startPos = pos;
-		endPos = constrain ? textD->TextLastVisiblePos() : window->buffer_->BufGetLength();
-		searchPos = startPos;
-	}
-
-	// do the search 
-	if (!findMatchingChar(window, c, style, searchPos, startPos, endPos, &matchPos))
-		return;
-
-	if (window->showMatchingStyle_ == FLASH_DELIMIT) {
-		// Highlight either the matching character ... 
-		window->buffer_->BufHighlight(matchPos, matchPos + 1);
-	} else {
-		// ... or the whole range. 
-		if (MatchingChars[matchIndex].direction == SEARCH_BACKWARD) {
-			window->buffer_->BufHighlight(matchPos, pos + 1);
-		} else {
-			window->buffer_->BufHighlight(matchPos + 1, pos);
-		}
-	}
-
-	// Set up a timer to erase the box after 1.5 seconds 
-	window->flashTimeoutID_ = XtAppAddTimeOut(XtWidgetToApplicationContext(window->shell_), 1500, flashTimeoutProc, window);
-	window->flashPos_ = matchPos;
-}
-
-
-
 static bool findMatchingCharEx(DocumentWidget *window, char toMatch, void *styleToMatch, int charPos, int startLimit, int endLimit, int *matchPos) {
-    int nestDepth, matchIndex, direction, beginPos, pos;
-    char matchChar, c;
+    int nestDepth;
+    int matchIndex;
+    int direction;
+    int beginPos;
+    int pos;
+    char matchChar;
+    char c;
     void *style = nullptr;
     TextBuffer *buf = window->buffer_;
     int matchSyntaxBased = window->matchSyntaxBased_;
@@ -935,93 +755,6 @@ static bool findMatchingCharEx(DocumentWidget *window, char toMatch, void *style
         }
     }
     return false;
-}
-
-static int findMatchingChar(Document *window, char toMatch, void *styleToMatch, int charPos, int startLimit, int endLimit, int *matchPos) {
-	int nestDepth, matchIndex, direction, beginPos, pos;
-	char matchChar, c;
-	void *style = nullptr;
-	TextBuffer *buf = window->buffer_;
-	int matchSyntaxBased = window->matchSyntaxBased_;
-
-	// If we don't match syntax based, fake a matching style. 
-	if (!matchSyntaxBased)
-		style = styleToMatch;
-
-	// Look up the matching character and match direction 
-	for (matchIndex = 0; matchIndex < N_MATCH_CHARS; matchIndex++) {
-		if (MatchingChars[matchIndex].c == toMatch)
-			break;
-	}
-	if (matchIndex == N_MATCH_CHARS)
-		return FALSE;
-	matchChar = MatchingChars[matchIndex].match;
-	direction = MatchingChars[matchIndex].direction;
-
-	// find it in the buffer 
-	beginPos = (direction == SEARCH_FORWARD) ? charPos + 1 : charPos - 1;
-	nestDepth = 1;
-	if (direction == SEARCH_FORWARD) {
-		for (pos = beginPos; pos < endLimit; pos++) {
-			c = buf->BufGetCharacter(pos);
-			if (c == matchChar) {
-				if (matchSyntaxBased)
-					style = GetHighlightInfo(window, pos);
-				if (style == styleToMatch) {
-					nestDepth--;
-					if (nestDepth == 0) {
-						*matchPos = pos;
-						return TRUE;
-					}
-				}
-			} else if (c == toMatch) {
-				if (matchSyntaxBased)
-					style = GetHighlightInfo(window, pos);
-				if (style == styleToMatch)
-					nestDepth++;
-			}
-		}
-	} else { // SEARCH_BACKWARD 
-		for (pos = beginPos; pos >= startLimit; pos--) {
-			c = buf->BufGetCharacter(pos);
-			if (c == matchChar) {
-				if (matchSyntaxBased)
-					style = GetHighlightInfo(window, pos);
-				if (style == styleToMatch) {
-					nestDepth--;
-					if (nestDepth == 0) {
-						*matchPos = pos;
-						return TRUE;
-					}
-				}
-			} else if (c == toMatch) {
-				if (matchSyntaxBased)
-					style = GetHighlightInfo(window, pos);
-				if (style == styleToMatch)
-					nestDepth++;
-			}
-		}
-	}
-	return FALSE;
-}
-
-/*
-** Xt timer procedure for erasing the matching parenthesis marker.
-*/
-static void flashTimeoutProc(XtPointer clientData, XtIntervalId *id) {
-
-	(void)id;
-
-	eraseFlash(static_cast<Document *>(clientData));
-	static_cast<Document *>(clientData)->flashTimeoutID_ = 0;
-}
-
-/*
-** Erase the marker drawn on a matching parenthesis bracket or brace
-** character.
-*/
-static void eraseFlash(Document *window) {
-	window->buffer_->BufUnhighlight();
 }
 
 /*
@@ -1300,7 +1033,7 @@ void ReplaceInSelectionEx(MainWindow *window, DocumentWidget *document, TextArea
     /* create a temporary buffer in which to do the replacements to hide the
        intermediate steps from the display routines, and so everything can
        be undone in a single operation */
-    auto tempBuf = mem::make_unique<TextBuffer>();
+    auto tempBuf = std::make_unique<TextBuffer>();
     tempBuf->BufSetAllEx(fileString);
 
     // search the string and do the replacements in the temporary buffer
@@ -2274,14 +2007,10 @@ void saveSearchHistory(const char *searchString, const char *replaceString, Sear
 	currentItemIsIncremental = isIncremental;
 
 	if (NHist == 0) {
-		for(Document *w: WindowList) {
-			if (w->IsTopDocument()) {
-#if 0 // NOTE(eteran): transitioned
-				XtSetSensitive(w->findAgainItem_, True);
-				XtSetSensitive(w->replaceFindAgainItem_, True);
-				XtSetSensitive(w->replaceAgainItem_, True);
-#endif
-			}
+        for(MainWindow *window : MainWindow::allWindows()) {
+            window->ui.action_Find_Again->setEnabled(true);
+            window->ui.action_Replace_Find_Again->setEnabled(true);
+            window->ui.action_Replace_Again->setEnabled(true);
 		}
 	}
 
@@ -2312,13 +2041,16 @@ void saveSearchHistory(const char *searchString, const char *replaceString, Sear
 ** the current time.
 */
 int historyIndex(int nCycles) {
-	int index;
 
-	if (nCycles > NHist || nCycles <= 0)
+    if (nCycles > NHist || nCycles <= 0) {
 		return -1;
-	index = HistStart - nCycles;
-	if (index < 0)
+    }
+
+    int index = HistStart - nCycles;
+    if (index < 0) {
 		index = MAX_SEARCH_HISTORY + index;
+    }
+
 	return index;
 }
 

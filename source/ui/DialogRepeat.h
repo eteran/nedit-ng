@@ -5,12 +5,12 @@
 #include <QDialog>
 #include "ui_DialogRepeat.h"
 
-class Document;
+class DocumentWidget;
 
 class DialogRepeat : public QDialog {
 	Q_OBJECT
 public:
-	DialogRepeat(Document *forWindow, QWidget *parent = 0, Qt::WindowFlags f = 0);
+    DialogRepeat(DocumentWidget *forWindow, QWidget *parent = 0, Qt::WindowFlags f = 0);
 	virtual ~DialogRepeat();
 	
 public Q_SLOTS:
@@ -23,7 +23,7 @@ private:
 private:
 	Ui::DialogRepeat ui;
 	QString lastCommand_;
-	Document *forWindow_;
+    DocumentWidget *document_;
 };
 
 #endif

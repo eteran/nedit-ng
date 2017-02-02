@@ -3,11 +3,10 @@
 #include <QIntValidator>
 #include "DialogRepeat.h"
 #include "TextBuffer.h"
-#include "Document.h"
-#include "util/MotifHelper.h"
+#include "DocumentWidget.h"
 #include "macro.h"
 
-DialogRepeat::DialogRepeat(Document *forWindow, QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f), forWindow_(forWindow) {
+DialogRepeat::DialogRepeat(DocumentWidget *document, QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f), document_(document) {
 	ui.setupUi(this);
 	ui.lineEdit->setValidator(new QIntValidator(0, INT_MAX, this));
 }
@@ -39,18 +38,17 @@ void DialogRepeat::on_buttonBox_accepted() {
 
 bool DialogRepeat::doRepeatDialogAction() {
 
-	char nTimesStr[TYPE_INT_STR_SIZE(int)];
-	const char *params[2];
+    int how;
 
 	// Find out from the dialog how to repeat the command 
 	if (ui.radioInSelection->isChecked()) {
-		if (!forWindow_->buffer_->primary_.selected) {
+        if (!document_->buffer_->primary_.selected) {
 			QMessageBox::warning(this, tr("Repeat Macro"), tr("No selection in window to repeat within"));
-			return False;
+            return false;
 		}
-		params[0] = "in_selection";
+        how = REPEAT_IN_SEL;
 	} else if (ui.radioToEnd->isChecked()) {
-		params[0] = "to_end";
+        how = REPEAT_TO_END;
 	} else {
 	
 		QString strTimes = ui.lineEdit->text();
@@ -67,22 +65,22 @@ bool DialogRepeat::doRepeatDialogAction() {
 			return false;
 		}
 	
-		sprintf(nTimesStr, "%d", nTimes);
-		params[0] = nTimesStr;
+        how = nTimes;
 	}
+
+    QString macro;
 
 	// Figure out which command user wants to repeat 
 	if (ui.radioLastCommand->isChecked()) {
-		params[1] = XtNewStringEx(lastCommand_);
+        macro = lastCommand_;
 	} else {
 		if (ReplayMacro.empty()) {
 			return false;
 		}
-		params[1] = XtNewStringEx(ReplayMacro);
+        macro = QString::fromStdString(ReplayMacro);
 	}
 
-	// call the action routine repeat_macro to do the work 
-	XtCallActionProc(forWindow_->lastFocus_, "repeat_macro", nullptr, const_cast<char **>(params), 2);
-	XtFree((char *)params[1]);
+    // call the action routine repeat_macro to do the work
+    document_->repeatMacro(macro, how);
 	return true;
 }

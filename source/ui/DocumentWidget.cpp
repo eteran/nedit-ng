@@ -47,7 +47,6 @@
 #include "SmartIndent.h"
 #include "utils.h"
 #include "interpret.h"
-#include "shell.h"
 #include "parse.h"
 #include "server.h"
 #include <memory>
@@ -65,11 +64,6 @@ const int IO_BUF_SIZE         = 4096; // size of buffers for collecting cmd outp
 const int OUTPUT_FLUSH_FREQ	  = 1000; // how often (msec) to flush output buffers when process is taking too long
 const int BANNER_WAIT_TIME	  = 6000; // how long to wait (msec) before putting up Shell Command Executing... banner
 
-// element of a buffer list for collecting output from shell processes
-struct bufElem {
-    int length;
-    char contents[IO_BUF_SIZE];
-};
 
 /* data attached to window during shell command execution with
    information for controling and communicating with the process */
@@ -364,7 +358,6 @@ DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inWindow, con
         // update tab label and tooltip
         document->RefreshTabState();
         win->SortTabBar();
-        win->ShowTabBar(win->GetShowTabBar());
     }
 
     if (!bgOpen) {
@@ -554,6 +547,7 @@ TextArea *DocumentWidget::createTextArea(TextBuffer *buffer) {
     area->addDragStartCallback(dragStartCB, this);
     area->addDragEndCallback(dragEndCB, this);
     area->addSmartIndentCallback(smartIndentCB, this);
+
 
     // NOTE(eteran): we kinda cheat here. We want to have a custom context menu
     // but we don't want it to fire if the user is pressing Ctrl when they right click
@@ -3119,7 +3113,7 @@ void DocumentWidget::CloseWindow() {
     if (keepWindow || (windowCount == 1 && documentCount == 1)) {
         filename_ = QLatin1String("");
 
-        QString name = UniqueUntitledName();
+        QString name = MainWindow::UniqueUntitledNameEx();
         lockReasons_.clear();
 
         fileMode_     = 0;
@@ -4990,16 +4984,19 @@ void DocumentWidget::issueCommandEx(MainWindow *window, TextArea *area, const QS
 
     // create the process and connect the output streams to the readyRead events
     auto process = new QProcess(this);
-    connect(process, SIGNAL(readyReadStandardOutput()), document, SLOT(stdoutReadProc()));
+
     connect(process, SIGNAL(finished(int, QProcess::ExitStatus)), document, SLOT(processFinished(int, QProcess::ExitStatus)));
 
+    // support for merged output if we are not using ERROR_DIALOGS
     if (flags & ERROR_DIALOGS) {
-        connect(process, SIGNAL(readyReadStandardError()), document, SLOT(stderrReadProc()));
+        connect(process, SIGNAL(readyReadStandardError()),  document, SLOT(stderrReadProc()));
+        connect(process, SIGNAL(readyReadStandardOutput()), document, SLOT(stdoutReadProc()));
+    } else {
+        process->setProcessChannelMode(QProcess::MergedChannels);
+        connect(process, SIGNAL(readyReadS()), document, SLOT(mergedReadProc()));
     }
 
     // start it off!
-    //QString shellCommand = QString(QLatin1String("%1 -c %2")).arg(QLatin1String(GetPrefShell())).arg(command);
-    //QString shellCommand = command;
     QStringList args;
     args << QLatin1String("-c");
     args << command;
@@ -5007,12 +5004,11 @@ void DocumentWidget::issueCommandEx(MainWindow *window, TextArea *area, const QS
 
     // if there's nothing to write to the process' stdin, close it now, otherwise
     // write it to the process
-    if(input.isEmpty()) {
-        process->closeWriteChannel();
-    } else {
+    if(!input.isEmpty()) {
         process->write(input.toLatin1());
-        process->closeWriteChannel();
     }
+
+    process->closeWriteChannel();
 
     /* Create a data structure for passing process information around
        amongst the callback routines which will process i/o and completion */
@@ -5051,6 +5047,16 @@ void DocumentWidget::issueCommandEx(MainWindow *window, TextArea *area, const QS
        command completes */
     if (fromMacro) {
         PreemptMacro();
+    }
+}
+
+/*
+** Called when the shell sub-process stream has data.
+*/
+void DocumentWidget::mergedReadProc() {
+    if(auto cmdData = static_cast<shellCmdInfoEx *>(shellCmdData_)) {
+        QByteArray data = cmdData->process->readAll();
+        cmdData->standardOutput.append(data);
     }
 }
 
@@ -5126,18 +5132,22 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
     cmdData->process->waitForReadyRead();
 
     /* Assemble the output from the process' stderr and stdout streams into
-       null terminated strings, and free the buffer lists used to collect it */
-    {
-        QByteArray data = cmdData->process->readAllStandardOutput();
-        cmdData->standardOutput.append(data);
-        outText = QString::fromLatin1(cmdData->standardOutput.data(), cmdData->standardOutput.size());
-    }
-
+       strings */
     if (cmdData->flags & ERROR_DIALOGS) {
         // make sure we got the rest and convert it to a string
-        QByteArray data = cmdData->process->readAllStandardOutput();
-        cmdData->standardError.append(data);
-        errText = QString::fromLatin1(cmdData->standardError.data(), cmdData->standardError.size());
+        QByteArray dataErr = cmdData->process->readAllStandardError();
+        cmdData->standardError.append(dataErr);
+        errText = QString::fromLocal8Bit(cmdData->standardError);
+
+        QByteArray dataOut = cmdData->process->readAllStandardOutput();
+        cmdData->standardOutput.append(dataOut);
+        outText = QString::fromLocal8Bit(cmdData->standardOutput);
+    } else {
+
+        QByteArray data = cmdData->process->readAll();
+        cmdData->standardOutput.append(data);
+        outText = QString::fromLocal8Bit(cmdData->standardOutput);
+
     }
 
     /* Present error and stderr-information dialogs.  If a command returned
@@ -5561,4 +5571,81 @@ void DocumentWidget::DoShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
                 left,
                 right,
                 fromMacro);
+}
+
+/*
+** Search through the Macro or background menu and execute the first command
+** with menu item name "itemName".  Returns True on successs and False on
+** failure.
+*/
+bool DocumentWidget::DoNamedMacroMenuCmd(TextArea *area, const QString &name, bool fromMacro) {
+
+    Q_UNUSED(fromMacro);
+    Q_UNUSED(area);
+
+    for(MenuData &data: MacroMenuData) {
+        if (data.item->name == name) {
+
+            DoMacroEx(
+                this,
+                data.item->cmd.toStdString(),
+                "macro menu command");
+
+            return true;
+        }
+    }
+    return false;
+}
+
+bool DocumentWidget::DoNamedBGMenuCmd(TextArea *area, const QString &name, bool fromMacro) {
+    Q_UNUSED(fromMacro);
+    Q_UNUSED(area);
+
+    for(MenuData &data: BGMenuData) {
+        if (data.item->name == name) {
+            DoMacroEx(
+                this,
+                data.item->cmd.toStdString(),
+                "background menu macro");
+
+            return true;
+        }
+    }
+    return false;
+}
+
+int DocumentWidget::WidgetToPaneIndex(TextArea *area) const {
+    return splitter_->indexOf(area);
+}
+
+/*
+** Execute shell command "command", on input string "input", depositing the
+** in a macro string (via a call back to ReturnShellCommandOutput).
+*/
+void DocumentWidget::ShellCmdToMacroStringEx(const std::string &command, const std::string &input) {
+
+    // fork the command and begin processing input/output
+    issueCommandEx(
+                toWindow(),
+                nullptr,
+                QString::fromStdString(command),
+                QString::fromStdString(input),
+                ACCUMULATE | OUTPUT_TO_STRING,
+                0,
+                0,
+                true);
+}
+
+/*
+** Set the auto-scroll margin
+*/
+void DocumentWidget::SetAutoScroll(int margin) {
+
+    for(TextArea *area : textPanes()) {
+        area->setCursorVPadding(margin);
+    }
+}
+
+void DocumentWidget::repeatMacro(const QString &macro, int how) {
+    RepeatMacroEx(this, macro.toLatin1().data(), how);
 }

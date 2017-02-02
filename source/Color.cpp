@@ -10,9 +10,12 @@ QColor toQColor(const Color &c) {
 }
 
 QColor toQColor(Pixel pixel) {
-    XColor color;
-    auto d = QX11Info::display();
-    color.pixel = pixel;
-    XQueryColor (d, DefaultColormap(d, DefaultScreen (d)), &color);
-    return toQColor({color.red, color.green, color.blue});
+    return QColor((pixel >> 16) & 0xff,
+                  (pixel >> 8)  & 0xff,
+                  (pixel >> 0)  & 0xff);
+
+}
+
+Pixel toPixel(const QColor &color) {
+    return color.value();
 }

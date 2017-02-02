@@ -6,7 +6,6 @@
 #include <QMessageBox>
 #include <QClipboard>
 
-#include "util/memory.h"
 #include "DialogFind.h"
 #include "MainWindow.h"
 #include "DocumentWidget.h"
@@ -16,8 +15,8 @@
 #include "search.h" // for the search type enum
 #include "server.h"
 #include "preferences.h"
-#include "util/MotifHelper.h"
 #include "regularExp.h"
+#include <memory>
 
 //------------------------------------------------------------------------------
 // name:
@@ -232,24 +231,15 @@ void DialogFind::on_buttonFind_clicked() {
 	
 	// fetch find string, direction and type from the dialog 
 	std::string searchString;
-	if (!getFindDlogInfoEx(&direction, &searchString, &searchType))
+    if (!getFindDlogInfoEx(&direction, &searchString, &searchType)) {
 		return;
-
+    }
 
 	// Set the initial focus of the dialog back to the search string
 	ui.textFind->setFocus();
 
 	// find the text and mark it 
-
-#if 0 // TODO(eteran): not sure we need this concept in Qt
-    windowNotToClose = window_;
-#endif
-
     SearchAndSelectEx(window_, document_, window_->lastFocus_, direction, searchString.c_str(), searchType, GetPrefSearchWraps());
-
-#if 0 // TODO(eteran): not sure we need this concept in Qt
-	windowNotToClose = nullptr;
-#endif
 
 	// pop down the dialog 
 	if (!keepDialog()) {
@@ -282,7 +272,7 @@ int DialogFind::getFindDlogInfoEx(SearchDirection *direction, std::string *searc
 		/* If the search type is a regular expression, test compile it
 		   immediately and present error messages */
 		try {
-			auto compiledRE = mem::make_unique<regexp>(findText.toStdString(), regexDefault);
+			auto compiledRE = std::make_unique<regexp>(findText.toStdString(), regexDefault);
 		} catch(const regex_error &e) {
 			QMessageBox::warning(this, tr("Regex Error"), tr("Please respecify the search string:\n%1").arg(QLatin1String(e.what())));
 			return false;

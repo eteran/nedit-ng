@@ -40,7 +40,6 @@
 #include "ui/MainWindow.h"
 #include "LanguageMode.h"
 
-#include "util/memory.h"
 #include "preferences.h"
 #include "TextBuffer.h"
 #include "nedit.h"
@@ -71,6 +70,7 @@
 #include <cstring>
 #include <cstdio>
 #include <unistd.h>
+#include <memory>
 #include <sys/stat.h>
 
 #include <sys/param.h>
@@ -1445,8 +1445,8 @@ void SetPrefAutoScroll(int state) {
 
 	setIntPref(&PrefData.autoScroll, state);
 	
-	for(Document *w: WindowList) {
-		w->SetAutoScroll(margin);
+    for(DocumentWidget *document : MainWindow::allDocuments()) {
+        document->SetAutoScroll(margin);
 	}
 }
 
@@ -1839,7 +1839,11 @@ void SelectShellDialog(Widget parent, Document *forWindow) {
 ** delimiters, syntax highlighting and other mode specific parameters
 */
 static void reapplyLanguageMode(Document *window, int mode, bool forceDefaults) {
+    Q_UNUSED(window);
+    Q_UNUSED(mode);
+    Q_UNUSED(forceDefaults);
 
+#if 0 // TODO(eteran): transitioned ?
     int wrapMode, indentStyle, tabDist, emTabDist, highlight, oldEmTabDist;
 	int wrapModeIsDef, tabDistIsDef, emTabDistIsDef, indentStyleIsDef;
 	int highlightIsDef, haveHighlightPatterns, haveSmartIndentMacros;
@@ -1938,6 +1942,7 @@ static void reapplyLanguageMode(Document *window, int mode, bool forceDefaults) 
 
 	// Add/remove language specific menu items 
 	UpdateUserMenus(window);
+#endif
 }
 
 /*
@@ -2141,7 +2146,7 @@ static int loadLanguageModesString(const char *inString, int fileVer) {
 static QString WriteLanguageModesStringEx() {
 	char numBuf[25];
 
-	auto outBuf = mem::make_unique<TextBuffer>();
+    auto outBuf = std::make_unique<TextBuffer>();
 
 	for (int i = 0; i < NLanguageModes; i++) {
 		outBuf->BufAppendEx("\t");

@@ -107,7 +107,6 @@ struct userSubMenuCache {
 
 bool DoNamedBGMenuCmd(Document *window, const char *itemName);
 bool DoNamedMacroMenuCmd(Document *window, const char *itemName);
-bool DoNamedShellMenuCmd(Document *window, const char *itemName, int fromMacro);
 int LoadBGMenuCmdsString(const char *inString);
 int LoadBGMenuCmdsStringEx(view::string_view inString);
 int LoadMacroCmdsString(const char *inString);

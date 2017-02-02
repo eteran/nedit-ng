@@ -46,6 +46,7 @@ private Q_SLOTS:
 	void onFocusOut(QWidget *was);
     void flashTimerTimeout();
     void customContextMenuRequested(const QPoint &pos);
+    void mergedReadProc();
     void stdoutReadProc();
     void stderrReadProc();
     void processFinished(int exitCode, QProcess::ExitStatus exitStatus);
@@ -175,6 +176,12 @@ public:
     void FilterSelection(const QString &command, bool fromMacro);
     bool DoNamedShellMenuCmd(TextArea *area, const QString &name, bool fromMacro);
     void DoShellMenuCmd(MainWindow *inWindow, TextArea *area, const QString &command, InSrcs input, OutDests output, bool outputReplacesInput, bool saveFirst, bool loadAfter, bool fromMacro);
+    bool DoNamedMacroMenuCmd(TextArea *area, const QString &name, bool fromMacro);
+    void repeatMacro(const QString &macro, int how);
+    bool DoNamedBGMenuCmd(TextArea *area, const QString &name, bool fromMacro);
+    int WidgetToPaneIndex(TextArea *area) const;
+    void ShellCmdToMacroStringEx(const std::string &command, const std::string &input);
+    void SetAutoScroll(int margin);
 
 public:
     static DocumentWidget *EditExistingFileEx(DocumentWidget *inWindow, const QString &name, const QString &path, int flags, char *geometry, int iconic, const char *languageMode, bool tabbed, bool bgOpen);

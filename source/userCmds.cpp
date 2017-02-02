@@ -34,7 +34,6 @@
 #include "menu.h"
 #include "MenuItem.h"
 #include "file.h"
-#include "shell.h"
 #include "macro.h"
 #include "preferences.h"
 #include "TextBuffer.h"
@@ -334,34 +333,6 @@ void UpdateUserMenuInfo(void) {
 	freeUserMenuInfoList(BGMenuData);
 	freeSubMenuCache(&BGSubMenus);
 	parseMenuItemList(BGMenuData, &BGSubMenus);
-}
-
-/*
-** Search through the shell menu and execute the first command with menu item
-** name "itemName".  Returns True on successs and False on failure.
-*/
-bool DoNamedShellMenuCmd(Document *window, const char *itemName, int fromMacro) {
-
-	for(MenuData &data: ShellMenuData) {
-		if (data.item->name == QLatin1String(itemName)) {
-			if (data.item->output == TO_SAME_WINDOW && CheckReadOnly(window)) {
-				return false;
-			}
-			
-			DoShellMenuCmd(
-				window, 
-				data.item->cmd.toStdString(), 
-				data.item->input, 
-				data.item->output, 
-				data.item->repInput, 
-				data.item->saveFirst, 
-				data.item->loadAfter, 
-				fromMacro);
-				
-			return true;
-		}
-	}
-	return false;
 }
 
 /*

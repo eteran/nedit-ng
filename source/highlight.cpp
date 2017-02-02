@@ -28,6 +28,7 @@
 *******************************************************************************/
 
 #include <QMessageBox>
+#include <QX11Info>
 
 #include "DocumentWidget.h"
 #include "highlight.h"
@@ -105,6 +106,7 @@ static HighlightData *patternOfStyle(HighlightData *patterns, int style);
 static PatternSet *findPatternsForWindow(Document *window, int warn);
 static PatternSet *findPatternsForWindowEx(DocumentWidget *document, int warn);
 static StyleTableEntry *styleTableEntryOfCode(Document *window, int hCode);
+static StyleTableEntry *styleTableEntryOfCodeEx(DocumentWidget *document, int hCode);
 static bool parseString(HighlightData *pattern, const char **string, char **styleString, int length, char *prevChar, bool anchored, const QString &delimiters, const char *lookBehindTo, const char *match_till);
 static char getPrevChar(TextBuffer *buf, int pos);
 static int backwardOneContext(TextBuffer *buf, ReparseContext *context, int fromPos);
@@ -1738,6 +1740,21 @@ static void freePatterns(HighlightData *patterns) {
 /*
 ** Find the HighlightPattern structure with a given name in the window.
 */
+HighlightPattern *FindPatternOfWindowEx(DocumentWidget *window, const char *name) {
+    auto hData = static_cast<WindowHighlightData *>(window->highlightData_);
+    PatternSet *set;
+
+    if (hData && (set = hData->patternSetForWindow)) {
+
+        for(HighlightPattern &pattern : set->patterns) {
+            if (pattern.name == QLatin1String(name)) {
+                return &pattern;
+            }
+        }
+    }
+    return nullptr;
+}
+
 HighlightPattern *FindPatternOfWindow(Document *window, const char *name) {
 	auto hData = static_cast<WindowHighlightData *>(window->highlightData_);
 	PatternSet *set;
@@ -1757,6 +1774,22 @@ HighlightPattern *FindPatternOfWindow(Document *window, const char *name) {
 ** Picks up the entry in the style buffer for the position (if any). Rather
 ** like styleOfPos() in TextDisplay.c. Returns the style code or zero.
 */
+int HighlightCodeOfPosEx(DocumentWidget *document, int pos) {
+    auto highlightData = static_cast<WindowHighlightData *>(document->highlightData_);
+    TextBuffer *styleBuf = highlightData ? highlightData->styleBuffer : nullptr;
+    int hCode = 0;
+
+    if (styleBuf) {
+        hCode = (uint8_t)styleBuf->BufGetCharacter(pos);
+        if (hCode == UNFINISHED_STYLE) {
+            // encountered "unfinished" style, trigger parsing
+            handleUnparsedRegionEx(document, highlightData->styleBuffer, pos);
+            hCode = (uint8_t)styleBuf->BufGetCharacter(pos);
+        }
+    }
+    return hCode;
+}
+
 int HighlightCodeOfPos(Document *window, int pos) {
 	auto highlightData = static_cast<WindowHighlightData *>(window->highlightData_);
 	TextBuffer *styleBuf = highlightData ? highlightData->styleBuffer : nullptr;
@@ -1778,8 +1811,38 @@ int HighlightCodeOfPos(Document *window, int pos) {
 ** at pos. If the initial code value *checkCode is zero, the highlight code of
 ** pos is used.
 */
-/* YOO: This is called form only one other function, which uses a constant
+/* YOO: This is called from only one other function, which uses a constant
     for checkCode and never evaluates it after the call. */
+int HighlightLengthOfCodeFromPosEx(DocumentWidget *window, int pos, int *checkCode) {
+    auto highlightData = static_cast<WindowHighlightData *>(window->highlightData_);
+    TextBuffer *styleBuf = highlightData ? highlightData->styleBuffer : nullptr;
+    int oldPos = pos;
+
+    if (styleBuf) {
+        int hCode = (uint8_t)styleBuf->BufGetCharacter(pos);
+        if (!hCode)
+            return 0;
+        if (hCode == UNFINISHED_STYLE) {
+            // encountered "unfinished" style, trigger parsing
+            handleUnparsedRegionEx(window, highlightData->styleBuffer, pos);
+            hCode = (uint8_t)styleBuf->BufGetCharacter(pos);
+        }
+        if (*checkCode == 0)
+            *checkCode = hCode;
+        while (hCode == *checkCode || hCode == UNFINISHED_STYLE) {
+            if (hCode == UNFINISHED_STYLE) {
+                // encountered "unfinished" style, trigger parsing, then loop
+                handleUnparsedRegionEx(window, highlightData->styleBuffer, pos);
+                hCode = (uint8_t)styleBuf->BufGetCharacter(pos);
+            } else {
+                // advance the position and get the new code
+                hCode = (uint8_t)styleBuf->BufGetCharacter(++pos);
+            }
+        }
+    }
+    return pos - oldPos;
+}
+
 int HighlightLengthOfCodeFromPos(Document *window, int pos, int *checkCode) {
 	auto highlightData = static_cast<WindowHighlightData *>(window->highlightData_);
 	TextBuffer *styleBuf = highlightData ? highlightData->styleBuffer : nullptr;
@@ -1815,6 +1878,45 @@ int HighlightLengthOfCodeFromPos(Document *window, int pos, int *checkCode) {
 ** If the initial code value *checkCode is zero, the highlight code of pos
 ** is used.
 */
+int StyleLengthOfCodeFromPosEx(DocumentWidget *window, int pos) {
+    auto highlightData = static_cast<WindowHighlightData *>(window->highlightData_);
+    TextBuffer *styleBuf = highlightData ? highlightData->styleBuffer : nullptr;
+    int hCode = 0;
+    int oldPos = pos;
+
+
+    if (styleBuf) {
+        hCode = (uint8_t)styleBuf->BufGetCharacter(pos);
+        if (!hCode)
+            return 0;
+
+        if (hCode == UNFINISHED_STYLE) {
+            // encountered "unfinished" style, trigger parsing
+            handleUnparsedRegionEx(window, highlightData->styleBuffer, pos);
+            hCode = (uint8_t)styleBuf->BufGetCharacter(pos);
+        }
+
+        StyleTableEntry *entry = styleTableEntryOfCodeEx(window, hCode);
+        if(!entry)
+            return 0;
+
+        QString checkStyleName = entry->styleName;
+
+        while (hCode == UNFINISHED_STYLE || ((entry = styleTableEntryOfCodeEx(window, hCode)) && entry->styleName == checkStyleName)) {
+            if (hCode == UNFINISHED_STYLE) {
+                // encountered "unfinished" style, trigger parsing, then loop
+                handleUnparsedRegionEx(window, highlightData->styleBuffer, pos);
+                hCode = (uint8_t)styleBuf->BufGetCharacter(pos);
+            } else {
+                // advance the position and get the new code
+                hCode = (uint8_t)styleBuf->BufGetCharacter(++pos);
+            }
+        }
+    }
+
+    return pos - oldPos;
+}
+
 int StyleLengthOfCodeFromPos(Document *window, int pos) {
 	auto highlightData = static_cast<WindowHighlightData *>(window->highlightData_);
 	TextBuffer *styleBuf = highlightData ? highlightData->styleBuffer : nullptr;
@@ -1867,18 +1969,61 @@ static StyleTableEntry *styleTableEntryOfCode(Document *window, int hCode) {
 	return &highlightData->styleTable[hCode];
 }
 
+static StyleTableEntry *styleTableEntryOfCodeEx(DocumentWidget *document, int hCode) {
+    auto highlightData = static_cast<WindowHighlightData *>(document->highlightData_);
+
+    hCode -= UNFINISHED_STYLE; // get the correct index value
+    if (!highlightData || hCode < 0 || hCode >= highlightData->nStyles)
+        return nullptr;
+    return &highlightData->styleTable[hCode];
+}
+
 /*
 ** Functions to return style information from the highlighting style table.
 */
+QString HighlightNameOfCodeEx(DocumentWidget *document, int hCode) {
+    StyleTableEntry *entry = styleTableEntryOfCodeEx(document, hCode);
+    return entry ? entry->highlightName : QString();
+}
 
 QString HighlightNameOfCode(Document *window, int hCode) {
 	StyleTableEntry *entry = styleTableEntryOfCode(window, hCode);
 	return entry ? entry->highlightName : QString();
 }
 
+QString HighlightStyleOfCodeEx(DocumentWidget *document, int hCode) {
+    StyleTableEntry *entry = styleTableEntryOfCodeEx(document, hCode);
+    return entry ? entry->styleName : QString();
+}
+
 QString HighlightStyleOfCode(Document *window, int hCode) {
 	StyleTableEntry *entry = styleTableEntryOfCode(window, hCode);
 	return entry ? entry->styleName : QString();
+}
+
+Pixel HighlightColorValueOfCodeEx(DocumentWidget *document, int hCode, Color *color) {
+    StyleTableEntry *entry = styleTableEntryOfCodeEx(document, hCode);
+    if (entry) {
+        return entry->color;
+    } else {
+        // pick up foreground color of the (first) text widget of the window
+        XColor colorDef;
+        Display *display = QX11Info::display();
+        QX11Info x11Info;
+
+        color->r = 0;
+        color->g = 0;
+        color->b = 0;
+
+        colorDef.pixel = document->firstPane()->getForegroundPixel();
+
+        if (XQueryColor(display, x11Info.colormap(), &colorDef)) {
+            color->r = colorDef.red;
+            color->g = colorDef.green;
+            color->b = colorDef.blue;
+        }
+        return colorDef.pixel;
+    }
 }
 
 Pixel HighlightColorValueOfCode(Document *window, int hCode, Color *color) {
@@ -1931,6 +2076,32 @@ Pixel GetHighlightBGColorOfCode(Document *window, int hCode, Color *color) {
 		}
 		return colorDef.pixel;
 	}
+}
+
+Pixel GetHighlightBGColorOfCodeEx(DocumentWidget *document, int hCode, Color *color) {
+    StyleTableEntry *entry = styleTableEntryOfCodeEx(document, hCode);
+
+    if (entry && !entry->bgColorName.isNull()) {
+        return entry->bgColor;
+    } else {
+        // pick up background color of the (first) text widget of the window
+        XColor colorDef;
+        QX11Info x11Info;
+        Display *display = QX11Info::display();
+
+        color->r = 0;
+        color->g = 0;
+        color->b = 0;
+
+        colorDef.pixel = 0;
+
+        if (XQueryColor(display, x11Info.colormap(), &colorDef)) {
+            color->r = colorDef.red;
+            color->g = colorDef.green;
+            color->b = colorDef.blue;
+        }
+        return colorDef.pixel;
+    }
 }
 
 /*

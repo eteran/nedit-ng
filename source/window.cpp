@@ -41,7 +41,6 @@
 #include "preferences.h"
 #include "selection.h"
 #include "server.h"
-#include "shell.h"
 #include "macro.h"
 #include "highlight.h"
 #include "smartIndent.h"
