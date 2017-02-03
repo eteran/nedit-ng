@@ -839,6 +839,7 @@ void Document::RefreshWindowStates() {
 ** settings of the top document.
 */
 void Document::refreshMenuBar() {
+#if 0 // NOTE(eteran):
 	RefreshMenuToggleStates();
 
 	// Add/remove language specific menu items
@@ -846,6 +847,7 @@ void Document::refreshMenuBar() {
 
 	// refresh selection-sensitive menus
 	DimSelectionDepUserMenuItems(this, wasSelected_);
+#endif
 }
 
 /*
@@ -3666,8 +3668,8 @@ void Document::addUndoItem(UndoInfo *undo) {
 	if (undo_.empty()) {
 #if 0 // NOTE(eteran): transitioned
 		SetSensitive(undoItem_, true);
-#endif
 		SetBGMenuUndoSensitivity(this, true);
+#endif
 	}
 
 	// Add the item to the beginning of the list
@@ -3696,8 +3698,10 @@ void Document::addUndoItem(UndoInfo *undo) {
 void Document::addRedoItem(UndoInfo *redo) {
 	// Make the redo menu item sensitive now that there's something to redo
 	if (redo_.empty()) {
+#if 0 // NOTE(eteran): transitioned
 		SetSensitive(redoItem_, true);
 		SetBGMenuRedoSensitivity(this, true);
+#endif
 	}
 
 	// Add the item to the beginning of the list
@@ -3727,8 +3731,8 @@ void Document::removeUndoItem() {
 	if (undo_.empty()) {
 #if 0 // NOTE(eteran): transitioned
 		SetSensitive(undoItem_, false);
-#endif
 		SetBGMenuUndoSensitivity(this, false);
+#endif
 	}
 }
 
@@ -3744,8 +3748,10 @@ void Document::removeRedoItem() {
 
 	// if there are no more redo records left, dim the Redo menu item
 	if (redo_.empty()) {
+#if 0 // NOTE(eteran): transitioned
 		SetSensitive(redoItem_, false);
 		SetBGMenuRedoSensitivity(this, false);
+#endif
 	}
 }
 

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------
 // Name: 
 //------------------------------------------------------------------------------
-MenuItem::MenuItem() : modifiers(0), keysym(0), mnemonic('\0'), input(FROM_NONE), output(TO_SAME_WINDOW), repInput(false), saveFirst(false), loadAfter(false) {
+MenuItem::MenuItem() : /*modifiers(0), keysym(0), */mnemonic('\0'), input(FROM_NONE), output(TO_SAME_WINDOW), repInput(false), saveFirst(false), loadAfter(false) {
 }
 
 //------------------------------------------------------------------------------
@@ -21,9 +21,9 @@ void MenuItem::swap(MenuItem &other) {
 	using std::swap;
 
 	swap(name,      other.name);
-	swap(modifiers, other.modifiers);
-	swap(keysym,    other.keysym);
-	swap(mnemonic,  other.mnemonic);
+    //swap(modifiers, other.modifiers);
+    //swap(keysym,    other.keysym);
+    swap(mnemonic,  other.mnemonic);
 	swap(input,     other.input);
 	swap(output,    other.output);
 	swap(repInput,  other.repInput);

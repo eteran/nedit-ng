@@ -284,6 +284,7 @@ private Q_SLOTS:
     void openPrevCB(QAction *action);
     void unloadTipsFileCB(QAction *action);
     void unloadTagsFileCB(QAction *action);
+    void focusChanged(QWidget *from, QWidget *to);
 
 public:
 	QPointer<QDialog>  dialogFind_;

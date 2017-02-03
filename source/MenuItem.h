@@ -3,6 +3,7 @@
 #define MENU_ITEM_H_
 
 #include <QString>
+#include <QKeySequence>
 #include <cstdint>
 #include <X11/Intrinsic.h>
 
@@ -14,10 +15,10 @@ enum OutDests : uint8_t { TO_SAME_WINDOW, TO_NEW_WINDOW, TO_DIALOG };
 class MenuItem {
 public:
 	MenuItem();
-	MenuItem(const MenuItem &other) = default;
+    MenuItem(const MenuItem &other)          = default;
 	MenuItem& operator=(const MenuItem &rhs) = default;
-	MenuItem(MenuItem &&other) = default;
-	MenuItem& operator=(MenuItem &&rhs) = default;
+    MenuItem(MenuItem &&other)               = default;
+    MenuItem& operator=(MenuItem &&rhs)      = default;
 	~MenuItem();
 	
 public:
@@ -25,9 +26,10 @@ public:
 
 public:
 	QString      name;
-	unsigned int modifiers;
-	KeySym       keysym;
-	char         mnemonic;
+    QKeySequence shortcut;
+    //unsigned int modifiers;
+    //KeySym       keysym;
+    char         mnemonic;
 	InSrcs       input;
 	OutDests     output;
 	bool         repInput;

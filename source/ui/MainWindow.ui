@@ -47,6 +47,9 @@
        </property>
        <item>
         <widget class="QToolButton" name="buttonIFind">
+         <property name="focusPolicy">
+          <enum>Qt::NoFocus</enum>
+         </property>
          <property name="text">
           <string>...</string>
          </property>
@@ -95,6 +98,9 @@
     </item>
     <item>
      <widget class="TabWidget" name="tabWidget">
+      <property name="focusPolicy">
+       <enum>Qt::NoFocus</enum>
+      </property>
       <property name="contextMenuPolicy">
        <enum>Qt::CustomContextMenu</enum>
       </property>
@@ -203,7 +209,7 @@
      <bool>true</bool>
     </property>
     <property name="title">
-     <string>&amp;Preferences</string>
+     <string>P&amp;references</string>
     </property>
     <widget class="QMenu" name="menu_Show_Matching">
      <property name="title">
@@ -409,7 +415,7 @@
      <bool>true</bool>
     </property>
     <property name="title">
-     <string>Ma&amp;cro</string>
+     <string>&amp;Macro</string>
     </property>
     <addaction name="action_Learn_Keystrokes"/>
     <addaction name="action_Finish_Learn"/>
@@ -1739,6 +1745,14 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>tabWidget</tabstop>
+  <tabstop>buttonIFind</tabstop>
+  <tabstop>editIFind</tabstop>
+  <tabstop>checkIFindReverse</tabstop>
+  <tabstop>checkIFindRegex</tabstop>
+  <tabstop>checkIFindCase</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

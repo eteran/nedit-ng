@@ -17,6 +17,7 @@
 #include "userCmds.h"
 #include "util/FileFormats.h"
 #include "MenuItem.h"
+#include "IndentStyle.h"
 
 #include <Xm/Xm.h>
 
@@ -42,8 +43,6 @@ public:
 	virtual ~DocumentWidget();
 
 private Q_SLOTS:
-	void onFocusIn(QWidget *now);
-	void onFocusOut(QWidget *was);
     void flashTimerTimeout();
     void customContextMenuRequested(const QPoint &pos);
     void mergedReadProc();
@@ -106,7 +105,7 @@ public:
     void reapplyLanguageMode(int mode, bool forceDefaults);
     void setWrapMargin(int margn);
     void SetAutoWrap(int state);
-    void SetAutoIndent(int state);
+    void SetAutoIndent(IndentStyle state);
     void SetEmTabDist(int emTabDist);
     void SetTabDist(int tabDist);
     bool IsTopDocument() const;
@@ -230,7 +229,7 @@ public:
 	bool saveOldVersion_;              // keep old version in filename.bck
 	bool windowMenuValid_;             // is window menu up to date?
     QString modeMessage_;              // stats line banner content for learn and shell command executing modes
-	char indentStyle_;                 // whether/how to auto indent
+    IndentStyle indentStyle_;          // whether/how to auto indent
 	char matchSyntaxBased_;            // Use syntax info to show matching
     ShowMatchingStyle showMatchingStyle_;           // How to show matching parens: NO_FLASH, FLASH_DELIMIT, or FLASH_RANGE
 	char wrapMode_;                    // line wrap style: NO_WRAP, NEWLINE_WRAP or CONTINUOUS_WRAP

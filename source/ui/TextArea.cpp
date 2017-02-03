@@ -961,8 +961,6 @@ void TextArea::focusInEvent(QFocusEvent *event) {
 
 	TextDUnblankCursor();
 
-	// Call any registered focus-in callbacks
-	Q_EMIT focusIn(this);
     QAbstractScrollArea::focusInEvent(event);
 }
 void TextArea::focusOutEvent(QFocusEvent *event) {
@@ -972,15 +970,14 @@ void TextArea::focusOutEvent(QFocusEvent *event) {
 	cursorBlinkTimer_->stop();
 
 	// Leave a dim or destination cursor
-	TextDSetCursorStyle(motifDestOwner_ ? CARET_CURSOR : DIM_CURSOR);
+    // TODO(eteran): perhaps abandon this concept of "motifDestOwner_" and
+    // just always show it as a caret when it doesn't have focus?
+    TextDSetCursorStyle(motifDestOwner_ ? CARET_CURSOR : DIM_CURSOR);
 	TextDUnblankCursor();
 
-#if 0
 	// If there's a calltip displayed, kill it.
 	TextDKillCalltip(0);
-#endif
-	// Call any registered focus-out callbacks
-	Q_EMIT focusOut(this);
+
     QAbstractScrollArea::focusOutEvent(event);
 }
 
@@ -4838,11 +4835,9 @@ void TextArea::keyMoveExtendSelection(int origPos, bool rectangular) {
 */
 void TextArea::TakeMotifDestination() {
 
-	Q_UNUSED(time);
-
-    //if (motifDestOwner_ || P_readOnly) {
-    //	return;
-    //}
+    if (motifDestOwner_ || P_readOnly) {
+        return;
+    }
 
 	// Take ownership of the MOTIF_DESTINATION selection
 #if 0
@@ -4864,9 +4859,7 @@ int TextArea::TextDMoveLeft() {
 
 int TextArea::TextDMoveUp(bool absolute) {
 	int lineStartPos;
-	int column;
 	int prevLineStartPos;
-	int newPos;
 	int visLineNum;
 
 	/* Find the position of the start of the line.  Use the line starts array
@@ -4874,17 +4867,19 @@ int TextArea::TextDMoveUp(bool absolute) {
 	if (absolute) {
 		lineStartPos = buffer_->BufStartOfLine(cursorPos_);
 		visLineNum = -1;
-	} else if (posToVisibleLineNum(cursorPos_, &visLineNum))
+    } else if (posToVisibleLineNum(cursorPos_, &visLineNum)) {
 		lineStartPos = lineStarts_[visLineNum];
-	else {
+    } else {
 		lineStartPos =TextDStartOfLine(cursorPos_);
 		visLineNum = -1;
 	}
-	if (lineStartPos == 0)
+
+    if (lineStartPos == 0) {
 		return false;
+    }
 
 	// Decide what column to move to, if there's a preferred column use that
-	column = cursorPreferredCol_ >= 0 ? cursorPreferredCol_ : buffer_->BufCountDispChars(lineStartPos, cursorPos_);
+    int column = cursorPreferredCol_ >= 0 ? cursorPreferredCol_ : buffer_->BufCountDispChars(lineStartPos, cursorPos_);
 
 	// count forward from the start of the previous line to reach the column
 	if (absolute) {
@@ -4895,9 +4890,10 @@ int TextArea::TextDMoveUp(bool absolute) {
 		prevLineStartPos = TextDCountBackwardNLines(lineStartPos, 1);
 	}
 
-	newPos = buffer_->BufCountForwardDispChars(prevLineStartPos, column);
-	if (P_continuousWrap && !absolute)
-		newPos = std::min(newPos, TextDEndOfLine(prevLineStartPos, True));
+    int newPos = buffer_->BufCountForwardDispChars(prevLineStartPos, column);
+    if (P_continuousWrap && !absolute) {
+        newPos = std::min(newPos, TextDEndOfLine(prevLineStartPos, true));
+    }
 
 	// move the cursor
 	TextDSetInsertPosition(newPos);

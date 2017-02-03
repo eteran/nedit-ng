@@ -208,15 +208,11 @@ void DialogShellMenu::on_listItems_itemSelectionChanged() {
 
 		auto ptr = reinterpret_cast<MenuItem *>(current->data(Qt::UserRole).toULongLong());
 
-		char buf[255];
-		generateAcceleratorString(buf, ptr->modifiers, ptr->keysym);
-
 		ui.editName->setText(ptr->name);
-		ui.editAccelerator->setKeySequence(QKeySequence::fromString(QLatin1String(buf)));
+        ui.editAccelerator->setKeySequence(ptr->shortcut);
 		ui.editMnemonic->setText(tr("%1").arg(ptr->mnemonic));
 		ui.editCommand->setPlainText(ptr->cmd);
-		
-		
+				
 		switch(ptr->input) {
 		case FROM_SELECTION:
 		default:
@@ -360,10 +356,9 @@ MenuItem *DialogShellMenu::readDialogFields(bool silent) {
 		}
 	}
 
-	QString accText = ui.editAccelerator->keySequence().toString();
-	if(!accText.isEmpty()) {
-		parseAcceleratorString(accText.toLatin1().data(), &f->modifiers, &f->keysym);
-	}
+    QKeySequence shortcut = ui.editAccelerator->keySequence();
+
+    f->shortcut = shortcut;
 
 	if(ui.radioFromSelection->isChecked()) {
 		f->input = FROM_SELECTION;

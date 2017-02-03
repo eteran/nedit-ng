@@ -33,7 +33,7 @@ public:
 	QString     defTipsFile;
 	QString     delimiters;
 	int         wrapStyle;
-	int         indentStyle;
+    IndentStyle indentStyle;
 	int         tabDist;
 	int         emTabDist;
 };

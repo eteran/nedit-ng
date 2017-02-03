@@ -28,6 +28,7 @@
 #define PREFERENCES_H_
 
 #include "util/string_view.h"
+#include "IndentStyle.h"
 #include "SearchType.h"
 #include <X11/Intrinsic.h>
 #include <X11/Xresource.h>
@@ -99,7 +100,7 @@ bool CheckPrefsChangesSaved(Widget dialogParent);
 int FindLanguageMode(const char *languageName);
 int GetPrefAlwaysCheckRelTagsSpecs();
 int GetPrefAppendLF();
-int GetPrefAutoIndent(int langMode);
+IndentStyle GetPrefAutoIndent(int langMode);
 int GetPrefAutoSave();
 int GetPrefAutoScroll();
 int GetPrefBacklightChars();

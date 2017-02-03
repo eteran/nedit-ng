@@ -52,9 +52,6 @@
         <property name="text">
          <string>/a/very/long/path/used/as/example/ 0 bytes</string>
         </property>
-        <property name="textInteractionFlags">
-         <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
-        </property>
        </widget>
       </item>
       <item>

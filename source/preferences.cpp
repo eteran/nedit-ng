@@ -1115,10 +1115,6 @@ void ImportPrefFile(const char *filename, int convertOld) {
 
 void SetPrefOpenInTab(int state) {
 	setIntPref(&PrefData.openInTab, state);
-	
-	for(Document *w: WindowList) {
-		w->UpdateNewOppositeMenu(state);
-	}
 }
 
 int GetPrefOpenInTab() {
@@ -1165,9 +1161,9 @@ void SetPrefAutoIndent(int state) {
 	setIntPref(&PrefData.autoIndent, state);
 }
 
-int GetPrefAutoIndent(int langMode) {
+IndentStyle GetPrefAutoIndent(int langMode) {
 	if (langMode == PLAIN_LANGUAGE_MODE || LanguageModes[langMode]->indentStyle == DEFAULT_INDENT)
-		return PrefData.autoIndent;
+        return static_cast<IndentStyle>(PrefData.autoIndent);
 	return LanguageModes[langMode]->indentStyle;
 }
 
@@ -2049,7 +2045,7 @@ static int loadLanguageModesString(const char *inString, int fileVer) {
 		else {
 			for (i = 0; i < N_INDENT_STYLES; i++) {
 				if (!strcmp(styleName, AutoIndentTypes[i])) {
-					lm->indentStyle = i;
+                    lm->indentStyle = static_cast<IndentStyle>(i);
 					break;
 				}
 			}

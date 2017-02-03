@@ -190,10 +190,9 @@ static int listDialogMS(DocumentWidget *window, DataValue *argList, int nArgs, D
 
 static int stringCompareMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 static int splitMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-/* DISASBLED for 5.4
-static int setBacklightStringMS(DocumentWidget *window, DataValue *argList,
-    int nArgs, DataValue *result, const char **errMsg);
-*/
+#if 0 // DISASBLED for 5.4
+static int setBacklightStringMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+#endif
 static int cursorMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 static int lineMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 static int columnMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
@@ -1048,9 +1047,9 @@ static void runMacroEx(DocumentWidget *document, Program *prog) {
 
     // Set up timer proc for putting up banner when macro takes too long
     cmdData->bannerTimeoutID = new QTimer(document);
-    cmdData->bannerTimeoutID->setInterval(BANNER_WAIT_TIME);
-    cmdData->bannerTimeoutID->setSingleShot(true);
     QObject::connect(cmdData->bannerTimeoutID, SIGNAL(timeout()), document, SLOT(bannerTimeoutProc()));
+    cmdData->bannerTimeoutID->setSingleShot(true);
+    cmdData->bannerTimeoutID->start(BANNER_WAIT_TIME);
 
     // Begin macro execution
     stat = ExecuteMacroEx(document, prog, 0, nullptr, &result, &cmdData->context, &errMsg);
@@ -1241,7 +1240,7 @@ int MacroWindowCloseActionsEx(DocumentWidget *document) {
 */
 static void finishMacroCmdExecutionEx(DocumentWidget *window) {
     auto cmdData = static_cast<macroCmdInfoEx *>(window->macroCmdData_);
-    int closeOnCompletion = cmdData->closeOnCompletion;
+    bool closeOnCompletion = cmdData->closeOnCompletion;
 
     // Cancel pending timeout and work proc
     cmdData->bannerTimeoutID->stop();
@@ -1257,10 +1256,7 @@ static void finishMacroCmdExecutionEx(DocumentWidget *window) {
     }
 
     if (cmdData->bannerIsUp) {
-#if 0
-        // TODO(eteran): implement banners and all that...
-        window->ClearModeMessage();
-#endif
+        window->ClearModeMessageEx();
     }
 
     // Free execution information

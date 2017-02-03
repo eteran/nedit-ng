@@ -219,11 +219,8 @@ void DialogMacros::on_listItems_itemSelectionChanged() {
 
 		auto ptr = reinterpret_cast<MenuItem *>(current->data(Qt::UserRole).toULongLong());
 
-		char buf[255];
-		generateAcceleratorString(buf, ptr->modifiers, ptr->keysym);
-
-		ui.editName->setText(ptr->name);
-		ui.editAccelerator->setKeySequence(QKeySequence::fromString(QLatin1String(buf)));
+        ui.editName->setText(ptr->name);
+        ui.editAccelerator->setKeySequence(ptr->shortcut);
 		ui.editMnemonic->setText(tr("%1").arg(ptr->mnemonic));
 		ui.checkRequiresSelection->setChecked(ptr->input == FROM_SELECTION);
 		ui.editMacro->setPlainText(ptr->cmd);
@@ -362,16 +359,15 @@ MenuItem *DialogMacros::readDialogFields(bool silent) {
 		}
 	}
 
-	QString accText = ui.editAccelerator->keySequence().toString();
-	if(!accText.isEmpty()) {
-		parseAcceleratorString(accText.toLatin1().data(), &f->modifiers, &f->keysym);
-	}
+    QKeySequence shortcut = ui.editAccelerator->keySequence();
+
 
 	f->input     = ui.checkRequiresSelection->isChecked() ? FROM_SELECTION : FROM_NONE;
 	f->output    = TO_SAME_WINDOW;
 	f->repInput  = false;
 	f->saveFirst = false;
 	f->loadAfter = false;
+    f->shortcut  = shortcut;
 
 	return f;
 }

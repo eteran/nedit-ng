@@ -325,8 +325,8 @@ void RestoreDefaultPreferences(PrefDescripRec *rsrcDescrip, int nRsrc) {
 ** the resource descriptions in rsrcDesrcip.
 */
 bool SavePreferences(Display *display, const char *fullName, const char *fileHeader, const PrefDescripRec *rsrcDescrip, int nRsrc) {
-	char *appName;
-	char *appClass;
+    const char *appName  = "nedit";
+    const char *appClass = "NEdit";
 	FILE *fp;
 
 	/* open the file */
@@ -338,8 +338,6 @@ bool SavePreferences(Display *display, const char *fullName, const char *fileHea
 	fprintf(fp, "%s\n", fileHeader);
 
 	/* write out the resources so they can be read by XrmGetFileDatabase */
-	XtGetApplicationNameAndClass(display, &appName, &appClass);
-	
 	for (int i = 0; i < nRsrc; i++) {
 		if (rsrcDescrip[i].save) {
 			const int type = rsrcDescrip[i].dataType;

@@ -88,6 +88,8 @@ long getRelTimeInTenthsOfSeconds() {
 //------------------------------------------------------------------------------
 MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(parent, flags) {
 	ui.setupUi(this);
+
+    connect(qApp, SIGNAL(focusChanged(QWidget *, QWidget *)), this, SLOT(focusChanged(QWidget *, QWidget *)));
 	
 	setupMenuGroups();
 	setupTabBar();
@@ -170,6 +172,8 @@ void MainWindow::setupTabBar() {
 	deleteTabButton->setToolButtonStyle(Qt::ToolButtonIconOnly);
 	deleteTabButton->setIcon(QIcon::fromTheme(tr("tab-close")));
 	deleteTabButton->setAutoRaise(true);
+    deleteTabButton->setFocusPolicy(Qt::NoFocus);
+    deleteTabButton->setObjectName(tr("tab-close"));
 	ui.tabWidget->setCornerWidget(deleteTabButton);
 	
 	connect(deleteTabButton, SIGNAL(clicked()), this, SLOT(deleteTabButtonClicked()));
@@ -403,7 +407,9 @@ void MainWindow::setupMenuStrings() {
 void MainWindow::setupMenuAlternativeMenus() {
 	if(!GetPrefOpenInTab()) {
 		ui.action_New_Window->setText(tr("New &Tab"));
-	}
+    } else {
+        ui.action_New_Window->setText(tr("New &Window"));
+    }
 
     if (GetPrefMaxPrevOpenFiles() <= 0) {
         ui.action_Open_Previous->setEnabled(false);
@@ -924,12 +930,8 @@ QMenu *MainWindow::createUserMenu(DocumentWidget *document, const QVector<MenuDa
                     QAction *action = parentMenu->addAction(name);
                     action->setData(i);
 
-                    // TODO(eteran): do this with native Qt QKeySequences instead
-                    // of this string conversion
-                    char accText[128] = {};
-                    generateAcceleratorString(accText, menuData.item->modifiers, menuData.item->keysym);
-                    if(accText[0] != '\0') {
-                        action->setShortcut(QKeySequence(QLatin1String(accText)));
+                    if(!menuData.item->shortcut.isEmpty()) {
+                        action->setShortcut(menuData.item->shortcut);
                     }
                 }
 
@@ -4108,4 +4110,26 @@ void MainWindow::on_action_Repeat_triggered() {
     auto dialog = new DialogRepeat(currentDocument(), this);
     dialog->setCommand(LastCommand);
     dialog->show();
+}
+
+
+void MainWindow::focusChanged(QWidget *from, QWidget *to) {
+
+    Q_UNUSED(from);
+
+    if(auto area = qobject_cast<TextArea *>(to)) {
+        if(auto document = DocumentWidget::documentFrom(area)) {
+            // record which window pane last had the keyboard focus
+            lastFocus_ = area;
+
+            // update line number statistic to reflect current focus pane
+            document->UpdateStatsLine(area);
+
+            // finish off the current incremental search
+            EndISearchEx();
+
+            // Check for changes to read-only status and/or file modifications
+            document->CheckForChangesToFileEx();
+        }
+    }
 }

@@ -32,7 +32,6 @@
 #include <QString>
 #include <X11/Intrinsic.h>
 
-class Document;
 struct UserMenuCache;
 struct UserBGMenuCache;
 class MenuItem;
@@ -105,47 +104,27 @@ struct userSubMenuCache {
 	userSubMenuInfo *usmcInfo;               // list of sub-menu info 
 };
 
-bool DoNamedBGMenuCmd(Document *window, const char *itemName);
-bool DoNamedMacroMenuCmd(Document *window, const char *itemName);
-int LoadBGMenuCmdsString(const char *inString);
+
 int LoadBGMenuCmdsStringEx(view::string_view inString);
-int LoadMacroCmdsString(const char *inString);
 int LoadMacroCmdsStringEx(view::string_view inString);
-int LoadShellCmdsString(const char *inString);
 int LoadShellCmdsStringEx(view::string_view inString);
 QString WriteBGMenuCmdsStringEx();
 QString WriteMacroCmdsStringEx();
 QString WriteShellCmdsStringEx();
-UserMenuCache *CreateUserMenuCache();
-void DimPasteReplayBtns(int sensitive);
-void DimSelectionDepUserMenuItems(Document *window, int sensitive);
-void FreeUserBGMenuCache(UserBGMenuCache *cache);
-void FreeUserMenuCache(UserMenuCache *cache);
-void InitUserBGMenuCache(UserBGMenuCache *cache);
-void RebuildAllMenus(Document *window);
-void SetBGMenuRedoSensitivity(Document *window, int sensitive);
-void SetBGMenuUndoSensitivity(Document *window, int sensitive);
 void SetupUserMenuInfo();
 void UpdateUserMenuInfo();
-void UpdateUserMenus(Document *window);
-
-void generateAcceleratorString(char *text, unsigned int modifiers, KeySym keysym);
-int checkMacroText(const char *macro, Widget errorParent, Widget errFocus);
-int parseAcceleratorString(const char *string, unsigned int *modifiers, KeySym *keysym);
 void freeSubMenuCache(userSubMenuCache *subMenus);
-void rebuildMenuOfAllWindows(int menuType);
 void freeUserMenuList(UserMenuList *list);
-
 void freeUserMenuInfoList(QVector<MenuData> &infoList);
 void parseMenuItemList(QVector<MenuData> &itemList, userSubMenuCache *subMenus);
 
 extern QVector<MenuData>  ShellMenuData;
-extern userSubMenuCache ShellSubMenus;
+extern userSubMenuCache   ShellSubMenus;
 
 extern QVector<MenuData> BGMenuData;
-extern userSubMenuCache BGSubMenus;
+extern userSubMenuCache  BGSubMenus;
 
 extern QVector<MenuData> MacroMenuData;
-extern userSubMenuCache MacroSubMenus;
+extern userSubMenuCache  MacroSubMenus;
 
 #endif

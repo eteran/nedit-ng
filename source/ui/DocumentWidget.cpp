@@ -480,6 +480,8 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
     connect(flashTimer_, SIGNAL(timeout()), this, SLOT(flashTimerTimeout()));
 
     auto area = createTextArea(buffer_);
+    static int n = 0;
+    area->setObjectName(tr("TextArea_%1").arg(n++));
     splitter_->addWidget(area);
     area->setFocus();
 }
@@ -557,8 +559,6 @@ TextArea *DocumentWidget::createTextArea(TextBuffer *buffer) {
     //area->setContextMenuPolicy(Qt::CustomContextMenu);
 
     connect(area, SIGNAL(customContextMenuRequested(const QPoint &)), SLOT(customContextMenuRequested(const QPoint &)));
-    connect(area, SIGNAL(focusIn(QWidget*)), this, SLOT(onFocusIn(QWidget*)));
-    connect(area, SIGNAL(focusOut(QWidget*)), this, SLOT(onFocusOut(QWidget*)));
 
     buffer_->BufAddModifyCB(modifiedCB, this);
 
@@ -567,35 +567,6 @@ TextArea *DocumentWidget::createTextArea(TextBuffer *buffer) {
     buffer_->useTabs_ = GetPrefInsertTabs();
 
     return area;
-}
-
-//------------------------------------------------------------------------------
-// Name: onFocusChanged
-// TODO(eteran): we need to do something similar for tab change events
-//               because Qt doesn't trigger spurious focus change events
-//               when switching tabs
-//------------------------------------------------------------------------------
-void DocumentWidget::onFocusIn(QWidget *now) {
-	if(auto w = qobject_cast<TextArea *>(now)) {
-		if(auto window = qobject_cast<MainWindow *>(w->window())) {
-
-			// record which window pane last had the keyboard focus
-			window->lastFocus_ = w;
-
-			// update line number statistic to reflect current focus pane
-			UpdateStatsLine(w);
-
-			// finish off the current incremental search
-            window->EndISearchEx();
-
-			// Check for changes to read-only status and/or file modifications
-            CheckForChangesToFileEx();
-		}
-	}
-}
-
-void DocumentWidget::onFocusOut(QWidget *was) {
-	Q_UNUSED(was);
 }
 
 MainWindow *DocumentWidget::toWindow() const {
@@ -1103,14 +1074,14 @@ void DocumentWidget::reapplyLanguageMode(int mode, bool forceDefaults) {
         int oldEmTabDist = textAreas[0]->getEmulateTabs();
         QString oldlanguageModeName = LanguageModeName(oldMode);
 
-        bool emTabDistIsDef   = oldEmTabDist == GetPrefEmTabDist(oldMode);
-        bool indentStyleIsDef = indentStyle_ == GetPrefAutoIndent(oldMode)   || (GetPrefAutoIndent(oldMode) == SMART_INDENT && indentStyle_ == AUTO_INDENT && !SmartIndentMacrosAvailable(LanguageModeName(oldMode).toLatin1().data()));
-        bool highlightIsDef   = highlightSyntax_ == GetPrefHighlightSyntax() || (GetPrefHighlightSyntax() && FindPatternSet(!oldlanguageModeName.isNull() ? oldlanguageModeName : QLatin1String("")) == nullptr);
-        int wrapMode          = wrapModeIsDef                                || forceDefaults ? GetPrefWrap(mode)        : wrapMode_;
-        int tabDist           = tabDistIsDef                                 || forceDefaults ? GetPrefTabDist(mode)     : buffer_->BufGetTabDistance();
-        int emTabDist         = emTabDistIsDef                               || forceDefaults ? GetPrefEmTabDist(mode)   : oldEmTabDist;
-        int indentStyle       = indentStyleIsDef                             || forceDefaults ? GetPrefAutoIndent(mode)  : indentStyle_;
-        int highlight         = highlightIsDef                               || forceDefaults ? GetPrefHighlightSyntax() : highlightSyntax_;
+        bool emTabDistIsDef     = oldEmTabDist == GetPrefEmTabDist(oldMode);
+        bool indentStyleIsDef   = indentStyle_ == GetPrefAutoIndent(oldMode)   || (GetPrefAutoIndent(oldMode) == SMART_INDENT && indentStyle_ == AUTO_INDENT && !SmartIndentMacrosAvailable(LanguageModeName(oldMode).toLatin1().data()));
+        bool highlightIsDef     = highlightSyntax_ == GetPrefHighlightSyntax() || (GetPrefHighlightSyntax() && FindPatternSet(!oldlanguageModeName.isNull() ? oldlanguageModeName : QLatin1String("")) == nullptr);
+        int wrapMode            = wrapModeIsDef                                || forceDefaults ? GetPrefWrap(mode)        : wrapMode_;
+        int tabDist             = tabDistIsDef                                 || forceDefaults ? GetPrefTabDist(mode)     : buffer_->BufGetTabDistance();
+        int emTabDist           = emTabDistIsDef                               || forceDefaults ? GetPrefEmTabDist(mode)   : oldEmTabDist;
+        IndentStyle indentStyle = indentStyleIsDef                             || forceDefaults ? GetPrefAutoIndent(mode)  : indentStyle_;
+        int highlight           = highlightIsDef                               || forceDefaults ? GetPrefHighlightSyntax() : highlightSyntax_;
 
         /* Dim/undim smart-indent and highlighting menu items depending on
            whether patterns/macros are available */
@@ -1212,7 +1183,7 @@ void DocumentWidget::SetEmTabDist(int emTabDist) {
 ** Set autoindent state to one of  NO_AUTO_INDENT, AUTO_INDENT, or SMART_INDENT.
 */
 // TODO(eteran): make state an enum
-void DocumentWidget::SetAutoIndent(int state) {
+void DocumentWidget::SetAutoIndent(IndentStyle state) {
     bool autoIndent  = (state == AUTO_INDENT);
     bool smartIndent = (state == SMART_INDENT);
 
@@ -1226,8 +1197,8 @@ void DocumentWidget::SetAutoIndent(int state) {
 
     const QList<TextArea *> textAreas = textPanes();
     for(TextArea *area : textAreas) {
-        area->setAutoIndent(smartIndent);
-        area->setSmartIndent(autoIndent);
+        area->setAutoIndent(autoIndent);
+        area->setSmartIndent(smartIndent);
     }
 
     if (IsTopDocument()) {

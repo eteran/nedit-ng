@@ -81,10 +81,6 @@ public:
 	TextArea& operator=(const TextArea &) = delete;
 	virtual ~TextArea();
 
-Q_SIGNALS:
-	void focusIn(QWidget *now);
-    void focusOut(QWidget *now);
-
 public:
 	// TODO(eteran): if these aren't expected to have side effects, then some
 	// of them may be able to be replaced with signals
