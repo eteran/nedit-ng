@@ -226,12 +226,16 @@ static int (*OpFns[N_OPS])() = {returnNoVal, returnVal,      pushSymVal, dupStac
 ** symbols to comprehend hyphenated names.
 */
 void InitMacroGlobals(void) {
-	XtActionsRec *actions;
-	int i, nActions;
+
+    int i;
 	static char argName[3] = "$x";
 	static DataValue dv = INIT_DATA_VALUE;
 
 	// Add action routines from NEdit menus and text widget 
+#if 0 // NOTE(eteran): we are replacing these with wrappers around Q_SLOTS
+    XtActionsRec *actions;
+    int nActions;
+
 	actions = GetMenuActions(&nActions);
 	for (i = 0; i < nActions; i++) {
 		dv.val.xtproc = actions[i].proc;
@@ -242,6 +246,7 @@ void InitMacroGlobals(void) {
 		dv.val.xtproc = actions[i].proc;
 		InstallSymbol(actions[i].string, ACTION_ROUTINE_SYM, dv);
 	}
+#endif
 
 	// Add subroutine argument symbols ($1, $2, ..., $9) 
 	for (i = 0; i < 9; i++) {

@@ -33,7 +33,6 @@
 #include "DocumentWidget.h"
 #include "highlight.h"
 #include "TextHelper.h"
-#include "Document.h"
 #include "HighlightData.h"
 #include "HighlightPattern.h"
 #include "util/MotifHelper.h"
@@ -100,11 +99,8 @@ bool can_cross_line_boundaries(const ReparseContext *contextRequirements) {
 
 }
 
-static HighlightData *compilePatterns(Widget dialogParent, HighlightPattern *patternSrc, int nPatterns);
 static HighlightData *patternOfStyle(HighlightData *patterns, int style);
-static PatternSet *findPatternsForWindow(Document *window, int warn);
 static PatternSet *findPatternsForWindowEx(DocumentWidget *document, int warn);
-static StyleTableEntry *styleTableEntryOfCode(Document *window, int hCode);
 static StyleTableEntry *styleTableEntryOfCodeEx(DocumentWidget *document, int hCode);
 static bool parseString(HighlightData *pattern, const char **string, char **styleString, int length, char *prevChar, bool anchored, const QString &delimiters, const char *lookBehindTo, const char *match_till);
 static char getPrevChar(TextBuffer *buf, int pos);
@@ -112,22 +108,17 @@ static int backwardOneContext(TextBuffer *buf, ReparseContext *context, int from
 static int findSafeParseRestartPos(TextBuffer *buf, WindowHighlightData *highlightData, int *pos);
 static int findTopLevelParentIndex(HighlightPattern *patList, int nPats, int index);
 static int forwardOneContext(TextBuffer *buf, ReparseContext *context, int fromPos);
-static int getFontHeight(Document *window);
 static int indexOfNamedPattern(HighlightPattern *patList, int nPats, const char *patName);
 static int isParentStyle(const char *parentStyles, int style1, int style2);
 static int lastModified(TextBuffer *styleBuf);
 static int parentStyleOf(const char *parentStyles, int style);
 static int parseBufferRange(HighlightData *pass1Patterns, HighlightData *pass2Patterns, TextBuffer *buf, TextBuffer *styleBuf, ReparseContext *contextRequirements, int beginParse, int endParse, const char *delimiters);
-static regexp *compileREAndWarn(Widget parent, view::string_view re);
 static void fillStyleString(const char **stringPtr, char **stylePtr, const char *toPtr, char style, char *prevChar);
 static void freePatterns(HighlightData *patterns);
-static void handleUnparsedRegion(const Document *win, TextBuffer *styleBuf, int pos);
-static void handleUnparsedRegionCB(const TextDisplay *textD, int pos, const void *cbArg);
 static void incrementalReparse(WindowHighlightData *highlightData, TextBuffer *buf, int pos, int nInserted, const char *delimiters);
 static void modifyStyleBuf(TextBuffer *styleBuf, char *styleString, int startPos, int endPos, int firstPass2Style);
 static void passTwoParseString(HighlightData *pattern, const char *string, char *styleString, int length, char *prevChar, const char *delimiters, const char *lookBehindTo, const char *match_till);
 static void recolorSubexpr(regexp *re, int subexpr, int style, const char *string, char *styleString);
-static void updateWindowHeight(Document *window, int oldFontHeight);
 static void handleUnparsedRegionEx(const DocumentWidget *window, TextBuffer *styleBuf, int pos);
 static HighlightData *compilePatternsEx(DocumentWidget *dialogParent, HighlightPattern *patternSrc, int nPatterns);
 static regexp *compileREAndWarnEx(DocumentWidget *parent, view::string_view re);
@@ -197,71 +188,6 @@ void SyntaxHighlightModifyCBEx(int pos, int nInserted, int nDeleted, int nRestyl
     if (highlightData->pass1Patterns) {
         incrementalReparse(highlightData, window->buffer_, pos, nInserted, window->GetWindowDelimiters().toLatin1().data());
     }
-}
-
-/*
-** Buffer modification callback for triggering re-parsing of modified
-** text and keeping the style buffer synchronized with the text buffer.
-** This must be attached to the the text buffer BEFORE any widget text
-** display callbacks, so it can get the style buffer ready to be used
-** by the text display routines.
-**
-** Update the style buffer for changes to the text, and mark any style
-** changes by selecting the region in the style buffer.  This strange
-** protocol of informing the text display to redraw style changes by
-** making selections in the style buffer is used because this routine
-** is intended to be called BEFORE the text display callback paints the
-** text (to minimize redraws and, most importantly, to synchronize the
-** style buffer with the text buffer).  If we redraw now, the text
-** display hasn't yet processed the modification, redrawing later is
-** not only complicated, it will double-draw almost everything typed.
-**
-** Note: This routine must be kept efficient.  It is called for every
-** character typed.
-*/
-void SyntaxHighlightModifyCB(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *cbArg) {
-
-	(void)nRestyled;
-	(void)deletedText;
-
-	auto window = static_cast<Document *>(cbArg);
-	auto highlightData = static_cast<WindowHighlightData *>(window->highlightData_);
-
-	if(!highlightData)
-		return;
-
-	/* Restyling-only modifications (usually a primary or secondary  selection)
-	   don't require any processing, but clear out the style buffer selection
-	   so the widget doesn't think it has to keep redrawing the old area */
-	if (nInserted == 0 && nDeleted == 0) {
-		highlightData->styleBuffer->BufUnselect();
-		return;
-	}
-
-	/* First and foremost, the style buffer must track the text buffer
-	   accurately and correctly */
-	if (nInserted > 0) {
-		auto insStyle = new char[nInserted + 1];
-		std::fill_n(insStyle, nInserted, UNFINISHED_STYLE);	
-		insStyle[nInserted] = '\0';
-		
-		highlightData->styleBuffer->BufReplaceEx(pos, pos + nDeleted, insStyle);
-		
-		delete [] insStyle;
-	} else {
-		highlightData->styleBuffer->BufRemove(pos, pos + nDeleted);
-	}
-
-	/* Mark the changed region in the style buffer as requiring redraw.  This
-	   is not necessary for getting it redrawn, it will be redrawn anyhow by
-	   the text display callback, but it clears the previous selection and
-	   saves the modifyStyleBuf routine from unnecessary work in tracking
-	   changes that are already scheduled for redraw */
-	highlightData->styleBuffer->BufSelect(pos, pos + nInserted);
-
-	// Re-parse around the changed region 
-	if (highlightData->pass1Patterns)
-		incrementalReparse(highlightData, window->buffer_, pos, nInserted, GetWindowDelimiters(window).toLatin1().data());
 }
 
 /*
@@ -351,125 +277,6 @@ void StartHighlightingEx(DocumentWidget *document, bool warn) {
 }
 
 /*
-** Turn on syntax highlighting.  If "warn" is true, warn the user when it
-** can't be done, otherwise, just return.
-*/
-void StartHighlighting(Document *window, int warn) {
-
-	char prevChar = '\0';
-	int i;
-	int oldFontHeight;
-
-	/* Find the pattern set matching the window's current
-	   language mode, tell the user if it can't be done */
-	PatternSet *patterns = findPatternsForWindow(window, warn);
-	if(!patterns) {
-		return;
-	}
-
-	// Compile the patterns 
-	WindowHighlightData *highlightData = createHighlightData(window, patterns);
-	if(!highlightData) {
-		return;
-	}
-
-	// Prepare for a long delay, refresh display and put up a watch cursor 
-	BeginWait(window->shell_);
-	XmUpdateDisplay(window->shell_);
-	
-	
-	const int bufLength = window->buffer_->BufGetLength();
-
-	/* Parse the buffer with pass 1 patterns.  If there are none, initialize
-	   the style buffer to all UNFINISHED_STYLE to trigger parsing later */
-	auto styleString = new char[bufLength + 1];
-	char *stylePtr = styleString;
-	
-	if (!highlightData->pass1Patterns) {
-		for (i = 0; i < bufLength; i++) {
-			*stylePtr++ = UNFINISHED_STYLE;
-		}
-	} else {
-		const char *const bufString = window->buffer_->BufAsString();
-		const char *const match_to  = bufString + bufLength;
-		const char *stringPtr = bufString;	
-			
-		parseString(
-			highlightData->pass1Patterns, 
-			&stringPtr, 
-			&stylePtr, 
-			bufLength, 
-			&prevChar, 
-			false, 
-			GetWindowDelimiters(window), 
-			bufString, 
-			match_to);
-	}
-	
-	highlightData->styleBuffer->BufSetAllEx(view::string_view(styleString, std::distance(styleString, stylePtr)));
-	delete [] styleString;
-
-	// install highlight pattern data in the window data structure 
-	window->highlightData_ = highlightData;
-
-	/* Get the height of the current font in the window, to be used after
-	   highlighting is turned on to resize the window to make room for
-	   additional highlight fonts which may be sized differently */
-	oldFontHeight = getFontHeight(window);
-
-	// Attach highlight information to text widgets in each pane 
-	AttachHighlightToWidget(window->textArea_, window);
-	for (i = 0; i < window->textPanes_.size(); i++)
-		AttachHighlightToWidget(window->textPanes_[i], window);
-
-	/* Re-size the window to fit the highlight fonts properly & tell the
-	   window manager about the potential line-height change as well */
-	updateWindowHeight(window, oldFontHeight);
-	window->UpdateWMSizeHints();
-	window->UpdateMinPaneHeights();
-
-	/* Make sure that if the window has grown, the additional area gets
-	   repainted. Otherwise, it is possible that the area gets moved before a
-	   repaint event is received and the area doesn't get repainted at all
-	   (eg. because of a -line command line argument that moves the text). */
-	XmUpdateDisplay(window->shell_);
-	EndWait(window->shell_);
-}
-
-/*
-** Turn off syntax highlighting and free style buffer, compiled patterns, and
-** related data.
-*/
-void StopHighlighting(Document *window) {
-	int i, oldFontHeight;
-
-	if (!window->highlightData_) {
-		return;
-	}
-
-	/* Get the line height being used by the highlight fonts in the window,
-	   to be used after highlighting is turned off to resize the window
-	   back to the line height of the primary font */
-	oldFontHeight = getFontHeight(window);
-
-	// Free and remove the highlight data from the window 
-	freeHighlightData(static_cast<WindowHighlightData *>(window->highlightData_));
-	window->highlightData_ = nullptr;
-
-	/* Remove and detach style buffer and style table from all text
-	   display(s) of window, and redisplay without highlighting */
-	RemoveWidgetHighlight(window->textArea_);
-	for (i = 0; i < window->textPanes_.size(); i++)
-		RemoveWidgetHighlight(window->textPanes_[i]);
-
-	/* Re-size the window to fit the primary font properly & tell the window
-	   manager about the potential line-height change as well */
-	updateWindowHeight(window, oldFontHeight);
-	window->UpdateWMSizeHints();
-	window->UpdateMinPaneHeights();
-}
-
-/*
 ** Free highlighting data from a window destined for destruction, without
 ** redisplaying.
 */
@@ -492,39 +299,6 @@ void FreeHighlightingDataEx(DocumentWidget *window) {
 }
 
 /*
-** Free highlighting data from a window destined for destruction, without
-** redisplaying.
-*/
-void FreeHighlightingData(Document *window) {
-
-	if (!window->highlightData_) {
-		return;
-	}
-
-	// Free and remove the highlight data from the window 
-	freeHighlightData(static_cast<WindowHighlightData *>(window->highlightData_));
-	window->highlightData_ = nullptr;
-
-	/* The text display may make a last desperate attempt to access highlight
-	   information when it is destroyed, which would be a disaster. */
-	textD_of(window->textArea_)->setStyleBuffer(nullptr);
-	
-	for (int i = 0; i < window->textPanes_.size(); i++) {
-		textD_of(window->textPanes_[i])->setStyleBuffer(nullptr);
-	}
-}
-
-/*
-** Attach style information from a window's highlight data to a
-** text widget and redisplay.
-*/
-void AttachHighlightToWidget(Widget widget, Document *window) {
-	auto highlightData = static_cast<WindowHighlightData *>(window->highlightData_);
-
-	textD_of(widget)->TextDAttachHighlightData(highlightData->styleBuffer, highlightData->styleTable, highlightData->nStyles, UNFINISHED_STYLE, handleUnparsedRegionCB, window);
-}
-
-/*
 ** Attach style information from a window's highlight data to a
 ** text widget and redisplay.
 */
@@ -538,13 +312,6 @@ void AttachHighlightToWidgetEx(TextArea *area, DocumentWidget *window) {
                 UNFINISHED_STYLE,
                 handleUnparsedRegionCBEx,
                 window);
-}
-
-/*
-** Remove style information from a text widget and redisplay it.
-*/
-void RemoveWidgetHighlight(Widget widget) {
-	textD_of(widget)->TextDAttachHighlightData(nullptr, nullptr, 0, UNFINISHED_STYLE, nullptr, nullptr);
 }
 
 /*
@@ -599,51 +366,6 @@ void UpdateHighlightStylesEx(DocumentWidget *document) {
 }
 
 /*
-** Change highlight fonts and/or styles in a highlighted window, without
-** re-parsing.
-*/
-void UpdateHighlightStyles(Document *window) {
-
-	auto oldHighlightData = static_cast<WindowHighlightData *>(window->highlightData_);
-
-	// Do nothing if window not highlighted 
-	if (!window->highlightData_) {
-		return;
-	}
-
-	// Find the pattern set for the window's current language mode 
-	PatternSet *patterns = findPatternsForWindow(window, false);
-	if(!patterns) {
-		StopHighlighting(window);
-		return;
-	}
-
-	// Build new patterns 
-	WindowHighlightData *highlightData = createHighlightData(window, patterns);
-	if(!highlightData) {
-		StopHighlighting(window);
-		return;
-	}
-
-	/* Update highlight pattern data in the window data structure, but
-	   preserve all of the effort that went in to parsing the buffer
-	   by swapping it with the empty one in highlightData (which is then
-	   freed in freeHighlightData) */
-	TextBuffer *styleBuffer = oldHighlightData->styleBuffer;
-	oldHighlightData->styleBuffer = highlightData->styleBuffer;
-	freeHighlightData(oldHighlightData);
-	highlightData->styleBuffer = styleBuffer;
-	window->highlightData_ = highlightData;
-
-	/* Attach new highlight information to text widgets in each pane
-	   (and redraw) */
-	AttachHighlightToWidget(window->textArea_, window);
-	for (int i = 0; i < window->textPanes_.size(); i++) {
-		AttachHighlightToWidget(window->textPanes_[i], window);
-	}
-}
-
-/*
 ** Returns the highlight style of the character at a given position of a
 ** window. To avoid breaking encapsulation, the highlight style is converted
 ** to a void* pointer (no other module has to know that characters are used
@@ -682,46 +404,6 @@ void *GetHighlightInfoEx(DocumentWidget *window, int pos) {
         return nullptr;
     }
     return reinterpret_cast<void *>(pattern->userStyleIndex);
-}
-
-/*
-** Returns the highlight style of the character at a given position of a
-** window. To avoid breaking encapsulation, the highlight style is converted
-** to a void* pointer (no other module has to know that characters are used
-** to represent highlight styles; that would complicate future extensions).
-** Returns nullptr if the window has highlighting turned off.
-** The only guarantee that this function offers, is that when the same
-** pointer is returned for two positions, the corresponding characters have
-** the same highlight style.
-**/
-void *GetHighlightInfo(Document *window, int pos) {
-
-	HighlightData *pattern = nullptr;
-	auto highlightData = static_cast<WindowHighlightData *>(window->highlightData_);
-	if (!highlightData)
-		return nullptr;
-
-	// Be careful with signed/unsigned conversions. NO conversion here! 
-	int style = (int)highlightData->styleBuffer->BufGetCharacter(pos);
-
-	// Beware of unparsed regions. 
-	if (style == UNFINISHED_STYLE) {
-		handleUnparsedRegion(window, highlightData->styleBuffer, pos);
-		style = (int)highlightData->styleBuffer->BufGetCharacter(pos);
-	}
-
-	if (highlightData->pass1Patterns) {
-		pattern = patternOfStyle(highlightData->pass1Patterns, style);
-	}
-
-	if (!pattern && highlightData->pass2Patterns) {
-		pattern = patternOfStyle(highlightData->pass2Patterns, style);
-	}
-
-	if (!pattern) {
-		return nullptr;
-	}
-	return reinterpret_cast<void *>(pattern->userStyleIndex);
 }
 
 /*
@@ -779,42 +461,6 @@ static PatternSet *findPatternsForWindowEx(DocumentWidget *document, int warn) {
     return patterns;
 }
 
-/*
-** Find the pattern set matching the window's current language mode, or
-** tell the user if it can't be done (if warn is true) and return nullptr.
-*/
-static PatternSet *findPatternsForWindow(Document *window, int warn) {
-	PatternSet *patterns;
-
-	// Find the window's language mode.  If none is set, warn user 
-	QString modeName = LanguageModeName(window->languageMode_);
-	if(modeName.isNull()) {
-		if (warn)
-			QMessageBox::warning(nullptr /*parent*/, QLatin1String("Language Mode"), QLatin1String("No language-specific mode has been set for this file.\n\n"
-			                                                    "To use syntax highlighting in this window, please select a\n"
-			                                                    "language from the Preferences -> Language Modes menu.\n\n"
-			                                                    "New language modes and syntax highlighting patterns can be\n"
-			                                                    "added via Preferences -> Default Settings -> Language Modes,\n"
-			                                                    "and Preferences -> Default Settings -> Syntax Highlighting."));
-		return nullptr;
-	}
-
-	// Look up the appropriate pattern for the language 
-	patterns = FindPatternSet(modeName);
-	if(!patterns) {
-		if (warn) {
-			QMessageBox::warning(nullptr /*parent*/, QLatin1String("Language Mode"), QString(QLatin1String("Syntax highlighting is not available in language\n"
-			                                                    "mode %1.\n\n"
-			                                                    "You can create new syntax highlight patterns in the\n"
-			                                                    "Preferences -> Default Settings -> Syntax Highlighting\n"
-			                                                    "dialog, or choose a different language mode from:\n"
-			                                                    "Preferences -> Language Mode.")).arg(modeName));
-			return nullptr;
-		}
-	}
-
-	return patterns;
-}
 
 /*
 ** Create complete syntax highlighting information from "patternSrc", using
@@ -1064,454 +710,6 @@ WindowHighlightData *createHighlightDataEx(DocumentWidget *document, PatternSet 
 }
 
 /*
-** Create complete syntax highlighting information from "patternSrc", using
-** highlighting fonts from "window", includes pattern compilation.  If errors
-** are encountered, warns user with a dialog and returns nullptr.  To free the
-** allocated components of the returned data structure, use freeHighlightData.
-*/
-WindowHighlightData *createHighlightData(Document *window, PatternSet *patSet) {
-	
-	HighlightPattern *patternSrc = &patSet->patterns[0];
-	int nPatterns    = patSet->patterns.size();
-	int contextLines = patSet->lineContext;
-	int contextChars = patSet->charContext;
-	int i;
-	HighlightData *pass1Pats;
-	HighlightData *pass2Pats;
-
-	// The highlighting code can't handle empty pattern sets, quietly say no 
-	if (nPatterns == 0) {
-		return nullptr;
-	}
-
-	// Check that the styles and parent pattern names actually exist 
-	if (!NamedStyleExists("Plain")) {
-		QMessageBox::warning(nullptr /*window->shell_*/, QLatin1String("Highlight Style"), QLatin1String("Highlight style \"Plain\" is missing"));
-		return nullptr;
-	}
-
-	for (int i = 0; i < nPatterns; i++) {
-		if (!patternSrc[i].subPatternOf.isNull() && indexOfNamedPattern(patternSrc, nPatterns, patternSrc[i].subPatternOf.toLatin1().data()) == -1) {				
-			QMessageBox::warning(nullptr /*window->shell_*/, QLatin1String("Parent Pattern"), QString(QLatin1String("Parent field \"%1\" in pattern \"%2\"\ndoes not match any highlight patterns in this set")).arg(patternSrc[i].subPatternOf).arg(patternSrc[i].name));
-			return nullptr;
-		}
-	}
-
-	for (int i = 0; i < nPatterns; i++) {
-		if (!NamedStyleExists(patternSrc[i].style.toStdString())) {				
-			QMessageBox::warning(nullptr /*window->shell_*/, QLatin1String("Highlight Style"), QString(QLatin1String("Style \"%1\" named in pattern \"%2\"\ndoes not match any existing style")).arg(patternSrc[i].style).arg(patternSrc[i].name));
-			return nullptr;
-		}
-	}
-
-	/* Make DEFER_PARSING flags agree with top level patterns (originally,
-	   individual flags had to be correct and were checked here, but dialog now
-	   shows this setting only on top patterns which is much less confusing) */
-	for (int i = 0; i < nPatterns; i++) {
-		if (!patternSrc[i].subPatternOf.isNull()) {
-
-			int parentindex = findTopLevelParentIndex(patternSrc, nPatterns, i);
-			if (parentindex == -1) {
-				QMessageBox::warning(nullptr /*window->shell_*/, QLatin1String("Parent Pattern"), QString(QLatin1String("Pattern \"%1\" does not have valid parent")).arg(patternSrc[i].name));
-				return nullptr;
-			}
-
-			if (patternSrc[parentindex].flags & DEFER_PARSING) {
-				patternSrc[i].flags |= DEFER_PARSING;
-			} else {
-				patternSrc[i].flags &= ~DEFER_PARSING;
-			}
-		}
-	}
-
-	/* Sort patterns into those to be used in pass 1 parsing, and those to
-	   be used in pass 2, and add default pattern (0) to each list */
-	int nPass1Patterns = 1;
-	int nPass2Patterns = 1;
-	for (int i = 0; i < nPatterns; i++) {
-		if (patternSrc[i].flags & DEFER_PARSING) {
-			nPass2Patterns++;
-		} else {
-			nPass1Patterns++;
-		}
-	}
-
-	auto pass1PatternSrc = new HighlightPattern[nPass1Patterns];
-	auto pass2PatternSrc = new HighlightPattern[nPass2Patterns];
-
-
-	HighlightPattern *p1Ptr = pass1PatternSrc;
-	HighlightPattern *p2Ptr = pass2PatternSrc;
-
-	p1Ptr->name         = QString();
-	p1Ptr->startRE      = QString();
-	p1Ptr->endRE        = QString();
-	p1Ptr->errorRE      = QString();
-	p1Ptr->style        = QLatin1String("Plain");
-	p1Ptr->flags        = 0;
-	
-	p2Ptr->name 		= QString();
-	p2Ptr->startRE  	= QString();
-	p2Ptr->endRE		= QString();
-	p2Ptr->errorRE  	= QString();
-	p2Ptr->style		= QLatin1String("Plain");
-	p2Ptr->flags		= 0;  
-	
-	p1Ptr++;
-	p2Ptr++;
-	
-	for (int i = 0; i < nPatterns; i++) {
-		if (patternSrc[i].flags & DEFER_PARSING) {
-			*p2Ptr++ = patternSrc[i];
-		} else {
-			*p1Ptr++ = patternSrc[i];
-		}
-	}
-
-	/* If a particular pass is empty except for the default pattern, don't
-	   bother compiling it or setting up styles */
-	if (nPass1Patterns == 1) {
-		nPass1Patterns = 0;
-	}
-	
-	if (nPass2Patterns == 1) {
-		nPass2Patterns = 0;
-	}
-
-	// Compile patterns 
-	if (nPass1Patterns == 0) {
-		pass1Pats = nullptr;
-	} else {
-		pass1Pats = compilePatterns(window->shell_, pass1PatternSrc, nPass1Patterns);
-		if (!pass1Pats) {
-			return nullptr;
-		}
-	}
-	
-	if (nPass2Patterns == 0) {
-		pass2Pats = nullptr;
-	} else {
-		pass2Pats = compilePatterns(window->shell_, pass2PatternSrc, nPass2Patterns);
-		if (!pass2Pats) {
-			return nullptr;
-		}
-	}
-
-	/* Set pattern styles.  If there are pass 2 patterns, pass 1 pattern
-	   0 should have a default style of UNFINISHED_STYLE.  With no pass 2
-	   patterns, unstyled areas of pass 1 patterns should be PLAIN_STYLE
-	   to avoid triggering re-parsing every time they are encountered */
-	int noPass1 = nPass1Patterns == 0;
-	int noPass2 = nPass2Patterns == 0;
-
-	if (noPass2) {
-		pass1Pats[0].style = PLAIN_STYLE;
-	} else if (noPass1) {
-		pass2Pats[0].style = PLAIN_STYLE;
-	} else {
-		pass1Pats[0].style = UNFINISHED_STYLE;
-		pass2Pats[0].style = PLAIN_STYLE;
-	}
-	
-	for (i = 1; i < nPass1Patterns; i++) {
-		pass1Pats[i].style = PLAIN_STYLE + i;
-	}
-	
-	for (i = 1; i < nPass2Patterns; i++) {
-		pass2Pats[i].style = PLAIN_STYLE + (noPass1 ? 0 : nPass1Patterns - 1) + i;
-	}
-
-	// Create table for finding parent styles 
-	QByteArray parentStyles;
-	parentStyles.reserve(nPass1Patterns + nPass2Patterns + 2);
-
-	auto parentStylesPtr = std::back_inserter(parentStyles);
-	
-	*parentStylesPtr++ = '\0';
-	*parentStylesPtr++ = '\0';
-	
-	for (int i = 1; i < nPass1Patterns; i++) {
-		*parentStylesPtr++ = pass1PatternSrc[i].subPatternOf.isNull() ? PLAIN_STYLE : pass1Pats[indexOfNamedPattern(pass1PatternSrc, nPass1Patterns, pass1PatternSrc[i].subPatternOf.toLatin1().data())].style;
-	}
-	
-	for (int i = 1; i < nPass2Patterns; i++) {
-		*parentStylesPtr++ = pass2PatternSrc[i].subPatternOf.isNull() ? PLAIN_STYLE : pass2Pats[indexOfNamedPattern(pass2PatternSrc, nPass2Patterns, pass2PatternSrc[i].subPatternOf.toLatin1().data())].style;
-	}
-
-	// Set up table for mapping colors and fonts to syntax 
-	const auto styleTable = new StyleTableEntry[nPass1Patterns + nPass2Patterns + 1];
-
-	StyleTableEntry *styleTablePtr = styleTable;
-
-	auto setStyleTablePtr = [window](StyleTableEntry *p, HighlightPattern *pat) {
-		Color c;
-
-		p->highlightName = pat->name;
-		p->styleName     = pat->style;
-		p->colorName     = ColorOfNamedStyleEx     (pat->style.toStdString());
-		p->bgColorName   = BgColorOfNamedStyleEx   (pat->style.toStdString());
-		p->isBold        = FontOfNamedStyleIsBold  (pat->style.toStdString());
-		p->isItalic      = FontOfNamedStyleIsItalic(pat->style.toStdString());
-
-		// And now for the more physical stuff 
-		p->color = AllocColor(p->colorName, &c);
-		
-		if (!p->bgColorName.isNull()) {
-			p->bgColor = AllocColor(p->bgColorName, &c);
-		} else {
-			p->bgColor = p->color;
-		}
-
-        p->font = FontOfNamedStyle(window, pat->style.toStdString());
-    };
-
-	// PLAIN_STYLE (pass 1) 
-	styleTablePtr->underline = false;
-	setStyleTablePtr(styleTablePtr++, noPass1 ? &pass2PatternSrc[0] : &pass1PatternSrc[0]);
-
-	// PLAIN_STYLE (pass 2) 
-	styleTablePtr->underline = false;
-	setStyleTablePtr(styleTablePtr++, noPass2 ? &pass1PatternSrc[0] : &pass2PatternSrc[0]);
-
-	// explicit styles (pass 1) 
-	for (int i = 1; i < nPass1Patterns; i++) {
-		styleTablePtr->underline = false;
-		setStyleTablePtr(styleTablePtr++, &pass1PatternSrc[i]);
-	}
-
-	// explicit styles (pass 2) 
-	for (int i = 1; i < nPass2Patterns; i++) {
-		styleTablePtr->underline = false;
-		setStyleTablePtr(styleTablePtr++, &pass2PatternSrc[i]);
-	}
-
-	// Free the temporary sorted pattern source list 
-	delete[] pass1PatternSrc;
-	delete[] pass2PatternSrc;
-
-	// Create the style buffer 
-	auto styleBuf = new TextBuffer;
-
-	// Collect all of the highlighting information in a single structure 
-	auto highlightData = new WindowHighlightData;
-	highlightData->pass1Patterns              = pass1Pats;
-	highlightData->pass2Patterns              = pass2Pats;
-	highlightData->parentStyles               = parentStyles;
-	highlightData->styleTable                 = styleTable;
-	highlightData->nStyles                    = styleTablePtr - styleTable;
-	highlightData->styleBuffer                = styleBuf;
-	highlightData->contextRequirements.nLines = contextLines;
-	highlightData->contextRequirements.nChars = contextChars;
-	highlightData->patternSetForWindow        = patSet;
-
-	return highlightData;
-}
-
-/*
-** Transform pattern sources into the compiled highlight information
-** actually used by the code.  Output is a tree of HighlightData structures
-** containing compiled regular expressions and style information.
-*/
-static HighlightData *compilePatterns(Widget dialogParent, HighlightPattern *patternSrc, int nPatterns) {
-	int length;
-	int subPatIndex;
-	int subExprNum;
-	int charsRead;
-	int parentIndex;
-	
-	/* Allocate memory for the compiled patterns.  The list is terminated
-	   by a record with style == 0. */
-	auto compiledPats = new HighlightData[nPatterns + 1];
-	compiledPats[nPatterns].style = 0;
-
-	// Build the tree of parse expressions 
-	for (int i = 0; i < nPatterns; i++) {
-		compiledPats[i].nSubPatterns = 0;
-		compiledPats[i].nSubBranches = 0;
-	}
-	
-	for (int i = 1; i < nPatterns; i++) {
-		if (patternSrc[i].subPatternOf.isNull()) {
-			compiledPats[0].nSubPatterns++;
-		} else {
-			compiledPats[indexOfNamedPattern(patternSrc, nPatterns, patternSrc[i].subPatternOf.toLatin1().data())].nSubPatterns++;
-		}
-	}
-
-	for (int i = 0; i < nPatterns; i++) {
-		compiledPats[i].subPatterns = (compiledPats[i].nSubPatterns == 0) ? nullptr : new HighlightData *[compiledPats[i].nSubPatterns];
-	}
-
-	for (int i = 0; i < nPatterns; i++) {
-		compiledPats[i].nSubPatterns = 0;
-	}
-
-	for (int i = 1; i < nPatterns; i++) {
-		if (patternSrc[i].subPatternOf.isNull()) {
-			compiledPats[0].subPatterns[compiledPats[0].nSubPatterns++] = &compiledPats[i];
-		} else {
-			parentIndex = indexOfNamedPattern(patternSrc, nPatterns, patternSrc[i].subPatternOf.toLatin1().data());
-			compiledPats[parentIndex].subPatterns[compiledPats[parentIndex].nSubPatterns++] = &compiledPats[i];
-		}
-	}
-
-	/* Process color-only sub patterns (no regular expressions to match,
-	   just colors and fonts for sub-expressions of the parent pattern */
-	for (int i = 0; i < nPatterns; i++) {
-		compiledPats[i].colorOnly      = patternSrc[i].flags & COLOR_ONLY;
-		compiledPats[i].userStyleIndex = IndexOfNamedStyle(patternSrc[i].style.toStdString());
-		
-		if (compiledPats[i].colorOnly && compiledPats[i].nSubPatterns != 0) {		
-			QMessageBox::warning(nullptr /*window->shell_*/, QLatin1String("Color-only Pattern"), QString(QLatin1String("Color-only pattern \"%1\" may not have subpatterns")).arg(patternSrc[i].name));
-			return nullptr;
-		}
-		
-		int nSubExprs = 0;
-		if (!patternSrc[i].startRE.isNull()) {
-			QByteArray bytes = patternSrc[i].startRE.toLatin1();
-			const char *s = bytes.data();
-			const char *ptr = s;
-			while (true) {
-				if (*ptr == '&') {
-					compiledPats[i].startSubexprs[nSubExprs++] = 0;
-					ptr++;
-				} else if (sscanf(ptr, "\\%d%n", &subExprNum, &charsRead) == 1) {
-					compiledPats[i].startSubexprs[nSubExprs++] = subExprNum;
-					ptr += charsRead;
-				} else {
-					break;
-				}
-			}
-		}
-		compiledPats[i].startSubexprs[nSubExprs] = -1;
-		nSubExprs = 0;
-		if (!patternSrc[i].endRE.isNull()) {
-			QByteArray bytes = patternSrc[i].endRE.toLatin1();
-			const char *s = bytes.data();
-			const char *ptr = s;
-			while (true) {
-				if (*ptr == '&') {
-					compiledPats[i].endSubexprs[nSubExprs++] = 0;
-					ptr++;
-				} else if (sscanf(ptr, "\\%d%n", &subExprNum, &charsRead) == 1) {
-					compiledPats[i].endSubexprs[nSubExprs++] = subExprNum;
-					ptr += charsRead;
-				} else {
-					break;
-				}
-			}
-		}
-		compiledPats[i].endSubexprs[nSubExprs] = -1;
-	}
-
-	// Compile regular expressions for all highlight patterns 
-	for (int i = 0; i < nPatterns; i++) {
-
-		if (patternSrc[i].startRE.isNull() || compiledPats[i].colorOnly) {
-			compiledPats[i].startRE = nullptr;
-		} else {
-			if ((compiledPats[i].startRE = compileREAndWarn(dialogParent, patternSrc[i].startRE.toStdString())) == nullptr) {
-				return nullptr;
-			}
-		}
-		
-		if (patternSrc[i].endRE.isNull() || compiledPats[i].colorOnly) {
-			compiledPats[i].endRE = nullptr;
-		} else {
-			if ((compiledPats[i].endRE = compileREAndWarn(dialogParent, patternSrc[i].endRE.toStdString())) == nullptr) {
-				return nullptr;
-			}
-		}
-		
-		if (patternSrc[i].errorRE.isNull()) {
-			compiledPats[i].errorRE = nullptr;
-		} else {
-			if ((compiledPats[i].errorRE = compileREAndWarn(dialogParent, patternSrc[i].errorRE.toStdString())) == nullptr) {
-				return nullptr;
-			}
-		}
-	}
-
-	/* Construct and compile the great hairy pattern to match the OR of the
-	   end pattern, the error pattern, and all of the start patterns of the
-	   sub-patterns */
-	for (int patternNum = 0; patternNum < nPatterns; patternNum++) {
-		if (patternSrc[patternNum].endRE.isNull() && patternSrc[patternNum].errorRE.isNull() && compiledPats[patternNum].nSubPatterns == 0) {
-			compiledPats[patternNum].subPatternRE = nullptr;
-			continue;
-		}
-		
-		length  = (compiledPats[patternNum].colorOnly || patternSrc[patternNum].endRE.isNull())   ? 0 : patternSrc[patternNum].endRE.size()   + 5;
-		length += (compiledPats[patternNum].colorOnly || patternSrc[patternNum].errorRE.isNull()) ? 0 : patternSrc[patternNum].errorRE.size() + 5;
-		
-		for (int i = 0; i < compiledPats[patternNum].nSubPatterns; i++) {
-			subPatIndex = compiledPats[patternNum].subPatterns[i] - compiledPats;
-			length += compiledPats[subPatIndex].colorOnly ? 0 : patternSrc[subPatIndex].startRE.size() + 5;
-		}
-		
-		if (length == 0) {
-			compiledPats[patternNum].subPatternRE = nullptr;
-			continue;
-		}
-		
-		std::string bigPattern;
-		bigPattern.reserve(length);
-		
-		if (!patternSrc[patternNum].endRE.isNull()) {
-			bigPattern += '(';
-			bigPattern += '?';
-			bigPattern += ':';
-			bigPattern += patternSrc[patternNum].endRE.toStdString();
-			bigPattern += ')';
-			bigPattern += '|';
-			compiledPats[patternNum].nSubBranches++;
-		}
-		
-		if (!patternSrc[patternNum].errorRE.isNull()) {
-			bigPattern += '(';
-			bigPattern += '?';
-			bigPattern += ':';
-			bigPattern += patternSrc[patternNum].errorRE.toStdString();
-			bigPattern += ')';
-			bigPattern += '|';
-			compiledPats[patternNum].nSubBranches++;
-		}
-		
-		for (int i = 0; i < compiledPats[patternNum].nSubPatterns; i++) {
-			subPatIndex = compiledPats[patternNum].subPatterns[i] - compiledPats;
-			
-			if (compiledPats[subPatIndex].colorOnly) {
-				continue;
-			}
-			
-			bigPattern += '(';
-			bigPattern += '?';
-			bigPattern += ':';
-			bigPattern += patternSrc[subPatIndex].startRE.toStdString();
-			bigPattern += ')';
-			bigPattern += '|';
-			compiledPats[patternNum].nSubBranches++;
-		}
-		
-		bigPattern.pop_back(); // remove last '|' character
-
-		try {
-			compiledPats[patternNum].subPatternRE = new regexp(bigPattern, REDFLT_STANDARD);
-		} catch(const regex_error &e) {
-			fprintf(stderr, "Error compiling syntax highlight patterns:\n%s", e.what());
-			return nullptr;
-		}
-	}
-
-	// Copy remaining parameters from pattern template to compiled tree 
-	for (int i = 0; i < nPatterns; i++) {
-		compiledPats[i].flags = patternSrc[i].flags;
-	}
-
-	return compiledPats;
-}
-
-/*
 ** Transform pattern sources into the compiled highlight information
 ** actually used by the code.  Output is a tree of HighlightData structures
 ** containing compiled regular expressions and style information.
@@ -1754,21 +952,6 @@ HighlightPattern *FindPatternOfWindowEx(DocumentWidget *window, const char *name
     return nullptr;
 }
 
-HighlightPattern *FindPatternOfWindow(Document *window, const char *name) {
-	auto hData = static_cast<WindowHighlightData *>(window->highlightData_);
-	PatternSet *set;
-
-	if (hData && (set = hData->patternSetForWindow)) {
-	
-		for(HighlightPattern &pattern : set->patterns) {
-			if (pattern.name == QLatin1String(name)) {
-				return &pattern;
-			}
-		}
-	}
-	return nullptr;
-}
-
 /*
 ** Picks up the entry in the style buffer for the position (if any). Rather
 ** like styleOfPos() in TextDisplay.c. Returns the style code or zero.
@@ -1787,22 +970,6 @@ int HighlightCodeOfPosEx(DocumentWidget *document, int pos) {
         }
     }
     return hCode;
-}
-
-int HighlightCodeOfPos(Document *window, int pos) {
-	auto highlightData = static_cast<WindowHighlightData *>(window->highlightData_);
-	TextBuffer *styleBuf = highlightData ? highlightData->styleBuffer : nullptr;
-	int hCode = 0;
-
-	if (styleBuf) {
-		hCode = (uint8_t)styleBuf->BufGetCharacter(pos);
-		if (hCode == UNFINISHED_STYLE) {
-			// encountered "unfinished" style, trigger parsing 
-			handleUnparsedRegion(window, highlightData->styleBuffer, pos);
-			hCode = (uint8_t)styleBuf->BufGetCharacter(pos);
-		}
-	}
-	return hCode;
 }
 
 /*
@@ -1840,36 +1007,6 @@ int HighlightLengthOfCodeFromPosEx(DocumentWidget *window, int pos, int *checkCo
         }
     }
     return pos - oldPos;
-}
-
-int HighlightLengthOfCodeFromPos(Document *window, int pos, int *checkCode) {
-	auto highlightData = static_cast<WindowHighlightData *>(window->highlightData_);
-	TextBuffer *styleBuf = highlightData ? highlightData->styleBuffer : nullptr;
-	int oldPos = pos;
-
-	if (styleBuf) {
-		int hCode = (uint8_t)styleBuf->BufGetCharacter(pos);
-		if (!hCode)
-			return 0;
-		if (hCode == UNFINISHED_STYLE) {
-			// encountered "unfinished" style, trigger parsing 
-			handleUnparsedRegion(window, highlightData->styleBuffer, pos);
-			hCode = (uint8_t)styleBuf->BufGetCharacter(pos);
-		}
-		if (*checkCode == 0)
-			*checkCode = hCode;
-		while (hCode == *checkCode || hCode == UNFINISHED_STYLE) {
-			if (hCode == UNFINISHED_STYLE) {
-				// encountered "unfinished" style, trigger parsing, then loop 
-				handleUnparsedRegion(window, highlightData->styleBuffer, pos);
-				hCode = (uint8_t)styleBuf->BufGetCharacter(pos);
-			} else {
-				// advance the position and get the new code 
-				hCode = (uint8_t)styleBuf->BufGetCharacter(++pos);
-			}
-		}
-	}
-	return pos - oldPos;
 }
 
 /*
@@ -1916,58 +1053,10 @@ int StyleLengthOfCodeFromPosEx(DocumentWidget *window, int pos) {
     return pos - oldPos;
 }
 
-int StyleLengthOfCodeFromPos(Document *window, int pos) {
-	auto highlightData = static_cast<WindowHighlightData *>(window->highlightData_);
-	TextBuffer *styleBuf = highlightData ? highlightData->styleBuffer : nullptr;
-	int hCode = 0;
-	int oldPos = pos;
-
-
-	if (styleBuf) {
-		hCode = (uint8_t)styleBuf->BufGetCharacter(pos);
-		if (!hCode)
-			return 0;
-			
-		if (hCode == UNFINISHED_STYLE) {
-			// encountered "unfinished" style, trigger parsing 
-			handleUnparsedRegion(window, highlightData->styleBuffer, pos);
-			hCode = (uint8_t)styleBuf->BufGetCharacter(pos);
-		}
-		
-		StyleTableEntry *entry = styleTableEntryOfCode(window, hCode);
-		if(!entry)
-			return 0;
-			
-		QString checkStyleName = entry->styleName;
-			
-		while (hCode == UNFINISHED_STYLE || ((entry = styleTableEntryOfCode(window, hCode)) && entry->styleName == checkStyleName)) {
-			if (hCode == UNFINISHED_STYLE) {
-				// encountered "unfinished" style, trigger parsing, then loop 
-				handleUnparsedRegion(window, highlightData->styleBuffer, pos);
-				hCode = (uint8_t)styleBuf->BufGetCharacter(pos);
-			} else {
-				// advance the position and get the new code 
-				hCode = (uint8_t)styleBuf->BufGetCharacter(++pos);
-			}
-		}
-	}
-	
-	return pos - oldPos;
-}
-
 /*
 ** Returns a pointer to the entry in the style table for the entry of code
 ** hCode (if any).
 */
-static StyleTableEntry *styleTableEntryOfCode(Document *window, int hCode) {
-	auto highlightData = static_cast<WindowHighlightData *>(window->highlightData_);
-
-	hCode -= UNFINISHED_STYLE; // get the correct index value 
-	if (!highlightData || hCode < 0 || hCode >= highlightData->nStyles)
-		return nullptr;
-	return &highlightData->styleTable[hCode];
-}
-
 static StyleTableEntry *styleTableEntryOfCodeEx(DocumentWidget *document, int hCode) {
     auto highlightData = static_cast<WindowHighlightData *>(document->highlightData_);
 
@@ -1985,19 +1074,9 @@ QString HighlightNameOfCodeEx(DocumentWidget *document, int hCode) {
     return entry ? entry->highlightName : QString();
 }
 
-QString HighlightNameOfCode(Document *window, int hCode) {
-	StyleTableEntry *entry = styleTableEntryOfCode(window, hCode);
-	return entry ? entry->highlightName : QString();
-}
-
 QString HighlightStyleOfCodeEx(DocumentWidget *document, int hCode) {
     StyleTableEntry *entry = styleTableEntryOfCodeEx(document, hCode);
     return entry ? entry->styleName : QString();
-}
-
-QString HighlightStyleOfCode(Document *window, int hCode) {
-	StyleTableEntry *entry = styleTableEntryOfCode(window, hCode);
-	return entry ? entry->styleName : QString();
 }
 
 Pixel HighlightColorValueOfCodeEx(DocumentWidget *document, int hCode, Color *color) {
@@ -2023,58 +1102,6 @@ Pixel HighlightColorValueOfCodeEx(DocumentWidget *document, int hCode, Color *co
         }
         return colorDef.pixel;
     }
-}
-
-Pixel HighlightColorValueOfCode(Document *window, int hCode, Color *color) {
-	StyleTableEntry *entry = styleTableEntryOfCode(window, hCode);
-	if (entry) {
-		return entry->color;
-	} else {
-		// pick up foreground color of the (first) text widget of the window 
-		XColor colorDef;
-		Colormap cMap;
-		Display *display = XtDisplay(window->textArea_);
-
-		color->r = 0;
-		color->g = 0;
-		color->b = 0;
-		
-		colorDef.pixel = textD_of(window->textArea_)->getForegroundPixel();
-		
-		XtVaGetValues(window->textArea_, XtNcolormap, &cMap, nullptr);
-		
-		if (XQueryColor(display, cMap, &colorDef)) {
-			color->r = colorDef.red;
-			color->g = colorDef.green;
-			color->b = colorDef.blue;
-		}
-		return colorDef.pixel;
-	}
-}
-
-Pixel GetHighlightBGColorOfCode(Document *window, int hCode, Color *color) {
-	StyleTableEntry *entry = styleTableEntryOfCode(window, hCode);
-	
-	if (entry && !entry->bgColorName.isNull()) {
-		return entry->bgColor;
-	} else {
-		// pick up background color of the (first) text widget of the window 
-		XColor colorDef;
-		Colormap cMap;
-		Display *display = XtDisplay(window->textArea_);
-		
-		color->r = 0;
-		color->g = 0;
-		color->b = 0;
-		
-		XtVaGetValues(window->textArea_, XtNcolormap, &cMap, XtNbackground, &colorDef.pixel, nullptr);
-		if (XQueryColor(display, cMap, &colorDef)) {
-			color->r = colorDef.red;
-			color->g = colorDef.green;
-			color->b = colorDef.blue;
-		}
-		return colorDef.pixel;
-	}
 }
 
 Pixel GetHighlightBGColorOfCodeEx(DocumentWidget *document, int hCode, Color *color) {
@@ -2197,105 +1224,8 @@ static void handleUnparsedRegionEx(const DocumentWidget *window, TextBuffer *sty
 }
 
 /*
-** Callback to parse an "unfinished" region of the buffer.  "unfinished" means
-** that the buffer has been parsed with pass 1 patterns, but this section has
-** not yet been exposed, and thus never had pass 2 patterns applied.  This
-** callback is invoked when the text widget's display routines encounter one
-** of these unfinished regions.  "pos" is the first position encountered which
-** needs re-parsing.  This routine applies pass 2 patterns to a chunk of
-** the buffer of size PASS_2_REPARSE_CHUNK_SIZE beyond pos.
-*/
-static void handleUnparsedRegion(const Document *window, TextBuffer *styleBuf, const int pos) {
-	TextBuffer *buf = window->buffer_;
-	int beginParse, endParse, beginSafety, endSafety, p;
-	auto highlightData = static_cast<WindowHighlightData *>(window->highlightData_);
-
-	ReparseContext *context = &highlightData->contextRequirements;
-	HighlightData *pass2Patterns = highlightData->pass2Patterns;
-	char c, prevChar;
-	int firstPass2Style = (uint8_t)pass2Patterns[1].style;
-
-	/* If there are no pass 2 patterns to process, do nothing (but this
-	   should never be triggered) */
-	if (!pass2Patterns)
-		return;
-
-	/* Find the point at which to begin parsing to ensure that the character at
-	   pos is parsed correctly (beginSafety), at most one context distance back
-	   from pos, unless there is a pass 1 section from which to start */
-	beginParse = pos;
-	beginSafety = backwardOneContext(buf, context, beginParse);
-	for (p = beginParse; p >= beginSafety; p--) {
-		c = styleBuf->BufGetCharacter(p);
-		if (c != UNFINISHED_STYLE && c != PLAIN_STYLE && (uint8_t)c < firstPass2Style) {
-			beginSafety = p + 1;
-			break;
-		}
-	}
-
-	/* Decide where to stop (endParse), and the extra distance (endSafety)
-	   necessary to ensure that the changes at endParse are correct.  Stop at
-	   the end of the unfinished region, or a max. of PASS_2_REPARSE_CHUNK_SIZE
-	   characters forward from the requested position */
-	endParse = std::min<int>(buf->BufGetLength(), pos + PASS_2_REPARSE_CHUNK_SIZE);
-	endSafety = forwardOneContext(buf, context, endParse);
-	for (p = pos; p < endSafety; p++) {
-		c = styleBuf->BufGetCharacter(p);
-		if (c != UNFINISHED_STYLE && c != PLAIN_STYLE && (uint8_t)c < firstPass2Style) {
-			endParse = std::min<int>(endParse, p);
-			endSafety = p;
-			break;
-		} else if (c != UNFINISHED_STYLE && p < endParse) {
-			endParse = p;
-			if ((uint8_t)c < firstPass2Style)
-				endSafety = p;
-			else
-				endSafety = forwardOneContext(buf, context, endParse);
-			break;
-		}
-	}
-
-	// Copy the buffer range into a string 
-	/* printf("callback pass2 parsing from %d thru %d w/ safety from %d thru %d\n",
-	        beginParse, endParse, beginSafety, endSafety); */
-			
-	std::string str       = buf->BufGetRangeEx(beginSafety, endSafety);
-	char *string          = &str[0];
-	const char *stringPtr = &str[0];
-	char *const match_to  = string + str.size();
-	
-	
-	std::string styleStr  = styleBuf->BufGetRangeEx(beginSafety, endSafety);
-	char *styleString     = &styleStr[0];
-	char *stylePtr        = &styleStr[0];
-
-	// Parse it with pass 2 patterns 
-	prevChar = getPrevChar(buf, beginSafety);
-
-	parseString(
-		pass2Patterns,
-		&stringPtr,
-		&stylePtr, 
-		endParse - beginSafety, 
-		&prevChar, 
-		false, 
-		GetWindowDelimiters(window),
-		string, 
-		match_to);
-
-	/* Update the style buffer the new style information, but only between
-	   beginParse and endParse.  Skip the safety region */
-	styleString[endParse - beginSafety] = '\0';
-	styleBuf->BufReplaceEx(beginParse, endParse, &styleString[beginParse - beginSafety]);
-}
-
-/*
 ** Callback wrapper around the above function.
 */
-static void handleUnparsedRegionCB(const TextDisplay *textD, int pos, const void *cbArg) {
-	handleUnparsedRegion((Document *)cbArg, textD->getStyleBuffer(), pos);
-}
-
 static void handleUnparsedRegionCBEx(const TextArea *area, int pos, const void *cbArg) {
     auto document = static_cast<const DocumentWidget *>(cbArg);
     handleUnparsedRegionEx(document, area->getStyleBuffer(), pos);
@@ -3054,34 +1984,6 @@ static regexp *compileREAndWarnEx(DocumentWidget *parent, view::string_view re) 
 
 }
 
-/*
-** compile a regular expression and present a user friendly dialog on failure.
-*/
-static regexp *compileREAndWarn(Widget parent, view::string_view re) {
-
-	Q_UNUSED(parent);
-
-	try {
-		return new regexp(re, REDFLT_STANDARD);
-	} catch(const regex_error &e) {
-	
-		// NOTE(eteran): was DF_MAX_MSG_LENGTH (2047 + 1024)
-		const size_t maxLength = 4096;
-
-		/* Prevent buffer overflow. If the re is too long, truncate it and append ... */
-		std::string boundedRe = re.to_string();
-				
-		if (boundedRe.size() > maxLength) {
-			boundedRe.resize(maxLength - 3);
-			boundedRe.append("...");
-		}
-
-		QMessageBox::warning(nullptr /*parent*/, QLatin1String("Error in Regex"), QString(QLatin1String("Error in syntax highlighting regular expression:\n%1\n%2")).arg(QString::fromStdString(boundedRe)).arg(QLatin1String(e.what())));
-		return nullptr;
-	}
-	
-}
-
 static int parentStyleOf(const char *parentStyles, int style) {
 	int r = parentStyles[(uint8_t)style - UNFINISHED_STYLE]; 
 	return r;
@@ -3334,65 +2236,3 @@ static int findTopLevelParentIndex(HighlightPattern *patList, int nPats, int ind
 	return topIndex;
 }
 
-/*
-** Re-size (or re-height, anyhow) a window after adding or removing
-** highlight fonts has changed the required vertical spacing (horizontal
-** spacing is determined by the primary font, which doesn't change).
-**
-** Note that this messes up the window manager's height increment hint,
-** which must be subsequently reset by UpdateWMSizeHints.
-*/
-static void updateWindowHeight(Document *window, int oldFontHeight) {
-	int i;
-	int borderHeight;
-	int marginHeight;
-	Dimension windowHeight;
-	Dimension textAreaHeight;
-	Dimension textHeight;
-	Dimension newWindowHeight;
-
-	/* resize if there's only _one_ document in the window, to avoid
-	   the growing-window bug */
-	if (window->TabCount() > 1) {
-		return;
-	}
-
-	/* Decompose the window height into the part devoted to displaying
-	   text (textHeight) and the non-text part (boderHeight) */
-	XtVaGetValues(window->shell_, XmNheight, &windowHeight, nullptr);
-	
-	marginHeight   = textD_of(window->textArea_)->getMarginHeight();
-	textAreaHeight = textD_of(window->textArea_)->getHeight();
-
-	textHeight = textAreaHeight - 2 * marginHeight;
-	
-	for (i = 0; i < window->textPanes_.size(); i++) {
-		textAreaHeight = textD_of(window->textPanes_[i])->getHeight();
-		textHeight += textAreaHeight - 2 * marginHeight;
-	}
-	
-	borderHeight = windowHeight - textHeight;
-
-	// Calculate a new window height appropriate for the new font 
-	newWindowHeight = (textHeight * getFontHeight(window)) / oldFontHeight + borderHeight;
-
-	/* Many window managers enforce window size increments even on client resize
-	   requests.  Our height increment is probably wrong because it is still
-	   set for the previous font.  Set the new height in advance, before
-	   attempting to resize. */
-	XtVaSetValues(window->shell_, XmNheightInc, getFontHeight(window), nullptr);
-
-	// Re-size the window 
-	XtVaSetValues(window->shell_, XmNheight, newWindowHeight, nullptr);
-}
-
-/*
-** Find the height currently being used to display text, which is
-** a composite of all of the active highlighting fonts as determined by the
-** text display component
-*/
-static int getFontHeight(Document *window) {
-	TextDisplay *textD = textD_of(window->textArea_);
-
-	return textD->fontAscent() + textD->fontDescent();
-}

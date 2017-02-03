@@ -58,8 +58,8 @@ public:
     void forceShowLineNumbers();
     void ShowLineNumbers(bool state);
     void AddToPrevOpenMenu(const QString &filename);
-    void ReadNEditDB();
-    void WriteNEditDB();
+    static void ReadNEditDB();
+    static void WriteNEditDB();
     void invalidatePrevOpenMenus();
     void updatePrevOpenMenu();
     void fileCB(DocumentWidget *window, const std::string &value);

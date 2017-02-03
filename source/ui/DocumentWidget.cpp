@@ -3039,7 +3039,7 @@ int DocumentWidget::CloseFileAndWindow(int preResponse) {
 ** Close a document, or an editor window
 */
 void DocumentWidget::CloseWindow() {
-
+#if 0
     MainWindow *window = toWindow();
     if(!window) {
         return;
@@ -3152,7 +3152,7 @@ void DocumentWidget::CloseWindow() {
     // so it's more automatic
     window->ui.action_Detach_Tab->setEnabled(window->TabCount() > 1);
     window->ui.action_Move_Tab_To->setEnabled(MainWindow::allWindows().size() > 1);
-
+#endif
     // deallocate the window data structure
     delete this;
 }

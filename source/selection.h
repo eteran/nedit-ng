@@ -28,18 +28,15 @@
 #define SELECTION_H_
 
 class QString;
-class Document;
 class DocumentWidget;
 class TextArea;
 class MainWindow;
+class QChar;
 
-#include <X11/Intrinsic.h>
 
 int StringToLineAndCol(const char *text, int *lineNum, int *column);
-QString GetAnySelectionEx(Document *window);
 QString GetAnySelectionEx(DocumentWidget *window);
 void AddMarkEx(MainWindow *window, DocumentWidget *document, TextArea *area, QChar label);
 void SelectNumberedLineEx(DocumentWidget *document, TextArea *area, int lineNum);
-void UpdateMarkTable(Document *window, int pos, int nInserted, int nDeleted);
-void SelectNumberedLine(Document *window, int lineNum);
+
 #endif

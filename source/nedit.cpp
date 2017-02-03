@@ -394,7 +394,7 @@ int main(int argc, char *argv[]) {
 
 	/* Read the nedit dynamic database of files for the Open Previous
 	   command (and eventually other information as well) */
-	ReadNEditDB();
+    MainWindow::ReadNEditDB();
 
 	/* Process -import command line argument before others which might
 	   open windows (loading preferences doesn't update menu settings,

@@ -50,17 +50,13 @@ void AbortMacroCommandEx(DocumentWidget *document);
 void AddLastCommandActionHook(XtAppContext context);
 void BeginLearnEx(DocumentWidget *document);
 void CancelMacroOrLearnEx(DocumentWidget *document);
-void DoMacro(Document *window, view::string_view macro, const char *errInName);
 void DoMacroEx(DocumentWidget *document, view::string_view macro, const char *errInName);
 void FinishLearnEx();
 
 void ReadMacroInitFileEx(DocumentWidget *window);
 void RegisterMacroSubroutines();
 void RepeatMacroEx(DocumentWidget *window, const char *command, int how);
-void Replay(Document *window);
-void ResumeMacroExecution(Document *window);
 void ResumeMacroExecutionEx(DocumentWidget *window);
-void ReturnShellCommandOutput(Document *window, const std::string &outText, int status);
 void ReturnShellCommandOutputEx(DocumentWidget *window, const std::string &outText, int status);
 void SafeGC();
 

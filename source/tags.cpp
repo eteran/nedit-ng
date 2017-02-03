@@ -39,7 +39,6 @@
 #include "TextDisplay.h"
 #include "text.h"
 #include "nedit.h"
-#include "Document.h"
 #include "file.h"
 #include "preferences.h"
 #include "search.h"

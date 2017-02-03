@@ -51,8 +51,8 @@
 #include "ui/TextArea.h"
 
 #include "macro.h"
-#include "Document.h"
 #include "HighlightPattern.h"
+#include "util/fileUtils.h"
 #include "IndentStyle.h"
 #include "RangesetTable.h"
 #include "SearchDirection.h"
@@ -71,6 +71,7 @@
 #include "tags.h"
 #include "text.h"
 #include "userCmds.h"
+#include "calltips.h"
 
 #include "util/MotifHelper.h"
 #include "util/misc.h"
@@ -80,6 +81,7 @@
 #include <sys/stat.h>
 
 #include <functional>
+
 
 namespace {
 
@@ -132,22 +134,11 @@ struct macroCmdInfoEx {
 
 
 static void cancelLearnEx();
-static void runMacro(Document *window, Program *prog);
 static void runMacroEx(DocumentWidget *document, Program *prog);
-static void finishMacroCmdExecution(Document *window);
 static void finishMacroCmdExecutionEx(DocumentWidget *window);
 void learnActionHook(Widget w, XtPointer clientData, String actionName, XEvent *event, String *params, Cardinal *numParams);
-static void lastActionHook(Widget w, XtPointer clientData, String actionName, XEvent *event, String *params, Cardinal *numParams);
-static char *actionToString(Widget w, const char *actionName, XEvent *event, String *params, Cardinal numParams);
-static int isMouseAction(const char *action);
-static int isRedundantAction(const char *action);
-static int isIgnoredAction(const char *action);
 static int readCheckMacroStringEx(QWidget *dialogParent, const char *string, DocumentWidget *runWindow, const char *errIn, const char **errPos);
-static void bannerTimeoutProc(XtPointer clientData, XtIntervalId *id);
-static Boolean continueWorkProc(XtPointer clientData);
 static bool continueWorkProcEx(DocumentWidget *clientData);
-static int escapeStringChars(char *fromString, char *toString);
-static int escapedStringLength(char *string);
 static int lengthMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 static int minMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 static int maxMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
@@ -564,6 +555,7 @@ static const char *ReturnGlobalNames[N_RETURN_GLOBALS] = {
 };
 static Symbol *ReturnGlobals[N_RETURN_GLOBALS];
 
+#if 0
 // List of actions not useful when learning a macro sequence (also see below) 
 static const char *IgnoredActions[] = {"focusIn", "focusOut"};
 
@@ -576,6 +568,7 @@ static const char *MouseActions[] = {"grab_focus",       "extend_adjust", "exten
    generate further actions, more suitable for recording */
 static const char *RedundantActions[] = {"open_dialog",             "save_as_dialog", "revert_to_saved_dialog", "include_file_dialog", "load_macro_file_dialog",  "load_tags_file_dialog",  "find_dialog",   "replace_dialog",
                                          "goto_line_number_dialog", "mark_dialog",    "goto_mark_dialog",       "control_code_dialog", "filter_selection_dialog", "execute_command_dialog", "repeat_dialog", "start_incremental_find"};
+#endif
 
 // The last command executed (used by the Repeat command) 
 QString LastCommand;
@@ -593,9 +586,11 @@ static std::function<int(DocumentWidget *document)> MacroRecordActionHookEx;
 // Window where macro recording is taking place 
 static DocumentWidget *MacroRecordWindowEx = nullptr;
 
+#if 0
 // Arrays for translating escape characters in escapeStringChars 
 static char ReplaceChars[] = "\\\"ntbrfav";
 static char EscapeChars[] = "\\\"\n\t\b\r\f\a\v";
+#endif
 
 /*
 ** Install built-in macro subroutines and special variables for accessing
@@ -687,9 +682,11 @@ void BeginLearnEx(DocumentWidget *document) {
     document->SetModeMessageEx(message);
 }
 
+#if 0
 void AddLastCommandActionHook(XtAppContext context) {
 	XtAppAddActionHook(context, lastActionHook, nullptr);
 }
+#endif
 
 void FinishLearnEx() {
 
@@ -770,26 +767,26 @@ static void cancelLearnEx() {
 /*
 ** Execute the learn/replay sequence stored in "window"
 */
-void Replay(Document *window) {
-	// Verify that a replay macro exists and it's not empty and that 
-	// we're not already running a macro 
-	if (!ReplayMacro.empty() && window->macroCmdData_ == nullptr) {
+void ReplayEx(DocumentWidget *window) {
+    // Verify that a replay macro exists and it's not empty and that
+    // we're not already running a macro
+    if (!ReplayMacro.empty() && window->macroCmdData_ == nullptr) {
 
-		/* Parse the replay macro (it's stored in text form) and compile it into
-		   an executable program "prog" */
-		   
-		const char *errMsg;
-		const char *stoppedAt;
+        /* Parse the replay macro (it's stored in text form) and compile it into
+           an executable program "prog" */
 
-		Program *prog = ParseMacro(ReplayMacro.c_str(), &errMsg, &stoppedAt);
-		if(!prog) {
-			fprintf(stderr, "NEdit internal error, learn/replay macro syntax error: %s\n", errMsg);
-			return;
-		}
+        const char *errMsg;
+        const char *stoppedAt;
 
-		// run the executable program 
-		runMacro(window, prog);
-	}
+        Program *prog = ParseMacro(ReplayMacro.c_str(), &errMsg, &stoppedAt);
+        if(!prog) {
+            fprintf(stderr, "NEdit internal error, learn/replay macro syntax error: %s\n", errMsg);
+            return;
+        }
+
+        // run the executable program
+        runMacroEx(window, prog);
+    }
 }
 
 /*
@@ -1072,66 +1069,6 @@ static void runMacroEx(DocumentWidget *document, Program *prog) {
 }
 
 /*
-** Run a pre-compiled macro, changing the interface state to reflect that
-** a macro is running, and handling preemption, resumption, and cancellation.
-** frees prog when macro execution is complete;
-*/
-static void runMacro(Document *window, Program *prog) {
-	DataValue result;
-	const char *errMsg;
-	int stat;
-	XmString s;
-
-	/* If a macro is already running, just call the program as a subroutine,
-	   instead of starting a new one, so we don't have to keep a separate
-	   context, and the macros will serialize themselves automatically */
-	if (window->macroCmdData_) {
-		RunMacroAsSubrCall(prog);
-		return;
-	}
-
-	// put up a watch cursor over the waiting window 
-	BeginWait(window->shell_);
-
-	// enable the cancel menu item 
-	XtVaSetValues(window->cancelMacroItem_, XmNlabelString, s = XmStringCreateSimpleEx("Cancel Macro"), nullptr);
-	XmStringFree(s);
-	window->SetSensitive(window->cancelMacroItem_, True);
-
-	/* Create a data structure for passing macro execution information around
-	   amongst the callback routines which will process i/o and completion */
-	auto cmdData = new macroCmdInfo;
-    window->macroCmdData_       = cmdData;
-    cmdData->bannerIsUp         = False;
-    cmdData->closeOnCompletion  = False;
-    cmdData->program            = prog;
-    cmdData->context            = nullptr;
-	cmdData->continueWorkProcID = 0;
-
-	// Set up timer proc for putting up banner when macro takes too long 
-	cmdData->bannerTimeoutID = XtAppAddTimeOut(XtWidgetToApplicationContext(window->shell_), BANNER_WAIT_TIME, bannerTimeoutProc, window);
-
-	// Begin macro execution 
-	stat = ExecuteMacro(window, prog, 0, nullptr, &result, &cmdData->context, &errMsg);
-
-	if (stat == MACRO_ERROR) {
-		finishMacroCmdExecution(window);
-		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Macro Error"), QString(QLatin1String("Error executing macro: %1")).arg(QLatin1String(errMsg)));
-		return;
-	}
-
-	if (stat == MACRO_DONE) {
-		finishMacroCmdExecution(window);
-		return;
-	}
-	if (stat == MACRO_TIME_LIMIT) {
-		ResumeMacroExecution(window);
-		return;
-	}
-	// (stat == MACRO_PREEMPT) Macro was preempted 
-}
-
-/*
 ** Continue with macro execution after preemption.  Called by the routines
 ** whose actions cause preemption when they have completed their lengthy tasks.
 ** Re-establishes macro execution work proc.  Window must be the window in
@@ -1146,20 +1083,6 @@ void ResumeMacroExecutionEx(DocumentWidget *window) {
             return continueWorkProcEx(window);
         });
     }
-}
-
-/*
-** Continue with macro execution after preemption.  Called by the routines
-** whose actions cause preemption when they have completed their lengthy tasks.
-** Re-establishes macro execution work proc.  Window must be the window in
-** which the macro is executing (the window to which macroCmdData is attached),
-** and not the window to which operations are focused.
-*/
-void ResumeMacroExecution(Document *window) {
-	auto cmdData = static_cast<macroCmdInfo *>(window->macroCmdData_);
-
-	if(cmdData)
-		cmdData->continueWorkProcID = XtAppAddWorkProc(XtWidgetToApplicationContext(window->shell_), continueWorkProc, window);
 }
 
 /*
@@ -1291,58 +1214,6 @@ static void finishMacroCmdExecutionEx(DocumentWidget *window) {
 }
 
 /*
-** Clean up after the execution of a macro command: free memory, and restore
-** the user interface state.
-*/
-static void finishMacroCmdExecution(Document *window) {
-	auto cmdData = static_cast<macroCmdInfo *>(window->macroCmdData_);
-	int closeOnCompletion = cmdData->closeOnCompletion;
-	XmString s;
-	XClientMessageEvent event;
-
-	// Cancel pending timeout and work proc 
-	if (cmdData->bannerTimeoutID != 0)
-		XtRemoveTimeOut(cmdData->bannerTimeoutID);
-	if (cmdData->continueWorkProcID != 0)
-		XtRemoveWorkProc(cmdData->continueWorkProcID);
-
-	// Clean up waiting-for-macro-command-to-complete mode 
-	EndWait(window->shell_);
-	XtVaSetValues(window->cancelMacroItem_, XmNlabelString, s = XmStringCreateSimpleEx("Cancel Learn"), nullptr);
-	XmStringFree(s);
-	window->SetSensitive(window->cancelMacroItem_, False);
-	if (cmdData->bannerIsUp) {
-		window->ClearModeMessage();
-	}
-
-	// Free execution information 
-	FreeProgram(cmdData->program);
-	delete cmdData;
-	window->macroCmdData_ = nullptr;
-
-	/* If macro closed its own window, window was made empty and untitled,
-	   but close was deferred until completion.  This is completion, so if
-	   the window is still empty, do the close */
-	if (closeOnCompletion && !window->filenameSet_ && !window->fileChanged_) {
-		window->CloseWindow();
-		window = nullptr;
-	}
-
-	// If no other macros are executing, do garbage collection 
-	SafeGC();
-
-	/* In processing the .neditmacro file (and possibly elsewhere), there
-	   is an event loop which waits for macro completion.  Send an event
-	   to wake up that loop, otherwise execution will stall until the user
-	   does something to the window. */
-	if (!closeOnCompletion) {
-		event.format = 8;
-		event.type = ClientMessage;
-		XSendEvent(XtDisplay(window->shell_), XtWindow(window->shell_), False, NoEventMask, (XEvent *)&event);
-	}
-}
-
-/*
 ** Do garbage collection of strings if there are no macros currently
 ** executing.  NEdit's macro language GC strategy is to call this routine
 ** whenever a macro completes.  If other macros are still running (preempted
@@ -1390,30 +1261,6 @@ void DoMacroEx(DocumentWidget *document, view::string_view macro, const char *er
 
     // run the executable program (prog is freed upon completion)
     runMacroEx(document, prog);
-}
-
-void DoMacro(Document *window, view::string_view macro, const char *errInName) {
-
-	const char *errMsg;
-	const char *stoppedAt;
-
-	/* Add a terminating newline (which command line users are likely to omit
-	   since they are typically invoking a single routine) */
-	   
-	std::string tMacro;
-	tMacro.reserve(macro.size() + 1);
-	tMacro.append(macro.begin(), macro.end());
-	tMacro.append("\n");
-
-	// Parse the macro and report errors if it fails 
-	Program *const prog = ParseMacro(tMacro.c_str(), &errMsg, &stoppedAt);
-	if(!prog) {
-		ParseError(window->shell_, tMacro.c_str(), stoppedAt, errInName, errMsg);
-		return;
-	}
-	
-	// run the executable program (prog is freed upon completion) 
-	runMacro(window, prog);
 }
 
 /*
@@ -1492,7 +1339,9 @@ void RepeatMacroEx(DocumentWidget *window, const char *command, int how) {
 ** Macro recording action hook for Learn/Replay, added temporarily during
 ** learn.
 */
+#if 0
 void learnActionHook(Widget w, XtPointer clientData, String actionName, XEvent *event, String *params, Cardinal *numParams) {
+
 	int i;
 	char *actionString;
 
@@ -1530,10 +1379,12 @@ void learnActionHook(Widget w, XtPointer clientData, String actionName, XEvent *
 		XtFree(actionString);
 	}
 }
+#endif
 
 /*
 ** Permanent action hook for remembering last action for possible replay
 */
+#if 0
 static void lastActionHook(Widget w, XtPointer clientData, String actionName, XEvent *event, String *params, Cardinal *numParams) {
 
 	(void)clientData;
@@ -1541,22 +1392,28 @@ static void lastActionHook(Widget w, XtPointer clientData, String actionName, XE
 	char *actionString;
 
 	// Find the curr to which this action belongs 
-    auto curr = WindowList.begin();
-	for (; curr != WindowList.end(); ++curr) {
-	
-		Document *const window = *curr;
-	
-		if (window->textArea_ == w)
+    QList<DocumentWidget *> documents = MainWindow::allDocuments();
+    auto curr = documents.begin();
+    for (; curr != documents.end(); ++curr) {
+
+        DocumentWidget *const document = *curr;
+
+        if (document->textArea_ == w) {
 			break;
-		for (i = 0; i < window->textPanes_.size(); i++) {
-			if (window->textPanes_[i] == w)
+        }
+
+        for (i = 0; i < document->textPanes_.size(); i++) {
+            if (document->textPanes_[i] == w) {
 				break;
+            }
 		}
-		if (i < window->textPanes_.size())
+
+        if (i < document->textPanes_.size()) {
 			break;
+        }
 	}
 	
-	if(curr == WindowList.end()) {
+    if(curr == documents.end()) {
 		return;
 	}
 
@@ -1571,6 +1428,7 @@ static void lastActionHook(Widget w, XtPointer clientData, String actionName, XE
 		LastCommand = QLatin1String(actionString);
 	}
 }
+
 
 /*
 ** Create a macro string to represent an invocation of an action routine.
@@ -1652,45 +1510,13 @@ static int isIgnoredAction(const char *action) {
 			return true;
 	return false;
 }
+#endif
 
 /*
 ** Timer proc for putting up the "Macro Command in Progress" banner if
 ** the process is taking too long.
 */
 #define MAX_TIMEOUT_MSG_LEN (MAX_ACCEL_LEN + 60)
-static void bannerTimeoutProc(XtPointer clientData, XtIntervalId *id) {
-	(void)id;
-
-	auto window = static_cast<Document *>(clientData);
-	auto cmdData = static_cast<macroCmdInfo *>(window->macroCmdData_);
-	XmString xmCancel;
-	std::string cCancel;
-	char message[MAX_TIMEOUT_MSG_LEN];
-
-	cmdData->bannerIsUp = True;
-
-	// Extract accelerator text from menu PushButtons 
-	XtVaGetValues(window->cancelMacroItem_, XmNacceleratorText, &xmCancel, nullptr);
-
-	if (!XmStringEmpty(xmCancel)) {
-		// Translate Motif string to char* 
-		cCancel = GetXmStringTextEx(xmCancel);
-
-		// Free Motif String 
-		XmStringFree(xmCancel);
-	}
-
-	// Create message 
-	if (cCancel.empty()) {
-		strncpy(message, "Macro Command in Progress", MAX_TIMEOUT_MSG_LEN);
-		message[MAX_TIMEOUT_MSG_LEN - 1] = '\0';
-	} else {
-		snprintf(message, sizeof(message), "Macro Command in Progress -- Press %s to Cancel", cCancel.c_str());
-	}
-
-	window->SetModeMessage(message);
-	cmdData->bannerTimeoutID = 0;
-}
 
 /*
 ** Work proc for continuing execution of a preempted macro.
@@ -1734,43 +1560,8 @@ bool continueWorkProcEx(DocumentWidget *window) {
     return false;
 }
 
-/*
-** Work proc for continuing execution of a preempted macro.
-**
-** Xt WorkProcs are designed to run first-in first-out, which makes them
-** very bad at sharing time between competing tasks.  For this reason, it's
-** usually bad to use work procs anywhere where their execution is likely to
-** overlap.  Using a work proc instead of a timer proc (which I usually
-** prefer) here means macros will probably share time badly, but we're more
-** interested in making the macros cancelable, and in continuing other work
-** than having users run a bunch of them at once together.
-*/
-static Boolean continueWorkProc(XtPointer clientData) {
-	auto window = static_cast<Document *>(clientData);
-	auto cmdData = static_cast<macroCmdInfo *>(window->macroCmdData_);
-	const char *errMsg;
-	int stat;
-	DataValue result;
 
-	stat = ContinueMacro(cmdData->context, &result, &errMsg);
-	if (stat == MACRO_ERROR) {
-		finishMacroCmdExecution(window);
-		QMessageBox::critical(nullptr /*parent*/, QLatin1String("Macro Error"), QString(QLatin1String("Error executing macro: %1")).arg(QLatin1String(errMsg)));
-		return true;
-	} else if (stat == MACRO_DONE) {
-		finishMacroCmdExecution(window);
-		return true;
-	} else if (stat == MACRO_PREEMPT) {
-		cmdData->continueWorkProcID = 0;
-		return true;
-	}
-
-	// Macro exceeded time slice, re-schedule it 
-	if (stat != MACRO_TIME_LIMIT)
-		return true; // shouldn't happen 
-    return false;
-}
-
+#if 0
 /*
 ** Copy fromString to toString replacing special characters in strings, such
 ** that they can be read back by the macro parser's string reader.  i.e. double
@@ -1820,6 +1611,7 @@ static int escapedStringLength(char *string) {
 	}
 	return length;
 }
+#endif
 
 /*
 ** Built-in macro subroutine for getting the length of a string
@@ -1908,7 +1700,7 @@ static int focusWindowMS(DocumentWidget *window, DataValue *argList, int nArgs, 
 	int len;
 
 	/* Read the argument representing the window to focus to, and translate
-	   it into a pointer to a real Document */
+       it into a pointer to a real DocumentWidget */
 	if (nArgs != 1) {
 		return wrongNArgsErr(errMsg);
 	}
@@ -2948,26 +2740,6 @@ void ReturnShellCommandOutputEx(DocumentWidget *window, const std::string &outTe
     ModifyReturnedValueEx(cmdData->context, retVal);
     ReturnGlobals[SHELL_CMD_STATUS]->value.tag = INT_TAG;
     ReturnGlobals[SHELL_CMD_STATUS]->value.val.n = status;
-}
-
-/*
-** Method used by ShellCmdToMacroString (called by shellCmdMS), for returning
-** macro string and exit status after the execution of a shell command is
-** complete.  (Sorry about the poor modularity here, it's just not worth
-** teaching other modules about macro return globals, since other than this,
-** they're not used outside of macro.c)
-*/
-void ReturnShellCommandOutput(Document *window, const std::string &outText, int status) {
-	DataValue retVal;
-	auto cmdData = static_cast<macroCmdInfo *>(window->macroCmdData_);
-
-	if(!cmdData)
-		return;
-	retVal.tag = STRING_TAG;
-	AllocNStringCpy(&retVal.val.str, outText.c_str());
-	ModifyReturnedValue(cmdData->context, retVal);
-	ReturnGlobals[SHELL_CMD_STATUS]->value.tag = INT_TAG;
-	ReturnGlobals[SHELL_CMD_STATUS]->value.val.n = status;
 }
 
 static int dialogMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {

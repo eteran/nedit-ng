@@ -33,8 +33,6 @@
 #include "DocumentWidget.h"
 #include "MainWindow.h"
 #include "TextArea.h"
-#include "TextHelper.h"
-#include "TextDisplay.h"
 #include "selection.h"
 #include "TextBuffer.h"
 #include "text.h"
@@ -42,7 +40,6 @@
 #include "file.h"
 #include "menu.h"
 #include "preferences.h"
-#include "Document.h"
 #include "server.h"
 #include "util/fileUtils.h"
 
@@ -55,15 +52,6 @@
 
 #include <glob.h>
 
-#include <Xm/Xm.h>
-#include <X11/Xatom.h>
-
-static void processMarkEvent(Widget w, XtPointer clientData, XEvent *event, Boolean *continueDispatch, char *action, int extend);
-static void markKeyCB(Widget w, XtPointer clientData, XEvent *event, Boolean *continueDispatch);
-static void gotoMarkKeyCB(Widget w, XtPointer clientData, XEvent *event, Boolean *continueDispatch);
-static void gotoMarkExtendKeyCB(Widget w, XtPointer clientData, XEvent *event, Boolean *continueDispatch);
-static void maintainSelection(TextSelection *sel, int pos, int nInserted, int nDeleted);
-static void maintainPosition(int *position, int modPos, int nInserted, int nDeleted);
 
 /*
 ** Extract the line and column number from the text string.
@@ -136,26 +124,6 @@ QString GetAnySelectionEx(DocumentWidget *window) {
     QApplication::beep();
     return QString();
 }
-
-QString GetAnySelectionEx(Document *window) {
-
-	/* If the selection is in the window's own buffer get it from there,
-	   but substitute null characters as if it were an external selection */
-	if (window->buffer_->primary_.selected) {
-		std::string text = window->buffer_->BufGetSelectionTextEx();
-		window->buffer_->BufUnsubstituteNullCharsEx(text);
-		return QString::fromStdString(text);
-	}
-
-    const QMimeData *mimeData = QApplication::clipboard()->mimeData(QClipboard::Selection);
-    if(mimeData->hasText()) {
-        return mimeData->text();
-    }
-
-    QApplication::beep();
-    return QString();
-}
-
 void SelectNumberedLineEx(DocumentWidget *document, TextArea *area, int lineNum) {
     int i;
     int lineStart = 0;
@@ -191,81 +159,6 @@ void SelectNumberedLineEx(DocumentWidget *document, TextArea *area, int lineNum)
     area->TextSetCursorPos(lineStart);
 }
 
-void SelectNumberedLine(Document *window, int lineNum) {
-	int i, lineStart = 0, lineEnd;
-
-	// count lines to find the start and end positions for the selection 
-	if (lineNum < 1)
-		lineNum = 1;
-	lineEnd = -1;
-	for (i = 1; i <= lineNum && lineEnd < window->buffer_->BufGetLength(); i++) {
-		lineStart = lineEnd + 1;
-		lineEnd = window->buffer_->BufEndOfLine( lineStart);
-	}
-
-	// highlight the line 
-	if (i > lineNum) {
-		// Line was found 
-		if (lineEnd < window->buffer_->BufGetLength()) {
-			window->buffer_->BufSelect(lineStart, lineEnd + 1);
-		} else {
-			// Don't select past the end of the buffer ! 
-			window->buffer_->BufSelect(lineStart, window->buffer_->BufGetLength());
-		}
-	} else {
-		/* Line was not found -> position the selection & cursor at the end
-		   without making a real selection and beep */
-		lineStart = window->buffer_->BufGetLength();
-		window->buffer_->BufSelect(lineStart, lineStart);
-		QApplication::beep();
-	}
-	window->MakeSelectionVisible(window->lastFocus_);
-	
-	auto textD = window->lastFocus();
-	textD->TextSetCursorPos(lineStart);
-}
-
-/*
-** Temporary event handlers for keys pressed after the mark or goto-mark
-** commands, If the key is valid, grab the key event and call the action
-** procedure to mark (or go to) the selection, otherwise, remove the handler
-** and give up.
-*/
-static void processMarkEvent(Widget w, XtPointer clientData, XEvent *event, Boolean *continueDispatch, char *action, int extend) {
-
-	(void)clientData;
-
-	auto e = reinterpret_cast<XKeyEvent *>(event);
-	Document *window = Document::WidgetToWindow(w);
-	Modifiers modifiers;
-	KeySym keysym;
-	const char *params[2];
-	char string[2];
-
-	XtTranslateKeycode(TheDisplay, e->keycode, e->state, &modifiers, &keysym);
-	if ((keysym >= 'A' && keysym <= 'Z') || (keysym >= 'a' && keysym <= 'z')) {
-		string[0] = toupper(keysym);
-		string[1] = '\0';
-		params[0] = string;
-		params[1] = "extend";
-		XtCallActionProc(window->lastFocus_, action, event, const_cast<char **>(params), extend ? 2 : 1);
-		*continueDispatch = False;
-	}
-	XtRemoveEventHandler(w, KeyPressMask, False, markKeyCB, window);
-	XtRemoveEventHandler(w, KeyPressMask, False, gotoMarkKeyCB, window);
-	XtRemoveEventHandler(w, KeyPressMask, False, gotoMarkExtendKeyCB, window);
-	XtRemoveTimeOut(window->markTimeoutID_);
-}
-static void markKeyCB(Widget w, XtPointer clientData, XEvent *event, Boolean *continueDispatch) {
-	processMarkEvent(w, clientData, event, continueDispatch, (String) "mark", False);
-}
-static void gotoMarkKeyCB(Widget w, XtPointer clientData, XEvent *event, Boolean *continueDispatch) {
-	processMarkEvent(w, clientData, event, continueDispatch, (String) "goto_mark", False);
-}
-static void gotoMarkExtendKeyCB(Widget w, XtPointer clientData, XEvent *event, Boolean *continueDispatch) {
-	processMarkEvent(w, clientData, event, continueDispatch, (String) "goto_mark", True);
-}
-
 void AddMarkEx(MainWindow *window, DocumentWidget *document, TextArea *area, QChar label) {
 
     Q_UNUSED(window);
@@ -296,41 +189,3 @@ void AddMarkEx(MainWindow *window, DocumentWidget *document, TextArea *area, QCh
     document->markTable_[index].cursorPos = area->TextGetCursorPos();
 }
 
-/*
-** Keep the marks in the windows book-mark table up to date across
-** changes to the underlying buffer
-*/
-void UpdateMarkTable(Document *window, int pos, int nInserted, int nDeleted) {
-	int i;
-
-	for (i = 0; i < window->nMarks_; i++) {
-		maintainSelection(&window->markTable_[i].sel, pos, nInserted, nDeleted);
-		maintainPosition(&window->markTable_[i].cursorPos, pos, nInserted, nDeleted);
-	}
-}
-
-/*
-** Update a selection across buffer modifications specified by
-** "pos", "nDeleted", and "nInserted".
-*/
-static void maintainSelection(TextSelection *sel, int pos, int nInserted, int nDeleted) {
-	if (!sel->selected || pos > sel->end)
-		return;
-	maintainPosition(&sel->start, pos, nInserted, nDeleted);
-	maintainPosition(&sel->end, pos, nInserted, nDeleted);
-	if (sel->end <= sel->start)
-		sel->selected = False;
-}
-
-/*
-** Update a position across buffer modifications specified by
-** "modPos", "nDeleted", and "nInserted".
-*/
-static void maintainPosition(int *position, int modPos, int nInserted, int nDeleted) {
-	if (modPos > *position)
-		return;
-	if (modPos + nDeleted <= *position)
-		*position += nInserted - nDeleted;
-	else
-		*position = modPos;
-}

@@ -9,7 +9,6 @@
 #include "HighlightStyle.h"
 #include "highlightData.h"
 #include "preferences.h"
-#include "Document.h"
 #include "FontType.h"
 #include "MainWindow.h"
 

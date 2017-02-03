@@ -27,16 +27,5 @@
 #ifndef MENU_H_
 #define MENU_H_
 
-#include <X11/Intrinsic.h>
-
-#define PERMANENT_MENU_ITEM reinterpret_cast<XtPointer>(1)
-#define TEMPORARY_MENU_ITEM reinterpret_cast<XtPointer>(2)
-
-XtActionsRec *GetMenuActions(int *nActions);
-
-void ReadNEditDB();
-void ShowHiddenTearOff(Widget menuPane);
-void WriteNEditDB();
-
 
 #endif

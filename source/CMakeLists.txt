@@ -116,10 +116,13 @@ add_executable(nedit
 	#QtMotifDialog.cpp
 	#QtMotifWidget.cpp
 	#QtXtWidget.cpp
+
+	Document.cpp
+	TextDisplay.cpp
+	text.cpp
 	
 	ui/ElidedLabel.cpp
 	Color.cpp
-	Document.cpp
 	Font.cpp
 	HighlightPattern.cpp
 	LanguageMode.cpp
@@ -129,7 +132,6 @@ add_executable(nedit
 	RangesetTable.cpp
 	SmartIndent.cpp
 	TextBuffer.cpp
-	TextDisplay.cpp
 	TextSelection.cpp
 	UndoInfo.cpp
 	UserMenuListElement.cpp
@@ -152,7 +154,6 @@ add_executable(nedit
 	shift.cpp
 	smartIndent.cpp
 	tags.cpp
-	text.cpp
 	userCmds.cpp
 	
 	ui/DialogDuplicateTags.cpp

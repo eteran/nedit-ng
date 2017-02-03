@@ -8,7 +8,6 @@
 #include "DialogSyntaxPatterns.h"
 #include "DialogLanguageModes.h"
 #include "PatternSet.h"
-#include "Document.h"
 #include "LanguageMode.h"
 #include "HighlightStyle.h"
 #include "preferences.h"

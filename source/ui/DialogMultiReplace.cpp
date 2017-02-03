@@ -5,7 +5,7 @@
 #include "DocumentWidget.h"
 #include "DialogReplace.h"
 #include "search.h"
-#include "Document.h"
+#include "nedit.h"
 #include "preferences.h"
 
 DialogMultiReplace::DialogMultiReplace(MainWindow *window, DocumentWidget *document, DialogReplace *replace, QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f), window_(window), document_(document), replace_(replace) {

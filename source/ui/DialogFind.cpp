@@ -11,7 +11,7 @@
 #include "DocumentWidget.h"
 #include "TextBuffer.h"
 #include "TextArea.h"
-#include "Document.h"
+#include "nedit.h"
 #include "search.h" // for the search type enum
 #include "server.h"
 #include "preferences.h"

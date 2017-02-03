@@ -9,7 +9,7 @@
 #include "MainWindow.h"
 #include "DocumentWidget.h"
 #include "DialogMultiReplace.h"
-#include "Document.h"
+#include "nedit.h"
 #include "search.h" // for the search type enum
 #include "server.h"
 #include "preferences.h"

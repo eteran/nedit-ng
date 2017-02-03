@@ -38,7 +38,6 @@
 #include "SmartIndent.h"
 
 #include "smartIndent.h"
-#include "Document.h"
 #include "help.h"
 #include "interpret.h"
 #include "macro.h"

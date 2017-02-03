@@ -26,71 +26,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#include <QApplication>
-#include <QInputDialog>
-#include <QMessageBox>
-#include <QStringList>
-#include <QPushButton>
-#include <QMenu>
-#include "ui/MainWindow.h"
-#include "ui/DialogExecuteCommand.h"
-#include "ui/DialogFilter.h"
-#include "ui/DialogTabs.h"
-#include "macro.h"
-#include "IndentStyle.h"
-#include "WrapStyle.h"
-#include "TextHelper.h"
-#include "TextDisplay.h"
 #include "menu.h"
-#include "TextBuffer.h"
-#include "text.h"
-#include "nedit.h"
-#include "file.h"
-#include "search.h"
-#include "selection.h"
-#include "shift.h"
-#include "help.h"
-#include "preferences.h"
-#include "tags.h"
-#include "userCmds.h"
-#include "highlight.h"
-#include "highlightData.h"
-#include "interpret.h"
-#include "smartIndent.h"
-#include "util/MotifHelper.h"
-#include "Document.h"
-#include "util/misc.h"
-#include "util/fileUtils.h"
-#include "util/utils.h"
-#include "Xlt/BubbleButton.h"
 
-#include <algorithm>
-#include <cctype>
-#include <cerrno>
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <unistd.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <sys/param.h>
-
-#include <Xm/Xm.h>
-#include <Xm/CascadeB.h>
-#include <Xm/PushB.h>
-#include <Xm/ToggleB.h>
-#include <Xm/Separator.h>
-#include <Xm/RowColumn.h>
-#include <Xm/MenuShell.h>
-
-#define MENU_WIDGET(w) (XmGetPostedFromWidget(XtParent(w)))
-
-// Menu modes for SGI_CUSTOM short-menus feature 
-enum menuModes { FULL, SHORT };
-
-typedef void (*menuCallbackProc)(Widget, XtPointer, XtPointer);
-
-extern "C" void _XmDismissTearOff(Widget, XtPointer, XtPointer);
 
 #ifdef REPLACE_SCOPE
 static void replaceScopeWindowCB(Widget w, XtPointer clientData, XtPointer callData);
@@ -98,12 +35,10 @@ static void replaceScopeSelectionCB(Widget w, XtPointer clientData, XtPointer ca
 static void replaceScopeSmartCB(Widget w, XtPointer clientData, XtPointer callData);
 #endif
 
-static void splitPaneAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
 
-static void beginningOfSelectionAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void endOfSelectionAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void raiseWindowAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
-static void focusPaneAP(Widget w, XEvent *event, String *args, Cardinal *nArgs);
+#if 0
+// Menu modes for SGI_CUSTOM short-menus feature 
+enum menuModes { FULL, SHORT };
 
 // Application action table 
 static XtActionsRec Actions[] = {
@@ -261,22 +196,11 @@ static XtActionsRec Actions[] = {
                                  //{(String) "set_language_mode", setLanguageModeAP}
                                 };
 
-// List of previously opened files for File menu 
-static int NPrevOpen = 0;
-static char **PrevOpen = nullptr;
-
-/*
-** Return the (statically allocated) action table for menu item actions.
-*/
-XtActionsRec *GetMenuActions(int *nActions) {
-	*nActions = XtNumber(Actions);
-	return Actions;
-}
 
 /*
 ** Create the menu bar
 */
-#if 0
+
 Widget CreateMenuBar(Widget parent, Document *window) {
     Widget menuBar, menuPane, btn, cascade;
 
@@ -438,7 +362,7 @@ static void replayCB(Widget w, XtPointer clientData, XtPointer callData) {
 }
 #endif
 
-
+#if 0 // NOTE(eteran): transitioned
 static void splitPaneAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	Q_UNUSED(args);
@@ -449,10 +373,10 @@ static void splitPaneAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 
 	window->SplitPane();
 	if (window->IsTopDocument()) {
-#if 0 // NOTE(eteran): transitioned
+
 		XtSetSensitive(window->splitPaneItem_, window->textPanes_.size() < MAX_PANES);
 		XtSetSensitive(window->closePaneItem_, window->textPanes_.size() > 0);
-#endif
+
 	}
 }
 
@@ -649,234 +573,9 @@ static void focusPaneAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 	}
 }
 
-static const char neditDBBadFilenameChars[] = "\n";
-
-/*
-** Write dynamic database of file names for "Open Previous".  Eventually,
-** this may hold window positions, and possibly file marks, in which case,
-** it should be moved to a different module, but for now it's just a list
-** of previously opened files.
-*/
-void WriteNEditDB(void) {
-
-	QString fullName = GetRCFileNameEx(NEDIT_HISTORY);
-	if(fullName.isNull()) {
-		return;
-	}
-
-	FILE *fp;
-	int i;
-	static char fileHeader[] = "# File name database for NEdit Open Previous command\n";
-
-	// If the Open Previous command is disabled, just return 
-	if (GetPrefMaxPrevOpenFiles() < 1) {
-		return;
-	}
-
-	// open the file 
-	if ((fp = fopen(fullName.toLatin1().data(), "w")) == nullptr) {
-		return;
-	}
-
-	// write the file header text to the file 
-	fprintf(fp, "%s", fileHeader);
-
-	// Write the list of file names 
-	for (i = 0; i < NPrevOpen; ++i) {
-		size_t lineLen = strlen(PrevOpen[i]);
-
-		if (lineLen > 0 && PrevOpen[i][0] != '#' && strcspn(PrevOpen[i], neditDBBadFilenameChars) == lineLen) {
-			fprintf(fp, "%s\n", PrevOpen[i]);
-		}
-	}
-
-	fclose(fp);
-
-}
-
-/*
-**  Read database of file names for 'Open Previous' submenu.
-**
-**  Eventually, this may hold window positions, and possibly file marks (in
-**  which case it should be moved to a different module) but for now it's
-**  just a list of previously opened files.
-**
-**  This list is read once at startup and potentially refreshed before a
-**  new entry is about to be written to the file or before the menu is
-**  displayed. If the file is modified since the last read (or not read
-**  before), it is read in, otherwise nothing is done.
-*/
-void ReadNEditDB(void) {
-	
-	char line[MAXPATHLEN + 2];
-	char *nameCopy;
-	struct stat attribute;
-	FILE *fp;
-	size_t lineLen;
-	static time_t lastNeditdbModTime = 0;
-
-	/*  If the Open Previous command is disabled or the user set the
-	    resource to an (invalid) negative value, just return.  */
-	if (GetPrefMaxPrevOpenFiles() < 1) {
-		return;
-	}
-
-	/* Initialize the files list and allocate a (permanent) block memory
-	   of the size prescribed by the maxPrevOpenFiles resource */
-	if (!PrevOpen) {
-		PrevOpen = new char*[GetPrefMaxPrevOpenFiles()];
-		NPrevOpen = 0;
-	}
-
-	/* Don't move this check ahead of the previous statements. PrevOpen
-	   must be initialized at all times. */
-	QString fullName = GetRCFileNameEx(NEDIT_HISTORY);
-	if(fullName.isNull()) {
-		return;
-	}
-
-	/*  Stat history file to see whether someone touched it after this
-	    session last changed it.  */
-	if (stat(fullName.toLatin1().data(), &attribute) == 0) {
-		if (lastNeditdbModTime >= attribute.st_mtime) {
-			//  Do nothing, history file is unchanged.  
-			return;
-		} else {
-			//  Memorize modtime to compare to next time.  
-			lastNeditdbModTime = attribute.st_mtime;
-		}
-	} else {
-		//  stat() failed, probably for non-exiting history database.  
-		if (ENOENT != errno) {
-			perror("nedit: Error reading history database");
-		}
-		return;
-	}
-
-	// open the file 
-	if ((fp = fopen(fullName.toLatin1().data(), "r")) == nullptr) {
-		return;
-	}
-
-	//  Clear previous list.  
-	while (NPrevOpen != 0) {
-		XtFree(PrevOpen[--NPrevOpen]);
-	}
-
-	/* read lines of the file, lines beginning with # are considered to be
-	   comments and are thrown away.  Lines are subject to cursory checking,
-	   then just copied to the Open Previous file menu list */
-	while (true) {
-		if (fgets(line, sizeof(line), fp) == nullptr) {
-			// end of file 
-			fclose(fp);
-			return;
-		}
-		if (line[0] == '#') {
-			// comment 
-			continue;
-		}
-		lineLen = strlen(line);
-		if (lineLen == 0) {
-			// blank line 
-			continue;
-		}
-		if (line[lineLen - 1] != '\n') {
-			// no newline, probably truncated 
-			fprintf(stderr, "nedit: Line too long in history file\n");
-			while (fgets(line, sizeof(line), fp)) {
-				lineLen = strlen(line);
-				if (lineLen > 0 && line[lineLen - 1] == '\n') {
-					break;
-				}
-			}
-			continue;
-		}
-		line[--lineLen] = '\0';
-		if (strcspn(line, neditDBBadFilenameChars) != lineLen) {
-			// non-filename characters 
-			fprintf(stderr, "nedit: History file may be corrupted\n");
-			continue;
-		}
-		nameCopy = XtMalloc(lineLen + 1);
-		strcpy(nameCopy, line);
-		PrevOpen[NPrevOpen++] = nameCopy;
-		if (NPrevOpen >= GetPrefMaxPrevOpenFiles()) {
-			// too many entries 
-			fclose(fp);
-			return;
-		}
-	}
-
-	// NOTE(eteran): fixes resource leak
-	fclose(fp);
-}
-
-#if 0
 static void raiseCB(Widget w, XtPointer clientData, XtPointer callData) {
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	static_cast<Document *>(clientData)->RaiseFocusDocumentWindow(True /* always focus */);
 }
 #endif
 
-/*
-** Event handler for restoring the input hint of menu tearoffs
-** previously disabled in ShowHiddenTearOff()
-*/
-static void tearoffMappedCB(Widget w, XtPointer clientData, XUnmapEvent *event) {
-
-	Q_UNUSED(w);
-
-	Widget shell = static_cast<Widget>(clientData);
-	XWMHints *wmHints;
-
-	if (event->type != MapNotify)
-		return;
-
-	// restore the input hint previously disabled in ShowHiddenTearOff() 
-	wmHints = XGetWMHints(TheDisplay, XtWindow(shell));
-	wmHints->input = True;
-	wmHints->flags |= InputHint;
-	XSetWMHints(TheDisplay, XtWindow(shell), wmHints);
-	XFree(wmHints);
-
-	// we only need to do this only 
-	XtRemoveEventHandler(shell, StructureNotifyMask, False, (XtEventHandler)tearoffMappedCB, shell);
-}
-
-/*
-** Redisplay (map) a hidden tearoff
-*/
-void ShowHiddenTearOff(Widget menuPane) {
-	Widget shell;
-
-	if (!menuPane)
-		return;
-
-	shell = XtParent(menuPane);
-	if (!XmIsMenuShell(shell)) {
-		XWindowAttributes winAttr;
-
-		XGetWindowAttributes(XtDisplay(shell), XtWindow(shell), &winAttr);
-		if (winAttr.map_state == IsUnmapped) {
-			XWMHints *wmHints;
-
-			/* to workaround a problem where the remapped tearoffs
-			   always receive the input focus insteads of the text
-			   editing window, we disable the input hint of the
-			   tearoff shell temporarily. */
-			wmHints = XGetWMHints(XtDisplay(shell), XtWindow(shell));
-			wmHints->input = False;
-			wmHints->flags |= InputHint;
-			XSetWMHints(XtDisplay(shell), XtWindow(shell), wmHints);
-			XFree(wmHints);
-
-			// show the tearoff 
-			XtMapWidget(shell);
-
-			/* the input hint will be restored when the tearoff
-		   is mapped */
-			XtAddEventHandler(shell, StructureNotifyMask, False, (XtEventHandler)tearoffMappedCB, shell);
-		}
-	}
-}

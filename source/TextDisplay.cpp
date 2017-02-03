@@ -34,7 +34,6 @@
 #include <QtDebug>
 #include "TextDisplay.h"
 
-#include "Document.h"
 #include "StyleTableEntry.h"
 #include "TextBuffer.h"
 #include "DragStates.h"
@@ -7268,9 +7267,10 @@ void TextDisplay::insertStringAP(XEvent *event, String *args, Cardinal *nArgs) {
 
 void TextDisplay::selfInsertAP(XEvent *event, String *args, Cardinal *nArgs) {
 
+    (void)event;
 	(void)args;
 	(void)nArgs;
-
+#if 0
 	Document *window = Document::WidgetToWindow(w_);
 
 	int status;
@@ -7310,6 +7310,7 @@ void TextDisplay::selfInsertAP(XEvent *event, String *args, Cardinal *nArgs) {
 	}
 	TextInsertAtCursorEx(chars, event, true, true);
 	buffer_->BufUnselect();
+#endif
 }
 
 void TextDisplay::pasteClipboardAP(XEvent *event, String *args, Cardinal *nArgs) {

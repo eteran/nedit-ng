@@ -154,22 +154,6 @@ Widget manageToolBars(Widget toolBarsForm) {
 }
 
 /*
-** Paned windows are impossible to adjust after they are created, which makes
-** them nearly useless for NEdit (or any application which needs to dynamically
-** adjust the panes) unless you tweek some private data to overwrite the
-** desired and minimum pane heights which were set at creation time.  These
-** will probably break in a future release of Motif because of dependence on
-** private data.
-*/
-void setPaneDesiredHeight(Widget w, int height) {
-    Q_UNUSED(w);
-    Q_UNUSED(height);
-#if 0 // NOTE(eteran)
-	reinterpret_cast<XmPanedWindowConstraintPtr>(w->core.constraints)->panedw.dheight = height;
-#endif
-}
-
-/*
 **
 */
 void setPaneMinHeight(Widget w, int min) {
@@ -189,6 +173,7 @@ Widget containingPane(Widget w) {
 	return XtParent(XtParent(w));
 }
 
+#if 0 // NOTE(eteran)
 /*
 ** Xt timer procedure for updating size hints.  The new sizes of objects in
 ** the window are not ready immediately after adding or removing panes.  This
@@ -200,11 +185,11 @@ void wmSizeUpdateProc(XtPointer clientData, XtIntervalId *id) {
 
 	(void)id;
     Q_UNUSED(clientData);
-#if 0 // NOTE(eteran)
-	static_cast<Document *>(clientData)->UpdateWMSizeHints();
-#endif
-}
 
+	static_cast<Document *>(clientData)->UpdateWMSizeHints();
+
+}
+#endif
 /*
 ** hide all the tearoffs spawned from this menu.
 ** It works recursively to close the tearoffs of the submenus
@@ -228,13 +213,13 @@ void hideTearOffs(Widget menuPane) {
 	if (!XmIsMenuShell(XtParent(menuPane)))
 		XtUnmapWidget(XtParent(menuPane));
 }
-
+#if 0 // NOTE(eteran)
 /*
 ** Redisplay menu tearoffs previously hid by hideTearOffs()
 */
 void redisplayTearOffs(Widget menuPane) {
     Q_UNUSED(menuPane)
-#if 0 // NOTE(eteran)
+
 	WidgetList itemList;
 	Widget subMenuID;
 	Cardinal nItems;
@@ -252,7 +237,6 @@ void redisplayTearOffs(Widget menuPane) {
 	// redisplay tearoff for this menu
 	if (!XmIsMenuShell(XtParent(menuPane)))
 		ShowHiddenTearOff(menuPane);
-#endif
 }
 
 /*
@@ -277,6 +261,8 @@ int getTabPosition(Widget tab) {
 
 std::list<UndoInfo *> cloneUndoItems(const std::list<UndoInfo *> &orgList) {
 
+    Q_UNUSED(orgList);
+
 	std::list<UndoInfo *> list;
 	for(UndoInfo *undo : orgList) {
 		list.push_back(new UndoInfo(*undo));
@@ -285,141 +271,145 @@ std::list<UndoInfo *> cloneUndoItems(const std::list<UndoInfo *> &orgList) {
 }
 
 void cloneTextPanes(Document *window, Document *orgWin) {
+    Q_UNUSED(window);
+    Q_UNUSED(orgWin);
 
-	short paneHeights[MAX_PANES + 1];
-	int insertPositions[MAX_PANES + 1];
-	int topLines[MAX_PANES + 1];
-	int horizOffsets[MAX_PANES + 1];
-	int i;
-	int focusPane;
-	int lineNumCols;
-	int totalHeight = 0;
+    short paneHeights[MAX_PANES + 1];
+    int insertPositions[MAX_PANES + 1];
+    int topLines[MAX_PANES + 1];
+    int horizOffsets[MAX_PANES + 1];
+    int i;
+    int focusPane;
+    int lineNumCols;
+    int totalHeight = 0;
 
-	// transfer the primary selection
-	TextSelection sel = orgWin->buffer_->primary_;
+    // transfer the primary selection
+    TextSelection sel = orgWin->buffer_->primary_;
 
-	if (sel.selected) {
-		if (sel.rectangular)
-			window->buffer_->BufRectSelect(sel.start, sel.end, sel.rectStart, sel.rectEnd);
-		else
-			window->buffer_->BufSelect(sel.start, sel.end);
-	} else
-		window->buffer_->BufUnselect();
+    if (sel.selected) {
+        if (sel.rectangular)
+            window->buffer_->BufRectSelect(sel.start, sel.end, sel.rectStart, sel.rectEnd);
+        else
+            window->buffer_->BufSelect(sel.start, sel.end);
+    } else
+        window->buffer_->BufUnselect();
 
-	/* Record the current heights, scroll positions, and insert positions
-	   of the existing panes, keyboard focus */
-	focusPane = 0;
+    /* Record the current heights, scroll positions, and insert positions
+       of the existing panes, keyboard focus */
+    focusPane = 0;
 
-	for (i = 0; i <= orgWin->textPanes_.size(); i++) {
-		Widget text = orgWin->GetPaneByIndex(i);
+    for (i = 0; i <= orgWin->textPanes_.size(); i++) {
+        Widget text = orgWin->GetPaneByIndex(i);
 
-		auto textD = textD_of(text);
+        auto textD = textD_of(text);
 
-		insertPositions[i] = textD->TextGetCursorPos();
-		XtVaGetValues(containingPane(text), XmNheight, &paneHeights[i], nullptr);
-		totalHeight += paneHeights[i];
-		textD->TextDGetScroll(&topLines[i], &horizOffsets[i]);
+        insertPositions[i] = textD->TextGetCursorPos();
+        XtVaGetValues(containingPane(text), XmNheight, &paneHeights[i], nullptr);
+        totalHeight += paneHeights[i];
+        textD->TextDGetScroll(&topLines[i], &horizOffsets[i]);
 
-		if (text == orgWin->lastFocus_) {
-			focusPane = i;
-		}
-	}
+        if (text == orgWin->lastFocus_) {
+            focusPane = i;
+        }
+    }
 
-	int paneCount = orgWin->textPanes_.size();
+    int paneCount = orgWin->textPanes_.size();
 
-	// Copy some parameters
-	int emTabDist      = textD_of(orgWin->textArea_)->getEmulateTabs();
-	QString delimiters = textD_of(orgWin->textArea_)->getWordDelimiters();
-	int wrapMargin     = textD_of(orgWin->textArea_)->getWrapMargin();
+    // Copy some parameters
+    int emTabDist      = textD_of(orgWin->textArea_)->getEmulateTabs();
+    QString delimiters = textD_of(orgWin->textArea_)->getWordDelimiters();
+    int wrapMargin     = textD_of(orgWin->textArea_)->getWrapMargin();
 
 
-	lineNumCols = orgWin->showLineNumbers_ ? MIN_LINE_NUM_COLS : 0;
+    lineNumCols = orgWin->showLineNumbers_ ? MIN_LINE_NUM_COLS : 0;
 
-	auto textD = textD_of(window->textArea_);
-	textD->setEmulateTabs(emTabDist);
-	textD->setWordDelimiters(delimiters);
-	textD->setWrapMargin(wrapMargin);
-	textD->setLineNumCols(lineNumCols);
+    auto textD = textD_of(window->textArea_);
+    textD->setEmulateTabs(emTabDist);
+    textD->setWordDelimiters(delimiters);
+    textD->setWrapMargin(wrapMargin);
+    textD->setLineNumCols(lineNumCols);
 
-	// clone split panes, if any
-	if (paneCount) {
-		// Unmanage & remanage the panedWindow so it recalculates pane heights
-		XtUnmanageChild(window->splitPane_);
+    // clone split panes, if any
+    if (paneCount) {
+        // Unmanage & remanage the panedWindow so it recalculates pane heights
+        XtUnmanageChild(window->splitPane_);
 
-		/* Create a text widget to add to the pane and set its buffer and
-		   highlight data to be the same as the other panes in the orgWin */
+        /* Create a text widget to add to the pane and set its buffer and
+           highlight data to be the same as the other panes in the orgWin */
 
-		for (i = 0; i < orgWin->textPanes_.size(); i++) {
+        for (i = 0; i < orgWin->textPanes_.size(); i++) {
 
-			Widget text;
+            Widget text;
 
             text = Document::createTextArea(window->splitPane_, window, 1, 1, emTabDist, delimiters.toLatin1().data(), wrapMargin, lineNumCols);
-			auto newTextD = textD_of(text);
-			newTextD->TextSetBuffer(window->buffer_);
+            auto newTextD = textD_of(text);
+            newTextD->TextSetBuffer(window->buffer_);
 
-			if (window->highlightData_) {
-				AttachHighlightToWidget(text, window);
-			}
+            if (window->highlightData_) {
+                AttachHighlightToWidget(text, window);
+            }
 
-			XtManageChild(text);
-			window->textPanes_.push_back(text);
+            XtManageChild(text);
+            window->textPanes_.push_back(text);
 
-			// Fix up the colors
+            // Fix up the colors
 
 
-			newTextD->setForegroundPixel(textD->foregroundPixel());
-			newTextD->setBackgroundPixel(textD->backgroundPixel());
+            newTextD->setForegroundPixel(textD->foregroundPixel());
+            newTextD->setBackgroundPixel(textD->backgroundPixel());
 
-			newTextD->TextDSetColors(
-				textD->foregroundPixel(),
-				textD->backgroundPixel(),
-				textD->getSelectFGPixel(),
-				textD->getSelectBGPixel(),
-				textD->getHighlightFGPixel(),
-				textD->getHighlightBGPixel(),
-				textD->getLineNumFGPixel(),
-				textD->getCursorFGPixel());
-		}
+            newTextD->TextDSetColors(
+                textD->foregroundPixel(),
+                textD->backgroundPixel(),
+                textD->getSelectFGPixel(),
+                textD->getSelectBGPixel(),
+                textD->getHighlightFGPixel(),
+                textD->getHighlightBGPixel(),
+                textD->getLineNumFGPixel(),
+                textD->getCursorFGPixel());
+        }
 
-		// Set the minimum pane height in the new pane
-		window->UpdateMinPaneHeights();
+        // Set the minimum pane height in the new pane
+        window->UpdateMinPaneHeights();
 
-		for (i = 0; i <= window->textPanes_.size(); i++) {
-			Widget text = window->GetPaneByIndex(i);
-			setPaneDesiredHeight(containingPane(text), paneHeights[i]);
-		}
+        for (i = 0; i <= window->textPanes_.size(); i++) {
+            Widget text = window->GetPaneByIndex(i);
+            setPaneDesiredHeight(containingPane(text), paneHeights[i]);
+        }
 
-		// Re-manage panedWindow to recalculate pane heights & reset selection
-		XtManageChild(window->splitPane_);
-	}
+        // Re-manage panedWindow to recalculate pane heights & reset selection
+        XtManageChild(window->splitPane_);
+    }
 
-	// Reset all of the heights, scroll positions, etc.
-	for (i = 0; i <= window->textPanes_.size(); i++) {
-		Widget text = window->GetPaneByIndex(i);
-		auto textD = textD_of(text);
-		textD->TextSetCursorPos(insertPositions[i]);
-		textD->TextDSetScroll(topLines[i], horizOffsets[i]);
+    // Reset all of the heights, scroll positions, etc.
+    for (i = 0; i <= window->textPanes_.size(); i++) {
+        Widget text = window->GetPaneByIndex(i);
+        auto textD = textD_of(text);
+        textD->TextSetCursorPos(insertPositions[i]);
+        textD->TextDSetScroll(topLines[i], horizOffsets[i]);
 
-		// dim the cursor
-		textD->TextDSetCursorStyle(DIM_CURSOR);
-		textD->TextDUnblankCursor();
-	}
+        // dim the cursor
+        textD->TextDSetCursorStyle(DIM_CURSOR);
+        textD->TextDUnblankCursor();
+    }
 
-	// set the focus pane
-	for (i = 0; i <= window->textPanes_.size(); i++) {
-		Widget text = window->GetPaneByIndex(i);
-		if (i == focusPane) {
-			window->lastFocus_ = text;
-			XmProcessTraversal(text, XmTRAVERSE_CURRENT);
-			break;
-		}
-	}
+    // set the focus pane
+    for (i = 0; i <= window->textPanes_.size(); i++) {
+        Widget text = window->GetPaneByIndex(i);
+        if (i == focusPane) {
+            window->lastFocus_ = text;
+            XmProcessTraversal(text, XmTRAVERSE_CURRENT);
+            break;
+        }
+    }
 
-	/* Update the window manager size hints after the sizes of the panes have
-	   been set (the widget heights are not yet readable here, but they will
-	   be by the time the event loop gets around to running this timer proc) */
-	XtAppAddTimeOut(XtWidgetToApplicationContext(window->shell_), 0, wmSizeUpdateProc, window);
+    /* Update the window manager size hints after the sizes of the panes have
+       been set (the widget heights are not yet readable here, but they will
+       be by the time the event loop gets around to running this timer proc) */
+    XtAppAddTimeOut(XtWidgetToApplicationContext(window->shell_), 0, wmSizeUpdateProc, window);
+
 }
+#endif
 
 /* Add an icon to an applicaction shell widget.  addWindowIcon adds a large
 ** (primary window) icon, AddSmallIcon adds a small (secondary window) icon.
@@ -632,6 +622,10 @@ bool Document::IsIconic() {
 ** the next tab after a tab detaches/closes and you don't want to wrap around.
 */
 Document *Document::getNextTabWindow(int direction, int crossWin, int wrap) {
+    Q_UNUSED(direction);
+    Q_UNUSED(crossWin);
+    Q_UNUSED(wrap);
+#if 0
 	WidgetList tabList;
 	Document *win;
 	int tabCount, tabTotalCount;
@@ -700,6 +694,8 @@ Document *Document::getNextTabWindow(int direction, int crossWin, int wrap) {
 	win = TabToWindow(tabs[nextPos]);
 	delete [] tabs;
 	return win;
+#endif
+    return 0;
 }
 
 /*
@@ -1683,6 +1679,15 @@ void Document::SetAutoScroll(int margin) {
 */
 void Document::SetColors(const char *textFg, const char *textBg, const char *selectFg, const char *selectBg, const char *hiliteFg, const char *hiliteBg, const char *lineNoFg, const char *cursorFg) {
 
+    Q_UNUSED(textFg);
+    Q_UNUSED(textBg);
+    Q_UNUSED(selectFg);
+    Q_UNUSED(selectBg);
+    Q_UNUSED(hiliteFg);
+    Q_UNUSED(hiliteBg);
+    Q_UNUSED(lineNoFg);
+    Q_UNUSED(cursorFg);
+#if 0
 	Pixel textFgPix   = AllocColor(textFg);
 	Pixel textBgPix   = AllocColor(textBg);
 	Pixel selectFgPix = AllocColor(selectFg);
@@ -1713,6 +1718,7 @@ void Document::SetColors(const char *textFg, const char *textBg, const char *sel
 	if (highlightData_) {
 		UpdateHighlightStyles(this);
 	}
+#endif
 }
 
 /*
@@ -2161,7 +2167,11 @@ void Document::SetShowMatching(int state) {
 ** futile effort of freeing them.
 */
 void Document::SetFonts(const char *fontName, const char *italicName, const char *boldName, const char *boldItalicName) {
-
+    Q_UNUSED(fontName);
+    Q_UNUSED(italicName);
+    Q_UNUSED(boldName);
+    Q_UNUSED(boldItalicName);
+#if 0
 	XFontStruct *font;
 	int oldFontWidth;
 	int oldFontHeight;
@@ -2283,6 +2293,7 @@ void Document::SetFonts(const char *fontName, const char *italicName, const char
 
 	// Change the minimum pane height
 	UpdateMinPaneHeights();
+#endif
 }
 
 
@@ -2521,6 +2532,7 @@ void Document::getTextPaneDimension(int *nRows, int *nCols) {
 ** splitting the pane which currently has keyboard focus.
 */
 void Document::SplitPane() {
+#if 0
 	short paneHeights[MAX_PANES + 1];
 	int insertPositions[MAX_PANES + 1];
 	int topLines[MAX_PANES + 1];
@@ -2628,6 +2640,7 @@ void Document::SplitPane() {
 	   been set (the widget heights are not yet readable here, but they will
 	   be by the time the event loop gets around to running this timer proc) */
 	XtAppAddTimeOut(XtWidgetToApplicationContext(shell_), 0, wmSizeUpdateProc, this);
+#endif
 }
 
 /*
@@ -2676,6 +2689,7 @@ void Document::getGeometryString(char *geomString) {
 **     its shell window.
 */
 void Document::RaiseDocument() {
+#if 0
 	Document *win;
 
 	if (WindowList.empty()) {
@@ -2752,13 +2766,15 @@ void Document::RaiseDocument() {
 	}
 
 	UpdateWMSizeHints();
+#endif
 }
 
 /*
 ** clone a document's states and settings into the other.
 */
 void Document::cloneDocument(Document *window) {
-
+    Q_UNUSED(window);
+#if 0
 	window->path_     = path_;
 	window->filename_ = filename_;
 
@@ -2885,6 +2901,7 @@ void Document::cloneDocument(Document *window) {
 
 	// synchronize window state to this document
 	window->RefreshWindowStates();
+#endif
 }
 
 /*

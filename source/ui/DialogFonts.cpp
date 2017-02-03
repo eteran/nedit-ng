@@ -5,7 +5,7 @@
 #include "DialogFonts.h"
 #include "DialogFontSelector.h"
 #include "DocumentWidget.h"
-#include "Document.h"
+#include "nedit.h"
 #include "preferences.h"
 #include "TextArea.h"
 #include "Color.h"
