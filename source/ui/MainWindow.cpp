@@ -3881,9 +3881,9 @@ bool MainWindow::CheckPrefsChangesSavedEx() {
     messageBox.setWindowTitle(tr("Default Preferences"));
     messageBox.setIcon(QMessageBox::Question);
 
-    messageBox.setText((ImportedFile == nullptr)
+    messageBox.setText((ImportedFile.isNull())
         ? tr("Default Preferences have changed.\nSave changes to NEdit preference file?")
-        : tr("Default Preferences have changed.  SAVING \nCHANGES WILL INCORPORATE ADDITIONAL\nSETTINGS FROM FILE: %s").arg(QLatin1String(ImportedFile)));
+        : tr("Default Preferences have changed.  SAVING \nCHANGES WILL INCORPORATE ADDITIONAL\nSETTINGS FROM FILE: %s").arg(ImportedFile));
 
     QPushButton *buttonSave     = messageBox.addButton(tr("Save"), QMessageBox::AcceptRole);
     QPushButton *buttonDontSave = messageBox.addButton(tr("Don't Save"), QMessageBox::AcceptRole);

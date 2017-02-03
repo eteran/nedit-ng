@@ -46,7 +46,6 @@
 #include "text.h"
 #include "nedit.h"
 #include "server.h"
-#include "Document.h"
 #include "userCmds.h"
 #include "preferences.h"
 #include "file.h"

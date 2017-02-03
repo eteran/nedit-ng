@@ -46,7 +46,6 @@
 #include "menu.h"
 #include "text.h"
 #include "search.h"
-#include "Document.h"
 #include "userCmds.h"
 #include "highlight.h"
 #include "highlightData.h"
@@ -80,9 +79,6 @@
 #include <Xm/ToggleB.h>
 #include <Xm/RowColumn.h>
 #include <Xm/CascadeBG.h>
-
-
-#define MENU_WIDGET(w) (XmGetPostedFromWidget(XtParent(w)))
 
 #define PREF_FILE_VERSION "5.6"
 
@@ -797,12 +793,11 @@ bool PrefsHaveChanged = false;
 
 /* Module-global variable set when user uses -import to load additional
    preferences on top of the defaults.  Contains name of file loaded */
-char *ImportedFile = nullptr;
+QString ImportedFile;
 
 static void translatePrefFormats(int convertOld, int fileVer);
 static void setIntPref(int *prefDataField, int newValue);
 static void setStringPref(char *prefDataField, const char *newValue);
-static void reapplyLanguageMode(Document *window, int mode, bool forceDefaults);
 
 static bool stringReplaceEx(std::string *inString, const char *expr, const char *replaceWith, SearchType searchType, int replaceLen);
 static QStringList readExtensionList(const char **inPtr);
@@ -811,7 +806,6 @@ static int caseFind(view::string_view inString, const char *expr);
 static int caseReplaceEx(std::string *inString, const char *expr, const char *replaceWith, int replaceLen);
 static int loadLanguageModesString(const char *inString, int fileVer);
 static int loadLanguageModesStringEx(const std::string &string, int fileVer);
-static int matchLanguageMode(Document *window);
 static int modeError(LanguageMode *lm, const char *stringStart, const char *stoppedAt, const char *message);
 static int regexFind(view::string_view inString, const char *expr);
 static int regexReplaceEx(std::string *inString, const char *expr, const char *replaceWith);
@@ -819,8 +813,6 @@ static int replaceMacroIfUnchanged(const char *oldText, const char *newStart, co
 static std::string spliceStringEx(const std::string &intoString, view::string_view insertString, const char *atExpr);
 static QString WriteLanguageModesStringEx(void);
 static void migrateColorResources(XrmDatabase prefDB, XrmDatabase appDB);
-static void setLangModeCB(Widget w, XtPointer clientData, XtPointer callData);
-void updateLanguageModeSubmenu(Document *window);
 
 static void updateMacroCmdsTo5dot5(void);
 static void updateMacroCmdsTo5dot6(void);
@@ -1018,8 +1010,8 @@ void SaveNEditPrefsEx(QWidget *parent, bool quietly) {
 
 
         int resp = QMessageBox::information(parent, QLatin1String("Save Preferences"),
-            ImportedFile == nullptr ? QString(QLatin1String("Default preferences will be saved in the file:\n%1\nNEdit automatically loads this file\neach time it is started.")).arg(prefFileName)
-                                    : QString(QLatin1String("Default preferences will be saved in the file:\n%1\nSAVING WILL INCORPORATE SETTINGS\nFROM FILE: %2")).arg(prefFileName).arg(QLatin1String(ImportedFile)),
+            ImportedFile.isNull() ? QString(QLatin1String("Default preferences will be saved in the file:\n%1\nNEdit automatically loads this file\neach time it is started.")).arg(prefFileName)
+                                  : QString(QLatin1String("Default preferences will be saved in the file:\n%1\nSAVING WILL INCORPORATE SETTINGS\nFROM FILE: %2")).arg(prefFileName).arg(ImportedFile),
                 QMessageBox::Ok | QMessageBox::Cancel);
 
 
@@ -1050,50 +1042,6 @@ void SaveNEditPrefsEx(QWidget *parent, bool quietly) {
     PrefsHaveChanged = false;
 }
 
-void SaveNEditPrefs(Widget parent, int quietly) {
-
-	QString prefFileName = GetRCFileNameEx(NEDIT_RC);
-	if(prefFileName.isNull()) {
-		QMessageBox::warning(nullptr /*parent*/, QLatin1String("Error saving Preferences"), QLatin1String("Unable to save preferences: Cannot determine filename."));
-		return;
-	}
-
-	if (!quietly) {
-
-
-		int resp = QMessageBox::information(nullptr /*parent*/, QLatin1String("Save Preferences"), 
-			ImportedFile == nullptr ? QString(QLatin1String("Default preferences will be saved in the file:\n%1\nNEdit automatically loads this file\neach time it is started.")).arg(prefFileName)
-				                    : QString(QLatin1String("Default preferences will be saved in the file:\n%1\nSAVING WILL INCORPORATE SETTINGS\nFROM FILE: %2")).arg(prefFileName).arg(QLatin1String(ImportedFile)), 
-				QMessageBox::Ok | QMessageBox::Cancel);
-
-
-
-		if(resp == QMessageBox::Cancel) {
-			return;
-		}
-	}
-
-	/*  Write the more dynamic settings into TempStringPrefs.
-	    These locations are set in PrefDescrip, so this is where
-	    SavePreferences() will look for them.  */
-
-	TempStringPrefs.shellCmds         = WriteShellCmdsStringEx();
-	TempStringPrefs.macroCmds         = WriteMacroCmdsStringEx();
-	TempStringPrefs.bgMenuCmds        = WriteBGMenuCmdsStringEx();
-	TempStringPrefs.highlight         = WriteHighlightStringEx();
-	TempStringPrefs.language          = WriteLanguageModesStringEx();
-	TempStringPrefs.styles            = WriteStylesStringEx();
-	TempStringPrefs.smartIndent       = WriteSmartIndentStringEx();
-	TempStringPrefs.smartIndentCommon = WriteSmartIndentCommonStringEx();
-	strcpy(PrefData.fileVersion, PREF_FILE_VERSION);
-
-	if (!SavePreferences(XtDisplay(parent), prefFileName.toLatin1().data(), HeaderText, PrefDescrip, XtNumber(PrefDescrip))) {
-		QMessageBox::warning(nullptr /*parent*/, QLatin1String("Save Preferences"), QString(QLatin1String("Unable to save preferences in %1")).arg(prefFileName));
-	}
-
-	PrefsHaveChanged = false;
-}
-
 /*
 ** Load an additional preferences file on top of the existing preferences
 ** derived from defaults, the .nedit file, and X resources.
@@ -1106,7 +1054,7 @@ void ImportPrefFile(const char *filename, int convertOld) {
 		db = XrmGetStringDatabase(fileString.toLatin1().data());
 		OverlayPreferences(db, APP_NAME, APP_CLASS, PrefDescrip, XtNumber(PrefDescrip));
 		translatePrefFormats(convertOld, -1);
-		ImportedFile = XtNewStringEx(filename);
+        ImportedFile = QLatin1String(filename);
 	} else {
 		fprintf(stderr, "Could not read additional preferences file: %s\n", filename);
 	}
@@ -1641,44 +1589,6 @@ void MarkPrefsChanged() {
 }
 
 /*
-** Check if preferences have changed, and if so, ask the user if he wants
-** to re-save.  Returns False if user requests cancelation of Exit (or whatever
-** operation triggered this call to be made).
-*/
-bool CheckPrefsChangesSaved(Widget dialogParent) {
-
-	if (!PrefsHaveChanged)
-		return true;
-
-
-	QMessageBox messageBox(nullptr /*dialogParent*/);
-	messageBox.setWindowTitle(QLatin1String("Default Preferences"));
-	messageBox.setIcon(QMessageBox::Question);
-	
-	
-	messageBox.setText((ImportedFile == nullptr)
-		? QString(QLatin1String("Default Preferences have changed.\nSave changes to NEdit preference file?"))
-		: QString(QLatin1String("Default Preferences have changed.  SAVING \nCHANGES WILL INCORPORATE ADDITIONAL\nSETTINGS FROM FILE: %s")).arg(QLatin1String(ImportedFile)));
-	
-	
-	QPushButton *buttonSave     = messageBox.addButton(QLatin1String("Save"), QMessageBox::AcceptRole);
-	QPushButton *buttonDontSave = messageBox.addButton(QLatin1String("Don't Save"), QMessageBox::AcceptRole);
-	QPushButton *buttonCancel   = messageBox.addButton(QMessageBox::Cancel);
-	Q_UNUSED(buttonCancel);
-
-	messageBox.exec();
-	if(messageBox.clickedButton() == buttonSave) {
-		SaveNEditPrefs(dialogParent, True);
-		return true;
-	} else if(messageBox.clickedButton() == buttonDontSave) {
-		return true;
-	} else {
-		return false;
-	}
-
-}
-
-/*
 ** set *prefDataField to newValue, but first check if they're different
 ** and update PrefsHaveChanged if a preference setting has now changed.
 */
@@ -1699,36 +1609,6 @@ static void setStringPref(char *prefDataField, const char *newValue) {
 }
 
 /*
-** Set the language mode for the window, update the menu and trigger language
-** mode specific actions (turn on/off highlighting).  If forceNewDefaults is
-** true, re-establish default settings for language-specific preferences
-** regardless of whether they were previously set by the user.
-*/
-void SetLanguageMode(Document *window, int mode, int forceNewDefaults) {
-#if 0 // NOTE(eteran): transitioned
-	Widget menu;
-	WidgetList items;
-	Cardinal nItems;
-	void *userData;
-#endif
-	// Do mode-specific actions 
-	reapplyLanguageMode(window, mode, forceNewDefaults);
-
-	// Select the correct language mode in the sub-menu 
-	if (window->IsTopDocument()) {
-#if 0 // NOTE(eteran): transitioned
-		XtVaGetValues(window->langModeCascade_, XmNsubMenuId, &menu, nullptr);
-		XtVaGetValues(menu, XmNchildren, &items, XmNnumChildren, &nItems, nullptr);
-		
-		for (int n = 0; n < (int)nItems; n++) {
-			XtVaGetValues(items[n], XmNuserData, &userData, nullptr);
-			XmToggleButtonSetState(items[n], (long)userData == mode, False);
-		}
-#endif
-	}
-}
-
-/*
 ** Lookup a language mode by name, returning the index of the language
 ** mode or PLAIN_LANGUAGE_MODE if the name is not found
 */
@@ -1742,18 +1622,6 @@ int FindLanguageMode(const char *languageName) {
 	}
 
 	return PLAIN_LANGUAGE_MODE;
-}
-
-/*
-** Apply language mode matching criteria and set window->languageMode_ to
-** the appropriate mode for the current file, trigger language mode
-** specific actions (turn on/off highlighting), and update the language
-** mode menu item.  If forceNewDefaults is true, re-establish default
-** settings for language-specific preferences regardless of whether
-** they were previously set by the user.
-*/
-void DetermineLanguageMode(Document *window, int forceNewDefaults) {
-	SetLanguageMode(window, matchLanguageMode(window), forceNewDefaults);
 }
 
 /*
@@ -1775,21 +1643,6 @@ QString LanguageModeName(int mode) {
 ** to supply delimiters for RE searching, and ExecRE can skip compiling a
 ** delimiter table when delimiters is nullptr).
 */
-QString GetWindowDelimiters(const Document *window) {
-	if (window->languageMode_ == PLAIN_LANGUAGE_MODE)
-		return QString();
-	else
-		return LanguageModes[window->languageMode_]->delimiters;
-}
-
-/*
-** Get the set of word delimiters for the language mode set in the current
-** window.  Returns nullptr when no language mode is set (it would be easy to
-** return the default delimiter set when the current language mode is "Plain",
-** or the mode doesn't have its own delimiters, but this is usually used
-** to supply delimiters for RE searching, and ExecRE can skip compiling a
-** delimiter table when delimiters is nullptr).
-*/
 QString GetWindowDelimitersEx(const DocumentWidget *window) {
     if (window->languageMode_ == PLAIN_LANGUAGE_MODE)
         return QString();
@@ -1797,194 +1650,6 @@ QString GetWindowDelimitersEx(const DocumentWidget *window) {
         return LanguageModes[window->languageMode_]->delimiters;
 }
 
-
-/*
-**  Create and show a dialog for selecting the shell
-*/
-void SelectShellDialog(Widget parent, Document *forWindow) {
-
-	Q_UNUSED(parent);
-	Q_UNUSED(forWindow);
-
-	bool ok;
-	QString shell = QInputDialog::getText(nullptr /*parent*/,
-		QLatin1String("Command Shell"),
-        QLatin1String("Enter shell path:"), 
-		QLineEdit::Normal,
-        QLatin1String(GetPrefShell()),
-		&ok);
-		
-	if (ok && !shell.isEmpty()) {
-
-		struct stat attribute;
-		if (stat(shell.toLatin1().data(), &attribute) == -1) {
-			int resp = QMessageBox::warning(nullptr /*shellSelDialog*/, QLatin1String("Command Shell"), QLatin1String("The selected shell is not available.\nDo you want to use it anyway?"), QMessageBox::Ok | QMessageBox::Cancel);
-			if(resp == QMessageBox::Cancel) {
-				return;
-			}
-		}
-
-		SetPrefShell(shell.toLatin1().data());
-	}
-
-}
-
-/*
-** Change the language mode to the one indexed by "mode", reseting word
-** delimiters, syntax highlighting and other mode specific parameters
-*/
-static void reapplyLanguageMode(Document *window, int mode, bool forceDefaults) {
-    Q_UNUSED(window);
-    Q_UNUSED(mode);
-    Q_UNUSED(forceDefaults);
-
-#if 0 // TODO(eteran): transitioned ?
-    int wrapMode, indentStyle, tabDist, emTabDist, highlight, oldEmTabDist;
-	int wrapModeIsDef, tabDistIsDef, emTabDistIsDef, indentStyleIsDef;
-	int highlightIsDef, haveHighlightPatterns, haveSmartIndentMacros;
-	int oldMode = window->languageMode_;
-
-	/* If the mode is the same, and changes aren't being forced (as might
-	   happen with Save As...), don't mess with already correct settings */
-	if (window->languageMode_ == mode && !forceDefaults)
-		return;
-
-	// Change the mode name stored in the window 
-	window->languageMode_ = mode;
-
-	// Decref oldMode's default calltips file if needed 
-	if (oldMode != PLAIN_LANGUAGE_MODE && !LanguageModes[oldMode]->defTipsFile.isNull()) {
-		DeleteTagsFileEx(LanguageModes[oldMode]->defTipsFile, TIP, False);
-	}
-
-	// Set delimiters for all text widgets 
-	QString delimiters;
-	if (mode == PLAIN_LANGUAGE_MODE || LanguageModes[mode]->delimiters.isNull()) {
-		delimiters = GetPrefDelimiters();
-	} else {
-		delimiters = LanguageModes[mode]->delimiters;
-	}
-	
-	
-	textD_of(window->textArea_)->setWordDelimiters(delimiters);
-    for (int i = 0; i < window->textPanes_.size(); i++) {
-		textD_of(window->textPanes_[i])->setWordDelimiters(delimiters);
-	}
-
-	/* Decide on desired values for language-specific parameters.  If a
-	   parameter was set to its default value, set it to the new default,
-	   otherwise, leave it alone */
-	wrapModeIsDef = window->wrapMode_ == GetPrefWrap(oldMode);
-	tabDistIsDef = window->buffer_->BufGetTabDistance() == GetPrefTabDist(oldMode);
-	
-	oldEmTabDist = textD_of(window->textArea_)->getEmulateTabs();
-	
-	QString oldlanguageModeName = LanguageModeName(oldMode);
-	
-	emTabDistIsDef   = oldEmTabDist == GetPrefEmTabDist(oldMode);
-	indentStyleIsDef = window->indentStyle_ == GetPrefAutoIndent(oldMode)   || (GetPrefAutoIndent(oldMode) == SMART_INDENT && window->indentStyle_ == AUTO_INDENT && !SmartIndentMacrosAvailable(LanguageModeName(oldMode).toLatin1().data()));
-	highlightIsDef   = window->highlightSyntax_ == GetPrefHighlightSyntax() || (GetPrefHighlightSyntax() && FindPatternSet(!oldlanguageModeName.isNull() ? oldlanguageModeName : QLatin1String("")) == nullptr);
-	wrapMode         = wrapModeIsDef                                       || forceDefaults ? GetPrefWrap(mode)        : window->wrapMode_;
-	tabDist          = tabDistIsDef                                        || forceDefaults ? GetPrefTabDist(mode)     : window->buffer_->BufGetTabDistance();
-	emTabDist        = emTabDistIsDef                                      || forceDefaults ? GetPrefEmTabDist(mode)   : oldEmTabDist;
-	indentStyle      = indentStyleIsDef                                    || forceDefaults ? GetPrefAutoIndent(mode)  : window->indentStyle_;
-	highlight        = highlightIsDef                                      || forceDefaults ? GetPrefHighlightSyntax() : window->highlightSyntax_;
-
-	/* Dim/undim smart-indent and highlighting menu items depending on
-	   whether patterns/macros are available */
-	QString languageModeName = LanguageModeName(mode);
-	haveHighlightPatterns = FindPatternSet(!languageModeName.isNull() ? languageModeName : QLatin1String("")) != nullptr;
-	haveSmartIndentMacros = SmartIndentMacrosAvailable(LanguageModeName(mode).toLatin1().data());
-	if (window->IsTopDocument()) {
-#if 0 // NOTE(eteran): transitioned
-		XtSetSensitive(window->highlightItem_, haveHighlightPatterns);
-		XtSetSensitive(window->smartIndentItem_, haveSmartIndentMacros);
-#endif
-	}
-
-	// Turn off requested options which are not available 
-	highlight = haveHighlightPatterns && highlight;
-	if (indentStyle == SMART_INDENT && !haveSmartIndentMacros)
-		indentStyle = AUTO_INDENT;
-
-	// Change highlighting 
-	window->highlightSyntax_ = highlight;
-#if 0 // NOTE(eteran): transitioned
-	window->SetToggleButtonState(window->highlightItem_, highlight, False);
-#endif
-	StopHighlighting(window);
-
-	// we defer highlighting to RaiseDocument() if doc is hidden 
-	if (window->IsTopDocument() && highlight)
-		StartHighlighting(window, False);
-
-	// Force a change of smart indent macros (SetAutoIndent will re-start) 
-	if (window->indentStyle_ == SMART_INDENT) {
-		EndSmartIndent(window);
-		window->indentStyle_ = AUTO_INDENT;
-	}
-
-	// set requested wrap, indent, and tabs 
-	window->SetAutoWrap(wrapMode);
-	window->SetAutoIndent(indentStyle);
-	window->SetTabDist(tabDist);
-	window->SetEmTabDist(emTabDist);
-
-	// Load calltips files for new mode 
-	if (mode != PLAIN_LANGUAGE_MODE && !LanguageModes[mode]->defTipsFile.isNull()) {
-		AddTagsFileEx(LanguageModes[mode]->defTipsFile, TIP);
-	}
-
-	// Add/remove language specific menu items 
-	UpdateUserMenus(window);
-#endif
-}
-
-/*
-** Find and return the name of the appropriate languange mode for
-** the file in "window".  Returns a pointer to a string, which will
-** remain valid until a change is made to the language modes list.
-*/
-static int matchLanguageMode(Document *window) {
-
-	int i, fileNameLen, beginPos, endPos;
-
-	/*... look for an explicit mode statement first */
-
-	// Do a regular expression search on for recognition pattern 
-	std::string first200 = window->buffer_->BufGetRangeEx(0, 200);
-	for (i = 0; i < NLanguageModes; i++) {
-		if (!LanguageModes[i]->recognitionExpr.isNull()) {
-			if (SearchString(first200, LanguageModes[i]->recognitionExpr.toLatin1().data(), SEARCH_FORWARD, SEARCH_REGEX, False, 0, &beginPos, &endPos, nullptr, nullptr, nullptr)) {
-				return i;
-			}
-		}
-	}
-
-	/* Look at file extension ("@@/" starts a ClearCase version extended path,
-	   which gets appended after the file extension, and therefore must be
-	   stripped off to recognize the extension to make ClearCase users happy) */
-	fileNameLen = window->filename_.size();
-
-	int versionExtendedPathIndex = GetClearCaseVersionExtendedPathIndex(window->filename_);
-	if (versionExtendedPathIndex != -1) {
-		fileNameLen = versionExtendedPathIndex;
-	}
-
-	for (i = 0; i < NLanguageModes; i++) {
-		for(QString ext : LanguageModes[i]->extensions) {
-			int extLen = ext.size();
-			int start = fileNameLen - extLen;
-
-			if (start >= 0 && strncmp(&window->filename_.toLatin1().data()[start], ext.toLatin1().data(), extLen) == 0) {
-				return i;
-			}
-		}
-	}
-
-	// no appropriate mode was found 
-	return PLAIN_LANGUAGE_MODE;
-}
 
 static int loadLanguageModesStringEx(const std::string &string, int fileVer) {
 	
@@ -2600,204 +2265,6 @@ std::string MakeQuotedStringEx(view::string_view string) {
 	*outPtr++ = '\"';
 
 	return outStr;
-}
-
-/*
-** Read a dialog text field containing a symbolic name (language mode names,
-** style names, highlight pattern names, colors, and fonts), clean the
-** entered text of leading and trailing whitespace, compress all
-** internal whitespace to one space character, and check it over for
-** colons, which interfere with the preferences file reader/writer syntax.
-** Returns nullptr on error, and puts up a dialog if silent is False.  Returns
-** an empty string if the text field is blank.
-*/
-char *ReadSymbolicFieldTextWidget(Widget textW, const char *fieldName, int silent) {
-	char *parsedString;
-
-	// read from the text widget 
-	char *string = XmTextGetString(textW);
-	const char *stringPtr = string;
-
-	/* parse it with the same routine used to read symbolic fields from
-	   files.  If the string is not read entirely, there are invalid
-	   characters, so warn the user if not in silent mode. */
-	parsedString = ReadSymbolicField(&stringPtr);
-	if (*stringPtr != '\0') {
-		if (!silent) {		
-			QMessageBox::warning(nullptr /*textW*/, QLatin1String("Invalid Character"), QString(QLatin1String("Invalid character \"%1\" in %2")).arg(QLatin1Char(stringPtr[1])).arg(QLatin1String(fieldName)));
-			XmProcessTraversal(textW, XmTRAVERSE_CURRENT);
-		}
-		
-		XtFree(string);
-		XtFree(parsedString);
-		return nullptr;
-	}
-	XtFree(string);
-	if(!parsedString) {
-		parsedString = XtStringDup("");
-	}
-	return parsedString;
-}
-
-/*
-** Read a dialog text field containing a symbolic name (language mode names,
-** style names, highlight pattern names, colors, and fonts), clean the
-** entered text of leading and trailing whitespace, compress all
-** internal whitespace to one space character, and check it over for
-** colons, which interfere with the preferences file reader/writer syntax.
-** Returns nullptr on error, and puts up a dialog if silent is False.  Returns
-** an empty string if the text field is blank.
-*/
-QString ReadSymbolicFieldTextWidgetEx(Widget textW, const char *fieldName, int silent) {
-
-	// read from the text widget 
-	QString string = XmTextGetStringEx(textW);
-	const std::string string_copy = string.toStdString();
-	const char *stringPtr = &string_copy[0];
-
-	/* parse it with the same routine used to read symbolic fields from
-	   files.  If the string is not read entirely, there are invalid
-	   characters, so warn the user if not in silent mode. */
-	QString parsedString = ReadSymbolicFieldEx(&stringPtr);
-	
-	if (*stringPtr != '\0') {
-		if (!silent) {
-			QMessageBox::warning(nullptr /*textW*/, QLatin1String("Invalid Character"), QString(QLatin1String("Invalid character \"%1\" in %2")).arg(QLatin1Char(stringPtr[1])).arg(QLatin1String(fieldName)));
-			XmProcessTraversal(textW, XmTRAVERSE_CURRENT);
-		}
-		return QString();
-	}
-	
-	if(parsedString.isNull()) {
-		parsedString = QLatin1String("");
-	}
-	
-	return parsedString;
-}
-
-/*
-** Create a pulldown menu pane with the names of the current language modes.
-** XmNuserData for each item contains the language mode name.
-*/
-Widget CreateLanguageModeMenu(Widget parent, XtCallbackProc cbProc, void *cbArg) {
-
-	Widget menu = CreatePulldownMenu(parent, "languageModes", nullptr, 0);
-	for (int i = 0; i < NLanguageModes; i++) {
-	
-		XmString s1 = XmStringCreateSimpleEx(LanguageModes[i]->name.toStdString());	
-		Widget btn = XtVaCreateManagedWidget("languageMode", xmPushButtonGadgetClass, menu, XmNlabelString, s1, XmNmarginHeight, 0, XmNuserData, LanguageModes[i]->name.toLatin1().data(), nullptr);
-			
-		XmStringFree(s1);
-		XtAddCallback(btn, XmNactivateCallback, cbProc, cbArg);
-	}
-	return menu;
-}
-
-/*
-** Set the language mode menu in option menu "optMenu" to
-** show a particular language mode
-*/
-void SetLangModeMenu(Widget optMenu, const char *modeName) {
-
-	Cardinal nItems;
-	WidgetList items;
-	Widget pulldown, selectedItem;
-	char *itemName;
-
-	XtVaGetValues(optMenu, XmNsubMenuId, &pulldown, nullptr);
-	XtVaGetValues(pulldown, XmNchildren, &items, XmNnumChildren, &nItems, nullptr);
-	
-	if (nItems == 0) {
-		return;
-	}
-	
-	selectedItem = items[0];
-	
-	for (int i = 0; i < (int)nItems; i++) {
-		XtVaGetValues(items[i], XmNuserData, &itemName, nullptr);
-		if (!strcmp(itemName, modeName)) {
-			selectedItem = items[i];
-			break;
-		}
-	}
-	
-	XtVaSetValues(optMenu, XmNmenuHistory, selectedItem, nullptr);
-}
-
-/*
-** Create a submenu for chosing language mode for the current window.
-*/
-void CreateLanguageModeSubMenu(Document *window, const Widget parent, const char *name, const char *label, const char mnemonic) {
-	XmString string = XmStringCreateSimpleEx((char *)label);
-
-	window->langModeCascade_ = XtVaCreateManagedWidget(name, xmCascadeButtonGadgetClass, parent, XmNlabelString, string, XmNmnemonic, mnemonic, XmNsubMenuId, nullptr, nullptr);
-	XmStringFree(string);
-
-	updateLanguageModeSubmenu(window);
-}
-
-/*
-** Re-build the language mode sub-menu using the current data stored
-** in the master list: LanguageModes.
-*/
-void updateLanguageModeSubmenu(Document *window) {
-
-	XmString s1;
-	Arg args[1] = {{XmNradioBehavior, (XtArgVal)True}};
-
-	// Destroy and re-create the menu pane 
-	Widget menu;
-	XtVaGetValues(window->langModeCascade_, XmNsubMenuId, &menu, nullptr);
-	if(menu) {
-		XtDestroyWidget(menu);
-	}
-	
-	menu = CreatePulldownMenu(XtParent(window->langModeCascade_), "languageModes", args, 1);
-	Widget btn  = XtVaCreateManagedWidget("languageMode", xmToggleButtonGadgetClass, menu, XmNlabelString, s1 = XmStringCreateSimpleEx("Plain"), XmNuserData, PLAIN_LANGUAGE_MODE, XmNset, window->languageMode_ == PLAIN_LANGUAGE_MODE, nullptr);
-	
-	XmStringFree(s1);
-	XtAddCallback(btn, XmNvalueChangedCallback, setLangModeCB, window);
-
-	for (int i = 0; i < NLanguageModes; i++) {
-		btn = XtVaCreateManagedWidget("languageMode", xmToggleButtonGadgetClass, menu, XmNlabelString, s1 = XmStringCreateSimpleEx(LanguageModes[i]->name), XmNmarginHeight, 0, XmNuserData, i, XmNset, window->languageMode_ == i, nullptr);
-		XmStringFree(s1);
-		XtAddCallback(btn, XmNvalueChangedCallback, setLangModeCB, window);
-	}
-
-	XtVaSetValues(window->langModeCascade_, XmNsubMenuId, menu, nullptr);
-}
-
-static void setLangModeCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	(void)w;
-	(void)callData;
-	(void)clientData;
-
-	Document *window = Document::WidgetToWindow(MENU_WIDGET(w));
-	const char *params[1];
-	void *mode;
-
-	if (!XmToggleButtonGetState(w)) {
-		return;
-	}
-
-	// get name of language mode stored in userData field of menu item 
-	XtVaGetValues(w, XmNuserData, &mode, nullptr);
-
-	// If the mode didn't change, do nothing 
-	if (window->languageMode_ == reinterpret_cast<long>(mode)) {
-		return;
-	}
-	
-	QByteArray str;
-	if((reinterpret_cast<long>(mode)) == PLAIN_LANGUAGE_MODE) {
-		params[0] = "";
-	} else {
-		str = LanguageModes[reinterpret_cast<long>(mode)]->name.toLatin1();
-		params[0] = str.data();
-	}
-	
-	XtCallActionProc(window->textArea_, "set_language_mode", nullptr, const_cast<char **>(params), 1);
 }
 
 /*
@@ -3565,15 +3032,6 @@ static void updateMacroCmdsTo5dot6() {
 	}
 	
 	return;
-}
-
-// Decref the default calltips file(s) for this window 
-void UnloadLanguageModeTipsFile(Document *window) {
-
-	int mode = window->languageMode_;
-	if (mode != PLAIN_LANGUAGE_MODE && !LanguageModes[mode]->defTipsFile.isNull()) {
-		DeleteTagsFileEx(LanguageModes[mode]->defTipsFile, TIP, False);
-	}
 }
 
 /*

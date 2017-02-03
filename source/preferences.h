@@ -37,7 +37,6 @@
 
 class QWidget;
 class QString;
-class Document;
 class LanguageMode;
 class DocumentWidget;
 
@@ -88,15 +87,12 @@ QString GetPrefItalicFontName();
 char *GetPrefServerName();
 char *GetPrefTagFile();
 char *GetPrefTooltipBgColor();
-QString GetWindowDelimiters(const Document *window);
 QString GetWindowDelimitersEx(const DocumentWidget *window);
 QString LanguageModeName(int mode);
 char *ReadSymbolicField(const char **inPtr);
-char *ReadSymbolicFieldTextWidget(Widget textW, const char *fieldName, int silent);
 const char *GetPrefShell();
 const char *GetPrefTitleFormat();
 int AllocatedStringsDiffer(const char *s1, const char *s2);
-bool CheckPrefsChangesSaved(Widget dialogParent);
 int FindLanguageMode(const char *languageName);
 int GetPrefAlwaysCheckRelTagsSpecs();
 int GetPrefAppendLF();
@@ -157,17 +153,10 @@ std::string EscapeSensitiveCharsEx(view::string_view string);
 QString EscapeSensitiveCharsEx(const QString &string);
 std::string MakeQuotedStringEx(view::string_view string);
 QString ReadSymbolicFieldEx(const char **inPtr);
-QString ReadSymbolicFieldTextWidgetEx(Widget textW, const char *fieldName, int silent);
-void CreateLanguageModeSubMenu(Document *window, const Widget parent, const char *name, const char *label, const char mnemonic);
-void DetermineLanguageMode(Document *window, int forceNewDefaults);
 void ImportPrefFile(const char *filename, int convertOld);
 void MarkPrefsChanged();
 void RestoreNEditPrefs(XrmDatabase prefDB, XrmDatabase appDB);
-void SaveNEditPrefs(Widget parent, int quietly);
 void SaveNEditPrefsEx(QWidget *parent, bool quietly);
-void SelectShellDialog(Widget parent, Document *forWindow);
-void SetLangModeMenu(Widget optMenu, const char *modeName);
-void SetLanguageMode(Document *window, int mode, int forceNewDefaults);
 void SetPrefAppendLF(int state);
 void SetPrefAutoIndent(int state);
 void SetPrefAutoSave(int state);
@@ -215,8 +204,7 @@ void SetPrefWarnFileMods(int state);
 void SetPrefWarnRealFileMods(int state);
 void SetPrefWrap(int state);
 void SetPrefWrapMargin(int margin);
-void UnloadLanguageModeTipsFile(Document *window);
-Widget CreateLanguageModeMenu(Widget parent, XtCallbackProc cbProc, void *cbArg);
+
 XFontStruct *GetPrefBoldFont();
 XFontStruct *GetPrefBoldItalicFont();
 XFontStruct *GetPrefItalicFont();
@@ -229,9 +217,9 @@ int GetPrefReplaceDefScope();
 #endif
 
 extern int NLanguageModes;
-extern char *ImportedFile;
+extern QString ImportedFile;
 extern bool PrefsHaveChanged;
 extern LanguageMode *LanguageModes[MAX_LANGUAGE_MODES];
-void updateLanguageModeSubmenu(Document *window);
+
 
 #endif

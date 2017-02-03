@@ -46,9 +46,7 @@
 #include "regularExp.h"
 #include "preferences.h"
 #include "help.h"
-#include "Document.h"
 #include "regexConvert.h"
-#include "util/MotifHelper.h"
 #include "PatternSet.h"
 #include "HighlightPattern.h"
 #include "HighlightStyle.h"
@@ -66,7 +64,7 @@ namespace {
 // Names for the fonts that can be used for syntax highlighting 
 const int N_FONT_TYPES = 4;
 
-static const char *FontTypeNames[N_FONT_TYPES] = {
+const char *FontTypeNames[N_FONT_TYPES] = {
 	"Plain", 
 	"Italic", 
 	"Bold", 
@@ -358,46 +356,6 @@ static QString convertPatternExprEx(const QString &patternRE, const char *patSet
 	}
 	
 	return QString();
-}
-
-/*
-** Find the font (font struct) associated with a named style.
-** This routine must only be called with a valid styleName (call
-** NamedStyleExists to find out whether styleName is valid).
-*/
-XFontStruct *FontOfNamedStyle(Document *window, view::string_view styleName) {
-    int styleNo = lookupNamedStyle(styleName), fontNum;
-    XFontStruct *font;
-
-    if (styleNo < 0) {
-        font = GetDefaultFontStruct(window->fontList_);
-    } else {
-
-        fontNum = HighlightStyles[styleNo]->font;
-
-        switch(fontNum) {
-        case BOLD_FONT:
-            font = window->boldFontStruct_;
-            break;
-        case ITALIC_FONT:
-            font = window->italicFontStruct_;
-            break;
-        case BOLD_ITALIC_FONT:
-            font = window->boldItalicFontStruct_;
-            break;
-        case PLAIN_FONT:
-        default:
-            font = GetDefaultFontStruct(window->fontList_);
-            break;
-        }
-
-        // If font isn't loaded, silently substitute primary font
-        if(!font) {
-            font = GetDefaultFontStruct(window->fontList_);
-        }
-    }
-
-    return font;
 }
 
 /*

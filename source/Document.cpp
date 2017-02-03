@@ -984,14 +984,14 @@ void Document::RefreshMenuToggleStates() {
 	XmToggleButtonSetState(readOnlyItem_, lockReasons_.isUserLocked(), false);
 
 	XtSetSensitive(smartIndentItem_, SmartIndentMacrosAvailable(LanguageModeName(languageMode_).toLatin1().data()));
-#endif
+
 	SetAutoIndent(indentStyle_);
 	SetAutoWrap(wrapMode_);
 	SetShowMatching(showMatchingStyle_);
 	SetLanguageMode(this, languageMode_, false);
 
 	// Windows Menu
-#if 0 // NOTE(eteran): transitioned
+
 	XtSetSensitive(splitPaneItem_, textPanes_.size() < MAX_PANES);
 	XtSetSensitive(closePaneItem_, textPanes_.size() > 0);
 	XtSetSensitive(detachDocumentItem_, TabCount() > 1);

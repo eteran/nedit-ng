@@ -23,7 +23,6 @@
 
 class UndoInfo;
 class TextBuffer;
-class Document;
 class MainWindow;
 class QFrame;
 class QLabel;
