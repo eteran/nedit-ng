@@ -46,7 +46,6 @@
 #include "regularExp.h"
 #include "preferences.h"
 #include "help.h"
-#include "window.h"
 #include "Document.h"
 #include "regexConvert.h"
 #include "util/MotifHelper.h"

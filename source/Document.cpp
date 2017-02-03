@@ -27,7 +27,6 @@
 #include "text.h"
 #include "UndoInfo.h"
 #include "userCmds.h"
-#include "window.h" // There are a few global functions found here... for now
 
 #include "Microline/XmL/Folder.h"
 #include "util/clearcase.h"

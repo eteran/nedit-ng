@@ -47,7 +47,6 @@
 #include "text.h"
 #include "search.h"
 #include "Document.h"
-#include "window.h"
 #include "userCmds.h"
 #include "highlight.h"
 #include "highlightData.h"

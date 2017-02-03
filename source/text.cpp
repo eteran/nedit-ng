@@ -34,7 +34,6 @@
 #include "nedit.h"
 #include "Document.h"
 #include "calltips.h"
-#include "window.h"
 #include "TextHelper.h"
 
 #include <climits>

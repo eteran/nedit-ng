@@ -40,7 +40,6 @@
 #include "text.h"
 #include "nedit.h"
 #include "file.h"
-#include "window.h"
 #include "menu.h"
 #include "preferences.h"
 #include "Document.h"

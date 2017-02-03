@@ -46,7 +46,6 @@
 #include "text.h"
 #include "nedit.h"
 #include "file.h"
-#include "window.h"
 #include "search.h"
 #include "selection.h"
 #include "shift.h"

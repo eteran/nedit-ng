@@ -49,11 +49,6 @@
 #include "selection.h"
 #include "server.h"
 #include "tags.h"
-//#include "window.h"
-//#include "Document.h"
-//#include "QtMotif.h"
-//#include "util/MotifHelper.h"
-//#include "util/fileUtils.h"
 #include "util/misc.h"
 
 #include <algorithm>
@@ -64,28 +59,13 @@
 #include <cstring>
 #include <unistd.h>
 
-//#include <X11/Xlocale.h>
-//#include <X11/Intrinsic.h>
-//#include <Xm/Xm.h>
-//#include <Xm/XmP.h>
-//#include <Xm/RepType.h>
+
 
 #include <sys/param.h>
 
 static void nextArg(int argc, char **argv, int *argIndex);
 static int checkDoMacroArg(const char *macro);
-#if 0
-static String neditLanguageProc(Display *dpy, String xnl, XtPointer closure);
-static void maskArgvKeywords(int argc, char **argv, const char **maskArgs);
-static void unmaskArgvKeywords(int argc, char **argv, const char **maskArgs);
-static void fixupBrokenXKeysymDB(void);
-static void patchResourcesForVisual(void);
-static uint8_t *sanitizeVirtualKeyBindings(void);
-static int virtKeyBindingsAreInvalid(const uint8_t *bindings);
-static void restoreInsaneVirtualKeyBindings(uint8_t *bindings);
-static void noWarningFilter(String);
-static void showWarningFilter(String);
-#endif
+
 
 QLinkedList<Document *> WindowList;
 Display *TheDisplay = nullptr;

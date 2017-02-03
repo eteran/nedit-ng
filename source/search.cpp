@@ -47,7 +47,6 @@
 #include "nedit.h"
 #include "server.h"
 #include "Document.h"
-#include "window.h"
 #include "userCmds.h"
 #include "preferences.h"
 #include "file.h"

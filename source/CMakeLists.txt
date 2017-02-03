@@ -154,7 +154,6 @@ add_executable(nedit
 	tags.cpp
 	text.cpp
 	userCmds.cpp
-	window.cpp
 	
 	ui/DialogDuplicateTags.cpp
 	ui/DialogAbout.cpp

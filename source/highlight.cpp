@@ -49,7 +49,6 @@
 #include "preferences.h"
 #include "regularExp.h"
 #include "text.h"
-#include "window.h"
 #include "TextArea.h"
 
 #include <algorithm>

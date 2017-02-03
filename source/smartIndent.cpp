@@ -50,7 +50,6 @@
 #include "TextBuffer.h"
 #include "text.h"
 #include "util/misc.h"
-#include "window.h"
 
 #include <cstdio>
 #include <cstring>
