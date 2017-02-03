@@ -807,7 +807,7 @@ static int loadTagsFile(const std::string &tagsFile, int index, int recLevel) {
 	}
 	fclose(fp);
 
-	AllWindowsUnbusy();
+    MainWindow::AllWindowsUnbusyEx();
 	return nTagsAdded;
 }
 

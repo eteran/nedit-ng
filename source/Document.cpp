@@ -96,6 +96,8 @@ Document *lastFocusDocument = nullptr; // where we came from
 **
 */
 Widget manageToolBars(Widget toolBarsForm) {
+    Q_UNUSED(toolBarsForm);
+#if 0 // NOTE(eteran)
 	Widget topWidget = nullptr;
 	WidgetList children;
 	int n, nItems = 0;
@@ -148,6 +150,8 @@ Widget manageToolBars(Widget toolBarsForm) {
 	}
 
 	return topWidget;
+#endif
+    return nullptr;
 }
 
 /*
@@ -159,14 +163,22 @@ Widget manageToolBars(Widget toolBarsForm) {
 ** private data.
 */
 void setPaneDesiredHeight(Widget w, int height) {
+    Q_UNUSED(w);
+    Q_UNUSED(height);
+#if 0 // NOTE(eteran)
 	reinterpret_cast<XmPanedWindowConstraintPtr>(w->core.constraints)->panedw.dheight = height;
+#endif
 }
 
 /*
 **
 */
 void setPaneMinHeight(Widget w, int min) {
+    Q_UNUSED(w);
+    Q_UNUSED(min);
+#if 0 // NOTE(eteran)
 	reinterpret_cast<XmPanedWindowConstraintPtr>(w->core.constraints)->panedw.min = min;
+#endif
 }
 
 /*
@@ -188,7 +200,10 @@ Widget containingPane(Widget w) {
 void wmSizeUpdateProc(XtPointer clientData, XtIntervalId *id) {
 
 	(void)id;
+    Q_UNUSED(clientData);
+#if 0 // NOTE(eteran)
 	static_cast<Document *>(clientData)->UpdateWMSizeHints();
+#endif
 }
 
 /*
@@ -3313,7 +3328,8 @@ Document::~Document() {
 ** multiple files.
 */
 Document *Document::CreateDocument(const QString &name) {
-
+    Q_UNUSED(name);
+#if 0
 	int nCols;
 	int nRows;
 
@@ -3321,7 +3337,7 @@ Document *Document::CreateDocument(const QString &name) {
 	// start with a copy of the this document
 	auto window = new Document(*this);
 
-#if 0
+
     // share these dialog items with parent shell
 	window->dialogFind_    = nullptr;
 	window->dialogReplace_ = nullptr;
@@ -3329,7 +3345,7 @@ Document *Document::CreateDocument(const QString &name) {
     window->showLineNumbers_ = GetPrefLineNums();
     window->showStats_       = GetPrefStatsLine();
     window->showISearchLine_ = GetPrefISearchLine();
-#endif
+
 
 	window->multiFileReplSelected_ = false;
 	window->multiFileBusy_         = false;
@@ -3499,6 +3515,8 @@ Document *Document::CreateDocument(const QString &name) {
 	XtVaSetValues(window->splitPane_, XmNmappedWhenManaged, true, nullptr);
 #endif
 	return window;
+    #endif
+return nullptr;
 }
 
 /*
@@ -3974,7 +3992,9 @@ Document *Document::TabToWindow(Widget tab) {
 ** Check if there is already a window open for a given file
 */
 Document *Document::FindWindowWithFile(const QString &name, const QString &path) {
-
+    Q_UNUSED(name);
+    Q_UNUSED(path);
+#if 0 // NOTE(eteran)
 	/* I don't think this algorithm will work on vms so I am
 	   disabling it for now */
 	if (!GetPrefHonorSymlinks()) {
@@ -4004,17 +4024,20 @@ Document *Document::FindWindowWithFile(const QString &name, const QString &path)
 	if(it != WindowList.end()) {
 		return *it;
 	}
-
+#endif
 	return nullptr;
 }
 
 int Document::WindowCount() {
+#if 0 // NOTE(eteran)
 	int n = 0;
 	for(Document *win: WindowList) {
 		(void)win;
 		++n;
 	}
 	return n;
+#endif
+    return 0;
 }
 
 Widget  Document::createTextArea(Widget parent, Document *window, int rows, int cols, int emTabDist, char *delimiters, int wrapMargin, int lineNumCols) {
@@ -4090,7 +4113,11 @@ TextDisplay *Document::lastFocus() const {
 ** displayed with that calltipID.
 */
 int Document::GetCalltipID(int calltipID) {
+    Q_UNUSED(calltipID);
+#if 0 // NOTE(eteran)
 	return lastFocus()->TextDGetCalltipID(calltipID);
+#endif
+    return 0;
 }
 
 /*
@@ -4099,12 +4126,24 @@ int Document::GetCalltipID(int calltipID) {
 ** the new calltip.  Returns the ID of the calltip or 0 on failure.
 */
 int Document::ShowCalltip(view::string_view text, bool anchored, int pos, int hAlign, int vAlign, int alignMode) {
+    Q_UNUSED(text);
+    Q_UNUSED(anchored);
+    Q_UNUSED(pos);
+    Q_UNUSED(hAlign);
+    Q_UNUSED(vAlign);
+    Q_UNUSED(alignMode);
+#if 0 // NOTE(eteran)
 	return lastFocus()->TextDShowCalltip(text, anchored, pos, hAlign, vAlign, alignMode);
+#endif
+    return 0;
 }
 
 /*
 ** Pop-down a calltip if one exists, else do nothing
 */
 void Document::KillCalltip(int calltipID) {
+    Q_UNUSED(calltipID);
+#if 0 // NOTE(eteran)
 	lastFocus()->TextDKillCalltip(calltipID);
+#endif
 }
