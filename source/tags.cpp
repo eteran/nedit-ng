@@ -37,7 +37,6 @@
 #include "TextHelper.h"
 #include "TextBuffer.h"
 #include "TextDisplay.h"
-#include "text.h"
 #include "nedit.h"
 #include "file.h"
 #include "preferences.h"

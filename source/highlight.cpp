@@ -47,7 +47,6 @@
 #include "nedit.h"
 #include "preferences.h"
 #include "regularExp.h"
-#include "text.h"
 #include "TextArea.h"
 
 #include <algorithm>

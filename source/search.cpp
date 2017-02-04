@@ -43,7 +43,6 @@
 #include "search.h"
 #include "regularExp.h"
 #include "TextBuffer.h"
-#include "text.h"
 #include "nedit.h"
 #include "server.h"
 #include "userCmds.h"

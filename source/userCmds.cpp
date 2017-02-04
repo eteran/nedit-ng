@@ -27,7 +27,6 @@
 *******************************************************************************/
 
 #include "userCmds.h"
-#include "Document.h"
 #include "MenuItem.h"
 #include "file.h"
 #include "macro.h"
@@ -75,8 +74,6 @@ userSubMenuCache BGSubMenus;
 
 static char *copySubstring(const char *string, int length);
 static void resetManageMode(UserMenuList *list);
-static void removeAccelFromMenuWidgets(UserMenuList *menuList);
-static void assignAccelToMenuWidgets(UserMenuList *menuList, Document *window);
 static int parseError(const char *message);
 static char *copyMacroToEnd(const char **inPtr);
 static int getSubMenuDepth(const char *menuName);
@@ -189,50 +186,6 @@ static void resetManageMode(UserMenuList *list) {
 		// recursively reset manage mode of sub-menus 
 		if (element->umleSubMenuList)
 			resetManageMode(element->umleSubMenuList);
-	}
-}
-
-/*
-** Cache user menus:
-** Remove accelerators from all items of given user (sub-)menu list.
-*/
-static void removeAccelFromMenuWidgets(UserMenuList *menuList) {
-
-	// scan all elements of this (sub-)menu 
-	for(UserMenuListElement *element : *menuList) {
-
-		if (element->umleSubMenuList) {
-			/* if element is a sub-menu, then continue removing accelerators
-			   from all items of that sub-menu recursively */
-			removeAccelFromMenuWidgets(element->umleSubMenuList);
-		} else if (!element->umleAccKeys.isNull() && element->umleManageMode == UMMM_UNMANAGE && element->umlePrevManageMode == UMMM_MANAGE) {
-			// remove accelerator if one was bound 
-			XtVaSetValues(element->umleMenuItem, XmNaccelerator, nullptr, nullptr);
-		}
-	}
-}
-
-/*
-** Cache user menus:
-** Assign accelerators to all managed items of given user (sub-)menu list.
-*/
-static void assignAccelToMenuWidgets(UserMenuList *menuList, Document *window) {
-
-	// scan all elements of this (sub-)menu 
-	for(UserMenuListElement *element : *menuList) {
-
-		if (element->umleSubMenuList) {
-			/* if element is a sub-menu, then continue assigning accelerators
-			   to all managed items of that sub-menu recursively */
-			assignAccelToMenuWidgets(element->umleSubMenuList, window);
-		} else if (!element->umleAccKeys.isNull() && element->umleManageMode == UMMM_MANAGE && element->umlePrevManageMode == UMMM_UNMANAGE) {
-			// assign accelerator if applicable 
-			XtVaSetValues(element->umleMenuItem, XmNaccelerator, element->umleAccKeys.toLatin1().data(), nullptr);
-			if (!element->umleAccLockPatchApplied) {
-				UpdateAccelLockPatch(window->splitPane_, element->umleMenuItem);
-				element->umleAccLockPatchApplied = true;
-			}
-		}
 	}
 }
 

@@ -28,9 +28,7 @@
 
 #include "DocumentWidget.h"
 #include "interpret.h"
-#include "Document.h"
 #include "menu.h"
-#include "text.h"
 #include <cmath>
 
 namespace {
@@ -1948,7 +1946,7 @@ static int concat(void) {
 */
 static int callSubroutine() {
 	Symbol *sym;
-	int i, nArgs;
+    int nArgs;
 	static DataValue noValue = INIT_DATA_VALUE;
 	Program *prog;
 	const char *errMsg;
@@ -2022,6 +2020,8 @@ static int callSubroutine() {
 	/*
 	** Call an action routine
 	*/
+#if 0 // NOTE(eteran): I think the "action_routine" stuff is no longer relevant as we are replacing it with custom wrappers for the same things
+    int i;
 	if (sym->type == ACTION_ROUTINE_SYM) {
 		String *argList;
 		Cardinal numArgs = nArgs;
@@ -2058,6 +2058,7 @@ static int callSubroutine() {
 		}
 		return PreemptRequest ? STAT_PREEMPT : STAT_OK;
 	}
+#endif
 
 	// Calling a non subroutine symbol 
 	return execError("%s is not a function or subroutine", sym->name.c_str());

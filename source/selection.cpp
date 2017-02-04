@@ -35,7 +35,6 @@
 #include "TextArea.h"
 #include "selection.h"
 #include "TextBuffer.h"
-#include "text.h"
 #include "nedit.h"
 #include "file.h"
 #include "menu.h"

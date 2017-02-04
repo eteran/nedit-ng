@@ -44,7 +44,6 @@
 #include "TextBuffer.h"
 #include "nedit.h"
 #include "menu.h"
-#include "text.h"
 #include "search.h"
 #include "userCmds.h"
 #include "highlight.h"

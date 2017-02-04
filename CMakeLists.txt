@@ -8,6 +8,6 @@ add_definitions(-DQT_NO_CAST_TO_ASCII)
 # add_definitions(-DNO_SESSION_RESTART)
 
 add_subdirectory (util)
-add_subdirectory (Xlt)
-add_subdirectory (Microline)
+#add_subdirectory (Xlt)
+#add_subdirectory (Microline)
 add_subdirectory (source)

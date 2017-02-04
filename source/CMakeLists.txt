@@ -117,85 +117,84 @@ add_executable(nedit
 	#QtMotifWidget.cpp
 	#QtXtWidget.cpp
 
-	Document.cpp
-	TextDisplay.cpp
-	text.cpp
+	#Document.cpp
+	#TextDisplay.cpp
+	#text.cpp
 	
-	ui/ElidedLabel.cpp
 	Color.cpp
-	Font.cpp
-	HighlightPattern.cpp
-	LanguageMode.cpp
-	MenuItem.cpp
-	PatternSet.cpp
-	Rangeset.cpp
-	RangesetTable.cpp
-	SmartIndent.cpp
-	TextBuffer.cpp
-	TextSelection.cpp
-	UndoInfo.cpp
-	UserMenuListElement.cpp
 	file.cpp
+	Font.cpp
 	help.cpp
 	highlight.cpp
 	highlightData.cpp
+	HighlightPattern.cpp
 	interpret.cpp
+	LanguageMode.cpp
 	macro.cpp
 	menu.cpp
+	MenuItem.cpp
 	nedit.cpp
+	PatternSet.cpp
 	preferences.cpp
+	Rangeset.cpp
+	RangesetTable.cpp
 	rbTree.cpp
 	regexConvert.cpp
 	regularExp.cpp
 	search.cpp
 	selection.cpp
-	server.cpp
 	server_common.cpp
+	server.cpp
 	shift.cpp
 	smartIndent.cpp
+	SmartIndent.cpp
 	tags.cpp
-	userCmds.cpp
-	
-	ui/DialogDuplicateTags.cpp
+	TextBuffer.cpp
+	TextSelection.cpp
+	ui/CallTipWidget.cpp
 	ui/DialogAbout.cpp
 	ui/DialogColors.cpp
 	ui/DialogDrawingStyles.cpp
+	ui/DialogDuplicateTags.cpp
 	ui/DialogExecuteCommand.cpp
 	ui/DialogFilter.cpp
 	ui/DialogFind.cpp
-	ui/DialogFontSelector.cpp
 	ui/DialogFonts.cpp
+	ui/DialogFontSelector.cpp
 	ui/DialogLanguageModes.cpp
 	ui/DialogMacros.cpp
 	ui/DialogMoveDocument.cpp
 	ui/DialogMultiReplace.cpp
+	ui/DialogOutput.cpp
 	ui/DialogPrint.cpp
+	ui/DialogPrompt.cpp
+	ui/DialogPromptList.cpp
+	ui/DialogPromptString.cpp
+	ui/DialogRepeat.cpp
 	ui/DialogReplace.cpp
 	ui/DialogShellMenu.cpp
-	ui/DialogSmartIndent.cpp
 	ui/DialogSmartIndentCommon.cpp
+	ui/DialogSmartIndent.cpp
+	ui/DialogSyntaxPatterns.cpp
 	ui/DialogTabs.cpp
 	ui/DialogWindowBackgroundMenu.cpp
 	ui/DialogWindowSize.cpp
 	ui/DialogWindowTitle.cpp
 	ui/DialogWrapMargin.cpp
+	ui/DocumentWidget.cpp
+	ui/ElidedLabel.cpp
+	ui/KeySequenceEdit.cpp
 	ui/LineEdit.cpp
 	ui/ListWidget.cpp
 	ui/MainWindow.cpp
-	ui/DialogPrompt.cpp
-	ui/DialogPromptString.cpp
-	ui/DialogPromptList.cpp
-	ui/DialogSyntaxPatterns.cpp
-	ui/DialogRepeat.cpp
-	ui/KeySequenceEdit.cpp
-	ui/TextArea.cpp
-	ui/DocumentWidget.cpp
-	ui/TabWidget.cpp
-	ui/DialogOutput.cpp
-	ui/CallTipWidget.cpp
-	ui/TabWidget.cpp
 	ui/SignalBlocker.h
-		
+	ui/TabWidget.cpp
+	ui/TabWidget.cpp
+	ui/TextArea.cpp
+	UndoInfo.cpp
+	userCmds.cpp
+	UserMenuListElement.cpp
+
 	${BISON_parser_OUTPUT_SOURCE}
 )
 
@@ -211,9 +210,7 @@ include_directories(nedit
 )
 
 target_link_libraries(nedit LINK_PUBLIC
-	Xlt
 	NUtil
-	XmL
 	${LibM}
 	${MOTIF_LIBRARIES}
 	${X11_LIBRARIES}

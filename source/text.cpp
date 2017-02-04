@@ -32,7 +32,6 @@
 #include "MultiClickStates.h"
 #include "DragStates.h"
 #include "nedit.h"
-#include "Document.h"
 #include "calltips.h"
 #include "TextHelper.h"
 

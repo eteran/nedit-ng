@@ -74,6 +74,9 @@
        </item>
        <item>
         <widget class="QCheckBox" name="checkIFindReverse">
+         <property name="focusPolicy">
+          <enum>Qt::NoFocus</enum>
+         </property>
          <property name="text">
           <string>Rev</string>
          </property>
@@ -81,6 +84,9 @@
        </item>
        <item>
         <widget class="QCheckBox" name="checkIFindRegex">
+         <property name="focusPolicy">
+          <enum>Qt::NoFocus</enum>
+         </property>
          <property name="text">
           <string>RegExp</string>
          </property>
@@ -88,6 +94,9 @@
        </item>
        <item>
         <widget class="QCheckBox" name="checkIFindCase">
+         <property name="focusPolicy">
+          <enum>Qt::NoFocus</enum>
+         </property>
          <property name="text">
           <string>Case</string>
          </property>
@@ -1747,11 +1756,7 @@
  </customwidgets>
  <tabstops>
   <tabstop>tabWidget</tabstop>
-  <tabstop>buttonIFind</tabstop>
   <tabstop>editIFind</tabstop>
-  <tabstop>checkIFindReverse</tabstop>
-  <tabstop>checkIFindRegex</tabstop>
-  <tabstop>checkIFindCase</tabstop>
  </tabstops>
  <resources/>
  <connections/>

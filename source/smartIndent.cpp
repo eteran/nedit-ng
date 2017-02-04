@@ -47,7 +47,6 @@
 #include "preferences.h"
 #include "shift.h"
 #include "TextBuffer.h"
-#include "text.h"
 #include "util/misc.h"
 
 #include <cstdio>

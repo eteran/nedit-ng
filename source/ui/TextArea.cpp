@@ -15,7 +15,7 @@
 #include <QTextCodec>
 #include "CallTipWidget.h"
 #include "TextArea.h"
-#include "Document.h"
+#include "calltips.h"
 #include "preferences.h"
 #include "TextBuffer.h"
 #include "DragStates.h"

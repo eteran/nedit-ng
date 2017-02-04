@@ -69,7 +69,6 @@
 #include "server.h"
 #include "smartIndent.h"
 #include "tags.h"
-#include "text.h"
 #include "userCmds.h"
 #include "calltips.h"
 
