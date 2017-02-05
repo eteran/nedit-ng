@@ -3,7 +3,6 @@
 #include <QRegExp>
 #include <QFontDialog>
 #include "DialogFonts.h"
-#include "DialogFontSelector.h"
 #include "DocumentWidget.h"
 #include "nedit.h"
 #include "preferences.h"
