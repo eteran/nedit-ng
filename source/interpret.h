@@ -39,7 +39,17 @@ class DocumentWidget;
 #define MAX_SYM_LEN        100   // Max. symbol name length
 #define MACRO_EVENT_MARKER 2     // Special value for the send_event field of events passed to action routines.  Tells them that they were called from a macro
 
-enum SymTypes { CONST_SYM, GLOBAL_SYM, LOCAL_SYM, ARG_SYM, PROC_VALUE_SYM, C_FUNCTION_SYM, MACRO_FUNCTION_SYM, ACTION_ROUTINE_SYM };
+enum SymTypes {
+    CONST_SYM,
+    GLOBAL_SYM,
+    LOCAL_SYM,
+    ARG_SYM,
+    PROC_VALUE_SYM,
+    C_FUNCTION_SYM,
+    MACRO_FUNCTION_SYM,
+    ACTION_ROUTINE_SYM
+};
+
 #define N_OPS 43
 enum Operations {
 	OP_RETURN_NO_VAL,
@@ -132,7 +142,6 @@ struct DataValue {
         NString        str;
         BuiltInSubrEx  subr;
         Program*       prog;
-        XtActionProc   xtproc;
         Inst*          inst;
         DataValue*     dataval;
         ArrayEntry*    arrayPtr;
@@ -182,11 +191,11 @@ void InitMacroGlobals();
 ArrayEntry *arrayIterateFirst(DataValue *theArray);
 ArrayEntry *arrayIterateNext(ArrayEntry *iterator);
 ArrayEntry *ArrayNew();
-Boolean ArrayInsert(DataValue *theArray, char *keyStr, DataValue *theValue);
+bool ArrayInsert(DataValue *theArray, char *keyStr, DataValue *theValue);
 void ArrayDelete(DataValue *theArray, char *keyStr);
 void ArrayDeleteAll(DataValue *theArray);
 unsigned ArraySize(DataValue *theArray);
-Boolean ArrayGet(DataValue *theArray, char *keyStr, DataValue *theValue);
+bool ArrayGet(DataValue *theArray, char *keyStr, DataValue *theValue);
 int ArrayCopy(DataValue *dstArray, DataValue *srcArray);
 
 /* Routines for creating a program, (accumulated beginning with
@@ -214,8 +223,6 @@ void FillLoopAddrs(Inst *breakAddr, Inst *continueAddr);
 
 /* Routines for executing programs */
 int ExecuteMacroEx(DocumentWidget *window, Program *prog, int nArgs, DataValue *args, DataValue *result, RestartData<DocumentWidget> **continuation, const char **msg);
-int ExecuteMacro(Document *window, Program *prog, int nArgs, DataValue *args, DataValue *result, RestartData<Document> **continuation, const char **msg);
-int ContinueMacro(RestartData<Document> *continuation, DataValue *result, const char **msg);
 int ContinueMacroEx(RestartData<DocumentWidget> *continuation, DataValue *result, const char **msg);
 void RunMacroAsSubrCall(Program *prog);
 void PreemptMacro();
@@ -226,17 +233,12 @@ int AllocNString(NString *string, int length);
 int AllocNStringNCpy(NString *string, const char *s, int length);
 int AllocNStringCpy(NString *string, const char *s);
 void GarbageCollectStrings();
-void FreeRestartData(RestartData<Document> *context);
 void FreeRestartDataEx(RestartData<DocumentWidget> *context);
 Symbol *PromoteToGlobal(Symbol *sym);
 void FreeProgram(Program *prog);
-void ModifyReturnedValue(RestartData<Document> *context, DataValue dv);
 void ModifyReturnedValueEx(RestartData<DocumentWidget> *context, DataValue dv);
-Document *MacroRunWindow();
-Document *MacroFocusWindow();
 DocumentWidget *MacroRunWindowEx();
 DocumentWidget *MacroFocusWindowEx();
-void SetMacroFocusWindow(Document *window);
 void SetMacroFocusWindowEx(DocumentWidget *window);
 
 /* function used for implicit conversion from string to number */

@@ -43,7 +43,7 @@ private:
     virtual void closeEvent(QCloseEvent *event) override;
 
 public:
-    void parseGeometry(const char *geometry);
+    void parseGeometry(QString geometry);
 	void UpdateWindowTitle(DocumentWidget *doc);
 	DialogReplace *getDialogReplace() const;
 	void InvalidateWindowMenus();
@@ -85,7 +85,7 @@ public:
     static QList<DocumentWidget *> allDocuments();
     static QString UniqueUntitledNameEx();
     static DocumentWidget *FindWindowWithFile(const QString &name, const QString &path);
-    static DocumentWidget *EditNewFileEx(MainWindow *inWindow, char *geometry, bool iconic, const char *languageMode, const QString &defaultPath);
+    static DocumentWidget *EditNewFileEx(MainWindow *inWindow, QString geometry, bool iconic, const char *languageMode, const QString &defaultPath);
     static void AllWindowsBusyEx(const QString &message);
     static void AllWindowsUnbusyEx();
     static void BusyWaitEx();

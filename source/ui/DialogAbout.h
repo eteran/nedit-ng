@@ -11,6 +11,9 @@ public:
 	DialogAbout(QWidget *parent = 0, Qt::WindowFlags f = 0);
 	virtual ~DialogAbout() override;
 
+public:
+    static QString createInfoString();
+
 private:
 	Ui::DialogAbout ui;
 };

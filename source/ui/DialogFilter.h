@@ -6,8 +6,6 @@
 #include <QStringList>
 #include "ui_DialogFilter.h"
 
-class Document;
-
 class DialogFilter : public QDialog {
 	Q_OBJECT
 public:

@@ -86,8 +86,7 @@ void DialogTabs::on_buttonBox_accepted() {
 		return;
 	}
 
-	if (emulate) {
-	
+	if (emulate) {	
 		if(ui.editEmulatedTabSpacing->text().isEmpty()) {
 			QMessageBox::critical(this, tr("Warning"), tr("Please supply a value for emulated tab spacing"));
 		}	
@@ -113,8 +112,6 @@ void DialogTabs::on_buttonBox_accepted() {
 		SetPrefEmTabDist(emTabDist);
 		SetPrefInsertTabs(useTabs);
 	} else {
-
-
         document_->SetTabDist(tabDist);
         document_->SetEmTabDist(emTabDist);
         document_->buffer_->useTabs_ = useTabs;

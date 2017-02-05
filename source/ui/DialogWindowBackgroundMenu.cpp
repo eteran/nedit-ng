@@ -455,7 +455,6 @@ bool DialogWindowBackgroundMenu::applyDialogChanges() {
 	}
 
 	freeUserMenuInfoList(BGMenuData);
-	freeSubMenuCache(&BGSubMenus);
 	BGMenuData.clear();
 
 	int count = ui.listItems->count();

@@ -7,8 +7,6 @@
 #include <cstring>
 #include <cstdio>
 #include <cctype>
-#include <X11/Intrinsic.h>
-#include <Xm/Xm.h>
 #include <sys/param.h>
 
 
@@ -729,7 +727,7 @@ static Symbol *matchesActionRoutine(const char **inPtr)
 {
     const char *c;
 	char *symPtr;
-    int hasDash = False;
+    int hasDash = false;
     char symbolName[MAX_SYM_LEN+1];
     Symbol *s;
 
@@ -737,7 +735,7 @@ static Symbol *matchesActionRoutine(const char **inPtr)
     for (c = *inPtr; isalnum((uint8_t)*c) || *c=='_' ||
             ( *c=='-' && isalnum((uint8_t)(*(c+1)))); c++) {
         if (*c == '-')
-            hasDash = True;
+            hasDash = true;
         *symPtr++ = *c;
     }
     if (!hasDash)

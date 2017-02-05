@@ -27,10 +27,7 @@
 #ifndef HIGHLIGHT_H_
 #define HIGHLIGHT_H_
 
-#include "Color.h"
 #include "util/string_view.h"
-
-#include <X11/Intrinsic.h>
 
 // Pattern flags for modifying pattern matching behavior
 enum {
@@ -53,13 +50,11 @@ HighlightPattern *FindPatternOfWindowEx(DocumentWidget *window, const char *name
 int HighlightCodeOfPosEx(DocumentWidget *document, int pos);
 int HighlightLengthOfCodeFromPosEx(DocumentWidget *window, int pos, int *checkCode);
 int StyleLengthOfCodeFromPosEx(DocumentWidget *window, int pos);
-Pixel AllocateColor(const char *colorName);
-Pixel AllocColor(const char *colorName);
-Pixel AllocColor(const char *colorName, Color *color);
-Pixel AllocColor(const QString &colorName);
-Pixel AllocColor(const QString &colorName, Color *color);
-Pixel GetHighlightBGColorOfCodeEx(DocumentWidget *document, int hCode, Color *color);
-Pixel HighlightColorValueOfCodeEx(DocumentWidget *document, int hCode, Color *color);
+QColor AllocateColor(const char *colorName);
+QColor AllocColor(const char *colorName);
+QColor AllocColor(const QString &colorName);
+QColor GetHighlightBGColorOfCodeEx(DocumentWidget *document, int hCode);
+QColor HighlightColorValueOfCodeEx(DocumentWidget *document, int hCode);
 QString HighlightNameOfCodeEx(DocumentWidget *document, int hCode);
 QString HighlightStyleOfCodeEx(DocumentWidget *document, int hCode);
 void AttachHighlightToWidgetEx(TextArea *area, DocumentWidget *window);

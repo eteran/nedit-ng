@@ -170,7 +170,7 @@ void KeySequenceEdit::setKeySequence(const QKeySequence &keySequence) {
 
 	keys_.clear();
 
-    for (size_t i = 0; i < keySequence_.count(); ++i) {
+    for (int i = 0; i < keySequence_.count(); ++i) {
         keys_.push_back(keySequence[i]);
 	}
 

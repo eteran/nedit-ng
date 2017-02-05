@@ -437,7 +437,6 @@ bool DialogShellMenu::applyDialogChanges() {
 	}	
 
 	freeUserMenuInfoList(ShellMenuData);
-	freeSubMenuCache(&ShellSubMenus);
 	ShellMenuData.clear();
 
 	int count = ui.listItems->count();

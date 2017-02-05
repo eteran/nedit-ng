@@ -27,6 +27,7 @@
 *******************************************************************************/
 
 #include <QApplication>
+#include <QX11Info>
 #include "ui/DocumentWidget.h"
 #include "ui/MainWindow.h"
 #include "server.h"
@@ -67,21 +68,21 @@ static Atom ServerExistsAtom = 0;
 ** called only once at startup time
 */
 void InitServerCommunication(void) {
-	Window rootWindow = RootWindow(TheDisplay, DefaultScreen(TheDisplay));
+    Window rootWindow = RootWindow(QX11Info::display(), DefaultScreen(QX11Info::display()));
 
 	// Create the server property atoms on the current DISPLAY. 
-	CreateServerPropertyAtoms(GetPrefServerName(), &ServerExistsAtom, &ServerRequestAtom);
+    CreateServerPropertyAtoms(GetPrefServerName().toLatin1().data(), &ServerExistsAtom, &ServerRequestAtom);
 
 	/* Pay attention to PropertyChangeNotify events on the root window.
 	   Do this before putting up the server atoms, to avoid a race
 	   condition (when nc sees that the server exists, it sends a command,
 	   so we must make sure that we already monitor properties). */
-	XSelectInput(TheDisplay, rootWindow, PropertyChangeMask);
+    XSelectInput(QX11Info::display(), rootWindow, PropertyChangeMask);
 
 	/* Create the server-exists property on the root window to tell clients
 	   whether to try a request (otherwise clients would always have to
 	   try and wait for their timeouts to expire) */
-	XChangeProperty(TheDisplay, rootWindow, ServerExistsAtom, XA_STRING, 8, PropModeReplace, (uint8_t *)"True", 4);
+    XChangeProperty(QX11Info::display(), rootWindow, ServerExistsAtom, XA_STRING, 8, PropModeReplace, (uint8_t *)"True", 4);
 
 	// Set up exit handler for cleaning up server-exists property 
 	atexit(cleanUpServerCommunication);
@@ -94,7 +95,7 @@ static void deleteProperty(Atom *atom) {
 	}
 
 	if (*atom != None) {
-		XDeleteProperty(TheDisplay, RootWindow(TheDisplay, DefaultScreen(TheDisplay)), *atom);
+        XDeleteProperty(QX11Info::display(), RootWindow(QX11Info::display(), DefaultScreen(QX11Info::display())), *atom);
 		*atom = None;
 	}
 }
@@ -114,13 +115,13 @@ static void cleanUpServerCommunication() {
 	/* Delete any per-file properties that still exist
 	 * (but that that server doesn't know about)
 	 */
-	DeleteServerFileAtoms(GetPrefServerName(), RootWindow(TheDisplay, DefaultScreen(TheDisplay)));
+    DeleteServerFileAtoms(GetPrefServerName().toLatin1().data(), RootWindow(QX11Info::display(), DefaultScreen(QX11Info::display())));
 
 	/* Delete the server-exists property from the root window (if it was
 	   assigned) and don't let the process exit until the X server has
 	   processed the delete request (otherwise it won't be done) */
 	deleteProperty(&ServerExistsAtom);
-	XSync(TheDisplay, False);
+    XSync(QX11Info::display(), False);
 }
 
 /*
@@ -147,7 +148,7 @@ static void processServerCommand(void) {
 	int getFmt;
 
 	// Get the value of the property, and delete it from the root window 
-	if (XGetWindowProperty(TheDisplay, RootWindow(TheDisplay, DefaultScreen(TheDisplay)), ServerRequestAtom, 0, INT_MAX, True, XA_STRING, &dummyAtom, &getFmt, &nItems, &dummyULong, &propValue) != Success || getFmt != 8)
+    if (XGetWindowProperty(QX11Info::display(), RootWindow(QX11Info::display(), DefaultScreen(QX11Info::display())), ServerRequestAtom, 0, INT_MAX, True, XA_STRING, &dummyAtom, &getFmt, &nItems, &dummyULong, &propValue) != Success || getFmt != 8)
 		return;
 
 	// Invoke the command line processor on the string to process the request 
@@ -157,7 +158,7 @@ static void processServerCommand(void) {
 
 Boolean ServerDispatchEvent(XEvent *event) {
 	if (IsServer) {
-		Window rootWindow = RootWindow(TheDisplay, DefaultScreen(TheDisplay));
+        Window rootWindow = RootWindow(QX11Info::display(), DefaultScreen(QX11Info::display()));
 		if (event->xany.window == rootWindow && event->xany.type == PropertyNotify) {
 			const XPropertyEvent *e = &event->xproperty;
 
@@ -165,7 +166,7 @@ Boolean ServerDispatchEvent(XEvent *event) {
 				if (e->atom == ServerRequestAtom && e->state == PropertyNewValue)
 					processServerCommand();
 				else if (e->atom == ServerExistsAtom && e->state == PropertyDelete)
-					XChangeProperty(TheDisplay, rootWindow, ServerExistsAtom, XA_STRING, 8, PropModeReplace, (uint8_t *)"True", 4);
+                    XChangeProperty(QX11Info::display(), rootWindow, ServerExistsAtom, XA_STRING, 8, PropModeReplace, (uint8_t *)"True", 4);
 			}
 		}
 	}
@@ -181,7 +182,7 @@ static Atom findFileOpenProperty(const char *filename, const char *pathname) {
 
 	QString path = QString(QLatin1String("%1%2")).arg(QLatin1String(pathname)).arg(QLatin1String(filename));
 	
-	return CreateServerFileOpenAtom(GetPrefServerName(), path.toLatin1().data());
+    return CreateServerFileOpenAtom(GetPrefServerName().toLatin1().data(), path.toLatin1().data());
 }
 
 /* Destroy the 'FileOpen' atom to inform nc that this file has
@@ -208,7 +209,7 @@ static Atom findFileClosedProperty(const char *filename, const char *pathname) {
 
 	QString path = QString(QLatin1String("%1%2")).arg(QLatin1String(pathname)).arg(QLatin1String(filename));
 
-	return CreateServerFileClosedAtom(GetPrefServerName(), path.toLatin1().data(), True); // don't create 
+    return CreateServerFileClosedAtom(GetPrefServerName().toLatin1().data(), path.toLatin1().data(), True); // don't create
 }
 
 // Get hold of the property to use when closing the file. 
@@ -304,7 +305,7 @@ static void processServerCommandString(char *string) {
 		});
 
         if(it == documents.end()) {
-            MainWindow::EditNewFileEx(findWindowOnDesktopEx(tabbed, currentDesktop), nullptr, false, nullptr, QString());
+            MainWindow::EditNewFileEx(findWindowOnDesktopEx(tabbed, currentDesktop), QString(), false, nullptr, QString());
             MainWindow::CheckCloseDimEx();
 		} else {
             (*it)->RaiseDocument();
@@ -366,7 +367,7 @@ static void processServerCommandString(char *string) {
 		
 			if (*doCommand == '\0') {
                 if(it == documents.end()) {
-                    MainWindow::EditNewFileEx(findWindowOnDesktopEx(tabbed, currentDesktop), nullptr, iconicFlag, lmLen == 0 ? nullptr : langMode, QString());
+                    MainWindow::EditNewFileEx(findWindowOnDesktopEx(tabbed, currentDesktop), QString(), iconicFlag, lmLen == 0 ? nullptr : langMode, QString());
 				} else {
 					if (iconicFlag) {
 						(*it)->RaiseDocument();
@@ -421,7 +422,7 @@ static void processServerCommandString(char *string) {
                         QLatin1String(filename),
                         QLatin1String(pathname),
                         editFlags,
-                        geometry,
+                        geometry ? QLatin1String(geometry) : QString(),
                         iconicFlag,
                         lmLen  ==  0 ? nullptr            : langMode,
                         tabbed == -1 ? GetPrefOpenInTab() : tabbed,

@@ -26,6 +26,7 @@
 *                                                                              *
 *******************************************************************************/
 
+#include <QVector>
 #include "userCmds.h"
 #include "MenuItem.h"
 #include "file.h"
@@ -50,17 +51,6 @@ struct menuTreeItem {
 	Widget  menuPane;
 };
 
-/* Structure holding info about a selected user menu (shell, macro or
-   background) */
-struct selectedUserMenu {
-	int sumType;                   // type of menu (shell, macro or background
-	Widget sumMenuPane;            // pane of main menu 
-	QVector<MenuData> sumDataList;
-	userSubMenuCache *sumSubMenus; // info about sub-menu structure 
-	UserMenuList *sumMainMenuList; // cached info about main menu 
-	bool *sumMenuCreated;          // pointer to "menu created" indicator
-};
-
 /* Descriptions of the current user programmed menu items for re-generating
    menus and processing shell, macro, and background menu selections */
 QVector<MenuData>  ShellMenuData;
@@ -73,7 +63,6 @@ QVector<MenuData> BGMenuData;
 userSubMenuCache BGSubMenus;
 
 static char *copySubstring(const char *string, int length);
-static void resetManageMode(UserMenuList *list);
 static int parseError(const char *message);
 static char *copyMacroToEnd(const char **inPtr);
 static int getSubMenuDepth(const char *menuName);
@@ -158,35 +147,13 @@ void SetupUserMenuInfo() {
 */
 void UpdateUserMenuInfo() {
 	freeUserMenuInfoList(ShellMenuData);
-	freeSubMenuCache(&ShellSubMenus);
 	parseMenuItemList(ShellMenuData, &ShellSubMenus);
 
 	freeUserMenuInfoList(MacroMenuData);
-	freeSubMenuCache(&MacroSubMenus);
 	parseMenuItemList(MacroMenuData, &MacroSubMenus);
 
 	freeUserMenuInfoList(BGMenuData);
-	freeSubMenuCache(&BGSubMenus);
 	parseMenuItemList(BGMenuData, &BGSubMenus);
-}
-
-/*
-** Cache user menus:
-** Reset manage mode of user menu items in window cache.
-*/
-static void resetManageMode(UserMenuList *list) {
-
-	for (auto &&element : *list) {
-
-		/* remember current manage mode before reset it to
-		   "unmanaged" */
-		element->umlePrevManageMode = element->umleManageMode;
-		element->umleManageMode = UMMM_UNMANAGE;
-
-		// recursively reset manage mode of sub-menus 
-		if (element->umleSubMenuList)
-			resetManageMode(element->umleSubMenuList);
-	}
 }
 
 static char *copySubstring(const char *string, int length) {
@@ -225,8 +192,6 @@ static char *writeMenuItemString(const QVector<MenuData> &menuItems, int listTyp
 
 	// write the string 
 	char *outPtr = outStr;
-	*outPtr++ = '\\';
-	*outPtr++ = '\n';
 	
 	for (const MenuData &data : menuItems) {
 		MenuItem *f = data.item;
@@ -235,23 +200,18 @@ static char *writeMenuItemString(const QVector<MenuData> &menuItems, int listTyp
 		*outPtr++ = '\t';
 		
 		for (auto ch : f->name) { // Copy the command name 
-			if (ch == QLatin1Char('\\')) {                // changing backslashes to "\\" 
-				*outPtr++ = '\\';
-				*outPtr++ = '\\';
-			} else if (ch == QLatin1Char('\n')) { // changing newlines to \n 
-				*outPtr++ = '\\';
-				*outPtr++ = 'n';
-			} else {
-				*outPtr++ = ch.toLatin1();
-			}
+            *outPtr++ = ch.toLatin1();
 		}
 		
 		*outPtr++ = ':';
         strcpy(outPtr, accStr.toLatin1());
         outPtr += accStr.size();
 		*outPtr++ = ':';
-		if (f->mnemonic != '\0')
+
+        if (f->mnemonic != '\0') {
 			*outPtr++ = f->mnemonic;
+        }
+
 		*outPtr++ = ':';
 		if (listType == SHELL_CMDS) {
 			if (f->input == FROM_SELECTION)
@@ -278,21 +238,13 @@ static char *writeMenuItemString(const QVector<MenuData> &menuItems, int listTyp
 			*outPtr++ = ' ';
 			*outPtr++ = '{';
 		}
-		*outPtr++ = '\\';
-		*outPtr++ = 'n';
-		*outPtr++ = '\\';
+
 		*outPtr++ = '\n';
 		*outPtr++ = '\t';
 		*outPtr++ = '\t';
 		
 		for(QChar c : f->cmd) {
-			if (c == QLatin1Char('\\')) {                
-				*outPtr++ = '\\';                // Copy the command string, changing 
-				*outPtr++ = '\\';                // backslashes to double backslashes 
-			} else if (c == QLatin1Char('\n')) { // and newlines to backslash-n's,    
-				*outPtr++ = '\\';			     // followed by real newlines and tab 
-				*outPtr++ = 'n';
-				*outPtr++ = '\\';
+            if (c == QLatin1Char('\n')) { // and newlines to backslash-n's,
 				*outPtr++ = '\n';
 				*outPtr++ = '\t';
 				*outPtr++ = '\t';
@@ -307,12 +259,9 @@ static char *writeMenuItemString(const QVector<MenuData> &menuItems, int listTyp
 			*outPtr++ = '}';
 		}
 		
-		*outPtr++ = '\\';
-		*outPtr++ = 'n';
-		*outPtr++ = '\\';
 		*outPtr++ = '\n';
 	}
-	--outPtr;
+
 	*--outPtr = '\0';
 	return outStr;
 }
@@ -802,18 +751,6 @@ static void allocSubMenuCache(userSubMenuCache *subMenus, int nbrOfItems) {
 	subMenus->usmcInfo               = new userSubMenuInfo[nbrOfItems];
 }
 
-void freeSubMenuCache(userSubMenuCache *subMenus) {
 
-	for (int i = 0; i < subMenus->usmcNbrOfSubMenus; i++) {
-		XtFree(subMenus->usmcInfo[i].usmiName);
-		delete [] subMenus->usmcInfo[i].usmiId;
-	}
 
-	delete [] subMenus->usmcInfo;
-}
 
-void freeUserMenuList(UserMenuList *list) {
-
-	qDeleteAll(*list);
-	list->clear();
-}

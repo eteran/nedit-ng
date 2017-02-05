@@ -1,5 +1,5 @@
 
-#include "util/MotifHelper.h"
+
 #include "RangesetTable.h"
 #include "TextBuffer.h"
 #include <string>
@@ -34,15 +34,17 @@ static void rangesetClone(Rangeset *destRangeset, const Rangeset *srcRangeset) {
 	destRangeset->last_index  = srcRangeset->last_index;
 	destRangeset->n_ranges    = srcRangeset->n_ranges;
 	destRangeset->color_set   = srcRangeset->color_set;
-	destRangeset->color       = srcRangeset->color;
+    destRangeset->color       = srcRangeset->color;
 
-	if (srcRangeset->color_name) {
-		destRangeset->color_name = XtStringDup(srcRangeset->color_name);
-	}
+    if (srcRangeset->color_name) {
+        destRangeset->color_name = new char[strlen(srcRangeset->color_name) + 1];
+        strcpy(destRangeset->color_name, srcRangeset->color_name);
+    }
 
-	if (srcRangeset->name) {
-		destRangeset->name = XtStringDup(srcRangeset->name);
-	}
+    if (srcRangeset->name) {
+        destRangeset->name = new char[strlen(srcRangeset->name) + 1];
+        strcpy(destRangeset->name, srcRangeset->name);
+    }
 
 	if (srcRangeset->ranges) {
 		destRangeset->ranges = RangesetTable::RangesNew(srcRangeset->n_ranges);
@@ -258,7 +260,7 @@ int RangesetTable::RangesetIndex1ofPos(int pos, int needs_color) {
 	for (i = 0; i < this->n_set; i++) {
 		Rangeset *rangeset = &this->set[(int)this->order[i]];
 		if (rangeset->RangesetCheckRangeOfPos(pos) >= 0) {
-			if (needs_color && rangeset->color_set >= 0 && rangeset->color_name)
+            if (needs_color && rangeset->color_set >= 0 && rangeset->color_name)
 				return this->order[i] + 1;
 		}
 	}
@@ -270,7 +272,7 @@ int RangesetTable::RangesetIndex1ofPos(int pos, int needs_color) {
 ** false, the color_set flag is set to an invalid (negative) value.
 */
 
-int RangesetTable::RangesetTableAssignColorPixel(int index, Pixel color, int ok) {
+int RangesetTable::RangesetTableAssignColorPixel(int index, const QColor &color, int ok) {
 	Rangeset *rangeset = &this->set[index];
 	rangeset->color_set = ok ? 1 : -1;
 	rangeset->color = color;
@@ -281,7 +283,7 @@ int RangesetTable::RangesetTableAssignColorPixel(int index, Pixel color, int ok)
 ** Return the color color validity, if any, and the value in *color.
 */
 
-int RangesetTable::RangesetTableGetColorValid(int index, Pixel *color) {
+int RangesetTable::RangesetTableGetColorValid(int index, QColor *color) {
 	Rangeset *rangeset = &this->set[index];
 	*color = rangeset->color;
 	return rangeset->color_set;

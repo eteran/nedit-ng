@@ -1,15 +1,13 @@
 
 #include <QPushButton>
 #include <QRegExp>
-#include <QX11Info>
+#include <QFontDialog>
 #include "DialogFonts.h"
 #include "DialogFontSelector.h"
 #include "DocumentWidget.h"
 #include "nedit.h"
 #include "preferences.h"
 #include "TextArea.h"
-#include "Color.h"
-#include "highlight.h" // for AllocColor
 
 //------------------------------------------------------------------------------
 // Name:
@@ -121,10 +119,10 @@ void DialogFonts::updateFonts() {
 	if (forWindow_) {
         document_->SetFonts(fontName, italicName, boldName, boldItalicName);
 	} else {
-		SetPrefFont(fontName.toLatin1().data());
-		SetPrefItalicFont(italicName.toLatin1().data());
-		SetPrefBoldFont(boldName.toLatin1().data());
-		SetPrefBoldItalicFont(boldItalicName.toLatin1().data());
+        SetPrefFont(fontName);
+        SetPrefItalicFont(italicName);
+        SetPrefBoldFont(boldName);
+        SetPrefBoldItalicFont(boldItalicName);
 	}
 }
 
@@ -198,7 +196,6 @@ DialogFonts::FontStatus DialogFonts::showFontStatus(const QString &font, QLabel 
 */
 DialogFonts::FontStatus DialogFonts::checkFontStatus(const QString &font) {
 
-    Display *display = QX11Info::display();
 
 	/* Get width and height of the font to check.  Note the test for empty
 	   name: X11R6 clients freak out X11R5 servers if they ask them to load
@@ -207,30 +204,32 @@ DialogFonts::FontStatus DialogFonts::checkFontStatus(const QString &font) {
 	if (testName.isEmpty()) {
 		return BAD_FONT;
 	}
-	
-	XFontStruct *testFont = XLoadQueryFont(display, testName.toLatin1().data());
-	if(!testFont) {
-		return BAD_FONT;
-	}
 
-	const int testWidth  = testFont->min_bounds.width;
-	const int testHeight = testFont->ascent + testFont->descent;
-	XFreeFont(display, testFont);
+    QFont f;
+    f.fromString(testName);
+    f.setStyleStrategy(QFont::ForceIntegerMetrics);
+
+    QFontMetrics fm(f);
+
+    const int testWidth  = fm.width(QLatin1Char('i')); // NOTE(eteran): min-width?
+    const int testHeight = fm.lineSpacing();
+
 
 	// Get width and height of the primary font 
 	QString primaryName = ui.editFontPrimary->text();
 	if (primaryName.isEmpty()) {
 		return BAD_FONT;
-	}
-	
-	XFontStruct *primaryFont = XLoadQueryFont(display, primaryName.toLatin1().data());
-	if(!primaryFont) {
-		return BAD_PRIMARY;
-	}
+    }
 
-	const int primaryWidth  = primaryFont->min_bounds.width;
-	const int primaryHeight = primaryFont->ascent + primaryFont->descent;
-	XFreeFont(display, primaryFont);
+    QFont primaryFont;
+    primaryFont.fromString(primaryName);
+    primaryFont.setStyleStrategy(QFont::ForceIntegerMetrics);
+
+    QFontMetrics primaryFm(primaryFont);
+
+
+    const int primaryWidth  = primaryFm.width(QLatin1Char('i')); // NOTE(eteran): min-width?
+    const int primaryHeight = primaryFm.lineSpacing();
 
 
 	// Compare font information 
@@ -250,32 +249,13 @@ DialogFonts::FontStatus DialogFonts::checkFontStatus(const QString &font) {
 */
 void DialogFonts::browseFont(QLineEdit *lineEdit) {
 
-	Color fgColor;
-	Color bgColor;
 
-	QString origFontName = lineEdit->text();
+    bool ok;
+    QFont currFont;
+    currFont.fromString(lineEdit->text());
+    QFont newFont = QFontDialog::getFont(&ok, currFont, this);
 
-	// Get the values from the defaults 
-	Pixel fgPixel = AllocColor(GetPrefColorName(TEXT_FG_COLOR), &fgColor);
-	Pixel bgPixel = AllocColor(GetPrefColorName(TEXT_BG_COLOR), &bgColor);
-	
-	Q_UNUSED(fgPixel);
-	Q_UNUSED(bgPixel);
-
-	QColor foreground = toQColor(fgColor);
-	QColor background = toQColor(bgColor);
-	
-    auto dialog = new DialogFontSelector(PREF_FIXED, origFontName.toLatin1().data(), foreground, background, this);
-	int r = dialog->exec();
-	
-	QString newFont;
-	if(r) {
-		newFont = dialog->ui.editFontName->text();		
-	}
-	
-	if(newFont.isEmpty()) {
-		return;
-	}
-	
-	lineEdit->setText(newFont);
+    if(ok) {
+        lineEdit->setText(newFont.toString());
+    }
 }

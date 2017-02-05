@@ -26,7 +26,6 @@
 #include "fileUtils.h"
 #include "TextBuffer.h"
 #include "nedit.h"
-#include "Color.h"
 #include "selection.h"
 #include "highlight.h"
 #include "LanguageMode.h"
@@ -36,7 +35,6 @@
 #include "smartIndentCBStruct.h"
 #include "smartIndent.h"
 #include "highlightData.h"
-#include "Font.h"
 #include "macro.h"
 #include "tags.h"
 #include "HighlightData.h"
@@ -76,7 +74,6 @@ struct shellCmdInfoEx {
     int leftPos;
     int rightPos;
     QTimer *bannerTimeoutID;
-    QTimer *flushTimeoutID;
     bool bannerIsUp;
     bool fromMacro;
 };
@@ -282,7 +279,7 @@ UndoTypes determineUndoType(int nInserted, int nDeleted) {
 // TODO(eteran): inWindow is a DocumentWidget, not a MainWindow...
 //               so either rename the parameter, OR rework this in
 //               terms of MainWindow
-DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inWindow, const QString &name, const QString &path, int flags, char *geometry, int iconic, const char *languageMode, bool tabbed, bool bgOpen) {
+DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inWindow, const QString &name, const QString &path, int flags, const QString &geometry, int iconic, const char *languageMode, bool tabbed, bool bgOpen) {
 
     // first look to see if file is already displayed in a window
     if(DocumentWidget *document = MainWindow::FindWindowWithFile(name, path)) {
@@ -377,7 +374,7 @@ DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inWindow, con
     QString fullname = QString(QLatin1String("%1%2")).arg(path, name);
 
     if (GetPrefAlwaysCheckRelTagsSpecs()) {
-        AddRelTagsFile(GetPrefTagFile(), path.toLatin1().data(), TAG);
+        AddRelTagsFileEx(GetPrefTagFile(), path.toLatin1().data(), TAG);
     }
 
     if(auto win = document->toWindow()) {
@@ -437,9 +434,9 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 	backlightChars_        = GetPrefBacklightChars();
 	
 	if (backlightChars_) {
-		const char *cTypes = GetPrefBacklightCharTypes();
-		if (cTypes && backlightChars_) {			
-			backlightCharTypes_ = QLatin1String(cTypes);
+        QString cTypes = GetPrefBacklightCharTypes();
+        if (!cTypes.isNull() && backlightChars_) {
+            backlightCharTypes_ = cTypes;
 		}
 	}
 	
@@ -455,13 +452,13 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 	boldFontName_          = GetPrefBoldFontName();
 	boldItalicFontName_    = GetPrefBoldItalicFontName();
 	dialogColors_          = nullptr;
-	fontList_              = GetPrefFontList();
+
 	italicFontStruct_      = GetPrefItalicFont();
 	boldFontStruct_        = GetPrefBoldFont();
 	boldItalicFontStruct_  = GetPrefBoldItalicFont();
-	dialogFonts_           = nullptr;
+
+    dialogFonts_           = nullptr;
 	nMarks_                = 0;
-	markTimeoutID_         = 0;
 	highlightData_         = nullptr;
 	shellCmdData_          = nullptr;
 	macroCmdData_          = nullptr;
@@ -514,7 +511,7 @@ TextArea *DocumentWidget::createTextArea(TextBuffer *buffer) {
                              0,
                              0,
                              buffer,
-                             toQFont(GetDefaultFontStruct(fontList_)),
+                             GetDefaultFontStructEx(),
                              Qt::white,
                              Qt::black,
                              Qt::white,
@@ -525,24 +522,24 @@ TextArea *DocumentWidget::createTextArea(TextBuffer *buffer) {
                              Qt::black  //QColor lineNumFGPixel,
                              );
 
-    Pixel textFgPix   = AllocColor(GetPrefColorName(TEXT_FG_COLOR));
-    Pixel textBgPix   = AllocColor(GetPrefColorName(TEXT_BG_COLOR));
-    Pixel selectFgPix = AllocColor(GetPrefColorName(SELECT_FG_COLOR));
-    Pixel selectBgPix = AllocColor(GetPrefColorName(SELECT_BG_COLOR));
-    Pixel hiliteFgPix = AllocColor(GetPrefColorName(HILITE_FG_COLOR));
-    Pixel hiliteBgPix = AllocColor(GetPrefColorName(HILITE_BG_COLOR));
-    Pixel lineNoFgPix = AllocColor(GetPrefColorName(LINENO_FG_COLOR));
-    Pixel cursorFgPix = AllocColor(GetPrefColorName(CURSOR_FG_COLOR));
+    QColor textFgPix   = AllocColor(GetPrefColorName(TEXT_FG_COLOR));
+    QColor textBgPix   = AllocColor(GetPrefColorName(TEXT_BG_COLOR));
+    QColor selectFgPix = AllocColor(GetPrefColorName(SELECT_FG_COLOR));
+    QColor selectBgPix = AllocColor(GetPrefColorName(SELECT_BG_COLOR));
+    QColor hiliteFgPix = AllocColor(GetPrefColorName(HILITE_FG_COLOR));
+    QColor hiliteBgPix = AllocColor(GetPrefColorName(HILITE_BG_COLOR));
+    QColor lineNoFgPix = AllocColor(GetPrefColorName(LINENO_FG_COLOR));
+    QColor cursorFgPix = AllocColor(GetPrefColorName(CURSOR_FG_COLOR));
 
     area->TextDSetColors(
-        toQColor(textFgPix),
-        toQColor(textBgPix),
-        toQColor(selectFgPix),
-        toQColor(selectBgPix),
-        toQColor(hiliteFgPix),
-        toQColor(hiliteBgPix),
-        toQColor(lineNoFgPix),
-        toQColor(cursorFgPix));
+        textFgPix,
+        textBgPix,
+        selectFgPix,
+        selectBgPix,
+        hiliteFgPix,
+        hiliteBgPix,
+        lineNoFgPix,
+        cursorFgPix);
 
     // add focus, drag, cursor tracking, and smart indent callbacks
     area->addCursorMovementCallback(movedCB, this);
@@ -3185,7 +3182,7 @@ void DocumentWidget::open(const char *fullpath) {
         return;
     }
 
-    EditExistingFileEx(this, QLatin1String(filename), QLatin1String(pathname), 0, nullptr, false, nullptr, GetPrefOpenInTab(), false);
+    EditExistingFileEx(this, QLatin1String(filename), QLatin1String(pathname), 0, QString(), false, nullptr, GetPrefOpenInTab(), false);
 
     if(auto win = toWindow()) {
         win->CheckCloseDimEx();
@@ -4347,7 +4344,7 @@ void DocumentWidget::PrintWindow(TextArea *area, bool selectedOnly) {
 */
 void DocumentWidget::PrintStringEx(const std::string &string, const QString &jobName) {
 
-    QString tempDir = QDesktopServices::storageLocation(QDesktopServices::TempLocation);
+    QString tempDir = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
 
     // L_tmpnam defined in stdio.h
     char tmpFileName[L_tmpnam];
@@ -4664,31 +4661,31 @@ void DocumentWidget::SetFonts(const QString &fontName, const QString &italicName
 #endif
     if (primaryChanged) {
         fontName_ = fontName;
-        XFontStruct *font = XLoadQueryFont(TheDisplay, fontName.toLatin1().data());
-        if(font) {
-            fontList_ = XmFontListCreate(font, XmSTRING_DEFAULT_CHARSET);
-        } else {
-            qDebug("nedit: Failed to load primary font!");
-        }
+
     }
 
     if (highlightChanged) {
-        italicFontName_       = italicName;
-        italicFontStruct_     = XLoadQueryFont(TheDisplay, italicName.toLatin1().data());
+        italicFontName_     = italicName;
+        italicFontStruct_.fromString(italicName);
 
-        boldFontName_         = boldName;
-        boldFontStruct_       = XLoadQueryFont(TheDisplay, boldName.toLatin1().data());
+        boldFontName_       = boldName;
+        boldFontStruct_.fromString(boldName);
 
-        boldItalicFontName_   = boldItalicName;
-        boldItalicFontStruct_ = XLoadQueryFont(TheDisplay, boldItalicName.toLatin1().data());
+        boldItalicFontName_ = boldItalicName;
+        boldItalicFontStruct_.fromString(boldItalicName);
+
+        italicFontStruct_.setStyleStrategy(QFont::ForceIntegerMetrics);
+        boldFontStruct_.setStyleStrategy(QFont::ForceIntegerMetrics);
+        boldItalicFontStruct_.setStyleStrategy(QFont::ForceIntegerMetrics);
     }
 
     // Change the primary font in all the widgets
     if (primaryChanged) {
-        XFontStruct *font = GetDefaultFontStruct(fontList_);
+        QFont font;
+        font.fromString(fontName);
 
         for(TextArea *area : textPanes()) {
-            area->setFont(toQFont(font));
+            area->setFont(font);
         }
     }
 
@@ -4728,14 +4725,14 @@ void DocumentWidget::SetFonts(const QString &fontName, const QString &italicName
 /*
 ** Set the backlight character class string
 */
-void DocumentWidget::SetBacklightChars(const char *applyBacklightTypes) {
+void DocumentWidget::SetBacklightChars(const QString &applyBacklightTypes) {
 
-    const bool do_apply = applyBacklightTypes ? true : false;
+    const bool do_apply = !applyBacklightTypes.isNull() ? true : false;
 
     backlightChars_ = do_apply;
 
     if(backlightChars_) {
-        backlightCharTypes_ = QLatin1String(applyBacklightTypes);
+        backlightCharTypes_ = applyBacklightTypes;
     } else {
         backlightCharTypes_ = QString();
     }
@@ -4802,14 +4799,14 @@ void DocumentWidget::gotoAP(TextArea *area, QStringList args) {
 */
 void DocumentWidget::SetColors(const char *textFg, const char *textBg, const char *selectFg, const char *selectBg, const char *hiliteFg, const char *hiliteBg, const char *lineNoFg, const char *cursorFg) {
 
-    Pixel textFgPix   = AllocColor(textFg);
-    Pixel textBgPix   = AllocColor(textBg);
-    Pixel selectFgPix = AllocColor(selectFg);
-    Pixel selectBgPix = AllocColor(selectBg);
-    Pixel hiliteFgPix = AllocColor(hiliteFg);
-    Pixel hiliteBgPix = AllocColor(hiliteBg);
-    Pixel lineNoFgPix = AllocColor(lineNoFg);
-    Pixel cursorFgPix = AllocColor(cursorFg);
+    QColor textFgPix   = AllocColor(textFg);
+    QColor textBgPix   = AllocColor(textBg);
+    QColor selectFgPix = AllocColor(selectFg);
+    QColor selectBgPix = AllocColor(selectBg);
+    QColor hiliteFgPix = AllocColor(hiliteFg);
+    QColor hiliteBgPix = AllocColor(hiliteBg);
+    QColor lineNoFgPix = AllocColor(lineNoFg);
+    QColor cursorFgPix = AllocColor(cursorFg);
 
 
     // Update all panes
@@ -4964,14 +4961,14 @@ void DocumentWidget::issueCommandEx(MainWindow *window, TextArea *area, const QS
         connect(process, SIGNAL(readyReadStandardOutput()), document, SLOT(stdoutReadProc()));
     } else {
         process->setProcessChannelMode(QProcess::MergedChannels);
-        connect(process, SIGNAL(readyReadS()), document, SLOT(mergedReadProc()));
+        connect(process, SIGNAL(readyRead()), document, SLOT(mergedReadProc()));
     }
 
     // start it off!
     QStringList args;
     args << QLatin1String("-c");
     args << command;
-    process->start(QLatin1String(GetPrefShell()), args);
+    process->start(GetPrefShell(), args);
 
     // if there's nothing to write to the process' stdin, close it now, otherwise
     // write it to the process
@@ -5002,16 +4999,6 @@ void DocumentWidget::issueCommandEx(MainWindow *window, TextArea *area, const QS
         QObject::connect(cmdData->bannerTimeoutID, SIGNAL(timeout()), document, SLOT(bannerTimeoutProc()));
         cmdData->bannerTimeoutID->setSingleShot(true);
         cmdData->bannerTimeoutID->start(BANNER_WAIT_TIME);
-    }
-
-    // Set up timer proc for flushing output buffers periodically
-    if ((flags & ACCUMULATE) || !area) {
-        cmdData->flushTimeoutID = nullptr;
-    } else {
-        cmdData->flushTimeoutID = new QTimer(document);
-        QObject::connect(cmdData->flushTimeoutID, SIGNAL(timeout()), document, SLOT(flushTimeoutProc()));
-        cmdData->flushTimeoutID->setSingleShot(true);
-        cmdData->flushTimeoutID->start(OUTPUT_FLUSH_FREQ);
     }
 
     /* If this was called from a macro, preempt the macro until shell
@@ -5072,11 +5059,6 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
     bool fromMacro = cmdData->fromMacro;
 
     // Cancel pending timeouts
-    if (cmdData->flushTimeoutID) {
-        cmdData->flushTimeoutID->stop();
-        delete cmdData->flushTimeoutID;
-    }
-
     if (cmdData->bannerTimeoutID) {
         cmdData->bannerTimeoutID->stop();
         delete cmdData->bannerTimeoutID;
@@ -5480,7 +5462,7 @@ void DocumentWidget::DoShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
         right = 0;
         break;
     case TO_NEW_WINDOW:
-        if(DocumentWidget *document = MainWindow::EditNewFileEx(GetPrefOpenInTab() ? inWindow : nullptr, nullptr, false, nullptr, path_)) {
+        if(DocumentWidget *document = MainWindow::EditNewFileEx(GetPrefOpenInTab() ? inWindow : nullptr, QString(), false, nullptr, path_)) {
             inWindow  = document->toWindow();
             outWidget = document->firstPane();
             left      = 0;

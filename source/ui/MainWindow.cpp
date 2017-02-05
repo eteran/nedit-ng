@@ -7,7 +7,9 @@
 #include <QInputDialog>
 #include <QClipboard>
 #include <QMessageBox>
+#include <QMimeData>
 #include "MainWindow.h"
+#include "Preferences.h"
 #include "DialogExecuteCommand.h"
 #include "DialogSmartIndent.h"
 #include "DialogWrapMargin.h"
@@ -129,7 +131,7 @@ MainWindow::~MainWindow() {
 //------------------------------------------------------------------------------
 // Name: setDimmensions
 //------------------------------------------------------------------------------
-void MainWindow::parseGeometry(const char *geometry) {
+void MainWindow::parseGeometry(QString geometry) {
     int rows = -1;
     int cols = -1;
 
@@ -142,17 +144,17 @@ void MainWindow::parseGeometry(const char *geometry) {
        application resource, which is pretty useless because width and height
        are the same as the rows and cols preferences, and specifying a window
        location will force all the windows to pile on top of one another */
-    if (geometry == nullptr || geometry[0] == '\0') {
+    if (geometry.isEmpty()) {
         geometry = GetPrefGeometry();
     }
 
-    if (geometry == nullptr || geometry[0] == '\0') {
+    if (geometry.isEmpty()) {
         rows = GetPrefRows();
         cols = GetPrefCols();
     } else {
 
         QRegExp regex(QLatin1String("(?:([0-9]+)(?:[xX]([0-9]+)(?:([\\+-][0-9]+)(?:([\\+-][0-9]+))?)?)?)?"));
-        if(regex.exactMatch(QLatin1String(geometry))) {
+        if(regex.exactMatch(geometry)) {
             cols = regex.capturedTexts()[1].toInt();
             rows = regex.capturedTexts()[2].toInt();
         }
@@ -528,7 +530,7 @@ void MainWindow::action_New(const QString &mode) {
     }
 
 
-    EditNewFileEx(openInTab ? this : nullptr, nullptr, false, nullptr, path);
+    EditNewFileEx(openInTab ? this : nullptr, QString(), false, nullptr, path);
     CheckCloseDimEx();
 }
 
@@ -676,12 +678,12 @@ void MainWindow::UpdateWindowTitle(DocumentWidget *doc) {
 		doc->filename_,
 		doc->path_,
 		clearCaseTag,
-		QLatin1String(GetPrefServerName()),
+        GetPrefServerName(),
 		IsServer,
 		doc->filenameSet_,
 		doc->lockReasons_,
 		doc->fileChanged_,
-		QLatin1String(GetPrefTitleFormat()));
+        GetPrefTitleFormat());
 
 	setWindowTitle(title);
 
@@ -1121,7 +1123,6 @@ int MainWindow::updateGutterWidth() {
 #if 0
     int newColsDiff = 0;
     if (reqCols != maxCols) {
-        XFontStruct *fs;
         Dimension windowWidth;
         short fontWidth;
 
@@ -1404,7 +1405,7 @@ void MainWindow::ReadNEditDB() {
 
     /* Don't move this check ahead of the previous statements. PrevOpen
        must be initialized at all times. */
-    QString fullName = GetRCFileNameEx(NEDIT_HISTORY);
+    QString fullName = Preferences::historyFile();
     if(fullName.isNull()) {
         return;
     }
@@ -1510,7 +1511,7 @@ void MainWindow::invalidatePrevOpenMenus() {
 void MainWindow::WriteNEditDB() {
 
 
-    QString fullName = GetRCFileNameEx(NEDIT_HISTORY);
+    QString fullName = Preferences::historyFile();
     if(fullName.isNull()) {
         return;
     }
@@ -1618,7 +1619,7 @@ void MainWindow::on_tabWidget_customContextMenuRequested(int index, const QPoint
         if(DocumentWidget *document = documentAt(index)) {
 
             if(selected == newTab) {
-                MainWindow::EditNewFileEx(this, nullptr, false, nullptr, document->path_);
+                MainWindow::EditNewFileEx(this, QString(), false, nullptr, document->path_);
             } else if(selected == closeTab) {
                 document->actionClose(QString());
             } else if(selected == detachTab) {
@@ -1706,7 +1707,7 @@ void MainWindow::fileCB(DocumentWidget *window, const std::string &text) {
             if (ParseFilename(globbuf.gl_pathv[i], filename, pathname) != 0) {
                 QApplication::beep();
             } else {
-                DocumentWidget::EditExistingFileEx(GetPrefOpenInTab() ? window : nullptr, QLatin1String(filename), QLatin1String(pathname), 0, nullptr, false, nullptr, GetPrefOpenInTab(), false);
+                DocumentWidget::EditExistingFileEx(GetPrefOpenInTab() ? window : nullptr, QLatin1String(filename), QLatin1String(pathname), 0, QString(), false, nullptr, GetPrefOpenInTab(), false);
             }
         }
         globfree(&globbuf);
@@ -2885,7 +2886,7 @@ void MainWindow::on_action_Highlight_Syntax_toggled(bool state) {
 
 void MainWindow::on_action_Apply_Backlighting_toggled(bool state) {
     if(auto document = currentDocument()) {
-        document->SetBacklightChars(state ? GetPrefBacklightCharTypes() : nullptr);
+        document->SetBacklightChars(state ? GetPrefBacklightCharTypes() : QString());
     }
 }
 
@@ -3027,7 +3028,7 @@ void MainWindow::on_action_Default_Command_Shell_triggered() {
         tr("Command Shell"),
         tr("Enter shell path:"),
         QLineEdit::Normal,
-        QLatin1String(GetPrefShell()),
+        GetPrefShell(),
         &ok);
 
     if (ok && !shell.isEmpty()) {
@@ -3040,16 +3041,14 @@ void MainWindow::on_action_Default_Command_Shell_triggered() {
             }
         }
 
-        SetPrefShell(shell.toLatin1().data());
+        SetPrefShell(shell);
     }
 }
 
 void MainWindow::on_action_Default_Tab_Stops_triggered() {
-    if(auto document = currentDocument()) {
-        auto dialog = new DialogTabs(document, this);
-        dialog->exec();
-        delete dialog;
-    }
+    auto dialog = new DialogTabs(nullptr, this);
+    dialog->exec();
+    delete dialog;
 }
 
 void MainWindow::on_action_Default_Text_Fonts_triggered() {
@@ -3382,7 +3381,6 @@ void MainWindow::on_action_Default_Terminate_with_Line_Break_on_Save_toggled(boo
 void MainWindow::on_action_Default_Popups_Under_Pointer_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
     SetPrefRepositionDialogs(state);
-    SetPointerCenteredDialogs(state);
     for(MainWindow *window : allWindows()) {
         no_signals(window->ui.action_Default_Popups_Under_Pointer)->setChecked(state);
     }
@@ -3505,7 +3503,7 @@ void MainWindow::action_Last_Document() {
     // TODO(eteran): implement!
 }
 
-DocumentWidget *MainWindow::EditNewFileEx(MainWindow *inWindow, char *geometry, bool iconic, const char *languageMode, const QString &defaultPath) {
+DocumentWidget *MainWindow::EditNewFileEx(MainWindow *inWindow, QString geometry, bool iconic, const char *languageMode, const QString &defaultPath) {
 
     DocumentWidget *document;
 
@@ -3798,7 +3796,7 @@ void MainWindow::on_action_Revert_to_Saved_triggered() {
 //------------------------------------------------------------------------------
 void MainWindow::on_action_New_Window_triggered() {
     if(auto document = currentDocument()) {
-        MainWindow::EditNewFileEx(GetPrefOpenInTab() ? nullptr : this, nullptr, false, nullptr, document->path_);
+        MainWindow::EditNewFileEx(GetPrefOpenInTab() ? nullptr : this, QString(), false, nullptr, document->path_);
         CheckCloseDimEx();
     }
 }

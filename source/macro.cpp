@@ -39,8 +39,9 @@
 #include <QTimer>
 #include <QMimeData>
 #include <QFuture>
-#include <QtConcurrentRun>
+#include <QtConcurrent>
 
+#include "Preferences.h"
 #include "ui/MainWindow.h"
 #include "ui/DialogPrompt.h"
 #include "ui/DialogPromptList.h"
@@ -72,7 +73,6 @@
 #include "userCmds.h"
 #include "calltips.h"
 
-#include "util/MotifHelper.h"
 #include "util/misc.h"
 #include "util/utils.h"
 
@@ -89,7 +89,7 @@ const int BANNER_WAIT_TIME = 6000;
 
 }
 
-
+void AddLastCommandActionHook(XtAppContext context);
 
 // The following definitions cause an exit from the macro with a message 
 // added if (1) to remove compiler warnings on solaris 
@@ -111,17 +111,6 @@ const int BANNER_WAIT_TIME = 6000;
 
 /* Data attached to window during shell command execution with
    information for controling and communicating with the process */
-struct macroCmdInfo {
-	XtIntervalId bannerTimeoutID;
-	XtWorkProcId continueWorkProcID;
-	char bannerIsUp;
-	char closeOnCompletion;
-	Program *program;
-    RestartData<Document> *context;
-};
-
-/* Data attached to window during shell command execution with
-   information for controling and communicating with the process */
 struct macroCmdInfoEx {
     QTimer *bannerTimeoutID;
     QFuture<bool> continueWorkProcID;
@@ -131,11 +120,9 @@ struct macroCmdInfoEx {
     RestartData<DocumentWidget> *context;
 };
 
-
 static void cancelLearnEx();
 static void runMacroEx(DocumentWidget *document, Program *prog);
 static void finishMacroCmdExecutionEx(DocumentWidget *window);
-void learnActionHook(Widget w, XtPointer clientData, String actionName, XEvent *event, String *params, Cardinal *numParams);
 static int readCheckMacroStringEx(QWidget *dialogParent, const char *string, DocumentWidget *runWindow, const char *errIn, const char **errPos);
 static bool continueWorkProcEx(DocumentWidget *clientData);
 static int lengthMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
@@ -793,7 +780,7 @@ void ReplayEx(DocumentWidget *window) {
 */
 void ReadMacroInitFileEx(DocumentWidget *window) {
 
-    const QString autoloadName = GetRCFileNameEx(AUTOLOAD_NM);
+    const QString autoloadName = Preferences::autoLoadMacroFile();
     if(autoloadName.isNull()) {
         return;
     }
@@ -4092,7 +4079,7 @@ static int serverNameMV(DocumentWidget *window, DataValue *argList, int nArgs, D
 	(void)errMsg;
 
 	result->tag = STRING_TAG;
-	AllocNStringCpy(&result->val.str, GetPrefServerName());
+    AllocNStringCpy(&result->val.str, GetPrefServerName().toLatin1().data());
 	return true;
 }
 
@@ -4976,7 +4963,7 @@ static int rangesetSetModeMS(DocumentWidget *window, DataValue *argList, int nAr
 static int fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWidget *document, const char *styleName, bool preallocatedStyleName, bool includeName, int patCode, int bufferPos) {
     DataValue DV;
     char colorValue[20];
-    Color color;
+    QColor color;
 
     // initialize array
     result->tag = ARRAY_TAG;
@@ -5010,8 +4997,8 @@ static int fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWid
        (only possible if we pass through the dynamic highlight pattern tables
        in other words, only if we have a pattern code) */
     if (patCode) {
-        HighlightColorValueOfCodeEx(document, patCode, &color);
-        sprintf(colorValue, "#%02x%02x%02x", color.r / 256, color.g / 256, color.b / 256);
+        QColor color = HighlightColorValueOfCodeEx(document, patCode);
+        sprintf(colorValue, "#%02x%02x%02x", color.red(), color.green(), color.blue());
         AllocNStringCpy(&DV.val.str, colorValue);
         M_STR_ALLOC_ASSERT(DV);
         if (!ArrayInsert(result, PERM_ALLOC_STR("rgb"), &DV)) {
@@ -5030,8 +5017,8 @@ static int fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWid
        (only possible if we pass through the dynamic highlight pattern tables
        in other words, only if we have a pattern code) */
     if (patCode) {
-        GetHighlightBGColorOfCodeEx(document, patCode, &color);
-        sprintf(colorValue, "#%02x%02x%02x", color.r / 256, color.g / 256, color.b / 256);
+        QColor color = GetHighlightBGColorOfCodeEx(document, patCode);
+        sprintf(colorValue, "#%02x%02x%02x", color.red(), color.green(), color.blue());
         AllocNStringCpy(&DV.val.str, colorValue);
         M_STR_ALLOC_ASSERT(DV);
         if (!ArrayInsert(result, PERM_ALLOC_STR("back_rgb"), &DV)) {

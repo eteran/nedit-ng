@@ -26,7 +26,10 @@
 *                                                                              *
 *******************************************************************************/
 
-#include "util/prefFile.h"
+#include "Preferences.h"
+#include <QSettings>
+#include <QString>
+
 #include "util/fileUtils.h"
 #include "util/utils.h"
 #include "util/system.h"
@@ -52,10 +55,10 @@
 #define APP_NAME "nc"
 #define APP_CLASS "NEditClient"
 
-#define PROPERTY_CHANGE_TIMEOUT (Preferences.timeOut * 1000) // milliseconds 
-#define SERVER_START_TIMEOUT    (Preferences.timeOut * 3000) // milliseconds 
-#define REQUEST_TIMEOUT         (Preferences.timeOut * 1000) // milliseconds 
-#define FILE_OPEN_TIMEOUT       (Preferences.timeOut * 3000) // milliseconds 
+#define PROPERTY_CHANGE_TIMEOUT (ServerPreferences.timeOut * 1000) // milliseconds
+#define SERVER_START_TIMEOUT    (ServerPreferences.timeOut * 3000) // milliseconds
+#define REQUEST_TIMEOUT         (ServerPreferences.timeOut * 1000) // milliseconds
+#define FILE_OPEN_TIMEOUT       (ServerPreferences.timeOut * 3000) // milliseconds
 
 struct CommandLine {
 	char *shell;
@@ -92,28 +95,11 @@ static const char cmdLineHelp[] = "Usage:  nc [-read] [-create]\n"
 // Structure to hold X Resource values 
 static struct {
 	int autoStart;
-	char serverCmd[2 * MAXPATHLEN]; // holds executable name + flags 
-	char serverName[MAXPATHLEN];
+    QString serverCmd; // holds executable name + flags
+    QString serverName;
 	bool waitForClose;
 	int timeOut;
-} Preferences;
-
-// Application resources 
-static PrefDescripRec PrefDescrip[] = {
-	{"autoStart",     "AutoStart",     PREF_BOOLEAN, "True",          &Preferences.autoStart,    nullptr,                        true},
-	{"serverCommand", "ServerCommand", PREF_STRING,  "nedit -server",  Preferences.serverCmd,    sizeof(Preferences.serverCmd),  false},
-	{"serverName",    "serverName",    PREF_STRING,  "",               Preferences.serverName,   sizeof(Preferences.serverName), false},
-	{"waitForClose",  "WaitForClose",  PREF_BOOLEAN, "False",         &Preferences.waitForClose, nullptr,                        false},
-	{"timeOut",       "TimeOut",       PREF_INT,     "10",            &Preferences.timeOut,      nullptr,                        false}
-};
-
-// Resource related command line options 
-static XrmOptionDescRec OpTable[] = {{(String) "-ask", (String) ".autoStart", XrmoptionNoArg, (XPointer) "False"},
-                                     {(String) "-noask", (String) ".autoStart", XrmoptionNoArg, (XPointer) "True"},
-                                     {(String) "-svrname", (String) ".serverName", XrmoptionSepArg, nullptr},
-                                     {(String) "-svrcmd", (String) ".serverCommand", XrmoptionSepArg, nullptr},
-                                     {(String) "-wait", (String) ".waitForClose", XrmoptionNoArg, (XPointer) "True"},
-                                     {(String) "-timeout", (String) ".timeOut", XrmoptionSepArg, nullptr}};
+} ServerPreferences;
 
 // Struct to hold info about files being opened and edited. 
 struct FileListEntry {
@@ -157,12 +143,12 @@ static void createWaitProperties() {
 
 	for(FileListEntry *item : fileListHead.fileList) {
 		fileListHead.waitForOpenCount++;
-		item->waitForFileOpenAtom = CreateServerFileOpenAtom(Preferences.serverName, item->path.c_str());
+        item->waitForFileOpenAtom = CreateServerFileOpenAtom(ServerPreferences.serverName.toLatin1().data(), item->path.c_str());
 		setPropertyValue(item->waitForFileOpenAtom);
 
-		if (Preferences.waitForClose) {
+        if (ServerPreferences.waitForClose) {
 			fileListHead.waitForCloseCount++;
-			item->waitForFileClosedAtom = CreateServerFileClosedAtom(Preferences.serverName, item->path.c_str(), False);
+            item->waitForFileClosedAtom = CreateServerFileClosedAtom(ServerPreferences.serverName.toLatin1().data(), item->path.c_str(), False);
 			setPropertyValue(item->waitForFileClosedAtom);
 		}
 	}
@@ -173,16 +159,12 @@ int main(int argc, char **argv) {
 	Window rootWindow;
 	CommandLine commandLine;
 	Atom serverExistsAtom, serverRequestAtom;
-	XrmDatabase prefDB;
 	Boolean serverExists;
 
 	// Initialize toolkit and get an application context 
 	XtToolkitInitialize();
 	AppContext = context = XtCreateApplicationContext();
 
-	/* Read the preferences command line into a database (note that we
-	   don't support the .nc file anymore) */
-	prefDB = CreatePreferencesDatabase(nullptr, APP_CLASS, OpTable, XtNumber(OpTable), (unsigned *)&argc, argv);
 
 	/* Process the command line before calling XtOpenDisplay, because the
 	   latter consumes certain command line arguments that we still need
@@ -198,24 +180,32 @@ int main(int argc, char **argv) {
 	rootWindow = RootWindow(TheDisplay, DefaultScreen(TheDisplay));
 
 	// Read the application resources into the Preferences data structure 
-	RestorePreferences(prefDB, XtDatabase(TheDisplay), APP_NAME, APP_CLASS, PrefDescrip, XtNumber(PrefDescrip));
+    QString filename = Preferences::configFile();
+    QSettings settings(filename, QSettings::IniFormat);
+    settings.beginGroup(QLatin1String("Server"));
+
+    ServerPreferences.autoStart     = settings.value(QLatin1String("autoStart"),     true).toBool();
+    ServerPreferences.serverCmd     = settings.value(QLatin1String("serverCommand"), QLatin1String("nedit-nc -server")).toString();
+    ServerPreferences.serverName    = settings.value(QLatin1String("serverName"),    QLatin1String("")).toString();
+    ServerPreferences.waitForClose  = settings.value(QLatin1String("waitForClose"),  false).toBool();
+    ServerPreferences.timeOut       = settings.value(QLatin1String("timeOut"),       10).toInt();
 
 	/* Make sure that the time out unit is at least 1 second and not too
 	   large either (overflow!). */
-	if (Preferences.timeOut < 1) {
-		Preferences.timeOut = 1;
-	} else if (Preferences.timeOut > 1000) {
-		Preferences.timeOut = 1000;
+    if (ServerPreferences.timeOut < 1) {
+        ServerPreferences.timeOut = 1;
+    } else if (ServerPreferences.timeOut > 1000) {
+        ServerPreferences.timeOut = 1000;
 	}
 
 	/* For Clearcase users who have not set a server name, use the clearcase
 	   view name.  Clearcase views make files with the same absolute path names
 	   but different contents (and therefore can't be edited in the same nedit
 	   session). This should have no bad side-effects for non-clearcase users */
-	if (Preferences.serverName[0] == '\0') {
+    if (ServerPreferences.serverName.isEmpty()) {
 		const QString viewTag = GetClearCaseViewTag();
 		if (!viewTag.isNull() && viewTag.size() < MAXPATHLEN) {
-			strcpy(Preferences.serverName, viewTag.toLatin1().data());
+            ServerPreferences.serverName =  viewTag;
 		}
 	}
 
@@ -226,7 +216,7 @@ int main(int argc, char **argv) {
 	XSelectInput(TheDisplay, rootWindow, PropertyChangeMask);
 
 	// Create the server property atoms on the current DISPLAY. 
-	CreateServerPropertyAtoms(Preferences.serverName, &serverExistsAtom, &serverRequestAtom);
+    CreateServerPropertyAtoms(ServerPreferences.serverName.toLatin1().data(), &serverExistsAtom, &serverRequestAtom);
 
 	serverExists = findExistingServer(context, rootWindow, serverExistsAtom);
 
@@ -326,9 +316,9 @@ static void startNewServer(XtAppContext context, Window rootWindow, char *comman
 	   CreatePreferencesDatabase before the command line was recorded
 	   in commandLine.shell. Moreover, if no server name was specified, it
 	   may have defaulted to the ClearCase view tag. */
-	if (Preferences.serverName[0] != '\0') {
+    if (!ServerPreferences.serverName.isEmpty()) {
 		strcat(commandLine, " -svrname ");
-		strcat(commandLine, Preferences.serverName);
+        strcat(commandLine, ServerPreferences.serverName.toLatin1().data());
 	}
 	switch (startServer("No servers available, start one? (y|n) [y]: ", commandLine)) {
 	case -1: // Start failed 
@@ -385,7 +375,7 @@ static void startNewServer(XtAppContext context, Window rootWindow, char *comman
 static int startServer(const char *message, const char *commandLineArgs) {
 	
 	// prompt user whether to start server 
-	if (!Preferences.autoStart) {
+    if (!ServerPreferences.autoStart) {
 		char c;
 		printf("%s", message);
 		do {
@@ -396,7 +386,7 @@ static int startServer(const char *message, const char *commandLineArgs) {
 	}
 
 	// start the server 
-	auto commandLine = QString(QLatin1String("%1 %2&")).arg(QLatin1String(Preferences.serverCmd)).arg(QLatin1String(commandLineArgs));
+    auto commandLine = QString(QLatin1String("%1 %2&")).arg(ServerPreferences.serverCmd).arg(QLatin1String(commandLineArgs));
 	
 	int sysrc = system(commandLine.toLatin1().data());
 
@@ -692,7 +682,7 @@ static void waitUntilFilesOpenedOrClosed(XtAppContext context, Window rootWindow
 
 		/* We are finished if we are only waiting for files to open and
 		** the file open timeout has expired. */
-		if (!Preferences.waitForClose && timeOut) {
+        if (!ServerPreferences.waitForClose && timeOut) {
 			break;
 		}
 

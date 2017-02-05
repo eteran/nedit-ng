@@ -35,11 +35,11 @@
 #include "ui/DialogPrint.h"
 #include "ui/MainWindow.h"
 #include "ui/DocumentWidget.h"
+#include "ui/DialogAbout.h"
 
 #include "nedit.h"
 #include "util/fileUtils.h"
 #include "file.h"
-#include "help.h"
 #include "interpret.h"
 #include "macro.h"
 #include "menu.h"
@@ -58,168 +58,13 @@
 #include <cstdlib>
 #include <cstring>
 #include <unistd.h>
-
-
-
 #include <sys/param.h>
 
 static void nextArg(int argc, char **argv, int *argIndex);
 static int checkDoMacroArg(const char *macro);
 
-
-QLinkedList<Document *> WindowList;
-Display *TheDisplay = nullptr;
-const char *ArgV0   = nullptr;
 bool IsServer       = false;
-Widget TheAppShell;
 
-/* Reasons for choice of default font qualifications:
-
-   iso8859 appears to be necessary for newer versions of XFree86 that
-   default to Unicode encoding, which doesn't quite work with Motif.
-   Otherwise Motif puts up garbage (square blocks).
-
-   (This of course, is a stupid default because there are far more iso8859
-   apps than Unicode apps.  But the X folks insist it's a client bug.  Hah.)
-
-   RedHat 7.3 won't default to '-1' for an encoding, if left with a *,
-   and so reverts to "fixed".  Yech. */
-
-#define NEDIT_DEFAULT_FONT                                                                                                                                                                                                                     \
-	"-*-helvetica-medium-r-normal-*-*-120-*-*-*-*-iso8859-1,"                                                                                                                                                                                  \
-	"-*-helvetica-bold-r-normal-*-*-120-*-*-*-*-iso8859-1=BOLD,"                                                                                                                                                                               \
-	"-*-helvetica-medium-o-normal-*-*-120-*-*-*-*-iso8859-1=ITALIC"
-
-#define NEDIT_FIXED_FONT                                                                                                                                                                                                                       \
-	"-*-courier-medium-r-normal-*-*-120-*-*-*-*-iso8859-1,"                                                                                                                                                                                    \
-	"-*-courier-bold-r-normal-*-*-120-*-*-*-*-iso8859-1=BOLD,"                                                                                                                                                                                 \
-	"-*-courier-medium-o-normal-*-*-120-*-*-*-*-iso8859-1=ITALIC"
-
-#define NEDIT_DEFAULT_BG "#b3b3b3"
-
-#define NEDIT_TEXT_TRANSLATIONS                                                                                                                                                                                                                \
-	"#override\\n"                                                                                                                                                                                                                             \
-	"Ctrl~Alt~Meta<KeyPress>v: paste-clipboard()\\n"                                                                                                                                                                                           \
-	"Ctrl~Alt~Meta<KeyPress>c: copy-clipboard()\\n"                                                                                                                                                                                            \
-	"Ctrl~Alt~Meta<KeyPress>x: cut-clipboard()\\n"                                                                                                                                                                                             \
-	"Ctrl~Alt~Meta<KeyPress>u: delete-to-start-of-line()\\n"
-
-#if 0
-static const char *fallbackResources[] = {
-/* Try to avoid Motif's horrificly ugly default colors and fonts,
-   if the user's environment provides no usable defaults.  We try
-   to choose a Windows-y default color setting here.  Editable text
-   fields are forced to a fixed-pitch font for usability.
-
-   By using the VendorShell fontList resources, Motif automatically
-   groups the fonts into the right classes.  It's then easier for
-   the user or environment to override this sensibly:
-
-     nedit -xrm '*textFontList: myfont'
-
-   This is broken in recent versions of LessTif.
-
-   If using OpenMotif 2.3.3 or better, support XFT fonts.  XFT is
-   claimed supported in OpenMotif 2.3.0, but doesn't work very well,
-   as insensitive text buttons are blank.  That bug is fixed in 2.3.3.
-  */
-
-#if (XmVersion >= 2003 && XmUPDATE_LEVEL >= 3 && USE_XFT == 1)
-    "*buttonRenderTable:        defaultRT",                            "*labelRenderTable:         defaultRT",                       "*textRenderTable:          fixedRT",
-    "*defaultRT.fontType:       FONT_IS_XFT",                          "*defaultRT.fontName:       Sans",                            "*defaultRT.fontSize:       9",
-    "*fixedRT.fontType:         FONT_IS_XFT",                          "*fixedRT.fontName:         Monospace",                       "*fixedRT.fontSize:         9",
-#else
-    "*buttonFontList: " NEDIT_DEFAULT_FONT,                            "*labelFontList: " NEDIT_DEFAULT_FONT,                        "*textFontList: " NEDIT_FIXED_FONT,
-#endif
-
-    "*background: " NEDIT_DEFAULT_BG,                                  "*foreground: " NEDIT_DEFAULT_FG,                             "*XmText.foreground: " NEDIT_DEFAULT_FG,
-    "*XmText.background: " NEDIT_DEFAULT_TEXT_BG,                      "*XmList.foreground: " NEDIT_DEFAULT_FG,                      "*XmList.background: " NEDIT_DEFAULT_TEXT_BG,
-    "*XmTextField.foreground: " NEDIT_DEFAULT_FG,                      "*XmTextField.background: " NEDIT_DEFAULT_TEXT_BG,
-
-    // Use baseTranslations as per Xt Programmer's Manual, 10.2.12 
-    "*XmText.baseTranslations: " NEDIT_TEXT_TRANSLATIONS,              "*XmTextField.baseTranslations: " NEDIT_TEXT_TRANSLATIONS,
-
-    "*XmLFolder.highlightThickness: 0",                                "*XmLFolder.shadowThickness:    1",                           "*XmLFolder.maxTabWidth:        150",
-    "*XmLFolder.traversalOn:        False",                            "*XmLFolder.inactiveForeground: #666",                        "*tab.alignment: XmALIGNMENT_BEGINNING",
-    "*tab.marginWidth: 0",                                             "*tab.marginHeight: 1",
-
-    // Prevent the file selection box from acting stupid. 
-    "*XmFileSelectionBox.resizePolicy: XmRESIZE_NONE",                 "*XmFileSelectionBox.textAccelerators:",                      "*XmFileSelectionBox.pathMode: XmPATH_MODE_RELATIVE",
-    "*XmFileSelectionBox.width: 500",                                  "*XmFileSelectionBox.height: 400",
-
-    /* NEdit-specific widgets.  Theses things should probably be manually
-       jammed into the database, rather than fallbacks.  We really want
-       the accelerators to be there even if someone creates an app-defaults
-       file against our wishes. */
-
-    "*text.lineNumForeground: " NEDIT_DEFAULT_LINENO_FG,               "*text.background: " NEDIT_DEFAULT_TEXT_BG,                   "*text.foreground: " NEDIT_DEFAULT_FG,
-    "*text.highlightForeground: " NEDIT_DEFAULT_HI_FG,                 "*text.highlightBackground: " NEDIT_DEFAULT_HI_BG,            "*textFrame.shadowThickness: 1",
-    "*menuBar.marginHeight: 0",                                        "*menuBar.shadowThickness: 1",                                "*pane.sashHeight: 11",
-    "*pane.sashWidth: 11",                                             "*pane.marginWidth: 0",                                       "*pane.marginHeight: 0",
-    "*scrolledW*spacing: 0",                                           "*text.selectionArrayCount: 3",                               "*helpText.background: " NEDIT_DEFAULT_HELP_BG,
-    "*helpText.foreground: " NEDIT_DEFAULT_HELP_FG,                    "*helpText.selectBackground: " NEDIT_DEFAULT_BG,              "*statsLine.background: " NEDIT_DEFAULT_BG,
-    "*statsLine.FontList: " NEDIT_DEFAULT_FONT,                        "*calltip.background: LemonChiffon1",                         "*calltip.foreground: black",
-    "*iSearchForm*highlightThickness: 1",                              "*fileMenu.tearOffModel: XmTEAR_OFF_ENABLED",                 "*editMenu.tearOffModel: XmTEAR_OFF_ENABLED",
-    "*searchMenu.tearOffModel: XmTEAR_OFF_ENABLED",                    "*preferencesMenu.tearOffModel: XmTEAR_OFF_ENABLED",          "*windowsMenu.tearOffModel: XmTEAR_OFF_ENABLED",
-    "*shellMenu.tearOffModel: XmTEAR_OFF_ENABLED",                     "*macroMenu.tearOffModel: XmTEAR_OFF_ENABLED",                "*helpMenu.tearOffModel: XmTEAR_OFF_ENABLED",
-    "*fileMenu.mnemonic: F",                                           "*fileMenu.new.accelerator: Ctrl<Key>n",                      "*fileMenu.new.acceleratorText: Ctrl+N",
-    "*fileMenu.newOpposite.accelerator: Shift Ctrl<Key>n",             "*fileMenu.newOpposite.acceleratorText: Shift+Ctrl+N",        "*fileMenu.open.accelerator: Ctrl<Key>o",
-    "*fileMenu.open.acceleratorText: Ctrl+O",                          "*fileMenu.openSelected.accelerator: Ctrl<Key>y",             "*fileMenu.openSelected.acceleratorText: Ctrl+Y",
-    "*fileMenu.close.accelerator: Ctrl<Key>w",                         "*fileMenu.close.acceleratorText: Ctrl+W",                    "*fileMenu.save.accelerator: Ctrl<Key>s",
-    "*fileMenu.save.acceleratorText: Ctrl+S",                          "*fileMenu.includeFile.accelerator: Alt<Key>i",               "*fileMenu.includeFile.acceleratorText: Alt+I",
-    "*fileMenu.print.accelerator: Ctrl<Key>p",                         "*fileMenu.print.acceleratorText: Ctrl+P",                    "*fileMenu.exit.accelerator: Ctrl<Key>q",
-    "*fileMenu.exit.acceleratorText: Ctrl+Q",                          "*editMenu.mnemonic: E",                                      "*editMenu.undo.accelerator: Ctrl<Key>z",
-    "*editMenu.undo.acceleratorText: Ctrl+Z",                          "*editMenu.redo.accelerator: Shift Ctrl<Key>z",               "*editMenu.redo.acceleratorText: Shift+Ctrl+Z",
-    /*  Clipboard accelerators prevent the use of the clipboard in iSearch's
-        XmText, so they are left out. Their job is done by translations in
-        the main text widget, so the acceleratorText is still kept.  */
-    "*editMenu.cut.acceleratorText: Ctrl+X",                           "*editMenu.copy.acceleratorText: Ctrl+C",                     "*editMenu.paste.acceleratorText: Ctrl+V",
-    "*editMenu.pasteColumn.accelerator: Shift Ctrl<Key>v",             "*editMenu.pasteColumn.acceleratorText: Ctrl+Shift+V",        "*editMenu.delete.acceleratorText: Del",
-    "*editMenu.selectAll.accelerator: Ctrl<Key>a",                     "*editMenu.selectAll.acceleratorText: Ctrl+A",                "*editMenu.shiftLeft.accelerator: Ctrl<Key>9",
-    "*editMenu.shiftLeft.acceleratorText: [Shift]Ctrl+9",              "*editMenu.shiftLeftShift.accelerator: Shift Ctrl<Key>9",     "*editMenu.shiftRight.accelerator: Ctrl<Key>0",
-    "*editMenu.shiftRight.acceleratorText: [Shift]Ctrl+0",             "*editMenu.shiftRightShift.accelerator: Shift Ctrl<Key>0",    "*editMenu.upperCase.accelerator: Ctrl<Key>6",
-    "*editMenu.upperCase.acceleratorText: Ctrl+6",                     "*editMenu.lowerCase.accelerator: Shift Ctrl<Key>6",          "*editMenu.lowerCase.acceleratorText: Shift+Ctrl+6",
-    "*editMenu.fillParagraph.accelerator: Ctrl<Key>j",                 "*editMenu.fillParagraph.acceleratorText: Ctrl+J",            "*editMenu.insertFormFeed.accelerator: Alt Ctrl<Key>l",
-    "*editMenu.insertFormFeed.acceleratorText: Alt+Ctrl+L",            "*editMenu.insertCtrlCode.accelerator: Alt Ctrl<Key>i",       "*editMenu.insertCtrlCode.acceleratorText: Alt+Ctrl+I",
-    "*searchMenu.mnemonic: S",                                         "*searchMenu.find.accelerator: Ctrl<Key>f",                   "*searchMenu.find.acceleratorText: [Shift]Ctrl+F",
-    "*searchMenu.findShift.accelerator: Shift Ctrl<Key>f",             "*searchMenu.findAgain.accelerator: Ctrl<Key>g",              "*searchMenu.findAgain.acceleratorText: [Shift]Ctrl+G",
-    "*searchMenu.findAgainShift.accelerator: Shift Ctrl<Key>g",        "*searchMenu.findSelection.accelerator: Ctrl<Key>h",          "*searchMenu.findSelection.acceleratorText: [Shift]Ctrl+H",
-    "*searchMenu.findSelectionShift.accelerator: Shift Ctrl<Key>h",    "*searchMenu.findIncremental.accelerator: Ctrl<Key>i",        "*searchMenu.findIncrementalShift.accelerator: Shift Ctrl<Key>i",
-    "*searchMenu.findIncremental.acceleratorText: [Shift]Ctrl+I",      "*searchMenu.replace.accelerator: Ctrl<Key>r",                "*searchMenu.replace.acceleratorText: [Shift]Ctrl+R",
-    "*searchMenu.replaceShift.accelerator: Shift Ctrl<Key>r",          "*searchMenu.findReplace.accelerator: Ctrl<Key>r",            "*searchMenu.findReplace.acceleratorText: [Shift]Ctrl+R",
-    "*searchMenu.findReplaceShift.accelerator: Shift Ctrl<Key>r",      "*searchMenu.replaceFindAgain.accelerator: Ctrl<Key>t",       "*searchMenu.replaceFindAgain.acceleratorText: [Shift]Ctrl+T",
-    "*searchMenu.replaceFindAgainShift.accelerator: Shift Ctrl<Key>t", "*searchMenu.replaceAgain.accelerator: Alt<Key>t",            "*searchMenu.replaceAgain.acceleratorText: [Shift]Alt+T",
-    "*searchMenu.replaceAgainShift.accelerator: Shift Alt<Key>t",      "*searchMenu.gotoLineNumber.accelerator: Ctrl<Key>l",         "*searchMenu.gotoLineNumber.acceleratorText: Ctrl+L",
-    "*searchMenu.gotoSelected.accelerator: Ctrl<Key>e",                "*searchMenu.gotoSelected.acceleratorText: Ctrl+E",           "*searchMenu.mark.accelerator: Alt<Key>m",
-    "*searchMenu.mark.acceleratorText: Alt+M a-z",                     "*searchMenu.gotoMark.accelerator: Alt<Key>g",                "*searchMenu.gotoMark.acceleratorText: [Shift]Alt+G a-z",
-    "*searchMenu.gotoMarkShift.accelerator: Shift Alt<Key>g",          "*searchMenu.gotoMatching.accelerator: Ctrl<Key>m",           "*searchMenu.gotoMatching.acceleratorText: [Shift]Ctrl+M",
-    "*searchMenu.gotoMatchingShift.accelerator: Shift Ctrl<Key>m",     "*searchMenu.findDefinition.accelerator: Ctrl<Key>d",         "*searchMenu.findDefinition.acceleratorText: Ctrl+D",
-    "*searchMenu.showCalltip.accelerator: Ctrl<Key>apostrophe",        "*searchMenu.showCalltip.acceleratorText: Ctrl+'",            "*preferencesMenu.mnemonic: P",
-    "*preferencesMenu.statisticsLine.accelerator: Alt<Key>a",          "*preferencesMenu.statisticsLine.acceleratorText: Alt+A",     "*preferencesMenu.overtype.acceleratorText: Insert",
-    "*shellMenu.mnemonic: l",                                          "*shellMenu.filterSelection.accelerator: Alt<Key>r",          "*shellMenu.filterSelection.acceleratorText: Alt+R",
-    "*shellMenu.executeCommand.accelerator: Alt<Key>x",                "*shellMenu.executeCommand.acceleratorText: Alt+X",           "*shellMenu.executeCommandLine.accelerator: Ctrl<Key>KP_Enter",
-    "*shellMenu.executeCommandLine.acceleratorText: Ctrl+KP Enter",    "*shellMenu.cancelShellCommand.accelerator: Ctrl<Key>period", "*shellMenu.cancelShellCommand.acceleratorText: Ctrl+.",
-    "*macroMenu.mnemonic: c",                                          "*macroMenu.learnKeystrokes.accelerator: Alt<Key>k",          "*macroMenu.learnKeystrokes.acceleratorText: Alt+K",
-    "*macroMenu.finishLearn.accelerator: Alt<Key>k",                   "*macroMenu.finishLearn.acceleratorText: Alt+K",              "*macroMenu.cancelLearn.accelerator: Ctrl<Key>period",
-    "*macroMenu.cancelLearn.acceleratorText: Ctrl+.",                  "*macroMenu.replayKeystrokes.accelerator: Ctrl<Key>k",        "*macroMenu.replayKeystrokes.acceleratorText: Ctrl+K",
-    "*macroMenu.repeat.accelerator: Ctrl<Key>comma",                   "*macroMenu.repeat.acceleratorText: Ctrl+,",                  "*windowsMenu.mnemonic: W",
-    "*windowsMenu.splitPane.accelerator: Ctrl<Key>2",                  "*windowsMenu.splitPane.acceleratorText: Ctrl+2",             "*windowsMenu.closePane.accelerator: Ctrl<Key>1",
-    "*windowsMenu.closePane.acceleratorText: Ctrl+1",                  "*helpMenu.mnemonic: H",                                      "nedit.help.helpForm.sw.helpText*baseTranslations: #override\
-<Key>Tab:help-focus-buttons()\\n\
-<Key>Return:help-button-action(\"close\")\\n\
-Ctrl<Key>F:help-button-action(\"find\")\\n\
-Ctrl<Key>G:help-button-action(\"findAgain\")\\n\
-<KeyPress>osfCancel:help-button-action(\"close\")\\n\
-~Meta~Ctrl~Shift<Btn1Down>:\
-    grab-focus() help-hyperlink()\\n\
-~Meta~Ctrl~Shift<Btn1Up>:\
-    help-hyperlink(\"current\", \"process-cancel\", \"extend-end\")\\n\
-~Meta~Ctrl~Shift<Btn2Down>:\
-    process-bdrag() help-hyperlink()\\n\
-~Meta~Ctrl~Shift<Btn2Up>:\
-    help-hyperlink(\"new\", \"process-cancel\", \"copy-to\")",
-    nullptr};
-#endif
 static const char cmdLineHelp[] =
     "Usage:  nedit [-read] [-create] [-line n | +n] [-server] [-do command]\n\
 	      [-tags file] [-tabs n] [-wrap] [-nowrap] [-autowrap]\n\
@@ -233,6 +78,7 @@ static const char cmdLineHelp[] =
 
 int main(int argc, char *argv[]) {	
 
+    Display *TheDisplay = nullptr;
 	int lineNum;
 	int nRead;
 	bool fileSpecified = false;
@@ -244,79 +90,17 @@ int main(int argc, char *argv[]) {
 	int tabbed = -1;
 	int group = 0;
 	int isTabbed;
-	char *geometry = nullptr;
+    QString geometry;
 	char *langMode = nullptr;
 	char filename[MAXPATHLEN];
 	char pathname[MAXPATHLEN];	
     QPointer<DocumentWidget> lastFileEx = nullptr;
     char *toDoCommand = nullptr;
 
-#if 0
-    static const char *protectedKeywords[] = {"-iconic", "-icon", "-geometry", "-g", "-rv", "-reverse", "-bd", "-bordercolor", "-borderwidth", "-bw", "-title", nullptr};
-    uint8_t *invalidBindings = nullptr;
-    Document *lastFile = nullptr;
-    bool macroFileRead = false;
+    // TODO(eteran): support non-X11 instance for things like -version again
+    QApplication app(argc, argv);
 
-
-	/* Set locale for C library, X, and Motif input functions.
-	   Reverts to "C" if requested locale not available. */
-	XtSetLanguageProc(nullptr, neditLanguageProc, nullptr);
-	
-	// Initialize X toolkit (does not open display yet) 
-	XtToolkitInitialize();
-	XtAppContext context = XtCreateApplicationContext();
-
-	QtMotif integrator(APP_CLASS, context);
-#endif
-	// TODO(eteran): support non-X11 instance for things like -version again
-	QApplication app(argc, argv);
-
-#if 0
-	// Set up a warning handler to trap obnoxious Xt grab warnings 
-	SuppressPassiveGrabWarnings();
-
-	// Set up a handler to suppress X warning messages by default 
-	XtAppSetWarningHandler(context, noWarningFilter);
-
-	// Set up default resources if no app-defaults file is found 
-	XtAppSetFallbackResources(context, (char **)fallbackResources);
-
-	// Allow users to change tear off menus with X resources 
-	XmRepTypeInstallTearOffModelConverter();
-#endif
-
-	// Read the preferences file and command line into a database 
-	XrmDatabase prefDB = CreateNEditPrefDB(&argc, argv);
-
-#if 0
-	/* Open the display and read X database and remaining command line args.
-	   XtOpenDisplay must be allowed to process some of the resource arguments
-	   with its inaccessible internal option table, but others, like -geometry
-	   and -iconic are per-window and it should not be allowed to consume them,
-	   so we temporarily masked them out. */
-	maskArgvKeywords(argc, argv, protectedKeywords);
-
-	/* X.Org 6.8 and above add support for ARGB visuals (with alpha-channel),
-	   typically with a 32-bit color depth. By default, NEdit uses the visual
-	   with the largest color depth. However, both OpenMotif and Lesstif
-	   cannot handle ARGB visuals (crashes, weird display effects, ...), so
-	   NEdit should avoid selecting such a visual.
-	   Unfortunatly, there appears to be no reliable way to identify
-	   ARGB visuals that doesn't require some of the recent X.Org
-	   extensions. Luckily, the X.Org developers have provided a mechanism
-	   that can hide these problematic visuals from the application. This can
-	   be achieved by setting the XLIB_SKIP_ARGB_VISUALS environment variable.
-	   Users can set this variable before starting NEdit, but it is much
-	   more convenient that NEdit takes care of this. This must be done before
-	   the display is opened (empirically verified). */
-	putenv((char *)"XLIB_SKIP_ARGB_VISUALS=1");
-
-	TheDisplay = XtOpenDisplay(context, nullptr, APP_NAME, APP_CLASS, nullptr, 0, &argc, argv);
-
-	unmaskArgvKeywords(argc, argv, protectedKeywords);
-#endif
-
-#ifdef Q_WS_X11
+#ifdef Q_OS_LINUX
     // temporary hack
     TheDisplay = QX11Info::display();
 
@@ -324,7 +108,8 @@ int main(int argc, char *argv[]) {
 		// Respond to -V or -version even if there is no display 
 		for (int i = 1; i < argc && strcmp(argv[i], "--"); i++) {
 			if (strcmp(argv[i], "-V") == 0 || strcmp(argv[i], "-version") == 0) {
-				PrintVersion();
+                QString infoString = DialogAbout::createInfoString();
+                printf("%s", infoString.toLatin1().data());
 				exit(EXIT_SUCCESS);
 			}
 		}
@@ -333,11 +118,7 @@ int main(int argc, char *argv[]) {
 	}
 #endif
 
-#if 0
-	// Must be done before creating widgets 
-	fixupBrokenXKeysymDB();
-	patchResourcesForVisual();
-#endif
+
 
 	// Initialize global symbols and subroutines used in the macro language 
 	InitMacroGlobals();
@@ -346,49 +127,18 @@ int main(int argc, char *argv[]) {
 
 	/* Store preferences from the command line and .nedit file,
 	   and set the appropriate preferences */
-	RestoreNEditPrefs(prefDB, XtDatabase(TheDisplay));
+    RestoreNEditPrefs();
 
-#if 0
-	/* Intercept syntactically invalid virtual key bindings BEFORE we
-	   create any shells. */
-	invalidBindings = sanitizeVirtualKeyBindings();
-
-	/* Create a hidden application shell that is the parent of all the
-	   main editor windows.  Realize it so it the window can act as
-	   group leader. */
-	TheAppShell = CreateShellWithBestVis((char *)APP_NAME, (char *)APP_CLASS, applicationShellWidgetClass, TheDisplay, nullptr, 0);
-
-	// Restore the original bindings ASAP such that other apps are not affected. 
-	restoreInsaneVirtualKeyBindings(invalidBindings);
-
-	XtSetMappedWhenManaged(TheAppShell, false);
-	XtRealizeWidget(TheAppShell);
-
-
-#ifndef NO_SESSION_RESTART
-	AttachSessionMgrHandler(TheAppShell);
-#endif
-
-#endif
 	// More preference stuff 
-	DialogPrint::LoadPrintPreferencesEx(XtDatabase(TheDisplay), APP_NAME, APP_CLASS, true);
-	SetDeleteRemap(GetPrefMapDelete());
-	SetPointerCenteredDialogs(GetPrefRepositionDialogs());
+    DialogPrint::LoadPrintPreferencesEx(true);
+
 
 #if 0 // TODO(eteran): I think that this feature likely has no equivalent in Qt's dialog
+    SetPointerCenteredDialogs(GetPrefRepositionDialogs());
+    SetDeleteRemap(GetPrefMapDelete());
 	SetGetEFTextFieldRemoval(!GetPrefStdOpenDialog());
 #endif
 
-#if 0
-	// Set up action procedures for menu item commands 
-	InstallMenuActions(context);
-
-	// Add Actions for following hyperlinks in the help window 
-	InstallHelpLinkActions(context);
-
-	// Add actions for mouse wheel support in scrolled windows (except text area) 
-	InstallMouseWheelActions(context);
-#endif
 	// Install word delimiters for regular expression matching 
 	SetREDefaultWordDelimiters(GetPrefDelimiters().toLatin1().data());
 
@@ -414,11 +164,11 @@ int main(int argc, char *argv[]) {
 	/* Load the default tags file. Don't complain if it doesn't load, the tag
 	   file resource is intended to be set and forgotten.  Running nedit in a
 	   directory without a tags should not cause it to spew out errors. */
-	if (*GetPrefTagFile() != '\0') {
-		AddTagsFile(GetPrefTagFile(), TAG);
+    if (!GetPrefTagFile().isEmpty()) {
+        AddTagsFileEx(GetPrefTagFile(), TAG);
 	}
 
-	if (strcmp(GetPrefServerName(), "") != 0) {
+    if (!GetPrefServerName().isEmpty()) {
 		IsServer = true;
 	}
 
@@ -475,14 +225,15 @@ int main(int argc, char *argv[]) {
 			iconic = false;
 		} else if (opts && (!strcmp(argv[i], "-geometry") || !strcmp(argv[i], "-g"))) {
 			nextArg(argc, argv, &i);
-			geometry = argv[i];
+            geometry = QLatin1String(argv[i]);
 		} else if (opts && !strcmp(argv[i], "-lm")) {
 			nextArg(argc, argv, &i);
 			langMode = argv[i];
 		} else if (opts && !strcmp(argv[i], "-import")) {
 			nextArg(argc, argv, &i); // already processed, skip 
 		} else if (opts && (!strcmp(argv[i], "-V") || !strcmp(argv[i], "-version"))) {
-			PrintVersion();
+            QString infoString = DialogAbout::createInfoString();
+            printf("%s", infoString.toLatin1().data());
 			exit(EXIT_SUCCESS);
 		} else if (opts && (!strcmp(argv[i], "-h") || !strcmp(argv[i], "-help"))) {
 			fprintf(stderr, "%s", cmdLineHelp);
@@ -631,307 +382,3 @@ static int checkDoMacroArg(const char *macro) {
 	FreeProgram(prog);
 	return True;
 }
-
-#if 0
-/*
-** maskArgvKeywords and unmaskArgvKeywords mangle selected keywords by
-** replacing the '-' with a space, for the purpose of hiding them from
-** XtOpenDisplay's option processing.  Why this silly scheme?  XtOpenDisplay
-** really needs to see command line arguments, particularly -display, but
-** there's no way to change the option processing table it uses, to keep
-** it from consuming arguments which are meant to apply per-window, like
-** -geometry and -iconic.
-*/
-static void maskArgvKeywords(int argc, char **argv, const char **maskArgs) {
-
-	for (int i = 1; i < argc; i++)
-		for (int k = 0; maskArgs[k] != nullptr; k++)
-			if (!strcmp(argv[i], maskArgs[k]))
-				argv[i][0] = ' ';
-}
-
-static void unmaskArgvKeywords(int argc, char **argv, const char **maskArgs) {
-
-	for (int i = 1; i < argc; i++)
-		for (int k = 0; maskArgs[k] != nullptr; k++)
-			if (argv[i][0] == ' ' && !strcmp(&argv[i][1], &maskArgs[k][1]))
-				argv[i][0] = '-';
-}
-
-/*
-** Some Linux distros ship with XKEYSYMDB set to a bogus filename which
-** breaks all Motif applications.  Ignore that, and let X fall back on the
-** default which is far more likely to work.
-*/
-static void fixupBrokenXKeysymDB(void) {
-	const char *keysym = getenv("XKEYSYMDB");
-
-	if (keysym != nullptr && access(keysym, F_OK) != 0)
-		putenv((char *)"XKEYSYMDB");
-}
-
-
-/*
-** If we're not using the default visual, then some default resources in
-** the database (colors) are not valid, because they are indexes into the
-** default colormap.  If we used them blindly, then we'd get "random"
-** unreadable colors.  So we inspect the resource list, and use the
-** fallback "grey" color instead if this is the case.
-*/
-static void patchResourcesForVisual(void) {
-	Cardinal i;
-	Visual *visual;
-	int depth;
-	Colormap map;
-
-	if (!TheDisplay)
-		return;
-
-	XrmDatabase db = XtDatabase(TheDisplay);
-
-	Boolean usingDefaultVisual = FindBestVisual(TheDisplay, APP_NAME, APP_CLASS, &visual, &depth, &map);
-
-	if (!usingDefaultVisual) {
-		/*
-		   For non-Lesstif versions, we have to put non-default visuals etc.
-		   in the resource data base to make sure that all (shell) widgets
-		   inherit them, especially Motif's own shells (eg, drag icons).
-
-		   For Lesstif, this doesn't work, but luckily, Lesstif handles
-		   non-default visuals etc. properly for its own shells and
-		   we can take care of things for our shells (eg, call tips) through
-		   our shell creation wrappers in misc.c.
-		*/
-
-		XrmValue value;
-		value.addr = (XPointer)&visual;
-		value.size = sizeof(visual);
-		XrmPutResource(&db, "*visual", "Visual", &value);
-		value.addr = (XPointer)&map;
-		value.size = sizeof(map);
-		XrmPutResource(&db, "*colormap", "Colormap", &value);
-		value.addr = (XPointer)&depth;
-		value.size = sizeof(depth);
-		XrmPutResource(&db, "*depth", "Int", &value);
-
-		/* Drag-and-drop visuals do not work well when using a different
-		   visual.  One some systems, you'll just get a funny-looking icon
-		   (maybe all-black) but on other systems it crashes with a BadMatch
-		   error.  This appears to be an OSF Motif bug.  It would be nicer
-		   to just disable the visual itself, instead of the entire drag
-		   operation.
-
-		   Update: this is no longer necessary since all problems with
-		   non-default visuals should now be solved.
-
-		   XrmPutStringResource(&db, "*dragInitiatorProtocolStyle", "DRAG_NONE");
-		 */
-
-		for (i = 1; i < XtNumber(fallbackResources); ++i) {
-			Cardinal resIndex = i - 1;
-
-			if (strstr(fallbackResources[resIndex], "*background:") || strstr(fallbackResources[resIndex], "*foreground:")) {
-				/* Qualify by application name to prevent them from being
-				   converted against the wrong colormap. */
-				char buf[1024] = "*" APP_NAME;
-				strcat(buf, fallbackResources[resIndex]);
-				XrmPutLineResource(&db, buf);
-			}
-		}
-	}
-}
-
-/*
-** Same as the default X language procedure, except we check if Motif can
-** handle the locale as well.
-*/
-
-static String neditLanguageProc(Display *dpy, String xnl, XtPointer closure) {
-
-	(void)dpy;
-	(void)closure;
-
-	/* "xnl" will be set if the user passes in a new language via the
-	   "-xnllanguage" flag.  If it's empty, then setlocale will get
-	   the default locale by some system-dependent means (usually,
-	   reading some environment variables). */
-
-	if (!setlocale(LC_ALL, xnl)) {
-		XtWarning("locale not supported by C library, locale unchanged");
-	}
-
-	if (!XSupportsLocale()) {
-		XtWarning("locale not supported by Xlib, locale set to C");
-		setlocale(LC_ALL, "C");
-	}
-	if (!XSetLocaleModifiers(""))
-		XtWarning("X locale modifiers not supported, using default");
-
-	return setlocale(LC_ALL, nullptr); // re-query in case overwritten 
-}
-
-/*
- * Checks whether a given virtual key binding string is invalid.
- * A binding is considered invalid if there are duplicate key entries.
- */
-static int virtKeyBindingsAreInvalid(const uint8_t *bindings) {
-	int maxCount = 1, i, count;
-	const char *pos = (const char *)bindings;
-	char *pos2;
-	char *pos3;
-
-	/* First count the number of bindings; bindings are separated by \n
-	   strings. The number of bindings equals the number of \n + 1.
-	   Beware of leading and trailing \n; the number is actually an
-	   upper bound on the number of entries. */
-	while ((pos = strstr(pos, "\n"))) {
-		++pos;
-		++maxCount;
-	}
-
-	if (maxCount == 1)
-		return False; // One binding is always ok 
-
-	auto keys = new char *[maxCount];
-
-	auto copy = XtNewStringEx((const char *)bindings);
-	i = 0;
-	pos2 = copy;
-
-	count = 0;
-	while (i < maxCount && pos2 && *pos2) {
-		while (isspace((int)*pos2) || *pos2 == '\n')
-			++pos2;
-
-		if (*pos2 == '!') // Ignore comment lines 
-		{
-			pos2 = strstr(pos2, "\n");
-			continue; // Go to the next line 
-		}
-
-		if (*pos2) {
-			keys[i++] = pos2;
-			++count;
-			pos3 = strstr(pos2, ":");
-			if (pos3) {
-				*pos3++ = 0; // Cut the string and jump to the next entry 
-				pos2 = pos3;
-			}
-			pos2 = strstr(pos2, "\n");
-		}
-	}
-
-	if (count <= 1) {
-		delete [] keys;
-		XtFree(copy);
-		return False; // No conflict 
-	}
-
-	// Sort the keys and look for duplicates 
-	std::sort(keys, keys + count, [](const char *key1, const char *key2) {
-		return strcmp(key1, key2) < 0;
-	});
-
-	for (i = 1; i < count; ++i) {
-		if (!strcmp(keys[i - 1], keys[i])) {
-			// Duplicate detected 
-            delete [] keys;
-			XtFree(copy);
-			return True;
-		}
-	}
-	delete [] keys;
-	XtFree(copy);
-	return False;
-}
-
-
-/*
- * Optionally sanitizes the Motif default virtual key bindings.
- * Some applications install invalid bindings (attached to the root window),
- * which cause certain keys to malfunction in NEdit.
- * Through an X-resource, users can choose whether they want
- *   - to always keep the existing bindings
- *   - to override the bindings only if they are invalid
- *   - to always override the existing bindings.
- */
-
-static Atom virtKeyAtom;
-
-
-static uint8_t *sanitizeVirtualKeyBindings(void) {
-	int overrideBindings = GetPrefOverrideVirtKeyBindings();
-	Window rootWindow;
-	const char *virtKeyPropName = "_MOTIF_DEFAULT_BINDINGS";
-	Atom dummyAtom;
-	int getFmt;
-	unsigned long dummyULong, nItems;
-	uint8_t *insaneVirtKeyBindings = nullptr;
-
-	if (overrideBindings == VIRT_KEY_OVERRIDE_NEVER)
-		return nullptr;
-
-	virtKeyAtom = XInternAtom(TheDisplay, virtKeyPropName, False);
-	rootWindow = RootWindow(TheDisplay, DefaultScreen(TheDisplay));
-
-	// Remove the property, if it exists; we'll restore it later again 
-	if (XGetWindowProperty(TheDisplay, rootWindow, virtKeyAtom, 0, INT_MAX, True, XA_STRING, &dummyAtom, &getFmt, &nItems, &dummyULong, &insaneVirtKeyBindings) != Success || nItems == 0) {
-		return nullptr; // No binding yet; nothing to do 
-	}
-
-	if (overrideBindings == VIRT_KEY_OVERRIDE_AUTO) {
-		if (!virtKeyBindingsAreInvalid(insaneVirtKeyBindings)) {
-			// Restore the property immediately; it seems valid 
-			XChangeProperty(TheDisplay, rootWindow, virtKeyAtom, XA_STRING, 8, PropModeReplace, insaneVirtKeyBindings, strlen((const char *)insaneVirtKeyBindings));
-			XFree((char *)insaneVirtKeyBindings);
-			return nullptr; // Prevent restoration 
-		}
-	}
-	return insaneVirtKeyBindings;
-}
-
-
-/*
- * NEdit should not mess with the bindings installed by other apps, so we
- * just restore whatever was installed, if necessary
- */
-static void restoreInsaneVirtualKeyBindings(uint8_t *insaneVirtKeyBindings) {
-	if (insaneVirtKeyBindings) {
-		Window rootWindow = RootWindow(TheDisplay, DefaultScreen(TheDisplay));
-		/* Restore the root window atom, such that we don't affect
-		   other apps. */
-		XChangeProperty(TheDisplay, rootWindow, virtKeyAtom, XA_STRING, 8, PropModeReplace, insaneVirtKeyBindings, strlen((const char *)insaneVirtKeyBindings));
-		XFree((char *)insaneVirtKeyBindings);
-	}
-}
-
-/*
-** Warning handler that suppresses harmless but annoying warnings generated
-** by non-production Lesstif versions.
-*/
-static void showWarningFilter(String message) {
-	const char *bogusMessages[] = {
-	    nullptr};
-	const char **bogusMessage = &bogusMessages[0];
-
-	while (*bogusMessage) {
-		size_t bogusLen = strlen(*bogusMessage);
-		if (strncmp(message, *bogusMessage, bogusLen) == 0) {
-#ifdef DEBUG_LESSTIF_WARNINGS
-			// Developers may want to see which messages are suppressed. 
-			fprintf(stderr, "[SUPPRESSED] %s\n", message);
-#endif
-			return;
-		}
-		++bogusMessage;
-	}
-
-	// An unknown message. Keep it. 
-	fprintf(stderr, "%s\n", message);
-}
-
-static void noWarningFilter(String message) {
-	(void)message;
-	return;
-}
-#endif

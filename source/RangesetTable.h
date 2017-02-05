@@ -11,13 +11,13 @@ public:
 	~RangesetTable();
 	
 public:
-	char *RangesetTableGetColorName(int index);
+    char *RangesetTableGetColorName(int index);
 	int nRangesetsAvailable() const;
 	int RangesetCreate();
 	int RangesetFindIndex(int label, int must_be_active) const;
 	int RangesetIndex1ofPos(int pos, int needs_color);
-	int RangesetTableAssignColorPixel(int index, Pixel color, int ok);	
-	int RangesetTableGetColorValid(int index, Pixel *color);
+    int RangesetTableAssignColorPixel(int index, const QColor &color, int ok);
+    int RangesetTableGetColorValid(int index, QColor *color);
 	Rangeset *RangesetFetch(int label);
 	Rangeset *RangesetForget(int label);
 	uint8_t *RangesetGetList();

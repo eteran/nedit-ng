@@ -1,10 +1,8 @@
 
 #include "Color.h"
 #include <QColor>
-#include <QX11Info>
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
 
+#if 0
 QColor toQColor(const Color &c) {
 	return QColor(c.r / 256, c.g / 256, c.b / 256);
 }
@@ -19,3 +17,4 @@ QColor toQColor(Pixel pixel) {
 Pixel toPixel(const QColor &color) {
     return color.value();
 }
+#endif

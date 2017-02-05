@@ -26,9 +26,12 @@
 *                                                                              *
 *******************************************************************************/
 
+#include <QString>
+#include <QX11Info>
 #include "util/utils.h"
 #include "nedit.h"
 #include "server_common.h"
+
 
 #include <cstdio>
 #include <sys/types.h>
@@ -52,10 +55,12 @@ void CreateServerPropertyAtoms(const char *serverName, Atom *serverExistsAtomRet
 	QString userName = GetUserNameEx();
 	QString hostName = GetNameOfHostEx();
 
+
+
 	snprintf(propName, sizeof(propName), "NEDIT_SERVER_EXISTS_%s_%s_%s", hostName.toLatin1().data(), userName.toLatin1().data(), serverName);
-	*serverExistsAtomReturn = XInternAtom(TheDisplay, propName, False);
+    *serverExistsAtomReturn = XInternAtom(QX11Info::display(), propName, False);
 	snprintf(propName, sizeof(propName), "NEDIT_SERVER_REQUEST_%s_%s_%s", hostName.toLatin1().data(), userName.toLatin1().data(), serverName);
-	*serverRequestAtomReturn = XInternAtom(TheDisplay, propName, False);
+    *serverRequestAtomReturn = XInternAtom(QX11Info::display(), propName, False);
 }
 
 /*
@@ -81,7 +86,7 @@ Atom CreateServerFileOpenAtom(const char *serverName, const char *path) {
 	QString hostName = GetNameOfHostEx();
 
 	snprintf(propName, sizeof(propName), "NEDIT_FILE_%s_%s_%s_%s_WF_OPEN", hostName.toLatin1().data(), userName.toLatin1().data(), serverName, path);
-	Atom atom = XInternAtom(TheDisplay, propName, False);
+    Atom atom = XInternAtom(QX11Info::display(), propName, False);
 	return (atom);
 }
 
@@ -91,7 +96,7 @@ Atom CreateServerFileClosedAtom(const char *serverName, const char *path, Bool o
 	QString hostName = GetNameOfHostEx();
 
 	snprintf(propName, sizeof(propName), "NEDIT_FILE_%s_%s_%s_%s_WF_CLOSED", hostName.toLatin1().data(), userName.toLatin1().data(), serverName, path);
-	Atom atom = XInternAtom(TheDisplay, propName, only_if_exist);
+    Atom atom = XInternAtom(QX11Info::display(), propName, only_if_exist);
 	return (atom);
 }
 
@@ -106,14 +111,14 @@ void DeleteServerFileAtoms(const char *serverName, Window rootWindow) {
 	int length = snprintf(propNamePrefix, sizeof(propNamePrefix), "NEDIT_FILE_%s_%s_%s_", hostName.toLatin1().data(), userName.toLatin1().data(), serverName);
 
 	int nProperties;
-	Atom *atoms = XListProperties(TheDisplay, rootWindow, &nProperties);
+    Atom *atoms = XListProperties(QX11Info::display(), rootWindow, &nProperties);
 	if (atoms) {
 		int i;
 		for (i = 0; i < nProperties; i++) {
 			// XGetAtomNames() is more efficient, but doesn't exist in X11R5. 
-			char *name = XGetAtomName(TheDisplay, atoms[i]);
+            char *name = XGetAtomName(QX11Info::display(), atoms[i]);
 			if (name != nullptr && strncmp(propNamePrefix, name, length) == 0) {
-				XDeleteProperty(TheDisplay, rootWindow, atoms[i]);
+                XDeleteProperty(QX11Info::display(), rootWindow, atoms[i]);
 			}
 			XFree(name);
 		}

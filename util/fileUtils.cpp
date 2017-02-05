@@ -38,8 +38,6 @@
 #include <cerrno>
 #include <algorithm>
 
-#include <X11/Intrinsic.h>
-
 #include <sys/types.h>
 #include <sys/param.h>
 #include <sys/stat.h>
@@ -133,7 +131,7 @@ int ExpandTilde(char *pathname) {
 	unsigned len_left;
 
 	if (pathname[0] != '~')
-		return TRUE;
+        return true;
 	nameEnd = strchr(&pathname[1], '/');
 	if(!nameEnd) {
 		nameEnd = pathname + strlen(pathname);
@@ -154,7 +152,7 @@ int ExpandTilde(char *pathname) {
 		if ((passwdEntry == nullptr) || (*(passwdEntry->pw_dir) == '\0')) {
 			/* username was just an input by the user, this is no
 		   indication for some (serious) problems */
-			return FALSE;
+            return false;
 		}
 	}
 
@@ -163,11 +161,11 @@ int ExpandTilde(char *pathname) {
 	len_left = sizeof(temp) - strlen(temp) - 1;
 	if (len_left < strlen(nameEnd)) {
 		/* It won't work out */
-		return FALSE;
+        return false;
 	}
 	strcat(temp, nameEnd);
 	strcpy(pathname, temp);
-	return TRUE;
+    return true;
 }
 
 /*
@@ -199,12 +197,12 @@ int ResolvePath(const char *pathIn, char *pathResolved) {
 				/* It's not a symlink - we are done */
 				strncpy(pathResolved, pathIn, MAXPATHLEN);
 				pathResolved[MAXPATHLEN - 1] = '\0';
-				return TRUE;
+                return true;
 			} else {
-				return FALSE;
+                return false;
 			}
 		} else if (rlResult == 0) {
-			return FALSE;
+            return false;
 		}
 
 		resolveBuf[rlResult] = 0;
@@ -214,7 +212,7 @@ int ResolvePath(const char *pathIn, char *pathResolved) {
 			pathBuf[MAXPATHLEN - 1] = '\0';
 			pathEnd = strrchr(pathBuf, '/');
 			if (!pathEnd) {
-				return FALSE;
+                return false;
 			}
 			strcpy(pathEnd + 1, resolveBuf);
 		} else {
@@ -224,7 +222,7 @@ int ResolvePath(const char *pathIn, char *pathResolved) {
 		pathIn = pathBuf;
 	}
 
-	return FALSE;
+    return false;
 }
 
 /*
@@ -365,11 +363,11 @@ static char *prevSlash(char *ptr) {
 }
 
 static int compareThruSlash(const char *string1, const char *string2) {
-	while (TRUE) {
+    while (true) {
 		if (*string1 != *string2)
-			return FALSE;
+            return false;
 		if (*string1 == '\0' || *string1 == '/')
-			return TRUE;
+            return true;
 		string1++;
 		string2++;
 	}
@@ -379,7 +377,7 @@ static void copyThruSlash(char **toString, char **fromString) {
 	char *to = *toString;
 	char *from = *fromString;
 
-	while (TRUE) {
+    while (true) {
 		*to = *from;
 		if (*from == '\0') {
 			*fromString = nullptr;
@@ -530,7 +528,7 @@ bool ConvertToDosFileStringEx(std::string &fileString) {
 
 	fileString = outString;
 
-	return true;
+    return true;
 }
 
 /*
@@ -573,10 +571,10 @@ QString ReadAnyTextFileEx(const std::string &fileName, int forceNL) {
 	/* +1 = space for null
 	** +1 = possible additional \n
 	*/
-	auto fileString = XtMalloc(fileLen + 2);
+    auto fileString = new char[fileLen + 2];
 	readLen = fread(fileString, sizeof(char), fileLen, fp);
 	if (ferror(fp)) {
-		XtFree(fileString);
+        delete [] fileString;
 		fclose(fp);
 		return QString();
 	}
@@ -599,6 +597,6 @@ QString ReadAnyTextFileEx(const std::string &fileName, int forceNL) {
 	}
 	
 	QString ret = QString::fromLatin1(fileString, readLen);
-	XtFree(fileString);
+    delete [] fileString;
 	return ret;
 }

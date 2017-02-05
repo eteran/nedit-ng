@@ -13,13 +13,13 @@
 #include "ui_DocumentWidget.h"
 #include "Bookmark.h"
 #include "LockReasons.h"
-#include "UserBGMenuCache.h"
 #include "userCmds.h"
 #include "util/FileFormats.h"
 #include "MenuItem.h"
 #include "IndentStyle.h"
 
-#include <Xm/Xm.h>
+// TODO(eteran): for now...
+using Atom = unsigned long;
 
 class UndoInfo;
 class TextBuffer;
@@ -113,7 +113,7 @@ public:
     MainWindow *toWindow() const;
     void UpdateMarkTable(int pos, int nInserted, int nDeleted);
     void StopHighlightingEx();
-    void SetBacklightChars(const char *applyBacklightTypes);
+    void SetBacklightChars(const QString &applyBacklightTypes);
     void freeHighlightData(WindowHighlightData *hd);
     void freePatterns(HighlightData *patterns);
     QString GetWindowDelimiters() const;
@@ -182,7 +182,7 @@ public:
     void SetAutoScroll(int margin);
 
 public:
-    static DocumentWidget *EditExistingFileEx(DocumentWidget *inWindow, const QString &name, const QString &path, int flags, char *geometry, int iconic, const char *languageMode, bool tabbed, bool bgOpen);
+    static DocumentWidget *EditExistingFileEx(DocumentWidget *inWindow, const QString &name, const QString &path, int flags, const QString &geometry, int iconic, const char *languageMode, bool tabbed, bool bgOpen);
 
 private:
 	// TODO(eteran): are these dialog's per window or per text document?
@@ -203,15 +203,12 @@ public:
 	QString path_;                     // path component of file being edited
 	TextBuffer *buffer_;               // holds the text being edited
 
-	XFontStruct *boldFontStruct_;
-	XFontStruct *boldItalicFontStruct_;
-	XFontStruct *italicFontStruct_;    // fontStructs for highlighting fonts
-	XmFontList fontList_;              // fontList for the primary font
+    QFont boldFontStruct_;
+    QFont boldItalicFontStruct_;
+    QFont italicFontStruct_;    // fontStructs for highlighting fonts
 
     QTimer *flashTimer_;               // timer for getting rid of highlighted matching paren.
     QMenu *contextMenu_;
-
-	XtIntervalId markTimeoutID_;       // backup timer for mark event handler
 
 	bool autoSave_;                    // is autosave turned on?
 	bool backlightChars_;              // is char backlighting turned on?

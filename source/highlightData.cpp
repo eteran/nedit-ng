@@ -37,7 +37,6 @@
 #include "ui/DocumentWidget.h"
 #include "ui/MainWindow.h"
 
-#include "Font.h"
 #include "highlightData.h"
 #include "FontType.h"
 #include "TextBuffer.h"
@@ -45,7 +44,6 @@
 #include "highlight.h"
 #include "regularExp.h"
 #include "preferences.h"
-#include "help.h"
 #include "regexConvert.h"
 #include "PatternSet.h"
 #include "HighlightPattern.h"
@@ -216,11 +214,11 @@ QString WriteStylesStringEx(void) {
 		}
 		outBuf->BufAppendEx(":");
 		outBuf->BufAppendEx(FontTypeNames[style->font]);
-		outBuf->BufAppendEx("\\n\\\n");
+        outBuf->BufAppendEx("\n");
 	}
 
 	// Get the output, and lop off the trailing newlines 
-	return QString::fromStdString(outBuf->BufGetRangeEx(0, outBuf->BufGetLength() - (i == 1 ? 0 : 4)));
+    return QString::fromStdString(outBuf->BufGetRangeEx(0, outBuf->BufGetLength() - (i == 1 ? 0 : 1)));
 }
 
 /*
@@ -232,7 +230,6 @@ QString WriteStylesStringEx(void) {
 ** that they may contain regular expressions are of the older syntax where
 ** braces were not quoted, and \0 was a legal substitution character).
 */
-
 bool LoadHighlightStringEx(const std::string &string, int convertOld) {
 
 	// TODO(eteran): rework this to actually use a modern approach
@@ -308,7 +305,7 @@ QString WriteHighlightStringEx(void) {
 
 	/* Protect newlines and backslashes from translation by the resource
 	   reader */
-	return QString::fromStdString(EscapeSensitiveCharsEx(outStr));
+    return QString::fromStdString(outStr);
 }
 
 /*
@@ -339,16 +336,16 @@ static QString convertPatternExprEx(const QString &patternRE, const char *patSet
 	
 	if (isSubsExpr) {
 		const int bufsize = patternRE.size() + 5000;		
-		char *newRE = XtMalloc(bufsize);
+        char *newRE = new char[bufsize];
 		ConvertSubstituteRE(patternRE.toLatin1().data(), newRE, bufsize);
 		QString s = QLatin1String(newRE);
-		XtFree(newRE);
+        delete [] newRE;
 		return s;
 	} else {
 		try {
 			char *newRE = ConvertRE(patternRE.toLatin1().data());
 			QString s = QLatin1String(newRE);
-			XtFree(newRE);
+            delete [] newRE;
 			return s;
 		} catch(const regex_error &e) {
 			fprintf(stderr, "NEdit error converting old format regular expression in pattern set %s, pattern %s: %s\n", patSetName, patName, e.what());
@@ -366,37 +363,25 @@ static QString convertPatternExprEx(const QString &patternRE, const char *patSet
 QFont FontOfNamedStyleEx(DocumentWidget *document, view::string_view styleName) {
 
     int styleNo = lookupNamedStyle(styleName), fontNum;
-    XFontStruct *font;
 
     if (styleNo < 0) {
-        font = GetDefaultFontStruct(document->fontList_);
+        return GetDefaultFontStructEx();
     } else {
 
         fontNum = HighlightStyles[styleNo]->font;
 
         switch(fontNum) {
         case BOLD_FONT:
-            font = document->boldFontStruct_;
-            break;
+            return document->boldFontStruct_;
         case ITALIC_FONT:
-            font = document->italicFontStruct_;
-            break;
+            return document->italicFontStruct_;
         case BOLD_ITALIC_FONT:
-            font = document->boldItalicFontStruct_;
-            break;
+            return document->boldItalicFontStruct_;
         case PLAIN_FONT:
         default:
-            font = GetDefaultFontStruct(document->fontList_);
-            break;
-        }
-
-        // If font isn't loaded, silently substitute primary font
-        if(!font) {
-            font = GetDefaultFontStruct(document->fontList_);
+            return GetDefaultFontStructEx();
         }
     }
-
-    return toQFont(font);
 }
 
 int FontOfNamedStyleIsBold(view::string_view styleName) {

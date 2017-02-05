@@ -38,10 +38,8 @@
 #include "SmartIndent.h"
 
 #include "smartIndent.h"
-#include "help.h"
 #include "interpret.h"
 #include "macro.h"
-#include "util/MotifHelper.h"
 #include "nedit.h"
 #include "parse.h"
 #include "preferences.h"
@@ -452,7 +450,7 @@ QString WriteSmartIndentStringEx() {
 	}
 
 	// Protect newlines and backslashes from translation by the resource reader
-	return EscapeSensitiveCharsEx(s);
+    return s;
 }
 
 QString WriteSmartIndentCommonStringEx() {
@@ -471,7 +469,7 @@ QString WriteSmartIndentCommonStringEx() {
 
 	/* Protect newlines and backslashes from translation by the resource
 	   reader */
-	QString escapedStr = QString::fromStdString(EscapeSensitiveCharsEx(outStr));
+    QString escapedStr = QString::fromStdString(outStr);
 
 	// If there's a trailing escaped newline, remove it 
 	int len = escapedStr.size();

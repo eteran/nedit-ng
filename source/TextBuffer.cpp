@@ -27,13 +27,9 @@
 *******************************************************************************/
 #include <QApplication>
 #include <QClipboard>
-
 #include "TextBuffer.h"
 #include "Rangeset.h"
 #include "RangesetTable.h"
-
-
-
 #include <algorithm>
 #include <cctype>
 #include <cstdio>

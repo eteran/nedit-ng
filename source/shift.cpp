@@ -30,7 +30,7 @@
 #include "DocumentWidget.h"
 #include "TextBuffer.h"
 #include "TextArea.h"
-
+#include <X11/Intrinsic.h>
 
 static char *makeIndentString(int indent, int tabDist, int allowTabs, int *nChars);
 static char *shiftLineLeft(const char *line, int lineLen, int tabDist, int nChars);

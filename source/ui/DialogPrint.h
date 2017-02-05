@@ -5,8 +5,6 @@
 #include <QDialog>
 #include "ui_DialogPrint.h"
 
-#include <X11/Intrinsic.h>
-
 class DialogPrint : public QDialog {
 	Q_OBJECT
 public:
@@ -25,7 +23,7 @@ private:
 	void updatePrintCmd();
 
 public:
-	static void LoadPrintPreferencesEx(XrmDatabase prefDB, const std::string &appName, const std::string &appClass, bool lookForFlpr);
+    static void LoadPrintPreferencesEx(bool lookForFlpr);
 
 private:	
 	static bool flprPresent();

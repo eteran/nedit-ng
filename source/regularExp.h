@@ -30,7 +30,6 @@
 #include "regex_error.h"
 #include "util/string_view.h"
 
-#include <X11/Intrinsic.h>
 #include <cstdint>
 #include <string>
 

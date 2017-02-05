@@ -29,11 +29,8 @@
 *                                                                              *
 *******************************************************************************/
 #include "TextBuffer.h"
-#include "util/MotifHelper.h"
-#include "TextDisplay.h"
 #include "Rangeset.h"
 #include "RangesetTable.h"
-
 
 #include <cstdio>
 #include <cstdlib>
@@ -57,15 +54,15 @@ RangesetUpdateFn rangesetBreakMaintain;
 #define DEFAULT_UPDATE_FN_NAME "maintain"
 
 struct {
-	const char *name;
+    const char *name;
 	RangesetUpdateFn *update_fn;
 } RangesetUpdateMap[] = {
-	{DEFAULT_UPDATE_FN_NAME, rangesetInsDelMaintain},
-	{"ins_del", rangesetInsDelMaintain},
-	{"include", rangesetInclMaintain},
-	{"del_ins", rangesetDelInsMaintain},
-	{"exclude", rangesetExclMaintain},
-	{"break", rangesetBreakMaintain}
+    {DEFAULT_UPDATE_FN_NAME, rangesetInsDelMaintain},
+    {"ins_del", rangesetInsDelMaintain},
+    {"include", rangesetInclMaintain},
+    {"del_ins", rangesetDelInsMaintain},
+    {"exclude", rangesetExclMaintain},
+    {"break", rangesetBreakMaintain}
 };
 
 
@@ -602,7 +599,7 @@ int Rangeset::RangesetFindRangeOfPos(int pos, int incl_end) {
 ** Return the color validity, if any, and the value in *color.
 */
 
-int Rangeset::RangesetGetColorValid(Pixel *color) {
+int Rangeset::RangesetGetColorValid(QColor *color) {
 	*color = this->color;
 	return this->color_set;
 }
@@ -831,22 +828,23 @@ int Rangeset::RangesetAddBetween(int start, int end) {
 */
 
 int Rangeset::RangesetAssignColorName(const char *color_name) {
-	char *cp;
+    char *cp;
 
 	if (color_name && color_name[0] == '\0')
 		color_name = nullptr; // "" invalid 
 
 	// store new color name value 
 	if (color_name) {
-		cp = XtStringDup(color_name);
-	} else {
-		cp = nullptr;
+        cp = new char[strlen(color_name) + 1];
+        strcpy(cp, color_name);
+    } else {
+        cp = nullptr;
 	}
 
-	// free old color name value 
-	XtFree(this->color_name);
+    // free old color name value
+    delete [] this->color_name;
 
-	this->color_name = cp;
+    this->color_name = cp;
 	this->color_set = 0;
 
 	rangesetRefreshAllRanges(this);
@@ -858,7 +856,7 @@ int Rangeset::RangesetAssignColorName(const char *color_name) {
 ** false, the color_set flag is set to an invalid (negative) value.
 */
 
-int Rangeset::RangesetAssignColorPixel(Pixel color, int ok) {
+int Rangeset::RangesetAssignColorPixel(const QColor &color, int ok) {
 	this->color_set = ok ? 1 : -1;
 	this->color = color;
 	return 1;
@@ -878,13 +876,14 @@ int Rangeset::RangesetAssignName(const char *name) {
 
 	// store new name value 
 	if (name) {
-		cp = XtStringDup(name);
+        cp = new char[strlen(name) + 1];
+        strcpy(cp, name);
 	} else {
 		cp = nullptr;
 	}
 
 	// free old name value 
-	XtFree(this->name);
+    delete [] this->name;
 
 	this->name = cp;
 
@@ -903,9 +902,9 @@ int Rangeset::RangesetChangeModifyResponse(const char *name) {
 		name = DEFAULT_UPDATE_FN_NAME;
 
 	for(auto &entry : RangesetUpdateMap) {
-		if (strcmp(entry.name, name) == 0) {
+        if (strcmp(entry.name, name) == 0) {
 			this->update_fn   = entry.update_fn;
-			this->update_name = entry.name;
+            this->update_name = entry.name;
 			return 1;
 		}
 	}
@@ -1153,11 +1152,11 @@ void Rangeset::RangesetEmpty() {
 		}
 	}
 
-	XtFree(this->color_name);
-	XtFree(this->name);
+    delete [] this->color_name;
+    delete [] this->name;
 
-	this->color_name = nullptr;
-	this->name = nullptr;
+    this->color_name = nullptr;
+    this->name = nullptr;
 	this->ranges = RangesetTable::RangesFree(this->ranges);
 }
 
@@ -1196,8 +1195,8 @@ void Rangeset::RangesetInit(int label, TextBuffer *buf) {
 	this->n_ranges = 0;                 // how many ranges in ranges 
 	this->ranges = nullptr;          // the ranges table 
 
-	this->color_name = nullptr;
-	this->name = nullptr;
+    this->color_name = nullptr;
+    this->name = nullptr;
 	this->color_set = 0;
 	this->buf = buf;
 

@@ -6,7 +6,6 @@
 #include <QStringList>
 #include "ui_DialogExecuteCommand.h"
 
-class Document;
 
 class DialogExecuteCommand : public QDialog {
 	Q_OBJECT

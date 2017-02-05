@@ -2,6 +2,7 @@
 #ifndef COLOR_H_
 #define COLOR_H_
 
+#if 0
 #include <cstdint>
 typedef unsigned long Pixel;
 
@@ -16,5 +17,6 @@ struct Color {
 QColor toQColor(const Color &c);
 QColor toQColor(Pixel pixel);
 Pixel toPixel(const QColor &color);
+#endif
 
 #endif

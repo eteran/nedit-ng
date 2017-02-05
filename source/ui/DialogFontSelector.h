@@ -5,7 +5,6 @@
 #include <QDialog>
 #include <QColor>
 #include "ui_DialogFontSelector.h"
-#include <X11/Intrinsic.h>
 
 #define ONLY_FIXED 0
 #define PREF_FIXED 1

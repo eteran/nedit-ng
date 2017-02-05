@@ -53,9 +53,6 @@
 #include "util/MotifHelper.h"
 #include <memory>
 
-#ifdef REPLACE_SCOPE
-#include "TextDisplay.h"
-#endif
 
 #include "util/misc.h"
 
@@ -65,8 +62,6 @@
 #include <cstring>
 #include <cctype>
 #include <sys/param.h>
-
-#include <Xm/ToggleB.h>
 
 int NHist = 0;
 

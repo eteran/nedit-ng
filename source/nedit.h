@@ -28,25 +28,24 @@
 #define NEDIT_H_
 
 #include "TextSelection.h"
-#include "UserMenuListElement.h"
 #include "ShowMatchingStyle.h"
 #include <QLinkedList>
-#include <X11/Intrinsic.h>
 
 #define NEDIT_VERSION  5
 #define NEDIT_REVISION 6
 
 /* Some default colors */
-#define NEDIT_DEFAULT_FG        "black"
-#define NEDIT_DEFAULT_TEXT_BG   "rgb:e5/e5/e5"
-#define NEDIT_DEFAULT_SEL_FG    "black"
-#define NEDIT_DEFAULT_SEL_BG    "rgb:cc/cc/cc"
+#define NEDIT_DEFAULT_FG        "#221f1e"
+#define NEDIT_DEFAULT_TEXT_BG   "#d6d2d0"
+#define NEDIT_DEFAULT_SEL_FG    "#ffffff"
+#define NEDIT_DEFAULT_SEL_BG    "#43ace8"
 #define NEDIT_DEFAULT_HI_FG     "white"        /* These are colors for flashing */
 #define NEDIT_DEFAULT_HI_BG     "red"          /* matching parens. */
 #define NEDIT_DEFAULT_LINENO_FG "black"
 #define NEDIT_DEFAULT_CURSOR_FG "black"
+
 #define NEDIT_DEFAULT_HELP_FG   "black"
-#define NEDIT_DEFAULT_HELP_BG   "rgb:cc/cc/cc"
+#define NEDIT_DEFAULT_HELP_BG   "#cccccc"
 
 /* Tuning parameters */
 #define SEARCHMAX 5119         /* Maximum length of search/replace strings */
@@ -58,18 +57,26 @@
 #define APP_NAME "nedit"    /* application name for loading resources */
 #define APP_CLASS "NEdit"   /* application class for loading resources */
 
-
-enum VirtKeyOverride   { VIRT_KEY_OVERRIDE_NEVER, VIRT_KEY_OVERRIDE_AUTO, VIRT_KEY_OVERRIDE_ALWAYS };
-
 /*  This enum must be kept in parallel to the array TruncSubstitutionModes[]
     in preferences.c  */
-enum TruncSubstitution { TRUNCSUBST_SILENT, TRUNCSUBST_FAIL, TRUNCSUBST_WARN, TRUNCSUBST_IGNORE };
+enum TruncSubstitution {
+    TRUNCSUBST_SILENT,
+    TRUNCSUBST_FAIL,
+    TRUNCSUBST_WARN,
+    TRUNCSUBST_IGNORE
+};
 
-#define NO_FLASH_STRING "off"
+enum virtKeyOverride {
+	VIRT_KEY_OVERRIDE_NEVER, 
+	VIRT_KEY_OVERRIDE_AUTO,
+    VIRT_KEY_OVERRIDE_ALWAYS
+};
+
+#define NO_FLASH_STRING      "off"
 #define FLASH_DELIMIT_STRING "delimiter"
-#define FLASH_RANGE_STRING "range"
+#define FLASH_RANGE_STRING   "range"
 
-#define CHARSET (XmStringCharSet) XmSTRING_DEFAULT_CHARSET
+
 
 #define SET_ONE_RSRC(widget, name, newValue)                                                                                                                                                                                                   \
 	{                                                                                                                                                                                                                                          \
@@ -89,7 +96,6 @@ enum TruncSubstitution { TRUNCSUBST_SILENT, TRUNCSUBST_FAIL, TRUNCSUBST_WARN, TR
 #define TYPE_INT_STR_SIZE(xType) ((sizeof(xType) * 3) + 2)
 
 class UndoInfo;
-class Document;
 
 
 /* Identifiers for the different colors that can be adjusted. */
@@ -106,22 +112,7 @@ enum ColorTypes {
 };
 
 
-/* structure holding cache info about Shell and Macro menus, which are
-   shared over all "tabbed" documents (needed to manage/unmanage this
-   user definable menus when language mode changes) */
-struct UserMenuCache {
-	int umcLanguageMode;           /* language mode applied for shared user menus */
-	bool umcShellMenuCreated;      /* indicating, if all shell menu items were created */
-	bool umcMacroMenuCreated;      /* indicating, if all macro menu items were created */
-	
-	UserMenuList umcShellMenuList; /* list of all shell menu items */
-	UserMenuList umcMacroMenuList; /* list of all macro menu items */
-};
-
-
-extern QLinkedList<Document *> WindowList;
-extern Display *TheDisplay;
-extern Widget TheAppShell;
+//extern Display *TheDisplay;
 extern bool IsServer;
 
 #endif

@@ -43,7 +43,6 @@
 #include "search.h"
 #include "selection.h"
 #include "calltips.h"
-#include "util/MotifHelper.h"
 #include "util/fileUtils.h"
 #include "util/misc.h"
 #include "util/utils.h"
@@ -360,6 +359,10 @@ static int tagFileIndex = 0;
 ** (not starting with [/~]) and extend the tag files list if in
 ** windowPath a tags file matching the relative spec has been found.
 */
+bool AddRelTagsFileEx(const QString &tagSpec, const char *windowPath, int file_type) {
+    return AddRelTagsFile(tagSpec.toLatin1().data(), windowPath, file_type);
+}
+
 bool AddRelTagsFile(const char *tagSpec, const char *windowPath, int file_type) {
 	tagFile *t;
 	bool added = false;
@@ -1307,7 +1310,17 @@ void editTaggedLocationEx(TextArea *area, int i) {
 
     ParseFilename(tagFiles[i], filename, pathname);
     // open the file containing the definition
-    DocumentWidget::EditExistingFileEx(document, QLatin1String(filename), QLatin1String(pathname), 0, nullptr, false, nullptr, GetPrefOpenInTab(), false);
+    DocumentWidget::EditExistingFileEx(
+                document,
+                QLatin1String(filename),
+                QLatin1String(pathname),
+                0,
+                QString(),
+                false,
+                nullptr,
+                GetPrefOpenInTab(),
+                false);
+
     windowToSearch = MainWindow::FindWindowWithFile(QLatin1String(filename), QLatin1String(pathname));
     if(!windowToSearch) {
         QMessageBox::warning(nullptr /*parent*/, QLatin1String("File not found"), QString(QLatin1String("File %1 not found")).arg(QLatin1String(tagFiles[i])));

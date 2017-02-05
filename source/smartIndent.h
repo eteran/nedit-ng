@@ -29,13 +29,11 @@
 
 #include "preferences.h"
 #include "util/string_view.h"
-#include <X11/Intrinsic.h>
 
 class QString;
 class QByteArray;
 class SmartIndent;
 class DocumentWidget;
-
 
 bool InSmartIndentMacrosEx(DocumentWidget *document);
 int LMHasSmartIndentMacros(const char *languageMode);

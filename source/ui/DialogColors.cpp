@@ -2,12 +2,13 @@
 #include "DialogColors.h"
 #include <QColorDialog>
 #include <QMessageBox>
-#include <QX11Info>
+
 #include "MainWindow.h"
 #include "preferences.h"
 #include "DocumentWidget.h"
 #include "highlight.h"
 #include "nedit.h" // (for some constants)
+#include "X11Colors.h"
 
 // TODO(eteran): use QColor for all the validation and all that... eventually
 
@@ -26,14 +27,14 @@ DialogColors::DialogColors(QWidget *parent, Qt::WindowFlags f) : QDialog(parent,
     ui.labelErrorMatchBG->setVisible(false);
     ui.labelErrorCursor->setVisible(false);
 
-	ui.editFG->setText(QLatin1String(GetPrefColorName(TEXT_FG_COLOR)));
-	ui.editBG->setText(QLatin1String(GetPrefColorName(TEXT_BG_COLOR)));
-	ui.editSelectionFG->setText(QLatin1String(GetPrefColorName(SELECT_FG_COLOR)));
-	ui.editSelectionBG->setText(QLatin1String(GetPrefColorName(SELECT_BG_COLOR)));
-	ui.editMatchFG->setText(QLatin1String(GetPrefColorName(HILITE_FG_COLOR)));
-	ui.editMatchBG->setText(QLatin1String(GetPrefColorName(HILITE_BG_COLOR)));
-	ui.editLineNumbers->setText(QLatin1String(GetPrefColorName(LINENO_FG_COLOR)));
-	ui.editCursor->setText(QLatin1String(GetPrefColorName(CURSOR_FG_COLOR)));
+    ui.editFG->setText(GetPrefColorName(TEXT_FG_COLOR));
+    ui.editBG->setText(GetPrefColorName(TEXT_BG_COLOR));
+    ui.editSelectionFG->setText(GetPrefColorName(SELECT_FG_COLOR));
+    ui.editSelectionBG->setText(GetPrefColorName(SELECT_BG_COLOR));
+    ui.editMatchFG->setText(GetPrefColorName(HILITE_FG_COLOR));
+    ui.editMatchBG->setText(GetPrefColorName(HILITE_BG_COLOR));
+    ui.editLineNumbers->setText(GetPrefColorName(LINENO_FG_COLOR));
+    ui.editCursor->setText(GetPrefColorName(CURSOR_FG_COLOR));
 }
 
 //------------------------------------------------------------------------------
@@ -48,13 +49,7 @@ DialogColors::~DialogColors() {
 // Desc: Returns True if the color is valid, False if it's not 
 //------------------------------------------------------------------------------
 bool DialogColors::checkColorStatus(const QString &text) {
-
-    QX11Info x11Info;
-    Display *display = QX11Info::display();
-    Colormap cMap = x11Info.colormap();
-	XColor colorDef;
-    Status status = XParseColor(display, cMap, text.toLatin1().data(), &colorDef);
-	return (status != 0);
+    return QColor::isValidColor(text);
 }
 
 //------------------------------------------------------------------------------
@@ -63,11 +58,8 @@ bool DialogColors::checkColorStatus(const QString &text) {
 void DialogColors::chooseColor(QLineEdit *edit) {
 
 	QString name = edit->text();
-	Color c;
-	AllocColor(name.toLatin1().data(), &c);
 
-	QColor initColor = toQColor(c);
-	QColor color = QColorDialog::getColor(initColor, this);
+    QColor color = QColorDialog::getColor(X11Colors::fromString(name), this);
 	if(color.isValid()) {
 		edit->setText(tr("#%1").arg((color.rgb() & 0x00ffffff), 6, 16, QLatin1Char('0')));
 	}
@@ -260,12 +252,12 @@ void DialogColors::updateColors() {
 			cursorFg.toLatin1().data());
 	}
 
-	SetPrefColorName(TEXT_FG_COLOR, textFg.toLatin1().data());
-	SetPrefColorName(TEXT_BG_COLOR, textBg.toLatin1().data());
-	SetPrefColorName(SELECT_FG_COLOR, selectFg.toLatin1().data());
-	SetPrefColorName(SELECT_BG_COLOR, selectBg.toLatin1().data());
-	SetPrefColorName(HILITE_FG_COLOR, hiliteFg.toLatin1().data());
-	SetPrefColorName(HILITE_BG_COLOR, hiliteBg.toLatin1().data());
-	SetPrefColorName(LINENO_FG_COLOR, lineNoFg.toLatin1().data());
-	SetPrefColorName(CURSOR_FG_COLOR, cursorFg.toLatin1().data());
+    SetPrefColorName(TEXT_FG_COLOR, textFg);
+    SetPrefColorName(TEXT_BG_COLOR, textBg);
+    SetPrefColorName(SELECT_FG_COLOR, selectFg);
+    SetPrefColorName(SELECT_BG_COLOR, selectBg);
+    SetPrefColorName(HILITE_FG_COLOR, hiliteFg);
+    SetPrefColorName(HILITE_BG_COLOR, hiliteBg);
+    SetPrefColorName(LINENO_FG_COLOR, lineNoFg);
+    SetPrefColorName(CURSOR_FG_COLOR, cursorFg);
 }

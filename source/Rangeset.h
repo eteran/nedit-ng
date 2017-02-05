@@ -31,7 +31,7 @@
 #ifndef RANGESET_H_
 #define RANGESET_H_
 
-#include <Xm/Xm.h> // for Pixel
+#include <QColor>
 
 #define N_RANGESETS 63
 
@@ -51,13 +51,13 @@ public:
 	int RangesetAdd(Rangeset *plusSet);
 	int RangesetAddBetween(int start, int end);
 	int RangesetAssignColorName(const char *color_name);
-	int RangesetAssignColorPixel(Pixel color, int ok);
+    int RangesetAssignColorPixel(const QColor &color, int ok);
 	int RangesetAssignName(const char *name);
 	int RangesetChangeModifyResponse(const char *name);
 	int RangesetCheckRangeOfPos(int pos);
 	int RangesetFindRangeNo(int index, int *start, int *end);
 	int RangesetFindRangeOfPos(int pos, int incl_end);
-	int RangesetGetColorValid(Pixel *color);
+    int RangesetGetColorValid(QColor *color);
 	int RangesetGetNRanges() const;
 	int RangesetInverse();
 	int RangesetRemove(Rangeset *minusSet);
@@ -69,7 +69,7 @@ public:
 
 public:
 	RangesetUpdateFn *update_fn; // modification update function
-	const char *update_name;     // update function name
+    const char *update_name;     // update function name
 	int maxpos;                  // text buffer maxpos
 	int last_index;              // a place to start looking
 	int n_ranges;                // how many ranges in ranges
@@ -77,10 +77,10 @@ public:
 	uint8_t label;         // a number 1-63
 
 	int8_t color_set;            // 0: unset; 1: set; -1: invalid
-	char *color_name;            // the name of an assigned color
-	Pixel color;                 // the value of a particular color
+    char *color_name;            // the name of an assigned color
+    QColor color;                 // the value of a particular color
 	TextBuffer *buf;             // the text buffer of the rangeset
-	char *name;                  // name of rangeset
+    char *name;                  // name of rangeset
 };
 
 #endif

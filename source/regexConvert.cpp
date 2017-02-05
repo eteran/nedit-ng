@@ -50,8 +50,6 @@
 #include <cctype>
 #include <climits>
 
-#include <X11/Intrinsic.h>
-
 // Utility definitions. 
 
 #define NSUBEXP 50
@@ -141,7 +139,7 @@ char *ConvertRE(view::string_view exp) {
 		Total_Paren = 1;
 
 		if (chunk(NO_PAREN, &flags_local) == 0) {
-			return (nullptr); // Something went wrong 
+            return nullptr; // Something went wrong
 		}
 		
 		emit_convert_byte('\0');
@@ -149,12 +147,7 @@ char *ConvertRE(view::string_view exp) {
 		if (pass == 1) {
 			// Allocate memory. 
 
-			Convert_Str = (char *)XtMalloc(Convert_Size);
-
-			if (!Convert_Str) {
-				throw regex_error("out of memory in `ConvertRE\'");
-			}
-
+            Convert_Str = new char[Convert_Size];
 			Code_Emit_Ptr = Convert_Str;
 		}
 	}

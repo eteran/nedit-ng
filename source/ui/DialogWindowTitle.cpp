@@ -42,7 +42,7 @@ DialogWindowTitle::DialogWindowTitle(DocumentWidget *document, QWidget *parent, 
 	QString clearCase = GetClearCaseViewTag();
 	
     viewTag_     = !clearCase.isNull() ? clearCase : tr("viewtag");
-    serverName_  = IsServer ? QLatin1String(GetPrefServerName()) : tr("servername");
+    serverName_  = IsServer ? GetPrefServerName() : tr("servername");
 	isServer_    = IsServer;
     filenameSet_ = document->filenameSet_;
     lockReasons_ = document->lockReasons_;
@@ -53,7 +53,7 @@ DialogWindowTitle::DialogWindowTitle(DocumentWidget *document, QWidget *parent, 
 	suppressFormatUpdate_ = false; 
 	
 	// set initial value of format field 
-	ui.editFormat->setText(QLatin1String(GetPrefTitleFormat()));
+    ui.editFormat->setText(GetPrefTitleFormat());
 	
 	// force update of the dialog 
 	setToggleButtons();
@@ -85,7 +85,7 @@ void DialogWindowTitle::setToggleButtons() {
 	ui.checkClearCasePresent->setChecked(!ccTag.isNull());
 	ui.checkServerNamePresent->setChecked(isServer_);
 
-	if (!ccTag.isNull() && isServer_ && GetPrefServerName()[0] != '\0' && ccTag == QLatin1String(GetPrefServerName())) {
+    if (!ccTag.isNull() && isServer_ && !GetPrefServerName().isEmpty() && ccTag == GetPrefServerName()) {
 		ui.checkServerEqualsCC->setChecked(true);
 	} else {
 		ui.checkServerEqualsCC->setChecked(false);
@@ -516,8 +516,8 @@ void DialogWindowTitle::on_buttonBox_clicked(QAbstractButton *button) {
 
 		QString format = ui.editFormat->text();
 
-		if (format != QLatin1String(GetPrefTitleFormat())) {
-			SetPrefTitleFormat(format.toLatin1().data());
+        if (format != GetPrefTitleFormat()) {
+            SetPrefTitleFormat(format);
 		}
 
 	} else if(ui.buttonBox->standardButton(button) == QDialogButtonBox::RestoreDefaults) {

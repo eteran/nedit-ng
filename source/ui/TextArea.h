@@ -60,12 +60,12 @@ public:
 
 public:
 	TextArea(QWidget *parent,
-		Position left,
-		Position top,
-		Position width,
-		Position height,
-		Position lineNumLeft,
-		Position lineNumWidth,
+        int left,
+        int top,
+        int width,
+        int height,
+        int lineNumLeft,
+        int lineNumWidth,
 		TextBuffer *buffer,
 		QFont fontStruct,
 		QColor bgPixel,
@@ -97,8 +97,8 @@ public:
 	void setEmulateTabs(int value);
 	void setWrapMargin(int value);
 	void setLineNumCols(int value);
-	void setForegroundPixel(Pixel pixel);
-	void setBackgroundPixel(Pixel pixel);
+    void setForegroundPixel(const QColor pixel);
+    void setBackgroundPixel(const QColor &pixel);
 	void setReadOnly(bool value);
 	void setOverstrike(bool value);
 	void setCursorVPadding(int value);
@@ -116,8 +116,8 @@ public:
     int TextNumVisibleLines() const;
     int TextFirstVisibleLine() const;
     int TextVisibleWidth() const;
-    Pixel getBackgroundPixel() const;
-    Pixel getForegroundPixel() const;
+    QColor getBackgroundPixel() const;
+    QColor getForegroundPixel() const;
     QFont getFont() const;
     int getEmulateTabs() const;
     int getLineNumCols() const;
@@ -294,9 +294,9 @@ public:
 
 private:
 	void measureDeletedLines(int pos, int nDeleted);
-	void wrappedLineCounter(const TextBuffer *buf, const int startPos, const int maxPos, const int maxLines, const Boolean startPosIsLineStart, const int styleBufOffset, int *retPos, int *retLines, int *retLineStart, int *retLineEnd) const;
-	int measurePropChar(const char c, const int colNum, const int pos) const;
-	int stringWidth(const char *string, const int length, const int style) const;
+    void wrappedLineCounter(const TextBuffer *buf, int startPos, int maxPos, int maxLines, bool startPosIsLineStart, int styleBufOffset, int *retPos, int *retLines, int *retLineStart, int *retLineEnd) const;
+    int measurePropChar(const char c, int colNum, int pos) const;
+    int stringWidth(const char *string, int length, int style) const;
 	void findWrapRangeEx(view::string_view deletedText, int pos, int nInserted, int nDeleted, int *modRangeStart, int *modRangeEnd, int *linesInserted, int *linesDeleted);
 	void updateLineStarts(int pos, int charsInserted, int charsDeleted, int linesInserted, int linesDeleted, int *scrolled);
 	void hideOrShowHScrollBar();
@@ -321,7 +321,7 @@ private:
 	void redisplayLine(QPainter *painter, int visLineNum, int leftClip, int rightClip, int leftCharIndex, int rightCharIndex);
 	void redisplayLineEx(int visLineNum, int leftClip, int rightClip, int leftCharIndex, int rightCharIndex);
 	int styleOfPos(int lineStartPos, int lineLen, int lineIndex, int dispIndex, int thisChar);
-	void drawString(QPainter *painter, int style, int x, int y, int toX, char *string, int nChars);
+    void drawString(QPainter *painter, int style, int x, int y, int toX, char *string, int nChars);
 	void drawCursor(QPainter *painter, int x, int y);
 	QColor getRangesetColor(int ind, QColor bground);
 	void setScroll(int topLineNum, int horizOffset, bool updateVScrollBar, bool updateHScrollBar);

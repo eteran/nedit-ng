@@ -5,6 +5,7 @@
 #include <QtDebug>
 #include <QMessageBox>
 #include <QClipboard>
+#include <QMimeData>
 
 #include "DialogFind.h"
 #include "MainWindow.h"

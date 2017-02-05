@@ -99,39 +99,41 @@ QString buildCompiler() {
 
 }
 
+QString DialogAbout::createInfoString() {
+    return tr("nedit-ng version %1\n"
+              "\n"
+              "     Built on: %2, %3, %4\n"
+              "     Built at: %5, %6\n"
+              "      With Qt: %7\n"
+              "   Running Qt: %8\n"
+              "       Locale: %9\n").arg(tr("1.0.0"))
+                                    .arg(buildPlatform())
+                                    .arg(tr("%1 bit").arg(QSysInfo::WordSize))
+                                    .arg(buildCompiler())
+                                    .arg(QLatin1String(__DATE__))
+                                    .arg(QLatin1String(__TIME__))
+                                    .arg(QLatin1String(QT_VERSION_STR))
+                                    .arg(QLatin1String(qVersion()))
+                                    .arg(QLocale::system().bcp47Name());
+}
+
 //------------------------------------------------------------------------------
 // Name: DialogAbout
 //------------------------------------------------------------------------------
 DialogAbout::DialogAbout(QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f) {
 	ui.setupUi(this);
 
-	ui.textAbout->setText(tr(
-		"NEdit-ng version %1\n"
+    ui.textAbout->setText(tr("%1"
 		"\n"
-		"     Built on: %2, %3, %4\n"
-		"     Built at: %5, %6\n"
-		"      With Qt: %7\n"
-		"   Running Qt: %8\n"
-		"       Locale: %9\n"
+        "nedit-ng was written by Evan Teran. It is intended to be a modern replacement for the Nirvana Editor (aka NEdit). The author has been using NEdit as his primary code editor for many years, and while it continues to be a superior editor in many ways, it is unfortunately showing its age. So nedit-ng was born out of a desire to have an editor that functions as close to the original as possible, but utilizing a modern toolkit (Qt). This will allow nedit-ng to enjoy the benefit of modern features such as:\n"
 		"\n"
-		"NEdit-ng was written by Evan Teran. It is intended to be a modern replacement for the Nirvana Editor (aka NEdit). The author has been using NEdit as his primary code editor for many years, and while it continues to be a superior editor in many ways, it is unfortunately showing its age. So NEdit-ng was born out of a design to have an editor that functions as close to the original as possible, but utilizing a modern toolkit (Qt). This will allow NEdit-ng to enjoy the benefit of modern features such as:\n"
-		"\n"
-		" * A modern/native look and feel.\n\n"
-		" * Antialiased fonts\n\n"
-		" * Unicode support!\n\n"
-		" * More cross platform, it will run on Windows, OSX, Linux and any other platform Qt supports.\n\n"
-		" * By using a modern toolkit, more developers will be able to be involved in furthering the evolution of the editor\n\n"
-	)
-	.arg(tr("1.0.0"))
-	.arg(buildPlatform())
-	.arg(tr("%1 bit").arg(QSysInfo::WordSize))
-	.arg(buildCompiler())
-	.arg(QLatin1String(__DATE__))
-	.arg(QLatin1String(__TIME__))
-	.arg(QLatin1String(QT_VERSION_STR))
-	.arg(QLatin1String(qVersion()))
-	.arg(QLocale::system().bcp47Name())
-	);
+        "* Anti-aliased font rendering.\n"
+        "* Support for internationalization.\n"
+        "* Modern look and feel.\n"
+        "* Internally, counted strings are used instead of NUL terminated strings.\n"
+        "* Use of C++ containers means many internal size limits are no longer present.\n"
+        "* Code as been reworked using modern C++ techniques using a toolkit with an active developer community, making it significantly easier for contributions to be made by the open source community.\n"
+	).arg(createInfoString()));
 }
 
 //------------------------------------------------------------------------------

@@ -9,7 +9,6 @@
 #include <ctime>
 
 
-class Document;
 class MainWindow;
 class DocumentWidget;
 

@@ -36,9 +36,8 @@ constexpr const int MAX_SEARCH_HISTORY = 100; /* Maximum length of search string
 class TextArea;
 class DocumentWidget;
 class MainWindow;
-class Document;
 
-Boolean WindowCanBeClosed(Document *window);
+
 
 bool ReplaceAllEx(MainWindow *window, DocumentWidget *document, TextArea *area, const char *searchString, const char *replaceString, SearchType searchType);
 bool ReplaceAndSearchEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, const char *searchString, const char *replaceString, SearchType searchType, int searchWrap);
@@ -92,7 +91,7 @@ extern int NHist;
 
 struct SelectionInfo {
 	bool done;
-	Document *window;
+    DocumentWidget *window;
 	char *selection;
 };
 

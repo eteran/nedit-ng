@@ -30,79 +30,31 @@
 #include <QString>
 #include <QPushButton>
 #include <QInputDialog>
-#include <QX11Info>
+#include <QStandardPaths>
 #include <QtDebug>
-#include "ui/DialogFontSelector.h"
-#include "ui/DialogWrapMargin.h"
-#include "ui/DialogLanguageModes.h"
+#include <QSettings>
 #include "ui/DocumentWidget.h"
-#include "ui/DialogColors.h"
 #include "ui/MainWindow.h"
 #include "LanguageMode.h"
+#include "Preferences.h"
 
 #include "preferences.h"
 #include "TextBuffer.h"
 #include "nedit.h"
-#include "menu.h"
 #include "search.h"
 #include "userCmds.h"
 #include "highlight.h"
 #include "highlightData.h"
-#include "help.h"
-#include "regularExp.h"
 #include "smartIndent.h"
 #include "server.h"
 #include "tags.h"
-#include "util/MotifHelper.h"
-#include "util/prefFile.h"
-#include "util/misc.h"
-#include "util/fileUtils.h"
-#include "util/utils.h"
-#include "TextHelper.h"
-#include "TextDisplay.h"
-
 #include <cctype>
 #include <pwd.h>
-#include <cstdlib>
-#include <cstring>
-#include <cstdio>
-#include <unistd.h>
 #include <memory>
-#include <sys/stat.h>
+#include <unistd.h>
+#include <sys/types.h>
 
-#include <sys/param.h>
 #include "util/clearcase.h"
-
-#include <Xm/PushBG.h>
-#include <Xm/ToggleBG.h>
-#include <Xm/ToggleB.h>
-#include <Xm/RowColumn.h>
-#include <Xm/CascadeBG.h>
-
-#define PREF_FILE_VERSION "5.6"
-
-// New styles added in 5.2 for auto-upgrade 
-#define ADD_5_2_STYLES " Pointer:#660000:Bold\nRegex:#009944:Bold\nWarning:brown2:Italic"
-
-// maximum number of word delimiters allowed (256 allows whole character set) 
-#define MAX_WORD_DELIMITERS 256
-
-// Return values for checkFontStatus 
-enum fontStatus { GOOD_FONT, BAD_PRIMARY, BAD_FONT, BAD_SIZE, BAD_SPACING };
-
-/* enumerated type preference strings
-** The order of the elements in this array must be exactly the same
-** as the order of the corresponding integers of the enum SearchType
-** defined in search.h (!!)
-*/
-static const char *SearchMethodStrings[] = {"Literal", "CaseSense", "RegExp", "LiteralWord", "CaseSenseWord", "RegExpNoCase", nullptr};
-
-#ifdef REPLACE_SCOPE
-/* enumerated default scope for replace dialog if a selection exists when
-** the dialog is popped up.
-*/
-static const char *ReplaceDefScopeStrings[] = {"Window", "Selection", "Smart", nullptr};
-#endif
 
 #define N_WRAP_STYLES 3
 static const char *AutoWrapTypes[N_WRAP_STYLES + 3] = {"None", "Newline", "Continuous", "True", "False", nullptr};
@@ -110,20 +62,6 @@ static const char *AutoWrapTypes[N_WRAP_STYLES + 3] = {"None", "Newline", "Conti
 #define N_INDENT_STYLES 3
 static const char *AutoIndentTypes[N_INDENT_STYLES + 3] = {"None", "Auto", "Smart", "True", "False", nullptr};
 
-#define N_VIRTKEY_OVERRIDE_MODES 3
-static const char *VirtKeyOverrideModes[N_VIRTKEY_OVERRIDE_MODES + 1] = {"Never", "Auto", "Always", nullptr};
-
-#define N_SHOW_MATCHING_STYLES 3
-/* For backward compatibility, "False" and "True" are still accepted.
-   They are internally converted to "Off" and "Delimiter" respectively.
-   NOTE: N_SHOW_MATCHING_STYLES must correspond to the number of
-         _real_ matching styles, not counting False & True.
-         False and True should also be the last ones in the list. */
-static const char *ShowMatchingTypes[] = {"Off", "Delimiter", "Range", "False", "True", nullptr};
-
-/*  This array must be kept in parallel to the enum truncSubstitution
-    in nedit.h  */
-static const char *TruncSubstitutionModes[] = {"Silent", "Fail", "Warn", "Ignore", nullptr};
 
 /* suplement wrap and indent styles w/ a value meaning "use default" for
    the override fields in the language modes dialog */
@@ -134,658 +72,6 @@ static const char *TruncSubstitutionModes[] = {"Silent", "Fail", "Warn", "Ignore
 int NLanguageModes = 0;
 LanguageMode *LanguageModes[MAX_LANGUAGE_MODES];
 
-// Repository for simple preferences settings 
-static struct prefData {
-	int openInTab;         // open files in new tabs  
-	int wrapStyle;         // what kind of wrapping to do 
-	int wrapMargin;        // 0=wrap at window width, other=wrap margin 
-	int autoIndent;        // style for auto-indent 
-	int autoSave;          // whether automatic backup feature is on 
-	int saveOldVersion;    // whether to preserve a copy of last version 
-	int searchDlogs;       // whether to show explanatory search dialogs 
-	int searchWrapBeep;    // 1=beep when search restarts at begin/end 
-	int keepSearchDlogs;   // whether to retain find and replace dialogs 
-	int searchWraps;       // whether to attempt search again if reach bof or eof 
-	int statsLine;         // whether to show the statistics line 
-	int iSearchLine;       // whether to show the incremental search line
-	int tabBar;            // whether to show the tab bar 
-	int tabBarHideOne;     // hide tab bar if only one document in window 
-	int globalTabNavigate; // prev/next document across windows 
-	int toolTips;          // whether to show the tooltips 
-	int lineNums;          // whether to show line numbers 
-	int pathInWindowsMenu; // whether to show path in windows menu 
-	int warnFileMods;      // warn user if files externally modified 
-	int warnRealFileMods;  // only warn if file contents modified 
-	int warnExit;          // whether to warn on exit 
-	int searchMethod;      // initial search method as a text string 
-#ifdef REPLACE_SCOPE
-	int replaceDefScope; // default replace scope if selection exists 
-#endif
-	int textRows;                     // initial window height in characters 
-	int textCols;                     // initial window width in characters 
-	int tabDist;                      // number of characters between tab stops 
-	int emTabDist;                    // non-zero tab dist. if emulated tabs are on 
-	int insertTabs;                   // whether to use tabs for padding 
-	int showMatchingStyle;            // how to flash matching parenthesis 
-	int matchSyntaxBased;             // use syntax info to match parenthesis 
-	int highlightSyntax;              // whether to highlight syntax by default 
-	int smartTags;                    // look for tag in current window first 
-	int alwaysCheckRelativeTagsSpecs; // for every new opened file of session 
-	int stickyCaseSenseBtn;           // whether Case Word Btn is sticky to Regex Btn 
-	int prefFileRead;                 // detects whether a .nedit existed 
-	int backlightChars;               // whether to apply character "backlighting" 
-	char *backlightCharTypes;         // the backlighting color definitions 
-	char fontString[MAX_FONT_LEN];    // names of fonts for text widget 
-	char boldFontString[MAX_FONT_LEN];
-	char italicFontString[MAX_FONT_LEN];
-	char boldItalicFontString[MAX_FONT_LEN];
-	XmFontList fontList;                  // XmFontLists corresp. to above named fonts 
-	XFontStruct *boldFontStruct;
-	XFontStruct *italicFontStruct;
-	XFontStruct *boldItalicFontStruct;
-	int sortTabs;                         // sort tabs alphabetically 
-	int repositionDialogs;                // w. to reposition dialogs under the pointer 
-	int autoScroll;                       // w. to autoscroll near top/bottom of screen 
-	int autoScrollVPadding;               // how close to get before autoscrolling 
-	int sortOpenPrevMenu;                 // whether to sort the "Open Previous" menu 
-	int appendLF;                         // Whether to append LF at the end of each file 
-	int mapDelete;                        // whether to map delete to backspace 
-	int stdOpenDialog;                    // w. to retain redundant text field in Open 
-	char tagFile[MAXPATHLEN];             // name of tags file to look for at startup 
-	int maxPrevOpenFiles;                 // limit to size of Open Previous menu 
-	int typingHidesPointer;               // hide mouse pointer when typing 
-	char delimiters[MAX_WORD_DELIMITERS]; // punctuation characters 
-	char shell[MAXPATHLEN + 1];           // shell to use for executing commands 
-	char geometry[MAX_GEOM_STRING_LEN];   // per-application geometry string, only for the clueless
-	char serverName[MAXPATHLEN];          // server name for multiple servers per disp. 
-	char bgMenuBtn[MAX_ACCEL_LEN];        // X event description for triggering posting of background menu
-	char fileVersion[6];                  // Version of nedit which wrote the .nedit file we're reading
-	int findReplaceUsesSelection;         // whether the find replace dialog is automatically loaded with the primary selection
-	int virtKeyOverride;                  // Override Motif default virtual key bindings never, if invalid, or always
-	char titleFormat[MAX_TITLE_FORMAT_LEN];
-	char helpFontNames[NUM_HELP_FONTS][MAX_FONT_LEN]; // fonts for help system 
-	char helpLinkColor[MAX_COLOR_LEN];                // Color for hyperlinks in the help system 
-	char colorNames[NUM_COLORS][MAX_COLOR_LEN];
-	char tooltipBgColor[MAX_COLOR_LEN];
-	int undoModifiesSelection;
-	int focusOnRaise;
-	Boolean honorSymlinks;
-	int truncSubstitution;
-	Boolean forceOSConversion;
-} PrefData;
-
-/* Temporary storage for preferences strings which are discarded after being
-   read */
-static struct {
-	QString shellCmds;
-	QString macroCmds;
-	QString bgMenuCmds;
-	QString highlight;
-	QString language;
-	QString styles;
-	QString smartIndent;
-	QString smartIndentCommon;
-} TempStringPrefs;
-
-// preference descriptions for SavePreferences and RestorePreferences. 
-static PrefDescripRec PrefDescrip[] = {
-    {"fileVersion", "FileVersion", PREF_STRING, "", PrefData.fileVersion, sizeof(PrefData.fileVersion), true},
-
-#ifdef linux
-    {"shellCommands", "ShellCommands", PREF_QSTRING, "spell:Alt+B:s:EX:\n\
-    cat>spellTmp; xterm -e ispell -x spellTmp; cat spellTmp; rm spellTmp\n\
-    wc::w:ED:\nwc | awk '{print $1 \" lines, \" $2 \" words, \" $3 \" characters\"}'\n\
-    sort::o:EX:\nsort\nnumber lines::n:AW:\nnl -ba\nmake:Alt+Z:m:W:\nmake\n\
-    expand::p:EX:\nexpand\nunexpand::u:EX:\nunexpand\n",
-     &TempStringPrefs.shellCmds, nullptr, true},
-#elif __FreeBSD__
-    {"shellCommands", "ShellCommands", PREF_QSTRING, "spell:Alt+B:s:EX:\n\
-    cat>spellTmp; xterm -e ispell -x spellTmp; cat spellTmp; rm spellTmp\n\
-    wc::w:ED:\nwc | awk '{print $2 \" lines, \" $1 \" words, \" $3 \" characters\"}'\n\
-    sort::o:EX:\nsort\nnumber lines::n:AW:\npr -tn\nmake:Alt+Z:m:W:\nmake\n\
-    expand::p:EX:\nexpand\nunexpand::u:EX:\nunexpand\n",
-     &TempStringPrefs.shellCmds, nullptr, true},
-#else
-    {"shellCommands", "ShellCommands", PREF_QSTRING, "spell:Alt+B:s:ED:\n\
-    (cat;echo \"\") | spell\nwc::w:ED:\nwc | awk '{print $1 \" lines, \" $2 \" words, \" $3 \" characters\"}'\n\
-    \nsort::o:EX:\nsort\nnumber lines::n:AW:\nnl -ba\nmake:Alt+Z:m:W:\nmake\n\
-    expand::p:EX:\nexpand\nunexpand::u:EX:\nunexpand\n",
-     &TempStringPrefs.shellCmds, nullptr, true},
-#endif // linux, __FreeBSD__ 
-
-    {"macroCommands", "MacroCommands", PREF_QSTRING, "Complete Word:Alt+D::: {\n\
-		# This macro attempts to complete the current word by\n\
-		# finding another word in the same document that has\n\
-		# the same prefix; repeated invocations of the macro\n\
-		# (by repeated typing of its accelerator, say) cycles\n\
-		# through the alternatives found.\n\
-		# \n\
-		# Make sure $compWord contains something (a dummy index)\n\
-		$compWord[\"\"] = \"\"\n\
-		\n\
-		# Test whether the rest of $compWord has been initialized:\n\
-		# this avoids having to initialize the global variable\n\
-		# $compWord in an external macro file\n\
-		if (!(\"wordEnd\" in $compWord)) {\n\
-		    # we need to initialize it\n\
-		    $compWord[\"wordEnd\"] = 0\n\
-		    $compWord[\"repeat\"] = 0\n\
-		    $compWord[\"init\"] = 0\n\
-		    $compWord[\"wordStart\"] = 0\n\
-		}\n\
-		\n\
-		if ($compWord[\"wordEnd\"] == $cursor) {\n\
-		        $compWord[\"repeat\"] += 1\n\
-		}\n\
-		else {\n\
-		   $compWord[\"repeat\"] = 1\n\
-		   $compWord[\"init\"] = $cursor\n\
-		\n\
-		   # search back to a word boundary to find the word to complete\n\
-		   # (we use \\w here to allow for programming \"words\" that can include\n\
-		   # digits and underscores; use \\l for letters only)\n\
-		   $compWord[\"wordStart\"] = search(\"<\\\\w+\", $cursor, \"backward\", \"regex\", \"wrap\")\n\
-		\n\
-		   if ($compWord[\"wordStart\"] == -1)\n\
-		      return\n\
-		\n\
-		    if ($search_end == $cursor)\n\
-		       $compWord[\"word\"] = get_range($compWord[\"wordStart\"], $cursor)\n\
-		    else\n\
-		        return\n\
-		}\n\
-		s = $cursor\n\
-		for (i=0; i <= $compWord[\"repeat\"]; i++)\n\
-		    s = search($compWord[\"word\"], s - 1, \"backward\", \"regex\", \"wrap\")\n\
-		\n\
-		if (s == $compWord[\"wordStart\"]) {\n\
-		   beep()\n\
-		   $compWord[\"repeat\"] = 0\n\
-		   s = $compWord[\"wordStart\"]\n\
-		   se = $compWord[\"init\"]\n\
-		}\n\
-		else\n\
-		   se = search(\">\", s, \"regex\")\n\
-		\n\
-		replace_range($compWord[\"wordStart\"], $cursor, get_range(s, se))\n\
-		\n\
-		$compWord[\"wordEnd\"] = $cursor\n\
-	}\n\
-	Fill Sel. w/Char:::R: {\n\
-		# This macro replaces each character position in\n\
-		# the selection with the string typed into the dialog\n\
-		# it displays.\n\
-		if ($selection_start == -1) {\n\
-		    beep()\n\
-		    return\n\
-		}\n\
-		\n\
-		# Ask the user what character to fill with\n\
-		fillChar = string_dialog(\"Fill selection with what character?\", \\\n\
-		                         \"OK\", \"Cancel\")\n\
-		if ($string_dialog_button == 2 || $string_dialog_button == 0)\n\
-		    return\n\
-		\n\
-		# Count the number of lines (NL characters) in the selection\n\
-		# (by removing all non-NLs in selection and counting the remainder)\n\
-		nLines = length(replace_in_string(get_selection(), \\\n\
-		                                  \"^.*$\", \"\", \"regex\"))\n\
-		\n\
-		rectangular = $selection_left != -1\n\
-		\n\
-		# work out the pieces of required of the replacement text\n\
-		# this will be top mid bot where top is empty or ends in NL,\n\
-		# mid is 0 or more lines of repeats ending with NL, and\n\
-		# bot is 0 or more repeats of the fillChar\n\
-		\n\
-		toplen = -1 # top piece by default empty (no NL)\n\
-		midlen = 0\n\
-		botlen = 0\n\
-		\n\
-		if (rectangular) {\n\
-		    # just fill the rectangle:  mid\\n \\ nLines\n\
-		    #                           mid\\n /\n\
-		    #                           bot   - last line with no nl\n\
-		    midlen = $selection_right -  $selection_left\n\
-		    botlen = $selection_right -  $selection_left\n\
-		} else {\n\
-		    #                  |col[0]\n\
-		    #         .........toptoptop\\n                      |col[0]\n\
-		    # either  midmidmidmidmidmid\\n \\ nLines - 1   or ...botbot...\n\
-		    #         midmidmidmidmidmid\\n /                          |col[1]\n\
-		    #         botbot...         |\n\
-		    #                 |col[1]   |wrap margin\n\
-		    # we need column positions col[0], col[1] of selection start and\n\
-		    # end (use a loop and arrays to do the two positions)\n\
-		    sel[0] = $selection_start\n\
-		    sel[1] = $selection_end\n\
-		\n\
-		    # col[0] = pos_to_column($selection_start)\n\
-		    # col[1] = pos_to_column($selection_end)\n\
-		\n\
-		    for (i = 0; i < 2; ++i) {\n\
-		        end = sel[i]\n\
-		        pos = search(\"^\", end, \"regex\", \"backward\")\n\
-		        thisCol = 0\n\
-		        while (pos < end) {\n\
-		            nexttab = search(\"\\t\", pos)\n\
-		            if (nexttab < 0 || nexttab >= end) {\n\
-		                thisCol += end - pos # count remaining non-tabs\n\
-		                nexttab = end\n\
-		            } else {\n\
-		                thisCol += nexttab - pos + $tab_dist\n\
-		                thisCol -= (thisCol % $tab_dist)\n\
-		            }\n\
-		            pos = nexttab + 1 # skip past the tab or end\n\
-		        }\n\
-		        col[i] = thisCol\n\
-		    }\n\
-		    toplen = max($wrap_margin - col[0], 0)\n\
-		    botlen = min(col[1], $wrap_margin)\n\
-		\n\
-		    if (nLines == 0) {\n\
-		        toplen = -1\n\
-		        botlen = max(botlen - col[0], 0)\n\
-		    } else {\n\
-		        midlen = $wrap_margin\n\
-		        if (toplen < 0)\n\
-		            toplen = 0\n\
-		        nLines-- # top piece will end in a NL\n\
-		    }\n\
-		}\n\
-		\n\
-		# Create the fill text\n\
-		# which is the longest piece? make a line of that length\n\
-		# (use string doubling - this allows the piece to be\n\
-		# appended to double in size at each iteration)\n\
-		\n\
-		len = max(toplen, midlen, botlen)\n\
-		charlen = length(fillChar) # maybe more than one char given!\n\
-		\n\
-		line = \"\"\n\
-		while (len > 0) {\n\
-		    if (len % 2)\n\
-		        line = line fillChar\n\
-		    len /= 2\n\
-		    if (len > 0)\n\
-		        fillChar = fillChar fillChar\n\
-		}\n\
-		# assemble our pieces\n\
-		toppiece = \"\"\n\
-		midpiece = \"\"\n\
-		botpiece = \"\"\n\
-		if (toplen >= 0)\n\
-		    toppiece = substring(line, 0, toplen * charlen) \"\\n\"\n\
-		if (botlen > 0)\n\
-		    botpiece = substring(line, 0, botlen * charlen)\n\
-		\n\
-		# assemble midpiece (use doubling again)\n\
-		line = substring(line, 0, midlen * charlen) \"\\n\"\n\
-		while (nLines > 0) {\n\
-		    if (nLines % 2)\n\
-		        midpiece = midpiece line\n\
-		    nLines /= 2\n\
-		    if (nLines > 0)\n\
-		        line = line line\n\
-		}\n\
-		# Replace the selection with the complete fill text\n\
-		replace_selection(toppiece midpiece botpiece)\n\
-	}\n\
-	Quote Mail Reply:::: {\n\
-		if ($selection_start == -1)\n\
-		    replace_all(\"^.*$\", \"\\\\> &\", \"regex\")\n\
-		else\n\
-		    replace_in_selection(\"^.*$\", \"\\\\> &\", \"regex\")\n\
-	}\n\
-	Unquote Mail Reply:::: {\n\
-		if ($selection_start == -1)\n\
-		    replace_all(\"(^\\\\> )(.*)$\", \"\\\\2\", \"regex\")\n\
-		else\n\
-		    replace_in_selection(\"(^\\\\> )(.*)$\", \"\\\\2\", \"regex\")\n\
-	}\n\
-	Comments>/* Comment */@C@C++@Java@CSS@JavaScript@Lex:::R: {\n\
-		selStart = $selection_start\n\
-		selEnd = $selection_end\n\
-		replace_range(selStart, selEnd, \"/* \" get_selection() \" */\")\n\
-		select(selStart, selEnd + 6)\n\
-	}\n\
-	Comments>/* Uncomment */@C@C++@Java@CSS@JavaScript@Lex:::R: {\n\
-		pos = search(\"(?n\\\\s*/\\\\*\\\\s*)\", $selection_start, \"regex\")\n\
-		start = $search_end\n\
-		end = search(\"(?n\\\\*/\\\\s*)\", $selection_end, \"regex\", \"backward\")\n\
-		if (pos != $selection_start || end == -1 )\n\
-		    return\n\
-		replace_selection(get_range(start, end))\n\
-		select(pos, $cursor)\n\
-	}\n\
-	Comments>// Comment@C@C++@Java@JavaScript:::R: {\n\
-		replace_in_selection(\"^.*$\", \"// &\", \"regex\")\n\
-	}\n\
-	Comments>// Uncomment@C@C++@Java@JavaScript:::R: {\n\
-		replace_in_selection(\"(^[ \\\\t]*// ?)(.*)$\", \"\\\\2\", \"regex\")\n\
-	}\n\
-	Comments># Comment@Perl@Sh Ksh Bash@NEdit Macro@Makefile@Awk@Csh@Python@Tcl:::R: {\n\
-		replace_in_selection(\"^.*$\", \"#&\", \"regex\")\n\
-	}\n\
-	Comments># Uncomment@Perl@Sh Ksh Bash@NEdit Macro@Makefile@Awk@Csh@Python@Tcl:::R: {\n\
-		replace_in_selection(\"(^[ \\\\t]*#)(.*)$\", \"\\\\2\", \"regex\")\n\
-	}\n\
-	Comments>-- Comment@SQL:::R: {\n\
-		replace_in_selection(\"^.*$\", \"--&\", \"regex\")\n\
-	}\n\
-	Comments>-- Uncomment@SQL:::R: {\n\
-		replace_in_selection(\"(^[ \\\\t]*--)(.*)$\", \"\\\\2\", \"regex\")\n\
-	}\n\
-	Comments>! Comment@X Resources:::R: {\n\
-		replace_in_selection(\"^.*$\", \"!&\", \"regex\")\n\
-	}\n\
-	Comments>! Uncomment@X Resources:::R: {\n\
-		replace_in_selection(\"(^[ \\\\t]*!)(.*)$\", \"\\\\2\", \"regex\")\n\
-	}\n\
-	Comments>% Comment@LaTeX:::R: {\n\
-		replace_in_selection(\"^.*$\", \"%&\", \"regex\")\n\
-		}\n\
-	Comments>% Uncomment@LaTeX:::R: {\n\
-		replace_in_selection(\"(^[ \\\\t]*%)(.*)$\", \"\\\\2\", \"regex\")\n\
-		}\n\
-	Comments>Bar Comment@C:::R: {\n\
-		if ($selection_left != -1) {\n\
-		    dialog(\"Selection must not be rectangular\")\n\
-		    return\n\
-		}\n\
-		start = $selection_start\n\
-		end = $selection_end-1\n\
-		origText = get_range($selection_start, $selection_end-1)\n\
-		newText = \"/*\\n\" replace_in_string(get_range(start, end), \\\n\
-		    \"^\", \" * \", \"regex\") \"\\n */\\n\"\n\
-		replace_selection(newText)\n\
-		select(start, start + length(newText))\n\
-	}\n\
-	Comments>Bar Uncomment@C:::R: {\n\
-		selStart = $selection_start\n\
-		selEnd = $selection_end\n\
-		pos = search(\"/\\\\*\\\\s*\\\\n\", selStart, \"regex\")\n\
-		if (pos != selStart) return\n\
-		start = $search_end\n\
-		end = search(\"\\\\n\\\\s*\\\\*/\\\\s*\\\\n?\", selEnd, \"regex\", \"backward\")\n\
-		if (end == -1 || $search_end < selEnd) return\n\
-		newText = get_range(start, end)\n\
-		newText = replace_in_string(newText,\"^ *\\\\* ?\", \"\", \"regex\", \"copy\")\n\
-		if (get_range(selEnd, selEnd - 1) == \"\\n\") selEnd -= 1\n\
-		replace_range(selStart, selEnd, newText)\n\
-		select(selStart, selStart + length(newText))\n\
-	}\n\
-	Make C Prototypes@C@C++:::: {\n\
-		# simplistic extraction of C function prototypes, usually good enough\n\
-		if ($selection_start == -1) {\n\
-		    start = 0\n\
-		    end = $text_length\n\
-		} else {\n\
-		    start = $selection_start\n\
-		    end = $selection_end\n\
-		}\n\
-		string = get_range(start, end)\n\
-		# remove all C++ and C comments, then all blank lines in the extracted range\n\
-		string = replace_in_string(string, \"//.*$\", \"\", \"regex\", \"copy\")\n\
-		string = replace_in_string(string, \"(?n/\\\\*.*?\\\\*/)\", \"\", \"regex\", \"copy\")\n\
-		string = replace_in_string(string, \"^\\\\s*\\n\", \"\", \"regex\", \"copy\")\n\
-		nDefs = 0\n\
-		searchPos = 0\n\
-		prototypes = \"\"\n\
-		staticPrototypes = \"\"\n\
-		for (;;) {\n\
-		    headerStart = search_string(string, \\\n\
-		        \"^[a-zA-Z]([^;#\\\"'{}=><!/]|\\n)*\\\\)[ \\t]*\\n?[ \\t]*\\\\{\", \\\n\
-		        searchPos, \"regex\")\n\
-		    if (headerStart == -1)\n\
-		        break\n\
-		    headerEnd = search_string(string, \")\", $search_end,\"backward\") + 1\n\
-		    prototype = substring(string, headerStart, headerEnd) \";\\n\"\n\
-		    if (substring(string, headerStart, headerStart+6) == \"static\")\n\
-		        staticPrototypes = staticPrototypes prototype\n\
-		    else\n\
-		        prototypes = prototypes prototype\n\
-		    searchPos = headerEnd\n\
-		    nDefs++\n\
-		}\n\
-		if (nDefs == 0) {\n\
-		    dialog(\"No function declarations found\")\n\
-		    return\n\
-		}\n\
-		new()\n\
-		focus_window(\"last\")\n\
-		replace_range(0, 0, prototypes staticPrototypes)\n\
-	}",
-     &TempStringPrefs.macroCmds, nullptr, true},
-    {"bgMenuCommands", "BGMenuCommands", PREF_QSTRING, "Undo:::: {\nundo()\n}\n\
-	Redo:::: {\nredo()\n}\n\
-	Cut:::R: {\ncut_clipboard()\n}\n\
-	Copy:::R: {\ncopy_clipboard()\n}\n\
-	Paste:::: {\npaste_clipboard()\n}",
-     &TempStringPrefs.bgMenuCmds, nullptr, true},
-
-    {"highlightPatterns", "HighlightPatterns", PREF_QSTRING, "Ada:Default\n\
-        Awk:Default\n\
-        C++:Default\n\
-        C:Default\n\
-        CSS:Default\n\
-        Csh:Default\n\
-        Fortran:Default\n\
-        Java:Default\n\
-        JavaScript:Default\n\
-        LaTeX:Default\n\
-        Lex:Default\n\
-        Makefile:Default\n\
-        Matlab:Default\n\
-        NEdit Macro:Default\n\
-        Pascal:Default\n\
-        Perl:Default\n\
-        PostScript:Default\n\
-        Python:Default\n\
-        Regex:Default\n\
-        SGML HTML:Default\n\
-        SQL:Default\n\
-        Sh Ksh Bash:Default\n\
-        Tcl:Default\n\
-        VHDL:Default\n\
-        Verilog:Default\n\
-        XML:Default\n\
-        X Resources:Default\n\
-        Yacc:Default",
-     &TempStringPrefs.highlight, nullptr, true},
-    {"languageModes", "LanguageModes", PREF_QSTRING,
-
-     "Ada:.ada .ad .ads .adb .a:::::::\n\
-        Awk:.awk:::::::\n\
-        C++:.cc .hh .C .H .i .cxx .hxx .cpp .c++::::::\".,/\\`'!|@#%^&*()-=+{}[]\"\":;<>?~\":\n\
-        C:.c .h::::::\".,/\\`'!|@#%^&*()-=+{}[]\"\":;<>?~\":\n\
-        CSS:css::Auto:None:::\".,/\\`'!|@#%^&*()=+{}[]\"\":;<>?~\":\n\
-        Csh:.csh .cshrc .tcshrc .login .logout:\"^[ \\t]*#[ \\t]*![ \\t]*/bin/t?csh\"::::::\n\
-        Fortran:.f .f77 .for:::::::\n\
-        Java:.java:::::::\n\
-        JavaScript:.js:::::::\n\
-        LaTeX:.tex .sty .cls .ltx .ins .clo .fd:::::::\n\
-        Lex:.lex:::::::\n\
-        Makefile:Makefile makefile .gmk:::None:8:8::\n\
-        Matlab:.m .oct .sci:::::::\n\
-        NEdit Macro:.nm .neditmacro:::::::\n\
-        Pascal:.pas .p .int:::::::\n\
-        Perl:.pl .pm .p5 .PL:\"^[ \\t]*#[ \\t]*!.*perl\":Auto:None:::\".,/\\\\`'!$@#%^&*()-=+{}[]\"\":;<>?~|\":\n\
-        PostScript:.ps .eps .epsf .epsi:\"^%!\":::::\"/%(){}[]<>\":\n\
-        Python:.py:\"^#!.*python\":Auto:None:::\"!\"\"#$%&'()*+,-./:;<=>?@[\\\\]^`{|}~\":\n\
-        Regex:.reg .regex:\"\\(\\?[:#=!iInN].+\\)\":None:Continuous::::\n\
-        SGML HTML:.sgml .sgm .html .htm:\"\\<[Hh][Tt][Mm][Ll]\\>\"::::::\n\
-        SQL:.sql:::::::\n\
-        Sh Ksh Bash:.sh .bash .ksh .profile .bashrc .bash_logout .bash_login .bash_profile:\"^[ \\t]*#[ \\t]*![ \\t]*/.*bin/(bash|ksh|sh|zsh)\"::::::\n\
-        Tcl:.tcl .tk .itcl .itk::Smart:None::::\n\
-        VHDL:.vhd .vhdl .vdl:::::::\n\
-        Verilog:.v:::::::\n\
-        XML:.xml .xsl .dtd:\"\\<(?i\\?xml|!doctype)\"::None:::\"<>/=\"\"'()+*?|\":\n\
-        X Resources:.Xresources .Xdefaults .nedit .pats nedit.rc:\"^[!#].*([Aa]pp|[Xx]).*[Dd]efaults\"::::::\n\
-        Yacc:.y::::::\".,/\\`'!|@#%^&*()-=+{}[]\"\":;<>?~\":",
-
-     &TempStringPrefs.language, nullptr, true},
-    {"styles", "Styles", PREF_QSTRING, "Plain:black:Plain\n\
-    	Comment:gray20:Italic\n\
-    	Keyword:black:Bold\n\
-        Operator:dark blue:Bold\n\
-        Bracket:dark blue:Bold\n\
-    	Storage Type:brown:Bold\n\
-    	Storage Type1:saddle brown:Bold\n\
-    	String:darkGreen:Plain\n\
-    	String1:SeaGreen:Plain\n\
-    	String2:darkGreen:Bold\n\
-    	Preprocessor:RoyalBlue4:Plain\n\
-    	Preprocessor1:blue:Plain\n\
-    	Character Const:darkGreen:Plain\n\
-    	Numeric Const:darkGreen:Plain\n\
-    	Identifier:brown:Plain\n\
-    	Identifier1:RoyalBlue4:Plain\n\
-        Identifier2:SteelBlue:Plain\n\
- 	Subroutine:brown:Plain\n\
-	Subroutine1:chocolate:Plain\n\
-   	Ada Attributes:plum:Bold\n\
-	Label:red:Italic\n\
-	Flag:red:Bold\n\
-    	Text Comment:SteelBlue4:Italic\n\
-    	Text Key:VioletRed4:Bold\n\
-	Text Key1:VioletRed4:Plain\n\
-    	Text Arg:RoyalBlue4:Bold\n\
-    	Text Arg1:SteelBlue4:Bold\n\
-	Text Arg2:RoyalBlue4:Plain\n\
-    	Text Escape:gray30:Bold\n\
-	LaTeX Math:darkGreen:Plain\n" ADD_5_2_STYLES,
-     &TempStringPrefs.styles, nullptr, true},
-    {"smartIndentInit", "SmartIndentInit", PREF_QSTRING, "C:Default\n\
-	C++:Default\n\
-	Python:Default\n\
-	Matlab:Default",
-     &TempStringPrefs.smartIndent, nullptr, true},
-    {"smartIndentInitCommon", "SmartIndentInitCommon", PREF_QSTRING, "Default", &TempStringPrefs.smartIndentCommon, nullptr, true},
-    {"autoWrap", "AutoWrap", PREF_ENUM, "Continuous", &PrefData.wrapStyle, AutoWrapTypes, true},
-    {"wrapMargin", "WrapMargin", PREF_INT, "0", &PrefData.wrapMargin, nullptr, true},
-    {"autoIndent", "AutoIndent", PREF_ENUM, "Auto", &PrefData.autoIndent, AutoIndentTypes, true},
-    {"autoSave", "AutoSave", PREF_BOOLEAN, "True", &PrefData.autoSave, nullptr, true},
-    {"openInTab", "OpenInTab", PREF_BOOLEAN, "True", &PrefData.openInTab, nullptr, true},
-    {"saveOldVersion", "SaveOldVersion", PREF_BOOLEAN, "False", &PrefData.saveOldVersion, nullptr, true},
-    {"showMatching", "ShowMatching", PREF_ENUM, "Delimiter", &PrefData.showMatchingStyle, ShowMatchingTypes, true},
-    {"matchSyntaxBased", "MatchSyntaxBased", PREF_BOOLEAN, "True", &PrefData.matchSyntaxBased, nullptr, true},
-    {"highlightSyntax", "HighlightSyntax", PREF_BOOLEAN, "True", &PrefData.highlightSyntax, nullptr, true},
-    {"backlightChars", "BacklightChars", PREF_BOOLEAN, "False", &PrefData.backlightChars, nullptr, true},
-    {"backlightCharTypes", "BacklightCharTypes", PREF_ALLOC_STRING, "0-8,10-31,127:red;9:#dedede;32,160-255:#f0f0f0;128-159:orange",
-     //                     gray87                 gray94                 
-     &PrefData.backlightCharTypes, nullptr, false},
-    {"searchDialogs", "SearchDialogs", PREF_BOOLEAN, "False", &PrefData.searchDlogs, nullptr, true},
-    {"beepOnSearchWrap", "BeepOnSearchWrap", PREF_BOOLEAN, "False", &PrefData.searchWrapBeep, nullptr, true},
-    {"retainSearchDialogs", "RetainSearchDialogs", PREF_BOOLEAN, "False", &PrefData.keepSearchDlogs, nullptr, true},
-    {"searchWraps", "SearchWraps", PREF_BOOLEAN, "True", &PrefData.searchWraps, nullptr, true},
-    {"stickyCaseSenseButton", "StickyCaseSenseButton", PREF_BOOLEAN, "True", &PrefData.stickyCaseSenseBtn, nullptr, true},
-    {"repositionDialogs", "RepositionDialogs", PREF_BOOLEAN, "True", &PrefData.repositionDialogs, nullptr, true},
-    {"autoScroll", "AutoScroll", PREF_BOOLEAN, "False", &PrefData.autoScroll, nullptr, true},
-    {"autoScrollVPadding", "AutoScrollVPadding", PREF_INT, "4", &PrefData.autoScrollVPadding, nullptr, false},
-    {"appendLF", "AppendLF", PREF_BOOLEAN, "True", &PrefData.appendLF, nullptr, true},
-    {"sortOpenPrevMenu", "SortOpenPrevMenu", PREF_BOOLEAN, "True", &PrefData.sortOpenPrevMenu, nullptr, true},
-    {"statisticsLine", "StatisticsLine", PREF_BOOLEAN, "False", &PrefData.statsLine, nullptr, true},
-    {"iSearchLine", "ISearchLine", PREF_BOOLEAN, "False", &PrefData.iSearchLine, nullptr, true},
-    {"sortTabs", "SortTabs", PREF_BOOLEAN, "False", &PrefData.sortTabs, nullptr, true},
-    {"tabBar", "TabBar", PREF_BOOLEAN, "True", &PrefData.tabBar, nullptr, true},
-    {"tabBarHideOne", "TabBarHideOne", PREF_BOOLEAN, "True", &PrefData.tabBarHideOne, nullptr, true},
-    {"toolTips", "ToolTips", PREF_BOOLEAN, "True", &PrefData.toolTips, nullptr, true},
-    {"globalTabNavigate", "GlobalTabNavigate", PREF_BOOLEAN, "False", &PrefData.globalTabNavigate, nullptr, true},
-    {"lineNumbers", "LineNumbers", PREF_BOOLEAN, "False", &PrefData.lineNums, nullptr, true},
-    {"pathInWindowsMenu", "PathInWindowsMenu", PREF_BOOLEAN, "True", &PrefData.pathInWindowsMenu, nullptr, true},
-    {"warnFileMods", "WarnFileMods", PREF_BOOLEAN, "True", &PrefData.warnFileMods, nullptr, true},
-    {"warnRealFileMods", "WarnRealFileMods", PREF_BOOLEAN, "True", &PrefData.warnRealFileMods, nullptr, true},
-    {"warnExit", "WarnExit", PREF_BOOLEAN, "True", &PrefData.warnExit, nullptr, true},
-    {"searchMethod", "SearchMethod", PREF_ENUM, "Literal", &PrefData.searchMethod, SearchMethodStrings, true},
-#ifdef REPLACE_SCOPE
-    {"replaceDefaultScope", "ReplaceDefaultScope", PREF_ENUM, "Smart", &PrefData.replaceDefScope, ReplaceDefScopeStrings, true},
-#endif
-    {"textRows", "TextRows", PREF_INT, "24", &PrefData.textRows, nullptr, true},
-    {"textCols", "TextCols", PREF_INT, "80", &PrefData.textCols, nullptr, true},
-    {"tabDistance", "TabDistance", PREF_INT, "8", &PrefData.tabDist, nullptr, true},
-    {"emulateTabs", "EmulateTabs", PREF_INT, "0", &PrefData.emTabDist, nullptr, true},
-    {"insertTabs", "InsertTabs", PREF_BOOLEAN, "True", &PrefData.insertTabs, nullptr, true},
-    {"textFont", "TextFont", PREF_STRING, "-*-courier-medium-r-normal--*-120-*-*-*-iso8859-1", PrefData.fontString, sizeof(PrefData.fontString), true},
-    {"boldHighlightFont", "BoldHighlightFont", PREF_STRING, "-*-courier-bold-r-normal--*-120-*-*-*-iso8859-1", PrefData.boldFontString, sizeof(PrefData.boldFontString), true},
-    {"italicHighlightFont", "ItalicHighlightFont", PREF_STRING, "-*-courier-medium-o-normal--*-120-*-*-*-iso8859-1", PrefData.italicFontString, sizeof(PrefData.italicFontString), true},
-    {"boldItalicHighlightFont", "BoldItalicHighlightFont", PREF_STRING, "-*-courier-bold-o-normal--*-120-*-*-*-iso8859-1", PrefData.boldItalicFontString, sizeof(PrefData.boldItalicFontString), true},
-    {"helpFont", "HelpFont", PREF_STRING, "-*-helvetica-medium-r-normal--*-120-*-*-*-iso8859-1", PrefData.helpFontNames[HELP_FONT], sizeof(PrefData.helpFontNames[HELP_FONT]), false},
-    {"boldHelpFont", "BoldHelpFont", PREF_STRING, "-*-helvetica-bold-r-normal--*-120-*-*-*-iso8859-1", PrefData.helpFontNames[BOLD_HELP_FONT], sizeof(PrefData.helpFontNames[BOLD_HELP_FONT]), false},
-    {"italicHelpFont", "ItalicHelpFont", PREF_STRING, "-*-helvetica-medium-o-normal--*-120-*-*-*-iso8859-1", PrefData.helpFontNames[ITALIC_HELP_FONT], sizeof(PrefData.helpFontNames[ITALIC_HELP_FONT]), false},
-    {"boldItalicHelpFont", "BoldItalicHelpFont", PREF_STRING, "-*-helvetica-bold-o-normal--*-120-*-*-*-iso8859-1", PrefData.helpFontNames[BOLD_ITALIC_HELP_FONT], sizeof(PrefData.helpFontNames[BOLD_ITALIC_HELP_FONT]), false},
-    {"fixedHelpFont", "FixedHelpFont", PREF_STRING, "-*-courier-medium-r-normal--*-120-*-*-*-iso8859-1", PrefData.helpFontNames[FIXED_HELP_FONT], sizeof(PrefData.helpFontNames[FIXED_HELP_FONT]), false},
-    {"boldFixedHelpFont", "BoldFixedHelpFont", PREF_STRING, "-*-courier-bold-r-normal--*-120-*-*-*-iso8859-1", PrefData.helpFontNames[BOLD_FIXED_HELP_FONT], sizeof(PrefData.helpFontNames[BOLD_FIXED_HELP_FONT]), false},
-    {"italicFixedHelpFont", "ItalicFixedHelpFont", PREF_STRING, "-*-courier-medium-o-normal--*-120-*-*-*-iso8859-1", PrefData.helpFontNames[ITALIC_FIXED_HELP_FONT], sizeof(PrefData.helpFontNames[ITALIC_FIXED_HELP_FONT]), false},
-    {"boldItalicFixedHelpFont", "BoldItalicFixedHelpFont", PREF_STRING, "-*-courier-bold-o-normal--*-120-*-*-*-iso8859-1", PrefData.helpFontNames[BOLD_ITALIC_FIXED_HELP_FONT], sizeof(PrefData.helpFontNames[BOLD_ITALIC_FIXED_HELP_FONT]), false},
-    {"helpLinkFont", "HelpLinkFont", PREF_STRING, "-*-helvetica-medium-r-normal--*-120-*-*-*-iso8859-1", PrefData.helpFontNames[HELP_LINK_FONT], sizeof(PrefData.helpFontNames[HELP_LINK_FONT]), false},
-    {"h1HelpFont", "H1HelpFont", PREF_STRING, "-*-helvetica-bold-r-normal--*-140-*-*-*-iso8859-1", PrefData.helpFontNames[H1_HELP_FONT], sizeof(PrefData.helpFontNames[H1_HELP_FONT]), false},
-    {"h2HelpFont", "H2HelpFont", PREF_STRING, "-*-helvetica-bold-o-normal--*-120-*-*-*-iso8859-1", PrefData.helpFontNames[H2_HELP_FONT], sizeof(PrefData.helpFontNames[H2_HELP_FONT]), false},
-    {"h3HelpFont", "H3HelpFont", PREF_STRING, "-*-courier-bold-r-normal--*-120-*-*-*-iso8859-1", PrefData.helpFontNames[H3_HELP_FONT], sizeof(PrefData.helpFontNames[H3_HELP_FONT]), false},
-    {"helpLinkColor", "HelpLinkColor", PREF_STRING, "#009900", PrefData.helpLinkColor, sizeof(PrefData.helpLinkColor), false},
-
-    {"textFgColor", "TextFgColor", PREF_STRING, NEDIT_DEFAULT_FG, PrefData.colorNames[TEXT_FG_COLOR], sizeof(PrefData.colorNames[TEXT_FG_COLOR]), true},
-    {"textBgColor", "TextBgColor", PREF_STRING, NEDIT_DEFAULT_TEXT_BG, PrefData.colorNames[TEXT_BG_COLOR], sizeof(PrefData.colorNames[TEXT_BG_COLOR]), true},
-    {"selectFgColor", "SelectFgColor", PREF_STRING, NEDIT_DEFAULT_SEL_FG, PrefData.colorNames[SELECT_FG_COLOR], sizeof(PrefData.colorNames[SELECT_FG_COLOR]), true},
-    {"selectBgColor", "SelectBgColor", PREF_STRING, NEDIT_DEFAULT_SEL_BG, PrefData.colorNames[SELECT_BG_COLOR], sizeof(PrefData.colorNames[SELECT_BG_COLOR]), true},
-    {"hiliteFgColor", "HiliteFgColor", PREF_STRING, NEDIT_DEFAULT_HI_FG, PrefData.colorNames[HILITE_FG_COLOR], sizeof(PrefData.colorNames[HILITE_FG_COLOR]), true},
-    {"hiliteBgColor", "HiliteBgColor", PREF_STRING, NEDIT_DEFAULT_HI_BG, PrefData.colorNames[HILITE_BG_COLOR], sizeof(PrefData.colorNames[HILITE_BG_COLOR]), true},
-    {"lineNoFgColor", "LineNoFgColor", PREF_STRING, NEDIT_DEFAULT_LINENO_FG, PrefData.colorNames[LINENO_FG_COLOR], sizeof(PrefData.colorNames[LINENO_FG_COLOR]), true},
-    {"cursorFgColor", "CursorFgColor", PREF_STRING, NEDIT_DEFAULT_CURSOR_FG, PrefData.colorNames[CURSOR_FG_COLOR], sizeof(PrefData.colorNames[CURSOR_FG_COLOR]), true},
-    {"tooltipBgColor", "TooltipBgColor", PREF_STRING, "LemonChiffon1", PrefData.tooltipBgColor, sizeof(PrefData.tooltipBgColor), false},
-    {"shell", "Shell", PREF_STRING, "DEFAULT", PrefData.shell, sizeof(PrefData.shell), true},
-    {"geometry", "Geometry", PREF_STRING, "", PrefData.geometry, sizeof(PrefData.geometry), false},
-    {"remapDeleteKey", "RemapDeleteKey", PREF_BOOLEAN, "False", &PrefData.mapDelete, nullptr, false},
-    {"stdOpenDialog", "StdOpenDialog", PREF_BOOLEAN, "False", &PrefData.stdOpenDialog, nullptr, false},
-    {"tagFile", "TagFile", PREF_STRING, "", PrefData.tagFile, sizeof(PrefData.tagFile), false},
-    {"wordDelimiters", "WordDelimiters", PREF_STRING, ".,/\\`'!|@#%^&*()-=+{}[]\":;<>?", PrefData.delimiters, sizeof(PrefData.delimiters), false},
-    {"serverName", "ServerName", PREF_STRING, "", PrefData.serverName, sizeof(PrefData.serverName), false},
-    {"maxPrevOpenFiles", "MaxPrevOpenFiles", PREF_INT, "30", &PrefData.maxPrevOpenFiles, nullptr, false},
-    {"bgMenuButton", "BGMenuButton", PREF_STRING, "~Shift~Ctrl~Meta~Alt<Btn3Down>", PrefData.bgMenuBtn, sizeof(PrefData.bgMenuBtn), false},
-    {"smartTags", "SmartTags", PREF_BOOLEAN, "True", &PrefData.smartTags, nullptr, true},
-    {"typingHidesPointer", "TypingHidesPointer", PREF_BOOLEAN, "False", &PrefData.typingHidesPointer, nullptr, false},
-    {"alwaysCheckRelativeTagsSpecs", "AlwaysCheckRelativeTagsSpecs", PREF_BOOLEAN, "True", &PrefData.alwaysCheckRelativeTagsSpecs, nullptr, false},
-    {"prefFileRead", "PrefFileRead", PREF_BOOLEAN, "False", &PrefData.prefFileRead, nullptr, true},
-    {"findReplaceUsesSelection", "FindReplaceUsesSelection", PREF_BOOLEAN, "False", &PrefData.findReplaceUsesSelection, nullptr, false},
-    {"overrideDefaultVirtualKeyBindings", "OverrideDefaultVirtualKeyBindings", PREF_ENUM, "Auto", &PrefData.virtKeyOverride, VirtKeyOverrideModes, false},
-    {"titleFormat", "TitleFormat", PREF_STRING, "{%c} [%s] %f (%S) - %d", PrefData.titleFormat, sizeof(PrefData.titleFormat), true},
-    {"undoModifiesSelection", "UndoModifiesSelection", PREF_BOOLEAN, "True", &PrefData.undoModifiesSelection, nullptr, false},
-    {"focusOnRaise", "FocusOnRaise", PREF_BOOLEAN, "False", &PrefData.focusOnRaise, nullptr, false},
-    {"forceOSConversion", "ForceOSConversion", PREF_BOOLEAN, "True", &PrefData.forceOSConversion, nullptr, false},
-    {"truncSubstitution", "TruncSubstitution", PREF_ENUM, "Fail", &PrefData.truncSubstitution, TruncSubstitutionModes, false},
-    {"honorSymlinks", "HonorSymlinks", PREF_BOOLEAN, "True", &PrefData.honorSymlinks, nullptr, false}};
-
-static XrmOptionDescRec OpTable[] = {
-    {(String) "-wrap", (String) ".autoWrap", XrmoptionNoArg, (XPointer) "Continuous"},
-    {(String) "-nowrap", (String) ".autoWrap", XrmoptionNoArg, (XPointer) "None"},
-    {(String) "-autowrap", (String) ".autoWrap", XrmoptionNoArg, (XPointer) "Newline"},
-    {(String) "-noautowrap", (String) ".autoWrap", XrmoptionNoArg, (XPointer) "None"},
-    {(String) "-autoindent", (String) ".autoIndent", XrmoptionNoArg, (XPointer) "Auto"},
-    {(String) "-noautoindent", (String) ".autoIndent", XrmoptionNoArg, (XPointer) "False"},
-    {(String) "-autosave", (String) ".autoSave", XrmoptionNoArg, (XPointer) "True"},
-    {(String) "-noautosave", (String) ".autoSave", XrmoptionNoArg, (XPointer) "False"},
-    {(String) "-rows", (String) ".textRows", XrmoptionSepArg, nullptr},
-    {(String) "-columns", (String) ".textCols", XrmoptionSepArg, nullptr},
-    {(String) "-tabs", (String) ".tabDistance", XrmoptionSepArg, nullptr},
-    {(String) "-font", (String) ".textFont", XrmoptionSepArg, nullptr},
-    {(String) "-fn", (String) ".textFont", XrmoptionSepArg, nullptr},
-    {(String) "-svrname", (String) ".serverName", XrmoptionSepArg, nullptr},
-};
-
-static const char HeaderText[] = "\
-! Preferences file for NEdit\n\
-! (User settings in X \"application defaults\" format)\n\
-!\n\
-! This file is overwritten by the \"Save Defaults...\" command in NEdit\n\
-! and serves only the interactively settable options presented in the NEdit\n\
-! \"Preferences\" menu.  To modify other options, such as key bindings, use\n\
-! the .Xdefaults file in your home directory (or the X resource\n\
-! specification method appropriate to your system).  The contents of this\n\
-! file can be moved into an X resource file, but since resources in this file\n\
-! override their corresponding X resources, either this file should be \n\
-! deleted or individual resource lines in the file should be deleted for the\n\
-! moved lines to take effect.\n";
-
 /* Module-global variable set when any preference changes (for asking the
    user about re-saving on exit) */
 bool PrefsHaveChanged = false;
@@ -794,117 +80,27 @@ bool PrefsHaveChanged = false;
    preferences on top of the defaults.  Contains name of file loaded */
 QString ImportedFile;
 
-static void translatePrefFormats(int convertOld, int fileVer);
-static void setIntPref(int *prefDataField, int newValue);
-static void setStringPref(char *prefDataField, const char *newValue);
+static void translatePrefFormats(bool convertOld, int fileVer);
 
-static bool stringReplaceEx(std::string *inString, const char *expr, const char *replaceWith, SearchType searchType, int replaceLen);
 static QStringList readExtensionList(const char **inPtr);
-static const char *getDefaultShell(void);
-static int caseFind(view::string_view inString, const char *expr);
-static int caseReplaceEx(std::string *inString, const char *expr, const char *replaceWith, int replaceLen);
+static QString getDefaultShell();
 static int loadLanguageModesString(const char *inString, int fileVer);
 static int loadLanguageModesStringEx(const std::string &string, int fileVer);
 static int modeError(LanguageMode *lm, const char *stringStart, const char *stoppedAt, const char *message);
-static int regexFind(view::string_view inString, const char *expr);
-static int regexReplaceEx(std::string *inString, const char *expr, const char *replaceWith);
-static int replaceMacroIfUnchanged(const char *oldText, const char *newStart, const char *newEnd);
-static std::string spliceStringEx(const std::string &intoString, view::string_view insertString, const char *atExpr);
-static QString WriteLanguageModesStringEx(void);
-static void migrateColorResources(XrmDatabase prefDB, XrmDatabase appDB);
+static QString WriteLanguageModesStringEx();
 
-static void updateMacroCmdsTo5dot5(void);
-static void updateMacroCmdsTo5dot6(void);
-static void updatePatternsTo5dot1(void);
-static void updatePatternsTo5dot2(void);
-static void updatePatternsTo5dot3(void);
-static void updatePatternsTo5dot4(void);
-static void updatePatternsTo5dot6(void);
-static void updateShellCmdsTo5dot3(void);
-static void updateShellCmdsTo5dot4(void);
+static Preferences g_Preferences;
 
-XrmDatabase CreateNEditPrefDB(int *argcInOut, char **argvInOut) {
+void RestoreNEditPrefs() {
 
-	// NOTE(eteran): mimic previous bahavior here of passing null when nedit.rc lookup fails
-	const QString filename = GetRCFileNameEx(NEDIT_RC);
-	if(filename.isNull()) {
-		return CreatePreferencesDatabase(nullptr, APP_NAME, OpTable, XtNumber(OpTable), (unsigned int *)argcInOut, argvInOut);
-	} else {
-		return CreatePreferencesDatabase(filename.toLatin1().data(), APP_NAME, OpTable, XtNumber(OpTable), (unsigned int *)argcInOut, argvInOut);
-	}
-}
+    g_Preferences.loadPreferences();
 
-void RestoreNEditPrefs(XrmDatabase prefDB, XrmDatabase appDB) {
-	int requiresConversion;
-	int major;       // The integral part of version number 
-	int minor;       // fractional part of version number 
-	int fileVer = 0; // Both combined into an integer 
-	int nparsed;
-
-	// Load preferences 
-	RestorePreferences(prefDB, appDB, APP_NAME, APP_CLASS, PrefDescrip, XtNumber(PrefDescrip));
-
-	/* If the preferences file was written by an older version of NEdit,
-	   warn the user that it will be converted. */
-	requiresConversion = PrefData.prefFileRead && PrefData.fileVersion[0] == '\0';
-	if (requiresConversion) {
-		updatePatternsTo5dot1();
-	}
-
-	if (PrefData.prefFileRead) {
-		if (PrefData.fileVersion[0] == '\0') {
-			fileVer = 0; // Pre-5.1 
-		} else {
-			/* Note: do not change the format of this.  Older executables
-			   need to read this field for forward compatability. */
-			nparsed = sscanf(PrefData.fileVersion, "%d.%d", &major, &minor);
-			if (nparsed >= 2) {
-				// Use OSF-style numbering scheme 
-				fileVer = major * 1000 + minor;
-			}
-		}
-	}
-
-	if (PrefData.prefFileRead && fileVer < 5002) {
-		updatePatternsTo5dot2();
-	}
-
-	if (PrefData.prefFileRead && fileVer < 5003) {
-		updateShellCmdsTo5dot3();
-		updatePatternsTo5dot3();
-	}
-
-	/* Note that we don't care about unreleased file versions.  Anyone
-	   who is running a CVS or alpha version of NEdit is resposnbile
-	   for managing the preferences file themselves.  Otherwise, it
-	   gets impossible to track the number of "in-between" file formats.
-	   We only do auto-upgrading for a real release. */
-
-	if (PrefData.prefFileRead && (fileVer < 5004)) {
-		migrateColorResources(prefDB, appDB);
-		updateShellCmdsTo5dot4();
-		updatePatternsTo5dot4();
-	}
-	if (PrefData.prefFileRead && (fileVer < 5005)) {
-		updateMacroCmdsTo5dot5();
-	}
-	if (PrefData.prefFileRead && (fileVer < 5006)) {
-		fprintf(stderr, "NEdit: Converting .nedit file to 5.6 version.\n"
-		                "    To keep, use Preferences -> Save Defaults\n");
-		updateMacroCmdsTo5dot6();
-		updatePatternsTo5dot6();
-	}
-	// Migrate colors if there's no config file yet 
-	if (!PrefData.prefFileRead) {
-		migrateColorResources(prefDB, appDB);
-	}
-
-	/* Do further parsing on resource types which RestorePreferences does
-	   not understand and reads as strings, to put them in the final form
-	   in which nedit stores and uses.  If the preferences file was
-	   written by an older version of NEdit, update regular expressions in
-	   highlight patterns to quote braces and use & instead of \0 */
-	translatePrefFormats(requiresConversion, fileVer);
+    /* Do further parsing on resource types which RestorePreferences does
+       not understand and reads as strings, to put them in the final form
+       in which nedit stores and uses.  If the preferences file was
+       written by an older version of NEdit, update regular expressions in
+       highlight patterns to quote braces and use & instead of \0 */
+    translatePrefFormats(false, 1000);
 }
 
 /*
@@ -922,51 +118,44 @@ void RestoreNEditPrefs(XrmDatabase prefDB, XrmDatabase appDB) {
 ** legal substitution character).  Macros, so far can not be automatically
 ** converted, unfortunately.
 */
-static void translatePrefFormats(int convertOld, int fileVer) {
-	XFontStruct *font;
+static void translatePrefFormats(bool convertOld, int fileVer) {
 
 	/* Parse the strings which represent types which are not decoded by
 	   the standard resource manager routines */
 
-	if (!TempStringPrefs.shellCmds.isNull()) {
-		LoadShellCmdsStringEx(TempStringPrefs.shellCmds.toStdString());
-		TempStringPrefs.shellCmds = QString();
+    if (!g_Preferences.shellCommands.isNull()) {
+        LoadShellCmdsStringEx(g_Preferences.shellCommands.toStdString());
 	}
-	if (!TempStringPrefs.macroCmds.isNull()) {
-		LoadMacroCmdsStringEx(TempStringPrefs.macroCmds.toStdString());
-		TempStringPrefs.macroCmds = QString();
+    if (!g_Preferences.macroCommands.isNull()) {
+        LoadMacroCmdsStringEx(g_Preferences.macroCommands.toStdString());
 	}
-	if (!TempStringPrefs.bgMenuCmds.isNull()) {
-		LoadBGMenuCmdsStringEx(TempStringPrefs.bgMenuCmds.toStdString());
-		TempStringPrefs.bgMenuCmds = QString();
+    if (!g_Preferences.bgMenuCommands.isNull()) {
+        LoadBGMenuCmdsStringEx(g_Preferences.bgMenuCommands.toStdString());
 	}
-	if (!TempStringPrefs.highlight.isNull()) {
-		LoadHighlightStringEx(TempStringPrefs.highlight.toStdString(), convertOld);
-		TempStringPrefs.highlight = QString();
+    if (!g_Preferences.highlightPatterns.isNull()) {
+        LoadHighlightStringEx(g_Preferences.highlightPatterns.toStdString(), convertOld);
 	}
-	if (!TempStringPrefs.styles.isNull()) {
-		LoadStylesStringEx(TempStringPrefs.styles.toStdString());
-		TempStringPrefs.styles = QString();
+    if (!g_Preferences.styles.isNull()) {
+        LoadStylesStringEx(g_Preferences.styles.toStdString());
 	}
-	if (!TempStringPrefs.language.isNull()) {
-		loadLanguageModesStringEx(TempStringPrefs.language.toStdString(), fileVer);
-		TempStringPrefs.language = QString();
+    if (!g_Preferences.languageModes.isNull()) {
+        loadLanguageModesStringEx(g_Preferences.languageModes.toStdString(), fileVer);
 	}
-	if (!TempStringPrefs.smartIndent.isNull()) {
-		LoadSmartIndentStringEx(TempStringPrefs.smartIndent);
-		TempStringPrefs.smartIndent = QString();
+    if (!g_Preferences.smartIndentInit.isNull()) {
+        LoadSmartIndentStringEx(g_Preferences.smartIndentInit);
 	}
-	if (!TempStringPrefs.smartIndentCommon.isNull()) {
-		LoadSmartIndentCommonStringEx(TempStringPrefs.smartIndentCommon.toStdString());
-		TempStringPrefs.smartIndentCommon = QString();
+    if (!g_Preferences.smartIndentInitCommon.isNull()) {
+        LoadSmartIndentCommonStringEx(g_Preferences.smartIndentInitCommon.toStdString());
 	}
 
 	// translate the font names into fontLists suitable for the text widget 
-	font = XLoadQueryFont(TheDisplay, PrefData.fontString);
-	PrefData.fontList = font == nullptr ? nullptr : XmFontListCreate(font, XmSTRING_DEFAULT_CHARSET);
-	PrefData.boldFontStruct = XLoadQueryFont(TheDisplay, PrefData.boldFontString);
-	PrefData.italicFontStruct = XLoadQueryFont(TheDisplay, PrefData.italicFontString);
-	PrefData.boldItalicFontStruct = XLoadQueryFont(TheDisplay, PrefData.boldItalicFontString);
+    g_Preferences.boldFontStruct.fromString(g_Preferences.boldHighlightFont);
+    g_Preferences.italicFontStruct.fromString(g_Preferences.italicHighlightFont);
+    g_Preferences.boldItalicFontStruct.fromString(g_Preferences.boldItalicHighlightFont);
+
+    g_Preferences.boldFontStruct.setStyleStrategy(QFont::ForceIntegerMetrics);
+    g_Preferences.italicFontStruct.setStyleStrategy(QFont::ForceIntegerMetrics);
+    g_Preferences.boldItalicFontStruct.setStyleStrategy(QFont::ForceIntegerMetrics);
 
 	/*
 	**  The default set for the comand shell in PrefDescrip ("DEFAULT") is
@@ -974,40 +163,39 @@ static void translatePrefFormats(int convertOld, int fileVer) {
 	**  (or whatever is implemented in getDefaultShell()). We put the login
 	**  shell's name in PrefData here.
 	*/
-	if (strcmp(PrefData.shell, "DEFAULT") == 0) {
-		strncpy(PrefData.shell, getDefaultShell(), MAXPATHLEN);
-		PrefData.shell[MAXPATHLEN] = '\0';
+    if (g_Preferences.shell == QLatin1String("DEFAULT")) {
+        g_Preferences.shell = getDefaultShell();
 	}
 
 	/* For compatability with older (4.0.3 and before) versions, the autoWrap
 	   and autoIndent resources can accept values of True and False.  Translate
 	   them into acceptable wrap and indent styles */
-	if (PrefData.wrapStyle == 3)
-		PrefData.wrapStyle = CONTINUOUS_WRAP;
-	if (PrefData.wrapStyle == 4)
-		PrefData.wrapStyle = NO_WRAP;
-	if (PrefData.autoIndent == 3)
-		PrefData.autoIndent = AUTO_INDENT;
-	if (PrefData.autoIndent == 4)
-		PrefData.autoIndent = NO_AUTO_INDENT;
+    if (g_Preferences.autoWrap== 3)
+        g_Preferences.autoWrap = CONTINUOUS_WRAP;
+    if (g_Preferences.autoWrap == 4)
+        g_Preferences.autoWrap = NO_WRAP;
+
+    if (g_Preferences.autoIndent == 3)
+        g_Preferences.autoIndent = AUTO_INDENT;
+    if (g_Preferences.autoIndent == 4)
+        g_Preferences.autoIndent = NO_AUTO_INDENT;
 
 	/* setup language mode dependent info of user menus (to increase
 	   performance when switching between documents of different
 	   language modes) */
-	SetupUserMenuInfo();
+    SetupUserMenuInfo();
+
 }
 
 void SaveNEditPrefsEx(QWidget *parent, bool quietly) {
 
-    QString prefFileName = GetRCFileNameEx(NEDIT_RC);
+    QString prefFileName = Preferences::configFile();
     if(prefFileName.isNull()) {
         QMessageBox::warning(parent, QLatin1String("Error saving Preferences"), QLatin1String("Unable to save preferences: Cannot determine filename."));
         return;
     }
 
     if (!quietly) {
-
-
         int resp = QMessageBox::information(parent, QLatin1String("Save Preferences"),
             ImportedFile.isNull() ? QString(QLatin1String("Default preferences will be saved in the file:\n%1\nNEdit automatically loads this file\neach time it is started.")).arg(prefFileName)
                                   : QString(QLatin1String("Default preferences will be saved in the file:\n%1\nSAVING WILL INCORPORATE SETTINGS\nFROM FILE: %2")).arg(prefFileName).arg(ImportedFile),
@@ -1020,21 +208,17 @@ void SaveNEditPrefsEx(QWidget *parent, bool quietly) {
         }
     }
 
-    /*  Write the more dynamic settings into TempStringPrefs.
-        These locations are set in PrefDescrip, so this is where
-        SavePreferences() will look for them.  */
+    g_Preferences.fileVersion           = QLatin1String("1.0");
+    g_Preferences.shellCommands         = WriteShellCmdsStringEx();
+    g_Preferences.macroCommands         = WriteMacroCmdsStringEx();
+    g_Preferences.bgMenuCommands        = WriteBGMenuCmdsStringEx();
+    g_Preferences.highlightPatterns     = WriteHighlightStringEx();
+    g_Preferences.languageModes         = WriteLanguageModesStringEx();
+    g_Preferences.styles                = WriteStylesStringEx();
+    g_Preferences.smartIndentInit       = WriteSmartIndentStringEx();
+    g_Preferences.smartIndentInitCommon = WriteSmartIndentCommonStringEx();
 
-    TempStringPrefs.shellCmds         = WriteShellCmdsStringEx();
-    TempStringPrefs.macroCmds         = WriteMacroCmdsStringEx();
-    TempStringPrefs.bgMenuCmds        = WriteBGMenuCmdsStringEx();
-    TempStringPrefs.highlight         = WriteHighlightStringEx();
-    TempStringPrefs.language          = WriteLanguageModesStringEx();
-    TempStringPrefs.styles            = WriteStylesStringEx();
-    TempStringPrefs.smartIndent       = WriteSmartIndentStringEx();
-    TempStringPrefs.smartIndentCommon = WriteSmartIndentCommonStringEx();
-    strcpy(PrefData.fileVersion, PREF_FILE_VERSION);
-
-    if (!SavePreferences(QX11Info::display(), prefFileName.toLatin1().data(), HeaderText, PrefDescrip, XtNumber(PrefDescrip))) {
+    if (!g_Preferences.savePreferences()) {
         QMessageBox::warning(parent, QLatin1String("Save Preferences"), QString(QLatin1String("Unable to save preferences in %1")).arg(prefFileName));
     }
 
@@ -1046,346 +230,456 @@ void SaveNEditPrefsEx(QWidget *parent, bool quietly) {
 ** derived from defaults, the .nedit file, and X resources.
 */
 void ImportPrefFile(const char *filename, int convertOld) {
-	XrmDatabase db;
-
-	QString fileString = ReadAnyTextFileEx(filename, False);
-	if (!fileString.isNull()) {
-		db = XrmGetStringDatabase(fileString.toLatin1().data());
-		OverlayPreferences(db, APP_NAME, APP_CLASS, PrefDescrip, XtNumber(PrefDescrip));
-		translatePrefFormats(convertOld, -1);
-        ImportedFile = QLatin1String(filename);
-	} else {
-		fprintf(stderr, "Could not read additional preferences file: %s\n", filename);
-	}
+    Q_UNUSED(filename);
+    Q_UNUSED(convertOld);
+    // TODO(eteran): implement this
+    qDebug("Not Implemented, please report");
 }
 
 void SetPrefOpenInTab(int state) {
-	setIntPref(&PrefData.openInTab, state);
+    if(g_Preferences.openInTab != state) {
+        PrefsHaveChanged = true;
+    }
+    g_Preferences.openInTab = state;
 }
 
 int GetPrefOpenInTab() {
-	return PrefData.openInTab;
+    return g_Preferences.openInTab;
 }
 
 void SetPrefWrap(int state) {
-	setIntPref(&PrefData.wrapStyle, state);
+    if(g_Preferences.autoWrap != state) {
+        PrefsHaveChanged = true;
+    }
+    g_Preferences.autoWrap = state;
 }
 
 int GetPrefWrap(int langMode) {
-	if (langMode == PLAIN_LANGUAGE_MODE || LanguageModes[langMode]->wrapStyle == DEFAULT_WRAP)
-		return PrefData.wrapStyle;
+    if (langMode == PLAIN_LANGUAGE_MODE || LanguageModes[langMode]->wrapStyle == DEFAULT_WRAP) {
+        return g_Preferences.autoWrap;
+    }
+
 	return LanguageModes[langMode]->wrapStyle;
 }
 
 void SetPrefWrapMargin(int margin) {
-	setIntPref(&PrefData.wrapMargin, margin);
+    if(g_Preferences.wrapMargin != margin) {
+        PrefsHaveChanged = true;
+    }
+    g_Preferences.wrapMargin = margin;
 }
 
 int GetPrefWrapMargin() {
-	return PrefData.wrapMargin;
+    return g_Preferences.wrapMargin;
 }
 
 void SetPrefSearch(SearchType searchType) {
-	setIntPref(&PrefData.searchMethod, searchType);
+    if(g_Preferences.searchMethod != searchType) {
+        PrefsHaveChanged = true;
+    }
+    g_Preferences.searchMethod = searchType;
 }
 
 SearchType GetPrefSearch() {
-	return static_cast<SearchType>(PrefData.searchMethod);
+    return static_cast<SearchType>(g_Preferences.searchMethod);
 }
 
 #ifdef REPLACE_SCOPE
 void SetPrefReplaceDefScope(int scope) {
-	setIntPref(&PrefData.replaceDefScope, scope);
+    if(g_Preferences.replaceDefaultScope != scope) {
+        PrefsHaveChanged = true;
+    }
+    g_Preferences.replaceDefaultScope = scope;
 }
 
 int GetPrefReplaceDefScope() {
-	return PrefData.replaceDefScope;
+    return g_Preferences.replaceDefaultScope;
 }
 #endif
 
 void SetPrefAutoIndent(int state) {
-	setIntPref(&PrefData.autoIndent, state);
+    if(g_Preferences.autoIndent != state) {
+        PrefsHaveChanged = true;
+    }
+    g_Preferences.autoIndent = state;
 }
 
 IndentStyle GetPrefAutoIndent(int langMode) {
-	if (langMode == PLAIN_LANGUAGE_MODE || LanguageModes[langMode]->indentStyle == DEFAULT_INDENT)
-        return static_cast<IndentStyle>(PrefData.autoIndent);
+    if (langMode == PLAIN_LANGUAGE_MODE || LanguageModes[langMode]->indentStyle == DEFAULT_INDENT) {
+        return static_cast<IndentStyle>(g_Preferences.autoIndent);
+    }
+
 	return LanguageModes[langMode]->indentStyle;
 }
 
 void SetPrefAutoSave(int state) {
-	setIntPref(&PrefData.autoSave, state);
+    if(g_Preferences.autoSave != state) {
+        PrefsHaveChanged = true;
+    }
+    g_Preferences.autoSave = state;
 }
 
 int GetPrefAutoSave() {
-	return PrefData.autoSave;
+    return g_Preferences.autoSave;
 }
 
 void SetPrefSaveOldVersion(int state) {
-	setIntPref(&PrefData.saveOldVersion, state);
+    if(g_Preferences.saveOldVersion != state) {
+        PrefsHaveChanged = true;
+    }
+    g_Preferences.saveOldVersion = state;
 }
 
 int GetPrefSaveOldVersion() {
-	return PrefData.saveOldVersion;
+    return g_Preferences.saveOldVersion;
 }
 
 void SetPrefSearchDlogs(int state) {
-	setIntPref(&PrefData.searchDlogs, state);
+    if(g_Preferences.searchDialogs != state) {
+        PrefsHaveChanged = true;
+    }
+    g_Preferences.searchDialogs = state;
 }
 
 int GetPrefSearchDlogs() {
-	return PrefData.searchDlogs;
+    return g_Preferences.searchDialogs;
 }
 
 void SetPrefBeepOnSearchWrap(int state) {
-	setIntPref(&PrefData.searchWrapBeep, state);
+    if(g_Preferences.beepOnSearchWrap != state) {
+        PrefsHaveChanged = true;
+    }
+    g_Preferences.beepOnSearchWrap = state;
 }
 
 int GetPrefBeepOnSearchWrap() {
-	return PrefData.searchWrapBeep;
+    return g_Preferences.beepOnSearchWrap;
 }
 
 void SetPrefKeepSearchDlogs(int state) {
-	setIntPref(&PrefData.keepSearchDlogs, state);
+    if(g_Preferences.retainSearchDialogs != state) {
+        PrefsHaveChanged = true;
+    }
+    g_Preferences.retainSearchDialogs = state;
 }
 
 int GetPrefKeepSearchDlogs() {
-	return PrefData.keepSearchDlogs;
+    return g_Preferences.retainSearchDialogs;
 }
 
 void SetPrefSearchWraps(int state) {
-	setIntPref(&PrefData.searchWraps, state);
-}
-
-int GetPrefStickyCaseSenseBtn() {
-	return PrefData.stickyCaseSenseBtn;
+    if(g_Preferences.searchWraps != state) {
+        PrefsHaveChanged = true;
+    }
+    g_Preferences.searchWraps = state;
 }
 
 int GetPrefSearchWraps() {
-	return PrefData.searchWraps;
+    return g_Preferences.searchWraps;
+}
+
+int GetPrefStickyCaseSenseBtn() {
+    return g_Preferences.stickyCaseSenseButton;
 }
 
 void SetPrefStatsLine(int state) {
-	setIntPref(&PrefData.statsLine, state);
+    if(g_Preferences.statisticsLine != state) {
+        PrefsHaveChanged = true;
+    }
+    g_Preferences.statisticsLine = state;
 }
 
 int GetPrefStatsLine() {
-	return PrefData.statsLine;
+    return g_Preferences.statisticsLine;
 }
 
 void SetPrefISearchLine(int state) {
-	setIntPref(&PrefData.iSearchLine, state);
+    if(g_Preferences.iSearchLine != state) {
+        PrefsHaveChanged = true;
+    }
+    g_Preferences.iSearchLine = state;
 }
 
 int GetPrefISearchLine() {
-	return PrefData.iSearchLine;
+    return g_Preferences.iSearchLine;
 }
 
 void SetPrefSortTabs(int state) {
-	setIntPref(&PrefData.sortTabs, state);
+    if(g_Preferences.sortTabs != state) {
+        PrefsHaveChanged = true;
+    }
+    g_Preferences.sortTabs = state;
 }
 
 int GetPrefSortTabs() {
-	return PrefData.sortTabs;
+    return g_Preferences.sortTabs;
 }
 
 void SetPrefTabBar(int state) {
-	setIntPref(&PrefData.tabBar, state);
+    if(g_Preferences.tabBar != state) {
+        PrefsHaveChanged = true;
+    }
+    g_Preferences.tabBar = state;
 }
 
 int GetPrefTabBar() {
-	return PrefData.tabBar;
+    return g_Preferences.tabBar;
 }
 
 void SetPrefTabBarHideOne(int state) {
-	setIntPref(&PrefData.tabBarHideOne, state);
+    if(g_Preferences.tabBarHideOne != state) {
+        PrefsHaveChanged = true;
+    }
+    g_Preferences.tabBarHideOne = state;
 }
 
 int GetPrefTabBarHideOne() {
-	return PrefData.tabBarHideOne;
+    return g_Preferences.tabBarHideOne;
 }
 
 void SetPrefGlobalTabNavigate(int state) {
-	setIntPref(&PrefData.globalTabNavigate, state);
+    if(g_Preferences.globalTabNavigate != state) {
+        PrefsHaveChanged = true;
+    }
+    g_Preferences.globalTabNavigate = state;
 }
 
 int GetPrefGlobalTabNavigate() {
-	return PrefData.globalTabNavigate;
+    return g_Preferences.globalTabNavigate;
 }
 
 void SetPrefToolTips(int state) {
-	setIntPref(&PrefData.toolTips, state);
+    if(g_Preferences.toolTips != state) {
+        PrefsHaveChanged = true;
+    }
+    g_Preferences.toolTips = state;
 }
 
 int GetPrefToolTips() {
-	return PrefData.toolTips;
+    return g_Preferences.toolTips;
 }
 
 void SetPrefLineNums(int state) {
-	setIntPref(&PrefData.lineNums, state);
+    if(g_Preferences.lineNumbers != state) {
+        PrefsHaveChanged = true;
+    }
+    g_Preferences.lineNumbers = state;
 }
 
 int GetPrefLineNums() {
-	return PrefData.lineNums;
+    return g_Preferences.lineNumbers;
 }
 
 void SetPrefShowPathInWindowsMenu(int state) {
-	setIntPref(&PrefData.pathInWindowsMenu, state);
+    if(g_Preferences.pathInWindowsMenu != state) {
+        PrefsHaveChanged = true;
+    }
+    g_Preferences.pathInWindowsMenu = state;
 }
 
 int GetPrefShowPathInWindowsMenu() {
-	return PrefData.pathInWindowsMenu;
+    return g_Preferences.pathInWindowsMenu;
 }
 
 void SetPrefWarnFileMods(int state) {
-	setIntPref(&PrefData.warnFileMods, state);
+    if(g_Preferences.warnFileMods != state) {
+        PrefsHaveChanged = true;
+    }
+    g_Preferences.warnFileMods = state;
 }
 
 int GetPrefWarnFileMods() {
-	return PrefData.warnFileMods;
+    return g_Preferences.warnFileMods;
 }
 
 void SetPrefWarnRealFileMods(int state) {
-	setIntPref(&PrefData.warnRealFileMods, state);
+    if(g_Preferences.warnRealFileMods != state) {
+        PrefsHaveChanged = true;
+    }
+    g_Preferences.warnRealFileMods = state;
 }
 
 int GetPrefWarnRealFileMods() {
-	return PrefData.warnRealFileMods;
+    return g_Preferences.warnRealFileMods;
 }
 
 void SetPrefWarnExit(int state) {
-	setIntPref(&PrefData.warnExit, state);
+    if(g_Preferences.warnExit != state) {
+        PrefsHaveChanged = true;
+    }
+    g_Preferences.warnExit = state;
 }
 
 int GetPrefWarnExit() {
-	return PrefData.warnExit;
+    return g_Preferences.warnExit;
 }
 
-void SetPrefv(int state) {
-	setIntPref(&PrefData.findReplaceUsesSelection, state);
+void SetPrefFindReplaceUsesSelection(int state) {
+    if(g_Preferences.findReplaceUsesSelection != state) {
+        PrefsHaveChanged = true;
+    }
+    g_Preferences.findReplaceUsesSelection = state;
 }
 
 int GetPrefFindReplaceUsesSelection() {
-	return PrefData.findReplaceUsesSelection;
+    return g_Preferences.findReplaceUsesSelection;
 }
 
+// Advanced
 int GetPrefMapDelete() {
-	return PrefData.mapDelete;
+    return g_Preferences.remapDeleteKey;
 }
 
+// Advanced
 int GetPrefStdOpenDialog() {
-	return PrefData.stdOpenDialog;
+    return g_Preferences.stdOpenDialog;
 }
 
 void SetPrefRows(int nRows) {
-	setIntPref(&PrefData.textRows, nRows);
+    if(g_Preferences.textRows != nRows) {
+        PrefsHaveChanged = true;
+    }
+    g_Preferences.textRows = nRows;
 }
 
 int GetPrefRows() {
-	return PrefData.textRows;
+    return g_Preferences.textRows;
 }
 
 void SetPrefCols(int nCols) {
-	setIntPref(&PrefData.textCols, nCols);
+    if(g_Preferences.textCols != nCols) {
+        PrefsHaveChanged = true;
+    }
+    g_Preferences.textCols = nCols;
 }
 
 int GetPrefCols() {
-	return PrefData.textCols;
+    return g_Preferences.textCols;
 }
 
 void SetPrefTabDist(int tabDist) {
-	setIntPref(&PrefData.tabDist, tabDist);
+    if(g_Preferences.tabDistance != tabDist) {
+        PrefsHaveChanged = true;
+    }
+    g_Preferences.tabDistance = tabDist;
 }
 
 int GetPrefTabDist(int langMode) {
 	int tabDist;
-	if (langMode == PLAIN_LANGUAGE_MODE || LanguageModes[langMode]->tabDist == DEFAULT_TAB_DIST) {
-		tabDist = PrefData.tabDist;
+
+    if (langMode == PLAIN_LANGUAGE_MODE || LanguageModes[langMode]->tabDist == DEFAULT_TAB_DIST) {
+        tabDist = g_Preferences.tabDistance;
 	} else {
 		tabDist = LanguageModes[langMode]->tabDist;
 	}
+
 	/* Make sure that the tab distance is in range (garbage may have
 	   been entered via the command line or the X resources, causing
 	   errors later on, like division by zero). */
-	if (tabDist <= 0)
+    if (tabDist <= 0) {
 		return 1;
-	if (tabDist > MAX_EXP_CHAR_LEN)
+    }
+
+    if (tabDist > MAX_EXP_CHAR_LEN) {
 		return MAX_EXP_CHAR_LEN;
+    }
+
 	return tabDist;
 }
 
 void SetPrefEmTabDist(int tabDist) {
-	setIntPref(&PrefData.emTabDist, tabDist);
+    if(g_Preferences.emulateTabs != tabDist) {
+        PrefsHaveChanged = true;
+    }
+    g_Preferences.emulateTabs = tabDist;
 }
 
 int GetPrefEmTabDist(int langMode) {
-	if (langMode == PLAIN_LANGUAGE_MODE || LanguageModes[langMode]->emTabDist == DEFAULT_EM_TAB_DIST)
-		return PrefData.emTabDist;
+    if (langMode == PLAIN_LANGUAGE_MODE || LanguageModes[langMode]->emTabDist == DEFAULT_EM_TAB_DIST) {
+        return g_Preferences.emulateTabs;
+    }
+
 	return LanguageModes[langMode]->emTabDist;
 }
 
 void SetPrefInsertTabs(int state) {
-	setIntPref(&PrefData.insertTabs, state);
+    if(g_Preferences.insertTabs != state) {
+        PrefsHaveChanged = true;
+    }
+    g_Preferences.insertTabs = state;
 }
 
 int GetPrefInsertTabs() {
-	return PrefData.insertTabs;
+    return g_Preferences.insertTabs;
 }
 
 void SetPrefShowMatching(int state) {
-	setIntPref(&PrefData.showMatchingStyle, state);
+    if(g_Preferences.showMatching != state) {
+        PrefsHaveChanged = true;
+    }
+    g_Preferences.showMatching = state;
 }
 
 int GetPrefShowMatching() {
-	/*
-	 * For backwards compatibility with pre-5.2 versions, the boolean
-	 * False/True matching behavior is converted to NO_FLASH/FLASH_DELIMIT.
-	 */
-	if (PrefData.showMatchingStyle >= N_SHOW_MATCHING_STYLES)
-		PrefData.showMatchingStyle -= N_SHOW_MATCHING_STYLES;
-	return PrefData.showMatchingStyle;
+    return g_Preferences.showMatching;
 }
 
 void SetPrefMatchSyntaxBased(int state) {
-	setIntPref(&PrefData.matchSyntaxBased, state);
+    if(g_Preferences.matchSyntaxBased != state) {
+        PrefsHaveChanged = true;
+    }
+    g_Preferences.matchSyntaxBased = state;
 }
 
 int GetPrefMatchSyntaxBased() {
-	return PrefData.matchSyntaxBased;
+    return g_Preferences.matchSyntaxBased;
 }
 
 void SetPrefHighlightSyntax(bool state) {
-	setIntPref(&PrefData.highlightSyntax, state);
+    if(g_Preferences.highlightSyntax != state) {
+        PrefsHaveChanged = true;
+    }
+    g_Preferences.highlightSyntax = state;
 }
 
 bool GetPrefHighlightSyntax() {
-	return PrefData.highlightSyntax;
+    return g_Preferences.highlightSyntax;
 }
 
 void SetPrefBacklightChars(int state) {
-	setIntPref(&PrefData.backlightChars, state);
+    if(g_Preferences.backlightChars != state) {
+        PrefsHaveChanged = true;
+    }
+    g_Preferences.backlightChars = state;
 }
 
 int GetPrefBacklightChars() {
-	return PrefData.backlightChars;
+    return g_Preferences.backlightChars;
 }
 
-char *GetPrefBacklightCharTypes() {
-	return PrefData.backlightCharTypes;
+QString GetPrefBacklightCharTypes() {
+    return g_Preferences.backlightCharTypes;
 }
 
 void SetPrefRepositionDialogs(int state) {
-	setIntPref(&PrefData.repositionDialogs, state);
+    if(g_Preferences.repositionDialogs != state) {
+        PrefsHaveChanged = true;
+    }
+    g_Preferences.repositionDialogs = state;
 }
 
 int GetPrefRepositionDialogs() {
-	return PrefData.repositionDialogs;
+    return g_Preferences.repositionDialogs;
 }
 
 void SetPrefAutoScroll(int state) {
-	int margin = state ? PrefData.autoScrollVPadding : 0;
+    if(g_Preferences.autoScroll != state) {
+        PrefsHaveChanged = true;
+    }
 
-	setIntPref(&PrefData.autoScroll, state);
+    const int margin = state ? g_Preferences.autoScrollVPadding : 0;
+
+    g_Preferences.autoScroll = state;
 	
     for(DocumentWidget *document : MainWindow::allDocuments()) {
         document->SetAutoScroll(margin);
@@ -1393,55 +687,68 @@ void SetPrefAutoScroll(int state) {
 }
 
 int GetPrefAutoScroll() {
-	return PrefData.autoScroll;
+    return g_Preferences.autoScroll;
 }
 
 int GetVerticalAutoScroll() {
-	return PrefData.autoScroll ? PrefData.autoScrollVPadding : 0;
+    return g_Preferences.autoScroll ? g_Preferences.autoScrollVPadding : 0;
 }
 
 void SetPrefAppendLF(int state) {
-	setIntPref(&PrefData.appendLF, state);
+    if(g_Preferences.appendLF != state) {
+        PrefsHaveChanged = true;
+    }
+    g_Preferences.appendLF = state;
 }
 
 int GetPrefAppendLF() {
-	return PrefData.appendLF;
+    return g_Preferences.appendLF;
 }
 
 void SetPrefSortOpenPrevMenu(int state) {
-	setIntPref(&PrefData.sortOpenPrevMenu, state);
+    if(g_Preferences.sortOpenPrevMenu != state) {
+        PrefsHaveChanged = true;
+    }
+    g_Preferences.sortOpenPrevMenu = state;
 }
 
 int GetPrefSortOpenPrevMenu() {
-	return PrefData.sortOpenPrevMenu;
+    return g_Preferences.sortOpenPrevMenu;
 }
 
-char *GetPrefTagFile() {
-	return PrefData.tagFile;
+QString GetPrefTagFile() {
+    return g_Preferences.tagFile;
 }
 
 void SetPrefSmartTags(int state) {
-	setIntPref(&PrefData.smartTags, state);
+    if(g_Preferences.smartTags != state) {
+        PrefsHaveChanged = true;
+    }
+    g_Preferences.smartTags = state;
 }
 
 int GetPrefSmartTags() {
-	return PrefData.smartTags;
+    return g_Preferences.smartTags;
 }
 
+// Advanced
 int GetPrefAlwaysCheckRelTagsSpecs() {
-	return PrefData.alwaysCheckRelativeTagsSpecs;
+    return g_Preferences.alwaysCheckRelativeTagsSpecs;
 }
 
 QString GetPrefDelimiters() {
-	return QLatin1String(PrefData.delimiters);
+    return g_Preferences.wordDelimiters;
 }
 
-char *GetPrefColorName(int index) {
-	return PrefData.colorNames[index];
+QString GetPrefColorName(int index) {
+    return g_Preferences.colors[index];
 }
 
-void SetPrefColorName(int index, const char *name) {
-	setStringPref(PrefData.colorNames[index], name);
+void SetPrefColorName(int index, const QString &name) {
+    if(g_Preferences.colors[index] != name) {
+        PrefsHaveChanged = true;
+    }
+    g_Preferences.colors[index] = name;
 }
 
 /*
@@ -1450,134 +757,148 @@ void SetPrefColorName(int index, const char *name) {
 ** time the default font is re-set.  See note on SetFontByName in window.c
 ** for more information.
 */
-void SetPrefFont(char *fontName) {
-	XFontStruct *font;
-
-	setStringPref(PrefData.fontString, fontName);
-	font = XLoadQueryFont(TheDisplay, fontName);
-	PrefData.fontList = font == nullptr ? nullptr : XmFontListCreate(font, XmSTRING_DEFAULT_CHARSET);
+void SetPrefFont(const QString &fontName) {
+    if(g_Preferences.textFont != fontName) {
+        PrefsHaveChanged = true;
+    }
+    g_Preferences.textFont = fontName;
 }
 
-void SetPrefBoldFont(char *fontName) {
-	setStringPref(PrefData.boldFontString, fontName);
-	PrefData.boldFontStruct = XLoadQueryFont(TheDisplay, fontName);
+void SetPrefBoldFont(const QString &fontName) {
+    if(g_Preferences.boldHighlightFont != fontName) {
+        PrefsHaveChanged = true;
+    }
+    g_Preferences.boldHighlightFont = fontName;
+    g_Preferences.boldFontStruct.fromString(fontName);
+    g_Preferences.boldFontStruct.setStyleStrategy(QFont::ForceIntegerMetrics);
 }
 
-void SetPrefItalicFont(char *fontName) {
-	setStringPref(PrefData.italicFontString, fontName);
-	PrefData.italicFontStruct = XLoadQueryFont(TheDisplay, fontName);
+void SetPrefItalicFont(const QString &fontName) {
+    if(g_Preferences.italicHighlightFont != fontName) {
+        PrefsHaveChanged = true;
+    }
+    g_Preferences.italicHighlightFont = fontName;
+    g_Preferences.italicFontStruct.fromString(fontName);
+    g_Preferences.italicFontStruct.setStyleStrategy(QFont::ForceIntegerMetrics);
 }
-void SetPrefBoldItalicFont(char *fontName) {
-	setStringPref(PrefData.boldItalicFontString, fontName);
-	PrefData.boldItalicFontStruct = XLoadQueryFont(TheDisplay, fontName);
+void SetPrefBoldItalicFont(const QString &fontName) {
+    if(g_Preferences.boldItalicHighlightFont != fontName) {
+        PrefsHaveChanged = true;
+    }
+    g_Preferences.boldItalicHighlightFont = fontName;
+    g_Preferences.boldItalicFontStruct.fromString(fontName);
+    g_Preferences.boldItalicFontStruct.setStyleStrategy(QFont::ForceIntegerMetrics);
 }
 
 QString GetPrefFontName() {
-	return QLatin1String(PrefData.fontString);
+    return g_Preferences.textFont;
 }
 
 QString GetPrefBoldFontName() {
-	return QLatin1String(PrefData.boldFontString);
+    return g_Preferences.boldHighlightFont;
 }
 
 QString GetPrefItalicFontName() {
-	return QLatin1String(PrefData.italicFontString);
+    return g_Preferences.italicHighlightFont;
 }
 
 QString GetPrefBoldItalicFontName() {
-	return QLatin1String(PrefData.boldItalicFontString);
+    return g_Preferences.boldItalicHighlightFont;
 }
 
-XmFontList GetPrefFontList() {
-	return PrefData.fontList;
+QFont GetPrefBoldFont() {
+    return g_Preferences.boldFontStruct;
 }
 
-XFontStruct *GetPrefBoldFont() {
-	return PrefData.boldFontStruct;
+QFont GetPrefItalicFont() {
+    return g_Preferences.italicFontStruct;
 }
 
-XFontStruct *GetPrefItalicFont() {
-	return PrefData.italicFontStruct;
+QFont GetPrefBoldItalicFont() {
+    return g_Preferences.boldItalicFontStruct;
 }
 
-XFontStruct *GetPrefBoldItalicFont() {
-	return PrefData.boldItalicFontStruct;
+QString GetPrefHelpFontName(int index) {
+    return g_Preferences.helpFonts[index];
 }
 
-char *GetPrefHelpFontName(int index) {
-	return PrefData.helpFontNames[index];
+QString GetPrefHelpLinkColor() {
+    return g_Preferences.helpLinkColor;
 }
 
-char *GetPrefHelpLinkColor() {
-	return PrefData.helpLinkColor;
+QString GetPrefTooltipBgColor() {
+    return g_Preferences.tooltipBgColor;
 }
 
-char *GetPrefTooltipBgColor() {
-	return PrefData.tooltipBgColor;
+void SetPrefShell(const QString &shell) {
+    if(g_Preferences.shell != shell) {
+        PrefsHaveChanged = true;
+    }
+    g_Preferences.shell = shell;
 }
 
-void SetPrefShell(const char *shell) {
-	setStringPref(PrefData.shell, shell);
+QString GetPrefShell() {
+    return g_Preferences.shell;
 }
 
-const char *GetPrefShell() {
-	return PrefData.shell;
+QString GetPrefGeometry() {
+    return g_Preferences.geometry;
 }
 
-char *GetPrefGeometry() {
-	return PrefData.geometry;
+QString GetPrefServerName() {
+    return g_Preferences.serverName;
 }
 
-char *GetPrefServerName() {
-	return PrefData.serverName;
-}
-
-char *GetPrefBGMenuBtn() {
-	return PrefData.bgMenuBtn;
+QString GetPrefBGMenuBtn() {
+    return g_Preferences.bgMenuButton;
 }
 
 int GetPrefMaxPrevOpenFiles() {
-	return PrefData.maxPrevOpenFiles;
+    return g_Preferences.maxPrevOpenFiles;
 }
 
 int GetPrefTypingHidesPointer() {
-	return (PrefData.typingHidesPointer);
+    return g_Preferences.typingHidesPointer;
 }
 
-void SetPrefTitleFormat(const char *format) {
-	setStringPref(PrefData.titleFormat, format);
+void SetPrefTitleFormat(const QString &format) {
+    if(g_Preferences.titleFormat != format) {
+        PrefsHaveChanged = true;
+    }
+
+    g_Preferences.titleFormat = format;
 
     // update all windows
     for(MainWindow *window : MainWindow::allWindows()) {
         window->UpdateWindowTitle(window->currentDocument());
 	}
 }
-const char *GetPrefTitleFormat() {
-	return PrefData.titleFormat;
+QString GetPrefTitleFormat() {
+    return g_Preferences.titleFormat;
 }
 
 bool GetPrefUndoModifiesSelection() {
-	return PrefData.undoModifiesSelection;
+    return g_Preferences.undoModifiesSelection;
 }
 
 bool GetPrefFocusOnRaise() {
-	return PrefData.focusOnRaise;
+    return g_Preferences.focusOnRaise;
 }
 
 bool GetPrefForceOSConversion() {
-	return PrefData.forceOSConversion;
+    return g_Preferences.forceOSConversion;
 }
 
 bool GetPrefHonorSymlinks() {
-	return PrefData.honorSymlinks;
+    return g_Preferences.honorSymlinks;
 }
 
 int GetPrefOverrideVirtKeyBindings() {
-	return PrefData.virtKeyOverride;
+    return g_Preferences.overrideDefaultVirtualKeyBindings;
 }
 
 int GetPrefTruncSubstitution() {
-	return PrefData.truncSubstitution;
+    return g_Preferences.truncSubstitution;
 }
 
 /*
@@ -1585,26 +906,6 @@ int GetPrefTruncSubstitution() {
 */
 void MarkPrefsChanged() {
 	PrefsHaveChanged = true;
-}
-
-/*
-** set *prefDataField to newValue, but first check if they're different
-** and update PrefsHaveChanged if a preference setting has now changed.
-*/
-static void setIntPref(int *prefDataField, int newValue) {
-	if (newValue != *prefDataField) {
-		PrefsHaveChanged = true;
-	}
-	
-	*prefDataField = newValue;
-}
-
-static void setStringPref(char *prefDataField, const char *newValue) {
-	if (strcmp(prefDataField, newValue)) {
-		PrefsHaveChanged = true;
-	}
-
-	strcpy(prefDataField, newValue);
 }
 
 /*
@@ -1858,7 +1159,7 @@ static QString WriteLanguageModesStringEx() {
 
 	// Get the output, and lop off the trailing newline 
 	std::string outStr = outBuf->BufGetRangeEx(0, outBuf->BufGetLength() - 1);
-	return QString::fromStdString(EscapeSensitiveCharsEx(outStr));
+    return QString::fromStdString(outStr);
 }
 
 static QStringList readExtensionList(const char **inPtr) {
@@ -2380,688 +1681,18 @@ int ParseError(Widget toDialog, const char *stringStart, const char *stoppedAt, 
 }
 
 /*
-** Compare two strings which may be nullptr
-*/
-int AllocatedStringsDiffer(const char *s1, const char *s2) {
-	if (s1 == nullptr && s2 == nullptr)
-		return false;
-	if (s1 == nullptr || s2 == nullptr)
-		return true;
-	return strcmp(s1, s2);
-}
-
-static void updatePatternsTo5dot1() {
-	const char *htmlDefaultExpr = "^[ \t]*HTML[ \t]*:[ \t]*Default[ \t]*$";
-	const char *vhdlAnchorExpr = "^[ \t]*VHDL:";
-	
-	
-	std::string newHighlight   = TempStringPrefs.highlight.toStdString();
-	std::string newStyles      = TempStringPrefs.styles.toStdString();
-	std::string newLanguage    = TempStringPrefs.language.toStdString();
-	std::string newSmartIndent = TempStringPrefs.smartIndent.toStdString();
-
-	/* Add new patterns if there aren't already existing patterns with
-	   the same name.  If possible, insert before VHDL in language mode
-	   list.  If not, just add to end */
-	if (!regexFind(newHighlight, "^[ \t]*PostScript:")) {
-		newHighlight = spliceStringEx(newHighlight, "PostScript:Default", vhdlAnchorExpr);
-	}
-	
-	if (!regexFind(newLanguage, "^[ \t]*PostScript:")) {
-		newLanguage = spliceStringEx(newLanguage, "PostScript:.ps .PS .eps .EPS .epsf .epsi::::::", vhdlAnchorExpr);
-	}
-	
-	if (!regexFind(newHighlight, "^[ \t]*Lex:")) {
-		newHighlight = spliceStringEx(newHighlight, "Lex:Default", vhdlAnchorExpr);
-	}
-	
-	if (!regexFind(newLanguage, "^[ \t]*Lex:")) {
-		newLanguage = spliceStringEx(newLanguage, "Lex:.lex::::::", vhdlAnchorExpr);
-	}
-	
-	if (!regexFind(newHighlight, "^[ \t]*SQL:")) {
-		newHighlight = spliceStringEx(newHighlight, "SQL:Default", vhdlAnchorExpr);
-	}
-	
-	if (!regexFind(newLanguage, "^[ \t]*SQL:")) {
-		newLanguage = spliceStringEx(newLanguage, "SQL:.sql::::::", vhdlAnchorExpr);
-	}
-	if (!regexFind(newHighlight, "^[ \t]*Matlab:")) {
-		newHighlight = spliceStringEx(newHighlight, "Matlab:Default", vhdlAnchorExpr);
-	}
-	
-	if (!regexFind(newLanguage, "^[ \t]*Matlab:")) {
-		newLanguage = spliceStringEx(newLanguage, "Matlab:..m .oct .sci::::::", vhdlAnchorExpr);
-	}
-	
-	if (!regexFind(newSmartIndent, "^[ \t]*Matlab:")) {
-		newSmartIndent = spliceStringEx(newSmartIndent, "Matlab:Default", nullptr);
-	}
-	
-	if (!regexFind(newStyles, "^[ \t]*Label:")) {
-		newStyles = spliceStringEx(newStyles, "Label:red:Italic", "^[ \t]*Flag:");
-	}
-	
-	if (!regexFind(newStyles, "^[ \t]*Storage Type1:")) {
-		newStyles = spliceStringEx(newStyles, "Storage Type1:saddle brown:Bold", "^[ \t]*String:");
-	}
-
-	/* Replace html pattern with sgml html pattern, as long as there
-	   isn't an existing html pattern which will be overwritten */
-	if (regexFind(newHighlight, htmlDefaultExpr)) {
-		regexReplaceEx(&newHighlight, htmlDefaultExpr, "SGML HTML:Default");
-		
-		if (!regexReplaceEx(&newLanguage, "^[ \t]*HTML:.*$", "SGML HTML:.sgml .sgm .html .htm:\"\\<(?ihtml)\\>\":::::\n")) {
-			newLanguage = spliceStringEx(newLanguage, "SGML HTML:.sgml .sgm .html .htm:\"\\<(?ihtml)\\>\":::::\n", vhdlAnchorExpr);
-		}
-	}
-	
-	TempStringPrefs.smartIndent = QString::fromStdString(newSmartIndent);
-	TempStringPrefs.language    = QString::fromStdString(newLanguage);
-	TempStringPrefs.styles      = QString::fromStdString(newStyles);
-	TempStringPrefs.highlight   = QString::fromStdString(newHighlight);
-}
-
-static void updatePatternsTo5dot2() {
-
-	const char *cppLm5dot1 = "^[ \t]*C\\+\\+:\\.cc \\.hh \\.C \\.H \\.i \\.cxx "
-	                         "\\.hxx::::::\"\\.,/\\\\`'!\\|@#%\\^&\\*\\(\\)-=\\+\\{\\}\\[\\]\"\":;\\<\\>\\?~\"";
-	const char *perlLm5dot1 = "^[ \t]*Perl:\\.pl \\.pm \\.p5:\"\\^\\[ \\\\t\\]\\*#\\[ \\\\t\\]\\*!\\.\\*perl\":::::";
-	const char *psLm5dot1 = "^[ \t]*PostScript:\\.ps \\.PS \\.eps \\.EPS \\.epsf \\.epsi:\"\\^%!\":::::\"/%\\(\\)\\{\\}\\[\\]\\<\\>\"";
-	const char *shLm5dot1 = "^[ \t]*Sh Ksh Bash:\\.sh \\.bash \\.ksh \\.profile:\"\\^\\[ \\\\t\\]\\*#\\[ "
-	                        "\\\\t\\]\\*!\\[ \\\\t\\]\\*/bin/\\(sh\\|ksh\\|bash\\)\":::::";
-	const char *tclLm5dot1 = "^[ \t]*Tcl:\\.tcl::::::";
-
-	const char *cppLm5dot2 = "C++:.cc .hh .C .H .i .cxx .hxx .cpp::::::\".,/\\`'!|@#%^&*()-=+{}[]\"\":;<>?~\"";
-	const char *perlLm5dot2 = "Perl:.pl .pm .p5 .PL:\"^[ \\t]*#[ \\t]*!.*perl\":Auto:None:::\".,/\\\\`'!$@#%^&*()-=+{}[]\"\":;<>?~|\"";
-	const char *psLm5dot2 = "PostScript:.ps .eps .epsf .epsi:\"^%!\":::::\"/%(){}[]<>\"";
-	const char *shLm5dot2 = "Sh Ksh Bash:.sh .bash .ksh .profile .bashrc .bash_logout .bash_login .bash_profile:\"^[ "
-	                        "\\t]*#[ \\t]*![ \\t]*/.*bin/(sh|ksh|bash)\":::::";
-	const char *tclLm5dot2 = "Tcl:.tcl .tk .itcl .itk::Smart:None:::";
-
-	const char *cssLm5dot2 = "CSS:css::Auto:None:::\".,/\\`'!|@#%^&*()=+{}[]\"\":;<>?~\"";
-	const char *reLm5dot2 = "Regex:.reg .regex:\"\\(\\?[:#=!iInN].+\\)\":None:Continuous:::";
-	const char *xmlLm5dot2 = "XML:.xml .xsl .dtd:\"\\<(?i\\?xml|!doctype)\"::None:::\"<>/=\"\"'()+*?|\"";
-
-	const char *cssHl5dot2 = "CSS:Default";
-	const char *reHl5dot2 = "Regex:Default";
-	const char *xmlHl5dot2 = "XML:Default";
-
-	const char *ptrStyle = "Pointer:#660000:Bold";
-	const char *reStyle = "Regex:#009944:Bold";
-	const char *wrnStyle = "Warning:brown2:Italic";
-	
-	std::string newHighlight = TempStringPrefs.highlight.toStdString();
-	std::string newStyles    = TempStringPrefs.styles.toStdString();
-	std::string newLanguage  = TempStringPrefs.language.toStdString();
-
-	/* First upgrade modified language modes, only if the user hasn't
-	   altered the default 5.1 definitions. */
-	if (regexFind(newLanguage, cppLm5dot1))
-		regexReplaceEx(&newLanguage, cppLm5dot1, cppLm5dot2);
-	if (regexFind(newLanguage, perlLm5dot1))
-		regexReplaceEx(&newLanguage, perlLm5dot1, perlLm5dot2);
-	if (regexFind(newLanguage, psLm5dot1))
-		regexReplaceEx(&newLanguage, psLm5dot1, psLm5dot2);
-	if (regexFind(newLanguage, shLm5dot1))
-		regexReplaceEx(&newLanguage, shLm5dot1, shLm5dot2);
-	if (regexFind(newLanguage, tclLm5dot1))
-		regexReplaceEx(&newLanguage, tclLm5dot1, tclLm5dot2);
-
-	/* Then append the new modes (trying to keep them in alphabetical order
-	   makes no sense, since 5.1 didn't use alphabetical order). */
-	if (!regexFind(newLanguage, "^[ \t]*CSS:"))
-		newLanguage = spliceStringEx(newLanguage, cssLm5dot2, nullptr);
-	if (!regexFind(newLanguage, "^[ \t]*Regex:"))
-		newLanguage = spliceStringEx(newLanguage, reLm5dot2, nullptr);
-	if (!regexFind(newLanguage, "^[ \t]*XML:"))
-		newLanguage = spliceStringEx(newLanguage, xmlLm5dot2, nullptr);
-
-	/* Enable default highlighting patterns for these modes, unless already
-	   present */
-	if (!regexFind(newHighlight, "^[ \t]*CSS:"))
-		newHighlight = spliceStringEx(newHighlight, cssHl5dot2, nullptr);
-	if (!regexFind(newHighlight, "^[ \t]*Regex:"))
-		newHighlight = spliceStringEx(newHighlight, reHl5dot2, nullptr);
-	if (!regexFind(newHighlight, "^[ \t]*XML:"))
-		newHighlight = spliceStringEx(newHighlight, xmlHl5dot2, nullptr);
-
-	// Finally, append the new highlight styles 
-
-	if (!regexFind(newStyles, "^[ \t]*Warning:"))
-		newStyles = spliceStringEx(newStyles, wrnStyle, nullptr);
-	if (!regexFind(newStyles, "^[ \t]*Regex:"))
-		newStyles = spliceStringEx(newStyles, reStyle, "^[ \t]*Warning:");
-	if (!regexFind(newStyles, "^[ \t]*Pointer:"))
-		newStyles = spliceStringEx(newStyles, ptrStyle, "^[ \t]*Regex:");
-		
-	
-	TempStringPrefs.language  = QString::fromStdString(newLanguage);
-	TempStringPrefs.styles    = QString::fromStdString(newStyles);
-	TempStringPrefs.highlight = QString::fromStdString(newHighlight);
-}
-
-static void updatePatternsTo5dot3() {
-	// This is a bogus function on non-VMS 
-}
-
-static void updatePatternsTo5dot4() {
-
-	const char *pyLm5dot3 = "Python:\\.py:\"\\^#!\\.\\*python\":Auto:None::::?\n";
-	const char *xrLm5dot3 = "X Resources:\\.Xresources \\.Xdefaults "
-	                        "\\.nedit:\"\\^\\[!#\\]\\.\\*\\(\\[Aa\\]pp\\|\\[Xx\\]\\)\\.\\*\\[Dd\\]efaults\"::::::?\n";
-
-	const char *pyLm5dot4 = "Python:.py:\"^#!.*python\":Auto:None:::\"!\"\"#$%&'()*+,-./:;<=>?@[\\\\]^`{|}~\":\n";
-	const char *xrLm5dot4 = "X Resources:.Xresources .Xdefaults .nedit nedit.rc:\"^[!#].*([Aa]pp|[Xx]).*[Dd]efaults\"::::::\n";
-
-	std::string newStyles   = TempStringPrefs.styles.toStdString();
-	std::string newLanguage = TempStringPrefs.language.toStdString();
-
-	/* Upgrade modified language modes, only if the user hasn't
-	   altered the default 5.3 definitions. */
-	if (regexFind(newLanguage, pyLm5dot3))
-		regexReplaceEx(&newLanguage, pyLm5dot3, pyLm5dot4);
-	if (regexFind(newLanguage, xrLm5dot3))
-		regexReplaceEx(&newLanguage, xrLm5dot3, xrLm5dot4);
-
-	// Add new styles 
-	if (!regexFind(newStyles, "^[ \t]*Identifier2:")) {
-		newStyles = spliceStringEx(newStyles, "Identifier2:SteelBlue:Plain", "^[ \t]*Subroutine:");
-	}
-	
-	TempStringPrefs.language  = QString::fromStdString(newLanguage);
-	TempStringPrefs.styles    = QString::fromStdString(newStyles);
-}
-
-static void updatePatternsTo5dot6() {
-	const char *pats[] = {"Csh:\\.csh \\.cshrc \\.login \\.logout:\"\\^\\[ \\\\t\\]\\*#\\[ \\\\t\\]\\*!\\[ "
-	                      "\\\\t\\]\\*/bin/csh\"::::::\\n",
-	                      "Csh:.csh .cshrc .tcshrc .login .logout:\"^[ \\t]*#[ \\t]*![ \\t]*/bin/t?csh\"::::::\n", "LaTeX:\\.tex \\.sty \\.cls \\.ltx \\.ins:::::::\\n", "LaTeX:.tex .sty .cls .ltx .ins .clo .fd:::::::\n",
-	                      "X Resources:\\.Xresources \\.Xdefaults "
-	                      "\\.nedit:\"\\^\\[!#\\]\\.\\*\\(\\[Aa\\]pp\\|\\[Xx\\]\\)\\.\\*\\[Dd\\]efaults\"::::::\\n",
-	                      "X Resources:.Xresources .Xdefaults .nedit .pats nedit.rc:\"^[!#].*([Aa]pp|[Xx]).*[Dd]efaults\"::::::\n", nullptr};
-
-	std::string newStyles   = TempStringPrefs.styles.toStdString();
-	std::string newLanguage = TempStringPrefs.language.toStdString();
-
-	/* Upgrade modified language modes, only if the user hasn't
-	   altered the default 5.5 definitions. */
-	for (int i = 0; pats[i]; i += 2) {
-		if (regexFind(newLanguage, pats[i])) {
-			regexReplaceEx(&newLanguage, pats[i], pats[i + 1]);
-		}
-	}
-
-	// Add new styles 
-	if (!regexFind(newStyles, "^[ \t]*Bracket:")) {
-		newStyles = spliceStringEx(newStyles, "Bracket:dark blue:Bold", "^[ \t]*Storage Type:");
-	}
-	
-	if (!regexFind(newStyles, "^[ \t]*Operator:")) {
-		newStyles = spliceStringEx(newStyles, "Operator:dark blue:Bold", "^[ \t]*Bracket:");
-	}
-		
-	TempStringPrefs.styles   = QString::fromStdString(newStyles);
-	TempStringPrefs.language = QString::fromStdString(newLanguage);
-}
-
-/*
- * We migrate a color from the X resources to the prefs if:
- *      1.  The prefs entry is equal to the default entry
- *      2.  The X resource is not equal to the default entry
- */
-static void migrateColor(XrmDatabase prefDB, XrmDatabase appDB, const char *clazz, const char *name, int color_index, const char *default_val) {
-	char *type, *valueString;
-	XrmValue rsrcValue;
-
-	/* If this color has been customized in the color dialog then use
-	    that value */
-	if (strcmp(default_val, PrefData.colorNames[color_index]))
-		return;
-
-	// Retrieve the value of the resource from the DB 
-	if (XrmGetResource(prefDB, name, clazz, &type, &rsrcValue)) {
-		if (strcmp(type, XmRString)) {
-			fprintf(stderr, "Internal Error: Unexpected resource type, %s\n", type);
-			return;
-		}
-		valueString = rsrcValue.addr;
-	} else if (XrmGetResource(appDB, name, clazz, &type, &rsrcValue)) {
-		if (strcmp(type, XmRString)) {
-			fprintf(stderr, "Internal Error: Unexpected resource type, %s\n", type);
-			return;
-		}
-		valueString = rsrcValue.addr;
-	} else
-		// No resources set 
-		return;
-
-	// An X resource is set.  If it's non-default, update the prefs. 
-	if (strcmp(valueString, default_val)) {
-		strncpy(PrefData.colorNames[color_index], valueString, MAX_COLOR_LEN);
-	}
-}
-
-/*
- * In 5.4 we moved color preferences from X resources to a color dialog,
- * meaning they're in the normal prefs system.  Users who have customized
- * their colors with X resources would probably prefer not to have to redo
- * the customization in the dialog, so we migrate them to the prefs for them.
- */
-static void migrateColorResources(XrmDatabase prefDB, XrmDatabase appDB) {
-	migrateColor(prefDB, appDB, APP_CLASS ".Text.Foreground", APP_NAME ".text.foreground", TEXT_FG_COLOR, NEDIT_DEFAULT_FG);
-	migrateColor(prefDB, appDB, APP_CLASS ".Text.Background", APP_NAME ".text.background", TEXT_BG_COLOR, NEDIT_DEFAULT_TEXT_BG);
-	migrateColor(prefDB, appDB, APP_CLASS ".Text.SelectForeground", APP_NAME ".text.selectForeground", SELECT_FG_COLOR, NEDIT_DEFAULT_SEL_FG);
-	migrateColor(prefDB, appDB, APP_CLASS ".Text.SelectBackground", APP_NAME ".text.selectBackground", SELECT_BG_COLOR, NEDIT_DEFAULT_SEL_BG);
-	migrateColor(prefDB, appDB, APP_CLASS ".Text.HighlightForeground", APP_NAME ".text.highlightForeground", HILITE_FG_COLOR, NEDIT_DEFAULT_HI_FG);
-	migrateColor(prefDB, appDB, APP_CLASS ".Text.HighlightBackground", APP_NAME ".text.highlightBackground", HILITE_BG_COLOR, NEDIT_DEFAULT_HI_BG);
-	migrateColor(prefDB, appDB, APP_CLASS ".Text.LineNumForeground", APP_NAME ".text.lineNumForeground", LINENO_FG_COLOR, NEDIT_DEFAULT_LINENO_FG);
-	migrateColor(prefDB, appDB, APP_CLASS ".Text.CursorForeground", APP_NAME ".text.cursorForeground", CURSOR_FG_COLOR, NEDIT_DEFAULT_CURSOR_FG);
-}
-
-/*
-** Inserts a string into intoString, reallocating it with XtMalloc.  If
-** regular expression atExpr is found, inserts the string before atExpr
-** followed by a newline.  If atExpr is not found, inserts insertString
-** at the end, PRECEDED by a newline.
-*/
-static std::string spliceStringEx(const std::string &intoString, view::string_view insertString, const char *atExpr) {
-	int beginPos;
-	int endPos;
-	
-	std::string newString;
-	newString.reserve(intoString.size() + insertString.size());
-
-	if (atExpr && SearchString(intoString, atExpr, SEARCH_FORWARD, SEARCH_REGEX, false, 0, &beginPos, &endPos, nullptr, nullptr, nullptr)) {
-		
-		newString.append(intoString, 0, beginPos);
-		newString.append(insertString.begin(), insertString.end());	
-		newString.append("\n");
-		newString.append(intoString, beginPos, std::string::npos);
-	} else {
-		newString.append(intoString);
-		newString.append("\n");
-		newString.append(insertString.begin(), insertString.end());	
-	}
-
-	return newString;
-}
-
-/*
-** Simplified regular expression search routine which just returns true
-** or false depending on whether inString matches expr
-*/
-static int regexFind(view::string_view inString, const char *expr) {
-	int beginPos, endPos;
-	return SearchString(inString, expr, SEARCH_FORWARD, SEARCH_REGEX, false, 0, &beginPos, &endPos, nullptr, nullptr, nullptr);
-}
-
-/*
-** Simplified case-sensisitive string search routine which just
-** returns true or false depending on whether inString matches expr
-*/
-static int caseFind(view::string_view inString, const char *expr) {
-	int beginPos;
-	int endPos;
-	return SearchString(inString, expr, SEARCH_FORWARD, SEARCH_CASE_SENSE, false, 0, &beginPos, &endPos, nullptr, nullptr, nullptr);
-}
-
-
-/*
-** Common implementation for simplified string replacement routines.
-*/
-static bool stringReplaceEx(std::string *inString, const char *expr, const char *replaceWith, SearchType searchType, int replaceLen) {
-	
-	const std::string &oldString = *inString;
-	
-	int beginPos;
-	int endPos;
-	int inLen = oldString.size();
-
-	if (0 >= replaceLen)
-		replaceLen = strlen(replaceWith);
-		
-	if (!SearchString(oldString, expr, SEARCH_FORWARD, searchType, False, 0, &beginPos, &endPos, nullptr, nullptr, nullptr)) {
-		return false;
-	}
-
-	std::string newString;
-	newString.reserve(oldString.size() + replaceLen);
-	newString.append(oldString.substr(0, beginPos));
-	newString.append(replaceWith, replaceLen);
-	newString.append(oldString.substr(endPos, inLen - endPos));
-	
-	*inString = std::move(newString);
-	return true;
-}
-
-/*
-** Simplified regular expression replacement routine which replaces the
-** first occurence of expr in inString with replaceWith.
-** If expr is not found, does nothing and returns false.
-*/
-static int regexReplaceEx(std::string *inString, const char *expr, const char *replaceWith) {
-	return stringReplaceEx(inString, expr, replaceWith, SEARCH_REGEX, -1);
-}
-
-/*
-** Simplified case-sensisitive string replacement routine which
-** replaces the first occurence of expr in inString with replaceWith.
-** If expr is not found, does nothing and returns false.
-*/
-static int caseReplaceEx(std::string *inString, const char *expr, const char *replaceWith, int replaceLen) {
-	return stringReplaceEx(inString, expr, replaceWith, SEARCH_CASE_SENSE, replaceLen);
-}
-
-/*
-** Looks for a (case-sensitive literal) match of an old macro text in a
-** temporary macro commands buffer. If the text is found, it is replaced by
-** a substring of the default macros, bounded by a given start and end pattern
-** (inclusive). Returns the length of the replacement.
-*/
-static int replaceMacroIfUnchanged(const char *oldText, const char *newStart, const char *newEnd) {
-	
-	std::string macroCmds = TempStringPrefs.macroCmds.toStdString();
-	
-	if (caseFind(macroCmds, oldText)) {
-		const char *start = strstr(PrefDescrip[2].defaultString, newStart);
-
-		if (start) {
-			const char *end = strstr(start, newEnd);
-			if (end) {
-				int length = (int)(end - start) + strlen(newEnd);
-				caseReplaceEx(&macroCmds, oldText, start, length);
-				TempStringPrefs.macroCmds = QString::fromStdString(macroCmds);
-				return length;
-			}
-		}
-	}
-	return 0;
-}
-
-/*
-** Replace all '#' characters in shell commands by '##' to keep commands
-** containing those working. '#' is a line number placeholder in 5.3 and
-** had no special meaning before.
-*/
-static void updateShellCmdsTo5dot3() {
-
-	if (TempStringPrefs.shellCmds.isNull())
-		return;
-
-	/* Count number of '#'. If there are '#' characters in the non-command
-	** part of the definition we count too much and later allocate too much
-	** memory for the new string, but this doesn't hurt.
-	*/
-	int nHash = 0;
-	
-	for(QChar ch: TempStringPrefs.shellCmds) {
-		if (ch == QLatin1Char('#')) {
-			nHash++;
-		}
-	}
-
-	// No '#' -> no conversion necessary. 
-	if (!nHash) {
-		return;
-	}
-
-	std::string newString;
-	newString.reserve(TempStringPrefs.shellCmds.size() + nHash);
-	
-	std::string shellCmds = TempStringPrefs.shellCmds.toStdString();
-
-	char *cOld = &shellCmds[0]; // TODO(eteran): probably a better approach to this..
-	auto cNew  = std::back_inserter(newString);
-	bool isCmd = false;
-	char *pCol = nullptr;
-	char *pNL  = nullptr;
-
-	/* Copy all characters from TempStringPrefs.shellCmds into newString
-	** and duplicate '#' in command parts. A simple check for really beeing
-	** inside a command part (starting with '\n', between the the two last
-	** '\n' a colon ':' must have been found) is preformed.
-	*/
-	while (*cOld != '\0') {
-		/* actually every 2nd line is a command. We additionally
-		** check if there is a colon ':' in the previous line.
-		*/
-		if (*cOld == '\n') {
-			if ((pCol > pNL) && !isCmd) {
-				isCmd = true;
-			} else {
-				isCmd = false;
-			}
-			
-			pNL = cOld;
-		}
-
-		if (!isCmd && *cOld == ':') {
-			pCol = cOld;
-		}
-
-		// Duplicate hashes if we're in a command part 
-		if (isCmd && *cOld == '#') {
-			*cNew++ = '#';
-		}
-
-		// Copy every character 
-		*cNew++ = *cOld++;
-	}
-
-	// exchange the string 
-	TempStringPrefs.shellCmds = QString::fromStdString(newString);
-}
-
-static void updateShellCmdsTo5dot4() {
-#ifdef __FreeBSD__
-	static const char *wc5dot3 = "^(\\s*)set wc=`wc`; echo \\$wc\\[1\\] \"words,\" \\$wc\\[2\\] \"lines,\" \\$wc\\[3\\] \"characters\"\\n";
-	static const char *wc5dot4 = "wc | awk '{print $2 \" lines, \" $1 \" words, \" $3 \" characters\"}'\n";
-#else
-	static const char *wc5dot3 = "^(\\s*)set wc=`wc`; echo \\$wc\\[1\\] \"lines,\" \\$wc\\[2\\] \"words,\" \\$wc\\[3\\] \"characters\"\\n";
-	static const char *wc5dot4 = "wc | awk '{print $1 \" lines, \" $2 \" words, \" $3 \" characters\"}'\n";
-#endif
-
-
-	std::string shellCmds = TempStringPrefs.shellCmds.toStdString();
-
-	if (regexFind(shellCmds, wc5dot3)) {
-		regexReplaceEx(&shellCmds, wc5dot3, wc5dot4);
-	}
-	
-	TempStringPrefs.shellCmds = QString::fromStdString(shellCmds);
-}
-
-static void updateMacroCmdsTo5dot5() {
-	static const char *uc5dot4 = "^(\\s*)if \\(substring\\(sel, keepEnd - 1, keepEnd == \" \"\\)\\)\\n";
-	static const char *uc5dot5 = "		if (substring(sel, keepEnd - 1, keepEnd) == \" \")\n";
-	
-	std::string macroCmds = TempStringPrefs.macroCmds.toStdString();
-	
-	if (regexFind(macroCmds, uc5dot4)) {
-		regexReplaceEx(&macroCmds, uc5dot4, uc5dot5);
-	}
-	
-	TempStringPrefs.macroCmds = QString::fromStdString(macroCmds);
-}
-
-static void updateMacroCmdsTo5dot6() {
-	/*
-	   This is ridiculous. Macros don't belong in the default preferences
-	   string.
-	   This code is also likely to break when the macro commands are upgraded
-	   again in a next release, because it looks for patterns in the default
-	   macro string (which may change).
-	   Using a "Default" mechanism, like we do for highlighting patterns
-	   would simplify upgrading A LOT in the future, but changing the way
-	   default macros are stored, is a lot of work too, unfortunately.
-	*/
-	static const char *pats[] = {"Complete Word:Alt+D::: {\n\
-		# Tuning parameters\n\
-		ScanDistance = 200\n\
-		\n\
-		# Search back to a word boundary to find the word to complete\n\
-		startScan = max(0, $cursor - ScanDistance)\n\
-		endScan = min($text_length, $cursor + ScanDistance)\n\
-		scanString = get_range(startScan, endScan)\n\
-		keyEnd = $cursor-startScan\n\
-		keyStart = search_string(scanString, \"<\", keyEnd, \"backward\", \"regex\")\n\
-		if (keyStart == -1)\n\
-		    return\n\
-		keyString = \"<\" substring(scanString, keyStart, keyEnd)\n\
-		\n\
-		# search both forward and backward from the cursor position.  Note that\n\
-		# using a regex search can lead to incorrect results if any of the special\n\
-		# regex characters is encountered, which is not considered a delimiter\n\
-		backwardSearchResult = search_string(scanString, keyString, keyStart-1, \\\n\
-		    	\"backward\", \"regex\")\n\
-		forwardSearchResult = search_string(scanString, keyString, keyEnd, \"regex\")\n\
-		if (backwardSearchResult == -1 && forwardSearchResult == -1) {\n\
-		    beep()\n\
-		    return\n\
-		}\n\
-		\n\
-		# if only one direction matched, use that, otherwise use the nearest\n\
-		if (backwardSearchResult == -1)\n\
-		    matchStart = forwardSearchResult\n\
-		else if (forwardSearchResult == -1)\n\
-		    matchStart = backwardSearchResult\n\
-		else {\n\
-		    if (keyStart - backwardSearchResult <= forwardSearchResult - keyEnd)\n\
-		    	matchStart = backwardSearchResult\n\
-		    else\n\
-		    	matchStart = forwardSearchResult\n\
-		}\n\
-		\n\
-		# find the complete word\n\
-		matchEnd = search_string(scanString, \">\", matchStart, \"regex\")\n\
-		completedWord = substring(scanString, matchStart, matchEnd)\n\
-		\n\
-		# replace it in the window\n\
-		replace_range(startScan + keyStart, $cursor, completedWord)\n\
-	}",                                      "Complete Word:",           "\n\t}",         "Fill Sel. w/Char:::R: {\n\
-		if ($selection_start == -1) {\n\
-		    beep()\n\
-		    return\n\
-		}\n\
-		\n\
-		# Ask the user what character to fill with\n\
-		fillChar = string_dialog(\"Fill selection with what character?\", \"OK\", \"Cancel\")\n\
-		if ($string_dialog_button == 2 || $string_dialog_button == 0)\n\
-		    return\n\
-		\n\
-		# Count the number of lines in the selection\n\
-		nLines = 0\n\
-		for (i=$selection_start; i<$selection_end; i++)\n\
-		    if (get_character(i) == \"\\n\")\n\
-		    	nLines++\n\
-		\n\
-		# Create the fill text\n\
-		rectangular = $selection_left != -1\n\
-		line = \"\"\n\
-		fillText = \"\"\n\
-		if (rectangular) {\n\
-		    for (i=0; i<$selection_right-$selection_left; i++)\n\
-			line = line fillChar\n\
-		    for (i=0; i<nLines; i++)\n\
-			fillText = fillText line \"\\n\"\n\
-		    fillText = fillText line\n\
-		} else {\n\
-		    if (nLines == 0) {\n\
-		    	for (i=$selection_start; i<$selection_end; i++)\n\
-		    	    fillText = fillText fillChar\n\
-		    } else {\n\
-		    	startIndent = 0\n\
-		    	for (i=$selection_start-1; i>=0 && get_character(i)!=\"\\n\"; i--)\n\
-		    	    startIndent++\n\
-		    	for (i=0; i<$wrap_margin-startIndent; i++)\n\
-		    	    fillText = fillText fillChar\n\
-		    	fillText = fillText \"\\n\"\n\
-			for (i=0; i<$wrap_margin; i++)\n\
-			    line = line fillChar\n\
-			for (i=0; i<nLines-1; i++)\n\
-			    fillText = fillText line \"\\n\"\n\
-			for (i=$selection_end-1; i>=$selection_start && get_character(i)!=\"\\n\"; \\\n\
-			    	i--)\n\
-			    fillText = fillText fillChar\n\
-		    }\n\
-		}\n\
-		\n\
-		# Replace the selection with the fill text\n\
-		replace_selection(fillText)\n\
-	}",         "Fill Sel. w/Char:",         "\n\t}",
-	                      "Comments>/* Uncomment */@C@C++@Java@CSS@JavaScript@Lex:::R: {\n\
-		sel = get_selection()\n\
-		selStart = $selection_start\n\
-		selEnd = $selection_end\n\
-		commentStart = search_string(sel, \"/*\", 0)\n\
-		if (substring(sel, commentStart + 2, commentStart + 3) == \" \")\n\
-		    keepStart = commentStart + 3\n\
-		else\n\
-		    keepStart = commentStart + 2\n\
-		keepEnd = search_string(sel, \"*/\", length(sel), \"backward\")\n\
-		commentEnd = keepEnd + 2\n\
-		if (substring(sel, keepEnd - 1, keepEnd) == \" \")\n\
-		    keepEnd = keepEnd - 1\n\
-		replace_range(selStart + commentStart, selStart + commentEnd, \\\n\
-			substring(sel, keepStart, keepEnd))\n\
-		select(selStart, selEnd - (keepStart-commentStart) - \\\n\
-			(commentEnd - keepEnd))\n\
-	}", "Comments>/* Uncomment */", "\n\t}",         "Comments>Bar Uncomment@C:::R: {\n\
-		selStart = $selection_start\n\
-		selEnd = $selection_end\n\
-		newText = get_range(selStart+3, selEnd-4)\n\
-		newText = replace_in_string(newText, \"^ \\\\* \", \"\", \"regex\")\n\
-		replace_range(selStart, selEnd, newText)\n\
-		select(selStart, selStart + length(newText))\n\
-	}", "Comments>Bar Uncomment@C:", "\n\t}",
-	                      "Make C Prototypes@C@C++:::: {\n\
-		if ($selection_start == -1) {\n\
-		    start = 0\n\
-		    end = $text_length\n\
-		} else {\n\
-		    start = $selection_start\n\
-		    end = $selection_end\n\
-		}\n\
-		string = get_range(start, end)\n\
-		nDefs = 0",                                 "Make C Prototypes@C@C++:", "\t\tnDefs = 0", nullptr};
-
-	for (int i = 0; pats[i]; i += 3) {
-		replaceMacroIfUnchanged(pats[i], pats[i + 1], pats[i + 2]);
-	}
-	
-	return;
-}
-
-/*
 **  This function passes up a pointer to the static name of the default
 **  shell, currently defined as the user's login shell.
 **  In case of errors, the fallback of "sh" will be returned.
 */
-static const char *getDefaultShell() {
-	struct passwd *passwdEntry = nullptr;
-	static char shellBuffer[MAXPATHLEN + 1] = "sh";
+static QString getDefaultShell() {
+    struct passwd *passwdEntry = getpwuid(getuid()); //  getuid() never fails.
 
-	passwdEntry = getpwuid(getuid()); //  getuid() never fails.  
+    if (!passwdEntry) {
+        //  Something bad happened! Do something, quick!
+        perror("nedit: Failed to get passwd entry (falling back to 'sh')");
+        return QLatin1String("sh");
+    }
 
-	if (nullptr == passwdEntry) {
-		//  Something bad happened! Do something, quick!  
-		perror("nedit: Failed to get passwd entry (falling back to 'sh')");
-		return "sh";
-	}
-
-	//  *passwdEntry may be overwritten  
-	/*  TODO: To make this and other function calling getpwuid() more robust,
-	    passwdEntry should be kept in a central position (Core->sysinfo?).
-	    That way, local code would always get a current copy of passwdEntry,
-	    but could still be kept lean.  The obvious alternative of a central
-	    facility within NEdit to access passwdEntry would increase coupling
-	    and would have to cover a lot of assumptions.  */
-	strncpy(shellBuffer, passwdEntry->pw_shell, MAXPATHLEN);
-	shellBuffer[MAXPATHLEN] = '\0';
-
-	return shellBuffer;
+    return QLatin1String(passwdEntry->pw_shell);
 }
-
-
-

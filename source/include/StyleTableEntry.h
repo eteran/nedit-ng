@@ -4,7 +4,7 @@
 
 #include <QString>
 #include <QFont>
-#include <X11/Intrinsic.h>
+#include <QColor>
 
 class StyleTableEntry {
 public:
@@ -13,12 +13,11 @@ public:
 	QString      colorName;
 	bool         isBold;
 	bool         isItalic;
-	Pixel        color;
+	QColor       color;
 	bool         underline;
-	XFontStruct* font;
     QFont        fontEx;
 	QString      bgColorName; // background style coloring (name may be "empty")
-	Pixel        bgColor;
+	QColor       bgColor;
 };
 
 #endif

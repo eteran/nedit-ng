@@ -3,10 +3,9 @@
 #include "DialogPrint.h"
 #include <QRegExpValidator>
 #include <QMessageBox>
-
-
+#include <QSettings>
+#include "Preferences.h"
 #include "preferences.h"
-#include "util/prefFile.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/param.h>
@@ -55,16 +54,6 @@ bool CmdFieldModified = false;    /* user last changed the print command field, 
 
 bool DialogPrint::PreferencesLoaded = false;
 
-static PrefDescripRec PrintPrefDescrip[N_PRINT_PREFS] = {
-    {"printCommand",      "PrintCommand",      PREF_QSTRING, nullptr, &PrintCommand, nullptr, false},
-    {"printCopiesOption", "PrintCopiesOption", PREF_QSTRING, nullptr, &CopiesOption, nullptr, false},
-    {"printQueueOption",  "PrintQueueOption",  PREF_QSTRING, nullptr, &QueueOption,  nullptr, false},
-    {"printNameOption",   "PrintNameOption",   PREF_QSTRING, nullptr, &NameOption,   nullptr, false},
-    {"printHostOption",   "PrintHostOption",   PREF_QSTRING, nullptr, &HostOption,   nullptr, false},
-    {"printDefaultQueue", "PrintDefaultQueue", PREF_QSTRING, nullptr, &DefaultQueue, nullptr, false},
-    {"printDefaultHost",  "PrintDefaultHost",  PREF_QSTRING, nullptr, &DefaultHost,  nullptr, false},
-};
-
 
 //------------------------------------------------------------------------------
 // Name: 
@@ -84,7 +73,7 @@ DialogPrint::DialogPrint(const QString &PrintFileName, const QString &jobName, Q
 	// In case the program hasn't called LoadPrintPreferences, 
 	// set up the default values for the print preferences
 	if (!PreferencesLoaded) {
-		LoadPrintPreferencesEx(nullptr, "", "", true);
+        LoadPrintPreferencesEx(true);
 	}
 
 	// Make the PrintFile information available to the callback routines
@@ -142,45 +131,44 @@ DialogPrint::~DialogPrint() {
 **			(flpr is a Fermilab utility for printing on
 **			arbitrary systems that support the lpr protocol)
 */
-void DialogPrint::LoadPrintPreferencesEx(XrmDatabase prefDB, const std::string &appName, const std::string &appClass, bool lookForFlpr) {
-	
-	static char defaultQueue[MAX_QUEUE_STR];
-	static char defaultHost[MAX_HOST_STR];
+void DialogPrint::LoadPrintPreferencesEx(bool lookForFlpr) {
 
-	/* check if flpr is installed, and otherwise choose appropriate
-	   printer per system type */
-	if (lookForFlpr && flprPresent()) {
-	
-		getFlprQueueDefault(defaultQueue);
-		getFlprHostDefault(defaultHost);
-		
-		PrintPrefDescrip[PRINT_COMMAND_INDEX].defaultString = "flpr";
-		PrintPrefDescrip[COPIES_OPTION_INDEX].defaultString = "";
-		PrintPrefDescrip[QUEUE_OPTION_INDEX].defaultString  = "-q";
-		PrintPrefDescrip[NAME_OPTION_INDEX].defaultString   = "-j ";
-		PrintPrefDescrip[HOST_OPTION_INDEX].defaultString   = "-h";
-		PrintPrefDescrip[DEFAULT_QUEUE_INDEX].defaultString = defaultQueue;
-		PrintPrefDescrip[DEFAULT_HOST_INDEX].defaultString  = defaultHost;
-	} else {
-	
-		getLprQueueDefault(defaultQueue);
-		
-		PrintPrefDescrip[PRINT_COMMAND_INDEX].defaultString = "lpr";
-		PrintPrefDescrip[COPIES_OPTION_INDEX].defaultString = "-# ";
-		PrintPrefDescrip[QUEUE_OPTION_INDEX].defaultString  = "-P ";
-		PrintPrefDescrip[NAME_OPTION_INDEX].defaultString   = "-J ";
-		PrintPrefDescrip[HOST_OPTION_INDEX].defaultString   = "";
-		PrintPrefDescrip[DEFAULT_QUEUE_INDEX].defaultString = defaultQueue;
-		PrintPrefDescrip[DEFAULT_HOST_INDEX].defaultString  = "";
-	}
+    static char defaultQueue[MAX_QUEUE_STR];
+    static char defaultHost[MAX_HOST_STR];
 
-	/* Read in the preferences from the X database using the mechanism from
-	   prefFile.c (this allows LoadPrintPreferences to work before any
-	   widgets are created, which is more convenient than XtGetApplication-
-	   Resources for applications which have no main window) */
-	RestorePreferences(nullptr, prefDB, appName, appClass, PrintPrefDescrip, N_PRINT_PREFS);
+    QString filename = Preferences::configFile();
+    QSettings settings(filename, QSettings::IniFormat);
+    settings.beginGroup(QLatin1String("Printer"));
 
-	PreferencesLoaded = true;
+    /* check if flpr is installed, and otherwise choose appropriate
+       printer per system type */
+    if (lookForFlpr && flprPresent()) {
+
+        getFlprQueueDefault(defaultQueue);
+        getFlprHostDefault(defaultHost);
+
+        PrintCommand = settings.value(tr("printCommand"),      QLatin1String("flpr")).toString();
+        CopiesOption = settings.value(tr("printCopiesOption"), QLatin1String("")).toString();
+        QueueOption  = settings.value(tr("printQueueOption"),  QLatin1String("-q")).toString();
+        NameOption   = settings.value(tr("printNameOption"),   QLatin1String("-j ")).toString();
+        HostOption   = settings.value(tr("printHostOption"),   QLatin1String("-h")).toString();
+        DefaultQueue = settings.value(tr("printDefaultQueue"), QLatin1String(defaultQueue)).toString();
+        DefaultHost  = settings.value(tr("printDefaultHost"),  QLatin1String(defaultHost)).toString();
+
+    } else {
+
+        getLprQueueDefault(defaultQueue);
+
+        PrintCommand = settings.value(tr("printCommand"),      QLatin1String("lpr")).toString();
+        CopiesOption = settings.value(tr("printCopiesOption"), QLatin1String("-# ")).toString();
+        QueueOption  = settings.value(tr("printQueueOption"),  QLatin1String("-P ")).toString();
+        NameOption   = settings.value(tr("printNameOption"),   QLatin1String("-J ")).toString();
+        HostOption   = settings.value(tr("printHostOption"),   QLatin1String("")).toString();
+        DefaultQueue = settings.value(tr("printDefaultQueue"), QLatin1String(defaultQueue)).toString();
+        DefaultHost  = settings.value(tr("printDefaultHost"),  QLatin1String("")).toString();
+    }
+
+    PreferencesLoaded = true;
 }
 
 /*

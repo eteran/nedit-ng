@@ -27,13 +27,9 @@
 #ifndef USER_CMDS_H_
 #define USER_CMDS_H_
 
-#include "UserMenuListElement.h"
 #include "util/string_view.h"
 #include <QString>
-#include <X11/Intrinsic.h>
 
-struct UserMenuCache;
-struct UserBGMenuCache;
 class MenuItem;
 
 // types of current dialog and/or menu 
@@ -113,8 +109,6 @@ QString WriteMacroCmdsStringEx();
 QString WriteShellCmdsStringEx();
 void SetupUserMenuInfo();
 void UpdateUserMenuInfo();
-void freeSubMenuCache(userSubMenuCache *subMenus);
-void freeUserMenuList(UserMenuList *list);
 void freeUserMenuInfoList(QVector<MenuData> &infoList);
 void parseMenuItemList(QVector<MenuData> &itemList, userSubMenuCache *subMenus);
 

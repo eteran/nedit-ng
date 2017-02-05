@@ -47,7 +47,6 @@ int ReadMacroFileEx(DocumentWidget *window, const std::string &fileName, int war
 int ReadMacroStringEx(DocumentWidget *window, const QString &string, const char *errIn);
 std::string GetReplayMacro();
 void AbortMacroCommandEx(DocumentWidget *document);
-void AddLastCommandActionHook(XtAppContext context);
 void BeginLearnEx(DocumentWidget *document);
 void CancelMacroOrLearnEx(DocumentWidget *document);
 void DoMacroEx(DocumentWidget *document, view::string_view macro, const char *errInName);

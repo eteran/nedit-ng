@@ -29,13 +29,11 @@
 
 #include <QMessageBox>
 #include <QX11Info>
-
 #include "DocumentWidget.h"
 #include "highlight.h"
 #include "TextHelper.h"
 #include "HighlightData.h"
 #include "HighlightPattern.h"
-#include "util/MotifHelper.h"
 #include "PatternSet.h"
 #include "ReparseContext.h"
 #include "StyleTableEntry.h"
@@ -48,6 +46,7 @@
 #include "preferences.h"
 #include "regularExp.h"
 #include "TextArea.h"
+#include "X11Colors.h"
 
 #include <algorithm>
 #include <climits>
@@ -642,7 +641,6 @@ WindowHighlightData *createHighlightDataEx(DocumentWidget *document, PatternSet 
     StyleTableEntry *styleTablePtr = styleTable;
 
     auto setStyleTablePtr = [document](StyleTableEntry *p, HighlightPattern *pat) {
-        Color c;
 
         p->highlightName = pat->name;
         p->styleName     = pat->style;
@@ -652,18 +650,15 @@ WindowHighlightData *createHighlightDataEx(DocumentWidget *document, PatternSet 
         p->isItalic      = FontOfNamedStyleIsItalic(pat->style.toStdString());
 
         // And now for the more physical stuff
-        p->color = AllocColor(p->colorName, &c);
+        p->color = AllocColor(p->colorName);
 
         if (!p->bgColorName.isNull()) {
-            p->bgColor = AllocColor(p->bgColorName, &c);
+            p->bgColor = AllocColor(p->bgColorName);
         } else {
             p->bgColor = p->color;
         }
 
         p->fontEx = FontOfNamedStyleEx(document, pat->style.toStdString());
-#if 1
-        p->font = nullptr;
-#endif
     };
 
     // PLAIN_STYLE (pass 1)
@@ -1078,54 +1073,24 @@ QString HighlightStyleOfCodeEx(DocumentWidget *document, int hCode) {
     return entry ? entry->styleName : QString();
 }
 
-Pixel HighlightColorValueOfCodeEx(DocumentWidget *document, int hCode, Color *color) {
+QColor HighlightColorValueOfCodeEx(DocumentWidget *document, int hCode) {
     StyleTableEntry *entry = styleTableEntryOfCodeEx(document, hCode);
     if (entry) {
         return entry->color;
     } else {
         // pick up foreground color of the (first) text widget of the window
-        XColor colorDef;
-        Display *display = QX11Info::display();
-        QX11Info x11Info;
-
-        color->r = 0;
-        color->g = 0;
-        color->b = 0;
-
-        colorDef.pixel = document->firstPane()->getForegroundPixel();
-
-        if (XQueryColor(display, x11Info.colormap(), &colorDef)) {
-            color->r = colorDef.red;
-            color->g = colorDef.green;
-            color->b = colorDef.blue;
-        }
-        return colorDef.pixel;
+        return document->firstPane()->getForegroundPixel();
     }
 }
 
-Pixel GetHighlightBGColorOfCodeEx(DocumentWidget *document, int hCode, Color *color) {
+QColor GetHighlightBGColorOfCodeEx(DocumentWidget *document, int hCode) {
     StyleTableEntry *entry = styleTableEntryOfCodeEx(document, hCode);
 
     if (entry && !entry->bgColorName.isNull()) {
         return entry->bgColor;
     } else {
         // pick up background color of the (first) text widget of the window
-        XColor colorDef;
-        QX11Info x11Info;
-        Display *display = QX11Info::display();
-
-        color->r = 0;
-        color->g = 0;
-        color->b = 0;
-
-        colorDef.pixel = 0;
-
-        if (XQueryColor(display, x11Info.colormap(), &colorDef)) {
-            color->r = colorDef.red;
-            color->g = colorDef.green;
-            color->b = colorDef.blue;
-        }
-        return colorDef.pixel;
+        return document->firstPane()->getBackgroundPixel();
     }
 }
 
@@ -1799,34 +1764,12 @@ static int lastModified(TextBuffer *styleBuf) {
 }
 
 /*
-** Compute the distance between two colors.
-*/
-
-static double colorDistance(const XColor *c1, const XColor *c2) {
-	/* This is done in RGB space, which is close, but not optimal.  It's
-	   probably better to do it in HSV or YIQ space, however, that means
-	   a whole lot of extra conversions.  This would allow us to weight
-	   the coordinates differently, e.g, prefer to match hue over
-	   brightness. */
-
-	static const double scale = 65535.0;
-
-	double tred   = c1->red   / scale - c2->red   / scale;
-	double tgreen = c1->green / scale - c2->green / scale;
-	double tblue  = c1->blue  / scale - c2->blue  / scale;
-
-	// use square Euclidian distance 
-	return tred * tred + tgreen * tgreen + tblue * tblue;
-}
-
-/*
 ** use this canned function to call AllocColor() when
 ** the r, g & b components is not needed, thus saving
 ** the little hassle of creating the dummy variable.
 */
-Pixel AllocateColor(const char *colorName) {
-	Color dummy;
-	return AllocColor(colorName, &dummy);
+QColor AllocateColor(const char *colorName) {
+    return AllocColor(colorName);
 }
 
 /*
@@ -1835,117 +1778,12 @@ Pixel AllocateColor(const char *colorName) {
 ** the colormap is full and there's no suitable substitute, print an error on
 ** stderr, and return the widget's foreground color as a backup.
 */
-Pixel AllocColor(const QString &colorName, Color *color) {
-	return AllocColor(colorName.toLatin1().data(), color);
+QColor AllocColor(const QString &colorName) {
+     return X11Colors::fromString(colorName);
 }
 
-Pixel AllocColor(const char *colorName, Color *color) {
-	XColor colorDef;
-	XColor *allColorDefs;
-	double small = 1.0e9;
-	unsigned int ncolors;
-	unsigned long i;
-	unsigned long best = 0; // pixel value 
-
-	Display *display = TheDisplay;
-	Colormap cMap    = DefaultColormap(display, DefaultScreen(display));
-	int depth        = XDefaultDepth(display, DefaultScreen(display));
-
-	/* Get the correct colormap for compatability with the "best" visual
-	   feature in 5.2.  Default visual of screen is no good here. */
-	// NOTE(eteran): because we are migrating to Qt, We are not terribly conerned with
-	//               with the minor details of X11's color routines
-	//               so I've simplified this to aid in porting (for now)
-	//               at the cost of NERFing the "best visual stuff"
-	Pixel foreground =  BlackPixelOfScreen(DefaultScreenOfDisplay(display));
-	Pixel bestPixel = foreground; // Our last fallback
-
-	// First, check for valid syntax 
-	if (!XParseColor(display, cMap, colorName, &colorDef)) {
-		fprintf(stderr, "NEdit: Color name %s not in database\n", colorName);
-		colorDef.pixel = foreground;
-		if (XQueryColor(display, cMap, &colorDef)) {
-			color->r = colorDef.red;
-			color->g = colorDef.green;
-			color->b = colorDef.blue;
-		}
-		return foreground;
-	}
-
-	// Attempt allocation of the exact color. 
-	if (XAllocColor(display, cMap, &colorDef)) {
-		color->r = colorDef.red;
-		color->g = colorDef.green;
-		color->b = colorDef.blue;
-		return colorDef.pixel;
-	}
-
-// ---------- Allocation failed, the colormap may be full. ---------- 
-
-#if 0
-    printf("Couldn't allocate %d %d %d\n", colorDef.red, colorDef.green, colorDef.blue);
-#endif
-
-	/* We can't do the nearest-match on other than 8 bit visuals because
-	   it just takes too long.  */
-
-	if (depth > 8) { // Oh no! 
-		colorDef.pixel = foreground;
-		if (XQueryColor(display, cMap, &colorDef)) {
-			color->r = colorDef.red;
-			color->g = colorDef.green;
-			color->b = colorDef.blue;
-		}
-		return foreground;
-	}
-
-	// Get the entire colormap so we can find the closest one. 
-	ncolors = (1 << depth);
-	allColorDefs = new XColor[ncolors];
-	memset(allColorDefs, 0, ncolors * sizeof(XColor));
-
-	for (i = 0; i < ncolors; i++)
-		allColorDefs[i].pixel = i;
-
-	XQueryColors(display, cMap, allColorDefs, ncolors);
-
-	// Scan through each color, looking for the closest one. 
-	for (i = 0; i < ncolors; i++) {
-		double dist = colorDistance(&allColorDefs[i], &colorDef);
-
-		if (dist < small) {
-			best = i;
-			small = dist;
-		}
-	}
-
-	/* Legally try to acquire the shared color- we should loop through
-	   the shortest distances here.  We could sort the map in order
-	   of decreasing distances and loop through it until one works. */
-
-	if (XAllocColor(display, cMap, &allColorDefs[best])) {
-		bestPixel = allColorDefs[best].pixel;
-	}
-
-#if 0
-    printf("Got %d %d %d, ", allColorDefs[best].red, allColorDefs[best].green, allColorDefs[best].blue);
-    printf("That's %f off\n", small);
-#endif
-
-	color->r = allColorDefs[best].red;
-	color->g = allColorDefs[best].green;
-	color->b = allColorDefs[best].blue;
-	delete [] allColorDefs;
-	return bestPixel;
-}
-
-Pixel AllocColor(const QString &colorName) {
-	return AllocColor(colorName.toLatin1().data());
-}
-
-Pixel AllocColor(const char *colorName) {
-	Color dummy;
-	return AllocColor(colorName, &dummy);
+QColor AllocColor(const char *colorName) {
+    return X11Colors::fromString(QLatin1String(colorName));
 }
 
 /*

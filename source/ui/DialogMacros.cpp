@@ -457,7 +457,6 @@ bool DialogMacros::applyDialogChanges() {
 	}	
 
 	freeUserMenuInfoList(MacroMenuData);
-	freeSubMenuCache(&MacroSubMenus);
 	MacroMenuData.clear();
 
 	int count = ui.listItems->count();

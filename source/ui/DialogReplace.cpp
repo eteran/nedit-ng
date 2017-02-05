@@ -4,6 +4,7 @@
 #include <QtDebug>
 #include <QMessageBox>
 #include <QClipboard>
+#include <QMimeData>
 
 #include "DialogReplace.h"
 #include "MainWindow.h"
@@ -13,7 +14,6 @@
 #include "search.h" // for the search type enum
 #include "server.h"
 #include "preferences.h"
-#include "util/MotifHelper.h"
 #include "regularExp.h"
 #include <memory>
 

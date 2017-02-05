@@ -31,6 +31,8 @@
 #include "menu.h"
 #include <cmath>
 
+#include <X11/Intrinsic.h>
+
 namespace {
 
 class MacroException : public std::exception {
@@ -73,8 +75,6 @@ enum OpStatusCodes {
 }
 
 static void addLoopAddr(Inst *addr);
-static void saveContext(RestartData<Document> *context);
-static void restoreContext(RestartData<Document> *context);
 
 static void saveContextEx(RestartData<DocumentWidget> *context);
 static void restoreContextEx(RestartData<DocumentWidget> *context);
@@ -185,8 +185,6 @@ static DataValue *FrameP;                      // frame pointer (start of local 
 static Inst *PC;                               // program counter during execution
 static char *ErrMsg;                           // global for returning error messages from executing functions
 
-static Document *InitiatingWindow = nullptr;   // window from which macro was run
-static Document *FocusWindow;                  // window on which macro commands operate
 static DocumentWidget *InitiatingWindowEx = nullptr;   // window from which macro was run
 static DocumentWidget *FocusWindowEx;                  // window on which macro commands operate
 
@@ -512,58 +510,6 @@ int ExecuteMacroEx(DocumentWidget *window, Program *prog, int nArgs, DataValue *
 }
 
 /*
-** Execute a compiled macro, "prog", using the arguments in the array
-** "args".  Returns one of MACRO_DONE, MACRO_PREEMPT, or MACRO_ERROR.
-** if MACRO_DONE is returned, the macro completed, and the returned value
-** (if any) can be read from "result".  If MACRO_PREEMPT is returned, the
-** macro exceeded its alotted time-slice and scheduled...
-*/
-int ExecuteMacro(Document *window, Program *prog, int nArgs, DataValue *args, DataValue *result, RestartData<Document> **continuation, const char **msg) {
-
-	static DataValue noValue = INIT_DATA_VALUE;
-	int i;
-
-	/* Create an execution context (a stack, a stack pointer, a frame pointer,
-	   and a program counter) which will retain the program state across
-	   preemption and resumption of execution */
-    auto context         = new RestartData<Document>;
-	context->stack       = new DataValue[STACK_SIZE];
-	*continuation        = context;
-	context->stackP      = context->stack;
-	context->pc          = prog->code;
-	context->runWindow   = window;
-	context->focusWindow = window;
-
-	// Push arguments and call information onto the stack 
-	for (i = 0; i < nArgs; i++) {
-		*(context->stackP++) = args[i];
-	}
-
-	context->stackP->val.subr = nullptr; // return PC 
-	context->stackP->tag = NO_TAG;
-	context->stackP++;
-
-	*(context->stackP++) = noValue; // old FrameP 
-
-	context->stackP->tag = NO_TAG; // nArgs 
-	context->stackP->val.n = nArgs;
-	context->stackP++;
-
-	*(context->stackP++) = noValue; // cached arg array 
-
-	context->frameP = context->stackP;
-
-	// Initialize and make room on the stack for local variables 
-	for(Symbol *s : prog->localSymList) {
-		FP_GET_SYM_VAL(context->frameP, s) = noValue;
-		context->stackP++;
-	}
-
-	// Begin execution, return on error or preemption 
-	return ContinueMacro(context, result, msg);
-}
-
-/*
 ** Continue the execution of a suspended macro whose state is described in
 ** "continuation"
 */
@@ -634,76 +580,6 @@ int ContinueMacroEx(RestartData<DocumentWidget> *continuation, DataValue *result
 }
 
 /*
-** Continue the execution of a suspended macro whose state is described in
-** "continuation"
-*/
-int ContinueMacro(RestartData<Document> *continuation, DataValue *result, const char **msg) {
-	int status, instCount = 0;
-	Inst *inst;
-    RestartData<Document> oldContext;
-
-	/* To allow macros to be invoked arbitrarily (such as those automatically
-	   triggered within smart-indent) within executing macros, this call is
-	   reentrant. */
-	saveContext(&oldContext);
-
-	/*
-	** Execution Loop:  Call the succesive routine addresses in the program
-	** until one returns something other than STAT_OK, then take action
-	*/
-	restoreContext(continuation);
-	ErrMsg = nullptr;
-	for (;;) {
-
-		// Execute an instruction 
-		inst = PC++;
-
-        try {
-            status = (inst->func)();
-        } catch(const MacroException &ex) {
-            static char error_buffer[4096];
-            strcpy(error_buffer, ex.what());
-            *msg = error_buffer;
-            FreeRestartData(continuation);
-            restoreContext(&oldContext);
-            return MACRO_ERROR;
-        }
-
-		// If error return was not STAT_OK, return to caller 
-        switch(status) {
-        case STAT_PREEMPT:
-            saveContext(continuation);
-            restoreContext(&oldContext);
-            return MACRO_PREEMPT;
-        case STAT_ERROR:
-            *msg = ErrMsg;
-            FreeRestartData(continuation);
-            restoreContext(&oldContext);
-            return MACRO_ERROR;
-        case STAT_DONE:
-            *msg = "";
-            *result = *--StackP;
-            FreeRestartData(continuation);
-            restoreContext(&oldContext);
-            return MACRO_DONE;
-        case STAT_OK:
-        default:
-            break;
-        }
-
-		/* Count instructions executed.  If the instruction limit is hit,
-		   preempt, store re-start information in continuation and give
-		   X, other macros, and other shell scripts a chance to execute */
-		instCount++;
-		if (instCount >= INSTRUCTION_LIMIT) {
-			saveContext(continuation);
-			restoreContext(&oldContext);
-			return MACRO_TIME_LIMIT;
-		}
-	}
-}
-
-/*
 ** If a macro is already executing, and requests that another macro be run,
 ** this can be called instead of ExecuteMacro to run it in the same context
 ** as if it were a subroutine.  This saves the caller from maintaining
@@ -742,11 +618,6 @@ void FreeRestartDataEx(RestartData<DocumentWidget> *context) {
     delete context;
 }
 
-void FreeRestartData(RestartData<Document> *context) {
-	delete [] context->stack;
-	delete context;
-}
-
 /*
 ** Cause a macro in progress to be preempted (called by commands which take
 ** a long time, or want to return to the event loop.  Call ResumeMacroExecution
@@ -766,11 +637,6 @@ void ModifyReturnedValueEx(RestartData<DocumentWidget> *context, DataValue dv) {
         *(context->stackP - 1) = dv;
 }
 
-void ModifyReturnedValue(RestartData<Document> *context, DataValue dv) {
-	if ((context->pc - 1)->func == fetchRetVal)
-		*(context->stackP - 1) = dv;
-}
-
 /*
 ** Called within a routine invoked from a macro, returns the window in
 ** which the macro is executing (where the banner is, not where it is focused)
@@ -788,30 +654,11 @@ DocumentWidget *MacroFocusWindowEx(void) {
     return FocusWindowEx;
 }
 
-/*
-** Called within a routine invoked from a macro, returns the window in
-** which the macro is executing (where the banner is, not where it is focused)
-*/
-Document *MacroRunWindow(void) {
-	return InitiatingWindow;
-}
 
-/*
-** Called within a routine invoked from a macro, returns the window to which
-** the currently executing macro is focused (the window which macro commands
-** modify, not the window from which the macro is being run)
-*/
-Document *MacroFocusWindow(void) {
-	return FocusWindow;
-}
 
-/*
-** Set the window to which macro subroutines and actions which operate on an
-** implied window are directed.
-*/
-void SetMacroFocusWindow(Document *window) {
-	FocusWindow = window;
-}
+
+
+
 
 /*
 ** Set the window to which macro subroutines and actions which operate on an
@@ -1167,27 +1014,6 @@ static void restoreContextEx(RestartData<DocumentWidget> *context) {
     PC                 = context->pc;
     InitiatingWindowEx = context->runWindow;
     FocusWindowEx      = context->focusWindow;
-}
-
-/*
-** Save and restore execution context to data structure "context"
-*/
-static void saveContext(RestartData<Document> *context) {
-	context->stack       = TheStack;
-	context->stackP      = StackP;
-	context->frameP      = FrameP;
-	context->pc          = PC;
-	context->runWindow   = InitiatingWindow;
-	context->focusWindow = FocusWindow;
-}
-
-static void restoreContext(RestartData<Document> *context) {
-	TheStack         = context->stack;
-	StackP           = context->stackP;
-	FrameP           = context->frameP;
-	PC               = context->pc;
-    InitiatingWindow = context->runWindow;
-    FocusWindow      = context->focusWindow;
 }
 
 static void freeSymbolTable(std::list<Symbol *> &symTab) {
@@ -2347,7 +2173,7 @@ ArrayEntry *ArrayNew(void) {
 ** insert a DataValue into an array, allocate the array if needed
 ** keyStr must be a string that was allocated with AllocString()
 */
-Boolean ArrayInsert(DataValue *theArray, char *keyStr, DataValue *theValue) {
+bool ArrayInsert(DataValue *theArray, char *keyStr, DataValue *theValue) {
 	ArrayEntry tmpEntry;
 	rbTreeNode *insertedNode;
 
@@ -2413,7 +2239,7 @@ unsigned ArraySize(DataValue *theArray) {
 ** retrieves an array node whose key matches
 ** returns 1 for success 0 for not found
 */
-Boolean ArrayGet(DataValue *theArray, char *keyStr, DataValue *theValue) {
+bool ArrayGet(DataValue *theArray, char *keyStr, DataValue *theValue) {
 	ArrayEntry searchEntry;
 	rbTreeNode *foundNode;
 
@@ -2422,11 +2248,11 @@ Boolean ArrayGet(DataValue *theArray, char *keyStr, DataValue *theValue) {
 		foundNode = rbTreeFind(theArray->val.arrayPtr, &searchEntry, arrayEntryCompare);
 		if (foundNode) {
 			*theValue = ((ArrayEntry *)foundNode)->value;
-			return True;
+            return true;
 		}
 	}
 
-	return False;
+    return false;
 }
 
 /*

@@ -5,7 +5,6 @@
 #include <QString>
 #include <QKeySequence>
 #include <cstdint>
-#include <X11/Intrinsic.h>
 
 /* sources for command input and destinations for command output */
 enum InSrcs   : uint8_t { FROM_SELECTION, FROM_WINDOW, FROM_EITHER, FROM_NONE };
@@ -27,8 +26,6 @@ public:
 public:
 	QString      name;
     QKeySequence shortcut;
-    //unsigned int modifiers;
-    //KeySym       keysym;
     char         mnemonic;
 	InSrcs       input;
 	OutDests     output;

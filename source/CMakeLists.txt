@@ -8,7 +8,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 find_package(Motif REQUIRED)
 find_package(X11 REQUIRED)
 find_package(BISON REQUIRED)
-find_package(Qt4 4.6.0 REQUIRED QtCore QtGui)
+find_package(Qt5 5.0.0 REQUIRED Widgets X11Extras Concurrent)
 
 find_library(LibM m)
 
@@ -17,11 +17,11 @@ find_library(LibM m)
 # in source copy of that file!
 bison_target(parser parse.y ${CMAKE_CURRENT_BINARY_DIR}/parser.cpp)
 
-qt4_add_resources(QRC_SOURCES
+qt5_add_resources(QRC_SOURCES
 	nedit.qrc
 )
 
-qt4_wrap_cpp(MOC_SOURCES
+qt5_wrap_cpp(MOC_SOURCES
 	#QtMotif.h
 	#QtMotifDialog.h
 	#QtMotifWidget.h
@@ -35,7 +35,6 @@ qt4_wrap_cpp(MOC_SOURCES
 	ui/DialogExecuteCommand.h
 	ui/DialogFilter.h
 	ui/DialogFind.h
-	ui/DialogFontSelector.h
 	ui/DialogFonts.h
 	ui/DialogLanguageModes.h
 	ui/DialogMacros.h
@@ -66,6 +65,7 @@ qt4_wrap_cpp(MOC_SOURCES
 	ui/DialogOutput.h
 	ui/CallTipWidget.h
 	ui/TabWidget.h
+	Preferences.h
 )
 
 set(UI_FILES
@@ -77,7 +77,6 @@ set(UI_FILES
 	ui/DialogExecuteCommand.ui
 	ui/DialogFilter.ui
 	ui/DialogFind.ui
-	ui/DialogFontSelector.ui
 	ui/DialogFonts.ui
 	ui/DialogLanguageModes.ui
 	ui/DialogMacros.ui
@@ -104,7 +103,7 @@ set(UI_FILES
 	ui/DocumentWidget.ui
 )
 
-qt4_wrap_ui(UI_H ${UI_FILES})
+qt5_wrap_ui(UI_H ${UI_FILES})
 
 add_executable(nedit
 
@@ -120,10 +119,12 @@ add_executable(nedit
 	#Document.cpp
 	#TextDisplay.cpp
 	#text.cpp
-	
-	Color.cpp
+	#Font.cpp
+	#Color.cpp
+	#UserMenuListElement.cpp
+
+	Preferences.cpp
 	file.cpp
-	Font.cpp
 	help.cpp
 	highlight.cpp
 	highlightData.cpp
@@ -160,7 +161,6 @@ add_executable(nedit
 	ui/DialogFilter.cpp
 	ui/DialogFind.cpp
 	ui/DialogFonts.cpp
-	ui/DialogFontSelector.cpp
 	ui/DialogLanguageModes.cpp
 	ui/DialogMacros.cpp
 	ui/DialogMoveDocument.cpp
@@ -193,12 +193,10 @@ add_executable(nedit
 	ui/TextArea.cpp
 	UndoInfo.cpp
 	userCmds.cpp
-	UserMenuListElement.cpp
+	X11Colors.cpp
 
 	${BISON_parser_OUTPUT_SOURCE}
 )
-
-include(${QT_USE_FILE})
 
 include_directories(nedit
 	${PROJECT_SOURCE_DIR}
@@ -215,23 +213,32 @@ target_link_libraries(nedit LINK_PUBLIC
 	${MOTIF_LIBRARIES}
 	${X11_LIBRARIES}
 	${X11_Xt_LIB}
-	Qt4::QtGui
+	Qt5::Widgets
+	Qt5::X11Extras
+	Qt5::Concurrent
+)
+
+qt5_wrap_cpp(MOC_SOURCES_NC
+	Preferences.h
 )
 
 add_executable(nc
 	nc.cpp
-	server_common.cpp)
+	server_common.cpp
+	Preferences.cpp
+	${MOC_SOURCES_NC})
 
 include_directories(nc
 	${X11_INCLUDE_DIR}
-	${X11_Xt_INCLUDE_PATH}
-	${QT_QTCORE_INCLUDE_DIR}
-	${QT_QTGUI_INCLUDE_DIR})
+	${X11_Xt_INCLUDE_PATH})
 
 target_link_libraries(nc LINK_PUBLIC
 	NUtil
 	${X11_Xt_LIB}
 	${X11_LIBRARIES}
+	Qt5::Widgets
+	Qt5::X11Extras
+
 )
 
 set_property(TARGET nedit PROPERTY C_STANDARD 99)

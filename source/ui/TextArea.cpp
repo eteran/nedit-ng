@@ -7,6 +7,7 @@
 #include <QScrollBar>
 #include <QPaintEvent>
 #include <QPainter>
+#include <QMimeData>
 #include <QX11Info>
 #include <QDesktopWidget>
 #include <QResizeEvent>
@@ -31,6 +32,9 @@
 // in a way that is comparaable to how the original nedit works
 class AsciiTextCodec : public QTextCodec {
 public:
+    virtual ~AsciiTextCodec() {
+    }
+
     virtual QByteArray name() const {
         return "US_ASCII";
     }
@@ -283,8 +287,8 @@ int countLinesEx(view::string_view string) {
 ** the colormap is full and there's no suitable substitute, print an error on
 ** stderr, and return the widget's background color as a backup.
 */
-Pixel allocBGColor(char *colorName, int *ok) {
-	*ok = 1;
+QColor allocBGColor(const char *colorName, int *ok) {
+    *ok = 1;
 	return AllocColor(colorName);
 }
 
@@ -346,12 +350,12 @@ bool isModifier(QKeyEvent *e) {
 }
 
 TextArea::TextArea(QWidget *parent,
-	Position left,
-	Position top,
-	Position width,
-	Position height,
-	Position lineNumLeft,
-	Position lineNumWidth,
+    int left,
+    int top,
+    int width,
+    int height,
+    int lineNumLeft,
+    int lineNumWidth,
 	TextBuffer *buffer,
 	QFont fontStruct,
 	QColor bgPixel,
@@ -387,8 +391,8 @@ TextArea::TextArea(QWidget *parent,
 
 
 	// defaults for the "resources
-	P_marginWidth        = 0; // NOTE(eteran): was 5, but Qt has its own notion of widget margins that we'll use
-	P_marginHeight       = 0; // NOTE(eteran): was 5, but Qt has its own notion of widget margins that we'll use
+    P_marginWidth        = 5;
+    P_marginHeight       = 5;
 	P_pendingDelete      = true;
 	P_heavyCursor        = false;
 	P_autoShowInsertPos  = true;
@@ -457,7 +461,9 @@ TextArea::TextArea(QWidget *parent,
 	pal.setColor(QPalette::HighlightedText, selectFGPixel); // highlight foreground
 	viewport()->setPalette(pal);
 #endif
-	QFontMetrics fm(fontStruct);
+
+    fontStruct.setStyleStrategy(QFont::ForceIntegerMetrics);
+    QFontMetrics fm(fontStruct);
 	QFontInfo    fi(fontStruct);
 
 	ascent_  = fm.ascent();
@@ -493,7 +499,7 @@ TextArea::TextArea(QWidget *parent,
 
 	lineNumLeft_        = lineNumLeft;
 	lineNumWidth_       = lineNumWidth;
-	nVisibleLines_      = (height - 1) / (ascent_ + descent_) + 1;
+    nVisibleLines_      = (height - 1) / ascent_ + descent_ + 1;
 
 	lineStarts_        = new int[nVisibleLines_];
 	lineStarts_[0]     = 0;
@@ -567,7 +573,7 @@ TextArea::TextArea(QWidget *parent,
 	   Fixing it here is 100x easier than re-designing TextDisplay.c */
 
 	setMinimumWidth(fm.maxWidth() + (marginWidth * 2) + lineNumAreaWidth);
-	setMinimumHeight(fm.ascent() + fm.descent() + (marginHeight * 2));
+    setMinimumHeight(ascent_ + descent_ + (marginHeight * 2));
 #endif
 }
 
@@ -875,13 +881,13 @@ void TextArea::cursorBlinkTimerTimeout() {
 //------------------------------------------------------------------------------
 void TextArea::autoScrollTimerTimeout() {
 
-	QFontMetrics fm(viewport()->font());
+    QFontMetrics fm(viewport()->font());
 	int topLineNum;
 	int horizOffset;
 	int cursorX;
 	int y;
 	int fontWidth    = fm.maxWidth();
-	int fontHeight   = fm.ascent() + fm.descent();
+    int fontHeight   = ascent_ + descent_;
 	Point mouseCoord = mouseCoord_;
 
 	/* For vertical autoscrolling just dragging the mouse outside of the top
@@ -1571,6 +1577,8 @@ void TextArea::paintEvent(QPaintEvent *event) {
 
 	QPainter painter(viewport());
 
+    QFontMetrics fm(viewport()->font());
+
 	QRect rect = event->rect();
 	const int top    = rect.top();
 	const int left   = rect.left();
@@ -1578,7 +1586,7 @@ void TextArea::paintEvent(QPaintEvent *event) {
 	const int height = rect.height();
 
 	// find the line number range of the display
-	const int fontHeight = ascent_ + descent_;
+    const int fontHeight = ascent_ + descent_;
 	const int firstLine  = (top - rect_.top - fontHeight + 1) / fontHeight;
 	const int lastLine   = (top + height - rect_.top) / fontHeight;
 
@@ -1587,7 +1595,7 @@ void TextArea::paintEvent(QPaintEvent *event) {
 	resetClipRectangles();
 
 	painter.save();
-	painter.setClipRect(QRect(rect_.left, rect_.top, rect_.width, rect_.height - rect_.height % (ascent_ + descent_)));
+    painter.setClipRect(QRect(rect_.left, rect_.top, rect_.width, rect_.height - rect_.height % (ascent_ + descent_)));
 
 	// draw the lines of text
 	for (int line = firstLine; line <= lastLine; line++) {
@@ -1607,7 +1615,7 @@ void TextArea::paintEvent(QPaintEvent *event) {
 //------------------------------------------------------------------------------
 void TextArea::resizeEvent(QResizeEvent *event) {
 
-	QFontMetrics fm(viewport()->font());
+    QFontMetrics fm(viewport()->font());
 	int height           = event->size().height();
 	int width            = event->size().width();
 	int marginWidth      = P_marginWidth;
@@ -1615,7 +1623,7 @@ void TextArea::resizeEvent(QResizeEvent *event) {
 	int lineNumAreaWidth = P_lineNumCols == 0 ? 0 : P_marginWidth + fm.maxWidth() * P_lineNumCols;
 
 	P_columns = (width - marginWidth * 2 - lineNumAreaWidth) / fm.maxWidth();
-	P_rows    = (height - marginHeight * 2) / (fm.ascent() + fm.descent());
+    P_rows    = (height - marginHeight * 2) / (ascent_ + descent_);
 
 	// Resize the text display that the widget uses to render text
 	TextDResize(width - marginWidth * 2 - lineNumAreaWidth, height - marginHeight * 2);
@@ -1781,7 +1789,7 @@ void TextArea::setBacklightCharTypes(const QString &charTypes) {
 // Name:
 //------------------------------------------------------------------------------
 void TextArea::hideOrShowHScrollBar() {
-	QFontMetrics fm(viewport()->font());
+    QFontMetrics fm(viewport()->font());
 	if (P_continuousWrap && (P_wrapMargin == 0 || P_wrapMargin * fm.maxWidth() < rect_.width)) {
 		setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 	} else {
@@ -1889,7 +1897,7 @@ void TextArea::measureDeletedLines(int pos, int nDeleted) {
 //------------------------------------------------------------------------------
 // Name:
 //------------------------------------------------------------------------------
-void TextArea::wrappedLineCounter(const TextBuffer *buf, const int startPos, const int maxPos, const int maxLines, const Boolean startPosIsLineStart, const int styleBufOffset, int *retPos, int *retLines, int *retLineStart, int *retLineEnd) const {
+void TextArea::wrappedLineCounter(const TextBuffer *buf, int startPos, int maxPos, int maxLines, bool startPosIsLineStart, int styleBufOffset, int *retPos, int *retLines, int *retLineStart, int *retLineEnd) const {
 	int lineStart;
 	int newLineStart = 0;
 	int b;
@@ -2033,7 +2041,7 @@ void TextArea::wrappedLineCounter(const TextBuffer *buf, const int startPos, con
 //------------------------------------------------------------------------------
 // Name:
 //------------------------------------------------------------------------------
-int TextArea::measurePropChar(const char c, const int colNum, const int pos) const {
+int TextArea::measurePropChar(const char c, int colNum, int pos) const {
 	int style;
 	char expChar[MAX_EXP_CHAR_LEN];
 	TextBuffer *styleBuf = styleBuffer_;
@@ -2058,21 +2066,17 @@ int TextArea::measurePropChar(const char c, const int colNum, const int pos) con
 //------------------------------------------------------------------------------
 // Name:
 //------------------------------------------------------------------------------
-int TextArea::stringWidth(const char *string, const int length, const int style) const {
+int TextArea::stringWidth(const char *string, int length, int style) const {
 
 
 	if (style & STYLE_LOOKUP_MASK) {
-        if(XFontStruct *fs = styleTable_[(style & STYLE_LOOKUP_MASK) - ASCII_A].font) {
-            return XTextWidth(fs, (char *)string, (int)length);
-        } else {
-            QFontMetrics fm(styleTable_[(style & STYLE_LOOKUP_MASK) - ASCII_A].fontEx);
-            int ret = fm.width(QString::fromAscii(string, length));
-            return ret;
-        }
+        QFontMetrics fm(styleTable_[(style & STYLE_LOOKUP_MASK) - ASCII_A].fontEx);
+        int ret = fm.width(QString::fromLatin1(string, length));
+        return ret;
 	} else {
-		QFontMetrics fm(viewport()->font());
-        int ret = fm.width(QString::fromAscii(string, length));
-		return ret;
+        QFontMetrics fm(viewport()->font());
+        int ret = fm.width(QString::fromLatin1(string, length));
+        return ret;
 	}
 }
 
@@ -2578,7 +2582,7 @@ void TextArea::TextDRedisplayRect(int left, int top, int width, int height) {
 	int line;
 
 	// find the line number range of the display
-	fontHeight = ascent_ + descent_;
+    fontHeight = ascent_ + descent_;
 	firstLine = (top - rect_.top - fontHeight + 1) / fontHeight;
 	lastLine = (top + height - rect_.top) / fontHeight;
 
@@ -2812,9 +2816,9 @@ void TextArea::blankCursorProtrusions() {
 	int width;
 	int cursorX    = cursor_.x;
 	int cursorY    = cursor_.y;
-	QFontMetrics fm(viewport()->font());
+    QFontMetrics fm(viewport()->font());
 	int fontWidth  = fm.maxWidth();
-	int fontHeight = ascent_ + descent_;
+    int fontHeight = ascent_ + descent_;
 	int left       = rect_.left;
 	int right      = left + rect_.width;
 
@@ -2844,12 +2848,12 @@ int TextArea::measureVisLine(int visLineNum) {
 	int charCount = 0;
 	int lineStartPos = lineStarts_[visLineNum];
 	char expandedChar[MAX_EXP_CHAR_LEN];
-	QFontMetrics fm(viewport()->font());
+    QFontMetrics fm(viewport()->font());
 
 	if (!styleBuffer_) {
 		for (i = 0; i < lineLen; i++) {
 			len = buffer_->BufGetExpandedChar(lineStartPos + i, charCount, expandedChar);
-            width += fm.width(QString::fromAscii(expandedChar, len));
+            width += fm.width(QString::fromLatin1(expandedChar, len));
 			charCount += len;
 		}
 	} else {
@@ -2858,14 +2862,9 @@ int TextArea::measureVisLine(int visLineNum) {
             auto styleChar = styleBuffer_->BufGetCharacter(lineStartPos + i);
             int style = static_cast<uint8_t>(styleChar) - ASCII_A;
 
+            QFontMetrics styleFm(styleTable_[style].fontEx);
+            width += styleFm.width(QString::fromLatin1(expandedChar, len));
 
-            if(styleTable_[style].font) {
-                width += XTextWidth(styleTable_[style].font, expandedChar, len);
-            } else {
-                QFontMetrics styleFm(styleTable_[style].fontEx);
-                width += styleFm.width(QString::fromAscii(expandedChar, len));
-
-            }
 			charCount += len;
 		}
 	}
@@ -3070,7 +3069,7 @@ void TextArea::resetClipRectangles() {
 	clipRect.x      = rect_.left;
 	clipRect.y      = rect_.top;
 	clipRect.width  = rect_.width;
-	clipRect.height = rect_.height - rect_.height % (ascent_ + descent_);
+    clipRect.height = rect_.height - rect_.height % (ascent_ + descent_);
 
 	XSetClipRectangles(display, gc_,            0, 0, &clipRect, 1, Unsorted);
 	XSetClipRectangles(display, selectGC_,      0, 0, &clipRect, 1, Unsorted);
@@ -3111,8 +3110,8 @@ void TextArea::redrawLineNumbers(QPainter *painter, bool clearAll) {
 	int visLine;
 	int nCols;
 	char lineNumString[12];
-	QFontMetrics fm(viewport()->font());
-	int lineHeight = ascent_ + descent_;
+    QFontMetrics fm(viewport()->font());
+    int lineHeight = ascent_ + descent_;
 	int charWidth  = fm.maxWidth();
 
 	/* Don't draw if lineNumWidth == 0 (line numbers are hidden), or widget is
@@ -3162,13 +3161,15 @@ void TextArea::redisplayLineEx(int visLineNum, int leftClip, int rightClip, int 
 	Q_UNUSED(leftCharIndex);
 	Q_UNUSED(rightCharIndex);
 
+    QFontMetrics fm(viewport()->font());
+
 	// If line is not displayed, skip it
 	if (visLineNum < 0 || visLineNum >= nVisibleLines_) {
 		return;
 	}
 
 	// Calculate y coordinate of the string to draw
-	int fontHeight = ascent_ + descent_;
+    int fontHeight = ascent_ + descent_;
 	int y = rect_.top + visLineNum * fontHeight;
 
 	viewport()->update(QRect(leftClip, y, rightClip - leftClip, fontHeight));
@@ -3189,14 +3190,14 @@ void TextArea::redisplayLineEx(int visLineNum, int leftClip, int rightClip, int 
 void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, int rightClip, int leftCharIndex, int rightCharIndex) {
 
 	int i;
-	int x;
-	int startX;
+    int x;
+    int startX;
 	int charIndex;
 	int lineStartPos;
 	int lineLen;
-	int stdCharWidth;
-	int charWidth;
-	int startIndex;
+    int stdCharWidth;
+    int charWidth;
+    int startIndex;
 	int style;
 	int charLen;
 	int outStartIndex;
@@ -3210,10 +3211,9 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 	char *outPtr;
 	char baseChar;
 	std::string lineStr;
-	QFontMetrics fm(viewport()->font());
+    QFontMetrics fm(viewport()->font());
 
-
-	// If line is not displayed, skip it
+    // If line is not displayed, skip it
 	if (visLineNum < 0 || visLineNum >= nVisibleLines_) {
 		return;
 	}
@@ -3227,7 +3227,7 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 	}
 
 	// Calculate y coordinate of the string to draw
-	int fontHeight = ascent_ + descent_;
+    int fontHeight = ascent_ + descent_;
 	const int y = rect_.top + visLineNum * fontHeight;
 
 	// Get the text, length, and  buffer position of the line to display
@@ -3244,7 +3244,7 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 	   changes based on character position can still occur in this region due
 	   to rectangular selections).  stdCharWidth must be non-zero to prevent a
 	   potential infinite loop if x does not advance */
-	stdCharWidth = fm.maxWidth();
+    stdCharWidth = fm.maxWidth();
 	if (stdCharWidth <= 0) {
 		fprintf(stderr, "nedit: Internal Error, bad font measurement\n");
 		return;
@@ -3454,44 +3454,30 @@ void TextArea::drawString(QPainter *painter, int style, int x, int y, int toX, c
 	QColor bground       = palette.color(QPalette::Base);
 	QColor fground       = palette.color(QPalette::Text);
 	bool underlineStyle = false;
-	QColor X_gc;
-	QColor X_bgGC;
 	QFont X_font = viewport()->font();
 
 	enum DrawType {
-		DrawStyle, DrawHighlight, DrawSelect, DrawPlain
+        DrawStyle,
+        DrawHighlight,
+        DrawSelect,
+        DrawPlain
 	};
-	DrawType drawType;
 
+	DrawType drawType;
 
 	// select a GC
 	if (style & (STYLE_LOOKUP_MASK | BACKLIGHT_MASK | RANGESET_MASK)) {
 		drawType = DrawStyle;
-#if 0
-		gc = bgGC = styleGC_;
-#endif
 	} else if (style & HIGHLIGHT_MASK) {
 		drawType = DrawHighlight;
-
         fground = highlightFGPixel_;
         bground = highlightBGPixel_;
-#if 0
-		gc = highlightGC_;
-		bgGC = highlightBGGC_;
-#endif
 	} else if (style & PRIMARY_MASK) {
 		drawType = DrawSelect;
 		fground = palette.color(QPalette::HighlightedText);
 		bground = palette.color(QPalette::Highlight);
-#if 0
-		gc   = selectGC_;
-		bgGC = selectBGGC_;
-#endif
 	} else {
 		drawType = DrawPlain;
-#if 0
-		gc = bgGC = gc_;
-#endif
 	}
 
 	if(drawType == DrawStyle) {
@@ -3506,17 +3492,8 @@ void TextArea::drawString(QPainter *painter, int style, int x, int y, int toX, c
 			styleRec = &styleTable_[(style & STYLE_LOOKUP_MASK) - ASCII_A];
 			underlineStyle = styleRec->underline;
 
-            if(XFontStruct *fi = styleRec->font) {
-                unsigned long ret;
-                XGetFontProperty(fi, XA_FONT, &ret);
-                const char *name = XGetAtomName(QX11Info::display(), (Atom)ret);
-
-                X_font.setRawName(QLatin1String(name));
-            } else {
-                X_font = styleRec->fontEx;
-            }
-
-			fground = toQColor(styleRec->color);
+            X_font = styleRec->fontEx;
+            fground = styleRec->color;
 			// here you could pick up specific select and highlight fground
 		} else {
 			styleRec = nullptr;
@@ -3539,7 +3516,7 @@ void TextArea::drawString(QPainter *painter, int style, int x, int y, int toX, c
 		} else if(style & RANGESET_MASK) {
 			bground = getRangesetColor((style & RANGESET_MASK) >> RANGESET_SHIFT, bground);
 		} else if(styleRec && !styleRec->bgColorName.isNull()) {
-			bground = toQColor(styleRec->bgColor);
+            bground = styleRec->bgColor;
 		} else if((style & BACKLIGHT_MASK) && !(style & FILL_MASK)) {
 			bground = bgClassPixel_[(style >> BACKLIGHT_SHIFT) & 0xff];
 		} else {
@@ -3550,20 +3527,16 @@ void TextArea::drawString(QPainter *painter, int style, int x, int y, int toX, c
 		if (fground == bground) { // B&W kludge
 			fground = palette.color(QPalette::Base);
 		}
-#if 0
-		// set up gc for clearing using the foreground color entry
-		gcValues.foreground = bground;
-		gcValues.background = bground;
-		XChangeGC(display, gc, GCFont | GCForeground | GCBackground, &gcValues);
-#endif
 	}
+
+    QFontMetrics fm(X_font);
 
 	// Draw blank area rather than text, if that was the request
 	if (style & FILL_MASK) {
 
 		// wipes out to right hand edge of widget
 		if (toX >= rect_.left) {
-			painter->fillRect(QRect(std::max(x, rect_.left), y, toX - std::max(x, rect_.left), ascent_ + descent_), bground);
+            painter->fillRect(QRect(std::max(x, rect_.left), y, toX - std::max(x, rect_.left), ascent_ + descent_), bground);
 		}
 
 		return;
@@ -3581,39 +3554,25 @@ void TextArea::drawString(QPainter *painter, int style, int x, int y, int toX, c
 		painter->fillRect(QRect(x, y + ascent_ + fm.descent(), toX - x, descent_ - fm.descent()), bground);
 	}
 #endif
-#if 0
-	// set up gc for writing text (set foreground properly)
-	if(drawType == DrawStyle) {
-		gcValues.foreground = fground;
-		XChangeGC(display, gc, GCForeground, &gcValues);
-	}
-#endif
 
 	// Underline if style is secondary selection
 	if (style & SECONDARY_MASK || underlineStyle) {
 		X_font.setUnderline(true);
-#if 0
-		// restore foreground in GC (was set to background by clearRect())
-		gcValues.foreground = fground;
-		XChangeGC(display, gc, GCForeground, &gcValues);
-		// draw underline
-		XDrawLine(display, window, gc, x, y + ascent_, toX - 1, y + ascent_);
-#endif
 	}
 
-	QRect rect(x, y, toX - x, ascent_ + descent_);
+    QRect rect(x, y, toX - x, ascent_ + descent_);
 	// Draw the string using gc and font set above
 	painter->setPen(fground);
 
 
     // temporarily use a custom converter
-    static AsciiTextCodec asciiCodec;
-    QTextCodec::setCodecForCStrings(&asciiCodec);
+    static auto asciiCodec = new AsciiTextCodec ();
+    QTextCodec::setCodecForLocale(asciiCodec);
 
-    auto s = QString::fromAscii(string, nChars);
+    auto s = QString::fromLatin1(string, nChars);
 
     // restore it, because otherwise it messes up QString::toStdString
-    QTextCodec::setCodecForCStrings(nullptr);
+    QTextCodec::setCodecForLocale(nullptr);
 
 	// TODO(eteran): OPTIMIZATTION: since Qt will auto-fill the BG with the
 	//               default base color we only need to play with the
@@ -3629,7 +3588,7 @@ void TextArea::drawString(QPainter *painter, int style, int x, int y, int toX, c
 	painter->fillRect(rect, bground);
 #endif
 	painter->setFont(X_font);
-	painter->drawText(rect, Qt::TextSingleLine | Qt::TextDontClip | Qt::AlignVCenter, s);
+    painter->drawText(rect, Qt::TextSingleLine | Qt::TextDontClip | Qt::AlignVCenter | Qt::AlignLeft, s);
 }
 
 //------------------------------------------------------------------------------
@@ -3639,7 +3598,7 @@ void TextArea::drawString(QPainter *painter, int style, int x, int y, int toX, c
 void TextArea::drawCursor(QPainter *painter, int x, int y) {
 
 	QPainterPath path;
-	QFontMetrics fm(viewport()->font());
+    QFontMetrics fm(viewport()->font());
 
 	int midY;
     // TODO(eteran): the original code used fontStruct_->min_bounds.width
@@ -3647,8 +3606,8 @@ void TextArea::drawCursor(QPainter *painter, int x, int y) {
     // we aren't quite right. I've approximated this with the width of 'i', but
     // in some fonts, maybe that's not right?
     int fontWidth  = fm.width(QLatin1Char('i'));
-	int fontHeight = ascent_ + descent_;
-	int bot        = y + fontHeight - 1;
+    int fontHeight = ascent_ + descent_;
+    int bot        = y + fontHeight - 1;
 
 	if (x < rect_.left - 1 || x > rect_.left + rect_.width) {
 		return;
@@ -3746,17 +3705,17 @@ QColor TextArea::getRangesetColor(int ind, QColor bground) {
 		ind--;
 		RangesetTable *tab = buffer_->rangesetTable_;
 
-		Pixel color;
+        QColor color;
 		int valid = tab->RangesetTableGetColorValid(ind, &color);
 		if (valid == 0) {
-			char *color_name = tab->RangesetTableGetColorName(ind);
-			if (color_name) {
-				color = allocBGColor(color_name, &valid);
+            const char *color_name = tab->RangesetTableGetColorName(ind);
+            if (color_name) {
+                color = allocBGColor(color_name, &valid);
 			}
 			tab->RangesetTableAssignColorPixel(ind, color, valid);
 		}
 		if (valid > 0) {
-			return toQColor(color);
+            return color;
 		}
 	}
 	return bground;
@@ -3768,12 +3727,13 @@ QColor TextArea::getRangesetColor(int ind, QColor bground) {
 //------------------------------------------------------------------------------
 void TextArea::TextDResize(int width, int height) {
 
+    QFontMetrics fm(viewport()->font());
 	int oldVisibleLines = nVisibleLines_;
 	bool canRedraw = true;
-	int newVisibleLines = height / (ascent_ + descent_);
+    int newVisibleLines = height / (ascent_ + descent_);
 	int redrawAll = false;
 	int oldWidth = rect_.width;
-	int exactHeight = height - height % (ascent_ + descent_);
+    int exactHeight = height - height % (ascent_ + descent_);
 
 	rect_.width = width;
 	rect_.height = height;
@@ -3897,9 +3857,9 @@ void TextArea::setScroll(int topLineNum, int horizOffset, bool updateVScrollBar,
 	//               the whole thing. It's not as fast/clever, but it'll work
 	viewport()->update();
 #else
-	int fontHeight  = ascent_ + descent_;
+    int fontHeight  = ascent_ + descent_;
 	int origHOffset = horizOffset_;
-	int exactHeight = rect_.height - rect_.height % (ascent_ + descent_);
+    int exactHeight = rect_.height - rect_.height % (ascent_ + descent_);
 
 	/* Redisplay everything if the window is partially obscured (since
 	   it's too hard to tell what displayed areas are salvageable) or
@@ -4238,9 +4198,11 @@ void TextArea::TextDRedrawCalltip(int calltipID) {
 			return;
 		}
 		rel_x = calltip_.pos;
-	}
+    }
 
-	int lineHeight = ascent_ + descent_;
+    QFontMetrics fm(viewport()->font());
+
+    int lineHeight = ascent_ + descent_;
     int tipWidth    = calltipWidget_->width();
     int tipHeight   = calltipWidget_->height();
     int borderWidth = 1; // TODO(eteran): get the actual border width!
@@ -4376,8 +4338,8 @@ void TextArea::TextDSetupBGClasses(const QString &s, QVector<QColor> *pp_bgClass
 			const uint8_t nextClass = class_no++;
 
 			int dummy;
-			Pixel pix = allocBGColor(color.toLatin1().data(), &dummy);
-			bgClassPixel[nextClass] = toQColor(pix);
+            QColor pix = allocBGColor(color.toLatin1().data(), &dummy);
+            bgClassPixel[nextClass] = pix;
 
 			QStringList rangeList = ranges.split(QLatin1Char(','), QString::SkipEmptyParts);
 			for(const QString &range : rangeList) {
@@ -4441,8 +4403,11 @@ int TextArea::TextDPositionToXY(int pos, int *x, int *y) {
 
 	// Calculate y coordinate
 	if (!posToVisibleLineNum(pos, &visLineNum))
-		return false;
-	fontHeight = ascent_ + descent_;
+        return false;
+
+    QFontMetrics fm(viewport()->font());
+
+    fontHeight = ascent_ + descent_;
 	*y = rect_.top + visLineNum * fontHeight + fontHeight / 2;
 
 	/* Get the text, length, and  buffer position of the line. If the position
@@ -4967,7 +4932,7 @@ void TextArea::TextInsertAtCursorEx(view::string_view chars, bool allowPendingDe
 	int colNum;
 	int lineStartPos;
 	int cursorPos;
-	QFontMetrics fm(viewport()->font());
+    QFontMetrics fm(viewport()->font());
 	int fontWidth   = fm.maxWidth();
 	int replaceSel;
 	int singleLine;
@@ -5944,8 +5909,8 @@ void TextArea::TextDXYToUnconstrainedPosition(Point coord, int *row, int *column
 */
 void TextArea::xyToUnconstrainedPos(int x, int y, int *row, int *column, int posType) {
 
-	QFontMetrics fm(viewport()->font());
-	int fontHeight = ascent_ + descent_;
+    QFontMetrics fm(viewport()->font());
+    int fontHeight = ascent_ + descent_;
 	int fontWidth = fm.maxWidth();
 
 	// Find the visible line number corresponding to the y coordinate
@@ -6258,8 +6223,10 @@ int TextArea::xyToPos(int x, int y, int posType) {
 	int outIndex;
 	char expandedChar[MAX_EXP_CHAR_LEN];
 
+    QFontMetrics fm(viewport()->font());
+
 	// Find the visible line number corresponding to the y coordinate
-	fontHeight = ascent_ + descent_;
+    fontHeight = ascent_ + descent_;
 	visLineNum = (y - rect_.top) / fontHeight;
 	if (visLineNum < 0)
 		return firstChar_;
@@ -6584,9 +6551,11 @@ void TextArea::deleteToStartOfLineAP(EventFlags flags) {
 
 void TextArea::mousePanAP(QMouseEvent *event, EventFlags flags) {
 
-	Q_UNUSED(flags);
+    Q_UNUSED(flags);
 
-	int lineHeight = ascent_ + descent_;
+    QFontMetrics fm(viewport()->font());
+
+    int lineHeight = ascent_ + descent_;
 	int topLineNum;
 	int horizOffset;
 
@@ -6870,8 +6839,8 @@ void TextArea::secondaryAdjustAP(QMouseEvent *event, EventFlags flags) {
 */
 void TextArea::BeginBlockDrag() {
 
-	QFontMetrics fm(viewport()->font());
-	int fontHeight     = fm.ascent() + fm.descent();
+    QFontMetrics fm(viewport()->font());
+    int fontHeight     = ascent_ + descent_;
 	int fontWidth      = fm.maxWidth();
 	TextSelection *sel = &buffer_->primary_;
 	int nLines;
@@ -6966,8 +6935,8 @@ void TextArea::BeginBlockDrag() {
 */
 void TextArea::BlockDragSelection(Point pos, BlockDragTypes dragType) {
 
-	QFontMetrics fm(viewport()->font());
-	int fontHeight             = fm.ascent() + fm.descent();
+    QFontMetrics fm(viewport()->font());
+    int fontHeight             = ascent_ + descent_;
 	int fontWidth              = fm.maxWidth();
 	TextBuffer *origBuf        = dragOrigBuf_;
 	int dragXOffset            = dragXOffset_;
@@ -7266,7 +7235,7 @@ void TextArea::setLineNumCols(int value) {
 
 	P_lineNumCols = value;
 
-	QFontMetrics fm(viewport()->font());
+    QFontMetrics fm(viewport()->font());
 
 	int marginWidth = P_marginWidth;
 	int charWidth   = fm.maxWidth();
@@ -7593,25 +7562,25 @@ int TextArea::getAbsTopLineNum() {
 	return 0;
 }
 
-Pixel TextArea::getForegroundPixel() const {
+QColor TextArea::getForegroundPixel() const {
     QPalette pal = viewport()->palette();
-    return toPixel(pal.color(QPalette::Text));
+    return pal.color(QPalette::Text);
 }
 
-Pixel TextArea::getBackgroundPixel() const {
+QColor TextArea::getBackgroundPixel() const {
     QPalette pal = viewport()->palette();
-    return toPixel(pal.color(QPalette::Base));
+    return pal.color(QPalette::Base);
 }
 
-void TextArea::setForegroundPixel(Pixel pixel) {
+void TextArea::setForegroundPixel(const QColor pixel) {
 	QPalette pal = viewport()->palette();
-	pal.setColor(QPalette::Text, toQColor(pixel));
+    pal.setColor(QPalette::Text, pixel);
 	viewport()->setPalette(pal);
 }
 
-void TextArea::setBackgroundPixel(Pixel pixel) {
+void TextArea::setBackgroundPixel(const QColor &pixel) {
 	QPalette pal = viewport()->palette();
-	pal.setColor(QPalette::Base, toQColor(pixel));
+    pal.setColor(QPalette::Base, pixel);
 	viewport()->setPalette(pal);
 }
 
@@ -7649,18 +7618,21 @@ QFont TextArea::getFont() const {
 
 void TextArea::setFont(const QFont &font) {
 
+    QFont newFont = font;
+    newFont.setStyleStrategy(QFont::ForceIntegerMetrics);
+
 	bool reconfigure = false;
 
     // TODO(eteran): i beleive that this set font is redundant to one
     // that gets called in TextDSetFont
-    viewport()->setFont(font);
+    viewport()->setFont(newFont);
 
 	// did the font change?
 	if (P_lineNumCols != 0) {
 		reconfigure = true;
 	}
 
-    TextDSetFont(font);
+    TextDSetFont(newFont);
 
 	/* Setting the lineNumCols resource tells the text widget to hide or
 	   show, or change the number of columns of the line number display,
@@ -7697,7 +7669,7 @@ void TextArea::setSmartIndent(bool value) {
 
 void TextArea::pageLeftAP(EventFlags flags) {
 
-	QFontMetrics fm(viewport()->font());
+    QFontMetrics fm(viewport()->font());
 	int insertPos    = cursorPos_;
 	int maxCharWidth = fm.maxWidth();
 	int lineStartPos;
@@ -7732,7 +7704,7 @@ void TextArea::pageLeftAP(EventFlags flags) {
 
 void TextArea::pageRightAP(EventFlags flags) {
 
-	QFontMetrics fm(viewport()->font());
+    QFontMetrics fm(viewport()->font());
 	int insertPos      = cursorPos_;
 	int maxCharWidth   = fm.maxWidth();
 	int oldHorizOffset = horizOffset_;
@@ -8135,11 +8107,8 @@ void TextArea::TextDSetFont(const QFont &font) {
     QFontMetrics fm(font);
     QFontInfo fi(font);
 
-    int i;
     int maxAscent  = fm.ascent();
     int maxDescent = fm.descent();
-    int width;
-    int height;
 
     // If font size changes, cursor will be redrawn in a new position
     blankCursorProtrusions();
@@ -8162,11 +8131,11 @@ void TextArea::TextDSetFont(const QFont &font) {
     if(!fi.fixedPitch()) {
         fontWidth = -1;
     } else {
-        for (i = 0; i < nStyles_; i++) {
+        for (int i = 0; i < nStyles_; i++) {
 
             // NOTE(eteran): old code tested for nullptr? can this still be null?
             QFontMetrics styleFM(styleTable_[i].fontEx);
-            QFontInfo    styleFI(styleTable_[i].fontEx);
+            QFontInfo     styleFI(styleTable_[i].fontEx);
 
             if ((styleFM.maxWidth() != fontWidth || !styleFI.fixedPitch())) {
                 fontWidth = -1;
@@ -8188,8 +8157,8 @@ void TextArea::TextDSetFont(const QFont &font) {
     viewport()->setFont(font);
 
     // Do a full resize to force recalculation of font related parameters
-    width  = rect_.width;
-    height = rect_.height;
+    int width  = rect_.width;
+    int height = rect_.height;
 
     rect_.width  = 0;
     rect_.height = 0;
@@ -8503,14 +8472,17 @@ TextBuffer *TextArea::TextGetBuffer() const {
 
 int TextArea::TextDMinFontWidth(bool considerStyles) const {
 
-    QFontMetricsF fm(viewport()->font());
+    QFontMetrics fm(viewport()->font());
 
-    int fontWidth = fm.maxWidth(); // TODO(eteran) this is max, not min
-                                   // maybe we should use width('i') or something?
+    int fontWidth = fm.maxWidth();
+
 
     if (considerStyles) {
         for (int i = 0; i < nStyles_; ++i) {
-            int thisWidth = (styleTable_[i].font)->min_bounds.width;
+            QFontMetrics fm(styleTable_[i].fontEx);
+
+            // NOTE(eteran): this was min_bounds.width, we just assume that 'i' is the thinnest character
+            int thisWidth = fm.width(QLatin1Char('i'));
             if (thisWidth < fontWidth) {
                 fontWidth = thisWidth;
             }
@@ -8521,13 +8493,14 @@ int TextArea::TextDMinFontWidth(bool considerStyles) const {
 
 int TextArea::TextDMaxFontWidth(bool considerStyles) const {
 
-    QFontMetricsF fm(viewport()->font());
+    QFontMetrics fm(viewport()->font());
 
     int fontWidth = fm.maxWidth();
 
     if (considerStyles) {
         for (int i = 0; i < nStyles_; ++i) {
-            int thisWidth = (styleTable_[i].font)->max_bounds.width;
+            QFontMetrics fm(styleTable_[i].fontEx);
+            int thisWidth = fm.maxWidth();
             if (thisWidth > fontWidth) {
                 fontWidth = thisWidth;
             }

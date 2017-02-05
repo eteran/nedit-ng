@@ -60,6 +60,7 @@ enum Mode {
 	TIP
 };
 
+bool AddRelTagsFileEx(const QString &tagSpec, const char *windowPath, int file_type);
 bool AddRelTagsFile(const char *tagSpec, const char *windowPath, int file_type);
 // tagSpec is a colon-delimited list of filenames 
 int AddTagsFile(const char *tagSpec, int file_type);

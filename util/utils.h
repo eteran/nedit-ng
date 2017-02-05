@@ -29,18 +29,9 @@
 
 class QString;
 
-/* N_FILE_TYPES must be the last entry!! This saves us from counting. */
-enum {
-	NEDIT_RC,
-	AUTOLOAD_NM,
-	NEDIT_HISTORY,
-	N_FILE_TYPES
-};
-
 QString GetCurrentDirEx();
 QString GetHomeDirEx();
 QString GetNameOfHostEx();
-QString GetRCFileNameEx(int type);
 QString GetUserNameEx();
 QString PrependHomeEx(const QString &filename);
 

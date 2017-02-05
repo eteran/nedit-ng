@@ -1,7 +1,10 @@
 
 #include "Font.h"
+
+#if 0
 #include <QX11Info>
 #include <X11/Xatom.h>
+
 
 //------------------------------------------------------------------------------
 // Name:
@@ -23,3 +26,5 @@ QFont toQFont(XFontStruct *fs) {
 XFontStruct *fromQFont(const QFont &font) {
     return XQueryFont(QX11Info::display(), font.handle());
 }
+
+#endif
