@@ -1,5 +1,5 @@
 
-#include "Preferences.h"
+#include "Settings.h"
 #include <QStandardPaths>
 #include <QSettings>
 #include "WrapStyle.h"
@@ -13,19 +13,19 @@
 // New styles added in 5.2 for auto-upgrade
 #define ADD_5_2_STYLES " Pointer:#660000:Bold\nRegex:#009944:Bold\nWarning:brown2:Italic"
 
-QString Preferences::configFile() {
+QString Settings::configFile() {
     QString configDir  = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
     QString configFile = QString(QLatin1String("%1/%2/%3")).arg(configDir, QLatin1String("nedit-ng"), QLatin1String("config.ini"));
     return configFile;
 }
 
-QString Preferences::historyFile() {
+QString Settings::historyFile() {
     QString configDir  = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
     QString configFile = QString(QLatin1String("%1/%2/%3")).arg(configDir, QLatin1String("nedit-ng"), QLatin1String("history"));
     return configFile;
 }
 
-QString Preferences::autoLoadMacroFile() {
+QString Settings::autoLoadMacroFile() {
     QString configDir  = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
     QString configFile = QString(QLatin1String("%1/%2/%3")).arg(configDir, QLatin1String("nedit-ng"), QLatin1String("autoload.nm"));
     return configFile;
@@ -34,7 +34,7 @@ QString Preferences::autoLoadMacroFile() {
 //------------------------------------------------------------------------------
 // Name:
 //------------------------------------------------------------------------------
-void Preferences::loadPreferences() {
+void Settings::loadPreferences() {
 
     QString filename = configFile();
     QSettings settings(filename, QSettings::IniFormat);
@@ -152,7 +152,7 @@ void Preferences::loadPreferences() {
 //------------------------------------------------------------------------------
 // Name:
 //------------------------------------------------------------------------------
-bool Preferences::savePreferences() {
+bool Settings::savePreferences() {
     QString filename = configFile();
     QSettings settings(filename, QSettings::IniFormat);
 

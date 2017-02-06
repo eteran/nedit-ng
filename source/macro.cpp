@@ -41,7 +41,7 @@
 #include <QFuture>
 #include <QtConcurrent>
 
-#include "Preferences.h"
+#include "Settings.h"
 #include "ui/MainWindow.h"
 #include "ui/DialogPrompt.h"
 #include "ui/DialogPromptList.h"
@@ -123,7 +123,7 @@ struct macroCmdInfoEx {
 static void cancelLearnEx();
 static void runMacroEx(DocumentWidget *document, Program *prog);
 static void finishMacroCmdExecutionEx(DocumentWidget *window);
-static int readCheckMacroStringEx(QWidget *dialogParent, const char *string, DocumentWidget *runWindow, const char *errIn, const char **errPos);
+static int readCheckMacroStringEx(QWidget *dialogParent, const QString &string, DocumentWidget *runWindow, const char *errIn, const char **errPos);
 static bool continueWorkProcEx(DocumentWidget *clientData);
 static int lengthMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 static int minMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
@@ -780,7 +780,7 @@ void ReplayEx(DocumentWidget *window) {
 */
 void ReadMacroInitFileEx(DocumentWidget *window) {
 
-    const QString autoloadName = Preferences::autoLoadMacroFile();
+    const QString autoloadName = Settings::autoLoadMacroFile();
     if(autoloadName.isNull()) {
         return;
     }
@@ -812,7 +812,7 @@ int ReadMacroFileEx(DocumentWidget *window, const std::string &fileName, int war
 
 
     // Parse fileString
-    return readCheckMacroStringEx(window, fileString.toLatin1().data(), window, fileName.c_str(), nullptr);
+    return readCheckMacroStringEx(window, fileString, window, fileName.c_str(), nullptr);
 }
 
 /*
@@ -820,11 +820,7 @@ int ReadMacroFileEx(DocumentWidget *window, const std::string &fileName, int war
 ** parsing errors in a dialog posted over window->shell_.
 */
 int ReadMacroStringEx(DocumentWidget *window, const QString &string, const char *errIn) {
-    if(!string.isNull()) {
-        return readCheckMacroStringEx(window, string.toLatin1().data(), window, errIn, nullptr);
-    } else {
-        return readCheckMacroStringEx(window, nullptr, window, errIn, nullptr);
-    }
+    return readCheckMacroStringEx(window, string, window, errIn, nullptr);
 }
 
 /*
@@ -840,7 +836,7 @@ bool CheckMacroStringEx(QWidget *dialogParent, const QString &string, const QStr
     const char *errorString = errorArray.data();
     const char *errorPosition;
 
-    int r = readCheckMacroStringEx(dialogParent, string.toLatin1().data(), nullptr, errorString, &errorPosition);
+    int r = readCheckMacroStringEx(dialogParent, string, nullptr, errorString, &errorPosition);
     *errPos = std::distance(errorString, errorPosition);
     return r;
 }
@@ -865,9 +861,8 @@ Program *ParseMacroEx(const QString &expr, int index, QString *message, int *sto
 	return p;
 }
 
-static int readCheckMacroStringEx(QWidget *dialogParent, const char *string, DocumentWidget *runWindow, const char *errIn, const char **errPos) {
+static int readCheckMacroStringEx(QWidget *dialogParent, const QString &string, DocumentWidget *runWindow, const char *errIn, const char **errPos) {
     const char *stoppedAt;
-    const char *inPtr;
     char *namePtr;
     const char *errMsg;
     char subrName[MAX_SYM_LEN];
@@ -879,7 +874,10 @@ static int readCheckMacroStringEx(QWidget *dialogParent, const char *string, Doc
     // TODO(eteran): use this for ParseError again/switch to ParseErrorEx
     (void)dialogParent;
 
-    inPtr = string;
+    QByteArray stringBytes = string.toLatin1();
+    const char *stringPtr = stringBytes.data();
+
+    const char *inPtr = stringPtr;
     while (*inPtr != '\0') {
 
         // skip over white space and comments
@@ -908,7 +906,7 @@ static int readCheckMacroStringEx(QWidget *dialogParent, const char *string, Doc
             }
             *namePtr = '\0';
             if (isalnum((uint8_t)*inPtr) || *inPtr == '_') {
-                return ParseErrorEx(dialogParent, QString::fromLatin1(string), inPtr - string, QString::fromLatin1(errIn), QLatin1String("subroutine name too long"));
+                return ParseErrorEx(dialogParent, string, inPtr - stringPtr, QString::fromLatin1(errIn), QLatin1String("subroutine name too long"));
             }
 
             inPtr += strspn(inPtr, " \t\n");
@@ -916,7 +914,7 @@ static int readCheckMacroStringEx(QWidget *dialogParent, const char *string, Doc
             if (*inPtr != '{') {
                 if(errPos)
                     *errPos = stoppedAt;
-                return ParseErrorEx(dialogParent, QString::fromLatin1(string), inPtr - string, QString::fromLatin1(errIn), QLatin1String("expected '{'"));
+                return ParseErrorEx(dialogParent, string, inPtr - stringPtr, QString::fromLatin1(errIn), QLatin1String("expected '{'"));
             }
 
             Program *const prog = ParseMacro(inPtr, &errMsg, &stoppedAt);
@@ -925,7 +923,7 @@ static int readCheckMacroStringEx(QWidget *dialogParent, const char *string, Doc
                     *errPos = stoppedAt;
                 }
 
-                return ParseErrorEx(dialogParent, QString::fromLatin1(string), stoppedAt - string, QString::fromLatin1(errIn), QString::fromLatin1(errMsg));
+                return ParseErrorEx(dialogParent, string, stoppedAt - stringPtr, QString::fromLatin1(errIn), QString::fromLatin1(errMsg));
             }
             if (runWindow) {
                 sym = LookupSymbol(subrName);
@@ -955,7 +953,7 @@ static int readCheckMacroStringEx(QWidget *dialogParent, const char *string, Doc
                     *errPos = stoppedAt;
                 }
 
-                return ParseErrorEx(dialogParent, QString::fromLatin1(string), stoppedAt - string, QString::fromLatin1(errIn), QString::fromLatin1(errMsg));
+                return ParseErrorEx(dialogParent, string, stoppedAt - stringPtr, QString::fromLatin1(errIn), QString::fromLatin1(errMsg));
             }
 
             if (runWindow) {
@@ -1761,8 +1759,9 @@ static int focusWindowMS(DocumentWidget *window, DataValue *argList, int nArgs, 
 	}
 
 	// Return the name of the window 
-	result->tag = STRING_TAG;
-    AllocNString(&result->val.str, document->path_.size() + document->filename_.size() + 1);
+    result->tag     = STRING_TAG;
+    result->val.str = AllocNStringEx(document->path_.size() + document->filename_.size() + 1);
+
     sprintf(result->val.str.rep, "%s%s", document->path_.toLatin1().data(), document->filename_.toLatin1().data());
 	return true;
 }
@@ -2192,14 +2191,9 @@ static int clipboardToStringMS(DocumentWidget *window, DataValue *argList, int n
         result->val.str.rep = PERM_ALLOC_STR("");
         result->val.str.len = 0;
     } else {
-
-        QString strData = data->text();
-
         // Allocate a new string to hold the data
         result->tag = STRING_TAG;
-        AllocNString(&result->val.str, strData.size() + 1);
-        strcpy(result->val.str.rep, strData.toLatin1().data());
-        result->val.str.len = strData.size();
+        result->val.str = AllocNStringCpyEx(data->text());
     }
 
 	return true;
@@ -3623,8 +3617,8 @@ static int fileNameMV(DocumentWidget *window, DataValue *argList, int nArgs, Dat
 	(void)nArgs;
 	(void)argList;
 
-	result->tag = STRING_TAG;
-	AllocNStringCpy(&result->val.str, window->filename_.toLatin1().data());
+    result->tag     = STRING_TAG;
+    result->val.str = AllocNStringCpyEx(window->filename_);
 	return true;
 }
 
@@ -3634,8 +3628,8 @@ static int filePathMV(DocumentWidget *window, DataValue *argList, int nArgs, Dat
 	(void)nArgs;
 	(void)argList;
 
-	result->tag = STRING_TAG;
-	AllocNStringCpy(&result->val.str, window->path_.toLatin1().data());
+    result->tag     = STRING_TAG;
+    result->val.str = AllocNStringCpyEx(window->path_);
 	return true;
 }
 
@@ -3943,7 +3937,7 @@ static int fontNameMV(DocumentWidget *window, DataValue *argList, int nArgs, Dat
 	(void)argList;
 
 	result->tag = STRING_TAG;
-	AllocNStringCpy(&result->val.str, window->fontName_.toLatin1().data());
+    result->val.str = AllocNStringCpyEx(window->fontName_);
 	return true;
 }
 
@@ -3953,7 +3947,7 @@ static int fontNameItalicMV(DocumentWidget *window, DataValue *argList, int nArg
 	(void)argList;
 
 	result->tag = STRING_TAG;
-	AllocNStringCpy(&result->val.str, window->italicFontName_.toLatin1().data());
+    result->val.str = AllocNStringCpyEx(window->italicFontName_);
 	return true;
 }
 
@@ -3963,7 +3957,7 @@ static int fontNameBoldMV(DocumentWidget *window, DataValue *argList, int nArgs,
 	(void)argList;
 
 	result->tag = STRING_TAG;
-	AllocNStringCpy(&result->val.str, window->boldFontName_.toLatin1().data());
+    result->val.str = AllocNStringCpyEx(window->boldFontName_);
 	return true;
 }
 
@@ -3973,7 +3967,7 @@ static int fontNameBoldItalicMV(DocumentWidget *window, DataValue *argList, int 
 	(void)argList;
 
 	result->tag = STRING_TAG;
-	AllocNStringCpy(&result->val.str, window->boldItalicFontName_.toLatin1().data());
+    result->val.str = AllocNStringCpyEx(window->boldItalicFontName_);
 	return true;
 }
 
@@ -4150,7 +4144,7 @@ static int languageModeMV(DocumentWidget *window, DataValue *argList, int nArgs,
 	}
 	
 	result->tag = STRING_TAG;
-	AllocNStringCpy(&result->val.str, lmName.toLatin1().data());
+    result->val.str = AllocNStringCpyEx(lmName);
 	return true;
 }
 

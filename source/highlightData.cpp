@@ -801,13 +801,13 @@ static bool styleError(const char *stringStart, const char *stoppedAt, const cha
 /*
 ** Present a dialog for editing highlight style information
 */
-void EditHighlightStyles(QWidget *parent, const char *initialStyle) {
+void EditHighlightStyles(QWidget *parent, const QString &initialStyle) {
 
 	if(!DrawingStyles) {
         DrawingStyles = new DialogDrawingStyles(parent);
 	}
 	
-    DrawingStyles->setStyleByName(QString::fromLatin1(initialStyle));
+    DrawingStyles->setStyleByName(initialStyle);
 	DrawingStyles->show();
 	DrawingStyles->raise();
 }

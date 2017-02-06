@@ -110,12 +110,12 @@ static int indexOfNamedPattern(HighlightPattern *patList, int nPats, const QStri
 static int isParentStyle(const char *parentStyles, int style1, int style2);
 static int lastModified(TextBuffer *styleBuf);
 static int parentStyleOf(const char *parentStyles, int style);
-static int parseBufferRange(HighlightData *pass1Patterns, HighlightData *pass2Patterns, TextBuffer *buf, TextBuffer *styleBuf, ReparseContext *contextRequirements, int beginParse, int endParse, const char *delimiters);
+static int parseBufferRange(HighlightData *pass1Patterns, HighlightData *pass2Patterns, TextBuffer *buf, TextBuffer *styleBuf, ReparseContext *contextRequirements, int beginParse, int endParse, const QString &delimiters);
 static void fillStyleString(const char **stringPtr, char **stylePtr, const char *toPtr, char style, char *prevChar);
 static void freePatterns(HighlightData *patterns);
-static void incrementalReparse(WindowHighlightData *highlightData, TextBuffer *buf, int pos, int nInserted, const char *delimiters);
+static void incrementalReparse(WindowHighlightData *highlightData, TextBuffer *buf, int pos, int nInserted, const QString &delimiters);
 static void modifyStyleBuf(TextBuffer *styleBuf, char *styleString, int startPos, int endPos, int firstPass2Style);
-static void passTwoParseString(HighlightData *pattern, const char *string, char *styleString, int length, char *prevChar, const char *delimiters, const char *lookBehindTo, const char *match_till);
+static void passTwoParseString(HighlightData *pattern, const char *string, char *styleString, int length, char *prevChar, const QString &delimiters, const char *lookBehindTo, const char *match_till);
 static void recolorSubexpr(regexp *re, int subexpr, int style, const char *string, char *styleString);
 static void handleUnparsedRegionEx(const DocumentWidget *window, TextBuffer *styleBuf, int pos);
 static HighlightData *compilePatternsEx(DocumentWidget *dialogParent, HighlightPattern *patternSrc, int nPatterns);
@@ -184,7 +184,7 @@ void SyntaxHighlightModifyCBEx(int pos, int nInserted, int nDeleted, int nRestyl
 
     // Re-parse around the changed region
     if (highlightData->pass1Patterns) {
-        incrementalReparse(highlightData, window->buffer_, pos, nInserted, window->GetWindowDelimiters().toLatin1().data());
+        incrementalReparse(highlightData, window->buffer_, pos, nInserted, window->GetWindowDelimiters());
     }
 }
 
@@ -1201,7 +1201,7 @@ static void handleUnparsedRegionCBEx(const TextArea *area, int pos, const void *
 ** been presented to the patterns.  Changes the style buffer in "highlightData"
 ** with the parsing result.
 */
-static void incrementalReparse(WindowHighlightData *highlightData, TextBuffer *buf, int pos, int nInserted, const char *delimiters) {
+static void incrementalReparse(WindowHighlightData *highlightData, TextBuffer *buf, int pos, int nInserted, const QString &delimiters) {
 	int beginParse, endParse, endAt, lastMod, parseInStyle, nPasses;
 	TextBuffer *styleBuf = highlightData->styleBuffer;
 	HighlightData *pass1Patterns = highlightData->pass1Patterns;
@@ -1286,7 +1286,7 @@ static void incrementalReparse(WindowHighlightData *highlightData, TextBuffer *b
 ** finished (this will normally be endParse, unless the pass1Patterns is a
 ** pattern which does end and the end is reached).
 */
-static int parseBufferRange(HighlightData *pass1Patterns, HighlightData *pass2Patterns, TextBuffer *buf, TextBuffer *styleBuf, ReparseContext *contextRequirements, int beginParse, int endParse, const char *delimiters) {
+static int parseBufferRange(HighlightData *pass1Patterns, HighlightData *pass2Patterns, TextBuffer *buf, TextBuffer *styleBuf, ReparseContext *contextRequirements, int beginParse, int endParse, const QString &delimiters) {
 
 	int endSafety, endPass2Safety, startPass2Safety;
 	int modStart, modEnd, beginSafety, beginStyle, p, style;
@@ -1347,7 +1347,7 @@ static int parseBufferRange(HighlightData *pass1Patterns, HighlightData *pass2Pa
 		endParse - beginParse, 
 		&prevChar, 
 		false, 
-        QString::fromLatin1(delimiters),
+        delimiters,
 		string, 
 		match_to);
 
@@ -1635,7 +1635,7 @@ static bool parseString(HighlightData *pattern, const char **string, char **styl
 ** have the same meaning as in parseString, except that strings aren't doubly
 ** indirect and string pointers are not updated.
 */
-static void passTwoParseString(HighlightData *pattern, const char *string, char *styleString, int length, char *prevChar, const char *delimiters, const char *lookBehindTo, const char *match_till) {
+static void passTwoParseString(HighlightData *pattern, const char *string, char *styleString, int length, char *prevChar, const QString &delimiters, const char *lookBehindTo, const char *match_till) {
 
 	bool inParseRegion = false;
 	char *stylePtr;
@@ -1671,7 +1671,7 @@ static void passTwoParseString(HighlightData *pattern, const char *string, char 
 				length - (parseStart - string)), 
 				prevChar, 
 				false, 
-                QString::fromLatin1(delimiters),
+                delimiters,
 				lookBehindTo, 
 				match_till);
 				

@@ -230,6 +230,8 @@ char *AllocString(int length);
 char *AllocStringNCpy(const char *s, int length);
 char *AllocStringCpy(const char *s);
 int AllocNString(NString *string, int length);
+NString AllocNStringEx(int length);
+NString AllocNStringCpyEx(const QString &s);
 int AllocNStringNCpy(NString *string, const char *s, int length);
 int AllocNStringCpy(NString *string, const char *s);
 void GarbageCollectStrings();

@@ -53,7 +53,7 @@ QString ColorOfNamedStyleEx(view::string_view styleName);
 QString WriteHighlightStringEx();
 QString WriteStylesStringEx();
 void EditHighlightPatterns(MainWindow *window);
-void EditHighlightStyles(QWidget *parent, const char *initialStyle);
+void EditHighlightStyles(QWidget *parent, const QString &initialStyle);
 void RenameHighlightPattern(view::string_view oldName, view::string_view newName);
 void UpdateLanguageModeMenu();
 QFont FontOfNamedStyleEx(DocumentWidget *document, view::string_view styleName);

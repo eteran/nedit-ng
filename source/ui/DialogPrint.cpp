@@ -4,7 +4,7 @@
 #include <QRegExpValidator>
 #include <QMessageBox>
 #include <QSettings>
-#include "Preferences.h"
+#include "Settings.h"
 #include "preferences.h"
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -136,7 +136,7 @@ void DialogPrint::LoadPrintPreferencesEx(bool lookForFlpr) {
     static char defaultQueue[MAX_QUEUE_STR];
     static char defaultHost[MAX_HOST_STR];
 
-    QString filename = Preferences::configFile();
+    QString filename = Settings::configFile();
     QSettings settings(filename, QSettings::IniFormat);
     settings.beginGroup(QLatin1String("Printer"));
 

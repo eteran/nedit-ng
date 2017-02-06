@@ -1,16 +1,16 @@
 
-#include <QtDebug>
+#include "DialogDrawingStyles.h"
+#include "FontType.h"
+#include "HighlightStyle.h"
+#include "MainWindow.h"
+#include "SignalBlocker.h"
+#include "X11Colors.h"
 #include <QMessageBox>
-#include <QX11Info>
 #include <QRegExp>
 #include <QRegExpValidator>
-#include "SignalBlocker.h"
-#include "DialogDrawingStyles.h"
-#include "HighlightStyle.h"
+#include <QtDebug>
 #include "highlightData.h"
 #include "preferences.h"
-#include "FontType.h"
-#include "MainWindow.h"
 
 //------------------------------------------------------------------------------
 // Name: DialogDrawingStyles
@@ -355,17 +355,14 @@ HighlightStyle *DialogDrawingStyles::readDialogFields(bool silent) {
         return nullptr;
     }
 
-    XColor rgb;
-	Display *display = QX11Info::display();
-	int screenNum    = QX11Info::appScreen();
-
-    // Verify that the color is a valid X color spec 
-    if (!XParseColor(display, DefaultColormap(display, screenNum), hs->color.toLatin1().data(), &rgb)) {
-        if (!silent) {			
-			QMessageBox::warning(this, tr("Invalid Color"), tr("Invalid X color specification: %1").arg(hs->color));
+    // Verify that the color is a valid X color spec
+    QColor rgb = X11Colors::fromString(hs->color);
+    if(!rgb.isValid()) {
+        if (!silent) {
+            QMessageBox::warning(this, tr("Invalid Color"), tr("Invalid X color specification: %1").arg(hs->color));
         }
         delete hs;
-        return nullptr;;
+        return nullptr;
     }
 
     // read the background color field - this may be empty
@@ -377,14 +374,18 @@ HighlightStyle *DialogDrawingStyles::readDialogFields(bool silent) {
 	}
 
     // Verify that the background color (if present) is a valid X color spec 
-    if (!hs->bgColor.isEmpty() && !XParseColor(display, DefaultColormap(display, screenNum), hs->bgColor.toLatin1().data(), &rgb)) {
-        if (!silent) {
-			QMessageBox::warning(this, tr("Invalid Color"), tr("Invalid X background color specification: %1").arg(hs->bgColor));
-        }
+    if (!hs->bgColor.isEmpty()) {
+        rgb = X11Colors::fromString(hs->color);
+        if (!rgb.isValid()) {
+            if (!silent) {
+                QMessageBox::warning(this, tr("Invalid Color"), tr("Invalid X background color specification: %1").arg(hs->bgColor));
+            }
 
-        delete hs;
-        return nullptr;;
+            delete hs;
+            return nullptr;;
+        }
     }
+
     // read the font buttons 
     if (ui.radioBold->isChecked()) {
     	hs->font = BOLD_FONT;

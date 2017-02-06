@@ -9,7 +9,7 @@
 #include <QMessageBox>
 #include <QMimeData>
 #include "MainWindow.h"
-#include "Preferences.h"
+#include "Settings.h"
 #include "DialogExecuteCommand.h"
 #include "DialogSmartIndent.h"
 #include "DialogWrapMargin.h"
@@ -1405,7 +1405,7 @@ void MainWindow::ReadNEditDB() {
 
     /* Don't move this check ahead of the previous statements. PrevOpen
        must be initialized at all times. */
-    QString fullName = Preferences::historyFile();
+    QString fullName = Settings::historyFile();
     if(fullName.isNull()) {
         return;
     }
@@ -1511,7 +1511,7 @@ void MainWindow::invalidatePrevOpenMenus() {
 void MainWindow::WriteNEditDB() {
 
 
-    QString fullName = Preferences::historyFile();
+    QString fullName = Settings::historyFile();
     if(fullName.isNull()) {
         return;
     }
@@ -3224,7 +3224,7 @@ void MainWindow::on_action_Default_Syntax_Recognition_Patterns_triggered() {
 
 void MainWindow::on_action_Default_Syntax_Text_Drawing_Styles_triggered() {
     // TODO(eteran): eventually move this logic to be local
-    EditHighlightStyles(this, nullptr);
+    EditHighlightStyles(this, QString());
 }
 
 void MainWindow::on_action_Default_Apply_Backlighting_toggled(bool state) {

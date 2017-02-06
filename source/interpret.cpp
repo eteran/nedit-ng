@@ -764,7 +764,6 @@ Symbol *InstallSymbol(const char *name, enum SymTypes type, DataValue value) {
 **
 */
 Symbol *PromoteToGlobal(Symbol *sym) {
-	Symbol *s;
 
 	if (sym->type != LOCAL_SYM)
 		return sym;
@@ -779,7 +778,7 @@ Symbol *PromoteToGlobal(Symbol *sym) {
 	   Both are errors, without question.
 	   We currently just print this warning, but we should error out the
 	   parsing process. */
-	s = LookupSymbol(sym->name);
+    Symbol *const s = LookupSymbol(sym->name);
 	if (sym == s) {
 		/* case a)
 		   just make this symbol a GLOBAL_SYM symbol and return */
@@ -821,6 +820,25 @@ char *AllocString(int length) {
     auto mem = new char [length + 1];
 	AllocatedStrings.push_back(mem);
 	return mem + 1;
+}
+
+/*
+ * Allocate a new NString buffer of length chars (terminating \0 included),
+ * The buffer length is initialized to length-1 and the terminating \0 is
+ * filled in.
+ */
+NString AllocNStringEx(int length) {
+
+    NString str;
+
+    auto mem = new char[length + 1];
+
+    AllocatedStrings.push_back(mem);
+
+    str.rep = mem + 1;
+    str.rep[length - 1] = '\0'; // forced \0
+    str.len = length - 1;
+    return str;
 }
 
 /*
@@ -896,6 +914,15 @@ int AllocNStringCpy(NString *string, const char *s) {
 		strncpy(string->rep, s, length);
 	}
     return true;
+}
+
+NString AllocNStringCpyEx(const QString &s) {
+    size_t length = s.size();
+
+    NString string = AllocNStringEx(length + 1);
+    strcpy(string.rep, s.toLatin1().data());
+
+    return string;
 }
 
 static ArrayEntry *allocateSparseArrayEntry(void) {

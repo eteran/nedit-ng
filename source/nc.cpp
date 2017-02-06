@@ -26,7 +26,7 @@
 *                                                                              *
 *******************************************************************************/
 
-#include "Preferences.h"
+#include "Settings.h"
 #include <QSettings>
 #include <QString>
 
@@ -180,7 +180,7 @@ int main(int argc, char **argv) {
 	rootWindow = RootWindow(TheDisplay, DefaultScreen(TheDisplay));
 
 	// Read the application resources into the Preferences data structure 
-    QString filename = Preferences::configFile();
+    QString filename = Settings::configFile();
     QSettings settings(filename, QSettings::IniFormat);
     settings.beginGroup(QLatin1String("Server"));
 

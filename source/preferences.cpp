@@ -36,7 +36,7 @@
 #include "ui/DocumentWidget.h"
 #include "ui/MainWindow.h"
 #include "LanguageMode.h"
-#include "Preferences.h"
+#include "Settings.h"
 
 #include "preferences.h"
 #include "TextBuffer.h"
@@ -89,11 +89,11 @@ static int loadLanguageModesStringEx(const std::string &string, int fileVer);
 static int modeError(LanguageMode *lm, const char *stringStart, const char *stoppedAt, const char *message);
 static QString WriteLanguageModesStringEx();
 
-static Preferences g_Preferences;
+static Settings g_Settings;
 
 void RestoreNEditPrefs() {
 
-    g_Preferences.loadPreferences();
+    g_Settings.loadPreferences();
 
     /* Do further parsing on resource types which RestorePreferences does
        not understand and reads as strings, to put them in the final form
@@ -123,39 +123,39 @@ static void translatePrefFormats(bool convertOld, int fileVer) {
 	/* Parse the strings which represent types which are not decoded by
 	   the standard resource manager routines */
 
-    if (!g_Preferences.shellCommands.isNull()) {
-        LoadShellCmdsStringEx(g_Preferences.shellCommands.toStdString());
+    if (!g_Settings.shellCommands.isNull()) {
+        LoadShellCmdsStringEx(g_Settings.shellCommands.toStdString());
 	}
-    if (!g_Preferences.macroCommands.isNull()) {
-        LoadMacroCmdsStringEx(g_Preferences.macroCommands.toStdString());
+    if (!g_Settings.macroCommands.isNull()) {
+        LoadMacroCmdsStringEx(g_Settings.macroCommands.toStdString());
 	}
-    if (!g_Preferences.bgMenuCommands.isNull()) {
-        LoadBGMenuCmdsStringEx(g_Preferences.bgMenuCommands.toStdString());
+    if (!g_Settings.bgMenuCommands.isNull()) {
+        LoadBGMenuCmdsStringEx(g_Settings.bgMenuCommands.toStdString());
 	}
-    if (!g_Preferences.highlightPatterns.isNull()) {
-        LoadHighlightStringEx(g_Preferences.highlightPatterns.toStdString(), convertOld);
+    if (!g_Settings.highlightPatterns.isNull()) {
+        LoadHighlightStringEx(g_Settings.highlightPatterns.toStdString(), convertOld);
 	}
-    if (!g_Preferences.styles.isNull()) {
-        LoadStylesStringEx(g_Preferences.styles.toStdString());
+    if (!g_Settings.styles.isNull()) {
+        LoadStylesStringEx(g_Settings.styles.toStdString());
 	}
-    if (!g_Preferences.languageModes.isNull()) {
-        loadLanguageModesStringEx(g_Preferences.languageModes.toStdString(), fileVer);
+    if (!g_Settings.languageModes.isNull()) {
+        loadLanguageModesStringEx(g_Settings.languageModes.toStdString(), fileVer);
 	}
-    if (!g_Preferences.smartIndentInit.isNull()) {
-        LoadSmartIndentStringEx(g_Preferences.smartIndentInit);
+    if (!g_Settings.smartIndentInit.isNull()) {
+        LoadSmartIndentStringEx(g_Settings.smartIndentInit);
 	}
-    if (!g_Preferences.smartIndentInitCommon.isNull()) {
-        LoadSmartIndentCommonStringEx(g_Preferences.smartIndentInitCommon.toStdString());
+    if (!g_Settings.smartIndentInitCommon.isNull()) {
+        LoadSmartIndentCommonStringEx(g_Settings.smartIndentInitCommon.toStdString());
 	}
 
 	// translate the font names into fontLists suitable for the text widget 
-    g_Preferences.boldFontStruct.fromString(g_Preferences.boldHighlightFont);
-    g_Preferences.italicFontStruct.fromString(g_Preferences.italicHighlightFont);
-    g_Preferences.boldItalicFontStruct.fromString(g_Preferences.boldItalicHighlightFont);
+    g_Settings.boldFontStruct.fromString(g_Settings.boldHighlightFont);
+    g_Settings.italicFontStruct.fromString(g_Settings.italicHighlightFont);
+    g_Settings.boldItalicFontStruct.fromString(g_Settings.boldItalicHighlightFont);
 
-    g_Preferences.boldFontStruct.setStyleStrategy(QFont::ForceIntegerMetrics);
-    g_Preferences.italicFontStruct.setStyleStrategy(QFont::ForceIntegerMetrics);
-    g_Preferences.boldItalicFontStruct.setStyleStrategy(QFont::ForceIntegerMetrics);
+    g_Settings.boldFontStruct.setStyleStrategy(QFont::ForceIntegerMetrics);
+    g_Settings.italicFontStruct.setStyleStrategy(QFont::ForceIntegerMetrics);
+    g_Settings.boldItalicFontStruct.setStyleStrategy(QFont::ForceIntegerMetrics);
 
 	/*
 	**  The default set for the comand shell in PrefDescrip ("DEFAULT") is
@@ -163,22 +163,22 @@ static void translatePrefFormats(bool convertOld, int fileVer) {
 	**  (or whatever is implemented in getDefaultShell()). We put the login
 	**  shell's name in PrefData here.
 	*/
-    if (g_Preferences.shell == QLatin1String("DEFAULT")) {
-        g_Preferences.shell = getDefaultShell();
+    if (g_Settings.shell == QLatin1String("DEFAULT")) {
+        g_Settings.shell = getDefaultShell();
 	}
 
 	/* For compatability with older (4.0.3 and before) versions, the autoWrap
 	   and autoIndent resources can accept values of True and False.  Translate
 	   them into acceptable wrap and indent styles */
-    if (g_Preferences.autoWrap== 3)
-        g_Preferences.autoWrap = CONTINUOUS_WRAP;
-    if (g_Preferences.autoWrap == 4)
-        g_Preferences.autoWrap = NO_WRAP;
+    if (g_Settings.autoWrap== 3)
+        g_Settings.autoWrap = CONTINUOUS_WRAP;
+    if (g_Settings.autoWrap == 4)
+        g_Settings.autoWrap = NO_WRAP;
 
-    if (g_Preferences.autoIndent == 3)
-        g_Preferences.autoIndent = AUTO_INDENT;
-    if (g_Preferences.autoIndent == 4)
-        g_Preferences.autoIndent = NO_AUTO_INDENT;
+    if (g_Settings.autoIndent == 3)
+        g_Settings.autoIndent = AUTO_INDENT;
+    if (g_Settings.autoIndent == 4)
+        g_Settings.autoIndent = NO_AUTO_INDENT;
 
 	/* setup language mode dependent info of user menus (to increase
 	   performance when switching between documents of different
@@ -189,7 +189,7 @@ static void translatePrefFormats(bool convertOld, int fileVer) {
 
 void SaveNEditPrefsEx(QWidget *parent, bool quietly) {
 
-    QString prefFileName = Preferences::configFile();
+    QString prefFileName = Settings::configFile();
     if(prefFileName.isNull()) {
         QMessageBox::warning(parent, QLatin1String("Error saving Preferences"), QLatin1String("Unable to save preferences: Cannot determine filename."));
         return;
@@ -208,17 +208,17 @@ void SaveNEditPrefsEx(QWidget *parent, bool quietly) {
         }
     }
 
-    g_Preferences.fileVersion           = QLatin1String("1.0");
-    g_Preferences.shellCommands         = WriteShellCmdsStringEx();
-    g_Preferences.macroCommands         = WriteMacroCmdsStringEx();
-    g_Preferences.bgMenuCommands        = WriteBGMenuCmdsStringEx();
-    g_Preferences.highlightPatterns     = WriteHighlightStringEx();
-    g_Preferences.languageModes         = WriteLanguageModesStringEx();
-    g_Preferences.styles                = WriteStylesStringEx();
-    g_Preferences.smartIndentInit       = WriteSmartIndentStringEx();
-    g_Preferences.smartIndentInitCommon = WriteSmartIndentCommonStringEx();
+    g_Settings.fileVersion           = QLatin1String("1.0");
+    g_Settings.shellCommands         = WriteShellCmdsStringEx();
+    g_Settings.macroCommands         = WriteMacroCmdsStringEx();
+    g_Settings.bgMenuCommands        = WriteBGMenuCmdsStringEx();
+    g_Settings.highlightPatterns     = WriteHighlightStringEx();
+    g_Settings.languageModes         = WriteLanguageModesStringEx();
+    g_Settings.styles                = WriteStylesStringEx();
+    g_Settings.smartIndentInit       = WriteSmartIndentStringEx();
+    g_Settings.smartIndentInitCommon = WriteSmartIndentCommonStringEx();
 
-    if (!g_Preferences.savePreferences()) {
+    if (!g_Settings.savePreferences()) {
         QMessageBox::warning(parent, QLatin1String("Save Preferences"), QString(QLatin1String("Unable to save preferences in %1")).arg(prefFileName));
     }
 
@@ -237,51 +237,51 @@ void ImportPrefFile(const char *filename, int convertOld) {
 }
 
 void SetPrefOpenInTab(int state) {
-    if(g_Preferences.openInTab != state) {
+    if(g_Settings.openInTab != state) {
         PrefsHaveChanged = true;
     }
-    g_Preferences.openInTab = state;
+    g_Settings.openInTab = state;
 }
 
 int GetPrefOpenInTab() {
-    return g_Preferences.openInTab;
+    return g_Settings.openInTab;
 }
 
 void SetPrefWrap(int state) {
-    if(g_Preferences.autoWrap != state) {
+    if(g_Settings.autoWrap != state) {
         PrefsHaveChanged = true;
     }
-    g_Preferences.autoWrap = state;
+    g_Settings.autoWrap = state;
 }
 
 int GetPrefWrap(int langMode) {
     if (langMode == PLAIN_LANGUAGE_MODE || LanguageModes[langMode]->wrapStyle == DEFAULT_WRAP) {
-        return g_Preferences.autoWrap;
+        return g_Settings.autoWrap;
     }
 
 	return LanguageModes[langMode]->wrapStyle;
 }
 
 void SetPrefWrapMargin(int margin) {
-    if(g_Preferences.wrapMargin != margin) {
+    if(g_Settings.wrapMargin != margin) {
         PrefsHaveChanged = true;
     }
-    g_Preferences.wrapMargin = margin;
+    g_Settings.wrapMargin = margin;
 }
 
 int GetPrefWrapMargin() {
-    return g_Preferences.wrapMargin;
+    return g_Settings.wrapMargin;
 }
 
 void SetPrefSearch(SearchType searchType) {
-    if(g_Preferences.searchMethod != searchType) {
+    if(g_Settings.searchMethod != searchType) {
         PrefsHaveChanged = true;
     }
-    g_Preferences.searchMethod = searchType;
+    g_Settings.searchMethod = searchType;
 }
 
 SearchType GetPrefSearch() {
-    return static_cast<SearchType>(g_Preferences.searchMethod);
+    return static_cast<SearchType>(g_Settings.searchMethod);
 }
 
 #ifdef REPLACE_SCOPE
@@ -298,277 +298,277 @@ int GetPrefReplaceDefScope() {
 #endif
 
 void SetPrefAutoIndent(int state) {
-    if(g_Preferences.autoIndent != state) {
+    if(g_Settings.autoIndent != state) {
         PrefsHaveChanged = true;
     }
-    g_Preferences.autoIndent = state;
+    g_Settings.autoIndent = state;
 }
 
 IndentStyle GetPrefAutoIndent(int langMode) {
     if (langMode == PLAIN_LANGUAGE_MODE || LanguageModes[langMode]->indentStyle == DEFAULT_INDENT) {
-        return static_cast<IndentStyle>(g_Preferences.autoIndent);
+        return static_cast<IndentStyle>(g_Settings.autoIndent);
     }
 
 	return LanguageModes[langMode]->indentStyle;
 }
 
 void SetPrefAutoSave(int state) {
-    if(g_Preferences.autoSave != state) {
+    if(g_Settings.autoSave != state) {
         PrefsHaveChanged = true;
     }
-    g_Preferences.autoSave = state;
+    g_Settings.autoSave = state;
 }
 
 int GetPrefAutoSave() {
-    return g_Preferences.autoSave;
+    return g_Settings.autoSave;
 }
 
 void SetPrefSaveOldVersion(int state) {
-    if(g_Preferences.saveOldVersion != state) {
+    if(g_Settings.saveOldVersion != state) {
         PrefsHaveChanged = true;
     }
-    g_Preferences.saveOldVersion = state;
+    g_Settings.saveOldVersion = state;
 }
 
 int GetPrefSaveOldVersion() {
-    return g_Preferences.saveOldVersion;
+    return g_Settings.saveOldVersion;
 }
 
 void SetPrefSearchDlogs(int state) {
-    if(g_Preferences.searchDialogs != state) {
+    if(g_Settings.searchDialogs != state) {
         PrefsHaveChanged = true;
     }
-    g_Preferences.searchDialogs = state;
+    g_Settings.searchDialogs = state;
 }
 
 int GetPrefSearchDlogs() {
-    return g_Preferences.searchDialogs;
+    return g_Settings.searchDialogs;
 }
 
 void SetPrefBeepOnSearchWrap(int state) {
-    if(g_Preferences.beepOnSearchWrap != state) {
+    if(g_Settings.beepOnSearchWrap != state) {
         PrefsHaveChanged = true;
     }
-    g_Preferences.beepOnSearchWrap = state;
+    g_Settings.beepOnSearchWrap = state;
 }
 
 int GetPrefBeepOnSearchWrap() {
-    return g_Preferences.beepOnSearchWrap;
+    return g_Settings.beepOnSearchWrap;
 }
 
 void SetPrefKeepSearchDlogs(int state) {
-    if(g_Preferences.retainSearchDialogs != state) {
+    if(g_Settings.retainSearchDialogs != state) {
         PrefsHaveChanged = true;
     }
-    g_Preferences.retainSearchDialogs = state;
+    g_Settings.retainSearchDialogs = state;
 }
 
 int GetPrefKeepSearchDlogs() {
-    return g_Preferences.retainSearchDialogs;
+    return g_Settings.retainSearchDialogs;
 }
 
 void SetPrefSearchWraps(int state) {
-    if(g_Preferences.searchWraps != state) {
+    if(g_Settings.searchWraps != state) {
         PrefsHaveChanged = true;
     }
-    g_Preferences.searchWraps = state;
+    g_Settings.searchWraps = state;
 }
 
 int GetPrefSearchWraps() {
-    return g_Preferences.searchWraps;
+    return g_Settings.searchWraps;
 }
 
 int GetPrefStickyCaseSenseBtn() {
-    return g_Preferences.stickyCaseSenseButton;
+    return g_Settings.stickyCaseSenseButton;
 }
 
 void SetPrefStatsLine(int state) {
-    if(g_Preferences.statisticsLine != state) {
+    if(g_Settings.statisticsLine != state) {
         PrefsHaveChanged = true;
     }
-    g_Preferences.statisticsLine = state;
+    g_Settings.statisticsLine = state;
 }
 
 int GetPrefStatsLine() {
-    return g_Preferences.statisticsLine;
+    return g_Settings.statisticsLine;
 }
 
 void SetPrefISearchLine(int state) {
-    if(g_Preferences.iSearchLine != state) {
+    if(g_Settings.iSearchLine != state) {
         PrefsHaveChanged = true;
     }
-    g_Preferences.iSearchLine = state;
+    g_Settings.iSearchLine = state;
 }
 
 int GetPrefISearchLine() {
-    return g_Preferences.iSearchLine;
+    return g_Settings.iSearchLine;
 }
 
 void SetPrefSortTabs(int state) {
-    if(g_Preferences.sortTabs != state) {
+    if(g_Settings.sortTabs != state) {
         PrefsHaveChanged = true;
     }
-    g_Preferences.sortTabs = state;
+    g_Settings.sortTabs = state;
 }
 
 int GetPrefSortTabs() {
-    return g_Preferences.sortTabs;
+    return g_Settings.sortTabs;
 }
 
 void SetPrefTabBar(int state) {
-    if(g_Preferences.tabBar != state) {
+    if(g_Settings.tabBar != state) {
         PrefsHaveChanged = true;
     }
-    g_Preferences.tabBar = state;
+    g_Settings.tabBar = state;
 }
 
 int GetPrefTabBar() {
-    return g_Preferences.tabBar;
+    return g_Settings.tabBar;
 }
 
 void SetPrefTabBarHideOne(int state) {
-    if(g_Preferences.tabBarHideOne != state) {
+    if(g_Settings.tabBarHideOne != state) {
         PrefsHaveChanged = true;
     }
-    g_Preferences.tabBarHideOne = state;
+    g_Settings.tabBarHideOne = state;
 }
 
 int GetPrefTabBarHideOne() {
-    return g_Preferences.tabBarHideOne;
+    return g_Settings.tabBarHideOne;
 }
 
 void SetPrefGlobalTabNavigate(int state) {
-    if(g_Preferences.globalTabNavigate != state) {
+    if(g_Settings.globalTabNavigate != state) {
         PrefsHaveChanged = true;
     }
-    g_Preferences.globalTabNavigate = state;
+    g_Settings.globalTabNavigate = state;
 }
 
 int GetPrefGlobalTabNavigate() {
-    return g_Preferences.globalTabNavigate;
+    return g_Settings.globalTabNavigate;
 }
 
 void SetPrefToolTips(int state) {
-    if(g_Preferences.toolTips != state) {
+    if(g_Settings.toolTips != state) {
         PrefsHaveChanged = true;
     }
-    g_Preferences.toolTips = state;
+    g_Settings.toolTips = state;
 }
 
 int GetPrefToolTips() {
-    return g_Preferences.toolTips;
+    return g_Settings.toolTips;
 }
 
 void SetPrefLineNums(int state) {
-    if(g_Preferences.lineNumbers != state) {
+    if(g_Settings.lineNumbers != state) {
         PrefsHaveChanged = true;
     }
-    g_Preferences.lineNumbers = state;
+    g_Settings.lineNumbers = state;
 }
 
 int GetPrefLineNums() {
-    return g_Preferences.lineNumbers;
+    return g_Settings.lineNumbers;
 }
 
 void SetPrefShowPathInWindowsMenu(int state) {
-    if(g_Preferences.pathInWindowsMenu != state) {
+    if(g_Settings.pathInWindowsMenu != state) {
         PrefsHaveChanged = true;
     }
-    g_Preferences.pathInWindowsMenu = state;
+    g_Settings.pathInWindowsMenu = state;
 }
 
 int GetPrefShowPathInWindowsMenu() {
-    return g_Preferences.pathInWindowsMenu;
+    return g_Settings.pathInWindowsMenu;
 }
 
 void SetPrefWarnFileMods(int state) {
-    if(g_Preferences.warnFileMods != state) {
+    if(g_Settings.warnFileMods != state) {
         PrefsHaveChanged = true;
     }
-    g_Preferences.warnFileMods = state;
+    g_Settings.warnFileMods = state;
 }
 
 int GetPrefWarnFileMods() {
-    return g_Preferences.warnFileMods;
+    return g_Settings.warnFileMods;
 }
 
 void SetPrefWarnRealFileMods(int state) {
-    if(g_Preferences.warnRealFileMods != state) {
+    if(g_Settings.warnRealFileMods != state) {
         PrefsHaveChanged = true;
     }
-    g_Preferences.warnRealFileMods = state;
+    g_Settings.warnRealFileMods = state;
 }
 
 int GetPrefWarnRealFileMods() {
-    return g_Preferences.warnRealFileMods;
+    return g_Settings.warnRealFileMods;
 }
 
 void SetPrefWarnExit(int state) {
-    if(g_Preferences.warnExit != state) {
+    if(g_Settings.warnExit != state) {
         PrefsHaveChanged = true;
     }
-    g_Preferences.warnExit = state;
+    g_Settings.warnExit = state;
 }
 
 int GetPrefWarnExit() {
-    return g_Preferences.warnExit;
+    return g_Settings.warnExit;
 }
 
 void SetPrefFindReplaceUsesSelection(int state) {
-    if(g_Preferences.findReplaceUsesSelection != state) {
+    if(g_Settings.findReplaceUsesSelection != state) {
         PrefsHaveChanged = true;
     }
-    g_Preferences.findReplaceUsesSelection = state;
+    g_Settings.findReplaceUsesSelection = state;
 }
 
 int GetPrefFindReplaceUsesSelection() {
-    return g_Preferences.findReplaceUsesSelection;
+    return g_Settings.findReplaceUsesSelection;
 }
 
 // Advanced
 int GetPrefMapDelete() {
-    return g_Preferences.remapDeleteKey;
+    return g_Settings.remapDeleteKey;
 }
 
 // Advanced
 int GetPrefStdOpenDialog() {
-    return g_Preferences.stdOpenDialog;
+    return g_Settings.stdOpenDialog;
 }
 
 void SetPrefRows(int nRows) {
-    if(g_Preferences.textRows != nRows) {
+    if(g_Settings.textRows != nRows) {
         PrefsHaveChanged = true;
     }
-    g_Preferences.textRows = nRows;
+    g_Settings.textRows = nRows;
 }
 
 int GetPrefRows() {
-    return g_Preferences.textRows;
+    return g_Settings.textRows;
 }
 
 void SetPrefCols(int nCols) {
-    if(g_Preferences.textCols != nCols) {
+    if(g_Settings.textCols != nCols) {
         PrefsHaveChanged = true;
     }
-    g_Preferences.textCols = nCols;
+    g_Settings.textCols = nCols;
 }
 
 int GetPrefCols() {
-    return g_Preferences.textCols;
+    return g_Settings.textCols;
 }
 
 void SetPrefTabDist(int tabDist) {
-    if(g_Preferences.tabDistance != tabDist) {
+    if(g_Settings.tabDistance != tabDist) {
         PrefsHaveChanged = true;
     }
-    g_Preferences.tabDistance = tabDist;
+    g_Settings.tabDistance = tabDist;
 }
 
 int GetPrefTabDist(int langMode) {
 	int tabDist;
 
     if (langMode == PLAIN_LANGUAGE_MODE || LanguageModes[langMode]->tabDist == DEFAULT_TAB_DIST) {
-        tabDist = g_Preferences.tabDistance;
+        tabDist = g_Settings.tabDistance;
 	} else {
 		tabDist = LanguageModes[langMode]->tabDist;
 	}
@@ -588,98 +588,98 @@ int GetPrefTabDist(int langMode) {
 }
 
 void SetPrefEmTabDist(int tabDist) {
-    if(g_Preferences.emulateTabs != tabDist) {
+    if(g_Settings.emulateTabs != tabDist) {
         PrefsHaveChanged = true;
     }
-    g_Preferences.emulateTabs = tabDist;
+    g_Settings.emulateTabs = tabDist;
 }
 
 int GetPrefEmTabDist(int langMode) {
     if (langMode == PLAIN_LANGUAGE_MODE || LanguageModes[langMode]->emTabDist == DEFAULT_EM_TAB_DIST) {
-        return g_Preferences.emulateTabs;
+        return g_Settings.emulateTabs;
     }
 
 	return LanguageModes[langMode]->emTabDist;
 }
 
 void SetPrefInsertTabs(int state) {
-    if(g_Preferences.insertTabs != state) {
+    if(g_Settings.insertTabs != state) {
         PrefsHaveChanged = true;
     }
-    g_Preferences.insertTabs = state;
+    g_Settings.insertTabs = state;
 }
 
 int GetPrefInsertTabs() {
-    return g_Preferences.insertTabs;
+    return g_Settings.insertTabs;
 }
 
 void SetPrefShowMatching(int state) {
-    if(g_Preferences.showMatching != state) {
+    if(g_Settings.showMatching != state) {
         PrefsHaveChanged = true;
     }
-    g_Preferences.showMatching = state;
+    g_Settings.showMatching = state;
 }
 
 int GetPrefShowMatching() {
-    return g_Preferences.showMatching;
+    return g_Settings.showMatching;
 }
 
 void SetPrefMatchSyntaxBased(int state) {
-    if(g_Preferences.matchSyntaxBased != state) {
+    if(g_Settings.matchSyntaxBased != state) {
         PrefsHaveChanged = true;
     }
-    g_Preferences.matchSyntaxBased = state;
+    g_Settings.matchSyntaxBased = state;
 }
 
 int GetPrefMatchSyntaxBased() {
-    return g_Preferences.matchSyntaxBased;
+    return g_Settings.matchSyntaxBased;
 }
 
 void SetPrefHighlightSyntax(bool state) {
-    if(g_Preferences.highlightSyntax != state) {
+    if(g_Settings.highlightSyntax != state) {
         PrefsHaveChanged = true;
     }
-    g_Preferences.highlightSyntax = state;
+    g_Settings.highlightSyntax = state;
 }
 
 bool GetPrefHighlightSyntax() {
-    return g_Preferences.highlightSyntax;
+    return g_Settings.highlightSyntax;
 }
 
 void SetPrefBacklightChars(int state) {
-    if(g_Preferences.backlightChars != state) {
+    if(g_Settings.backlightChars != state) {
         PrefsHaveChanged = true;
     }
-    g_Preferences.backlightChars = state;
+    g_Settings.backlightChars = state;
 }
 
 int GetPrefBacklightChars() {
-    return g_Preferences.backlightChars;
+    return g_Settings.backlightChars;
 }
 
 QString GetPrefBacklightCharTypes() {
-    return g_Preferences.backlightCharTypes;
+    return g_Settings.backlightCharTypes;
 }
 
 void SetPrefRepositionDialogs(int state) {
-    if(g_Preferences.repositionDialogs != state) {
+    if(g_Settings.repositionDialogs != state) {
         PrefsHaveChanged = true;
     }
-    g_Preferences.repositionDialogs = state;
+    g_Settings.repositionDialogs = state;
 }
 
 int GetPrefRepositionDialogs() {
-    return g_Preferences.repositionDialogs;
+    return g_Settings.repositionDialogs;
 }
 
 void SetPrefAutoScroll(int state) {
-    if(g_Preferences.autoScroll != state) {
+    if(g_Settings.autoScroll != state) {
         PrefsHaveChanged = true;
     }
 
-    const int margin = state ? g_Preferences.autoScrollVPadding : 0;
+    const int margin = state ? g_Settings.autoScrollVPadding : 0;
 
-    g_Preferences.autoScroll = state;
+    g_Settings.autoScroll = state;
 	
     for(DocumentWidget *document : MainWindow::allDocuments()) {
         document->SetAutoScroll(margin);
@@ -687,68 +687,68 @@ void SetPrefAutoScroll(int state) {
 }
 
 int GetPrefAutoScroll() {
-    return g_Preferences.autoScroll;
+    return g_Settings.autoScroll;
 }
 
 int GetVerticalAutoScroll() {
-    return g_Preferences.autoScroll ? g_Preferences.autoScrollVPadding : 0;
+    return g_Settings.autoScroll ? g_Settings.autoScrollVPadding : 0;
 }
 
 void SetPrefAppendLF(int state) {
-    if(g_Preferences.appendLF != state) {
+    if(g_Settings.appendLF != state) {
         PrefsHaveChanged = true;
     }
-    g_Preferences.appendLF = state;
+    g_Settings.appendLF = state;
 }
 
 int GetPrefAppendLF() {
-    return g_Preferences.appendLF;
+    return g_Settings.appendLF;
 }
 
 void SetPrefSortOpenPrevMenu(int state) {
-    if(g_Preferences.sortOpenPrevMenu != state) {
+    if(g_Settings.sortOpenPrevMenu != state) {
         PrefsHaveChanged = true;
     }
-    g_Preferences.sortOpenPrevMenu = state;
+    g_Settings.sortOpenPrevMenu = state;
 }
 
 int GetPrefSortOpenPrevMenu() {
-    return g_Preferences.sortOpenPrevMenu;
+    return g_Settings.sortOpenPrevMenu;
 }
 
 QString GetPrefTagFile() {
-    return g_Preferences.tagFile;
+    return g_Settings.tagFile;
 }
 
 void SetPrefSmartTags(int state) {
-    if(g_Preferences.smartTags != state) {
+    if(g_Settings.smartTags != state) {
         PrefsHaveChanged = true;
     }
-    g_Preferences.smartTags = state;
+    g_Settings.smartTags = state;
 }
 
 int GetPrefSmartTags() {
-    return g_Preferences.smartTags;
+    return g_Settings.smartTags;
 }
 
 // Advanced
 int GetPrefAlwaysCheckRelTagsSpecs() {
-    return g_Preferences.alwaysCheckRelativeTagsSpecs;
+    return g_Settings.alwaysCheckRelativeTagsSpecs;
 }
 
 QString GetPrefDelimiters() {
-    return g_Preferences.wordDelimiters;
+    return g_Settings.wordDelimiters;
 }
 
 QString GetPrefColorName(int index) {
-    return g_Preferences.colors[index];
+    return g_Settings.colors[index];
 }
 
 void SetPrefColorName(int index, const QString &name) {
-    if(g_Preferences.colors[index] != name) {
+    if(g_Settings.colors[index] != name) {
         PrefsHaveChanged = true;
     }
-    g_Preferences.colors[index] = name;
+    g_Settings.colors[index] = name;
 }
 
 /*
@@ -758,115 +758,115 @@ void SetPrefColorName(int index, const QString &name) {
 ** for more information.
 */
 void SetPrefFont(const QString &fontName) {
-    if(g_Preferences.textFont != fontName) {
+    if(g_Settings.textFont != fontName) {
         PrefsHaveChanged = true;
     }
-    g_Preferences.textFont = fontName;
+    g_Settings.textFont = fontName;
 }
 
 void SetPrefBoldFont(const QString &fontName) {
-    if(g_Preferences.boldHighlightFont != fontName) {
+    if(g_Settings.boldHighlightFont != fontName) {
         PrefsHaveChanged = true;
     }
-    g_Preferences.boldHighlightFont = fontName;
-    g_Preferences.boldFontStruct.fromString(fontName);
-    g_Preferences.boldFontStruct.setStyleStrategy(QFont::ForceIntegerMetrics);
+    g_Settings.boldHighlightFont = fontName;
+    g_Settings.boldFontStruct.fromString(fontName);
+    g_Settings.boldFontStruct.setStyleStrategy(QFont::ForceIntegerMetrics);
 }
 
 void SetPrefItalicFont(const QString &fontName) {
-    if(g_Preferences.italicHighlightFont != fontName) {
+    if(g_Settings.italicHighlightFont != fontName) {
         PrefsHaveChanged = true;
     }
-    g_Preferences.italicHighlightFont = fontName;
-    g_Preferences.italicFontStruct.fromString(fontName);
-    g_Preferences.italicFontStruct.setStyleStrategy(QFont::ForceIntegerMetrics);
+    g_Settings.italicHighlightFont = fontName;
+    g_Settings.italicFontStruct.fromString(fontName);
+    g_Settings.italicFontStruct.setStyleStrategy(QFont::ForceIntegerMetrics);
 }
 void SetPrefBoldItalicFont(const QString &fontName) {
-    if(g_Preferences.boldItalicHighlightFont != fontName) {
+    if(g_Settings.boldItalicHighlightFont != fontName) {
         PrefsHaveChanged = true;
     }
-    g_Preferences.boldItalicHighlightFont = fontName;
-    g_Preferences.boldItalicFontStruct.fromString(fontName);
-    g_Preferences.boldItalicFontStruct.setStyleStrategy(QFont::ForceIntegerMetrics);
+    g_Settings.boldItalicHighlightFont = fontName;
+    g_Settings.boldItalicFontStruct.fromString(fontName);
+    g_Settings.boldItalicFontStruct.setStyleStrategy(QFont::ForceIntegerMetrics);
 }
 
 QString GetPrefFontName() {
-    return g_Preferences.textFont;
+    return g_Settings.textFont;
 }
 
 QString GetPrefBoldFontName() {
-    return g_Preferences.boldHighlightFont;
+    return g_Settings.boldHighlightFont;
 }
 
 QString GetPrefItalicFontName() {
-    return g_Preferences.italicHighlightFont;
+    return g_Settings.italicHighlightFont;
 }
 
 QString GetPrefBoldItalicFontName() {
-    return g_Preferences.boldItalicHighlightFont;
+    return g_Settings.boldItalicHighlightFont;
 }
 
 QFont GetPrefBoldFont() {
-    return g_Preferences.boldFontStruct;
+    return g_Settings.boldFontStruct;
 }
 
 QFont GetPrefItalicFont() {
-    return g_Preferences.italicFontStruct;
+    return g_Settings.italicFontStruct;
 }
 
 QFont GetPrefBoldItalicFont() {
-    return g_Preferences.boldItalicFontStruct;
+    return g_Settings.boldItalicFontStruct;
 }
 
 QString GetPrefHelpFontName(int index) {
-    return g_Preferences.helpFonts[index];
+    return g_Settings.helpFonts[index];
 }
 
 QString GetPrefHelpLinkColor() {
-    return g_Preferences.helpLinkColor;
+    return g_Settings.helpLinkColor;
 }
 
 QString GetPrefTooltipBgColor() {
-    return g_Preferences.tooltipBgColor;
+    return g_Settings.tooltipBgColor;
 }
 
 void SetPrefShell(const QString &shell) {
-    if(g_Preferences.shell != shell) {
+    if(g_Settings.shell != shell) {
         PrefsHaveChanged = true;
     }
-    g_Preferences.shell = shell;
+    g_Settings.shell = shell;
 }
 
 QString GetPrefShell() {
-    return g_Preferences.shell;
+    return g_Settings.shell;
 }
 
 QString GetPrefGeometry() {
-    return g_Preferences.geometry;
+    return g_Settings.geometry;
 }
 
 QString GetPrefServerName() {
-    return g_Preferences.serverName;
+    return g_Settings.serverName;
 }
 
 QString GetPrefBGMenuBtn() {
-    return g_Preferences.bgMenuButton;
+    return g_Settings.bgMenuButton;
 }
 
 int GetPrefMaxPrevOpenFiles() {
-    return g_Preferences.maxPrevOpenFiles;
+    return g_Settings.maxPrevOpenFiles;
 }
 
 int GetPrefTypingHidesPointer() {
-    return g_Preferences.typingHidesPointer;
+    return g_Settings.typingHidesPointer;
 }
 
 void SetPrefTitleFormat(const QString &format) {
-    if(g_Preferences.titleFormat != format) {
+    if(g_Settings.titleFormat != format) {
         PrefsHaveChanged = true;
     }
 
-    g_Preferences.titleFormat = format;
+    g_Settings.titleFormat = format;
 
     // update all windows
     for(MainWindow *window : MainWindow::allWindows()) {
@@ -874,31 +874,31 @@ void SetPrefTitleFormat(const QString &format) {
 	}
 }
 QString GetPrefTitleFormat() {
-    return g_Preferences.titleFormat;
+    return g_Settings.titleFormat;
 }
 
 bool GetPrefUndoModifiesSelection() {
-    return g_Preferences.undoModifiesSelection;
+    return g_Settings.undoModifiesSelection;
 }
 
 bool GetPrefFocusOnRaise() {
-    return g_Preferences.focusOnRaise;
+    return g_Settings.focusOnRaise;
 }
 
 bool GetPrefForceOSConversion() {
-    return g_Preferences.forceOSConversion;
+    return g_Settings.forceOSConversion;
 }
 
 bool GetPrefHonorSymlinks() {
-    return g_Preferences.honorSymlinks;
+    return g_Settings.honorSymlinks;
 }
 
 int GetPrefOverrideVirtKeyBindings() {
-    return g_Preferences.overrideDefaultVirtualKeyBindings;
+    return g_Settings.overrideDefaultVirtualKeyBindings;
 }
 
 int GetPrefTruncSubstitution() {
-    return g_Preferences.truncSubstitution;
+    return g_Settings.truncSubstitution;
 }
 
 /*

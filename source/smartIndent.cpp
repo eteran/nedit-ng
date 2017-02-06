@@ -67,7 +67,7 @@ DialogSmartIndent *SmartIndentDlg = nullptr;
 
 static void insertShiftedMacro(QTextStream &ts, const QString &macro);
 static bool isDefaultIndentSpec(SmartIndent *indentSpec);
-static bool loadDefaultIndentSpec(const char *lmName);
+static bool loadDefaultIndentSpec(const QString &lmName);
 static int siParseError(const char *stringStart, const char *stoppedAt, const char *message);
 
 static char *readSIMacro(const char **inPtr);
@@ -246,10 +246,10 @@ bool InSmartIndentMacrosEx(DocumentWidget *document) {
     return ((winData && (winData->inModMacro || winData->inNewLineMacro)));
 }
 
-static bool loadDefaultIndentSpec(const char *lmName) {
+static bool loadDefaultIndentSpec(const QString &lmName) {
 
 	for (int i = 0; i < N_DEFAULT_INDENT_SPECS; i++) {
-        if (DefaultIndentSpecs[i].lmName == QString::fromLatin1(lmName)) {
+        if (DefaultIndentSpecs[i].lmName == lmName) {
 			SmartIndentSpecs[NSmartIndentSpecs++] = new SmartIndent(DefaultIndentSpecs[i]);
 			return true;
 		}
@@ -290,7 +290,7 @@ int LoadSmartIndentString(char *inString) {
 		   smart indent macros */
 		if (!strncmp(inPtr, "Default", 7)) {
 			inPtr += 7;
-			if (!loadDefaultIndentSpec(is.lmName.toLatin1().data())) {
+            if (!loadDefaultIndentSpec(is.lmName)) {
 				return siParseError(inString, inPtr, "no default smart indent macros");
 			}
 			continue;

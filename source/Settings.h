@@ -1,16 +1,17 @@
 
-#ifndef PREFERENCES_H_20170204_
-#define PREFERENCES_H_20170204_
+#ifndef SETTINGS_H_
+#define SETTINGS_H_
 
 #include <QString>
 #include <QObject>
 #include <QFont>
 
-class Preferences : QObject {
+class Settings : QObject {
     Q_OBJECT
 public:
     void loadPreferences();
     bool savePreferences();
+	void importSettings(const QString &filename);
 
 public:
     static QString configFile();

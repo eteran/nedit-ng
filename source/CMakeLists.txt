@@ -64,7 +64,7 @@ qt5_wrap_cpp(MOC_SOURCES
 	ui/DialogOutput.h
 	ui/CallTipWidget.h
 	ui/TabWidget.h
-	Preferences.h
+	Settings.h
 )
 
 set(UI_FILES
@@ -110,7 +110,7 @@ add_executable(nedit
 	${QRC_SOURCES}
 	${UI_H}
 
-	Preferences.cpp
+	Settings.cpp
 	file.cpp
 	highlight.cpp
 	highlightData.cpp
@@ -204,13 +204,13 @@ target_link_libraries(nedit LINK_PUBLIC
 )
 
 qt5_wrap_cpp(MOC_SOURCES_NC
-	Preferences.h
+	Settings.h
 )
 
 add_executable(nc
 	nc.cpp
 	server_common.cpp
-	Preferences.cpp
+	Settings.cpp
 	${MOC_SOURCES_NC})
 
 include_directories(nc
