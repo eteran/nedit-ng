@@ -46,7 +46,7 @@ class WindowHighlightData;
 class TextArea;
 class DocumentWidget;
 
-HighlightPattern *FindPatternOfWindowEx(DocumentWidget *window, const char *name);
+HighlightPattern *FindPatternOfWindowEx(DocumentWidget *window, const QString &name);
 int HighlightCodeOfPosEx(DocumentWidget *document, int pos);
 int HighlightLengthOfCodeFromPosEx(DocumentWidget *window, int pos, int *checkCode);
 int StyleLengthOfCodeFromPosEx(DocumentWidget *window, int pos);

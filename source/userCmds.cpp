@@ -188,7 +188,7 @@ static char *writeMenuItemString(const QVector<MenuData> &menuItems, int listTyp
 	}
 	
 	length++; // terminating null 
-	char *outStr = XtMalloc(length);
+    char *outStr = new char[length];
 
 	// write the string 
 	char *outPtr = outStr;
@@ -269,8 +269,8 @@ static char *writeMenuItemString(const QVector<MenuData> &menuItems, int listTyp
 static QString writeMenuItemStringEx(const QVector<MenuData> &menuItems, int listType) {
 	QString str;
 	if(char *s = writeMenuItemString(menuItems, listType)) {
-		str = QLatin1String(s);
-		XtFree(s);
+        str = QString::fromLatin1(s);
+        delete [] s;
 	}
 	return str;
 }
@@ -301,7 +301,7 @@ static int loadMenuItemString(const char *inString, QVector<MenuData> &menuItems
 		nameLen = strcspn(inPtr, ":");
 		if (nameLen == 0)
 			return parseError("no name field");
-		nameStr = XtMalloc(nameLen + 1);
+        nameStr = new char[nameLen + 1];
 		strncpy(nameStr, inPtr, nameLen);
 		nameStr[nameLen] = '\0';
 		inPtr += nameLen;
@@ -351,11 +351,11 @@ static int loadMenuItemString(const char *inString, QVector<MenuData> &menuItems
 				else if (*inPtr == 'D')
 					output = TO_DIALOG;
 				else if (*inPtr == 'X')
-					repInput = True;
+                    repInput = true;
 				else if (*inPtr == 'S')
-					saveFirst = True;
+                    saveFirst = true;
 				else if (*inPtr == 'L')
-					loadAfter = True;
+                    loadAfter = true;
 				else
 					return parseError("unreadable flag field");
 			} else {
@@ -376,7 +376,7 @@ static int loadMenuItemString(const char *inString, QVector<MenuData> &menuItems
 			cmdLen = strcspn(inPtr, "\n");
 			if (cmdLen == 0)
 				return parseError("shell command field is empty");
-			cmdStr = XtMalloc(cmdLen + 1);
+            cmdStr = new char[cmdLen + 1];
 			strncpy(cmdStr, inPtr, cmdLen);
 			cmdStr[cmdLen] = '\0';
 			inPtr += cmdLen;
@@ -394,8 +394,8 @@ static int loadMenuItemString(const char *inString, QVector<MenuData> &menuItems
 
 		// create a menu item record 
 		auto f = new MenuItem;
-		f->name      = QLatin1String(nameStr);
-		f->cmd       = QLatin1String(cmdStr);
+        f->name      = QString::fromLatin1(nameStr);
+        f->cmd       = QString::fromLatin1(cmdStr);
 		f->mnemonic  = mneChar;
 		f->input     = input;
 		f->output    = output;
@@ -404,8 +404,8 @@ static int loadMenuItemString(const char *inString, QVector<MenuData> &menuItems
 		f->loadAfter = loadAfter;
         f->shortcut  = shortcut;
 		
-		XtFree(nameStr);
-		XtFree(cmdStr);
+        delete [] nameStr;
+        delete [] cmdStr;
 
 		// add/replace menu record in the list 
 		bool found = false;
@@ -438,25 +438,23 @@ static int parseError(const char *message) {
 ** negligible for most macros.
 */
 static char *copyMacroToEnd(const char **inPtr) {
-	char *retStr;
-	const char *errMsg;
-	const char *stoppedAt;
+
+    const char *errMsg;
+    const char *stoppedAt;
 	const char *p;
-	char *retPtr;
-	Program *prog;
 
 	/* Skip over whitespace to find make sure there's a beginning brace
 	   to anchor the parse (if not, it will take the whole file) */
 	*inPtr += strspn(*inPtr, " \t\n");
-	if (**inPtr != '{') {
-		ParseError(nullptr, *inPtr, *inPtr - 1, "macro menu item", "expecting '{'");
+    if (**inPtr != '{') {
+        ParseError(nullptr, *inPtr, *inPtr - 1, "macro menu item", "expecting '{'");
 		return nullptr;
 	}
 
 	// Parse the input 
-	prog = ParseMacro(*inPtr, &errMsg, &stoppedAt);
+    Program *prog = ParseMacro(*inPtr, &errMsg, &stoppedAt);
 	if(!prog) {
-		ParseError(nullptr, *inPtr, stoppedAt, "macro menu item", errMsg);
+        ParseError(nullptr, *inPtr, stoppedAt, "macro menu item", errMsg);
 		return nullptr;
 	}
 	FreeProgram(prog);
@@ -465,24 +463,38 @@ static char *copyMacroToEnd(const char **inPtr) {
 	   extra leading tabs added by the writer routine */
 	(*inPtr)++;
 	*inPtr += strspn(*inPtr, " \t");
-	if (**inPtr == '\n')
+
+    if (**inPtr == '\n')
 		(*inPtr)++;
+
+    if (**inPtr == '\t')
+		(*inPtr)++;
+
 	if (**inPtr == '\t')
 		(*inPtr)++;
-	if (**inPtr == '\t')
-		(*inPtr)++;
-	retPtr = retStr = XtMalloc(stoppedAt - *inPtr + 1);
+
+    char *retStr;
+    char *retPtr;
+
+    retStr = new char[stoppedAt - *inPtr + 1];
+    retPtr = retStr;
+
 	for (p = *inPtr; p < stoppedAt - 1; p++) {
 		if (!strncmp(p, "\n\t\t", 3)) {
 			*retPtr++ = '\n';
 			p += 2;
-		} else
+        } else {
 			*retPtr++ = *p;
+        }
 	}
+
 	if (*(retPtr - 1) == '\t')
 		retPtr--;
 	*retPtr = '\0';
+
 	*inPtr = stoppedAt;
+
+
 	return retStr;
 }
 

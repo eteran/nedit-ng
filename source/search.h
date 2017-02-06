@@ -39,22 +39,22 @@ class MainWindow;
 
 
 
-bool ReplaceAllEx(MainWindow *window, DocumentWidget *document, TextArea *area, const char *searchString, const char *replaceString, SearchType searchType);
-bool ReplaceAndSearchEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, const char *searchString, const char *replaceString, SearchType searchType, int searchWrap);
+bool ReplaceAllEx(MainWindow *window, DocumentWidget *document, TextArea *area, const QString &searchString, const QString &replaceString, SearchType searchType);
+bool ReplaceAndSearchEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, const QString &searchString, const QString &replaceString, SearchType searchType, int searchWrap);
 bool ReplaceFindSameEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, int searchWrap);
 bool ReplaceSameEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, int searchWrap);
-bool SearchAndReplaceEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, const char *searchString, const char *replaceString, SearchType searchType, bool searchWrap);
-bool SearchAndSelectIncrementalEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, const char *searchString, SearchType searchType, bool searchWrap, bool continued);
+bool SearchAndReplaceEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, const QString &searchString, const QString &replaceString, SearchType searchType, bool searchWrap);
+bool SearchAndSelectIncrementalEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, const QString &searchString, SearchType searchType, bool searchWrap, bool continued);
 bool SearchAndSelectSameEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, bool searchWrap);
-bool SearchAndSelectEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, const char *searchString, SearchType searchType, int searchWrap);
-bool SearchString(view::string_view string, const char *searchString, SearchDirection direction, SearchType searchType, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters);
-bool SearchWindowEx(MainWindow *window, DocumentWidget *document, SearchDirection direction, const char *searchString, SearchType searchType, int searchWrap, int beginPos, int *startPos, int *endPos, int *extentBW, int *extentFW);
-char *ReplaceAllInString(view::string_view inString, const char *searchString, const char *replaceString, SearchType searchType, int *copyStart, int *copyEnd, int *replacementLength, const char *delimiters);
+bool SearchAndSelectEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, const QString &searchString, SearchType searchType, int searchWrap);
+bool SearchString(view::string_view string, const QString &searchString, SearchDirection direction, SearchType searchType, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters);
+bool SearchWindowEx(MainWindow *window, DocumentWidget *document, SearchDirection direction, const QString &searchString, SearchType searchType, int searchWrap, int beginPos, int *startPos, int *endPos, int *extentBW, int *extentFW);
+char *ReplaceAllInString(view::string_view inString, const QString &searchString, const char *replaceString, SearchType searchType, int *copyStart, int *copyEnd, int *replacementLength, const char *delimiters);
 void BeginISearchEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction);
 void DoFindDlogEx(MainWindow *window, DocumentWidget *document, SearchDirection direction, int keepDialogs, SearchType searchType);
 void DoFindReplaceDlogEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, int keepDialogs, SearchType searchType);
 void FlashMatchingEx(DocumentWidget *document, TextArea *area);
-void ReplaceInSelectionEx(MainWindow *window, DocumentWidget *document, TextArea *area, const char *searchString, const char *replaceString, SearchType searchType);
+void ReplaceInSelectionEx(MainWindow *window, DocumentWidget *document, TextArea *area, const QString &searchString, const QString &replaceString, SearchType searchType);
 void SearchForSelectedEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, SearchType searchType, int searchWrap);
 
 void eraseFlashEx(DocumentWidget *document);
@@ -99,11 +99,11 @@ struct SelectionInfo {
 int countWritableWindows();
 int historyIndex(int nCycles);
 int isRegexType(SearchType searchType);
-void saveSearchHistory(const char *searchString, const char *replaceString, SearchType searchType, bool isIncremental);
+void saveSearchHistory(const QString &searchString, QString replaceString, SearchType searchType, bool isIncremental);
 int defaultRegexFlags(SearchType searchType);
 
-extern char *SearchHistory[MAX_SEARCH_HISTORY];
-extern char *ReplaceHistory[MAX_SEARCH_HISTORY];
+extern QString SearchHistory[MAX_SEARCH_HISTORY];
+extern QString ReplaceHistory[MAX_SEARCH_HISTORY];
 extern SearchType SearchTypeHistory[MAX_SEARCH_HISTORY];
 
 #endif

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>381</width>
-    <height>129</height>
+    <height>126</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -35,7 +35,11 @@
     </widget>
    </item>
    <item>
-    <widget class="LineEdit" name="textFilter"/>
+    <widget class="QLineEdit" name="textFilter">
+     <property name="clearButtonEnabled">
+      <bool>true</bool>
+     </property>
+    </widget>
    </item>
    <item>
     <spacer name="verticalSpacer_2">
@@ -72,13 +76,6 @@
    </item>
   </layout>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>LineEdit</class>
-   <extends>QLineEdit</extends>
-   <header>LineEdit.h</header>
-  </customwidget>
- </customwidgets>
  <tabstops>
   <tabstop>textFilter</tabstop>
  </tabstops>

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>452</width>
-    <height>291</height>
+    <width>430</width>
+    <height>284</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -46,7 +46,11 @@
     </layout>
    </item>
    <item>
-    <widget class="QLineEdit" name="textFind"/>
+    <widget class="QLineEdit" name="textFind">
+     <property name="clearButtonEnabled">
+      <bool>true</bool>
+     </property>
+    </widget>
    </item>
    <item>
     <widget class="QLabel" name="label_3">
@@ -56,7 +60,11 @@
     </widget>
    </item>
    <item>
-    <widget class="QLineEdit" name="textReplace"/>
+    <widget class="QLineEdit" name="textReplace">
+     <property name="clearButtonEnabled">
+      <bool>true</bool>
+     </property>
+    </widget>
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -180,7 +188,8 @@
         <string>Replace</string>
        </property>
        <property name="icon">
-        <iconset theme="edit-find-replace"/>
+        <iconset theme="edit-find-replace">
+         <normaloff>.</normaloff>.</iconset>
        </property>
        <property name="shortcut">
         <string>Return</string>
@@ -196,7 +205,8 @@
         <string>&amp;Find</string>
        </property>
        <property name="icon">
-        <iconset theme="edit-find"/>
+        <iconset theme="edit-find">
+         <normaloff>.</normaloff>.</iconset>
        </property>
       </widget>
      </item>
@@ -213,7 +223,8 @@
         <string>Cancel</string>
        </property>
        <property name="icon">
-        <iconset theme="dialog-cancel"/>
+        <iconset theme="dialog-cancel">
+         <normaloff>.</normaloff>.</iconset>
        </property>
        <property name="shortcut">
         <string>Esc</string>

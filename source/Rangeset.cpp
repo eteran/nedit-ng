@@ -38,9 +38,6 @@
 #include <cctype>
 #include <algorithm>
 
-#define is_start(i) !((i)&1) // true if i is even 
-#define is_end(i)    ((i)&1) // true if i is odd 
-
 namespace {
 
 // -------------------------------------------------------------------------- 
@@ -68,9 +65,15 @@ struct {
 
 // -------------------------------------------------------------------------- 
 
+bool is_start(int i) {
+    return !(i & 1);
+}
+
+bool is_end(int i) {
+    return (i & 1);
+}
 
 void rangesetRefreshAllRanges(Rangeset *rangeset) {
-
 	for (int i = 0; i < rangeset->n_ranges; i++) {
 		rangeset->RangesetRefreshRange(rangeset->ranges[i].start, rangeset->ranges[i].end);
 	}
@@ -544,7 +547,7 @@ Rangeset *rangesetBreakMaintain(Rangeset *rangeset, int pos, int ins, int del) {
 ** Return the name, if any.
 */
 
-const char *Rangeset::RangesetGetName() const {
+QString Rangeset::RangesetGetName() const {
 	return this->name;
 }
 
@@ -868,7 +871,6 @@ int Rangeset::RangesetAssignColorPixel(const QColor &color, int ok) {
 */
 
 int Rangeset::RangesetAssignName(const char *name) {
-	char *cp;
 
 	if (name && name[0] == '\0') {
 		name = nullptr;
@@ -876,16 +878,10 @@ int Rangeset::RangesetAssignName(const char *name) {
 
 	// store new name value 
 	if (name) {
-        cp = new char[strlen(name) + 1];
-        strcpy(cp, name);
+        this->name = QString::fromLatin1(name);
 	} else {
-		cp = nullptr;
+        this->name = QString();
 	}
-
-	// free old name value 
-    delete [] this->name;
-
-	this->name = cp;
 
 	return 1;
 }
@@ -1153,22 +1149,21 @@ void Rangeset::RangesetEmpty() {
 	}
 
     delete [] this->color_name;
-    delete [] this->name;
 
     this->color_name = nullptr;
-    this->name = nullptr;
+    this->name = QString();
 	this->ranges = RangesetTable::RangesFree(this->ranges);
 }
 
 /*
 ** Get information about rangeset.
 */
-void Rangeset::RangesetGetInfo(bool *defined, int *label, int *count, const char **color, const char **name, const char **mode) {
+void Rangeset::RangesetGetInfo(bool *defined, int *label, int *count, const char **color, QString *name, const char **mode) {
     *defined = true;
     *label = static_cast<int>(this->label);
     *count = this->n_ranges;
     *color = this->color_name ? this->color_name : "";
-    *name  = this->name       ? this->name : "";
+    *name  = this->name;
     *mode  = this->update_name;
 }
 
@@ -1196,7 +1191,7 @@ void Rangeset::RangesetInit(int label, TextBuffer *buf) {
 	this->ranges = nullptr;          // the ranges table 
 
     this->color_name = nullptr;
-    this->name = nullptr;
+    this->name = QString();
 	this->color_set = 0;
 	this->buf = buf;
 

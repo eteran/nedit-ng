@@ -47,6 +47,8 @@
 #include <cstring>
 #include <climits>
 
+#include <Xm/Xm.h>
+
 #include <sys/types.h>
 #include <sys/utsname.h>
 #include <sys/param.h>
@@ -180,7 +182,7 @@ static Atom findFileOpenProperty(const char *filename, const char *pathname) {
 		return (None);
 	}
 
-	QString path = QString(QLatin1String("%1%2")).arg(QLatin1String(pathname)).arg(QLatin1String(filename));
+    QString path = QString(QLatin1String("%1%2")).arg(QString::fromLatin1(pathname)).arg(QString::fromLatin1(filename));
 	
     return CreateServerFileOpenAtom(GetPrefServerName().toLatin1().data(), path.toLatin1().data());
 }
@@ -207,7 +209,7 @@ static Atom findFileClosedProperty(const char *filename, const char *pathname) {
 		return (None);
 	}
 
-	QString path = QString(QLatin1String("%1%2")).arg(QLatin1String(pathname)).arg(QLatin1String(filename));
+    QString path = QString(QLatin1String("%1%2")).arg(QString::fromLatin1(pathname)).arg(QString::fromLatin1(filename));
 
     return CreateServerFileClosedAtom(GetPrefServerName().toLatin1().data(), path.toLatin1().data(), True); // don't create
 }
@@ -409,7 +411,7 @@ static void processServerCommandString(char *string) {
 			break;
 		}
 
-        DocumentWidget *window = MainWindow::FindWindowWithFile(QLatin1String(filename), QLatin1String(pathname));
+        DocumentWidget *window = MainWindow::FindWindowWithFile(QString::fromLatin1(filename), QString::fromLatin1(pathname));
 		if(!window) {
 			/* Files are opened in background to improve opening speed
 			   by defering certain time  consuiming task such as syntax
@@ -419,10 +421,10 @@ static void processServerCommandString(char *string) {
 			   macros to execute on. */
             window = DocumentWidget::EditExistingFileEx(
                         findWindowOnDesktopEx(tabbed, currentDesktop)->currentDocument(),
-                        QLatin1String(filename),
-                        QLatin1String(pathname),
+                        QString::fromLatin1(filename),
+                        QString::fromLatin1(pathname),
                         editFlags,
-                        geometry ? QLatin1String(geometry) : QString(),
+                        geometry ? QString::fromLatin1(geometry) : QString(),
                         iconicFlag,
                         lmLen  ==  0 ? nullptr            : langMode,
                         tabbed == -1 ? GetPrefOpenInTab() : tabbed,

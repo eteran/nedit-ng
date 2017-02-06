@@ -65,7 +65,7 @@ QString GetClearCaseViewTag() {
 		/* Extract the view name from the CLEARCASE_ROOT environment variable */
 		if (const char *envPtr = qgetenv("CLEARCASE_ROOT")) {
 
-			ClearCaseViewRoot = QLatin1String(envPtr);
+            ClearCaseViewRoot = QString::fromLatin1(envPtr);
 
 			const int tagPtr = ClearCaseViewRoot.lastIndexOf(QLatin1Char('/'));
 			if (tagPtr != -1) {

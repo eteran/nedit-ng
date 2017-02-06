@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>413</width>
-    <height>147</height>
+    <width>323</width>
+    <height>144</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -23,7 +23,7 @@
       <item>
        <widget class="QRadioButton" name="radioLastCommand">
         <property name="text">
-         <string>Last &amp;Command (%1)</string>
+         <string>Last Command (%&amp;1)</string>
         </property>
         <property name="checked">
          <bool>true</bool>

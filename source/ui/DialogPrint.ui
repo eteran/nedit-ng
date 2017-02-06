@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>421</width>
-    <height>213</height>
+    <height>208</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -67,7 +67,11 @@
       </widget>
      </item>
      <item row="2" column="1" colspan="3">
-      <widget class="QLineEdit" name="editHost"/>
+      <widget class="QLineEdit" name="editHost">
+       <property name="clearButtonEnabled">
+        <bool>true</bool>
+       </property>
+      </widget>
      </item>
      <item row="3" column="0" colspan="4">
       <widget class="QLineEdit" name="editCommand"/>
@@ -96,8 +100,7 @@
        </property>
        <property name="icon">
         <iconset theme="document-print">
-         <normaloff/>
-        </iconset>
+         <normaloff>.</normaloff>.</iconset>
        </property>
       </widget>
      </item>
@@ -121,8 +124,7 @@
        </property>
        <property name="icon">
         <iconset theme="dialog-cancel">
-         <normaloff/>
-        </iconset>
+         <normaloff>.</normaloff>.</iconset>
        </property>
       </widget>
      </item>

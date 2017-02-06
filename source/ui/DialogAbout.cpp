@@ -113,7 +113,7 @@ QString DialogAbout::createInfoString() {
                                     .arg(QLatin1String(__DATE__))
                                     .arg(QLatin1String(__TIME__))
                                     .arg(QLatin1String(QT_VERSION_STR))
-                                    .arg(QLatin1String(qVersion()))
+                                    .arg(QString::fromLatin1(qVersion()))
                                     .arg(QLocale::system().bcp47Name());
 }
 

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>683</width>
+    <width>661</width>
     <height>476</height>
    </rect>
   </property>
@@ -27,8 +27,7 @@
            </property>
            <property name="icon">
             <iconset theme="document-new">
-             <normaloff/>
-            </iconset>
+             <normaloff>.</normaloff>.</iconset>
            </property>
           </widget>
          </item>
@@ -39,8 +38,7 @@
            </property>
            <property name="icon">
             <iconset theme="edit-delete">
-             <normaloff/>
-            </iconset>
+             <normaloff>.</normaloff>.</iconset>
            </property>
           </widget>
          </item>
@@ -51,8 +49,7 @@
            </property>
            <property name="icon">
             <iconset theme="edit-copy">
-             <normaloff/>
-            </iconset>
+             <normaloff>.</normaloff>.</iconset>
            </property>
           </widget>
          </item>
@@ -63,8 +60,7 @@
            </property>
            <property name="icon">
             <iconset theme="go-up">
-             <normaloff/>
-            </iconset>
+             <normaloff>.</normaloff>.</iconset>
            </property>
           </widget>
          </item>
@@ -75,8 +71,7 @@
            </property>
            <property name="icon">
             <iconset theme="go-down">
-             <normaloff/>
-            </iconset>
+             <normaloff>.</normaloff>.</iconset>
            </property>
           </widget>
          </item>
@@ -219,8 +214,7 @@ Replay Macro</string>
        </property>
        <property name="icon">
         <iconset theme="dialog-ok">
-         <normaloff/>
-        </iconset>
+         <normaloff>.</normaloff>.</iconset>
        </property>
       </widget>
      </item>
@@ -231,8 +225,7 @@ Replay Macro</string>
        </property>
        <property name="icon">
         <iconset theme="dialog-ok-apply">
-         <normaloff/>
-        </iconset>
+         <normaloff>.</normaloff>.</iconset>
        </property>
       </widget>
      </item>
@@ -250,8 +243,7 @@ Replay Macro</string>
        </property>
        <property name="icon">
         <iconset theme="dialog-close">
-         <normaloff/>
-        </iconset>
+         <normaloff>.</normaloff>.</iconset>
        </property>
       </widget>
      </item>

@@ -47,7 +47,7 @@ typedef Rangeset *RangesetUpdateFn(Rangeset *p, int pos, int ins, int del);
 
 class Rangeset {
 public:
-	const char *RangesetGetName() const;
+    QString RangesetGetName() const;
 	int RangesetAdd(Rangeset *plusSet);
 	int RangesetAddBetween(int start, int end);
 	int RangesetAssignColorName(const char *color_name);
@@ -63,7 +63,7 @@ public:
 	int RangesetRemove(Rangeset *minusSet);
 	int RangesetRemoveBetween(int start, int end);
 	void RangesetEmpty();
-	void RangesetGetInfo(bool *defined, int *label, int *count, const char **color, const char **name, const char **mode);
+    void RangesetGetInfo(bool *defined, int *label, int *count, const char **color, QString *name, const char **mode);
 	void RangesetRefreshRange(int start, int end);
 	void RangesetInit(int label, TextBuffer *buf);
 
@@ -74,13 +74,13 @@ public:
 	int last_index;              // a place to start looking
 	int n_ranges;                // how many ranges in ranges
 	Range *ranges;               // the ranges table
-	uint8_t label;         // a number 1-63
+    uint8_t label;               // a number 1-63
 
 	int8_t color_set;            // 0: unset; 1: set; -1: invalid
     char *color_name;            // the name of an assigned color
     QColor color;                 // the value of a particular color
 	TextBuffer *buf;             // the text buffer of the rangeset
-    char *name;                  // name of rangeset
+    QString name;                  // name of rangeset
 };
 
 #endif

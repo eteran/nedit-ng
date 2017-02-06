@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
+    <width>621</width>
     <height>409</height>
    </rect>
   </property>
@@ -66,9 +66,12 @@
         </widget>
        </item>
        <item>
-        <widget class="LineEdit" name="editIFind">
+        <widget class="QLineEdit" name="editIFind">
          <property name="placeholderText">
           <string>Incremental Search</string>
+         </property>
+         <property name="clearButtonEnabled">
+          <bool>true</bool>
          </property>
         </widget>
        </item>
@@ -128,7 +131,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>621</width>
      <height>30</height>
     </rect>
    </property>
@@ -218,7 +221,7 @@
      <bool>true</bool>
     </property>
     <property name="title">
-     <string>P&amp;references</string>
+     <string>Preferen&amp;ces</string>
     </property>
     <widget class="QMenu" name="menu_Show_Matching">
      <property name="title">
@@ -1742,11 +1745,6 @@
   </action>
  </widget>
  <customwidgets>
-  <customwidget>
-   <class>LineEdit</class>
-   <extends>QLineEdit</extends>
-   <header>LineEdit.h</header>
-  </customwidget>
   <customwidget>
    <class>TabWidget</class>
    <extends>QTabWidget</extends>

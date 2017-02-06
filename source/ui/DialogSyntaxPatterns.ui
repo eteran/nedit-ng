@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>820</width>
-    <height>790</height>
+    <width>709</width>
+    <height>768</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -79,8 +79,7 @@ Language Mode...</string>
             </property>
             <property name="icon">
              <iconset theme="document-new">
-              <normaloff/>
-             </iconset>
+              <normaloff>.</normaloff>.</iconset>
             </property>
            </widget>
           </item>
@@ -91,8 +90,7 @@ Language Mode...</string>
             </property>
             <property name="icon">
              <iconset theme="edit-delete">
-              <normaloff/>
-             </iconset>
+              <normaloff>.</normaloff>.</iconset>
             </property>
            </widget>
           </item>
@@ -103,8 +101,7 @@ Language Mode...</string>
             </property>
             <property name="icon">
              <iconset theme="edit-copy">
-              <normaloff/>
-             </iconset>
+              <normaloff>.</normaloff>.</iconset>
             </property>
            </widget>
           </item>
@@ -115,8 +112,7 @@ Language Mode...</string>
             </property>
             <property name="icon">
              <iconset theme="go-up">
-              <normaloff/>
-             </iconset>
+              <normaloff>.</normaloff>.</iconset>
             </property>
            </widget>
           </item>
@@ -127,8 +123,7 @@ Language Mode...</string>
             </property>
             <property name="icon">
              <iconset theme="go-down">
-              <normaloff/>
-             </iconset>
+              <normaloff>.</normaloff>.</iconset>
             </property>
            </widget>
           </item>
@@ -254,7 +249,11 @@ Language Mode...</string>
          <widget class="QComboBox" name="comboHighlightStyle"/>
         </item>
         <item row="1" column="2">
-         <widget class="QLineEdit" name="editPatternName"/>
+         <widget class="QLineEdit" name="editPatternName">
+          <property name="clearButtonEnabled">
+           <bool>true</bool>
+          </property>
+         </widget>
         </item>
         <item row="1" column="3">
          <widget class="QLineEdit" name="editParentPattern">
@@ -413,8 +412,7 @@ Style...</string>
        </property>
        <property name="icon">
         <iconset theme="dialog-ok">
-         <normaloff/>
-        </iconset>
+         <normaloff>.</normaloff>.</iconset>
        </property>
       </widget>
      </item>
@@ -425,8 +423,7 @@ Style...</string>
        </property>
        <property name="icon">
         <iconset theme="dialog-ok-apply">
-         <normaloff/>
-        </iconset>
+         <normaloff>.</normaloff>.</iconset>
        </property>
       </widget>
      </item>
@@ -444,8 +441,7 @@ Style...</string>
        </property>
        <property name="icon">
         <iconset theme="edit-delete">
-         <normaloff/>
-        </iconset>
+         <normaloff>.</normaloff>.</iconset>
        </property>
       </widget>
      </item>
@@ -463,8 +459,7 @@ Style...</string>
        </property>
        <property name="icon">
         <iconset theme="dialog-close">
-         <normaloff/>
-        </iconset>
+         <normaloff>.</normaloff>.</iconset>
        </property>
       </widget>
      </item>
@@ -475,8 +470,7 @@ Style...</string>
        </property>
        <property name="icon">
         <iconset theme="help-contents">
-         <normaloff/>
-        </iconset>
+         <normaloff>.</normaloff>.</iconset>
        </property>
       </widget>
      </item>

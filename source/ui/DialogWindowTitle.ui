@@ -131,7 +131,11 @@
          </widget>
         </item>
         <item>
-         <widget class="LineEdit" name="editFormat"/>
+         <widget class="QLineEdit" name="editFormat">
+          <property name="clearButtonEnabled">
+           <bool>true</bool>
+          </property>
+         </widget>
         </item>
        </layout>
       </item>
@@ -299,13 +303,6 @@
    </item>
   </layout>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>LineEdit</class>
-   <extends>QLineEdit</extends>
-   <header>LineEdit.h</header>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections>
   <connection>

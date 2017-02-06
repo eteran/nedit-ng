@@ -225,7 +225,7 @@ int main(int argc, char *argv[]) {
 			iconic = false;
 		} else if (opts && (!strcmp(argv[i], "-geometry") || !strcmp(argv[i], "-g"))) {
 			nextArg(argc, argv, &i);
-            geometry = QLatin1String(argv[i]);
+            geometry = QString::fromLatin1(argv[i]);
 		} else if (opts && !strcmp(argv[i], "-lm")) {
 			nextArg(argc, argv, &i);
 			langMode = argv[i];
@@ -266,9 +266,9 @@ int main(int argc, char *argv[]) {
                 QPointer<DocumentWidget> documentEx = nullptr;
                 QList<MainWindow *> windows = MainWindow::allWindows();
                 if(!windows.empty()) {
-                    documentEx = DocumentWidget::EditExistingFileEx(windows[0]->currentDocument(), QLatin1String(filename), QLatin1String(pathname), editFlags, geometry, iconic, langMode, isTabbed, true);
+                    documentEx = DocumentWidget::EditExistingFileEx(windows[0]->currentDocument(), QString::fromLatin1(filename), QString::fromLatin1(pathname), editFlags, geometry, iconic, langMode, isTabbed, true);
                 } else {
-                    documentEx = DocumentWidget::EditExistingFileEx(nullptr,                       QLatin1String(filename), QLatin1String(pathname), editFlags, geometry, iconic, langMode, isTabbed, true);
+                    documentEx = DocumentWidget::EditExistingFileEx(nullptr,                       QString::fromLatin1(filename), QString::fromLatin1(pathname), editFlags, geometry, iconic, langMode, isTabbed, true);
                 }
 
                 fileSpecified = true;
@@ -358,23 +358,26 @@ static void nextArg(int argc, char **argv, int *argIndex) {
 */
 static int checkDoMacroArg(const char *macro) {
 
-	const char *errMsg;
-	const char *stoppedAt;
+    QString errMsg;
+    int stoppedAt;
 	int macroLen;
 
 	/* Add a terminating newline (which command line users are likely to omit
 	   since they are typically invoking a single routine) */
 	macroLen = strlen(macro);
+
 	auto tMacro = new char[strlen(macro) + 2];
 	strncpy(tMacro, macro, macroLen);
 	tMacro[macroLen] = '\n';
 	tMacro[macroLen + 1] = '\0';
 
+    auto macroString = QString::fromLatin1(tMacro);
+
 	// Do a test parse 
-	Program *const prog = ParseMacro(tMacro, &errMsg, &stoppedAt);
+    Program *const prog = ParseMacroEx(macroString, 0, &errMsg, &stoppedAt);
 
 	if(!prog) {        
-		ParseError(nullptr, tMacro, stoppedAt, "argument to -do", errMsg);
+        ParseErrorEx(nullptr, macroString, stoppedAt, QLatin1String("argument to -do"), errMsg);
         delete [] tMacro;
 		return False;
 	}

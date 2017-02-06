@@ -31,9 +31,7 @@
 #include "IndentStyle.h"
 #include "SearchType.h"
 #include <X11/Intrinsic.h>
-#include <X11/Xresource.h>
-#include <Xm/Xm.h>
-#include <X11/Xlib.h>
+
 
 class QWidget;
 class QString;

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>719</width>
-    <height>644</height>
+    <width>688</width>
+    <height>558</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -27,8 +27,7 @@
            </property>
            <property name="icon">
             <iconset theme="document-new">
-             <normaloff/>
-            </iconset>
+             <normaloff>.</normaloff>.</iconset>
            </property>
           </widget>
          </item>
@@ -39,8 +38,7 @@
            </property>
            <property name="icon">
             <iconset theme="edit-delete">
-             <normaloff/>
-            </iconset>
+             <normaloff>.</normaloff>.</iconset>
            </property>
           </widget>
          </item>
@@ -51,8 +49,7 @@
            </property>
            <property name="icon">
             <iconset theme="edit-copy">
-             <normaloff/>
-            </iconset>
+             <normaloff>.</normaloff>.</iconset>
            </property>
           </widget>
          </item>
@@ -63,8 +60,7 @@
            </property>
            <property name="icon">
             <iconset theme="go-up">
-             <normaloff/>
-            </iconset>
+             <normaloff>.</normaloff>.</iconset>
            </property>
           </widget>
          </item>
@@ -75,8 +71,7 @@
            </property>
            <property name="icon">
             <iconset theme="go-down">
-             <normaloff/>
-            </iconset>
+             <normaloff>.</normaloff>.</iconset>
            </property>
           </widget>
          </item>
@@ -145,7 +140,11 @@ Select &quot;New&quot; to add a new command to the menu.</string>
         </layout>
        </item>
        <item>
-        <widget class="QLineEdit" name="editName"/>
+        <widget class="QLineEdit" name="editName">
+         <property name="clearButtonEnabled">
+          <bool>true</bool>
+         </property>
+        </widget>
        </item>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_6">

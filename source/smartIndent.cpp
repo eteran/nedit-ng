@@ -249,7 +249,7 @@ bool InSmartIndentMacrosEx(DocumentWidget *document) {
 static bool loadDefaultIndentSpec(const char *lmName) {
 
 	for (int i = 0; i < N_DEFAULT_INDENT_SPECS; i++) {
-		if (DefaultIndentSpecs[i].lmName == QLatin1String(lmName)) {
+        if (DefaultIndentSpecs[i].lmName == QString::fromLatin1(lmName)) {
 			SmartIndentSpecs[NSmartIndentSpecs++] = new SmartIndent(DefaultIndentSpecs[i]);
 			return true;
 		}
@@ -379,7 +379,7 @@ int LoadSmartIndentCommonString(char *inString) {
 */
 static QString readSIMacroEx(const char **inPtr) {
 	if(char *s = readSIMacro(inPtr)) {
-		QString ret = QLatin1String(s);
+        QString ret = QString::fromLatin1(s);
         delete s;
 		return ret;
 	}
@@ -408,7 +408,7 @@ static char *readSIMacro(const char **inPtr) {
 	// Remove leading tabs added by writer routine 
 	*inPtr = macroEnd + strlen(MacroEndBoundary);
 
-    std::string shiftedText = ShiftTextEx(macroStr, SHIFT_LEFT, True, 8, 8);
+    std::string shiftedText = ShiftTextEx(macroStr, SHIFT_LEFT, true, 8, 8);
 
     auto retStr = new char[shiftedText.size() + 1];
     strcpy(retStr, shiftedText.c_str());
@@ -420,7 +420,7 @@ static char *readSIMacro(const char **inPtr) {
 
 
 static int siParseError(const char *stringStart, const char *stoppedAt, const char *message) {
-	return ParseError(nullptr, stringStart, stoppedAt, "smart indent specification", message);
+    return ParseErrorEx(nullptr, QString::fromLatin1(stringStart), stoppedAt - stringStart, QLatin1String("smart indent specification"), QString::fromLatin1(message));
 }
 
 QString WriteSmartIndentStringEx() {
@@ -493,7 +493,7 @@ static void insertShiftedMacro(QTextStream &ts, const QString &macro) {
 	}
 	
 	ts << QLatin1String("\t");
-	ts << QLatin1String(MacroEndBoundary);
+    ts << QString::fromLatin1(MacroEndBoundary);
 	ts << QLatin1String("\n");
 }
 
@@ -514,7 +514,7 @@ SmartIndent *findIndentSpec(const char *modeName) {
 	}
 
 	for (int i = 0; i < NSmartIndentSpecs; i++) {
-		if (SmartIndentSpecs[i]->lmName == QLatin1String(modeName)) {
+        if (SmartIndentSpecs[i]->lmName == QString::fromLatin1(modeName)) {
 			return SmartIndentSpecs[i];
 		}
 	}
@@ -531,7 +531,7 @@ int LMHasSmartIndentMacros(const char *languageMode) {
 	}
 	
 	
-	return SmartIndentDlg != nullptr && SmartIndentDlg->hasSmartIndentMacros(QLatin1String(languageMode));
+    return SmartIndentDlg != nullptr && SmartIndentDlg->hasSmartIndentMacros(QString::fromLatin1(languageMode));
 }
 
 /*
@@ -542,13 +542,13 @@ int LMHasSmartIndentMacros(const char *languageMode) {
 void RenameSmartIndentMacros(const char *oldName, const char *newName) {
 
 	for (int i = 0; i < NSmartIndentSpecs; i++) {
-		if (SmartIndentSpecs[i]->lmName == QLatin1String(oldName)) {
-			SmartIndentSpecs[i]->lmName = QLatin1String(newName);
+        if (SmartIndentSpecs[i]->lmName == QString::fromLatin1(oldName)) {
+            SmartIndentSpecs[i]->lmName = QString::fromLatin1(newName);
 		}
 	}
 	if (SmartIndentDlg) {
-		if(SmartIndentDlg->languageMode_ == QLatin1String(oldName)) {
-			SmartIndentDlg->setLanguageMode(QLatin1String(newName));
+        if(SmartIndentDlg->languageMode_ == QString::fromLatin1(oldName)) {
+            SmartIndentDlg->setLanguageMode(QString::fromLatin1(newName));
 		}
 	}
 }

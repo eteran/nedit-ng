@@ -41,10 +41,8 @@ static void rangesetClone(Rangeset *destRangeset, const Rangeset *srcRangeset) {
         strcpy(destRangeset->color_name, srcRangeset->color_name);
     }
 
-    if (srcRangeset->name) {
-        destRangeset->name = new char[strlen(srcRangeset->name) + 1];
-        strcpy(destRangeset->name, srcRangeset->name);
-    }
+
+    destRangeset->name = srcRangeset->name;
 
 	if (srcRangeset->ranges) {
 		destRangeset->ranges = RangesetTable::RangesNew(srcRangeset->n_ranges);

@@ -42,7 +42,7 @@ public:
 	void rSetActionButtons(bool replaceBtn, bool replaceFindBtn, bool replaceAndFindBtn, bool replaceInWinBtn, bool replaceInSelBtn, bool replaceAllBtn);
 #endif
 	void UpdateReplaceActionButtons();
-	int getReplaceDlogInfo(SearchDirection *direction, char *searchString, char *replaceString, SearchType *searchType);
+    bool getReplaceDlogInfo(SearchDirection *direction, QString *searchString, QString *replaceString, SearchType *searchType);
 	void collectWritableWindows();
 
 public:

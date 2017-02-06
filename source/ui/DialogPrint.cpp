@@ -152,8 +152,8 @@ void DialogPrint::LoadPrintPreferencesEx(bool lookForFlpr) {
         QueueOption  = settings.value(tr("printQueueOption"),  QLatin1String("-q")).toString();
         NameOption   = settings.value(tr("printNameOption"),   QLatin1String("-j ")).toString();
         HostOption   = settings.value(tr("printHostOption"),   QLatin1String("-h")).toString();
-        DefaultQueue = settings.value(tr("printDefaultQueue"), QLatin1String(defaultQueue)).toString();
-        DefaultHost  = settings.value(tr("printDefaultHost"),  QLatin1String(defaultHost)).toString();
+        DefaultQueue = settings.value(tr("printDefaultQueue"), QString::fromLatin1(defaultQueue)).toString();
+        DefaultHost  = settings.value(tr("printDefaultHost"),  QString::fromLatin1(defaultHost)).toString();
 
     } else {
 
@@ -164,7 +164,7 @@ void DialogPrint::LoadPrintPreferencesEx(bool lookForFlpr) {
         QueueOption  = settings.value(tr("printQueueOption"),  QLatin1String("-P ")).toString();
         NameOption   = settings.value(tr("printNameOption"),   QLatin1String("-J ")).toString();
         HostOption   = settings.value(tr("printHostOption"),   QLatin1String("")).toString();
-        DefaultQueue = settings.value(tr("printDefaultQueue"), QLatin1String(defaultQueue)).toString();
+        DefaultQueue = settings.value(tr("printDefaultQueue"), QString::fromLatin1(defaultQueue)).toString();
         DefaultHost  = settings.value(tr("printDefaultHost"),  QLatin1String("")).toString();
     }
 
@@ -421,7 +421,7 @@ void DialogPrint::on_buttonPrint_clicked() {
 	// from the output stream of the command.
 	FILE *pipe = popen(command.toLatin1().data(), "r");
 	if(!pipe) {
-		QMessageBox::warning(this, tr("Print Error"), tr("Unable to Print:\n%1").arg(QLatin1String(strerror(errno))));
+        QMessageBox::warning(this, tr("Print Error"), tr("Unable to Print:\n%1").arg(QString::fromLatin1(strerror(errno))));
 		return;
 	}
 
@@ -441,7 +441,7 @@ void DialogPrint::on_buttonPrint_clicked() {
 	}
 
 	if (pclose(pipe)) {
-		QMessageBox::warning(this, tr("Print Error"), tr("Unable to Print:\n%1").arg(QLatin1String(errorString)));
+        QMessageBox::warning(this, tr("Print Error"), tr("Unable to Print:\n%1").arg(QString::fromLatin1(errorString)));
 		return;
 	}
 	

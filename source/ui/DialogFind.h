@@ -29,7 +29,7 @@ public:
 	void fUpdateActionButtons();
 	
 private:
-	int getFindDlogInfoEx(SearchDirection *direction, std::string *searchString, SearchType *searchType);
+    bool getFindDlogInfoEx(SearchDirection *direction, QString *searchString, SearchType *searchType);
 	
 public:
 	bool keepDialog() const;

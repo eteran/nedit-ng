@@ -3601,6 +3601,7 @@ void TextArea::drawCursor(QPainter *painter, int x, int y) {
     QFontMetrics fm(viewport()->font());
 
 	int midY;
+
     // TODO(eteran): the original code used fontStruct_->min_bounds.width
     // this doesn't matter for fixed sized fonts, but for variable sized ones
     // we aren't quite right. I've approximated this with the width of 'i', but

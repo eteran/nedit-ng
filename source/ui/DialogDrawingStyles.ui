@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>608</width>
-    <height>408</height>
+    <height>384</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -40,8 +40,7 @@
            </property>
            <property name="icon">
             <iconset theme="document-new">
-             <normaloff/>
-            </iconset>
+             <normaloff>.</normaloff>.</iconset>
            </property>
           </widget>
          </item>
@@ -52,8 +51,7 @@
            </property>
            <property name="icon">
             <iconset theme="edit-delete">
-             <normaloff/>
-            </iconset>
+             <normaloff>.</normaloff>.</iconset>
            </property>
           </widget>
          </item>
@@ -64,8 +62,7 @@
            </property>
            <property name="icon">
             <iconset theme="edit-copy">
-             <normaloff/>
-            </iconset>
+             <normaloff>.</normaloff>.</iconset>
            </property>
           </widget>
          </item>
@@ -76,8 +73,7 @@
            </property>
            <property name="icon">
             <iconset theme="go-up">
-             <normaloff/>
-            </iconset>
+             <normaloff>.</normaloff>.</iconset>
            </property>
           </widget>
          </item>
@@ -88,8 +84,7 @@
            </property>
            <property name="icon">
             <iconset theme="go-down">
-             <normaloff/>
-            </iconset>
+             <normaloff>.</normaloff>.</iconset>
            </property>
           </widget>
          </item>

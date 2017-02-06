@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>424</width>
-    <height>184</height>
+    <width>397</width>
+    <height>180</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -46,7 +46,11 @@
     </layout>
    </item>
    <item>
-    <widget class="QLineEdit" name="textFind"/>
+    <widget class="QLineEdit" name="textFind">
+     <property name="clearButtonEnabled">
+      <bool>true</bool>
+     </property>
+    </widget>
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -138,7 +142,8 @@
         <string>Find</string>
        </property>
        <property name="icon">
-        <iconset theme="edit-find"/>
+        <iconset theme="edit-find">
+         <normaloff>.</normaloff>.</iconset>
        </property>
        <property name="shortcut">
         <string>Return</string>
@@ -167,7 +172,8 @@
         <string>Cancel</string>
        </property>
        <property name="icon">
-        <iconset theme="dialog-cancel"/>
+        <iconset theme="dialog-cancel">
+         <normaloff>.</normaloff>.</iconset>
        </property>
        <property name="shortcut">
         <string>Esc</string>

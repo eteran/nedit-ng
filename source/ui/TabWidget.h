@@ -11,21 +11,10 @@ public:
 	explicit TabWidget(QWidget *parent = 0);
 
 Q_SIGNALS:
-	void countChanged(int count);
 	void customContextMenuRequested(int, const QPoint &);
 
 protected:
-	virtual void tabInserted(int index) override;
-	virtual void tabRemoved(int index) override;
 	virtual void mousePressEvent(QMouseEvent *event) override;
-
-public:
-	QTabBar *getTabBar() const;
-    bool hideSingleTab() const;
-    void setHideSingleTab(bool value);
-
-private:
-	bool hideSingleTab_;
 };
 
 #endif

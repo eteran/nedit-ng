@@ -31,8 +31,6 @@
 #include "menu.h"
 #include <cmath>
 
-#include <X11/Intrinsic.h>
-
 namespace {
 
 class MacroException : public std::exception {
@@ -81,7 +79,7 @@ static void restoreContextEx(RestartData<DocumentWidget> *context);
 
 static int returnNoVal();
 static int returnVal();
-static int returnValOrNone(int valOnStack);
+static int returnValOrNone(bool valOnStack);
 static int pushSymVal();
 static int pushArgVal();
 static int pushArgCount();
@@ -820,7 +818,7 @@ Symbol *PromoteToGlobal(Symbol *sym) {
 
 // Allocate a new string buffer of length chars 
 char *AllocString(int length) {
-	char *mem = XtMalloc(length + 1);
+    auto mem = new char [length + 1];
 	AllocatedStrings.push_back(mem);
 	return mem + 1;
 }
@@ -831,11 +829,11 @@ char *AllocString(int length) {
  * filled in.
  */
 int AllocNString(NString *string, int length) {
-	char *mem = XtMalloc(length + 1);
+    auto mem = new char[length + 1];
 	if (!mem) {
 		string->rep = nullptr;
 		string->len = 0;
-		return False;
+        return false;
 	}
 
 	AllocatedStrings.push_back(mem);
@@ -843,7 +841,7 @@ int AllocNString(NString *string, int length) {
 	string->rep = mem + 1;
 	string->rep[length - 1] = '\0'; // forced \0 
 	string->len = length - 1;
-	return True;
+    return true;
 }
 
 // Allocate a new string buffer of length chars, and copy in the string s 
@@ -869,12 +867,12 @@ char *AllocStringNCpy(const char *s, int length) {
  */
 int AllocNStringNCpy(NString *string, const char *s, int length) {
 	if (!AllocNString(string, length + 1)) // add extra char for forced \0 
-		return False;
+        return false;
 	if (!s)
 		s = "";
 	strncpy(string->rep, s, length);
 	string->len = strlen(string->rep); // re-calculate! 
-	return True;
+    return true;
 }
 
 // Allocate a new copy of string s 
@@ -891,13 +889,13 @@ int AllocNStringCpy(NString *string, const char *s) {
 	size_t length = s ? strlen(s) : 0;
 
 	if (!AllocNString(string, length + 1)) {
-		return False;
+        return false;
 	}
 
 	if (s) {
 		strncpy(string->rep, s, length);
 	}
-	return True;
+    return true;
 }
 
 static ArrayEntry *allocateSparseArrayEntry(void) {
@@ -971,7 +969,7 @@ void GarbageCollectStrings(void) {
 		assert(p);
 
 		if (*p == 0) {
-			XtFree(p);
+            delete [] p;
 			it = AllocatedStrings.erase(it);
 		} else {
 			++it;
@@ -1344,7 +1342,7 @@ static int add(void) {
 			leftIter = arrayIterateFirst(&leftVal);
 			rightIter = arrayIterateFirst(&rightVal);
 			while (leftIter || rightIter) {
-				Boolean insertResult = True;
+                bool insertResult = true;
 
 				if (leftIter && rightIter) {
 					int compareResult = arrayEntryCompare(leftIter, rightIter);
@@ -1409,7 +1407,7 @@ static int subtract(void) {
 			leftIter = arrayIterateFirst(&leftVal);
 			rightIter = arrayIterateFirst(&rightVal);
 			while (leftIter) {
-				Boolean insertResult = True;
+                bool insertResult = true;
 
 				if (leftIter && rightIter) {
 					int compareResult = arrayEntryCompare(leftIter, rightIter);
@@ -1586,7 +1584,7 @@ static int bitAnd(void) {
 			leftIter = arrayIterateFirst(&leftVal);
 			rightIter = arrayIterateFirst(&rightVal);
 			while (leftIter && rightIter) {
-				Boolean insertResult = True;
+                bool insertResult = true;
 				int compareResult = arrayEntryCompare(leftIter, rightIter);
 
 				if (compareResult < 0) {
@@ -1641,7 +1639,7 @@ static int bitOr(void) {
 			leftIter = arrayIterateFirst(&leftVal);
 			rightIter = arrayIterateFirst(&rightVal);
 			while (leftIter || rightIter) {
-				Boolean insertResult = True;
+                bool insertResult = true;
 
 				if (leftIter && rightIter) {
 					int compareResult = arrayEntryCompare(leftIter, rightIter);
@@ -1901,10 +1899,10 @@ static int fetchRetVal(void) {
 
 // see comments for returnValOrNone() 
 static int returnNoVal(void) {
-	return returnValOrNone(False);
+    return returnValOrNone(false);
 }
 static int returnVal(void) {
-	return returnValOrNone(True);
+    return returnValOrNone(true);
 }
 
 /*
@@ -1914,7 +1912,7 @@ static int returnVal(void) {
 ** After:  Prog->  next, ..., (in caller)[FETCH_RET_VAL?], ...
 **         TheStack-> retVal?, next, ...
 */
-static int returnValOrNone(int valOnStack) {
+static int returnValOrNone(bool valOnStack) {
 	DataValue retVal;
 	static DataValue noValue = INIT_DATA_VALUE;
 	DataValue *newFrameP;
@@ -2188,13 +2186,13 @@ bool ArrayInsert(DataValue *theArray, char *keyStr, DataValue *theValue) {
 		insertedNode = rbTreeInsert((theArray->val.arrayPtr), &tmpEntry, arrayEntryCompare, arrayAllocateNode, arrayEntryCopyToNode);
 
 		if (insertedNode) {
-			return True;
+            return true;
 		} else {
-			return False;
+            return false;
 		}
 	}
 
-	return False;
+    return false;
 }
 
 /*

@@ -184,11 +184,11 @@ int main(int argc, char **argv) {
     QSettings settings(filename, QSettings::IniFormat);
     settings.beginGroup(QLatin1String("Server"));
 
-    ServerPreferences.autoStart     = settings.value(QLatin1String("autoStart"),     true).toBool();
-    ServerPreferences.serverCmd     = settings.value(QLatin1String("serverCommand"), QLatin1String("nedit-nc -server")).toString();
-    ServerPreferences.serverName    = settings.value(QLatin1String("serverName"),    QLatin1String("")).toString();
-    ServerPreferences.waitForClose  = settings.value(QLatin1String("waitForClose"),  false).toBool();
-    ServerPreferences.timeOut       = settings.value(QLatin1String("timeOut"),       10).toInt();
+    ServerPreferences.autoStart     = settings.value(QLatin1String("nc.autoStart"),     true).toBool();
+    ServerPreferences.serverCmd     = settings.value(QLatin1String("nc.serverCommand"), QLatin1String("nedit-ng -server")).toString();
+    ServerPreferences.serverName    = settings.value(QLatin1String("nc.serverName"),    QLatin1String("")).toString();
+    ServerPreferences.waitForClose  = settings.value(QLatin1String("nc.waitForClose"),  false).toBool();
+    ServerPreferences.timeOut       = settings.value(QLatin1String("nc.timeOut"),       10).toInt();
 
 	/* Make sure that the time out unit is at least 1 second and not too
 	   large either (overflow!). */
@@ -386,7 +386,7 @@ static int startServer(const char *message, const char *commandLineArgs) {
 	}
 
 	// start the server 
-    auto commandLine = QString(QLatin1String("%1 %2&")).arg(ServerPreferences.serverCmd).arg(QLatin1String(commandLineArgs));
+    auto commandLine = QString(QLatin1String("%1 %2&")).arg(ServerPreferences.serverCmd).arg(QString::fromLatin1(commandLineArgs));
 	
 	int sysrc = system(commandLine.toLatin1().data());
 

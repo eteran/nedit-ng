@@ -324,8 +324,8 @@ void MainWindow::setupMenuDefaults() {
     ui.action_Default_Tab_Next_Prev_Tabs_Across_Windows->setChecked(GetPrefGlobalTabNavigate());
     ui.action_Default_Tab_Sort_Tabs_Alphabetically->setChecked(GetPrefSortTabs());
 
-    ui.tabWidget->getTabBar()->setVisible(GetPrefTabBar());
-    ui.tabWidget->setHideSingleTab(GetPrefTabBarHideOne());
+    ui.tabWidget->tabBar()->setVisible(GetPrefTabBar());
+    ui.tabWidget->setTabBarAutoHide(GetPrefTabBarHideOne());
 
     ui.action_Default_Show_Tooltips->setChecked(GetPrefToolTips());
     ui.action_Default_Statistics_Line->setChecked(GetPrefStatsLine());
@@ -795,7 +795,7 @@ void MainWindow::SortTabBar() {
 	for(int i = 0; i < windows.size(); ++i) {
 		int from = ui.tabWidget->indexOf(windows[i]);
 		int to   = i;
-		ui.tabWidget->getTabBar()->moveTab(from, to);
+        ui.tabWidget->tabBar()->moveTab(from, to);
 	}
 }
 
@@ -901,7 +901,7 @@ QMenu *MainWindow::createUserMenu(DocumentWidget *document, const QVector<MenuDa
         }
 
         QMenu *parentMenu = rootMenu;
-        QString name = QLatin1String(menuData.info->umiName);
+        QString name = QString::fromLatin1(menuData.info->umiName);
 
         int index = 0;
         for (;;) {
@@ -1707,7 +1707,7 @@ void MainWindow::fileCB(DocumentWidget *window, const std::string &text) {
             if (ParseFilename(globbuf.gl_pathv[i], filename, pathname) != 0) {
                 QApplication::beep();
             } else {
-                DocumentWidget::EditExistingFileEx(GetPrefOpenInTab() ? window : nullptr, QLatin1String(filename), QLatin1String(pathname), 0, QString(), false, nullptr, GetPrefOpenInTab(), false);
+                DocumentWidget::EditExistingFileEx(GetPrefOpenInTab() ? window : nullptr, QString::fromLatin1(filename), QString::fromLatin1(pathname), 0, QString(), false, nullptr, GetPrefOpenInTab(), false);
             }
         }
         globfree(&globbuf);
@@ -2101,15 +2101,15 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
         return;
     }
 
-    const char *searchStr;
+    QString searchStr;
     SearchType searchType;
 
     // determine the strings and button settings to use
     if (index == 0) {
-        searchStr = "";
+        searchStr  = QLatin1String("");
         searchType = GetPrefSearch();
     } else {
-        searchStr = SearchHistory[historyIndex(index)];
+        searchStr  = SearchHistory[historyIndex(index)];
         searchType = SearchTypeHistory[historyIndex(index)];
     }
 
@@ -2119,7 +2119,7 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
 
     // Beware the value changed callback is processed as part of this call
     int previousPosition = ui.editIFind->cursorPosition();
-    ui.editIFind->setText(QLatin1String(searchStr));
+    ui.editIFind->setText(searchStr);
     ui.editIFind->setCursorPosition(previousPosition);
 }
 
@@ -2275,7 +2275,7 @@ void MainWindow::EndISearchEx() {
     iSearchStartPos_ = -1;
 
     // Mark the end of incremental search history overwriting
-    saveSearchHistory("", nullptr, SEARCH_LITERAL, false);
+    saveSearchHistory(QLatin1String(""), QString(), SEARCH_LITERAL, false);
 
     // Pop down the search line (if it's not pegged up in Preferences)
     TempShowISearch(false);
@@ -3254,7 +3254,7 @@ void MainWindow::on_action_Default_Tab_Show_Tab_Bar_toggled(bool state) {
     SetPrefTabBar(state);
     for(MainWindow *window : allWindows()) {
         no_signals(window->ui.action_Default_Tab_Show_Tab_Bar)->setChecked(state);
-        window->ui.tabWidget->getTabBar()->setVisible(state);
+        window->ui.tabWidget->tabBar()->setVisible(state);
     }
 }
 
@@ -3263,7 +3263,7 @@ void MainWindow::on_action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Op
     SetPrefTabBarHideOne(state);
     for(MainWindow *window : allWindows()) {
         no_signals(window->ui.action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Open)->setChecked(state);
-        window->ui.tabWidget->setHideSingleTab(state);
+        window->ui.tabWidget->setTabBarAutoHide(state);
     }
 }
 

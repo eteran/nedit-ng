@@ -68,7 +68,7 @@ QString GetUserNameEx(void) {
 	static char *userName = nullptr;
 
 	if (userName) {
-		return QLatin1String(userName);
+        return QString::fromLatin1(userName);
 	}
 
 	if(const struct passwd *passwdEntry = getpwuid(getuid())) {
@@ -76,14 +76,14 @@ QString GetUserNameEx(void) {
 		//               it is tollerable, but probably should be 
 		//               improved in the future.
 		userName = qstrdup(passwdEntry->pw_name);
-		return QLatin1String(userName);
+        return QString::fromLatin1(userName);
 	}
 	
 	/* This is really serious, but sometimes username service
 	   is misconfigured through no fault of the user.  Be nice
 	   and let the user start nc anyway. */
 	perror("nedit: getpwuid() failed - reverting to $USER");
-	return QLatin1String(qgetenv("USER"));
+    return QString::fromLatin1(qgetenv("USER"));
 
 }
 

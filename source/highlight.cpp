@@ -106,7 +106,7 @@ static int backwardOneContext(TextBuffer *buf, ReparseContext *context, int from
 static int findSafeParseRestartPos(TextBuffer *buf, WindowHighlightData *highlightData, int *pos);
 static int findTopLevelParentIndex(HighlightPattern *patList, int nPats, int index);
 static int forwardOneContext(TextBuffer *buf, ReparseContext *context, int fromPos);
-static int indexOfNamedPattern(HighlightPattern *patList, int nPats, const char *patName);
+static int indexOfNamedPattern(HighlightPattern *patList, int nPats, const QString &patName);
 static int isParentStyle(const char *parentStyles, int style1, int style2);
 static int lastModified(TextBuffer *styleBuf);
 static int parentStyleOf(const char *parentStyles, int style);
@@ -488,7 +488,7 @@ WindowHighlightData *createHighlightDataEx(DocumentWidget *document, PatternSet 
     }
 
     for (int i = 0; i < nPatterns; i++) {
-        if (!patternSrc[i].subPatternOf.isNull() && indexOfNamedPattern(patternSrc, nPatterns, patternSrc[i].subPatternOf.toLatin1().data()) == -1) {
+        if (!patternSrc[i].subPatternOf.isNull() && indexOfNamedPattern(patternSrc, nPatterns, patternSrc[i].subPatternOf) == -1) {
             QMessageBox::warning(document, QLatin1String("Parent Pattern"), QString(QLatin1String("Parent field \"%1\" in pattern \"%2\"\ndoes not match any highlight patterns in this set")).arg(patternSrc[i].subPatternOf).arg(patternSrc[i].name));
             return nullptr;
         }
@@ -628,11 +628,11 @@ WindowHighlightData *createHighlightDataEx(DocumentWidget *document, PatternSet 
     *parentStylesPtr++ = '\0';
 
     for (int i = 1; i < nPass1Patterns; i++) {
-        *parentStylesPtr++ = pass1PatternSrc[i].subPatternOf.isNull() ? PLAIN_STYLE : pass1Pats[indexOfNamedPattern(pass1PatternSrc, nPass1Patterns, pass1PatternSrc[i].subPatternOf.toLatin1().data())].style;
+        *parentStylesPtr++ = pass1PatternSrc[i].subPatternOf.isNull() ? PLAIN_STYLE : pass1Pats[indexOfNamedPattern(pass1PatternSrc, nPass1Patterns, pass1PatternSrc[i].subPatternOf)].style;
     }
 
     for (int i = 1; i < nPass2Patterns; i++) {
-        *parentStylesPtr++ = pass2PatternSrc[i].subPatternOf.isNull() ? PLAIN_STYLE : pass2Pats[indexOfNamedPattern(pass2PatternSrc, nPass2Patterns, pass2PatternSrc[i].subPatternOf.toLatin1().data())].style;
+        *parentStylesPtr++ = pass2PatternSrc[i].subPatternOf.isNull() ? PLAIN_STYLE : pass2Pats[indexOfNamedPattern(pass2PatternSrc, nPass2Patterns, pass2PatternSrc[i].subPatternOf)].style;
     }
 
     // Set up table for mapping colors and fonts to syntax
@@ -730,7 +730,7 @@ static HighlightData *compilePatternsEx(DocumentWidget *dialogParent, HighlightP
         if (patternSrc[i].subPatternOf.isNull()) {
             compiledPats[0].nSubPatterns++;
         } else {
-            compiledPats[indexOfNamedPattern(patternSrc, nPatterns, patternSrc[i].subPatternOf.toLatin1().data())].nSubPatterns++;
+            compiledPats[indexOfNamedPattern(patternSrc, nPatterns, patternSrc[i].subPatternOf)].nSubPatterns++;
         }
     }
 
@@ -746,7 +746,7 @@ static HighlightData *compilePatternsEx(DocumentWidget *dialogParent, HighlightP
         if (patternSrc[i].subPatternOf.isNull()) {
             compiledPats[0].subPatterns[compiledPats[0].nSubPatterns++] = &compiledPats[i];
         } else {
-            parentIndex = indexOfNamedPattern(patternSrc, nPatterns, patternSrc[i].subPatternOf.toLatin1().data());
+            parentIndex = indexOfNamedPattern(patternSrc, nPatterns, patternSrc[i].subPatternOf);
             compiledPats[parentIndex].subPatterns[compiledPats[parentIndex].nSubPatterns++] = &compiledPats[i];
         }
     }
@@ -931,14 +931,14 @@ static void freePatterns(HighlightData *patterns) {
 /*
 ** Find the HighlightPattern structure with a given name in the window.
 */
-HighlightPattern *FindPatternOfWindowEx(DocumentWidget *window, const char *name) {
+HighlightPattern *FindPatternOfWindowEx(DocumentWidget *window, const QString &name) {
     auto hData = static_cast<WindowHighlightData *>(window->highlightData_);
     PatternSet *set;
 
     if (hData && (set = hData->patternSetForWindow)) {
 
         for(HighlightPattern &pattern : set->patterns) {
-            if (pattern.name == QLatin1String(name)) {
+            if (pattern.name == name) {
                 return &pattern;
             }
         }
@@ -1347,7 +1347,7 @@ static int parseBufferRange(HighlightData *pass1Patterns, HighlightData *pass2Pa
 		endParse - beginParse, 
 		&prevChar, 
 		false, 
-		QLatin1String(delimiters),
+        QString::fromLatin1(delimiters),
 		string, 
 		match_to);
 
@@ -1671,7 +1671,7 @@ static void passTwoParseString(HighlightData *pattern, const char *string, char 
 				length - (parseStart - string)), 
 				prevChar, 
 				false, 
-				QLatin1String(delimiters),
+                QString::fromLatin1(delimiters),
 				lookBehindTo, 
 				match_till);
 				
@@ -1783,7 +1783,7 @@ QColor AllocColor(const QString &colorName) {
 }
 
 QColor AllocColor(const char *colorName) {
-    return X11Colors::fromString(QLatin1String(colorName));
+    return X11Colors::fromString(QString::fromLatin1(colorName));
 }
 
 /*
@@ -1815,7 +1815,7 @@ static regexp *compileREAndWarnEx(DocumentWidget *parent, view::string_view re) 
             boundedRe.append("...");
         }
 
-        QMessageBox::warning(parent, QLatin1String("Error in Regex"), QString(QLatin1String("Error in syntax highlighting regular expression:\n%1\n%2")).arg(QString::fromStdString(boundedRe)).arg(QLatin1String(e.what())));
+        QMessageBox::warning(parent, QLatin1String("Error in Regex"), QString(QLatin1String("Error in syntax highlighting regular expression:\n%1\n%2")).arg(QString::fromStdString(boundedRe)).arg(QString::fromLatin1(e.what())));
         return nullptr;
     }
 
@@ -2047,14 +2047,14 @@ static HighlightData *patternOfStyle(HighlightData *patterns, int style) {
 	return nullptr;
 }
 
-static int indexOfNamedPattern(HighlightPattern *patList, int nPats, const char *patName) {
+static int indexOfNamedPattern(HighlightPattern *patList, int nPats, const QString &patName) {
 
-	if(!patName) {
+    if(patName.isNull()) {
 		return -1;
 	}
 	
 	for (int i = 0; i < nPats; i++) {
-		if (patList[i].name == QLatin1String(patName)) {
+        if (patList[i].name == patName) {
 			return i;
 		}
 	}
@@ -2066,7 +2066,7 @@ static int findTopLevelParentIndex(HighlightPattern *patList, int nPats, int ind
 
 	int topIndex = index;
 	while (!patList[topIndex].subPatternOf.isNull()) {
-		topIndex = indexOfNamedPattern(patList, nPats, patList[topIndex].subPatternOf.toLatin1().data());
+        topIndex = indexOfNamedPattern(patList, nPats, patList[topIndex].subPatternOf);
 		if (index == topIndex)
 			return -1; // amai: circular dependency ?! 
 	}

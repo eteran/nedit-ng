@@ -30,8 +30,8 @@ void DialogMultiReplace::on_buttonSelectAll_clicked() {
 
 void DialogMultiReplace::on_buttonReplace_clicked() {
 
-	char searchString[SEARCHMAX];
-	char replaceString[SEARCHMAX];
+    QString searchString;
+    QString replaceString;
 	SearchDirection direction;
 	SearchType searchType;	
 
@@ -61,7 +61,7 @@ void DialogMultiReplace::on_buttonReplace_clicked() {
 	   they should have been validated already, but since Lesstif may not
 	   honor modal dialogs, it is possible that the user modified the
 	   strings again, so we should verify them again too. */
-	if (!replace_->getReplaceDlogInfo(&direction, searchString, replaceString, &searchType))
+    if (!replace_->getReplaceDlogInfo(&direction, &searchString, &replaceString, &searchType))
 		return;
 
 
@@ -86,7 +86,7 @@ void DialogMultiReplace::on_buttonReplace_clicked() {
 				writableWin->multiFileReplSelected_ = true;
 				writableWin->multiFileBusy_ = true; // Avoid multi-beep/dialog 
 				writableWin->replaceFailed_ = false;
-                writableWin->replaceAllAP(QString::fromLatin1(searchString), QString::fromLatin1(replaceString), searchType);
+                writableWin->replaceAllAP(searchString, replaceString, searchType);
 				writableWin->multiFileBusy_ = false;
 				if (!writableWin->replaceFailed_) {
 					replaceFailed = false;

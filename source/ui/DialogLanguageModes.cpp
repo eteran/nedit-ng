@@ -262,7 +262,7 @@ LanguageMode *DialogLanguageModes::readLMDialogFields(bool silent) {
 			auto compiledRE = std::make_unique<regexp>(expression, REDFLT_STANDARD);
 		} catch(const regex_error &e) {
 			if (!silent) {
-				QMessageBox::warning(this, tr("Regex"), tr("Recognition expression:\n%1").arg(QLatin1String(e.what())));
+                QMessageBox::warning(this, tr("Regex"), tr("Recognition expression:\n%1").arg(QString::fromLatin1(e.what())));
 			}
 			delete lm;
 			return nullptr;

@@ -338,13 +338,13 @@ static QString convertPatternExprEx(const QString &patternRE, const char *patSet
 		const int bufsize = patternRE.size() + 5000;		
         char *newRE = new char[bufsize];
 		ConvertSubstituteRE(patternRE.toLatin1().data(), newRE, bufsize);
-		QString s = QLatin1String(newRE);
+        QString s = QString::fromLatin1(newRE);
         delete [] newRE;
 		return s;
 	} else {
 		try {
 			char *newRE = ConvertRE(patternRE.toLatin1().data());
-			QString s = QLatin1String(newRE);
+            QString s = QString::fromLatin1(newRE);
             delete [] newRE;
 			return s;
 		} catch(const regex_error &e) {
@@ -693,7 +693,7 @@ static int readHighlightPattern(const char **inPtr, const char **errMsg, Highlig
 
 	// read the style field 
 	if(const char *s = ReadSymbolicField(inPtr)) {
-		pattern->style = QLatin1String(s);
+        pattern->style = QString::fromLatin1(s);
 	}
 	
 	if (pattern->style.isNull()) {
@@ -708,7 +708,7 @@ static int readHighlightPattern(const char **inPtr, const char **errMsg, Highlig
 
 	// read the sub-pattern-of field 
 	if(const char *s = ReadSymbolicField(inPtr)) {	
-		pattern->subPatternOf = QLatin1String(s);
+        pattern->subPatternOf = QString::fromLatin1(s);
 	}
 	
 	if (!SkipDelimiter(inPtr, errMsg))
@@ -789,12 +789,12 @@ static bool isDefaultPatternSet(PatternSet *patSet) {
 ** Short-hand functions for formating and outputing errors for
 */
 static PatternSet *highlightError(const char *stringStart, const char *stoppedAt, const char *message) {
-	ParseError(nullptr, stringStart, stoppedAt, "highlight pattern", message);
+    ParseErrorEx(nullptr, QString::fromLatin1(stringStart), stoppedAt - stringStart, QLatin1String("highlight pattern"), QString::fromLatin1(message));
 	return nullptr;
 }
 
 static bool styleError(const char *stringStart, const char *stoppedAt, const char *message) {
-	ParseError(nullptr, stringStart, stoppedAt, "style specification", message);
+    ParseErrorEx(nullptr, QString::fromLatin1(stringStart), stoppedAt - stringStart, QLatin1String("style specification"), QString::fromLatin1(message));
 	return false;
 }
 
@@ -807,7 +807,7 @@ void EditHighlightStyles(QWidget *parent, const char *initialStyle) {
         DrawingStyles = new DialogDrawingStyles(parent);
 	}
 	
-	DrawingStyles->setStyleByName(QLatin1String(initialStyle));
+    DrawingStyles->setStyleByName(QString::fromLatin1(initialStyle));
 	DrawingStyles->show();
 	DrawingStyles->raise();
 }

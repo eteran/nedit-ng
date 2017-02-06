@@ -69,10 +69,10 @@ void DialogFind::keyPressEvent(QKeyEvent *event) {
 		}
 
 		// determine the strings and button settings to use 
-		const char *searchStr;
+        QString searchStr;
 		SearchType searchType;
 		if (index == 0) {
-			searchStr  = "";
+            searchStr  = QLatin1String("");
 			searchType = GetPrefSearch();
 		} else {
 			searchStr  = SearchHistory[historyIndex(index)];
@@ -82,7 +82,7 @@ void DialogFind::keyPressEvent(QKeyEvent *event) {
 		// Set the buttons and fields with the selected search type 
 		initToggleButtons(searchType);
 
-		ui.textFind->setText(QLatin1String(searchStr));
+        ui.textFind->setText(searchStr);
 
 		// Set the state of the Find ... button 
 		fUpdateActionButtons();
@@ -231,7 +231,7 @@ void DialogFind::on_buttonFind_clicked() {
 	SearchType searchType;
 	
 	// fetch find string, direction and type from the dialog 
-	std::string searchString;
+    QString searchString;
     if (!getFindDlogInfoEx(&direction, &searchString, &searchType)) {
 		return;
     }
@@ -240,7 +240,7 @@ void DialogFind::on_buttonFind_clicked() {
 	ui.textFind->setFocus();
 
 	// find the text and mark it 
-    SearchAndSelectEx(window_, document_, window_->lastFocus_, direction, searchString.c_str(), searchType, GetPrefSearchWraps());
+    SearchAndSelectEx(window_, document_, window_->lastFocus_, direction, searchString, searchType, GetPrefSearchWraps());
 
 	// pop down the dialog 
 	if (!keepDialog()) {
@@ -256,7 +256,7 @@ void DialogFind::on_buttonFind_clicked() {
 ** in "searchType", and return TRUE as the function value.  Otherwise,
 ** return FALSE.
 */
-int DialogFind::getFindDlogInfoEx(SearchDirection *direction, std::string *searchString, SearchType *searchType) {
+bool DialogFind::getFindDlogInfoEx(SearchDirection *direction, QString *searchString, SearchType *searchType) {
 
 	// Get the search string, search type, and direction from the dialog 
 	QString findText = ui.textFind->text();
@@ -275,7 +275,7 @@ int DialogFind::getFindDlogInfoEx(SearchDirection *direction, std::string *searc
 		try {
 			auto compiledRE = std::make_unique<regexp>(findText.toStdString(), regexDefault);
 		} catch(const regex_error &e) {
-			QMessageBox::warning(this, tr("Regex Error"), tr("Please respecify the search string:\n%1").arg(QLatin1String(e.what())));
+            QMessageBox::warning(this, tr("Regex Error"), tr("Please respecify the search string:\n%1").arg(QString::fromLatin1(e.what())));
 			return false;
 		}
 	} else {
@@ -302,11 +302,11 @@ int DialogFind::getFindDlogInfoEx(SearchDirection *direction, std::string *searc
 	// Return the search string 
 	if (findText.size() >= SEARCHMAX) {
 		QMessageBox::warning(this, tr("String too long"), tr("Search string too long."));
-		return FALSE;
+        return false;
 	}
 	
-	*searchString = findText.toStdString();
-	return TRUE;
+    *searchString = findText;
+    return true;
 }
 
 //------------------------------------------------------------------------------

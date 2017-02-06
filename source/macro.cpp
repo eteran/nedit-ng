@@ -805,7 +805,7 @@ int ReadMacroFileEx(DocumentWidget *window, const std::string &fileName, int war
     QString fileString = ReadAnyTextFileEx(fileName, True);
     if (fileString.isNull()) {
         if (errno != ENOENT || warnNotExist) {
-            QMessageBox::critical(window, QLatin1String("Read Macro"), QString(QLatin1String("Error reading macro file %1: %2")).arg(QString::fromStdString(fileName), QLatin1String(strerror(errno))));
+            QMessageBox::critical(window, QLatin1String("Read Macro"), QString(QLatin1String("Error reading macro file %1: %2")).arg(QString::fromStdString(fileName), QString::fromLatin1(strerror(errno))));
         }
         return false;
     }
@@ -860,7 +860,7 @@ Program *ParseMacroEx(const QString &expr, int index, QString *message, int *sto
 	const char *msg = nullptr;
 	const char *e = nullptr;
 	Program *p = ParseMacro(ptr + index, &msg, &e);
-	*message = QLatin1String(msg);
+    *message = QString::fromLatin1(msg);
 	*stoppedAt = (e - ptr);
 	return p;
 }
@@ -871,7 +871,7 @@ static int readCheckMacroStringEx(QWidget *dialogParent, const char *string, Doc
     char *namePtr;
     const char *errMsg;
     char subrName[MAX_SYM_LEN];
-    Program *prog;
+
     Symbol *sym;
     DataValue subrPtr;
     QStack<Program *> progStack;
@@ -884,39 +884,48 @@ static int readCheckMacroStringEx(QWidget *dialogParent, const char *string, Doc
 
         // skip over white space and comments
         while (*inPtr == ' ' || *inPtr == '\t' || *inPtr == '\n' || *inPtr == '#') {
-            if (*inPtr == '#')
-                while (*inPtr != '\n' && *inPtr != '\0')
+            if (*inPtr == '#') {
+                while (*inPtr != '\n' && *inPtr != '\0') {
                     inPtr++;
-            else
+                }
+            } else {
                 inPtr++;
+            }
         }
-        if (*inPtr == '\0')
+
+        if (*inPtr == '\0') {
             break;
+        }
 
         // look for define keyword, and compile and store defined routines
         if (!strncmp(inPtr, "define", 6) && (inPtr[6] == ' ' || inPtr[6] == '\t')) {
             inPtr += 6;
             inPtr += strspn(inPtr, " \t\n");
             namePtr = subrName;
+
             while ((namePtr < &subrName[MAX_SYM_LEN - 1]) && (isalnum((uint8_t)*inPtr) || *inPtr == '_')) {
                 *namePtr++ = *inPtr++;
             }
             *namePtr = '\0';
             if (isalnum((uint8_t)*inPtr) || *inPtr == '_') {
-                return ParseError(nullptr /* dialogParent */, string, inPtr, errIn, "subroutine name too long");
+                return ParseErrorEx(dialogParent, QString::fromLatin1(string), inPtr - string, QString::fromLatin1(errIn), QLatin1String("subroutine name too long"));
             }
 
             inPtr += strspn(inPtr, " \t\n");
+
             if (*inPtr != '{') {
                 if(errPos)
                     *errPos = stoppedAt;
-                return ParseError(nullptr /* dialogParent */, string, inPtr, errIn, "expected '{'");
+                return ParseErrorEx(dialogParent, QString::fromLatin1(string), inPtr - string, QString::fromLatin1(errIn), QLatin1String("expected '{'"));
             }
-            prog = ParseMacro(inPtr, &errMsg, &stoppedAt);
+
+            Program *const prog = ParseMacro(inPtr, &errMsg, &stoppedAt);
             if(!prog) {
-                if(errPos)
+                if(errPos) {
                     *errPos = stoppedAt;
-                return ParseError(nullptr /* dialogParent */, string, stoppedAt, errIn, errMsg);
+                }
+
+                return ParseErrorEx(dialogParent, QString::fromLatin1(string), stoppedAt - string, QString::fromLatin1(errIn), QString::fromLatin1(errMsg));
             }
             if (runWindow) {
                 sym = LookupSymbol(subrName);
@@ -940,13 +949,13 @@ static int readCheckMacroStringEx(QWidget *dialogParent, const char *string, Doc
                definitions in a file which is loaded from another macro file, it
                will probably run the code blocks in reverse order! */
         } else {
-            prog = ParseMacro(inPtr, &errMsg, &stoppedAt);
+            Program *const prog = ParseMacro(inPtr, &errMsg, &stoppedAt);
             if(!prog) {
                 if (errPos) {
                     *errPos = stoppedAt;
                 }
 
-                return ParseError(nullptr /* dialogParent */, string, stoppedAt, errIn, errMsg);
+                return ParseErrorEx(dialogParent, QString::fromLatin1(string), stoppedAt - string, QString::fromLatin1(errIn), QString::fromLatin1(errMsg));
             }
 
             if (runWindow) {
@@ -983,7 +992,7 @@ static int readCheckMacroStringEx(QWidget *dialogParent, const char *string, Doc
     //  Unroll reversal stack for macros loaded from macros.
     while (!progStack.empty()) {
 
-        prog = progStack.top();
+        Program *const prog = progStack.top();
         progStack.pop();
 
         RunMacroAsSubrCall(prog);
@@ -1039,7 +1048,7 @@ static void runMacroEx(DocumentWidget *document, Program *prog) {
 
     if (stat == MACRO_ERROR) {
         finishMacroCmdExecutionEx(document);
-        QMessageBox::critical(document, QLatin1String("Macro Error"), QString(QLatin1String("Error executing macro: %1")).arg(QLatin1String(errMsg)));
+        QMessageBox::critical(document, QLatin1String("Macro Error"), QString(QLatin1String("Error executing macro: %1")).arg(QString::fromLatin1(errMsg)));
         return;
     }
 
@@ -1241,7 +1250,7 @@ void DoMacroEx(DocumentWidget *document, view::string_view macro, const char *er
     int stoppedAt;
     Program *const prog = ParseMacroEx(qMacro, 0, &errMsg, &stoppedAt);
     if(!prog) {
-        ParseErrorEx(document, qMacro, stoppedAt, QLatin1String(errInName), errMsg);
+        ParseErrorEx(document, qMacro, stoppedAt, QString::fromLatin1(errInName), errMsg);
         return;
     }
 
@@ -1411,7 +1420,7 @@ static void lastActionHook(Widget w, XtPointer clientData, String actionName, XE
 	// Record the action and its parameters 
 	actionString = actionToString(w, actionName, event, params, *numParams);
 	if (actionString) {
-		LastCommand = QLatin1String(actionString);
+        LastCommand = QString::fromLatin1(actionString);
 	}
 }
 
@@ -1528,7 +1537,7 @@ bool continueWorkProcEx(DocumentWidget *window) {
 
     if (stat == MACRO_ERROR) {
         finishMacroCmdExecutionEx(window);
-        QMessageBox::critical(window, QLatin1String("Macro Error"), QString(QLatin1String("Error executing macro: %1")).arg(QLatin1String(errMsg)));
+        QMessageBox::critical(window, QLatin1String("Macro Error"), QString(QLatin1String("Error executing macro: %1")).arg(QString::fromLatin1(errMsg)));
         return true;
     } else if (stat == MACRO_DONE) {
         finishMacroCmdExecutionEx(window);
@@ -1714,7 +1723,7 @@ static int focusWindowMS(DocumentWidget *window, DataValue *argList, int nArgs, 
 		// just use the plain name as supplied 
         w = std::find_if(documents.begin(), documents.end(), [&string](DocumentWidget *doc) {
 			QString fullname = doc->FullPath();
-			return fullname == QLatin1String(string);
+            return fullname == QString::fromLatin1(string);
 		});
 		
 		// didn't work? try normalizing the string passed in 
@@ -1732,7 +1741,7 @@ static int focusWindowMS(DocumentWidget *window, DataValue *argList, int nArgs, 
 			
             w = std::find_if(documents.begin(), documents.end(), [&normalizedString](DocumentWidget *win) {
 				QString fullname = win->FullPath();
-				return fullname == QLatin1String(normalizedString);
+                return fullname == QString::fromLatin1(normalizedString);
 			});
 		}
 	}
@@ -2236,10 +2245,10 @@ static int readFileMS(DocumentWidget *window, DataValue *argList, int nArgs, Dat
 		// Couldn't trust file size. Use slower but more general method 
 		int chunkSize = 1024;
 
-		char *buffer = XtMalloc(readLen);
+        auto buffer = static_cast<char *>(malloc(readLen));
 		memcpy(buffer, result->val.str.rep, readLen);
 		while (!feof(fp)) {
-			buffer = XtRealloc(buffer, (readLen + chunkSize));
+            buffer = static_cast<char *>(realloc(buffer, (readLen + chunkSize)));
 			readLen += fread(&buffer[readLen], 1, chunkSize, fp);
 			if (ferror(fp)) {
 				XtFree(buffer);
@@ -2248,7 +2257,7 @@ static int readFileMS(DocumentWidget *window, DataValue *argList, int nArgs, Dat
 		}
 		AllocNString(&result->val.str, readLen + 1);
 		memcpy(result->val.str.rep, buffer, readLen);
-		XtFree(buffer);
+        free(buffer);
 	}
 	fclose(fp);
 
@@ -2418,7 +2427,7 @@ static int searchStringMS(DocumentWidget *window, DataValue *argList, int nArgs,
 	}
 
 	if (!skipSearch)
-        found = SearchString(view::string_view(string, stringLen), searchStr, direction, type, wrap, beginPos, &foundStart, &foundEnd, nullptr, nullptr, GetWindowDelimitersEx(window).toLatin1().data());
+        found = SearchString(view::string_view(string, stringLen), QString::fromLatin1(searchStr), direction, type, wrap, beginPos, &foundStart, &foundEnd, nullptr, nullptr, GetWindowDelimitersEx(window).toLatin1().data());
 
 	// Return the results 
 	ReturnGlobals[SEARCH_END]->value.tag = INT_TAG;
@@ -2484,7 +2493,7 @@ static int replaceInStringMS(DocumentWidget *window, DataValue *argList, int nAr
 	}
 
 	// Do the replace 
-    replacedStr = ReplaceAllInString(string, searchStr, replaceStr, searchType, &copyStart, &copyEnd, &replacedLen, GetWindowDelimitersEx(window).toLatin1().data());
+    replacedStr = ReplaceAllInString(string, QString::fromLatin1(searchStr), replaceStr, searchType, &copyStart, &copyEnd, &replacedLen, GetWindowDelimitersEx(window).toLatin1().data());
 
 	// Return the results 
 	result->tag = STRING_TAG;
@@ -2775,13 +2784,13 @@ static int dialogMS(DocumentWidget *window, DataValue *argList, int nArgs, DataV
 	result->val.n = 0;		
 	
 	auto prompt = new DialogPrompt(nullptr /*parent*/);
-	prompt->setMessage(QLatin1String(message));
+    prompt->setMessage(QString::fromLatin1(message));
 	if (nArgs == 1) {
 		prompt->addButton(QDialogButtonBox::Ok);
 	} else {
 		for(int i = 1; i < nArgs; ++i) {		
 			readStringArg(argList[i], &btnLabel, &btnLabelLen, btnStorage, errMsg);			
-			prompt->addButton(QLatin1String(btnLabel));
+            prompt->addButton(QString::fromLatin1(btnLabel));
 		}
 	}	
 	prompt->exec();
@@ -2840,13 +2849,13 @@ static int stringDialogMS(DocumentWidget *window, DataValue *argList, int nArgs,
 	result->val.n = 0;	
 
 	auto prompt = new DialogPromptString(nullptr /*parent*/);
-	prompt->setMessage(QLatin1String(message));
+    prompt->setMessage(QString::fromLatin1(message));
 	if (nArgs == 1) {
 		prompt->addButton(QDialogButtonBox::Ok);
 	} else {
 		for(int i = 1; i < nArgs; ++i) {		
 			readStringArg(argList[i], &btnLabel, &btnLabelLen, btnStorage, errMsg);			
-			prompt->addButton(QLatin1String(btnLabel));
+            prompt->addButton(QString::fromLatin1(btnLabel));
 		}
 	}	
 	prompt->exec();
@@ -3188,7 +3197,7 @@ static int filenameDialogMS(DocumentWidget *window, DataValue *argList, int nArg
 	//  Set default directory (saving original for later)  
 	QString defaultPathEx;
 	if (defaultPath[0] != '\0') {
-		defaultPathEx = QLatin1String(defaultPath);
+        defaultPathEx = QString::fromLatin1(defaultPath);
 	} else {
 		defaultPathEx = window->path_;
 	}
@@ -3204,7 +3213,7 @@ static int filenameDialogMS(DocumentWidget *window, DataValue *argList, int nArg
 	if (strcmp(mode, "exist") == 0) {
 		// TODO(eteran); filter's probably don't work quite the same with Qt's dialog
 		// TODO(eteran): default path doesn't seem to be able to be specified easily
-		QString existingFile = QFileDialog::getOpenFileName(/*this*/ nullptr, QLatin1String(title), defaultPathEx, defaultFilter, nullptr);
+        QString existingFile = QFileDialog::getOpenFileName(/*this*/ nullptr, QString::fromLatin1(title), defaultPathEx, defaultFilter, nullptr);
 		if(!existingFile.isNull()) {
 			strcpy(filename, existingFile.toLatin1().data());
 			gfnResult = true;
@@ -3214,7 +3223,7 @@ static int filenameDialogMS(DocumentWidget *window, DataValue *argList, int nArg
 	} else {
 		// TODO(eteran); filter's probably don't work quite the same with Qt's dialog
 		// TODO(eteran): default path doesn't seem to be able to be specified easily
-		QString newFile = QFileDialog::getSaveFileName(/*this*/ nullptr, QLatin1String(title), defaultPathEx, defaultFilter, nullptr);
+        QString newFile = QFileDialog::getSaveFileName(/*this*/ nullptr, QString::fromLatin1(title), defaultPathEx, defaultFilter, nullptr);
 		if(!newFile.isNull()) {
 			strcpy(filename, newFile.toLatin1().data());
 			gfnResult = true;
@@ -3299,14 +3308,14 @@ static int listDialogMS(DocumentWidget *window, DataValue *argList, int nArgs, D
 	result->val.n = 0;	
 
 	auto prompt = new DialogPromptList(nullptr /*parent*/);
-	prompt->setMessage(QLatin1String(message));
-	prompt->setList(QLatin1String(text));
+    prompt->setMessage(QString::fromLatin1(message));
+    prompt->setList(QString::fromLatin1(text));
 	if (nArgs == 2) {
 		prompt->addButton(QDialogButtonBox::Ok);
 	} else {
 		for(int i = 2; i < nArgs; ++i) {		
 			readStringArg(argList[i], &btnLabel, &btnLabelLen, btnStorage, errMsg);			
-			prompt->addButton(QLatin1String(btnLabel));
+            prompt->addButton(QString::fromLatin1(btnLabel));
 		}
 	}	
 	prompt->exec();
@@ -3381,7 +3390,7 @@ static int stringCompareMS(DocumentWidget *window, DataValue *argList, int nArgs
 
 static int splitMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	char stringStorage[3][TYPE_INT_STR_SIZE(int)];
-	char *sourceStr, *splitStr, *typeSplitStr;
+    char *sourceStr, *splitStr, *typeSplitStr;
 	SearchType searchType;
 	int beginPos;
 	int foundStart;
@@ -3441,7 +3450,7 @@ static int splitMS(DocumentWidget *window, DataValue *argList, int nArgs, DataVa
 			return (False);
 		}
 		strcpy(allocIndexStr, indexStr);
-        found = SearchString(view::string_view(sourceStr, sourceStrLen), splitStr, SEARCH_FORWARD, searchType, False, beginPos, &foundStart, &foundEnd, nullptr, nullptr, GetWindowDelimitersEx(window).toLatin1().data());
+        found = SearchString(view::string_view(sourceStr, sourceStrLen), QString::fromLatin1(splitStr), SEARCH_FORWARD, searchType, false, beginPos, &foundStart, &foundEnd, nullptr, nullptr, GetWindowDelimitersEx(window).toLatin1().data());
 		elementEnd = found ? foundStart : strLength;
 		elementLen = elementEnd - lastEnd;
 		element.tag = STRING_TAG;
@@ -3504,7 +3513,7 @@ static int splitMS(DocumentWidget *window, DataValue *argList, int nArgs, DataVa
 			   The '\n' gets added in the lines above, but we still have to
 			   verify whether the pattern also matches the end of the string,
 			   and add an empty chunk in case it does. */
-            found = SearchString(view::string_view(sourceStr, sourceStrLen), splitStr, SEARCH_FORWARD, searchType, False, strLength, &foundStart, &foundEnd, nullptr, nullptr, GetWindowDelimitersEx(window).toLatin1().data());
+            found = SearchString(view::string_view(sourceStr, sourceStrLen), QString::fromLatin1(splitStr), SEARCH_FORWARD, searchType, false, strLength, &foundStart, &foundEnd, nullptr, nullptr, GetWindowDelimitersEx(window).toLatin1().data());
 			if (found) {
 				++indexNum;
 				sprintf(indexStr, "%d", indexNum);
@@ -4369,8 +4378,10 @@ static int rangesetGetByNameMS(DocumentWidget *window, DataValue *argList, int n
 		label = rangesetList[i];
 		rangeset = rangesetTable->RangesetFetch(label);
 		if (rangeset) {
-			const char *rangeset_name = rangeset->RangesetGetName();
-			if (strcmp(name, rangeset_name ? rangeset_name : "") == 0) {
+            QString rangeset_name = rangeset->RangesetGetName();
+
+            if(rangeset_name == QString::fromLatin1(name)) {
+
 				element.tag = INT_TAG;
 				element.val.n = label;
 
@@ -4623,7 +4634,7 @@ static int rangesetInfoMS(DocumentWidget *window, DataValue *argList, int nArgs,
 	int count;
 	bool defined;
 	const char *color;
-	const char *name;
+    QString name;
 	const char *mode;
 	DataValue element;
 	int label = 0;
@@ -4646,7 +4657,7 @@ static int rangesetInfoMS(DocumentWidget *window, DataValue *argList, int nArgs,
         label = 0;
         count = 0;
         color = "";
-        name  = "";
+        name  = QString();
         mode  = "";
     }
 
@@ -4671,7 +4682,7 @@ static int rangesetInfoMS(DocumentWidget *window, DataValue *argList, int nArgs,
 		M_FAILURE("Failed to insert array element \"color\" in %s");
 
 	element.tag = STRING_TAG;
-	if (!AllocNStringCpy(&element.val.str, name))
+    if (!AllocNStringCpy(&element.val.str, name.toLatin1().data()))
 		M_FAILURE("Failed to allocate array value \"name\" in %s");
 	if (!ArrayInsert(result, PERM_ALLOC_STR("name"), &element)) {
 		M_FAILURE("Failed to insert array element \"name\" in %s");
@@ -5222,7 +5233,7 @@ static int getPatternByNameMS(DocumentWidget *document, DataValue *argList, int 
 		M_FAILURE("First parameter is not a string in %s");
 	}
 
-    pattern = FindPatternOfWindowEx(document, patternName);
+    pattern = FindPatternOfWindowEx(document, QString::fromLatin1(patternName));
 	if(!pattern) {
 		// The pattern's name is unknown. 
 		return true;

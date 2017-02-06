@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>770</width>
-    <height>638</height>
+    <width>764</width>
+    <height>591</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -38,8 +38,7 @@
          </property>
          <property name="icon">
           <iconset theme="document-new">
-           <normaloff/>
-          </iconset>
+           <normaloff>.</normaloff>.</iconset>
          </property>
         </widget>
        </item>
@@ -50,8 +49,7 @@
          </property>
          <property name="icon">
           <iconset theme="edit-delete">
-           <normaloff/>
-          </iconset>
+           <normaloff>.</normaloff>.</iconset>
          </property>
         </widget>
        </item>
@@ -62,8 +60,7 @@
          </property>
          <property name="icon">
           <iconset theme="edit-copy">
-           <normaloff/>
-          </iconset>
+           <normaloff>.</normaloff>.</iconset>
          </property>
         </widget>
        </item>
@@ -74,8 +71,7 @@
          </property>
          <property name="icon">
           <iconset theme="go-up">
-           <normaloff/>
-          </iconset>
+           <normaloff>.</normaloff>.</iconset>
          </property>
         </widget>
        </item>
@@ -86,8 +82,7 @@
          </property>
          <property name="icon">
           <iconset theme="go-down">
-           <normaloff/>
-          </iconset>
+           <normaloff>.</normaloff>.</iconset>
          </property>
         </widget>
        </item>
@@ -272,7 +267,7 @@
          <item>
           <widget class="QRadioButton" name="radioIndentAuto">
            <property name="text">
-            <string>&amp;Auto-indent</string>
+            <string>A&amp;uto-indent</string>
            </property>
           </widget>
          </item>

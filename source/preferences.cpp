@@ -916,7 +916,7 @@ int FindLanguageMode(const char *languageName) {
 
 	// Compare each language mode to the one we were presented 
 	for (int i = 0; i < NLanguageModes; i++) {
-		if (LanguageModes[i]->name == QLatin1String(languageName)) {
+        if (LanguageModes[i]->name == QString::fromLatin1(languageName)) {
 			return i;
 		}
 	}
@@ -977,7 +977,7 @@ static int loadLanguageModesString(const char *inString, int fileVer) {
 			return modeError(nullptr, inString, inPtr, "language mode name required");
 		}
 		
-		lm->name = QLatin1String(name);
+        lm->name = QString::fromLatin1(name);
 		
 		if (!SkipDelimiter(&inPtr, &errMsg))
 			return modeError(lm, inString, inPtr, errMsg);
@@ -996,7 +996,7 @@ static int loadLanguageModesString(const char *inString, int fileVer) {
 		}
 			
 			
-		lm->recognitionExpr = QLatin1String(recognitionExpr);
+        lm->recognitionExpr = QString::fromLatin1(recognitionExpr);
 			
 		if (!SkipDelimiter(&inPtr, &errMsg)) {
 			return modeError(lm, inString, inPtr, errMsg);
@@ -1062,7 +1062,7 @@ static int loadLanguageModesString(const char *inString, int fileVer) {
 			return modeError(lm, inString, inPtr, errMsg);
 		}
 			
-		lm->delimiters = delimiters ? QLatin1String(delimiters) : QString();
+        lm->delimiters = delimiters ? QString::fromLatin1(delimiters) : QString();
 
 		// After 5.3 all language modes need a default tips file field 
 		if (!SkipDelimiter(&inPtr, &errMsg))
@@ -1078,7 +1078,7 @@ static int loadLanguageModesString(const char *inString, int fileVer) {
 			return modeError(lm, inString, inPtr, errMsg);
 		}
 		
-		lm->defTipsFile = defTipsFile ? QLatin1String(defTipsFile) : QString();
+        lm->defTipsFile = defTipsFile ? QString::fromLatin1(defTipsFile) : QString();
 
 		// pattern set was read correctly, add/replace it in the list 
 		for (i = 0; i < NLanguageModes; i++) {
@@ -1605,7 +1605,7 @@ static int modeError(LanguageMode *lm, const char *stringStart, const char *stop
 		delete lm;
 	}
 
-	return ParseError(nullptr, stringStart, stoppedAt, "language mode specification", message);
+    return ParseErrorEx(nullptr, QString::fromLatin1(stringStart), stoppedAt - stringStart, QLatin1String("language mode specification"), QString::fromLatin1(message));
 }
 
 /*
@@ -1673,7 +1673,7 @@ int ParseError(Widget toDialog, const char *stringStart, const char *stoppedAt, 
 	if(!toDialog) {
 		fprintf(stderr, "NEdit: %s in %s:\n%s\n", message, errorIn, errorLine);
 	} else {
-		QMessageBox::warning(nullptr /*toDialog*/, QLatin1String("Parse Error"), QString(QLatin1String("%1 in %2:\n%3")).arg(QLatin1String(message)).arg(QLatin1String(errorIn)).arg(QLatin1String(errorLine)));
+        QMessageBox::warning(nullptr /*toDialog*/, QLatin1String("Parse Error"), QString(QLatin1String("%1 in %2:\n%3")).arg(QString::fromLatin1(message)).arg(QString::fromLatin1(errorIn)).arg(QString::fromLatin1(errorLine)));
 	}
 	
 	delete [] errorLine;
@@ -1694,5 +1694,5 @@ static QString getDefaultShell() {
         return QLatin1String("sh");
     }
 
-    return QLatin1String(passwdEntry->pw_shell);
+    return QString::fromLatin1(passwdEntry->pw_shell);
 }

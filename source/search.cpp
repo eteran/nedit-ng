@@ -73,8 +73,8 @@ struct SearchSelectedCallData {
 
 
 // History mechanism for search and replace strings 
-char *SearchHistory[MAX_SEARCH_HISTORY];
-char *ReplaceHistory[MAX_SEARCH_HISTORY];
+QString SearchHistory[MAX_SEARCH_HISTORY];
+QString ReplaceHistory[MAX_SEARCH_HISTORY];
 SearchType SearchTypeHistory[MAX_SEARCH_HISTORY];
 static int HistStart = 0;
 
@@ -86,7 +86,7 @@ static bool searchRegex(view::string_view string, view::string_view searchString
 static int countWindows(void);
 static bool searchLiteral(view::string_view string, view::string_view searchString, bool caseSense, SearchDirection direction, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW);
 static bool searchLiteralWord(view::string_view string, view::string_view searchString, bool caseSense, SearchDirection direction, bool wrap, int beginPos, int *startPos, int *endPos, const char *delimiters);
-static bool searchMatchesSelectionEx(DocumentWidget *window, const char *searchString, SearchType searchType, int *left, int *right, int *searchExtentBW, int *searchExtentFW);
+static bool searchMatchesSelectionEx(DocumentWidget *window, const QString &searchString, SearchType searchType, int *left, int *right, int *searchExtentBW, int *searchExtentFW);
 static void iSearchRecordLastBeginPosEx(MainWindow *window, SearchDirection direction, int initPos);
 static void iSearchTryBeepOnWrapEx(MainWindow *window, SearchDirection direction, int beginPos, int startPos);
 static std::string upCaseStringEx(view::string_view inString);
@@ -382,7 +382,7 @@ bool SearchAndSelectSameEx(MainWindow *window, DocumentWidget *document, TextAre
 ** the window when found (or beep or put up a dialog if not found).  Also
 ** adds the search string to the global search history.
 */
-bool SearchAndSelectEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, const char *searchString, SearchType searchType, int searchWrap) {
+bool SearchAndSelectEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, const QString &searchString, SearchType searchType, int searchWrap) {
     int startPos;
     int endPos;
     int beginPos;
@@ -392,7 +392,7 @@ bool SearchAndSelectEx(MainWindow *window, DocumentWidget *document, TextArea *a
     int movedFwd = 0;
 
     // Save a copy of searchString in the search history
-    saveSearchHistory(searchString, nullptr, searchType, false);
+    saveSearchHistory(searchString, QString(), searchType, false);
 
     /* set the position to start the search so we don't find the same
        string that was found on the last search	*/
@@ -500,7 +500,7 @@ void SearchForSelectedEx(MainWindow *window, DocumentWidget *document, TextArea 
                 document,
                 area,
                 direction,
-                searchString.toLatin1().data(),
+                searchString,
                 searchType,
                 searchWrap);
 }
@@ -522,7 +522,7 @@ static void iSearchRecordLastBeginPosEx(MainWindow *window, SearchDirection dire
 ** recorded, search from that original position, otherwise, search from the
 ** current cursor position.
 */
-bool SearchAndSelectIncrementalEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, const char *searchString, SearchType searchType, bool searchWrap, bool continued) {
+bool SearchAndSelectIncrementalEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, const QString &searchString, SearchType searchType, bool searchWrap, bool continued) {
     int beginPos;
     int startPos;
     int endPos;
@@ -540,7 +540,7 @@ bool SearchAndSelectIncrementalEx(MainWindow *window, DocumentWidget *document, 
        back to the initial position, re-init iSearchLastBeginPos,
        clear the selection, set the cursor back to what would be the
        beginning of the search, and return. */
-    if (searchString[0] == '\0') {
+    if (searchString.isEmpty()) {
         int beepBeginPos = (direction == SEARCH_BACKWARD) ? beginPos - 1 : beginPos;
         iSearchTryBeepOnWrapEx(window, direction, beepBeginPos, beepBeginPos);
         iSearchRecordLastBeginPosEx(window, direction, window->iSearchStartPos_);
@@ -553,8 +553,8 @@ bool SearchAndSelectIncrementalEx(MainWindow *window, DocumentWidget *document, 
     /* Save the string in the search history, unless we're cycling thru
        the search history itself, which can be detected by matching the
        search string with the search string of the current history index. */
-    if (!(window->iSearchHistIndex_ > 1 && !strcmp(searchString, SearchHistory[historyIndex(window->iSearchHistIndex_)]))) {
-        saveSearchHistory(searchString, nullptr, searchType, true);
+    if (!(window->iSearchHistIndex_ > 1 && (searchString == SearchHistory[historyIndex(window->iSearchHistIndex_)]))) {
+        saveSearchHistory(searchString, QString(), searchType, true);
         // Reset the incremental search history pointer to the beginning
         window->iSearchHistIndex_ = 1;
     }
@@ -787,7 +787,7 @@ bool ReplaceFindSameEx(MainWindow *window, DocumentWidget *document, TextArea *a
 ** Replace selection with "replaceString" and search for string "searchString" in window "window",
 ** using algorithm "searchType" and direction "direction"
 */
-bool ReplaceAndSearchEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, const char *searchString, const char *replaceString, SearchType searchType, int searchWrap) {
+bool ReplaceAndSearchEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, const QString &searchString, const QString &replaceString, SearchType searchType, int searchWrap) {
     int startPos = 0;
     int endPos = 0;
     int replaceLen = 0;
@@ -807,8 +807,8 @@ bool ReplaceAndSearchEx(MainWindow *window, DocumentWidget *document, TextArea *
             const std::string foundString = document->buffer_->BufGetRangeEx(searchExtentBW, searchExtentFW + 1);
 
             replaceUsingREEx(
-                searchString,
-                replaceString,
+                searchString.toLatin1().data(),
+                replaceString.toLatin1().data(),
                 foundString,
                 startPos - searchExtentBW,
                 replaceResult,
@@ -820,8 +820,8 @@ bool ReplaceAndSearchEx(MainWindow *window, DocumentWidget *document, TextArea *
             document->buffer_->BufReplaceEx(startPos, endPos, replaceResult);
             replaceLen = strlen(replaceResult);
         } else {
-            document->buffer_->BufReplaceEx(startPos, endPos, replaceString);
-            replaceLen = strlen(replaceString);
+            document->buffer_->BufReplaceEx(startPos, endPos, replaceString.toLatin1().data());
+            replaceLen = replaceString.size();
         }
 
         // Position the cursor so the next search will work correctly based
@@ -840,7 +840,7 @@ bool ReplaceAndSearchEx(MainWindow *window, DocumentWidget *document, TextArea *
 ** "searchType" and direction "direction", and replace it with "replaceString"
 ** Also adds the search and replace strings to the global search history.
 */
-bool SearchAndReplaceEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, const char *searchString, const char *replaceString, SearchType searchType, bool searchWrap) {
+bool SearchAndReplaceEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, const QString &searchString, const QString &replaceString, SearchType searchType, bool searchWrap) {
     int startPos;
     int endPos;
     int replaceLen;
@@ -879,8 +879,8 @@ bool SearchAndReplaceEx(MainWindow *window, DocumentWidget *document, TextArea *
         char replaceResult[SEARCHMAX];
         const std::string foundString = document->buffer_->BufGetRangeEx(searchExtentBW, searchExtentFW + 1);
         replaceUsingREEx(
-            searchString,
-            replaceString,
+            searchString.toLatin1().data(),
+            replaceString.toLatin1().data(),
             foundString,
             startPos - searchExtentBW,
             replaceResult,
@@ -892,8 +892,8 @@ bool SearchAndReplaceEx(MainWindow *window, DocumentWidget *document, TextArea *
         document->buffer_->BufReplaceEx(startPos, endPos, replaceResult);
         replaceLen = strlen(replaceResult);
     } else {
-        document->buffer_->BufReplaceEx(startPos, endPos, replaceString);
-        replaceLen = strlen(replaceString);
+        document->buffer_->BufReplaceEx(startPos, endPos, replaceString.toLatin1().data());
+        replaceLen = replaceString.size();
     }
 
     /* after successfully completing a replace, selected text attracts
@@ -984,7 +984,7 @@ static bool prefOrUserCancelsSubstEx(MainWindow *window, DocumentWidget *documen
 ** within the current primary selection in "window". Also adds the search and
 ** replace strings to the global search history.
 */
-void ReplaceInSelectionEx(MainWindow *window, DocumentWidget *document, TextArea *area, const char *searchString, const char *replaceString, SearchType searchType) {
+void ReplaceInSelectionEx(MainWindow *window, DocumentWidget *document, TextArea *area, const QString &searchString, const QString &replaceString, SearchType searchType) {
     int selStart;
     int selEnd;
     int beginPos;
@@ -1029,11 +1029,13 @@ void ReplaceInSelectionEx(MainWindow *window, DocumentWidget *document, TextArea
     tempBuf->BufSetAllEx(fileString);
 
     // search the string and do the replacements in the temporary buffer
-    replaceLen = strlen(replaceString);
-    found = true;
-    beginPos = 0;
-    cursorPos = 0;
+
+    replaceLen = replaceString.size();
+    found      = true;
+    beginPos   = 0;
+    cursorPos  = 0;
     realOffset = 0;
+
     while (found) {
         found = SearchString(fileString, searchString, SEARCH_FORWARD, searchType, FALSE, beginPos, &startPos, &endPos, &extentBW, &extentFW, GetWindowDelimitersEx(document).toLatin1().data());
         if (!found)
@@ -1073,8 +1075,8 @@ void ReplaceInSelectionEx(MainWindow *window, DocumentWidget *document, TextArea
             char replaceResult[SEARCHMAX];
             const std::string foundString = tempBuf->BufGetRangeEx(extentBW + realOffset, extentFW + realOffset + 1);
             substSuccess = replaceUsingREEx(
-                            searchString,
-                            replaceString,
+                            searchString.toLatin1().data(),
+                            replaceString.toLatin1().data(),
                             foundString,
                             startPos - extentBW,
                             replaceResult,
@@ -1099,7 +1101,7 @@ void ReplaceInSelectionEx(MainWindow *window, DocumentWidget *document, TextArea
             replaceLen = strlen(replaceResult);
         } else {
             // at this point plain substitutions (should) always work
-            tempBuf->BufReplaceEx(startPos + realOffset, endPos + realOffset, replaceString);
+            tempBuf->BufReplaceEx(startPos + realOffset, endPos + realOffset, replaceString.toLatin1().data());
             substSuccess = True;
         }
 
@@ -1156,13 +1158,14 @@ void ReplaceInSelectionEx(MainWindow *window, DocumentWidget *document, TextArea
 ** Replace all occurences of "searchString" in "window" with "replaceString".
 ** Also adds the search and replace strings to the global search history.
 */
-bool ReplaceAllEx(MainWindow *window, DocumentWidget *document, TextArea *area, const char *searchString, const char *replaceString, SearchType searchType) {
+bool ReplaceAllEx(MainWindow *window, DocumentWidget *document, TextArea *area, const QString &searchString, const QString &replaceString, SearchType searchType) {
     char *newFileString;
     int copyStart, copyEnd, replacementLen;
 
     // reject empty string
-    if (*searchString == '\0')
+    if (searchString.isEmpty()) {
         return false;
+    }
 
     // save a copy of search and replace strings in the search history
     saveSearchHistory(searchString, replaceString, searchType, false);
@@ -1170,7 +1173,7 @@ bool ReplaceAllEx(MainWindow *window, DocumentWidget *document, TextArea *area, 
     // view the entire text buffer from the text area widget as a string
     view::string_view fileString = document->buffer_->BufAsStringEx();
 
-    newFileString = ReplaceAllInString(fileString, searchString, replaceString, searchType, &copyStart, &copyEnd, &replacementLen, GetWindowDelimitersEx(document).toLatin1().data());
+    newFileString = ReplaceAllInString(fileString, searchString, replaceString.toLatin1().data(), searchType, &copyStart, &copyEnd, &replacementLen, GetWindowDelimitersEx(document).toLatin1().data());
 
     if(!newFileString) {
         if (document->multiFileBusy_) {
@@ -1201,7 +1204,7 @@ bool ReplaceAllEx(MainWindow *window, DocumentWidget *document, TextArea *area, 
     // Move the cursor to the end of the last replacement
     area->TextSetCursorPos(copyStart + replacementLen);
 
-    XtFree(newFileString);
+    delete [] newFileString;
     return true;
 }
 
@@ -1211,27 +1214,34 @@ bool ReplaceAllEx(MainWindow *window, DocumentWidget *document, TextArea *area, 
 ** first replacement (returned in "copyStart", and the end of the last
 ** replacement (returned in "copyEnd")
 */
-char *ReplaceAllInString(view::string_view inString, const char *searchString, const char *replaceString, SearchType searchType, int *copyStart, int *copyEnd, int *replacementLength, const char *delimiters) {
-	int beginPos, startPos, endPos, lastEndPos;
-	int found, nFound, removeLen, replaceLen, copyLen, addLen;
-	char *outString, *fillPtr;
-	int searchExtentBW, searchExtentFW;
+char *ReplaceAllInString(view::string_view inString, const QString &searchString, const char *replaceString, SearchType searchType, int *copyStart, int *copyEnd, int *replacementLength, const char *delimiters) {
+    int startPos;
+    int endPos;
+    int lastEndPos;
+    int copyLen;
+    char *outString;
+    char *fillPtr;
+    int searchExtentBW;
+    int searchExtentFW;
 
 	// reject empty string 
-	if (*searchString == '\0')
+    if (searchString.isNull()) {
 		return nullptr;
+    }
 
 	/* rehearse the search first to determine the size of the buffer needed
 	   to hold the substituted text.  No substitution done here yet */
-	replaceLen = strlen(replaceString);
-	found = TRUE;
-	nFound = 0;
-	removeLen = 0;
-	addLen = 0;
-	beginPos = 0;
+    int replaceLen = strlen(replaceString);
+    bool found     = true;
+    int nFound     = 0;
+    int removeLen  = 0;
+    int addLen     = 0;
+    int beginPos   = 0;
+
 	*copyStart = -1;
+
 	while (found) {
-		found = SearchString(inString, searchString, SEARCH_FORWARD, searchType, FALSE, beginPos, &startPos, &endPos, &searchExtentBW, &searchExtentFW, delimiters);
+        found = SearchString(inString, searchString, SEARCH_FORWARD, searchType, false, beginPos, &startPos, &endPos, &searchExtentBW, &searchExtentFW, delimiters);
 		if (found) {
 			if (*copyStart < 0)
 				*copyStart = startPos;
@@ -1243,7 +1253,7 @@ char *ReplaceAllInString(view::string_view inString, const char *searchString, c
 			if (isRegexType(searchType)) {
 				char replaceResult[SEARCHMAX];
 				replaceUsingREEx(
-					searchString,
+                    searchString.toLatin1().data(),
 					replaceString,
 					&inString[searchExtentBW],
 					startPos - searchExtentBW,
@@ -1266,16 +1276,16 @@ char *ReplaceAllInString(view::string_view inString, const char *searchString, c
 	/* Allocate a new buffer to hold all of the new text between the first
 	   and last substitutions */
 	copyLen = *copyEnd - *copyStart;
-	outString = XtMalloc(copyLen - removeLen + addLen + 1);
+    outString = new char[copyLen - removeLen + addLen + 1];
 
 	/* Scan through the text buffer again, substituting the replace string
 	   and copying the part between replaced text to the new buffer  */
-	found = TRUE;
+    found = true;
 	beginPos = 0;
 	lastEndPos = 0;
 	fillPtr = outString;
 	while (found) {
-		found = SearchString(inString, searchString, SEARCH_FORWARD, searchType, FALSE, beginPos, &startPos, &endPos, &searchExtentBW, &searchExtentFW, delimiters);
+        found = SearchString(inString, searchString, SEARCH_FORWARD, searchType, false, beginPos, &startPos, &endPos, &searchExtentBW, &searchExtentFW, delimiters);
 		if (found) {
 			if (beginPos != 0) {
 				memcpy(fillPtr, &inString[lastEndPos], startPos - lastEndPos);
@@ -1284,7 +1294,7 @@ char *ReplaceAllInString(view::string_view inString, const char *searchString, c
 			if (isRegexType(searchType)) {
 				char replaceResult[SEARCHMAX];
 				replaceUsingREEx(
-					searchString,
+                    searchString.toLatin1().data(),
 					replaceString,
 					&inString[searchExtentBW],
 					startPos - searchExtentBW,
@@ -1334,14 +1344,15 @@ static void iSearchTryBeepOnWrapEx(MainWindow *window, SearchDirection direction
 /*
 ** Search the text in "window", attempting to match "searchString"
 */
-bool SearchWindowEx(MainWindow *window, DocumentWidget *document, SearchDirection direction, const char *searchString, SearchType searchType, int searchWrap, int beginPos, int *startPos, int *endPos, int *extentBW, int *extentFW) {
+bool SearchWindowEx(MainWindow *window, DocumentWidget *document, SearchDirection direction, const QString &searchString, SearchType searchType, int searchWrap, int beginPos, int *startPos, int *endPos, int *extentBW, int *extentFW) {
     bool found;
     int fileEnd = document->buffer_->BufGetLength() - 1;
     bool outsideBounds;
 
     // reject empty string
-    if (*searchString == '\0')
+    if (searchString.isEmpty()) {
         return false;
+    }
 
     // get the entire text buffer from the text area widget
     view::string_view fileString = document->buffer_->BufAsStringEx();
@@ -1412,7 +1423,7 @@ bool SearchWindowEx(MainWindow *window, DocumentWidget *document, SearchDirectio
                             return false;
                         }
                     }
-                    found = SearchString(fileString, searchString, direction, searchType, FALSE, fileEnd + 1, startPos, endPos, extentBW, extentFW, GetWindowDelimitersEx(document).toLatin1().data());
+                    found = SearchString(fileString, searchString, direction, searchType, false, fileEnd + 1, startPos, endPos, extentBW, extentFW, GetWindowDelimitersEx(document).toLatin1().data());
                 }
             }
             if (!found) {
@@ -1451,20 +1462,20 @@ bool SearchWindowEx(MainWindow *window, DocumentWidget *document, SearchDirectio
 ** alternative set of word delimiters for regular expression "<" and ">"
 ** characters, or simply passed as null for the default delimiter set.
 */
-bool SearchString(view::string_view string, const char *searchString, SearchDirection direction, SearchType searchType, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters) {
+bool SearchString(view::string_view string, const QString &searchString, SearchDirection direction, SearchType searchType, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters) {
 	switch (searchType) {
 	case SEARCH_CASE_SENSE_WORD:
-		return searchLiteralWord(string, searchString, true, direction, wrap, beginPos, startPos, endPos, delimiters);
+        return searchLiteralWord(string, searchString.toLatin1().data(), true, direction, wrap, beginPos, startPos, endPos, delimiters);
 	case SEARCH_LITERAL_WORD:
-		return searchLiteralWord(string, searchString, false, direction, wrap, beginPos, startPos, endPos, delimiters);
+        return searchLiteralWord(string, searchString.toLatin1().data(), false, direction, wrap, beginPos, startPos, endPos, delimiters);
 	case SEARCH_CASE_SENSE:
-		return searchLiteral(string, searchString, true, direction, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW);
+        return searchLiteral(string, searchString.toLatin1().data(), true, direction, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW);
 	case SEARCH_LITERAL:
-		return searchLiteral(string, searchString, false, direction, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW);
+        return searchLiteral(string, searchString.toLatin1().data(), false, direction, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW);
 	case SEARCH_REGEX:
-		return searchRegex(string, searchString, direction, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW, delimiters, REDFLT_STANDARD);
+        return searchRegex(string, searchString.toLatin1().data(), direction, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW, delimiters, REDFLT_STANDARD);
 	case SEARCH_REGEX_NOCASE:
-		return searchRegex(string, searchString, direction, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW, delimiters, REDFLT_CASE_INSENSITIVE);
+        return searchRegex(string, searchString.toLatin1().data(), direction, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW, delimiters, REDFLT_CASE_INSENSITIVE);
 	default:
 		Q_ASSERT(0);
 	}
@@ -1854,7 +1865,7 @@ static std::string downCaseStringEx(view::string_view inString) {
 ** current primary selection using search algorithm "searchType".  If true,
 ** also return the position of the selection in "left" and "right".
 */
-static bool searchMatchesSelectionEx(DocumentWidget *window, const char *searchString, SearchType searchType, int *left, int *right, int *searchExtentBW, int *searchExtentFW) {
+static bool searchMatchesSelectionEx(DocumentWidget *window, const QString &searchString, SearchType searchType, int *left, int *right, int *searchExtentBW, int *searchExtentFW) {
     int selLen, selStart, selEnd, startPos, endPos, extentBW, extentFW, beginPos;
     int regexLookContext = isRegexType(searchType) ? 1000 : 0;
     std::string string;
@@ -1964,35 +1975,37 @@ static bool replaceUsingREEx(view::string_view searchStr, const char *replaceStr
 ** is made.  To mark the end of an incremental search, call saveSearchHistory
 ** again with an empty search string and isIncremental==False.
 */
-void saveSearchHistory(const char *searchString, const char *replaceString, SearchType searchType, bool isIncremental) {
-	char *sStr, *rStr;
-	static int currentItemIsIncremental = FALSE;
+void saveSearchHistory(const QString &searchString, QString replaceString, SearchType searchType, bool isIncremental) {
+
+    static bool currentItemIsIncremental = false;
 
 	/* Cancel accumulation of contiguous incremental searches (even if the
 	   information is not worthy of saving) if search is not incremental */
     if (!isIncremental) {
-		currentItemIsIncremental = FALSE;
+        currentItemIsIncremental = false;
     }
 
 	// Don't save empty search strings 
-	if (searchString[0] == '\0')
+    if (searchString.isEmpty()) {
 		return;
+    }
 
 	// If replaceString is nullptr, duplicate the last one (if any) 
-	if(!replaceString)
-		replaceString = NHist >= 1 ? ReplaceHistory[historyIndex(1)] : "";
+    if(replaceString.isNull()) {
+        replaceString = (NHist >= 1) ? ReplaceHistory[historyIndex(1)] : QLatin1String("");
+    }
 
 	/* Compare the current search and replace strings against the saved ones.
 	   If they are identical, don't bother saving */
-	if (NHist >= 1 && searchType == SearchTypeHistory[historyIndex(1)] && !strcmp(SearchHistory[historyIndex(1)], searchString) && !strcmp(ReplaceHistory[historyIndex(1)], replaceString)) {
+    if (NHist >= 1 && searchType == SearchTypeHistory[historyIndex(1)] && SearchHistory[historyIndex(1)] == searchString && ReplaceHistory[historyIndex(1)] == replaceString) {
 		return;
 	}
 
 	/* If the current history item came from an incremental search, and the
 	   new one is also incremental, just update the entry */
 	if (currentItemIsIncremental && isIncremental) {
-		XtFree(SearchHistory[historyIndex(1)]);
-		SearchHistory[historyIndex(1)] = XtNewStringEx(searchString);
+
+        SearchHistory[historyIndex(1)]     = searchString;
 		SearchTypeHistory[historyIndex(1)] = searchType;
 		return;
 	}
@@ -2008,23 +2021,19 @@ void saveSearchHistory(const char *searchString, const char *replaceString, Sear
 
 	/* If there are more than MAX_SEARCH_HISTORY strings saved, recycle
 	   some space, free the entry that's about to be overwritten */
-	if (NHist == MAX_SEARCH_HISTORY) {
-		XtFree(SearchHistory[HistStart]);
-		XtFree(ReplaceHistory[HistStart]);
-	} else
+    if (NHist != MAX_SEARCH_HISTORY) {
 		NHist++;
+    }
 
-	/* Allocate and copy the search and replace strings and add them to the
-	   circular buffers at HistStart, bump the buffer pointer to next pos. */
-	sStr = XtStringDup(searchString);
-	rStr = XtStringDup(replaceString);
-
-	SearchHistory[HistStart] = sStr;
-	ReplaceHistory[HistStart] = rStr;
+    SearchHistory[HistStart]     = searchString;
+    ReplaceHistory[HistStart]    = replaceString;
 	SearchTypeHistory[HistStart] = searchType;
-	HistStart++;
-	if (HistStart >= MAX_SEARCH_HISTORY)
+
+    HistStart++;
+
+    if (HistStart >= MAX_SEARCH_HISTORY) {
 		HistStart = 0;
+    }
 }
 
 /*

@@ -8,7 +8,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 find_package(Motif REQUIRED)
 find_package(X11 REQUIRED)
 find_package(BISON REQUIRED)
-find_package(Qt5 5.0.0 REQUIRED Widgets X11Extras Concurrent)
+find_package(Qt5 5.4.0 REQUIRED Widgets X11Extras Concurrent)
 
 find_library(LibM m)
 
@@ -55,7 +55,6 @@ qt5_wrap_cpp(MOC_SOURCES
 	ui/DialogPromptString.h
 	ui/DialogPromptList.h
 	ui/DialogRepeat.h
-	ui/LineEdit.h
 	ui/ListWidget.h
 	ui/MainWindow.h
 	ui/KeySequenceEdit.h
@@ -125,7 +124,6 @@ add_executable(nedit
 
 	Preferences.cpp
 	file.cpp
-	help.cpp
 	highlight.cpp
 	highlightData.cpp
 	HighlightPattern.cpp
@@ -184,7 +182,6 @@ add_executable(nedit
 	ui/DocumentWidget.cpp
 	ui/ElidedLabel.cpp
 	ui/KeySequenceEdit.cpp
-	ui/LineEdit.cpp
 	ui/ListWidget.cpp
 	ui/MainWindow.cpp
 	ui/SignalBlocker.h
