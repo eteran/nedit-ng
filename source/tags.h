@@ -80,6 +80,4 @@ void showMatchingCalltipEx(TextArea *area, int i);
 
 int findAllMatchesEx(DocumentWidget *document, TextArea *area, const char *string);
 
-
-
 #endif

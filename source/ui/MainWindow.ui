@@ -457,6 +457,8 @@
     <property name="title">
      <string>&amp;Help</string>
     </property>
+    <addaction name="action_Help"/>
+    <addaction name="separator"/>
     <addaction name="action_About"/>
     <addaction name="action_About_Qt"/>
    </widget>
@@ -1741,6 +1743,14 @@
    </property>
    <property name="text">
     <string>&amp;Custom...</string>
+   </property>
+  </action>
+  <action name="action_Help">
+   <property name="text">
+    <string>&amp;Help</string>
+   </property>
+   <property name="shortcut">
+    <string>F1</string>
    </property>
   </action>
  </widget>

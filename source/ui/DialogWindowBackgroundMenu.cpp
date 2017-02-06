@@ -14,7 +14,7 @@
 //------------------------------------------------------------------------------
 DialogWindowBackgroundMenu::DialogWindowBackgroundMenu(QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f), previous_(nullptr) {
 	ui.setupUi(this);
-	ui.editAccelerator->setMaximumSequenceLength(1);
+    ui.editAccelerator->setMaximumSequenceLength(1);
 
 	for(MenuData &data : BGMenuData) {
 		auto ptr  = new MenuItem(*data.item);

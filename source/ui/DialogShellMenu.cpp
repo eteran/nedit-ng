@@ -15,7 +15,7 @@
 //------------------------------------------------------------------------------
 DialogShellMenu::DialogShellMenu(QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f), previous_(nullptr) {
 	ui.setupUi(this);
-	ui.editAccelerator->setMaximumSequenceLength(1);
+    ui.editAccelerator->setMaximumSequenceLength(1);
 
 	for(MenuData &data : ShellMenuData) {
 		auto ptr  = new MenuItem(*data.item);

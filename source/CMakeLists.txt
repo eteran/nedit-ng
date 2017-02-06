@@ -110,18 +110,6 @@ add_executable(nedit
 	${QRC_SOURCES}
 	${UI_H}
 
-	#QtMotif.cpp
-	#QtMotifDialog.cpp
-	#QtMotifWidget.cpp
-	#QtXtWidget.cpp
-
-	#Document.cpp
-	#TextDisplay.cpp
-	#text.cpp
-	#Font.cpp
-	#Color.cpp
-	#UserMenuListElement.cpp
-
 	Preferences.cpp
 	file.cpp
 	highlight.cpp

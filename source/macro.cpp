@@ -1615,20 +1615,18 @@ static int lengthMS(DocumentWidget *window, DataValue *argList, int nArgs, DataV
 
 	(void)window;
 
-	char *string;
-	char stringStorage[TYPE_INT_STR_SIZE(int)];
-	int len;
+    std::string string;
 	
 	if (nArgs != 1) {
 		return wrongNArgsErr(errMsg);
 	}
 
-	if (!readStringArg(argList[0], &string, &len, stringStorage, errMsg)) {
+    if (!readStringArgEx(argList[0], &string, errMsg)) {
 		return false;
 	}
 
 	result->tag   = INT_TAG;
-	result->val.n = len;
+    result->val.n = string.size();
 	return true;
 }
 
@@ -1690,9 +1688,7 @@ static int maxMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValu
 }
 
 static int focusWindowMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
-	char stringStorage[TYPE_INT_STR_SIZE(int)];
-	char *string;
-	int len;
+    std::string string;
 
 	/* Read the argument representing the window to focus to, and translate
        it into a pointer to a real DocumentWidget */
@@ -1703,11 +1699,11 @@ static int focusWindowMS(DocumentWidget *window, DataValue *argList, int nArgs, 
     QList<DocumentWidget *> documents = MainWindow::allDocuments();
     QList<DocumentWidget *>::iterator w;
 
-	if (!readStringArg(argList[0], &string, &len, stringStorage, errMsg)) {
+    if (!readStringArgEx(argList[0], &string, errMsg)) {
 		return false;
-	} else if (!strcmp(string, "last")) {
+    } else if (string == "last") {
         w = documents.begin();
-	} else if (!strcmp(string, "next")) {
+    } else if (string == "next") {
 
         auto curr = std::find_if(documents.begin(), documents.end(), [window](DocumentWidget *doc) {
 			return doc == window;
@@ -1716,21 +1712,21 @@ static int focusWindowMS(DocumentWidget *window, DataValue *argList, int nArgs, 
         if(curr != documents.end()) {
 			w = std::next(curr);
 		}
-	} else if (strlen(string) >= MAXPATHLEN) {
+    } else if (string.size() >= MAXPATHLEN) {
 		*errMsg = "Pathname too long in focus_window()";
 		return false;
 	} else {
 		// just use the plain name as supplied 
         w = std::find_if(documents.begin(), documents.end(), [&string](DocumentWidget *doc) {
 			QString fullname = doc->FullPath();
-            return fullname == QString::fromLatin1(string);
+            return fullname == QString::fromStdString(string);
 		});
 		
 		// didn't work? try normalizing the string passed in 
         if(w == documents.end()) {
 			
 			char normalizedString[MAXPATHLEN];
-			strncpy(normalizedString, string, MAXPATHLEN);
+            strncpy(normalizedString, string.c_str(), MAXPATHLEN);
 			normalizedString[MAXPATHLEN - 1] = '\0';
 			
 			if (NormalizePathname(normalizedString) == 1) {
@@ -3065,6 +3061,8 @@ static int replaceAllInSelectionMS(DocumentWidget *document, DataValue *argList,
         searchType = SEARCH_CASE_SENSE_WORD;
     } else if(typeString == "regexNoCase") {
         searchType = SEARCH_REGEX_NOCASE;
+    } else {
+        return false;
     }
 
     result->tag = INT_TAG;
@@ -3113,6 +3111,8 @@ static int replaceAllMS(DocumentWidget *document, DataValue *argList, int nArgs,
         searchType = SEARCH_CASE_SENSE_WORD;
     } else if(typeString == "regexNoCase") {
         searchType = SEARCH_REGEX_NOCASE;
+    } else {
+        return false;
     }
 
     result->tag = INT_TAG;
@@ -5381,9 +5381,7 @@ static bool readStringArgEx(DataValue dv, std::string *result, const char **errM
 		*result = dv.val.str.rep;
 		return true;
 	} else if (dv.tag == INT_TAG) {
-		char storage[32];
-		sprintf(storage, "%d", dv.val.n);
-		*result = storage;
+        *result = std::to_string(dv.val.n);
 		return true;
 	}
 	

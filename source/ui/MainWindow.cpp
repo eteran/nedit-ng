@@ -4131,3 +4131,8 @@ void MainWindow::focusChanged(QWidget *from, QWidget *to) {
         }
     }
 }
+
+void MainWindow::on_action_Help_triggered() {
+    // TODO(eteran): implement
+    qDebug("TODO(eteran): implement this");
+}

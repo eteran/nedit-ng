@@ -149,8 +149,7 @@ public Q_SLOTS:
     // File Menu
 	void on_action_New_triggered();
 	void on_action_New_Window_triggered();
-	void on_action_Open_triggered();
-	void on_action_About_triggered();
+	void on_action_Open_triggered();	
 	void on_action_Select_All_triggered();
     void on_action_Open_Selected_triggered();
     void on_action_Close_triggered();
@@ -268,7 +267,9 @@ public Q_SLOTS:
     void on_action_Replay_Keystrokes_triggered();
 
 #endif
+    void on_action_About_triggered();
     void on_action_About_Qt_triggered();
+    void on_action_Help_triggered();
 
 public Q_SLOTS:
     void unloadTipsAP(const QString &filename);
