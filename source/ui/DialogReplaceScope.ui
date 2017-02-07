@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>480</width>
+    <width>500</width>
     <height>286</height>
    </rect>
   </property>
@@ -151,7 +151,7 @@
       <item>
        <widget class="QRadioButton" name="radioSelection">
         <property name="text">
-         <string>In &amp;Selection</string>
+         <string>In Se&amp;lection</string>
         </property>
        </widget>
       </item>
@@ -199,6 +199,9 @@
       <widget class="QPushButton" name="buttonReplaceFind">
        <property name="text">
         <string>Replace &amp;&amp; Fi&amp;nd</string>
+       </property>
+       <property name="icon">
+        <iconset theme="edit-find-replace"/>
        </property>
       </widget>
      </item>

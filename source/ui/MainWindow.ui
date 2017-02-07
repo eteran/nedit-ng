@@ -221,7 +221,7 @@
      <bool>true</bool>
     </property>
     <property name="title">
-     <string>Preferen&amp;ces</string>
+     <string>P&amp;references</string>
     </property>
     <widget class="QMenu" name="menu_Show_Matching">
      <property name="title">
@@ -1746,6 +1746,9 @@
    </property>
   </action>
   <action name="action_Help">
+   <property name="icon">
+    <iconset theme="help-browser"/>
+   </property>
    <property name="text">
     <string>&amp;Help</string>
    </property>

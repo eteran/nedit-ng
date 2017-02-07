@@ -58,6 +58,7 @@ void DialogReplace::keyPressEvent(QKeyEvent *event) {
 
 		// only process up and down arrow keys 
 		if (event->key() != Qt::Key_Up && event->key() != Qt::Key_Down) {
+            QDialog::keyPressEvent(event);
 			return;
 		}
 
@@ -101,6 +102,7 @@ void DialogReplace::keyPressEvent(QKeyEvent *event) {
 
 		// only process up and down arrow keys 
 		if (event->key() != Qt::Key_Up && event->key() != Qt::Key_Down) {
+            QDialog::keyPressEvent(event);
 			return;
 		}
 
