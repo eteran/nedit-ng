@@ -397,7 +397,7 @@ TextArea::TextArea(QWidget *parent,
 	P_heavyCursor        = false;
 	P_autoShowInsertPos  = true;
 	P_autoWrapPastedText = false;
-	P_cursorBlinkRate    = 500;
+    P_cursorBlinkRate    = QApplication::cursorFlashTime() / 2;
 
 #if 0
 	static XtResource resources[] = {
