@@ -130,7 +130,7 @@ bool DialogSmartIndentCommon::updateSmartIndentCommonData() {
 	/* Re-execute initialization macros (macros require a window to function,
 	   since user could theoretically execute an action routine, but it
 	   probably won't be referenced in a smart indent initialization) */
-    QList<DocumentWidget *> documents = MainWindow::allDocuments();
+    QList<DocumentWidget *> documents = DocumentWidget::allDocuments();
     if(!documents.empty()) {
         if (!ReadMacroStringEx(documents[0], CommonMacros, "common macros")) {
 			return false;

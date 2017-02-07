@@ -681,7 +681,7 @@ void SetPrefAutoScroll(int state) {
 
     g_Settings.autoScroll = state;
 	
-    for(DocumentWidget *document : MainWindow::allDocuments()) {
+    for(DocumentWidget *document : DocumentWidget::allDocuments()) {
         document->SetAutoScroll(margin);
 	}
 }

@@ -133,11 +133,12 @@ void DialogMultiReplace::on_buttonReplace_clicked() {
  */
 void DialogMultiReplace::uploadFileListItems(bool replace) {
 
-	QStringList names;
-
 	bool usePathNames = ui.checkShowPaths->isChecked();
 	
-	
+    // NOTE(eteran): so replace seems to mean that we want to keep
+    //               existing items and possible update them "replacing" their
+    //               strings with new ones, when not in replace mode, I think the
+    //               whole list is supposed to be new
 	if(replace) {
 		// we want to maintain selections, we are replacing the 
 		// existing items with equivalent items but with (possibly)
@@ -156,6 +157,8 @@ void DialogMultiReplace::uploadFileListItems(bool replace) {
 		/* Note: the windows are sorted alphabetically by _file_ name. This
 	        	 order is _not_ changed when we switch to path names. That
 	        	 would be confusing for the user */
+
+        ui.listFiles->clear();
 
         for (int i = 0; i < window_->writableWindows_.size(); ++i) {
             DocumentWidget *w = window_->writableWindows_[i];

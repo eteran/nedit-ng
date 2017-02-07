@@ -110,7 +110,7 @@ static void cleanUpServerCommunication() {
 	/* Delete any per-file properties that still exist
 	 * (and that server knows about)
 	 */
-    for(DocumentWidget *document : MainWindow::allDocuments()) {
+    for(DocumentWidget *document : DocumentWidget::allDocuments()) {
         DeleteFileClosedPropertyEx(document);
 	}
 
@@ -248,7 +248,7 @@ static MainWindow *findWindowOnDesktopEx(int tabbed, long currentDesktop) {
     if (tabbed == 0 || (tabbed == -1 && GetPrefOpenInTab() == 0)) {
         /* A new window is requested, unless we find an untitled unmodified
             document on the current desktop */
-        for(DocumentWidget *document : MainWindow::allDocuments()) {
+        for(DocumentWidget *document : DocumentWidget::allDocuments()) {
             if (document->filenameSet_ || document->fileChanged_ || document->macroCmdData_) {
                 continue;
             }
@@ -300,7 +300,7 @@ static void processServerCommandString(char *string) {
 	   (or just pop one up if it already exists) */
 	if (string[0] == '\0') {
 
-        QList<DocumentWidget *> documents = MainWindow::allDocuments();
+        QList<DocumentWidget *> documents = DocumentWidget::allDocuments();
 
         auto it = std::find_if(documents.begin(), documents.end(), [currentDesktop](DocumentWidget *document) {
             return (!document->filenameSet_ && !document->fileChanged_ && isLocatedOnDesktopEx(document->toWindow(), currentDesktop));
@@ -360,7 +360,7 @@ static void processServerCommandString(char *string) {
 		 */
 		if (fileLen <= 0) {
 			
-            QList<DocumentWidget *> documents = MainWindow::allDocuments();
+            QList<DocumentWidget *> documents = DocumentWidget::allDocuments();
 
             auto it = std::find_if(documents.begin(), documents.end(), [currentDesktop](DocumentWidget *w) {
                 return (!w->filenameSet_ && !w->fileChanged_ && isLocatedOnDesktopEx(w->toWindow(), currentDesktop));

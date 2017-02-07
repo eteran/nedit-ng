@@ -687,12 +687,17 @@ void MainWindow::UpdateWindowTitle(DocumentWidget *doc) {
 
 	setWindowTitle(title);
 
+
 	QString iconTitle = doc->filename_;
-	if (doc->fileChanged_) {
+
+    // TODO(eteran): For version 2.0, consider using a disk icon instead of this "*"
+    //               as this would be more conventional in modern program
+    if (doc->fileChanged_) {
 		iconTitle.append(tr("*"));
 	}
 
-    setWindowIconText(iconTitle); // NOTE(eteran): is the functional equivalent to "XmNiconName"?
+    // NOTE(eteran): is the functional equivalent to "XmNiconName"?
+    setWindowIconText(iconTitle);
 
 	/* If there's a find or replace dialog up in "Keep Up" mode, with a
 	   file name in the title, update it too */
@@ -721,13 +726,50 @@ DialogReplace *MainWindow::getDialogReplace() const {
 */
 void MainWindow::InvalidateWindowMenus() {
 
-    QList<DocumentWidget *> documents = MainWindow::allDocuments();
-    for(DocumentWidget *doc : documents) {
-        if(doc == ui.tabWidget->currentWidget()) {
-            doc->updateWindowMenu();
-        } else {
-            doc->windowMenuValid_ = false;
+    for(MainWindow *window : MainWindow::allWindows()) {
+        window->updateWindowMenu();
+    }
+}
+
+/*
+** Update the Window menu of a single window to reflect the current state of
+** all NEdit windows as determined by the global window list.
+*/
+void MainWindow::updateWindowMenu() {
+
+    // TODO(eteran): if we are clever, we can probably make all windows
+    // literally share the same QMenu object for this...
+
+    // Make a sorted list of windows
+    QList<DocumentWidget *> documents = DocumentWidget::allDocuments();
+
+    std::sort(documents.begin(), documents.end(), [](const DocumentWidget *a, const DocumentWidget *b) {
+
+        // Untitled first
+        int rc = a->filenameSet_ == b->filenameSet_ ? 0 : a->filenameSet_ && !b->filenameSet_ ? 1 : -1;
+        if (rc != 0) {
+            return rc < 0;
         }
+
+        if(a->filename_ < b->filename_) {
+            return true;
+        }
+
+        return a->path_ < b->path_;
+    });
+
+    ui.menu_Windows->clear();
+    ui.menu_Windows->addAction(ui.action_Split_Pane);
+    ui.menu_Windows->addAction(ui.action_Close_Pane);
+    ui.menu_Windows->addSeparator();
+    ui.menu_Windows->addAction(ui.action_Detach_Tab);
+    ui.menu_Windows->addAction(ui.action_Move_Tab_To);
+    ui.menu_Windows->addSeparator();
+
+    for(DocumentWidget *document : documents) {
+        QString title = document->getWindowsMenuEntry();
+        QAction *action = ui.menu_Windows->addAction(title, this, SLOT(raiseCB()));
+        action->setData(reinterpret_cast<qulonglong>(document));
     }
 }
 
@@ -825,16 +867,7 @@ QList<DocumentWidget *> MainWindow::openDocuments() const {
     return list;
 }
 
-QList<DocumentWidget *> MainWindow::allDocuments() {
-    QList<MainWindow *> windows = MainWindow::allWindows();
-    QList<DocumentWidget *> documents;
 
-    for(MainWindow *window : windows) {
-        documents.append(window->openDocuments());
-    }
-    return documents;
-
-}
 
 /*
 ** Make sure the close menu item is dimmed appropriately for the current
@@ -1186,7 +1219,7 @@ QString MainWindow::UniqueUntitledNameEx() {
             name = tr("Untitled_%1").arg(i);
         }
 
-        QList<DocumentWidget *> documents = allDocuments();
+        QList<DocumentWidget *> documents = DocumentWidget::allDocuments();
 
         auto it = std::find_if(documents.begin(), documents.end(), [name](DocumentWidget *window) {
             return window->filename_ == name;
@@ -1223,7 +1256,7 @@ void MainWindow::on_action_Redo_triggered() {
 */
 DocumentWidget *MainWindow::FindWindowWithFile(const QString &name, const QString &path) {
 
-    QList<DocumentWidget *> documents = allDocuments();
+    QList<DocumentWidget *> documents = DocumentWidget::allDocuments();
 
     /* I don't think this algorithm will work on vms so I am disabling it for now */
     if (!GetPrefHonorSymlinks()) {
@@ -3578,7 +3611,7 @@ void MainWindow::AllWindowsBusyEx(const QString &message) {
         busyStartTime = getRelTimeInTenthsOfSeconds();
         modeMessageSet = false;
 
-        for(DocumentWidget *document : MainWindow::allDocuments()) {
+        for(DocumentWidget *document : DocumentWidget::allDocuments()) {
             /* We don't the display message here yet, but defer it for
                a while. If the wait is short, we don't want
                to have it flash on and off the screen.  However,
@@ -3593,7 +3626,7 @@ void MainWindow::AllWindowsBusyEx(const QString &message) {
     } else if (!modeMessageSet && !message.isNull() && getRelTimeInTenthsOfSeconds() - busyStartTime > 10) {
 
         // Show the mode message when we've been busy for more than a second
-        for(DocumentWidget *document : MainWindow::allDocuments()) {
+        for(DocumentWidget *document : DocumentWidget::allDocuments()) {
             document->SetModeMessageEx(message);
         }
         modeMessageSet = true;
@@ -3607,7 +3640,7 @@ void MainWindow::AllWindowsBusyEx(const QString &message) {
 
 void MainWindow::AllWindowsUnbusyEx() {
 
-    for(DocumentWidget *document : MainWindow::allDocuments()) {
+    for(DocumentWidget *document : DocumentWidget::allDocuments()) {
         document->ClearModeMessageEx();
         document->setCursor(Qt::ArrowCursor);
     }
@@ -3817,7 +3850,7 @@ void MainWindow::on_action_Exit_triggered() {
 
     const int DF_MAX_MSG_LENGTH = 2048;
 
-    QList<DocumentWidget *> documents = MainWindow::allDocuments();
+    QList<DocumentWidget *> documents = DocumentWidget::allDocuments();
 
     if (!CheckPrefsChangesSavedEx()) {
         return;

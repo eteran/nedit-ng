@@ -442,7 +442,6 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 	
 	modeMessageDisplayed_  = false;
 	ignoreModify_          = false;
-	windowMenuValid_       = false;
 
     flashTimer_            = new QTimer(this);
     contextMenu_           = nullptr;
@@ -1257,51 +1256,7 @@ bool DocumentWidget::IsTopDocument() const {
     return false;
 }
 
-/*
-** Update the Window menu of a single window to reflect the current state of
-** all NEdit windows as determined by the global window list.
-*/
-void DocumentWidget::updateWindowMenu() {
 
-    if (!IsTopDocument()) {
-        return;
-    }
-
-    if(auto win = toWindow()) {
-
-        // Make a sorted list of windows
-        QList<DocumentWidget *> documents = win->allDocuments();
-
-        std::sort(documents.begin(), documents.end(), [](const DocumentWidget *a, const DocumentWidget *b) {
-
-            // Untitled first
-            int rc = a->filenameSet_ == b->filenameSet_ ? 0 : a->filenameSet_ && !b->filenameSet_ ? 1 : -1;
-            if (rc != 0) {
-                return rc < 0;
-            }
-
-            if(a->filename_ < b->filename_) {
-                return true;
-            }
-
-            return a->path_ < b->path_;
-        });
-
-        win->ui.menu_Windows->clear();
-        win->ui.menu_Windows->addAction(win->ui.action_Split_Pane);
-        win->ui.menu_Windows->addAction(win->ui.action_Close_Pane);
-        win->ui.menu_Windows->addSeparator();
-        win->ui.menu_Windows->addAction(win->ui.action_Detach_Tab);
-        win->ui.menu_Windows->addAction(win->ui.action_Move_Tab_To);
-        win->ui.menu_Windows->addSeparator();
-
-        for(DocumentWidget *document : documents) {
-            QString title = document->getWindowsMenuEntry();
-            QAction *action = win->ui.menu_Windows->addAction(title, win, SLOT(raiseCB()));
-            action->setData(reinterpret_cast<qulonglong>(document));
-        }
-    }
-}
 
 QString DocumentWidget::getWindowsMenuEntry() {
 
@@ -3247,7 +3202,7 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
 
                 // ask user for next action if file not found
 
-                QList<DocumentWidget *> documents = MainWindow::allDocuments();
+                QList<DocumentWidget *> documents = DocumentWidget::allDocuments();
                 int resp;
                 if (this == documents.front() && documents.size() == 1) {
 
@@ -4890,7 +4845,7 @@ void DocumentWidget::customContextMenuRequested(const QPoint &pos) {
 */
 void DocumentWidget::safeCloseEx() {
 
-    QList<DocumentWidget *> documents = MainWindow::allDocuments();
+    QList<DocumentWidget *> documents = DocumentWidget::allDocuments();
 
     auto it = std::find_if(documents.begin(), documents.end(), [this](DocumentWidget *p) {
         return p == this;
@@ -5616,4 +5571,15 @@ void DocumentWidget::SetAutoScroll(int margin) {
 
 void DocumentWidget::repeatMacro(const QString &macro, int how) {
     RepeatMacroEx(this, macro.toLatin1().data(), how);
+}
+
+QList<DocumentWidget *> DocumentWidget::allDocuments() {
+    QList<MainWindow *> windows = MainWindow::allWindows();
+    QList<DocumentWidget *> documents;
+
+    for(MainWindow *window : windows) {
+        documents.append(window->openDocuments());
+    }
+    return documents;
+
 }

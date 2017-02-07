@@ -7,7 +7,7 @@
 
 
 //------------------------------------------------------------------------------
-inline String XtNewStringEx(QString string) {
+inline String XtNewStringEx(const QString &string) {
 	return XtNewString(string.toLatin1().data());
 }
 

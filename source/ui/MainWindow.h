@@ -45,8 +45,7 @@ private:
 public:
     void parseGeometry(QString geometry);
 	void UpdateWindowTitle(DocumentWidget *doc);
-	DialogReplace *getDialogReplace() const;
-	void InvalidateWindowMenus();
+	DialogReplace *getDialogReplace() const;	
 	void UpdateWindowReadOnly(DocumentWidget *doc);
 	void SortTabBar();
 	int TabCount();    
@@ -78,11 +77,11 @@ public:
     bool CheckPrefsChangesSavedEx();
     bool CloseAllDocumentInWindow();
     void addToGroup(QActionGroup *group, QMenu *menu);
+    void updateWindowMenu();
 
 
 public:
-    static QList<MainWindow *> allWindows();
-    static QList<DocumentWidget *> allDocuments();
+    static QList<MainWindow *> allWindows();    
     static QString UniqueUntitledNameEx();
     static DocumentWidget *FindWindowWithFile(const QString &name, const QString &path);
     static DocumentWidget *EditNewFileEx(MainWindow *inWindow, QString geometry, bool iconic, const QString &languageMode, const QString &defaultPath);
@@ -91,6 +90,7 @@ public:
     static void BusyWaitEx();
     static void CheckCloseDimEx();
     static bool CloseAllFilesAndWindowsEx();
+    static void InvalidateWindowMenus();
 
 public:
 	DocumentWidget *CreateDocument(QString name);

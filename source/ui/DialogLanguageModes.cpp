@@ -434,7 +434,7 @@ bool DialogLanguageModes::updateLMList(bool silent) {
         /* Fix up language mode indices in all open windows (which may change
            if the currently selected mode is deleted or has changed position),
            and update word delimiters */
-        for(DocumentWidget *document: MainWindow::allDocuments()) {
+        for(DocumentWidget *document: DocumentWidget::allDocuments()) {
             if (document->languageMode_ != PLAIN_LANGUAGE_MODE) {
 
                 QString oldModeName = LanguageModes[document->languageMode_]->name;
@@ -508,7 +508,7 @@ bool DialogLanguageModes::updateLMList(bool silent) {
 
         /* Update the menus in the window menu bars and load any needed
             calltips files */
-        for(DocumentWidget *document: window->allDocuments()) {
+        for(DocumentWidget *document: DocumentWidget::allDocuments()) {
 
             if (document->languageMode_ != PLAIN_LANGUAGE_MODE && !LanguageModes[document->languageMode_]->defTipsFile.isNull()) {
                 AddTagsFileEx(LanguageModes[document->languageMode_]->defTipsFile, TIP);

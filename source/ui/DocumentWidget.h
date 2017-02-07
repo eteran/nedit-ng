@@ -109,7 +109,6 @@ public:
     void SetEmTabDist(int emTabDist);
     void SetTabDist(int tabDist);
     bool IsTopDocument() const;
-    void updateWindowMenu();
     QString getWindowsMenuEntry();
     MainWindow *toWindow() const;
     void UpdateMarkTable(int pos, int nInserted, int nDeleted);
@@ -184,6 +183,7 @@ public:
 
 public:
     static DocumentWidget *EditExistingFileEx(DocumentWidget *inWindow, const QString &name, const QString &path, int flags, const QString &geometry, int iconic, const QString &languageMode, bool tabbed, bool bgOpen);
+    static QList<DocumentWidget *> allDocuments();
 
 private:
 	// TODO(eteran): are these dialog's per window or per text document?
@@ -223,8 +223,7 @@ public:
 	bool multiFileReplSelected_;       // selected during last multi-window replacement operation (history)
 	bool overstrike_;                  // is overstrike mode turned on ?
 	bool replaceFailed_;               // flags replacements failures during multi-file replacements
-	bool saveOldVersion_;              // keep old version in filename.bck
-	bool windowMenuValid_;             // is window menu up to date?
+    bool saveOldVersion_;              // keep old version in filename.bc
     QString modeMessage_;              // stats line banner content for learn and shell command executing modes
     IndentStyle indentStyle_;          // whether/how to auto indent
 	char matchSyntaxBased_;            // Use syntax info to show matching

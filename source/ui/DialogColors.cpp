@@ -240,7 +240,7 @@ void DialogColors::updateColors() {
 	QString lineNoFg = ui.editLineNumbers->text();
 	QString cursorFg = ui.editCursor->text();
 
-    for(DocumentWidget *document : MainWindow::allDocuments()) {
+    for(DocumentWidget *document : DocumentWidget::allDocuments()) {
         document->SetColors(
             textFg,
             textBg,

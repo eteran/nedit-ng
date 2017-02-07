@@ -1121,7 +1121,7 @@ int MacroWindowCloseActionsEx(DocumentWidget *document) {
        if macros executing in other windows have it as focus.  If so, set
        their focus back to the window from which they were originally run */
     if(!cmdData) {
-        for(DocumentWidget *w : MainWindow::allDocuments()) {
+        for(DocumentWidget *w : DocumentWidget::allDocuments()) {
             auto mcd = static_cast<macroCmdInfoEx *>(w->macroCmdData_);
             if (w == MacroRunWindowEx() && MacroFocusWindowEx() == document) {
                 SetMacroFocusWindowEx(MacroRunWindowEx());
@@ -1215,7 +1215,7 @@ static void finishMacroCmdExecutionEx(DocumentWidget *window) {
 */
 void SafeGC() {
 
-    for(DocumentWidget *document : MainWindow::allDocuments()) {
+    for(DocumentWidget *document : DocumentWidget::allDocuments()) {
         if (document->macroCmdData_ != nullptr || InSmartIndentMacrosEx(document)) {
 			return;
 		}
@@ -1385,7 +1385,7 @@ static void lastActionHook(Widget w, XtPointer clientData, String actionName, XE
 	char *actionString;
 
 	// Find the curr to which this action belongs 
-    QList<DocumentWidget *> documents = MainWindow::allDocuments();
+    QList<DocumentWidget *> documents = DocumentWidget::allDocuments();
     auto curr = documents.begin();
     for (; curr != documents.end(); ++curr) {
 
@@ -1694,7 +1694,7 @@ static int focusWindowMS(DocumentWidget *window, DataValue *argList, int nArgs, 
 		return wrongNArgsErr(errMsg);
 	}
 
-    QList<DocumentWidget *> documents = MainWindow::allDocuments();
+    QList<DocumentWidget *> documents = DocumentWidget::allDocuments();
     QList<DocumentWidget *>::iterator w;
 
     if (!readStringArgEx(argList[0], &string, errMsg)) {
@@ -1760,9 +1760,7 @@ static int focusWindowMS(DocumentWidget *window, DataValue *argList, int nArgs, 
 
 	// Return the name of the window 
     result->tag     = STRING_TAG;
-    result->val.str = AllocNStringEx(document->path_.size() + document->filename_.size() + 1);
-
-    sprintf(result->val.str.rep, "%s%s", document->path_.toLatin1().data(), document->filename_.toLatin1().data());
+    result->val.str = AllocNStringCpyEx(QString(QLatin1String("%1%2")).arg(document->path_, document->filename_));
 	return true;
 }
 
@@ -1953,7 +1951,6 @@ static int replaceSelectionMS(DocumentWidget *window, DataValue *argList, int nA
 ** part of screen if "any" argument is given
 */
 static int getSelectionMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
-	std::string selText;
 
 	/* Read argument list to check for "any" keyword, and get the appropriate
 	   selection */
@@ -1972,15 +1969,19 @@ static int getSelectionMS(DocumentWidget *window, DataValue *argList, int nArgs,
 			text = QLatin1String("");
 		}
 		
-		selText = text.toStdString();
+
+        // Return the text as an allocated string
+        result->tag = STRING_TAG;
+        result->val.str = AllocNStringCpyEx(text);
 	} else {
-		selText = window->buffer_->BufGetSelectionTextEx();
+        std::string selText = window->buffer_->BufGetSelectionTextEx();
 		window->buffer_->BufUnsubstituteNullCharsEx(selText);
+
+        // Return the text as an allocated string
+        result->tag = STRING_TAG;
+        result->val.str = AllocNStringCpyEx(QString::fromStdString(selText));
 	}
 
-	// Return the text as an allocated string 
-	result->tag = STRING_TAG;
-	AllocNStringCpy(&result->val.str, selText.c_str());
 	return true;
 }
 
@@ -2855,7 +2856,7 @@ static int stringDialogMS(DocumentWidget *window, DataValue *argList, int nArgs,
 	ReturnGlobals[STRING_DIALOG_BUTTON]->value.val.n = prompt->result();
 	
 	result->tag = STRING_TAG;
-	AllocNStringCpy(&result->val.str, prompt->text().toLatin1().data());
+	result->val.str = AllocNStringCpyEx(prompt->text());
     ModifyReturnedValueEx(cmdData->context, *result);
 
     ResumeMacroExecutionEx(window);
@@ -3144,7 +3145,7 @@ static int replaceAllMS(DocumentWidget *document, DataValue *argList, int nArgs,
 */
 static int filenameDialogMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	char stringStorage[5][TYPE_INT_STR_SIZE(int)];
-	char filename[MAXPATHLEN + 1];
+    QString filename;
 	char *title       = (String) "Choose Filename";
 	char *mode        = (String) "exist";
 	char *defaultPath = (String) "";
@@ -3215,7 +3216,7 @@ static int filenameDialogMS(DocumentWidget *window, DataValue *argList, int nArg
 		// TODO(eteran): default path doesn't seem to be able to be specified easily
         QString existingFile = QFileDialog::getOpenFileName(/*this*/ nullptr, QString::fromLatin1(title), defaultPathEx, defaultFilter, nullptr);
 		if(!existingFile.isNull()) {
-			strcpy(filename, existingFile.toLatin1().data());
+            filename = existingFile;
 			gfnResult = true;
 		} else {
 			gfnResult = false;
@@ -3225,7 +3226,7 @@ static int filenameDialogMS(DocumentWidget *window, DataValue *argList, int nArg
 		// TODO(eteran): default path doesn't seem to be able to be specified easily
         QString newFile = QFileDialog::getSaveFileName(/*this*/ nullptr, QString::fromLatin1(title), defaultPathEx, defaultFilter, nullptr);
 		if(!newFile.isNull()) {
-			strcpy(filename, newFile.toLatin1().data());
+            filename  = newFile;
 			gfnResult = true;
 		} else {
 			gfnResult = false;
@@ -3236,9 +3237,7 @@ static int filenameDialogMS(DocumentWidget *window, DataValue *argList, int nArg
 	result->tag = STRING_TAG;
 	if (gfnResult == true) {
 		//  Got a string, copy it to the result  
-		if (!AllocNStringNCpy(&result->val.str, filename, MAXPATHLEN)) {
-			M_FAILURE("failed to allocate return value: %s");
-		}
+        result->val.str = AllocNStringCpyEx(filename);
 	} else {
 		// User cancelled.  Return "" 
 		result->val.str.rep = PERM_ALLOC_STR("");
@@ -3325,7 +3324,7 @@ static int listDialogMS(DocumentWidget *window, DataValue *argList, int nArgs, D
 	ReturnGlobals[STRING_DIALOG_BUTTON]->value.val.n = prompt->result();
 	
 	result->tag = STRING_TAG;
-	AllocNStringCpy(&result->val.str, prompt->text().toLatin1().data());
+	result->val.str = AllocNStringCpyEx(prompt->text());
     ModifyReturnedValueEx(cmdData->context, *result);
 	delete prompt;
 	
@@ -4088,7 +4087,7 @@ static int serverNameMV(DocumentWidget *window, DataValue *argList, int nArgs, D
 	(void)errMsg;
 
 	result->tag = STRING_TAG;
-    AllocNStringCpy(&result->val.str, GetPrefServerName().toLatin1().data());
+    result->val.str = AllocNStringCpyEx(GetPrefServerName());
 	return true;
 }
 
@@ -4682,8 +4681,8 @@ static int rangesetInfoMS(DocumentWidget *window, DataValue *argList, int nArgs,
 		M_FAILURE("Failed to insert array element \"color\" in %s");
 
 	element.tag = STRING_TAG;
-    if (!AllocNStringCpy(&element.val.str, name.toLatin1().data()))
-		M_FAILURE("Failed to allocate array value \"name\" in %s");
+    element.val.str = AllocNStringCpyEx(name);
+
 	if (!ArrayInsert(result, PERM_ALLOC_STR("name"), &element)) {
 		M_FAILURE("Failed to insert array element \"name\" in %s");
 	}
@@ -4973,8 +4972,6 @@ static int rangesetSetModeMS(DocumentWidget *window, DataValue *argList, int nAr
 */
 static int fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWidget *document, const char *styleName, bool preallocatedStyleName, bool includeName, int patCode, int bufferPos) {
     DataValue DV;
-    char colorValue[20];
-    QColor color;
 
     // initialize array
     result->tag = ARRAY_TAG;
@@ -4998,7 +4995,7 @@ static int fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWid
     }
 
     // insert color name
-    AllocNStringCpy(&DV.val.str, ColorOfNamedStyleEx(styleName).toLatin1().data());
+    DV.val.str = AllocNStringCpyEx(ColorOfNamedStyleEx(styleName));
     M_STR_ALLOC_ASSERT(DV);
     if (!ArrayInsert(result, PERM_ALLOC_STR("color"), &DV)) {
         M_ARRAY_INSERT_FAILURE();
@@ -5009,8 +5006,8 @@ static int fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWid
        in other words, only if we have a pattern code) */
     if (patCode) {
         QColor color = HighlightColorValueOfCodeEx(document, patCode);
-        sprintf(colorValue, "#%02x%02x%02x", color.red(), color.green(), color.blue());
-        AllocNStringCpy(&DV.val.str, colorValue);
+        DV.val.str = AllocNStringCpyEx(color.name());
+
         M_STR_ALLOC_ASSERT(DV);
         if (!ArrayInsert(result, PERM_ALLOC_STR("rgb"), &DV)) {
             M_ARRAY_INSERT_FAILURE();
@@ -5018,7 +5015,7 @@ static int fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWid
     }
 
     // Prepare array element for background color name
-    AllocNStringCpy(&DV.val.str, BgColorOfNamedStyleEx(styleName).toLatin1().data());
+    DV.val.str = AllocNStringCpyEx(BgColorOfNamedStyleEx(styleName));
     M_STR_ALLOC_ASSERT(DV);
     if (!ArrayInsert(result, PERM_ALLOC_STR("background"), &DV)) {
         M_ARRAY_INSERT_FAILURE();
@@ -5029,8 +5026,7 @@ static int fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWid
        in other words, only if we have a pattern code) */
     if (patCode) {
         QColor color = GetHighlightBGColorOfCodeEx(document, patCode);
-        sprintf(colorValue, "#%02x%02x%02x", color.red(), color.green(), color.blue());
-        AllocNStringCpy(&DV.val.str, colorValue);
+        DV.val.str = AllocNStringCpyEx(color.name());
         M_STR_ALLOC_ASSERT(DV);
         if (!ArrayInsert(result, PERM_ALLOC_STR("back_rgb"), &DV)) {
             M_ARRAY_INSERT_FAILURE();

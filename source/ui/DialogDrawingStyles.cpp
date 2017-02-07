@@ -4,6 +4,7 @@
 #include "HighlightStyle.h"
 #include "MainWindow.h"
 #include "SignalBlocker.h"
+#include "DocumentWidget.h"
 #include "X11Colors.h"
 #include <QMessageBox>
 #include <QRegExp>
@@ -440,7 +441,7 @@ bool DialogDrawingStyles::updateHSList() {
 	updateHighlightStyleMenu();
 
 	// Redisplay highlighted windows which use changed style(s) 
-    for(DocumentWidget *document : MainWindow::allDocuments()) {
+    for(DocumentWidget *document : DocumentWidget::allDocuments()) {
         UpdateHighlightStylesEx(document);
 	}
 

@@ -777,7 +777,7 @@ bool DialogSyntaxPatterns::updatePatternSet() {
 	}
 
 	// Find windows that are currently using this pattern set and re-do the highlighting
-    for(DocumentWidget *document : MainWindow::allDocuments()) {
+    for(DocumentWidget *document : DocumentWidget::allDocuments()) {
 		if (!patSet->patterns.isEmpty()) {
             if (document->languageMode_ != PLAIN_LANGUAGE_MODE && (LanguageModeName(document->languageMode_) == patSet->languageMode)) {
 				/*  The user worked on the current document's language mode, so
@@ -1030,7 +1030,7 @@ bool DialogSyntaxPatterns::TestHighlightPatterns(PatternSet *patSet) {
 
 	/* Compile the patterns (passing a random window as a source for fonts, and
 	   parent for dialogs, since we really don't care what fonts are used) */
-    for(DocumentWidget *document : MainWindow::allDocuments()) {
+    for(DocumentWidget *document : DocumentWidget::allDocuments()) {
 
         if(WindowHighlightData *highlightData = createHighlightDataEx(document, patSet)) {
             freeHighlightData(highlightData);

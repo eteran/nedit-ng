@@ -87,7 +87,7 @@ static PatternSet *highlightError(const char *stringStart, const char *stoppedAt
 static PatternSet *readPatternSet(const char **inPtr, int convertOld);
 static std::string createPatternsString(PatternSet *patSet, const char *indentStr);
 static void convertOldPatternSet(PatternSet *patSet);
-static QString convertPatternExprEx(const QString &patternRE, const char *patSetName, const char *patName, bool isSubsExpr);
+static QString convertPatternExprEx(const QString &patternRE, const QString &patSetName, const QString &patName, bool isSubsExpr);
 
 // Pattern sources loaded from the .nedit file or set by the user 
 int NPatternSets = 0;
@@ -315,9 +315,9 @@ QString WriteHighlightStringEx(void) {
 static void convertOldPatternSet(PatternSet *patSet) {
 
 	for(HighlightPattern &pattern : patSet->patterns) {
-		pattern.startRE = convertPatternExprEx(pattern.startRE, patSet->languageMode.toLatin1().data(), pattern.name.toLatin1().data(), pattern.flags & COLOR_ONLY);
-		pattern.endRE   = convertPatternExprEx(pattern.endRE,   patSet->languageMode.toLatin1().data(), pattern.name.toLatin1().data(), pattern.flags & COLOR_ONLY);
-		pattern.errorRE = convertPatternExprEx(pattern.errorRE, patSet->languageMode.toLatin1().data(), pattern.name.toLatin1().data(), pattern.flags & COLOR_ONLY);
+        pattern.startRE = convertPatternExprEx(pattern.startRE, patSet->languageMode, pattern.name, pattern.flags & COLOR_ONLY);
+        pattern.endRE   = convertPatternExprEx(pattern.endRE,   patSet->languageMode, pattern.name, pattern.flags & COLOR_ONLY);
+        pattern.errorRE = convertPatternExprEx(pattern.errorRE, patSet->languageMode, pattern.name, pattern.flags & COLOR_ONLY);
 	}
 }
 
@@ -328,7 +328,7 @@ static void convertOldPatternSet(PatternSet *patSet) {
 ** isSubsExpr.  Error messages are directed to stderr, and include the
 ** pattern set name and pattern name as passed in patSetName and patName.
 */
-static QString convertPatternExprEx(const QString &patternRE, const char *patSetName, const char *patName, bool isSubsExpr) {
+static QString convertPatternExprEx(const QString &patternRE, const QString &patSetName, const QString &patName, bool isSubsExpr) {
 
 	if (patternRE.isNull()) {
 		return QString();
@@ -348,7 +348,7 @@ static QString convertPatternExprEx(const QString &patternRE, const char *patSet
             delete [] newRE;
 			return s;
 		} catch(const regex_error &e) {
-			fprintf(stderr, "NEdit error converting old format regular expression in pattern set %s, pattern %s: %s\n", patSetName, patName, e.what());
+            fprintf(stderr, "NEdit error converting old format regular expression in pattern set %s, pattern %s: %s\n", patSetName.toLatin1().data(), patName.toLatin1().data(), e.what());
 		}
 	}
 	

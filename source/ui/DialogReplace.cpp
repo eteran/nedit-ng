@@ -672,7 +672,7 @@ void DialogReplace::collectWritableWindows() {
 
     QVector<DocumentWidget *> windows;
 
-    for(DocumentWidget *document : MainWindow::allDocuments()) {
+    for(DocumentWidget *document : DocumentWidget::allDocuments()) {
         if (!document->lockReasons_.isAnyLocked()) {
             windows.push_back(document);
         }

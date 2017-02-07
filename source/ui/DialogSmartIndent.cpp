@@ -249,7 +249,7 @@ bool DialogSmartIndent::updateSmartIndentData() {
 
 	/* Find windows that are currently using this indent specification and
 	   re-do the smart indent macros */
-    for(DocumentWidget *document: MainWindow::allDocuments()) {
+    for(DocumentWidget *document: DocumentWidget::allDocuments()) {
 
         QString lmName = LanguageModeName(document->languageMode_);
 		if(!lmName.isNull()) {

@@ -314,7 +314,7 @@ void DoFindDlogEx(MainWindow *window, DocumentWidget *document, SearchDirection 
 ** Count no. of windows
 */
 static int countWindows() {
-    return MainWindow::allDocuments().size();
+    return DocumentWidget::allDocuments().size();
 }
 
 /*
@@ -326,7 +326,7 @@ int countWritableWindows() {
 	int nBefore = countWindows();
     int nWritable = 0;
 
-    QList<DocumentWidget *> documents = MainWindow::allDocuments();
+    QList<DocumentWidget *> documents = DocumentWidget::allDocuments();
     auto first = documents.begin();
     auto last = documents.end();
 
@@ -343,7 +343,7 @@ int countWritableWindows() {
 			// The user has destroyed a file; start counting all over again 
 			nBefore = nAfter;
 
-            documents = MainWindow::allDocuments();
+            documents = DocumentWidget::allDocuments();
             first = documents.begin();
             last = documents.end();
             it = first;
