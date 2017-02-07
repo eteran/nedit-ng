@@ -477,8 +477,8 @@ bool DialogLanguageModes::updateLMList(bool silent) {
                 QString oldName = parts[0];
                 QString newName = parts[1];
 
-                RenameHighlightPattern(oldName.toLatin1().data(), newName.toLatin1().data());
-                RenameSmartIndentMacros(oldName.toLatin1().data(), newName.toLatin1().data());
+                RenameHighlightPattern(oldName, newName);
+                RenameSmartIndentMacros(oldName, newName);
                 itemFromIndex(i)->name = newName;
             }
         }
@@ -654,7 +654,7 @@ void DialogLanguageModes::on_buttonDelete_clicked() {
 	}
 
 	// don't allow deletion if data will be lost 
-	if (LMHasSmartIndentMacros(itemFromIndex(itemIndex)->name.toLatin1().data())) {
+    if (LMHasSmartIndentMacros(itemFromIndex(itemIndex)->name)) {
 		QMessageBox::warning(this, tr("Smart Indent Macros exist"), tr("This language mode has smart indent macros defined.  Please delete the macros first, in Preferences -> Default Settings -> Auto Indent -> Program Smart Indent, before proceeding here."));
 		return; // False;
 	}

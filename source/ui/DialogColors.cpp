@@ -242,14 +242,14 @@ void DialogColors::updateColors() {
 
     for(DocumentWidget *document : MainWindow::allDocuments()) {
         document->SetColors(
-			textFg.toLatin1().data(),
-			textBg.toLatin1().data(),
-			selectFg.toLatin1().data(),
-			selectBg.toLatin1().data(),
-			hiliteFg.toLatin1().data(),
-			hiliteBg.toLatin1().data(),
-			lineNoFg.toLatin1().data(), 
-			cursorFg.toLatin1().data());
+            textFg,
+            textBg,
+            selectFg,
+            selectBg,
+            hiliteFg,
+            hiliteBg,
+            lineNoFg,
+            cursorFg);
 	}
 
     SetPrefColorName(TEXT_FG_COLOR, textFg);

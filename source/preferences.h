@@ -91,7 +91,7 @@ QString LanguageModeName(int mode);
 char *ReadSymbolicField(const char **inPtr);
 QString GetPrefShell();
 QString GetPrefTitleFormat();
-int FindLanguageMode(const char *languageName);
+int FindLanguageMode(const QString &languageName);
 int GetPrefAlwaysCheckRelTagsSpecs();
 int GetPrefAppendLF();
 IndentStyle GetPrefAutoIndent(int langMode);

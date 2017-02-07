@@ -236,7 +236,7 @@ void EndSmartIndentEx(DocumentWidget *window) {
 /*
 ** Returns true if there are smart indent macros for a named language
 */
-int SmartIndentMacrosAvailable(char *languageModeName) {
+int SmartIndentMacrosAvailable(const QString &languageModeName) {
 	return findIndentSpec(languageModeName) != nullptr;
 }
 
@@ -507,14 +507,14 @@ static bool isDefaultIndentSpec(SmartIndent *indentSpec) {
 	return false;
 }
 
-SmartIndent *findIndentSpec(const char *modeName) {
+SmartIndent *findIndentSpec(const QString &modeName) {
 
-	if(!modeName) {
+    if(modeName.isNull()) {
 		return nullptr;
 	}
 
 	for (int i = 0; i < NSmartIndentSpecs; i++) {
-        if (SmartIndentSpecs[i]->lmName == QString::fromLatin1(modeName)) {
+        if (SmartIndentSpecs[i]->lmName == modeName) {
 			return SmartIndentSpecs[i];
 		}
 	}
@@ -525,13 +525,13 @@ SmartIndent *findIndentSpec(const char *modeName) {
 ** Returns True if there are smart indent macros, or potential macros
 ** not yet committed in the smart indent dialog for a language mode,
 */
-int LMHasSmartIndentMacros(const char *languageMode) {
+int LMHasSmartIndentMacros(const QString &languageMode) {
 	if (findIndentSpec(languageMode) != nullptr) {
 		return true;
 	}
 	
 	
-    return SmartIndentDlg != nullptr && SmartIndentDlg->hasSmartIndentMacros(QString::fromLatin1(languageMode));
+    return SmartIndentDlg != nullptr && SmartIndentDlg->hasSmartIndentMacros(languageMode);
 }
 
 /*
@@ -539,16 +539,16 @@ int LMHasSmartIndentMacros(const char *languageMode) {
 ** "oldName" to "newName" in both the stored macro sets, and the pattern set
 ** currently being edited in the dialog.
 */
-void RenameSmartIndentMacros(const char *oldName, const char *newName) {
+void RenameSmartIndentMacros(const QString &oldName, const QString &newName) {
 
 	for (int i = 0; i < NSmartIndentSpecs; i++) {
-        if (SmartIndentSpecs[i]->lmName == QString::fromLatin1(oldName)) {
-            SmartIndentSpecs[i]->lmName = QString::fromLatin1(newName);
+        if (SmartIndentSpecs[i]->lmName == oldName) {
+            SmartIndentSpecs[i]->lmName = newName;
 		}
 	}
 	if (SmartIndentDlg) {
-        if(SmartIndentDlg->languageMode_ == QString::fromLatin1(oldName)) {
-            SmartIndentDlg->setLanguageMode(QString::fromLatin1(newName));
+        if(SmartIndentDlg->languageMode_ == oldName) {
+            SmartIndentDlg->setLanguageMode(newName);
 		}
 	}
 }

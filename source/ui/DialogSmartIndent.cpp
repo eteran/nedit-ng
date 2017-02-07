@@ -26,7 +26,7 @@ DialogSmartIndent::DialogSmartIndent(DocumentWidget *document, QWidget *parent, 
 	setLanguageMode(languageMode);
 
 	// Fill in the dialog information for the selected language mode 
-	setSmartIndentDialogData(findIndentSpec(languageMode_.toLatin1().data()));
+    setSmartIndentDialogData(findIndentSpec(languageMode_));
 }
 
 //------------------------------------------------------------------------------
@@ -65,7 +65,7 @@ void DialogSmartIndent::setLanguageMode(const QString &s) {
 //------------------------------------------------------------------------------
 void DialogSmartIndent::on_comboLanguageMode_currentIndexChanged(const QString &text) {
 	languageMode_ = text;
-	setSmartIndentDialogData(findIndentSpec(text.toLatin1().data()));
+    setSmartIndentDialogData(findIndentSpec(text));
 }
 
 //------------------------------------------------------------------------------

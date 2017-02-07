@@ -475,19 +475,17 @@ bool LMHasHighlightPatterns(const QString &languageMode) {
 ** "newName" in both the stored patterns, and the pattern set currently being
 ** edited in the dialog.
 */
-void RenameHighlightPattern(view::string_view oldName, view::string_view newName) {
+void RenameHighlightPattern(const QString &oldName, const QString &newName) {
 
 	for (int i = 0; i < NPatternSets; i++) {
 	
-		if (PatternSets[i]->languageMode.toStdString() == oldName) {
-			PatternSets[i]->languageMode = QString::fromStdString(newName.to_string());
+        if (PatternSets[i]->languageMode == oldName) {
+            PatternSets[i]->languageMode = newName;
 		}
 	}
 	
 	if(SyntaxPatterns) {
-		SyntaxPatterns->RenameHighlightPattern(
-			QString::fromStdString(oldName.to_string()), 
-			QString::fromStdString(newName.to_string()));
+        SyntaxPatterns->RenameHighlightPattern(oldName, newName);
 	}
 }
 

@@ -912,11 +912,11 @@ void MarkPrefsChanged() {
 ** Lookup a language mode by name, returning the index of the language
 ** mode or PLAIN_LANGUAGE_MODE if the name is not found
 */
-int FindLanguageMode(const char *languageName) {
+int FindLanguageMode(const QString &languageName) {
 
 	// Compare each language mode to the one we were presented 
 	for (int i = 0; i < NLanguageModes; i++) {
-        if (LanguageModes[i]->name == QString::fromLatin1(languageName)) {
+        if (LanguageModes[i]->name == languageName) {
 			return i;
 		}
 	}

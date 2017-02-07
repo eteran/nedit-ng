@@ -2893,8 +2893,12 @@ static int calltipMS(DocumentWidget *window, DataValue *argList, int nArgs, Data
 	char *tipText;
 	char *txtArg;
 	Boolean anchored = False, lookup = True;
-	int mode = -1, i;
-	int anchorPos, hAlign = TIP_LEFT, vAlign = TIP_BELOW, alignMode = TIP_SLOPPY;
+    int mode = -1;
+    int i;
+    int anchorPos;
+    int hAlign = TIP_LEFT;
+    int vAlign = TIP_BELOW;
+    int alignMode = TIP_SLOPPY;
 	int tipTextLen;
 	int txtArgLen;
 
@@ -2949,14 +2953,15 @@ static int calltipMS(DocumentWidget *window, DataValue *argList, int nArgs, Data
 			alignMode = TIP_STRICT;
 			break;
 		case 't':
-			if (!strcmp(txtArg, "tipText"))
+            if (!strcmp(txtArg, "tipText")) {
 				mode = -1;
-			else if (!strcmp(txtArg, "tipKey"))
+            } else if (!strcmp(txtArg, "tipKey")) {
 				mode = TIP;
-			else if (!strcmp(txtArg, "tagKey"))
+            } else if (!strcmp(txtArg, "tagKey")) {
 				mode = TIP_FROM_TAG;
-			else
+            } else {
 				goto bad_arg;
+            }
 			break;
 		default:
 			goto bad_arg;
@@ -2964,8 +2969,9 @@ static int calltipMS(DocumentWidget *window, DataValue *argList, int nArgs, Data
 	}
 
 	result->tag = INT_TAG;
-	if (mode < 0)
-		lookup = False;
+    if (mode < 0) {
+        lookup = false;
+    }
 	// Look up (maybe) a calltip and display it 
     result->val.n = ShowTipStringEx(window, tipText, anchored, anchorPos, lookup, mode, hAlign, vAlign, alignMode);
 

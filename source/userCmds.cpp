@@ -611,7 +611,7 @@ static void parseMenuItemName(char *menuItemName, userMenuInfo *info) {
 			   "@" is unknown (i.e. not defined) */
 			c = *endPtr;
 			*endPtr = '\0';
-			languageMode = FindLanguageMode(atPtr + 1);
+            languageMode = FindLanguageMode(QString::fromLatin1(atPtr + 1));
 			if (languageMode == PLAIN_LANGUAGE_MODE) {
 				langModes[nbrLM] = UNKNOWN_LANGUAGE_MODE;
 			} else {
@@ -716,7 +716,7 @@ static char *stripLanguageModeEx(const QString &menuItemName) {
 	if(const char *firstAtPtr = strchr(latin1.data(), '@')) {
 		return copySubstring(latin1.data(), firstAtPtr - latin1.data());
 	} else {
-		return XtNewStringEx(latin1.data());
+        return XtNewStringEx(menuItemName);
 	}
 }
 

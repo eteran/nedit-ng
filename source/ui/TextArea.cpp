@@ -4338,7 +4338,7 @@ void TextArea::TextDSetupBGClasses(const QString &s, QVector<QColor> *pp_bgClass
 			// side effects of this.
 			const uint8_t nextClass = class_no++;
 
-            QColor pix = AllocColor(color.toLatin1().data());
+            QColor pix = AllocColor(color);
             bgClassPixel[nextClass] = pix;
 
 			QStringList rangeList = ranges.split(QLatin1Char(','), QString::SkipEmptyParts);

@@ -916,17 +916,17 @@ int ShowTipStringEx(DocumentWidget *window, char *text, bool anchored, int pos, 
         return 0;
 
     // So we don't have to carry all of the calltip alignment info around
-    globAnchored = anchored;
-    globPos = pos;
-    globHAlign = hAlign;
-    globVAlign = vAlign;
+    globAnchored  = anchored;
+    globPos       = pos;
+    globHAlign    = hAlign;
+    globVAlign    = vAlign;
     globAlignMode = alignMode;
 
     // If this isn't a lookup request, just display it.
     if (!lookup)
         return tagsShowCalltipEx(window->toWindow()->lastFocus_, text);
     else
-        return window->findDef(window->toWindow()->lastFocus_, text, search_type);
+        return window->findDef(window->toWindow()->lastFocus_, text, static_cast<Mode>(search_type));
 }
 
 /*
@@ -1015,11 +1015,11 @@ static int fakeRegExSearchEx(view::string_view in_buffer, const char *searchStri
 	// return the result 
 	if (found) {
 		// *startPos and *endPos are set in SearchString
-		return TRUE;
+        return true;
 	} else {
 		// startPos, endPos left untouched by SearchString if search failed. 
 		QApplication::beep();
-		return FALSE;
+        return false;
 	}
 }
 
@@ -1319,7 +1319,7 @@ void editTaggedLocationEx(TextArea *area, int i) {
                 0,
                 QString(),
                 false,
-                nullptr,
+                QString(),
                 GetPrefOpenInTab(),
                 false);
 
@@ -1742,7 +1742,7 @@ static int loadTipsFile(const std::string &tipsFile, int index, int recLevel) {
 			/* Switch to the new language mode if it's valid, else ignore
 			    it. */
 			oldLangMode = langMode;
-			langMode = FindLanguageMode(header);
+            langMode = FindLanguageMode(QString::fromLatin1(header));
 			if (langMode == PLAIN_LANGUAGE_MODE && strcmp(header, "Plain")) {
 				fprintf(stderr, "nedit: Error reading calltips file:\n\t%s\n"
 				                "Unknown language mode: \"%s\"\n",

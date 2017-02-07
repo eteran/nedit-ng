@@ -245,5 +245,6 @@ void SetMacroFocusWindowEx(DocumentWidget *window);
 
 /* function used for implicit conversion from string to number */
 bool StringToNum(const char *string, int *number);
+bool StringToNum(const QString &string, int *number);
 
 #endif

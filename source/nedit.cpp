@@ -91,7 +91,7 @@ int main(int argc, char *argv[]) {
 	int group = 0;
 	int isTabbed;
     QString geometry;
-	char *langMode = nullptr;
+    QString langMode;
 	char filename[MAXPATHLEN];
 	char pathname[MAXPATHLEN];	
     QPointer<DocumentWidget> lastFileEx = nullptr;
@@ -228,7 +228,7 @@ int main(int argc, char *argv[]) {
             geometry = QString::fromLatin1(argv[i]);
 		} else if (opts && !strcmp(argv[i], "-lm")) {
 			nextArg(argc, argv, &i);
-			langMode = argv[i];
+            langMode = QString::fromLatin1(argv[i]);
 		} else if (opts && !strcmp(argv[i], "-import")) {
 			nextArg(argc, argv, &i); // already processed, skip 
 		} else if (opts && (!strcmp(argv[i], "-V") || !strcmp(argv[i], "-version"))) {

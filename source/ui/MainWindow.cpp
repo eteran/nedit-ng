@@ -530,7 +530,7 @@ void MainWindow::action_New(const QString &mode) {
     }
 
 
-    EditNewFileEx(openInTab ? this : nullptr, QString(), false, nullptr, path);
+    EditNewFileEx(openInTab ? this : nullptr, QString(), false, QString(), path);
     CheckCloseDimEx();
 }
 
@@ -1619,7 +1619,7 @@ void MainWindow::on_tabWidget_customContextMenuRequested(int index, const QPoint
         if(DocumentWidget *document = documentAt(index)) {
 
             if(selected == newTab) {
-                MainWindow::EditNewFileEx(this, QString(), false, nullptr, document->path_);
+                MainWindow::EditNewFileEx(this, QString(), false, QString(), document->path_);
             } else if(selected == closeTab) {
                 document->actionClose(QString());
             } else if(selected == detachTab) {
@@ -1707,7 +1707,16 @@ void MainWindow::fileCB(DocumentWidget *window, const std::string &text) {
             if (ParseFilename(globbuf.gl_pathv[i], filename, pathname) != 0) {
                 QApplication::beep();
             } else {
-                DocumentWidget::EditExistingFileEx(GetPrefOpenInTab() ? window : nullptr, QString::fromLatin1(filename), QString::fromLatin1(pathname), 0, QString(), false, nullptr, GetPrefOpenInTab(), false);
+                DocumentWidget::EditExistingFileEx(
+                            GetPrefOpenInTab() ? window : nullptr,
+                            QString::fromLatin1(filename),
+                            QString::fromLatin1(pathname),
+                            0,
+                            QString(),
+                            false,
+                            QString(),
+                            GetPrefOpenInTab(),
+                            false);
             }
         }
         globfree(&globbuf);
@@ -3503,7 +3512,7 @@ void MainWindow::action_Last_Document() {
     // TODO(eteran): implement!
 }
 
-DocumentWidget *MainWindow::EditNewFileEx(MainWindow *inWindow, QString geometry, bool iconic, const char *languageMode, const QString &defaultPath) {
+DocumentWidget *MainWindow::EditNewFileEx(MainWindow *inWindow, QString geometry, bool iconic, const QString &languageMode, const QString &defaultPath) {
 
     DocumentWidget *document;
 
@@ -3547,7 +3556,7 @@ DocumentWidget *MainWindow::EditNewFileEx(MainWindow *inWindow, QString geometry
     document->RefreshTabState();
 
 
-    if(!languageMode) {
+    if(languageMode.isNull()) {
         document->DetermineLanguageMode(true);
     } else {
         document->SetLanguageMode(FindLanguageMode(languageMode), true);
@@ -3796,7 +3805,7 @@ void MainWindow::on_action_Revert_to_Saved_triggered() {
 //------------------------------------------------------------------------------
 void MainWindow::on_action_New_Window_triggered() {
     if(auto document = currentDocument()) {
-        MainWindow::EditNewFileEx(GetPrefOpenInTab() ? nullptr : this, QString(), false, nullptr, document->path_);
+        MainWindow::EditNewFileEx(GetPrefOpenInTab() ? nullptr : this, QString(), false, QString(), document->path_);
         CheckCloseDimEx();
     }
 }

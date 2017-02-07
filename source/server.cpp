@@ -307,7 +307,7 @@ static void processServerCommandString(char *string) {
 		});
 
         if(it == documents.end()) {
-            MainWindow::EditNewFileEx(findWindowOnDesktopEx(tabbed, currentDesktop), QString(), false, nullptr, QString());
+            MainWindow::EditNewFileEx(findWindowOnDesktopEx(tabbed, currentDesktop), QString(), false, QString(), QString());
             MainWindow::CheckCloseDimEx();
 		} else {
             (*it)->RaiseDocument();
@@ -369,7 +369,12 @@ static void processServerCommandString(char *string) {
 		
 			if (*doCommand == '\0') {
                 if(it == documents.end()) {
-                    MainWindow::EditNewFileEx(findWindowOnDesktopEx(tabbed, currentDesktop), QString(), iconicFlag, lmLen == 0 ? nullptr : langMode, QString());
+                    MainWindow::EditNewFileEx(
+                                findWindowOnDesktopEx(tabbed, currentDesktop),
+                                QString(),
+                                iconicFlag,
+                                lmLen == 0 ? QString() : QString::fromLatin1(langMode),
+                                QString());
 				} else {
 					if (iconicFlag) {
 						(*it)->RaiseDocument();
@@ -426,7 +431,7 @@ static void processServerCommandString(char *string) {
                         editFlags,
                         geometry ? QString::fromLatin1(geometry) : QString(),
                         iconicFlag,
-                        lmLen  ==  0 ? nullptr            : langMode,
+                        lmLen  ==  0 ? QString()          : QString::fromLatin1(langMode),
                         tabbed == -1 ? GetPrefOpenInTab() : tabbed,
                         true);
 

@@ -50,7 +50,6 @@
 #include "file.h"
 #include "highlight.h"
 #include "selection.h"
-#include "util/MotifHelper.h"
 #include <memory>
 
 

@@ -17,6 +17,7 @@
 #include "util/FileFormats.h"
 #include "MenuItem.h"
 #include "IndentStyle.h"
+#include "tags.h"
 
 // TODO(eteran): for now...
 using Atom = unsigned long;
@@ -64,8 +65,8 @@ public Q_SLOTS:
     void GotoMatchingCharacter(TextArea *area);
     void SelectToMatchingCharacter(TextArea *area);
     void FindDefCalltip(TextArea *area, const char *arg);
-    void findDefinitionHelper(TextArea *area, const char *arg, int search_type);
-    int findDef(TextArea *area, const char *value, int search_type);
+    void findDefinitionHelper(TextArea *area, const char *arg, Mode search_type);
+    int findDef(TextArea *area, const char *value, Mode search_type);
     void FindDefinition(TextArea *area, const char *arg);
     void execAP(TextArea *area, const QString &command);
     void ExecShellCommandEx(TextArea *area, const QString &command, bool fromMacro);
@@ -77,7 +78,7 @@ public Q_SLOTS:
     void moveDocument(MainWindow *fromWindow);
     void ShowStatsLine(bool state);
     void gotoAP(TextArea *area, QStringList args);
-    void SetColors(const char *textFg, const char *textBg, const char *selectFg, const char *selectBg, const char *hiliteFg, const char *hiliteBg, const char *lineNoFg, const char *cursorFg);
+    void SetColors(const QString &textFg, const QString &textBg, const QString &selectFg, const QString &selectBg, const QString &hiliteFg, const QString &hiliteBg, const QString &lineNoFg, const QString &cursorFg);
 
 public:
 	void movedCallback(TextArea *area);
@@ -182,7 +183,7 @@ public:
     void SetAutoScroll(int margin);
 
 public:
-    static DocumentWidget *EditExistingFileEx(DocumentWidget *inWindow, const QString &name, const QString &path, int flags, const QString &geometry, int iconic, const char *languageMode, bool tabbed, bool bgOpen);
+    static DocumentWidget *EditExistingFileEx(DocumentWidget *inWindow, const QString &name, const QString &path, int flags, const QString &geometry, int iconic, const QString &languageMode, bool tabbed, bool bgOpen);
 
 private:
 	// TODO(eteran): are these dialog's per window or per text document?

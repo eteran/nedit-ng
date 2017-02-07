@@ -73,7 +73,7 @@ struct shellCmdInfoEx {
     TextArea *area;
     int leftPos;
     int rightPos;
-    QTimer *bannerTimeoutID;
+    QTimer *bannerTimer;
     bool bannerIsUp;
     bool fromMacro;
 };
@@ -279,7 +279,7 @@ UndoTypes determineUndoType(int nInserted, int nDeleted) {
 // TODO(eteran): inWindow is a DocumentWidget, not a MainWindow...
 //               so either rename the parameter, OR rework this in
 //               terms of MainWindow
-DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inWindow, const QString &name, const QString &path, int flags, const QString &geometry, int iconic, const char *languageMode, bool tabbed, bool bgOpen) {
+DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inWindow, const QString &name, const QString &path, int flags, const QString &geometry, int iconic, const QString &languageMode, bool tabbed, bool bgOpen) {
 
     // first look to see if file is already displayed in a window
     if(DocumentWidget *document = MainWindow::FindWindowWithFile(name, path)) {
@@ -345,7 +345,7 @@ DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inWindow, con
     }
 
     // Decide what language mode to use, trigger language specific actions
-    if(!languageMode) {
+    if(languageMode.isNull()) {
         document->DetermineLanguageMode(true);
     } else {
         document->SetLanguageMode(FindLanguageMode(languageMode), true);
@@ -1072,7 +1072,7 @@ void DocumentWidget::reapplyLanguageMode(int mode, bool forceDefaults) {
         QString oldlanguageModeName = LanguageModeName(oldMode);
 
         bool emTabDistIsDef     = oldEmTabDist == GetPrefEmTabDist(oldMode);
-        bool indentStyleIsDef   = indentStyle_ == GetPrefAutoIndent(oldMode)   || (GetPrefAutoIndent(oldMode) == SMART_INDENT && indentStyle_ == AUTO_INDENT && !SmartIndentMacrosAvailable(LanguageModeName(oldMode).toLatin1().data()));
+        bool indentStyleIsDef   = indentStyle_ == GetPrefAutoIndent(oldMode)   || (GetPrefAutoIndent(oldMode) == SMART_INDENT && indentStyle_ == AUTO_INDENT && !SmartIndentMacrosAvailable(LanguageModeName(oldMode)));
         bool highlightIsDef     = highlightSyntax_ == GetPrefHighlightSyntax() || (GetPrefHighlightSyntax() && FindPatternSet(!oldlanguageModeName.isNull() ? oldlanguageModeName : QLatin1String("")) == nullptr);
         int wrapMode            = wrapModeIsDef                                || forceDefaults ? GetPrefWrap(mode)        : wrapMode_;
         int tabDist             = tabDistIsDef                                 || forceDefaults ? GetPrefTabDist(mode)     : buffer_->BufGetTabDistance();
@@ -1082,9 +1082,9 @@ void DocumentWidget::reapplyLanguageMode(int mode, bool forceDefaults) {
 
         /* Dim/undim smart-indent and highlighting menu items depending on
            whether patterns/macros are available */
-        QString languageModeName = LanguageModeName(mode);
-        bool haveHighlightPatterns = FindPatternSet(!languageModeName.isNull() ? languageModeName : QLatin1String("")) != nullptr;
-        bool haveSmartIndentMacros = SmartIndentMacrosAvailable(LanguageModeName(mode).toLatin1().data());
+        QString languageModeName   = LanguageModeName(mode);
+        bool haveHighlightPatterns = FindPatternSet(languageModeName);
+        bool haveSmartIndentMacros = SmartIndentMacrosAvailable(LanguageModeName(mode));
 
         if (IsTopDocument()) {
             win->ui.action_Highlight_Syntax->setEnabled(haveHighlightPatterns);
@@ -1321,7 +1321,7 @@ void DocumentWidget::setLanguageMode(const QString &mode) {
     //               converted it to a string, and now we look up the number
     //               again to pass to this function. We should just pass the
     //               number and skip the round trip
-    SetLanguageMode(FindLanguageMode(mode.toLatin1().data()), false);
+    SetLanguageMode(FindLanguageMode(mode), false);
 }
 
 /*
@@ -3182,7 +3182,16 @@ void DocumentWidget::open(const char *fullpath) {
         return;
     }
 
-    EditExistingFileEx(this, QString::fromLatin1(filename), QString::fromLatin1(pathname), 0, QString(), false, nullptr, GetPrefOpenInTab(), false);
+    EditExistingFileEx(
+                this,
+                QString::fromLatin1(filename),
+                QString::fromLatin1(pathname),
+                0,
+                QString(),
+                false,
+                QString(),
+                GetPrefOpenInTab(),
+                false);
 
     if(auto win = toWindow()) {
         win->CheckCloseDimEx();
@@ -3527,7 +3536,7 @@ void DocumentWidget::RefreshMenuToggleStates() {
         no_signals(win->ui.action_Overtype)->setChecked(overstrike_);
         no_signals(win->ui.action_Matching_Syntax)->setChecked(matchSyntaxBased_);
         no_signals(win->ui.action_Read_Only)->setChecked(lockReasons_.isUserLocked());
-        no_signals(win->ui.action_Indent_Smart)->setEnabled(SmartIndentMacrosAvailable(LanguageModeName(languageMode_).toLatin1().data()));
+        no_signals(win->ui.action_Indent_Smart)->setEnabled(SmartIndentMacrosAvailable(LanguageModeName(languageMode_)));
 
         SetAutoIndent(indentStyle_);
         SetAutoWrap(wrapMode_);
@@ -4154,7 +4163,7 @@ void DocumentWidget::FindDefCalltip(TextArea *area, const char *arg) {
 ** loaded tags file and bring up the file and line that the tags file
 ** indicates.
 */
-void DocumentWidget::findDefinitionHelper(TextArea *area, const char *arg, int search_type) {
+void DocumentWidget::findDefinitionHelper(TextArea *area, const char *arg, Mode search_type) {
     if (arg) {
         findDef(area, arg, search_type);
     } else {
@@ -4174,16 +4183,15 @@ void DocumentWidget::findDefinitionHelper(TextArea *area, const char *arg, int s
 ** This code path is followed if the request came from either
 ** FindDefinition or FindDefCalltip.  This should probably be refactored.
 */
-int DocumentWidget::findDef(TextArea *area, const char *value, int search_type) {
+int DocumentWidget::findDef(TextArea *area, const char *value, Mode search_type) {
     int status = 0;
 
     static char tagText[MAX_TAG_LEN + 1];
     const char *p;
     char message[MAX_TAG_LEN + 40];
-    int l;
 
     searchMode = search_type;
-    l = strlen(value);
+    int l = strlen(value);
     if (l <= MAX_TAG_LEN) {
 
         // should be of type text???
@@ -4448,7 +4456,7 @@ void DocumentWidget::BeginSmartIndentEx(int warn) {
     }
 
     // Look up the appropriate smart-indent macros for the language
-    indentMacros = findIndentSpec(modeName.toLatin1().data());
+    indentMacros = findIndentSpec(modeName);
     if(!indentMacros) {
         if (warn) {
             QMessageBox::warning(this, tr("Smart Indent"), tr("Smart indent is not available in languagemode\n%1.\n\nYou can create new smart indent macros in the\nPreferences -> Default Settings -> Smart Indent\ndialog, or choose a different language mode from:\nPreferences -> Language Mode.").arg(modeName));
@@ -4761,14 +4769,15 @@ void DocumentWidget::gotoAP(TextArea *area, QStringList args) {
     int position;
     int curCol;
 
+
     /* Accept various formats:
           [line]:[column]   (menu action)
           line              (macro call)
           line, column      (macro call) */
-    if (args.size() == 0 ||
+    if (    args.size() == 0 ||
             args.size() > 2 ||
             (args.size() == 1 && StringToLineAndCol(args[0].toLatin1().data(), &lineNum, &column) == -1) ||
-            (args.size() == 2 && (!StringToNum(args[0].toLatin1().data(), &lineNum) || !StringToNum(args[1].toLatin1().data(), &column)))) {
+            (args.size() == 2 && (!StringToNum(args[0], &lineNum) || !StringToNum(args[1], &column)))) {
         fprintf(stderr, "nedit: goto_line_number action requires line and/or column number\n");
         return;
     }
@@ -4797,7 +4806,7 @@ void DocumentWidget::gotoAP(TextArea *area, QStringList args) {
 /*
 **
 */
-void DocumentWidget::SetColors(const char *textFg, const char *textBg, const char *selectFg, const char *selectBg, const char *hiliteFg, const char *hiliteBg, const char *lineNoFg, const char *cursorFg) {
+void DocumentWidget::SetColors(const QString &textFg, const QString &textBg, const QString &selectFg, const QString &selectBg, const QString &hiliteFg, const QString &hiliteBg, const QString &lineNoFg, const QString &cursorFg) {
 
     QColor textFgPix   = AllocColor(textFg);
     QColor textBgPix   = AllocColor(textBg);
@@ -4993,12 +5002,12 @@ void DocumentWidget::issueCommandEx(MainWindow *window, TextArea *area, const QS
 
     // Set up timer proc for putting up banner when process takes too long
     if (fromMacro) {
-        cmdData->bannerTimeoutID = nullptr;
+        cmdData->bannerTimer = nullptr;
     } else {
-        cmdData->bannerTimeoutID = new QTimer(document);
-        QObject::connect(cmdData->bannerTimeoutID, SIGNAL(timeout()), document, SLOT(bannerTimeoutProc()));
-        cmdData->bannerTimeoutID->setSingleShot(true);
-        cmdData->bannerTimeoutID->start(BANNER_WAIT_TIME);
+        cmdData->bannerTimer = new QTimer(document);
+        QObject::connect(cmdData->bannerTimer, SIGNAL(timeout()), document, SLOT(bannerTimeoutProc()));
+        cmdData->bannerTimer->setSingleShot(true);
+        cmdData->bannerTimer->start(BANNER_WAIT_TIME);
     }
 
     /* If this was called from a macro, preempt the macro until shell
@@ -5059,15 +5068,15 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
     bool fromMacro = cmdData->fromMacro;
 
     // Cancel pending timeouts
-    if (cmdData->bannerTimeoutID) {
-        cmdData->bannerTimeoutID->stop();
-        delete cmdData->bannerTimeoutID;
+    if (cmdData->bannerTimer) {
+        cmdData->bannerTimer->stop();
+        delete cmdData->bannerTimer;
     }
 
     // Clean up waiting-for-shell-command-to-complete mode
     if (!cmdData->fromMacro) {
         setCursor(Qt::ArrowCursor);
-        window->ui.action_Cancel_Learn->setEnabled(false);
+        window->ui.action_Cancel_Shell_Command->setEnabled(false);
         if (cmdData->bannerIsUp) {
             ClearModeMessageEx();
         }
@@ -5462,7 +5471,13 @@ void DocumentWidget::DoShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
         right = 0;
         break;
     case TO_NEW_WINDOW:
-        if(DocumentWidget *document = MainWindow::EditNewFileEx(GetPrefOpenInTab() ? inWindow : nullptr, QString(), false, nullptr, path_)) {
+        if(DocumentWidget *document = MainWindow::EditNewFileEx(
+                    GetPrefOpenInTab() ? inWindow : nullptr,
+                    QString(),
+                    false,
+                    QString(),
+                    path_)) {
+
             inWindow  = document->toWindow();
             outWidget = document->firstPane();
             left      = 0;

@@ -2674,6 +2674,13 @@ static int execError(const char *s1, const char *s2) {
 	return STAT_ERROR;
 }
 
+bool StringToNum(const QString &string, int *number) {
+    bool ok;
+    *number = string.toInt(&ok);
+    return ok;
+
+}
+
 bool StringToNum(const char *string, int *number) {
 	const char *c = string;
 
