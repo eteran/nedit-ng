@@ -19,92 +19,95 @@ public:
     static QString autoLoadMacroFile();
 
 public:
-    QString fileVersion;
-    QString shellCommands;
-    QString macroCommands;
-    QString bgMenuCommands;
-    QString highlightPatterns;
-    QString languageModes;
-    QString styles;
-    QString smartIndentInit;
-    QString smartIndentInitCommon;
-    int autoWrap;
-    int wrapMargin;
-    int autoIndent;
-    bool autoSave;
-    bool openInTab;
-    bool saveOldVersion;
-    int showMatching;
-    bool matchSyntaxBased;
-    bool highlightSyntax;
-    bool backlightChars;
-    QString backlightCharTypes;
-    bool searchDialogs;
-    bool beepOnSearchWrap;
-    bool retainSearchDialogs;
-    bool searchWraps;
-    bool stickyCaseSenseButton;
-    bool repositionDialogs;
-    bool autoScroll;
-    int autoScrollVPadding;
     bool appendLF;
-    bool sortOpenPrevMenu;
-    bool statisticsLine;
+    bool autoSave;
+    bool autoScroll;
+    bool backlightChars;
+    bool beepOnSearchWrap;
+    bool globalTabNavigate;
+    bool highlightSyntax;
+    bool insertTabs;
     bool iSearchLine;
+    bool lineNumbers;
+    bool matchSyntaxBased;
+    bool openInTab;
+    bool pathInWindowsMenu;
+    bool prefFileRead;
+    bool repositionDialogs;
+    bool retainSearchDialogs;
+    bool saveOldVersion;
+    bool searchDialogs;
+    bool searchWraps;
+    bool smartTags;
+    bool sortOpenPrevMenu;
     bool sortTabs;
+    bool statisticsLine;
     bool tabBar;
     bool tabBarHideOne;
     bool toolTips;
-    bool globalTabNavigate;
-    bool lineNumbers;
-    bool pathInWindowsMenu;
+    bool warnExit;
     bool warnFileMods;
     bool warnRealFileMods;
-    bool warnExit;
+    int autoIndent;
+    int autoWrap;
+    int emulateTabs;
     int searchMethod;
+    int showMatching;
+    int tabDistance;
+    int textCols;
+    int textRows;
+    int wrapMargin;
+    QString bgMenuCommands;
+    QString boldHighlightFont;
+    QString boldItalicHighlightFont;
+    QString colors[8];
+    QString fileVersion;
+    QString geometry;
+    QString highlightPatterns;
+    QString italicHighlightFont;
+    QString languageModes;
+    QString macroCommands;
+    QString serverName;
+    QString shell;
+    QString shellCommands;
+    QString smartIndentInit;
+    QString smartIndentInitCommon;
+    QString styles;
+    QString textFont;
+    QString titleFormat;
+    QString tooltipBgColor;
 #ifdef REPLACE_SCOPE
     int replaceDefaultScope;
 #endif
-    int textRows;
-    int textCols;
-    int tabDistance;
-    int emulateTabs;
-    bool insertTabs;
-    QString textFont;
-    QString boldHighlightFont;
-    QString italicHighlightFont;
-    QString boldItalicHighlightFont;
-    QString helpFonts[12];
-    QString helpLinkColor;
-    QString colors[8];
-    QString tooltipBgColor;
-    QString shell;
-    QString geometry;
-    bool remapDeleteKey;
-    bool stdOpenDialog;
-    QString tagFile;
-    QString wordDelimiters;
-    QString serverName;
-    int maxPrevOpenFiles;
-    QString bgMenuButton;
-    bool smartTags;
-    bool typingHidesPointer;
-    bool alwaysCheckRelativeTagsSpecs;
-    bool prefFileRead;
-    bool findReplaceUsesSelection;
-    int overrideDefaultVirtualKeyBindings;
-    QString titleFormat;
-    bool undoModifiesSelection;
-    bool focusOnRaise;
-    bool forceOSConversion;
-    int truncSubstitution;
-    bool honorSymlinks;
 
 public:
-	// created implicitly from other "real" settings
+    // Advanced
+    bool alwaysCheckRelativeTagsSpecs;
+    bool findReplaceUsesSelection;
+    bool focusOnRaise;
+    bool forceOSConversion;
+    bool honorSymlinks;
+    bool remapDeleteKey;
+    bool stdOpenDialog;
+    bool stickyCaseSenseButton;
+    bool typingHidesPointer;
+    bool undoModifiesSelection;
+    int autoScrollVPadding;
+    int maxPrevOpenFiles;
+    int overrideDefaultVirtualKeyBindings;
+    int truncSubstitution;
+    QString backlightCharTypes;
+    QString tagFile;
+    QString wordDelimiters;
+
+public:
+    // Created implicitly from other "real" settings
     QFont boldFontStruct;
     QFont italicFontStruct;
     QFont boldItalicFontStruct;
+
+private:
+    bool settingsLoaded_ = false;
 };
 
 #endif

@@ -818,14 +818,6 @@ QFont GetPrefBoldItalicFont() {
     return g_Settings.boldItalicFontStruct;
 }
 
-QString GetPrefHelpFontName(int index) {
-    return g_Settings.helpFonts[index];
-}
-
-QString GetPrefHelpLinkColor() {
-    return g_Settings.helpLinkColor;
-}
-
 QString GetPrefTooltipBgColor() {
     return g_Settings.tooltipBgColor;
 }
@@ -847,10 +839,6 @@ QString GetPrefGeometry() {
 
 QString GetPrefServerName() {
     return g_Settings.serverName;
-}
-
-QString GetPrefBGMenuBtn() {
-    return g_Settings.bgMenuButton;
 }
 
 int GetPrefMaxPrevOpenFiles() {

@@ -427,8 +427,8 @@ TextArea::TextArea(QWidget *parent,
 	P_autoWrap       = true;
 	P_continuousWrap = true;
 	P_overstrike     = false;
-	P_hidePointer    = false;
-	P_cursorVPadding = 0;
+    P_hidePointer    = GetPrefTypingHidesPointer();
+    P_cursorVPadding = GetVerticalAutoScroll();
 
 
 #if 0

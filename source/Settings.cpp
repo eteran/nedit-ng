@@ -102,20 +102,6 @@ void Settings::loadPreferences() {
     italicHighlightFont               = settings.value(tr("nedit.italicHighlightFont"), 		      QLatin1String("Courier New,10,-1,5,50,1,0,0,0,0")).toString();
     boldItalicHighlightFont           = settings.value(tr("nedit.boldItalicHighlightFont"), 	      QLatin1String("Courier New,10,-1,5,75,1,0,0,0,0")).toString();
 
-    helpFonts[HELP_FONT]                          = settings.value(tr("nedit.helpFont"),					      QLatin1String("Arial,10,-1,5,50,0,0,0,0,0")).toString();
-    helpFonts[BOLD_HELP_FONT]                      = settings.value(tr("nedit.boldHelpFont"),				      QLatin1String("Arial,10,-1,5,75,0,0,0,0,0")).toString();
-    helpFonts[ITALIC_HELP_FONT]                    = settings.value(tr("nedit.italicHelpFont"),  			      QLatin1String("Arial,10,-1,5,50,1,0,0,0,0")).toString();
-    helpFonts[BOLD_ITALIC_HELP_FONT]                = settings.value(tr("nedit.boldItalicHelpFont"),  		      QLatin1String("Arial,10,-1,5,75,1,0,0,0,0")).toString();
-    helpFonts[FIXED_HELP_FONT]                     = settings.value(tr("nedit.fixedHelpFont"),				      QLatin1String("Courier New,10,-1,5,50,0,0,0,0,0")).toString();
-    helpFonts[BOLD_FIXED_HELP_FONT]                 = settings.value(tr("nedit.boldFixedHelpFont"),			      QLatin1String("Courier New,10,-1,5,75,0,0,0,0,0")).toString();
-    helpFonts[ITALIC_FIXED_HELP_FONT]               = settings.value(tr("nedit.italicFixedHelpFont"), 		      QLatin1String("Courier New,10,-1,5,50,1,0,0,0,0")).toString();
-    helpFonts[BOLD_ITALIC_FIXED_HELP_FONT]           = settings.value(tr("nedit.boldItalicFixedHelpFont"), 	      QLatin1String("Courier New,10,-1,5,75,1,0,0,0,0")).toString();
-    helpFonts[HELP_LINK_FONT]                      = settings.value(tr("nedit.helpLinkFont"),				      QLatin1String("Arial,10,-1,5,50,0,0,0,0,0")).toString();
-    helpFonts[H1_HELP_FONT]                        = settings.value(tr("nedit.h1HelpFont"),  				      QLatin1String("Arial,14,-1,5,75,0,0,0,0,0")).toString();
-    helpFonts[H2_HELP_FONT]                        = settings.value(tr("nedit.h2HelpFont"),  				      QLatin1String("Arial,12,-1,5,75,0,0,0,0,0")).toString();
-    helpFonts[H3_HELP_FONT]                        = settings.value(tr("nedit.h3HelpFont"),  				      QLatin1String("Arial,10,-1,5,75,0,0,0,0,0")).toString();
-    helpLinkColor                     = settings.value(tr("nedit.helpLinkColor"),				      QLatin1String("#009900")).toString();
-
     colors[TEXT_FG_COLOR]                       = settings.value(tr("nedit.textFgColor"), 				      QLatin1String(NEDIT_DEFAULT_FG)).toString();
     colors[TEXT_BG_COLOR]                       = settings.value(tr("nedit.textBgColor"), 				      QLatin1String(NEDIT_DEFAULT_TEXT_BG)).toString();
     colors[SELECT_FG_COLOR]                     = settings.value(tr("nedit.selectFgColor"),				      QLatin1String(NEDIT_DEFAULT_SEL_FG)).toString();
@@ -134,7 +120,6 @@ void Settings::loadPreferences() {
     wordDelimiters                    = settings.value(tr("nedit.wordDelimiters"),  			      QLatin1String(".,/\\`'!|@#%^&*()-=+{}[]\":;<>?")).toString();
     serverName                        = settings.value(tr("nedit.serverName"),  				      QLatin1String("")).toString();
     maxPrevOpenFiles                  = settings.value(tr("nedit.maxPrevOpenFiles"),			      30).toInt();
-    bgMenuButton                      = settings.value(tr("nedit.bgMenuButton"),				      QLatin1String("~Shift~Ctrl~Meta~Alt<Btn3Down>")).toString();
     smartTags                         = settings.value(tr("nedit.smartTags"),					      true).toBool();
     typingHidesPointer                = settings.value(tr("nedit.typingHidesPointer"),  		      false).toBool();
     alwaysCheckRelativeTagsSpecs      = settings.value(tr("nedit.alwaysCheckRelativeTagsSpecs"),      true).toBool();
@@ -147,6 +132,104 @@ void Settings::loadPreferences() {
     forceOSConversion                 = settings.value(tr("nedit.forceOSConversion"),                 true).toBool();
     truncSubstitution                 = settings.value(tr("nedit.truncSubstitution"),                 TRUNCSUBST_FAIL).toInt();
     honorSymlinks                     = settings.value(tr("nedit.honorSymlinks"),                     true).toBool();
+
+    settingsLoaded_ = true;
+}
+
+void Settings::importSettings(const QString &filename) {
+    if(!settingsLoaded_) {
+        qDebug("nedit: Warning, importing while no previous settings loaded!");
+    }
+
+    QSettings settings(filename, QSettings::IniFormat);
+
+    fileVersion           = settings.value(tr("nedit.fileVersion"),           fileVersion).toString();
+    shellCommands         = settings.value(tr("nedit.shellCommands"),         shellCommands).toString();
+    macroCommands         = settings.value(tr("nedit.macroCommands"),         macroCommands).toString();
+    bgMenuCommands        = settings.value(tr("nedit.bgMenuCommands"),        bgMenuCommands).toString();
+    highlightPatterns     = settings.value(tr("nedit.highlightPatterns"),     highlightPatterns).toString();
+    languageModes         = settings.value(tr("nedit.languageModes"),         languageModes).toString();
+    styles                = settings.value(tr("nedit.styles"),                styles).toString();
+    smartIndentInit       = settings.value(tr("nedit.smartIndentInit"),       smartIndentInit).toString();
+    smartIndentInitCommon = settings.value(tr("nedit.smartIndentInitCommon"), smartIndentInitCommon).toString();
+    autoWrap              = settings.value(tr("nedit.autoWrap"),              autoWrap).toInt();
+    wrapMargin            = settings.value(tr("nedit.wrapMargin"),            wrapMargin).toInt();
+    autoIndent            = settings.value(tr("nedit.autoIndent"),            autoIndent).toInt();
+    autoSave              = settings.value(tr("nedit.autoSave"),              autoSave).toBool();
+    openInTab             = settings.value(tr("nedit.openInTab"),             openInTab).toBool();
+    saveOldVersion        = settings.value(tr("nedit.saveOldVersion"),        saveOldVersion).toBool();
+    showMatching          = settings.value(tr("nedit.showMatching"),          showMatching).toInt();
+    matchSyntaxBased      = settings.value(tr("nedit.matchSyntaxBased"),      matchSyntaxBased).toBool();
+    highlightSyntax       = settings.value(tr("nedit.highlightSyntax"),       highlightSyntax).toBool();
+    backlightChars        = settings.value(tr("nedit.backlightChars"),        backlightChars).toBool();
+    backlightCharTypes    = settings.value(tr("nedit.backlightCharTypes"),    backlightCharTypes).toString();
+    searchDialogs         = settings.value(tr("nedit.searchDialogs"),         searchDialogs).toBool();
+    beepOnSearchWrap      = settings.value(tr("nedit.beepOnSearchWrap"),      beepOnSearchWrap).toBool();
+    retainSearchDialogs   = settings.value(tr("nedit.retainSearchDialogs"),   retainSearchDialogs).toBool();
+    searchWraps           = settings.value(tr("nedit.searchWraps"),           searchWraps).toBool();
+    stickyCaseSenseButton = settings.value(tr("nedit.stickyCaseSenseButton"), stickyCaseSenseButton).toBool();
+    repositionDialogs     = settings.value(tr("nedit.repositionDialogs"),     repositionDialogs).toBool();
+    autoScroll            = settings.value(tr("nedit.autoScroll"),            autoScroll).toBool();
+    autoScrollVPadding    = settings.value(tr("nedit.autoScrollVPadding"),    autoScrollVPadding).toInt();
+    appendLF              = settings.value(tr("nedit.appendLF"),              appendLF).toBool();
+    sortOpenPrevMenu      = settings.value(tr("nedit.sortOpenPrevMenu"),      sortOpenPrevMenu).toBool();
+    statisticsLine        = settings.value(tr("nedit.statisticsLine"),        statisticsLine).toBool();
+    iSearchLine           = settings.value(tr("nedit.iSearchLine"),           iSearchLine).toBool();
+    sortTabs              = settings.value(tr("nedit.sortTabs"),              sortTabs).toBool();
+    tabBar                = settings.value(tr("nedit.tabBar"),                tabBar).toBool();
+    tabBarHideOne         = settings.value(tr("nedit.tabBarHideOne"),         tabBarHideOne).toBool();
+    toolTips              = settings.value(tr("nedit.toolTips"),              toolTips).toBool();
+    globalTabNavigate     = settings.value(tr("nedit.globalTabNavigate"),     globalTabNavigate).toBool();
+    lineNumbers           = settings.value(tr("nedit.lineNumbers"),           lineNumbers).toBool();
+    pathInWindowsMenu     = settings.value(tr("nedit.pathInWindowsMenu"),     pathInWindowsMenu).toBool();
+    warnFileMods          = settings.value(tr("nedit.warnFileMods"),          warnFileMods).toBool();
+    warnRealFileMods      = settings.value(tr("nedit.warnRealFileMods"),      warnRealFileMods).toBool();
+    warnExit              = settings.value(tr("nedit.warnExit"),              warnExit).toBool();
+    searchMethod          = settings.value(tr("nedit.searchMethod"),          searchMethod).toInt();
+#ifdef REPLACE_SCOPE
+    replaceDefaultScope   = settings.value(tr("nedit.replaceDefaultScope"),   replaceDefaultScope).toInt();
+#endif
+
+    textRows                          = settings.value(tr("nedit.textRows"),					      textRows).toInt();
+    textCols                          = settings.value(tr("nedit.textCols"),					      textCols).toInt();
+    tabDistance                       = settings.value(tr("nedit.tabDistance"), 				      tabDistance).toInt();
+    emulateTabs                       = settings.value(tr("nedit.emulateTabs"), 				      emulateTabs).toInt();
+    insertTabs                        = settings.value(tr("nedit.insertTabs"),  				      insertTabs).toBool();
+    textFont                          = settings.value(tr("nedit.textFont"),					      textFont).toString();
+    boldHighlightFont                 = settings.value(tr("nedit.boldHighlightFont"),			      boldHighlightFont).toString();
+    italicHighlightFont               = settings.value(tr("nedit.italicHighlightFont"), 		      italicHighlightFont).toString();
+    boldItalicHighlightFont           = settings.value(tr("nedit.boldItalicHighlightFont"), 	      boldItalicHighlightFont).toString();
+
+    colors[TEXT_FG_COLOR]             = settings.value(tr("nedit.textFgColor"), 				      colors[TEXT_FG_COLOR]).toString();
+    colors[TEXT_BG_COLOR]             = settings.value(tr("nedit.textBgColor"), 				      colors[TEXT_BG_COLOR]).toString();
+    colors[SELECT_FG_COLOR]           = settings.value(tr("nedit.selectFgColor"),				      colors[SELECT_FG_COLOR]).toString();
+    colors[SELECT_BG_COLOR]           = settings.value(tr("nedit.selectBgColor"),				      colors[SELECT_BG_COLOR]).toString();
+    colors[HILITE_FG_COLOR]           = settings.value(tr("nedit.hiliteFgColor"),				      colors[HILITE_FG_COLOR]).toString();
+    colors[HILITE_BG_COLOR]           = settings.value(tr("nedit.hiliteBgColor"),				      colors[HILITE_BG_COLOR]).toString();
+    colors[LINENO_FG_COLOR]           = settings.value(tr("nedit.lineNoFgColor"),				      colors[LINENO_FG_COLOR]).toString();
+    colors[CURSOR_FG_COLOR]           = settings.value(tr("nedit.cursorFgColor"),				      colors[CURSOR_FG_COLOR]).toString();
+
+    tooltipBgColor                    = settings.value(tr("nedit.tooltipBgColor"),  			      tooltipBgColor).toString();
+    shell                             = settings.value(tr("nedit.shell"),						      shell).toString();
+    geometry                          = settings.value(tr("nedit.geometry"),					      geometry).toString();
+    remapDeleteKey                    = settings.value(tr("nedit.remapDeleteKey"),  			      remapDeleteKey).toBool();
+    stdOpenDialog                     = settings.value(tr("nedit.stdOpenDialog"),				      stdOpenDialog).toBool();
+    tagFile                           = settings.value(tr("nedit.tagFile"), 					      tagFile).toString();
+    wordDelimiters                    = settings.value(tr("nedit.wordDelimiters"),  			      wordDelimiters).toString();
+    serverName                        = settings.value(tr("nedit.serverName"),  				      serverName).toString();
+    maxPrevOpenFiles                  = settings.value(tr("nedit.maxPrevOpenFiles"),			      maxPrevOpenFiles).toInt();
+    smartTags                         = settings.value(tr("nedit.smartTags"),					      smartTags).toBool();
+    typingHidesPointer                = settings.value(tr("nedit.typingHidesPointer"),  		      typingHidesPointer).toBool();
+    alwaysCheckRelativeTagsSpecs      = settings.value(tr("nedit.alwaysCheckRelativeTagsSpecs"),      alwaysCheckRelativeTagsSpecs).toBool();
+    prefFileRead                      = settings.value(tr("nedit.prefFileRead"),				      prefFileRead).toBool();
+    findReplaceUsesSelection          = settings.value(tr("nedit.findReplaceUsesSelection"),	      findReplaceUsesSelection).toBool();
+    overrideDefaultVirtualKeyBindings = settings.value(tr("nedit.overrideDefaultVirtualKeyBindings"), overrideDefaultVirtualKeyBindings).toInt();
+    titleFormat                       = settings.value(tr("nedit.titleFormat"),                       titleFormat).toString();
+    undoModifiesSelection             = settings.value(tr("nedit.undoModifiesSelection"),             undoModifiesSelection).toBool();
+    focusOnRaise                      = settings.value(tr("nedit.focusOnRaise"),                      focusOnRaise).toBool();
+    forceOSConversion                 = settings.value(tr("nedit.forceOSConversion"),                 forceOSConversion).toBool();
+    truncSubstitution                 = settings.value(tr("nedit.truncSubstitution"),                 truncSubstitution).toInt();
+    honorSymlinks                     = settings.value(tr("nedit.honorSymlinks"),                     honorSymlinks).toBool();
 }
 
 //------------------------------------------------------------------------------
@@ -211,19 +294,6 @@ bool Settings::savePreferences() {
 	settings.setValue(tr("nedit.boldHighlightFont"),     boldHighlightFont);
 	settings.setValue(tr("nedit.italicHighlightFont"),     italicHighlightFont);
 	settings.setValue(tr("nedit.boldItalicHighlightFont"),     boldItalicHighlightFont);
-    settings.setValue(tr("nedit.helpFont"),     helpFonts[HELP_FONT]);
-    settings.setValue(tr("nedit.boldHelpFont"),     helpFonts[BOLD_HELP_FONT]      );
-    settings.setValue(tr("nedit.italicHelpFont"),     helpFonts[ITALIC_HELP_FONT]           );
-    settings.setValue(tr("nedit.boldItalicHelpFont"),     helpFonts[BOLD_ITALIC_HELP_FONT]      );
-    settings.setValue(tr("nedit.fixedHelpFont"),     helpFonts[FIXED_HELP_FONT]          );
-    settings.setValue(tr("nedit.boldFixedHelpFont"),     helpFonts[BOLD_FIXED_HELP_FONT]    );
-    settings.setValue(tr("nedit.italicFixedHelpFont"),     helpFonts[ITALIC_FIXED_HELP_FONT]   );
-    settings.setValue(tr("nedit.boldItalicFixedHelpFont"),     helpFonts[BOLD_ITALIC_FIXED_HELP_FONT]);
-    settings.setValue(tr("nedit.helpLinkFont"),     helpFonts[HELP_LINK_FONT]       );
-    settings.setValue(tr("nedit.h1HelpFont"),     helpFonts[H1_HELP_FONT]);
-    settings.setValue(tr("nedit.h2HelpFont"),     helpFonts[H2_HELP_FONT]);
-    settings.setValue(tr("nedit.h3HelpFont"),     helpFonts[H3_HELP_FONT]);
-	settings.setValue(tr("nedit.helpLinkColor"),     helpLinkColor);
     settings.setValue(tr("nedit.textFgColor"),     colors[TEXT_FG_COLOR] );
     settings.setValue(tr("nedit.textBgColor"),     colors[TEXT_BG_COLOR]  );
     settings.setValue(tr("nedit.selectFgColor"),     colors[SELECT_FG_COLOR]);
@@ -241,7 +311,6 @@ bool Settings::savePreferences() {
 	settings.setValue(tr("nedit.wordDelimiters"),     wordDelimiters);
 	settings.setValue(tr("nedit.serverName"),     serverName);
 	settings.setValue(tr("nedit.maxPrevOpenFiles"),     maxPrevOpenFiles);
-	settings.setValue(tr("nedit.bgMenuButton"),     bgMenuButton);
 	settings.setValue(tr("nedit.smartTags"),     smartTags);
 	settings.setValue(tr("nedit.typingHidesPointer"),     typingHidesPointer);
 	settings.setValue(tr("nedit.alwaysCheckRelativeTagsSpecs"),     alwaysCheckRelativeTagsSpecs);
