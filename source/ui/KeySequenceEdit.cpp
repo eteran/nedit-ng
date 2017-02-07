@@ -80,6 +80,7 @@ KeySequenceEdit::KeySequenceEdit(QWidget *parent) : QWidget(parent, 0), prevKey_
 	
     lineEdit_ = new QLineEdit(this);	
 	lineEdit_->setContextMenuPolicy(Qt::PreventContextMenu);
+    lineEdit_->setClearButtonEnabled(true);
 
     auto layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
@@ -94,21 +95,7 @@ KeySequenceEdit::KeySequenceEdit(QWidget *parent) : QWidget(parent, 0), prevKey_
     setAttribute(Qt::WA_MacShowFocusRect, true);
     setAttribute(Qt::WA_InputMethodEnabled, false);
 
-	// clear button
-	buttonClear_ = new QToolButton(lineEdit_);
-	buttonClear_->setIcon(QIcon::fromTheme(QLatin1String("edit-clear")));
-	buttonClear_->setCursor(Qt::ArrowCursor);
-	buttonClear_->setStyleSheet(QLatin1String("QToolButton { border: none; padding: 0px; }"));
-	buttonClear_->hide();
-
-	connect(buttonClear_, SIGNAL(clicked()), this, SLOT(clear()));
 	connect(lineEdit_, SIGNAL(textChanged(const QString &)), this, SLOT(updateCloseButton(const QString &)));
-
-	const int frameWidth = style()->pixelMetric(QStyle::PM_DefaultFrameWidth);
-
-	setStyleSheet(QString(QLatin1String("QLineEdit { padding-right: %1px; }")).arg(buttonClear_->sizeHint().width() + frameWidth + 1));
-	QSize msz = minimumSizeHint();
-	setMinimumSize(qMax(msz.width(), buttonClear_->sizeHint().height() + frameWidth * 2 + 2), qMax(msz.height(), buttonClear_->sizeHint().height() + frameWidth * 2 + 2));
 }
 
 //------------------------------------------------------------------------------
@@ -307,19 +294,4 @@ void KeySequenceEdit::setModifierRequired(bool required) {
 	modifierRequired_ = required;
 }
 
-//------------------------------------------------------------------------------
-// Name: resizeEvent
-//------------------------------------------------------------------------------
-void KeySequenceEdit::resizeEvent(QResizeEvent *e) {
-	Q_UNUSED(e);
-    QSize sz = buttonClear_->sizeHint();
-    const int frameWidth = style()->pixelMetric(QStyle::PM_DefaultFrameWidth);
-    buttonClear_->move(rect().right() - frameWidth - sz.width(), (rect().bottom() + 1 - sz.height()) / 2);
-}
 
-//------------------------------------------------------------------------------
-// Name: updateCloseButton
-//------------------------------------------------------------------------------
-void KeySequenceEdit::updateCloseButton(const QString &text) {
-	buttonClear_->setVisible(!text.isEmpty());
-}

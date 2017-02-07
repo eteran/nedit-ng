@@ -31,11 +31,7 @@ public Q_SLOTS:
 	void setMaximumSequenceLength(int maximum);
 	void setModifierRequired(bool required);
     void clear();
-	void updateCloseButton(const QString &text);
 	
-private Q_SLOTS:
-	virtual void resizeEvent(QResizeEvent *e) override;
-
 Q_SIGNALS:
     void editingFinished();
     void keySequenceChanged(const QKeySequence &keySequence);
@@ -59,7 +55,6 @@ private:
     int          releaseTimer_;
 	int          maximumSequenceLength_;
 	bool         modifierRequired_;
-	QToolButton *buttonClear_;
 	
 };
 
