@@ -1092,62 +1092,62 @@ static int loadLanguageModesString(const char *inString, int fileVer) {
 }
 
 static QString WriteLanguageModesStringEx() {
-	char numBuf[25];
 
-    auto outBuf = std::make_unique<TextBuffer>();
+    QString str;
+    QTextStream out(&str);
 
 	for (int i = 0; i < NLanguageModes; i++) {
-		outBuf->BufAppendEx("\t");
-		outBuf->BufAppendEx(LanguageModes[i]->name.toStdString());
-		outBuf->BufAppendEx(":");
-		
-		QString str = LanguageModes[i]->extensions.join(QLatin1String(" "));
-		
-		outBuf->BufAppendEx(str.toStdString());
-		outBuf->BufAppendEx(":");
-		if (!LanguageModes[i]->recognitionExpr.isEmpty()) {
-			std::string str = MakeQuotedStringEx(LanguageModes[i]->recognitionExpr.toStdString());
-			outBuf->BufAppendEx(str);
-		}
-		
-		outBuf->BufAppendEx(":");
-		if (LanguageModes[i]->indentStyle != DEFAULT_INDENT)
-			outBuf->BufAppendEx(AutoIndentTypes[LanguageModes[i]->indentStyle]);
-		
-		outBuf->BufAppendEx(":");
-		if (LanguageModes[i]->wrapStyle != DEFAULT_WRAP)
-			outBuf->BufAppendEx(AutoWrapTypes[LanguageModes[i]->wrapStyle]);
-		
-		outBuf->BufAppendEx(":");		
-		if (LanguageModes[i]->tabDist != DEFAULT_TAB_DIST) {
-			sprintf(numBuf, "%d", LanguageModes[i]->tabDist);
-			outBuf->BufAppendEx(numBuf);
-		}
-		
-		outBuf->BufAppendEx(":");
-		if (LanguageModes[i]->emTabDist != DEFAULT_EM_TAB_DIST) {
-			sprintf(numBuf, "%d", LanguageModes[i]->emTabDist);
-			outBuf->BufAppendEx(numBuf);
-		}
-		
-		outBuf->BufAppendEx(":");
-		if (!LanguageModes[i]->delimiters.isEmpty()) {
-			std::string str = MakeQuotedStringEx(LanguageModes[i]->delimiters.toStdString());
-			outBuf->BufAppendEx(str);
-		}
-		
-		outBuf->BufAppendEx(":");
-		if (!LanguageModes[i]->defTipsFile.isEmpty()) {
-			std::string str = MakeQuotedStringEx(LanguageModes[i]->defTipsFile.toStdString());
-			outBuf->BufAppendEx(str);
-		}
 
-		outBuf->BufAppendEx("\n");
+        out << QLatin1Char('\t')
+            << LanguageModes[i]->name
+            << QLatin1Char(':');
+
+        QString exts = LanguageModes[i]->extensions.join(QLatin1String(" "));
+        out << exts
+            << QLatin1Char(':');
+
+        if (!LanguageModes[i]->recognitionExpr.isEmpty()) {
+            out << MakeQuotedStringEx(LanguageModes[i]->recognitionExpr);
+        }
+
+        out << QLatin1Char(':');
+        if (LanguageModes[i]->indentStyle != DEFAULT_INDENT) {
+            out << QString::fromLatin1(AutoIndentTypes[LanguageModes[i]->indentStyle]);
+        }
+
+        out << QLatin1Char(':');
+        if (LanguageModes[i]->wrapStyle != DEFAULT_WRAP) {
+            out << QString::fromLatin1(AutoWrapTypes[LanguageModes[i]->wrapStyle]);
+        }
+
+        out << QLatin1Char(':');
+        if (LanguageModes[i]->tabDist != DEFAULT_TAB_DIST) {
+            out << LanguageModes[i]->tabDist;
+        }
+
+        out << QLatin1Char(':');
+        if (LanguageModes[i]->emTabDist != DEFAULT_EM_TAB_DIST) {
+            out << LanguageModes[i]->emTabDist;
+        }
+
+        out << QLatin1Char(':');
+        if (!LanguageModes[i]->delimiters.isEmpty()) {
+            out << MakeQuotedStringEx(LanguageModes[i]->delimiters);
+        }
+
+        out << QLatin1Char(':');
+        if (!LanguageModes[i]->defTipsFile.isEmpty()) {
+            out << LanguageModes[i]->defTipsFile;
+        }
+
+        out << QLatin1Char('\n');
 	}
 
-	// Get the output, and lop off the trailing newline 
-	std::string outStr = outBuf->BufGetRangeEx(0, outBuf->BufGetLength() - 1);
-    return QString::fromStdString(outStr);
+    if(!str.isEmpty()) {
+        str.chop(1);
+    }
+
+    return str;
 }
 
 static QStringList readExtensionList(const char **inPtr) {
@@ -1214,7 +1214,7 @@ char *ReadSymbolicField(const char **inPtr) {
 	len = *inPtr - strStart;
 	if (len == 0)
 		return nullptr;
-	outStr = outPtr = XtMalloc(len + 1);
+    outStr = outPtr = XtMalloc(len + 1);
 
 	// Copy the string, compressing internal whitespace to a single space 
 	strPtr = strStart;
@@ -1230,7 +1230,7 @@ char *ReadSymbolicField(const char **inPtr) {
 	if (outPtr > outStr && *(outPtr - 1) == ' ')
 		outPtr--;
 	if (outPtr == outStr) {
-		XtFree(outStr);
+        XtFree(outStr);
 		return nullptr;
 	}
 	*outPtr = '\0';
@@ -1398,161 +1398,41 @@ int ReadQuotedStringEx(const char **inPtr, const char **errMsg, QString *string)
 }
 
 /*
-** Replace characters which the X resource file reader considers control
-** characters, such that a string will read back as it appears in "string".
-** (So far, newline characters are replaced with with \n\<newline> and
-** backslashes with \\.  This has not been tested exhaustively, and
-** probably should be.  It would certainly be more asthetic if other
-** control characters were replaced as well).
-**
-** Returns an allocated string which must be freed by the caller with XtFree.
-*/
-char *EscapeSensitiveChars(const char *string) {
-	const char *c;
-	char *outStr, *outPtr;
-	int length = 0;
-
-	// calculate length and allocate returned string 
-	for (c = string; *c != '\0'; c++) {
-		if (*c == '\\')
-			length++;
-		else if (*c == '\n')
-			length += 3;
-		length++;
-	}
-	outStr = XtMalloc(length + 1);
-	outPtr = outStr;
-
-	// add backslashes 
-	for (c = string; *c != '\0'; c++) {
-		if (*c == '\\')
-			*outPtr++ = '\\';
-		else if (*c == '\n') {
-			*outPtr++ = '\\';
-			*outPtr++ = 'n';
-			*outPtr++ = '\\';
-		}
-		*outPtr++ = *c;
-	}
-	*outPtr = '\0';
-	return outStr;
-}
-
-
-/*
-** Replace characters which the X resource file reader considers control
-** characters, such that a string will read back as it appears in "string".
-** (So far, newline characters are replaced with with \n\<newline> and
-** backslashes with \\.  This has not been tested exhaustively, and
-** probably should be.  It would certainly be more asthetic if other
-** control characters were replaced as well).
-**
-** Returns an allocated string which must be freed by the caller with XtFree.
-*/
-QString EscapeSensitiveCharsEx(const QString &string) {
-
-	int length = 0;
-
-	// calculate length and allocate returned string 
-	for(QChar ch : string) {
-		if (ch == QLatin1Char('\\')) {
-			length++;
-		} else if (ch == QLatin1Char('\n')) {
-			length += 3;
-		}
-		
-		length++;
-	}
-	
-	QString outStr;
-	outStr.reserve(length);
-	auto outPtr = std::back_inserter(outStr);
-
-	// add backslashes 
-	for(QChar ch : string) {
-		if (ch == QLatin1Char('\\'))
-			*outPtr++ = QLatin1Char('\\');
-			
-		else if (ch == QLatin1Char('\n')) {
-		
-			*outPtr++ = QLatin1Char('\\');
-			*outPtr++ = QLatin1Char('n');
-			*outPtr++ = QLatin1Char('\\');
-		}
-		*outPtr++ = ch;
-	}
-
-	return outStr;
-}
-
-std::string EscapeSensitiveCharsEx(view::string_view string) {
-
-	int length = 0;
-
-	// calculate length and allocate returned string 
-	for(char ch : string) {
-		if (ch == '\\')
-			length++;
-		else if (ch == '\n')
-			length += 3;
-		length++;
-	}
-	
-	std::string outStr;
-	outStr.reserve(length);
-	auto outPtr = std::back_inserter(outStr);
-
-	// add backslashes 
-	for(char ch : string) {
-		if (ch == '\\')
-			*outPtr++ = '\\';
-		else if (ch == '\n') {
-			*outPtr++ = '\\';
-			*outPtr++ = 'n';
-			*outPtr++ = '\\';
-		}
-		*outPtr++ = ch;
-	}
-
-	return outStr;
-}
-
-/*
 ** Adds double quotes around a string and escape existing double quote
 ** characters with two double quotes.  Enables the string to be read back
 ** by ReadQuotedString.
 */
-std::string MakeQuotedStringEx(view::string_view string) {
+QString MakeQuotedStringEx(const QString &string) {
 
-	int length = 0;
+    int length = 0;
 
-	// calculate length and allocate returned string 
-	for(char ch: string) {
-		if (ch == '\"') {
-			length++;
-		}
-		length++;
-	}
-	
-	std::string outStr;
-	outStr.reserve(length + 3);
-	auto outPtr = std::back_inserter(outStr);
+    // calculate length and allocate returned string
+    for(QChar ch: string) {
+        if (ch == QLatin1Char('\"')) {
+            length++;
+        }
+        length++;
+    }
 
-	// add starting quote 
-	*outPtr++ = '\"';
+    QString outStr;
+    outStr.reserve(length + 3);
+    auto outPtr = std::back_inserter(outStr);
 
-	// copy string, escaping quotes with "" 
-	for(char ch: string) {
-		if (ch == '\"') {
-			*outPtr++ = '\"';
-		}
-		*outPtr++ = ch;
-	}
+    // add starting quote
+    *outPtr++ = QLatin1Char('\"');
 
-	// add ending quote 
-	*outPtr++ = '\"';
+    // copy string, escaping quotes with ""
+    for(QChar ch: string) {
+        if (ch == QLatin1Char('\"')) {
+            *outPtr++ = QLatin1Char('\"');
+        }
+        *outPtr++ = ch;
+    }
 
-	return outStr;
+    // add ending quote
+    *outPtr++ = QLatin1Char('\"');
+
+    return outStr;
 }
 
 /*
@@ -1628,7 +1508,7 @@ bool ParseErrorEx(QWidget *toDialog, const QString &string, int stoppedAt, const
 	QString errorLine = QString(QLatin1String("%1<==")).arg(string.mid(c, len));
 
 	if(!toDialog) {
-		fprintf(stderr, "NEdit: %s in %s:\n%s\n", message.toLatin1().data(), errorIn.toLatin1().data(), errorLine.toLatin1().data());
+        qDebug("NEdit: %s in %s:\n%s", message.toLatin1().data(), errorIn.toLatin1().data(), errorLine.toLatin1().data());
 	} else {
 		QMessageBox::warning(toDialog, QLatin1String("Parse Error"), QString(QLatin1String("%1 in %2:\n%3")).arg(message).arg(errorIn).arg(errorLine));
 	}
@@ -1659,7 +1539,7 @@ int ParseError(Widget toDialog, const char *stringStart, const char *stoppedAt, 
 	errorLine[len] = '\0';
 	
 	if(!toDialog) {
-		fprintf(stderr, "NEdit: %s in %s:\n%s\n", message, errorIn, errorLine);
+        qDebug("NEdit: %s in %s:\n%s", message, errorIn, errorLine);
 	} else {
         QMessageBox::warning(nullptr /*toDialog*/, QLatin1String("Parse Error"), QString(QLatin1String("%1 in %2:\n%3")).arg(QString::fromLatin1(message)).arg(QString::fromLatin1(errorIn)).arg(QString::fromLatin1(errorLine)));
 	}

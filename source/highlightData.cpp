@@ -62,11 +62,11 @@ namespace {
 // Names for the fonts that can be used for syntax highlighting 
 const int N_FONT_TYPES = 4;
 
-const char *FontTypeNames[N_FONT_TYPES] = {
-	"Plain", 
-	"Italic", 
-	"Bold", 
-	"Bold Italic"
+const QString FontTypeNames[] = {
+    QLatin1String("Plain"),
+    QLatin1String("Italic"),
+    QLatin1String("Bold"),
+    QLatin1String("Bold Italic")
 };
 
 
@@ -85,7 +85,7 @@ static int lookupNamedStyle(view::string_view styleName);
 static int readHighlightPattern(const char **inPtr, const char **errMsg, HighlightPattern *pattern);
 static PatternSet *highlightError(const char *stringStart, const char *stoppedAt, const char *message);
 static PatternSet *readPatternSet(const char **inPtr, int convertOld);
-static std::string createPatternsString(PatternSet *patSet, const char *indentStr);
+static QString createPatternsString(PatternSet *patSet, const QString &indentStr);
 static void convertOldPatternSet(PatternSet *patSet);
 static QString convertPatternExprEx(const QString &patternRE, const QString &patSetName, const QString &patName, bool isSubsExpr);
 
@@ -158,7 +158,7 @@ bool LoadStylesStringEx(const std::string &string) {
 		fontStr = ReadSymbolicFieldEx(&inPtr);
 		
 		for (i = 0; i < N_FONT_TYPES; i++) {
-			if (FontTypeNames[i] == fontStr.toStdString()) {
+            if (FontTypeNames[i] == fontStr) {
 				hs->font = i;
 				break;
 			}
@@ -196,29 +196,36 @@ bool LoadStylesStringEx(const std::string &string) {
 ** all of the highlight styles information from the stored highlight style
 ** list (HighlightStyles) for this NEdit session.
 */
-QString WriteStylesStringEx(void) {
-	int i;
-	HighlightStyle *style;
+QString WriteStylesStringEx() {
 
-    auto outBuf = std::make_unique<TextBuffer>();
+    QString str;
+    QTextStream out(&str);
 
-	for (i = 0; i < HighlightStyles.size(); i++) {
-		style = HighlightStyles[i];
-		outBuf->BufAppendEx("\t");
-		outBuf->BufAppendEx(style->name.toStdString());
-		outBuf->BufAppendEx(":");
-		outBuf->BufAppendEx(style->color.toStdString());
-		if (!style->bgColor.isNull()) {
-			outBuf->BufAppendEx("/");
-			outBuf->BufAppendEx(style->bgColor.toStdString());
-		}
-		outBuf->BufAppendEx(":");
-		outBuf->BufAppendEx(FontTypeNames[style->font]);
-        outBuf->BufAppendEx("\n");
+    for (int i = 0; i < HighlightStyles.size(); i++) {
+        HighlightStyle *style = HighlightStyles[i];
+
+
+        out << QLatin1Char('\t')
+            << style->name
+            << QLatin1Char(':')
+            << style->color;
+
+        if (!style->bgColor.isNull()) {
+            out << QLatin1Char('/')
+                << style->bgColor;
+        }
+
+        out << QLatin1Char(':')
+            << FontTypeNames[style->font]
+            << QLatin1Char('\n');
+
 	}
 
-	// Get the output, and lop off the trailing newlines 
-    return QString::fromStdString(outBuf->BufGetRangeEx(0, outBuf->BufGetLength() - (i == 1 ? 0 : 1)));
+    // Get the output, and lop off the trailing newlines
+    if(!str.isEmpty()) {
+        str.chop(1);
+    }
+    return str;
 }
 
 /*
@@ -276,8 +283,8 @@ bool LoadHighlightStringEx(const std::string &string, int convertOld) {
 */
 QString WriteHighlightStringEx(void) {
 
-	bool written = false;
-    auto outBuf = std::make_unique<TextBuffer>();
+    QString str;
+    QTextStream out(&str);
 
 	for (int psn = 0; psn < NPatternSets; psn++) {
 		PatternSet *patSet = PatternSets[psn];
@@ -285,27 +292,26 @@ QString WriteHighlightStringEx(void) {
 			continue;
 		}
 		
-		written = true;		
-		outBuf->BufAppendEx(patSet->languageMode.toStdString());
-		outBuf->BufAppendEx(":");
-		if (isDefaultPatternSet(patSet))
-			outBuf->BufAppendEx("Default\n\t");
-		else {
-			outBuf->BufAppendEx(std::to_string(patSet->lineContext));
-			outBuf->BufAppendEx(":");
-			outBuf->BufAppendEx(std::to_string(patSet->charContext));
-			outBuf->BufAppendEx("{\n");
-			outBuf->BufAppendEx(createPatternsString(patSet, "\t\t"));
-			outBuf->BufAppendEx("\t}\n\t");
-		}
+        out << patSet->languageMode
+            << QLatin1Char(':');
+
+        if (isDefaultPatternSet(patSet)) {
+            out << QLatin1String("Default\n\t");
+        } else {
+            out << QString(QLatin1String("%1")).arg(patSet->lineContext)
+                << QLatin1Char(':')
+                << QString(QLatin1String("%1")).arg(patSet->charContext)
+                << QLatin1String("{\n")
+                << createPatternsString(patSet, QLatin1String("\t\t"))
+                << QLatin1String("\t}\n\t");
+        }
 	}
 
-	// Get the output string, and lop off the trailing newline and tab 
-	std::string outStr = outBuf->BufGetRangeEx(0, outBuf->BufGetLength() - (written ? 2 : 0));
+    if(!str.isEmpty()) {
+        str.chop(2);
+    };
 
-	/* Protect newlines and backslashes from translation by the resource
-	   reader */
-    return QString::fromStdString(outStr);
+    return str;
 }
 
 /*
@@ -489,44 +495,47 @@ void RenameHighlightPattern(const QString &oldName, const QString &newName) {
 	}
 }
 
-std::string createPatternsString(PatternSet *patSet, const char *indentStr) {
+QString createPatternsString(PatternSet *patSet, const QString &indentStr) {
 
-    auto outBuf = std::make_unique<TextBuffer>();
+    QString str;
+    QTextStream out(&str);
 
 	for(HighlightPattern &pat : patSet->patterns) {
 
-		outBuf->BufAppendEx(indentStr);
-		outBuf->BufAppendEx(pat.name.toStdString());
-		outBuf->BufAppendEx(":");
-		if (!pat.startRE.isNull()) {
-			std::string str = MakeQuotedStringEx(pat.startRE.toStdString());
-			outBuf->BufAppendEx(str);
-		}
-		outBuf->BufAppendEx(":");
-		if (!pat.endRE.isNull()) {
-			std::string str = MakeQuotedStringEx(pat.endRE.toStdString());
-			outBuf->BufAppendEx(str);
-		}
-		outBuf->BufAppendEx(":");
-		if (!pat.errorRE.isNull()) {
-			std::string str = MakeQuotedStringEx(pat.errorRE.toStdString());
-			outBuf->BufAppendEx(str);
-		}
-		outBuf->BufAppendEx(":");
-		outBuf->BufAppendEx(pat.style.toStdString());
-		outBuf->BufAppendEx(":");
-		if (!pat.subPatternOf.isNull())
-			outBuf->BufAppendEx(pat.subPatternOf.toStdString());
-		outBuf->BufAppendEx(":");
-		if (pat.flags & DEFER_PARSING)
-			outBuf->BufAppendEx("D");
-		if (pat.flags & PARSE_SUBPATS_FROM_START)
-			outBuf->BufAppendEx("R");
-		if (pat.flags & COLOR_ONLY)
-			outBuf->BufAppendEx("C");
-		outBuf->BufAppendEx("\n");
+        out << indentStr
+            << pat.name
+            << QLatin1Char(':');
+
+        if (!pat.startRE.isNull()) {
+            out << MakeQuotedStringEx(pat.startRE);
+        }
+        out << QLatin1Char(':');
+
+        if (!pat.endRE.isNull()) {
+            out << MakeQuotedStringEx(pat.endRE);
+        }
+        out << QLatin1Char(':');
+
+        if (!pat.errorRE.isNull()) {
+            out << MakeQuotedStringEx(pat.errorRE);
+        }
+        out << QLatin1Char(':')
+            << pat.style
+            << QLatin1Char(':');
+
+        if (!pat.subPatternOf.isNull()) {
+            out << pat.subPatternOf;
+        }
+
+        out << QLatin1Char(':');
+
+        if (pat.flags & DEFER_PARSING)            out << QLatin1Char('D');
+        if (pat.flags & PARSE_SUBPATS_FROM_START) out << QLatin1Char('R');
+        if (pat.flags & COLOR_ONLY)               out << QLatin1Char('C');
+        out << QLatin1Char('\n');
 	}
-	return outBuf->BufGetAllEx();
+
+    return str;
 }
 
 /*

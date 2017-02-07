@@ -4818,8 +4818,6 @@ static int rangesetSetColorMS(DocumentWidget *window, DataValue *argList, int nA
 	char stringStorage[1][TYPE_INT_STR_SIZE(int)];
 	TextBuffer *buffer = window->buffer_;
 	RangesetTable *rangesetTable = buffer->rangesetTable_;
-	Rangeset *rangeset;
-	char *color_name;
 	int label = 0;
 	int color_nameLen;
 
@@ -4835,12 +4833,12 @@ static int rangesetSetColorMS(DocumentWidget *window, DataValue *argList, int nA
 		M_FAILURE("Rangeset does not exist in %s");
 	}
 
-	rangeset = rangesetTable->RangesetFetch(label);
+    Rangeset *rangeset = rangesetTable->RangesetFetch(label);
 	if(!rangeset) {
 		M_FAILURE("Rangeset does not exist in %s");
 	}
 
-	color_name = (String) "";
+    char *color_name = (String) "";
 	if (rangeset) {
 		if (!readStringArg(argList[1], &color_name, &color_nameLen, stringStorage[0], errMsg)) {
 			M_FAILURE("Second parameter is not a color name string in %s");
@@ -4905,8 +4903,6 @@ static int rangesetSetModeMS(DocumentWidget *window, DataValue *argList, int nAr
 	TextBuffer *buffer = window->buffer_;
 	RangesetTable *rangesetTable = buffer->rangesetTable_;
 	Rangeset *rangeset;
-	char *update_fn_name;
-	int ok;
 	int label = 0;
 	int update_fn_nameLen;
 
@@ -4927,7 +4923,7 @@ static int rangesetSetModeMS(DocumentWidget *window, DataValue *argList, int nAr
 		M_FAILURE("Rangeset does not exist in %s");
 	}
 
-	update_fn_name = (String) "";
+    char *update_fn_name = (String) "";
 	if (rangeset) {
 		if (nArgs == 2) {
 			if (!readStringArg(argList[1], &update_fn_name, &update_fn_nameLen, stringStorage[0], errMsg)) {
@@ -4936,7 +4932,7 @@ static int rangesetSetModeMS(DocumentWidget *window, DataValue *argList, int nAr
 		}
 	}
 
-	ok = rangeset->RangesetChangeModifyResponse(update_fn_name);
+    int ok = rangeset->RangesetChangeModifyResponse(update_fn_name);
 
 	if (!ok) {
 		M_FAILURE("Second parameter is not a valid mode in %s");
