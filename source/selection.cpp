@@ -173,7 +173,7 @@ void AddMarkEx(MainWindow *window, DocumentWidget *document, TextArea *area, QCh
             break;
     }
     if (index >= MAX_MARKS) {
-        fprintf(stderr, "no more marks allowed\n"); // shouldn't happen
+        qDebug("no more marks allowed"); // shouldn't happen
         return;
     }
 

@@ -8,6 +8,7 @@
 #include <QFileDialog>
 #include <QRadioButton>
 #include <QFuture>
+#include <QTimer>
 #include <QClipboard>
 #include <QDesktopServices>
 #include <QTextCodec>

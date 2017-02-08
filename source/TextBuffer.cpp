@@ -840,7 +840,7 @@ void TextBuffer::BufInsertColEx(int column, int startPos, view::string_view text
 	insertColEx(column, lineStartPos, text, &insertDeleted, &nInserted, &cursorPosHint_);
 
 	if (nDeleted != insertDeleted) {
-		fprintf(stderr, "NEdit internal consistency check ins1 failed");
+        qDebug("NEdit internal consistency check ins1 failed");
 	}
 
 	callModifyCBs(lineStartPos, nDeleted, nInserted, 0, deletedText);
@@ -952,7 +952,7 @@ void TextBuffer::BufOverlayRectEx(int startPos, int rectStart, int rectEnd, view
 	overlayRectEx(lineStartPos, rectStart, rectEnd, text, &insertDeleted, &nInserted, &cursorPosHint_);
 
     if (nDeleted != insertDeleted) {
-        fprintf(stderr, "NEdit internal consistency check ovly1 failed");
+        qDebug("NEdit internal consistency check ovly1 failed");
     }
     callModifyCBs(lineStartPos, nDeleted, nInserted, 0, deletedText);
 
@@ -1022,8 +1022,10 @@ void TextBuffer::BufReplaceRectEx(int start, int end, int rectStart, int rectEnd
 		insertColEx(rectStart, start, text, &insertDeleted, &insertInserted, &cursorPosHint_);
 
 	// Figure out how many chars were inserted and call modify callbacks
-	if (insertDeleted != deleteInserted + linesPadded)
-		fprintf(stderr, "NEdit: internal consistency check repl1 failed\n");
+    if (insertDeleted != deleteInserted + linesPadded) {
+        qDebug("NEdit: internal consistency check repl1 failed");
+    }
+
 	callModifyCBs(start, end - start, insertInserted, 0, deletedText);
 }
 
@@ -1257,7 +1259,7 @@ void TextBuffer::BufRemoveModifyCB(bufModifyCallbackProc bufModifiedCB, void *cb
 		}
 	}
 
-	fprintf(stderr, "NEdit Internal Error: Can't find modify CB to remove\n");
+    qDebug("NEdit Internal Error: Can't find modify CB to remove");
 }
 
 /*
@@ -1278,7 +1280,7 @@ void TextBuffer::BufRemovePreDeleteCB(bufPreDeleteCallbackProc bufPreDeleteCB, v
 		}
 	}
 
-	fprintf(stderr, "NEdit Internal Error: Can't find pre-delete CB to remove\n");
+    qDebug("NEdit Internal Error: Can't find pre-delete CB to remove");
 }
 
 /*

@@ -29,6 +29,7 @@
 #include <QApplication>
 #include <QMessageBox>
 #include <QClipboard>
+#include <QTimer>
 #include <QMimeData>
 #include "SignalBlocker.h"
 #include "ui/DialogFind.h"

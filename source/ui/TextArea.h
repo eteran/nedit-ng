@@ -4,15 +4,13 @@
 
 #include <QFont>
 #include <QColor>
-#include <QTimer>
 #include <QTime>
 #include <QFlags>
 #include <QPointer>
+#include <QRect>
 #include <QAbstractScrollArea>
 #include <QVector>
 #include "StyleTableEntry.h"
-#include "Rect.h"
-#include "Point.h"
 #include "CursorStyles.h"
 #include "CallTip.h"
 #include "string_view.h"
@@ -23,6 +21,8 @@ class TextBuffer;
 class TextArea;
 class QShortcut;
 class QMenu;
+class QPoint;
+class QTimer;
 struct smartIndentCBStruct;
 struct dragEndCBStruct;
 class CallTipWidget;
@@ -230,18 +230,19 @@ public:
 	int TextDEndOfLine(int pos, bool startPosIsLineStart);
 	int TextDCountBackwardNLines(int startPos, int nLines);
 	void TextDRedisplayRect(int left, int top, int width, int height);
-	void TextDRedisplayRect(const Rect &rect);
+    void TextDRedisplayRect(const QRect &rect);
 	int TextDCountForwardNLines(const int startPos, const unsigned nLines, bool startPosIsLineStart);
 	void TextSetBuffer(TextBuffer *buffer);
-	int TextDPositionToXY(int pos, int *x, int *y);
+    int TextDPositionToXY(int pos, int *x, int *y);
+    int TextDPositionToXY(int pos, QPoint *coord);
 	void TextDKillCalltip(int calltipID);
     int TextDGetCalltipID(int calltipID) const;
 	void TextDSetColors(QColor textFgP, QColor textBgP, QColor selectFgP, QColor selectBgP, QColor hiliteFgP, QColor hiliteBgP, QColor lineNoFgP, QColor cursorFgP);
-	void TextDXYToUnconstrainedPosition(Point coord, int *row, int *column);
-	int TextDXYToPosition(Point coord);
+    void TextDXYToUnconstrainedPosition(const QPoint &coord, int *row, int *column);
+    int TextDXYToPosition(const QPoint &coord);
 	int TextDOffsetWrappedColumn(int row, int column);
 	void TextDGetScroll(int *topLineNum, int *horizOffset);
-	int TextDInSelection(Point p);
+    int TextDInSelection(const QPoint &p);
 	int TextGetCursorPos() const;
 	int TextDGetInsertPosition() const;
 	int TextDPosToLineAndCol(int pos, int *lineNum, int *column);
@@ -283,7 +284,7 @@ public:
     int getWrapMargin() const;
     int getColumns() const;
     int TextDLineAndColToPos(int lineNum, int column);
-    Rect getRect() const;
+    QRect getRect() const;
     TextBuffer *TextGetBuffer() const;
 
 public:
@@ -354,13 +355,13 @@ private:
 	void selectLine();
 	int xyToPos(int x, int y, int posType);
 	void endDrag();
-	void adjustSelection(const Point &coord);
-	void checkAutoScroll(const Point &coord);
+    void adjustSelection(const QPoint &coord);
+    void checkAutoScroll(const QPoint &coord);
 	void FinishBlockDrag();
 	void SendSecondarySelection(bool removeAfter);
 	void BeginBlockDrag();
-	void BlockDragSelection(Point pos, BlockDragTypes dragType);
-	void adjustSecondarySelection(const Point &coord);
+    void BlockDragSelection(const QPoint &pos, BlockDragTypes dragType);
+    void adjustSecondarySelection(const QPoint &coord);
 	void MovePrimarySelection(bool isColumnar);
 	void ExchangeSelections();
 	int getAbsTopLineNum();
@@ -371,12 +372,12 @@ private:
 private:
 	QVector<QColor> bgClassPixel_;                 // table of colors for each BG class
 	QVector<uint8_t> bgClass_;                    // obtains index into bgClassPixel[]
-	Rect rect_;
+    QRect rect_;
 	int lineNumLeft_;
 	int lineNumWidth_;
 	int cursorPos_;
 	int cursorOn_;
-	Point cursor_;                               // X pos. of last drawn cursor Note: these are used for *drawing* and are not generally reliable for finding the insert position's x/y coordinates!
+    QPoint cursor_;                               // X pos. of last drawn cursor Note: these are used for *drawing* and are not generally reliable for finding the insert position's x/y coordinates!
 	int cursorToHint_;                            // Tells the buffer modified callback where to move the cursor, to reduce the number of redraw calls
 	CursorStyles cursorStyle_;                    // One of enum cursorStyles above
 	int cursorPreferredCol_;                      // Column for vert. cursor movement
@@ -424,8 +425,8 @@ private:
 	int anchor_;                     // Anchor for drag operations
 	int rectAnchor_;                 // Anchor for rectangular drag operations
 	DragStates dragState_;           // Why is the mouse being dragged and what is being acquired
-	Point btnDownCoord_;             // Mark the position of last btn down action for deciding when to begin paying attention to motion actions, and where to paste columns
-	Point mouseCoord_;               // Last known mouse position in drag operation (for autoscroll)
+    QPoint btnDownCoord_;             // Mark the position of last btn down action for deciding when to begin paying attention to motion actions, and where to paste columns
+    QPoint mouseCoord_;               // Last known mouse position in drag operation (for autoscroll)
 	bool selectionOwner_;            // True if widget owns the selection
 	bool motifDestOwner_;            // " "            owns the motif destination
 	QTimer *autoScrollTimer_;
