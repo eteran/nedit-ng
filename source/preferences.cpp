@@ -149,10 +149,12 @@ static void translatePrefFormats(bool convertOld, int fileVer) {
 	}
 
 	// translate the font names into fontLists suitable for the text widget 
+    g_Settings.plainFontStruct.fromString(g_Settings.textFont);
     g_Settings.boldFontStruct.fromString(g_Settings.boldHighlightFont);
     g_Settings.italicFontStruct.fromString(g_Settings.italicHighlightFont);
     g_Settings.boldItalicFontStruct.fromString(g_Settings.boldItalicHighlightFont);
 
+    g_Settings.plainFontStruct.setStyleStrategy(QFont::ForceIntegerMetrics);
     g_Settings.boldFontStruct.setStyleStrategy(QFont::ForceIntegerMetrics);
     g_Settings.italicFontStruct.setStyleStrategy(QFont::ForceIntegerMetrics);
     g_Settings.boldItalicFontStruct.setStyleStrategy(QFont::ForceIntegerMetrics);
@@ -751,17 +753,13 @@ void SetPrefColorName(int index, const QString &name) {
     g_Settings.colors[index] = name;
 }
 
-/*
-** Set the font preferences using the font name (the fontList is generated
-** in this call).  Note that this leaks memory and server resources each
-** time the default font is re-set.  See note on SetFontByName in window.c
-** for more information.
-*/
 void SetPrefFont(const QString &fontName) {
     if(g_Settings.textFont != fontName) {
         PrefsHaveChanged = true;
     }
     g_Settings.textFont = fontName;
+    g_Settings.plainFontStruct.fromString(fontName);
+    g_Settings.plainFontStruct.setStyleStrategy(QFont::ForceIntegerMetrics);
 }
 
 void SetPrefBoldFont(const QString &fontName) {
@@ -781,6 +779,7 @@ void SetPrefItalicFont(const QString &fontName) {
     g_Settings.italicFontStruct.fromString(fontName);
     g_Settings.italicFontStruct.setStyleStrategy(QFont::ForceIntegerMetrics);
 }
+
 void SetPrefBoldItalicFont(const QString &fontName) {
     if(g_Settings.boldItalicHighlightFont != fontName) {
         PrefsHaveChanged = true;
@@ -804,6 +803,10 @@ QString GetPrefItalicFontName() {
 
 QString GetPrefBoldItalicFontName() {
     return g_Settings.boldItalicHighlightFont;
+}
+
+QFont GetPrefDefaultFont() {
+    return g_Settings.plainFontStruct;
 }
 
 QFont GetPrefBoldFont() {

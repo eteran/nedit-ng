@@ -30,7 +30,3 @@
 #include <QFontDatabase>
 #include "misc.h"
 
-QFont GetDefaultFontStructEx() {
-    //return QFontDatabase::systemFont(QFontDatabase::FixedFont);
-    return QFont(QLatin1String("Courier New"), 10);
-}

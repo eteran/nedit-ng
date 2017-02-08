@@ -27,13 +27,10 @@
 #ifndef MISC_H_
 #define MISC_H_
 
-class QFont;
-
 // maximum length for a window geometry string
 #define MAX_GEOM_STRING_LEN 24
 
 #define MAX_ACCEL_LEN 128
 
-QFont GetDefaultFontStructEx();
 	
 #endif

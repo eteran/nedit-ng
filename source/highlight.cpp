@@ -482,7 +482,7 @@ WindowHighlightData *createHighlightDataEx(DocumentWidget *document, PatternSet 
     }
 
     // Check that the styles and parent pattern names actually exist
-    if (!NamedStyleExists("Plain")) {
+    if (!NamedStyleExists(QLatin1String("Plain"))) {
         QMessageBox::warning(document, QLatin1String("Highlight Style"), QLatin1String("Highlight style \"Plain\" is missing"));
         return nullptr;
     }
@@ -495,7 +495,7 @@ WindowHighlightData *createHighlightDataEx(DocumentWidget *document, PatternSet 
     }
 
     for (int i = 0; i < nPatterns; i++) {
-        if (!NamedStyleExists(patternSrc[i].style.toStdString())) {
+        if (!NamedStyleExists(patternSrc[i].style)) {
             QMessageBox::warning(document, QLatin1String("Highlight Style"), QString(QLatin1String("Style \"%1\" named in pattern \"%2\"\ndoes not match any existing style")).arg(patternSrc[i].style).arg(patternSrc[i].name));
             return nullptr;
         }
@@ -644,10 +644,10 @@ WindowHighlightData *createHighlightDataEx(DocumentWidget *document, PatternSet 
 
         p->highlightName = pat->name;
         p->styleName     = pat->style;
-        p->colorName     = ColorOfNamedStyleEx     (pat->style.toStdString());
-        p->bgColorName   = BgColorOfNamedStyleEx   (pat->style.toStdString());
-        p->isBold        = FontOfNamedStyleIsBold  (pat->style.toStdString());
-        p->isItalic      = FontOfNamedStyleIsItalic(pat->style.toStdString());
+        p->colorName     = ColorOfNamedStyleEx     (pat->style);
+        p->bgColorName   = BgColorOfNamedStyleEx   (pat->style);
+        p->isBold        = FontOfNamedStyleIsBold  (pat->style);
+        p->isItalic      = FontOfNamedStyleIsItalic(pat->style);
 
         // And now for the more physical stuff
         p->color = AllocColor(p->colorName);
@@ -658,7 +658,7 @@ WindowHighlightData *createHighlightDataEx(DocumentWidget *document, PatternSet 
             p->bgColor = p->color;
         }
 
-        p->fontEx = FontOfNamedStyleEx(document, pat->style.toStdString());
+        p->fontEx = FontOfNamedStyleEx(document, pat->style);
     };
 
     // PLAIN_STYLE (pass 1)
@@ -755,7 +755,7 @@ static HighlightData *compilePatternsEx(DocumentWidget *dialogParent, HighlightP
        just colors and fonts for sub-expressions of the parent pattern */
     for (int i = 0; i < nPatterns; i++) {
         compiledPats[i].colorOnly      = patternSrc[i].flags & COLOR_ONLY;
-        compiledPats[i].userStyleIndex = IndexOfNamedStyle(patternSrc[i].style.toStdString());
+        compiledPats[i].userStyleIndex = IndexOfNamedStyle(patternSrc[i].style);
 
         if (compiledPats[i].colorOnly && compiledPats[i].nSubPatterns != 0) {
             QMessageBox::warning(nullptr /*window->shell_*/, QLatin1String("Color-only Pattern"), QString(QLatin1String("Color-only pattern \"%1\" may not have subpatterns")).arg(patternSrc[i].name));

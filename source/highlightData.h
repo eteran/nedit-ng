@@ -42,21 +42,21 @@ class MainWindow;
 
 bool LoadHighlightStringEx(const std::string &inString, int convertOld);
 bool LoadStylesStringEx(const std::string &string);
-bool NamedStyleExists(view::string_view styleName);
-int FontOfNamedStyleIsBold(view::string_view styleName);
-int FontOfNamedStyleIsItalic(view::string_view styleName);
-int IndexOfNamedStyle(view::string_view styleName);
+bool NamedStyleExists(const QString &styleName);
+int FontOfNamedStyleIsBold(const QString &styleName);
+int FontOfNamedStyleIsItalic(const QString &styleName);
+int IndexOfNamedStyle(const QString &styleName);
 bool LMHasHighlightPatterns(const QString &languageMode);
 PatternSet *FindPatternSet(const QString &langModeName);
-QString BgColorOfNamedStyleEx(view::string_view styleName);
-QString ColorOfNamedStyleEx(view::string_view styleName);
+QString BgColorOfNamedStyleEx(const QString &styleName);
+QString ColorOfNamedStyleEx(const QString &styleName);
 QString WriteHighlightStringEx();
 QString WriteStylesStringEx();
 void EditHighlightPatterns(MainWindow *window);
 void EditHighlightStyles(QWidget *parent, const QString &initialStyle);
 void RenameHighlightPattern(const QString &oldName, const QString &newName);
 void UpdateLanguageModeMenu();
-QFont FontOfNamedStyleEx(DocumentWidget *document, view::string_view styleName);
+QFont FontOfNamedStyleEx(DocumentWidget *document, const QString &styleName);
 void updateHighlightStyleMenu();
 PatternSet *readDefaultPatternSet(const QString &langModeName);
 

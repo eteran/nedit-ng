@@ -315,7 +315,6 @@ private:
 	int visLineLength(int visLineNum);
 	int wrapUsesCharacter(int lineEndPos);
 	void extendRangeForStyleMods(int *start, int *end);
-	void resetClipRectangles();
 	void redrawLineNumbers(QPainter *painter, bool clearAll);
 	void redrawLineNumbersEx(bool clearAll);
 	void redisplayLine(QPainter *painter, int visLineNum, int leftClip, int rightClip, int leftCharIndex, int rightCharIndex);

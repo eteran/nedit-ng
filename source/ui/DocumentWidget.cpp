@@ -452,6 +452,7 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 	boldItalicFontName_    = GetPrefBoldItalicFontName();
 	dialogColors_          = nullptr;
 
+    fontStruct_            = GetPrefDefaultFont();
 	italicFontStruct_      = GetPrefItalicFont();
 	boldFontStruct_        = GetPrefBoldFont();
 	boldItalicFontStruct_  = GetPrefBoldItalicFont();
@@ -510,7 +511,7 @@ TextArea *DocumentWidget::createTextArea(TextBuffer *buffer) {
                              0,
                              0,
                              buffer,
-                             GetDefaultFontStructEx(),
+                             GetPrefDefaultFont(),
                              Qt::white,
                              Qt::black,
                              Qt::white,
@@ -4567,7 +4568,7 @@ void DocumentWidget::setWrapMargin(int margin) {
 */
 void DocumentWidget::SetFonts(const QString &fontName, const QString &italicName, const QString &boldName, const QString &boldItalicName) {
 
-    int textHeight;
+
     auto textD = firstPane();
 
     // Check which fonts have changed
@@ -4603,7 +4604,7 @@ void DocumentWidget::SetFonts(const QString &fontName, const QString &italicName
     int marginWidth      = textD->getMarginWidth();
     QFont oldFont = textD->getFont();
 #endif
-    textHeight    = textD->height();
+    int textHeight    = textD->height();
 
 #if 0
     int oldTextWidth = textD->getRect().width + textD->getLineNumWidth();
@@ -4625,6 +4626,8 @@ void DocumentWidget::SetFonts(const QString &fontName, const QString &italicName
     if (primaryChanged) {
         fontName_ = fontName;
 
+        fontStruct_.fromString(fontName_);
+        fontStruct_.setStyleStrategy(QFont::ForceIntegerMetrics);
     }
 
     if (highlightChanged) {
@@ -4644,11 +4647,8 @@ void DocumentWidget::SetFonts(const QString &fontName, const QString &italicName
 
     // Change the primary font in all the widgets
     if (primaryChanged) {
-        QFont font;
-        font.fromString(fontName);
-
         for(TextArea *area : textPanes()) {
-            area->setFont(font);
+            area->setFont(fontStruct_);
         }
     }
 

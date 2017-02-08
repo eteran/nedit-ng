@@ -102,6 +102,7 @@ public:
 
 public:
     // Created implicitly from other "real" settings
+    QFont plainFontStruct;
     QFont boldFontStruct;
     QFont italicFontStruct;
     QFont boldItalicFontStruct;

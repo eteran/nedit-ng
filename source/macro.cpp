@@ -4991,7 +4991,7 @@ static int fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWid
     }
 
     // insert color name
-    DV.val.str = AllocNStringCpyEx(ColorOfNamedStyleEx(styleName));
+    DV.val.str = AllocNStringCpyEx(ColorOfNamedStyleEx(QString::fromLatin1(styleName)));
     M_STR_ALLOC_ASSERT(DV);
     if (!ArrayInsert(result, PERM_ALLOC_STR("color"), &DV)) {
         M_ARRAY_INSERT_FAILURE();
@@ -5011,7 +5011,7 @@ static int fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWid
     }
 
     // Prepare array element for background color name
-    DV.val.str = AllocNStringCpyEx(BgColorOfNamedStyleEx(styleName));
+    DV.val.str = AllocNStringCpyEx(BgColorOfNamedStyleEx(QString::fromLatin1(styleName)));
     M_STR_ALLOC_ASSERT(DV);
     if (!ArrayInsert(result, PERM_ALLOC_STR("background"), &DV)) {
         M_ARRAY_INSERT_FAILURE();
@@ -5033,13 +5033,13 @@ static int fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWid
     DV.tag = INT_TAG;
 
     // Put boldness value in array
-    DV.val.n = FontOfNamedStyleIsBold(styleName);
+    DV.val.n = FontOfNamedStyleIsBold(QString::fromLatin1(styleName));
     if (!ArrayInsert(result, PERM_ALLOC_STR("bold"), &DV)) {
         M_ARRAY_INSERT_FAILURE();
     }
 
     // Put italicity value in array
-    DV.val.n = FontOfNamedStyleIsItalic(styleName);
+    DV.val.n = FontOfNamedStyleIsItalic(QString::fromLatin1(styleName));
     if (!ArrayInsert(result, PERM_ALLOC_STR("italic"), &DV)) {
         M_ARRAY_INSERT_FAILURE();
     }
@@ -5080,7 +5080,7 @@ static int getStyleByNameMS(DocumentWidget *window, DataValue *argList, int nArg
 		M_FAILURE("First parameter is not a string in %s");
 	}
 
-	if (!NamedStyleExists(styleName)) {
+    if (!NamedStyleExists(QString::fromLatin1(styleName))) {
 		// if the given name is invalid we just return an empty array. 
 		return true;
 	}

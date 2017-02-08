@@ -1,6 +1,5 @@
 
 #include <QPushButton>
-#include <QRegExp>
 #include <QFontDialog>
 #include "DialogFonts.h"
 #include "DocumentWidget.h"
@@ -72,20 +71,24 @@ void DialogFonts::on_buttonFontBoldItalic_clicked() {
 // Name:
 //------------------------------------------------------------------------------
 void DialogFonts::on_buttonFill_clicked() {
-	
-	QRegExp regex(QLatin1String("(-[^-]*-[^-]*)-([^-]*)-([^-]*)-(.*)"));
-	QString italicString     = ui.editFontPrimary->text();
-	QString boldString       = ui.editFontPrimary->text();
-	QString italicBoldString = ui.editFontPrimary->text();
-	
-	
-	italicString    .replace(regex, QLatin1String("\\1-\\2-o-\\4"));
-	boldString      .replace(regex, QLatin1String("\\1-bold-\\3-\\4"));
-	italicBoldString.replace(regex, QLatin1String("\\1-bold-o-\\4"));
-	
-	ui.editFontItalic    ->setText(italicString);
-	ui.editFontBold      ->setText(boldString);
-	ui.editFontBoldItalic->setText(italicBoldString);
+
+    QFont font;
+    font.fromString(ui.editFontPrimary->text());
+
+    QFont boldFont(font);
+    boldFont.setBold(true);
+    boldFont.setItalic(false);
+    ui.editFontBold->setText(boldFont.toString());
+
+    QFont italicFont(font);
+    italicFont.setItalic(true);
+    italicFont.setBold(false);
+    ui.editFontItalic->setText(italicFont.toString());
+
+    QFont boldItalicFont(font);
+    boldItalicFont.setBold(true);
+    boldItalicFont.setItalic(true);
+    ui.editFontBoldItalic->setText(boldItalicFont.toString());
 }
 
 //------------------------------------------------------------------------------
@@ -226,10 +229,8 @@ DialogFonts::FontStatus DialogFonts::checkFontStatus(const QString &font) {
 
     QFontMetrics primaryFm(primaryFont);
 
-
     const int primaryWidth  = primaryFm.width(QLatin1Char('i')); // NOTE(eteran): min-width?
     const int primaryHeight = primaryFm.lineSpacing();
-
 
 	// Compare font information 
 	if (testWidth != primaryWidth) {
@@ -248,7 +249,9 @@ DialogFonts::FontStatus DialogFonts::checkFontStatus(const QString &font) {
 */
 void DialogFonts::browseFont(QLineEdit *lineEdit) {
 
-
+    // NOTE(eteran): there is a bug in pre Qt-5.8 where a font with no "normal"
+    //               style, (ex. sometimes they call it "regular") will default
+    //               to the first style in the list
     bool ok;
     QFont currFont;
     currFont.fromString(lineEdit->text());

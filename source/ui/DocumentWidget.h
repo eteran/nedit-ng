@@ -204,6 +204,7 @@ public:
 	QString path_;                     // path component of file being edited
 	TextBuffer *buffer_;               // holds the text being edited
 
+    QFont fontStruct_;
     QFont boldFontStruct_;
     QFont boldItalicFontStruct_;
     QFont italicFontStruct_;    // fontStructs for highlighting fonts

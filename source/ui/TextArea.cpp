@@ -1590,10 +1590,6 @@ void TextArea::paintEvent(QPaintEvent *event) {
 	const int firstLine  = (top - rect_.top - fontHeight + 1) / fontHeight;
 	const int lastLine   = (top + height - rect_.top) / fontHeight;
 
-	/* If the graphics contexts are shared using XtAllocateGC, their
-	   clipping rectangles may have changed since the last use */
-	resetClipRectangles();
-
 	painter.save();
     painter.setClipRect(QRect(rect_.left, rect_.top, rect_.width, rect_.height - rect_.height % (ascent_ + descent_)));
 
@@ -2812,10 +2808,11 @@ int TextArea::posToVisibleLineNum(int pos, int *lineNum) {
 //        erased independently by calling this routine.
 //------------------------------------------------------------------------------
 void TextArea::blankCursorProtrusions() {
+
 	int x;
 	int width;
 	int cursorX    = cursor_.x;
-	int cursorY    = cursor_.y;
+    int cursorY    = cursor_.y;
     QFontMetrics fm(viewport()->font());
 	int fontWidth  = fm.maxWidth();
     int fontHeight = ascent_ + descent_;
@@ -2833,7 +2830,7 @@ void TextArea::blankCursorProtrusions() {
 		return;
 	}
 
-	viewport()->update(QRect(x, cursorY, width, fontHeight));
+    viewport()->update(QRect(x, cursorY, width, fontHeight));
 }
 
 //------------------------------------------------------------------------------
@@ -2978,21 +2975,19 @@ void TextArea::extendRangeForStyleMods(int *start, int *end) {
 // Name:
 //------------------------------------------------------------------------------
 void TextArea::textDRedisplayRange(int start, int end) {
-	int i, startLine, lastLine, startIndex, endIndex;
+    int i;
+    int startLine;
+    int lastLine;
+    int startIndex;
+    int endIndex;
 
 	// If the range is outside of the displayed text, just return
 	if (end < firstChar_ || (start > lastChar_ && !emptyLinesVisible()))
 		return;
 
 	// Clean up the starting and ending values
-	if (start < 0)
-		start = 0;
-	if (start > buffer_->BufGetLength())
-		start = buffer_->BufGetLength();
-	if (end < 0)
-		end = 0;
-	if (end > buffer_->BufGetLength())
-		end = buffer_->BufGetLength();
+    start = qBound(0, start, buffer_->BufGetLength());
+    end   = qBound(0, end,   buffer_->BufGetLength());
 
 	// Get the starting and ending lines
 	if (start < firstChar_) {
@@ -3027,10 +3022,6 @@ void TextArea::textDRedisplayRange(int start, int end) {
 		endIndex = end - lineStarts_[lastLine];
 	}
 
-	/* Reset the clipping rectangles for the drawing GCs which are shared
-	   using XtAllocateGC, and may have changed since the last use */
-	resetClipRectangles();
-
 	/* If the starting and ending lines are the same, redisplay the single
 	   line between "start" and "end" */
 	if (startLine == lastLine) {
@@ -3042,42 +3033,12 @@ void TextArea::textDRedisplayRange(int start, int end) {
 	redisplayLineEx(startLine, 0, INT_MAX, startIndex, INT_MAX);
 
 	// Redisplay the lines in between at their full width
-	for (i = startLine + 1; i < lastLine; i++)
+    for (i = startLine + 1; i < lastLine; i++) {
 		redisplayLineEx(i, 0, INT_MAX, 0, INT_MAX);
+    }
 
 	// Redisplay the last line to "end"
 	redisplayLineEx(lastLine, 0, INT_MAX, 0, endIndex);
-}
-
-/*
-** resetClipRectangles sets the clipping rectangles for GCs which clip
-** at the text boundary (as opposed to the window boundary).  These GCs
-** are shared such that the drawing styles are constant, but the clipping
-** rectangles are allowed to change among different users of the GCs (the
-** GCs were created with XtAllocGC).  This routine resets them so the clipping
-** rectangles are correct for this text display.
-*/
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
-void TextArea::resetClipRectangles() {
-	// TODO(eteran): is this something which has an equivilency in Qt?
-#if 0
-	XRectangle clipRect;
-	Display *display = XtDisplay(w_);
-
-	clipRect.x      = rect_.left;
-	clipRect.y      = rect_.top;
-	clipRect.width  = rect_.width;
-    clipRect.height = rect_.height - rect_.height % (ascent_ + descent_);
-
-	XSetClipRectangles(display, gc_,            0, 0, &clipRect, 1, Unsorted);
-	XSetClipRectangles(display, selectGC_,      0, 0, &clipRect, 1, Unsorted);
-	XSetClipRectangles(display, highlightGC_,   0, 0, &clipRect, 1, Unsorted);
-	XSetClipRectangles(display, selectBGGC_,    0, 0, &clipRect, 1, Unsorted);
-	XSetClipRectangles(display, highlightBGGC_, 0, 0, &clipRect, 1, Unsorted);
-	XSetClipRectangles(display, styleGC_,       0, 0, &clipRect, 1, Unsorted);
-#endif
 }
 
 //------------------------------------------------------------------------------
@@ -3585,7 +3546,7 @@ void TextArea::drawString(QPainter *painter, int style, int x, int y, int toX, c
 	painter->setBackground(QBrush(bground));
 	painter->setBackgroundMode(Qt::OpaqueMode);
 #else
-	painter->fillRect(rect, bground);
+    painter->fillRect(rect, bground);
 #endif
 	painter->setFont(X_font);
     painter->drawText(rect, Qt::TextSingleLine | Qt::TextDontClip | Qt::AlignVCenter | Qt::AlignLeft, s);
@@ -3608,6 +3569,14 @@ void TextArea::drawCursor(QPainter *painter, int x, int y) {
     // in some fonts, maybe that's not right?
     int fontWidth  = fm.width(QLatin1Char('i'));
     int fontHeight = ascent_ + descent_;
+
+    // NOTE(eteran): some minor adjustments to get things to align "just right"
+    // This wasn't needed when using bitmapped X11 fonts, so I assume there is
+    // a slight discrepancy between that and Qt's high quality rendering.
+    x += 1;
+    y += 1;
+    fontHeight -= 1;
+
     int bot        = y + fontHeight - 1;
 
 	if (x < rect_.left - 1 || x > rect_.left + rect_.width) {
@@ -4027,7 +3996,7 @@ void TextArea::TextDBlankCursor() {
 		return;
 
 	blankCursorProtrusions();
-	cursorOn_ = false;
+    cursorOn_ = false;
 	textDRedisplayRange(cursorPos_ - 1, cursorPos_ + 1);
 }
 
@@ -7167,11 +7136,11 @@ void TextArea::BlockDragSelection(Point pos, BlockDragTypes dragType) {
 	}
 
 	TextDUnblankCursor();
-#if 1
+
 	for(auto &c : movedCallbacks_) {
 		c.first(this, c.second);
 	}
-#endif
+
 	emTabsBeforeCursor_ = 0;
 }
 

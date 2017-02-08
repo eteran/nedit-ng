@@ -81,7 +81,7 @@ QList<HighlightStyle *> HighlightStyles;
 static bool isDefaultPatternSet(PatternSet *patSet);
 static bool styleError(const char *stringStart, const char *stoppedAt, const char *message);
 static QVector<HighlightPattern> readHighlightPatterns(const char **inPtr, int withBraces, const char **errMsg, bool *ok);
-static int lookupNamedStyle(view::string_view styleName);
+static int lookupNamedStyle(const QString &styleName);
 static int readHighlightPattern(const char **inPtr, const char **errMsg, HighlightPattern *pattern);
 static PatternSet *highlightError(const char *stringStart, const char *stoppedAt, const char *message);
 static PatternSet *readPatternSet(const char **inPtr, int convertOld);
@@ -366,12 +366,12 @@ static QString convertPatternExprEx(const QString &patternRE, const QString &pat
 ** This routine must only be called with a valid styleName (call
 ** NamedStyleExists to find out whether styleName is valid).
 */
-QFont FontOfNamedStyleEx(DocumentWidget *document, view::string_view styleName) {
+QFont FontOfNamedStyleEx(DocumentWidget *document, const QString &styleName) {
 
     int styleNo = lookupNamedStyle(styleName), fontNum;
 
     if (styleNo < 0) {
-        return GetDefaultFontStructEx();
+        return GetPrefDefaultFont();
     } else {
 
         fontNum = HighlightStyles[styleNo]->font;
@@ -385,12 +385,12 @@ QFont FontOfNamedStyleEx(DocumentWidget *document, view::string_view styleName) 
             return document->boldItalicFontStruct_;
         case PLAIN_FONT:
         default:
-            return GetDefaultFontStructEx();
+            return document->fontStruct_;
         }
     }
 }
 
-int FontOfNamedStyleIsBold(view::string_view styleName) {
+int FontOfNamedStyleIsBold(const QString &styleName) {
     int styleNo = lookupNamedStyle(styleName);
 
     if (styleNo < 0) {
@@ -401,7 +401,7 @@ int FontOfNamedStyleIsBold(view::string_view styleName) {
 	return (fontNum == BOLD_FONT || fontNum == BOLD_ITALIC_FONT);
 }
 
-int FontOfNamedStyleIsItalic(view::string_view styleName) {
+int FontOfNamedStyleIsItalic(const QString &styleName) {
     int styleNo = lookupNamedStyle(styleName);
 
     if (styleNo < 0) {
@@ -417,7 +417,7 @@ int FontOfNamedStyleIsItalic(view::string_view styleName) {
 ** called with a valid styleName (call NamedStyleExists to find out whether
 ** styleName is valid).
 */
-QString ColorOfNamedStyleEx(view::string_view styleName) {
+QString ColorOfNamedStyleEx(const QString &styleName) {
 	int styleNo = lookupNamedStyle(styleName);
 
 	if (styleNo < 0) {
@@ -430,7 +430,7 @@ QString ColorOfNamedStyleEx(view::string_view styleName) {
 /*
 ** Find the background color associated with a named style.
 */
-QString BgColorOfNamedStyleEx(view::string_view styleName) {
+QString BgColorOfNamedStyleEx(const QString &styleName) {
 	int styleNo = lookupNamedStyle(styleName);
 
 	if (styleNo < 0) {
@@ -444,7 +444,7 @@ QString BgColorOfNamedStyleEx(view::string_view styleName) {
 /*
 ** Determine whether a named style exists
 */
-bool NamedStyleExists(view::string_view styleName) {
+bool NamedStyleExists(const QString &styleName) {
 	return lookupNamedStyle(styleName) != -1;
 }
 
@@ -876,10 +876,10 @@ void UpdateLanguageModeMenu(void) {
 ** Find the index into the HighlightStyles array corresponding to "styleName".
 ** If styleName is not found, return -1.
 */
-static int lookupNamedStyle(view::string_view styleName) {
+static int lookupNamedStyle(const QString &styleName) {
 
 	for (int i = 0; i < HighlightStyles.size(); i++) {
-		if (HighlightStyles[i]->name.toStdString() == styleName) {
+        if (HighlightStyles[i]->name == styleName) {
 			return i;
 		}
 	}
@@ -890,6 +890,6 @@ static int lookupNamedStyle(view::string_view styleName) {
 /*
 ** Returns a unique number of a given style name
 */
-int IndexOfNamedStyle(view::string_view styleName) {
+int IndexOfNamedStyle(const QString &styleName) {
 	return lookupNamedStyle(styleName);
 }

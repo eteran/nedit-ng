@@ -197,11 +197,10 @@ void SetPrefWarnRealFileMods(int state);
 void SetPrefWrap(int state);
 void SetPrefWrapMargin(int margin);
 
+QFont GetPrefDefaultFont();
 QFont GetPrefBoldFont();
 QFont GetPrefBoldItalicFont();
 QFont GetPrefItalicFont();
-
-
 
 #ifdef REPLACE_SCOPE
 void SetPrefReplaceDefScope(int scope);
