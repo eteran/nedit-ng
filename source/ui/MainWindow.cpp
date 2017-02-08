@@ -3686,11 +3686,11 @@ void MainWindow::on_action_Save_triggered() {
 ** (if set) as the default directory, and asks about embedding newlines
 ** to make wrapping permanent.
 */
-bool MainWindow::PromptForNewFileEx(DocumentWidget *document, const QString prompt, char *fullname, FileFormats *fileFormat, bool *addWrap) {
+QString MainWindow::PromptForNewFileEx(DocumentWidget *document, const QString &prompt, FileFormats *fileFormat, bool *addWrap) {
 
     *fileFormat = document->fileFormat_;
 
-    bool retVal = false;
+    QString filename;
 
     QFileDialog dialog(this, prompt);
 
@@ -3739,13 +3739,11 @@ bool MainWindow::PromptForNewFileEx(DocumentWidget *document, const QString prom
             if(*addWrap) {
                 wrapCheck->setChecked(true);
             }
-#if 0
-            // TODO(eteran): implement this once this is hoisted into a QObject
-            //               since Qt4 doesn't support lambda based connections
-            QObject::connect(wrapCheck, &QCheckBox::toggled, [&](bool checked) {
+
+            QObject::connect(wrapCheck, &QCheckBox::toggled, [&wrapCheck, this](bool checked) {
                 if(checked) {
-                    int ret = QMessageBox::information(nullptr, QLatin1String("Add Wrap"),
-                        QLatin1String("This operation adds permanent line breaks to\n"
+                    int ret = QMessageBox::information(this, tr("Add Wrap"),
+                        tr("This operation adds permanent line breaks to\n"
                         "match the automatic wrapping done by the\n"
                         "Continuous Wrap mode Preferences Option.\n\n"
                         "*** This Option is Irreversable ***\n\n"
@@ -3758,7 +3756,7 @@ bool MainWindow::PromptForNewFileEx(DocumentWidget *document, const QString prom
                     }
                 }
             });
-#endif
+
 
             if (document->wrapMode_ == CONTINUOUS_WRAP) {
                 layout->addWidget(wrapCheck, row, 1, 1, 1);
@@ -3774,14 +3772,13 @@ bool MainWindow::PromptForNewFileEx(DocumentWidget *document, const QString prom
                 }
 
                 *addWrap = wrapCheck->isChecked();
-                strcpy(fullname, dialog.selectedFiles()[0].toLocal8Bit().data());
-                retVal = true;
+                filename = dialog.selectedFiles()[0];
             }
 
         }
     }
 
-    return retVal;
+    return filename;
 }
 
 void MainWindow::on_action_Save_As_triggered() {
@@ -3789,10 +3786,9 @@ void MainWindow::on_action_Save_As_triggered() {
 
         bool addWrap;
         FileFormats fileFormat;
-        char fullname[MAXPATHLEN];
 
-        bool response = PromptForNewFileEx(document, tr("Save File As"), fullname, &fileFormat, &addWrap);
-        if (!response) {
+        QString fullname = PromptForNewFileEx(document, tr("Save File As"), &fileFormat, &addWrap);
+        if (fullname.isNull()) {
             return;
         }
 

@@ -237,14 +237,14 @@ void ImportPrefFile(const QString &filename, bool convertOld) {
     g_Settings.importSettings(filename);
 }
 
-void SetPrefOpenInTab(int state) {
+void SetPrefOpenInTab(bool state) {
     if(g_Settings.openInTab != state) {
         PrefsHaveChanged = true;
     }
     g_Settings.openInTab = state;
 }
 
-int GetPrefOpenInTab() {
+bool GetPrefOpenInTab() {
     return g_Settings.openInTab;
 }
 
@@ -313,25 +313,25 @@ IndentStyle GetPrefAutoIndent(int langMode) {
 	return LanguageModes[langMode]->indentStyle;
 }
 
-void SetPrefAutoSave(int state) {
+void SetPrefAutoSave(bool state) {
     if(g_Settings.autoSave != state) {
         PrefsHaveChanged = true;
     }
     g_Settings.autoSave = state;
 }
 
-int GetPrefAutoSave() {
+bool GetPrefAutoSave() {
     return g_Settings.autoSave;
 }
 
-void SetPrefSaveOldVersion(int state) {
+void SetPrefSaveOldVersion(bool state) {
     if(g_Settings.saveOldVersion != state) {
         PrefsHaveChanged = true;
     }
     g_Settings.saveOldVersion = state;
 }
 
-int GetPrefSaveOldVersion() {
+bool GetPrefSaveOldVersion() {
     return g_Settings.saveOldVersion;
 }
 

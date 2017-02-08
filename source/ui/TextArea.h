@@ -15,7 +15,6 @@
 #include "Point.h"
 #include "CursorStyles.h"
 #include "CallTip.h"
-#include "graphicExposeTranslationEntry.h"
 #include "string_view.h"
 #include "BlockDragTypes.h"
 #include "DragStates.h"

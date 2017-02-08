@@ -2384,7 +2384,7 @@ int DocumentWidget::SaveWindow() {
 
     // Prompt for a filename if this is an Untitled window
     if (!filenameSet_) {
-        return SaveWindowAs(nullptr, false);
+        return SaveWindowAs(QString(), false);
     }
 
     // Check for external modifications and warn the user
@@ -2472,7 +2472,7 @@ bool DocumentWidget::doSave() {
 
         messageBox.exec();
         if(messageBox.clickedButton() == buttonSaveAs) {
-            return SaveWindowAs(nullptr, 0);
+            return SaveWindowAs(QString(), 0);
         }
 
         return false;
@@ -2533,16 +2533,16 @@ bool DocumentWidget::doSave() {
     return true;
 }
 
-int DocumentWidget::SaveWindowAs(const char *newName, bool addWrap) {
+int DocumentWidget::SaveWindowAs(const QString &newName, bool addWrap) {
 
     if(auto win = toWindow()) {
 
         int  retVal;
-        char fullname[MAXPATHLEN];
+        QString fullname;
         char filename[MAXPATHLEN];
         char pathname[MAXPATHLEN];
 
-        if(!newName) {
+        if(newName.isNull()) {
             QFileDialog dialog(this, tr("Save File As"));
             dialog.setFileMode(QFileDialog::AnyFile);
             dialog.setAcceptMode(QFileDialog::AcceptSave);
@@ -2590,11 +2590,9 @@ int DocumentWidget::SaveWindowAs(const char *newName, bool addWrap) {
                         wrapCheck->setChecked(true);
                     }
 
-                    // TODO(eteran): implement this once this is hoisted into a QObject
-                    //               since Qt4 doesn't support lambda based connections
-#if 0
 
-                    connect(wrapCheck, &QCheckBox::toggled, [&wrapCheck](bool checked) {
+                    // NOTE(eteran): this seems a bit redundant to other code...
+                    connect(wrapCheck, &QCheckBox::toggled, [&wrapCheck, this](bool checked) {
                         if(checked) {
                             int ret = QMessageBox::information(this, tr("Add Wrap"),
                                 tr("This operation adds permanent line breaks to\n"
@@ -2610,7 +2608,7 @@ int DocumentWidget::SaveWindowAs(const char *newName, bool addWrap) {
                             }
                         }
                     });
-#endif
+
 
                     if (wrapMode_ == CONTINUOUS_WRAP) {
                         layout->addWidget(wrapCheck, row, 1, 1, 1);
@@ -2626,7 +2624,7 @@ int DocumentWidget::SaveWindowAs(const char *newName, bool addWrap) {
                         }
 
                         addWrap = wrapCheck->isChecked();
-                        strcpy(fullname, dialog.selectedFiles()[0].toLocal8Bit().data());
+                        fullname = dialog.selectedFiles()[0];
                     } else {
                         return false;
                     }
@@ -2634,7 +2632,7 @@ int DocumentWidget::SaveWindowAs(const char *newName, bool addWrap) {
                 }
             }
         } else {
-            strcpy(fullname, newName);
+            fullname = newName;
         }
 
         // Add newlines if requested
@@ -2642,7 +2640,7 @@ int DocumentWidget::SaveWindowAs(const char *newName, bool addWrap) {
             addWrapNewlines();
         }
 
-        if (ParseFilename(fullname, filename, pathname) != 0) {
+        if (ParseFilename(fullname.toLatin1().data(), filename, pathname) != 0) {
             return false;
         }
 
@@ -2698,7 +2696,7 @@ int DocumentWidget::SaveWindowAs(const char *newName, bool addWrap) {
         RefreshTabState();
 
         // Add the name to the convenience menu of previously opened files
-        win->AddToPrevOpenMenu(QString::fromLatin1(fullname));
+        win->AddToPrevOpenMenu(fullname);
 
         /*  If name has changed, language mode may have changed as well, unless
             it's an Untitled window for which the user already set a language
@@ -4789,7 +4787,7 @@ void DocumentWidget::SetColors(const QString &textFg, const QString &textBg, con
 ** Display a special message in the stats line (show the stats line if it
 ** is not currently shown).
 */
-void DocumentWidget::SetModeMessageEx(const QString message) {
+void DocumentWidget::SetModeMessageEx(const QString &message) {
     /* this document may be hidden (not on top) or later made hidden,
        so we save a copy of the mode message, so we can restore the
        statsline when the document is raised to top again */

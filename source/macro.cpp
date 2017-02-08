@@ -2216,6 +2216,7 @@ static int readFileMS(DocumentWidget *window, DataValue *argList, int nArgs, Dat
 	// Validate arguments and convert to int 
 	if (nArgs != 1)
 		return wrongNArgsErr(errMsg);
+
 	if (!readStringArg(argList[0], &name, &len, stringStorage, errMsg))
 		return false;
 
@@ -2231,7 +2232,7 @@ static int readFileMS(DocumentWidget *window, DataValue *argList, int nArgs, Dat
 		goto error;
 	if (!feof(fp)) {
 		// Couldn't trust file size. Use slower but more general method 
-		int chunkSize = 1024;
+        constexpr const int chunkSize = 1024;
 
         auto buffer = static_cast<char *>(malloc(readLen));
 		memcpy(buffer, result->val.str.rep, readLen);
@@ -2239,7 +2240,7 @@ static int readFileMS(DocumentWidget *window, DataValue *argList, int nArgs, Dat
             buffer = static_cast<char *>(realloc(buffer, (readLen + chunkSize)));
 			readLen += fread(&buffer[readLen], 1, chunkSize, fp);
 			if (ferror(fp)) {
-				XtFree(buffer);
+                free(buffer);
 				goto error;
 			}
 		}
@@ -2251,7 +2252,7 @@ static int readFileMS(DocumentWidget *window, DataValue *argList, int nArgs, Dat
 
 	// Return the results 
 	ReturnGlobals[READ_STATUS]->value.tag = INT_TAG;
-	ReturnGlobals[READ_STATUS]->value.val.n = True;
+    ReturnGlobals[READ_STATUS]->value.val.n = true;
 	return true;
 
 error:
@@ -2259,7 +2260,7 @@ error:
 
 errorNoClose:
 	ReturnGlobals[READ_STATUS]->value.tag = INT_TAG;
-	ReturnGlobals[READ_STATUS]->value.val.n = False;
+    ReturnGlobals[READ_STATUS]->value.val.n = false;
 	result->tag = STRING_TAG;
 	result->val.str.rep = PERM_ALLOC_STR("");
 	result->val.str.len = 0;
@@ -2272,11 +2273,11 @@ errorNoClose:
 ** unsuccessful.
 */
 static int writeFileMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
-	return writeOrAppendFile(False, window, argList, nArgs, result, errMsg);
+    return writeOrAppendFile(false, window, argList, nArgs, result, errMsg);
 }
 
 static int appendFileMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
-	return writeOrAppendFile(True, window, argList, nArgs, result, errMsg);
+    return writeOrAppendFile(true, window, argList, nArgs, result, errMsg);
 }
 
 static int writeOrAppendFile(int append, DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {

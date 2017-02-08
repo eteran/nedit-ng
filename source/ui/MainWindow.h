@@ -80,7 +80,7 @@ public:
     void setWindowSizeDefault(int rows, int cols);
     void updateWindowSizeMenus();
     void updateWindowSizeMenu();
-    bool PromptForNewFileEx(DocumentWidget *document, const QString prompt, char *fullname, FileFormats *fileFormat, bool *addWrap);
+    QString PromptForNewFileEx(DocumentWidget *document, const QString &prompt, FileFormats *fileFormat, bool *addWrap);
     bool CheckPrefsChangesSavedEx();
     bool CloseAllDocumentInWindow();
     void addToGroup(QActionGroup *group, QMenu *menu);

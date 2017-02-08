@@ -144,7 +144,7 @@ public:
     int WriteBackupFile();
     int SaveWindow();
     bool doSave();
-    int SaveWindowAs(const char *newName, bool addWrap);
+    int SaveWindowAs(const QString &newName, bool addWrap);
     void addWrapNewlines();
     bool writeBckVersion();
     bool bckError(const QString &errString, const QString &file);
@@ -164,7 +164,7 @@ public:
     bool findMatchingCharEx(char toMatch, void *styleToMatch, int charPos, int startLimit, int endLimit, int *matchPos);
     void SetFonts(const QString &fontName, const QString &italicName, const QString &boldName, const QString &boldItalicName);
     void SetOverstrike(bool overstrike);
-    void SetModeMessageEx(const QString message);
+    void SetModeMessageEx(const QString &message);
     void ClearModeMessageEx();
     void safeCloseEx();
     void UnloadLanguageModeTipsFileEx();
