@@ -192,11 +192,7 @@ int main(int argc, char **argv) {
 
 	/* Make sure that the time out unit is at least 1 second and not too
 	   large either (overflow!). */
-    if (ServerPreferences.timeOut < 1) {
-        ServerPreferences.timeOut = 1;
-    } else if (ServerPreferences.timeOut > 1000) {
-        ServerPreferences.timeOut = 1000;
-	}
+    ServerPreferences.timeOut = qBound(1, ServerPreferences.timeOut, 1000);
 
 	/* For Clearcase users who have not set a server name, use the clearcase
 	   view name.  Clearcase views make files with the same absolute path names

@@ -107,24 +107,24 @@ QString WriteBGMenuCmdsStringEx(void) {
 ** Read a string representing shell command menu items and add them to the
 ** internal list used for constructing shell menus
 */
-int LoadShellCmdsStringEx(view::string_view inString) {
+int LoadShellCmdsStringEx(const QString &inString) {
 	// TODO(eteran): make this more efficient
-	return loadMenuItemString(inString.to_string().c_str(), ShellMenuData, SHELL_CMDS);
+    return loadMenuItemString(inString.toLatin1().data(), ShellMenuData, SHELL_CMDS);
 }
 
 /*
 ** Read strings representing macro menu or background menu command menu items
 ** and add them to the internal lists used for constructing menus
 */
-int LoadMacroCmdsStringEx(view::string_view inString) {
+int LoadMacroCmdsStringEx(const QString &inString) {
 	// TODO(eteran): make this more efficient
-	return loadMenuItemString(inString.to_string().c_str(), MacroMenuData, MACRO_CMDS);
+    return loadMenuItemString(inString.toLatin1().data(), MacroMenuData, MACRO_CMDS);
 }
 
 
-int LoadBGMenuCmdsStringEx(view::string_view inString) {
+int LoadBGMenuCmdsStringEx(const QString &inString) {
 	// TODO(eteran): make this more efficient
-	return loadMenuItemString(inString.to_string().c_str(), BGMenuData, BG_MENU_CMDS);
+    return loadMenuItemString(inString.toLatin1().data(), BGMenuData, BG_MENU_CMDS);
 }
 
 /*

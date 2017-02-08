@@ -40,7 +40,7 @@ class HighlightStyle;
 class MainWindow;
 
 
-bool LoadHighlightStringEx(const std::string &inString, int convertOld);
+bool LoadHighlightStringEx(const QString &inString, int convertOld);
 bool LoadStylesStringEx(const std::string &string);
 bool NamedStyleExists(const QString &styleName);
 int FontOfNamedStyleIsBold(const QString &styleName);

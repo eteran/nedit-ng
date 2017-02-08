@@ -71,7 +71,7 @@ static int siParseError(const char *stringStart, const char *stoppedAt, const ch
 
 static char *readSIMacro(const char **inPtr);
 static QString readSIMacroEx(const char **inPtr);
-static int LoadSmartIndentCommonString(char *inString);
+static int LoadSmartIndentCommonString(const char *inString);
 static int LoadSmartIndentString(char *inString);
 QByteArray defaultCommonMacros() {
 
@@ -336,19 +336,13 @@ int LoadSmartIndentString(char *inString) {
 	}
 }
 
-int LoadSmartIndentCommonStringEx(view::string_view string) {
-
-	auto buffer = new char[string.size() + 1];
-	std::copy(string.begin(), string.end(), buffer);
-	buffer[string.size()] = '\0';
-	int r = LoadSmartIndentCommonString(buffer);
-	delete [] buffer;
-	return r;
+int LoadSmartIndentCommonStringEx(const QString &string) {
+    return LoadSmartIndentCommonString(string.toLatin1().data());
 }
 
-int LoadSmartIndentCommonString(char *inString) {
+int LoadSmartIndentCommonString(const char *inString) {
 
-	char *inPtr = inString;
+    const char *inPtr = inString;
 
 	// If called from -import, can replace existing ones 
 
@@ -360,7 +354,7 @@ int LoadSmartIndentCommonString(char *inString) {
 	if (!strncmp(inPtr, "Default", 7)) {
 			
 		QByteArray defaults = defaultCommonMacros();
-		CommonMacros = QString::fromLatin1(defaults.data(), defaults.size());
+        CommonMacros = QString::fromLatin1(defaults);
 		return true;
 	}
 

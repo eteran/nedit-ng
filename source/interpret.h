@@ -34,6 +34,7 @@
 #include <list>
 
 class DocumentWidget;
+class QString;
 
 #define STACK_SIZE         1024  // Maximum stack size
 #define MAX_SYM_LEN        100   // Max. symbol name length

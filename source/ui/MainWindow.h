@@ -81,6 +81,7 @@ public:
 
 
 public:
+    static MainWindow *firstWindow();
     static QList<MainWindow *> allWindows();    
     static QString UniqueUntitledNameEx();
     static DocumentWidget *FindWindowWithFile(const QString &name, const QString &path);

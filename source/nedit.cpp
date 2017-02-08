@@ -60,7 +60,7 @@
 #include <sys/param.h>
 
 static void nextArg(int argc, char **argv, int *argIndex);
-static int checkDoMacroArg(const char *macro);
+static bool checkDoMacroArg(const char *macro);
 
 bool IsServer       = false;
 
@@ -77,10 +77,8 @@ static const char cmdLineHelp[] =
 
 int main(int argc, char *argv[]) {	
 
-    Display *TheDisplay = nullptr;
 	int lineNum;
 	int nRead;
-	bool fileSpecified = false;
 	int editFlags = CREATE;
 	bool gotoLine = false;
     bool macroFileReadEx = false;
@@ -96,14 +94,8 @@ int main(int argc, char *argv[]) {
     QPointer<DocumentWidget> lastFileEx = nullptr;
     char *toDoCommand = nullptr;
 
-    // TODO(eteran): support non-X11 instance for things like -version again
-    QApplication app(argc, argv);
-
 #ifdef Q_OS_LINUX
-    // temporary hack
-    TheDisplay = QX11Info::display();
-
-	if (!TheDisplay) {
+    if (qgetenv("DISPLAY").isEmpty()) {
 		// Respond to -V or -version even if there is no display 
 		for (int i = 1; i < argc && strcmp(argv[i], "--"); i++) {
 			if (strcmp(argv[i], "-V") == 0 || strcmp(argv[i], "-version") == 0) {
@@ -117,12 +109,11 @@ int main(int argc, char *argv[]) {
 	}
 #endif
 
-
+    QApplication app(argc, argv);
 
 	// Initialize global symbols and subroutines used in the macro language 
 	InitMacroGlobals();
 	RegisterMacroSubroutines();
-
 
 	/* Store preferences from the command line and .nedit file,
 	   and set the appropriate preferences */
@@ -133,7 +124,6 @@ int main(int argc, char *argv[]) {
 
 
 #if 0 // TODO(eteran): I think that this feature likely has no equivalent in Qt's dialog
-    SetPointerCenteredDialogs(GetPrefRepositionDialogs());
     SetDeleteRemap(GetPrefMapDelete());
 	SetGetEFTextFieldRemoval(!GetPrefStdOpenDialog());
 #endif
@@ -153,10 +143,10 @@ int main(int argc, char *argv[]) {
 			break; // treat all remaining arguments as filenames 
 		} else if (!strcmp(argv[i], "-import")) {
 			nextArg(argc, argv, &i);
-			ImportPrefFile(argv[i], false);
+            ImportPrefFile(QString::fromLatin1(argv[i]), false);
 		} else if (!strcmp(argv[i], "-importold")) {
 			nextArg(argc, argv, &i);
-			ImportPrefFile(argv[i], true);
+            ImportPrefFile(QString::fromLatin1(argv[i]), true);
 		}
 	}
 
@@ -174,19 +164,24 @@ int main(int argc, char *argv[]) {
 	/* Process any command line arguments (-tags, -do, -read, -create,
 	   +<line_number>, -line, -server, and files to edit) not already
 	   processed by RestoreNEditPrefs. */
-	fileSpecified = false;
+    bool fileSpecified = false;
+
 	for (int i = 1; i < argc; i++) {
 		if (opts && !strcmp(argv[i], "--")) {
 			opts = false; // treat all remaining arguments as filenames 
 			continue;
 		} else if (opts && !strcmp(argv[i], "-tags")) {
 			nextArg(argc, argv, &i);
-			if (!AddTagsFile(argv[i], TAG))
+            if (!AddTagsFile(argv[i], TAG)) {
 				fprintf(stderr, "NEdit: Unable to load tags file\n");
+            }
+
 		} else if (opts && !strcmp(argv[i], "-do")) {
 			nextArg(argc, argv, &i);
-			if (checkDoMacroArg(argv[i]))
+            if (checkDoMacroArg(argv[i])) {
 				toDoCommand = argv[i];
+            }
+
 		} else if (opts && !strcmp(argv[i], "-read")) {
 			editFlags |= PREF_READ_ONLY;
 		} else if (opts && !strcmp(argv[i], "-create")) {
@@ -214,10 +209,6 @@ int main(int argc, char *argv[]) {
 				gotoLine = true;
 		} else if (opts && !strcmp(argv[i], "-server")) {
 			IsServer = true;
-		} else if (opts && !strcmp(argv[i], "-xwarn")) {
-#if 0
-			XtAppSetWarningHandler(context, showWarningFilter);
-#endif
 		} else if (opts && (!strcmp(argv[i], "-iconic") || !strcmp(argv[i], "-icon"))) {
 			iconic = true;
 		} else if (opts && !strcmp(argv[i], "-noiconic")) {
@@ -246,14 +237,17 @@ int main(int argc, char *argv[]) {
 			if (ParseFilename(argv[i], filename, pathname) == 0) {
 				/* determine if file is to be openned in new tab, by
 				   factoring the options -group, -tabbed & -untabbed */
-				if (group == 2) {
-					isTabbed = 0; // start a new window for new group 
-					group = 1;    // next file will be within group 
-				} else if (group == 1) {
-					isTabbed = 1; // new tab for file in group 
-				} else {          // not in group 
-					isTabbed = (tabbed == -1) ? GetPrefOpenInTab() : tabbed;
-				}
+                switch(group) {
+                case 2:
+                    isTabbed = 0; // start a new window for new group
+                    group = 1;    // next file will be within group
+                    break;
+                case 1:
+                    isTabbed = 1; // new tab for file in group
+                    break;
+                default:          // not in group
+                    isTabbed = (tabbed == -1) ? GetPrefOpenInTab() : tabbed;
+                }
 
 				/* Files are opened in background to improve opening speed
 				   by defering certain time  consuiming task such as syntax
@@ -263,11 +257,29 @@ int main(int argc, char *argv[]) {
 				   macros to execute on. */
 
                 QPointer<DocumentWidget> documentEx = nullptr;
-                QList<MainWindow *> windows = MainWindow::allWindows();
-                if(!windows.empty()) {
-                    documentEx = DocumentWidget::EditExistingFileEx(windows[0]->currentDocument(), QString::fromLatin1(filename), QString::fromLatin1(pathname), editFlags, geometry, iconic, langMode, isTabbed, true);
+
+                if(MainWindow *window = MainWindow::firstWindow()) {
+                    documentEx = DocumentWidget::EditExistingFileEx(
+                                window->currentDocument(),
+                                QString::fromLatin1(filename),
+                                QString::fromLatin1(pathname),
+                                editFlags,
+                                geometry,
+                                iconic,
+                                langMode,
+                                isTabbed,
+                                true);
                 } else {
-                    documentEx = DocumentWidget::EditExistingFileEx(nullptr,                       QString::fromLatin1(filename), QString::fromLatin1(pathname), editFlags, geometry, iconic, langMode, isTabbed, true);
+                    documentEx = DocumentWidget::EditExistingFileEx(
+                                nullptr,
+                                QString::fromLatin1(filename),
+                                QString::fromLatin1(pathname),
+                                editFlags,
+                                geometry,
+                                iconic,
+                                langMode,
+                                isTabbed,
+                                true);
                 }
 
                 fileSpecified = true;
@@ -329,6 +341,7 @@ int main(int argc, char *argv[]) {
 	// Begin remembering last command invoked for "Repeat" menu item 
 	AddLastCommandActionHook(context);
 #endif
+
 	// Set up communication port and write ~/.nedit_server_process file 
 	if (IsServer) {
 		InitServerCommunication();
@@ -355,32 +368,23 @@ static void nextArg(int argc, char **argv, int *argIndex) {
 /*
 ** Return True if -do macro is valid, otherwise write an error on stderr
 */
-static int checkDoMacroArg(const char *macro) {
+static bool checkDoMacroArg(const char *macro) {
 
     QString errMsg;
     int stoppedAt;
-	int macroLen;
 
 	/* Add a terminating newline (which command line users are likely to omit
 	   since they are typically invoking a single routine) */
-	macroLen = strlen(macro);
-
-	auto tMacro = new char[strlen(macro) + 2];
-	strncpy(tMacro, macro, macroLen);
-	tMacro[macroLen] = '\n';
-	tMacro[macroLen + 1] = '\0';
-
-    auto macroString = QString::fromLatin1(tMacro);
+    auto macroString = QString::fromLatin1(macro) + QLatin1Char('\n');
 
 	// Do a test parse 
     Program *const prog = ParseMacroEx(macroString, 0, &errMsg, &stoppedAt);
 
 	if(!prog) {        
         ParseErrorEx(nullptr, macroString, stoppedAt, QLatin1String("argument to -do"), errMsg);
-        delete [] tMacro;
-		return False;
+        return false;
 	}
-    delete [] tMacro;
+
 	FreeProgram(prog);
-	return True;
+    return true;
 }

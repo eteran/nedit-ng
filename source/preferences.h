@@ -145,7 +145,7 @@ int SkipDelimiter(const char **inPtr, const char **errMsg);
 int SkipOptSeparator(char separator, const char **inPtr);
 QString MakeQuotedStringEx(const QString &string);
 QString ReadSymbolicFieldEx(const char **inPtr);
-void ImportPrefFile(const char *filename, int convertOld);
+void ImportPrefFile(const QString &filename, bool convertOld);
 void MarkPrefsChanged();
 void RestoreNEditPrefs();
 void SaveNEditPrefsEx(QWidget *parent, bool quietly);

@@ -37,7 +37,7 @@ class DocumentWidget;
 
 bool InSmartIndentMacrosEx(DocumentWidget *document);
 int LMHasSmartIndentMacros(const QString &languageMode);
-int LoadSmartIndentCommonStringEx(view::string_view string);
+int LoadSmartIndentCommonStringEx(const QString &string);
 int LoadSmartIndentStringEx(const QString &string);
 int SmartIndentMacrosAvailable(const QString &languageMode);
 QString  WriteSmartIndentCommonStringEx();

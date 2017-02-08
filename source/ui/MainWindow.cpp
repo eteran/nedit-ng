@@ -856,6 +856,15 @@ QList<MainWindow *> MainWindow::allWindows() {
     return windows;
 }
 
+MainWindow *MainWindow::firstWindow() {
+    for (QWidget *widget : QApplication::topLevelWidgets()) {
+        if(auto window = qobject_cast<MainWindow *>(widget)) {
+           return window;
+        }
+    }
+    return nullptr;
+}
+
 QList<DocumentWidget *> MainWindow::openDocuments() const {
     QList<DocumentWidget *> list;
     for(int i = 0; i < ui.tabWidget->count(); ++i) {

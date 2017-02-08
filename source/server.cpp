@@ -68,7 +68,7 @@ static Atom ServerExistsAtom = 0;
 ** Set up inter-client communication for NEdit server end, expected to be
 ** called only once at startup time
 */
-void InitServerCommunication(void) {
+void InitServerCommunication() {
     Window rootWindow = RootWindow(QX11Info::display(), DefaultScreen(QX11Info::display()));
 
 	// Create the server property atoms on the current DISPLAY. 

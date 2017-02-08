@@ -85,7 +85,7 @@ static void translatePrefFormats(bool convertOld, int fileVer);
 static QStringList readExtensionList(const char **inPtr);
 static QString getDefaultShell();
 static int loadLanguageModesString(const char *inString, int fileVer);
-static int loadLanguageModesStringEx(const std::string &string, int fileVer);
+static int loadLanguageModesStringEx(const QString &string, int fileVer);
 static int modeError(LanguageMode *lm, const char *stringStart, const char *stoppedAt, const char *message);
 static QString WriteLanguageModesStringEx();
 
@@ -124,28 +124,28 @@ static void translatePrefFormats(bool convertOld, int fileVer) {
 	   the standard resource manager routines */
 
     if (!g_Settings.shellCommands.isNull()) {
-        LoadShellCmdsStringEx(g_Settings.shellCommands.toStdString());
+        LoadShellCmdsStringEx(g_Settings.shellCommands);
 	}
     if (!g_Settings.macroCommands.isNull()) {
-        LoadMacroCmdsStringEx(g_Settings.macroCommands.toStdString());
+        LoadMacroCmdsStringEx(g_Settings.macroCommands);
 	}
     if (!g_Settings.bgMenuCommands.isNull()) {
-        LoadBGMenuCmdsStringEx(g_Settings.bgMenuCommands.toStdString());
+        LoadBGMenuCmdsStringEx(g_Settings.bgMenuCommands);
 	}
     if (!g_Settings.highlightPatterns.isNull()) {
-        LoadHighlightStringEx(g_Settings.highlightPatterns.toStdString(), convertOld);
+        LoadHighlightStringEx(g_Settings.highlightPatterns, convertOld);
 	}
     if (!g_Settings.styles.isNull()) {
         LoadStylesStringEx(g_Settings.styles.toStdString());
 	}
     if (!g_Settings.languageModes.isNull()) {
-        loadLanguageModesStringEx(g_Settings.languageModes.toStdString(), fileVer);
+        loadLanguageModesStringEx(g_Settings.languageModes, fileVer);
 	}
     if (!g_Settings.smartIndentInit.isNull()) {
         LoadSmartIndentStringEx(g_Settings.smartIndentInit);
 	}
     if (!g_Settings.smartIndentInitCommon.isNull()) {
-        LoadSmartIndentCommonStringEx(g_Settings.smartIndentInitCommon.toStdString());
+        LoadSmartIndentCommonStringEx(g_Settings.smartIndentInitCommon);
 	}
 
 	// translate the font names into fontLists suitable for the text widget 
@@ -231,11 +231,10 @@ void SaveNEditPrefsEx(QWidget *parent, bool quietly) {
 ** Load an additional preferences file on top of the existing preferences
 ** derived from defaults, the .nedit file, and X resources.
 */
-void ImportPrefFile(const char *filename, int convertOld) {
-    Q_UNUSED(filename);
+void ImportPrefFile(const QString &filename, bool convertOld) {
     Q_UNUSED(convertOld);
-    // TODO(eteran): implement this
-    qDebug("Not Implemented, please report");
+
+    g_Settings.importSettings(filename);
 }
 
 void SetPrefOpenInTab(int state) {
@@ -942,10 +941,10 @@ QString GetWindowDelimitersEx(const DocumentWidget *window) {
 }
 
 
-static int loadLanguageModesStringEx(const std::string &string, int fileVer) {
+static int loadLanguageModesStringEx(const QString &string, int fileVer) {
 	
 	// TODO(eteran): implement this natively
-	return loadLanguageModesString(string.c_str(), fileVer);
+    return loadLanguageModesString(string.toLatin1().data(), fileVer);
 }
 
 static int loadLanguageModesString(const char *inString, int fileVer) {

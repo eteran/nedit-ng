@@ -101,9 +101,9 @@ struct userSubMenuCache {
 };
 
 
-int LoadBGMenuCmdsStringEx(view::string_view inString);
-int LoadMacroCmdsStringEx(view::string_view inString);
-int LoadShellCmdsStringEx(view::string_view inString);
+int LoadBGMenuCmdsStringEx(const QString &inString);
+int LoadMacroCmdsStringEx(const QString &inString);
+int LoadShellCmdsStringEx(const QString &inString);
 QString WriteBGMenuCmdsStringEx();
 QString WriteMacroCmdsStringEx();
 QString WriteShellCmdsStringEx();

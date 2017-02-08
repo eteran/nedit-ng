@@ -236,10 +236,12 @@ QString WriteStylesStringEx() {
 ** that they may contain regular expressions are of the older syntax where
 ** braces were not quoted, and \0 was a legal substitution character).
 */
-bool LoadHighlightStringEx(const std::string &string, int convertOld) {
+bool LoadHighlightStringEx(const QString &string, int convertOld) {
 
 	// TODO(eteran): rework this to actually use a modern approach
-	const char *inString = &string[0];
+    QByteArray stringBytes = string.toLatin1();
+
+    const char *inString = stringBytes.data();
 	const char *inPtr = inString;
 	int i;
 
@@ -280,7 +282,7 @@ bool LoadHighlightStringEx(const std::string &string, int convertOld) {
 ** containing all of the highlight pattern information from the stored
 ** highlight pattern list (PatternSets) for this NEdit session.
 */
-QString WriteHighlightStringEx(void) {
+QString WriteHighlightStringEx() {
 
     QString str;
     QTextStream out(&str);

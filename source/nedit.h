@@ -29,7 +29,6 @@
 
 #include "TextSelection.h"
 #include "ShowMatchingStyle.h"
-#include <QLinkedList>
 
 #define NEDIT_VERSION  5
 #define NEDIT_REVISION 6
@@ -54,8 +53,6 @@
 #define AUTOSAVE_CHAR_LIMIT 80 /* set higher on VMS becaus saving is slower */
 #define AUTOSAVE_OP_LIMIT   8  /* number of distinct editing operations user can do before NEdit gens. new backup file */
 #define MIN_LINE_NUM_COLS 4 /* Min. # of columns in line number display */
-#define APP_NAME "nedit"    /* application name for loading resources */
-#define APP_CLASS "NEdit"   /* application class for loading resources */
 
 /*  This enum must be kept in parallel to the array TruncSubstitutionModes[]
     in preferences.c  */
@@ -95,9 +92,6 @@ enum virtKeyOverride {
 /* determine a safe size for a string to hold an integer-like number contained in xType */
 #define TYPE_INT_STR_SIZE(xType) ((sizeof(xType) * 3) + 2)
 
-class UndoInfo;
-
-
 /* Identifiers for the different colors that can be adjusted. */
 enum ColorTypes {
 	TEXT_FG_COLOR, 
@@ -112,7 +106,6 @@ enum ColorTypes {
 };
 
 
-//extern Display *TheDisplay;
 extern bool IsServer;
 
 #endif
