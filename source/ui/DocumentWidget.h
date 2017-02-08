@@ -28,6 +28,7 @@ class MainWindow;
 class QFrame;
 class QLabel;
 class QSplitter;
+class QMenu;
 class QTimer;
 class TextArea;
 struct dragEndCBStruct;
@@ -248,10 +249,7 @@ public:
     void *macroCmdData_;               // same for macro commands                                               // TODO(eteran): why void* ?
     void *shellCmdData_;               // when a shell command is executing, info. about it, otherwise, nullptr // TODO(eteran): why void* ?
     void *smartIndentData_;            // compiled macros for smart indent                                      // TODO(eteran): why void* ?
-
-public:
-    // TODO(eteran): probably migrate these to MainWindow
-    bool  showStats_;       // is stats line supposed to be shown
+    bool  showStats_;                  // is stats line supposed to be shown
 
 private:
 	QSplitter *splitter_;

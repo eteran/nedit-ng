@@ -276,10 +276,12 @@ static QString writeMenuItemStringEx(const QVector<MenuData> &menuItems, int lis
 }
 
 static int loadMenuItemString(const char *inString, QVector<MenuData> &menuItems, int listType) {
-	char *cmdStr;
+
 	const char *inPtr = inString;
-	char *nameStr;
-	char accStr[MAX_ACCEL_LEN];
+
+    QString cmdStr;
+    QString nameStr;
+    QString accStr;
 	char mneChar;
 	int nameLen;
 	int accLen;
@@ -301,9 +303,9 @@ static int loadMenuItemString(const char *inString, QVector<MenuData> &menuItems
 		nameLen = strcspn(inPtr, ":");
 		if (nameLen == 0)
 			return parseError("no name field");
-        nameStr = new char[nameLen + 1];
-		strncpy(nameStr, inPtr, nameLen);
-		nameStr[nameLen] = '\0';
+
+        nameStr = QString::fromLatin1(inPtr, nameLen);
+
 		inPtr += nameLen;
 		if (*inPtr == '\0')
 			return parseError("end not expected");
@@ -311,11 +313,10 @@ static int loadMenuItemString(const char *inString, QVector<MenuData> &menuItems
 
 		// read accelerator field 
 		accLen = strcspn(inPtr, ":");
-		if (accLen >= MAX_ACCEL_LEN)
-			return parseError("accelerator field too long");
-		strncpy(accStr, inPtr, accLen);
-		accStr[accLen] = '\0';
-		inPtr += accLen;
+
+        accStr = QString::fromLatin1(inPtr, accLen);
+
+        inPtr += accLen;
 		if (*inPtr == '\0')
 			return parseError("end not expected");
 		inPtr++;
@@ -376,26 +377,29 @@ static int loadMenuItemString(const char *inString, QVector<MenuData> &menuItems
 			cmdLen = strcspn(inPtr, "\n");
 			if (cmdLen == 0)
 				return parseError("shell command field is empty");
-            cmdStr = new char[cmdLen + 1];
-			strncpy(cmdStr, inPtr, cmdLen);
-			cmdStr[cmdLen] = '\0';
+
+            cmdStr = QString::fromLatin1(inPtr, cmdLen);
 			inPtr += cmdLen;
 		} else {
-			cmdStr = copyMacroToEnd(&inPtr);
-			if(!cmdStr)
-				return False;
+            char *p = copyMacroToEnd(&inPtr);
+            if(!p) {
+                return false;
+            }
+
+            cmdStr = QString::fromLatin1(p);
+            delete [] p;
 		}
 		while (*inPtr == ' ' || *inPtr == '\t' || *inPtr == '\n') {
 			inPtr++; // skip trailing whitespace & newline 
 		}
 
 		// parse the accelerator field 
-        QKeySequence shortcut = QKeySequence::fromString(QString::fromLatin1(accStr));
+        QKeySequence shortcut = QKeySequence::fromString(accStr);
 
 		// create a menu item record 
 		auto f = new MenuItem;
-        f->name      = QString::fromLatin1(nameStr);
-        f->cmd       = QString::fromLatin1(cmdStr);
+        f->name      = nameStr;
+        f->cmd       = cmdStr;
 		f->mnemonic  = mneChar;
 		f->input     = input;
 		f->output    = output;
@@ -403,9 +407,6 @@ static int loadMenuItemString(const char *inString, QVector<MenuData> &menuItems
 		f->saveFirst = saveFirst;
 		f->loadAfter = loadAfter;
         f->shortcut  = shortcut;
-		
-        delete [] nameStr;
-        delete [] cmdStr;
 
 		// add/replace menu record in the list 
 		bool found = false;

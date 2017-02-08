@@ -27,10 +27,7 @@
 #ifndef MISC_H_
 #define MISC_H_
 
-// maximum length for a window geometry string
-#define MAX_GEOM_STRING_LEN 24
+//#define MAX_ACCEL_LEN 128
 
-#define MAX_ACCEL_LEN 128
 
-	
 #endif
