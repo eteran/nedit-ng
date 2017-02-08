@@ -52,9 +52,6 @@
 #include "selection.h"
 #include <memory>
 
-
-#include "util/misc.h"
-
 #include <algorithm>
 #include <cstdlib>
 #include <cstdio>

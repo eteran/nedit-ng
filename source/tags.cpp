@@ -44,7 +44,6 @@
 #include "selection.h"
 #include "calltips.h"
 #include "util/fileUtils.h"
-#include "util/misc.h"
 #include "util/utils.h"
 
 #include <cstdio>

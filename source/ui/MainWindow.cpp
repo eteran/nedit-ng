@@ -46,7 +46,6 @@
 #include "selection.h"
 #include "search.h"
 #include "macro.h"
-#include "misc.h"
 #include "highlight.h"
 #include "highlightData.h"
 #include "util/fileUtils.h"

@@ -73,7 +73,6 @@
 #include "userCmds.h"
 #include "calltips.h"
 
-#include "util/misc.h"
 #include "util/utils.h"
 
 #include <sys/param.h>

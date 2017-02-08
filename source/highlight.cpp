@@ -41,7 +41,6 @@
 #include "TextDisplay.h"
 #include "WindowHighlightData.h"
 #include "highlightData.h"
-#include "util/misc.h"
 #include "nedit.h"
 #include "preferences.h"
 #include "regularExp.h"

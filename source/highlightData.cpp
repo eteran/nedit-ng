@@ -48,7 +48,6 @@
 #include "PatternSet.h"
 #include "HighlightPattern.h"
 #include "HighlightStyle.h"
-#include "util/misc.h"
 
 #include <cstdio>
 #include <cstring>

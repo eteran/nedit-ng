@@ -5,7 +5,6 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 find_package(Qt5 5.4.0 REQUIRED Widgets Network)
 
 add_library (NUtil 
-	misc.cpp 
 	fileUtils.cpp 
 	utils.cpp 
 	clearcase.cpp)

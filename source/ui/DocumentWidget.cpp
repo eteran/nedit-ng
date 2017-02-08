@@ -39,7 +39,6 @@
 #include "tags.h"
 #include "HighlightData.h"
 #include "WindowHighlightData.h"
-#include "misc.h"
 #include "file.h"
 #include "UndoInfo.h"
 #include "SmartIndent.h"

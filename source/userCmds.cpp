@@ -33,7 +33,6 @@
 #include "macro.h"
 #include "preferences.h"
 #include "parse.h"
-#include "util/misc.h"
 #include "util/MotifHelper.h"
 
 namespace {

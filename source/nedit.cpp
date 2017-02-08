@@ -49,7 +49,6 @@
 #include "selection.h"
 #include "server.h"
 #include "tags.h"
-#include "util/misc.h"
 
 #include <algorithm>
 #include <cctype>
