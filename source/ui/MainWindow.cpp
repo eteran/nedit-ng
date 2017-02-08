@@ -111,6 +111,7 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(par
     iSearchLastRegexCase_  = true;
     iSearchLastLiteralCase_= false;
     wasSelected_           = false;
+    showLineNumbers_       = GetPrefLineNums();
 	
 	// default to hiding the optional panels
     ui.incrementalSearchFrame->setVisible(showISearchLine_);

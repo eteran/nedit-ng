@@ -58,8 +58,6 @@
 #include "RangesetTable.h"
 #include "SearchDirection.h"
 #include "TextBuffer.h"
-#include "TextDisplay.h"
-#include "TextHelper.h"
 #include "WrapStyle.h"
 #include "highlight.h"
 #include "highlightData.h"

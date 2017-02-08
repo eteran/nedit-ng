@@ -18,8 +18,6 @@
 #include "highlightData.h"
 #include "smartIndent.h"
 #include "userCmds.h"
-#include "TextHelper.h"
-#include "TextDisplay.h"
 #include <memory>
 
 //------------------------------------------------------------------------------

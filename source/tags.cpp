@@ -34,9 +34,7 @@
 #include "ui/TextArea.h"
 
 #include "tags.h"
-#include "TextHelper.h"
 #include "TextBuffer.h"
-#include "TextDisplay.h"
 #include "nedit.h"
 #include "file.h"
 #include "preferences.h"

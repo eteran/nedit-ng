@@ -38,8 +38,6 @@
 #include "ui/TextArea.h"
 #include "ui/MainWindow.h"
 #include "WrapStyle.h"
-#include "TextDisplay.h"
-#include "TextHelper.h"
 #include "search.h"
 #include "regularExp.h"
 #include "TextBuffer.h"
