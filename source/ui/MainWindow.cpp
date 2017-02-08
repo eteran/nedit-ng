@@ -498,29 +498,30 @@ void MainWindow::deleteTabButtonClicked() {
 // Name: on_action_New_triggered
 //------------------------------------------------------------------------------
 void MainWindow::on_action_New_triggered() {
-    action_New(QLatin1String("prefs"));
+    action_New(New_Prefs);
 }
 
 //------------------------------------------------------------------------------
 // Name: on_action_New_triggered
 //------------------------------------------------------------------------------
-void MainWindow::action_New(const QString &mode) {
+void MainWindow::action_New(NewMode mode) {
 
-    bool openInTab = GetPrefOpenInTab();
+    bool openInTab;
 
-	if (!mode.isEmpty()) {
-		if (mode == QLatin1String("prefs")) {
-			/* accept default */;
-		} else if (mode == QLatin1String("tab")) {
-			openInTab = true;
-		} else if (mode == QLatin1String("window")) {
-			openInTab = true;
-		} else if (mode == QLatin1String("opposite")) {
-			openInTab = !openInTab;
-		} else {
-			fprintf(stderr, "nedit: Unknown argument to action procedure \"new\": %s\n", qPrintable(mode));
-		}
-	}
+    switch(mode) {
+    case New_Prefs:
+        openInTab = GetPrefOpenInTab();
+        break;
+    case New_Tab:
+        openInTab = true;
+        break;
+    case New_Window:
+        openInTab = false;
+        break;
+    case New_Opposite:
+        openInTab = !GetPrefOpenInTab();
+        break;
+    }
 
 	QString path;
 
@@ -528,9 +529,8 @@ void MainWindow::action_New(const QString &mode) {
         path = doc->path_;
     }
 
-
     EditNewFileEx(openInTab ? this : nullptr, QString(), false, QString(), path);
-    CheckCloseDimEx();
+    MainWindow::CheckCloseDimEx();
 }
 
 QString MainWindow::PromptForExistingFileEx(const QString &path, const QString &prompt) {

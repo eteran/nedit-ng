@@ -14,6 +14,13 @@ class DocumentWidget;
 class DialogReplace;
 class MenuData;
 
+enum NewMode {
+    New_Prefs,
+    New_Tab,
+    New_Window,
+    New_Opposite
+};
+
 #include "ui_MainWindow.h"
 
 class MainWindow : public QMainWindow {
@@ -98,7 +105,7 @@ public:
 
 public Q_SLOTS:
 	// internal variants
-    void action_New(const QString &mode = QString());
+    void action_New(NewMode mode = New_Prefs);
     void action_Shift_Left_Tabs();
     void action_Shift_Right_Tabs();
     void action_Shift_Find();
