@@ -27,13 +27,19 @@
 *******************************************************************************/
 
 #include <QVector>
+#include <QTextStream>
 #include "userCmds.h"
 #include "MenuItem.h"
 #include "file.h"
 #include "macro.h"
 #include "preferences.h"
 #include "parse.h"
-#include "util/MotifHelper.h"
+
+/* Descriptions of the current user programmed menu items for re-generating
+   menus and processing shell, macro, and background menu selections */
+QVector<MenuData> ShellMenuData;
+QVector<MenuData> MacroMenuData;
+QVector<MenuData> BGMenuData;
 
 namespace {
 
@@ -43,40 +49,15 @@ const int UNKNOWN_LANGUAGE_MODE = -2;
 
 }
 
-/* Structure for keeping track of hierarchical sub-menus during user-menu
-   creation */
-struct menuTreeItem {
-	QString name;
-	Widget  menuPane;
-};
-
-/* Descriptions of the current user programmed menu items for re-generating
-   menus and processing shell, macro, and background menu selections */
-QVector<MenuData>  ShellMenuData;
-userSubMenuCache ShellSubMenus;
-
-QVector<MenuData> MacroMenuData;
-userSubMenuCache MacroSubMenus;
-
-QVector<MenuData> BGMenuData;
-userSubMenuCache BGSubMenus;
-
-static char *copySubstring(const char *string, int length);
-static int parseError(const char *message);
 static char *copyMacroToEnd(const char **inPtr);
-static int getSubMenuDepth(const char *menuName);
+static char *writeMenuItemString(const QVector<MenuData> &menuItems, int listType);
+static int loadMenuItemString(const char *inString, QVector<MenuData> &menuItems, int listType);
+static int parseError(const char *message);
+static QString stripLanguageModeEx(const QString &menuItemName);
+static QString writeMenuItemStringEx(const QVector<MenuData> &menuItems, int listType);
 static userMenuInfo *parseMenuItemRec(MenuItem *item);
 static void parseMenuItemName(char *menuItemName, userMenuInfo *info);
-static void generateUserMenuId(userMenuInfo *info, userSubMenuCache *subMenus);
-static userSubMenuInfo *findSubMenuInfo(userSubMenuCache *subMenus, const char *hierName);
-static char *stripLanguageModeEx(const QString &menuItemName);
-static void freeUserMenuInfo(userMenuInfo *info);
-static void allocSubMenuCache(userSubMenuCache *subMenus, int nbrOfItems);
-
-static void setDefaultIndex(const QVector<MenuData> &infoList, int defaultIdx);
-static int loadMenuItemString(const char *inString, QVector<MenuData> &menuItems, int listType);
-static QString writeMenuItemStringEx(const QVector<MenuData> &menuItems, int listType);
-static char *writeMenuItemString(const QVector<MenuData> &menuItems, int listType);
+static void setDefaultIndex(const QVector<MenuData> &infoList, int index);
 
 /*
 ** Generate a text string for the preferences file describing the contents
@@ -84,7 +65,7 @@ static char *writeMenuItemString(const QVector<MenuData> &menuItems, int listTyp
 ** can be read by LoadShellCmdsString, rather, it is what needs to be written
 ** to a resource file such that it will read back in that form.
 */
-QString WriteShellCmdsStringEx(void) {
+QString WriteShellCmdsStringEx() {
 	return writeMenuItemStringEx(ShellMenuData, SHELL_CMDS);
 }
 
@@ -95,11 +76,11 @@ QString WriteShellCmdsStringEx(void) {
 ** is what needs to be written to a resource file such that it will read back
 ** in that form.
 */
-QString WriteMacroCmdsStringEx(void) {
+QString WriteMacroCmdsStringEx() {
 	return writeMenuItemStringEx(MacroMenuData, MACRO_CMDS);
 }
 
-QString WriteBGMenuCmdsStringEx(void) {
+QString WriteBGMenuCmdsStringEx() {
 	return writeMenuItemStringEx(BGMenuData, BG_MENU_CMDS);
 }
 
@@ -134,9 +115,9 @@ int LoadBGMenuCmdsStringEx(const QString &inString) {
 ** user menu preference string was read).
 */
 void SetupUserMenuInfo() {
-	parseMenuItemList(ShellMenuData, &ShellSubMenus);
-	parseMenuItemList(MacroMenuData, &MacroSubMenus);
-	parseMenuItemList(BGMenuData,    &BGSubMenus);
+    parseMenuItemList(ShellMenuData);
+    parseMenuItemList(MacroMenuData);
+    parseMenuItemList(BGMenuData);
 }
 
 /*
@@ -146,23 +127,14 @@ void SetupUserMenuInfo() {
 */
 void UpdateUserMenuInfo() {
 	freeUserMenuInfoList(ShellMenuData);
-	parseMenuItemList(ShellMenuData, &ShellSubMenus);
+    parseMenuItemList(ShellMenuData);
 
 	freeUserMenuInfoList(MacroMenuData);
-	parseMenuItemList(MacroMenuData, &MacroSubMenus);
+    parseMenuItemList(MacroMenuData);
 
 	freeUserMenuInfoList(BGMenuData);
-	parseMenuItemList(BGMenuData, &BGSubMenus);
+    parseMenuItemList(BGMenuData);
 }
-
-static char *copySubstring(const char *string, int length) {
-	char *retStr = XtMalloc(length + 1);
-
-	strncpy(retStr, string, length);
-	retStr[length] = '\0';
-	return retStr;
-}
-
 
 static char *writeMenuItemString(const QVector<MenuData> &menuItems, int listType) {
 
@@ -213,16 +185,21 @@ static char *writeMenuItemString(const QVector<MenuData> &menuItems, int listTyp
 
 		*outPtr++ = ':';
 		if (listType == SHELL_CMDS) {
-			if (f->input == FROM_SELECTION)
-				*outPtr++ = 'I';
-			else if (f->input == FROM_WINDOW)
-				*outPtr++ = 'A';
-			else if (f->input == FROM_EITHER)
-				*outPtr++ = 'E';
-			if (f->output == TO_DIALOG)
-				*outPtr++ = 'D';
-			else if (f->output == TO_NEW_WINDOW)
-				*outPtr++ = 'W';
+            switch(f->input) {
+            case FROM_SELECTION: *outPtr++ = 'I'; break;
+            case FROM_WINDOW:    *outPtr++ = 'A'; break;
+            case FROM_EITHER:    *outPtr++ = 'E'; break;
+            default:
+                break;
+            }
+
+            switch(f->output) {
+            case TO_DIALOG:     *outPtr++ = 'D'; break;
+            case TO_NEW_WINDOW: *outPtr++ = 'W'; break;
+            default:
+                break;
+            }
+
 			if (f->repInput)
 				*outPtr++ = 'X';
 			if (f->saveFirst)
@@ -231,8 +208,10 @@ static char *writeMenuItemString(const QVector<MenuData> &menuItems, int listTyp
 				*outPtr++ = 'L';
 			*outPtr++ = ':';
 		} else {
-			if (f->input == FROM_SELECTION)
+            if (f->input == FROM_SELECTION) {
 				*outPtr++ = 'R';
+            }
+
 			*outPtr++ = ':';
 			*outPtr++ = ' ';
 			*outPtr++ = '{';
@@ -271,7 +250,7 @@ static QString writeMenuItemStringEx(const QVector<MenuData> &menuItems, int lis
         str = QString::fromLatin1(s);
         delete [] s;
 	}
-	return str;
+    return str;
 }
 
 static int loadMenuItemString(const char *inString, QVector<MenuData> &menuItems, int listType) {
@@ -504,15 +483,12 @@ static char *copyMacroToEnd(const char **inPtr) {
 ** management of user menu.
 */
 
-void parseMenuItemList(QVector<MenuData> &itemList, userSubMenuCache *subMenus) {
-	// Allocate storage for structures to keep track of sub-menus 
-	allocSubMenuCache(subMenus, itemList.size());
+void parseMenuItemList(QVector<MenuData> &itemList) {
 
 	/* 1st pass: setup user menu info: extract language modes, menu name &
 	   default indication; build user menu ID */
 	for (MenuData &data: itemList) {
 		data.info = parseMenuItemRec(data.item);
-		generateUserMenuId(data.info, subMenus);
 	}
 
 	// 2nd pass: solve "default" dependencies 
@@ -526,30 +502,12 @@ void parseMenuItemList(QVector<MenuData> &itemList, userSubMenuCache *subMenus) 
 		if (info->umiIsDefault) {
 			setDefaultIndex(itemList, i);
 		}
-	}
-}
-
-/*
-** Returns the sub-menu depth (i.e. nesting level) of given
-** menu name.
-*/
-static int getSubMenuDepth(const char *menuName) {
-
-	int depth = 0;
-
-	// determine sub-menu depth by counting '>' of given "menuName" 
-	const char *subSep = menuName;
-	while ((subSep = strchr(subSep, '>'))) {
-		depth++;
-		subSep++;
-	}
-
-	return depth;
+    }
 }
 
 /*
 ** Cache user menus:
-** Parse a singe menu item. Allocate & setup a user menu info element
+** Parse a single menu item. Allocate & setup a user menu info element
 ** holding extracted info.
 */
 static userMenuInfo *parseMenuItemRec(MenuItem *item) {
@@ -561,17 +519,9 @@ static userMenuInfo *parseMenuItemRec(MenuItem *item) {
 	   for hierarchical ID; init. ID with {0,.., 0} */
 	newInfo->umiName = stripLanguageModeEx(item->name);
 
-	int subMenuDepth = getSubMenuDepth(newInfo->umiName);
-
-	newInfo->umiId = new int[subMenuDepth + 1]();
-
 	// init. remaining parts of user menu info element 
-    newInfo->umiIdLen              = 0;
     newInfo->umiIsDefault          = false;
-	newInfo->umiNbrOfLanguageModes = 0;
-    newInfo->umiLanguageMode       = nullptr;
     newInfo->umiDefaultIndex       = -1;
-    newInfo->umiToBeManaged        = false;
 
 	// assign language mode info to new user menu info element 
 	parseMenuItemName(item->name.toLatin1().data(), newInfo);
@@ -590,7 +540,6 @@ static void parseMenuItemName(char *menuItemName, userMenuInfo *info) {
 	int languageMode;
 	int langModes[MAX_LANGUAGE_MODES];
 	int nbrLM = 0;
-	int size;
 
 	if (char *atPtr = strchr(menuItemName, '@')) {
 		if (!strcmp(atPtr + 1, "*")) {
@@ -625,83 +574,16 @@ static void parseMenuItemName(char *menuItemName, userMenuInfo *info) {
 		}
 
 		if (nbrLM != 0) {
-			info->umiNbrOfLanguageModes = nbrLM;
-			size = sizeof(int) * nbrLM;
-			info->umiLanguageMode = (int *)XtMalloc(size);
-			memcpy(info->umiLanguageMode, langModes, size);
+            QVector<int> languageModes;
+            languageModes.reserve(nbrLM);
+
+            for(int i = 0; i < nbrLM; ++i) {
+                languageModes.push_back(langModes[i]);
+            }
+
+            info->umiLanguageModes = languageModes;
 		}
 	}
-}
-
-/*
-** Cache user menus:
-** generates an ID (= array of integers) of given user menu info, which
-** allows to find the user menu  item within the menu tree later on: 1st
-** integer of ID indicates position within main menu; 2nd integer indicates
-** position within 1st sub-menu etc.
-*/
-static void generateUserMenuId(userMenuInfo *info, userSubMenuCache *subMenus) {
-
-	char *hierName, *subSep;
-	int subMenuDepth = 0;
-	int *menuIdx = &subMenus->usmcNbrOfMainMenuItems;
-	userSubMenuInfo *curSubMenu;
-
-	/* find sub-menus, stripping off '>' until item name is
-	   reached */
-	subSep = info->umiName;
-	while ((subSep = strchr(subSep, '>'))) {
-		hierName = copySubstring(info->umiName, subSep - info->umiName);
-		curSubMenu = findSubMenuInfo(subMenus, hierName);
-		if(!curSubMenu) {
-			/* sub-menu info not stored before: new sub-menu;
-			   remember its hierarchical position */
-			info->umiId[subMenuDepth] = *menuIdx;
-			(*menuIdx)++;
-
-			/* store sub-menu info in list of subMenus; allocate
-			   some memory for hierarchical ID of sub-menu & take over
-			   current hierarchical ID of current user menu info */
-			curSubMenu = &subMenus->usmcInfo[subMenus->usmcNbrOfSubMenus];
-			subMenus->usmcNbrOfSubMenus++;
-			curSubMenu->usmiName = hierName;
-
-			curSubMenu->usmiId = new int[subMenuDepth + 2];			
-			std::copy_n(info->umiId, subMenuDepth + 2, curSubMenu->usmiId);
-			
-			curSubMenu->usmiIdLen = subMenuDepth + 1;
-		} else {
-			/* sub-menu info already stored before: takeover its
-			   hierarchical position */
-			XtFree(hierName);
-			info->umiId[subMenuDepth] = curSubMenu->usmiId[subMenuDepth];
-		}
-
-		subMenuDepth++;
-		menuIdx = &curSubMenu->usmiId[subMenuDepth];
-
-		subSep++;
-	}
-
-	// remember position of menu item within final (sub) menu 
-	info->umiId[subMenuDepth] = *menuIdx;
-	info->umiIdLen = subMenuDepth + 1;
-	(*menuIdx)++;
-}
-
-/*
-** Cache user menus:
-** Find info corresponding to a hierarchical menu name (a>b>c...)
-*/
-static userSubMenuInfo *findSubMenuInfo(userSubMenuCache *subMenus, const char *hierName) {
-
-	for (int i = 0; i < subMenus->usmcNbrOfSubMenus; i++) {
-		if (!strcmp(hierName, subMenus->usmcInfo[i].usmiName)) {
-			return &subMenus->usmcInfo[i];
-		}
-	}
-	
-	return nullptr;
 }
 
 /*
@@ -709,58 +591,39 @@ static userSubMenuInfo *findSubMenuInfo(userSubMenuCache *subMenus, const char *
 ** Returns an allocated copy of menuItemName stripped of language mode
 ** parts (i.e. parts starting with "@").
 */
-static char *stripLanguageModeEx(const QString &menuItemName) {
+static QString stripLanguageModeEx(const QString &menuItemName) {
 	
-	QByteArray latin1 = menuItemName.toLatin1();
-	
-	if(const char *firstAtPtr = strchr(latin1.data(), '@')) {
-		return copySubstring(latin1.data(), firstAtPtr - latin1.data());
-	} else {
-        return XtNewStringEx(menuItemName);
+    int index = menuItemName.indexOf(QLatin1Char('@'));
+    if(index != -1) {
+        return menuItemName.mid(0, index);
+    } else {
+        return menuItemName;
+    }
+}
+
+static void setDefaultIndex(const QVector<MenuData> &infoList, int index) {
+    QString defaultMenuName = infoList[index].info->umiName;
+
+    /* Scan the list for items with the same name and a language mode
+       specified. If one is found, then set the default index to the
+       index of the current default item. */
+
+    for (const MenuData &data: infoList) {
+        userMenuInfo *info = data.info;
+
+        if (!info->umiIsDefault && info->umiName == defaultMenuName) {
+            info->umiDefaultIndex = index;
+        }
+    }
+}
+
+void freeUserMenuInfoList(QVector<MenuData> &menuList) {
+    for(MenuData &data: menuList) {
+        delete data.item;
+        delete data.info;
 	}
-}
 
-static void setDefaultIndex(const QVector<MenuData> &infoList, int defaultIdx) {
-	char *defaultMenuName = infoList[defaultIdx].info->umiName;
-
-	/* Scan the list for items with the same name and a language mode
-	   specified. If one is found, then set the default index to the
-	   index of the current default item. */
-	
-	for (const MenuData &data: infoList) {
-		userMenuInfo *info = data.info;
-
-		if (!info->umiIsDefault && strcmp(info->umiName, defaultMenuName) == 0) {
-			info->umiDefaultIndex = defaultIdx;
-		}
-	}
-}
-
-void freeUserMenuInfoList(QVector<MenuData> &infoList) {
-	for(MenuData &data: infoList) {			
-		freeUserMenuInfo(data.info);
-	}
-}
-
-static void freeUserMenuInfo(userMenuInfo *info) {
-
-
-	delete [] info->umiId;
-
-	if (info->umiNbrOfLanguageModes != 0)
-		XtFree((char *)info->umiLanguageMode);
-
-	delete [] info;
-}
-
-/*
-** Cache user menus:
-** Allocate & init. storage for structures to manage sub-menus
-*/
-static void allocSubMenuCache(userSubMenuCache *subMenus, int nbrOfItems) {
-	subMenus->usmcNbrOfMainMenuItems = 0;
-	subMenus->usmcNbrOfSubMenus      = 0;
-	subMenus->usmcInfo               = new userSubMenuInfo[nbrOfItems];
+    menuList.clear();
 }
 
 

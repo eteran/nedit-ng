@@ -432,12 +432,7 @@ bool DialogShellMenu::applyDialogChanges() {
 	selection->setText(current->name);
 
 	// Update the menu information
-	for(MenuData &data : ShellMenuData) {
-		delete data.item;
-	}	
-
 	freeUserMenuInfoList(ShellMenuData);
-	ShellMenuData.clear();
 
 	int count = ui.listItems->count();
 	for(int i = 0; i < count; ++i) {
@@ -445,7 +440,7 @@ bool DialogShellMenu::applyDialogChanges() {
 		ShellMenuData.push_back({ new MenuItem(*ptr), nullptr });
 	}
 
-	parseMenuItemList(ShellMenuData, &ShellSubMenus);
+    parseMenuItemList(ShellMenuData);
 
 	// Update the menus themselves in all of the NEdit windows
     for(MainWindow *window : MainWindow::allWindows()) {

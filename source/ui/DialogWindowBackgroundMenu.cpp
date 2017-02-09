@@ -450,12 +450,7 @@ bool DialogWindowBackgroundMenu::applyDialogChanges() {
 	selection->setText(current->name);
 
 	// Update the menu information
-	for(MenuData &data : BGMenuData) {
-		delete data.item;
-	}
-
 	freeUserMenuInfoList(BGMenuData);
-	BGMenuData.clear();
 
 	int count = ui.listItems->count();
 	for(int i = 0; i < count; ++i) {
@@ -463,7 +458,7 @@ bool DialogWindowBackgroundMenu::applyDialogChanges() {
 		BGMenuData.push_back({ new MenuItem(*ptr), nullptr });
 	}
 
-	parseMenuItemList(BGMenuData, &BGSubMenus);
+    parseMenuItemList(BGMenuData);
 
     // Update the menus themselves in all of the NEdit windows
     for(MainWindow *window : MainWindow::allWindows()) {

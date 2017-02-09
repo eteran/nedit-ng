@@ -50,8 +50,6 @@ HighlightPattern *FindPatternOfWindowEx(DocumentWidget *window, const QString &n
 int HighlightCodeOfPosEx(DocumentWidget *document, int pos);
 int HighlightLengthOfCodeFromPosEx(DocumentWidget *window, int pos, int *checkCode);
 int StyleLengthOfCodeFromPosEx(DocumentWidget *window, int pos);
-QColor AllocateColor(const char *colorName);
-QColor AllocColor(const char *colorName);
 QColor AllocColor(const QString &colorName);
 QColor GetHighlightBGColorOfCodeEx(DocumentWidget *document, int hCode);
 QColor HighlightColorValueOfCodeEx(DocumentWidget *document, int hCode);

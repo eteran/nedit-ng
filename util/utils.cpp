@@ -35,7 +35,6 @@
 #include <sys/param.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <sys/types.h>
 #include <sys/utsname.h>
 #include <unistd.h>
 
@@ -49,7 +48,7 @@ QString GetCurrentDirEx(void) {
 /* return a non-nullptr value for the user's home directory,
    without trailing slash.
    We try the  environment var and the system user database. */
-QString GetHomeDirEx(void) {
+QString GetHomeDirEx() {
     return QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
 }
 
@@ -57,7 +56,7 @@ QString GetHomeDirEx(void) {
 ** Return a pointer to the username of the current user in a statically
 ** allocated string.
 */
-QString GetUserNameEx(void) {
+QString GetUserNameEx() {
 	/* cuserid has apparently been dropped from the ansi C standard, and if
 	   strict ansi compliance is turned on (on Sun anyhow, maybe others), calls
 	   to cuserid fail to compile.  Older versions of nedit try to use the

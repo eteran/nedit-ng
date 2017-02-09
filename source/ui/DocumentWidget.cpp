@@ -2990,21 +2990,11 @@ int DocumentWidget::CloseFileAndWindow(int preResponse) {
 ** Close a document, or an editor window
 */
 void DocumentWidget::CloseWindow() {
-#if 0
+#if 1
     MainWindow *window = toWindow();
     if(!window) {
         return;
     }
-
-    int state;
-    DocumentWidget *win;
-    DocumentWidget *topBuf = nullptr;
-    DocumentWidget *nextBuf = nullptr;
-
-    Q_UNUSED(state);
-    Q_UNUSED(win);
-    Q_UNUSED(topBuf);
-    Q_UNUSED(nextBuf);
 
     // Free smart indent macro programs
     EndSmartIndentEx(this);
@@ -3023,15 +3013,11 @@ void DocumentWidget::CloseWindow() {
     // Destroy the file closed property for this file
     DeleteFileClosedPropertyEx(this);
 
-    /* Remove any possibly pending callback which might fire after the
-       widget is gone. */
-#if 0
-    cancelTimeOut(&markTimeoutID_);
-#endif
     /* if this is the last window, or must be kept alive temporarily because
        it's running the macro calling us, don't close it, make it Untitled */
-    int windowCount   = MainWindow::allWindows().size();
-    int documentCount = MainWindow::allDocuments().size();
+    const int windowCount   = MainWindow::allWindows().size();
+    const int documentCount = DocumentWidget::allDocuments().size();
+
     if (keepWindow || (windowCount == 1 && documentCount == 1)) {
         filename_ = QLatin1String("");
 
@@ -3086,7 +3072,7 @@ void DocumentWidget::CloseWindow() {
     /* remove the buffer modification callbacks so the buffer will be
        deallocated when the last text widget is destroyed */
     buffer_->BufRemoveModifyCB(modifiedCB, this);
-    buffer_->BufRemoveModifyCB(SyntaxHighlightModifyCB, this);
+    buffer_->BufRemoveModifyCB(SyntaxHighlightModifyCBEx, this);
 
     // free the undo and redo lists
     ClearUndoList();
@@ -3094,7 +3080,7 @@ void DocumentWidget::CloseWindow() {
 
     // remove the window from the global window list, update window menus
     window->InvalidateWindowMenus();
-    window->CheckCloseDimEx(); // Close of window running a macro may have been disabled.
+    MainWindow::CheckCloseDimEx(); // Close of window running a macro may have been disabled.
 
     // NOTE(eteran): No need to explicitly sync this with the tab context menu
     //               because they are set to be in sync when the context menu is shown

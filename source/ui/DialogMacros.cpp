@@ -452,12 +452,7 @@ bool DialogMacros::applyDialogChanges() {
 	selection->setText(current->name);
 
 	// Update the menu information
-	for(MenuData &data : MacroMenuData) {
-		delete data.item;
-	}	
-
 	freeUserMenuInfoList(MacroMenuData);
-	MacroMenuData.clear();
 
 	int count = ui.listItems->count();
 	for(int i = 0; i < count; ++i) {
@@ -465,7 +460,7 @@ bool DialogMacros::applyDialogChanges() {
 		MacroMenuData.push_back({ new MenuItem(*ptr), nullptr });
 	}
 
-	parseMenuItemList(MacroMenuData, &MacroSubMenus);
+    parseMenuItemList(MacroMenuData);
 	
     // Update the menus themselves in all of the NEdit windows
     for(MainWindow *window : MainWindow::allWindows()) {

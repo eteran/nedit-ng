@@ -15,7 +15,7 @@ public:
 	bool         isItalic;
 	QColor       color;
 	bool         underline;
-    QFont        fontEx;
+    QFont        font;
 	QString      bgColorName; // background style coloring (name may be "empty")
 	QColor       bgColor;
 };

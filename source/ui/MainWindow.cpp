@@ -160,9 +160,12 @@ void MainWindow::parseGeometry(QString geometry) {
         }
     }
 
-    // TODO(eteran): get this to work!... somehow
-    TextArea *area = currentDocument()->firstPane();
-    area->setSize(cols, rows);
+    // TODO(eteran): make this a bit more accurate
+    if(DocumentWidget *document = currentDocument()) {
+        QFontMetrics fm(document->fontStruct_);
+
+        setGeometry(x(), y(), fm.maxWidth() * cols, (fm.ascent() + fm.descent()) * rows);
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -931,9 +934,10 @@ QMenu *MainWindow::createUserMenu(DocumentWidget *document, const QVector<MenuDa
     for(int i = 0; i < data.size(); ++i) {
         const MenuData &menuData = data[i];
 
-        bool found = menuData.info->umiNbrOfLanguageModes == 0;
-        for(int language = 0; language < menuData.info->umiNbrOfLanguageModes; ++language) {
-            if(menuData.info->umiLanguageMode[language] == document->languageMode_) {
+        bool found = menuData.info->umiLanguageModes.isEmpty();
+
+        for(int language = 0; language < menuData.info->umiLanguageModes.size(); ++language) {
+            if(menuData.info->umiLanguageModes[language] == document->languageMode_) {
                 found = true;
             }
         }
@@ -943,7 +947,7 @@ QMenu *MainWindow::createUserMenu(DocumentWidget *document, const QVector<MenuDa
         }
 
         QMenu *parentMenu = rootMenu;
-        QString name = QString::fromLatin1(menuData.info->umiName);
+        QString name = menuData.info->umiName;
 
         int index = 0;
         for (;;) {

@@ -104,9 +104,9 @@ static int findSafeParseRestartPos(TextBuffer *buf, WindowHighlightData *highlig
 static int findTopLevelParentIndex(HighlightPattern *patList, int nPats, int index);
 static int forwardOneContext(TextBuffer *buf, ReparseContext *context, int fromPos);
 static int indexOfNamedPattern(HighlightPattern *patList, int nPats, const QString &patName);
-static int isParentStyle(const char *parentStyles, int style1, int style2);
+static int isParentStyle(const QByteArray &parentStyles, int style1, int style2);
 static int lastModified(TextBuffer *styleBuf);
-static int parentStyleOf(const char *parentStyles, int style);
+static int parentStyleOf(const QByteArray &parentStyles, int style);
 static int parseBufferRange(HighlightData *pass1Patterns, HighlightData *pass2Patterns, TextBuffer *buf, TextBuffer *styleBuf, ReparseContext *contextRequirements, int beginParse, int endParse, const QString &delimiters);
 static void fillStyleString(const char **stringPtr, char **stylePtr, const char *toPtr, char style, char *prevChar);
 static void freePatterns(HighlightData *patterns);
@@ -655,7 +655,9 @@ WindowHighlightData *createHighlightDataEx(DocumentWidget *document, PatternSet 
             p->bgColor = p->color;
         }
 
-        p->fontEx = FontOfNamedStyleEx(document, pat->style);
+        p->font = FontOfNamedStyleEx(document, pat->style);
+        // just to be sure...
+        p->font.setStyleStrategy(QFont::ForceIntegerMetrics);
     };
 
     // PLAIN_STYLE (pass 1)
@@ -1199,14 +1201,20 @@ static void handleUnparsedRegionCBEx(const TextArea *area, int pos, const void *
 ** with the parsing result.
 */
 static void incrementalReparse(WindowHighlightData *highlightData, TextBuffer *buf, int pos, int nInserted, const QString &delimiters) {
-	int beginParse, endParse, endAt, lastMod, parseInStyle, nPasses;
+    int beginParse;
+    int endParse;
+    int endAt;
+    int lastMod;
+    int parseInStyle;
+    int nPasses;
+
 	TextBuffer *styleBuf = highlightData->styleBuffer;
 	HighlightData *pass1Patterns = highlightData->pass1Patterns;
 	HighlightData *pass2Patterns = highlightData->pass2Patterns;
 	HighlightData *startPattern;
 	ReparseContext *context = &highlightData->contextRequirements;
 		
-	char *parentStyles = highlightData->parentStyles.data();
+    QByteArray parentStyles = highlightData->parentStyles;
 
 	/* Find the position "beginParse" at which to begin reparsing.  This is
 	   far enough back in the buffer such that the guranteed number of
@@ -1761,15 +1769,6 @@ static int lastModified(TextBuffer *styleBuf) {
 }
 
 /*
-** use this canned function to call AllocColor() when
-** the r, g & b components is not needed, thus saving
-** the little hassle of creating the dummy variable.
-*/
-QColor AllocateColor(const char *colorName) {
-    return AllocColor(colorName);
-}
-
-/*
 ** Allocate a read-only (shareable) colormap cell for a named color, from the
 ** the default colormap of the screen on which the widget (w) is displayed. If
 ** the colormap is full and there's no suitable substitute, print an error on
@@ -1777,10 +1776,6 @@ QColor AllocateColor(const char *colorName) {
 */
 QColor AllocColor(const QString &colorName) {
      return X11Colors::fromString(colorName);
-}
-
-QColor AllocColor(const char *colorName) {
-    return X11Colors::fromString(QString::fromLatin1(colorName));
 }
 
 /*
@@ -1818,12 +1813,11 @@ static regexp *compileREAndWarnEx(DocumentWidget *parent, view::string_view re) 
 
 }
 
-static int parentStyleOf(const char *parentStyles, int style) {
-	int r = parentStyles[(uint8_t)style - UNFINISHED_STYLE]; 
-	return r;
+static int parentStyleOf(const QByteArray &parentStyles, int style) {
+    return parentStyles[(uint8_t)style - UNFINISHED_STYLE];
 }
 
-static int isParentStyle(const char *parentStyles, int style1, int style2) {
+static int isParentStyle(const QByteArray &parentStyles, int style1, int style2) {
 
 	for (int p = parentStyleOf(parentStyles, style2); p != 0; p = parentStyleOf(parentStyles, p)) {
 		if (style1 == p) {
@@ -1862,7 +1856,7 @@ static int patternIsParsable(HighlightData *pattern) {
 static int findSafeParseRestartPos(TextBuffer *buf, WindowHighlightData *highlightData, int *pos) {
 	
 	int style, startStyle, runningStyle, checkBackTo, safeParseStart, i;
-	char *parentStyles = highlightData->parentStyles.data();
+    QByteArray parentStyles = highlightData->parentStyles;
 	HighlightData *pass1Patterns = highlightData->pass1Patterns;
 	ReparseContext *context = &highlightData->contextRequirements;
 

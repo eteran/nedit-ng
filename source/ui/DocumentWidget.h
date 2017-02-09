@@ -15,6 +15,7 @@
 #include "LockReasons.h"
 #include "userCmds.h"
 #include "util/FileFormats.h"
+#include "string_view.h"
 #include "MenuItem.h"
 #include "IndentStyle.h"
 #include "tags.h"

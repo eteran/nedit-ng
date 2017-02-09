@@ -289,8 +289,8 @@ int countLinesEx(view::string_view string) {
 ** the colormap is full and there's no suitable substitute, print an error on
 ** stderr, and return the widget's background color as a backup.
 */
-QColor allocBGColor(const char *colorName, int *ok) {
-    *ok = 1;
+QColor allocBGColor(const QString &colorName, bool *ok) {
+    *ok = true;
 	return AllocColor(colorName);
 }
 
@@ -2068,7 +2068,7 @@ int TextArea::stringWidth(const char *string, int length, int style) const {
 
 
 	if (style & STYLE_LOOKUP_MASK) {
-        QFontMetrics fm(styleTable_[(style & STYLE_LOOKUP_MASK) - ASCII_A].fontEx);
+        QFontMetrics fm(styleTable_[(style & STYLE_LOOKUP_MASK) - ASCII_A].font);
         int ret = fm.width(QString::fromLatin1(string, length));
         return ret;
 	} else {
@@ -2861,7 +2861,7 @@ int TextArea::measureVisLine(int visLineNum) {
             auto styleChar = styleBuffer_->BufGetCharacter(lineStartPos + i);
             int style = static_cast<uint8_t>(styleChar) - ASCII_A;
 
-            QFontMetrics styleFm(styleTable_[style].fontEx);
+            QFontMetrics styleFm(styleTable_[style].font);
             width += styleFm.width(QString::fromLatin1(expandedChar, len));
 
 			charCount += len;
@@ -3455,7 +3455,7 @@ void TextArea::drawString(QPainter *painter, int style, int x, int y, int toX, c
 			styleRec = &styleTable_[(style & STYLE_LOOKUP_MASK) - ASCII_A];
 			underlineStyle = styleRec->underline;
 
-            X_font = styleRec->fontEx;
+            X_font = styleRec->font;
             fground = styleRec->color;
 			// here you could pick up specific select and highlight fground
 		} else {
@@ -3682,15 +3682,15 @@ QColor TextArea::getRangesetColor(int ind, QColor bground) {
 		RangesetTable *tab = buffer_->rangesetTable_;
 
         QColor color;
-		int valid = tab->RangesetTableGetColorValid(ind, &color);
-		if (valid == 0) {
+        bool valid = tab->RangesetTableGetColorValid(ind, &color);
+        if (!valid) {
             const char *color_name = tab->RangesetTableGetColorName(ind);
             if (color_name) {
-                color = allocBGColor(color_name, &valid);
+                color = allocBGColor(QString::fromLatin1(color_name), &valid);
 			}
 			tab->RangesetTableAssignColorPixel(ind, color, valid);
 		}
-		if (valid > 0) {
+        if (valid) {
             return color;
 		}
 	}
@@ -8102,7 +8102,7 @@ void TextArea::TextDSetFont(const QFont &font) {
        maximum font height for this text display */
     for (int i = 0; i < nStyles_; i++) {
         // NOTE(eteran): old code tested for nullptr? can this still be null?
-        QFontMetrics styleFM(styleTable_[i].fontEx);
+        QFontMetrics styleFM(styleTable_[i].font);
 
         maxAscent  = qMax(maxAscent, styleFM.ascent());
         maxDescent = qMax(maxDescent, styleFM.descent());
@@ -8119,8 +8119,8 @@ void TextArea::TextDSetFont(const QFont &font) {
         for (int i = 0; i < nStyles_; i++) {
 
             // NOTE(eteran): old code tested for nullptr? can this still be null?
-            QFontMetrics styleFM(styleTable_[i].fontEx);
-            QFontInfo     styleFI(styleTable_[i].fontEx);
+            QFontMetrics styleFM(styleTable_[i].font);
+            QFontInfo     styleFI(styleTable_[i].font);
 
             if ((styleFM.maxWidth() != fontWidth || !styleFI.fixedPitch())) {
                 fontWidth = -1;
@@ -8463,7 +8463,7 @@ int TextArea::TextDMinFontWidth(bool considerStyles) const {
 
     if (considerStyles) {
         for (int i = 0; i < nStyles_; ++i) {
-            QFontMetrics fm(styleTable_[i].fontEx);
+            QFontMetrics fm(styleTable_[i].font);
 
             // NOTE(eteran): this was min_bounds.width, we just assume that 'i' is the thinnest character
             int thisWidth = fm.width(QLatin1Char('i'));
@@ -8483,7 +8483,7 @@ int TextArea::TextDMaxFontWidth(bool considerStyles) const {
 
     if (considerStyles) {
         for (int i = 0; i < nStyles_; ++i) {
-            QFontMetrics fm(styleTable_[i].fontEx);
+            QFontMetrics fm(styleTable_[i].font);
             int thisWidth = fm.maxWidth();
             if (thisWidth > fontWidth) {
                 fontWidth = thisWidth;

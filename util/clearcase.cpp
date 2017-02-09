@@ -29,7 +29,6 @@
 #include "clearcase.h"
 #include <QString>
 
-
 namespace {
 
 bool ClearCaseViewTagFound = false;
@@ -63,9 +62,10 @@ QString GetClearCaseVersionExtendedPath(const QString &fullname) {
 QString GetClearCaseViewTag() {
 	if (!ClearCaseViewTagFound) {
 		/* Extract the view name from the CLEARCASE_ROOT environment variable */
-		if (const char *envPtr = qgetenv("CLEARCASE_ROOT")) {
+        QByteArray envPtr = qgetenv("CLEARCASE_ROOT");
+        if (!envPtr.isNull()) {
 
-            ClearCaseViewRoot = QString::fromLatin1(envPtr);
+            ClearCaseViewRoot = QString::fromLocal8Bit(envPtr);
 
 			const int tagPtr = ClearCaseViewRoot.lastIndexOf(QLatin1Char('/'));
 			if (tagPtr != -1) {
