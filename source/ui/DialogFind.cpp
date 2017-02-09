@@ -32,12 +32,6 @@ DialogFind::DialogFind(MainWindow *window, DocumentWidget *document, QWidget *pa
 //------------------------------------------------------------------------------
 // name: 
 //------------------------------------------------------------------------------
-DialogFind::~DialogFind() {
-}
-
-//------------------------------------------------------------------------------
-// name: 
-//------------------------------------------------------------------------------
 void DialogFind::showEvent(QShowEvent *event) {
 	Q_UNUSED(event);
 	ui.textFind->setFocus();

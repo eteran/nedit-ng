@@ -5135,7 +5135,7 @@ static int getStyleAtPosMS(DocumentWidget *window, DataValue *argList, int nArgs
 		errMsg, 
 		window, 
         HighlightStyleOfCodeEx(window, patCode).toLatin1().data(),
-		False, 
+		false, 
 		True, 
 		patCode, 
 		bufferPos);
@@ -5229,7 +5229,7 @@ static int getPatternByNameMS(DocumentWidget *document, DataValue *argList, int 
 		return true;
 	}
 
-    return fillPatternResultEx(result, errMsg, document, patternName, (argList[0].tag == STRING_TAG), False, pattern->style.toLatin1().data(), -1);
+    return fillPatternResultEx(result, errMsg, document, patternName, (argList[0].tag == STRING_TAG), false, pattern->style.toLatin1().data(), -1);
 }
 
 /*

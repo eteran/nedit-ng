@@ -852,7 +852,7 @@ void EditHighlightPatterns(MainWindow *window) {
 ** If a syntax highlighting dialog is up, ask to have the option menu for
 ** chosing highlight styles updated (via a call to createHighlightStylesMenu)
 */
-void updateHighlightStyleMenu(void) {
+void updateHighlightStyleMenu() {
 	if(!SyntaxPatterns) {
 		return;
 	}
@@ -864,7 +864,7 @@ void updateHighlightStyleMenu(void) {
 ** If a syntax highlighting dialog is up, ask to have the option menu for
 ** chosing language mode updated (via a call to CreateLanguageModeMenu)
 */
-void UpdateLanguageModeMenu(void) {
+void UpdateLanguageModeMenu() {
 
 	if(!SyntaxPatterns) {
 		return;

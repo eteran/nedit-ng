@@ -134,14 +134,14 @@ static void cleanUpServerCommunication() {
 ** this server is still alive to take over.
 */
 void ServerMainLoop(XtAppContext context) {
-	while (TRUE) {
+	while (true) {
 		XEvent event;
 		XtAppNextEvent(context, &event);
 		ServerDispatchEvent(&event);
 	}
 }
 
-static void processServerCommand(void) {
+static void processServerCommand() {
 	Atom dummyAtom;
     unsigned long nItems;
     unsigned long dummyULong;

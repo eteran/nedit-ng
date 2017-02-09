@@ -41,7 +41,7 @@
 
 /* return non-nullptr value for the current working directory.
    If system call fails, provide a fallback value */
-QString GetCurrentDirEx(void) {
+QString GetCurrentDirEx() {
 	return QDir::currentPath();
 }
 

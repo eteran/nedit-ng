@@ -86,7 +86,7 @@ enum searchDirection { FORWARD, BACKWARD };
 static int loadTagsFile(const std::string &tagSpec, int index, int recLevel);
 static int fakeRegExSearchEx(view::string_view buffer, const char *searchString, int *startPos, int *endPos);
 static size_t hashAddr(const char *key);
-static void updateMenuItems(void);
+static void updateMenuItems();
 static int addTag(const char *name, const char *file, int lang, const char *search, int posInf, const char *path, int index);
 static bool delTag(const char *name, const char *file, int lang, const char *search, int posInf, int index);
 static bool delTag(int index);
@@ -1473,7 +1473,7 @@ static int nextTFBlock(FILE *fp, char *header, char **body, int *blkLine, int *c
 	int code;
 
 	// Skip blank lines and comments 
-	while (1) {
+	while (true) {
 		// Skip blank lines 
 		while ((status = fgets(line, MAXLINE, fp))) {
 			++(*currLine);
@@ -1704,7 +1704,7 @@ static int loadTipsFile(const std::string &tipsFile, int index, int recLevel) {
 	if ((fp = fopen(resolvedTipsFile, "r")) == nullptr)
 		return 0;
 
-	while (1) {
+	while (true) {
 		int blkLine = 0;
 		char *body = nullptr;
 		code = nextTFBlock(fp, header, &body, &blkLine, &currLine);

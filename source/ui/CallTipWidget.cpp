@@ -12,9 +12,6 @@ CallTipWidget::CallTipWidget(QWidget *parent, Qt::WindowFlags f) : QWidget(paren
     connect(ui.buttonCopy, SIGNAL(clicked()), this, SLOT(copyText()));
 }
 
-CallTipWidget::~CallTipWidget() {
-}
-
 void CallTipWidget::setText(const QString &text) {
 	ui.labelTip->setText(text);
     ui.labelTip->adjustSize();

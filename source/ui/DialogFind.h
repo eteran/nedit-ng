@@ -16,7 +16,7 @@ class DialogFind : public QDialog {
 	Q_OBJECT
 public:
     DialogFind(MainWindow *window, DocumentWidget *document, QWidget *parent = 0, Qt::WindowFlags f = 0);
-	virtual ~DialogFind();
+	virtual ~DialogFind() = default;
 	
 protected:
 	virtual void keyPressEvent(QKeyEvent *event) override;

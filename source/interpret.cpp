@@ -42,7 +42,7 @@ public:
         va_end(args);
     }
 
-    const char *what() const noexcept {
+    const char *what() const noexcept override{
         return buf_;
     }
 
@@ -219,7 +219,7 @@ static int (*OpFns[N_OPS])() = {returnNoVal, returnVal,      pushSymVal, dupStac
 ** any macros are even parsed, because the parser uses action routine
 ** symbols to comprehend hyphenated names.
 */
-void InitMacroGlobals(void) {
+void InitMacroGlobals() {
 
     int i;
 	static char argName[3] = "$x";
@@ -266,7 +266,7 @@ void InitMacroGlobals(void) {
 ** Start collecting instructions for a program. Clears the program
 ** and the symbol table.
 */
-void BeginCreatingProgram(void) {
+void BeginCreatingProgram() {
 	LocalSymList.clear();
 	ProgP        = Prog;
 	LoopStackPtr = LoopStack;
@@ -277,7 +277,7 @@ void BeginCreatingProgram(void) {
 ** symbol table) as a package that ExecuteMacro can execute.  This
 ** program must be freed with FreeProgram.
 */
-Program *FinishCreatingProgram(void) {
+Program *FinishCreatingProgram() {
 
 	int fpOffset = 0;
 
@@ -367,7 +367,7 @@ int AddBranchOffset(Inst *to, const char **msg) {
 /*
 ** Return the address at which the next instruction will be stored
 */
-Inst *GetPC(void) {
+Inst *GetPC() {
 	return ProgP;
 }
 
@@ -409,7 +409,7 @@ void SwapCode(Inst *start, Inst *boundary, Inst *end) {
 ** address for a break or continue statement, and FillLoopAddrs to fill
 ** in all the addresses and return to the level of the enclosing loop.
 */
-void StartLoopAddrList(void) {
+void StartLoopAddrList() {
 	addLoopAddr(nullptr);
 }
 
@@ -621,7 +621,7 @@ void FreeRestartDataEx(RestartData<DocumentWidget> *context) {
 ** a long time, or want to return to the event loop.  Call ResumeMacroExecution
 ** to resume.
 */
-void PreemptMacro(void) {
+void PreemptMacro() {
 	PreemptRequest = true;
 }
 
@@ -639,7 +639,7 @@ void ModifyReturnedValueEx(RestartData<DocumentWidget> *context, DataValue dv) {
 ** Called within a routine invoked from a macro, returns the window in
 ** which the macro is executing (where the banner is, not where it is focused)
 */
-DocumentWidget *MacroRunWindowEx(void) {
+DocumentWidget *MacroRunWindowEx() {
     return InitiatingWindowEx;
 }
 
@@ -648,7 +648,7 @@ DocumentWidget *MacroRunWindowEx(void) {
 ** the currently executing macro is focused (the window which macro commands
 ** modify, not the window from which the macro is being run)
 */
-DocumentWidget *MacroFocusWindowEx(void) {
+DocumentWidget *MacroFocusWindowEx() {
     return FocusWindowEx;
 }
 
@@ -671,7 +671,7 @@ void SetMacroFocusWindowEx(DocumentWidget *window) {
 ** it is tagged as an integer but holds an array node pointer
 */
 #define ARRAY_ITER_SYM_PREFIX "aryiter "
-Symbol *InstallIteratorSymbol(void) {
+Symbol *InstallIteratorSymbol() {
 	char symbolName[sizeof(ARRAY_ITER_SYM_PREFIX) + TYPE_INT_STR_SIZE(int)];
 	DataValue value;
 	static int interatorNameIndex = 0;
@@ -925,7 +925,7 @@ NString AllocNStringCpyEx(const QString &s) {
     return string;
 }
 
-static ArrayEntry *allocateSparseArrayEntry(void) {
+static ArrayEntry *allocateSparseArrayEntry() {
 	auto mem = new ArrayEntry;
 	AllocatedSparseArrayEntries.push_back(mem);
 	return mem;
@@ -966,7 +966,7 @@ static void MarkArrayContentsAsUsed(ArrayEntry *arrayPtr) {
 ** only be run after all macro activity has ceased.
 */
 
-void GarbageCollectStrings(void) {
+void GarbageCollectStrings() {
 
 	// mark all strings as unreferenced 
 	for(char *p : AllocatedStrings) {
@@ -1142,7 +1142,7 @@ static void freeSymbolTable(std::list<Symbol *> &symTab) {
 ** After:  Prog->  Sym, [next], ...
 **         TheStack-> [symVal], next, ...
 */
-static int pushSymVal(void) {
+static int pushSymVal() {
 	Symbol *s;
 	int nArgs, argNum;
 	DataValue symVal;
@@ -1185,7 +1185,7 @@ static int pushSymVal(void) {
 	return STAT_OK;
 }
 
-static int pushArgVal(void) {
+static int pushArgVal() {
 	int nArgs, argNum;
 
 	DISASM_RT(PC - 1, 1);
@@ -1203,7 +1203,7 @@ static int pushArgVal(void) {
 	return STAT_OK;
 }
 
-static int pushArgCount(void) {
+static int pushArgCount() {
 	DISASM_RT(PC - 1, 1);
 	STACKDUMP(0, 3);
 
@@ -1211,7 +1211,7 @@ static int pushArgCount(void) {
 	return STAT_OK;
 }
 
-static int pushArgArray(void) {
+static int pushArgArray() {
 	int nArgs, argNum;
 	DataValue argVal, *resultArray;
 
@@ -1247,7 +1247,7 @@ static int pushArgArray(void) {
 ** makeEmpty is either true (1) or false (0): if true, and the element is not
 ** present in the array, create it.
 */
-static int pushArraySymVal(void) {
+static int pushArraySymVal() {
 
 	DataValue *dataPtr;
 	
@@ -1287,7 +1287,7 @@ static int pushArraySymVal(void) {
 ** After:  Prog->  symbol, [next], ...
 **         TheStack-> next, ...
 */
-static int assign(void) {
+static int assign() {
 	Symbol *sym;
 	DataValue *dataPtr;
 	DataValue value;
@@ -1329,7 +1329,7 @@ static int assign(void) {
 ** Before: TheStack-> value, next, ...
 ** After:  TheStack-> value, value, next, ...
 */
-static int dupStack(void) {
+static int dupStack() {
 	DataValue value;
 
 	DISASM_RT(PC - 1, 1);
@@ -1349,7 +1349,7 @@ static int dupStack(void) {
 ** Before: TheStack-> value2, value1, next, ...
 ** After:  TheStack-> resValue, next, ...
 */
-static int add(void) {
+static int add() {
 	DataValue leftVal, rightVal, resultArray;
 	int n1, n2;
 
@@ -1414,7 +1414,7 @@ static int add(void) {
 ** Before: TheStack-> value2, value1, next, ...
 ** After:  TheStack-> resValue, next, ...
 */
-static int subtract(void) {
+static int subtract() {
 	DataValue leftVal, rightVal, resultArray;
 	int n1, n2;
 
@@ -1476,11 +1476,11 @@ static int subtract(void) {
 ** Before: TheStack-> value, next, ...
 ** After:  TheStack-> resValue, next, ...
 */
-static int multiply(void) {
+static int multiply() {
 	BINARY_NUMERIC_OPERATION(*)
 }
 
-static int divide(void) {
+static int divide() {
 	int n1, n2;
 
 	DISASM_RT(PC - 1, 1);
@@ -1495,7 +1495,7 @@ static int divide(void) {
 	return STAT_OK;
 }
 
-static int modulo(void) {
+static int modulo() {
 	int n1, n2;
 
 	DISASM_RT(PC - 1, 1);
@@ -1510,31 +1510,31 @@ static int modulo(void) {
 	return STAT_OK;
 }
 
-static int negate(void) {
+static int negate() {
 	UNARY_NUMERIC_OPERATION(-)
 }
 
-static int increment(void) {
+static int increment() {
 	UNARY_NUMERIC_OPERATION(++)
 }
 
-static int decrement(void) {
+static int decrement() {
 	UNARY_NUMERIC_OPERATION(--)
 }
 
-static int gt(void) {
+static int gt() {
 	BINARY_NUMERIC_OPERATION(> )
 }
 
-static int lt(void) {
+static int lt() {
 	BINARY_NUMERIC_OPERATION(< )
 }
 
-static int ge(void) {
+static int ge() {
 	BINARY_NUMERIC_OPERATION(>= )
 }
 
-static int le(void) {
+static int le() {
 	BINARY_NUMERIC_OPERATION(<= )
 }
 
@@ -1544,7 +1544,7 @@ static int le(void) {
 ** After:  TheStack-> resValue, next, ...
 ** where resValue is 1 for true, 0 for false
 */
-static int eq(void) {
+static int eq() {
 	DataValue v1, v2;
 
 	DISASM_RT(PC - 1, 1);
@@ -1579,7 +1579,7 @@ static int eq(void) {
 }
 
 // negated eq() call 
-static int ne(void) {
+static int ne() {
 	eq();
 	return logicalNot();
 }
@@ -1591,7 +1591,7 @@ static int ne(void) {
 ** Before: TheStack-> value2, value1, next, ...
 ** After:  TheStack-> resValue, next, ...
 */
-static int bitAnd(void) {
+static int bitAnd() {
 	DataValue leftVal, rightVal, resultArray;
 	int n1, n2;
 
@@ -1646,7 +1646,7 @@ static int bitAnd(void) {
 ** Before: TheStack-> value2, value1, next, ...
 ** After:  TheStack-> resValue, next, ...
 */
-static int bitOr(void) {
+static int bitOr() {
 	DataValue leftVal, rightVal, resultArray;
 	int n1, n2;
 
@@ -1703,15 +1703,15 @@ static int bitOr(void) {
 	return (STAT_OK);
 }
 
-static int logicalAnd(void) {
+static int logicalAnd() {
 	BINARY_NUMERIC_OPERATION(&&)
 }
 
-static int logicalOr(void) {
+static int logicalOr() {
 	BINARY_NUMERIC_OPERATION(|| )
 }
 
-static int logicalNot(void) {
+static int logicalNot() {
 	UNARY_NUMERIC_OPERATION(!)
 }
 
@@ -1720,7 +1720,7 @@ static int logicalNot(void) {
 ** Before: TheStack-> raisedBy, number, next, ...
 ** After:  TheStack-> result, next, ...
 */
-static int power(void) {
+static int power() {
 	int n1, n2, n3;
 
 	DISASM_RT(PC - 1, 1);
@@ -1761,7 +1761,7 @@ static int power(void) {
 ** Before: TheStack-> str2, str1, next, ...
 ** After:  TheStack-> result, next, ...
 */
-static int concat(void) {
+static int concat() {
 	char *s1, *s2, *out;
 
 	DISASM_RT(PC - 1, 1);
@@ -1920,15 +1920,15 @@ static int callSubroutine() {
 ** instruction at the PC to decide whether to push the function's return
 ** value, then skips over it without executing.
 */
-static int fetchRetVal(void) {
+static int fetchRetVal() {
 	return execError("internal error: frv", nullptr);
 }
 
 // see comments for returnValOrNone() 
-static int returnNoVal(void) {
+static int returnNoVal() {
     return returnValOrNone(false);
 }
-static int returnVal(void) {
+static int returnVal() {
     return returnValOrNone(true);
 }
 
@@ -1990,7 +1990,7 @@ static int returnValOrNone(bool valOnStack) {
 ** Before: Prog->  [branchDest], next, ..., (branchdest)next
 ** After:  Prog->  branchDest, next, ..., (branchdest)[next]
 */
-static int branch(void) {
+static int branch() {
 	DISASM_RT(PC - 1, 2);
 	STACKDUMP(0, 3);
 
@@ -2006,7 +2006,7 @@ static int branch(void) {
 ** After:  either: Prog->  branchDest, [next], ...
 ** After:  or:     Prog->  branchDest, next, ..., (branchdest)[next]
 */
-static int branchTrue(void) {
+static int branchTrue() {
 	int value;
 	Inst *addr;
 
@@ -2021,7 +2021,7 @@ static int branchTrue(void) {
 		PC = addr;
 	return STAT_OK;
 }
-static int branchFalse(void) {
+static int branchFalse() {
 	int value;
 	Inst *addr;
 
@@ -2045,7 +2045,7 @@ static int branchFalse(void) {
 ** Before: Prog->  [branchDest], next, ...
 ** After:  Prog->  branchDest, [next], ...
 */
-static int branchNever(void) {
+static int branchNever() {
 	DISASM_RT(PC - 1, 2);
 	STACKDUMP(0, 3);
 
@@ -2139,7 +2139,7 @@ static int makeArrayKeyFromArgs(int nArgs, char **keyString, int leaveParams) {
 ** allocate an empty array node, this is used as the root node and never
 ** contains any data, only refernces to other nodes
 */
-static rbTreeNode *arrayEmptyAllocator(void) {
+static rbTreeNode *arrayEmptyAllocator() {
 	ArrayEntry *newNode = allocateSparseArrayEntry();
 	if (newNode) {
 		newNode->key = nullptr;
@@ -2190,7 +2190,7 @@ static void arrayDisposeNode(rbTreeNode *src) {
 	src->color  = -1;
 }
 
-ArrayEntry *ArrayNew(void) {
+ArrayEntry *ArrayNew() {
 	return ((ArrayEntry *)rbTreeNew(arrayEmptyAllocator));
 }
 
@@ -2314,7 +2314,7 @@ ArrayEntry *arrayIterateNext(ArrayEntry *iterator) {
 ** After:  Prog->  nDim, [next], ...
 **         TheStack-> indexedArrayVal, next, ...
 */
-static int arrayRef(void) {
+static int arrayRef() {
 	int errNum;
 	DataValue srcArray, valueItem;
 	char *keyString = nullptr;
@@ -2361,7 +2361,7 @@ static int arrayRef(void) {
 ** After:  Prog->  nDim, [next], ...
 **         TheStack-> next, ...
 */
-static int arrayAssign(void) {
+static int arrayAssign() {
 	char *keyString = nullptr;
 	DataValue srcValue, dstArray;
 	int errNum;
@@ -2412,7 +2412,7 @@ static int arrayAssign(void) {
 ** After:  Prog->  binOp, nDim, [next], ...
 **         TheStack-> [rhs], arrayValue, next, ...
 */
-static int arrayRefAndAssignSetup(void) {
+static int arrayRefAndAssignSetup() {
 	int errNum;
 	DataValue srcArray, valueItem, moveExpr;
 	char *keyString = nullptr;
@@ -2466,7 +2466,7 @@ static int arrayRefAndAssignSetup(void) {
 **              the stack frame
 **      arrayVal is the data value holding the array in question
 */
-static int beginArrayIter(void) {
+static int beginArrayIter() {
 	Symbol *iterator;
 	DataValue *iteratorValPtr;
 	DataValue arrayVal;
@@ -2516,7 +2516,7 @@ static int beginArrayIter(void) {
 ** The return-to-start-of-loop branch (at the end of the loop) should address
 ** the ARRAY_ITER instruction
 */
-static int arrayIter(void) {
+static int arrayIter() {
 	Symbol *iterator;
 	Symbol *item;
 	DataValue *iteratorValPtr;
@@ -2573,7 +2573,7 @@ static int arrayIter(void) {
 ** After:  Prog->  [next], ...      -- (unchanged)
 **         TheStack-> next, ...
 */
-static int inArray(void) {
+static int inArray() {
 	DataValue theArray, leftArray, theValue;
 	char *keyStr;
 	int inResult = 0;
@@ -2615,7 +2615,7 @@ static int inArray(void) {
 ** After:  Prog->  nDim, [next], ...
 **         TheStack-> next, ...
 */
-static int deleteArrayElement(void) {
+static int deleteArrayElement() {
 	DataValue theArray;
 	char *keyString = nullptr;
 	int nDim;

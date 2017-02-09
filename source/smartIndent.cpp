@@ -373,7 +373,7 @@ int LoadSmartIndentCommonString(const char *inString) {
 static QString readSIMacroEx(const char **inPtr) {
 	if(char *s = readSIMacro(inPtr)) {
         QString ret = QString::fromLatin1(s);
-        delete s;
+        delete [] s;
 		return ret;
 	}
 	
