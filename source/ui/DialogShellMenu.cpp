@@ -56,9 +56,13 @@ MenuItem *DialogShellMenu::itemFromIndex(int i) const {
 //------------------------------------------------------------------------------
 void DialogShellMenu::on_buttonNew_clicked() {
 
-	if(!updateCurrentItem()) {
-		return;
-	}
+    // if the list isn't empty, then make sure we've updated the current one
+    // before moving the focus away
+    if(ui.listItems->count() != 0) {
+        if(!updateCurrentItem()) {
+            return;
+        }
+    }
 	
 	auto ptr  = new MenuItem;
 	ptr->name = tr("New Item");
