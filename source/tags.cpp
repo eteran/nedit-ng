@@ -908,7 +908,7 @@ static int LookupTag(const char *name, const char **file, int *language, const c
 **                  tip and/or tag database depending on search_type
 **  search_type:    Either TIP or TIP_FROM_TAG
 */
-int ShowTipStringEx(DocumentWidget *window, char *text, bool anchored, int pos, bool lookup, int search_type, int hAlign, int vAlign, int alignMode) {
+int ShowTipStringEx(DocumentWidget *window, const char *text, bool anchored, int pos, bool lookup, int search_type, int hAlign, int vAlign, int alignMode) {
     if (search_type == TAG)
         return 0;
 

@@ -220,7 +220,7 @@ int AddContinueAddr(Inst *addr);
 void FillLoopAddrs(Inst *breakAddr, Inst *continueAddr);
 
 /* create a permanently allocated static string (only for use with static strings) */
-#define PERM_ALLOC_STR(xStr) (((char *)("\001" xStr)) + 1)
+#define PERM_ALLOC_STR(xStr) ((const_cast<char *>("\001" xStr)) + 1)
 
 /* Routines for executing programs */
 int ExecuteMacroEx(DocumentWidget *window, Program *prog, int nArgs, DataValue *args, DataValue *result, RestartData<DocumentWidget> **continuation, const char **msg);
@@ -233,6 +233,7 @@ char *AllocStringCpy(const char *s);
 int AllocNString(NString *string, int length);
 NString AllocNStringEx(int length);
 NString AllocNStringCpyEx(const QString &s);
+NString AllocNStringCpyEx(const std::string &s);
 int AllocNStringNCpy(NString *string, const char *s, int length);
 int AllocNStringCpy(NString *string, const char *s);
 void GarbageCollectStrings();
@@ -246,6 +247,7 @@ void SetMacroFocusWindowEx(DocumentWidget *window);
 
 /* function used for implicit conversion from string to number */
 bool StringToNum(const char *string, int *number);
+bool StringToNum(const std::string &string, int *number);
 bool StringToNum(const QString &string, int *number);
 
 #endif

@@ -830,24 +830,16 @@ int Rangeset::RangesetAddBetween(int start, int end) {
 ** Assign a color name to a rangeset via the rangeset table.
 */
 
-int Rangeset::RangesetAssignColorName(const char *color_name) {
-    char *cp;
+int Rangeset::RangesetAssignColorName(const std::string &color_name) {
 
-	if (color_name && color_name[0] == '\0')
-		color_name = nullptr; // "" invalid 
 
-	// store new color name value 
-	if (color_name) {
-        cp = new char[strlen(color_name) + 1];
-        strcpy(cp, color_name);
+    // "" invalid
+    if(!color_name.empty()) {
+        this->color_name = QString::fromStdString(color_name);
     } else {
-        cp = nullptr;
-	}
+        this->color_name = QString();
+    }
 
-    // free old color name value
-    delete [] this->color_name;
-
-    this->color_name = cp;
 	this->color_set = 0;
 
 	rangesetRefreshAllRanges(this);
@@ -870,15 +862,11 @@ int Rangeset::RangesetAssignColorPixel(const QColor &color, int ok) {
 ** Assign a name to a rangeset via the rangeset table.
 */
 
-int Rangeset::RangesetAssignName(const char *name) {
-
-	if (name && name[0] == '\0') {
-		name = nullptr;
-	}
+int Rangeset::RangesetAssignName(const std::string &name) {
 
 	// store new name value 
-	if (name) {
-        this->name = QString::fromLatin1(name);
+    if(!name.empty()) {
+        this->name = QString::fromStdString(name);
 	} else {
         this->name = QString();
 	}
@@ -894,8 +882,9 @@ int Rangeset::RangesetAssignName(const char *name) {
 
 int Rangeset::RangesetChangeModifyResponse(const char *name) {
 
-	if(!name)
+    if(!name) {
 		name = DEFAULT_UPDATE_FN_NAME;
+    }
 
 	for(auto &entry : RangesetUpdateMap) {
         if (strcmp(entry.name, name) == 0) {
@@ -1137,7 +1126,7 @@ int Rangeset::RangesetRemoveBetween(int start, int end) {
 void Rangeset::RangesetEmpty() {
 	Range *ranges = this->ranges;
 
-	if (this->color_name && this->color_set > 0) {
+    if (!this->color_name.isNull() && this->color_set > 0) {
 		// this range is colored: we need to clear it 
 		this->color_set = -1;
 
@@ -1148,9 +1137,7 @@ void Rangeset::RangesetEmpty() {
 		}
 	}
 
-    delete [] this->color_name;
-
-    this->color_name = nullptr;
+    this->color_name = QString();
     this->name = QString();
 	this->ranges = RangesetTable::RangesFree(this->ranges);
 }
@@ -1158,11 +1145,11 @@ void Rangeset::RangesetEmpty() {
 /*
 ** Get information about rangeset.
 */
-void Rangeset::RangesetGetInfo(bool *defined, int *label, int *count, const char **color, QString *name, const char **mode) {
+void Rangeset::RangesetGetInfo(bool *defined, int *label, int *count, QString *color, QString *name, const char **mode) {
     *defined = true;
     *label = static_cast<int>(this->label);
     *count = this->n_ranges;
-    *color = this->color_name ? this->color_name : "";
+    *color = this->color_name;
     *name  = this->name;
     *mode  = this->update_name;
 }
@@ -1190,7 +1177,7 @@ void Rangeset::RangesetInit(int label, TextBuffer *buf) {
 	this->n_ranges = 0;                 // how many ranges in ranges 
 	this->ranges = nullptr;          // the ranges table 
 
-    this->color_name = nullptr;
+    this->color_name = QString();
     this->name = QString();
 	this->color_set = 0;
 	this->buf = buf;

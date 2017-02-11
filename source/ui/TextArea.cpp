@@ -3684,9 +3684,9 @@ QColor TextArea::getRangesetColor(int ind, QColor bground) {
         QColor color;
         bool valid = tab->RangesetTableGetColorValid(ind, &color);
         if (!valid) {
-            const char *color_name = tab->RangesetTableGetColorName(ind);
-            if (color_name) {
-                color = allocBGColor(QString::fromLatin1(color_name), &valid);
+            const QString color_name = tab->RangesetTableGetColorName(ind);
+            if (!color_name.isNull()) {
+                color = allocBGColor(color_name, &valid);
 			}
 			tab->RangesetTableAssignColorPixel(ind, color, valid);
 		}

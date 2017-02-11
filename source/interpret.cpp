@@ -532,16 +532,7 @@ int ContinueMacroEx(RestartData<DocumentWidget> *continuation, DataValue *result
         // Execute an instruction
         inst = PC++;
 
-        try {
-            status = (inst->func)();
-        } catch(const MacroException &ex) {
-            static char error_buffer[4096];
-            strcpy(error_buffer, ex.what());
-            *msg = error_buffer;
-            FreeRestartDataEx(continuation);
-            restoreContextEx(&oldContext);
-            return MACRO_ERROR;
-        }
+        status = (inst->func)();
 
         // If error return was not STAT_OK, return to caller
         switch(status) {
@@ -919,8 +910,21 @@ int AllocNStringCpy(NString *string, const char *s) {
 NString AllocNStringCpyEx(const QString &s) {
     size_t length = s.size();
 
+    // TODO(eteran): make this allow embedded NULs
+
     NString string = AllocNStringEx(length + 1);
     strcpy(string.rep, s.toLatin1().data());
+
+    return string;
+}
+
+NString AllocNStringCpyEx(const std::string &s) {
+    size_t length = s.size();
+
+    // TODO(eteran): make this allow embedded NULs
+
+    NString string = AllocNStringEx(length + 1);
+    strcpy(string.rep, s.data());
 
     return string;
 }
@@ -1143,14 +1147,14 @@ static void freeSymbolTable(std::list<Symbol *> &symTab) {
 **         TheStack-> [symVal], next, ...
 */
 static int pushSymVal() {
-	Symbol *s;
+    Symbol *s;
 	int nArgs, argNum;
 	DataValue symVal;
 
 	DISASM_RT(PC - 1, 2);
 	STACKDUMP(0, 3);
 
-	s = PC->sym;
+    s = PC->sym;
 	PC++;
 
 	if (s->type == LOCAL_SYM) {
@@ -2679,6 +2683,39 @@ bool StringToNum(const QString &string, int *number) {
     *number = string.toInt(&ok);
     return ok;
 
+}
+
+bool StringToNum(const std::string &string, int *number) {
+    auto it = string.begin();
+
+    while (*it == ' ' || *it == '\t') {
+        ++it;
+    }
+
+    if (*it == '+' || *it == '-') {
+        ++it;
+    }
+
+    while (isdigit((uint8_t)*it)) {
+        ++it;
+    }
+
+    while (*it == ' ' || *it == '\t') {
+        ++it;
+    }
+
+    if (it != string.end()) {
+        // if everything went as expected, we should be at end, but we're not
+        return false;
+    }
+
+    if (number) {
+        if (sscanf(string.c_str(), "%d", number) != 1) {
+            // This case is here to support old behavior
+            *number = 0;
+        }
+    }
+    return true;
 }
 
 bool StringToNum(const char *string, int *number) {

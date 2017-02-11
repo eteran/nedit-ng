@@ -11,7 +11,7 @@ public:
 	~RangesetTable();
 	
 public:
-    char *RangesetTableGetColorName(int index);
+    QString RangesetTableGetColorName(int index);
 	int nRangesetsAvailable() const;
 	int RangesetCreate();
 	int RangesetFindIndex(int label, int must_be_active) const;

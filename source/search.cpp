@@ -1483,18 +1483,16 @@ bool SearchString(view::string_view string, const QString &searchString, SearchD
 ** SearchType in searchType. Returns FALSE and leaves searchType untouched
 ** otherwise. (Originally written by Markus Schwarzenberg; slightly adapted).
 */
-int StringToSearchType(const char *string, SearchType *searchType) {
-	int i;
-	for (i = 0; searchTypeStrings[i]; i++) {
-		if (!strcmp(string, searchTypeStrings[i])) {
-			break;
+int StringToSearchType(const std::string &string, SearchType *searchType) {
+
+    for (int i = 0; searchTypeStrings[i]; i++) {
+        if (string == searchTypeStrings[i]) {
+            *searchType = static_cast<SearchType>(i);
+            return true;
 		}
 	}
-	if (!searchTypeStrings[i]) {
-		return false;
-	}
-	*searchType = static_cast<SearchType>(i);
-	return true;
+
+    return false;
 }
 
 /*

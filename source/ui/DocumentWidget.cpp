@@ -3500,7 +3500,7 @@ void DocumentWidget::RefreshMenuToggleStates() {
 void DocumentWidget::executeNewlineMacroEx(smartIndentCBStruct *cbInfo) {
     auto winData = static_cast<SmartIndentData *>(smartIndentData_);
     // posValue probably shouldn't be static due to re-entrance issues <slobasso>
-    static DataValue posValue = INIT_DATA_VALUE;
+    static DataValue posValue = {INT_TAG, {0}};
     DataValue result;
     RestartData<DocumentWidget> *continuation;
     const char *errMsg;
@@ -3579,7 +3579,7 @@ void DocumentWidget::executeModMacroEx(smartIndentCBStruct *cbInfo) {
     auto winData = static_cast<SmartIndentData *>(smartIndentData_);
 
     // args probably shouldn't be static due to future re-entrance issues <slobasso>
-    static DataValue args[2] = {INIT_DATA_VALUE, INIT_DATA_VALUE};
+    static DataValue args[2] = {{INT_TAG, {0}}, {STRING_TAG, {0}}};
 
     // after 5.2 release remove inModCB and use new winData->inModMacro value
     static bool inModCB = false;

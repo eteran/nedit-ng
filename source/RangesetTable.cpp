@@ -35,14 +35,8 @@ static void rangesetClone(Rangeset *destRangeset, const Rangeset *srcRangeset) {
 	destRangeset->n_ranges    = srcRangeset->n_ranges;
 	destRangeset->color_set   = srcRangeset->color_set;
     destRangeset->color       = srcRangeset->color;
-
-    if (srcRangeset->color_name) {
-        destRangeset->color_name = new char[strlen(srcRangeset->color_name) + 1];
-        strcpy(destRangeset->color_name, srcRangeset->color_name);
-    }
-
-
-    destRangeset->name = srcRangeset->name;
+    destRangeset->color_name  = srcRangeset->color_name;
+    destRangeset->name        = srcRangeset->name;
 
 	if (srcRangeset->ranges) {
 		destRangeset->ranges = RangesetTable::RangesNew(srcRangeset->n_ranges);
@@ -214,7 +208,7 @@ Rangeset *RangesetTable::RangesetForget(int label) {
 ** Return the color name, if any.
 */
 
-char *RangesetTable::RangesetTableGetColorName(int index) {
+QString RangesetTable::RangesetTableGetColorName(int index) {
 	Rangeset *rangeset = &this->set[index];
 	return rangeset->color_name;
 }
@@ -258,7 +252,7 @@ int RangesetTable::RangesetIndex1ofPos(int pos, int needs_color) {
 	for (i = 0; i < this->n_set; i++) {
 		Rangeset *rangeset = &this->set[(int)this->order[i]];
 		if (rangeset->RangesetCheckRangeOfPos(pos) >= 0) {
-            if (needs_color && rangeset->color_set >= 0 && rangeset->color_name)
+            if (needs_color && rangeset->color_set >= 0 && !rangeset->color_name.isNull())
 				return this->order[i] + 1;
 		}
 	}

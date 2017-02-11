@@ -50,9 +50,9 @@ public:
     QString RangesetGetName() const;
 	int RangesetAdd(Rangeset *plusSet);
 	int RangesetAddBetween(int start, int end);
-	int RangesetAssignColorName(const char *color_name);
+    int RangesetAssignColorName(const std::string &color_name);
     int RangesetAssignColorPixel(const QColor &color, int ok);
-	int RangesetAssignName(const char *name);
+    int RangesetAssignName(const std::string &name);
 	int RangesetChangeModifyResponse(const char *name);
 	int RangesetCheckRangeOfPos(int pos);
 	int RangesetFindRangeNo(int index, int *start, int *end);
@@ -63,7 +63,7 @@ public:
 	int RangesetRemove(Rangeset *minusSet);
 	int RangesetRemoveBetween(int start, int end);
 	void RangesetEmpty();
-    void RangesetGetInfo(bool *defined, int *label, int *count, const char **color, QString *name, const char **mode);
+    void RangesetGetInfo(bool *defined, int *label, int *count, QString *color, QString *name, const char **mode);
 	void RangesetRefreshRange(int start, int end);
 	void RangesetInit(int label, TextBuffer *buf);
 
@@ -77,10 +77,10 @@ public:
     uint8_t label;               // a number 1-63
 
 	int8_t color_set;            // 0: unset; 1: set; -1: invalid
-    char *color_name;            // the name of an assigned color
-    QColor color;                 // the value of a particular color
+    QString color_name;          // the name of an assigned color
+    QColor color;                // the value of a particular color
 	TextBuffer *buf;             // the text buffer of the rangeset
-    QString name;                  // name of rangeset
+    QString name;                // name of rangeset
 };
 
 #endif

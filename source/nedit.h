@@ -73,22 +73,6 @@ enum virtKeyOverride {
 #define FLASH_DELIMIT_STRING "delimiter"
 #define FLASH_RANGE_STRING   "range"
 
-
-
-#define SET_ONE_RSRC(widget, name, newValue)                                                                                                                                                                                                   \
-	{                                                                                                                                                                                                                                          \
-		static Arg args[1] = {{name, (XtArgVal)0}};                                                                                                                                                                                            \
-		args[0].value = (XtArgVal)newValue;                                                                                                                                                                                                    \
-		XtSetValues(widget, args, 1);                                                                                                                                                                                                          \
-	}
-
-#define GET_ONE_RSRC(widget, name, valueAddr)                                                                                                                                                                                                  \
-	{                                                                                                                                                                                                                                          \
-		static Arg args[1] = {{name, (XtArgVal)0}};                                                                                                                                                                                            \
-		args[0].value = (XtArgVal)valueAddr;                                                                                                                                                                                                   \
-		XtGetValues(widget, args, 1);                                                                                                                                                                                                          \
-	}
-
 /* determine a safe size for a string to hold an integer-like number contained in xType */
 #define TYPE_INT_STR_SIZE(xType) ((sizeof(xType) * 3) + 2)
 

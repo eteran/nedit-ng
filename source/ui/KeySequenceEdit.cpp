@@ -94,8 +94,6 @@ KeySequenceEdit::KeySequenceEdit(QWidget *parent) : QWidget(parent, 0), prevKey_
     setFocusPolicy(Qt::StrongFocus);
     setAttribute(Qt::WA_MacShowFocusRect, true);
     setAttribute(Qt::WA_InputMethodEnabled, false);
-
-	connect(lineEdit_, SIGNAL(textChanged(const QString &)), this, SLOT(updateCloseButton(const QString &)));
 }
 
 //------------------------------------------------------------------------------
