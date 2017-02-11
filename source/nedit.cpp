@@ -300,7 +300,7 @@ int main(int argc, char *argv[]) {
                     }
 
                     if (toDoCommand) {
-                        DoMacroEx(documentEx, toDoCommand, "-do macro");
+                        DoMacroEx(documentEx, QString::fromLatin1(toDoCommand), "-do macro");
                         toDoCommand = nullptr;
                     }
                 }
@@ -333,7 +333,7 @@ int main(int argc, char *argv[]) {
         MainWindow::CheckCloseDimEx();
 
         if (toDoCommand) {
-            DoMacroEx(documentEx, toDoCommand, "-do macro");
+            DoMacroEx(documentEx, QString::fromLatin1(toDoCommand), "-do macro");
         }
 	}
 
@@ -378,7 +378,7 @@ static bool checkDoMacroArg(const char *macro) {
     auto macroString = QString::fromLatin1(macro) + QLatin1Char('\n');
 
 	// Do a test parse 
-    Program *const prog = ParseMacroEx(macroString, 0, &errMsg, &stoppedAt);
+    Program *const prog = ParseMacroEx(macroString, &errMsg, &stoppedAt);
 
 	if(!prog) {        
         ParseErrorEx(nullptr, macroString, stoppedAt, QLatin1String("argument to -do"), errMsg);

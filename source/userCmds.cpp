@@ -418,47 +418,50 @@ static int parseError(const char *message) {
 */
 static char *copyMacroToEnd(const char **inPtr) {
 
+    const char *&ptr = *inPtr;
     const char *errMsg;
-    const char *stoppedAt;
-	const char *p;
 
-	/* Skip over whitespace to find make sure there's a beginning brace
-	   to anchor the parse (if not, it will take the whole file) */
-	*inPtr += strspn(*inPtr, " \t\n");
-    if (**inPtr != '{') {
-        ParseError(nullptr, *inPtr, *inPtr - 1, "macro menu item", "expecting '{'");
+
+    // Skip over whitespace to find make sure there's a beginning brace
+    // to anchor the parse (if not, it will take the whole file)
+    ptr += strspn(ptr, " \t\n");
+
+    if (*ptr != '{') {
+        ParseError(nullptr, ptr, ptr - 1, "macro menu item", "expecting '{'");
 		return nullptr;
 	}
 
 	// Parse the input 
-    Program *prog = ParseMacro(*inPtr, &errMsg, &stoppedAt);
+    const char *stoppedAt;
+    Program *const prog = ParseMacro(ptr, &errMsg, &stoppedAt);
 	if(!prog) {
-        ParseError(nullptr, *inPtr, stoppedAt, "macro menu item", errMsg);
+        ParseError(nullptr, ptr, stoppedAt, "macro menu item", errMsg);
 		return nullptr;
 	}
 	FreeProgram(prog);
 
-	/* Copy and return the body of the macro, stripping outer braces and
-	   extra leading tabs added by the writer routine */
-	(*inPtr)++;
-	*inPtr += strspn(*inPtr, " \t");
+    // Copy and return the body of the macro, stripping outer braces and
+    // extra leading tabs added by the writer routine
+    ptr++;
+    ptr += strspn(ptr, " \t");
 
-    if (**inPtr == '\n')
-		(*inPtr)++;
+    if (*ptr == '\n') {
+        ptr++;
+    }
 
-    if (**inPtr == '\t')
-		(*inPtr)++;
+    if (*ptr == '\t') {
+        ptr++;
+    }
 
-	if (**inPtr == '\t')
-		(*inPtr)++;
+    if (*ptr == '\t') {
+        ptr++;
+    }
 
-    char *retStr;
-    char *retPtr;
 
-    retStr = new char[stoppedAt - *inPtr + 1];
-    retPtr = retStr;
+    auto retStr = new char[stoppedAt - ptr + 1];
+    char *retPtr = retStr;
 
-	for (p = *inPtr; p < stoppedAt - 1; p++) {
+    for (const char *p = ptr; p < stoppedAt - 1; p++) {
 		if (!strncmp(p, "\n\t\t", 3)) {
 			*retPtr++ = '\n';
 			p += 2;
@@ -467,13 +470,13 @@ static char *copyMacroToEnd(const char **inPtr) {
         }
 	}
 
-	if (*(retPtr - 1) == '\t')
+    if (*(retPtr - 1) == '\t') {
 		retPtr--;
+    }
+
 	*retPtr = '\0';
 
-	*inPtr = stoppedAt;
-
-
+    ptr = stoppedAt;
 	return retStr;
 }
 

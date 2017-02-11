@@ -380,7 +380,7 @@ bool DialogMacros::checkMacroText(const QString &macro, bool silent) {
 	QString errMsg;
 	int stoppedAt;
 
-	Program *prog = ParseMacroEx(macro, 0, &errMsg, &stoppedAt);
+    Program *prog = ParseMacroEx(macro, &errMsg, &stoppedAt);
 	if(!prog) {
 		if(!silent) {
 			ParseErrorEx(this, macro, stoppedAt, tr("macro"), errMsg);

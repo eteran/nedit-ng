@@ -846,16 +846,17 @@ bool CheckMacroStringEx(QWidget *dialogParent, const QString &string, const QStr
 ** runWindow is passed as nullptr, does parse only.  If errPos is non-null,
 ** returns a pointer to the error location in the string.
 */
+Program *ParseMacroEx(const QString &expr, QString *message, int *stoppedAt) {
+    QByteArray str = expr.toLatin1();
+    const char *ptr = str.data();
 
-Program *ParseMacroEx(const QString &expr, int index, QString *message, int *stoppedAt) {
-	QByteArray str = expr.toLatin1();
-	const char *ptr = str.data();
-	const char *msg = nullptr;
-	const char *e = nullptr;
-	Program *p = ParseMacro(ptr + index, &msg, &e);
+    const char *msg = nullptr;
+    const char *e = nullptr;
+    Program *p = ParseMacro(ptr, &msg, &e);
+
     *message = QString::fromLatin1(msg);
-	*stoppedAt = (e - ptr);
-	return p;
+    *stoppedAt = (e - ptr);
+    return p;
 }
 
 static int readCheckMacroStringEx(QWidget *dialogParent, const QString &string, DocumentWidget *runWindow, const char *errIn, const char **errPos) {
@@ -1226,24 +1227,16 @@ void SafeGC() {
 ** Reports errors via a dialog posted over "window", integrating the name
 ** "errInName" into the message to help identify the source of the error.
 */
-void DoMacroEx(DocumentWidget *document, view::string_view macro, const char *errInName) {
-
-
+void DoMacroEx(DocumentWidget *document, const QString &macro, const char *errInName) {
 
     /* Add a terminating newline (which command line users are likely to omit
        since they are typically invoking a single routine) */
-
-    std::string tMacro;
-    tMacro.reserve(macro.size() + 1);
-    tMacro.append(macro.begin(), macro.end());
-    tMacro.append("\n");
-
-    // TODO(eteran): avoid this round trip of conversions :-/
-    QString qMacro = QString::fromStdString(tMacro);
+    QString qMacro = macro + QLatin1Char('\n');
     QString errMsg;
+
     // Parse the macro and report errors if it fails
     int stoppedAt;
-    Program *const prog = ParseMacroEx(qMacro, 0, &errMsg, &stoppedAt);
+    Program *const prog = ParseMacroEx(qMacro, &errMsg, &stoppedAt);
     if(!prog) {
         ParseErrorEx(document, qMacro, stoppedAt, QString::fromLatin1(errInName), errMsg);
         return;

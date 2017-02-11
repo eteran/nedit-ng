@@ -398,7 +398,7 @@ static void processServerCommandString(char *string) {
 					} else {
 						(*win)->RaiseDocumentWindow();
 					}
-                    DoMacroEx(*win, doCommand, "-do macro");
+                    DoMacroEx(*win, QString::fromLatin1(doCommand), "-do macro");
 				}
 			}
 
@@ -460,7 +460,7 @@ static void processServerCommandString(char *string) {
 				if (window->macroCmdData_) {
 					QApplication::beep();
 				} else {
-                    DoMacroEx(window, doCommand, "-do macro");
+                    DoMacroEx(window, QString::fromLatin1(doCommand), "-do macro");
 				}
 			}
 

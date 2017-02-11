@@ -39,7 +39,7 @@ class MainWindow;
 #define REPEAT_TO_END -1
 #define REPEAT_IN_SEL -2
 
-Program *ParseMacroEx(const QString &expr, int index, QString *message, int *stoppedAt);
+Program *ParseMacroEx(const QString &expr, QString *message, int *stoppedAt);
 bool CheckMacroStringEx(QWidget *dialogParent, const QString &string, const QString &errIn, int *errPos);
 int MacroWindowCloseActionsEx(DocumentWidget *document);
 int ReadMacroFileEx(DocumentWidget *window, const std::string &fileName, int warnNotExist);
@@ -49,7 +49,7 @@ std::string GetReplayMacro();
 void AbortMacroCommandEx(DocumentWidget *document);
 void BeginLearnEx(DocumentWidget *document);
 void CancelMacroOrLearnEx(DocumentWidget *document);
-void DoMacroEx(DocumentWidget *document, view::string_view macro, const char *errInName);
+void DoMacroEx(DocumentWidget *document, const QString &macro, const char *errInName);
 void FinishLearnEx();
 
 void ReadMacroInitFileEx(DocumentWidget *window);

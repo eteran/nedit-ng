@@ -369,13 +369,13 @@ static QString convertPatternExprEx(const QString &patternRE, const QString &pat
 */
 QFont FontOfNamedStyleEx(DocumentWidget *document, const QString &styleName) {
 
-    int styleNo = lookupNamedStyle(styleName), fontNum;
+    int styleNo = lookupNamedStyle(styleName);
 
     if (styleNo < 0) {
         return GetPrefDefaultFont();
     } else {
 
-        fontNum = HighlightStyles[styleNo]->font;
+        int fontNum = HighlightStyles[styleNo]->font;
 
         switch(fontNum) {
         case BOLD_FONT:

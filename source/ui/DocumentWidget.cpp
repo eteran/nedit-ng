@@ -4431,7 +4431,7 @@ void DocumentWidget::BeginSmartIndentEx(int warn) {
     auto winData = new SmartIndentData;
     winData->inNewLineMacro = false;
     winData->inModMacro     = false;
-    winData->newlineMacro   = ParseMacroEx(indentMacros->newlineMacro, 0, &errMsg, &stoppedAt);
+    winData->newlineMacro   = ParseMacroEx(indentMacros->newlineMacro, &errMsg, &stoppedAt);
 
 
     if (!winData->newlineMacro) {
@@ -4444,7 +4444,7 @@ void DocumentWidget::BeginSmartIndentEx(int warn) {
         winData->modMacro = nullptr;
     } else {
 
-        winData->modMacro = ParseMacroEx(indentMacros->modMacro, 0, &errMsg, &stoppedAt);
+        winData->modMacro = ParseMacroEx(indentMacros->modMacro, &errMsg, &stoppedAt);
         if (!winData->modMacro) {
 
             FreeProgram(winData->newlineMacro);
@@ -5495,7 +5495,7 @@ bool DocumentWidget::DoNamedMacroMenuCmd(TextArea *area, const QString &name, bo
 
             DoMacroEx(
                 this,
-                data.item->cmd.toStdString(),
+                data.item->cmd,
                 "macro menu command");
 
             return true;
@@ -5512,7 +5512,7 @@ bool DocumentWidget::DoNamedBGMenuCmd(TextArea *area, const QString &name, bool 
         if (data.item->name == name) {
             DoMacroEx(
                 this,
-                data.item->cmd.toStdString(),
+                data.item->cmd,
                 "background menu macro");
 
             return true;

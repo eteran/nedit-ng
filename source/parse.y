@@ -1,6 +1,5 @@
 %{
 #include "parse.h"
-#include "nedit.h"
 #include "interpret.h"
 
 #include <cstdlib>
