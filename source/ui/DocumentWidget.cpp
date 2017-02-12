@@ -79,17 +79,6 @@ struct shellCmdInfoEx {
 };
 
 
-/* Data attached to window during shell command execution with
-   information for controling and communicating with the process */
-struct macroCmdInfoEx {
-    QTimer *bannerTimeoutID;
-    QFuture<bool> continueWorkProcID;
-    bool bannerIsUp;
-    bool closeOnCompletion;
-    Program *program;
-    RestartData<DocumentWidget> *context;
-};
-
 // flags for issueCommand
 enum {
     ACCUMULATE  	  = 1,
@@ -3502,7 +3491,7 @@ void DocumentWidget::executeNewlineMacroEx(smartIndentCBStruct *cbInfo) {
     // posValue probably shouldn't be static due to re-entrance issues <slobasso>
     static DataValue posValue = {INT_TAG, {0}};
     DataValue result;
-    RestartData<DocumentWidget> *continuation;
+    RestartData *continuation;
     const char *errMsg;
     int stat;
 
@@ -3585,7 +3574,7 @@ void DocumentWidget::executeModMacroEx(smartIndentCBStruct *cbInfo) {
     static bool inModCB = false;
 
     DataValue result;
-    RestartData<DocumentWidget> *continuation;
+    RestartData *continuation;
     const char *errMsg;
     int stat;
 

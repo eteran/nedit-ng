@@ -4098,7 +4098,7 @@ static std::bitset<256> makeDelimiterTable(view::string_view delimiters) {
 	std::bitset<256> table;
 
 	for(char ch : delimiters) {
-		table[ch] = true;
+        table[static_cast<size_t>(ch)] = true;
 	}
 
 	table['\0'] = true; // These	   

@@ -74,8 +74,12 @@ enum OpStatusCodes {
 
 static void addLoopAddr(Inst *addr);
 
-static void saveContextEx(RestartData<DocumentWidget> *context);
-static void restoreContextEx(RestartData<DocumentWidget> *context);
+static void saveContextEx(RestartData *context);
+static void restoreContextEx(RestartData *context);
+
+static char *AllocStringNCpy(const char *s, int length);
+static char *AllocStringCpy(const char *s);
+static NString AllocNStringEx(int length);
 
 static int returnNoVal();
 static int returnVal();
@@ -462,7 +466,7 @@ void FillLoopAddrs(Inst *breakAddr, Inst *continueAddr) {
 ** (if any) can be read from "result".  If MACRO_PREEMPT is returned, the
 ** macro exceeded its alotted time-slice and scheduled...
 */
-int ExecuteMacroEx(DocumentWidget *window, Program *prog, int nArgs, DataValue *args, DataValue *result, RestartData<DocumentWidget> **continuation, const char **msg) {
+int ExecuteMacroEx(DocumentWidget *window, Program *prog, int nArgs, DataValue *args, DataValue *result, RestartData **continuation, const char **msg) {
 
     static DataValue noValue = INIT_DATA_VALUE;
     int i;
@@ -470,7 +474,7 @@ int ExecuteMacroEx(DocumentWidget *window, Program *prog, int nArgs, DataValue *
     /* Create an execution context (a stack, a stack pointer, a frame pointer,
        and a program counter) which will retain the program state across
        preemption and resumption of execution */
-    auto context         = new RestartData<DocumentWidget>;
+    auto context         = new RestartData;
     context->stack       = new DataValue[STACK_SIZE];
     *continuation        = context;
     context->stackP      = context->stack;
@@ -511,10 +515,10 @@ int ExecuteMacroEx(DocumentWidget *window, Program *prog, int nArgs, DataValue *
 ** Continue the execution of a suspended macro whose state is described in
 ** "continuation"
 */
-int ContinueMacroEx(RestartData<DocumentWidget> *continuation, DataValue *result, const char **msg) {
+int ContinueMacroEx(RestartData *continuation, DataValue *result, const char **msg) {
     int status, instCount = 0;
     Inst *inst;
-    RestartData<DocumentWidget> oldContext;
+    RestartData oldContext;
 
     /* To allow macros to be invoked arbitrarily (such as those automatically
        triggered within smart-indent) within executing macros, this call is
@@ -602,7 +606,7 @@ void RunMacroAsSubrCall(Program *prog) {
 	}
 }
 
-void FreeRestartDataEx(RestartData<DocumentWidget> *context) {
+void FreeRestartDataEx(RestartData *context) {
     delete [] context->stack;
     delete context;
 }
@@ -621,7 +625,7 @@ void PreemptMacro() {
 ** how to return a value from a routine which preempts instead of returning
 ** a value directly).
 */
-void ModifyReturnedValueEx(RestartData<DocumentWidget> *context, DataValue dv) {
+void ModifyReturnedValueEx(RestartData *context, DataValue dv) {
     if ((context->pc - 1)->func == fetchRetVal)
         *(context->stackP - 1) = dv;
 }
@@ -889,6 +893,14 @@ char *AllocStringCpy(const char *s) {
 	return AllocStringNCpy(s, s ? strlen(s) : 0);
 }
 
+// Allocate a new copy of string s
+char *AllocStringCpyEx(const std::string &s) {
+
+    auto str = AllocString(s.size() + 1);
+    strcpy(str, s.c_str());
+    return str;
+}
+
 /*
  * Allocate a new NString buffer, containing a copy of the given string.
  * The length is set to the length of the string and resulting string is
@@ -1027,7 +1039,7 @@ void GarbageCollectStrings() {
 /*
 ** Save and restore execution context to data structure "context"
 */
-static void saveContextEx(RestartData<DocumentWidget> *context) {
+static void saveContextEx(RestartData *context) {
     context->stack       = TheStack;
     context->stackP      = StackP;
     context->frameP      = FrameP;
@@ -1036,7 +1048,7 @@ static void saveContextEx(RestartData<DocumentWidget> *context) {
     context->focusWindow = FocusWindowEx;
 }
 
-static void restoreContextEx(RestartData<DocumentWidget> *context) {
+static void restoreContextEx(RestartData *context) {
     TheStack           = context->stack;
     StackP             = context->stackP;
     FrameP             = context->frameP;

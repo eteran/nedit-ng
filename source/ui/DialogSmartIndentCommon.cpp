@@ -1,10 +1,10 @@
 
 #include <QMessageBox>
 #include "DialogSmartIndentCommon.h"
+#include "macro.h"
 #include "IndentStyle.h"
 #include "DocumentWidget.h"
 #include "smartIndent.h"
-#include "macro.h"
 #include "preferences.h"
 #include "MainWindow.h"
 

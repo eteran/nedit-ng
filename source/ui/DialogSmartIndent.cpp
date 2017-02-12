@@ -7,8 +7,9 @@
 #include "MainWindow.h"
 #include <QMessageBox>
 
-#include "smartIndent.h"
 #include "macro.h"
+#include "smartIndent.h"
+
 #include "DocumentWidget.h"
 #include "preferences.h"
 #include "interpret.h"

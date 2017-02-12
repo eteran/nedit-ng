@@ -28,10 +28,11 @@
 
 #include <QVector>
 #include <QTextStream>
+#include "macro.h"
 #include "userCmds.h"
 #include "MenuItem.h"
 #include "file.h"
-#include "macro.h"
+
 #include "preferences.h"
 #include "parse.h"
 

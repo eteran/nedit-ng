@@ -27,14 +27,18 @@
 #ifndef MACRO_H_
 #define MACRO_H_
 
+#include <QFuture>
 #include "nedit.h"
 #include "util/string_view.h"
+
 
 class QString;
 class QWidget;
 class Program;
+class QTimer;
 class DocumentWidget;
 class MainWindow;
+struct RestartData;
 
 #define REPEAT_TO_END -1
 #define REPEAT_IN_SEL -2
@@ -61,4 +65,16 @@ void SafeGC();
 
 extern std::string ReplayMacro;
 extern QString LastCommand;
+
+/* Data attached to window during shell command execution with
+   information for controling and communicating with the process */
+struct macroCmdInfoEx {
+    QTimer *bannerTimeoutID;
+    Program *program;
+    QFuture<bool> continueWorkProcID;
+    bool bannerIsUp;
+    bool closeOnCompletion;
+    RestartData *context;
+};
+
 #endif

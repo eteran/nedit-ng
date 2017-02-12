@@ -28,6 +28,7 @@
 *******************************************************************************/
 
 #include <QDialogButtonBox>
+#include <QApplication>
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QPushButton>
@@ -70,6 +71,7 @@
 #include "tags.h"
 #include "userCmds.h"
 #include "calltips.h"
+#include "string_view.h"
 
 #include "util/utils.h"
 
@@ -78,6 +80,7 @@
 
 #include <functional>
 #include <type_traits>
+#include <fstream>
 
 
 namespace {
@@ -107,16 +110,8 @@ void AddLastCommandActionHook(XtAppContext context);
 	
 #define M_ARRAY_INSERT_FAILURE() M_FAILURE("array element failed to insert: %s")
 
-/* Data attached to window during shell command execution with
-   information for controling and communicating with the process */
-struct macroCmdInfoEx {
-    QTimer *bannerTimeoutID;
-    QFuture<bool> continueWorkProcID;
-    bool bannerIsUp;
-    bool closeOnCompletion;
-    Program *program;
-    RestartData<DocumentWidget> *context;
-};
+
+
 
 static void cancelLearnEx();
 static void runMacroEx(DocumentWidget *document, Program *prog);
@@ -138,7 +133,7 @@ static int replaceSubstringMS(DocumentWidget *window, DataValue *argList, int nA
 static int readFileMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 static int writeFileMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 static int appendFileMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int writeOrAppendFile(int append, DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int writeOrAppendFile(bool append, DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 static int substringMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 static int toupperMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 static int tolowerMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
@@ -238,7 +233,7 @@ static int fillPatternResultEx(DataValue *result, const char **errMsg, DocumentW
 static int getPatternByNameMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 static int getPatternAtPosMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 
-static int fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWidget *document, const char *styleName, bool preallocatedStyleName, bool includeName, int patCode, int bufferPos);
+static int fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWidget *document, const char *styleName, bool includeName, int patCode, int bufferPos);
 static int getStyleByNameMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 static int getStyleAtPosMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 static int filenameDialogMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
@@ -1555,7 +1550,7 @@ bool continueWorkProcEx(DocumentWidget *window) {
 */
 static int lengthMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
-	(void)window;
+    Q_UNUSED(window);
 
     std::string string;
 
@@ -1563,16 +1558,8 @@ static int lengthMS(DocumentWidget *window, DataValue *argList, int nArgs, DataV
         return false;
     }
 	
-	if (nArgs != 1) {
-		return wrongNArgsErr(errMsg);
-	}
-
-    if (!readArgument(argList[0], &string, errMsg)) {
-		return false;
-	}
-
 	result->tag   = INT_TAG;
-    result->val.n = string.size();
+    result->val.n = static_cast<int>(string.size());
 	return true;
 }
 
@@ -1580,7 +1567,8 @@ static int lengthMS(DocumentWidget *window, DataValue *argList, int nArgs, DataV
 ** Built-in macro subroutines for min and max
 */
 static int minMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
-	(void)window;
+
+    Q_UNUSED(window);
 
 	int minVal;
 	int value;
@@ -1607,7 +1595,7 @@ static int minMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValu
 }
 
 static int maxMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
-	(void)window;
+    Q_UNUSED(window);
 
 	int maxVal;
 	int value;
@@ -1717,47 +1705,32 @@ static int focusWindowMS(DocumentWidget *window, DataValue *argList, int nArgs, 
 ** buffer
 */
 static int getRangeMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
-	int from, to;
+    int from;
+    int to;
 	TextBuffer *buf = window->buffer_;
 
 	// Validate arguments and convert to int 
-	if (nArgs != 2)
-		return wrongNArgsErr(errMsg);
-		
-    if (!readArgument(argList[0], &from, errMsg))
-		return false;
-		
-    if (!readArgument(argList[1], &to, errMsg))
-		return false;
-		
-	if (from < 0)
-		from = 0;
-		
-	if (from > buf->BufGetLength())
-		from = buf->BufGetLength();
-		
-	if (to < 0)
-		to = 0;
-		
-	if (to > buf->BufGetLength())
-		to = buf->BufGetLength();
+    if(!readArguments(argList, nArgs, 0, errMsg, &from, &to)) {
+        return false;
+    }
+
+    from = qBound(0, from, buf->BufGetLength());
+    to   = qBound(0, to,   buf->BufGetLength());
 		
 	if (from > to) {
-		std::swap(from, to);
+        qSwap(from, to);
 	}
 
 	/* Copy text from buffer (this extra copy could be avoided if TextBuffer.c
 	   provided a routine for writing into a pre-allocated string) */
 	result->tag = STRING_TAG;
-	AllocNString(&result->val.str, to - from + 1);
 
 	std::string rangeText = buf->BufGetRangeEx(from, to);
 	buf->BufUnsubstituteNullCharsEx(rangeText);
 
-	// TODO(eteran): I think we can fix this to work with std::string
-	// and not care about the NULs
-	strcpy(result->val.str.rep, rangeText.c_str());
-	/* Note: after the un-substitution, it is possible that strlen() != len,
+    result->val.str = AllocNStringCpyEx(rangeText);
+
+    /* Note: after the un-substitution, it is possible that strlen() != len,
 	   but that's because strlen() can't deal with 0-characters. */
 
 	return true;
@@ -1771,15 +1744,12 @@ static int getCharacterMS(DocumentWidget *window, DataValue *argList, int nArgs,
 	int pos;
 	TextBuffer *buf = window->buffer_;
 
-	// Validate argument and convert it to int 
-	if (nArgs != 1)
-		return wrongNArgsErr(errMsg);
-    if (!readArgument(argList[0], &pos, errMsg))
-		return false;
-	if (pos < 0)
-		pos = 0;
-	if (pos > buf->BufGetLength())
-		pos = buf->BufGetLength();
+    // Validate arguments and convert to int
+    if(!readArguments(argList, nArgs, 0, errMsg, &pos)) {
+        return false;
+    }
+
+    pos = qBound(0, pos, buf->BufGetLength());
 
 	// Return the character in a pre-allocated string) 
 	result->tag = STRING_TAG;
@@ -1789,6 +1759,7 @@ static int getCharacterMS(DocumentWidget *window, DataValue *argList, int nArgs,
 	buf->BufUnsubstituteNullChars(result->val.str.rep, result->val.str.len);
 	/* Note: after the un-substitution, it is possible that strlen() != len,
 	   but that's because strlen() can't deal with 0-characters. */
+
 	return true;
 }
 
@@ -1797,38 +1768,21 @@ static int getCharacterMS(DocumentWidget *window, DataValue *argList, int nArgs,
 ** buffer
 */
 static int replaceRangeMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
-	int from, to;
+    int from;
+    int to;
 	TextBuffer *buf = window->buffer_;
-	
 	std::string string;
 
 	// Validate arguments and convert to int 
-	if (nArgs != 3)
-		return wrongNArgsErr(errMsg);
-		
-    if (!readArgument(argList[0], &from, errMsg))
-		return false;
-		
-    if (!readArgument(argList[1], &to, errMsg))
-		return false;
-		
-    if (!readArgument(argList[2], &string, errMsg))
-		return false;
-		
-	if (from < 0)
-		from = 0;
-		
-	if (from > buf->BufGetLength())
-		from = buf->BufGetLength();
-		
-	if (to < 0)
-		to = 0;
-		
-	if (to > buf->BufGetLength())
-		to = buf->BufGetLength();
+    if(!readArguments(argList, nArgs, 0, errMsg, &from, &to, &string)) {
+        return false;
+    }
+
+    from = qBound(0, from, buf->BufGetLength());
+    to   = qBound(0, to,   buf->BufGetLength());
 		
 	if (from > to) {
-		std::swap(from, to);
+        qSwap(from, to);
 	}
 
 	// Don't allow modifications if the window is read-only 
@@ -1863,11 +1817,9 @@ static int replaceSelectionMS(DocumentWidget *window, DataValue *argList, int nA
 	std::string string;
 
 	// Validate argument and convert to string 
-	if (nArgs != 1)
-		return wrongNArgsErr(errMsg);
-
-    if (!readArgument(argList[0], &string, errMsg))
-		return false;
+    if(!readArguments(argList, nArgs, 0, errMsg, &string)) {
+        return false;
+    }
 
 	// Don't allow modifications if the window is read-only 
 	if (window->lockReasons_.isAnyLocked()) {
@@ -1927,7 +1879,7 @@ static int getSelectionMS(DocumentWidget *window, DataValue *argList, int nArgs,
 
         // Return the text as an allocated string
         result->tag = STRING_TAG;
-        result->val.str = AllocNStringCpyEx(QString::fromStdString(selText));
+        result->val.str = AllocNStringCpyEx(selText);
 	}
 
 	return true;
@@ -1938,16 +1890,13 @@ static int getSelectionMS(DocumentWidget *window, DataValue *argList, int nArgs,
 ** a string to number will succeed or fail
 */
 static int validNumberMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
-	(void)window;
+    Q_UNUSED(window);
 
     std::string string;
 
-	if (nArgs != 1) {
-		return wrongNArgsErr(errMsg);
-	}
-    if (!readArgument(argList[0], &string, errMsg)) {
-		return false;
-	}
+    if(!readArguments(argList, nArgs, 0, errMsg, &string)) {
+        return false;
+    }
 
 	result->tag = INT_TAG;
 	result->val.n = StringToNum(string, nullptr);
@@ -1960,55 +1909,33 @@ static int validNumberMS(DocumentWidget *window, DataValue *argList, int nArgs, 
 */
 static int replaceSubstringMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
-	(void)window;
-	(void)nArgs;
-	(void)argList;
+    Q_UNUSED(window);
 
     int from;
     int to;
-    int length;
     std::string string;
     std::string replStr;
 
 	// Validate arguments and convert to int 
-	if (nArgs != 4)
-		return wrongNArgsErr(errMsg);
+    if(!readArguments(argList, nArgs, 0, errMsg, &string, &from, &to, &replStr)) {
+        return false;
+    }
 
-    if (!readArgument(argList[0], &string, errMsg))
-		return false;
+    const int length = string.size();
 
-    if (!readArgument(argList[1], &from, errMsg))
-		return false;
+    from = qBound(0, from, length);
+    to   = qBound(0, to,   length);
 
-    if (!readArgument(argList[2], &to, errMsg))
-		return false;
-
-    if (!readArgument(argList[3], &replStr, errMsg))
-		return false;
-	
-    length = string.size();
-	
-	if (from < 0)
-		from = 0;
-	if (from > length)
-		from = length;
-	if (to < 0)
-		to = 0;
-	if (to > length)
-		to = length;
 	if (from > to) {
-		std::swap(from, to);
+        qSwap(from, to);
 	}
 
 	// Allocate a new string and do the replacement 
-    size_t replaceLen = replStr.size();
-    size_t outLen = length - (to - from) + replaceLen;
 	result->tag = STRING_TAG;
-	AllocNString(&result->val.str, outLen + 1);
 
-    strncpy(result->val.str.rep, string.c_str(), from);
-    strncpy(&result->val.str.rep[from], replStr.c_str(), replaceLen);
-	strncpy(&result->val.str.rep[from + replaceLen], &string[to], length - to);
+    string.replace(from, to - from, replStr);
+    result->val.str = AllocNStringCpyEx(string);
+
 	return true;
 }
 
@@ -2018,7 +1945,7 @@ static int replaceSubstringMS(DocumentWidget *window, DataValue *argList, int nA
 */
 static int substringMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
-	(void)window;
+    Q_UNUSED(window);
 
     int from;
     int to;
@@ -2026,103 +1953,92 @@ static int substringMS(DocumentWidget *window, DataValue *argList, int nArgs, Da
     std::string string;
 
 	// Validate arguments and convert to int 
-	if (nArgs != 2 && nArgs != 3)
-		return wrongNArgsErr(errMsg);
-
-    if (!readArgument(argList[0], &string, errMsg))
-		return false;
-
-    if (!readArgument(argList[1], &from, errMsg))
-		return false;
-
-    length = to = string.size();
-
-	if (nArgs == 3)
-        if (!readArgument(argList[2], &to, errMsg))
-			return false;
-
-	if (from < 0)
-		from += length;
-
-	if (from < 0)
-		from = 0;
-
-	if (from > length)
-		from = length;
-
-    if (to < 0)
-		to += length;
-
-    if (to < 0)
-		to = 0;
-
-    if (to > length)
-		to = length;
-
-    if (from > to)
-		to = from;
-
-	// Allocate a new string and copy the sub-string into it 
-	result->tag = STRING_TAG;
-	AllocNStringNCpy(&result->val.str, &string[from], to - from);
-	return true;
-}
-
-static int toupperMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
-
-	(void)window;
-    int length;
-    std::string string;
-
-	// Validate arguments and convert to int 
-	if (nArgs != 1)
-		return wrongNArgsErr(errMsg);
-    if (!readArgument(argList[0], &string, errMsg))
-		return false;
-    length = string.size();
-
-	// Allocate a new string and copy an uppercased version of the string it 
-	result->tag = STRING_TAG;
-	AllocNString(&result->val.str, length + 1);
-    for (int i = 0; i < length; i++)
-		result->val.str.rep[i] = toupper((uint8_t)string[i]);
-	return true;
-}
-
-static int tolowerMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
-
-	(void)window;
-	int i, length;
-    std::string string;
-
-	// Validate arguments and convert to int 
-	if (nArgs != 1)
-		return wrongNArgsErr(errMsg);
-    if (!readArgument(argList[0], &string, errMsg))
-		return false;
-    length = string.size();
-
-	// Allocate a new string and copy an lowercased version of the string it 
-	result->tag = STRING_TAG;
-	AllocNString(&result->val.str, length + 1);
-	for (i = 0; i < length; i++)
-		result->val.str.rep[i] = tolower((uint8_t)string[i]);
-	return true;
-}
-
-static int stringToClipboardMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
-
-    std::string string;
-
-    Q_UNUSED(window);
-
-	// Get the string argument 
-    if (nArgs != 1) {
+    if (nArgs != 2 && nArgs != 3) {
 		return wrongNArgsErr(errMsg);
     }
 
     if (!readArgument(argList[0], &string, errMsg)) {
 		return false;
+    }
+
+    if (!readArgument(argList[1], &from, errMsg)) {
+		return false;
+    }
+
+    length = string.size();
+    to     = string.size();
+
+    if (nArgs == 3) {
+        if (!readArgument(argList[2], &to, errMsg)) {
+			return false;
+        }
+    }
+
+    if (from < 0)      from += length;
+    if (from < 0)      from = 0;
+    if (from > length) from = length;
+    if (to < 0)        to += length;
+    if (to < 0)        to = 0;
+    if (to > length)   to = length;
+    if (from > to)     to = from;
+
+	// Allocate a new string and copy the sub-string into it 
+    result->tag     = STRING_TAG;
+    result->val.str = AllocNStringCpyEx(string.substr(from, to - from));
+	return true;
+}
+
+static int toupperMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+
+    Q_UNUSED(window);
+    std::string string;
+
+    // Validate arguments and convert to int
+    if(!readArguments(argList, nArgs, 0, errMsg, &string)) {
+        return false;
+    }
+
+	// Allocate a new string and copy an uppercased version of the string it 
+    for(char &ch : string) {
+        ch = toupper(static_cast<uint8_t>(ch));
+    }
+
+	result->tag = STRING_TAG;
+    result->val.str = AllocNStringCpyEx(string);
+
+	return true;
+}
+
+static int tolowerMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+
+    Q_UNUSED(window);
+    std::string string;
+
+    // Validate arguments and convert to int
+    if(!readArguments(argList, nArgs, 0, errMsg, &string)) {
+        return false;
+    }
+
+    // Allocate a new string and copy an uppercased version of the string it
+    for(char &ch : string) {
+        ch = tolower(static_cast<uint8_t>(ch));
+    }
+
+    result->tag = STRING_TAG;
+    result->val.str = AllocNStringCpyEx(string);
+
+    return true;
+}
+
+static int stringToClipboardMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+
+    Q_UNUSED(window);
+
+    std::string string;
+
+	// Get the string argument 
+    if(!readArguments(argList, nArgs, 0, errMsg, &string)) {
+        return false;
     }
 
 	result->tag = NO_TAG;
@@ -2165,64 +2081,33 @@ static int readFileMS(DocumentWidget *window, DataValue *argList, int nArgs, Dat
     Q_UNUSED(window);
 
     std::string name;
-	struct stat statbuf;
-	FILE *fp;
-	int readLen;
 
-	// Validate arguments and convert to int 
-	if (nArgs != 1)
-		return wrongNArgsErr(errMsg);
+    // Validate arguments
+    if(!readArguments(argList, nArgs, 0, errMsg, &name)) {
+        return false;
+    }
 
-    if (!readArgument(argList[0], &name, errMsg))
-		return false;
+    // Read the whole file into an allocated string
+    std::ifstream file(name, std::ios::binary);
+    if(file) {
+        // TODO(eteran): double check that this doens't auto convert some characters
+        //               we want the REAL contents of the file
+        std::string contents{std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>()};
+        result->tag = STRING_TAG;
+        result->val.str = AllocNStringCpyEx(contents);
 
-	// Read the whole file into an allocated string 
-    if ((fp = fopen(name.c_str(), "r")) == nullptr)
-		goto errorNoClose;
+        // Return the results
+        ReturnGlobals[READ_STATUS]->value.tag = INT_TAG;
+        ReturnGlobals[READ_STATUS]->value.val.n = true;
+        return true;
+    }
 
-    if (fstat(fileno(fp), &statbuf) != 0)
-		goto error;
-
-	result->tag = STRING_TAG;
-	AllocNString(&result->val.str, statbuf.st_size + 1);
-	readLen = fread(result->val.str.rep, sizeof(char), statbuf.st_size + 1, fp);
-	if (ferror(fp))
-		goto error;
-	if (!feof(fp)) {
-		// Couldn't trust file size. Use slower but more general method 
-        constexpr const int chunkSize = 1024;
-
-        auto buffer = static_cast<char *>(malloc(readLen));
-		memcpy(buffer, result->val.str.rep, readLen);
-		while (!feof(fp)) {
-            buffer = static_cast<char *>(realloc(buffer, (readLen + chunkSize)));
-			readLen += fread(&buffer[readLen], 1, chunkSize, fp);
-			if (ferror(fp)) {
-                free(buffer);
-				goto error;
-			}
-		}
-		AllocNString(&result->val.str, readLen + 1);
-		memcpy(result->val.str.rep, buffer, readLen);
-        free(buffer);
-	}
-	fclose(fp);
-
-	// Return the results 
-	ReturnGlobals[READ_STATUS]->value.tag = INT_TAG;
-    ReturnGlobals[READ_STATUS]->value.val.n = true;
-	return true;
-
-error:
-	fclose(fp);
-
-errorNoClose:
-	ReturnGlobals[READ_STATUS]->value.tag = INT_TAG;
+    ReturnGlobals[READ_STATUS]->value.tag = INT_TAG;
     ReturnGlobals[READ_STATUS]->value.val.n = false;
-	result->tag = STRING_TAG;
-	result->val.str.rep = PERM_ALLOC_STR("");
-	result->val.str.len = 0;
-	return true;
+    result->tag = STRING_TAG;
+    result->val.str.rep = PERM_ALLOC_STR("");
+    result->val.str.len = 0;
+    return true;
 }
 
 /*
@@ -2238,23 +2123,18 @@ static int appendFileMS(DocumentWidget *window, DataValue *argList, int nArgs, D
     return writeOrAppendFile(true, window, argList, nArgs, result, errMsg);
 }
 
-static int writeOrAppendFile(int append, DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int writeOrAppendFile(bool append, DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
-	(void)window;
+    Q_UNUSED(window);
 
     std::string name;
     std::string string;
 	FILE *fp;
 
 	// Validate argument 
-	if (nArgs != 2)
-		return wrongNArgsErr(errMsg);
-
-    if (!readArgument(argList[0], &string, errMsg))
-		return false;
-
-    if (!readArgument(argList[1], &name, errMsg))
-		return false;
+    if(!readArguments(argList, nArgs, 0, errMsg, &string, &name)) {
+        return false;
+    }
 
 	// open the file 
     if ((fp = fopen(name.c_str(), append ? "a" : "w")) == nullptr) {
@@ -2264,7 +2144,7 @@ static int writeOrAppendFile(int append, DocumentWidget *window, DataValue *argL
 	}
 
 	// write the string to the file 
-    fwrite(string.c_str(), sizeof(char), string.size(), fp);
+    fwrite(string.data(), 1, string.size(), fp);
 	if (ferror(fp)) {
 		fclose(fp);
 		result->tag = INT_TAG;
@@ -2275,7 +2155,7 @@ static int writeOrAppendFile(int append, DocumentWidget *window, DataValue *argL
 
 	// return the status 
 	result->tag = INT_TAG;
-	result->val.n = True;
+    result->val.n = true;
 	return true;
 }
 
@@ -2370,8 +2250,9 @@ static int searchStringMS(DocumentWidget *window, DataValue *argList, int nArgs,
 		}
 	}
 
-	if (!skipSearch)
+    if (!skipSearch) {
         found = SearchString(string, QString::fromStdString(searchStr), direction, type, wrap, beginPos, &foundStart, &foundEnd, nullptr, nullptr, GetWindowDelimitersEx(window).toLatin1().data());
+    }
 
 	// Return the results 
 	ReturnGlobals[SEARCH_END]->value.tag = INT_TAG;
@@ -2456,6 +2337,8 @@ static int replaceInStringMS(DocumentWidget *window, DataValue *argList, int nAr
 	} else {
 		size_t remainder = strlen(&string[copyEnd]);
 		replaceEnd = copyStart + replacedLen;
+
+        // TODO(eteran): we can do this better/cleaner
 		AllocNString(&result->val.str, replaceEnd + remainder + 1);
         strncpy(result->val.str.rep, &string[0], copyStart);
 		strcpy(&result->val.str.rep[copyStart], replacedStr);
@@ -2495,12 +2378,11 @@ static int setCursorPosMS(DocumentWidget *window, DataValue *argList, int nArgs,
 	int pos;
 
 	// Get argument and convert to int 
-	if (nArgs != 1)
-		return wrongNArgsErr(errMsg);
-    if (!readArgument(argList[0], &pos, errMsg))
-		return false;
+    if(!readArguments(argList, nArgs, 0, errMsg, &pos)) {
+        return false;
+    }
 
-	// Set the position 
+    // Set the position
     auto textD = window->toWindow()->lastFocus_;
 	textD->TextSetCursorPos(pos);
 	result->tag = NO_TAG;
@@ -2508,30 +2390,21 @@ static int setCursorPosMS(DocumentWidget *window, DataValue *argList, int nArgs,
 }
 
 static int selectMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
-	int start, end, startTmp;
+    int start;
+    int end;
 
 	// Get arguments and convert to int 
-	if (nArgs != 2)
-		return wrongNArgsErr(errMsg);
-    if (!readArgument(argList[0], &start, errMsg))
-		return false;
-    if (!readArgument(argList[1], &end, errMsg))
-		return false;
+    if(!readArguments(argList, nArgs, 0, errMsg, &start, &end)) {
+        return false;
+    }
 
 	// Verify integrity of arguments 
 	if (start > end) {
-		startTmp = start;
-		start = end;
-		end = startTmp;
+        qSwap(start, end);
 	}
-	if (start < 0)
-		start = 0;
-	if (start > window->buffer_->BufGetLength())
-		start = window->buffer_->BufGetLength();
-	if (end < 0)
-		end = 0;
-	if (end > window->buffer_->BufGetLength())
-		end = window->buffer_->BufGetLength();
+
+    start = qBound(0, start, window->buffer_->BufGetLength());
+    end   = qBound(0, end,   window->buffer_->BufGetLength());
 
 	// Make the selection 
 	window->buffer_->BufSelect(start, end);
@@ -2543,16 +2416,9 @@ static int selectRectangleMS(DocumentWidget *window, DataValue *argList, int nAr
 	int start, end, left, right;
 
 	// Get arguments and convert to int 
-	if (nArgs != 4)
-		return wrongNArgsErr(errMsg);
-    if (!readArgument(argList[0], &start, errMsg))
-		return false;
-    if (!readArgument(argList[1], &end, errMsg))
-		return false;
-    if (!readArgument(argList[2], &left, errMsg))
-		return false;
-    if (!readArgument(argList[3], &right, errMsg))
-		return false;
+    if(!readArguments(argList, nArgs, 0, errMsg, &start, &end, &left, &right)) {
+        return false;
+    }
 
 	// Make the selection 
 	window->buffer_->BufRectSelect(start, end, left, right);
@@ -2579,16 +2445,19 @@ static int beepMS(DocumentWidget *window, DataValue *argList, int nArgs, DataVal
 
 static int tPrintMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
-	(void)window;
+    Q_UNUSED(window);
 
     std::string string;
 
-	if (nArgs == 0)
+    if (nArgs == 0) {
 		return tooFewArgsErr(errMsg);
+    }
 
     for (int i = 0; i < nArgs; i++) {
-        if (!readArgument(argList[i], &string, errMsg))
+        if (!readArgument(argList[i], &string, errMsg)) {
 			return false;
+        }
+
         printf("%s%s", string.c_str(), i == nArgs - 1 ? "" : " ");
 	}
 
@@ -2602,26 +2471,21 @@ static int tPrintMS(DocumentWidget *window, DataValue *argList, int nArgs, DataV
 */
 static int getenvMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
-	(void)window;
+    Q_UNUSED(window);
 
     std::string name;
 
 	// Get name of variable to get 
-	if (nArgs != 1)
-		return wrongNArgsErr(errMsg);
+    if(!readArguments(argList, nArgs, 0, errMsg, &name)) {
+        *errMsg = "argument to %s must be a string";
+        return false;
+    }
 
-    if (!readArgument(argList[0], &name, errMsg)) {
-		*errMsg = "argument to %s must be a string";
-		return false;
-	}
-
-    const char *value = getenv(name.c_str());
-	if(!value)
-		value = "";
+    QByteArray value = qgetenv(name.c_str());
 
 	// Return the text as an allocated string 
 	result->tag = STRING_TAG;
-	AllocNStringCpy(&result->val.str, value);
+    result->val.str = AllocNStringCpyEx(QString::fromLocal8Bit(value));
 	return true;
 }
 
@@ -2630,14 +2494,9 @@ static int shellCmdMS(DocumentWidget *document, DataValue *argList, int nArgs, D
     std::string cmdString;
     std::string inputString;
 
-	if (nArgs != 2)
-		return wrongNArgsErr(errMsg);
-
-    if (!readArgument(argList[0], &cmdString, errMsg))
-		return false;
-
-    if (!readArgument(argList[1], &inputString, errMsg))
-		return false;
+    if(!readArguments(argList, nArgs, 0, errMsg, &cmdString, &inputString)) {
+        return false;
+    }
 
 	/* Shell command execution requires that the macro be suspended, so
 	   this subroutine can't be run if macro execution can't be interrupted */
@@ -2668,7 +2527,7 @@ void ReturnShellCommandOutputEx(DocumentWidget *window, const std::string &outTe
     }
 
     retVal.tag = STRING_TAG;
-    AllocNStringCpy(&retVal.val.str, outText.c_str());
+    retVal.val.str = AllocNStringCpyEx(outText);
     ModifyReturnedValueEx(cmdData->context, retVal);
     ReturnGlobals[SHELL_CMD_STATUS]->value.tag = INT_TAG;
     ReturnGlobals[SHELL_CMD_STATUS]->value.val.n = status;
@@ -2974,15 +2833,8 @@ static int replaceAllInSelectionMS(DocumentWidget *document, DataValue *argList,
     std::string searchString;
     std::string replaceString;
     std::string typeString;
-    if (!readArgument(argList[0], &searchString, errMsg)) {
-        return false;
-    }
 
-    if (!readArgument(argList[1], &replaceString, errMsg)) {
-        return false;
-    }
-
-    if (!readArgument(argList[2], &typeString, errMsg)) {
+    if(!readArguments(argList, nArgs, 0, errMsg, &searchString, &replaceString, &typeString)) {
         return false;
     }
 
@@ -3024,15 +2876,8 @@ static int replaceAllMS(DocumentWidget *document, DataValue *argList, int nArgs,
     std::string searchString;
     std::string replaceString;
     std::string typeString;
-    if (!readArgument(argList[0], &searchString, errMsg)) {
-        return false;
-    }
 
-    if (!readArgument(argList[1], &replaceString, errMsg)) {
-        return false;
-    }
-
-    if (!readArgument(argList[2], &typeString, errMsg)) {
+    if(!readArguments(argList, nArgs, 0, errMsg, &searchString, &replaceString, &typeString)) {
         return false;
     }
 
@@ -3262,7 +3107,7 @@ static int listDialogMS(DocumentWidget *window, DataValue *argList, int nArgs, D
 
 static int stringCompareMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
-	(void)window;
+    Q_UNUSED(window);
 
     std::string leftStr;
     std::string rightStr;
@@ -3275,10 +3120,12 @@ static int stringCompareMS(DocumentWidget *window, DataValue *argList, int nArgs
 	if (nArgs < 2) {
 		return (wrongNArgsErr(errMsg));
 	}
+
     if (!readArgument(argList[0], &leftStr, errMsg))
 		return false;
     if (!readArgument(argList[1], &rightStr, errMsg))
 		return false;
+
 	for (i = 2; i < nArgs; ++i) {
         if (!readArgument(argList[i], &argStr, errMsg))
 			return false;
@@ -3374,7 +3221,7 @@ static int splitMS(DocumentWidget *window, DataValue *argList, int nArgs, DataVa
 		allocIndexStr = AllocString(strlen(indexStr) + 1);
 		if (!allocIndexStr) {
 			*errMsg = "array element failed to allocate key: %s";
-			return (False);
+            return false;
 		}
 		strcpy(allocIndexStr, indexStr);
         found = SearchString(sourceStr, QString::fromStdString(splitStr), SEARCH_FORWARD, searchType, false, beginPos, &foundStart, &foundEnd, nullptr, nullptr, GetWindowDelimitersEx(window).toLatin1().data());
@@ -3383,7 +3230,7 @@ static int splitMS(DocumentWidget *window, DataValue *argList, int nArgs, DataVa
 		element.tag = STRING_TAG;
 		if (!AllocNStringNCpy(&element.val.str, &sourceStr[lastEnd], elementLen)) {
 			*errMsg = "failed to allocate element value: %s";
-			return (False);
+            return false;
 		}
 
 		if (!ArrayInsert(result, allocIndexStr, &element)) {
@@ -3407,7 +3254,7 @@ static int splitMS(DocumentWidget *window, DataValue *argList, int nArgs, DataVa
 		allocIndexStr = AllocString(strlen(indexStr) + 1);
 		if (!allocIndexStr) {
 			*errMsg = "array element failed to allocate key: %s";
-			return (False);
+            return false;
 		}
 		strcpy(allocIndexStr, indexStr);
 		element.tag = STRING_TAG;
@@ -3425,7 +3272,7 @@ static int splitMS(DocumentWidget *window, DataValue *argList, int nArgs, DataVa
 			elementLen = strLength - lastEnd;
 			if (!AllocNStringNCpy(&element.val.str, &sourceStr[lastEnd], elementLen)) {
 				*errMsg = "failed to allocate element value: %s";
-				return (False);
+                return false;
 			}
 
 			if (!ArrayInsert(result, allocIndexStr, &element)) {
@@ -3447,7 +3294,7 @@ static int splitMS(DocumentWidget *window, DataValue *argList, int nArgs, DataVa
 				allocIndexStr = AllocString(strlen(indexStr) + 1);
 				if (!allocIndexStr) {
 					*errMsg = "array element failed to allocate key: %s";
-					return (False);
+                    return false;
 				}
 				strcpy(allocIndexStr, indexStr);
 				element.tag = STRING_TAG;
@@ -3460,7 +3307,7 @@ static int splitMS(DocumentWidget *window, DataValue *argList, int nArgs, DataVa
 			}
 		}
 	}
-	return (True);
+    return true;
 }
 
 /*
@@ -3691,12 +3538,13 @@ static int autoIndentMV(DocumentWidget *window, DataValue *argList, int nArgs, D
 		break;
 	case SMART_INDENT:
 		res = PERM_ALLOC_STR("smart");
-		break;
-	default:
+        break;
+    default:
 		*errMsg = "Invalid indent style value encountered in %s";
 		return false;
 		break;
 	}
+
 	result->tag = STRING_TAG;
 	result->val.str.rep = res;
 	result->val.str.len = strlen(res);
@@ -3907,7 +3755,7 @@ static int fontNameBoldItalicMV(DocumentWidget *window, DataValue *argList, int 
 }
 
 static int subscriptSepMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
-	(void)window;
+    Q_UNUSED(window);
 	(void)errMsg;
 	(void)nArgs;
 	(void)argList;
@@ -3999,7 +3847,7 @@ static int nPanesMV(DocumentWidget *window, DataValue *argList, int nArgs, DataV
 
 static int emptyArrayMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
-	(void)window;
+    Q_UNUSED(window);
 	(void)nArgs;
 	(void)argList;
 	(void)errMsg;
@@ -4011,7 +3859,7 @@ static int emptyArrayMV(DocumentWidget *window, DataValue *argList, int nArgs, D
 
 static int serverNameMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
-	(void)window;
+    Q_UNUSED(window);
 	(void)nArgs;
 	(void)argList;
 	(void)errMsg;
@@ -4094,10 +3942,6 @@ static int rangesetListMV(DocumentWidget *window, DataValue *argList, int nArgs,
 	(void)argList;
 
 	RangesetTable *rangesetTable = window->buffer_->rangesetTable_;
-	uint8_t *rangesetList;
-	char *allocIndexStr;
-	char indexStr[TYPE_INT_STR_SIZE(int)];
-	int nRangesets, i;
 	DataValue element;
 
 	result->tag = ARRAY_TAG;
@@ -4107,22 +3951,13 @@ static int rangesetListMV(DocumentWidget *window, DataValue *argList, int nArgs,
 		return true;
 	}
 
-	rangesetList = rangesetTable->RangesetGetList();
-	nRangesets = strlen((char *)rangesetList);
-	for (i = 0; i < nRangesets; i++) {
+    uint8_t *rangesetList = rangesetTable->RangesetGetList();
+    int nRangesets = strlen((char *)rangesetList);
+    for (int i = 0; i < nRangesets; i++) {
 		element.tag = INT_TAG;
 		element.val.n = rangesetList[i];
 
-        snprintf(indexStr, sizeof(indexStr), "%d", nRangesets - i - 1);
-		allocIndexStr = AllocString(strlen(indexStr) + 1);
-
-        if(!allocIndexStr) {
-			M_FAILURE("Failed to allocate array key in %s");
-        }
-
-		strcpy(allocIndexStr, indexStr);
-
-        if (!ArrayInsert(result, allocIndexStr, &element)) {
+        if (!ArrayInsert(result, AllocStringCpyEx(std::to_string(nRangesets - i - 1)), &element)) {
 			M_FAILURE("Failed to insert array element in %s");
         }
 	}
@@ -4145,7 +3980,7 @@ static int versionMV(DocumentWidget *window, DataValue *argList, int nArgs, Data
 	(void)errMsg;
 	(void)nArgs;
 	(void)argList;
-	(void)window;
+    Q_UNUSED(window);
 
 	static unsigned version = NEDIT_VERSION * 1000 + NEDIT_REVISION;
 
@@ -4164,9 +3999,9 @@ static int versionMV(DocumentWidget *window, DataValue *argList, int nArgs, Data
 */
 static int rangesetCreateMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	int label;
-	int i, nRangesetsRequired;
+    int i;
+    int nRangesetsRequired;
 	DataValue element;
-	char indexStr[TYPE_INT_STR_SIZE(int)], *allocIndexStr;
 
 	RangesetTable *rangesetTable = window->buffer_->rangesetTable_;
 
@@ -4198,14 +4033,7 @@ static int rangesetCreateMS(DocumentWidget *window, DataValue *argList, int nArg
 			element.tag = INT_TAG;
 			element.val.n = rangesetTable->RangesetCreate();
 
-			sprintf(indexStr, "%d", i);
-			allocIndexStr = AllocString(strlen(indexStr) + 1);
-			if (!allocIndexStr) {
-				*errMsg = "Array element failed to allocate key: %s";
-				return (False);
-			}
-			strcpy(allocIndexStr, indexStr);
-			ArrayInsert(result, allocIndexStr, &element);
+            ArrayInsert(result, AllocStringCpyEx(std::to_string(i)), &element);
 		}
 
 		return true;
@@ -4280,20 +4108,12 @@ static int rangesetGetByNameMS(DocumentWidget *window, DataValue *argList, int n
     std::string name;
 	RangesetTable *rangesetTable = window->buffer_->rangesetTable_;
 	uint8_t *rangesetList;
-	char *allocIndexStr;
-	char indexStr[TYPE_INT_STR_SIZE(int)];
-    int nRangesets;
-    int i;
     int insertIndex = 0;
 	DataValue element;
 
-	if (nArgs != 1) {
-		return wrongNArgsErr(errMsg);
-	}
-
-    if (!readArgument(argList[0], &name, errMsg)) {
-		M_FAILURE("First parameter is not a name string in %s");
-	}
+    if(!readArguments(argList, nArgs, 0, errMsg, &name)) {
+        M_FAILURE("First parameter is not a name string in %s");
+    }
 
 	result->tag = ARRAY_TAG;
 	result->val.arrayPtr = ArrayNew();
@@ -4303,8 +4123,8 @@ static int rangesetGetByNameMS(DocumentWidget *window, DataValue *argList, int n
 	}
 
 	rangesetList = rangesetTable->RangesetGetList();
-	nRangesets = strlen((char *)rangesetList);
-	for (i = 0; i < nRangesets; ++i) {
+    int nRangesets = strlen((char *)rangesetList);
+    for (int i = 0; i < nRangesets; ++i) {
 		label = rangesetList[i];
 		rangeset = rangesetTable->RangesetFetch(label);
 		if (rangeset) {
@@ -4315,15 +4135,9 @@ static int rangesetGetByNameMS(DocumentWidget *window, DataValue *argList, int n
 				element.tag = INT_TAG;
 				element.val.n = label;
 
-				sprintf(indexStr, "%d", insertIndex);
-				allocIndexStr = AllocString(strlen(indexStr) + 1);
-				if(!allocIndexStr)
-					M_FAILURE("Failed to allocate array key in %s");
-
-				strcpy(allocIndexStr, indexStr);
-
-				if (!ArrayInsert(result, allocIndexStr, &element))
+                if (!ArrayInsert(result, AllocStringCpyEx(std::to_string(insertIndex)), &element)) {
 					M_FAILURE("Failed to insert array element in %s");
+                }
 
 				++insertIndex;
 			}
@@ -4411,9 +4225,7 @@ static int rangesetAddMS(DocumentWidget *window, DataValue *argList, int nArgs, 
 		if (end > maxpos)
 			end = maxpos;
 		if (start > end) {
-			int temp = start;
-			start = end;
-			end = temp;
+            qSwap(start, end);
 		}
 
 		if ((start != end) && !targetRangeset->RangesetAddBetween(start, end)) {
@@ -4505,9 +4317,7 @@ static int rangesetSubtractMS(DocumentWidget *window, DataValue *argList, int nA
 		if (end > maxpos)
 			end = maxpos;
 		if (start > end) {
-			int temp = start;
-			start = end;
-			end = temp;
+            qSwap(start, end);
 		}
 
 		targetRangeset->RangesetRemoveBetween(start, end);
@@ -4526,12 +4336,13 @@ static int rangesetSubtractMS(DocumentWidget *window, DataValue *argList, int nA
 static int rangesetInvertMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
 	RangesetTable *rangesetTable = window->buffer_->rangesetTable_;
-	int label = 0;
+    int label;
 
-	if (nArgs != 1)
-		return wrongNArgsErr(errMsg);
+    if(!readArguments(argList, nArgs, 0, errMsg, &label)) {
+        return false;
+    }
 
-    if (!readArgument(argList[0], &label, errMsg) || !RangesetTable::RangesetLabelOK(label)) {
+    if (!RangesetTable::RangesetLabelOK(label)) {
 		M_FAILURE("First parameter is an invalid rangeset label in %s");
 	}
 
@@ -4567,12 +4378,13 @@ static int rangesetInfoMS(DocumentWidget *window, DataValue *argList, int nArgs,
     QString name;
 	const char *mode;
 	DataValue element;
-	int label = 0;
+    int label;
 
-	if (nArgs != 1)
-		return wrongNArgsErr(errMsg);
+    if(!readArguments(argList, nArgs, 0, errMsg, &label)) {
+        return false;
+    }
 
-    if (!readArgument(argList[0], &label, errMsg) || !RangesetTable::RangesetLabelOK(label)) {
+    if (!RangesetTable::RangesetLabelOK(label)) {
 		M_FAILURE("First parameter is an invalid rangeset label in %s");
 	}
 
@@ -4894,7 +4706,7 @@ static int rangesetSetModeMS(DocumentWidget *window, DataValue *argList, int nAr
 **      ["style"]       Name of style
 **
 */
-static int fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWidget *document, const char *styleName, bool preallocatedStyleName, bool includeName, int patCode, int bufferPos) {
+static int fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWidget *document, const char *styleName, bool includeName, int patCode, int bufferPos) {
     DataValue DV;
 
     // initialize array
@@ -4904,14 +4716,13 @@ static int fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWid
     // the following array entries will be strings
     DV.tag = STRING_TAG;
 
+    auto styleNameStr = QString::fromLatin1(styleName);
+
     if (includeName) {
+
         // insert style name
-        if (preallocatedStyleName) {
-            DV.val.str.rep = (String)styleName;
-            DV.val.str.len = strlen(styleName);
-        } else {
-            AllocNStringCpy(&DV.val.str, styleName);
-        }
+        DV.val.str = AllocNStringCpyEx(styleNameStr);
+
         M_STR_ALLOC_ASSERT(DV);
         if (!ArrayInsert(result, PERM_ALLOC_STR("style"), &DV)) {
             M_ARRAY_INSERT_FAILURE();
@@ -4919,7 +4730,7 @@ static int fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWid
     }
 
     // insert color name
-    DV.val.str = AllocNStringCpyEx(ColorOfNamedStyleEx(QString::fromLatin1(styleName)));
+    DV.val.str = AllocNStringCpyEx(ColorOfNamedStyleEx(styleNameStr));
     M_STR_ALLOC_ASSERT(DV);
     if (!ArrayInsert(result, PERM_ALLOC_STR("color"), &DV)) {
         M_ARRAY_INSERT_FAILURE();
@@ -4994,24 +4805,27 @@ static int getStyleByNameMS(DocumentWidget *window, DataValue *argList, int nArg
     std::string styleName;
 
 	// Validate number of arguments 
-	if (nArgs != 1) {
-		return wrongNArgsErr(errMsg);
-	}
+    if(!readArguments(argList, nArgs, 0, errMsg, &styleName)) {
+        M_FAILURE("First parameter is not a string in %s");
+    }
 
-	// Prepare result 
+    // Prepare result
 	result->tag = ARRAY_TAG;
 	result->val.arrayPtr = nullptr;
-
-    if (!readArgument(argList[0], &styleName, errMsg)) {
-		M_FAILURE("First parameter is not a string in %s");
-	}
 
     if (!NamedStyleExists(QString::fromStdString(styleName))) {
 		// if the given name is invalid we just return an empty array. 
 		return true;
 	}
 
-    return fillStyleResultEx(result, errMsg, window, styleName.c_str(), (argList[0].tag == STRING_TAG), false, 0, -1);
+    return fillStyleResultEx(
+                result,
+                errMsg,
+                window,
+                styleName.c_str(),
+                false,
+                0,
+                -1);
 }
 
 /*
@@ -5032,17 +4846,13 @@ static int getStyleAtPosMS(DocumentWidget *window, DataValue *argList, int nArgs
 	TextBuffer *buf = window->buffer_;
 
 	// Validate number of arguments 
-	if (nArgs != 1) {
-		return wrongNArgsErr(errMsg);
-	}
+    if(!readArguments(argList, nArgs, 0, errMsg, &bufferPos)) {
+        return false;
+    }
 
 	// Prepare result 
 	result->tag = ARRAY_TAG;
 	result->val.arrayPtr = nullptr;
-
-    if (!readArgument(argList[0], &bufferPos, errMsg)) {
-		return false;
-	}
 
 	//  Verify sane buffer position 
 	if ((bufferPos < 0) || (bufferPos >= buf->BufGetLength())) {
@@ -5063,8 +4873,7 @@ static int getStyleAtPosMS(DocumentWidget *window, DataValue *argList, int nArgs
 		errMsg, 
 		window, 
         HighlightStyleOfCodeEx(window, patCode).toLatin1().data(),
-		false, 
-		True, 
+        true,
 		patCode, 
 		bufferPos);
 }
@@ -5094,7 +4903,7 @@ static int fillPatternResultEx(DataValue *result, const char **errMsg, DocumentW
 
     if (includeName) {
         // insert pattern name
-        AllocNStringCpy(&DV.val.str, patternName);
+        DV.val.str = AllocNStringCpyEx(QString::fromLatin1(patternName));
 
         M_STR_ALLOC_ASSERT(DV);
         if (!ArrayInsert(result, PERM_ALLOC_STR("pattern"), &DV)) {
@@ -5103,7 +4912,7 @@ static int fillPatternResultEx(DataValue *result, const char **errMsg, DocumentW
     }
 
     // insert style name
-    AllocNStringCpy(&DV.val.str, styleName);
+    DV.val.str = AllocNStringCpyEx(QString::fromLatin1(styleName));
     M_STR_ALLOC_ASSERT(DV);
     if (!ArrayInsert(result, PERM_ALLOC_STR("style"), &DV)) {
         M_ARRAY_INSERT_FAILURE();
@@ -5134,28 +4943,30 @@ static int fillPatternResultEx(DataValue *result, const char **errMsg, DocumentW
 static int getPatternByNameMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     std::string patternName;
-	HighlightPattern *pattern;
 
 	// Begin of building the result. 
 	result->tag = ARRAY_TAG;
 	result->val.arrayPtr = nullptr;
 
 	// Validate number of arguments 
-	if (nArgs != 1) {
-		return wrongNArgsErr(errMsg);
-	}
-
-    if (!readArgument(argList[0], &patternName, errMsg)) {
+    if(!readArguments(argList, nArgs, 0, errMsg, &patternName)) {
 		M_FAILURE("First parameter is not a string in %s");
 	}
 
-    pattern = FindPatternOfWindowEx(document, QString::fromStdString(patternName));
+    HighlightPattern *pattern = FindPatternOfWindowEx(document, QString::fromStdString(patternName));
 	if(!pattern) {
 		// The pattern's name is unknown. 
 		return true;
 	}
 
-    return fillPatternResultEx(result, errMsg, document, patternName.c_str(), (argList[0].tag == STRING_TAG), pattern->style.toLatin1().data(), -1);
+    return fillPatternResultEx(
+                result,
+                errMsg,
+                document,
+                patternName.c_str(),
+                false,
+                pattern->style.toLatin1().data(),
+                -1);
 }
 
 /*
@@ -5167,24 +4978,20 @@ static int getPatternByNameMS(DocumentWidget *document, DataValue *argList, int 
 **      ["extent"]      Distance from position over which this pattern applies
 */
 static int getPatternAtPosMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
-	int bufferPos = -1;
+    int bufferPos;
 	TextBuffer *buffer = window->buffer_;
-	int patCode = 0;
 
 	// Begin of building the result. 
 	result->tag = ARRAY_TAG;
 	result->val.arrayPtr = nullptr;
 
 	// Validate number of arguments 
-	if (nArgs != 1) {
-		return wrongNArgsErr(errMsg);
-	}
+    if(!readArguments(argList, nArgs, 0, errMsg, &bufferPos)) {
+        return false;
+    }
 
 	/* The most straightforward case: Get a pattern, style and extent
 	   for a buffer position. */
-    if (!readArgument(argList[0], &bufferPos, errMsg)) {
-		return false;
-	}
 
 	/*  Verify sane buffer position
 	 *  You would expect that buffer->length would be among the sane
@@ -5196,7 +5003,7 @@ static int getPatternAtPosMS(DocumentWidget *window, DataValue *argList, int nAr
 	}
 
 	// Determine the highlighting pattern used 
-    patCode = HighlightCodeOfPosEx(window, bufferPos);
+    int patCode = HighlightCodeOfPosEx(window, bufferPos);
 	if (patCode == 0) {
 		// if there is no highlighting pattern we just return an empty array. 
 		return true;

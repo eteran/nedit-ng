@@ -65,6 +65,7 @@ qt5_wrap_cpp(MOC_SOURCES
 	ui/CallTipWidget.h
 	ui/TabWidget.h
 	Settings.h
+	CommandRecorder.h
 )
 
 set(UI_FILES
@@ -179,6 +180,7 @@ add_executable(nedit
 	UndoInfo.cpp
 	userCmds.cpp
 	X11Colors.cpp
+	CommandRecorder.cpp
 
 	${BISON_parser_OUTPUT_SOURCE}
 )

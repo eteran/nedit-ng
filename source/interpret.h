@@ -148,7 +148,7 @@ struct DataValue {
         ArrayEntry*    arrayPtr;
 	} val;
 #if 0
-    typedef boost::variant<int, NString, BuiltInSubrEx, Program*, XtActionProc, Inst*, DataValue*, ArrayEntry*> value_type;
+    typedef boost::variant<int, NString, BuiltInSubrEx, Program*, Inst*, DataValue*, ArrayEntry*> value_type;
 	value_type value;
 #endif
 };
@@ -176,15 +176,14 @@ public:
 };
 
 /* Information needed to re-start a preempted macro */
-template <class Doc>
 struct RestartData {
 	DataValue *stack;
 	DataValue *stackP;
 	DataValue *frameP;
     Inst *pc;
 
-    Doc *runWindow;
-    Doc *focusWindow;
+    DocumentWidget *runWindow;
+    DocumentWidget *focusWindow;
 };
 
 void InitMacroGlobals();
@@ -223,24 +222,22 @@ void FillLoopAddrs(Inst *breakAddr, Inst *continueAddr);
 #define PERM_ALLOC_STR(xStr) ((const_cast<char *>("\001" xStr)) + 1)
 
 /* Routines for executing programs */
-int ExecuteMacroEx(DocumentWidget *window, Program *prog, int nArgs, DataValue *args, DataValue *result, RestartData<DocumentWidget> **continuation, const char **msg);
-int ContinueMacroEx(RestartData<DocumentWidget> *continuation, DataValue *result, const char **msg);
+int ExecuteMacroEx(DocumentWidget *window, Program *prog, int nArgs, DataValue *args, DataValue *result, RestartData **continuation, const char **msg);
+int ContinueMacroEx(RestartData *continuation, DataValue *result, const char **msg);
 void RunMacroAsSubrCall(Program *prog);
 void PreemptMacro();
 char *AllocString(int length);
-char *AllocStringNCpy(const char *s, int length);
-char *AllocStringCpy(const char *s);
+char *AllocStringCpyEx(const std::string &s);
 int AllocNString(NString *string, int length);
-NString AllocNStringEx(int length);
 NString AllocNStringCpyEx(const QString &s);
 NString AllocNStringCpyEx(const std::string &s);
 int AllocNStringNCpy(NString *string, const char *s, int length);
 int AllocNStringCpy(NString *string, const char *s);
 void GarbageCollectStrings();
-void FreeRestartDataEx(RestartData<DocumentWidget> *context);
+void FreeRestartDataEx(RestartData *context);
 Symbol *PromoteToGlobal(Symbol *sym);
 void FreeProgram(Program *prog);
-void ModifyReturnedValueEx(RestartData<DocumentWidget> *context, DataValue dv);
+void ModifyReturnedValueEx(RestartData *context, DataValue dv);
 DocumentWidget *MacroRunWindowEx();
 DocumentWidget *MacroFocusWindowEx();
 void SetMacroFocusWindowEx(DocumentWidget *window);

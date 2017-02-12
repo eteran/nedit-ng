@@ -31,7 +31,6 @@
 *******************************************************************************/
 
 #include <QApplication>
-#include <QX11Info>
 #include "ui/DialogPrint.h"
 #include "ui/MainWindow.h"
 #include "ui/DocumentWidget.h"
@@ -42,7 +41,6 @@
 #include "file.h"
 #include "interpret.h"
 #include "macro.h"
-#include "menu.h"
 #include "parse.h"
 #include "preferences.h"
 #include "regularExp.h"
@@ -56,7 +54,6 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <unistd.h>
 #include <sys/param.h>
 
 static void nextArg(int argc, char **argv, int *argIndex);

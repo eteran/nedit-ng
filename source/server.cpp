@@ -30,12 +30,14 @@
 #include <QX11Info>
 #include "ui/DocumentWidget.h"
 #include "ui/MainWindow.h"
+#include "macro.h"
 #include "server.h"
+
 #include "TextBuffer.h"
 #include "nedit.h"
 #include "file.h"
 #include "selection.h"
-#include "macro.h"
+
 #include "preferences.h"
 #include "server_common.h"
 #include "util/fileUtils.h"
