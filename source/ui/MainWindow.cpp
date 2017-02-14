@@ -644,18 +644,18 @@ void MainWindow::on_action_Paste_triggered() {
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name: on_action_Paste_Column_triggered
-//------------------------------------------------------------------------------
+/**
+ * @brief MainWindow::on_action_Paste_Column_triggered
+ */
 void MainWindow::on_action_Paste_Column_triggered() {
     if(TextArea *w = lastFocus_) {
         w->pasteClipboardAP(TextArea::RectFlag);
     }
 }
 
-//------------------------------------------------------------------------------
-// Name: on_action_Delete_triggered
-//------------------------------------------------------------------------------
+/**
+ * @brief MainWindow::on_action_Delete_triggered
+ */
 void MainWindow::on_action_Delete_triggered() {
     if(auto doc = currentDocument()) {
         if (doc->CheckReadOnly()) {
@@ -666,6 +666,11 @@ void MainWindow::on_action_Delete_triggered() {
     }
 }
 
+/**
+ * @brief MainWindow::CreateDocument
+ * @param name
+ * @return
+ */
 DocumentWidget *MainWindow::CreateDocument(QString name) {
 	auto window = new DocumentWidget(name, this);
 	int i = ui.tabWidget->addTab(window, name);
@@ -673,6 +678,10 @@ DocumentWidget *MainWindow::CreateDocument(QString name) {
 	return window;
 }
 
+/**
+ * @brief MainWindow::UpdateWindowTitle
+ * @param doc
+ */
 void MainWindow::UpdateWindowTitle(DocumentWidget *doc) {
 
 	QString clearCaseTag = GetClearCaseViewTag();
@@ -716,6 +725,10 @@ void MainWindow::UpdateWindowTitle(DocumentWidget *doc) {
 	InvalidateWindowMenus();
 }
 
+/**
+ * @brief MainWindow::getDialogReplace
+ * @return
+ */
 DialogReplace *MainWindow::getDialogReplace() const {
 	return qobject_cast<DialogReplace *>(dialogReplace_);
 }

@@ -31,7 +31,7 @@
 #include "rbTree.h"
 #include "util/string_view.h"
 #include <map>
-#include <list>
+#include <QList>
 
 class DocumentWidget;
 class QString;
@@ -171,7 +171,7 @@ struct Symbol {
 
 class Program {
 public:
-	std::list<Symbol *> localSymList;
+    QList<Symbol *> localSymList;
 	Inst *code;
 };
 

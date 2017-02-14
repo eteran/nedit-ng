@@ -125,7 +125,7 @@ static int beginArrayIter();
 static int arrayIter();
 static int inArray();
 static int deleteArrayElement();
-static void freeSymbolTable(std::list<Symbol *> &symTab);
+static void freeSymbolTable(QList<Symbol *> &symTab);
 static int errCheck(const char *s);
 static int execError(const char *s1, const char *s2);
 
@@ -174,7 +174,7 @@ static const char StackUnderflowMsg[] = "macro stack underflow";
 static const char StringToNumberMsg[] = "string could not be converted to number";
 
 // Temporary global data for use while accumulating programs
-static std::list<Symbol *> LocalSymList; // symbols local to the program
+static QList<Symbol *> LocalSymList; // symbols local to the program
 static Inst Prog[PROGRAM_SIZE];          // the program
 static Inst *ProgP;                      // next free spot for code gen.
 static Inst *LoopStack[LOOP_STACK_SIZE]; // addresses of break, cont stmts
@@ -292,10 +292,8 @@ Program *FinishCreatingProgram() {
 
 	std::copy_n(Prog, count, newProg->code);
 
-
-
-	newProg->localSymList = std::move(LocalSymList);
-	LocalSymList = std::list<Symbol *>();
+    newProg->localSymList = LocalSymList;
+    LocalSymList = QList<Symbol *>();
 
 	/* Local variables' values are stored on the stack.  Here we assign
 	   frame pointer offsets to them. */
@@ -1057,10 +1055,8 @@ static void restoreContextEx(RestartData *context) {
     FocusWindowEx      = context->focusWindow;
 }
 
-static void freeSymbolTable(std::list<Symbol *> &symTab) {
-	for(Symbol *s : symTab) {
-		delete s;
-	}
+static void freeSymbolTable(QList<Symbol *> &symTab) {
+    qDeleteAll(symTab);
 }
 
 #define POP(dataVal)                                                                               \
@@ -1812,15 +1808,14 @@ static int concat() {
 **         TheStack-> symN-sym1(FP), argArray, nArgs, oldFP, retPC, argN-arg1, next, ...
 */
 static int callSubroutine() {
-	Symbol *sym;
-    int nArgs;
+
 	static DataValue noValue = INIT_DATA_VALUE;
 	Program *prog;
 	const char *errMsg;
 
-	sym = PC->sym;
+    Symbol *sym = PC->sym;
 	PC++;
-	nArgs = PC->value;
+    int nArgs = PC->value;
 	PC++;
 
 	DISASM_RT(PC - 3, 3);
@@ -1883,49 +1878,6 @@ static int callSubroutine() {
 		}
 		return STAT_OK;
 	}
-
-	/*
-	** Call an action routine
-	*/
-#if 0 // NOTE(eteran): I think the "action_routine" stuff is no longer relevant as we are replacing it with custom wrappers for the same things
-    int i;
-	if (sym->type == ACTION_ROUTINE_SYM) {
-		String *argList;
-		Cardinal numArgs = nArgs;
-		XKeyEvent key_event;
-
-		/* Create a fake event with a timestamp suitable for actions which need
-		   timestamps, a marker to indicate that the call was from a macro
-		   (to stop shell commands from putting up their own separate banner) */
-		Display *disp = XtDisplay(InitiatingWindow->shell_);
-		Window win    = XtWindow (InitiatingWindow->shell_);
-
-		key_event.type = KeyPress;
-		key_event.send_event = MACRO_EVENT_MARKER;
-		key_event.time = XtLastTimestampProcessed(XtDisplay(InitiatingWindow->shell_));
-
-		/* The following entries are just filled in to avoid problems
-		   in strange cases, like calling "self_insert()" directly from the
-		   macro menu. In fact the display was sufficient to cure this crash. */
-		key_event.display = disp;
-		key_event.window = key_event.root = key_event.subwindow = win;
-
-		argList = (String *)XtCalloc(nArgs, sizeof(*argList));
-		// pop arguments off the stack and put them in the argument list 
-		for (i = nArgs - 1; i >= 0; i--) {
-			POP_STRING(argList[i])
-		}
-
-		// Call the action routine and check for preemption 
-		PreemptRequest = false;
-		sym->value.val.xtproc(FocusWindow->lastFocus_, (XEvent *)&key_event, argList, &numArgs);
-		XtFree((char *)argList);
-		if (PC->func == fetchRetVal) {
-			return execError("%s does not return a value", sym->name.c_str());
-		}
-		return PreemptRequest ? STAT_PREEMPT : STAT_OK;
-	}
-#endif
 
 	// Calling a non subroutine symbol 
 	return execError("%s is not a function or subroutine", sym->name.c_str());

@@ -240,6 +240,9 @@ static int filenameDialogMS(DocumentWidget *window, DataValue *argList, int nArg
 
 static int replaceAllInSelectionMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 static int replaceAllMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int undoMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int redoMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int selectAllMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 
 template <class T, class ...Ts>
 bool readArguments(DataValue *argList, int nArgs, int index, const char **errMsg, T arg, Ts...args);
@@ -290,11 +293,11 @@ static const SubRoutine MenuMacroSubrNames[] = {
 	{ "print-selection",              nullptr },
 	{ "print_selection",              nullptr },
 	{ "exit",                         nullptr },
-	{ "undo",                         nullptr },
-	{ "redo",                         nullptr },
+    { "undo",                         undoMS },
+    { "redo",                         redoMS },
 	{ "delete",                       nullptr },
-	{ "select-all",                   nullptr },
-	{ "select_all",                   nullptr },
+    { "select-all",                   selectAllMS },
+    { "select_all",                   selectAllMS },
 	{ "shift-left",                   nullptr },
 	{ "shift_left",                   nullptr },
 	{ "shift-left-by-tab",            nullptr },
@@ -2533,7 +2536,7 @@ void ReturnShellCommandOutputEx(DocumentWidget *window, const std::string &outTe
     ReturnGlobals[SHELL_CMD_STATUS]->value.val.n = status;
 }
 
-static int dialogMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int dialogMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     std::string btnLabel;
     std::string message;
@@ -2541,8 +2544,8 @@ static int dialogMS(DocumentWidget *window, DataValue *argList, int nArgs, DataV
 
 	/* Ignore the focused window passed as the function argument and put
 	   the dialog up over the window which is executing the macro */
-    window = MacroRunWindowEx();
-    auto cmdData = static_cast<macroCmdInfoEx *>(window->macroCmdData_);
+    document = MacroRunWindowEx();
+    auto cmdData = static_cast<macroCmdInfoEx *>(document->macroCmdData_);
 
 	/* Dialogs require macro to be suspended and interleaved with other macros.
 	   This subroutine can't be run if macro execution can't be interrupted */
@@ -2590,11 +2593,11 @@ static int dialogMS(DocumentWidget *window, DataValue *argList, int nArgs, DataV
     ModifyReturnedValueEx(cmdData->context, *result);
 	delete prompt;
 	
-    ResumeMacroExecutionEx(window);
+    ResumeMacroExecutionEx(document);
 	return true;
 }
 
-static int stringDialogMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int stringDialogMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     std::string btnLabel;
     std::string message;
@@ -2602,8 +2605,8 @@ static int stringDialogMS(DocumentWidget *window, DataValue *argList, int nArgs,
 
 	/* Ignore the focused window passed as the function argument and put
 	   the dialog up over the window which is executing the macro */
-    window = MacroRunWindowEx();
-    auto cmdData = static_cast<macroCmdInfoEx *>(window->macroCmdData_);
+    document = MacroRunWindowEx();
+    auto cmdData = static_cast<macroCmdInfoEx *>(document->macroCmdData_);
 
 	/* Dialogs require macro to be suspended and interleaved with other macros.
 	   This subroutine can't be run if macro execution can't be interrupted */
@@ -2656,7 +2659,7 @@ static int stringDialogMS(DocumentWidget *window, DataValue *argList, int nArgs,
 	result->val.str = AllocNStringCpyEx(prompt->text());
     ModifyReturnedValueEx(cmdData->context, *result);
 
-    ResumeMacroExecutionEx(window);
+    ResumeMacroExecutionEx(document);
 	delete prompt;
 	
 	return true;
@@ -2686,7 +2689,7 @@ static int stringDialogMS(DocumentWidget *window, DataValue *argList, int nArgs,
 ** Does this need to go on IgnoredActions?  I don't think so, since
 ** showing a calltip may be part of the action you want to learn.
 */
-static int calltipMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int calltipMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     std::string tipText;
     std::string txtArg;
@@ -2770,7 +2773,7 @@ static int calltipMS(DocumentWidget *window, DataValue *argList, int nArgs, Data
         lookup = false;
     }
 	// Look up (maybe) a calltip and display it 
-    result->val.n = ShowTipStringEx(window, tipText.c_str(), anchored, anchorPos, lookup, mode, hAlign, vAlign, alignMode);
+    result->val.n = ShowTipStringEx(document, tipText.c_str(), anchored, anchorPos, lookup, mode, hAlign, vAlign, alignMode);
 
 	return true;
 
@@ -2786,7 +2789,7 @@ bad_arg:
 /*
 ** A subroutine to kill the current calltip
 */
-static int killCalltipMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int killCalltipMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 	int calltipID = 0;
 
 	if (nArgs > 1) {
@@ -2798,7 +2801,7 @@ static int killCalltipMS(DocumentWidget *window, DataValue *argList, int nArgs, 
 			return false;
 	}
 
-    window->toWindow()->lastFocus_->TextDKillCalltip(calltipID);
+    document->toWindow()->lastFocus_->TextDKillCalltip(calltipID);
 
 	result->tag = NO_TAG;
 	return true;
@@ -2807,27 +2810,21 @@ static int killCalltipMS(DocumentWidget *window, DataValue *argList, int nArgs, 
 /*
  * A subroutine to get the ID of the current calltip, or 0 if there is none.
  */
-static int calltipIDMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int calltipIDMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
 	(void)errMsg;
 	(void)nArgs;
 	(void)argList;
 
 	result->tag = INT_TAG;
-    result->val.n = window->toWindow()->lastFocus_->TextDGetCalltipID(0);
+    result->val.n = document->toWindow()->lastFocus_->TextDGetCalltipID(0);
 	return true;
 }
 
 static int replaceAllInSelectionMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
-    if (nArgs < 3) {
-        *errMsg = "%s subroutine called with too few arguments";
-        return false;
-    }
-    if (nArgs > 3) {
-        *errMsg = "%s subroutine called with too many arguments";
-        return false;
-    }
+    // ensure that we are dealing with the document which currently has the focus
+    document = MacroRunWindowEx();
 
     //  Get the argument list.
     std::string searchString;
@@ -2863,14 +2860,8 @@ static int replaceAllInSelectionMS(DocumentWidget *document, DataValue *argList,
 
 static int replaceAllMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
-    if (nArgs < 3) {
-        *errMsg = "%s subroutine called with too few arguments";
-        return false;
-    }
-    if (nArgs > 3) {
-        *errMsg = "%s subroutine called with too many arguments";
-        return false;
-    }
+    // ensure that we are dealing with the document which currently has the focus
+    document = MacroRunWindowEx();
 
     //  Get the argument list.
     std::string searchString;
@@ -2901,6 +2892,56 @@ static int replaceAllMS(DocumentWidget *document, DataValue *argList, int nArgs,
     result->tag = INT_TAG;
     result->val.n = 0;
     document->replaceAllAP(QString::fromStdString(searchString), QString::fromStdString(replaceString), searchType);
+    return true;
+}
+
+static int undoMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+
+    Q_UNUSED(argList);
+    // ensure that we are dealing with the document which currently has the focus
+    document = MacroRunWindowEx();
+
+    if(nArgs != 0) {
+        return wrongNArgsErr(errMsg);
+    }
+
+    document->Undo();
+    result->tag = NO_TAG;
+    return true;
+}
+
+static int selectAllMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+
+    Q_UNUSED(argList);
+    // ensure that we are dealing with the document which currently has the focus
+    document = MacroRunWindowEx();
+
+    if(nArgs != 0) {
+        return wrongNArgsErr(errMsg);
+    }
+
+    if(MainWindow *window = document->toWindow()) {
+        if(TextArea *w = window->lastFocus_) {
+            w->selectAllAP();
+        }
+    }
+    result->tag = NO_TAG;
+    return true;
+}
+
+static int redoMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+
+    Q_UNUSED(argList);
+
+    // ensure that we are dealing with the document which currently has the focus
+    document = MacroRunWindowEx();
+
+    if(nArgs != 0) {
+        return wrongNArgsErr(errMsg);
+    }
+
+    document->Redo();
+    result->tag = NO_TAG;
     return true;
 }
 

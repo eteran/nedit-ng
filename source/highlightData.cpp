@@ -44,7 +44,7 @@
 #include "highlight.h"
 #include "regularExp.h"
 #include "preferences.h"
-#include "regexConvert.h"
+
 #include "PatternSet.h"
 #include "HighlightPattern.h"
 #include "HighlightStyle.h"
@@ -52,8 +52,6 @@
 #include <cstdio>
 #include <cstring>
 #include <climits>
-#include <sys/param.h>
-#include <memory>
 #include <algorithm>
 
 namespace {
@@ -83,10 +81,8 @@ static QVector<HighlightPattern> readHighlightPatterns(const char **inPtr, int w
 static int lookupNamedStyle(const QString &styleName);
 static int readHighlightPattern(const char **inPtr, const char **errMsg, HighlightPattern *pattern);
 static PatternSet *highlightError(const char *stringStart, const char *stoppedAt, const char *message);
-static PatternSet *readPatternSet(const char **inPtr, int convertOld);
+static PatternSet *readPatternSet(const char **inPtr);
 static QString createPatternsString(PatternSet *patSet, const QString &indentStr);
-static void convertOldPatternSet(PatternSet *patSet);
-static QString convertPatternExprEx(const QString &patternRE, const QString &patSetName, const QString &patName, bool isSubsExpr);
 
 // Pattern sources loaded from the .nedit file or set by the user 
 int NPatternSets = 0;
@@ -97,14 +93,16 @@ PatternSet *PatternSets[MAX_LANGUAGE_MODES];
 ** styles information, parse it, and load it into the stored highlight style
 ** list (HighlightStyles) for this NEdit session.
 */
-bool LoadStylesStringEx(const std::string &string) {
+bool LoadStylesStringEx(const QString &string) {
 
 	// TODO(eteran): implement this using better algorithms
 
-	const char *inString = &string[0];
+    QByteArray stringBytes = string.toLatin1();
+
+    const char *inString = stringBytes.data();
     const char *errMsg;
 	QString fontStr;
-    const char *inPtr = &string[0];
+    const char *inPtr = inString;
     int i;
 
 	for (;;) {
@@ -236,7 +234,7 @@ QString WriteStylesStringEx() {
 ** that they may contain regular expressions are of the older syntax where
 ** braces were not quoted, and \0 was a legal substitution character).
 */
-bool LoadHighlightStringEx(const QString &string, int convertOld) {
+bool LoadHighlightStringEx(const QString &string) {
 
 	// TODO(eteran): rework this to actually use a modern approach
     QByteArray stringBytes = string.toLatin1();
@@ -248,7 +246,7 @@ bool LoadHighlightStringEx(const QString &string, int convertOld) {
 	for (;;) {
 
 		// Read each pattern set, abort on error 
-		PatternSet *patSet = readPatternSet(&inPtr, convertOld);
+        PatternSet *patSet = readPatternSet(&inPtr);
 		if(!patSet) {
 			return false;
 		}
@@ -313,53 +311,6 @@ QString WriteHighlightStringEx() {
     };
 
     return str;
-}
-
-/*
-** Update regular expressions in stored pattern sets to version 5.1 regular
-** expression syntax, in which braces and \0 have different meanings
-*/
-static void convertOldPatternSet(PatternSet *patSet) {
-
-	for(HighlightPattern &pattern : patSet->patterns) {
-        pattern.startRE = convertPatternExprEx(pattern.startRE, patSet->languageMode, pattern.name, pattern.flags & COLOR_ONLY);
-        pattern.endRE   = convertPatternExprEx(pattern.endRE,   patSet->languageMode, pattern.name, pattern.flags & COLOR_ONLY);
-        pattern.errorRE = convertPatternExprEx(pattern.errorRE, patSet->languageMode, pattern.name, pattern.flags & COLOR_ONLY);
-	}
-}
-
-/*
-** Convert a single regular expression, patternRE, to version 5.1 regular
-** expression syntax.  It will convert either a match expression or a
-** substitution expression, which must be specified by the setting of
-** isSubsExpr.  Error messages are directed to stderr, and include the
-** pattern set name and pattern name as passed in patSetName and patName.
-*/
-static QString convertPatternExprEx(const QString &patternRE, const QString &patSetName, const QString &patName, bool isSubsExpr) {
-
-	if (patternRE.isNull()) {
-		return QString();
-	}
-	
-	if (isSubsExpr) {
-		const int bufsize = patternRE.size() + 5000;		
-        char *newRE = new char[bufsize];
-		ConvertSubstituteRE(patternRE.toLatin1().data(), newRE, bufsize);
-        QString s = QString::fromLatin1(newRE);
-        delete [] newRE;
-		return s;
-	} else {
-		try {
-			char *newRE = ConvertRE(patternRE.toLatin1().data());
-            QString s = QString::fromLatin1(newRE);
-            delete [] newRE;
-			return s;
-		} catch(const regex_error &e) {
-            fprintf(stderr, "NEdit error converting old format regular expression in pattern set %s, pattern %s: %s\n", patSetName.toLatin1().data(), patName.toLatin1().data(), e.what());
-		}
-	}
-	
-	return QString();
 }
 
 /*
@@ -543,7 +494,7 @@ QString createPatternsString(PatternSet *patSet, const QString &indentStr) {
 ** Read in a pattern set character string, and advance *inPtr beyond it.
 ** Returns nullptr and outputs an error to stderr on failure.
 */
-static PatternSet *readPatternSet(const char **inPtr, int convertOld) {
+static PatternSet *readPatternSet(const char **inPtr) {
 	const char *errMsg;
 	const char *stringStart = *inPtr;
 	PatternSet patSet;
@@ -584,7 +535,7 @@ static PatternSet *readPatternSet(const char **inPtr, int convertOld) {
 
 	// read pattern list 
 	bool ok;
-	QVector<HighlightPattern> patterns = readHighlightPatterns(inPtr, True, &errMsg, &ok);
+    QVector<HighlightPattern> patterns = readHighlightPatterns(inPtr, true, &errMsg, &ok);
 	if (!ok) {
 		return highlightError(stringStart, *inPtr, errMsg);
 	}
@@ -594,11 +545,6 @@ static PatternSet *readPatternSet(const char **inPtr, int convertOld) {
 	// pattern set was read correctly, make an allocated copy to return 
 	auto retPatSet = new PatternSet(patSet);
 
-	/* Convert pre-5.1 pattern sets which use old regular expression
-	   syntax to quote braces and use & rather than \0 */
-	if (convertOld) {
-		convertOldPatternSet(retPatSet);
-	}
 
 	return retPatSet;
 }
@@ -744,7 +690,7 @@ PatternSet *readDefaultPatternSet(QByteArray &patternData, const QString &langMo
 	
 	if(patternData.startsWith(langModeName.toLatin1()) && patternData.data()[modeNameLen] == ':') {
 		const char *strPtr = patternData.data();
-		return readPatternSet(&strPtr, false);
+        return readPatternSet(&strPtr);
 	}
 
 	return nullptr;

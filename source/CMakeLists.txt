@@ -127,7 +127,6 @@ add_executable(nedit
 	Rangeset.cpp
 	RangesetTable.cpp
 	rbTree.cpp
-	regexConvert.cpp
 	regularExp.cpp
 	search.cpp
 	selection.cpp

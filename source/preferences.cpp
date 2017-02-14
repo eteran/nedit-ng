@@ -80,7 +80,7 @@ bool PrefsHaveChanged = false;
    preferences on top of the defaults.  Contains name of file loaded */
 QString ImportedFile;
 
-static void translatePrefFormats(bool convertOld, int fileVer);
+static void translatePrefFormats(int fileVer);
 
 static QStringList readExtensionList(const char **inPtr);
 static QString getDefaultShell();
@@ -100,7 +100,7 @@ void RestoreNEditPrefs() {
        in which nedit stores and uses.  If the preferences file was
        written by an older version of NEdit, update regular expressions in
        highlight patterns to quote braces and use & instead of \0 */
-    translatePrefFormats(false, 1000);
+    translatePrefFormats((NEDIT_VERSION << 16) | NEDIT_REVISION);
 }
 
 /*
@@ -118,7 +118,7 @@ void RestoreNEditPrefs() {
 ** legal substitution character).  Macros, so far can not be automatically
 ** converted, unfortunately.
 */
-static void translatePrefFormats(bool convertOld, int fileVer) {
+static void translatePrefFormats(int fileVer) {
 
 	/* Parse the strings which represent types which are not decoded by
 	   the standard resource manager routines */
@@ -133,10 +133,10 @@ static void translatePrefFormats(bool convertOld, int fileVer) {
         LoadBGMenuCmdsStringEx(g_Settings.bgMenuCommands);
 	}
     if (!g_Settings.highlightPatterns.isNull()) {
-        LoadHighlightStringEx(g_Settings.highlightPatterns, convertOld);
+        LoadHighlightStringEx(g_Settings.highlightPatterns);
 	}
     if (!g_Settings.styles.isNull()) {
-        LoadStylesStringEx(g_Settings.styles.toStdString());
+        LoadStylesStringEx(g_Settings.styles);
 	}
     if (!g_Settings.languageModes.isNull()) {
         loadLanguageModesStringEx(g_Settings.languageModes, fileVer);
@@ -172,7 +172,7 @@ static void translatePrefFormats(bool convertOld, int fileVer) {
 	/* For compatability with older (4.0.3 and before) versions, the autoWrap
 	   and autoIndent resources can accept values of True and False.  Translate
 	   them into acceptable wrap and indent styles */
-    if (g_Settings.autoWrap== 3)
+    if (g_Settings.autoWrap == 3)
         g_Settings.autoWrap = CONTINUOUS_WRAP;
     if (g_Settings.autoWrap == 4)
         g_Settings.autoWrap = NO_WRAP;
@@ -186,7 +186,6 @@ static void translatePrefFormats(bool convertOld, int fileVer) {
 	   performance when switching between documents of different
 	   language modes) */
     SetupUserMenuInfo();
-
 }
 
 void SaveNEditPrefsEx(QWidget *parent, bool quietly) {
