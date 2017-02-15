@@ -202,7 +202,7 @@ void findTextMargins(TextBuffer *buf, int start, int end, int *leftMargin, int *
 	for (pos = start; pos < end; pos++) {
 		c = buf->BufGetCharacter(pos);
 		if (inWhite && c != ' ' && c != '\t') {
-			inWhite = False;
+            inWhite = false;
 			if (width < minWhite)
 				minWhite = width;
 		}
@@ -415,7 +415,7 @@ TextArea::TextArea(QWidget *parent,
 	};
 #endif
 
-	// TODO(eteran): these previously were set by the constructor of the TextDisplay Motif Widget initializer
+    // TODO(eteran): these previously were set by the constructor of the TextDisplay Motif widget initializer
 	//               so we need a better way to pass this info to this widget...
 	P_rows           = 24;
 	P_columns        = 80;
@@ -493,7 +493,6 @@ TextArea::TextArea(QWidget *parent,
 	absTopLineNum_      = 1;
 	needAbsTopLineNum_  = false;
 	horizOffset_        = 0;
-	visibility_         = VisibilityUnobscured;
 	fixedFontWidth_     = fi.fixedPitch() ? fm.maxWidth() : -1;
 	styleBuffer_        = nullptr;
 	styleTable_         = nullptr;
@@ -2090,7 +2089,7 @@ int TextArea::TextDStartOfLine(int pos) const {
 		return buffer_->BufStartOfLine(pos);
 	}
 
-	wrappedLineCounter(buffer_, buffer_->BufStartOfLine(pos), pos, INT_MAX, True, 0, &retPos, &retLines, &retLineStart, &retLineEnd);
+    wrappedLineCounter(buffer_, buffer_->BufStartOfLine(pos), pos, INT_MAX, true, 0, &retPos, &retLines, &retLineStart, &retLineEnd);
 	return retLineStart;
 }
 
@@ -2243,7 +2242,7 @@ void TextArea::findWrapRangeEx(view::string_view deletedText, int pos, int nInse
 		deletedTextBuf->BufCopyFromBuf(buffer_, pos + nInserted, countTo, pos - countFrom + nDeleted);
 	/* Note that we need to take into account an offset for the style buffer:
 	   the deletedTextBuf can be out of sync with the style buffer. */
-	wrappedLineCounter(deletedTextBuf, 0, length, INT_MAX, True, countFrom, &retPos, &retLines, &retLineStart, &retLineEnd);
+    wrappedLineCounter(deletedTextBuf, 0, length, INT_MAX, true, countFrom, &retPos, &retLines, &retLineStart, &retLineEnd);
 	delete deletedTextBuf;
 	*linesDeleted = retLines;
 	suppressResync_ = false;
@@ -2462,7 +2461,7 @@ void TextArea::calcLineStarts(int startLine, int endLine) {
 	/* Loop searching for ends of lines and storing the positions of the
 	   start of the next line in lineStarts */
 	for (line = startLine; line <= endLine; line++) {
-		findLineEnd(startPos, True, &lineEnd, &nextLineStart);
+        findLineEnd(startPos, true, &lineEnd, &nextLineStart);
 		startPos = nextLineStart;
 		if (startPos >= bufLen) {
 			/* If the buffer ends with a newline or line break, put
@@ -2522,7 +2521,7 @@ int TextArea::TextDCountBackwardNLines(int startPos, int nLines) {
 	int pos = startPos;
 	while (true) {
 		int lineStart = buffer_->BufStartOfLine(pos);
-		wrappedLineCounter(buffer_, lineStart, pos, INT_MAX, True, 0, &retPos, &retLines, &retLineStart, &retLineEnd);
+        wrappedLineCounter(buffer_, lineStart, pos, INT_MAX, true, 0, &retPos, &retLines, &retLineStart, &retLineEnd);
 		if (retLines > nLines)
 			return TextDCountForwardNLines(lineStart, retLines - nLines, true);
 		nLines -= retLines;
@@ -2721,7 +2720,7 @@ int TextArea::updateHScrollBarRange() {
 	int origHOffset = horizOffset_;
 
 	if(!horizontalScrollBar()->isVisible()) {
-		return false;
+        return false;
 	}
 
 	// Scan all the displayed lines to find the width of the longest line
@@ -2773,7 +2772,7 @@ int TextArea::emptyLinesVisible() const {
 int TextArea::posToVisibleLineNum(int pos, int *lineNum) {
 
 	if (pos < firstChar_) {
-		return false;
+        return false;
 	}
 
 	if (pos > lastChar_) {
@@ -2781,7 +2780,7 @@ int TextArea::posToVisibleLineNum(int pos, int *lineNum) {
 			if (lastChar_ < buffer_->BufGetLength()) {
 				if (!posToVisibleLineNum(lastChar_, lineNum)) {
                     qDebug("nedit: Consistency check ptvl failed");
-					return false;
+                    return false;
 				}
 				return ++(*lineNum) <= nVisibleLines_ - 1;
 			} else {
@@ -2789,7 +2788,7 @@ int TextArea::posToVisibleLineNum(int pos, int *lineNum) {
 				return true;
 			}
 		}
-		return false;
+        return false;
 	}
 
 	for (int i = nVisibleLines_ - 1; i >= 0; i--) {
@@ -2799,7 +2798,7 @@ int TextArea::posToVisibleLineNum(int pos, int *lineNum) {
 		}
 	}
 
-	return false;
+    return false;
 }
 
 //------------------------------------------------------------------------------
@@ -3720,7 +3719,7 @@ void TextArea::TextDResize(int width, int height) {
 		int oldFirstChar = firstChar_;
 		nBufferLines_ = TextDCountLines(0, buffer_->BufGetLength(), true);
 		firstChar_ = TextDStartOfLine(firstChar_);
-		topLineNum_ = TextDCountLines(0, firstChar_, True) + 1;
+        topLineNum_ = TextDCountLines(0, firstChar_, true) + 1;
 		redrawAll = true;
 		offsetAbsLineNum(oldFirstChar);
 	}
@@ -3842,7 +3841,7 @@ void TextArea::setScroll(int topLineNum, int horizOffset, bool updateVScrollBar,
 	int xOffset = origHOffset - horizOffset_;
 	int yOffset = lineDelta * fontHeight;
 
-	if (visibility_ != VisibilityUnobscured || abs(xOffset) > rect_.width || abs(yOffset) > exactHeight) {
+    if (abs(xOffset) > rect_.width || abs(yOffset) > exactHeight) {
 		TextDTranlateGraphicExposeQueue(xOffset, yOffset, false);
 		TextDRedisplayRect(rect_);
 	} else {
@@ -4382,7 +4381,7 @@ int TextArea::TextDPositionToXY(int pos, int *x, int *y) {
 
 	// If position is not displayed, return false
     if (pos < firstChar_ || (pos > lastChar_ && !emptyLinesVisible())) {
-		return false;
+        return false;
     }
 
 	// Calculate y coordinate
@@ -4479,7 +4478,7 @@ void TextArea::cancelDrag() {
 */
 int TextArea::TextDMoveRight() {
 	if (cursorPos_ >= buffer_->BufGetLength()) {
-		return false;
+        return false;
 	}
 
 	TextDSetInsertPosition(cursorPos_ + 1);
@@ -4583,7 +4582,7 @@ void TextArea::TextDMakeInsertPosVisible() {
 	   to scroll to, otherwise, do the vertical scrolling first, then the
 	   horizontal */
 	if (!TextDPositionToXY(cursorPos, &x, &y)) {
-		setScroll(topLine, hOffset, True, true);
+        setScroll(topLine, hOffset, true, true);
 		if (!TextDPositionToXY(cursorPos, &x, &y)) {
 			return; // Give up, it's not worth it (but why does it fail?)
 		}
@@ -4800,7 +4799,7 @@ void TextArea::TakeMotifDestination() {
 
 int TextArea::TextDMoveLeft() {
 	if (cursorPos_ <= 0) {
-		return false;
+        return false;
 	}
 
 	TextDSetInsertPosition(cursorPos_ - 1);
@@ -4825,7 +4824,7 @@ int TextArea::TextDMoveUp(bool absolute) {
 	}
 
     if (lineStartPos == 0) {
-		return false;
+        return false;
     }
 
 	// Decide what column to move to, if there's a preferred column use that
@@ -4862,7 +4861,7 @@ int TextArea::TextDMoveDown(bool absolute) {
 	int visLineNum;
 
 	if (cursorPos_ == buffer_->BufGetLength()) {
-		return false;
+        return false;
 	}
 
 	if (absolute) {
@@ -4885,7 +4884,7 @@ int TextArea::TextDMoveDown(bool absolute) {
 	newPos = buffer_->BufCountForwardDispChars(nextLineStartPos, column);
 
 	if (P_continuousWrap && !absolute) {
-		newPos = std::min(newPos, TextDEndOfLine(nextLineStartPos, True));
+        newPos = std::min(newPos, TextDEndOfLine(nextLineStartPos, true));
 	}
 
 	TextDSetInsertPosition(newPos);
@@ -4899,7 +4898,7 @@ bool TextArea::checkReadOnly() const {
 		QApplication::beep();
 		return true;
 	}
-	return false;
+    return false;
 }
 
 /*
@@ -5156,7 +5155,7 @@ int TextArea::wrapLine(TextBuffer *buf, int bufOffset, int lineStartPos, int lin
 	   whitespace in line at which to wrap */
 	for (p = lineEndPos;; p--) {
 		if (p < lineStartPos || p < limitPos) {
-			return false;
+            return false;
 		}
 
 		char c = buf->BufGetCharacter(p);
@@ -5422,7 +5421,7 @@ int TextArea::deleteEmulatedTab() {
 	char c;
 
 	if (emTabDist <= 0 || emTabsBeforeCursor <= 0)
-		return False;
+        return false;
 
 	// Find the position of the previous tab stop
 	insertPos = cursorPos_;
@@ -5474,7 +5473,7 @@ int TextArea::deleteEmulatedTab() {
 	/* Decrement and restore the marker for consecutive emulated tabs, which
 	   would otherwise have been zeroed by callCursorMovementCBs */
 	emTabsBeforeCursor_ = emTabsBeforeCursor - 1;
-	return True;
+    return true;
 }
 
 /*
@@ -5491,7 +5490,7 @@ bool TextArea::deletePendingSelection() {
 		callCursorMovementCBs();
 		return true;
 	} else
-		return false;
+        return false;
 }
 
 int TextArea::startOfWord(int pos) {
@@ -5542,7 +5541,7 @@ bool TextArea::spanBackward(TextBuffer *buf, int startPos, const char *searchCha
 
 	if (startPos == 0) {
 		*foundPos = 0;
-		return False;
+        return false;
 	}
 	pos = startPos == 0 ? 0 : startPos - 1;
 	while (pos >= 0) {
@@ -5557,7 +5556,7 @@ bool TextArea::spanBackward(TextBuffer *buf, int startPos, const char *searchCha
 		pos--;
 	}
 	*foundPos = 0;
-	return false;
+    return false;
 }
 
 /*
@@ -5583,7 +5582,7 @@ bool TextArea::spanForward(TextBuffer *buf, int startPos, const char *searchChar
 		pos++;
 	}
 	*foundPos = buf->BufGetLength();
-	return false;
+    return false;
 }
 
 void TextArea::processShiftUpAP(EventFlags flags) {
@@ -7267,7 +7266,7 @@ void TextArea::TextDSetWrapMode(int wrap, int wrapMargin) {
 	   can leave the character at the top no longer at a line start, and/or
 	   change the line number */
 	firstChar_  = TextDStartOfLine(firstChar_);
-	topLineNum_ = TextDCountLines(0, firstChar_, True) + 1;
+    topLineNum_ = TextDCountLines(0, firstChar_, true) + 1;
 	resetAbsLineNum();
 
 	// update the line starts array
@@ -7933,7 +7932,7 @@ int TextArea::TextDPosOfPreferredCol(int column, int lineStartPos) {
 
 	int newPos = buffer_->BufCountForwardDispChars(lineStartPos, column);
 	if (P_continuousWrap) {
-		newPos = std::min(newPos, TextDEndOfLine(lineStartPos, True));
+        newPos = std::min(newPos, TextDEndOfLine(lineStartPos, true));
 	}
 
 	return newPos;
@@ -7965,7 +7964,7 @@ int TextArea::TextDPosToLineAndCol(int pos, int *lineNum, int *column) {
 	   keeping track of it and pos is in the displayed text */
 	if (P_continuousWrap) {
 		if (!maintainingAbsTopLineNum() || pos < firstChar_ || pos > lastChar_)
-			return false;
+            return false;
 		*lineNum = absTopLineNum_ + buffer_->BufCountLines(firstChar_, pos);
 		*column = buffer_->BufCountDispChars(buffer_->BufStartOfLine(pos), pos);
 		return true;
@@ -7973,7 +7972,7 @@ int TextArea::TextDPosToLineAndCol(int pos, int *lineNum, int *column) {
 
 	// Only return the data if pos is within the displayed text
 	if (!posToVisibleLineNum(pos, lineNum))
-		return false;
+        return false;
 	*column = buffer_->BufCountDispChars(lineStarts_[*lineNum], pos);
 	*lineNum += topLineNum_;
 	return true;
@@ -7997,7 +7996,7 @@ void TextArea::addSmartIndentCallback(smartIndentCBEx callback, void *arg) {
 
 bool TextArea::focusNextPrevChild(bool next) {
 	if(true) { // !tabChangesFocus()
-		return false;
+        return false;
 	} else {
 		return QAbstractScrollArea::focusNextPrevChild(next);
 	}

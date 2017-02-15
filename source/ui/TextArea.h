@@ -392,7 +392,6 @@ private:
 	int absTopLineNum_;                           // In continuous wrap mode, the line number of the top line if the text were not wrapped (note that this is only maintained as needed).
 	int needAbsTopLineNum_;                       // Externally settable flag to continue maintaining absTopLineNum even if it isn't needed for line # display
 	int horizOffset_;                             // Horizontal scroll pos. in pixels
-	int visibility_;                              // Window visibility (see XVisibility event)
 	int nStyles_;                                 // Number of entries in styleTable
 	StyleTableEntry *styleTable_;                 // Table of fonts and colors for coloring/syntax-highlighting
 	char unfinishedStyle_;                        // Style buffer entry which triggers on-the-fly reparsing of region

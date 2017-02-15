@@ -278,7 +278,7 @@ LanguageMode *DialogLanguageModes::readLMDialogFields(bool silent) {
 			}
 			delete lm;
 			return nullptr;
-		} else if (!DeleteTagsFileEx(tipsFile, TIP, False)) {
+        } else if (!DeleteTagsFileEx(tipsFile, TIP, false)) {
 			fprintf(stderr, "nedit: Internal error: Trouble deleting calltips file(s):\n  \"%s\"\n", tipsFile.toLatin1().data());
 		}	
 	}

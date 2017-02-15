@@ -313,7 +313,7 @@ static bool delTag(const char *name, const char *file, int lang, const char *sea
 		table = Tags;
 
 	if(!table)
-		return false;
+        return false;
 		
 	if (name)
 		start = finish = hashAddr(name) % DefTagHashSize;
@@ -527,7 +527,7 @@ int DeleteTagsFile(const char *tagSpec, int file_type, bool force_unload) {
 	// To prevent any possible segfault 
 	if(!tagSpec) {
 		fprintf(stderr, "nedit: Internal Error: Passed nullptr pointer to DeleteTagsFile!\n");
-		return FALSE;
+        return false;
 	}
 
 	searchMode = file_type;
@@ -577,9 +577,9 @@ int DeleteTagsFile(const char *tagSpec, int file_type, bool force_unload) {
 	delete [] tmptagSpec;
 	
 	if (removed)
-		return TRUE;
+        return true;
 	else
-		return FALSE;
+        return false;
 }
 
 /*
@@ -871,10 +871,10 @@ static bool LookupTagFromList(tagFile *FileList, const char *name, const char **
 		*searchString = t->searchString;
 		*pos          = t->posInf;
 		*path         = t->path;
-		return true;	
+        return true;
 	}
 	
-	return false;
+    return false;
 
 }
 
@@ -958,7 +958,7 @@ static int fakeRegExSearchEx(view::string_view in_buffer, const char *searchStri
 		ctagsMode = 1;
 	} else {
 		fprintf(stderr, "NEdit: Error parsing tag file search string");
-		return FALSE;
+        return false;
 	}
 
 	// Build the search regex. 
@@ -999,14 +999,14 @@ static int fakeRegExSearchEx(view::string_view in_buffer, const char *searchStri
 	}
 	*outPtr = 0; // Terminate searchSubs 
 
-    found = SearchString(fileString, QString::fromLatin1(searchSubs), dir, SEARCH_REGEX, False, searchStartPos, startPos, endPos, nullptr, nullptr, nullptr);
+    found = SearchString(fileString, QString::fromLatin1(searchSubs), dir, SEARCH_REGEX, false, searchStartPos, startPos, endPos, nullptr, nullptr, nullptr);
 
 	if (!found && !ctagsMode) {
 		/* position of the target definition could have been drifted before
 		   startPos, if nothing has been found by now try searching backward
 		   again from startPos.
 		*/
-        found = SearchString(fileString, QString::fromLatin1(searchSubs), SEARCH_BACKWARD, SEARCH_REGEX, False, searchStartPos, startPos, endPos, nullptr, nullptr, nullptr);
+        found = SearchString(fileString, QString::fromLatin1(searchSubs), SEARCH_BACKWARD, SEARCH_REGEX, false, searchStartPos, startPos, endPos, nullptr, nullptr, nullptr);
 	}
 
 	// return the result 
@@ -1342,7 +1342,7 @@ void editTaggedLocationEx(TextArea *area, int i) {
 
     // select the matched string
     windowToSearch->buffer_->BufSelect(startPos, endPos);
-    windowToSearch->RaiseFocusDocumentWindow(True);
+    windowToSearch->RaiseFocusDocumentWindow(true);
 
     /* Position it nicely in the window,
        about 1/4 of the way down from the top */
@@ -1431,10 +1431,10 @@ static int searchLine(char *line, const char *regex) {
 static bool lineEmpty(const char *line) {
 	while (*line && *line != '\n') {
 		if (*line != ' ' && *line != '\t')
-			return False;
+            return false;
 		++line;
 	}
-	return True;
+    return true;
 }
 
 // Remove trailing whitespace from a line 

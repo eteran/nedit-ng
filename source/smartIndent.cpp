@@ -458,7 +458,7 @@ QString WriteSmartIndentCommonStringEx() {
 	}
 
 	// Shift the macro over by a tab to keep .nedit file bright and clean 
-	std::string outStr = ShiftTextEx(CommonMacros.toStdString(), SHIFT_RIGHT, True, 8, 8);
+    std::string outStr = ShiftTextEx(CommonMacros.toStdString(), SHIFT_RIGHT, true, 8, 8);
 
 	/* Protect newlines and backslashes from translation by the resource
 	   reader */

@@ -53,7 +53,7 @@ const int UNKNOWN_LANGUAGE_MODE = -2;
 static char *copyMacroToEnd(const char **inPtr);
 static char *writeMenuItemString(const QVector<MenuData> &menuItems, int listType);
 static int loadMenuItemString(const char *inString, QVector<MenuData> &menuItems, int listType);
-static int parseError(const char *message);
+static bool parseError(const char *message);
 static QString stripLanguageModeEx(const QString &menuItemName);
 static QString writeMenuItemStringEx(const QVector<MenuData> &menuItems, int listType);
 static userMenuInfo *parseMenuItemRec(MenuItem *item);
@@ -262,8 +262,6 @@ static int loadMenuItemString(const char *inString, QVector<MenuData> &menuItems
     QString nameStr;
     QString accStr;
 	char mneChar;
-	int nameLen;
-	int accLen;
 	int mneLen;
 	int cmdLen;
 
@@ -275,11 +273,11 @@ static int loadMenuItemString(const char *inString, QVector<MenuData> &menuItems
 
 		// end of string in proper place 
 		if (*inPtr == '\0') {
-			return True;
+            return true;
 		}
 
 		// read name field 
-		nameLen = strcspn(inPtr, ":");
+        int nameLen = strcspn(inPtr, ":");
 		if (nameLen == 0)
 			return parseError("no name field");
 
@@ -291,7 +289,7 @@ static int loadMenuItemString(const char *inString, QVector<MenuData> &menuItems
 		inPtr++;
 
 		// read accelerator field 
-		accLen = strcspn(inPtr, ":");
+        int accLen = strcspn(inPtr, ":");
 
         accStr = QString::fromLatin1(inPtr, accLen);
 
@@ -404,9 +402,9 @@ static int loadMenuItemString(const char *inString, QVector<MenuData> &menuItems
 	}
 }
 
-static int parseError(const char *message) {
+static bool parseError(const char *message) {
 	fprintf(stderr, "NEdit: Parse error in user defined menu item, %s\n", message);
-	return False;
+    return false;
 }
 
 /*
@@ -419,7 +417,9 @@ static int parseError(const char *message) {
 */
 static char *copyMacroToEnd(const char **inPtr) {
 
+
     const char *&ptr = *inPtr;
+    const char *begin = ptr;
     const char *errMsg;
 
 
@@ -428,7 +428,7 @@ static char *copyMacroToEnd(const char **inPtr) {
     ptr += strspn(ptr, " \t\n");
 
     if (*ptr != '{') {
-        ParseError(nullptr, ptr, ptr - 1, "macro menu item", "expecting '{'");
+        ParseErrorEx(nullptr, QString::fromLatin1(ptr), ptr - 1 - begin, QLatin1String("macro menu item"), QLatin1String("expecting '{'"));
 		return nullptr;
 	}
 
@@ -436,7 +436,7 @@ static char *copyMacroToEnd(const char **inPtr) {
     const char *stoppedAt;
     Program *const prog = ParseMacro(ptr, &errMsg, &stoppedAt);
 	if(!prog) {
-        ParseError(nullptr, ptr, stoppedAt, "macro menu item", errMsg);
+        ParseErrorEx(nullptr, QString::fromLatin1(ptr), stoppedAt - begin, QLatin1String("macro menu item"), QString::fromLatin1(errMsg));
 		return nullptr;
 	}
 	FreeProgram(prog);

@@ -1517,38 +1517,6 @@ bool ParseErrorEx(QWidget *toDialog, const QString &string, int stoppedAt, const
 	return false;
 }
 
-int ParseError(Widget toDialog, const char *stringStart, const char *stoppedAt, const char *errorIn, const char *message) {
-	int len;
-	int nNonWhite = 0;
-	const char *c;
-
-	for (c = stoppedAt; c >= stringStart; c--) {
-		if (c == stringStart)
-			break;
-		else if (*c == '\n' && nNonWhite >= 5)
-			break;
-		else if (*c != ' ' && *c != '\t')
-			nNonWhite++;
-	}
-	len = stoppedAt - c + (*stoppedAt == '\0' ? 0 : 1);
-
-	auto errorLine = new char[len + 4];
-	strncpy(errorLine, c, len);
-	errorLine[len++] = '<';
-	errorLine[len++] = '=';
-	errorLine[len++] = '=';
-	errorLine[len] = '\0';
-	
-	if(!toDialog) {
-        qDebug("NEdit: %s in %s:\n%s", message, errorIn, errorLine);
-	} else {
-        QMessageBox::warning(nullptr /*toDialog*/, QLatin1String("Parse Error"), QString(QLatin1String("%1 in %2:\n%3")).arg(QString::fromLatin1(message)).arg(QString::fromLatin1(errorIn)).arg(QString::fromLatin1(errorLine)));
-	}
-	
-	delete [] errorLine;
-	return false;
-}
-
 /*
 **  This function passes up a pointer to the static name of the default
 **  shell, currently defined as the user's login shell.
