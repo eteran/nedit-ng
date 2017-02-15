@@ -100,27 +100,17 @@ void AddLastCommandActionHook(XtAppContext context);
 		return false;                                                                                                                                                                                                                      \
 	} while (0)
 
-#define M_STR_ALLOC_ASSERT(xDV)                                                                                                                                                                                                                \
-	do {                                                                                                                                                                                                                                       \
-		if (xDV.tag == STRING_TAG && !xDV.val.str.rep) {                                                                                                                                                                                       \
-			*errMsg = "Failed to allocate value: %s";                                                                                                                                                                                          \
-            return false;                                                                                                                                                                                                                    \
-		}                                                                                                                                                                                                                                      \
-	} while (0)
-	
 #define M_ARRAY_INSERT_FAILURE() M_FAILURE("array element failed to insert: %s")
-
-
-
 
 static void cancelLearnEx();
 static void runMacroEx(DocumentWidget *document, Program *prog);
-static void finishMacroCmdExecutionEx(DocumentWidget *window);
+static void finishMacroCmdExecutionEx(DocumentWidget *document);
 static int readCheckMacroStringEx(QWidget *dialogParent, const QString &string, DocumentWidget *runWindow, const char *errIn, const char **errPos);
 static bool continueWorkProcEx(DocumentWidget *clientData);
-static int lengthMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int minMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int maxMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+
+static int lengthMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int minMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static int maxMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 static int focusWindowMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 static int getRangeMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 static int getCharacterMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
@@ -149,11 +139,10 @@ static int tPrintMS(DocumentWidget *window, DataValue *argList, int nArgs, DataV
 static int getenvMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 static int shellCmdMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 static int dialogMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-
 static int stringDialogMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-
 static int calltipMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 static int killCalltipMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+
 // T Balinski 
 static int listDialogMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 // T Balinski End 
@@ -208,12 +197,6 @@ static int useTabsMV(DocumentWidget *window, DataValue *argList, int nArgs, Data
 static int modifiedMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 static int languageModeMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 static int calltipIDMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int readSearchArgs(DataValue *argList, int nArgs, SearchDirection *searchDirection, SearchType *searchType, bool *wrap, const char **errMsg);
-static bool wrongNArgsErr(const char **errMsg);
-static bool tooFewArgsErr(const char **errMsg);
-static int strCaseCmpEx(const std::string &str1, const std::string &str2);
-static bool readArgument(DataValue dv, int *result, const char **errMsg);
-static bool readArgument(DataValue dv, std::string *result, const char **errMsg);
 static int rangesetListMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 static int versionMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 static int rangesetCreateMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
@@ -228,21 +211,27 @@ static int rangesetIncludesPosMS(DocumentWidget *window, DataValue *argList, int
 static int rangesetSetColorMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 static int rangesetSetNameMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 static int rangesetSetModeMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-
 static int fillPatternResultEx(DataValue *result, const char **errMsg, DocumentWidget *window, const char *patternName, bool includeName, char *styleName, int bufferPos);
 static int getPatternByNameMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 static int getPatternAtPosMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-
 static int fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWidget *document, const char *styleName, bool includeName, int patCode, int bufferPos);
 static int getStyleByNameMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 static int getStyleAtPosMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 static int filenameDialogMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 
+// MainWindow scoped functions
 static int replaceAllInSelectionMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 static int replaceAllMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 static int undoMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 static int redoMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 static int selectAllMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+
+static int readSearchArgs(DataValue *argList, int nArgs, SearchDirection *searchDirection, SearchType *searchType, bool *wrap, const char **errMsg);
+static bool wrongNArgsErr(const char **errMsg);
+static bool tooFewArgsErr(const char **errMsg);
+static int strCaseCmpEx(const std::string &str1, const std::string &str2);
+static bool readArgument(DataValue dv, int *result, const char **errMsg);
+static bool readArgument(DataValue dv, std::string *result, const char **errMsg);
 
 template <class T, class ...Ts>
 bool readArguments(DataValue *argList, int nArgs, int index, const char **errMsg, T arg, Ts...args);
@@ -1156,8 +1145,8 @@ int MacroWindowCloseActionsEx(DocumentWidget *document) {
 ** Clean up after the execution of a macro command: free memory, and restore
 ** the user interface state.
 */
-static void finishMacroCmdExecutionEx(DocumentWidget *window) {
-    auto cmdData = static_cast<macroCmdInfoEx *>(window->macroCmdData_);
+static void finishMacroCmdExecutionEx(DocumentWidget *document) {
+    auto cmdData = static_cast<macroCmdInfoEx *>(document->macroCmdData_);
     bool closeOnCompletion = cmdData->closeOnCompletion;
 
     // Cancel pending timeout and work proc
@@ -1165,29 +1154,29 @@ static void finishMacroCmdExecutionEx(DocumentWidget *window) {
     cmdData->continueWorkProcID.cancel();
 
     // Clean up waiting-for-macro-command-to-complete mode
-    window->setCursor(Qt::ArrowCursor);
+    document->setCursor(Qt::ArrowCursor);
 
     // enable the cancel menu item
-    if(MainWindow *win = window->toWindow()) {
+    if(MainWindow *win = document->toWindow()) {
         win->ui.action_Cancel_Learn->setText(QLatin1String("Cancel Learn"));
         win->ui.action_Cancel_Learn->setEnabled(false);
     }
 
     if (cmdData->bannerIsUp) {
-        window->ClearModeMessageEx();
+        document->ClearModeMessageEx();
     }
 
     // Free execution information
     FreeProgram(cmdData->program);
     delete cmdData;
-    window->macroCmdData_ = nullptr;
+    document->macroCmdData_ = nullptr;
 
     /* If macro closed its own window, window was made empty and untitled,
        but close was deferred until completion.  This is completion, so if
        the window is still empty, do the close */
-    if (closeOnCompletion && !window->filenameSet_ && !window->fileChanged_) {
-        window->CloseWindow();
-        window = nullptr;
+    if (closeOnCompletion && !document->filenameSet_ && !document->fileChanged_) {
+        document->CloseWindow();
+        document = nullptr;
     }
 
     // If no other macros are executing, do garbage collection
@@ -1551,9 +1540,9 @@ bool continueWorkProcEx(DocumentWidget *window) {
 /*
 ** Built-in macro subroutine for getting the length of a string
 */
-static int lengthMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int lengthMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
-    Q_UNUSED(window);
+    Q_UNUSED(document);
 
     std::string string;
 
@@ -1569,9 +1558,9 @@ static int lengthMS(DocumentWidget *window, DataValue *argList, int nArgs, DataV
 /*
 ** Built-in macro subroutines for min and max
 */
-static int minMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static int minMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
-    Q_UNUSED(window);
+    Q_UNUSED(document);
 
 	int minVal;
 	int value;
@@ -1597,8 +1586,8 @@ static int minMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValu
 	return true;
 }
 
-static int maxMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
-    Q_UNUSED(window);
+static int maxMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+    Q_UNUSED(document);
 
 	int maxVal;
 	int value;
@@ -1643,7 +1632,7 @@ static int focusWindowMS(DocumentWidget *window, DataValue *argList, int nArgs, 
     } else if (string == "next") {
 
         auto curr = std::find_if(documents.begin(), documents.end(), [window](DocumentWidget *doc) {
-			return doc == window;
+            return doc == window;
 		});
 		
         if(curr != documents.end()) {
@@ -4764,7 +4753,6 @@ static int fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWid
         // insert style name
         DV.val.str = AllocNStringCpyEx(styleNameStr);
 
-        M_STR_ALLOC_ASSERT(DV);
         if (!ArrayInsert(result, PERM_ALLOC_STR("style"), &DV)) {
             M_ARRAY_INSERT_FAILURE();
         }
@@ -4772,7 +4760,6 @@ static int fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWid
 
     // insert color name
     DV.val.str = AllocNStringCpyEx(ColorOfNamedStyleEx(styleNameStr));
-    M_STR_ALLOC_ASSERT(DV);
     if (!ArrayInsert(result, PERM_ALLOC_STR("color"), &DV)) {
         M_ARRAY_INSERT_FAILURE();
     }
@@ -4784,7 +4771,6 @@ static int fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWid
         QColor color = HighlightColorValueOfCodeEx(document, patCode);
         DV.val.str = AllocNStringCpyEx(color.name());
 
-        M_STR_ALLOC_ASSERT(DV);
         if (!ArrayInsert(result, PERM_ALLOC_STR("rgb"), &DV)) {
             M_ARRAY_INSERT_FAILURE();
         }
@@ -4792,7 +4778,6 @@ static int fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWid
 
     // Prepare array element for background color name
     DV.val.str = AllocNStringCpyEx(BgColorOfNamedStyleEx(QString::fromLatin1(styleName)));
-    M_STR_ALLOC_ASSERT(DV);
     if (!ArrayInsert(result, PERM_ALLOC_STR("background"), &DV)) {
         M_ARRAY_INSERT_FAILURE();
     }
@@ -4803,7 +4788,7 @@ static int fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWid
     if (patCode) {
         QColor color = GetHighlightBGColorOfCodeEx(document, patCode);
         DV.val.str = AllocNStringCpyEx(color.name());
-        M_STR_ALLOC_ASSERT(DV);
+
         if (!ArrayInsert(result, PERM_ALLOC_STR("back_rgb"), &DV)) {
             M_ARRAY_INSERT_FAILURE();
         }
@@ -4946,7 +4931,6 @@ static int fillPatternResultEx(DataValue *result, const char **errMsg, DocumentW
         // insert pattern name
         DV.val.str = AllocNStringCpyEx(QString::fromLatin1(patternName));
 
-        M_STR_ALLOC_ASSERT(DV);
         if (!ArrayInsert(result, PERM_ALLOC_STR("pattern"), &DV)) {
             M_ARRAY_INSERT_FAILURE();
         }
@@ -4954,7 +4938,7 @@ static int fillPatternResultEx(DataValue *result, const char **errMsg, DocumentW
 
     // insert style name
     DV.val.str = AllocNStringCpyEx(QString::fromLatin1(styleName));
-    M_STR_ALLOC_ASSERT(DV);
+
     if (!ArrayInsert(result, PERM_ALLOC_STR("style"), &DV)) {
         M_ARRAY_INSERT_FAILURE();
     }
