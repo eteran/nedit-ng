@@ -15,8 +15,6 @@ qt5_wrap_cpp(MOC_SOURCES
 include_directories(nc
 	${PROJECT_SOURCE_DIR}
 	${PROJECT_SOURCE_DIR}/source
-	${PROJECT_SOURCE_DIR}/source/include
-	${PROJECT_SOURCE_DIR}/source/ui
 )
 
 qt5_wrap_cpp(MOC_SOURCES_NC
