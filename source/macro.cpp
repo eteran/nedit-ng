@@ -90,7 +90,6 @@ const int BANNER_WAIT_TIME = 6000;
 
 }
 
-void AddLastCommandActionHook(XtAppContext context);
 
 // The following definitions cause an exit from the macro with a message 
 // added if (1) to remove compiler warnings on solaris 
@@ -556,7 +555,6 @@ std::string ReplayMacro;
 static TextBuffer *MacroRecordBuf = nullptr;
 
 // Action Hook id for recording actions for Learn mode 
-static XtActionHookId MacroRecordActionHook = nullptr;
 static std::function<int(DocumentWidget *document)> MacroRecordActionHookEx;
 
 // Window where macro recording is taking place 
@@ -603,7 +601,7 @@ void RegisterMacroSubroutines() {
 void BeginLearnEx(DocumentWidget *document) {
 
     // If we're already in learn mode, return
-    if(MacroRecordActionHook)
+    if(MacroRecordActionHookEx)
         return;
 
     MainWindow *thisWindow = document->toWindow();
@@ -778,7 +776,7 @@ void ReadMacroInitFileEx(DocumentWidget *window) {
     static bool initFileLoaded = false;
 
     if (!initFileLoaded) {
-        ReadMacroFileEx(window, autoloadName.toStdString(), False);
+        ReadMacroFileEx(window, autoloadName.toStdString(), false);
         initFileLoaded = true;
     }
 }
@@ -792,7 +790,7 @@ int ReadMacroFileEx(DocumentWidget *window, const std::string &fileName, int war
     /* read-in macro file and force a terminating \n, to prevent syntax
     ** errors with statements on the last line
     */
-    QString fileString = ReadAnyTextFileEx(fileName, True);
+    QString fileString = ReadAnyTextFileEx(fileName, true);
     if (fileString.isNull()) {
         if (errno != ENOENT || warnNotExist) {
             QMessageBox::critical(window, QLatin1String("Read Macro"), QString(QLatin1String("Error reading macro file %1: %2")).arg(QString::fromStdString(fileName), QString::fromLatin1(strerror(errno))));
@@ -2197,8 +2195,9 @@ static int searchMS(DocumentWidget *window, DataValue *argList, int nArgs, DataV
 static int searchStringMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     int beginPos;
     bool wrap;
-	bool found = false;
-	int foundStart, foundEnd;
+    bool found = false;
+    int foundStart;
+    int foundEnd;
 	SearchType type;
     bool skipSearch = false;
     std::string string;
@@ -2223,8 +2222,8 @@ static int searchStringMS(DocumentWidget *window, DataValue *argList, int nArgs,
 			if (wrap) {
 				beginPos = 0; // Wrap immediately 
 			} else {
-				found = False;
-				skipSearch = True;
+                found = false;
+                skipSearch = true;
 			}
 		} else {
 			beginPos = len;
@@ -2234,8 +2233,8 @@ static int searchStringMS(DocumentWidget *window, DataValue *argList, int nArgs,
 			if (wrap) {
 				beginPos = len; // Wrap immediately 
 			} else {
-				found = False;
-				skipSearch = True;
+                found = false;
+                skipSearch = true;
 			}
 		} else {
 			beginPos = 0;
@@ -2277,7 +2276,7 @@ static int replaceInStringMS(DocumentWidget *window, DataValue *argList, int nAr
 	int copyEnd;
 	int replacedLen;
 	int replaceEnd;
-	bool force = false;
+    bool force = false;
 	int i;
 
 	// Validate arguments and convert to proper types 
@@ -3027,7 +3026,7 @@ static int filenameDialogMS(DocumentWidget *window, DataValue *argList, int nArg
             filename = existingFile;
 			gfnResult = true;
 		} else {
-			gfnResult = false;
+            gfnResult = false;
 		}
 	} else {
 		// TODO(eteran); filter's probably don't work quite the same with Qt's dialog
@@ -3037,7 +3036,7 @@ static int filenameDialogMS(DocumentWidget *window, DataValue *argList, int nArg
             filename  = newFile;
 			gfnResult = true;
 		} else {
-			gfnResult = false;
+            gfnResult = false;
 		}
 	} //  Invalid values are weeded out above.  
 
@@ -4266,7 +4265,7 @@ static int rangesetAddMS(DocumentWidget *window, DataValue *argList, int nArgs, 
 	// (to) which range did we just add? 
 	if (nArgs != 2 && start >= 0) {
 		start = (start + end) / 2; // "middle" of added range 
-		index = 1 + targetRangeset->RangesetFindRangeOfPos(start, False);
+        index = 1 + targetRangeset->RangesetFindRangeOfPos(start, false);
 	} else {
 		index = 0;
 	}
@@ -4495,7 +4494,7 @@ static int rangesetRangeMS(DocumentWidget *window, DataValue *argList, int nArgs
 		M_FAILURE("Rangeset does not exist in %s");
 	}
 
-	ok = False;
+    ok = false;
 	rangeset = rangesetTable->RangesetFetch(label);
 	if (rangeset) {
 		if (nArgs == 1) {
@@ -4573,7 +4572,7 @@ static int rangesetIncludesPosMS(DocumentWidget *window, DataValue *argList, int
 	if (pos < 0 || pos > maxpos) {
 		rangeIndex = 0;
 	} else {
-		rangeIndex = rangeset->RangesetFindRangeOfPos(pos, False) + 1;
+        rangeIndex = rangeset->RangesetFindRangeOfPos(pos, false) + 1;
 	}
 
 	// set up result 

@@ -123,6 +123,7 @@ QString GetAnySelectionEx(DocumentWidget *window) {
     QApplication::beep();
     return QString();
 }
+
 void SelectNumberedLineEx(DocumentWidget *document, TextArea *area, int lineNum) {
     int i;
     int lineStart = 0;

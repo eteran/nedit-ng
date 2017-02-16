@@ -26,102 +26,10 @@
 *                                                                              *
 *******************************************************************************/
 
-#include <QString>
-#include <QX11Info>
-#include "util/utils.h"
-#include "nedit.h"
+
 #include "server_common.h"
 
 
-#include <cstdio>
-#include <sys/types.h>
-#include <sys/param.h>
-
-/*
- * Create the server property atoms for the server with serverName.
- * Atom names are generated as follows:
- *
- * NEDIT_SERVER_EXISTS_<host_name>_<user>_<server_name>
- * NEDIT_SERVER_REQUEST_<host_name>_<user>_<server_name>
- *
- * <server_name> is the name that can be set by the user to allow
- * for multiple servers to run on the same display. <server_name>
- * defaults to "" if not supplied by the user.
- *
- * <user> is the user name of the current user.
- */
-void CreateServerPropertyAtoms(const char *serverName, Atom *serverExistsAtomReturn, Atom *serverRequestAtomReturn) {
-	char propName[20 + 1 + MAXNODENAMELEN + 1 + MAXUSERNAMELEN + 1 + MAXSERVERNAMELEN];
-	QString userName = GetUserNameEx();
-	QString hostName = GetNameOfHostEx();
 
 
 
-	snprintf(propName, sizeof(propName), "NEDIT_SERVER_EXISTS_%s_%s_%s", hostName.toLatin1().data(), userName.toLatin1().data(), serverName);
-    *serverExistsAtomReturn = XInternAtom(QX11Info::display(), propName, False);
-	snprintf(propName, sizeof(propName), "NEDIT_SERVER_REQUEST_%s_%s_%s", hostName.toLatin1().data(), userName.toLatin1().data(), serverName);
-    *serverRequestAtomReturn = XInternAtom(QX11Info::display(), propName, False);
-}
-
-/*
- * Create the individual property atoms for each file being
- * opened by the server with serverName. This atom is used
- * by nc to monitor if the file has been closed.
- *
- * Atom names are generated as follows:
- *
- * NEDIT_FILE_<host_name>_<user>_<server_name>_<path>
- *
- * <server_name> is the name that can be set by the user to allow
- * for multiple servers to run on the same display. <server_name>
- * defaults to "" if not supplied by the user.
- *
- * <user> is the user name of the current user.
- *
- * <path> is the path of the file being edited.
- */
-Atom CreateServerFileOpenAtom(const char *serverName, const char *path) {
-	char propName[10 + 1 + MAXNODENAMELEN + 1 + MAXUSERNAMELEN + 1 + MAXSERVERNAMELEN + 1 + MAXPATHLEN + 1 + 7];
-	QString userName = GetUserNameEx();
-	QString hostName = GetNameOfHostEx();
-
-	snprintf(propName, sizeof(propName), "NEDIT_FILE_%s_%s_%s_%s_WF_OPEN", hostName.toLatin1().data(), userName.toLatin1().data(), serverName, path);
-    Atom atom = XInternAtom(QX11Info::display(), propName, False);
-	return (atom);
-}
-
-Atom CreateServerFileClosedAtom(const char *serverName, const char *path, Bool only_if_exist) {
-	char propName[10 + 1 + MAXNODENAMELEN + 1 + MAXUSERNAMELEN + 1 + MAXSERVERNAMELEN + 1 + MAXPATHLEN + 1 + 9];
-	QString userName = GetUserNameEx();
-	QString hostName = GetNameOfHostEx();
-
-	snprintf(propName, sizeof(propName), "NEDIT_FILE_%s_%s_%s_%s_WF_CLOSED", hostName.toLatin1().data(), userName.toLatin1().data(), serverName, path);
-    Atom atom = XInternAtom(QX11Info::display(), propName, only_if_exist);
-	return (atom);
-}
-
-/*
- * Delete all File atoms that belong to this server (as specified by
- * <host_name>_<user>_<server_name>).
- */
-void DeleteServerFileAtoms(const char *serverName, Window rootWindow) {
-	char propNamePrefix[10 + 1 + MAXNODENAMELEN + 1 + MAXUSERNAMELEN + 1 + MAXSERVERNAMELEN + 1];
-	QString userName = GetUserNameEx();
-	QString hostName = GetNameOfHostEx();
-	int length = snprintf(propNamePrefix, sizeof(propNamePrefix), "NEDIT_FILE_%s_%s_%s_", hostName.toLatin1().data(), userName.toLatin1().data(), serverName);
-
-	int nProperties;
-    Atom *atoms = XListProperties(QX11Info::display(), rootWindow, &nProperties);
-	if (atoms) {
-		int i;
-		for (i = 0; i < nProperties; i++) {
-			// XGetAtomNames() is more efficient, but doesn't exist in X11R5. 
-            char *name = XGetAtomName(QX11Info::display(), atoms[i]);
-			if (name != nullptr && strncmp(propNamePrefix, name, length) == 0) {
-                XDeleteProperty(QX11Info::display(), rootWindow, atoms[i]);
-			}
-			XFree(name);
-		}
-		XFree((char *)atoms);
-	}
-}

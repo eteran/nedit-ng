@@ -1002,7 +1002,7 @@ static int loadLanguageModesString(const char *inString, int fileVer) {
 					break;
 				}
 			}
-			XtFree(styleName);
+            delete [] styleName;
 			if (i == N_INDENT_STYLES)
 				return modeError(lm, inString, inPtr, "unrecognized indent style");
 		}
@@ -1020,7 +1020,7 @@ static int loadLanguageModesString(const char *inString, int fileVer) {
 					break;
 				}
 			}
-			XtFree(styleName);
+            delete [] styleName;
 			if (i == N_WRAP_STYLES)
 				return modeError(lm, inString, inPtr, "unrecognized wrap style");
 		}
@@ -1215,7 +1215,7 @@ char *ReadSymbolicField(const char **inPtr) {
 	len = *inPtr - strStart;
 	if (len == 0)
 		return nullptr;
-    outStr = outPtr = XtMalloc(len + 1);
+    outStr = outPtr = new char[len + 1];
 
 	// Copy the string, compressing internal whitespace to a single space 
 	strPtr = strStart;
@@ -1231,7 +1231,7 @@ char *ReadSymbolicField(const char **inPtr) {
 	if (outPtr > outStr && *(outPtr - 1) == ' ')
 		outPtr--;
 	if (outPtr == outStr) {
-        XtFree(outStr);
+        delete [] (outStr);
 		return nullptr;
 	}
 	*outPtr = '\0';
@@ -1324,7 +1324,7 @@ int ReadQuotedString(const char **inPtr, const char **errMsg, char **string) {
 	}
 
 	// copy string up to end quote, transforming escaped quotes into quotes 
-	*string = XtMalloc(c - *inPtr + 1);
+    *string = new char[c - *inPtr + 1];
 	outPtr = *string;
 	while (true) {
 		if (**inPtr == '\"') {

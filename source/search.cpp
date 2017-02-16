@@ -143,7 +143,7 @@ static bool selectionSpansMultipleLines(Document *window) {
 	int lineWidth;
 
 	if (!window->buffer_->BufGetSelectionPos(&selStart, &selEnd, &isRect, &rectStart, &rectEnd)) {
-		return false;
+        return false;
 	}
 
 	/* This is kind of tricky. The perception of a line depends on the
@@ -168,7 +168,7 @@ static bool selectionSpansMultipleLines(Document *window) {
 	}
 
 	if (window->wrapMode_ != CONTINUOUS_WRAP) {
-		return false; // Same line
+        return false; // Same line
 	}
 
 	// Estimate the number of characters on a line 
@@ -189,7 +189,7 @@ static bool selectionSpansMultipleLines(Document *window) {
 		return true; // Spans multiple lines
 	}
 
-	return false; // Small selection; probably doesn't span lines
+    return false; // Small selection; probably doesn't span lines
 }
 #endif
 
@@ -759,7 +759,7 @@ void eraseFlashEx(DocumentWidget *document) {
 bool ReplaceSameEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, int searchWrap) {
     if (NHist < 1) {
         QApplication::beep();
-        return FALSE;
+        return false;
     }
 
     return SearchAndReplaceEx(window, document, area, direction, SearchHistory[historyIndex(1)], ReplaceHistory[historyIndex(1)], SearchTypeHistory[historyIndex(1)], searchWrap);
@@ -772,7 +772,7 @@ bool ReplaceSameEx(MainWindow *window, DocumentWidget *document, TextArea *area,
 bool ReplaceFindSameEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, int searchWrap) {
     if (NHist < 1) {
         QApplication::beep();
-        return FALSE;
+        return false;
     }
 
     return ReplaceAndSearchEx(window, document, area, direction, SearchHistory[historyIndex(1)], ReplaceHistory[historyIndex(1)], SearchTypeHistory[historyIndex(1)], searchWrap);
@@ -1032,11 +1032,11 @@ void ReplaceInSelectionEx(MainWindow *window, DocumentWidget *document, TextArea
     realOffset = 0;
 
     while (found) {
-        found = SearchString(fileString, searchString, SEARCH_FORWARD, searchType, FALSE, beginPos, &startPos, &endPos, &extentBW, &extentFW, GetWindowDelimitersEx(document).toLatin1().data());
+        found = SearchString(fileString, searchString, SEARCH_FORWARD, searchType, false, beginPos, &startPos, &endPos, &extentBW, &extentFW, GetWindowDelimitersEx(document).toLatin1().data());
         if (!found)
             break;
 
-        anyFound = True;
+        anyFound = true;
         /* if the selection is rectangular, verify that the found
            string is in the rectangle */
         if (isRect) {
@@ -1097,7 +1097,7 @@ void ReplaceInSelectionEx(MainWindow *window, DocumentWidget *document, TextArea
         } else {
             // at this point plain substitutions (should) always work
             tempBuf->BufReplaceEx(startPos + realOffset, endPos + realOffset, replaceString.toLatin1().data());
-            substSuccess = True;
+            substSuccess = true;
         }
 
         realOffset += replaceLen - (endPos - startPos);
@@ -1365,7 +1365,7 @@ bool SearchWindowEx(MainWindow *window, DocumentWidget *document, SearchDirectio
        dialogs, or just beep.  iSearchStartPos is not a perfect indicator that
        an incremental search is in progress.  A parameter would be better. */
     if (window->iSearchStartPos_ == -1) { // normal search
-        found = !outsideBounds && SearchString(fileString, searchString, direction, searchType, FALSE, beginPos, startPos, endPos, extentBW, extentFW, GetWindowDelimitersEx(document).toLatin1().data());
+        found = !outsideBounds && SearchString(fileString, searchString, direction, searchType, false, beginPos, startPos, endPos, extentBW, extentFW, GetWindowDelimitersEx(document).toLatin1().data());
 
         // Avoid Motif 1.1 bug by putting away search dialog before Dialogs
         if (auto dialog = qobject_cast<DialogFind *>(window->dialogFind_)) {
@@ -1399,7 +1399,7 @@ bool SearchWindowEx(MainWindow *window, DocumentWidget *document, SearchDirectio
                             return false;
                         }
                     }
-                    found = SearchString(fileString, searchString, direction, searchType, FALSE, 0, startPos, endPos, extentBW, extentFW, GetWindowDelimitersEx(document).toLatin1().data());
+                    found = SearchString(fileString, searchString, direction, searchType, false, 0, startPos, endPos, extentBW, extentFW, GetWindowDelimitersEx(document).toLatin1().data());
                 } else if (direction == SEARCH_BACKWARD && beginPos != fileEnd) {
                     if (GetPrefBeepOnSearchWrap()) {
                         QApplication::beep();
@@ -1435,7 +1435,7 @@ bool SearchWindowEx(MainWindow *window, DocumentWidget *document, SearchDirectio
                 beginPos = 0;
             else
                 beginPos = fileEnd + 1;
-            outsideBounds = FALSE;
+            outsideBounds = false;
         }
         found = !outsideBounds && SearchString(fileString, searchString, direction, searchType, searchWrap, beginPos, startPos, endPos, extentBW, extentFW, GetWindowDelimitersEx(document).toLatin1().data());
         if (found) {
@@ -1474,7 +1474,7 @@ bool SearchString(view::string_view string, const QString &searchString, SearchD
 	default:
 		Q_ASSERT(0);
 	}
-	return false; // never reached, just makes compilers happy 
+    return false; // never reached, just makes compilers happy
 }
 
 /*
@@ -1518,8 +1518,8 @@ static bool searchLiteralWord(view::string_view string, view::string_view search
 
 	std::string lcString;
 	std::string ucString;
-	bool cignore_L = false;
-	bool cignore_R = false;
+    bool cignore_L = false;
+    bool cignore_R = false;
 
 	auto DOSEARCHWORD2 = [&](const char *filePtr) {
 		if (*filePtr == ucString[0] || *filePtr == lcString[0]) {
@@ -1542,7 +1542,7 @@ static bool searchLiteralWord(view::string_view string, view::string_view search
 			}
 		}
 		
-		return false;
+        return false;
 	};
 
 
@@ -1576,7 +1576,7 @@ static bool searchLiteralWord(view::string_view string, view::string_view search
 			}
 		}
 		if (!wrap)
-			return FALSE;
+            return false;
 
 		// search from start of file to beginPos 
 		for (auto filePtr = string.begin(); filePtr <= string.begin() + beginPos; filePtr++) {
@@ -1584,7 +1584,7 @@ static bool searchLiteralWord(view::string_view string, view::string_view search
 				return true;
 			}
 		}
-		return FALSE;
+        return false;
 	} else {
 		// SEARCH_BACKWARD 
 		// search from beginPos to start of file. A negative begin pos 
@@ -1597,7 +1597,7 @@ static bool searchLiteralWord(view::string_view string, view::string_view search
 			}
 		}
 		if (!wrap)
-			return FALSE;
+            return false;
 		// search from end of file to beginPos 
 		/*... this strlen call is extreme inefficiency, but it's not obvious */
 		// how to get the text string length from the text widget (under 1.1)
@@ -1606,7 +1606,7 @@ static bool searchLiteralWord(view::string_view string, view::string_view search
 				return true;
 			}
 		}
-		return FALSE;
+        return false;
 	}
 }
 
@@ -1643,7 +1643,7 @@ static bool searchLiteral(view::string_view string, view::string_view searchStri
 			}
 		}
 
-		return false;
+        return false;
 	};
 
 	if (caseSense) {
@@ -1668,7 +1668,7 @@ static bool searchLiteral(view::string_view string, view::string_view searchStri
 		}
 
 		if (!wrap) {
-			return false;
+            return false;
 		}
 
 		// search from start of file to beginPos 
@@ -1680,7 +1680,7 @@ static bool searchLiteral(view::string_view string, view::string_view searchStri
 			}
 		}
 
-		return false;
+        return false;
 	} else {
 		// SEARCH_BACKWARD 
 		// search from beginPos to start of file.  A negative begin pos	
@@ -1699,7 +1699,7 @@ static bool searchLiteral(view::string_view string, view::string_view searchStri
 		}
 
 		if (!wrap) {
-			return false;
+            return false;
 		}
 
 		// search from end of file to beginPos 
@@ -1710,7 +1710,7 @@ static bool searchLiteral(view::string_view string, view::string_view searchStri
 			}
 		}
 
-		return false;
+        return false;
 	}
 }
 
@@ -1745,7 +1745,7 @@ static bool forwardRegexSearch(view::string_view string, view::string_view searc
 
 		// if wrap turned off, we're done 
 		if (!wrap) {
-			return false;
+            return false;
 		}
 
 		// search from the beginning of the string to beginPos 
@@ -1764,12 +1764,12 @@ static bool forwardRegexSearch(view::string_view string, view::string_view searc
 			return true;
 		}
 
-		return false;
+        return false;
 	} catch(const regex_error &e) {
 		/* Note that this does not process errors from compiling the expression.
 		 * It assumes that the expression was checked earlier.
 		 */
-		return false;
+        return false;
 	}
 }
 
@@ -1802,7 +1802,7 @@ static bool backwardRegexSearch(view::string_view string, view::string_view sear
 
 		// if wrap turned off, we're done 
 		if (!wrap) {
-			return false;
+            return false;
 		}
 
 		// search from the end of the string to beginPos 
@@ -1826,10 +1826,10 @@ static bool backwardRegexSearch(view::string_view string, view::string_view sear
 			return true;
 		}
 
-		return false;
+        return false;
 	} catch(const regex_error &e) {
 		// NOTE(eteran): ignoring error!
-		return false;
+        return false;
 	}
 }
 
@@ -1910,7 +1910,7 @@ static bool searchMatchesSelectionEx(DocumentWidget *window, const QString &sear
     // search for the string in the selection (we are only interested
     // in an exact match, but the procedure SearchString does important
     // stuff like applying the correct matching algorithm)
-    bool found = SearchString(string, searchString, SEARCH_FORWARD, searchType, FALSE, beginPos, &startPos, &endPos, &extentBW, &extentFW, GetWindowDelimitersEx(window).toLatin1().data());
+    bool found = SearchString(string, searchString, SEARCH_FORWARD, searchType, false, beginPos, &startPos, &endPos, &extentBW, &extentFW, GetWindowDelimitersEx(window).toLatin1().data());
 
     // decide if it is an exact match
     if (!found) {
@@ -1956,7 +1956,7 @@ static bool replaceUsingREEx(view::string_view searchStr, const char *replaceStr
 		return compiledRE.SubstituteRE(replaceStr, destStr, maxDestLen);
 	} catch(const regex_error &e) {
 		// NOTE(eteran): ignoring error!
-		return false;
+        return false;
 	}
 }
 

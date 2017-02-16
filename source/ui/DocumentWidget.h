@@ -20,9 +20,6 @@
 #include "IndentStyle.h"
 #include "tags.h"
 
-// TODO(eteran): for now...
-using Atom = unsigned long;
-
 class UndoInfo;
 class TextBuffer;
 class MainWindow;
@@ -193,7 +190,6 @@ private:
 	QPointer<QDialog> dialogFonts_; /* nullptr, unless font dialog is up */	
 
 public:
-	Atom fileClosedAtom_;              // Atom used to tell nc that the file is closed
 	Bookmark markTable_[MAX_MARKS];    // marked locations in window
 	FileFormats fileFormat_;           // whether to save the file straight (Unix format), or convert it to MS DOS style with \r\n line breaks
 	LockReasons lockReasons_;          // all ways a file can be locked

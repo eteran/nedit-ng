@@ -27,8 +27,14 @@
 *******************************************************************************/
 
 #include "Settings.h"
+
+#include <QCoreApplication>
+#include <QDBusConnection>
+#include <QDBusInterface>
+#include <QDBusReply>
 #include <QSettings>
 #include <QString>
+#include <QTextStream>
 
 #include "util/fileUtils.h"
 #include "util/utils.h"
@@ -49,38 +55,18 @@
 #include <unistd.h>
 #include <pwd.h>
 
-#include <X11/Intrinsic.h>
-#include <X11/Xatom.h>
-
-#define APP_NAME "nc"
-#define APP_CLASS "NEditClient"
-
-#define PROPERTY_CHANGE_TIMEOUT (ServerPreferences.timeOut * 1000) // milliseconds
-#define SERVER_START_TIMEOUT    (ServerPreferences.timeOut * 3000) // milliseconds
-#define REQUEST_TIMEOUT         (ServerPreferences.timeOut * 1000) // milliseconds
-#define FILE_OPEN_TIMEOUT       (ServerPreferences.timeOut * 3000) // milliseconds
-
 struct CommandLine {
-	char *shell;
-	char *serverRequest;
+    QString shell;
+    QString serverRequest;
 };
 
-static void timeOutProc(Boolean *timeOutReturn, XtIntervalId *id);
-static int startServer(const char *message, const char *commandLine);
 static CommandLine processCommandLine(int argc, char **argv);
 static void parseCommandLine(int argc, char **arg, CommandLine *cmdLine);
 static void nextArg(int argc, char **argv, int *argIndex);
 static void copyCommandLineArg(CommandLine *cmdLine, const char *arg);
 static void printNcVersion();
-static Boolean findExistingServer(XtAppContext context, Window rootWindow, Atom serverExistsAtom);
-static void startNewServer(XtAppContext context, Window rootWindow, char *commandLine, Atom serverExistsAtom);
-static void waitUntilRequestProcessed(XtAppContext context, Window rootWindow, char *commandString, Atom serverRequestAtom);
-static void waitUntilFilesOpenedOrClosed(XtAppContext context, Window rootWindow);
 
-Display *TheDisplay;
-XtAppContext AppContext;
-static Atom currentWaitForAtom;
-static const Atom noAtom = static_cast<Atom>(-1);
+
 
 static const char cmdLineHelp[] = "Usage:  nc [-read] [-create]\n"
                                   "           [-line n | +n] [-do command] [-lm languagemode]\n"
@@ -93,93 +79,35 @@ static const char cmdLineHelp[] = "Usage:  nc [-read] [-create]\n"
                                   "           [--] [file...]\n";
 
 // Structure to hold X Resource values 
-static struct {
-	int autoStart;
+static struct {	
     QString serverCmd; // holds executable name + flags
-    QString serverName;
-	bool waitForClose;
+    QString serverName;	
 	int timeOut;
+    int autoStart;
+    bool waitForClose;
 } ServerPreferences;
 
-// Struct to hold info about files being opened and edited. 
-struct FileListEntry {
-	Atom waitForFileOpenAtom;
-	Atom waitForFileClosedAtom;
-	std::string path;
-};
 
-struct FileListHead {
-	int waitForOpenCount;
-	int waitForCloseCount;
-	std::list<FileListEntry *> fileList;
-};
-static FileListHead fileListHead;
+/**
+ * @brief main
+ * @param argc
+ * @param argv
+ * @return
+ */
+int main(int argc, char *argv[]) {
 
-static void setPropertyValue(Atom atom) {
-	XChangeProperty(TheDisplay, RootWindow(TheDisplay, DefaultScreen(TheDisplay)), atom, XA_STRING, 8, PropModeReplace, (uint8_t *)"True", 4);
-}
+    QCoreApplication app(argc, argv);
 
-// Add another entry to the file entry list, if it doesn't exist yet. 
-static void addToFileList(const char *path) {
+    if(!QDBusConnection::sessionBus().isConnected()) {
+        return -1;
+    }
 
-	// see if the file already exists in the list 
-	auto it = std::find_if(fileListHead.fileList.begin(), fileListHead.fileList.end(), [path](FileListEntry *item) {
-		return item->path == path;
-	});
+    /* Process the command line before calling XtOpenDisplay, because the
+       latter consumes certain command line arguments that we still need
+       (-icon, -geometry ...) */
+    CommandLine commandLine = processCommandLine(argc, argv);
 
-	// Add the atom to the head of the file list if it wasn't found. 
-	if (it == fileListHead.fileList.end()) {
-		auto item = new FileListEntry;
-		item->waitForFileOpenAtom   = None;
-		item->waitForFileClosedAtom = None;
-		item->path                  = path;
-		
-		fileListHead.fileList.push_front(item);
-	}
-}
-
-// Creates the properties for the various paths 
-static void createWaitProperties() {
-
-	for(FileListEntry *item : fileListHead.fileList) {
-		fileListHead.waitForOpenCount++;
-        item->waitForFileOpenAtom = CreateServerFileOpenAtom(ServerPreferences.serverName.toLatin1().data(), item->path.c_str());
-		setPropertyValue(item->waitForFileOpenAtom);
-
-        if (ServerPreferences.waitForClose) {
-			fileListHead.waitForCloseCount++;
-            item->waitForFileClosedAtom = CreateServerFileClosedAtom(ServerPreferences.serverName.toLatin1().data(), item->path.c_str(), False);
-			setPropertyValue(item->waitForFileClosedAtom);
-		}
-	}
-}
-
-int main(int argc, char **argv) {
-	XtAppContext context;
-	Window rootWindow;
-	CommandLine commandLine;
-	Atom serverExistsAtom, serverRequestAtom;
-	Boolean serverExists;
-
-	// Initialize toolkit and get an application context 
-	XtToolkitInitialize();
-	AppContext = context = XtCreateApplicationContext();
-
-
-	/* Process the command line before calling XtOpenDisplay, because the
-	   latter consumes certain command line arguments that we still need
-	   (-icon, -geometry ...) */
-	commandLine = processCommandLine(argc, argv);
-
-	// Open the display and find the root window 
-	TheDisplay = XtOpenDisplay(context, nullptr, APP_NAME, APP_CLASS, nullptr, 0, &argc, argv);
-	if (!TheDisplay) {
-		XtWarning("nc: Can't open display\n");
-		exit(EXIT_FAILURE);
-	}
-	rootWindow = RootWindow(TheDisplay, DefaultScreen(TheDisplay));
-
-	// Read the application resources into the Preferences data structure 
+    // Read the application resources into the Preferences data structure
     QString filename = Settings::configFile();
     QSettings settings(filename, QSettings::IniFormat);
     settings.beginGroup(QLatin1String("Server"));
@@ -190,119 +118,44 @@ int main(int argc, char **argv) {
     ServerPreferences.waitForClose  = settings.value(QLatin1String("nc.waitForClose"),  false).toBool();
     ServerPreferences.timeOut       = settings.value(QLatin1String("nc.timeOut"),       10).toInt();
 
-	/* Make sure that the time out unit is at least 1 second and not too
-	   large either (overflow!). */
+    /* Make sure that the time out unit is at least 1 second and not too
+       large either (overflow!). */
     ServerPreferences.timeOut = qBound(1, ServerPreferences.timeOut, 1000);
 
-	/* For Clearcase users who have not set a server name, use the clearcase
-	   view name.  Clearcase views make files with the same absolute path names
-	   but different contents (and therefore can't be edited in the same nedit
-	   session). This should have no bad side-effects for non-clearcase users */
+    /* For Clearcase users who have not set a server name, use the clearcase
+       view name.  Clearcase views make files with the same absolute path names
+       but different contents (and therefore can't be edited in the same nedit
+       session). This should have no bad side-effects for non-clearcase users */
     if (ServerPreferences.serverName.isEmpty()) {
-		const QString viewTag = GetClearCaseViewTag();
-		if (!viewTag.isNull() && viewTag.size() < MAXPATHLEN) {
+        const QString viewTag = GetClearCaseViewTag();
+        if (!viewTag.isNull() && viewTag.size() < MAXPATHLEN) {
             ServerPreferences.serverName =  viewTag;
-		}
-	}
+        }
+    }
 
-	// Create the wait properties for the various files. 
-	createWaitProperties();
 
-	// Monitor the properties on the root window 
-	XSelectInput(TheDisplay, rootWindow, PropertyChangeMask);
+    QDBusInterface iface(QLatin1String(SERVICE_NAME), QLatin1String("/Server"), QLatin1String(""), QDBusConnection::sessionBus());
+    if(iface.isValid()) {
+        QDBusReply<void> reply = iface.call(QLatin1String("processCommand"), commandLine.serverRequest);
+        if(reply.isValid()) {
+            qDebug("Success!");
+        }
+    }
 
-	// Create the server property atoms on the current DISPLAY. 
-    CreateServerPropertyAtoms(ServerPreferences.serverName.toLatin1().data(), &serverExistsAtom, &serverRequestAtom);
 
-	serverExists = findExistingServer(context, rootWindow, serverExistsAtom);
 
-	if (serverExists == False)
+
+#if 0
+    if (!serverExists) {
 		startNewServer(context, rootWindow, commandLine.shell, serverExistsAtom);
+    }
+#endif
 
-	waitUntilRequestProcessed(context, rootWindow, commandLine.serverRequest, serverRequestAtom);
-
-	waitUntilFilesOpenedOrClosed(context, rootWindow);
-
-	XtCloseDisplay(TheDisplay);
-	XtFree(commandLine.shell);
-	XtFree(commandLine.serverRequest);
-	return 0;
 }
 
-/*
-** Xt timer procedure for timeouts on NEdit server requests
-*/
-static void timeOutProc(Boolean *timeOutReturn, XtIntervalId *id) {
 
-	(void)id;
-	/* NOTE: XtAppNextEvent() does call this routine but
-	** doesn't return unless there are more events.
-	** Hence, we generate this (synthetic) event to break the deadlock
-	*/
-	Window rootWindow = RootWindow(TheDisplay, DefaultScreen(TheDisplay));
-	if (currentWaitForAtom != noAtom) {
-		XChangeProperty(TheDisplay, rootWindow, currentWaitForAtom, XA_STRING, 8, PropModeReplace, (uint8_t *)"", strlen(""));
-	}
-
-	// Flag that the timeout has occurred. 
-	*timeOutReturn = True;
-}
-
-static Boolean findExistingServer(XtAppContext context, Window rootWindow, Atom serverExistsAtom) {
-	Boolean serverExists = True;
-	uint8_t *propValue;
-	int getFmt;
-	Atom dummyAtom;
-	unsigned long dummyULong, nItems;
-
-	/* See if there might be a server (not a guaranty), by translating the
-	   root window property NEDIT_SERVER_EXISTS_<user>_<host> */
-	if (XGetWindowProperty(TheDisplay, rootWindow, serverExistsAtom, 0, INT_MAX, False, XA_STRING, &dummyAtom, &getFmt, &nItems, &dummyULong, &propValue) != Success || nItems == 0) {
-		serverExists = False;
-	} else {
-		Boolean timeOut = False;
-		XtIntervalId timerId;
-
-		XFree(propValue);
-
-		/* Remove the server exists property to make sure the server is
-		** running. If it is running it will get recreated.
-		*/
-		XDeleteProperty(TheDisplay, rootWindow, serverExistsAtom);
-		XSync(TheDisplay, False);
-		timerId = XtAppAddTimeOut(context, PROPERTY_CHANGE_TIMEOUT, (XtTimerCallbackProc)timeOutProc, &timeOut);
-		currentWaitForAtom = serverExistsAtom;
-
-		while (!timeOut) {
-			/* NOTE: XtAppNextEvent() does call the timeout routine but
-			** doesn't return unless there are more events. */
-			XEvent event;
-			const XPropertyEvent *e = (const XPropertyEvent *)&event;
-			XtAppNextEvent(context, &event);
-
-			/* We will get a PropertyNewValue when the server recreates
-			** the server exists atom. */
-			if (e->type == PropertyNotify && e->window == rootWindow && e->atom == serverExistsAtom) {
-				if (e->state == PropertyNewValue) {
-					break;
-				}
-			}
-			XtDispatchEvent(&event);
-		}
-
-		/* Start a new server if the timeout expired. The server exists
-		** property was not recreated. */
-		if (timeOut) {
-			serverExists = False;
-		} else {
-			XtRemoveTimeOut(timerId);
-		}
-	}
-
-	return (serverExists);
-}
-
-static void startNewServer(XtAppContext context, Window rootWindow, char *commandLine, Atom serverExistsAtom) {
+#if 0
+static void startNewServer(XtAppContext context, Window rootWindow, QString commandLine, Atom serverExistsAtom) {
 	Boolean timeOut = False;
 	XtIntervalId timerId;
 
@@ -313,10 +166,10 @@ static void startNewServer(XtAppContext context, Window rootWindow, char *comman
 	   in commandLine.shell. Moreover, if no server name was specified, it
 	   may have defaulted to the ClearCase view tag. */
     if (!ServerPreferences.serverName.isEmpty()) {
-		strcat(commandLine, " -svrname ");
-        strcat(commandLine, ServerPreferences.serverName.toLatin1().data());
+        commandLine.append(QLatin1Literal(" -svrname "));
+        commandLine.append(ServerPreferences.serverName);
 	}
-	switch (startServer("No servers available, start one? (y|n) [y]: ", commandLine)) {
+    switch (startServer("No servers available, start one? (y|n) [y]: ", commandLine.toLatin1().data())) {
 	case -1: // Start failed 
 		XtCloseDisplay(TheDisplay);
 		exit(EXIT_FAILURE);
@@ -365,6 +218,7 @@ static void startNewServer(XtAppContext context, Window rootWindow, char *comman
 	}
 }
 
+
 /*
 ** Prompt the user about starting a server, with "message", then start server
 */
@@ -388,6 +242,7 @@ static int startServer(const char *message, const char *commandLineArgs) {
 
 	return (sysrc == 0) ? 0 : -1;
 }
+#endif
 
 /* Reconstruct the command line in string commandLine in case we have to
  * start a server (nc command line args parallel nedit's).  Include
@@ -396,23 +251,17 @@ static int startServer(const char *message, const char *commandLineArgs) {
  */
 static CommandLine processCommandLine(int argc, char **argv) {
 	CommandLine commandLine;
-	int length = 0;
 
-	for (int i = 1; i < argc; i++) {
-		length += 1 + strlen(argv[i]) * 4 + 2;
-	}
-	
-	commandLine.shell = XtMalloc(length + 1 + 9 + MAXPATHLEN);
-	commandLine.shell[0] = '\0';
+    commandLine.shell = QString();
 
 	// Convert command line arguments into a command string for the server 
 	parseCommandLine(argc, argv, &commandLine);
-	if(!commandLine.serverRequest) {
+    if(commandLine.serverRequest.isNull()) {
 		fprintf(stderr, "nc: Invalid commandline argument\n");
 		exit(EXIT_FAILURE);
 	}
 
-	return (commandLine);
+    return commandLine;
 }
 
 /*
@@ -420,33 +269,31 @@ static CommandLine processCommandLine(int argc, char **argv) {
 ** the server
 */
 static void parseCommandLine(int argc, char **argv, CommandLine *commandLine) {
-#define MAX_RECORD_HEADER_LENGTH 38
-	char name[MAXPATHLEN], path[MAXPATHLEN];
-	const char *toDoCommand = "", *langMode = "", *geometry = "";
-	char *outPtr;
-	int lineNum = 0, read = 0, create = 0, iconic = 0, tabbed = -1, length = 0;
-	int i, lineArg;
-	int fileCount = 0, group = 0, isTabbed;
+
+    char name[MAXPATHLEN];
+    char path[MAXPATHLEN];
+    const char *toDoCommand = "";
+    const char *langMode = "";
+    const char *geometry = "";
+    int lineNum = 0;
+    int read = 0;
+    int create = 0;
+    int iconic = 0;
+    int tabbed = -1;
+    int i;
+    int lineArg;
+    int fileCount = 0;
+    int group = 0;
+    int isTabbed;
 	bool opts = true;
 
-	/* Allocate a string for output, for the maximum possible length.  The
-	   maximum length is calculated by assuming every argument is a file,
-	   and a complete record of maximum length is created for it */
-	for (i = 1; i < argc; i++) {
-		length += MAX_RECORD_HEADER_LENGTH + strlen(argv[i]) + MAXPATHLEN;
-	}
-	// In case of no arguments, must still allocate space for one record header 
-	if (length < MAX_RECORD_HEADER_LENGTH) {
-		length = MAX_RECORD_HEADER_LENGTH;
-	}
+    // Parse the arguments and write the output string
+    QString commandString;
+    QTextStream out(&commandString);
 	
-	char *commandString = XtMalloc(length + 1);
-
-	// Parse the arguments and write the output string 
-	outPtr = commandString;
 	for (i = 1; i < argc; i++) {
 		if (opts && !strcmp(argv[i], "--")) {
-			opts = False; // treat all remaining arguments as filenames 
+            opts = false; // treat all remaining arguments as filenames
 			continue;
 		} else if (opts && !strcmp(argv[i], "-do")) {
 			nextArg(argc, argv, &i);
@@ -516,7 +363,7 @@ static void parseCommandLine(int argc, char **argv, CommandLine *commandLine) {
 		} else {
 			if (ParseFilename(argv[i], name, path) != 0) {
 				// An Error, most likely too long paths/strings given 
-				commandLine->serverRequest = nullptr;
+                commandLine->serverRequest = QString();
 				return;
 			}
 			strcat(path, name);
@@ -539,25 +386,23 @@ static void parseCommandLine(int argc, char **argv, CommandLine *commandLine) {
 			   The "long" cast on strlen() is necessary because size_t
 			   is 64 bit on Alphas, and 32-bit on most others.  There is
 			   no printf format specifier for "size_t", thanx, ANSI. */
-			int charsWritten = sprintf(outPtr, "%d %d %d %d %d %ld %ld %ld %ld\n", lineNum, read, create, iconic, isTabbed, (long)strlen(path), (long)strlen(toDoCommand), (long)strlen(langMode), (long)strlen(geometry));
-			outPtr += charsWritten;
-			
-			strcpy(outPtr, path);
-			outPtr += strlen(path);
-			*outPtr++ = '\n';
-			strcpy(outPtr, toDoCommand);
-			outPtr += strlen(toDoCommand);
-			*outPtr++ = '\n';
-			strcpy(outPtr, langMode);
-			outPtr += strlen(langMode);
-			*outPtr++ = '\n';
-			strcpy(outPtr, geometry);
-			outPtr += strlen(geometry);
-			*outPtr++ = '\n';
+            QString temp;
+            temp.sprintf("%d %d %d %d %d %ld %ld %ld %ld\n",
+                         lineNum,
+                         read,
+                         create,
+                         iconic,
+                         isTabbed,
+                         static_cast<long>(strlen(path)),
+                         static_cast<long>(strlen(toDoCommand)),
+                         static_cast<long>(strlen(langMode)),
+                         static_cast<long>(strlen(geometry)));
 
-			// Create the file open atoms for the paths supplied 
-			addToFileList(path);
-			fileCount++;
+            out << temp;
+            out << path << '\n';
+            out << toDoCommand << '\n';
+            out << langMode << '\n';
+            out << geometry << '\n';
 
 			// These switches only affect the next filename argument, not all 
 			toDoCommand = "";
@@ -571,121 +416,29 @@ static void parseCommandLine(int argc, char **argv, CommandLine *commandLine) {
 	 * iconic state (and optional language mode and geometry).
 	 */
 	if (toDoCommand[0] != '\0' || fileCount == 0) {
-		int charsWritten = sprintf(outPtr, "0 0 0 %d %d 0 %ld %ld %ld\n\n", iconic, tabbed, (long)strlen(toDoCommand), (long)strlen(langMode), (long)strlen(geometry));
-		outPtr += charsWritten;
-		strcpy(outPtr, toDoCommand);
-		outPtr += strlen(toDoCommand);
-		*outPtr++ = '\n';
-		strcpy(outPtr, langMode);
-		outPtr += strlen(langMode);
-		*outPtr++ = '\n';
-		strcpy(outPtr, geometry);
-		outPtr += strlen(geometry);
-		*outPtr++ = '\n';
+
+        QString temp;
+        temp.sprintf("0 0 0 %d %d 0 %ld %ld %ld\n\n",
+                     iconic,
+                     tabbed,
+                     static_cast<long>(strlen(toDoCommand)),
+                     static_cast<long>(strlen(langMode)),
+                     static_cast<long>(strlen(geometry)));
+
+        out << temp;
+        out << toDoCommand << '\n';
+        out << langMode << '\n';
+        out << geometry << '\n';
 	}
 
-	*outPtr = '\0';
 	commandLine->serverRequest = commandString;
 }
-
-static void waitUntilRequestProcessed(XtAppContext context, Window rootWindow, char *commandString, Atom serverRequestAtom) {
-	XtIntervalId timerId;
-	Boolean timeOut = False;
-
-	/* Set the NEDIT_SERVER_REQUEST_<user>_<host> property on the root
-	   window to activate the server */
-	XChangeProperty(TheDisplay, rootWindow, serverRequestAtom, XA_STRING, 8, PropModeReplace, (uint8_t *)commandString, strlen(commandString));
-
-	/* Set up a timeout proc in case the server is dead.  The standard
-	   selection timeout is probably a good guess at how long to wait
-	   for this style of inter-client communication as well */
-	timerId = XtAppAddTimeOut(context, REQUEST_TIMEOUT, (XtTimerCallbackProc)timeOutProc, &timeOut);
-	currentWaitForAtom = serverRequestAtom;
-
-	// Wait for the property to be deleted to know the request was processed 
-	while (!timeOut) {
-		XEvent event;
-		const XPropertyEvent *e = (const XPropertyEvent *)&event;
-
-		XtAppNextEvent(context, &event);
-		if (e->window == rootWindow && e->atom == serverRequestAtom && e->state == PropertyDelete)
-			break;
-		XtDispatchEvent(&event);
-	}
-
-	// Exit if the timeout expired. 
-	if (timeOut) {
-		fprintf(stderr, "%s: The server did not respond to the request.\n", APP_NAME);
-		XtCloseDisplay(TheDisplay);
-		exit(EXIT_FAILURE);
-	} else {
-		XtRemoveTimeOut(timerId);
-	}
-}
-
-static void waitUntilFilesOpenedOrClosed(XtAppContext context, Window rootWindow) {
-	XtIntervalId timerId;
-	Boolean timeOut = False;
-
-	/* Set up a timeout proc so we don't wait forever if the server is dead.
-	   The standard selection timeout is probably a good guess at how
-	   long to wait for this style of inter-client communication as
-	   well */
-	timerId = XtAppAddTimeOut(context, FILE_OPEN_TIMEOUT, (XtTimerCallbackProc)timeOutProc, &timeOut);
-	currentWaitForAtom = noAtom;
-
-	/* Wait for all of the windows to be opened by server,
-	 * and closed if -wait was supplied */
-	while (!fileListHead.fileList.empty()) {
-
-		XEvent event;
-		const XPropertyEvent *e = (const XPropertyEvent *)&event;
-
-		XtAppNextEvent(context, &event);
-
-		// Update the fileList and check if all files have been closed. 
-		if (e->type == PropertyNotify && e->window == rootWindow) {
-
-			if (e->state == PropertyDelete) {
-			
-				for(FileListEntry *item : fileListHead.fileList) {
-					if (e->atom == item->waitForFileOpenAtom) {
-						// The 'waitForFileOpen' property is deleted when the file is opened 
-						fileListHead.waitForOpenCount--;
-						item->waitForFileOpenAtom = None;
-
-						// Reset the timer while we wait for all files to be opened. 
-						XtRemoveTimeOut(timerId);
-						timerId = XtAppAddTimeOut(context, FILE_OPEN_TIMEOUT, (XtTimerCallbackProc)timeOutProc, &timeOut);
-					} else if (e->atom == item->waitForFileClosedAtom) {
-						/* When file is opened in -wait mode the property
-						 * is deleted when the file is closed.
-						 */
-						fileListHead.waitForCloseCount--;
-						item->waitForFileClosedAtom = None;
-					}
-				}
-
-				if (fileListHead.waitForOpenCount == 0 && !timeOut) {
-					XtRemoveTimeOut(timerId);
-				}
-
-				if (fileListHead.waitForOpenCount == 0 && fileListHead.waitForCloseCount == 0) {
-					break;
-				}
-			}
-		}
-
-		/* We are finished if we are only waiting for files to open and
-		** the file open timeout has expired. */
-        if (!ServerPreferences.waitForClose && timeOut) {
-			break;
-		}
-
-		XtDispatchEvent(&event);
-	}
-}
-
+/**
+ * @brief nextArg
+ * @param argc
+ * @param argv
+ * @param argIndex
+ */
 static void nextArg(int argc, char **argv, int *argIndex) {
 	if (*argIndex + 1 >= argc) {
 		fprintf(stderr, "nc: %s requires an argument\n%s", argv[*argIndex], cmdLineHelp);
@@ -701,30 +454,33 @@ static void nextArg(int argc, char **argv, int *argIndex) {
 ** to hold the escaped characters.
 */
 static void copyCommandLineArg(CommandLine *commandLine, const char *arg) {
-	const char *c;
-	char *outPtr = commandLine->shell + strlen(commandLine->shell);
 
-	*outPtr++ = '\'';
-	for (c = arg; *c != '\0'; c++) {
-		if (*c == '\'') {
-			*outPtr++ = '\'';
-			*outPtr++ = '\\';
+    auto outPtr = std::back_inserter(commandLine->shell);
+
+    *outPtr++ = QLatin1Char('\'');
+    for (const char *c = arg; *c != '\0'; c++) {
+
+        if (*c == '\'') {
+            *outPtr++ = QLatin1Char('\'');
+            *outPtr++ = QLatin1Char('\\');
 		}
-		*outPtr++ = *c;
-		if (*c == '\'') {
-			*outPtr++ = '\'';
+
+        *outPtr++ = QLatin1Char(*c);
+
+        if (*c == '\'') {
+            *outPtr++ = QLatin1Char('\'');
 		}
 	}
-	*outPtr++ = '\'';
-	*outPtr++ = ' ';
-	*outPtr = '\0';
+
+    *outPtr++ = QLatin1Char('\'');
+    *outPtr++ = QLatin1Char(' ');
 }
 
 // Print version of 'nc' 
 static void printNcVersion() {
-	static const char *const ncHelpText = "nc (NEdit) Version 5.6 (November 2009)\n\n\
+    static const char ncHelpText[] = "nc (nedit-ng) Version 1.0\n\n\
      Built on: %s, %s, %s\n\
      Built at: %s, %s\n";
 
-	fprintf(stdout, ncHelpText, COMPILE_OS, COMPILE_MACHINE, COMPILE_COMPILER, __DATE__, __TIME__);
+    printf(ncHelpText, COMPILE_OS, COMPILE_MACHINE, COMPILE_COMPILER, __DATE__, __TIME__);
 }

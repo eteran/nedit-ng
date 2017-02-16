@@ -5,12 +5,8 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 #set(CMAKE_AUTOUIC ON)
 #set(CMAKE_AUTORCC ON)
 
-find_package(Motif REQUIRED)
-find_package(X11 REQUIRED)
 find_package(BISON REQUIRED)
-find_package(Qt5 5.4.0 REQUIRED Widgets X11Extras Concurrent)
-
-find_library(LibM m)
+find_package(Qt5 5.4.0 REQUIRED Widgets X11Extras Concurrent DBus)
 
 # using a different name from parse.cpp
 # because it will also output parse.h, which will conflict with the
@@ -22,11 +18,6 @@ qt5_add_resources(QRC_SOURCES
 )
 
 qt5_wrap_cpp(MOC_SOURCES
-	#QtMotif.h
-	#QtMotifDialog.h
-	#QtMotifWidget.h
-	#QtXtWidget.h
-
 	ui/ElidedLabel.h
 	ui/DialogDuplicateTags.h
 	ui/DialogAbout.h
@@ -66,6 +57,7 @@ qt5_wrap_cpp(MOC_SOURCES
 	ui/TabWidget.h
 	Settings.h
 	CommandRecorder.h
+	NeditServer.h
 )
 
 set(UI_FILES
@@ -105,6 +97,8 @@ set(UI_FILES
 
 qt5_wrap_ui(UI_H ${UI_FILES})
 
+
+
 add_executable(nedit
 
 	${MOC_SOURCES}
@@ -130,8 +124,6 @@ add_executable(nedit
 	regularExp.cpp
 	search.cpp
 	selection.cpp
-	server_common.cpp
-	server.cpp
 	shift.cpp
 	smartIndent.cpp
 	SmartIndent.cpp
@@ -180,6 +172,7 @@ add_executable(nedit
 	userCmds.cpp
 	X11Colors.cpp
 	CommandRecorder.cpp
+	NeditServer.cpp
 
 	${BISON_parser_OUTPUT_SOURCE}
 )
@@ -188,20 +181,14 @@ include_directories(nedit
 	${PROJECT_SOURCE_DIR}
 	${CMAKE_CURRENT_SOURCE_DIR}/ui
 	${CMAKE_CURRENT_SOURCE_DIR}/include
-	${MOTIF_INCLUDES}
-	${X11_INCLUDE_DIR}
-	${X11_Xt_INCLUDE_PATH}
 )
 
 target_link_libraries(nedit LINK_PUBLIC
 	NUtil
-	${LibM}
-	${MOTIF_LIBRARIES}
-	${X11_LIBRARIES}
-	${X11_Xt_LIB}
 	Qt5::Widgets
 	Qt5::X11Extras
 	Qt5::Concurrent
+	Qt5::DBus
 )
 
 qt5_wrap_cpp(MOC_SOURCES_NC
@@ -215,16 +202,14 @@ add_executable(nc
 	${MOC_SOURCES_NC})
 
 include_directories(nc
-	${X11_INCLUDE_DIR}
-	${X11_Xt_INCLUDE_PATH})
+	${PROJECT_SOURCE_DIR}
+	${CMAKE_CURRENT_SOURCE_DIR}/ui
+	${CMAKE_CURRENT_SOURCE_DIR}/include
+	)
 
 target_link_libraries(nc LINK_PUBLIC
 	NUtil
-	${X11_Xt_LIB}
-	${X11_LIBRARIES}
-	Qt5::Widgets
-	Qt5::X11Extras
-
+	Qt5::DBus
 )
 
 set_property(TARGET nedit PROPERTY C_STANDARD 99)

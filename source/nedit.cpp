@@ -31,10 +31,12 @@
 *******************************************************************************/
 
 #include <QApplication>
+#include <QDBusConnection>
 #include "ui/DialogPrint.h"
 #include "ui/MainWindow.h"
 #include "ui/DocumentWidget.h"
 #include "ui/DialogAbout.h"
+#include "NeditServer.h"
 
 #include "nedit.h"
 #include "util/fileUtils.h"
@@ -45,7 +47,6 @@
 #include "preferences.h"
 #include "regularExp.h"
 #include "selection.h"
-#include "server.h"
 #include "tags.h"
 
 #include <algorithm>
@@ -339,19 +340,13 @@ int main(int argc, char *argv[]) {
 	AddLastCommandActionHook(context);
 #endif
 
-	// Set up communication port and write ~/.nedit_server_process file 
-	if (IsServer) {
-		InitServerCommunication();
+    // Set up communication over dbus!
+    if (IsServer) {
+        new NeditServer;
 	}
 
 	// Process events. 
-	if (IsServer) {
-#if 0
-		ServerMainLoop(context);
-#endif
-	} else {
-		return app.exec();
-	}
+    return app.exec();
 }
 
 static void nextArg(int argc, char **argv, int *argIndex) {

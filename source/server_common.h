@@ -29,16 +29,23 @@
 #ifndef SERVER_COMMON_H_
 #define SERVER_COMMON_H_
 
-#include <X11/Intrinsic.h>
 
-/* Lets limit the unique server name to MAXPATHLEN */
-#define MAXSERVERNAMELEN MAXPATHLEN
+// TODO(eteran): add the concept of user/server uniqueness similar to the following
+// comment
+/*
+ * Create the server property atoms for the server with serverName.
+ * Atom names are generated as follows:
+ *
+ * NEDIT_SERVER_EXISTS_<host_name>_<user>_<server_name>
+ * NEDIT_SERVER_REQUEST_<host_name>_<user>_<server_name>
+ *
+ * <server_name> is the name that can be set by the user to allow
+ * for multiple servers to run on the same display. <server_name>
+ * defaults to "" if not supplied by the user.
+ *
+ * <user> is the user name of the current user.
+ */
 
-#define DEFAULTSERVERNAME ""
-
-void CreateServerPropertyAtoms(const char *serverName, Atom *serverExistsAtomReturn, Atom *serverRequestAtomReturn);
-Atom CreateServerFileOpenAtom(const char *serverName, const char *path);
-Atom CreateServerFileClosedAtom(const char *serverName, const char *path, Bool only_if_exists);
-void DeleteServerFileAtoms(const char *serverName, Window rootWindow);
+#define SERVICE_NAME "com.nedit"
 
 #endif

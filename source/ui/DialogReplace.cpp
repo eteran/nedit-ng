@@ -632,7 +632,7 @@ bool DialogReplace::getReplaceDlogInfo(SearchDirection *direction, QString *sear
 			auto compiledRE = std::make_unique<regexp>(replaceText.toLatin1().data(), regexDefault);
 		} catch(const regex_error &e) {
             QMessageBox::warning(this, tr("Search String"), tr("Please respecify the search string:\n%1").arg(QString::fromLatin1(e.what())));
-			return FALSE;
+            return false;
 		}
 	} else {
 		if (ui.checkCase->isChecked()) {

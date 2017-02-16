@@ -434,7 +434,6 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 
     flashTimer_            = new QTimer(this);
     contextMenu_           = nullptr;
-	fileClosedAtom_        = None;
 	fontName_              = GetPrefFontName();
 	italicFontName_        = GetPrefItalicFontName();
 	boldFontName_          = GetPrefBoldFontName();
@@ -1035,7 +1034,7 @@ void DocumentWidget::reapplyLanguageMode(int mode, bool forceDefaults) {
 
         // Decref oldMode's default calltips file if needed
         if (oldMode != PLAIN_LANGUAGE_MODE && !LanguageModes[oldMode]->defTipsFile.isNull()) {
-            DeleteTagsFileEx(LanguageModes[oldMode]->defTipsFile, TIP, False);
+            DeleteTagsFileEx(LanguageModes[oldMode]->defTipsFile, TIP, false);
         }
 
         // Set delimiters for all text widgets
@@ -2580,7 +2579,6 @@ int DocumentWidget::SaveWindowAs(const QString &newName, bool addWrap) {
                         wrapCheck->setChecked(true);
                     }
 
-
                     // NOTE(eteran): this seems a bit redundant to other code...
                     connect(wrapCheck, &QCheckBox::toggled, [&wrapCheck, this](bool checked) {
                         if(checked) {
@@ -2669,8 +2667,10 @@ int DocumentWidget::SaveWindowAs(const QString &newName, bool addWrap) {
             }
         }
 
+#if 0
         // Destroy the file closed property for the original file
         DeleteFileClosedPropertyEx(this);
+#endif
 
         // Change the name of the file and save it under the new name
         RemoveBackupFile();
@@ -2999,8 +2999,10 @@ void DocumentWidget::CloseWindow() {
     // Unload the default tips files for this language mode if necessary
     UnloadLanguageModeTipsFileEx();
 
+#if 0
     // Destroy the file closed property for this file
     DeleteFileClosedPropertyEx(this);
+#endif
 
     /* if this is the last window, or must be kept alive temporarily because
        it's running the macro calling us, don't close it, make it Untitled */
@@ -4713,7 +4715,7 @@ void DocumentWidget::gotoAP(TextArea *area, QStringList args) {
     // User specified column, but not line number
     if (lineNum == -1) {
         position = area->TextGetCursorPos();
-        if (area->TextDPosToLineAndCol(position, &lineNum, &curCol) == False) {
+        if (!area->TextDPosToLineAndCol(position, &lineNum, &curCol)) {
             return;
         }
     } else if (column == -1) {
@@ -4834,7 +4836,7 @@ void DocumentWidget::UnloadLanguageModeTipsFileEx() {
 
     int mode = languageMode_;
     if (mode != PLAIN_LANGUAGE_MODE && !LanguageModes[mode]->defTipsFile.isNull()) {
-        DeleteTagsFileEx(LanguageModes[mode]->defTipsFile, TIP, False);
+        DeleteTagsFileEx(LanguageModes[mode]->defTipsFile, TIP, false);
     }
 }
 
