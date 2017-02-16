@@ -31,11 +31,11 @@
 #include <QPushButton>
 #include <QResource>
 #include <QtDebug>
-#include "ui/DialogLanguageModes.h"
-#include "ui/DialogDrawingStyles.h"
-#include "ui/DialogSyntaxPatterns.h"
-#include "ui/DocumentWidget.h"
-#include "ui/MainWindow.h"
+#include "DialogLanguageModes.h"
+#include "DialogDrawingStyles.h"
+#include "DialogSyntaxPatterns.h"
+#include "DocumentWidget.h"
+#include "MainWindow.h"
 
 #include "highlightData.h"
 #include "FontType.h"

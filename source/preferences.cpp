@@ -33,8 +33,8 @@
 #include <QStandardPaths>
 #include <QtDebug>
 #include <QSettings>
-#include "ui/DocumentWidget.h"
-#include "ui/MainWindow.h"
+#include "DocumentWidget.h"
+#include "MainWindow.h"
 #include "LanguageMode.h"
 #include "Settings.h"
 

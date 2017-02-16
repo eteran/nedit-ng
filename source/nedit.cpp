@@ -32,10 +32,10 @@
 
 #include <QApplication>
 #include <QDBusConnection>
-#include "ui/DialogPrint.h"
-#include "ui/MainWindow.h"
-#include "ui/DocumentWidget.h"
-#include "ui/DialogAbout.h"
+#include "DialogPrint.h"
+#include "MainWindow.h"
+#include "DocumentWidget.h"
+#include "DialogAbout.h"
 #include "NeditServer.h"
 
 #include "nedit.h"

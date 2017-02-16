@@ -29,10 +29,10 @@
 #include <QMessageBox>
 #include <QResource>
 #include <QtDebug>
-#include "ui/DialogLanguageModes.h"
-#include "ui/DialogSmartIndentCommon.h"
-#include "ui/DialogSmartIndent.h"
-#include "ui/DocumentWidget.h"
+#include "DialogLanguageModes.h"
+#include "DialogSmartIndentCommon.h"
+#include "DialogSmartIndent.h"
+#include "DocumentWidget.h"
 #include "IndentStyle.h"
 #include "WrapStyle.h"
 #include "SmartIndent.h"

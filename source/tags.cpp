@@ -28,10 +28,10 @@
 
 #include <QApplication>
 #include <QMessageBox>
-#include "ui/MainWindow.h"
-#include "ui/DialogDuplicateTags.h"
-#include "ui/DocumentWidget.h"
-#include "ui/TextArea.h"
+#include "MainWindow.h"
+#include "DialogDuplicateTags.h"
+#include "DocumentWidget.h"
+#include "TextArea.h"
 
 #include "tags.h"
 #include "TextBuffer.h"

@@ -43,14 +43,14 @@
 #include <QtConcurrent>
 
 #include "Settings.h"
-#include "ui/MainWindow.h"
-#include "ui/DialogPrompt.h"
-#include "ui/DialogPromptList.h"
-#include "ui/DialogPromptString.h"
-#include "ui/DialogRepeat.h"
-#include "ui/DocumentWidget.h"
-#include "ui/MainWindow.h"
-#include "ui/TextArea.h"
+#include "MainWindow.h"
+#include "DialogPrompt.h"
+#include "DialogPromptList.h"
+#include "DialogPromptString.h"
+#include "DialogRepeat.h"
+#include "DocumentWidget.h"
+#include "MainWindow.h"
+#include "TextArea.h"
 
 #include "macro.h"
 #include "HighlightPattern.h"
