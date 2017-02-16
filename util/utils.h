@@ -35,12 +35,4 @@ QString GetNameOfHostEx();
 QString GetUserNameEx();
 QString PrependHomeEx(const QString &filename);
 
-/* If anyone knows where to get this from system include files (in a machine
-   independent way), please change this (L_cuserid is apparently not ANSI) */
-#define MAXUSERNAMELEN 32
-
-/* Ditto for the maximum length for a node name.  SYS_NMLN is not available
-   on most systems, and I don't know what the portable alternative is. */
-#define MAXNODENAMELEN (MAXPATHLEN + 2)
-
 #endif

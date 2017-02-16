@@ -195,28 +195,10 @@ qt5_wrap_cpp(MOC_SOURCES_NC
 	Settings.h
 )
 
-add_executable(nc
-	nc.cpp
-	server_common.cpp
-	Settings.cpp
-	${MOC_SOURCES_NC})
-
-include_directories(nc
-	${PROJECT_SOURCE_DIR}
-	${CMAKE_CURRENT_SOURCE_DIR}/ui
-	${CMAKE_CURRENT_SOURCE_DIR}/include
-	)
-
-target_link_libraries(nc LINK_PUBLIC
-	NUtil
-	Qt5::DBus
-)
 
 set_property(TARGET nedit PROPERTY C_STANDARD 99)
-set_property(TARGET nc    PROPERTY C_STANDARD 99)
-
 set_property(TARGET nedit PROPERTY CXX_STANDARD 14)
-set_property(TARGET nc    PROPERTY CXX_STANDARD 14)
+
 
 set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -Wc++-compat -Wwrite-strings -Wunused") # -ffunction-sections -fdata-sections
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -W -Wall -pedantic -Wunused") #-Wuseless-cast -Wold-style-cast -ffunction-sections -fdata-sections
@@ -227,7 +209,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -ggdb3")
 
 # SET_TARGET_PROPERTIES(nedit PROPERTIES LINK_FLAGS "-Wl,--gc-sections,--print-gc-sections")
 
-set_target_properties(nedit nc
+set_target_properties(nedit
 	PROPERTIES
 	RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
 )
