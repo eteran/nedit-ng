@@ -11,7 +11,7 @@ class DialogDuplicateTags : public QDialog {
 	Q_OBJECT
 public:
     DialogDuplicateTags(DocumentWidget *document, TextArea *area, QWidget *parent = 0, Qt::WindowFlags f = 0);
-	virtual ~DialogDuplicateTags() override;
+	virtual ~DialogDuplicateTags() = default;
 	
 public:
 	void setTag(const QString &tag);

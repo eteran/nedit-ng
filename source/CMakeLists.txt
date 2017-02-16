@@ -18,11 +18,12 @@ qt5_add_resources(QRC_SOURCES
 )
 
 qt5_wrap_cpp(MOC_SOURCES
-	ElidedLabel.h
-	DialogDuplicateTags.h
+	CallTipWidget.h
+	CommandRecorder.h
 	DialogAbout.h
 	DialogColors.h
 	DialogDrawingStyles.h
+	DialogDuplicateTags.h
 	DialogExecuteCommand.h
 	DialogFilter.h
 	DialogFind.h
@@ -31,41 +32,40 @@ qt5_wrap_cpp(MOC_SOURCES
 	DialogMacros.h
 	DialogMoveDocument.h
 	DialogMultiReplace.h
+	DialogOutput.h
 	DialogPrint.h
+	DialogPrompt.h
+	DialogPromptList.h
+	DialogPromptString.h
+	DialogRepeat.h
 	DialogReplace.h
 	DialogShellMenu.h
 	DialogSmartIndent.h
 	DialogSmartIndentCommon.h
+	DialogSyntaxPatterns.h
 	DialogTabs.h
 	DialogWindowBackgroundMenu.h
 	DialogWindowSize.h
 	DialogWindowTitle.h
 	DialogWrapMargin.h
-	DialogSyntaxPatterns.h
-	DialogPrompt.h
-	DialogPromptString.h
-	DialogPromptList.h
-	DialogRepeat.h
+	DocumentWidget.h
+	ElidedLabel.h
+	KeySequenceEdit.h
 	ListWidget.h
 	MainWindow.h
-	KeySequenceEdit.h
-	TextArea.h
-	DocumentWidget.h
-	TabWidget.h
-	DialogOutput.h
-	CallTipWidget.h
-	TabWidget.h
-	Settings.h
-	CommandRecorder.h
 	NeditServer.h
+	Settings.h
+	TabWidget.h
+	TabWidget.h
+	TextArea.h
 )
 
 set(UI_FILES
 	CallTipWidget.ui
-	DialogDuplicateTags.ui
 	DialogAbout.ui
 	DialogColors.ui
 	DialogDrawingStyles.ui
+	DialogDuplicateTags.ui
 	DialogExecuteCommand.ui
 	DialogFilter.ui
 	DialogFind.ui
@@ -74,25 +74,25 @@ set(UI_FILES
 	DialogMacros.ui
 	DialogMoveDocument.ui
 	DialogMultiReplace.ui
+	DialogOutput.ui
 	DialogPrint.ui
+	DialogPrompt.ui
+	DialogPromptList.ui
+	DialogPromptString.ui
+	DialogRepeat.ui
 	DialogReplace.ui
 	DialogReplaceScope.ui
 	DialogShellMenu.ui
 	DialogSmartIndent.ui
 	DialogSmartIndentCommon.ui
+	DialogSyntaxPatterns.ui
 	DialogTabs.ui
 	DialogWindowBackgroundMenu.ui
 	DialogWindowSize.ui
 	DialogWindowTitle.ui
 	DialogWrapMargin.ui
-	DialogSyntaxPatterns.ui
-	DialogPrompt.ui
-	DialogPromptString.ui
-	DialogPromptList.ui
-	DialogRepeat.ui
-	MainWindow.ui
-	DialogOutput.ui
 	DocumentWidget.ui
+	MainWindow.ui
 )
 
 qt5_wrap_ui(UI_H ${UI_FILES})
@@ -103,32 +103,8 @@ add_executable(nedit
 	${QRC_SOURCES}
 	${UI_H}
 
-	Settings.cpp
-	file.cpp
-	highlight.cpp
-	highlightData.cpp
-	HighlightPattern.cpp
-	interpret.cpp
-	LanguageMode.cpp
-	macro.cpp
-	menu.cpp
-	MenuItem.cpp
-	nedit.cpp
-	PatternSet.cpp
-	preferences.cpp
-	Rangeset.cpp
-	RangesetTable.cpp
-	rbTree.cpp
-	regularExp.cpp
-	search.cpp
-	selection.cpp
-	shift.cpp
-	smartIndent.cpp
-	SmartIndent.cpp
-	tags.cpp
-	TextBuffer.cpp
-	TextSelection.cpp
 	CallTipWidget.cpp
+	CommandRecorder.cpp
 	DialogAbout.cpp
 	DialogColors.cpp
 	DialogDrawingStyles.cpp
@@ -149,8 +125,8 @@ add_executable(nedit
 	DialogRepeat.cpp
 	DialogReplace.cpp
 	DialogShellMenu.cpp
-	DialogSmartIndentCommon.cpp
 	DialogSmartIndent.cpp
+	DialogSmartIndentCommon.cpp
 	DialogSyntaxPatterns.cpp
 	DialogTabs.cpp
 	DialogWindowBackgroundMenu.cpp
@@ -159,18 +135,42 @@ add_executable(nedit
 	DialogWrapMargin.cpp
 	DocumentWidget.cpp
 	ElidedLabel.cpp
+	HighlightPattern.cpp
 	KeySequenceEdit.cpp
+	LanguageMode.cpp
 	ListWidget.cpp
 	MainWindow.cpp
+	MenuItem.cpp
+	NeditServer.cpp
+	PatternSet.cpp
+	Rangeset.cpp
+	RangesetTable.cpp
+	Settings.cpp
 	SignalBlocker.h
+	SmartIndent.cpp
 	TabWidget.cpp
 	TabWidget.cpp
 	TextArea.cpp
+	TextBuffer.cpp
+	TextSelection.cpp
 	UndoInfo.cpp
-	userCmds.cpp
 	X11Colors.cpp
-	CommandRecorder.cpp
-	NeditServer.cpp
+	file.cpp
+	highlight.cpp
+	highlightData.cpp
+	interpret.cpp
+	macro.cpp
+	menu.cpp
+	nedit.cpp
+	preferences.cpp
+	rbTree.cpp
+	regularExp.cpp
+	search.cpp
+	selection.cpp
+	shift.cpp
+	smartIndent.cpp
+	tags.cpp
+	userCmds.cpp
 
 	${BISON_parser_OUTPUT_SOURCE}
 )
@@ -186,11 +186,6 @@ target_link_libraries(nedit LINK_PUBLIC
 	Qt5::Concurrent
 	Qt5::DBus
 )
-
-qt5_wrap_cpp(MOC_SOURCES_NC
-	Settings.h
-)
-
 
 set_property(TARGET nedit PROPERTY C_STANDARD 99)
 set_property(TARGET nedit PROPERTY CXX_STANDARD 14)

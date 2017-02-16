@@ -11,12 +11,6 @@ DialogDuplicateTags::DialogDuplicateTags(DocumentWidget *document, TextArea *are
 }
 
 //------------------------------------------------------------------------------
-// Name: ~DialogDuplicateTags
-//------------------------------------------------------------------------------
-DialogDuplicateTags::~DialogDuplicateTags() {
-}
-
-//------------------------------------------------------------------------------
 // Name: setTag
 //------------------------------------------------------------------------------
 void DialogDuplicateTags::setTag(const QString &tag) {
