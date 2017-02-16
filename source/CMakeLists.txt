@@ -6,7 +6,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 #set(CMAKE_AUTORCC ON)
 
 find_package(BISON REQUIRED)
-find_package(Qt5 5.4.0 REQUIRED Widgets X11Extras Concurrent DBus)
+find_package(Qt5 5.4.0 REQUIRED Widgets Concurrent DBus)
 
 # using a different name from parse.cpp
 # because it will also output parse.h, which will conflict with the
@@ -181,7 +181,6 @@ include_directories(nedit
 target_link_libraries(nedit LINK_PUBLIC
 	NUtil
 	Qt5::Widgets
-	Qt5::X11Extras
 	Qt5::Concurrent
 	Qt5::DBus
 )

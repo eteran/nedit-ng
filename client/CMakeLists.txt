@@ -5,7 +5,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
-find_package(Qt5 5.4.0 REQUIRED Widgets X11Extras Concurrent DBus)
+find_package(Qt5 5.4.0 REQUIRED Widgets DBus)
 
 include_directories(nc
 	${PROJECT_SOURCE_DIR}
@@ -18,8 +18,9 @@ add_executable(nc
 )
 
 target_link_libraries(nc LINK_PUBLIC
-	NUtil
 	Qt5::DBus
+	Qt5::Widgets
+	NUtil
 )
 
 set_property(TARGET nc PROPERTY C_STANDARD 99)
