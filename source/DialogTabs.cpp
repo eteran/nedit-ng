@@ -1,10 +1,10 @@
 
-#include <QMessageBox>
-#include <QtDebug>
-#include "TextBuffer.h"
 #include "DialogTabs.h"
 #include "DocumentWidget.h"
+#include "TextBuffer.h"
 #include "preferences.h"
+#include <QMessageBox>
+#include <QtDebug>
 
 //------------------------------------------------------------------------------
 // Name: 
@@ -16,7 +16,6 @@ DialogTabs::DialogTabs(DocumentWidget *document, QWidget *parent, Qt::WindowFlag
 	int emTabDist;
 	int useTabs;
 	int tabDist;
-
 
 	// Set default values 
     if(!document) {

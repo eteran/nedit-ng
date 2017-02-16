@@ -24,33 +24,28 @@
 *                                                                              *
 *******************************************************************************/
 
-#include <QApplication>
-#include <QInputDialog>
-#include <QClipboard>
-#include <QString>
-#include <QMimeData>
-
+#include "selection.h"
 #include "DocumentWidget.h"
 #include "MainWindow.h"
 #include "TextArea.h"
-#include "selection.h"
 #include "TextBuffer.h"
-#include "nedit.h"
 #include "file.h"
 #include "menu.h"
+#include "nedit.h"
 #include "preferences.h"
-#include "server.h"
 #include "util/fileUtils.h"
-
-#include <cstdlib>
-#include <cstdio>
+#include <QApplication>
+#include <QClipboard>
+#include <QInputDialog>
+#include <QMimeData>
+#include <QString>
 #include <cctype>
-#include <cstring>
 #include <climits>
-#include <sys/param.h>
-
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <glob.h>
-
+#include <sys/param.h>
 
 /*
 ** Extract the line and column number from the text string.

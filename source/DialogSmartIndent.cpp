@@ -1,19 +1,16 @@
 
 #include "DialogSmartIndent.h"
-#include "DialogSmartIndentCommon.h"
 #include "DialogLanguageModes.h"
-#include "SmartIndent.h"
+#include "DialogSmartIndentCommon.h"
+#include "DocumentWidget.h"
 #include "LanguageMode.h"
 #include "MainWindow.h"
-#include <QMessageBox>
-
-#include "macro.h"
-#include "smartIndent.h"
-
-#include "DocumentWidget.h"
-#include "preferences.h"
+#include "SmartIndent.h"
 #include "interpret.h"
-
+#include "macro.h"
+#include "preferences.h"
+#include "smartIndent.h"
+#include <QMessageBox>
 
 //------------------------------------------------------------------------------
 // Name: 

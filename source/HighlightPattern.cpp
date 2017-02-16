@@ -5,9 +5,6 @@
 HighlightPattern::HighlightPattern() : flags(0) {
 }
 
-HighlightPattern::~HighlightPattern() {
-}
-
 void HighlightPattern::swap(HighlightPattern &other) {
 	using std::swap;
 	

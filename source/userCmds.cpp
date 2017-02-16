@@ -26,15 +26,14 @@
 *                                                                              *
 *******************************************************************************/
 
-#include <QVector>
-#include <QTextStream>
-#include "macro.h"
 #include "userCmds.h"
 #include "MenuItem.h"
 #include "file.h"
-
-#include "preferences.h"
+#include "macro.h"
 #include "parse.h"
+#include "preferences.h"
+#include <QTextStream>
+#include <QVector>
 
 /* Descriptions of the current user programmed menu items for re-generating
    menus and processing shell, macro, and background menu selections */

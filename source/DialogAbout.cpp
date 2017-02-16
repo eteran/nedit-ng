@@ -99,24 +99,6 @@ QString buildCompiler() {
 
 }
 
-QString DialogAbout::createInfoString() {
-    return tr("nedit-ng version %1\n"
-              "\n"
-              "     Built on: %2, %3, %4\n"
-              "     Built at: %5, %6\n"
-              "      With Qt: %7\n"
-              "   Running Qt: %8\n"
-              "       Locale: %9\n").arg(tr("1.0.0"))
-                                    .arg(buildPlatform())
-                                    .arg(tr("%1 bit").arg(QSysInfo::WordSize))
-                                    .arg(buildCompiler())
-                                    .arg(QLatin1String(__DATE__))
-                                    .arg(QLatin1String(__TIME__))
-                                    .arg(QLatin1String(QT_VERSION_STR))
-                                    .arg(QString::fromLatin1(qVersion()))
-                                    .arg(QLocale::system().bcp47Name());
-}
-
 //------------------------------------------------------------------------------
 // Name: DialogAbout
 //------------------------------------------------------------------------------
@@ -137,7 +119,22 @@ DialogAbout::DialogAbout(QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f
 }
 
 //------------------------------------------------------------------------------
-// Name: ~DialogAbout
+// Name: createInfoString
 //------------------------------------------------------------------------------
-DialogAbout::~DialogAbout() {
+QString DialogAbout::createInfoString() {
+    return tr("nedit-ng version %1\n"
+              "\n"
+              "     Built on: %2, %3, %4\n"
+              "     Built at: %5, %6\n"
+              "      With Qt: %7\n"
+              "   Running Qt: %8\n"
+              "       Locale: %9\n").arg(tr("1.0.0"))
+                                    .arg(buildPlatform())
+                                    .arg(tr("%1 bit").arg(QSysInfo::WordSize))
+                                    .arg(buildCompiler())
+                                    .arg(QLatin1String(__DATE__))
+                                    .arg(QLatin1String(__TIME__))
+                                    .arg(QLatin1String(QT_VERSION_STR))
+                                    .arg(QString::fromLatin1(qVersion()))
+                                    .arg(QLocale::system().bcp47Name());
 }

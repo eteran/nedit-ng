@@ -1,11 +1,11 @@
 
-#include <QPushButton>
-#include <QFontDialog>
 #include "DialogFonts.h"
 #include "DocumentWidget.h"
+#include "TextArea.h"
 #include "nedit.h"
 #include "preferences.h"
-#include "TextArea.h"
+#include <QFontDialog>
+#include <QPushButton>
 
 //------------------------------------------------------------------------------
 // Name:

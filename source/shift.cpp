@@ -28,8 +28,8 @@
 
 #include "shift.h"
 #include "DocumentWidget.h"
-#include "TextBuffer.h"
 #include "TextArea.h"
+#include "TextBuffer.h"
 
 static std::string makeIndentString(int indent, int tabDist, int allowTabs);
 static char *shiftLineLeft(const char *line, int lineLen, int tabDist, int nChars);

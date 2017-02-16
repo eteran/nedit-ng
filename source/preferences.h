@@ -27,9 +27,9 @@
 #ifndef PREFERENCES_H_
 #define PREFERENCES_H_
 
-#include "util/string_view.h"
 #include "IndentStyle.h"
 #include "SearchType.h"
+#include "util/string_view.h"
 
 class QWidget;
 class QString;
@@ -43,26 +43,6 @@ constexpr const int PLAIN_LANGUAGE_MODE = -1;
 #define MAX_LANGUAGE_MODES 127
 
 #define MAX_TITLE_FORMAT_LEN 50
-
-#define MAX_FONT_LEN 100    /* maximum length for a font name */
-#define MAX_COLOR_LEN 30    /* maximum length for a color name */
-
-/* Identifiers for individual fonts in the help fonts list */
-enum HelpFonts {
-	HELP_FONT,
-	BOLD_HELP_FONT,
-	ITALIC_HELP_FONT,
-	BOLD_ITALIC_HELP_FONT,
-	FIXED_HELP_FONT,
-	BOLD_FIXED_HELP_FONT,
-	ITALIC_FIXED_HELP_FONT,
-	BOLD_ITALIC_FIXED_HELP_FONT,
-	HELP_LINK_FONT,
-	H1_HELP_FONT,
-	H2_HELP_FONT,
-	H3_HELP_FONT,
-	NUM_HELP_FONTS
-};
 
 bool GetPrefFocusOnRaise();
 bool GetPrefForceOSConversion();

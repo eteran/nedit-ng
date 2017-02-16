@@ -2,12 +2,14 @@
 #ifndef MAIN_WINDOW_H_
 #define MAIN_WINDOW_H_
 
-#include "smartIndentCBStruct.h"
+#include "FileFormats.h"
 #include "SearchDirection.h"
 #include "SearchType.h"
-#include "FileFormats.h"
+#include "smartIndentCBStruct.h"
 #include <QMainWindow>
 #include <QPointer>
+
+#include "ui_MainWindow.h"
 
 class TextArea;
 class DocumentWidget;
@@ -21,7 +23,6 @@ enum NewMode {
     New_Opposite
 };
 
-#include "ui_MainWindow.h"
 
 class MainWindow : public QMainWindow {
 	Q_OBJECT
@@ -50,42 +51,41 @@ private:
     virtual void closeEvent(QCloseEvent *event) override;
 
 public:
-    void parseGeometry(QString geometry);
-	void UpdateWindowTitle(DocumentWidget *doc);
 	DialogReplace *getDialogReplace() const;	
-	void UpdateWindowReadOnly(DocumentWidget *doc);
-	void SortTabBar();
 	int TabCount();    
-    QList<DocumentWidget *> openDocuments() const;
-    int updateLineNumDisp();
-    int updateGutterWidth();
-    void TempShowISearch(bool state);
-    QString PromptForExistingFileEx(const QString &path, const QString &prompt);
-    void forceShowLineNumbers();
-    void ShowLineNumbers(bool state);
-    void AddToPrevOpenMenu(const QString &filename);
-    static void ReadNEditDB();
-    static void WriteNEditDB();
-    void invalidatePrevOpenMenus();
-    void updatePrevOpenMenu();
-    void fileCB(DocumentWidget *window, const std::string &value);
-    void initToggleButtonsiSearch(SearchType searchType);
-    void EndISearchEx();
-    void BeginISearchEx(SearchDirection direction);
-    QString PromptForExistingFileEx(const QString &prompt);
-    void updateTipsFileMenuEx();
-    void updateTagsFileMenuEx();
+	void SortTabBar();
+	void UpdateWindowReadOnly(DocumentWidget *doc);
+	void UpdateWindowTitle(DocumentWidget *doc);
     DocumentWidget *currentDocument() const;
     DocumentWidget *documentAt(int index) const;
-    void setWindowSizeDefault(int rows, int cols);
-    void updateWindowSizeMenus();
-    void updateWindowSizeMenu();
+    QList<DocumentWidget *> openDocuments() const;
+    QString PromptForExistingFileEx(const QString &path, const QString &prompt);
+    QString PromptForExistingFileEx(const QString &prompt);
     QString PromptForNewFileEx(DocumentWidget *document, const QString &prompt, FileFormats *fileFormat, bool *addWrap);
     bool CheckPrefsChangesSavedEx();
     bool CloseAllDocumentInWindow();
+    int updateGutterWidth();
+    int updateLineNumDisp();
+    static void ReadNEditDB();
+    static void WriteNEditDB();
+    void AddToPrevOpenMenu(const QString &filename);
+    void BeginISearchEx(SearchDirection direction);
+    void EndISearchEx();
+    void ShowLineNumbers(bool state);
+    void TempShowISearch(bool state);
     void addToGroup(QActionGroup *group, QMenu *menu);
+    void fileCB(DocumentWidget *window, const std::string &value);
+    void forceShowLineNumbers();
+    void initToggleButtonsiSearch(SearchType searchType);
+    void invalidatePrevOpenMenus();
+    void parseGeometry(QString geometry);
+    void setWindowSizeDefault(int rows, int cols);
+    void updatePrevOpenMenu();
+    void updateTagsFileMenuEx();
+    void updateTipsFileMenuEx();
     void updateWindowMenu();
-
+    void updateWindowSizeMenu();
+    void updateWindowSizeMenus();
 
 public:
     static MainWindow *firstWindow();

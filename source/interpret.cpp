@@ -26,8 +26,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#include "DocumentWidget.h"
 #include "interpret.h"
+#include "DocumentWidget.h"
 #include "menu.h"
 #include <cmath>
 

@@ -2,11 +2,11 @@
 #include "NeditServer.h"
 #include "DocumentWidget.h"
 #include "MainWindow.h"
-#include "preferences.h"
-#include "macro.h"
-#include "server_common.h"
 #include "file.h"
+#include "macro.h"
+#include "preferences.h"
 #include "selection.h"
+#include "server_common.h"
 #include "util/fileUtils.h"
 #include <QApplication>
 #include <QDBusConnection>

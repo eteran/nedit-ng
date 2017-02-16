@@ -155,7 +155,6 @@ add_executable(nedit
 	TextSelection.cpp
 	UndoInfo.cpp
 	X11Colors.cpp
-	file.cpp
 	highlight.cpp
 	highlightData.cpp
 	interpret.cpp

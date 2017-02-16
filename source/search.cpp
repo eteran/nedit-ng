@@ -26,36 +26,34 @@
 *                                                                              *
 *******************************************************************************/
 
-#include <QApplication>
-#include <QMessageBox>
-#include <QClipboard>
-#include <QTimer>
-#include <QMimeData>
-#include "SignalBlocker.h"
-#include "DialogFind.h"
-#include "DialogReplace.h"
-#include "DialogMultiReplace.h"
-#include "DocumentWidget.h"
-#include "TextArea.h"
-#include "MainWindow.h"
-#include "WrapStyle.h"
 #include "search.h"
-#include "regularExp.h"
+#include "DialogFind.h"
+#include "DialogMultiReplace.h"
+#include "DialogReplace.h"
+#include "DocumentWidget.h"
+#include "MainWindow.h"
+#include "SignalBlocker.h"
+#include "TextArea.h"
 #include "TextBuffer.h"
-#include "nedit.h"
-#include "server.h"
-#include "userCmds.h"
-#include "preferences.h"
+#include "WrapStyle.h"
 #include "file.h"
 #include "highlight.h"
+#include "nedit.h"
+#include "preferences.h"
+#include "regularExp.h"
 #include "selection.h"
-#include <memory>
-
+#include "userCmds.h"
+#include <QApplication>
+#include <QClipboard>
+#include <QMessageBox>
+#include <QMimeData>
+#include <QTimer>
 #include <algorithm>
-#include <cstdlib>
-#include <cstdio>
-#include <cstring>
 #include <cctype>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <memory>
 #include <sys/param.h>
 
 int NHist = 0;

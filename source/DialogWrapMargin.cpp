@@ -1,8 +1,8 @@
 
 #include "DialogWrapMargin.h"
-#include <QMessageBox>
 #include "preferences.h"
 #include "DocumentWidget.h"
+#include <QMessageBox>
 
 DialogWrapMargin::DialogWrapMargin(DocumentWidget *document, QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f), document_(document) {
 	ui.setupUi(this);

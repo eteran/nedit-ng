@@ -27,32 +27,29 @@
 *                                                                              *
 *******************************************************************************/
 
+#include "highlightData.h"
+#include "DialogDrawingStyles.h"
+#include "DialogLanguageModes.h"
+#include "DialogSyntaxPatterns.h"
+#include "DocumentWidget.h"
+#include "FontType.h"
+#include "HighlightPattern.h"
+#include "HighlightStyle.h"
+#include "MainWindow.h"
+#include "PatternSet.h"
+#include "TextBuffer.h"
+#include "highlight.h"
+#include "nedit.h"
+#include "preferences.h"
+#include "regularExp.h"
 #include <QMessageBox>
 #include <QPushButton>
 #include <QResource>
 #include <QtDebug>
-#include "DialogLanguageModes.h"
-#include "DialogDrawingStyles.h"
-#include "DialogSyntaxPatterns.h"
-#include "DocumentWidget.h"
-#include "MainWindow.h"
-
-#include "highlightData.h"
-#include "FontType.h"
-#include "TextBuffer.h"
-#include "nedit.h"
-#include "highlight.h"
-#include "regularExp.h"
-#include "preferences.h"
-
-#include "PatternSet.h"
-#include "HighlightPattern.h"
-#include "HighlightStyle.h"
-
+#include <algorithm>
+#include <climits>
 #include <cstdio>
 #include <cstring>
-#include <climits>
-#include <algorithm>
 
 namespace {
 

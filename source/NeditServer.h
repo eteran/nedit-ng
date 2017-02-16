@@ -1,3 +1,4 @@
+
 #ifndef NEDIT_SERVER_H_
 #define NEDIT_SERVER_H_
 
@@ -7,6 +8,7 @@
 class NeditServer : public QObject {
     Q_OBJECT
     Q_CLASSINFO("D-BUS Interface", "com.nedit.IServer")
+
 public:
     explicit NeditServer(QObject *parent = Q_NULLPTR);
     virtual ~NeditServer() = default;

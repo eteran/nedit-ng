@@ -2,8 +2,8 @@
 #ifndef MENU_ITEM_H_
 #define MENU_ITEM_H_
 
-#include <QString>
 #include <QKeySequence>
+#include <QString>
 #include <cstdint>
 
 /* sources for command input and destinations for command output */
@@ -18,7 +18,7 @@ public:
 	MenuItem& operator=(const MenuItem &rhs) = default;
     MenuItem(MenuItem &&other)               = default;
     MenuItem& operator=(MenuItem &&rhs)      = default;
-	~MenuItem();
+	~MenuItem()                              = default;
 	
 public:
 	void swap(MenuItem &other);

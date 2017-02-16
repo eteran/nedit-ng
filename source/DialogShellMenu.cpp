@@ -1,14 +1,14 @@
 
-#include <QMessageBox>
-#include <QPushButton>
 #include "DialogShellMenu.h"
-#include "SignalBlocker.h"
+#include "MainWindow.h"
 #include "MenuItem.h"
+#include "SignalBlocker.h"
 #include "interpret.h"
 #include "macro.h"
 #include "preferences.h"
 #include "userCmds.h"
-#include "MainWindow.h"
+#include <QMessageBox>
+#include <QPushButton>
 
 //------------------------------------------------------------------------------
 // Name: DialogShellMenu

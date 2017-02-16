@@ -26,35 +26,32 @@
 *                                                                              *
 *******************************************************************************/
 
-#include <QMessageBox>
-#include <QString>
-#include <QPushButton>
-#include <QInputDialog>
-#include <QStandardPaths>
-#include <QtDebug>
-#include <QSettings>
-#include "DocumentWidget.h"
-#include "MainWindow.h"
-#include "LanguageMode.h"
-#include "Settings.h"
-
 #include "preferences.h"
+#include "DocumentWidget.h"
+#include "LanguageMode.h"
+#include "MainWindow.h"
+#include "Settings.h"
 #include "TextBuffer.h"
-#include "nedit.h"
-#include "search.h"
-#include "userCmds.h"
 #include "highlight.h"
 #include "highlightData.h"
+#include "nedit.h"
+#include "search.h"
 #include "smartIndent.h"
-#include "server.h"
 #include "tags.h"
-#include <cctype>
-#include <pwd.h>
-#include <memory>
-#include <unistd.h>
-#include <sys/types.h>
-
+#include "userCmds.h"
 #include "util/clearcase.h"
+#include <QInputDialog>
+#include <QMessageBox>
+#include <QPushButton>
+#include <QSettings>
+#include <QStandardPaths>
+#include <QString>
+#include <QtDebug>
+#include <cctype>
+#include <memory>
+#include <pwd.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #define N_WRAP_STYLES 3
 static const char *AutoWrapTypes[N_WRAP_STYLES + 3] = {"None", "Newline", "Continuous", "True", "False", nullptr};

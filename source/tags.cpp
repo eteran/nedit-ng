@@ -26,33 +26,33 @@
 *                                                                              *
 *******************************************************************************/
 
-#include <QApplication>
-#include <QMessageBox>
-#include "MainWindow.h"
-#include "DialogDuplicateTags.h"
-#include "DocumentWidget.h"
-#include "TextArea.h"
 
 #include "tags.h"
+#include "DialogDuplicateTags.h"
+#include "DocumentWidget.h"
+#include "MainWindow.h"
+#include "TextArea.h"
 #include "TextBuffer.h"
-#include "nedit.h"
+#include "calltips.h"
 #include "file.h"
+#include "nedit.h"
 #include "preferences.h"
 #include "search.h"
 #include "selection.h"
-#include "calltips.h"
 #include "util/fileUtils.h"
 #include "util/utils.h"
-
+#include <QApplication>
+#include <QMessageBox>
+#include <cctype>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <cctype>
-#include <unordered_map>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
 #include <sys/param.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <unordered_map>
+
 
 static int LookupTag(const char *name, const char **file, int *lang, const char **searchString, int *pos, const char **path, int search_type);
 static bool AddRelTagsFile(const char *tagSpec, const char *windowPath, int file_type);

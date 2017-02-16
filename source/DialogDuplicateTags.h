@@ -4,6 +4,7 @@
 
 #include <QDialog>
 #include "ui_DialogDuplicateTags.h"
+
 class DocumentWidget;
 class TextArea;
 

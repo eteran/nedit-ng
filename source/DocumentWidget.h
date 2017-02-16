@@ -2,37 +2,39 @@
 #ifndef DOCUMENT_WIDGET_H_
 #define DOCUMENT_WIDGET_H_
 
-#include <QDialog>
-#include <QPointer>
-#include <QWidget>
-#include <QProcess>
 
+#include "Bookmark.h"
+#include "IndentStyle.h"
+#include "LockReasons.h"
+#include "MenuItem.h"
 #include "SearchDirection.h"
 #include "SearchType.h"
 #include "ShowMatchingStyle.h"
-#include "ui_DocumentWidget.h"
-#include "Bookmark.h"
-#include "LockReasons.h"
+#include "string_view.h"
+#include "tags.h"
 #include "userCmds.h"
 #include "util/FileFormats.h"
-#include "string_view.h"
-#include "MenuItem.h"
-#include "IndentStyle.h"
-#include "tags.h"
 
-class UndoInfo;
-class TextBuffer;
+#include <QDialog>
+#include <QPointer>
+#include <QProcess>
+#include <QWidget>
+
+#include "ui_DocumentWidget.h"
+
 class MainWindow;
 class QFrame;
 class QLabel;
-class QSplitter;
 class QMenu;
+class QSplitter;
 class QTimer;
 class TextArea;
+class TextBuffer;
+class UndoInfo;
+struct HighlightData;
+struct WindowHighlightData;
 struct dragEndCBStruct;
 struct smartIndentCBStruct;
-struct WindowHighlightData;
-struct HighlightData;
 
 class DocumentWidget : public QWidget {
 	Q_OBJECT

@@ -2,12 +2,13 @@
 #ifndef DIALOG_FIND_H_
 #define DIALOG_FIND_H_
 
-#include <QDialog>
-#include "ui_DialogFind.h"
 #include "SearchDirection.h"
 #include "SearchType.h"
+
+#include <QDialog>
 #include <ctime>
 
+#include "ui_DialogFind.h"
 
 class MainWindow;
 class DocumentWidget;

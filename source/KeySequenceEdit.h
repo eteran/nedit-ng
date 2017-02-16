@@ -2,10 +2,10 @@
 #ifndef QKEYSEQUENCEEDIT_H
 #define QKEYSEQUENCEEDIT_H
 
-#include <QWidget>
-#include <QVector>
 #include <QKeySequence>
 #include <QToolButton>
+#include <QVector>
+#include <QWidget>
 
 class QLineEdit;
 

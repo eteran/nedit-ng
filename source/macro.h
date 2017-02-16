@@ -27,17 +27,16 @@
 #ifndef MACRO_H_
 #define MACRO_H_
 
-#include <QFuture>
 #include "nedit.h"
 #include "util/string_view.h"
+#include <QFuture>
 
-
-class QString;
-class QWidget;
-class Program;
-class QTimer;
 class DocumentWidget;
 class MainWindow;
+class Program;
+class QString;
+class QTimer;
+class QWidget;
 struct RestartData;
 
 #define REPEAT_TO_END -1

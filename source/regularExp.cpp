@@ -79,13 +79,13 @@
 
 #include "regularExp.h"
 
+#include <bitset>
+#include <cassert>
 #include <cctype>
 #include <climits>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <cassert>
-#include <bitset>
 
 /* The first byte of the regexp internal 'program' is a magic number to help
    gaurd against corrupted data; the compiled regex code really begins in the

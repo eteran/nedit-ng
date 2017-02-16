@@ -27,60 +27,56 @@
 *                                                                              *
 *******************************************************************************/
 
-#include <QDialogButtonBox>
-#include <QApplication>
-#include <QFileDialog>
-#include <QMessageBox>
-#include <QPushButton>
-#include <QStack>
-#include <QClipboard>
-#include <QString>
-#include <QWidget>
-#include <QtDebug>
-#include <QTimer>
-#include <QMimeData>
-#include <QFuture>
-#include <QtConcurrent>
-
-#include "Settings.h"
-#include "MainWindow.h"
+#include "macro.h"
 #include "DialogPrompt.h"
 #include "DialogPromptList.h"
 #include "DialogPromptString.h"
 #include "DialogRepeat.h"
 #include "DocumentWidget.h"
-#include "MainWindow.h"
-#include "TextArea.h"
-
-#include "macro.h"
 #include "HighlightPattern.h"
-#include "util/fileUtils.h"
 #include "IndentStyle.h"
+#include "MainWindow.h"
+#include "MainWindow.h"
 #include "RangesetTable.h"
 #include "SearchDirection.h"
+#include "Settings.h"
+#include "TextArea.h"
 #include "TextBuffer.h"
 #include "WrapStyle.h"
+#include "calltips.h"
 #include "highlight.h"
 #include "highlightData.h"
 #include "interpret.h"
 #include "parse.h"
 #include "search.h"
 #include "selection.h"
-#include "server.h"
 #include "smartIndent.h"
+#include "string_view.h"
 #include "tags.h"
 #include "userCmds.h"
-#include "calltips.h"
-#include "string_view.h"
-
+#include "util/fileUtils.h"
 #include "util/utils.h"
 
+#include <QApplication>
+#include <QClipboard>
+#include <QDialogButtonBox>
+#include <QFileDialog>
+#include <QFuture>
+#include <QMessageBox>
+#include <QMimeData>
+#include <QPushButton>
+#include <QStack>
+#include <QString>
+#include <QTimer>
+#include <QWidget>
+#include <QtConcurrent>
+#include <QtDebug>
+#include <fstream>
+#include <functional>
 #include <sys/param.h>
 #include <sys/stat.h>
-
-#include <functional>
 #include <type_traits>
-#include <fstream>
+
 
 
 namespace {

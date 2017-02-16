@@ -27,24 +27,22 @@
 *                                                                              *
 *******************************************************************************/
 
-#include <QMessageBox>
-#include <QX11Info>
-#include "DocumentWidget.h"
 #include "highlight.h"
+#include "DocumentWidget.h"
 #include "HighlightData.h"
 #include "HighlightPattern.h"
 #include "PatternSet.h"
 #include "ReparseContext.h"
 #include "StyleTableEntry.h"
+#include "TextArea.h"
 #include "TextBuffer.h"
 #include "WindowHighlightData.h"
+#include "X11Colors.h"
 #include "highlightData.h"
 #include "nedit.h"
 #include "preferences.h"
 #include "regularExp.h"
-#include "TextArea.h"
-#include "X11Colors.h"
-
+#include <QMessageBox>
 #include <algorithm>
 #include <climits>
 #include <cmath>
@@ -52,26 +50,25 @@
 #include <cstdlib>
 #include <cstring>
 
-
 // TODO(eteran): NOTE! while we've removed the limitation of strings being NUL terminated, it seems that the highlighter
 //               doesn't  know how to deal with NUL caracters so we need to fix that
 
 namespace {
 
 // How much re-parsing to do when an unfinished style is encountered 
-const int PASS_2_REPARSE_CHUNK_SIZE = 1000;
+constexpr const int PASS_2_REPARSE_CHUNK_SIZE = 1000;
 
 /* Initial forward expansion of parsing region in incremental reparsing,
    when style changes propagate forward beyond the original modification.
    This distance is increased by a factor of two for each subsequent step. */
-const int REPARSE_CHUNK_SIZE = 80;
+constexpr const int REPARSE_CHUNK_SIZE = 80;
 
 /* Meanings of style buffer characters (styles). Don't use plain 'A' or 'B';
    it causes problems with EBCDIC coding (possibly negative offsets when
    subtracting 'A'). */
-const char UNFINISHED_STYLE = ASCII_A;
+constexpr const char UNFINISHED_STYLE = ASCII_A;
 
-const char PLAIN_STYLE = (ASCII_A + 1);
+constexpr const char PLAIN_STYLE = (ASCII_A + 1);
 
 constexpr bool is_plain(int style) {
 	return (style == PLAIN_STYLE || style == UNFINISHED_STYLE);

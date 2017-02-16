@@ -2,8 +2,8 @@
 #ifndef REGEX_ERROR_H_
 #define REGEX_ERROR_H_
 
-#include <exception>
 #include <cstdarg>
+#include <exception>
 #include <string>
 
 class regex_error : public std::exception {

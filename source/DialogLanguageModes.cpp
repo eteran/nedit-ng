@@ -1,23 +1,23 @@
 
-#include <QtDebug>
-#include <QStringList>
-#include <QString>
-#include <QRegExpValidator>
-#include <QIntValidator>
-#include <QRegExp>
-#include <QMessageBox>
 #include "DialogLanguageModes.h"
-#include "MainWindow.h"
-#include "TextArea.h"
 #include "DocumentWidget.h"
-#include "SignalBlocker.h"
 #include "LanguageMode.h"
+#include "MainWindow.h"
+#include "SignalBlocker.h"
+#include "TextArea.h"
+#include "highlightData.h"
 #include "preferences.h"
 #include "regularExp.h"
-#include "tags.h"
-#include "highlightData.h"
 #include "smartIndent.h"
+#include "tags.h"
 #include "userCmds.h"
+#include <QIntValidator>
+#include <QMessageBox>
+#include <QRegExp>
+#include <QRegExpValidator>
+#include <QString>
+#include <QStringList>
+#include <QtDebug>
 #include <memory>
 
 //------------------------------------------------------------------------------

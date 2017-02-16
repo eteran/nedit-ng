@@ -1,7 +1,7 @@
 
 #include "DialogMoveDocument.h"
-#include "MainWindow.h"
 #include "DocumentWidget.h"
+#include "MainWindow.h"
 #include "TextArea.h"
 
 //------------------------------------------------------------------------------

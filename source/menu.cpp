@@ -26,9 +26,6 @@
 *                                                                              *
 *******************************************************************************/
 
-#include "menu.h"
-
-
 #ifdef REPLACE_SCOPE
 static void replaceScopeWindowCB(Widget w, XtPointer clientData, XtPointer callData);
 static void replaceScopeSelectionCB(Widget w, XtPointer clientData, XtPointer callData);

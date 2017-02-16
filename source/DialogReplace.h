@@ -2,10 +2,10 @@
 #ifndef DIALOG_REPLACE_H_
 #define DIALOG_REPLACE_H_
 
+#include "SearchDirection.h"
+#include "SearchType.h"
 #include <QDialog>
 #include <QPointer>
-#include "SearchType.h"
-#include "SearchDirection.h"
 #include <ctime>
 
 #ifdef REPLACE_SCOPE
@@ -14,8 +14,6 @@
 #else
 #include "ui_DialogReplace.h"
 #endif
-
-
 
 class MainWindow;
 class DocumentWidget;

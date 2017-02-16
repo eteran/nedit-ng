@@ -1,19 +1,19 @@
 
-#include <QtDebug>
-#include <QMessageBox>
-#include <QIntValidator>
-#include "SignalBlocker.h"
-#include "MainWindow.h"
-#include "DocumentWidget.h"
 #include "DialogSyntaxPatterns.h"
 #include "DialogLanguageModes.h"
-#include "PatternSet.h"
-#include "LanguageMode.h"
-#include "HighlightStyle.h"
-#include "preferences.h"
-#include "highlightData.h"
+#include "DocumentWidget.h"
 #include "HighlightData.h"
+#include "HighlightStyle.h"
+#include "LanguageMode.h"
+#include "MainWindow.h"
+#include "PatternSet.h"
+#include "SignalBlocker.h"
 #include "WindowHighlightData.h"
+#include "highlightData.h"
+#include "preferences.h"
+#include <QIntValidator>
+#include <QMessageBox>
+#include <QtDebug>
 
 //------------------------------------------------------------------------------
 // Name: DialogSyntaxPatterns

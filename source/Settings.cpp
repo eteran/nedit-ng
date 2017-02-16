@@ -1,14 +1,13 @@
 
 #include "Settings.h"
-#include <QStandardPaths>
-#include <QSettings>
-#include "WrapStyle.h"
 #include "IndentStyle.h"
-#include "ShowMatchingStyle.h"
 #include "SearchType.h"
-#include "search.h" // For ReplaceScope enum
+#include "ShowMatchingStyle.h"
+#include "WrapStyle.h"
 #include "nedit.h" // For some global constants such as NEDIT_DEFAULT_FG, etc..
-#include "preferences.h" // for some constants such as HELP_FONT
+#include "search.h" // For ReplaceScope enum
+#include <QSettings>
+#include <QStandardPaths>
 
 // New styles added in 5.2 for auto-upgrade
 #define ADD_5_2_STYLES " Pointer:#660000:Bold\nRegex:#009944:Bold\nWarning:brown2:Italic"

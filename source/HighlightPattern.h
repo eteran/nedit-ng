@@ -8,11 +8,11 @@
 class HighlightPattern {
 public:
 	HighlightPattern();
-	HighlightPattern(const HighlightPattern &) = default;
+	HighlightPattern(const HighlightPattern &)            = default;
 	HighlightPattern &operator=(const HighlightPattern &) = default;
-	HighlightPattern(HighlightPattern &&) = default;
-	HighlightPattern &operator=(HighlightPattern &&) = default;	
-	~HighlightPattern();
+	HighlightPattern(HighlightPattern &&)                 = default;
+	HighlightPattern &operator=(HighlightPattern &&)      = default;	
+	~HighlightPattern()                                   = default;
 	
 public:
 	bool operator==(const HighlightPattern &rhs) const;

@@ -15,10 +15,10 @@ public:
 	LockReasons() : reasons_(0) {
 	}
 	
-	LockReasons(const LockReasons &) = default;
-	LockReasons(LockReasons &&) = default;
+	LockReasons(const LockReasons &)            = default;
+	LockReasons(LockReasons &&)                 = default;
 	LockReasons& operator=(const LockReasons &) = default;
-	LockReasons& operator=(LockReasons &&) = default;
+	LockReasons& operator=(LockReasons &&)      = default;
 
 public:
 	bool isUserLocked() const {

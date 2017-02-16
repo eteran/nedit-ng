@@ -2,10 +2,10 @@
 #ifndef LANGUAGE_MODE_H_
 #define LANGUAGE_MODE_H_
 
+#include "IndentStyle.h"
+#include "WrapStyle.h"
 #include <QString>
 #include <QStringList>
-#include "WrapStyle.h"
-#include "IndentStyle.h"
 
 class LanguageMode {
 public:
@@ -18,10 +18,10 @@ public:
 	
 public:
 	LanguageMode();
-	LanguageMode(const LanguageMode &) = default;
+	LanguageMode(const LanguageMode &)            = default;
 	LanguageMode& operator=(const LanguageMode &) = default;
-	LanguageMode(LanguageMode &&) = default;
-	LanguageMode& operator=(LanguageMode &&) = default;
+	LanguageMode(LanguageMode &&)                 = default;
+	LanguageMode& operator=(LanguageMode &&)      = default;
 	
 public:
 	void swap(LanguageMode &other);

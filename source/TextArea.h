@@ -2,30 +2,30 @@
 #ifndef TEXT_AREA_H_
 #define TEXT_AREA_H_
 
-#include <QFont>
+#include "BlockDragTypes.h"
+#include "CallTip.h"
+#include "CursorStyles.h"
+#include "DragStates.h"
+#include "StyleTableEntry.h"
+#include "string_view.h"
+#include <QAbstractScrollArea>
 #include <QColor>
-#include <QTime>
 #include <QFlags>
+#include <QFont>
 #include <QPointer>
 #include <QRect>
-#include <QAbstractScrollArea>
+#include <QTime>
 #include <QVector>
-#include "StyleTableEntry.h"
-#include "CursorStyles.h"
-#include "CallTip.h"
-#include "string_view.h"
-#include "BlockDragTypes.h"
-#include "DragStates.h"
 
-class TextBuffer;
-class TextArea;
-class QShortcut;
+class CallTipWidget;
 class QMenu;
 class QPoint;
+class QShortcut;
 class QTimer;
-struct smartIndentCBStruct;
+class TextArea;
+class TextBuffer;
 struct dragEndCBStruct;
-class CallTipWidget;
+struct smartIndentCBStruct;
 
 typedef void (*unfinishedStyleCBProcEx)(const TextArea *, int, const void *);
 typedef void (*cursorMovedCBEx)(TextArea *, void *);

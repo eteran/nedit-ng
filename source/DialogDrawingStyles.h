@@ -38,7 +38,7 @@ private:
 private:
 	Ui::DialogDrawingStyles ui;
 	QListWidgetItem *previous_;
-	QString                 styleName_;
+	QString styleName_;
 };
 
 #endif

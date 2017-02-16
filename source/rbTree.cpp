@@ -33,9 +33,9 @@
 
 #include "rbTree.h"
 
+#include <algorithm>
 #include <cstdlib>
 #include <cstring>
-#include <algorithm>
 
 namespace {
 

@@ -2,9 +2,9 @@
 #ifndef STYLE_TABLE_ENTRY_H_
 #define STYLE_TABLE_ENTRY_H_
 
-#include <QString>
-#include <QFont>
 #include <QColor>
+#include <QFont>
+#include <QString>
 
 class StyleTableEntry {
 public:

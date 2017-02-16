@@ -25,17 +25,20 @@
 * Written by Mark Edel                                                         *
 *                                                                              *
 *******************************************************************************/
-#include <QApplication>
-#include <QClipboard>
+
 #include "TextBuffer.h"
 #include "Rangeset.h"
 #include "RangesetTable.h"
+
+#include <QApplication>
+#include <QClipboard>
 #include <algorithm>
+#include <cassert>
 #include <cctype>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <cassert>
+
 
 namespace {
 

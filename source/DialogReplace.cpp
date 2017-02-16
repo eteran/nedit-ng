@@ -1,20 +1,18 @@
 
-#include <QApplication>
-#include <QKeyEvent>
-#include <QtDebug>
-#include <QMessageBox>
-#include <QClipboard>
-#include <QMimeData>
-
 #include "DialogReplace.h"
-#include "MainWindow.h"
-#include "DocumentWidget.h"
 #include "DialogMultiReplace.h"
+#include "DocumentWidget.h"
+#include "MainWindow.h"
 #include "nedit.h"
-#include "search.h" // for the search type enum
-#include "server.h"
 #include "preferences.h"
 #include "regularExp.h"
+#include "search.h" // for the search type enum
+#include <QApplication>
+#include <QClipboard>
+#include <QKeyEvent>
+#include <QMessageBox>
+#include <QMimeData>
+#include <QtDebug>
 #include <memory>
 
 //------------------------------------------------------------------------------

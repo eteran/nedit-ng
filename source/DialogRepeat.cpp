@@ -1,10 +1,10 @@
 
-#include <QMessageBox>
-#include <QIntValidator>
 #include "DialogRepeat.h"
-#include "TextBuffer.h"
 #include "DocumentWidget.h"
+#include "TextBuffer.h"
 #include "macro.h"
+#include <QIntValidator>
+#include <QMessageBox>
 
 DialogRepeat::DialogRepeat(DocumentWidget *document, QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f), document_(document) {
 	ui.setupUi(this);

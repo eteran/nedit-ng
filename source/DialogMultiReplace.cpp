@@ -1,12 +1,12 @@
 
-#include <QMessageBox>
 #include "DialogMultiReplace.h"
-#include "MainWindow.h"
-#include "DocumentWidget.h"
 #include "DialogReplace.h"
-#include "search.h"
+#include "DocumentWidget.h"
+#include "MainWindow.h"
 #include "nedit.h"
 #include "preferences.h"
+#include "search.h"
+#include <QMessageBox>
 
 DialogMultiReplace::DialogMultiReplace(MainWindow *window, DocumentWidget *document, DialogReplace *replace, QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f), window_(window), document_(document), replace_(replace) {
 	ui.setupUi(this);

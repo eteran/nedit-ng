@@ -1,14 +1,14 @@
 
 #include "DialogColors.h"
+#include "DocumentWidget.h"
+#include "MainWindow.h"
+#include "X11Colors.h"
+#include "highlight.h"
+#include "nedit.h" // (for some constants)
+#include "preferences.h"
 #include <QColorDialog>
 #include <QMessageBox>
 
-#include "MainWindow.h"
-#include "preferences.h"
-#include "DocumentWidget.h"
-#include "highlight.h"
-#include "nedit.h" // (for some constants)
-#include "X11Colors.h"
 
 // TODO(eteran): use QColor for all the validation and all that... eventually
 
@@ -41,7 +41,6 @@ DialogColors::DialogColors(QWidget *parent, Qt::WindowFlags f) : QDialog(parent,
 // Name: 
 //------------------------------------------------------------------------------
 DialogColors::~DialogColors() {
-
 }
 
 //------------------------------------------------------------------------------

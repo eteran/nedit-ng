@@ -1,8 +1,8 @@
 
 #include "DialogWindowSize.h"
-#include <QMessageBox>
-#include <QIntValidator>
 #include "preferences.h"
+#include <QIntValidator>
+#include <QMessageBox>
 
 DialogWindowSize::DialogWindowSize(QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f) {
 	ui.setupUi(this);

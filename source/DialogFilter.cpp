@@ -1,7 +1,7 @@
 
+#include "DialogFilter.h"
 #include <QKeyEvent>
 #include <QtDebug>
-#include "DialogFilter.h"
 
 //------------------------------------------------------------------------------
 // Name: 

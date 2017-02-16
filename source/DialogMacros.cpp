@@ -1,13 +1,13 @@
 
-#include <QMessageBox>
 #include "DialogMacros.h"
-#include "SignalBlocker.h"
-#include "macro.h"
+#include "MainWindow.h"
 #include "MenuItem.h"
+#include "SignalBlocker.h"
 #include "interpret.h"
+#include "macro.h"
 #include "preferences.h"
 #include "userCmds.h"
-#include "MainWindow.h"
+#include <QMessageBox>
 
 //------------------------------------------------------------------------------
 // Name: DialogMacros

@@ -27,8 +27,8 @@
 #ifndef NEDIT_H_
 #define NEDIT_H_
 
-#include "TextSelection.h"
 #include "ShowMatchingStyle.h"
+#include "TextSelection.h"
 
 #define NEDIT_VERSION  5
 #define NEDIT_REVISION 6
@@ -42,9 +42,6 @@
 #define NEDIT_DEFAULT_HI_BG     "red"          /* matching parens. */
 #define NEDIT_DEFAULT_LINENO_FG "black"
 #define NEDIT_DEFAULT_CURSOR_FG "black"
-
-#define NEDIT_DEFAULT_HELP_FG   "black"
-#define NEDIT_DEFAULT_HELP_BG   "#cccccc"
 
 /* Tuning parameters */
 #define SEARCHMAX 5119         /* Maximum length of search/replace strings */

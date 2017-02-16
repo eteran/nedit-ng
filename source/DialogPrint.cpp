@@ -1,37 +1,37 @@
 
-#include <QtDebug>
 #include "DialogPrint.h"
-#include <QRegExpValidator>
-#include <QMessageBox>
-#include <QSettings>
 #include "Settings.h"
 #include "preferences.h"
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/param.h>
-#include <unistd.h>
+#include <QMessageBox>
+#include <QRegExpValidator>
+#include <QSettings>
+#include <QtDebug>
 #include <dirent.h>
+#include <sys/param.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 namespace {
 
 /* Separator between directory references in PATH environmental variable */
-const char SEPARATOR = ':';
+constexpr const char SEPARATOR = ':';
 
 /* Maximum text string lengths */
-const int MAX_QUEUE_STR = 60u;
-const int MAX_HOST_STR  = 100u;
+constexpr const int MAX_QUEUE_STR = 60u;
+constexpr const int MAX_HOST_STR  = 100u;
 
 
-const int PRINT_COMMAND_INDEX = 0;
-const int COPIES_OPTION_INDEX = 1;
-const int QUEUE_OPTION_INDEX  = 2;
-const int NAME_OPTION_INDEX   = 3;
-const int HOST_OPTION_INDEX   = 4;
-const int DEFAULT_QUEUE_INDEX = 5;
-const int DEFAULT_HOST_INDEX  = 6;
+constexpr const int PRINT_COMMAND_INDEX = 0;
+constexpr const int COPIES_OPTION_INDEX = 1;
+constexpr const int QUEUE_OPTION_INDEX  = 2;
+constexpr const int NAME_OPTION_INDEX   = 3;
+constexpr const int HOST_OPTION_INDEX   = 4;
+constexpr const int DEFAULT_QUEUE_INDEX = 5;
+constexpr const int DEFAULT_HOST_INDEX  = 6;
 
 /* Maximum length of an error returned by IssuePrintCommand() */
-const int MAX_PRINT_ERROR_LENGTH = 1024;
+constexpr const int MAX_PRINT_ERROR_LENGTH = 1024;
 
 
 QString PrintCommand;  /* print command string */

@@ -1,7 +1,7 @@
 
+#include "DialogExecuteCommand.h"
 #include <QKeyEvent>
 #include <QtDebug>
-#include "DialogExecuteCommand.h"
 
 //------------------------------------------------------------------------------
 // name:

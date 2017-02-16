@@ -26,29 +26,29 @@
 *                                                                              *
 *******************************************************************************/
 
-#include <QMessageBox>
-#include <QResource>
-#include <QtDebug>
-#include "DialogLanguageModes.h"
-#include "DialogSmartIndentCommon.h"
-#include "DialogSmartIndent.h"
-#include "DocumentWidget.h"
-#include "IndentStyle.h"
-#include "WrapStyle.h"
-#include "SmartIndent.h"
 
 #include "smartIndent.h"
+#include "DialogLanguageModes.h"
+#include "DialogSmartIndent.h"
+#include "DialogSmartIndentCommon.h"
+#include "DocumentWidget.h"
+#include "IndentStyle.h"
+#include "SmartIndent.h"
+#include "TextBuffer.h"
+#include "WrapStyle.h"
 #include "interpret.h"
 #include "macro.h"
 #include "nedit.h"
 #include "parse.h"
 #include "preferences.h"
 #include "shift.h"
-#include "TextBuffer.h"
 
+#include <QMessageBox>
+#include <QResource>
+#include <QtDebug>
+#include <climits>
 #include <cstdio>
 #include <cstring>
-#include <climits>
 
 
 namespace {
@@ -468,15 +468,14 @@ QString WriteSmartIndentCommonStringEx() {
 
 	/* Protect newlines and backslashes from translation by the resource
 	   reader */
-    QString escapedStr = QString::fromStdString(outStr);
 
 	// If there's a trailing escaped newline, remove it 
-	int len = escapedStr.size();
-	if (len > 1 && escapedStr[len - 1] == QLatin1Char('\n') && escapedStr[len - 2] == QLatin1Char('\\')) {
-		escapedStr.resize(len - 2);
+	const size_t len = outStr.size();
+	if (len > 1 && outStr[len - 1] == '\n' && outStr[len - 2] == '\\') {
+		outStr.resize(len - 2);
 	}
 	
-	return escapedStr;
+	return QString::fromStdString(outStr);
 }
 
 /*

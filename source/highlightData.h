@@ -28,17 +28,15 @@
 #define HIGHLIGHT_DATA_H_
 
 #include "highlight.h"
-#include "util/string_view.h"
 #include "preferences.h"
-#include <string>
+#include "util/string_view.h"
 #include <QList>
-
+#include <string>
 
 class PatternSet;
 class QString;
 class HighlightStyle;
 class MainWindow;
-
 
 bool LoadHighlightStringEx(const QString &inString);
 bool LoadStylesStringEx(const QString &string);

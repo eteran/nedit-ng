@@ -27,12 +27,11 @@
 #ifndef SELECTION_H_
 #define SELECTION_H_
 
-class QString;
 class DocumentWidget;
-class TextArea;
 class MainWindow;
 class QChar;
-
+class QString;
+class TextArea;
 
 int StringToLineAndCol(const char *text, int *lineNum, int *column);
 QString GetAnySelectionEx(DocumentWidget *window);

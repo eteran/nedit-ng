@@ -2,9 +2,9 @@
 #ifndef SETTINGS_H_
 #define SETTINGS_H_
 
-#include <QString>
-#include <QObject>
 #include <QFont>
+#include <QObject>
+#include <QString>
 
 class Settings : QObject {
     Q_OBJECT

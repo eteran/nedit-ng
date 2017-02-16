@@ -28,15 +28,15 @@
 *                                                                              *
 *                                                                              *
 *******************************************************************************/
-#include "TextBuffer.h"
+
 #include "Rangeset.h"
 #include "RangesetTable.h"
-
+#include "TextBuffer.h"
+#include <algorithm>
+#include <cctype>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <cctype>
-#include <algorithm>
 
 namespace {
 

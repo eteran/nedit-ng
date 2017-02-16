@@ -32,6 +32,7 @@
 
 class DocumentWidget;
 class TextArea;
+class QString;
 
 struct tagFile {
 	tagFile     *next;
@@ -44,6 +45,7 @@ struct tagFile {
 
 extern tagFile *TagsFileList; // list of loaded tags files
 extern tagFile *TipsFileList; // list of loaded calltips tag files
+
 extern int searchMode;
 extern const char *tagName;
 extern bool globAnchored;

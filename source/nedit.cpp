@@ -30,16 +30,13 @@
 *                                                                              *
 *******************************************************************************/
 
-#include <QApplication>
-#include <QDBusConnection>
-#include "DialogPrint.h"
-#include "MainWindow.h"
-#include "DocumentWidget.h"
-#include "DialogAbout.h"
-#include "NeditServer.h"
 
 #include "nedit.h"
-#include "util/fileUtils.h"
+#include "DialogAbout.h"
+#include "DialogPrint.h"
+#include "DocumentWidget.h"
+#include "MainWindow.h"
+#include "NeditServer.h"
 #include "file.h"
 #include "interpret.h"
 #include "macro.h"
@@ -48,7 +45,10 @@
 #include "regularExp.h"
 #include "selection.h"
 #include "tags.h"
+#include "util/fileUtils.h"
 
+#include <QApplication>
+#include <QDBusConnection>
 #include <algorithm>
 #include <cctype>
 #include <climits>

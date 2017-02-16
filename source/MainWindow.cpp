@@ -1,62 +1,64 @@
 
-#include <QtDebug>
-#include <QToolButton>
-#include <QShortcut>
-#include <QFileDialog>
-#include <QFile>
-#include <QInputDialog>
-#include <QClipboard>
-#include <QMessageBox>
-#include <QMimeData>
 #include "MainWindow.h"
-#include "Settings.h"
+#include "DialogAbout.h"
+#include "DialogColors.h"
 #include "DialogExecuteCommand.h"
-#include "DialogSmartIndent.h"
-#include "DialogWrapMargin.h"
+#include "DialogFilter.h"
+#include "DialogFind.h"
+#include "DialogFonts.h"
+#include "DialogLanguageModes.h"
 #include "DialogMacros.h"
 #include "DialogRepeat.h"
-#include "DialogWindowBackgroundMenu.h"
+#include "DialogReplace.h"
 #include "DialogShellMenu.h"
-#include "DialogFilter.h"
-#include "DialogWindowSize.h"
-#include "SignalBlocker.h"
-#include "DialogLanguageModes.h"
+#include "DialogSmartIndent.h"
 #include "DialogTabs.h"
-#include "DialogFonts.h"
-#include "DialogColors.h"
+#include "DialogWindowBackgroundMenu.h"
+#include "DialogWindowSize.h"
+#include "DialogWindowTitle.h"
+#include "DialogWrapMargin.h"
+#include "DocumentWidget.h"
+#include "LanguageMode.h"
+#include "MenuItem.h"
+#include "Settings.h"
+#include "SignalBlocker.h"
 #include "TextArea.h"
 #include "TextBuffer.h"
-#include "DialogAbout.h"
-#include "DocumentWidget.h"
-#include "DialogWindowTitle.h"
-#include "DialogReplace.h"
-#include "DialogFind.h"
-#include "selection.h"
 #include "clearcase.h"
-#include "MenuItem.h"
 #include "file.h"
-#include "preferences.h"
-#include "shift.h"
-#include "utils.h"
-#include "memory.h"
-#include "regularExp.h"
-#include "tags.h"
-#include "LanguageMode.h"
-#include "nedit.h"
-#include "selection.h"
-#include "search.h"
-#include "macro.h"
 #include "highlight.h"
 #include "highlightData.h"
+#include "macro.h"
+#include "memory.h"
+#include "nedit.h"
+#include "preferences.h"
+#include "regularExp.h"
+#include "search.h"
+#include "selection.h"
+#include "selection.h"
+#include "shift.h"
+#include "tags.h"
 #include "util/fileUtils.h"
-#include <memory>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/param.h>
-#include <sys/time.h>
-#include <unistd.h>
+#include "utils.h"
+
+#include <QClipboard>
+#include <QFile>
+#include <QFileDialog>
+#include <QInputDialog>
+#include <QMessageBox>
+#include <QMimeData>
+#include <QShortcut>
+#include <QToolButton>
+#include <QtDebug>
 #include <cmath>
 #include <glob.h>
+#include <memory>
+#include <sys/param.h>
+#include <sys/stat.h>
+#include <sys/time.h>
+#include <sys/types.h>
+#include <unistd.h>
+
 
 namespace {
 
@@ -510,7 +512,7 @@ void MainWindow::on_action_New_triggered() {
 //------------------------------------------------------------------------------
 void MainWindow::action_New(NewMode mode) {
 
-    bool openInTab;
+    bool openInTab = true;
 
     switch(mode) {
     case New_Prefs:
@@ -533,7 +535,7 @@ void MainWindow::action_New(NewMode mode) {
         path = doc->path_;
     }
 
-    EditNewFileEx(openInTab ? this : nullptr, QString(), false, QString(), path);
+    MainWindow::EditNewFileEx(openInTab ? this : nullptr, QString(), false, QString(), path);
     MainWindow::CheckCloseDimEx();
 }
 

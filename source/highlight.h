@@ -29,6 +29,14 @@
 
 #include "util/string_view.h"
 
+class DocumentWidget;
+class HighlightPattern;
+class PatternSet;
+class QColor;
+class QString;
+class TextArea;
+class WindowHighlightData;
+
 // Pattern flags for modifying pattern matching behavior
 enum {
 	PARSE_SUBPATS_FROM_START = 1,
@@ -39,12 +47,6 @@ enum {
 // Don't use plain 'A' or 'B' for style indices, it causes problems
 // with EBCDIC coding (possibly negative offsets when subtracting 'A').
 constexpr auto ASCII_A = static_cast<char>(65);
-
-class PatternSet;
-class HighlightPattern;
-class WindowHighlightData;
-class TextArea;
-class DocumentWidget;
 
 HighlightPattern *FindPatternOfWindowEx(DocumentWidget *window, const QString &name);
 int HighlightCodeOfPosEx(DocumentWidget *document, int pos);

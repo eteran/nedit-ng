@@ -9,7 +9,7 @@ class DialogAbout : public QDialog {
 	Q_OBJECT
 public:
 	DialogAbout(QWidget *parent = 0, Qt::WindowFlags f = 0);
-	virtual ~DialogAbout() override;
+	virtual ~DialogAbout() = default;
 
 public:
     static QString createInfoString();

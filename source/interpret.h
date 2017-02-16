@@ -30,11 +30,15 @@
 #include "nedit.h"
 #include "rbTree.h"
 #include "util/string_view.h"
-#include <map>
 #include <QList>
+#include <map>
 
 class DocumentWidget;
+class Program;
 class QString;
+struct ArrayEntry;
+struct DataValue;
+struct Symbol;
 
 #define STACK_SIZE         1024  // Maximum stack size
 #define MAX_SYM_LEN        100   // Max. symbol name length
@@ -113,11 +117,6 @@ enum ExecReturnCodes {
 };
 
 #define ARRAY_DIM_SEP "\034"
-
-struct DataValue;
-struct ArrayEntry;
-class Program;
-struct Symbol;
 
 union Inst {
 	int (*func)();

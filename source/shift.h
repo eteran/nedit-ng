@@ -27,8 +27,8 @@
 #ifndef SHIFT_H_
 #define SHIFT_H_
 
-#include "util/string_view.h"
 #include "ShiftDirection.h"
+#include "util/string_view.h"
 
 class DocumentWidget;
 class TextArea;

@@ -2,7 +2,6 @@
 #include "ListWidget.h"
 #include <QMouseEvent>
 
-
 ListWidget::ListWidget(QWidget *parent) : QListWidget(parent) {
 }
 

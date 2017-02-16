@@ -1,14 +1,14 @@
 
+#include "DialogWindowTitle.h"
+#include "DocumentWidget.h"
+#include "MainWindow.h"
+#include "nedit.h"
+#include "preferences.h"
+#include "util/clearcase.h"
+#include "util/fileUtils.h"
+#include "util/utils.h"
 #include <QRegExp>
 #include <QRegExpValidator>
-#include "DialogWindowTitle.h"
-#include "MainWindow.h"
-#include "DocumentWidget.h"
-#include "util/clearcase.h"
-#include "preferences.h"
-#include "nedit.h"
-#include "util/utils.h"
-#include "util/fileUtils.h"
 
 struct UpdateState {
 	bool fileNamePresent;
