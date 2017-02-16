@@ -133,7 +133,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
-
+    // TODO(eteran): start the server if needed!
     QDBusInterface iface(QLatin1String(SERVICE_NAME), QLatin1String("/Server"), QLatin1String(""), QDBusConnection::sessionBus());
     if(iface.isValid()) {
         QDBusReply<void> reply = iface.call(QLatin1String("processCommand"), commandLine.serverRequest);

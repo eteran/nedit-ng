@@ -10,7 +10,7 @@ public:
     static CommandRecorder *getInstance();
 
 private:
-    CommandRecorder(QObject *parent = Q_NULLPTR);
+    explicit CommandRecorder(QObject *parent = Q_NULLPTR);
 	virtual ~CommandRecorder() = default;
 };
 

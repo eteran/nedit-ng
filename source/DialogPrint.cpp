@@ -22,8 +22,6 @@ const int MAX_QUEUE_STR = 60u;
 const int MAX_HOST_STR  = 100u;
 
 
-const int N_PRINT_PREFS = 7; /* must agree with number of preferences below */
-
 const int PRINT_COMMAND_INDEX = 0;
 const int COPIES_OPTION_INDEX = 1;
 const int QUEUE_OPTION_INDEX  = 2;
@@ -134,7 +132,6 @@ DialogPrint::~DialogPrint() {
 void DialogPrint::LoadPrintPreferencesEx(bool lookForFlpr) {
 
     static char defaultQueue[MAX_QUEUE_STR];
-    static char defaultHost[MAX_HOST_STR];
 
     QString filename = Settings::configFile();
     QSettings settings(filename, QSettings::IniFormat);
@@ -143,6 +140,8 @@ void DialogPrint::LoadPrintPreferencesEx(bool lookForFlpr) {
     /* check if flpr is installed, and otherwise choose appropriate
        printer per system type */
     if (lookForFlpr && flprPresent()) {
+
+        static char defaultHost[MAX_HOST_STR];
 
         getFlprQueueDefault(defaultQueue);
         getFlprHostDefault(defaultHost);

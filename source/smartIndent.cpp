@@ -73,6 +73,12 @@ static char *readSIMacro(const char **inPtr);
 static QString readSIMacroEx(const char **inPtr);
 static int LoadSmartIndentCommonString(const char *inString);
 static int LoadSmartIndentString(char *inString);
+
+
+/**
+ * @brief defaultCommonMacros
+ * @return
+ */
 QByteArray defaultCommonMacros() {
 
 	static bool loaded = false;

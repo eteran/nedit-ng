@@ -334,36 +334,36 @@ bool GetPrefSaveOldVersion() {
     return g_Settings.saveOldVersion;
 }
 
-void SetPrefSearchDlogs(int state) {
+void SetPrefSearchDlogs(bool state) {
     if(g_Settings.searchDialogs != state) {
         PrefsHaveChanged = true;
     }
     g_Settings.searchDialogs = state;
 }
 
-int GetPrefSearchDlogs() {
+bool GetPrefSearchDlogs() {
     return g_Settings.searchDialogs;
 }
 
-void SetPrefBeepOnSearchWrap(int state) {
+void SetPrefBeepOnSearchWrap(bool state) {
     if(g_Settings.beepOnSearchWrap != state) {
         PrefsHaveChanged = true;
     }
     g_Settings.beepOnSearchWrap = state;
 }
 
-int GetPrefBeepOnSearchWrap() {
+bool GetPrefBeepOnSearchWrap() {
     return g_Settings.beepOnSearchWrap;
 }
 
-void SetPrefKeepSearchDlogs(int state) {
+void SetPrefKeepSearchDlogs(bool state) {
     if(g_Settings.retainSearchDialogs != state) {
         PrefsHaveChanged = true;
     }
     g_Settings.retainSearchDialogs = state;
 }
 
-int GetPrefKeepSearchDlogs() {
+bool GetPrefKeepSearchDlogs() {
     return g_Settings.retainSearchDialogs;
 }
 
@@ -720,7 +720,7 @@ QString GetPrefTagFile() {
     return g_Settings.tagFile;
 }
 
-void SetPrefSmartTags(int state) {
+void SetPrefSmartTags(bool state) {
     if(g_Settings.smartTags != state) {
         PrefsHaveChanged = true;
     }

@@ -34,7 +34,7 @@ enum UndoTypes {
 class UndoInfo {
 public:
 	UndoInfo(UndoTypes undoType, int start, int end);
-	~UndoInfo();
+    ~UndoInfo() = default;
 	UndoInfo(const UndoInfo &) = default;
 	UndoInfo(UndoInfo &&) = default;
 	UndoInfo &operator=(const UndoInfo &) = default;

@@ -66,7 +66,6 @@ void ShiftSelectionEx(DocumentWidget *window, TextArea *area, ShiftDirection dir
     int newEndPos;
     int cursorPos;
     int origLength;
-    int emTabDist;
     int shiftDist;
     TextBuffer *buf = window->buffer_;
     std::string text;
@@ -104,7 +103,7 @@ void ShiftSelectionEx(DocumentWidget *window, TextArea *area, ShiftDirection dir
 
     // shift the text by the appropriate distance
     if (byTab) {
-        emTabDist = area->getEmulateTabs();
+        int emTabDist = area->getEmulateTabs();
         shiftDist = emTabDist == 0 ? buf->tabDist_ : emTabDist;
     } else
         shiftDist = 1;
@@ -123,7 +122,7 @@ void ShiftSelectionEx(DocumentWidget *window, TextArea *area, ShiftDirection dir
 ** tab if emulated tabs are turned on, or a hardware tab if not).
 */
 static void shiftRectEx(DocumentWidget *window, TextArea *area, int direction, bool byTab, int selStart, int selEnd, int rectStart, int rectEnd) {
-    int offset, emTabDist;
+    int offset;
     TextBuffer *buf = window->buffer_;
 
     // Make sure selStart and SelEnd refer to whole lines
@@ -132,7 +131,7 @@ static void shiftRectEx(DocumentWidget *window, TextArea *area, int direction, b
 
     // Calculate the the left/right offset for the new rectangle
     if (byTab) {
-        emTabDist = area->getEmulateTabs();
+        int emTabDist = area->getEmulateTabs();
         offset = emTabDist == 0 ? buf->tabDist_ : emTabDist;
     } else
         offset = 1;
@@ -223,17 +222,13 @@ void FillSelectionEx(DocumentWidget *window, TextArea *area) {
     TextBuffer *buf = window->buffer_;
     int left;
     int right;
-    int nCols;
     int len;
     int rectStart;
     int rectEnd;
     bool isRect;
     int rightMargin;
-    int wrapMargin;
 
-    auto textD = area;
-
-    int insertPos = textD->TextGetCursorPos();
+    int insertPos = area->TextGetCursorPos();
     int hasSelection = window->buffer_->primary_.selected;
     std::string text;
 
@@ -270,8 +265,8 @@ void FillSelectionEx(DocumentWidget *window, TextArea *area) {
         rightMargin = rectEnd - rectStart;
     } else {
 
-        wrapMargin = area->getWrapMargin();
-        nCols      = area->getColumns();
+        int wrapMargin = area->getWrapMargin();
+        int nCols      = area->getColumns();
 
         rightMargin = (wrapMargin == 0) ? nCols : wrapMargin;
     }
@@ -292,9 +287,9 @@ void FillSelectionEx(DocumentWidget *window, TextArea *area) {
     /* Find a reasonable cursor position.  Usually insertPos is best, but
        if the text was indented, positions can shift */
     if (hasSelection && isRect) {
-        textD->TextSetCursorPos(buf->cursorPosHint_);
+        area->TextSetCursorPos(buf->cursorPosHint_);
     } else {
-        textD->TextSetCursorPos(insertPos < left ? left : (insertPos > left + len ? left + len : insertPos));
+        area->TextSetCursorPos(insertPos < left ? left : (insertPos > left + len ? left + len : insertPos));
     }
 }
 
@@ -745,13 +740,12 @@ static std::string makeIndentString(int indent, int tabDist, int allowTabs) {
 ** Find the boundaries of the paragraph containing pos
 */
 static int findParagraphEnd(TextBuffer *buf, int startPos) {
-	char c;
-	int pos;
+
 	static char whiteChars[] = " \t";
 
-	pos = buf->BufEndOfLine(startPos) + 1;
+    int pos = buf->BufEndOfLine(startPos) + 1;
 	while (pos < buf->BufGetLength()) {
-		c = buf->BufGetCharacter(pos);
+        char c = buf->BufGetCharacter(pos);
 		if (c == '\n')
 			break;
 		if (strchr(whiteChars, c) != nullptr)
@@ -762,16 +756,17 @@ static int findParagraphEnd(TextBuffer *buf, int startPos) {
 	return pos < buf->BufGetLength() ? pos : buf->BufGetLength();
 }
 static int findParagraphStart(TextBuffer *buf, int startPos) {
-	char c;
-	int pos, parStart;
+
 	static char whiteChars[] = " \t";
 
 	if (startPos == 0)
 		return 0;
-	parStart = buf->BufStartOfLine(startPos);
-	pos = parStart - 2;
-	while (pos > 0) {
-		c = buf->BufGetCharacter(pos);
+
+    int parStart = buf->BufStartOfLine(startPos);
+    int pos      = parStart - 2;
+
+    while (pos > 0) {
+        char c = buf->BufGetCharacter(pos);
 		if (c == '\n')
 			break;
 		if (strchr(whiteChars, c) != nullptr)

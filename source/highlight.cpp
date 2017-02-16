@@ -192,7 +192,6 @@ void SyntaxHighlightModifyCBEx(int pos, int nInserted, int nDeleted, int nRestyl
 void StartHighlightingEx(DocumentWidget *document, bool warn) {
 
     char prevChar = '\0';
-    int i;
 
     /* Find the pattern set matching the window's current
        language mode, tell the user if it can't be done */
@@ -219,7 +218,7 @@ void StartHighlightingEx(DocumentWidget *document, bool warn) {
     char *stylePtr = styleString;
 
     if (!highlightData->pass1Patterns) {
-        for (i = 0; i < bufLength; i++) {
+        for (int i = 0; i < bufLength; i++) {
             *stylePtr++ = UNFINISHED_STYLE;
         }
     } else {
@@ -1010,12 +1009,11 @@ int HighlightLengthOfCodeFromPosEx(DocumentWidget *window, int pos, int *checkCo
 int StyleLengthOfCodeFromPosEx(DocumentWidget *window, int pos) {
     auto highlightData = static_cast<WindowHighlightData *>(window->highlightData_);
     TextBuffer *styleBuf = highlightData ? highlightData->styleBuffer : nullptr;
-    int hCode = 0;
     int oldPos = pos;
 
 
     if (styleBuf) {
-        hCode = (uint8_t)styleBuf->BufGetCharacter(pos);
+        int hCode = (uint8_t)styleBuf->BufGetCharacter(pos);
         if (!hCode)
             return 0;
 
@@ -1201,17 +1199,12 @@ static void handleUnparsedRegionCBEx(const TextArea *area, int pos, const void *
 ** with the parsing result.
 */
 static void incrementalReparse(WindowHighlightData *highlightData, TextBuffer *buf, int pos, int nInserted, const QString &delimiters) {
-    int beginParse;
-    int endParse;
+
     int endAt;
-    int lastMod;
-    int parseInStyle;
-    int nPasses;
 
 	TextBuffer *styleBuf = highlightData->styleBuffer;
 	HighlightData *pass1Patterns = highlightData->pass1Patterns;
 	HighlightData *pass2Patterns = highlightData->pass2Patterns;
-	HighlightData *startPattern;
 	ReparseContext *context = &highlightData->contextRequirements;
 		
     QByteArray parentStyles = highlightData->parentStyles;
@@ -1219,14 +1212,14 @@ static void incrementalReparse(WindowHighlightData *highlightData, TextBuffer *b
 	/* Find the position "beginParse" at which to begin reparsing.  This is
 	   far enough back in the buffer such that the guranteed number of
 	   lines and characters of context are examined. */
-	beginParse = pos;
-	parseInStyle = findSafeParseRestartPos(buf, highlightData, &beginParse);
+    int beginParse = pos;
+    int parseInStyle = findSafeParseRestartPos(buf, highlightData, &beginParse);
 
 	/* Find the position "endParse" at which point it is safe to stop
 	   parsing, unless styles are getting changed beyond the last
 	   modification */
-	lastMod = pos + nInserted;
-	endParse = forwardOneContext(buf, context, lastMod);
+    int lastMod = pos + nInserted;
+    int endParse = forwardOneContext(buf, context, lastMod);
 
 	/*
 	** Parse the buffer from beginParse, until styles compare
@@ -1235,11 +1228,11 @@ static void incrementalReparse(WindowHighlightData *highlightData, TextBuffer *b
 	** parsing ends before endParse, start again one level up in the
 	** pattern hierarchy
 	*/
-	for (nPasses = 0;; nPasses++) {
+    for (int nPasses = 0;; nPasses++) {
 
 		/* Parse forward from beginParse to one context beyond the end
 		   of the last modification */
-		startPattern = patternOfStyle(pass1Patterns, parseInStyle);
+        HighlightData *startPattern = patternOfStyle(pass1Patterns, parseInStyle);
 		/* If there is no pattern matching the style, it must be a pass-2
 		   style. It that case, it is (probably) safe to start parsing with
 		   the root pass-1 pattern again. Anyway, passing a nullptr-pointer to
