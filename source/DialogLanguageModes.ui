@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>764</width>
-    <height>591</height>
+    <width>806</width>
+    <height>552</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -274,7 +274,7 @@
          <item>
           <widget class="QRadioButton" name="radioIndentSmart">
            <property name="text">
-            <string>&amp;Smart-indent</string>
+            <string>S&amp;mart-indent</string>
            </property>
           </widget>
          </item>
@@ -303,7 +303,7 @@
          <item>
           <widget class="QRadioButton" name="radioWrapNone">
            <property name="text">
-            <string>&amp;No wrapping</string>
+            <string>No &amp;wrapping</string>
            </property>
           </widget>
          </item>

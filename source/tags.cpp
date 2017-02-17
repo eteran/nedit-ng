@@ -83,7 +83,7 @@ struct Tag;
 
 enum searchDirection { FORWARD, BACKWARD };
 
-static int loadTagsFile(const std::string &tagSpec, int index, int recLevel);
+static int loadTagsFile(const QString &tagSpec, int index, int recLevel);
 static int fakeRegExSearchEx(view::string_view buffer, const char *searchString, int *startPos, int *endPos);
 static size_t hashAddr(const char *key);
 static void updateMenuItems();
@@ -99,7 +99,7 @@ static void rcs_free(const char *str);
 static int searchLine(char *line, const char *regex);
 static void rstrip(char *dst, const char *src);
 static int nextTFBlock(FILE *fp, char *header, char **tiptext, int *lineAt, int *lineNo);
-static int loadTipsFile(const std::string &tipsFile, int index, int recLevel);
+static int loadTipsFile(const QString &tipsFile, int index, int recLevel);
 
 
 struct Tag {
@@ -392,7 +392,7 @@ bool AddRelTagsFile(const char *tagSpec, const char *windowPath, int file_type) 
 
 		NormalizePathname(pathName);
 
-		for (t = FileList; t && t->filename != pathName; t = t->next) {
+        for (t = FileList; t && t->filename != QString::fromLatin1(pathName); t = t->next) {
 			;
 		}
 		
@@ -405,7 +405,7 @@ bool AddRelTagsFile(const char *tagSpec, const char *windowPath, int file_type) 
 		}
 		
 		t = new tagFile;
-		t->filename = pathName;
+        t->filename = QString::fromLatin1(pathName);
 		t->loaded   = false;
 		t->date     = statbuf.st_mtime;
 		t->index    = ++tagFileIndex;
@@ -475,7 +475,7 @@ int AddTagsFile(const char *tagSpec, int file_type) {
 		}
 		NormalizePathname(pathName);
 
-		for (t = FileList; t && t->filename != pathName; t = t->next)
+        for (t = FileList; t && t->filename != QString::fromLatin1(pathName); t = t->next)
 			;
 		if (t) {
 			/* This file is already in the list.  It's easiest to just
@@ -492,7 +492,7 @@ int AddTagsFile(const char *tagSpec, int file_type) {
 		}
 
 		t = new tagFile;
-		t->filename = pathName;
+        t->filename = QString::fromLatin1(pathName);
 		t->loaded   = false;
 		t->date     = statbuf.st_mtime;
 		t->index    = ++tagFileIndex;
@@ -548,8 +548,10 @@ int DeleteTagsFile(const char *tagSpec, int file_type, bool force_unload) {
 		NormalizePathname(pathName);
 
 		for (last = nullptr, t = FileList; t; last = t, t = t->next) {
-			if (t->filename != pathName)
+            if (t->filename != QString::fromLatin1(pathName)) {
 				continue;
+            }
+
 			// Don't unload tips files with nonzero refcounts unless forced 
 			if (searchMode == TIP && !force_unload && --t->refcount > 0) {
 				break;
@@ -738,9 +740,9 @@ static int scanETagsLine(const char *line, const char *tagPath, int index, char 
 				sprintf(incPath, "%s%s", tagPath, file);
 
 				CompressPathname(incPath);
-				return loadTagsFile(incPath, index, recLevel + 1);
+                return loadTagsFile(QString::fromLatin1(incPath), index, recLevel + 1);
 			} else {
-				return loadTagsFile(file, index, recLevel + 1);
+                return loadTagsFile(QString::fromLatin1(file), index, recLevel + 1);
 			}
 		}
 	}
@@ -754,7 +756,7 @@ enum TFT { TFT_CHECK, TFT_ETAGS, TFT_CTAGS };
 ** Loads tagsFile into the hash table.
 ** Returns the number of added tag specifications.
 */
-static int loadTagsFile(const std::string &tagsFile, int index, int recLevel) {
+static int loadTagsFile(const QString &tagsFile, int index, int recLevel) {
 	FILE *fp = nullptr;
 	char line[MAXLINE];
 	char file[MAXPATHLEN], tagPath[MAXPATHLEN];
@@ -769,7 +771,7 @@ static int loadTagsFile(const std::string &tagsFile, int index, int recLevel) {
 	 * definition source files are (in most cases) specified relatively inside
 	 * the tags file to the tags files directory.
 	 */
-	if (!ResolvePath(tagsFile.c_str(), resolvedTagsFile)) {
+    if (!ResolvePath(tagsFile.toLatin1().data(), resolvedTagsFile)) {
 		return 0;
 	}
 
@@ -830,8 +832,8 @@ static bool LookupTagFromList(tagFile *FileList, const char *name, const char **
 			int load_status;		
 		
 			if (tf->loaded) {
-				if (stat(tf->filename.c_str(), &statbuf) != 0) { //  
-					fprintf(stderr, TAG_STS_ERR_FMT, tf->filename.c_str());
+                if (stat(tf->filename.toLatin1().data(), &statbuf) != 0) { //
+                    fprintf(stderr, TAG_STS_ERR_FMT, tf->filename.toLatin1().data());
 				} else {
 					if (tf->date == statbuf.st_mtime) {
 						// current tags file tf is already loaded and up to date 
@@ -850,10 +852,10 @@ static bool LookupTagFromList(tagFile *FileList, const char *name, const char **
 			}
 
 			if (load_status) {
-				if (stat(tf->filename.c_str(), &statbuf) != 0) {
+                if (stat(tf->filename.toLatin1().data(), &statbuf) != 0) {
 					if (!tf->loaded) {
 						// if tf->loaded == true we already have seen the error msg 
-						fprintf(stderr, TAG_STS_ERR_FMT, tf->filename.c_str());
+                        fprintf(stderr, TAG_STS_ERR_FMT, tf->filename.toLatin1().data());
 					}
 				} else {
 					tf->date = statbuf.st_mtime;
@@ -1673,7 +1675,7 @@ static void free_alias_list(tf_alias *alias) {
 ** at which it appears--the exact same way ctags indexes source-code.  That's
 ** why calltips and tags share so much code.
 */
-static int loadTipsFile(const std::string &tipsFile, int index, int recLevel) {
+static int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
 	FILE *fp = nullptr;
 	char header[MAXLINE];
 	
@@ -1686,13 +1688,13 @@ static int loadTipsFile(const std::string &tipsFile, int index, int recLevel) {
 	tf_alias *aliases = nullptr, *tmp_alias;
 
 	if (recLevel > MAX_TAG_INCLUDE_RECURSION_LEVEL) {
-		fprintf(stderr, "nedit: Warning: Reached recursion limit before loading calltips file:\n\t%s\n", tipsFile.c_str());
+        fprintf(stderr, "nedit: Warning: Reached recursion limit before loading calltips file:\n\t%s\n", tipsFile.toLatin1().data());
 		return 0;
 	}
 
 	// find the tips file 
 	// Allow ~ in Unix filenames 
-	strncpy(tipPath, tipsFile.c_str(), MAXPATHLEN); // ExpandTilde is destructive 
+    strncpy(tipPath, tipsFile.toLatin1().data(), MAXPATHLEN); // ExpandTilde is destructive
 	ExpandTilde(tipPath);
 	if (!ResolvePath(tipPath, resolvedTipsFile))
 		return 0;
@@ -1731,7 +1733,7 @@ static int loadTipsFile(const std::string &tipsFile, int index, int recLevel) {
 				/* fprintf(stderr,
 				    "nedit: DEBUG: including tips file '%s'\n",
 				    tipIncFile); */
-				nTipsAdded += loadTipsFile(tipIncFile, index, recLevel + 1);
+                nTipsAdded += loadTipsFile(QString::fromLatin1(tipIncFile), index, recLevel + 1);
 			}
 			delete [] body;
 			break;
@@ -1743,7 +1745,7 @@ static int loadTipsFile(const std::string &tipsFile, int index, int recLevel) {
 			if (langMode == PLAIN_LANGUAGE_MODE && strcmp(header, "Plain")) {
 				fprintf(stderr, "nedit: Error reading calltips file:\n\t%s\n"
 				                "Unknown language mode: \"%s\"\n",
-				        tipsFile.c_str(), header);
+                        tipsFile.toLatin1().data(), header);
 				langMode = oldLangMode;
 			}
 			break;

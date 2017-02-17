@@ -50,7 +50,7 @@
          </sizepolicy>
         </property>
         <property name="text">
-         <string>/a/very/long/path/used/as/example/ 0 bytes</string>
+         <string/>
         </property>
        </widget>
       </item>

@@ -2638,7 +2638,7 @@ void MainWindow::updateTipsFileMenuEx() {
     const tagFile *tf = TipsFileList;
     while(tf) {
 
-        auto filename = QString::fromStdString(tf->filename);
+        auto filename = tf->filename;
         QAction *action = tipsMenu->addAction(filename);
         action->setData(filename);
 
@@ -2655,7 +2655,7 @@ void MainWindow::updateTagsFileMenuEx() {
     const tagFile *tf = TagsFileList;
     while(tf) {
 
-        auto filename = QString::fromStdString(tf->filename);
+        auto filename = tf->filename;
         QAction *action = tagsMenu->addAction(filename);
         action->setData(filename);
 

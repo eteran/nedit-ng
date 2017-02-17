@@ -8348,6 +8348,7 @@ void TextArea::TextDKillCalltip(int calltipID) {
     }
 }
 
+// TODO(eteran): it is probably better to make text a QString
 int TextArea::TextDShowCalltip(view::string_view text, bool anchored, int pos, int hAlign, int vAlign, int alignMode) {
     static int StaticCalltipID = 1;
 

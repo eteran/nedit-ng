@@ -28,15 +28,14 @@
 #define TAGS_H_
 
 #include <ctime>
-#include <string>
+#include <QString>
 
 class DocumentWidget;
 class TextArea;
-class QString;
 
 struct tagFile {
 	tagFile     *next;
-	std::string filename;
+    QString     filename;
 	time_t      date;
 	bool        loaded;
 	short       index;
