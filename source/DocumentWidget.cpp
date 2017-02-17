@@ -928,30 +928,28 @@ void DocumentWidget::smartIndentCallback(TextArea *area, smartIndentCBStruct *da
 void DocumentWidget::RaiseFocusDocumentWindow(bool focus) {
     RaiseDocument();
     if(auto win = toWindow()) {
+
         if(!win->isMaximized()) {
             win->showNormal();
         }
-    }
 
-    if(focus) {
-        setFocus();
+        if(focus) {
+            win->activateWindow();
+            //setFocus();
+        }
     }
 }
 
-/*
-** raise the document and its shell window and focus depending on pref.
-*/
+/**
+ * @brief DocumentWidget::RaiseDocumentWindow
+ * raise the document and its shell window and focus depending on pref.
+ */
 void DocumentWidget::RaiseDocumentWindow() {
     RaiseFocusDocumentWindow(GetPrefFocusOnRaise());
 }
 
-
 void DocumentWidget::documentRaised() {
-    /* Turn on syntax highlight that might have been deferred.
-       NB: this must be done after setting the document as
-           XmNworkWindow and managed, else the parent shell
-       this may shrink on some this-managers such as
-       metacity, due to changes made in UpdateWMSizeHints().*/
+    // Turn on syntax highlight that might have been deferred.
     if (highlightSyntax_ && !highlightData_) {
         StartHighlightingEx(this, false);
     }
@@ -992,11 +990,6 @@ void DocumentWidget::RaiseDocument() {
         //               window/document here. I think there is likely a better
         //               approach
 
-
-        // document already on top?
-        if(win->ui.tabWidget->currentWidget() == this) {
-            return;
-        }
 
         // set the document as top document
         // show the new top document

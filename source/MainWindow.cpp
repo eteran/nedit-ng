@@ -3537,7 +3537,6 @@ void MainWindow::action_Next_Document() {
     int nextIndex     = currentIndex + 1;
     int tabCount      = ui.tabWidget->count();
 
-    // TODO(eteran): implement crossing windows supports
     if(!crossWindows) {
         if(nextIndex == tabCount) {
             ui.tabWidget->setCurrentIndex(0);
@@ -3549,16 +3548,25 @@ void MainWindow::action_Next_Document() {
 
 			QList<MainWindow *> windows = MainWindow::allWindows();
 			int thisIndex  = windows.indexOf(this);
-			int nextWindow = (thisIndex + 1);
+            int nextIndex = (thisIndex + 1);
 			
-			if(nextWindow == windows.size()) {
-				nextWindow = 0;
+            if(nextIndex == windows.size()) {
+                nextIndex = 0;
 			}
-			
-			windows[nextWindow]->raise();
-			windows[nextWindow]->ui.tabWidget->setCurrentIndex(0);
-			
 
+            // raise the window set the focus to the first document in it
+            MainWindow *nextWindow = windows[nextIndex];
+            QWidget *firstWidget = nextWindow->ui.tabWidget->widget(0);
+
+            // NOTE(eteran): I *think* I've seen this be null,
+            // but not sure why it would happen
+            Q_ASSERT(qobject_cast<DocumentWidget *>(firstWidget));
+
+            if(auto document = qobject_cast<DocumentWidget *>(firstWidget)) {
+                document->RaiseFocusDocumentWindow(true);
+                nextWindow->ui.tabWidget->setCurrentWidget(document);
+            }
+			
         } else {
             ui.tabWidget->setCurrentIndex(nextIndex);
         }	
@@ -3575,6 +3583,33 @@ void MainWindow::action_Prev_Document() {
     if(!crossWindows) {
         if(currentIndex == 0) {
             ui.tabWidget->setCurrentIndex(tabCount - 1);
+        } else {
+            ui.tabWidget->setCurrentIndex(prevIndex);
+        }
+    } else {
+        if(currentIndex == 0) {
+
+            QList<MainWindow *> windows = MainWindow::allWindows();
+            int thisIndex  = windows.indexOf(this);
+            int nextIndex = (thisIndex - 1);
+
+            if(thisIndex == 0) {
+                nextIndex = windows.size() - 1;
+            }
+
+            // raise the window set the focus to the first document in it
+            MainWindow *nextWindow = windows[nextIndex];
+            QWidget *lastWidget = nextWindow->ui.tabWidget->widget(nextWindow->ui.tabWidget->count() - 1);
+
+            // NOTE(eteran): I *think* I've seen this be null,
+            // but not sure why it would happen
+            Q_ASSERT(qobject_cast<DocumentWidget *>(lastWidget));
+
+            if(auto document = qobject_cast<DocumentWidget *>(lastWidget)) {
+                document->RaiseFocusDocumentWindow(true);
+                nextWindow->ui.tabWidget->setCurrentWidget(document);
+            }
+
         } else {
             ui.tabWidget->setCurrentIndex(prevIndex);
         }
