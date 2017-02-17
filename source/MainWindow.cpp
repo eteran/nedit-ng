@@ -3999,7 +3999,9 @@ void MainWindow::closeEvent(QCloseEvent *event) {
     QList<MainWindow *> windows = MainWindow::allWindows();
     if(windows.size() == 1) {
         // this is only window, then this is the same as exit
+        event->ignore();
         Q_EMIT on_action_Exit_triggered();
+
     } else {
 
         if (TabCount() == 1) {
