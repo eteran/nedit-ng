@@ -2963,7 +2963,7 @@ int DocumentWidget::CloseFileAndWindow(int preResponse) {
 ** Close a document, or an editor window
 */
 void DocumentWidget::CloseWindow() {
-#if 1
+
     MainWindow *window = toWindow();
     if(!window) {
         return;
@@ -2982,11 +2982,6 @@ void DocumentWidget::CloseWindow() {
 
     // Unload the default tips files for this language mode if necessary
     UnloadLanguageModeTipsFileEx();
-
-#if 0
-    // Destroy the file closed property for this file
-    DeleteFileClosedPropertyEx(this);
-#endif
 
     /* if this is the last window, or must be kept alive temporarily because
        it's running the macro calling us, don't close it, make it Untitled */
@@ -3064,9 +3059,13 @@ void DocumentWidget::CloseWindow() {
     // so it's more automatic
     window->ui.action_Detach_Tab->setEnabled(window->TabCount() > 1);
     window->ui.action_Move_Tab_To->setEnabled(MainWindow::allWindows().size() > 1);
-#endif
+
     // deallocate the window data structure
     delete this;
+
+    if(window->TabCount() == 0) {
+        delete window;
+    }
 }
 
 DocumentWidget *DocumentWidget::documentFrom(TextArea *area) {
@@ -3620,16 +3619,20 @@ void DocumentWidget::bannerTimeoutProc() {
     SetModeMessageEx(message);
 }
 
-void DocumentWidget::actionClose(const QString &mode) {
+void DocumentWidget::actionClose(CloseMode mode) {
 
-    int preResponse = PROMPT_SBC_DIALOG_RESPONSE;
+    int preResponse;
 
-    if (mode == QLatin1String("prompt")) {
+    switch(mode) {
+    case CloseMode::Close_Prompt:
         preResponse = PROMPT_SBC_DIALOG_RESPONSE;
-    } else if (mode == QLatin1String("save")) {
+        break;
+    case CloseMode::Close_Save:
         preResponse = YES_SBC_DIALOG_RESPONSE;
-    } else if (mode == QLatin1String("nosave")) {
+        break;
+    case CloseMode::CLose_NoSave:
         preResponse = NO_SBC_DIALOG_RESPONSE;
+        break;
     }
 
     if(auto win = toWindow()) {

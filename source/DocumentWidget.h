@@ -36,6 +36,13 @@ struct WindowHighlightData;
 struct dragEndCBStruct;
 struct smartIndentCBStruct;
 
+// TODO(eteran): find a better place for this enum
+enum CloseMode {
+    Close_Prompt,
+    Close_Save,
+    CLose_NoSave
+};
+
 class DocumentWidget : public QWidget {
 	Q_OBJECT
 	friend class MainWindow;
@@ -161,7 +168,7 @@ public:
     void Undo();
     void UnloadLanguageModeTipsFileEx();
     void UpdateMarkTable(int pos, int nInserted, int nDeleted);
-    void actionClose(const QString &mode);
+    void actionClose(CloseMode mode);
     void addRedoItem(UndoInfo *redo);
     void addUndoItem(UndoInfo *undo);
     void addWrapNewlines();

@@ -569,7 +569,7 @@ void MainWindow::on_action_Open_triggered() {
 //------------------------------------------------------------------------------
 void MainWindow::on_action_Close_triggered() {
     if(auto doc = currentDocument()) {
-        doc->actionClose(QString());
+        doc->actionClose(CloseMode::Close_Prompt);
     }
 }
 
@@ -1676,7 +1676,7 @@ void MainWindow::on_tabWidget_customContextMenuRequested(const QPoint &pos) {
                 if(selected == newTab) {
                     MainWindow::EditNewFileEx(this, QString(), false, QString(), document->path_);
                 } else if(selected == closeTab) {
-                    document->actionClose(QString());
+                    document->actionClose(CloseMode::Close_Prompt);
                 } else if(selected == detachTab) {
                     if(TabCount() > 1) {
                         auto new_window = new MainWindow(nullptr);
@@ -3579,7 +3579,6 @@ void MainWindow::action_Prev_Document() {
     int prevIndex     = currentIndex - 1;
     int tabCount      = ui.tabWidget->count();
 
-    // TODO(eteran): implement crossing windows supports
     if(!crossWindows) {
         if(currentIndex == 0) {
             ui.tabWidget->setCurrentIndex(tabCount - 1);

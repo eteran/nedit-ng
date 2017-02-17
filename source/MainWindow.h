@@ -23,7 +23,6 @@ enum NewMode {
     New_Opposite
 };
 
-
 class MainWindow : public QMainWindow {
 	Q_OBJECT
 	friend class DocumentWidget;
