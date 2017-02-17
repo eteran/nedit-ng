@@ -325,7 +325,6 @@ std::string ShiftTextEx(view::string_view text, ShiftDirection direction, int ta
 	while (true) {
 		if (textPtr == text.end() || *textPtr == '\n') {
 		
-			// TODO(eteran): avoid the string copy... wish we had string_view!
 			auto segment = view::substr(lineStartPtr, text.end());
 			
 			std::string shiftedLineString = (direction == SHIFT_RIGHT) ? 

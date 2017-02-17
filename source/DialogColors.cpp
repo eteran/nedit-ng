@@ -9,9 +9,6 @@
 #include <QColorDialog>
 #include <QMessageBox>
 
-
-// TODO(eteran): use QColor for all the validation and all that... eventually
-
 //------------------------------------------------------------------------------
 // Name: 
 //------------------------------------------------------------------------------

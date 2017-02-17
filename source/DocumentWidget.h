@@ -39,6 +39,7 @@ struct smartIndentCBStruct;
 class DocumentWidget : public QWidget {
 	Q_OBJECT
 	friend class MainWindow;
+	
 public:
 	DocumentWidget(const QString &name, QWidget *parent = 0, Qt::WindowFlags f = 0);
 	virtual ~DocumentWidget() = default;
@@ -52,34 +53,34 @@ private Q_SLOTS:
     void processFinished(int exitCode, QProcess::ExitStatus exitStatus);
 
 public Q_SLOTS:
-    void setLanguageMode(const QString &mode);
-    void open(const char *fullpath);
-    void bannerTimeoutProc();
-    void findIncrAP(const QString &searchString, SearchDirection direction, SearchType searchType, bool searchWraps, bool isContinue);
-    void findAP(const QString &searchString, SearchDirection direction, SearchType searchType, bool searchWraps);
-    void replaceAP(const QString &searchString, const QString &replaceString, SearchDirection direction, SearchType searchType, bool searchWraps);
-    void replaceFindAP(const QString &searchString, const QString &replaceString, SearchDirection direction, SearchType searchType, bool searchWraps);
-    void replaceAllAP(const QString &searchString, const QString &replaceString, SearchType searchType);
-    void replaceInSelAP(const QString &searchString, const QString &replaceString, SearchType searchType);
-    void markAP(QChar ch);
-    void gotoMarkAP(QChar label, bool extendSel);
-    void GotoMatchingCharacter(TextArea *area);
-    void SelectToMatchingCharacter(TextArea *area);
-    void FindDefCalltip(TextArea *area, const char *arg);
-    void findDefinitionHelper(TextArea *area, const char *arg, Mode search_type);
     int findDef(TextArea *area, const char *value, Mode search_type);
-    void FindDefinition(TextArea *area, const char *arg);
-    void execAP(TextArea *area, const QString &command);
-    void ExecShellCommandEx(TextArea *area, const QString &command, bool fromMacro);
-    void PrintWindow(TextArea *area, bool selectedOnly);
-    void PrintStringEx(const std::string &string, const QString &jobName);
-    void splitPane();
-    void closePane();
     void BeginSmartIndentEx(int warn);
-    void moveDocument(MainWindow *fromWindow);
-    void ShowStatsLine(bool state);
-    void gotoAP(TextArea *area, QStringList args);
+    void ExecShellCommandEx(TextArea *area, const QString &command, bool fromMacro);
+    void FindDefCalltip(TextArea *area, const char *arg);
+    void FindDefinition(TextArea *area, const char *arg);
+    void GotoMatchingCharacter(TextArea *area);
+    void PrintStringEx(const std::string &string, const QString &jobName);
+    void PrintWindow(TextArea *area, bool selectedOnly);
+    void SelectToMatchingCharacter(TextArea *area);
     void SetColors(const QString &textFg, const QString &textBg, const QString &selectFg, const QString &selectBg, const QString &hiliteFg, const QString &hiliteBg, const QString &lineNoFg, const QString &cursorFg);
+    void ShowStatsLine(bool state);
+    void bannerTimeoutProc();
+    void closePane();
+    void execAP(TextArea *area, const QString &command);
+    void findAP(const QString &searchString, SearchDirection direction, SearchType searchType, bool searchWraps);
+    void findDefinitionHelper(TextArea *area, const char *arg, Mode search_type);
+    void findIncrAP(const QString &searchString, SearchDirection direction, SearchType searchType, bool searchWraps, bool isContinue);
+    void gotoAP(TextArea *area, QStringList args);
+    void gotoMarkAP(QChar label, bool extendSel);
+    void markAP(QChar ch);
+    void moveDocument(MainWindow *fromWindow);
+    void open(const char *fullpath);
+    void replaceAP(const QString &searchString, const QString &replaceString, SearchDirection direction, SearchType searchType, bool searchWraps);
+    void replaceAllAP(const QString &searchString, const QString &replaceString, SearchType searchType);
+    void replaceFindAP(const QString &searchString, const QString &replaceString, SearchDirection direction, SearchType searchType, bool searchWraps);
+    void replaceInSelAP(const QString &searchString, const QString &replaceString, SearchType searchType);
+    void setLanguageMode(const QString &mode);
+    void splitPane();
 
 public:
 	void movedCallback(TextArea *area);
@@ -92,95 +93,95 @@ public:
     static DocumentWidget *documentFrom(TextArea *area);
 
 public:
-    TextArea *createTextArea(TextBuffer *buffer);
-    QList<TextArea *> textPanes() const;
-    TextArea *firstPane() const;
-	void SetWindowModified(bool modified);
-	void RefreshTabState();
-	void DetermineLanguageMode(bool forceNewDefaults);
-	void SetLanguageMode(int mode, bool forceNewDefaults);
 	int matchLanguageMode();
+	void DetermineLanguageMode(bool forceNewDefaults);
+	void RefreshTabState();
+	void SetLanguageMode(int mode, bool forceNewDefaults);
+	void SetWindowModified(bool modified);
 	void UpdateStatsLine(TextArea *area);
-    void RaiseDocument();
-    void documentRaised();
-    void reapplyLanguageMode(int mode, bool forceDefaults);
-    void setWrapMargin(int margn);
-    void SetAutoWrap(int state);
-    void SetAutoIndent(IndentStyle state);
-    void SetEmTabDist(int emTabDist);
-    void SetTabDist(int tabDist);
-    bool IsTopDocument() const;
-    QString getWindowsMenuEntry();
     MainWindow *toWindow() const;
-    void UpdateMarkTable(int pos, int nInserted, int nDeleted);
-    void StopHighlightingEx();
-    void SetBacklightChars(const QString &applyBacklightTypes);
-    void freeHighlightData(WindowHighlightData *hd);
-    void freePatterns(HighlightData *patterns);
+    QList<TextArea *> textPanes() const;
+    QString FullPath() const;
     QString GetWindowDelimiters() const;
-    void DimSelectionDepUserMenuItems(bool enabled);
-    void dimSelDepItemsInMenu(QMenu *menuPane, const QVector<MenuData> &menuList, bool enabled);
-    void RaiseFocusDocumentWindow(bool focus);
-    void RaiseDocumentWindow();
-    void SaveUndoInformation(int pos, int nInserted, int nDeleted, view::string_view deletedText);
+    QString backupFileNameEx();
+    QString getWindowsMenuEntry();
+    TextArea *createTextArea(TextBuffer *buffer);
+    TextArea *firstPane() const;
+    bool CheckReadOnly() const;
+    bool DoNamedBGMenuCmd(TextArea *area, const QString &name, bool fromMacro);
+    bool DoNamedMacroMenuCmd(TextArea *area, const QString &name, bool fromMacro);
+    bool DoNamedShellMenuCmd(TextArea *area, const QString &name, bool fromMacro);
+    bool IsTopDocument() const;
+    bool bckError(const QString &errString, const QString &file);
+    bool doOpen(const QString &name, const QString &path, int flags);
+    bool doSave();
+    bool findMatchingCharEx(char toMatch, void *styleToMatch, int charPos, int startLimit, int endLimit, int *matchPos);
+    bool includeFile(const QString &name);
+    bool writeBckVersion();
+    int CloseFileAndWindow(int preResponse);
+    int SaveWindow();
+    int SaveWindowAs(const QString &newName, bool addWrap);
+    int WidgetToPaneIndex(TextArea *area) const;
+    int WriteBackupFile();
+    int cmpWinAgainstFile(const QString &fileName);
+    int fileWasModifiedExternally();
+    int textPanesCount() const;
+    void AbortShellCommandEx();
+    void CheckForChangesToFileEx();
+    void ClearModeMessageEx();
     void ClearRedoList();
     void ClearUndoList();
-    void appendDeletedText(view::string_view deletedText, int deletedLen, int direction);
-    void removeRedoItem();
-    void removeUndoItem();
+    void CloseWindow();
+    void DimSelectionDepUserMenuItems(bool enabled);
+    void DoShellMenuCmd(MainWindow *inWindow, TextArea *area, const QString &command, InSrcs input, OutDests output, bool outputReplacesInput, bool saveFirst, bool loadAfter, bool fromMacro);
+    void ExecCursorLineEx(TextArea *area, bool fromMacro);
+    void FilterSelection(const QString &command, bool fromMacro);
+    void MakeSelectionVisible(TextArea *textPane);
+    void RaiseDocument();
+    void RaiseDocumentWindow();
+    void RaiseFocusDocumentWindow(bool focus);
+    void Redo();
+    void RefreshMenuToggleStates();
+    void RefreshWindowStates();
+    void RemoveBackupFile();
+    void RevertToSaved();
+    void SaveUndoInformation(int pos, int nInserted, int nDeleted, view::string_view deletedText);
+    void SetAutoIndent(IndentStyle state);
+    void SetAutoScroll(int margin);
+    void SetAutoWrap(int state);
+    void SetBacklightChars(const QString &applyBacklightTypes);
+    void SetEmTabDist(int emTabDist);
+    void SetFonts(const QString &fontName, const QString &italicName, const QString &boldName, const QString &boldItalicName);
+    void SetModeMessageEx(const QString &message);
+    void SetOverstrike(bool overstrike);
+    void SetShowMatching(ShowMatchingStyle state);
+    void SetTabDist(int tabDist);
+    void ShellCmdToMacroStringEx(const std::string &command, const std::string &input);
+    void StopHighlightingEx();
+    void Undo();
+    void UnloadLanguageModeTipsFileEx();
+    void UpdateMarkTable(int pos, int nInserted, int nDeleted);
+    void actionClose(const QString &mode);
     void addRedoItem(UndoInfo *redo);
     void addUndoItem(UndoInfo *undo);
-    void trimUndoList(int maxLength);
-    void Undo();
-    void Redo();
-    bool CheckReadOnly() const;
-    void MakeSelectionVisible(TextArea *textPane);
-    void RemoveBackupFile();
-    QString backupFileNameEx();
-    void CheckForChangesToFileEx();
-    QString FullPath() const;
-    int cmpWinAgainstFile(const QString &fileName);
-    void RevertToSaved();
-    int WriteBackupFile();
-    int SaveWindow();
-    bool doSave();
-    int SaveWindowAs(const QString &newName, bool addWrap);
     void addWrapNewlines();
-    bool writeBckVersion();
-    bool bckError(const QString &errString, const QString &file);
-    int fileWasModifiedExternally();
-    int CloseFileAndWindow(int preResponse);
-    void CloseWindow();
-    bool doOpen(const QString &name, const QString &path, int flags);
-    void RefreshWindowStates();
-    void refreshMenuBar();
-    void RefreshMenuToggleStates();
-    void executeNewlineMacroEx(smartIndentCBStruct *cbInfo);
-    void SetShowMatching(ShowMatchingStyle state);
-    int textPanesCount() const;
+    void appendDeletedText(view::string_view deletedText, int deletedLen, int direction);
+    void dimSelDepItemsInMenu(QMenu *menuPane, const QVector<MenuData> &menuList, bool enabled);
+    void documentRaised();
     void executeModMacroEx(smartIndentCBStruct *cbInfo);
-    void actionClose(const QString &mode);
-    bool includeFile(const QString &name);
-    bool findMatchingCharEx(char toMatch, void *styleToMatch, int charPos, int startLimit, int endLimit, int *matchPos);
-    void SetFonts(const QString &fontName, const QString &italicName, const QString &boldName, const QString &boldItalicName);
-    void SetOverstrike(bool overstrike);
-    void SetModeMessageEx(const QString &message);
-    void ClearModeMessageEx();
-    void safeCloseEx();
-    void UnloadLanguageModeTipsFileEx();
-    void issueCommandEx(MainWindow *window, TextArea *area, const QString &command, const QString &input, int flags, int replaceLeft, int replaceRight, bool fromMacro);
-    void AbortShellCommandEx();
-    void ExecCursorLineEx(TextArea *area, bool fromMacro);
+    void executeNewlineMacroEx(smartIndentCBStruct *cbInfo);
     void filterSelection(const QString &filterText);
-    void FilterSelection(const QString &command, bool fromMacro);
-    bool DoNamedShellMenuCmd(TextArea *area, const QString &name, bool fromMacro);
-    void DoShellMenuCmd(MainWindow *inWindow, TextArea *area, const QString &command, InSrcs input, OutDests output, bool outputReplacesInput, bool saveFirst, bool loadAfter, bool fromMacro);
-    bool DoNamedMacroMenuCmd(TextArea *area, const QString &name, bool fromMacro);
+    void freeHighlightData(WindowHighlightData *hd);
+    void freePatterns(HighlightData *patterns);
+    void issueCommandEx(MainWindow *window, TextArea *area, const QString &command, const QString &input, int flags, int replaceLeft, int replaceRight, bool fromMacro);
+    void reapplyLanguageMode(int mode, bool forceDefaults);
+    void refreshMenuBar();
+    void removeRedoItem();
+    void removeUndoItem();
     void repeatMacro(const QString &macro, int how);
-    bool DoNamedBGMenuCmd(TextArea *area, const QString &name, bool fromMacro);
-    int WidgetToPaneIndex(TextArea *area) const;
-    void ShellCmdToMacroStringEx(const std::string &command, const std::string &input);
-    void SetAutoScroll(int margin);
+    void safeCloseEx();
+    void setWrapMargin(int margn);
+    void trimUndoList(int maxLength);
 
 public:
     static DocumentWidget *EditExistingFileEx(DocumentWidget *inWindow, const QString &name, const QString &path, int flags, const QString &geometry, int iconic, const QString &languageMode, bool tabbed, bool bgOpen);
@@ -189,7 +190,7 @@ public:
 private:
 	// TODO(eteran): are these dialog's per window or per text document?
 	QPointer<QDialog> dialogColors_;
-	QPointer<QDialog> dialogFonts_; /* nullptr, unless font dialog is up */	
+	QPointer<QDialog> dialogFonts_; /* nullptr, unless font dialog is up */
 
 public:
 	Bookmark markTable_[MAX_MARKS];    // marked locations in window
@@ -234,7 +235,7 @@ public:
 	gid_t fileGid_;                    // last recorded group id of the file
 	ino_t inode_;                      // file's inode
 	int autoSaveCharCount_;            // count of single characters typed since last backup file generated
-	int autoSaveOpCount_;              // count of editing operations ""    
+	int autoSaveOpCount_;              // count of editing operations ""
 	int flashPos_;                     // position saved for erasing matching paren highlight (if one is drawn)
 	int languageMode_;                 // identifies language mode currently selected in the window
 	int nMarks_;                       // number of active bookmarks
@@ -244,10 +245,10 @@ public:
 	time_t lastModTime_;               // time of last modification to file
 	uid_t fileUid_;                    // last recorded user id of the file
 	unsigned fileMode_;                // permissions of file being edited
-    void *highlightData_;              // info for syntax highlighting                                          // TODO(eteran): why void* ?
-    void *macroCmdData_;               // same for macro commands                                               // TODO(eteran): why void* ?
-    void *shellCmdData_;               // when a shell command is executing, info. about it, otherwise, nullptr // TODO(eteran): why void* ?
-    void *smartIndentData_;            // compiled macros for smart indent                                      // TODO(eteran): why void* ?
+    void *highlightData_;              // info for syntax highlighting
+    void *macroCmdData_;               // same for macro commands
+    void *shellCmdData_;               // when a shell command is executing, info. about it, otherwise, nullptr
+    void *smartIndentData_;            // compiled macros for smart indent
     bool  showStats_;                  // is stats line supposed to be shown
 
 private:
