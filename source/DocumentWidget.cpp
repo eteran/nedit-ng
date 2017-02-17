@@ -1,5 +1,4 @@
 
-
 #include "DocumentWidget.h"
 #include "DialogMoveDocument.h"
 #include "DialogOutput.h"
@@ -468,14 +467,6 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
     static int n = 0;
     area->setObjectName(tr("TextArea_%1").arg(n++));
     splitter_->addWidget(area);
-    area->setFocus();
-}
-
-
-//------------------------------------------------------------------------------
-// Name: ~DocumentWidget
-//------------------------------------------------------------------------------
-DocumentWidget::~DocumentWidget() {
 }
 
 //------------------------------------------------------------------------------
@@ -583,7 +574,7 @@ void DocumentWidget::SetWindowModified(bool modified) {
 void DocumentWidget::RefreshTabState() {
 
     if(auto w = toWindow()) {
-		TabWidget *tabWidget = w->ui.tabWidget;
+        QTabWidget *tabWidget = w->ui.tabWidget;
 		int index = tabWidget->indexOf(this);
 
 		QString labelString;

@@ -8,9 +8,6 @@ DialogWrapMargin::DialogWrapMargin(DocumentWidget *document, QWidget *parent, Qt
 	ui.setupUi(this);
 }
 
-DialogWrapMargin::~DialogWrapMargin() {
-}
-
 void DialogWrapMargin::on_checkWrapAndFill_toggled(bool checked) {
 	ui.label->setEnabled(!checked);
 	ui.spinWrapAndFill->setEnabled(!checked);

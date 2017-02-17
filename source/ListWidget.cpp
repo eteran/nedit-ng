@@ -5,9 +5,6 @@
 ListWidget::ListWidget(QWidget *parent) : QListWidget(parent) {
 }
 
-ListWidget::~ListWidget() {
-}
-
 void ListWidget::mousePressEvent(QMouseEvent *event) {
 	QModelIndex item = indexAt(event->pos());
 	bool selected = selectionModel()->isSelected(indexAt(event->pos()));

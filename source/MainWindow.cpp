@@ -124,13 +124,6 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(par
 }
 
 //------------------------------------------------------------------------------
-// Name: ~MainWindow
-//------------------------------------------------------------------------------
-MainWindow::~MainWindow() {
-
-}
-
-//------------------------------------------------------------------------------
 // Name: setDimmensions
 //------------------------------------------------------------------------------
 void MainWindow::parseGeometry(QString geometry) {
@@ -1656,41 +1649,43 @@ void MainWindow::on_tabWidget_currentChanged(int index) {
     }
 }
 
-void MainWindow::on_tabWidget_customContextMenuRequested(int index, const QPoint &pos) {
+void MainWindow::on_tabWidget_customContextMenuRequested(const QPoint &pos) {
+    const int index = ui.tabWidget->tabBar()->tabAt(pos);
+    if(index != -1) {
+        auto *menu = new QMenu(this);
+        QAction *const newTab    = menu->addAction(tr("New Tab"));
+        QAction *const closeTab  = menu->addAction(tr("Close Tab"));
+        menu->addSeparator();
+        QAction *const detachTab = menu->addAction(tr("Detach Tab"));
+        QAction *const moveTab   = menu->addAction(tr("Move Tab To..."));
 
-    auto *menu = new QMenu(this);
-    QAction *const newTab    = menu->addAction(tr("New Tab"));
-    QAction *const closeTab  = menu->addAction(tr("Close Tab"));
-    menu->addSeparator();
-    QAction *const detachTab = menu->addAction(tr("Detach Tab"));
-    QAction *const moveTab   = menu->addAction(tr("Move Tab To..."));
+        // make sure that these are always in sync with the primary UI
+        detachTab->setEnabled(ui.action_Detach_Tab->isEnabled());
+        moveTab->setEnabled(ui.action_Move_Tab_To->isEnabled());
 
-    // make sure that these are always in sync with the primary UI
-    detachTab->setEnabled(ui.action_Detach_Tab->isEnabled());
-    moveTab->setEnabled(ui.action_Move_Tab_To->isEnabled());
+        // make the icons the same too :-P
+        newTab->setIcon(ui.action_New->icon());
+        closeTab->setIcon(ui.action_Close->icon());
+        detachTab->setIcon(ui.action_Detach_Tab->icon());
+        moveTab->setIcon(ui.action_Move_Tab_To->icon());
 
-    // make the icons the same too :-P
-    newTab->setIcon(ui.action_New->icon());
-    closeTab->setIcon(ui.action_Close->icon());
-    detachTab->setIcon(ui.action_Detach_Tab->icon());
-    moveTab->setIcon(ui.action_Move_Tab_To->icon());
+        if(QAction *const selected = menu->exec(ui.tabWidget->tabBar()->mapToGlobal(pos))) {
 
-    if(QAction *const selected = menu->exec(mapToGlobal(pos))) {
+            if(DocumentWidget *document = documentAt(index)) {
 
-        if(DocumentWidget *document = documentAt(index)) {
-
-            if(selected == newTab) {
-                MainWindow::EditNewFileEx(this, QString(), false, QString(), document->path_);
-            } else if(selected == closeTab) {
-                document->actionClose(QString());
-            } else if(selected == detachTab) {
-                if(TabCount() > 1) {
-                    auto new_window = new MainWindow(nullptr);
-                    new_window->ui.tabWidget->addTab(document, document->filename_);
-                    new_window->show();
+                if(selected == newTab) {
+                    MainWindow::EditNewFileEx(this, QString(), false, QString(), document->path_);
+                } else if(selected == closeTab) {
+                    document->actionClose(QString());
+                } else if(selected == detachTab) {
+                    if(TabCount() > 1) {
+                        auto new_window = new MainWindow(nullptr);
+                        new_window->ui.tabWidget->addTab(document, document->filename_);
+                        new_window->show();
+                    }
+                } else if(selected == moveTab) {
+                    document->moveDocument(this);
                 }
-            } else if(selected == moveTab) {
-                document->moveDocument(this);
             }
         }
     }

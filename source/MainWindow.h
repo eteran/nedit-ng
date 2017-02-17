@@ -31,7 +31,7 @@ class MainWindow : public QMainWindow {
 
 public:
     MainWindow (QWidget *parent = 0, Qt::WindowFlags flags = 0);
-	virtual ~MainWindow();
+	virtual ~MainWindow() = default;
 	
 private:
 	void setupMenuGroups();
@@ -145,7 +145,7 @@ public Q_SLOTS:
 
 public Q_SLOTS:
     void on_tabWidget_currentChanged(int index);
-    void on_tabWidget_customContextMenuRequested(int index, const QPoint &pos);
+    void on_tabWidget_customContextMenuRequested(const QPoint &pos);
     void on_editIFind_textChanged(const QString &text);
     void on_editIFind_returnPressed();
     void on_buttonIFind_clicked();

@@ -105,13 +105,6 @@ KeySequenceEdit::KeySequenceEdit(const QKeySequence &keySequence, QWidget *paren
 }
 
 //------------------------------------------------------------------------------
-// Name: ~KeySequenceEdit
-// Desc: Destroys the KeySequenceEdit object.
-//------------------------------------------------------------------------------
-KeySequenceEdit::~KeySequenceEdit() {
-}
-
-//------------------------------------------------------------------------------
 // Name: maximumSequenceLength
 //------------------------------------------------------------------------------
 int KeySequenceEdit::maximumSequenceLength() const {

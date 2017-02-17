@@ -19,7 +19,7 @@ class KeySequenceEdit : public QWidget {
 public:
     explicit KeySequenceEdit(QWidget *parent = 0);
     explicit KeySequenceEdit(const QKeySequence &keySequence, QWidget *parent = 0);
-    virtual ~KeySequenceEdit() override;
+    virtual ~KeySequenceEdit() = default;
 
 public:
     QKeySequence keySequence() const;

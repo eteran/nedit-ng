@@ -67,6 +67,9 @@
        </item>
        <item>
         <widget class="QLineEdit" name="editIFind">
+         <property name="focusPolicy">
+          <enum>Qt::ClickFocus</enum>
+         </property>
          <property name="placeholderText">
           <string>Incremental Search</string>
          </property>
@@ -109,10 +112,7 @@
      </widget>
     </item>
     <item>
-     <widget class="TabWidget" name="tabWidget">
-      <property name="focusPolicy">
-       <enum>Qt::NoFocus</enum>
-      </property>
+     <widget class="QTabWidget" name="tabWidget">
       <property name="contextMenuPolicy">
        <enum>Qt::CustomContextMenu</enum>
       </property>
@@ -1747,7 +1747,8 @@
   </action>
   <action name="action_Help">
    <property name="icon">
-    <iconset theme="help-browser"/>
+    <iconset theme="help-browser">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>&amp;Help</string>
@@ -1757,14 +1758,6 @@
    </property>
   </action>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>TabWidget</class>
-   <extends>QTabWidget</extends>
-   <header>TabWidget.h</header>
-   <container>1</container>
-  </customwidget>
- </customwidgets>
  <tabstops>
   <tabstop>tabWidget</tabstop>
   <tabstop>editIFind</tabstop>

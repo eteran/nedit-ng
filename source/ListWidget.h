@@ -9,7 +9,7 @@ class ListWidget : public QListWidget {
 
 public:
 	explicit ListWidget(QWidget *parent = 0);
-	virtual ~ListWidget();
+	virtual ~ListWidget() = default;
 	
 protected:
     virtual void mousePressEvent(QMouseEvent *event) override;

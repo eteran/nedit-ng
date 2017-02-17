@@ -55,8 +55,6 @@ qt5_wrap_cpp(MOC_SOURCES
 	MainWindow.h
 	NeditServer.h
 	Settings.h
-	TabWidget.h
-	TabWidget.h
 	TextArea.h
 )
 
@@ -148,8 +146,6 @@ add_executable(nedit
 	Settings.cpp
 	SignalBlocker.h
 	SmartIndent.cpp
-	TabWidget.cpp
-	TabWidget.cpp
 	TextArea.cpp
 	TextBuffer.cpp
 	TextSelection.cpp

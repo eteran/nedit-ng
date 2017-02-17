@@ -41,7 +41,7 @@ class DocumentWidget : public QWidget {
 	friend class MainWindow;
 public:
 	DocumentWidget(const QString &name, QWidget *parent = 0, Qt::WindowFlags f = 0);
-	virtual ~DocumentWidget();
+	virtual ~DocumentWidget() = default;
 
 private Q_SLOTS:
     void flashTimerTimeout();
