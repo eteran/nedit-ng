@@ -36,10 +36,10 @@ DialogLanguageModes::DialogLanguageModes(QWidget *parent, Qt::WindowFlags f) : Q
 	if(ui.listItems->count() != 0) {
 		ui.listItems->setCurrentRow(0);
 	}
-	
+
 	// Valid characters are letters, numbers, _, -, +, $, #, and internal whitespace.
 	ui.editName->setValidator(new QRegExpValidator(QRegExp(QLatin1String("[\\sA-Za-z0-9_+$#-]+")), this));
-	
+
 	// 0-100
 	ui.editTabSpacing->setValidator(new QIntValidator(0, 100, this));
 	ui.editEmulatedTabSpacing->setValidator(new QIntValidator(-1, 100, this));
@@ -63,7 +63,7 @@ LanguageMode *DialogLanguageModes::itemFromIndex(int i) const {
 		auto ptr = reinterpret_cast<LanguageMode *>(item->data(Qt::UserRole).toULongLong());
 		return ptr;
 	}
-	
+
 	return nullptr;
 }
 
@@ -84,7 +84,7 @@ void DialogLanguageModes::on_listItems_itemSelectionChanged() {
 
 		// we want to try to save it (but not apply it yet)
 		// and then move on
-		
+
 		// NOTE(eteran): in the original nedit 5.6, this code is broken!
 		//               it results in a crash when leaving invalid entries :-(
 		//               we can do better of course
@@ -104,12 +104,12 @@ void DialogLanguageModes::on_listItems_itemSelectionChanged() {
 
 			messageBox.exec();
 			if (messageBox.clickedButton() == buttonKeep) {
-			
+
 				// again to cause messagebox to pop up
 #if 0
 				checkCurrent(false);
 #endif
-				
+
 				// reselect the old item
                 no_signals(ui.listItems)->setCurrentItem(previous_);
 				return;
@@ -124,7 +124,7 @@ void DialogLanguageModes::on_listItems_itemSelectionChanged() {
 	}
 
 	if(current) {
-		
+
 		const int i = ui.listItems->row(current);
 
 		LanguageMode *language = itemFromIndex(i);
@@ -191,15 +191,15 @@ void DialogLanguageModes::on_listItems_itemSelectionChanged() {
 			ui.buttonUp    ->setEnabled(true);
 			ui.buttonDown  ->setEnabled(false);
 			ui.buttonDelete->setEnabled(true);
-			ui.buttonCopy  ->setEnabled(true);				
+			ui.buttonCopy  ->setEnabled(true);
 		} else {
 			ui.buttonUp    ->setEnabled(true);
 			ui.buttonDown  ->setEnabled(true);
 			ui.buttonDelete->setEnabled(true);
-			ui.buttonCopy  ->setEnabled(true);					
+			ui.buttonCopy  ->setEnabled(true);
 		}
 	}
-	
+
 	previous_ = current;
 }
 
@@ -210,7 +210,7 @@ void DialogLanguageModes::on_buttonBox_accepted() {
 	if (!updateLMList(false)) {
 		return;
 	}
-	
+
 	accept();
 }
 
@@ -234,9 +234,9 @@ LanguageMode *DialogLanguageModes::readLMDialogFields(bool silent) {
 	/* Allocate a language mode structure to return, set unread fields to
 	   empty so everything can be freed on errors by freeLanguageModeRec */
 	auto lm = new LanguageMode;
-	
-	// read the name field 
-	QString name = ui.editName->text().simplified();	
+
+	// read the name field
+	QString name = ui.editName->text().simplified();
 	if (name.isEmpty()) {
 		if (!silent) {
 			QMessageBox::warning(this, tr("Language Mode Name"), tr("Please specify a name for the language mode"));
@@ -244,15 +244,15 @@ LanguageMode *DialogLanguageModes::readLMDialogFields(bool silent) {
 		delete lm;
 		return nullptr;
 	}
-	
+
 	lm->name = name;
-	
-	// read the extension list field 
+
+	// read the extension list field
 	QString extStr      = ui.editExtensions->text().simplified();
 	QStringList extList = extStr.split(QLatin1Char(' '), QString::SkipEmptyParts);
 	lm->extensions = extList;
 
-	// read recognition expression 
+	// read recognition expression
 	QString recognitionExpr = ui.editRegex->text();
 	if(!recognitionExpr.isEmpty()) {
 		try {
@@ -267,11 +267,11 @@ LanguageMode *DialogLanguageModes::readLMDialogFields(bool silent) {
 		}
 	}
 	lm->recognitionExpr = recognitionExpr;
-	
-	// Read the default calltips file for the language mode 
+
+	// Read the default calltips file for the language mode
 	QString tipsFile = ui.editCallTips->text();
 	if(!tipsFile.isEmpty()) {
-		// Ensure that AddTagsFile will work 
+		// Ensure that AddTagsFile will work
 		if (!AddTagsFileEx(tipsFile, TIP)) {
 			if (!silent) {
 				QMessageBox::warning(this, tr("Error reading Calltips"), tr("Can't read default calltips file(s):\n  \"%1\"\n").arg(tipsFile));
@@ -280,11 +280,11 @@ LanguageMode *DialogLanguageModes::readLMDialogFields(bool silent) {
 			return nullptr;
         } else if (!DeleteTagsFileEx(tipsFile, TIP, false)) {
 			fprintf(stderr, "nedit: Internal error: Trouble deleting calltips file(s):\n  \"%s\"\n", tipsFile.toLatin1().data());
-		}	
+		}
 	}
 	lm->defTipsFile = tipsFile;
-	
-	// read tab spacing field 	
+
+	// read tab spacing field
 	QString tabsSpacing = ui.editTabSpacing->text();
 	if(tabsSpacing.isEmpty()) {
 		lm->tabDist = LanguageMode::DEFAULT_TAB_DIST;
@@ -296,7 +296,7 @@ LanguageMode *DialogLanguageModes::readLMDialogFields(bool silent) {
 			delete lm;
 			return nullptr;
 		}
-		
+
 		lm->tabDist = tabsSpacingValue;
 
 		if (lm->tabDist <= 0 || lm->tabDist > 100) {
@@ -305,10 +305,10 @@ LanguageMode *DialogLanguageModes::readLMDialogFields(bool silent) {
 			}
 			delete lm;
 			return nullptr;
-		}	
+		}
 	}
-	
-	// read emulated tab field 
+
+	// read emulated tab field
 	QString emulatedTabSpacing = ui.editEmulatedTabSpacing->text();
 	if(emulatedTabSpacing.isEmpty()) {
 		lm->emTabDist = LanguageMode::DEFAULT_EM_TAB_DIST;
@@ -320,7 +320,7 @@ LanguageMode *DialogLanguageModes::readLMDialogFields(bool silent) {
 			delete lm;
 			return nullptr;
 		}
-		
+
 		lm->emTabDist = emulatedTabSpacingValue;
 
 		if (lm->emTabDist < 0 || lm->emTabDist > 100) {
@@ -329,16 +329,16 @@ LanguageMode *DialogLanguageModes::readLMDialogFields(bool silent) {
 			}
 			delete lm;
 			return nullptr;
-		}	
+		}
 	}
-	
-	// read delimiters string 
+
+	// read delimiters string
 	QString delimiters = ui.editDelimiters->text();
 	if(!delimiters.isEmpty()) {
 		lm->delimiters = delimiters;
 	}
-	
-	// read indent style 
+
+	// read indent style
 	if(ui.radioIndentNone->isChecked()) {
 		lm->indentStyle = NO_AUTO_INDENT;
 	} else if(ui.radioIndentAuto->isChecked()) {
@@ -348,8 +348,8 @@ LanguageMode *DialogLanguageModes::readLMDialogFields(bool silent) {
 	} else if(ui.radioIndentDefault->isChecked()) {
 		lm->indentStyle = DEFAULT_INDENT;
 	}
-	
-	// read wrap style 
+
+	// read wrap style
 	if(ui.radioWrapNone->isChecked()) {
 		lm->wrapStyle = NO_WRAP;
 	} else if(ui.radioWrapAuto->isChecked()) {
@@ -376,7 +376,7 @@ bool DialogLanguageModes::updateLanguageList(bool silent) {
 
 	QListWidgetItem *const selection = selections[0];
 	QString languageName = selection->text();
-	
+
 	const int i = ui.listItems->row(selection);
 	LanguageMode *oldLM = itemFromIndex(i);
 
@@ -402,7 +402,7 @@ bool DialogLanguageModes::updateLanguageList(bool silent) {
 
 				auto tempName = tr("%1:%2").arg(oldLM->name.mid(0, oldLen)).arg(newLM->name);
 				newLM->name = tempName;
-			}			
+			}
 		}
 
 		QListWidgetItem* item = ui.listItems->item(i);
@@ -412,7 +412,7 @@ bool DialogLanguageModes::updateLanguageList(bool silent) {
 		return true;
 	}
 
-	
+
 	return false;
 }
 
@@ -422,7 +422,7 @@ bool DialogLanguageModes::updateLanguageList(bool silent) {
 bool DialogLanguageModes::updateLMList(bool silent) {
 
 
-	// Get the current contents of the dialog fields 
+	// Get the current contents of the dialog fields
 	if(!updateLanguageList(silent)) {
 		return false;
 	}
@@ -511,17 +511,14 @@ bool DialogLanguageModes::updateLMList(bool silent) {
             if (document->languageMode_ != PLAIN_LANGUAGE_MODE && !LanguageModes[document->languageMode_]->defTipsFile.isNull()) {
                 AddTagsFileEx(LanguageModes[document->languageMode_]->defTipsFile, TIP);
             }
-
-#if 0 // TODO(eteran)
-            // cache user menus: Rebuild all user menus of this window
-            RebuildAllMenus(document);
-#endif
         }
 
         // If a syntax highlighting dialog is up, update its menu
         UpdateLanguageModeMenu();
-        // The same for the smart indent macro dialog
+
+		// The same for the smart indent macro dialog
         UpdateLangModeMenuSmartIndent();
+
         // Note that preferences have been changed
         MarkPrefsChanged();
     }
@@ -585,7 +582,7 @@ void DialogLanguageModes::on_buttonUp_clicked() {
 	QListWidgetItem *const selection = selections[0];
 
 	const int i = ui.listItems->row(selection);
-	if(i != 0) {	
+	if(i != 0) {
 		QListWidgetItem *item = ui.listItems->takeItem(i);
 		ui.listItems->insertItem(i - 1, item);
 		ui.listItems->scrollToItem(item);
@@ -607,7 +604,7 @@ void DialogLanguageModes::on_buttonDown_clicked() {
 
 	const int i = ui.listItems->row(selection);
 	if(i != ui.listItems->count() - 1) {
-		
+
 		QListWidgetItem *item = ui.listItems->takeItem(i);
 		ui.listItems->insertItem(i + 1, item);
 		ui.listItems->scrollToItem(item);
@@ -630,13 +627,13 @@ void DialogLanguageModes::on_buttonDelete_clicked() {
 
 	const int itemIndex = ui.listItems->row(selection);
 
-	// Allow duplicate names to be deleted regardless of dependencies 
+	// Allow duplicate names to be deleted regardless of dependencies
 	for (int i = 0; i < ui.listItems->count(); i++) {
 		if (i != itemIndex && itemFromIndex(i)->name == itemFromIndex(itemIndex)->name) {
-		
-		
-			previous_ = nullptr;		
-		
+
+
+			previous_ = nullptr;
+
 			delete itemFromIndex(itemIndex);
 			delete selection;
 			// force an update of the display
@@ -645,18 +642,18 @@ void DialogLanguageModes::on_buttonDelete_clicked() {
 		}
 	}
 
-	// don't allow deletion if data will be lost 
+	// don't allow deletion if data will be lost
 	if (LMHasHighlightPatterns(itemFromIndex(itemIndex)->name)) {
 		QMessageBox::warning(this, tr("Patterns exist"), tr("This language mode has syntax highlighting patterns defined.  Please delete the patterns first, in Preferences -> Default Settings -> Syntax Highlighting, before proceeding here."));
 		return; // False;
 	}
 
-	// don't allow deletion if data will be lost 
+	// don't allow deletion if data will be lost
     if (LMHasSmartIndentMacros(itemFromIndex(itemIndex)->name)) {
 		QMessageBox::warning(this, tr("Smart Indent Macros exist"), tr("This language mode has smart indent macros defined.  Please delete the macros first, in Preferences -> Default Settings -> Auto Indent -> Program Smart Indent, before proceeding here."));
 		return; // False;
 	}
-	
+
 	previous_ = nullptr;
 
 	delete itemFromIndex(itemIndex);
@@ -666,26 +663,26 @@ void DialogLanguageModes::on_buttonDelete_clicked() {
 }
 
 //------------------------------------------------------------------------------
-// Name: 
+// Name:
 //------------------------------------------------------------------------------
 bool DialogLanguageModes::updateCurrentItem(QListWidgetItem *item) {
-	// Get the current contents of the "patterns" dialog fields 
+	// Get the current contents of the "patterns" dialog fields
 	auto ptr = readLMDialogFields(false);
 	if(!ptr) {
 		return false;
 	}
-	
+
 	// delete the current pattern in this slot
 	auto old = reinterpret_cast<LanguageMode *>(item->data(Qt::UserRole).toULongLong());
 	delete old;
-	
+
 	item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(ptr));
 	item->setText(ptr->name);
 	return true;
 }
 
 //------------------------------------------------------------------------------
-// Name: 
+// Name:
 //------------------------------------------------------------------------------
 bool DialogLanguageModes::updateCurrentItem() {
 	QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
@@ -694,5 +691,5 @@ bool DialogLanguageModes::updateCurrentItem() {
 	}
 
 	QListWidgetItem *const selection = selections[0];
-	return updateCurrentItem(selection);	
+	return updateCurrentItem(selection);
 }

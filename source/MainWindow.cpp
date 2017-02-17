@@ -313,24 +313,24 @@ void MainWindow::setupMenuDefaults() {
         ui.action_Default_Syntax_Off->setChecked(true);
     }
 
-    ui.action_Default_Apply_Backlighting->setChecked(GetPrefBacklightChars());
+    no_signals(ui.action_Default_Apply_Backlighting)->setChecked(GetPrefBacklightChars());
 
     // Default tab settings
-    ui.action_Default_Tab_Open_File_In_New_Tab->setChecked(GetPrefOpenInTab());
-    ui.action_Default_Tab_Show_Tab_Bar->setChecked(GetPrefTabBar());
-    ui.action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Open->setChecked(GetPrefTabBarHideOne());
-    ui.action_Default_Tab_Next_Prev_Tabs_Across_Windows->setChecked(GetPrefGlobalTabNavigate());
-    ui.action_Default_Tab_Sort_Tabs_Alphabetically->setChecked(GetPrefSortTabs());
+    no_signals(ui.action_Default_Tab_Open_File_In_New_Tab)->setChecked(GetPrefOpenInTab());
+    no_signals(ui.action_Default_Tab_Show_Tab_Bar)->setChecked(GetPrefTabBar());
+    no_signals(ui.action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Open)->setChecked(GetPrefTabBarHideOne());
+    no_signals(ui.action_Default_Tab_Next_Prev_Tabs_Across_Windows)->setChecked(GetPrefGlobalTabNavigate());
+    no_signals(ui.action_Default_Tab_Sort_Tabs_Alphabetically)->setChecked(GetPrefSortTabs());
 
-    ui.tabWidget->tabBar()->setVisible(GetPrefTabBar());
-    ui.tabWidget->setTabBarAutoHide(GetPrefTabBarHideOne());
+    no_signals(ui.tabWidget)->tabBar()->setVisible(GetPrefTabBar());
+    no_signals(ui.tabWidget)->setTabBarAutoHide(GetPrefTabBarHideOne());
 
-    ui.action_Default_Show_Tooltips->setChecked(GetPrefToolTips());
-    ui.action_Default_Statistics_Line->setChecked(GetPrefStatsLine());
-    ui.action_Default_Incremental_Search_Line->setChecked(GetPrefISearchLine());
-    ui.action_Default_Show_Line_Numbers->setChecked(GetPrefLineNums());
-    ui.action_Default_Make_Backup_Copy->setChecked(GetPrefSaveOldVersion());
-    ui.action_Default_Incremental_Backup->setChecked(GetPrefAutoSave());
+    no_signals(ui.action_Default_Show_Tooltips)->setChecked(GetPrefToolTips());
+    no_signals(ui.action_Default_Statistics_Line)->setChecked(GetPrefStatsLine());
+    no_signals(ui.action_Default_Incremental_Search_Line)->setChecked(GetPrefISearchLine());
+    no_signals(ui.action_Default_Show_Line_Numbers)->setChecked(GetPrefLineNums());
+    no_signals(ui.action_Default_Make_Backup_Copy)->setChecked(GetPrefSaveOldVersion());
+    no_signals(ui.action_Default_Incremental_Backup)->setChecked(GetPrefAutoSave());
 
     switch(GetPrefShowMatching()) {
     case NO_FLASH:
@@ -3544,7 +3544,25 @@ void MainWindow::action_Next_Document() {
         } else {
             ui.tabWidget->setCurrentIndex(nextIndex);
         }
-    }
+    } else {
+        if(nextIndex == tabCount) {
+
+			QList<MainWindow *> windows = MainWindow::allWindows();
+			int thisIndex  = windows.indexOf(this);
+			int nextWindow = (thisIndex + 1);
+			
+			if(nextWindow == windows.size()) {
+				nextWindow = 0;
+			}
+			
+			windows[nextWindow]->raise();
+			windows[nextWindow]->ui.tabWidget->setCurrentIndex(0);
+			
+
+        } else {
+            ui.tabWidget->setCurrentIndex(nextIndex);
+        }	
+	}
 }
 
 void MainWindow::action_Prev_Document() {
