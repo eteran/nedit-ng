@@ -286,7 +286,7 @@ DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inWindow, con
        busy running a macro; create the window */
     DocumentWidget *document = nullptr;
     if(!inWindow) {
-        auto win = new MainWindow();
+        MainWindow *const win = new MainWindow();
         document = win->CreateDocument(name);
         if(iconic) {
             win->showMinimized();
@@ -300,7 +300,7 @@ DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inWindow, con
                 document = win->CreateDocument(name);
             }
         } else {
-            auto win = new MainWindow();
+            MainWindow *const win = new MainWindow();
             document = win->CreateDocument(name);
             if(iconic) {
                 win->showMinimized();
@@ -320,6 +320,11 @@ DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inWindow, con
         }
     }
 
+    MainWindow *const win = document->toWindow();
+    if(!win) {
+        return nullptr;
+    }
+
     // Open the file
     if (!document->doOpen(name, path, flags)) {
         // The user may have destroyed the window instead of closing
@@ -328,9 +333,7 @@ DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inWindow, con
         return nullptr;
     }
 
-    if(auto win = document->toWindow()) {
-        win->forceShowLineNumbers();
-    }
+    win->forceShowLineNumbers();
 
     // Decide what language mode to use, trigger language specific actions
     if(languageMode.isNull()) {
@@ -339,11 +342,9 @@ DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inWindow, con
         document->SetLanguageMode(FindLanguageMode(languageMode), true);
     }
 
-    if(auto win = document->toWindow()) {
-        // update tab label and tooltip
-        document->RefreshTabState();
-        win->SortTabBar();
-    }
+    // update tab label and tooltip
+    document->RefreshTabState();
+    win->SortTabBar();
 
     if (!bgOpen) {
         document->RaiseDocument();
@@ -351,10 +352,8 @@ DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inWindow, con
 
     /* Bring the title bar and statistics line up to date, doOpen does
        not necessarily set the window title or read-only status */
-    if(auto win = document->toWindow()) {
-        win->UpdateWindowTitle(document);
-        win->UpdateWindowReadOnly(document);
-    }
+    win->UpdateWindowTitle(document);
+    win->UpdateWindowReadOnly(document);
 
     document->UpdateStatsLine(nullptr);
 
@@ -365,10 +364,7 @@ DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inWindow, con
         AddRelTagsFileEx(GetPrefTagFile(), path, TAG);
     }
 
-    if(auto win = document->toWindow()) {
-        win->AddToPrevOpenMenu(fullname);
-    }
-
+    MainWindow::AddToPrevOpenMenu(fullname);
     return document;
 }
 
@@ -978,13 +974,6 @@ void DocumentWidget::documentRaised() {
 
 void DocumentWidget::RaiseDocument() {
     if(auto win = toWindow()) {
-
-        // NOTE(eteran): not sure if this is even possible anymore
-        //               but it can't hurt too much
-        QList<MainWindow *> windows = MainWindow::allWindows();
-        if(windows.empty()) {
-            return;
-        }
 
         // TODO(eteran): this used to do some tracking for the last active
         //               window/document here. I think there is likely a better

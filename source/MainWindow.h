@@ -67,7 +67,7 @@ public:
     int updateLineNumDisp();
     static void ReadNEditDB();
     static void WriteNEditDB();
-    void AddToPrevOpenMenu(const QString &filename);
+    static void AddToPrevOpenMenu(const QString &filename);
     void BeginISearchEx(SearchDirection direction);
     void EndISearchEx();
     void ShowLineNumbers(bool state);
@@ -76,7 +76,7 @@ public:
     void fileCB(DocumentWidget *window, const std::string &value);
     void forceShowLineNumbers();
     void initToggleButtonsiSearch(SearchType searchType);
-    void invalidatePrevOpenMenus();
+    static void invalidatePrevOpenMenus();
     void parseGeometry(QString geometry);
     void setWindowSizeDefault(int rows, int cols);
     void updatePrevOpenMenu();

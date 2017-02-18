@@ -25,7 +25,7 @@ bool isLocatedOnDesktopEx(MainWindow *window, long currentDesktop) {
 
 MainWindow *findWindowOnDesktopEx(int tabbed, long currentDesktop) {
 
-    if (tabbed == 0 || (tabbed == -1 && GetPrefOpenInTab() == 0)) {
+    if (tabbed == 0 || (tabbed == -1 && !GetPrefOpenInTab())) {
         /* A new window is requested, unless we find an untitled unmodified
             document on the current desktop */
         for(DocumentWidget *document : DocumentWidget::allDocuments()) {
@@ -184,12 +184,14 @@ void NeditServer::processCommand(const QString &command) {
 
             if (doCommand.isEmpty()) {
                 if(it == documents.end()) {
+
                     MainWindow::EditNewFileEx(
                                 findWindowOnDesktopEx(tabbed, currentDesktop),
                                 QString(),
                                 iconicFlag,
-                                langMode,
+                                langMode.isEmpty() ? QString() : langMode,
                                 QString());
+
                 } else {
                     if (iconicFlag) {
                         (*it)->RaiseDocument();
@@ -227,33 +229,30 @@ void NeditServer::processCommand(const QString &command) {
         int editFlags = (readFlag ? PREF_READ_ONLY : 0) | CREATE | (createFlag ? SUPPRESS_CREATE_WARN : 0);
         if (ParseFilename(fullname.toLatin1().data(), filename, pathname) != 0) {
             fprintf(stderr, "NEdit: invalid file name\n");
-#if 0
-            deleteFileClosedProperty2(filename, pathname);=
-#endif
             break;
         }
 
-        DocumentWidget *window = MainWindow::FindWindowWithFile(QString::fromLatin1(filename), QString::fromLatin1(pathname));
-        if(!window) {
+        DocumentWidget *document = MainWindow::FindWindowWithFile(QString::fromLatin1(filename), QString::fromLatin1(pathname));
+        if(!document) {
             /* Files are opened in background to improve opening speed
                by defering certain time  consuiming task such as syntax
                highlighting. At the end of the file-opening loop, the
                last file opened will be raised to restore those deferred
                items. The current file may also be raised if there're
                macros to execute on. */
-            window = DocumentWidget::EditExistingFileEx(
+            document = DocumentWidget::EditExistingFileEx(
                         findWindowOnDesktopEx(tabbed, currentDesktop)->currentDocument(),
                         QString::fromLatin1(filename),
                         QString::fromLatin1(pathname),
                         editFlags,
                         geometry,
                         iconicFlag,
-                        langMode,
+                        langMode.isEmpty() ? QString() : langMode,
                         tabbed == -1 ? GetPrefOpenInTab() : tabbed,
                         true);
 
-            if (window) {
-                if (lastFileEx && window->toWindow() != lastFileEx->toWindow()) {
+            if (document) {
+                if (lastFileEx && document->toWindow() != lastFileEx->toWindow()) {
                     lastFileEx->RaiseDocument();
                 }
             }
@@ -261,39 +260,30 @@ void NeditServer::processCommand(const QString &command) {
 
         /* Do the actions requested (note DoMacro is last, since the do
            command can do anything, including closing the window!) */
-        if (window) {
-#if 0
-            deleteFileOpenPropertyEx(window);
-            getFileClosedPropertyEx(window);
-#endif
+        if (document) {
 
             if (lineNum > 0) {
                 // TODO(eteran): how was the TextArea previously determined?
-                SelectNumberedLineEx(window, window->firstPane(), lineNum);
+                SelectNumberedLineEx(document, document->firstPane(), lineNum);
             }
 
             if (!doCommand.isEmpty()) {
-                window->RaiseDocument();
+                document->RaiseDocument();
 
                 /* Starting a new command while another one is still running
                    in the same window is not possible (crashes). */
-                if (window->macroCmdData_) {
+                if (document->macroCmdData_) {
                     QApplication::beep();
                 } else {
-                    DoMacroEx(window, doCommand, "-do macro");
+                    DoMacroEx(document, doCommand, "-do macro");
                 }
             }
 
             // register the last file opened for later use
-            if (window) {
-                lastFileEx = window;
+            if (document) {
+                lastFileEx = document;
                 lastIconic = iconicFlag;
             }
-        } else {
-#if 0
-            deleteFileOpenProperty2(filename, pathname);
-            deleteFileClosedProperty2(filename, pathname);
-#endif
         }
     }
 

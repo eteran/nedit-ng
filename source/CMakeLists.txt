@@ -95,7 +95,7 @@ set(UI_FILES
 
 qt5_wrap_ui(UI_H ${UI_FILES})
 
-add_executable(nedit
+add_executable(nedit-ng
 
 	${MOC_SOURCES}
 	${QRC_SOURCES}
@@ -170,19 +170,19 @@ add_executable(nedit
 	${BISON_parser_OUTPUT_SOURCE}
 )
 
-include_directories(nedit
+include_directories(nedit-ng
 	${PROJECT_SOURCE_DIR}
 )
 
-target_link_libraries(nedit LINK_PUBLIC
+target_link_libraries(nedit-ng LINK_PUBLIC
 	NUtil
 	Qt5::Widgets
 	Qt5::Concurrent
 	Qt5::DBus
 )
 
-set_property(TARGET nedit PROPERTY C_STANDARD 99)
-set_property(TARGET nedit PROPERTY CXX_STANDARD 14)
+set_property(TARGET nedit-ng PROPERTY C_STANDARD 99)
+set_property(TARGET nedit-ng PROPERTY CXX_STANDARD 14)
 
 set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -Wc++-compat -Wwrite-strings -Wunused") # -ffunction-sections -fdata-sections
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -W -Wall -pedantic -Wunused") #-Wuseless-cast -Wold-style-cast -ffunction-sections -fdata-sections
@@ -190,9 +190,9 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -W -Wall -pedantic -Wunused") #-Wuseless
 set(CMAKE_C_FLAGS_DEBUG   "${CMAKE_C_FLAGS_DEBUG}   -ggdb3")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -ggdb3")
 
-# SET_TARGET_PROPERTIES(nedit PROPERTIES LINK_FLAGS "-Wl,--gc-sections,--print-gc-sections")
+# SET_TARGET_PROPERTIES(nedit-ng PROPERTIES LINK_FLAGS "-Wl,--gc-sections,--print-gc-sections")
 
-set_target_properties(nedit
+set_target_properties(nedit-ng
 	PROPERTIES
 	RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
 )

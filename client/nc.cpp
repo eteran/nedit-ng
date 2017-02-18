@@ -36,6 +36,7 @@
 #include <QString>
 #include <QProcess>
 #include <QTextStream>
+#include <QtDebug>
 
 #include "util/fileUtils.h"
 #include "util/utils.h"
@@ -273,6 +274,8 @@ void parseCommandLine(int argc, char **argv, CommandLine *commandLine) {
             out << langMode << '\n';
             out << geometry << '\n';
 
+            ++fileCount;
+
             // These switches only affect the next filename argument, not all
             toDoCommand = "";
             lineNum = 0;
@@ -300,6 +303,9 @@ void parseCommandLine(int argc, char **argv, CommandLine *commandLine) {
         out << geometry << '\n';
     }
 
+#if 0 // NOTE(eteran): useful for debugging, but not for the average users
+    qDebug() << "Sending: " << commandString;
+#endif
     commandLine->serverRequest = commandString;
 }
 
