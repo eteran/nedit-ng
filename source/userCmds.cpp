@@ -177,14 +177,9 @@ static char *writeMenuItemString(const QVector<MenuData> &menuItems, int listTyp
 		*outPtr++ = ':';
         strcpy(outPtr, accStr.toLatin1());
         outPtr += accStr.size();
-		*outPtr++ = ':';
 
-        if (f->mnemonic != '\0') {
-			*outPtr++ = f->mnemonic;
-        }
-
-		*outPtr++ = ':';
-		if (listType == SHELL_CMDS) {
+        *outPtr++ = ':';
+        if (listType == SHELL_CMDS) {
             switch(f->input) {
             case FROM_SELECTION: *outPtr++ = 'I'; break;
             case FROM_WINDOW:    *outPtr++ = 'A'; break;
@@ -260,9 +255,7 @@ static int loadMenuItemString(const char *inString, QVector<MenuData> &menuItems
     QString cmdStr;
     QString nameStr;
     QString accStr;
-	char mneChar;
-	int mneLen;
-	int cmdLen;
+    int cmdLen;
 
 	for (;;) {
 
@@ -297,19 +290,7 @@ static int loadMenuItemString(const char *inString, QVector<MenuData> &menuItems
 			return parseError("end not expected");
 		inPtr++;
 
-		// read menemonic field 
-		mneLen = strcspn(inPtr, ":");
-		if (mneLen > 1)
-			return parseError("mnemonic field too long");
-		if (mneLen == 1)
-			mneChar = *inPtr++;
-		else
-			mneChar = '\0';
-		inPtr++;
-		if (*inPtr == '\0')
-			return parseError("end not expected");
-
-		// read flags field 
+        // read flags field
 		InSrcs input = FROM_NONE;
 		OutDests output = TO_SAME_WINDOW;
 		bool repInput = false;
@@ -350,7 +331,7 @@ static int loadMenuItemString(const char *inString, QVector<MenuData> &menuItems
 				return parseError("command must begin with newline");
 			while (*inPtr == ' ' || *inPtr == '\t') // leading whitespace 
 				inPtr++;
-			cmdLen = strcspn(inPtr, "\n");
+            cmdLen = strcspn(inPtr, "\n");
 			if (cmdLen == 0)
 				return parseError("shell command field is empty");
 
@@ -376,7 +357,6 @@ static int loadMenuItemString(const char *inString, QVector<MenuData> &menuItems
 		auto f = new MenuItem;
         f->name      = nameStr;
         f->cmd       = cmdStr;
-		f->mnemonic  = mneChar;
 		f->input     = input;
 		f->output    = output;
 		f->repInput  = repInput;

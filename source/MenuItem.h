@@ -26,7 +26,6 @@ public:
 public:
 	QString      name;
     QKeySequence shortcut;
-    char         mnemonic;
 	InSrcs       input;
 	OutDests     output;
 	bool         repInput;

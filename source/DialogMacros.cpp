@@ -225,7 +225,6 @@ void DialogMacros::on_listItems_itemSelectionChanged() {
 
         ui.editName->setText(ptr->name);
         ui.editAccelerator->setKeySequence(ptr->shortcut);
-		ui.editMnemonic->setText(tr("%1").arg(ptr->mnemonic));
 		ui.checkRequiresSelection->setChecked(ptr->input == FROM_SELECTION);
 		ui.editMacro->setPlainText(ptr->cmd);
 
@@ -248,7 +247,6 @@ void DialogMacros::on_listItems_itemSelectionChanged() {
 	} else {
 		ui.editName->setText(QString());
 		ui.editAccelerator->clear();
-		ui.editMnemonic->setText(QString());
 		ui.checkRequiresSelection->setChecked(false);
 		ui.editMacro->setPlainText(QString());
 
@@ -352,19 +350,7 @@ MenuItem *DialogMacros::readDialogFields(bool silent) {
 	f->name = nameText;
 	f->cmd  = cmdText;
 
-	QString mneText = ui.editMnemonic->text();
-	if(!mneText.isEmpty()) {
-
-		f->mnemonic = mneText[0].toLatin1();
-
-		// colons mess up string parsing
-		if (f->mnemonic == ':') {
-			f->mnemonic = '\0';
-		}
-	}
-
     QKeySequence shortcut = ui.editAccelerator->keySequence();
-
 
 	f->input     = ui.checkRequiresSelection->isChecked() ? FROM_SELECTION : FROM_NONE;
 	f->output    = TO_SAME_WINDOW;

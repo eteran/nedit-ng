@@ -963,12 +963,6 @@ QMenu *MainWindow::createUserMenu(DocumentWidget *document, const QVector<MenuDa
             if(subSep == -1) {
                 name = name.mid(index);
 
-                // add the mnemonic to the string in the appropriate place
-                int pos = name.indexOf(QLatin1Char(menuData.item->mnemonic));
-                if(pos != -1) {
-                    name.insert(pos, QLatin1String("&"));
-                }
-
                 // create the actual action or, if it represents one of our
                 // *very* common entries make it equivalent to the global
                 // QAction representing that task
