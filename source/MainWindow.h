@@ -141,6 +141,9 @@ public Q_SLOTS:
     void defaultSizeGroupTriggered(QAction *action);
     void macroTriggered(QAction *action);
     void shellTriggered(QAction *action);
+#if defined(REPLACE_SCOPE)
+    void defaultReplaceScopeGroupTriggered(QAction *action);
+#endif
 
 public Q_SLOTS:
     void on_tabWidget_currentChanged(int index);
@@ -270,9 +273,7 @@ public Q_SLOTS:
     void on_action_Cancel_Learn_triggered();
     void on_action_Repeat_triggered();
 #if 0
-
     void on_action_Replay_Keystrokes_triggered();
-
 #endif
     void on_action_About_triggered();
     void on_action_About_Qt_triggered();
@@ -309,7 +310,11 @@ public:
     int iSearchStartPos_;              // start pos. of current incr. search
     QVector<DocumentWidget *> writableWindows_;      // temporary list of writable documents, used during multi-file replacements
     bool wasSelected_;                 // last selection state (for dim/undim of selection related menu items
-
+#if defined(REPLACE_SCOPE)
+    QAction *replaceScopeInWindow_;
+    QAction *replaceScopeInSelection_;
+    QAction *replaceScopeSmart_;
+#endif
 public:
     Ui::MainWindow ui;
 };

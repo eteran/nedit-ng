@@ -14,6 +14,9 @@ public:
 	DialogShellMenu(QWidget *parent = 0, Qt::WindowFlags f = 0);
 	virtual ~DialogShellMenu();
 
+private:
+    virtual void showEvent(QShowEvent *event) override;
+
 private Q_SLOTS:
 	void on_buttonNew_clicked();
 	void on_buttonCopy_clicked();

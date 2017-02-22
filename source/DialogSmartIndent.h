@@ -14,6 +14,9 @@ public:
     DialogSmartIndent(DocumentWidget *document, QWidget *parent = 0, Qt::WindowFlags f = 0);
 	virtual ~DialogSmartIndent();
 
+private:
+    virtual void showEvent(QShowEvent *event) override;
+
 public:
 	void updateLanguageModes();
 	bool hasSmartIndentMacros(const QString &languageMode) const;

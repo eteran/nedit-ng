@@ -14,6 +14,9 @@ public:
 	DialogMacros(QWidget *parent = 0, Qt::WindowFlags f = 0);
 	virtual ~DialogMacros();
 
+private:
+    virtual void showEvent(QShowEvent *event) override;
+
 public:
 	void setPasteReplayEnabled(bool enabled);
 

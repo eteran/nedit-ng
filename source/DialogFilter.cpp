@@ -1,5 +1,6 @@
 
 #include "DialogFilter.h"
+#include "preferences.h"
 #include <QKeyEvent>
 #include <QtDebug>
 
@@ -56,6 +57,8 @@ void DialogFilter::showEvent(QShowEvent *event) {
 	Q_UNUSED(event);
 	historyIndex_ = 0;
 	ui.textFilter->setText(QString());
+
+    centerDialog(this);
 }
 
 //------------------------------------------------------------------------------

@@ -497,3 +497,8 @@ bool DialogWindowBackgroundMenu::updateCurrentItem() {
 	QListWidgetItem *const selection = selections[0];
 	return updateCurrentItem(selection);	
 }
+
+void DialogWindowBackgroundMenu::showEvent(QShowEvent *event) {
+    Q_UNUSED(event);
+    centerDialog(this);
+}

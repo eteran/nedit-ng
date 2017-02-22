@@ -1,6 +1,7 @@
 
 #include "DialogDuplicateTags.h"
 #include "tags.h"
+#include "preferences.h"
 #include <QPushButton>
 
 //------------------------------------------------------------------------------
@@ -64,4 +65,9 @@ bool DialogDuplicateTags::applySelection() {
 	}
 
 	return false;
+}
+
+void DialogDuplicateTags::showEvent(QShowEvent *event) {
+    Q_UNUSED(event);
+    centerDialog(this);
 }

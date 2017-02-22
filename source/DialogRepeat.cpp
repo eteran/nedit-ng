@@ -3,6 +3,7 @@
 #include "DocumentWidget.h"
 #include "TextBuffer.h"
 #include "macro.h"
+#include "preferences.h"
 #include <QIntValidator>
 #include <QMessageBox>
 
@@ -83,4 +84,9 @@ bool DialogRepeat::doRepeatDialogAction() {
     // call the action routine repeat_macro to do the work
     document_->repeatMacro(macro, how);
 	return true;
+}
+
+void DialogRepeat::showEvent(QShowEvent *event) {
+    Q_UNUSED(event);
+    centerDialog(this);
 }

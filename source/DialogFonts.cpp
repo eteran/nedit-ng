@@ -261,3 +261,8 @@ void DialogFonts::browseFont(QLineEdit *lineEdit) {
         lineEdit->setText(newFont.toString());
     }
 }
+
+void DialogFonts::showEvent(QShowEvent *event) {
+    Q_UNUSED(event);
+    centerDialog(this);
+}

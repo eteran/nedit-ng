@@ -44,6 +44,9 @@ private:
 	void updateColors();
 
 private:
+    virtual void showEvent(QShowEvent *event) override;
+
+private:
 	Ui::DialogColors ui;
 };
 

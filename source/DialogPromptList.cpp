@@ -1,5 +1,6 @@
 
 #include "DialogPromptList.h"
+#include "preferences.h"
 #include <QPushButton>
 
 // NOTE(eteran): maybe we want to present an option to have this be a combo box instead?
@@ -38,6 +39,8 @@ void DialogPromptList::showEvent(QShowEvent *event) {
 	resize(minimumSize());
 	result_ = 0;
 	text_ = QString();
+
+    centerDialog(this);
 }
 
 void DialogPromptList::on_buttonBox_clicked(QAbstractButton *button) {

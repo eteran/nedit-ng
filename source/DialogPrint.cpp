@@ -460,3 +460,8 @@ void DialogPrint::on_buttonPrint_clicked() {
 	CmdText = ui.editCommand->text();	
 	accept();
 }
+
+void DialogPrint::showEvent(QShowEvent *event) {
+    Q_UNUSED(event);
+    centerDialog(this);
+}

@@ -3,6 +3,7 @@
 #include "DocumentWidget.h"
 #include "MainWindow.h"
 #include "TextArea.h"
+#include "preferences.h"
 
 //------------------------------------------------------------------------------
 // Name: 
@@ -64,4 +65,9 @@ int DialogMoveDocument::selectionIndex() const {
 //------------------------------------------------------------------------------
 bool DialogMoveDocument::moveAllSelected() const {
 	return ui.checkMoveAll->isChecked();
+}
+
+void DialogMoveDocument::showEvent(QShowEvent *event) {
+    Q_UNUSED(event);
+    centerDialog(this);
 }

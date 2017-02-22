@@ -482,3 +482,8 @@ bool DialogDrawingStyles::updateCurrentItem() {
 	QListWidgetItem *const selection = selections[0];
 	return updateCurrentItem(selection);	
 }
+
+void DialogDrawingStyles::showEvent(QShowEvent *event) {
+    Q_UNUSED(event);
+    centerDialog(this);
+}

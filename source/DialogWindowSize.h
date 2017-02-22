@@ -11,6 +11,9 @@ public:
 	DialogWindowSize(QWidget *parent, Qt::WindowFlags f = 0);
 	virtual ~DialogWindowSize();
 
+private:
+    virtual void showEvent(QShowEvent *event) override;
+
 private Q_SLOTS:
 	void on_buttonBox_accepted();
 	

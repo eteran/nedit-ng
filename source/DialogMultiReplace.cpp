@@ -15,6 +15,11 @@ DialogMultiReplace::DialogMultiReplace(MainWindow *window, DocumentWidget *docum
 DialogMultiReplace::~DialogMultiReplace() {
 }
 
+void DialogMultiReplace::showEvent(QShowEvent *event) {
+    Q_UNUSED(event);
+    centerDialog(this);
+}
+
 void DialogMultiReplace::on_checkShowPaths_toggled(bool checked) {
 	Q_UNUSED(checked);
 	uploadFileListItems(true);

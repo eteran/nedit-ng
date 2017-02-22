@@ -1,5 +1,6 @@
 
 #include "DialogPromptString.h"
+#include "preferences.h"
 #include <QPushButton>
 
 DialogPromptString::DialogPromptString(QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f), result_(0) {
@@ -30,6 +31,8 @@ void DialogPromptString::showEvent(QShowEvent *event) {
 	resize(minimumSize());
 	result_ = 0;
 	text_ = QString();
+
+    centerDialog(this);
 }
 
 void DialogPromptString::on_buttonBox_clicked(QAbstractButton *button) {
@@ -41,3 +44,5 @@ void DialogPromptString::on_buttonBox_clicked(QAbstractButton *button) {
 		}
 	}
 }
+
+

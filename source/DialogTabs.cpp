@@ -128,3 +128,8 @@ void DialogTabs::on_buttonBox_helpRequested() {
 	Help(HELP_TABS_DIALOG);
 #endif
 }
+
+void DialogTabs::showEvent(QShowEvent *event) {
+    Q_UNUSED(event);
+    centerDialog(this);
+}

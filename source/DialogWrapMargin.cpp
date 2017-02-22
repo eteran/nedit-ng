@@ -40,3 +40,8 @@ void DialogWrapMargin::on_buttonBox_accepted() {
 
 	accept();
 }
+
+void DialogWrapMargin::showEvent(QShowEvent *event) {
+    Q_UNUSED(event);
+    centerDialog(this);
+}

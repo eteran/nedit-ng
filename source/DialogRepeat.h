@@ -12,7 +12,10 @@ class DialogRepeat : public QDialog {
 public:
     DialogRepeat(DocumentWidget *forWindow, QWidget *parent = 0, Qt::WindowFlags f = 0);
 	virtual ~DialogRepeat();
-	
+
+private:
+    virtual void showEvent(QShowEvent *event) override;
+
 public Q_SLOTS:
 	void setCommand(const QString &command);	
 	void on_buttonBox_accepted();

@@ -144,7 +144,7 @@
       <item>
        <widget class="QRadioButton" name="radioWindow">
         <property name="text">
-         <string>In W&amp;indow</string>
+         <string>In &amp;Window</string>
         </property>
        </widget>
       </item>
@@ -201,7 +201,8 @@
         <string>Replace &amp;&amp; Fi&amp;nd</string>
        </property>
        <property name="icon">
-        <iconset theme="edit-find-replace"/>
+        <iconset theme="edit-find-replace">
+         <normaloff>.</normaloff>.</iconset>
        </property>
       </widget>
      </item>

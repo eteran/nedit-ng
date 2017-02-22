@@ -281,16 +281,16 @@ SearchType GetPrefSearch() {
     return static_cast<SearchType>(g_Settings.searchMethod);
 }
 
-#ifdef REPLACE_SCOPE
+#if defined(REPLACE_SCOPE)
 void SetPrefReplaceDefScope(int scope) {
-    if(g_Preferences.replaceDefaultScope != scope) {
+    if(g_Settings.replaceDefaultScope != scope) {
         PrefsHaveChanged = true;
     }
-    g_Preferences.replaceDefaultScope = scope;
+    g_Settings.replaceDefaultScope = scope;
 }
 
 int GetPrefReplaceDefScope() {
-    return g_Preferences.replaceDefaultScope;
+    return g_Settings.replaceDefaultScope;
 }
 #endif
 
@@ -665,7 +665,7 @@ void SetPrefRepositionDialogs(int state) {
     g_Settings.repositionDialogs = state;
 }
 
-int GetPrefRepositionDialogs() {
+bool GetPrefRepositionDialogs() {
     return g_Settings.repositionDialogs;
 }
 
@@ -1529,4 +1529,20 @@ static QString getDefaultShell() {
     }
 
     return QString::fromLatin1(passwdEntry->pw_shell);
+}
+
+void centerDialog(QDialog *dialog) {
+
+    if(GetPrefRepositionDialogs()) {
+        QPoint pos = QCursor::pos();
+
+        int x = pos.x() - (dialog->width() / 2);
+        int y = pos.y() - (dialog->height() / 2);
+
+        // NOTE(eteran): no effort is made to fixup the location to prevent it
+        // from being partially off screen. At least on KDE Plasma, this happens
+        // automagically for us. We can revisit this if need be
+
+        dialog->move(x, y);
+    }
 }

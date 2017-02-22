@@ -151,3 +151,8 @@ bool DialogSmartIndentCommon::updateSmartIndentCommonData() {
 
 	return true;
 }
+
+void DialogSmartIndentCommon::showEvent(QShowEvent *event) {
+    Q_UNUSED(event);
+    centerDialog(this);
+}

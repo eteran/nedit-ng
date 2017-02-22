@@ -36,6 +36,7 @@ class QString;
 class LanguageMode;
 class DocumentWidget;
 class QFont;
+class QDialog;
 
 constexpr const int PLAIN_LANGUAGE_MODE = -1;
 
@@ -86,7 +87,7 @@ int GetPrefMatchSyntaxBased();
 int GetPrefMaxPrevOpenFiles();
 bool GetPrefOpenInTab();
 int GetPrefOverrideVirtKeyBindings();
-int GetPrefRepositionDialogs();
+bool GetPrefRepositionDialogs();
 int GetPrefRows();
 bool GetPrefSaveOldVersion();
 bool GetPrefSearchDlogs();
@@ -179,7 +180,9 @@ QFont GetPrefBoldFont();
 QFont GetPrefBoldItalicFont();
 QFont GetPrefItalicFont();
 
-#ifdef REPLACE_SCOPE
+void centerDialog(QDialog *dialog);
+
+#if defined(REPLACE_SCOPE)
 void SetPrefReplaceDefScope(int scope);
 int GetPrefReplaceDefScope();
 #endif

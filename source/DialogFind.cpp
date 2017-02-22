@@ -32,8 +32,8 @@ DialogFind::DialogFind(MainWindow *window, DocumentWidget *document, QWidget *pa
 void DialogFind::showEvent(QShowEvent *event) {
 	Q_UNUSED(event);
 	ui.textFind->setFocus();
-	
-	// TODO(eteran): reset state on show?
+
+    centerDialog(this);
 }
 
 //------------------------------------------------------------------------------

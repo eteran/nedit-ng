@@ -693,3 +693,8 @@ bool DialogLanguageModes::updateCurrentItem() {
 	QListWidgetItem *const selection = selections[0];
 	return updateCurrentItem(selection);
 }
+
+void DialogLanguageModes::showEvent(QShowEvent *event) {
+    Q_UNUSED(event);
+    centerDialog(this);
+}

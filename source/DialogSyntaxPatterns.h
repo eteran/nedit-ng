@@ -14,6 +14,9 @@ public:
 	DialogSyntaxPatterns(QWidget *parent = 0, Qt::WindowFlags f = 0);
 	virtual ~DialogSyntaxPatterns();
 
+private:
+    virtual void showEvent(QShowEvent *event) override;
+
 public:
 	void setLanguageName(const QString &name);
 	void UpdateLanguageModeMenu();

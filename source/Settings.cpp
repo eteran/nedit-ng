@@ -69,7 +69,7 @@ void Settings::loadPreferences() {
     retainSearchDialogs   = settings.value(tr("nedit.retainSearchDialogs"),   false).toBool();
     searchWraps           = settings.value(tr("nedit.searchWraps"),           true).toBool();
     stickyCaseSenseButton = settings.value(tr("nedit.stickyCaseSenseButton"), true).toBool();
-    repositionDialogs     = settings.value(tr("nedit.repositionDialogs"),     true).toBool();
+    repositionDialogs     = settings.value(tr("nedit.repositionDialogs"),     false).toBool();
     autoScroll            = settings.value(tr("nedit.autoScroll"),            false).toBool();
     autoScrollVPadding    = settings.value(tr("nedit.autoScrollVPadding"),    4).toInt();
     appendLF              = settings.value(tr("nedit.appendLF"),              true).toBool();
@@ -87,7 +87,7 @@ void Settings::loadPreferences() {
     warnRealFileMods      = settings.value(tr("nedit.warnRealFileMods"),      true).toBool();
     warnExit              = settings.value(tr("nedit.warnExit"),              true).toBool();
     searchMethod          = settings.value(tr("nedit.searchMethod"),          SEARCH_LITERAL).toInt();
-#ifdef REPLACE_SCOPE
+#if defined(REPLACE_SCOPE)
     replaceDefaultScope   = settings.value(tr("nedit.replaceDefaultScope"),   REPL_DEF_SCOPE_SMART).toInt();
 #endif
 
@@ -185,7 +185,7 @@ void Settings::importSettings(const QString &filename) {
     warnRealFileMods      = settings.value(tr("nedit.warnRealFileMods"),      warnRealFileMods).toBool();
     warnExit              = settings.value(tr("nedit.warnExit"),              warnExit).toBool();
     searchMethod          = settings.value(tr("nedit.searchMethod"),          searchMethod).toInt();
-#ifdef REPLACE_SCOPE
+#if defined(REPLACE_SCOPE)
     replaceDefaultScope   = settings.value(tr("nedit.replaceDefaultScope"),   replaceDefaultScope).toInt();
 #endif
 
@@ -281,7 +281,7 @@ bool Settings::savePreferences() {
 	settings.setValue(tr("nedit.warnRealFileMods"),     warnRealFileMods);
 	settings.setValue(tr("nedit.warnExit"),     warnExit);
 	settings.setValue(tr("nedit.searchMethod"),     searchMethod);
-#ifdef REPLACE_SCOPE
+#if defined(REPLACE_SCOPE)
 	settings.setValue(tr("nedit.replaceDefaultScope"),     replaceDefaultScope);
 #endif
 	settings.setValue(tr("nedit.textRows"),     textRows);

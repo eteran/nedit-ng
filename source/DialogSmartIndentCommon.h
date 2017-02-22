@@ -12,6 +12,9 @@ public:
 	virtual ~DialogSmartIndentCommon();
 
 private:
+    virtual void showEvent(QShowEvent *event) override;
+
+private:
 	bool checkSmartIndentCommonDialogData();
 	bool updateSmartIndentCommonData();
 	QString ensureNewline(const QString &string);

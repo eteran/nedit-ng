@@ -393,7 +393,7 @@ public:
 			}
 
 			if(!found) {
-				return i;
+				return static_cast<size_t>(i);
 			}
 		}
 

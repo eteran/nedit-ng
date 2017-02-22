@@ -23,6 +23,9 @@ public:
     DialogFonts(DocumentWidget *document, bool forWindow, QWidget *parent = 0, Qt::WindowFlags f = 0);
 	virtual ~DialogFonts();
 
+private:
+    virtual void showEvent(QShowEvent *event) override;
+
 private Q_SLOTS:
 	void on_buttonPrimaryFont_clicked();
 	void on_buttonFontItalic_clicked();

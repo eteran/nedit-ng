@@ -1,5 +1,6 @@
 
 #include "DialogExecuteCommand.h"
+#include "preferences.h"
 #include <QKeyEvent>
 #include <QtDebug>
 
@@ -56,6 +57,8 @@ void DialogExecuteCommand::showEvent(QShowEvent *event) {
 	Q_UNUSED(event);
 	historyIndex_ = 0;
 	ui.textCommand->setText(QString());
+
+    centerDialog(this);
 }
 
 //------------------------------------------------------------------------------

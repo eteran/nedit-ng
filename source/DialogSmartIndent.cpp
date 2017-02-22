@@ -375,3 +375,8 @@ QString DialogSmartIndent::ensureNewline(const QString &string) {
 bool DialogSmartIndent::hasSmartIndentMacros(const QString &languageMode) const {
 	return languageMode_ == languageMode;
 }
+
+void DialogSmartIndent::showEvent(QShowEvent *event) {
+    Q_UNUSED(event);
+    centerDialog(this);
+}

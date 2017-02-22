@@ -12,6 +12,9 @@ public:
 	virtual ~DialogAbout() = default;
 
 public:
+    virtual void showEvent(QShowEvent *event) override;
+
+public:
     static QString createInfoString();
 
 private:

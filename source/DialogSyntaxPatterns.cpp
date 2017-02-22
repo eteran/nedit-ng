@@ -1056,3 +1056,8 @@ void DialogSyntaxPatterns::RenameHighlightPattern(const QString &oldName, const 
 bool DialogSyntaxPatterns::LMHasHighlightPatterns(const QString &languageMode) {
 	return languageMode == ui.comboLanguageMode->currentText() && ui.listItems->count() != 0;
 }
+
+void DialogSyntaxPatterns::showEvent(QShowEvent *event) {
+    Q_UNUSED(event);
+    centerDialog(this);
+}

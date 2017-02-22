@@ -494,3 +494,8 @@ bool DialogShellMenu::checkCurrent(bool silent) {
 	
 	return false;
 }
+
+void DialogShellMenu::showEvent(QShowEvent *event) {
+    Q_UNUSED(event);
+    centerDialog(this);
+}

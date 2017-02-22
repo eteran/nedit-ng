@@ -257,3 +257,8 @@ void DialogColors::updateColors() {
     SetPrefColorName(LINENO_FG_COLOR, lineNoFg);
     SetPrefColorName(CURSOR_FG_COLOR, cursorFg);
 }
+
+void DialogColors::showEvent(QShowEvent *event) {
+    Q_UNUSED(event);
+    centerDialog(this);
+}

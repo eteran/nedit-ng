@@ -49,10 +49,10 @@ enum DialogTypes {
    e.) "menuItemB2" (hierarchical ID = {1, 2, 1})
  */
 struct userMenuInfo {
-    QString umiName;               // hierarchical name of menu item (w.o. language mode info)
-    bool  umiIsDefault;            // menu item is default one ("@*")
+    QString      umiName;          // hierarchical name of menu item (w.o. language mode info)
+    bool         umiIsDefault;     // menu item is default one ("@*")
     QVector<int> umiLanguageModes; // list of applicable lang. modes
-    int   umiDefaultIndex;         // array index of menu item to be used as default, if no lang. mode matches
+    int          umiDefaultIndex;  // array index of menu item to be used as default, if no lang. mode matches
 };
 
 struct MenuData {

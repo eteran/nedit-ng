@@ -13,6 +13,9 @@ public:
 public:
 	DialogLanguageModes(QWidget *parent = 0, Qt::WindowFlags f = 0);
 	virtual ~DialogLanguageModes();
+
+private:
+    virtual void showEvent(QShowEvent *event) override;
 	
 private Q_SLOTS:
 	void on_buttonBox_accepted();

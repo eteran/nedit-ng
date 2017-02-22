@@ -48,3 +48,8 @@ void DialogWindowSize::on_buttonBox_accepted() {
 	
 	accept();
 }
+
+void DialogWindowSize::showEvent(QShowEvent *event) {
+    Q_UNUSED(event);
+    centerDialog(this);
+}

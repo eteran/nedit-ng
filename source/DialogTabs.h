@@ -18,7 +18,10 @@ public:
 public:
     DialogTabs(DocumentWidget *document, QWidget *parent = 0, Qt::WindowFlags f = 0);
 	virtual ~DialogTabs();
-	
+
+private:
+    virtual void showEvent(QShowEvent *event) override;
+
 private Q_SLOTS:
 	void on_checkEmulateTabs_toggled(bool checked);
 	void on_buttonBox_accepted();

@@ -8,7 +8,7 @@
 #include <QPointer>
 #include <ctime>
 
-#ifdef REPLACE_SCOPE
+#if defined(REPLACE_SCOPE)
 #include "ui_DialogReplaceScope.h"
 #include "ReplaceScope.h"
 #else
@@ -34,7 +34,7 @@ public:
     void setTextField(DocumentWidget *document);
 	void initToggleButtons(SearchType searchType);
 	void fUpdateActionButtons();
-#ifdef REPLACE_SCOPE
+#if defined(REPLACE_SCOPE)
 	void rSetActionButtons(bool replaceBtn, bool replaceFindBtn, bool replaceAndFindBtn, bool replaceAllBtn);
 #else
 	void rSetActionButtons(bool replaceBtn, bool replaceFindBtn, bool replaceAndFindBtn, bool replaceInWinBtn, bool replaceInSelBtn, bool replaceAllBtn);
@@ -55,7 +55,7 @@ private Q_SLOTS:
 	void on_buttonFind_clicked();
 	void on_buttonReplace_clicked();
 	void on_buttonReplaceFind_clicked();
-#ifdef REPLACE_SCOPE
+#if defined(REPLACE_SCOPE)
 	void on_buttonAll_clicked();
 	void on_radioWindow_toggled(bool checked);
 	void on_radioSelection_toggled(bool checked);
@@ -69,7 +69,7 @@ private Q_SLOTS:
 public:
     MainWindow *window_;
     DocumentWidget *document_;
-#ifdef REPLACE_SCOPE
+#if defined(REPLACE_SCOPE)
 	Ui::DialogReplaceScope ui;
 	ReplaceScope replaceScope_;
 #else

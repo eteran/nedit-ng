@@ -920,10 +920,8 @@ int AllocNStringCpy(NString *string, const char *s) {
 NString AllocNStringCpyEx(const QString &s) {
     size_t length = s.size();
 
-    // TODO(eteran): make this allow embedded NULs
-
     NString string = AllocNStringEx(length + 1);
-    strcpy(string.rep, s.toLatin1().data());
+    memcpy(string.rep, s.toLatin1().data(), length + 1);
 
     return string;
 }
@@ -931,10 +929,8 @@ NString AllocNStringCpyEx(const QString &s) {
 NString AllocNStringCpyEx(const std::string &s) {
     size_t length = s.size();
 
-    // TODO(eteran): make this allow embedded NULs
-
     NString string = AllocNStringEx(length + 1);
-    strcpy(string.rep, s.data());
+    memcpy(string.rep, s.data(), length + 1);
 
     return string;
 }

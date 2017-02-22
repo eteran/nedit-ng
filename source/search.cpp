@@ -123,14 +123,14 @@ static const char *searchTypeStrings[] = {"literal",     // SEARCH_LITERAL
                                           "regexNoCase", // SEARCH_REGEX_NOCASE    
                                           nullptr};
 
-#ifdef REPLACE_SCOPE
+#if defined(REPLACE_SCOPE)
 /*
 ** Checks whether a selection spans multiple lines. Used to decide on the
 ** default scope for replace dialogs.
 ** This routine introduces a dependency on TextDisplay.h, which is not so nice,
 ** but I currently don't have a cleaner solution.
 */
-static bool selectionSpansMultipleLines(Document *window) {
+static bool selectionSpansMultipleLines(DocumentWidget *document) {
 	int selStart;
 	int selEnd;
 	int rectStart;
@@ -140,7 +140,7 @@ static bool selectionSpansMultipleLines(Document *window) {
 	bool isRect;
 	int lineWidth;
 
-	if (!window->buffer_->BufGetSelectionPos(&selStart, &selEnd, &isRect, &rectStart, &rectEnd)) {
+    if (!document->buffer_->BufGetSelectionPos(&selStart, &selEnd, &isRect, &rectStart, &rectEnd)) {
         return false;
 	}
 
@@ -158,21 +158,24 @@ static bool selectionSpansMultipleLines(Document *window) {
 	  we also assume a multi-line selection.
 	*/
 
-	lineStartStart = window->buffer_->BufStartOfLine(selStart);
-	lineStartEnd = window->buffer_->BufStartOfLine(selEnd);
+    lineStartStart = document->buffer_->BufStartOfLine(selStart);
+    lineStartEnd = document->buffer_->BufStartOfLine(selEnd);
 	// If the line starts differ, we have a "\n" in between. 
 	if (lineStartStart != lineStartEnd) {
 		return true;
 	}
 
-	if (window->wrapMode_ != CONTINUOUS_WRAP) {
+    if (document->wrapMode_ != CONTINUOUS_WRAP) {
         return false; // Same line
 	}
 
 	// Estimate the number of characters on a line 
-	TextDisplay *textD = textD_of(window->textArea_);
-	if (textD->TextDGetFont()->max_bounds.width > 0) {
-		lineWidth = textD->getRect().width / textD->TextDGetFont()->max_bounds.width;
+    TextArea *area = document->firstPane();
+
+    int maxWidth = area->TextDMaxFontWidth(false);
+
+    if (maxWidth > 0) {
+        lineWidth = area->getRect().width() / maxWidth;
 	} else {
 		lineWidth = 1;
 	}
@@ -223,23 +226,19 @@ void DoFindReplaceDlogEx(MainWindow *window, DocumentWidget *document, TextArea 
     // Set the state of the Keep Dialog Up button
     dialog->ui.checkKeep->setChecked(keepDialogs);
 
-#if defined(REPLACE_SCOPE) || 0
-    /* Set the state of the scope radio buttons to "In Window".
-       Notify to make sure that callbacks are called.
-       NOTE: due to an apparent bug in OpenMotif, the radio buttons may
-       get stuck after resetting the scope to "In Window". Therefore we must
-       use RadioButtonChangeState(), which contains a workaround. */
-    if (document->wasSelected_) {
-        /* If a selection exists, the default scope depends on the preference
-               of the user. */
+#if defined(REPLACE_SCOPE)
+
+    if (window->wasSelected_) {
+        // If a selection exists, the default scope depends on the preference
+        // of the user.
         switch (GetPrefReplaceDefScope()) {
         case REPL_DEF_SCOPE_SELECTION:
-            /* The user prefers selection scope, no matter what the
-               size of the selection is. */
+            // The user prefers selection scope, no matter what the size of
+            // the selection is.
             dialog->ui.radioSelection->setChecked(true);
             break;
         case REPL_DEF_SCOPE_SMART:
-            if (selectionSpansMultipleLines(window)) {
+            if (selectionSpansMultipleLines(document)) {
                 /* If the selection spans multiple lines, the user most
                    likely wants to perform a replacement in the selection */
                 dialog->ui.radioSelection->setChecked(true);
@@ -265,7 +264,6 @@ void DoFindReplaceDlogEx(MainWindow *window, DocumentWidget *document, TextArea 
     // Start the search history mechanism at the current history item
     window->rHistIndex_ = 0;
 
-    // TODO(eteran): center it on the cursor if settings say so
     dialog->show();
 }
 
@@ -300,7 +298,6 @@ void DoFindDlogEx(MainWindow *window, DocumentWidget *document, SearchDirection 
     // start the search history mechanism at the current history item
     window->fHistIndex_ = 0;
 
-    // TODO(eteran): center it on the cursor if settings say so
     dialog->show();
 }
 
@@ -978,6 +975,7 @@ static bool prefOrUserCancelsSubstEx(MainWindow *window, DocumentWidget *documen
 ** replace strings to the global search history.
 */
 void ReplaceInSelectionEx(MainWindow *window, DocumentWidget *document, TextArea *area, const QString &searchString, const QString &replaceString, SearchType searchType) {
+
     int selStart;
     int selEnd;
     int beginPos;

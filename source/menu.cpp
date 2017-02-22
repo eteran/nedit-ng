@@ -26,12 +26,6 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifdef REPLACE_SCOPE
-static void replaceScopeWindowCB(Widget w, XtPointer clientData, XtPointer callData);
-static void replaceScopeSelectionCB(Widget w, XtPointer clientData, XtPointer callData);
-static void replaceScopeSmartCB(Widget w, XtPointer clientData, XtPointer callData);
-#endif
-
 
 #if 0
 // Menu modes for SGI_CUSTOM short-menus feature 
@@ -236,13 +230,7 @@ Widget CreateMenuBar(Widget parent, Document *window) {
 
 	// Search sub menu 
 
-#ifdef REPLACE_SCOPE
-	subSubSubPane = createMenu(subSubPane, "defaultReplaceScope", "Default Replace Scope", 'R', nullptr, FULL);
-	XtVaSetValues(subSubSubPane, XmNradioBehavior, True, nullptr);
-	window->replScopeWinDefItem_ = createMenuToggle(subSubSubPane, "window", "In Window", 'W', replaceScopeWindowCB, window, GetPrefReplaceDefScope() == REPL_DEF_SCOPE_WINDOW, FULL);
-	window->replScopeSelDefItem_ = createMenuToggle(subSubSubPane, "selection", "In Selection", 'S', replaceScopeSelectionCB, window, GetPrefReplaceDefScope() == REPL_DEF_SCOPE_SELECTION, FULL);
-	window->replScopeSmartDefItem_ = createMenuToggle(subSubSubPane, "window", "Smart", 'm', replaceScopeSmartCB, window, GetPrefReplaceDefScope() == REPL_DEF_SCOPE_SMART, FULL);
-#endif
+
 
 	/*
 	** Remainder of Preferences menu
@@ -288,67 +276,6 @@ Widget CreateMenuBar(Widget parent, Document *window) {
 
 /*----------------------------------------------------------------------------*/
 
-
-
-#ifdef REPLACE_SCOPE
-static void replaceScopeWindowCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	Q_UNUSED(clientData);
-	Q_UNUSED(callData);
-
-	// Set the preference and make the other windows' menus agree 
-	if (XmToggleButtonGetState(w)) {
-		SetPrefReplaceDefScope(REPL_DEF_SCOPE_WINDOW);
-		for(Document *win: WindowList) {
-			if (win->IsTopDocument()) {
-				XmToggleButtonSetState(win->replScopeWinDefItem_, True, False);
-				XmToggleButtonSetState(win->replScopeSelDefItem_, False, False);
-				XmToggleButtonSetState(win->replScopeSmartDefItem_, False, False);
-			}
-		}
-	}
-}
-
-static void replaceScopeSelectionCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	Q_UNUSED(clientData);
-	Q_UNUSED(callData);
-
-	// Set the preference and make the other windows' menus agree 
-	if (XmToggleButtonGetState(w)) {
-		SetPrefReplaceDefScope(REPL_DEF_SCOPE_SELECTION);
-		for(Document *win: WindowList) {
-			if (win->IsTopDocument()) {
-				XmToggleButtonSetState(win->replScopeWinDefItem_, False, False);
-				XmToggleButtonSetState(win->replScopeSelDefItem_, True, False);
-				XmToggleButtonSetState(win->replScopeSmartDefItem_, False, False);
-			}
-		}
-	}
-}
-
-static void replaceScopeSmartCB(Widget w, XtPointer clientData, XtPointer callData) {
-
-	Q_UNUSED(clientData);
-	Q_UNUSED(callData);
-
-	// Set the preference and make the other windows' menus agree 
-	if (XmToggleButtonGetState(w)) {
-		SetPrefReplaceDefScope(REPL_DEF_SCOPE_SMART);
-		for(Document *win: WindowList) {
-			if (win->IsTopDocument()) {
-				XmToggleButtonSetState(win->replScopeWinDefItem_, False, False);
-				XmToggleButtonSetState(win->replScopeSelDefItem_, False, False);
-				XmToggleButtonSetState(win->replScopeSmartDefItem_, True, False);
-			}
-		}
-	}
-}
-#endif
-
-
-
-
 #if 0
 static void replayCB(Widget w, XtPointer clientData, XtPointer callData) {
 	Q_UNUSED(clientData);
@@ -357,9 +284,7 @@ static void replayCB(Widget w, XtPointer clientData, XtPointer callData) {
 	HidePointerOnKeyedEvent(Document::WidgetToWindow(MENU_WIDGET(w))->lastFocus_, static_cast<XmAnyCallbackStruct *>(callData)->event);
 	Replay(Document::WidgetToWindow(MENU_WIDGET(w)));
 }
-#endif
 
-#if 0 // NOTE(eteran): transitioned
 static void splitPaneAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) {
 
 	Q_UNUSED(args);

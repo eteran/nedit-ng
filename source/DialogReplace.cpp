@@ -25,7 +25,7 @@ DialogReplace::DialogReplace(MainWindow *window, DocumentWidget *document, QWidg
 	lastRegexCase_   = true;
 	lastLiteralCase_ = false;
 	
-#ifdef REPLACE_SCOPE
+#if defined(REPLACE_SCOPE)
 	replaceScope_ = REPL_SCOPE_WIN;
 #endif
 }
@@ -42,8 +42,8 @@ DialogReplace::~DialogReplace() {
 void DialogReplace::showEvent(QShowEvent *event) {
 	Q_UNUSED(event);
 	ui.textFind->setFocus();
-	
-	// TODO(eteran): reset state on show
+
+    centerDialog(this);
 }
 
 //------------------------------------------------------------------------------
@@ -52,7 +52,7 @@ void DialogReplace::showEvent(QShowEvent *event) {
 void DialogReplace::keyPressEvent(QKeyEvent *event) {
 
 	if(ui.textFind->hasFocus()) {
-		int index = window_->fHistIndex_;
+        int index = window_->rHistIndex_;
 
 		// only process up and down arrow keys 
 		if (event->key() != Qt::Key_Up && event->key() != Qt::Key_Down) {
@@ -74,8 +74,8 @@ void DialogReplace::keyPressEvent(QKeyEvent *event) {
         QString replaceStr;
 		SearchType searchType;
 		if (index == 0) {
-			searchStr  = QLatin1String("");
-            replaceStr = QLatin1String("");
+            searchStr  = QString();
+            replaceStr = QString();
 			searchType = GetPrefSearch();
 		} else {
             searchStr  = SearchHistory[historyIndex(index)];
@@ -92,7 +92,7 @@ void DialogReplace::keyPressEvent(QKeyEvent *event) {
 		// Set the state of the Find ... button 
 		fUpdateActionButtons();
 
-		window_->fHistIndex_ = index;
+        window_->rHistIndex_ = index;
 	}
 
 	if(ui.textReplace->hasFocus()) {
@@ -190,20 +190,6 @@ void DialogReplace::on_buttonFind_clicked() {
 //------------------------------------------------------------------------------
 void DialogReplace::on_buttonReplace_clicked() {
 
-#ifdef REPLACE_SCOPE
-    // TODO(eteran): implement this
-	switch (replaceScope_) {
-	case REPL_SCOPE_WIN:
-		replaceAllCB(w, window, callData);
-		break;
-	case REPL_SCOPE_SEL:
-		rInSelCB(w, window, callData);
-		break;
-	case REPL_SCOPE_MULTI:
-		replaceMultiFileCB(w, window, callData);
-		break;
-	}
-#else
     QString searchString;
     QString replaceString;
 	SearchDirection direction;
@@ -224,7 +210,6 @@ void DialogReplace::on_buttonReplace_clicked() {
 	if (!keepDialog()) {
 		hide();
 	}
-#endif
 }
 
 //------------------------------------------------------------------------------
@@ -237,7 +222,6 @@ void DialogReplace::on_buttonReplaceFind_clicked() {
 	SearchDirection direction;
 	SearchType searchType;
 	
-
 	// Validate and fetch the find and replace strings from the dialog 
     if (!getReplaceDlogInfo(&direction, &searchString, &replaceString, &searchType))
 		return;
@@ -254,7 +238,7 @@ void DialogReplace::on_buttonReplaceFind_clicked() {
 	}
 }
 
-#ifdef REPLACE_SCOPE
+#if defined(REPLACE_SCOPE)
 
 //------------------------------------------------------------------------------
 // name: 
@@ -292,15 +276,64 @@ void DialogReplace::on_radioMulti_toggled(bool checked) {
 //------------------------------------------------------------------------------
 void DialogReplace::on_buttonAll_clicked() {
 	
-	// TODO(eteran): implement this
-#if 0
-	switch (replaceScope_) {
+#if defined(REPLACE_SCOPE)
+
+    QString searchString;
+    QString replaceString;
+    SearchDirection direction;
+    SearchType searchType;
+
+    // Validate and fetch the find and replace strings from the dialog
+    if (!getReplaceDlogInfo(&direction, &searchString, &replaceString, &searchType)) {
+        return;
+    }
+
+    switch (replaceScope_) {
 	case REPL_SCOPE_WIN:
+        document_->replaceAllAP(searchString, replaceString, searchType);
+
+        // pop down the replace dialog
+        if(!keepDialog()) {
+            hide();
+        }
+
 		break;
 	case REPL_SCOPE_SEL:
+        document_->replaceInSelAP(searchString, replaceString, searchType);
+
+        // pop down the replace dialog
+        if(!keepDialog()) {
+            hide();
+        }
+
 		break;
 	case REPL_SCOPE_MULTI:
-		replaceMultiFileCB(w, window, callData);
+        // Don't let the user select files when no replacement can be made
+        if (searchString.isEmpty()) {
+            // Set the initial focus of the dialog back to the search string
+            ui.textFind->setFocus();
+
+            // pop down the replace dialog
+            if(!keepDialog()) {
+                hide();
+            }
+            return;
+        }
+
+        // Create the dialog if it doesn't already exist
+        if (!dialogMultiReplace_) {
+            dialogMultiReplace_ = new DialogMultiReplace(window_, document_, this, this);
+        }
+
+        // Raising the window doesn't make sense. It is modal, so we can't get here unless it is unmanaged
+        // Prepare a list of writable windows
+        collectWritableWindows();
+
+        // Initialize/update the list of files.
+        dialogMultiReplace_->uploadFileListItems(false);
+
+        // Display the dialog
+        dialogMultiReplace_->exec();
 		break;
 	}
 #endif
@@ -373,8 +406,9 @@ void DialogReplace::on_buttonMulti_clicked() {
 	SearchType searchType;
 
 	// Validate and fetch the find and replace strings from the dialog 
-    if (!getReplaceDlogInfo(&direction, &searchString, &replaceString, &searchType))
+    if (!getReplaceDlogInfo(&direction, &searchString, &replaceString, &searchType)) {
 		return;
+    }
 
 	// Don't let the user select files when no replacement can be made 
     if (searchString.isEmpty()) {
@@ -401,7 +435,6 @@ void DialogReplace::on_buttonMulti_clicked() {
 	dialogMultiReplace_->uploadFileListItems(false);
 
 	// Display the dialog 
-	// TODO(eteran): center on pointer
     dialogMultiReplace_->exec();
 }
 
@@ -553,7 +586,7 @@ void DialogReplace::fUpdateActionButtons() {
 //------------------------------------------------------------------------------
 void DialogReplace::UpdateReplaceActionButtons() {
 
-#ifdef REPLACE_SCOPE
+#if defined(REPLACE_SCOPE)
 	// Is there any text in the search for field 
 	bool searchText = !ui.textFind->text().isEmpty();
 
@@ -580,7 +613,7 @@ void DialogReplace::UpdateReplaceActionButtons() {
 #endif
 }
 
-#ifdef REPLACE_SCOPE
+#if defined(REPLACE_SCOPE)
 void DialogReplace::rSetActionButtons(bool replaceBtn, bool replaceFindBtn, bool replaceAndFindBtn, bool replaceAllBtn) {
 	
 	ui.buttonReplace->setEnabled(replaceBtn);

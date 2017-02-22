@@ -23,6 +23,8 @@ public:
 	int selectionIndex() const;
 	bool moveAllSelected() const;
 
+private:
+    virtual void showEvent(QShowEvent *event) override;
 	
 private Q_SLOTS:
 	void on_buttonMove_clicked();

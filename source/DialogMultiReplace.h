@@ -14,8 +14,11 @@ class DialogMultiReplace : public QDialog {
 public:
     DialogMultiReplace(MainWindow *window, DocumentWidget *document, DialogReplace *replace, QWidget *parent = 0, Qt::WindowFlags f = 0);
 	virtual ~DialogMultiReplace();
-	
-public Q_SLOTS:
+
+public:
+    virtual void showEvent(QShowEvent *event) override;
+
+private Q_SLOTS:
 	void on_checkShowPaths_toggled(bool checked);
 	void on_buttonDeselectAll_clicked();
 	void on_buttonSelectAll_clicked();

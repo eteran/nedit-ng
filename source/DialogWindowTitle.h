@@ -17,6 +17,9 @@ public:
     DialogWindowTitle(DocumentWidget *document, QWidget *parent = 0, Qt::WindowFlags f = 0);
 	virtual ~DialogWindowTitle();
 
+private:
+    virtual void showEvent(QShowEvent *event) override;
+
 private Q_SLOTS:
 	void on_checkFileName_toggled(bool checked);
 	void on_checkHostName_toggled(bool checked);

@@ -498,3 +498,8 @@ bool DialogMacros::updateCurrentItem() {
 	QListWidgetItem *const selection = selections[0];
 	return updateCurrentItem(selection);	
 }
+
+void DialogMacros::showEvent(QShowEvent *event) {
+    Q_UNUSED(event);
+    centerDialog(this);
+}

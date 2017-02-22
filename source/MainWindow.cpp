@@ -414,6 +414,39 @@ void MainWindow::setupMenuAlternativeMenus() {
     if (GetPrefMaxPrevOpenFiles() <= 0) {
         ui.action_Open_Previous->setEnabled(false);
     }
+
+#if defined(REPLACE_SCOPE)
+    auto replaceScopeGroup = new QActionGroup(this);
+    auto replaceScopeMenu = new QMenu(tr("Default &Replace Scope"), this);
+
+    replaceScopeInWindow_    = replaceScopeMenu->addAction(tr("In &Window"));
+    replaceScopeInSelection_ = replaceScopeMenu->addAction(tr("In &Selection"));
+    replaceScopeSmart_       = replaceScopeMenu->addAction(tr("Smart"));
+
+    replaceScopeInWindow_->setCheckable(true);
+    replaceScopeInSelection_->setCheckable(true);
+    replaceScopeSmart_->setCheckable(true);
+
+    switch(GetPrefReplaceDefScope()) {
+    case REPL_DEF_SCOPE_WINDOW:
+        replaceScopeInWindow_->setChecked(true);
+        break;
+    case REPL_DEF_SCOPE_SELECTION:
+        replaceScopeInSelection_->setChecked(true);
+        break;
+    case REPL_DEF_SCOPE_SMART:
+        replaceScopeSmart_->setChecked(true);
+        break;
+    }
+
+    ui.menu_Default_Searching->addMenu(replaceScopeMenu);
+
+    replaceScopeGroup->addAction(replaceScopeInWindow_);
+    replaceScopeGroup->addAction(replaceScopeInSelection_);
+    replaceScopeGroup->addAction(replaceScopeSmart_);
+
+    connect(replaceScopeGroup, SIGNAL(triggered(QAction *)), this, SLOT(defaultReplaceScopeGroupTriggered(QAction *)));
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -3027,7 +3060,6 @@ void MainWindow::defaultIndentGroupTriggered(QAction *action) {
 
 void MainWindow::on_action_Default_Program_Smart_Indent_triggered() {
 
-
     if (!SmartIndentDlg) {
         // TODO(eteran): do we really want this to be associated with THIS document?
         if(auto document = currentDocument()) {
@@ -3226,6 +3258,28 @@ void MainWindow::on_action_Default_Search_Keep_Dialogs_Up_toggled(bool state) {
         no_signals(window->ui.action_Default_Search_Keep_Dialogs_Up)->setChecked(state);
     }
 }
+
+#if defined(REPLACE_SCOPE)
+void MainWindow::defaultReplaceScopeGroupTriggered(QAction *action) {
+
+    if(action == replaceScopeInWindow_) {
+        SetPrefReplaceDefScope(REPL_DEF_SCOPE_WINDOW);
+        for(MainWindow *window : allWindows()) {
+            no_signals(window->replaceScopeInWindow_)->setChecked(true);
+        }
+    } else if(action == replaceScopeInSelection_) {
+        SetPrefReplaceDefScope(REPL_DEF_SCOPE_SELECTION);
+        for(MainWindow *window : allWindows()) {
+            no_signals(window->replaceScopeInSelection_)->setChecked(true);
+        }
+    } else if(action == replaceScopeSmart_) {
+        SetPrefReplaceDefScope(REPL_DEF_SCOPE_SMART);
+        for(MainWindow *window : allWindows()) {
+            no_signals(window->replaceScopeSmart_)->setChecked(true);
+        }
+    }
+}
+#endif
 
 void MainWindow::defaultSearchGroupTriggered(QAction *action) {
 

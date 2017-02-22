@@ -11,6 +11,9 @@ public:
 	DialogPromptString(QWidget *parent = 0, Qt::WindowFlags f = 0);
 	virtual ~DialogPromptString();
 
+private:
+    virtual void showEvent(QShowEvent *event) override;
+
 public:
 	int result() const {
 		return result_;
@@ -28,9 +31,6 @@ public Q_SLOTS:
 private Q_SLOTS:
 	void on_buttonBox_clicked(QAbstractButton *button);
 	
-private:
-	virtual void showEvent(QShowEvent *event) override;
-
 private:
 	Ui::DialogPromptString ui;
 	int result_;

@@ -13,6 +13,9 @@ public:
 	DialogDrawingStyles(QWidget *parent = 0, Qt::WindowFlags f = 0);
 	virtual ~DialogDrawingStyles();
 
+private:
+    virtual void showEvent(QShowEvent *event) override;
+
 public Q_SLOTS:
 	void setStyleByName(const QString &name);
 

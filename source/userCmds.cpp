@@ -51,7 +51,7 @@ const int UNKNOWN_LANGUAGE_MODE = -2;
 
 static char *copyMacroToEnd(const char **inPtr);
 static char *writeMenuItemString(const QVector<MenuData> &menuItems, int listType);
-static int loadMenuItemString(const char *inString, QVector<MenuData> &menuItems, int listType);
+static int loadMenuItemString(const char *inString, QVector<MenuData> &menuItems, DialogTypes listType);
 static bool parseError(const char *message);
 static QString stripLanguageModeEx(const QString &menuItemName);
 static QString writeMenuItemStringEx(const QVector<MenuData> &menuItems, int listType);
@@ -248,14 +248,9 @@ static QString writeMenuItemStringEx(const QVector<MenuData> &menuItems, int lis
     return str;
 }
 
-static int loadMenuItemString(const char *inString, QVector<MenuData> &menuItems, int listType) {
+static int loadMenuItemString(const char *inString, QVector<MenuData> &menuItems, DialogTypes listType) {
 
 	const char *inPtr = inString;
-
-    QString cmdStr;
-    QString nameStr;
-    QString accStr;
-    int cmdLen;
 
 	for (;;) {
 
@@ -273,7 +268,7 @@ static int loadMenuItemString(const char *inString, QVector<MenuData> &menuItems
 		if (nameLen == 0)
 			return parseError("no name field");
 
-        nameStr = QString::fromLatin1(inPtr, nameLen);
+        auto nameStr = QString::fromLatin1(inPtr, nameLen);
 
 		inPtr += nameLen;
 		if (*inPtr == '\0')
@@ -283,7 +278,7 @@ static int loadMenuItemString(const char *inString, QVector<MenuData> &menuItems
 		// read accelerator field 
         int accLen = strcspn(inPtr, ":");
 
-        accStr = QString::fromLatin1(inPtr, accLen);
+        auto accStr = QString::fromLatin1(inPtr, accLen);
 
         inPtr += accLen;
 		if (*inPtr == '\0')
@@ -298,32 +293,48 @@ static int loadMenuItemString(const char *inString, QVector<MenuData> &menuItems
 		bool loadAfter = false;
 		for (; *inPtr != ':'; inPtr++) {
 			if (listType == SHELL_CMDS) {
-				if (*inPtr == 'I')
-					input = FROM_SELECTION;
-				else if (*inPtr == 'A')
-					input = FROM_WINDOW;
-				else if (*inPtr == 'E')
-					input = FROM_EITHER;
-				else if (*inPtr == 'W')
-					output = TO_NEW_WINDOW;
-				else if (*inPtr == 'D')
-					output = TO_DIALOG;
-				else if (*inPtr == 'X')
+
+                switch(*inPtr) {
+                case 'I':
+                    input = FROM_SELECTION;
+                    break;
+                case 'A':
+                    input = FROM_WINDOW;
+                    break;
+                case 'E':
+                    input = FROM_EITHER;
+                    break;
+                case 'W':
+                    output = TO_NEW_WINDOW;
+                    break;
+                case 'D':
+                    output = TO_DIALOG;
+                    break;
+                case 'X':
                     repInput = true;
-				else if (*inPtr == 'S')
+                    break;
+                case 'S':
                     saveFirst = true;
-				else if (*inPtr == 'L')
+                    break;
+                case 'L':
                     loadAfter = true;
-				else
-					return parseError("unreadable flag field");
+                    break;
+                default:
+                    return parseError("unreadable flag field");
+                }
 			} else {
-				if (*inPtr == 'R')
-					input = FROM_SELECTION;
-				else
-					return parseError("unreadable flag field");
+                switch(*inPtr) {
+                case 'R':
+                    input = FROM_SELECTION;
+                    break;
+                default:
+                    return parseError("unreadable flag field");
+                }
 			}
 		}
 		inPtr++;
+
+        QString cmdStr;
 
 		// read command field 
 		if (listType == SHELL_CMDS) {
@@ -331,7 +342,7 @@ static int loadMenuItemString(const char *inString, QVector<MenuData> &menuItems
 				return parseError("command must begin with newline");
 			while (*inPtr == ' ' || *inPtr == '\t') // leading whitespace 
 				inPtr++;
-            cmdLen = strcspn(inPtr, "\n");
+            int cmdLen = strcspn(inPtr, "\n");
 			if (cmdLen == 0)
 				return parseError("shell command field is empty");
 

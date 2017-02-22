@@ -1,5 +1,6 @@
 
 #include "DialogAbout.h"
+#include "preferences.h"
 #include <QLocale>
 #include <QSysInfo>
 #include <QtGlobal>
@@ -137,4 +138,9 @@ QString DialogAbout::createInfoString() {
                                     .arg(QLatin1String(QT_VERSION_STR))
                                     .arg(QString::fromLatin1(qVersion()))
                                     .arg(QLocale::system().bcp47Name());
+}
+
+void DialogAbout::showEvent(QShowEvent *event) {
+    Q_UNUSED(event);
+    centerDialog(this);
 }
