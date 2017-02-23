@@ -123,7 +123,6 @@ void DialogTabs::on_buttonBox_accepted() {
 // Name: 
 //------------------------------------------------------------------------------
 void DialogTabs::on_buttonBox_helpRequested() {
-	qDebug() << "TODO(eteran): implement this";
 #if 0
 	Help(HELP_TABS_DIALOG);
 #endif

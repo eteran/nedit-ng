@@ -117,7 +117,7 @@ static const CharMatchTable MatchingChars[N_MATCH_CHARS] = {
 /*
  * Number of bytes read at once by cmpWinAgainstFile
  */
-const int PREFERRED_CMPBUF_LEN = 32768;
+const int PREFERRED_CMPBUF_LEN = 0x8000;
 
 // TODO(eteran): use an enum for this
 const int FORWARD = 1;
@@ -599,7 +599,7 @@ void DocumentWidget::RefreshTabState() {
 			tipString = labelString;
 		}
 
-		tabWidget->setTabToolTip(index, tipString);
+        tabWidget->setTabToolTip(index, tipString);
 	}
 }
 
@@ -647,15 +647,15 @@ void DocumentWidget::SetLanguageMode(int mode, bool forceNewDefaults) {
 */
 int DocumentWidget::matchLanguageMode() {
 
-	int beginPos;
-	int endPos;
-
 	/*... look for an explicit mode statement first */
 
 	// Do a regular expression search on for recognition pattern
     const std::string first200 = buffer_->BufGetRangeEx(0, 200);
-	for (int i = 0; i < NLanguageModes; i++) {
+    for (int i = 0; i < LanguageModes.size(); i++) {
 		if (!LanguageModes[i]->recognitionExpr.isNull()) {
+            int beginPos;
+            int endPos;
+
             if (SearchString(first200, LanguageModes[i]->recognitionExpr, SEARCH_FORWARD, SEARCH_REGEX, false, 0, &beginPos, &endPos, nullptr, nullptr, nullptr)) {
 				return i;
 			}
@@ -672,15 +672,12 @@ int DocumentWidget::matchLanguageMode() {
 		fileNameLen = versionExtendedPathIndex;
 	}
 
-	for (int i = 0; i < NLanguageModes; i++) {
+    for (int i = 0; i < LanguageModes.size(); i++) {
         for(const QString &ext : LanguageModes[i]->extensions) {
-			// TODO(eteran): we could use QFileInfo to get the extension to make this code a little simpler
-			int extLen = ext.size();
-			int start = fileNameLen - extLen;
 
-			if (start >= 0 && strncmp(&filename_.toLatin1().data()[start], ext.toLatin1().data(), extLen) == 0) {
-				return i;
-			}
+            if(filename_.midRef(0, fileNameLen).endsWith(ext)) {
+                return i;
+            }
 		}
 	}
 
@@ -1140,7 +1137,6 @@ void DocumentWidget::SetEmTabDist(int emTabDist) {
 /*
 ** Set autoindent state to one of  NO_AUTO_INDENT, AUTO_INDENT, or SMART_INDENT.
 */
-// TODO(eteran): make state an enum
 void DocumentWidget::SetAutoIndent(IndentStyle state) {
     bool autoIndent  = (state == AUTO_INDENT);
     bool smartIndent = (state == SMART_INDENT);
@@ -2390,7 +2386,6 @@ int DocumentWidget::SaveWindow() {
 
 bool DocumentWidget::doSave() {
     struct stat statbuf;
-    FILE *fp;
 
     // Get the full name of the file
 
@@ -2413,14 +2408,12 @@ bool DocumentWidget::doSave() {
              changes. If the file is created for the first time, it has
              zero size on disk, and the check would falsely conclude that the
              file has changed on disk, and would pop up a warning dialog */
-    // TODO(eteran): this seems to be broken for an empty buffer
-    //               it is going to read the buffer at index -1 :-/
-    if (buffer_->BufGetCharacter(buffer_->BufGetLength() - 1) != '\n' && !buffer_->BufIsEmpty() && GetPrefAppendLF()) {
+    if (!buffer_->BufIsEmpty() && buffer_->BufGetCharacter(buffer_->BufGetLength() - 1) != '\n' && GetPrefAppendLF()) {
         buffer_->BufAppendEx("\n");
     }
 
     // open the file
-    fp = ::fopen(fullname.toLatin1().data(), "wb");
+    FILE *fp = ::fopen(fullname.toLatin1().data(), "wb");
     if(!fp) {
 
         QMessageBox messageBox(this);
@@ -2464,14 +2457,14 @@ bool DocumentWidget::doSave() {
 
     if (ferror(fp)) {
         QMessageBox::critical(this, tr("Error saving File"), tr("%2 not saved:\n%2").arg(filename_).arg(QString::fromLatin1(strerror(errno))));
-        fclose(fp);
-        remove(fullname.toLatin1().data());
+        ::fclose(fp);
+        ::remove(fullname.toLatin1().data());
         return false;
     }
 
     // close the file
-    if (fclose(fp) != 0) {
-        QMessageBox::critical(nullptr /*window->shell_*/, QLatin1String("Error closing File"), QString(QLatin1String("Error closing file:\n%1")).arg(QString::fromLatin1(strerror(errno))));
+    if (::fclose(fp) != 0) {
+        QMessageBox::critical(this, tr("Error closing File"), tr("Error closing file:\n%1").arg(QString::fromLatin1(strerror(errno))));
         return false;
     }
 
@@ -2639,11 +2632,6 @@ int DocumentWidget::SaveWindowAs(const QString &newName, bool addWrap) {
                 }
             }
         }
-
-#if 0
-        // Destroy the file closed property for the original file
-        DeleteFileClosedPropertyEx(this);
-#endif
 
         // Change the name of the file and save it under the new name
         RemoveBackupFile();
@@ -3140,11 +3128,7 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
             // Give option to create (or to exit if this is the only window)
             if (!(flags & SUPPRESS_CREATE_WARN)) {
 
-#if 0 // NOTE(eteran): probably not needed
-                /* on Solaris 2.6, and possibly other OSes, dialog won't
-                   show if parent window is iconized. */
-                RaiseShellWindow(window->shell_, false);
-#endif
+
                 QMessageBox msgbox(this);
                 QAbstractButton  *exitButton;
 
@@ -3619,7 +3603,7 @@ void DocumentWidget::actionClose(CloseMode mode) {
     case CloseMode::Close_Save:
         preResponse = YES_SBC_DIALOG_RESPONSE;
         break;
-    case CloseMode::CLose_NoSave:
+    case CloseMode::Close_NoSave:
         preResponse = NO_SBC_DIALOG_RESPONSE;
         break;
     }

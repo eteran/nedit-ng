@@ -31,6 +31,8 @@
 #include "SearchType.h"
 #include "util/string_view.h"
 
+#include <QList>
+
 class QWidget;
 class QString;
 class LanguageMode;
@@ -187,10 +189,8 @@ void SetPrefReplaceDefScope(int scope);
 int GetPrefReplaceDefScope();
 #endif
 
-extern int NLanguageModes;
 extern QString ImportedFile;
 extern bool PrefsHaveChanged;
-extern LanguageMode *LanguageModes[MAX_LANGUAGE_MODES];
-
+extern QList<LanguageMode *> LanguageModes;
 
 #endif

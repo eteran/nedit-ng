@@ -48,6 +48,7 @@ public:
 private:
     virtual void keyPressEvent(QKeyEvent *event) override;
     virtual void closeEvent(QCloseEvent *event) override;
+    virtual bool eventFilter(QObject *object, QEvent *event);
 
 public:
 	DialogReplace *getDialogReplace() const;	

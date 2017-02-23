@@ -3386,7 +3386,7 @@ int TextArea::styleOfPos(int lineStartPos, int lineLen, int lineIndex, int dispI
 
 	// store in the RANGESET_MASK portion of style the rangeset index for pos
 	if (buffer_->rangesetTable_) {
-		int rangesetIndex = buffer_->rangesetTable_->RangesetIndex1ofPos(pos, true);
+        int rangesetIndex = RangesetTable::RangesetIndex1ofPos(buffer_->rangesetTable_, pos, true);
 		style |= ((rangesetIndex << RANGESET_SHIFT) & RANGESET_MASK);
 	}
 	/* store in the BACKLIGHT_MASK portion of style the background color class

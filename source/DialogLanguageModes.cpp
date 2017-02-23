@@ -26,8 +26,8 @@
 DialogLanguageModes::DialogLanguageModes(QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f), previous_(nullptr) {
 	ui.setupUi(this);
 
-	for (int i = 0; i < NLanguageModes; i++) {
-		auto ptr  = new LanguageMode(*LanguageModes[i]);
+    for(LanguageMode *lang : LanguageModes) {
+        auto ptr  = new LanguageMode(*lang);
 		auto item = new QListWidgetItem(ptr->name);
 		item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(ptr));
 		ui.listItems->addItem(item);
@@ -482,16 +482,12 @@ bool DialogLanguageModes::updateLMList(bool silent) {
         }
 
         // Replace the old language mode list with the new one from the dialog
-        for (int i = 0; i < NLanguageModes; i++) {
-            delete LanguageModes[i];
-        }
-
+        qDeleteAll(LanguageModes);
+        LanguageModes.clear();
 
         for (int i = 0; i < ui.listItems->count(); i++) {
-            LanguageModes[i] = new LanguageMode(*itemFromIndex(i));
+            LanguageModes.push_back(new LanguageMode(*itemFromIndex(i)));
         }
-
-        NLanguageModes = ui.listItems->count();
 
         /* Update user menu info to update language mode dependencies of
            user menu items */

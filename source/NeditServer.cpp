@@ -263,7 +263,9 @@ void NeditServer::processCommand(const QString &command) {
         if (document) {
 
             if (lineNum > 0) {
-                // TODO(eteran): how was the TextArea previously determined?
+                // NOTE(eteran): this was previously window->lastFocus, but that
+                // is very inconvinient to get at this point in the code (now)
+                // firstPane() seems practical for npw
                 SelectNumberedLineEx(document, document->firstPane(), lineNum);
             }
 

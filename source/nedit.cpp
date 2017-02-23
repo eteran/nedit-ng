@@ -120,12 +120,6 @@ int main(int argc, char *argv[]) {
 	// More preference stuff 
     DialogPrint::LoadPrintPreferencesEx(true);
 
-
-#if 0 // TODO(eteran): I think that this feature likely has no equivalent in Qt's dialog
-    SetDeleteRemap(GetPrefMapDelete());
-	SetGetEFTextFieldRemoval(!GetPrefStdOpenDialog());
-#endif
-
 	// Install word delimiters for regular expression matching 
 	SetREDefaultWordDelimiters(GetPrefDelimiters().toLatin1().data());
 

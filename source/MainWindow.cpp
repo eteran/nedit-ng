@@ -177,36 +177,36 @@ void MainWindow::setupTabBar() {
 	ui.tabWidget->setCornerWidget(deleteTabButton);
 	
 	connect(deleteTabButton, SIGNAL(clicked()), this, SLOT(deleteTabButtonClicked()));
+
+    ui.tabWidget->tabBar()->installEventFilter(this);
 }
 
 //------------------------------------------------------------------------------
 // Name: setupMenuDefaults
 //------------------------------------------------------------------------------
 void MainWindow::setupMenuDefaults() {
-    // TODO(eteran): make sure that the various menus default to the current
-    //               settings based on the preferences!
 
     // active settings
-    ui.action_Statistics_Line->setChecked(GetPrefStatsLine());
-    ui.action_Incremental_Search_Line->setChecked(GetPrefISearchLine());
-    ui.action_Show_Line_Numbers->setChecked(GetPrefLineNums());
-    ui.action_Highlight_Syntax->setChecked(GetPrefHighlightSyntax());
-    ui.action_Apply_Backlighting->setChecked(false); // TODO(eteran)
-    ui.action_Make_Backup_Copy->setChecked(GetPrefAutoSave());
-    ui.action_Incremental_Backup->setChecked(GetPrefSaveOldVersion());
-    ui.action_Matching_Syntax->setChecked(GetPrefMatchSyntaxBased());
+    no_signals(ui.action_Statistics_Line)->setChecked(GetPrefStatsLine());
+    no_signals(ui.action_Incremental_Search_Line)->setChecked(GetPrefISearchLine());
+    no_signals(ui.action_Show_Line_Numbers)->setChecked(GetPrefLineNums());
+    no_signals(ui.action_Highlight_Syntax)->setChecked(GetPrefHighlightSyntax());
+    no_signals(ui.action_Apply_Backlighting)->setChecked(GetPrefBacklightChars());
+    no_signals(ui.action_Make_Backup_Copy)->setChecked(GetPrefAutoSave());
+    no_signals(ui.action_Incremental_Backup)->setChecked(GetPrefSaveOldVersion());
+    no_signals(ui.action_Matching_Syntax)->setChecked(GetPrefMatchSyntaxBased());
 
 
     // based on document, which defaults to this
     switch(GetPrefAutoIndent(PLAIN_LANGUAGE_MODE)) {
     case NO_AUTO_INDENT:
-        ui.action_Indent_Off->setChecked(true);
+        no_signals(ui.action_Indent_Off)->setChecked(true);
         break;
     case AUTO_INDENT:
-        ui.action_Indent_On->setChecked(true);
+        no_signals(ui.action_Indent_On)->setChecked(true);
         break;
     case SMART_INDENT:
-        ui.action_Indent_Smart->setChecked(true);
+        no_signals(ui.action_Indent_Smart)->setChecked(true);
         break;
     default:
         break;
@@ -215,13 +215,13 @@ void MainWindow::setupMenuDefaults() {
     // based on document, which defaults to this
     switch(GetPrefWrap(PLAIN_LANGUAGE_MODE)) {
     case NO_WRAP:
-        ui.action_Wrap_None->setChecked(true);
+        no_signals(ui.action_Wrap_None)->setChecked(true);
         break;
     case NEWLINE_WRAP:
-        ui.action_Wrap_Auto_Newline->setChecked(true);
+        no_signals(ui.action_Wrap_Auto_Newline)->setChecked(true);
         break;
     case CONTINUOUS_WRAP:
-        ui.action_Wrap_Continuous->setChecked(true);
+        no_signals(ui.action_Wrap_Continuous)->setChecked(true);
         break;
     default:
         break;
@@ -229,13 +229,13 @@ void MainWindow::setupMenuDefaults() {
 
     switch(static_cast<ShowMatchingStyle>(GetPrefShowMatching())) {
     case NO_FLASH:
-        ui.action_Matching_Off->setChecked(true);
+        no_signals(ui.action_Matching_Off)->setChecked(true);
         break;
     case FLASH_DELIMIT:
-        ui.action_Matching_Delimiter->setChecked(true);
+        no_signals(ui.action_Matching_Delimiter)->setChecked(true);
         break;
     case FLASH_RANGE:
-        ui.action_Matching_Range->setChecked(true);
+        no_signals(ui.action_Matching_Range)->setChecked(true);
         break;
     default:
         break;
@@ -244,13 +244,13 @@ void MainWindow::setupMenuDefaults() {
     // Default Indent
     switch(GetPrefAutoIndent(PLAIN_LANGUAGE_MODE)) {
     case NO_AUTO_INDENT:
-        ui.action_Default_Indent_Off->setChecked(true);
+        no_signals(ui.action_Default_Indent_Off)->setChecked(true);
         break;
     case AUTO_INDENT:
-        ui.action_Default_Indent_On->setChecked(true);
+        no_signals(ui.action_Default_Indent_On)->setChecked(true);
         break;
     case SMART_INDENT:
-        ui.action_Default_Indent_Smart->setChecked(true);
+        no_signals(ui.action_Default_Indent_Smart)->setChecked(true);
         break;
     default:
         break;
@@ -259,48 +259,48 @@ void MainWindow::setupMenuDefaults() {
     // Default Wrap
     switch(GetPrefWrap(PLAIN_LANGUAGE_MODE)) {
     case NO_WRAP:
-        ui.action_Default_Wrap_None->setChecked(true);
+        no_signals(ui.action_Default_Wrap_None)->setChecked(true);
         break;
     case NEWLINE_WRAP:
-        ui.action_Default_Wrap_Auto_Newline->setChecked(true);
+        no_signals(ui.action_Default_Wrap_Auto_Newline)->setChecked(true);
         break;
     case CONTINUOUS_WRAP:
-        ui.action_Default_Wrap_Continuous->setChecked(true);
+        no_signals(ui.action_Default_Wrap_Continuous)->setChecked(true);
         break;
     default:
         break;
     }
 
     if(GetPrefSmartTags()) {
-        ui.action_Default_Tag_Smart->setChecked(true);
+        no_signals(ui.action_Default_Tag_Smart)->setChecked(true);
     } else {
-        ui.action_Default_Tag_Show_All->setChecked(true);
+        no_signals(ui.action_Default_Tag_Show_All)->setChecked(true);
     }
 
     // Default Search Settings
-    ui.action_Default_Search_Verbose->setChecked(GetPrefSearchDlogs());
-    ui.action_Default_Search_Wrap_Around->setChecked(GetPrefSearchWraps());
-    ui.action_Default_Search_Beep_On_Search_Wrap->setChecked(GetPrefBeepOnSearchWrap());
-    ui.action_Default_Search_Keep_Dialogs_Up->setChecked(GetPrefKeepSearchDlogs());
+    no_signals(ui.action_Default_Search_Verbose)->setChecked(GetPrefSearchDlogs());
+    no_signals(ui.action_Default_Search_Wrap_Around)->setChecked(GetPrefSearchWraps());
+    no_signals(ui.action_Default_Search_Beep_On_Search_Wrap)->setChecked(GetPrefBeepOnSearchWrap());
+    no_signals(ui.action_Default_Search_Keep_Dialogs_Up)->setChecked(GetPrefKeepSearchDlogs());
 
     switch(GetPrefSearch()) {
     case SEARCH_LITERAL:
-        ui.action_Default_Search_Literal->setChecked(true);
+        no_signals(ui.action_Default_Search_Literal)->setChecked(true);
         break;
     case SEARCH_CASE_SENSE:
-        ui.action_Default_Search_Literal_Case_Sensitive->setChecked(true);
+        no_signals(ui.action_Default_Search_Literal_Case_Sensitive)->setChecked(true);
         break;
     case SEARCH_LITERAL_WORD:
-        ui.action_Default_Search_Literal_Whole_Word->setChecked(true);
+        no_signals(ui.action_Default_Search_Literal_Whole_Word)->setChecked(true);
         break;
     case SEARCH_CASE_SENSE_WORD:
-        ui.action_Default_Search_Literal_Case_Sensitive_Whole_Word->setChecked(true);
+        no_signals(ui.action_Default_Search_Literal_Case_Sensitive_Whole_Word)->setChecked(true);
         break;
     case SEARCH_REGEX:
-        ui.action_Default_Search_Regular_Expression->setChecked(true);
+        no_signals(ui.action_Default_Search_Regular_Expression)->setChecked(true);
         break;
     case SEARCH_REGEX_NOCASE:
-        ui.action_Default_Search_Regular_Expresison_Case_Insensitive->setChecked(true);
+        no_signals(ui.action_Default_Search_Regular_Expresison_Case_Insensitive)->setChecked(true);
         break;
     default:
         break;
@@ -308,9 +308,9 @@ void MainWindow::setupMenuDefaults() {
 
     // Default syntax
     if(GetPrefHighlightSyntax()) {
-        ui.action_Default_Syntax_On->setChecked(true);
+        no_signals(ui.action_Default_Syntax_On)->setChecked(true);
     } else {
-        ui.action_Default_Syntax_Off->setChecked(true);
+        no_signals(ui.action_Default_Syntax_Off)->setChecked(true);
     }
 
     no_signals(ui.action_Default_Apply_Backlighting)->setChecked(GetPrefBacklightChars());
@@ -334,24 +334,24 @@ void MainWindow::setupMenuDefaults() {
 
     switch(GetPrefShowMatching()) {
     case NO_FLASH:
-        ui.action_Default_Matching_Off->setChecked(true);
+        no_signals(ui.action_Default_Matching_Off)->setChecked(true);
         break;
     case FLASH_DELIMIT:
-        ui.action_Default_Matching_Delimiter->setChecked(true);
+        no_signals(ui.action_Default_Matching_Delimiter)->setChecked(true);
         break;
     case FLASH_RANGE:
-        ui.action_Default_Matching_Range->setChecked(true);
+        no_signals(ui.action_Default_Matching_Range)->setChecked(true);
         break;
     }
 
-    ui.action_Default_Matching_Syntax_Based->setChecked(GetPrefMatchSyntaxBased());
-    ui.action_Default_Terminate_with_Line_Break_on_Save->setChecked(GetPrefAppendLF());
-    ui.action_Default_Popups_Under_Pointer->setChecked(GetPrefRepositionDialogs());
-    ui.action_Default_Auto_Scroll_Near_Window_Top_Bottom->setChecked(GetPrefAutoScroll());
-    ui.action_Default_Warnings_Files_Modified_Externally->setChecked(GetPrefWarnFileMods());
-    ui.action_Default_Warnings_Check_Modified_File_Contents->setChecked(GetPrefWarnRealFileMods());
-    ui.action_Default_Warnings_On_Exit->setChecked(GetPrefWarnExit());
-    ui.action_Default_Warnings_Check_Modified_File_Contents->setEnabled(GetPrefWarnFileMods());
+    no_signals(ui.action_Default_Matching_Syntax_Based)->setChecked(GetPrefMatchSyntaxBased());
+    no_signals(ui.action_Default_Terminate_with_Line_Break_on_Save)->setChecked(GetPrefAppendLF());
+    no_signals(ui.action_Default_Popups_Under_Pointer)->setChecked(GetPrefRepositionDialogs());
+    no_signals(ui.action_Default_Auto_Scroll_Near_Window_Top_Bottom)->setChecked(GetPrefAutoScroll());
+    no_signals(ui.action_Default_Warnings_Files_Modified_Externally)->setChecked(GetPrefWarnFileMods());
+    no_signals(ui.action_Default_Warnings_Check_Modified_File_Contents)->setChecked(GetPrefWarnRealFileMods());
+    no_signals(ui.action_Default_Warnings_On_Exit)->setChecked(GetPrefWarnExit());
+    no_signals(ui.action_Default_Warnings_Check_Modified_File_Contents)->setEnabled(GetPrefWarnFileMods());
 
     updateWindowSizeMenu();
 }
@@ -781,9 +781,6 @@ void MainWindow::InvalidateWindowMenus() {
 */
 void MainWindow::updateWindowMenu() {
 
-    // TODO(eteran): if we are clever, we can probably make all windows
-    // literally share the same QMenu object for this...
-
     // Make a sorted list of windows
     QList<DocumentWidget *> documents = DocumentWidget::allDocuments();
 
@@ -1117,7 +1114,7 @@ void MainWindow::updateLanguageModeSubmenu() {
     languageGroup->addAction(action);
 
 
-    for (int i = 0; i < NLanguageModes; i++) {
+    for (int i = 0; i < LanguageModes.size(); i++) {
         QAction *action = languageMenu->addAction(LanguageModes[i]->name);
         action->setData(i);
         action->setCheckable(true);
@@ -3411,7 +3408,6 @@ void MainWindow::on_action_Default_Show_Tooltips_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
     SetPrefToolTips(state);
     for(MainWindow *window : allWindows()) {
-        // TODO(eteran): actually disable tooltips (on the tabbar?)
         no_signals(window->ui.action_Default_Show_Tooltips)->setChecked(state);
     }
 }
@@ -4111,7 +4107,7 @@ void MainWindow::closeEvent(QCloseEvent *event) {
         } else {
             int resp = QMessageBox::Cancel;
             if (GetPrefWarnExit()) {
-                // TODO(eteran): this is probably better off with "Ok" "Cancel", but we are being consistant with the original UI for now
+                // TODO(eteran): 2.0 this is probably better off with "Ok" "Cancel", but we are being consistant with the original UI for now
                 resp = QMessageBox::question(this, tr("Close Window"), tr("Close ALL documents in this window?"), QMessageBox::Cancel, QMessageBox::Close);
             }
 
@@ -4262,7 +4258,7 @@ void MainWindow::on_action_Repeat_triggered() {
         return;
     }
 
-    // TODO(eteran): redundant to work done in DialogRepeat::setCommand function
+    // NOTE(eteran): redundant to work done in DialogRepeat::setCommand function
     int index = LastCommand.indexOf(QLatin1Char('('));
     if(index == -1) {
         return;
@@ -4297,5 +4293,17 @@ void MainWindow::focusChanged(QWidget *from, QWidget *to) {
 
 void MainWindow::on_action_Help_triggered() {
     // TODO(eteran): implement
-    qDebug("TODO(eteran): implement this");
+}
+
+bool MainWindow::eventFilter(QObject *object, QEvent *event) {
+
+    if(qobject_cast<QTabBar*>(object)) {
+        if(event->type() == QEvent::ToolTip) {
+            if(!GetPrefToolTips()) {
+                return true;
+            }
+        }
+    }
+
+    return false;
 }

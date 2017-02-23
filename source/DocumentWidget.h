@@ -40,7 +40,7 @@ struct smartIndentCBStruct;
 enum CloseMode {
     Close_Prompt,
     Close_Save,
-    CLose_NoSave
+    Close_NoSave
 };
 
 class DocumentWidget : public QWidget {

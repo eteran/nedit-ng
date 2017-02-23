@@ -66,8 +66,7 @@ static const char *AutoIndentTypes[N_INDENT_STYLES + 3] = {"None", "Auto", "Smar
 #define DEFAULT_EM_TAB_DIST -1
 
 // list of available language modes and language specific preferences 
-int NLanguageModes = 0;
-LanguageMode *LanguageModes[MAX_LANGUAGE_MODES];
+QList<LanguageMode *> LanguageModes;
 
 /* Module-global variable set when any preference changes (for asking the
    user about re-saving on exit) */
@@ -76,6 +75,7 @@ bool PrefsHaveChanged = false;
 /* Module-global variable set when user uses -import to load additional
    preferences on top of the defaults.  Contains name of file loaded */
 QString ImportedFile;
+
 
 static void translatePrefFormats(int fileVer);
 
@@ -901,7 +901,7 @@ void MarkPrefsChanged() {
 int FindLanguageMode(const QString &languageName) {
 
 	// Compare each language mode to the one we were presented 
-	for (int i = 0; i < NLanguageModes; i++) {
+    for (int i = 0; i < LanguageModes.size(); i++) {
         if (LanguageModes[i]->name == languageName) {
 			return i;
 		}
@@ -1067,7 +1067,7 @@ static int loadLanguageModesString(const char *inString, int fileVer) {
         lm->defTipsFile = defTipsFile ? QString::fromLatin1(defTipsFile) : QString();
 
 		// pattern set was read correctly, add/replace it in the list 
-		for (i = 0; i < NLanguageModes; i++) {
+        for (i = 0; i < LanguageModes.size(); i++) {
 			if (LanguageModes[i]->name == lm->name) {
 				delete LanguageModes[i];
 				LanguageModes[i] = lm;
@@ -1075,11 +1075,8 @@ static int loadLanguageModesString(const char *inString, int fileVer) {
 			}
 		}
 		
-		if (i == NLanguageModes) {
-			LanguageModes[NLanguageModes++] = lm;
-			if (NLanguageModes > MAX_LANGUAGE_MODES) {
-				return modeError(nullptr, inString, inPtr, "maximum allowable number of language modes exceeded");
-			}
+        if (i == LanguageModes.size()) {
+            LanguageModes.push_back(lm);
 		}
 
 		// if the string ends here, we're done 
@@ -1094,48 +1091,48 @@ static QString WriteLanguageModesStringEx() {
     QString str;
     QTextStream out(&str);
 
-	for (int i = 0; i < NLanguageModes; i++) {
+    for(LanguageMode *language : LanguageModes) {
 
         out << QLatin1Char('\t')
-            << LanguageModes[i]->name
+            << language->name
             << QLatin1Char(':');
 
-        QString exts = LanguageModes[i]->extensions.join(QLatin1String(" "));
+        QString exts = language->extensions.join(QLatin1String(" "));
         out << exts
             << QLatin1Char(':');
 
-        if (!LanguageModes[i]->recognitionExpr.isEmpty()) {
-            out << MakeQuotedStringEx(LanguageModes[i]->recognitionExpr);
+        if (!language->recognitionExpr.isEmpty()) {
+            out << MakeQuotedStringEx(language->recognitionExpr);
         }
 
         out << QLatin1Char(':');
-        if (LanguageModes[i]->indentStyle != DEFAULT_INDENT) {
-            out << QString::fromLatin1(AutoIndentTypes[LanguageModes[i]->indentStyle]);
+        if (language->indentStyle != DEFAULT_INDENT) {
+            out << QString::fromLatin1(AutoIndentTypes[language->indentStyle]);
         }
 
         out << QLatin1Char(':');
-        if (LanguageModes[i]->wrapStyle != DEFAULT_WRAP) {
-            out << QString::fromLatin1(AutoWrapTypes[LanguageModes[i]->wrapStyle]);
+        if (language->wrapStyle != DEFAULT_WRAP) {
+            out << QString::fromLatin1(AutoWrapTypes[language->wrapStyle]);
         }
 
         out << QLatin1Char(':');
-        if (LanguageModes[i]->tabDist != DEFAULT_TAB_DIST) {
-            out << LanguageModes[i]->tabDist;
+        if (language->tabDist != DEFAULT_TAB_DIST) {
+            out << language->tabDist;
         }
 
         out << QLatin1Char(':');
-        if (LanguageModes[i]->emTabDist != DEFAULT_EM_TAB_DIST) {
-            out << LanguageModes[i]->emTabDist;
+        if (language->emTabDist != DEFAULT_EM_TAB_DIST) {
+            out << language->emTabDist;
         }
 
         out << QLatin1Char(':');
-        if (!LanguageModes[i]->delimiters.isEmpty()) {
-            out << MakeQuotedStringEx(LanguageModes[i]->delimiters);
+        if (!language->delimiters.isEmpty()) {
+            out << MakeQuotedStringEx(language->delimiters);
         }
 
         out << QLatin1Char(':');
-        if (!LanguageModes[i]->defTipsFile.isEmpty()) {
-            out << LanguageModes[i]->defTipsFile;
+        if (!language->defTipsFile.isEmpty()) {
+            out << language->defTipsFile;
         }
 
         out << QLatin1Char('\n');
