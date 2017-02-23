@@ -530,15 +530,12 @@ static userMenuInfo *parseMenuItemRec(MenuItem *item) {
 */
 static void parseMenuItemName(char *menuItemName, userMenuInfo *info) {
 	char *endPtr;
-	char c;
-	int languageMode;
 	int langModes[MAX_LANGUAGE_MODES];
 	int nbrLM = 0;
 
 	if (char *atPtr = strchr(menuItemName, '@')) {
 		if (!strcmp(atPtr + 1, "*")) {
-			/* only language is "*": this is for all but language specific
-			   macros */
+            /* only language is "*": this is for all but language specific macros */
             info->umiIsDefault = true;
 			return;
 		}
@@ -546,21 +543,24 @@ static void parseMenuItemName(char *menuItemName, userMenuInfo *info) {
 		// setup a list of all language modes related to given menu item 
 		while (atPtr) {
 			// extract language mode name after "@" sign 
-			for (endPtr = atPtr + 1; isalnum((uint8_t)*endPtr) || *endPtr == '_' || *endPtr == '-' || *endPtr == ' ' || *endPtr == '+' || *endPtr == '$' || *endPtr == '#'; endPtr++)
+            for (endPtr = atPtr + 1; isalnum((uint8_t)*endPtr) || *endPtr == '_' || *endPtr == '-' || *endPtr == ' ' || *endPtr == '+' || *endPtr == '$' || *endPtr == '#'; endPtr++) {
 				;
+            }
 
 			/* lookup corresponding language mode index; if PLAIN is
 			   returned then this means, that language mode name after
 			   "@" is unknown (i.e. not defined) */
-			c = *endPtr;
+            char c = *endPtr;
 			*endPtr = '\0';
-            languageMode = FindLanguageMode(QString::fromLatin1(atPtr + 1));
+
+            int languageMode = FindLanguageMode(QString::fromLatin1(atPtr + 1));
 			if (languageMode == PLAIN_LANGUAGE_MODE) {
 				langModes[nbrLM] = UNKNOWN_LANGUAGE_MODE;
 			} else {
 				langModes[nbrLM] = languageMode;
 			}
-			nbrLM++;
+
+            nbrLM++;
 			*endPtr = c;
 
 			// look for next "@" 
