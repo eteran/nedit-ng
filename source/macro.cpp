@@ -917,10 +917,12 @@ static int readCheckMacroStringEx(QWidget *dialogParent, const QString &string, 
                     subrPtr.tag = NO_TAG;
                     sym = InstallSymbol(subrName, MACRO_FUNCTION_SYM, subrPtr);
                 } else {
-                    if (sym->type == MACRO_FUNCTION_SYM)
+                    if (sym->type == MACRO_FUNCTION_SYM) {
                         FreeProgram(sym->value.val.prog);
-                    else
+                    } else {
                         sym->type = MACRO_FUNCTION_SYM;
+                    }
+
                     sym->value.val.prog = prog;
                 }
             }

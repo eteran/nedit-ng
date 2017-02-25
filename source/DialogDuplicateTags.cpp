@@ -46,25 +46,25 @@ bool DialogDuplicateTags::applySelection() {
 		return false;
 	}
 
+    QString eptr = item->text();
 
-	// TODO(eteran): replace with data embeded in the item telling us which index it is
-	std::string eptr = item->text().toStdString();
-	try {
-		int i = stoi(eptr) - 1;
+    bool ok;
+    int i = eptr.toInt(&ok) - 1;
 
-		if (searchMode == TAG) {
-            editTaggedLocationEx(area_, i); // Open the file with the definition
-		} else {
-            showMatchingCalltipEx(area_, i);
-		}
+    if(!ok) {
+        QApplication::beep();
+        return false;
+    }
 
-		return true;
+    if (searchMode == TAG) {
+        editTaggedLocationEx(area_, i); // Open the file with the definition
+    } else {
+        showMatchingCalltipEx(area_, i);
+    }
 
-	} catch(const std::exception &) {
-		QApplication::beep();
-	}
+    return true;
 
-	return false;
+
 }
 
 void DialogDuplicateTags::showEvent(QShowEvent *event) {

@@ -651,14 +651,14 @@ view::string_view TextBuffer::BufAsStringEx() {
 ** Replace the entire contents of the text buffer
 */
 void TextBuffer::BufSetAllEx(view::string_view text) {
-	int length, deletedLength;
-	length = text.size();
+
+    int length = text.size();
 
 	callPreDeleteCBs(0, length_);
 
 	// Save information for redisplay, and get rid of the old buffer
 	std::string deletedText = BufGetAllEx();
-	deletedLength = length_;
+    int deletedLength = length_;
 	delete [] buf_;
 
 	// Start a new buffer with a gap of PreferredGapSize in the center
@@ -976,7 +976,7 @@ void TextBuffer::BufOverlayRectEx(int startPos, int rectStart, int rectEnd, view
 void TextBuffer::BufReplaceRectEx(int start, int end, int rectStart, int rectEnd, view::string_view text) {
 
 	char *insText = nullptr;
-	int i, nInsertedLines, nDeletedLines, hint;
+    int i, hint;
 	int insertDeleted, insertInserted, deleteInserted;
 	int linesPadded = 0;
 
@@ -993,22 +993,27 @@ void TextBuffer::BufReplaceRectEx(int start, int end, int rectStart, int rectEnd
 	   column.  If more lines will be inserted than deleted, insert extra
 	   lines in the buffer at the end of the rectangle to make room for the
 	   additional lines in "text" */
-	nInsertedLines = countLinesEx(text);
-	nDeletedLines = BufCountLines(start, end);
+    int nInsertedLines = countLinesEx(text);
+    int nDeletedLines = BufCountLines(start, end);
+
 	if (nInsertedLines < nDeletedLines) {
-		char *insPtr;
 
 		int insLen = text.size();
 		insText = new char[insLen + nDeletedLines - nInsertedLines + 1];
-		text.copy(insText, insLen, 0);
-		insPtr = insText + insLen;
-		for (i = 0; i < nDeletedLines - nInsertedLines; i++)
+        text.copy(insText, insLen);
+
+        char *insPtr = insText + insLen;
+        for (i = 0; i < nDeletedLines - nInsertedLines; i++) {
 			*insPtr++ = '\n';
+        }
+
 		*insPtr = '\0';
 	} else if (nDeletedLines < nInsertedLines) {
 		linesPadded = nInsertedLines - nDeletedLines;
-		for (i = 0; i < linesPadded; i++)
+        for (i = 0; i < linesPadded; i++) {
 			insertEx(end, "\n");
+        }
+
 	} else /* nDeletedLines == nInsertedLines */ {
 	}
 
@@ -1020,8 +1025,9 @@ void TextBuffer::BufReplaceRectEx(int start, int end, int rectStart, int rectEnd
 	if (insText) {
 		insertColEx(rectStart, start, insText, &insertDeleted, &insertInserted, &cursorPosHint_);
 		delete [] insText;
-	} else
+    } else {
 		insertColEx(rectStart, start, text, &insertDeleted, &insertInserted, &cursorPosHint_);
+    }
 
 	// Figure out how many chars were inserted and call modify callbacks
     if (insertDeleted != deleteInserted + linesPadded) {

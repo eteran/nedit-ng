@@ -47,16 +47,30 @@ namespace {
    is bound to an user menu item */
 const int UNKNOWN_LANGUAGE_MODE = -2;
 
+
+struct ParseError : std::exception {
+public:
+    ParseError(const std::string &s) : s_(s) {
+    }
+
+    virtual ~ParseError() = default;
+
+    const char *what() const noexcept {
+        return s_.c_str();
+    }
+private:
+    std::string s_;
+};
+
 }
 
 static char *copyMacroToEnd(const char **inPtr);
 static char *writeMenuItemString(const QVector<MenuData> &menuItems, int listType);
 static int loadMenuItemString(const char *inString, QVector<MenuData> &menuItems, DialogTypes listType);
-static bool parseError(const char *message);
 static QString stripLanguageModeEx(const QString &menuItemName);
 static QString writeMenuItemStringEx(const QVector<MenuData> &menuItems, int listType);
 static userMenuInfo *parseMenuItemRec(MenuItem *item);
-static void parseMenuItemName(char *menuItemName, userMenuInfo *info);
+static void parseMenuItemName(const QString &menuItemName, userMenuInfo *info);
 static void setDefaultIndex(const QVector<MenuData> &infoList, int index);
 
 /*
@@ -195,12 +209,10 @@ static char *writeMenuItemString(const QVector<MenuData> &menuItems, int listTyp
                 break;
             }
 
-			if (f->repInput)
-				*outPtr++ = 'X';
-			if (f->saveFirst)
-				*outPtr++ = 'S';
-			if (f->loadAfter)
-				*outPtr++ = 'L';
+            if (f->repInput)  *outPtr++ = 'X';
+            if (f->saveFirst) *outPtr++ = 'S';
+            if (f->loadAfter) *outPtr++ = 'L';
+
 			*outPtr++ = ':';
 		} else {
             if (f->input == FROM_SELECTION) {
@@ -241,7 +253,7 @@ static char *writeMenuItemString(const QVector<MenuData> &menuItems, int listTyp
 
 static QString writeMenuItemStringEx(const QVector<MenuData> &menuItems, int listType) {
 	QString str;
-	if(char *s = writeMenuItemString(menuItems, listType)) {
+    if(const char *s = writeMenuItemString(menuItems, listType)) {
         str = QString::fromLatin1(s);
         delete [] s;
 	}
@@ -250,151 +262,151 @@ static QString writeMenuItemStringEx(const QVector<MenuData> &menuItems, int lis
 
 static int loadMenuItemString(const char *inString, QVector<MenuData> &menuItems, DialogTypes listType) {
 
-	const char *inPtr = inString;
+    try {
+        const char *inPtr = inString;
 
-	for (;;) {
+        Q_FOREVER {
 
-		// remove leading whitespace 
-		while (*inPtr == ' ' || *inPtr == '\t')
-			inPtr++;
+            // remove leading whitespace
+            while (*inPtr == ' ' || *inPtr == '\t')
+                inPtr++;
 
-		// end of string in proper place 
-		if (*inPtr == '\0') {
-            return true;
-		}
-
-		// read name field 
-        int nameLen = strcspn(inPtr, ":");
-		if (nameLen == 0)
-			return parseError("no name field");
-
-        auto nameStr = QString::fromLatin1(inPtr, nameLen);
-
-		inPtr += nameLen;
-		if (*inPtr == '\0')
-			return parseError("end not expected");
-		inPtr++;
-
-		// read accelerator field 
-        int accLen = strcspn(inPtr, ":");
-
-        auto accStr = QString::fromLatin1(inPtr, accLen);
-
-        inPtr += accLen;
-		if (*inPtr == '\0')
-			return parseError("end not expected");
-		inPtr++;
-
-        // read flags field
-		InSrcs input = FROM_NONE;
-		OutDests output = TO_SAME_WINDOW;
-		bool repInput = false;
-		bool saveFirst = false;
-		bool loadAfter = false;
-		for (; *inPtr != ':'; inPtr++) {
-			if (listType == SHELL_CMDS) {
-
-                switch(*inPtr) {
-                case 'I':
-                    input = FROM_SELECTION;
-                    break;
-                case 'A':
-                    input = FROM_WINDOW;
-                    break;
-                case 'E':
-                    input = FROM_EITHER;
-                    break;
-                case 'W':
-                    output = TO_NEW_WINDOW;
-                    break;
-                case 'D':
-                    output = TO_DIALOG;
-                    break;
-                case 'X':
-                    repInput = true;
-                    break;
-                case 'S':
-                    saveFirst = true;
-                    break;
-                case 'L':
-                    loadAfter = true;
-                    break;
-                default:
-                    return parseError("unreadable flag field");
-                }
-			} else {
-                switch(*inPtr) {
-                case 'R':
-                    input = FROM_SELECTION;
-                    break;
-                default:
-                    return parseError("unreadable flag field");
-                }
-			}
-		}
-		inPtr++;
-
-        QString cmdStr;
-
-		// read command field 
-		if (listType == SHELL_CMDS) {
-			if (*inPtr++ != '\n')
-				return parseError("command must begin with newline");
-			while (*inPtr == ' ' || *inPtr == '\t') // leading whitespace 
-				inPtr++;
-            int cmdLen = strcspn(inPtr, "\n");
-			if (cmdLen == 0)
-				return parseError("shell command field is empty");
-
-            cmdStr = QString::fromLatin1(inPtr, cmdLen);
-			inPtr += cmdLen;
-		} else {
-            char *p = copyMacroToEnd(&inPtr);
-            if(!p) {
-                return false;
+            // end of string in proper place
+            if (*inPtr == '\0') {
+                return true;
             }
 
-            cmdStr = QString::fromLatin1(p);
-            delete [] p;
-		}
-		while (*inPtr == ' ' || *inPtr == '\t' || *inPtr == '\n') {
-			inPtr++; // skip trailing whitespace & newline 
-		}
+            // read name field
+            int nameLen = strcspn(inPtr, ":");
+            if (nameLen == 0)
+                throw ParseError("no name field");
 
-		// parse the accelerator field 
-        QKeySequence shortcut = QKeySequence::fromString(accStr);
+            auto nameStr = QString::fromLatin1(inPtr, nameLen);
 
-		// create a menu item record 
-		auto f = new MenuItem;
-        f->name      = nameStr;
-        f->cmd       = cmdStr;
-		f->input     = input;
-		f->output    = output;
-		f->repInput  = repInput;
-		f->saveFirst = saveFirst;
-		f->loadAfter = loadAfter;
-        f->shortcut  = shortcut;
+            inPtr += nameLen;
+            if (*inPtr == '\0')
+                throw ParseError("end not expected");
+            inPtr++;
 
-		// add/replace menu record in the list 
-		bool found = false;
-		for (MenuData &data: menuItems) {
-			if (data.item->name == f->name) {
-				delete data.item;
-				data.item = f;
-				found = true;
-				break;
-			}
-		}
-		
-		if (!found) {
-			menuItems.push_back({f, nullptr});
-		}
-	}
-}
+            // read accelerator field
+            int accLen = strcspn(inPtr, ":");
 
-static bool parseError(const char *message) {
-	fprintf(stderr, "NEdit: Parse error in user defined menu item, %s\n", message);
-    return false;
+            auto accStr = QString::fromLatin1(inPtr, accLen);
+
+            inPtr += accLen;
+            if (*inPtr == '\0')
+                throw ParseError("end not expected");
+            inPtr++;
+
+            // read flags field
+            InSrcs input = FROM_NONE;
+            OutDests output = TO_SAME_WINDOW;
+            bool repInput = false;
+            bool saveFirst = false;
+            bool loadAfter = false;
+            for (; *inPtr != ':'; inPtr++) {
+                if (listType == SHELL_CMDS) {
+
+                    switch(*inPtr) {
+                    case 'I':
+                        input = FROM_SELECTION;
+                        break;
+                    case 'A':
+                        input = FROM_WINDOW;
+                        break;
+                    case 'E':
+                        input = FROM_EITHER;
+                        break;
+                    case 'W':
+                        output = TO_NEW_WINDOW;
+                        break;
+                    case 'D':
+                        output = TO_DIALOG;
+                        break;
+                    case 'X':
+                        repInput = true;
+                        break;
+                    case 'S':
+                        saveFirst = true;
+                        break;
+                    case 'L':
+                        loadAfter = true;
+                        break;
+                    default:
+                        throw ParseError("unreadable flag field");
+                    }
+                } else {
+                    switch(*inPtr) {
+                    case 'R':
+                        input = FROM_SELECTION;
+                        break;
+                    default:
+                        throw ParseError("unreadable flag field");
+                    }
+                }
+            }
+            inPtr++;
+
+            QString cmdStr;
+
+            // read command field
+            if (listType == SHELL_CMDS) {
+                if (*inPtr++ != '\n')
+                    throw ParseError("command must begin with newline");
+                while (*inPtr == ' ' || *inPtr == '\t') // leading whitespace
+                    inPtr++;
+                int cmdLen = strcspn(inPtr, "\n");
+                if (cmdLen == 0)
+                    throw ParseError("shell command field is empty");
+
+                cmdStr = QString::fromLatin1(inPtr, cmdLen);
+                inPtr += cmdLen;
+            } else {
+                char *p = copyMacroToEnd(&inPtr);
+                if(!p) {
+                    return false;
+                }
+
+                cmdStr = QString::fromLatin1(p);
+                delete [] p;
+            }
+            while (*inPtr == ' ' || *inPtr == '\t' || *inPtr == '\n') {
+                inPtr++; // skip trailing whitespace & newline
+            }
+
+            // parse the accelerator field
+            QKeySequence shortcut = QKeySequence::fromString(accStr);
+
+            // create a menu item record
+            auto f = new MenuItem;
+            f->name      = nameStr;
+            f->cmd       = cmdStr;
+            f->input     = input;
+            f->output    = output;
+            f->repInput  = repInput;
+            f->saveFirst = saveFirst;
+            f->loadAfter = loadAfter;
+            f->shortcut  = shortcut;
+
+            // add/replace menu record in the list
+            bool found = false;
+            for (MenuData &data: menuItems) {
+                if (data.item->name == f->name) {
+                    delete data.item;
+                    data.item = f;
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found) {
+                menuItems.push_back({f, nullptr});
+            }
+        }
+    } catch(const ParseError &ex) {
+        qDebug("NEdit: Parse error in user defined menu item, %s", ex.what());
+        return false;
+    }
 }
 
 /*
@@ -406,7 +418,6 @@ static bool parseError(const char *message) {
 ** negligible for most macros.
 */
 static char *copyMacroToEnd(const char **inPtr) {
-
 
     const char *&ptr = *inPtr;
     const char *begin = ptr;
@@ -518,7 +529,7 @@ static userMenuInfo *parseMenuItemRec(MenuItem *item) {
     newInfo->umiDefaultIndex       = -1;
 
 	// assign language mode info to new user menu info element 
-	parseMenuItemName(item->name.toLatin1().data(), newInfo);
+    parseMenuItemName(item->name, newInfo);
 
 	return newInfo;
 }
@@ -528,20 +539,55 @@ static userMenuInfo *parseMenuItemRec(MenuItem *item) {
 ** Extract language mode related info out of given menu item name string.
 ** Store this info in given user menu info structure.
 */
-static void parseMenuItemName(char *menuItemName, userMenuInfo *info) {
-	char *endPtr;
-	int langModes[MAX_LANGUAGE_MODES];
-	int nbrLM = 0;
+static void parseMenuItemName(const QString &menuItemName, userMenuInfo *info) {
 
-	if (char *atPtr = strchr(menuItemName, '@')) {
+
+    int index = menuItemName.indexOf(QLatin1Char('@'));
+    if(index != -1) {
+        QStringRef languageString = menuItemName.midRef(index);
+        if(languageString == QLatin1String("*")) {
+            /* only language is "*": this is for all but language specific macros */
+            info->umiIsDefault = true;
+            return;
+        }
+
+        QVector<QStringRef> languages = languageString.split(QLatin1Char('@'), QString::SkipEmptyParts);
+        QVector<int> languageModes;
+
+        // setup a list of all language modes related to given menu item
+        for(const QStringRef &language : languages) {
+            /* lookup corresponding language mode index; if PLAIN is
+               returned then this means, that language mode name after
+               "@" is unknown (i.e. not defined) */
+
+            int languageMode = FindLanguageMode(language);
+            if (languageMode == PLAIN_LANGUAGE_MODE) {
+                languageModes.push_back(UNKNOWN_LANGUAGE_MODE);
+            } else {
+                languageModes.push_back(languageMode);
+            }
+        }
+
+        if (!languageModes.isEmpty()) {
+            info->umiLanguageModes = languageModes;
+        }
+    }
+
+#if 0
+    if (const char *atPtr = strchr(menuItemName, '@')) {
 		if (!strcmp(atPtr + 1, "*")) {
             /* only language is "*": this is for all but language specific macros */
             info->umiIsDefault = true;
 			return;
 		}
 
+        QVector<int> languageModes;
+
 		// setup a list of all language modes related to given menu item 
 		while (atPtr) {
+
+            const char *endPtr;
+
 			// extract language mode name after "@" sign 
             for (endPtr = atPtr + 1; isalnum((uint8_t)*endPtr) || *endPtr == '_' || *endPtr == '-' || *endPtr == ' ' || *endPtr == '+' || *endPtr == '$' || *endPtr == '#'; endPtr++) {
 				;
@@ -550,34 +596,23 @@ static void parseMenuItemName(char *menuItemName, userMenuInfo *info) {
 			/* lookup corresponding language mode index; if PLAIN is
 			   returned then this means, that language mode name after
 			   "@" is unknown (i.e. not defined) */
-            char c = *endPtr;
-			*endPtr = '\0';
 
-            int languageMode = FindLanguageMode(QString::fromLatin1(atPtr + 1));
-			if (languageMode == PLAIN_LANGUAGE_MODE) {
-				langModes[nbrLM] = UNKNOWN_LANGUAGE_MODE;
+            int languageMode = FindLanguageMode(QString::fromLatin1(atPtr + 1, endPtr - (atPtr + 1)));
+            if (languageMode == PLAIN_LANGUAGE_MODE) {
+                languageModes.push_back(UNKNOWN_LANGUAGE_MODE);
 			} else {
-				langModes[nbrLM] = languageMode;
+                languageModes.push_back(languageMode);
 			}
-
-            nbrLM++;
-			*endPtr = c;
 
 			// look for next "@" 
 			atPtr = strchr(endPtr, '@');
 		}
 
-		if (nbrLM != 0) {
-            QVector<int> languageModes;
-            languageModes.reserve(nbrLM);
-
-            for(int i = 0; i < nbrLM; ++i) {
-                languageModes.push_back(langModes[i]);
-            }
-
+        if (!languageModes.isEmpty()) {
             info->umiLanguageModes = languageModes;
 		}
 	}
+#endif
 }
 
 /*

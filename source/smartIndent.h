@@ -52,9 +52,9 @@ SmartIndent *findIndentSpec(const QString &modeName);
 extern QString CommonMacros;
 
 #define N_DEFAULT_INDENT_SPECS 4
-extern int NSmartIndentSpecs;
+
 extern SmartIndent DefaultIndentSpecs[N_DEFAULT_INDENT_SPECS];
-extern SmartIndent *SmartIndentSpecs[MAX_LANGUAGE_MODES];
+extern QList<SmartIndent *> SmartIndentSpecs;
 
 struct Program;
 

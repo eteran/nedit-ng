@@ -57,8 +57,7 @@ const char MacroEndBoundary[] = "--End-of-Macro--";
 
 }
 
-int NSmartIndentSpecs = 0;
-SmartIndent *SmartIndentSpecs[MAX_LANGUAGE_MODES];
+QList<SmartIndent *> SmartIndentSpecs;
 
 QString CommonMacros;
 
@@ -255,7 +254,7 @@ static bool loadDefaultIndentSpec(const QString &lmName) {
 
 	for (int i = 0; i < N_DEFAULT_INDENT_SPECS; i++) {
         if (DefaultIndentSpecs[i].lmName == lmName) {
-			SmartIndentSpecs[NSmartIndentSpecs++] = new SmartIndent(DefaultIndentSpecs[i]);
+            SmartIndentSpecs.push_back(new SmartIndent(DefaultIndentSpecs[i]));
 			return true;
 		}
 	}
@@ -326,18 +325,18 @@ int LoadSmartIndentString(char *inString) {
 		}
 
 		// create a new data structure and add/change it in the list 
-		auto isCopy = new SmartIndent(is);
+        auto isCopy = new SmartIndent(is);
 
-		for (i = 0; i < NSmartIndentSpecs; i++) {
+        for (i = 0; i < SmartIndentSpecs.size(); i++) {
 			if (SmartIndentSpecs[i]->lmName == is.lmName) {
 				delete SmartIndentSpecs[i];
-				SmartIndentSpecs[i] = isCopy;
+                SmartIndentSpecs[i] = isCopy;
 				break;
 			}
 		}
 		
-		if (i == NSmartIndentSpecs) {
-			SmartIndentSpecs[NSmartIndentSpecs++] = isCopy;
+        if (i == SmartIndentSpecs.size()) {
+            SmartIndentSpecs.push_back(isCopy);
 		}
 	}
 }
@@ -378,7 +377,7 @@ int LoadSmartIndentCommonString(const char *inString) {
 */
 static QString readSIMacroEx(const char **inPtr) {
 	if(char *s = readSIMacro(inPtr)) {
-        QString ret = QString::fromLatin1(s);
+        auto ret = QString::fromLatin1(s);
         delete [] s;
 		return ret;
 	}
@@ -399,10 +398,10 @@ static char *readSIMacro(const char **inPtr) {
 		return nullptr;
 	}
 
-	// Copy the macro 
-	auto macroStr = new char[macroEnd - *inPtr + 1];
-	strncpy(macroStr, *inPtr, macroEnd - *inPtr);
-	macroStr[macroEnd - *inPtr] = '\0';
+    // Copy the macro
+    auto macroStr = new char[macroEnd - *inPtr + 1];
+    strncpy(macroStr, *inPtr, macroEnd - *inPtr);
+    macroStr[macroEnd - *inPtr] = '\0';
 
 	// Remove leading tabs added by writer routine 
 	*inPtr = macroEnd + strlen(MacroEndBoundary);
@@ -412,7 +411,7 @@ static char *readSIMacro(const char **inPtr) {
     auto retStr = new char[shiftedText.size() + 1];
     strcpy(retStr, shiftedText.c_str());
 
-	delete [] macroStr;
+    delete [] macroStr;
 	return retStr;
 }
 
@@ -427,9 +426,8 @@ QString WriteSmartIndentStringEx() {
 	QString s;
 	QTextStream ts(&s);
 
-	for (int i = 0; i < NSmartIndentSpecs; i++) {
-		SmartIndent *const sis = SmartIndentSpecs[i];
-		
+    for(SmartIndent *sis : SmartIndentSpecs) {
+
 		ts << QLatin1String("\t")
 		   << sis->lmName
 		   << QLatin1String(":");
@@ -511,9 +509,9 @@ SmartIndent *findIndentSpec(const QString &modeName) {
 		return nullptr;
 	}
 
-	for (int i = 0; i < NSmartIndentSpecs; i++) {
-        if (SmartIndentSpecs[i]->lmName == modeName) {
-			return SmartIndentSpecs[i];
+    for(SmartIndent *sis : SmartIndentSpecs) {
+        if (sis->lmName == modeName) {
+            return sis;
 		}
 	}
 	return nullptr;
@@ -539,11 +537,11 @@ int LMHasSmartIndentMacros(const QString &languageMode) {
 */
 void RenameSmartIndentMacros(const QString &oldName, const QString &newName) {
 
-	for (int i = 0; i < NSmartIndentSpecs; i++) {
-        if (SmartIndentSpecs[i]->lmName == oldName) {
-            SmartIndentSpecs[i]->lmName = newName;
+    for(SmartIndent *sis : SmartIndentSpecs) {
+        if (sis->lmName == oldName) {
+            sis->lmName = newName;
 		}
-	}
+    }
 	if (SmartIndentDlg) {
         if(SmartIndentDlg->languageMode_ == oldName) {
             SmartIndentDlg->setLanguageMode(newName);

@@ -1468,9 +1468,8 @@ bool SearchString(view::string_view string, const QString &searchString, SearchD
 	case SEARCH_REGEX_NOCASE:
         return searchRegex(string, searchString.toLatin1().data(), direction, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW, delimiters, REDFLT_CASE_INSENSITIVE);
 	default:
-		Q_ASSERT(0);
+        Q_UNREACHABLE();
 	}
-    return false; // never reached, just makes compilers happy
 }
 
 /*
@@ -1509,15 +1508,13 @@ static bool searchLiteralWord(view::string_view string, view::string_view search
 
 
 	// TODO(eteran): rework this code in terms of iterators, it will be more clean
-	//               also, I'd love to have a nice clean way of replacing this macro
-	//               with a lambda or similar
 
 	std::string lcString;
 	std::string ucString;
     bool cignore_L = false;
     bool cignore_R = false;
 
-	auto DOSEARCHWORD2 = [&](const char *filePtr) {
+    auto do_search_word2 = [&](const char *filePtr) {
 		if (*filePtr == ucString[0] || *filePtr == lcString[0]) {
 			// matched first character 
 			auto ucPtr = ucString.begin();
@@ -1530,7 +1527,7 @@ static bool searchLiteralWord(view::string_view string, view::string_view search
 				if (ucPtr == ucString.end()                                                            // matched whole string 
 			    	&& (cignore_R || isspace((uint8_t)*tempPtr) || strchr(delimiters, *tempPtr)) // next char right delimits word ? 
 			    	&& (cignore_L || filePtr == &string[0] ||                                          // border case 
-			        	isspace((uint8_t)filePtr[-1]) || strchr(delimiters, filePtr[-1])))       /* next char left delimits word ? */ {
+                        isspace((uint8_t)filePtr[-1]) || strchr(delimiters, filePtr[-1]))) {       /* next char left delimits word ? */
 					*startPos = filePtr - &string[0];
 					*endPos = tempPtr - &string[0];
 					return true;
@@ -1567,7 +1564,7 @@ static bool searchLiteralWord(view::string_view string, view::string_view search
 	if (direction == SEARCH_FORWARD) {
 		// search from beginPos to end of string 
 		for (auto filePtr = string.begin() + beginPos; filePtr != string.end(); filePtr++) {
-			if(DOSEARCHWORD2(filePtr)) {
+            if(do_search_word2(filePtr)) {
 				return true;
 			}
 		}
@@ -1576,7 +1573,7 @@ static bool searchLiteralWord(view::string_view string, view::string_view search
 
 		// search from start of file to beginPos 
 		for (auto filePtr = string.begin(); filePtr <= string.begin() + beginPos; filePtr++) {
-			if(DOSEARCHWORD2(filePtr)) {
+            if(do_search_word2(filePtr)) {
 				return true;
 			}
 		}
@@ -1587,7 +1584,7 @@ static bool searchLiteralWord(view::string_view string, view::string_view search
 		// says begin searching from the far end of the file 
 		if (beginPos >= 0) {
 			for (auto filePtr = string.begin() + beginPos; filePtr >= string.begin(); filePtr--) {
-				if(DOSEARCHWORD2(filePtr)) {
+                if(do_search_word2(filePtr)) {
 					return true;
 				}
 			}
@@ -1598,7 +1595,7 @@ static bool searchLiteralWord(view::string_view string, view::string_view search
 		/*... this strlen call is extreme inefficiency, but it's not obvious */
 		// how to get the text string length from the text widget (under 1.1)
 		for (auto filePtr = string.begin() + string.size(); filePtr >= string.begin() + beginPos; filePtr--) {
-			if(DOSEARCHWORD2(filePtr)) {
+            if(do_search_word2(filePtr)) {
 				return true;
 			}
 		}
@@ -1612,7 +1609,7 @@ static bool searchLiteral(view::string_view string, view::string_view searchStri
 	std::string lcString;
 	std::string ucString;
 
-	auto DOSEARCH2 = [&](const char *filePtr) {
+    auto do_search2 = [&](const char *filePtr) {
 		if (*filePtr == ucString[0] || *filePtr == lcString[0]) {
 			// matched first character 
 			auto ucPtr   = ucString.begin();
@@ -1658,7 +1655,7 @@ static bool searchLiteral(view::string_view string, view::string_view searchStri
 
 		// search from beginPos to end of string 
 		for (auto filePtr = mid; filePtr != last; ++filePtr) {
-			if(DOSEARCH2(filePtr)) {
+            if(do_search2(filePtr)) {
 				return true;
 			}
 		}
@@ -1671,7 +1668,7 @@ static bool searchLiteral(view::string_view string, view::string_view searchStri
 		// TODO(eteran): this used to include "mid", but that seems redundant given that we already looked there
 		//               in the first loop
 		for (auto filePtr = first; filePtr != mid; ++filePtr) {
-			if(DOSEARCH2(filePtr)) {
+            if(do_search2(filePtr)) {
 				return true;
 			}
 		}
@@ -1688,7 +1685,7 @@ static bool searchLiteral(view::string_view string, view::string_view searchStri
 
 		if (beginPos >= 0) {
 			for (auto filePtr = mid; filePtr >= first; --filePtr) {
-				if(DOSEARCH2(filePtr)) {
+                if(do_search2(filePtr)) {
 					return true;
 				}
 			}
@@ -1701,7 +1698,7 @@ static bool searchLiteral(view::string_view string, view::string_view searchStri
 		// search from end of file to beginPos 
 		// how to get the text string length from the text widget (under 1.1)
 		for (auto filePtr = last; filePtr >= mid; --filePtr) {
-			if(DOSEARCH2(filePtr)) {
+            if(do_search2(filePtr)) {
 				return true;
 			}
 		}
@@ -1778,7 +1775,7 @@ static bool backwardRegexSearch(view::string_view string, view::string_view sear
 		// says begin searching from the far end of the file.		
 		if (beginPos >= 0) {
 
-			// TODO(eteran): why do we use '\0' as the previous char, and not string[beginPos - 1] (assuming that beginPos > 0)?
+            // NOTE(eteran): why do we use '\0' as the previous char, and not string[beginPos - 1] (assuming that beginPos > 0)?
 			if (compiledRE.execute(string, 0, beginPos, '\0', '\0', delimiters, true)) {
 
 				*startPos = compiledRE.startp[0] - &string[0];
@@ -1835,7 +1832,7 @@ static std::string upCaseStringEx(view::string_view inString) {
 	std::string str;
 	str.reserve(inString.size());
 	std::transform(inString.begin(), inString.end(), std::back_inserter(str), [](char ch) {
-		return toupper((uint8_t)ch);
+        return toupper(static_cast<uint8_t>(ch));
 	});
 	return str;
 }
@@ -1844,7 +1841,7 @@ static std::string downCaseStringEx(view::string_view inString) {
 	std::string str;
 	str.reserve(inString.size());
 	std::transform(inString.begin(), inString.end(), std::back_inserter(str), [](char ch) {
-		return tolower((uint8_t)ch);
+        return tolower(static_cast<uint8_t>(ch));
 	});
 	return str;
 }

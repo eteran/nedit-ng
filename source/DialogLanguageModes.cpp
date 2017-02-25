@@ -233,7 +233,7 @@ LanguageMode *DialogLanguageModes::readLMDialogFields(bool silent) {
 
 	/* Allocate a language mode structure to return, set unread fields to
 	   empty so everything can be freed on errors by freeLanguageModeRec */
-	auto lm = new LanguageMode;
+    auto lm = std::make_unique<LanguageMode>();
 
 	// read the name field
 	QString name = ui.editName->text().simplified();
@@ -241,7 +241,6 @@ LanguageMode *DialogLanguageModes::readLMDialogFields(bool silent) {
 		if (!silent) {
 			QMessageBox::warning(this, tr("Language Mode Name"), tr("Please specify a name for the language mode"));
 		}
-		delete lm;
 		return nullptr;
 	}
 
@@ -262,7 +261,6 @@ LanguageMode *DialogLanguageModes::readLMDialogFields(bool silent) {
 			if (!silent) {
                 QMessageBox::warning(this, tr("Regex"), tr("Recognition expression:\n%1").arg(QString::fromLatin1(e.what())));
 			}
-			delete lm;
 			return nullptr;
 		}
 	}
@@ -276,7 +274,6 @@ LanguageMode *DialogLanguageModes::readLMDialogFields(bool silent) {
 			if (!silent) {
 				QMessageBox::warning(this, tr("Error reading Calltips"), tr("Can't read default calltips file(s):\n  \"%1\"\n").arg(tipsFile));
 			}
-			delete lm;
 			return nullptr;
         } else if (!DeleteTagsFileEx(tipsFile, TIP, false)) {
 			fprintf(stderr, "nedit: Internal error: Trouble deleting calltips file(s):\n  \"%s\"\n", tipsFile.toLatin1().data());
@@ -293,7 +290,6 @@ LanguageMode *DialogLanguageModes::readLMDialogFields(bool silent) {
 		int tabsSpacingValue = tabsSpacing.toInt(&ok);
 		if (!ok) {
 			QMessageBox::warning(this, tr("Warning"), tr("Can't read integer value \"%1\" in tab spacing").arg(tabsSpacing));
-			delete lm;
 			return nullptr;
 		}
 
@@ -303,7 +299,6 @@ LanguageMode *DialogLanguageModes::readLMDialogFields(bool silent) {
 			if (!silent) {
 				QMessageBox::warning(this, tr("Invalid Tab Spacing"), tr("Invalid tab spacing: %1").arg(lm->tabDist));
 			}
-			delete lm;
 			return nullptr;
 		}
 	}
@@ -317,7 +312,6 @@ LanguageMode *DialogLanguageModes::readLMDialogFields(bool silent) {
 		int emulatedTabSpacingValue = emulatedTabSpacing.toInt(&ok);
 		if (!ok) {
 			QMessageBox::warning(this, tr("Warning"), tr("Can't read integer value \"%1\" in emulated tab spacing").arg(tabsSpacing));
-			delete lm;
 			return nullptr;
 		}
 
@@ -327,7 +321,6 @@ LanguageMode *DialogLanguageModes::readLMDialogFields(bool silent) {
 			if (!silent) {
 				QMessageBox::warning(this, tr("Invalid Tab Spacing"), tr("Invalid emulated tab spacing: %1").arg(lm->emTabDist));
 			}
-			delete lm;
 			return nullptr;
 		}
 	}
@@ -360,7 +353,7 @@ LanguageMode *DialogLanguageModes::readLMDialogFields(bool silent) {
 		lm->wrapStyle = DEFAULT_WRAP;
 	}
 
-	return lm;
+    return lm.release();
 }
 
 
@@ -443,7 +436,7 @@ bool DialogLanguageModes::updateLMList(bool silent) {
                     if (oldModeName == itemFromIndex(i)->name) {
                         QString newDelimiters = itemFromIndex(i)->delimiters;
 
-                        // TODO(eteran): should this include empty string?
+                        // NOTE(eteran): should this include empty string?
                         if(newDelimiters.isNull()) {
                             newDelimiters = GetPrefDelimiters();
                         }

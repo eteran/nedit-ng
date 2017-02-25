@@ -12,6 +12,7 @@
 #include <QRegExp>
 #include <QRegExpValidator>
 #include <QtDebug>
+#include <memory>
 
 //------------------------------------------------------------------------------
 // Name: DialogDrawingStyles
@@ -321,12 +322,11 @@ bool DialogDrawingStyles::checkCurrent(bool silent) {
 HighlightStyle *DialogDrawingStyles::readDialogFields(bool silent) {
 
    	// Allocate a language mode structure to return 
-	auto hs = new HighlightStyle;
+    auto hs = std::make_unique<HighlightStyle>();
 
     // read the name field 
 	QString name = ui.editName->text().simplified();
     if (name.isNull()) {
-    	delete hs;
     	return nullptr;
     }
 
@@ -336,14 +336,12 @@ HighlightStyle *DialogDrawingStyles::readDialogFields(bool silent) {
             QMessageBox::warning(this, tr("Highlight Style"), tr("Please specify a name for the highlight style"));
         }
 
-        delete hs;
         return nullptr;
     }
 
     // read the color field 
     QString color = ui.editColorFG->text().simplified();
     if (color.isNull()) {
-    	delete hs;
     	return nullptr;
     }
 
@@ -352,7 +350,6 @@ HighlightStyle *DialogDrawingStyles::readDialogFields(bool silent) {
         if (!silent) {
             QMessageBox::warning(this, tr("Style Color"), tr("Please specify a color for the highlight style"));
         }
-        delete hs;
         return nullptr;
     }
 
@@ -362,7 +359,6 @@ HighlightStyle *DialogDrawingStyles::readDialogFields(bool silent) {
         if (!silent) {
             QMessageBox::warning(this, tr("Invalid Color"), tr("Invalid X color specification: %1").arg(hs->color));
         }
-        delete hs;
         return nullptr;
     }
 
@@ -382,7 +378,6 @@ HighlightStyle *DialogDrawingStyles::readDialogFields(bool silent) {
                 QMessageBox::warning(this, tr("Invalid Color"), tr("Invalid X background color specification: %1").arg(hs->bgColor));
             }
 
-            delete hs;
             return nullptr;;
         }
     }
@@ -398,7 +393,7 @@ HighlightStyle *DialogDrawingStyles::readDialogFields(bool silent) {
     	hs->font = PLAIN_FONT;
 	}
 
-    return hs;
+    return hs.release();
 }
 
 

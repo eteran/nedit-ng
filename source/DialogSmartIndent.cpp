@@ -116,7 +116,6 @@ void DialogSmartIndent::on_buttonCheck_clicked() {
 // Name: 
 //------------------------------------------------------------------------------
 void DialogSmartIndent::on_buttonDelete_clicked() {
-	int i;
 
 	// NOTE(eteran): originally was "Yes, Delete"
 	int resp = QMessageBox::question(this, tr("Delete Macros"), tr("Are you sure you want to delete smart indent macros for language mode %1?").arg(languageMode_), QMessageBox::Yes | QMessageBox::Cancel);
@@ -125,18 +124,14 @@ void DialogSmartIndent::on_buttonDelete_clicked() {
 	}
 
 	// if a stored version of the pattern set exists, delete it from the list 
-	for (i = 0; i < NSmartIndentSpecs; i++) {
-		if (languageMode_ == SmartIndentSpecs[i]->lmName) {
-			break;
+    for (auto it = SmartIndentSpecs.begin(); it != SmartIndentSpecs.end(); ++it) {
+        if (languageMode_ == (*it)->lmName) {
+            delete *it;
+            SmartIndentSpecs.erase(it);
 		}
 	}
 			
-			
-	if (i < NSmartIndentSpecs) {
-		delete SmartIndentSpecs[i];
-		std::copy_n(&SmartIndentSpecs[i + 1], (NSmartIndentSpecs - 1 - i), &SmartIndentSpecs[i]);
-		NSmartIndentSpecs--;
-	}
+
 
 	// Clear out the dialog 
 	setSmartIndentDialogData(nullptr);
@@ -169,17 +164,17 @@ void DialogSmartIndent::on_buttonRestore_clicked() {
 	}
 
 	// if a stored version of the indent macros exist, replace them, if not, add a new one
-	for (i = 0; i < NSmartIndentSpecs; i++) {
+    for (i = 0; i < SmartIndentSpecs.size(); i++) {
 		if (languageMode_ == SmartIndentSpecs[i]->lmName) {
 			break;
 		}
 	}
 	
-	if (i < NSmartIndentSpecs) {
+    if (i < SmartIndentSpecs.size()) {
 		delete SmartIndentSpecs[i];
 		SmartIndentSpecs[i] = new SmartIndent(*defaultIS);
 	} else {
-		SmartIndentSpecs[NSmartIndentSpecs++] = new SmartIndent(*defaultIS);
+        SmartIndentSpecs.push_back(new SmartIndent(*defaultIS));
 	}
 
 	// Update the dialog 
@@ -225,11 +220,10 @@ bool DialogSmartIndent::updateSmartIndentData() {
 		
 	// Get the current data 
 	SmartIndent *newMacros = getSmartIndentDialogData();
-	(void)newMacros;
 
 	// Find the original macros
 	int i;
-	for (i = 0; i < NSmartIndentSpecs; i++) {
+    for (i = 0; i < SmartIndentSpecs.size(); i++) {
 		if (languageMode_ == SmartIndentSpecs[i]->lmName) {
 			break;
 		}
@@ -237,8 +231,8 @@ bool DialogSmartIndent::updateSmartIndentData() {
 
 	/* If it's a new language, add it at the end, otherwise free the
 	   existing macros and replace it */
-	if (i == NSmartIndentSpecs) {
-		SmartIndentSpecs[NSmartIndentSpecs++] = newMacros;
+    if (i == SmartIndentSpecs.size()) {
+        SmartIndentSpecs.push_back(newMacros);
 	} else {
 		delete SmartIndentSpecs[i];
 		SmartIndentSpecs[i] = newMacros;

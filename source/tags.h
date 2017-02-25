@@ -69,7 +69,7 @@ int DeleteTagsFile(const char *tagSpec, int file_type, bool force_unload);
 
 int AddTagsFileEx(const QString &tagSpec, int file_type);
 int DeleteTagsFileEx(const QString &tagSpec, int file_type, bool force_unload);
-int tagsShowCalltipEx(TextArea *area, const char *text);
+int tagsShowCalltipEx(TextArea *area, const QString &text);
 
 // Routines for handling tags or tips from the current selection
 

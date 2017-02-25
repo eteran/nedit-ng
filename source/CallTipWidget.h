@@ -16,8 +16,7 @@ public:
 
 public Q_SLOTS:
     void copyText();
-    void deleteThis();
-	
+
 private:
     Ui::CallTipWidget ui;
 };

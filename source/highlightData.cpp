@@ -50,6 +50,7 @@
 #include <climits>
 #include <cstdio>
 #include <cstring>
+#include <memory>
 
 namespace {
 
@@ -108,25 +109,22 @@ bool LoadStylesStringEx(const QString &string) {
 		inPtr += strspn(inPtr, " \t");
 
 		// Allocate a language mode structure in which to store the info. 
-		auto hs = new HighlightStyle;
+        auto hs = std::make_unique<HighlightStyle>();
 
 		// read style name 
 		QString name = ReadSymbolicFieldEx(&inPtr);
 		if (name.isNull()) {
-            delete hs;
 			return styleError(inString, inPtr, "style name required");
 		}		
 		hs->name = name;
 		
 		if (!SkipDelimiter(&inPtr, &errMsg)) {
-			delete hs;
 			return styleError(inString,inPtr, errMsg);
 		}
 
 		// read color 
 		QString color = ReadSymbolicFieldEx(&inPtr);
 		if (color.isNull()) {
-			delete hs;
 			return styleError(inString,inPtr, "color name required");
 		}
 		
@@ -143,7 +141,6 @@ bool LoadStylesStringEx(const QString &string) {
 		}
 		
 		if (!SkipDelimiter(&inPtr, &errMsg)) {
-			delete hs;
 			return styleError(inString,inPtr, errMsg);
 		}
 
@@ -159,7 +156,6 @@ bool LoadStylesStringEx(const QString &string) {
 		}
 	
 		if (i == N_FONT_TYPES) {
-			delete hs;
 			return styleError(inString, inPtr, "unrecognized font type");
 		}
 
@@ -167,14 +163,14 @@ bool LoadStylesStringEx(const QString &string) {
 		for (i = 0; i < HighlightStyles.size(); i++) {
 			if (HighlightStyles[i]->name == hs->name) {			
 				delete HighlightStyles[i];
-				HighlightStyles[i] = hs;
+                HighlightStyles[i] = hs.release();
 				break;
 			}
 		}
 		
 	
 		if (i == HighlightStyles.size()) {
-			HighlightStyles.push_back(hs);
+            HighlightStyles.push_back(hs.release());
 		}
 
 		// if the string ends here, we're done 
@@ -540,10 +536,8 @@ static PatternSet *readPatternSet(const char **inPtr) {
 	patSet.patterns = patterns;
 
 	// pattern set was read correctly, make an allocated copy to return 
-	auto retPatSet = new PatternSet(patSet);
-
-
-	return retPatSet;
+    auto retPatSet = std::make_unique<PatternSet>(patSet);
+    return retPatSet.release();
 }
 
 /*
@@ -643,24 +637,18 @@ static int readHighlightPattern(const char **inPtr, const char **errMsg, Highlig
 		return false;
 
 	// read the style field 
-	if(const char *s = ReadSymbolicField(inPtr)) {
-        pattern->style = QString::fromLatin1(s);
-	}
+    pattern->style = ReadSymbolicFieldEx(inPtr);
 	
 	if (pattern->style.isNull()) {
 		*errMsg = "style field required in pattern";
 		return false;
 	}
 	
-	
-	
 	if (!SkipDelimiter(inPtr, errMsg))
 		return false;
 
 	// read the sub-pattern-of field 
-	if(const char *s = ReadSymbolicField(inPtr)) {	
-        pattern->subPatternOf = QString::fromLatin1(s);
-	}
+    pattern->subPatternOf = ReadSymbolicFieldEx(inPtr);
 	
 	if (!SkipDelimiter(inPtr, errMsg))
 		return false;
@@ -731,7 +719,7 @@ static bool isDefaultPatternSet(PatternSet *patSet) {
 		return false;
 	}
 	
-	bool retVal = *patSet == *defaultPatSet;
+    bool retVal = (*patSet == *defaultPatSet);
 	delete defaultPatSet;
 	return retVal;
 }

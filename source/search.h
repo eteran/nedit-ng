@@ -82,7 +82,7 @@ const char *SearchTypeArg(SearchType searchType, const char *defaultRV);
 ** SearchType in searchType. Returns FALSE and leaves searchType untouched
 ** otherwise.
 */
-int StringToSearchType(const std::string &string, SearchType*searchType);
+int StringToSearchType(const std::string &string, SearchType *searchType);
 
 /*
 ** History of search actions.

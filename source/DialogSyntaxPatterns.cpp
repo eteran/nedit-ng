@@ -14,6 +14,7 @@
 #include <QIntValidator>
 #include <QMessageBox>
 #include <QtDebug>
+#include <memory>
 
 //------------------------------------------------------------------------------
 // Name: DialogSyntaxPatterns
@@ -900,7 +901,7 @@ PatternSet *DialogSyntaxPatterns::getDialogPatternSet() {
 */
 HighlightPattern *DialogSyntaxPatterns::readDialogFields(bool silent) {
 
-	auto pat = new HighlightPattern;
+    auto pat = std::make_unique<HighlightPattern>();
 
 	// read the type buttons
 	int colorOnly = ui.radioColoring->isChecked();
@@ -913,7 +914,6 @@ HighlightPattern *DialogSyntaxPatterns::readDialogFields(bool silent) {
 	// read the name field
 	QString name = ui.editPatternName->text().simplified();
 	if (name.isNull()) {
-		delete pat;
 		return nullptr;
 	}
 
@@ -922,7 +922,6 @@ HighlightPattern *DialogSyntaxPatterns::readDialogFields(bool silent) {
 		if (!silent) {
 			QMessageBox::warning(this, tr("Pattern Name"), tr("Please specify a name for the pattern"));
 		}
-		delete pat;
 		return nullptr;
 	}
 
@@ -932,7 +931,6 @@ HighlightPattern *DialogSyntaxPatterns::readDialogFields(bool silent) {
 		if (!silent) {
 			QMessageBox::warning(this, tr("Matching Regex"), tr("Please specify a regular expression to match"));
 		}
-		delete pat;
 		return nullptr;
 	}
 
@@ -959,7 +957,6 @@ HighlightPattern *DialogSyntaxPatterns::readDialogFields(bool silent) {
 			if (!silent) {
 				QMessageBox::warning(this, tr("Pattern Error"), tr("The expression field in patterns which specify highlighting for a parent, must contain only sub-expression references in regular expression replacement form (&\\1\\2 etc.).  See Help -> Regular Expressions and Help -> Syntax Highlighting for more information"));
 			}
-			delete pat;
 			return nullptr;
 		}
 	}
@@ -971,7 +968,6 @@ HighlightPattern *DialogSyntaxPatterns::readDialogFields(bool silent) {
 			if (!silent) {
 				QMessageBox::warning(this, tr("Specify Parent Pattern"), tr("Please specify a parent pattern"));
 			}
-			delete pat;
 			return nullptr;
 		}
 
@@ -990,7 +986,6 @@ HighlightPattern *DialogSyntaxPatterns::readDialogFields(bool silent) {
 			if (!silent) {
 				QMessageBox::warning(this, tr("Specify Regex"), tr("Please specify an ending regular expression"));
 			}
-			delete pat;
 			return nullptr;
 		}
 	}
@@ -1003,7 +998,7 @@ HighlightPattern *DialogSyntaxPatterns::readDialogFields(bool silent) {
 		}
 	}
 
-	return pat;
+    return pat.release();
 }
 
 //------------------------------------------------------------------------------

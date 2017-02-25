@@ -4079,7 +4079,6 @@ int DocumentWidget::findDef(TextArea *area, const char *value, Mode search_type)
 
     static char tagText[MAX_TAG_LEN + 1];
     const char *p;
-    char message[MAX_TAG_LEN + 40];
 
     searchMode = search_type;
     int l = strlen(value);
@@ -4107,8 +4106,7 @@ int DocumentWidget::findDef(TextArea *area, const char *value, Mode search_type)
             if (status == 0) {
                 // Didn't find any matches
                 if (searchMode == TIP_FROM_TAG || searchMode == TIP) {
-                    sprintf(message, "No match for \"%s\" in calltips or tags.", tagName);
-                    tagsShowCalltipEx(area, message);
+                    tagsShowCalltipEx(area, tr("No match for \"%1\" in calltips or tags.").arg(QString::fromLatin1(tagName)));
                 } else {
                     QMessageBox::warning(this, tr("Tags"), tr("\"%1\" not found in tags file%2").arg(QString::fromLatin1(tagName), QLatin1String((TagsFileList && TagsFileList->next) ? "s" : "")));
                 }

@@ -574,7 +574,7 @@ QString ReadAnyTextFileEx(const std::string &fileName, int forceNL) {
 	** +1 = possible additional \n
 	*/
     auto fileString = new char[fileLen + 2];
-	readLen = fread(fileString, sizeof(char), fileLen, fp);
+    readLen = fread(fileString, 1, fileLen, fp);
 	if (ferror(fp)) {
         delete [] fileString;
 		fclose(fp);

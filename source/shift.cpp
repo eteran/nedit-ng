@@ -30,6 +30,7 @@
 #include "DocumentWidget.h"
 #include "TextArea.h"
 #include "TextBuffer.h"
+#include <memory>
 
 static std::string makeIndentString(int indent, int tabDist, int allowTabs);
 static char *shiftLineLeft(const char *line, int lineLen, int tabDist, int nChars);
@@ -141,7 +142,7 @@ static void shiftRectEx(DocumentWidget *window, TextArea *area, int direction, b
 
     /* Create a temporary buffer for the lines containing the selection, to
        hide the intermediate steps from the display update routines */
-    auto tempBuf = new TextBuffer;
+    auto tempBuf = std::make_unique<TextBuffer>();
     tempBuf->tabDist_ = buf->tabDist_;
     tempBuf->useTabs_ = buf->useTabs_;
     std::string text = buf->BufGetRangeEx(selStart, selEnd);
@@ -155,7 +156,6 @@ static void shiftRectEx(DocumentWidget *window, TextArea *area, int direction, b
     // Make the change in the real buffer
     buf->BufReplaceEx(selStart, selEnd, tempBuf->BufAsStringEx());
     buf->BufRectSelect(selStart, selStart + tempBuf->BufGetLength(), rectStart + offset, rectEnd + offset);
-    delete tempBuf;
 }
 
 
@@ -541,7 +541,7 @@ static std::string fillParagraphsEx(view::string_view text, int rightMargin, int
 	int len;
 
 	// Create a buffer to accumulate the filled paragraphs 
-	auto buf = new TextBuffer;
+    auto buf = std::make_unique<TextBuffer>();
 	buf->BufSetAllEx(text);
 
 	/*
@@ -565,7 +565,7 @@ static std::string fillParagraphsEx(view::string_view text, int rightMargin, int
 		paraStart = buf->BufStartOfLine(paraStart);
 
 		// Find the end of the paragraph 
-		int paraEnd = findParagraphEnd(buf, paraStart);
+        int paraEnd = findParagraphEnd(&*buf, paraStart);
 
 		/* Operate on either the one paragraph, or to make them all identical,
 		   do all of them together (fill paragraph can format all the paragraphs
@@ -598,7 +598,7 @@ static std::string fillParagraphsEx(view::string_view text, int rightMargin, int
 	// Free the buffer and return its contents 
 	std::string filledText = buf->BufGetAllEx();
 	*filledLen = buf->BufGetLength();
-	delete buf;
+
 	return filledText;
 }
 

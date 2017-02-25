@@ -158,13 +158,8 @@ void SyntaxHighlightModifyCBEx(int pos, int nInserted, int nDeleted, int nRestyl
     /* First and foremost, the style buffer must track the text buffer
        accurately and correctly */
     if (nInserted > 0) {
-        auto insStyle = new char[nInserted + 1];
-        std::fill_n(insStyle, nInserted, UNFINISHED_STYLE);
-        insStyle[nInserted] = '\0';
-
+        std::string insStyle(nInserted, UNFINISHED_STYLE);
         highlightData->styleBuffer->BufReplaceEx(pos, pos + nDeleted, insStyle);
-
-        delete [] insStyle;
     } else {
         highlightData->styleBuffer->BufRemove(pos, pos + nDeleted);
     }

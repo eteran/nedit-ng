@@ -152,33 +152,33 @@ bool offscreenV(QDesktopWidget *desktop, int top, int height) {
 ** is to prevent tabs from turning into squares in calltips, not to get the
 ** formatting just right.
 */
-std::string expandAllTabsEx(view::string_view text, int tab_width) {
+QString expandAllTabsEx(const QString &text, int tab_width) {
     int nTabs = 0;
 
     // First count 'em
-    for(char ch : text) {
-        if (ch == '\t') {
+    for(QChar ch : text) {
+        if (ch == QLatin1Char('\t')) {
             ++nTabs;
         }
     }
 
     if (nTabs == 0) {
-        return text.to_string();
+        return text;
     }
 
     // Allocate the new string
-    size_t len = text.size() + (tab_width - 1) * nTabs;
+    int len = text.size() + (tab_width - 1) * nTabs;
 
-    std::string textCpy;
+    QString textCpy;
     textCpy.reserve(len);
 
     auto cCpy = std::back_inserter(textCpy);
 
     // Now replace 'em
-    for(char ch : text) {
-        if (ch == '\t') {
+    for(QChar ch : text) {
+        if (ch == QLatin1Char('\t')) {
             for (int i = 0; i < tab_width; ++i) {
-                *cCpy++ = ' ';
+                *cCpy++ = QLatin1Char(' ');
             }
         } else {
             *cCpy++ = ch;
@@ -8348,8 +8348,7 @@ void TextArea::TextDKillCalltip(int calltipID) {
     }
 }
 
-// TODO(eteran): it is probably better to make text a QString
-int TextArea::TextDShowCalltip(view::string_view text, bool anchored, int pos, int hAlign, int vAlign, int alignMode) {
+int TextArea::TextDShowCalltip(const QString &text, bool anchored, int pos, int hAlign, int vAlign, int alignMode) {
     static int StaticCalltipID = 1;
 
     int rel_x;
@@ -8363,9 +8362,7 @@ int TextArea::TextDShowCalltip(view::string_view text, bool anchored, int pos, i
     }
 
     // Expand any tabs in the calltip and make it an XmString
-    std::string textCpy = expandAllTabsEx(text, buffer_->BufGetTabDistance());
-    std::string str = textCpy;
-
+    QString textCpy = expandAllTabsEx(text, buffer_->BufGetTabDistance());
 
     // Figure out where to put the tip
     if (anchored) {
@@ -8403,7 +8400,7 @@ int TextArea::TextDShowCalltip(view::string_view text, bool anchored, int pos, i
         StaticCalltipID = 1;
     }
 
-    calltipWidget_->setText(QString::fromStdString(str));
+    calltipWidget_->setText(textCpy);
     TextDRedrawCalltip(0);
 
     return calltip_.ID;

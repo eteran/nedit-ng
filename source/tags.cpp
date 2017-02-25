@@ -158,8 +158,8 @@ int globVAlign;
 int globAlignMode;
 
 // A wrapper for calling TextDShowCalltip
-int tagsShowCalltipEx(TextArea *area, const char *text) {
-    if (text)
+int tagsShowCalltipEx(TextArea *area, const QString &text) {
+    if (!text.isNull())
         return area->TextDShowCalltip(text, globAnchored, globPos, globHAlign, globVAlign, globAlignMode);
     else
         return 0;
@@ -362,7 +362,7 @@ bool AddRelTagsFileEx(const QString &tagSpec, const QString &windowPath, int fil
 }
 
 bool AddRelTagsFile(const char *tagSpec, const char *windowPath, int file_type) {
-	tagFile *t;
+    tagFile *t;
 	bool added = false;
 	struct stat statbuf;
 	char *filename;
@@ -404,7 +404,7 @@ bool AddRelTagsFile(const char *tagSpec, const char *windowPath, int file_type) 
 			continue;
 		}
 		
-		t = new tagFile;
+        t = new tagFile;
         t->filename = QString::fromLatin1(pathName);
 		t->loaded   = false;
 		t->date     = statbuf.st_mtime;
@@ -923,7 +923,7 @@ int ShowTipStringEx(DocumentWidget *window, const char *text, bool anchored, int
 
     // If this isn't a lookup request, just display it.
     if (!lookup)
-        return tagsShowCalltipEx(window->toWindow()->lastFocus_, text);
+        return tagsShowCalltipEx(window->toWindow()->lastFocus_, QString::fromLatin1(text));
     else
         return window->findDef(window->toWindow()->lastFocus_, text, static_cast<Mode>(search_type));
 }
@@ -1275,14 +1275,11 @@ void showMatchingCalltipEx(TextArea *area, int i) {
         // 5. Copy the calltip to a string
         tipLen = endPos - startPos;
 
-        auto message = new char[tipLen + 1]; // +1 = space for null
-        strncpy(message, &fileString[startPos], tipLen);
-        message[tipLen] = '\0';
+        auto message = QString::fromLatin1(&fileString[startPos], tipLen);
 
         // 6. Display it
         tagsShowCalltipEx(area, message);
 
-        delete [] message;
         delete [] fileString;
     } catch(const std::bad_alloc &) {
         QMessageBox::critical(nullptr /*parent*/, QLatin1String("Out of Memory"), QLatin1String("Can't allocate memory"));

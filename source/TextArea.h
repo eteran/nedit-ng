@@ -225,7 +225,7 @@ private Q_SLOTS:
 
 public:
     void TextDMaintainAbsLineNum(bool state);
-    int TextDShowCalltip(view::string_view text, bool anchored, int pos, int hAlign, int vAlign, int alignMode);
+    int TextDShowCalltip(const QString &text, bool anchored, int pos, int hAlign, int vAlign, int alignMode);
 	int TextDStartOfLine(int pos) const;
 	int TextDEndOfLine(int pos, bool startPosIsLineStart);
 	int TextDCountBackwardNLines(int startPos, int nLines);
