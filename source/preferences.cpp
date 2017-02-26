@@ -1202,52 +1202,6 @@ int ReadNumericField(const char **inPtr, int *value) {
 ** are letters, numbers, _, -, +, $, #, and internal whitespace.  Internal
 ** whitespace is compressed to single space characters.
 */
-char *ReadSymbolicField(const char **inPtr) {
-	char *outStr, *outPtr;
-	const char *strStart;
-	const char *strPtr;
-	int len;
-
-	// skip over initial blank space 
-	*inPtr += strspn(*inPtr, " \t");
-
-	/* Find the first invalid character or end of string to know how
-	   much memory to allocate for the returned string */
-	strStart = *inPtr;
-	while (isalnum((uint8_t)**inPtr) || **inPtr == '_' || **inPtr == '-' || **inPtr == '+' || **inPtr == '$' || **inPtr == '#' || **inPtr == ' ' || **inPtr == '\t')
-		(*inPtr)++;
-	len = *inPtr - strStart;
-	if (len == 0)
-		return nullptr;
-    outStr = outPtr = new char[len + 1];
-
-	// Copy the string, compressing internal whitespace to a single space 
-	strPtr = strStart;
-	while (strPtr - strStart < len) {
-		if (*strPtr == ' ' || *strPtr == '\t') {
-			strPtr += strspn(strPtr, " \t");
-			*outPtr++ = ' ';
-		} else
-			*outPtr++ = *strPtr++;
-	}
-
-	// If there's space on the end, take it back off 
-	if (outPtr > outStr && *(outPtr - 1) == ' ')
-		outPtr--;
-	if (outPtr == outStr) {
-        delete [] (outStr);
-		return nullptr;
-	}
-	*outPtr = '\0';
-	return outStr;
-}
-
-/*
-** Parse a symbolic field, skipping initial and trailing whitespace,
-** stops on first invalid character or end of string.  Valid characters
-** are letters, numbers, _, -, +, $, #, and internal whitespace.  Internal
-** whitespace is compressed to single space characters.
-*/
 QString ReadSymbolicFieldEx(const char **inPtr) {
 
 	// skip over initial blank space 

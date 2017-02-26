@@ -490,15 +490,16 @@ QString createPatternsString(PatternSet *patSet, const QString &indentStr) {
 static PatternSet *readPatternSet(const char **inPtr) {
 	const char *errMsg;
 	const char *stringStart = *inPtr;
-	PatternSet patSet;
 
 	// remove leading whitespace 
 	*inPtr += strspn(*inPtr, " \t\n");
 
+    auto patSet = std::make_unique<PatternSet>();
+
 	// read language mode field 
-	patSet.languageMode = ReadSymbolicFieldEx(inPtr);
+    patSet->languageMode = ReadSymbolicFieldEx(inPtr);
 	
-	if (patSet.languageMode.isNull()) {
+    if (patSet->languageMode.isNull()) {
 		return highlightError(stringStart, *inPtr, "language mode must be specified");
 	}
 
@@ -510,20 +511,21 @@ static PatternSet *readPatternSet(const char **inPtr) {
 	   pattern set */
 	if (!strncmp(*inPtr, "Default", 7)) {
 		*inPtr += 7;
-		PatternSet *retPatSet = readDefaultPatternSet(patSet.languageMode);
-		if(!retPatSet)
+        PatternSet *retPatSet = readDefaultPatternSet(patSet->languageMode);
+        if(!retPatSet) {
 			return highlightError(stringStart, *inPtr, "No default pattern set");
+        }
 		return retPatSet;
 	}
 
 	// read line context field 
-	if (!ReadNumericField(inPtr, &patSet.lineContext))
+    if (!ReadNumericField(inPtr, &patSet->lineContext))
 		return highlightError(stringStart, *inPtr, "unreadable line context field");
 	if (!SkipDelimiter(inPtr, &errMsg))
 		return highlightError(stringStart, *inPtr, errMsg);
 
 	// read character context field 
-	if (!ReadNumericField(inPtr, &patSet.charContext))
+    if (!ReadNumericField(inPtr, &patSet->charContext))
 		return highlightError(stringStart, *inPtr, "unreadable character context field");
 
 	// read pattern list 
@@ -533,11 +535,10 @@ static PatternSet *readPatternSet(const char **inPtr) {
 		return highlightError(stringStart, *inPtr, errMsg);
 	}
 	
-	patSet.patterns = patterns;
+    patSet->patterns = patterns;
 
 	// pattern set was read correctly, make an allocated copy to return 
-    auto retPatSet = std::make_unique<PatternSet>(patSet);
-    return retPatSet.release();
+    return patSet.release();
 }
 
 /*

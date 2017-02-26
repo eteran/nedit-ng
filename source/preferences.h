@@ -65,7 +65,6 @@ QString GetPrefTagFile();
 QString GetPrefTooltipBgColor();
 QString GetWindowDelimitersEx(const DocumentWidget *window);
 QString LanguageModeName(int mode);
-char *ReadSymbolicField(const char **inPtr);
 QString GetPrefShell();
 QString GetPrefTitleFormat();
 int FindLanguageMode(const QString &languageName);
