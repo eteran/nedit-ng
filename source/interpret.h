@@ -209,7 +209,7 @@ Symbol *InstallIteratorSymbol();
 Symbol *LookupStringConstSymbol(const char *value);
 Symbol *InstallStringConstSymbol(const char *str);
 Symbol *LookupSymbol(view::string_view name);
-Symbol *InstallSymbol(const char *name, SymTypes type, DataValue value);
+Symbol *InstallSymbol(const std::string &name, SymTypes type, DataValue value);
 Program *FinishCreatingProgram();
 void SwapCode(Inst *start, Inst *boundary, Inst *end);
 void StartLoopAddrList();

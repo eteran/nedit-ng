@@ -477,17 +477,16 @@ void DialogSyntaxPatterns::on_buttonDeletePattern_clicked() {
 
 
 	// if a stored version of the pattern set exists, delete it from the list
-	int psn;
-	for (psn = 0; psn < NPatternSets; psn++) {
-		if (languageMode == PatternSets[psn]->languageMode) {
+    auto it = PatternSets.begin();
+    for (; it != PatternSets.end(); ++it) {
+        if (languageMode == (*it)->languageMode) {
 			break;
 		}
 	}
 
-	if (psn < NPatternSets) {
-		delete PatternSets[psn];
-		std::copy_n(&PatternSets[psn + 1], (NPatternSets - 1 - psn), &PatternSets[psn]);
-		NPatternSets--;
+    if (it != PatternSets.end()) {
+        delete *it;
+        PatternSets.erase(it);
 	}
 
 	// Free the old dialog information
@@ -522,18 +521,18 @@ void DialogSyntaxPatterns::on_buttonRestore_clicked() {
 	}
 
 	// if a stored version of the pattern set exists, replace it, if it doesn't, add a new one
-	int psn;
-	for (psn = 0; psn < NPatternSets; psn++) {
-		if (languageMode == PatternSets[psn]->languageMode) {
+    auto it = PatternSets.begin();
+    for (; it != PatternSets.end(); ++it) {
+        if (languageMode == (*it)->languageMode) {
 			break;
 		}
 	}
 
-	if (psn < NPatternSets) {
-		delete PatternSets[psn];
-		PatternSets[psn] = defaultPatSet;
+    if (it != PatternSets.end()) {
+        delete *it;
+        *it = defaultPatSet;
 	} else {
-		PatternSets[NPatternSets++] = defaultPatSet;
+        PatternSets.push_back(defaultPatSet);
 	}
 
 	// Free the old dialog information
@@ -761,22 +760,22 @@ bool DialogSyntaxPatterns::updatePatternSet() {
 	}
 
 	// Find the pattern being modified
-	int psn;
-	for (psn = 0; psn < NPatternSets; psn++) {
-		if (PatternSets[psn]->languageMode == ui.comboLanguageMode->currentText()) {
+    auto it = PatternSets.begin();
+    for (; it != PatternSets.end(); ++it) {
+        if ((*it)->languageMode == ui.comboLanguageMode->currentText()) {
 			break;
 		}
 	}
 
 	// If it's a new pattern, add it at the end, otherwise free the existing pattern set and replace it
 	int oldNum = -1;
-	if (psn == NPatternSets) {
-		PatternSets[NPatternSets++] = patSet;
+    if (it == PatternSets.end()) {
+        PatternSets.push_back(patSet);
 		oldNum = 0;
 	} else {
-		oldNum = PatternSets[psn]->patterns.size();
-		delete PatternSets[psn];
-		PatternSets[psn] = patSet;
+        oldNum = (*it)->patterns.size();
+        delete *it;
+        *it = patSet;
 	}
 
 	// Find windows that are currently using this pattern set and re-do the highlighting

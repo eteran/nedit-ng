@@ -78,7 +78,6 @@ QString ImportedFile;
 
 
 static void translatePrefFormats(quint32 fileVer);
-
 static QStringList readExtensionList(const char **inPtr);
 static QString getDefaultShell();
 static int loadLanguageModesStringEx(const QString &string);
@@ -986,15 +985,14 @@ static int loadLanguageModesString(const char *inString) {
             return modeError(inString, inPtr, errMsg);
 
 		// read the recognition regular expression 
-		char *recognitionExpr;
+        QString recognitionExpr;
 		if (*inPtr == '\n' || *inPtr == '\0' || *inPtr == ':') {
-			recognitionExpr = nullptr;
-		} else if (!ReadQuotedString(&inPtr, &errMsg, &recognitionExpr)) {
+            recognitionExpr = QString();
+        } else if (!ReadQuotedStringEx(&inPtr, &errMsg, &recognitionExpr)) {
             return modeError(inString, inPtr, errMsg);
 		}
-			
-			
-        lm->recognitionExpr = QString::fromLatin1(recognitionExpr);
+
+        lm->recognitionExpr = recognitionExpr;
 			
 		if (!SkipDelimiter(&inPtr, &errMsg)) {
             return modeError(inString, inPtr, errMsg);
@@ -1052,14 +1050,14 @@ static int loadLanguageModesString(const char *inString) {
             return modeError(inString, inPtr, errMsg);
 
 		// read the delimiters string 
-		char *delimiters;
+        QString delimiters;
 		if (*inPtr == '\n' || *inPtr == '\0' || *inPtr == ':') {
-			delimiters = nullptr;
-		} else if (!ReadQuotedString(&inPtr, &errMsg, &delimiters)) {
+            delimiters = QString();
+        } else if (!ReadQuotedStringEx(&inPtr, &errMsg, &delimiters)) {
             return modeError(inString, inPtr, errMsg);
 		}
 			
-        lm->delimiters = delimiters ? QString::fromLatin1(delimiters) : QString();
+        lm->delimiters = delimiters;
 
 		// After 5.3 all language modes need a default tips file field 
         if (!SkipDelimiter(&inPtr, &errMsg))
@@ -1067,14 +1065,14 @@ static int loadLanguageModesString(const char *inString) {
 
 		// read the default tips file 
 		
-		char *defTipsFile;
+        QString defTipsFile;
 		if (*inPtr == '\n' || *inPtr == '\0') {
-			defTipsFile = nullptr;
-		} else if (!ReadQuotedString(&inPtr, &errMsg, &defTipsFile)) {
+            defTipsFile = QString();
+        } else if (!ReadQuotedStringEx(&inPtr, &errMsg, &defTipsFile)) {
             return modeError(inString, inPtr, errMsg);
 		}
 		
-        lm->defTipsFile = defTipsFile ? QString::fromLatin1(defTipsFile) : QString();
+        lm->defTipsFile = defTipsFile;
 
 		// pattern set was read correctly, add/replace it in the list 
         for (i = 0; i < LanguageModes.size(); i++) {
@@ -1210,11 +1208,11 @@ QString ReadSymbolicFieldEx(const char **inPtr) {
 	/* Find the first invalid character or end of string to know how
 	   much memory to allocate for the returned string */
 	const char *strStart = *inPtr;
-	while (isalnum((uint8_t)**inPtr) || **inPtr == '_' || **inPtr == '-' || **inPtr == '+' || **inPtr == '$' || **inPtr == '#' || **inPtr == ' ' || **inPtr == '\t') {
-		(*inPtr)++;
+    while (isalnum(static_cast<uint8_t>(**inPtr)) || **inPtr == '_' || **inPtr == '-' || **inPtr == '+' || **inPtr == '$' || **inPtr == '#' || **inPtr == ' ' || **inPtr == '\t') {
+        (*inPtr)++;
 	}
 	
-	int len = *inPtr - strStart;
+    const int len = *inPtr - strStart;
 	if (len == 0) {
 		return QString();
 	}
@@ -1254,60 +1252,7 @@ QString ReadSymbolicFieldEx(const char **inPtr) {
 ** argument minus quotes.  If not successful, returns False with
 ** (statically allocated) message in "errMsg".
 */
-int ReadQuotedString(const char **inPtr, const char **errMsg, char **string) {
-	char *outPtr;
-	const char *c;
-
-	// skip over blank space 
-	*inPtr += strspn(*inPtr, " \t");
-
-	// look for initial quote 
-	if (**inPtr != '\"') {
-		*errMsg = "expecting quoted string";
-		return false;
-	}
-	(*inPtr)++;
-
-	// calculate max length and allocate returned string 
-	for (c = *inPtr;; c++) {
-		if (*c == '\0') {
-			*errMsg = "string not terminated";
-			return false;
-		} else if (*c == '\"') {
-			if (*(c + 1) == '\"')
-				c++;
-			else
-				break;
-		}
-	}
-
-	// copy string up to end quote, transforming escaped quotes into quotes 
-    *string = new char[c - *inPtr + 1];
-	outPtr = *string;
-	while (true) {
-		if (**inPtr == '\"') {
-			if (*(*inPtr + 1) == '\"')
-				(*inPtr)++;
-			else
-				break;
-		}
-		*outPtr++ = *(*inPtr)++;
-	}
-	*outPtr = '\0';
-
-	// skip end quote 
-	(*inPtr)++;
-	return true;
-}
-
-/*
-** parse an individual quoted string.  Anything between
-** double quotes is acceptable, quote characters can be escaped by "".
-** Returns allocated string "string" containing
-** argument minus quotes.  If not successful, returns False with
-** (statically allocated) message in "errMsg".
-*/
-int ReadQuotedStringEx(const char **inPtr, const char **errMsg, QString *string) {
+bool ReadQuotedStringEx(const char **inPtr, const char **errMsg, QString *string) {
 	const char *c;
 
 	// skip over blank space 

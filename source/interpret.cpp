@@ -673,7 +673,8 @@ Symbol *InstallIteratorSymbol() {
 	++interatorNameIndex;
 	value.tag = INT_TAG;
 	value.val.arrayPtr = nullptr;
-	return (InstallSymbol(symbolName, LOCAL_SYM, value));
+
+    return InstallSymbol(symbolName, LOCAL_SYM, value);
 }
 
 /*
@@ -694,18 +695,19 @@ Symbol *LookupStringConstSymbol(const char *value) {
 ** install string str in the global symbol table with a string name
 */
 Symbol *InstallStringConstSymbol(const char *str) {
-	static int stringConstIndex = 0;
+
+    static int stringConstIndex = 0;
 	char stringName[35];
 	DataValue value;
-	Symbol *sym = LookupStringConstSymbol(str);
-	if (sym) {
+
+    if (Symbol *sym = LookupStringConstSymbol(str)) {
 		return sym;
 	}
 
-	sprintf(stringName, "string #%d", stringConstIndex++);
-	value.tag = STRING_TAG;
-	AllocNStringCpy(&value.val.str, str);
-	return (InstallSymbol(stringName, CONST_SYM, value));
+    sprintf(stringName, "string #%d", stringConstIndex++);
+    value.tag = STRING_TAG;
+    AllocNStringCpy(&value.val.str, str);
+    return InstallSymbol(stringName, CONST_SYM, value);
 }
 
 /*
@@ -731,7 +733,7 @@ Symbol *LookupSymbol(view::string_view name) {
 /*
 ** install symbol name in symbol table
 */
-Symbol *InstallSymbol(const char *name, enum SymTypes type, DataValue value) {
+Symbol *InstallSymbol(const std::string &name, enum SymTypes type, DataValue value) {
 
 	auto s = new Symbol;
 	s->name  = name;
@@ -918,6 +920,14 @@ int AllocNStringCpy(NString *string, const char *s) {
 }
 
 NString AllocNStringCpyEx(const QString &s) {
+
+    if(s.isNull()) {
+        NString string;
+        string.len = 0;
+        string.rep = nullptr;
+        return string;
+    }
+
     size_t length = s.size();
 
     NString string = AllocNStringEx(length + 1);

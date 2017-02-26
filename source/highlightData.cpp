@@ -83,8 +83,7 @@ static PatternSet *readPatternSet(const char **inPtr);
 static QString createPatternsString(PatternSet *patSet, const QString &indentStr);
 
 // Pattern sources loaded from the .nedit file or set by the user 
-int NPatternSets = 0;
-PatternSet *PatternSets[MAX_LANGUAGE_MODES];
+QList<PatternSet *> PatternSets;
 
 /*
 ** Read a string (from the  value of the styles resource) containing highlight
@@ -234,7 +233,6 @@ bool LoadHighlightStringEx(const QString &string) {
 
     const char *inString = stringBytes.data();
 	const char *inPtr = inString;
-	int i;
 
 	for (;;) {
 
@@ -245,19 +243,17 @@ bool LoadHighlightStringEx(const QString &string) {
 		}
 
 		// Add/change the pattern set in the list 
-		for (i = 0; i < NPatternSets; i++) {
-			if (PatternSets[i]->languageMode == patSet->languageMode) {
-				delete PatternSets[i];
-				PatternSets[i] = patSet;
+        auto it = PatternSets.begin();
+        for (; it != PatternSets.end(); ++it) {
+            if ((*it)->languageMode == patSet->languageMode) {
+                delete *it;
+                *it = patSet;
 				break;
 			}
 		}
 
-		if (i == NPatternSets) {
-			PatternSets[NPatternSets++] = patSet;
-			if (NPatternSets > MAX_LANGUAGE_MODES) {
-				return false;
-			}
+        if (it == PatternSets.end()) {
+            PatternSets.push_back(patSet);
 		}
 
 		// if the string ends here, we're done 
@@ -278,8 +274,8 @@ QString WriteHighlightStringEx() {
     QString str;
     QTextStream out(&str);
 
-	for (int psn = 0; psn < NPatternSets; psn++) {
-		PatternSet *patSet = PatternSets[psn];
+
+    for (PatternSet *patSet : PatternSets) {
 		if (patSet->patterns.isEmpty()) {
 			continue;
 		}
@@ -399,9 +395,9 @@ bool NamedStyleExists(const QString &styleName) {
 */
 PatternSet *FindPatternSet(const QString &langModeName) {
 
-	for (int i = 0; i < NPatternSets; i++) {
-		if (langModeName == PatternSets[i]->languageMode) {
-			return PatternSets[i];
+    for(PatternSet *patternSet : PatternSets) {
+        if (langModeName == patternSet->languageMode) {
+            return patternSet;
 		}
 	}
 	
@@ -428,10 +424,9 @@ bool LMHasHighlightPatterns(const QString &languageMode) {
 */
 void RenameHighlightPattern(const QString &oldName, const QString &newName) {
 
-	for (int i = 0; i < NPatternSets; i++) {
-	
-        if (PatternSets[i]->languageMode == oldName) {
-            PatternSets[i]->languageMode = newName;
+    for(PatternSet *patternSet : PatternSets) {
+        if (patternSet->languageMode == oldName) {
+            patternSet->languageMode = newName;
 		}
 	}
 	

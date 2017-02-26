@@ -335,7 +335,7 @@ int main(int argc, char *argv[]) {
 #endif
 
     // Set up communication over dbus!
-    if (IsServer || true) {
+    if (IsServer) {
         new NeditServer;
 	}
 

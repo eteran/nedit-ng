@@ -42,11 +42,6 @@ class QDialog;
 
 constexpr const int PLAIN_LANGUAGE_MODE = -1;
 
-/* maximum number of language modes allowed */
-#define MAX_LANGUAGE_MODES 127
-
-#define MAX_TITLE_FORMAT_LEN 50
-
 bool GetPrefFocusOnRaise();
 bool GetPrefForceOSConversion();
 bool GetPrefHighlightSyntax();
@@ -119,8 +114,7 @@ bool ParseErrorEx(QWidget *toDialog, const QString &stringStart, int stoppedAt, 
 
 
 int ReadNumericField(const char **inPtr, int *value);
-int ReadQuotedString(const char **inPtr, const char **errMsg, char **string);
-int ReadQuotedStringEx(const char **inPtr, const char **errMsg, QString *string);
+bool ReadQuotedStringEx(const char **inPtr, const char **errMsg, QString *string);
 int SkipDelimiter(const char **inPtr, const char **errMsg);
 int SkipOptSeparator(char separator, const char **inPtr);
 QString MakeQuotedStringEx(const QString &string);

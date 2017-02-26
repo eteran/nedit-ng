@@ -60,8 +60,6 @@ PatternSet *readDefaultPatternSet(const QString &langModeName);
 
 // list of available highlight styles 
 extern QList<HighlightStyle *> HighlightStyles;
-
-extern int NPatternSets;
-extern PatternSet *PatternSets[MAX_LANGUAGE_MODES];
+extern QList<PatternSet *> PatternSets;
 
 #endif

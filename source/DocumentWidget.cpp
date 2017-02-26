@@ -3534,12 +3534,12 @@ void DocumentWidget::executeModMacroEx(smartIndentCBStruct *cbInfo) {
     DataValue result;
     RestartData *continuation;
     const char *errMsg;
-    int stat;
 
     /* Check for inappropriate calls and prevent re-entering if the macro
        makes a buffer modification */
-    if (winData == nullptr || winData->modMacro == nullptr || inModCB)
+    if (winData == nullptr || winData->modMacro == nullptr || inModCB) {
         return;
+    }
 
     /* Call modification macro with the position of the modification,
        and the character(s) inserted.  Don't allow
@@ -3550,7 +3550,7 @@ void DocumentWidget::executeModMacroEx(smartIndentCBStruct *cbInfo) {
     inModCB = true;
     ++(winData->inModMacro);
 
-    stat = ExecuteMacroEx(this, winData->modMacro, 2, args, &result, &continuation, &errMsg);
+    int stat = ExecuteMacroEx(this, winData->modMacro, 2, args, &result, &continuation, &errMsg);
 
     while (stat == MACRO_TIME_LIMIT) {
         stat = ContinueMacroEx(continuation, &result, &errMsg);
