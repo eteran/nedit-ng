@@ -189,7 +189,7 @@ void DialogMacros::on_listItems_itemSelectionChanged() {
 	if(previous_ != nullptr && current != nullptr && current != previous_) {
 		// we want to try to save it (but not apply it yet)
 		// and then move on
-		if(!checkMacro(true)) {
+        if(!checkMacro(Mode::Silent)) {
 
 			QMessageBox messageBox(this);
 			messageBox.setWindowTitle(tr("Discard Entry"));
@@ -203,7 +203,7 @@ void DialogMacros::on_listItems_itemSelectionChanged() {
 			if (messageBox.clickedButton() == buttonKeep) {
 			
 				// again to cause messagebox to pop up
-				checkMacro(false);
+                checkMacro(Mode::Verbose);
 				
 				// reselect the old item
                 no_signals(ui.listItems)->setCurrentItem(previous_);
@@ -263,7 +263,7 @@ void DialogMacros::on_listItems_itemSelectionChanged() {
 // Name: on_buttonCheck_clicked
 //------------------------------------------------------------------------------
 void DialogMacros::on_buttonCheck_clicked() {
-	if (checkMacro(false)) {
+    if (checkMacro(Mode::Verbose)) {
 		QMessageBox::information(this, tr("Macro"), tr("Macro compiled without error"));
 	}
 }
@@ -291,19 +291,17 @@ void DialogMacros::on_buttonOK_clicked() {
 //------------------------------------------------------------------------------
 // Name: checkMacro
 //------------------------------------------------------------------------------
-bool DialogMacros::checkMacro(bool silent) {
+bool DialogMacros::checkMacro(Mode mode) {
 
-	MenuItem *f = readDialogFields(silent);
+    auto f = readDialogFields(mode);
 	if(!f) {
 		return false;
 	}
 
-	if (!checkMacroText(f->cmd, silent)) {
-		delete f;
+    if (!checkMacroText(f->cmd, mode)) {
 		return false;
 	}
 
-	delete f;
 	return true;
 }
 
@@ -314,12 +312,12 @@ bool DialogMacros::checkMacro(bool silent) {
 ** pointer to the new MenuItem structure as the function value, or nullptr on
 ** failure.
 */
-MenuItem *DialogMacros::readDialogFields(bool silent) {
+std::unique_ptr<MenuItem> DialogMacros::readDialogFields(Mode mode) {
 
 	QString nameText = ui.editName->text();
 
 	if (nameText.isEmpty()) {
-		if (!silent) {
+        if (mode == Mode::Verbose) {
 			QMessageBox::warning(this, tr("Menu Entry"), tr("Please specify a name for the menu item"));
 		}
 		return nullptr;
@@ -327,7 +325,7 @@ MenuItem *DialogMacros::readDialogFields(bool silent) {
 
 
 	if (nameText.indexOf(QLatin1Char(':')) != -1) {
-		if (!silent) {
+        if (mode == Mode::Verbose) {
 			QMessageBox::warning(this, tr("Menu Entry"), tr("Menu item names may not contain colon (:) characters"));
 		}
 		return nullptr;
@@ -335,18 +333,18 @@ MenuItem *DialogMacros::readDialogFields(bool silent) {
 
 	QString cmdText = ui.editMacro->toPlainText();
 	if (cmdText.isEmpty()) {
-		if (!silent) {
+        if (mode == Mode::Verbose) {
 			QMessageBox::warning(this, tr("Command to Execute"), tr("Please specify macro command(s) to execute"));
 		}
 		return nullptr;
 	}
 
 	cmdText = ensureNewline(cmdText);
-	if (!checkMacroText(cmdText, silent)) {
+    if (!checkMacroText(cmdText, mode)) {
 		return nullptr;
 	}
 
-	auto f = new MenuItem;
+    auto f = std::make_unique<MenuItem>();
 	f->name = nameText;
 	f->cmd  = cmdText;
 
@@ -365,14 +363,14 @@ MenuItem *DialogMacros::readDialogFields(bool silent) {
 //------------------------------------------------------------------------------
 // Name: checkMacroText
 //------------------------------------------------------------------------------
-bool DialogMacros::checkMacroText(const QString &macro, bool silent) {
+bool DialogMacros::checkMacroText(const QString &macro, Mode mode) {
 
 	QString errMsg;
 	int stoppedAt;
 
     Program *prog = ParseMacroEx(macro, &errMsg, &stoppedAt);
 	if(!prog) {
-		if(!silent) {
+        if(mode == Mode::Verbose) {
 			ParseErrorEx(this, macro, stoppedAt, tr("macro"), errMsg);
 		}
 		QTextCursor cursor = ui.editMacro->textCursor();
@@ -384,7 +382,7 @@ bool DialogMacros::checkMacroText(const QString &macro, bool silent) {
 	FreeProgram(prog);
 
 	if(stoppedAt != macro.size()) {
-		if(!silent) {
+        if(mode == Mode::Verbose) {
 			ParseErrorEx(this, macro, stoppedAt, tr("macro"), tr("syntax error"));
 		}
 		QTextCursor cursor = ui.editMacro->textCursor();
@@ -422,7 +420,7 @@ QString DialogMacros::ensureNewline(const QString &string) {
 bool DialogMacros::applyDialogChanges() {
 
 	// Test compile the macro
-	auto current = readDialogFields(false);
+    auto current = readDialogFields(Mode::Verbose);
 	if(!current) {
 		return false;
 	}
@@ -438,8 +436,9 @@ bool DialogMacros::applyDialogChanges() {
 	QListWidgetItem *const selection = selections[0];
 	auto ptr = reinterpret_cast<MenuItem *>(selection->data(Qt::UserRole).toULongLong());
 	delete ptr;
-	selection->setData(Qt::UserRole, reinterpret_cast<qulonglong>(current));
-	selection->setText(current->name);
+
+    selection->setText(current->name);
+    selection->setData(Qt::UserRole, reinterpret_cast<qulonglong>(current.release()));
 
 	// Update the menu information
 	freeUserMenuInfoList(MacroMenuData);
@@ -472,7 +471,7 @@ void DialogMacros::setPasteReplayEnabled(bool enabled) {
 //------------------------------------------------------------------------------
 bool DialogMacros::updateCurrentItem(QListWidgetItem *item) {
 	// Get the current contents of the "patterns" dialog fields 
-	auto ptr = readDialogFields(false);
+    auto ptr = readDialogFields(Mode::Verbose);
 	if(!ptr) {
 		return false;
 	}
@@ -481,8 +480,8 @@ bool DialogMacros::updateCurrentItem(QListWidgetItem *item) {
 	auto old = reinterpret_cast<MenuItem *>(item->data(Qt::UserRole).toULongLong());
 	delete old;
 	
-	item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(ptr));
-	item->setText(ptr->name);
+    item->setText(ptr->name);
+    item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(ptr.release()));
 	return true;
 }
 

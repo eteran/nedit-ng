@@ -151,7 +151,6 @@ void parseCommandLine(int argc, char **argv, CommandLine *commandLine) {
     int iconic = 0;
     int tabbed = -1;
     int i;
-    int lineArg;
     int fileCount = 0;
     int group = 0;
     int isTabbed;
@@ -197,7 +196,7 @@ void parseCommandLine(int argc, char **argv, CommandLine *commandLine) {
             nextArg(argc, argv, &i);
 
             char *end = nullptr;
-            lineArg = strtol(argv[i], &end, 10);
+            long lineArg = strtol(argv[i], &end, 10);
             if(*end != '\0') {
                 fprintf(stderr, "nc: argument to line should be a number\n");
             } else {
@@ -206,7 +205,7 @@ void parseCommandLine(int argc, char **argv, CommandLine *commandLine) {
         } else if (opts && (*argv[i] == '+')) {
 
             char *end = nullptr;
-            lineArg = strtol(argv[i], &end, 10);
+            long lineArg = strtol(argv[i], &end, 10);
             if(*end != '\0') {
                 fprintf(stderr, "nc: argument to + should be a number\n");
             } else {

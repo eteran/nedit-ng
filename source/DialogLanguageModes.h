@@ -3,6 +3,7 @@
 #define DIALOG_LANGUAGE_MODES_H_
 
 #include <QDialog>
+#include <memory>
 #include "ui_DialogLanguageModes.h"
 
 class LanguageMode;
@@ -10,6 +11,12 @@ class LanguageMode;
 class DialogLanguageModes : public QDialog {
 public:
 	Q_OBJECT
+private:
+    enum class Mode {
+        Silent,
+        Verbose
+    };
+
 public:
 	DialogLanguageModes(QWidget *parent = 0, Qt::WindowFlags f = 0);
 	virtual ~DialogLanguageModes();
@@ -28,9 +35,9 @@ private Q_SLOTS:
 	void on_listItems_itemSelectionChanged();
 	
 private:
-	bool updateLMList(bool silent);
-	bool updateLanguageList(bool silent);
-	LanguageMode *readLMDialogFields(bool silent);
+    bool updateLMList(Mode mode);
+    bool updateLanguageList(Mode mode);
+    std::unique_ptr<LanguageMode> readLMDialogFields(Mode mode);
 	LanguageMode *itemFromIndex(int i) const;
 	bool updateCurrentItem();
 	bool updateCurrentItem(QListWidgetItem *item);		

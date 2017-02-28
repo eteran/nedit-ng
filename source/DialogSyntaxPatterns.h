@@ -3,6 +3,7 @@
 #define DIALOG_SYNTAX_PATTERNS_H_
 
 #include <QDialog>
+#include <memory>
 #include "ui_DialogSyntaxPatterns.h"
 
 class PatternSet;
@@ -10,6 +11,13 @@ class HighlightPattern;
 
 class DialogSyntaxPatterns : public QDialog {
 	Q_OBJECT
+
+private:
+    enum class Mode {
+        Silent,
+        Verbose
+    };
+
 public:
 	DialogSyntaxPatterns(QWidget *parent = 0, Qt::WindowFlags f = 0);
 	virtual ~DialogSyntaxPatterns();
@@ -50,13 +58,13 @@ private:
 	bool checkHighlightDialogData();
 	void setStyleMenu(const QString &name);
 	void setLanguageMenu(const QString &name);
-	PatternSet *getDialogPatternSet();
+    PatternSet *getDialogPatternSet();
 	HighlightPattern *itemFromIndex(int i) const;
-	HighlightPattern *readDialogFields(bool silent);
-	bool checkCurrentPattern(bool silent);
+    HighlightPattern *readDialogFields(Mode mode);
+    bool checkCurrentPattern(Mode mode);
 	bool updateCurrentItem();
 	bool updateCurrentItem(QListWidgetItem *item);
-	bool TestHighlightPatterns(PatternSet *patSet);
+    bool TestHighlightPatterns(PatternSet *patSet);
 
 private:
 	Ui::DialogSyntaxPatterns ui;

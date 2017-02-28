@@ -178,7 +178,7 @@ void DialogShellMenu::on_listItems_itemSelectionChanged() {
 	
 		// we want to try to save it (but not apply it yet)
 		// and then move on
-		if(!checkCurrent(true)) {
+        if(!checkCurrent(Mode::Silent)) {
 
 			QMessageBox messageBox(this);
 			messageBox.setWindowTitle(tr("Discard Entry"));
@@ -192,7 +192,7 @@ void DialogShellMenu::on_listItems_itemSelectionChanged() {
 			if (messageBox.clickedButton() == buttonKeep) {
 			
 				// again to cause messagebox to pop up
-				checkCurrent(false);
+                checkCurrent(Mode::Verbose);
 				
 				// reselect the old item
                 no_signals(ui.listItems)->setCurrentItem(previous_);
@@ -318,18 +318,18 @@ void DialogShellMenu::on_buttonBox_accepted() {
 ** pointer to the new MenuItem structure as the function value, or nullptr on
 ** failure.
 */
-MenuItem *DialogShellMenu::readDialogFields(bool silent) {
+std::unique_ptr<MenuItem> DialogShellMenu::readDialogFields(Mode mode) {
 
 	QString nameText = ui.editName->text();
 	if (nameText.isEmpty()) {
-		if (!silent) {
+        if (mode == Mode::Verbose) {
 			QMessageBox::warning(this, tr("Menu Entry"), tr("Please specify a name for the menu item"));
 		}
 		return nullptr;
 	}
 
 	if (nameText.indexOf(QLatin1Char(':')) != -1) {
-		if (!silent) {
+        if (mode == Mode::Verbose) {
 			QMessageBox::warning(this, tr("Menu Entry"), tr("Menu item names may not contain colon (:) characters"));
 		}
 		return nullptr;
@@ -337,13 +337,13 @@ MenuItem *DialogShellMenu::readDialogFields(bool silent) {
 
 	QString cmdText = ui.editCommand->toPlainText();
 	if (cmdText.isEmpty()) {
-		if (!silent) {
+        if (mode == Mode::Verbose) {
 			QMessageBox::warning(this, tr("Command to Execute"), tr("Please specify macro command(s) to execute"));
 		}
 		return nullptr;
 	}
 
-	auto f = new MenuItem;
+    auto f = std::make_unique<MenuItem>();
 	f->name = nameText;
 	f->cmd  = cmdText;
 
@@ -403,7 +403,7 @@ QString DialogShellMenu::ensureNewline(const QString &string) {
 bool DialogShellMenu::applyDialogChanges() {
 
 	// Test compile the macro
-	auto current = readDialogFields(false);
+    auto current = readDialogFields(Mode::Verbose);
 	if(!current) {
 		return false;
 	}
@@ -419,8 +419,10 @@ bool DialogShellMenu::applyDialogChanges() {
 	QListWidgetItem *const selection = selections[0];
 	auto ptr = reinterpret_cast<MenuItem *>(selection->data(Qt::UserRole).toULongLong());
 	delete ptr;
-	selection->setData(Qt::UserRole, reinterpret_cast<qulonglong>(current));
+
+
 	selection->setText(current->name);
+    selection->setData(Qt::UserRole, reinterpret_cast<qulonglong>(current.release()));
 
 	// Update the menu information
 	freeUserMenuInfoList(ShellMenuData);
@@ -456,7 +458,7 @@ void DialogShellMenu::on_radioToSameDocument_toggled(bool checked) {
 //------------------------------------------------------------------------------
 bool DialogShellMenu::updateCurrentItem(QListWidgetItem *item) {
 	// Get the current contents of the "patterns" dialog fields 
-	auto ptr = readDialogFields(false);
+    auto ptr = readDialogFields(Mode::Verbose);
 	if(!ptr) {
 		return false;
 	}
@@ -465,8 +467,8 @@ bool DialogShellMenu::updateCurrentItem(QListWidgetItem *item) {
 	auto old = reinterpret_cast<MenuItem *>(item->data(Qt::UserRole).toULongLong());
 	delete old;
 	
-	item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(ptr));
-	item->setText(ptr->name);
+    item->setText(ptr->name);
+    item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(ptr.release()));
 	return true;
 }
 
@@ -486,9 +488,8 @@ bool DialogShellMenu::updateCurrentItem() {
 //------------------------------------------------------------------------------
 // Name: 
 //------------------------------------------------------------------------------
-bool DialogShellMenu::checkCurrent(bool silent) {
-	if(auto ptr = readDialogFields(silent)) {
-		delete ptr;
+bool DialogShellMenu::checkCurrent(Mode mode) {
+    if(auto ptr = readDialogFields(mode)) {
 		return true;
 	}
 	

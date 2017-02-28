@@ -4,12 +4,20 @@
 
 #include <QDialog>
 #include <QList>
+#include <memory>
 #include "ui_DialogShellMenu.h"
 
 class MenuItem;
 
 class DialogShellMenu : public QDialog {
 	Q_OBJECT
+
+private:
+    enum class Mode {
+        Silent,
+        Verbose
+    };
+
 public:
 	DialogShellMenu(QWidget *parent = 0, Qt::WindowFlags f = 0);
 	virtual ~DialogShellMenu();
@@ -29,8 +37,8 @@ private Q_SLOTS:
 	void on_radioToSameDocument_toggled(bool checked);
 	
 private:
-	bool checkCurrent(bool silent);
-	MenuItem *readDialogFields(bool silent);
+    bool checkCurrent(Mode mode);
+    std::unique_ptr<MenuItem> readDialogFields(Mode mode);
 	QString ensureNewline(const QString &string);
 	bool applyDialogChanges();
 	void updateButtons();

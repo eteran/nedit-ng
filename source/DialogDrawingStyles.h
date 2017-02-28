@@ -3,12 +3,20 @@
 #define DIALOG_DRAWING_STYLES_H_
 
 #include <QDialog>
+#include <memory>
 #include "ui_DialogDrawingStyles.h"
 
 class HighlightStyle;
 
 class DialogDrawingStyles : public QDialog {
 	Q_OBJECT
+
+private:
+    enum class Mode {
+        Silent,
+        Verbose
+    };
+
 public:
 	DialogDrawingStyles(QWidget *parent = 0, Qt::WindowFlags f = 0);
 	virtual ~DialogDrawingStyles();
@@ -26,14 +34,13 @@ private Q_SLOTS:
 	void on_buttonDelete_clicked();
 	void on_buttonUp_clicked();
 	void on_buttonDown_clicked();
-
 	void on_buttonBox_clicked(QAbstractButton *button);
 	void on_buttonBox_accepted();
 	
 private:
 	bool updateHSList();
-	bool checkCurrent(bool silent);
-	HighlightStyle *readDialogFields(bool silent);
+    bool checkCurrent(Mode mode);
+    std::unique_ptr<HighlightStyle> readDialogFields(Mode mode);
 	HighlightStyle *itemFromIndex(int i) const;
 	bool updateCurrentItem();
 	bool updateCurrentItem(QListWidgetItem *item);		
@@ -41,7 +48,6 @@ private:
 private:
 	Ui::DialogDrawingStyles ui;
 	QListWidgetItem *previous_;
-	QString styleName_;
 };
 
 #endif

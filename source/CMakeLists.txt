@@ -51,7 +51,6 @@ qt5_wrap_cpp(MOC_SOURCES
 	DocumentWidget.h
 	ElidedLabel.h
 	KeySequenceEdit.h
-	ListWidget.h
 	MainWindow.h
 	NeditServer.h
 	Settings.h
@@ -136,7 +135,6 @@ add_executable(nedit-ng
 	HighlightPattern.cpp
 	KeySequenceEdit.cpp
 	LanguageMode.cpp
-	ListWidget.cpp
 	MainWindow.cpp
 	MenuItem.cpp
 	NeditServer.cpp

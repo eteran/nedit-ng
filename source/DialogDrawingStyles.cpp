@@ -12,7 +12,6 @@
 #include <QRegExp>
 #include <QRegExpValidator>
 #include <QtDebug>
-#include <memory>
 
 //------------------------------------------------------------------------------
 // Name: DialogDrawingStyles
@@ -121,6 +120,7 @@ void DialogDrawingStyles::on_buttonCopy_clicked() {
 // Name: on_buttonDelete_clicked
 //------------------------------------------------------------------------------
 void DialogDrawingStyles::on_buttonDelete_clicked() {
+
 	QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
 	if(selections.size() != 1) {
 		return;
@@ -145,7 +145,8 @@ void DialogDrawingStyles::on_buttonDelete_clicked() {
 // Name: on_buttonUp_clicked
 //------------------------------------------------------------------------------
 void DialogDrawingStyles::on_buttonUp_clicked() {
-	QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
+
+    QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
 	if(selections.size() != 1) {
 		return;
 	}
@@ -165,6 +166,7 @@ void DialogDrawingStyles::on_buttonUp_clicked() {
 // Name: on_buttonDown_clicked
 //------------------------------------------------------------------------------
 void DialogDrawingStyles::on_buttonDown_clicked() {
+
 	QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
 	if(selections.size() != 1) {
 		return;
@@ -197,7 +199,7 @@ void DialogDrawingStyles::on_listItems_itemSelectionChanged() {
 	if(previous_ != nullptr && current != nullptr && current != previous_) {
 		// we want to try to save it (but not apply it yet)
 		// and then move on
-		if(!checkCurrent(true)) {
+        if(!checkCurrent(Mode::Silent)) {
 
 			QMessageBox messageBox(this);
 			messageBox.setWindowTitle(tr("Discard Entry"));
@@ -211,7 +213,7 @@ void DialogDrawingStyles::on_listItems_itemSelectionChanged() {
 			if (messageBox.clickedButton() == buttonKeep) {
 			
 				// again to cause messagebox to pop up
-				checkCurrent(false);
+                checkCurrent(Mode::Verbose);
 				
 				// reselect the old item
                 no_signals(ui.listItems)->setCurrentItem(previous_);
@@ -308,9 +310,8 @@ void DialogDrawingStyles::on_buttonBox_clicked(QAbstractButton *button) {
 //------------------------------------------------------------------------------
 // Name: checkCurrent
 //------------------------------------------------------------------------------
-bool DialogDrawingStyles::checkCurrent(bool silent) {
-	if(HighlightStyle *ptr = readDialogFields(silent)) {
-		delete ptr;
+bool DialogDrawingStyles::checkCurrent(Mode mode) {
+    if(auto ptr = readDialogFields(mode)) {
 		return true;
 	}
 	return false;
@@ -319,7 +320,7 @@ bool DialogDrawingStyles::checkCurrent(bool silent) {
 //------------------------------------------------------------------------------
 // Name: readDialogFields
 //------------------------------------------------------------------------------
-HighlightStyle *DialogDrawingStyles::readDialogFields(bool silent) {
+std::unique_ptr<HighlightStyle> DialogDrawingStyles::readDialogFields(Mode mode) {
 
    	// Allocate a language mode structure to return 
     auto hs = std::make_unique<HighlightStyle>();
@@ -332,7 +333,7 @@ HighlightStyle *DialogDrawingStyles::readDialogFields(bool silent) {
 
 	hs->name = name;
     if (hs->name.isEmpty()) {
-        if (!silent) {
+        if (mode == Mode::Verbose) {
             QMessageBox::warning(this, tr("Highlight Style"), tr("Please specify a name for the highlight style"));
         }
 
@@ -347,7 +348,7 @@ HighlightStyle *DialogDrawingStyles::readDialogFields(bool silent) {
 
 	hs->color = color;
     if (hs->color.isEmpty()) {
-        if (!silent) {
+        if (mode == Mode::Verbose) {
             QMessageBox::warning(this, tr("Style Color"), tr("Please specify a color for the highlight style"));
         }
         return nullptr;
@@ -356,7 +357,7 @@ HighlightStyle *DialogDrawingStyles::readDialogFields(bool silent) {
     // Verify that the color is a valid X color spec
     QColor rgb = X11Colors::fromString(hs->color);
     if(!rgb.isValid()) {
-        if (!silent) {
+        if (mode == Mode::Verbose) {
             QMessageBox::warning(this, tr("Invalid Color"), tr("Invalid X color specification: %1").arg(hs->color));
         }
         return nullptr;
@@ -374,7 +375,7 @@ HighlightStyle *DialogDrawingStyles::readDialogFields(bool silent) {
     if (!hs->bgColor.isEmpty()) {
         rgb = X11Colors::fromString(hs->color);
         if (!rgb.isValid()) {
-            if (!silent) {
+            if (mode == Mode::Verbose) {
                 QMessageBox::warning(this, tr("Invalid Color"), tr("Invalid X background color specification: %1").arg(hs->bgColor));
             }
 
@@ -393,7 +394,7 @@ HighlightStyle *DialogDrawingStyles::readDialogFields(bool silent) {
     	hs->font = PLAIN_FONT;
 	}
 
-    return hs.release();
+    return hs;
 }
 
 
@@ -404,7 +405,7 @@ HighlightStyle *DialogDrawingStyles::readDialogFields(bool silent) {
 bool DialogDrawingStyles::updateHSList() {
 
 	// Test compile the macro
-	auto current = readDialogFields(false);
+    auto current = readDialogFields(Mode::Verbose);
 	if(!current) {
 		return false;
 	}
@@ -420,8 +421,9 @@ bool DialogDrawingStyles::updateHSList() {
 	QListWidgetItem *const selection = selections[0];
 	auto ptr = reinterpret_cast<HighlightStyle *>(selection->data(Qt::UserRole).toULongLong());
 	delete ptr;
-	selection->setData(Qt::UserRole, reinterpret_cast<qulonglong>(current));
-	selection->setText(current->name);
+
+    selection->setText(current->name);
+    selection->setData(Qt::UserRole, reinterpret_cast<qulonglong>(current.release()));
 
 	// Replace the old highlight styles list with the new one from the dialog 
 	qDeleteAll(HighlightStyles);
@@ -451,7 +453,7 @@ bool DialogDrawingStyles::updateHSList() {
 //------------------------------------------------------------------------------
 bool DialogDrawingStyles::updateCurrentItem(QListWidgetItem *item) {
 	// Get the current contents of the "patterns" dialog fields 
-	auto ptr = readDialogFields(false);
+    auto ptr = readDialogFields(Mode::Verbose);
 	if(!ptr) {
 		return false;
 	}
@@ -460,8 +462,8 @@ bool DialogDrawingStyles::updateCurrentItem(QListWidgetItem *item) {
 	auto old = reinterpret_cast<HighlightStyle *>(item->data(Qt::UserRole).toULongLong());
 	delete old;
 	
-	item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(ptr));
-	item->setText(ptr->name);
+    item->setText(ptr->name);
+    item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(ptr.release()));
 	return true;
 }
 

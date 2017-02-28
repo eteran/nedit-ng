@@ -477,6 +477,7 @@ int AddTagsFile(const char *tagSpec, int file_type) {
 
         for (t = FileList; t && t->filename != QString::fromLatin1(pathName); t = t->next)
 			;
+
 		if (t) {
 			/* This file is already in the list.  It's easiest to just
 			    refcount all tag/tip files even though we only actually care
@@ -485,7 +486,8 @@ int AddTagsFile(const char *tagSpec, int file_type) {
 			added = 1;
 			continue;
 		}
-		if (stat(pathName, &statbuf) != 0) {
+
+        if (stat(pathName, &statbuf) != 0) {
 			// Problem reading this tags file.  Return FALSE 
 			added = 0;
 			continue;

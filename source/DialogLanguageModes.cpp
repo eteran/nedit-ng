@@ -18,7 +18,7 @@
 #include <QString>
 #include <QStringList>
 #include <QtDebug>
-#include <memory>
+
 
 //------------------------------------------------------------------------------
 // Name: DialogLanguageModes
@@ -207,7 +207,7 @@ void DialogLanguageModes::on_listItems_itemSelectionChanged() {
 // Name: on_buttonBox_accepted
 //------------------------------------------------------------------------------
 void DialogLanguageModes::on_buttonBox_accepted() {
-	if (!updateLMList(false)) {
+    if (!updateLMList(Mode::Verbose)) {
 		return;
 	}
 
@@ -219,7 +219,7 @@ void DialogLanguageModes::on_buttonBox_accepted() {
 //------------------------------------------------------------------------------
 void DialogLanguageModes::on_buttonBox_clicked(QAbstractButton *button) {
 	if(ui.buttonBox->standardButton(button) == QDialogButtonBox::Apply) {
-		updateLMList(false);
+        updateLMList(Mode::Verbose);
 	}
 }
 
@@ -229,7 +229,7 @@ void DialogLanguageModes::on_buttonBox_clicked(QAbstractButton *button) {
 ** If any of the information is incorrect or missing, display a warning dialog and
 ** return nullptr.  Passing "silent" as True, suppresses the warning dialogs.
 */
-LanguageMode *DialogLanguageModes::readLMDialogFields(bool silent) {
+std::unique_ptr<LanguageMode> DialogLanguageModes::readLMDialogFields(Mode mode) {
 
 	/* Allocate a language mode structure to return, set unread fields to
 	   empty so everything can be freed on errors by freeLanguageModeRec */
@@ -238,7 +238,7 @@ LanguageMode *DialogLanguageModes::readLMDialogFields(bool silent) {
 	// read the name field
 	QString name = ui.editName->text().simplified();
 	if (name.isEmpty()) {
-		if (!silent) {
+        if (mode == Mode::Verbose) {
 			QMessageBox::warning(this, tr("Language Mode Name"), tr("Please specify a name for the language mode"));
 		}
 		return nullptr;
@@ -258,7 +258,7 @@ LanguageMode *DialogLanguageModes::readLMDialogFields(bool silent) {
 			std::string expression = recognitionExpr.toStdString();
 			auto compiledRE = std::make_unique<regexp>(expression, REDFLT_STANDARD);
 		} catch(const regex_error &e) {
-			if (!silent) {
+            if (mode == Mode::Verbose) {
                 QMessageBox::warning(this, tr("Regex"), tr("Recognition expression:\n%1").arg(QString::fromLatin1(e.what())));
 			}
 			return nullptr;
@@ -271,7 +271,7 @@ LanguageMode *DialogLanguageModes::readLMDialogFields(bool silent) {
 	if(!tipsFile.isEmpty()) {
 		// Ensure that AddTagsFile will work
 		if (!AddTagsFileEx(tipsFile, TIP)) {
-			if (!silent) {
+            if (mode == Mode::Verbose) {
 				QMessageBox::warning(this, tr("Error reading Calltips"), tr("Can't read default calltips file(s):\n  \"%1\"\n").arg(tipsFile));
 			}
 			return nullptr;
@@ -296,7 +296,7 @@ LanguageMode *DialogLanguageModes::readLMDialogFields(bool silent) {
 		lm->tabDist = tabsSpacingValue;
 
 		if (lm->tabDist <= 0 || lm->tabDist > 100) {
-			if (!silent) {
+            if (mode == Mode::Verbose) {
 				QMessageBox::warning(this, tr("Invalid Tab Spacing"), tr("Invalid tab spacing: %1").arg(lm->tabDist));
 			}
 			return nullptr;
@@ -318,7 +318,7 @@ LanguageMode *DialogLanguageModes::readLMDialogFields(bool silent) {
 		lm->emTabDist = emulatedTabSpacingValue;
 
 		if (lm->emTabDist < 0 || lm->emTabDist > 100) {
-			if (!silent) {
+            if (mode == Mode::Verbose) {
 				QMessageBox::warning(this, tr("Invalid Tab Spacing"), tr("Invalid emulated tab spacing: %1").arg(lm->emTabDist));
 			}
 			return nullptr;
@@ -353,7 +353,7 @@ LanguageMode *DialogLanguageModes::readLMDialogFields(bool silent) {
 		lm->wrapStyle = DEFAULT_WRAP;
 	}
 
-    return lm.release();
+    return lm;
 }
 
 
@@ -361,7 +361,7 @@ LanguageMode *DialogLanguageModes::readLMDialogFields(bool silent) {
 //------------------------------------------------------------------------------
 // Name: updateLanguageList
 //------------------------------------------------------------------------------
-bool DialogLanguageModes::updateLanguageList(bool silent) {
+bool DialogLanguageModes::updateLanguageList(Mode mode) {
 	QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
 	if(selections.size() != 1) {
 		return false;
@@ -373,7 +373,7 @@ bool DialogLanguageModes::updateLanguageList(bool silent) {
 	const int i = ui.listItems->row(selection);
 	LanguageMode *oldLM = itemFromIndex(i);
 
-	if(LanguageMode *newLM = readLMDialogFields(silent)) {
+    if(auto newLM = readLMDialogFields(mode)) {
 
 		/* If there was a name change of a non-duplicate language mode, modify the
 		   name to the weird format of: "old name:new name".  This signals that a
@@ -399,8 +399,8 @@ bool DialogLanguageModes::updateLanguageList(bool silent) {
 		}
 
 		QListWidgetItem* item = ui.listItems->item(i);
-		item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(newLM));
-		item->setText(newLM->name);
+        item->setText(newLM->name);
+        item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(newLM.release()));
 		delete oldLM;
 		return true;
 	}
@@ -412,11 +412,11 @@ bool DialogLanguageModes::updateLanguageList(bool silent) {
 //------------------------------------------------------------------------------
 // Name: updateLMList
 //------------------------------------------------------------------------------
-bool DialogLanguageModes::updateLMList(bool silent) {
+bool DialogLanguageModes::updateLMList(Mode mode) {
 
 
 	// Get the current contents of the dialog fields
-	if(!updateLanguageList(silent)) {
+    if(!updateLanguageList(mode)) {
 		return false;
 	}
 
@@ -656,7 +656,7 @@ void DialogLanguageModes::on_buttonDelete_clicked() {
 //------------------------------------------------------------------------------
 bool DialogLanguageModes::updateCurrentItem(QListWidgetItem *item) {
 	// Get the current contents of the "patterns" dialog fields
-	auto ptr = readLMDialogFields(false);
+    auto ptr = readLMDialogFields(Mode::Verbose);
 	if(!ptr) {
 		return false;
 	}
@@ -665,8 +665,8 @@ bool DialogLanguageModes::updateCurrentItem(QListWidgetItem *item) {
 	auto old = reinterpret_cast<LanguageMode *>(item->data(Qt::UserRole).toULongLong());
 	delete old;
 
-	item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(ptr));
-	item->setText(ptr->name);
+    item->setText(ptr->name);
+    item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(ptr.release()));
 	return true;
 }
 

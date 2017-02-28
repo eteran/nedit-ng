@@ -92,7 +92,7 @@ void DialogSyntaxPatterns::setLanguageName(const QString &name) {
 		/* Get the current information displayed by the dialog.  If it's bad,
 		   give the user the chance to throw it out or go back and fix it.  If
 		   it has changed, give the user the chance to apply discard or cancel. */
-		PatternSet *const newPatSet = getDialogPatternSet();
+        PatternSet *const newPatSet = getDialogPatternSet();
 
 		if(!newPatSet) {
 			QMessageBox messageBox(this);
@@ -137,9 +137,9 @@ void DialogSyntaxPatterns::setLanguageName(const QString &name) {
 			}
 		}
 
-		if(newPatSet) {
-			delete newPatSet;
-		}
+        if(newPatSet) {
+            delete newPatSet;
+        }
 	}
 
 
@@ -297,7 +297,7 @@ void DialogSyntaxPatterns::on_buttonHighlightStyle_clicked() {
 //------------------------------------------------------------------------------
 bool DialogSyntaxPatterns::updateCurrentItem(QListWidgetItem *item) {
 	// Get the current contents of the "patterns" dialog fields
-	auto ptr = readDialogFields(false);
+    auto ptr = readDialogFields(Mode::Verbose);
 	if(!ptr) {
 		return false;
 	}
@@ -306,8 +306,8 @@ bool DialogSyntaxPatterns::updateCurrentItem(QListWidgetItem *item) {
 	auto old = reinterpret_cast<HighlightPattern *>(item->data(Qt::UserRole).toULongLong());
 	delete old;
 
-	item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(ptr));
-	item->setText(ptr->name);
+    item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(ptr));
+    item->setText(ptr->name);
 	return true;
 }
 
@@ -600,7 +600,7 @@ void DialogSyntaxPatterns::on_listItems_itemSelectionChanged() {
 
 		// we want to try to save it (but not apply it yet)
 		// and then move on
-		if(!checkCurrentPattern(true)) {
+        if(!checkCurrentPattern(Mode::Silent)) {
 
 			QMessageBox messageBox(this);
 			messageBox.setWindowTitle(tr("Discard Entry"));
@@ -614,7 +614,7 @@ void DialogSyntaxPatterns::on_listItems_itemSelectionChanged() {
 			if (messageBox.clickedButton() == buttonKeep) {
 
 				// again to cause messagebox to pop up
-				checkCurrentPattern(false);
+                checkCurrentPattern(Mode::Verbose);
 
 				// reselect the old item
                 no_signals(ui.listItems)->setCurrentItem(previous_);
@@ -754,7 +754,7 @@ bool DialogSyntaxPatterns::updatePatternSet() {
 	}
 
 	// Get the current data
-	PatternSet *patSet = getDialogPatternSet();
+    PatternSet *patSet = getDialogPatternSet();
 	if(!patSet) {
 		return false;
 	}
@@ -831,14 +831,14 @@ bool DialogSyntaxPatterns::updatePatternSet() {
 //------------------------------------------------------------------------------
 bool DialogSyntaxPatterns::checkHighlightDialogData() {
 	// Get the pattern information from the dialog
-	PatternSet *patSet = getDialogPatternSet();
+    PatternSet *patSet = getDialogPatternSet();
 	if(!patSet) {
 		return false;
 	}
 
 	// Compile the patterns
 	bool result = patSet->patterns.isEmpty() ? true : TestHighlightPatterns(patSet);
-	delete patSet;
+    delete patSet;
 	return result;
 }
 
@@ -880,7 +880,7 @@ PatternSet *DialogSyntaxPatterns::getDialogPatternSet() {
 
 	/* Allocate a new pattern set structure and copy the fields read from the
 	   dialog, including the modified pattern list into it */
-	auto patSet = new PatternSet;
+    auto patSet = new PatternSet;
 	patSet->languageMode = ui.comboLanguageMode->currentText();
 	patSet->lineContext  = lineContext;
 	patSet->charContext  = charContext;
@@ -898,7 +898,7 @@ PatternSet *DialogSyntaxPatterns::getDialogPatternSet() {
 ** telling the user what's wrong (Passing "silent" as true, suppresses these
 ** dialogs).  Returns nullptr on error.
 */
-HighlightPattern *DialogSyntaxPatterns::readDialogFields(bool silent) {
+HighlightPattern *DialogSyntaxPatterns::readDialogFields(Mode mode) {
 
     auto pat = std::make_unique<HighlightPattern>();
 
@@ -918,7 +918,7 @@ HighlightPattern *DialogSyntaxPatterns::readDialogFields(bool silent) {
 
 	pat->name = name;
 	if (pat->name.isEmpty()) {
-		if (!silent) {
+        if (mode == Mode::Verbose) {
 			QMessageBox::warning(this, tr("Pattern Name"), tr("Please specify a name for the pattern"));
 		}
 		return nullptr;
@@ -927,7 +927,7 @@ HighlightPattern *DialogSyntaxPatterns::readDialogFields(bool silent) {
 	// read the startRE field
 	pat->startRE = ui.editRegex->toPlainText();
 	if (pat->startRE.isEmpty()) {
-		if (!silent) {
+        if (mode == Mode::Verbose) {
 			QMessageBox::warning(this, tr("Matching Regex"), tr("Please specify a regular expression to match"));
 		}
 		return nullptr;
@@ -953,7 +953,7 @@ HighlightPattern *DialogSyntaxPatterns::readDialogFields(bool silent) {
 		QByteArray regexString = pat->startRE.toLatin1();
 
 		if (strspn(regexString.data(), "&\\123456789 \t") != static_cast<size_t>(pat->startRE.size()) || (pat->startRE[0] != QLatin1Char('\\') && pat->startRE[0] != QLatin1Char('&')) || strstr(regexString.data(), "\\\\")) {
-			if (!silent) {
+            if (mode == Mode::Verbose) {
 				QMessageBox::warning(this, tr("Pattern Error"), tr("The expression field in patterns which specify highlighting for a parent, must contain only sub-expression references in regular expression replacement form (&\\1\\2 etc.).  See Help -> Regular Expressions and Help -> Syntax Highlighting for more information"));
 			}
 			return nullptr;
@@ -964,7 +964,7 @@ HighlightPattern *DialogSyntaxPatterns::readDialogFields(bool silent) {
 	if (ui.radioSubPattern->isChecked() || colorOnly) {
 		QString parent = ui.editParentPattern->text().simplified();
 		if (parent.isEmpty()) {
-			if (!silent) {
+            if (mode == Mode::Verbose) {
 				QMessageBox::warning(this, tr("Specify Parent Pattern"), tr("Please specify a parent pattern"));
 			}
 			return nullptr;
@@ -982,7 +982,7 @@ HighlightPattern *DialogSyntaxPatterns::readDialogFields(bool silent) {
 	if (colorOnly || ui.radioRangeRegex->isChecked()) {
 		pat->endRE = ui.editRegexEnd->text();
 		if (!colorOnly && pat->endRE.isEmpty()) {
-			if (!silent) {
+            if (mode == Mode::Verbose) {
 				QMessageBox::warning(this, tr("Specify Regex"), tr("Please specify an ending regular expression"));
 			}
 			return nullptr;
@@ -1003,9 +1003,9 @@ HighlightPattern *DialogSyntaxPatterns::readDialogFields(bool silent) {
 //------------------------------------------------------------------------------
 // Name:
 //------------------------------------------------------------------------------
-bool DialogSyntaxPatterns::checkCurrentPattern(bool silent) {
-	if(auto ptr = readDialogFields(silent)) {
-		delete ptr;
+bool DialogSyntaxPatterns::checkCurrentPattern(Mode mode) {
+    if(auto ptr = readDialogFields(mode)) {
+        delete ptr;
 		return true;
 	}
 

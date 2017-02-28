@@ -4,12 +4,19 @@
 
 #include <QDialog>
 #include <QList>
+#include <memory>
 #include "ui_DialogMacros.h"
 
 class MenuItem;
 
 class DialogMacros : public QDialog {
 	Q_OBJECT
+private:
+    enum class Mode {
+        Silent,
+        Verbose
+    };
+
 public:
 	DialogMacros(QWidget *parent = 0, Qt::WindowFlags f = 0);
 	virtual ~DialogMacros();
@@ -33,9 +40,9 @@ private Q_SLOTS:
 	void on_buttonOK_clicked();
 	
 private:
-	bool checkMacro(bool silent);
-	MenuItem *readDialogFields(bool silent);
-	bool checkMacroText(const QString &macro, bool silent);
+    bool checkMacro(Mode mode);
+    std::unique_ptr<MenuItem> readDialogFields(Mode mode);
+    bool checkMacroText(const QString &macro, Mode mode);
 	QString ensureNewline(const QString &string);
 	bool applyDialogChanges();
 	void updateButtons();
