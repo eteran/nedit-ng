@@ -461,7 +461,7 @@ private:
 	int         P_wrapMargin;
 	int         P_emulateTabs;
 	int         P_lineNumCols;
-	const char *P_delimiters;
+    QString     P_delimiters;
 	int         P_cursorVPadding;
     QSize       size_;
 

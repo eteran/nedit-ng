@@ -251,6 +251,9 @@
       <property name="title">
        <string>&amp;Wrap</string>
       </property>
+      <property name="icon">
+       <iconset theme="text-wrap"/>
+      </property>
       <addaction name="action_Default_Wrap_None"/>
       <addaction name="action_Default_Wrap_Auto_Newline"/>
       <addaction name="action_Default_Wrap_Continuous"/>
@@ -374,6 +377,9 @@
     <widget class="QMenu" name="menu_Wrap">
      <property name="title">
       <string>&amp;Wrap</string>
+     </property>
+     <property name="icon">
+      <iconset theme="text-wrap"/>
      </property>
      <addaction name="action_Wrap_None"/>
      <addaction name="action_Wrap_Auto_Newline"/>
@@ -1076,6 +1082,9 @@
    </property>
   </action>
   <action name="action_Language_Mode">
+   <property name="icon">
+    <iconset theme="set-language"/>
+   </property>
    <property name="text">
     <string>&amp;Language Mode</string>
    </property>
@@ -1086,6 +1095,9 @@
    </property>
   </action>
   <action name="action_Text_Fonts">
+   <property name="icon">
+    <iconset theme="preferences-desktop-font"/>
+   </property>
    <property name="text">
     <string>Text &amp;Fonts...</string>
    </property>
@@ -1289,6 +1301,9 @@
    </property>
   </action>
   <action name="action_Default_Language_Modes">
+   <property name="icon">
+    <iconset theme="languages"/>
+   </property>
    <property name="text">
     <string>&amp;Language Modes...</string>
    </property>
@@ -1304,6 +1319,9 @@
    </property>
   </action>
   <action name="action_Default_Text_Fonts">
+   <property name="icon">
+    <iconset theme="preferences-desktop-font"/>
+   </property>
    <property name="text">
     <string>Text &amp;Fonts...</string>
    </property>

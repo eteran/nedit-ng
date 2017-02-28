@@ -681,7 +681,7 @@ static std::string fillParagraphEx(view::string_view text, int leftMargin, int f
 
 
 	// allocate memory for the finished string 
-    outText = new char[(cleanedLen + leadIndentLen + indentLen * (nLines - 1) + 1)];
+    outText = new char [(cleanedLen + leadIndentLen + indentLen * (nLines - 1) + 1)];
 	outPtr = outText;
 
 	// prepend the indent string to each line of the filled text 
