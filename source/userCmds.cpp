@@ -64,7 +64,7 @@ private:
 
 }
 
-static char *copyMacroToEnd(const char **inPtr);
+static QString copyMacroToEnd(const char **inPtr);
 static char *writeMenuItemString(const QVector<MenuData> &menuItems, int listType);
 static int loadMenuItemString(const char *inString, QVector<MenuData> &menuItems, DialogTypes listType);
 static QString stripLanguageModeEx(const QString &menuItemName);
@@ -189,7 +189,7 @@ static char *writeMenuItemString(const QVector<MenuData> &menuItems, int listTyp
 		}
 		
 		*outPtr++ = ':';
-        strcpy(outPtr, accStr.toLatin1());
+        strcpy(outPtr, accStr.toLatin1().data());
         outPtr += accStr.size();
 
         *outPtr++ = ':';
@@ -362,13 +362,12 @@ static int loadMenuItemString(const char *inString, QVector<MenuData> &menuItems
                 cmdStr = QString::fromLatin1(inPtr, cmdLen);
                 inPtr += cmdLen;
             } else {
-                char *p = copyMacroToEnd(&inPtr);
-                if(!p) {
+                QString p = copyMacroToEnd(&inPtr);
+                if(p.isNull()) {
                     return false;
                 }
 
-                cmdStr = QString::fromLatin1(p);
-                delete [] p;
+                cmdStr = p;
             }
             while (*inPtr == ' ' || *inPtr == '\t' || *inPtr == '\n') {
                 inPtr++; // skip trailing whitespace & newline
@@ -417,7 +416,7 @@ static int loadMenuItemString(const char *inString, QVector<MenuData> &menuItems
 ** to be re-generated from the text as needed, but compile time is
 ** negligible for most macros.
 */
-static char *copyMacroToEnd(const char **inPtr) {
+static QString copyMacroToEnd(const char **inPtr) {
 
     const char *&ptr = *inPtr;
     const char *begin = ptr;
@@ -430,7 +429,7 @@ static char *copyMacroToEnd(const char **inPtr) {
 
     if (*ptr != '{') {
         ParseErrorEx(nullptr, QString::fromLatin1(ptr), ptr - 1 - begin, QLatin1String("macro menu item"), QLatin1String("expecting '{'"));
-		return nullptr;
+        return QString();
 	}
 
 	// Parse the input 
@@ -438,7 +437,7 @@ static char *copyMacroToEnd(const char **inPtr) {
     Program *const prog = ParseMacro(ptr, &errMsg, &stoppedAt);
 	if(!prog) {
         ParseErrorEx(nullptr, QString::fromLatin1(ptr), stoppedAt - begin, QLatin1String("macro menu item"), QString::fromLatin1(errMsg));
-		return nullptr;
+        return QString();
 	}
 	FreeProgram(prog);
 
@@ -459,24 +458,23 @@ static char *copyMacroToEnd(const char **inPtr) {
         ptr++;
     }
 
+    QString retStr;
+    retStr.reserve(stoppedAt - ptr + 1);
 
-    auto retStr = new char[stoppedAt - ptr + 1];
-    char *retPtr = retStr;
+    auto retPtr = std::back_inserter(retStr);
 
     for (const char *p = ptr; p < stoppedAt - 1; p++) {
 		if (!strncmp(p, "\n\t\t", 3)) {
-			*retPtr++ = '\n';
+            *retPtr++ = QLatin1Char('\n');
 			p += 2;
         } else {
-			*retPtr++ = *p;
+            *retPtr++ = QChar::fromLatin1(*p);
         }
 	}
 
-    if (*(retPtr - 1) == '\t') {
-		retPtr--;
+    if(retStr.endsWith(QLatin1Char('\t'))) {
+        retStr.chop(1);
     }
-
-	*retPtr = '\0';
 
     ptr = stoppedAt;
 	return retStr;

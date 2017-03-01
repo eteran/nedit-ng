@@ -1150,8 +1150,9 @@ void ReplaceInSelectionEx(MainWindow *window, DocumentWidget *document, TextArea
 ** Also adds the search and replace strings to the global search history.
 */
 bool ReplaceAllEx(MainWindow *window, DocumentWidget *document, TextArea *area, const QString &searchString, const QString &replaceString, SearchType searchType) {
-    char *newFileString;
-    int copyStart, copyEnd, replacementLen;
+
+    int copyStart;
+    int copyEnd;
 
     // reject empty string
     if (searchString.isEmpty()) {
@@ -1164,9 +1165,10 @@ bool ReplaceAllEx(MainWindow *window, DocumentWidget *document, TextArea *area, 
     // view the entire text buffer from the text area widget as a string
     view::string_view fileString = document->buffer_->BufAsStringEx();
 
-    newFileString = ReplaceAllInString(fileString, searchString, replaceString.toLatin1().data(), searchType, &copyStart, &copyEnd, &replacementLen, GetWindowDelimitersEx(document).toLatin1().data());
+    bool ok;
+    std::string newFileString = ReplaceAllInStringEx(fileString, searchString, replaceString.toLatin1().data(), searchType, &copyStart, &copyEnd, GetWindowDelimitersEx(document).toLatin1().data(), &ok);
 
-    if(!newFileString) {
+    if(!ok) {
         if (document->multiFileBusy_) {
             document->replaceFailed_ = true; /* only needed during multi-file
                                              replacements */
@@ -1193,9 +1195,8 @@ bool ReplaceAllEx(MainWindow *window, DocumentWidget *document, TextArea *area, 
     document->buffer_->BufReplaceEx(copyStart, copyEnd, newFileString);
 
     // Move the cursor to the end of the last replacement
-    area->TextSetCursorPos(copyStart + replacementLen);
+    area->TextSetCursorPos(copyStart + newFileString.size());
 
-    delete [] newFileString;
     return true;
 }
 
@@ -1205,19 +1206,18 @@ bool ReplaceAllEx(MainWindow *window, DocumentWidget *document, TextArea *area, 
 ** first replacement (returned in "copyStart", and the end of the last
 ** replacement (returned in "copyEnd")
 */
-char *ReplaceAllInString(view::string_view inString, const QString &searchString, const char *replaceString, SearchType searchType, int *copyStart, int *copyEnd, int *replacementLength, const char *delimiters) {
+std::string ReplaceAllInStringEx(view::string_view inString, const QString &searchString, const char *replaceString, SearchType searchType, int *copyStart, int *copyEnd, const char *delimiters, bool *ok) {
     int startPos;
     int endPos;
     int lastEndPos;
     int copyLen;
-    char *outString;
-    char *fillPtr;
     int searchExtentBW;
     int searchExtentFW;
 
 	// reject empty string 
     if (searchString.isNull()) {
-		return nullptr;
+        *ok = false;
+        return std::string();
     }
 
 	/* rehearse the search first to determine the size of the buffer needed
@@ -1232,10 +1232,24 @@ char *ReplaceAllInString(view::string_view inString, const QString &searchString
 	*copyStart = -1;
 
 	while (found) {
-        found = SearchString(inString, searchString, SEARCH_FORWARD, searchType, false, beginPos, &startPos, &endPos, &searchExtentBW, &searchExtentFW, delimiters);
+        found = SearchString(
+                    inString,
+                    searchString,
+                    SEARCH_FORWARD,
+                    searchType,
+                    false,
+                    beginPos,
+                    &startPos,
+                    &endPos,
+                    &searchExtentBW,
+                    &searchExtentFW,
+                    delimiters);
+
 		if (found) {
-			if (*copyStart < 0)
+            if (*copyStart < 0) {
 				*copyStart = startPos;
+            }
+
 			*copyEnd = endPos;
 			// start next after match unless match was empty, then endPos+1 
 			beginPos = (startPos == endPos) ? endPos + 1 : endPos;
@@ -1261,27 +1275,34 @@ char *ReplaceAllInString(view::string_view inString, const QString &searchString
 				break;
 		}
 	}
-	if (nFound == 0)
-		return nullptr;
+
+    if (nFound == 0) {
+        *ok = false;
+        return std::string();
+    }
 
 	/* Allocate a new buffer to hold all of the new text between the first
 	   and last substitutions */
 	copyLen = *copyEnd - *copyStart;
-    outString = new char[copyLen - removeLen + addLen + 1];
+
+
+    std::string outString;
+    outString.reserve(copyLen - removeLen + addLen);
 
 	/* Scan through the text buffer again, substituting the replace string
 	   and copying the part between replaced text to the new buffer  */
     found = true;
 	beginPos = 0;
 	lastEndPos = 0;
-	fillPtr = outString;
-	while (found) {
+
+    while (found) {
         found = SearchString(inString, searchString, SEARCH_FORWARD, searchType, false, beginPos, &startPos, &endPos, &searchExtentBW, &searchExtentFW, delimiters);
 		if (found) {
 			if (beginPos != 0) {
-				memcpy(fillPtr, &inString[lastEndPos], startPos - lastEndPos);
-				fillPtr += startPos - lastEndPos;
+
+                outString.append(&inString[lastEndPos], &inString[lastEndPos + startPos - lastEndPos]);
 			}
+
 			if (isRegexType(searchType)) {
 				char replaceResult[SEARCHMAX];
 				replaceUsingREEx(
@@ -1295,21 +1316,22 @@ char *ReplaceAllInString(view::string_view inString, const QString &searchString
 					delimiters,
 					defaultRegexFlags(searchType));
 
-				replaceLen = strlen(replaceResult);
-				memcpy(fillPtr, replaceResult, replaceLen);
+                outString.append(replaceResult);
 			} else {
-				memcpy(fillPtr, replaceString, replaceLen);
+                outString.append(replaceString);
 			}
-			fillPtr += replaceLen;
+
 			lastEndPos = endPos;
+
 			// start next after match unless match was empty, then endPos+1 
 			beginPos = (startPos == endPos) ? endPos + 1 : endPos;
-			if (inString[endPos] == '\0')
+            if (inString[endPos] == '\0') {
 				break;
+            }
 		}
 	}
-	*fillPtr = '\0';
-	*replacementLength = fillPtr - outString;
+
+    *ok = true;
 	return outString;
 }
 

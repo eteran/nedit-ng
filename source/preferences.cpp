@@ -1140,7 +1140,7 @@ static QString WriteLanguageModesStringEx() {
 
         out << QLatin1Char(':');
         if (!language->defTipsFile.isEmpty()) {
-            out << language->defTipsFile;
+            out << MakeQuotedStringEx(language->defTipsFile);
         }
 
         out << QLatin1Char('\n');
@@ -1291,7 +1291,7 @@ bool ReadQuotedStringEx(const char **inPtr, const char **errMsg, QString *string
 			else
 				break;
 		}
-		*outPtr++ = QLatin1Char(*(*inPtr)++);
+        *outPtr++ = QChar::fromLatin1(*(*inPtr)++);
 	}
 
 	// skip end quote 

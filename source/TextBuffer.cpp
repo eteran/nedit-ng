@@ -265,7 +265,10 @@ int addPadding(char *string, int startIndent, int toIndent, int tabDist, int use
 ** to position the cursor).
 */
 void insertColInLineEx(view::string_view line, view::string_view insLine, int column, int insWidth, int tabDist, int useTabs, char nullSubsChar, char *outStr, int *outLen, int *endOffset) {
-	int indent, toIndent, len, postColIndent;
+    int indent;
+    int toIndent;
+    int len = 0;
+    int postColIndent;
 
 	// copy the line up to "column"
 	char *outPtr = outStr;
@@ -975,9 +978,12 @@ void TextBuffer::BufOverlayRectEx(int startPos, int rectStart, int rectEnd, view
 */
 void TextBuffer::BufReplaceRectEx(int start, int end, int rectStart, int rectEnd, view::string_view text) {
 
-	char *insText = nullptr;
-    int i, hint;
-	int insertDeleted, insertInserted, deleteInserted;
+    std::string insText;
+    int i;
+    int hint;
+    int insertDeleted;
+    int insertInserted;
+    int deleteInserted;
 	int linesPadded = 0;
 
 	/* Make sure start and end refer to complete lines, since the
@@ -996,18 +1002,15 @@ void TextBuffer::BufReplaceRectEx(int start, int end, int rectStart, int rectEnd
     int nInsertedLines = countLinesEx(text);
     int nDeletedLines = BufCountLines(start, end);
 
+    bool useInsText = false;
+
 	if (nInsertedLines < nDeletedLines) {
 
-		int insLen = text.size();
-		insText = new char[insLen + nDeletedLines - nInsertedLines + 1];
-        text.copy(insText, insLen);
+        insText.reserve(text.size() + nDeletedLines - nInsertedLines);
+        insText.assign(text.begin(), text.end());
+        insText.append(nDeletedLines - nInsertedLines, '\n');
+        useInsText = true;
 
-        char *insPtr = insText + insLen;
-        for (i = 0; i < nDeletedLines - nInsertedLines; i++) {
-			*insPtr++ = '\n';
-        }
-
-		*insPtr = '\0';
 	} else if (nDeletedLines < nInsertedLines) {
 		linesPadded = nInsertedLines - nDeletedLines;
         for (i = 0; i < linesPadded; i++) {
@@ -1022,9 +1025,8 @@ void TextBuffer::BufReplaceRectEx(int start, int end, int rectStart, int rectEnd
 
 	// Delete then insert
 	deleteRect(start, end, rectStart, rectEnd, &deleteInserted, &hint);
-	if (insText) {
+    if (useInsText) {
 		insertColEx(rectStart, start, insText, &insertDeleted, &insertInserted, &cursorPosHint_);
-		delete [] insText;
     } else {
 		insertColEx(rectStart, start, text, &insertDeleted, &insertInserted, &cursorPosHint_);
     }
@@ -2039,11 +2041,11 @@ void TextBuffer::insertColEx(int column, int startPos, view::string_view insText
 
 	expText = expandTabsEx(insText, 0, tabDist_, nullSubsChar_, &expInsLen);
 
-	auto outStr = new char[expReplLen + expInsLen + nLines * (column + insWidth + MAX_EXP_CHAR_LEN) + 1];
+    auto outStr = new char[expReplLen + expInsLen + nLines * (column + insWidth + MAX_EXP_CHAR_LEN) + 1];
 
 	/* Loop over all lines in the buffer between start and end inserting
 	   text at column, splitting tabs and adding padding appropriately */
-	char *outPtr = outStr;
+    char *outPtr = outStr;
 	int lineStart = start;
 	auto insPtr = insText.begin();
 	while (true) {
@@ -2052,11 +2054,11 @@ void TextBuffer::insertColEx(int column, int startPos, view::string_view insText
 		std::string insLine = copyLineEx(insPtr, insText.end());
 		insPtr += insLine.size();
 		insertColInLineEx(line, insLine, column, insWidth, tabDist_, useTabs_, nullSubsChar_, outPtr, &len, &endOffset);
-
-#if 0 /* Earlier comments claimed that trailing whitespace could multiply on                                                                                                                                                                   \
-      the ends of lines, but insertColInLine looks like it should never                                                                                                                                                                        \
-      add space unnecessarily, and this trimming interfered with                                                                                                                                                                               \
-      paragraph filling, so lets see if it works without it. MWE */
+#if 0
+        /* Earlier comments claimed that trailing whitespace could multiply on                                                                                                                                                                   \
+           the ends of lines, but insertColInLine looks like it should never                                                                                                                                                                        \
+           add space unnecessarily, and this trimming interfered with                                                                                                                                                                               \
+           paragraph filling, so lets see if it works without it. MWE */
         {
             char *c;
             for (c=outPtr+len-1; c>outPtr && (*c == ' ' || *c == '\t'); c--)
@@ -2070,8 +2072,11 @@ void TextBuffer::insertColEx(int column, int startPos, view::string_view insText
 			break;
 		insPtr++;
 	}
-	if (outPtr != outStr)
+
+    if (outPtr != outStr) {
 		outPtr--; // trim back off extra newline
+    }
+
 	*outPtr = '\0';
 
 	// replace the text between start and end with the new stuff

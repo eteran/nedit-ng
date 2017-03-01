@@ -45,6 +45,7 @@
 #include <QMessageBox>
 #include <cctype>
 #include <cstdio>
+#include <memory>
 #include <cstdlib>
 #include <cstring>
 #include <sys/param.h>
@@ -54,7 +55,7 @@
 #include <unordered_map>
 
 
-static int LookupTag(const char *name, const char **file, int *lang, const char **searchString, int *pos, const char **path, int search_type);
+static int LookupTag(const char *name, std::string *file, int *lang, std::string *searchString, int *pos, std::string *path, int search_type);
 static bool AddRelTagsFile(const char *tagSpec, const char *windowPath, int file_type);
 
 namespace {
@@ -94,8 +95,6 @@ static Tag *getTag(const char *name, int search_type);
 static void createSelectMenuEx(DocumentWidget *document, TextArea *area, const QVector<char *> &args);
 
 
-static const char *rcs_strdup(const char *str);
-static void rcs_free(const char *str);
 static int searchLine(char *line, const char *regex);
 static void rstrip(char *dst, const char *src);
 static int nextTFBlock(FILE *fp, char *header, char **tiptext, int *lineAt, int *lineNo);
@@ -105,28 +104,21 @@ static int loadTipsFile(const QString &tipsFile, int index, int recLevel);
 struct Tag {
 public:
 	Tag(const char *name, const char *file, int language, const char *searchString, int posInf, const char *path) {
-		this->name         = rcs_strdup(name);
-		this->file         = rcs_strdup(file);
+        this->name         = name;
+        this->file         = file;
 		this->language     = language;
-		this->searchString = rcs_strdup(searchString);
+        this->searchString = searchString;
 		this->posInf       = posInf;
-		this->path         = rcs_strdup(path);
-	}
-	
-	~Tag() {
-		rcs_free(this->name);
-		rcs_free(this->file);
-		rcs_free(this->searchString);
-		rcs_free(this->path);  
+        this->path         = path;
 	}
 	
 public:
 	struct Tag *next;
-	const char *path;
-	const char *name;
-	const char *file;
+    std::string path;
+    std::string name;
+    std::string file;
 	int language;
-	const char *searchString; // see comment below 
+    std::string searchString; // see comment below
 	int posInf;               // see comment below 
 	short index;
 };
@@ -202,7 +194,7 @@ static Tag *getTagFromTable(Tag **table, const char *name) {
 	}
 	
 	for (; t; t = t->next) {
-		if (strcmp(name, t->name) == 0) {
+        if (name == t->name) {
 			return t;
 		}
 	}
@@ -258,19 +250,19 @@ static int addTag(const char *name, const char *file, int lang, const char *sear
 		Tag *t = table[addr]; 
 		t; 
 		t = t->next) {
-		if (strcmp(name, t->name))
+        if (name != t->name)
 			continue;
 		if (lang != t->language)
 			continue;
-		if (strcmp(search, t->searchString))
+        if (search != t->searchString)
 			continue;
 		if (posInf != t->posInf)
 			continue;
-		if (*t->file == '/' && strcmp(newfile, t->file))
+        if (t->file[0] == '/' && (newfile != t->file))
 			continue;
-		if (*t->file != '/') {
+        if (t->file[0] != '/') {
 			char tmpfile[MAXPATHLEN];
-			snprintf(tmpfile, sizeof(tmpfile), "%s%s", t->path, t->file);
+            snprintf(tmpfile, sizeof(tmpfile), "%s%s", t->path.c_str(), t->file.c_str());
 			NormalizePathname(tmpfile);
 			if (strcmp(newfile, tmpfile)) {
 				continue;
@@ -281,10 +273,10 @@ static int addTag(const char *name, const char *file, int lang, const char *sear
 	
 
 	
-	auto t = new Tag(name, file, lang, search, posInf, path);
+    auto t = std::make_unique<Tag>(name, file, lang, search, posInf, path);
 	t->index = index;
 	t->next = table[addr];
-	table[addr] = t;
+    table[addr] = t.release();
 	return 1;
 }
 
@@ -324,15 +316,15 @@ static bool delTag(const char *name, const char *file, int lang, const char *sea
 	
 	for (size_t i = start; i < finish; i++) {
 		for (last = nullptr, t = table[i]; t; last = t, t = t ? t->next : table[i]) {
-			if (name && strcmp(name, t->name))
+            if (name && (name != t->name))
 				continue;
-			if (index && index != t->index)
+            if (index && (index != t->index))
 				continue;
-			if (file && strcmp(file, t->file))
+            if (file && (file != t->file))
 				continue;
-			if (lang >= PLAIN_LANGUAGE_MODE && lang != t->language)
+            if (lang >= PLAIN_LANGUAGE_MODE && (lang != t->language))
 				continue;
-			if (search && strcmp(search, t->searchString))
+            if (search && (search != t->searchString))
 				continue;
 			if (posInf == t->posInf)
 				continue;
@@ -396,23 +388,25 @@ bool AddRelTagsFile(const char *tagSpec, const char *windowPath, int file_type) 
 			;
 		}
 		
+        // if we found an entry with the same pathname, we're done..
 		if (t) {
 			added = true;
 			continue;
 		}
+
+        // or if the file isn't found...
 		if (stat(pathName, &statbuf) != 0) {
 			continue;
 		}
 		
-        t = new tagFile;
-        t->filename = QString::fromLatin1(pathName);
-		t->loaded   = false;
-		t->date     = statbuf.st_mtime;
-		t->index    = ++tagFileIndex;
+        auto tag = std::make_unique<tagFile>();
+        tag->filename = QString::fromLatin1(pathName);
+        tag->loaded   = false;
+        tag->date     = statbuf.st_mtime;
+        tag->index    = ++tagFileIndex;
 		
-		t->next     = FileList;
-		FileList    = setFileListHead(t, file_type);
-		
+        tag->next     = FileList;
+        FileList      = setFileListHead(tag.release(), file_type);
 		added = true;
 	}
 	delete [] tmptagSpec;
@@ -493,15 +487,15 @@ int AddTagsFile(const char *tagSpec, int file_type) {
 			continue;
 		}
 
-		t = new tagFile;
-        t->filename = QString::fromLatin1(pathName);
-		t->loaded   = false;
-		t->date     = statbuf.st_mtime;
-		t->index    = ++tagFileIndex;
-		t->next     = FileList;
-		t->refcount = 1;
+        auto tag = std::make_unique<tagFile>();
+        tag->filename = QString::fromLatin1(pathName);
+        tag->loaded   = false;
+        tag->date     = statbuf.st_mtime;
+        tag->index    = ++tagFileIndex;
+        tag->next     = FileList;
+        tag->refcount = 1;
 		
-		FileList    = setFileListHead(t, file_type);
+        FileList    = setFileListHead(tag.release(), file_type);
 	}
 
 	delete [] tmptagSpec;
@@ -815,7 +809,7 @@ static int loadTagsFile(const QString &tagsFile, int index, int recLevel) {
 }
 
 #define TAG_STS_ERR_FMT "NEdit: Error getting status for tag file %s\n"
-static bool LookupTagFromList(tagFile *FileList, const char *name, const char **file, int *language, const char **searchString, int *pos, const char **path, int search_type) {
+static bool LookupTagFromList(tagFile *FileList, const char *name, std::string *file, int *language, std::string *searchString, int *pos, std::string *path, int search_type) {
 
 	/*
 	** Go through the list of all tags Files:
@@ -895,7 +889,7 @@ static bool LookupTagFromList(tagFile *FileList, const char *name, const char **
 ** Return Value: TRUE:  tag spec found
 **               FALSE: no (more) definitions found.
 */
-static int LookupTag(const char *name, const char **file, int *language, const char **searchString, int *pos, const char **path, int search_type) {
+static int LookupTag(const char *name, std::string *file, int *language, std::string *searchString, int *pos, std::string *path, int search_type) {
 
 	searchMode = search_type;
 	if (searchMode == TIP) {
@@ -1031,9 +1025,9 @@ int findAllMatchesEx(DocumentWidget *document, TextArea *area, const char *strin
 
     char filename[MAXPATHLEN];
     char pathname[MAXPATHLEN];
-    const char *fileToSearch;
-    const char *searchString;
-    const char *tagPath;
+    std::string fileToSearch;
+    std::string searchString;
+    std::string tagPath;
     int startPos;
     int i;
     int pathMatch = 0;
@@ -1062,13 +1056,13 @@ int findAllMatchesEx(DocumentWidget *document, TextArea *area, const char *strin
             continue;
         }
 
-        if (*fileToSearch == '/') {
-            strcpy(tagFiles[nMatches], fileToSearch);
+        if (fileToSearch[0] == '/') {
+            strcpy(tagFiles[nMatches], fileToSearch.c_str());
         } else {
-            sprintf(tagFiles[nMatches], "%s%s", tagPath, fileToSearch);
+            sprintf(tagFiles[nMatches], "%s%s", tagPath.c_str(), fileToSearch.c_str());
         }
 
-        strcpy(tagSearch[nMatches], searchString);
+        strcpy(tagSearch[nMatches], searchString.c_str());
         tagPosInf[nMatches] = startPos;
         ParseFilename(tagFiles[nMatches], filename, pathname);
 
@@ -1357,55 +1351,6 @@ static void createSelectMenuEx(DocumentWidget *document, TextArea *area, const Q
         dialog->addListItem(QString::fromLatin1(arg));
     }
     dialog->show();
-}
-
-/*--------------------------------------------------------------------------
-
-   Reference-counted string hack; SJT 4/2000
-
-   This stuff isn't specific to tags, so it should be in it's own file.
-   However, I'm leaving it in here for now to reduce the diffs.
-
-   This could really benefit from using a real hash table.
-*/
-
-std::unordered_map<std::string, int> Rcs;
-
-/*
-** Take a normal string, create a shared string from it if need be,
-** and return pointer to that shared string.
-**
-** Returned strings are const because they are shared.  Do not modify them!
-*/
-
-static const char *rcs_strdup(const char *str) {
-
-	auto it = Rcs.find(str);
-	if(it != Rcs.end()) {
-		it->second++;
-		return it->first.c_str();
-	} else {
-		auto pair = Rcs.emplace(str, 1);
-		return pair.first->first.c_str();
-	}
-}
-
-/*
-** Decrease the reference count on a shared string.  When the reference
-** count reaches zero, free the master string.
-*/
-
-static void rcs_free(const char *rcs_str) {
-
-	auto it = Rcs.find(rcs_str);
-	if(it != Rcs.end()) {
-		it->second--;
-		if(it->second == 0) {
-			Rcs.erase(it);
-		}
-	} else {
-		fprintf(stderr, "NEdit: attempt to free a non-shared string.");
-	}
 }
 
 /********************************************************************

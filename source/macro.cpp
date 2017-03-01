@@ -2268,11 +2268,9 @@ static int replaceInStringMS(DocumentWidget *window, DataValue *argList, int nAr
     std::string searchStr;
     std::string replaceStr;
     std::string argStr;
-	char *replacedStr;
 	SearchType searchType = SEARCH_LITERAL;
 	int copyStart;
 	int copyEnd;
-	int replacedLen;
 	int replaceEnd;
     bool force = false;
 	int i;
@@ -2304,19 +2302,20 @@ static int replaceInStringMS(DocumentWidget *window, DataValue *argList, int nAr
 	}
 
 	// Do the replace 
-    replacedStr = ReplaceAllInString(
+    bool ok;
+    std::string replacedStr = ReplaceAllInStringEx(
                 string,
                 QString::fromStdString(searchStr),
                 replaceStr.c_str(),
                 searchType,
                 &copyStart,
                 &copyEnd,
-                &replacedLen,
-                GetWindowDelimitersEx(window).toLatin1().data());
+                GetWindowDelimitersEx(window).toLatin1().data(),
+                &ok);
 
 	// Return the results 
 	result->tag = STRING_TAG;
-	if(!replacedStr) {
+    if(!ok) {
 		if (force) {
             result->val.str = AllocNStringCpyEx(string);
 		} else {
@@ -2325,15 +2324,16 @@ static int replaceInStringMS(DocumentWidget *window, DataValue *argList, int nAr
 		}
 	} else {
 		size_t remainder = strlen(&string[copyEnd]);
-		replaceEnd = copyStart + replacedLen;
+        replaceEnd = copyStart + replacedStr.size();
 
         // TODO(eteran): we can do this better/cleaner
 		AllocNString(&result->val.str, replaceEnd + remainder + 1);
+
         strncpy(result->val.str.rep, &string[0], copyStart);
-		strcpy(&result->val.str.rep[copyStart], replacedStr);
+        strcpy(&result->val.str.rep[copyStart], replacedStr.c_str());
 		strcpy(&result->val.str.rep[replaceEnd], &string[copyEnd]);
-        delete [] replacedStr;
 	}
+
 	return true;
 }
 

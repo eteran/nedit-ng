@@ -37,6 +37,7 @@
 #include <cstring>
 #include <cerrno>
 #include <algorithm>
+#include <memory>
 
 #include <sys/types.h>
 #include <sys/param.h>
@@ -481,16 +482,16 @@ void ConvertFromDosFileString(char *fileString, int *length, char *pendingCR) {
 	*outPtr = '\0';
 	*length = outPtr - fileString;
 }
+
 void ConvertFromMacFileString(char *fileString, int length) {
-	char *inPtr = fileString;
-	while (inPtr < fileString + length) {
-		if (*inPtr == '\r')
-			*inPtr = '\n';
-		inPtr++;
-	}
+    std::transform(fileString, fileString + length, fileString, [](char ch) {
+        if(ch == '\r') {
+            return '\n';
+        }
+
+        return ch;
+    });
 }
-
-
 
 /*
 ** Converts a string (which may represent the entire contents of the file) from
@@ -529,7 +530,6 @@ bool ConvertToDosFileStringEx(std::string &fileString) {
 	}
 
 	fileString = outString;
-
     return true;
 }
 
@@ -573,10 +573,9 @@ QString ReadAnyTextFileEx(const std::string &fileName, int forceNL) {
 	/* +1 = space for null
 	** +1 = possible additional \n
 	*/
-    auto fileString = new char[fileLen + 2];
-    readLen = fread(fileString, 1, fileLen, fp);
+    auto fileString = std::make_unique<char[]>(fileLen + 2);
+    readLen = fread(&fileString[0], 1, fileLen, fp);
 	if (ferror(fp)) {
-        delete [] fileString;
 		fclose(fp);
 		return QString();
 	}
@@ -584,12 +583,12 @@ QString ReadAnyTextFileEx(const std::string &fileName, int forceNL) {
 	fileString[readLen] = '\0';
 
 	/* Convert linebreaks? */
-	FileFormats format = FormatOfFileEx(view::string_view(fileString, readLen));
+    FileFormats format = FormatOfFileEx(view::string_view(&fileString[0], readLen));
 	if (format == DOS_FILE_FORMAT) {
 		char pendingCR;
-		ConvertFromDosFileString(fileString, &readLen, &pendingCR);
+        ConvertFromDosFileString(&fileString[0], &readLen, &pendingCR);
 	} else if (format == MAC_FILE_FORMAT) {
-		ConvertFromMacFileString(fileString, readLen);
+        ConvertFromMacFileString(&fileString[0], readLen);
 	}
 
 	/* now, that the fileString is in Unix format, check for terminating \n */
@@ -598,7 +597,5 @@ QString ReadAnyTextFileEx(const std::string &fileName, int forceNL) {
 		fileString[readLen + 1] = '\0';
 	}
 	
-	QString ret = QString::fromLatin1(fileString, readLen);
-    delete [] fileString;
-	return ret;
+    return QString::fromLatin1(&fileString[0], readLen);
 }

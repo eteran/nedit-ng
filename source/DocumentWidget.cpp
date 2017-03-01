@@ -2767,19 +2767,16 @@ bool DocumentWidget::writeBckVersion() {
     }
 
     // Allocate I/O buffer
-    auto io_buffer = new char[IO_BUFFER_SIZE];
+    auto io_buffer = std::make_unique<char[]>(IO_BUFFER_SIZE);;
 
     // copy loop
     for (;;) {
-        ssize_t bytes_read;
-        ssize_t bytes_written;
-        bytes_read = ::read(in_fd, io_buffer, IO_BUFFER_SIZE);
+        ssize_t bytes_read = ::read(in_fd, &io_buffer[0], IO_BUFFER_SIZE);
 
         if (bytes_read < 0) {
             ::close(in_fd);
             ::close(out_fd);
             ::remove(bckname);
-            delete [] io_buffer;
             return bckError(tr("read() error"), filename_);
         }
 
@@ -2788,12 +2785,11 @@ bool DocumentWidget::writeBckVersion() {
         }
 
         // write to the file
-        bytes_written = write(out_fd, io_buffer, (size_t)bytes_read);
+        ssize_t bytes_written = ::write(out_fd, &io_buffer[0], (size_t)bytes_read);
         if (bytes_written != bytes_read) {
             ::close(in_fd);
             ::close(out_fd);
             ::remove(bckname);
-            delete [] io_buffer;
             return bckError(QString::fromLatin1(strerror(errno)), QString::fromLatin1(bckname));
         }
     }
@@ -2801,9 +2797,6 @@ bool DocumentWidget::writeBckVersion() {
     // close the input and output files
     ::close(in_fd);
     ::close(out_fd);
-
-    delete [] io_buffer;
-
     return false;
 }
 
@@ -3216,10 +3209,10 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
     }
 #endif
 
-    int fileLen = statbuf.st_size;
+    const auto fileLen = static_cast<int>(statbuf.st_size);
 
     // Allocate space for the whole contents of the file (unfortunately)
-    std::unique_ptr<char[]> fileString(new char[fileLen + 1]); // +1 = space for null
+    auto fileString = std::make_unique<char[]>(fileLen + 1); // +1 = space for null
 
     if(!fileString) {
         ::fclose(fp);
@@ -3641,11 +3634,12 @@ bool DocumentWidget::includeFile(const QString &name) {
         fclose(fp);
         return false;
     }
+
     int fileLen = statbuf.st_size;
 
     // allocate space for the whole contents of the file
     try {
-        std::unique_ptr<char[]> fileString(new char[fileLen + 1]); // +1 = space for null
+        auto fileString = std::make_unique<char[]>(fileLen + 1); // +1 = space for null
 
         // read the file into fileString and terminate with a null
         int readLen = ::fread(&fileString[0], sizeof(char), fileLen, fp);
@@ -3664,7 +3658,7 @@ bool DocumentWidget::includeFile(const QString &name) {
         case MAC_FILE_FORMAT:
             ConvertFromMacFileString(&fileString[0], readLen);
             break;
-        default:
+        case UNIX_FILE_FORMAT:
             //  Default is Unix, no conversion necessary.
             break;
         }

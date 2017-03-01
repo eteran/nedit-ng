@@ -656,7 +656,7 @@ void TextArea::deletePreviousWordAP(EventFlags flags) {
 	int lineStart = buffer_->BufStartOfLine(insertPos);
 
     QByteArray delimiters = P_delimiters.toLatin1();
-	bool silent = flags & NoBellFlag;
+    bool silent = flags & NoBellFlag;
 
 	cancelDrag();
 	if (checkReadOnly()) {
@@ -5498,9 +5498,9 @@ int TextArea::startOfWord(int pos) {
 
 	if (c == ' ' || c == '\t') {
 		if (!spanBackward(buffer_, pos, " \t", false, &startPos))
-			return 0;
+            return 0;
     } else if (strchr(delimiters.data(), c)) {
-		if (!spanBackward(buffer_, pos, delimiters, true, &startPos))
+        if (!spanBackward(buffer_, pos, delimiters, true, &startPos))
 			return 0;
 	} else {
         if (!buffer_->BufSearchBackwardEx(pos, delimiters.data(), &startPos))
@@ -5519,7 +5519,7 @@ int TextArea::endOfWord(int pos) {
 		if (!spanForward(buffer_, pos, " \t", false, &endPos))
 			return buffer_->BufGetLength();
     } else if (strchr(delimiters.data(), c)) {
-		if (!spanForward(buffer_, pos, delimiters, true, &endPos))
+        if (!spanForward(buffer_, pos, delimiters, true, &endPos))
 			return buffer_->BufGetLength();
 	} else {
         if (!buffer_->BufSearchForwardEx(pos, delimiters.data(), &endPos))
@@ -5944,8 +5944,8 @@ void TextArea::endOfFileAP(EventFlags flags) {
 
 void TextArea::backwardWordAP(EventFlags flags) {
 
-	int pos;
-	int insertPos = cursorPos_;
+    int pos;
+    int insertPos = cursorPos_;
     QByteArray delimiters = P_delimiters.toLatin1();
 	bool silent = flags & NoBellFlag;
 
@@ -5955,8 +5955,8 @@ void TextArea::backwardWordAP(EventFlags flags) {
 		return;
 	}
 
-	pos = std::max(insertPos - 1, 0);
-    while (strchr(delimiters.data(), buffer_->BufGetCharacter(pos)) != nullptr && pos > 0) {
+    pos = std::max(insertPos - 1, 0);
+    while (strchr(delimiters, buffer_->BufGetCharacter(pos)) != nullptr && pos > 0) {
 		pos--;
 	}
 
@@ -5970,7 +5970,7 @@ void TextArea::backwardWordAP(EventFlags flags) {
 
 void TextArea::forwardWordAP(EventFlags flags) {
 
-	int pos, insertPos = cursorPos_;
+    int pos, insertPos = cursorPos_;
     QByteArray delimiters = P_delimiters.toLatin1();
 	bool silent = flags & NoBellFlag;
 
@@ -5983,19 +5983,19 @@ void TextArea::forwardWordAP(EventFlags flags) {
 
 	if (flags & TailFlag) {
 		for (; pos < buffer_->BufGetLength(); pos++) {
-            if (strchr(delimiters.data(), buffer_->BufGetCharacter(pos)) == nullptr) {
+            if (strchr(delimiters, buffer_->BufGetCharacter(pos)) == nullptr) {
 				break;
 			}
 		}
-        if (strchr(delimiters.data(), buffer_->BufGetCharacter(pos)) == nullptr) {
+        if (strchr(delimiters, buffer_->BufGetCharacter(pos)) == nullptr) {
 			pos = endOfWord(pos);
 		}
 	} else {
-        if (strchr(delimiters.data(), buffer_->BufGetCharacter(pos)) == nullptr) {
+        if (strchr(delimiters, buffer_->BufGetCharacter(pos)) == nullptr) {
 			pos = endOfWord(pos);
 		}
 		for (; pos < buffer_->BufGetLength(); pos++) {
-            if (strchr(delimiters.data(), buffer_->BufGetCharacter(pos)) == nullptr) {
+            if (strchr(delimiters, buffer_->BufGetCharacter(pos)) == nullptr) {
 				break;
 			}
 		}
@@ -7192,9 +7192,7 @@ int TextArea::TextDOffsetWrappedRow(int row) const {
 }
 
 void TextArea::setWordDelimiters(const QString &delimiters) {
-	/* When delimiters are changed, copy the memory, so that the caller
-	   doesn't have to manage it, and add mandatory delimiters blank,
-	   tab, and newline to the list */
+    // add mandatory delimiters blank, tab, and newline to the list
     P_delimiters.sprintf("%s%s", " \t\n", delimiters.toLatin1().data());
 }
 

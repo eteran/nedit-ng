@@ -114,7 +114,7 @@ void copyCommandLineArg(CommandLine *commandLine, const char *arg) {
             *outPtr++ = QLatin1Char('\\');
         }
 
-        *outPtr++ = QLatin1Char(*c);
+        *outPtr++ = QChar::fromLatin1(*c);
 
         if (*c == '\'') {
             *outPtr++ = QLatin1Char('\'');

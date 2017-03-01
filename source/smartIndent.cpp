@@ -68,7 +68,7 @@ static bool isDefaultIndentSpec(SmartIndent *indentSpec);
 static bool loadDefaultIndentSpec(const QString &lmName);
 static int siParseError(const char *stringStart, const char *stoppedAt, const char *message);
 
-static char *readSIMacro(const char **inPtr);
+static std::string readSIMacro(const char **inPtr);
 static QString readSIMacroEx(const char **inPtr);
 static int LoadSmartIndentCommonString(const char *inString);
 static int LoadSmartIndentString(char *inString);
@@ -376,16 +376,10 @@ int LoadSmartIndentCommonString(const char *inString) {
 ** Returns nullptr if the macro end boundary string is not found.
 */
 static QString readSIMacroEx(const char **inPtr) {
-	if(char *s = readSIMacro(inPtr)) {
-        auto ret = QString::fromLatin1(s);
-        delete [] s;
-		return ret;
-	}
-	
-	return QString();
+    return QString::fromStdString(readSIMacro(inPtr));
 }
 
-static char *readSIMacro(const char **inPtr) {
+static std::string readSIMacro(const char **inPtr) {
 	
 	// Strip leading newline 
 	if (**inPtr == '\n') {
@@ -399,20 +393,12 @@ static char *readSIMacro(const char **inPtr) {
 	}
 
     // Copy the macro
-    auto macroStr = new char[macroEnd - *inPtr + 1];
-    strncpy(macroStr, *inPtr, macroEnd - *inPtr);
-    macroStr[macroEnd - *inPtr] = '\0';
+    view::string_view macroStr(*inPtr, macroEnd - *inPtr);
 
 	// Remove leading tabs added by writer routine 
 	*inPtr = macroEnd + strlen(MacroEndBoundary);
 
-    std::string shiftedText = ShiftTextEx(macroStr, SHIFT_LEFT, true, 8, 8);
-
-    auto retStr = new char[shiftedText.size() + 1];
-    strcpy(retStr, shiftedText.c_str());
-
-    delete [] macroStr;
-	return retStr;
+    return ShiftTextEx(macroStr, SHIFT_LEFT, true, 8, 8);
 }
 
 
