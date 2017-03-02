@@ -73,17 +73,17 @@ DialogSyntaxPatterns *SyntaxPatterns = nullptr;
 // list of available highlight styles 
 QList<HighlightStyle> HighlightStyles;
 
-static bool isDefaultPatternSet(PatternSet *patSet);
+static bool isDefaultPatternSet(const PatternSet *patSet);
 static bool styleError(const char *stringStart, const char *stoppedAt, const char *message);
 static QVector<HighlightPattern> readHighlightPatterns(const char **inPtr, int withBraces, const char **errMsg, bool *ok);
 static int lookupNamedStyle(const QString &styleName);
 static int readHighlightPattern(const char **inPtr, const char **errMsg, HighlightPattern *pattern);
 static PatternSet *highlightError(const char *stringStart, const char *stoppedAt, const char *message);
 static PatternSet *readPatternSet(const char **inPtr);
-static QString createPatternsString(PatternSet *patSet, const QString &indentStr);
+static QString createPatternsString(const PatternSet *patSet, const QString &indentStr);
 
 // Pattern sources loaded from the .nedit file or set by the user 
-QList<PatternSet *> PatternSets;
+QList<PatternSet> PatternSets;
 
 /*
 ** Read a string (from the  value of the styles resource) containing highlight
@@ -239,16 +239,17 @@ bool LoadHighlightStringEx(const QString &string) {
 		// Add/change the pattern set in the list 
         auto it = PatternSets.begin();
         for (; it != PatternSets.end(); ++it) {
-            if ((*it)->languageMode == patSet->languageMode) {
-                delete *it;
-                *it = patSet;
+            if (it->languageMode == patSet->languageMode) {
+                *it = *patSet;
 				break;
 			}
 		}
 
         if (it == PatternSets.end()) {
-            PatternSets.push_back(patSet);
+            PatternSets.push_back(*patSet);
 		}
+
+        delete patSet;
 
 		// if the string ends here, we're done 
 		inPtr += strspn(inPtr, " \t\n");
@@ -269,22 +270,22 @@ QString WriteHighlightStringEx() {
     QTextStream out(&str);
 
 
-    for (PatternSet *patSet : PatternSets) {
-		if (patSet->patterns.isEmpty()) {
+    for (const PatternSet &patSet : PatternSets) {
+        if (patSet.patterns.isEmpty()) {
 			continue;
 		}
 		
-        out << patSet->languageMode
+        out << patSet.languageMode
             << QLatin1Char(':');
 
-        if (isDefaultPatternSet(patSet)) {
+        if (isDefaultPatternSet(&patSet)) {
             out << QLatin1String("Default\n\t");
         } else {
-            out << QString(QLatin1String("%1")).arg(patSet->lineContext)
+            out << QString(QLatin1String("%1")).arg(patSet.lineContext)
                 << QLatin1Char(':')
-                << QString(QLatin1String("%1")).arg(patSet->charContext)
+                << QString(QLatin1String("%1")).arg(patSet.charContext)
                 << QLatin1String("{\n")
-                << createPatternsString(patSet, QLatin1String("\t\t"))
+                << createPatternsString(&patSet, QLatin1String("\t\t"))
                 << QLatin1String("\t}\n\t");
         }
 	}
@@ -389,9 +390,9 @@ bool NamedStyleExists(const QString &styleName) {
 */
 PatternSet *FindPatternSet(const QString &langModeName) {
 
-    for(PatternSet *patternSet : PatternSets) {
-        if (langModeName == patternSet->languageMode) {
-            return patternSet;
+    for(PatternSet &patternSet : PatternSets) {
+        if (langModeName == patternSet.languageMode) {
+            return &patternSet;
 		}
 	}
 	
@@ -418,9 +419,9 @@ bool LMHasHighlightPatterns(const QString &languageMode) {
 */
 void RenameHighlightPattern(const QString &oldName, const QString &newName) {
 
-    for(PatternSet *patternSet : PatternSets) {
-        if (patternSet->languageMode == oldName) {
-            patternSet->languageMode = newName;
+    for(PatternSet &patternSet : PatternSets) {
+        if (patternSet.languageMode == oldName) {
+            patternSet.languageMode = newName;
 		}
 	}
 	
@@ -429,12 +430,12 @@ void RenameHighlightPattern(const QString &oldName, const QString &newName) {
 	}
 }
 
-QString createPatternsString(PatternSet *patSet, const QString &indentStr) {
+QString createPatternsString(const PatternSet *patSet, const QString &indentStr) {
 
     QString str;
     QTextStream out(&str);
 
-	for(HighlightPattern &pat : patSet->patterns) {
+    for(const HighlightPattern &pat : patSet->patterns) {
 
         out << indentStr
             << pat.name
@@ -663,7 +664,7 @@ static int readHighlightPattern(const char **inPtr, const char **errMsg, Highlig
 PatternSet *readDefaultPatternSet(QByteArray &patternData, const QString &langModeName) {
 	size_t modeNameLen = langModeName.size();
 	
-	if(patternData.startsWith(langModeName.toLatin1()) && patternData.data()[modeNameLen] == ':') {
+    if(patternData.startsWith(langModeName.toLatin1()) && patternData.data()[modeNameLen] == ':') {
 		const char *strPtr = patternData.data();
         return readPatternSet(&strPtr);
 	}
@@ -702,7 +703,7 @@ PatternSet *readDefaultPatternSet(const QString &langModeName) {
 /*
 ** Return True if patSet exactly matches one of the default pattern sets
 */
-static bool isDefaultPatternSet(PatternSet *patSet) {
+static bool isDefaultPatternSet(const PatternSet *patSet) {
 
 	PatternSet *defaultPatSet = readDefaultPatternSet(patSet->languageMode);
 	if(!defaultPatSet) {

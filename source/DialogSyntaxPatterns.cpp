@@ -479,13 +479,12 @@ void DialogSyntaxPatterns::on_buttonDeletePattern_clicked() {
 	// if a stored version of the pattern set exists, delete it from the list
     auto it = PatternSets.begin();
     for (; it != PatternSets.end(); ++it) {
-        if (languageMode == (*it)->languageMode) {
+        if (languageMode == it->languageMode) {
 			break;
 		}
 	}
 
     if (it != PatternSets.end()) {
-        delete *it;
         PatternSets.erase(it);
 	}
 
@@ -523,17 +522,18 @@ void DialogSyntaxPatterns::on_buttonRestore_clicked() {
 	// if a stored version of the pattern set exists, replace it, if it doesn't, add a new one
     auto it = PatternSets.begin();
     for (; it != PatternSets.end(); ++it) {
-        if (languageMode == (*it)->languageMode) {
+        if (languageMode == it->languageMode) {
 			break;
 		}
 	}
 
     if (it != PatternSets.end()) {
-        delete *it;
-        *it = defaultPatSet;
+        *it = *defaultPatSet;
 	} else {
-        PatternSets.push_back(defaultPatSet);
+        PatternSets.push_back(*defaultPatSet);
 	}
+
+    delete defaultPatSet;
 
 	// Free the old dialog information
 	for(int i = 0; i < ui.listItems->count(); ++i) {
@@ -762,7 +762,7 @@ bool DialogSyntaxPatterns::updatePatternSet() {
 	// Find the pattern being modified
     auto it = PatternSets.begin();
     for (; it != PatternSets.end(); ++it) {
-        if ((*it)->languageMode == ui.comboLanguageMode->currentText()) {
+        if (it->languageMode == ui.comboLanguageMode->currentText()) {
 			break;
 		}
 	}
@@ -770,13 +770,14 @@ bool DialogSyntaxPatterns::updatePatternSet() {
 	// If it's a new pattern, add it at the end, otherwise free the existing pattern set and replace it
 	int oldNum = -1;
     if (it == PatternSets.end()) {
-        PatternSets.push_back(patSet);
+        PatternSets.push_back(*patSet);
 		oldNum = 0;
 	} else {
-        oldNum = (*it)->patterns.size();
-        delete *it;
-        *it = patSet;
+        oldNum = it->patterns.size();
+        *it = *patSet;
 	}
+
+    delete patSet;
 
 	// Find windows that are currently using this pattern set and re-do the highlighting
     for(DocumentWidget *document : DocumentWidget::allDocuments()) {
