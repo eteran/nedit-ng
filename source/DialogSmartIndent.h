@@ -22,7 +22,7 @@ public:
 	bool hasSmartIndentMacros(const QString &languageMode) const;
 	
 private:
-	void setSmartIndentDialogData(SmartIndent *is);
+    void setSmartIndentDialogData(const SmartIndent *is);
 	bool updateSmartIndentData();
 	bool checkSmartIndentDialogData();
 	SmartIndent *getSmartIndentDialogData();

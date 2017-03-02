@@ -55,16 +55,15 @@ namespace {
 
 const char MacroEndBoundary[] = "--End-of-Macro--";
 
-}
-
-QList<SmartIndent *> SmartIndentSpecs;
-
-QString CommonMacros;
-
 DialogSmartIndent *SmartIndentDlg = nullptr;
 
+}
+
+QList<SmartIndent> SmartIndentSpecs;
+QString CommonMacros;
+
 static void insertShiftedMacro(QTextStream &ts, const QString &macro);
-static bool isDefaultIndentSpec(SmartIndent *indentSpec);
+static bool isDefaultIndentSpec(const SmartIndent *indentSpec);
 static bool loadDefaultIndentSpec(const QString &lmName);
 static int siParseError(const char *stringStart, const char *stoppedAt, const char *message);
 
@@ -254,7 +253,7 @@ static bool loadDefaultIndentSpec(const QString &lmName) {
 
 	for (int i = 0; i < N_DEFAULT_INDENT_SPECS; i++) {
         if (DefaultIndentSpecs[i].lmName == lmName) {
-            SmartIndentSpecs.push_back(new SmartIndent(DefaultIndentSpecs[i]));
+            SmartIndentSpecs.push_back(DefaultIndentSpecs[i]);
 			return true;
 		}
 	}
@@ -268,10 +267,11 @@ int LoadSmartIndentStringEx(const QString &string) {
 int LoadSmartIndentString(char *inString) {
 	const char *errMsg;
 	const char *inPtr = inString;
-	SmartIndent is;
 	int i;
 
 	for (;;) {
+
+        SmartIndent is;
 
 		// skip over blank space 
 		inPtr += strspn(inPtr, " \t\n");
@@ -324,19 +324,15 @@ int LoadSmartIndentString(char *inString) {
 			is.modMacro = QString();
 		}
 
-		// create a new data structure and add/change it in the list 
-        auto isCopy = new SmartIndent(is);
-
         for (i = 0; i < SmartIndentSpecs.size(); i++) {
-			if (SmartIndentSpecs[i]->lmName == is.lmName) {
-				delete SmartIndentSpecs[i];
-                SmartIndentSpecs[i] = isCopy;
+            if (SmartIndentSpecs[i].lmName == is.lmName) {
+                SmartIndentSpecs[i] = is;
 				break;
 			}
 		}
 		
         if (i == SmartIndentSpecs.size()) {
-            SmartIndentSpecs.push_back(isCopy);
+            SmartIndentSpecs.push_back(is);
 		}
 	}
 }
@@ -412,18 +408,18 @@ QString WriteSmartIndentStringEx() {
 	QString s;
 	QTextStream ts(&s);
 
-    for(SmartIndent *sis : SmartIndentSpecs) {
+    for(const SmartIndent &sis : SmartIndentSpecs) {
 
 		ts << QLatin1String("\t")
-		   << sis->lmName
+           << sis.lmName
 		   << QLatin1String(":");
 		
-		if (isDefaultIndentSpec(sis)) {
+        if (isDefaultIndentSpec(&sis)) {
 			ts << QLatin1String("Default\n");
 		} else {
-			insertShiftedMacro(ts, sis->initMacro);
-			insertShiftedMacro(ts, sis->newlineMacro);
-			insertShiftedMacro(ts, sis->modMacro);
+            insertShiftedMacro(ts, sis.initMacro);
+            insertShiftedMacro(ts, sis.newlineMacro);
+            insertShiftedMacro(ts, sis.modMacro);
 		}
 	}
 	
@@ -479,7 +475,7 @@ static void insertShiftedMacro(QTextStream &ts, const QString &macro) {
 	ts << QLatin1String("\n");
 }
 
-static bool isDefaultIndentSpec(SmartIndent *indentSpec) {
+static bool isDefaultIndentSpec(const SmartIndent *indentSpec) {
 
 	for (int i = 0; i < N_DEFAULT_INDENT_SPECS; i++) {
 		if (indentSpec->lmName == DefaultIndentSpecs[i].lmName) {
@@ -489,15 +485,15 @@ static bool isDefaultIndentSpec(SmartIndent *indentSpec) {
 	return false;
 }
 
-SmartIndent *findIndentSpec(const QString &modeName) {
+const SmartIndent *findIndentSpec(const QString &modeName) {
 
     if(modeName.isNull()) {
 		return nullptr;
 	}
 
-    for(SmartIndent *sis : SmartIndentSpecs) {
-        if (sis->lmName == modeName) {
-            return sis;
+    for(const SmartIndent &sis : SmartIndentSpecs) {
+        if (sis.lmName == modeName) {
+            return &sis;
 		}
 	}
 	return nullptr;
@@ -523,9 +519,9 @@ int LMHasSmartIndentMacros(const QString &languageMode) {
 */
 void RenameSmartIndentMacros(const QString &oldName, const QString &newName) {
 
-    for(SmartIndent *sis : SmartIndentSpecs) {
-        if (sis->lmName == oldName) {
-            sis->lmName = newName;
+    for(SmartIndent &sis : SmartIndentSpecs) {
+        if (sis.lmName == oldName) {
+            sis.lmName = newName;
 		}
     }
 	if (SmartIndentDlg) {

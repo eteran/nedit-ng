@@ -125,8 +125,7 @@ void DialogSmartIndent::on_buttonDelete_clicked() {
 
 	// if a stored version of the pattern set exists, delete it from the list 
     for (auto it = SmartIndentSpecs.begin(); it != SmartIndentSpecs.end(); ++it) {
-        if (languageMode_ == (*it)->lmName) {
-            delete *it;
+        if (languageMode_ == it->lmName) {
             SmartIndentSpecs.erase(it);
 		}
 	}
@@ -156,7 +155,7 @@ void DialogSmartIndent::on_buttonRestore_clicked() {
 		return;
 	}
 
-	SmartIndent *defaultIS = &DefaultIndentSpecs[i];
+    const SmartIndent &defaultIS = DefaultIndentSpecs[i];
 	
 	int resp = QMessageBox::question(this, tr("Discard Changes"), tr("Are you sure you want to discard all changes to smart indent macros for language mode %1?").arg(languageMode_), QMessageBox::Discard | QMessageBox::Cancel);
 	if(resp == QMessageBox::Cancel) {
@@ -165,20 +164,19 @@ void DialogSmartIndent::on_buttonRestore_clicked() {
 
 	// if a stored version of the indent macros exist, replace them, if not, add a new one
     for (i = 0; i < SmartIndentSpecs.size(); i++) {
-		if (languageMode_ == SmartIndentSpecs[i]->lmName) {
+        if (languageMode_ == SmartIndentSpecs[i].lmName) {
 			break;
 		}
 	}
 	
     if (i < SmartIndentSpecs.size()) {
-		delete SmartIndentSpecs[i];
-		SmartIndentSpecs[i] = new SmartIndent(*defaultIS);
+        SmartIndentSpecs[i] = defaultIS;
 	} else {
-        SmartIndentSpecs.push_back(new SmartIndent(*defaultIS));
+        SmartIndentSpecs.push_back(defaultIS);
 	}
 
 	// Update the dialog 
-	setSmartIndentDialogData(defaultIS);
+    setSmartIndentDialogData(&defaultIS);
 }
 
 //------------------------------------------------------------------------------
@@ -193,7 +191,7 @@ void DialogSmartIndent::on_buttonHelp_clicked() {
 //------------------------------------------------------------------------------
 // Name: 
 //------------------------------------------------------------------------------
-void DialogSmartIndent::setSmartIndentDialogData(SmartIndent *is) {
+void DialogSmartIndent::setSmartIndentDialogData(const SmartIndent *is) {
 
 	if(!is) {
 		ui.editInit->setPlainText(QString());
@@ -224,7 +222,7 @@ bool DialogSmartIndent::updateSmartIndentData() {
 	// Find the original macros
 	int i;
     for (i = 0; i < SmartIndentSpecs.size(); i++) {
-		if (languageMode_ == SmartIndentSpecs[i]->lmName) {
+        if (languageMode_ == SmartIndentSpecs[i].lmName) {
 			break;
 		}
 	}
@@ -232,11 +230,12 @@ bool DialogSmartIndent::updateSmartIndentData() {
 	/* If it's a new language, add it at the end, otherwise free the
 	   existing macros and replace it */
     if (i == SmartIndentSpecs.size()) {
-        SmartIndentSpecs.push_back(newMacros);
+        SmartIndentSpecs.push_back(*newMacros);
 	} else {
-		delete SmartIndentSpecs[i];
-		SmartIndentSpecs[i] = newMacros;
+        SmartIndentSpecs[i] = *newMacros;
 	}
+
+    delete newMacros;
 
 
 	/* Find windows that are currently using this indent specification and
