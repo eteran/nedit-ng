@@ -1249,7 +1249,7 @@ int TextBuffer::BufGetHighlightPos(int *start, int *end, bool *isRect, int *rect
 ** Add a callback routine to be called when the buffer is modified
 */
 void TextBuffer::BufAddModifyCB(bufModifyCallbackProc bufModifiedCB, void *cbArg) {
-	modifyProcs_.emplace_back(bufModifiedCB, cbArg);
+    modifyProcs_.emplace_back(bufModifiedCB, cbArg);
 }
 
 /*
@@ -1257,7 +1257,7 @@ void TextBuffer::BufAddModifyCB(bufModifyCallbackProc bufModifiedCB, void *cbArg
 ** normal priority callbacks.
 */
 void TextBuffer::BufAddHighPriorityModifyCB(bufModifyCallbackProc bufModifiedCB, void *cbArg) {
-	modifyProcs_.emplace_front(bufModifiedCB, cbArg);
+    modifyProcs_.emplace_front(bufModifiedCB, cbArg);
 }
 
 void TextBuffer::BufRemoveModifyCB(bufModifyCallbackProc bufModifiedCB, void *cbArg) {
@@ -1277,7 +1277,7 @@ void TextBuffer::BufRemoveModifyCB(bufModifyCallbackProc bufModifiedCB, void *cb
 */
 void TextBuffer::BufAddPreDeleteCB(bufPreDeleteCallbackProc bufPreDeleteCB, void *cbArg) {
 
-	preDeleteProcs_.emplace_back(bufPreDeleteCB, cbArg);
+    preDeleteProcs_.emplace_back(bufPreDeleteCB, cbArg);
 }
 
 void TextBuffer::BufRemovePreDeleteCB(bufPreDeleteCallbackProc bufPreDeleteCB, void *cbArg) {

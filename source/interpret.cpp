@@ -160,12 +160,12 @@ static void stackdump(int n, int extra);
 #endif
 
 // Global symbols and function definitions 
-static std::list<Symbol *> GlobalSymList;
+static QList<Symbol *> GlobalSymList;
 
 // List of all memory allocated for strings 
-static std::list<char *> AllocatedStrings;
+static QList<char *> AllocatedStrings;
 
-static std::list<ArrayEntry *> AllocatedSparseArrayEntries;
+static QList<ArrayEntry *> AllocatedSparseArrayEntries;
 
 /* Message strings used in macros (so they don't get repeated every time
    the macros are used */
@@ -225,7 +225,6 @@ static int (*OpFns[N_OPS])() = {returnNoVal, returnVal,      pushSymVal, dupStac
 */
 void InitMacroGlobals() {
 
-    int i;
 	static char argName[3] = "$x";
 	static DataValue dv = INIT_DATA_VALUE;
 
@@ -247,8 +246,8 @@ void InitMacroGlobals() {
 #endif
 
 	// Add subroutine argument symbols ($1, $2, ..., $9) 
-	for (i = 0; i < 9; i++) {
-		argName[1] = '1' + i;
+    for (int i = 0; i < 9; i++) {
+        argName[1] = static_cast<char>('1' + i);
 		dv.val.n = i;
 		InstallSymbol(argName, ARG_SYM, dv);
 	}

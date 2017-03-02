@@ -158,8 +158,8 @@ public:
 	TextSelection highlight_;	
 	int tabDist_;                                                            // equiv. number of characters in a tab
 	bool useTabs_;                                                           // True if buffer routines are allowed to use tabs for padding in rectangular operations
-	std::deque<std::pair<bufModifyCallbackProc, void *>> modifyProcs_;       // procedures to call when buffer is modified to redisplay contents
-	std::deque<std::pair<bufPreDeleteCallbackProc, void *>> preDeleteProcs_; // procedure to call before text is deleted from the buffer; at most one is supported.
+    std::deque<std::pair<bufModifyCallbackProc, void *>> modifyProcs_;       // procedures to call when buffer is modified to redisplay contents
+    std::deque<std::pair<bufPreDeleteCallbackProc, void *>> preDeleteProcs_; // procedure to call before text is deleted from the buffer; at most one is supported.
 	int cursorPosHint_;                                                      // hint for reasonable cursor position after a buffer modification operation
 	char nullSubsChar_;                                                      // NEdit is based on C null-terminated strings, so ascii-nul characters must be substituted with something else.  This is the else, but of course, things get quite messy when you use it
 	RangesetTable *rangesetTable_;                                           // current range sets
