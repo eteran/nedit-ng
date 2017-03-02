@@ -966,7 +966,7 @@ static int loadLanguageModesString(const char *inString) {
 		// skip over blank space 
 		inPtr += strspn(inPtr, " \t\n");
 
-        auto lm = std::make_unique<LanguageMode>();
+        LanguageMode lm;
 		
 		// read language mode name 		
         QString name = ReadSymbolicFieldEx(&inPtr);
@@ -974,13 +974,13 @@ static int loadLanguageModesString(const char *inString) {
             return modeError(inString, inPtr, "language mode name required");
 		}
 		
-        lm->name = name;
+        lm.name = name;
 		
 		if (!SkipDelimiter(&inPtr, &errMsg))
             return modeError(inString, inPtr, errMsg);
 
 		// read list of extensions 
-		lm->extensions = readExtensionList(&inPtr);
+        lm.extensions = readExtensionList(&inPtr);
 		if (!SkipDelimiter(&inPtr, &errMsg))
             return modeError(inString, inPtr, errMsg);
 
@@ -992,7 +992,7 @@ static int loadLanguageModesString(const char *inString) {
             return modeError(inString, inPtr, errMsg);
 		}
 
-        lm->recognitionExpr = recognitionExpr;
+        lm.recognitionExpr = recognitionExpr;
 			
 		if (!SkipDelimiter(&inPtr, &errMsg)) {
             return modeError(inString, inPtr, errMsg);
@@ -1001,11 +1001,11 @@ static int loadLanguageModesString(const char *inString) {
 		// read the indent style 
         QString styleName = ReadSymbolicFieldEx(&inPtr);
         if(styleName.isNull()) {
-			lm->indentStyle = DEFAULT_INDENT;
+            lm.indentStyle = DEFAULT_INDENT;
         } else {
 			for (i = 0; i < N_INDENT_STYLES; i++) {
                 if (styleName == QString::fromLatin1(AutoIndentTypes[i])) {
-                    lm->indentStyle = static_cast<IndentStyle>(i);
+                    lm.indentStyle = static_cast<IndentStyle>(i);
 					break;
 				}
 			}
@@ -1019,11 +1019,11 @@ static int loadLanguageModesString(const char *inString) {
 		// read the wrap style 
         styleName = ReadSymbolicFieldEx(&inPtr);
         if(styleName.isNull()) {
-			lm->wrapStyle = DEFAULT_WRAP;
+            lm.wrapStyle = DEFAULT_WRAP;
         } else {
 			for (i = 0; i < N_WRAP_STYLES; i++) {
                 if ((styleName == QString::fromLatin1(AutoWrapTypes[i]))) {
-					lm->wrapStyle = i;
+                    lm.wrapStyle = i;
 					break;
 				}
 			}
@@ -1034,17 +1034,21 @@ static int loadLanguageModesString(const char *inString) {
             return modeError(inString, inPtr, errMsg);
 
 		// read the tab distance 
-		if (*inPtr == '\n' || *inPtr == '\0' || *inPtr == ':')
-			lm->tabDist = DEFAULT_TAB_DIST;
-		else if (!ReadNumericField(&inPtr, &lm->tabDist))
+        if (*inPtr == '\n' || *inPtr == '\0' || *inPtr == ':') {
+            lm.tabDist = DEFAULT_TAB_DIST;
+        } else if (!ReadNumericField(&inPtr, &lm.tabDist)) {
             return modeError(inString, inPtr, "bad tab spacing");
-		if (!SkipDelimiter(&inPtr, &errMsg))
+        }
+
+        if (!SkipDelimiter(&inPtr, &errMsg)) {
             return modeError(inString, inPtr, errMsg);
+        }
 
 		// read emulated tab distance 
-		if (*inPtr == '\n' || *inPtr == '\0' || *inPtr == ':')
-			lm->emTabDist = DEFAULT_EM_TAB_DIST;
-		else if (!ReadNumericField(&inPtr, &lm->emTabDist))
+        if (*inPtr == '\n' || *inPtr == '\0' || *inPtr == ':') {
+            lm.emTabDist = DEFAULT_EM_TAB_DIST;
+        }
+        else if (!ReadNumericField(&inPtr, &lm.emTabDist))
             return modeError(inString, inPtr, "bad emulated tab spacing");
 		if (!SkipDelimiter(&inPtr, &errMsg))
             return modeError(inString, inPtr, errMsg);
@@ -1057,7 +1061,7 @@ static int loadLanguageModesString(const char *inString) {
             return modeError(inString, inPtr, errMsg);
 		}
 			
-        lm->delimiters = delimiters;
+        lm.delimiters = delimiters;
 
 		// After 5.3 all language modes need a default tips file field 
         if (!SkipDelimiter(&inPtr, &errMsg))
@@ -1072,18 +1076,18 @@ static int loadLanguageModesString(const char *inString) {
             return modeError(inString, inPtr, errMsg);
 		}
 		
-        lm->defTipsFile = defTipsFile;
+        lm.defTipsFile = defTipsFile;
 
 		// pattern set was read correctly, add/replace it in the list 
         for (i = 0; i < LanguageModes.size(); i++) {
-            if (LanguageModes[i].name == lm->name) {
-                LanguageModes[i] = *lm;
+            if (LanguageModes[i].name == lm.name) {
+                LanguageModes[i] = lm;
 				break;
 			}
 		}
 		
         if (i == LanguageModes.size()) {
-            LanguageModes.push_back(*lm);
+            LanguageModes.push_back(lm);
 		}
 
 		// if the string ends here, we're done 
