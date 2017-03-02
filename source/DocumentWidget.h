@@ -31,8 +31,8 @@ class QTimer;
 class TextArea;
 class TextBuffer;
 class UndoInfo;
-struct HighlightData;
-struct WindowHighlightData;
+class HighlightData;
+class WindowHighlightData;
 struct dragEndCBStruct;
 struct smartIndentCBStruct;
 

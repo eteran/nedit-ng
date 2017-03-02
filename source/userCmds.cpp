@@ -65,10 +65,9 @@ private:
 }
 
 static QString copyMacroToEnd(const char **inPtr);
-static char *writeMenuItemString(const QVector<MenuData> &menuItems, int listType);
 static int loadMenuItemString(const char *inString, QVector<MenuData> &menuItems, DialogTypes listType);
 static QString stripLanguageModeEx(const QString &menuItemName);
-static QString writeMenuItemStringEx(const QVector<MenuData> &menuItems, int listType);
+static QString writeMenuItemStringEx(const QVector<MenuData> &menuItems, DialogTypes listType);
 static userMenuInfo *parseMenuItemRec(MenuItem *item);
 static void parseMenuItemName(const QString &menuItemName, userMenuInfo *info);
 static void setDefaultIndex(const QVector<MenuData> &infoList, int index);
@@ -150,114 +149,83 @@ void UpdateUserMenuInfo() {
     parseMenuItemList(BGMenuData);
 }
 
-static char *writeMenuItemString(const QVector<MenuData> &menuItems, int listType) {
+static QString writeMenuItemStringEx(const QVector<MenuData> &menuItems, DialogTypes listType) {
 
-	int length;
+    QString outStr;
+    auto outPtr = std::back_inserter(outStr);
 
-	/* determine the max. amount of memory needed for the returned string
-	   and allocate a buffer for composing the string */
-	   
-	// NOTE(eteran): this code unconditionally writes at least 2 chars
-	// so to avoid an off by one error, this needs to be initialized to
-	// 1
-	length = 1;
-	
-	for (const MenuData &data : menuItems) {
-		MenuItem *f = data.item;
+    for (const MenuData &data : menuItems) {
+        MenuItem *f = data.item;
+
         QString accStr = f->shortcut.toString();
+        *outPtr++ = QLatin1Char('\t');
 
-		length += f->name.size() * 2; // allow for \n & \\ expansions 
-        length += accStr.size();
-		length += f->cmd.size() * 6; // allow for \n & \\ expansions 
-		length += 21;                 // number of characters added below 
-	}
-	
-	length++; // terminating null 
-    char *outStr = new char[length];
+        for (auto ch : f->name) { // Copy the command name
+            *outPtr++ = (ch);
+        }
 
-	// write the string 
-	char *outPtr = outStr;
-	
-	for (const MenuData &data : menuItems) {
-		MenuItem *f = data.item;
-		
-        QString accStr = f->shortcut.toString();
-		*outPtr++ = '\t';
-		
-		for (auto ch : f->name) { // Copy the command name 
-            *outPtr++ = ch.toLatin1();
-		}
-		
-		*outPtr++ = ':';
-        strcpy(outPtr, accStr.toLatin1().data());
-        outPtr += accStr.size();
+        *outPtr++ = QLatin1Char(':');
+        std::copy(accStr.begin(), accStr.end(), outPtr);
 
-        *outPtr++ = ':';
+        *outPtr++ = QLatin1Char(':');
         if (listType == SHELL_CMDS) {
             switch(f->input) {
-            case FROM_SELECTION: *outPtr++ = 'I'; break;
-            case FROM_WINDOW:    *outPtr++ = 'A'; break;
-            case FROM_EITHER:    *outPtr++ = 'E'; break;
+            case FROM_SELECTION: *outPtr++ = QLatin1Char('I'); break;
+            case FROM_WINDOW:    *outPtr++ = QLatin1Char('A'); break;
+            case FROM_EITHER:    *outPtr++ = QLatin1Char('E'); break;
             default:
                 break;
             }
 
             switch(f->output) {
-            case TO_DIALOG:     *outPtr++ = 'D'; break;
-            case TO_NEW_WINDOW: *outPtr++ = 'W'; break;
+            case TO_DIALOG:     *outPtr++ = QLatin1Char('D'); break;
+            case TO_NEW_WINDOW: *outPtr++ = QLatin1Char('W'); break;
             default:
                 break;
             }
 
-            if (f->repInput)  *outPtr++ = 'X';
-            if (f->saveFirst) *outPtr++ = 'S';
-            if (f->loadAfter) *outPtr++ = 'L';
+            if (f->repInput)  *outPtr++ = QLatin1Char('X');
+            if (f->saveFirst) *outPtr++ = QLatin1Char('S');
+            if (f->loadAfter) *outPtr++ = QLatin1Char('L');
 
-			*outPtr++ = ':';
-		} else {
+            *outPtr++ = QLatin1Char(':');
+        } else {
             if (f->input == FROM_SELECTION) {
-				*outPtr++ = 'R';
+                *outPtr++ = QLatin1Char('R');
             }
 
-			*outPtr++ = ':';
-			*outPtr++ = ' ';
-			*outPtr++ = '{';
-		}
+            *outPtr++ = QLatin1Char(':');
+            *outPtr++ = QLatin1Char(' ');
+            *outPtr++ = QLatin1Char('{');
+        }
 
-		*outPtr++ = '\n';
-		*outPtr++ = '\t';
-		*outPtr++ = '\t';
-		
-		for(QChar c : f->cmd) {
+        *outPtr++ = QLatin1Char('\n');
+        *outPtr++ = QLatin1Char('\t');
+        *outPtr++ = QLatin1Char('\t');
+
+        for(QChar c : f->cmd) {
             if (c == QLatin1Char('\n')) { // and newlines to backslash-n's,
-				*outPtr++ = '\n';
-				*outPtr++ = '\t';
-				*outPtr++ = '\t';
-			} else
-				*outPtr++ = c.toLatin1();
-		}
-		
-		if (listType == MACRO_CMDS || listType == BG_MENU_CMDS) {
-			if (*(outPtr - 1) == '\t') {
-				outPtr--;
-			}
-			*outPtr++ = '}';
-		}
-		
-		*outPtr++ = '\n';
-	}
+                *outPtr++ = QLatin1Char('\n');
+                *outPtr++ = QLatin1Char('\t');
+                *outPtr++ = QLatin1Char('\t');
+            } else
+                *outPtr++ = (c);
+        }
 
-	*--outPtr = '\0';
-	return outStr;
-}
+        if (listType == MACRO_CMDS || listType == BG_MENU_CMDS) {
 
-static QString writeMenuItemStringEx(const QVector<MenuData> &menuItems, int listType) {
-	QString str;
-    if(const char *s = writeMenuItemString(menuItems, listType)) {
-        str = QString::fromLatin1(s);
-        delete [] s;
-	}
-    return str;
+            if(outStr.endsWith(QLatin1Char('\t'))) {
+                outStr.chop(1);
+            }
+
+            *outPtr++ = QLatin1Char('}');
+        }
+
+        *outPtr++ = QLatin1Char('\n');
+    }
+
+    outStr.chop(1);
+    return outStr;
 }
 
 static int loadMenuItemString(const char *inString, QVector<MenuData> &menuItems, DialogTypes listType) {

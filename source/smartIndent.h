@@ -56,7 +56,7 @@ extern QString CommonMacros;
 extern SmartIndent DefaultIndentSpecs[N_DEFAULT_INDENT_SPECS];
 extern QList<SmartIndent *> SmartIndentSpecs;
 
-struct Program;
+class Program;
 
 struct SmartIndentData {
     Program *newlineMacro;

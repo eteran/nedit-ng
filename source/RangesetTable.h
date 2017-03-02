@@ -18,10 +18,10 @@ public:
     int RangesetTableGetColorValid(int index, QColor *color);
 	Rangeset *RangesetFetch(int label);
 	Rangeset *RangesetForget(int label);
-    uint8_t *RangesetGetList();
-	void RangesetTableUpdatePos(int pos, int n_ins, int n_del);
-	
+
 public:
+    static void RangesetTableUpdatePos(RangesetTable *table, int pos, int n_ins, int n_del);
+    static uint8_t *RangesetGetList(RangesetTable *table);
     static int RangesetFindIndex(RangesetTable *table, int label, int must_be_active);
     static int RangesetIndex1ofPos(RangesetTable *table, int pos, int needs_color);
 	static Range *RangesFree(Range *ranges);

@@ -3978,7 +3978,7 @@ static int rangesetListMV(DocumentWidget *window, DataValue *argList, int nArgs,
 		return true;
 	}
 
-    uint8_t *rangesetList = rangesetTable->RangesetGetList();
+    uint8_t *rangesetList = RangesetTable::RangesetGetList(rangesetTable);
     int nRangesets = strlen((char *)rangesetList);
     for (int i = 0; i < nRangesets; i++) {
 		element.tag = INT_TAG;
@@ -4149,7 +4149,7 @@ static int rangesetGetByNameMS(DocumentWidget *window, DataValue *argList, int n
 		return true;
 	}
 
-	rangesetList = rangesetTable->RangesetGetList();
+    rangesetList = RangesetTable::RangesetGetList(rangesetTable);
     int nRangesets = strlen((char *)rangesetList);
     for (int i = 0; i < nRangesets; ++i) {
 		label = rangesetList[i];

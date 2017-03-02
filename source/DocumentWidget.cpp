@@ -57,8 +57,6 @@
 namespace {
 
 // Tuning parameters
-const int IO_BUF_SIZE         = 4096; // size of buffers for collecting cmd output
-const int OUTPUT_FLUSH_FREQ	  = 1000; // how often (msec) to flush output buffers when process is taking too long
 const int BANNER_WAIT_TIME	  = 6000; // how long to wait (msec) before putting up Shell Command Executing... banner
 
 
@@ -5005,7 +5003,7 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
 
         if (failure && errorReport) {
             errText.remove(QRegExp(QLatin1String("\n+$"))); // remove trailing newlines
-            errText.left(DF_MAX_MSG_LENGTH);                // truncate to DF_MAX_MSG_LENGTH characters
+            errText.truncate(DF_MAX_MSG_LENGTH);            // truncate to DF_MAX_MSG_LENGTH characters
 
             QMessageBox msgBox;
             msgBox.setWindowTitle(tr("Warning"));
@@ -5018,7 +5016,7 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
             cancel = (msgBox.exec() == QMessageBox::Cancel);
 
         } else if (failure) {
-            outText.left(DF_MAX_MSG_LENGTH - 70); // truncate to ~DF_MAX_MSG_LENGTH characters
+            outText.truncate(DF_MAX_MSG_LENGTH - 70); // truncate to ~DF_MAX_MSG_LENGTH characters
 
             QMessageBox msgBox;
             msgBox.setWindowTitle(tr("Command Failure"));
@@ -5033,7 +5031,7 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
         } else if (errorReport) {
 
             errText.remove(QRegExp(QLatin1String("\n+$"))); // remove trailing newlines
-            errText.left(DF_MAX_MSG_LENGTH);                // truncate to DF_MAX_MSG_LENGTH characters
+            errText.truncate(DF_MAX_MSG_LENGTH);            // truncate to DF_MAX_MSG_LENGTH characters
 
             QMessageBox msgBox;
             msgBox.setWindowTitle(tr("Information"));

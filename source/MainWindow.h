@@ -14,7 +14,7 @@
 class TextArea;
 class DocumentWidget;
 class DialogReplace;
-class MenuData;
+struct MenuData;
 
 enum NewMode {
     New_Prefs,
@@ -48,7 +48,7 @@ public:
 private:
     virtual void keyPressEvent(QKeyEvent *event) override;
     virtual void closeEvent(QCloseEvent *event) override;
-    virtual bool eventFilter(QObject *object, QEvent *event);
+    virtual bool eventFilter(QObject *object, QEvent *event) override;
 
 public:
 	DialogReplace *getDialogReplace() const;	

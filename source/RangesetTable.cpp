@@ -19,7 +19,7 @@ static void RangesetBufModifiedCB(int pos, int nInserted, int nDeleted, int nRes
 
 	auto table = static_cast<RangesetTable *>(cbArg);
     if ((nInserted != nDeleted) || table->buf_->BufCmpEx(pos, nInserted, deletedText) != 0) {
-		table->RangesetTableUpdatePos(pos, nInserted, nDeleted);
+        RangesetTable::RangesetTableUpdatePos(table, pos, nInserted, nDeleted);
 	}
 }
 
@@ -288,17 +288,17 @@ int RangesetTable::nRangesetsAvailable() const {
 }
 
 
-uint8_t *RangesetTable::RangesetGetList() {
-    return this ? list_ : (uint8_t *)"";
+uint8_t *RangesetTable::RangesetGetList(RangesetTable *table) {
+    return table ? table->list_ : (uint8_t *)"";
 }
 
-void RangesetTable::RangesetTableUpdatePos(int pos, int ins, int del) {
+void RangesetTable::RangesetTableUpdatePos(RangesetTable *table, int pos, int ins, int del) {
 
-	if (!this || (ins == 0 && del == 0))
+    if (!table || (ins == 0 && del == 0))
 		return;
 
-    for (int i = 0; i < n_set_; i++) {
-        Rangeset *p = &set_[(int)order_[i]];
+    for (int i = 0; i < table->n_set_; i++) {
+        Rangeset *p = &table->set_[(int)table->order_[i]];
 		p->update_fn_(p, pos, ins, del);
 	}
 }
