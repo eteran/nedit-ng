@@ -3595,6 +3595,7 @@ void DocumentWidget::actionClose(CloseMode mode) {
         preResponse = YES_SBC_DIALOG_RESPONSE;
         break;
     case CloseMode::Close_NoSave:
+    default:
         preResponse = NO_SBC_DIALOG_RESPONSE;
         break;
     }
