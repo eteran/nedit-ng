@@ -40,8 +40,8 @@ DialogSyntaxPatterns::DialogSyntaxPatterns(QWidget *parent, Qt::WindowFlags f) :
     auto blocker = no_signals(ui.comboLanguageMode);
 
 	// populate language mode combo
-    for(LanguageMode *lang : LanguageModes) {
-        ui.comboLanguageMode->addItem(lang->name);
+    for(const LanguageMode &lang : LanguageModes) {
+        ui.comboLanguageMode->addItem(lang.name);
 	}
 }
 
@@ -718,8 +718,8 @@ void DialogSyntaxPatterns::UpdateLanguageModeMenu() {
 	QString language = ui.comboLanguageMode->currentText();
 	ui.comboLanguageMode->clear();
 
-    for(LanguageMode *lang : LanguageModes) {
-        ui.comboLanguageMode->addItem(lang->name);
+    for(const LanguageMode &lang : LanguageModes) {
+        ui.comboLanguageMode->addItem(lang.name);
 	}
 
 	SetLangModeMenu(language);

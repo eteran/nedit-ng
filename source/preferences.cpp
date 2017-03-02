@@ -66,7 +66,7 @@ static const char *AutoIndentTypes[N_INDENT_STYLES + 3] = {"None", "Auto", "Smar
 #define DEFAULT_EM_TAB_DIST -1
 
 // list of available language modes and language specific preferences 
-QList<LanguageMode *> LanguageModes;
+QList<LanguageMode> LanguageModes;
 
 /* Module-global variable set when any preference changes (for asking the
    user about re-saving on exit) */
@@ -253,11 +253,11 @@ void SetPrefWrap(int state) {
 }
 
 int GetPrefWrap(int langMode) {
-    if (langMode == PLAIN_LANGUAGE_MODE || LanguageModes[langMode]->wrapStyle == DEFAULT_WRAP) {
+    if (langMode == PLAIN_LANGUAGE_MODE || LanguageModes[langMode].wrapStyle == DEFAULT_WRAP) {
         return g_Settings.autoWrap;
     }
 
-	return LanguageModes[langMode]->wrapStyle;
+    return LanguageModes[langMode].wrapStyle;
 }
 
 void SetPrefWrapMargin(int margin) {
@@ -303,11 +303,11 @@ void SetPrefAutoIndent(int state) {
 }
 
 IndentStyle GetPrefAutoIndent(int langMode) {
-    if (langMode == PLAIN_LANGUAGE_MODE || LanguageModes[langMode]->indentStyle == DEFAULT_INDENT) {
+    if (langMode == PLAIN_LANGUAGE_MODE || LanguageModes[langMode].indentStyle == DEFAULT_INDENT) {
         return static_cast<IndentStyle>(g_Settings.autoIndent);
     }
 
-	return LanguageModes[langMode]->indentStyle;
+    return LanguageModes[langMode].indentStyle;
 }
 
 void SetPrefAutoSave(bool state) {
@@ -565,10 +565,10 @@ void SetPrefTabDist(int tabDist) {
 int GetPrefTabDist(int langMode) {
 	int tabDist;
 
-    if (langMode == PLAIN_LANGUAGE_MODE || LanguageModes[langMode]->tabDist == DEFAULT_TAB_DIST) {
+    if (langMode == PLAIN_LANGUAGE_MODE || LanguageModes[langMode].tabDist == DEFAULT_TAB_DIST) {
         tabDist = g_Settings.tabDistance;
 	} else {
-		tabDist = LanguageModes[langMode]->tabDist;
+        tabDist = LanguageModes[langMode].tabDist;
 	}
 
 	/* Make sure that the tab distance is in range (garbage may have
@@ -593,11 +593,11 @@ void SetPrefEmTabDist(int tabDist) {
 }
 
 int GetPrefEmTabDist(int langMode) {
-    if (langMode == PLAIN_LANGUAGE_MODE || LanguageModes[langMode]->emTabDist == DEFAULT_EM_TAB_DIST) {
+    if (langMode == PLAIN_LANGUAGE_MODE || LanguageModes[langMode].emTabDist == DEFAULT_EM_TAB_DIST) {
         return g_Settings.emulateTabs;
     }
 
-	return LanguageModes[langMode]->emTabDist;
+    return LanguageModes[langMode].emTabDist;
 }
 
 void SetPrefInsertTabs(int state) {
@@ -903,7 +903,7 @@ int FindLanguageMode(const QString &languageName) {
 
     // Compare each language mode to the one we were presented
     for (int i = 0; i < LanguageModes.size(); i++) {
-        if (LanguageModes[i]->name == languageName) {
+        if (LanguageModes[i].name == languageName) {
             return i;
         }
     }
@@ -915,7 +915,7 @@ int FindLanguageMode(const QStringRef &languageName) {
 
     // Compare each language mode to the one we were presented
     for (int i = 0; i < LanguageModes.size(); i++) {
-        if (LanguageModes[i]->name == languageName) {
+        if (LanguageModes[i].name == languageName) {
             return i;
         }
     }
@@ -931,7 +931,7 @@ QString LanguageModeName(int mode) {
 	if (mode == PLAIN_LANGUAGE_MODE)
 		return QString();
 	else
-		return LanguageModes[mode]->name;
+        return LanguageModes[mode].name;
 }
 
 /*
@@ -946,7 +946,7 @@ QString GetWindowDelimitersEx(const DocumentWidget *window) {
     if (window->languageMode_ == PLAIN_LANGUAGE_MODE)
         return QString();
     else
-        return LanguageModes[window->languageMode_]->delimiters;
+        return LanguageModes[window->languageMode_].delimiters;
 }
 
 
@@ -1076,15 +1076,14 @@ static int loadLanguageModesString(const char *inString) {
 
 		// pattern set was read correctly, add/replace it in the list 
         for (i = 0; i < LanguageModes.size(); i++) {
-			if (LanguageModes[i]->name == lm->name) {
-				delete LanguageModes[i];
-                LanguageModes[i] = lm.release();
+            if (LanguageModes[i].name == lm->name) {
+                LanguageModes[i] = *lm;
 				break;
 			}
 		}
 		
         if (i == LanguageModes.size()) {
-            LanguageModes.push_back(lm.release());
+            LanguageModes.push_back(*lm);
 		}
 
 		// if the string ends here, we're done 
@@ -1099,48 +1098,48 @@ static QString WriteLanguageModesStringEx() {
     QString str;
     QTextStream out(&str);
 
-    for(LanguageMode *language : LanguageModes) {
+    for(const LanguageMode &language : LanguageModes) {
 
         out << QLatin1Char('\t')
-            << language->name
+            << language.name
             << QLatin1Char(':');
 
-        QString exts = language->extensions.join(QLatin1String(" "));
+        QString exts = language.extensions.join(QLatin1String(" "));
         out << exts
             << QLatin1Char(':');
 
-        if (!language->recognitionExpr.isEmpty()) {
-            out << MakeQuotedStringEx(language->recognitionExpr);
+        if (!language.recognitionExpr.isEmpty()) {
+            out << MakeQuotedStringEx(language.recognitionExpr);
         }
 
         out << QLatin1Char(':');
-        if (language->indentStyle != DEFAULT_INDENT) {
-            out << QString::fromLatin1(AutoIndentTypes[language->indentStyle]);
+        if (language.indentStyle != DEFAULT_INDENT) {
+            out << QString::fromLatin1(AutoIndentTypes[language.indentStyle]);
         }
 
         out << QLatin1Char(':');
-        if (language->wrapStyle != DEFAULT_WRAP) {
-            out << QString::fromLatin1(AutoWrapTypes[language->wrapStyle]);
+        if (language.wrapStyle != DEFAULT_WRAP) {
+            out << QString::fromLatin1(AutoWrapTypes[language.wrapStyle]);
         }
 
         out << QLatin1Char(':');
-        if (language->tabDist != DEFAULT_TAB_DIST) {
-            out << language->tabDist;
+        if (language.tabDist != DEFAULT_TAB_DIST) {
+            out << language.tabDist;
         }
 
         out << QLatin1Char(':');
-        if (language->emTabDist != DEFAULT_EM_TAB_DIST) {
-            out << language->emTabDist;
+        if (language.emTabDist != DEFAULT_EM_TAB_DIST) {
+            out << language.emTabDist;
         }
 
         out << QLatin1Char(':');
-        if (!language->delimiters.isEmpty()) {
-            out << MakeQuotedStringEx(language->delimiters);
+        if (!language.delimiters.isEmpty()) {
+            out << MakeQuotedStringEx(language.delimiters);
         }
 
         out << QLatin1Char(':');
-        if (!language->defTipsFile.isEmpty()) {
-            out << MakeQuotedStringEx(language->defTipsFile);
+        if (!language.defTipsFile.isEmpty()) {
+            out << MakeQuotedStringEx(language.defTipsFile);
         }
 
         out << QLatin1Char('\n');

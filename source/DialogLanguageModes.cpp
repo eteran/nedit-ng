@@ -26,8 +26,8 @@
 DialogLanguageModes::DialogLanguageModes(QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f), previous_(nullptr) {
 	ui.setupUi(this);
 
-    for(LanguageMode *lang : LanguageModes) {
-        auto ptr  = new LanguageMode(*lang);
+    for(const LanguageMode &lang : LanguageModes) {
+        auto ptr  = new LanguageMode(lang);
 		auto item = new QListWidgetItem(ptr->name);
 		item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(ptr));
 		ui.listItems->addItem(item);
@@ -428,7 +428,7 @@ bool DialogLanguageModes::updateLMList(Mode mode) {
         for(DocumentWidget *document: DocumentWidget::allDocuments()) {
             if (document->languageMode_ != PLAIN_LANGUAGE_MODE) {
 
-                QString oldModeName = LanguageModes[document->languageMode_]->name;
+                QString oldModeName = LanguageModes[document->languageMode_].name;
                 document->languageMode_ = PLAIN_LANGUAGE_MODE;
 
                 for (int i = 0; i < ui.listItems->count(); i++) {
@@ -475,11 +475,10 @@ bool DialogLanguageModes::updateLMList(Mode mode) {
         }
 
         // Replace the old language mode list with the new one from the dialog
-        qDeleteAll(LanguageModes);
         LanguageModes.clear();
 
         for (int i = 0; i < ui.listItems->count(); i++) {
-            LanguageModes.push_back(new LanguageMode(*itemFromIndex(i)));
+            LanguageModes.push_back(*itemFromIndex(i));
         }
 
         /* Update user menu info to update language mode dependencies of
@@ -497,8 +496,8 @@ bool DialogLanguageModes::updateLMList(Mode mode) {
             calltips files */
         for(DocumentWidget *document: DocumentWidget::allDocuments()) {
 
-            if (document->languageMode_ != PLAIN_LANGUAGE_MODE && !LanguageModes[document->languageMode_]->defTipsFile.isNull()) {
-                AddTagsFileEx(LanguageModes[document->languageMode_]->defTipsFile, TIP);
+            if (document->languageMode_ != PLAIN_LANGUAGE_MODE && !LanguageModes[document->languageMode_].defTipsFile.isNull()) {
+                AddTagsFileEx(LanguageModes[document->languageMode_].defTipsFile, TIP);
             }
         }
 

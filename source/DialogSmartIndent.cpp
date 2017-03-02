@@ -40,8 +40,8 @@ void DialogSmartIndent::updateLanguageModes() {
 
 	const QString languageMode = languageMode_;
 	ui.comboLanguageMode->clear();
-    for(LanguageMode *lang : LanguageModes) {
-        ui.comboLanguageMode->addItem(lang->name);
+    for(const LanguageMode &lang : LanguageModes) {
+        ui.comboLanguageMode->addItem(lang.name);
 	}
 	
 	setLanguageMode(languageMode);

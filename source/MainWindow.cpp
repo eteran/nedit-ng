@@ -1115,7 +1115,7 @@ void MainWindow::updateLanguageModeSubmenu() {
 
 
     for (int i = 0; i < LanguageModes.size(); i++) {
-        QAction *action = languageMenu->addAction(LanguageModes[i]->name);
+        QAction *action = languageMenu->addAction(LanguageModes[i].name);
         action->setData(i);
         action->setCheckable(true);
         languageGroup->addAction(action);
@@ -1145,7 +1145,7 @@ void MainWindow::setLangModeCB(QAction *action) {
         if(mode == PLAIN_LANGUAGE_MODE) {
             document->setLanguageMode(QString());
         } else {
-            document->setLanguageMode(LanguageModes[mode]->name);
+            document->setLanguageMode(LanguageModes[mode].name);
         }
     }
 }

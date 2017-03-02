@@ -185,6 +185,6 @@ int GetPrefReplaceDefScope();
 
 extern QString ImportedFile;
 extern bool PrefsHaveChanged;
-extern QList<LanguageMode *> LanguageModes;
+extern QList<LanguageMode> LanguageModes;
 
 #endif
