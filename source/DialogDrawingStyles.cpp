@@ -20,8 +20,8 @@ DialogDrawingStyles::DialogDrawingStyles(QWidget *parent, Qt::WindowFlags f) : Q
 	ui.setupUi(this);
 
 	// Copy the list of highlight style information to one that the user can freely edit
-	for (HighlightStyle *style: HighlightStyles) {
-		auto ptr  = new HighlightStyle(*style);
+    for (const HighlightStyle &style: HighlightStyles) {
+        auto ptr  = new HighlightStyle(style);
 		auto item = new QListWidgetItem(ptr->name);
 		item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(ptr));
 		ui.listItems->addItem(item);
@@ -426,12 +426,11 @@ bool DialogDrawingStyles::updateHSList() {
     selection->setData(Qt::UserRole, reinterpret_cast<qulonglong>(current.release()));
 
 	// Replace the old highlight styles list with the new one from the dialog 
-	qDeleteAll(HighlightStyles);
 	HighlightStyles.clear();
 	
 	for(int i = 0; i < ui.listItems->count(); ++i) {
 		auto ptr = itemFromIndex(i);
-		HighlightStyles.push_back(new HighlightStyle(*ptr));
+        HighlightStyles.push_back(*ptr);
 	}
 
 	// If a syntax highlighting dialog is up, update its menu 

@@ -59,7 +59,7 @@ void updateHighlightStyleMenu();
 PatternSet *readDefaultPatternSet(const QString &langModeName);
 
 // list of available highlight styles 
-extern QList<HighlightStyle *> HighlightStyles;
+extern QList<HighlightStyle> HighlightStyles;
 extern QList<PatternSet *> PatternSets;
 
 #endif

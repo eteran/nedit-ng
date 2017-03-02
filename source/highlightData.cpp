@@ -71,7 +71,7 @@ DialogSyntaxPatterns *SyntaxPatterns = nullptr;
 }
 
 // list of available highlight styles 
-QList<HighlightStyle *> HighlightStyles;
+QList<HighlightStyle> HighlightStyles;
 
 static bool isDefaultPatternSet(PatternSet *patSet);
 static bool styleError(const char *stringStart, const char *stoppedAt, const char *message);
@@ -98,7 +98,6 @@ bool LoadStylesStringEx(const QString &string) {
 
     const char *inString = stringBytes.data();
     const char *errMsg;
-	QString fontStr;
     const char *inPtr = inString;
     int i;
 
@@ -108,14 +107,14 @@ bool LoadStylesStringEx(const QString &string) {
 		inPtr += strspn(inPtr, " \t");
 
 		// Allocate a language mode structure in which to store the info. 
-        auto hs = std::make_unique<HighlightStyle>();
+        HighlightStyle hs;
 
 		// read style name 
 		QString name = ReadSymbolicFieldEx(&inPtr);
 		if (name.isNull()) {
 			return styleError(inString, inPtr, "style name required");
 		}		
-		hs->name = name;
+        hs.name = name;
 		
 		if (!SkipDelimiter(&inPtr, &errMsg)) {
 			return styleError(inString,inPtr, errMsg);
@@ -127,14 +126,14 @@ bool LoadStylesStringEx(const QString &string) {
 			return styleError(inString,inPtr, "color name required");
 		}
 		
-		hs->color   = color;
-		hs->bgColor = QString();
+        hs.color   = color;
+        hs.bgColor = QString();
 		
 		if (SkipOptSeparator('/', &inPtr)) {
 			// read bgColor
 			QString s = ReadSymbolicFieldEx(&inPtr); // no error if fails 
 			if(!s.isNull()) {
-				hs->bgColor = s;
+                hs.bgColor = s;
 			}
 	
 		}
@@ -145,11 +144,10 @@ bool LoadStylesStringEx(const QString &string) {
 
 		// read the font type 
 		// TODO(eteran): Note, assumes success!
-		fontStr = ReadSymbolicFieldEx(&inPtr);
-		
+        QString fontStr = ReadSymbolicFieldEx(&inPtr);
 		for (i = 0; i < N_FONT_TYPES; i++) {
             if (FontTypeNames[i] == fontStr) {
-				hs->font = i;
+                hs.font = i;
 				break;
 			}
 		}
@@ -160,16 +158,14 @@ bool LoadStylesStringEx(const QString &string) {
 
 		/* pattern set was read correctly, add/change it in the list */\
 		for (i = 0; i < HighlightStyles.size(); i++) {
-			if (HighlightStyles[i]->name == hs->name) {			
-				delete HighlightStyles[i];
-                HighlightStyles[i] = hs.release();
+            if (HighlightStyles[i].name == hs.name) {
+                HighlightStyles[i] = hs;
 				break;
 			}
 		}
 		
-	
 		if (i == HighlightStyles.size()) {
-            HighlightStyles.push_back(hs.release());
+            HighlightStyles.push_back(hs);
 		}
 
 		// if the string ends here, we're done 
@@ -190,22 +186,20 @@ QString WriteStylesStringEx() {
     QString str;
     QTextStream out(&str);
 
-    for (int i = 0; i < HighlightStyles.size(); i++) {
-        HighlightStyle *style = HighlightStyles[i];
-
+    for (const HighlightStyle  &style : HighlightStyles) {
 
         out << QLatin1Char('\t')
-            << style->name
+            << style.name
             << QLatin1Char(':')
-            << style->color;
+            << style.color;
 
-        if (!style->bgColor.isNull()) {
+        if (!style.bgColor.isNull()) {
             out << QLatin1Char('/')
-                << style->bgColor;
+                << style.bgColor;
         }
 
         out << QLatin1Char(':')
-            << FontTypeNames[style->font]
+            << FontTypeNames[style.font]
             << QLatin1Char('\n');
 
 	}
@@ -315,7 +309,7 @@ QFont FontOfNamedStyleEx(DocumentWidget *document, const QString &styleName) {
         return GetPrefDefaultFont();
     } else {
 
-        int fontNum = HighlightStyles[styleNo]->font;
+        int fontNum = HighlightStyles[styleNo].font;
 
         switch(fontNum) {
         case BOLD_FONT:
@@ -338,7 +332,7 @@ int FontOfNamedStyleIsBold(const QString &styleName) {
 		return 0;
     }
 
-    int fontNum = HighlightStyles[styleNo]->font;
+    int fontNum = HighlightStyles[styleNo].font;
 	return (fontNum == BOLD_FONT || fontNum == BOLD_ITALIC_FONT);
 }
 
@@ -349,7 +343,7 @@ int FontOfNamedStyleIsItalic(const QString &styleName) {
 		return 0;
     }
 
-    int fontNum = HighlightStyles[styleNo]->font;
+    int fontNum = HighlightStyles[styleNo].font;
 	return (fontNum == ITALIC_FONT || fontNum == BOLD_ITALIC_FONT);
 }
 
@@ -365,7 +359,7 @@ QString ColorOfNamedStyleEx(const QString &styleName) {
 		return QLatin1String("black");
 	}
 		
-	return HighlightStyles[styleNo]->color;
+    return HighlightStyles[styleNo].color;
 }
 
 /*
@@ -378,7 +372,7 @@ QString BgColorOfNamedStyleEx(const QString &styleName) {
 		return QLatin1String("");
 	}
 	
-	return HighlightStyles[styleNo]->bgColor;	
+    return HighlightStyles[styleNo].bgColor;
 	
 }
 
@@ -807,7 +801,7 @@ void UpdateLanguageModeMenu() {
 static int lookupNamedStyle(const QString &styleName) {
 
 	for (int i = 0; i < HighlightStyles.size(); i++) {
-        if (HighlightStyles[i]->name == styleName) {
+        if (HighlightStyles[i].name == styleName) {
 			return i;
 		}
 	}
