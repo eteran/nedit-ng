@@ -33,18 +33,17 @@ enum UndoTypes {
 /* Record on undo list */
 class UndoInfo {
 public:
-	UndoInfo(UndoTypes undoType, int start, int end);
-    ~UndoInfo() = default;
-	UndoInfo(const UndoInfo &) = default;
-	UndoInfo(UndoInfo &&) = default;
+    explicit UndoInfo(UndoTypes undoType, int start, int end);
+    UndoInfo(const UndoInfo &)            = default;
+    UndoInfo(UndoInfo &&)                 = default;
 	UndoInfo &operator=(const UndoInfo &) = default;
-	UndoInfo &operator=(UndoInfo &&) = default;
+    UndoInfo &operator=(UndoInfo &&)      = default;
+    ~UndoInfo()                           = default;
 	
 public:
 	UndoTypes type;
 	int startPos;
 	int endPos;
-	int oldLen;
 	std::string oldText;
 	bool inUndo;          // flag to indicate undo command on this record in progress. Redirects SaveUndoInfo to save the next modifications on the redo list instead of the undo list.
 	bool restoresToSaved; // flag to indicate undoing this operation will restore file to last saved (unmodified) state

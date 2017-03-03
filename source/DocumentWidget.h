@@ -12,6 +12,7 @@
 #include "ShowMatchingStyle.h"
 #include "string_view.h"
 #include "tags.h"
+#include "UndoInfo.h"
 #include "userCmds.h"
 #include "util/FileFormats.h"
 
@@ -169,8 +170,8 @@ public:
     void UnloadLanguageModeTipsFileEx();
     void UpdateMarkTable(int pos, int nInserted, int nDeleted);
     void actionClose(CloseMode mode);
-    void addRedoItem(UndoInfo *redo);
-    void addUndoItem(UndoInfo *undo);
+    void addRedoItem(const UndoInfo &redo);
+    void addUndoItem(const UndoInfo &undo);
     void addWrapNewlines();
     void appendDeletedText(view::string_view deletedText, int deletedLen, int direction);
     void dimSelDepItemsInMenu(QMenu *menuPane, const QVector<MenuData> &menuList, bool enabled);
@@ -247,8 +248,8 @@ public:
 	int languageMode_;                 // identifies language mode currently selected in the window
 	int nMarks_;                       // number of active bookmarks
 	int undoMemUsed_;                  // amount of memory (in bytes) dedicated to the undo list
-	std::list<UndoInfo *> redo_;       // info for redoing last undone op
-	std::list<UndoInfo *> undo_;       // info for undoing last operation
+    QList<UndoInfo> redo_;             // info for redoing last undone op
+    QList<UndoInfo> undo_;             // info for undoing last operation
 	time_t lastModTime_;               // time of last modification to file
 	uid_t fileUid_;                    // last recorded user id of the file
 	unsigned fileMode_;                // permissions of file being edited

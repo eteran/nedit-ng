@@ -944,7 +944,7 @@ HighlightPattern *DialogSyntaxPatterns::readDialogFields(Mode mode) {
 
 		auto outPtr = std::back_inserter(outStr);
 
-		for(QChar ch : pat->startRE) {
+        for(QChar ch : pat->startRE) {
 			if (ch != QLatin1Char(' ') && ch != QLatin1Char('\t')) {
 				*outPtr++ = ch;
 			}

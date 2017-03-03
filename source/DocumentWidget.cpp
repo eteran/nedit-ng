@@ -396,8 +396,6 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 	fileFormat_            = UNIX_FILE_FORMAT;
 	lastModTime_           = 0;
 	filename_              = name;
-	undo_                  = std::list<UndoInfo *>();
-	redo_                  = std::list<UndoInfo *>();
 	autoSaveCharCount_     = 0;
 	autoSaveOpCount_       = 0;
 	undoMemUsed_           = 0;
@@ -1391,8 +1389,8 @@ void DocumentWidget::dimSelDepItemsInMenu(QMenu *menuPane, const QVector<MenuDat
 */
 void DocumentWidget::SaveUndoInformation(int pos, int nInserted, int nDeleted, view::string_view deletedText) {
 
-    const int isUndo = (!undo_.empty() && undo_.front()->inUndo);
-    const int isRedo = (!redo_.empty() && redo_.front()->inUndo);
+    const int isUndo = (!undo_.empty() && undo_.front().inUndo);
+    const int isRedo = (!redo_.empty() && redo_.front().inUndo);
 
     /* redo operations become invalid once the user begins typing or does
        other editing.  If this is not a redo or undo operation and a redo
@@ -1408,7 +1406,7 @@ void DocumentWidget::SaveUndoInformation(int pos, int nInserted, int nDeleted, v
         return;
     }
 
-    UndoInfo *const currentUndo = undo_.empty() ? nullptr : undo_.front();
+    UndoInfo *const currentUndo = undo_.empty() ? nullptr : &undo_.front();
 
     const UndoTypes oldType = (!currentUndo || isUndo) ? UNDO_NOOP : currentUndo->type;
 
@@ -1455,12 +1453,11 @@ void DocumentWidget::SaveUndoInformation(int pos, int nInserted, int nDeleted, v
     ** The user has started a new operation, create a new undo record
     ** and save the new undo data.
     */
-    auto undo = new UndoInfo(newType, pos, pos + nInserted);
+    UndoInfo undo(newType, pos, pos + nInserted);
 
     // if text was deleted, save it
     if (nDeleted > 0) {
-        undo->oldLen = nDeleted + 1; // +1 is for null at end
-        undo->oldText = deletedText.to_string();
+        undo.oldText = deletedText.to_string();
     }
 
     // increment the operation count for the autosave feature
@@ -1469,14 +1466,14 @@ void DocumentWidget::SaveUndoInformation(int pos, int nInserted, int nDeleted, v
     /* if the this is currently unmodified, remove the previous
        restoresToSaved marker, and set it on this record */
     if (!fileChanged_) {
-        undo->restoresToSaved = true;
+        undo.restoresToSaved = true;
 
-        for(UndoInfo *u : undo_) {
-            u->restoresToSaved = false;
+        for(UndoInfo &u : undo_) {
+            u.restoresToSaved = false;
         }
 
-        for(UndoInfo *u : redo_) {
-            u->restoresToSaved = false;
+        for(UndoInfo &u : redo_) {
+            u.restoresToSaved = false;
         }
     }
 
@@ -1514,27 +1511,26 @@ void DocumentWidget::ClearRedoList() {
 ** work with more than one character.
 */
 void DocumentWidget::appendDeletedText(view::string_view deletedText, int deletedLen, int direction) {
-    UndoInfo *undo = undo_.front();
+    UndoInfo &undo = undo_.front();
 
     // re-allocate, adding space for the new character(s)
     std::string comboText;
-    comboText.reserve(undo->oldLen + deletedLen);
+    comboText.reserve(undo.oldText.size() + deletedLen);
 
     // copy the new character and the already deleted text to the new memory
     if (direction == FORWARD) {
-        comboText.append(undo->oldText);
+        comboText.append(undo.oldText);
         comboText.append(deletedText.begin(), deletedText.end());
     } else {
         comboText.append(deletedText.begin(), deletedText.end());
-        comboText.append(undo->oldText);
+        comboText.append(undo.oldText);
     }
 
     // keep track of the additional memory now used by the undo list
     undoMemUsed_++;
 
     // free the old saved text and attach the new
-    undo->oldText = comboText;
-    undo->oldLen += deletedLen;
+    undo.oldText = comboText;
 }
 
 /*
@@ -1542,7 +1538,7 @@ void DocumentWidget::appendDeletedText(view::string_view deletedText, int delete
 ** list if the item pushes the undo operation or character counts past the
 ** limits, trim the undo list to an acceptable length.
 */
-void DocumentWidget::addUndoItem(UndoInfo *undo) {
+void DocumentWidget::addUndoItem(const UndoInfo &undo) {
 
     // Make the undo menu item sensitive now that there's something to undo
     if (undo_.empty()) {
@@ -1555,7 +1551,7 @@ void DocumentWidget::addUndoItem(UndoInfo *undo) {
     undo_.push_front(undo);
 
     // Increment the operation and memory counts
-    undoMemUsed_ += undo->oldLen;
+    undoMemUsed_ += undo.oldText.size();
 
     // Trim the list if it exceeds any of the limits
     if (undo_.size() > UNDO_OP_LIMIT) {
@@ -1574,7 +1570,7 @@ void DocumentWidget::addUndoItem(UndoInfo *undo) {
 /*
 ** Add an item (already allocated by the caller) to the this's redo list.
 */
-void DocumentWidget::addRedoItem(UndoInfo *redo) {
+void DocumentWidget::addRedoItem(const UndoInfo &redo) {
     // Make the redo menu item sensitive now that there's something to redo
     if (redo_.empty()) {
         if(auto win = toWindow()) {
@@ -1595,14 +1591,13 @@ void DocumentWidget::removeUndoItem() {
         return;
     }
 
-    UndoInfo *undo = undo_.front();
+    const UndoInfo &undo = undo_.front();
 
     // Decrement the operation and memory counts
-    undoMemUsed_ -= undo->oldLen;
+    undoMemUsed_ -= undo.oldText.size();
 
     // Remove and free the item
     undo_.pop_front();
-    delete undo;
 
     // if there are no more undo records left, dim the Undo menu item
     if (undo_.empty()) {
@@ -1616,11 +1611,8 @@ void DocumentWidget::removeUndoItem() {
 ** Pop (remove and free) the current (front) redo record from the redo list
 */
 void DocumentWidget::removeRedoItem() {
-    UndoInfo *redo = redo_.front();
-
     // Remove and free the item
     redo_.pop_front();
-    delete redo;
 
     // if there are no more redo records left, dim the Redo menu item
     if (redo_.empty()) {
@@ -1652,11 +1644,7 @@ void DocumentWidget::trimUndoList(int maxLength) {
 
     // Trim off all subsequent entries
     while(it != undo_.end()) {
-        UndoInfo *u = *it;
-
-        undoMemUsed_ -= u->oldLen;
-        delete u;
-
+        undoMemUsed_ -= it->oldText.size();
         it = undo_.erase(it);
     }
 }
@@ -1671,29 +1659,29 @@ void DocumentWidget::Undo() {
             return;
         }
 
-        UndoInfo *undo = undo_.front();
+        UndoInfo &undo = undo_.front();
 
         /* BufReplaceEx will eventually call SaveUndoInformation.  This is mostly
            good because it makes accumulating redo operations easier, however
            SaveUndoInformation needs to know that it is being called in the context
            of an undo.  The inUndo field in the undo record indicates that this
            record is in the process of being undone. */
-        undo->inUndo = true;
+        undo.inUndo = true;
 
         // use the saved undo information to reverse changes
-        buffer_->BufReplaceEx(undo->startPos, undo->endPos, undo->oldText);
+        buffer_->BufReplaceEx(undo.startPos, undo.endPos, undo.oldText);
 
-        restoredTextLength = undo->oldText.size();
+        restoredTextLength = undo.oldText.size();
         if (!buffer_->primary_.selected || GetPrefUndoModifiesSelection()) {
             /* position the cursor in the focus pane after the changed text
                to show the user where the undo was done */
             auto area = win->lastFocus_;
-            area->TextSetCursorPos(undo->startPos + restoredTextLength);
+            area->TextSetCursorPos(undo.startPos + restoredTextLength);
         }
 
         if (GetPrefUndoModifiesSelection()) {
             if (restoredTextLength > 0) {
-                buffer_->BufSelect(undo->startPos, undo->startPos + restoredTextLength);
+                buffer_->BufSelect(undo.startPos, undo.startPos + restoredTextLength);
             } else {
                 buffer_->BufUnselect();
             }
@@ -1704,7 +1692,7 @@ void DocumentWidget::Undo() {
            when the change being undone was originally made.  Also, remove
            the backup file, since the text in the buffer is now identical to
            the original file */
-        if (undo->restoresToSaved) {
+        if (undo.restoresToSaved) {
             SetWindowModified(false);
             RemoveBackupFile();
         }
@@ -1724,27 +1712,27 @@ void DocumentWidget::Redo() {
             return;
         }
 
-        UndoInfo *redo = redo_.front();
+        UndoInfo &redo = redo_.front();
 
         /* BufReplaceEx will eventually call SaveUndoInformation.  To indicate
            to SaveUndoInformation that this is the context of a redo operation,
            we set the inUndo indicator in the redo record */
-        redo->inUndo = true;
+        redo.inUndo = true;
 
         // use the saved redo information to reverse changes
-        buffer_->BufReplaceEx(redo->startPos, redo->endPos, redo->oldText);
+        buffer_->BufReplaceEx(redo.startPos, redo.endPos, redo.oldText);
 
-        restoredTextLength = redo->oldText.size();
+        restoredTextLength = redo.oldText.size();
         if (!buffer_->primary_.selected || GetPrefUndoModifiesSelection()) {
             /* position the cursor in the focus pane after the changed text
                to show the user where the undo was done */
             auto area = win->lastFocus_;
-            area->TextSetCursorPos(redo->startPos + restoredTextLength);
+            area->TextSetCursorPos(redo.startPos + restoredTextLength);
         }
         if (GetPrefUndoModifiesSelection()) {
 
             if (restoredTextLength > 0) {
-                buffer_->BufSelect(redo->startPos, redo->startPos + restoredTextLength);
+                buffer_->BufSelect(redo.startPos, redo.startPos + restoredTextLength);
             } else {
                 buffer_->BufUnselect();
             }
@@ -1755,7 +1743,7 @@ void DocumentWidget::Redo() {
            when the change being redone was originally made. Also, remove
            the backup file, since the text in the buffer is now identical to
            the original file */
-        if (redo->restoresToSaved) {
+        if (redo.restoresToSaved) {
             SetWindowModified(false);
             RemoveBackupFile();
         }
