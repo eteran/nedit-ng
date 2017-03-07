@@ -3947,15 +3947,13 @@ bool regexp::SubstituteRE(const char *source, char *dest, const int max) const {
 	char chgcase;
 	bool anyWarnings = false;
 
-	if (!this || !source || !dest) {
+    if (!source || !dest) {
 		reg_error("nullptr parm to 'SubstituteRE'");
-
 		return false;
 	}
 
 	if (U_CHAR_AT(this->program) != MAGIC) {
 		reg_error("damaged regexp passed to 'SubstituteRE'");
-
 		return false;
 	}
 
