@@ -11,9 +11,6 @@ DialogWindowSize::DialogWindowSize(QWidget *parent, Qt::WindowFlags f) : QDialog
 	ui.editHeight->setValidator(new QIntValidator(0, INT_MAX, this));
 }
 
-DialogWindowSize::~DialogWindowSize() {
-}
-
 void DialogWindowSize::on_buttonBox_accepted() {
 
 	bool ok;

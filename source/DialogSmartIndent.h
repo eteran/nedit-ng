@@ -12,7 +12,7 @@ class DialogSmartIndent : public QDialog {
 	Q_OBJECT
 public:
     DialogSmartIndent(DocumentWidget *document, QWidget *parent = 0, Qt::WindowFlags f = 0);
-	virtual ~DialogSmartIndent();
+    virtual ~DialogSmartIndent() = default;
 
 private:
     virtual void showEvent(QShowEvent *event) override;

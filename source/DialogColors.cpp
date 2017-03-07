@@ -36,12 +36,6 @@ DialogColors::DialogColors(QWidget *parent, Qt::WindowFlags f) : QDialog(parent,
 
 //------------------------------------------------------------------------------
 // Name: 
-//------------------------------------------------------------------------------
-DialogColors::~DialogColors() {
-}
-
-//------------------------------------------------------------------------------
-// Name: 
 // Desc: Returns True if the color is valid, False if it's not 
 //------------------------------------------------------------------------------
 bool DialogColors::checkColorStatus(const QString &text) {

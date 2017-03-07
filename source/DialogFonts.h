@@ -21,7 +21,7 @@ private:
 	
 public:
     DialogFonts(DocumentWidget *document, bool forWindow, QWidget *parent = 0, Qt::WindowFlags f = 0);
-	virtual ~DialogFonts();
+    virtual ~DialogFonts() = default;
 
 private:
     virtual void showEvent(QShowEvent *event) override;

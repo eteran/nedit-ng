@@ -9,7 +9,7 @@ class DialogPromptString : public QDialog {
 	Q_OBJECT
 public:
 	DialogPromptString(QWidget *parent = 0, Qt::WindowFlags f = 0);
-	virtual ~DialogPromptString();
+    virtual ~DialogPromptString() = default;
 
 private:
     virtual void showEvent(QShowEvent *event) override;

@@ -9,7 +9,7 @@ class DialogPromptList : public QDialog {
 	Q_OBJECT
 public:
 	DialogPromptList(QWidget *parent = 0, Qt::WindowFlags f = 0);
-	virtual ~DialogPromptList();
+    virtual ~DialogPromptList() = default;
 
 public:
 	int result() const {

@@ -9,7 +9,7 @@ class DialogSmartIndentCommon : public QDialog {
 	Q_OBJECT
 public:
 	DialogSmartIndentCommon(QWidget *parent = 0, Qt::WindowFlags f = 0);
-	virtual ~DialogSmartIndentCommon();
+    virtual ~DialogSmartIndentCommon() = default;
 
 private:
     virtual void showEvent(QShowEvent *event) override;

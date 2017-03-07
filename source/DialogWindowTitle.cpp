@@ -64,12 +64,6 @@ DialogWindowTitle::DialogWindowTitle(DocumentWidget *document, QWidget *parent, 
 	
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
-DialogWindowTitle::~DialogWindowTitle() {
-}
-
 // a utility that sets the values of all toggle buttons 
 void DialogWindowTitle::setToggleButtons() {
 

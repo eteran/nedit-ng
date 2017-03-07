@@ -9,9 +9,6 @@ DialogPrompt::DialogPrompt(QWidget *parent, Qt::WindowFlags f) : QDialog(parent,
 	setWindowTitle(QLatin1String(" "));
 }
 
-DialogPrompt::~DialogPrompt() {
-}
-
 void DialogPrompt::addButton(const QString &text) {
 	QPushButton *btn = ui.buttonBox->addButton(text, QDialogButtonBox::AcceptRole);
 	connect(btn, SIGNAL(clicked()), this, SLOT(accept()));

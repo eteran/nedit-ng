@@ -9,7 +9,7 @@ class DialogWindowSize : public QDialog {
 	Q_OBJECT
 public:
 	DialogWindowSize(QWidget *parent, Qt::WindowFlags f = 0);
-	virtual ~DialogWindowSize();
+    virtual ~DialogWindowSize() = default;
 
 private:
     virtual void showEvent(QShowEvent *event) override;

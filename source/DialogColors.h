@@ -12,7 +12,7 @@ class DialogColors : public QDialog {
 	Q_OBJECT
 public:
     DialogColors(QWidget *parent = 0, Qt::WindowFlags f = 0);
-	virtual ~DialogColors();
+    virtual ~DialogColors() = default;
 
 private Q_SLOTS:
 	void on_buttonFG_clicked();

@@ -36,12 +36,6 @@ DialogFonts::DialogFonts(DocumentWidget *document, bool forWindow, QWidget *pare
 //------------------------------------------------------------------------------
 // Name:
 //------------------------------------------------------------------------------
-DialogFonts::~DialogFonts() {
-}
-
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
 void DialogFonts::on_buttonPrimaryFont_clicked() {
 	browseFont(ui.editFontPrimary);
 }

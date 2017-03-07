@@ -13,7 +13,7 @@ public:
 	Q_OBJECT
 public:
 	DialogMoveDocument(QWidget *parent = 0, Qt::WindowFlags f = 0);
-	virtual ~DialogMoveDocument();
+    virtual ~DialogMoveDocument() = default;
 	
 public:
     void addItem(MainWindow *window);
@@ -25,10 +25,6 @@ public:
 
 private:
     virtual void showEvent(QShowEvent *event) override;
-	
-private Q_SLOTS:
-	void on_buttonMove_clicked();
-
 	
 private:
 	Ui::DialogMoveDocument ui;

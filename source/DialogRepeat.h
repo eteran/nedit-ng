@@ -11,7 +11,7 @@ class DialogRepeat : public QDialog {
 	Q_OBJECT
 public:
     DialogRepeat(DocumentWidget *forWindow, QWidget *parent = 0, Qt::WindowFlags f = 0);
-	virtual ~DialogRepeat();
+    virtual ~DialogRepeat() = default;
 
 private:
     virtual void showEvent(QShowEvent *event) override;

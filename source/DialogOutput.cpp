@@ -12,12 +12,6 @@ DialogOutput::DialogOutput(QWidget *parent, Qt::WindowFlags f) : QDialog(parent,
 //------------------------------------------------------------------------------
 // Name: ~DialogOutput
 //------------------------------------------------------------------------------
-DialogOutput::~DialogOutput() {
-}
-
-//------------------------------------------------------------------------------
-// Name: ~DialogOutput
-//------------------------------------------------------------------------------
 void DialogOutput::setText(const QString &text) {
 	ui.plainTextEdit->setPlainText(text);
 }

@@ -34,4 +34,8 @@ public:
 	QString      cmd;
 };
 
+inline void swap(MenuItem &lhs, MenuItem &rhs) {
+    lhs.swap(rhs);
+}
+
 #endif

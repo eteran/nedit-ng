@@ -23,7 +23,7 @@ class DialogReplace : public QDialog {
 	Q_OBJECT
 public:
     DialogReplace(MainWindow *window, DocumentWidget *document, QWidget *parent = 0, Qt::WindowFlags f = 0);
-	virtual ~DialogReplace();
+    virtual ~DialogReplace() = default;
 	
 protected:
 	virtual void keyPressEvent(QKeyEvent *event) override;

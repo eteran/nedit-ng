@@ -10,7 +10,7 @@ class DialogOutput : public QDialog {
 
 public:
 	DialogOutput(QWidget *parent = 0, Qt::WindowFlags f = 0);
-	virtual ~DialogOutput() override;
+    virtual ~DialogOutput() = default;
 
 private:
     virtual void showEvent(QShowEvent *event) override;

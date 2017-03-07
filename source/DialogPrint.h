@@ -9,7 +9,7 @@ class DialogPrint : public QDialog {
 	Q_OBJECT
 public:
 	DialogPrint(const QString &PrintFileName, const QString &jobName, QWidget *parent = 0, Qt::WindowFlags f = 0);
-	virtual ~DialogPrint();
+    virtual ~DialogPrint() = default;
 	
 private:
     virtual void showEvent(QShowEvent *event) override;

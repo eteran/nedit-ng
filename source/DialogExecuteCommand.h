@@ -10,7 +10,7 @@ class DialogExecuteCommand : public QDialog {
 	Q_OBJECT
 public:
 	DialogExecuteCommand(QWidget *parent = 0, Qt::WindowFlags f = 0);
-	virtual ~DialogExecuteCommand();
+    virtual ~DialogExecuteCommand() = default;
 
 protected:
 	virtual void keyPressEvent(QKeyEvent *event) override;

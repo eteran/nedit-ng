@@ -9,6 +9,7 @@ public:
 	ElidedLabel(QWidget *parent = 0, Qt::WindowFlags f = 0);
 	ElidedLabel(const QString &text, QWidget *parent = 0, Qt::WindowFlags f = 0);
 	ElidedLabel(const QString &text, Qt::TextElideMode elideMode, QWidget *parent = 0, Qt::WindowFlags f = 0);
+    virtual ~ElidedLabel() = default;
 
 public Q_SLOTS:
 	void setText(const QString &text);

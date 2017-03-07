@@ -13,7 +13,7 @@ class DialogMultiReplace : public QDialog {
 	Q_OBJECT
 public:
     DialogMultiReplace(MainWindow *window, DocumentWidget *document, DialogReplace *replace, QWidget *parent = 0, Qt::WindowFlags f = 0);
-	virtual ~DialogMultiReplace();
+    virtual ~DialogMultiReplace() = default;
 
 public:
     virtual void showEvent(QShowEvent *event) override;

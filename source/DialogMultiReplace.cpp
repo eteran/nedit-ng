@@ -12,9 +12,6 @@ DialogMultiReplace::DialogMultiReplace(MainWindow *window, DocumentWidget *docum
 	ui.setupUi(this);
 }
 
-DialogMultiReplace::~DialogMultiReplace() {
-}
-
 void DialogMultiReplace::showEvent(QShowEvent *event) {
     Q_UNUSED(event);
     centerDialog(this);

@@ -38,4 +38,8 @@ public:
 	int         emTabDist;
 };
 
+inline void swap(LanguageMode &lhs, LanguageMode &rhs) {
+    lhs.swap(rhs);
+}
+
 #endif

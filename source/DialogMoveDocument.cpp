@@ -15,18 +15,6 @@ DialogMoveDocument::DialogMoveDocument(QWidget *parent, Qt::WindowFlags f) : QDi
 //------------------------------------------------------------------------------
 // Name: 
 //------------------------------------------------------------------------------
-DialogMoveDocument::~DialogMoveDocument() {
-}
-
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
-void DialogMoveDocument::on_buttonMove_clicked() {
-}
-
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
 void DialogMoveDocument::addItem(MainWindow *window) {
     windows_.push_back(window);
     ui.listDocuments->addItem(window->windowTitle());

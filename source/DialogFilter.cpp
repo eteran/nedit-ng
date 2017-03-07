@@ -17,12 +17,6 @@ DialogFilter::DialogFilter(QWidget *parent, Qt::WindowFlags f) : QDialog(parent,
 //------------------------------------------------------------------------------
 // Name: 
 //------------------------------------------------------------------------------
-DialogFilter::~DialogFilter() {
-}
-	
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
 void DialogFilter::keyPressEvent(QKeyEvent *event) {
 	if(ui.textFilter->hasFocus()) {
 		int index = historyIndex_;

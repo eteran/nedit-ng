@@ -17,7 +17,7 @@ public:
 	Q_OBJECT
 public:
     DialogTabs(DocumentWidget *document, QWidget *parent = 0, Qt::WindowFlags f = 0);
-	virtual ~DialogTabs();
+    virtual ~DialogTabs() = default;
 
 private:
     virtual void showEvent(QShowEvent *event) override;

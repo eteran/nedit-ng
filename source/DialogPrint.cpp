@@ -108,12 +108,6 @@ DialogPrint::DialogPrint(const QString &PrintFileName, const QString &jobName, Q
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
-DialogPrint::~DialogPrint() {
-}
-
 /*
 ** LoadPrintPreferences
 **

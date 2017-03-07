@@ -12,9 +12,6 @@ DialogRepeat::DialogRepeat(DocumentWidget *document, QWidget *parent, Qt::Window
 	ui.lineEdit->setValidator(new QIntValidator(0, INT_MAX, this));
 }
 
-DialogRepeat::~DialogRepeat() {
-}
-
 void DialogRepeat::setCommand(const QString &command) {
 	
 	

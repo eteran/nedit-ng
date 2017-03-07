@@ -11,9 +11,6 @@ DialogPromptList::DialogPromptList(QWidget *parent, Qt::WindowFlags f) : QDialog
 	setWindowTitle(QLatin1String(" "));
 }
 
-DialogPromptList::~DialogPromptList() {
-}
-
 void DialogPromptList::addButton(const QString &text) {
 	QPushButton *btn = ui.buttonBox->addButton(text, QDialogButtonBox::AcceptRole);
 	connect(btn, SIGNAL(clicked()), this, SLOT(accept()));

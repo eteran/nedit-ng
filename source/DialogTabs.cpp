@@ -48,12 +48,6 @@ DialogTabs::DialogTabs(DocumentWidget *document, QWidget *parent, Qt::WindowFlag
 //------------------------------------------------------------------------------
 // Name: 
 //------------------------------------------------------------------------------
-DialogTabs::~DialogTabs() {
-}
-
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
 void DialogTabs::on_checkEmulateTabs_toggled(bool checked) {
 	ui.labelEmulatedTabSpacing->setEnabled(checked);
 	ui.editEmulatedTabSpacing->setEnabled(checked);

@@ -46,6 +46,15 @@ struct Range {
 typedef Rangeset *RangesetUpdateFn(Rangeset *p, int pos, int ins, int del);
 
 class Rangeset {
+
+public:
+    Rangeset()                            = default;
+    Rangeset(const Rangeset &)            = delete;
+    Rangeset& operator=(const Rangeset &) = delete;
+    Rangeset(Rangeset &&)                 = delete;
+    Rangeset& operator=(Rangeset &&)      = delete;
+    virtual ~Rangeset()                   = default;
+
 public:
     QString RangesetGetName() const;
 	int RangesetAdd(Rangeset *plusSet);

@@ -30,4 +30,8 @@ public:
 	QVector<HighlightPattern> patterns;
 };
 
+inline void swap(PatternSet &lhs, PatternSet &rhs) {
+    lhs.swap(rhs);
+}
+
 #endif

@@ -28,7 +28,7 @@
 #define RBTREE_H_
 
 struct rbTreeNode {
-	virtual ~rbTreeNode() {}
+    virtual ~rbTreeNode() = default;
 	
 	struct rbTreeNode *left;   /* left child */
 	struct rbTreeNode *right;  /* right child */

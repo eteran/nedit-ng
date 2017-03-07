@@ -17,12 +17,6 @@ DialogExecuteCommand::DialogExecuteCommand(QWidget *parent, Qt::WindowFlags f) :
 //------------------------------------------------------------------------------
 // name:
 //------------------------------------------------------------------------------
-DialogExecuteCommand::~DialogExecuteCommand() {
-}
-
-//------------------------------------------------------------------------------
-// name:
-//------------------------------------------------------------------------------
 void DialogExecuteCommand::keyPressEvent(QKeyEvent *event) {
 	if(ui.textCommand->hasFocus()) {
 		int index = historyIndex_;

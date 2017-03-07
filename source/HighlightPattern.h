@@ -31,5 +31,9 @@ public:
 	int flags;
 };
 
+inline void swap(HighlightPattern &lhs, HighlightPattern &rhs) {
+    return lhs.swap(rhs);
+}
+
 
 #endif

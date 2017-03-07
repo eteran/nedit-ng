@@ -30,12 +30,6 @@ DialogSmartIndent::DialogSmartIndent(DocumentWidget *document, QWidget *parent, 
 //------------------------------------------------------------------------------
 // Name: 
 //------------------------------------------------------------------------------
-DialogSmartIndent::~DialogSmartIndent() {
-}
-
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
 void DialogSmartIndent::updateLanguageModes() {
 
 	const QString languageMode = languageMode_;

@@ -20,12 +20,6 @@ DialogSmartIndentCommon::DialogSmartIndentCommon(QWidget *parent, Qt::WindowFlag
 //------------------------------------------------------------------------------
 // Name: 
 //------------------------------------------------------------------------------
-DialogSmartIndentCommon::~DialogSmartIndentCommon() {
-}
-
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
 void DialogSmartIndentCommon::on_buttonOK_clicked() {
 	// change the macro 
 	if(updateSmartIndentCommonData()) {

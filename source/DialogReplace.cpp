@@ -33,12 +33,6 @@ DialogReplace::DialogReplace(MainWindow *window, DocumentWidget *document, QWidg
 //------------------------------------------------------------------------------
 // name: 
 //------------------------------------------------------------------------------
-DialogReplace::~DialogReplace() {
-}
-
-//------------------------------------------------------------------------------
-// name: 
-//------------------------------------------------------------------------------
 void DialogReplace::showEvent(QShowEvent *event) {
 	Q_UNUSED(event);
 	ui.textFind->setFocus();

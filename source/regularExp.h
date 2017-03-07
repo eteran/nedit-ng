@@ -51,7 +51,7 @@ class regexp {
 public:
 	regexp(view::string_view exp, int defaultFlags);
 	~regexp();
-	regexp(const regexp &) = delete;
+    regexp(const regexp &)            = delete;
 	regexp& operator=(const regexp &) = delete;
 
 public:

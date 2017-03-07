@@ -15,7 +15,7 @@ class DialogWindowTitle : public QDialog {
 	Q_OBJECT
 public:
     DialogWindowTitle(DocumentWidget *document, QWidget *parent = 0, Qt::WindowFlags f = 0);
-	virtual ~DialogWindowTitle();
+    virtual ~DialogWindowTitle() = default;
 
 private:
     virtual void showEvent(QShowEvent *event) override;
