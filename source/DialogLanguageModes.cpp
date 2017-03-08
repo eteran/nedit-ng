@@ -264,7 +264,7 @@ std::unique_ptr<LanguageMode> DialogLanguageModes::readLMDialogFields(Mode mode)
 			return nullptr;
 		}
 	}
-	lm->recognitionExpr = recognitionExpr;
+    lm->recognitionExpr = !recognitionExpr.isEmpty() ? recognitionExpr : QString();
 
 	// Read the default calltips file for the language mode
 	QString tipsFile = ui.editCallTips->text();
@@ -279,7 +279,7 @@ std::unique_ptr<LanguageMode> DialogLanguageModes::readLMDialogFields(Mode mode)
 			fprintf(stderr, "nedit: Internal error: Trouble deleting calltips file(s):\n  \"%s\"\n", tipsFile.toLatin1().data());
 		}
 	}
-	lm->defTipsFile = tipsFile;
+    lm->defTipsFile = !tipsFile.isEmpty() ? tipsFile : QString();
 
 	// read tab spacing field
 	QString tabsSpacing = ui.editTabSpacing->text();

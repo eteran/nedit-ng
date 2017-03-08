@@ -435,7 +435,7 @@ bool AddTagsFileEx(const QString &tagSpec, int file_type) {
 
         // NOTE(eteran): We use this temporary buffer because NormalizePathname is an inplace C-string algorithm... for now
         char pathName[MAXPATHLEN];
-        if(filename.startsWith(QLatin1Char('/'))) {
+        if(!filename.startsWith(QLatin1Char('/'))) {
             snprintf(pathName, sizeof(pathName), "%s/%s", GetCurrentDirEx().toLatin1().data(), filename.toLatin1().data());
         } else {
             strcpy(pathName, filename.toLatin1().data());
