@@ -2271,7 +2271,6 @@ static int replaceInStringMS(DocumentWidget *window, DataValue *argList, int nAr
 	SearchType searchType = SEARCH_LITERAL;
 	int copyStart;
 	int copyEnd;
-	int replaceEnd;
     bool force = false;
 	int i;
 
@@ -2323,15 +2322,13 @@ static int replaceInStringMS(DocumentWidget *window, DataValue *argList, int nAr
 			result->val.str.len = 0;
 		}
 	} else {
-		size_t remainder = strlen(&string[copyEnd]);
-        replaceEnd = copyStart + replacedStr.size();
+        std::string new_string;
+        new_string.reserve(string.size() + replacedStr.size());
 
-        // TODO(eteran): we can do this better/cleaner
-		AllocNString(&result->val.str, replaceEnd + remainder + 1);
-
-        strncpy(result->val.str.rep, &string[0], copyStart);
-        strcpy(&result->val.str.rep[copyStart], replacedStr.c_str());
-		strcpy(&result->val.str.rep[replaceEnd], &string[copyEnd]);
+        new_string.append(string.substr(0, copyStart));
+        new_string.append(replacedStr);
+        new_string.append(string.substr(copyEnd));
+        result->val.str = AllocNStringCpyEx(new_string);
 	}
 
 	return true;

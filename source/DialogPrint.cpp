@@ -263,6 +263,7 @@ bool DialogPrint::foundTag(const char *tagfilename, const char *tagname, char *r
 	FILE *tfile;
 	char tagformat[512];
 
+    // NOTE(eteran): format string vuln?
 	strcpy(tagformat, tagname);
 	strcat(tagformat, " %s");
 

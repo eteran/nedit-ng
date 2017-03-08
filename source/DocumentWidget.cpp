@@ -2701,7 +2701,9 @@ void DocumentWidget::addWrapNewlines() {
 */
 bool DocumentWidget::writeBckVersion() {
 
-    char bckname[MAXPATHLEN];
+    // TODO(eteran): this is essentially just a QFile::copy("filename", "filename.bck");
+    // with error reporting
+
     struct stat statbuf;
 
     static const size_t IO_BUFFER_SIZE = (1024 * 1024);
@@ -2715,14 +2717,11 @@ bool DocumentWidget::writeBckVersion() {
     QString fullname = FullPath();
 
     // Generate name for old version
-    if (fullname.size() >= MAXPATHLEN) {
-        return bckError(tr("file name too long"), filename_);
-    }
-    snprintf(bckname, sizeof(bckname), "%s.bck", fullname.toLatin1().data());
+    QString bckname = tr("%1.bck").arg(fullname);
 
     // Delete the old backup file
     // Errors are ignored; we'll notice them later.
-    ::remove(bckname);
+    ::remove(bckname.toLatin1().data());
 
     /* open the file being edited.  If there are problems with the
        old file, don't bother the user, just skip the backup */
@@ -2739,17 +2738,17 @@ bool DocumentWidget::writeBckVersion() {
     }
 
     // open the destination file exclusive and with restrictive permissions.
-    int out_fd = ::open(bckname, O_CREAT | O_EXCL | O_TRUNC | O_WRONLY, S_IRUSR | S_IWUSR);
+    int out_fd = ::open(bckname.toLatin1().data(), O_CREAT | O_EXCL | O_TRUNC | O_WRONLY, S_IRUSR | S_IWUSR);
     if (out_fd < 0) {
-        return bckError(tr("Error open backup file"), QString::fromLatin1(bckname));
+        return bckError(tr("Error open backup file"), bckname);
     }
 
     // Set permissions on new file
     if (::fchmod(out_fd, statbuf.st_mode) != 0) {
         ::close(in_fd);
         ::close(out_fd);
-        ::remove(bckname);
-        return bckError(tr("fchmod() failed"), QString::fromLatin1(bckname));
+        ::remove(bckname.toLatin1().data());
+        return bckError(tr("fchmod() failed"), bckname);
     }
 
     // Allocate I/O buffer
@@ -2762,7 +2761,7 @@ bool DocumentWidget::writeBckVersion() {
         if (bytes_read < 0) {
             ::close(in_fd);
             ::close(out_fd);
-            ::remove(bckname);
+            ::remove(bckname.toLatin1().data());
             return bckError(tr("read() error"), filename_);
         }
 
@@ -2775,8 +2774,8 @@ bool DocumentWidget::writeBckVersion() {
         if (bytes_written != bytes_read) {
             ::close(in_fd);
             ::close(out_fd);
-            ::remove(bckname);
-            return bckError(QString::fromLatin1(strerror(errno)), QString::fromLatin1(bckname));
+            ::remove(bckname.toLatin1().data());
+            return bckError(QString::fromLatin1(strerror(errno)), bckname);
         }
     }
 

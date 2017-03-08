@@ -1779,16 +1779,17 @@ static int power() {
 ** After:  TheStack-> result, next, ...
 */
 static int concat() {
-	char *s1, *s2, *out;
+    char *s1, *s2;
 
 	DISASM_RT(PC - 1, 1);
 	STACKDUMP(2, 3);
 
 	POP_STRING(s2)
 	POP_STRING(s1)
+
 	int len1 = strlen(s1);
 	int len2 = strlen(s2);
-	out = AllocString(len1 + len2 + 1);
+    char *out = AllocString(len1 + len2 + 1);
 	strncpy(out, s1, len1);
 	strcpy(&out[len1], s2);
 	PUSH_STRING(out, len1 + len2)
