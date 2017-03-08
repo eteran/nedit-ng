@@ -1350,6 +1350,27 @@ void TextArea::keyPressEvent(QKeyEvent *event) {
         return;
     }
 
+    // NOTE(eteran): these were added because Qt handles disabled shortcuts differently from Motif
+    // In Motif, they are apparently still caught, but just do nothing, in Qt, it acts like
+    // they don't exist, so they get sent to widgets lower in the chain (such as this one)
+    // resulting in the suprising ability to type in some funny characters
+    if ((event->key() == Qt::Key_W) && (event->modifiers() == (Qt::ControlModifier))) {
+        QApplication::beep();
+        return;
+    } else if ((event->key() == Qt::Key_X) && (event->modifiers() == (Qt::ControlModifier))) {
+        QApplication::beep();
+        return;
+    } else if ((event->key() == Qt::Key_D) && (event->modifiers() == (Qt::ControlModifier))) {
+        QApplication::beep();
+        return;
+    } else if ((event->key() == Qt::Key_Apostrophe) && (event->modifiers() == (Qt::ControlModifier))) {
+        QApplication::beep();
+        return;
+    } else if ((event->key() == Qt::Key_Period) && (event->modifiers() == (Qt::ControlModifier))) {
+        QApplication::beep();
+        return;
+    }
+
     QString text = event->text();
     if(text.size() == 0) {
         return;
