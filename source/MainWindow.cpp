@@ -2660,14 +2660,10 @@ void MainWindow::updateTipsFileMenuEx() {
 
     auto tipsMenu = new QMenu(this);
 
-    const tagFile *tf = TipsFileList;
-    while(tf) {
-
+    for(tagFile *tf : TipsFileList) {
         auto filename = tf->filename;
         QAction *action = tipsMenu->addAction(filename);
         action->setData(filename);
-
-        tf = tf->next;
     }
 
     ui.action_Unload_Calltips_File->setMenu(tipsMenu);
@@ -2677,14 +2673,10 @@ void MainWindow::updateTipsFileMenuEx() {
 void MainWindow::updateTagsFileMenuEx() {
     auto tagsMenu = new QMenu(this);
 
-    const tagFile *tf = TagsFileList;
-    while(tf) {
-
+    for(tagFile *tf : TagsFileList) {
         auto filename = tf->filename;
         QAction *action = tagsMenu->addAction(filename);
         action->setData(filename);
-
-        tf = tf->next;
     }
 
     ui.action_Unload_Tags_File->setMenu(tagsMenu);

@@ -127,11 +127,11 @@ static Tag **Tags = nullptr;
 static const int DefTagHashSize = 10000;
 
 // list of loaded tags files 
-tagFile *TagsFileList = nullptr;
+QList<tagFile *> TagsFileList;
 
 // Hash table of calltip tags 
 static Tag **Tips = nullptr;
-tagFile *TipsFileList = nullptr;
+QList<tagFile *> TipsFileList;
 
 /* These are all transient global variables -- they don't hold any state
     between tag/tip lookups */
@@ -153,17 +153,6 @@ int tagsShowCalltipEx(TextArea *area, const QString &text) {
         return area->TextDShowCalltip(text, globAnchored, globPos, globHAlign, globVAlign, globAlignMode);
     else
         return 0;
-}
-
-// Set the head of the proper file list (Tags or Tips) to t 
-static tagFile *setFileListHead(tagFile *t, int file_type) {
-	if (file_type == TAG) {
-		TagsFileList = t;
-	} else {
-		TipsFileList = t;
-	}
-	
-	return t;
 }
 
 //      Compute hash address from a string key 
@@ -350,13 +339,17 @@ static int tagFileIndex = 0;
 bool AddRelTagsFileEx(const QString &tagSpec, const QString &windowPath, int file_type) {
 
     bool added = false;
-    tagFile *FileList;
+    QList<tagFile *> *FileList = nullptr;
 
     searchMode = file_type;
     if (searchMode == TAG) {
-        FileList = TagsFileList;
+        FileList = &TagsFileList;
     } else {
-        FileList = TipsFileList;
+        FileList = &TipsFileList;
+    }
+
+    if(tagSpec.isEmpty()) {
+        return false;
     }
 
     QStringList filenames = tagSpec.split(QLatin1Char(':'));
@@ -376,13 +369,12 @@ bool AddRelTagsFileEx(const QString &tagSpec, const QString &windowPath, int fil
 
         NormalizePathname(pathName);
 
-        tagFile *t;
-        for (t = FileList; t && t->filename != QString::fromLatin1(pathName); t = t->next) {
-            ;
-        }
+        auto it = std::find_if(FileList->begin(), FileList->end(), [pathName](tagFile *tag) {
+            return tag->filename == QString::fromLatin1(pathName);
+        });
 
         // if we found an entry with the same pathname, we're done..
-        if (t) {
+        if (it != FileList->end()) {
             added = true;
             continue;
         }
@@ -399,8 +391,7 @@ bool AddRelTagsFileEx(const QString &tagSpec, const QString &windowPath, int fil
         tag->date     = statbuf.st_mtime;
         tag->index    = ++tagFileIndex;
 
-        tag->next     = FileList;
-        FileList      = setFileListHead(tag.release(), file_type);
+        FileList->push_front(tag.release());
         added = true;
     }
 
@@ -420,13 +411,17 @@ bool AddRelTagsFileEx(const QString &tagSpec, const QString &windowPath, int fil
 bool AddTagsFileEx(const QString &tagSpec, int file_type) {
 
     bool added = true;
-    tagFile *FileList = nullptr;
+    QList<tagFile *> *FileList = nullptr;
 
     searchMode = file_type;
     if (searchMode == TAG) {
-        FileList = TagsFileList;
+        FileList = &TagsFileList;
     } else {
-        FileList = TipsFileList;
+        FileList = &TipsFileList;
+    }
+
+    if(tagSpec.isEmpty()) {
+        return false;
     }
 
     QStringList filenames = tagSpec.split(QLatin1Char(':'));
@@ -440,17 +435,18 @@ bool AddTagsFileEx(const QString &tagSpec, int file_type) {
         } else {
             strcpy(pathName, filename.toLatin1().data());
         }
+
         NormalizePathname(pathName);
 
-        tagFile *t;
-        for (t = FileList; t && t->filename != QString::fromLatin1(pathName); t = t->next) {
-        }
+        auto it = std::find_if(FileList->begin(), FileList->end(), [pathName](tagFile *tag) {
+            return tag->filename == QString::fromLatin1(pathName);
+        });
 
-        if (t) {
+        if (it != FileList->end()) {
             /* This file is already in the list.  It's easiest to just
                 refcount all tag/tip files even though we only actually care
                 about tip files. */
-            ++(t->refcount);
+            ++((*it)->refcount);
             added = true;
             continue;
         }
@@ -469,8 +465,7 @@ bool AddTagsFileEx(const QString &tagSpec, int file_type) {
         tag->index    = ++tagFileIndex;
         tag->refcount = 1;
 
-        tag->next     = FileList;
-        FileList      = setFileListHead(tag.release(), file_type);
+        FileList->push_front(tag.release());
     }
 
     updateMenuItems();
@@ -489,10 +484,9 @@ int DeleteTagsFileEx(const QString &tagSpec, int file_type, bool force_unload) {
 }
 
 int DeleteTagsFile(const char *tagSpec, int file_type, bool force_unload) {
-	tagFile *t, *last;
-	tagFile *FileList;
+
 	char pathName[MAXPATHLEN];
-	int removed;
+    bool removed;
 
 	// To prevent any possible segfault 
 	if(!tagSpec) {
@@ -501,57 +495,62 @@ int DeleteTagsFile(const char *tagSpec, int file_type, bool force_unload) {
 	}
 
 	searchMode = file_type;
-	if (searchMode == TAG)
-		FileList = TagsFileList;
-	else
-		FileList = TipsFileList;
+    QList<tagFile *> *FileList = nullptr;
+
+    if (searchMode == TAG) {
+        FileList = &TagsFileList;
+    } else {
+        FileList = &TipsFileList;
+    }
 
 	auto tmptagSpec = new char[strlen(tagSpec) + 1];
 	strcpy(tmptagSpec, tagSpec);
-	removed = 1;
+
+    removed = true;
+
 	for (char *filename = strtok(tmptagSpec, ":"); filename; filename = strtok(nullptr, ":")) {
 		if (*filename != '/') {
 			snprintf(pathName, sizeof(pathName), "%s/%s", GetCurrentDirEx().toLatin1().data(), filename);
 		} else {
 			strcpy(pathName, filename);
 		}
-		NormalizePathname(pathName);
+        NormalizePathname(pathName);
 
-		for (last = nullptr, t = FileList; t; last = t, t = t->next) {
+
+        auto it = FileList->begin();
+        while(it != FileList->end()) {
+            tagFile *t = *it;
+
             if (t->filename != QString::fromLatin1(pathName)) {
+                ++it;
 				continue;
             }
 
 			// Don't unload tips files with nonzero refcounts unless forced 
-			if (searchMode == TIP && !force_unload && --t->refcount > 0) {
+            if (searchMode == TIP && !force_unload && --t->refcount > 0) {
 				break;
 			}
 
-			if (t->loaded) {
-				delTag(t->index);
-			}
+            if (t->loaded) {
+                delTag(t->index);
+            }
 
-			if (last) {
-				last->next = t->next;
-			} else {
-				FileList = setFileListHead(t->next, file_type);
-			}
-				
-			delete t;
+            FileList->erase(it);
+            delete t;
+
 			updateMenuItems();
 			break;
-		}
+        }
+
 		// If any file can't be removed, return false 
-		if (!t)
-			removed = 0;
+        if (it == FileList->end()) {
+            removed = false;
+        }
 	}
 	
 	delete [] tmptagSpec;
 	
-	if (removed)
-        return true;
-	else
-        return false;
+    return removed != 0;
 }
 
 /*
@@ -562,11 +561,11 @@ static void updateMenuItems() {
     bool tipStat = false;
     bool tagStat = false;
 
-    if (TipsFileList) {
+    if (!TipsFileList.isEmpty()) {
         tipStat = true;
     }
 
-    if (TagsFileList) {
+    if (!TagsFileList.isEmpty()) {
         tagStat = true;
     }
 
@@ -783,7 +782,7 @@ static int loadTagsFile(const QString &tagsFile, int index, int recLevel) {
 }
 
 #define TAG_STS_ERR_FMT "NEdit: Error getting status for tag file %s\n"
-static bool LookupTagFromList(tagFile *FileList, const char *name, std::string *file, int *language, std::string *searchString, int *pos, std::string *path, int search_type) {
+static bool LookupTagFromList(QList<tagFile *> *FileList, const char *name, std::string *file, int *language, std::string *searchString, int *pos, std::string *path, int search_type) {
 
 	/*
 	** Go through the list of all tags Files:
@@ -796,8 +795,8 @@ static bool LookupTagFromList(tagFile *FileList, const char *name, std::string *
 	**
 	*/
 	if (name) {
-		for (tagFile *tf = FileList; tf; tf = tf->next) {
-		
+        for(tagFile *tf : *FileList) {
+
 			struct stat statbuf;
 			int load_status;		
 		
@@ -815,7 +814,7 @@ static bool LookupTagFromList(tagFile *FileList, const char *name, std::string *
 			}
 
 			// If we get here we have to try to (re-) load the tags file 
-			if (FileList == TipsFileList) {
+            if (FileList == &TipsFileList) {
 				load_status = loadTipsFile(tf->filename, tf->index, 0);
 			} else {
 				load_status = loadTagsFile(tf->filename, tf->index, 0);
@@ -867,9 +866,9 @@ static int LookupTag(const char *name, std::string *file, int *language, std::st
 
 	searchMode = search_type;
 	if (searchMode == TIP) {
-		return LookupTagFromList(TipsFileList, name, file, language, searchString, pos, path, search_type);
+        return LookupTagFromList(&TipsFileList, name, file, language, searchString, pos, path, search_type);
 	} else {
-		return LookupTagFromList(TagsFileList, name, file, language, searchString, pos, path, search_type);
+        return LookupTagFromList(&TagsFileList, name, file, language, searchString, pos, path, search_type);
 	}
 }
 

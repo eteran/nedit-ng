@@ -29,12 +29,12 @@
 
 #include <ctime>
 #include <QString>
+#include <QList>
 
 class DocumentWidget;
 class TextArea;
 
 struct tagFile {
-	tagFile     *next;
     QString     filename;
 	time_t      date;
 	bool        loaded;
@@ -42,8 +42,8 @@ struct tagFile {
 	short       refcount; // Only tips files are refcounted, not tags files
 };
 
-extern tagFile *TagsFileList; // list of loaded tags files
-extern tagFile *TipsFileList; // list of loaded calltips tag files
+extern QList<tagFile *> TagsFileList; // list of loaded tags files
+extern QList<tagFile *> TipsFileList; // list of loaded calltips tag files
 
 extern int searchMode;
 extern const char *tagName;

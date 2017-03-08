@@ -4078,7 +4078,7 @@ int DocumentWidget::findDef(TextArea *area, const char *value, Mode search_type)
             status = findAllMatchesEx(this, area, tagText);
 
             // If we didn't find a requested calltip, see if we can use a tag
-            if (status == 0 && search_type == TIP && TagsFileList) {
+            if (status == 0 && search_type == TIP && !TagsFileList.isEmpty()) {
                 searchMode = TIP_FROM_TAG;
                 status = findAllMatchesEx(this, area, tagText);
             }
@@ -4088,7 +4088,7 @@ int DocumentWidget::findDef(TextArea *area, const char *value, Mode search_type)
                 if (searchMode == TIP_FROM_TAG || searchMode == TIP) {
                     tagsShowCalltipEx(area, tr("No match for \"%1\" in calltips or tags.").arg(QString::fromLatin1(tagName)));
                 } else {
-                    QMessageBox::warning(this, tr("Tags"), tr("\"%1\" not found in tags %2").arg(QString::fromLatin1(tagName), (TagsFileList && TagsFileList->next) ? tr("files") : tr("file")));
+                    QMessageBox::warning(this, tr("Tags"), tr("\"%1\" not found in tags %2").arg(QString::fromLatin1(tagName), (TagsFileList.size() > 1) ? tr("files") : tr("file")));
                 }
             }
 
