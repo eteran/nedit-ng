@@ -2706,7 +2706,7 @@ void MainWindow::unloadTagsFileCB(QAction *action) {
 
 void MainWindow::unloadTipsAP(const QString &filename) {
 
-    if (DeleteTagsFile(filename.toLatin1().data(), TIP, true)) {
+    if (DeleteTagsFileEx(filename, TIP, true)) {
 
         for(MainWindow *window : MainWindow::allWindows()) {
             window->updateTipsFileMenuEx();
@@ -2716,7 +2716,7 @@ void MainWindow::unloadTipsAP(const QString &filename) {
 
 void MainWindow::unloadTagsAP(const QString &filename) {
 
-    if (DeleteTagsFile(filename.toLatin1().data(), TAG, true)) {
+    if (DeleteTagsFileEx(filename, TAG, true)) {
 
         for(MainWindow *window : MainWindow::allWindows()) {
              window->updateTagsFileMenuEx();

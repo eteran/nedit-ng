@@ -1533,9 +1533,14 @@ static bool parseString(HighlightData *pattern, const char **string, char **styl
 
 			/* If parsing should start after the start pattern, advance
 			   to that point (this is currently always the case) */
-			if (!(subPat->flags & PARSE_SUBPATS_FROM_START))
-				fillStyleString(&stringPtr, &stylePtr, pattern->subPatternRE->endp[0], // subPat->startRE->endp[0],
-				                subPat->style, prevChar);
+            if (!(subPat->flags & PARSE_SUBPATS_FROM_START)) {
+                fillStyleString(
+                            &stringPtr,
+                            &stylePtr,
+                            pattern->subPatternRE->endp[0], // subPat->startRE->endp[0],
+                            subPat->style,
+                            prevChar);
+            }
 
 			// Parse to the end of the subPattern 
 			parseString(

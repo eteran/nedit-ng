@@ -56,7 +56,7 @@
 
 
 static int LookupTag(const char *name, std::string *file, int *lang, std::string *searchString, int *pos, std::string *path, int search_type);
-static bool AddRelTagsFile(const char *tagSpec, const char *windowPath, int file_type);
+static int DeleteTagsFile(const char *tagSpec, int file_type, bool force_unload);
 
 namespace {
 
@@ -72,8 +72,6 @@ const int TIP_DEFAULT_LINES = 4;
 }
 
 struct Tag;
-
-
 
 /*
 **  contents of                   tag->searchString   | tag->posInf
@@ -350,79 +348,64 @@ static int tagFileIndex = 0;
 ** windowPath a tags file matching the relative spec has been found.
 */
 bool AddRelTagsFileEx(const QString &tagSpec, const QString &windowPath, int file_type) {
-    return AddRelTagsFile(tagSpec.toLatin1().data(), windowPath.toLatin1().data(), file_type);
-}
 
-bool AddRelTagsFile(const char *tagSpec, const char *windowPath, int file_type) {
-    tagFile *t;
-	bool added = false;
-	struct stat statbuf;
-	char *filename;
-	char pathName[MAXPATHLEN];
-	tagFile *FileList;
+    bool added = false;
+    tagFile *FileList;
 
-	searchMode = file_type;
-	if (searchMode == TAG) {
-		FileList = TagsFileList;
-	} else {
-		FileList = TipsFileList;
-	}
+    searchMode = file_type;
+    if (searchMode == TAG) {
+        FileList = TagsFileList;
+    } else {
+        FileList = TipsFileList;
+    }
 
-	auto tmptagSpec = new char[strlen(tagSpec) + 1];
-	strcpy(tmptagSpec, tagSpec);
-	
-	for (filename = strtok(tmptagSpec, ":"); filename; filename = strtok(nullptr, ":")) {
-		if (*filename == '/' || *filename == '~') {
-			continue;
-		}
-		
-		if (windowPath && *windowPath) {
-			snprintf(pathName, sizeof(pathName), "%s/%s", windowPath, filename);
-		} else {
-			snprintf(pathName, sizeof(pathName), "%s/%s", GetCurrentDirEx().toLatin1().data(), filename);
-		}
+    QStringList filenames = tagSpec.split(QLatin1Char(':'));
 
-		NormalizePathname(pathName);
+    for(const QString &filename : filenames) {
+        if(filename.startsWith(QLatin1Char('/')) || filename.startsWith(QLatin1Char('~'))) {
+            continue;
+        }
 
+        // NOTE(eteran): We use this temporary buffer because NormalizePathname is an inplace C-string algorithm... for now
+        char pathName[MAXPATHLEN];
+        if(!windowPath.isEmpty()) {
+            snprintf(pathName, sizeof(pathName), "%s/%s", windowPath.toLatin1().data(), filename.toLatin1().data());
+        } else {
+            snprintf(pathName, sizeof(pathName), "%s/%s", GetCurrentDirEx().toLatin1().data(), filename.toLatin1().data());
+        }
+
+        NormalizePathname(pathName);
+
+        tagFile *t;
         for (t = FileList; t && t->filename != QString::fromLatin1(pathName); t = t->next) {
-			;
-		}
-		
+            ;
+        }
+
         // if we found an entry with the same pathname, we're done..
-		if (t) {
-			added = true;
-			continue;
-		}
+        if (t) {
+            added = true;
+            continue;
+        }
 
         // or if the file isn't found...
-		if (stat(pathName, &statbuf) != 0) {
-			continue;
-		}
-		
+        struct stat statbuf;
+        if (stat(pathName, &statbuf) != 0) {
+            continue;
+        }
+
         auto tag = std::make_unique<tagFile>();
         tag->filename = QString::fromLatin1(pathName);
         tag->loaded   = false;
         tag->date     = statbuf.st_mtime;
         tag->index    = ++tagFileIndex;
-		
+
         tag->next     = FileList;
         FileList      = setFileListHead(tag.release(), file_type);
-		added = true;
-	}
-	delete [] tmptagSpec;
-	updateMenuItems();
-	if (added)
-        return true;
-	else
-        return false;
-}
+        added = true;
+    }
 
-int AddTagsFileEx(const QString &tagSpec, int file_type) {
-	return AddTagsFile(tagSpec.toLatin1().data(), file_type);
-}
-
-int DeleteTagsFileEx(const QString &tagSpec, int file_type, bool force_unload) {
-	return DeleteTagsFile(tagSpec.toLatin1().data(), file_type, force_unload);
+    updateMenuItems();
+    return added;
 }
 
 /*
@@ -434,77 +417,64 @@ int DeleteTagsFileEx(const QString &tagSpec, int file_type, bool force_unload) {
 **  Returns True if all files were found in the FileList or loaded successfully,
 **  FALSE otherwise.
 */
-int AddTagsFile(const char *tagSpec, int file_type) {
-	tagFile *t;
-	int added = 1;
-	struct stat statbuf;
-	char pathName[MAXPATHLEN];
+bool AddTagsFileEx(const QString &tagSpec, int file_type) {
+
+    bool added = true;
     tagFile *FileList = nullptr;
 
-	// To prevent any possible segfault 
-	if(!tagSpec) {
-		fprintf(stderr, "nedit: Internal Error!\n"
-		                "  Passed nullptr pointer to AddTagsFile!\n");
-        return false;
-	}
-
-	searchMode = file_type;
-    switch(searchMode) {
-    case TAG:
+    searchMode = file_type;
+    if (searchMode == TAG) {
         FileList = TagsFileList;
-        break;
-    case TIP:
+    } else {
         FileList = TipsFileList;
-        break;
     }
 
-	auto tmptagSpec = new char[strlen(tagSpec) + 1];
-	strcpy(tmptagSpec, tagSpec);
+    QStringList filenames = tagSpec.split(QLatin1Char(':'));
 
-	for (char *filename = strtok(tmptagSpec, ":"); filename; filename = strtok(nullptr, ":")) {
-		if (*filename != '/') {
-			snprintf(pathName, sizeof(pathName), "%s/%s", GetCurrentDirEx().toLatin1().data(), filename);
-		} else {
-			strcpy(pathName, filename);
-		}
-		NormalizePathname(pathName);
+    for(const QString &filename : filenames) {
 
-        for (t = FileList; t && t->filename != QString::fromLatin1(pathName); t = t->next)
-			;
+        // NOTE(eteran): We use this temporary buffer because NormalizePathname is an inplace C-string algorithm... for now
+        char pathName[MAXPATHLEN];
+        if(filename.startsWith(QLatin1Char('/'))) {
+            snprintf(pathName, sizeof(pathName), "%s/%s", GetCurrentDirEx().toLatin1().data(), filename.toLatin1().data());
+        } else {
+            strcpy(pathName, filename.toLatin1().data());
+        }
+        NormalizePathname(pathName);
 
-		if (t) {
-			/* This file is already in the list.  It's easiest to just
-			    refcount all tag/tip files even though we only actually care
-			    about tip files. */
-			++(t->refcount);
-			added = 1;
-			continue;
-		}
+        tagFile *t;
+        for (t = FileList; t && t->filename != QString::fromLatin1(pathName); t = t->next) {
+        }
 
+        if (t) {
+            /* This file is already in the list.  It's easiest to just
+                refcount all tag/tip files even though we only actually care
+                about tip files. */
+            ++(t->refcount);
+            added = true;
+            continue;
+        }
+
+        struct stat statbuf;
         if (stat(pathName, &statbuf) != 0) {
-			// Problem reading this tags file.  Return FALSE 
-			added = 0;
-			continue;
-		}
+            // Problem reading this tags file.  Return FALSE
+            added = false;
+            continue;
+        }
 
         auto tag = std::make_unique<tagFile>();
         tag->filename = QString::fromLatin1(pathName);
         tag->loaded   = false;
         tag->date     = statbuf.st_mtime;
         tag->index    = ++tagFileIndex;
-        tag->next     = FileList;
         tag->refcount = 1;
-		
-        FileList    = setFileListHead(tag.release(), file_type);
-	}
 
-	delete [] tmptagSpec;
-	updateMenuItems();
-    if (added) {
-        return true;
-    } else {
-        return false;
+        tag->next     = FileList;
+        FileList      = setFileListHead(tag.release(), file_type);
     }
+
+    updateMenuItems();
+    return added;
 }
 
 /* Un-manage a colon-delimited set of tags files
@@ -514,6 +484,10 @@ int AddTagsFile(const char *tagSpec, int file_type) {
  * If "force_unload" is true, a calltips file will be deleted even if its
  * refcount is nonzero.
  */
+int DeleteTagsFileEx(const QString &tagSpec, int file_type, bool force_unload) {
+	return DeleteTagsFile(tagSpec.toLatin1().data(), file_type, force_unload);
+}
+
 int DeleteTagsFile(const char *tagSpec, int file_type, bool force_unload) {
 	tagFile *t, *last;
 	tagFile *FileList;

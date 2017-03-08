@@ -164,7 +164,7 @@ int main(int argc, char *argv[]) {
 			continue;
 		} else if (opts && !strcmp(argv[i], "-tags")) {
 			nextArg(argc, argv, &i);
-            if (!AddTagsFile(argv[i], TAG)) {
+            if (!AddTagsFileEx(QString::fromLatin1(argv[i]), TAG)) {
 				fprintf(stderr, "NEdit: Unable to load tags file\n");
             }
 
