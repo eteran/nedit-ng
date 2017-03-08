@@ -1744,6 +1744,7 @@ void MainWindow::fileCB(DocumentWidget *window, const std::string &text) {
     char *inPtr;
     char *outPtr;
 
+    // TODO(eteran): version 2.0 let the user specify a list of potential paths!
     static const char includeDir[] = "/usr/include/";
 
     /* get the string, or skip if we can't get the selection data, or it's
