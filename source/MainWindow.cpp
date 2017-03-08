@@ -2660,8 +2660,8 @@ void MainWindow::updateTipsFileMenuEx() {
 
     auto tipsMenu = new QMenu(this);
 
-    for(tagFile *tf : TipsFileList) {
-        auto filename = tf->filename;
+    for(tagFile &tf : TipsFileList) {
+        auto filename = tf.filename;
         QAction *action = tipsMenu->addAction(filename);
         action->setData(filename);
     }
@@ -2673,8 +2673,8 @@ void MainWindow::updateTipsFileMenuEx() {
 void MainWindow::updateTagsFileMenuEx() {
     auto tagsMenu = new QMenu(this);
 
-    for(tagFile *tf : TagsFileList) {
-        auto filename = tf->filename;
+    for(tagFile &tf : TagsFileList) {
+        auto filename = tf.filename;
         QAction *action = tagsMenu->addAction(filename);
         action->setData(filename);
     }

@@ -38,12 +38,12 @@ struct tagFile {
     QString     filename;
 	time_t      date;
 	bool        loaded;
-	short       index;
-	short       refcount; // Only tips files are refcounted, not tags files
+    int16_t     index;
+    int16_t     refcount; // Only tips files are refcounted, not tags files
 };
 
-extern QList<tagFile *> TagsFileList; // list of loaded tags files
-extern QList<tagFile *> TipsFileList; // list of loaded calltips tag files
+extern QList<tagFile> TagsFileList; // list of loaded tags files
+extern QList<tagFile> TipsFileList; // list of loaded calltips tag files
 
 extern int searchMode;
 extern const char *tagName;
