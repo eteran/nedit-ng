@@ -81,19 +81,18 @@ enum searchDirection { FORWARD, BACKWARD };
 
 static int loadTagsFile(const QString &tagSpec, int index, int recLevel);
 static int fakeRegExSearchEx(view::string_view buffer, const char *searchString, int *startPos, int *endPos);
-static size_t hashAddr(const char *key);
 static void updateMenuItems();
 static int addTag(const char *name, const char *file, int lang, const char *search, int posInf, const char *path, int index);
 static bool delTag(int index);
-static Tag *getTag(const char *name, int search_type);
+static QList<Tag> getTag(const char *name, int search_type);
 static void createSelectMenuEx(DocumentWidget *document, TextArea *area, const QVector<char *> &args);
-static int LookupTag(const char *name, std::string *file, int *lang, std::string *searchString, int *pos, std::string *path, int search_type);
+static QList<Tag> LookupTag(const char *name, int search_type);
 
 static int searchLine(char *line, const char *regex);
 static void rstrip(char *dst, const char *src);
 static int nextTFBlock(FILE *fp, char *header, char **tiptext, int *lineAt, int *lineNo);
 static int loadTipsFile(const QString &tipsFile, int index, int recLevel);
-static Tag **hashTableByType(int type);
+static QMultiHash<QString, Tag> *hashTableByType(int type);
 static QList<tagFile> *tagListByType(int type);
 
 struct Tag {
@@ -103,21 +102,18 @@ struct Tag {
     std::string searchString; // see comment below
     int posInf;               // see comment below
     std::string path;
-
-    struct Tag *next;
     int index;
 };
 
 /* Hash table of tags, implemented as an array.  Each bin contains a
     nullptr-terminated linked list of parsed tags */
-static Tag **Tags = nullptr;
-static const int DefTagHashSize = 10000;
+QMultiHash<QString, Tag> Tags;
 
 // list of loaded tags files 
 QList<tagFile> TagsFileList;
 
 // Hash table of calltip tags 
-static Tag **Tips = nullptr;
+QMultiHash<QString, Tag> Tips;
 QList<tagFile> TipsFileList;
 
 /* These are all transient global variables -- they don't hold any state
@@ -143,11 +139,11 @@ int tagsShowCalltipEx(TextArea *area, const QString &text) {
     }
 }
 
-static Tag **hashTableByType(int type) {
+static QMultiHash<QString, Tag> *hashTableByType(int type) {
     if (type == TIP) {
-        return Tips;
+        return &Tips;
     } else {
-        return Tags;
+        return &Tags;
     }
 }
 
@@ -159,52 +155,17 @@ static QList<tagFile> *tagListByType(int type) {
     }
 }
 
-
-
-//      Compute hash address from a string key
-static size_t hashAddr(const char *key) {
-    return std::hash<std::string>()(key);
-}
-
-static Tag *getTagFromTable(Tag **table, const char *name) {
-
-    static char lastName[MAXLINE];
-    static Tag *t;
-
-    if(!table) {
-        return nullptr;
-    }
-
-    // NOTE(eteran): kind of like strtok, if name is not null
-    // then it is a new search. If it is null, then it will return other
-    // matches for this name until none are found
-    if (name) {
-        size_t addr = hashAddr(name) % DefTagHashSize;
-        t = table[addr];
-        strcpy(lastName, name);
-    } else if (t) {
-        name = lastName;
-        t = t->next;
-    } else {
-        return nullptr;
-    }
-
-    for (; t; t = t->next) {
-        if (name == t->name) {
-            return t;
-        }
-    }
-
-    return nullptr;
+static QList<Tag> getTagFromTable(QMultiHash<QString, Tag> *table, const char *name) {
+    return table->values(QString::fromLatin1(name));
 }
 
 //      Retrieve a Tag structure from the hash table 
-static Tag *getTag(const char *name, int search_type) {
+static QList<Tag> getTag(const char *name, int search_type) {
 
 	if (search_type == TIP) {
-        return getTagFromTable(Tips, name);
+        return getTagFromTable(&Tips, name);
 	} else {
-        return getTagFromTable(Tags, name);
+        return getTagFromTable(&Tags, name);
 	}	
 }
 
@@ -215,21 +176,14 @@ static Tag *getTag(const char *name, int search_type) {
 **
 */
 static int addTag(const char *name, const char *file, int lang, const char *search, int posInf, const char *path, int index) {
-    const size_t addr = hashAddr(name) % DefTagHashSize;
 
 	char newfile[MAXPATHLEN];
-    Tag **table;
+    QMultiHash<QString, Tag> *table;
 
 	if (searchMode == TIP) {
-        if(!Tips) {
-            Tips = new Tag*[DefTagHashSize]();
-        }
-        table = Tips;
+        table = &Tips;
     } else {
-        if(!Tags) {
-            Tags = new Tag*[DefTagHashSize]();
-        }
-        table = Tags;
+        table = &Tags;
 	}
 
 	if (*file == '/') {
@@ -240,22 +194,21 @@ static int addTag(const char *name, const char *file, int lang, const char *sear
 
 	NormalizePathname(newfile);
 
-    for (const Tag *t = table[addr]; t; t = t->next) {
+    QList<Tag> tags = table->values(QString::fromLatin1(name));
+    for(const Tag &t : tags) {
 
-        if (name != t->name)
+        if (lang != t.language)
 			continue;
-        if (lang != t->language)
+        if (search != t.searchString)
 			continue;
-        if (search != t->searchString)
+        if (posInf != t.posInf)
 			continue;
-        if (posInf != t->posInf)
-			continue;
-        if (t->file[0] == '/' && (newfile != t->file))
+        if (t.file[0] == '/' && (newfile != t.file))
 			continue;
 
-        if (t->file[0] != '/') {
+        if (t.file[0] != '/') {
 			char tmpfile[MAXPATHLEN];
-            snprintf(tmpfile, sizeof(tmpfile), "%s%s", t->path.c_str(), t->file.c_str());
+            snprintf(tmpfile, sizeof(tmpfile), "%s%s", t.path.c_str(), t.file.c_str());
 			NormalizePathname(tmpfile);
 			if (strcmp(newfile, tmpfile)) {
 				continue;
@@ -264,19 +217,16 @@ static int addTag(const char *name, const char *file, int lang, const char *sear
         return 0;
     }
 	
+    Tag t;
+    t.name         = name;
+    t.file         = file;
+    t.language     = lang;
+    t.searchString = search;
+    t.posInf       = posInf;
+    t.path         = path;
+    t.index        = index;
 
-
-    auto t = std::make_unique<Tag>();
-    t->name         = name;
-    t->file         = file;
-    t->language     = lang;
-    t->searchString = search;
-    t->posInf       = posInf;
-    t->path         = path;
-    t->index        = index;
-
-    t->next = table[addr];
-    table[addr] = t.release();
+    table->insert(QString::fromLatin1(name), t);
     return 1;
 }
 
@@ -287,41 +237,24 @@ static int addTag(const char *name, const char *file, int lang, const char *sear
  *  (posInf = -2 is an invalid match, posInf range: -1 .. +MAXINT,
      lang = -2 is also an invalid match)
  */
- 
 static bool delTag(int index) {
-    Tag *t, *last;
     int del = 0;
 
-    static const int posInf   = -2;
-    Tag **table = hashTableByType(searchMode);
+    QMultiHash<QString, Tag> *table = hashTableByType(searchMode);
 
-    if(!table) {
+    if(table->isEmpty()) {
         return false;
     }
 
-    size_t start  = 0;
-    size_t finish = DefTagHashSize;
-
-
-    for (size_t i = start; i < finish; i++) {
-        for (last = nullptr, t = table[i]; t; last = t, t = t ? t->next : table[i]) {
-
-            if (index != 0 && (index != t->index))
-                continue;
-
-            if (posInf == t->posInf)
-                continue;
-
-            if (last)
-                last->next = t->next;
-            else
-                table[i] = t->next;
-
-            delete t;
-            t = nullptr;
-            del++;
+    for(auto it = table->begin(); it != table->end(); ) {
+        if(it->index == index) {
+            it = table->erase(it);
+            ++del;
+        } else {
+            ++it;
         }
     }
+
     return del > 0;
 }
 
@@ -754,7 +687,7 @@ static int loadTagsFile(const QString &tagsFile, int index, int recLevel) {
 }
 
 #define TAG_STS_ERR_FMT "NEdit: Error getting status for tag file %s\n"
-static bool LookupTagFromList(QList<tagFile> *FileList, const char *name, std::string *file, int *language, std::string *searchString, int *pos, std::string *path, int search_type) {
+static QList<Tag> LookupTagFromList(QList<tagFile> *FileList, const char *name, int search_type) {
 
 	/*
 	** Go through the list of all tags Files:
@@ -808,17 +741,7 @@ static bool LookupTagFromList(QList<tagFile> *FileList, const char *name, std::s
 		}
 	}
 
-	if(Tag *t = getTag(name, search_type)) {
-		*file         = t->file;
-		*language     = t->language;
-		*searchString = t->searchString;
-		*pos          = t->posInf;
-		*path         = t->path;
-        return true;
-	}
-	
-    return false;
-
+    return getTag(name, search_type);
 }
 
 /*
@@ -834,13 +757,13 @@ static bool LookupTagFromList(QList<tagFile> *FileList, const char *name, std::s
 ** Return Value: TRUE:  tag spec found
 **               FALSE: no (more) definitions found.
 */
-static int LookupTag(const char *name, std::string *file, int *language, std::string *searchString, int *pos, std::string *path, int search_type) {
+static QList<Tag> LookupTag(const char *name, int search_type) {
 
 	searchMode = search_type;
 	if (searchMode == TIP) {
-        return LookupTagFromList(&TipsFileList, name, file, language, searchString, pos, path, search_type);
+        return LookupTagFromList(&TipsFileList, name, search_type);
 	} else {
-        return LookupTagFromList(&TagsFileList, name, file, language, searchString, pos, path, search_type);
+        return LookupTagFromList(&TagsFileList, name, search_type);
 	}
 }
 
@@ -971,14 +894,10 @@ int findAllMatchesEx(DocumentWidget *document, TextArea *area, const char *strin
 
     char filename[MAXPATHLEN];
     char pathname[MAXPATHLEN];
-    std::string fileToSearch;
-    std::string searchString;
-    std::string tagPath;
-    int startPos;
+
     int i;
     int pathMatch = 0;
-    int samePath = 0;
-    int langMode;
+    int samePath = 0;    
     int nMatches = 0;
 
     // verify that the string is reasonable as a tag
@@ -988,9 +907,16 @@ int findAllMatchesEx(DocumentWidget *document, TextArea *area, const char *strin
     }
     tagName = string;
 
-    // First look up all of the matching tags
-    while (LookupTag(string, &fileToSearch, &langMode, &searchString, &startPos, &tagPath, searchMode)) {
+    QList<Tag> tags = LookupTag(string, searchMode);
 
+    // First look up all of the matching tags
+    for(const Tag &tag : tags) {
+
+        std::string fileToSearch = tag.file;
+        std::string searchString = tag.searchString;
+        std::string tagPath      = tag.path;
+        int langMode             = tag.language;
+        int startPos             = tag.posInf;
 
         /*
         ** Skip this tag if it has a language mode that doesn't match the
@@ -998,7 +924,6 @@ int findAllMatchesEx(DocumentWidget *document, TextArea *area, const char *strin
         ** PLAIN_LANGUAGE_MODE.
         */
         if (document->languageMode_ != PLAIN_LANGUAGE_MODE && GetPrefSmartTags() && langMode != PLAIN_LANGUAGE_MODE && langMode != document->languageMode_) {
-            string = nullptr;
             continue;
         }
 
@@ -1033,8 +958,6 @@ int findAllMatchesEx(DocumentWidget *document, TextArea *area, const char *strin
             QMessageBox::warning(nullptr /*parent*/, QLatin1String("Tags"), QString(QLatin1String("Too many duplicate tags, first %1 shown")).arg(MAXDUPTAGS));
             break;
         }
-        // Tell LookupTag to look for more definitions of the same tag:
-        string = nullptr;
     }
 
     // Did we find any matches?
@@ -1293,8 +1216,8 @@ static void createSelectMenuEx(DocumentWidget *document, TextArea *area, const Q
 
     auto dialog = new DialogDuplicateTags(document, area, document);
     dialog->setTag(QString::fromLatin1(tagName));
-    for(char *arg: args) {
-        dialog->addListItem(QString::fromLatin1(arg));
+    for(int i = 0; i < args.size(); ++i) {
+        dialog->addListItem(QString::fromLatin1(args[i]), i);
     }
     dialog->show();
 }
@@ -1663,14 +1586,18 @@ static int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
 	// Now resolve any aliases 
 	tmp_alias = aliases;
 	while (tmp_alias) {
-		Tag *t = getTag(tmp_alias->dest.c_str(), TIP);
-		if (!t) {
+        QList<Tag> tags = getTag(tmp_alias->dest.c_str(), TIP);
+        if (tags.isEmpty()) {
 			fprintf(stderr, "nedit: Can't find destination of alias \"%s\"\n"
 			                "  in calltips file:\n   \"%s\"\n",
 			        tmp_alias->dest.c_str(), resolvedTipsFile);
 		} else {
-			for (char *src = strtok(tmp_alias->sources, ":"); src; src = strtok(nullptr, ":"))
+
+            const Tag *t = &tags[0];
+
+            for (char *src = strtok(tmp_alias->sources, ":"); src; src = strtok(nullptr, ":")) {
 				addTag(src, resolvedTipsFile, t->language, "", t->posInf, tipPath, index);
+            }
 		}
 		tmp_alias = tmp_alias->next;
 	}

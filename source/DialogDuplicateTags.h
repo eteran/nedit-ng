@@ -19,7 +19,7 @@ private:
 
 public:
 	void setTag(const QString &tag);
-	void addListItem(const QString &item);
+    void addListItem(const QString &text, int id);
 	
 private Q_SLOTS:
 	void on_buttonBox_accepted();

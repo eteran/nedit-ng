@@ -21,8 +21,9 @@ void DialogDuplicateTags::setTag(const QString &tag) {
 //------------------------------------------------------------------------------
 // Name: addListItem
 //------------------------------------------------------------------------------
-void DialogDuplicateTags::addListItem(const QString &item) {
-	ui.listWidget->addItem(item);
+void DialogDuplicateTags::addListItem(const QString &text, int id) {
+    auto item = new QListWidgetItem(text, ui.listWidget);
+    item->setData(Qt::UserRole, id);
 }
 
 
@@ -46,15 +47,7 @@ bool DialogDuplicateTags::applySelection() {
 		return false;
 	}
 
-    QString eptr = item->text();
-
-    bool ok;
-    int i = eptr.toInt(&ok) - 1;
-
-    if(!ok) {
-        QApplication::beep();
-        return false;
-    }
+    int i = item->data(Qt::UserRole).toInt();
 
     if (searchMode == TAG) {
         editTaggedLocationEx(area_, i); // Open the file with the definition
