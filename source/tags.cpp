@@ -1442,36 +1442,16 @@ static int nextTFBlock(FILE *fp, char *header, char **body, int *blkLine, int *c
 }
 
 // A struct for describing a calltip alias 
-struct tf_alias {
+struct tf_alias {    
 	std::string dest;
 	char *sources;
-	struct tf_alias *next;
 };
 
-/*
-** Allocate a new alias, copying dest and stealing sources.  This may
-** seem strange but that's the way it's called
-*/
-static tf_alias *new_alias(const char *dest, char *sources) {
-
-	// fprintf(stderr, "new_alias: %s <- %s\n", dest, sources); 
-	// Allocate the alias 
-	auto alias = new tf_alias;
-
-	// Fill it in 
-	alias->dest = dest;
-	alias->sources = sources;
-	return alias;
-}
-
 // Deallocate a linked-list of aliases 
-static void free_alias_list(tf_alias *alias) {
+static void free_alias_list(QList<tf_alias> *aliases) {
 
-	while (alias) {
-		tf_alias *tmp_alias = alias->next;
-		delete [] alias->sources;
-		delete alias;
-		alias = tmp_alias;
+    for(tf_alias &alias : *aliases) {
+        delete [] alias.sources;
 	}
 }
 
@@ -1488,10 +1468,12 @@ static int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
 	char *tipIncFile;
 	char tipPath[MAXPATHLEN];
 	char resolvedTipsFile[MAXPATHLEN + 1];
-	int nTipsAdded = 0, langMode = PLAIN_LANGUAGE_MODE, oldLangMode;
+    int nTipsAdded = 0;
+    int langMode = PLAIN_LANGUAGE_MODE;
+    int oldLangMode;
 	int currLine = 0;
-	int code;	
-	tf_alias *aliases = nullptr, *tmp_alias;
+
+    QList<tf_alias> aliases;
 
 	if (recLevel > MAX_TAG_INCLUDE_RECURSION_LEVEL) {
         fprintf(stderr, "nedit: Warning: Reached recursion limit before loading calltips file:\n\t%s\n", tipsFile.toLatin1().data());
@@ -1502,20 +1484,24 @@ static int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
 	// Allow ~ in Unix filenames 
     strncpy(tipPath, tipsFile.toLatin1().data(), MAXPATHLEN); // ExpandTilde is destructive
 	ExpandTilde(tipPath);
-	if (!ResolvePath(tipPath, resolvedTipsFile))
+
+    if (!ResolvePath(tipPath, resolvedTipsFile)) {
 		return 0;
+    }
 
 	// Get the path to the tips file 
 	ParseFilename(resolvedTipsFile, nullptr, tipPath);
 
 	// Open the file 
-	if ((fp = fopen(resolvedTipsFile, "r")) == nullptr)
+    if ((fp = fopen(resolvedTipsFile, "r")) == nullptr) {
 		return 0;
+    }
 
-	while (true) {
+    Q_FOREVER {
 		int blkLine = 0;
 		char *body = nullptr;
-		code = nextTFBlock(fp, header, &body, &blkLine, &currLine);
+        int code = nextTFBlock(fp, header, &body, &blkLine, &currLine);
+
 		if (code == TF_ERROR_EOF) {
 			fprintf(stderr, "nedit: Warning: unexpected EOF in calltips file.\n");
 			break;
@@ -1562,18 +1548,7 @@ static int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
 			break;
 		case TF_ALIAS:
 			// Allocate a new alias struct 
-			tmp_alias = aliases;
-			aliases = new_alias(header, body);
-			if (!aliases) {
-				fprintf(stderr, "nedit: Can't allocate memory for tipfile "
-				                "alias in calltips file:\n   \"%s\"\n",
-				        resolvedTipsFile);
-				// Deallocate any allocated aliases 
-				free_alias_list(tmp_alias);
-				return 0;
-			}
-			// Add it to the list 
-			aliases->next = tmp_alias;
+            aliases.push_front(tf_alias{ header, body });
 			break;
 		default:
 			; // Ignore TF_VERSION for now 
@@ -1583,24 +1558,22 @@ static int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
 	// NOTE(eteran): fix resource leak
 	fclose(fp);
 
-	// Now resolve any aliases 
-	tmp_alias = aliases;
-	while (tmp_alias) {
-        QList<Tag> tags = getTag(tmp_alias->dest.c_str(), TIP);
+    // Now resolve any aliases
+    for(const tf_alias &tmp_alias : aliases) {
+        QList<Tag> tags = getTag(tmp_alias.dest.c_str(), TIP);
         if (tags.isEmpty()) {
 			fprintf(stderr, "nedit: Can't find destination of alias \"%s\"\n"
 			                "  in calltips file:\n   \"%s\"\n",
-			        tmp_alias->dest.c_str(), resolvedTipsFile);
+                    tmp_alias.dest.c_str(), resolvedTipsFile);
 		} else {
 
             const Tag *t = &tags[0];
-
-            for (char *src = strtok(tmp_alias->sources, ":"); src; src = strtok(nullptr, ":")) {
+            for (char *src = strtok(tmp_alias.sources, ":"); src; src = strtok(nullptr, ":")) {
 				addTag(src, resolvedTipsFile, t->language, "", t->posInf, tipPath, index);
             }
 		}
-		tmp_alias = tmp_alias->next;
 	}
-	free_alias_list(aliases);
+
+    free_alias_list(&aliases);
 	return nTipsAdded;
 }
