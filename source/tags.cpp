@@ -55,8 +55,6 @@
 #include <unordered_map>
 
 
-static int LookupTag(const char *name, std::string *file, int *lang, std::string *searchString, int *pos, std::string *path, int search_type);
-
 namespace {
 
 const int MAXLINE                         = 2048;
@@ -89,34 +87,25 @@ static int addTag(const char *name, const char *file, int lang, const char *sear
 static bool delTag(int index);
 static Tag *getTag(const char *name, int search_type);
 static void createSelectMenuEx(DocumentWidget *document, TextArea *area, const QVector<char *> &args);
-
+static int LookupTag(const char *name, std::string *file, int *lang, std::string *searchString, int *pos, std::string *path, int search_type);
 
 static int searchLine(char *line, const char *regex);
 static void rstrip(char *dst, const char *src);
 static int nextTFBlock(FILE *fp, char *header, char **tiptext, int *lineAt, int *lineNo);
 static int loadTipsFile(const QString &tipsFile, int index, int recLevel);
-
+static Tag **hashTableByType(int type);
+static QList<tagFile> *tagListByType(int type);
 
 struct Tag {
-public:
-    Tag(const char *name, const char *file, int language, const char *searchString, int posInf, const char *path) {
-        this->name         = name;
-        this->file         = file;
-        this->language     = language;
-        this->searchString = searchString;
-        this->posInf       = posInf;
-        this->path         = path;
-    }
-
-public:
-    struct Tag *next;
-    std::string path;
     std::string name;
     std::string file;
     int language;
     std::string searchString; // see comment below
     int posInf;               // see comment below
-    int16_t index;
+    std::string path;
+
+    struct Tag *next;
+    int index;
 };
 
 /* Hash table of tags, implemented as an array.  Each bin contains a
@@ -154,6 +143,24 @@ int tagsShowCalltipEx(TextArea *area, const QString &text) {
     }
 }
 
+static Tag **hashTableByType(int type) {
+    if (type == TIP) {
+        return Tips;
+    } else {
+        return Tags;
+    }
+}
+
+static QList<tagFile> *tagListByType(int type) {
+    if (type == TAG) {
+        return &TagsFileList;
+    } else {
+        return &TipsFileList;
+    }
+}
+
+
+
 //      Compute hash address from a string key
 static size_t hashAddr(const char *key) {
     return std::hash<std::string>()(key);
@@ -168,6 +175,9 @@ static Tag *getTagFromTable(Tag **table, const char *name) {
         return nullptr;
     }
 
+    // NOTE(eteran): kind of like strtok, if name is not null
+    // then it is a new search. If it is null, then it will return other
+    // matches for this name until none are found
     if (name) {
         size_t addr = hashAddr(name) % DefTagHashSize;
         t = table[addr];
@@ -212,14 +222,12 @@ static int addTag(const char *name, const char *file, int lang, const char *sear
 
 	if (searchMode == TIP) {
         if(!Tips) {
-            Tips = new Tag*[DefTagHashSize];
-            std::fill_n(Tips, DefTagHashSize, nullptr);
+            Tips = new Tag*[DefTagHashSize]();
         }
         table = Tips;
     } else {
         if(!Tags) {
-            Tags = new Tag*[DefTagHashSize];
-            std::fill_n(Tags, DefTagHashSize, nullptr);
+            Tags = new Tag*[DefTagHashSize]();
         }
         table = Tags;
 	}
@@ -232,10 +240,8 @@ static int addTag(const char *name, const char *file, int lang, const char *sear
 
 	NormalizePathname(newfile);
 
-    for (
-        Tag *t = table[addr];
-        t;
-        t = t->next) {
+    for (const Tag *t = table[addr]; t; t = t->next) {
+
         if (name != t->name)
 			continue;
         if (lang != t->language)
@@ -246,6 +252,7 @@ static int addTag(const char *name, const char *file, int lang, const char *sear
 			continue;
         if (t->file[0] == '/' && (newfile != t->file))
 			continue;
+
         if (t->file[0] != '/') {
 			char tmpfile[MAXPATHLEN];
             snprintf(tmpfile, sizeof(tmpfile), "%s%s", t->path.c_str(), t->file.c_str());
@@ -259,8 +266,15 @@ static int addTag(const char *name, const char *file, int lang, const char *sear
 	
 
 
-    auto t = std::make_unique<Tag>(name, file, lang, search, posInf, path);
-    t->index = index;
+    auto t = std::make_unique<Tag>();
+    t->name         = name;
+    t->file         = file;
+    t->language     = lang;
+    t->searchString = search;
+    t->posInf       = posInf;
+    t->path         = path;
+    t->index        = index;
+
     t->next = table[addr];
     table[addr] = t.release();
     return 1;
@@ -277,49 +291,27 @@ static int addTag(const char *name, const char *file, int lang, const char *sear
 static bool delTag(int index) {
     Tag *t, *last;
     int del = 0;
-    Tag **table;
 
-    static const char *const name   = nullptr;
-    static const char *const file   = nullptr;
-    static const char *const search = nullptr;
-    static const int lang     = -2;
     static const int posInf   = -2;
-
-    if (searchMode == TIP) {
-        table = Tips;
-    } else {
-        table = Tags;
-    }
+    Tag **table = hashTableByType(searchMode);
 
     if(!table) {
         return false;
     }
 
-    size_t start;
-    size_t finish;
+    size_t start  = 0;
+    size_t finish = DefTagHashSize;
 
-    if (name) {
-        start  = hashAddr(name) % DefTagHashSize;
-        finish = start;
-    } else {
-        start = 0;
-        finish = DefTagHashSize;
-    }
 
     for (size_t i = start; i < finish; i++) {
         for (last = nullptr, t = table[i]; t; last = t, t = t ? t->next : table[i]) {
-            if (name && (name != t->name))
+
+            if (index != 0 && (index != t->index))
                 continue;
-            if (index && (index != t->index))
-                continue;
-            if (file && (file != t->file))
-                continue;
-            if (lang >= PLAIN_LANGUAGE_MODE && (lang != t->language))
-                continue;
-            if (search && (search != t->searchString))
-                continue;
+
             if (posInf == t->posInf)
                 continue;
+
             if (last)
                 last->next = t->next;
             else
@@ -344,14 +336,10 @@ static int tagFileIndex = 0;
 bool AddRelTagsFileEx(const QString &tagSpec, const QString &windowPath, int file_type) {
 
     bool added = false;
-    QList<tagFile> *FileList = nullptr;
+
 
     searchMode = file_type;
-    if (searchMode == TAG) {
-        FileList = &TagsFileList;
-    } else {
-        FileList = &TipsFileList;
-    }
+    QList<tagFile> *FileList = tagListByType(searchMode);
 
     if(tagSpec.isEmpty()) {
         return false;
@@ -417,14 +405,9 @@ bool AddRelTagsFileEx(const QString &tagSpec, const QString &windowPath, int fil
 bool AddTagsFileEx(const QString &tagSpec, int file_type) {
 
     bool added = true;
-    QList<tagFile> *FileList = nullptr;
 
     searchMode = file_type;
-    if (searchMode == TAG) {
-        FileList = &TagsFileList;
-    } else {
-        FileList = &TipsFileList;
-    }
+    QList<tagFile> *FileList = tagListByType(searchMode);
 
     if(tagSpec.isEmpty()) {
         return false;
@@ -492,13 +475,7 @@ int DeleteTagsFileEx(const QString &tagSpec, int file_type, bool force_unload) {
     }
 
     searchMode = file_type;
-    QList<tagFile> *FileList = nullptr;
-
-    if (searchMode == TAG) {
-        FileList = &TagsFileList;
-    } else {
-        FileList = &TipsFileList;
-    }
+    QList<tagFile> *FileList = tagListByType(searchMode);
 
     bool removed = true;
 
@@ -875,8 +852,9 @@ static int LookupTag(const char *name, std::string *file, int *language, std::st
 **  search_type:    Either TIP or TIP_FROM_TAG
 */
 int ShowTipStringEx(DocumentWidget *window, const char *text, bool anchored, int pos, bool lookup, int search_type, int hAlign, int vAlign, int alignMode) {
-    if (search_type == TAG)
+    if (search_type == TAG) {
         return 0;
+    }
 
     // So we don't have to carry all of the calltip alignment info around
     globAnchored  = anchored;
