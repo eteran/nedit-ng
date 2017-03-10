@@ -185,7 +185,6 @@ QString expandAllTabsEx(const QString &text, int tab_width) {
         }
     }
 
-
     return textCpy;
 }
 
@@ -358,15 +357,7 @@ TextArea::TextArea(QWidget *parent,
     int lineNumLeft,
     int lineNumWidth,
 	TextBuffer *buffer,
-	QFont fontStruct,
-	QColor bgPixel,
-	QColor fgPixel,
-	QColor selectFGPixel,
-	QColor selectBGPixel,
-	QColor highlightFGPixel,
-	QColor highlightBGPixel,
-	QColor cursorFGPixel,
-	QColor lineNumFGPixel) : QAbstractScrollArea(parent) {
+    QFont fontStruct) : QAbstractScrollArea(parent) {
 
 	setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 	setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
@@ -453,16 +444,6 @@ TextArea::TextArea(QWidget *parent,
 	P_continuousWrap = false;
 	P_autoWrap       = false;
 
-
-#if 1
-	QPalette pal = viewport()->palette();
-	pal.setColor(QPalette::Text, fgPixel);                  // foreground color
-	pal.setColor(QPalette::Base, bgPixel);                  // background
-	pal.setColor(QPalette::Highlight, selectBGPixel);       // highlight background
-	pal.setColor(QPalette::HighlightedText, selectFGPixel); // highlight foreground
-	viewport()->setPalette(pal);
-#endif
-
     fontStruct.setStyleStrategy(QFont::ForceIntegerMetrics);
     QFontMetrics fm(fontStruct);
 	QFontInfo    fi(fontStruct);
@@ -474,10 +455,11 @@ TextArea::TextArea(QWidget *parent,
 
 	buffer_           = buffer;
 	rect_             = { left, top, width, height };
-	highlightFGPixel_ = highlightFGPixel;
-	highlightBGPixel_ = highlightBGPixel;
-	lineNumFGPixel_   = lineNumFGPixel;
-	cursorFGPixel_    = cursorFGPixel;
+
+    highlightFGPixel_ = Qt::white;
+    highlightBGPixel_ = Qt::red;
+    lineNumFGPixel_   = Qt::black;
+    cursorFGPixel_    = Qt::black;
 
 	cursorOn_           = true;
 	cursorPos_          = 0;
@@ -501,7 +483,7 @@ TextArea::TextArea(QWidget *parent,
 	lineNumWidth_       = lineNumWidth;
     nVisibleLines_      = (height - 1) / ascent_ + descent_ + 1;
 
-	lineStarts_        = new int[nVisibleLines_];
+    lineStarts_.resize(nVisibleLines_);
 	lineStarts_[0]     = 0;
 	calltip_.ID        = 0;
     calltipWidget_     = nullptr;
@@ -844,7 +826,6 @@ void TextArea::backwardCharacterAP(EventFlags flags) {
 TextArea::~TextArea() {
     buffer_->BufRemoveModifyCB(bufModifiedCB, this);
     buffer_->BufRemovePreDeleteCB(bufPreDeleteCB, this);
-	delete[] lineStarts_;
 }
 
 //------------------------------------------------------------------------------
@@ -1833,7 +1814,6 @@ void TextArea::measureDeletedLines(int pos, int nDeleted) {
 	int retLineStart;
 	int retLineEnd;
 	int nVisLines   = nVisibleLines_;
-	int *lineStarts = lineStarts_;
 	int countFrom;
 	int lineStart;
 	int nLines = 0;
@@ -1845,10 +1825,10 @@ void TextArea::measureDeletedLines(int pos, int nDeleted) {
 	if (pos >= firstChar_ && pos <= lastChar_) {
 		int i;
 		for (i = nVisLines - 1; i > 0; i--)
-			if (lineStarts[i] != -1 && pos >= lineStarts[i])
+            if (lineStarts_[i] != -1 && pos >= lineStarts_[i])
 				break;
 		if (i > 0) {
-			countFrom = lineStarts[i - 1];
+            countFrom = lineStarts_[i - 1];
 		} else
 			countFrom = buffer_->BufStartOfLine(pos);
 	} else
@@ -2130,7 +2110,6 @@ void TextArea::findWrapRangeEx(view::string_view deletedText, int pos, int nInse
 	int retLineStart;
 	int retLineEnd;
 	int nVisLines   = nVisibleLines_;
-	int *lineStarts = lineStarts_;
 	int countFrom;
 	int countTo;
 	int lineStart;
@@ -2146,10 +2125,10 @@ void TextArea::findWrapRangeEx(view::string_view deletedText, int pos, int nInse
 	if (pos >= firstChar_ && pos <= lastChar_) {
 		int i;
 		for (i = nVisLines - 1; i > 0; i--)
-			if (lineStarts[i] != -1 && pos >= lineStarts[i])
+            if (lineStarts_[i] != -1 && pos >= lineStarts_[i])
 				break;
 		if (i > 0) {
-			countFrom = lineStarts[i - 1];
+            countFrom = lineStarts_[i - 1];
 			visLineNum = i - 1;
 		} else
 			countFrom = buffer_->BufStartOfLine(pos);
@@ -2196,13 +2175,13 @@ void TextArea::findWrapRangeEx(view::string_view deletedText, int pos, int nInse
 		/* check for synchronization with the original line starts array
 		   before pos, if so, the modified range can begin later */
 		if (lineStart <= pos) {
-			while (visLineNum < nVisLines && lineStarts[visLineNum] < lineStart)
+            while (visLineNum < nVisLines && lineStarts_[visLineNum] < lineStart)
 				visLineNum++;
-			if (visLineNum < nVisLines && lineStarts[visLineNum] == lineStart) {
+            if (visLineNum < nVisLines && lineStarts_[visLineNum] == lineStart) {
 				countFrom = lineStart;
 				nLines = 0;
-				if (visLineNum + 1 < nVisLines && lineStarts[visLineNum + 1] != -1)
-					*modRangeStart = std::min(pos, lineStarts[visLineNum + 1] - 1);
+                if (visLineNum + 1 < nVisLines && lineStarts_[visLineNum + 1] != -1)
+                    *modRangeStart = std::min(pos, lineStarts_[visLineNum + 1] - 1);
 				else
 					*modRangeStart = countFrom;
 			} else
@@ -2213,9 +2192,9 @@ void TextArea::findWrapRangeEx(view::string_view deletedText, int pos, int nInse
 			   after pos, if so, the modified range can end early */
 		else if (lineStart > pos + nInserted) {
 			adjLineStart = lineStart - nInserted + nDeleted;
-			while (visLineNum < nVisLines && lineStarts[visLineNum] < adjLineStart)
+            while (visLineNum < nVisLines && lineStarts_[visLineNum] < adjLineStart)
 				visLineNum++;
-			if (visLineNum < nVisLines && lineStarts[visLineNum] != -1 && lineStarts[visLineNum] == adjLineStart) {
+            if (visLineNum < nVisLines && lineStarts_[visLineNum] != -1 && lineStarts_[visLineNum] == adjLineStart) {
 				countTo = TextDEndOfLine(lineStart, true);
 				*modRangeEnd = lineStart;
 				break;
@@ -2311,8 +2290,11 @@ int TextArea::TextDEndOfLine(int pos, bool startPosIsLineStart) {
 // Name:
 //------------------------------------------------------------------------------
 void TextArea::updateLineStarts(int pos, int charsInserted, int charsDeleted, int linesInserted, int linesDeleted, int *scrolled) {
-	int *lineStarts = lineStarts_;
-	int i, lineOfPos, lineOfEnd, nVisLines = nVisibleLines_;
+
+    int i;
+    int lineOfPos;
+    int lineOfEnd;
+    int nVisLines = nVisibleLines_;
 	int charDelta = charsInserted - charsDeleted;
 	int lineDelta = linesInserted - linesDeleted;
 
@@ -2320,7 +2302,7 @@ void TextArea::updateLineStarts(int pos, int charsInserted, int charsDeleted, in
 		printf("linesDeleted %d, linesInserted %d, charsInserted %d, charsDeleted %d\n",
 				linesDeleted, linesInserted, charsInserted, charsDeleted);
 		printf("lineStarts Before: ");
-		for(i=0; i<nVisLines; i++) printf("%d ", lineStarts[i]);
+        for(i=0; i<nVisLines; i++) printf("%d ", lineStarts_[i]);
 		printf("\n");
 	} */
 	/* If all of the changes were before the displayed text, the display
@@ -2328,11 +2310,11 @@ void TextArea::updateLineStarts(int pos, int charsInserted, int charsDeleted, in
 	   start entries and first and last characters */
 	if (pos + charsDeleted < firstChar_) {
 		topLineNum_ += lineDelta;
-		for (i = 0; i < nVisLines && lineStarts[i] != -1; i++)
-			lineStarts[i] += charDelta;
+        for (i = 0; i < nVisLines && lineStarts_[i] != -1; i++)
+            lineStarts_[i] += charDelta;
 		/* {   int i;
 			printf("lineStarts after delete doesn't touch: ");
-			for(i=0; i<nVisLines; i++) printf("%d ", lineStarts[i]);
+            for(i=0; i<nVisLines; i++) printf("%d ", lineStarts_[i]);
 			printf("\n");
 		} */
 		firstChar_ += charDelta;
@@ -2345,9 +2327,9 @@ void TextArea::updateLineStarts(int pos, int charsInserted, int charsDeleted, in
 	   part or all of the displayed text was deleted */
 	if (pos < firstChar_) {
 		// If some text remains in the window, anchor on that
-		if (posToVisibleLineNum(pos + charsDeleted, &lineOfEnd) && ++lineOfEnd < nVisLines && lineStarts[lineOfEnd] != -1) {
+        if (posToVisibleLineNum(pos + charsDeleted, &lineOfEnd) && ++lineOfEnd < nVisLines && lineStarts_[lineOfEnd] != -1) {
 			topLineNum_ = std::max(1, topLineNum_ + lineDelta);
-			firstChar_ = TextDCountBackwardNLines(lineStarts[lineOfEnd] + charDelta, lineOfEnd);
+            firstChar_ = TextDCountBackwardNLines(lineStarts_[lineOfEnd] + charDelta, lineOfEnd);
 			// Otherwise anchor on original line number and recount everything
 		} else {
 			if (topLineNum_ > nBufferLines_ + lineDelta) {
@@ -2359,7 +2341,7 @@ void TextArea::updateLineStarts(int pos, int charsInserted, int charsDeleted, in
 		calcLineStarts(0, nVisLines - 1);
 		/* {   int i;
 			printf("lineStarts after delete encroaches: ");
-			for(i=0; i<nVisLines; i++) printf("%d ", lineStarts[i]);
+            for(i=0; i<nVisLines; i++) printf("%d ", lineStarts_[i]);
 			printf("\n");
 		} */
 		// calculate lastChar by finding the end of the last displayed line
@@ -2378,18 +2360,18 @@ void TextArea::updateLineStarts(int pos, int charsInserted, int charsDeleted, in
 		posToVisibleLineNum(pos, &lineOfPos);
 		// salvage line starts after the changed area
 		if (lineDelta == 0) {
-			for (i = lineOfPos + 1; i < nVisLines && lineStarts[i] != -1; i++)
-				lineStarts[i] += charDelta;
+            for (i = lineOfPos + 1; i < nVisLines && lineStarts_[i] != -1; i++)
+                lineStarts_[i] += charDelta;
 		} else if (lineDelta > 0) {
 			for (i = nVisLines - 1; i >= lineOfPos + lineDelta + 1; i--)
-				lineStarts[i] = lineStarts[i - lineDelta] + (lineStarts[i - lineDelta] == -1 ? 0 : charDelta);
+                lineStarts_[i] = lineStarts_[i - lineDelta] + (lineStarts_[i - lineDelta] == -1 ? 0 : charDelta);
 		} else /* (lineDelta < 0) */ {
 			for (i = std::max(0, lineOfPos + 1); i < nVisLines + lineDelta; i++)
-				lineStarts[i] = lineStarts[i - lineDelta] + (lineStarts[i - lineDelta] == -1 ? 0 : charDelta);
+                lineStarts_[i] = lineStarts_[i - lineDelta] + (lineStarts_[i - lineDelta] == -1 ? 0 : charDelta);
 		}
 		/* {   int i;
 			printf("lineStarts after salvage: ");
-			for(i=0; i<nVisLines; i++) printf("%d ", lineStarts[i]);
+            for(i=0; i<nVisLines; i++) printf("%d ", lineStarts_[i]);
 			printf("\n");
 		} */
 		// fill in the missing line starts
@@ -2399,7 +2381,7 @@ void TextArea::updateLineStarts(int pos, int charsInserted, int charsDeleted, in
 			calcLineStarts(nVisLines + lineDelta, nVisLines);
 		/* {   int i;
 			printf("lineStarts after recalculation: ");
-			for(i=0; i<nVisLines; i++) printf("%d ", lineStarts[i]);
+            for(i=0; i<nVisLines; i++) printf("%d ", lineStarts_[i]);
 			printf("\n");
 		} */
 		// calculate lastChar by finding the end of the last displayed line
@@ -2416,7 +2398,7 @@ void TextArea::updateLineStarts(int pos, int charsInserted, int charsDeleted, in
 		calcLastChar();
 		/* {
 			printf("lineStarts after insert at end: ");
-			for(int i=0; i<nVisLines; i++) printf("%d ", lineStarts[i]);
+            for(int i=0; i<nVisLines; i++) printf("%d ", lineStarts_[i]);
 			printf("\n");
 		} */
 		*scrolled = false;
@@ -2445,7 +2427,6 @@ void TextArea::calcLineStarts(int startLine, int endLine) {
 	int lineEnd;
 	int nextLineStart;
 	int nVis = nVisibleLines_;
-	int *lineStarts = lineStarts_;
 
 	// Clean up (possibly) messy input parameters
 	if (nVis == 0)
@@ -2463,16 +2444,16 @@ void TextArea::calcLineStarts(int startLine, int endLine) {
 
 	// Find the last known good line number -> position mapping
 	if (startLine == 0) {
-		lineStarts[0] = firstChar_;
+        lineStarts_[0] = firstChar_;
 		startLine = 1;
 	}
-	startPos = lineStarts[startLine - 1];
+    startPos = lineStarts_[startLine - 1];
 
 	/* If the starting position is already past the end of the text,
 	   fill in -1's (means no text on line) and return */
 	if (startPos == -1) {
 		for (line = startLine; line <= endLine; line++)
-			lineStarts[line] = -1;
+            lineStarts_[line] = -1;
 		return;
 	}
 
@@ -2486,18 +2467,18 @@ void TextArea::calcLineStarts(int startLine, int endLine) {
 			   buf->BufGetLength() in the next line start position (instead of
 			   a -1 which is the normal marker for an empty line) to
 			   indicate that the cursor may safely be displayed there */
-			if (line == 0 || (lineStarts[line - 1] != bufLen && lineEnd != nextLineStart)) {
-				lineStarts[line] = bufLen;
+            if (line == 0 || (lineStarts_[line - 1] != bufLen && lineEnd != nextLineStart)) {
+                lineStarts_[line] = bufLen;
 				line++;
 			}
 			break;
 		}
-		lineStarts[line] = startPos;
+        lineStarts_[line] = startPos;
 	}
 
 	// Set any entries beyond the end of the text to -1
 	for (; line <= endLine; line++)
-		lineStarts[line] = -1;
+        lineStarts_[line] = -1;
 }
 
 /*
@@ -3746,8 +3727,7 @@ void TextArea::TextDResize(int width, int height) {
 	   size and/or contents. (contents can change in continuous wrap mode
 	   when the width changes, even without a change in height) */
 	if (oldVisibleLines < newVisibleLines) {
-		delete[] lineStarts_;
-		lineStarts_ = new int[newVisibleLines];
+        lineStarts_.resize(newVisibleLines);
 	}
 
 	nVisibleLines_ = newVisibleLines;
@@ -4044,7 +4024,6 @@ void TextArea::offsetLineStarts(int newTopLineNum) {
 	int oldFirstChar  = firstChar_;
 	int lineDelta     = newTopLineNum - oldTopLineNum;
 	int nVisLines     = nVisibleLines_;
-	int *lineStarts   = lineStarts_;
 	int i;
 	int lastLineNum;
 
@@ -4055,7 +4034,7 @@ void TextArea::offsetLineStarts(int newTopLineNum) {
 	/* {   int i;
 		printf("Scroll, lineDelta %d\n", lineDelta);
 		printf("lineStarts Before: ");
-		for(i=0; i<nVisLines; i++) printf("%d ", lineStarts[i]);
+        for(i=0; i<nVisLines; i++) printf("%d ", lineStarts_[i]);
 		printf("\n");
 	} */
 
@@ -4070,11 +4049,11 @@ void TextArea::offsetLineStarts(int newTopLineNum) {
 		firstChar_ = TextDCountBackwardNLines(firstChar_, -lineDelta);
 		// printf("counting backward %d lines from firstChar\n", -lineDelta);
 	} else if (newTopLineNum < lastLineNum) {
-		firstChar_ = lineStarts[newTopLineNum - oldTopLineNum];
-		/* printf("taking new start from lineStarts[%d]\n",
+        firstChar_ = lineStarts_[newTopLineNum - oldTopLineNum];
+        /* printf("taking new start from lineStarts_[%d]\n",
 			newTopLineNum - oldTopLineNum); */
 	} else if (newTopLineNum - lastLineNum < nBufferLines_ - newTopLineNum) {
-		firstChar_ = TextDCountForwardNLines(lineStarts[nVisLines - 1], newTopLineNum - lastLineNum, true);
+        firstChar_ = TextDCountForwardNLines(lineStarts_[nVisLines - 1], newTopLineNum - lastLineNum, true);
 		/* printf("counting forward %d lines from start of last line\n",
 			newTopLineNum - lastLineNum); */
 	} else {
@@ -4086,11 +4065,11 @@ void TextArea::offsetLineStarts(int newTopLineNum) {
 	// Fill in the line starts array
 	if (lineDelta < 0 && -lineDelta < nVisLines) {
 		for (i = nVisLines - 1; i >= -lineDelta; i--)
-			lineStarts[i] = lineStarts[i + lineDelta];
+            lineStarts_[i] = lineStarts_[i + lineDelta];
 		calcLineStarts(0, -lineDelta);
 	} else if (lineDelta > 0 && lineDelta < nVisLines) {
 		for (i = 0; i < nVisLines - lineDelta; i++)
-			lineStarts[i] = lineStarts[i + lineDelta];
+            lineStarts_[i] = lineStarts_[i + lineDelta];
 		calcLineStarts(nVisLines - lineDelta, nVisLines - 1);
 	} else
 		calcLineStarts(0, nVisLines);
@@ -4105,7 +4084,7 @@ void TextArea::offsetLineStarts(int newTopLineNum) {
 
 	/* {   int i;
 		printf("lineStarts After: ");
-		for(i=0; i<nVisLines; i++) printf("%d ", lineStarts[i]);
+        for(i=0; i<nVisLines; i++) printf("%d ", lineStarts_[i]);
 		printf("\n");
 	} */
 }

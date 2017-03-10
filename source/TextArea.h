@@ -58,25 +58,17 @@ public:
     Q_DECLARE_FLAGS(EventFlags, EventFlag)
 
 public:
-	TextArea(QWidget *parent,
+    TextArea(QWidget *parent,
         int left,
         int top,
         int width,
         int height,
         int lineNumLeft,
         int lineNumWidth,
-		TextBuffer *buffer,
-		QFont fontStruct,
-		QColor bgPixel,
-		QColor fgPixel,
-		QColor selectFGPixel,
-		QColor selectBGPixel,
-		QColor highlightFGPixel,
-		QColor highlightBGPixel,
-		QColor cursorFGPixel,
-		QColor lineNumFGPixel);
+        TextBuffer *buffer,
+        QFont fontStruct);
 
-    TextArea(const TextArea &other);
+    TextArea(const TextArea &other) = delete;
 	TextArea& operator=(const TextArea &) = delete;
 	virtual ~TextArea();
 
@@ -387,7 +379,7 @@ private:
 	TextBuffer *styleBuffer_;                     // Optional parallel buffer containing color and font information
 	int firstChar_;                               // Buffer positions of first and last displayed character (lastChar points either to a newline or one character beyond the end of the buffer)
 	int lastChar_;
-	int *lineStarts_;
+    QVector<int> lineStarts_;
 	int topLineNum_;                              // Line number of top displayed line of file (first line of file is 1)
 	int absTopLineNum_;                           // In continuous wrap mode, the line number of the top line if the text were not wrapped (note that this is only maintained as needed).
 	int needAbsTopLineNum_;                       // Externally settable flag to continue maintaining absTopLineNum even if it isn't needed for line # display

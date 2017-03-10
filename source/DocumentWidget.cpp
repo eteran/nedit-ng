@@ -456,6 +456,13 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
     connect(flashTimer_, SIGNAL(timeout()), this, SLOT(flashTimerTimeout()));
 
     auto area = createTextArea(buffer_);
+
+    buffer_->BufAddModifyCB(modifiedCB, this);
+
+    // Set the requested hardware tab distance and useTabs in the text buffer
+    buffer_->BufSetTabDistance(GetPrefTabDist(PLAIN_LANGUAGE_MODE));
+    buffer_->useTabs_ = GetPrefInsertTabs();
+
     static int n = 0;
     area->setObjectName(tr("TextArea_%1").arg(n++));
     splitter_->addWidget(area);
@@ -482,15 +489,7 @@ TextArea *DocumentWidget::createTextArea(TextBuffer *buffer) {
                              0,
                              0,
                              buffer,
-                             GetPrefDefaultFont(),
-                             Qt::white,
-                             Qt::black,
-                             Qt::white,
-                             Qt::blue,
-                             Qt::black, //QColor highlightFGPixel,
-                             Qt::black, //QColor highlightBGPixel,
-                             Qt::black, //QColor cursorFGPixel,
-                             Qt::black  //QColor lineNumFGPixel,
+                             GetPrefDefaultFont()
                              );
 
     QColor textFgPix   = AllocColor(GetPrefColorName(TEXT_FG_COLOR));
@@ -518,7 +517,6 @@ TextArea *DocumentWidget::createTextArea(TextBuffer *buffer) {
     area->addDragEndCallback(dragEndCB, this);
     area->addSmartIndentCallback(smartIndentCB, this);
 
-
     // NOTE(eteran): we kinda cheat here. We want to have a custom context menu
     // but we don't want it to fire if the user is pressing Ctrl when they right click
     // so TextArea captures the default context menu event, then if appropriate
@@ -527,12 +525,6 @@ TextArea *DocumentWidget::createTextArea(TextBuffer *buffer) {
     //area->setContextMenuPolicy(Qt::CustomContextMenu);
 
     connect(area, SIGNAL(customContextMenuRequested(const QPoint &)), SLOT(customContextMenuRequested(const QPoint &)));
-
-    buffer_->BufAddModifyCB(modifiedCB, this);
-
-    // Set the requested hardware tab distance and useTabs in the text buffer
-    buffer_->BufSetTabDistance(GetPrefTabDist(PLAIN_LANGUAGE_MODE));
-    buffer_->useTabs_ = GetPrefInsertTabs();
 
     return area;
 }
