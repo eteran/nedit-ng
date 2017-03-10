@@ -2,7 +2,7 @@
 #ifndef DIALOG_WINDOW_TITLE_H_
 #define DIALOG_WINDOW_TITLE_H_
 
-#include <QDialog>
+#include "Dialog.h"
 #include <QString>
 #include "LockReasons.h"
 #include "ui_DialogWindowTitle.h"
@@ -11,14 +11,11 @@ class MainWindow;
 class DocumentWidget;
 struct UpdateState;
 
-class DialogWindowTitle : public QDialog {
+class DialogWindowTitle : public Dialog {
 	Q_OBJECT
 public:
     DialogWindowTitle(DocumentWidget *document, QWidget *parent = 0, Qt::WindowFlags f = 0);
     virtual ~DialogWindowTitle() = default;
-
-private:
-    virtual void showEvent(QShowEvent *event) override;
 
 private Q_SLOTS:
 	void on_checkFileName_toggled(bool checked);

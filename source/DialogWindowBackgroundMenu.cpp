@@ -12,7 +12,7 @@
 //------------------------------------------------------------------------------
 // Name: DialogWindowBackgroundMenu
 //------------------------------------------------------------------------------
-DialogWindowBackgroundMenu::DialogWindowBackgroundMenu(QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f), previous_(nullptr) {
+DialogWindowBackgroundMenu::DialogWindowBackgroundMenu(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f), previous_(nullptr) {
 	ui.setupUi(this);
     ui.editAccelerator->setMaximumSequenceLength(1);
 
@@ -496,9 +496,4 @@ bool DialogWindowBackgroundMenu::updateCurrentItem() {
 
 	QListWidgetItem *const selection = selections[0];
 	return updateCurrentItem(selection);	
-}
-
-void DialogWindowBackgroundMenu::showEvent(QShowEvent *event) {
-    Q_UNUSED(event);
-    centerDialog(this);
 }

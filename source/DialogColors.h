@@ -2,13 +2,13 @@
 #ifndef DIALOG_COLORS_H_
 #define DIALOG_COLORS_H_
 
-#include <QDialog>
+#include "Dialog.h"
 #include "ui_DialogColors.h"
 
 class DocumentWidget;
 class QLabel;
 
-class DialogColors : public QDialog {
+class DialogColors : public Dialog {
 	Q_OBJECT
 public:
     DialogColors(QWidget *parent = 0, Qt::WindowFlags f = 0);
@@ -42,9 +42,6 @@ private:
 	void chooseColor(QLineEdit *edit);
 	bool verifyAllColors();
 	void updateColors();
-
-private:
-    virtual void showEvent(QShowEvent *event) override;
 
 private:
 	Ui::DialogColors ui;

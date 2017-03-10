@@ -103,7 +103,7 @@ QString buildCompiler() {
 //------------------------------------------------------------------------------
 // Name: DialogAbout
 //------------------------------------------------------------------------------
-DialogAbout::DialogAbout(QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f) {
+DialogAbout::DialogAbout(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f) {
 	ui.setupUi(this);
 
     ui.textAbout->setText(tr("%1"
@@ -138,9 +138,4 @@ QString DialogAbout::createInfoString() {
                                     .arg(QLatin1String(QT_VERSION_STR))
                                     .arg(QString::fromLatin1(qVersion()))
                                     .arg(QLocale::system().bcp47Name());
-}
-
-void DialogAbout::showEvent(QShowEvent *event) {
-    Q_UNUSED(event);
-    centerDialog(this);
 }

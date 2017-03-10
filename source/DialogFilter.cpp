@@ -7,7 +7,7 @@
 //------------------------------------------------------------------------------
 // Name: 
 //------------------------------------------------------------------------------
-DialogFilter::DialogFilter(QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f), historyIndex_(0) {
+DialogFilter::DialogFilter(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f), historyIndex_(0) {
 	ui.setupUi(this);
 	
 	// seed the history with a blank string, makes later logic simpler
@@ -43,16 +43,13 @@ void DialogFilter::keyPressEvent(QKeyEvent *event) {
 	QDialog::keyPressEvent(event);
 }
 
-
 //------------------------------------------------------------------------------
 // Name: 
 //------------------------------------------------------------------------------
 void DialogFilter::showEvent(QShowEvent *event) {
-	Q_UNUSED(event);
 	historyIndex_ = 0;
 	ui.textFilter->setText(QString());
-
-    centerDialog(this);
+    Dialog::showEvent(event);
 }
 
 //------------------------------------------------------------------------------

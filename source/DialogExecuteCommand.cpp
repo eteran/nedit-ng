@@ -7,7 +7,7 @@
 //------------------------------------------------------------------------------
 // name:
 //------------------------------------------------------------------------------
-DialogExecuteCommand::DialogExecuteCommand(QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f), historyIndex_(0) {
+DialogExecuteCommand::DialogExecuteCommand(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f), historyIndex_(0) {
 	ui.setupUi(this);
 
 	// seed the history with a blank string, makes later logic simpler
@@ -48,11 +48,9 @@ void DialogExecuteCommand::keyPressEvent(QKeyEvent *event) {
 // name:
 //------------------------------------------------------------------------------
 void DialogExecuteCommand::showEvent(QShowEvent *event) {
-	Q_UNUSED(event);
 	historyIndex_ = 0;
 	ui.textCommand->setText(QString());
-
-    centerDialog(this);
+    Dialog::showEvent(event);
 }
 
 //------------------------------------------------------------------------------

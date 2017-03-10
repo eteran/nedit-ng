@@ -3,7 +3,7 @@
 #include "preferences.h"
 #include <QPushButton>
 
-DialogPrompt::DialogPrompt(QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f), result_(0) {
+DialogPrompt::DialogPrompt(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f), result_(0) {
 	setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowCloseButtonHint | Qt::WindowTitleHint);
 	ui.setupUi(this);
 	setWindowTitle(QLatin1String(" "));
@@ -24,11 +24,9 @@ void DialogPrompt::setMessage(const QString &text) {
 }
 
 void DialogPrompt::showEvent(QShowEvent *event) {
-	Q_UNUSED(event);
 	resize(minimumSize());
 	result_ = 0;
-
-    centerDialog(this);
+    Dialog::showEvent(event);
 }
 
 void DialogPrompt::on_buttonBox_clicked(QAbstractButton *button) {

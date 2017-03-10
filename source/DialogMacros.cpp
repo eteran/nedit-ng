@@ -12,7 +12,7 @@
 //------------------------------------------------------------------------------
 // Name: DialogMacros
 //------------------------------------------------------------------------------
-DialogMacros::DialogMacros(QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f), previous_(nullptr) {
+DialogMacros::DialogMacros(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f), previous_(nullptr) {
 	ui.setupUi(this);
     ui.editAccelerator->setMaximumSequenceLength(1);
 
@@ -496,9 +496,4 @@ bool DialogMacros::updateCurrentItem() {
 
 	QListWidgetItem *const selection = selections[0];
 	return updateCurrentItem(selection);	
-}
-
-void DialogMacros::showEvent(QShowEvent *event) {
-    Q_UNUSED(event);
-    centerDialog(this);
 }

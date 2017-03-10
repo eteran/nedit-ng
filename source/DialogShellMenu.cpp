@@ -13,7 +13,7 @@
 //------------------------------------------------------------------------------
 // Name: DialogShellMenu
 //------------------------------------------------------------------------------
-DialogShellMenu::DialogShellMenu(QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f), previous_(nullptr) {
+DialogShellMenu::DialogShellMenu(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f), previous_(nullptr) {
 	ui.setupUi(this);
     ui.editAccelerator->setMaximumSequenceLength(1);
 
@@ -494,9 +494,4 @@ bool DialogShellMenu::checkCurrent(Mode mode) {
 	}
 	
 	return false;
-}
-
-void DialogShellMenu::showEvent(QShowEvent *event) {
-    Q_UNUSED(event);
-    centerDialog(this);
 }

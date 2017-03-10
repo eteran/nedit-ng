@@ -10,7 +10,7 @@
 //------------------------------------------------------------------------------
 // Name:
 //------------------------------------------------------------------------------
-DialogFonts::DialogFonts(DocumentWidget *document, bool forWindow, QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f), document_(document), forWindow_(forWindow) {
+DialogFonts::DialogFonts(DocumentWidget *document, bool forWindow, QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f), document_(document), forWindow_(forWindow) {
 	ui.setupUi(this);
 
 	if(!forWindow) {
@@ -254,9 +254,4 @@ void DialogFonts::browseFont(QLineEdit *lineEdit) {
     if(ok) {
         lineEdit->setText(newFont.toString());
     }
-}
-
-void DialogFonts::showEvent(QShowEvent *event) {
-    Q_UNUSED(event);
-    centerDialog(this);
 }

@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------
 // Name: DialogOutput
 //------------------------------------------------------------------------------
-DialogOutput::DialogOutput(QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f) {
+DialogOutput::DialogOutput(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f) {
 	ui.setupUi(this);
 }
 
@@ -14,9 +14,4 @@ DialogOutput::DialogOutput(QWidget *parent, Qt::WindowFlags f) : QDialog(parent,
 //------------------------------------------------------------------------------
 void DialogOutput::setText(const QString &text) {
 	ui.plainTextEdit->setPlainText(text);
-}
-
-void DialogOutput::showEvent(QShowEvent *event) {
-    Q_UNUSED(event);
-    centerDialog(this);
 }

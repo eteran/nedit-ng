@@ -2,14 +2,14 @@
 #ifndef DIALOG_SYNTAX_PATTERNS_H_
 #define DIALOG_SYNTAX_PATTERNS_H_
 
-#include <QDialog>
+#include "Dialog.h"
 #include <memory>
 #include "ui_DialogSyntaxPatterns.h"
 
 class PatternSet;
 class HighlightPattern;
 
-class DialogSyntaxPatterns : public QDialog {
+class DialogSyntaxPatterns : public Dialog {
 	Q_OBJECT
 
 private:
@@ -21,9 +21,6 @@ private:
 public:
 	DialogSyntaxPatterns(QWidget *parent = 0, Qt::WindowFlags f = 0);
 	virtual ~DialogSyntaxPatterns();
-
-private:
-    virtual void showEvent(QShowEvent *event) override;
 
 public:
 	void setLanguageName(const QString &name);

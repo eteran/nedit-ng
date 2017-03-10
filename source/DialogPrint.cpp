@@ -56,7 +56,7 @@ bool DialogPrint::PreferencesLoaded = false;
 //------------------------------------------------------------------------------
 // Name: 
 //------------------------------------------------------------------------------
-DialogPrint::DialogPrint(const QString &PrintFileName, const QString &jobName, QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f) {
+DialogPrint::DialogPrint(const QString &PrintFileName, const QString &jobName, QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f) {
 	ui.setupUi(this);
 	
 	ui.spinCopies->setSpecialValueText(tr(" "));
@@ -456,7 +456,3 @@ void DialogPrint::on_buttonPrint_clicked() {
 	accept();
 }
 
-void DialogPrint::showEvent(QShowEvent *event) {
-    Q_UNUSED(event);
-    centerDialog(this);
-}

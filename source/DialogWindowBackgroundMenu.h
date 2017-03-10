@@ -2,20 +2,17 @@
 #ifndef DIALOG_WINDOW_BACKGROUND_MENU_H_
 #define DIALOG_WINDOW_BACKGROUND_MENU_H_
 
-#include <QDialog>
+#include "Dialog.h"
 #include <QList>
 #include "ui_DialogWindowBackgroundMenu.h"
 
 class MenuItem;
 
-class DialogWindowBackgroundMenu : public QDialog {
+class DialogWindowBackgroundMenu : public Dialog {
 	Q_OBJECT
 public:
 	DialogWindowBackgroundMenu(QWidget *parent = 0, Qt::WindowFlags f = 0);
 	virtual ~DialogWindowBackgroundMenu();
-
-private:
-    virtual void showEvent(QShowEvent *event) override;
 
 public:
 	void setPasteReplayEnabled(bool enabled);

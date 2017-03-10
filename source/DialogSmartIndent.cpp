@@ -15,7 +15,7 @@
 //------------------------------------------------------------------------------
 // Name: 
 //------------------------------------------------------------------------------
-DialogSmartIndent::DialogSmartIndent(DocumentWidget *document, QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f) {
+DialogSmartIndent::DialogSmartIndent(DocumentWidget *document, QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f) {
 	ui.setupUi(this);
 		
     QString languageMode = LanguageModeName(document->languageMode_ == PLAIN_LANGUAGE_MODE ? 0 : document->languageMode_);
@@ -361,9 +361,4 @@ QString DialogSmartIndent::ensureNewline(const QString &string) {
 
 bool DialogSmartIndent::hasSmartIndentMacros(const QString &languageMode) const {
 	return languageMode_ == languageMode;
-}
-
-void DialogSmartIndent::showEvent(QShowEvent *event) {
-    Q_UNUSED(event);
-    centerDialog(this);
 }

@@ -2,11 +2,11 @@
 #ifndef DIALOG_EXECUTE_COMMAND_H_
 #define DIALOG_EXECUTE_COMMAND_H_
 
-#include <QDialog>
+#include "Dialog.h"
 #include <QStringList>
 #include "ui_DialogExecuteCommand.h"
 
-class DialogExecuteCommand : public QDialog {
+class DialogExecuteCommand : public Dialog {
 	Q_OBJECT
 public:
 	DialogExecuteCommand(QWidget *parent = 0, Qt::WindowFlags f = 0);

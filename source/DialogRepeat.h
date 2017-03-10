@@ -2,19 +2,16 @@
 #ifndef DIALOG_REPEAT_H_
 #define DIALOG_REPEAT_H_
 
-#include <QDialog>
+#include "Dialog.h"
 #include "ui_DialogRepeat.h"
 
 class DocumentWidget;
 
-class DialogRepeat : public QDialog {
+class DialogRepeat : public Dialog {
 	Q_OBJECT
 public:
     DialogRepeat(DocumentWidget *forWindow, QWidget *parent = 0, Qt::WindowFlags f = 0);
     virtual ~DialogRepeat() = default;
-
-private:
-    virtual void showEvent(QShowEvent *event) override;
 
 public Q_SLOTS:
 	void setCommand(const QString &command);	

@@ -2,17 +2,14 @@
 #ifndef DIALOG_PRINT_H_
 #define DIALOG_PRINT_H_
 
-#include <QDialog>
+#include "Dialog.h"
 #include "ui_DialogPrint.h"
 
-class DialogPrint : public QDialog {
+class DialogPrint : public Dialog {
 	Q_OBJECT
 public:
 	DialogPrint(const QString &PrintFileName, const QString &jobName, QWidget *parent = 0, Qt::WindowFlags f = 0);
     virtual ~DialogPrint() = default;
-	
-private:
-    virtual void showEvent(QShowEvent *event) override;
 
 private Q_SLOTS:
 	void on_spinCopies_valueChanged(int n);

@@ -2,7 +2,7 @@
 #ifndef DIALOG_TABS_H_
 #define DIALOG_TABS_H_
 
-#include <QDialog>
+#include "Dialog.h"
 #include "ui_DialogTabs.h"
 
 class DocumentWidget;
@@ -12,15 +12,12 @@ class DocumentWidget;
 ** defaults, or for a specific window (pass "forWindow" as nullptr to set default
 ** preference, or a window to set preferences for the specific window.
 */
-class DialogTabs : public QDialog {
+class DialogTabs : public Dialog {
 public:
 	Q_OBJECT
 public:
     DialogTabs(DocumentWidget *document, QWidget *parent = 0, Qt::WindowFlags f = 0);
     virtual ~DialogTabs() = default;
-
-private:
-    virtual void showEvent(QShowEvent *event) override;
 
 private Q_SLOTS:
 	void on_checkEmulateTabs_toggled(bool checked);

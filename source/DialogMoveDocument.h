@@ -2,13 +2,13 @@
 #ifndef DIALOG_MOVE_DOCUMENT_H_
 #define DIALOG_MOVE_DOCUMENT_H_
 
-#include <QDialog>
+#include "Dialog.h"
 #include <QList>
 #include "ui_DialogMoveDocument.h"
 
 class MainWindow;
 
-class DialogMoveDocument : public QDialog {
+class DialogMoveDocument : public Dialog {
 public:
 	Q_OBJECT
 public:
@@ -23,9 +23,6 @@ public:
 	int selectionIndex() const;
 	bool moveAllSelected() const;
 
-private:
-    virtual void showEvent(QShowEvent *event) override;
-	
 private:
 	Ui::DialogMoveDocument ui;
     QList<MainWindow *>    windows_;

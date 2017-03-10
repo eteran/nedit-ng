@@ -25,7 +25,7 @@ struct UpdateState {
 //------------------------------------------------------------------------------
 // Name: 
 //------------------------------------------------------------------------------
-DialogWindowTitle::DialogWindowTitle(DocumentWidget *document, QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f) {
+DialogWindowTitle::DialogWindowTitle(DocumentWidget *document, QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f) {
 	ui.setupUi(this);
 	
 	inConstructor_ = true;
@@ -713,9 +713,4 @@ QString DialogWindowTitle::FormatWindowTitleInternal(const QString &filename, co
 	}
 
 	return title;
-}
-
-void DialogWindowTitle::showEvent(QShowEvent *event) {
-    Q_UNUSED(event);
-    centerDialog(this);
 }

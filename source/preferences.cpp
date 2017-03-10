@@ -1440,19 +1440,3 @@ static QString getDefaultShell() {
 
     return QString::fromLatin1(passwdEntry->pw_shell);
 }
-
-void centerDialog(QDialog *dialog) {
-
-    if(GetPrefRepositionDialogs()) {
-        QPoint pos = QCursor::pos();
-
-        int x = pos.x() - (dialog->width() / 2);
-        int y = pos.y() - (dialog->height() / 2);
-
-        // NOTE(eteran): no effort is made to fixup the location to prevent it
-        // from being partially off screen. At least on KDE Plasma, this happens
-        // automagically for us. We can revisit this if need be
-
-        dialog->move(x, y);
-    }
-}

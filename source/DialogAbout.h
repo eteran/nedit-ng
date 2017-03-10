@@ -2,17 +2,14 @@
 #ifndef DIALOG_ABOUT_H_
 #define DIALOG_ABOUT_H_
 
-#include <QDialog>
+#include "Dialog.h"
 #include "ui_DialogAbout.h"
 
-class DialogAbout : public QDialog {
+class DialogAbout : public Dialog {
 	Q_OBJECT
 public:
 	DialogAbout(QWidget *parent = 0, Qt::WindowFlags f = 0);
 	virtual ~DialogAbout() = default;
-
-public:
-    virtual void showEvent(QShowEvent *event) override;
 
 public:
     static QString createInfoString();

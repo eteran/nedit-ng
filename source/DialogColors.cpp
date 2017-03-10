@@ -12,7 +12,7 @@
 //------------------------------------------------------------------------------
 // Name: 
 //------------------------------------------------------------------------------
-DialogColors::DialogColors(QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f) {
+DialogColors::DialogColors(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f) {
 	ui.setupUi(this);
 	
     ui.labelErrorFG->setVisible(false);
@@ -250,9 +250,4 @@ void DialogColors::updateColors() {
     SetPrefColorName(HILITE_BG_COLOR, hiliteBg);
     SetPrefColorName(LINENO_FG_COLOR, lineNoFg);
     SetPrefColorName(CURSOR_FG_COLOR, cursorFg);
-}
-
-void DialogColors::showEvent(QShowEvent *event) {
-    Q_UNUSED(event);
-    centerDialog(this);
 }

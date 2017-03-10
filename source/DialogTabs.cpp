@@ -9,7 +9,7 @@
 //------------------------------------------------------------------------------
 // Name: 
 //------------------------------------------------------------------------------
-DialogTabs::DialogTabs(DocumentWidget *document, QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f), document_(document) {
+DialogTabs::DialogTabs(DocumentWidget *document, QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f), document_(document) {
 
 	ui.setupUi(this);
 	
@@ -120,9 +120,4 @@ void DialogTabs::on_buttonBox_helpRequested() {
 #if 0
 	Help(HELP_TABS_DIALOG);
 #endif
-}
-
-void DialogTabs::showEvent(QShowEvent *event) {
-    Q_UNUSED(event);
-    centerDialog(this);
 }

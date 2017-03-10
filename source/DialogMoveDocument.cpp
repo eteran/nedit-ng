@@ -8,7 +8,7 @@
 //------------------------------------------------------------------------------
 // Name: 
 //------------------------------------------------------------------------------
-DialogMoveDocument::DialogMoveDocument(QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f) {
+DialogMoveDocument::DialogMoveDocument(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f) {
 	ui.setupUi(this);
 }
 
@@ -53,9 +53,4 @@ int DialogMoveDocument::selectionIndex() const {
 //------------------------------------------------------------------------------
 bool DialogMoveDocument::moveAllSelected() const {
 	return ui.checkMoveAll->isChecked();
-}
-
-void DialogMoveDocument::showEvent(QShowEvent *event) {
-    Q_UNUSED(event);
-    centerDialog(this);
 }

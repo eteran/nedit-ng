@@ -2,11 +2,11 @@
 #ifndef DIALOG_FILTER_H_
 #define DIALOG_FILTER_H_
 
-#include <QDialog>
+#include "Dialog.h"
 #include <QStringList>
 #include "ui_DialogFilter.h"
 
-class DialogFilter : public QDialog {
+class DialogFilter : public Dialog {
 	Q_OBJECT
 public:
 	DialogFilter(QWidget *parent = 0, Qt::WindowFlags f = 0);

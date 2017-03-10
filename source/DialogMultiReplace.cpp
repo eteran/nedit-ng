@@ -8,13 +8,8 @@
 #include "search.h"
 #include <QMessageBox>
 
-DialogMultiReplace::DialogMultiReplace(MainWindow *window, DocumentWidget *document, DialogReplace *replace, QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f), window_(window), document_(document), replace_(replace) {
+DialogMultiReplace::DialogMultiReplace(MainWindow *window, DocumentWidget *document, DialogReplace *replace, QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f), window_(window), document_(document), replace_(replace) {
 	ui.setupUi(this);
-}
-
-void DialogMultiReplace::showEvent(QShowEvent *event) {
-    Q_UNUSED(event);
-    centerDialog(this);
 }
 
 void DialogMultiReplace::on_checkShowPaths_toggled(bool checked) {

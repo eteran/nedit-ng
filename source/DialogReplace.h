@@ -4,7 +4,7 @@
 
 #include "SearchDirection.h"
 #include "SearchType.h"
-#include <QDialog>
+#include "Dialog.h"
 #include <QPointer>
 #include <ctime>
 
@@ -19,7 +19,7 @@ class MainWindow;
 class DocumentWidget;
 class DialogMultiReplace;
 
-class DialogReplace : public QDialog {
+class DialogReplace : public Dialog {
 	Q_OBJECT
 public:
     DialogReplace(MainWindow *window, DocumentWidget *document, QWidget *parent = 0, Qt::WindowFlags f = 0);

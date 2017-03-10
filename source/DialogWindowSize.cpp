@@ -4,7 +4,7 @@
 #include <QIntValidator>
 #include <QMessageBox>
 
-DialogWindowSize::DialogWindowSize(QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f) {
+DialogWindowSize::DialogWindowSize(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f) {
 	ui.setupUi(this);
 	
 	ui.editWidth->setValidator(new QIntValidator(0, INT_MAX, this));
@@ -44,9 +44,4 @@ void DialogWindowSize::on_buttonBox_accepted() {
 	SetPrefCols(colValue);
 	
 	accept();
-}
-
-void DialogWindowSize::showEvent(QShowEvent *event) {
-    Q_UNUSED(event);
-    centerDialog(this);
 }

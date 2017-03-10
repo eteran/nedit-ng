@@ -176,8 +176,6 @@ QFont GetPrefBoldFont();
 QFont GetPrefBoldItalicFont();
 QFont GetPrefItalicFont();
 
-void centerDialog(QDialog *dialog);
-
 #if defined(REPLACE_SCOPE)
 void SetPrefReplaceDefScope(int scope);
 int GetPrefReplaceDefScope();

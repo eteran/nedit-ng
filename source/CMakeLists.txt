@@ -20,6 +20,7 @@ qt5_add_resources(QRC_SOURCES
 qt5_wrap_cpp(MOC_SOURCES
 	CallTipWidget.h
 	CommandRecorder.h
+	Dialog.h
 	DialogAbout.h
 	DialogColors.h
 	DialogDrawingStyles.h
@@ -102,6 +103,7 @@ add_executable(nedit-ng
 
 	CallTipWidget.cpp
 	CommandRecorder.cpp
+	Dialog.cpp
 	DialogAbout.cpp
 	DialogColors.cpp
 	DialogDrawingStyles.cpp

@@ -4,7 +4,7 @@
 #include "DocumentWidget.h"
 #include <QMessageBox>
 
-DialogWrapMargin::DialogWrapMargin(DocumentWidget *document, QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f), document_(document) {
+DialogWrapMargin::DialogWrapMargin(DocumentWidget *document, QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f), document_(document) {
 	ui.setupUi(this);
 }
 
@@ -41,7 +41,3 @@ void DialogWrapMargin::on_buttonBox_accepted() {
 	accept();
 }
 
-void DialogWrapMargin::showEvent(QShowEvent *event) {
-    Q_UNUSED(event);
-    centerDialog(this);
-}

@@ -5,7 +5,7 @@
 #include "SearchDirection.h"
 #include "SearchType.h"
 
-#include <QDialog>
+#include "Dialog.h"
 #include <ctime>
 
 #include "ui_DialogFind.h"
@@ -13,7 +13,7 @@
 class MainWindow;
 class DocumentWidget;
 
-class DialogFind : public QDialog {
+class DialogFind : public Dialog {
 	Q_OBJECT
 public:
     DialogFind(MainWindow *window, DocumentWidget *document, QWidget *parent = 0, Qt::WindowFlags f = 0);

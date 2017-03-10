@@ -2,12 +2,12 @@
 #ifndef DIALOG_FONTS_H_
 #define DIALOG_FONTS_H_
 
-#include <QDialog>
+#include "Dialog.h"
 #include "ui_DialogFonts.h"
 
 class DocumentWidget;
 
-class DialogFonts : public QDialog {
+class DialogFonts : public Dialog {
 	Q_OBJECT
 private:
 	// Return values for checkFontStatus 
@@ -22,9 +22,6 @@ private:
 public:
     DialogFonts(DocumentWidget *document, bool forWindow, QWidget *parent = 0, Qt::WindowFlags f = 0);
     virtual ~DialogFonts() = default;
-
-private:
-    virtual void showEvent(QShowEvent *event) override;
 
 private Q_SLOTS:
 	void on_buttonPrimaryFont_clicked();

@@ -2,10 +2,10 @@
 #ifndef DIALOG_PROMPT_LIST_H_
 #define DIALOG_PROMPT_LIST_H_
 
-#include <QDialog>
+#include "Dialog.h"
 #include "ui_DialogPromptList.h"
 
-class DialogPromptList : public QDialog {
+class DialogPromptList : public Dialog {
 	Q_OBJECT
 public:
 	DialogPromptList(QWidget *parent = 0, Qt::WindowFlags f = 0);

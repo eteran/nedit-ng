@@ -2,17 +2,14 @@
 #ifndef DIALOG_SMART_INDENT_COMMON_H_
 #define DIALOG_SMART_INDENT_COMMON_H_
 
-#include <QDialog>
+#include "Dialog.h"
 #include "ui_DialogSmartIndentCommon.h"
 
-class DialogSmartIndentCommon : public QDialog {
+class DialogSmartIndentCommon : public Dialog {
 	Q_OBJECT
 public:
 	DialogSmartIndentCommon(QWidget *parent = 0, Qt::WindowFlags f = 0);
     virtual ~DialogSmartIndentCommon() = default;
-
-private:
-    virtual void showEvent(QShowEvent *event) override;
 
 private:
 	bool checkSmartIndentCommonDialogData();

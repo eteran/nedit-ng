@@ -23,7 +23,7 @@
 //------------------------------------------------------------------------------
 // Name: DialogLanguageModes
 //------------------------------------------------------------------------------
-DialogLanguageModes::DialogLanguageModes(QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f), previous_(nullptr) {
+DialogLanguageModes::DialogLanguageModes(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f), previous_(nullptr) {
 	ui.setupUi(this);
 
     for(const LanguageMode &lang : LanguageModes) {
@@ -680,9 +680,4 @@ bool DialogLanguageModes::updateCurrentItem() {
 
 	QListWidgetItem *const selection = selections[0];
 	return updateCurrentItem(selection);
-}
-
-void DialogLanguageModes::showEvent(QShowEvent *event) {
-    Q_UNUSED(event);
-    centerDialog(this);
 }

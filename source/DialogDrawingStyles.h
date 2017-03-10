@@ -2,13 +2,13 @@
 #ifndef DIALOG_DRAWING_STYLES_H_
 #define DIALOG_DRAWING_STYLES_H_
 
-#include <QDialog>
+#include "Dialog.h"
 #include <memory>
 #include "ui_DialogDrawingStyles.h"
 
 class HighlightStyle;
 
-class DialogDrawingStyles : public QDialog {
+class DialogDrawingStyles : public Dialog {
 	Q_OBJECT
 
 private:
@@ -20,9 +20,6 @@ private:
 public:
 	DialogDrawingStyles(QWidget *parent = 0, Qt::WindowFlags f = 0);
 	virtual ~DialogDrawingStyles();
-
-private:
-    virtual void showEvent(QShowEvent *event) override;
 
 public Q_SLOTS:
 	void setStyleByName(const QString &name);

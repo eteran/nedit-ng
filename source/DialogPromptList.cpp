@@ -5,7 +5,7 @@
 
 // NOTE(eteran): maybe we want to present an option to have this be a combo box instead?
 
-DialogPromptList::DialogPromptList(QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f), result_(0) {
+DialogPromptList::DialogPromptList(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f), result_(0) {
 	setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowCloseButtonHint | Qt::WindowTitleHint);
 	ui.setupUi(this);
 	setWindowTitle(QLatin1String(" "));
@@ -32,12 +32,10 @@ void DialogPromptList::setList(const QString &string) {
 }
 
 void DialogPromptList::showEvent(QShowEvent *event) {
-	Q_UNUSED(event);
 	resize(minimumSize());
 	result_ = 0;
 	text_ = QString();
-
-    centerDialog(this);
+    Dialog::showEvent(event);
 }
 
 void DialogPromptList::on_buttonBox_clicked(QAbstractButton *button) {

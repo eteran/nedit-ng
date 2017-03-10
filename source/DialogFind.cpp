@@ -19,7 +19,7 @@
 //------------------------------------------------------------------------------
 // name:
 //------------------------------------------------------------------------------
-DialogFind::DialogFind(MainWindow *window, DocumentWidget *document, QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f), window_(window), document_(document) {
+DialogFind::DialogFind(MainWindow *window, DocumentWidget *document, QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f), window_(window), document_(document) {
     ui.setupUi(this);
 
     lastRegexCase_   = true;
@@ -29,11 +29,9 @@ DialogFind::DialogFind(MainWindow *window, DocumentWidget *document, QWidget *pa
 //------------------------------------------------------------------------------
 // name: 
 //------------------------------------------------------------------------------
-void DialogFind::showEvent(QShowEvent *event) {
-	Q_UNUSED(event);
+void DialogFind::showEvent(QShowEvent *event) {    
 	ui.textFind->setFocus();
-
-    centerDialog(this);
+    Dialog::showEvent(event);
 }
 
 //------------------------------------------------------------------------------

@@ -19,7 +19,7 @@
 //------------------------------------------------------------------------------
 // Name: DialogSyntaxPatterns
 //------------------------------------------------------------------------------
-DialogSyntaxPatterns::DialogSyntaxPatterns(QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f), previous_(nullptr) {
+DialogSyntaxPatterns::DialogSyntaxPatterns(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f), previous_(nullptr) {
 	ui.setupUi(this);
 
 	ui.editContextChars->setValidator(new QIntValidator(0, INT_MAX, this));
@@ -1052,9 +1052,4 @@ void DialogSyntaxPatterns::RenameHighlightPattern(const QString &oldName, const 
 //------------------------------------------------------------------------------
 bool DialogSyntaxPatterns::LMHasHighlightPatterns(const QString &languageMode) {
 	return languageMode == ui.comboLanguageMode->currentText() && ui.listItems->count() != 0;
-}
-
-void DialogSyntaxPatterns::showEvent(QShowEvent *event) {
-    Q_UNUSED(event);
-    centerDialog(this);
 }

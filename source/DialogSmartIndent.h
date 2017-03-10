@@ -2,20 +2,17 @@
 #ifndef DIALOG_SMART_INDENT_H_
 #define DIALOG_SMART_INDENT_H_
 
-#include <QDialog>
+#include "Dialog.h"
 #include "ui_DialogSmartIndent.h"
 
 class DocumentWidget;
 class SmartIndent;
 
-class DialogSmartIndent : public QDialog {
+class DialogSmartIndent : public Dialog {
 	Q_OBJECT
 public:
     DialogSmartIndent(DocumentWidget *document, QWidget *parent = 0, Qt::WindowFlags f = 0);
     virtual ~DialogSmartIndent() = default;
-
-private:
-    virtual void showEvent(QShowEvent *event) override;
 
 public:
 	void updateLanguageModes();

@@ -11,7 +11,7 @@
 //------------------------------------------------------------------------------
 // Name: 
 //------------------------------------------------------------------------------
-DialogSmartIndentCommon::DialogSmartIndentCommon(QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f) {
+DialogSmartIndentCommon::DialogSmartIndentCommon(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f) {
 	ui.setupUi(this);
 	
 	ui.editCode->setPlainText(CommonMacros);
@@ -144,9 +144,4 @@ bool DialogSmartIndentCommon::updateSmartIndentCommonData() {
 	MarkPrefsChanged();
 
 	return true;
-}
-
-void DialogSmartIndentCommon::showEvent(QShowEvent *event) {
-    Q_UNUSED(event);
-    centerDialog(this);
 }

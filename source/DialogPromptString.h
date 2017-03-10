@@ -2,10 +2,10 @@
 #ifndef DIALOG_PROMPT_STRING_H_
 #define DIALOG_PROMPT_STRING_H_
 
-#include <QDialog>
+#include "Dialog.h"
 #include "ui_DialogPromptString.h"
 
-class DialogPromptString : public QDialog {
+class DialogPromptString : public Dialog {
 	Q_OBJECT
 public:
 	DialogPromptString(QWidget *parent = 0, Qt::WindowFlags f = 0);

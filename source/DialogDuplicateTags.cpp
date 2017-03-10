@@ -7,7 +7,7 @@
 //------------------------------------------------------------------------------
 // Name: DialogDuplicateTags
 //------------------------------------------------------------------------------
-DialogDuplicateTags::DialogDuplicateTags(DocumentWidget *document, TextArea *area, QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f), document_(document), area_(area) {
+DialogDuplicateTags::DialogDuplicateTags(DocumentWidget *document, TextArea *area, QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f), document_(document), area_(area) {
 	ui.setupUi(this);
 }
 
@@ -26,7 +26,6 @@ void DialogDuplicateTags::addListItem(const QString &text, int id) {
     item->setData(Qt::UserRole, id);
 }
 
-
 void DialogDuplicateTags::on_buttonBox_accepted() {
 	if(applySelection()) {
 		accept();
@@ -38,7 +37,6 @@ void DialogDuplicateTags::on_buttonBox_clicked(QAbstractButton *button) {
 		applySelection();
 	}
 }
-
 
 bool DialogDuplicateTags::applySelection() {
 	QListWidgetItem *item = ui.listWidget->currentItem();
@@ -58,9 +56,4 @@ bool DialogDuplicateTags::applySelection() {
     return true;
 
 
-}
-
-void DialogDuplicateTags::showEvent(QShowEvent *event) {
-    Q_UNUSED(event);
-    centerDialog(this);
 }

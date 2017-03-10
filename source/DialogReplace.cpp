@@ -18,7 +18,7 @@
 //------------------------------------------------------------------------------
 // name: 
 //------------------------------------------------------------------------------
-DialogReplace::DialogReplace(MainWindow *window, DocumentWidget *document, QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f), window_(window), document_(document) {
+DialogReplace::DialogReplace(MainWindow *window, DocumentWidget *document, QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f), window_(window), document_(document) {
 	
 	ui.setupUi(this);
 	
@@ -34,10 +34,8 @@ DialogReplace::DialogReplace(MainWindow *window, DocumentWidget *document, QWidg
 // name: 
 //------------------------------------------------------------------------------
 void DialogReplace::showEvent(QShowEvent *event) {
-	Q_UNUSED(event);
 	ui.textFind->setFocus();
-
-    centerDialog(this);
+    Dialog::showEvent(event);
 }
 
 //------------------------------------------------------------------------------

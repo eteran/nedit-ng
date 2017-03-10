@@ -2,19 +2,16 @@
 #ifndef DIALOG_WRAP_MARGIN_H_
 #define DIALOG_WRAP_MARGIN_H_
 
-#include <QDialog>
+#include "Dialog.h"
 #include "ui_DialogWrapMargin.h"
 
 class DocumentWidget;
 
-class DialogWrapMargin : public QDialog {
+class DialogWrapMargin : public Dialog {
 	Q_OBJECT
 public:
     DialogWrapMargin(DocumentWidget *document, QWidget *parent = 0, Qt::WindowFlags f = 0);
 	virtual ~DialogWrapMargin() = default;
-
-private:
-    virtual void showEvent(QShowEvent *event) override;
 
 private Q_SLOTS:
 	void on_checkWrapAndFill_toggled(bool checked);

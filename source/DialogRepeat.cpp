@@ -7,7 +7,7 @@
 #include <QIntValidator>
 #include <QMessageBox>
 
-DialogRepeat::DialogRepeat(DocumentWidget *document, QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f), document_(document) {
+DialogRepeat::DialogRepeat(DocumentWidget *document, QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f), document_(document) {
 	ui.setupUi(this);
 	ui.lineEdit->setValidator(new QIntValidator(0, INT_MAX, this));
 }
@@ -81,9 +81,4 @@ bool DialogRepeat::doRepeatDialogAction() {
     // call the action routine repeat_macro to do the work
     document_->repeatMacro(macro, how);
 	return true;
-}
-
-void DialogRepeat::showEvent(QShowEvent *event) {
-    Q_UNUSED(event);
-    centerDialog(this);
 }

@@ -2,14 +2,14 @@
 #ifndef DIALOG_SHELL_MENU_H_
 #define DIALOG_SHELL_MENU_H_
 
-#include <QDialog>
+#include "Dialog.h"
 #include <QList>
 #include <memory>
 #include "ui_DialogShellMenu.h"
 
 class MenuItem;
 
-class DialogShellMenu : public QDialog {
+class DialogShellMenu : public Dialog {
 	Q_OBJECT
 
 private:
@@ -21,9 +21,6 @@ private:
 public:
 	DialogShellMenu(QWidget *parent = 0, Qt::WindowFlags f = 0);
 	virtual ~DialogShellMenu();
-
-private:
-    virtual void showEvent(QShowEvent *event) override;
 
 private Q_SLOTS:
 	void on_buttonNew_clicked();

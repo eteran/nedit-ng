@@ -16,7 +16,7 @@
 //------------------------------------------------------------------------------
 // Name: DialogDrawingStyles
 //------------------------------------------------------------------------------
-DialogDrawingStyles::DialogDrawingStyles(QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f), previous_(nullptr) {
+DialogDrawingStyles::DialogDrawingStyles(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f), previous_(nullptr) {
 	ui.setupUi(this);
 
 	// Copy the list of highlight style information to one that the user can freely edit
@@ -138,7 +138,6 @@ void DialogDrawingStyles::on_buttonDelete_clicked() {
 	
 	// force an update of the display
 	Q_EMIT on_listItems_itemSelectionChanged();
-	
 }
 
 //------------------------------------------------------------------------------
@@ -479,7 +478,3 @@ bool DialogDrawingStyles::updateCurrentItem() {
 	return updateCurrentItem(selection);	
 }
 
-void DialogDrawingStyles::showEvent(QShowEvent *event) {
-    Q_UNUSED(event);
-    centerDialog(this);
-}

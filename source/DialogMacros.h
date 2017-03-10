@@ -2,14 +2,14 @@
 #ifndef DIALOG_MACROS_H_
 #define DIALOG_MACROS_H_
 
-#include <QDialog>
+#include "Dialog.h"
 #include <QList>
 #include <memory>
 #include "ui_DialogMacros.h"
 
 class MenuItem;
 
-class DialogMacros : public QDialog {
+class DialogMacros : public Dialog {
 	Q_OBJECT
 private:
     enum class Mode {
@@ -20,9 +20,6 @@ private:
 public:
 	DialogMacros(QWidget *parent = 0, Qt::WindowFlags f = 0);
 	virtual ~DialogMacros();
-
-private:
-    virtual void showEvent(QShowEvent *event) override;
 
 public:
 	void setPasteReplayEnabled(bool enabled);
