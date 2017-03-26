@@ -353,6 +353,9 @@ void MainWindow::setupMenuDefaults() {
     no_signals(ui.action_Default_Warnings_On_Exit)->setChecked(GetPrefWarnExit());
     no_signals(ui.action_Default_Warnings_Check_Modified_File_Contents)->setEnabled(GetPrefWarnFileMods());
 
+    no_signals(ui.action_Default_Sort_Open_Prev_Menu)->setChecked(GetPrefSortOpenPrevMenu());
+    no_signals(ui.action_Default_Show_Path_In_Windows_Menu)->setChecked(GetPrefShowPathInWindowsMenu());
+
     updateWindowSizeMenu();
 }
 
@@ -3220,9 +3223,8 @@ void MainWindow::on_action_Default_Show_Path_In_Windows_Menu_toggled(bool state)
     for(MainWindow *window : allWindows()) {
         no_signals(window->ui.action_Default_Show_Path_In_Windows_Menu)->setChecked(state);
     }
-#if 0
+
     InvalidateWindowMenus();
-#endif
 }
 
 void MainWindow::on_action_Default_Customize_Window_Title_triggered() {
