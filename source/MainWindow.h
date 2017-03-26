@@ -297,6 +297,7 @@ private Q_SLOTS:
     void focusChanged(QWidget *from, QWidget *to);
 
 public:
+    QList<QAction *>   previousOpenFilesList_;
 	QPointer<QDialog>  dialogFind_;
 	QPointer<QDialog>  dialogReplace_;
 	QPointer<TextArea> lastFocus_;

@@ -411,8 +411,25 @@ void MainWindow::setupMenuAlternativeMenus() {
         ui.action_New_Window->setText(tr("New &Window"));
     }
 
-    if (GetPrefMaxPrevOpenFiles() <= 0) {
+    const int maxPrevOpenFiles = GetPrefMaxPrevOpenFiles();
+
+    if (maxPrevOpenFiles <= 0) {
         ui.action_Open_Previous->setEnabled(false);
+    } else {
+
+        // create all of the actions
+        for(int i = 0; i < maxPrevOpenFiles; ++i) {
+            auto action = new QAction(this);
+            action->setVisible(true);
+            previousOpenFilesList_.push_back(action);
+        }
+
+        auto prevMenu = new QMenu(this);
+
+        prevMenu->addActions(previousOpenFilesList_);
+
+        connect(prevMenu, SIGNAL(triggered(QAction *)), this, SLOT(openPrevCB(QAction *)));
+        ui.action_Open_Previous->setMenu(prevMenu);
     }
 
 #if defined(REPLACE_SCOPE)
@@ -1638,18 +1655,17 @@ void MainWindow::updatePrevOpenMenu() {
         qSort(prevOpenSorted);
     }
 
-    delete ui.action_Open_Previous->menu();
 
-    auto prevOpenMenu = new QMenu(this);
-
-    for(const QString &item :prevOpenSorted) {
-        QAction *action = prevOpenMenu->addAction(item);
-        action->setData(item);
+    for(int i = 0; i < prevOpenSorted.size(); ++i) {
+        QString filename = prevOpenSorted[i];
+        previousOpenFilesList_[i]->setText(filename);
+        previousOpenFilesList_[i]->setData(filename);
+        previousOpenFilesList_[i]->setVisible(true);
     }
 
-    connect(prevOpenMenu, SIGNAL(triggered(QAction *)), this, SLOT(openPrevCB(QAction *)));
-
-    ui.action_Open_Previous->setMenu(prevOpenMenu);
+    for(int i = prevOpenSorted.size(); i < previousOpenFilesList_.size(); ++i) {
+        previousOpenFilesList_[i]->setVisible(false);
+    }
 }
 
 void MainWindow::openPrevCB(QAction *action) {
