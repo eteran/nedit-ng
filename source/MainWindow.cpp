@@ -105,6 +105,7 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(par
     // when the user actually tried to look at the menu. It is simpler (but
     // perhaps marginally less efficient) to just populate it when we construct
     // the window
+    setupPrevOpenMenuActions();
     updatePrevOpenMenu();
 
     showISearchLine_       = GetPrefISearchLine();
@@ -403,17 +404,10 @@ void MainWindow::setupMenuStrings() {
     new QShortcut(QKeySequence(Qt::ALT + Qt::Key_Home), this, SLOT(action_Last_Document()));
 }
 
-//------------------------------------------------------------------------------
-// Name: setupMenuAlternativeMenus
-// Desc: under some configurations, menu items have different text/functionality
-//------------------------------------------------------------------------------
-void MainWindow::setupMenuAlternativeMenus() {
-	if(!GetPrefOpenInTab()) {
-		ui.action_New_Window->setText(tr("New &Tab"));
-    } else {
-        ui.action_New_Window->setText(tr("New &Window"));
-    }
-
+/**
+ * @brief MainWindow::setupPrevOpenMenuActions
+ */
+void MainWindow::setupPrevOpenMenuActions() {
     const int maxPrevOpenFiles = GetPrefMaxPrevOpenFiles();
 
     if (maxPrevOpenFiles <= 0) {
@@ -434,6 +428,20 @@ void MainWindow::setupMenuAlternativeMenus() {
         connect(prevMenu, SIGNAL(triggered(QAction *)), this, SLOT(openPrevCB(QAction *)));
         ui.action_Open_Previous->setMenu(prevMenu);
     }
+}
+
+//------------------------------------------------------------------------------
+// Name: setupMenuAlternativeMenus
+// Desc: under some configurations, menu items have different text/functionality
+//------------------------------------------------------------------------------
+void MainWindow::setupMenuAlternativeMenus() {
+	if(!GetPrefOpenInTab()) {
+		ui.action_New_Window->setText(tr("New &Tab"));
+    } else {
+        ui.action_New_Window->setText(tr("New &Window"));
+    }
+
+
 
 #if defined(REPLACE_SCOPE)
     auto replaceScopeGroup = new QActionGroup(this);
@@ -1645,7 +1653,7 @@ void MainWindow::WriteNEditDB() {
 void MainWindow::updatePrevOpenMenu() {
 
     if (GetPrefMaxPrevOpenFiles() == 0) {
-        delete ui.action_Open_Previous;
+        ui.action_Open_Previous->setEnabled(false);
         return;
     }
 
@@ -1657,7 +1665,6 @@ void MainWindow::updatePrevOpenMenu() {
     if (GetPrefSortOpenPrevMenu()) {
         qSort(prevOpenSorted);
     }
-
 
     for(int i = 0; i < prevOpenSorted.size(); ++i) {
         QString filename = prevOpenSorted[i];
@@ -3070,7 +3077,8 @@ void MainWindow::defaultIndentGroupTriggered(QAction *action) {
 void MainWindow::on_action_Default_Program_Smart_Indent_triggered() {
 
     if (!SmartIndentDlg) {
-        // TODO(eteran): do we really want this to be associated with THIS document?
+        // We pass this document so that the dialog can show the information for the currently
+        // active language mode
         if(auto document = currentDocument()) {
             SmartIndentDlg = new DialogSmartIndent(document, this);
         }
