@@ -55,7 +55,7 @@ qt5_wrap_cpp(MOC_SOURCES
 	MainWindow.h
 	NeditServer.h
 	Settings.h
-	TextArea.h
+	TextArea.h	
 )
 
 set(UI_FILES

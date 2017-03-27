@@ -158,7 +158,7 @@ private Q_SLOTS:
 private:
 	bool clickTracker(QMouseEvent *event, bool inDoubleClickHandler);
 
-public Q_SLOTS:
+public Q_SLOTS:    
 	void forwardCharacterAP(EventFlags flags = NoneFlag);
 	void backwardCharacterAP(EventFlags flags = NoneFlag);
 	void processUpAP(EventFlags flags = NoneFlag);
@@ -197,6 +197,7 @@ public Q_SLOTS:
 	void nextPageAP(EventFlags flags = NoneFlag);
 	void previousPageAP(EventFlags flags = NoneFlag);
     void insertStringAP(const QString &string, EventFlags flags = NoneFlag);
+    void selfInsertAP(const QString &string, EventFlags flags = NoneFlag);
 
 
 private Q_SLOTS:

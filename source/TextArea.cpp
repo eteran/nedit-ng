@@ -11,6 +11,7 @@
 #include "highlight.h"
 #include "preferences.h"
 #include "smartIndentCBStruct.h"
+#include "TextEditEvent.h"
 #include <QApplication>
 #include <QClipboard>
 #include <QDesktopWidget>
@@ -28,6 +29,19 @@
 #include <QTimer>
 #include <QtDebug>
 #include <memory>
+
+#define EMIT_EVENT(name)                                     \
+    do {                                                     \
+        TextEditEvent textEvent(QLatin1String(name), flags); \
+        QApplication::sendEvent(this, &textEvent);           \
+    } while(0)
+
+#define EMIT_EVENT_ARG(name, arg)                                 \
+    do {                                                          \
+        TextEditEvent textEvent(QLatin1String(name), arg, flags); \
+        QApplication::sendEvent(this, &textEvent);                \
+    } while(0)
+
 
 // NOTE(eteran): this is a bit of a hack to covert the raw c-strings to unicode
 // in a way that is comparaable to how the original nedit works
@@ -566,13 +580,15 @@ void TextArea::pasteClipboardAP(EventFlags flags) {
 }
 
 void TextArea::cutClipboardAP(EventFlags flags) {
-	Q_UNUSED(flags);
+
+    EMIT_EVENT("cut_clipboard");
+
     TextCutClipboard();
 }
 
 void TextArea::toggleOverstrikeAP(EventFlags flags) {
 
-	Q_UNUSED(flags);
+    EMIT_EVENT("toggle_overstrike");
 
 	if (P_overstrike) {
 		P_overstrike = false;
@@ -585,6 +601,8 @@ void TextArea::toggleOverstrikeAP(EventFlags flags) {
 }
 
 void TextArea::endOfLineAP(EventFlags flags) {
+
+    EMIT_EVENT("end_of_line");
 
 	int insertPos = cursorPos_;
 
@@ -601,6 +619,8 @@ void TextArea::endOfLineAP(EventFlags flags) {
 }
 
 void TextArea::deleteNextCharacterAP(EventFlags flags) {
+
+    EMIT_EVENT("delete_next_character");
 
 	int insertPos = cursorPos_;
 	bool silent = flags & NoBellFlag;
@@ -627,11 +647,15 @@ void TextArea::deleteNextCharacterAP(EventFlags flags) {
 }
 
 void TextArea::copyClipboardAP(EventFlags flags) {
-	Q_UNUSED(flags);
+
+    EMIT_EVENT("copy_clipboard");
+
 	TextCopyClipboard();
 }
 
 void TextArea::deletePreviousWordAP(EventFlags flags) {
+
+    EMIT_EVENT("delete_previous_word");
 
 	int insertPos = cursorPos_;
 	int pos;
@@ -668,6 +692,8 @@ void TextArea::deletePreviousWordAP(EventFlags flags) {
 
 void TextArea::beginningOfLineAP(EventFlags flags) {
 
+    EMIT_EVENT("beginning_of_line");
+
 	int insertPos = cursorPos_;
 
 	cancelDrag();
@@ -684,7 +710,7 @@ void TextArea::beginningOfLineAP(EventFlags flags) {
 
 void TextArea::processCancelAP(EventFlags flags) {
 
-	Q_UNUSED(flags);
+    EMIT_EVENT("process_cancel");
 
 	DragStates dragState = dragState_;
 
@@ -699,6 +725,8 @@ void TextArea::processCancelAP(EventFlags flags) {
 }
 
 void TextArea::deletePreviousCharacterAP(EventFlags flags) {
+
+    EMIT_EVENT("delete_previous_character");
 
 	int insertPos = cursorPos_;
 	char c;
@@ -739,7 +767,8 @@ void TextArea::deletePreviousCharacterAP(EventFlags flags) {
 // Name: newlineAP
 //------------------------------------------------------------------------------
 void TextArea::newlineAP(EventFlags flags) {
-	Q_UNUSED(flags);
+
+    EMIT_EVENT("newline");
 
 	if (P_autoIndent || P_smartIndent) {
 		newlineAndIndentAP();
@@ -752,6 +781,9 @@ void TextArea::newlineAP(EventFlags flags) {
 // Name: processUpAP
 //------------------------------------------------------------------------------
 void TextArea::processUpAP(EventFlags flags) {
+
+    EMIT_EVENT("process_up");
+
 	int insertPos = cursorPos_;
 	bool silent = flags & NoBellFlag;
 	bool abs    = flags & AbsoluteFlag;
@@ -771,6 +803,9 @@ void TextArea::processUpAP(EventFlags flags) {
 // Name: processDownAP
 //------------------------------------------------------------------------------
 void TextArea::processDownAP(EventFlags flags) {
+
+    EMIT_EVENT("process_down");
+
 	int insertPos = cursorPos_;
 
 	bool silent = flags & NoBellFlag;
@@ -790,6 +825,9 @@ void TextArea::processDownAP(EventFlags flags) {
 // Name: forwardCharacterAP
 //------------------------------------------------------------------------------
 void TextArea::forwardCharacterAP(EventFlags flags) {
+
+    EMIT_EVENT("forward_character");
+
 	int insertPos = cursorPos_;
 	bool silent = flags & NoBellFlag;
 
@@ -806,6 +844,9 @@ void TextArea::forwardCharacterAP(EventFlags flags) {
 // Name: backwardCharacterAP
 //------------------------------------------------------------------------------
 void TextArea::backwardCharacterAP(EventFlags flags) {
+
+    EMIT_EVENT("backward_character");
+
 	int insertPos = cursorPos_;
 	bool silent = flags & NoBellFlag;
 
@@ -818,6 +859,44 @@ void TextArea::backwardCharacterAP(EventFlags flags) {
 
 	checkAutoShowInsertPos();
 	callCursorMovementCBs();
+}
+
+//------------------------------------------------------------------------------
+// Name:
+//------------------------------------------------------------------------------
+void TextArea::selfInsertAP(const QString &string, EventFlags flags) {
+
+    EMIT_EVENT_ARG("insert_string", string);
+
+    std::string s = string.toStdString();
+
+    cancelDrag();
+    if (checkReadOnly()) {
+        return;
+    }
+
+    TakeMotifDestination();
+
+    if (!buffer_->BufSubstituteNullCharsEx(s)) {
+        QMessageBox::critical(this, tr("Error"), tr("Too much binary data"));
+        return;
+    }
+
+    /* If smart indent is on, call the smart indent callback to check the
+       inserted character */
+    if (P_smartIndent) {
+        smartIndentCBStruct smartIndent;
+        smartIndent.reason        = CHAR_TYPED;
+        smartIndent.pos           = cursorPos_;
+        smartIndent.indentRequest = 0;
+        smartIndent.charsTyped    = s.c_str(); // TODO(eteran): is this safe?
+
+        for(auto &c : smartIndentCallbacks_) {
+            c.first(this, &smartIndent, c.second);
+        }
+    }
+    TextInsertAtCursorEx(s, true, true);
+    buffer_->BufUnselect();
 }
 
 //------------------------------------------------------------------------------
@@ -1005,7 +1084,6 @@ void TextArea::dropEvent(QDropEvent *event) {
 
 //------------------------------------------------------------------------------
 // Name: keyPressEvent
-// Note: "self-insert"
 //------------------------------------------------------------------------------
 void TextArea::keyPressEvent(QKeyEvent *event) {
 
@@ -1357,37 +1435,7 @@ void TextArea::keyPressEvent(QKeyEvent *event) {
         return;
     }
 
-    std::string s = text.toStdString();
-
-	cancelDrag();
-	if (checkReadOnly()) {
-		return;
-	}
-
-    TakeMotifDestination();
-
-	if (!buffer_->BufSubstituteNullCharsEx(s)) {
-		QMessageBox::critical(this, tr("Error"), tr("Too much binary data"));
-		return;
-	}
-
-	/* If smart indent is on, call the smart indent callback to check the
-	   inserted character */
-	if (P_smartIndent) {
-		smartIndentCBStruct smartIndent;
-		smartIndent.reason        = CHAR_TYPED;
-		smartIndent.pos           = cursorPos_;
-		smartIndent.indentRequest = 0;
-		smartIndent.charsTyped    = s.c_str(); // TODO(eteran): is this safe?
-
-		for(auto &c : smartIndentCallbacks_) {
-			c.first(this, &smartIndent, c.second);
-		}
-	}
-	TextInsertAtCursorEx(s, true, true);
-	buffer_->BufUnselect();
-
-
+    selfInsertAP(text); // self-insert()
 }
 
 //------------------------------------------------------------------------------

@@ -45,6 +45,7 @@
 #include "regularExp.h"
 #include "selection.h"
 #include "tags.h"
+#include "CommandRecorder.h"
 #include "util/fileUtils.h"
 
 #include <QApplication>
@@ -332,6 +333,11 @@ int main(int argc, char *argv[]) {
 #if 0
 	// Begin remembering last command invoked for "Repeat" menu item 
 	AddLastCommandActionHook(context);
+#endif
+
+#if 1
+    auto recorder = CommandRecorder::getInstance();
+    qApp->installEventFilter(recorder);
 #endif
 
     // Set up communication over dbus!
