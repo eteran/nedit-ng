@@ -2,9 +2,20 @@
 #include "Dialog.h"
 #include "preferences.h"
 
+/**
+ * @brief Dialog::Dialog
+ * @param parent passed to QDialog's constructor
+ * @param f      passed to QDialog's constructor
+ */
 Dialog::Dialog(QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f) {
 }
 
+/**
+ * @brief Dialog::showEvent
+ * @param event unused
+ *
+ * reposition the dialog to be centered on the cursor if the setting is enabled
+ */
 void Dialog::showEvent(QShowEvent *event) {
     Q_UNUSED(event);
 

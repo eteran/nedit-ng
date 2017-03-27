@@ -46,4 +46,7 @@ void ConvertFromDosFileString(char *inString, int *length, char *pendingCR);
 void ConvertFromMacFileString(char *fileString, int length);
 void ConvertToMacFileStringEx(std::string &fileString);
 
+QString NormalizePathnameEx(const QString &pathname);
+QString NormalizePathnameEx(const std::string &pathname);
+
 #endif

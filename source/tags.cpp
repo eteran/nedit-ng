@@ -189,7 +189,7 @@ static int addTag(const char *name, const char *file, int lang, const char *sear
 	if (*file == '/') {
 		strcpy(newfile, file);
 	} else {
-		sprintf(newfile, "%s%s", path, file);
+        snprintf(newfile, sizeof(newfile), "%s%s", path, file);
 	}
 
 	NormalizePathname(newfile);
@@ -1039,7 +1039,7 @@ int findAllMatchesEx(DocumentWidget *document, TextArea *area, const char *strin
  * string is reached before n lines, return the number of lines advanced,
  * else normally return -1.
  */
-static int moveAheadNLines(char *str, int *pos, int n) {
+static int moveAheadNLines(const char *str, int *pos, int n) {
 	int i = n;
 	while (str[*pos] != '\0' && n > 0) {
 		if (str[*pos] == '\n')
@@ -1059,18 +1059,19 @@ static int moveAheadNLines(char *str, int *pos, int n) {
 */
 void showMatchingCalltipEx(TextArea *area, int i) {
     try {
-        int startPos = 0, fileLen, readLen, tipLen;
+        int startPos = 0;
+        int tipLen;
         int endPos = 0;
-        FILE *fp;
         struct stat statbuf;
 
         // 1. Open the target file
         NormalizePathname(tagFiles[i]);
-        fp = fopen(tagFiles[i], "r");
+        FILE *fp = fopen(tagFiles[i], "r");
         if(!fp) {
             QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error opening File"), QString(QLatin1String("Error opening %1")).arg(QString::fromLatin1(tagFiles[i])));
             return;
         }
+
         if (fstat(fileno(fp), &statbuf) != 0) {
             fclose(fp);
             QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error opening File"), QString(QLatin1String("Error opening %1")).arg(QString::fromLatin1(tagFiles[i])));
@@ -1079,15 +1080,14 @@ void showMatchingCalltipEx(TextArea *area, int i) {
 
         // 2. Read the target file
         // Allocate space for the whole contents of the file (unfortunately)
-        fileLen = statbuf.st_size;
-        auto fileString = new char[fileLen + 1]; // +1 = space for null
+        int fileLen = statbuf.st_size;
+        auto fileString = std::make_unique<char[]>(fileLen + 1); // +1 = space for null
 
         // Read the file into fileString and terminate with a null
-        readLen = fread(fileString, 1, fileLen, fp);
+        int readLen = fread(&fileString[0], 1, fileLen, fp);
         if (ferror(fp)) {
             fclose(fp);
             QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error reading File"), QString(QLatin1String("Error reading %1")).arg(QString::fromLatin1(tagFiles[i])));
-            delete [] fileString;
             return;
         }
         fileString[readLen] = '\0';
@@ -1102,16 +1102,14 @@ void showMatchingCalltipEx(TextArea *area, int i) {
         // 3. Search for the tagged location (set startPos)
         if (!*(tagSearch[i])) {
             // It's a line number, just go for it
-            if ((moveAheadNLines(fileString, &startPos, tagPosInf[i] - 1)) >= 0) {
+            if ((moveAheadNLines(&fileString[0], &startPos, tagPosInf[i] - 1)) >= 0) {
                 QMessageBox::critical(nullptr /*parent*/, QLatin1String("Tags Error"), QString(QLatin1String("%1\n not long enough for definition to be on line %2")).arg(QString::fromLatin1(tagFiles[i])).arg(tagPosInf[i]));
-                delete [] fileString;
                 return;
             }
         } else {
             startPos = tagPosInf[i];
-            if (!fakeRegExSearchEx(view::string_view(fileString, readLen), tagSearch[i], &startPos, &endPos)) {
+            if (!fakeRegExSearchEx(view::string_view(&fileString[0], readLen), tagSearch[i], &startPos, &endPos)) {
                 QMessageBox::critical(nullptr /*parent*/, QLatin1String("Tag not found"), QString(QLatin1String("Definition for %1\nnot found in %2")).arg(QString::fromLatin1(tagName)).arg(QString::fromLatin1(tagFiles[i])));
-                delete [] fileString;
                 return;
             }
         }
@@ -1121,22 +1119,23 @@ void showMatchingCalltipEx(TextArea *area, int i) {
 
             // 4. Find the end of the calltip (delimited by an empty line)
             endPos = startPos;
-            found = SearchString(fileString, QLatin1String("\\n\\s*\\n"), SEARCH_FORWARD, SEARCH_REGEX, false, startPos, &endPos, &dummy, nullptr, nullptr, nullptr);
+            found = SearchString(&fileString[0], QLatin1String("\\n\\s*\\n"), SEARCH_FORWARD, SEARCH_REGEX, false, startPos, &endPos, &dummy, nullptr, nullptr, nullptr);
             if (!found) {
                 // Just take 4 lines
-                moveAheadNLines(fileString, &endPos, TIP_DEFAULT_LINES);
+                moveAheadNLines(&fileString[0], &endPos, TIP_DEFAULT_LINES);
                 --endPos; // Lose the last \n
             }
         } else { // Mode = TIP_FROM_TAG
             // 4. Copy TIP_DEFAULT_LINES lines of text to the calltip string
             endPos = startPos;
-            moveAheadNLines(fileString, &endPos, TIP_DEFAULT_LINES);
+            moveAheadNLines(&fileString[0], &endPos, TIP_DEFAULT_LINES);
             // Make sure not to overrun the fileString with ". . ."
-            if (((size_t)endPos) <= (strlen(fileString) - 5)) {
+            if (((size_t)endPos) <= (strlen(&fileString[0]) - 5)) {
                 sprintf(&fileString[endPos], ". . .");
                 endPos += 5;
             }
         }
+
         // 5. Copy the calltip to a string
         tipLen = endPos - startPos;
 
@@ -1144,8 +1143,6 @@ void showMatchingCalltipEx(TextArea *area, int i) {
 
         // 6. Display it
         tagsShowCalltipEx(area, message);
-
-        delete [] fileString;
     } catch(const std::bad_alloc &) {
         QMessageBox::critical(nullptr /*parent*/, QLatin1String("Out of Memory"), QLatin1String("Can't allocate memory"));
     }

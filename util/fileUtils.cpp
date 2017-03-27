@@ -228,6 +228,30 @@ int ResolvePath(const char *pathIn, char *pathResolved) {
     return false;
 }
 
+QString NormalizePathnameEx(const std::string &pathname) {
+
+    char path[PATH_MAX];
+    strcpy(path, pathname.c_str());
+
+    if(!NormalizePathname(path)) {
+        return QString::fromLatin1(path);
+    }
+
+    return QString();
+}
+
+QString NormalizePathnameEx(const QString &pathname) {
+
+    char path[PATH_MAX];
+    strcpy(path, pathname.toLatin1().data());
+
+    if(!NormalizePathname(path)) {
+        return QString::fromLatin1(path);
+    }
+
+    return QString();
+}
+
 /*
 ** Return 0 if everything's fine. In fact it always return 0... (No it doesn't)
 ** Capable to handle arbitrary path length (>MAXPATHLEN)!

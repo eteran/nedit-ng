@@ -33,23 +33,6 @@
 
 namespace {
 
-class MacroException : public std::exception {
-public:
-    MacroException(const char *fmt, ...) {
-        va_list args;
-        va_start(args, fmt);
-        vsnprintf(buf_, sizeof(buf_), fmt, args);
-        va_end(args);
-    }
-
-    const char *what() const noexcept override{
-        return buf_;
-    }
-
-private:
-    char buf_[1024];
-};
-
 const int PROGRAM_SIZE      = 4096; // Maximum program size
 const int MAX_ERR_MSG_LEN   = 256;  // Max. length for error messages
 const int LOOP_STACK_SIZE   = 200;  // (Approx.) Number of break/continue stmts allowed per program
@@ -1837,19 +1820,19 @@ static int callSubroutine() {
 		StackP -= nArgs;
 
 		// Call the function and check for preemption 
-		PreemptRequest = false;
+        PreemptRequest = false;
         if (!sym->value.val.subr(FocusWindowEx, StackP, nArgs, &result, &errMsg)) {
-			return execError(errMsg, sym->name.c_str());
+            return execError(errMsg, sym->name.c_str());
         }
 
-		if (PC->func == fetchRetVal) {
-			if (result.tag == NO_TAG) {
-				return execError("%s does not return a value", sym->name.c_str());
-			}
-			PUSH(result);
-			PC++;
-		}
-		return PreemptRequest ? STAT_PREEMPT : STAT_OK;
+        if (PC->func == fetchRetVal) {
+            if (result.tag == NO_TAG) {
+                return execError("%s does not return a value", sym->name.c_str());
+            }
+            PUSH(result);
+            PC++;
+        }
+        return PreemptRequest ? STAT_PREEMPT : STAT_OK;
 	}
 
 	/*
