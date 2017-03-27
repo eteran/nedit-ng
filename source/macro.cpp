@@ -214,13 +214,6 @@ static int filenameDialogMS(DocumentWidget *window, DataValue *argList, int nArg
 // MainWindow scoped functions
 static int replaceAllInSelectionMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 static int replaceAllMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int undoMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int redoMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int selectAllMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int shiftLeftMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int shiftRightMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int shiftRightTabMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int shiftLeftTabMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 
 static int readSearchArgs(DataValue *argList, int nArgs, SearchDirection *searchDirection, SearchType *searchType, bool *wrap, const char **errMsg);
 static bool wrongNArgsErr(const char **errMsg);
@@ -240,6 +233,58 @@ struct SubRoutine {
     BuiltInSubrEx function;
 };
 
+
+#define WINDOW_MENU_EVENT(routineName, slotName)                                                                              \
+    static int routineName(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) { \
+        Q_UNUSED(argList);                                                                                                    \
+                                                                                                                              \
+        /* ensure that we are dealing with the document which currently has the focus */                                      \
+        document = MacroRunWindowEx();                                                                                        \
+                                                                                                                              \
+        if(nArgs != 0) {                                                                                                      \
+            return wrongNArgsErr(errMsg);                                                                                     \
+        }                                                                                                                     \
+                                                                                                                              \
+        if(MainWindow *window = document->toWindow()) {                                                                       \
+            window->slotName();                                                                                               \
+        }                                                                                                                     \
+                                                                                                                              \
+        result->tag = NO_TAG;                                                                                                 \
+        return true;                                                                                                          \
+    }
+
+// These emit functions to support calling them from macros, see WINDOW_MENU_EVENT for what
+// these functions will look like
+WINDOW_MENU_EVENT(undoMS,                            on_action_Undo_triggered)
+WINDOW_MENU_EVENT(redoMS,                            on_action_Redo_triggered)
+WINDOW_MENU_EVENT(selectAllMS,                       on_action_Select_All_triggered)
+WINDOW_MENU_EVENT(shiftLeftMS,                       on_action_Shift_Left_triggered)
+WINDOW_MENU_EVENT(shiftRightMS,                      on_action_Shift_Right_triggered)
+WINDOW_MENU_EVENT(shiftLeftTabMS,                    action_Shift_Left_Tabs)
+WINDOW_MENU_EVENT(shiftRightTabMS,                   action_Shift_Right_Tabs)
+WINDOW_MENU_EVENT(closeMS,                           on_action_Close_triggered)
+WINDOW_MENU_EVENT(deleteMS,                          on_action_Delete_triggered)
+WINDOW_MENU_EVENT(exitMS,                            on_action_Exit_triggered)
+WINDOW_MENU_EVENT(printMS,                           on_action_Print_triggered)
+WINDOW_MENU_EVENT(printSelectionMS,                  on_action_Print_Selection_triggered)
+WINDOW_MENU_EVENT(findDefinitionMS,                  on_action_Find_Definition_triggered)
+WINDOW_MENU_EVENT(splitPaneMS,                       on_action_Split_Pane_triggered)
+WINDOW_MENU_EVENT(closePaneMS,                       on_action_Close_Pane_triggered)
+WINDOW_MENU_EVENT(uppercaseMS,                       on_action_Upper_case_triggered)
+WINDOW_MENU_EVENT(lowercaseMS,                       on_action_Lower_case_triggered)
+WINDOW_MENU_EVENT(fillParagraphMS,                   on_action_Fill_Paragraph_triggered)
+WINDOW_MENU_EVENT(saveMS,                            on_action_Save_triggered)
+WINDOW_MENU_EVENT(gotoMatchingMS,                    on_action_Goto_Matching_triggered)
+WINDOW_MENU_EVENT(insertControlCodeDialogMS,         on_action_Insert_Ctrl_Code_triggered)
+WINDOW_MENU_EVENT(includeFileDialogMS,               on_action_Include_File_triggered)
+WINDOW_MENU_EVENT(saveAsDialogMS,                    on_action_Save_As_triggered)
+WINDOW_MENU_EVENT(loadMacroFileDialogMS,             on_action_Load_Macro_File_triggered)
+WINDOW_MENU_EVENT(loadTagsFileDialogMS,              on_action_Load_Tags_File_triggered)
+WINDOW_MENU_EVENT(loadTipsFileDialogMS,              on_action_Load_Calltips_File_triggered)
+WINDOW_MENU_EVENT(openSelectedMS,                    on_action_Open_Selected_triggered)
+WINDOW_MENU_EVENT(findDialogMS,                      on_action_Find_triggered)
+WINDOW_MENU_EVENT(replaceDialogMS,                   on_action_Replace_triggered)
+
 static const SubRoutine MenuMacroSubrNames[] = {
 	{ "new",                          nullptr },
 	{ "new_opposite",                 nullptr },
@@ -247,40 +292,40 @@ static const SubRoutine MenuMacroSubrNames[] = {
 	{ "open",                         nullptr },
 	{ "open-dialog",                  nullptr },
 	{ "open_dialog",                  nullptr },
-	{ "open-selected",                nullptr },
-	{ "open_selected",                nullptr },
-	{ "close",                        nullptr },
-	{ "save",                         nullptr },
+    { "open-selected",                openSelectedMS },
+    { "open_selected",                openSelectedMS },
+    { "close",                        closeMS },
+    { "save",                         saveMS },
 	{ "save-as",                      nullptr },
 	{ "save_as",                      nullptr },
-	{ "save-as-dialog",               nullptr },
-	{ "save_as_dialog",               nullptr },
+    { "save-as-dialog",               saveAsDialogMS },
+    { "save_as_dialog",               saveAsDialogMS },
 	{ "revert-to-saved",              nullptr },
-	{ "revert_to_saved",              nullptr },
+    { "revert_to_saved",              nullptr },
 	{ "revert_to_saved_dialog",       nullptr },
 	{ "include-file",                 nullptr },
 	{ "include_file",                 nullptr },
-	{ "include-file-dialog",          nullptr },
-	{ "include_file_dialog",          nullptr },
+    { "include-file-dialog",          includeFileDialogMS },
+    { "include_file_dialog",          includeFileDialogMS },
 	{ "load-macro-file",              nullptr },
 	{ "load_macro_file",              nullptr },
-	{ "load-macro-file-dialog",       nullptr },
-	{ "load_macro_file_dialog",       nullptr },
+    { "load-macro-file-dialog",       loadMacroFileDialogMS },
+    { "load_macro_file_dialog",       loadMacroFileDialogMS },
 	{ "load-tags-file",               nullptr },
 	{ "load_tags_file",               nullptr },
-	{ "load-tags-file-dialog",        nullptr },
-	{ "load_tags_file_dialog",        nullptr },
-	{ "unload_tags_file",             nullptr },
+    { "load-tags-file-dialog",        loadTagsFileDialogMS },
+    { "load_tags_file_dialog",        loadTagsFileDialogMS },
+    { "unload_tags_file",             nullptr },
 	{ "load_tips_file",               nullptr },
-	{ "load_tips_file_dialog",        nullptr },
+    { "load_tips_file_dialog",        loadTipsFileDialogMS },
 	{ "unload_tips_file",             nullptr },
-	{ "print",                        nullptr },
-	{ "print-selection",              nullptr },
-	{ "print_selection",              nullptr },
-	{ "exit",                         nullptr },
+    { "print",                        printMS },
+    { "print-selection",              printSelectionMS },
+    { "print_selection",              printSelectionMS },
+    { "exit",                         exitMS },
     { "undo",                         undoMS },
     { "redo",                         redoMS },
-	{ "delete",                       nullptr },
+    { "delete",                       deleteMS },
     { "select-all",                   selectAllMS },
     { "select_all",                   selectAllMS },
     { "shift-left",                   shiftLeftMS },
@@ -292,8 +337,8 @@ static const SubRoutine MenuMacroSubrNames[] = {
     { "shift-right-by-tab",           shiftRightTabMS },
     { "shift_right_by_tab",           shiftRightTabMS },
 	{ "find",                         nullptr },
-	{ "find-dialog",                  nullptr },
-	{ "find_dialog",                  nullptr },
+    { "find-dialog",                  findDialogMS },
+    { "find_dialog",                  findDialogMS },
 	{ "find-again",                   nullptr },
 	{ "find_again",                   nullptr },
 	{ "find-selection",               nullptr },
@@ -301,8 +346,8 @@ static const SubRoutine MenuMacroSubrNames[] = {
 	{ "find_incremental",             nullptr },
 	{ "start_incremental_find",       nullptr },
 	{ "replace",                      nullptr },
-	{ "replace-dialog",               nullptr },
-	{ "replace_dialog",               nullptr },
+    { "replace-dialog",               replaceDialogMS },
+    { "replace_dialog",               replaceDialogMS },
     { "replace-all",                  replaceAllMS },
     { "replace_all",                  replaceAllMS },
     { "replace-in-selection",         replaceAllInSelectionMS },
@@ -327,26 +372,26 @@ static const SubRoutine MenuMacroSubrNames[] = {
 	{ "goto_mark_dialog",             nullptr },
 	{ "match",                        nullptr },
 	{ "select_to_matching",           nullptr },
-	{ "goto_matching",                nullptr },
-	{ "find-definition",              nullptr },
-	{ "find_definition",              nullptr },
+    { "goto_matching",                gotoMatchingMS },
+    { "find-definition",              findDefinitionMS },
+    { "find_definition",              findDefinitionMS },
 	{ "show_tip",                     nullptr },
-	{ "split-pane",                   nullptr },
-	{ "split_pane",                   nullptr },
-	{ "close-pane",                   nullptr },
-	{ "close_pane",                   nullptr },
+    { "split-pane",                   splitPaneMS },
+    { "split_pane",                   splitPaneMS },
+    { "close-pane",                   closePaneMS },
+    { "close_pane",                   closePaneMS },
 	{ "detach_document",              nullptr },
 	{ "detach_document_dialog",       nullptr },
 	{ "move_document_dialog",         nullptr },
 	{ "next_document",                nullptr },
 	{ "previous_document",            nullptr },
 	{ "last_document",                nullptr },
-	{ "uppercase",                    nullptr },
-	{ "lowercase",                    nullptr },
-	{ "fill-paragraph",               nullptr },
-	{ "fill_paragraph",               nullptr },
-	{ "control-code-dialog",          nullptr },
-	{ "control_code_dialog",          nullptr },
+    { "uppercase",                    uppercaseMS },
+    { "lowercase",                    lowercaseMS },
+    { "fill-paragraph",               fillParagraphMS },
+    { "fill_paragraph",               fillParagraphMS },
+    { "control-code-dialog",          insertControlCodeDialogMS },
+    { "control_code_dialog",          insertControlCodeDialogMS },
 	{ "filter-selection-dialog",      nullptr },
 	{ "filter_selection_dialog",      nullptr },
 	{ "filter-selection",             nullptr },
@@ -2876,128 +2921,6 @@ static int replaceAllMS(DocumentWidget *document, DataValue *argList, int nArgs,
     return true;
 }
 
-static int undoMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
-
-    Q_UNUSED(argList);
-    // ensure that we are dealing with the document which currently has the focus
-    document = MacroRunWindowEx();
-
-    if(nArgs != 0) {
-        return wrongNArgsErr(errMsg);
-    }
-
-    document->Undo();
-    result->tag = NO_TAG;
-    return true;
-}
-
-static int shiftLeftTabMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
-    Q_UNUSED(argList);
-
-    // ensure that we are dealing with the document which currently has the focus
-    document = MacroRunWindowEx();
-
-    if(nArgs != 0) {
-        return wrongNArgsErr(errMsg);
-    }
-
-    if(MainWindow *window = document->toWindow()) {
-        window->action_Shift_Left_Tabs();
-    }
-
-    result->tag = NO_TAG;
-    return true;
-}
-
-static int shiftLeftMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
-    Q_UNUSED(argList);
-
-    // ensure that we are dealing with the document which currently has the focus
-    document = MacroRunWindowEx();
-
-    if(nArgs != 0) {
-        return wrongNArgsErr(errMsg);
-    }
-
-    if(MainWindow *window = document->toWindow()) {
-        window->on_action_Shift_Left_triggered();
-    }
-
-    result->tag = NO_TAG;
-    return true;
-}
-
-static int shiftRightTabMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
-    Q_UNUSED(argList);
-
-    // ensure that we are dealing with the document which currently has the focus
-    document = MacroRunWindowEx();
-
-    if(nArgs != 0) {
-        return wrongNArgsErr(errMsg);
-    }
-
-    if(MainWindow *window = document->toWindow()) {
-        window->action_Shift_Right_Tabs();
-    }
-
-    result->tag = NO_TAG;
-    return true;
-}
-
-static int shiftRightMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
-    Q_UNUSED(argList);
-
-    // ensure that we are dealing with the document which currently has the focus
-    document = MacroRunWindowEx();
-
-    if(nArgs != 0) {
-        return wrongNArgsErr(errMsg);
-    }
-
-    if(MainWindow *window = document->toWindow()) {
-        window->on_action_Shift_Right_triggered();
-    }
-
-    result->tag = NO_TAG;
-    return true;
-}
-
-static int selectAllMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
-
-    Q_UNUSED(argList);
-    // ensure that we are dealing with the document which currently has the focus
-    document = MacroRunWindowEx();
-
-    if(nArgs != 0) {
-        return wrongNArgsErr(errMsg);
-    }
-
-    if(MainWindow *window = document->toWindow()) {
-        if(TextArea *w = window->lastFocus_) {
-            w->selectAllAP();
-        }
-    }
-    result->tag = NO_TAG;
-    return true;
-}
-
-static int redoMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
-
-    Q_UNUSED(argList);
-
-    // ensure that we are dealing with the document which currently has the focus
-    document = MacroRunWindowEx();
-
-    if(nArgs != 0) {
-        return wrongNArgsErr(errMsg);
-    }
-
-    document->Redo();
-    result->tag = NO_TAG;
-    return true;
-}
-
 /*
 **  filename_dialog([title[, mode[, defaultPath[, filter[, defaultName]]]]])
 **
@@ -5188,16 +5111,17 @@ static bool readArgument(DataValue dv, int *result, const char **errMsg) {
 */
 static bool readArgument(DataValue dv, std::string *result, const char **errMsg) {
 
-	if (dv.tag == STRING_TAG) {
-		*result = dv.val.str.rep;
-		return true;
-	} else if (dv.tag == INT_TAG) {
+    switch(dv.tag) {
+    case STRING_TAG:
+        *result = dv.val.str.rep;
+        return true;
+    case INT_TAG:
         *result = std::to_string(dv.val.n);
-		return true;
-	}
-	
-	*errMsg = "%s called with unknown object";
-	return false;
+        return true;
+    default:
+        *errMsg = "%s called with unknown object";
+        return false;
+    }
 }
 
 
