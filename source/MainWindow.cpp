@@ -35,11 +35,11 @@
 #include "regularExp.h"
 #include "search.h"
 #include "selection.h"
-#include "selection.h"
 #include "shift.h"
 #include "tags.h"
 #include "util/fileUtils.h"
 #include "utils.h"
+#include "CommandRecorder.h"
 
 #include <QClipboard>
 #include <QFile>
@@ -4272,6 +4272,9 @@ bool MainWindow::CloseAllFilesAndWindowsEx() {
 }
 
 void MainWindow::on_action_Repeat_triggered() {
+
+    QString LastCommand = CommandRecorder::getInstance()->lastCommand;
+
     if(LastCommand.isNull()) {
         QMessageBox::warning(this, tr("Repeat Macro"), tr("No previous commands or learn/replay sequences to repeat"));
         return;

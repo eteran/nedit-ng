@@ -63,7 +63,7 @@ void ReturnShellCommandOutputEx(DocumentWidget *window, const std::string &outTe
 void SafeGC();
 
 extern std::string ReplayMacro;
-extern QString LastCommand;
+
 
 /* Data attached to window during shell command execution with
    information for controling and communicating with the process */

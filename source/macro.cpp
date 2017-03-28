@@ -72,6 +72,7 @@
 #include <QtDebug>
 #include <fstream>
 #include <functional>
+#include <memory>
 #include <sys/param.h>
 #include <sys/stat.h>
 #include <type_traits>
@@ -572,25 +573,7 @@ static const char *ReturnGlobalNames[N_RETURN_GLOBALS] = {
 };
 static Symbol *ReturnGlobals[N_RETURN_GLOBALS];
 
-#if 0
-// List of actions not useful when learning a macro sequence (also see below) 
-static const char *IgnoredActions[] = {"focusIn", "focusOut"};
-
-/* List of actions intended to be attached to mouse buttons, which the user
-   must be warned can't be recorded in a learn/replay sequence */
-static const char *MouseActions[] = {"grab_focus",       "extend_adjust", "extend_start",        "extend_end", "secondary_or_drag_adjust", "secondary_adjust", "secondary_or_drag_start", "secondary_start",
-                                     "move_destination", "move_to",       "move_to_or_end_drag", "copy_to",    "copy_to_or_end_drag",      "exchange",         "process_bdrag",           "mouse_pan"};
-
-/* List of actions to not record because they
-   generate further actions, more suitable for recording */
-static const char *RedundantActions[] = {"open_dialog",             "save_as_dialog", "revert_to_saved_dialog", "include_file_dialog", "load_macro_file_dialog",  "load_tags_file_dialog",  "find_dialog",   "replace_dialog",
-                                         "goto_line_number_dialog", "mark_dialog",    "goto_mark_dialog",       "control_code_dialog", "filter_selection_dialog", "execute_command_dialog", "repeat_dialog", "start_incremental_find"};
-#endif
-
-// The last command executed (used by the Repeat command) 
-QString LastCommand;
-
-// The current macro to execute on Replay command 
+// The current macro to execute on Replay command
 std::string ReplayMacro;
 
 // Buffer where macro commands are recorded in Learn mode 
@@ -601,12 +584,6 @@ static std::function<int(DocumentWidget *document)> MacroRecordActionHookEx;
 
 // Window where macro recording is taking place 
 static DocumentWidget *MacroRecordWindowEx = nullptr;
-
-#if 0
-// Arrays for translating escape characters in escapeStringChars 
-static char ReplaceChars[] = "\\\"ntbrfav";
-static char EscapeChars[] = "\\\"\n\t\b\r\f\a\v";
-#endif
 
 /*
 ** Install built-in macro subroutines and special variables for accessing
@@ -697,12 +674,6 @@ void BeginLearnEx(DocumentWidget *document) {
     // Put up the learn-mode banner
     document->SetModeMessageEx(message);
 }
-
-#if 0
-void AddLastCommandActionHook(XtAppContext context) {
-	XtAppAddActionHook(context, lastActionHook, nullptr);
-}
-#endif
 
 void FinishLearnEx() {
 
@@ -1290,8 +1261,6 @@ std::string GetReplayMacro() {
 	return ReplayMacro;
 }
 
-
-
 /*
 ** Dispatches a macro to which repeats macro command in "command", either
 ** an integer number of times ("how" == positive integer), or within a
@@ -1302,14 +1271,14 @@ std::string GetReplayMacro() {
 ** finished executing
 */
 void RepeatMacroEx(DocumentWidget *window, const char *command, int how) {
-    Program *prog;
+
     const char *errMsg;
     const char *stoppedAt;
     const char *loopMacro;
-    char *loopedCmd;
 
-    if(!command)
+    if(!command) {
         return;
+    }
 
     // Wrap a for loop and counter/tests around the command
     switch(how) {
@@ -1332,21 +1301,20 @@ void RepeatMacroEx(DocumentWidget *window, const char *command, int how) {
     }
 
 
-    loopedCmd = new char[strlen(command) + strlen(loopMacro) + 25];
+    auto loopedCmd = std::make_unique<char[]>(strlen(command) + strlen(loopMacro) + 25);
+
     if (how == REPEAT_TO_END || how == REPEAT_IN_SEL) {
-        sprintf(loopedCmd, loopMacro, command);
+        sprintf(&loopedCmd[0], loopMacro, command);
     } else {
-        sprintf(loopedCmd, loopMacro, how, command);
+        sprintf(&loopedCmd[0], loopMacro, how, command);
     }
 
     // Parse the resulting macro into an executable program "prog"
-    prog = ParseMacro(loopedCmd, &errMsg, &stoppedAt);
+    Program *const prog = ParseMacro(&loopedCmd[0], &errMsg, &stoppedAt);
     if(!prog) {
         fprintf(stderr, "NEdit internal error, repeat macro syntax wrong: %s\n", errMsg);
         return;
     }
-
-    delete [] loopedCmd;
 
     // run the executable program
     runMacroEx(window, prog);
@@ -1399,136 +1367,7 @@ void learnActionHook(Widget w, XtPointer clientData, String actionName, XEvent *
 }
 #endif
 
-/*
-** Permanent action hook for remembering last action for possible replay
-*/
-#if 0
-static void lastActionHook(Widget w, XtPointer clientData, String actionName, XEvent *event, String *params, Cardinal *numParams) {
 
-	(void)clientData;
-	int i;
-	char *actionString;
-
-	// Find the curr to which this action belongs 
-    QList<DocumentWidget *> documents = DocumentWidget::allDocuments();
-    auto curr = documents.begin();
-    for (; curr != documents.end(); ++curr) {
-
-        DocumentWidget *const document = *curr;
-
-        if (document->textArea_ == w) {
-			break;
-        }
-
-        for (i = 0; i < document->textPanes_.size(); i++) {
-            if (document->textPanes_[i] == w) {
-				break;
-            }
-		}
-
-        if (i < document->textPanes_.size()) {
-			break;
-        }
-	}
-	
-    if(curr == documents.end()) {
-		return;
-	}
-
-	/* The last action is recorded for the benefit of repeating the last
-	   action.  Don't record repeat_macro and wipe out the real action */
-	if (!strcmp(actionName, "repeat_macro"))
-		return;
-
-	// Record the action and its parameters 
-	actionString = actionToString(w, actionName, event, params, *numParams);
-	if (actionString) {
-        LastCommand = QString::fromLatin1(actionString);
-	}
-}
-
-
-/*
-** Create a macro string to represent an invocation of an action routine.
-** Returns nullptr for non-operational or un-recordable actions.
-*/
-static char *actionToString(Widget w, const char *actionName, XEvent *event, String *params, Cardinal numParams) {
-	char chars[20], *charList[1], *outStr, *outPtr;
-	KeySym keysym;
-	int i, nChars, nParams, length, nameLength;
-	int status;
-
-	if (isIgnoredAction(actionName) || isRedundantAction(actionName) || isMouseAction(actionName))
-		return nullptr;
-
-	// Convert self_insert actions, to insert_string 
-	if (!strcmp(actionName, "self_insert") || !strcmp(actionName, "self-insert")) {
-		actionName = "insert_string";
-
-		nChars = XmImMbLookupString(w, (XKeyEvent *)event, chars, 19, &keysym, &status);
-		if (nChars == 0 || status == XLookupNone || status == XLookupKeySym || status == XBufferOverflow)
-			return nullptr;
-
-		chars[nChars] = '\0';
-		charList[0] = chars;
-		params = charList;
-		nParams = 1;
-	} else
-		nParams = numParams;
-
-	// Figure out the length of string required 
-	nameLength = strlen(actionName);
-	length = nameLength + 3;
-	for (i = 0; i < nParams; i++)
-		length += escapedStringLength(params[i]) + 4;
-
-	// Allocate the string and copy the information to it 
-	outPtr = outStr = XtMalloc(length + 1);
-	strcpy(outPtr, actionName);
-	outPtr += nameLength;
-	*outPtr++ = '(';
-	for (i = 0; i < nParams; i++) {
-		*outPtr++ = '\"';
-		outPtr += escapeStringChars(params[i], outPtr);
-		*outPtr++ = '\"';
-		*outPtr++ = ',';
-		*outPtr++ = ' ';
-	}
-	if (nParams != 0)
-		outPtr -= 2;
-	*outPtr++ = ')';
-	*outPtr++ = '\n';
-	*outPtr++ = '\0';
-	return outStr;
-}
-
-static int isMouseAction(const char *action) {
-	int i;
-
-	for (i = 0; i < (int)XtNumber(MouseActions); i++)
-		if (!strcmp(action, MouseActions[i]))
-			return true;
-	return false;
-}
-
-static int isRedundantAction(const char *action) {
-	int i;
-
-	for (i = 0; i < (int)XtNumber(RedundantActions); i++)
-		if (!strcmp(action, RedundantActions[i]))
-			return true;
-	return false;
-}
-
-static int isIgnoredAction(const char *action) {
-	int i;
-
-	for (i = 0; i < (int)XtNumber(IgnoredActions); i++)
-		if (!strcmp(action, IgnoredActions[i]))
-			return true;
-	return false;
-}
-#endif
 
 /*
 ** Timer proc for putting up the "Macro Command in Progress" banner if

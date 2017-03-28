@@ -1,13 +1,71 @@
 
 #include "CommandRecorder.h"
 #include "TextEditEvent.h"
+#include "DocumentWidget.h"
 #include <QMutex>
 #include <QtDebug>
 
 namespace {
 
+#if 0
+// Arrays for translating escape characters in escapeStringChars
+const char ReplaceChars[] = "\\\"ntbrfav";
+const char EscapeChars[] = "\\\"\n\t\b\r\f\a\v";
+#endif
+
+// List of actions not useful when learning a macro sequence (also see below)
+const char *IgnoredActions[] = {
+    "focusIn",
+    "focusOut"
+};
+
+/* List of actions intended to be attached to mouse buttons, which the user
+   must be warned can't be recorded in a learn/replay sequence */
+const char *MouseActions[] = {
+    "grab_focus",
+    "extend_adjust",
+    "extend_start",
+    "extend_end",
+    "secondary_or_drag_adjust",
+    "secondary_adjust",
+    "secondary_or_drag_start",
+    "secondary_start",
+    "move_destination",
+    "move_to",
+    "move_to_or_end_drag",
+    "copy_to",
+    "copy_to_or_end_drag",
+    "exchange",
+    "process_bdrag",
+    "mouse_pan"
+};
+
+/* List of actions to not record because they
+   generate further actions, more suitable for recording */
+const char *RedundantActions[] = {
+    "open_dialog",
+    "save_as_dialog",
+    "revert_to_saved_dialog",
+    "include_file_dialog",
+    "load_macro_file_dialog",
+    "load_tags_file_dialog",
+    "find_dialog",
+    "replace_dialog",
+    "goto_line_number_dialog",
+    "mark_dialog",
+    "goto_mark_dialog",
+    "control_code_dialog",
+    "filter_selection_dialog",
+    "execute_command_dialog",
+    "repeat_dialog",
+    "start_incremental_find"
+};
+
+
 CommandRecorder *instance = nullptr;
 QMutex instanceMutex;
+
+
 
 }
 
@@ -42,12 +100,96 @@ CommandRecorder *CommandRecorder::getInstance() {
  */
 bool CommandRecorder::eventFilter(QObject *obj, QEvent *event) {
 
-    Q_UNUSED(obj);
-
     if(event->type() == TextEditEvent::eventType) {
-        auto ev = static_cast<TextEditEvent *>(event);
-        qDebug() << tr("Custom Event! : %1").arg(ev->toString());
+        lastActionHook(obj, static_cast<TextEditEvent *>(event));
     }
 
     return false;
+}
+
+void CommandRecorder::lastActionHook(QObject *obj, const TextEditEvent *ev) {
+    qDebug("Text Event! : %s", ev->toString().toLatin1().data());
+
+    int i;
+
+    // Find the curr to which this action belongs
+    QList<DocumentWidget *> documents = DocumentWidget::allDocuments();
+    auto curr = documents.begin();
+    for (; curr != documents.end(); ++curr) {
+
+        DocumentWidget *const document = *curr;
+        QList<TextArea *> textPanes = document->textPanes();
+
+        for (i = 0; i < textPanes.size(); i++) {
+            if (textPanes[i] == obj) {
+                break;
+            }
+        }
+
+        if (i < textPanes.size()) {
+            break;
+        }
+    }
+
+    if(curr == documents.end()) {
+        return;
+    }
+
+    /* The last action is recorded for the benefit of repeating the last
+       action.  Don't record repeat_macro and wipe out the real action */
+    if(ev->actionString() == QLatin1String("repeat_macro")) {
+        return;
+    }
+
+    // Record the action and its parameters
+    QString actionString = actionToString(ev);
+    if (!actionString.isNull()) {
+        lastCommand = actionString;
+    }
+}
+
+bool CommandRecorder::isMouseAction(const TextEditEvent *ev) const {
+
+    for(const char *action : MouseActions) {
+        if (!strcmp(action, ev->actionString().toLatin1().data())) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool CommandRecorder::isRedundantAction(const TextEditEvent *ev) const {
+
+    for(const char *action : RedundantActions) {
+        if (!strcmp(action, ev->actionString().toLatin1().data())) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool CommandRecorder::isIgnoredAction(const TextEditEvent *ev) const {
+
+    for(const char *action : IgnoredActions) {
+        if (!strcmp(action, ev->actionString().toLatin1().data())) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/*
+** Create a macro string to represent an invocation of an action routine.
+** Returns nullptr for non-operational or un-recordable actions.
+*/
+QString CommandRecorder::actionToString(const TextEditEvent *ev) {
+
+    if (isIgnoredAction(ev) || isRedundantAction(ev) || isMouseAction(ev)) {
+        return QString();
+    }
+
+    return ev->toString();
 }

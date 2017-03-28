@@ -330,15 +330,8 @@ int main(int argc, char *argv[]) {
         }
 	}
 
-#if 0
-	// Begin remembering last command invoked for "Repeat" menu item 
-	AddLastCommandActionHook(context);
-#endif
-
-#if 1
-    auto recorder = CommandRecorder::getInstance();
-    qApp->installEventFilter(recorder);
-#endif
+    // Begin remembering last command invoked for "Repeat" menu item
+    qApp->installEventFilter(CommandRecorder::getInstance());
 
     // Set up communication over dbus!
     if (IsServer) {
