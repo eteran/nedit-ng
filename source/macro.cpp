@@ -234,6 +234,28 @@ struct SubRoutine {
     BuiltInSubrEx function;
 };
 
+static int insertStringMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+
+    std::string string;
+
+    if(!readArguments(argList, nArgs, 0, errMsg, &string)) {
+        return false;
+    }
+
+    if(MainWindow *window = document->toWindow()) {
+        if(TextArea *area = window->lastFocus_) {
+            area->TextDInsertEx(string);
+        }
+    }
+
+    result->tag = NO_TAG;
+    return true;
+}
+
+static const SubRoutine TextAreaSubrNames[] = {
+    { "insert_string", insertStringMS}
+};
+
 
 #define WINDOW_MENU_EVENT(routineName, slotName)                                                                              \
     static int routineName(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) { \
@@ -607,6 +629,12 @@ void RegisterMacroSubroutines() {
 
     // NOTE(eteran): things that were in the menu action list
     for(const SubRoutine &routine : MenuMacroSubrNames) {
+        subrPtr.val.subr = routine.function;
+        InstallSymbol(routine.name, C_FUNCTION_SYM, subrPtr);
+    }
+
+    // NOTE(eteran): things that were in the text widget action list
+    for(const SubRoutine &routine : TextAreaSubrNames) {
         subrPtr.val.subr = routine.function;
         InstallSymbol(routine.name, C_FUNCTION_SYM, subrPtr);
     }
