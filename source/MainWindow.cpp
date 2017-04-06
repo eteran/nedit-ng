@@ -652,10 +652,27 @@ void MainWindow::on_action_Select_All_triggered() {
 }
 
 //------------------------------------------------------------------------------
+// Name: action_Include_File
+//------------------------------------------------------------------------------
+void MainWindow::action_Include_File(const QString &filename) {
+    if(auto doc = currentDocument()) {
+
+        if (doc->CheckReadOnly()) {
+            return;
+        }
+
+        if (filename.isNull()) {
+            return;
+        }
+
+        doc->includeFile(filename);
+    }
+}
+
+//------------------------------------------------------------------------------
 // Name: on_action_Include_File_triggered
 //------------------------------------------------------------------------------
 void MainWindow::on_action_Include_File_triggered() {
-
 
     if(auto doc = currentDocument()) {
 
@@ -3770,7 +3787,6 @@ void MainWindow::AllWindowsBusyEx(const QString &message) {
         modeMessageSet = true;
     }
 
-    // NOTE(eteran): this used to be a BusyWait(window->shell)
     BusyWaitEx();
     currentlyBusy = true;
 }

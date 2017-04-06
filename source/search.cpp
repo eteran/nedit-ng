@@ -2067,7 +2067,7 @@ int historyIndex(int nCycles) {
 /*
 ** Checks whether a search mode in one of the regular expression modes.
 */
-int isRegexType(SearchType searchType) {
+bool isRegexType(SearchType searchType) {
 	return searchType == SEARCH_REGEX || searchType == SEARCH_REGEX_NOCASE;
 }
 

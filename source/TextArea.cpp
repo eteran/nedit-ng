@@ -206,7 +206,6 @@ QString expandAllTabsEx(const QString &text, int tab_width) {
 ** Find the left and right margins of text between "start" and "end" in
 ** buffer "buf".  Note that "start is assumed to be at the start of a line.
 */
-// TODO(eteran): make this a member of TextBuffer?
 void findTextMargins(TextBuffer *buf, int start, int end, int *leftMargin, int *rightMargin) {
 	char c;
 	int pos, width = 0, maxWidth = 0, minWhite = INT_MAX, inWhite = true;
@@ -236,7 +235,6 @@ void findTextMargins(TextBuffer *buf, int start, int end, int *leftMargin, int *
 ** Find a text position in buffer "buf" by counting forward or backward
 ** from a reference position with known line number
 */
-// TODO(eteran): make this a member of TextBuffer?
 int findRelativeLineStart(const TextBuffer *buf, int referencePos, int referenceLineNum, int newLineNum) {
 	if (newLineNum < referenceLineNum)
 		return buf->BufCountBackwardNLines(referencePos, referenceLineNum - newLineNum);
@@ -502,11 +500,9 @@ TextArea::TextArea(QWidget *parent,
 	calltip_.ID        = 0;
     calltipWidget_     = nullptr;
 
-	for (int i = 1; i < nVisibleLines_; i++) {
-		lineStarts_[i] = -1;
-	}
+    std::fill_n(&lineStarts_[1], nVisibleLines_, -1);
 
-	bgClassPixel_ = QVector<QColor>();
+    bgClassPixel_ = QVector<QColor>();
 	bgClass_      = QVector<uint8_t>();
 	setBacklightCharTypes(QString()); // TODO(eteran): used to be set by resource textNbacklightCharTypes
 									  // which came from window->backlightCharTypes_ originally
@@ -891,7 +887,7 @@ void TextArea::selfInsertAP(const QString &string, EventFlags flags) {
         smartIndent.reason        = CHAR_TYPED;
         smartIndent.pos           = cursorPos_;
         smartIndent.indentRequest = 0;
-        smartIndent.charsTyped    = s.c_str(); // TODO(eteran): is this safe?
+        smartIndent.charsTyped    = view::string_view(s);
 
         for(auto &c : smartIndentCallbacks_) {
             c.first(this, &smartIndent, c.second);

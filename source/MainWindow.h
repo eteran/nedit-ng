@@ -158,6 +158,9 @@ public Q_SLOTS:
     void on_checkIFindReverse_toggled(bool value);
 
 public Q_SLOTS:
+    void action_Include_File(const QString &filename);
+
+public Q_SLOTS:
     // File Menu
 	void on_action_New_triggered();
 	void on_action_New_Window_triggered();

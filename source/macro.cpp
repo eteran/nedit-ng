@@ -87,10 +87,10 @@ const int BANNER_WAIT_TIME = 6000;
 
 // The following definitions cause an exit from the macro with a message 
 // added if (1) to remove compiler warnings on solaris 
-#define M_FAILURE(s)                                                                                                                                                                                                                           \
-	do {                                                                                                                                                                                                                                       \
-		*errMsg = s;                                                                                                                                                                                                                           \
-		return false;                                                                                                                                                                                                                      \
+#define M_FAILURE(s)   \
+    do {               \
+        *errMsg = s;   \
+        return false;  \
 	} while (0)
 
 #define M_ARRAY_INSERT_FAILURE() M_FAILURE("array element failed to insert: %s")
@@ -222,6 +222,7 @@ static bool tooFewArgsErr(const char **errMsg);
 static int strCaseCmpEx(const std::string &str1, const std::string &str2);
 static bool readArgument(DataValue dv, int *result, const char **errMsg);
 static bool readArgument(DataValue dv, std::string *result, const char **errMsg);
+static bool readArgument(DataValue dv, QString *result, const char **errMsg);
 
 template <class T, class ...Ts>
 bool readArguments(DataValue *argList, int nArgs, int index, const char **errMsg, T arg, Ts...args);
@@ -234,28 +235,79 @@ struct SubRoutine {
     BuiltInSubrEx function;
 };
 
-static int insertStringMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
-
-    std::string string;
-
-    if(!readArguments(argList, nArgs, 0, errMsg, &string)) {
-        return false;
-    }
-
-    if(MainWindow *window = document->toWindow()) {
-        if(TextArea *area = window->lastFocus_) {
-            area->TextDInsertEx(string);
-        }
-    }
-
-    result->tag = NO_TAG;
-    return true;
+#define TEXT_EVENT(routineName, slotName)                                                                                 \
+static int routineName(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) { \
+                                                                                                                          \
+    Q_UNUSED(argList)                                                                                                     \
+                                                                                                                          \
+    if(nArgs != 0) {                                                                                                      \
+        return wrongNArgsErr(errMsg);                                                                                     \
+    }                                                                                                                     \
+                                                                                                                          \
+    if(MainWindow *window = document->toWindow()) {                                                                       \
+        if(TextArea *area = window->lastFocus_) {                                                                         \
+            area->slotName();                                                                                             \
+        }                                                                                                                 \
+    }                                                                                                                     \
+                                                                                                                          \
+    result->tag = NO_TAG;                                                                                                 \
+    return true;                                                                                                          \
 }
 
+#define TEXT_EVENT_S(routineName, slotName)                                                                               \
+static int routineName(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) { \
+                                                                                                                          \
+    QString string;                                                                                                       \
+                                                                                                                          \
+    if(!readArguments(argList, nArgs, 0, errMsg, &string)) {                                                              \
+        return false;                                                                                                     \
+    }                                                                                                                     \
+                                                                                                                          \
+    if(MainWindow *window = document->toWindow()) {                                                                       \
+        if(TextArea *area = window->lastFocus_) {                                                                         \
+            area->slotName(string);                                                                                       \
+        }                                                                                                                 \
+    }                                                                                                                     \
+                                                                                                                          \
+    result->tag = NO_TAG;                                                                                                 \
+    return true;                                                                                                          \
+}
+
+TEXT_EVENT_S(insertStringMS,   insertStringAP)
+TEXT_EVENT(pasteClipboardMS,   pasteClipboardAP)
+TEXT_EVENT(cutClipboardMS,     cutClipboardAP)
+TEXT_EVENT(toggleOverstrikeMS, toggleOverstrikeAP)
+TEXT_EVENT(copyClipboardMS,    copyClipboardAP)
+
 static const SubRoutine TextAreaSubrNames[] = {
-    { "insert_string", insertStringMS}
+    { "insert_string",     insertStringMS },
+    { "paste_clipboard",   pasteClipboardMS },
+    { "cut_clipboard",     cutClipboardMS },
+    { "copy_clipboard",    copyClipboardMS },
+    { "toggle_overstrike", toggleOverstrikeMS },
 };
 
+
+#define WINDOW_MENU_EVENT_S(routineName, slotName)                                                                            \
+    static int routineName(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) { \
+        Q_UNUSED(argList);                                                                                                    \
+                                                                                                                              \
+        /* ensure that we are dealing with the document which currently has the focus */                                      \
+        document = MacroRunWindowEx();                                                                                        \
+                                                                                                                              \
+        std::string string;                                                                                                   \
+                                                                                                                              \
+        if(!readArguments(argList, nArgs, 0, errMsg, &string)) {                                                              \
+            return false;                                                                                                     \
+        }                                                                                                                     \
+                                                                                                                              \
+        if(MainWindow *window = document->toWindow()) {                                                                       \
+            window->slotName(QString::fromStdString(string));                                                                 \
+        }                                                                                                                     \
+                                                                                                                              \
+        result->tag = NO_TAG;                                                                                                 \
+        return true;                                                                                                          \
+    }
 
 #define WINDOW_MENU_EVENT(routineName, slotName)                                                                              \
     static int routineName(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) { \
@@ -308,6 +360,8 @@ WINDOW_MENU_EVENT(openSelectedMS,                    on_action_Open_Selected_tri
 WINDOW_MENU_EVENT(findDialogMS,                      on_action_Find_triggered)
 WINDOW_MENU_EVENT(replaceDialogMS,                   on_action_Replace_triggered)
 
+WINDOW_MENU_EVENT_S(includeFileMS, action_Include_File)
+
 static const SubRoutine MenuMacroSubrNames[] = {
 	{ "new",                          nullptr },
 	{ "new_opposite",                 nullptr },
@@ -326,8 +380,8 @@ static const SubRoutine MenuMacroSubrNames[] = {
 	{ "revert-to-saved",              nullptr },
     { "revert_to_saved",              nullptr },
 	{ "revert_to_saved_dialog",       nullptr },
-	{ "include-file",                 nullptr },
-	{ "include_file",                 nullptr },
+    { "include-file",                 includeFileMS },
+    { "include_file",                 includeFileMS },
     { "include-file-dialog",          includeFileDialogMS },
     { "include_file_dialog",          includeFileDialogMS },
 	{ "load-macro-file",              nullptr },
@@ -1523,7 +1577,7 @@ static int maxMS(DocumentWidget *document, DataValue *argList, int nArgs, DataVa
 }
 
 static int focusWindowMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
-    std::string string;
+    QString string;
 
 	/* Read the argument representing the window to focus to, and translate
        it into a pointer to a real DocumentWidget */
@@ -1536,9 +1590,9 @@ static int focusWindowMS(DocumentWidget *window, DataValue *argList, int nArgs, 
 
     if (!readArgument(argList[0], &string, errMsg)) {
 		return false;
-    } else if (string == "last") {
+    } else if (string == QLatin1String("last")) {
         w = documents.begin();
-    } else if (string == "next") {
+    } else if (string == QLatin1String("next")) {
 
         auto curr = std::find_if(documents.begin(), documents.end(), [window](DocumentWidget *doc) {
             return doc == window;
@@ -1554,7 +1608,7 @@ static int focusWindowMS(DocumentWidget *window, DataValue *argList, int nArgs, 
 		// just use the plain name as supplied 
         w = std::find_if(documents.begin(), documents.end(), [&string](DocumentWidget *doc) {
 			QString fullname = doc->FullPath();
-            return fullname == QString::fromStdString(string);
+            return fullname == string;
 		});
 		
 		// didn't work? try normalizing the string passed in 
@@ -1932,7 +1986,7 @@ static int stringToClipboardMS(DocumentWidget *window, DataValue *argList, int n
 
     Q_UNUSED(window);
 
-    std::string string;
+    QString string;
 
 	// Get the string argument 
     if(!readArguments(argList, nArgs, 0, errMsg, &string)) {
@@ -1940,7 +1994,7 @@ static int stringToClipboardMS(DocumentWidget *window, DataValue *argList, int n
     }
 
 	result->tag = NO_TAG;
-    QApplication::clipboard()->setText(QString::fromStdString(string), QClipboard::Clipboard);
+    QApplication::clipboard()->setText(string, QClipboard::Clipboard);
     return true;
 }
 
@@ -2109,7 +2163,7 @@ static int searchStringMS(DocumentWidget *window, DataValue *argList, int nArgs,
 	SearchType type;
     bool skipSearch = false;
     std::string string;
-    std::string searchStr;
+    QString searchStr;
 	SearchDirection direction;
 
 	// Validate arguments and convert to proper types 
@@ -2150,7 +2204,18 @@ static int searchStringMS(DocumentWidget *window, DataValue *argList, int nArgs,
 	}
 
     if (!skipSearch) {
-        found = SearchString(string, QString::fromStdString(searchStr), direction, type, wrap, beginPos, &foundStart, &foundEnd, nullptr, nullptr, GetWindowDelimitersEx(window).toLatin1().data());
+        found = SearchString(
+                    string,
+                    searchStr,
+                    direction,
+                    type,
+                    wrap,
+                    beginPos,
+                    &foundStart,
+                    &foundEnd,
+                    nullptr,
+                    nullptr,
+                    GetWindowDelimitersEx(window).toLatin1().data());
     }
 
 	// Return the results 
@@ -2175,7 +2240,7 @@ static int searchStringMS(DocumentWidget *window, DataValue *argList, int nArgs,
 static int replaceInStringMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     std::string string;
-    std::string searchStr;
+    QString searchStr;
     std::string replaceStr;
     std::string argStr;
 	SearchType searchType = SEARCH_LITERAL;
@@ -2214,7 +2279,7 @@ static int replaceInStringMS(DocumentWidget *window, DataValue *argList, int nAr
     bool ok;
     std::string replacedStr = ReplaceAllInStringEx(
                 string,
-                QString::fromStdString(searchStr),
+                searchStr,
                 replaceStr.c_str(),
                 searchType,
                 &copyStart,
@@ -2431,8 +2496,8 @@ void ReturnShellCommandOutputEx(DocumentWidget *window, const std::string &outTe
 
 static int dialogMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
-    std::string btnLabel;
-    std::string message;
+    QString btnLabel;
+    QString message;
 	long i;
 
 	/* Ignore the focused window passed as the function argument and put
@@ -2472,13 +2537,13 @@ static int dialogMS(DocumentWidget *document, DataValue *argList, int nArgs, Dat
 	result->val.n = 0;		
 	
 	auto prompt = new DialogPrompt(nullptr /*parent*/);
-    prompt->setMessage(QString::fromStdString(message));
+    prompt->setMessage(message);
 	if (nArgs == 1) {
 		prompt->addButton(QDialogButtonBox::Ok);
 	} else {
 		for(int i = 1; i < nArgs; ++i) {		
             readArgument(argList[i], &btnLabel, errMsg);
-            prompt->addButton(QString::fromStdString(btnLabel));
+            prompt->addButton(btnLabel);
 		}
 	}	
 	prompt->exec();
@@ -2492,8 +2557,8 @@ static int dialogMS(DocumentWidget *document, DataValue *argList, int nArgs, Dat
 
 static int stringDialogMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
-    std::string btnLabel;
-    std::string message;
+    QString btnLabel;
+    QString message;
 	long i;
 
 	/* Ignore the focused window passed as the function argument and put
@@ -2533,13 +2598,13 @@ static int stringDialogMS(DocumentWidget *document, DataValue *argList, int nArg
 	result->val.n = 0;	
 
 	auto prompt = new DialogPromptString(nullptr /*parent*/);
-    prompt->setMessage(QString::fromStdString(message));
+    prompt->setMessage(message);
 	if (nArgs == 1) {
 		prompt->addButton(QDialogButtonBox::Ok);
 	} else {
 		for(int i = 1; i < nArgs; ++i) {		
             readArgument(argList[i], &btnLabel, errMsg);
-            prompt->addButton(QString::fromStdString(btnLabel));
+            prompt->addButton(btnLabel);
 		}
 	}	
 	prompt->exec();
@@ -2720,26 +2785,26 @@ static int replaceAllInSelectionMS(DocumentWidget *document, DataValue *argList,
     document = MacroRunWindowEx();
 
     //  Get the argument list.
-    std::string searchString;
-    std::string replaceString;
-    std::string typeString;
+    QString searchString;
+    QString replaceString;
+    QString typeString;
 
     if(!readArguments(argList, nArgs, 0, errMsg, &searchString, &replaceString, &typeString)) {
         return false;
     }
 
     SearchType searchType;
-    if(typeString == "literal") {
+    if(typeString == QLatin1String("literal")) {
         searchType = SEARCH_LITERAL;
-    } else if(typeString == "case") {
+    } else if(typeString == QLatin1String("case")) {
         searchType = SEARCH_CASE_SENSE;
-    } else if(typeString == "regex") {
+    } else if(typeString == QLatin1String("regex")) {
         searchType = SEARCH_REGEX;
-    } else if(typeString == "word") {
+    } else if(typeString == QLatin1String("word")) {
         searchType = SEARCH_LITERAL_WORD;
-    } else if(typeString == "caseWord") {
+    } else if(typeString == QLatin1String("caseWord")) {
         searchType = SEARCH_CASE_SENSE_WORD;
-    } else if(typeString == "regexNoCase") {
+    } else if(typeString == QLatin1String("regexNoCase")) {
         searchType = SEARCH_REGEX_NOCASE;
     } else {
         return false;
@@ -2747,7 +2812,7 @@ static int replaceAllInSelectionMS(DocumentWidget *document, DataValue *argList,
 
     result->tag = INT_TAG;
     result->val.n = 0;
-    document->replaceInSelAP(QString::fromStdString(searchString), QString::fromStdString(replaceString), searchType);
+    document->replaceInSelAP(searchString, replaceString, searchType);
     return true;
 }
 
@@ -2757,26 +2822,26 @@ static int replaceAllMS(DocumentWidget *document, DataValue *argList, int nArgs,
     document = MacroRunWindowEx();
 
     //  Get the argument list.
-    std::string searchString;
-    std::string replaceString;
-    std::string typeString;
+    QString searchString;
+    QString replaceString;
+    QString typeString;
 
     if(!readArguments(argList, nArgs, 0, errMsg, &searchString, &replaceString, &typeString)) {
         return false;
     }
 
     SearchType searchType;
-    if(typeString == "literal") {
+    if(typeString == QLatin1String("literal")) {
         searchType = SEARCH_LITERAL;
-    } else if(typeString == "case") {
+    } else if(typeString == QLatin1String("case")) {
         searchType = SEARCH_CASE_SENSE;
-    } else if(typeString == "regex") {
+    } else if(typeString == QLatin1String("regex")) {
         searchType = SEARCH_REGEX;
-    } else if(typeString == "word") {
+    } else if(typeString == QLatin1String("word")) {
         searchType = SEARCH_LITERAL_WORD;
-    } else if(typeString == "caseWord") {
+    } else if(typeString == QLatin1String("caseWord")) {
         searchType = SEARCH_CASE_SENSE_WORD;
-    } else if(typeString == "regexNoCase") {
+    } else if(typeString == QLatin1String("regexNoCase")) {
         searchType = SEARCH_REGEX_NOCASE;
     } else {
         return false;
@@ -2784,7 +2849,7 @@ static int replaceAllMS(DocumentWidget *document, DataValue *argList, int nArgs,
 
     result->tag = INT_TAG;
     result->val.n = 0;
-    document->replaceAllAP(QString::fromStdString(searchString), QString::fromStdString(replaceString), searchType);
+    document->replaceAllAP(searchString, replaceString, searchType);
     return true;
 }
 
@@ -2811,12 +2876,11 @@ static int replaceAllMS(DocumentWidget *document, DataValue *argList, int nArgs,
 */
 static int filenameDialogMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
-    QString filename;
-    std::string title       = "Choose Filename";
-    std::string mode        = "exist";
-    std::string defaultPath = "";
-    std::string filter      = "";
-    std::string defaultName = "";
+    QString title           = QLatin1String("Choose Filename");
+    QString mode            = QLatin1String("exist");
+    QString defaultPath;
+    QString defaultFilter;
+    QString defaultName;
 
 	
 	/* Ignore the focused window passed as the function argument and put
@@ -2837,7 +2901,7 @@ static int filenameDialogMS(DocumentWidget *window, DataValue *argList, int nArg
     if (nArgs > 1 && !readArgument(argList[1], &mode, errMsg)) {
 		return false;
 	}
-    if ((mode != "exist") != 0 && (mode != "new")) {
+    if ((mode != QLatin1String("exist")) != 0 && (mode != QLatin1String("new"))) {
 		M_FAILURE("Invalid value for mode in %s");
 	}
 
@@ -2845,7 +2909,7 @@ static int filenameDialogMS(DocumentWidget *window, DataValue *argList, int nArg
 		return false;
 	}
 
-    if (nArgs > 3 && !readArgument(argList[3], &filter,  errMsg)) {
+    if (nArgs > 3 && !readArgument(argList[3], &defaultFilter,  errMsg)) {
 		return false;
 	}
 
@@ -2857,26 +2921,21 @@ static int filenameDialogMS(DocumentWidget *window, DataValue *argList, int nArg
 		M_FAILURE("%s called with too many arguments. Expects at most 5 arguments.");
 	}
 
-	//  Set default directory (saving original for later)  
-	QString defaultPathEx;
-    if (!defaultPath.empty()) {
-        defaultPathEx = QString::fromStdString(defaultPath);
-	} else {
-		defaultPathEx = window->path_;
+    //  Set default directory
+    if (defaultPath.isEmpty()) {
+        defaultPath = window->path_;
 	}
 
-	//  Set filter (saving original for later)  
-	QString defaultFilter;
-    if (!filter.empty()) {
-		defaultFilter = QString::fromStdString(filter);
-	}
-
+    //  Set default filter
+    if(defaultFilter.isEmpty()) {
+        defaultFilter = QLatin1String("*");
+    }
 
 	bool gfnResult;
-    if (mode == "exist") {
-		// TODO(eteran); filter's probably don't work quite the same with Qt's dialog
-		// TODO(eteran): default path doesn't seem to be able to be specified easily
-        QString existingFile = QFileDialog::getOpenFileName(/*this*/ nullptr, QString::fromStdString(title), defaultPathEx, defaultFilter, nullptr);
+    QString filename;
+    if (mode == QLatin1String("exist")) {
+        // TODO(eteran); filters probably don't work quite the same with Qt's dialog
+        QString existingFile = QFileDialog::getOpenFileName(/*this*/ nullptr, title, defaultPath, defaultFilter, nullptr);
 		if(!existingFile.isNull()) {
             filename = existingFile;
 			gfnResult = true;
@@ -2884,9 +2943,8 @@ static int filenameDialogMS(DocumentWidget *window, DataValue *argList, int nArg
             gfnResult = false;
 		}
 	} else {
-		// TODO(eteran); filter's probably don't work quite the same with Qt's dialog
-		// TODO(eteran): default path doesn't seem to be able to be specified easily
-        QString newFile = QFileDialog::getSaveFileName(/*this*/ nullptr, QString::fromStdString(title), defaultPathEx, defaultFilter, nullptr);
+        // TODO(eteran); filters probably don't work quite the same with Qt's dialog
+        QString newFile = QFileDialog::getSaveFileName(/*this*/ nullptr, title, defaultPath, defaultFilter, nullptr);
 		if(!newFile.isNull()) {
             filename  = newFile;
 			gfnResult = true;
@@ -2912,9 +2970,9 @@ static int filenameDialogMS(DocumentWidget *window, DataValue *argList, int nArg
 // T Balinski 
 static int listDialogMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
-    std::string btnLabel;
-    std::string message;
-    std::string text;
+    QString btnLabel;
+    QString message;
+    QString text;
 	long i;
 
 	/* Ignore the focused window passed as the function argument and put
@@ -2942,7 +3000,7 @@ static int listDialogMS(DocumentWidget *window, DataValue *argList, int nArgs, D
     if (!readArgument(argList[1], &text, errMsg))
 		return false;
 
-    if (text.empty()) {
+    if (text.isEmpty()) {
 		*errMsg = "%s subroutine called with empty list data";
 		return false;
 	}
@@ -2953,8 +3011,7 @@ static int listDialogMS(DocumentWidget *window, DataValue *argList, int nArgs, D
 			return false;
 		}
 	}
-			
-			
+					
 	// Stop macro execution until the dialog is complete 
 	PreemptMacro();
 	
@@ -2963,16 +3020,17 @@ static int listDialogMS(DocumentWidget *window, DataValue *argList, int nArgs, D
 	result->val.n = 0;	
 
 	auto prompt = new DialogPromptList(nullptr /*parent*/);
-    prompt->setMessage(QString::fromStdString(message));
-    prompt->setList(QString::fromStdString(text));
+    prompt->setMessage(message);
+    prompt->setList(text);
 	if (nArgs == 2) {
 		prompt->addButton(QDialogButtonBox::Ok);
 	} else {
 		for(int i = 2; i < nArgs; ++i) {		
             readArgument(argList[i], &btnLabel, errMsg);
-            prompt->addButton(QString::fromStdString(btnLabel));
+            prompt->addButton(btnLabel);
 		}
-	}	
+    }
+
 	prompt->exec();
 	
 	// Return the button number in the global variable $string_dialog_button 
@@ -3007,6 +3065,7 @@ static int stringCompareMS(DocumentWidget *window, DataValue *argList, int nArgs
 
     if (!readArgument(argList[0], &leftStr, errMsg))
 		return false;
+
     if (!readArgument(argList[1], &rightStr, errMsg))
 		return false;
 
@@ -3047,18 +3106,13 @@ static int stringCompareMS(DocumentWidget *window, DataValue *argList, int nArgs
 static int splitMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     std::string sourceStr;
-    std::string splitStr;
+    QString splitStr;
     bool validSplit = true;
     std::string typeSplitStr;
 	SearchType searchType;
-	int beginPos;
 	int foundStart;
 	int foundEnd;
-	int strLength;
-	int lastEnd;
-	int found;
 	int elementEnd;
-	int indexNum;
     char indexStr[TYPE_INT_STR_SIZE(int)];
     char *allocIndexStr;
 	DataValue element;
@@ -3074,7 +3128,7 @@ static int splitMS(DocumentWidget *window, DataValue *argList, int nArgs, DataVa
     if (!readArgument(argList[1], &splitStr, errMsg)) {
         validSplit = false;
 	} else {
-        if (splitStr.empty()) {
+        if (splitStr.isEmpty()) {
             validSplit = false;
 		}
 	}
@@ -3095,11 +3149,11 @@ static int splitMS(DocumentWidget *window, DataValue *argList, int nArgs, DataVa
 	result->tag = ARRAY_TAG;
 	result->val.arrayPtr = ArrayNew();
 
-	beginPos = 0;
-	lastEnd = 0;
-	indexNum = 0;
-    strLength = sourceStr.size();
-	found = 1;
+    int beginPos  = 0;
+    int lastEnd   = 0;
+    int indexNum  = 0;
+    int strLength = sourceStr.size();
+    bool found    = true;
 	while (found && beginPos < strLength) {
 		sprintf(indexStr, "%d", indexNum);
 		allocIndexStr = AllocString(strlen(indexStr) + 1);
@@ -3108,7 +3162,20 @@ static int splitMS(DocumentWidget *window, DataValue *argList, int nArgs, DataVa
             return false;
 		}
 		strcpy(allocIndexStr, indexStr);
-        found = SearchString(sourceStr, QString::fromStdString(splitStr), SEARCH_FORWARD, searchType, false, beginPos, &foundStart, &foundEnd, nullptr, nullptr, GetWindowDelimitersEx(window).toLatin1().data());
+
+        found = SearchString(
+                    sourceStr,
+                    splitStr,
+                    SEARCH_FORWARD,
+                    searchType,
+                    false,
+                    beginPos,
+                    &foundStart,
+                    &foundEnd,
+                    nullptr,
+                    nullptr,
+                    GetWindowDelimitersEx(window).toLatin1().data());
+
 		elementEnd = found ? foundStart : strLength;
 		elementLen = elementEnd - lastEnd;
 		element.tag = STRING_TAG;
@@ -3171,7 +3238,18 @@ static int splitMS(DocumentWidget *window, DataValue *argList, int nArgs, DataVa
 			   The '\n' gets added in the lines above, but we still have to
 			   verify whether the pattern also matches the end of the string,
 			   and add an empty chunk in case it does. */
-            found = SearchString(sourceStr, QString::fromStdString(splitStr), SEARCH_FORWARD, searchType, false, strLength, &foundStart, &foundEnd, nullptr, nullptr, GetWindowDelimitersEx(window).toLatin1().data());
+            found = SearchString(
+                        sourceStr,
+                        splitStr,
+                        SEARCH_FORWARD,
+                        searchType,
+                        false,
+                        strLength,
+                        &foundStart,
+                        &foundEnd,
+                        nullptr,
+                        nullptr,
+                        GetWindowDelimitersEx(window).toLatin1().data());
 			if (found) {
 				++indexNum;
 				sprintf(indexStr, "%d", indexNum);
@@ -4984,6 +5062,21 @@ static bool readArgument(DataValue dv, std::string *result, const char **errMsg)
         return true;
     case INT_TAG:
         *result = std::to_string(dv.val.n);
+        return true;
+    default:
+        *errMsg = "%s called with unknown object";
+        return false;
+    }
+}
+
+static bool readArgument(DataValue dv, QString *result, const char **errMsg) {
+
+    switch(dv.tag) {
+    case STRING_TAG:
+        *result = QString::fromLatin1(dv.val.str.rep, dv.val.str.len);
+        return true;
+    case INT_TAG:
+        *result = QString::number(dv.val.n);
         return true;
     default:
         *errMsg = "%s called with unknown object";

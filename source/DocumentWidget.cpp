@@ -3514,8 +3514,8 @@ void DocumentWidget::executeModMacroEx(smartIndentCBStruct *cbInfo) {
     /* Call modification macro with the position of the modification,
        and the character(s) inserted.  Don't allow
        preemption or time limit.  Execution must not overlap or re-enter */
-    args[0].val.n = cbInfo->pos;
-    AllocNStringCpy(&args[1].val.str, cbInfo->charsTyped);
+    args[0].val.n   = cbInfo->pos;
+    args[1].val.str = AllocNStringCpyEx(cbInfo->charsTyped);
 
     inModCB = true;
     ++(winData->inModMacro);

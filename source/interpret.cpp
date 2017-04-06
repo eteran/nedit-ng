@@ -362,25 +362,11 @@ Inst *GetPC() {
 */
 void SwapCode(Inst *start, Inst *boundary, Inst *end) {
 
-	// TODO(eteran): this looks like a stock reverse, can probably
-	//               use std::reverse
-	auto reverseCode = [](Inst *L, Inst *H) {
-		Inst t;
-		Inst *l = L;
-		Inst *h = H - 1;
-
-		while (l < h) {
-			t = *h;
-			*h-- = *l;
-			*l++ = t;
-		}
-	};
-
 	// double-reverse method: reverse elements of both parts then whole lot 
-	// eg abcdefABCD -1-> edcbaABCD -2-> edcbaDCBA -3-> DCBAedcba 
-	reverseCode(start, boundary); // 1 
-	reverseCode(boundary, end);   // 2 
-	reverseCode(start, end);      // 3 
+    // eg abcdeABCD -1-> edcbaABCD -2-> edcbaDCBA -3-> DCBAedcba
+    std::reverse(start, boundary); // 1
+    std::reverse(boundary, end);   // 2
+    std::reverse(start, end);      // 3
 }
 
 /*
@@ -879,7 +865,8 @@ char *AllocStringCpy(const char *s) {
 char *AllocStringCpyEx(const std::string &s) {
 
     auto str = AllocString(s.size() + 1);
-    strcpy(str, s.c_str());
+    memcpy(str, s.data(), s.size());
+    str[s.size()] = '\0';
     return str;
 }
 
@@ -897,6 +884,7 @@ int AllocNStringCpy(NString *string, const char *s) {
 
 	if (s) {
 		strncpy(string->rep, s, length);
+        string->rep[length] = '\0';
 	}
     return true;
 }
@@ -913,7 +901,8 @@ NString AllocNStringCpyEx(const QString &s) {
     size_t length = s.size();
 
     NString string = AllocNStringEx(length + 1);
-    memcpy(string.rep, s.toLatin1().data(), length + 1);
+    memcpy(string.rep, s.toLatin1().data(), length);
+    string.rep[length] = '\0';
 
     return string;
 }
@@ -922,7 +911,18 @@ NString AllocNStringCpyEx(const std::string &s) {
     size_t length = s.size();
 
     NString string = AllocNStringEx(length + 1);
-    memcpy(string.rep, s.data(), length + 1);
+    memcpy(string.rep, s.data(), length);
+    string.rep[length] = '\0';
+
+    return string;
+}
+
+NString AllocNStringCpyEx(const view::string_view s) {
+    size_t length = s.size();
+
+    NString string = AllocNStringEx(length + 1);
+    memcpy(string.rep, s.data(), length);
+    string.rep[length] = '\0';
 
     return string;
 }

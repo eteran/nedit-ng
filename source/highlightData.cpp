@@ -143,7 +143,7 @@ bool LoadStylesStringEx(const QString &string) {
 		}
 
 		// read the font type 
-		// TODO(eteran): Note, assumes success!
+        // NOTE(eteran): assumes success!
         QString fontStr = ReadSymbolicFieldEx(&inPtr);
 		for (i = 0; i < N_FONT_TYPES; i++) {
             if (FontTypeNames[i] == fontStr) {

@@ -132,7 +132,7 @@ struct NString {
 };
 
 
-// TODO(eteran): we can replace this with boost::variant
+// TODO(eteran): we can eventually replace this with boost::variant
 
 struct DataValue {
 	TypeTags tag;
@@ -146,10 +146,6 @@ struct DataValue {
         DataValue*     dataval;
         ArrayEntry*    arrayPtr;
 	} val;
-#if 0
-    typedef boost::variant<int, NString, BuiltInSubrEx, Program*, Inst*, DataValue*, ArrayEntry*> value_type;
-	value_type value;
-#endif
 };
 
 #define INIT_DATA_VALUE {NO_TAG, {0}}
@@ -230,6 +226,7 @@ char *AllocStringCpyEx(const std::string &s);
 int AllocNString(NString *string, int length);
 NString AllocNStringCpyEx(const QString &s);
 NString AllocNStringCpyEx(const std::string &s);
+NString AllocNStringCpyEx(const view::string_view s);
 int AllocNStringNCpy(NString *string, const char *s, int length);
 int AllocNStringCpy(NString *string, const char *s);
 void GarbageCollectStrings();

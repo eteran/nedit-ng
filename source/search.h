@@ -70,13 +70,6 @@ enum ReplaceAllDefaultScope {
 };
 
 /*
-** Returns a pointer to the string describing the search type for search
-** action routine parameters (see menu.c for processing of action routines)
-** If searchType is invalid defaultRV is returned.
-*/
-const char *SearchTypeArg(SearchType searchType, const char *defaultRV);
-
-/*
 ** Parses a search type description string. If the string contains a valid
 ** search type description, returns TRUE and writes the corresponding
 ** SearchType in searchType. Returns FALSE and leaves searchType untouched
@@ -98,7 +91,7 @@ struct SelectionInfo {
 // TODO(eteran): temporarily exposing these publically
 int countWritableWindows();
 int historyIndex(int nCycles);
-int isRegexType(SearchType searchType);
+bool isRegexType(SearchType searchType);
 void saveSearchHistory(const QString &searchString, QString replaceString, SearchType searchType, bool isIncremental);
 int defaultRegexFlags(SearchType searchType);
 
