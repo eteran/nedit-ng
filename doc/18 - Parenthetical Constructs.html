@@ -1,100 +1,79 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-	<title>Parenthetical Constructs(18)</title>
-	<style>
-		body    { font-family: sans-serif; }
-		.bold   { font-weight: bold; }
-		.italic { font-style: italic; }
-		.normal { font-style: normal; font-weight: normal; }
-		.fixed  { font-family: monospace; white-space: pre; display: inline-block; }
-		footer  { padding-top: 20px; }
-	</style>
+	<title>Keyboard Shortcuts(6)</title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
 </head>
 <body>
-<h1>Capturing Parentheses</h1><div class='normal'><br>
-<br>
-Capturing Parentheses are of the form `(&lt;regex&gt;)' and can be used to group arbitrarily complex regular expressions.  Parentheses can be nested, but the total number of parentheses, nested or otherwise, is limited to 50 pairs. The text that is matched by the regular expression between a matched set of parentheses is captured and available for text substitutions and backreferences (see below.)  Capturing parentheses carry a fairly high overhead both in terms of memory used and execution speed, especially if quantified by `*' or `+'. <br>
-<br>
-<h1>Non-Capturing Parentheses</h1>
-<br>
-Non-Capturing Parentheses are of the form `(?:&lt;regex&gt;)' and facilitate grouping only and do not incur the overhead of normal capturing parentheses. They should not be counted when determining numbers for capturing parentheses which are used with backreferences and substitutions.  Because of the limit on the number of capturing parentheses allowed in a regex, it is advisable to use non-capturing parentheses when possible. <br>
-<br>
-<h1>Positive Look-Ahead</h1>
-<br>
-Positive look-ahead constructs are of the form `(?=&lt;regex&gt;)' and implement a zero width assertion of the enclosed regular expression.  In other words, a match of the regular expression contained in the positive look-ahead construct is attempted.  If it succeeds, control is passed to the next regular expression atom, but the text that was consumed by the positive look-ahead is first unmatched (backtracked) to the place in the text where the positive look-ahead was first encountered. <br>
-<br>
-One application of positive look-ahead is the manual implementation of a first character discrimination optimization.  You can include a positive look-ahead that contains a character class which lists every character that the following (potentially complex) regular expression could possibly start with.  This will quickly filter out match attempts that cannot possibly succeed. <br>
-<br>
-<h1>Negative Look-Ahead</h1>
-<br>
-Negative look-ahead takes the form `(?!&lt;regex&gt;)' and is exactly the same as positive look-ahead except that the enclosed regular expression must NOT match.  This can be particularly useful when you have an expression that is general, and you want to exclude some special cases.  Simply precede the general expression with a negative look-ahead that covers the special cases that need to be filtered out. <br>
-<br>
-<h1>Positive Look-Behind</h1>
-<br>
-Positive look-behind constructs are of the form `(?&lt;=&lt;regex&gt;)' and implement a zero width assertion of the enclosed regular expression in front of the current matching position.  It is similar to a positive look-ahead assertion, except for the fact that the match is attempted on the text preceding the current position, possibly even in front of the start of the matching range of the entire regular expression. <br>
-<br>
-A restriction on look-behind expressions is the fact that the expression must match a string of a bounded size.  In other words, `*', `+', and `{n,}' quantifiers are not allowed inside the look-behind expression. Moreover, matching performance is sensitive to the difference between the upper and lower bound on the matching size.  The smaller the difference, the better the performance.  This is especially important for regular expressions used in highlight patterns. <br>
-<br>
-Positive look-behind has similar applications as positive look-ahead. <br>
-<br>
-<h1>Negative Look-Behind</h1>
-<br>
-Negative look-behind takes the form `(?&lt;!&lt;regex&gt;)' and is exactly the same as positive look-behind except that the enclosed regular expression must </div><div class='italic'>not</div><div class='normal'> match. The same restrictions apply. <br>
-<br>
-Note however, that performance is even more sensitive to the distance between the size boundaries: a negative look-behind must not match for </div><div class='bold'>any</div><div class='normal'> possible size, so the matching engine must check </div><div class='bold'>every</div><div class='normal'> size. <br>
-<br>
-<h1>Case Sensitivity</h1>
-<br>
-There are two parenthetical constructs that control case sensitivity: <br>
-<br>
-</div><div class='fixed normal'>     (?i&lt;regex&gt;)   Case insensitive; `AbcD' and `aBCd' are
-                   equivalent.
-</div><div class='normal'><br>
-</div><div class='fixed normal'>     (?I&lt;regex&gt;)   Case sensitive;   `AbcD' and `aBCd' are
-                   different.
-</div><div class='normal'><br>
-Regular expressions are case sensitive by default, that is, `(?I&lt;regex&gt;)' is assumed.  All regular expression token types respond appropriately to case insensitivity including character classes and backreferences.  There is some extra overhead involved when case insensitivity is in effect, but only to the extent of converting each character compared to lower case. <br>
-<br>
-<h1>Matching Newlines</h1>
-<br>
-NEdit regular expressions by default handle the matching of newlines in a way that should seem natural for most editing tasks.  There are situations, however, that require finer control over how newlines are matched by some regular expression tokens. <br>
-<br>
-By default, NEdit regular expressions will </div><div class='italic'>not</div><div class='normal'> match a newline character for the following regex tokens: dot (`.'); a negated character class (`[^...]'); and the following shortcuts for character classes: <br>
-<br>
-</div><div class='fixed normal'>     `\d', `\D', `\l', `\L', `\s', `\S', `\w', `\W', `\Y'
-</div><div class='normal'><br>
-The matching of newlines can be controlled for the `.' token, negated character classes, and the `\s' and `\S' shortcuts by using one of the following parenthetical constructs: <br>
-<br>
-</div><div class='fixed normal'>     (?n&lt;regex&gt;)  `.', `[^...]', `\s', `\S' match newlines
-</div><div class='normal'><br>
-</div><div class='fixed normal'>     (?N&lt;regex&gt;)  `.', `[^...]', `\s', `\S' don't match
-                                            newlines
-</div><div class='normal'><br>
-`(?N&lt;regex&gt;)' is the default behavior. <br>
-<br>
-<h1>Notes on New Parenthetical Constructs</h1>
-<br>
-Except for plain parentheses, none of the parenthetical constructs capture text.  If that is desired, the construct must be wrapped with capturing parentheses, e.g. `((?i&lt;regex))'. <br>
-<br>
-All parenthetical constructs can be nested as deeply as desired, except for capturing parentheses which have a limit of 50 sets of parentheses, regardless of nesting level. <br>
-<br>
-<h1>Back References</h1>
-<br>
-Backreferences allow you to match text captured by a set of capturing parenthesis at some later position in your regular expression.  A backreference is specified using a single backslash followed by a single digit from 1 to 9 (example: \3).  Backreferences have similar syntax to substitutions (see below), but are different from substitutions in that they appear within the regular expression, not the substitution string. The number specified with a backreference identifies which set of text capturing parentheses the backreference is associated with. The text that was most recently captured by these parentheses is used by the backreference to attempt a match.  As with substitutions, open parentheses are counted from left to right beginning with 1.  So the backreference `\3' will try to match another occurrence of the text most recently matched by the third set of capturing parentheses.  As an example, the regular expression `(\d)\1' could match `22', `33', or `00', but wouldn't match `19' or `01'. <br>
-<br>
-A backreference must be associated with a parenthetical expression that is complete.  The expression `(\w(\1))' contains an invalid backreference since the first set of parentheses are not complete at the point where the backreference appears. <br>
-<br>
-<h1>Substitution</h1>
-<br>
-Substitution strings are used to replace text matched by a set of capturing parentheses.  The substitution string is mostly interpreted as ordinary text except as follows. <br>
-<br>
-The escape sequences described above for special characters, and octal and hexadecimal escapes are treated the same way by a substitution string. When the substitution string contains the `&amp;' character, NEdit will substitute the entire string that was matched by the `Find...' operation. Any of the first nine sub-expressions of the match string can also be inserted into the replacement string.  This is done by inserting a `\' followed by a digit from 1 to 9 that represents the string matched by a parenthesized expression within the regular expression.  These expressions are numbered left-to-right in order of their opening parentheses. <br>
-<br>
-The capitalization of text inserted by `&amp;' or `\1', `\2', ... `\9' can be altered by preceding them with `\U', `\u', `\L', or `\l'.  `\u' and `\l' change only the first character of the inserted entity, while `\U' and `\L' change the entire entity to upper or lower case, respectively. <footer>
-<a href="17.html">Previous</a>
-<a href="19.html">Next</a>
-</footer>
+
+<div class="container">
+	<div class="row">
+		<div class="col-md-12">
+			<h2>Capturing Parentheses</h2>
+			<p>Capturing Parentheses are of the form '(&lt;regex&gt;)' and can be used to group arbitrarily complex regular expressions.  Parentheses can be nested, but the total number of parentheses, nested or otherwise, is limited to 50 pairs. The text that is matched by the regular expression between a matched set of parentheses is captured and available for text substitutions and backreferences (see below.)  Capturing parentheses carry a fairly high overhead both in terms of memory used and execution speed, especially if quantified by '*' or '+'.</p>
+
+			<h2>Non-Capturing Parentheses</h2>
+			<p>Non-Capturing Parentheses are of the form '(?:&lt;regex&gt;)' and facilitate grouping only and do not incur the overhead of normal capturing parentheses. They should not be counted when determining numbers for capturing parentheses which are used with backreferences and substitutions.  Because of the limit on the number of capturing parentheses allowed in a regex, it is advisable to use non-capturing parentheses when possible.</p>
+
+			<h2>Positive Look-Ahead</h2>
+			<p>Positive look-ahead constructs are of the form '(?=&lt;regex&gt;)' and implement a zero width assertion of the enclosed regular expression.  In other words, a match of the regular expression contained in the positive look-ahead construct is attempted.  If it succeeds, control is passed to the next regular expression atom, but the text that was consumed by the positive look-ahead is first unmatched (backtracked) to the place in the text where the positive look-ahead was first encountered.</p>
+			<p>One application of positive look-ahead is the manual implementation of a first character discrimination optimization.  You can include a positive look-ahead that contains a character class which lists every character that the following (potentially complex) regular expression could possibly start with.  This will quickly filter out match attempts that cannot possibly succeed.</p>
+
+			<h2>Negative Look-Ahead</h2>
+			<p>Negative look-ahead takes the form '(?!&lt;regex&gt;)' and is exactly the same as positive look-ahead except that the enclosed regular expression must NOT match.  This can be particularly useful when you have an expression that is general, and you want to exclude some special cases.  Simply precede the general expression with a negative look-ahead that covers the special cases that need to be filtered out.</p>
+
+			<h2>Positive Look-Behind</h2>
+			<p>Positive look-behind constructs are of the form '(?&lt;=&lt;regex&gt;)' and implement a zero width assertion of the enclosed regular expression in front of the current matching position.  It is similar to a positive look-ahead assertion, except for the fact that the match is attempted on the text preceding the current position, possibly even in front of the start of the matching range of the entire regular expression.</p>
+			<p>A restriction on look-behind expressions is the fact that the expression must match a string of a bounded size.  In other words, '*', '+', and '{n,}' quantifiers are not allowed inside the look-behind expression. Moreover, matching performance is sensitive to the difference between the upper and lower bound on the matching size.  The smaller the difference, the better the performance.  This is especially important for regular expressions used in highlight patterns.</p>
+			<p>Positive look-behind has similar applications as positive look-ahead.</p>
+			
+			
+			<h2>Negative Look-Behind</h2>
+			<p>Negative look-behind takes the form '(?&lt;!&lt;regex&gt;)' and is exactly the same as positive look-behind except that the enclosed regular expression must <em>not</em> match. The same restrictions apply.</p>
+			<p>Note however, that performance is even more sensitive to the distance between the size boundaries: a negative look-behind must not match for <strong>any</strong> possible size, so the matching engine must check <strong>every</strong> size.</p>
+
+			<h2>Case Sensitivity</h2>
+			<p>There are two parenthetical constructs that control case sensitivity:</p>
+
+			<dl>
+			<dt>(?i&lt;regex&gt;)</dt><dd>Case insensitive; 'AbcD' and 'aBCd' are equivalent.</dd>
+			<dt>(?I&lt;regex&gt;)</dt><dd>Case sensitive;   'AbcD' and 'aBCd' are different.</dd>
+			</dl>
+
+			<p>Regular expressions are case sensitive by default, that is, '(?I&lt;regex&gt;)' is assumed.  All regular expression token types respond appropriately to case insensitivity including character classes and backreferences.  There is some extra overhead involved when case insensitivity is in effect, but only to the extent of converting each character compared to lower case.</p>
+
+			<h2>Matching Newlines</h2>
+			<p>NEdit regular expressions by default handle the matching of newlines in a way that should seem natural for most editing tasks.  There are situations, however, that require finer control over how newlines are matched by some regular expression tokens.</p>
+			<p>By default, NEdit regular expressions will <em>not</em> match a newline character for the following regex tokens: dot <code>('.')</code>; a negated character class <code>('[^...]')</code>; and the following shortcuts for character classes:</p>
+
+			<pre>'\d', '\D', '\l', '\L', '\s', '\S', '\w', '\W', '\Y'</pre>
+			
+			<p>The matching of newlines can be controlled for the '.' token, negated character classes, and the '\s' and '\S' shortcuts by using one of the following parenthetical constructs:</p>
+
+
+			<dl>
+			<dt><code>(?n&lt;regex&gt;)</code></dt><dd>'.', '[^...]', '\s', '\S' match newlines</dd>
+			<dt><code>(?N&lt;regex&gt;)</code></dt><dd>'.', '[^...]', '\s', '\S' don't match newlines</dd>
+			<dt><code>(?N&lt;regex&gt;)</code></dt><dd>is the default behavior.</dd>
+			</dl>
+			
+			<h2>Notes on New Parenthetical Constructs</h2>
+			<p>Except for plain parentheses, none of the parenthetical constructs capture text.  If that is desired, the construct must be wrapped with capturing parentheses, e.g. '((?i&lt;regex))'.</p>
+			<p>All parenthetical constructs can be nested as deeply as desired, except for capturing parentheses which have a limit of 50 sets of parentheses, regardless of nesting level.</p>
+
+			<h2>Back References</h2>
+			<p>Backreferences allow you to match text captured by a set of capturing parenthesis at some later position in your regular expression.  A backreference is specified using a single backslash followed by a single digit from 1 to 9 (example: \3).  Backreferences have similar syntax to substitutions (see below), but are different from substitutions in that they appear within the regular expression, not the substitution string. The number specified with a backreference identifies which set of text capturing parentheses the backreference is associated with. The text that was most recently captured by these parentheses is used by the backreference to attempt a match.  As with substitutions, open parentheses are counted from left to right beginning with 1.  So the backreference '\3' will try to match another occurrence of the text most recently matched by the third set of capturing parentheses.  As an example, the regular expression '(\d)\1' could match '22', '33', or '00', but wouldn't match '19' or '01'.</p>
+			<p>A backreference must be associated with a parenthetical expression that is complete.  The expression '(\w(\1))' contains an invalid backreference since the first set of parentheses are not complete at the point where the backreference appears.</p>
+
+			<h2>Substitution</h2>
+			<p>Substitution strings are used to replace text matched by a set of capturing parentheses.  The substitution string is mostly interpreted as ordinary text except as follows.</p>
+			<p>The escape sequences described above for special characters, and octal and hexadecimal escapes are treated the same way by a substitution string. When the substitution string contains the '&amp;' character, NEdit will substitute the entire string that was matched by the 'Find...' operation. Any of the first nine sub-expressions of the match string can also be inserted into the replacement string.  This is done by inserting a '\' followed by a digit from 1 to 9 that represents the string matched by a parenthesized expression within the regular expression.  These expressions are numbered left-to-right in order of their opening parentheses.</p>
+			<p>The capitalization of text inserted by '&amp;' or '\1', '\2', ... '\9' can be altered by preceding them with '\U', '\u', '\L', or '\l'.  '\u' and '\l' change only the first character of the inserted entity, while '\U' and '\L' change the entire entity to upper or lower case, respectively.</p>
+		</div>
+	</div>
+</div>
+
 </body>
 </html>
 

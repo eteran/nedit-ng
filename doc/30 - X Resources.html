@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 	<title>X Resources(30)</title>
 	<style>
@@ -16,7 +16,7 @@
 <br>
 X resources are usually specified in a file called .Xdefaults or .Xresources in your home directory (on VMS this is sys$login:decw$xdefaults.dat).  On some systems, this file is read and its information attached to the X server (your screen) when you start X.  On other systems, the .Xdefaults file is read each time you run an X program.  When X resource values are attached to the X server, changes to the resource file are not available to application programs until you either run the xrdb program with the appropriate file as input, or re-start the X server. <br>
 <br>
-<h1>Selected X Resource Names</h1>
+<h2>Selected X Resource Names</h2>
 <br>
 The following are selected NEdit resource names and default values for NEdit options not settable via the Preferences menu (for preference resource names, see your NEdit preference file): <br>
 <br>
@@ -34,7 +34,7 @@ The set of characters which mark the boundaries between words. In addition to th
 <br>
 These boundaries take effect for the move-by-word (Ctrl+Arrow) and select-word (double click) commands, and for doing regex searches using the \B, &lt; and &gt; tokens. <br>
 <br>
-Note that this default value may be overridden by the setting in Preferences -&gt; Default Settings -&gt; Language Modes.... <br>
+Note that this default value may be overridden by the setting in Preferences &#x2192; Default Settings &#x2192; Language Modes.... <br>
 <br>
 </div><div class='fixed normal'></div><div class='fixed bold'>nedit.remapDeleteKey</div><div class='fixed normal'>: False
 </div><div class='normal'><br>
@@ -210,7 +210,7 @@ Color for hyperlinks in the help text <br>
 <br>
 </div><div class='fixed normal'></div><div class='fixed bold'>nedit.backlightCharTypes</div><div class='fixed normal'>:  0-8,10-31,127:red;9:#dedede;32,160-255:#f0f0f0;128-159:orange
 </div><div class='normal'><br>
-</div><div class='bold'>NOTE: backlighting is </div><div class='bold italic'>experimental</div><div class='bold'></div><div class='normal'> (see &quot;<a href="10.html">Programming with NEdit</a>&quot;). <br>
+<strong>NOTE: backlighting is </div><div class='bold italic'>experimental</div><div class='bold'></strong> (see &quot;<a href="10 - Programming with NEdit.html">Programming with NEdit</a>&quot;). <br>
 <br>
 A string specifying character classes as ranges of ASCII values followed by the color to be used as their background colors.  The format is: <br>
 <br>
@@ -234,9 +234,9 @@ Note: Setting this to False while the option 'Terminate with Line Break on Save'
 <br>
 </div><div class='fixed normal'></div><div class='fixed bold'>nedit.truncSubstitution</div><div class='fixed normal'>: Fail
 </div><div class='normal'><br>
-NEdit has a fixed limit on substitution result string length. This resource modifies the behaviour if this limit is exceeded. Possible values are </div><div class='italic'>Silent</div><div class='normal'> (will silently fail the operation), </div><div class='italic'>Fail</div><div class='normal'> (will fail the operation and pop up a dialog informing the user), </div><div class='italic'>Warn</div><div class='normal'> (pops up a dialog warning the user, offering to cancel the operation) and </div><div class='italic'>Ignore</div><div class='normal'> (will silently conclude the operation). <br>
+NEdit has a fixed limit on substitution result string length. This resource modifies the behaviour if this limit is exceeded. Possible values are <em>Silent</em> (will silently fail the operation), <em>Fail</em> (will fail the operation and pop up a dialog informing the user), <em>Warn</em> (pops up a dialog warning the user, offering to cancel the operation) and <em>Ignore</em> (will silently conclude the operation). <br>
 <br>
-</div><div class='bold'>WARNING</div><div class='normal'>: Setting this to 'Ignore' will destroy data without warning! <br>
+<strong>WARNING</strong>: Setting this to 'Ignore' will destroy data without warning! <br>
 <br>
 </div><div class='fixed normal'></div><div class='fixed bold'>nedit.honorSymlinks</div><div class='fixed normal'>: True
 </div><div class='normal'><br>
@@ -254,7 +254,7 @@ Command used by the nc program to start an NEdit server. <br>
 </div><div class='normal'><br>
 Basic time-out period used in communication with an NEdit server (seconds). <br>
 <br>
-</div><div class='italic'>The following are Selected widget names (to which you may append</div><div class='normal'> </div><div class='italic'>.background, .foreground, .fontList, etc., to change colors, fonts</div><div class='normal'> </div><div class='italic'> and other characteristics):</div><div class='normal'> <br>
+<em>The following are Selected widget names (to which you may append</em> <em>.background, .foreground, .fontList, etc., to change colors, fonts</em> <em> and other characteristics):</em> <br>
 <br>
 </div><div class='fixed normal'></div><div class='fixed bold'>nedit*statsAreaForm</div><div class='fixed normal'>
 </div><div class='normal'><br>
@@ -271,7 +271,8 @@ Horizontal scroll bar. <br>
 <br>
 </div><div class='fixed normal'></div><div class='fixed bold'>nedit*textVertScrollBar</div><div class='fixed normal'>
 </div><div class='normal'><br>
-Vertical scroll bar. <footer>
+Vertical scroll bar.
+ <footer>
 <a href="29.html">Previous</a>
 <a href="31.html">Next</a>
 </footer>

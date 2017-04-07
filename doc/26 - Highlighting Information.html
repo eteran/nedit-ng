@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 	<title>Highlighting Information(26)</title>
 	<style>
@@ -21,16 +21,16 @@ Note that if any of the functions is used while in Plain mode or while syntax hi
 </div><div class='fixed normal'></div><div class='fixed bold'>get_pattern_by_name( pattern_name )</div><div class='fixed normal'>
 </div><div class='normal'>Returns an array containing the pattern attributes for pattern 'pattern_name'. The elements in this array are: <br>
 <br>
-    * </div><div class='bold'>style</div><div class='normal'> -- Highlight style name<br>
+    * <strong>style</strong> -- Highlight style name<br>
 <br>
 If 'pattern_name' is invalid, an empty array is returned. <br>
 <br>
 </div><div class='fixed normal'></div><div class='fixed bold'>get_pattern_at_pos( pos )</div><div class='fixed normal'>
 </div><div class='normal'>Returns an array containing the pattern attributes of the character at position 'pos'. The elements in this array are: <br>
 <br>
-    * </div><div class='bold'>pattern</div><div class='normal'> -- Highlight pattern name<br>
-    * </div><div class='bold'>style</div><div class='normal'> -- Highlight style name<br>
-    * </div><div class='bold'>extent</div><div class='normal'> -- The length in the text which uses the same highlighting pattern<br>
+    * <strong>pattern</strong> -- Highlight pattern name<br>
+    * <strong>style</strong> -- Highlight style name<br>
+    * <strong>extent</strong> -- The length in the text which uses the same highlighting pattern<br>
 <br>
 The 'extent' value is measured from position 'pos' going right/down (forward in the file) only. <br>
 <br>
@@ -39,10 +39,10 @@ If 'pos' is invalid, an empty array is returned. <br>
 </div><div class='fixed normal'></div><div class='fixed bold'>get_style_by_name( style_name )</div><div class='fixed normal'>
 </div><div class='normal'>Returns an array containing the style attributes for style 'style_name'. The elements in this array are: <br>
 <br>
-    * </div><div class='bold'>bold</div><div class='normal'> -- '1' if style is bold, '0' otherwise<br>
-    * </div><div class='bold'>italic</div><div class='normal'> -- '1' if style is italic, '0' otherwise<br>
-    * </div><div class='bold'>color</div><div class='normal'> -- Name of the style's color<br>
-    * </div><div class='bold'>background</div><div class='normal'> -- Name of the background color, if any<br>
+    * <strong>bold</strong> -- '1' if style is bold, '0' otherwise<br>
+    * <strong>italic</strong> -- '1' if style is italic, '0' otherwise<br>
+    * <strong>color</strong> -- Name of the style's color<br>
+    * <strong>background</strong> -- Name of the background color, if any<br>
 <br>
 The colors use the names specified in the color definitions for the style. These will either be names matching those the X server recognises, or RGB (red/green/blue) specifications. <br>
 <br>
@@ -51,14 +51,14 @@ If 'style_name' is invalid, an empty array is returned. <br>
 </div><div class='fixed normal'></div><div class='fixed bold'>get_style_at_pos( pos )</div><div class='fixed normal'>
 </div><div class='normal'>Returns an array containing the style attributes of the character at position 'pos'. The elements in this array are: <br>
 <br>
-    * </div><div class='bold'>style</div><div class='normal'> -- Name of the highlight style<br>
-    * </div><div class='bold'>bold</div><div class='normal'> -- '1' if style is bold, '0' otherwise<br>
-    * </div><div class='bold'>italic</div><div class='normal'> -- '1' if style is italic, '0' otherwise<br>
-    * </div><div class='bold'>color</div><div class='normal'> -- Name of the style's color<br>
-    * </div><div class='bold'>rgb</div><div class='normal'> -- Color's RGB values ('#rrggbb')<br>
-    * </div><div class='bold'>background</div><div class='normal'> -- Name of the background color, if any<br>
-    * </div><div class='bold'>back_rgb</div><div class='normal'> -- Background color's RGB values ('#rrggbb')<br>
-    * </div><div class='bold'>extent</div><div class='normal'> -- The length in the text which uses the same highlight style<br>
+    * <strong>style</strong> -- Name of the highlight style<br>
+    * <strong>bold</strong> -- '1' if style is bold, '0' otherwise<br>
+    * <strong>italic</strong> -- '1' if style is italic, '0' otherwise<br>
+    * <strong>color</strong> -- Name of the style's color<br>
+    * <strong>rgb</strong> -- Color's RGB values ('#rrggbb')<br>
+    * <strong>background</strong> -- Name of the background color, if any<br>
+    * <strong>back_rgb</strong> -- Background color's RGB values ('#rrggbb')<br>
+    * <strong>extent</strong> -- The length in the text which uses the same highlight style<br>
 <br>
 The colors use the names specified in the color definitions for the style. These will either be names matching those the X server recognises, or RGB specifications. The values for 'rgb' and 'back_rgb' contain the actual color values allocated by the X server for the window. If the X server cannot allocate the specified (named) color exactly, the RGB values in these entries may not match the specified ones. <br>
 <br>

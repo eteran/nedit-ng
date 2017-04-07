@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 	<title>Macro Subroutines(24)</title>
 	<style>
@@ -12,14 +12,14 @@
 	</style>
 </head>
 <body>
-<h1>Built in Variables</h1><div class='normal'><br>
+<h2>Built in Variables</h2><div class='normal'><br>
 <br>
 These variables are read-only and cannot be changed by direct assignment. <br>
 <br>
 </div><div class='fixed normal'></div><div class='fixed bold'>$1</div><div class='fixed normal'>, </div><div class='fixed bold'>$2</div><div class='fixed normal'>, </div><div class='fixed bold'>$3</div><div class='fixed normal'>, </div><div class='fixed bold'>$4</div><div class='fixed normal'>, </div><div class='fixed bold'>$5</div><div class='fixed normal'>, </div><div class='fixed bold'>$6</div><div class='fixed normal'>, </div><div class='fixed bold'>$7</div><div class='fixed normal'>, </div><div class='fixed bold'>$8</div><div class='fixed normal'>, </div><div class='fixed bold'>$9</div><div class='fixed normal'>
 </div><div class='fixed bold'>$args</div><div class='fixed normal'>[</div><div class='fixed italic'>expr</div><div class='fixed normal'>]
 </div><div class='fixed bold'>$n_args</div><div class='fixed normal'>
-</div><div class='normal'>Argument information. The first 9 arguments (if there are that many) can be referenced as read-only values using the shorthand form. All arguments can be accessed as values in the </div><div class='bold'>$args</div><div class='normal'> array, using a numeric index starting at 1. The total number of arguments received by a function is given by </div><div class='bold'>$n_args</div><div class='normal'> or </div><div class='bold'>$args[]</div><div class='normal'>. <br>
+</div><div class='normal'>Argument information. The first 9 arguments (if there are that many) can be referenced as read-only values using the shorthand form. All arguments can be accessed as values in the <strong>$args</strong> array, using a numeric index starting at 1. The total number of arguments received by a function is given by <strong>$n_args</strong> or <strong>$args[]</strong>. <br>
 <br>
 </div><div class='fixed normal'></div><div class='fixed bold'>$active_pane</div><div class='fixed normal'>
 </div><div class='normal'>Index of the current pane. <br>
@@ -153,7 +153,7 @@ These variables are read-only and cannot be changed by direct assignment. <br>
 </div><div class='fixed normal'></div><div class='fixed bold'>$wrap_text</div><div class='fixed normal'>
 </div><div class='normal'>The current wrap text mode. Values are &quot;none&quot;, &quot;auto&quot; or &quot;continuous&quot;. <br>
 <br>
-<h1>Built-in Subroutines</h1>
+<h2>Built-in Subroutines</h2>
 <br>
 </div><div class='fixed normal'></div><div class='fixed bold'>append_file( string, filename )</div><div class='fixed normal'>
 </div><div class='normal'>Appends a string to a named file. Returns 1 on successful write, or 0 if unsuccessful. <br>
@@ -179,7 +179,7 @@ Returns the ID of the calltip if it was found and/or displayed correctly, 0 othe
 </div><div class='fixed normal'></div><div class='fixed bold'>filename_dialog( [title[, mode[, defaultPath[, filter[, defaultName]]]]] )</div><div class='fixed normal'>
 </div><div class='normal'>Presents a file selection dialog with the given title to the user that prompts for a new or existing file. <br>
 <br>
-Options are: </div><div class='italic'>title</div><div class='normal'> will be the title of the dialog, defaults to &quot;Choose file&quot;. If </div><div class='italic'>mode</div><div class='normal'> is set to &quot;exist&quot; (default), the &quot;New File Name&quot;TextField of the FSB will be unmanaged. If &quot;new&quot;, the TextField will be managed. </div><div class='italic'>defaultPath</div><div class='normal'> is the default path to use. Default (or &quot;&quot;) will use the active document's directory. </div><div class='italic'>filter</div><div class='normal'> is the file glob which determines which files to display. Is set to &quot;*&quot; if filter is &quot;&quot; and by default. </div><div class='italic'>defaultName</div><div class='normal'> is the default filename that is filled in automatically. (</div><div class='bold'>Note</div><div class='normal'> that the default_filename argument does not work on all Motif implementations.) <br>
+Options are: <em>title</em> will be the title of the dialog, defaults to &quot;Choose file&quot;. If <em>mode</em> is set to &quot;exist&quot; (default), the &quot;New File Name&quot;TextField of the FSB will be unmanaged. If &quot;new&quot;, the TextField will be managed. <em>defaultPath</em> is the default path to use. Default (or &quot;&quot;) will use the active document's directory. <em>filter</em> is the file glob which determines which files to display. Is set to &quot;*&quot; if filter is &quot;&quot; and by default. <em>defaultName</em> is the default filename that is filled in automatically. (<strong>Note</strong> that the default_filename argument does not work on all Motif implementations.) <br>
 <br>
 Returns &quot;&quot; if the user cancelled the dialog, otherwise returns the fully-qualified path, including the filename. <br>
 <br>
@@ -279,12 +279,12 @@ Returns &quot;&quot; if the user cancelled the dialog, otherwise returns the ful
 </div><div class='fixed normal'></div><div class='fixed bold'>write_file( string, filename )</div><div class='fixed normal'>
 </div><div class='normal'>Writes a string (parameter 1) to a file named in parameter 2. Returns 1 on successful write, or 0 if unsuccessful. <br>
 <br>
-<h1>Deprecated Functions</h1>
+<h2>Deprecated Functions</h2>
 <br>
-Some functions are included only for supporting legacy macros. You should not use any of these functions in any new macro you write. Among these are all action routines with hyphens in their names; use underscores instead ('find-dialog' -&gt; 'find_dialog'). <br>
+Some functions are included only for supporting legacy macros. You should not use any of these functions in any new macro you write. Among these are all action routines with hyphens in their names; use underscores instead ('find-dialog' &#x2192; 'find_dialog'). <br>
 <br>
 </div><div class='fixed normal'></div><div class='fixed bold'>match()</div><div class='fixed normal'>
-</div><div class='normal'></div><div class='bold'>DEPRECATED</div><div class='normal'> Use select_to_matching() instead. <br>
+</div><div class='normal'><strong>DEPRECATED</strong> Use select_to_matching() instead. <br>
 <br>
 <footer>
 <a href="23.html">Previous</a>

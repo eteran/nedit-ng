@@ -1,29 +1,24 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-	<title>Shell Commands and Filters(21)</title>
-	<style>
-		body    { font-family: sans-serif; }
-		.bold   { font-weight: bold; }
-		.italic { font-style: italic; }
-		.normal { font-style: normal; font-weight: normal; }
-		.fixed  { font-family: monospace; white-space: pre; display: inline-block; }
-		footer  { padding-top: 20px; }
-	</style>
+	<title>Keyboard Shortcuts(6)</title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
 </head>
 <body>
-<div class='normal'>The Shell menu (Unix versions only) allows you to execute Unix shell commands from within NEdit.  You can add items to the menu to extend NEdit's command set or to incorporate custom automatic editing features using shell commands or editing languages like awk and sed.  To add items to the menu, select Preferences -&gt; Default Settings Customize Menus -&gt; Shell Menu.  NEdit comes pre-configured with a few useful Unix commands like spell and sort, but we encourage you to add your own custom extensions. <br>
-<br>
-Filter Selection... prompts you for a Unix command to use to process the currently selected text.  The output from this command replaces the contents of the selection. <br>
-<br>
-Execute Command... prompts you for a Unix command and replaces the current selection with the output of the command.  If there is no  selection, it deposits the output at the current insertion point. In the Shell Command field, the % character expands to the name (including directory path), and the # character expands to the current line number of the file in the window. To include a % or # character in the command, use %% or ##, respectively. <br>
-<br>
-Execute Command Line uses the position of the cursor in the window to indicate a line to execute as a shell command line.  The cursor may be positioned anywhere on the line.  This command allows you to use an NEdit window as an editable command window for saving output and saving commands for re-execution. Note that the same character expansions described above in Execute Command also occur with this command. <br>
-<br>
-The X resource called nedit.shell (See &quot;<a href="28.html">Customizing NEdit</a>&quot;) determines which Unix shell is used to execute commands.  The default value for this resource is the user's login shell. <footer>
-<a href="20.html">Previous</a>
-<a href="22.html">Next</a>
-</footer>
+
+<div class="container">
+	<div class="row">
+		<div class="col-md-12">
+			<p>The Shell menu (Unix versions only) allows you to execute Unix shell commands from within NEdit.  You can add items to the menu to extend NEdit's command set or to incorporate custom automatic editing features using shell commands or editing languages like awk and sed.  To add items to the menu, select Preferences &#x2192; Default Settings Customize Menus &#x2192; Shell Menu.  NEdit comes pre-configured with a few useful Unix commands like spell and sort, but we encourage you to add your own custom extensions.</p>
+			<p>Filter Selection... prompts you for a Unix command to use to process the currently selected text.  The output from this command replaces the contents of the selection.</p>
+			<p>Execute Command... prompts you for a Unix command and replaces the current selection with the output of the command.  If there is no  selection, it deposits the output at the current insertion point. In the Shell Command field, the % character expands to the name (including directory path), and the # character expands to the current line number of the file in the window. To include a % or # character in the command, use %% or ##, respectively.</p>
+			<p>Execute Command Line uses the position of the cursor in the window to indicate a line to execute as a shell command line.  The cursor may be positioned anywhere on the line.  This command allows you to use an NEdit window as an editable command window for saving output and saving commands for re-execution. Note that the same character expansions described above in Execute Command also occur with this command.</p>
+			<p>The X resource called nedit.shell (See &quot;<a href="28.html">Customizing NEdit</a>&quot;) determines which Unix shell is used to execute commands.  The default value for this resource is the user's login shell.</p>
+		</div>
+	</div>
+</div>
+
 </body>
 </html>
 

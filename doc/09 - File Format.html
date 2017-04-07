@@ -1,29 +1,24 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-	<title>File Format(9)</title>
-	<style>
-		body    { font-family: sans-serif; }
-		.bold   { font-weight: bold; }
-		.italic { font-style: italic; }
-		.normal { font-style: normal; font-weight: normal; }
-		.fixed  { font-family: monospace; white-space: pre; display: inline-block; }
-		footer  { padding-top: 20px; }
-	</style>
+	<title>Keyboard Shortcuts(6)</title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
 </head>
 <body>
-<div class='normal'>While plain-text is probably the simplest and most interchangeable file format in the computer world, there is still variation in what plain-text means from system to system.  Plain-text files can differ in character set, line termination, and wrapping. <br>
-<br>
-While character set differences are the most obvious and pose the most challenge to portability, they affect NEdit only indirectly via the same font and localization mechanisms common to all X applications.  If your system is set up properly, you will probably never see character-set related problems in NEdit.  NEdit cannot display Unicode text files, nor any multi-byte character set. <br>
-<br>
-The primary difference between an MS DOS format file and a Unix format file, is how the lines are terminated.  Unix uses a single newline character.  MS DOS uses a carriage-return and a newline.  NEdit can read and write both file formats, but internally, it uses the single character Unix standard.  NEdit auto-detects MS DOS format files based on the line termination at the start of the file.  Files are judged to be DOS format if all of the first five line terminators, within a maximum range, are DOS-style.  To change the format in which NEdit writes a file from DOS to Unix or visa versa, use the Save As... command and check or un-check the MS DOS Format button. <br>
-<br>
-Wrapping within text files can vary among individual users, as well as from system to system.  Both Windows and MacOS make frequent use of plain text files with no implicit right margin.  In these files, wrapping is determined by the tool which displays them.  Files of this style also exist on Unix systems, despite the fact that they are not supported by all Unix utilities. To display this kind of file properly in NEdit, you have to select the wrap style called Continuous.  Wrapping modes are discussed in the sections: Customizing -&gt; Preferences, and Basic Operation -&gt; Shifting and Filling. <br>
-<br>
-The last and most minute of format differences is the terminating newline. Some Unix compilers and utilities require a final terminating newline on all files they read and fail in various ways on files which do not have it.  Vi and approximately half of Unix editors enforce the terminating newline on all files that they write; Emacs does not enforce this rule.  Users are divided on which is best.  NEdit makes the final terminating newline optional (Preferences -&gt; Default Settings -&gt; Terminate with Line Break on Save). <footer>
-<a href="8.html">Previous</a>
-<a href="10.html">Next</a>
-</footer>
+
+<div class="container">
+	<div class="row">
+		<div class="col-md-12">
+			<p>While plain-text is probably the simplest and most interchangeable file format in the computer world, there is still variation in what plain-text means from system to system.  Plain-text files can differ in character set, line termination, and wrapping.</p>
+			<p>While character set differences are the most obvious and pose the most challenge to portability, they affect NEdit only indirectly via the same font and localization mechanisms common to all X applications.  If your system is set up properly, you will probably never see character-set related problems in NEdit.  NEdit cannot display Unicode text files, nor any multi-byte character set.</p>
+			<p>The primary difference between an MS DOS format file and a Unix format file, is how the lines are terminated.  Unix uses a single newline character.  MS DOS uses a carriage-return and a newline.  NEdit can read and write both file formats, but internally, it uses the single character Unix standard.  NEdit auto-detects MS DOS format files based on the line termination at the start of the file.  Files are judged to be DOS format if all of the first five line terminators, within a maximum range, are DOS-style.  To change the format in which NEdit writes a file from DOS to Unix or visa versa, use the Save As... command and check or un-check the MS DOS Format button.</p>
+			<p>Wrapping within text files can vary among individual users, as well as from system to system.  Both Windows and MacOS make frequent use of plain text files with no implicit right margin.  In these files, wrapping is determined by the tool which displays them.  Files of this style also exist on Unix systems, despite the fact that they are not supported by all Unix utilities. To display this kind of file properly in NEdit, you have to select the wrap style called Continuous.  Wrapping modes are discussed in the sections: Customizing &#x2192; Preferences, and Basic Operation &#x2192; Shifting and Filling.</p>
+			<p>The last and most minute of format differences is the terminating newline. Some Unix compilers and utilities require a final terminating newline on all files they read and fail in various ways on files which do not have it.  Vi and approximately half of Unix editors enforce the terminating newline on all files that they write; Emacs does not enforce this rule.  Users are divided on which is best.  NEdit makes the final terminating newline optional (Preferences &#x2192; Default Settings &#x2192; Terminate with Line Break on Save).</p>
+		</div>
+	</div>
+</div>
+
 </body>
 </html>
 

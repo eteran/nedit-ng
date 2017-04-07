@@ -1,47 +1,40 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-	<title>Advanced Topics(19)</title>
-	<style>
-		body    { font-family: sans-serif; }
-		.bold   { font-weight: bold; }
-		.italic { font-style: italic; }
-		.normal { font-style: normal; font-weight: normal; }
-		.fixed  { font-family: monospace; white-space: pre; display: inline-block; }
-		footer  { padding-top: 20px; }
-	</style>
+	<title>Keyboard Shortcuts(6)</title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
 </head>
 <body>
-<h1>Substitutions</h1><div class='normal'><br>
-<br>
-Regular expression substitution can be used to program automatic editing operations.  For example, the following are search and replace strings to find occurrences of the `C' language subroutine `get_x', reverse the first and second parameters, add a third parameter of NULL, and change the name to `new_get_x': <br>
-<br>
-</div><div class='fixed normal'>     Search string:   `get_x *\( *([^ ,]*), *([^\)]*)\)'
-     Replace string:  `new_get_x(\2, \1, NULL)'
-</div><div class='normal'><br>
-<h1>Ambiguity</h1>
-<br>
-If a regular expression could match two different parts of the text, it will match the one which begins earliest.  If both begin in the same place but match different lengths, or match the same length in different ways, life gets messier, as follows. <br>
-<br>
-In general, the possibilities in a list of alternatives are considered in left-to-right order.  The possibilities for `*', `+', and `?' are considered longest-first, nested constructs are considered from the outermost in, and concatenated constructs are considered leftmost-first. The match that will be chosen is the one that uses the earliest possibility in the first choice that has to be made.  If there is more than one choice, the next will be made in the same manner (earliest possibility) subject to the decision on the first choice.  And so forth. <br>
-<br>
-For example, `(ab|a)b*c' could match `abc' in one of two ways.  The first choice is between `ab' and `a'; since `ab' is earlier, and does lead to a successful overall match, it is chosen.  Since the `b' is already spoken for, the `b*' must match its last possibility, the empty string, since it must respect the earlier choice. <br>
-<br>
-In the particular case where no `|'s are present and there is only one `*', `+', or `?', the net effect is that the longest possible match will be chosen.  So `ab*', presented with `xabbbby', will match `abbbb'.  Note that if `ab*' is tried against `xabyabbbz', it will match `ab' just after `x', due to the begins-earliest rule.  (In effect, the decision on where to start the match is the first choice to be made, hence subsequent choices must respect it even if this leads them to less-preferred alternatives.) <br>
-<br>
-<h1>References</h1>
-<br>
-An excellent book on the care and feeding of regular expressions is <br>
-<br>
-</div><div class='fixed normal'>          Mastering Regular Expressions, 3rd Edition
-          Jeffrey E. F. Friedl
-          August 2006, O'Reilly &amp; Associates
-          ISBN 0-596-52812-4
-</div><div class='normal'><br>
-The first end second editions of this book are still useful for basic introduction to regexes and contain many useful tips and tricks. <footer>
-<a href="18.html">Previous</a>
-<a href="20.html">Next</a>
-</footer>
+
+<div class="container">
+	<div class="row">
+		<div class="col-md-12">
+			<h2>Substitutions</h2>
+			<p>Regular expression substitution can be used to program automatic editing operations.  For example, the following are search and replace strings to find occurrences of the `C' language subroutine `get_x', reverse the first and second parameters, add a third parameter of NULL, and change the name to `new_get_x':</p>
+
+			<pre><code>Search string:   `get_x *\( *([^ ,]*), *([^\)]*)\)'
+Replace string:  `new_get_x(\2, \1, NULL)'</code></pre>
+			
+			<h2>Ambiguity</h2>
+			<p>If a regular expression could match two different parts of the text, it will match the one which begins earliest.  If both begin in the same place but match different lengths, or match the same length in different ways, life gets messier, as follows.</p>
+			<p>In general, the possibilities in a list of alternatives are considered in left-to-right order.  The possibilities for `*', `+', and `?' are considered longest-first, nested constructs are considered from the outermost in, and concatenated constructs are considered leftmost-first. The match that will be chosen is the one that uses the earliest possibility in the first choice that has to be made.  If there is more than one choice, the next will be made in the same manner (earliest possibility) subject to the decision on the first choice.  And so forth.</p>
+			<p>For example, `(ab|a)b*c' could match `abc' in one of two ways.  The first choice is between `ab' and `a'; since `ab' is earlier, and does lead to a successful overall match, it is chosen.  Since the `b' is already spoken for, the `b*' must match its last possibility, the empty string, since it must respect the earlier choice.</p>
+			<p>In the particular case where no `|'s are present and there is only one `*', `+', or `?', the net effect is that the longest possible match will be chosen.  So `ab*', presented with `xabbbby', will match `abbbb'.  Note that if `ab*' is tried against `xabyabbbz', it will match `ab' just after `x', due to the begins-earliest rule.  (In effect, the decision on where to start the match is the first choice to be made, hence subsequent choices must respect it even if this leads them to less-preferred alternatives.)</p>
+
+			<h2>References</h2>
+			<p>An excellent book on the care and feeding of regular expressions is</p>
+
+			<pre>
+Mastering Regular Expressions, 3rd Edition
+Jeffrey E. F. Friedl
+August 2006, O'Reilly &amp; Associates
+ISBN 0-596-52812-4</pre>
+
+			<p>The first end second editions of this book are still useful for basic introduction to regexes and contain many useful tips and tricks.</p>
+		</div>
+	</div>
+</div>
+
 </body>
 </html>
-

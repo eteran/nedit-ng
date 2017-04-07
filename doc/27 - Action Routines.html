@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 	<title>Action Routines(27)</title>
 	<style>
@@ -14,7 +14,7 @@
 <body>
 <div class='normal'>All of the editing capabilities of NEdit are represented as a special type of subroutine, called an action routine, which can be invoked from both macros and translation table entries (see &quot;<a href="31.html">Key Binding</a>&quot; in the Customizing section of the Help menu). <br>
 <br>
-<h1>Actions Representing Menu Commands</h1>
+<h2>Actions Representing Menu Commands</h2>
 <br>
 </div><div class='fixed normal'>    File Menu                 Search Menu
     -----------------------   -------------------------
@@ -63,7 +63,7 @@
 </div><div class='normal'><br>
 An action representing a menu command is usually named the same as its corresponding menu item except that all punctuation is removed, all letters are changed to lower case, and spaces are replaced with underscores.  To present a dialog to ask the user for input, use the actions with the `_dialog` suffix. Actions without the `_dialog` suffix take the information from the routine's arguments (see below). <br>
 <br>
-<h1>Menu Action Routine Arguments</h1>
+<h2>Menu Action Routine Arguments</h2>
 <br>
 Arguments are text strings enclosed in quotes. Below are the menu action routines which take arguments.  Optional arguments are enclosed in []. <br>
 <br>
@@ -162,7 +162,7 @@ Arguments are text strings enclosed in quotes. Below are the menu action routine
                    Name of the command exactly as specified in
                    the Shell Menu dialogs.
 </div><div class='normal'><br>
-<h1>Window Preferences Actions</h1>
+<h2>Window Preferences Actions</h2>
 <br>
 </div><div class='fixed normal'></div><div class='fixed bold'>set_auto_indent( &quot;off&quot; | &quot;on&quot; | &quot;smart&quot; )</div><div class='fixed normal'>
 </div><div class='normal'>Set auto indent mode for the current window. <br>
@@ -186,7 +186,7 @@ Arguments are text strings enclosed in quotes. Below are the menu action routine
 </div><div class='normal'>Set the language mode for the current window. If the language mode is &quot;&quot; or unrecognized, it will be set to Plain. <br>
 <br>
 </div><div class='fixed normal'></div><div class='fixed bold'>set_locked( [0 | 1] )</div><div class='fixed normal'>
-</div><div class='normal'>This only affects the locked status of a file, not its read-only status. Permissions are </div><div class='italic'>not</div><div class='normal'> changed. A value of 0 turns it off and a value of 1 turns it on. If no parameters are supplied the option is toggled. <br>
+</div><div class='normal'>This only affects the locked status of a file, not its read-only status. Permissions are <em>not</em> changed. A value of 0 turns it off and a value of 1 turns it on. If no parameters are supplied the option is toggled. <br>
 <br>
 </div><div class='fixed normal'></div><div class='fixed bold'>set_make_backup_copy( [0 | 1] )</div><div class='fixed normal'>
 </div><div class='normal'>Set whether backup copies are made during saves for the current window. A value of 0 turns it off and a value of 1 turns it on. If no parameters are supplied the option is toggled. <br>
@@ -218,7 +218,7 @@ Arguments are text strings enclosed in quotes. Below are the menu action routine
 </div><div class='fixed normal'></div><div class='fixed bold'>set_wrap_text( &quot;none&quot; | &quot;auto&quot; | &quot;continuous&quot; )</div><div class='fixed normal'>
 </div><div class='normal'>Set wrap text mode for the current window. <br>
 <br>
-<h1>Keyboard-Only Actions</h1>
+<h2>Keyboard-Only Actions</h2>
 <br>
 In addition to the arguments listed in the call descriptions below, any routine involving cursor movement can take the argument &quot;extend&quot;, meaning, adjust the primary selection to the new cursor position. Routines which take the &quot;extend&quot; argument as well as mouse dragging operations for both primary and secondary selections can take the optional keyword &quot;rect&quot;, meaning, make the selection rectangular. Any routine that accepts the &quot;scrollbar&quot; argument will move the display but not the cursor or selection. Routines that accept the &quot;nobell&quot; argument will fail silently without beeping, when that argument is supplied. <br>
 <br>

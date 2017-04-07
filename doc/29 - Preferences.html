@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 	<title>Preferences(29)</title>
 	<style>
@@ -16,7 +16,7 @@
 <br>
 Preferences set in the Default Settings sub-menu are saved in a file that NEdit reads at startup time, cf. <a href="Autoload Files">Autoload Files</a>, by selecting Save Defaults. <br>
 <br>
-<h1>Preferences Menu</h1>
+<h2>Preferences Menu</h2>
 <br>
 </div><div class='fixed normal'></div><div class='fixed bold'>Default Settings</div><div class='fixed normal'>
 </div><div class='normal'>Menu of initial settings for future windows.  Generally the same as the options in the main part of the menu, but apply as defaults for future windows created during this NEdit session.  These settings can be saved using the Save Defaults command below, to be loaded automatically each time NEdit is started. <br>
@@ -28,13 +28,13 @@ Preferences set in the Default Settings sub-menu are saved in a file that NEdit 
 </div><div class='normal'>Show the full file name, line number, and length of the file being edited. <br>
 <br>
 </div><div class='fixed normal'></div><div class='fixed bold'>Incremental Search Line</div><div class='fixed normal'>
-</div><div class='normal'>Keep the incremental search bar (Search -&gt; Find Incremental) permanently displayed at the top of the window. <br>
+</div><div class='normal'>Keep the incremental search bar (Search &#x2192; Find Incremental) permanently displayed at the top of the window. <br>
 <br>
 </div><div class='fixed normal'></div><div class='fixed bold'>Show Line Numbers</div><div class='fixed normal'>
 </div><div class='normal'>Display line numbers to the right of the text. <br>
 <br>
 </div><div class='fixed normal'></div><div class='fixed bold'>Language Mode</div><div class='fixed normal'>
-</div><div class='normal'>Tells NEdit what language (if any) to assume, for selecting language-specific features such as highlight patterns and smart indent macros, and setting language specific preferences like word delimiters, tab emulation, and auto-indent.  See <a href="10.html">Programming with NEdit</a> for more information. <br>
+</div><div class='normal'>Tells NEdit what language (if any) to assume, for selecting language-specific features such as highlight patterns and smart indent macros, and setting language specific preferences like word delimiters, tab emulation, and auto-indent.  See <a href="10 - Programming with NEdit.html">Programming with NEdit</a> for more information. <br>
 <br>
 </div><div class='fixed normal'></div><div class='fixed bold'>Auto Indent</div><div class='fixed normal'>
 </div><div class='normal'>Setting Auto Indent &quot;on&quot; maintains a running indent (pressing the Return key will line up the cursor with the indent level of the previous line).  If smart indent macros are available for the current language mode, smart indent can be selected and NEdit will attempt to guess proper language indentation for each new line, cf. <a href="12.html">Auto/Smart Indent</a>. <br>
@@ -71,9 +71,9 @@ Optionally, the matching can make use of syntax information if syntax highlighti
 </div><div class='fixed normal'></div><div class='fixed bold'>Read Only</div><div class='fixed normal'>
 </div><div class='normal'>Lock the file against accidental modification.  This temporarily prevents the file from being modified in this NEdit session. Note that this is different from setting the file protection. <br>
 <br>
-<h1>Preferences -&gt; Default Settings Menu</h1>
+<h2>Preferences &#x2192; Default Settings Menu</h2>
 <br>
-Options in the Preferences -&gt; Default Settings menu have the same meaning as those in the top-level Preferences menu, except that they apply to future NEdit windows and future NEdit sessions if saved with the Save Defaults command.  Additional options which appear in this menu are: <br>
+Options in the Preferences &#x2192; Default Settings menu have the same meaning as those in the top-level Preferences menu, except that they apply to future NEdit windows and future NEdit sessions if saved with the Save Defaults command.  Additional options which appear in this menu are: <br>
 <br>
 </div><div class='fixed normal'></div><div class='fixed bold'>Language Modes</div><div class='fixed normal'>
 </div><div class='normal'>Define language recognition information (for determining language mode from file name or content) and set language specific preferences. <br>
@@ -96,17 +96,17 @@ Options in the Preferences -&gt; Default Settings menu have the same meaning as 
 </div><div class='fixed normal'></div><div class='fixed bold'>Searching</div><div class='fixed normal'>
 </div><div class='normal'>Options for controlling the behavior of Find and Replace commands: <br>
 <br>
-</div><div class='italic'>Verbose</div><div class='normal'> - Presents search results in dialog form, asks before wrapping a search back around the beginning (or end) of the file (unless Beep On Search Wrap is turned on). <br>
+<em>Verbose</em> - Presents search results in dialog form, asks before wrapping a search back around the beginning (or end) of the file (unless Beep On Search Wrap is turned on). <br>
 <br>
-</div><div class='italic'>Wrap Around</div><div class='normal'> - Search and Replace operations wrap around the beginning (or end) of the file. <br>
+<em>Wrap Around</em> - Search and Replace operations wrap around the beginning (or end) of the file. <br>
 <br>
-</div><div class='italic'>Beep On Search Wrap</div><div class='normal'> - Beep when Search and Replace operations wrap around the beginning (or end) of the file (only if Wrap Around is turned on). <br>
+<em>Beep On Search Wrap</em> - Beep when Search and Replace operations wrap around the beginning (or end) of the file (only if Wrap Around is turned on). <br>
 <br>
-</div><div class='italic'>Keep Dialogs Up</div><div class='normal'> - Don't pop down Replace and Find boxes after searching. <br>
+<em>Keep Dialogs Up</em> - Don't pop down Replace and Find boxes after searching. <br>
 <br>
-</div><div class='italic'>Default Search Style</div><div class='normal'> - Initial setting for search type in Find and Replace dialogs. <br>
+<em>Default Search Style</em> - Initial setting for search type in Find and Replace dialogs. <br>
 <br>
-</div><div class='italic'>Default Replace Scope</div><div class='normal'> - [THIS OPTION IS ONLY PRESENT WHEN NEDIT WAS COMPILED WITH THE </div><div class='fixed normal'>   -DREPLACE_SCOPE FLAG TO SELECT AN ALTERNATIVE REPLACE DIALOG LAYOUT.]
+<em>Default Replace Scope</em> - [THIS OPTION IS ONLY PRESENT WHEN NEDIT WAS COMPILED WITH THE </div><div class='fixed normal'>   -DREPLACE_SCOPE FLAG TO SELECT AN ALTERNATIVE REPLACE DIALOG LAYOUT.]
 </div><div class='normal'><br>
 Initial setting for the scope in the Replace/Find dialog, when a selection exists. It can be either &quot;In Window&quot;, &quot;In Selection&quot;, or &quot;Smart&quot;. &quot;Smart&quot; results in &quot;In Window&quot; if the size of the selection is smaller than 1 line, and to &quot;In Selection&quot; otherwise. <br>
 <br>
@@ -116,24 +116,24 @@ Initial setting for the scope in the Replace/Find dialog, when a selection exist
 </div><div class='fixed normal'></div><div class='fixed bold'>Tabbed Editing</div><div class='fixed normal'>
 </div><div class='normal'>Options for controlling the tabbed interface: <br>
 <br>
-</div><div class='italic'>Open File in New Tab</div><div class='normal'> - Open files in new tabs, else open files in new windows. <br>
+<em>Open File in New Tab</em> - Open files in new tabs, else open files in new windows. <br>
 <br>
-</div><div class='italic'>Show Tab Bar</div><div class='normal'> - Show/Hide the tab bar. <br>
+<em>Show Tab Bar</em> - Show/Hide the tab bar. <br>
 <br>
-</div><div class='italic'>Hide Tab Bar when only one Document is open</div><div class='normal'> <br>
+<em>Hide Tab Bar when only one Document is open</em> <br>
 <br>
-</div><div class='italic'>Next/Prev Tabs Across Windows</div><div class='normal'> - Suppose there are two windows with three tabs in the first window and two tabs in the second window.  Enabling this option, if you are on the third tab in the first window, hitting Ctrl+PageDown would switch to the first tab in the second window (instead of switching to the first tab in the first window). <br>
+<em>Next/Prev Tabs Across Windows</em> - Suppose there are two windows with three tabs in the first window and two tabs in the second window.  Enabling this option, if you are on the third tab in the first window, hitting Ctrl+PageDown would switch to the first tab in the second window (instead of switching to the first tab in the first window). <br>
 <br>
-</div><div class='italic'>Sort Tabs Alphabetically</div><div class='normal'> <br>
+<em>Sort Tabs Alphabetically</em> <br>
 <br>
 </div><div class='fixed normal'></div><div class='fixed bold'>Show Tooltips</div><div class='fixed normal'>
-</div><div class='normal'>Show file name and path in a tooltip when moving the mouse pointer over a tab. (See <a href="8.html">Tabbed Editing</a>.) <br>
+</div><div class='normal'>Show file name and path in a tooltip when moving the mouse pointer over a tab. (See <a href="08 - Tabbed Editing.html">Tabbed Editing</a>.) <br>
 <br>
 </div><div class='fixed normal'></div><div class='fixed bold'>Terminate with Line Break on Save</div><div class='fixed normal'>
 </div><div class='normal'>Some UNIX tools expect that files end with a line feed. If this option is activated, NEdit will append one if required. <br>
 <br>
 </div><div class='fixed normal'></div><div class='fixed bold'>Sort Open Prev. Menu</div><div class='fixed normal'>
-</div><div class='normal'>Option to order the File -&gt; Open Previous menu alphabetically, versus in order of last access. <br>
+</div><div class='normal'>Option to order the File &#x2192; Open Previous menu alphabetically, versus in order of last access. <br>
 <br>
 </div><div class='fixed normal'></div><div class='fixed bold'>Popups Under Pointer</div><div class='fixed normal'>
 </div><div class='normal'>Display pop-up dialogs centered on the current mouse position, as opposed to centered on the parent window.  This generally speeds interaction, and is essential for users who set their window managers so keyboard focus follows the mouse. <br>
@@ -144,18 +144,18 @@ Initial setting for the scope in the Replace/Find dialog, when a selection exist
 </div><div class='fixed normal'></div><div class='fixed bold'>Warnings</div><div class='fixed normal'>
 </div><div class='normal'>Options for controlling the popping up of warning dialogs: <br>
 <br>
-</div><div class='italic'>File Modified Externally</div><div class='normal'> - Pop up a warning dialog when files get changed external to NEdit. <br>
+<em>File Modified Externally</em> - Pop up a warning dialog when files get changed external to NEdit. <br>
 <br>
-</div><div class='italic'>Check Modified File Contents</div><div class='normal'> - If external file modification warnings are requested, also check the file contents iso. only the modification date. <br>
+<em>Check Modified File Contents</em> - If external file modification warnings are requested, also check the file contents iso. only the modification date. <br>
 <br>
-</div><div class='italic'>On Exit</div><div class='normal'> - Ask before exiting when two or more files are open in an NEdit session or before closing a window with two or more tabs. <br>
+<em>On Exit</em> - Ask before exiting when two or more files are open in an NEdit session or before closing a window with two or more tabs. <br>
 <br>
 </div><div class='fixed normal'></div><div class='fixed bold'>Initial Window Size</div><div class='fixed normal'>
 </div><div class='normal'>Default size for new windows. <br>
 <br>
-<h1>Changing Font(s)</h1>
+<h2>Changing Font(s)</h2>
 <br>
-The font used to display text in NEdit is set under Preferences -&gt; Text Font (for the current window), or Preferences -&gt; Default Settings Text Font (for future windows).  These dialogs also allow you to set fonts for syntax highlighting.  If you don't intend to use syntax highlighting, you can ignore most of the dialog, and just set the field labeled Primary Font. <br>
+The font used to display text in NEdit is set under Preferences &#x2192; Text Font (for the current window), or Preferences &#x2192; Default Settings Text Font (for future windows).  These dialogs also allow you to set fonts for syntax highlighting.  If you don't intend to use syntax highlighting, you can ignore most of the dialog, and just set the field labeled Primary Font. <br>
 <br>
 Unless you are absolutely certain about the types of files that you will be editing with NEdit, you should choose a fixed-spacing font.  Many, if not most, plain-text files are written expecting to be viewed with fixed character spacing, and will look wrong with proportional spacing.  NEdit's filling, wrapping, and rectangular operations will also work strangely if you choose a proportional font. <br>
 <br>
@@ -163,9 +163,9 @@ Note that in the font browser (the dialog brought up by the Browse... button), t
 <br>
 Fonts for syntax highlighting should ideally match the primary font in both height and spacing.  A mismatch in spacing will result in similar distortions as choosing a proportional font: column alignment will sometimes look wrong, and rectangular operations, wrapping, and filling will behave strangely.  A mismatch in height will cause windows to re-size themselves slightly when syntax highlighting is turned on or off, and increase the inter-line spacing of the text.  Unfortunately, on some systems it is hard to find sets of fonts which match exactly in height. <br>
 <br>
-<h1>Customizing Menus</h1>
+<h2>Customizing Menus</h2>
 <br>
-You can add or change items in the Shell, Macro, and window background menus under Preferences -&gt; Default Settings -&gt; Customize Menus.  When you choose one of these, you will see a dialog with a list of the current user-configurable items from the menu on the left.  To change an existing item, select it from the list, and its properties will appear in the remaining fields of the dialog, where you may change them.  Selecting the item &quot;New&quot; from the list allows you to enter new items in the menu. <br>
+You can add or change items in the Shell, Macro, and window background menus under Preferences &#x2192; Default Settings &#x2192; Customize Menus.  When you choose one of these, you will see a dialog with a list of the current user-configurable items from the menu on the left.  To change an existing item, select it from the list, and its properties will appear in the remaining fields of the dialog, where you may change them.  Selecting the item &quot;New&quot; from the list allows you to enter new items in the menu. <br>
 <br>
 Hopefully most of the characteristics are self explanatory, but here are a few things to note: <br>
 <br>
@@ -206,7 +206,7 @@ The first will be available when the language mode is C or C++, the second when 
 </div><div class='normal'><br>
 also exists, this will always appear, meaning that the menu will always have two &quot;Make Prototypes&quot; entries, whatever the language mode. <br>
 <br>
-<h1>The NEdit Autoload Files</h1>
+<h2>The NEdit Autoload Files</h2>
 <br>
 At startup time, NEdit automatically reads the preferences file `nedit.rc', the autoload macro file `autoload.nm', and the history data base `nedit.history'.  The preferences file contains saved preferences (menu settings) in the format of an X resource file.  The autoload macro file is a macro file containing macro commands and definitions that NEdit will execute at startup.  (NEdit doesn't create this file automatically.) Moreover, NEdit saves a list of the recently opened files, which appear under the Open Previous menu, in the history data base. <br>
 <br>
@@ -218,7 +218,7 @@ Notice that NEdit still supports the older names for these files, which are `$HO
 <br>
 The contents of the preferences file can be moved into another X resource file (see <a href="30.html">X Resources</a>).  One reason for doing so would be to attach server specific preferences, such as a default font, to a particular X server. Another reason for moving preferences into an X resource file would be to keep preferences menu options and X resource settable options together in one place.  Though the files are the same format, additional resources should not be added to the preferences file, since NEdit modifies that file by overwriting it completely.  Note also that the contents of the preferences file takes precedence over the values in an X resource file. Using Save Defaults after moving the contents of your preferences file to your .Xdefaults file will re-create the preferences file, interfering with the options that you have moved. <br>
 <br>
-<h1>Sharing Customizations with Other NEdit Users</h1>
+<h2>Sharing Customizations with Other NEdit Users</h2>
 <br>
 If you have written macro or shell menu commands, highlight patterns, or smart-indent macros that you want to share with other NEdit users, you can make a file which they can load into their NEdit environment. <br>
 <br>
@@ -226,7 +226,7 @@ To load such a file, start NEdit with the command: <br>
 <br>
 </div><div class='fixed normal'>     nedit -import &lt;file&gt;
 </div><div class='normal'><br>
-In the new NEdit session, verify that the imported patterns or macros do what you want, then select Preferences -&gt; Save Defaults.  Saving incorporates the changes into the NEdit preferences file, so the next time you run NEdit, you will not have to import the distribution file. <br>
+In the new NEdit session, verify that the imported patterns or macros do what you want, then select Preferences &#x2192; Save Defaults.  Saving incorporates the changes into the NEdit preferences file, so the next time you run NEdit, you will not have to import the distribution file. <br>
 <br>
 Loading a customization file is automated, but creating one is not.  To produce a file to be imported by other users, you must make a copy of your own preferences file, and edit it, by hand, to remove everything but the few items of interest to the recipient.  Leave only the individual resource(s), and within those resources, only the particular macro, pattern, style, etc, that you wish to exchange. <br>
 <br>
@@ -240,7 +240,8 @@ For example, to share a highlighting pattern set, you would include the patterns
      nedit.languageModes: My Language:.my::::::
      nedit.styles: Loop:blue:Bold
 </div><div class='normal'><br>
-Resources are in the format of X resource files, but the format of text within multiple-item resources like highlight patterns, language modes, macros, styles, etc., are private to NEdit.  Each resource is a string which ends at the first newline character not escaped with \, so you must be careful about how you treat ends of lines.  While you can generally just cut and paste indented sections, if something which was originally in the middle of a resource string is now at the end, you must remove the \ line continuation character(s) so it will not join the next line into the resource.  Conversely, if something which was originally at the end of a resource is now in the middle, you'll have to add continuation character(s) to make sure that the resource string is properly continued from beginning to end, and possibly newline character(s) (\n) to make sure that it is properly separated from the next item. <footer>
+Resources are in the format of X resource files, but the format of text within multiple-item resources like highlight patterns, language modes, macros, styles, etc., are private to NEdit.  Each resource is a string which ends at the first newline character not escaped with \, so you must be careful about how you treat ends of lines.  While you can generally just cut and paste indented sections, if something which was originally in the middle of a resource string is now at the end, you must remove the \ line continuation character(s) so it will not join the next line into the resource.  Conversely, if something which was originally at the end of a resource is now in the middle, you'll have to add continuation character(s) to make sure that the resource string is properly continued from beginning to end, and possibly newline character(s) (\n) to make sure that it is properly separated from the next item.
+ <footer>
 <a href="28.html">Previous</a>
 <a href="30.html">Next</a>
 </footer>

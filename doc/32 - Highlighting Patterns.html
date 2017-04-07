@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 	<title>Highlighting Patterns(32)</title>
 	<style>
@@ -12,7 +12,7 @@
 	</style>
 </head>
 <body>
-<h1>Writing Syntax Highlighting Patterns</h1><div class='normal'><br>
+<h2>Writing Syntax Highlighting Patterns</h2><div class='normal'><br>
 <br>
 Patterns are the mechanism by which language syntax highlighting is implemented in NEdit (see <a href="13.html">Syntax Highlighting</a> under the heading of Features for Programming). To create syntax highlighting patterns for a new language, or to modify existing patterns, select &quot;Recognition Patterns&quot; from &quot;Syntax Highlighting&quot; sub-section of the &quot;Default Settings&quot; sub-menu of the &quot;Preferences&quot; menu. <br>
 <br>
@@ -30,21 +30,21 @@ Again, the limitation for automatic parsing to operate properly is that both exp
 <br>
 With the ability to span large distances, comes the responsibility to recover when things go wrong.  Remember that syntax highlighting is called upon to parse incorrect or incomplete syntax as often as correct syntax.  To stop a pattern short of matching its end expression, you can specify an error expression, which stops the pattern from gobbling up more than it should. For example, if the text between double quotes shouldn't contain newlines, the error expression might be &quot;$&quot;.  As with both starting and ending expressions, error expressions must also match within the requested context distance. <br>
 <br>
-<h2>Coloring Sub-Expressions</h2>
+<h3>Coloring Sub-Expressions</h3>
 <br>
 It is also possible to color areas of text within a regular expression match.  A pattern of this type associates a style with sub-expressions references of the parent pattern (as used in regular expression substitution patterns, see the NEdit Help menu item on Regular Expressions). Sub-expressions of both the starting and ending patterns may be colored.  For example, if the parent pattern has a starting expression &quot;\&lt;&quot;, and end expression &quot;\&gt;&quot;, (for highlighting all of the text contained within angle brackets), a sub-pattern using &quot;&amp;&quot; in both the starting and ending expression fields could color the brackets differently from the intervening text.  A quick shortcut to typing in pattern names in the Parent Pattern field is to use the middle mouse button to drag them from the Patterns list. <br>
 <br>
 In some cases, there can be interference between coloring sub-patterns and hierarchical sub-patterns (discussed next). How this is resolved, is explained below. <br>
 <br>
-<h2>Hierarchical Patterns</h2>
+<h3>Hierarchical Patterns</h3>
 <br>
 A hierarchical sub-pattern, is identical to a top level pattern, but is invoked only between the starting and ending expression matches of its parent pattern or, in case the parent pattern consists of a single expression, inside the text area matching that expression.  Like the sub-expression coloring patterns discussed above, it is associated with a parent pattern using the Parent Pattern field in the pattern specification. Pattern names can be dragged from the pattern list with the middle mouse button to the Parent Pattern field. <br>
 <br>
 The matching behaviour for sub-patterns is slightly different, depending on whether the parent pattern consists of a single expression or has both a starting and an ending expression. <br>
 <br>
-In case the parent pattern consists of a single expression, and the syntax highlighting parser finds a match for that expression, sub-patterns are matched between the start and the end of the parent match.  Sub-patterns cannot extend beyond the boundaries of the parent's match nor can they affect those boundaries (the latter can happen for starting/ending parent patterns, see below). Note that sub-patterns can </div><div class='italic'>peek</div><div class='normal'> beyond the parent's matching boundaries by means of look-ahead or look-behind expressions. <br>
+In case the parent pattern consists of a single expression, and the syntax highlighting parser finds a match for that expression, sub-patterns are matched between the start and the end of the parent match.  Sub-patterns cannot extend beyond the boundaries of the parent's match nor can they affect those boundaries (the latter can happen for starting/ending parent patterns, see below). Note that sub-patterns can <em>peek</em> beyond the parent's matching boundaries by means of look-ahead or look-behind expressions. <br>
 <br>
-In case the parent pattern is a starting/ending style pattern, after the start expression of the parent pattern matches, the syntax highlighting parser searches for either the parent's end pattern or a matching sub-pattern.  When a sub-pattern matches, control is not returned to the parent pattern until the entire sub-pattern has been parsed, regardless of whether the parent's end pattern appears in the text matched by the sub-pattern.  In this way, matching of the parent's ending pattern can be postponed, in contrast to the case where the parent pattern consists of a single expression. Note that, in this case, parsing of sub-patterns starts </div><div class='bold'>after</div><div class='normal'> the match of the parent pattern's starting expression, also in contrast to the single-expression case. <br>
+In case the parent pattern is a starting/ending style pattern, after the start expression of the parent pattern matches, the syntax highlighting parser searches for either the parent's end pattern or a matching sub-pattern.  When a sub-pattern matches, control is not returned to the parent pattern until the entire sub-pattern has been parsed, regardless of whether the parent's end pattern appears in the text matched by the sub-pattern.  In this way, matching of the parent's ending pattern can be postponed, in contrast to the case where the parent pattern consists of a single expression. Note that, in this case, parsing of sub-patterns starts <strong>after</strong> the match of the parent pattern's starting expression, also in contrast to the single-expression case. <br>
 <br>
 The most common use for this capability is for coloring sub-structure of language constructs (smaller patterns embedded in larger patterns). Hierarchical patterns can also simplify parsing by having sub-patterns &quot;hide&quot; special syntax from parent patterns, such as special escape sequences or internal comments. <br>
 <br>
@@ -52,9 +52,9 @@ There is no depth limit in nesting hierarchical sub-patterns, but beyond the thi
 <br>
 While this is obviously not a complete hierarchical language parser it is still useful in many text coloring situations.  As a pattern writer, your goal is not to completely cover the language syntax, but to generate colorings that are useful to the programmer.  Simpler patterns are usually more efficient and also more robust when applied to incorrect code. <br>
 <br>
-Note that in case of a single-expression parent pattern, there is a potential for conflicts between coloring-only sub-patterns and hierarchical sub-patterns (which cannot happen for starting/ending type of patterns, because sub-patterns are matched </div><div class='bold'>between</div><div class='normal'> the starting and ending pattern (not included)).  Due to the different nature of these two kinds of sub-patterns, it is technically infeasible to follow the standard matching precedence rules, where a sub-pattern has precedence over the sub-patterns following it.  Instead, coloring-only sub-patterns are always colored last, ie., they may override the coloring for overlapping sibling sub-patterns in the overlapping parts of the matches. <br>
+Note that in case of a single-expression parent pattern, there is a potential for conflicts between coloring-only sub-patterns and hierarchical sub-patterns (which cannot happen for starting/ending type of patterns, because sub-patterns are matched <strong>between</strong> the starting and ending pattern (not included)).  Due to the different nature of these two kinds of sub-patterns, it is technically infeasible to follow the standard matching precedence rules, where a sub-pattern has precedence over the sub-patterns following it.  Instead, coloring-only sub-patterns are always colored last, ie., they may override the coloring for overlapping sibling sub-patterns in the overlapping parts of the matches. <br>
 <br>
-<h2>Deferred (Pass-2) Parsing</h2>
+<h3>Deferred (Pass-2) Parsing</h3>
 <br>
 NEdit does pattern matching for syntax highlighting in two passes.  The first pass is applied to the entire file when syntax highlighting is first turned on, and to new ranges of text when they are initially read or pasted in.  The second pass is applied only as needed when text is exposed (scrolled in to view). <br>
 <br>
@@ -62,13 +62,14 @@ If you have a particularly complex set of patterns, and parsing is beginning to 
 <br>
 Sometimes a pattern can't be deferred, not because of context requirements, but because it must run concurrently with pass-1 (non-deferred) patterns.  If they didn't run concurrently, a pass-1 pattern might incorrectly match some of the characters which would normally be hidden inside of a sequence matched by the deferred pattern.  For example, C has character constants enclosed in single quotes.  These typically do not cross line boundaries, meaning they can be parsed entirely within the context distance of the C pattern set and should be good candidates for deferred parsing.  However, they can't be deferred because they can contain sequences of characters which can trigger pass-one patterns. Specifically, the sequence, '\&quot;', contains a double quote character, which would be matched by the string pattern and interpreted as introducing a string. <br>
 <br>
-<h2>Pattern Context Requirements</h2>
+<h3>Pattern Context Requirements</h3>
 <br>
 The context requirements of a pattern set state how much additional text around any change must be examined to guarantee that the patterns will match what they are intended to match.  Context requirements are a promise by NEdit to the pattern writer, that the regular expressions in his/her patterns will be matched against at least &lt;line context&gt; lines and &lt;character context&gt; characters, around any modified text.  Combining line and character requirements guarantee that both will be met. <br>
 <br>
 Automatic re-parsing happens on EVERY KEYSTROKE, so the amount of context which must be examined is very critical to typing efficiency.  The more complicated your patterns, the more critical the context becomes.  To cover all of the keywords in a typical language, without affecting the maximum rate at which users can enter text, you may be limited to just a few lines and/or a few hundred characters of context. <br>
 <br>
-The default context distance is 1 line, with no minimum character requirement.  There are several benefits to sticking with this default.  One is simply that it is easy to understand and to comply with.  Regular expression notation is designed around single line matching.  To span lines in a regular expression, you must explicitly mention the newline character &quot;\n&quot;, and matches which are restricted to a single line are virtually immune to lock-ups.  Also, if you can code your patterns to work within a single line of context, without an additional character-range context requirement, the parser can take advantage the fact that patterns don't cross line boundaries, and nearly double its efficiency over a one-line and 1-character context requirement.  (In a single line context, you are allowed to match newlines, but only as the first and/or last character.) <footer>
+The default context distance is 1 line, with no minimum character requirement.  There are several benefits to sticking with this default.  One is simply that it is easy to understand and to comply with.  Regular expression notation is designed around single line matching.  To span lines in a regular expression, you must explicitly mention the newline character &quot;\n&quot;, and matches which are restricted to a single line are virtually immune to lock-ups.  Also, if you can code your patterns to work within a single line of context, without an additional character-range context requirement, the parser can take advantage the fact that patterns don't cross line boundaries, and nearly double its efficiency over a one-line and 1-character context requirement.  (In a single line context, you are allowed to match newlines, but only as the first and/or last character.)
+ <footer>
 <a href="31.html">Previous</a>
 <a href="33.html">Next</a>
 </footer>
