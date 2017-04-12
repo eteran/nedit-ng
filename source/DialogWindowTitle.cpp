@@ -3,6 +3,7 @@
 #include "DocumentWidget.h"
 #include "MainWindow.h"
 #include "nedit.h"
+#include "Help.h"
 #include "preferences.h"
 #include "util/clearcase.h"
 #include "util/fileUtils.h"
@@ -517,10 +518,7 @@ void DialogWindowTitle::on_buttonBox_clicked(QAbstractButton *button) {
 	} else if(ui.buttonBox->standardButton(button) == QDialogButtonBox::RestoreDefaults) {
 		ui.editFormat->setText(QLatin1String("{%c} [%s] %f (%S) - %d"));
 	} else if(ui.buttonBox->standardButton(button) == QDialogButtonBox::Help) {
-
-	#if 0
-		Help(HELP_CUSTOM_TITLE_DIALOG);
-	#endif	
+        Help::displayTopic(Help::Topic::HELP_CUSTOM_TITLE_DIALOG);
 	}
 }
 

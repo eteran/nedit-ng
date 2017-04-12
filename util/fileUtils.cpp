@@ -231,8 +231,8 @@ int ResolvePath(const char *pathIn, char *pathResolved) {
 QString NormalizePathnameEx(const std::string &pathname) {
 
     char path[PATH_MAX];
-    // TODO(eteran): bounds checking
-    strcpy(path, pathname.c_str());
+    strncpy(path, pathname.c_str(), sizeof(path));
+    path[PATH_MAX - 1] = '\0';
 
     if(!NormalizePathname(path)) {
         return QString::fromLatin1(path);
@@ -244,8 +244,8 @@ QString NormalizePathnameEx(const std::string &pathname) {
 QString NormalizePathnameEx(const QString &pathname) {
 
     char path[PATH_MAX];
-    // TODO(eteran): bounds checking
-    strcpy(path, pathname.toLatin1().data());
+    strncpy(path, pathname.toLatin1().data(), sizeof(path));
+    path[PATH_MAX - 1] = '\0';
 
     if(!NormalizePathname(path)) {
         return QString::fromLatin1(path);

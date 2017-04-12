@@ -3,6 +3,7 @@
 #include "DocumentWidget.h"
 #include "TextBuffer.h"
 #include "preferences.h"
+#include "Help.h"
 #include <QMessageBox>
 #include <QtDebug>
 
@@ -117,7 +118,5 @@ void DialogTabs::on_buttonBox_accepted() {
 // Name: 
 //------------------------------------------------------------------------------
 void DialogTabs::on_buttonBox_helpRequested() {
-#if 0
-	Help(HELP_TABS_DIALOG);
-#endif
+    Help::displayTopic(Help::Topic::HELP_TABS_DIALOG);
 }

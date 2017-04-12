@@ -177,7 +177,6 @@ static QList<Tag> getTag(const char *name, int search_type) {
 */
 static int addTag(const char *name, const char *file, int lang, const char *search, int posInf, const char *path, int index) {
 
-	char newfile[MAXPATHLEN];
     QMultiHash<QString, Tag> *table;
 
 	if (searchMode == TIP) {
@@ -186,33 +185,45 @@ static int addTag(const char *name, const char *file, int lang, const char *sear
         table = &Tags;
 	}
 
+    QString newFile;
 	if (*file == '/') {
-		strcpy(newfile, file);
+        newFile = QString::fromLatin1(file);
 	} else {
-        snprintf(newfile, sizeof(newfile), "%s%s", path, file);
+        newFile = QString(QLatin1String("%1%2")).arg(QString::fromLatin1(path), QString::fromLatin1(file));
 	}
 
-	NormalizePathname(newfile);
+    newFile = NormalizePathnameEx(newFile);
 
     QList<Tag> tags = table->values(QString::fromLatin1(name));
     for(const Tag &t : tags) {
 
-        if (lang != t.language)
+        if (lang != t.language) {
 			continue;
-        if (search != t.searchString)
+        }
+
+        if (search != t.searchString) {
 			continue;
-        if (posInf != t.posInf)
+        }
+
+        if (posInf != t.posInf) {
 			continue;
-        if (t.file[0] == '/' && (newfile != t.file))
+        }
+
+        Q_ASSERT(!t.file.empty());
+
+        if (t.file[0] == '/' && (newFile != QString::fromStdString(t.file))) {
 			continue;
+        }
 
         if (t.file[0] != '/') {
-			char tmpfile[MAXPATHLEN];
-            snprintf(tmpfile, sizeof(tmpfile), "%s%s", t.path.c_str(), t.file.c_str());
-			NormalizePathname(tmpfile);
-			if (strcmp(newfile, tmpfile)) {
-				continue;
-			}
+
+            auto tmpFile = QString(QLatin1String("%1%2")).arg(QString::fromStdString(t.path), QString::fromStdString(t.file));
+
+            tmpFile = NormalizePathnameEx(tmpFile);
+
+            if(newFile != tmpFile) {
+                continue;
+            }
 		}
         return 0;
     }
@@ -285,18 +296,17 @@ bool AddRelTagsFileEx(const QString &tagSpec, const QString &windowPath, int fil
             continue;
         }
 
-        // NOTE(eteran): We use this temporary buffer because NormalizePathname is an inplace C-string algorithm... for now
-        char pathName[MAXPATHLEN];
+        QString pathName;
         if(!windowPath.isEmpty()) {
-            snprintf(pathName, sizeof(pathName), "%s/%s", windowPath.toLatin1().data(), filename.toLatin1().data());
+            pathName = QString(QLatin1String("%1/%2")).arg(windowPath, filename);
         } else {
-            snprintf(pathName, sizeof(pathName), "%s/%s", GetCurrentDirEx().toLatin1().data(), filename.toLatin1().data());
+            pathName = QString(QLatin1String("%1/%2")).arg(GetCurrentDirEx(), filename);
         }
 
-        NormalizePathname(pathName);
+        pathName = NormalizePathnameEx(pathName);
 
         auto it = std::find_if(FileList->begin(), FileList->end(), [pathName](const tagFile &tag) {
-            return tag.filename == QString::fromLatin1(pathName);
+            return tag.filename == pathName;
         });
 
         // if we found an entry with the same pathname, we're done..
@@ -307,12 +317,12 @@ bool AddRelTagsFileEx(const QString &tagSpec, const QString &windowPath, int fil
 
         // or if the file isn't found...
         struct stat statbuf;
-        if (stat(pathName, &statbuf) != 0) {
+        if (stat(pathName.toLatin1().data(), &statbuf) != 0) {
             continue;
         }
 
         tagFile tag;
-        tag.filename = QString::fromLatin1(pathName);
+        tag.filename = pathName;
         tag.loaded   = false;
         tag.date     = statbuf.st_mtime;
         tag.index    = ++tagFileIndex;
@@ -416,20 +426,20 @@ int DeleteTagsFileEx(const QString &tagSpec, int file_type, bool force_unload) {
 
     for(const QString &filename : filenames) {
 
-        char pathName[MAXPATHLEN];
+        QString pathName;
         if(!filename.startsWith(QLatin1Char('/'))) {
-            snprintf(pathName, sizeof(pathName), "%s/%s", GetCurrentDirEx().toLatin1().data(), filename.toLatin1().data());
+            pathName = QString(QLatin1String("%1/%2")).arg(GetCurrentDirEx(), filename);
         } else {
-            strcpy(pathName, filename.toLatin1().data());
+            pathName = filename;
         }
-        NormalizePathname(pathName);
 
+        pathName = NormalizePathnameEx(pathName);
 
         auto it = FileList->begin();
         while(it != FileList->end()) {
             tagFile &t = *it;
 
-            if (t.filename != QString::fromLatin1(pathName)) {
+            if (t.filename != pathName) {
                 ++it;
                 continue;
             }

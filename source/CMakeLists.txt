@@ -101,6 +101,7 @@ add_executable(nedit-ng
 	${QRC_SOURCES}
 	${UI_H}
 
+	Help.cpp
 	CallTipWidget.cpp
 	CommandRecorder.cpp
 	Dialog.cpp

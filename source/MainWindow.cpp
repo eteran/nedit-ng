@@ -13,6 +13,7 @@
 #include "DialogShellMenu.h"
 #include "DialogSmartIndent.h"
 #include "DialogTabs.h"
+#include "Help.h"
 #include "DialogWindowBackgroundMenu.h"
 #include "DialogWindowSize.h"
 #include "DialogWindowTitle.h"
@@ -66,10 +67,10 @@ bool currentlyBusy = false;
 long busyStartTime = 0;
 bool modeMessageSet = false;
 
-DialogShellMenu            *WindowShellMenu = nullptr;
-DialogWindowBackgroundMenu *WindowBackgroundMenu = nullptr;
-DialogMacros               *WindowMacros = nullptr;
-DialogSmartIndent          *SmartIndentDlg = nullptr;
+QPointer<DialogShellMenu>            WindowShellMenu      = nullptr;
+QPointer<DialogWindowBackgroundMenu> WindowBackgroundMenu = nullptr;
+QPointer<DialogMacros>               WindowMacros         = nullptr;
+QPointer<DialogSmartIndent>          SmartIndentDlg       = nullptr;
 
 const char neditDBBadFilenameChars[] = "\n";
 
@@ -4330,7 +4331,7 @@ void MainWindow::focusChanged(QWidget *from, QWidget *to) {
 }
 
 void MainWindow::on_action_Help_triggered() {
-    // TODO(eteran): implement
+    Help::displayTopic(Help::Topic::HELP_START);
 }
 
 bool MainWindow::eventFilter(QObject *object, QEvent *event) {
@@ -4344,4 +4345,18 @@ bool MainWindow::eventFilter(QObject *object, QEvent *event) {
     }
 
     return false;
+}
+
+/*
+** Dim/undim buttons for pasting replay macros into macro and bg menu dialogs
+*/
+void MainWindow::DimPasteReplayBtns(bool enabled) {
+
+    if(WindowMacros) {
+        WindowMacros->setPasteReplayEnabled(enabled);
+    }
+
+    if(WindowBackgroundMenu) {
+        WindowBackgroundMenu->setPasteReplayEnabled(enabled);
+    }
 }

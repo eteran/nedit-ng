@@ -6,6 +6,7 @@
 #include "HighlightStyle.h"
 #include "LanguageMode.h"
 #include "MainWindow.h"
+#include "Help.h"
 #include "PatternSet.h"
 #include "SignalBlocker.h"
 #include "WindowHighlightData.h"
@@ -562,9 +563,7 @@ void DialogSyntaxPatterns::on_buttonRestore_clicked() {
 // Name:
 //------------------------------------------------------------------------------
 void DialogSyntaxPatterns::on_buttonHelp_clicked() {
-#if 0
-	Help(HELP_PATTERNS);
-#endif
+    Help::displayTopic(Help::Topic::HELP_SYNTAX);
 }
 
 //------------------------------------------------------------------------------

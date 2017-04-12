@@ -10,6 +10,7 @@
 #include "macro.h"
 #include "preferences.h"
 #include "smartIndent.h"
+#include "Help.h"
 #include <QMessageBox>
 
 //------------------------------------------------------------------------------
@@ -177,9 +178,7 @@ void DialogSmartIndent::on_buttonRestore_clicked() {
 // Name: 
 //------------------------------------------------------------------------------
 void DialogSmartIndent::on_buttonHelp_clicked() {
-#if 0
-	Help(HELP_SMART_INDENT);
-#endif
+    Help::displayTopic(Help::Topic::HELP_SMART_INDENT);
 }
 
 //------------------------------------------------------------------------------

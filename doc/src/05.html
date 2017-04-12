@@ -1,0 +1,114 @@
+<p>Mouse-based editing is what NEdit is all about, and learning to use the more advanced features like secondary selections and primary selection dragging will be well worth your while.</p>
+<p>If you don't have time to learn everything, you can get by adequately with just the left mouse button:  Clicking the left button moves the cursor. Dragging with the left button makes a selection.  Holding the shift key while clicking extends the existing selection, or begins a selection between the cursor and the mouse.  Double or triple clicking selects a whole word or a whole line.</p>
+<p>This section will make more sense if you also read the section called, &quot;<a href="02.html">Selecting Text</a>&quot;, which explains the terminology of selections, that is, what is meant by primary, secondary, rectangular, etc.</p>
+
+<h2>Button and Modifier Key Summary</h2>
+<h3>General meaning of mouse buttons and modifier keys:</h3>
+
+<h4>Buttons</h4>
+<dl>
+<dt>Button 1 (left)</dt>
+<dd>Cursor position and primary selection</dd>
+<dt>Button 2 (middle)</dt>
+<dd>Secondary selections, and dragging and copying the primary selection</dd>
+<dt>Button 3 (right)</dt>
+<dd>Quick-access programmable menu and pan scrolling</dd>
+</dl>
+
+<h4>Modifier keys</h4>
+
+<dl>
+<dt><kbd>Shift</kbd></dt>
+<dd>On primary selections, (left mouse button): Extends selection to the mouse pointer</dd>
+<dd>On secondary and copy operations, (middle): Toggles between move and copy</dd>
+<dt><kbd>Ctrl</kbd></dt>
+<dd>Makes selection rectangular or insertion columnar</dd>
+<dt><kbd>Alt</kbd> *(on release)</dt>
+<dd>Exchange primary and secondary selections</dd>
+</dl>			
+
+<h2>Left Mouse Button</h2>
+
+<p>The left mouse button is used to position the cursor and to make primary selections.</p>
+
+<dl>
+<dt>Click</dt>
+<dd>Moves the cursor</dd>
+<dt>Double Click</dt>
+<dd>Selects a whole word</dd>
+<dt>Triple Click</dt>
+<dd>Selects a whole line</dd>
+<dt>Quad Click</dt>
+<dd>Selects the whole file</dd>
+<dt><kbd>Shift</kbd> Click</dt>
+<dd>Adjusts (extends or shrinks) the selection, or if there is no existing selection, begins a new selection between the cursor and the mouse.</dd>
+<dt><kbd>Ctrl</kbd> + <kbd>Shift</kbd> Click</dt>
+<dd>Adjusts (extends or shrinks) the Click selection rectangularly.</dd>
+<dt>Drag</dt>
+<dd>Selects text between where the mouse was pressed and where it was released.</dd>
+<dt><kbd>Ctrl</kbd> Drag</dt>
+<dd>Selects rectangle between where the mouse was pressed and where it was released.</dd>
+</dl>
+
+<h2>Right Mouse Button</h2>
+<p>The right mouse button posts a programmable menu for frequently used commands.</p>
+
+<dl>
+<dt>Click/Drag</dt>
+<dd>Pops up the background menu (programmed from Preferences &#x2192; Default Settings &#x2192; Customize Menus &#x2192; Window Background).</dd>
+<dt><kbd>Ctrl</kbd> + Drag</dt>
+<dd>Pan scrolling.  Scrolls the window both vertically and horizontally, as if you had grabbed it with your mouse.</dd>
+</dl>
+
+
+<h2>Middle Mouse Button</h2>
+<p>The middle mouse button is for making secondary selections, and copying and dragging the primary selection.</p>
+
+<dl>
+<dt>Click</dt>
+<dd>Copies the primary selection to the clicked position.</dd>
+<dt><kbd>Shift</kbd> + Click</dt>
+<dd>Moves the primary selection to the clicked position, deleting it from its original position.</dd>
+<dt>Drag</dt>
+<dd>
+	<ol>
+	<li>Outside of the primary selection: Begins a secondary selection.</li>
+	<li>Inside of the primary selection: Moves the selection by dragging.</li>
+	</ol>
+</dd>
+<dt><kbd>Ctrl</kbd> + Drag</dt>
+<dd>
+	<ol>
+	<li>Outside of the primary selection: Begins a rectangular secondary selection.</li>
+	<li>Inside of the primary selection: Drags the selection in overlay mode (see below).</li>
+	</ol>
+</dd>
+</dl>
+
+<p>When the mouse button is released after creating a secondary selection:</p>
+<div>
+	<dl>
+	<dt>No Modifiers</dt>
+	<dd>If there is a primary selection, replaces it with the secondary selection.  Otherwise, inserts the secondary selection at the cursor position.</dd>
+	<dt><kbd>Shift</kbd></dt>
+	<dd>Move the secondary selection, deleting it from its original position.  If there is a primary selection, the move will replace the primary selection with the secondary selection. Otherwise, moves the secondary selection to the cursor position.</dd>
+	<dt><kbd>Alt</kbd> *</dt>
+	<dd>Exchange the primary and secondary selections.</dd>
+	</dl>			
+</div>
+
+<p>While moving the primary selection by dragging with the middle mouse button:</p>
+
+<dl>
+<dt><kbd>Shift</kbd></dt>
+<dd>Leaves a copy of the original selection in place rather than removing it or blanking the area.</dd>
+<dt><kbd>Ctrl</kbd></dt>
+<dd>Changes from insert mode to overlay mode (see below).</dd>
+<dt><kbd>Escape</kbd></dt>
+<dd>Cancels drag in progress.</dd>
+</dl>			
+
+<p>Overlay Mode: Normally, dragging moves text by removing it from the selected position at the start of the drag, and inserting it at a new position relative to the mouse. When you drag a block of text over existing characters, the existing characters are displaced to the end of the selection.  In overlay mode, characters which are occluded by blocks of text being dragged are simply removed.  When dragging non-rectangular selections, overlay mode also converts the selection to rectangular form, allowing it to be dragged outside of the bounds of the existing text.</p>
+<p>Mouse buttons 4 and 5 are usually represented by a mouse wheel nowadays. They are used to scroll up or down in the text window.</p>
+
+<p><small>* The Alt key may be labeled Meta or Compose-Character on some keyboards. Some window managers, including default configurations of mwm, bind combinations of the Alt key and mouse buttons to window manager operations. In NEdit, Alt is only used on button release, so regardless of the window manager bindings for Alt-modified mouse buttons, you can still do the corresponding NEdit operation by using the Alt key AFTER the initial mouse press, so that Alt is held while you release the mouse button.  If you find this difficult or annoying, you can re-configure most window managers to skip this binding, or you can re-configure NEdit to use a different key combination.</small></p>

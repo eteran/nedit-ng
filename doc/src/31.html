@@ -1,0 +1,31 @@
+
+<p>There are several ways to change key bindings in NEdit.  The easiest way to add a new key binding in NEdit is to define a macro in Preferences &#x2192; Default Settings &#x2192; Customize Menus &#x2192; Macro Menu.  However, if you want to change existing bindings or add a significant number of new key bindings you will need to do so via X resources.</p>
+<p>Before reading this section, you must understand how to set X resources (see the help section &quot;<a href="30.html">X Resources</a>&quot;).  Since setting X resources is tricky, it is also helpful when working on key-binding, to set some easier-to-verify resource at the same time, as a simple check that the NEdit program is actually seeing your changes.  The appres program is also very helpful in checking that the resource settings that you make, actually reach the program for which they are intended in the correct form.</p>
+
+<h2>Key Binding in General</h2>
+<p>Keyboard commands are associated with editor action routines through two separate mechanisms in NEdit.  Commands which appear in pull-down menus have individual resources designating a keyboard equivalent to the menu command, called an accelerator key.  Commands which do not have an associated menu item are bound to keys via the X toolkit translation mechanism.  The methods for changing these two kinds of bindings are quite different.</p>
+
+<h2>Key Binding Via Translations</h2>
+<p>The most general way to bind actions to keys in NEdit is to use the translation table associated with the text widget.  To add a binding to Alt+Y to insert the string &quot;Hi!&quot;, for example, add lines similar to the following to your X resource file:</p>
+
+
+<pre><code>NEdit*text.Translations: #override \n\
+Alt&lt;Key&gt;y: insert_string(&quot;Hi!&quot;) \n</code></pre>
+
+
+<p>The Help topic &quot;<a href="27.html">Action Routines</a>&quot; lists the actions available to be bound.</p>
+<p>Translation tables map key and mouse presses, window operations, and other kinds of events, to actions. The syntax for translation tables is simplified here, so you may need to refer to a book on the X window system for more detailed information.</p>
+<p>Note that accelerator resources (discussed below) override translations, and that most Ctrl+letter and Alt+letter combinations are already bound to an accelerator key.  To use one of these combinations from a translation table, therefore, you must first un-bind the original menu accelerator.</p>
+<p>A resource for changing a translation table consists of a keyword; #override, #augment, or #replace; followed by lines (separated by newline characters) pairing events with actions.  Events begin with modifiers, like Ctrl, Shift, or Alt, followed by the event type in &lt;&gt;.  BtnDown, Btn1Down, Btn2Down, Btn1Up, Key, KeyUp are valid event types.  For key presses, the event type is followed by the name of the key.  You can specify a combination of events, such as a sequence of key presses, by separating them with commas.  The other half of the event/action pair is a set of actions.  These are separated from the event specification by a colon and from each other by spaces.  Actions are names followed by parentheses, optionally containing one or more parameters separated by comas.</p>
+
+<h2>Changing Menu Accelerator Keys</h2>
+<p>The menu shortcut keys shown at the right of NEdit menu items can also be changed via X resources.  Each menu item has two resources associated with it, accelerator, the event to trigger the menu item; and acceleratorText, the string shown in the menu.  The form of the accelerator resource is the same as events for translation table entries discussed above, though multiple keys and other subtleties are not allowed.  The resource name for a menu is the title in lower case, followed by &quot;Menu&quot;, the resource name of menu item is the name in lower case, run together, with words separated by caps, and all punctuation removed.  For example, to change Cut to Ctrl+X, you would add the following to your .Xdefaults file:</p>
+<pre><code>nedit*editMenu.cut.accelerator: Ctrl&lt;Key&gt;x
+nedit*editMenu.cut.acceleratorText: Ctrl+X</code></pre>
+
+<p>Accelerator keys with optional shift key modifiers, like Find..., have an additional accelerator resource with Shift appended to the name.  For example:</p>
+
+<pre><code>nedit*searchMenu.find.acceleratorText: [Shift]Alt+F
+nedit*searchMenu.find.accelerator: Alt&lt;Key&gt;f
+nedit*searchMenu.findShift.accelerator: Shift Alt&lt;Key&gt;f</code></pre>
+

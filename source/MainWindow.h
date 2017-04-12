@@ -67,9 +67,6 @@ public:
     bool CloseAllDocumentInWindow();
     int updateGutterWidth();
     int updateLineNumDisp();
-    static void ReadNEditDB();
-    static void WriteNEditDB();
-    static void AddToPrevOpenMenu(const QString &filename);
     void BeginISearchEx(SearchDirection direction);
     void EndISearchEx();
     void ShowLineNumbers(bool state);
@@ -78,7 +75,6 @@ public:
     void fileCB(DocumentWidget *window, const std::string &value);
     void forceShowLineNumbers();
     void initToggleButtonsiSearch(SearchType searchType);
-    static void invalidatePrevOpenMenus();
     void parseGeometry(QString geometry);
     void setWindowSizeDefault(int rows, int cols);
     void updatePrevOpenMenu();
@@ -89,6 +85,11 @@ public:
     void updateWindowSizeMenus();
 
 public:
+    static void DimPasteReplayBtns(bool enabled);
+    static void ReadNEditDB();
+    static void WriteNEditDB();
+    static void AddToPrevOpenMenu(const QString &filename);
+    static void invalidatePrevOpenMenus();
     static MainWindow *firstWindow();
     static QList<MainWindow *> allWindows();    
     static QString UniqueUntitledNameEx();

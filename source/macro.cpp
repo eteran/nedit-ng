@@ -790,9 +790,8 @@ void FinishLearnEx() {
         window->ui.action_Replay_Keystrokes->setEnabled(true);
     }
 
-#if 0 // TODO(eteran): implement
-    DimPasteReplayBtns(true);
-#endif
+    MainWindow::DimPasteReplayBtns(true);
+
     // Clear learn-mode banner
     MacroRecordWindowEx->ClearModeMessageEx();
 }
