@@ -4223,6 +4223,12 @@ void MainWindow::on_action_Finish_Learn_triggered() {
     }
 }
 
+void MainWindow::on_action_Replay_Keystrokes_triggered() {
+    if(auto doc = currentDocument()) {
+        ReplayEx(doc);
+    }
+}
+
 void MainWindow::on_action_Cancel_Learn_triggered() {
     if(auto doc = currentDocument()) {
         CancelMacroOrLearnEx(doc);

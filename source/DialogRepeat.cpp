@@ -2,6 +2,7 @@
 #include "DialogRepeat.h"
 #include "DocumentWidget.h"
 #include "TextBuffer.h"
+#include "CommandRecorder.h"
 #include "macro.h"
 #include "preferences.h"
 #include <QIntValidator>
@@ -67,15 +68,16 @@ bool DialogRepeat::doRepeatDialogAction() {
 	}
 
     QString macro;
+    QString replayMacro = CommandRecorder::getInstance()->replayMacro;
 
 	// Figure out which command user wants to repeat 
 	if (ui.radioLastCommand->isChecked()) {
         macro = lastCommand_;
 	} else {
-		if (ReplayMacro.empty()) {
+        if (replayMacro.isEmpty()) {
 			return false;
 		}
-        macro = QString::fromStdString(ReplayMacro);
+        macro = replayMacro;
 	}
 
     // call the action routine repeat_macro to do the work

@@ -3,6 +3,7 @@
 #include "MainWindow.h"
 #include "MenuItem.h"
 #include "SignalBlocker.h"
+#include "CommandRecorder.h"
 #include "interpret.h"
 #include "macro.h"
 #include "preferences.h"
@@ -125,11 +126,13 @@ void DialogWindowBackgroundMenu::on_buttonDelete_clicked() {
 //------------------------------------------------------------------------------
 void DialogWindowBackgroundMenu::on_buttonPasteLRMacro_clicked() {
 
-	if (GetReplayMacro().empty()) {
+    QString replayMacro = CommandRecorder::getInstance()->replayMacro;
+
+    if (replayMacro.isEmpty()) {
 		return;
 	}
 
-	ui.editMacro->insertPlainText(QString::fromStdString(GetReplayMacro()));
+    ui.editMacro->insertPlainText(replayMacro);
 }
 
 //------------------------------------------------------------------------------

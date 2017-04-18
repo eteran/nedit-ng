@@ -36,6 +36,7 @@
 #include "DocumentWidget.h"
 #include "HighlightPattern.h"
 #include "IndentStyle.h"
+#include "CommandRecorder.h"
 #include "MainWindow.h"
 #include "RangesetTable.h"
 #include "SearchDirection.h"
@@ -650,15 +651,6 @@ static const char *ReturnGlobalNames[N_RETURN_GLOBALS] = {
 };
 static Symbol *ReturnGlobals[N_RETURN_GLOBALS];
 
-// The current macro to execute on Replay command
-std::string ReplayMacro;
-
-// Buffer where macro commands are recorded in Learn mode 
-static TextBuffer *MacroRecordBuf = nullptr;
-
-// Action Hook id for recording actions for Learn mode 
-static std::function<int(DocumentWidget *document)> MacroRecordActionHookEx;
-
 // Window where macro recording is taking place 
 static DocumentWidget *MacroRecordWindowEx = nullptr;
 
@@ -703,8 +695,9 @@ void RegisterMacroSubroutines() {
 void BeginLearnEx(DocumentWidget *document) {
 
     // If we're already in learn mode, return
-    if(MacroRecordActionHookEx)
+    if(CommandRecorder::getInstance()->isRecording()) {
         return;
+    }
 
     MainWindow *thisWindow = document->toWindow();
     if(!thisWindow) {
@@ -723,16 +716,8 @@ void BeginLearnEx(DocumentWidget *document) {
     // Mark the window where learn mode is happening
     MacroRecordWindowEx = document;
 
-    // Allocate a text buffer for accumulating the macro strings
-    MacroRecordBuf = new TextBuffer;
-
     // Add the action hook for recording the actions
-    MacroRecordActionHookEx = [](DocumentWidget *document) -> int {
-        Q_UNUSED(document);
-        // TODO(eteran): implement this!
-        // it was set to learnActionHook which with an argument of document bound to it!
-        return -1;
-    };
+    CommandRecorder::getInstance()->startRecording();
 
     // Extract accelerator texts from menu PushButtons
     QString cFinish = thisWindow->ui.action_Finish_Learn->shortcut().toString();
@@ -761,18 +746,12 @@ void BeginLearnEx(DocumentWidget *document) {
 void FinishLearnEx() {
 
     // If we're not in learn mode, return
-    if(!MacroRecordActionHookEx) {
+    if(!CommandRecorder::getInstance()->isRecording()) {
         return;
     }
 
-    // Remove the action hook
-    MacroRecordActionHookEx = nullptr;
+    CommandRecorder::getInstance()->stopRecording();
 
-    // Store the finished action for the replay menu item
-    ReplayMacro = MacroRecordBuf->BufGetAllEx();
-
-    // Free the buffer used to accumulate the macro sequence
-    delete MacroRecordBuf;
 
     // Undim the menu items dimmed during learn
     for(MainWindow *window : MainWindow::allWindows()) {
@@ -781,7 +760,7 @@ void FinishLearnEx() {
 
     if (MacroRecordWindowEx->IsTopDocument()) {
         if(MainWindow *window = MacroRecordWindowEx->toWindow()) {
-            window->ui.action_Learn_Keystrokes->setEnabled(false);
+            window->ui.action_Finish_Learn->setEnabled(false);
             window->ui.action_Cancel_Learn->setEnabled(false);
         }
     }
@@ -801,22 +780,18 @@ void FinishLearnEx() {
 ** Cancel Learn mode, or macro execution (they're bound to the same menu item)
 */
 void CancelMacroOrLearnEx(DocumentWidget *document) {
-    if(MacroRecordActionHookEx)
+    if(CommandRecorder::getInstance()->isRecording()) {
         cancelLearnEx();
-    else if (document->macroCmdData_)
+    } else if (document->macroCmdData_) {
         AbortMacroCommandEx(document);
+    }
 }
 
 static void cancelLearnEx() {
     // If we're not in learn mode, return
-    if(!MacroRecordActionHookEx)
+    if(!CommandRecorder::getInstance()->isRecording()) {
         return;
-
-    // Remove the action hook
-    MacroRecordActionHookEx = nullptr;
-
-    // Free the macro under construction
-    delete MacroRecordBuf;
+    }
 
     // Undim the menu items dimmed during learn
     for(MainWindow *window : MainWindow::allWindows()) {
@@ -837,19 +812,22 @@ static void cancelLearnEx() {
 ** Execute the learn/replay sequence stored in "window"
 */
 void ReplayEx(DocumentWidget *window) {
+
+    QString replayMacro = CommandRecorder::getInstance()->replayMacro;
+
     // Verify that a replay macro exists and it's not empty and that
     // we're not already running a macro
-    if (!ReplayMacro.empty() && window->macroCmdData_ == nullptr) {
+    if (!replayMacro.isEmpty() && window->macroCmdData_ == nullptr) {
 
         /* Parse the replay macro (it's stored in text form) and compile it into
            an executable program "prog" */
 
-        const char *errMsg;
-        const char *stoppedAt;
+        QString errMsg;
+        int stoppedAt;
 
-        Program *prog = ParseMacro(ReplayMacro.c_str(), &errMsg, &stoppedAt);
+        Program *prog = ParseMacroEx(replayMacro, &errMsg, &stoppedAt);
         if(!prog) {
-            fprintf(stderr, "NEdit internal error, learn/replay macro syntax error: %s\n", errMsg);
+            fprintf(stderr, "NEdit internal error, learn/replay macro syntax error: %s\n", errMsg.toLatin1().data());
             return;
         }
 
@@ -1199,7 +1177,7 @@ void AbortMacroCommandEx(DocumentWidget *document) {
 int MacroWindowCloseActionsEx(DocumentWidget *document) {
     auto cmdData = static_cast<macroCmdInfoEx *>(document->macroCmdData_);
 
-    if (MacroRecordActionHookEx != nullptr && MacroRecordWindowEx == document) {
+    if (CommandRecorder::getInstance()->isRecording() && MacroRecordWindowEx == document) {
         FinishLearnEx();
     }
 
@@ -1332,15 +1310,6 @@ void DoMacroEx(DocumentWidget *document, const QString &macro, const char *errIn
 
     // run the executable program (prog is freed upon completion)
     runMacroEx(document, prog);
-}
-
-/*
-** Get the current Learn/Replay macro in text form.  Returned string is a
-** pointer to the stored macro and should not be freed by the caller (and
-** will cease to exist when the next replay macro is installed)
-*/
-std::string GetReplayMacro() {
-	return ReplayMacro;
 }
 
 /*

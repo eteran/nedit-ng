@@ -48,12 +48,12 @@ int MacroWindowCloseActionsEx(DocumentWidget *document);
 int ReadMacroFileEx(DocumentWidget *window, const std::string &fileName, int warnNotExist);
 
 int ReadMacroStringEx(DocumentWidget *window, const QString &string, const char *errIn);
-std::string GetReplayMacro();
 void AbortMacroCommandEx(DocumentWidget *document);
 void BeginLearnEx(DocumentWidget *document);
 void CancelMacroOrLearnEx(DocumentWidget *document);
 void DoMacroEx(DocumentWidget *document, const QString &macro, const char *errInName);
 void FinishLearnEx();
+void ReplayEx(DocumentWidget *window);
 
 void ReadMacroInitFileEx(DocumentWidget *window);
 void RegisterMacroSubroutines();
@@ -61,9 +61,6 @@ void RepeatMacroEx(DocumentWidget *window, const char *command, int how);
 void ResumeMacroExecutionEx(DocumentWidget *window);
 void ReturnShellCommandOutputEx(DocumentWidget *window, const std::string &outText, int status);
 void SafeGC();
-
-extern std::string ReplayMacro;
-
 
 /* Data attached to window during shell command execution with
    information for controling and communicating with the process */

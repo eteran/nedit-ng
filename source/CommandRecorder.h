@@ -20,6 +20,13 @@ private:
 public:
     virtual bool eventFilter(QObject *obj, QEvent *event) override;
 
+public:
+    void startRecording();
+    void stopRecording();
+    void cancelRecording();
+    bool isRecording() const;
+    void setRecording(bool enabled);
+
 private:
     void lastActionHook(QObject *obj, const TextEditEvent *ev);
     QString actionToString(const TextEditEvent *ev);
@@ -29,7 +36,12 @@ private:
 
 public:
     // The last command executed (used by the Repeat command)
-    QString lastCommand;
+    QString lastCommand;    
+    QString replayMacro;
+
+private:
+    QString macroRecordBuffer;
+    bool isRecording_;
 };
 
 #endif

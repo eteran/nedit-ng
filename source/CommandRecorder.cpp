@@ -65,15 +65,13 @@ const char *RedundantActions[] = {
 CommandRecorder *instance = nullptr;
 QMutex instanceMutex;
 
-
-
 }
 
 /**
  * @brief CommandRecorder::CommandRecorder
  * @param parent
  */
-CommandRecorder::CommandRecorder(QObject *parent) : QObject(parent) {
+CommandRecorder::CommandRecorder(QObject *parent) : QObject(parent), isRecording_(false) {
 
 }
 
@@ -145,7 +143,55 @@ void CommandRecorder::lastActionHook(QObject *obj, const TextEditEvent *ev) {
     QString actionString = actionToString(ev);
     if (!actionString.isNull()) {
         lastCommand = actionString;
+
+        if(isRecording_) {
+            /* beep on un-recordable operations which require a mouse position, to
+               remind the user that the action was not recorded */
+            if (isMouseAction(ev)) {
+                QApplication::beep();
+                return;
+            }
+
+            macroRecordBuffer.append(actionString);
+            macroRecordBuffer.append(QLatin1Char('\n'));
+        }
     }
+
+
+
+#if 0
+    WindowInfo *window;
+    int i;
+    char *actionString;
+
+    /* Select only actions in text panes in the window for which this
+       action hook is recording macros (from clientData). */
+    for (window=WindowList; window!=NULL; window=window->next) {
+    if (window->textArea == w)
+        break;
+    for (i=0; i<window->nPanes; i++) {
+            if (window->textPanes[i] == w)
+                break;
+    }
+    if (i < window->nPanes)
+        break;
+    }
+    if (window == NULL || window != (WindowInfo *)clientData)
+        return;
+
+    /* beep on un-recordable operations which require a mouse position, to
+       remind the user that the action was not recorded */
+    if (isMouseAction(actionName)) {
+        XBell(XtDisplay(w), 0);
+        return;
+    }
+
+    /* Record the action and its parameters */
+    actionString = actionToString(w, actionName, event, params, *numParams);
+    if (actionString != NULL) {
+    BufInsert(MacroRecordBuf, MacroRecordBuf->length, actionString);
+    }
+#endif
 }
 
 bool CommandRecorder::isMouseAction(const TextEditEvent *ev) const {
@@ -192,4 +238,57 @@ QString CommandRecorder::actionToString(const TextEditEvent *ev) {
     }
 
     return ev->toString();
+}
+
+/**
+ * @brief CommandRecorder::startRecording
+ */
+void CommandRecorder::startRecording() {
+    setRecording(true);
+}
+
+/**
+ * @brief CommandRecorder::stopRecording
+ */
+void CommandRecorder::stopRecording() {
+    setRecording(false);
+}
+
+/**
+ * stops recording user actions, but does NOT save the buffer
+ * @brief CommandRecorder::cancelRecording
+ */
+void CommandRecorder::cancelRecording() {
+    isRecording_ = false;
+    macroRecordBuffer.clear();
+}
+
+/**
+ * @brief CommandRecorder::isRecording
+ * @return
+ */
+bool CommandRecorder::isRecording() const {
+    return isRecording_;
+}
+
+/**
+ * @brief CommandRecorder::setRecording
+ * @param enabled
+ */
+void CommandRecorder::setRecording(bool enabled) {
+
+    if(isRecording_ == enabled) {
+        // no change in state, do nothing
+    }
+
+    if(!enabled) {
+        // we've been asked to stop recording
+        // Store the finished action for the replay menu item
+        replayMacro = macroRecordBuffer;
+    } else {
+        // start recording
+        macroRecordBuffer.clear();
+    }
+
+    isRecording_ = enabled;
 }

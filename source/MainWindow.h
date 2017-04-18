@@ -278,9 +278,7 @@ public Q_SLOTS:
     void on_action_Finish_Learn_triggered();
     void on_action_Cancel_Learn_triggered();
     void on_action_Repeat_triggered();
-#if 0
     void on_action_Replay_Keystrokes_triggered();
-#endif
     void on_action_About_triggered();
     void on_action_About_Qt_triggered();
     void on_action_Help_triggered();

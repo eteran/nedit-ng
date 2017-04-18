@@ -6,6 +6,7 @@
 #include "interpret.h"
 #include "macro.h"
 #include "preferences.h"
+#include "CommandRecorder.h"
 #include "userCmds.h"
 #include <QMessageBox>
 
@@ -126,11 +127,12 @@ void DialogMacros::on_buttonDelete_clicked() {
 //------------------------------------------------------------------------------
 void DialogMacros::on_buttonPasteLRMacro_clicked() {
 
-	if (GetReplayMacro().empty()) {
+    QString replayMacro = CommandRecorder::getInstance()->replayMacro;
+    if (replayMacro.isEmpty()) {
 		return;
 	}
 
-	ui.editMacro->insertPlainText(QString::fromStdString(GetReplayMacro()));
+    ui.editMacro->insertPlainText(replayMacro);
 }
 
 //------------------------------------------------------------------------------
