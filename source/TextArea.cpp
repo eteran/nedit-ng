@@ -7,7 +7,7 @@
 #include "RangesetTable.h"
 #include "TextBuffer.h"
 #include "calltips.h"
-#include "dragEndCBStruct.h"
+#include "DragEndEvent.h"
 #include "highlight.h"
 #include "preferences.h"
 #include "smartIndentCBStruct.h"
@@ -4685,7 +4685,7 @@ void TextArea::CancelBlockDrag() {
 	dragState_ = DRAG_CANCELED;
 
 	// Call finish-drag calback
-	dragEndCBStruct endStruct;
+	DragEndEvent endStruct;
 	endStruct.startPos       = 0;
 	endStruct.nCharsDeleted  = 0;
 	endStruct.nCharsInserted = 0;
@@ -6740,7 +6740,7 @@ void TextArea::FinishBlockDrag() {
 	dragState_ = NOT_CLICKED;
 
 	// Call finish-drag calback
-	dragEndCBStruct endStruct;
+	DragEndEvent endStruct;
 	endStruct.startPos       = modRangeStart;
 	endStruct.nCharsDeleted  = origModRangeEnd - modRangeStart;
 	endStruct.nCharsInserted = bufModRangeEnd  - modRangeStart;

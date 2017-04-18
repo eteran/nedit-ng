@@ -263,14 +263,11 @@ QString NormalizePathnameEx(const QString &pathname) {
 */
 int NormalizePathname(char *pathname) {
 
-	// TODO(eteran): this can be more efficient
-	
 	/* if this is a relative pathname, prepend current directory */
 	if (pathname[0] != '/') {
-		size_t len;
 
 		/* make a copy of pathname to work from */
-		char *oldPathname = (char *)malloc(strlen(pathname) + 1);
+        char *oldPathname = new char[strlen(pathname) + 1];
 		strcpy(oldPathname, pathname);
 		
 		/* get the working directory and prepend to the path */
@@ -279,7 +276,7 @@ int NormalizePathname(char *pathname) {
 		/* check for trailing slash, or pathname being root dir "/":
 		   don't add a second '/' character as this may break things
 		   on non-un*x systems */
-		len = strlen(pathname); /* GetCurrentDirEx() returns non-nullptr value */
+        const size_t len = strlen(pathname); /* GetCurrentDirEx() returns non-nullptr value */
 
 		/*  Apart from the fact that people putting conditional expressions in
 		    ifs should be caned: How should len ever become 0 if GetCurrentDirEx()
@@ -288,8 +285,9 @@ int NormalizePathname(char *pathname) {
 		if ((len == 0) ? 1 : pathname[len - 1] != '/') {
 			strcat(pathname, "/");
 		}
+
 		strcat(pathname, oldPathname);
-		free(oldPathname);
+        delete [] oldPathname;
 	}
 
 	/* compress out .. and . */
@@ -303,7 +301,6 @@ int NormalizePathname(char *pathname) {
 **  FIXME: Change return value to False and True.
 */
 int CompressPathname(char *pathname) {
-
 
 	/* (Added by schwarzenberg)
 	** replace multiple slashes by a single slash

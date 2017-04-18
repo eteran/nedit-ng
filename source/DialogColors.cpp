@@ -5,6 +5,7 @@
 #include "X11Colors.h"
 #include "highlight.h"
 #include "nedit.h" // (for some constants)
+#include "Settings.h"
 #include "preferences.h"
 #include <QColorDialog>
 #include <QMessageBox>

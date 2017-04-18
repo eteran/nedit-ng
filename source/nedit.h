@@ -30,19 +30,6 @@
 #include "ShowMatchingStyle.h"
 #include "TextSelection.h"
 
-#define NEDIT_VERSION  5
-#define NEDIT_REVISION 6
-
-/* Some default colors */
-#define NEDIT_DEFAULT_FG        "#221f1e"
-#define NEDIT_DEFAULT_TEXT_BG   "#d6d2d0"
-#define NEDIT_DEFAULT_SEL_FG    "#ffffff"
-#define NEDIT_DEFAULT_SEL_BG    "#43ace8"
-#define NEDIT_DEFAULT_HI_FG     "white"        /* These are colors for flashing */
-#define NEDIT_DEFAULT_HI_BG     "red"          /* matching parens. */
-#define NEDIT_DEFAULT_LINENO_FG "black"
-#define NEDIT_DEFAULT_CURSOR_FG "black"
-
 /* Tuning parameters */
 #define SEARCHMAX 5119         /* Maximum length of search/replace strings */
 #define MAX_PANES 6            /* Max # of ADDITIONAL text editing panes  that can be added to a window */
@@ -72,20 +59,6 @@ enum virtKeyOverride {
 
 /* determine a safe size for a string to hold an integer-like number contained in xType */
 #define TYPE_INT_STR_SIZE(xType) ((sizeof(xType) * 3) + 2)
-
-/* Identifiers for the different colors that can be adjusted. */
-enum ColorTypes {
-	TEXT_FG_COLOR, 
-	TEXT_BG_COLOR, 
-	SELECT_FG_COLOR, 
-	SELECT_BG_COLOR, 
-	HILITE_FG_COLOR, 
-	HILITE_BG_COLOR, 
-	LINENO_FG_COLOR, 
-	CURSOR_FG_COLOR, 
-	NUM_COLORS
-};
-
 
 extern bool IsServer;
 

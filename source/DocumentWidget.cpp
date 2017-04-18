@@ -7,15 +7,17 @@
 #include "HighlightData.h"
 #include "LanguageMode.h"
 #include "MainWindow.h"
+#include "Direction.h"
 #include "SignalBlocker.h"
 #include "SmartIndent.h"
 #include "TextArea.h"
 #include "TextBuffer.h"
+#include "Settings.h"
 #include "UndoInfo.h"
 #include "WindowHighlightData.h"
 #include "calltips.h"
 #include "clearcase.h"
-#include "dragEndCBStruct.h"
+#include "DragEndEvent.h"
 #include "file.h"
 #include "fileUtils.h"
 #include "highlight.h"
@@ -117,10 +119,6 @@ static const CharMatchTable MatchingChars[N_MATCH_CHARS] = {
  */
 const int PREFERRED_CMPBUF_LEN = 0x8000;
 
-// TODO(eteran): use an enum for this
-const int FORWARD = 1;
-const int REVERSE = 2;
-
 /* Maximum frequency in miliseconds of checking for external modifications.
    The periodic check is only performed on buffer modification, and the check
    interval is only to prevent checking on every keystroke in case of a file
@@ -151,7 +149,7 @@ void dragStartCB(TextArea *area, void *user) {
 	}
 }
 
-void dragEndCB(TextArea *area, dragEndCBStruct *data, void *user) {
+void dragEndCB(TextArea *area, DragEndEvent *data, void *user) {
     if(auto document = static_cast<DocumentWidget *>(user)) {
         document->dragEndCallback(area, data);
 	}
@@ -861,7 +859,7 @@ void DocumentWidget::modifiedCallback(int pos, int nInserted, int nDeleted, int 
     }
 }
 
-void DocumentWidget::dragEndCallback(TextArea *area, dragEndCBStruct *data) {
+void DocumentWidget::dragEndCallback(TextArea *area, DragEndEvent *data) {
 
     // NOTE(eteran): so, it's a minor shame here that we don't use the area
     // variable. The **buffer** is what reports the modifications, and that is
@@ -1420,7 +1418,7 @@ void DocumentWidget::SaveUndoInformation(int pos, int nInserted, int nDeleted, v
 
         // overstrike mode replacement
         if ((oldType == ONE_CHAR_REPLACE && newType == ONE_CHAR_REPLACE) && (pos == currentUndo->endPos)) {
-            appendDeletedText(deletedText, nDeleted, FORWARD);
+            appendDeletedText(deletedText, nDeleted, Direction::FORWARD);
             currentUndo->endPos++;
             autoSaveCharCount_++;
             return;
@@ -1428,13 +1426,13 @@ void DocumentWidget::SaveUndoInformation(int pos, int nInserted, int nDeleted, v
 
         // forward delete
         if ((oldType == ONE_CHAR_DELETE && newType == ONE_CHAR_DELETE) && (pos == currentUndo->startPos)) {
-            appendDeletedText(deletedText, nDeleted, FORWARD);
+            appendDeletedText(deletedText, nDeleted, Direction::FORWARD);
             return;
         }
 
         // reverse delete
         if ((oldType == ONE_CHAR_DELETE && newType == ONE_CHAR_DELETE) && (pos == currentUndo->startPos - 1)) {
-            appendDeletedText(deletedText, nDeleted, REVERSE);
+            appendDeletedText(deletedText, nDeleted, Direction::REVERSE);
             currentUndo->startPos--;
             currentUndo->endPos--;
             return;
@@ -1502,7 +1500,7 @@ void DocumentWidget::ClearRedoList() {
 ** for continuing of a string of one character deletes or replaces, but will
 ** work with more than one character.
 */
-void DocumentWidget::appendDeletedText(view::string_view deletedText, int deletedLen, int direction) {
+void DocumentWidget::appendDeletedText(view::string_view deletedText, int deletedLen, Direction direction) {
     UndoInfo &undo = undo_.front();
 
     // re-allocate, adding space for the new character(s)
@@ -1510,7 +1508,7 @@ void DocumentWidget::appendDeletedText(view::string_view deletedText, int delete
     comboText.reserve(undo.oldText.size() + deletedLen);
 
     // copy the new character and the already deleted text to the new memory
-    if (direction == FORWARD) {
+    if (direction == Direction::FORWARD) {
         comboText.append(undo.oldText);
         comboText.append(deletedText.begin(), deletedText.end());
     } else {

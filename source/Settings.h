@@ -6,6 +6,19 @@
 #include <QObject>
 #include <QString>
 
+// Identifiers for the different colors that can be adjusted.
+enum ColorTypes {
+    TEXT_FG_COLOR,
+    TEXT_BG_COLOR,
+    SELECT_FG_COLOR,
+    SELECT_BG_COLOR,
+    HILITE_FG_COLOR,
+    HILITE_BG_COLOR,
+    LINENO_FG_COLOR,
+    CURSOR_FG_COLOR,
+    NUM_COLORS
+};
+
 class Settings : QObject {
     Q_OBJECT
 public:

@@ -34,8 +34,10 @@ class TextBuffer;
 class UndoInfo;
 class HighlightData;
 class WindowHighlightData;
-struct dragEndCBStruct;
+struct DragEndEvent;
 struct smartIndentCBStruct;
+
+enum class Direction;
 
 // TODO(eteran): find a better place for this enum
 enum CloseMode {
@@ -93,7 +95,7 @@ public Q_SLOTS:
 public:
 	void movedCallback(TextArea *area);
 	void dragStartCallback(TextArea *area);
-	void dragEndCallback(TextArea *area, dragEndCBStruct *data);
+    void dragEndCallback(TextArea *area, DragEndEvent *data);
 	void smartIndentCallback(TextArea *area, smartIndentCBStruct *data);
     void modifiedCallback(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText);
 
@@ -173,7 +175,7 @@ public:
     void addRedoItem(const UndoInfo &redo);
     void addUndoItem(const UndoInfo &undo);
     void addWrapNewlines();
-    void appendDeletedText(view::string_view deletedText, int deletedLen, int direction);
+    void appendDeletedText(view::string_view deletedText, int deletedLen, Direction direction);
     void dimSelDepItemsInMenu(QMenu *menuPane, const QVector<MenuData> &menuList, bool enabled);
     void documentRaised();
     void executeModMacroEx(smartIndentCBStruct *cbInfo);

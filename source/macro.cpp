@@ -28,6 +28,7 @@
 *******************************************************************************/
 
 #include "macro.h"
+#include "version.h"
 #include "DialogPrompt.h"
 #include "DialogPromptList.h"
 #include "DialogPromptString.h"
@@ -3938,12 +3939,12 @@ static int rangesetListMV(DocumentWidget *window, DataValue *argList, int nArgs,
 */
 static int versionMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
-    (void)errMsg;
-    (void)nArgs;
-    (void)argList;
+    Q_UNUSED(errMsg);
+    Q_UNUSED(nArgs);
+    Q_UNUSED(argList);
     Q_UNUSED(window);
 
-	static unsigned version = NEDIT_VERSION * 1000 + NEDIT_REVISION;
+    static const unsigned version = NEDIT_VERSION;
 
 	result->tag = INT_TAG;
 	result->val.n = version;

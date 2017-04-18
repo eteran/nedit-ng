@@ -442,8 +442,6 @@ void MainWindow::setupMenuAlternativeMenus() {
         ui.action_New_Window->setText(tr("New &Window"));
     }
 
-
-
 #if defined(REPLACE_SCOPE)
     auto replaceScopeGroup = new QActionGroup(this);
     auto replaceScopeMenu = new QMenu(tr("Default &Replace Scope"), this);

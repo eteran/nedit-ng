@@ -24,13 +24,13 @@ class QShortcut;
 class QTimer;
 class TextArea;
 class TextBuffer;
-struct dragEndCBStruct;
+struct DragEndEvent;
 struct smartIndentCBStruct;
 
 typedef void (*unfinishedStyleCBProcEx)(const TextArea *, int, const void *);
 typedef void (*cursorMovedCBEx)(TextArea *, void *);
 typedef void (*dragStartCBEx)(TextArea *, void *);
-typedef void (*dragEndCBEx)(TextArea *, dragEndCBStruct *, void *);
+typedef void (*dragEndCBEx)(TextArea *, DragEndEvent *, void *);
 typedef void (*smartIndentCBEx)(TextArea *, smartIndentCBStruct *, void *);
 
 class TextArea : public QAbstractScrollArea {

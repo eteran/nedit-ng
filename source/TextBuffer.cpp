@@ -69,8 +69,13 @@ std::string unexpandTabsEx(view::string_view text, int startIndent, int tabDist,
 		if (*c == ' ') {
 			int len = TextBuffer::BufExpandCharacter('\t', indent, expandedChar, tabDist, nullSubsChar);
 
-			// TODO(eteran): replace strncmp
-			if (len >= 3 && !strncmp(&*c, expandedChar, len)) {
+            // NOTE(eteran): cmp = strncmp(&*c, expandedChar, len)
+            const int n = std::min<int>(len, std::distance(c, text.end()));
+            const auto cmp1 = view::string_view(&*c, n);
+            const auto cmp2 = view::string_view(expandedChar, len);
+            const auto cmp = cmp1.compare(cmp2);
+
+            if (len >= 3 && !cmp) {
 				c += len;
 				*outPtr++ = '\t';
 				indent += len;

@@ -1,7 +1,10 @@
-#ifndef DRAGENDCBSTRUCT_H_
-#define DRAGENDCBSTRUCT_H_
 
-struct dragEndCBStruct {
+#ifndef DRAG_END_EVENT_H_
+#define DRAG_END_EVENT_H_
+
+#include "string_view.h"
+
+struct DragEndEvent {
 	int               startPos;
 	int               nCharsDeleted;
 	int               nCharsInserted;

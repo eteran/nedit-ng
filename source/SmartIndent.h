@@ -6,18 +6,11 @@
 
 class SmartIndent {
 public:
-    SmartIndent()                               = default;
-    SmartIndent(const SmartIndent &)            = default;
-    SmartIndent& operator=(const SmartIndent &) = default;
-    SmartIndent(SmartIndent &&)                 = default;
-    SmartIndent& operator=(SmartIndent &&)      = default;
+    bool operator==(const SmartIndent &rhs) const;
+    bool operator!=(const SmartIndent &rhs) const;
 
 public:
-	bool operator==(const SmartIndent &rhs) const;
-	bool operator!=(const SmartIndent &rhs) const;
-	
-public:
-	QString lmName;
+    QString lmName;
 	QString initMacro;
 	QString newlineMacro;
 	QString modMacro;

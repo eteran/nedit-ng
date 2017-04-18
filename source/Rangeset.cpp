@@ -89,7 +89,6 @@ void rangesetRefreshAllRanges(Rangeset *rangeset) {
 */
 
 // TODO(eteran): is this just an implementation of std::lower_bound?
-
 int at_or_before(int *table, int base, int len, int val) {
 	int lo, mid = 0, hi;
 

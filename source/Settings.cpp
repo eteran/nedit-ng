@@ -4,10 +4,21 @@
 #include "SearchType.h"
 #include "ShowMatchingStyle.h"
 #include "WrapStyle.h"
-#include "nedit.h" // For some global constants such as NEDIT_DEFAULT_FG, etc..
 #include "search.h" // For ReplaceScope enum
+#include "nedit.h"
 #include <QSettings>
 #include <QStandardPaths>
+
+// Some default colors
+#define NEDIT_DEFAULT_FG        "#221f1e"
+#define NEDIT_DEFAULT_TEXT_BG   "#d6d2d0"
+#define NEDIT_DEFAULT_SEL_FG    "#ffffff"
+#define NEDIT_DEFAULT_SEL_BG    "#43ace8"
+#define NEDIT_DEFAULT_HI_FG     "white"        /* These are colors for flashing */
+#define NEDIT_DEFAULT_HI_BG     "red"          /* matching parens. */
+#define NEDIT_DEFAULT_LINENO_FG "black"
+#define NEDIT_DEFAULT_CURSOR_FG "black"
+
 
 // New styles added in 5.2 for auto-upgrade
 #define ADD_5_2_STYLES " Pointer:#660000:Bold\nRegex:#009944:Bold\nWarning:brown2:Italic"

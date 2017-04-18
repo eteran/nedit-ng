@@ -1,6 +1,7 @@
 
 #include "DialogAbout.h"
 #include "preferences.h"
+#include "version.h"
 #include <QLocale>
 #include <QSysInfo>
 #include <QtGlobal>
@@ -129,7 +130,7 @@ QString DialogAbout::createInfoString() {
               "     Built at: %5, %6\n"
               "      With Qt: %7\n"
               "   Running Qt: %8\n"
-              "       Locale: %9\n").arg(tr("1.0.0"))
+              "       Locale: %9\n").arg(tr("%1.%2").arg(NEDIT_VERSION_MAJ).arg(NEDIT_VERSION_REV))
                                     .arg(buildPlatform())
                                     .arg(tr("%1 bit").arg(QSysInfo::WordSize))
                                     .arg(buildCompiler())
@@ -139,3 +140,4 @@ QString DialogAbout::createInfoString() {
                                     .arg(QString::fromLatin1(qVersion()))
                                     .arg(QLocale::system().bcp47Name());
 }
+

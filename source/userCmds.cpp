@@ -34,6 +34,7 @@
 #include "preferences.h"
 #include <QTextStream>
 #include <QVector>
+#include <memory>
 
 /* Descriptions of the current user programmed menu items for re-generating
    menus and processing shell, macro, and background menu selections */
@@ -345,7 +346,7 @@ static int loadMenuItemString(const char *inString, QVector<MenuData> &menuItems
             QKeySequence shortcut = QKeySequence::fromString(accStr);
 
             // create a menu item record
-            auto f = new MenuItem;
+            auto f = std::make_unique<MenuItem>();
             f->name      = nameStr;
             f->cmd       = cmdStr;
             f->input     = input;
@@ -360,14 +361,14 @@ static int loadMenuItemString(const char *inString, QVector<MenuData> &menuItems
             for (MenuData &data: menuItems) {
                 if (data.item->name == f->name) {
                     delete data.item;
-                    data.item = f;
+                    data.item = f.release();
                     found = true;
                     break;
                 }
             }
 
             if (!found) {
-                menuItems.push_back({f, nullptr});
+                menuItems.push_back({f.release(), nullptr});
             }
         }
     } catch(const ParseError &ex) {

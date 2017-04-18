@@ -80,21 +80,20 @@ int StringToSearchType(const std::string &string, SearchType *searchType);
 /*
 ** History of search actions.
 */
-extern int NHist;
-
 struct SelectionInfo {
 	bool done;
     DocumentWidget *window;
 	char *selection;
 };
 
-// TODO(eteran): temporarily exposing these publically
+// NOTE(eteran): temporarily exposing these publically
 int countWritableWindows();
 int historyIndex(int nCycles);
 bool isRegexType(SearchType searchType);
 void saveSearchHistory(const QString &searchString, QString replaceString, SearchType searchType, bool isIncremental);
 int defaultRegexFlags(SearchType searchType);
 
+extern int NHist;
 extern QString SearchHistory[MAX_SEARCH_HISTORY];
 extern QString ReplaceHistory[MAX_SEARCH_HISTORY];
 extern SearchType SearchTypeHistory[MAX_SEARCH_HISTORY];

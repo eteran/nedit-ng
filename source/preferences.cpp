@@ -27,6 +27,7 @@
 *******************************************************************************/
 
 #include "preferences.h"
+#include "version.h"
 #include "DocumentWidget.h"
 #include "LanguageMode.h"
 #include "MainWindow.h"
@@ -96,7 +97,7 @@ void RestoreNEditPrefs() {
        in which nedit stores and uses.  If the preferences file was
        written by an older version of NEdit, update regular expressions in
        highlight patterns to quote braces and use & instead of \0 */
-    translatePrefFormats((NEDIT_VERSION << 16) | NEDIT_REVISION);
+    translatePrefFormats(NEDIT_VERSION);
 }
 
 /*
