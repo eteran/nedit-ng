@@ -5,7 +5,7 @@
 #include "DocumentWidget.h"
 #include "LanguageMode.h"
 #include "MainWindow.h"
-#include "SmartIndent.h"
+#include "SmartIndentEntry.h"
 #include "interpret.h"
 #include "macro.h"
 #include "preferences.h"
@@ -150,7 +150,7 @@ void DialogSmartIndent::on_buttonRestore_clicked() {
 		return;
 	}
 
-    const SmartIndent &defaultIS = DefaultIndentSpecs[i];
+    const SmartIndentEntry &defaultIS = DefaultIndentSpecs[i];
 	
 	int resp = QMessageBox::question(this, tr("Discard Changes"), tr("Are you sure you want to discard all changes to smart indent macros for language mode %1?").arg(languageMode_), QMessageBox::Discard | QMessageBox::Cancel);
 	if(resp == QMessageBox::Cancel) {
@@ -184,7 +184,7 @@ void DialogSmartIndent::on_buttonHelp_clicked() {
 //------------------------------------------------------------------------------
 // Name: 
 //------------------------------------------------------------------------------
-void DialogSmartIndent::setSmartIndentDialogData(const SmartIndent *is) {
+void DialogSmartIndent::setSmartIndentDialogData(const SmartIndentEntry *is) {
 
 	if(!is) {
 		ui.editInit->setPlainText(QString());
@@ -210,7 +210,7 @@ bool DialogSmartIndent::updateSmartIndentData() {
 	}
 		
 	// Get the current data 
-	SmartIndent *newMacros = getSmartIndentDialogData();
+	SmartIndentEntry *newMacros = getSmartIndentDialogData();
 
 	// Find the original macros
 	int i;
@@ -327,9 +327,9 @@ bool DialogSmartIndent::checkSmartIndentDialogData() {
 //------------------------------------------------------------------------------
 // Name: 
 //------------------------------------------------------------------------------
-SmartIndent *DialogSmartIndent::getSmartIndentDialogData() {
+SmartIndentEntry *DialogSmartIndent::getSmartIndentDialogData() {
 
-	auto is = new SmartIndent;
+	auto is = new SmartIndentEntry;
 	is->lmName       = languageMode_;
 	is->initMacro    = ui.editInit->toPlainText().isEmpty()     ? QString() : ensureNewline(ui.editInit->toPlainText());
 	is->newlineMacro = ui.editNewline->toPlainText().isEmpty()  ? QString() : ensureNewline(ui.editNewline->toPlainText());

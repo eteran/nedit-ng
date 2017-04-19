@@ -71,7 +71,7 @@ QMutex instanceMutex;
  * @brief CommandRecorder::CommandRecorder
  * @param parent
  */
-CommandRecorder::CommandRecorder(QObject *parent) : QObject(parent), isRecording_(false) {
+CommandRecorder::CommandRecorder(QObject *parent) : QObject(parent), macroRecordWindowEx(nullptr), isRecording_(false) {
 
 }
 
@@ -243,8 +243,9 @@ QString CommandRecorder::actionToString(const TextEditEvent *ev) {
 /**
  * @brief CommandRecorder::startRecording
  */
-void CommandRecorder::startRecording() {
+void CommandRecorder::startRecording(DocumentWidget *document) {
     setRecording(true);
+    macroRecordWindowEx = document;
 }
 
 /**
@@ -252,6 +253,7 @@ void CommandRecorder::startRecording() {
  */
 void CommandRecorder::stopRecording() {
     setRecording(false);
+    macroRecordWindowEx = nullptr;
 }
 
 /**
@@ -261,6 +263,7 @@ void CommandRecorder::stopRecording() {
 void CommandRecorder::cancelRecording() {
     isRecording_ = false;
     macroRecordBuffer.clear();
+    macroRecordWindowEx = nullptr;
 }
 
 /**

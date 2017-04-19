@@ -32,7 +32,7 @@
 
 class QString;
 class QByteArray;
-class SmartIndent;
+class SmartIndentEntry;
 class DocumentWidget;
 
 bool InSmartIndentMacrosEx(DocumentWidget *document);
@@ -47,14 +47,14 @@ void EndSmartIndentEx(DocumentWidget *window);
 void RenameSmartIndentMacros(const QString &oldName, const QString &newName);
 void UpdateLangModeMenuSmartIndent();
 QByteArray defaultCommonMacros();
-const SmartIndent *findIndentSpec(const QString &modeName);
+const SmartIndentEntry *findIndentSpec(const QString &modeName);
 
 extern QString CommonMacros;
 
 #define N_DEFAULT_INDENT_SPECS 4
 
-extern SmartIndent DefaultIndentSpecs[N_DEFAULT_INDENT_SPECS];
-extern QList<SmartIndent> SmartIndentSpecs;
+extern SmartIndentEntry DefaultIndentSpecs[N_DEFAULT_INDENT_SPECS];
+extern QList<SmartIndentEntry> SmartIndentSpecs;
 
 class Program;
 

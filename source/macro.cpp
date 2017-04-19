@@ -82,7 +82,7 @@
 namespace {
 
 // How long to wait (msec) before putting up Macro Command banner 
-const int BANNER_WAIT_TIME = 6000;
+constexpr const int BANNER_WAIT_TIME = 6000;
 
 }
 
@@ -651,9 +651,6 @@ static const char *ReturnGlobalNames[N_RETURN_GLOBALS] = {
 };
 static Symbol *ReturnGlobals[N_RETURN_GLOBALS];
 
-// Window where macro recording is taking place 
-static DocumentWidget *MacroRecordWindowEx = nullptr;
-
 /*
 ** Install built-in macro subroutines and special variables for accessing
 ** editor information
@@ -713,11 +710,8 @@ void BeginLearnEx(DocumentWidget *document) {
     thisWindow->ui.action_Cancel_Learn->setText(QLatin1String("Cancel Learn"));
     thisWindow->ui.action_Cancel_Learn->setEnabled(true);
 
-    // Mark the window where learn mode is happening
-    MacroRecordWindowEx = document;
-
     // Add the action hook for recording the actions
-    CommandRecorder::getInstance()->startRecording();
+    CommandRecorder::getInstance()->startRecording(document);
 
     // Extract accelerator texts from menu PushButtons
     QString cFinish = thisWindow->ui.action_Finish_Learn->shortcut().toString();
@@ -758,8 +752,10 @@ void FinishLearnEx() {
         window->ui.action_Learn_Keystrokes->setEnabled(true);
     }
 
-    if (MacroRecordWindowEx->IsTopDocument()) {
-        if(MainWindow *window = MacroRecordWindowEx->toWindow()) {
+    DocumentWidget *document = CommandRecorder::getInstance()->macroRecordWindowEx;
+
+    if (document->IsTopDocument()) {
+        if(MainWindow *window = document->toWindow()) {
             window->ui.action_Finish_Learn->setEnabled(false);
             window->ui.action_Cancel_Learn->setEnabled(false);
         }
@@ -772,8 +768,8 @@ void FinishLearnEx() {
 
     MainWindow::DimPasteReplayBtns(true);
 
-    // Clear learn-mode banner
-    MacroRecordWindowEx->ClearModeMessageEx();
+    // Clear learn-mode banner    
+    document->ClearModeMessageEx();
 }
 
 /*
@@ -798,14 +794,16 @@ static void cancelLearnEx() {
         window->ui.action_Learn_Keystrokes->setEnabled(true);
     }
 
-    if (MacroRecordWindowEx->IsTopDocument()) {
-        MainWindow *win = MacroRecordWindowEx->toWindow();
+    DocumentWidget *document = CommandRecorder::getInstance()->macroRecordWindowEx;
+
+    if (document->IsTopDocument()) {
+        MainWindow *win = document->toWindow();
         win->ui.action_Finish_Learn->setEnabled(false);
         win->ui.action_Cancel_Learn->setEnabled(false);
     }
 
     // Clear learn-mode banner
-    MacroRecordWindowEx->ClearModeMessageEx();
+    document->ClearModeMessageEx();
 }
 
 /*
@@ -1177,7 +1175,9 @@ void AbortMacroCommandEx(DocumentWidget *document) {
 int MacroWindowCloseActionsEx(DocumentWidget *document) {
     auto cmdData = static_cast<macroCmdInfoEx *>(document->macroCmdData_);
 
-    if (CommandRecorder::getInstance()->isRecording() && MacroRecordWindowEx == document) {
+    auto recorder = CommandRecorder::getInstance();
+
+    if (recorder->isRecording() && recorder->macroRecordWindowEx == document) {
         FinishLearnEx();
     }
 

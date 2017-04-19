@@ -9,7 +9,7 @@
 #include "MainWindow.h"
 #include "Direction.h"
 #include "SignalBlocker.h"
-#include "SmartIndent.h"
+#include "SmartIndentEntry.h"
 #include "TextArea.h"
 #include "TextBuffer.h"
 #include "Settings.h"
@@ -4315,7 +4315,7 @@ void DocumentWidget::BeginSmartIndentEx(int warn) {
     }
 
     // Look up the appropriate smart-indent macros for the language
-    const SmartIndent *indentMacros = findIndentSpec(modeName);
+    const SmartIndentEntry *indentMacros = findIndentSpec(modeName);
     if(!indentMacros) {
         if (warn) {
             QMessageBox::warning(this, tr("Smart Indent"), tr("Smart indent is not available in languagemode\n%1.\n\nYou can create new smart indent macros in the\nPreferences -> Default Settings -> Smart Indent\ndialog, or choose a different language mode from:\nPreferences -> Language Mode.").arg(modeName));

@@ -7,6 +7,7 @@
 #include <QString>
 
 class TextEditEvent;
+class DocumentWidget;
 
 class CommandRecorder : public QObject {
 	Q_OBJECT
@@ -21,7 +22,7 @@ public:
     virtual bool eventFilter(QObject *obj, QEvent *event) override;
 
 public:
-    void startRecording();
+    void startRecording(DocumentWidget *document);
     void stopRecording();
     void cancelRecording();
     bool isRecording() const;
@@ -38,6 +39,9 @@ public:
     // The last command executed (used by the Repeat command)
     QString lastCommand;    
     QString replayMacro;
+
+    // Window where macro recording is taking place
+    DocumentWidget *macroRecordWindowEx;
 
 private:
     QString macroRecordBuffer;

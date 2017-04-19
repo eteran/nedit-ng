@@ -33,7 +33,7 @@
 #include "DialogSmartIndentCommon.h"
 #include "DocumentWidget.h"
 #include "IndentStyle.h"
-#include "SmartIndent.h"
+#include "SmartIndentEntry.h"
 #include "TextBuffer.h"
 #include "WrapStyle.h"
 #include "interpret.h"
@@ -59,11 +59,11 @@ DialogSmartIndent *SmartIndentDlg = nullptr;
 
 }
 
-QList<SmartIndent> SmartIndentSpecs;
+QList<SmartIndentEntry> SmartIndentSpecs;
 QString CommonMacros;
 
 static void insertShiftedMacro(QTextStream &ts, const QString &macro);
-static bool isDefaultIndentSpec(const SmartIndent *indentSpec);
+static bool isDefaultIndentSpec(const SmartIndentEntry *indentSpec);
 static bool loadDefaultIndentSpec(const QString &lmName);
 static int siParseError(const char *stringStart, const char *stoppedAt, const char *message);
 
@@ -99,7 +99,7 @@ QByteArray defaultCommonMacros() {
 	return defaultsMacros;
 }
 
-SmartIndent DefaultIndentSpecs[N_DEFAULT_INDENT_SPECS] = {
+SmartIndentEntry DefaultIndentSpecs[N_DEFAULT_INDENT_SPECS] = {
 	{
 		QLatin1String("C")
 		,
@@ -271,7 +271,7 @@ int LoadSmartIndentString(char *inString) {
 
 	for (;;) {
 
-        SmartIndent is;
+        SmartIndentEntry is;
 
 		// skip over blank space 
 		inPtr += strspn(inPtr, " \t\n");
@@ -408,7 +408,7 @@ QString WriteSmartIndentStringEx() {
 	QString s;
 	QTextStream ts(&s);
 
-    for(const SmartIndent &sis : SmartIndentSpecs) {
+    for(const SmartIndentEntry &sis : SmartIndentSpecs) {
 
 		ts << QLatin1String("\t")
            << sis.lmName
@@ -475,7 +475,7 @@ static void insertShiftedMacro(QTextStream &ts, const QString &macro) {
 	ts << QLatin1String("\n");
 }
 
-static bool isDefaultIndentSpec(const SmartIndent *indentSpec) {
+static bool isDefaultIndentSpec(const SmartIndentEntry *indentSpec) {
 
 	for (int i = 0; i < N_DEFAULT_INDENT_SPECS; i++) {
 		if (indentSpec->lmName == DefaultIndentSpecs[i].lmName) {
@@ -485,13 +485,13 @@ static bool isDefaultIndentSpec(const SmartIndent *indentSpec) {
 	return false;
 }
 
-const SmartIndent *findIndentSpec(const QString &modeName) {
+const SmartIndentEntry *findIndentSpec(const QString &modeName) {
 
     if(modeName.isNull()) {
 		return nullptr;
 	}
 
-    for(const SmartIndent &sis : SmartIndentSpecs) {
+    for(const SmartIndentEntry &sis : SmartIndentSpecs) {
         if (sis.lmName == modeName) {
             return &sis;
 		}
@@ -519,7 +519,7 @@ int LMHasSmartIndentMacros(const QString &languageMode) {
 */
 void RenameSmartIndentMacros(const QString &oldName, const QString &newName) {
 
-    for(SmartIndent &sis : SmartIndentSpecs) {
+    for(SmartIndentEntry &sis : SmartIndentSpecs) {
         if (sis.lmName == oldName) {
             sis.lmName = newName;
 		}

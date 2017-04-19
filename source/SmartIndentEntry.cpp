@@ -1,11 +1,11 @@
 
-#include "SmartIndent.h"
+#include "SmartIndentEntry.h"
 
-bool SmartIndent::operator==(const SmartIndent &rhs) const {
+bool SmartIndentEntry::operator==(const SmartIndentEntry &rhs) const {
 	return (initMacro == rhs.initMacro) && (newlineMacro == rhs.newlineMacro) && (modMacro == rhs.modMacro);
 }
 
-bool SmartIndent::operator!=(const SmartIndent &rhs) const {
+bool SmartIndentEntry::operator!=(const SmartIndentEntry &rhs) const {
 	return (initMacro != rhs.initMacro) || (newlineMacro != rhs.newlineMacro) || (modMacro != rhs.modMacro);
 }
 

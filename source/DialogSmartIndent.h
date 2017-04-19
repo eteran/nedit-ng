@@ -6,7 +6,7 @@
 #include "ui_DialogSmartIndent.h"
 
 class DocumentWidget;
-class SmartIndent;
+class SmartIndentEntry;
 
 class DialogSmartIndent : public Dialog {
 	Q_OBJECT
@@ -19,10 +19,10 @@ public:
 	bool hasSmartIndentMacros(const QString &languageMode) const;
 	
 private:
-    void setSmartIndentDialogData(const SmartIndent *is);
+    void setSmartIndentDialogData(const SmartIndentEntry *is);
 	bool updateSmartIndentData();
 	bool checkSmartIndentDialogData();
-	SmartIndent *getSmartIndentDialogData();
+	SmartIndentEntry *getSmartIndentDialogData();
 	QString ensureNewline(const QString &string);
 	
 

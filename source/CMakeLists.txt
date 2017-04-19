@@ -146,7 +146,7 @@ add_executable(nedit-ng
 	RangesetTable.cpp
 	Settings.cpp
 	SignalBlocker.h
-	SmartIndent.cpp
+	SmartIndentEntry.cpp
 	TextArea.cpp
 	TextBuffer.cpp
 	TextSelection.cpp
