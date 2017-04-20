@@ -557,7 +557,7 @@ void MainWindow::deleteTabButtonClicked() {
 // Name: on_action_New_triggered
 //------------------------------------------------------------------------------
 void MainWindow::on_action_New_triggered() {
-    action_New(New_Prefs);
+    action_New(NewMode::Prefs);
 }
 
 //------------------------------------------------------------------------------
@@ -568,16 +568,16 @@ void MainWindow::action_New(NewMode mode) {
     bool openInTab = true;
 
     switch(mode) {
-    case New_Prefs:
+    case NewMode::Prefs:
         openInTab = GetPrefOpenInTab();
         break;
-    case New_Tab:
+    case NewMode::Tab:
         openInTab = true;
         break;
-    case New_Window:
+    case NewMode::Window:
         openInTab = false;
         break;
-    case New_Opposite:
+    case NewMode::Opposite:
         openInTab = !GetPrefOpenInTab();
         break;
     }
@@ -629,7 +629,7 @@ void MainWindow::on_action_Open_triggered() {
 //------------------------------------------------------------------------------
 void MainWindow::on_action_Close_triggered() {
     if(auto doc = currentDocument()) {
-        doc->actionClose(CloseMode::Close_Prompt);
+        doc->actionClose(CloseMode::Prompt);
     }
 }
 
@@ -1742,7 +1742,7 @@ void MainWindow::on_tabWidget_customContextMenuRequested(const QPoint &pos) {
                 if(selected == newTab) {
                     MainWindow::EditNewFileEx(this, QString(), false, QString(), document->path_);
                 } else if(selected == closeTab) {
-                    document->actionClose(CloseMode::Close_Prompt);
+                    document->actionClose(CloseMode::Prompt);
                 } else if(selected == detachTab) {
                     if(TabCount() > 1) {
                         auto new_window = new MainWindow(nullptr);

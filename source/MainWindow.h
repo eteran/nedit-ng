@@ -6,6 +6,7 @@
 #include "SearchDirection.h"
 #include "SearchType.h"
 #include "smartIndentCBStruct.h"
+#include "NewMode.h"
 #include <QMainWindow>
 #include <QPointer>
 
@@ -15,13 +16,6 @@ class TextArea;
 class DocumentWidget;
 class DialogReplace;
 struct MenuData;
-
-enum NewMode {
-    New_Prefs,
-    New_Tab,
-    New_Window,
-    New_Opposite
-};
 
 class MainWindow : public QMainWindow {
 	Q_OBJECT
@@ -107,7 +101,7 @@ public:
 
 public Q_SLOTS:
 	// internal variants
-    void action_New(NewMode mode = New_Prefs);
+    void action_New(NewMode mode = NewMode::Prefs);
     void action_Shift_Left_Tabs();
     void action_Shift_Right_Tabs();
     void action_Shift_Find();

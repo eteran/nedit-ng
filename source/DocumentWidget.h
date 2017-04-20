@@ -13,6 +13,7 @@
 #include "string_view.h"
 #include "tags.h"
 #include "UndoInfo.h"
+#include "CloseMode.h"
 #include "userCmds.h"
 #include "util/FileFormats.h"
 
@@ -38,13 +39,6 @@ struct DragEndEvent;
 struct smartIndentCBStruct;
 
 enum class Direction;
-
-// TODO(eteran): find a better place for this enum
-enum CloseMode {
-    Close_Prompt,
-    Close_Save,
-    Close_NoSave
-};
 
 class DocumentWidget : public QWidget {
 	Q_OBJECT

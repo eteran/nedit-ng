@@ -43,6 +43,7 @@
 #include "util/system.h"
 #include "util/clearcase.h"
 #include "server_common.h"
+#include "version.h"
 
 #include <cstdio>
 #include <cstdlib>
@@ -127,11 +128,18 @@ void copyCommandLineArg(CommandLine *commandLine, const char *arg) {
 
 // Print version
 void printNcVersion() {
-    static const char ncHelpText[] = "nc (nedit-ng) Version 1.0\n\n"
+    static const char ncHelpText[] = "nc (nedit-ng) Version %d.%d\n\n"
                                      "Built on: %s, %s, %s\n"
                                      "Built at: %s, %s\n";
 
-    printf(ncHelpText, COMPILE_OS, COMPILE_MACHINE, COMPILE_COMPILER, __DATE__, __TIME__);
+    printf(ncHelpText,
+           NEDIT_VERSION_MAJ,
+           NEDIT_VERSION_REV,
+           COMPILE_OS,
+           COMPILE_MACHINE,
+           COMPILE_COMPILER,
+           __DATE__,
+           __TIME__);
 }
 
 /*

@@ -3542,7 +3542,6 @@ void DocumentWidget::bannerTimeoutProc() {
         return;
     }
 
-    QString message;
     auto cmdData = static_cast<macroCmdInfoEx *>(macroCmdData_);
 
     cmdData->bannerIsUp = true;
@@ -3552,12 +3551,10 @@ void DocumentWidget::bannerTimeoutProc() {
 
     // Create message
     if (cCancel.isEmpty()) {
-        message = tr("Macro Command in Progress");
+        SetModeMessageEx(tr("Macro Command in Progress"));
     } else {
-        message = tr("Macro Command in Progress -- Press %1 to Cancel").arg(cCancel);
+        SetModeMessageEx(tr("Macro Command in Progress -- Press %1 to Cancel").arg(cCancel));
     }
-
-    SetModeMessageEx(message);
 }
 
 void DocumentWidget::actionClose(CloseMode mode) {
@@ -3565,13 +3562,13 @@ void DocumentWidget::actionClose(CloseMode mode) {
     int preResponse;
 
     switch(mode) {
-    case CloseMode::Close_Prompt:
+    case CloseMode::Prompt:
         preResponse = PROMPT_SBC_DIALOG_RESPONSE;
         break;
-    case CloseMode::Close_Save:
+    case CloseMode::Save:
         preResponse = YES_SBC_DIALOG_RESPONSE;
         break;
-    case CloseMode::Close_NoSave:
+    case CloseMode::NoSave:
     default:
         preResponse = NO_SBC_DIALOG_RESPONSE;
         break;
