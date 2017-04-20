@@ -643,7 +643,8 @@ enum TFT { TFT_CHECK, TFT_ETAGS, TFT_CTAGS };
 static int loadTagsFile(const QString &tagsFile, int index, int recLevel) {
 	FILE *fp = nullptr;
 	char line[MAXLINE];
-	char file[MAXPATHLEN], tagPath[MAXPATHLEN];
+    char file[MAXPATHLEN];
+    QString tagPath;
 	char resolvedTagsFile[MAXPATHLEN + 1];
 	int nTagsAdded = 0;
 	int tagFileType = TFT_CHECK;
@@ -664,7 +665,7 @@ static int loadTagsFile(const QString &tagsFile, int index, int recLevel) {
 		return 0;
 	}
 
-	ParseFilename(resolvedTagsFile, nullptr, tagPath);
+    ParseFilenameEx(QString::fromLatin1(resolvedTagsFile), nullptr, &tagPath);
 
 	// Read the file and store its contents 
 	while (fgets(line, MAXLINE, fp)) {
@@ -685,9 +686,9 @@ static int loadTagsFile(const QString &tagsFile, int index, int recLevel) {
 				tagFileType = TFT_CTAGS;
 		}
 		if (tagFileType == TFT_CTAGS) {
-			nTagsAdded += scanCTagsLine(line, tagPath, index);
+            nTagsAdded += scanCTagsLine(line, tagPath.toLatin1().data(), index);
 		} else {
-			nTagsAdded += scanETagsLine(line, tagPath, index, file, recLevel);
+            nTagsAdded += scanETagsLine(line, tagPath.toLatin1().data(), index, file, recLevel);
 		}
 	}
 	fclose(fp);
@@ -902,8 +903,8 @@ static int fakeRegExSearchEx(view::string_view in_buffer, const char *searchStri
         the correct one. */
 int findAllMatchesEx(DocumentWidget *document, TextArea *area, const char *string) {
 
-    char filename[MAXPATHLEN];
-    char pathname[MAXPATHLEN];
+    QString filename;
+    QString pathname;
 
     int i;
     int pathMatch = 0;
@@ -945,10 +946,11 @@ int findAllMatchesEx(DocumentWidget *document, TextArea *area, const char *strin
 
         strcpy(tagSearch[nMatches], searchString.c_str());
         tagPosInf[nMatches] = startPos;
-        ParseFilename(tagFiles[nMatches], filename, pathname);
+
+        ParseFilenameEx(QString::fromLatin1(tagFiles[nMatches]), &filename, &pathname);
 
         // Is this match in the current file?  If so, use it!
-        if (GetPrefSmartTags() && document->filename_ == QString::fromLatin1(filename) && document->path_ == QString::fromLatin1(pathname)) {
+        if (GetPrefSmartTags() && document->filename_ == filename && document->path_ == pathname) {
             if (nMatches) {
                 strcpy(tagFiles[0],  tagFiles[nMatches]);
                 strcpy(tagSearch[0], tagSearch[nMatches]);
@@ -959,7 +961,7 @@ int findAllMatchesEx(DocumentWidget *document, TextArea *area, const char *strin
         }
 
         // Is this match in the same dir. as the current file?
-        if (document->path_ == QString::fromLatin1(pathname)) {
+        if (document->path_ == pathname) {
             samePath++;
             pathMatch = nMatches;
         }
@@ -1005,19 +1007,19 @@ int findAllMatchesEx(DocumentWidget *document, TextArea *area, const char *strin
 
             char temp[32 + 2 * MAXPATHLEN + MAXLINE];
 
-            ParseFilename(tagFiles[i], filename, pathname);
+            ParseFilenameEx(QString::fromLatin1(tagFiles[i]), &filename, &pathname);
             if ((i < nMatches - 1 && !strcmp(tagFiles[i], tagFiles[i + 1])) || (i > 0 && !strcmp(tagFiles[i], tagFiles[i - 1]))) {
 
 
                 if (*(tagSearch[i]) && (tagPosInf[i] != -1)) { // etags
-                    sprintf(temp, "%2d. %s%s %8i %s", i + 1, pathname, filename, tagPosInf[i], tagSearch[i]);
+                    sprintf(temp, "%2d. %s%s %8i %s", i + 1, pathname.toLatin1().data(), filename.toLatin1().data(), tagPosInf[i], tagSearch[i]);
                 } else if (*(tagSearch[i])) { // ctags search expr
-                    sprintf(temp, "%2d. %s%s          %s", i + 1, pathname, filename, tagSearch[i]);
+                    sprintf(temp, "%2d. %s%s          %s", i + 1, pathname.toLatin1().data(), filename.toLatin1().data(), tagSearch[i]);
                 } else { // line number only
-                    sprintf(temp, "%2d. %s%s %8i", i + 1, pathname, filename, tagPosInf[i]);
+                    sprintf(temp, "%2d. %s%s %8i", i + 1, pathname.toLatin1().data(), filename.toLatin1().data(), tagPosInf[i]);
                 }
             } else {
-                sprintf(temp, "%2d. %s%s", i + 1, pathname, filename);
+                sprintf(temp, "%2d. %s%s", i + 1, pathname.toLatin1().data(), filename.toLatin1().data());
             }
 
             auto str = new char[strlen(temp) + 1];
@@ -1166,17 +1168,17 @@ void editTaggedLocationEx(TextArea *area, int i) {
     int endPos;
     int lineNum;
     int rows;
-    char filename[MAXPATHLEN];
-    char pathname[MAXPATHLEN];
+    QString filename;
+    QString pathname;
     DocumentWidget *windowToSearch;
     auto document = DocumentWidget::documentFrom(area);
 
-    ParseFilename(tagFiles[i], filename, pathname);
+    ParseFilenameEx(QString::fromLatin1(tagFiles[i]), &filename, &pathname);
     // open the file containing the definition
     DocumentWidget::EditExistingFileEx(
                 document,
-                QString::fromLatin1(filename),
-                QString::fromLatin1(pathname),
+                filename,
+                pathname,
                 0,
                 QString(),
                 false,
@@ -1184,7 +1186,7 @@ void editTaggedLocationEx(TextArea *area, int i) {
                 GetPrefOpenInTab(),
                 false);
 
-    windowToSearch = MainWindow::FindWindowWithFile(QString::fromLatin1(filename), QString::fromLatin1(pathname));
+    windowToSearch = MainWindow::FindWindowWithFile(filename, pathname);
     if(!windowToSearch) {
         QMessageBox::warning(nullptr /*parent*/, QLatin1String("File not found"), QString(QLatin1String("File %1 not found")).arg(QString::fromLatin1(tagFiles[i])));
         return;
@@ -1473,8 +1475,6 @@ static int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
 	char header[MAXLINE];
 	
 	char *tipIncFile;
-	char tipPath[MAXPATHLEN];
-	char resolvedTipsFile[MAXPATHLEN + 1];
     int nTipsAdded = 0;
     int langMode = PLAIN_LANGUAGE_MODE;
     int oldLangMode;
@@ -1488,19 +1488,22 @@ static int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
 	}
 
 	// find the tips file 
-	// Allow ~ in Unix filenames 
-    strncpy(tipPath, tipsFile.toLatin1().data(), MAXPATHLEN); // ExpandTilde is destructive
-	ExpandTilde(tipPath);
-
-    if (!ResolvePath(tipPath, resolvedTipsFile)) {
-		return 0;
+    // Allow ~ in Unix filenames
+    QString tipPath = ExpandTildeEx(tipsFile);
+    if(tipPath.isNull()) {
+        return 0;
     }
 
-	// Get the path to the tips file 
-	ParseFilename(resolvedTipsFile, nullptr, tipPath);
+    QString resolvedTipsFile = ResolvePathEx(tipPath);
+    if(resolvedTipsFile.isNull()) {
+        return 0;
+    }
+
+    // Get the path to the tips file
+    ParseFilenameEx(resolvedTipsFile, nullptr, &tipPath);
 
 	// Open the file 
-    if ((fp = fopen(resolvedTipsFile, "r")) == nullptr) {
+    if ((fp = fopen(resolvedTipsFile.toLatin1().data(), "r")) == nullptr) {
 		return 0;
     }
 
@@ -1522,7 +1525,7 @@ static int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
 			    For the moment I'm just using line numbers because I don't
 			    want to have to deal with adding escape characters for
 			    regex metacharacters that might appear in the string */
-			nTipsAdded += addTag(header, resolvedTipsFile, langMode, "", blkLine, tipPath, index);
+            nTipsAdded += addTag(header, resolvedTipsFile.toLatin1().data(), langMode, "", blkLine, tipPath.toLatin1().data(), index);
 			delete [] body;
 			break;
 		case TF_INCLUDE:
@@ -1551,7 +1554,7 @@ static int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
 		case TF_ERROR:
 			fprintf(stderr, "nedit: Warning: Recoverable error while "
 			                "reading calltips file:\n   \"%s\"\n",
-			        resolvedTipsFile);
+                    resolvedTipsFile.toLatin1().data());
 			break;
 		case TF_ALIAS:
 			// Allocate a new alias struct 
@@ -1571,12 +1574,12 @@ static int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
         if (tags.isEmpty()) {
 			fprintf(stderr, "nedit: Can't find destination of alias \"%s\"\n"
 			                "  in calltips file:\n   \"%s\"\n",
-                    tmp_alias.dest.c_str(), resolvedTipsFile);
+                    tmp_alias.dest.c_str(), resolvedTipsFile.toLatin1().data());
 		} else {
 
             const Tag *t = &tags[0];
             for (char *src = strtok(tmp_alias.sources, ":"); src; src = strtok(nullptr, ":")) {
-				addTag(src, resolvedTipsFile, t->language, "", t->posInf, tipPath, index);
+                addTag(src, resolvedTipsFile.toLatin1().data(), t->language, "", t->posInf, tipPath.toLatin1().data(), index);
             }
 		}
 	}

@@ -148,8 +148,8 @@ void printNcVersion() {
 */
 void parseCommandLine(int argc, char **argv, CommandLine *commandLine) {
 
-    char name[MAXPATHLEN];
-    char path[MAXPATHLEN];
+    QString name;
+    QString path;
     const char *toDoCommand = "";
     const char *langMode = "";
     const char *geometry = "";
@@ -238,12 +238,13 @@ void parseCommandLine(int argc, char **argv, CommandLine *commandLine) {
             fprintf(stderr, "nc: Unrecognized option %s\n%s", argv[i], cmdLineHelp);
             exit(EXIT_FAILURE);
         } else {
-            if (ParseFilename(argv[i], name, path) != 0) {
+            if (ParseFilenameEx(QString::fromLatin1(argv[i]), &name, &path) != 0) {
                 // An Error, most likely too long paths/strings given
                 commandLine->serverRequest = QString();
                 return;
             }
-            strcat(path, name);
+
+            path.append(name);
 
             /* determine if file is to be openned in new tab, by
                factoring the options -group, -tabbed & -untabbed */
@@ -264,13 +265,13 @@ void parseCommandLine(int argc, char **argv, CommandLine *commandLine) {
                is 64 bit on Alphas, and 32-bit on most others.  There is
                no printf format specifier for "size_t", thanx, ANSI. */
             QString temp;
-            temp.sprintf("%d %d %d %d %d %ld %ld %ld %ld\n",
+            temp.sprintf("%d %d %d %d %d %d %ld %ld %ld\n",
                          lineNum,
                          read,
                          create,
                          iconic,
                          isTabbed,
-                         static_cast<long>(strlen(path)),
+                         path.size(),
                          static_cast<long>(strlen(toDoCommand)),
                          static_cast<long>(strlen(langMode)),
                          static_cast<long>(strlen(geometry)));

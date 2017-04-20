@@ -78,7 +78,7 @@ public Q_SLOTS:
     void gotoMarkAP(QChar label, bool extendSel);
     void markAP(QChar ch);
     void moveDocument(MainWindow *fromWindow);
-    void open(const char *fullpath);
+    void open(const QString &fullpath);
     void replaceAP(const QString &searchString, const QString &replaceString, SearchDirection direction, SearchType searchType, bool searchWraps);
     void replaceAllAP(const QString &searchString, const QString &replaceString, SearchType searchType);
     void replaceFindAP(const QString &searchString, const QString &replaceString, SearchDirection direction, SearchType searchType, bool searchWraps);

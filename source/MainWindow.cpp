@@ -50,6 +50,7 @@
 #include <QMimeData>
 #include <QShortcut>
 #include <QToolButton>
+#include <QRegExp>
 #include <QtDebug>
 #include <cmath>
 #include <glob.h>
@@ -618,7 +619,7 @@ void MainWindow::on_action_Open_triggered() {
             return;
         }
 
-        doc->open(filename.toLatin1().data());
+        doc->open(filename);
     }
 
     CheckCloseDimEx();
@@ -1703,7 +1704,7 @@ void MainWindow::openPrevCB(QAction *action) {
             return;
         }
 
-        doc->open(filename.toLatin1().data());
+        doc->open(filename);
     }
 
     CheckCloseDimEx();
@@ -1779,14 +1780,11 @@ void MainWindow::on_action_Open_Selected_triggered() {
 //------------------------------------------------------------------------------
 void MainWindow::fileCB(DocumentWidget *window, const std::string &text) {
 
-    char nameText[MAXPATHLEN];
-    char includeName[MAXPATHLEN];
-    char filename[MAXPATHLEN];
-    char pathname[MAXPATHLEN];
-    char *inPtr;
-    char *outPtr;
-
     // TODO(eteran): version 2.0 let the user specify a list of potential paths!
+    //       can we ask the system simply or similar?
+    //       `gcc -print-prog-name=cc1plus` -v
+    //       `gcc -print-prog-name=cc1` -v
+    //       etc...
     static const char includeDir[] = "/usr/include/";
 
     /* get the string, or skip if we can't get the selection data, or it's
@@ -1796,44 +1794,46 @@ void MainWindow::fileCB(DocumentWidget *window, const std::string &text) {
         return;
     }
 
-    snprintf(nameText, sizeof(nameText), "%s", text.c_str());
+    QRegExp regexSystem(QLatin1String("#include\\s*<([^>]+)>"), Qt::CaseSensitive, QRegExp::RegExp2);
+    QRegExp regexLocal(QLatin1String("#include\\s*\"([^\"]+)\""), Qt::CaseSensitive, QRegExp::RegExp2);
+    QString nameText = QString::fromStdString(text);
 
     // extract name from #include syntax
-    if (sscanf(nameText, "#include \"%[^\"]\"", includeName) == 1) {
-        strcpy(nameText, includeName);
-    } else if (sscanf(nameText, "#include <%[^<>]>", includeName) == 1) {
-        sprintf(nameText, "%s%s", includeDir, includeName);
+    // TODO(eteran): version 2.0, support import/include syntax from multiple languages
+    if(regexLocal.indexIn(nameText) != -1) {
+        nameText = regexLocal.cap(1);
+    } else if(regexSystem.indexIn(nameText) != -1) {
+        nameText = QString(QLatin1String("%1%2")).arg(QString::fromLatin1(includeDir), regexSystem.cap(1));
     }
 
     // strip whitespace from name
-    for (inPtr = nameText, outPtr = nameText; *inPtr != '\0'; inPtr++) {
-        if (*inPtr != ' ' && *inPtr != '\t' && *inPtr != '\n') {
-            *outPtr++ = *inPtr;
-        }
-    }
-    *outPtr = '\0';
+    nameText.remove(QLatin1Char(' '));
+    nameText.remove(QLatin1Char('\t'));
+    nameText.remove(QLatin1Char('\n'));
 
     // Process ~ characters in name
-    ExpandTilde(nameText);
+    nameText = ExpandTildeEx(nameText);
 
     // If path name is relative, make it refer to current window's directory
-    if (nameText[0] != '/') {
-        snprintf(filename, sizeof(filename), "%s%s", window->path_.toLatin1().data(), nameText);
-        strcpy(nameText, filename);
+    if (nameText[0] != QLatin1Char('/')) {
+        nameText = QString(QLatin1String("%1%2")).arg(window->path_, nameText);
     }
 
     // Expand wildcards in file name.
     {
         glob_t globbuf;
-        glob(nameText, GLOB_NOCHECK, nullptr, &globbuf);
+        glob(nameText.toLatin1().data(), GLOB_NOCHECK, nullptr, &globbuf);
+
         for (size_t i = 0; i < globbuf.gl_pathc; i++) {
-            if (ParseFilename(globbuf.gl_pathv[i], filename, pathname) != 0) {
+            QString pathname;
+            QString filename;
+            if (ParseFilenameEx(QString::fromLatin1(globbuf.gl_pathv[i]), &filename, &pathname) != 0) {
                 QApplication::beep();
             } else {
                 DocumentWidget::EditExistingFileEx(
                             GetPrefOpenInTab() ? window : nullptr,
-                            QString::fromLatin1(filename),
-                            QString::fromLatin1(pathname),
+                            filename,
+                            pathname,
                             0,
                             QString(),
                             false,

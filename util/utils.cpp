@@ -106,3 +106,11 @@ QString PrependHomeEx(const QString &filename) {
 	return QString(QLatin1String("%1/%2")).arg(GetHomeDirEx()).arg(filename);
 }
 
+/**
+ * @brief ErrorString
+ * @param error
+ * @return The result of strerror(error), but as a QString
+ */
+QString ErrorString(int error) {
+    return QString::fromLatin1(strerror(error));
+}

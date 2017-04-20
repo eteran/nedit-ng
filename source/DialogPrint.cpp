@@ -2,6 +2,7 @@
 #include "DialogPrint.h"
 #include "Settings.h"
 #include "preferences.h"
+#include "utils.h"
 #include <QMessageBox>
 #include <QRegExpValidator>
 #include <QSettings>
@@ -415,7 +416,7 @@ void DialogPrint::on_buttonPrint_clicked() {
 	// from the output stream of the command.
 	FILE *pipe = popen(command.toLatin1().data(), "r");
 	if(!pipe) {
-        QMessageBox::warning(this, tr("Print Error"), tr("Unable to Print:\n%1").arg(QString::fromLatin1(strerror(errno))));
+        QMessageBox::warning(this, tr("Print Error"), tr("Unable to Print:\n%1").arg(ErrorString(errno)));
 		return;
 	}
 

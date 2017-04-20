@@ -69,6 +69,52 @@ static void copyThruSlash(char **toString, char **fromString);
 ** least MAXPATHLEN chars long.
 ** To skip setting filename or pathname pass nullptr for that argument.
 */
+int ParseFilenameEx(const QString &fullname, QString *filename, QString *pathname) {
+    int fullLen = fullname.size();
+    int i;
+    int viewExtendPath;
+    int scanStart;
+
+    /* For clearcase version extended paths, slash characters after the "@@/"
+       should be considered part of the file name, rather than the path */
+    if ((viewExtendPath = fullname.indexOf(QLatin1String("@@/"))) != -1) {
+        scanStart = viewExtendPath - 1;
+    } else {
+        scanStart = fullLen - 1;
+    }
+
+    /* find the last slash */
+    for (i = scanStart; i >= 0; i--) {
+        if (fullname[i] == QLatin1Char('/'))
+            break;
+    }
+
+    /* move chars before / (or ] or :) into pathname,& after into filename */
+    int pathLen = i + 1;
+    int fileLen = fullLen - pathLen;
+
+    if (pathname) {
+        *pathname = fullname.left(pathLen);
+    }
+
+    if (filename) {
+        *filename = fullname.mid(pathLen, fileLen);
+    }
+
+    if (pathname) {
+        *pathname = NormalizePathnameEx(*pathname);
+    }
+
+    return 0;
+}
+
+/*
+** Decompose a Unix file name into a file name and a path.
+** Return non-zero value if it fails, zero else.
+** For now we assume that filename and pathname are at
+** least MAXPATHLEN chars long.
+** To skip setting filename or pathname pass nullptr for that argument.
+*/
 int ParseFilename(const char *fullname, char *filename, char *pathname) {
 	int fullLen = strlen(fullname);
     int i;
@@ -127,6 +173,22 @@ int ParseFilename(const char *fullname, char *filename, char *pathname) {
 ** If it doesn't work just out leave pathname unmodified.
 ** This implementation is neither fast, nor elegant, nor ...
 */
+QString ExpandTildeEx(const QString &pathname) {
+#ifdef Q_OS_UNIX
+    char path[PATH_MAX];
+    strncpy(path, pathname.toLatin1().data(), sizeof(path));
+    path[PATH_MAX - 1] = '\0';
+
+    if(ExpandTilde(path)) {
+        return QString::fromLatin1(path);
+    }
+
+    return QString();
+#else
+    return pathname;
+#endif
+}
+
 int ExpandTilde(char *pathname) {
 	struct passwd *passwdEntry;
 	char username[MAXPATHLEN], temp[MAXPATHLEN];
@@ -185,6 +247,16 @@ int ExpandTilde(char *pathname) {
  *   FALSE an error occured while trying to resolve the symlink, i.e.
  *         pathIn was no absolute path or the link is a loop.
  */
+QString ResolvePathEx(const QString &pathname) {
+    char pathResolved[MAXPATHLEN];
+
+    if(!ResolvePath(pathname.toLatin1().data(), pathResolved)) {
+        return QString::fromLatin1(pathResolved);
+    }
+
+    return QString();
+}
+
 int ResolvePath(const char *pathIn, char *pathResolved) {
 	char resolveBuf[MAXPATHLEN], pathBuf[MAXPATHLEN];
 	char *pathEnd;

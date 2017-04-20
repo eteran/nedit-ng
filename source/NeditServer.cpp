@@ -81,8 +81,8 @@ NeditServer::NeditServer(QObject *parent) : QObject(parent) {
 void NeditServer::processCommand(const QString &command) {
 
     QString fullname;
-    char filename[MAXPATHLEN];
-    char pathname[MAXPATHLEN];
+    QString filename;
+    QString pathname;
     QString doCommand;
     QString geometry;
     QString langMode;
@@ -227,12 +227,12 @@ void NeditServer::processCommand(const QString &command) {
         /* Process the filename by looking for the files in an
            existing window, or opening if they don't exist */
         int editFlags = (readFlag ? PREF_READ_ONLY : 0) | CREATE | (createFlag ? SUPPRESS_CREATE_WARN : 0);
-        if (ParseFilename(fullname.toLatin1().data(), filename, pathname) != 0) {
+        if (ParseFilenameEx(fullname, &filename, &pathname) != 0) {
             fprintf(stderr, "NEdit: invalid file name\n");
             break;
         }
 
-        DocumentWidget *document = MainWindow::FindWindowWithFile(QString::fromLatin1(filename), QString::fromLatin1(pathname));
+        DocumentWidget *document = MainWindow::FindWindowWithFile(filename, pathname);
         if(!document) {
             /* Files are opened in background to improve opening speed
                by defering certain time  consuiming task such as syntax
@@ -242,8 +242,8 @@ void NeditServer::processCommand(const QString &command) {
                macros to execute on. */
             document = DocumentWidget::EditExistingFileEx(
                         findWindowOnDesktopEx(tabbed, currentDesktop)->currentDocument(),
-                        QString::fromLatin1(filename),
-                        QString::fromLatin1(pathname),
+                        filename,
+                        pathname,
                         editFlags,
                         geometry,
                         iconicFlag,

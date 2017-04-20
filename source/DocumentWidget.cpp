@@ -1979,7 +1979,7 @@ void DocumentWidget::CheckForChangesToFileEx() {
                 default:
                     {
                         // Everything else. This hints at an internal error (eg. ENOTDIR) or at some bad state at the host.
-                        int resp = QMessageBox::critical(this, tr("File not Accessible"), tr("Error while checking the status of file '%1':\n    '%2'\nPlease make sure that no data is lost before closing this window.").arg(filename_).arg(QString::fromLatin1(strerror(errno))), QMessageBox::Save | QMessageBox::Cancel);
+                        int resp = QMessageBox::critical(this, tr("File not Accessible"), tr("Error while checking the status of file '%1':\n    '%2'\nPlease make sure that no data is lost before closing this window.").arg(filename_).arg(ErrorString(errno)), QMessageBox::Save | QMessageBox::Cancel);
                         save = (resp == QMessageBox::Save);
                     }
                     break;
@@ -2267,7 +2267,7 @@ int DocumentWidget::WriteBackupFile() {
     int fd = ::open(name.toLatin1().data(), O_CREAT | O_EXCL | O_WRONLY, S_IRUSR | S_IWUSR);
     if (fd < 0 || (fp = fdopen(fd, "w")) == nullptr) {
 
-        QMessageBox::warning(this, tr("Error writing Backup"), tr("Unable to save backup for %1:\n%2\nAutomatic backup is now off").arg(filename_).arg(QString::fromLatin1(strerror(errno))));
+        QMessageBox::warning(this, tr("Error writing Backup"), tr("Unable to save backup for %1:\n%2\nAutomatic backup is now off").arg(filename_).arg(ErrorString(errno)));
         autoSave_ = false;
 
         if(auto win = toWindow()) {
@@ -2290,7 +2290,7 @@ int DocumentWidget::WriteBackupFile() {
     // write out the file
     ::fwrite(fileString.data(), sizeof(char), fileString.size(), fp);
     if (::ferror(fp)) {
-        QMessageBox::critical(this, tr("Error saving Backup"), tr("Error while saving backup for %1:\n%2\nAutomatic backup is now off").arg(filename_).arg(QString::fromLatin1(strerror(errno))));
+        QMessageBox::critical(this, tr("Error saving Backup"), tr("Error while saving backup for %1:\n%2\nAutomatic backup is now off").arg(filename_).arg(ErrorString(errno)));
         ::fclose(fp);
         ::remove(name.toLatin1().data());
         autoSave_ = false;
@@ -2395,7 +2395,7 @@ bool DocumentWidget::doSave() {
         QMessageBox messageBox(this);
         messageBox.setWindowTitle(tr("Error saving File"));
         messageBox.setIcon(QMessageBox::Warning);
-        messageBox.setText(tr("Unable to save %1:\n%1\n\nSave as a new file?").arg(filename_).arg(QString::fromLatin1(strerror(errno))));
+        messageBox.setText(tr("Unable to save %1:\n%1\n\nSave as a new file?").arg(filename_).arg(ErrorString(errno)));
 
         QPushButton *buttonSaveAs = messageBox.addButton(tr("Save As..."), QMessageBox::AcceptRole);
         QPushButton *buttonCancel = messageBox.addButton(QMessageBox::Cancel);
@@ -2432,7 +2432,7 @@ bool DocumentWidget::doSave() {
     fwrite(fileString.data(), sizeof(char), fileString.size(), fp);
 
     if (ferror(fp)) {
-        QMessageBox::critical(this, tr("Error saving File"), tr("%2 not saved:\n%2").arg(filename_).arg(QString::fromLatin1(strerror(errno))));
+        QMessageBox::critical(this, tr("Error saving File"), tr("%2 not saved:\n%2").arg(filename_).arg(ErrorString(errno)));
         ::fclose(fp);
         ::remove(fullname.toLatin1().data());
         return false;
@@ -2440,7 +2440,7 @@ bool DocumentWidget::doSave() {
 
     // close the file
     if (::fclose(fp) != 0) {
-        QMessageBox::critical(this, tr("Error closing File"), tr("Error closing file:\n%1").arg(QString::fromLatin1(strerror(errno))));
+        QMessageBox::critical(this, tr("Error closing File"), tr("Error closing file:\n%1").arg(ErrorString(errno)));
         return false;
     }
 
@@ -2470,8 +2470,7 @@ int DocumentWidget::SaveWindowAs(const QString &newName, bool addWrap) {
 
         int  retVal;
         QString fullname;
-        char filename[MAXPATHLEN];
-        char pathname[MAXPATHLEN];
+
 
         if(newName.isNull()) {
             QFileDialog dialog(this, tr("Save File As"));
@@ -2570,12 +2569,15 @@ int DocumentWidget::SaveWindowAs(const QString &newName, bool addWrap) {
             addWrapNewlines();
         }
 
-        if (ParseFilename(fullname.toLatin1().data(), filename, pathname) != 0) {
+        QString filename;
+        QString pathname;
+
+        if (ParseFilenameEx(fullname, &filename, &pathname) != 0) {
             return false;
         }
 
         // If the requested file is this file, just save it and return
-        if (filename_ == QString::fromLatin1(filename) && path_ == QString::fromLatin1(pathname)) {
+        if (filename_ == filename && path_ == pathname) {
             if (writeBckVersion()) {
                 return false;
             }
@@ -2587,12 +2589,12 @@ int DocumentWidget::SaveWindowAs(const QString &newName, bool addWrap) {
            it is possible for user to close the window by hand while the dialog
            is still up, because the dialog is not application modal, so after
            doing the dialog, check again whether the window still exists. */
-        if (DocumentWidget *otherWindow = MainWindow::FindWindowWithFile(QString::fromLatin1(filename), QString::fromLatin1(pathname))) {
+        if (DocumentWidget *otherWindow = MainWindow::FindWindowWithFile(filename, pathname)) {
 
             QMessageBox messageBox(this);
             messageBox.setWindowTitle(tr("File open"));
             messageBox.setIcon(QMessageBox::Warning);
-            messageBox.setText(tr("%1 is open in another NEdit window").arg(QString::fromLatin1(filename)));
+            messageBox.setText(tr("%1 is open in another NEdit window").arg(filename));
             QPushButton *buttonCloseOther = messageBox.addButton(tr("Close Other Window"), QMessageBox::AcceptRole);
             QPushButton *buttonCancel     = messageBox.addButton(QMessageBox::Cancel);
             Q_UNUSED(buttonCloseOther);
@@ -2602,7 +2604,7 @@ int DocumentWidget::SaveWindowAs(const QString &newName, bool addWrap) {
                 return false;
             }
 
-            if (otherWindow == MainWindow::FindWindowWithFile(QString::fromLatin1(filename), QString::fromLatin1(pathname))) {
+            if (otherWindow == MainWindow::FindWindowWithFile(filename, pathname)) {
                 if (!otherWindow->CloseFileAndWindow(PROMPT_SBC_DIALOG_RESPONSE)) {
                     return false;
                 }
@@ -2611,8 +2613,8 @@ int DocumentWidget::SaveWindowAs(const QString &newName, bool addWrap) {
 
         // Change the name of the file and save it under the new name
         RemoveBackupFile();
-        filename_ = QString::fromLatin1(filename);
-        path_     = QString::fromLatin1(pathname);
+        filename_ = filename;
+        path_     = pathname;
         fileMode_ = 0;
         fileUid_  = 0;
         fileGid_  = 0;
@@ -2765,7 +2767,7 @@ bool DocumentWidget::writeBckVersion() {
             ::close(in_fd);
             ::close(out_fd);
             ::remove(bckname.toLatin1().data());
-            return bckError(QString::fromLatin1(strerror(errno)), bckname);
+            return bckError(ErrorString(errno), bckname);
         }
     }
 
@@ -3031,20 +3033,20 @@ DocumentWidget *DocumentWidget::documentFrom(TextArea *area) {
     return nullptr;
 }
 
-void DocumentWidget::open(const char *fullpath) {
+void DocumentWidget::open(const QString &fullpath) {
 
-    char filename[MAXPATHLEN];
-    char pathname[MAXPATHLEN];
+    QString filename;
+    QString pathname;
 
-    if (ParseFilename(fullpath, filename, pathname) != 0 || strlen(filename) + strlen(pathname) > MAXPATHLEN - 1) {
-        fprintf(stderr, "nedit: invalid file name for open action: %s\n", fullpath);
+    if (ParseFilenameEx(fullpath, &filename, &pathname) != 0 || filename.size() + pathname.size() > MAXPATHLEN - 1) {
+        fprintf(stderr, "nedit: invalid file name for open action: %s\n", fullpath.toLatin1().data());
         return;
     }
 
     EditExistingFileEx(
                 this,
-                QString::fromLatin1(filename),
-                QString::fromLatin1(pathname),
+                filename,
+                pathname,
                 0,
                 QString(),
                 false,
@@ -3108,7 +3110,7 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
 
                     msgbox.setIcon(QMessageBox::Warning);
                     msgbox.setWindowTitle(tr("New File"));
-                    msgbox.setText(tr("Can't open %1:\n%2").arg(fullname, QString::fromLatin1(strerror(errno))));
+                    msgbox.setText(tr("Can't open %1:\n%2").arg(fullname, ErrorString(errno)));
                     msgbox.addButton(tr("New File"), QMessageBox::AcceptRole);
                     msgbox.addButton(QMessageBox::Cancel);
                     exitButton = msgbox.addButton(tr("Exit NEdit"), QMessageBox::RejectRole);
@@ -3118,7 +3120,7 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
 
                     msgbox.setIcon(QMessageBox::Warning);
                     msgbox.setWindowTitle(tr("New File"));
-                    msgbox.setText(tr("Can't open %1:\n%2").arg(fullname, QString::fromLatin1(strerror(errno))));
+                    msgbox.setText(tr("Can't open %1:\n%2").arg(fullname, ErrorString(errno)));
                     msgbox.addButton(tr("New File"), QMessageBox::AcceptRole);
                     msgbox.addButton(QMessageBox::Cancel);
                     exitButton = nullptr;
@@ -3135,7 +3137,7 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
             // Test if new file can be created
             int fd = ::creat(fullname.toLatin1().data(), 0666);
             if (fd == -1) {
-                QMessageBox::critical(this, tr("Error creating File"), tr("Can't create %1:\n%2").arg(fullname, QString::fromLatin1(strerror(errno))));
+                QMessageBox::critical(this, tr("Error creating File"), tr("Can't create %1:\n%2").arg(fullname, ErrorString(errno)));
                 return false;
             } else {
                 ::close(fd);
@@ -3151,7 +3153,7 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
             return true;
         } else {
             // A true error
-            QMessageBox::critical(this, tr("Error opening File"), tr("Could not open %1%2:\n%3").arg(path, name, QString::fromLatin1(strerror(errno))));
+            QMessageBox::critical(this, tr("Error opening File"), tr("Could not open %1%2:\n%3").arg(path, name, ErrorString(errno)));
             return false;
         }
     }
@@ -3202,7 +3204,7 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
     if (ferror(fp)) {
         ::fclose(fp);
         filenameSet_ = false; // Temp. prevent check for changes.
-        QMessageBox::critical(this, tr("Error while opening File"), tr("Error reading %1:\n%2").arg(name, QString::fromLatin1(strerror(errno))));
+        QMessageBox::critical(this, tr("Error while opening File"), tr("Error reading %1:\n%2").arg(name, ErrorString(errno)));
         filenameSet_ = true;
         return false;
     }
@@ -3413,6 +3415,7 @@ void DocumentWidget::RefreshMenuToggleStates() {
 ** structure passed by the widget
 */
 void DocumentWidget::executeNewlineMacroEx(smartIndentCBStruct *cbInfo) {
+
     auto winData = static_cast<SmartIndentData *>(smartIndentData_);
     // posValue probably shouldn't be static due to re-entrance issues <slobasso>
     static DataValue posValue = {INT_TAG, {0}};
@@ -3589,7 +3592,7 @@ bool DocumentWidget::includeFile(const QString &name) {
     // Open the file
     FILE *fp = ::fopen(name.toLatin1().data(), "rb");
     if(!fp) {
-        QMessageBox::critical(this, tr("Error opening File"), tr("Could not open %1:\n%2").arg(name, QString::fromLatin1(strerror(errno))));
+        QMessageBox::critical(this, tr("Error opening File"), tr("Could not open %1:\n%2").arg(name, ErrorString(errno)));
         return false;
     }
 
@@ -3617,7 +3620,7 @@ bool DocumentWidget::includeFile(const QString &name) {
         // read the file into fileString and terminate with a null
         int readLen = ::fread(&fileString[0], sizeof(char), fileLen, fp);
         if (::ferror(fp)) {
-            QMessageBox::critical(this, tr("Error opening File"), tr("Error reading %1:\n%2").arg(name, QString::fromLatin1(strerror(errno))));
+            QMessageBox::critical(this, tr("Error opening File"), tr("Error reading %1:\n%2").arg(name, ErrorString(errno)));
             ::fclose(fp);
             return false;
         }
@@ -4216,7 +4219,7 @@ void DocumentWidget::PrintStringEx(const std::string &string, const QString &job
 
     int fd = mkstemp(tmpFileName);
     if (fd < 0) {
-        QMessageBox::warning(this, tr("Error while Printing"), tr("Unable to write file for printing:\n%1").arg(QString::fromLatin1(strerror(errno))));
+        QMessageBox::warning(this, tr("Error while Printing"), tr("Unable to write file for printing:\n%1").arg(ErrorString(errno)));
         return;
     }
 
@@ -4224,14 +4227,14 @@ void DocumentWidget::PrintStringEx(const std::string &string, const QString &job
 
     // open the temporary file
     if (fp == nullptr) {
-        QMessageBox::warning(this, tr("Error while Printing"), tr("Unable to write file for printing:\n%1").arg(QString::fromLatin1(strerror(errno))));
+        QMessageBox::warning(this, tr("Error while Printing"), tr("Unable to write file for printing:\n%1").arg(ErrorString(errno)));
         return;
     }
 
     // write to the file
     fwrite(string.data(), sizeof(char), string.size(), fp);
     if (ferror(fp)) {
-        QMessageBox::critical(this, tr("Error while Printing"), tr("%1 not printed:\n%2").arg(jobName).arg(QString::fromLatin1(strerror(errno))));
+        QMessageBox::critical(this, tr("Error while Printing"), tr("%1 not printed:\n%2").arg(jobName).arg(ErrorString(errno)));
         fclose(fp); // should call close(fd) in turn!
         remove(tmpFileName);
         return;
@@ -4239,7 +4242,7 @@ void DocumentWidget::PrintStringEx(const std::string &string, const QString &job
 
     // close the temporary file
     if (fclose(fp) != 0) {
-        QMessageBox::warning(this, tr("Error while Printing"), tr("Error closing temp. print file:\n%1").arg(QString::fromLatin1(strerror(errno))));
+        QMessageBox::warning(this, tr("Error while Printing"), tr("Error closing temp. print file:\n%1").arg(ErrorString(errno)));
         remove(tmpFileName);
         return;
     }

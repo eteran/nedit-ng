@@ -864,7 +864,7 @@ int ReadMacroFileEx(DocumentWidget *window, const std::string &fileName, int war
     QString fileString = ReadAnyTextFileEx(fileName, true);
     if (fileString.isNull()) {
         if (errno != ENOENT || warnNotExist) {
-            QMessageBox::critical(window, QLatin1String("Read Macro"), QString(QLatin1String("Error reading macro file %1: %2")).arg(QString::fromStdString(fileName), QString::fromLatin1(strerror(errno))));
+            QMessageBox::critical(window, QLatin1String("Read Macro"), QString(QLatin1String("Error reading macro file %1: %2")).arg(QString::fromStdString(fileName), ErrorString(errno)));
         }
         return false;
     }

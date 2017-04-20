@@ -34,5 +34,6 @@ QString GetHomeDirEx();
 QString GetNameOfHostEx();
 QString GetUserNameEx();
 QString PrependHomeEx(const QString &filename);
+QString ErrorString(int error);
 
 #endif

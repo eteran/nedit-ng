@@ -88,8 +88,8 @@ int main(int argc, char *argv[]) {
 	int isTabbed;
     QString geometry;
     QString langMode;
-	char filename[MAXPATHLEN];
-	char pathname[MAXPATHLEN];	
+    QString filename;
+    QString pathname;
     QPointer<DocumentWidget> lastFileEx = nullptr;
     char *toDoCommand = nullptr;
 
@@ -227,7 +227,7 @@ int main(int argc, char *argv[]) {
 			exit(EXIT_FAILURE);
 		} else {
 
-			if (ParseFilename(argv[i], filename, pathname) == 0) {
+            if (ParseFilenameEx(QString::fromLatin1(argv[i]), &filename, &pathname) == 0) {
 				/* determine if file is to be openned in new tab, by
 				   factoring the options -group, -tabbed & -untabbed */
                 switch(group) {
@@ -254,8 +254,8 @@ int main(int argc, char *argv[]) {
                 if(MainWindow *window = MainWindow::firstWindow()) {
                     documentEx = DocumentWidget::EditExistingFileEx(
                                 window->currentDocument(),
-                                QString::fromLatin1(filename),
-                                QString::fromLatin1(pathname),
+                                filename,
+                                pathname,
                                 editFlags,
                                 geometry,
                                 iconic,
@@ -265,8 +265,8 @@ int main(int argc, char *argv[]) {
                 } else {
                     documentEx = DocumentWidget::EditExistingFileEx(
                                 nullptr,
-                                QString::fromLatin1(filename),
-                                QString::fromLatin1(pathname),
+                                filename,
+                                pathname,
                                 editFlags,
                                 geometry,
                                 iconic,
