@@ -8,9 +8,10 @@
 
 namespace {
 
-//------------------------------------------------------------------------------
-// Name: buildPlatform
-//------------------------------------------------------------------------------
+/**
+ * @brief buildPlatform
+ * @return
+ */
 QString buildPlatform() {
 #if defined(Q_OS_AIX)
 	return QLatin1String("AIX");
@@ -77,10 +78,11 @@ QString buildPlatform() {
 #endif
 }
 
-//------------------------------------------------------------------------------
-// Name: buildCompiler
-// Note: copied from QtCreator ICore
-//------------------------------------------------------------------------------
+/**
+ * @brief buildCompiler
+ * @return
+ * @note copied from QtCreator ICore
+ */
 QString buildCompiler() {
 #if defined(Q_CC_CLANG) // must be before GNU, because clang claims to be GNU too
     QString isAppleString;
@@ -101,9 +103,11 @@ QString buildCompiler() {
 
 }
 
-//------------------------------------------------------------------------------
-// Name: DialogAbout
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogAbout::DialogAbout
+ * @param parent
+ * @param f
+ */
 DialogAbout::DialogAbout(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f) {
 	ui.setupUi(this);
 
@@ -120,9 +124,10 @@ DialogAbout::DialogAbout(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f)
 	).arg(createInfoString()));
 }
 
-//------------------------------------------------------------------------------
-// Name: createInfoString
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogAbout::createInfoString
+ * @return
+ */
 QString DialogAbout::createInfoString() {
     return tr("nedit-ng version %1\n"
               "\n"

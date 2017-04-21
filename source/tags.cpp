@@ -645,7 +645,6 @@ static int loadTagsFile(const QString &tagsFile, int index, int recLevel) {
 	char line[MAXLINE];
     char file[MAXPATHLEN];
     QString tagPath;
-	char resolvedTagsFile[MAXPATHLEN + 1];
 	int nTagsAdded = 0;
 	int tagFileType = TFT_CHECK;
 
@@ -656,16 +655,17 @@ static int loadTagsFile(const QString &tagsFile, int index, int recLevel) {
 	 * definition source files are (in most cases) specified relatively inside
 	 * the tags file to the tags files directory.
 	 */
-    if (!ResolvePath(tagsFile.toLatin1().data(), resolvedTagsFile)) {
+    QString resolvedTagsFile = ResolvePathEx(tagsFile);
+    if (resolvedTagsFile.isNull()) {
 		return 0;
 	}
 
 	// Open the file 
-	if ((fp = fopen(resolvedTagsFile, "r")) == nullptr) {
+    if ((fp = fopen(resolvedTagsFile.toLatin1().data(), "r")) == nullptr) {
 		return 0;
 	}
 
-    ParseFilenameEx(QString::fromLatin1(resolvedTagsFile), nullptr, &tagPath);
+    ParseFilenameEx(resolvedTagsFile, nullptr, &tagPath);
 
 	// Read the file and store its contents 
 	while (fgets(line, MAXLINE, fp)) {

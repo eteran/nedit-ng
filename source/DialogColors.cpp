@@ -10,9 +10,11 @@
 #include <QColorDialog>
 #include <QMessageBox>
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogColors::DialogColors
+ * @param parent
+ * @param f
+ */
 DialogColors::DialogColors(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f) {
 	ui.setupUi(this);
 	
@@ -35,17 +37,19 @@ DialogColors::DialogColors(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, 
     ui.editCursor->setText(GetPrefColorName(CURSOR_FG_COLOR));
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-// Desc: Returns True if the color is valid, False if it's not 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogColors::checkColorStatus
+ * @param text
+ * @return True if the color is valid, False if it's not
+ */
 bool DialogColors::checkColorStatus(const QString &text) {
     return QColor::isValidColor(text);
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogColors::chooseColor
+ * @param edit
+ */
 void DialogColors::chooseColor(QLineEdit *edit) {
 
 	QString name = edit->text();
@@ -56,9 +60,11 @@ void DialogColors::chooseColor(QLineEdit *edit) {
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogColors::showColorStatus
+ * @param text
+ * @param label
+ */
 void DialogColors::showColorStatus(const QString &text, QLabel *label) {
 	/* Should set the OK/Apply button sensitivity here, instead
 	   of leaving is sensitive and then complaining if an error. */
@@ -66,121 +72,130 @@ void DialogColors::showColorStatus(const QString &text, QLabel *label) {
 	label->setVisible(!checkColorStatus(text));
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogColors::on_buttonFG_clicked
+ */
 void DialogColors::on_buttonFG_clicked() {
 	chooseColor(ui.editFG);
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogColors::on_buttonBG_clicked
+ */
 void DialogColors::on_buttonBG_clicked() {
 	chooseColor(ui.editBG);
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogColors::on_buttonSelectionFG_clicked
+ */
 void DialogColors::on_buttonSelectionFG_clicked() {
 	chooseColor(ui.editSelectionFG);
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogColors::on_buttonSelectionBG_clicked
+ */
 void DialogColors::on_buttonSelectionBG_clicked() {
 	chooseColor(ui.editSelectionBG);
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogColors::on_buttonMatchFG_clicked
+ */
 void DialogColors::on_buttonMatchFG_clicked() {
 	chooseColor(ui.editMatchFG);
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogColors::on_buttonMatchBG_clicked
+ */
 void DialogColors::on_buttonMatchBG_clicked() {
 	 chooseColor(ui.editMatchBG);
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogColors::on_buttonLineNumbers_clicked
+ */
 void DialogColors::on_buttonLineNumbers_clicked() {
 	chooseColor(ui.editLineNumbers);
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogColors::on_buttonCursor_clicked
+ */
 void DialogColors::on_buttonCursor_clicked() {
 	chooseColor(ui.editCursor);
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogColors::on_editFG_textChanged
+ * @param text
+ */
 void DialogColors::on_editFG_textChanged(const QString &text) {
 	showColorStatus(text, ui.labelErrorFG);
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogColors::on_editBG_textChanged
+ * @param text
+ */
 void DialogColors::on_editBG_textChanged(const QString &text) {
 	showColorStatus(text, ui.labelErrorBG);
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogColors::on_editSelectionFG_textChanged
+ * @param text
+ */
 void DialogColors::on_editSelectionFG_textChanged(const QString &text) {
 	showColorStatus(text, ui.labelErrorSelectionFG);
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogColors::on_editSelectionBG_textChanged
+ * @param text
+ */
 void DialogColors::on_editSelectionBG_textChanged(const QString &text) {
 	showColorStatus(text, ui.labelErrorSelectionBG);
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogColors::on_editMatchFG_textChanged
+ * @param text
+ */
 void DialogColors::on_editMatchFG_textChanged(const QString &text) {
 	showColorStatus(text, ui.labelErrorMatchFG);
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogColors::on_editMatchBG_textChanged
+ * @param text
+ */
 void DialogColors::on_editMatchBG_textChanged(const QString &text) {
 	showColorStatus(text, ui.labelErrorMatchBG);
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogColors::on_editLineNumbers_textChanged
+ * @param text
+ */
 void DialogColors::on_editLineNumbers_textChanged(const QString &text) {
 	showColorStatus(text, ui.labelErrorLineNumbers);
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogColors::on_editCursor_textChanged
+ * @param text
+ */
 void DialogColors::on_editCursor_textChanged(const QString &text) {
 	showColorStatus(text, ui.labelErrorCursor);
 }
 
-//------------------------------------------------------------------------------
-// Name: on_buttonBox_clicked
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogColors::on_buttonBox_clicked
+ * @param button
+ */
 void DialogColors::on_buttonBox_clicked(QAbstractButton *button) {
 	if(ui.buttonBox->standardButton(button) == QDialogButtonBox::Apply) {
 		if (!verifyAllColors()) {
@@ -191,9 +206,9 @@ void DialogColors::on_buttonBox_clicked(QAbstractButton *button) {
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name: on_buttonBox_accepted
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogColors::on_buttonBox_accepted
+ */
 void DialogColors::on_buttonBox_accepted() {
 	if (!verifyAllColors()) {
 		QMessageBox::critical(this, tr("Invalid Colors"), tr("All colors must be valid to proceed."));
@@ -203,23 +218,31 @@ void DialogColors::on_buttonBox_accepted() {
 	accept();
 }
 
-/*
+
+/**
+ * @brief DialogColors::verifyAllColors
+ * @return
+ *
  * Helper functions for validating colors
  */
 bool DialogColors::verifyAllColors() {
 
 	// Maybe just check for empty strings in error widgets instead? 
-	return  checkColorStatus(ui.editFG->text()) &&
-			checkColorStatus(ui.editBG->text()) &&
-			checkColorStatus(ui.editSelectionFG->text()) &&
-			checkColorStatus(ui.editSelectionBG->text()) &&
-			checkColorStatus(ui.editMatchFG->text()) &&
-			checkColorStatus(ui.editMatchBG->text()) &&
-			checkColorStatus(ui.editLineNumbers->text()) &&
-			checkColorStatus(ui.editCursor->text());
+    return checkColorStatus(ui.editFG->text()) &&
+           checkColorStatus(ui.editBG->text()) &&
+           checkColorStatus(ui.editSelectionFG->text()) &&
+           checkColorStatus(ui.editSelectionBG->text()) &&
+           checkColorStatus(ui.editMatchFG->text()) &&
+           checkColorStatus(ui.editMatchBG->text()) &&
+           checkColorStatus(ui.editLineNumbers->text()) &&
+           checkColorStatus(ui.editCursor->text());
 }
 
-// Update the colors in the window or in the preferences 
+/**
+ * @brief DialogColors::updateColors
+ *
+ * Update the colors in the window or in the preferences
+ */
 void DialogColors::updateColors() {
 	
 	QString textFg   = ui.editFG->text();

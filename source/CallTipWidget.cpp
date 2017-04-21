@@ -3,6 +3,11 @@
 #include <QToolTip>
 #include <QClipboard>
 
+/**
+ * @brief CallTipWidget::CallTipWidget
+ * @param parent
+ * @param f
+ */
 CallTipWidget::CallTipWidget(QWidget *parent, Qt::WindowFlags f) : QWidget(parent, f) {
 	ui.setupUi(this);
 
@@ -14,12 +19,19 @@ CallTipWidget::CallTipWidget(QWidget *parent, Qt::WindowFlags f) : QWidget(paren
     connect(ui.buttonCopy, SIGNAL(clicked()), this, SLOT(copyText()));
 }
 
+/**
+ * @brief CallTipWidget::setText
+ * @param text
+ */
 void CallTipWidget::setText(const QString &text) {
 	ui.labelTip->setText(text);
     ui.labelTip->adjustSize();
     resize(minimumSize());
 }
 
+/**
+ * @brief CallTipWidget::copyText
+ */
 void CallTipWidget::copyText() {
     QApplication::clipboard()->setText(ui.labelTip->text());
 }

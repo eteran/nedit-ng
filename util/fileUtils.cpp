@@ -45,6 +45,9 @@
 #include <unistd.h>
 #include <pwd.h>
 
+static int ExpandTilde(char *pathname);
+static int ResolvePath(const char *pathIn, char *pathResolved);
+
 #ifndef MAXSYMLINKS /* should be defined in <sys/param.h> */
 #define MAXSYMLINKS 20
 #endif
@@ -85,8 +88,9 @@ int ParseFilenameEx(const QString &fullname, QString *filename, QString *pathnam
 
     /* find the last slash */
     for (i = scanStart; i >= 0; i--) {
-        if (fullname[i] == QLatin1Char('/'))
+        if (fullname[i] == QLatin1Char('/')) {
             break;
+        }
     }
 
     /* move chars before / (or ] or :) into pathname,& after into filename */
@@ -106,66 +110,6 @@ int ParseFilenameEx(const QString &fullname, QString *filename, QString *pathnam
     }
 
     return 0;
-}
-
-/*
-** Decompose a Unix file name into a file name and a path.
-** Return non-zero value if it fails, zero else.
-** For now we assume that filename and pathname are at
-** least MAXPATHLEN chars long.
-** To skip setting filename or pathname pass nullptr for that argument.
-*/
-int ParseFilename(const char *fullname, char *filename, char *pathname) {
-	int fullLen = strlen(fullname);
-    int i;
-    int pathLen;
-    int fileLen;
-	const char *viewExtendPath;
-	int scanStart;
-
-	/* For clearcase version extended paths, slash characters after the "@@/"
-	   should be considered part of the file name, rather than the path */
-    if ((viewExtendPath = strstr(fullname, "@@/")) != nullptr) {
-		scanStart = viewExtendPath - fullname - 1;
-    } else {
-		scanStart = fullLen - 1;
-    }
-
-	/* find the last slash */
-	for (i = scanStart; i >= 0; i--) {
-		if (fullname[i] == '/')
-			break;
-	}
-
-	/* move chars before / (or ] or :) into pathname,& after into filename */
-	pathLen = i + 1;
-	fileLen = fullLen - pathLen;
-	if (pathname) {
-		if (pathLen >= MAXPATHLEN) {
-			return 1;
-		}
-		strncpy(pathname, fullname, pathLen);
-		pathname[pathLen] = 0;
-	}
-	if (filename) {
-		if (fileLen >= MAXPATHLEN) {
-			return 2;
-		}
-		strncpy(filename, &fullname[pathLen], fileLen);
-		filename[fileLen] = 0;
-	}
-
-	if (pathname) {
-		if (NormalizePathname(pathname)) {
-			return 1; /* pathname too long */
-		}
-		pathLen = strlen(pathname);
-	}
-
-	if (filename && pathname && ((pathLen + 1 + fileLen) >= MAXPATHLEN)) {
-		return 1; /* pathname + filename too long */
-	}
-	return 0;
 }
 
 /*
@@ -191,18 +135,22 @@ QString ExpandTildeEx(const QString &pathname) {
 
 int ExpandTilde(char *pathname) {
 	struct passwd *passwdEntry;
-	char username[MAXPATHLEN], temp[MAXPATHLEN];
-	char *nameEnd;
+    char username[MAXPATHLEN];
+    char temp[MAXPATHLEN];
 	unsigned len_left;
 
-	if (pathname[0] != '~')
+    if (pathname[0] != '~') {
         return true;
-	nameEnd = strchr(&pathname[1], '/');
+    }
+
+    char *nameEnd = strchr(&pathname[1], '/');
 	if(!nameEnd) {
 		nameEnd = pathname + strlen(pathname);
 	}
+
 	strncpy(username, &pathname[1], nameEnd - &pathname[1]);
 	username[nameEnd - &pathname[1]] = '\0';
+
 	/* We might consider to re-use the GetHomeDirEx() function,
 	   but to keep the code more similar for both cases ... */
 	if (username[0] == '\0') {
@@ -223,11 +171,13 @@ int ExpandTilde(char *pathname) {
 
 	strcpy(temp, passwdEntry->pw_dir);
 	strcat(temp, "/");
+
 	len_left = sizeof(temp) - strlen(temp) - 1;
 	if (len_left < strlen(nameEnd)) {
 		/* It won't work out */
         return false;
 	}
+
 	strcat(temp, nameEnd);
 	strcpy(pathname, temp);
     return true;
