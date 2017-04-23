@@ -8,6 +8,9 @@
 #include <QSettings>
 #include <QtDebug>
 #include <dirent.h>
+#include <iostream>
+#include <fstream>
+#include <string>
 #include <sys/param.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -18,22 +21,8 @@ namespace {
 /* Separator between directory references in PATH environmental variable */
 constexpr const char SEPARATOR = ':';
 
-/* Maximum text string lengths */
-constexpr const int MAX_QUEUE_STR = 60u;
-constexpr const int MAX_HOST_STR  = 100u;
-
-
-constexpr const int PRINT_COMMAND_INDEX = 0;
-constexpr const int COPIES_OPTION_INDEX = 1;
-constexpr const int QUEUE_OPTION_INDEX  = 2;
-constexpr const int NAME_OPTION_INDEX   = 3;
-constexpr const int HOST_OPTION_INDEX   = 4;
-constexpr const int DEFAULT_QUEUE_INDEX = 5;
-constexpr const int DEFAULT_HOST_INDEX  = 6;
-
 /* Maximum length of an error returned by IssuePrintCommand() */
 constexpr const int MAX_PRINT_ERROR_LENGTH = 1024;
-
 
 QString PrintCommand;  /* print command string */
 QString CopiesOption;  /* # of copies argument string */
@@ -126,8 +115,6 @@ DialogPrint::DialogPrint(const QString &PrintFileName, const QString &jobName, Q
 */
 void DialogPrint::LoadPrintPreferencesEx(bool lookForFlpr) {
 
-    static char defaultQueue[MAX_QUEUE_STR];
-
     QString filename = Settings::configFile();
     QSettings settings(filename, QSettings::IniFormat);
     settings.beginGroup(QLatin1String("Printer"));
@@ -136,29 +123,27 @@ void DialogPrint::LoadPrintPreferencesEx(bool lookForFlpr) {
        printer per system type */
     if (lookForFlpr && flprPresent()) {
 
-        static char defaultHost[MAX_HOST_STR];
-
-        getFlprQueueDefault(defaultQueue);
-        getFlprHostDefault(defaultHost);
+        QString defaultQueue = getFlprQueueDefault();
+        QString defaultHost  = getFlprHostDefault();
 
         PrintCommand = settings.value(tr("printCommand"),      QLatin1String("flpr")).toString();
         CopiesOption = settings.value(tr("printCopiesOption"), QLatin1String("")).toString();
         QueueOption  = settings.value(tr("printQueueOption"),  QLatin1String("-q")).toString();
         NameOption   = settings.value(tr("printNameOption"),   QLatin1String("-j ")).toString();
         HostOption   = settings.value(tr("printHostOption"),   QLatin1String("-h")).toString();
-        DefaultQueue = settings.value(tr("printDefaultQueue"), QString::fromLatin1(defaultQueue)).toString();
-        DefaultHost  = settings.value(tr("printDefaultHost"),  QString::fromLatin1(defaultHost)).toString();
+        DefaultQueue = settings.value(tr("printDefaultQueue"), defaultQueue).toString();
+        DefaultHost  = settings.value(tr("printDefaultHost"),  defaultHost).toString();
 
     } else {
 
-        getLprQueueDefault(defaultQueue);
+        QString defaultQueue = getLprQueueDefault();
 
         PrintCommand = settings.value(tr("printCommand"),      QLatin1String("lpr")).toString();
         CopiesOption = settings.value(tr("printCopiesOption"), QLatin1String("-# ")).toString();
         QueueOption  = settings.value(tr("printQueueOption"),  QLatin1String("-P ")).toString();
         NameOption   = settings.value(tr("printNameOption"),   QLatin1String("-J ")).toString();
         HostOption   = settings.value(tr("printHostOption"),   QLatin1String("")).toString();
-        DefaultQueue = settings.value(tr("printDefaultQueue"), QString::fromLatin1(defaultQueue)).toString();
+        DefaultQueue = settings.value(tr("printDefaultQueue"), defaultQueue).toString();
         DefaultHost  = settings.value(tr("printDefaultHost"),  QLatin1String("")).toString();
     }
 
@@ -176,35 +161,36 @@ bool DialogPrint::flprPresent() {
 //------------------------------------------------------------------------------
 // Name: 
 //------------------------------------------------------------------------------
-void DialogPrint::getFlprQueueDefault(char *defqueue) {
+QString DialogPrint::getFlprQueueDefault() {
 
-	if (!foundEnv("FLPQUE", defqueue)) {
-		if (!foundTag("/usr/local/etc/flp.defaults", "queue", defqueue)) {
-			strcpy(defqueue, "");
-		}
-	}
+    QByteArray defqueue = qgetenv("FLPQUE");
+    if(defqueue.isNull()) {
+        defqueue = foundTag("/usr/local/etc/flp.defaults", "queue");
+    }
+
+    return QString::fromLatin1(defqueue);
 }
 
 //------------------------------------------------------------------------------
 // Name: 
 //------------------------------------------------------------------------------
-void DialogPrint::getFlprHostDefault(char *defhost) {
+QString DialogPrint::getFlprHostDefault() {
 
-	if (!foundEnv("FLPHOST", defhost)) {
-		if (!foundTag("/usr/local/etc/flp.defaults", "host", defhost)) {
-			strcpy(defhost, "");
-		}
-	}
+    QByteArray defhost = qgetenv("FLPHOST");
+    if(defhost.isNull()) {
+        defhost = foundTag("/usr/local/etc/flp.defaults", "host");
+    }
+
+    return QString::fromLatin1(defhost);
 }
 
 //------------------------------------------------------------------------------
 // Name: 
 //------------------------------------------------------------------------------
-void DialogPrint::getLprQueueDefault(char *defqueue) {
+QString DialogPrint::getLprQueueDefault() {
 
-	if (!foundEnv("PRINTER", defqueue)) {
-		strcpy(defqueue, "");
-	}
+    QByteArray defqueue = qgetenv("PRINTER");
+    return QString::fromLatin1(defqueue);
 }
 
 /*
@@ -248,42 +234,24 @@ bool DialogPrint::fileInPath(const char *filename, uint16_t mode_flags) {
 //------------------------------------------------------------------------------
 // Name: 
 //------------------------------------------------------------------------------
-bool DialogPrint::foundEnv(const char *EnvVarName, char *result) {
+QByteArray DialogPrint::foundTag(const char *tagfilename, const char *tagname) {
 
-	if (char *dqstr = getenv(EnvVarName)) {
-		strcpy(result, dqstr);
-		return true;
-	}
-	return false;
-}
-
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
-bool DialogPrint::foundTag(const char *tagfilename, const char *tagname, char *result) {
-	FILE *tfile;
 	char tagformat[512];
 
     // NOTE(eteran): format string vuln?
+    // NOTE(eteran): buffer overflow if the user's file has a LOT in the match?
 	strcpy(tagformat, tagname);
 	strcat(tagformat, " %s");
 
-	tfile = fopen(tagfilename, "r");
-	if (tfile) {
-		while (!feof(tfile)) {
-			
-			char line[512];
-			
-			if(fgets(line, sizeof(line), tfile)) {
-				if (sscanf(line, tagformat, result) != 0) {
-					fclose(tfile);
-					return true;
-				}
-			}
-		}
-		fclose(tfile);
-	}
-	return false;
+    std::ifstream file(tagfilename);
+    for(std::string line; std::getline(file, line); ) {
+        char result_buffer[1024];
+        if (sscanf(line.c_str(), tagformat, result_buffer) != 0) {
+            return QByteArray(result_buffer);
+        }
+    }
+
+    return QByteArray();
 }
 
 /*
@@ -344,7 +312,6 @@ void DialogPrint::on_editHost_textChanged(const QString &text) {
 //------------------------------------------------------------------------------
 void DialogPrint::updatePrintCmd() {
 
-	
 	QString copiesArg;
 	QString queueArg;	
 	QString hostArg;

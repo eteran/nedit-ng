@@ -26,12 +26,11 @@ public:
 
 private:	
 	static bool flprPresent();
-	static void getFlprQueueDefault(char *defqueue);
-	static void getFlprHostDefault(char *defhost);
-	static void getLprQueueDefault(char *defqueue);
+    static QString getFlprQueueDefault();
+    static QString getFlprHostDefault();
+    static QString getLprQueueDefault();
 	static bool fileInPath(const char *filename, uint16_t mode_flags);
-	static bool foundEnv(const char *EnvVarName, char *result);
-	static bool foundTag(const char *tagfilename, const char *tagname, char *result);
+    static QByteArray foundTag(const char *tagfilename, const char *tagname);
 	static bool fileInDir(const char *filename, const char *dirpath, uint16_t mode_flags);
 
 public:
