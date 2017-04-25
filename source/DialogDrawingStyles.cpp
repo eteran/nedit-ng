@@ -137,7 +137,7 @@ void DialogDrawingStyles::on_buttonDelete_clicked() {
 	
 	
 	// force an update of the display
-	Q_EMIT on_listItems_itemSelectionChanged();
+	on_listItems_itemSelectionChanged();
 }
 
 //------------------------------------------------------------------------------

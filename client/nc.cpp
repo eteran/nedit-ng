@@ -359,7 +359,7 @@ int startServer(const char *message, const QString &commandLineArgs) {
 
     // start the server
     auto process = new QProcess;
-    process->start(QString(QLatin1String("%1 %2")).arg(ServerPreferences.serverCmd).arg(commandLineArgs));
+    process->start(QString(QLatin1String("%1 %2")).arg(ServerPreferences.serverCmd, commandLineArgs));
     bool sysrc = process->waitForStarted();
 
     // TODO(eteran): why is this necessary?!?

@@ -362,7 +362,7 @@ void DialogSyntaxPatterns::on_buttonDelete_clicked() {
 	delete selection;
 
 	// force an update of the display
-	Q_EMIT on_listItems_itemSelectionChanged();
+	on_listItems_itemSelectionChanged();
 }
 
 //------------------------------------------------------------------------------
@@ -499,7 +499,7 @@ void DialogSyntaxPatterns::on_buttonDeletePattern_clicked() {
 	ui.editContextLines->setText(tr("%1").arg(1));
 	ui.editContextChars->setText(tr("%1").arg(0));
 
-	Q_EMIT on_listItems_itemSelectionChanged();
+	on_listItems_itemSelectionChanged();
 }
 
 //------------------------------------------------------------------------------

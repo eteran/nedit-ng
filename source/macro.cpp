@@ -729,7 +729,7 @@ void BeginLearnEx(DocumentWidget *document) {
         if (cCancel.isEmpty()) {
             message = QString(QLatin1String("Learn Mode -- Press %1 to finish, use menu to cancel")).arg(cFinish);
         } else {
-            message = QString(QLatin1String("Learn Mode -- Press %1 to finish, %2 to cancel")).arg(cFinish).arg(cCancel);
+            message = QString(QLatin1String("Learn Mode -- Press %1 to finish, %2 to cancel")).arg(cFinish, cCancel);
         }
     }
 

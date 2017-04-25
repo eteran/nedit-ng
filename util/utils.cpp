@@ -103,7 +103,7 @@ QString GetNameOfHostEx() {
 ** Return "" if it doesn't fit into the buffer
 */
 QString PrependHomeEx(const QString &filename) {	
-	return QString(QLatin1String("%1/%2")).arg(GetHomeDirEx()).arg(filename);
+	return QString(QLatin1String("%1/%2")).arg(GetHomeDirEx(), filename);
 }
 
 /**

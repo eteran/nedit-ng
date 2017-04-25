@@ -47,7 +47,7 @@ public:
     }
 
     QString toString() const {
-        return QString(QLatin1String("%1(%2)")).arg(macroString_).arg(argumentString());
+        return QString(QLatin1String("%1(%2)")).arg(macroString_, argumentString());
     }
 
 public:

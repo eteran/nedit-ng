@@ -477,14 +477,14 @@ WindowHighlightData *createHighlightDataEx(DocumentWidget *document, PatternSet 
 
     for (int i = 0; i < nPatterns; i++) {
         if (!patternSrc[i].subPatternOf.isNull() && indexOfNamedPattern(patternSrc, nPatterns, patternSrc[i].subPatternOf) == -1) {
-            QMessageBox::warning(document, QLatin1String("Parent Pattern"), QString(QLatin1String("Parent field \"%1\" in pattern \"%2\"\ndoes not match any highlight patterns in this set")).arg(patternSrc[i].subPatternOf).arg(patternSrc[i].name));
+            QMessageBox::warning(document, QLatin1String("Parent Pattern"), QString(QLatin1String("Parent field \"%1\" in pattern \"%2\"\ndoes not match any highlight patterns in this set")).arg(patternSrc[i].subPatternOf, patternSrc[i].name));
             return nullptr;
         }
     }
 
     for (int i = 0; i < nPatterns; i++) {
         if (!NamedStyleExists(patternSrc[i].style)) {
-            QMessageBox::warning(document, QLatin1String("Highlight Style"), QString(QLatin1String("Style \"%1\" named in pattern \"%2\"\ndoes not match any existing style")).arg(patternSrc[i].style).arg(patternSrc[i].name));
+            QMessageBox::warning(document, QLatin1String("Highlight Style"), QString(QLatin1String("Style \"%1\" named in pattern \"%2\"\ndoes not match any existing style")).arg(patternSrc[i].style, patternSrc[i].name));
             return nullptr;
         }
     }
@@ -1797,7 +1797,7 @@ static regexp *compileREAndWarnEx(DocumentWidget *parent, view::string_view re) 
             boundedRe.append("...");
         }
 
-        QMessageBox::warning(parent, QLatin1String("Error in Regex"), QString(QLatin1String("Error in syntax highlighting regular expression:\n%1\n%2")).arg(QString::fromStdString(boundedRe)).arg(QString::fromLatin1(e.what())));
+        QMessageBox::warning(parent, QLatin1String("Error in Regex"), QString(QLatin1String("Error in syntax highlighting regular expression:\n%1\n%2")).arg(QString::fromStdString(boundedRe), QString::fromLatin1(e.what())));
         return nullptr;
     }
 

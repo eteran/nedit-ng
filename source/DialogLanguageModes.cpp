@@ -130,7 +130,7 @@ void DialogLanguageModes::on_listItems_itemSelectionChanged() {
 		LanguageMode *language = itemFromIndex(i);
 
 		QStringList extensions;
-		for(QString extension : language->extensions) {
+		for(QString &extension : language->extensions) {
 			extensions.push_back(extension);
 		}
 
@@ -368,7 +368,6 @@ bool DialogLanguageModes::updateLanguageList(Mode mode) {
 	}
 
 	QListWidgetItem *const selection = selections[0];
-	QString languageName = selection->text();
 
 	const int i = ui.listItems->row(selection);
 	LanguageMode *oldLM = itemFromIndex(i);
@@ -393,7 +392,7 @@ bool DialogLanguageModes::updateLanguageList(Mode mode) {
 				int index = oldLM->name.indexOf(QLatin1Char(':'));
 				int oldLen = (index == -1) ? oldLM->name.size() : index;
 
-				auto tempName = tr("%1:%2").arg(oldLM->name.mid(0, oldLen)).arg(newLM->name);
+				auto tempName = tr("%1:%2").arg(oldLM->name.mid(0, oldLen), newLM->name);
 				newLM->name = tempName;
 			}
 		}
@@ -611,7 +610,6 @@ void DialogLanguageModes::on_buttonDelete_clicked() {
 	}
 
 	QListWidgetItem *const selection = selections[0];
-	QString languageName = selection->text();
 
 	const int itemIndex = ui.listItems->row(selection);
 
@@ -625,7 +623,7 @@ void DialogLanguageModes::on_buttonDelete_clicked() {
 			delete itemFromIndex(itemIndex);
 			delete selection;
 			// force an update of the display
-			Q_EMIT on_listItems_itemSelectionChanged();
+			on_listItems_itemSelectionChanged();
 			return; // True;
 		}
 	}
@@ -646,7 +644,7 @@ void DialogLanguageModes::on_buttonDelete_clicked() {
 
 	delete itemFromIndex(itemIndex);
 	delete selection;
-	Q_EMIT on_listItems_itemSelectionChanged();
+	on_listItems_itemSelectionChanged();
 	return;// True;
 }
 

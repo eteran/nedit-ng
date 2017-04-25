@@ -571,9 +571,9 @@ void DocumentWidget::RefreshTabState() {
 		int alignment = style->styleHint(QStyle::SH_TabBar_Alignment);
 
 		if (alignment != Qt::AlignRight) {
-			labelString = tr("%1%2").arg(fileChanged_ ? tr("*") : tr("")).arg(filename_);
+			labelString = tr("%1%2").arg(fileChanged_ ? tr("*") : tr(""), filename_);
 		} else {
-			labelString = tr("%1%2").arg(filename_).arg(fileChanged_ ? tr("*") : tr(""));
+			labelString = tr("%2%1").arg(fileChanged_ ? tr("*") : tr(""), filename_);
 		}
 
 		tabWidget->setTabText(index, labelString);
@@ -1204,7 +1204,7 @@ bool DocumentWidget::IsTopDocument() const {
 
 QString DocumentWidget::getWindowsMenuEntry() {
 
-    QString fullTitle = tr("%1%2").arg(filename_).arg(fileChanged_ ? tr("*") : tr(""));
+    QString fullTitle = tr("%1%2").arg(filename_, fileChanged_ ? tr("*") : tr(""));
 
     if (GetPrefShowPathInWindowsMenu() && filenameSet_) {
         fullTitle.append(tr(" - "));
@@ -1979,7 +1979,7 @@ void DocumentWidget::CheckForChangesToFileEx() {
                 default:
                     {
                         // Everything else. This hints at an internal error (eg. ENOTDIR) or at some bad state at the host.
-                        int resp = QMessageBox::critical(this, tr("File not Accessible"), tr("Error while checking the status of file '%1':\n    '%2'\nPlease make sure that no data is lost before closing this window.").arg(filename_).arg(ErrorString(errno)), QMessageBox::Save | QMessageBox::Cancel);
+                        int resp = QMessageBox::critical(this, tr("File not Accessible"), tr("Error while checking the status of file '%1':\n    '%2'\nPlease make sure that no data is lost before closing this window.").arg(filename_, ErrorString(errno)), QMessageBox::Save | QMessageBox::Cancel);
                         save = (resp == QMessageBox::Save);
                     }
                     break;
@@ -2267,7 +2267,7 @@ int DocumentWidget::WriteBackupFile() {
     int fd = ::open(name.toLatin1().data(), O_CREAT | O_EXCL | O_WRONLY, S_IRUSR | S_IWUSR);
     if (fd < 0 || (fp = fdopen(fd, "w")) == nullptr) {
 
-        QMessageBox::warning(this, tr("Error writing Backup"), tr("Unable to save backup for %1:\n%2\nAutomatic backup is now off").arg(filename_).arg(ErrorString(errno)));
+        QMessageBox::warning(this, tr("Error writing Backup"), tr("Unable to save backup for %1:\n%2\nAutomatic backup is now off").arg(filename_, ErrorString(errno)));
         autoSave_ = false;
 
         if(auto win = toWindow()) {
@@ -2290,7 +2290,7 @@ int DocumentWidget::WriteBackupFile() {
     // write out the file
     ::fwrite(fileString.data(), sizeof(char), fileString.size(), fp);
     if (::ferror(fp)) {
-        QMessageBox::critical(this, tr("Error saving Backup"), tr("Error while saving backup for %1:\n%2\nAutomatic backup is now off").arg(filename_).arg(ErrorString(errno)));
+        QMessageBox::critical(this, tr("Error saving Backup"), tr("Error while saving backup for %1:\n%2\nAutomatic backup is now off").arg(filename_, ErrorString(errno)));
         ::fclose(fp);
         ::remove(name.toLatin1().data());
         autoSave_ = false;
@@ -2395,7 +2395,7 @@ bool DocumentWidget::doSave() {
         QMessageBox messageBox(this);
         messageBox.setWindowTitle(tr("Error saving File"));
         messageBox.setIcon(QMessageBox::Warning);
-        messageBox.setText(tr("Unable to save %1:\n%1\n\nSave as a new file?").arg(filename_).arg(ErrorString(errno)));
+        messageBox.setText(tr("Unable to save %1:\n%1\n\nSave as a new file?").arg(filename_, ErrorString(errno)));
 
         QPushButton *buttonSaveAs = messageBox.addButton(tr("Save As..."), QMessageBox::AcceptRole);
         QPushButton *buttonCancel = messageBox.addButton(QMessageBox::Cancel);
@@ -2432,7 +2432,7 @@ bool DocumentWidget::doSave() {
     fwrite(fileString.data(), sizeof(char), fileString.size(), fp);
 
     if (ferror(fp)) {
-        QMessageBox::critical(this, tr("Error saving File"), tr("%2 not saved:\n%2").arg(filename_).arg(ErrorString(errno)));
+        QMessageBox::critical(this, tr("Error saving File"), tr("%2 not saved:\n%2").arg(filename_, ErrorString(errno)));
         ::fclose(fp);
         ::remove(fullname.toLatin1().data());
         return false;
@@ -2521,7 +2521,7 @@ int DocumentWidget::SaveWindowAs(const QString &newName, bool addWrap) {
                     }
 
                     // NOTE(eteran): this seems a bit redundant to other code...
-                    connect(wrapCheck, &QCheckBox::toggled, [&wrapCheck, this](bool checked) {
+                    connect(wrapCheck, &QCheckBox::toggled, [wrapCheck, this](bool checked) {
                         if(checked) {
                             int ret = QMessageBox::information(this, tr("Add Wrap"),
                                 tr("This operation adds permanent line breaks to\n"
@@ -2553,7 +2553,8 @@ int DocumentWidget::SaveWindowAs(const QString &newName, bool addWrap) {
                         }
 
                         addWrap = wrapCheck->isChecked();
-                        fullname = dialog.selectedFiles()[0];
+						QStringList selectedFiles = dialog.selectedFiles();
+                        fullname = selectedFiles[0];
                     } else {
                         return false;
                     }
@@ -2786,7 +2787,7 @@ bool DocumentWidget::bckError(const QString &errString, const QString &file) {
     QMessageBox messageBox(this);
     messageBox.setWindowTitle(tr("Error writing Backup"));
     messageBox.setIcon(QMessageBox::Critical);
-    messageBox.setText(tr("Couldn't write .bck (last version) file.\n%1: %2").arg(file).arg(errString));
+    messageBox.setText(tr("Couldn't write .bck (last version) file.\n%1: %2").arg(file, errString));
 
     QPushButton *buttonCancelSave = messageBox.addButton(tr("Cancel Save"),      QMessageBox::RejectRole);
     QPushButton *buttonTurnOff    = messageBox.addButton(tr("Turn off Backups"), QMessageBox::AcceptRole);
@@ -4234,7 +4235,7 @@ void DocumentWidget::PrintStringEx(const std::string &string, const QString &job
     // write to the file
     fwrite(string.data(), sizeof(char), string.size(), fp);
     if (ferror(fp)) {
-        QMessageBox::critical(this, tr("Error while Printing"), tr("%1 not printed:\n%2").arg(jobName).arg(ErrorString(errno)));
+        QMessageBox::critical(this, tr("Error while Printing"), tr("%1 not printed:\n%2").arg(jobName, ErrorString(errno)));
         fclose(fp); // should call close(fd) in turn!
         remove(tmpFileName);
         return;
@@ -5137,7 +5138,7 @@ void DocumentWidget::ExecCursorLineEx(TextArea *area, bool fromMacro) {
 
     /* Substitute the current file name for % and the current line number
        for # in the shell command */
-    QString fullName = tr("%1%2").arg(path_).arg(filename_);
+    QString fullName = tr("%1%2").arg(path_, filename_);
     area->TextDPosToLineAndCol(pos, &line, &column);
 
     QString substitutedCommand = QString::fromStdString(cmdText);
@@ -5269,7 +5270,7 @@ void DocumentWidget::DoShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
 
     /* Substitute the current file name for % and the current line number
        for # in the shell command */
-    QString fullName = tr("%1%2").arg(path_).arg(filename_);
+    QString fullName = tr("%1%2").arg(path_, filename_);
     int pos = area->TextGetCursorPos();
     area->TextDPosToLineAndCol(pos, &line, &column);
 

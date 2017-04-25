@@ -198,7 +198,7 @@ void SaveNEditPrefsEx(QWidget *parent, bool quietly) {
     if (!quietly) {
         int resp = QMessageBox::information(parent, QLatin1String("Save Preferences"),
             ImportedFile.isNull() ? QString(QLatin1String("Default preferences will be saved in the file:\n%1\nNEdit automatically loads this file\neach time it is started.")).arg(prefFileName)
-                                  : QString(QLatin1String("Default preferences will be saved in the file:\n%1\nSAVING WILL INCORPORATE SETTINGS\nFROM FILE: %2")).arg(prefFileName).arg(ImportedFile),
+                                  : QString(QLatin1String("Default preferences will be saved in the file:\n%1\nSAVING WILL INCORPORATE SETTINGS\nFROM FILE: %2")).arg(prefFileName, ImportedFile),
                 QMessageBox::Ok | QMessageBox::Cancel);
 
 
@@ -1419,7 +1419,7 @@ bool ParseErrorEx(QWidget *toDialog, const QString &string, int stoppedAt, const
 	if(!toDialog) {
         qDebug("NEdit: %s in %s:\n%s", message.toLatin1().data(), errorIn.toLatin1().data(), errorLine.toLatin1().data());
 	} else {
-		QMessageBox::warning(toDialog, QLatin1String("Parse Error"), QString(QLatin1String("%1 in %2:\n%3")).arg(message).arg(errorIn).arg(errorLine));
+		QMessageBox::warning(toDialog, QLatin1String("Parse Error"), QString(QLatin1String("%1 in %2:\n%3")).arg(message, errorIn, errorLine));
 	}
 	
 	return false;

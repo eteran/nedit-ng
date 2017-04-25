@@ -129,20 +129,25 @@ DialogAbout::DialogAbout(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f)
  * @return
  */
 QString DialogAbout::createInfoString() {
+
+	auto versionString = tr("%1.%2").arg(NEDIT_VERSION_MAJ).arg(NEDIT_VERSION_REV);
+	auto platformBits  = tr("%1 bit").arg(QSysInfo::WordSize);
+	auto localeString  = QLocale::system().bcp47Name();
+
     return tr("nedit-ng version %1\n"
               "\n"
               "     Built on: %2, %3, %4\n"
               "     Built at: %5, %6\n"
               "      With Qt: %7\n"
               "   Running Qt: %8\n"
-              "       Locale: %9\n").arg(tr("%1.%2").arg(NEDIT_VERSION_MAJ).arg(NEDIT_VERSION_REV))
-                                    .arg(buildPlatform())
-                                    .arg(tr("%1 bit").arg(QSysInfo::WordSize))
-                                    .arg(buildCompiler())
-                                    .arg(QLatin1String(__DATE__))
-                                    .arg(QLatin1String(__TIME__))
-                                    .arg(QLatin1String(QT_VERSION_STR))
-                                    .arg(QString::fromLatin1(qVersion()))
-                                    .arg(QLocale::system().bcp47Name());
+              "       Locale: %9\n").arg(versionString, 
+			                             buildPlatform(), 
+										 platformBits, 
+										 buildCompiler(), 
+										 QLatin1String(__DATE__), 
+										 QLatin1String(__TIME__), 
+										 QLatin1String(QT_VERSION_STR), 
+										 QString::fromLatin1(qVersion()), 
+										 localeString);
 }
 

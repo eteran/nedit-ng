@@ -1121,7 +1121,7 @@ void showMatchingCalltipEx(TextArea *area, int i) {
         } else {
             startPos = tagPosInf[i];
             if (!fakeRegExSearchEx(view::string_view(&fileString[0], readLen), tagSearch[i], &startPos, &endPos)) {
-                QMessageBox::critical(nullptr /*parent*/, QLatin1String("Tag not found"), QString(QLatin1String("Definition for %1\nnot found in %2")).arg(QString::fromLatin1(tagName)).arg(QString::fromLatin1(tagFiles[i])));
+                QMessageBox::critical(nullptr /*parent*/, QLatin1String("Tag not found"), QString(QLatin1String("Definition for %1\nnot found in %2")).arg(QString::fromLatin1(tagName), QString::fromLatin1(tagFiles[i])));
                 return;
             }
         }
@@ -1202,7 +1202,7 @@ void editTaggedLocationEx(TextArea *area, int i) {
 
     // search for the tags file search string in the newly opened file
     if (!fakeRegExSearchEx(windowToSearch->buffer_->BufAsStringEx(), tagSearch[i], &startPos, &endPos)) {
-        QMessageBox::warning(nullptr /*parent*/, QLatin1String("Tag Error"), QString(QLatin1String("Definition for %1\nnot found in %2")).arg(QString::fromLatin1(tagName)).arg(QString::fromLatin1(tagFiles[i])));
+        QMessageBox::warning(nullptr /*parent*/, QLatin1String("Tag Error"), QString(QLatin1String("Definition for %1\nnot found in %2")).arg(QString::fromLatin1(tagName), QString::fromLatin1(tagFiles[i])));
         return;
     }
 

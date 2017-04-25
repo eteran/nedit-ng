@@ -551,7 +551,7 @@ void MainWindow::setupMenuGroups() {
 // Name: deleteTabButtonClicked
 //------------------------------------------------------------------------------
 void MainWindow::deleteTabButtonClicked() {
-    Q_EMIT on_action_Close_triggered();
+    on_action_Close_triggered();
 }
 
 //------------------------------------------------------------------------------
@@ -2164,7 +2164,7 @@ void MainWindow::on_editIFind_textChanged(const QString &searchString) {
 //------------------------------------------------------------------------------
 void MainWindow::on_buttonIFind_clicked() {
     // NOTE(eteran): same as pressing return
-    Q_EMIT on_editIFind_returnPressed();
+    on_editIFind_returnPressed();
 }
 
 //------------------------------------------------------------------------------
@@ -2285,7 +2285,7 @@ void MainWindow::on_checkIFindCase_toggled(bool searchCaseSense) {
     }
 
     // When search parameters (direction or search type), redo the search
-    Q_EMIT on_editIFind_returnPressed();
+    on_editIFind_returnPressed();
 }
 
 void MainWindow::on_checkIFindRegex_toggled(bool searchRegex) {
@@ -2308,7 +2308,7 @@ void MainWindow::on_checkIFindRegex_toggled(bool searchRegex) {
     // TODO(eteran): original nedit seems to have code to do this @search.c:3071
     //               but in practice, toggling the case/regex often doesn't seem
     //               to change the search
-    Q_EMIT on_editIFind_returnPressed();
+    on_editIFind_returnPressed();
 }
 
 void MainWindow::on_checkIFindReverse_toggled(bool value) {
@@ -2316,7 +2316,7 @@ void MainWindow::on_checkIFindReverse_toggled(bool value) {
     Q_UNUSED(value);
 
     // When search parameters (direction or search type), redo the search
-    Q_EMIT on_editIFind_returnPressed();
+    on_editIFind_returnPressed();
 }
 
 /*
@@ -2726,14 +2726,14 @@ void MainWindow::updateTagsFileMenuEx() {
 }
 
 void MainWindow::unloadTipsFileCB(QAction *action) {
-    const QString filename = action->data().value<QString>();
+    auto filename = action->data().toString();
     if(!filename.isEmpty()) {
         unloadTipsAP(filename);
     }
 }
 
 void MainWindow::unloadTagsFileCB(QAction *action) {
-    const QString filename = action->data().value<QString>();
+    auto filename = action->data().toString();
     if(!filename.isEmpty()) {
         unloadTagsAP(filename);
     }
@@ -3884,7 +3884,7 @@ QString MainWindow::PromptForNewFileEx(DocumentWidget *document, const QString &
                 wrapCheck->setChecked(true);
             }
 
-            QObject::connect(wrapCheck, &QCheckBox::toggled, [&wrapCheck, this](bool checked) {
+            QObject::connect(wrapCheck, &QCheckBox::toggled, [wrapCheck, this](bool checked) {
                 if(checked) {
                     int ret = QMessageBox::information(this, tr("Add Wrap"),
                         tr("This operation adds permanent line breaks to\n"
@@ -3950,7 +3950,7 @@ void MainWindow::on_action_Revert_to_Saved_triggered() {
             QMessageBox messageBox(this);
             messageBox.setWindowTitle(tr("Discard Changes"));
             messageBox.setIcon(QMessageBox::Question);
-            messageBox.setText(tr("Discard changes to\n%1%2?").arg(document->path_).arg(document->filename_));
+            messageBox.setText(tr("Discard changes to\n%1%2?").arg(document->path_, document->filename_));
             QPushButton *buttonOk     = messageBox.addButton(QMessageBox::Ok);
             QPushButton *buttonCancel = messageBox.addButton(QMessageBox::Cancel);
             Q_UNUSED(buttonOk);
@@ -3965,7 +3965,7 @@ void MainWindow::on_action_Revert_to_Saved_triggered() {
             QMessageBox messageBox(nullptr /*window->shell_*/);
             messageBox.setWindowTitle(tr("Reload File"));
             messageBox.setIcon(QMessageBox::Question);
-            messageBox.setText(tr("Re-load file\n%1%2?").arg(document->path_).arg(document->filename_));
+            messageBox.setText(tr("Re-load file\n%1%2?").arg(document->path_, document->filename_));
             QPushButton *buttonOk   = messageBox.addButton(tr("Re-read"), QMessageBox::AcceptRole);
             QPushButton *buttonCancel = messageBox.addButton(QMessageBox::Cancel);
             Q_UNUSED(buttonOk);
@@ -4018,7 +4018,7 @@ void MainWindow::on_action_Exit_triggered() {
         for(int i = 0; i < documents.size(); ++i) {
             DocumentWidget *const document  = documents[i];
 
-            QString filename = tr("%1%2").arg(document->filename_).arg(document->fileChanged_ ? tr("*") : tr(""));
+            QString filename = tr("%1%2").arg(document->filename_, document->fileChanged_ ? tr("*") : tr(""));
 
             if (exitMsg.size() + filename.size() + 30 >= DF_MAX_MSG_LENGTH) {
                 exitMsg.append(tr("..."));
@@ -4130,7 +4130,7 @@ void MainWindow::closeEvent(QCloseEvent *event) {
     if(windows.size() == 1) {
         // this is only window, then this is the same as exit
         event->ignore();
-        Q_EMIT on_action_Exit_triggered();
+        on_action_Exit_triggered();
 
     } else {
 

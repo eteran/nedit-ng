@@ -543,7 +543,6 @@ TextArea::TextArea(QWidget *parent,
 #if 1
 	/* Add mandatory delimiters blank, tab, and newline to the list of
        delimiters. */
-    auto defaultDelimiters = P_delimiters;
     setWordDelimiters(P_delimiters);
 #endif
 
@@ -1622,8 +1621,6 @@ void TextArea::mouseReleaseEvent(QMouseEvent *event) {
 void TextArea::paintEvent(QPaintEvent *event) {
 
 	QPainter painter(viewport());
-
-    QFontMetrics fm(viewport()->font());
 
 	QRect rect = event->rect();
 	const int top    = rect.top();
@@ -3168,8 +3165,6 @@ void TextArea::redisplayLineEx(int visLineNum, int leftClip, int rightClip, int 
 	Q_UNUSED(leftCharIndex);
 	Q_UNUSED(rightCharIndex);
 
-    QFontMetrics fm(viewport()->font());
-
 	// If line is not displayed, skip it
 	if (visLineNum < 0 || visLineNum >= nVisibleLines_) {
 		return;
@@ -4217,8 +4212,6 @@ void TextArea::TextDRedrawCalltip(int calltipID) {
 		rel_x = calltip_.pos;
     }
 
-    QFontMetrics fm(viewport()->font());
-
     int lineHeight = ascent_ + descent_;
     int tipWidth    = calltipWidget_->width();
     int tipHeight   = calltipWidget_->height();
@@ -4431,8 +4424,6 @@ int TextArea::TextDPositionToXY(int pos, int *x, int *y) {
     if (!posToVisibleLineNum(pos, &visLineNum)) {
         return false;
     }
-
-    QFontMetrics fm(viewport()->font());
 
     fontHeight = ascent_ + descent_;
     *y = rect_.top() + visLineNum * fontHeight + fontHeight / 2;
@@ -6615,8 +6606,6 @@ void TextArea::mousePanAP(QMouseEvent *event, EventFlags flags) {
 
     EMIT_EVENT("mouse_pan");
 
-    QFontMetrics fm(viewport()->font());
-
     int lineHeight = ascent_ + descent_;
 	int topLineNum;
 	int horizOffset;
@@ -7071,9 +7060,6 @@ void TextArea::BlockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
 
 	const std::string text = origBuf->BufGetRangeEx(tempStart, tempEnd);
 	tempBuf->BufSetAllEx(text);
-
-	auto temp = QString::fromStdString(text);
-	//qDebug() << "HERE1: " << temp;
 
 	// If the drag type is USE_LAST, use the last dragType applied
 	if (dragType == USE_LAST) {

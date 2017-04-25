@@ -118,7 +118,7 @@ void DialogShellMenu::on_buttonDelete_clicked() {
 	delete selection;
 
 	// force an update of the display
-	Q_EMIT on_listItems_itemSelectionChanged();
+	on_listItems_itemSelectionChanged();
 }
 
 //------------------------------------------------------------------------------

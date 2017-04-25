@@ -94,7 +94,7 @@ int main(int argc, char *argv[]) {
     char *toDoCommand = nullptr;
 
 #ifdef Q_OS_LINUX
-    if (qgetenv("DISPLAY").isEmpty()) {
+    if (qEnvironmentVariableIsEmpty("DISPLAY")) {
 		// Respond to -V or -version even if there is no display 
 		for (int i = 1; i < argc && strcmp(argv[i], "--"); i++) {
 			if (strcmp(argv[i], "-V") == 0 || strcmp(argv[i], "-version") == 0) {
