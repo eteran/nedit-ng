@@ -97,7 +97,10 @@ int main(int argc, char *argv[]) {
     if (qEnvironmentVariableIsEmpty("DISPLAY")) {
 		// Respond to -V or -version even if there is no display 
 		for (int i = 1; i < argc && strcmp(argv[i], "--"); i++) {
-			if (strcmp(argv[i], "-V") == 0 || strcmp(argv[i], "-version") == 0) {
+
+	        const view::string_view arg = argv[i];
+
+			if (arg == "-V" || arg == "-version") {
                 QString infoString = DialogAbout::createInfoString();
                 printf("%s", infoString.toLatin1().data());
 				exit(EXIT_SUCCESS);
@@ -132,12 +135,15 @@ int main(int argc, char *argv[]) {
 	   open windows (loading preferences doesn't update menu settings,
 	   which would then be out of sync with the real preference settings) */
 	for (int i = 1; i < argc; i++) {
-		if (!strcmp(argv[i], "--")) {
+
+		const view::string_view arg = argv[i];
+
+		if (arg == "--") {
 			break; // treat all remaining arguments as filenames 
-		} else if (!strcmp(argv[i], "-import")) {
+		} else if (arg == "-import") {
 			nextArg(argc, argv, &i);
             ImportPrefFile(QString::fromLatin1(argv[i]), false);
-		} else if (!strcmp(argv[i], "-importold")) {
+		} else if (arg == "-importold") {
 			nextArg(argc, argv, &i);
             ImportPrefFile(QString::fromLatin1(argv[i]), true);
 		}
@@ -160,34 +166,37 @@ int main(int argc, char *argv[]) {
     bool fileSpecified = false;
 
 	for (int i = 1; i < argc; i++) {
-		if (opts && !strcmp(argv[i], "--")) {
+
+		const view::string_view arg = argv[i];
+
+		if (opts && arg == "--") {
 			opts = false; // treat all remaining arguments as filenames 
 			continue;
-		} else if (opts && !strcmp(argv[i], "-tags")) {
+		} else if (opts && arg == "-tags") {
 			nextArg(argc, argv, &i);
             if (!AddTagsFileEx(QString::fromLatin1(argv[i]), TAG)) {
 				fprintf(stderr, "NEdit: Unable to load tags file\n");
             }
 
-		} else if (opts && !strcmp(argv[i], "-do")) {
+		} else if (opts && arg == "-do") {
 			nextArg(argc, argv, &i);
             if (checkDoMacroArg(argv[i])) {
 				toDoCommand = argv[i];
             }
 
-		} else if (opts && !strcmp(argv[i], "-read")) {
+		} else if (opts && arg == "-read") {
 			editFlags |= PREF_READ_ONLY;
-		} else if (opts && !strcmp(argv[i], "-create")) {
+		} else if (opts && arg == "-create") {
 			editFlags |= SUPPRESS_CREATE_WARN;
-		} else if (opts && !strcmp(argv[i], "-tabbed")) {
+		} else if (opts && arg == "-tabbed") {
 			tabbed = 1;
 			group = 0; // override -group option 
-		} else if (opts && !strcmp(argv[i], "-untabbed")) {
+		} else if (opts && arg == "-untabbed") {
 			tabbed = 0;
 			group = 0; // override -group option 
-		} else if (opts && !strcmp(argv[i], "-group")) {
+		} else if (opts && arg == "-group") {
 			group = 2; // 2: start new group, 1: in group 
-		} else if (opts && !strcmp(argv[i], "-line")) {
+		} else if (opts && arg == "-line") {
 			nextArg(argc, argv, &i);
 			nRead = sscanf(argv[i], "%d", &lineNum);
 			if (nRead != 1)
@@ -200,28 +209,28 @@ int main(int argc, char *argv[]) {
 				fprintf(stderr, "NEdit: argument to + should be a number\n");
 			else
 				gotoLine = true;
-		} else if (opts && !strcmp(argv[i], "-server")) {
+		} else if (opts && arg == "-server") {
 			IsServer = true;
-		} else if (opts && (!strcmp(argv[i], "-iconic") || !strcmp(argv[i], "-icon"))) {
+		} else if (opts && (arg == "-iconic" || arg == "-icon")) {
 			iconic = true;
-		} else if (opts && !strcmp(argv[i], "-noiconic")) {
+		} else if (opts && arg == "-noiconic") {
 			iconic = false;
-		} else if (opts && (!strcmp(argv[i], "-geometry") || !strcmp(argv[i], "-g"))) {
+		} else if (opts && (arg == "-geometry" || arg == "-g")) {
 			nextArg(argc, argv, &i);
             geometry = QString::fromLatin1(argv[i]);
-		} else if (opts && !strcmp(argv[i], "-lm")) {
+		} else if (opts && arg == "-lm") {
 			nextArg(argc, argv, &i);
             langMode = QString::fromLatin1(argv[i]);
-		} else if (opts && !strcmp(argv[i], "-import")) {
+		} else if (opts && arg == "-import") {
 			nextArg(argc, argv, &i); // already processed, skip 
-		} else if (opts && (!strcmp(argv[i], "-V") || !strcmp(argv[i], "-version"))) {
+		} else if (opts && (arg == "-V" || arg == "-version")) {
             QString infoString = DialogAbout::createInfoString();
             printf("%s", infoString.toLatin1().data());
 			exit(EXIT_SUCCESS);
-		} else if (opts && (!strcmp(argv[i], "-h") || !strcmp(argv[i], "-help"))) {
+		} else if (opts && (arg == "-h" || arg == "-help")) {
 			fprintf(stderr, "%s", cmdLineHelp);
 			exit(EXIT_SUCCESS);
-		} else if (opts && (*argv[i] == '-')) {
+		} else if (opts && (arg[0] == '-')) {
 
 			fprintf(stderr, "nedit: Unrecognized option %s\n%s", argv[i], cmdLineHelp);
 			exit(EXIT_FAILURE);

@@ -1332,7 +1332,13 @@ void TextArea::keyPressEvent(QKeyEvent *event) {
     } else if ((event->key() == Qt::Key_Backspace) && (event->modifiers() == (Qt::NoModifier))) {
         deletePreviousCharacterAP(); // delete-previous-character()
         return;
-    } else if ((event->key() == Qt::Key_Escape) && (event->modifiers() == (Qt::NoModifier))) {
+	} else if ((event->key() == Qt::Key_Backspace) && (event->modifiers() == (Qt::ShiftModifier))) {
+		deletePreviousCharacterAP(); // delete-previous-character()
+		return;
+	} else if ((event->key() == Qt::Key_Backspace) && (event->modifiers() == (Qt::ControlModifier | Qt::ShiftModifier))) {
+		deletePreviousWordAP(); // delete-previous-word()
+		return;
+	} else if ((event->key() == Qt::Key_Escape) && (event->modifiers() == (Qt::NoModifier))) {
         processCancelAP(); // process-cancel()
         return;
     } else if ((event->key() == Qt::Key_Return) && (event->modifiers() == (Qt::ControlModifier))) {
