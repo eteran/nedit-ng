@@ -148,7 +148,7 @@ const int RANGESET_MASK  = (0x3F << RANGESET_SHIFT);
 const int MAX_DISP_LINE_LEN = 1000;
 
 int min3(int i1, int i2, int i3) {
-    return std::min(i1, std::min(i2, i3));
+	return std::min(i1, std::min(i2, i3));
 }
 
 int max3(int i1, int i2, int i3) {
@@ -3198,27 +3198,21 @@ void TextArea::redisplayLineEx(int visLineNum, int leftClip, int rightClip, int 
 void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, int rightClip, int leftCharIndex, int rightCharIndex) {
 
 	int i;
-    int x;
     int startX;
 	int charIndex;
-	int lineStartPos;
 	int lineLen;
-    int stdCharWidth;
     int charWidth;
     int startIndex;
 	int style;
 	int charLen;
 	int outStartIndex;
-	int outIndex;
 	int cursorX = 0;
 	bool hasCursor = false;
 	int dispIndexOffset;
-	int cursorPos = cursorPos_, y_orig;
-	char expandedChar[MAX_EXP_CHAR_LEN];
+	int cursorPos = cursorPos_;
 	char outStr[MAX_DISP_LINE_LEN];
-	char *outPtr;
 	char baseChar;
-	std::string lineStr;
+
     QFontMetrics fm(viewport()->font());
 
     // If line is not displayed, skip it
@@ -3235,11 +3229,12 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 	}
 
 	// Calculate y coordinate of the string to draw
-    int fontHeight = ascent_ + descent_;
+	const int fontHeight = ascent_ + descent_;
     const int y = rect_.top() + visLineNum * fontHeight;
 
 	// Get the text, length, and  buffer position of the line to display
-	lineStartPos = lineStarts_[visLineNum];
+	const int lineStartPos = lineStarts_[visLineNum];
+	std::string lineStr;
 	if (lineStartPos == -1) {
 		lineLen = 0;
 	} else {
@@ -3252,7 +3247,7 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 	   changes based on character position can still occur in this region due
 	   to rectangular selections).  stdCharWidth must be non-zero to prevent a
 	   potential infinite loop if x does not advance */
-    stdCharWidth = fm.maxWidth();
+	const int stdCharWidth = fm.maxWidth();
 	if (stdCharWidth <= 0) {
         qDebug("nedit: Internal Error, bad font measurement");
 		return;
@@ -3275,11 +3270,14 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 	   that's off the left edge of the displayed area) to find the first
 	   character position that's not clipped, and the x coordinate for drawing
 	   that character */
-    x = rect_.left() - horizOffset_;
-	outIndex = 0;
+	int x = rect_.left() - horizOffset_;
+	int outIndex = 0;
 
 	for (charIndex = 0;; charIndex++) {
 		baseChar = '\0';
+
+		char expandedChar[MAX_EXP_CHAR_LEN];
+
 		charLen = charIndex >= lineLen ? 1 : TextBuffer::BufExpandCharacter(baseChar = lineStr[charIndex], outIndex, expandedChar, buffer_->tabDist_, buffer_->nullSubsChar_);
 		style = styleOfPos(lineStartPos, lineLen, charIndex, outIndex + dispIndexOffset, baseChar);
 		charWidth = charIndex >= lineLen ? stdCharWidth : stringWidth(expandedChar, charLen, style);
@@ -3298,7 +3296,8 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 	   draw parts whenever the style changes (also note if the cursor is on
 	   this line, and where it should be drawn to take advantage of the x
 	   position which we've gone to so much trouble to calculate) */
-	outPtr = outStr;
+	char *outPtr = outStr;
+
 	outIndex = outStartIndex;
 	x = startX;
 	for (charIndex = startIndex; charIndex < rightCharIndex; charIndex++) {
@@ -3314,6 +3313,8 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 				}
 			}
 		}
+
+		char expandedChar[MAX_EXP_CHAR_LEN];
 
 		baseChar = '\0';
 		charLen = charIndex >= lineLen ? 1 : TextBuffer::BufExpandCharacter(baseChar = lineStr[charIndex], outIndex, expandedChar, buffer_->tabDist_, buffer_->nullSubsChar_);
@@ -3356,7 +3357,7 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 	   this line.  Also check for the cases which are not caught as the
 	   line is scanned above: when the cursor appears at the very end
 	   of the redisplayed section. */
-    y_orig = cursor_.y();
+	const int y_orig = cursor_.y();
 	if (cursorOn_) {
 		if (hasCursor) {
 			drawCursor(painter, cursorX, y);
@@ -3379,7 +3380,6 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 	}
 
 	painter->restore();
-
 }
 
 /*
