@@ -169,38 +169,41 @@ void parseCommandLine(int argc, char **argv, CommandLine *commandLine) {
     QTextStream out(&commandString);
 
     for (i = 1; i < argc; i++) {
-        if (opts && !strcmp(argv[i], "--")) {
+
+		view::string_view arg = argv[i];
+
+        if (opts && arg == "--") {
             opts = false; // treat all remaining arguments as filenames
             continue;
-        } else if (opts && !strcmp(argv[i], "-do")) {
+        } else if (opts && arg == "-do") {
             nextArg(argc, argv, &i);
             toDoCommand = argv[i];
-        } else if (opts && !strcmp(argv[i], "-lm")) {
+        } else if (opts && arg == "-lm") {
             copyCommandLineArg(commandLine, argv[i]);
             nextArg(argc, argv, &i);
             langMode = argv[i];
             copyCommandLineArg(commandLine, argv[i]);
-        } else if (opts && (!strcmp(argv[i], "-g") || !strcmp(argv[i], "-geometry"))) {
+        } else if (opts && (arg == "-g" || arg == "-geometry")) {
             copyCommandLineArg(commandLine, argv[i]);
             nextArg(argc, argv, &i);
             geometry = argv[i];
             copyCommandLineArg(commandLine, argv[i]);
-        } else if (opts && !strcmp(argv[i], "-read")) {
+        } else if (opts && arg == "-read") {
             read = 1;
-        } else if (opts && !strcmp(argv[i], "-create")) {
+        } else if (opts && arg == "-create") {
             create = 1;
-        } else if (opts && !strcmp(argv[i], "-tabbed")) {
+        } else if (opts && arg == "-tabbed") {
             tabbed = 1;
             group = 0; // override -group option
-        } else if (opts && !strcmp(argv[i], "-untabbed")) {
+        } else if (opts && arg == "-untabbed") {
             tabbed = 0;
             group = 0; // override -group option
-        } else if (opts && !strcmp(argv[i], "-group")) {
+        } else if (opts && arg == "-group") {
             group = 2; // 2: start new group, 1: in group
-        } else if (opts && (!strcmp(argv[i], "-iconic") || !strcmp(argv[i], "-icon"))) {
+        } else if (opts && (arg == "-iconic" || arg == "-icon")) {
             iconic = 1;
             copyCommandLineArg(commandLine, argv[i]);
-        } else if (opts && !strcmp(argv[i], "-line")) {
+        } else if (opts && arg == "-line") {
             nextArg(argc, argv, &i);
 
             char *end = nullptr;
@@ -219,18 +222,18 @@ void parseCommandLine(int argc, char **argv, CommandLine *commandLine) {
             } else {
                 lineNum = lineArg;
             }
-        } else if (opts && (!strcmp(argv[i], "-ask") || !strcmp(argv[i], "-noask"))) {
+        } else if (opts && (arg == "-ask" || arg == "-noask")) {
             ; // Ignore resource-based arguments which are processed later
-        } else if (opts && (!strcmp(argv[i], "-svrname") || !strcmp(argv[i], "-svrcmd"))) {
+        } else if (opts && (arg == "-svrname" || arg == "-svrcmd")) {
             nextArg(argc, argv, &i); // Ignore rsrc args with data
-        } else if (opts && (!strcmp(argv[i], "-xrm") || !strcmp(argv[i], "-display"))) {
+        } else if (opts && (arg == "-xrm" || arg == "-display")) {
             copyCommandLineArg(commandLine, argv[i]);
             nextArg(argc, argv, &i); // Ignore rsrc args with data
             copyCommandLineArg(commandLine, argv[i]);
-        } else if (opts && (!strcmp(argv[i], "-version") || !strcmp(argv[i], "-V"))) {
+        } else if (opts && (arg == "-version" || arg == "-V")) {
             printNcVersion();
             exit(EXIT_SUCCESS);
-        } else if (opts && (!strcmp(argv[i], "-h") || !strcmp(argv[i], "-help"))) {
+        } else if (opts && (arg == "-h" || arg == "-help")) {
             fprintf(stderr, "%s", cmdLineHelp);
             exit(EXIT_SUCCESS);
         } else if (opts && (*argv[i] == '-')) {
