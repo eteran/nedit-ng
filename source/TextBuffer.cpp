@@ -696,7 +696,8 @@ void TextBuffer::BufSetAllEx(view::string_view text) {
 */
 std::string TextBuffer::BufGetRangeEx(int start, int end) {
 	std::string text;
-	int length, part1Length;
+	int length;
+	int part1Length;
 
 	/* Make sure start and end are ok, and allocate memory for returned string.
 	   If start is bad, return "", if end is bad, adjust it. */
@@ -709,8 +710,9 @@ std::string TextBuffer::BufGetRangeEx(int start, int end) {
 		end = temp;
 	}
 
-	if (end > length_)
+	if (end > length_) {
 		end = length_;
+	}
 
 	length = end - start;
 	text.reserve(length);

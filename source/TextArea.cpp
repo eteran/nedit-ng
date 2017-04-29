@@ -1572,7 +1572,6 @@ void TextArea::mousePressEvent(QMouseEvent *event) {
 	} else if(event->button() == Qt::MiddleButton) {
 		secondaryOrDragStartAP(event);
 	}
-
 }
 
 //------------------------------------------------------------------------------
@@ -1586,7 +1585,6 @@ void TextArea::mouseReleaseEvent(QMouseEvent *event) {
 	} else if(event->button() == Qt::RightButton) {
 		endDrag();
 	} else if(event->button() == Qt::MiddleButton) {
-
 
 		switch(event->modifiers() & (Qt::ShiftModifier | Qt::ControlModifier | Qt::AltModifier | Qt::MetaModifier)) {
 		case Qt::ControlModifier:
@@ -1617,8 +1615,6 @@ void TextArea::mouseReleaseEvent(QMouseEvent *event) {
 
 		FinishBlockDrag();
 	}
-
-
 }
 
 //------------------------------------------------------------------------------
@@ -6399,6 +6395,10 @@ void TextArea::clickTimeout() {
     clickCount_ = 0;
 }
 
+/**
+ * @brief TextArea::selectAllAP
+ * @param flags
+ */
 void TextArea::selectAllAP(EventFlags flags) {
 
     EMIT_EVENT("select_all");
@@ -6407,6 +6407,10 @@ void TextArea::selectAllAP(EventFlags flags) {
 	buffer_->BufSelect(0, buffer_->BufGetLength());
 }
 
+/**
+ * @brief TextArea::deselectAllAP
+ * @param flags
+ */
 void TextArea::deselectAllAP(EventFlags flags) {
 
     EMIT_EVENT("deselect_all");
@@ -6415,7 +6419,11 @@ void TextArea::deselectAllAP(EventFlags flags) {
 	buffer_->BufUnselect();
 }
 
-
+/**
+ * @brief TextArea::extendStartAP
+ * @param event
+ * @param flags
+ */
 void TextArea::extendStartAP(QMouseEvent *event, EventFlags flags) {
 
     EMIT_EVENT("extend_start");
@@ -6475,24 +6483,31 @@ void TextArea::extendStartAP(QMouseEvent *event, EventFlags flags) {
 	callCursorMovementCBs();
 }
 
+/**
+ * @brief TextArea::extendAdjustAP
+ * @param event
+ * @param flags
+ */
 void TextArea::extendAdjustAP(QMouseEvent *event, EventFlags flags) {
 
     EMIT_EVENT("extend_adjust");
 
 	DragStates dragState = dragState_;
-	bool rectDrag = flags & RectFlag;
+	const bool rectDrag = flags & RectFlag;
 
 	// Make sure the proper initialization was done on mouse down
-	if (dragState != PRIMARY_DRAG && dragState != PRIMARY_CLICKED && dragState != PRIMARY_RECT_DRAG)
+	if (dragState != PRIMARY_DRAG && dragState != PRIMARY_CLICKED && dragState != PRIMARY_RECT_DRAG) {
 		return;
+	}
 
 	/* If the selection hasn't begun, decide whether the mouse has moved
 	   far enough from the initial mouse down to be considered a drag */
 	if (dragState_ == PRIMARY_CLICKED) {
-        if (abs(event->x() - btnDownCoord_.x()) > SELECT_THRESHOLD || abs(event->y() - btnDownCoord_.y()) > SELECT_THRESHOLD)
+		if (abs(event->x() - btnDownCoord_.x()) > SELECT_THRESHOLD || abs(event->y() - btnDownCoord_.y()) > SELECT_THRESHOLD) {
 			dragState_ = rectDrag ? PRIMARY_RECT_DRAG : PRIMARY_DRAG;
-		else
+		} else {
 			return;
+		}
 	}
 
 	/* If "rect" argument has appeared or disappeared, keep dragState up
@@ -6730,6 +6745,7 @@ void TextArea::FinishBlockDrag() {
 
 	// Free the backup buffer
 	delete dragOrigBuf_;
+	dragOrigBuf_ = nullptr;
 
 	// Return to normal drag state
 	dragState_ = NOT_CLICKED;
@@ -6760,7 +6776,11 @@ void TextArea::SendSecondarySelection(bool removeAfter) {
 #endif
 }
 
-
+/**
+ * @brief TextArea::secondaryOrDragStartAP
+ * @param event
+ * @param flags
+ */
 void TextArea::secondaryOrDragStartAP(QMouseEvent *event, EventFlags flags) {
 
     EMIT_EVENT("secondary_or_drag_start");
@@ -6772,8 +6792,9 @@ void TextArea::secondaryOrDragStartAP(QMouseEvent *event, EventFlags flags) {
 		return;
 	}
 
-	if (checkReadOnly())
+	if (checkReadOnly()) {
 		return;
+	}
 
 	/* Record the site of the initial button press and the initial character
 	   position so subsequent motion events can decide when to begin a
@@ -6798,6 +6819,11 @@ int TextArea::TextDInSelection(const QPoint &p) {
 	return buffer_->primary_.inSelection(pos, buffer_->BufStartOfLine(pos), column);
 }
 
+/**
+ * @brief TextArea::secondaryStartAP
+ * @param event
+ * @param flags
+ */
 void TextArea::secondaryStartAP(QMouseEvent *event, EventFlags flags) {
 
     EMIT_EVENT("secondary_start");
@@ -6831,6 +6857,11 @@ void TextArea::secondaryStartAP(QMouseEvent *event, EventFlags flags) {
 	dragState_ = SECONDARY_CLICKED;
 }
 
+/**
+ * @brief TextArea::secondaryOrDragAdjustAP
+ * @param event
+ * @param flags
+ */
 void TextArea::secondaryOrDragAdjustAP(QMouseEvent *event, EventFlags flags) {
 
     EMIT_EVENT("secondary_or_drag_adjust");
@@ -6926,10 +6957,11 @@ void TextArea::BeginBlockDrag() {
 	std::string text = buffer_->BufGetAllEx();
 	dragOrigBuf_->BufSetAllEx(text);
 
-	if (sel->rectangular)
+	if (sel->rectangular) {
 		dragOrigBuf_->BufRectSelect(sel->start, sel->end, sel->rectStart, sel->rectEnd);
-	else
+	} else {
 		dragOrigBuf_->BufSelect(sel->start, sel->end);
+	}
 
 	/* Record the mouse pointer offsets from the top left corner of the
 	   selection (the position where text will actually be inserted In dragging
