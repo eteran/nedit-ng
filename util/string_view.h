@@ -635,41 +635,75 @@ struct hash;
 
 template <>
 struct hash<view::string_view> {
-	typedef view::string_view argument_type;
-	typedef size_t            result_type;
+	using argument_type = view::string_view;
+	using result_type   = size_t;
 
-	result_type operator()(argument_type key) {
-		return hash<string>()(key.to_string());
+	// NOTE(eteran): see https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function
+	result_type operator()(argument_type key) const {
+		static_assert(sizeof(result_type) == 8, "");
+
+		result_type h = 0xcbf29ce484222325;
+		for(char ch : key) {
+			h = (h * 1099511628211) ^ ch;
+		}
+		return h;
 	}
 };
 
 template <>
 struct hash<view::wstring_view> {
-	typedef view::wstring_view argument_type;
-	typedef size_t             result_type;
+	using argument_type = view::wstring_view;
+	using result_type   = size_t;
 
 	result_type operator()(argument_type key) {
-		return hash<wstring>()(key.to_string());
+		static_assert(sizeof(result_type) == 8, "");
+
+		auto p    = reinterpret_cast<const char *>(&*key.begin());
+		auto last = reinterpret_cast<const char *>(&*key.end());
+
+		result_type h = 0xcbf29ce484222325;
+		while(p != last) {
+			h = (h * 1099511628211) ^ *p++;
+		}
+		return h;
 	}
 };
 
 template <>
 struct hash<view::u16string_view> {
-	typedef view::u16string_view argument_type;
-	typedef size_t               result_type;
+	using argument_type = view::u16string_view;
+	using result_type   = size_t;
 
 	result_type operator()(argument_type key) {
-		return hash<u16string>()(key.to_string());
+		static_assert(sizeof(result_type) == 8, "");
+
+		auto p    = reinterpret_cast<const char *>(&*key.begin());
+		auto last = reinterpret_cast<const char *>(&*key.end());
+
+		result_type h = 0xcbf29ce484222325;
+		while(p != last) {
+			h = (h * 1099511628211) ^ *p++;
+		}
+		return h;
 	}
 };
 
 template <>
 struct hash<view::u32string_view> {
-	typedef view::u32string_view argument_type;
-	typedef size_t               result_type;
+	using argument_type =  view::u32string_view;
+	using result_type   = size_t;
 
 	result_type operator()(argument_type key) {
-		return hash<u32string>()(key.to_string());
+		static_assert(sizeof(result_type) == 8, "");
+
+		auto p    = reinterpret_cast<const char *>(&*key.begin());
+		auto last = reinterpret_cast<const char *>(&*key.end());
+
+		result_type h = 0xcbf29ce484222325;
+		while(p != last) {
+			h = (h * 1099511628211) ^ *p++;
+		}
+		return h;
 	}
 };
 
