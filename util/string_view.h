@@ -638,8 +638,8 @@ struct hash_constants;
 
 template <>
 struct hash_constants<uint64_t>{
-	static constexpr const uint64_t FNV_offset_basis = 0xcbf29ce484222325;
-	static constexpr const uint64_t FNV_prime        = 1099511628211;
+	static constexpr const uint64_t FNV_offset_basis = 0xcbf29ce484222325ull;
+	static constexpr const uint64_t FNV_prime        = 1099511628211ull;
 };
 
 template <>
