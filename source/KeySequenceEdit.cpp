@@ -117,7 +117,7 @@ int KeySequenceEdit::maximumSequenceLength() const {
 void KeySequenceEdit::setMaximumSequenceLength(int maximum) {
 
 	if(maximum < 1 || maximum > 4) {
-		qDebug("Maximum sequence length must be an integer from 1 to 4");
+		qWarning("Maximum sequence length must be an integer from 1 to 4");
 		return;
 	}
 

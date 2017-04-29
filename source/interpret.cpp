@@ -401,7 +401,7 @@ int AddContinueAddr(Inst *addr) {
 
 static void addLoopAddr(Inst *addr) {
 	if (LoopStackPtr > &LoopStack[LOOP_STACK_SIZE - 1]) {
-		fprintf(stderr, "NEdit: loop stack overflow in macro parser");
+		qCritical("NEdit: loop stack overflow in macro parser");
 		return;
 	}
 	*LoopStackPtr++ = addr;
@@ -411,7 +411,7 @@ void FillLoopAddrs(Inst *breakAddr, Inst *continueAddr) {
 	while (true) {
 		LoopStackPtr--;
 		if (LoopStackPtr < LoopStack) {
-			fprintf(stderr, "NEdit: internal error (lsu) in macro parser\n");
+			qCritical("NEdit: internal error (lsu) in macro parser");
 			return;
 		}
 		if (*LoopStackPtr == nullptr)
@@ -421,7 +421,7 @@ void FillLoopAddrs(Inst *breakAddr, Inst *continueAddr) {
 		else if ((*LoopStackPtr)->value == NEEDS_CONTINUE)
 			(*LoopStackPtr)->value = continueAddr - *LoopStackPtr;
 		else
-			fprintf(stderr, "NEdit: internal error (uat) in macro parser\n");
+			qCritical("NEdit: internal error (uat) in macro parser");
 	}
 }
 
@@ -728,12 +728,12 @@ Symbol *InstallSymbol(const std::string &name, enum SymTypes type, DataValue val
 */
 Symbol *PromoteToGlobal(Symbol *sym) {
 
-	if (sym->type != LOCAL_SYM)
+	if (sym->type != LOCAL_SYM) {
 		return sym;
+	}
 
 	// Remove sym from the local symbol list 
 	LocalSymList.erase(std::remove(LocalSymList.begin(), LocalSymList.end(), sym), LocalSymList.end());
-
 
 	/* There are two scenarios which could make this check succeed:
 	   a) this sym is in the GlobalSymList as a LOCAL_SYM symbol

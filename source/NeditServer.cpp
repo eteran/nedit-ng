@@ -228,7 +228,7 @@ void NeditServer::processCommand(const QString &command) {
            existing window, or opening if they don't exist */
         int editFlags = (readFlag ? PREF_READ_ONLY : 0) | CREATE | (createFlag ? SUPPRESS_CREATE_WARN : 0);
         if (ParseFilenameEx(fullname, &filename, &pathname) != 0) {
-            fprintf(stderr, "NEdit: invalid file name\n");
+			qWarning("NEdit: invalid file name");
             break;
         }
 
@@ -301,6 +301,6 @@ void NeditServer::processCommand(const QString &command) {
     return;
 
 readError:
-    fprintf(stderr, "NEdit: error processing server request\n");
+	qWarning("NEdit: error processing server request");
     return;
 }

@@ -3040,7 +3040,7 @@ void DocumentWidget::open(const QString &fullpath) {
     QString pathname;
 
     if (ParseFilenameEx(fullpath, &filename, &pathname) != 0 || filename.size() + pathname.size() > MAXPATHLEN - 1) {
-        fprintf(stderr, "nedit: invalid file name for open action: %s\n", fullpath.toLatin1().data());
+		qWarning("nedit: invalid file name for open action: %s", fullpath.toLatin1().data());
         return;
     }
 
@@ -3765,7 +3765,7 @@ void DocumentWidget::replaceAP(const QString &searchString, const QString &repla
 void DocumentWidget::markAP(QChar ch) {
 
     if (!ch.isLetterOrNumber()) {
-        qDebug("nedit: mark action requires a single-letter label");
+		qWarning("NEdit: mark action requires a single-letter label");
         return;
     }
 
@@ -4084,12 +4084,12 @@ int DocumentWidget::findDef(TextArea *area, const char *value, Mode search_type)
             }
 
         } else {
-            fprintf(stderr, "NEdit: Can't handle non 8-bit text\n");
+			qWarning("NEdit: Can't handle non 8-bit text");
             QApplication::beep();
         }
 
     } else {
-        fprintf(stderr, "NEdit: Tag Length too long.\n");
+		qWarning("NEdit: Tag Length too long.");
         QApplication::beep();
     }
 
@@ -4637,7 +4637,7 @@ void DocumentWidget::gotoAP(TextArea *area, QStringList args) {
             args.size() > 2 ||
             (args.size() == 1 && StringToLineAndCol(args[0].toLatin1().data(), &lineNum, &column) == -1) ||
             (args.size() == 2 && (!StringToNum(args[0], &lineNum) || !StringToNum(args[1], &column)))) {
-        fprintf(stderr, "nedit: goto_line_number action requires line and/or column number\n");
+		qWarning("nedit: goto_line_number action requires line and/or column number");
         return;
     }
 
@@ -5051,7 +5051,7 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
             auto area = cmdData->area;
             buf = area->TextGetBuffer();
             if (!buf->BufSubstituteNullCharsEx(output_string)) {
-                fprintf(stderr, "nedit: Too much binary data in shell cmd output\n");
+				qWarning("nedit: Too much binary data in shell cmd output");
                 output_string.clear();
             }
 

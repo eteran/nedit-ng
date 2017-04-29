@@ -884,7 +884,7 @@ static HighlightData *compilePatternsEx(DocumentWidget *dialogParent, HighlightP
         try {
             compiledPats[patternNum].subPatternRE = new regexp(bigPattern, REDFLT_STANDARD);
         } catch(const regex_error &e) {
-            fprintf(stderr, "Error compiling syntax highlight patterns:\n%s", e.what());
+			qWarning("Error compiling syntax highlight patterns:\n%s", e.what());
             return nullptr;
         }
     }
@@ -1242,7 +1242,7 @@ static void incrementalReparse(WindowHighlightData *highlightData, TextBuffer *b
 			beginParse = endAt;
 			endParse = forwardOneContext(buf, context, std::max<int>(endAt, std::max<int>(lastModified(styleBuf), lastMod)));
 			if (is_plain(parseInStyle)) {
-				fprintf(stderr, "NEdit internal error: incr. reparse fell short\n");
+				qCritical("NEdit internal error: incr. reparse fell short");
 				return;
 			}
 			parseInStyle = parentStyleOf(parentStyles, parseInStyle);
@@ -1478,7 +1478,7 @@ static bool parseString(HighlightData *pattern, const char **string, char **styl
 					if (subPat->colorOnly) {
 						if (!subExecuted) {
 							if (!pattern->endRE->ExecRE(savedStartPtr, savedStartPtr + 1, false, savedPrevChar, succChar, delimiters.toLatin1().data(), lookBehindTo, match_till)) {
-								fprintf(stderr, "Internal error, failed to recover end match in parseString\n");
+								qCritical("Internal error, failed to recover end match in parseString");
 								return false;
 							}
 							subExecuted = true;
@@ -1518,7 +1518,7 @@ static bool parseString(HighlightData *pattern, const char **string, char **styl
 		}
 		
 		if (i == pattern->nSubPatterns) {
-			fprintf(stderr, "Internal error, failed to match in parseString\n");
+			qCritical("Internal error, failed to match in parseString");
 			return false;
 		}
 
@@ -1582,8 +1582,7 @@ static bool parseString(HighlightData *pattern, const char **string, char **styl
 			if (subSubPat->colorOnly) {
 				if (!subExecuted) {
 					if (!subPat->startRE->ExecRE(savedStartPtr, savedStartPtr + 1, false, savedPrevChar, succChar, delimiters.toLatin1().data(), lookBehindTo, match_till)) {
-						fprintf(stderr, "Internal error, failed to recover "
-						                "start match in parseString\n");
+						qCritical("Internal error, failed to recover start match in parseString");
 						return false;
 					}
 					subExecuted = true;

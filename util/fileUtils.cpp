@@ -386,7 +386,7 @@ int CompressPathname(char *pathname) {
 
 	/* updated pathname with the new value */
 	if (strlen(buf) > MAXPATHLEN) {
-		fprintf(stderr, "nedit: CompressPathname(): file name too long %s\n", pathname);
+		qWarning("nedit: CompressPathname(): file name too long %s", pathname);
 		delete [] buf;
 		return 1;
 	} else {

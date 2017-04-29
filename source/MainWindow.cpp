@@ -1535,7 +1535,7 @@ void MainWindow::ReadNEditDB() {
 
     /*  Stat history file to see whether someone touched it after this
         session last changed it.  */
-    if (stat(fullName.toLatin1().data(), &attribute) == 0) {
+	if (::stat(fullName.toLatin1().data(), &attribute) == 0) {
         if (lastNeditdbModTime >= attribute.st_mtime) {
             //  Do nothing, history file is unchanged.
             return;
@@ -1579,7 +1579,7 @@ void MainWindow::ReadNEditDB() {
         }
         if (line[lineLen - 1] != '\n') {
             // no newline, probably truncated
-            fprintf(stderr, "nedit: Line too long in history file\n");
+			qWarning("nedit: Line too long in history file");
             while (fgets(line, sizeof(line), fp)) {
                 lineLen = strlen(line);
                 if (lineLen > 0 && line[lineLen - 1] == '\n') {
@@ -1588,10 +1588,12 @@ void MainWindow::ReadNEditDB() {
             }
             continue;
         }
+
         line[--lineLen] = '\0';
-        if (strcspn(line, neditDBBadFilenameChars) != lineLen) {
+
+		if (strcspn(line, neditDBBadFilenameChars) != lineLen) {
             // non-filename characters
-            fprintf(stderr, "nedit: History file may be corrupted\n");
+			qWarning("nedit: History file may be corrupted");
             continue;
         }
 
@@ -2942,7 +2944,7 @@ void MainWindow::indentGroupTriggered(QAction *action) {
         } else if(action == ui.action_Indent_Smart) {
             document->SetAutoIndent(SMART_INDENT);
         } else {
-            qDebug("nedit: set_auto_indent invalid argument");
+			qWarning("nedit: set_auto_indent invalid argument");
         }
     }
 }
@@ -2956,7 +2958,7 @@ void MainWindow::wrapGroupTriggered(QAction *action) {
         } else if(action == ui.action_Wrap_Continuous) {
             document->SetAutoWrap(CONTINUOUS_WRAP);
         } else {
-            qDebug("nedit: set_wrap_text invalid argument");
+			qWarning("nedit: set_wrap_text invalid argument");
         }
     }
 }
@@ -3043,7 +3045,7 @@ void MainWindow::matchingGroupTriggered(QAction *action) {
         } else if(action == ui.action_Matching_Range) {
             document->SetShowMatching(FLASH_RANGE);
         } else {
-            qDebug("nedit: Invalid argument for set_show_matching");
+			qWarning("nedit: Invalid argument for set_show_matching");
         }
     }
 }
@@ -3086,7 +3088,7 @@ void MainWindow::defaultIndentGroupTriggered(QAction *action) {
     } else if(action == ui.action_Default_Indent_Smart) {
         SetPrefAutoIndent(SMART_INDENT);
     } else {
-        qDebug("nedit: invalid default indent");
+		qWarning("nedit: invalid default indent");
     }
 }
 
@@ -3118,7 +3120,7 @@ void MainWindow::defaultWrapGroupTriggered(QAction *action) {
     } else if(action == ui.action_Default_Wrap_Continuous) {
         SetPrefWrap(CONTINUOUS_WRAP);
     } else {
-        qDebug("nedit: invalid default wrap");
+		qWarning("nedit: invalid default wrap");
     }
 }
 
@@ -3142,7 +3144,7 @@ void MainWindow::defaultTagCollisionsGroupTriggered(QAction *action) {
     } else if(action == ui.action_Default_Tag_Smart) {
         SetPrefSmartTags(true);
     } else {
-        qDebug("nedit: invalid default collisions");
+		qWarning("nedit: invalid default collisions");
     }
 }
 

@@ -2823,7 +2823,7 @@ int TextArea::posToVisibleLineNum(int pos, int *lineNum) {
 		if (emptyLinesVisible()) {
 			if (lastChar_ < buffer_->BufGetLength()) {
 				if (!posToVisibleLineNum(lastChar_, lineNum)) {
-                    qDebug("nedit: Consistency check ptvl failed");
+					qCritical("nedit: Consistency check ptvl failed");
                     return false;
 				}
 				return ++(*lineNum) <= nVisibleLines_ - 1;
@@ -3245,7 +3245,7 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 	   potential infinite loop if x does not advance */
 	const int stdCharWidth = fm.maxWidth();
 	if (stdCharWidth <= 0) {
-        qDebug("nedit: Internal Error, bad font measurement");
+		qWarning("nedit: Internal Error, bad font measurement");
 		return;
 	}
 
@@ -4596,7 +4596,7 @@ void TextArea::TextDMakeInsertPosVisible() {
 			linesFromTop = TextDCountLines(firstChar_, cursorPos, true);
 	}
 	if (topLine < 1) {
-        qDebug("nedit: internal consistency check tl1 failed");
+		qCritical("nedit: internal consistency check tl1 failed");
 		topLine = 1;
 	}
 
@@ -5781,7 +5781,7 @@ void TextArea::InsertClipboard(bool isColumnar) {
 	/* If the string contains ascii-nul characters, substitute something
 	   else, or give up, warn, and refuse */
 	if (!buf->BufSubstituteNullCharsEx(contents)) {
-        qDebug("Too much binary data, text not pasted");
+		qWarning("Too much binary data, text not pasted");
 		return;
 	}
 
@@ -5900,7 +5900,7 @@ void TextArea::InsertPrimarySelection(bool isColumnar) {
 	/* If the string contains ascii-nul characters, substitute something
 	   else, or give up, warn, and refuse */
 	if (!buffer_->BufSubstituteNullCharsEx(string)) {
-        qDebug("Too much binary data, giving up");
+		qWarning("Too much binary data, giving up");
 		return;
 	}
 

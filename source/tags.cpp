@@ -616,7 +616,7 @@ static int scanETagsLine(const char *line, const char *tagPath, int index, char 
 		if (!(strncmp(posCOM + 1, "include", 7))) {
 			if (*file != '/') {
 				if ((strlen(tagPath) + strlen(file)) >= MAXPATHLEN) {
-					fprintf(stderr, "tags.c: MAXPATHLEN overflow\n");
+					qWarning("tags.c: MAXPATHLEN overflow");
 					*file = 0; // invalidate 
 					return 0;
 				}
@@ -697,7 +697,6 @@ static int loadTagsFile(const QString &tagsFile, int index, int recLevel) {
 	return nTagsAdded;
 }
 
-#define TAG_STS_ERR_FMT "NEdit: Error getting status for tag file %s\n"
 static QList<Tag> LookupTagFromList(QList<tagFile> *FileList, const char *name, int search_type) {
 
 	/*
@@ -718,7 +717,7 @@ static QList<Tag> LookupTagFromList(QList<tagFile> *FileList, const char *name, 
 		
             if (tf.loaded) {
                 if (stat(tf.filename.toLatin1().data(), &statbuf) != 0) { //
-                    fprintf(stderr, TAG_STS_ERR_FMT, tf.filename.toLatin1().data());
+					qWarning("NEdit: Error getting status for tag file %s", tf.filename.toLatin1().data());
 				} else {
                     if (tf.date == statbuf.st_mtime) {
 						// current tags file tf is already loaded and up to date 
@@ -740,7 +739,7 @@ static QList<Tag> LookupTagFromList(QList<tagFile> *FileList, const char *name, 
                 if (stat(tf.filename.toLatin1().data(), &statbuf) != 0) {
                     if (!tf.loaded) {
 						// if tf->loaded == true we already have seen the error msg 
-                        fprintf(stderr, TAG_STS_ERR_FMT, tf.filename.toLatin1().data());
+						qWarning("NEdit: Error getting status for tag file %s", tf.filename.toLatin1().data());
 					}
 				} else {
                     tf.date = statbuf.st_mtime;
@@ -835,7 +834,7 @@ static int fakeRegExSearchEx(view::string_view in_buffer, const char *searchStri
 		searchStartPos = fileString.size();
 		ctagsMode = 1;
 	} else {
-		fprintf(stderr, "NEdit: Error parsing tag file search string");
+		qWarning("NEdit: Error parsing tag file search string");
         return false;
 	}
 
@@ -1367,7 +1366,7 @@ static int nextTFBlock(FILE *fp, char *header, char **body, int *blkLine, int *c
 			return TF_ERROR;
 		}
 		// Read all the lines in the block 
-		// fprintf(stderr, "Copying lines\n"); 
+		// qDebug("Copying lines");
 		for (i = 0; i < incLines; i++) {
 			status = fgets(line, MAXLINE, fp);
 			if (!status) {
@@ -1380,7 +1379,7 @@ static int nextTFBlock(FILE *fp, char *header, char **body, int *blkLine, int *c
 			}
 			strcat(*body, line);
 		}
-		// fprintf(stderr, "Finished include/alias at line %i\n", *currLine); 
+		// qDebug("Finished include/alias at line %i", *currLine);
 	}
 
 	else if (searchLine(line, language_regex)) {
@@ -1390,7 +1389,7 @@ static int nextTFBlock(FILE *fp, char *header, char **body, int *blkLine, int *c
 		if (!status)
 			return TF_ERROR_EOF;
 		if (lineEmpty(line)) {
-			fprintf(stderr, "nedit: Warning: empty '* language *' block in calltips file.\n");
+			qWarning("nedit: Warning: empty '* language *' block in calltips file.");
 			return TF_ERROR;
 		}
 		*blkLine = *currLine;
@@ -1405,7 +1404,7 @@ static int nextTFBlock(FILE *fp, char *header, char **body, int *blkLine, int *c
 		if (!status)
 			return TF_ERROR_EOF;
 		if (lineEmpty(line)) {
-			fprintf(stderr, "nedit: Warning: empty '* version *' block in calltips file.\n");
+			qWarning("nedit: Warning: empty '* version *' block in calltips file.");
 			return TF_ERROR;
 		}
 		*blkLine = *currLine;
@@ -1444,7 +1443,7 @@ static int nextTFBlock(FILE *fp, char *header, char **body, int *blkLine, int *c
 
 	// Warn about any unneeded extra lines (which are ignored). 
 	if (dummy1 + 1 < *currLine && code != TF_BLOCK) {
-		fprintf(stderr, "nedit: Warning: extra lines in language or version block ignored.\n");
+		qWarning("nedit: Warning: extra lines in language or version block ignored.");
 	}
 
 	return code;
@@ -1483,7 +1482,7 @@ static int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
     QList<tf_alias> aliases;
 
 	if (recLevel > MAX_TAG_INCLUDE_RECURSION_LEVEL) {
-        fprintf(stderr, "nedit: Warning: Reached recursion limit before loading calltips file:\n\t%s\n", tipsFile.toLatin1().data());
+		qWarning("nedit: Warning: Reached recursion limit before loading calltips file:\n\t%s", tipsFile.toLatin1().data());
 		return 0;
 	}
 
@@ -1513,11 +1512,13 @@ static int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
         int code = nextTFBlock(fp, header, &body, &blkLine, &currLine);
 
 		if (code == TF_ERROR_EOF) {
-			fprintf(stderr, "nedit: Warning: unexpected EOF in calltips file.\n");
+			qWarning("nedit: Warning: unexpected EOF in calltips file.");
 			break;
 		}
-		if (code == TF_EOF)
+
+		if (code == TF_EOF) {
 			break;
+		}
 
 		switch (code) {
 		case TF_BLOCK:
@@ -1532,9 +1533,7 @@ static int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
 			/* nextTFBlock returns a colon-separated list of tips files
 			    in body */
 			for (tipIncFile = strtok(body, ":"); tipIncFile; tipIncFile = strtok(nullptr, ":")) {
-				/* fprintf(stderr,
-				    "nedit: DEBUG: including tips file '%s'\n",
-				    tipIncFile); */
+				/* qDebug("nedit: DEBUG: including tips file '%s'", tipIncFile); */
                 nTipsAdded += loadTipsFile(QString::fromLatin1(tipIncFile), index, recLevel + 1);
 			}
 			delete [] body;
@@ -1554,7 +1553,7 @@ static int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
 		case TF_ERROR:
 			fprintf(stderr, "nedit: Warning: Recoverable error while "
 			                "reading calltips file:\n   \"%s\"\n",
-                    resolvedTipsFile.toLatin1().data());
+			        resolvedTipsFile.toLatin1().data());
 			break;
 		case TF_ALIAS:
 			// Allocate a new alias struct 

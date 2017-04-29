@@ -158,18 +158,17 @@ void AddMarkEx(MainWindow *window, DocumentWidget *document, TextArea *area, QCh
 
     Q_UNUSED(window);
 
-    int index;
-
-    /* look for a matching mark to re-use, or advance
+	/* look for a matching mark to re-use, or advance
        nMarks to create a new one */
-    label = label.toUpper();
+	label = label.toUpper();
 
+	int index;
     for (index = 0; index < document->nMarks_; index++) {
         if (document->markTable_[index].label == label.toLatin1())
             break;
     }
     if (index >= MAX_MARKS) {
-        qDebug("no more marks allowed"); // shouldn't happen
+		qWarning("no more marks allowed"); // shouldn't happen
         return;
     }
 

@@ -148,7 +148,7 @@ void Settings::loadPreferences() {
 
 void Settings::importSettings(const QString &filename) {
     if(!settingsLoaded_) {
-        qDebug("nedit: Warning, importing while no previous settings loaded!");
+		qWarning("nedit: Warning, importing while no previous settings loaded!");
     }
 
     QSettings settings(filename, QSettings::IniFormat);

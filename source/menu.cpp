@@ -491,7 +491,7 @@ static void focusPaneAP(Widget w, XEvent *event, String *args, Cardinal *nArgs) 
 			QApplication::beep();
 		}
 	} else {
-		fprintf(stderr, "nedit: focus_pane requires argument\n");
+		qWarning("nedit: focus_pane requires argument");
 	}
 }
 
