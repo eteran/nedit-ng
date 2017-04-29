@@ -628,6 +628,28 @@ basic_string_view<Ch, Tr> substr(const Ch *first, const Ch *last) {
 
 //--------------------------------------------------------------------------
 
+
+// NOTE(eteran): see https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function
+// for more details on this algorithm
+namespace detail {
+
+template <class T>
+struct hash_constants;
+
+template <>
+struct hash_constants<uint64_t>{
+	static constexpr const uint64_t FNV_offset_basis = 0xcbf29ce484222325;
+	static constexpr const uint64_t FNV_prime        = 1099511628211;
+};
+
+template <>
+struct hash_constants<uint32_t>{
+	static constexpr const uint32_t FNV_offset_basis = 0x811c9dc5;
+	static constexpr const uint32_t FNV_prime        = 16777619;
+};
+
+}
+
 namespace std {
 
 template <class Key>
@@ -638,13 +660,11 @@ struct hash<view::string_view> {
 	using argument_type = view::string_view;
 	using result_type   = size_t;
 
-	// NOTE(eteran): see https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function
 	result_type operator()(argument_type key) const {
-		static_assert(sizeof(result_type) == 8, "");
 
-		result_type h = 0xcbf29ce484222325;
+		result_type h = detail::hash_constants<result_type>::FNV_offset_basis;;
 		for(char ch : key) {
-			h = (h * 1099511628211) ^ ch;
+			h = (h * detail::hash_constants<result_type>::FNV_prime) ^ ch;
 		}
 		return h;
 	}
@@ -655,15 +675,13 @@ struct hash<view::wstring_view> {
 	using argument_type = view::wstring_view;
 	using result_type   = size_t;
 
-	result_type operator()(argument_type key) {
-		static_assert(sizeof(result_type) == 8, "");
-
+	result_type operator()(argument_type key) const {
 		auto p    = reinterpret_cast<const char *>(&*key.begin());
 		auto last = reinterpret_cast<const char *>(&*key.end());
 
-		result_type h = 0xcbf29ce484222325;
+		result_type h = detail::hash_constants<result_type>::FNV_offset_basis;
 		while(p != last) {
-			h = (h * 1099511628211) ^ *p++;
+			h = (h * detail::hash_constants<result_type>::FNV_prime) ^ *p++;
 		}
 		return h;
 	}
@@ -674,15 +692,13 @@ struct hash<view::u16string_view> {
 	using argument_type = view::u16string_view;
 	using result_type   = size_t;
 
-	result_type operator()(argument_type key) {
-		static_assert(sizeof(result_type) == 8, "");
-
+	result_type operator()(argument_type key) const {
 		auto p    = reinterpret_cast<const char *>(&*key.begin());
 		auto last = reinterpret_cast<const char *>(&*key.end());
 
-		result_type h = 0xcbf29ce484222325;
+		result_type h = detail::hash_constants<result_type>::FNV_offset_basis;
 		while(p != last) {
-			h = (h * 1099511628211) ^ *p++;
+			h = (h * detail::hash_constants<result_type>::FNV_prime) ^ *p++;
 		}
 		return h;
 	}
@@ -690,18 +706,16 @@ struct hash<view::u16string_view> {
 
 template <>
 struct hash<view::u32string_view> {
-	using argument_type =  view::u32string_view;
+	using argument_type = view::u32string_view;
 	using result_type   = size_t;
 
-	result_type operator()(argument_type key) {
-		static_assert(sizeof(result_type) == 8, "");
-
+	result_type operator()(argument_type key) const {
 		auto p    = reinterpret_cast<const char *>(&*key.begin());
 		auto last = reinterpret_cast<const char *>(&*key.end());
 
-		result_type h = 0xcbf29ce484222325;
+		result_type h = detail::hash_constants<result_type>::FNV_offset_basis;
 		while(p != last) {
-			h = (h * 1099511628211) ^ *p++;
+			h = (h * detail::hash_constants<result_type>::FNV_prime) ^ *p++;
 		}
 		return h;
 	}
