@@ -37,22 +37,23 @@ class TextArea : public QAbstractScrollArea {
 	Q_OBJECT
 public:
     enum EventFlag {
-        NoneFlag      = 0x0000,
-        AbsoluteFlag  = 0x0001,
-        ColumnFlag    = 0x0002,
-        CopyFlag      = 0x0004,
-        DownFlag      = 0x0008,
-        ExtendFlag    = 0x0010,
-        LeftFlag      = 0x0020,
-        NoBellFlag    = 0x0040,
-        OverlayFlag   = 0x0080,
-        RectFlag      = 0x0100,
-        RightFlag     = 0x0200,
-        ScrollbarFlag = 0x0400,
-        StutterFlag   = 0x0800,
-        TailFlag      = 0x1000,
-        UpFlag        = 0x2000,
-        WrapFlag      = 0x4000,
+		NoneFlag         = 0x0000,
+		AbsoluteFlag     = 0x0001,
+		ColumnFlag       = 0x0002,
+		CopyFlag         = 0x0004,
+		DownFlag         = 0x0008,
+		ExtendFlag       = 0x0010,
+		LeftFlag         = 0x0020,
+		NoBellFlag       = 0x0040,
+		OverlayFlag      = 0x0080,
+		RectFlag         = 0x0100,
+		RightFlag        = 0x0200,
+		ScrollbarFlag    = 0x0400,
+		StutterFlag      = 0x0800,
+		TailFlag         = 0x1000,
+		UpFlag           = 0x2000,
+		WrapFlag         = 0x4000,
+		SupressRecording = 0x8000, // We use this to prevent recording of events that are triggered by events (and are thus redundant)
     };
 
     Q_DECLARE_FLAGS(EventFlags, EventFlag)

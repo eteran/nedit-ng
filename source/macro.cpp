@@ -281,6 +281,23 @@ TEXT_EVENT(pasteClipboardMS,   pasteClipboardAP)
 TEXT_EVENT(cutClipboardMS,     cutClipboardAP)
 TEXT_EVENT(toggleOverstrikeMS, toggleOverstrikeAP)
 TEXT_EVENT(copyClipboardMS,    copyClipboardAP)
+TEXT_EVENT(newlineMS,          newlineAP)
+TEXT_EVENT(newlineAndIndentMS, newlineAndIndentAP)
+TEXT_EVENT(newlineNoIndentMS,  newlineNoIndentAP)
+TEXT_EVENT(processUpMS,        processUpAP)
+TEXT_EVENT(processDownMS,      processDownAP)
+TEXT_EVENT(processShiftUpMS,   processShiftUpAP)
+TEXT_EVENT(processShiftDownMS, processShiftDownAP)
+TEXT_EVENT(processHomeMS,      beginningOfLineAP)
+TEXT_EVENT(processCancelMS,    processCancelAP)
+TEXT_EVENT(cutPrimaryMS,       cutPrimaryAP)
+TEXT_EVENT(copyPrimaryMS,      copyPrimaryAP)
+TEXT_EVENT(keySelectMS,        keySelectAP)
+TEXT_EVENT(forwardWordMS,      forwardWordAP)
+TEXT_EVENT(backwardWordMS,     backwardWordAP)
+TEXT_EVENT(deletePreviousCharacterMS, deletePreviousCharacterAP)
+TEXT_EVENT(deleteNextCharacterMS, deleteNextCharacterAP)
+TEXT_EVENT(deletePreviousWordMS, deletePreviousWordAP)
 
 static const SubRoutine TextAreaSubrNames[] = {
     {"self-insert",               nullptr},
@@ -315,31 +332,31 @@ static const SubRoutine TextAreaSubrNames[] = {
     {"copy-to-or-end-drag",       nullptr},
     {"copy_to_or_end_drag",       nullptr},
     {"exchange",                  nullptr},
-    {"process-cancel",            nullptr},
-    {"process_cancel",            nullptr},
+    {"process-cancel",            processCancelMS},
+    {"process_cancel",            processCancelMS},
     {"paste-clipboard",           pasteClipboardMS},
     {"paste_clipboard",           pasteClipboardMS},
     {"copy-clipboard",            copyClipboardMS},
     {"copy_clipboard",            copyClipboardMS},
     {"cut-clipboard",             cutClipboardMS},
     {"cut_clipboard",             cutClipboardMS},
-    {"copy-primary",              nullptr},
-    {"copy_primary",              nullptr},
-    {"cut-primary",               nullptr},
-    {"cut_primary",               nullptr},
-    {"newline",                   nullptr},
-    {"newline-and-indent",        nullptr},
-    {"newline_and_indent",        nullptr},
-    {"newline-no-indent",         nullptr},
-    {"newline_no_indent",         nullptr},
+    {"copy-primary",              copyPrimaryMS},
+    {"copy_primary",              copyPrimaryMS},
+    {"cut-primary",               cutPrimaryMS},
+    {"cut_primary",               cutPrimaryMS},
+    {"newline",                   newlineMS},
+    {"newline-and-indent",        newlineAndIndentMS},
+    {"newline_and_indent",        newlineAndIndentMS},
+    {"newline-no-indent",         newlineNoIndentMS},
+    {"newline_no_indent",         newlineNoIndentMS},
     {"delete-selection",          nullptr},
     {"delete_selection",          nullptr},
-    {"delete-previous-character", nullptr},
-    {"delete_previous_character", nullptr},
-    {"delete-next-character",     nullptr},
-    {"delete_next_character",     nullptr},
-    {"delete-previous-word",      nullptr},
-    {"delete_previous_word",      nullptr},
+    {"delete-previous-character", deletePreviousCharacterMS},
+    {"delete_previous_character", deletePreviousCharacterMS},
+    {"delete-next-character",     deleteNextCharacterMS},
+    {"delete_next_character",     deleteNextCharacterMS},
+    {"delete-previous-word",      deletePreviousWordMS},
+    {"delete_previous_word",      deletePreviousWordMS},
     {"delete-next-word",          nullptr},
     {"delete_next_word",          nullptr},
     {"delete-to-start-of-line",   nullptr},
@@ -350,22 +367,22 @@ static const SubRoutine TextAreaSubrNames[] = {
     {"forward_character",         nullptr},
     {"backward-character",        nullptr},
     {"backward_character",        nullptr},
-    {"key-select",                nullptr},
-    {"key_select",                nullptr},
-    {"process-up",                nullptr},
-    {"process_up",                nullptr},
-    {"process-down",              nullptr},
-    {"process_down",              nullptr},
-    {"process-shift-up",          nullptr},
-    {"process_shift_up",          nullptr},
-    {"process-shift-down",        nullptr},
-    {"process_shift_down",        nullptr},
-    {"process-home",              nullptr},
-    {"process_home",              nullptr},
-    {"forward-word",              nullptr},
-    {"forward_word",              nullptr},
-    {"backward-word",             nullptr},
-    {"backward_word",             nullptr},
+    {"key-select",                keySelectMS},
+    {"key_select",                keySelectMS},
+    {"process-up",                processUpMS},
+    {"process_up",                processUpMS},
+    {"process-down",              processDownMS},
+    {"process_down",              processDownMS},
+    {"process-shift-up",          processShiftUpMS},
+    {"process_shift_up",          processShiftUpMS},
+    {"process-shift-down",        processShiftDownMS},
+    {"process_shift_down",        processShiftDownMS},
+    {"process-home",              processHomeMS},
+    {"process_home",              processHomeMS},
+    {"forward-word",              forwardWordMS},
+    {"forward_word",              forwardWordMS},
+    {"backward-word",             backwardWordMS},
+    {"backward_word",             backwardWordMS},
     {"forward-paragraph",         nullptr},
     {"forward_paragraph",         nullptr},
     {"backward-paragraph",        nullptr},
@@ -811,60 +828,15 @@ void RegisterMacroSubroutines() {
 		ReturnGlobals[i] = InstallSymbol(ReturnGlobalNames[i], GLOBAL_SYM, noValue);
 }
 
-void BeginLearnEx(DocumentWidget *document) {
-
-    // If we're already in learn mode, return
-    if(CommandRecorder::getInstance()->isRecording()) {
-        return;
-    }
-
-    MainWindow *thisWindow = document->toWindow();
-    if(!thisWindow) {
-        return;
-    }
-
-    // dim the inappropriate menus and items, and undim finish and cancel
-    for(MainWindow *window : MainWindow::allWindows()) {
-        window->ui.action_Learn_Keystrokes->setEnabled(false);
-    }
-
-    thisWindow->ui.action_Finish_Learn->setEnabled(true);
-    thisWindow->ui.action_Cancel_Learn->setText(QLatin1String("Cancel Learn"));
-    thisWindow->ui.action_Cancel_Learn->setEnabled(true);
-
-    // Add the action hook for recording the actions
-    CommandRecorder::getInstance()->startRecording(document);
-
-    // Extract accelerator texts from menu PushButtons
-    QString cFinish = thisWindow->ui.action_Finish_Learn->shortcut().toString();
-    QString cCancel = thisWindow->ui.action_Cancel_Learn->shortcut().toString();
-
-    // Create message
-    QString message;
-    if (cFinish.isEmpty()) {
-        if (cCancel.isEmpty()) {
-            message = QLatin1String("Learn Mode -- Use menu to finish or cancel");
-        } else {
-            message = QString(QLatin1String("Learn Mode -- Use menu to finish, press %1 to cancel")).arg(cCancel);
-        }
-    } else {
-        if (cCancel.isEmpty()) {
-            message = QString(QLatin1String("Learn Mode -- Press %1 to finish, use menu to cancel")).arg(cFinish);
-        } else {
-            message = QString(QLatin1String("Learn Mode -- Press %1 to finish, %2 to cancel")).arg(cFinish, cCancel);
-        }
-    }
-
-    // Put up the learn-mode banner
-    document->SetModeMessageEx(message);
-}
-
 void FinishLearnEx() {
 
     // If we're not in learn mode, return
     if(!CommandRecorder::getInstance()->isRecording()) {
         return;
     }
+
+	DocumentWidget *document = CommandRecorder::getInstance()->macroRecordWindowEx;
+	Q_ASSERT(document);
 
     CommandRecorder::getInstance()->stopRecording();
 
@@ -874,14 +846,12 @@ void FinishLearnEx() {
         window->ui.action_Learn_Keystrokes->setEnabled(true);
     }
 
-    DocumentWidget *document = CommandRecorder::getInstance()->macroRecordWindowEx;
-
-    if (document->IsTopDocument()) {
-        if(MainWindow *window = document->toWindow()) {
-            window->ui.action_Finish_Learn->setEnabled(false);
-            window->ui.action_Cancel_Learn->setEnabled(false);
-        }
-    }
+	if (document->IsTopDocument()) {
+		if(MainWindow *window = document->toWindow()) {
+			window->ui.action_Finish_Learn->setEnabled(false);
+			window->ui.action_Cancel_Learn->setEnabled(false);
+		}
+	}
 
     // Undim the replay and paste-macro buttons
     for(MainWindow *window : MainWindow::allWindows()) {
@@ -890,8 +860,8 @@ void FinishLearnEx() {
 
     MainWindow::DimPasteReplayBtns(true);
 
-    // Clear learn-mode banner    
-    document->ClearModeMessageEx();
+	// Clear learn-mode banner
+	document->ClearModeMessageEx();
 }
 
 /*
@@ -911,12 +881,12 @@ static void cancelLearnEx() {
         return;
     }
 
+	DocumentWidget *document = CommandRecorder::getInstance()->macroRecordWindowEx;
+
     // Undim the menu items dimmed during learn
     for(MainWindow *window : MainWindow::allWindows()) {
         window->ui.action_Learn_Keystrokes->setEnabled(true);
     }
-
-    DocumentWidget *document = CommandRecorder::getInstance()->macroRecordWindowEx;
 
     if (document->IsTopDocument()) {
         MainWindow *win = document->toWindow();
@@ -941,7 +911,6 @@ void ReplayEx(DocumentWidget *window) {
 
         /* Parse the replay macro (it's stored in text form) and compile it into
            an executable program "prog" */
-
         QString errMsg;
         int stoppedAt;
 

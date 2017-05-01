@@ -97,6 +97,7 @@ public:
     static DocumentWidget *documentFrom(TextArea *area);
 
 public:
+	void BeginLearnEx();
 	int matchLanguageMode();
 	void DetermineLanguageMode(bool forceNewDefaults);
 	void RefreshTabState();

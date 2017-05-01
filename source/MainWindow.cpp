@@ -4214,7 +4214,7 @@ void MainWindow::shellTriggered(QAction *action) {
 
 void MainWindow::on_action_Learn_Keystrokes_triggered() {
     if(auto doc = currentDocument()) {
-        BeginLearnEx(doc);
+		doc->BeginLearnEx();
     }
 }
 

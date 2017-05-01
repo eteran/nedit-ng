@@ -49,7 +49,6 @@ int ReadMacroFileEx(DocumentWidget *window, const std::string &fileName, int war
 
 int ReadMacroStringEx(DocumentWidget *window, const QString &string, const char *errIn);
 void AbortMacroCommandEx(DocumentWidget *document);
-void BeginLearnEx(DocumentWidget *document);
 void CancelMacroOrLearnEx(DocumentWidget *document);
 void DoMacroEx(DocumentWidget *document, const QString &macro, const char *errInName);
 void FinishLearnEx();

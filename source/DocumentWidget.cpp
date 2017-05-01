@@ -9,6 +9,7 @@
 #include "MainWindow.h"
 #include "Direction.h"
 #include "SignalBlocker.h"
+#include "CommandRecorder.h"
 #include "SmartIndentEntry.h"
 #include "TextArea.h"
 #include "TextBuffer.h"
@@ -5486,4 +5487,52 @@ QList<DocumentWidget *> DocumentWidget::allDocuments() {
     }
     return documents;
 
+}
+
+void DocumentWidget::BeginLearnEx() {
+
+	// If we're already in learn mode, return
+	if(CommandRecorder::getInstance()->isRecording()) {
+		return;
+	}
+
+	MainWindow *thisWindow = toWindow();
+	if(!thisWindow) {
+		return;
+	}
+
+	// dim the inappropriate menus and items, and undim finish and cancel
+	for(MainWindow *window : MainWindow::allWindows()) {
+		window->ui.action_Learn_Keystrokes->setEnabled(false);
+	}
+
+	thisWindow->ui.action_Finish_Learn->setEnabled(true);
+	thisWindow->ui.action_Cancel_Learn->setText(tr("Cancel Learn"));
+	thisWindow->ui.action_Cancel_Learn->setEnabled(true);
+
+	// Add the action hook for recording the actions
+	CommandRecorder::getInstance()->startRecording(this);
+
+	// Extract accelerator texts from menu PushButtons
+	QString cFinish = thisWindow->ui.action_Finish_Learn->shortcut().toString();
+	QString cCancel = thisWindow->ui.action_Cancel_Learn->shortcut().toString();
+
+	// Create message
+	QString message;
+	if (cFinish.isEmpty()) {
+		if (cCancel.isEmpty()) {
+			message = tr("Learn Mode -- Use menu to finish or cancel");
+		} else {
+			message = tr("Learn Mode -- Use menu to finish, press %1 to cancel").arg(cCancel);
+		}
+	} else {
+		if (cCancel.isEmpty()) {
+			message = tr("Learn Mode -- Press %1 to finish, use menu to cancel").arg(cFinish);
+		} else {
+			message = tr("Learn Mode -- Press %1 to finish, %2 to cancel").arg(cFinish, cCancel);
+		}
+	}
+
+	// Put up the learn-mode banner
+	SetModeMessageEx(message);
 }
