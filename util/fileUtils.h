@@ -40,7 +40,7 @@ int NormalizePathname(char *pathname);
 int ParseFilenameEx(const QString &fullname, QString *filename, QString *pathname);
 QString ExpandTildeEx(const QString &pathname);
 QString GetTrailingPathComponentsEx(const QString &path, int noOfComponents);
-QString ReadAnyTextFileEx(const std::string &fileName, int forceNL);
+QString ReadAnyTextFileEx(const QString &fileName, bool forceNL);
 QString ResolvePathEx(const QString &pathname);
 void ConvertFromDosFileString(char *inString, int *length, char *pendingCR);
 void ConvertFromMacFileString(char *fileString, int length);

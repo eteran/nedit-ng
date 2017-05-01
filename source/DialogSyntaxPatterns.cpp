@@ -163,13 +163,13 @@ void DialogSyntaxPatterns::setLanguageName(const QString &name) {
 		}
 
 		// Fill in the dialog information for the selected language mode
-		ui.editContextLines->setText(tr("%1").arg(patSet->lineContext));
-		ui.editContextChars->setText(tr("%1").arg(patSet->charContext));
+		ui.editContextLines->setText(QString::number(patSet->lineContext));
+		ui.editContextChars->setText(QString::number(patSet->charContext));
 		SetLangModeMenu(name);
 		updateLabels();
 	} else {
-		ui.editContextLines->setText(tr("%1").arg(1));
-		ui.editContextChars->setText(tr("%1").arg(1));
+		ui.editContextLines->setText(QString::number(1));
+		ui.editContextChars->setText(QString::number(1));
 	}
 
 	if(ui.listItems->count() != 0) {
@@ -494,8 +494,8 @@ void DialogSyntaxPatterns::on_buttonDeletePattern_clicked() {
 	ui.listItems->clear();
 
 	// Clear out the dialog
-	ui.editContextLines->setText(tr("%1").arg(1));
-	ui.editContextChars->setText(tr("%1").arg(0));
+	ui.editContextLines->setText(QString::number(1));
+	ui.editContextChars->setText(QString::number(0));
 
 	on_listItems_itemSelectionChanged();
 }
@@ -549,8 +549,8 @@ void DialogSyntaxPatterns::on_buttonRestore_clicked() {
 	}
 
 	// Fill in the dialog information for the selected language mode
-	ui.editContextLines->setText(tr("%1").arg(defaultPatSet->lineContext));
-	ui.editContextChars->setText(tr("%1").arg(defaultPatSet->charContext));
+	ui.editContextLines->setText(QString::number(defaultPatSet->lineContext));
+	ui.editContextChars->setText(QString::number(defaultPatSet->charContext));
 
 	if(ui.listItems->count() != 0) {
 		ui.listItems->setCurrentRow(0);

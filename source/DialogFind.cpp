@@ -263,6 +263,7 @@ bool DialogFind::getFindDlogInfoEx(SearchDirection *direction, QString *searchSt
 		   immediately and present error messages */
 		try {
 			auto compiledRE = std::make_unique<regexp>(findText.toStdString(), regexDefault);
+			Q_UNUSED(compiledRE);
 		} catch(const regex_error &e) {
             QMessageBox::warning(this, tr("Regex Error"), tr("Please respecify the search string:\n%1").arg(QString::fromLatin1(e.what())));
 			return false;

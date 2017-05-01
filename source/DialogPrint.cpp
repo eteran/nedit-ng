@@ -381,29 +381,29 @@ void DialogPrint::on_buttonPrint_clicked() {
 
 	// Issue the print command using a popen call and recover error messages
 	// from the output stream of the command.
-	FILE *pipe = popen(command.toLatin1().data(), "r");
+	FILE *pipe = ::popen(command.toLatin1().data(), "r");
 	if(!pipe) {
         QMessageBox::warning(this, tr("Print Error"), tr("Unable to Print:\n%1").arg(ErrorString(errno)));
 		return;
 	}
 
 	char errorString[MAX_PRINT_ERROR_LENGTH] = {};
-	int nRead = fread(errorString, 1, MAX_PRINT_ERROR_LENGTH - 1, pipe);
+	int nRead = ::fread(errorString, 1, MAX_PRINT_ERROR_LENGTH - 1, pipe);
 	
 	// Make sure that the print command doesn't get stuck when trying to
 	// write a lot of output on stderr (pipe may fill up). We discard
 	// the additional output, though.
 	char discarded[1024];
-	while (fread(discarded, 1, sizeof(discarded), pipe) > 0) {
+	while (::fread(discarded, 1, sizeof(discarded), pipe) > 0) {
 		;
 	}
 
-	if (!ferror(pipe)) {
+	if (!::ferror(pipe)) {
 		errorString[nRead] = '\0';
 	}
 
-	if (pclose(pipe)) {
-        QMessageBox::warning(this, tr("Print Error"), tr("Unable to Print:\n%1").arg(QString::fromLatin1(errorString)));
+	if (::pclose(pipe)) {
+		QMessageBox::warning(this, tr("Print Error"), tr("Unable to Print:\n%1").arg(QString::fromLatin1(errorString)));
 		return;
 	}
 	

@@ -45,8 +45,7 @@ struct RestartData;
 Program *ParseMacroEx(const QString &expr, QString *message, int *stoppedAt);
 bool CheckMacroStringEx(QWidget *dialogParent, const QString &string, const QString &errIn, int *errPos);
 int MacroWindowCloseActionsEx(DocumentWidget *document);
-int ReadMacroFileEx(DocumentWidget *window, const std::string &fileName, int warnNotExist);
-
+int readCheckMacroStringEx(QWidget *dialogParent, const QString &string, DocumentWidget *runWindow, const char *errIn, const char **errPos);
 int ReadMacroStringEx(DocumentWidget *window, const QString &string, const char *errIn);
 void AbortMacroCommandEx(DocumentWidget *document);
 void CancelMacroOrLearnEx(DocumentWidget *document);

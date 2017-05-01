@@ -599,13 +599,13 @@ void ConvertToMacFileStringEx(std::string &fileString) {
 **
 ** Force a terminating \n, if this is requested
 */
-QString ReadAnyTextFileEx(const std::string &fileName, int forceNL) {
+QString ReadAnyTextFileEx(const QString &fileName, bool forceNL) {
 	struct stat statbuf;
 	FILE *fp;
 	int readLen;
 
 	/* Read the whole file into fileString */
-	if ((fp = fopen(fileName.c_str(), "r")) == nullptr) {
+	if ((fp = ::fopen(fileName.toLatin1().data(), "r")) == nullptr) {
 		return QString();
 	}
 	

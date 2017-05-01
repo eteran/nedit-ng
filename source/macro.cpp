@@ -101,7 +101,6 @@ constexpr const int BANNER_WAIT_TIME = 6000;
 static void cancelLearnEx();
 static void runMacroEx(DocumentWidget *document, Program *prog);
 static void finishMacroCmdExecutionEx(DocumentWidget *document);
-static int readCheckMacroStringEx(QWidget *dialogParent, const QString &string, DocumentWidget *runWindow, const char *errIn, const char **errPos);
 static bool continueWorkProcEx(DocumentWidget *clientData);
 
 static int lengthMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
@@ -840,7 +839,6 @@ void FinishLearnEx() {
 
     CommandRecorder::getInstance()->stopRecording();
 
-
     // Undim the menu items dimmed during learn
     for(MainWindow *window : MainWindow::allWindows()) {
         window->ui.action_Learn_Keystrokes->setEnabled(true);
@@ -938,31 +936,9 @@ void ReadMacroInitFileEx(DocumentWidget *window) {
     static bool initFileLoaded = false;
 
     if (!initFileLoaded) {
-        ReadMacroFileEx(window, autoloadName.toStdString(), false);
+		window->ReadMacroFileEx(autoloadName, false);
         initFileLoaded = true;
     }
-}
-
-/*
-** Read an NEdit macro file.  Extends the syntax of the macro parser with
-** define keyword, and allows intermixing of defines with immediate actions.
-*/
-int ReadMacroFileEx(DocumentWidget *window, const std::string &fileName, int warnNotExist) {
-
-    /* read-in macro file and force a terminating \n, to prevent syntax
-    ** errors with statements on the last line
-    */
-    QString fileString = ReadAnyTextFileEx(fileName, true);
-    if (fileString.isNull()) {
-        if (errno != ENOENT || warnNotExist) {
-            QMessageBox::critical(window, QLatin1String("Read Macro"), QString(QLatin1String("Error reading macro file %1: %2")).arg(QString::fromStdString(fileName), ErrorString(errno)));
-        }
-        return false;
-    }
-
-
-    // Parse fileString
-    return readCheckMacroStringEx(window, fileString, window, fileName.c_str(), nullptr);
 }
 
 /*
@@ -970,7 +946,7 @@ int ReadMacroFileEx(DocumentWidget *window, const std::string &fileName, int war
 ** parsing errors in a dialog posted over window->shell_.
 */
 int ReadMacroStringEx(DocumentWidget *window, const QString &string, const char *errIn) {
-    return readCheckMacroStringEx(window, string, window, errIn, nullptr);
+	return readCheckMacroStringEx(window, string, window, errIn, nullptr);
 }
 
 /*
@@ -1012,7 +988,7 @@ Program *ParseMacroEx(const QString &expr, QString *message, int *stoppedAt) {
     return p;
 }
 
-static int readCheckMacroStringEx(QWidget *dialogParent, const QString &string, DocumentWidget *runWindow, const char *errIn, const char **errPos) {
+int readCheckMacroStringEx(QWidget *dialogParent, const QString &string, DocumentWidget *runWindow, const char *errIn, const char **errPos) {
     const char *stoppedAt;
     char *namePtr;
     const char *errMsg;

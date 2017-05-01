@@ -106,7 +106,7 @@ bool CommandRecorder::eventFilter(QObject *obj, QEvent *event) {
 }
 
 void CommandRecorder::lastActionHook(QObject *obj, const TextEditEvent *ev) {
-    qDebug("Text Event! : %s", ev->toString().toLatin1().data());
+	qDebug("Text Event! : %s", qPrintable(ev->toString()));
 
     int i;
 
@@ -116,7 +116,7 @@ void CommandRecorder::lastActionHook(QObject *obj, const TextEditEvent *ev) {
     for (; curr != documents.end(); ++curr) {
 
         DocumentWidget *const document = *curr;
-        QList<TextArea *> textPanes = document->textPanes();
+		QList<TextArea *> textPanes = document->textPanes();
 
         for (i = 0; i < textPanes.size(); i++) {
             if (textPanes[i] == obj) {

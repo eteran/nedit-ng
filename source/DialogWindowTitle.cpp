@@ -192,14 +192,14 @@ QString DialogWindowTitle::FormatWindowTitleEx(const QString &filename, const QS
 		if (state.noOfComponents >= 0) {
 
 			QString value = ui.editDirectory->text();
-			QString comp  = tr("%1").arg(state.noOfComponents);
+			auto comp     = QString::number(state.noOfComponents);
 
 			// Don't overwrite unless diff. 
 			if (value != comp) {
 				ui.editDirectory->setText(comp);
 			}
 		} else {
-			ui.editDirectory->setText(tr(""));
+			ui.editDirectory->setText(QString());
 		}
 	}
 

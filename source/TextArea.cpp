@@ -7305,8 +7305,8 @@ int TextArea::TextDOffsetWrappedRow(int row) const {
 }
 
 void TextArea::setWordDelimiters(const QString &delimiters) {
-    // add mandatory delimiters blank, tab, and newline to the list
-    P_delimiters.sprintf("%s%s", " \t\n", delimiters.toLatin1().data());
+	// add mandatory delimiters blank, tab, and newline to the list
+	P_delimiters = QString(QLatin1String(" \t\n%1")).arg(delimiters);
 }
 
 void TextArea::setAutoShowInsertPos(bool value) {

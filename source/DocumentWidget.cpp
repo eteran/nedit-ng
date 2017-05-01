@@ -47,6 +47,7 @@
 #include <QRadioButton>
 #include <QSplitter>
 #include <QTextCodec>
+#include <QTemporaryFile>
 #include <QTimer>
 #include <QtDebug>
 #include <fcntl.h>
@@ -2009,10 +2010,10 @@ void DocumentWidget::CheckForChangesToFileEx() {
             fileGid_  = statbuf.st_gid;
 
             FILE *fp;
-            if ((fp = fopen(fullname.toLatin1().data(), "r"))) {
+			if ((fp = ::fopen(fullname.toLatin1().data(), "r"))) {
                 fclose(fp);
 
-                bool readOnly = access(fullname.toLatin1().data(), W_OK) != 0;
+				bool readOnly = ::access(fullname.toLatin1().data(), W_OK) != 0;
 
                 if (lockReasons_.isPermLocked() != readOnly) {
                     lockReasons_.setPermLocked(readOnly);
@@ -2088,7 +2089,7 @@ int DocumentWidget::cmpWinAgainstFile(const QString &fileName) {
     FileFormats fileFormat = fileFormat_;
     TextBuffer *buf        = buffer_;
 
-    FILE *fp = fopen(fileName.toLatin1().data(), "r");
+	FILE *fp = ::fopen(fileName.toLatin1().data(), "r");
     if (!fp) {
         return 1;
     }
@@ -2132,7 +2133,7 @@ int DocumentWidget::cmpWinAgainstFile(const QString &fileName) {
             offset = 0;
         }
 
-        int nRead = fread(fileString + offset, sizeof(char), restLen, fp);
+		int nRead = ::fread(fileString + offset, 1, restLen, fp);
         if (nRead != restLen) {
             fclose(fp);
             MainWindow::AllWindowsUnbusyEx();
@@ -2289,7 +2290,7 @@ int DocumentWidget::WriteBackupFile() {
     }
 
     // write out the file
-    ::fwrite(fileString.data(), sizeof(char), fileString.size(), fp);
+	::fwrite(fileString.data(), 1, fileString.size(), fp);
     if (::ferror(fp)) {
         QMessageBox::critical(this, tr("Error saving Backup"), tr("Error while saving backup for %1:\n%2\nAutomatic backup is now off").arg(filename_, ErrorString(errno)));
         ::fclose(fp);
@@ -2365,13 +2366,11 @@ bool DocumentWidget::doSave() {
     struct stat statbuf;
 
     // Get the full name of the file
-
     QString fullname = FullPath();
 
     /*  Check for root and warn him if he wants to write to a file with
         none of the write bits set.  */
-    if ((getuid() == 0) && (stat(fullname.toLatin1().data(), &statbuf) == 0) && !(statbuf.st_mode & (S_IWUSR | S_IWGRP | S_IWOTH))) {
-
+	if ((getuid() == 0) && (::stat(fullname.toLatin1().data(), &statbuf) == 0) && !(statbuf.st_mode & (S_IWUSR | S_IWGRP | S_IWOTH))) {
         int result = QMessageBox::warning(this, tr("Writing Read-only File"), tr("File '%1' is marked as read-only.\nDo you want to save anyway?").arg(filename_), QMessageBox::Save | QMessageBox::Cancel);
         if (result != QMessageBox::Save) {
             return true;
@@ -2392,7 +2391,6 @@ bool DocumentWidget::doSave() {
     // open the file
     FILE *fp = ::fopen(fullname.toLatin1().data(), "wb");
     if(!fp) {
-
         QMessageBox messageBox(this);
         messageBox.setWindowTitle(tr("Error saving File"));
         messageBox.setIcon(QMessageBox::Warning);
@@ -2430,7 +2428,7 @@ bool DocumentWidget::doSave() {
     }
 
     // write to the file
-    fwrite(fileString.data(), sizeof(char), fileString.size(), fp);
+	::fwrite(fileString.data(), 1, fileString.size(), fp);
 
     if (ferror(fp)) {
         QMessageBox::critical(this, tr("Error saving File"), tr("%2 not saved:\n%2").arg(filename_, ErrorString(errno)));
@@ -3041,7 +3039,7 @@ void DocumentWidget::open(const QString &fullpath) {
     QString pathname;
 
     if (ParseFilenameEx(fullpath, &filename, &pathname) != 0 || filename.size() + pathname.size() > MAXPATHLEN - 1) {
-		qWarning("nedit: invalid file name for open action: %s", fullpath.toLatin1().data());
+		qWarning("nedit: invalid file name for open action: %s", qPrintable(fullpath));
         return;
     }
 
@@ -3202,8 +3200,8 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
     }
 
     // Read the file into fileString and terminate with a null
-    int readLen = ::fread(&fileString[0], sizeof(char), fileLen, fp);
-    if (ferror(fp)) {
+	int readLen = ::fread(&fileString[0], 1, fileLen, fp);
+	if (::ferror(fp)) {
         ::fclose(fp);
         filenameSet_ = false; // Temp. prevent check for changes.
         QMessageBox::critical(this, tr("Error while opening File"), tr("Error reading %1:\n%2").arg(name, ErrorString(errno)));
@@ -3620,7 +3618,7 @@ bool DocumentWidget::includeFile(const QString &name) {
         auto fileString = std::make_unique<char[]>(fileLen + 1); // +1 = space for null
 
         // read the file into fileString and terminate with a null
-        int readLen = ::fread(&fileString[0], sizeof(char), fileLen, fp);
+		int readLen = ::fread(&fileString[0], 1, fileLen, fp);
         if (::ferror(fp)) {
             QMessageBox::critical(this, tr("Error opening File"), tr("Error reading %1:\n%2").arg(name, ErrorString(errno)));
             ::fclose(fp);
@@ -4146,7 +4144,7 @@ void DocumentWidget::ExecShellCommandEx(TextArea *area, const QString &command, 
 
         QString substitutedCommand = command;
         substitutedCommand.replace(QLatin1Char('%'), fullName);
-        substitutedCommand.replace(QLatin1Char('#'), tr("%1").arg(line));
+		substitutedCommand.replace(QLatin1Char('#'), QString::number(line));
 
 
         // NOTE(eteran): this used to be a nullptr check because the old code would
@@ -4207,55 +4205,29 @@ void DocumentWidget::PrintWindow(TextArea *area, bool selectedOnly) {
     PrintStringEx(fileString, filename_);
 }
 
-/*
-** Print a string (length is required).  parent is the dialog parent, for
-** error dialogs, and jobName is the print title.
-*/
+/**
+ * Print a string (length is required).  parent is the dialog parent, for
+ * error dialogs, and jobName is the print title.
+ *
+ * @brief DocumentWidget::PrintStringEx
+ * @param string
+ * @param jobName
+ */
 void DocumentWidget::PrintStringEx(const std::string &string, const QString &jobName) {
 
-    QString tempDir = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
+	QTemporaryFile tempFile(QLatin1String("nedit-XXXXXX"));
+	if(!tempFile.open()) {
+		QMessageBox::warning(this, tr("Error while Printing"), tr("Unable to write file for printing:\n%1").arg(tempFile.errorString()));
+		return;
+	}
 
-    // L_tmpnam defined in stdio.h
-    char tmpFileName[L_tmpnam];
-    snprintf(tmpFileName, sizeof(tmpFileName), "%s/nedit-XXXXXX", qPrintable(tempDir));
-
-    int fd = mkstemp(tmpFileName);
-    if (fd < 0) {
-        QMessageBox::warning(this, tr("Error while Printing"), tr("Unable to write file for printing:\n%1").arg(ErrorString(errno)));
-        return;
-    }
-
-    FILE *const fp = fdopen(fd, "w");
-
-    // open the temporary file
-    if (fp == nullptr) {
-        QMessageBox::warning(this, tr("Error while Printing"), tr("Unable to write file for printing:\n%1").arg(ErrorString(errno)));
-        return;
-    }
-
-    // write to the file
-    fwrite(string.data(), sizeof(char), string.size(), fp);
-    if (ferror(fp)) {
-        QMessageBox::critical(this, tr("Error while Printing"), tr("%1 not printed:\n%2").arg(jobName, ErrorString(errno)));
-        fclose(fp); // should call close(fd) in turn!
-        remove(tmpFileName);
-        return;
-    }
-
-    // close the temporary file
-    if (fclose(fp) != 0) {
-        QMessageBox::warning(this, tr("Error while Printing"), tr("Error closing temp. print file:\n%1").arg(ErrorString(errno)));
-        remove(tmpFileName);
-        return;
-    }
+	tempFile.write(string.data(), string.size());
+	tempFile.close();
 
     // Print the temporary file, then delete it and return success
-
-    auto dialog = new DialogPrint(QString::fromLatin1(tmpFileName), jobName, this);
+	auto dialog = new DialogPrint(tempFile.fileName(), jobName, this);
     dialog->exec();
     delete dialog;
-
-    remove(tmpFileName);
 }
 
 void DocumentWidget::splitPane() {
@@ -5144,7 +5116,7 @@ void DocumentWidget::ExecCursorLineEx(TextArea *area, bool fromMacro) {
 
     QString substitutedCommand = QString::fromStdString(cmdText);
     substitutedCommand.replace(QLatin1Char('%'), fullName);
-    substitutedCommand.replace(QLatin1Char('#'), tr("%1").arg(line));
+	substitutedCommand.replace(QLatin1Char('#'), QString::number(line));
 
     if(substitutedCommand.isNull()) {
         QMessageBox::critical(this, tr("Shell Command"), tr("Shell command is too long due to\n"
@@ -5277,7 +5249,7 @@ void DocumentWidget::DoShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
 
     QString substitutedCommand = command;
     substitutedCommand.replace(QLatin1Char('%'), fullName);
-    substitutedCommand.replace(QLatin1Char('#'), tr("%1").arg(line));
+	substitutedCommand.replace(QLatin1Char('#'), QString::number(line));
 
     if(substitutedCommand.isNull()) {
         QMessageBox::critical(this,
@@ -5535,4 +5507,26 @@ void DocumentWidget::BeginLearnEx() {
 
 	// Put up the learn-mode banner
 	SetModeMessageEx(message);
+}
+
+/*
+** Read an NEdit macro file.  Extends the syntax of the macro parser with
+** define keyword, and allows intermixing of defines with immediate actions.
+*/
+int DocumentWidget::ReadMacroFileEx(const QString &fileName, bool warnNotExist) {
+
+	/* read-in macro file and force a terminating \n, to prevent syntax
+	** errors with statements on the last line
+	*/
+	QString fileString = ReadAnyTextFileEx(fileName, true);
+	if (fileString.isNull()) {
+		if (errno != ENOENT || warnNotExist) {
+			QMessageBox::critical(this, tr("Read Macro"), tr("Error reading macro file %1: %2").arg(fileName, ErrorString(errno)));
+		}
+		return false;
+	}
+
+
+	// Parse fileString
+	return readCheckMacroStringEx(this, fileString, this, fileName.toLatin1().data(), nullptr);
 }

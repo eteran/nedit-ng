@@ -317,7 +317,7 @@ bool AddRelTagsFileEx(const QString &tagSpec, const QString &windowPath, int fil
 
         // or if the file isn't found...
         struct stat statbuf;
-        if (stat(pathName.toLatin1().data(), &statbuf) != 0) {
+		if (::stat(pathName.toLatin1().data(), &statbuf) != 0) {
             continue;
         }
 
@@ -360,18 +360,17 @@ bool AddTagsFileEx(const QString &tagSpec, int file_type) {
 
     for(const QString &filename : filenames) {
 
-        // NOTE(eteran): We use this temporary buffer because NormalizePathname is an inplace C-string algorithm... for now
-        char pathName[MAXPATHLEN];
+		QString pathName;
         if(!filename.startsWith(QLatin1Char('/'))) {
-            snprintf(pathName, sizeof(pathName), "%s/%s", GetCurrentDirEx().toLatin1().data(), filename.toLatin1().data());
+			pathName = QString(QLatin1String("%1/%2")).arg(GetCurrentDirEx(), filename);
         } else {
-            strcpy(pathName, filename.toLatin1().data());
+			pathName = filename;
         }
 
-        NormalizePathname(pathName);
+		pathName = NormalizePathnameEx(pathName);
 
         auto it = std::find_if(FileList->begin(), FileList->end(), [pathName](const tagFile &tag) {
-            return tag.filename == QString::fromLatin1(pathName);
+			return tag.filename == pathName;
         });
 
         if (it != FileList->end()) {
@@ -384,14 +383,14 @@ bool AddTagsFileEx(const QString &tagSpec, int file_type) {
         }
 
         struct stat statbuf;
-        if (stat(pathName, &statbuf) != 0) {
+		if (::stat(pathName.toLatin1().data(), &statbuf) != 0) {
             // Problem reading this tags file.  Return FALSE
             added = false;
             continue;
         }
 
         tagFile tag;
-        tag.filename = QString::fromLatin1(pathName);
+		tag.filename = pathName;
         tag.loaded   = false;
         tag.date     = statbuf.st_mtime;
         tag.index    = ++tagFileIndex;

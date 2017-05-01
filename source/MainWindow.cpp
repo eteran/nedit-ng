@@ -2815,7 +2815,7 @@ void MainWindow::on_action_Load_Macro_File_triggered() {
 
 void MainWindow::loadMacroAP(const QString &filename) {
     if(auto doc = currentDocument()) {
-        ReadMacroFileEx(doc, filename.toStdString(), true);
+		doc->ReadMacroFileEx(filename, true);
     }
 }
 

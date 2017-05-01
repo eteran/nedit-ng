@@ -30,11 +30,11 @@ DialogTabs::DialogTabs(DocumentWidget *document, QWidget *parent, Qt::WindowFlag
 	}
 	
 	const bool emulate = emTabDist != 0;
-	ui.editTabSpacing->setText(tr("%1").arg(tabDist));
+	ui.editTabSpacing->setText(QString::number(tabDist));
 	ui.checkEmulateTabs->setChecked(emulate);
 
 	if (emulate) {
-		ui.editEmulatedTabSpacing->setText(tr("%1").arg(emTabDist));
+		ui.editEmulatedTabSpacing->setText(QString::number(emTabDist));
 	}
 	
 	ui.checkUseTabsInPadding->setChecked(useTabs);

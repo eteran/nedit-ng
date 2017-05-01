@@ -141,13 +141,13 @@ void DialogLanguageModes::on_listItems_itemSelectionChanged() {
 		ui.editDelimiters->setText(language->delimiters);
 
 		if(language->tabDist != -1) {
-			ui.editTabSpacing->setText(tr("%1").arg(language->tabDist));
+			ui.editTabSpacing->setText(QString::number(language->tabDist));
 		} else {
 			ui.editTabSpacing->setText(QString());
 		}
 
 		if(language->emTabDist != -1) {
-			ui.editEmulatedTabSpacing->setText(tr("%1").arg(language->emTabDist));
+			ui.editEmulatedTabSpacing->setText(QString::number(language->emTabDist));
 		} else {
 			ui.editEmulatedTabSpacing->setText(QString());
 		}
@@ -276,7 +276,7 @@ std::unique_ptr<LanguageMode> DialogLanguageModes::readLMDialogFields(Mode mode)
 			}
 			return nullptr;
         } else if (!DeleteTagsFileEx(tipsFile, TIP, false)) {
-			qCritical("nedit: Internal error: Trouble deleting calltips file(s):\n  \"%s\"", tipsFile.toLatin1().data());
+			qCritical("nedit: Internal error: Trouble deleting calltips file(s):\n  \"%s\"", qPrintable(tipsFile));
 		}
 	}
     lm->defTipsFile = !tipsFile.isEmpty() ? tipsFile : QString();

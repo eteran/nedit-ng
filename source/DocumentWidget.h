@@ -98,6 +98,7 @@ public:
 
 public:
 	void BeginLearnEx();
+	int ReadMacroFileEx(const QString &fileName, bool warnNotExist);
 	int matchLanguageMode();
 	void DetermineLanguageMode(bool forceNewDefaults);
 	void RefreshTabState();
