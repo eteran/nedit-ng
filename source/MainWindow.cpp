@@ -182,7 +182,7 @@ void MainWindow::parseGeometry(QString geometry) {
 		// to happen now, so that we can set the widget to be fully
 		// resizable again right after we make everything adjust
 		QApplication::processEvents();
-		document->setMinimumSize(-1, -1);
+		document->setMinimumSize(0, 0);
     }
 }
 
