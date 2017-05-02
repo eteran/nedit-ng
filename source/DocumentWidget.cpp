@@ -4065,6 +4065,9 @@ int DocumentWidget::findDef(TextArea *area, const QString &value, Mode search_ty
 
 		if (p == value.end()) {
 
+			// NOTE(eteran): findAllMatchesEx will set the global tagName
+			// to point to this static buffer. I hate this design, but it's
+			// what we have for now...
 			static char tagText[MAX_TAG_LEN + 1];
 			const int ml = ((l < MAX_TAG_LEN) ? (l) : (MAX_TAG_LEN));
 			strncpy(tagText, value.toLatin1().data(), ml);
