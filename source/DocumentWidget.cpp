@@ -4013,15 +4013,17 @@ void DocumentWidget::SelectToMatchingCharacter(TextArea *area) {
 /*
 ** See findDefHelper
 */
-void DocumentWidget::FindDefCalltip(TextArea *area, const char *arg) {
-    // Reset calltip parameters to reasonable defaults
-    globAnchored  = false;
-    globPos       = -1;
-    globHAlign    = TIP_LEFT;
-    globVAlign    = TIP_BELOW;
-    globAlignMode = TIP_SLOPPY;
+void DocumentWidget::FindDefCalltip(TextArea *area, const QString &arg) {
 
-    findDefinitionHelper(area, arg, TIP);
+	// Reset calltip parameters to reasonable defaults
+	globAnchored  = false;
+	globPos       = -1;
+	globHAlign    = TIP_LEFT;
+	globVAlign    = TIP_BELOW;
+	globAlignMode = TIP_SLOPPY;
+
+	findDefinitionHelper(area, arg, TIP);
+
 }
 
 /*
@@ -4029,79 +4031,78 @@ void DocumentWidget::FindDefCalltip(TextArea *area, const char *arg) {
 ** loaded tags file and bring up the file and line that the tags file
 ** indicates.
 */
-void DocumentWidget::findDefinitionHelper(TextArea *area, const char *arg, Mode search_type) {
-    if (arg) {
-        findDef(area, arg, search_type);
-    } else {
-        searchMode = search_type;
+void DocumentWidget::findDefinitionHelper(TextArea *area, const QString &arg, Mode search_type) {
+	if (!arg.isNull()) {
+		findDef(area, arg, search_type);
+	} else {
+		searchMode = search_type;
 
-        const QMimeData *mimeData = QApplication::clipboard()->mimeData(QClipboard::Selection);
-        if(!mimeData->hasText()) {
-            return;
-        }
+		const QMimeData *mimeData = QApplication::clipboard()->mimeData(QClipboard::Selection);
+		if(!mimeData->hasText()) {
+			return;
+		}
 
-        QString string = mimeData->text();
-        findDef(area, string.toLatin1().data(), search_type);
-    }
+		QString string = mimeData->text();
+		findDef(area, string, search_type);
+	}
 }
 
 /*
 ** This code path is followed if the request came from either
 ** FindDefinition or FindDefCalltip.  This should probably be refactored.
 */
-int DocumentWidget::findDef(TextArea *area, const char *value, Mode search_type) {
-    int status = 0;
+int DocumentWidget::findDef(TextArea *area, const QString &value, Mode search_type) {
+	int status = 0;
 
-    static char tagText[MAX_TAG_LEN + 1];
-    const char *p;
+	searchMode = search_type;
+	int l = value.size();
+	if (l <= MAX_TAG_LEN) {
 
-    searchMode = search_type;
-    int l = strlen(value);
-    if (l <= MAX_TAG_LEN) {
+		// should be of type text???
+		QString::const_iterator p;
+		for (p = value.begin(); p != value.end() && isascii(p->toLatin1()); p++) {
+		}
 
-        // should be of type text???
-        for (p = value; *p && isascii(*p); p++) {
-        }
+		if (p == value.end()) {
 
-        if (!*p) {
+			static char tagText[MAX_TAG_LEN + 1];
+			const int ml = ((l < MAX_TAG_LEN) ? (l) : (MAX_TAG_LEN));
+			strncpy(tagText, value.toLatin1().data(), ml);
+			tagText[ml] = '\0';
 
-            int ml = ((l < MAX_TAG_LEN) ? (l) : (MAX_TAG_LEN));
-            strncpy(tagText, value, ml);
-            tagText[ml] = '\0';
+			// See if we can find the tip/tag
+			status = findAllMatchesEx(this, area, tagText);
 
-            // See if we can find the tip/tag
-            status = findAllMatchesEx(this, area, tagText);
+			// If we didn't find a requested calltip, see if we can use a tag
+			if (status == 0 && search_type == TIP && !TagsFileList.isEmpty()) {
+				searchMode = TIP_FROM_TAG;
+				status = findAllMatchesEx(this, area, tagText);
+			}
 
-            // If we didn't find a requested calltip, see if we can use a tag
-            if (status == 0 && search_type == TIP && !TagsFileList.isEmpty()) {
-                searchMode = TIP_FROM_TAG;
-                status = findAllMatchesEx(this, area, tagText);
-            }
+			if (status == 0) {
+				// Didn't find any matches
+				if (searchMode == TIP_FROM_TAG || searchMode == TIP) {
+					tagsShowCalltipEx(area, tr("No match for \"%1\" in calltips or tags.").arg(QString::fromLatin1(tagName)));
+				} else {
+					QMessageBox::warning(this, tr("Tags"), tr("\"%1\" not found in tags %2").arg(QString::fromLatin1(tagName), (TagsFileList.size() > 1) ? tr("files") : tr("file")));
+				}
+			}
 
-            if (status == 0) {
-                // Didn't find any matches
-                if (searchMode == TIP_FROM_TAG || searchMode == TIP) {
-                    tagsShowCalltipEx(area, tr("No match for \"%1\" in calltips or tags.").arg(QString::fromLatin1(tagName)));
-                } else {
-                    QMessageBox::warning(this, tr("Tags"), tr("\"%1\" not found in tags %2").arg(QString::fromLatin1(tagName), (TagsFileList.size() > 1) ? tr("files") : tr("file")));
-                }
-            }
-
-        } else {
+		} else {
 			qWarning("NEdit: Can't handle non 8-bit text");
-            QApplication::beep();
-        }
+			QApplication::beep();
+		}
 
-    } else {
+	} else {
 		qWarning("NEdit: Tag Length too long.");
-        QApplication::beep();
-    }
+		QApplication::beep();
+	}
 
-    return status;
+	return status;
 }
 
-void DocumentWidget::FindDefinition(TextArea *area, const char *arg) {
-    findDefinitionHelper(area, arg, TAG);
+void DocumentWidget::FindDefinition(TextArea *area, const QString &arg) {
+	findDefinitionHelper(area, arg, TAG);
 }
 
 void DocumentWidget::execAP(TextArea *area, const QString &command) {

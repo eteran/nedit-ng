@@ -799,7 +799,7 @@ int ShowTipStringEx(DocumentWidget *window, const char *text, bool anchored, int
     if (!lookup)
         return tagsShowCalltipEx(window->toWindow()->lastFocus_, QString::fromLatin1(text));
     else
-        return window->findDef(window->toWindow()->lastFocus_, text, static_cast<Mode>(search_type));
+		return window->findDef(window->toWindow()->lastFocus_, QString::fromLatin1(text), static_cast<Mode>(search_type));
 }
 
 /*

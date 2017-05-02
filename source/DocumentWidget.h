@@ -57,11 +57,11 @@ private Q_SLOTS:
     void processFinished(int exitCode, QProcess::ExitStatus exitStatus);
 
 public Q_SLOTS:
-    int findDef(TextArea *area, const char *value, Mode search_type);
+	int findDef(TextArea *area, const QString &value, Mode search_type);
     void BeginSmartIndentEx(int warn);
     void ExecShellCommandEx(TextArea *area, const QString &command, bool fromMacro);
-    void FindDefCalltip(TextArea *area, const char *arg);
-    void FindDefinition(TextArea *area, const char *arg);
+	void FindDefCalltip(TextArea *area, const QString &arg);
+	void FindDefinition(TextArea *area, const QString &arg);
     void GotoMatchingCharacter(TextArea *area);
     void PrintStringEx(const std::string &string, const QString &jobName);
     void PrintWindow(TextArea *area, bool selectedOnly);
@@ -72,7 +72,7 @@ public Q_SLOTS:
     void closePane();
     void execAP(TextArea *area, const QString &command);
     void findAP(const QString &searchString, SearchDirection direction, SearchType searchType, bool searchWraps);
-    void findDefinitionHelper(TextArea *area, const char *arg, Mode search_type);
+	void findDefinitionHelper(TextArea *area, const QString &arg, Mode search_type);
     void findIncrAP(const QString &searchString, SearchDirection direction, SearchType searchType, bool searchWraps, bool isContinue);
     void gotoAP(TextArea *area, QStringList args);
     void gotoMarkAP(QChar label, bool extendSel);

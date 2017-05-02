@@ -795,7 +795,7 @@ void MainWindow::UpdateWindowTitle(DocumentWidget *doc) {
 
 	QString iconTitle = doc->filename_;
 
-    // TODO(eteran): For version 2.0, consider using a disk icon instead of this "*"
+	// TODO(eteran): 2.0, consider using a disk icon instead of this "*"
     //               as this would be more conventional in modern program
     if (doc->fileChanged_) {
 		iconTitle.append(tr("*"));
@@ -1778,7 +1778,7 @@ void MainWindow::on_action_Open_Selected_triggered() {
 //------------------------------------------------------------------------------
 void MainWindow::fileCB(DocumentWidget *window, const std::string &text) {
 
-    // TODO(eteran): version 2.0 let the user specify a list of potential paths!
+	// TODO(eteran): 2.0, let the user specify a list of potential paths!
     //       can we ask the system simply or similar?
     //       `gcc -print-prog-name=cc1plus` -v
     //       `gcc -print-prog-name=cc1` -v
@@ -1797,11 +1797,11 @@ void MainWindow::fileCB(DocumentWidget *window, const std::string &text) {
     QString nameText = QString::fromStdString(text);
 
     // extract name from #include syntax
-    // TODO(eteran): version 2.0, support import/include syntax from multiple languages
+	// TODO(eteran): 2.0, support import/include syntax from multiple languages
     if(regexLocal.indexIn(nameText) != -1) {
         nameText = regexLocal.cap(1);
     } else if(regexSystem.indexIn(nameText) != -1) {
-        nameText = QString(QLatin1String("%1%2")).arg(QString::fromLatin1(includeDir), regexSystem.cap(1));
+		nameText = QString(QLatin1String("%1%2")).arg(QString::fromLatin1(includeDir), regexSystem.cap(1));
     }
 
     // strip whitespace from name
@@ -1814,7 +1814,7 @@ void MainWindow::fileCB(DocumentWidget *window, const std::string &text) {
 
     // If path name is relative, make it refer to current window's directory
     if (nameText[0] != QLatin1Char('/')) {
-        nameText = QString(QLatin1String("%1%2")).arg(window->path_, nameText);
+		nameText = QString(QLatin1String("%1%2")).arg(window->path_, nameText);
     }
 
     // Expand wildcards in file name.
@@ -2817,13 +2817,13 @@ void MainWindow::loadMacroAP(const QString &filename) {
 
 void MainWindow::on_action_Show_Calltip_triggered() {
     if(auto doc = currentDocument()) {
-        doc->FindDefCalltip(lastFocus_, nullptr); // TODO(eteran): there was an optional arg?
+		doc->FindDefCalltip(lastFocus_, QString()); // TODO(eteran): there was an optional arg?
     }
 }
 
 void MainWindow::on_action_Find_Definition_triggered() {
     if(auto doc = currentDocument()) {
-        doc->FindDefinition(lastFocus_, nullptr); // TODO(eteran): there was an optional arg?
+		doc->FindDefinition(lastFocus_, QString()); // TODO(eteran): there was an optional arg?
     }
 }
 
