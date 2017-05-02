@@ -178,7 +178,7 @@ DialogFonts::FontStatus DialogFonts::showFontStatus(const QString &font, QLabel 
 		msg = tr("(spacing of font below does not match primary)");
 		break;
 	default:
-		msg = tr("");
+		msg = QString();
 		break;
 	}
 

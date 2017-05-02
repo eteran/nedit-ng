@@ -708,7 +708,7 @@ void DocumentWidget::UpdateStatsLine(TextArea *area) {
 			format = tr(" Mac");
 			break;
 		default:
-			format = tr("");
+			format = QString();
 			break;
 		}
 
@@ -1874,8 +1874,7 @@ void DocumentWidget::RemoveBackupFile() {
         return;
     }
 
-    QString name = backupFileNameEx();
-    ::remove(name.toLatin1().data());
+	QFile::remove(backupFileNameEx());
 }
 
 /*
@@ -2261,7 +2260,7 @@ int DocumentWidget::WriteBackupFile() {
     QString name = backupFileNameEx();
 
     // remove the old backup file. Well, this might fail - we'll notice later however.
-    ::remove(name.toLatin1().data());
+	QFile::remove(name);
 
     /* open the file, set more restrictive permissions (using default
        permissions was somewhat of a security hole, because permissions were
@@ -2294,13 +2293,14 @@ int DocumentWidget::WriteBackupFile() {
     if (::ferror(fp)) {
         QMessageBox::critical(this, tr("Error saving Backup"), tr("Error while saving backup for %1:\n%2\nAutomatic backup is now off").arg(filename_, ErrorString(errno)));
         ::fclose(fp);
-        ::remove(name.toLatin1().data());
+
+		QFile::remove(name);
         autoSave_ = false;
         return false;
     }
 
     // close the backup file
-    if (fclose(fp) != 0) {
+	if (::fclose(fp) != 0) {
         return false;
     }
 
@@ -2433,7 +2433,8 @@ bool DocumentWidget::doSave() {
     if (ferror(fp)) {
         QMessageBox::critical(this, tr("Error saving File"), tr("%2 not saved:\n%2").arg(filename_, ErrorString(errno)));
         ::fclose(fp);
-        ::remove(fullname.toLatin1().data());
+
+		QFile::remove(fullname);
         return false;
     }
 
@@ -2713,7 +2714,7 @@ bool DocumentWidget::writeBckVersion() {
 
     // Delete the old backup file
     // Errors are ignored; we'll notice them later.
-    ::remove(bckname.toLatin1().data());
+	QFile::remove(bckname);
 
     /* open the file being edited.  If there are problems with the
        old file, don't bother the user, just skip the backup */
@@ -2739,7 +2740,8 @@ bool DocumentWidget::writeBckVersion() {
     if (::fchmod(out_fd, statbuf.st_mode) != 0) {
         ::close(in_fd);
         ::close(out_fd);
-        ::remove(bckname.toLatin1().data());
+
+		QFile::remove(bckname);
         return bckError(tr("fchmod() failed"), bckname);
     }
 
@@ -2753,7 +2755,8 @@ bool DocumentWidget::writeBckVersion() {
         if (bytes_read < 0) {
             ::close(in_fd);
             ::close(out_fd);
-            ::remove(bckname.toLatin1().data());
+
+			QFile::remove(bckname);
             return bckError(tr("read() error"), filename_);
         }
 
@@ -2766,7 +2769,8 @@ bool DocumentWidget::writeBckVersion() {
         if (bytes_written != bytes_read) {
             ::close(in_fd);
             ::close(out_fd);
-            ::remove(bckname.toLatin1().data());
+
+			QFile::remove(bckname);
             return bckError(ErrorString(errno), bckname);
         }
     }
@@ -3141,7 +3145,8 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
                 return false;
             } else {
                 ::close(fd);
-                ::remove(fullname.toLatin1().data());
+
+				QFile::remove(fullname);
             }
 
             SetWindowModified(false);

@@ -373,6 +373,9 @@ void DialogPrint::on_editCommand_textEdited(const QString &text) {
 //------------------------------------------------------------------------------
 void DialogPrint::on_buttonPrint_clicked() {
 
+	// TODO(eteran): short term, we can replace this with QProcess
+	//               long term, we'll use Qt's built in print system
+
 	// get the print command from the command text area
 	const QString str = ui.editCommand->text();
 

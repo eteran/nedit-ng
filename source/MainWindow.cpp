@@ -52,15 +52,20 @@
 #include <QToolButton>
 #include <QRegExp>
 #include <QtDebug>
+#include <QScrollBar>
+
 #include <cmath>
-#include <glob.h>
 #include <memory>
+#include <fstream>
+#include <iostream>
+#include <string>
+
 #include <sys/param.h>
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
-
+#include <glob.h>
 
 namespace {
 
@@ -158,11 +163,26 @@ void MainWindow::parseGeometry(QString geometry) {
         }
     }
 
-    // TODO(eteran): make this a bit more accurate
     if(DocumentWidget *document = currentDocument()) {
         QFontMetrics fm(document->fontStruct_);
+		constexpr int margin = 5;
+		int w = (fm.maxWidth() * cols) + (margin * 2);
+		int h = (fm.ascent() + fm.descent()) * rows + (margin * 2);
 
-        setGeometry(x(), y(), fm.maxWidth() * cols, (fm.ascent() + fm.descent()) * rows);
+		// NOTE(eteran): why 17? your guess is as good as mine
+		// but getting the width/height from the actual scrollbars
+		// yielded nonsense on my system (like 100px). Maybe it's a bug
+		// involving HiDPI screens? I dunno
+		w += 17; // area->verticalScrollBar()->width();
+		h += 17; // area->horizontalScrollBar()->height();
+
+		document->setMinimumSize(w, h);
+		adjustSize();
+		// NOTE(eteran): this processEvents() is to force the resize
+		// to happen now, so that we can set the widget to be fully
+		// resizable again right after we make everything adjust
+		QApplication::processEvents();
+		document->setMinimumSize(-1, -1);
     }
 }
 
@@ -1514,11 +1534,7 @@ void MainWindow::AddToPrevOpenMenu(const QString &filename) {
 */
 void MainWindow::ReadNEditDB() {
 
-    char line[MAXPATHLEN + 2];
-    struct stat attribute;
-    FILE *fp;
-    size_t lineLen;
-    static time_t lastNeditdbModTime = 0;
+	static QDateTime lastNeditdbModTime;
 
     /*  If the Open Previous command is disabled or the user set the
         resource to an (invalid) negative value, just return.  */
@@ -1533,28 +1549,24 @@ void MainWindow::ReadNEditDB() {
         return;
     }
 
-    /*  Stat history file to see whether someone touched it after this
-        session last changed it.  */
-	if (::stat(fullName.toLatin1().data(), &attribute) == 0) {
-        if (lastNeditdbModTime >= attribute.st_mtime) {
-            //  Do nothing, history file is unchanged.
-            return;
-        } else {
-            //  Memorize modtime to compare to next time.
-            lastNeditdbModTime = attribute.st_mtime;
-        }
-    } else {
-        //  stat() failed, probably for non-exiting history database.
-        if (ENOENT != errno) {
-            perror("nedit: Error reading history database");
-        }
-        return;
-    }
+	QFileInfo info(fullName);
+	QDateTime mtime = info.lastModified();
+
+	/*  Stat history file to see whether someone touched it after this
+		session last changed it.  */
+	if(lastNeditdbModTime >= mtime) {
+		//  Do nothing, history file is unchanged.
+		return;
+	} else {
+		//  Memorize modtime to compare to next time.
+		lastNeditdbModTime = mtime;
+	}
 
     // open the file
-    if ((fp = fopen(fullName.toLatin1().data(), "r")) == nullptr) {
-        return;
-    }
+	std::ifstream in(fullName.toLatin1().data());
+	if(!in) {
+		return;
+	}
 
     //  Clear previous list.
     PrevOpen.clear();
@@ -1562,53 +1574,37 @@ void MainWindow::ReadNEditDB() {
     /* read lines of the file, lines beginning with # are considered to be
        comments and are thrown away.  Lines are subject to cursory checking,
        then just copied to the Open Previous file menu list */
-    while (true) {
-        if (fgets(line, sizeof(line), fp) == nullptr) {
-            // end of file
-            fclose(fp);
-            return;
-        }
+	for(std::string line; std::getline(in, line); ) {
+
+		if(line.empty()) {
+			// blank line
+			continue;
+		}
+
         if (line[0] == '#') {
             // comment
             continue;
         }
-        lineLen = strlen(line);
-        if (lineLen == 0) {
-            // blank line
-            continue;
-        }
-        if (line[lineLen - 1] != '\n') {
-            // no newline, probably truncated
-			qWarning("nedit: Line too long in history file");
-            while (fgets(line, sizeof(line), fp)) {
-                lineLen = strlen(line);
-                if (lineLen > 0 && line[lineLen - 1] == '\n') {
-                    break;
-                }
-            }
-            continue;
-        }
 
-        line[--lineLen] = '\0';
-
-		if (strcspn(line, neditDBBadFilenameChars) != lineLen) {
+		// NOTE(eteran): right now, neditDBBadFilenameChars only consists of a
+		// newline character, I don't see how it is even possible for that to
+		// happen as we are reading lines which are obviously delimited by
+		// '\n', but the check remains as we could hypothetically ban other
+		// characters in the future.
+		std::string::size_type index = line.find_first_of(neditDBBadFilenameChars);
+		if(index != std::string::npos) {
             // non-filename characters
 			qWarning("nedit: History file may be corrupted");
             continue;
         }
 
-        auto nameCopy = QString::fromLatin1(line);
-        PrevOpen.push_back(nameCopy);
+		PrevOpen.push_back(QString::fromStdString(line));
 
         if (PrevOpen.size() >= GetPrefMaxPrevOpenFiles()) {
             // too many entries
-            fclose(fp);
             return;
         }
     }
-
-    // NOTE(eteran): fixes resource leak
-    fclose(fp);
 }
 
 /*
@@ -3159,8 +3155,7 @@ void MainWindow::on_action_Default_Command_Shell_triggered() {
 
     if (ok && !shell.isEmpty()) {
 
-        struct stat attribute;
-        if (stat(shell.toLatin1().data(), &attribute) == -1) {
+		if(!QFile::exists(shell)) {
             int resp = QMessageBox::warning(this, tr("Command Shell"), tr("The selected shell is not available.\nDo you want to use it anyway?"), QMessageBox::Ok | QMessageBox::Cancel);
             if(resp == QMessageBox::Cancel) {
                 return;

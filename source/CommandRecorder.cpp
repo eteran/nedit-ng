@@ -194,10 +194,15 @@ void CommandRecorder::lastActionHook(QObject *obj, const TextEditEvent *ev) {
 #endif
 }
 
+/**
+ * @brief CommandRecorder::isMouseAction
+ * @param ev
+ * @return
+ */
 bool CommandRecorder::isMouseAction(const TextEditEvent *ev) const {
 
     for(const char *action : MouseActions) {
-        if (!strcmp(action, ev->actionString().toLatin1().data())) {
+		if (QString::fromLatin1(action) == ev->actionString()) {
             return true;
         }
     }
@@ -205,10 +210,15 @@ bool CommandRecorder::isMouseAction(const TextEditEvent *ev) const {
     return false;
 }
 
+/**
+ * @brief CommandRecorder::isRedundantAction
+ * @param ev
+ * @return
+ */
 bool CommandRecorder::isRedundantAction(const TextEditEvent *ev) const {
 
     for(const char *action : RedundantActions) {
-        if (!strcmp(action, ev->actionString().toLatin1().data())) {
+		if (QString::fromLatin1(action) == ev->actionString()) {
             return true;
         }
     }
@@ -216,10 +226,15 @@ bool CommandRecorder::isRedundantAction(const TextEditEvent *ev) const {
     return false;
 }
 
+/**
+ * @brief CommandRecorder::isIgnoredAction
+ * @param ev
+ * @return
+ */
 bool CommandRecorder::isIgnoredAction(const TextEditEvent *ev) const {
 
     for(const char *action : IgnoredActions) {
-        if (!strcmp(action, ev->actionString().toLatin1().data())) {
+		if (QString::fromLatin1(action) == ev->actionString()) {
             return true;
         }
     }
