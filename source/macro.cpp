@@ -914,7 +914,7 @@ void ReplayEx(DocumentWidget *window) {
 
         Program *prog = ParseMacroEx(replayMacro, &errMsg, &stoppedAt);
         if(!prog) {
-			qWarning("NEdit internal error, learn/replay macro syntax error: %s", errMsg.toLatin1().data());
+			qWarning("NEdit internal error, learn/replay macro syntax error: %s", qPrintable(errMsg));
             return;
         }
 

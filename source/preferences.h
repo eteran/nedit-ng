@@ -39,6 +39,7 @@ class LanguageMode;
 class DocumentWidget;
 class QFont;
 class QDialog;
+class Input;
 
 constexpr const int PLAIN_LANGUAGE_MODE = -1;
 
@@ -115,10 +116,12 @@ bool ParseErrorEx(QWidget *toDialog, const QString &stringStart, int stoppedAt, 
 
 int ReadNumericField(const char **inPtr, int *value);
 bool ReadQuotedStringEx(const char **inPtr, const char **errMsg, QString *string);
-int SkipDelimiter(const char **inPtr, const char **errMsg);
+bool SkipDelimiter(const char **inPtr, const char **errMsg);
+bool SkipDelimiter(Input &inPtr, const char **errMsg);
 int SkipOptSeparator(char separator, const char **inPtr);
 QString MakeQuotedStringEx(const QString &string);
 QString ReadSymbolicFieldEx(const char **inPtr);
+QString ReadSymbolicFieldEx(Input &input);
 void ImportPrefFile(const QString &filename, bool convertOld);
 void MarkPrefsChanged();
 void RestoreNEditPrefs();

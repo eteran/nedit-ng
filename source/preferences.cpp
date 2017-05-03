@@ -40,6 +40,7 @@
 #include "smartIndent.h"
 #include "tags.h"
 #include "userCmds.h"
+#include "Input.h"
 #include "util/clearcase.h"
 #include <QInputDialog>
 #include <QMessageBox>
@@ -1204,6 +1205,47 @@ int ReadNumericField(const char **inPtr, int *value) {
 ** are letters, numbers, _, -, +, $, #, and internal whitespace.  Internal
 ** whitespace is compressed to single space characters.
 */
+QString ReadSymbolicFieldEx(Input &input) {
+
+	// skip over initial blank space
+	input.skipWhitespace();
+
+	/* Find the first invalid character or end of string to know how
+	   much memory to allocate for the returned string */
+	Input strStart = input;
+	while ((*input).isLetterOrNumber() || *input == QLatin1Char('_') || *input == QLatin1Char('-') || *input == QLatin1Char('+') || *input == QLatin1Char('$') || *input == QLatin1Char('#') || *input == QLatin1Char(' ') || *input == QLatin1Char('\t')) {
+		++input;
+	}
+
+	const int len = input - strStart;
+	if (len == 0) {
+		return QString();
+	}
+
+	QString outStr;
+	outStr.reserve(len);
+
+	auto outPtr = std::back_inserter(outStr);
+
+	// Copy the string, compressing internal whitespace to a single space
+	Input strPtr = strStart;
+	while (strPtr - strStart < len) {
+		if (*strPtr == QLatin1Char(' ') || *strPtr == QLatin1Char('\t')) {
+			strPtr.skipWhitespace();
+			*outPtr++ = QLatin1Char(' ');
+		} else {
+			*outPtr++ = *strPtr++;
+		}
+	}
+
+	// If there's space on the end, take it back off
+	if(outStr.endsWith(QLatin1Char(' '))) {
+		outStr.chop(1);
+	}
+
+	return outStr;
+}
+
 QString ReadSymbolicFieldEx(const char **inPtr) {
 
 	// skip over initial blank space 
@@ -1221,7 +1263,7 @@ QString ReadSymbolicFieldEx(const char **inPtr) {
 		return QString();
 	}
 	
-	std::string outStr;
+	QString outStr;
 	outStr.reserve(len);
 	
 	auto outPtr = std::back_inserter(outStr);
@@ -1231,22 +1273,18 @@ QString ReadSymbolicFieldEx(const char **inPtr) {
 	while (strPtr - strStart < len) {
 		if (*strPtr == ' ' || *strPtr == '\t') {
 			strPtr += strspn(strPtr, " \t");
-			*outPtr++ = ' ';
+			*outPtr++ = QLatin1Char(' ');
 		} else {
-			*outPtr++ = *strPtr++;
+			*outPtr++ = QChar::fromLatin1(*strPtr++);
 		}
 	}
 
 	// If there's space on the end, take it back off 
-	if(!outStr.empty() && outStr.back() == ' ') {
-		outStr.pop_back();	
+	if(outStr.endsWith(QLatin1Char(' '))) {
+		outStr.chop(1);
 	}
 	
-	if(outStr.empty()) {
-		return QString();
-	}
-	
-	return QString::fromStdString(outStr);
+	return outStr;
 }
 
 /*
@@ -1346,7 +1384,7 @@ QString MakeQuotedStringEx(const QString &string) {
 /*
 ** Skip a delimiter and it's surrounding whitespace
 */
-int SkipDelimiter(const char **inPtr, const char **errMsg) {
+bool SkipDelimiter(const char **inPtr, const char **errMsg) {
 	*inPtr += strspn(*inPtr, " \t");
 	if (**inPtr != ':') {
 		*errMsg = "syntax error";
@@ -1354,6 +1392,21 @@ int SkipDelimiter(const char **inPtr, const char **errMsg) {
 	}
 	(*inPtr)++;
 	*inPtr += strspn(*inPtr, " \t");
+	return true;
+}
+
+bool SkipDelimiter(Input &in, const char **errMsg) {
+
+	in.skipWhitespace();
+
+	if (*in != QLatin1Char(':')) {
+		*errMsg = "syntax error";
+		return false;
+	}
+
+	++in;
+
+	in.skipWhitespace();
 	return true;
 }
 

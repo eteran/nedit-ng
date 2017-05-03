@@ -124,8 +124,6 @@ void DialogSmartIndent::on_buttonDelete_clicked() {
             SmartIndentSpecs.erase(it);
 		}
 	}
-			
-
 
 	// Clear out the dialog 
 	setSmartIndentDialogData(nullptr);

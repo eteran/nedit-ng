@@ -41,6 +41,7 @@
 #include "nedit.h"
 #include "parse.h"
 #include "preferences.h"
+#include "Input.h"
 #include "shift.h"
 
 #include <QMessageBox>
@@ -49,7 +50,6 @@
 #include <climits>
 #include <cstdio>
 #include <cstring>
-
 
 namespace {
 
@@ -65,12 +65,8 @@ QString CommonMacros;
 static void insertShiftedMacro(QTextStream &ts, const QString &macro);
 static bool isDefaultIndentSpec(const SmartIndentEntry *indentSpec);
 static bool loadDefaultIndentSpec(const QString &lmName);
-static int siParseError(const char *stringStart, const char *stoppedAt, const char *message);
-
-static std::string readSIMacro(const char **inPtr);
-static QString readSIMacroEx(const char **inPtr);
-static int LoadSmartIndentCommonString(const char *inString);
-static int LoadSmartIndentString(char *inString);
+static int siParseError(const Input &in, const QString &message);
+static QString readSIMacroEx(Input &in);
 
 
 /**
@@ -261,106 +257,99 @@ static bool loadDefaultIndentSpec(const QString &lmName) {
 }
 
 int LoadSmartIndentStringEx(const QString &string) {
-	return LoadSmartIndentString(string.toLatin1().data());
-}
 
-int LoadSmartIndentString(char *inString) {
+	Input in(&string);
 	const char *errMsg;
-	const char *inPtr = inString;
 	int i;
 
 	for (;;) {
+		SmartIndentEntry is;
 
-        SmartIndentEntry is;
+		// skip over blank space
+		in.skipWhitespaceNL();
 
-		// skip over blank space 
-		inPtr += strspn(inPtr, " \t\n");
-
-		// finished 
-		if (*inPtr == '\0')
+		// finished
+		if (in.atEnd()) {
 			return true;
-
-		// read language mode name 
-		is.lmName = ReadSymbolicFieldEx(&inPtr);
-		if (is.lmName.isNull()) {
-			return siParseError(inString, inPtr, "language mode name required");
 		}
-		
-		if (!SkipDelimiter(&inPtr, &errMsg)) {
-			return siParseError(inString, inPtr, errMsg);
+
+		// read language mode name
+		is.lmName = ReadSymbolicFieldEx(in);
+		if (is.lmName.isNull()) {
+			return siParseError(in, QLatin1String("language mode name required"));
+		}
+
+		if (!SkipDelimiter(in, &errMsg)) {
+			return siParseError(in, QString::fromLatin1(errMsg));
 		}
 
 		/* look for "Default" keyword, and if it's there, return the default
 		   smart indent macros */
-		if (!strncmp(inPtr, "Default", 7)) {
-			inPtr += 7;
-            if (!loadDefaultIndentSpec(is.lmName)) {
-				return siParseError(inString, inPtr, "no default smart indent macros");
+		if (in.match(QLatin1String("Default"))) {
+			in += 7;
+			if (!loadDefaultIndentSpec(is.lmName)) {
+				return siParseError(in, QLatin1String("no default smart indent macros"));
 			}
 			continue;
 		}
 
 		/* read the initialization macro (arbitrary text terminated by the
 		   macro end boundary string) */
-		is.initMacro = readSIMacroEx(&inPtr);
+		is.initMacro = readSIMacroEx(in);
 		if(is.initMacro.isNull()) {
-			return siParseError(inString, inPtr, "no end boundary to initialization macro");
-		}
-		
-		// read the newline macro 
-		is.newlineMacro = readSIMacroEx(&inPtr);
-		if(is.newlineMacro.isNull()) {
-			return siParseError(inString, inPtr, "no end boundary to newline macro");
-		}
-		
-		// read the modify macro 
-		is.modMacro = readSIMacroEx(&inPtr);
-		if(is.modMacro.isNull()) {
-			return siParseError(inString, inPtr, "no end boundary to modify macro");
+			return siParseError(in, QLatin1String("no end boundary to initialization macro"));
 		}
 
-		// if there's no mod macro, make it null so it won't be executed 
+		// read the newline macro
+		is.newlineMacro = readSIMacroEx(in);
+		if(is.newlineMacro.isNull()) {
+			return siParseError(in, QLatin1String("no end boundary to newline macro"));
+		}
+
+		// read the modify macro
+		is.modMacro = readSIMacroEx(in);
+		if(is.modMacro.isNull()) {
+			return siParseError(in, QLatin1String("no end boundary to modify macro"));
+		}
+
+		// if there's no mod macro, make it null so it won't be executed
 		if (is.modMacro.isEmpty()) {
 			is.modMacro = QString();
 		}
 
-        for (i = 0; i < SmartIndentSpecs.size(); i++) {
-            if (SmartIndentSpecs[i].lmName == is.lmName) {
-                SmartIndentSpecs[i] = is;
+		for (i = 0; i < SmartIndentSpecs.size(); i++) {
+			if (SmartIndentSpecs[i].lmName == is.lmName) {
+				SmartIndentSpecs[i] = is;
 				break;
 			}
 		}
-		
-        if (i == SmartIndentSpecs.size()) {
-            SmartIndentSpecs.push_back(is);
+
+		if (i == SmartIndentSpecs.size()) {
+			SmartIndentSpecs.push_back(is);
 		}
 	}
 }
 
 int LoadSmartIndentCommonStringEx(const QString &string) {
-    return LoadSmartIndentCommonString(string.toLatin1().data());
-}
 
-int LoadSmartIndentCommonString(const char *inString) {
+	Input in(&string);
 
-    const char *inPtr = inString;
+	// If called from -import, can replace existing ones
 
-	// If called from -import, can replace existing ones 
-
-	// skip over blank space 
-	inPtr += strspn(inPtr, " \t\n");
+	// skip over blank space
+	in.skipWhitespaceNL();
 
 	/* look for "Default" keyword, and if it's there, return the default
 	   smart common macro */
-	if (!strncmp(inPtr, "Default", 7)) {
-			
+	if (in.match(QLatin1String("Default"))) {
+
 		QByteArray defaults = defaultCommonMacros();
-        CommonMacros = QString::fromLatin1(defaults);
+		CommonMacros = QString::fromLatin1(defaults);
 		return true;
 	}
 
 	// Remove leading tabs added by writer routine
-	std::string newMacros = ShiftTextEx(inPtr, SHIFT_LEFT, true, 8, 8);
+	std::string newMacros = ShiftTextEx(in.segment().toStdString(), SHIFT_LEFT, true, 8, 8);
 	CommonMacros = QString::fromStdString(newMacros);
 	return true;
 }
@@ -371,36 +360,36 @@ int LoadSmartIndentCommonString(const char *inString) {
 ** allocated copy of the string, and advance *inPtr to the end of the macro.
 ** Returns nullptr if the macro end boundary string is not found.
 */
-static QString readSIMacroEx(const char **inPtr) {
-    return QString::fromStdString(readSIMacro(inPtr));
-}
-
-static std::string readSIMacro(const char **inPtr) {
-	
-	// Strip leading newline 
-	if (**inPtr == '\n') {
-		(*inPtr)++;
+static QString readSIMacroEx(Input &in) {
+	// Strip leading newline
+	if (*in == QLatin1Char('\n')) {
+		++in;
 	}
 
-	// Find the end of the macro 
-	const char *macroEnd = strstr(*inPtr, MacroEndBoundary);
-	if(!macroEnd) {
-		return nullptr;
+	// Find the end of the macro
+	int macroEnd = in.find(QString::fromLatin1(MacroEndBoundary));
+	if(macroEnd == -1) {
+		return QString();
 	}
 
-    // Copy the macro
-    view::string_view macroStr(*inPtr, macroEnd - *inPtr);
+	// Copy the macro
+	std::string macroStr = in.segment(macroEnd - in.index()).toStdString();
 
-	// Remove leading tabs added by writer routine 
-	*inPtr = macroEnd + strlen(MacroEndBoundary);
+	// Remove leading tabs added by writer routine
+	in += macroEnd - in.index();
+	in += strlen(MacroEndBoundary);
 
-    return ShiftTextEx(macroStr, SHIFT_LEFT, true, 8, 8);
+	return QString::fromStdString(ShiftTextEx(macroStr, SHIFT_LEFT, true, 8, 8));
 }
 
+static int siParseError(const Input &input, const QString &message) {
+	return ParseErrorEx(
+	            nullptr,
+	            *input.string(),
+	            input.index(),
+	            QLatin1String("smart indent specification"),
+	            message);
 
-
-static int siParseError(const char *stringStart, const char *stoppedAt, const char *message) {
-    return ParseErrorEx(nullptr, QString::fromLatin1(stringStart), stoppedAt - stringStart, QLatin1String("smart indent specification"), QString::fromLatin1(message));
 }
 
 QString WriteSmartIndentStringEx() {
