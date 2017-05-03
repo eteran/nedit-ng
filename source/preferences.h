@@ -111,16 +111,15 @@ int GetPrefWarnRealFileMods();
 int GetPrefWrap(int langMode);
 int GetPrefWrapMargin();
 int GetVerticalAutoScroll();
-bool ParseErrorEx(QWidget *toDialog, const QString &stringStart, int stoppedAt, const QString &errorIn, const QString &message);
+bool ParseErrorEx(QWidget *toDialog, const QString &string, int stoppedAt, const QString &errorIn, const QString &message);
 
 
-int ReadNumericField(const char **inPtr, int *value);
-bool ReadQuotedStringEx(const char **inPtr, const char **errMsg, QString *string);
-bool SkipDelimiter(const char **inPtr, const char **errMsg);
+int ReadNumericFieldEx(Input &in, int *value);
+bool ReadQuotedStringEx(Input &in, const char **errMsg, QString *string);
 bool SkipDelimiter(Input &inPtr, const char **errMsg);
-int SkipOptSeparator(char separator, const char **inPtr);
+
+int SkipOptSeparatorEx(QChar separator, Input &in);
 QString MakeQuotedStringEx(const QString &string);
-QString ReadSymbolicFieldEx(const char **inPtr);
 QString ReadSymbolicFieldEx(Input &input);
 void ImportPrefFile(const QString &filename, bool convertOld);
 void MarkPrefsChanged();

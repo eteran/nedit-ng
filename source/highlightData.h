@@ -32,6 +32,7 @@
 #include "util/string_view.h"
 #include <QList>
 #include <string>
+#include <memory>
 
 class PatternSet;
 class QString;
@@ -56,7 +57,7 @@ void RenameHighlightPattern(const QString &oldName, const QString &newName);
 void UpdateLanguageModeMenu();
 QFont FontOfNamedStyleEx(DocumentWidget *document, const QString &styleName);
 void updateHighlightStyleMenu();
-PatternSet *readDefaultPatternSet(const QString &langModeName);
+std::unique_ptr<PatternSet> readDefaultPatternSet(const QString &langModeName);
 
 // list of available highlight styles 
 extern QList<HighlightStyle> HighlightStyles;

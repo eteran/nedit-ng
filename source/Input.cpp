@@ -110,6 +110,12 @@ int Input::operator-(const Input &rhs) const {
 	return index_ - rhs.index_;
 }
 
+Input Input::operator+(int rhs) {
+	Input next = *this;
+	next += rhs;
+	return next;
+}
+
 /**
  * @brief Input::operator ==
  * @param rhs
@@ -138,13 +144,7 @@ bool Input::match(const QString &s) const {
 		return false;
 	}
 
-	for(int i = 0; i < s.size(); ++i) {
-		if(s[i] != string_->at(index_ + i)) {
-			return false;
-		}
-	}
-
-	return true;
+	return string_->midRef(index_, s.size()) == s;
 }
 
 /**

@@ -507,7 +507,7 @@ void DialogSyntaxPatterns::on_buttonRestore_clicked() {
 
 	const QString languageMode = ui.comboLanguageMode->currentText();
 
-	PatternSet *defaultPatSet = readDefaultPatternSet(languageMode);
+	std::unique_ptr<PatternSet> defaultPatSet = readDefaultPatternSet(languageMode);
 	if(!defaultPatSet) {
 		QMessageBox::warning(this, tr("No Default Pattern"), tr("There is no default pattern set for language mode %1").arg(languageMode));
 		return;
@@ -519,20 +519,15 @@ void DialogSyntaxPatterns::on_buttonRestore_clicked() {
 	}
 
 	// if a stored version of the pattern set exists, replace it, if it doesn't, add a new one
-    auto it = PatternSets.begin();
-    for (; it != PatternSets.end(); ++it) {
-        if (languageMode == it->languageMode) {
-			break;
-		}
-	}
+	auto it = std::find_if(PatternSets.begin(), PatternSets.end(), [languageMode](const PatternSet &pattern) {
+		return pattern.languageMode == languageMode;
+	});
 
     if (it != PatternSets.end()) {
         *it = *defaultPatSet;
 	} else {
         PatternSets.push_back(*defaultPatSet);
 	}
-
-    delete defaultPatSet;
 
 	// Free the old dialog information
 	for(int i = 0; i < ui.listItems->count(); ++i) {
@@ -757,12 +752,9 @@ bool DialogSyntaxPatterns::updatePatternSet() {
 	}
 
 	// Find the pattern being modified
-    auto it = PatternSets.begin();
-    for (; it != PatternSets.end(); ++it) {
-        if (it->languageMode == ui.comboLanguageMode->currentText()) {
-			break;
-		}
-	}
+	auto it = std::find_if(PatternSets.begin(), PatternSets.end(), [this](const PatternSet &pattern) {
+		return pattern.languageMode == ui.comboLanguageMode->currentText();
+	});
 
 	// If it's a new pattern, add it at the end, otherwise free the existing pattern set and replace it
 	int oldNum = -1;
@@ -773,8 +765,6 @@ bool DialogSyntaxPatterns::updatePatternSet() {
         oldNum = it->patterns.size();
         *it = *patSet;
 	}
-
-    delete patSet;
 
 	// Find windows that are currently using this pattern set and re-do the highlighting
     for(DocumentWidget *document : DocumentWidget::allDocuments()) {
@@ -817,6 +807,8 @@ bool DialogSyntaxPatterns::updatePatternSet() {
 			}
 		}
 	}
+
+	delete patSet;
 
 	// Note that preferences have been changed
 	MarkPrefsChanged();

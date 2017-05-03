@@ -23,6 +23,7 @@ public:
 
 public:
 	int operator-(const Input &rhs) const;
+	Input operator+(int rhs);
 
 public:
 	bool operator==(const Input &rhs) const;
@@ -47,5 +48,7 @@ private:
 	const QString *string_;
 	int            index_;
 };
+
+
 
 #endif
