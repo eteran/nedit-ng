@@ -46,6 +46,7 @@
 #include <QMessageBox>
 #include <QPushButton>
 #include <QSettings>
+#include <QRegExp>
 #include <QStandardPaths>
 #include <QString>
 #include <QtDebug>
@@ -1202,31 +1203,24 @@ int ReadNumericField(const char **inPtr, int *value) {
 	return true;
 }
 
-int ReadNumericFieldEx(Input &in, int *value) {
+bool ReadNumericFieldEx(Input &in, int *value) {
 
 	// skip over blank space
 	in.skipWhitespace();
 
-	Input input = in;
-	if(*input == QLatin1Char('-') || *input == QLatin1Char('+')) {
-		++input;
+	QRegExp regex(QLatin1String("^(0|[-+]?[1-9][0-9]*)"));
+
+	int n = regex.indexIn(*in.string(), in.index(), QRegExp::CaretAtOffset);
+	if(n == in.index()) {
+		bool ok;
+		*value = regex.cap(1).toInt(&ok);
+		if(ok) {
+			in += regex.matchedLength();
+			return true;
+		}
 	}
 
-	while((*input).isDigit()) {
-		++input;
-	}
-
-	int len = input - in;
-	bool ok;
-	*value = in.segment(len).toInt(&ok);
-
-	if(!ok) {
-		return false;
-	}
-
-
-	in += len;
-	return true;
+	return false;
 }
 
 /*

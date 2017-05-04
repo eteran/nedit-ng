@@ -114,7 +114,7 @@ int GetVerticalAutoScroll();
 bool ParseErrorEx(QWidget *toDialog, const QString &string, int stoppedAt, const QString &errorIn, const QString &message);
 
 
-int ReadNumericFieldEx(Input &in, int *value);
+bool ReadNumericFieldEx(Input &in, int *value);
 bool ReadQuotedStringEx(Input &in, const char **errMsg, QString *string);
 bool SkipDelimiter(Input &inPtr, const char **errMsg);
 
