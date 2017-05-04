@@ -65,7 +65,9 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
+#if !defined(DONT_HAVE_GLOB)
 #include <glob.h>
+#endif
 
 namespace {
 
@@ -1817,6 +1819,7 @@ void MainWindow::fileCB(DocumentWidget *window, const std::string &text) {
 		nameText = QString(QLatin1String("%1%2")).arg(window->path_, nameText);
     }
 
+#if !defined(DONT_HAVE_GLOB)
     // Expand wildcards in file name.
     {
         glob_t globbuf;
@@ -1842,6 +1845,24 @@ void MainWindow::fileCB(DocumentWidget *window, const std::string &text) {
         }
         globfree(&globbuf);
     }
+#else
+	QString pathname;
+	QString filename;
+	if (ParseFilenameEx(nameText, &filename, &pathname) != 0) {
+		QApplication::beep();
+	} else {
+		DocumentWidget::EditExistingFileEx(
+		            GetPrefOpenInTab() ? window : nullptr,
+		            filename,
+		            pathname,
+		            0,
+		            QString(),
+		            false,
+		            QString(),
+		            GetPrefOpenInTab(),
+		            false);
+	}
+#endif
 
     CheckCloseDimEx();
 }
