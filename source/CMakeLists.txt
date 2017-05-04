@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.0)
 
+if(NOT CMAKE_BUILD_TYPE)
+	set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING "Choose the type of build, options are: Debug Release RelWithDebInfo MinSizeRel." FORCE)
+endif()
+
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 #set(CMAKE_AUTOMOC ON)
 #set(CMAKE_AUTOUIC ON)
@@ -183,14 +187,10 @@ target_link_libraries(nedit-ng LINK_PUBLIC
 	Qt5::DBus
 )
 
-set_property(TARGET nedit-ng PROPERTY C_STANDARD 99)
+set_property(TARGET nedit-ng PROPERTY CMAKE_EXTENSIONS OFF)
 set_property(TARGET nedit-ng PROPERTY CXX_STANDARD 14)
 
-set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -Wc++-compat -Wwrite-strings -Wunused") # -ffunction-sections -fdata-sections
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -W -Wall -pedantic -Wunused") #-Wuseless-cast -Wold-style-cast -ffunction-sections -fdata-sections
-
-set(CMAKE_C_FLAGS_DEBUG   "${CMAKE_C_FLAGS_DEBUG}   -ggdb3")
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -ggdb3")
 
 # SET_TARGET_PROPERTIES(nedit-ng PROPERTIES LINK_FLAGS "-Wl,--gc-sections,--print-gc-sections")
 
