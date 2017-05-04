@@ -81,16 +81,12 @@ QString ImportedFile;
 
 
 static void translatePrefFormats(quint32 fileVer);
-static QStringList readExtensionList(const char **inPtr);
+static QStringList readExtensionListEx(Input &in);
 static QString getDefaultShell();
 static int loadLanguageModesStringEx(const QString &string);
-static int loadLanguageModesString(const char *inString);
-static int modeError(const char *stringStart, const char *stoppedAt, const char *message);
+static int modeErrorEx(const Input &in, const QString &message);
 static QString WriteLanguageModesStringEx();
-static int ReadNumericField(const char **inPtr, int *value);
-static bool ReadQuotedStringEx(const char **inPtr, const char **errMsg, QString *string);
-static bool SkipDelimiter(const char **inPtr, const char **errMsg);
-static QString ReadSymbolicFieldEx(const char **inPtr);
+
 static Settings g_Settings;
 
 void RestoreNEditPrefs() {
@@ -957,55 +953,50 @@ QString GetWindowDelimitersEx(const DocumentWidget *window) {
 
 
 static int loadLanguageModesStringEx(const QString &string) {
-	
-	// TODO(eteran): implement this natively
-	return loadLanguageModesString(string.toLatin1().data());
-}
-
-static int loadLanguageModesString(const char *inString) {
 	const char *errMsg;
-	const char *inPtr = inString;
 	int i;
+
+	Input in(&string);
 
 	Q_FOREVER {
 
 		// skip over blank space
-		inPtr += strspn(inPtr, " \t\n");
+		in.skipWhitespaceNL();
 
 		LanguageMode lm;
 
 		// read language mode name
-		QString name = ReadSymbolicFieldEx(&inPtr);
+		QString name = ReadSymbolicFieldEx(in);
 		if (name.isNull()) {
-			return modeError(inString, inPtr, "language mode name required");
+			return modeErrorEx(in, QLatin1String("language mode name required"));
 		}
 
 		lm.name = name;
 
-		if (!SkipDelimiter(&inPtr, &errMsg))
-			return modeError(inString, inPtr, errMsg);
+		if (!SkipDelimiter(in, &errMsg))
+			return modeErrorEx(in, QString::fromLatin1(errMsg));
 
 		// read list of extensions
-		lm.extensions = readExtensionList(&inPtr);
-		if (!SkipDelimiter(&inPtr, &errMsg))
-			return modeError(inString, inPtr, errMsg);
+		lm.extensions = readExtensionListEx(in);
+		if (!SkipDelimiter(in, &errMsg))
+			return modeErrorEx(in, QString::fromLatin1(errMsg));
 
 		// read the recognition regular expression
 		QString recognitionExpr;
-		if (*inPtr == '\n' || *inPtr == '\0' || *inPtr == ':') {
+		if (in.atEnd() || *in == QLatin1Char('\n') || *in == QLatin1Char(':')) {
 			recognitionExpr = QString();
-		} else if (!ReadQuotedStringEx(&inPtr, &errMsg, &recognitionExpr)) {
-			return modeError(inString, inPtr, errMsg);
+		} else if (!ReadQuotedStringEx(in, &errMsg, &recognitionExpr)) {
+			return modeErrorEx(in, QString::fromLatin1(errMsg));
 		}
 
 		lm.recognitionExpr = recognitionExpr;
 
-		if (!SkipDelimiter(&inPtr, &errMsg)) {
-			return modeError(inString, inPtr, errMsg);
+		if (!SkipDelimiter(in, &errMsg)) {
+			return modeErrorEx(in, QString::fromLatin1(errMsg));
 		}
 
 		// read the indent style
-		QString styleName = ReadSymbolicFieldEx(&inPtr);
+		QString styleName = ReadSymbolicFieldEx(in);
 		if(styleName.isNull()) {
 			lm.indentStyle = DEFAULT_INDENT;
 		} else {
@@ -1016,14 +1007,14 @@ static int loadLanguageModesString(const char *inString) {
 				}
 			}
 			if (i == N_INDENT_STYLES)
-				return modeError(inString, inPtr, "unrecognized indent style");
+				return modeErrorEx(in, QLatin1String("unrecognized indent style"));
 		}
 
-		if (!SkipDelimiter(&inPtr, &errMsg))
-			return modeError(inString, inPtr, errMsg);
+		if (!SkipDelimiter(in, &errMsg))
+			return modeErrorEx(in, QString::fromLatin1(errMsg));
 
 		// read the wrap style
-		styleName = ReadSymbolicFieldEx(&inPtr);
+		styleName = ReadSymbolicFieldEx(in);
 		if(styleName.isNull()) {
 			lm.wrapStyle = DEFAULT_WRAP;
 		} else {
@@ -1034,52 +1025,52 @@ static int loadLanguageModesString(const char *inString) {
 				}
 			}
 			if (i == N_WRAP_STYLES)
-				return modeError(inString, inPtr, "unrecognized wrap style");
+				return modeErrorEx(in, QLatin1String("unrecognized wrap style"));
 		}
-		if (!SkipDelimiter(&inPtr, &errMsg))
-			return modeError(inString, inPtr, errMsg);
+		if (!SkipDelimiter(in, &errMsg))
+			return modeErrorEx(in, QString::fromLatin1(errMsg));
 
 		// read the tab distance
-		if (*inPtr == '\n' || *inPtr == '\0' || *inPtr == ':') {
+		if (in.atEnd() || *in == QLatin1Char('\n') || *in == QLatin1Char(':')) {
 			lm.tabDist = DEFAULT_TAB_DIST;
-		} else if (!ReadNumericField(&inPtr, &lm.tabDist)) {
-			return modeError(inString, inPtr, "bad tab spacing");
+		} else if (!ReadNumericFieldEx(in, &lm.tabDist)) {
+			return modeErrorEx(in, QLatin1String("bad tab spacing"));
 		}
 
-		if (!SkipDelimiter(&inPtr, &errMsg)) {
-			return modeError(inString, inPtr, errMsg);
+		if (!SkipDelimiter(in, &errMsg)) {
+			return modeErrorEx(in, QString::fromLatin1(errMsg));
 		}
 
 		// read emulated tab distance
-		if (*inPtr == '\n' || *inPtr == '\0' || *inPtr == ':') {
+		if (in.atEnd() || *in == QLatin1Char('\n') || *in == QLatin1Char(':')) {
 			lm.emTabDist = DEFAULT_EM_TAB_DIST;
 		}
-		else if (!ReadNumericField(&inPtr, &lm.emTabDist))
-			return modeError(inString, inPtr, "bad emulated tab spacing");
-		if (!SkipDelimiter(&inPtr, &errMsg))
-			return modeError(inString, inPtr, errMsg);
+		else if (!ReadNumericFieldEx(in, &lm.emTabDist))
+			return modeErrorEx(in, QLatin1String("bad emulated tab spacing"));
+		if (!SkipDelimiter(in, &errMsg))
+			return modeErrorEx(in, QString::fromLatin1(errMsg));
 
 		// read the delimiters string
 		QString delimiters;
-		if (*inPtr == '\n' || *inPtr == '\0' || *inPtr == ':') {
+		if (in.atEnd() || *in == QLatin1Char('\n') || *in == QLatin1Char(':')) {
 			delimiters = QString();
-		} else if (!ReadQuotedStringEx(&inPtr, &errMsg, &delimiters)) {
-			return modeError(inString, inPtr, errMsg);
+		} else if (!ReadQuotedStringEx(in, &errMsg, &delimiters)) {
+			return modeErrorEx(in, QString::fromLatin1(errMsg));
 		}
 
 		lm.delimiters = delimiters;
 
 		// After 5.3 all language modes need a default tips file field
-		if (!SkipDelimiter(&inPtr, &errMsg))
-			return modeError(inString, inPtr, errMsg);
+		if (!SkipDelimiter(in, &errMsg))
+			return modeErrorEx(in, QString::fromLatin1(errMsg));
 
 		// read the default tips file
 
 		QString defTipsFile;
-		if (*inPtr == '\n' || *inPtr == '\0') {
+		if (in.atEnd() || *in == QLatin1Char('\n')) {
 			defTipsFile = QString();
-		} else if (!ReadQuotedStringEx(&inPtr, &errMsg, &defTipsFile)) {
-			return modeError(inString, inPtr, errMsg);
+		} else if (!ReadQuotedStringEx(in, &errMsg, &defTipsFile)) {
+			return modeErrorEx(in, QString::fromLatin1(errMsg));
 		}
 
 		lm.defTipsFile = defTipsFile;
@@ -1097,9 +1088,11 @@ static int loadLanguageModesString(const char *inString) {
 		}
 
 		// if the string ends here, we're done
-		inPtr += strspn(inPtr, " \t\n");
-		if (*inPtr == '\0')
+		in.skipWhitespaceNL();
+
+		if (in.atEnd()) {
 			return true;
+		}
 	}
 }
 
@@ -1162,45 +1155,28 @@ static QString WriteLanguageModesStringEx() {
     return str;
 }
 
-static QStringList readExtensionList(const char **inPtr) {
+static QStringList readExtensionListEx(Input &in) {
 	QStringList extensionList;
-	const char *strStart;
-	int len;
 
 	// skip over blank space
-	*inPtr += strspn(*inPtr, " \t");
+	in.skipWhitespace();
 
-	while(**inPtr != ':' && **inPtr != '\0') {
+	while(!in.atEnd() && *in != QLatin1Char(':')) {
 
-		*inPtr += strspn(*inPtr, " \t");
-		strStart = *inPtr;
+		in.skipWhitespace();
 
-		while (**inPtr != ' ' && **inPtr != '\t' && **inPtr != ':' && **inPtr != '\0') {
-			(*inPtr)++;
+		Input strStart = in;
+
+		while (!in.atEnd() && *in != QLatin1Char(' ') && *in != QLatin1Char('\t') && *in != QLatin1Char(':')) {
+			++in;
 		}
 
-		len = *inPtr - strStart;
-
-
-		extensionList.push_back(QString::fromLatin1(strStart, len));
+		int len = in - strStart;
+		QString ext = strStart.segment(len);
+		extensionList.push_back(ext);
 	}
-
 
 	return extensionList;
-}
-
-int ReadNumericField(const char **inPtr, int *value) {
-	int charsRead;
-
-	// skip over blank space
-	*inPtr += strspn(*inPtr, " \t");
-
-	if (sscanf(*inPtr, "%d%n", value, &charsRead) != 1) {
-		return false;
-	}
-
-	*inPtr += charsRead;
-	return true;
 }
 
 bool ReadNumericFieldEx(Input &in, int *value) {
@@ -1259,47 +1235,6 @@ QString ReadSymbolicFieldEx(Input &input) {
 			*outPtr++ = QLatin1Char(' ');
 		} else {
 			*outPtr++ = *strPtr++;
-		}
-	}
-
-	// If there's space on the end, take it back off
-	if(outStr.endsWith(QLatin1Char(' '))) {
-		outStr.chop(1);
-	}
-
-	return outStr;
-}
-
-QString ReadSymbolicFieldEx(const char **inPtr) {
-
-	// skip over initial blank space
-	*inPtr += strspn(*inPtr, " \t");
-
-	/* Find the first invalid character or end of string to know how
-	   much memory to allocate for the returned string */
-	const char *strStart = *inPtr;
-	while (isalnum(static_cast<uint8_t>(**inPtr)) || **inPtr == '_' || **inPtr == '-' || **inPtr == '+' || **inPtr == '$' || **inPtr == '#' || **inPtr == ' ' || **inPtr == '\t') {
-		(*inPtr)++;
-	}
-
-	const int len = *inPtr - strStart;
-	if (len == 0) {
-		return QString();
-	}
-
-	QString outStr;
-	outStr.reserve(len);
-
-	auto outPtr = std::back_inserter(outStr);
-
-	// Copy the string, compressing internal whitespace to a single space
-	const char *strPtr = strStart;
-	while (strPtr - strStart < len) {
-		if (*strPtr == ' ' || *strPtr == '\t') {
-			strPtr += strspn(strPtr, " \t");
-			*outPtr++ = QLatin1Char(' ');
-		} else {
-			*outPtr++ = QChar::fromLatin1(*strPtr++);
 		}
 	}
 
@@ -1370,55 +1305,6 @@ bool ReadQuotedStringEx(Input &in, const char **errMsg, QString *string) {
 	return true;
 }
 
-bool ReadQuotedStringEx(const char **inPtr, const char **errMsg, QString *string) {
-	const char *c;
-
-	// skip over blank space
-	*inPtr += strspn(*inPtr, " \t");
-
-	// look for initial quote
-	if (**inPtr != '\"') {
-		*errMsg = "expecting quoted string";
-		return false;
-	}
-	(*inPtr)++;
-
-	// calculate max length and allocate returned string
-	for (c = *inPtr;; c++) {
-		if (*c == '\0') {
-			*errMsg = "string not terminated";
-			return false;
-		} else if (*c == '\"') {
-			if (*(c + 1) == '\"')
-				c++;
-			else
-				break;
-		}
-	}
-
-	// copy string up to end quote, transforming escaped quotes into quotes
-	QString str;
-	str.reserve(c - *inPtr);
-
-	auto outPtr = std::back_inserter(str);
-
-	while (true) {
-		if (**inPtr == '\"') {
-			if (*(*inPtr + 1) == '\"')
-				(*inPtr)++;
-			else
-				break;
-		}
-		*outPtr++ = QChar::fromLatin1(*(*inPtr)++);
-	}
-
-	// skip end quote
-	(*inPtr)++;
-
-	*string = str;
-	return true;
-}
-
 /*
 ** Adds double quotes around a string and escape existing double quote
 ** characters with two double quotes.  Enables the string to be read back
@@ -1460,17 +1346,6 @@ QString MakeQuotedStringEx(const QString &string) {
 /*
 ** Skip a delimiter and it's surrounding whitespace
 */
-bool SkipDelimiter(const char **inPtr, const char **errMsg) {
-	*inPtr += strspn(*inPtr, " \t");
-	if (**inPtr != ':') {
-		*errMsg = "syntax error";
-		return false;
-	}
-	(*inPtr)++;
-	*inPtr += strspn(*inPtr, " \t");
-	return true;
-}
-
 bool SkipDelimiter(Input &in, const char **errMsg) {
 
 	in.skipWhitespace();
@@ -1507,13 +1382,13 @@ int SkipOptSeparatorEx(QChar separator, Input &in) {
 ** lm (if non-null), prints a formatted message explaining where the
 ** error is, and returns False;
 */
-static int modeError(const char *stringStart, const char *stoppedAt, const char *message) {
+static int modeErrorEx(const Input &in, const QString &message) {
 	return ParseErrorEx(
 	            nullptr,
-	            QString::fromLatin1(stringStart),
-	            stoppedAt - stringStart,
+	            *in.string(),
+	            in.index(),
 	            QLatin1String("language mode specification"),
-	            QString::fromLatin1(message));
+	            message);
 }
 
 /*
