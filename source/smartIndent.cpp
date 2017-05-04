@@ -259,7 +259,7 @@ static bool loadDefaultIndentSpec(const QString &lmName) {
 int LoadSmartIndentStringEx(const QString &string) {
 
 	Input in(&string);
-	const char *errMsg;
+	QString errMsg;
 	int i;
 
 	for (;;) {
@@ -279,8 +279,8 @@ int LoadSmartIndentStringEx(const QString &string) {
 			return siParseError(in, QLatin1String("language mode name required"));
 		}
 
-		if (!SkipDelimiter(in, &errMsg)) {
-			return siParseError(in, QString::fromLatin1(errMsg));
+		if (!SkipDelimiterEx(in, &errMsg)) {
+			return siParseError(in, errMsg);
 		}
 
 		/* look for "Default" keyword, and if it's there, return the default

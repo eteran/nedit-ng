@@ -115,8 +115,8 @@ bool ParseErrorEx(QWidget *toDialog, const QString &string, int stoppedAt, const
 
 
 bool ReadNumericFieldEx(Input &in, int *value);
-bool ReadQuotedStringEx(Input &in, const char **errMsg, QString *string);
-bool SkipDelimiter(Input &inPtr, const char **errMsg);
+bool ReadQuotedStringEx(Input &in, QString *errMsg, QString *string);
+bool SkipDelimiterEx(Input &in, QString *errMsg);
 
 int SkipOptSeparatorEx(QChar separator, Input &in);
 QString MakeQuotedStringEx(const QString &string);

@@ -76,9 +76,9 @@ QList<HighlightStyle> HighlightStyles;
 
 static bool isDefaultPatternSet(const PatternSet *patSet);
 static bool styleErrorEx(const Input &in, const QString &message);
-static QVector<HighlightPattern> readHighlightPatternsEx(Input &in, int withBraces, const char **errMsg, bool *ok);
+static QVector<HighlightPattern> readHighlightPatternsEx(Input &in, int withBraces, QString *errMsg, bool *ok);
 static int lookupNamedStyle(const QString &styleName);
-static int readHighlightPatternEx(Input &in, const char **errMsg, HighlightPattern *pattern);
+static int readHighlightPatternEx(Input &in, QString *errMsg, HighlightPattern *pattern);
 static std::unique_ptr<PatternSet> highlightErrorEx(const Input &in, const QString &message);
 static std::unique_ptr<PatternSet> readPatternSetEx(Input &in);
 static QString createPatternsString(const PatternSet *patSet, const QString &indentStr);
@@ -94,8 +94,7 @@ QList<PatternSet> PatternSets;
 bool LoadStylesStringEx(const QString &string) {
 
 	Input in(&string);
-
-    const char *errMsg;
+	QString errMsg;
     int i;
 
 	for (;;) {
@@ -113,8 +112,8 @@ bool LoadStylesStringEx(const QString &string) {
 		}		
         hs.name = name;
 		
-		if (!SkipDelimiter(in, &errMsg)) {
-			return styleErrorEx(in, QString::fromLatin1(errMsg));
+		if (!SkipDelimiterEx(in, &errMsg)) {
+			return styleErrorEx(in, errMsg);
 		}
 
 		// read color 
@@ -135,8 +134,8 @@ bool LoadStylesStringEx(const QString &string) {
 	
 		}
 		
-		if (!SkipDelimiter(in, &errMsg)) {
-			return styleErrorEx(in, QString::fromLatin1(errMsg));
+		if (!SkipDelimiterEx(in, &errMsg)) {
+			return styleErrorEx(in, errMsg);
 		}
 
 		// read the font type 
@@ -469,7 +468,7 @@ QString createPatternsString(const PatternSet *patSet, const QString &indentStr)
 ** Returns nullptr and outputs an error to stderr on failure.
 */
 static std::unique_ptr<PatternSet> readPatternSetEx(Input &in) {
-	const char *errMsg;
+	QString errMsg;
 
 	// remove leading whitespace
 	in.skipWhitespaceNL();
@@ -483,8 +482,8 @@ static std::unique_ptr<PatternSet> readPatternSetEx(Input &in) {
 		return highlightErrorEx(in, QLatin1String("language mode must be specified"));
 	}
 
-	if (!SkipDelimiter(in, &errMsg)) {
-		return highlightErrorEx(in, QString::fromLatin1(errMsg));
+	if (!SkipDelimiterEx(in, &errMsg)) {
+		return highlightErrorEx(in, errMsg);
 	}
 
 	/* look for "Default" keyword, and if it's there, return the default
@@ -501,8 +500,9 @@ static std::unique_ptr<PatternSet> readPatternSetEx(Input &in) {
 	// read line context field
 	if (!ReadNumericFieldEx(in, &patSet->lineContext))
 		return highlightErrorEx(in, QLatin1String("unreadable line context field"));
-	if (!SkipDelimiter(in, &errMsg))
-		return highlightErrorEx(in, QString::fromLatin1(errMsg));
+
+	if (!SkipDelimiterEx(in, &errMsg))
+		return highlightErrorEx(in, errMsg);
 
 	// read character context field
 	if (!ReadNumericFieldEx(in, &patSet->charContext))
@@ -512,7 +512,7 @@ static std::unique_ptr<PatternSet> readPatternSetEx(Input &in) {
 	bool ok;
 	QVector<HighlightPattern> patterns = readHighlightPatternsEx(in, true, &errMsg, &ok);
 	if (!ok) {
-		return highlightErrorEx(in, QString::fromLatin1(errMsg));
+		return highlightErrorEx(in, errMsg);
 	}
 
 	patSet->patterns = patterns;
@@ -526,14 +526,14 @@ static std::unique_ptr<PatternSet> readPatternSetEx(Input &in) {
 ** structures, and a language mode name.  If unsuccessful, returns nullptr with
 ** (statically allocated) message in "errMsg".
 */
-static QVector<HighlightPattern> readHighlightPatternsEx(Input &in, int withBraces, const char **errMsg, bool *ok) {
+static QVector<HighlightPattern> readHighlightPatternsEx(Input &in, int withBraces, QString *errMsg, bool *ok) {
 	// skip over blank space
 	in.skipWhitespaceNL();
 
 	// look for initial brace
 	if (withBraces) {
 		if (*in != QLatin1Char('{')) {
-			*errMsg = "pattern list must begin with \"{\"";
+			*errMsg = QLatin1String("pattern list must begin with \"{\"");
 			*ok = false;
 			return QVector<HighlightPattern>();
 		}
@@ -550,7 +550,7 @@ static QVector<HighlightPattern> readHighlightPatternsEx(Input &in, int withBrac
 		in.skipWhitespaceNL();
 		if(in.atEnd()) {
 			if (withBraces) {
-				*errMsg = "end of pattern list not found";
+				*errMsg = QLatin1String("end of pattern list not found");
 				*ok = false;
 				return QVector<HighlightPattern>();
 			} else
@@ -576,23 +576,24 @@ static QVector<HighlightPattern> readHighlightPatternsEx(Input &in, int withBrac
 	return ret;
 }
 
-static int readHighlightPatternEx(Input &in, const char **errMsg, HighlightPattern *pattern) {
+static int readHighlightPatternEx(Input &in, QString *errMsg, HighlightPattern *pattern) {
 
 	// read the name field
 	QString name = ReadSymbolicFieldEx(in);
 	if (name.isNull()) {
-		*errMsg = "pattern name is required";
+		*errMsg = QLatin1String("pattern name is required");
 		return false;
 	}
 	pattern->name = name;
 
-	if (!SkipDelimiter(in, errMsg))
+	if (!SkipDelimiterEx(in, errMsg))
 		return false;
 
 	// read the start pattern
 	if (!ReadQuotedStringEx(in, errMsg, &pattern->startRE))
 		return false;
-	if (!SkipDelimiter(in, errMsg))
+
+	if (!SkipDelimiterEx(in, errMsg))
 		return false;
 
 	// read the end pattern
@@ -603,7 +604,7 @@ static int readHighlightPatternEx(Input &in, const char **errMsg, HighlightPatte
 		return false;
 	}
 
-	if (!SkipDelimiter(in, errMsg))
+	if (!SkipDelimiterEx(in, errMsg))
 		return false;
 
 	// read the error pattern
@@ -613,24 +614,24 @@ static int readHighlightPatternEx(Input &in, const char **errMsg, HighlightPatte
 		return false;
 	}
 
-	if (!SkipDelimiter(in, errMsg))
+	if (!SkipDelimiterEx(in, errMsg))
 		return false;
 
 	// read the style field
 	pattern->style = ReadSymbolicFieldEx(in);
 
 	if (pattern->style.isNull()) {
-		*errMsg = "style field required in pattern";
+		*errMsg = QLatin1String("style field required in pattern");
 		return false;
 	}
 
-	if (!SkipDelimiter(in, errMsg))
+	if (!SkipDelimiterEx(in, errMsg))
 		return false;
 
 	// read the sub-pattern-of field
 	pattern->subPatternOf = ReadSymbolicFieldEx(in);
 
-	if (!SkipDelimiter(in, errMsg))
+	if (!SkipDelimiterEx(in, errMsg))
 		return false;
 
 	// read flags field
@@ -644,7 +645,7 @@ static int readHighlightPatternEx(Input &in, const char **errMsg, HighlightPatte
 		else if (*in == QLatin1Char('C'))
 			pattern->flags |= COLOR_ONLY;
 		else if (*in != QLatin1Char(' ') && *in != QLatin1Char('\t')) {
-			*errMsg = "unreadable flag field";
+			*errMsg = QLatin1String("unreadable flag field");
 			return false;
 		}
 	}

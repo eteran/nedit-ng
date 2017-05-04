@@ -482,7 +482,7 @@ bool DialogWindowBackgroundMenu::updateCurrentItem(QListWidgetItem *item) {
 	// delete the current pattern in this slot
 	auto old = reinterpret_cast<MenuItem *>(item->data(Qt::UserRole).toULongLong());
 	delete old;
-	
+
 	item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(ptr));
 	item->setText(ptr->name);
 	return true;
