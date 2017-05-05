@@ -67,6 +67,7 @@ private:
 
 static QString copyMacroToEnd(const char **inPtr);
 static int loadMenuItemString(const char *inString, QVector<MenuData> &menuItems, DialogTypes listType);
+static int loadMenuItemStringEx(const QString &inString, QVector<MenuData> &menuItems, DialogTypes listType);
 static QString stripLanguageModeEx(const QString &menuItemName);
 static QString writeMenuItemStringEx(const QVector<MenuData> &menuItems, DialogTypes listType);
 static userMenuInfo *parseMenuItemRec(MenuItem *item);
@@ -103,8 +104,7 @@ QString WriteBGMenuCmdsStringEx() {
 ** internal list used for constructing shell menus
 */
 int LoadShellCmdsStringEx(const QString &inString) {
-	// TODO(eteran): make this more efficient
-    return loadMenuItemString(inString.toLatin1().data(), ShellMenuData, SHELL_CMDS);
+	return loadMenuItemStringEx(inString, ShellMenuData, SHELL_CMDS);
 }
 
 /*
@@ -112,14 +112,13 @@ int LoadShellCmdsStringEx(const QString &inString) {
 ** and add them to the internal lists used for constructing menus
 */
 int LoadMacroCmdsStringEx(const QString &inString) {
-	// TODO(eteran): make this more efficient
-    return loadMenuItemString(inString.toLatin1().data(), MacroMenuData, MACRO_CMDS);
+	return loadMenuItemStringEx(inString, MacroMenuData, MACRO_CMDS);
 }
 
 
 int LoadBGMenuCmdsStringEx(const QString &inString) {
 	// TODO(eteran): make this more efficient
-    return loadMenuItemString(inString.toLatin1().data(), BGMenuData, BG_MENU_CMDS);
+	return loadMenuItemStringEx(inString, BGMenuData, BG_MENU_CMDS);
 }
 
 /*
@@ -227,6 +226,11 @@ static QString writeMenuItemStringEx(const QVector<MenuData> &menuItems, DialogT
 
     outStr.chop(1);
     return outStr;
+}
+
+static int loadMenuItemStringEx(const QString &inString, QVector<MenuData> &menuItems, DialogTypes listType) {
+	// TODO(eteran): better implementation
+	return loadMenuItemString(inString.toLatin1().data(), menuItems, listType);
 }
 
 static int loadMenuItemString(const char *inString, QVector<MenuData> &menuItems, DialogTypes listType) {
