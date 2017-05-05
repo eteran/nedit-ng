@@ -110,7 +110,7 @@ int Input::operator-(const Input &rhs) const {
 	return index_ - rhs.index_;
 }
 
-Input Input::operator+(int rhs) {
+Input Input::operator+(int rhs) const {
 	Input next = *this;
 	next += rhs;
 	return next;

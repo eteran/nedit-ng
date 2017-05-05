@@ -1766,23 +1766,14 @@ bool DocumentWidget::CheckReadOnly() const {
 */
 void DocumentWidget::MakeSelectionVisible(TextArea *area) {
 
-    int width;
-    bool isRect;
+	bool isRect;
     int horizOffset;
-    int lastLineNum;
     int left;
-    int leftLineNum;
     int leftX;
-    int linesToScroll;
-    int margin;
     int rectEnd;
     int rectStart;
     int right;
-    int rightLineNum;
     int rightX;
-    int rows;
-    int scrollOffset;
-    int targetLineNum;
     int topLineNum;
     int y;
 
@@ -1804,17 +1795,17 @@ void DocumentWidget::MakeSelectionVisible(TextArea *area) {
        necessary), around 1/3 of the height of the window */
     if (!((left >= topChar && right <= lastChar) || (left <= topChar && right >= lastChar))) {
 
-        rows = area->getRows();
+		int rows = area->getRows();
 
-        scrollOffset = rows / 3;
+		int scrollOffset = rows / 3;
         area->TextDGetScroll(&topLineNum, &horizOffset);
         if (right > lastChar) {
             // End of sel. is below bottom of screen
-            leftLineNum = topLineNum + area->TextDCountLines(topChar, left, false);
-            targetLineNum = topLineNum + scrollOffset;
+			int leftLineNum = topLineNum + area->TextDCountLines(topChar, left, false);
+			int targetLineNum = topLineNum + scrollOffset;
             if (leftLineNum >= targetLineNum) {
                 // Start of sel. is not between top & target
-                linesToScroll = area->TextDCountLines(lastChar, right, false) + scrollOffset;
+				int linesToScroll = area->TextDCountLines(lastChar, right, false) + scrollOffset;
                 if (leftLineNum - linesToScroll < targetLineNum)
                     linesToScroll = leftLineNum - targetLineNum;
                 // Scroll start of selection to the target line
@@ -1822,12 +1813,13 @@ void DocumentWidget::MakeSelectionVisible(TextArea *area) {
             }
         } else if (left < topChar) {
             // Start of sel. is above top of screen
-            lastLineNum = topLineNum + rows;
-            rightLineNum = lastLineNum - area->TextDCountLines(right, lastChar, false);
-            targetLineNum = lastLineNum - scrollOffset;
+			int lastLineNum = topLineNum + rows;
+			int rightLineNum = lastLineNum - area->TextDCountLines(right, lastChar, false);
+			int targetLineNum = lastLineNum - scrollOffset;
+
             if (rightLineNum <= targetLineNum) {
                 // End of sel. is not between bottom & target
-                linesToScroll = area->TextDCountLines(left, topChar, false) + scrollOffset;
+				int linesToScroll = area->TextDCountLines(left, topChar, false) + scrollOffset;
                 if (rightLineNum + linesToScroll > targetLineNum)
                     linesToScroll = targetLineNum - rightLineNum;
                 // Scroll end of selection to the target line
@@ -1847,8 +1839,8 @@ void DocumentWidget::MakeSelectionVisible(TextArea *area) {
     if (area->TextDPositionToXY(left, &leftX, &y) && area->TextDPositionToXY(right, &rightX, &y) && leftX <= rightX) {
         area->TextDGetScroll(&topLineNum, &horizOffset);
 
-        margin = area->getMarginWidth();
-        width  = area->width();
+		int margin = area->getMarginWidth();
+		int width  = area->width();
 
         if (leftX < margin + area->getLineNumLeft() + area->getLineNumWidth())
             horizOffset -= margin + area->getLineNumLeft() + area->getLineNumWidth() - leftX;
@@ -2844,8 +2836,6 @@ int DocumentWidget::fileWasModifiedExternally() {
 }
 
 int DocumentWidget::CloseFileAndWindow(int preResponse) {
-    int response;
-    int stat;
 
     // Make sure that the window is not in iconified state
     if (fileChanged_) {
@@ -2865,6 +2855,7 @@ int DocumentWidget::CloseFileAndWindow(int preResponse) {
         CloseWindow();
         // up-to-date windows don't have outstanding backup files to close
     } else {
+		int response;
         if (preResponse == PROMPT_SBC_DIALOG_RESPONSE) {
 
             int resp = QMessageBox::warning(this, tr("Save File"), tr("Save %1 before closing?").arg(filename_), QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
@@ -2890,8 +2881,8 @@ int DocumentWidget::CloseFileAndWindow(int preResponse) {
         switch(response) {
         case YES_SBC_DIALOG_RESPONSE:
             // Save
-            stat = SaveWindow();
-            if (stat) {
+			if (int stat = SaveWindow()) {
+				Q_UNUSED(stat);
                 CloseWindow();
             } else {
                 return false;
@@ -4060,7 +4051,7 @@ int DocumentWidget::findDef(TextArea *area, const QString &value, Mode search_ty
 
 		// should be of type text???
 		QString::const_iterator p;
-		for (p = value.begin(); p != value.end() && isascii(p->toLatin1()); p++) {
+		for (p = value.begin(); p != value.end() && isascii(p->toLatin1()); ++p) {
 		}
 
 		if (p == value.end()) {

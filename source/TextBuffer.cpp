@@ -102,15 +102,14 @@ std::string unexpandTabsEx(view::string_view text, int startIndent, int tabDist,
 ** beginning at column "startIndent"
 */
 std::string expandTabsEx(view::string_view text, int startIndent, int tabDist, char nullSubsChar, int *newLen) {
-	int indent;
-	int len;
+
 	int outLen = 0;
 
 	// rehearse the expansion to figure out length for output string
-	indent = startIndent;
+	int indent = startIndent;
 	for (char ch : text) {
 		if (ch == '\t') {
-			len = TextBuffer::BufCharWidth(ch, indent, tabDist, nullSubsChar);
+			int len = TextBuffer::BufCharWidth(ch, indent, tabDist, nullSubsChar);
 			outLen += len;
 			indent += len;
 		} else if (ch == '\n') {
@@ -134,7 +133,7 @@ std::string expandTabsEx(view::string_view text, int startIndent, int tabDist, c
 
 			char temp[MAX_EXP_CHAR_LEN];
 			char *temp_ptr = temp;
-			len = TextBuffer::BufExpandCharacter(ch, indent, temp, tabDist, nullSubsChar);
+			int len = TextBuffer::BufExpandCharacter(ch, indent, temp, tabDist, nullSubsChar);
 
 			std::copy_n(temp_ptr, len, outPtr);
 
@@ -2026,7 +2025,6 @@ void TextBuffer::findRectSelBoundariesForCopy(int lineStartPos, int rectStart, i
 */
 void TextBuffer::insertColEx(int column, int startPos, view::string_view insText, int *nDeleted, int *nInserted, int *endPos) {
 
-    int lineEnd;
     int expReplLen;
     int expInsLen;
     int len;
@@ -2052,9 +2050,16 @@ void TextBuffer::insertColEx(int column, int startPos, view::string_view insText
     int insWidth = textWidthEx(insText, tabDist_, nullSubsChar_);
     int end = BufEndOfLine(BufCountForwardNLines(start, nLines - 1));
 	std::string replText = BufGetRangeEx(start, end);
-	std::string expText = expandTabsEx(replText, 0, tabDist_, nullSubsChar_, &expReplLen);
-
-	expText = expandTabsEx(insText, 0, tabDist_, nullSubsChar_, &expInsLen);
+	{
+		std::string expText = expandTabsEx(replText, 0, tabDist_, nullSubsChar_, &expReplLen);
+		Q_UNUSED(expText);
+		// NOTE(eteran): immediately freed, result isn't used for anything
+	}
+	{
+		std::string expText = expandTabsEx(insText, 0, tabDist_, nullSubsChar_, &expInsLen);
+		Q_UNUSED(expText);
+		// NOTE(eteran): immediately freed, result isn't used for anything
+	}
 
     auto outStr = new char[expReplLen + expInsLen + nLines * (column + insWidth + MAX_EXP_CHAR_LEN) + 1];
 
@@ -2064,7 +2069,7 @@ void TextBuffer::insertColEx(int column, int startPos, view::string_view insText
 	int lineStart = start;
 	auto insPtr = insText.begin();
 	while (true) {
-		lineEnd = BufEndOfLine(lineStart);
+		int lineEnd = BufEndOfLine(lineStart);
 		std::string line = BufGetRangeEx(lineStart, lineEnd);
 		std::string insLine = copyLineEx(insPtr, insText.end());
 		insPtr += insLine.size();

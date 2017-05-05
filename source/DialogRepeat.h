@@ -10,7 +10,7 @@ class DocumentWidget;
 class DialogRepeat : public Dialog {
 	Q_OBJECT
 public:
-    DialogRepeat(DocumentWidget *forWindow, QWidget *parent = 0, Qt::WindowFlags f = 0);
+	DialogRepeat(DocumentWidget *document, QWidget *parent = 0, Qt::WindowFlags f = 0);
     virtual ~DialogRepeat() = default;
 
 public Q_SLOTS:

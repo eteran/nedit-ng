@@ -367,7 +367,7 @@ bool GetPrefKeepSearchDlogs() {
     return g_Settings.retainSearchDialogs;
 }
 
-void SetPrefSearchWraps(int state) {
+void SetPrefSearchWraps(bool state) {
     if(g_Settings.searchWraps != state) {
         PrefsHaveChanged = true;
     }
@@ -382,7 +382,7 @@ int GetPrefStickyCaseSenseBtn() {
     return g_Settings.stickyCaseSenseButton;
 }
 
-void SetPrefStatsLine(int state) {
+void SetPrefStatsLine(bool state) {
     if(g_Settings.statisticsLine != state) {
         PrefsHaveChanged = true;
     }
@@ -393,7 +393,7 @@ int GetPrefStatsLine() {
     return g_Settings.statisticsLine;
 }
 
-void SetPrefISearchLine(int state) {
+void SetPrefISearchLine(bool state) {
     if(g_Settings.iSearchLine != state) {
         PrefsHaveChanged = true;
     }
@@ -404,7 +404,7 @@ int GetPrefISearchLine() {
     return g_Settings.iSearchLine;
 }
 
-void SetPrefSortTabs(int state) {
+void SetPrefSortTabs(bool state) {
     if(g_Settings.sortTabs != state) {
         PrefsHaveChanged = true;
     }
@@ -415,7 +415,7 @@ int GetPrefSortTabs() {
     return g_Settings.sortTabs;
 }
 
-void SetPrefTabBar(int state) {
+void SetPrefTabBar(bool state) {
     if(g_Settings.tabBar != state) {
         PrefsHaveChanged = true;
     }
@@ -426,7 +426,7 @@ int GetPrefTabBar() {
     return g_Settings.tabBar;
 }
 
-void SetPrefTabBarHideOne(int state) {
+void SetPrefTabBarHideOne(bool state) {
     if(g_Settings.tabBarHideOne != state) {
         PrefsHaveChanged = true;
     }
@@ -437,7 +437,7 @@ int GetPrefTabBarHideOne() {
     return g_Settings.tabBarHideOne;
 }
 
-void SetPrefGlobalTabNavigate(int state) {
+void SetPrefGlobalTabNavigate(bool state) {
     if(g_Settings.globalTabNavigate != state) {
         PrefsHaveChanged = true;
     }
@@ -448,7 +448,7 @@ int GetPrefGlobalTabNavigate() {
     return g_Settings.globalTabNavigate;
 }
 
-void SetPrefToolTips(int state) {
+void SetPrefToolTips(bool state) {
     if(g_Settings.toolTips != state) {
         PrefsHaveChanged = true;
     }
@@ -459,7 +459,7 @@ int GetPrefToolTips() {
     return g_Settings.toolTips;
 }
 
-void SetPrefLineNums(int state) {
+void SetPrefLineNums(bool state) {
     if(g_Settings.lineNumbers != state) {
         PrefsHaveChanged = true;
     }
@@ -470,7 +470,7 @@ int GetPrefLineNums() {
     return g_Settings.lineNumbers;
 }
 
-void SetPrefShowPathInWindowsMenu(int state) {
+void SetPrefShowPathInWindowsMenu(bool state) {
     if(g_Settings.pathInWindowsMenu != state) {
         PrefsHaveChanged = true;
     }
@@ -481,7 +481,7 @@ int GetPrefShowPathInWindowsMenu() {
     return g_Settings.pathInWindowsMenu;
 }
 
-void SetPrefWarnFileMods(int state) {
+void SetPrefWarnFileMods(bool state) {
     if(g_Settings.warnFileMods != state) {
         PrefsHaveChanged = true;
     }
@@ -492,7 +492,7 @@ int GetPrefWarnFileMods() {
     return g_Settings.warnFileMods;
 }
 
-void SetPrefWarnRealFileMods(int state) {
+void SetPrefWarnRealFileMods(bool state) {
     if(g_Settings.warnRealFileMods != state) {
         PrefsHaveChanged = true;
     }
@@ -503,7 +503,7 @@ int GetPrefWarnRealFileMods() {
     return g_Settings.warnRealFileMods;
 }
 
-void SetPrefWarnExit(int state) {
+void SetPrefWarnExit(bool state) {
     if(g_Settings.warnExit != state) {
         PrefsHaveChanged = true;
     }
@@ -514,7 +514,7 @@ int GetPrefWarnExit() {
     return g_Settings.warnExit;
 }
 
-void SetPrefFindReplaceUsesSelection(int state) {
+void SetPrefFindReplaceUsesSelection(bool state) {
     if(g_Settings.findReplaceUsesSelection != state) {
         PrefsHaveChanged = true;
     }
@@ -602,7 +602,7 @@ int GetPrefEmTabDist(int langMode) {
     return LanguageModes[langMode].emTabDist;
 }
 
-void SetPrefInsertTabs(int state) {
+void SetPrefInsertTabs(bool state) {
     if(g_Settings.insertTabs != state) {
         PrefsHaveChanged = true;
     }
@@ -624,7 +624,7 @@ int GetPrefShowMatching() {
     return g_Settings.showMatching;
 }
 
-void SetPrefMatchSyntaxBased(int state) {
+void SetPrefMatchSyntaxBased(bool state) {
     if(g_Settings.matchSyntaxBased != state) {
         PrefsHaveChanged = true;
     }
@@ -646,7 +646,7 @@ bool GetPrefHighlightSyntax() {
     return g_Settings.highlightSyntax;
 }
 
-void SetPrefBacklightChars(int state) {
+void SetPrefBacklightChars(bool state) {
     if(g_Settings.backlightChars != state) {
         PrefsHaveChanged = true;
     }
@@ -661,7 +661,7 @@ QString GetPrefBacklightCharTypes() {
     return g_Settings.backlightCharTypes;
 }
 
-void SetPrefRepositionDialogs(int state) {
+void SetPrefRepositionDialogs(bool state) {
     if(g_Settings.repositionDialogs != state) {
         PrefsHaveChanged = true;
     }
@@ -672,7 +672,7 @@ bool GetPrefRepositionDialogs() {
     return g_Settings.repositionDialogs;
 }
 
-void SetPrefAutoScroll(int state) {
+void SetPrefAutoScroll(bool state) {
     if(g_Settings.autoScroll != state) {
         PrefsHaveChanged = true;
     }
@@ -694,7 +694,7 @@ int GetVerticalAutoScroll() {
     return g_Settings.autoScroll ? g_Settings.autoScrollVPadding : 0;
 }
 
-void SetPrefAppendLF(int state) {
+void SetPrefAppendLF(bool state) {
     if(g_Settings.appendLF != state) {
         PrefsHaveChanged = true;
     }
@@ -705,7 +705,7 @@ int GetPrefAppendLF() {
     return g_Settings.appendLF;
 }
 
-void SetPrefSortOpenPrevMenu(int state) {
+void SetPrefSortOpenPrevMenu(bool state) {
     if(g_Settings.sortOpenPrevMenu != state) {
         PrefsHaveChanged = true;
     }
@@ -745,10 +745,10 @@ QString GetPrefColorName(int index) {
 }
 
 void SetPrefColorName(int index, const QString &name) {
-    if(g_Settings.colors[index] != name) {
+	if(g_Settings.colors[index] != name) {
         PrefsHaveChanged = true;
     }
-    g_Settings.colors[index] = name;
+	g_Settings.colors[index] = name;
 }
 
 void SetPrefFont(const QString &fontName) {
@@ -1275,7 +1275,7 @@ bool ReadQuotedStringEx(Input &in, QString *errMsg, QString *string) {
 			return false;
 		} else if (*c == QLatin1Char('\"')) {
 			if (*(c + 1) == QLatin1Char('\"')) {
-				c++;
+				++c;
 			} else {
 				break;
 			}

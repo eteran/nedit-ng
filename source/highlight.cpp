@@ -1192,12 +1192,10 @@ static void handleUnparsedRegionCBEx(const TextArea *area, int pos, const void *
 */
 static void incrementalReparse(WindowHighlightData *highlightData, TextBuffer *buf, int pos, int nInserted, const QString &delimiters) {
 
-    int endAt;
-
-	TextBuffer *styleBuf = highlightData->styleBuffer;
+	TextBuffer *styleBuf         = highlightData->styleBuffer;
 	HighlightData *pass1Patterns = highlightData->pass1Patterns;
 	HighlightData *pass2Patterns = highlightData->pass2Patterns;
-	ReparseContext *context = &highlightData->contextRequirements;
+	ReparseContext *context      = &highlightData->contextRequirements;
 		
     QByteArray parentStyles = highlightData->parentStyles;
 
@@ -1234,7 +1232,8 @@ static void incrementalReparse(WindowHighlightData *highlightData, TextBuffer *b
 		if (!startPattern) {
 			startPattern = pass1Patterns;
 		}
-		endAt = parseBufferRange(startPattern, pass2Patterns, buf, styleBuf, context, beginParse, endParse, delimiters);
+
+		int endAt = parseBufferRange(startPattern, pass2Patterns, buf, styleBuf, context, beginParse, endParse, delimiters);
 
 		/* If parse completed at this level, move one style up in the
 		   hierarchy and start again from where the previous parse left off. */
@@ -1844,21 +1843,28 @@ static int patternIsParsable(HighlightData *pattern) {
 */
 static int findSafeParseRestartPos(TextBuffer *buf, WindowHighlightData *highlightData, int *pos) {
 	
-	int style, startStyle, runningStyle, checkBackTo, safeParseStart, i;
-    QByteArray parentStyles = highlightData->parentStyles;
+	int style;
+	int checkBackTo;
+	int safeParseStart;
+
+	QByteArray parentStyles      = highlightData->parentStyles;
 	HighlightData *pass1Patterns = highlightData->pass1Patterns;
-	ReparseContext *context = &highlightData->contextRequirements;
+	ReparseContext *context      = &highlightData->contextRequirements;
 
 	// We must begin at least one context distance back from the change 
 	*pos = backwardOneContext(buf, context, *pos);
 
 	/* If the new position is outside of any styles or at the beginning of
 	   the buffer, this is a safe place to begin parsing, and we're done */
-	if (*pos == 0)
+	if (*pos == 0) {
 		return PLAIN_STYLE;
-	startStyle = highlightData->styleBuffer->BufGetCharacter(*pos);
-	if (is_plain(startStyle))
+	}
+
+	int startStyle = highlightData->styleBuffer->BufGetCharacter(*pos);
+
+	if (is_plain(startStyle)) {
 		return PLAIN_STYLE;
+	}
 
 	/*
 	** The new position is inside of a styled region, meaning, its pattern
@@ -1881,8 +1887,9 @@ static int findSafeParseRestartPos(TextBuffer *buf, WindowHighlightData *highlig
 		safeParseStart = 0;
 		checkBackTo = 0;
 	}
-	runningStyle = startStyle;
-	for (i = *pos - 1;; i--) {
+
+	int runningStyle = startStyle;
+	for (int i = *pos - 1;; i--) {
 
 		// The start of the buffer is certainly a safe place to parse from 
 		if (i == 0) {

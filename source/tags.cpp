@@ -57,14 +57,14 @@
 
 namespace {
 
-const int MAXLINE                         = 2048;
-const int MAX_TAG_LEN                     = 256;
-const int MAXDUPTAGS                      = 100;
-const int MAX_TAG_INCLUDE_RECURSION_LEVEL = 5;
+constexpr const int MAXLINE                         = 2048;
+constexpr const int MAX_TAG_LEN                     = 256;
+constexpr const int MAXDUPTAGS                      = 100;
+constexpr const int MAX_TAG_INCLUDE_RECURSION_LEVEL = 5;
 
 /* Take this many lines when making a tip from a tag.
    (should probably be a language-dependent option, but...) */
-const int TIP_DEFAULT_LINES = 4;
+constexpr const int TIP_DEFAULT_LINES = 4;
 
 }
 
@@ -496,16 +496,20 @@ static void updateMenuItems() {
 ** Return value: Number of tag specs added.
 */
 static int scanCTagsLine(const char *line, const char *tagPath, int index) {
-	char name[MAXLINE], searchString[MAXLINE];
+	char name[MAXLINE];
+	char searchString[MAXLINE];
 	char file[MAXPATHLEN];
-	char *posTagREEnd, *posTagRENull;
-	int nRead, pos;
+	char *posTagRENull;
+	int pos;
 
-	nRead = sscanf(line, "%s\t%s\t%[^\n]", name, file, searchString);
-	if (nRead != 3)
+	int nRead = sscanf(line, "%s\t%s\t%[^\n]", name, file, searchString);
+	if (nRead != 3) {
 		return 0;
-	if (*name == '!')
+	}
+
+	if (*name == '!') {
 		return 0;
+	}
 
 	/*
 	** Guess the end of searchString:
@@ -520,14 +524,14 @@ static int scanCTagsLine(const char *line, const char *tagPath, int index) {
 		**             /<ANY expr>/;"  <flags>
 		**             ?<ANY expr>?;"  <flags> --> exuberant ctags
 		*/
-		posTagREEnd = strrchr(searchString, ';');
+		char *posTagREEnd = strrchr(searchString, ';');
 		posTagRENull = strchr(searchString, 0);
 		if (!posTagREEnd || (posTagREEnd[1] != '"') || (posTagRENull[-1] == searchString[0])) {
 			//  -> original ctags format = exuberant ctags format 1 
 			posTagREEnd = posTagRENull;
 		} else {
 			// looks like exuberant ctags format 2 
-			*posTagREEnd = 0;
+			*posTagREEnd = '\0';
 		}
 
 		/*
@@ -556,8 +560,7 @@ static int scanCTagsLine(const char *line, const char *tagPath, int index) {
  * Return value: Number of tag specs added.
  */
 static int scanETagsLine(const char *line, const char *tagPath, int index, char *file, int recLevel) {
-	char name[MAXLINE], searchString[MAXLINE];
-	char incPath[MAXPATHLEN];
+	char name[MAXLINE], searchString[MAXLINE];	
 	int pos;
 	int len;
 	const char *posDEL;
@@ -620,7 +623,8 @@ static int scanETagsLine(const char *line, const char *tagPath, int index, char 
 					return 0;
 				}
 				
-				sprintf(incPath, "%s%s", tagPath, file);
+				char incPath[MAXPATHLEN];
+				snprintf(incPath, sizeof(incPath), "%s%s", tagPath, file);
 
 				CompressPathname(incPath);
                 return loadTagsFile(QString::fromLatin1(incPath), index, recLevel + 1);

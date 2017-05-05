@@ -1045,9 +1045,9 @@ void TextArea::focusOutEvent(QFocusEvent *event) {
 //------------------------------------------------------------------------------
 // Name: contextMenuEvent
 //------------------------------------------------------------------------------
-void TextArea::contextMenuEvent(QContextMenuEvent *e) {
-	if(e->modifiers() != Qt::ControlModifier) {
-        Q_EMIT customContextMenuRequested(mapToGlobal(e->pos()));
+void TextArea::contextMenuEvent(QContextMenuEvent *event) {
+	if(event->modifiers() != Qt::ControlModifier) {
+		Q_EMIT customContextMenuRequested(mapToGlobal(event->pos()));
     }
 }
 
@@ -7669,7 +7669,7 @@ QColor TextArea::getBackgroundPixel() const {
     return pal.color(QPalette::Base);
 }
 
-void TextArea::setForegroundPixel(const QColor pixel) {
+void TextArea::setForegroundPixel(const QColor &pixel) {
 	QPalette pal = viewport()->palette();
     pal.setColor(QPalette::Text, pixel);
 	viewport()->setPalette(pal);

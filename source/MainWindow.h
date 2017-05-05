@@ -66,7 +66,7 @@ public:
     void ShowLineNumbers(bool state);
     void TempShowISearch(bool state);
     void addToGroup(QActionGroup *group, QMenu *menu);
-    void fileCB(DocumentWidget *window, const std::string &value);
+	void fileCB(DocumentWidget *window, const std::string &text);
     void forceShowLineNumbers();
     void initToggleButtonsiSearch(SearchType searchType);
     void parseGeometry(QString geometry);
@@ -150,7 +150,7 @@ public Q_SLOTS:
     void on_buttonIFind_clicked();
     void on_checkIFindCase_toggled(bool searchCaseSense);
     void on_checkIFindRegex_toggled(bool value);
-    void on_checkIFindReverse_toggled(bool value);
+	void on_checkIFindReverse_toggled(bool value);
 
 public Q_SLOTS:
     void action_Include_File(const QString &filename);

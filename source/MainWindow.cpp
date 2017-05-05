@@ -2136,7 +2136,7 @@ void MainWindow::action_Shift_Find_Incremental_triggered() {
 ** Called when user types in the incremental search line.  Redoes the
 ** search for the new search string.
 */
-void MainWindow::on_editIFind_textChanged(const QString &searchString) {
+void MainWindow::on_editIFind_textChanged(const QString &text) {
 
     SearchType searchType;
 
@@ -2162,7 +2162,7 @@ void MainWindow::on_editIFind_textChanged(const QString &searchString) {
        correct syntax doesn't match) */
     if (isRegexType(searchType)) {
         try {
-            auto compiledRE = std::make_unique<regexp>(searchString.toStdString(), defaultRegexFlags(searchType));
+			auto compiledRE = std::make_unique<regexp>(text.toStdString(), defaultRegexFlags(searchType));
         } catch(const regex_error &) {
             return;
         }
@@ -2174,7 +2174,7 @@ void MainWindow::on_editIFind_textChanged(const QString &searchString) {
        as "continued" so the search routine knows to re-start the search
        from the original starting position */
     if(auto doc = currentDocument()) {
-        doc->findIncrAP(searchString, direction, searchType, GetPrefSearchWraps(), iSearchStartPos_ != -1);
+		doc->findIncrAP(text, direction, searchType, GetPrefSearchWraps(), iSearchStartPos_ != -1);
     }
 }
 
@@ -2332,7 +2332,7 @@ void MainWindow::on_checkIFindRegex_toggled(bool searchRegex) {
 
 void MainWindow::on_checkIFindReverse_toggled(bool value) {
 
-    Q_UNUSED(value);
+	Q_UNUSED(value);
 
     // When search parameters (direction or search type), redo the search
     on_editIFind_returnPressed();

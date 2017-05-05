@@ -7,7 +7,7 @@
 
 class Input {
 public:
-	Input(const QString *input);
+	explicit Input(const QString *input);
 	Input(const Input &other) = default;
 	Input& operator=(const Input &rhs) = default;
 	
@@ -23,7 +23,7 @@ public:
 
 public:
 	int operator-(const Input &rhs) const;
-	Input operator+(int rhs);
+	Input operator+(int rhs) const;
 
 public:
 	bool operator==(const Input &rhs) const;

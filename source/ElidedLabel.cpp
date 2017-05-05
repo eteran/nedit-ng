@@ -19,8 +19,8 @@ void ElidedLabel::setText(const QString &text) {
     QLabel::setText(fontMetrics().elidedText(realString_, elideMode_, width(), Qt::TextShowMnemonic));
 }
 
-void ElidedLabel::resizeEvent(QResizeEvent *e) {
-	QLabel::resizeEvent(e);
+void ElidedLabel::resizeEvent(QResizeEvent *event) {
+	QLabel::resizeEvent(event);
 	QLabel::setText(fontMetrics().elidedText(realString_, elideMode_, width(), Qt::TextShowMnemonic));
 }
 
