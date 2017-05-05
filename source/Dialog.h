@@ -5,13 +5,13 @@
 #include <QDialog>
 
 class Dialog : public QDialog {
-    Q_OBJECT
+	Q_OBJECT
 public:
-    Dialog(QWidget *parent = 0, Qt::WindowFlags f = 0);
-    virtual ~Dialog() = default;
+	Dialog(QWidget *parent = 0, Qt::WindowFlags f = 0);
+	virtual ~Dialog() = default;
 
 public:
-    virtual void showEvent(QShowEvent *event) override;
+	virtual void showEvent(QShowEvent *event) override;
 };
 
 #endif

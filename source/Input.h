@@ -37,8 +37,9 @@ public:
 public:
 	bool match(const QString &s) const;
 	int find(const QString &s) const;
-	QString segment(int length) const;
-	QString segment() const;
+	int find(QChar ch) const;
+	QString mid(int length) const;
+	QString mid() const;
 
 public:
 	const QString *string() const;

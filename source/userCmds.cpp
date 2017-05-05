@@ -324,10 +324,15 @@ static int loadMenuItemString(const char *inString, QVector<MenuData> &menuItems
 
             // read command field
             if (listType == SHELL_CMDS) {
-                if (*inPtr++ != '\n')
+				if (*inPtr++ != '\n') {
                     throw ParseError("command must begin with newline");
-                while (*inPtr == ' ' || *inPtr == '\t') // leading whitespace
+				}
+
+				// leading whitespace
+				while (*inPtr == ' ' || *inPtr == '\t') {
                     inPtr++;
+				}
+
                 int cmdLen = strcspn(inPtr, "\n");
                 if (cmdLen == 0)
                     throw ParseError("shell command field is empty");

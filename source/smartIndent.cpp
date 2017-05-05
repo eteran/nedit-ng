@@ -349,7 +349,7 @@ int LoadSmartIndentCommonStringEx(const QString &string) {
 	}
 
 	// Remove leading tabs added by writer routine
-	std::string newMacros = ShiftTextEx(in.segment().toStdString(), SHIFT_LEFT, true, 8, 8);
+	std::string newMacros = ShiftTextEx(in.mid().toStdString(), SHIFT_LEFT, true, 8, 8);
 	CommonMacros = QString::fromStdString(newMacros);
 	return true;
 }
@@ -373,7 +373,7 @@ static QString readSIMacroEx(Input &in) {
 	}
 
 	// Copy the macro
-	std::string macroStr = in.segment(macroEnd - in.index()).toStdString();
+	std::string macroStr = in.mid(macroEnd - in.index()).toStdString();
 
 	// Remove leading tabs added by writer routine
 	in += macroEnd - in.index();

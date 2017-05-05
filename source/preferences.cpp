@@ -84,7 +84,7 @@ static void translatePrefFormats(quint32 fileVer);
 static QStringList readExtensionListEx(Input &in);
 static QString getDefaultShell();
 static int loadLanguageModesStringEx(const QString &string);
-static int modeErrorEx(const Input &in, const QString &message);
+static bool modeErrorEx(const Input &in, const QString &message);
 static QString WriteLanguageModesStringEx();
 
 static Settings g_Settings;
@@ -1173,7 +1173,7 @@ static QStringList readExtensionListEx(Input &in) {
 		}
 
 		int len = in - strStart;
-		QString ext = strStart.segment(len);
+		QString ext = strStart.mid(len);
 		extensionList.push_back(ext);
 	}
 
@@ -1383,7 +1383,7 @@ int SkipOptSeparatorEx(QChar separator, Input &in) {
 ** lm (if non-null), prints a formatted message explaining where the
 ** error is, and returns False;
 */
-static int modeErrorEx(const Input &in, const QString &message) {
+static bool modeErrorEx(const Input &in, const QString &message) {
 	return ParseErrorEx(
 	            nullptr,
 	            *in.string(),

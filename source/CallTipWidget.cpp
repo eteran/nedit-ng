@@ -1,7 +1,7 @@
 
 #include "CallTipWidget.h"
-#include <QToolTip>
 #include <QClipboard>
+#include <QToolTip>
 
 /**
  * @brief CallTipWidget::CallTipWidget
@@ -11,12 +11,12 @@
 CallTipWidget::CallTipWidget(QWidget *parent, Qt::WindowFlags f) : QWidget(parent, f) {
 	ui.setupUi(this);
 
-    setAttribute(Qt::WA_DeleteOnClose, true);
+	setAttribute(Qt::WA_DeleteOnClose, true);
 
-    ui.labelTip->setPalette(QToolTip::palette());
+	ui.labelTip->setPalette(QToolTip::palette());
 
-    connect(ui.buttonClose, SIGNAL(clicked()), this, SLOT(close()));
-    connect(ui.buttonCopy, SIGNAL(clicked()), this, SLOT(copyText()));
+	connect(ui.buttonClose, SIGNAL(clicked()), this, SLOT(close()));
+	connect(ui.buttonCopy, SIGNAL(clicked()), this, SLOT(copyText()));
 }
 
 /**
@@ -25,14 +25,13 @@ CallTipWidget::CallTipWidget(QWidget *parent, Qt::WindowFlags f) : QWidget(paren
  */
 void CallTipWidget::setText(const QString &text) {
 	ui.labelTip->setText(text);
-    ui.labelTip->adjustSize();
-    resize(minimumSize());
+	ui.labelTip->adjustSize();
+	resize(minimumSize());
 }
 
 /**
  * @brief CallTipWidget::copyText
  */
 void CallTipWidget::copyText() {
-    QApplication::clipboard()->setText(ui.labelTip->text());
+	QApplication::clipboard()->setText(ui.labelTip->text());
 }
-

@@ -27,13 +27,6 @@
 #ifndef FILE_H_
 #define FILE_H_
 
-/* flags for EditExistingFile */
-enum EditFlags {
-	CREATE               = 1,
-	SUPPRESS_CREATE_WARN = 2,
-	PREF_READ_ONLY       = 4
-};
-
 #define PROMPT_SBC_DIALOG_RESPONSE 0
 #define YES_SBC_DIALOG_RESPONSE    1
 #define NO_SBC_DIALOG_RESPONSE     2

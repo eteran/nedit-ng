@@ -37,7 +37,7 @@
 #include "DocumentWidget.h"
 #include "MainWindow.h"
 #include "NeditServer.h"
-#include "file.h"
+#include "EditFlags.h"
 #include "interpret.h"
 #include "macro.h"
 #include "parse.h"

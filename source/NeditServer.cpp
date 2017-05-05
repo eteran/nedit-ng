@@ -2,7 +2,7 @@
 #include "NeditServer.h"
 #include "DocumentWidget.h"
 #include "MainWindow.h"
-#include "file.h"
+#include "EditFlags.h"
 #include "macro.h"
 #include "preferences.h"
 #include "selection.h"
@@ -226,7 +226,7 @@ void NeditServer::processCommand(const QString &command) {
 
         /* Process the filename by looking for the files in an
            existing window, or opening if they don't exist */
-        int editFlags = (readFlag ? PREF_READ_ONLY : 0) | CREATE | (createFlag ? SUPPRESS_CREATE_WARN : 0);
+		int editFlags = (readFlag ? PREF_READ_ONLY : 0) | CREATE | (createFlag ? SUPPRESS_CREATE_WARN : 0);
         if (ParseFilenameEx(fullname, &filename, &pathname) != 0) {
 			qWarning("NEdit: invalid file name");
             break;

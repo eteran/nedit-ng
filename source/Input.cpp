@@ -6,6 +6,7 @@
  * @param input
  */
 Input::Input(const QString *input) : string_(input), index_(0) {
+	Q_ASSERT(input);
 }
 
 Input &Input::operator+=(int n) {
@@ -152,7 +153,7 @@ bool Input::match(const QString &s) const {
  * @param length
  * @return
  */
-QString Input::segment(int length) const {
+QString Input::mid(int length) const {
 	return string_->mid(index_, length);
 }
 
@@ -160,7 +161,7 @@ QString Input::segment(int length) const {
  * @brief Input::segment
  * @return
  */
-QString Input::segment() const {
+QString Input::mid() const {
 	return string_->mid(index_);
 }
 
@@ -171,6 +172,15 @@ QString Input::segment() const {
  */
 int Input::find(const QString &s) const {
 	return string_->indexOf(s, index_);
+}
+
+/**
+ * @brief Input::find
+ * @param ch
+ * @return
+ */
+int Input::find(QChar ch) const {
+	return string_->indexOf(ch, index_);
 }
 
 /**

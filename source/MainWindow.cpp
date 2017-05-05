@@ -41,6 +41,7 @@
 #include "util/fileUtils.h"
 #include "utils.h"
 #include "CommandRecorder.h"
+#include "file.h"
 
 #include <QClipboard>
 #include <QFile>
