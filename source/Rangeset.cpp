@@ -560,7 +560,7 @@ QString Rangeset::RangesetGetName() const {
 ** Note: ranges are indexed from zero.
 */
 
-int Rangeset::RangesetFindRangeNo(int index, int *start, int *end) {
+int Rangeset::RangesetFindRangeNo(int index, int *start, int *end) const {
     if (index < 0 || n_ranges_ <= index || !ranges_) {
 		return 0;
 	}
@@ -577,7 +577,7 @@ int Rangeset::RangesetFindRangeNo(int index, int *start, int *end) {
 ** Note: ranges are indexed from zero.
 */
 
-int Rangeset::RangesetFindRangeOfPos(int pos, int incl_end) {
+int Rangeset::RangesetFindRangeOfPos(int pos, int incl_end) const {
 
     if (!n_ranges_ || !ranges_) {
 		return -1;
@@ -604,8 +604,8 @@ int Rangeset::RangesetFindRangeOfPos(int pos, int incl_end) {
 ** Return the color validity, if any, and the value in *color.
 */
 
-int Rangeset::RangesetGetColorValid(QColor *color) {
-    *color = color_;
+int Rangeset::RangesetGetColorValid(QColor *color) const {
+	*color = color_;
     return color_set_;
 }
 
@@ -675,20 +675,19 @@ int Rangeset::RangesetInverse() {
 */
 
 int Rangeset::RangesetAdd(Rangeset *plusSet) {
-	Range *origRanges, *plusRanges, *newRanges, *oldRanges;
-	int nOrigRanges, nPlusRanges;
-	int isOld;
+	Range *oldRanges;
 
-    origRanges = ranges_;
-    nOrigRanges = n_ranges_;
+	Range *origRanges = ranges_;
+	int nOrigRanges   = n_ranges_;
 
-    plusRanges = plusSet->ranges_;
-    nPlusRanges = plusSet->n_ranges_;
+	Range *plusRanges = plusSet->ranges_;
+	int nPlusRanges   = plusSet->n_ranges_;
 
-	if (nPlusRanges == 0)
+	if (nPlusRanges == 0) {
 		return nOrigRanges; // no ranges in plusSet - nothing to do 
+	}
 
-	newRanges = RangesetTable::RangesNew(nOrigRanges + nPlusRanges);
+	Range *newRanges = RangesetTable::RangesNew(nOrigRanges + nPlusRanges);
 
 	if (nOrigRanges == 0) {
 		// no ranges in destination: just copy the ranges from the other set 
@@ -711,7 +710,7 @@ int Rangeset::RangesetAdd(Rangeset *plusSet) {
 	   ranges (from this and plusSet) - don't worry, they're both consulted
 	   read-only - building the merged set in newRanges */
 
-	isOld = 1; // true if origRanges points to a range in oldRanges[] 
+	bool isOld = true; // true if origRanges points to a range in oldRanges[]
 
 	while (nOrigRanges > 0 || nPlusRanges > 0) {
 		// make the range with the lowest start value the origRanges range 
@@ -831,12 +830,12 @@ int Rangeset::RangesetAddBetween(int start, int end) {
 ** Assign a color name to a rangeset via the rangeset table.
 */
 
-int Rangeset::RangesetAssignColorName(const std::string &color_name) {
+bool Rangeset::RangesetAssignColorName(const std::string &color_name) {
 
 
     // "" invalid
-    if(!color_name.empty()) {
-        color_name_ = QString::fromStdString(color_name);
+	if(!color_name.empty()) {
+		color_name_ = QString::fromStdString(color_name);
     } else {
         color_name_ = QString();
     }
@@ -844,7 +843,7 @@ int Rangeset::RangesetAssignColorName(const std::string &color_name) {
     color_set_ = 0;
 
 	rangesetRefreshAllRanges(this);
-	return 1;
+	return true;
 }
 
 /*
@@ -852,10 +851,10 @@ int Rangeset::RangesetAssignColorName(const std::string &color_name) {
 ** false, the color_set flag is set to an invalid (negative) value.
 */
 
-int Rangeset::RangesetAssignColorPixel(const QColor &color, int ok) {
+bool Rangeset::RangesetAssignColorPixel(const QColor &color, int ok) {
     color_set_ = ok ? 1 : -1;
-    color_ = color;
-	return 1;
+	color_ = color;
+	return true;
 }
 
 
@@ -863,7 +862,7 @@ int Rangeset::RangesetAssignColorPixel(const QColor &color, int ok) {
 ** Assign a name to a rangeset via the rangeset table.
 */
 
-int Rangeset::RangesetAssignName(const std::string &name) {
+bool Rangeset::RangesetAssignName(const std::string &name) {
 
 	// store new name value 
     if(!name.empty()) {
@@ -872,7 +871,7 @@ int Rangeset::RangesetAssignName(const std::string &name) {
         name_ = QString();
 	}
 
-	return 1;
+	return true;
 }
 
 
@@ -881,7 +880,7 @@ int Rangeset::RangesetAssignName(const std::string &name) {
 ** if the update function name was found, else false.
 */
 
-int Rangeset::RangesetChangeModifyResponse(const char *name) {
+bool Rangeset::RangesetChangeModifyResponse(const char *name) {
 
     if(!name) {
 		name = DEFAULT_UPDATE_FN_NAME;
@@ -891,11 +890,11 @@ int Rangeset::RangesetChangeModifyResponse(const char *name) {
         if (strcmp(entry.name, name) == 0) {
             update_fn_   = entry.update_fn;
             update_name_ = entry.name;
-			return 1;
+			return true;
 		}
 	}
 
-	return 0;
+	return false;
 }
 
 
@@ -1146,12 +1145,12 @@ void Rangeset::RangesetEmpty() {
 /*
 ** Get information about rangeset.
 */
-void Rangeset::RangesetGetInfo(bool *defined, int *label, int *count, QString *color, QString *name, const char **mode) {
+void Rangeset::RangesetGetInfo(bool *defined, int *label, int *count, QString *color, QString *name, const char **mode) const {
     *defined = true;
-    *label = static_cast<int>(label_);
+	*label = static_cast<int>(label_);
     *count = n_ranges_;
-    *color = color_name_;
-    *name  = name_;
+	*color = color_name_;
+	*name  = name_;
     *mode  = update_name_;
 }
 
@@ -1160,7 +1159,7 @@ void Rangeset::RangesetGetInfo(bool *defined, int *label, int *count, QString *c
 ** refresh the screen for the whole file.
 */
 
-void Rangeset::RangesetRefreshRange(int start, int end) {
+void Rangeset::RangesetRefreshRange(int start, int end) const {
     if (buf_) {
         buf_->BufCheckDisplay(start, end);
 	}
@@ -1172,7 +1171,7 @@ void Rangeset::RangesetRefreshRange(int start, int end) {
 */
 
 void Rangeset::RangesetInit(int label, TextBuffer *buf) {
-    label_ = (uint8_t)label; // a letter A-Z
+	label_ = static_cast<uint8_t>(label); // a letter A-Z
     maxpos_ = 0;                   // text buffer maxpos
     last_index_ = 0;               // a place to start looking
     n_ranges_ = 0;                 // how many ranges in ranges
@@ -1181,9 +1180,9 @@ void Rangeset::RangesetInit(int label, TextBuffer *buf) {
     color_name_ = QString();
     name_ = QString();
     color_set_ = 0;
-    buf_ = buf;
+	buf_ = buf;
 
-    maxpos_ = buf->BufGetLength();
+	maxpos_ = buf->BufGetLength();
 
     RangesetChangeModifyResponse(DEFAULT_UPDATE_FN_NAME);
 }

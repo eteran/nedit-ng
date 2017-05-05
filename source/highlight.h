@@ -62,9 +62,9 @@ void freeHighlightData(WindowHighlightData *hd);
 void FreeHighlightingDataEx(DocumentWidget *window);
 void *GetHighlightInfoEx(DocumentWidget *window, int pos);
 void RemoveWidgetHighlightEx(TextArea *area);
-void StartHighlightingEx(DocumentWidget *window, bool warn);
+void StartHighlightingEx(DocumentWidget *document, bool warn);
 void SyntaxHighlightModifyCBEx(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *cbArg);
 void UpdateHighlightStylesEx(DocumentWidget *document);
-WindowHighlightData *createHighlightDataEx(DocumentWidget *window, PatternSet *patSet);
+WindowHighlightData *createHighlightDataEx(DocumentWidget *document, PatternSet *patSet);
 
 #endif

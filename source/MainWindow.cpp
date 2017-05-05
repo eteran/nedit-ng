@@ -2956,7 +2956,7 @@ void MainWindow::indentGroupTriggered(QAction *action) {
     if(auto document = currentDocument()) {
         if(action == ui.action_Indent_Off) {
             document->SetAutoIndent(NO_AUTO_INDENT);
-        } else if(action == ui.action_Indent_Off) {
+		} else if(action == ui.action_Indent_On) {
             document->SetAutoIndent(AUTO_INDENT);
         } else if(action == ui.action_Indent_Smart) {
             document->SetAutoIndent(SMART_INDENT);

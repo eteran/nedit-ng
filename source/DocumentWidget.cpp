@@ -1777,12 +1777,12 @@ void DocumentWidget::MakeSelectionVisible(TextArea *area) {
     int topLineNum;
     int y;
 
-    int topChar  = area->TextFirstVisiblePos();
-    int lastChar = area->TextLastVisiblePos();
+	int topChar  = area->TextFirstVisiblePos();
+	int lastChar = area->TextLastVisiblePos();
 
     // find out where the selection is
     if (!buffer_->BufGetSelectionPos(&left, &right, &isRect, &rectStart, &rectEnd)) {
-        left = right = area->TextGetCursorPos();
+		left = right = area->TextGetCursorPos();
         isRect = false;
     }
 
@@ -1798,7 +1798,7 @@ void DocumentWidget::MakeSelectionVisible(TextArea *area) {
 		int rows = area->getRows();
 
 		int scrollOffset = rows / 3;
-        area->TextDGetScroll(&topLineNum, &horizOffset);
+		area->TextDGetScroll(&topLineNum, &horizOffset);
         if (right > lastChar) {
             // End of sel. is below bottom of screen
 			int leftLineNum = topLineNum + area->TextDCountLines(topChar, left, false);
@@ -1809,7 +1809,7 @@ void DocumentWidget::MakeSelectionVisible(TextArea *area) {
                 if (leftLineNum - linesToScroll < targetLineNum)
                     linesToScroll = leftLineNum - targetLineNum;
                 // Scroll start of selection to the target line
-                area->TextDSetScroll(topLineNum + linesToScroll, horizOffset);
+				area->TextDSetScroll(topLineNum + linesToScroll, horizOffset);
             }
         } else if (left < topChar) {
             // Start of sel. is above top of screen
@@ -1823,7 +1823,7 @@ void DocumentWidget::MakeSelectionVisible(TextArea *area) {
                 if (rightLineNum + linesToScroll > targetLineNum)
                     linesToScroll = targetLineNum - rightLineNum;
                 // Scroll end of selection to the target line
-                area->TextDSetScroll(topLineNum - linesToScroll, horizOffset);
+				area->TextDSetScroll(topLineNum - linesToScroll, horizOffset);
             }
         }
     }
@@ -1836,22 +1836,22 @@ void DocumentWidget::MakeSelectionVisible(TextArea *area) {
        scrolling operation, causing the display to jump twice.  It's done after
        vertical scrolling to take advantage of TextDPosToXY which requires it's
        reqested position to be vertically on screen) */
-    if (area->TextDPositionToXY(left, &leftX, &y) && area->TextDPositionToXY(right, &rightX, &y) && leftX <= rightX) {
-        area->TextDGetScroll(&topLineNum, &horizOffset);
+	if (area->TextDPositionToXY(left, &leftX, &y) && area->TextDPositionToXY(right, &rightX, &y) && leftX <= rightX) {
+		area->TextDGetScroll(&topLineNum, &horizOffset);
 
 		int margin = area->getMarginWidth();
 		int width  = area->width();
 
-        if (leftX < margin + area->getLineNumLeft() + area->getLineNumWidth())
-            horizOffset -= margin + area->getLineNumLeft() + area->getLineNumWidth() - leftX;
+		if (leftX < margin + area->getLineNumLeft() + area->getLineNumWidth())
+			horizOffset -= margin + area->getLineNumLeft() + area->getLineNumWidth() - leftX;
         else if (rightX > width - margin)
             horizOffset += rightX - (width - margin);
 
-        area->TextDSetScroll(topLineNum, horizOffset);
+		area->TextDSetScroll(topLineNum, horizOffset);
     }
 
     // make sure that the statistics line is up to date
-    UpdateStatsLine(area);
+	UpdateStatsLine(area);
 }
 
 
@@ -3412,7 +3412,7 @@ void DocumentWidget::RefreshMenuToggleStates() {
 */
 void DocumentWidget::executeNewlineMacroEx(smartIndentCBStruct *cbInfo) {
 
-    auto winData = static_cast<SmartIndentData *>(smartIndentData_);
+	SmartIndentData *winData = smartIndentData_;
     // posValue probably shouldn't be static due to re-entrance issues <slobasso>
     static DataValue posValue = {INT_TAG, {0}};
     DataValue result;
@@ -3490,7 +3490,7 @@ void DocumentWidget::SetShowMatching(ShowMatchingStyle state) {
 */
 void DocumentWidget::executeModMacroEx(smartIndentCBStruct *cbInfo) {
 
-    auto winData = static_cast<SmartIndentData *>(smartIndentData_);
+	SmartIndentData *winData = smartIndentData_;
 
     // args probably shouldn't be static due to future re-entrance issues <slobasso>
     static DataValue args[2] = {{INT_TAG, {0}}, {STRING_TAG, {0}}};
@@ -3726,7 +3726,7 @@ void DocumentWidget::findAP(const QString &searchString, SearchDirection directi
                 searchWraps);
 }
 
-void DocumentWidget::findIncrAP(const QString &searchString, SearchDirection direction, SearchType searchType, bool searchWraps, bool continued) {
+void DocumentWidget::findIncrAP(const QString &searchString, SearchDirection direction, SearchType searchType, bool searchWraps, bool isContinue) {
 
     SearchAndSelectIncrementalEx(
                 toWindow(),
@@ -3736,7 +3736,7 @@ void DocumentWidget::findIncrAP(const QString &searchString, SearchDirection dir
                 searchString,
                 searchType,
                 searchWraps,
-                continued);
+	            isContinue);
 
 }
 

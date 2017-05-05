@@ -289,12 +289,12 @@ int RangesetTable::nRangesetsAvailable() const {
 
 
 uint8_t *RangesetTable::RangesetGetList(RangesetTable *table) {
-    return table ? table->list_ : (uint8_t *)"";
+	return table ? table->list_ : (uint8_t *)"";
 }
 
 void RangesetTable::RangesetTableUpdatePos(RangesetTable *table, int pos, int ins, int del) {
 
-    if (!table || (ins == 0 && del == 0))
+	if (!table || (ins == 0 && del == 0))
 		return;
 
     for (int i = 0; i < table->n_set_; i++) {

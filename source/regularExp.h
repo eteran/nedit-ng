@@ -67,7 +67,7 @@ public:
 	 * @param look_behind_to Boundary for look-behind; defaults to "string" if nullptr
 	 * @param match_till     Boundary to where match can extend. \0 is assumed to be the boundary if not set. Lookahead can cross the boundary.
 	 */
-	bool ExecRE(const char *string, const char *end, bool reverse, char prev_char, char succ_char, const char *delimiters, const char *look_behind_to, const char *match_till);
+	bool ExecRE(const char *string, const char *end, bool reverse, char prev_char, char succ_char, const char *delimiters, const char *look_behind_to, const char *match_to);
 
 	/**
 	 * Match a 'regexp' structure against a string.

@@ -33,18 +33,18 @@
 
 namespace {
 
-const int PROGRAM_SIZE      = 4096; // Maximum program size
-const int MAX_ERR_MSG_LEN   = 256;  // Max. length for error messages
-const int LOOP_STACK_SIZE   = 200;  // (Approx.) Number of break/continue stmts allowed per program
-const int INSTRUCTION_LIMIT = 100;  // Number of instructions the interpreter is allowed to execute before preempting and returning to allow other things to run
+constexpr const int PROGRAM_SIZE      = 4096; // Maximum program size
+constexpr const int MAX_ERR_MSG_LEN   = 256;  // Max. length for error messages
+constexpr const int LOOP_STACK_SIZE   = 200;  // (Approx.) Number of break/continue stmts allowed per program
+constexpr const int INSTRUCTION_LIMIT = 100;  // Number of instructions the interpreter is allowed to execute before preempting and returning to allow other things to run
 
 /* Temporary markers placed in a branch address location to designate
    which loop address (break or continue) the location needs */
 
-const int NEEDS_BREAK    = 1;
-const int NEEDS_CONTINUE = 2;
+constexpr const int NEEDS_BREAK    = 1;
+constexpr const int NEEDS_CONTINUE = 2;
 
-const int N_ARGS_ARG_SYM = -1; // special arg number meaning $n_args value 
+constexpr const int N_ARGS_ARG_SYM = -1; // special arg number meaning $n_args value
 
 enum OpStatusCodes {
 	STAT_OK = 2, 
@@ -59,9 +59,6 @@ static void addLoopAddr(Inst *addr);
 
 static void saveContextEx(RestartData *context);
 static void restoreContextEx(RestartData *context);
-
-static char *AllocStringNCpy(const char *s, int length);
-static char *AllocStringCpy(const char *s);
 static NString AllocNStringEx(int length);
 
 static int returnNoVal();
@@ -108,9 +105,10 @@ static int beginArrayIter();
 static int arrayIter();
 static int inArray();
 static int deleteArrayElement();
-static void freeSymbolTable(QList<Symbol *> &symTab);
 static int errCheck(const char *s);
-static int execError(const char *s1, const char *s2);
+
+template <class ...T>
+int execError(const char *s1, T ... args);
 
 static ArrayEntry *allocateSparseArrayEntry();
 static rbTreeNode *arrayEmptyAllocator();
@@ -152,9 +150,9 @@ static QList<ArrayEntry *> AllocatedSparseArrayEntries;
 
 /* Message strings used in macros (so they don't get repeated every time
    the macros are used */
-static const char StackOverflowMsg[]  = "macro stack overflow";
-static const char StackUnderflowMsg[] = "macro stack underflow";
-static const char StringToNumberMsg[] = "string could not be converted to number";
+constexpr static const char StackOverflowMsg[]  = "macro stack overflow";
+constexpr static const char StackUnderflowMsg[] = "macro stack underflow";
+constexpr static const char StringToNumberMsg[] = "string could not be converted to number";
 
 // Temporary global data for use while accumulating programs
 static QList<Symbol *> LocalSymList; // symbols local to the program
@@ -289,7 +287,7 @@ Program *FinishCreatingProgram() {
 }
 
 void FreeProgram(Program *prog) {
-	freeSymbolTable(prog->localSymList);
+	qDeleteAll(prog->localSymList);
 	delete [] prog->code;
 	delete prog;
 }
@@ -482,8 +480,8 @@ int ExecuteMacroEx(DocumentWidget *window, Program *prog, int nArgs, DataValue *
 ** "continuation"
 */
 int ContinueMacroEx(RestartData *continuation, DataValue *result, const char **msg) {
-    int status, instCount = 0;
-    Inst *inst;
+
+	int instCount = 0;
     RestartData oldContext;
 
     /* To allow macros to be invoked arbitrarily (such as those automatically
@@ -500,9 +498,9 @@ int ContinueMacroEx(RestartData *continuation, DataValue *result, const char **m
     for (;;) {
 
         // Execute an instruction
-        inst = PC++;
+		Inst *inst = PC++;
 
-        status = (inst->func)();
+		int status = (inst->func)();
 
         // If error return was not STAT_OK, return to caller
         switch(status) {
@@ -529,7 +527,7 @@ int ContinueMacroEx(RestartData *continuation, DataValue *result, const char **m
         /* Count instructions executed.  If the instruction limit is hit,
            preempt, store re-start information in continuation and give
            X, other macros, and other shell scripts a chance to execute */
-        instCount++;
+		++instCount;
         if (instCount >= INSTRUCTION_LIMIT) {
             saveContextEx(continuation);
             restoreContextEx(&oldContext);
@@ -591,7 +589,7 @@ void PreemptMacro() {
 ** how to return a value from a routine which preempts instead of returning
 ** a value directly).
 */
-void ModifyReturnedValueEx(RestartData *context, DataValue dv) {
+void ModifyReturnedValueEx(RestartData *context, const DataValue &dv) {
     if ((context->pc - 1)->func == fetchRetVal)
         *(context->stackP - 1) = dv;
 }
@@ -701,7 +699,7 @@ Symbol *LookupSymbol(view::string_view name) {
 /*
 ** install symbol name in symbol table
 */
-Symbol *InstallSymbol(const std::string &name, enum SymTypes type, DataValue value) {
+Symbol *InstallSymbol(const std::string &name, enum SymTypes type, const DataValue &value) {
 
 	auto s = new Symbol;
 	s->name  = name;
@@ -825,21 +823,6 @@ int AllocNString(NString *string, int length) {
     return true;
 }
 
-// Allocate a new string buffer of length chars, and copy in the string s 
-char *AllocStringNCpy(const char *s, int length) {
-	char *p = AllocString(length + 1); // add extra char for forced \0 
-	if (!p) {
-		return p;
-	}
-	
-	if (!s) {
-		s = "";
-	}
-	
-	p[length] = '\0'; // forced \0 
-	return strncpy(p, s, length);
-}
-
 /*
  * Allocate a new NString buffer of length chars (terminating \0 NOT included),
  * and copy at most length characters of the given string.
@@ -854,11 +837,6 @@ int AllocNStringNCpy(NString *string, const char *s, int length) {
 	strncpy(string->rep, s, length);
 	string->len = strlen(string->rep); // re-calculate! 
     return true;
-}
-
-// Allocate a new copy of string s 
-char *AllocStringCpy(const char *s) {
-	return AllocStringNCpy(s, s ? strlen(s) : 0);
 }
 
 // Allocate a new copy of string s
@@ -934,14 +912,13 @@ static ArrayEntry *allocateSparseArrayEntry() {
 }
 
 static void MarkArrayContentsAsUsed(ArrayEntry *arrayPtr) {
-	ArrayEntry *globalSEUse;
 
 	if (arrayPtr) {
 		arrayPtr->inUse = true;
 
 		auto first = static_cast<ArrayEntry *>(rbTreeBegin(arrayPtr));
 
-		for (globalSEUse = first; globalSEUse != nullptr; globalSEUse = static_cast<ArrayEntry *>(rbTreeNext(globalSEUse))) {
+		for (ArrayEntry *globalSEUse = first; globalSEUse != nullptr; globalSEUse = static_cast<ArrayEntry *>(rbTreeNext(globalSEUse))) {
 
 			globalSEUse->inUse = true;
 
@@ -1043,37 +1020,33 @@ static void restoreContextEx(RestartData *context) {
     FocusWindowEx      = context->focusWindow;
 }
 
-static void freeSymbolTable(QList<Symbol *> &symTab) {
-    qDeleteAll(symTab);
-}
-
 #define POP(dataVal)                                                                               \
 	if (StackP == TheStack)                                                                        \
-		return execError(StackUnderflowMsg, "");                                                   \
+	    return execError(StackUnderflowMsg);                                                   \
 	dataVal = *--StackP;
 
 #define PUSH(dataVal)                                                                              \
 	if (StackP >= &TheStack[STACK_SIZE])                                                           \
-		return execError(StackOverflowMsg, "");                                                    \
+	    return execError(StackOverflowMsg);                                                    \
 	*StackP++ = dataVal;
 
 #define PEEK(dataVal, peekIndex) dataVal = *(StackP - peekIndex - 1);
 
 #define POP_INT(number)                                                                            \
 	if (StackP == TheStack)                                                                        \
-		return execError(StackUnderflowMsg, "");                                                   \
+	    return execError(StackUnderflowMsg);                                                   \
 	--StackP;                                                                                      \
 	if (StackP->tag == STRING_TAG) {                                                               \
 		if (!StringToNum(StackP->val.str.rep, &number))                                            \
-			return execError(StringToNumberMsg, "");                                               \
+	        return execError(StringToNumberMsg);                                               \
 	} else if (StackP->tag == INT_TAG)                                                             \
 		number = StackP->val.n;                                                                    \
 	else                                                                                           \
-		return (execError("can't convert array to integer", nullptr));
+	    return execError("can't convert array to integer");
 
 #define POP_STRING(string)                                                                         \
 	if (StackP == TheStack)                                                                        \
-		return execError(StackUnderflowMsg, "");                                                   \
+	    return execError(StackUnderflowMsg);                                                   \
 	--StackP;                                                                                      \
 	if (StackP->tag == INT_TAG) {                                                                  \
 		string = AllocString(TYPE_INT_STR_SIZE(int));                                              \
@@ -1081,7 +1054,7 @@ static void freeSymbolTable(QList<Symbol *> &symTab) {
 	} else if (StackP->tag == STRING_TAG)                                                          \
 		string = StackP->val.str.rep;                                                              \
 	else                                                                                           \
-		return (execError("can't convert array to string", nullptr));
+	    return execError("can't convert array to string");
 
 #define PEEK_STRING(string, peekIndex)                                                             \
 	if ((StackP - peekIndex - 1)->tag == INT_TAG) {                                                \
@@ -1090,30 +1063,30 @@ static void freeSymbolTable(QList<Symbol *> &symTab) {
 	} else if ((StackP - peekIndex - 1)->tag == STRING_TAG) {                                      \
 		string = (StackP - peekIndex - 1)->val.str.rep;                                            \
 	} else {                                                                                       \
-		return (execError("can't convert array to string", nullptr));                              \
+	    return execError("can't convert array to string");                                         \
 	}
 
 #define PEEK_INT(number, peekIndex)                                                                \
 	if ((StackP - peekIndex - 1)->tag == STRING_TAG) {                                             \
 		if (!StringToNum((StackP - peekIndex - 1)->val.str.rep, &number)) {                        \
-			return execError(StringToNumberMsg, "");                                               \
+	        return execError(StringToNumberMsg);                                               \
 		}                                                                                          \
 	} else if ((StackP - peekIndex - 1)->tag == INT_TAG) {                                         \
 		number = (StackP - peekIndex - 1)->val.n;                                                  \
 	} else {                                                                                       \
-		return (execError("can't convert array to string", nullptr));                              \
+	    return execError("can't convert array to string");                                         \
 	}
 
 #define PUSH_INT(number)                                                                           \
 	if (StackP >= &TheStack[STACK_SIZE])                                                           \
-		return execError(StackOverflowMsg, "");                                                    \
+	    return execError(StackOverflowMsg);                                                    \
 	StackP->tag   = INT_TAG;                                                                       \
 	StackP->val.n = number;                                                                        \
 	StackP++;
 
 #define PUSH_STRING(string, length)                                                                \
 	if (StackP >= &TheStack[STACK_SIZE])                                                           \
-		return execError(StackOverflowMsg, "");                                                    \
+	    return execError(StackOverflowMsg);                                                    \
 	StackP->tag     = STRING_TAG;                                                                  \
 	StackP->val.str = NString({string, size_t(length)});                                           \
 	StackP++;
@@ -1212,8 +1185,9 @@ static int pushArgCount() {
 }
 
 static int pushArgArray() {
-	int nArgs, argNum;
-	DataValue argVal, *resultArray;
+	int nArgs;
+	DataValue argVal;
+	DataValue *resultArray;
 
 	DISASM_RT(PC - 1, 1);
 	STACKDUMP(0, 3);
@@ -1224,13 +1198,13 @@ static int pushArgArray() {
 		resultArray->tag = ARRAY_TAG;
 		resultArray->val.arrayPtr = ArrayNew();
 
-		for (argNum = 0; argNum < nArgs; ++argNum) {
-			char intStr[TYPE_INT_STR_SIZE(argNum)];
+		for (int argNum = 0; argNum < nArgs; ++argNum) {
 
-			sprintf(intStr, "%d", argNum + 1);
+			auto intStr = std::to_string(argNum);
+
 			argVal = FP_GET_ARG_N(FrameP, argNum);
-			if (!ArrayInsert(resultArray, AllocStringCpy(intStr), &argVal)) {
-				return (execError("array insertion failure", nullptr));
+			if (!ArrayInsert(resultArray, AllocStringCpyEx(intStr), &argVal)) {
+				return execError("array insertion failure");
 			}
 		}
 	}
@@ -1392,19 +1366,19 @@ static int add() {
 					rightIter = arrayIterateNext(rightIter);
 				}
 				if (!insertResult) {
-					return (execError("array insertion failure", nullptr));
+					return execError("array insertion failure");
 				}
 			}
 			PUSH(resultArray)
 		} else {
-			return (execError("can't mix math with arrays and non-arrays", nullptr));
+			return execError("can't mix math with arrays and non-arrays");
 		}
 	} else {
 		POP_INT(n2)
 		POP_INT(n1)
 		PUSH_INT(n1 + n2)
 	}
-	return (STAT_OK);
+	return STAT_OK;
 }
 
 /*
@@ -1452,19 +1426,19 @@ static int subtract() {
 					leftIter = arrayIterateNext(leftIter);
 				}
 				if (!insertResult) {
-					return (execError("array insertion failure", nullptr));
+					return execError("array insertion failure");
 				}
 			}
 			PUSH(resultArray)
 		} else {
-			return (execError("can't mix math with arrays and non-arrays", nullptr));
+			return execError("can't mix math with arrays and non-arrays");
 		}
 	} else {
 		POP_INT(n2)
 		POP_INT(n1)
 		PUSH_INT(n1 - n2)
 	}
-	return (STAT_OK);
+	return STAT_OK;
 }
 
 /*
@@ -1489,7 +1463,7 @@ static int divide() {
 	POP_INT(n2)
 	POP_INT(n1)
 	if (n2 == 0) {
-		return execError("division by zero", "");
+		return execError("division by zero");
 	}
 	PUSH_INT(n1 / n2)
 	return STAT_OK;
@@ -1504,7 +1478,7 @@ static int modulo() {
 	POP_INT(n2)
 	POP_INT(n1)
 	if (n2 == 0) {
-		return execError("modulo by zero", "");
+		return execError("modulo by zero");
 	}
 	PUSH_INT(n1 % n2)
 	return STAT_OK;
@@ -1571,11 +1545,11 @@ static int eq() {
 			v1.val.n = number == v1.val.n;
 		}
 	} else {
-		return (execError("incompatible types to compare", nullptr));
+		return execError("incompatible types to compare");
 	}
 	v1.tag = INT_TAG;
 	PUSH(v1)
-	return (STAT_OK);
+	return STAT_OK;
 }
 
 // negated eq() call 
@@ -1624,19 +1598,19 @@ static int bitAnd() {
 					rightIter = arrayIterateNext(rightIter);
 				}
 				if (!insertResult) {
-					return (execError("array insertion failure", nullptr));
+					return execError("array insertion failure");
 				}
 			}
 			PUSH(resultArray)
 		} else {
-			return (execError("can't mix math with arrays and non-arrays", nullptr));
+			return execError("can't mix math with arrays and non-arrays");
 		}
 	} else {
 		POP_INT(n2)
 		POP_INT(n1)
 		PUSH_INT(n1 & n2)
 	}
-	return (STAT_OK);
+	return STAT_OK;
 }
 
 /*
@@ -1688,19 +1662,19 @@ static int bitOr() {
 					rightIter = arrayIterateNext(rightIter);
 				}
 				if (!insertResult) {
-					return (execError("array insertion failure", nullptr));
+					return execError("array insertion failure");
 				}
 			}
 			PUSH(resultArray)
 		} else {
-			return (execError("can't mix math with arrays and non-arrays", nullptr));
+			return execError("can't mix math with arrays and non-arrays");
 		}
 	} else {
 		POP_INT(n2)
 		POP_INT(n1)
 		PUSH_INT(n1 | n2)
 	}
-	return (STAT_OK);
+	return STAT_OK;
 }
 
 static int logicalAnd() {
@@ -1878,7 +1852,7 @@ static int callSubroutine() {
 ** value, then skips over it without executing.
 */
 static int fetchRetVal() {
-	return execError("internal error: frv", nullptr);
+	return execError("internal error: frv");
 }
 
 // see comments for returnValOrNone() 
@@ -2029,19 +2003,19 @@ int ArrayCopy(DataValue *dstArray, DataValue *srcArray) {
 
 			errNum = ArrayCopy(&tmpArray, &srcIter->value);
 			if (errNum != STAT_OK) {
-				return (errNum);
+				return errNum;
 			}
 			if (!ArrayInsert(dstArray, srcIter->key, &tmpArray)) {
-				return (execError("array copy failed", nullptr));
+				return execError("array copy failed");
 			}
 		} else {
 			if (!ArrayInsert(dstArray, srcIter->key, &srcIter->value)) {
-				return (execError("array copy failed", nullptr));
+				return execError("array copy failed");
 			}
 		}
 		srcIter = arrayIterateNext(srcIter);
 	}
-	return (STAT_OK);
+	return STAT_OK;
 }
 
 /*
@@ -2066,11 +2040,11 @@ static int makeArrayKeyFromArgs(int nArgs, char **keyString, int leaveParams) {
 		} else if (tmpVal.tag == STRING_TAG) {
 			keyLength += tmpVal.val.str.len;
 		} else {
-			return (execError("can only index array with string or int.", nullptr));
+			return execError("can only index array with string or int.");
 		}
 	}
 	*keyString = AllocString(keyLength + 1);
-	(*keyString)[0] = 0;
+	(*keyString)[0] = '\0';
 	for (i = nArgs - 1; i >= 0; --i) {
 		if (i != nArgs - 1) {
 			strcat(*keyString, ARRAY_DIM_SEP);
@@ -2081,7 +2055,7 @@ static int makeArrayKeyFromArgs(int nArgs, char **keyString, int leaveParams) {
 		} else if (tmpVal.tag == STRING_TAG) {
 			strcat(*keyString, tmpVal.val.str.rep);
 		} else {
-			return (execError("can only index array with string or int.", nullptr));
+			return execError("can only index array with string or int.");
 		}
 	}
 	if (!leaveParams) {
@@ -2102,7 +2076,7 @@ static rbTreeNode *arrayEmptyAllocator() {
 		newNode->key = nullptr;
 		newNode->value.tag = NO_TAG;
 	}
-	return (newNode);
+	return newNode;
 }
 
 /*
@@ -2115,7 +2089,7 @@ static rbTreeNode *arrayAllocateNode(rbTreeNode *src) {
 		newNode->key   = static_cast<ArrayEntry *>(src)->key;
 		newNode->value = static_cast<ArrayEntry *>(src)->value;
 	}
-	return (newNode);
+	return newNode;
 }
 
 /*
@@ -2123,16 +2097,16 @@ static rbTreeNode *arrayAllocateNode(rbTreeNode *src) {
 ** modified, only replaced
 */
 static int arrayEntryCopyToNode(rbTreeNode *dst, rbTreeNode *src) {
-	((ArrayEntry *)dst)->key   = ((ArrayEntry *)src)->key;
-	((ArrayEntry *)dst)->value = ((ArrayEntry *)src)->value;
-	return (1);
+	static_cast<ArrayEntry *>(dst)->key   = static_cast<ArrayEntry *>(src)->key;
+	static_cast<ArrayEntry *>(dst)->value = static_cast<ArrayEntry *>(src)->value;
+	return 1;
 }
 
 /*
 ** compare two array nodes returning an integer value similar to strcmp()
 */
 static int arrayEntryCompare(rbTreeNode *left, rbTreeNode *right) {
-	return (strcmp(((ArrayEntry *)left)->key, ((ArrayEntry *)right)->key));
+	return strcmp(static_cast<ArrayEntry *>(left)->key, static_cast<ArrayEntry *>(right)->key);
 }
 
 /*
@@ -2148,7 +2122,7 @@ static void arrayDisposeNode(rbTreeNode *src) {
 }
 
 ArrayEntry *ArrayNew() {
-	return ((ArrayEntry *)rbTreeNew(arrayEmptyAllocator));
+	return static_cast<ArrayEntry *>(rbTreeNew(arrayEmptyAllocator));
 }
 
 /*
@@ -2157,17 +2131,16 @@ ArrayEntry *ArrayNew() {
 */
 bool ArrayInsert(DataValue *theArray, char *keyStr, DataValue *theValue) {
 	ArrayEntry tmpEntry;
-	rbTreeNode *insertedNode;
 
-	tmpEntry.key = keyStr;
+	tmpEntry.key   = keyStr;
 	tmpEntry.value = *theValue;
 
-	if (theArray->val.arrayPtr == nullptr) {
+	if (!theArray->val.arrayPtr) {
 		theArray->val.arrayPtr = ArrayNew();
 	}
 
 	if (theArray->val.arrayPtr) {
-		insertedNode = rbTreeInsert((theArray->val.arrayPtr), &tmpEntry, arrayEntryCompare, arrayAllocateNode, arrayEntryCopyToNode);
+		rbTreeNode *insertedNode = rbTreeInsert((theArray->val.arrayPtr), &tmpEntry, arrayEntryCompare, arrayAllocateNode, arrayEntryCopyToNode);
 
 		if (insertedNode) {
             return true;
@@ -2222,14 +2195,13 @@ unsigned ArraySize(DataValue *theArray) {
 ** returns 1 for success 0 for not found
 */
 bool ArrayGet(DataValue *theArray, char *keyStr, DataValue *theValue) {
-	ArrayEntry searchEntry;
-	rbTreeNode *foundNode;
 
 	if (theArray->val.arrayPtr) {
+		ArrayEntry searchEntry;
 		searchEntry.key = keyStr;
-		foundNode = rbTreeFind(theArray->val.arrayPtr, &searchEntry, arrayEntryCompare);
+		rbTreeNode *foundNode = rbTreeFind(theArray->val.arrayPtr, &searchEntry, arrayEntryCompare);
 		if (foundNode) {
-			*theValue = ((ArrayEntry *)foundNode)->value;
+			*theValue = static_cast<ArrayEntry *>(foundNode)->value;
             return true;
 		}
 	}
@@ -2243,11 +2215,11 @@ bool ArrayGet(DataValue *theArray, char *keyStr, DataValue *theValue) {
 ArrayEntry *arrayIterateFirst(DataValue *theArray) {
 	ArrayEntry *startPos;
 	if (theArray->val.arrayPtr) {
-		startPos = (ArrayEntry *)rbTreeBegin(theArray->val.arrayPtr);
+		startPos = static_cast<ArrayEntry *>(rbTreeBegin(theArray->val.arrayPtr));
 	} else {
 		startPos = nullptr;
 	}
-	return (startPos);
+	return startPos;
 }
 
 /*
@@ -2256,11 +2228,11 @@ ArrayEntry *arrayIterateFirst(DataValue *theArray) {
 ArrayEntry *arrayIterateNext(ArrayEntry *iterator) {
 	ArrayEntry *nextPos;
 	if (iterator) {
-		nextPos = (ArrayEntry *)rbTreeNext(iterator);
+		nextPos = static_cast<ArrayEntry *>(rbTreeNext(iterator));
 	} else {
 		nextPos = nullptr;
 	}
-	return (nextPos);
+	return nextPos;
 }
 
 /*
@@ -2272,40 +2244,40 @@ ArrayEntry *arrayIterateNext(ArrayEntry *iterator) {
 **         TheStack-> indexedArrayVal, next, ...
 */
 static int arrayRef() {
-	int errNum;
-	DataValue srcArray, valueItem;
-	char *keyString = nullptr;
-	int nDim;
 
-	nDim = PC->value;
+	DataValue srcArray;
+	DataValue valueItem;
+	char *keyString = nullptr;
+
+	int nDim = PC->value;
 	PC++;
 
 	DISASM_RT(PC - 2, 2);
 	STACKDUMP(nDim, 3);
 
 	if (nDim > 0) {
-		errNum = makeArrayKeyFromArgs(nDim, &keyString, 0);
+		int errNum = makeArrayKeyFromArgs(nDim, &keyString, 0);
 		if (errNum != STAT_OK) {
-			return (errNum);
+			return errNum;
 		}
 
 		POP(srcArray)
 		if (srcArray.tag == ARRAY_TAG) {
 			if (!ArrayGet(&srcArray, keyString, &valueItem)) {
-				return (execError("referenced array value not in array: %s", keyString));
+				return execError("referenced array value not in array: %s", keyString);
 			}
 			PUSH(valueItem)
-			return (STAT_OK);
+			return STAT_OK;
 		} else {
-			return (execError("operator [] on non-array", nullptr));
+			return execError("operator [] on non-array");
 		}
 	} else {
 		POP(srcArray)
 		if (srcArray.tag == ARRAY_TAG) {
 			PUSH_INT(ArraySize(&srcArray))
-			return (STAT_OK);
+			return STAT_OK;
 		} else {
-			return (execError("operator [] on non-array", nullptr));
+			return execError("operator [] on non-array");
 		}
 	}
 }
@@ -2320,8 +2292,8 @@ static int arrayRef() {
 */
 static int arrayAssign() {
 	char *keyString = nullptr;
-	DataValue srcValue, dstArray;
-	int errNum;
+	DataValue srcValue;
+	DataValue dstArray;
 	int nDim;
 
 	nDim = PC->value;
@@ -2333,15 +2305,15 @@ static int arrayAssign() {
 	if (nDim > 0) {
 		POP(srcValue)
 
-		errNum = makeArrayKeyFromArgs(nDim, &keyString, 0);
+		int errNum = makeArrayKeyFromArgs(nDim, &keyString, 0);
 		if (errNum != STAT_OK) {
-			return (errNum);
+			return errNum;
 		}
 
 		POP(dstArray)
 
 		if (dstArray.tag != ARRAY_TAG && dstArray.tag != NO_TAG) {
-			return (execError("cannot assign array element of non-array", nullptr));
+			return execError("cannot assign array element of non-array");
 		}
 		if (srcValue.tag == ARRAY_TAG) {
 			DataValue arrayCopyValue;
@@ -2349,16 +2321,16 @@ static int arrayAssign() {
 			errNum = ArrayCopy(&arrayCopyValue, &srcValue);
 			srcValue = arrayCopyValue;
 			if (errNum != STAT_OK) {
-				return (errNum);
+				return errNum;
 			}
 		}
 		if (ArrayInsert(&dstArray, keyString, &srcValue)) {
-			return (STAT_OK);
+			return STAT_OK;
 		} else {
-			return (execError("array member allocation failure", nullptr));
+			return execError("array member allocation failure");
 		}
 	}
-	return (execError("empty operator []", nullptr));
+	return execError("empty operator []");
 }
 
 /*
@@ -2370,14 +2342,15 @@ static int arrayAssign() {
 **         TheStack-> [rhs], arrayValue, next, ...
 */
 static int arrayRefAndAssignSetup() {
-	int errNum;
-	DataValue srcArray, valueItem, moveExpr;
-	char *keyString = nullptr;
-	int binaryOp, nDim;
 
-	binaryOp = PC->value;
+	DataValue srcArray;
+	DataValue valueItem;
+	DataValue moveExpr;
+	char *keyString = nullptr;
+
+	int binaryOp = PC->value;
 	PC++;
-	nDim = PC->value;
+	int nDim = PC->value;
 	PC++;
 
 	DISASM_RT(PC - 3, 3);
@@ -2388,26 +2361,26 @@ static int arrayRefAndAssignSetup() {
 	}
 
 	if (nDim > 0) {
-		errNum = makeArrayKeyFromArgs(nDim, &keyString, 1);
+		int errNum = makeArrayKeyFromArgs(nDim, &keyString, 1);
 		if (errNum != STAT_OK) {
-			return (errNum);
+			return errNum;
 		}
 
 		PEEK(srcArray, nDim)
 		if (srcArray.tag == ARRAY_TAG) {
 			if (!ArrayGet(&srcArray, keyString, &valueItem)) {
-				return (execError("referenced array value not in array: %s", keyString));
+				return execError("referenced array value not in array: %s", keyString);
 			}
 			PUSH(valueItem)
 			if (binaryOp) {
 				PUSH(moveExpr)
 			}
-			return (STAT_OK);
+			return STAT_OK;
 		} else {
-			return (execError("operator [] on non-array", nullptr));
+			return execError("operator [] on non-array");
 		}
 	} else {
-		return (execError("array[] not an lvalue", nullptr));
+		return execError("array[] not an lvalue");
 	}
 }
 
@@ -2439,16 +2412,16 @@ static int beginArrayIter() {
 	if (iterator->type == LOCAL_SYM) {
 		iteratorValPtr = &FP_GET_SYM_VAL(FrameP, iterator);
 	} else {
-		return (execError("bad temporary iterator: %s", iterator->name.c_str()));
+		return execError("bad temporary iterator: %s", iterator->name.c_str());
 	}
 
 	iteratorValPtr->tag = INT_TAG;
 	if (arrayVal.tag != ARRAY_TAG) {
-		return (execError("can't iterate non-array", nullptr));
+		return execError("can't iterate non-array");
 	}
 
 	iteratorValPtr->val.arrayPtr = arrayIterateFirst(&arrayVal);
-	return (STAT_OK);
+	return STAT_OK;
 }
 
 /*
@@ -2496,14 +2469,14 @@ static int arrayIter() {
 	} else if (item->type == GLOBAL_SYM) {
 		itemValPtr = &(item->value);
 	} else {
-		return (execError("can't assign to: %s", item->name.c_str()));
+		return execError("can't assign to: %s", item->name.c_str());
 	}
 	itemValPtr->tag = NO_TAG;
 
 	if (iterator->type == LOCAL_SYM) {
 		iteratorValPtr = &FP_GET_SYM_VAL(FrameP, iterator);
 	} else {
-		return (execError("bad temporary iterator: %s", iterator->name.c_str()));
+		return execError("bad temporary iterator: %s", iterator->name.c_str());
 	}
 
 	thisEntry = iteratorValPtr->val.arrayPtr;
@@ -2515,7 +2488,7 @@ static int arrayIter() {
 	} else {
 		PC = branchAddr;
 	}
-	return (STAT_OK);
+	return STAT_OK;
 }
 
 /*
@@ -2531,8 +2504,10 @@ static int arrayIter() {
 **         TheStack-> next, ...
 */
 static int inArray() {
-	DataValue theArray, leftArray, theValue;
-	char *keyStr;
+	DataValue theArray;
+	DataValue leftArray;
+	DataValue theValue;
+
 	int inResult = 0;
 
 	DISASM_RT(PC - 1, 1);
@@ -2540,27 +2515,27 @@ static int inArray() {
 
 	POP(theArray)
 	if (theArray.tag != ARRAY_TAG) {
-		return (execError("operator in on non-array", nullptr));
+		return execError("operator in on non-array");
 	}
 	PEEK(leftArray, 0)
 	if (leftArray.tag == ARRAY_TAG) {
-		ArrayEntry *iter;
 
 		POP(leftArray)
 		inResult = 1;
-		iter = arrayIterateFirst(&leftArray);
+		ArrayEntry *iter = arrayIterateFirst(&leftArray);
 		while (inResult && iter) {
 			inResult = inResult && ArrayGet(&theArray, iter->key, &theValue);
 			iter = arrayIterateNext(iter);
 		}
 	} else {
+		char *keyStr;
 		POP_STRING(keyStr)
 		if (ArrayGet(&theArray, keyStr, &theValue)) {
 			inResult = 1;
 		}
 	}
 	PUSH_INT(inResult)
-	return (STAT_OK);
+	return STAT_OK;
 }
 
 /*
@@ -2588,7 +2563,7 @@ static int deleteArrayElement() {
 
 		errNum = makeArrayKeyFromArgs(nDim, &keyString, 0);
 		if (errNum != STAT_OK) {
-			return (errNum);
+			return errNum;
 		}
 	}
 
@@ -2600,9 +2575,9 @@ static int deleteArrayElement() {
 			ArrayDeleteAll(&theArray);
 		}
 	} else {
-		return (execError("attempt to delete from non-array", nullptr));
+		return execError("attempt to delete from non-array");
 	}
-	return (STAT_OK);
+	return STAT_OK;
 }
 
 /*
@@ -2623,10 +2598,11 @@ static int errCheck(const char *s) {
 ** result.  Returns false so a single return execError() statement can
 ** be used to both process the message and return.
 */
-static int execError(const char *s1, const char *s2) {
+template <class ...T>
+int execError(const char *s1, T ... args) {
 	static char msg[MAX_ERR_MSG_LEN];
 
-    snprintf(msg, sizeof(msg), s1, s2);
+	snprintf(msg, sizeof(msg), s1, args...);
 	ErrMsg = msg;
 	return STAT_ERROR;
 }

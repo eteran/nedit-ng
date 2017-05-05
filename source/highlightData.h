@@ -39,7 +39,7 @@ class QString;
 class HighlightStyle;
 class MainWindow;
 
-bool LoadHighlightStringEx(const QString &inString);
+bool LoadHighlightStringEx(const QString &string);
 bool LoadStylesStringEx(const QString &string);
 bool NamedStyleExists(const QString &styleName);
 int FontOfNamedStyleIsBold(const QString &styleName);

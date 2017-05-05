@@ -312,7 +312,6 @@ static int countWindows() {
 ** Count no. of writable windows, but first update the status of all files.
 */
 int countWritableWindows() {
-	int nAfter;
 
 	int nBefore = countWindows();
     int nWritable = 0;
@@ -328,7 +327,7 @@ int countWritableWindows() {
 		   dialog when the file has changed on disk, and the user may destroy
 		   arbitrary windows in response. */
         w->CheckForChangesToFileEx();
-        nAfter = countWindows();
+		int nAfter = countWindows();
 
 		if (nAfter != nBefore) {
 			// The user has destroyed a file; start counting all over again 

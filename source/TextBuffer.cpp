@@ -891,6 +891,8 @@ void TextBuffer::overlayRectEx(int startPos, int rectStart, int rectEnd, view::s
     int nLines = countLinesEx(insText) + 1;
     int end = BufEndOfLine(BufCountForwardNLines(start, nLines-1));
     std::string expText = expandTabsEx(insText, 0, tabDist_, nullSubsChar_, &expInsLen);
+	Q_UNUSED(expText);
+
     char *outStr = new char[end - start + expInsLen + nLines * (rectEnd + MAX_EXP_CHAR_LEN) + 1];
 
     /* Loop over all lines in the buffer between start and end overlaying the
@@ -1130,7 +1132,7 @@ void TextBuffer::BufSetTabDistance(int tabDist) {
 	callModifyCBs(0, length_, length_, 0, deletedText);
 }
 
-void TextBuffer::BufCheckDisplay(int start, int end) {
+void TextBuffer::BufCheckDisplay(int start, int end) const {
 	// just to make sure colors in the selected region are up to date
 	callModifyCBs(start, 0, 0, end - start, std::string());
 }
@@ -1933,6 +1935,7 @@ void TextBuffer::deleteRect(int start, int end, int rectStart, int rectEnd, int 
 
 	std::string text = BufGetRangeEx(start, end);
 	std::string expText = expandTabsEx(text, 0, tabDist_, nullSubsChar_, &len);
+	Q_UNUSED(expText);
 
 	auto outStr = new char[len + nLines * MAX_EXP_CHAR_LEN * 2 + 1];
 

@@ -149,7 +149,7 @@ public Q_SLOTS:
     void on_editIFind_returnPressed();
     void on_buttonIFind_clicked();
     void on_checkIFindCase_toggled(bool searchCaseSense);
-    void on_checkIFindRegex_toggled(bool value);
+	void on_checkIFindRegex_toggled(bool searchRegex);
 	void on_checkIFindReverse_toggled(bool value);
 
 public Q_SLOTS:

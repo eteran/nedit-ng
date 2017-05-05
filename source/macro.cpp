@@ -1316,7 +1316,6 @@ static void finishMacroCmdExecutionEx(DocumentWidget *document) {
        the window is still empty, do the close */
     if (closeOnCompletion && !document->filenameSet_ && !document->fileChanged_) {
         document->CloseWindow();
-        document = nullptr;
     }
 
     // If no other macros are executing, do garbage collection
@@ -4578,11 +4577,9 @@ static int rangesetSetColorMS(DocumentWidget *window, DataValue *argList, int nA
 		M_FAILURE("Rangeset does not exist in %s");
 	}
 
-    std::string color_name = "";
-	if (rangeset) {
-        if (!readArgument(argList[1], &color_name, errMsg)) {
-			M_FAILURE("Second parameter is not a color name string in %s");
-		}
+	std::string color_name;
+	if (!readArgument(argList[1], &color_name, errMsg)) {
+		M_FAILURE("Second parameter is not a color name string in %s");
 	}
 
     rangeset->RangesetAssignColorName(color_name);
@@ -4619,11 +4616,9 @@ static int rangesetSetNameMS(DocumentWidget *window, DataValue *argList, int nAr
 		M_FAILURE("Rangeset does not exist in %s");
 	}
 
-    std::string name = "";
-	if (rangeset) {
-        if (!readArgument(argList[1], &name, errMsg)) {
-			M_FAILURE("Second parameter is not a valid name string in %s");
-		}
+	std::string name;
+	if (!readArgument(argList[1], &name, errMsg)) {
+		M_FAILURE("Second parameter is not a valid name string in %s");
 	}
 
     rangeset->RangesetAssignName(name);
@@ -4661,17 +4656,14 @@ static int rangesetSetModeMS(DocumentWidget *window, DataValue *argList, int nAr
 		M_FAILURE("Rangeset does not exist in %s");
 	}
 
-    std::string update_fn_name = "";
-	if (rangeset) {
-		if (nArgs == 2) {
-            if (!readArgument(argList[1], &update_fn_name,  errMsg)) {
-				M_FAILURE("Second parameter is not a string in %s");
-			}
+	std::string update_fn_name;
+	if (nArgs == 2) {
+		if (!readArgument(argList[1], &update_fn_name,  errMsg)) {
+			M_FAILURE("Second parameter is not a string in %s");
 		}
 	}
 
     int ok = rangeset->RangesetChangeModifyResponse(update_fn_name.c_str());
-
 	if (!ok) {
 		M_FAILURE("Second parameter is not a valid mode in %s");
 	}

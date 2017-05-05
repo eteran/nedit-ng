@@ -37,6 +37,7 @@ class HighlightData;
 class WindowHighlightData;
 struct DragEndEvent;
 struct smartIndentCBStruct;
+struct SmartIndentData;
 
 enum class Direction;
 
@@ -142,7 +143,7 @@ public:
     void DoShellMenuCmd(MainWindow *inWindow, TextArea *area, const QString &command, InSrcs input, OutDests output, bool outputReplacesInput, bool saveFirst, bool loadAfter, bool fromMacro);
     void ExecCursorLineEx(TextArea *area, bool fromMacro);
     void FilterSelection(const QString &command, bool fromMacro);
-    void MakeSelectionVisible(TextArea *textPane);
+	void MakeSelectionVisible(TextArea *area);
     void RaiseDocument();
     void RaiseDocumentWindow();
     void RaiseFocusDocumentWindow(bool focus);
@@ -186,7 +187,7 @@ public:
     void removeUndoItem();
     void repeatMacro(const QString &macro, int how);
     void safeCloseEx();
-    void setWrapMargin(int margn);
+	void setWrapMargin(int margin);
     void trimUndoList(int maxLength);
 
 public:
@@ -254,7 +255,7 @@ public:
     void *highlightData_;              // info for syntax highlighting
     void *macroCmdData_;               // same for macro commands
     void *shellCmdData_;               // when a shell command is executing, info. about it, otherwise, nullptr
-    void *smartIndentData_;            // compiled macros for smart indent
+	SmartIndentData *smartIndentData_;            // compiled macros for smart indent
     bool  showStats_;                  // is stats line supposed to be shown
 
 private:

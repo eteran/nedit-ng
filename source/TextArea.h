@@ -231,7 +231,7 @@ public:
     int TextDPositionToXY(int pos, QPoint *coord);
 	void TextDKillCalltip(int calltipID);
     int TextDGetCalltipID(int calltipID) const;
-	void TextDSetColors(QColor textFgP, QColor textBgP, QColor selectFgP, QColor selectBgP, QColor hiliteFgP, QColor hiliteBgP, QColor lineNoFgP, QColor cursorFgP);
+	void TextDSetColors(const QColor &textFgP, const QColor &textBgP, const QColor &selectFgP, const QColor &selectBgP, const QColor &hiliteFgP, const QColor &hiliteBgP, const QColor &lineNoFgP, const QColor &cursorFgP);
     void TextDXYToUnconstrainedPosition(const QPoint &coord, int *row, int *column);
     int TextDXYToPosition(const QPoint &coord);
 	int TextDOffsetWrappedColumn(int row, int column);
@@ -256,7 +256,7 @@ public:
 	void TextDBlankCursor();
 	void TextDRedrawCalltip(int calltipID);
 	void TextDSetupBGClassesEx(const QString &str);
-	void TextDSetupBGClasses(const QString &s, QVector<QColor> *pp_bgClassPixel, QVector<uint8_t> *pp_bgClass, QColor bgPixelDefault);
+	void TextDSetupBGClasses(const QString &s, QVector<QColor> *pp_bgClassPixel, QVector<uint8_t> *pp_bgClass, const QColor &bgPixelDefault);
 	int TextDMoveRight();
 	int TextDMoveLeft();
 	int TextDMoveUp(bool absolute);

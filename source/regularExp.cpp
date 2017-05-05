@@ -549,6 +549,13 @@ unsigned int U_CHAR_AT(T *p) {
  *----------------------------------------------------------------------*/
 regexp::regexp(view::string_view exp, int defaultFlags) {
 
+	// NOTE(eteran): previously uninitialized
+	std::fill_n(startp, NSUBEXP, nullptr);
+	std::fill_n(endp, NSUBEXP, nullptr);
+	extentpBW = nullptr;
+	extentpFW = nullptr;
+	top_branch = 0;
+
 	uint8_t *scan;
 	int flags_local, pass;
 	len_range range_local;

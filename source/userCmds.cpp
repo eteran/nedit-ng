@@ -51,7 +51,7 @@ const int UNKNOWN_LANGUAGE_MODE = -2;
 
 struct ParseError : std::exception {
 public:
-    ParseError(const std::string &s) : s_(s) {
+	explicit ParseError(const std::string &s) : s_(s) {
     }
 
     virtual ~ParseError() = default;

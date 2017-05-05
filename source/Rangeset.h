@@ -43,38 +43,37 @@ struct Range {
 	int end; /* range from [start-]end */
 };
 
-typedef Rangeset *RangesetUpdateFn(Rangeset *p, int pos, int ins, int del);
+typedef Rangeset *RangesetUpdateFn(Rangeset *rangeset, int pos, int ins, int del);
 
 class Rangeset {
-
 public:
     Rangeset()                            = default;
     Rangeset(const Rangeset &)            = delete;
     Rangeset& operator=(const Rangeset &) = delete;
     Rangeset(Rangeset &&)                 = delete;
     Rangeset& operator=(Rangeset &&)      = delete;
-    virtual ~Rangeset()                   = default;
+	~Rangeset()                           = default;
 
 public:
     QString RangesetGetName() const;
 	int RangesetAdd(Rangeset *plusSet);
 	int RangesetAddBetween(int start, int end);
-    int RangesetAssignColorName(const std::string &color_name_);
-    int RangesetAssignColorPixel(const QColor &color_, int ok);
-    int RangesetAssignName(const std::string &name_);
-    int RangesetChangeModifyResponse(const char *name_);
+	bool RangesetAssignColorName(const std::string &color_name);
+	bool RangesetAssignColorPixel(const QColor &color, int ok);
+	bool RangesetAssignName(const std::string &name);
+	bool RangesetChangeModifyResponse(const char *name);
 	int RangesetCheckRangeOfPos(int pos);
-	int RangesetFindRangeNo(int index, int *start, int *end);
-	int RangesetFindRangeOfPos(int pos, int incl_end);
-    int RangesetGetColorValid(QColor *color_);
+	int RangesetFindRangeNo(int index, int *start, int *end) const;
+	int RangesetFindRangeOfPos(int pos, int incl_end) const;
+	int RangesetGetColorValid(QColor *color) const;
 	int RangesetGetNRanges() const;
 	int RangesetInverse();
 	int RangesetRemove(Rangeset *minusSet);
 	int RangesetRemoveBetween(int start, int end);
 	void RangesetEmpty();
-    void RangesetGetInfo(bool *defined, int *label_, int *count, QString *color_, QString *name_, const char **mode);
-	void RangesetRefreshRange(int start, int end);
-    void RangesetInit(int label_, TextBuffer *buf_);
+	void RangesetGetInfo(bool *defined, int *label, int *count, QString *color, QString *name, const char **mode) const;
+	void RangesetRefreshRange(int start, int end) const;
+	void RangesetInit(int label, TextBuffer *buf);
 
 public:
     RangesetUpdateFn *update_fn_; // modification update function

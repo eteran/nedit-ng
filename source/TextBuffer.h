@@ -94,7 +94,7 @@ public:
 	void BufAddModifyCB(bufModifyCallbackProc bufModifiedCB, void *cbArg);
 	void BufAddPreDeleteCB(bufPreDeleteCallbackProc bufPreDeleteCB, void *cbArg);
 	void BufAppendEx(view::string_view text);
-	void BufCheckDisplay(int start, int end);
+	void BufCheckDisplay(int start, int end) const;
 	void BufClearRect(int start, int end, int rectStart, int rectEnd);
 	void BufCopyFromBuf(TextBuffer *fromBuf, int fromStart, int fromEnd, int toPos);
 	void BufHighlight(int start, int end);

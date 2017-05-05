@@ -502,6 +502,7 @@ static int scanCTagsLine(const char *line, const char *tagPath, int index) {
 	char *posTagRENull;
 	int pos;
 
+	// TODO(eteran): replace this with a regex?
 	int nRead = sscanf(line, "%s\t%s\t%[^\n]", name, file, searchString);
 	if (nRead != 3) {
 		return 0;

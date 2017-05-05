@@ -187,22 +187,22 @@ void StartHighlightingEx(DocumentWidget *document, bool warn) {
 
     /* Find the pattern set matching the window's current
        language mode, tell the user if it can't be done */
-    PatternSet *patterns = findPatternsForWindowEx(document, warn);
+	PatternSet *patterns = findPatternsForWindowEx(document, warn);
     if(!patterns) {
         return;
     }
 
     // Compile the patterns
-    WindowHighlightData *highlightData = createHighlightDataEx(document, patterns);
+	WindowHighlightData *highlightData = createHighlightDataEx(document, patterns);
     if(!highlightData) {
         return;
     }
 
     // Prepare for a long delay, refresh display and put up a watch cursor
-    const QCursor cursor = document->cursor();
-    document->setCursor(Qt::WaitCursor);
+	const QCursor cursor = document->cursor();
+	document->setCursor(Qt::WaitCursor);
 
-    const int bufLength = document->buffer_->BufGetLength();
+	const int bufLength = document->buffer_->BufGetLength();
 
     /* Parse the buffer with pass 1 patterns.  If there are none, initialize
        the style buffer to all UNFINISHED_STYLE to trigger parsing later */
@@ -215,7 +215,7 @@ void StartHighlightingEx(DocumentWidget *document, bool warn) {
         }
     } else {
 
-        const char *const bufString = document->buffer_->BufAsString();
+		const char *const bufString = document->buffer_->BufAsString();
         const char *const match_to  = bufString + bufLength;
         const char *stringPtr = bufString;
 
@@ -226,7 +226,7 @@ void StartHighlightingEx(DocumentWidget *document, bool warn) {
             bufLength,
             &prevChar,
             false,
-            document->GetWindowDelimiters(),
+		    document->GetWindowDelimiters(),
             bufString,
             match_to);
     }
@@ -235,7 +235,7 @@ void StartHighlightingEx(DocumentWidget *document, bool warn) {
     delete [] styleString;
 
     // install highlight pattern data in the window data structure
-    document->highlightData_ = highlightData;
+	document->highlightData_ = highlightData;
 
 #if 0
     int oldFontHeight;
@@ -246,9 +246,9 @@ void StartHighlightingEx(DocumentWidget *document, bool warn) {
 #endif
 
     // Attach highlight information to text widgets in each pane
-    QList<TextArea *> panes = document->textPanes();
+	QList<TextArea *> panes = document->textPanes();
     for(TextArea *area : panes) {
-        AttachHighlightToWidgetEx(area, document);
+		AttachHighlightToWidgetEx(area, document);
     }
 
 #if 0
@@ -259,7 +259,7 @@ void StartHighlightingEx(DocumentWidget *document, bool warn) {
     window->UpdateMinPaneHeights();
 #endif
 
-    document->setCursor(cursor);
+	document->setCursor(cursor);
 }
 
 /*
@@ -471,20 +471,20 @@ WindowHighlightData *createHighlightDataEx(DocumentWidget *document, PatternSet 
 
     // Check that the styles and parent pattern names actually exist
     if (!NamedStyleExists(QLatin1String("Plain"))) {
-        QMessageBox::warning(document, QLatin1String("Highlight Style"), QLatin1String("Highlight style \"Plain\" is missing"));
+		QMessageBox::warning(document, QLatin1String("Highlight Style"), QLatin1String("Highlight style \"Plain\" is missing"));
         return nullptr;
     }
 
     for (int i = 0; i < nPatterns; i++) {
         if (!patternSrc[i].subPatternOf.isNull() && indexOfNamedPattern(patternSrc, nPatterns, patternSrc[i].subPatternOf) == -1) {
-            QMessageBox::warning(document, QLatin1String("Parent Pattern"), QString(QLatin1String("Parent field \"%1\" in pattern \"%2\"\ndoes not match any highlight patterns in this set")).arg(patternSrc[i].subPatternOf, patternSrc[i].name));
+			QMessageBox::warning(document, QLatin1String("Parent Pattern"), QString(QLatin1String("Parent field \"%1\" in pattern \"%2\"\ndoes not match any highlight patterns in this set")).arg(patternSrc[i].subPatternOf, patternSrc[i].name));
             return nullptr;
         }
     }
 
     for (int i = 0; i < nPatterns; i++) {
         if (!NamedStyleExists(patternSrc[i].style)) {
-            QMessageBox::warning(document, QLatin1String("Highlight Style"), QString(QLatin1String("Style \"%1\" named in pattern \"%2\"\ndoes not match any existing style")).arg(patternSrc[i].style, patternSrc[i].name));
+			QMessageBox::warning(document, QLatin1String("Highlight Style"), QString(QLatin1String("Style \"%1\" named in pattern \"%2\"\ndoes not match any existing style")).arg(patternSrc[i].style, patternSrc[i].name));
             return nullptr;
         }
     }
@@ -567,7 +567,7 @@ WindowHighlightData *createHighlightDataEx(DocumentWidget *document, PatternSet 
     if (nPass1Patterns == 0) {
         pass1Pats = nullptr;
     } else {
-        pass1Pats = compilePatternsEx(document, pass1PatternSrc, nPass1Patterns);
+		pass1Pats = compilePatternsEx(document, pass1PatternSrc, nPass1Patterns);
         if (!pass1Pats) {
             return nullptr;
         }
@@ -576,7 +576,7 @@ WindowHighlightData *createHighlightDataEx(DocumentWidget *document, PatternSet 
     if (nPass2Patterns == 0) {
         pass2Pats = nullptr;
     } else {
-        pass2Pats = compilePatternsEx(document, pass2PatternSrc, nPass2Patterns);
+		pass2Pats = compilePatternsEx(document, pass2PatternSrc, nPass2Patterns);
         if (!pass2Pats) {
             return nullptr;
         }
@@ -628,7 +628,7 @@ WindowHighlightData *createHighlightDataEx(DocumentWidget *document, PatternSet 
 
     StyleTableEntry *styleTablePtr = styleTable;
 
-    auto setStyleTablePtr = [document](StyleTableEntry *p, HighlightPattern *pat) {
+	auto setStyleTablePtr = [document](StyleTableEntry *p, HighlightPattern *pat) {
 
         p->highlightName = pat->name;
         p->styleName     = pat->style;
@@ -646,7 +646,7 @@ WindowHighlightData *createHighlightDataEx(DocumentWidget *document, PatternSet 
             p->bgColor = p->color;
         }
 
-        p->font = FontOfNamedStyleEx(document, pat->style);
+		p->font = FontOfNamedStyleEx(document, pat->style);
         // just to be sure...
         p->font.setStyleStrategy(QFont::ForceIntegerMetrics);
     };
@@ -1099,13 +1099,18 @@ static void handleUnparsedRegionEx(const DocumentWidget *window, TextBuffer *sty
 
     ReparseContext *context = &highlightData->contextRequirements;
     HighlightData *pass2Patterns = highlightData->pass2Patterns;
-    char c, prevChar;
+
+	if (!pass2Patterns) {
+		return;
+	}
+
+	char c;
+	char prevChar;
     int firstPass2Style = (uint8_t)pass2Patterns[1].style;
 
     /* If there are no pass 2 patterns to process, do nothing (but this
        should never be triggered) */
-    if (!pass2Patterns)
-        return;
+
 
     /* Find the point at which to begin parsing to ensure that the character at
        pos is parsed correctly (beginSafety), at most one context distance back
@@ -1843,7 +1848,6 @@ static int patternIsParsable(HighlightData *pattern) {
 */
 static int findSafeParseRestartPos(TextBuffer *buf, WindowHighlightData *highlightData, int *pos) {
 	
-	int style;
 	int checkBackTo;
 	int safeParseStart;
 
@@ -1899,7 +1903,7 @@ static int findSafeParseRestartPos(TextBuffer *buf, WindowHighlightData *highlig
 
 		/* If the style is preceded by a parent style, it's safe to parse
 	   with the parent style, provided that the parent is parsable. */
-		style = highlightData->styleBuffer->BufGetCharacter(i);
+		int style = highlightData->styleBuffer->BufGetCharacter(i);
 		if (isParentStyle(parentStyles, style, runningStyle)) {
 			if (patternIsParsable(patternOfStyle(pass1Patterns, style))) {
 				*pos = i + 1;

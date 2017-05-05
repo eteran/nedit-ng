@@ -215,11 +215,12 @@ SmartIndentEntry DefaultIndentSpecs[N_DEFAULT_INDENT_SPECS] = {
 	}
 };
 
-void EndSmartIndentEx(DocumentWidget *window) {
-    auto winData = static_cast<SmartIndentData *>(window->smartIndentData_);
+void EndSmartIndentEx(DocumentWidget *document) {
+	SmartIndentData *winData = document->smartIndentData_;
 
-    if(!winData)
+	if(!winData) {
         return;
+	}
 
     // Free programs and allocated data
     if (winData->modMacro) {
@@ -229,7 +230,7 @@ void EndSmartIndentEx(DocumentWidget *window) {
     FreeProgram(winData->newlineMacro);
 
     delete winData;
-    window->smartIndentData_ = nullptr;
+	document->smartIndentData_ = nullptr;
 }
 
 /*
@@ -240,9 +241,8 @@ int SmartIndentMacrosAvailable(const QString &languageModeName) {
 }
 
 bool InSmartIndentMacrosEx(DocumentWidget *document) {
-    auto winData = static_cast<SmartIndentData *>(document->smartIndentData_);
-
-    return ((winData && (winData->inModMacro || winData->inNewLineMacro)));
+	SmartIndentData *winData = document->smartIndentData_;
+	return winData && (winData->inModMacro || winData->inNewLineMacro);
 }
 
 static bool loadDefaultIndentSpec(const QString &lmName) {
