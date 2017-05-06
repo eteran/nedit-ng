@@ -30,6 +30,14 @@ QChar Input::operator*() const {
 	return string_->at(index_);
 }
 
+QChar Input::operator[](int index) const {
+	if((index_ + index) >= string_->size()) {
+		return QLatin1Char('\0');
+	}
+
+	return string_->at(index_ + index);
+}
+
 /**
  * @brief Input::operator ++
  * @return

@@ -590,8 +590,9 @@ void PreemptMacro() {
 ** a value directly).
 */
 void ModifyReturnedValueEx(RestartData *context, const DataValue &dv) {
-    if ((context->pc - 1)->func == fetchRetVal)
+	if ((context->pc - 1)->func == fetchRetVal) {
         *(context->stackP - 1) = dv;
+	}
 }
 
 /*
@@ -611,12 +612,6 @@ DocumentWidget *MacroFocusWindowEx() {
     return FocusWindowEx;
 }
 
-
-
-
-
-
-
 /*
 ** Set the window to which macro subroutines and actions which operate on an
 ** implied window are directed.
@@ -631,12 +626,12 @@ void SetMacroFocusWindowEx(DocumentWidget *window) {
 */
 #define ARRAY_ITER_SYM_PREFIX "aryiter "
 Symbol *InstallIteratorSymbol() {
-	char symbolName[sizeof(ARRAY_ITER_SYM_PREFIX) + TYPE_INT_STR_SIZE(int)];
-	DataValue value;
+
 	static int interatorNameIndex = 0;
 
-	sprintf(symbolName, ARRAY_ITER_SYM_PREFIX "#%d", interatorNameIndex);
-	++interatorNameIndex;
+	auto symbolName = ARRAY_ITER_SYM_PREFIX + std::to_string(interatorNameIndex++);
+
+	DataValue value;
 	value.tag = INT_TAG;
 	value.val.arrayPtr = nullptr;
 
@@ -660,17 +655,18 @@ Symbol *LookupStringConstSymbol(const char *value) {
 /*
 ** install string str in the global symbol table with a string name
 */
+#define ARRAY_STRING_CONST_SYM_PREFIX "string #"
 Symbol *InstallStringConstSymbol(const char *str) {
 
     static int stringConstIndex = 0;
-	char stringName[35];
-	DataValue value;
 
     if (Symbol *sym = LookupStringConstSymbol(str)) {
 		return sym;
 	}
 
-    sprintf(stringName, "string #%d", stringConstIndex++);
+	auto stringName = ARRAY_STRING_CONST_SYM_PREFIX + std::to_string(stringConstIndex++);
+
+	DataValue value;
     value.tag = STRING_TAG;
     AllocNStringCpy(&value.val.str, str);
     return InstallSymbol(stringName, CONST_SYM, value);

@@ -200,7 +200,7 @@ int ExpandTilde(char *pathname) {
 QString ResolvePathEx(const QString &pathname) {
     char pathResolved[MAXPATHLEN];
 
-    if(!ResolvePath(pathname.toLatin1().data(), pathResolved)) {
+	if(ResolvePath(pathname.toLatin1().data(), pathResolved)) {
         return QString::fromLatin1(pathResolved);
     }
 
@@ -214,7 +214,7 @@ int ResolvePath(const char *pathIn, char *pathResolved) {
 
 	/* !! readlink does NOT recognize loops, i.e. links like file -> ./file */
 	for (loops = 0; loops < MAXSYMLINKS; loops++) {
-		int rlResult = readlink(pathIn, resolveBuf, MAXPATHLEN - 1);
+		int rlResult = ::readlink(pathIn, resolveBuf, MAXPATHLEN - 1);
 		if (rlResult < 0) {
 
 			if (errno == EINVAL)

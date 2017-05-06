@@ -4308,7 +4308,7 @@ void DocumentWidget::BeginSmartIndentEx(int warn) {
        (Note that when these return, the immediate commands in the file have not
        necessarily been executed yet.  They are only SCHEDULED for execution) */
     if (!initialized) {
-        if (!ReadMacroStringEx(this, CommonMacros, "smart indent common initialization macros")) {
+		if (!ReadMacroStringEx(this, CommonMacros, tr("smart indent common initialization macros"))) {
             return;
         }
 
@@ -4316,7 +4316,7 @@ void DocumentWidget::BeginSmartIndentEx(int warn) {
     }
 
     if (!indentMacros->initMacro.isNull()) {
-        if (!ReadMacroStringEx(this, indentMacros->initMacro, "smart indent initialization macro")) {
+		if (!ReadMacroStringEx(this, indentMacros->initMacro, tr("smart indent initialization macro"))) {
             return;
         }
     }
@@ -5529,5 +5529,5 @@ int DocumentWidget::ReadMacroFileEx(const QString &fileName, bool warnNotExist) 
 
 
 	// Parse fileString
-	return readCheckMacroStringEx(this, fileString, this, fileName.toLatin1().data(), nullptr);
+	return readCheckMacroStringEx(this, fileString, this, fileName, nullptr);
 }

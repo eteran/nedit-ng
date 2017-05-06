@@ -12,6 +12,7 @@ public:
 	Input& operator=(const Input &rhs) = default;
 	
 public:
+	QChar operator[](int index) const;
 	QChar operator*() const;
 	Input& operator++();
 	Input operator++(int);

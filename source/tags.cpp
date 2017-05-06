@@ -43,6 +43,7 @@
 #include "util/utils.h"
 #include <QApplication>
 #include <QMessageBox>
+#include <QFile>
 #include <cctype>
 #include <cstdio>
 #include <memory>
@@ -496,43 +497,49 @@ static void updateMenuItems() {
 ** Return value: Number of tag specs added.
 */
 static int scanCTagsLine(const char *line, const char *tagPath, int index) {
-	char name[MAXLINE];
-	char searchString[MAXLINE];
-	char file[MAXPATHLEN];
-	char *posTagRENull;
+
+	QRegExp regex(QLatin1String("^([^\\t]+)\\t([^\\t]+)\\t([^\\n]+)\\n$"));
+	if(!regex.exactMatch(QString::fromLatin1(line))) {
+		return 0;
+	}
+
+	if(regex.captureCount() != 3) {
+		return 0;
+	}
+
+	QString name         = regex.cap(1);
+	QString file         = regex.cap(2);
+	QString searchString = regex.cap(3);
+
+	if (name.startsWith(QLatin1Char('!'))) {
+		return 0;
+	}
+
 	int pos;
-
-	// TODO(eteran): replace this with a regex?
-	int nRead = sscanf(line, "%s\t%s\t%[^\n]", name, file, searchString);
-	if (nRead != 3) {
-		return 0;
-	}
-
-	if (*name == '!') {
-		return 0;
-	}
 
 	/*
 	** Guess the end of searchString:
 	** Try to handle original ctags and exuberant ctags format:
 	*/
-	if (searchString[0] == '/' || searchString[0] == '?') {
+	if (searchString.startsWith(QLatin1Char('/')) || searchString.startsWith(QLatin1Char('?'))) {
 
-		pos = -1; // "search expr without pos info" 
+		pos = -1; // "search expr without pos info"
 
 		/* Situations: /<ANY expr>/\0
 		**             ?<ANY expr>?\0          --> original ctags
 		**             /<ANY expr>/;"  <flags>
 		**             ?<ANY expr>?;"  <flags> --> exuberant ctags
 		*/
-		char *posTagREEnd = strrchr(searchString, ';');
-		posTagRENull = strchr(searchString, 0);
-		if (!posTagREEnd || (posTagREEnd[1] != '"') || (posTagRENull[-1] == searchString[0])) {
-			//  -> original ctags format = exuberant ctags format 1 
-			posTagREEnd = posTagRENull;
+
+		int posTagREEnd = searchString.lastIndexOf(QLatin1Char(';'));
+
+		if(posTagREEnd == -1 ||
+		   searchString.mid(posTagREEnd, 2) != QLatin1String(";\"") ||
+		   searchString.startsWith(searchString.right(1))) {
+			//  -> original ctags format = exuberant ctags format 1
 		} else {
-			// looks like exuberant ctags format 2 
-			*posTagREEnd = '\0';
+			// looks like exuberant ctags format 2
+			searchString = searchString.left(posTagREEnd);
 		}
 
 		/*
@@ -541,17 +548,22 @@ static int scanCTagsLine(const char *line, const char *tagPath, int index) {
 		**   ?<expression>?    becomes   ?<expression>
 		** This will save a little work in fakeRegExSearch.
 		*/
-		if (posTagREEnd > (searchString + 2)) {
-			posTagREEnd--;
-			if (searchString[0] == *posTagREEnd)
-				*posTagREEnd = 0;
+		if(searchString.startsWith(searchString.right(1))) {
+			searchString.chop(1);
 		}
 	} else {
-		pos = atoi(searchString);
-		*searchString = 0;
+		pos = searchString.toInt();
+		searchString.clear();
 	}
 	// No ability to read language mode right now 
-	return addTag(name, file, PLAIN_LANGUAGE_MODE, searchString, pos, tagPath, index);
+	return addTag(
+	            name.toLatin1().data(),
+	            file.toLatin1().data(),
+	            PLAIN_LANGUAGE_MODE,
+	            searchString.toLatin1().data(),
+	            pos,
+	            tagPath,
+	            index);
 }
 
 /*
@@ -570,7 +582,7 @@ static int scanETagsLine(const char *line, const char *tagPath, int index, char 
 
 	// check for destination file separator  
 	if (line[0] == 12) { // <np> 
-		*file = 0;
+		*file = '\0';
 		return 0;
 	}
 
@@ -645,9 +657,7 @@ enum TFT { TFT_CHECK, TFT_ETAGS, TFT_CTAGS };
 ** Returns the number of added tag specifications.
 */
 static int loadTagsFile(const QString &tagsFile, int index, int recLevel) {
-	FILE *fp = nullptr;
-	char line[MAXLINE];
-    char file[MAXPATHLEN];
+
     QString tagPath;
 	int nTagsAdded = 0;
 	int tagFileType = TFT_CHECK;
@@ -664,40 +674,40 @@ static int loadTagsFile(const QString &tagsFile, int index, int recLevel) {
 		return 0;
 	}
 
-	// Open the file 
-    if ((fp = fopen(resolvedTagsFile.toLatin1().data(), "r")) == nullptr) {
+	QFile f(resolvedTagsFile);
+	if(!f.open(QIODevice::ReadOnly)) {
 		return 0;
 	}
 
-    ParseFilenameEx(resolvedTagsFile, nullptr, &tagPath);
+	ParseFilenameEx(resolvedTagsFile, nullptr, &tagPath);
 
-	// Read the file and store its contents 
-	while (fgets(line, MAXLINE, fp)) {
+	/* This might take a while if you have a huge tags file (like I do)..
+	   keep the windows up to date and post a busy cursor so the user
+	   doesn't think we died. */
+	MainWindow::AllWindowsBusyEx(QLatin1String("Loading tags file..."));
 
-		/* This might take a while if you have a huge tags file (like I do)..
-		   keep the windows up to date and post a busy cursor so the user
-		   doesn't think we died. */
-
-        MainWindow::AllWindowsBusyEx(QLatin1String("Loading tags file..."));
+	while (!f.atEnd()) {
+		QByteArray line = f.readLine();
 
 		/* the first character in the file decides if the file is treat as
 		   etags or ctags file.
 		 */
 		if (tagFileType == TFT_CHECK) {
-			if (line[0] == 12) // <np> 
+			if (line.startsWith(0x0c)) { // <np>
 				tagFileType = TFT_ETAGS;
-			else
+			} else {
 				tagFileType = TFT_CTAGS;
+			}
 		}
 		if (tagFileType == TFT_CTAGS) {
-            nTagsAdded += scanCTagsLine(line, tagPath.toLatin1().data(), index);
+			nTagsAdded += scanCTagsLine(line, tagPath.toLatin1().data(), index);
 		} else {
-            nTagsAdded += scanETagsLine(line, tagPath.toLatin1().data(), index, file, recLevel);
+			char file[MAXPATHLEN];
+			nTagsAdded += scanETagsLine(line, tagPath.toLatin1().data(), index, file, recLevel);
 		}
 	}
-	fclose(fp);
 
-    MainWindow::AllWindowsUnbusyEx();
+	MainWindow::AllWindowsUnbusyEx();
 	return nTagsAdded;
 }
 
@@ -1506,7 +1516,7 @@ static int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
     ParseFilenameEx(resolvedTipsFile, nullptr, &tipPath);
 
 	// Open the file 
-    if ((fp = fopen(resolvedTipsFile.toLatin1().data(), "r")) == nullptr) {
+	if ((fp = ::fopen(resolvedTipsFile.toLatin1().data(), "r")) == nullptr) {
 		return 0;
     }
 
@@ -1569,7 +1579,7 @@ static int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
 	}
 
 	// NOTE(eteran): fix resource leak
-	fclose(fp);
+	::fclose(fp);
 
     // Now resolve any aliases
     for(const tf_alias &tmp_alias : aliases) {

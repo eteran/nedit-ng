@@ -37,6 +37,7 @@
 #include "HighlightPattern.h"
 #include "IndentStyle.h"
 #include "CommandRecorder.h"
+#include "Input.h"
 #include "MainWindow.h"
 #include "RangesetTable.h"
 #include "SearchDirection.h"
@@ -945,7 +946,7 @@ void ReadMacroInitFileEx(DocumentWidget *window) {
 ** Parse and execute a macro string including macro definitions.  Report
 ** parsing errors in a dialog posted over window->shell_.
 */
-int ReadMacroStringEx(DocumentWidget *window, const QString &string, const char *errIn) {
+int ReadMacroStringEx(DocumentWidget *window, const QString &string, const QString &errIn) {
 	return readCheckMacroStringEx(window, string, window, errIn, nullptr);
 }
 
@@ -955,16 +956,8 @@ int ReadMacroStringEx(DocumentWidget *window, const QString &string, const char 
 ** a dialog explaining if macro did not compile successfully.
 */
 bool CheckMacroStringEx(QWidget *dialogParent, const QString &string, const QString &errIn, int *errPos) {
-
     Q_ASSERT(errPos);
-
-    QByteArray errorArray = errIn.toLatin1();
-    const char *errorString = errorArray.data();
-    const char *errorPosition;
-
-    int r = readCheckMacroStringEx(dialogParent, string, nullptr, errorString, &errorPosition);
-    *errPos = std::distance(errorString, errorPosition);
-    return r;
+	return readCheckMacroStringEx(dialogParent, string, nullptr, errIn, errPos);
 }
 
 /*
@@ -988,76 +981,87 @@ Program *ParseMacroEx(const QString &expr, QString *message, int *stoppedAt) {
     return p;
 }
 
-int readCheckMacroStringEx(QWidget *dialogParent, const QString &string, DocumentWidget *runWindow, const char *errIn, const char **errPos) {
-    const char *stoppedAt;
-    char *namePtr;
-    const char *errMsg;
-    char subrName[MAX_SYM_LEN];
+int readCheckMacroStringEx(QWidget *dialogParent, const QString &string, DocumentWidget *runWindow, const QString &errIn, int *errPos) {
 
-    Symbol *sym;
+	Input in(&string);
+
     DataValue subrPtr;
     QStack<Program *> progStack;
 
-    // TODO(eteran): use this for ParseError again/switch to ParseErrorEx
-    (void)dialogParent;
-
-    QByteArray stringBytes = string.toLatin1();
-    const char *stringPtr = stringBytes.data();
-
-    const char *inPtr = stringPtr;
-    while (*inPtr != '\0') {
+	while (!in.atEnd()) {
 
         // skip over white space and comments
-        while (*inPtr == ' ' || *inPtr == '\t' || *inPtr == '\n' || *inPtr == '#') {
-            if (*inPtr == '#') {
-                while (*inPtr != '\n' && *inPtr != '\0') {
-                    inPtr++;
+		while (*in == QLatin1Char(' ') || *in == QLatin1Char('\t') || *in == QLatin1Char('\n') || *in == QLatin1Char('#')) {
+			if (*in == QLatin1Char('#')) {
+				while (!in.atEnd() && *in != QLatin1Char('\n')) {
+					++in;
                 }
             } else {
-                inPtr++;
+				++in;
             }
         }
 
-        if (*inPtr == '\0') {
+		if (in.atEnd()) {
             break;
         }
 
         // look for define keyword, and compile and store defined routines
-        if (!strncmp(inPtr, "define", 6) && (inPtr[6] == ' ' || inPtr[6] == '\t')) {
-            inPtr += 6;
-            inPtr += strspn(inPtr, " \t\n");
-            namePtr = subrName;
+		if (in.match(QLatin1String("define"))  && (in[6] == QLatin1Char(' ') || in[6] == QLatin1Char('\t'))) {
+			in += 6;
+			in.skipWhitespace();
 
-            while ((namePtr < &subrName[MAX_SYM_LEN - 1]) && (isalnum((uint8_t)*inPtr) || *inPtr == '_')) {
-                *namePtr++ = *inPtr++;
-            }
-            *namePtr = '\0';
-            if (isalnum((uint8_t)*inPtr) || *inPtr == '_') {
-                return ParseErrorEx(dialogParent, string, inPtr - stringPtr, QString::fromLatin1(errIn), QLatin1String("subroutine name too long"));
+			QString subrName;
+			auto namePtr = std::back_inserter(subrName);
+
+			while ((*in).isLetterOrNumber() || *in == QLatin1Char('_')) {
+				*namePtr++ = *in++;
             }
 
-            inPtr += strspn(inPtr, " \t\n");
-
-            if (*inPtr != '{') {
-                if(errPos)
-                    *errPos = stoppedAt;
-                return ParseErrorEx(dialogParent, string, inPtr - stringPtr, QString::fromLatin1(errIn), QLatin1String("expected '{'"));
+			if ((*in).isLetterOrNumber() || *in == QLatin1Char('_')) {
+				return ParseErrorEx(
+				            dialogParent,
+				            *in.string(),
+				            in.index(),
+				            errIn,
+				            QLatin1String("subroutine name too long"));
             }
 
-            Program *const prog = ParseMacro(inPtr, &errMsg, &stoppedAt);
+			in.skipWhitespaceNL();
+
+			if (*in != QLatin1Char('{')) {
+				if(errPos) {
+					*errPos = in.index();
+				}
+				return ParseErrorEx(
+				            dialogParent,
+				            *in.string(),
+				            in.index(),
+				            errIn,
+				            QLatin1String("expected '{'"));
+            }
+
+			QString code = in.mid();
+			int stoppedAt;
+			QString errMsg;
+			Program *const prog = ParseMacroEx(code, &errMsg, &stoppedAt);
             if(!prog) {
                 if(errPos) {
-                    *errPos = stoppedAt;
+					*errPos = in.index() + stoppedAt;
                 }
 
-                return ParseErrorEx(dialogParent, string, stoppedAt - stringPtr, QString::fromLatin1(errIn), QString::fromLatin1(errMsg));
+				return ParseErrorEx(
+				            dialogParent,
+				            code,
+				            stoppedAt,
+				            errIn,
+				            errMsg);
             }
             if (runWindow) {
-                sym = LookupSymbol(subrName);
+				Symbol *sym = LookupSymbol(subrName.toStdString());
                 if(!sym) {
                     subrPtr.val.prog = prog;
                     subrPtr.tag = NO_TAG;
-                    sym = InstallSymbol(subrName, MACRO_FUNCTION_SYM, subrPtr);
+					sym = InstallSymbol(subrName.toStdString(), MACRO_FUNCTION_SYM, subrPtr);
                 } else {
                     if (sym->type == MACRO_FUNCTION_SYM) {
                         FreeProgram(sym->value.val.prog);
@@ -1068,7 +1072,8 @@ int readCheckMacroStringEx(QWidget *dialogParent, const QString &string, Documen
                     sym->value.val.prog = prog;
                 }
             }
-            inPtr = stoppedAt;
+
+			in += stoppedAt;
 
             /* Parse and execute immediate (outside of any define) macro commands
                and WAIT for them to finish executing before proceeding.  Note that
@@ -1076,13 +1081,21 @@ int readCheckMacroStringEx(QWidget *dialogParent, const QString &string, Documen
                definitions in a file which is loaded from another macro file, it
                will probably run the code blocks in reverse order! */
         } else {
-            Program *const prog = ParseMacro(inPtr, &errMsg, &stoppedAt);
+			QString code = in.mid();
+			int stoppedAt;
+			QString errMsg;
+			Program *const prog = ParseMacroEx(code, &errMsg, &stoppedAt);
             if(!prog) {
                 if (errPos) {
-                    *errPos = stoppedAt;
+					*errPos = in.index() + stoppedAt;
                 }
 
-                return ParseErrorEx(dialogParent, string, stoppedAt - stringPtr, QString::fromLatin1(errIn), QString::fromLatin1(errMsg));
+				return ParseErrorEx(
+				            dialogParent,
+				            code,
+				            stoppedAt,
+				            errIn,
+				            errMsg);
             }
 
             if (runWindow) {
@@ -1112,7 +1125,7 @@ int readCheckMacroStringEx(QWidget *dialogParent, const QString &string, Documen
                     progStack.push(prog);
                 }
             }
-            inPtr = stoppedAt;
+			in += stoppedAt;
         }
     }
 
@@ -1387,7 +1400,7 @@ void DoMacroEx(DocumentWidget *document, const QString &macro, const char *errIn
 ** Note that as with most macro routines, this returns BEFORE the macro is
 ** finished executing
 */
-void RepeatMacroEx(DocumentWidget *window, const char *command, int how) {
+void RepeatMacroEx(DocumentWidget *document, const char *command, int how) {
 
     const char *errMsg;
     const char *stoppedAt;
@@ -1434,7 +1447,7 @@ void RepeatMacroEx(DocumentWidget *window, const char *command, int how) {
     }
 
     // run the executable program
-    runMacroEx(window, prog);
+	runMacroEx(document, prog);
 }
 
 
@@ -1484,14 +1497,6 @@ void learnActionHook(Widget w, XtPointer clientData, String actionName, XEvent *
 }
 #endif
 
-
-
-/*
-** Timer proc for putting up the "Macro Command in Progress" banner if
-** the process is taking too long.
-*/
-#define MAX_TIMEOUT_MSG_LEN (MAX_ACCEL_LEN + 60)
-
 /*
 ** Work proc for continuing execution of a preempted macro.
 **
@@ -1509,9 +1514,9 @@ void learnActionHook(Widget w, XtPointer clientData, String actionName, XEvent *
 bool continueWorkProcEx(DocumentWidget *window) {
 
     auto cmdData = static_cast<macroCmdInfoEx *>(window->macroCmdData_);
+
     const char *errMsg;
     DataValue result;
-
     const int stat = ContinueMacroEx(cmdData->context, &result, &errMsg);
 
     if (stat == MACRO_ERROR) {
@@ -2077,9 +2082,7 @@ static int readFileMS(DocumentWidget *window, DataValue *argList, int nArgs, Dat
     // Read the whole file into an allocated string
     std::ifstream file(name, std::ios::binary);
     if(file) {
-        // TODO(eteran): double check that this doens't auto convert some characters
-        //               we want the REAL contents of the file
-        std::string contents{std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>()};
+		std::string contents(std::istreambuf_iterator<char>{file}, std::istreambuf_iterator<char>{});
         result->tag = STRING_TAG;
         result->val.str = AllocNStringCpyEx(contents);
 

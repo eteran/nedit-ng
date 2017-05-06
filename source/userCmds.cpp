@@ -117,7 +117,6 @@ int LoadMacroCmdsStringEx(const QString &inString) {
 
 
 int LoadBGMenuCmdsStringEx(const QString &inString) {
-	// TODO(eteran): make this more efficient
 	return loadMenuItemStringEx(inString, BGMenuData, BG_MENU_CMDS);
 }
 
