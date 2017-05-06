@@ -496,10 +496,10 @@ static void updateMenuItems() {
 ** Scans one <line> from a ctags tags file (<index>) in tagPath.
 ** Return value: Number of tag specs added.
 */
-static int scanCTagsLine(const char *line, const char *tagPath, int index) {
+static int scanCTagsLine(const QString &line, const char *tagPath, int index) {
 
 	QRegExp regex(QLatin1String("^([^\\t]+)\\t([^\\t]+)\\t([^\\n]+)\\n$"));
-	if(!regex.exactMatch(QString::fromLatin1(line))) {
+	if(!regex.exactMatch(line)) {
 		return 0;
 	}
 
@@ -700,7 +700,7 @@ static int loadTagsFile(const QString &tagsFile, int index, int recLevel) {
 			}
 		}
 		if (tagFileType == TFT_CTAGS) {
-			nTagsAdded += scanCTagsLine(line, tagPath.toLatin1().data(), index);
+			nTagsAdded += scanCTagsLine(QString::fromLatin1(line), tagPath.toLatin1().data(), index);
 		} else {
 			char file[MAXPATHLEN];
 			nTagsAdded += scanETagsLine(line, tagPath.toLatin1().data(), index, file, recLevel);
