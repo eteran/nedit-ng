@@ -187,7 +187,7 @@ target_link_libraries(nedit-ng LINK_PUBLIC
 	Qt5::DBus
 )
 
-set_property(TARGET nedit-ng PROPERTY CMAKE_EXTENSIONS OFF)
+set_property(TARGET nedit-ng PROPERTY CXX_EXTENSIONS OFF)
 set_property(TARGET nedit-ng PROPERTY CXX_STANDARD 14)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -W -Wall -pedantic -Wunused") #-Wuseless-cast -Wold-style-cast -ffunction-sections -fdata-sections
