@@ -1774,6 +1774,7 @@ static int callSubroutine() {
 
     Symbol *sym = PC->sym;
 	PC++;
+
     int nArgs = PC->value;
 	PC++;
 
@@ -1813,7 +1814,8 @@ static int callSubroutine() {
 	** values which are already there.
 	*/
 	if (sym->type == MACRO_FUNCTION_SYM) {
-		StackP->tag = NO_TAG; // return PC 
+
+		StackP->tag = NO_TAG; // return PC
 		StackP->val.inst = PC;
 		StackP++;
 

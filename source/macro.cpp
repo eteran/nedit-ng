@@ -238,11 +238,11 @@ struct SubRoutine {
     BuiltInSubrEx function;
 };
 
+// TODO(eteran): support the method parameters (like "rect", "extend", etc...)
 #define TEXT_EVENT(routineName, slotName)                                                                                 \
 static int routineName(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) { \
                                                                                                                           \
     Q_UNUSED(argList)                                                                                                     \
-                                                                                                                          \
     if(nArgs != 0) {                                                                                                      \
         return wrongNArgsErr(errMsg);                                                                                     \
     }                                                                                                                     \
@@ -257,11 +257,11 @@ static int routineName(DocumentWidget *document, DataValue *argList, int nArgs, 
     return true;                                                                                                          \
 }
 
+// TODO(eteran): support the method parameters (like "rect", "extend", etc...)
 #define TEXT_EVENT_S(routineName, slotName)                                                                               \
 static int routineName(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) { \
                                                                                                                           \
     QString string;                                                                                                       \
-                                                                                                                          \
     if(!readArguments(argList, nArgs, 0, errMsg, &string)) {                                                              \
         return false;                                                                                                     \
     }                                                                                                                     \
@@ -277,6 +277,7 @@ static int routineName(DocumentWidget *document, DataValue *argList, int nArgs, 
 }
 
 TEXT_EVENT_S(insertStringMS,   insertStringAP)
+TEXT_EVENT_S(selfInsertMS,     insertStringAP)
 TEXT_EVENT(pasteClipboardMS,   pasteClipboardAP)
 TEXT_EVENT(cutClipboardMS,     cutClipboardAP)
 TEXT_EVENT(toggleOverstrikeMS, toggleOverstrikeAP)
@@ -300,8 +301,8 @@ TEXT_EVENT(deleteNextCharacterMS, deleteNextCharacterAP)
 TEXT_EVENT(deletePreviousWordMS, deletePreviousWordAP)
 
 static const SubRoutine TextAreaSubrNames[] = {
-    {"self-insert",               nullptr},
-    {"self_insert",               nullptr},
+    {"self-insert",               selfInsertMS},
+    {"self_insert",               selfInsertMS},
     {"grab-focus",                nullptr},
     {"grab_focus",                nullptr},
     {"extend-adjust",             nullptr},
@@ -433,17 +434,17 @@ static const SubRoutine TextAreaSubrNames[] = {
     static int routineName(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) { \
         Q_UNUSED(argList);                                                                                                    \
                                                                                                                               \
-        /* ensure that we are dealing with the document which currently has the focus */                                      \
+	    /* ensure that we are dealing with the document which currently has the focus */                                      \
         document = MacroRunWindowEx();                                                                                        \
                                                                                                                               \
-        std::string string;                                                                                                   \
+	    QString string;                                                                                                       \
                                                                                                                               \
         if(!readArguments(argList, nArgs, 0, errMsg, &string)) {                                                              \
             return false;                                                                                                     \
         }                                                                                                                     \
                                                                                                                               \
         if(MainWindow *window = document->toWindow()) {                                                                       \
-            window->slotName(QString::fromStdString(string));                                                                 \
+	        window->slotName(string);                                                                                         \
         }                                                                                                                     \
                                                                                                                               \
         result->tag = NO_TAG;                                                                                                 \
@@ -454,7 +455,7 @@ static const SubRoutine TextAreaSubrNames[] = {
     static int routineName(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) { \
         Q_UNUSED(argList);                                                                                                    \
                                                                                                                               \
-        /* ensure that we are dealing with the document which currently has the focus */                                      \
+	    /* ensure that we are dealing with the document which currently has the focus */                                      \
         document = MacroRunWindowEx();                                                                                        \
                                                                                                                               \
         if(nArgs != 0) {                                                                                                      \
@@ -4372,11 +4373,6 @@ static int rangesetInvertMS(DocumentWidget *window, DataValue *argList, int nArg
 static int rangesetInfoMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     RangesetTable *rangesetTable = window->buffer_->rangesetTable_;
 	Rangeset *rangeset = nullptr;
-	int count;
-	bool defined;
-    QString color;
-    QString name;
-	const char *mode;
 	DataValue element;
     int label;
 
@@ -4392,15 +4388,19 @@ static int rangesetInfoMS(DocumentWidget *window, DataValue *argList, int nArgs,
 		rangeset = rangesetTable->RangesetFetch(label);
 	}
 
-    if(rangeset) {
-        rangeset->RangesetGetInfo(&defined, &label, &count, &color, &name, &mode);
-    } else {
-        defined = false;
-        label = 0;
-        count = 0;
-        color = QString();
-        name  = QString();
-        mode  = "";
+	int count;
+	bool defined;
+	QString color;
+	QString name;
+	const char *mode;
+
+	if(rangeset) {
+		rangeset->RangesetGetInfo(&defined, &label, &count, &color, &name, &mode);
+	} else {
+		defined = false;
+		label = 0;
+		count = 0;
+		mode  = "";
     }
 
 	// set up result 
@@ -5070,7 +5070,7 @@ static bool readArgument(DataValue dv, int *result, const char **errMsg) {
             return false;
         }
 
-        *result = val;
+		*result = static_cast<int>(val);
 		return true;
 	}
 

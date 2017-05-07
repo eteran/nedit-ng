@@ -51,8 +51,7 @@ enum SymTypes {
     ARG_SYM,
     PROC_VALUE_SYM,
     C_FUNCTION_SYM,
-    MACRO_FUNCTION_SYM,
-    ACTION_ROUTINE_SYM
+	MACRO_FUNCTION_SYM
 };
 
 #define N_OPS 43
@@ -132,7 +131,9 @@ struct NString {
 };
 
 
-// TODO(eteran): we can eventually replace this with boost::variant
+// TODO(eteran): we can eventually replace this with boost::variant,
+// but first we need to figure out what to do about the fact that half of these
+// entries get used with a "NO_TAG" type.
 
 struct DataValue {
 	TypeTags tag;
@@ -141,9 +142,9 @@ struct DataValue {
         int            n;
         NString        str;
         BuiltInSubrEx  subr;
-        Program*       prog;
+		Program*       prog;
         Inst*          inst;
-        DataValue*     dataval;
+		DataValue*     dataval;
         ArrayEntry*    arrayPtr;
 	} val;
 };
