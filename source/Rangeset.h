@@ -43,6 +43,17 @@ struct Range {
 	int end; /* range from [start-]end */
 };
 
+struct RangesetInfo {
+	bool        defined;
+	int         label;
+	int         count;
+	QString     color;
+	QString     name;
+	const char *mode;
+};
+
+
+
 typedef Rangeset *RangesetUpdateFn(Rangeset *rangeset, int pos, int ins, int del);
 
 class Rangeset {
@@ -72,6 +83,8 @@ public:
 	int RangesetRemoveBetween(int start, int end);
 	void RangesetEmpty();
 	void RangesetGetInfo(bool *defined, int *label, int *count, QString *color, QString *name, const char **mode) const;
+	RangesetInfo RangesetGetInfo() const;
+
 	void RangesetRefreshRange(int start, int end) const;
 	void RangesetInit(int label, TextBuffer *buf);
 

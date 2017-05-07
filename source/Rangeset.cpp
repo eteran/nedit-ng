@@ -248,9 +248,8 @@ int rangesetShuffleToFrom(int *rangeTable, int to, int from, int n, int delta) {
 */
 
 Rangeset *rangesetInsDelMaintain(Rangeset *rangeset, int pos, int ins, int del) {
-	int j;	
+
     auto rangeTable = reinterpret_cast<int *>(rangeset->ranges_);
-	int end_del, movement;
 
     int n = 2 * rangeset->n_ranges_;
 
@@ -259,14 +258,14 @@ Rangeset *rangesetInsDelMaintain(Rangeset *rangeset, int pos, int ins, int del) 
 	if (i == n)
 		return rangesetFixMaxpos(rangeset, ins, del); // all beyond the end 
 
-	end_del = pos + del;
-	movement = ins - del;
+	int end_del = pos + del;
+	int movement = ins - del;
 
 	/* the idea now is to determine the first range not concerned with the
 	   movement: its index will be j. For indices j to n-1, we will adjust
 	   position by movement only. (They may need shuffling up or down, depending
 	   on whether ranges have been deleted or created by the change.) */
-	j = i;
+	int j = i;
 	while (j < n && rangeTable[j] <= end_del) // skip j to first ind beyond changes 
 		j++;
 
@@ -1140,6 +1139,21 @@ void Rangeset::RangesetEmpty() {
     color_name_ = QString();
     name_ = QString();
     ranges_ = RangesetTable::RangesFree(ranges_);
+}
+
+/**
+ * @brief Rangeset::RangesetGetInfo
+ * @return
+ */
+RangesetInfo Rangeset::RangesetGetInfo() const {
+	RangesetInfo info;
+	info.defined = true;
+	info.label   = static_cast<int>(label_);
+	info.count   = n_ranges_;
+	info.color   = color_name_;
+	info.name    = name_;
+	info.mode    = update_name_;
+	return info;
 }
 
 /*
