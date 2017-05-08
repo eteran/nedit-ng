@@ -1,6 +1,5 @@
 
 #include "DialogAbout.h"
-#include "preferences.h"
 #include "version.h"
 #include <QLocale>
 #include <QSysInfo>

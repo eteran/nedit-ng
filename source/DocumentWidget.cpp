@@ -1020,7 +1020,7 @@ void DocumentWidget::reapplyLanguageMode(int mode, bool forceDefaults) {
 
         bool emTabDistIsDef     = oldEmTabDist == GetPrefEmTabDist(oldMode);
         bool indentStyleIsDef   = indentStyle_ == GetPrefAutoIndent(oldMode)   || (GetPrefAutoIndent(oldMode) == SMART_INDENT && indentStyle_ == AUTO_INDENT && !SmartIndentMacrosAvailable(LanguageModeName(oldMode)));
-        bool highlightIsDef     = highlightSyntax_ == GetPrefHighlightSyntax() || (GetPrefHighlightSyntax() && FindPatternSet(!oldlanguageModeName.isNull() ? oldlanguageModeName : QLatin1String("")) == nullptr);
+		bool highlightIsDef     = highlightSyntax_ == GetPrefHighlightSyntax() || (GetPrefHighlightSyntax() && FindPatternSet(!oldlanguageModeName.isNull() ? oldlanguageModeName : QLatin1String("")) == nullptr);
         int wrapMode            = wrapModeIsDef                                || forceDefaults ? GetPrefWrap(mode)        : wrapMode_;
         int tabDist             = tabDistIsDef                                 || forceDefaults ? GetPrefTabDist(mode)     : buffer_->BufGetTabDistance();
         int emTabDist           = emTabDistIsDef                               || forceDefaults ? GetPrefEmTabDist(mode)   : oldEmTabDist;
@@ -2932,7 +2932,7 @@ void DocumentWidget::CloseWindow() {
     const int documentCount = DocumentWidget::allDocuments().size();
 
     if (keepWindow || (windowCount == 1 && documentCount == 1)) {
-        filename_ = QLatin1String("");
+		filename_ = QLatin1String("");
 
         QString name = MainWindow::UniqueUntitledNameEx();
         lockReasons_.clear();
@@ -2941,7 +2941,7 @@ void DocumentWidget::CloseWindow() {
         fileUid_      = 0;
         fileGid_      = 0;
         filename_     = name;
-        path_         = QLatin1String("");
+		path_         = QLatin1String("");
         ignoreModify_ = true;
 
         buffer_->BufSetAllEx("");
@@ -3854,6 +3854,7 @@ void DocumentWidget::GotoMatchingCharacter(TextArea *area) {
             return;
         }
     }
+
     if ((selEnd - selStart) != 1) {
         QApplication::beep();
         return;
@@ -3881,7 +3882,6 @@ bool DocumentWidget::findMatchingCharEx(char toMatch, void *styleToMatch, int ch
     int matchIndex;
     int beginPos;
     int pos;
-    char c;
     void *style = nullptr;
     TextBuffer *buf = buffer_;
     bool matchSyntaxBased = matchSyntaxBased_;
@@ -3910,7 +3910,7 @@ bool DocumentWidget::findMatchingCharEx(char toMatch, void *styleToMatch, int ch
     nestDepth = 1;
     if (direction == SEARCH_FORWARD) {
         for (pos = beginPos; pos < endLimit; pos++) {
-            c = buf->BufGetCharacter(pos);
+			char c = buf->BufGetCharacter(pos);
             if (c == matchChar) {
                 if (matchSyntaxBased) {
                     style = GetHighlightInfoEx(this, pos);
@@ -3932,7 +3932,7 @@ bool DocumentWidget::findMatchingCharEx(char toMatch, void *styleToMatch, int ch
         }
     } else { // SEARCH_BACKWARD
         for (pos = beginPos; pos >= startLimit; pos--) {
-            c = buf->BufGetCharacter(pos);
+			char c = buf->BufGetCharacter(pos);
             if (c == matchChar) {
                 if (matchSyntaxBased)
                     style = GetHighlightInfoEx(this, pos);
@@ -3957,8 +3957,6 @@ bool DocumentWidget::findMatchingCharEx(char toMatch, void *styleToMatch, int ch
 void DocumentWidget::SelectToMatchingCharacter(TextArea *area) {
     int selStart;
     int selEnd;
-    int startPos;
-    int endPos;
     int matchPos;
     TextBuffer *buf = buffer_;
 
@@ -3976,6 +3974,7 @@ void DocumentWidget::SelectToMatchingCharacter(TextArea *area) {
             return;
         }
     }
+
     if ((selEnd - selStart) != 1) {
         QApplication::beep();
         return;
@@ -3987,8 +3986,8 @@ void DocumentWidget::SelectToMatchingCharacter(TextArea *area) {
         return;
     }
 
-    startPos = (matchPos > selStart) ? selStart : matchPos;
-    endPos   = (matchPos > selStart) ? matchPos : selStart;
+	int startPos = (matchPos > selStart) ? selStart : matchPos;
+	int endPos   = (matchPos > selStart) ? matchPos : selStart;
 
     /* temporarily shut off autoShowInsertPos before setting the cursor
        position so MakeSelectionVisible gets a chance to place the cursor
@@ -4077,9 +4076,9 @@ int DocumentWidget::findDef(TextArea *area, const QString &value, Mode search_ty
 			if (status == 0) {
 				// Didn't find any matches
 				if (searchMode == TIP_FROM_TAG || searchMode == TIP) {
-					tagsShowCalltipEx(area, tr("No match for \"%1\" in calltips or tags.").arg(QString::fromLatin1(tagName)));
+					tagsShowCalltipEx(area, tr("No match for \"%1\" in calltips or tags.").arg(tagName));
 				} else {
-					QMessageBox::warning(this, tr("Tags"), tr("\"%1\" not found in tags %2").arg(QString::fromLatin1(tagName), (TagsFileList.size() > 1) ? tr("files") : tr("file")));
+					QMessageBox::warning(this, tr("Tags"), tr("\"%1\" not found in tags %2").arg(tagName, (TagsFileList.size() > 1) ? tr("files") : tr("file")));
 				}
 			}
 
@@ -4231,7 +4230,14 @@ void DocumentWidget::PrintStringEx(const std::string &string, const QString &job
     delete dialog;
 }
 
+/**
+ * @brief DocumentWidget::splitPane
+ */
 void DocumentWidget::splitPane() {
+
+	if(splitter_->count() >= MAX_PANES) {
+		return;
+	}
 
     // TODO(eteran): copy common state from an existing text area!
     //               this includes the BGMenu, and the syntax highlighting
@@ -4595,45 +4601,63 @@ void DocumentWidget::SetOverstrike(bool overstrike) {
     overstrike_ = overstrike;
 }
 
-void DocumentWidget::gotoAP(TextArea *area, QStringList args) {
+void DocumentWidget::gotoAP(TextArea *area, int lineNum, int column) {
+
+	int position;
+
+	// User specified column, but not line number
+	if (lineNum == -1) {
+		position = area->TextGetCursorPos();
+
+		int curCol;
+		if (!area->TextDPosToLineAndCol(position, &lineNum, &curCol)) {
+			return;
+		}
+	} else if (column == -1) {
+		// User didn't specify a column
+		SelectNumberedLineEx(this, area, lineNum);
+		return;
+	}
+
+	position = area->TextDLineAndColToPos(lineNum, column);
+	if (position == -1) {
+		return;
+	}
+
+	area->TextSetCursorPos(position);
+}
+
+void DocumentWidget::gotoAP(TextArea *area, const QString &arg1, const QString &arg2) {
+	int lineNum;
+	int column;
+
+	/* Accept various formats:
+		  [line]:[column]   (menu action)
+		  line              (macro call)
+		  line, column      (macro call) */
+	if ((!StringToNum(arg1, &lineNum) || !StringToNum(arg2, &column))) {
+		qWarning("nedit: goto_line_number action requires line and/or column number");
+		return;
+	}
+
+	gotoAP(area, lineNum, column);
+}
+
+void DocumentWidget::gotoAP(TextArea *area, const QString &args) {
 
     int lineNum;
     int column;
-    int position;
-    int curCol;
-
 
     /* Accept various formats:
           [line]:[column]   (menu action)
           line              (macro call)
           line, column      (macro call) */
-    if (    args.size() == 0 ||
-            args.size() > 2 ||
-            (args.size() == 1 && StringToLineAndCol(args[0].toLatin1().data(), &lineNum, &column) == -1) ||
-            (args.size() == 2 && (!StringToNum(args[0], &lineNum) || !StringToNum(args[1], &column)))) {
+	if ((StringToLineAndCol(args.toLatin1().data(), &lineNum, &column) == -1)) {
 		qWarning("nedit: goto_line_number action requires line and/or column number");
         return;
     }
 
-    // User specified column, but not line number
-    if (lineNum == -1) {
-        position = area->TextGetCursorPos();
-        if (!area->TextDPosToLineAndCol(position, &lineNum, &curCol)) {
-            return;
-        }
-    } else if (column == -1) {
-        // User didn't specify a column
-        SelectNumberedLineEx(this, area, lineNum);
-        return;
-    }
-
-    position = area->TextDLineAndColToPos(lineNum, column);
-    if (position == -1) {
-        return;
-    }
-
-    area->TextSetCursorPos(position);
-    return;
+	gotoAP(area, lineNum, column);
 }
 
 /*

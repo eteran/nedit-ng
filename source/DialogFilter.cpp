@@ -1,6 +1,5 @@
 
 #include "DialogFilter.h"
-#include "preferences.h"
 #include <QKeyEvent>
 #include <QtDebug>
 

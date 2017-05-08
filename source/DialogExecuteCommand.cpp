@@ -1,6 +1,5 @@
 
 #include "DialogExecuteCommand.h"
-#include "preferences.h"
 #include <QKeyEvent>
 #include <QtDebug>
 

@@ -75,7 +75,9 @@ public Q_SLOTS:
     void findAP(const QString &searchString, SearchDirection direction, SearchType searchType, bool searchWraps);
 	void findDefinitionHelper(TextArea *area, const QString &arg, Mode search_type);
     void findIncrAP(const QString &searchString, SearchDirection direction, SearchType searchType, bool searchWraps, bool isContinue);
-    void gotoAP(TextArea *area, QStringList args);
+	void gotoAP(TextArea *area, const QString &args);
+	void gotoAP(TextArea *area, const QString &arg1, const QString &arg2);
+	void gotoAP(TextArea *area, int linenum, int column);
     void gotoMarkAP(QChar label, bool extendSel);
     void markAP(QChar ch);
     void moveDocument(MainWindow *fromWindow);

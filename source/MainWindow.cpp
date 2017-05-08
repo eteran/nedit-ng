@@ -1996,31 +1996,46 @@ void MainWindow::on_action_Insert_Ctrl_Code_triggered() {
     }
 }
 
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
+/**
+ * @brief MainWindow::action_Goto_Line_Number
+ * @param s
+ */
+void MainWindow::action_Goto_Line_Number(const QString &s) {
+	if(auto doc = currentDocument()) {
+
+		int lineNum;
+		int column;
+
+		if (StringToLineAndCol(s.toLatin1().data(), &lineNum, &column) == -1) {
+			QApplication::beep();
+			return;
+		}
+
+		if(TextArea *w = lastFocus_) {
+			doc->gotoAP(w, s);
+		}
+	}
+}
+
+/**
+ * @brief MainWindow::on_action_Goto_Line_Number_triggered
+ */
 void MainWindow::on_action_Goto_Line_Number_triggered() {
-    if(auto doc = currentDocument()) {
 
-        int lineNum;
-        int column;
+	bool ok;
+	QString text = QInputDialog::getText(
+	                   this,
+	                   tr("Goto Line Number"),
+	                   tr("Goto Line (and/or Column)  Number:"),
+	                   QLineEdit::Normal,
+	                   QString(),
+	                   &ok);
 
-        bool ok;
-        QString text = QInputDialog::getText(this, tr("Goto Line Number"), tr("Goto Line (and/or Column)  Number:"), QLineEdit::Normal, QString(), &ok);
+	if (!ok) {
+		return;
+	}
 
-        if (!ok) {
-            return;
-        }
-
-        if (StringToLineAndCol(text.toLatin1().data(), &lineNum, &column) == -1) {
-            QApplication::beep();
-            return;
-        }
-
-        if(TextArea *w = lastFocus_) {
-            doc->gotoAP(w, QStringList() << text);
-        }
-    }
+	action_Goto_Line_Number(text);
 }
 
 //------------------------------------------------------------------------------
@@ -2032,7 +2047,7 @@ void MainWindow::on_action_Goto_Selected_triggered() {
         const QMimeData *mimeData = QApplication::clipboard()->mimeData(QClipboard::Selection);
         if(mimeData->hasText()) {
             if(TextArea *w = lastFocus_) {
-                doc->gotoAP(w, QStringList() << mimeData->text());
+				doc->gotoAP(w, mimeData->text());
             }
         } else {
             QApplication::beep();
@@ -2226,17 +2241,21 @@ void MainWindow::on_editIFind_returnPressed() {
     }
 }
 
+/**
+ * @brief MainWindow::keyPressEvent
+ * @param event
+ */
 void MainWindow::keyPressEvent(QKeyEvent *event) {
 
-    int index;
+	int index;
 
-    // only process up and down arrow keys
+	// only process up and down arrow keys
     if (event->key() != Qt::Key_Up && event->key() != Qt::Key_Down && event->key() != Qt::Key_Escape) {
         QMainWindow::keyPressEvent(event);
         return;
     }
 
-    index = iSearchHistIndex_;
+	index = iSearchHistIndex_;
 
     // allow escape key to cancel search
     if (event->key() == Qt::Key_Escape) {
@@ -2258,7 +2277,7 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
 
     // determine the strings and button settings to use
     if (index == 0) {
-        searchStr  = QLatin1String("");
+		searchStr  = QLatin1String("");
         searchType = GetPrefSearch();
     } else {
         searchStr  = SearchHistory[historyIndex(index)];
@@ -2396,7 +2415,7 @@ void MainWindow::initToggleButtonsiSearch(SearchType searchType) {
 void MainWindow::BeginISearchEx(SearchDirection direction) {
 
     iSearchStartPos_ = -1;
-    ui.editIFind->setText(QLatin1String(""));
+	ui.editIFind->setText(QLatin1String(""));
     no_signals(ui.checkIFindReverse)->setChecked(direction == SEARCH_BACKWARD);
 
 

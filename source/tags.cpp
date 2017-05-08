@@ -44,6 +44,8 @@
 #include <QApplication>
 #include <QMessageBox>
 #include <QFile>
+#include <iostream>
+#include <fstream>
 #include <cctype>
 #include <cstdio>
 #include <memory>
@@ -86,7 +88,7 @@ static void updateMenuItems();
 static int addTag(const char *name, const char *file, int lang, const char *search, int posInf, const char *path, int index);
 static bool delTag(int index);
 static QList<Tag> getTag(const char *name, int search_type);
-static void createSelectMenuEx(DocumentWidget *document, TextArea *area, const QVector<char *> &args);
+static void createSelectMenuEx(DocumentWidget *document, TextArea *area, const QStringList &args);
 static QList<Tag> LookupTag(const char *name, int search_type);
 
 static int searchLine(char *line, const char *regex);
@@ -99,28 +101,28 @@ static QList<tagFile> *tagListByType(int type);
 struct Tag {
     std::string name;
     std::string file;
+	std::string searchString;
+	std::string path;
     int language;
-    std::string searchString; // see comment below
-    int posInf;               // see comment below
-    std::string path;
+	int posInf;
     int index;
 };
 
 /* Hash table of tags, implemented as an array.  Each bin contains a
     nullptr-terminated linked list of parsed tags */
-QMultiHash<QString, Tag> Tags;
+static QMultiHash<QString, Tag> Tags;
 
 // list of loaded tags files 
 QList<tagFile> TagsFileList;
 
 // Hash table of calltip tags 
-QMultiHash<QString, Tag> Tips;
+static QMultiHash<QString, Tag> Tips;
 QList<tagFile> TipsFileList;
 
 /* These are all transient global variables -- they don't hold any state
     between tag/tip lookups */
 int searchMode = TAG;
-const char *tagName;
+QString tagName;
 static char tagFiles[MAXDUPTAGS][MAXPATHLEN];
 static char tagSearch[MAXDUPTAGS][MAXPATHLEN];
 static int tagPosInf[MAXDUPTAGS];
@@ -929,7 +931,7 @@ int findAllMatchesEx(DocumentWidget *document, TextArea *area, const char *strin
         QApplication::beep();
         return -1;
     }
-    tagName = string;
+	tagName = QString::fromLatin1(string);
 
     QList<Tag> tags = LookupTag(string, searchMode);
 
@@ -1013,8 +1015,7 @@ int findAllMatchesEx(DocumentWidget *document, TextArea *area, const char *strin
     }
 
     if (nMatches > 1) {
-
-        QVector<char *> dupTagsList;
+		QStringList dupTagsList;
 
         for (i = 0; i < nMatches; i++) {
 
@@ -1023,26 +1024,21 @@ int findAllMatchesEx(DocumentWidget *document, TextArea *area, const char *strin
             ParseFilenameEx(QString::fromLatin1(tagFiles[i]), &filename, &pathname);
             if ((i < nMatches - 1 && !strcmp(tagFiles[i], tagFiles[i + 1])) || (i > 0 && !strcmp(tagFiles[i], tagFiles[i - 1]))) {
 
-
                 if (*(tagSearch[i]) && (tagPosInf[i] != -1)) { // etags
-                    sprintf(temp, "%2d. %s%s %8i %s", i + 1, pathname.toLatin1().data(), filename.toLatin1().data(), tagPosInf[i], tagSearch[i]);
+					snprintf(temp, sizeof(temp), "%2d. %s%s %8i %s", i + 1, pathname.toLatin1().data(), filename.toLatin1().data(), tagPosInf[i], tagSearch[i]);
                 } else if (*(tagSearch[i])) { // ctags search expr
-                    sprintf(temp, "%2d. %s%s          %s", i + 1, pathname.toLatin1().data(), filename.toLatin1().data(), tagSearch[i]);
+					snprintf(temp, sizeof(temp), "%2d. %s%s          %s", i + 1, pathname.toLatin1().data(), filename.toLatin1().data(), tagSearch[i]);
                 } else { // line number only
-                    sprintf(temp, "%2d. %s%s %8i", i + 1, pathname.toLatin1().data(), filename.toLatin1().data(), tagPosInf[i]);
+					snprintf(temp, sizeof(temp), "%2d. %s%s %8i", i + 1, pathname.toLatin1().data(), filename.toLatin1().data(), tagPosInf[i]);
                 }
             } else {
-                sprintf(temp, "%2d. %s%s", i + 1, pathname.toLatin1().data(), filename.toLatin1().data());
+				snprintf(temp, sizeof(temp), "%2d. %s%s", i + 1, pathname.toLatin1().data(), filename.toLatin1().data());
             }
 
-            auto str = new char[strlen(temp) + 1];
-            strcpy(str, temp);
-            dupTagsList.push_back(str);
+			dupTagsList.push_back(QString::fromLatin1(temp));
         }
 
         createSelectMenuEx(document, area, dupTagsList);
-
-        qDeleteAll(dupTagsList);
         return 1;
     }
 
@@ -1055,6 +1051,7 @@ int findAllMatchesEx(DocumentWidget *document, TextArea *area, const char *strin
     } else {
         showMatchingCalltipEx(area, 0);
     }
+
     return 1;
 }
 
@@ -1064,17 +1061,21 @@ int findAllMatchesEx(DocumentWidget *document, TextArea *area, const char *strin
  * string is reached before n lines, return the number of lines advanced,
  * else normally return -1.
  */
-static int moveAheadNLines(const char *str, int *pos, int n) {
+static int moveAheadNLinesEx(view::string_view str, int *pos, int n) {
+
 	int i = n;
-	while (str[*pos] != '\0' && n > 0) {
-		if (str[*pos] == '\n')
+	while (str.begin() + *pos != str.end() && n > 0) {
+		if (str[*pos] == '\n') {
 			--n;
+		}
 		++(*pos);
 	}
-	if (n == 0)
+
+	if (n == 0) {
 		return -1;
-	else
+	} else {
 		return i - n;
+	}
 }
 
 /*
@@ -1085,85 +1086,61 @@ static int moveAheadNLines(const char *str, int *pos, int n) {
 void showMatchingCalltipEx(TextArea *area, int i) {
     try {
         int startPos = 0;
-        int tipLen;
         int endPos = 0;
-        struct stat statbuf;
 
         // 1. Open the target file
         NormalizePathname(tagFiles[i]);
-        FILE *fp = fopen(tagFiles[i], "r");
-        if(!fp) {
-            QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error opening File"), QString(QLatin1String("Error opening %1")).arg(QString::fromLatin1(tagFiles[i])));
-            return;
-        }
 
-        if (fstat(fileno(fp), &statbuf) != 0) {
-            fclose(fp);
-            QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error opening File"), QString(QLatin1String("Error opening %1")).arg(QString::fromLatin1(tagFiles[i])));
-            return;
-        }
+		std::ifstream file(tagFiles[i]);
+		if(!file) {
+			QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error opening File"), QString(QLatin1String("Error opening %1")).arg(QString::fromLatin1(tagFiles[i])));
+			return;
+		}
 
-        // 2. Read the target file
-        // Allocate space for the whole contents of the file (unfortunately)
-        int fileLen = statbuf.st_size;
-        auto fileString = std::make_unique<char[]>(fileLen + 1); // +1 = space for null
+		// 2. Read the target file
+		std::string fileString(std::istreambuf_iterator<char>{file}, std::istreambuf_iterator<char>{});
 
-        // Read the file into fileString and terminate with a null
-        int readLen = fread(&fileString[0], 1, fileLen, fp);
-        if (ferror(fp)) {
-            fclose(fp);
-            QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error reading File"), QString(QLatin1String("Error reading %1")).arg(QString::fromLatin1(tagFiles[i])));
-            return;
-        }
-        fileString[readLen] = '\0';
-
-        // Close the file
-        if (fclose(fp) != 0) {
-            // unlikely error
-            QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error closing File"), QLatin1String("Unable to close file"));
-            // we read it successfully, so continue
-        }
-
-        // 3. Search for the tagged location (set startPos)
+		// 3. Search for the tagged location (set startPos)
         if (!*(tagSearch[i])) {
             // It's a line number, just go for it
-            if ((moveAheadNLines(&fileString[0], &startPos, tagPosInf[i] - 1)) >= 0) {
+			if ((moveAheadNLinesEx(fileString, &startPos, tagPosInf[i] - 1)) >= 0) {
                 QMessageBox::critical(nullptr /*parent*/, QLatin1String("Tags Error"), QString(QLatin1String("%1\n not long enough for definition to be on line %2")).arg(QString::fromLatin1(tagFiles[i])).arg(tagPosInf[i]));
                 return;
             }
         } else {
             startPos = tagPosInf[i];
-            if (!fakeRegExSearchEx(view::string_view(&fileString[0], readLen), tagSearch[i], &startPos, &endPos)) {
-                QMessageBox::critical(nullptr /*parent*/, QLatin1String("Tag not found"), QString(QLatin1String("Definition for %1\nnot found in %2")).arg(QString::fromLatin1(tagName), QString::fromLatin1(tagFiles[i])));
+			if (!fakeRegExSearchEx(fileString, tagSearch[i], &startPos, &endPos)) {
+				QMessageBox::critical(nullptr /*parent*/, QLatin1String("Tag not found"), QString(QLatin1String("Definition for %1\nnot found in %2")).arg(tagName, QString::fromLatin1(tagFiles[i])));
                 return;
             }
         }
 
         if (searchMode == TIP) {
-            int dummy, found;
+			int dummy;
 
             // 4. Find the end of the calltip (delimited by an empty line)
             endPos = startPos;
-            found = SearchString(&fileString[0], QLatin1String("\\n\\s*\\n"), SEARCH_FORWARD, SEARCH_REGEX, false, startPos, &endPos, &dummy, nullptr, nullptr, nullptr);
+			bool found = SearchString(fileString.c_str(), QLatin1String("\\n\\s*\\n"), SEARCH_FORWARD, SEARCH_REGEX, false, startPos, &endPos, &dummy, nullptr, nullptr, nullptr);
             if (!found) {
                 // Just take 4 lines
-                moveAheadNLines(&fileString[0], &endPos, TIP_DEFAULT_LINES);
+				moveAheadNLinesEx(fileString, &endPos, TIP_DEFAULT_LINES);
                 --endPos; // Lose the last \n
             }
+
         } else { // Mode = TIP_FROM_TAG
             // 4. Copy TIP_DEFAULT_LINES lines of text to the calltip string
             endPos = startPos;
-            moveAheadNLines(&fileString[0], &endPos, TIP_DEFAULT_LINES);
+			moveAheadNLinesEx(fileString, &endPos, TIP_DEFAULT_LINES);
+
             // Make sure not to overrun the fileString with ". . ."
-            if (((size_t)endPos) <= (strlen(&fileString[0]) - 5)) {
-                sprintf(&fileString[endPos], ". . .");
+			if (static_cast<size_t>(endPos) <= (fileString.size() - 5)) {
+				fileString.replace(endPos, 5, ". . .");
                 endPos += 5;
             }
         }
 
         // 5. Copy the calltip to a string
-        tipLen = endPos - startPos;
-
+		int tipLen = endPos - startPos;
         auto message = QString::fromLatin1(&fileString[startPos], tipLen);
 
         // 6. Display it
@@ -1177,13 +1154,11 @@ void showMatchingCalltipEx(TextArea *area, int i) {
     tagFiles[i], tagSearch[i], tagPosInf[i] */
 void editTaggedLocationEx(TextArea *area, int i) {
 
-    int startPos;
     int endPos;
-    int lineNum;
     int rows;
     QString filename;
     QString pathname;
-    DocumentWidget *windowToSearch;
+
     auto document = DocumentWidget::documentFrom(area);
 
     ParseFilenameEx(QString::fromLatin1(tagFiles[i]), &filename, &pathname);
@@ -1199,13 +1174,13 @@ void editTaggedLocationEx(TextArea *area, int i) {
                 GetPrefOpenInTab(),
                 false);
 
-    windowToSearch = MainWindow::FindWindowWithFile(filename, pathname);
+	DocumentWidget *windowToSearch = MainWindow::FindWindowWithFile(filename, pathname);
     if(!windowToSearch) {
         QMessageBox::warning(nullptr /*parent*/, QLatin1String("File not found"), QString(QLatin1String("File %1 not found")).arg(QString::fromLatin1(tagFiles[i])));
         return;
     }
 
-    startPos = tagPosInf[i];
+	int startPos = tagPosInf[i];
 
     if (!*(tagSearch[i])) {
         // if the search string is empty, select the numbered line
@@ -1215,7 +1190,7 @@ void editTaggedLocationEx(TextArea *area, int i) {
 
     // search for the tags file search string in the newly opened file
     if (!fakeRegExSearchEx(windowToSearch->buffer_->BufAsStringEx(), tagSearch[i], &startPos, &endPos)) {
-        QMessageBox::warning(nullptr /*parent*/, QLatin1String("Tag Error"), QString(QLatin1String("Definition for %1\nnot found in %2")).arg(QString::fromLatin1(tagName), QString::fromLatin1(tagFiles[i])));
+		QMessageBox::warning(nullptr /*parent*/, QLatin1String("Tag Error"), QString(QLatin1String("Definition for %1\nnot found in %2")).arg(tagName, QString::fromLatin1(tagFiles[i])));
         return;
     }
 
@@ -1225,7 +1200,7 @@ void editTaggedLocationEx(TextArea *area, int i) {
 
     /* Position it nicely in the window,
        about 1/4 of the way down from the top */
-    lineNum = windowToSearch->buffer_->BufCountLines(0, startPos);
+	int lineNum = windowToSearch->buffer_->BufCountLines(0, startPos);
 
     rows = area->getRows();
 
@@ -1234,12 +1209,12 @@ void editTaggedLocationEx(TextArea *area, int i) {
 }
 
 //      Create a Menu for user to select from the collided tags 
-static void createSelectMenuEx(DocumentWidget *document, TextArea *area, const QVector<char *> &args) {
+static void createSelectMenuEx(DocumentWidget *document, TextArea *area, const QStringList &args) {
 
     auto dialog = new DialogDuplicateTags(document, area, document);
-    dialog->setTag(QString::fromLatin1(tagName));
+	dialog->setTag(tagName);
     for(int i = 0; i < args.size(); ++i) {
-        dialog->addListItem(QString::fromLatin1(args[i]), i);
+		dialog->addListItem(args[i], i);
     }
     dialog->show();
 }

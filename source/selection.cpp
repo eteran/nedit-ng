@@ -53,12 +53,12 @@
 ** both line and column numbers are not specified.
 */
 int StringToLineAndCol(const char *text, int *lineNum, int *column) {
-	char *endptr;
-	long tempNum;
-	int textLen;
+
+	// TODO(eteran): rework this in terms of QString APIs, maybe a regex?
 
 	// Get line number 
-	tempNum = strtol(text, &endptr, 10);
+	char *endptr;
+	const long tempNum = strtol(text, &endptr, 10);
 
 	// If user didn't specify a line number, set lineNum to -1 
 	if (endptr == text) {
@@ -68,25 +68,25 @@ int StringToLineAndCol(const char *text, int *lineNum, int *column) {
 	} else if (tempNum < 0) {
 		*lineNum = 0;
 	} else {
-		*lineNum = tempNum;
+		*lineNum = static_cast<int>(tempNum);
 	}
 
 	// Find the next digit 
-	for (textLen = strlen(endptr); textLen > 0; endptr++, textLen--) {
-		if (isdigit((uint8_t)*endptr) || *endptr == '-' || *endptr == '+') {
+	for (size_t textLen = strlen(endptr); textLen > 0; endptr++, textLen--) {
+		if (isdigit(static_cast<uint8_t>(*endptr)) || *endptr == '-' || *endptr == '+') {
 			break;
 		}
 	}
 
 	// Get column 
 	if (*endptr != '\0') {
-		tempNum = strtol(endptr, nullptr, 10);
+		const long tempNum = strtol(endptr, nullptr, 10);
 		if (tempNum >= INT_MAX) {
 			*column = INT_MAX;
 		} else if (tempNum < 0) {
 			*column = 0;
 		} else {
-			*column = tempNum;
+			*column = static_cast<int>(tempNum);
 		}
 	} else {
 		*column = -1;

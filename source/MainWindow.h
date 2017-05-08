@@ -154,6 +154,7 @@ public Q_SLOTS:
 
 public Q_SLOTS:
     void action_Include_File(const QString &filename);
+	void action_Goto_Line_Number(const QString &s);
 
 public Q_SLOTS:
     // File Menu

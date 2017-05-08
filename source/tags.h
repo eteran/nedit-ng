@@ -46,7 +46,8 @@ extern QList<tagFile> TagsFileList; // list of loaded tags files
 extern QList<tagFile> TipsFileList; // list of loaded calltips tag files
 
 extern int searchMode;
-extern const char *tagName;
+extern QString tagName;
+
 extern bool globAnchored;
 extern int globPos;
 extern int globHAlign;

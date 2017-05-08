@@ -7,7 +7,6 @@
 #include "SignalBlocker.h"
 #include "X11Colors.h"
 #include "highlightData.h"
-#include "preferences.h"
 #include <QMessageBox>
 #include <QRegExp>
 #include <QRegExpValidator>

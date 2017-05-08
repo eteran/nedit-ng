@@ -421,7 +421,7 @@ int main(int argc, char *argv[]) {
 
     ServerPreferences.autoStart     = settings.value(QLatin1String("nc.autoStart"),     true).toBool();
     ServerPreferences.serverCmd     = settings.value(QLatin1String("nc.serverCommand"), QLatin1String("nedit-ng -server")).toString();
-    ServerPreferences.serverName    = settings.value(QLatin1String("nc.serverName"),    QLatin1String("")).toString();
+	ServerPreferences.serverName    = settings.value(QLatin1String("nc.serverName"),    QLatin1String("")).toString();
     ServerPreferences.waitForClose  = settings.value(QLatin1String("nc.waitForClose"),  false).toBool();
     ServerPreferences.timeOut       = settings.value(QLatin1String("nc.timeOut"),       10).toInt();
 
@@ -441,7 +441,7 @@ int main(int argc, char *argv[]) {
     }
 
     for(int i = 0; i < 10; ++i) {
-        QDBusInterface iface(QLatin1String(SERVICE_NAME), QLatin1String("/Server"), QLatin1String(""), QDBusConnection::sessionBus());
+		QDBusInterface iface(QLatin1String(SERVICE_NAME), QLatin1String("/Server"), QLatin1String(""), QDBusConnection::sessionBus());
         if(iface.isValid()) {
             QDBusReply<void> reply = iface.call(QLatin1String("processCommand"), commandLine.serverRequest);
             if(reply.isValid()) {

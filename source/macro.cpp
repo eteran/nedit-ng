@@ -295,10 +295,12 @@ TEXT_EVENT(cutPrimaryMS,       cutPrimaryAP)
 TEXT_EVENT(copyPrimaryMS,      copyPrimaryAP)
 TEXT_EVENT(keySelectMS,        keySelectAP)
 TEXT_EVENT(forwardWordMS,      forwardWordAP)
-TEXT_EVENT(backwardWordMS,     backwardWordAP)
+TEXT_EVENT(backwardWordMS,            backwardWordAP)
 TEXT_EVENT(deletePreviousCharacterMS, deletePreviousCharacterAP)
-TEXT_EVENT(deleteNextCharacterMS, deleteNextCharacterAP)
-TEXT_EVENT(deletePreviousWordMS, deletePreviousWordAP)
+TEXT_EVENT(deleteNextCharacterMS,     deleteNextCharacterAP)
+TEXT_EVENT(deletePreviousWordMS,      deletePreviousWordAP)
+TEXT_EVENT(processTabMS,              processTabAP)
+TEXT_EVENT(deselectAllMS,             deselectAllAP)
 
 static const SubRoutine TextAreaSubrNames[] = {
     {"self-insert",               selfInsertMS},
@@ -414,16 +416,18 @@ static const SubRoutine TextAreaSubrNames[] = {
     {"scroll_right",              nullptr},
     {"scroll-to-line",            nullptr},
     {"scroll_to_line",            nullptr},
-    {"select-all",                nullptr},
-    {"select_all",                nullptr},
-    {"deselect-all",              nullptr},
-    {"deselect_all",              nullptr},
+#if 0
+    {"select-all",                selectAllMS},
+    {"select_all",                selectAllMS},
+#endif
+    {"deselect-all",              deselectAllMS},
+    {"deselect_all",              deselectAllMS},
     {"focusIn",                   nullptr},
     {"focusOut",                  nullptr},
     {"process-return",            nullptr},
     {"process_return",            nullptr},
-    {"process-tab",               nullptr},
-    {"process_tab",               nullptr},
+    {"process-tab",               processTabMS},
+    {"process_tab",               processTabMS},
     {"insert-string",             insertStringMS},
     {"insert_string",             insertStringMS},
     {"mouse_pan",                 nullptr},
@@ -501,6 +505,7 @@ WINDOW_MENU_EVENT(loadTipsFileDialogMS,              on_action_Load_Calltips_Fil
 WINDOW_MENU_EVENT(openSelectedMS,                    on_action_Open_Selected_triggered)
 WINDOW_MENU_EVENT(findDialogMS,                      on_action_Find_triggered)
 WINDOW_MENU_EVENT(replaceDialogMS,                   on_action_Replace_triggered)
+WINDOW_MENU_EVENT(gotoLineNumberDialogMS,           on_action_Goto_Line_Number_triggered)
 
 WINDOW_MENU_EVENT_S(includeFileMS, action_Include_File)
 
@@ -578,8 +583,8 @@ static const SubRoutine MenuMacroSubrNames[] = {
 	{ "replace_find_again",           nullptr },
 	{ "goto-line-number",             nullptr },
 	{ "goto_line_number",             nullptr },
-	{ "goto-line-number-dialog",      nullptr },
-	{ "goto_line_number_dialog",      nullptr },
+    { "goto-line-number-dialog",      gotoLineNumberDialogMS },
+    { "goto_line_number_dialog",      gotoLineNumberDialogMS },
 	{ "goto-selected",                nullptr },
 	{ "goto_selected",                nullptr },
 	{ "mark",                         nullptr },

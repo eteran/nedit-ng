@@ -1,7 +1,6 @@
 
 #include "DialogDuplicateTags.h"
 #include "tags.h"
-#include "preferences.h"
 #include <QPushButton>
 
 //------------------------------------------------------------------------------
