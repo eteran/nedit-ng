@@ -38,6 +38,8 @@
 #include <cerrno>
 #include <algorithm>
 #include <memory>
+#include <iostream>
+#include <fstream>
 
 #include <sys/types.h>
 #include <sys/param.h>
@@ -505,6 +507,42 @@ FileFormats FormatOfFileEx(view::string_view fileString) {
 ** It's the caller's responsability to make sure that the pending character,
 ** if present, is inserted at the beginning of the next block to convert.
 */
+void ConvertFromDosFileStringEx(std::string *fileString, char *pendingCR) {
+
+	using std::swap;
+
+	// TODO(eteran): the original did this in place, it likely can stil be
+	// but this version is "obviously correct", despite using more memory
+
+	std::string out;
+	out.reserve(fileString->size());
+	auto outPtr = std::back_inserter(out);
+
+	if (pendingCR) {
+		*pendingCR = '\0';
+	}
+
+	auto it = fileString->begin();
+	while (it != fileString->end()) {
+		if (*it == '\r') {
+			auto next = std::next(it);
+			if (next != fileString->end()) {
+				if (*next == '\n') {
+					++it;
+				}
+			} else {
+				if (pendingCR) {
+					*pendingCR = *it;
+					break; /* Don't copy this trailing '\r' */
+				}
+			}
+		}
+		*outPtr++ = *it++;
+	}
+
+	swap(*fileString, out);
+}
+
 void ConvertFromDosFileString(char *fileString, int *length, char *pendingCR) {
 	char *outPtr = fileString;
 	char *inPtr = fileString;
@@ -538,6 +576,16 @@ void ConvertFromMacFileString(char *fileString, int length) {
     });
 }
 
+void ConvertFromMacFileStringEx(std::string *fileString) {
+	std::transform(fileString->begin(), fileString->end(), fileString->begin(), [](char ch) {
+		if(ch == '\r') {
+			return '\n';
+		}
+
+		return ch;
+	});
+}
+
 /*
 ** Converts a string (which may represent the entire contents of the file) from
 ** Unix to DOS format.  String is re-allocated (with malloc), and length is
@@ -552,7 +600,7 @@ void ConvertFromMacFileString(char *fileString, int length) {
 bool ConvertToDosFileStringEx(std::string &fileString) {
 
 	/* How long a string will we need? */
-	int outLength = 0;
+	size_t outLength = 0;
 	for (char ch : fileString) {
 		if (ch == '\n') {
 			outLength++;
@@ -600,47 +648,33 @@ void ConvertToMacFileStringEx(std::string &fileString) {
 ** Force a terminating \n, if this is requested
 */
 QString ReadAnyTextFileEx(const QString &fileName, bool forceNL) {
-	struct stat statbuf;
-	FILE *fp;
-	int readLen;
 
-	/* Read the whole file into fileString */
-	if ((fp = ::fopen(fileName.toLatin1().data(), "r")) == nullptr) {
+	std::ifstream file(fileName.toLatin1().data());
+	if(!file) {
 		return QString();
 	}
-	
-	if (fstat(fileno(fp), &statbuf) != 0) {
-		fclose(fp);
-		return QString();
-	}
-	
-	int fileLen = statbuf.st_size;
-	/* +1 = space for null
-	** +1 = possible additional \n
-	*/
-    auto fileString = std::make_unique<char[]>(fileLen + 2);
-    readLen = fread(&fileString[0], 1, fileLen, fp);
-	if (ferror(fp)) {
-		fclose(fp);
-		return QString();
-	}
-	fclose(fp);
-	fileString[readLen] = '\0';
+
+	auto contents = std::string(std::istreambuf_iterator<char>{file}, std::istreambuf_iterator<char>{});
 
 	/* Convert linebreaks? */
-    FileFormats format = FormatOfFileEx(view::string_view(&fileString[0], readLen));
-	if (format == DOS_FILE_FORMAT) {
-		char pendingCR;
-        ConvertFromDosFileString(&fileString[0], &readLen, &pendingCR);
-	} else if (format == MAC_FILE_FORMAT) {
-        ConvertFromMacFileString(&fileString[0], readLen);
+	switch(FormatOfFileEx(contents)) {
+	case DOS_FILE_FORMAT:
+		ConvertFromDosFileStringEx(&contents, nullptr);
+		break;
+	case MAC_FILE_FORMAT:
+		ConvertFromMacFileStringEx(&contents);
+		break;
+	case UNIX_FILE_FORMAT:
+		break;
+	}
+	if(contents.empty()) {
+		return QString();
 	}
 
 	/* now, that the fileString is in Unix format, check for terminating \n */
-	if (forceNL && fileString[readLen - 1] != '\n') {
-		fileString[readLen] = '\n';
-		fileString[readLen + 1] = '\0';
+	if (forceNL && contents.back() != '\n') {
+		contents.push_back('\n');
 	}
 	
-    return QString::fromLatin1(&fileString[0], readLen);
+	return QString::fromStdString(contents);
 }

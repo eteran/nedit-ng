@@ -2149,7 +2149,7 @@ int DocumentWidget::cmpWinAgainstFile(const QString &fileName) {
         case DOS_FILE_FORMAT:
             ConvertFromDosFileString(fileString, &nRead, &pendingCR);
             break;
-        default:
+		case UNIX_FILE_FORMAT:
             break;
         }
 
@@ -2211,7 +2211,7 @@ void DocumentWidget::RevertToSaved() {
 
         RemoveBackupFile();
         ClearUndoList();
-        openFlags |= lockReasons_.isUserLocked() ? PREF_READ_ONLY : 0;
+		openFlags |= lockReasons_.isUserLocked() ? EditFlags::PREF_READ_ONLY : 0;
 
         if (!doOpen(name, path, openFlags)) {
             /* This is a bit sketchy.  The only error in doOpen that irreperably
@@ -3071,7 +3071,6 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
     filenameSet_ = true;
     fileMissing_ = true;
 
-    struct stat statbuf;
     FILE *fp = nullptr;
 
     // Get the full name of the file
@@ -3090,9 +3089,9 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
                 lockReasons_.setPermLocked(true);
             }
 
-        } else if (flags & CREATE && errno == ENOENT) {
+		} else if (flags & EditFlags::CREATE && errno == ENOENT) {
             // Give option to create (or to exit if this is the only window)
-            if (!(flags & SUPPRESS_CREATE_WARN)) {
+			if (!(flags & EditFlags::SUPPRESS_CREATE_WARN)) {
 
 
                 QMessageBox msgbox(this);
@@ -3142,7 +3141,7 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
             }
 
             SetWindowModified(false);
-            if ((flags & PREF_READ_ONLY) != 0) {
+			if ((flags & EditFlags::PREF_READ_ONLY) != 0) {
                 lockReasons_.setUserLocked(true);
             }
 
@@ -3157,6 +3156,7 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
 
     /* Get the length of the file, the protection mode, and the time of the
        last modification to the file */
+	struct stat statbuf;
     if (::fstat(fileno(fp), &statbuf) != 0) {
         ::fclose(fp);
         filenameSet_ = false; // Temp. prevent check for changes.
@@ -3183,7 +3183,7 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
     }
 #endif
 
-    const auto fileLen = static_cast<int>(statbuf.st_size);
+	const auto fileLen = static_cast<int>(statbuf.st_size);
 
     // Allocate space for the whole contents of the file (unfortunately)
     auto fileString = std::make_unique<char[]>(fileLen + 1); // +1 = space for null
@@ -3227,12 +3227,16 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
 
     // Detect and convert DOS and Macintosh format files
     if (GetPrefForceOSConversion()) {
-        fileFormat_ = FormatOfFileEx(view::string_view(&fileString[0], readLen));
-        if (fileFormat_ == DOS_FILE_FORMAT) {
-            ConvertFromDosFileString(&fileString[0], &readLen, nullptr);
-        } else if (fileFormat_ == MAC_FILE_FORMAT) {
-            ConvertFromMacFileString(&fileString[0], readLen);
-        }
+		switch (FormatOfFileEx(view::string_view(&fileString[0], readLen))) {
+		case DOS_FILE_FORMAT:
+			ConvertFromDosFileString(&fileString[0], &readLen, nullptr);
+			break;
+		case MAC_FILE_FORMAT:
+			ConvertFromMacFileString(&fileString[0], readLen);
+			break;
+		case UNIX_FILE_FORMAT:
+			break;
+		}
     }
 
     // Display the file contents in the text widget
@@ -3279,7 +3283,7 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
     }
 
     // Set window title and file changed flag
-    if ((flags & PREF_READ_ONLY) != 0) {
+	if ((flags & EditFlags::PREF_READ_ONLY) != 0) {
         lockReasons_.setUserLocked(true);
     }
 
@@ -3585,6 +3589,8 @@ bool DocumentWidget::includeFile(const QString &name) {
     if (CheckReadOnly()) {
         return false;
     }
+
+	// TODO(eteran): 2.0, replace this with a memory map of the file
 
     // Open the file
     FILE *fp = ::fopen(name.toLatin1().data(), "rb");

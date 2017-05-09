@@ -33,7 +33,7 @@
 
 class QString;
 
-bool ConvertToDosFileStringEx(std::string &fileString);
+
 FileFormats FormatOfFileEx(view::string_view fileString);
 int CompressPathname(char *pathname);
 int NormalizePathname(char *pathname);
@@ -42,8 +42,12 @@ QString ExpandTildeEx(const QString &pathname);
 QString GetTrailingPathComponentsEx(const QString &path, int noOfComponents);
 QString ReadAnyTextFileEx(const QString &fileName, bool forceNL);
 QString ResolvePathEx(const QString &pathname);
+
+bool ConvertToDosFileStringEx(std::string &fileString);
 void ConvertFromDosFileString(char *fileString, int *length, char *pendingCR);
+void ConvertFromDosFileStringEx(std::string *fileString, char *pendingCR);
 void ConvertFromMacFileString(char *fileString, int length);
+void ConvertFromMacFileStringEx(std::string *fileString);
 void ConvertToMacFileStringEx(std::string &fileString);
 
 QString NormalizePathnameEx(const QString &pathname);
