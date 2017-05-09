@@ -59,12 +59,12 @@ static int ResolvePath(const char *pathIn, char *pathResolved);
    characters of the beginning of the file, checking that all newlines are
    paired with carriage returns.  If even a single counterexample exists,
    the file is judged to be in Unix format. */
-#define FORMAT_SAMPLE_LINES 5
-#define FORMAT_SAMPLE_CHARS 2000
+constexpr int FORMAT_SAMPLE_LINES = 5;
+constexpr int FORMAT_SAMPLE_CHARS = 2000;
 
 static char *nextSlash(char *ptr);
 static char *prevSlash(char *ptr);
-static int compareThruSlash(const char *string1, const char *string2);
+static bool compareThruSlash(const char *string1, const char *string2);
 static void copyThruSlash(char **toString, char **fromString);
 
 /*
@@ -412,7 +412,7 @@ static char *prevSlash(char *ptr) {
 	return ptr + 1;
 }
 
-static int compareThruSlash(const char *string1, const char *string2) {
+static bool compareThruSlash(const char *string1, const char *string2) {
     while (true) {
 		if (*string1 != *string2)
             return false;
@@ -472,7 +472,6 @@ QString GetTrailingPathComponentsEx(const QString &path, int noOfComponents) {
 */
 FileFormats FormatOfFileEx(view::string_view fileString) {
 
-
 	const char *p;
 	int nNewlines = 0;
 	int nReturns = 0;
@@ -508,21 +507,15 @@ FileFormats FormatOfFileEx(view::string_view fileString) {
 ** if present, is inserted at the beginning of the next block to convert.
 */
 void ConvertFromDosFileStringEx(std::string *fileString, char *pendingCR) {
-
-	using std::swap;
-
-	// TODO(eteran): the original did this in place, it likely can stil be
-	// but this version is "obviously correct", despite using more memory
-
-	std::string out;
-	out.reserve(fileString->size());
-	auto outPtr = std::back_inserter(out);
+	Q_ASSERT(fileString);
 
 	if (pendingCR) {
 		*pendingCR = '\0';
 	}
 
-	auto it = fileString->begin();
+	auto out = fileString->begin();
+	auto it  = fileString->begin();
+
 	while (it != fileString->end()) {
 		if (*it == '\r') {
 			auto next = std::next(it);
@@ -533,17 +526,19 @@ void ConvertFromDosFileStringEx(std::string *fileString, char *pendingCR) {
 			} else {
 				if (pendingCR) {
 					*pendingCR = *it;
-					break; /* Don't copy this trailing '\r' */
+					break; // Don't copy this trailing '\r'
 				}
 			}
 		}
-		*outPtr++ = *it++;
+		*out++ = *it++;
 	}
 
-	swap(*fileString, out);
+	// remove the junk left at the end of the string
+	fileString->erase(out, fileString->end());
 }
 
 void ConvertFromDosFileString(char *fileString, int *length, char *pendingCR) {
+	Q_ASSERT(fileString);
 	char *outPtr = fileString;
 	char *inPtr = fileString;
 	if (pendingCR)
@@ -567,6 +562,7 @@ void ConvertFromDosFileString(char *fileString, int *length, char *pendingCR) {
 }
 
 void ConvertFromMacFileString(char *fileString, int length) {
+	Q_ASSERT(fileString);
     std::transform(fileString, fileString + length, fileString, [](char ch) {
         if(ch == '\r') {
             return '\n';
@@ -577,6 +573,7 @@ void ConvertFromMacFileString(char *fileString, int length) {
 }
 
 void ConvertFromMacFileStringEx(std::string *fileString) {
+	Q_ASSERT(fileString);
 	std::transform(fileString->begin(), fileString->end(), fileString->begin(), [](char ch) {
 		if(ch == '\r') {
 			return '\n';

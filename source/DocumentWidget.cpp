@@ -62,22 +62,22 @@
 namespace {
 
 // Tuning parameters
-const int BANNER_WAIT_TIME	  = 6000; // how long to wait (msec) before putting up Shell Command Executing... banner
+constexpr int BANNER_WAIT_TIME = 6000; // how long to wait (msec) before putting up Shell Command Executing... banner
 
 
 /* data attached to window during shell command execution with
    information for controling and communicating with the process */
 struct shellCmdInfoEx {
-    QProcess *process;
-    int flags;
-    QByteArray standardOutput;
-    QByteArray standardError;
-    TextArea *area;
-    int leftPos;
-    int rightPos;
-    QTimer *bannerTimer;
-    bool bannerIsUp;
-    bool fromMacro;
+	QByteArray standardError;
+	QByteArray standardOutput;
+	QProcess *process;
+	QTimer *bannerTimer;
+	TextArea *area;
+	int flags;
+	int leftPos;
+	int rightPos;
+	bool bannerIsUp;
+	bool fromMacro;
 };
 
 
@@ -91,7 +91,7 @@ enum {
     OUTPUT_TO_STRING  = 32
 };
 
-const int MAX_TAG_LEN = 256;
+constexpr int MAX_TAG_LEN = 256;
 
 struct CharMatchTable {
     char c;
@@ -99,7 +99,7 @@ struct CharMatchTable {
     char direction;
 };
 
-const int N_MATCH_CHARS = 13;
+constexpr int N_MATCH_CHARS = 13;
 
 static const CharMatchTable MatchingChars[N_MATCH_CHARS] = {
     {'{', '}',   SEARCH_FORWARD},
@@ -120,13 +120,13 @@ static const CharMatchTable MatchingChars[N_MATCH_CHARS] = {
 /*
  * Number of bytes read at once by cmpWinAgainstFile
  */
-const int PREFERRED_CMPBUF_LEN = 0x8000;
+constexpr int PREFERRED_CMPBUF_LEN = 0x8000;
 
 /* Maximum frequency in miliseconds of checking for external modifications.
    The periodic check is only performed on buffer modification, and the check
    interval is only to prevent checking on every keystroke in case of a file
    system which is slow to process stat requests (which I'm not sure exists) */
-const int MOD_CHECK_INTERVAL = 3000;
+constexpr int MOD_CHECK_INTERVAL = 3000;
 
 void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *user) {
     if(auto document = static_cast<DocumentWidget *>(user)) {
@@ -1487,9 +1487,9 @@ void DocumentWidget::SaveUndoInformation(int pos, int nInserted, int nDeleted, v
 ** lists and adjusting the edit menu accordingly
 */
 void DocumentWidget::ClearUndoList() {
-    while (!undo_.empty()) {
-        removeUndoItem();
-    }
+	while (!undo_.empty()) {
+		removeUndoItem();
+	}
 }
 void DocumentWidget::ClearRedoList() {
     while (!redo_.empty()) {
