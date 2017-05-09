@@ -1812,6 +1812,7 @@ uint8_t *atom(int *flag_param, len_range *range_param) {
 			range_param->upper = -1;
 			break;
 		}
+		/* fallthrough */
 
 	/* At this point it is apparent that the escaped character is not a
 	   shortcut escape or back-reference.  Back up one character to allow
@@ -2015,10 +2016,10 @@ uint8_t *emit_special(uint8_t op_code, unsigned long test_val, int index) {
 
 		case TEST_COUNT:
 			Reg_Size += NEXT_PTR_SIZE; // Make room for a test value. 
-
+			/* fallthrough */
 		case INC_COUNT:
 			Reg_Size += INDEX_SIZE; // Make room for an index value. 
-
+			/* fallthrough */
 		default:
 			Reg_Size += NODE_SIZE; // Make room for the node. 
 		}
@@ -3355,6 +3356,7 @@ static int match(uint8_t *prog, int *branch_index_param) {
 			switch (GET_OP_CODE(scan)) {
 			case LAZY_STAR:
 				lazy = true;
+				/* fallthrough */
 			case STAR:
 				min = REG_ZERO;
 				max = ULONG_MAX;
@@ -3362,6 +3364,7 @@ static int match(uint8_t *prog, int *branch_index_param) {
 
 			case LAZY_PLUS:
 				lazy = true;
+				/* fallthrough */
 			case PLUS:
 				min = REG_ONE;
 				max = ULONG_MAX;
@@ -3369,6 +3372,7 @@ static int match(uint8_t *prog, int *branch_index_param) {
 
 			case LAZY_QUESTION:
 				lazy = true;
+				/* fallthrough */
 			case QUESTION:
 				min = REG_ZERO;
 				max = REG_ONE;
@@ -3376,6 +3380,7 @@ static int match(uint8_t *prog, int *branch_index_param) {
 
 			case LAZY_BRACE:
 				lazy = true;
+				/* fallthrough */
 			case BRACE:
 				min = static_cast<unsigned long>(GET_OFFSET(scan + NEXT_PTR_SIZE));
 
