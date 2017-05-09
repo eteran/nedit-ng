@@ -76,16 +76,16 @@ static const char cmdLineHelp[] =
 
 int main(int argc, char *argv[]) {	
 
-	int lineNum;
-	int nRead;
-	int editFlags = CREATE;
-	bool gotoLine = false;
+    int lineNum = 0;
+    int nRead;
+    int editFlags = CREATE;
+    bool gotoLine = false;
     bool macroFileReadEx = false;
-	bool opts = true;
-	bool iconic = false;
-	int tabbed = -1;
-	int group = 0;
-	int isTabbed;
+    bool opts = true;
+    bool iconic = false;
+    int tabbed = -1;
+    int group = 0;
+    int isTabbed;
     QString geometry;
     QString langMode;
     QString filename;
@@ -111,25 +111,25 @@ int main(int argc, char *argv[]) {
 	}
 #endif
 
-    QApplication app(argc, argv);
+	QApplication app(argc, argv);
 
-	// Initialize global symbols and subroutines used in the macro language 
+	// Initialize global symbols and subroutines used in the macro language
 	InitMacroGlobals();
 	RegisterMacroSubroutines();
 
 	/* Store preferences from the command line and .nedit file,
 	   and set the appropriate preferences */
-    RestoreNEditPrefs();
+	RestoreNEditPrefs();
 
-	// More preference stuff 
-    DialogPrint::LoadPrintPreferencesEx(true);
+	// More preference stuff
+	DialogPrint::LoadPrintPreferencesEx(true);
 
-	// Install word delimiters for regular expression matching 
+	// Install word delimiters for regular expression matching
 	SetREDefaultWordDelimiters(GetPrefDelimiters().toLatin1().data());
 
 	/* Read the nedit dynamic database of files for the Open Previous
-	   command (and eventually other information as well) */
-    MainWindow::ReadNEditDB();
+	command (and eventually other information as well) */
+	MainWindow::ReadNEditDB();
 
 	/* Process -import command line argument before others which might
 	   open windows (loading preferences doesn't update menu settings,
