@@ -30,17 +30,21 @@
 #include <QtDebug>
 #include <memory>
 
-#define EMIT_EVENT(name)                                     \
-	if(!(flags & SupressRecording)) {                        \
-        TextEditEvent textEvent(QLatin1String(name), flags); \
-        QApplication::sendEvent(this, &textEvent);           \
-    } while(0)
+#define EMIT_EVENT(name)                                         \
+	do {                                                         \
+		if(!(flags & SupressRecording)) {                        \
+			TextEditEvent textEvent(QLatin1String(name), flags); \
+			QApplication::sendEvent(this, &textEvent);           \
+		}                                                        \
+	} while(0)
 
-#define EMIT_EVENT_ARG(name, arg)                                 \
-	if(!(flags & SupressRecording)) {                             \
-        TextEditEvent textEvent(QLatin1String(name), arg, flags); \
-        QApplication::sendEvent(this, &textEvent);                \
-    } while(0)
+#define EMIT_EVENT_ARG(name, arg)                                     \
+	do {                                                              \
+		if(!(flags & SupressRecording)) {                             \
+			TextEditEvent textEvent(QLatin1String(name), arg, flags); \
+			QApplication::sendEvent(this, &textEvent);                \
+		}                                                             \
+	} while(0)
 
 
 // NOTE(eteran): this is a bit of a hack to covert the raw c-strings to unicode
@@ -7789,7 +7793,7 @@ void TextArea::pageRightAP(EventFlags flags) {
 	int insertPos      = cursorPos_;
 	int maxCharWidth   = fm.maxWidth();
 	int oldHorizOffset = horizOffset_;
-	bool silent = NoBellFlag;
+	bool silent = flags & NoBellFlag;
 
 	cancelDrag();
 	if (flags & ScrollbarFlag) {
