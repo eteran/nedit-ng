@@ -276,163 +276,154 @@ static int routineName(DocumentWidget *document, DataValue *argList, int nArgs, 
     return true;                                                                                                          \
 }
 
-TEXT_EVENT_S(insertStringMS,   insertStringAP)
-TEXT_EVENT_S(selfInsertMS,     insertStringAP)
-TEXT_EVENT(pasteClipboardMS,   pasteClipboardAP)
-TEXT_EVENT(cutClipboardMS,     cutClipboardAP)
-TEXT_EVENT(toggleOverstrikeMS, toggleOverstrikeAP)
-TEXT_EVENT(copyClipboardMS,    copyClipboardAP)
-TEXT_EVENT(newlineMS,          newlineAP)
-TEXT_EVENT(newlineAndIndentMS, newlineAndIndentAP)
-TEXT_EVENT(newlineNoIndentMS,  newlineNoIndentAP)
-TEXT_EVENT(processUpMS,        processUpAP)
-TEXT_EVENT(processDownMS,      processDownAP)
-TEXT_EVENT(processShiftUpMS,   processShiftUpAP)
-TEXT_EVENT(processShiftDownMS, processShiftDownAP)
-TEXT_EVENT(processHomeMS,      beginningOfLineAP)
-TEXT_EVENT(processCancelMS,    processCancelAP)
-TEXT_EVENT(cutPrimaryMS,       cutPrimaryAP)
-TEXT_EVENT(copyPrimaryMS,      copyPrimaryAP)
-TEXT_EVENT(keySelectMS,        keySelectAP)
-TEXT_EVENT(forwardWordMS,      forwardWordAP)
+TEXT_EVENT_S(insertStringMS,          insertStringAP)
+TEXT_EVENT_S(selfInsertMS,            insertStringAP)
 TEXT_EVENT(backwardWordMS,            backwardWordAP)
-TEXT_EVENT(deletePreviousCharacterMS, deletePreviousCharacterAP)
+TEXT_EVENT(backwardCharacterMS,       backwardCharacterAP)
+TEXT_EVENT(copyClipboardMS,           copyClipboardAP)
+TEXT_EVENT(copyPrimaryMS,             copyPrimaryAP)
+TEXT_EVENT(cutClipboardMS,            cutClipboardAP)
+TEXT_EVENT(cutPrimaryMS,              cutPrimaryAP)
 TEXT_EVENT(deleteNextCharacterMS,     deleteNextCharacterAP)
+TEXT_EVENT(deletePreviousCharacterMS, deletePreviousCharacterAP)
 TEXT_EVENT(deletePreviousWordMS,      deletePreviousWordAP)
-TEXT_EVENT(processTabMS,              processTabAP)
 TEXT_EVENT(deselectAllMS,             deselectAllAP)
+TEXT_EVENT(forwardWordMS,             forwardWordAP)
+TEXT_EVENT(keySelectMS,               keySelectAP)
+TEXT_EVENT(newlineAndIndentMS,        newlineAndIndentAP)
+TEXT_EVENT(newlineMS,                 newlineAP)
+TEXT_EVENT(newlineNoIndentMS,         newlineNoIndentAP)
+TEXT_EVENT(pasteClipboardMS,          pasteClipboardAP)
+TEXT_EVENT(processCancelMS,           processCancelAP)
+TEXT_EVENT(processDownMS,             processDownAP)
+TEXT_EVENT(processShiftDownMS,        processShiftDownAP)
+TEXT_EVENT(processShiftUpMS,          processShiftUpAP)
+TEXT_EVENT(processTabMS,              processTabAP)
+TEXT_EVENT(processUpMS,               processUpAP)
+TEXT_EVENT(beginingOfLineMS,          beginningOfLineAP)
 
 static const SubRoutine TextAreaSubrNames[] = {
-    {"self-insert",               selfInsertMS},
-    {"self_insert",               selfInsertMS},
-    {"grab-focus",                nullptr},
-    {"grab_focus",                nullptr},
-    {"extend-adjust",             nullptr},
-    {"extend_adjust",             nullptr},
-    {"extend-start",              nullptr},
-    {"extend_start",              nullptr},
-    {"extend-end",                nullptr},
-    {"extend_end",                nullptr},
-    {"secondary-adjust",          nullptr},
-    {"secondary_adjust",          nullptr},
-    {"secondary-or-drag-adjust",  nullptr},
-    {"secondary_or_drag_adjust",  nullptr},
-    {"secondary-start",           nullptr},
-    {"secondary_start",           nullptr},
-    {"secondary-or-drag-start",   nullptr},
-    {"secondary_or_drag_start",   nullptr},
-    {"process-bdrag",             nullptr},
-    {"process_bdrag",             nullptr},
-    {"move-destination",          nullptr},
-    {"move_destination",          nullptr},
-    {"move-to",                   nullptr},
-    {"move_to",                   nullptr},
-    {"move-to-or-end-drag",       nullptr},
-    {"move_to_or_end_drag",       nullptr},
-    {"end_drag",                  nullptr},
-    {"copy-to",                   nullptr},
-    {"copy_to",                   nullptr},
-    {"copy-to-or-end-drag",       nullptr},
-    {"copy_to_or_end_drag",       nullptr},
-    {"exchange",                  nullptr},
-    {"process-cancel",            processCancelMS},
-    {"process_cancel",            processCancelMS},
-    {"paste-clipboard",           pasteClipboardMS},
-    {"paste_clipboard",           pasteClipboardMS},
+    // Keyboard
+    {"backward-character",        backwardCharacterMS},
+    {"backward_character",        backwardCharacterMS},
+    {"backward-paragraph",        nullptr},
+    {"backward_paragraph",        nullptr},
+    {"backward-word",             backwardWordMS},
+    {"backward_word",             backwardWordMS},
+    {"beginning-of-file",         nullptr},
+    {"beginning_of_file",         nullptr},
+    {"beginning-of-line",         beginingOfLineMS},
+    {"beginning_of_line",         beginingOfLineMS},
+    {"beginning-of-selection",    nullptr}, // TODO(eteran): was from MainWindow in my code...
+    {"beginning_of_selection",    nullptr}, // TODO(eteran): was from MainWindow in my code...
     {"copy-clipboard",            copyClipboardMS},
     {"copy_clipboard",            copyClipboardMS},
-    {"cut-clipboard",             cutClipboardMS},
-    {"cut_clipboard",             cutClipboardMS},
     {"copy-primary",              copyPrimaryMS},
     {"copy_primary",              copyPrimaryMS},
+    {"copy-to",                   nullptr},
+    {"copy_to",                   nullptr},
+    {"copy_to_or_end_drag",       nullptr},
+    {"copy-to-or-end-drag",       nullptr},
+    {"cut-clipboard",             cutClipboardMS},
+    {"cut_clipboard",             cutClipboardMS},
     {"cut-primary",               cutPrimaryMS},
     {"cut_primary",               cutPrimaryMS},
-    {"newline",                   newlineMS},
-    {"newline-and-indent",        newlineAndIndentMS},
-    {"newline_and_indent",        newlineAndIndentMS},
-    {"newline-no-indent",         newlineNoIndentMS},
-    {"newline_no_indent",         newlineNoIndentMS},
     {"delete-selection",          nullptr},
     {"delete_selection",          nullptr},
-    {"delete-previous-character", deletePreviousCharacterMS},
-    {"delete_previous_character", deletePreviousCharacterMS},
     {"delete-next-character",     deleteNextCharacterMS},
     {"delete_next_character",     deleteNextCharacterMS},
-    {"delete-previous-word",      deletePreviousWordMS},
-    {"delete_previous_word",      deletePreviousWordMS},
+    {"delete-previous-character", deletePreviousCharacterMS},
+    {"delete_previous_character", deletePreviousCharacterMS},
     {"delete-next-word",          nullptr},
     {"delete_next_word",          nullptr},
+    {"delete-previous-word",      deletePreviousWordMS},
+    {"delete_previous_word",      deletePreviousWordMS},
     {"delete-to-start-of-line",   nullptr},
     {"delete_to_start_of_line",   nullptr},
     {"delete-to-end-of-line",     nullptr},
     {"delete_to_end_of_line",     nullptr},
-    {"forward-character",         nullptr},
-    {"forward_character",         nullptr},
-    {"backward-character",        nullptr},
-    {"backward_character",        nullptr},
-    {"key-select",                keySelectMS},
-    {"key_select",                keySelectMS},
-    {"process-up",                processUpMS},
-    {"process_up",                processUpMS},
-    {"process-down",              processDownMS},
-    {"process_down",              processDownMS},
-    {"process-shift-up",          processShiftUpMS},
-    {"process_shift_up",          processShiftUpMS},
-    {"process-shift-down",        processShiftDownMS},
-    {"process_shift_down",        processShiftDownMS},
-    {"process-home",              processHomeMS},
-    {"process_home",              processHomeMS},
-    {"forward-word",              forwardWordMS},
-    {"forward_word",              forwardWordMS},
-    {"backward-word",             backwardWordMS},
-    {"backward_word",             backwardWordMS},
-    {"forward-paragraph",         nullptr},
-    {"forward_paragraph",         nullptr},
-    {"backward-paragraph",        nullptr},
-    {"backward_paragraph",        nullptr},
-    {"beginning-of-line",         nullptr},
-    {"beginning_of_line",         nullptr},
-    {"end-of-line",               nullptr},
-    {"end_of_line",               nullptr},
-    {"beginning-of-file",         nullptr},
-    {"beginning_of_file",         nullptr},
+    {"deselect-all",              deselectAllMS},
+    {"deselect_all",              deselectAllMS},
     {"end-of-file",               nullptr},
     {"end_of_file",               nullptr},
-    {"next-page",                 nullptr},
+    {"end-of-line",               nullptr},
+    {"end_of_line",               nullptr},
+    {"end-of-selection",          nullptr}, // TODO(eteran): was from MainWindow in my code...
+    {"end_of_selection",          nullptr}, // TODO(eteran): was from MainWindow in my code...
+    {"exchange",                  nullptr},
+    {"extend_adjust",             nullptr},
+    {"extend_end",                nullptr},
+    {"extend_start",              nullptr},
+    {"focus_pane",                nullptr}, // TODO(eteran): was from MainWindow in my code...
+    {"forward_character",         nullptr},
+    {"forward-character",         nullptr},
+    {"forward_paragraph",         nullptr},
+    {"forward-paragraph",         nullptr},
+    {"forward_word",              forwardWordMS},
+    {"forward-word",              forwardWordMS},
+    {"grab_focus",                nullptr},
+    {"insert_string",             insertStringMS},
+    {"insert-string",             insertStringMS},
+    {"key_select",                keySelectMS},
+    {"key-select",                keySelectMS},
+    {"newline",                   newlineMS},
+    {"newline_and_indent",        newlineAndIndentMS},
+    {"newline-and-indent",        newlineAndIndentMS},
+    {"newline_no_indent",         newlineNoIndentMS},
+    {"newline-no-indent",         newlineNoIndentMS},
     {"next_page",                 nullptr},
-    {"previous-page",             nullptr},
-    {"previous_page",             nullptr},
-    {"page-left",                 nullptr},
+    {"next-page",                 nullptr},
     {"page_left",                 nullptr},
-    {"page-right",                nullptr},
+    {"page-left",                 nullptr},
     {"page_right",                nullptr},
-    {"toggle-overstrike",         toggleOverstrikeMS},
-    {"toggle_overstrike",         toggleOverstrikeMS},
-    {"scroll-up",                 nullptr},
-    {"scroll_up",                 nullptr},
-    {"scroll-down",               nullptr},
+    {"page-right",                nullptr},
+    {"paste_clipboard",           pasteClipboardMS},
+    {"paste-clipboard",           pasteClipboardMS},
+    {"previous_page",             nullptr},
+    {"previous-page",             nullptr},
+    {"process_bdrag",             nullptr},
+    {"process_cancel",            processCancelMS},
+    {"process-cancel",            processCancelMS},
+    {"process_down",              processDownMS},
+    {"process-down",              processDownMS},
+    {"process_return",            newlineMS},
+    {"process-return",            newlineMS},
+    {"process_shift_down",        processShiftDownMS},
+    {"process-shift-down",        processShiftDownMS},
+    {"process_shift_up",          processShiftUpMS},
+    {"process-shift-up",          processShiftUpMS},
+    {"process_tab",               processTabMS},
+    {"process-tab",               processTabMS},
+    {"process_up",                processUpMS},
+    {"process-up",                processUpMS},
+    {"raise_window",              nullptr}, // TODO(eteran): was from MainWindow in my code...
     {"scroll_down",               nullptr},
+    {"scroll-down",               nullptr},
     {"scroll_left",               nullptr},
     {"scroll_right",              nullptr},
-    {"scroll-to-line",            nullptr},
+    {"scroll_up",                 nullptr},
+    {"scroll-up",                 nullptr},
     {"scroll_to_line",            nullptr},
-#if 0
+    {"scroll-to-line",            nullptr},
+    {"secondary_adjust",          nullptr},
+    {"secondary_or_drag_adjust",  nullptr},
+    {"secondary_or_drag_start",   nullptr},
+    {"secondary_start",           nullptr},
+#if 0 // NOTE(eteran): duplicated by the main window event
     {"select-all",                selectAllMS},
     {"select_all",                selectAllMS},
 #endif
-    {"deselect-all",              deselectAllMS},
-    {"deselect_all",              deselectAllMS},
-    {"focusIn",                   nullptr},
-    {"focusOut",                  nullptr},
-    {"process-return",            nullptr},
-    {"process_return",            nullptr},
-    {"process-tab",               processTabMS},
-    {"process_tab",               processTabMS},
-    {"insert-string",             insertStringMS},
-    {"insert_string",             insertStringMS},
-    {"mouse_pan",                 nullptr},
-};
+    {"self_insert",               selfInsertMS},
+    {"self-insert",               selfInsertMS},
 
+#if 0 // Not mentioned in the documentation
+    {"end_drag",                  nullptr},
+    {"process_home",              processHomeMS},
+    {"process-home",              processHomeMS},
+    {"toggle_overstrike",         toggleOverstrikeMS},
+    {"toggle-overstrike",         toggleOverstrikeMS},
+#endif
+};
 
 #define WINDOW_MENU_EVENT_S(routineName, slotName)                                                                            \
     static int routineName(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) { \
@@ -476,43 +467,42 @@ static const SubRoutine TextAreaSubrNames[] = {
 
 // These emit functions to support calling them from macros, see WINDOW_MENU_EVENT for what
 // these functions will look like
-WINDOW_MENU_EVENT(undoMS,                            on_action_Undo_triggered)
-WINDOW_MENU_EVENT(redoMS,                            on_action_Redo_triggered)
-WINDOW_MENU_EVENT(selectAllMS,                       on_action_Select_All_triggered)
-WINDOW_MENU_EVENT(shiftLeftMS,                       on_action_Shift_Left_triggered)
-WINDOW_MENU_EVENT(shiftRightMS,                      on_action_Shift_Right_triggered)
-WINDOW_MENU_EVENT(shiftLeftTabMS,                    action_Shift_Left_Tabs)
-WINDOW_MENU_EVENT(shiftRightTabMS,                   action_Shift_Right_Tabs)
+WINDOW_MENU_EVENT_S(includeFileMS,                   action_Include_File)
 WINDOW_MENU_EVENT(closeMS,                           on_action_Close_triggered)
+WINDOW_MENU_EVENT(closePaneMS,                       on_action_Close_Pane_triggered)
 WINDOW_MENU_EVENT(deleteMS,                          on_action_Delete_triggered)
 WINDOW_MENU_EVENT(exitMS,                            on_action_Exit_triggered)
-WINDOW_MENU_EVENT(printMS,                           on_action_Print_triggered)
-WINDOW_MENU_EVENT(printSelectionMS,                  on_action_Print_Selection_triggered)
-WINDOW_MENU_EVENT(findDefinitionMS,                  on_action_Find_Definition_triggered)
-WINDOW_MENU_EVENT(splitPaneMS,                       on_action_Split_Pane_triggered)
-WINDOW_MENU_EVENT(closePaneMS,                       on_action_Close_Pane_triggered)
-WINDOW_MENU_EVENT(uppercaseMS,                       on_action_Upper_case_triggered)
-WINDOW_MENU_EVENT(lowercaseMS,                       on_action_Lower_case_triggered)
 WINDOW_MENU_EVENT(fillParagraphMS,                   on_action_Fill_Paragraph_triggered)
-WINDOW_MENU_EVENT(saveMS,                            on_action_Save_triggered)
+WINDOW_MENU_EVENT(findDefinitionMS,                  on_action_Find_Definition_triggered)
+WINDOW_MENU_EVENT(findDialogMS,                      on_action_Find_triggered)
+WINDOW_MENU_EVENT(gotoLineNumberDialogMS,            on_action_Goto_Line_Number_triggered)
 WINDOW_MENU_EVENT(gotoMatchingMS,                    on_action_Goto_Matching_triggered)
-WINDOW_MENU_EVENT(insertControlCodeDialogMS,         on_action_Insert_Ctrl_Code_triggered)
 WINDOW_MENU_EVENT(includeFileDialogMS,               on_action_Include_File_triggered)
-WINDOW_MENU_EVENT(saveAsDialogMS,                    on_action_Save_As_triggered)
+WINDOW_MENU_EVENT(insertControlCodeDialogMS,         on_action_Insert_Ctrl_Code_triggered)
 WINDOW_MENU_EVENT(loadMacroFileDialogMS,             on_action_Load_Macro_File_triggered)
 WINDOW_MENU_EVENT(loadTagsFileDialogMS,              on_action_Load_Tags_File_triggered)
 WINDOW_MENU_EVENT(loadTipsFileDialogMS,              on_action_Load_Calltips_File_triggered)
+WINDOW_MENU_EVENT(lowercaseMS,                       on_action_Lower_case_triggered)
 WINDOW_MENU_EVENT(openSelectedMS,                    on_action_Open_Selected_triggered)
-WINDOW_MENU_EVENT(findDialogMS,                      on_action_Find_triggered)
+WINDOW_MENU_EVENT(printMS,                           on_action_Print_triggered)
+WINDOW_MENU_EVENT(printSelectionMS,                  on_action_Print_Selection_triggered)
+WINDOW_MENU_EVENT(redoMS,                            on_action_Redo_triggered)
 WINDOW_MENU_EVENT(replaceDialogMS,                   on_action_Replace_triggered)
-WINDOW_MENU_EVENT(gotoLineNumberDialogMS,           on_action_Goto_Line_Number_triggered)
+WINDOW_MENU_EVENT(saveAsDialogMS,                    on_action_Save_As_triggered)
+WINDOW_MENU_EVENT(saveMS,                            on_action_Save_triggered)
+WINDOW_MENU_EVENT(selectAllMS,                       on_action_Select_All_triggered)
+WINDOW_MENU_EVENT(shiftLeftMS,                       on_action_Shift_Left_triggered)
+WINDOW_MENU_EVENT(shiftLeftTabMS,                    action_Shift_Left_Tabs)
+WINDOW_MENU_EVENT(shiftRightMS,                      on_action_Shift_Right_triggered)
+WINDOW_MENU_EVENT(shiftRightTabMS,                   action_Shift_Right_Tabs)
+WINDOW_MENU_EVENT(splitPaneMS,                       on_action_Split_Pane_triggered)
+WINDOW_MENU_EVENT(undoMS,                            on_action_Undo_triggered)
+WINDOW_MENU_EVENT(uppercaseMS,                       on_action_Upper_case_triggered)
 
-WINDOW_MENU_EVENT_S(includeFileMS, action_Include_File)
 
 static const SubRoutine MenuMacroSubrNames[] = {
+    // File
 	{ "new",                          nullptr },
-	{ "new_opposite",                 nullptr },
-	{ "new_tab",                      nullptr },
 	{ "open",                         nullptr },
 	{ "open-dialog",                  nullptr },
 	{ "open_dialog",                  nullptr },
@@ -524,8 +514,6 @@ static const SubRoutine MenuMacroSubrNames[] = {
 	{ "save_as",                      nullptr },
     { "save-as-dialog",               saveAsDialogMS },
     { "save_as_dialog",               saveAsDialogMS },
-	{ "revert-to-saved",              nullptr },
-    { "revert_to_saved",              nullptr },
 	{ "revert_to_saved_dialog",       nullptr },
     { "include-file",                 includeFileMS },
     { "include_file",                 includeFileMS },
@@ -547,6 +535,7 @@ static const SubRoutine MenuMacroSubrNames[] = {
     { "print-selection",              printSelectionMS },
     { "print_selection",              printSelectionMS },
     { "exit",                         exitMS },
+    // Edit
     { "undo",                         undoMS },
     { "redo",                         redoMS },
     { "delete",                       deleteMS },
@@ -560,6 +549,13 @@ static const SubRoutine MenuMacroSubrNames[] = {
     { "shift_right",                  shiftRightMS },
     { "shift-right-by-tab",           shiftRightTabMS },
     { "shift_right_by_tab",           shiftRightTabMS },
+    { "uppercase",                    uppercaseMS },
+    { "lowercase",                    lowercaseMS },
+    { "fill-paragraph",               fillParagraphMS },
+    { "fill_paragraph",               fillParagraphMS },
+    { "control-code-dialog",          insertControlCodeDialogMS },
+    { "control_code_dialog",          insertControlCodeDialogMS },
+    // Search
 	{ "find",                         nullptr },
     { "find-dialog",                  findDialogMS },
     { "find_dialog",                  findDialogMS },
@@ -567,98 +563,96 @@ static const SubRoutine MenuMacroSubrNames[] = {
 	{ "find_again",                   nullptr },
 	{ "find-selection",               nullptr },
 	{ "find_selection",               nullptr },
-	{ "find_incremental",             nullptr },
-	{ "start_incremental_find",       nullptr },
-	{ "replace",                      nullptr },
+    { "replace",                      nullptr },
     { "replace-dialog",               replaceDialogMS },
     { "replace_dialog",               replaceDialogMS },
     { "replace-all",                  replaceAllMS },
     { "replace_all",                  replaceAllMS },
     { "replace-in-selection",         replaceAllInSelectionMS },
     { "replace_in_selection",         replaceAllInSelectionMS },
-	{ "replace-again",                nullptr },
-	{ "replace_again",                nullptr },
-	{ "replace_find",                 nullptr },
-	{ "replace_find_same",            nullptr },
-	{ "replace_find_again",           nullptr },
-	{ "goto-line-number",             nullptr },
-	{ "goto_line_number",             nullptr },
+    { "replace-again",                nullptr },
+    { "replace_again",                nullptr },
+    { "goto-line-number",             nullptr },
+    { "goto_line_number",             nullptr },
     { "goto-line-number-dialog",      gotoLineNumberDialogMS },
     { "goto_line_number_dialog",      gotoLineNumberDialogMS },
-	{ "goto-selected",                nullptr },
-	{ "goto_selected",                nullptr },
-	{ "mark",                         nullptr },
-	{ "mark-dialog",                  nullptr },
-	{ "mark_dialog",                  nullptr },
-	{ "goto-mark",                    nullptr },
-	{ "goto_mark",                    nullptr },
-	{ "goto-mark-dialog",             nullptr },
-	{ "goto_mark_dialog",             nullptr },
-	{ "match",                        nullptr },
-	{ "select_to_matching",           nullptr },
+    { "goto-selected",                nullptr },
+    { "goto_selected",                nullptr },
+    { "mark",                         nullptr },
+    { "mark-dialog",                  nullptr },
+    { "mark_dialog",                  nullptr },
+    { "goto-mark",                    nullptr },
+    { "goto_mark",                    nullptr },
+    { "goto-mark-dialog",             nullptr },
+    { "goto_mark_dialog",             nullptr },
     { "goto_matching",                gotoMatchingMS },
+    { "select_to_matching",           nullptr },
     { "find-definition",              findDefinitionMS },
     { "find_definition",              findDefinitionMS },
-	{ "show_tip",                     nullptr },
+    { "show_tip",                     nullptr },
+    // Shell
+    { "filter-selection-dialog",      nullptr },
+    { "filter_selection_dialog",      nullptr },
+    { "filter-selection",             nullptr },
+    { "filter_selection",             nullptr },
+    { "execute-command",              nullptr },
+    { "execute_command",              nullptr },
+    { "execute-command-dialog",       nullptr },
+    { "execute_command_dialog",       nullptr },
+    { "execute-command-line",         nullptr },
+    { "execute_command_line",         nullptr },
+    { "shell-menu-command",           nullptr },
+    { "shell_menu_command",           nullptr },
+    // Macro
+    { "macro-menu-command",           nullptr },
+    { "macro_menu_command",           nullptr },
+    { "repeat_macro",                 nullptr },
+    { "repeat_dialog",                nullptr },
+    // Windows
     { "split-pane",                   splitPaneMS },
     { "split_pane",                   splitPaneMS },
     { "close-pane",                   closePaneMS },
     { "close_pane",                   closePaneMS },
-	{ "detach_document",              nullptr },
-	{ "detach_document_dialog",       nullptr },
-	{ "move_document_dialog",         nullptr },
+    { "detach_document",              nullptr },
+    { "detach_document_dialog",       nullptr },
+    { "move_document_dialog",         nullptr },
+    // Preferences
+    { "set_auto_indent",              nullptr },
+    { "set_em_tab_dist",              nullptr },
+    { "set_fonts",                    nullptr },
+    { "set_highlight_syntax",         nullptr },
+    { "set_incremental_backup",       nullptr },
+    { "set_incremental_search_line",  nullptr },
+    { "set_language_mode",            nullptr },
+    { "set_locked",                   nullptr },
+    { "set_make_backup_copy",         nullptr },
+    { "set_overtype_mode",            nullptr },
+    { "set_show_line_numbers",        nullptr },
+    { "set_show_matching",            nullptr },
+    { "set_match_syntax_based",       nullptr },
+    { "set_statistics_line",          nullptr },
+    { "set_tab_dist",                 nullptr },
+    { "set_use_tabs",                 nullptr },
+    { "set_wrap_margin",              nullptr },
+    { "set_wrap_text",                nullptr },
+
+    // Deprecated
+    { "match",                        nullptr },
+
+#if 0 // These aren't mentioned in the documentation...
+	{ "find_incremental",             nullptr },
+	{ "start_incremental_find",       nullptr },
+	{ "replace_find",                 nullptr },
+	{ "replace_find_same",            nullptr },
+	{ "replace_find_again",           nullptr },
 	{ "next_document",                nullptr },
 	{ "previous_document",            nullptr },
 	{ "last_document",                nullptr },
-    { "uppercase",                    uppercaseMS },
-    { "lowercase",                    lowercaseMS },
-    { "fill-paragraph",               fillParagraphMS },
-    { "fill_paragraph",               fillParagraphMS },
-    { "control-code-dialog",          insertControlCodeDialogMS },
-    { "control_code_dialog",          insertControlCodeDialogMS },
-	{ "filter-selection-dialog",      nullptr },
-	{ "filter_selection_dialog",      nullptr },
-	{ "filter-selection",             nullptr },
-	{ "filter_selection",             nullptr },
-	{ "execute-command",              nullptr },
-	{ "execute_command",              nullptr },
-	{ "execute-command-dialog",       nullptr },
-	{ "execute_command_dialog",       nullptr },
-	{ "execute-command-line",         nullptr },
-	{ "execute_command_line",         nullptr },
-	{ "shell-menu-command",           nullptr },
-	{ "shell_menu_command",           nullptr },
-	{ "macro-menu-command",           nullptr },
-	{ "macro_menu_command",           nullptr },
 	{ "bg_menu_command",              nullptr },
 	{ "post_window_bg_menu",          nullptr },
-	{ "post_tab_context_menu",        nullptr },
-	{ "beginning-of-selection",       nullptr },
-	{ "beginning_of_selection",       nullptr },
-	{ "end-of-selection",             nullptr },
-	{ "end_of_selection",             nullptr },
-	{ "repeat_macro",                 nullptr },
-	{ "repeat_dialog",                nullptr },
-	{ "raise_window",                 nullptr },
-	{ "focus_pane",                   nullptr },
-	{ "set_statistics_line",          nullptr },
-	{ "set_incremental_search_line",  nullptr },
-	{ "set_show_line_numbers",        nullptr },
-	{ "set_auto_indent",              nullptr },
-	{ "set_wrap_text",                nullptr },
-	{ "set_wrap_margin",              nullptr },
-	{ "set_highlight_syntax",         nullptr },
-	{ "set_make_backup_copy",         nullptr },
-	{ "set_incremental_backup",       nullptr },
-	{ "set_show_matching",            nullptr },
-	{ "set_match_syntax_based",       nullptr },
-	{ "set_overtype_mode",            nullptr },
-	{ "set_locked",                   nullptr },
-	{ "set_tab_dist",                 nullptr },
-	{ "set_em_tab_dist",              nullptr },
-	{ "set_use_tabs",                 nullptr },
-	{ "set_fonts",                    nullptr },
-	{ "set_language_mode",            nullptr },
+	{ "post_tab_context_menu",        nullptr },	
+#endif
+
 };
 
 

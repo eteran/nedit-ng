@@ -252,7 +252,8 @@
        <string>&amp;Wrap</string>
       </property>
       <property name="icon">
-       <iconset theme="text-wrap"/>
+       <iconset theme="text-wrap">
+        <normaloff>.</normaloff>.</iconset>
       </property>
       <addaction name="action_Default_Wrap_None"/>
       <addaction name="action_Default_Wrap_Auto_Newline"/>
@@ -379,7 +380,8 @@
       <string>&amp;Wrap</string>
      </property>
      <property name="icon">
-      <iconset theme="text-wrap"/>
+      <iconset theme="text-wrap">
+       <normaloff>.</normaloff>.</iconset>
      </property>
      <addaction name="action_Wrap_None"/>
      <addaction name="action_Wrap_Auto_Newline"/>
@@ -523,6 +525,9 @@
    </property>
   </action>
   <action name="action_Open_Previous">
+   <property name="icon">
+    <iconset theme="document-open-recent"/>
+   </property>
    <property name="text">
     <string>Open Pre&amp;vious</string>
    </property>
@@ -1083,7 +1088,8 @@
   </action>
   <action name="action_Language_Mode">
    <property name="icon">
-    <iconset theme="set-language"/>
+    <iconset theme="set-language">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>&amp;Language Mode</string>
@@ -1096,7 +1102,8 @@
   </action>
   <action name="action_Text_Fonts">
    <property name="icon">
-    <iconset theme="preferences-desktop-font"/>
+    <iconset theme="preferences-desktop-font">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Text &amp;Fonts...</string>
@@ -1239,6 +1246,9 @@
    </property>
   </action>
   <action name="action_Learn_Keystrokes">
+   <property name="icon">
+    <iconset theme="media-record"/>
+   </property>
    <property name="text">
     <string>&amp;Learn Keystrokes</string>
    </property>
@@ -1249,6 +1259,9 @@
   <action name="action_Finish_Learn">
    <property name="enabled">
     <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset theme="process-stop"/>
    </property>
    <property name="text">
     <string>&amp;Finish Learn</string>
@@ -1302,7 +1315,8 @@
   </action>
   <action name="action_Default_Language_Modes">
    <property name="icon">
-    <iconset theme="languages"/>
+    <iconset theme="languages">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>&amp;Language Modes...</string>
@@ -1320,7 +1334,8 @@
   </action>
   <action name="action_Default_Text_Fonts">
    <property name="icon">
-    <iconset theme="preferences-desktop-font"/>
+    <iconset theme="preferences-desktop-font">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Text &amp;Fonts...</string>
