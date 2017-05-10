@@ -93,7 +93,7 @@ void DialogSyntaxPatterns::setLanguageName(const QString &name) {
 		/* Get the current information displayed by the dialog.  If it's bad,
 		   give the user the chance to throw it out or go back and fix it.  If
 		   it has changed, give the user the chance to apply discard or cancel. */
-        PatternSet *const newPatSet = getDialogPatternSet();
+		auto newPatSet = getDialogPatternSet();
 
 		if(!newPatSet) {
 			QMessageBox messageBox(this);
@@ -126,7 +126,6 @@ void DialogSyntaxPatterns::setLanguageName(const QString &name) {
 			messageBox.exec();
 			if (messageBox.clickedButton() == buttonCancel) {
 
-
 				// reselect the old item
                 auto blocker = no_signals(ui.comboLanguageMode);
 				setLanguageMenu(previousLanguage_);
@@ -135,10 +134,6 @@ void DialogSyntaxPatterns::setLanguageName(const QString &name) {
 				updatePatternSet();
 			}
 		}
-
-        if(newPatSet) {
-            delete newPatSet;
-        }
 	}
 
 
@@ -745,7 +740,7 @@ bool DialogSyntaxPatterns::updatePatternSet() {
 	}
 
 	// Get the current data
-    PatternSet *patSet = getDialogPatternSet();
+	auto patSet = getDialogPatternSet();
 	if(!patSet) {
 		return false;
 	}
@@ -807,11 +802,8 @@ bool DialogSyntaxPatterns::updatePatternSet() {
 		}
 	}
 
-	delete patSet;
-
 	// Note that preferences have been changed
 	MarkPrefsChanged();
-
 	return true;
 }
 
@@ -820,15 +812,15 @@ bool DialogSyntaxPatterns::updatePatternSet() {
 //------------------------------------------------------------------------------
 bool DialogSyntaxPatterns::checkHighlightDialogData() {
 	// Get the pattern information from the dialog
-    PatternSet *patSet = getDialogPatternSet();
+	auto patSet = getDialogPatternSet();
 	if(!patSet) {
 		return false;
 	}
 
 	// Compile the patterns
-	bool result = patSet->patterns.isEmpty() ? true : TestHighlightPatterns(patSet);
-    delete patSet;
-	return result;
+	// TODO(eteran): we are padding a raw pointer here, investigate how
+	// difficult it would be to make the call chain work with a unique_ptr
+	return patSet->patterns.isEmpty() ? true : TestHighlightPatterns(patSet.get());
 }
 
 
@@ -838,7 +830,7 @@ bool DialogSyntaxPatterns::checkHighlightDialogData() {
 ** Get the current information that the user has entered in the syntax
 ** highlighting dialog.  Return nullptr if the data is currently invalid
 */
-PatternSet *DialogSyntaxPatterns::getDialogPatternSet() {
+std::unique_ptr<PatternSet> DialogSyntaxPatterns::getDialogPatternSet() {
 
 	// Get the line and character context values
 	if(ui.editContextLines->text().isEmpty()) {
@@ -869,7 +861,7 @@ PatternSet *DialogSyntaxPatterns::getDialogPatternSet() {
 
 	/* Allocate a new pattern set structure and copy the fields read from the
 	   dialog, including the modified pattern list into it */
-    auto patSet = new PatternSet;
+	auto patSet = std::make_unique<PatternSet>();
 	patSet->languageMode = ui.comboLanguageMode->currentText();
 	patSet->lineContext  = lineContext;
 	patSet->charContext  = charContext;

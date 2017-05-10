@@ -55,7 +55,7 @@ private:
 	bool checkHighlightDialogData();
 	void setStyleMenu(const QString &name);
 	void setLanguageMenu(const QString &name);
-    PatternSet *getDialogPatternSet();
+	std::unique_ptr<PatternSet> getDialogPatternSet();
 	HighlightPattern *itemFromIndex(int i) const;
     HighlightPattern *readDialogFields(Mode mode);
     bool checkCurrentPattern(Mode mode);

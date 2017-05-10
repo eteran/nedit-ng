@@ -2290,17 +2290,18 @@ void TextArea::findWrapRangeEx(view::string_view deletedText, int pos, int nInse
 	}
 
 	length = (pos - countFrom) + nDeleted + (countTo - (pos + nInserted));
-	auto deletedTextBuf = new TextBuffer(length);
+	auto deletedTextBuf = std::make_unique<TextBuffer>(length);
 	if (pos > countFrom)
 		deletedTextBuf->BufCopyFromBuf(buffer_, countFrom, pos, 0);
 	if (nDeleted != 0)
 		deletedTextBuf->BufInsertEx(pos - countFrom, deletedText);
 	if (countTo > pos + nInserted)
 		deletedTextBuf->BufCopyFromBuf(buffer_, pos + nInserted, countTo, pos - countFrom + nDeleted);
+
 	/* Note that we need to take into account an offset for the style buffer:
 	   the deletedTextBuf can be out of sync with the style buffer. */
-    wrappedLineCounter(deletedTextBuf, 0, length, INT_MAX, true, countFrom, &retPos, &retLines, &retLineStart, &retLineEnd);
-	delete deletedTextBuf;
+	wrappedLineCounter(deletedTextBuf.get(), 0, length, INT_MAX, true, countFrom, &retPos, &retLines, &retLineStart, &retLineEnd);
+
 	*linesDeleted = retLines;
 	suppressResync_ = false;
 }
@@ -5060,7 +5061,7 @@ std::string TextArea::wrapTextEx(view::string_view startLine, view::string_view 
 	std::string wrappedText;
 
 	// Create a temporary text buffer and load it with the strings
-	auto wrapBuf = new TextBuffer;
+	auto wrapBuf = std::make_unique<TextBuffer>();
 	wrapBuf->BufInsertEx(0, startLine);
 	wrapBuf->BufAppendEx(text);
 
@@ -5080,7 +5081,7 @@ std::string TextArea::wrapTextEx(view::string_view startLine, view::string_view 
 		} else {
 			colNum += TextBuffer::BufCharWidth(c, colNum, tabDist, buffer_->nullSubsChar_);
 			if (colNum > wrapMargin) {
-				if (!wrapLine(wrapBuf, bufOffset, lineStartPos, pos, limitPos, &breakAt, &charsAdded)) {
+				if (!wrapLine(wrapBuf.get(), bufOffset, lineStartPos, pos, limitPos, &breakAt, &charsAdded)) {
 					limitPos = std::max(pos, limitPos);
 				} else {
 					lineStartPos = limitPos = breakAt + 1;
@@ -5101,7 +5102,6 @@ std::string TextArea::wrapTextEx(view::string_view startLine, view::string_view 
 		*breakBefore = firstBreak != -1 && firstBreak < startLineLen ? startLineLen - firstBreak : 0;
 		wrappedText = wrapBuf->BufGetRangeEx(startLineLen - *breakBefore, wrapBuf->BufGetLength());
 	}
-	delete wrapBuf;
 	return wrappedText;
 }
 
@@ -7083,7 +7083,7 @@ void TextArea::BlockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
 	   eventually be replaced in the real buffer.  Load the buffer with the
 	   range of characters which might be modified in this drag step
 	   (this could be tighter, but hopefully it's not too slow) */
-	auto tempBuf = new TextBuffer;
+	auto tempBuf = std::make_unique<TextBuffer>();
 	tempBuf->tabDist_ = buffer_->tabDist_;
 	tempBuf->useTabs_ = buffer_->useTabs_;
 	tempStart         = min3(dragInsertPos_, origSel->start, buffer_->BufCountBackwardNLines(firstChar_, nLines + 2));
@@ -7189,7 +7189,7 @@ void TextArea::BlockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
 
 	/* find the position associated with the start of the new line in the
 	   temporary buffer */
-	insLineStart = findRelativeLineStart(tempBuf, referencePos - tempStart, referenceLine, insLineNum) + tempStart;
+	insLineStart = findRelativeLineStart(tempBuf.get(), referencePos - tempStart, referenceLine, insLineNum) + tempStart;
 	if (insLineStart - tempStart == tempBuf->BufGetLength())
 		insLineStart = tempBuf->BufStartOfLine(insLineStart - tempStart) + tempStart;
 
@@ -7205,7 +7205,6 @@ void TextArea::BlockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
 	/* If the position is the same as last time, don't bother drawing (it
 	   would be nice if this decision could be made earlier) */
 	if (insStart == dragInsertPos_ && insRectStart == dragRectStart_ && dragType == oldDragType) {
-		delete tempBuf;
 		return;
 	}
 
@@ -7230,7 +7229,6 @@ void TextArea::BlockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
 
 	// Make the changes in the real buffer
 	std::string repText = tempBuf->BufGetRangeEx(modRangeStart - tempStart, tempModRangeEnd - tempStart);
-	delete tempBuf;
 
 	TextDBlankCursor();
 	buffer_->BufReplaceEx(modRangeStart, bufModRangeEnd, repText);

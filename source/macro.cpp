@@ -2648,7 +2648,7 @@ static int stringDialogMS(DocumentWidget *document, DataValue *argList, int nArg
 	result->tag = INT_TAG;
 	result->val.n = 0;	
 
-	auto prompt = new DialogPromptString(nullptr /*parent*/);
+	auto prompt = std::make_unique<DialogPromptString>(nullptr /*parent*/);
     prompt->setMessage(message);
 	if (nArgs == 1) {
 		prompt->addButton(QDialogButtonBox::Ok);
@@ -2669,8 +2669,6 @@ static int stringDialogMS(DocumentWidget *document, DataValue *argList, int nArg
     ModifyReturnedValueEx(cmdData->context, *result);
 
     ResumeMacroExecutionEx(document);
-	delete prompt;
-	
 	return true;
 }
 
@@ -3070,7 +3068,7 @@ static int listDialogMS(DocumentWidget *window, DataValue *argList, int nArgs, D
 	result->tag = INT_TAG;
 	result->val.n = 0;	
 
-	auto prompt = new DialogPromptList(nullptr /*parent*/);
+	auto prompt = std::make_unique<DialogPromptList>(nullptr /*parent*/);
     prompt->setMessage(message);
     prompt->setList(text);
 	if (nArgs == 2) {
@@ -3091,10 +3089,8 @@ static int listDialogMS(DocumentWidget *window, DataValue *argList, int nArgs, D
 	result->tag = STRING_TAG;
 	result->val.str = AllocNStringCpyEx(prompt->text());
     ModifyReturnedValueEx(cmdData->context, *result);
-	delete prompt;
-	
-    ResumeMacroExecutionEx(window);
 
+    ResumeMacroExecutionEx(window);
 	return true;
 }
 

@@ -4225,9 +4225,8 @@ void DocumentWidget::PrintStringEx(const std::string &string, const QString &job
 	tempFile.close();
 
     // Print the temporary file, then delete it and return success
-	auto dialog = new DialogPrint(tempFile.fileName(), jobName, this);
+	auto dialog = std::make_unique<DialogPrint>(tempFile.fileName(), jobName, this);
     dialog->exec();
-    delete dialog;
 }
 
 /**
@@ -4328,14 +4327,13 @@ void DocumentWidget::BeginSmartIndentEx(int warn) {
     }
 
     // Compile the newline and modify macros and attach them to the window
-    auto winData = new SmartIndentData;
+	auto winData = std::make_unique<SmartIndentData>();
     winData->inNewLineMacro = false;
     winData->inModMacro     = false;
     winData->newlineMacro   = ParseMacroEx(indentMacros->newlineMacro, &errMsg, &stoppedAt);
 
 
     if (!winData->newlineMacro) {
-        delete winData;
         ParseErrorEx(this, indentMacros->newlineMacro, stoppedAt, tr("newline macro"), errMsg);
         return;
     }
@@ -4348,13 +4346,12 @@ void DocumentWidget::BeginSmartIndentEx(int warn) {
         if (!winData->modMacro) {
 
             FreeProgram(winData->newlineMacro);
-            delete winData;
             ParseErrorEx(this, indentMacros->modMacro, stoppedAt, tr("smart indent modify macro"), errMsg);
             return;
         }
     }
 
-    smartIndentData_ = winData;
+	smartIndentData_ = winData.release();
 }
 
 /*
@@ -4362,7 +4359,7 @@ void DocumentWidget::BeginSmartIndentEx(int warn) {
 ** into. Do nothing if there is only one shell window opened.
 */
 void DocumentWidget::moveDocument(MainWindow *fromWindow) {
-    auto dialog = new DialogMoveDocument(this);
+	auto dialog = std::make_unique<DialogMoveDocument>(this);
 
     // all windows, except for the source window
     QList<MainWindow *> allWindows = MainWindow::allWindows();
@@ -4370,7 +4367,6 @@ void DocumentWidget::moveDocument(MainWindow *fromWindow) {
 
     // stop here if there's no other window to move to
     if (allWindows.empty()) {
-        delete dialog;
         return;
     }
 
@@ -4409,8 +4405,6 @@ void DocumentWidget::moveDocument(MainWindow *fromWindow) {
             delete fromWindow;
         }
     }
-
-    delete dialog;
 }
 
 /*

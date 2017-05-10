@@ -667,8 +667,7 @@ std::unique_ptr<PatternSet> readDefaultPatternSet(QByteArray &patternData, const
 /*
 ** Given a language mode name, determine if there is a default (built-in)
 ** pattern set available for that language mode, and if so, read it and
-** return a new allocated copy of it.  The returned pattern set should be
-** freed by the caller with delete
+** return a new allocated copy of it.
 */
 
 std::unique_ptr<PatternSet> readDefaultPatternSet(const QString &langModeName) {

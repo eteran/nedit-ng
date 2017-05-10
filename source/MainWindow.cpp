@@ -3003,7 +3003,7 @@ void MainWindow::wrapGroupTriggered(QAction *action) {
 void MainWindow::on_action_Wrap_Margin_triggered() {
     if(auto document = currentDocument()) {
 
-        auto dialog = new DialogWrapMargin(document, this);
+		auto dialog = std::make_unique<DialogWrapMargin>(document, this);
 
         // Set default value
         int margin = document->firstPane()->getWrapMargin();
@@ -3012,15 +3012,13 @@ void MainWindow::on_action_Wrap_Margin_triggered() {
         dialog->ui.spinWrapAndFill->setValue(margin);
 
         dialog->exec();
-        delete dialog;
     }
 }
 
 void MainWindow::on_action_Tab_Stops_triggered() {
     if(auto document = currentDocument()) {
-        auto dialog = new DialogTabs(document, this);
+		auto dialog = std::make_unique<DialogTabs>(document, this);
         dialog->exec();
-        delete dialog;
     }
 }
 
@@ -3029,7 +3027,6 @@ void MainWindow::on_action_Text_Fonts_triggered() {
 
         document->dialogFonts_ = new DialogFonts(document, true, this);
         document->dialogFonts_->exec();
-
         delete document->dialogFonts_;
     }
 }
@@ -3163,7 +3160,7 @@ void MainWindow::defaultWrapGroupTriggered(QAction *action) {
 
 void MainWindow::on_action_Default_Wrap_Margin_triggered() {
 
-    auto dialog = new DialogWrapMargin(nullptr, this);
+	auto dialog = std::make_unique<DialogWrapMargin>(nullptr, this);
 
     // Set default value
     int margin = GetPrefWrapMargin();
@@ -3172,7 +3169,6 @@ void MainWindow::on_action_Default_Wrap_Margin_triggered() {
     dialog->ui.spinWrapAndFill->setValue(margin);
 
     dialog->exec();
-    delete dialog;
 }
 
 void MainWindow::defaultTagCollisionsGroupTriggered(QAction *action) {
@@ -3208,9 +3204,8 @@ void MainWindow::on_action_Default_Command_Shell_triggered() {
 }
 
 void MainWindow::on_action_Default_Tab_Stops_triggered() {
-    auto dialog = new DialogTabs(nullptr, this);
+	auto dialog = std::make_unique<DialogTabs>(nullptr, this);
     dialog->exec();
-    delete dialog;
 }
 
 void MainWindow::on_action_Default_Text_Fonts_triggered() {
@@ -3291,9 +3286,8 @@ void MainWindow::on_action_Default_Show_Path_In_Windows_Menu_toggled(bool state)
 
 void MainWindow::on_action_Default_Customize_Window_Title_triggered() {
     if(auto document = currentDocument()) {
-        auto dialog = new DialogWindowTitle(document, this);
+		auto dialog = std::make_unique<DialogWindowTitle>(document, this);
         dialog->exec();
-        delete dialog;
     }
 }
 
@@ -3611,9 +3605,8 @@ void MainWindow::defaultSizeGroupTriggered(QAction *action) {
     } else if(action == ui.action_Default_Size_80_x_80) {
         setWindowSizeDefault(80, 80);
     } else if(action == ui.action_Default_Size_Custom) {
-        auto dialog = new DialogWindowSize(this);
+		auto dialog = std::make_unique<DialogWindowSize>(this);
         dialog->exec();
-        delete dialog;
         updateWindowSizeMenus();
     }
 }
