@@ -65,18 +65,16 @@ void DialogSmartIndent::on_comboLanguageMode_currentIndexChanged(const QString &
 // Name: 
 //------------------------------------------------------------------------------
 void DialogSmartIndent::on_buttonCommon_clicked() {
-	auto dialog = new DialogSmartIndentCommon(this);
+	auto dialog = std::make_unique<DialogSmartIndentCommon>(this);
 	dialog->exec();
-	delete dialog;
 }
 
 //------------------------------------------------------------------------------
 // Name: 
 //------------------------------------------------------------------------------
 void DialogSmartIndent::on_buttonLanguageMode_clicked() {
-	auto dialog = new DialogLanguageModes(this);
+	auto dialog = std::make_unique<DialogLanguageModes>(this);
 	dialog->exec();
-	delete dialog;
 }
 
 //------------------------------------------------------------------------------
@@ -208,7 +206,7 @@ bool DialogSmartIndent::updateSmartIndentData() {
 	}
 		
 	// Get the current data 
-	SmartIndentEntry *newMacros = getSmartIndentDialogData();
+	auto newMacros = getSmartIndentDialogData();
 
 	// Find the original macros
 	int i;
@@ -225,9 +223,6 @@ bool DialogSmartIndent::updateSmartIndentData() {
 	} else {
         SmartIndentSpecs[i] = *newMacros;
 	}
-
-    delete newMacros;
-
 
 	/* Find windows that are currently using this indent specification and
 	   re-do the smart indent macros */
@@ -251,7 +246,6 @@ bool DialogSmartIndent::updateSmartIndentData() {
 
 	// Note that preferences have been changed 
 	MarkPrefsChanged();
-
 	return true;
 }
 
@@ -325,9 +319,9 @@ bool DialogSmartIndent::checkSmartIndentDialogData() {
 //------------------------------------------------------------------------------
 // Name: 
 //------------------------------------------------------------------------------
-SmartIndentEntry *DialogSmartIndent::getSmartIndentDialogData() {
+std::unique_ptr<SmartIndentEntry> DialogSmartIndent::getSmartIndentDialogData() {
 
-	auto is = new SmartIndentEntry;
+	auto is = std::make_unique<SmartIndentEntry>();
 	is->lmName       = languageMode_;
 	is->initMacro    = ui.editInit->toPlainText().isEmpty()     ? QString() : ensureNewline(ui.editInit->toPlainText());
 	is->newlineMacro = ui.editNewline->toPlainText().isEmpty()  ? QString() : ensureNewline(ui.editNewline->toPlainText());

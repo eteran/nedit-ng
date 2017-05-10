@@ -276,9 +276,8 @@ void DialogSyntaxPatterns::on_comboLanguageMode_currentIndexChanged(const QStrin
 // Name:
 //------------------------------------------------------------------------------
 void DialogSyntaxPatterns::on_buttonLanguageMode_clicked() {
-	auto dialog = new DialogLanguageModes(this);
+	auto dialog = std::make_unique<DialogLanguageModes>(this);
 	dialog->exec();
-	delete dialog;
 }
 
 //------------------------------------------------------------------------------

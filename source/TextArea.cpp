@@ -571,7 +571,15 @@ TextArea::TextArea(QWidget *parent,
 	setMinimumWidth(fm.maxWidth() + (marginWidth * 2) + lineNumAreaWidth);
     setMinimumHeight(ascent_ + descent_ + (marginHeight * 2));
 #endif
+
+#if 0
+	// NOTE(eteran): this seems to be a viable approach for shortcuts
+	new QShortcut(QKeySequence(tr("Ctrl+K")), this, SLOT(DebugSlot()), Q_NULLPTR, Qt::WidgetShortcut);
+#endif
+
 }
+
+
 
 void TextArea::pasteClipboardAP(EventFlags flags) {
 
@@ -3460,7 +3468,6 @@ int TextArea::styleOfPos(int lineStartPos, int lineLen, int lineIndex, int dispI
 //------------------------------------------------------------------------------
 void TextArea::drawString(QPainter *painter, int style, int x, int y, int toX, char *string, int nChars) {
 
-	// TODO(eteran): get most of this from the widget's palette!
 	QPalette palette     = viewport()->palette();
 	QColor bground       = palette.color(QPalette::Base);
 	QColor fground       = palette.color(QPalette::Text);
@@ -3590,14 +3597,11 @@ void TextArea::drawString(QPainter *painter, int style, int x, int y, int toX, c
     // restore it, because otherwise it messes up QString::toStdString
     QTextCodec::setCodecForLocale(nullptr);
 
-	// TODO(eteran): OPTIMIZATTION: since Qt will auto-fill the BG with the
+	// TODO(eteran): 2.0, OPTIMIZATTION: since Qt will auto-fill the BG with the
 	//               default base color we only need to play with the
 	//               background mode if drawing a non-base color.
 	//               Probably same with font
 #if 0
-	// NOTE(eteran): I dunno if this would have been more efficient, but it
-	//               messed with drawing the cursor and some aspects of the
-	//               highlight
 	painter->setBackground(QBrush(bground));
 	painter->setBackgroundMode(Qt::OpaqueMode);
 #else
@@ -6652,7 +6656,7 @@ void TextArea::copyToOrEndDragAP(QMouseEvent *event, EventFlags flags) {
     DragStates dragState = dragState_;
 
 	if (dragState != PRIMARY_BLOCK_DRAG) {
-		copyToAP(event, flags);
+		copyToAP(event, flags | SupressRecording);
 		return;
 	}
 
@@ -6661,7 +6665,6 @@ void TextArea::copyToOrEndDragAP(QMouseEvent *event, EventFlags flags) {
 
 void TextArea::copyToAP(QMouseEvent *event, EventFlags flags) {
 
-    // TODO(eteran): suppress this if triggered by another event
     EMIT_EVENT("copy_to");
 
 	DragStates dragState = dragState_;

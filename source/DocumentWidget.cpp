@@ -262,11 +262,7 @@ UndoTypes determineUndoType(int nInserted, int nDeleted) {
 ** the syntax highlighting deferred, in order to speed up the file-
 ** opening operation when multiple files are being opened in succession.
 */
-
-// TODO(eteran): inWindow is a DocumentWidget, not a MainWindow...
-//               so either rename the parameter, OR rework this in
-//               terms of MainWindow
-DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inWindow, const QString &name, const QString &path, int flags, const QString &geometry, int iconic, const QString &languageMode, bool tabbed, bool bgOpen) {
+DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inDocument, const QString &name, const QString &path, int flags, const QString &geometry, int iconic, const QString &languageMode, bool tabbed, bool bgOpen) {
 
     // first look to see if file is already displayed in a window
     if(DocumentWidget *document = MainWindow::FindWindowWithFile(name, path)) {
@@ -284,7 +280,7 @@ DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inWindow, con
        in use (not Untitled or Untitled and modified), or is currently
        busy running a macro; create the window */
     DocumentWidget *document = nullptr;
-    if(!inWindow) {
+	if(!inDocument) {
         MainWindow *const win = new MainWindow();
         document = win->CreateDocument(name);
         if(iconic) {
@@ -293,9 +289,9 @@ DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inWindow, con
             win->showNormal();
         }
         win->parseGeometry(geometry);
-    } else if (inWindow->filenameSet_ || inWindow->fileChanged_ || inWindow->macroCmdData_) {
+	} else if (inDocument->filenameSet_ || inDocument->fileChanged_ || inDocument->macroCmdData_) {
         if (tabbed) {
-            if(auto win = inWindow->toWindow()) {
+			if(auto win = inDocument->toWindow()) {
                 document = win->CreateDocument(name);
             }
         } else {
@@ -310,7 +306,7 @@ DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inWindow, con
         }
     } else {
         // open file in untitled document
-        document            = inWindow;
+		document            = inDocument;
         document->path_     = path;
         document->filename_ = name;
 
@@ -567,7 +563,7 @@ void DocumentWidget::RefreshTabState() {
 		/* Set tab label to document's filename. Position of
 		   "*" (modified) will change per label alignment setting */
 
-        // TODO(eteran): for version 2.0, consider switching the "*" here
+		// TODO(eteran): 2.0, consider switching the "*" here
         //               with a "disk" icon, which is more conventional
         //               and more robust with regard to themeing
         QStyle *style = tabWidget->tabBar()->style();
@@ -1889,9 +1885,7 @@ QString DocumentWidget::backupFileNameEx() {
 */
 void DocumentWidget::CheckForChangesToFileEx() {
 
-    // TODO(eteran): this concept can be reworked in terms of QFileSystemWatcher
-    //               but we'll leave that for 2.0
-
+	// TODO(eteran): 2.0, this concept can be reworked in terms of QFileSystemWatcher
     static DocumentWidget *lastCheckWindow = nullptr;
     static qint64 lastCheckTime = 0;
 
@@ -2687,7 +2681,7 @@ void DocumentWidget::addWrapNewlines() {
 */
 bool DocumentWidget::writeBckVersion() {
 
-    // TODO(eteran): this is essentially just a QFile::copy("filename", "filename.bck");
+	// TODO(eteran): 2.0, this is essentially just a QFile::copy("filename", "filename.bck");
     // with error reporting
 
     struct stat statbuf;
@@ -4446,18 +4440,8 @@ void DocumentWidget::setWrapMargin(int margin) {
 /*
 ** Set the fonts for "window" from a font name, and updates the display.
 ** Also updates window->fontList_ which is used for statistics line.
-**
-** Note that this leaks memory and server resources.  In previous NEdit
-** versions, fontLists were carefully tracked and freed, but X and Motif
-** have some kind of timing problem when widgets are distroyed, such that
-** fonts may not be freed immediately after widget destruction with 100%
-** safety.  Rather than kludge around this with timerProcs, I have chosen
-** to create new fontLists only when the user explicitly changes the font
-** (which shouldn't happen much in normal NEdit operation), and skip the
-** futile effort of freeing them.
 */
 void DocumentWidget::SetFonts(const QString &fontName, const QString &italicName, const QString &boldName, const QString &boldItalicName) {
-
 
     auto textD = firstPane();
 

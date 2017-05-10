@@ -277,7 +277,6 @@ static int routineName(DocumentWidget *document, DataValue *argList, int nArgs, 
 }
 
 TEXT_EVENT_S(insertStringMS,          insertStringAP)
-TEXT_EVENT_S(selfInsertMS,            insertStringAP)
 TEXT_EVENT(backwardWordMS,            backwardWordAP)
 TEXT_EVENT(backwardCharacterMS,       backwardCharacterAP)
 TEXT_EVENT(copyClipboardMS,           copyClipboardAP)
@@ -301,17 +300,25 @@ TEXT_EVENT(processShiftUpMS,          processShiftUpAP)
 TEXT_EVENT(processTabMS,              processTabAP)
 TEXT_EVENT(processUpMS,               processUpAP)
 TEXT_EVENT(beginingOfLineMS,          beginningOfLineAP)
+TEXT_EVENT(backwardParagraphMS,       backwardParagraphAP)
+TEXT_EVENT(beginningOfFileMS,         beginningOfFileAP)
+TEXT_EVENT(endOfFileMS,               endOfFileAP)
+TEXT_EVENT(endOfLineMS,               endOfLineAP)
+TEXT_EVENT(forwardParagraphMS,        forwardParagraphAP)
+TEXT_EVENT(forwardCharacterMS,        forwardCharacterAP)
+TEXT_EVENT(nextPageMS,                nextPageAP)
+TEXT_EVENT(previousPageMS,            previousPageAP)
 
 static const SubRoutine TextAreaSubrNames[] = {
     // Keyboard
     {"backward-character",        backwardCharacterMS},
     {"backward_character",        backwardCharacterMS},
-    {"backward-paragraph",        nullptr},
-    {"backward_paragraph",        nullptr},
+    {"backward-paragraph",        backwardParagraphMS},
+    {"backward_paragraph",        backwardParagraphMS},
     {"backward-word",             backwardWordMS},
     {"backward_word",             backwardWordMS},
-    {"beginning-of-file",         nullptr},
-    {"beginning_of_file",         nullptr},
+    {"beginning-of-file",         beginningOfFileMS},
+    {"beginning_of_file",         beginningOfFileMS},
     {"beginning-of-line",         beginingOfLineMS},
     {"beginning_of_line",         beginingOfLineMS},
     {"beginning-of-selection",    nullptr}, // TODO(eteran): was from MainWindow in my code...
@@ -344,10 +351,10 @@ static const SubRoutine TextAreaSubrNames[] = {
     {"delete_to_end_of_line",     nullptr},
     {"deselect-all",              deselectAllMS},
     {"deselect_all",              deselectAllMS},
-    {"end-of-file",               nullptr},
-    {"end_of_file",               nullptr},
-    {"end-of-line",               nullptr},
-    {"end_of_line",               nullptr},
+    {"end-of-file",               endOfFileMS},
+    {"end_of_file",               endOfFileMS},
+    {"end-of-line",               endOfLineMS},
+    {"end_of_line",               endOfLineMS},
     {"end-of-selection",          nullptr}, // TODO(eteran): was from MainWindow in my code...
     {"end_of_selection",          nullptr}, // TODO(eteran): was from MainWindow in my code...
     {"exchange",                  nullptr},
@@ -355,10 +362,10 @@ static const SubRoutine TextAreaSubrNames[] = {
     {"extend_end",                nullptr},
     {"extend_start",              nullptr},
     {"focus_pane",                nullptr}, // TODO(eteran): was from MainWindow in my code...
-    {"forward_character",         nullptr},
-    {"forward-character",         nullptr},
-    {"forward_paragraph",         nullptr},
-    {"forward-paragraph",         nullptr},
+    {"forward_character",         forwardCharacterMS},
+    {"forward-character",         forwardCharacterMS},
+    {"forward_paragraph",         forwardParagraphMS},
+    {"forward-paragraph",         forwardParagraphMS},
     {"forward_word",              forwardWordMS},
     {"forward-word",              forwardWordMS},
     {"grab_focus",                nullptr},
@@ -371,16 +378,16 @@ static const SubRoutine TextAreaSubrNames[] = {
     {"newline-and-indent",        newlineAndIndentMS},
     {"newline_no_indent",         newlineNoIndentMS},
     {"newline-no-indent",         newlineNoIndentMS},
-    {"next_page",                 nullptr},
-    {"next-page",                 nullptr},
+    {"next_page",                 nextPageMS},
+    {"next-page",                 nextPageMS},
     {"page_left",                 nullptr},
     {"page-left",                 nullptr},
     {"page_right",                nullptr},
     {"page-right",                nullptr},
     {"paste_clipboard",           pasteClipboardMS},
     {"paste-clipboard",           pasteClipboardMS},
-    {"previous_page",             nullptr},
-    {"previous-page",             nullptr},
+    {"previous_page",             previousPageMS},
+    {"previous-page",             previousPageMS},
     {"process_bdrag",             nullptr},
     {"process_cancel",            processCancelMS},
     {"process-cancel",            processCancelMS},
@@ -413,9 +420,8 @@ static const SubRoutine TextAreaSubrNames[] = {
     {"select-all",                selectAllMS},
     {"select_all",                selectAllMS},
 #endif
-    {"self_insert",               selfInsertMS},
-    {"self-insert",               selfInsertMS},
-
+    {"self_insert",               insertStringMS},
+    {"self-insert",               insertStringMS},
 #if 0 // Not mentioned in the documentation
     {"end_drag",                  nullptr},
     {"process_home",              processHomeMS},
@@ -468,6 +474,8 @@ static const SubRoutine TextAreaSubrNames[] = {
 // These emit functions to support calling them from macros, see WINDOW_MENU_EVENT for what
 // these functions will look like
 WINDOW_MENU_EVENT_S(includeFileMS,                   action_Include_File)
+WINDOW_MENU_EVENT_S(gotoLineNumberMS,                action_Goto_Line_Number)
+
 WINDOW_MENU_EVENT(closeMS,                           on_action_Close_triggered)
 WINDOW_MENU_EVENT(closePaneMS,                       on_action_Close_Pane_triggered)
 WINDOW_MENU_EVENT(deleteMS,                          on_action_Delete_triggered)
@@ -498,14 +506,19 @@ WINDOW_MENU_EVENT(shiftRightTabMS,                   action_Shift_Right_Tabs)
 WINDOW_MENU_EVENT(splitPaneMS,                       on_action_Split_Pane_triggered)
 WINDOW_MENU_EVENT(undoMS,                            on_action_Undo_triggered)
 WINDOW_MENU_EVENT(uppercaseMS,                       on_action_Upper_case_triggered)
+WINDOW_MENU_EVENT(openMS,                            on_action_Open_triggered)
+WINDOW_MENU_EVENT(revertToSavedDialogMS,             on_action_Revert_to_Saved_triggered)
+WINDOW_MENU_EVENT(markDialogMS,                      on_action_Mark_triggered)
+WINDOW_MENU_EVENT(gotoMarkDialogMS,                  on_action_Goto_Mark_triggered)
+WINDOW_MENU_EVENT(showTipMS,                         on_action_Show_Calltip_triggered)
 
 
 static const SubRoutine MenuMacroSubrNames[] = {
     // File
 	{ "new",                          nullptr },
 	{ "open",                         nullptr },
-	{ "open-dialog",                  nullptr },
-	{ "open_dialog",                  nullptr },
+    { "open-dialog",                  openMS },
+    { "open_dialog",                  openMS },
     { "open-selected",                openSelectedMS },
     { "open_selected",                openSelectedMS },
     { "close",                        closeMS },
@@ -514,7 +527,7 @@ static const SubRoutine MenuMacroSubrNames[] = {
 	{ "save_as",                      nullptr },
     { "save-as-dialog",               saveAsDialogMS },
     { "save_as_dialog",               saveAsDialogMS },
-	{ "revert_to_saved_dialog",       nullptr },
+    { "revert_to_saved_dialog",       revertToSavedDialogMS },
     { "include-file",                 includeFileMS },
     { "include_file",                 includeFileMS },
     { "include-file-dialog",          includeFileDialogMS },
@@ -572,24 +585,24 @@ static const SubRoutine MenuMacroSubrNames[] = {
     { "replace_in_selection",         replaceAllInSelectionMS },
     { "replace-again",                nullptr },
     { "replace_again",                nullptr },
-    { "goto-line-number",             nullptr },
-    { "goto_line_number",             nullptr },
+    { "goto-line-number",             gotoLineNumberMS },
+    { "goto_line_number",             gotoLineNumberMS },
     { "goto-line-number-dialog",      gotoLineNumberDialogMS },
     { "goto_line_number_dialog",      gotoLineNumberDialogMS },
     { "goto-selected",                nullptr },
     { "goto_selected",                nullptr },
     { "mark",                         nullptr },
-    { "mark-dialog",                  nullptr },
-    { "mark_dialog",                  nullptr },
+    { "mark-dialog",                  markDialogMS },
+    { "mark_dialog",                  markDialogMS },
     { "goto-mark",                    nullptr },
     { "goto_mark",                    nullptr },
-    { "goto-mark-dialog",             nullptr },
-    { "goto_mark_dialog",             nullptr },
+    { "goto-mark-dialog",             gotoMarkDialogMS },
+    { "goto_mark_dialog",             gotoMarkDialogMS },
     { "goto_matching",                gotoMatchingMS },
     { "select_to_matching",           nullptr },
     { "find-definition",              findDefinitionMS },
     { "find_definition",              findDefinitionMS },
-    { "show_tip",                     nullptr },
+    { "show_tip",                     showTipMS },
     // Shell
     { "filter-selection-dialog",      nullptr },
     { "filter_selection_dialog",      nullptr },

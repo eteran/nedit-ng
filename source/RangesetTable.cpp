@@ -331,8 +331,6 @@ int RangesetTable::RangesetCreate() {
 	return label;
 }
 
-
-// TODO(eteran): does this really belong here?
 Range *RangesetTable::RangesNew(int n) {
 
 	if (n != 0) {

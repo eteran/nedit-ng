@@ -3,6 +3,7 @@
 #define DIALOG_SMART_INDENT_H_
 
 #include "Dialog.h"
+#include <memory>
 #include "ui_DialogSmartIndent.h"
 
 class DocumentWidget;
@@ -22,7 +23,7 @@ private:
     void setSmartIndentDialogData(const SmartIndentEntry *is);
 	bool updateSmartIndentData();
 	bool checkSmartIndentDialogData();
-	SmartIndentEntry *getSmartIndentDialogData();
+	std::unique_ptr<SmartIndentEntry>  getSmartIndentDialogData();
 	QString ensureNewline(const QString &string);
 	
 
