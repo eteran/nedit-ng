@@ -431,6 +431,7 @@ static const SubRoutine TextAreaSubrNames[] = {
 #endif
 };
 
+
 #define WINDOW_MENU_EVENT_S(routineName, slotName)                                                                            \
     static int routineName(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) { \
         Q_UNUSED(argList);                                                                                                    \

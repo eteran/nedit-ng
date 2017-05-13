@@ -3956,10 +3956,19 @@ QString MainWindow::PromptForNewFileEx(DocumentWidget *document, const QString &
     return filename;
 }
 
+void MainWindow::action_Save_As(const QString &filename, bool wrapped) {
+	if(auto document = currentDocument()) {
+		document->SaveWindowAs(filename, wrapped);
+	}
+}
+
+/**
+ * @brief MainWindow::on_action_Save_As_triggered
+ */
 void MainWindow::on_action_Save_As_triggered() {
     if(auto document = currentDocument()) {
 
-        bool addWrap;
+		bool addWrap;
         FileFormats fileFormat;
 
         QString fullname = PromptForNewFileEx(document, tr("Save File As"), &fileFormat, &addWrap);
@@ -3968,7 +3977,7 @@ void MainWindow::on_action_Save_As_triggered() {
         }
 
         document->fileFormat_ = fileFormat;
-        document->SaveWindowAs(fullname, addWrap);
+		action_Save_As(fullname, addWrap);
     }
 }
 
@@ -3978,22 +3987,18 @@ void MainWindow::on_action_Revert_to_Saved_triggered() {
         // re-reading file is irreversible, prompt the user first
         if (document->fileChanged_) {
 
-            QMessageBox messageBox(this);
-            messageBox.setWindowTitle(tr("Discard Changes"));
-            messageBox.setIcon(QMessageBox::Question);
-            messageBox.setText(tr("Discard changes to\n%1%2?").arg(document->path_, document->filename_));
-            QPushButton *buttonOk     = messageBox.addButton(QMessageBox::Ok);
-            QPushButton *buttonCancel = messageBox.addButton(QMessageBox::Cancel);
-            Q_UNUSED(buttonOk);
-
-            messageBox.exec();
-            if(messageBox.clickedButton() == buttonCancel) {
-                return;
-            }
-
+			int result = QMessageBox::question(
+			            this,
+			            tr("Discard Changes"),
+			            tr("Discard changes to\n%1%2?").arg(document->path_, document->filename_),
+			            QMessageBox::Ok | QMessageBox::Cancel
+			            );
+			if(result == QMessageBox::Cancel) {
+				return;
+			}
         } else {
 
-            QMessageBox messageBox(nullptr /*window->shell_*/);
+			QMessageBox messageBox(this);
             messageBox.setWindowTitle(tr("Reload File"));
             messageBox.setIcon(QMessageBox::Question);
             messageBox.setText(tr("Re-load file\n%1%2?").arg(document->path_, document->filename_));
@@ -4028,7 +4033,7 @@ void MainWindow::on_action_New_Window_triggered() {
 //------------------------------------------------------------------------------
 void MainWindow::on_action_Exit_triggered() {
 
-    const int DF_MAX_MSG_LENGTH = 2048;
+	constexpr const int DF_MAX_MSG_LENGTH = 2048;
 
     QList<DocumentWidget *> documents = DocumentWidget::allDocuments();
 

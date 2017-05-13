@@ -38,7 +38,6 @@ class QString;
 
 constexpr const int MAX_SEARCH_HISTORY = 100; /* Maximum length of search string history */
 
-
 bool ReplaceAllEx(MainWindow *window, DocumentWidget *document, TextArea *area, const QString &searchString, const QString &replaceString, SearchType searchType);
 bool ReplaceAndSearchEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, const QString &searchString, const QString &replaceString, SearchType searchType, int searchWrap);
 bool ReplaceFindSameEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, int searchWrap);
@@ -75,7 +74,9 @@ enum ReplaceAllDefaultScope {
 ** SearchType in searchType. Returns FALSE and leaves searchType untouched
 ** otherwise.
 */
-int StringToSearchType(const std::string &string, SearchType *searchType);
+bool StringToSearchType(view::string_view string, SearchType *searchType);
+bool StringToSearchDirection(view::string_view string, SearchDirection *searchDirection);
+bool StringToSearchWrap(view::string_view string, bool *searchWraps);
 
 /*
 ** History of search actions.

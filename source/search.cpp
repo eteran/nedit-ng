@@ -111,17 +111,7 @@ static CharMatchTable MatchingChars[N_MATCH_CHARS] = {
     {'\\', '\\', SEARCH_FORWARD},
 };
 
-/*
-** Definitions for the search method strings, used as arguments for
-** macro search subroutines and search action routines
-*/
-static const char *searchTypeStrings[] = {"literal",     // SEARCH_LITERAL         
-                                          "case",        // SEARCH_CASE_SENSE      
-                                          "regex",       // SEARCH_REGEX           
-                                          "word",        // SEARCH_LITERAL_WORD    
-                                          "caseWord",    // SEARCH_CASE_SENSE_WORD 
-                                          "regexNoCase", // SEARCH_REGEX_NOCASE    
-                                          nullptr};
+
 
 #if defined(REPLACE_SCOPE)
 /*
@@ -1489,7 +1479,7 @@ bool SearchString(view::string_view string, const QString &searchString, SearchD
 	case SEARCH_REGEX_NOCASE:
         return searchRegex(string, searchString.toLatin1().data(), direction, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW, delimiters, REDFLT_CASE_INSENSITIVE);
 	default:
-        Q_UNREACHABLE();
+		Q_UNREACHABLE();
 	}
 }
 
@@ -1499,16 +1489,77 @@ bool SearchString(view::string_view string, const QString &searchString, SearchD
 ** SearchType in searchType. Returns FALSE and leaves searchType untouched
 ** otherwise. (Originally written by Markus Schwarzenberg; slightly adapted).
 */
-int StringToSearchType(const std::string &string, SearchType *searchType) {
+bool StringToSearchType(view::string_view string, SearchType *searchType) {
 
-    for (int i = 0; searchTypeStrings[i]; i++) {
-        if (string == searchTypeStrings[i]) {
-            *searchType = static_cast<SearchType>(i);
-            return true;
+	// TODO(eteran): make this case insenstive
+
+	static const struct {
+		const char *name;
+		SearchType type;
+	} searchTypeStrings[] = {
+	    { "literal",     SearchType::SEARCH_LITERAL },
+	    { "case",        SearchType::SEARCH_CASE_SENSE },
+	    { "regex",       SearchType::SEARCH_REGEX },
+	    { "word",        SearchType::SEARCH_LITERAL_WORD },
+	    { "caseWord",    SearchType::SEARCH_CASE_SENSE_WORD },
+	    { "regexNoCase", SearchType::SEARCH_REGEX_NOCASE },
+    };
+
+	for(const auto &entry : searchTypeStrings) {
+		if (string == entry.name) {
+			*searchType = entry.type;
+			return true;
 		}
 	}
 
+	*searchType = GetPrefSearch();
     return false;
+}
+
+bool StringToSearchDirection(view::string_view string, SearchDirection *searchDirection) {
+
+	// TODO(eteran): make this case insenstive
+
+	static const struct {
+		const char *name;
+		SearchDirection direction;
+	} searchDirectionStrings[] = {
+	    { "forward",  SearchDirection::SEARCH_FORWARD },
+	    { "backward", SearchDirection::SEARCH_BACKWARD },
+    };
+
+	for(const auto &entry : searchDirectionStrings) {
+		if (string == entry.name) {
+			*searchDirection = entry.direction;
+			return true;
+		}
+	}
+
+	*searchDirection = SearchDirection::SEARCH_FORWARD;
+	return false;
+}
+
+bool StringToSearchWrap(view::string_view string, bool *searchWraps) {
+
+	// TODO(eteran): make this case insenstive
+
+	static const struct {
+		const char *name;
+		bool value;
+	} searchWrapStrings[] = {
+	    { "wrap", true },
+	    { "nowrap", false },
+    };
+
+	for(const auto &entry : searchWrapStrings) {
+		if (string == entry.name) {
+			*searchWraps = entry.value;
+			return true;
+		}
+	}
+
+	*searchWraps = GetPrefSearchWraps();
+	return false;
 }
 
 /*

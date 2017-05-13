@@ -114,6 +114,7 @@ void DialogSyntaxPatterns::setLanguageName(const QString &name) {
 			}
 		} else if (*oldPatSet != *newPatSet) {
 
+			// TODO(eteran): 2.0, use QMessageBox::Apply | QMessageBox::Discard
 			QMessageBox messageBox(this);
 			messageBox.setWindowTitle(tr("Language Mode"));
 			messageBox.setIcon(QMessageBox::Warning);

@@ -102,6 +102,7 @@ public:
 public Q_SLOTS:
 	// internal variants
     void action_New(NewMode mode = NewMode::Prefs);
+	void action_Save_As(const QString &filename, bool wrapped);
     void action_Shift_Left_Tabs();
     void action_Shift_Right_Tabs();
     void action_Shift_Find();
