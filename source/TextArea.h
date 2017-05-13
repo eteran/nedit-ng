@@ -25,13 +25,13 @@ class QTimer;
 class TextArea;
 class TextBuffer;
 struct DragEndEvent;
-struct smartIndentCBStruct;
+struct SmartIndentEvent;
 
 typedef void (*unfinishedStyleCBProcEx)(const TextArea *, int, const void *);
 typedef void (*cursorMovedCBEx)(TextArea *, void *);
 typedef void (*dragStartCBEx)(TextArea *, void *);
 typedef void (*dragEndCBEx)(TextArea *, DragEndEvent *, void *);
-typedef void (*smartIndentCBEx)(TextArea *, smartIndentCBStruct *, void *);
+typedef void (*smartIndentCBEx)(TextArea *, SmartIndentEvent *, void *);
 
 class TextArea : public QAbstractScrollArea {
 	Q_OBJECT
@@ -124,11 +124,6 @@ public:
     int getRows() const;
     int getMarginHeight() const;
     int getMarginWidth() const;
-
-public:
-    virtual QSize sizeHint() const override;
-    virtual QSize minimumSizeHint() const override;
-    void setSize(int columns, int rows);
 
 protected:
 	virtual bool focusNextPrevChild(bool next) override;

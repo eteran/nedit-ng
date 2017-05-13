@@ -10,7 +10,7 @@
 #include "DragEndEvent.h"
 #include "highlight.h"
 #include "preferences.h"
-#include "smartIndentCBStruct.h"
+#include "SmartIndentEvent.h"
 #include "TextEditEvent.h"
 #include <QApplication>
 #include <QClipboard>
@@ -19,15 +19,15 @@
 #include <QMenu>
 #include <QMessageBox>
 #include <QMimeData>
-#include <QPaintEvent>
 #include <QPainter>
+#include <QPaintEvent>
 #include <QPoint>
 #include <QResizeEvent>
 #include <QScrollBar>
 #include <QShortcut>
+#include <QtDebug>
 #include <QTextCodec>
 #include <QTimer>
-#include <QtDebug>
 #include <memory>
 
 #define EMIT_EVENT(name)                                         \
@@ -897,7 +897,7 @@ void TextArea::selfInsertAP(const QString &string, EventFlags flags) {
     /* If smart indent is on, call the smart indent callback to check the
        inserted character */
     if (P_smartIndent) {
-        smartIndentCBStruct smartIndent;
+		SmartIndentEvent smartIndent;
         smartIndent.reason        = CHAR_TYPED;
         smartIndent.pos           = cursorPos_;
         smartIndent.indentRequest = 0;
@@ -5246,7 +5246,7 @@ std::string TextArea::createIndentStringEx(TextBuffer *buf, int bufOffset, int l
 	int tabDist = buffer_->tabDist_;
 	int i;
 	int useTabs = buffer_->useTabs_;
-	smartIndentCBStruct smartIndent;
+	SmartIndentEvent smartIndent;
 
 	/* If smart indent is on, call the smart indent callback.  It is not
 	   called when multi-line changes are being made (lineStartPos != 0),
@@ -5379,7 +5379,7 @@ std::string TextArea::createIndentStringEx(TextBuffer *buf, int bufOffset, int l
 	   but not yet committed in the buffer, would make programming smart
 	   indent more difficult for users and make everything more complicated */
 	if (P_smartIndent && (lineStartPos == 0 || buf == buffer_)) {
-		smartIndentCBStruct smartIndent;
+		SmartIndentEvent smartIndent;
 		smartIndent.reason        = NEWLINE_INDENT_NEEDED;
 		smartIndent.pos           = lineEndPos + bufOffset;
 		smartIndent.indentRequest = 0;
@@ -8349,7 +8349,7 @@ void TextArea::insertStringAP(const QString &string, EventFlags flags) {
     QByteArray array = string.toLatin1();
 
     if (P_smartIndent) {
-        smartIndentCBStruct smartIndent;
+		SmartIndentEvent smartIndent;
         smartIndent.reason        = CHAR_TYPED;
         smartIndent.pos           = cursorPos_;
         smartIndent.indentRequest = 0;
@@ -8525,31 +8525,6 @@ void TextArea::TextDMaintainAbsLineNum(bool state) {
     resetAbsLineNum();
 }
 
-void TextArea::setSize(int columns, int rows) {
-
-    const int hScrollBarWidth = horizontalScrollBar()->isVisible() ? horizontalScrollBar()->sizeHint().height() : 0;
-    const int vScrollBarWidth = verticalScrollBar()->isVisible()   ? verticalScrollBar()->sizeHint().width() : 0;
-
-    QFontMetrics fm(viewport()->font());
-    QSize newSize = QSize(
-                columns * fixedFontWidth_ + vScrollBarWidth,
-                rows * fm.height() + hScrollBarWidth);
-
-    if(newSize != size()) {
-        size_ = newSize;
-        updateGeometry();
-    }
-
-}
-
-QSize TextArea::sizeHint() const {
-    return size_;
-}
-
-QSize TextArea::minimumSizeHint() const {
-    return size_;
-}
-
 TextBuffer *TextArea::TextGetBuffer() const {
     return buffer_;
 }
@@ -8559,8 +8534,6 @@ int TextArea::TextDMinFontWidth(bool considerStyles) const {
     QFontMetrics fm(viewport()->font());
 
     int fontWidth = fm.maxWidth();
-
-
     if (considerStyles) {
         for (int i = 0; i < nStyles_; ++i) {
             QFontMetrics fm(styleTable_[i].font);
@@ -8572,7 +8545,7 @@ int TextArea::TextDMinFontWidth(bool considerStyles) const {
             }
         }
     }
-    return (fontWidth);
+	return fontWidth;
 }
 
 int TextArea::TextDMaxFontWidth(bool considerStyles) const {
@@ -8590,7 +8563,7 @@ int TextArea::TextDMaxFontWidth(bool considerStyles) const {
             }
         }
     }
-    return (fontWidth);
+	return fontWidth;
 }
 
 int TextArea::TextNumVisibleLines() const {

@@ -9,7 +9,7 @@ enum SmartIndentCallbackReasons {
 	CHAR_TYPED
 };
 
-struct smartIndentCBStruct {
+struct SmartIndentEvent {
 	SmartIndentCallbackReasons reason;
 	int                        pos;
 	int                        indentRequest;

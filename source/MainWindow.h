@@ -5,7 +5,7 @@
 #include "FileFormats.h"
 #include "SearchDirection.h"
 #include "SearchType.h"
-#include "smartIndentCBStruct.h"
+#include "SmartIndentEvent.h"
 #include "NewMode.h"
 #include <QMainWindow>
 #include <QPointer>

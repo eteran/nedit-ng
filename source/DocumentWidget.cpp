@@ -32,7 +32,7 @@
 #include "search.h"
 #include "selection.h"
 #include "smartIndent.h"
-#include "smartIndentCBStruct.h"
+#include "SmartIndentEvent.h"
 #include "tags.h"
 #include "utils.h"
 #include <QBoxLayout>
@@ -134,7 +134,7 @@ void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view::strin
     }
 }
 
-void smartIndentCB(TextArea *area, smartIndentCBStruct *data, void *user) {
+void smartIndentCB(TextArea *area, SmartIndentEvent *data, void *user) {
     if(auto document = static_cast<DocumentWidget *>(user)) {
         document->smartIndentCallback(area, data);
 	}
@@ -882,7 +882,7 @@ void DocumentWidget::dragEndCallback(TextArea *area, DragEndEvent *data) {
     modifiedCallback(data->startPos, data->nCharsInserted, data->nCharsDeleted, 0, data->deletedText);
 }
 
-void DocumentWidget::smartIndentCallback(TextArea *area, smartIndentCBStruct *data) {
+void DocumentWidget::smartIndentCallback(TextArea *area, SmartIndentEvent *data) {
 
     Q_UNUSED(area);
 
@@ -3409,7 +3409,7 @@ void DocumentWidget::RefreshMenuToggleStates() {
 ** Run the newline macro with information from the smart-indent callback
 ** structure passed by the widget
 */
-void DocumentWidget::executeNewlineMacroEx(smartIndentCBStruct *cbInfo) {
+void DocumentWidget::executeNewlineMacroEx(SmartIndentEvent *cbInfo) {
 
 	SmartIndentData *winData = smartIndentData_;
     // posValue probably shouldn't be static due to re-entrance issues <slobasso>
@@ -3487,7 +3487,7 @@ void DocumentWidget::SetShowMatching(ShowMatchingStyle state) {
 ** Run the modification macro with information from the smart-indent callback
 ** structure passed by the widget
 */
-void DocumentWidget::executeModMacroEx(smartIndentCBStruct *cbInfo) {
+void DocumentWidget::executeModMacroEx(SmartIndentEvent *cbInfo) {
 
 	SmartIndentData *winData = smartIndentData_;
 

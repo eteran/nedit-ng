@@ -36,7 +36,7 @@ class UndoInfo;
 class HighlightData;
 class WindowHighlightData;
 struct DragEndEvent;
-struct smartIndentCBStruct;
+struct SmartIndentEvent;
 struct SmartIndentData;
 
 enum class Direction;
@@ -93,7 +93,7 @@ public:
 	void movedCallback(TextArea *area);
 	void dragStartCallback(TextArea *area);
     void dragEndCallback(TextArea *area, DragEndEvent *data);
-	void smartIndentCallback(TextArea *area, smartIndentCBStruct *data);
+	void smartIndentCallback(TextArea *area, SmartIndentEvent *data);
     void modifiedCallback(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText);
 
 public:
@@ -177,8 +177,8 @@ public:
     void appendDeletedText(view::string_view deletedText, int deletedLen, Direction direction);
     void dimSelDepItemsInMenu(QMenu *menuPane, const QVector<MenuData> &menuList, bool enabled);
     void documentRaised();
-    void executeModMacroEx(smartIndentCBStruct *cbInfo);
-    void executeNewlineMacroEx(smartIndentCBStruct *cbInfo);
+    void executeModMacroEx(SmartIndentEvent *cbInfo);
+    void executeNewlineMacroEx(SmartIndentEvent *cbInfo);
     void filterSelection(const QString &filterText);
     void freeHighlightData(WindowHighlightData *hd);
     void freePatterns(HighlightData *patterns);
