@@ -69,7 +69,7 @@ public:
 		return data_[pos];
 	}
 
-	/*constexpr */const_reference at(size_type pos) const {
+	constexpr const_reference at(size_type pos) const {
 		if(pos >= size_) {
 			throw std::out_of_range("out_of_range");
 		}
@@ -272,7 +272,7 @@ public:
 
 	//--------------------------------------------------------------------------
 
-	/*constexpr */ size_type find_first_of(basic_string_view v, size_type pos = 0) const noexcept {
+	constexpr  size_type find_first_of(basic_string_view v, size_type pos = 0) const noexcept {
 		if(v.empty() || empty()) {
 			return npos;
 		}
@@ -303,7 +303,7 @@ public:
 
 	//--------------------------------------------------------------------------
 
-	/*constexpr */ size_type find_last_of(basic_string_view v, size_type pos = npos) const noexcept {
+	constexpr size_type find_last_of(basic_string_view v, size_type pos = npos) const noexcept {
 		if(v.empty() || empty()) {
 			return npos;
 		}
@@ -337,7 +337,7 @@ public:
 
 	//--------------------------------------------------------------------------
 
-	/*constexpr */ size_type find_first_not_of(basic_string_view v, size_type pos = 0) const noexcept {
+	constexpr  size_type find_first_not_of(basic_string_view v, size_type pos = 0) const noexcept {
 		if(v.empty() || empty()) {
 			return npos;
 		}
@@ -374,7 +374,7 @@ public:
 
 	//--------------------------------------------------------------------------
 
-	/*constexpr */ size_type find_last_not_of(basic_string_view v, size_type pos = npos) const noexcept {
+	constexpr size_type find_last_not_of(basic_string_view v, size_type pos = npos) const noexcept {
 		if(v.empty() || empty()) {
 			return npos;
 		}
