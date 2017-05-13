@@ -199,10 +199,10 @@ QString DialogPrint::getLprQueueDefault() {
 */
 bool DialogPrint::fileInPath(const char *filename, uint16_t mode_flags) {
 	char path[MAXPATHLEN];
-	char *pathstring, *lastchar;
+	const char *lastchar;
 
 	/* Get environmental value of PATH */
-	pathstring = getenv("PATH");
+	const char *pathstring = getenv("PATH");
 	if(!pathstring)
 		return false;
 
@@ -239,9 +239,7 @@ QByteArray DialogPrint::foundTag(const char *tagfilename, const char *tagname) {
 	char tagformat[512];
 
     // NOTE(eteran): format string vuln?
-    // NOTE(eteran): buffer overflow if the user's file has a LOT in the match?
-	strcpy(tagformat, tagname);
-	strcat(tagformat, " %s");
+	snprintf(tagformat, sizeof(tagformat), "%s %%s", tagname);
 
     std::ifstream file(tagfilename);
     for(std::string line; std::getline(file, line); ) {
@@ -260,25 +258,20 @@ QByteArray DialogPrint::foundTag(const char *tagfilename, const char *tagname) {
 */
 bool DialogPrint::fileInDir(const char *filename, const char *dirpath, uint16_t mode_flags) {
 	
-	struct stat statbuf;
-	
-	DIR *dfile = opendir(dirpath);
-	if (dfile) {
-		
-		struct dirent *DirEntryPtr;	
-		
-		while ((DirEntryPtr = readdir(dfile))) {
-			if (!strcmp(DirEntryPtr->d_name, filename)) {
+	if (DIR *dfile = ::opendir(dirpath)) {
+		while (struct dirent *dir_entry = ::readdir(dfile)) {
+			if (!strcmp(dir_entry->d_name, filename)) {
 				char fullname[MAXPATHLEN];
 				
 				snprintf(fullname, sizeof(fullname), "%s/%s", dirpath, filename);
 
-				stat(fullname, &statbuf);
-				closedir(dfile);
+				struct stat statbuf;
+				::stat(fullname, &statbuf);
+				::closedir(dfile);
 				return statbuf.st_mode & mode_flags;
 			}
 		}
-		closedir(dfile);
+		::closedir(dfile);
 	}
 	return false;
 }
@@ -327,7 +320,6 @@ void DialogPrint::updatePrintCmd() {
 		}
 	}
 	
-	
 	if (!QueueOption.isEmpty()) {
 		const QString str = ui.editQueue->text();
 		if (str.isEmpty()) {
@@ -344,7 +336,6 @@ void DialogPrint::updatePrintCmd() {
 			hostArg = tr(" %1%2").arg(HostOption, str);
 		}
 	}
-
 
 	if (!NameOption.isEmpty()) {
 		jobArg = tr(" %1\"%2\"").arg(NameOption, PrintJobName_);

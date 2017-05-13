@@ -50,9 +50,6 @@
 #include <cstdlib>
 #include <cstring>
 
-// NOTE(eteran): NOTE! while we've removed the limitation of strings being NUL terminated, it seems that the highlighter
-//               doesn't  know how to deal with NUL caracters so we need to fix that
-
 namespace {
 
 // How much re-parsing to do when an unfinished style is encountered 
@@ -76,7 +73,7 @@ constexpr bool is_plain(int style) {
 
 /* Compare two styles where one of the styles may not yet have been processed
    with pass2 patterns */
-constexpr bool equivalent_style(int style1, int style2, int  firstPass2Style) {
+constexpr bool equivalent_style(int style1, int style2, int firstPass2Style) {
 	return (style1 == style2) || 
 		   (style1 == UNFINISHED_STYLE && (style2 == PLAIN_STYLE || (uint8_t)style2 >= firstPass2Style)) || 
 		   (style2 == UNFINISHED_STYLE && (style1 == PLAIN_STYLE || (uint8_t)style1 >= firstPass2Style));
