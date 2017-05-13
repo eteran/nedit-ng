@@ -30,6 +30,7 @@
 
 #include <QString>
 #include "fileUtils.h"
+#include "FileFormats.h"
 #include "utils.h"
 
 #include <cstdlib>

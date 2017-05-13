@@ -652,7 +652,7 @@ int DocumentWidget::matchLanguageMode() {
 	   stripped off to recognize the extension to make ClearCase users happy) */
     int fileNameLen = filename_.size();
 
-    const int versionExtendedPathIndex = GetClearCaseVersionExtendedPathIndex(filename_);
+    const int versionExtendedPathIndex = ClearCase::GetVersionExtendedPathIndex(filename_);
 	if (versionExtendedPathIndex != -1) {
 		fileNameLen = versionExtendedPathIndex;
 	}

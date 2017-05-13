@@ -780,7 +780,7 @@ DocumentWidget *MainWindow::CreateDocument(QString name) {
  */
 void MainWindow::UpdateWindowTitle(DocumentWidget *doc) {
 
-	QString clearCaseTag = GetClearCaseViewTag();
+    QString clearCaseTag = ClearCase::GetViewTag();
 
 	QString title = DialogWindowTitle::FormatWindowTitle(
 		doc->filename_,

@@ -29,10 +29,9 @@
 
 #include <string>
 #include "string_view.h"
-#include "FileFormats.h"
 
 class QString;
-
+enum FileFormats : int;
 
 FileFormats FormatOfFileEx(view::string_view fileString);
 int CompressPathname(char *pathname);

@@ -21,11 +21,11 @@
 *                                                                              *
 *******************************************************************************/
 
+#include "utils.h"
+
 #include <QDir>
 #include <QHostInfo>
 #include <QStandardPaths>
-
-#include "utils.h"
 
 #include <cstdlib>
 #include <cstdio>

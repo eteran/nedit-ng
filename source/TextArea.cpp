@@ -151,11 +151,13 @@ const int RANGESET_MASK  = (0x3F << RANGESET_SHIFT);
    stack in the redisplayLine routine for drawing strings */
 const int MAX_DISP_LINE_LEN = 1000;
 
-int min3(int i1, int i2, int i3) {
+template <class T>
+T min3(T i1, T i2, T i3) {
 	return std::min(i1, std::min(i2, i3));
 }
 
-int max3(int i1, int i2, int i3) {
+template <class T>
+T max3(T i1, T i2, T i3) {
     return std::max(i1, std::max(i2, i3));
 }
 
@@ -171,35 +173,30 @@ bool offscreenV(QDesktopWidget *desktop, int top, int height) {
 ** formatting just right.
 */
 QString expandAllTabsEx(const QString &text, int tab_width) {
-    int nTabs = 0;
 
     // First count 'em
-    for(QChar ch : text) {
-        if (ch == QLatin1Char('\t')) {
-            ++nTabs;
-        }
-    }
+	int nTabs = static_cast<int>(std::count(text.begin(), text.end(), QLatin1Char('\t')));
 
     if (nTabs == 0) {
         return text;
     }
 
     // Allocate the new string
-    int len = text.size() + (tab_width - 1) * nTabs;
+	int len = text.size() + (tab_width - 1) * nTabs;
 
     QString textCpy;
     textCpy.reserve(len);
 
-    auto cCpy = std::back_inserter(textCpy);
+	auto it = std::back_inserter(textCpy);
 
     // Now replace 'em
     for(QChar ch : text) {
         if (ch == QLatin1Char('\t')) {
             for (int i = 0; i < tab_width; ++i) {
-                *cCpy++ = QLatin1Char(' ');
+				*it++ = QLatin1Char(' ');
             }
         } else {
-            *cCpy++ = ch;
+			*it++ = ch;
         }
     }
 
@@ -212,13 +209,12 @@ QString expandAllTabsEx(const QString &text, int tab_width) {
 */
 void findTextMargins(TextBuffer *buf, int start, int end, int *leftMargin, int *rightMargin) {
 
-	int pos;
 	int width = 0;
 	int maxWidth = 0;
 	int minWhite = INT_MAX;
 	bool inWhite = true;
 
-	for (pos = start; pos < end; pos++) {
+	for (int pos = start; pos < end; pos++) {
 		char c = buf->BufGetCharacter(pos);
 		if (inWhite && c != ' ' && c != '\t') {
             inWhite = false;
@@ -226,16 +222,21 @@ void findTextMargins(TextBuffer *buf, int start, int end, int *leftMargin, int *
 				minWhite = width;
 		}
 		if (c == '\n') {
-			if (width > maxWidth)
+			if (width > maxWidth) {
 				maxWidth = width;
+			}
+
 			width = 0;
 			inWhite = true;
 		} else
 			width += TextBuffer::BufCharWidth(c, width, buf->tabDist_, buf->nullSubsChar_);
 	}
-	if (width > maxWidth)
+
+	if (width > maxWidth) {
 		maxWidth = width;
-	*leftMargin = minWhite == INT_MAX ? 0 : minWhite;
+	}
+
+	*leftMargin = (minWhite == INT_MAX) ? 0 : minWhite;
 	*rightMargin = maxWidth;
 }
 
@@ -244,10 +245,13 @@ void findTextMargins(TextBuffer *buf, int start, int end, int *leftMargin, int *
 ** from a reference position with known line number
 */
 int findRelativeLineStart(const TextBuffer *buf, int referencePos, int referenceLineNum, int newLineNum) {
-	if (newLineNum < referenceLineNum)
+
+	if (newLineNum < referenceLineNum) {
 		return buf->BufCountBackwardNLines(referencePos, referenceLineNum - newLineNum);
-	else if (newLineNum > referenceLineNum)
+	} else if (newLineNum > referenceLineNum) {
 		return buf->BufCountForwardNLines(referencePos, newLineNum - referenceLineNum);
+	}
+
 	return buf->BufStartOfLine(referencePos);
 }
 
@@ -282,34 +286,15 @@ void bufModifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view::st
 ** result, since later callbacks will see the second modifications first).
 */
 void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *cbArg) {
-	auto textD = static_cast<TextArea *>(cbArg);
-	textD->modifiedCallback(pos, nInserted, nDeleted, nRestyled, deletedText, cbArg);
+	auto area = static_cast<TextArea *>(cbArg);
+	area->modifiedCallback(pos, nInserted, nDeleted, nRestyled, deletedText, cbArg);
 }
 
 /*
 ** Count the number of newlines in a null-terminated text string;
 */
 int countLinesEx(view::string_view string) {
-	int lineCount = 0;
-
-	for (char ch : string) {
-		if (ch == '\n') {
-			lineCount++;
-		}
-	}
-
-	return lineCount;
-}
-
-/*
-** Allocate a read-only (shareable) colormap cell for a named color, from the
-** the default colormap of the screen on which the widget (w) is displayed. If
-** the colormap is full and there's no suitable substitute, print an error on
-** stderr, and return the widget's background color as a backup.
-*/
-QColor allocBGColor(const QString &colorName, bool *ok) {
-    *ok = true;
-	return AllocColor(colorName);
+	return static_cast<int>(std::count(string.begin(), string.end(), '\n'));
 }
 
 void ringIfNecessary(bool silent) {
@@ -399,8 +384,6 @@ TextArea::TextArea(QWidget *parent,
     clickTimer_->setSingleShot(true);
     connect(clickTimer_, SIGNAL(timeout()), this, SLOT(clickTimeout()));
     clickCount_ = 0;
-
-
 
 	// defaults for the "resources
     P_marginWidth        = 5;
@@ -3739,14 +3722,16 @@ QColor TextArea::getRangesetColor(int ind, QColor bground) {
         if (!valid) {
             const QString color_name = tab->RangesetTableGetColorName(ind);
             if (!color_name.isNull()) {
-                color = allocBGColor(color_name, &valid);
+				color = AllocColor(color_name);
 			}
 			tab->RangesetTableAssignColorPixel(ind, color, valid);
 		}
-        if (valid) {
+
+		if (color.isValid()) {
             return color;
 		}
 	}
+
 	return bground;
 }
 

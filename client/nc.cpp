@@ -434,7 +434,7 @@ int main(int argc, char *argv[]) {
        but different contents (and therefore can't be edited in the same nedit
        session). This should have no bad side-effects for non-clearcase users */
     if (ServerPreferences.serverName.isEmpty()) {
-        const QString viewTag = GetClearCaseViewTag();
+        const QString viewTag = ClearCase::GetViewTag();
         if (!viewTag.isNull() && viewTag.size() < MAXPATHLEN) {
             ServerPreferences.serverName =  viewTag;
         }

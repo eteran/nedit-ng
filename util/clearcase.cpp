@@ -37,11 +37,13 @@ QString ClearCaseViewTag;
 
 }
 
-int GetClearCaseVersionExtendedPathIndex(const QString &fullname) {
+namespace ClearCase {
+
+int GetVersionExtendedPathIndex(const QString &fullname) {
 	return fullname.indexOf(QLatin1String("@@/"));
 }
 
-QString GetClearCaseVersionExtendedPath(const QString &fullname) {
+QString GetVersionExtendedPath(const QString &fullname) {
 	int n = fullname.indexOf(QLatin1String("@@/"));
 	if(n == -1) {
 		return QString();
@@ -59,7 +61,7 @@ QString GetClearCaseVersionExtendedPath(const QString &fullname) {
 ** that it doesn't impact non-clearcase users, so it is not conditionally
 ** compiled. (Thanks to Max Vohlken)
 */
-QString GetClearCaseViewTag() {
+QString GetViewTag() {
 	if (!ClearCaseViewTagFound) {
 		/* Extract the view name from the CLEARCASE_ROOT environment variable */
         QByteArray envPtr = qgetenv("CLEARCASE_ROOT");
@@ -78,4 +80,6 @@ QString GetClearCaseViewTag() {
 	 */
 	ClearCaseViewTagFound = true;
 	return ClearCaseViewTag;
+}
+
 }

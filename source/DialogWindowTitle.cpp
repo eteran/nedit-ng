@@ -40,7 +40,7 @@ DialogWindowTitle::DialogWindowTitle(DocumentWidget *document, QWidget *parent, 
     path_        = document->path_;
     filename_    = document->filename_;
 	
-	QString clearCase = GetClearCaseViewTag();
+    QString clearCase = ClearCase::GetViewTag();
 	
     viewTag_     = !clearCase.isNull() ? clearCase : tr("viewtag");
     serverName_  = IsServer ? GetPrefServerName() : tr("servername");
@@ -75,7 +75,7 @@ void DialogWindowTitle::setToggleButtons() {
 	// Read-only takes precedence on locked 
 	ui.checkFileLocked->setEnabled(!lockReasons_.isPermLocked());
 
-	QString ccTag = GetClearCaseViewTag();
+    QString ccTag = ClearCase::GetViewTag();
 
 	ui.checkClearCasePresent->setChecked(!ccTag.isNull());
 	ui.checkServerNamePresent->setChecked(isServer_);

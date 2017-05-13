@@ -1744,7 +1744,7 @@ static void modifyStyleBuf(TextBuffer *styleBuf, char *styleString, int startPos
 	/* Mark or extend the range that needs to be redrawn.  Even if no
 	   change was made, it's important to re-establish the selection,
 	   because it can get damaged by the BufReplaceEx above */
-	styleBuf->BufSelect(std::min<int>(modStart, minPos), std::max<int>(modEnd, maxPos));
+	styleBuf->BufSelect(std::min(modStart, minPos), std::max(modEnd, maxPos));
 }
 
 /*
@@ -1754,7 +1754,7 @@ static void modifyStyleBuf(TextBuffer *styleBuf, char *styleString, int startPos
 */
 static int lastModified(TextBuffer *styleBuf) {
 	if (styleBuf->primary_.selected)
-		return std::max<int>(0, styleBuf->primary_.end);
+		return std::max(0, styleBuf->primary_.end);
 	return 0;
 }
 

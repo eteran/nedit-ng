@@ -29,8 +29,12 @@
 
 class QString;
 
-QString GetClearCaseVersionExtendedPath(const QString &fullname);
-int GetClearCaseVersionExtendedPathIndex(const QString &fullname);
-QString GetClearCaseViewTag();
+namespace ClearCase {
+
+QString GetVersionExtendedPath(const QString &fullname);
+int GetVersionExtendedPathIndex(const QString &fullname);
+QString GetViewTag();
+
+}
 
 #endif
