@@ -674,7 +674,7 @@ std::unique_ptr<PatternSet> readDefaultPatternSet(const QString &langModeName) {
 		QResource res(QString(QLatin1String("res/DefaultPatternSet%1.txt")).arg(i, 2, 10, QLatin1Char('0')));
 
 		if(res.isValid()) {
-			// NOTE(eteran): don't copy the data, if it's uncompressed, we can deal with it in place :-)
+            // don't copy the data, if it's uncompressed, we can deal with it in place :-)
 			auto data = QByteArray::fromRawData(reinterpret_cast<const char *>(res.data()), res.size());
 			
 			if(res.isCompressed()) {

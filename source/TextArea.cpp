@@ -2662,7 +2662,7 @@ void TextArea::updateVScrollBarRange() {
 	   buffer, with minor adjustments to keep the scroll bar widget happy */
 	if(P_continuousWrap) {
 		int sliderSize  = std::max(nVisibleLines_, 1); // Avoid X warning (size < 1)
-		int sliderMax   = std::max<int>(nBufferLines_ + 2 + P_cursorVPadding, sliderSize + sliderValue);
+        int sliderMax   = std::max(nBufferLines_ + 2 + P_cursorVPadding, sliderSize + sliderValue);
 
 		verticalScrollBar()->setMinimum(0);
 		verticalScrollBar()->setMaximum(sliderMax);
@@ -3606,7 +3606,7 @@ void TextArea::drawCursor(QPainter *painter, int x, int y) {
 
 	int midY;
 
-    // TODO(eteran): the original code used fontStruct_->min_bounds.width
+    // NOTE(eteran): the original code used fontStruct_->min_bounds.width
     // this doesn't matter for fixed sized fonts, but for variable sized ones
     // we aren't quite right. I've approximated this with the width of 'i', but
     // in some fonts, maybe that's not right?

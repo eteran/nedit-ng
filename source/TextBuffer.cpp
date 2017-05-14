@@ -56,7 +56,7 @@ const char *ControlCodeTable[32] = {"nul", "soh", "stx", "etx", "eot", "enq", "a
 ** when 3 or more spaces can be converted into a single tab, this avoids
 ** converting double spaces after a period withing a block of text.
 */
-std::string unexpandTabsEx(view::string_view text, int startIndent, int tabDist, char nullSubsChar, int *newLen) {
+std::string unexpandTabsEx(view::string_view text, int startIndent, int tabDist, char nullSubsChar) {
 	std::string outStr;
 	char expandedChar[MAX_EXP_CHAR_LEN];
 
@@ -92,7 +92,6 @@ std::string unexpandTabsEx(view::string_view text, int startIndent, int tabDist,
 		}
 	}
 
-	*newLen = outStr.size();
 	return outStr;
 }
 
@@ -101,7 +100,7 @@ std::string unexpandTabsEx(view::string_view text, int startIndent, int tabDist,
 ** "startIndent" if nonzero, indicates that the text is a rectangular selection
 ** beginning at column "startIndent"
 */
-std::string expandTabsEx(view::string_view text, int startIndent, int tabDist, char nullSubsChar, int *newLen) {
+std::string expandTabsEx(view::string_view text, int startIndent, int tabDist, char nullSubsChar) {
 
 	int outLen = 0;
 
@@ -147,7 +146,6 @@ std::string expandTabsEx(view::string_view text, int startIndent, int tabDist, c
 		}
 	}
 
-	*newLen = outLen;
 	return outStr;
 }
 
@@ -156,26 +154,22 @@ std::string expandTabsEx(view::string_view text, int startIndent, int tabDist, c
 ** characters remain stationary when the text is shifted from starting at
 ** "origIndent" to starting at "newIndent".
 */
-std::string realignTabsEx(view::string_view text, int origIndent, int newIndent, int tabDist, int useTabs, char nullSubsChar, int *newLength) {
-	int len;
+std::string realignTabsEx(view::string_view text, int origIndent, int newIndent, int tabDist, int useTabs, char nullSubsChar) {
 
 	// If the tabs settings are the same, retain original tabs
-	if (origIndent % tabDist == newIndent % tabDist) {
-		std::string outStr(text);
-		*newLength = outStr.size();
-		return outStr;
+    if (origIndent % tabDist == newIndent % tabDist) {
+        return std::string(text);
 	}
 
 	/* If the tab settings are not the same, brutally convert tabs to
 	   spaces, then back to tabs in the new position */
-	std::string expStr = expandTabsEx(text, origIndent, tabDist, nullSubsChar, &len);
+    std::string expStr = expandTabsEx(text, origIndent, tabDist, nullSubsChar);
 
-	if (!useTabs) {
-		*newLength = len;
+    if (!useTabs) {
 		return expStr;
 	}
 
-	return unexpandTabsEx(expStr, newIndent, tabDist, nullSubsChar, newLength);
+    return unexpandTabsEx(expStr, newIndent, tabDist, nullSubsChar);
 }
 
 /*
@@ -191,7 +185,7 @@ void histogramCharactersEx(view::string_view string, bool hist[256], bool init) 
 	}
 
 	for (char ch : string) {
-		hist[(uint8_t)ch] |= true;
+        hist[static_cast<uint8_t>(ch)] |= true;
 	}
 }
 
@@ -199,11 +193,12 @@ void histogramCharactersEx(view::string_view string, bool hist[256], bool init) 
 ** Substitute fromChar with toChar in string.
 */
 void subsChars(char *string, int length, char fromChar, char toChar) {
-	char *c;
 
-	for (c = string; c < &string[length]; c++)
-		if (*c == fromChar)
+    for (char *c = string; c < &string[length]; c++) {
+        if (*c == fromChar) {
 			*c = toChar;
+        }
+    }
 }
 
 /*
@@ -212,8 +207,9 @@ void subsChars(char *string, int length, char fromChar, char toChar) {
 void subsCharsEx(std::string &string, char fromChar, char toChar) {
 
 	for (char &ch : string) {
-		if (ch == fromChar)
+        if (ch == fromChar) {
 			ch = toChar;
+        }
 	}
 }
 
@@ -280,7 +276,7 @@ void insertColInLineEx(view::string_view line, view::string_view insLine, int co
 
 	auto linePtr = line.begin();
 	for (; linePtr != line.end(); ++linePtr) {
-		len = TextBuffer::BufCharWidth(*linePtr, indent, tabDist, nullSubsChar);
+        len = TextBuffer::BufCharWidth(*linePtr, indent, tabDist, nullSubsChar);
 		if (indent + len > column)
 			break;
 		indent += len;
@@ -310,7 +306,7 @@ void insertColInLineEx(view::string_view line, view::string_view insLine, int co
 
 	// pad out to column if text is too short
 	if (indent < column) {
-		len = addPadding(outPtr, indent, column, tabDist, useTabs, nullSubsChar);
+        len = addPadding(outPtr, indent, column, tabDist, useTabs, nullSubsChar);
 		outPtr += len;
 		indent = column;
 	}
@@ -318,7 +314,8 @@ void insertColInLineEx(view::string_view line, view::string_view insLine, int co
 	/* Copy the text from "insLine" (if any), recalculating the tabs as if
 	   the inserted string began at column 0 to its new column destination */
 	if (!insLine.empty()) {
-		std::string retabbedStr = realignTabsEx(insLine, 0, indent, tabDist, useTabs, nullSubsChar, &len);
+        std::string retabbedStr = realignTabsEx(insLine, 0, indent, tabDist, useTabs, nullSubsChar);
+        len = retabbedStr.size();
 
 		for (char ch : retabbedStr) {
 			*outPtr++ = ch;
@@ -341,7 +338,8 @@ void insertColInLineEx(view::string_view line, view::string_view insLine, int co
 	indent = toIndent;
 
 	// realign tabs for text beyond "column" and write it out
-	std::string retabbedStr = realignTabsEx(view::substr(linePtr, line.end()), postColIndent, indent, tabDist, useTabs, nullSubsChar, &len);
+    std::string retabbedStr = realignTabsEx(view::substr(linePtr, line.end()), postColIndent, indent, tabDist, useTabs, nullSubsChar);
+    len = retabbedStr.size();
 
 	auto it = retabbedStr.begin();
 	auto out = outPtr;
@@ -351,7 +349,7 @@ void insertColInLineEx(view::string_view line, view::string_view insLine, int co
 	*out++ = '\0';
 
 	*endOffset = (outPtr - outStr);
-	*outLen    = (outPtr - outStr) + len;
+    *outLen    = (outPtr - outStr) + len;
 }
 
 /*
@@ -395,14 +393,15 @@ void deleteRectFromLine(view::string_view line, int rectStart, int rectEnd, int 
 
 	/* fill in any space left by removed tabs or control characters
 	   which straddled the boundaries */
-	indent = std::max<int>(rectStart + postRectIndent - rectEnd, preRectIndent);
+    indent = std::max(rectStart + postRectIndent - rectEnd, preRectIndent);
 	len = addPadding(outPtr, preRectIndent, indent, tabDist, useTabs, nullSubsChar);
 	outPtr += len;
 
 	/* Copy the rest of the line.  If the indentation has changed, preserve
 	   the position of non-whitespace characters by converting tabs to
 	   spaces, then back to tabs with the correct offset */
-	std::string retabbedStr = realignTabsEx(view::substr(c, line.end()), postRectIndent, indent, tabDist, useTabs, nullSubsChar, &len);
+    std::string retabbedStr = realignTabsEx(view::substr(c, line.end()), postRectIndent, indent, tabDist, useTabs, nullSubsChar);
+    len = retabbedStr.size();
 
 	auto it = retabbedStr.begin();
 	auto out = outPtr;
@@ -528,7 +527,9 @@ void overlayRectInLineEx(view::string_view line, view::string_view insLine, int 
     /* Copy the text from "insLine" (if any), recalculating the tabs as if
        the inserted string began at column 0 to its new column destination */
     if (!insLine.empty()) {
-        std::string retabbedStr = realignTabsEx(insLine, 0, rectStart, tabDist, useTabs, nullSubsChar, &len);
+        std::string retabbedStr = realignTabsEx(insLine, 0, rectStart, tabDist, useTabs, nullSubsChar);
+        len = retabbedStr.size();
+
         for (char c : retabbedStr) {
             *outPtr++ = c;
             len = TextBuffer::BufCharWidth(c, outIndent, tabDist, nullSubsChar);
@@ -874,7 +875,6 @@ void TextBuffer::BufInsertColEx(int column, int startPos, view::string_view text
 */
 void TextBuffer::overlayRectEx(int startPos, int rectStart, int rectEnd, view::string_view insText, int *nDeleted, int *nInserted, int *endPos)
 {
-    int expInsLen;
     int len;
     int endOffset;
 
@@ -890,10 +890,10 @@ void TextBuffer::overlayRectEx(int startPos, int rectStart, int rectEnd, view::s
     int start = BufStartOfLine(startPos);
     int nLines = countLinesEx(insText) + 1;
     int end = BufEndOfLine(BufCountForwardNLines(start, nLines-1));
-    std::string expText = expandTabsEx(insText, 0, tabDist_, nullSubsChar_, &expInsLen);
-	Q_UNUSED(expText);
 
-    char *outStr = new char[end - start + expInsLen + nLines * (rectEnd + MAX_EXP_CHAR_LEN) + 1];
+    std::string expIns = expandTabsEx(insText, 0, tabDist_, nullSubsChar_);
+
+    char *outStr = new char[end - start + expIns.size() + nLines * (rectEnd + MAX_EXP_CHAR_LEN) + 1];
 
     /* Loop over all lines in the buffer between start and end overlaying the
        text between rectStart and rectEnd and padding appropriately.  Trim
@@ -1075,7 +1075,8 @@ void TextBuffer::BufClearRect(int start, int end, int rectStart, int rectEnd) {
 }
 
 std::string TextBuffer::BufGetTextInRectEx(int start, int end, int rectStart, int rectEnd) {
-	int selLeft, selRight, len;
+    int selLeft;
+    int selRight;
 
 	start = BufStartOfLine(start);
 	end   = BufEndOfLine(end);
@@ -1089,7 +1090,7 @@ std::string TextBuffer::BufGetTextInRectEx(int start, int end, int rectStart, in
 	while (lineStart <= end) {
 		findRectSelBoundariesForCopy(lineStart, rectStart, rectEnd, &selLeft, &selRight);
 		std::string textIn = BufGetRangeEx(selLeft, selRight);
-		len = selRight - selLeft;
+        int len = selRight - selLeft;
 
 		std::copy_n(textIn.begin(), len, outPtr);
 		lineStart = BufEndOfLine(selRight) + 1;
@@ -1103,7 +1104,7 @@ std::string TextBuffer::BufGetTextInRectEx(int start, int end, int rectStart, in
 
 	/* If necessary, realign the tabs in the selection as if the text were
 	   positioned at the left margin */
-	return realignTabsEx(textOut, rectStart, 0, tabDist_, useTabs_, nullSubsChar_, &len);
+    return realignTabsEx(textOut, rectStart, 0, tabDist_, useTabs_, nullSubsChar_);
 }
 
 /*
@@ -1922,8 +1923,7 @@ void TextBuffer::deleteRange(int start, int end) {
 */
 void TextBuffer::deleteRect(int start, int end, int rectStart, int rectEnd, int *replaceLen, int *endPos) {
 
-	int len;
-	int endOffset = 0;
+    int endOffset = 0;
 
 	/* allocate a buffer for the replacement string large enough to hold
 	   possibly expanded tabs as well as an additional  MAX_EXP_CHAR_LEN * 2
@@ -1934,10 +1934,10 @@ void TextBuffer::deleteRect(int start, int end, int rectStart, int rectEnd, int 
 	int nLines = BufCountLines(start, end) + 1;
 
 	std::string text = BufGetRangeEx(start, end);
-	std::string expText = expandTabsEx(text, 0, tabDist_, nullSubsChar_, &len);
-	Q_UNUSED(expText);
+    std::string expText = expandTabsEx(text, 0, tabDist_, nullSubsChar_);
+    int len = expText.size();
 
-	auto outStr = new char[len + nLines * MAX_EXP_CHAR_LEN * 2 + 1];
+    auto outStr = new char[expText.size() + nLines * MAX_EXP_CHAR_LEN * 2 + 1];
 
 	/* loop over all lines in the buffer between start and end removing
 	   the text between rectStart and rectEnd and padding appropriately */
@@ -1945,7 +1945,7 @@ void TextBuffer::deleteRect(int start, int end, int rectStart, int rectEnd, int 
 	char *outPtr = outStr;
 	while (lineStart <= length_ && lineStart <= end) {
 		int lineEnd = BufEndOfLine(lineStart);
-		std::string line = BufGetRangeEx(lineStart, lineEnd);
+        std::string line = BufGetRangeEx(lineStart, lineEnd);
 		deleteRectFromLine(line.c_str(), rectStart, rectEnd, tabDist_, useTabs_, nullSubsChar_, outPtr, &len, &endOffset);
 
 		outPtr += len;
@@ -2028,8 +2028,6 @@ void TextBuffer::findRectSelBoundariesForCopy(int lineStartPos, int rectStart, i
 */
 void TextBuffer::insertColEx(int column, int startPos, view::string_view insText, int *nDeleted, int *nInserted, int *endPos) {
 
-    int expReplLen;
-    int expInsLen;
     int len;
     int endOffset;
 
@@ -2053,18 +2051,11 @@ void TextBuffer::insertColEx(int column, int startPos, view::string_view insText
     int insWidth = textWidthEx(insText, tabDist_, nullSubsChar_);
     int end = BufEndOfLine(BufCountForwardNLines(start, nLines - 1));
 	std::string replText = BufGetRangeEx(start, end);
-	{
-		std::string expText = expandTabsEx(replText, 0, tabDist_, nullSubsChar_, &expReplLen);
-		Q_UNUSED(expText);
-		// NOTE(eteran): immediately freed, result isn't used for anything
-	}
-	{
-		std::string expText = expandTabsEx(insText, 0, tabDist_, nullSubsChar_, &expInsLen);
-		Q_UNUSED(expText);
-		// NOTE(eteran): immediately freed, result isn't used for anything
-	}
 
-    auto outStr = new char[expReplLen + expInsLen + nLines * (column + insWidth + MAX_EXP_CHAR_LEN) + 1];
+    std::string expRep = expandTabsEx(replText, 0, tabDist_, nullSubsChar_);
+    std::string expIns = expandTabsEx(insText, 0, tabDist_, nullSubsChar_);
+
+    auto outStr = new char[expRep.size() + expIns.size() + nLines * (column + insWidth + MAX_EXP_CHAR_LEN) + 1];
 
 	/* Loop over all lines in the buffer between start and end inserting
 	   text at column, splitting tabs and adding padding appropriately */

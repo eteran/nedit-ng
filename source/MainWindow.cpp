@@ -997,13 +997,11 @@ void MainWindow::CheckCloseDimEx() {
     QList<MainWindow *> windows = MainWindow::allWindows();
 
     if(windows.empty()) {
-        // should never happen...
         return;
     }
 
     if(windows.size() == 1) {
-        // NOTE(eteran): if there is only one window, then *this* must be it...
-        // right?
+        // if there is only one window, then *this* must be it... right?
         MainWindow *window = windows[0];
 
         QList<DocumentWidget *> documents = window->openDocuments();
@@ -2198,7 +2196,7 @@ void MainWindow::on_editIFind_textChanged(const QString &text) {
 // Name: on_buttonIFind_clicked
 //------------------------------------------------------------------------------
 void MainWindow::on_buttonIFind_clicked() {
-    // NOTE(eteran): same as pressing return
+    // same as pressing return
     on_editIFind_returnPressed();
 }
 
@@ -3668,8 +3666,6 @@ void MainWindow::action_Next_Document() {
             MainWindow *nextWindow = windows[nextIndex];
             QWidget *firstWidget = nextWindow->ui.tabWidget->widget(0);
 
-            // NOTE(eteran): I *think* I've seen this be null,
-            // but not sure why it would happen
             Q_ASSERT(qobject_cast<DocumentWidget *>(firstWidget));
 
             if(auto document = qobject_cast<DocumentWidget *>(firstWidget)) {
@@ -3710,8 +3706,6 @@ void MainWindow::action_Prev_Document() {
             MainWindow *nextWindow = windows[nextIndex];
             QWidget *lastWidget = nextWindow->ui.tabWidget->widget(nextWindow->ui.tabWidget->count() - 1);
 
-            // NOTE(eteran): I *think* I've seen this be null,
-            // but not sure why it would happen
             Q_ASSERT(qobject_cast<DocumentWidget *>(lastWidget));
 
             if(auto document = qobject_cast<DocumentWidget *>(lastWidget)) {
@@ -4337,7 +4331,6 @@ void MainWindow::on_action_Repeat_triggered() {
         return;
     }
 
-    // NOTE(eteran): redundant to work done in DialogRepeat::setCommand function
     int index = LastCommand.indexOf(QLatin1Char('('));
     if(index == -1) {
         return;

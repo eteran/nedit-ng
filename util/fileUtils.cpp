@@ -280,20 +280,19 @@ QString NormalizePathnameEx(const QString &pathname) {
 }
 
 /*
-** Return 0 if everything's fine. In fact it always return 0... (No it doesn't)
+** Return flase if everything's fine. In fact it always return false... (No it doesn't)
 ** Capable to handle arbitrary path length (>MAXPATHLEN)!
 **
 **  FIXME: Documentation
-**  FIXME: Change return value to False and True.
 */
-int NormalizePathname(char *pathname) {
+bool NormalizePathname(char *pathname) {
 
 	/* if this is a relative pathname, prepend current directory */
 	if (pathname[0] != '/') {
 
 		/* make a copy of pathname to work from */
-        char *oldPathname = new char[strlen(pathname) + 1];
-		strcpy(oldPathname, pathname);
+        auto oldPathname = std::make_unique<char[]>(strlen(pathname) + 1);
+        strcpy(&oldPathname[0], pathname);
 		
 		/* get the working directory and prepend to the path */
 		strcpy(pathname, GetCurrentDirEx().toLatin1().data());
@@ -306,13 +305,12 @@ int NormalizePathname(char *pathname) {
 		/*  Apart from the fact that people putting conditional expressions in
 		    ifs should be caned: How should len ever become 0 if GetCurrentDirEx()
 		    always returns a useful value?
-		    FIXME: Check and document GetCurrentDirEx() return behaviour.  */
+            FIXME: Check and document GetCurrentDir() return behaviour.  */
 		if ((len == 0) ? 1 : pathname[len - 1] != '/') {
 			strcat(pathname, "/");
 		}
 
-		strcat(pathname, oldPathname);
-        delete [] oldPathname;
+        strcat(pathname, &oldPathname[0]);
 	}
 
 	/* compress out .. and . */
@@ -320,12 +318,11 @@ int NormalizePathname(char *pathname) {
 }
 
 /*
-** Return 0 if everything's fine, 1 else.
+** Return false if everything's fine, true else.
 **
 **  FIXME: Documentation
-**  FIXME: Change return value to False and True.
 */
-int CompressPathname(char *pathname) {
+bool CompressPathname(char *pathname) {
 
 	/* (Added by schwarzenberg)
 	** replace multiple slashes by a single slash
@@ -351,9 +348,9 @@ int CompressPathname(char *pathname) {
 
 
 	/* compress out . and .. */
-	auto buf = new char[strlen(pathname) + 2];
+    auto buf = std::make_unique<char[]>(strlen(pathname) + 2);
 	char *inPtr = pathname;
-	char *outPtr = buf;
+    char *outPtr = &buf[0];
 	
 	/* copy initial / */
 	copyThruSlash(&outPtr, &inPtr);
@@ -369,7 +366,7 @@ int CompressPathname(char *pathname) {
 			   no S_ISLNK macro, assume system does not do symbolic links. */
 #ifdef S_ISLNK
 			struct stat statbuf;
-			if (outPtr - 1 == buf || (lstat(buf, &statbuf) == 0 && S_ISLNK(statbuf.st_mode))) {
+            if (outPtr - 1 == &buf[0] || (::lstat(&buf[0], &statbuf) == 0 && S_ISLNK(statbuf.st_mode))) {
 				copyThruSlash(&outPtr, &inPtr);
 			} else
 #endif
@@ -388,14 +385,12 @@ int CompressPathname(char *pathname) {
 	}
 
 	/* updated pathname with the new value */
-	if (strlen(buf) > MAXPATHLEN) {
+    if (strlen(&buf[0]) > MAXPATHLEN) {
 		qWarning("nedit: CompressPathname(): file name too long %s", pathname);
-		delete [] buf;
-		return 1;
+        return true;
 	} else {
-		strcpy(pathname, buf);
-		delete [] buf;
-		return 0;
+        strcpy(pathname, &buf[0]);
+        return false;
 	}
 }
 
@@ -408,8 +403,9 @@ static char *nextSlash(char *ptr) {
 }
 
 static char *prevSlash(char *ptr) {
-	for (ptr -= 2; *ptr != '/'; ptr--)
+    for (ptr -= 2; *ptr != '/'; ptr--) {
 		;
+    }
 	return ptr + 1;
 }
 

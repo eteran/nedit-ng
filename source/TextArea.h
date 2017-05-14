@@ -396,7 +396,7 @@ private:
 	int modifyingTabDist_;                        // Whether tab distance is being modified
 	bool pointerHidden_;                          // true if the mouse pointer is hidden
 
-	// NOTE(eteran): moved from textP
+    // moved from textP
 	TextBuffer *dragOrigBuf_;        // backup buffer copy used during block dragging of selections
 	int dragXOffset_;                // offsets between cursor location and actual insertion point in drag
 	int dragYOffset_;                // offsets between cursor location and actual insertion point in drag

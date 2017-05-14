@@ -34,8 +34,8 @@ class QString;
 enum FileFormats : int;
 
 FileFormats FormatOfFileEx(view::string_view fileString);
-int CompressPathname(char *pathname);
-int NormalizePathname(char *pathname);
+bool CompressPathname(char *pathname);
+bool NormalizePathname(char *pathname);
 int ParseFilenameEx(const QString &fullname, QString *filename, QString *pathname);
 QString ExpandTildeEx(const QString &pathname);
 QString GetTrailingPathComponentsEx(const QString &path, int noOfComponents);

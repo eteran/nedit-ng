@@ -1491,10 +1491,8 @@ bool SearchString(view::string_view string, const QString &searchString, SearchD
 */
 bool StringToSearchType(view::string_view string, SearchType *searchType) {
 
-	// TODO(eteran): make this case insenstive
-
 	static const struct {
-		const char *name;
+        view::string_view name;
 		SearchType type;
 	} searchTypeStrings[] = {
 	    { "literal",     SearchType::SEARCH_LITERAL },
@@ -1506,7 +1504,7 @@ bool StringToSearchType(view::string_view string, SearchType *searchType) {
     };
 
 	for(const auto &entry : searchTypeStrings) {
-		if (string == entry.name) {
+        if (view::icasecmp(string, entry.name)) {
 			*searchType = entry.type;
 			return true;
 		}
@@ -1518,10 +1516,8 @@ bool StringToSearchType(view::string_view string, SearchType *searchType) {
 
 bool StringToSearchDirection(view::string_view string, SearchDirection *searchDirection) {
 
-	// TODO(eteran): make this case insenstive
-
 	static const struct {
-		const char *name;
+        view::string_view name;
 		SearchDirection direction;
 	} searchDirectionStrings[] = {
 	    { "forward",  SearchDirection::SEARCH_FORWARD },
@@ -1529,7 +1525,7 @@ bool StringToSearchDirection(view::string_view string, SearchDirection *searchDi
     };
 
 	for(const auto &entry : searchDirectionStrings) {
-		if (string == entry.name) {
+        if (view::icasecmp(string, entry.name)) {
 			*searchDirection = entry.direction;
 			return true;
 		}
@@ -1541,10 +1537,8 @@ bool StringToSearchDirection(view::string_view string, SearchDirection *searchDi
 
 bool StringToSearchWrap(view::string_view string, bool *searchWraps) {
 
-	// TODO(eteran): make this case insenstive
-
 	static const struct {
-		const char *name;
+        view::string_view name;
 		bool value;
 	} searchWrapStrings[] = {
 	    { "wrap", true },
@@ -1552,7 +1546,7 @@ bool StringToSearchWrap(view::string_view string, bool *searchWraps) {
     };
 
 	for(const auto &entry : searchWrapStrings) {
-		if (string == entry.name) {
+        if (view::icasecmp(string, entry.name)) {
 			*searchWraps = entry.value;
 			return true;
 		}
@@ -1893,7 +1887,7 @@ static bool backwardRegexSearch(view::string_view string, view::string_view sear
 
         return false;
 	} catch(const regex_error &e) {
-		// NOTE(eteran): ignoring error!
+        Q_UNUSED(e);
         return false;
 	}
 }
@@ -2020,7 +2014,7 @@ static bool replaceUsingREEx(view::string_view searchStr, const char *replaceStr
 		compiledRE.execute(sourceStr, beginPos, sourceStr.size(), prevChar, '\0', delimiters, false);
 		return compiledRE.SubstituteRE(replaceStr, destStr, maxDestLen);
 	} catch(const regex_error &e) {
-		// NOTE(eteran): ignoring error!
+        Q_UNUSED(e);
         return false;
 	}
 }

@@ -88,7 +88,8 @@ void DialogLanguageModes::on_listItems_itemSelectionChanged() {
 		// NOTE(eteran): in the original nedit 5.6, this code is broken!
 		//               it results in a crash when leaving invalid entries :-(
 		//               we can do better of course
-		if(false/*!checkCurrent(true)*/) {
+#if 0
+        if(!checkCurrent(true)) {
 
 			/* If there are problems, and the user didn't ask for the fields to be
 			   read, give more warning */
@@ -121,7 +122,9 @@ void DialogLanguageModes::on_listItems_itemSelectionChanged() {
 				return;
 			}
 		}
+#endif
 	}
+
 
 	if(current) {
 
