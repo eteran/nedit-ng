@@ -7669,6 +7669,7 @@ void TextArea::setOverstrike(bool value) {
 	case NORMAL_CURSOR:
 	case HEAVY_CURSOR:
 		TextDSetCursorStyle(BLOCK_CURSOR);
+        break;
 	default:
 		// NOTE(eteran): wasn't handled in the original code
 		break;
