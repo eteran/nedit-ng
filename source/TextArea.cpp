@@ -51,8 +51,7 @@
 // in a way that is comparaable to how the original nedit works
 class AsciiTextCodec : public QTextCodec {
 public:
-    virtual ~AsciiTextCodec() {
-    }
+    virtual ~AsciiTextCodec() = default;
 
     virtual QByteArray name() const {
         return "US_ASCII";
