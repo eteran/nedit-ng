@@ -66,9 +66,7 @@ struct SearchSelectedCallData {
 
 
 // History mechanism for search and replace strings 
-QString SearchHistory[MAX_SEARCH_HISTORY];
-QString ReplaceHistory[MAX_SEARCH_HISTORY];
-SearchType SearchTypeHistory[MAX_SEARCH_HISTORY];
+SearchReplaceHistoryEntry SearchReplaceHistory[MAX_SEARCH_HISTORY];
 static int HistStart = 0;
 
 static bool backwardRegexSearch(view::string_view string, view::string_view searchString, bool wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags);
@@ -353,7 +351,14 @@ bool SearchAndSelectSameEx(MainWindow *window, DocumentWidget *document, TextAre
         return false;
     }
 
-    return SearchAndSelectEx(window, document, area, direction, SearchHistory[historyIndex(1)], SearchTypeHistory[historyIndex(1)], searchWrap);
+    return SearchAndSelectEx(
+                window,
+                document,
+                area,
+                direction,
+                SearchReplaceHistory[historyIndex(1)].search,
+                SearchReplaceHistory[historyIndex(1)].type,
+                searchWrap);
 }
 
 /*
@@ -532,7 +537,7 @@ bool SearchAndSelectIncrementalEx(MainWindow *window, DocumentWidget *document, 
     /* Save the string in the search history, unless we're cycling thru
        the search history itself, which can be detected by matching the
        search string with the search string of the current history index. */
-    if (!(window->iSearchHistIndex_ > 1 && (searchString == SearchHistory[historyIndex(window->iSearchHistIndex_)]))) {
+    if (!(window->iSearchHistIndex_ > 1 && (searchString == SearchReplaceHistory[historyIndex(window->iSearchHistIndex_)].search))) {
         saveSearchHistory(searchString, QString(), searchType, true);
         // Reset the incremental search history pointer to the beginning
         window->iSearchHistIndex_ = 1;
@@ -746,7 +751,15 @@ bool ReplaceSameEx(MainWindow *window, DocumentWidget *document, TextArea *area,
         return false;
     }
 
-    return SearchAndReplaceEx(window, document, area, direction, SearchHistory[historyIndex(1)], ReplaceHistory[historyIndex(1)], SearchTypeHistory[historyIndex(1)], searchWrap);
+    return SearchAndReplaceEx(
+                window,
+                document,
+                area,
+                direction,
+                SearchReplaceHistory[historyIndex(1)].search,
+                SearchReplaceHistory[historyIndex(1)].replace,
+                SearchReplaceHistory[historyIndex(1)].type,
+                searchWrap);
 }
 
 /*
@@ -759,7 +772,15 @@ bool ReplaceFindSameEx(MainWindow *window, DocumentWidget *document, TextArea *a
         return false;
     }
 
-    return ReplaceAndSearchEx(window, document, area, direction, SearchHistory[historyIndex(1)], ReplaceHistory[historyIndex(1)], SearchTypeHistory[historyIndex(1)], searchWrap);
+    return ReplaceAndSearchEx(
+                window,
+                document,
+                area,
+                direction,
+                SearchReplaceHistory[historyIndex(1)].search,
+                SearchReplaceHistory[historyIndex(1)].replace,
+                SearchReplaceHistory[historyIndex(1)].type,
+                searchWrap);
 }
 
 /*
@@ -2013,7 +2034,7 @@ static bool replaceUsingREEx(view::string_view searchStr, const char *replaceStr
 		regexp compiledRE(searchStr, defaultFlags);
 		compiledRE.execute(sourceStr, beginPos, sourceStr.size(), prevChar, '\0', delimiters, false);
 		return compiledRE.SubstituteRE(replaceStr, destStr, maxDestLen);
-	} catch(const regex_error &e) {
+    } catch(const regex_error &e) {
         Q_UNUSED(e);
         return false;
 	}
@@ -2044,12 +2065,12 @@ void saveSearchHistory(const QString &searchString, QString replaceString, Searc
 
 	// If replaceString is nullptr, duplicate the last one (if any) 
     if(replaceString.isNull()) {
-        replaceString = (NHist >= 1) ? ReplaceHistory[historyIndex(1)] : QLatin1String("");
+        replaceString = (NHist >= 1) ? SearchReplaceHistory[historyIndex(1)].replace : QLatin1String("");
     }
 
 	/* Compare the current search and replace strings against the saved ones.
 	   If they are identical, don't bother saving */
-    if (NHist >= 1 && searchType == SearchTypeHistory[historyIndex(1)] && SearchHistory[historyIndex(1)] == searchString && ReplaceHistory[historyIndex(1)] == replaceString) {
+    if (NHist >= 1 && searchType == SearchReplaceHistory[historyIndex(1)].type && SearchReplaceHistory[historyIndex(1)].search == searchString && SearchReplaceHistory[historyIndex(1)].replace == replaceString) {
 		return;
 	}
 
@@ -2057,13 +2078,13 @@ void saveSearchHistory(const QString &searchString, QString replaceString, Searc
 	   new one is also incremental, just update the entry */
 	if (currentItemIsIncremental && isIncremental) {
 
-        SearchHistory[historyIndex(1)]     = searchString;
-		SearchTypeHistory[historyIndex(1)] = searchType;
+        SearchReplaceHistory[historyIndex(1)].search = searchString;
+        SearchReplaceHistory[historyIndex(1)].type   = searchType;
 		return;
 	}
 	currentItemIsIncremental = isIncremental;
 
-	if (NHist == 0) {
+    if (NHist == 0) {
         for(MainWindow *window : MainWindow::allWindows()) {
             window->ui.action_Find_Again->setEnabled(true);
             window->ui.action_Replace_Find_Again->setEnabled(true);
@@ -2071,20 +2092,20 @@ void saveSearchHistory(const QString &searchString, QString replaceString, Searc
 		}
 	}
 
-	/* If there are more than MAX_SEARCH_HISTORY strings saved, recycle
-	   some space, free the entry that's about to be overwritten */
+    /* If there are more than MAX_SEARCH_HISTORY strings saved, recycle
+       some space, free the entry that's about to be overwritten */
     if (NHist != MAX_SEARCH_HISTORY) {
-		NHist++;
+        NHist++;
     }
 
-    SearchHistory[HistStart]     = searchString;
-    ReplaceHistory[HistStart]    = replaceString;
-	SearchTypeHistory[HistStart] = searchType;
+    SearchReplaceHistory[HistStart].search  = searchString;
+    SearchReplaceHistory[HistStart].replace = replaceString;
+    SearchReplaceHistory[HistStart].type    = searchType;
 
     HistStart++;
 
     if (HistStart >= MAX_SEARCH_HISTORY) {
-		HistStart = 0;
+        HistStart = 0;
     }
 }
 
@@ -2101,10 +2122,10 @@ int historyIndex(int nCycles) {
 
     int index = HistStart - nCycles;
     if (index < 0) {
-		index = MAX_SEARCH_HISTORY + index;
+        index = MAX_SEARCH_HISTORY + index;
     }
 
-	return index;
+    return index;
 }
 
 

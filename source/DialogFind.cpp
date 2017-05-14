@@ -64,8 +64,8 @@ void DialogFind::keyPressEvent(QKeyEvent *event) {
 			searchStr  = QLatin1String("");
 			searchType = GetPrefSearch();
 		} else {
-			searchStr  = SearchHistory[historyIndex(index)];
-			searchType = SearchTypeHistory[historyIndex(index)];
+            searchStr  = SearchReplaceHistory[historyIndex(index)].search;
+            searchType = SearchReplaceHistory[historyIndex(index)].type;
 		}
 
 		// Set the buttons and fields with the selected search type 

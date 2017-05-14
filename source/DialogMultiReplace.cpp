@@ -133,7 +133,7 @@ void DialogMultiReplace::uploadFileListItems(bool replace) {
 	bool usePathNames = ui.checkShowPaths->isChecked();
 	
     // NOTE(eteran): so replace seems to mean that we want to keep
-    //               existing items and possible update them "replacing" their
+    //               existing items and possible update them, "replacing" their
     //               strings with new ones, when not in replace mode, I think the
     //               whole list is supposed to be new
 	if(replace) {

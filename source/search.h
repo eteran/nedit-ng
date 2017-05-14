@@ -30,11 +30,11 @@
 #include "SearchDirection.h"
 #include "SearchType.h"
 #include "util/string_view.h"
+#include <QString>
 
 class DocumentWidget;
 class MainWindow;
 class TextArea;
-class QString;
 
 constexpr const int MAX_SEARCH_HISTORY = 100; /* Maximum length of search string history */
 
@@ -94,9 +94,14 @@ bool isRegexType(SearchType searchType);
 void saveSearchHistory(const QString &searchString, QString replaceString, SearchType searchType, bool isIncremental);
 int defaultRegexFlags(SearchType searchType);
 
+struct SearchReplaceHistoryEntry {
+    QString    search;
+    QString    replace;
+    SearchType type;
+
+};
+
 extern int NHist;
-extern QString SearchHistory[MAX_SEARCH_HISTORY];
-extern QString ReplaceHistory[MAX_SEARCH_HISTORY];
-extern SearchType SearchTypeHistory[MAX_SEARCH_HISTORY];
+extern SearchReplaceHistoryEntry SearchReplaceHistory[MAX_SEARCH_HISTORY];
 
 #endif

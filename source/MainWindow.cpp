@@ -2278,8 +2278,8 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
 		searchStr  = QLatin1String("");
         searchType = GetPrefSearch();
     } else {
-        searchStr  = SearchHistory[historyIndex(index)];
-        searchType = SearchTypeHistory[historyIndex(index)];
+        searchStr  = SearchReplaceHistory[historyIndex(index)].search;
+        searchType = SearchReplaceHistory[historyIndex(index)].type;
     }
 
     /* Set the info used in the value changed callback before calling XmTextSetStringEx(). */
