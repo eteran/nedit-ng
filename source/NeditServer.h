@@ -3,7 +3,9 @@
 #define NEDIT_SERVER_H_
 
 #include <QObject>
-#include <QString>
+
+class QLocalServer;
+class QString;
 
 class NeditServer : public QObject {
     Q_OBJECT
@@ -15,6 +17,10 @@ public:
 
 public Q_SLOTS:
     void processCommand(const QString &command);
+    void newConnection();
+
+private:
+    QLocalServer *server_;
 
 
 };

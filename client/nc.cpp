@@ -29,20 +29,20 @@
 #include "Settings.h"
 
 #include <QCoreApplication>
-#include <QDBusConnection>
-#include <QDBusInterface>
-#include <QDBusReply>
 #include <QSettings>
 #include <QString>
 #include <QProcess>
 #include <QTextStream>
 #include <QtDebug>
+#include <QJsonDocument>
+#include <QLocalSocket>
+#include <QDataStream>
 
 #include "util/fileUtils.h"
 #include "util/utils.h"
 #include "util/system.h"
 #include "util/clearcase.h"
-#include "server_common.h"
+#include "util/ServerCommon.h"
 #include "version.h"
 
 #include <cstdio>
@@ -72,7 +72,7 @@ const char cmdLineHelp[] = "Usage:  nc [-read] [-create]\n"
 
 struct CommandLine {
     QString shell;
-    QString serverRequest;
+    QByteArray jsonRequest;
 };
 
 struct {
@@ -146,7 +146,7 @@ void printNcVersion() {
 ** Converts command line into a command string suitable for passing to
 ** the server
 */
-void parseCommandLine(int argc, char **argv, CommandLine *commandLine) {
+bool parseCommandLine(int argc, char **argv, CommandLine *commandLine) {
 
     QString name;
     QString path;
@@ -167,6 +167,8 @@ void parseCommandLine(int argc, char **argv, CommandLine *commandLine) {
     // Parse the arguments and write the output string
     QString commandString;
     QTextStream out(&commandString);
+
+    QVariantList commandData;
 
     for (i = 1; i < argc; i++) {
 
@@ -243,8 +245,7 @@ void parseCommandLine(int argc, char **argv, CommandLine *commandLine) {
         } else {
             if (ParseFilenameEx(QString::fromLatin1(argv[i]), &name, &path) != 0) {
                 // An Error, most likely too long paths/strings given
-                commandLine->serverRequest = QString();
-                return;
+                return false;
             }
 
             path.append(name);
@@ -260,30 +261,17 @@ void parseCommandLine(int argc, char **argv, CommandLine *commandLine) {
                 isTabbed = tabbed; // not in group
             }
 
-            /* SunOS 4 acc or acc and/or its runtime library has a bug
-               such that %n fails (segv) if it follows a string in a
-               printf or sprintf.  The silly code below avoids this.
-
-               The "long" cast on strlen() is necessary because size_t
-               is 64 bit on Alphas, and 32-bit on most others.  There is
-               no printf format specifier for "size_t", thanx, ANSI. */
-            QString temp;
-            temp.sprintf("%d %d %d %d %d %d %ld %ld %ld\n",
-                         lineNum,
-                         read,
-                         create,
-                         iconic,
-                         isTabbed,
-                         path.size(),
-                         static_cast<long>(strlen(toDoCommand)),
-                         static_cast<long>(strlen(langMode)),
-                         static_cast<long>(strlen(geometry)));
-
-            out << temp;
-            out << path << '\n';
-            out << toDoCommand << '\n';
-            out << langMode << '\n';
-            out << geometry << '\n';
+            QVariantMap file;
+            file[QLatin1String("line_number")] = lineNum;
+            file[QLatin1String("read")]        = read;
+            file[QLatin1String("create")]      = create;
+            file[QLatin1String("iconic")]      = iconic;
+            file[QLatin1String("is_tabbed")]   = isTabbed;
+            file[QLatin1String("path")]        = path;
+            file[QLatin1String("toDoCommand")] = QLatin1String(toDoCommand);
+            file[QLatin1String("langMode")]    = QLatin1String(langMode);
+            file[QLatin1String("geometry")]    = QLatin1String(geometry);
+            commandData.append(file);
 
             ++fileCount;
 
@@ -300,24 +288,22 @@ void parseCommandLine(int argc, char **argv, CommandLine *commandLine) {
      */
     if (toDoCommand[0] != '\0' || fileCount == 0) {
 
-        QString temp;
-        temp.sprintf("0 0 0 %d %d 0 %ld %ld %ld\n\n",
-                     iconic,
-                     tabbed,
-                     static_cast<long>(strlen(toDoCommand)),
-                     static_cast<long>(strlen(langMode)),
-                     static_cast<long>(strlen(geometry)));
-
-        out << temp;
-        out << toDoCommand << '\n';
-        out << langMode << '\n';
-        out << geometry << '\n';
+        QVariantMap file;
+        file[QLatin1String("line_number")] = 0;
+        file[QLatin1String("read")]        = 0;
+        file[QLatin1String("create")]      = 0;
+        file[QLatin1String("iconic")]      = iconic;
+        file[QLatin1String("is_tabbed")]   = tabbed;
+        file[QLatin1String("path")]        = QString();
+        file[QLatin1String("toDoCommand")] = QLatin1String(toDoCommand);
+        file[QLatin1String("langMode")]    = QLatin1String(langMode);
+        file[QLatin1String("geometry")]    = QLatin1String(geometry);
+        commandData.append(file);
     }
 
-#if 0 // NOTE(eteran): useful for debugging, but not for the average users
-    qDebug() << "Sending: " << commandString;
-#endif
-    commandLine->serverRequest = commandString;
+    auto doc = QJsonDocument::fromVariant(commandData);
+    commandLine->jsonRequest = doc.toJson(QJsonDocument::Compact);
+    return true;
 }
 
 
@@ -329,11 +315,8 @@ void parseCommandLine(int argc, char **argv, CommandLine *commandLine) {
 CommandLine processCommandLine(int argc, char **argv) {
     CommandLine commandLine;
 
-    commandLine.shell = QString();
-
     // Convert command line arguments into a command string for the server
-    parseCommandLine(argc, argv, &commandLine);
-    if(commandLine.serverRequest.isNull()) {
+    if(!parseCommandLine(argc, argv, &commandLine)) {
         fprintf(stderr, "nc: Invalid commandline argument\n");
         exit(EXIT_FAILURE);
     }
@@ -365,25 +348,10 @@ int startServer(const char *message, const QString &commandLineArgs) {
     process->start(QString(QLatin1String("%1 %2")).arg(ServerPreferences.serverCmd, commandLineArgs));
     bool sysrc = process->waitForStarted();
 
-    // TODO(eteran): why is this necessary?!?
-    usleep(125000);
-
     return (sysrc) ? 0 : -1;
 }
 
 static void startNewServer(QString commandLine) {
-
-
-    /* Add back the server name resource from the command line or resource
-       database to the command line for starting the server.  If -svrcmd
-       appeared on the original command line, it was removed by
-       CreatePreferencesDatabase before the command line was recorded
-       in commandLine.shell. Moreover, if no server name was specified, it
-       may have defaulted to the ClearCase view tag. */
-    if (!ServerPreferences.serverName.isEmpty()) {
-        commandLine.append(QLatin1Literal(" -svrname "));
-        commandLine.append(ServerPreferences.serverName);
-    }
 
     switch (startServer("No servers available, start one? (y|n) [y]: ", commandLine)) {
     case -1: // Start failed
@@ -404,10 +372,6 @@ static void startNewServer(QString commandLine) {
 int main(int argc, char *argv[]) {
 
     QCoreApplication app(argc, argv);
-
-    if(!QDBusConnection::sessionBus().isConnected()) {
-        return -1;
-    }
 
     /* Process the command line before calling XtOpenDisplay, because the
        latter consumes certain command line arguments that we still need
@@ -440,20 +404,36 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    QString socketName = LocalSocketName(ServerPreferences.serverName);
+
     for(int i = 0; i < 10; ++i) {
-		QDBusInterface iface(QLatin1String(SERVICE_NAME), QLatin1String("/Server"), QLatin1String(""), QDBusConnection::sessionBus());
-        if(iface.isValid()) {
-            QDBusReply<void> reply = iface.call(QLatin1String("processCommand"), commandLine.serverRequest);
-            if(reply.isValid()) {
-                // successful!
-                return 0;
+
+        auto socket = new QLocalSocket();
+        socket->connectToServer(socketName, QIODevice::WriteOnly);
+        if(!socket->waitForConnected(ServerPreferences.timeOut * 1000)) {
+            if(i == 0) {
+                // if we failed to connect, try starting the server and try again
+                startNewServer(commandLine.shell);
             }
+
+            // give just a little bit of time for things to get going...
+            usleep(125000);
+            continue;
         }
 
-        if(i == 0) {
-            // if we failed to connect, try starting the server and try again
-            startNewServer(commandLine.shell);
-        }
+        QByteArray ba;
+        QDataStream stream(&ba, QIODevice::WriteOnly);
+        stream.setVersion(QDataStream::Qt_5_0);
+        stream << commandLine.jsonRequest;
+        stream.device()->seek(0);
+
+        socket->write(ba);
+        socket->flush();
+        socket->waitForBytesWritten(ServerPreferences.timeOut * 1000);
+        socket->disconnectFromServer();
+
+        delete socket;
+        return 0;
     }
 
     return -1;

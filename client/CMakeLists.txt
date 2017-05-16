@@ -5,7 +5,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
-find_package(Qt5 5.4.0 REQUIRED Widgets DBus)
+find_package(Qt5 5.4.0 REQUIRED Widgets Network)
 
 include_directories(nc-ng
 	${PROJECT_SOURCE_DIR}
@@ -18,8 +18,8 @@ add_executable(nc-ng
 )
 
 target_link_libraries(nc-ng LINK_PUBLIC
-	Qt5::DBus
 	Qt5::Widgets
+	Qt5::Network
 	NUtil
 )
 

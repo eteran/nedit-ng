@@ -49,12 +49,12 @@
 #include "util/fileUtils.h"
 
 #include <QApplication>
-#include <QDBusConnection>
 #include <algorithm>
 #include <cctype>
 #include <climits>
 #include <cstdio>
 #include <cstdlib>
+#include <memory>
 #include <cstring>
 #include <sys/param.h>
 
@@ -343,8 +343,10 @@ int main(int argc, char *argv[]) {
     qApp->installEventFilter(CommandRecorder::getInstance());
 
     // Set up communication over dbus!
-    if (IsServer) {
-        new NeditServer;
+    // TODO(eteran): make this conditional
+    std::unique_ptr<NeditServer> server;
+    if (IsServer || true) {
+        server = std::make_unique<NeditServer>();
 	}
 
 	// Process events. 
