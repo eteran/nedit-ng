@@ -61,18 +61,38 @@
 static void nextArg(int argc, char **argv, int *argIndex);
 static bool checkDoMacroArg(const char *macro);
 
-bool IsServer       = false;
+bool IsServer = false;
 
-static const char cmdLineHelp[] =
-    "Usage:  nedit [-read] [-create] [-line n | +n] [-server] [-do command]\n\
-	      [-tags file] [-tabs n] [-wrap] [-nowrap] [-autowrap]\n\
-	      [-autoindent] [-noautoindent] [-autosave] [-noautosave]\n\
-	      [-lm languagemode] [-rows n] [-columns n] [-font font]\n\
-	      [-geometry geometry] [-iconic] [-noiconic] [-svrname name]\n\
-	      [-display [host]:server[.screen] [-xrm resourcestring]\n\
-	      [-import file] [-background color] [-foreground color]\n\
-	      [-tabbed] [-untabbed] [-group] [-V|-version] [-h|-help]\n\
-	      [--] [file...]\n";
+namespace {
+
+// TODO(eteran): seems unhandled? they were handled by the XResources system?
+// -tabs n
+// -wrap
+// -nowrap
+// -autowrap
+// -autoindent
+// -noautoindent
+// -autosave
+// -noautosave
+// -rows n
+// -columns n
+// -font font
+// -svrname name
+// -display
+// -background color
+// -foreground color
+
+
+constexpr const char cmdLineHelp[] =
+    "Usage:  nedit [-read] [-create] [-line n | +n] [-server] [-do command]\n"
+    "              [-tags file] [-tabs n] [-wrap] [-nowrap] [-autowrap]\n"
+    "              [-autoindent] [-noautoindent] [-autosave] [-noautosave]\n"
+    "              [-lm languagemode] [-rows n] [-columns n] [-font font]\n"
+    "              [-geometry geometry] [-iconic] [-noiconic] [-svrname name]\n"
+    "              [-import file] [-background color] [-foreground color]\n"
+    "              [-tabbed] [-untabbed] [-group] [-V|-version] [-h|-help]\n"
+    "              [--] [file...]\n";
+}
 
 int main(int argc, char *argv[]) {	
 

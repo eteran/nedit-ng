@@ -50,6 +50,7 @@
 #include <climits>
 #include <cstring>
 #include <list>
+#include <memory>
 #include <algorithm>
 
 #include <sys/param.h>
@@ -67,7 +68,7 @@ const char cmdLineHelp[] = "Usage:  nc [-read] [-create]\n"
                            "           [-geometry geometry | -g geometry] [-icon | -iconic]\n"
                            "           [-tabbed] [-untabbed] [-group] [-wait]\n"
                            "           [-V | -version] [-h|-help]\n"
-                           "           [-xrm resourcestring] [-display [host]:server[.screen]]\n"
+                           "           [-display [host]:server[.screen]]\n"
                            "           [--] [file...]\n";
 
 struct CommandLine {
@@ -408,7 +409,7 @@ int main(int argc, char *argv[]) {
 
     for(int i = 0; i < 10; ++i) {
 
-        auto socket = new QLocalSocket();
+        auto socket = std::make_unique<QLocalSocket>();
         socket->connectToServer(socketName, QIODevice::WriteOnly);
         if(!socket->waitForConnected(ServerPreferences.timeOut * 1000)) {
             if(i == 0) {
@@ -425,14 +426,12 @@ int main(int argc, char *argv[]) {
         QDataStream stream(&ba, QIODevice::WriteOnly);
         stream.setVersion(QDataStream::Qt_5_0);
         stream << commandLine.jsonRequest;
-        stream.device()->seek(0);
+        //stream.device()->seek(0);
 
         socket->write(ba);
         socket->flush();
         socket->waitForBytesWritten(ServerPreferences.timeOut * 1000);
         socket->disconnectFromServer();
-
-        delete socket;
         return 0;
     }
 
