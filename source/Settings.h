@@ -5,6 +5,7 @@
 #include <QFont>
 #include <QObject>
 #include <QString>
+#include "WrapStyle.h"
 
 // Identifiers for the different colors that can be adjusted.
 enum ColorTypes {
@@ -62,7 +63,7 @@ public:
     bool warnFileMods;
     bool warnRealFileMods;
     int autoIndent;
-    int autoWrap;
+    WrapStyle autoWrap;
     int emulateTabs;
     int searchMethod;
     int showMatching;

@@ -29,6 +29,7 @@
 
 #include "IndentStyle.h"
 #include "SearchType.h"
+#include "WrapStyle.h"
 #include "util/string_view.h"
 
 #include <QList>
@@ -109,7 +110,7 @@ int GetPrefTypingHidesPointer();
 int GetPrefWarnExit();
 int GetPrefWarnFileMods();
 int GetPrefWarnRealFileMods();
-int GetPrefWrap(int langMode);
+WrapStyle GetPrefWrap(int langMode);
 int GetPrefWrapMargin();
 int GetVerticalAutoScroll();
 bool ParseErrorEx(QWidget *toDialog, const QString &string, int stoppedAt, const QString &errorIn, const QString &message);
@@ -172,7 +173,7 @@ void SetPrefUndoModifiesSelection(bool);
 void SetPrefWarnExit(bool state);
 void SetPrefWarnFileMods(bool state);
 void SetPrefWarnRealFileMods(bool state);
-void SetPrefWrap(int state);
+void SetPrefWrap(WrapStyle state);
 void SetPrefWrapMargin(int margin);
 
 QFont GetPrefDefaultFont();

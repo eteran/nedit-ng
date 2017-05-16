@@ -251,14 +251,14 @@ bool GetPrefOpenInTab() {
     return g_Settings.openInTab;
 }
 
-void SetPrefWrap(int state) {
+void SetPrefWrap(WrapStyle state) {
     if(g_Settings.autoWrap != state) {
         PrefsHaveChanged = true;
     }
     g_Settings.autoWrap = state;
 }
 
-int GetPrefWrap(int langMode) {
+WrapStyle GetPrefWrap(int langMode) {
     if (langMode == PLAIN_LANGUAGE_MODE || LanguageModes[langMode].wrapStyle == DEFAULT_WRAP) {
         return g_Settings.autoWrap;
     }
@@ -1024,7 +1024,7 @@ static int loadLanguageModesStringEx(const QString &string) {
 		} else {
 			for (i = 0; i < N_WRAP_STYLES; i++) {
 				if ((styleName == QString::fromLatin1(AutoWrapTypes[i]))) {
-					lm.wrapStyle = i;
+                    lm.wrapStyle = static_cast<WrapStyle>(i);
 					break;
 				}
 			}

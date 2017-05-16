@@ -76,7 +76,7 @@ void Settings::loadPreferences() {
     styles                = settings.value(tr("nedit.styles"),                QLatin1String("Plain:black:Plain\n    	Comment:gray20:Italic\n    	Keyword:black:Bold\n        Operator:dark blue:Bold\n        Bracket:dark blue:Bold\n    	Storage Type:brown:Bold\n    	Storage Type1:saddle brown:Bold\n    	String:darkGreen:Plain\n    	String1:SeaGreen:Plain\n    	String2:darkGreen:Bold\n    	Preprocessor:RoyalBlue4:Plain\n    	Preprocessor1:blue:Plain\n    	Character Const:darkGreen:Plain\n    	Numeric Const:darkGreen:Plain\n    	Identifier:brown:Plain\n    	Identifier1:RoyalBlue4:Plain\n        Identifier2:SteelBlue:Plain\n 	Subroutine:brown:Plain\n	Subroutine1:chocolate:Plain\n   	Ada Attributes:plum:Bold\n	Label:red:Italic\n	Flag:red:Bold\n    	Text Comment:SteelBlue4:Italic\n    	Text Key:VioletRed4:Bold\n	Text Key1:VioletRed4:Plain\n    	Text Arg:RoyalBlue4:Bold\n    	Text Arg1:SteelBlue4:Bold\n	Text Arg2:RoyalBlue4:Plain\n    	Text Escape:gray30:Bold\n	LaTeX Math:darkGreen:Plain\n" ADD_5_2_STYLES)).toString();
     smartIndentInit       = settings.value(tr("nedit.smartIndentInit"),       QLatin1String("C:Default\n	C++:Default\n	Python:Default\n	Matlab:Default")).toString();
     smartIndentInitCommon = settings.value(tr("nedit.smartIndentInitCommon"), QLatin1String("Default")).toString();
-    autoWrap              = settings.value(tr("nedit.autoWrap"),              CONTINUOUS_WRAP).toInt();
+    autoWrap              = static_cast<WrapStyle>(settings.value(tr("nedit.autoWrap"),              CONTINUOUS_WRAP).toInt());
     wrapMargin            = settings.value(tr("nedit.wrapMargin"),            0).toInt();
     autoIndent            = settings.value(tr("nedit.autoIndent"),            AUTO_INDENT).toInt();
     autoSave              = settings.value(tr("nedit.autoSave"),              true).toBool();
@@ -174,7 +174,7 @@ void Settings::importSettings(const QString &filename) {
     styles                = settings.value(tr("nedit.styles"),                styles).toString();
     smartIndentInit       = settings.value(tr("nedit.smartIndentInit"),       smartIndentInit).toString();
     smartIndentInitCommon = settings.value(tr("nedit.smartIndentInitCommon"), smartIndentInitCommon).toString();
-    autoWrap              = settings.value(tr("nedit.autoWrap"),              autoWrap).toInt();
+    autoWrap              = static_cast<WrapStyle>(settings.value(tr("nedit.autoWrap"), autoWrap).toInt());
     wrapMargin            = settings.value(tr("nedit.wrapMargin"),            wrapMargin).toInt();
     autoIndent            = settings.value(tr("nedit.autoIndent"),            autoIndent).toInt();
     autoSave              = settings.value(tr("nedit.autoSave"),              autoSave).toBool();

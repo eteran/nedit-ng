@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------
 // Name: 
 //------------------------------------------------------------------------------
-LanguageMode::LanguageMode() : wrapStyle(0), indentStyle(NO_AUTO_INDENT), tabDist(DEFAULT_TAB_DIST), emTabDist(DEFAULT_EM_TAB_DIST) {
+LanguageMode::LanguageMode() : wrapStyle(NO_WRAP), indentStyle(NO_AUTO_INDENT), tabDist(DEFAULT_TAB_DIST), emTabDist(DEFAULT_EM_TAB_DIST) {
 }
 
 //------------------------------------------------------------------------------

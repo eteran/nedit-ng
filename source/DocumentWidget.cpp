@@ -1017,7 +1017,7 @@ void DocumentWidget::reapplyLanguageMode(int mode, bool forceDefaults) {
         bool emTabDistIsDef     = oldEmTabDist == GetPrefEmTabDist(oldMode);
         bool indentStyleIsDef   = indentStyle_ == GetPrefAutoIndent(oldMode)   || (GetPrefAutoIndent(oldMode) == SMART_INDENT && indentStyle_ == AUTO_INDENT && !SmartIndentMacrosAvailable(LanguageModeName(oldMode)));
 		bool highlightIsDef     = highlightSyntax_ == GetPrefHighlightSyntax() || (GetPrefHighlightSyntax() && FindPatternSet(!oldlanguageModeName.isNull() ? oldlanguageModeName : QLatin1String("")) == nullptr);
-        int wrapMode            = wrapModeIsDef                                || forceDefaults ? GetPrefWrap(mode)        : wrapMode_;
+        WrapStyle wrapMode      = wrapModeIsDef                                || forceDefaults ? GetPrefWrap(mode)        : wrapMode_;
         int tabDist             = tabDistIsDef                                 || forceDefaults ? GetPrefTabDist(mode)     : buffer_->BufGetTabDistance();
         int emTabDist           = emTabDistIsDef                               || forceDefaults ? GetPrefEmTabDist(mode)   : oldEmTabDist;
         IndentStyle indentStyle = indentStyleIsDef                             || forceDefaults ? GetPrefAutoIndent(mode)  : indentStyle_;
@@ -1152,7 +1152,7 @@ void DocumentWidget::SetAutoIndent(IndentStyle state) {
 /*
 ** Select auto-wrap mode, one of NO_WRAP, NEWLINE_WRAP, or CONTINUOUS_WRAP
 */
-void DocumentWidget::SetAutoWrap(int state) {
+void DocumentWidget::SetAutoWrap(WrapStyle state) {
     const bool autoWrap = (state == NEWLINE_WRAP);
     const bool contWrap = (state == CONTINUOUS_WRAP);
 

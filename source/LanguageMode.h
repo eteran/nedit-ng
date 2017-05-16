@@ -32,7 +32,7 @@ public:
 	QString     recognitionExpr;
 	QString     defTipsFile;
 	QString     delimiters;
-	int         wrapStyle;
+    WrapStyle   wrapStyle;
     IndentStyle indentStyle;
 	int         tabDist;
 	int         emTabDist;

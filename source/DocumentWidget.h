@@ -14,6 +14,7 @@
 #include "tags.h"
 #include "UndoInfo.h"
 #include "CloseMode.h"
+#include "WrapStyle.h"
 #include "userCmds.h"
 #include "util/FileFormats.h"
 
@@ -157,7 +158,7 @@ public:
     void SaveUndoInformation(int pos, int nInserted, int nDeleted, view::string_view deletedText);
     void SetAutoIndent(IndentStyle state);
     void SetAutoScroll(int margin);
-    void SetAutoWrap(int state);
+    void SetAutoWrap(WrapStyle state);
     void SetBacklightChars(const QString &applyBacklightTypes);
     void SetEmTabDist(int emTabDist);
     void SetFonts(const QString &fontName, const QString &italicName, const QString &boldName, const QString &boldItalicName);
@@ -239,7 +240,7 @@ public:
     IndentStyle indentStyle_;          // whether/how to auto indent
 	char matchSyntaxBased_;            // Use syntax info to show matching
     ShowMatchingStyle showMatchingStyle_;           // How to show matching parens: NO_FLASH, FLASH_DELIMIT, or FLASH_RANGE
-	char wrapMode_;                    // line wrap style: NO_WRAP, NEWLINE_WRAP or CONTINUOUS_WRAP
+    WrapStyle wrapMode_;                    // line wrap style: NO_WRAP, NEWLINE_WRAP or CONTINUOUS_WRAP
 	dev_t device_;                     // device where the file resides
 	gid_t fileGid_;                    // last recorded group id of the file
 	ino_t inode_;                      // file's inode
