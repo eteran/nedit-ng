@@ -89,6 +89,10 @@ static QString WriteLanguageModesStringEx();
 
 static Settings g_Settings;
 
+Settings &GetSettings() {
+    return g_Settings;
+}
+
 void RestoreNEditPrefs() {
 
     g_Settings.loadPreferences();

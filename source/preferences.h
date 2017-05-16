@@ -40,6 +40,7 @@ class DocumentWidget;
 class QFont;
 class QDialog;
 class Input;
+class Settings;
 
 constexpr const int PLAIN_LANGUAGE_MODE = -1;
 
@@ -113,6 +114,7 @@ int GetPrefWrapMargin();
 int GetVerticalAutoScroll();
 bool ParseErrorEx(QWidget *toDialog, const QString &string, int stoppedAt, const QString &errorIn, const QString &message);
 
+Settings &GetSettings();
 
 bool ReadNumericFieldEx(Input &in, int *value);
 bool ReadQuotedStringEx(Input &in, QString *errMsg, QString *string);

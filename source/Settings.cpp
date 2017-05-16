@@ -23,18 +23,30 @@
 // New styles added in 5.2 for auto-upgrade
 #define ADD_5_2_STYLES " Pointer:#660000:Bold\nRegex:#009944:Bold\nWarning:brown2:Italic"
 
+/**
+ * @brief Settings::configFile
+ * @return
+ */
 QString Settings::configFile() {
     QString configDir  = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
     QString configFile = QString(QLatin1String("%1/%2/%3")).arg(configDir, QLatin1String("nedit-ng"), QLatin1String("config.ini"));
     return configFile;
 }
 
+/**
+ * @brief Settings::historyFile
+ * @return
+ */
 QString Settings::historyFile() {
     QString configDir  = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
     QString configFile = QString(QLatin1String("%1/%2/%3")).arg(configDir, QLatin1String("nedit-ng"), QLatin1String("history"));
     return configFile;
 }
 
+/**
+ * @brief Settings::autoLoadMacroFile
+ * @return
+ */
 QString Settings::autoLoadMacroFile() {
     QString configDir  = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
     QString configFile = QString(QLatin1String("%1/%2/%3")).arg(configDir, QLatin1String("nedit-ng"), QLatin1String("autoload.nm"));
@@ -249,90 +261,90 @@ bool Settings::savePreferences() {
     QString filename = configFile();
     QSettings settings(filename, QSettings::IniFormat);
 
-	settings.setValue(tr("nedit.fileVersion"),     fileVersion);
-	settings.setValue(tr("nedit.shellCommands"),     shellCommands);
-	settings.setValue(tr("nedit.macroCommands"),     macroCommands);
-	settings.setValue(tr("nedit.bgMenuCommands"),     bgMenuCommands);
-	settings.setValue(tr("nedit.highlightPatterns"),     highlightPatterns);
-	settings.setValue(tr("nedit.languageModes"),     languageModes);
-	settings.setValue(tr("nedit.styles"),     styles);
-	settings.setValue(tr("nedit.smartIndentInit"),     smartIndentInit);
-	settings.setValue(tr("nedit.smartIndentInitCommon"),     smartIndentInitCommon);
-	settings.setValue(tr("nedit.autoWrap"),     autoWrap);
-	settings.setValue(tr("nedit.wrapMargin"),     wrapMargin);
-	settings.setValue(tr("nedit.autoIndent"),     autoIndent);
-	settings.setValue(tr("nedit.autoSave"),     autoSave);
-	settings.setValue(tr("nedit.openInTab"),     openInTab);
-	settings.setValue(tr("nedit.saveOldVersion"),     saveOldVersion);
-	settings.setValue(tr("nedit.showMatching"),     showMatching);
-	settings.setValue(tr("nedit.matchSyntaxBased"),     matchSyntaxBased);
-	settings.setValue(tr("nedit.highlightSyntax"),     highlightSyntax);
-	settings.setValue(tr("nedit.backlightChars"),     backlightChars);
-	settings.setValue(tr("nedit.backlightCharTypes"),     backlightCharTypes);
-	settings.setValue(tr("nedit.searchDialogs"),     searchDialogs);
-	settings.setValue(tr("nedit.beepOnSearchWrap"),     beepOnSearchWrap);
-	settings.setValue(tr("nedit.retainSearchDialogs"),     retainSearchDialogs);
-	settings.setValue(tr("nedit.searchWraps"),     searchWraps);
-	settings.setValue(tr("nedit.stickyCaseSenseButton"),     stickyCaseSenseButton);
-	settings.setValue(tr("nedit.repositionDialogs"),     repositionDialogs);
-	settings.setValue(tr("nedit.autoScroll"),     autoScroll);
-	settings.setValue(tr("nedit.autoScrollVPadding"),     autoScrollVPadding);
-	settings.setValue(tr("nedit.appendLF"),     appendLF);
-	settings.setValue(tr("nedit.sortOpenPrevMenu"),     sortOpenPrevMenu);
-	settings.setValue(tr("nedit.statisticsLine"),     statisticsLine);
-	settings.setValue(tr("nedit.iSearchLine"),     iSearchLine);
-	settings.setValue(tr("nedit.sortTabs"),     sortTabs);
-	settings.setValue(tr("nedit.tabBar"),     tabBar);
-	settings.setValue(tr("nedit.tabBarHideOne"),     tabBarHideOne);
-	settings.setValue(tr("nedit.toolTips"),     toolTips);
-	settings.setValue(tr("nedit.globalTabNavigate"),     globalTabNavigate);
-	settings.setValue(tr("nedit.lineNumbers"),     lineNumbers);
-	settings.setValue(tr("nedit.pathInWindowsMenu"),     pathInWindowsMenu);
-	settings.setValue(tr("nedit.warnFileMods"),     warnFileMods);
-	settings.setValue(tr("nedit.warnRealFileMods"),     warnRealFileMods);
-	settings.setValue(tr("nedit.warnExit"),     warnExit);
-	settings.setValue(tr("nedit.searchMethod"),     searchMethod);
+    settings.setValue(tr("nedit.fileVersion"), fileVersion);
+    settings.setValue(tr("nedit.shellCommands"), shellCommands);
+    settings.setValue(tr("nedit.macroCommands"), macroCommands);
+    settings.setValue(tr("nedit.bgMenuCommands"), bgMenuCommands);
+    settings.setValue(tr("nedit.highlightPatterns"), highlightPatterns);
+    settings.setValue(tr("nedit.languageModes"), languageModes);
+    settings.setValue(tr("nedit.styles"), styles);
+    settings.setValue(tr("nedit.smartIndentInit"), smartIndentInit);
+    settings.setValue(tr("nedit.smartIndentInitCommon"), smartIndentInitCommon);
+    settings.setValue(tr("nedit.autoWrap"), autoWrap);
+    settings.setValue(tr("nedit.wrapMargin"), wrapMargin);
+    settings.setValue(tr("nedit.autoIndent"), autoIndent);
+    settings.setValue(tr("nedit.autoSave"), autoSave);
+    settings.setValue(tr("nedit.openInTab"), openInTab);
+    settings.setValue(tr("nedit.saveOldVersion"), saveOldVersion);
+    settings.setValue(tr("nedit.showMatching"), showMatching);
+    settings.setValue(tr("nedit.matchSyntaxBased"), matchSyntaxBased);
+    settings.setValue(tr("nedit.highlightSyntax"), highlightSyntax);
+    settings.setValue(tr("nedit.backlightChars"), backlightChars);
+    settings.setValue(tr("nedit.backlightCharTypes"), backlightCharTypes);
+    settings.setValue(tr("nedit.searchDialogs"), searchDialogs);
+    settings.setValue(tr("nedit.beepOnSearchWrap"), beepOnSearchWrap);
+    settings.setValue(tr("nedit.retainSearchDialogs"), retainSearchDialogs);
+    settings.setValue(tr("nedit.searchWraps"), searchWraps);
+    settings.setValue(tr("nedit.stickyCaseSenseButton"), stickyCaseSenseButton);
+    settings.setValue(tr("nedit.repositionDialogs"), repositionDialogs);
+    settings.setValue(tr("nedit.autoScroll"), autoScroll);
+    settings.setValue(tr("nedit.autoScrollVPadding"), autoScrollVPadding);
+    settings.setValue(tr("nedit.appendLF"), appendLF);
+    settings.setValue(tr("nedit.sortOpenPrevMenu"), sortOpenPrevMenu);
+    settings.setValue(tr("nedit.statisticsLine"), statisticsLine);
+    settings.setValue(tr("nedit.iSearchLine"), iSearchLine);
+    settings.setValue(tr("nedit.sortTabs"), sortTabs);
+    settings.setValue(tr("nedit.tabBar"), tabBar);
+    settings.setValue(tr("nedit.tabBarHideOne"), tabBarHideOne);
+    settings.setValue(tr("nedit.toolTips"), toolTips);
+    settings.setValue(tr("nedit.globalTabNavigate"), globalTabNavigate);
+    settings.setValue(tr("nedit.lineNumbers"), lineNumbers);
+    settings.setValue(tr("nedit.pathInWindowsMenu"), pathInWindowsMenu);
+    settings.setValue(tr("nedit.warnFileMods"), warnFileMods);
+    settings.setValue(tr("nedit.warnRealFileMods"), warnRealFileMods);
+    settings.setValue(tr("nedit.warnExit"), warnExit);
+    settings.setValue(tr("nedit.searchMethod"), searchMethod);
 #if defined(REPLACE_SCOPE)
 	settings.setValue(tr("nedit.replaceDefaultScope"),     replaceDefaultScope);
 #endif
-	settings.setValue(tr("nedit.textRows"),     textRows);
-	settings.setValue(tr("nedit.textCols"),     textCols);
-	settings.setValue(tr("nedit.tabDistance"),     tabDistance);
-	settings.setValue(tr("nedit.emulateTabs"),     emulateTabs);
-	settings.setValue(tr("nedit.insertTabs"),     insertTabs);
-	settings.setValue(tr("nedit.textFont"),     textFont);
-	settings.setValue(tr("nedit.boldHighlightFont"),     boldHighlightFont);
-	settings.setValue(tr("nedit.italicHighlightFont"),     italicHighlightFont);
-	settings.setValue(tr("nedit.boldItalicHighlightFont"),     boldItalicHighlightFont);
-    settings.setValue(tr("nedit.textFgColor"),     colors[TEXT_FG_COLOR] );
-    settings.setValue(tr("nedit.textBgColor"),     colors[TEXT_BG_COLOR]  );
-    settings.setValue(tr("nedit.selectFgColor"),     colors[SELECT_FG_COLOR]);
-    settings.setValue(tr("nedit.selectBgColor"),     colors[SELECT_BG_COLOR]);
-    settings.setValue(tr("nedit.hiliteFgColor"),     colors[HILITE_FG_COLOR]);
-    settings.setValue(tr("nedit.hiliteBgColor"),     colors[HILITE_BG_COLOR]);
-    settings.setValue(tr("nedit.lineNoFgColor"),     colors[LINENO_FG_COLOR]);
-    settings.setValue(tr("nedit.cursorFgColor"),     colors[CURSOR_FG_COLOR]    );
-	settings.setValue(tr("nedit.tooltipBgColor"),     tooltipBgColor);
-	settings.setValue(tr("nedit.shell"),     shell);
-	settings.setValue(tr("nedit.geometry"),     geometry);
-	settings.setValue(tr("nedit.remapDeleteKey"),     remapDeleteKey);
-	settings.setValue(tr("nedit.stdOpenDialog"),     stdOpenDialog);
-	settings.setValue(tr("nedit.tagFile"),     tagFile);
-	settings.setValue(tr("nedit.wordDelimiters"),     wordDelimiters);
-	settings.setValue(tr("nedit.serverName"),     serverName);
-	settings.setValue(tr("nedit.maxPrevOpenFiles"),     maxPrevOpenFiles);
-	settings.setValue(tr("nedit.smartTags"),     smartTags);
-	settings.setValue(tr("nedit.typingHidesPointer"),     typingHidesPointer);
-	settings.setValue(tr("nedit.alwaysCheckRelativeTagsSpecs"),     alwaysCheckRelativeTagsSpecs);
-	settings.setValue(tr("nedit.prefFileRead"),     prefFileRead);
-	settings.setValue(tr("nedit.findReplaceUsesSelection"),     findReplaceUsesSelection);
-	settings.setValue(tr("nedit.overrideDefaultVirtualKeyBindings"),     overrideDefaultVirtualKeyBindings);
-	settings.setValue(tr("nedit.titleFormat"),     titleFormat);
-	settings.setValue(tr("nedit.undoModifiesSelection"),     undoModifiesSelection);
-	settings.setValue(tr("nedit.focusOnRaise"),     focusOnRaise);
-	settings.setValue(tr("nedit.forceOSConversion"),     forceOSConversion);
-	settings.setValue(tr("nedit.truncSubstitution"),     truncSubstitution);
-	settings.setValue(tr("nedit.honorSymlinks"),     honorSymlinks);
+    settings.setValue(tr("nedit.textRows"), textRows);
+    settings.setValue(tr("nedit.textCols"), textCols);
+    settings.setValue(tr("nedit.tabDistance"), tabDistance);
+    settings.setValue(tr("nedit.emulateTabs"), emulateTabs);
+    settings.setValue(tr("nedit.insertTabs"), insertTabs);
+    settings.setValue(tr("nedit.textFont"), textFont);
+    settings.setValue(tr("nedit.boldHighlightFont"), boldHighlightFont);
+    settings.setValue(tr("nedit.italicHighlightFont"), italicHighlightFont);
+    settings.setValue(tr("nedit.boldItalicHighlightFont"), boldItalicHighlightFont);
+    settings.setValue(tr("nedit.textFgColor"), colors[TEXT_FG_COLOR]);
+    settings.setValue(tr("nedit.textBgColor"), colors[TEXT_BG_COLOR]);
+    settings.setValue(tr("nedit.selectFgColor"), colors[SELECT_FG_COLOR]);
+    settings.setValue(tr("nedit.selectBgColor"), colors[SELECT_BG_COLOR]);
+    settings.setValue(tr("nedit.hiliteFgColor"), colors[HILITE_FG_COLOR]);
+    settings.setValue(tr("nedit.hiliteBgColor"), colors[HILITE_BG_COLOR]);
+    settings.setValue(tr("nedit.lineNoFgColor"), colors[LINENO_FG_COLOR]);
+    settings.setValue(tr("nedit.cursorFgColor"), colors[CURSOR_FG_COLOR]);
+    settings.setValue(tr("nedit.tooltipBgColor"), tooltipBgColor);
+    settings.setValue(tr("nedit.shell"), shell);
+    settings.setValue(tr("nedit.geometry"), geometry);
+    settings.setValue(tr("nedit.remapDeleteKey"), remapDeleteKey);
+    settings.setValue(tr("nedit.stdOpenDialog"), stdOpenDialog);
+    settings.setValue(tr("nedit.tagFile"), tagFile);
+    settings.setValue(tr("nedit.wordDelimiters"), wordDelimiters);
+    settings.setValue(tr("nedit.serverName"), serverName);
+    settings.setValue(tr("nedit.maxPrevOpenFiles"), maxPrevOpenFiles);
+    settings.setValue(tr("nedit.smartTags"), smartTags);
+    settings.setValue(tr("nedit.typingHidesPointer"), typingHidesPointer);
+    settings.setValue(tr("nedit.alwaysCheckRelativeTagsSpecs"), alwaysCheckRelativeTagsSpecs);
+    settings.setValue(tr("nedit.prefFileRead"), prefFileRead);
+    settings.setValue(tr("nedit.findReplaceUsesSelection"), findReplaceUsesSelection);
+    settings.setValue(tr("nedit.overrideDefaultVirtualKeyBindings"), overrideDefaultVirtualKeyBindings);
+    settings.setValue(tr("nedit.titleFormat"), titleFormat);
+    settings.setValue(tr("nedit.undoModifiesSelection"), undoModifiesSelection);
+    settings.setValue(tr("nedit.focusOnRaise"), focusOnRaise);
+    settings.setValue(tr("nedit.forceOSConversion"), forceOSConversion);
+    settings.setValue(tr("nedit.truncSubstitution"), truncSubstitution);
+    settings.setValue(tr("nedit.honorSymlinks"), honorSymlinks);
 
     settings.sync();
     return settings.status() == QSettings::NoError;

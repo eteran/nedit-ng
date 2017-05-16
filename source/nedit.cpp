@@ -42,8 +42,10 @@
 #include "macro.h"
 #include "parse.h"
 #include "preferences.h"
+#include "Settings.h"
 #include "regularExp.h"
 #include "selection.h"
+#include "WrapStyle.h"
 #include "tags.h"
 #include "CommandRecorder.h"
 #include "util/fileUtils.h"
@@ -64,24 +66,6 @@ static bool checkDoMacroArg(const char *macro);
 bool IsServer = false;
 
 namespace {
-
-// TODO(eteran): seems unhandled? they were handled by the XResources system?
-// -tabs n
-// -wrap
-// -nowrap
-// -autowrap
-// -autoindent
-// -noautoindent
-// -autosave
-// -noautosave
-// -rows n
-// -columns n
-// -font font
-// -svrname name
-// -display
-// -background color
-// -foreground color
-
 
 constexpr const char cmdLineHelp[] =
     "Usage:  nedit [-read] [-create] [-line n | +n] [-server] [-do command]\n"
@@ -203,7 +187,62 @@ int main(int argc, char *argv[]) {
             if (checkDoMacroArg(argv[i])) {
 				toDoCommand = argv[i];
             }
-
+        } else if (opts && arg == "-background") {
+            nextArg(argc, argv, &i);
+            GetSettings().colors[TEXT_BG_COLOR] = QString::fromLatin1(argv[i]);
+        } else if (opts && arg == "-foreground") {
+            nextArg(argc, argv, &i);
+            GetSettings().colors[TEXT_FG_COLOR] = QString::fromLatin1(argv[i]);
+        } else if (opts && arg == "-svrname") {
+            nextArg(argc, argv, &i);
+            GetSettings().serverName = QString::fromLatin1(argv[i]);
+        } else if (opts && arg == "-font") {
+            nextArg(argc, argv, &i);
+            GetSettings().textFont = QString::fromLatin1(argv[i]);
+        } else if (opts && arg == "-fn") {
+            nextArg(argc, argv, &i);
+            GetSettings().textFont = QString::fromLatin1(argv[i]);
+        } else if (opts && arg == "-wrap") {
+            GetSettings().autoWrap = CONTINUOUS_WRAP;
+        } else if (opts && arg == "-nowrap") {
+            GetSettings().autoWrap = NO_WRAP;
+        } else if (opts && arg == "-autowrap") {
+            GetSettings().autoWrap = NEWLINE_WRAP;
+        } else if (opts && arg == "-autoindent") {
+            GetSettings().autoIndent = AUTO_INDENT;
+        } else if (opts && arg == "-noautoindent") {
+            GetSettings().autoIndent = NO_AUTO_INDENT;
+        } else if (opts && arg == "-autosave") {
+            GetSettings().autoSave = true;
+        } else if (opts && arg == "-noautosave") {
+            GetSettings().autoSave = false;
+        } else if (opts && arg == "-rows") {
+            int n;
+            nextArg(argc, argv, &i);
+            nRead = sscanf(argv[i], "%d", &n);
+            if (nRead != 1)
+                fprintf(stderr, "NEdit: argument to rows should be a number\n");
+            else {
+                GetSettings().textRows = n;
+            }
+        } else if (opts && arg == "-cols") {
+            int n;
+            nextArg(argc, argv, &i);
+            nRead = sscanf(argv[i], "%d", &n);
+            if (nRead != 1)
+                fprintf(stderr, "NEdit: argument to cols should be a number\n");
+            else {
+                GetSettings().textCols = n;
+            }
+        } else if (opts && arg == "-tabs") {
+            int n;
+            nextArg(argc, argv, &i);
+            nRead = sscanf(argv[i], "%d", &n);
+            if (nRead != 1)
+                fprintf(stderr, "NEdit: argument to tabs should be a number\n");
+            else {
+                GetSettings().tabDistance = n;
+            }
 		} else if (opts && arg == "-read") {
 			editFlags |= PREF_READ_ONLY;
 		} else if (opts && arg == "-create") {
