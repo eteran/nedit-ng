@@ -29,9 +29,7 @@ private:
     static QString getFlprQueueDefault();
     static QString getFlprHostDefault();
     static QString getLprQueueDefault();
-	static bool fileInPath(const char *filename, uint16_t mode_flags);
     static QByteArray foundTag(const char *tagfilename, const char *tagname);
-	static bool fileInDir(const char *filename, const char *dirpath, uint16_t mode_flags);
 
 public:
 	Ui::DialogPrint ui;

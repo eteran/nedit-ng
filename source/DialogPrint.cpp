@@ -5,6 +5,7 @@
 #include "utils.h"
 #include <QMessageBox>
 #include <QRegExpValidator>
+#include <QStandardPaths>
 #include <QSettings>
 #include <QtDebug>
 #include <dirent.h>
@@ -155,7 +156,8 @@ void DialogPrint::LoadPrintPreferencesEx(bool lookForFlpr) {
 */
 bool DialogPrint::flprPresent() {
 	/* Is flpr present in the search path and is it executable ? */
-	return fileInPath("flpr", 0111);
+    QString path = QStandardPaths::findExecutable(QLatin1String("flpr"));
+    return !path.isEmpty();
 }
 
 //------------------------------------------------------------------------------
@@ -193,87 +195,25 @@ QString DialogPrint::getLprQueueDefault() {
     return QString::fromLatin1(defqueue);
 }
 
-/*
-** Is the filename file in the environment path directories
-** and does it have at least some of the mode_flags enabled ?
-*/
-bool DialogPrint::fileInPath(const char *filename, uint16_t mode_flags) {
-	char path[MAXPATHLEN];
-	const char *lastchar;
-
-	/* Get environmental value of PATH */
-	const char *pathstring = getenv("PATH");
-	if(!pathstring)
-		return false;
-
-	/* parse the pathstring and search on each directory found */
-	do {
-		/* if final path in list is empty, don't search it */
-		if (!strcmp(pathstring, ""))
-			return false;
-		/* locate address of next : character */
-		lastchar = strchr(pathstring, SEPARATOR);
-		if (lastchar) {
-			/* if more directories remain in pathstring, copy up to : */
-			strncpy(path, pathstring, lastchar - pathstring);
-			path[lastchar - pathstring] = '\0';
-		} else {
-			/* if it's the last directory, just copy it */
-			strcpy(path, pathstring);
-		}
-		/* search for the file in this path */
-		if (fileInDir(filename, path, mode_flags))
-			return true; /* found it !! */
-		/* point pathstring to start of new dir string */
-		pathstring = lastchar + 1;
-	} while (lastchar != nullptr);
-	
-	return false;
-}
-
 //------------------------------------------------------------------------------
 // Name: 
 //------------------------------------------------------------------------------
 QByteArray DialogPrint::foundTag(const char *tagfilename, const char *tagname) {
 
 	char tagformat[512];
-
-    // NOTE(eteran): format string vuln?
 	snprintf(tagformat, sizeof(tagformat), "%s %%s", tagname);
 
     std::ifstream file(tagfilename);
     for(std::string line; std::getline(file, line); ) {
         char result_buffer[1024];
+
+        // NOTE(eteran): format string vuln?
         if (sscanf(line.c_str(), tagformat, result_buffer) != 0) {
             return QByteArray(result_buffer);
         }
     }
 
     return QByteArray();
-}
-
-/*
-** Is the filename file in the directory dirpath
-** and does it have at least some of the mode_flags enabled ?
-*/
-bool DialogPrint::fileInDir(const char *filename, const char *dirpath, uint16_t mode_flags) {
-	
-	if (DIR *dfile = ::opendir(dirpath)) {
-		while (struct dirent *dir_entry = ::readdir(dfile)) {
-			if (!strcmp(dir_entry->d_name, filename)) {
-				char fullname[MAXPATHLEN];
-				
-				snprintf(fullname, sizeof(fullname), "%s/%s", dirpath, filename);
-
-				struct stat statbuf;
-				::stat(fullname, &statbuf);
-				::closedir(dfile);
-				return statbuf.st_mode & mode_flags;
-			}
-		}
-		::closedir(dfile);
-	}
-	return false;
 }
 
 //------------------------------------------------------------------------------
