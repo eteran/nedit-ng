@@ -388,9 +388,8 @@ int main(int argc, char *argv[]) {
     qApp->installEventFilter(CommandRecorder::getInstance());
 
     // Set up communication over dbus!
-    // TODO(eteran): make this conditional
     std::unique_ptr<NeditServer> server;
-    if (IsServer || true) {
+    if (IsServer) {
         server = std::make_unique<NeditServer>();
 	}
 
