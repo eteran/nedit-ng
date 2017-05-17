@@ -819,8 +819,6 @@ bool DialogSyntaxPatterns::checkHighlightDialogData() {
 	}
 
 	// Compile the patterns
-	// TODO(eteran): we are padding a raw pointer here, investigate how
-	// difficult it would be to make the call chain work with a unique_ptr
 	return patSet->patterns.isEmpty() ? true : TestHighlightPatterns(patSet.get());
 }
 

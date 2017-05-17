@@ -2984,7 +2984,7 @@ static int filenameDialogMS(DocumentWidget *window, DataValue *argList, int nArg
 	bool gfnResult;
     QString filename;
     if (mode == QLatin1String("exist")) {
-        // TODO(eteran); filters probably don't work quite the same with Qt's dialog
+        // NOTE(eteran); filters probably don't work quite the same with Qt's dialog
         QString existingFile = QFileDialog::getOpenFileName(/*this*/ nullptr, title, defaultPath, defaultFilter, nullptr);
 		if(!existingFile.isNull()) {
             filename = existingFile;
@@ -2993,7 +2993,7 @@ static int filenameDialogMS(DocumentWidget *window, DataValue *argList, int nArg
             gfnResult = false;
 		}
 	} else {
-        // TODO(eteran); filters probably don't work quite the same with Qt's dialog
+        // NOTE(eteran); filters probably don't work quite the same with Qt's dialog
         QString newFile = QFileDialog::getSaveFileName(/*this*/ nullptr, title, defaultPath, defaultFilter, nullptr);
 		if(!newFile.isNull()) {
             filename  = newFile;
