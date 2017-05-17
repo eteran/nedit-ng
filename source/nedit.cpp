@@ -68,20 +68,18 @@ bool IsServer = false;
 namespace {
 
 constexpr const char cmdLineHelp[] =
-    "Usage:  nedit [-read] [-create] [-line n | +n] [-server] [-do command]\n"
-    "              [-tags file] [-tabs n] [-wrap] [-nowrap] [-autowrap]\n"
-    "              [-autoindent] [-noautoindent] [-autosave] [-noautosave]\n"
-    "              [-lm languagemode] [-rows n] [-columns n] [-font font]\n"
-    "              [-geometry geometry] [-iconic] [-noiconic] [-svrname name]\n"
-    "              [-import file] [-background color] [-foreground color]\n"
-    "              [-tabbed] [-untabbed] [-group] [-V|-version] [-h|-help]\n"
-    "              [--] [file...]\n";
+    "Usage: nedit [-read] [-create] [-line n | +n] [-server] [-do command]\n"
+    "             [-tags file] [-tabs n] [-wrap] [-nowrap] [-autowrap]\n"
+    "             [-autoindent] [-noautoindent] [-autosave] [-noautosave]\n"
+    "             [-lm languagemode] [-rows n] [-columns n] [-font font]\n"
+    "             [-geometry geometry] [-iconic] [-noiconic] [-svrname name]\n"
+    "             [-import file] [-tabbed] [-untabbed] [-group] [-V|-version]\n"
+    "             [-h|-help] [--] [file...]\n";
 }
 
 int main(int argc, char *argv[]) {	
 
     int lineNum = 0;
-    int nRead;
     int editFlags = CREATE;
     bool gotoLine = false;
     bool macroFileReadEx = false;
@@ -164,9 +162,6 @@ int main(int argc, char *argv[]) {
 		IsServer = true;
 	}
 
-	/* Process any command line arguments (-tags, -do, -read, -create,
-	   +<line_number>, -line, -server, and files to edit) not already
-	   processed by RestoreNEditPrefs. */
     bool fileSpecified = false;
 
 	for (int i = 1; i < argc; i++) {
@@ -187,19 +182,10 @@ int main(int argc, char *argv[]) {
             if (checkDoMacroArg(argv[i])) {
 				toDoCommand = argv[i];
             }
-        } else if (opts && arg == "-background") {
-            nextArg(argc, argv, &i);
-            GetSettings().colors[TEXT_BG_COLOR] = QString::fromLatin1(argv[i]);
-        } else if (opts && arg == "-foreground") {
-            nextArg(argc, argv, &i);
-            GetSettings().colors[TEXT_FG_COLOR] = QString::fromLatin1(argv[i]);
         } else if (opts && arg == "-svrname") {
             nextArg(argc, argv, &i);
             GetSettings().serverName = QString::fromLatin1(argv[i]);
-        } else if (opts && arg == "-font") {
-            nextArg(argc, argv, &i);
-            GetSettings().textFont = QString::fromLatin1(argv[i]);
-        } else if (opts && arg == "-fn") {
+        } else if (opts && (arg == "-font" || arg == "-fn")) {
             nextArg(argc, argv, &i);
             GetSettings().textFont = QString::fromLatin1(argv[i]);
         } else if (opts && arg == "-wrap") {
@@ -219,16 +205,16 @@ int main(int argc, char *argv[]) {
         } else if (opts && arg == "-rows") {
             int n;
             nextArg(argc, argv, &i);
-            nRead = sscanf(argv[i], "%d", &n);
+            int nRead = sscanf(argv[i], "%d", &n);
             if (nRead != 1)
                 fprintf(stderr, "NEdit: argument to rows should be a number\n");
             else {
                 GetSettings().textRows = n;
             }
-        } else if (opts && arg == "-cols") {
+        } else if (opts && arg == "-columns") {
             int n;
             nextArg(argc, argv, &i);
-            nRead = sscanf(argv[i], "%d", &n);
+            int nRead = sscanf(argv[i], "%d", &n);
             if (nRead != 1)
                 fprintf(stderr, "NEdit: argument to cols should be a number\n");
             else {
@@ -237,7 +223,7 @@ int main(int argc, char *argv[]) {
         } else if (opts && arg == "-tabs") {
             int n;
             nextArg(argc, argv, &i);
-            nRead = sscanf(argv[i], "%d", &n);
+            int nRead = sscanf(argv[i], "%d", &n);
             if (nRead != 1)
                 fprintf(stderr, "NEdit: argument to tabs should be a number\n");
             else {
@@ -257,13 +243,13 @@ int main(int argc, char *argv[]) {
 			group = 2; // 2: start new group, 1: in group 
 		} else if (opts && arg == "-line") {
 			nextArg(argc, argv, &i);
-			nRead = sscanf(argv[i], "%d", &lineNum);
+            int nRead = sscanf(argv[i], "%d", &lineNum);
 			if (nRead != 1)
 				fprintf(stderr, "NEdit: argument to line should be a number\n");
 			else
 				gotoLine = true;
 		} else if (opts && (*argv[i] == '+')) {
-			nRead = sscanf((argv[i] + 1), "%d", &lineNum);
+            int nRead = sscanf((argv[i] + 1), "%d", &lineNum);
 			if (nRead != 1)
 				fprintf(stderr, "NEdit: argument to + should be a number\n");
 			else

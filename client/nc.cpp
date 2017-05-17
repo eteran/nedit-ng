@@ -26,13 +26,16 @@
 *                                                                              *
 *******************************************************************************/
 
+// TODO(eteran): make -wait option function properly again, we need some method
+//               of having the server process signal this process when a file
+//               is closed in order to maintain compatible behavior
+
 #include "Settings.h"
 
 #include <QCoreApplication>
 #include <QSettings>
 #include <QString>
 #include <QProcess>
-#include <QTextStream>
 #include <QtDebug>
 #include <QJsonDocument>
 #include <QLocalSocket>
@@ -68,7 +71,6 @@ const char cmdLineHelp[] = "Usage:  nc [-read] [-create]\n"
                            "           [-geometry geometry | -g geometry] [-icon | -iconic]\n"
                            "           [-tabbed] [-untabbed] [-group] [-wait]\n"
                            "           [-V | -version] [-h|-help]\n"
-                           "           [-display [host]:server[.screen]]\n"
                            "           [--] [file...]\n";
 
 struct CommandLine {
@@ -165,10 +167,6 @@ bool parseCommandLine(int argc, char **argv, CommandLine *commandLine) {
     int isTabbed;
     bool opts = true;
 
-    // Parse the arguments and write the output string
-    QString commandString;
-    QTextStream out(&commandString);
-
     QVariantList commandData;
 
     for (i = 1; i < argc; i++) {
@@ -178,6 +176,24 @@ bool parseCommandLine(int argc, char **argv, CommandLine *commandLine) {
         if (opts && arg == "--") {
             opts = false; // treat all remaining arguments as filenames
             continue;
+        } else if (opts && arg == "-wait") {
+            ServerPreferences.waitForClose = true;
+        } else if (opts && arg == "-svrname") {
+            nextArg(argc, argv, &i);
+            ServerPreferences.serverName = QLatin1String(argv[i]);
+        } else if (opts && arg == "-svrcmd") {
+            nextArg(argc, argv, &i);
+            ServerPreferences.serverCmd = QLatin1String(argv[i]);
+        } else if (opts && arg == "-timeout") {
+            nextArg(argc, argv, &i);
+
+            char *end = nullptr;
+            long n = strtol(argv[i], &end, 10);
+            if(*end != '\0') {
+                fprintf(stderr, "nc: argument to timeout should be a number\n");
+            } else {
+                ServerPreferences.timeOut = static_cast<int>(n);
+            }
         } else if (opts && arg == "-do") {
             nextArg(argc, argv, &i);
             toDoCommand = argv[i];
@@ -214,7 +230,7 @@ bool parseCommandLine(int argc, char **argv, CommandLine *commandLine) {
             if(*end != '\0') {
                 fprintf(stderr, "nc: argument to line should be a number\n");
             } else {
-                lineNum = lineArg;
+                lineNum = static_cast<int>(lineArg);
             }
         } else if (opts && (*argv[i] == '+')) {
 
@@ -223,16 +239,10 @@ bool parseCommandLine(int argc, char **argv, CommandLine *commandLine) {
             if(*end != '\0') {
                 fprintf(stderr, "nc: argument to + should be a number\n");
             } else {
-                lineNum = lineArg;
+                lineNum = static_cast<int>(lineArg);
             }
         } else if (opts && (arg == "-ask" || arg == "-noask")) {
             ; // Ignore resource-based arguments which are processed later
-        } else if (opts && (arg == "-svrname" || arg == "-svrcmd")) {
-            nextArg(argc, argv, &i); // Ignore rsrc args with data
-        } else if (opts && (arg == "-xrm" || arg == "-display")) {
-            copyCommandLineArg(commandLine, argv[i]);
-            nextArg(argc, argv, &i); // Ignore rsrc args with data
-            copyCommandLineArg(commandLine, argv[i]);
         } else if (opts && (arg == "-version" || arg == "-V")) {
             printNcVersion();
             exit(EXIT_SUCCESS);
@@ -333,7 +343,7 @@ int startServer(const char *message, const QString &commandLineArgs) {
 
     // prompt user whether to start server
     if (!ServerPreferences.autoStart) {
-        char c;
+        int c;
         printf("%s", message);
         do {
             c = getc(stdin);
@@ -348,6 +358,29 @@ int startServer(const char *message, const QString &commandLineArgs) {
     auto process = new QProcess;
     process->start(QString(QLatin1String("%1 %2")).arg(ServerPreferences.serverCmd, commandLineArgs));
     bool sysrc = process->waitForStarted();
+
+    if(!sysrc) {
+        switch(process->error()) {
+        case QProcess::FailedToStart:
+            fprintf(stderr, "nc: The server process failed to start. Either the invoked program is missing, or you may have insufficient permissions to invoke the program.\n");
+            break;
+        case QProcess::Crashed:
+            fprintf(stderr, "nc: The server process crashed some time after starting successfully.\n");
+            break;
+        case QProcess::Timedout:
+            fprintf(stderr, "nc: Timeout while waiting for the server process\n");
+            break;
+        case QProcess::WriteError:
+            fprintf(stderr, "nc: An error occurred when attempting to write to the server process.\n");
+            break;
+        case QProcess::ReadError:
+            fprintf(stderr, "nc: An error occurred when attempting to read from the server process.\n");
+            break;
+        case QProcess::UnknownError:
+            fprintf(stderr, "nc: An unknown error occurred.\n");
+            break;
+        }
+    }
 
     return (sysrc) ? 0 : -1;
 }
@@ -374,11 +407,6 @@ int main(int argc, char *argv[]) {
 
     QCoreApplication app(argc, argv);
 
-    /* Process the command line before calling XtOpenDisplay, because the
-       latter consumes certain command line arguments that we still need
-       (-icon, -geometry ...) */
-    CommandLine commandLine = processCommandLine(argc, argv);
-
     // Read the application resources into the Preferences data structure
     QString filename = Settings::configFile();
     QSettings settings(filename, QSettings::IniFormat);
@@ -386,9 +414,12 @@ int main(int argc, char *argv[]) {
 
     ServerPreferences.autoStart     = settings.value(QLatin1String("nc.autoStart"),     true).toBool();
     ServerPreferences.serverCmd     = settings.value(QLatin1String("nc.serverCommand"), QLatin1String("nedit-ng -server")).toString();
-	ServerPreferences.serverName    = settings.value(QLatin1String("nc.serverName"),    QLatin1String("")).toString();
+    ServerPreferences.serverName    = settings.value(QLatin1String("nc.serverName"),    QLatin1String("")).toString();
     ServerPreferences.waitForClose  = settings.value(QLatin1String("nc.waitForClose"),  false).toBool();
     ServerPreferences.timeOut       = settings.value(QLatin1String("nc.timeOut"),       10).toInt();
+    CommandLine commandLine = processCommandLine(argc, argv);
+
+
 
     /* Make sure that the time out unit is at least 1 second and not too
        large either (overflow!). */
