@@ -143,31 +143,25 @@ public:
 
 public:
 	size_type copy(Ch *dest, size_type count, size_type pos = 0) const {
-		if(pos >= size()) {
+		if(pos > size()) {
 			throw std::out_of_range("out_of_range");
 		}
 
-		if(count >= size_) {
-			count = size_ - pos;
-		}
-
-		Tr::copy(dest, data_ + pos, count);
-		return count;
+		size_type rlen = std::min(count, size_ - pos);
+		Tr::copy(dest, data_ + pos, rlen);
+		return rlen;
 	}
 
 	//--------------------------------------------------------------------------
 
 	constexpr basic_string_view substr(size_type pos = 0, size_type count = npos) const {
 
-		if(pos >= size()) {
+		if(pos > size()) {
 			throw std::out_of_range("out_of_range");
 		}
 
-		if(count >= size_) {
-			count = size_ - pos;
-		}
-
-		return basic_string_view(data_ + pos, count);
+		size_type rlen = std::min(count, size_ - pos);
+		return basic_string_view(data_ + pos, rlen);
 	}
 
 	//--------------------------------------------------------------------------
