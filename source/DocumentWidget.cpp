@@ -2149,7 +2149,7 @@ int DocumentWidget::cmpWinAgainstFile(const QString &fileName) {
 
         // Beware of '\0' chars !
         buf->BufSubstituteNullChars(fileString, nRead);
-        rv = buf->BufCmpEx(bufPos, nRead, fileString);
+        rv = buf->BufCmpEx(bufPos, view::string_view(fileString, nRead));
         if (rv) {
             fclose(fp);
             MainWindow::AllWindowsUnbusyEx();
@@ -2162,7 +2162,7 @@ int DocumentWidget::cmpWinAgainstFile(const QString &fileName) {
     MainWindow::AllWindowsUnbusyEx();
     fclose(fp);
     if (pendingCR) {
-        rv = buf->BufCmpEx(bufPos, 1, &pendingCR);
+        rv = buf->BufCmpEx(bufPos, view::string_view(&pendingCR, 1));
         if (rv) {
             return rv;
         }

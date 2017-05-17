@@ -69,7 +69,7 @@ public:
 	bool BufSubstituteNullCharsEx(std::string &string);
 	char BufGetCharacter(int pos) const;
 	const char *BufAsString();
-	int BufCmpEx(int pos, int len, view::string_view cmpText);
+    int BufCmpEx(int pos, view::string_view cmpText);
 	int BufCountBackwardNLines(int startPos, int nLines) const;
 	int BufCountDispChars(int lineStartPos, int targetPos) const;
 	int BufCountForwardDispChars(int lineStartPos, int nChars) const;

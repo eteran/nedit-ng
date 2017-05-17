@@ -1722,9 +1722,9 @@ void TextBuffer::BufUnsubstituteNullCharsEx(std::string &string) const {
 ** != 0 otherwise.
 **
 */
-int TextBuffer::BufCmpEx(int pos, int len, view::string_view cmpText) {
+int TextBuffer::BufCmpEx(int pos, view::string_view cmpText) {
 
-	int posEnd = pos + len;
+    int posEnd = pos + cmpText.size();
 	if (posEnd > length_) {
 		return 1;
 	}
@@ -1733,25 +1733,17 @@ int TextBuffer::BufCmpEx(int pos, int len, view::string_view cmpText) {
 	}
 
 	// TODO(eteran): replace strncmp
-	if (posEnd <= gapStart_) {
-#if 0
-        return view::string_view(&buf_[pos], len).compare(cmpText);
-#else
-        return strncmp(&buf_[pos], cmpText.to_string().c_str(), len);
-#endif
+    if (posEnd <= gapStart_) {
+        return strncmp(&buf_[pos], cmpText.to_string().c_str(), cmpText.size());
 	} else if (pos >= gapStart_) {
-#if 1
-        return view::string_view(&buf_[pos + (gapEnd_ - gapStart_)], len).compare(cmpText);
-#else
-		return strncmp(&buf_[pos + (gapEnd_ - gapStart_)], cmpText.to_string().c_str(), len);
-#endif
+        return strncmp(&buf_[pos + (gapEnd_ - gapStart_)], cmpText.to_string().c_str(), cmpText.size());
 	} else {
 		int part1Length = gapStart_ - pos;
 		int result = strncmp(&buf_[pos], cmpText.to_string().c_str(), part1Length);
 		if (result) {
 			return result;
 		}
-		return strncmp(&buf_[gapEnd_], &cmpText[part1Length], len - part1Length);
+        return strncmp(&buf_[gapEnd_], &cmpText[part1Length], cmpText.size() - part1Length);
 	}
 }
 

@@ -18,7 +18,7 @@ static void RangesetBufModifiedCB(int pos, int nInserted, int nDeleted, int nRes
 	(void)nRestyled;
 
 	auto table = static_cast<RangesetTable *>(cbArg);
-    if ((nInserted != nDeleted) || table->buf_->BufCmpEx(pos, nInserted, deletedText) != 0) {
+    if ((nInserted != nDeleted) || table->buf_->BufCmpEx(pos, deletedText) != 0) {
         RangesetTable::RangesetTableUpdatePos(table, pos, nInserted, nDeleted);
 	}
 }
