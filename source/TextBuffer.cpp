@@ -58,36 +58,32 @@ const char *ControlCodeTable[32] = {"nul", "soh", "stx", "etx", "eot", "enq", "a
 */
 std::string unexpandTabsEx(view::string_view text, int startIndent, int tabDist, char nullSubsChar) {
 	std::string outStr;
-	char expandedChar[MAX_EXP_CHAR_LEN];
-
 	outStr.reserve(text.size());
 
 	auto outPtr = std::back_inserter(outStr);
 	int indent = startIndent;
 
-	for (auto c = text.begin(); c != text.end();) {
-		if (*c == ' ') {
-			int len = TextBuffer::BufExpandCharacter('\t', indent, expandedChar, tabDist, nullSubsChar);
+    for (size_t pos = 0; pos != text.size(); ) {
+        if (text[pos] == ' ') {
 
-            // NOTE(eteran): cmp = strncmp(&*c, expandedChar, len)
-            const int n = std::min<int>(len, std::distance(c, text.end()));
-            const auto cmp1 = view::string_view(&*c, n);
-            const auto cmp2 = view::string_view(expandedChar, len);
-            const auto cmp = cmp1.compare(cmp2);
+            char expandedChar[MAX_EXP_CHAR_LEN];
+            int len = TextBuffer::BufExpandCharacter('\t', indent, expandedChar, tabDist, nullSubsChar);
+
+            const auto cmp = text.compare(pos, len, expandedChar, len);
 
             if (len >= 3 && !cmp) {
-				c += len;
+                pos += len;
 				*outPtr++ = '\t';
 				indent += len;
 			} else {
-				*outPtr++ = *c++;
+                *outPtr++ = text[pos++];
 				indent++;
 			}
-		} else if (*c == '\n') {
+        } else if (text[pos]== '\n') {
 			indent = startIndent;
-			*outPtr++ = *c++;
+            *outPtr++ = text[pos++];
 		} else {
-			*outPtr++ = *c++;
+            *outPtr++ = text[pos++];
 			indent++;
 		}
 	}
