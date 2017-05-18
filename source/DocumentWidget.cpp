@@ -4001,10 +4001,26 @@ void DocumentWidget::SelectToMatchingCharacter(TextArea *area) {
     area->setAutoShowInsertPos(true);
 }
 
+/**
+ * @brief DocumentWidget::FindDefCalltip
+ * @param area
+ */
+void DocumentWidget::FindDefCalltip(TextArea *area) {
+    FindDefCalltip(area, QString());
+}
+
+/**
+ * @brief DocumentWidget::FindDefinition
+ * @param area
+ */
+void DocumentWidget::FindDefinition(TextArea *area) {
+    FindDefinition(area, QString());
+}
+
 /*
 ** See findDefHelper
 */
-void DocumentWidget::FindDefCalltip(TextArea *area, const QString &arg) {
+void DocumentWidget::FindDefCalltip(TextArea *area, const QString &tipName) {
 
 	// Reset calltip parameters to reasonable defaults
 	globAnchored  = false;
@@ -4013,7 +4029,7 @@ void DocumentWidget::FindDefCalltip(TextArea *area, const QString &arg) {
 	globVAlign    = TIP_BELOW;
 	globAlignMode = TIP_SLOPPY;
 
-	findDefinitionHelper(area, arg, TIP);
+    findDefinitionHelper(area, tipName, TIP);
 
 }
 
@@ -4095,8 +4111,8 @@ int DocumentWidget::findDef(TextArea *area, const QString &value, Mode search_ty
 	return status;
 }
 
-void DocumentWidget::FindDefinition(TextArea *area, const QString &arg) {
-	findDefinitionHelper(area, arg, TAG);
+void DocumentWidget::FindDefinition(TextArea *area, const QString &tagName) {
+    findDefinitionHelper(area, tagName, TAG);
 }
 
 void DocumentWidget::execAP(TextArea *area, const QString &command) {
@@ -5539,3 +5555,4 @@ int DocumentWidget::ReadMacroFileEx(const QString &fileName, bool warnNotExist) 
 	// Parse fileString
 	return readCheckMacroStringEx(this, fileString, this, fileName, nullptr);
 }
+

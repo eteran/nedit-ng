@@ -80,7 +80,7 @@ constexpr const char cmdLineHelp[] =
 int main(int argc, char *argv[]) {	
 
     int lineNum = 0;
-    int editFlags = CREATE;
+    int editFlags = EditFlags::CREATE;
     bool gotoLine = false;
     bool macroFileReadEx = false;
     bool opts = true;

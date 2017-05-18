@@ -62,8 +62,10 @@ public Q_SLOTS:
 	int findDef(TextArea *area, const QString &value, Mode search_type);
     void BeginSmartIndentEx(int warn);
     void ExecShellCommandEx(TextArea *area, const QString &command, bool fromMacro);
-	void FindDefCalltip(TextArea *area, const QString &arg);
-	void FindDefinition(TextArea *area, const QString &arg);
+    void FindDefCalltip(TextArea *area);
+    void FindDefinition(TextArea *area);
+    void FindDefCalltip(TextArea *area, const QString &tipName);
+    void FindDefinition(TextArea *area, const QString &tagName);
     void GotoMatchingCharacter(TextArea *area);
     void PrintStringEx(const std::string &string, const QString &jobName);
     void PrintWindow(TextArea *area, bool selectedOnly);

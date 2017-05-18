@@ -2856,13 +2856,13 @@ void MainWindow::loadMacroAP(const QString &filename) {
 
 void MainWindow::on_action_Show_Calltip_triggered() {
     if(auto doc = currentDocument()) {
-		doc->FindDefCalltip(lastFocus_, QString()); // TODO(eteran): there was an optional arg?
+        doc->FindDefCalltip(lastFocus_);
     }
 }
 
 void MainWindow::on_action_Find_Definition_triggered() {
     if(auto doc = currentDocument()) {
-		doc->FindDefinition(lastFocus_, QString()); // TODO(eteran): there was an optional arg?
+        doc->FindDefinition(lastFocus_);
     }
 }
 

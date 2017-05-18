@@ -108,6 +108,9 @@ public:
     int TextNumVisibleLines() const;
     int TextFirstVisibleLine() const;
     int TextVisibleWidth() const;
+    void beginningOfSelectionAP();
+    void deleteSelectionAP(EventFlags flags = NoneFlag);
+    void deleteNextWordAP(EventFlags flags = NoneFlag);
     QColor getBackgroundPixel() const;
     QColor getForegroundPixel() const;
     QFont getFont() const;

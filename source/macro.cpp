@@ -308,6 +308,9 @@ TEXT_EVENT(forwardParagraphMS,        forwardParagraphAP)
 TEXT_EVENT(forwardCharacterMS,        forwardCharacterAP)
 TEXT_EVENT(nextPageMS,                nextPageAP)
 TEXT_EVENT(previousPageMS,            previousPageAP)
+TEXT_EVENT(beginningOfSelectionMS,    beginningOfSelectionAP)
+TEXT_EVENT(deleteSelectionMS,         deleteSelectionAP)
+TEXT_EVENT(deleteNextWordMS,          deleteNextWordAP)
 
 static const SubRoutine TextAreaSubrNames[] = {
     // Keyboard
@@ -321,8 +324,8 @@ static const SubRoutine TextAreaSubrNames[] = {
     {"beginning_of_file",         beginningOfFileMS},
     {"beginning-of-line",         beginingOfLineMS},
     {"beginning_of_line",         beginingOfLineMS},
-    {"beginning-of-selection",    nullptr}, // TODO(eteran): was from MainWindow in my code...
-    {"beginning_of_selection",    nullptr}, // TODO(eteran): was from MainWindow in my code...
+    {"beginning-of-selection",    beginningOfSelectionMS}, // NOTE(eteran): was from MainWindow in my code...
+    {"beginning_of_selection",    beginningOfSelectionMS}, // NOTE(eteran): was from MainWindow in my code...
     {"copy-clipboard",            copyClipboardMS},
     {"copy_clipboard",            copyClipboardMS},
     {"copy-primary",              copyPrimaryMS},
@@ -335,14 +338,14 @@ static const SubRoutine TextAreaSubrNames[] = {
     {"cut_clipboard",             cutClipboardMS},
     {"cut-primary",               cutPrimaryMS},
     {"cut_primary",               cutPrimaryMS},
-    {"delete-selection",          nullptr},
-    {"delete_selection",          nullptr},
+    {"delete-selection",          deleteSelectionMS},
+    {"delete_selection",          deleteSelectionMS},
     {"delete-next-character",     deleteNextCharacterMS},
     {"delete_next_character",     deleteNextCharacterMS},
     {"delete-previous-character", deletePreviousCharacterMS},
     {"delete_previous_character", deletePreviousCharacterMS},
-    {"delete-next-word",          nullptr},
-    {"delete_next_word",          nullptr},
+    {"delete-next-word",          deleteNextWordMS},
+    {"delete_next_word",          deleteNextWordMS},
     {"delete-previous-word",      deletePreviousWordMS},
     {"delete_previous_word",      deletePreviousWordMS},
     {"delete-to-start-of-line",   nullptr},
@@ -355,13 +358,13 @@ static const SubRoutine TextAreaSubrNames[] = {
     {"end_of_file",               endOfFileMS},
     {"end-of-line",               endOfLineMS},
     {"end_of_line",               endOfLineMS},
-    {"end-of-selection",          nullptr}, // TODO(eteran): was from MainWindow in my code...
-    {"end_of_selection",          nullptr}, // TODO(eteran): was from MainWindow in my code...
+    {"end-of-selection",          nullptr}, // NOTE(eteran): was from MainWindow in my code...
+    {"end_of_selection",          nullptr}, // NOTE(eteran): was from MainWindow in my code...
     {"exchange",                  nullptr},
     {"extend_adjust",             nullptr},
     {"extend_end",                nullptr},
     {"extend_start",              nullptr},
-    {"focus_pane",                nullptr}, // TODO(eteran): was from MainWindow in my code...
+    {"focus_pane",                nullptr}, // NOTE(eteran): was from MainWindow in my code...
     {"forward_character",         forwardCharacterMS},
     {"forward-character",         forwardCharacterMS},
     {"forward_paragraph",         forwardParagraphMS},
@@ -403,7 +406,7 @@ static const SubRoutine TextAreaSubrNames[] = {
     {"process-tab",               processTabMS},
     {"process_up",                processUpMS},
     {"process-up",                processUpMS},
-    {"raise_window",              nullptr}, // TODO(eteran): was from MainWindow in my code...
+    {"raise_window",              nullptr}, // NOTE(eteran): was from MainWindow in my code...
     {"scroll_down",               nullptr},
     {"scroll-down",               nullptr},
     {"scroll_left",               nullptr},

@@ -8562,3 +8562,70 @@ int TextArea::TextFirstVisibleLine() const {
 int TextArea::TextVisibleWidth() const {
     return rect_.width();
 }
+
+void TextArea::beginningOfSelectionAP() {
+
+    int start;
+    int end;
+    bool isRect;
+    int rectStart;
+    int rectEnd;
+
+    if (!buffer_->BufGetSelectionPos(&start, &end, &isRect, &rectStart, &rectEnd)) {
+        return;
+    }
+
+    if (!isRect) {
+        TextSetCursorPos(start);
+    } else {
+        TextSetCursorPos(buffer_->BufCountForwardDispChars(buffer_->BufStartOfLine(start), rectStart));
+    }
+}
+
+void TextArea::deleteSelectionAP(EventFlags flags) {
+
+    EMIT_EVENT("delete_selection");
+
+    cancelDrag();
+    if (checkReadOnly()) {
+        return;
+    }
+
+    TakeMotifDestination();
+    deletePendingSelection();
+}
+
+void TextArea::deleteNextWordAP(EventFlags flags) {
+
+    EMIT_EVENT("delete_next_word");
+
+    int insertPos = TextDGetInsertPosition();
+    int pos, lineEnd = buffer_->BufEndOfLine(insertPos);
+    QString delimiters = P_delimiters;
+    bool silent = flags & NoBellFlag;
+
+    cancelDrag();
+    if (checkReadOnly()) {
+        return;
+    }
+
+    TakeMotifDestination();
+    if (deletePendingSelection()) {
+        return;
+    }
+
+    if (insertPos == lineEnd) {
+        ringIfNecessary(silent);
+        return;
+    }
+
+    pos = insertPos;
+    while (strchr(delimiters.toLatin1().data(), buffer_->BufGetCharacter(pos)) != '\0' && pos != lineEnd) {
+        pos++;
+    }
+
+    pos = endOfWord(pos);
+    buffer_->BufRemove(insertPos, pos);
+    checkAutoShowInsertPos();
+    callCursorMovementCBs();
+}
