@@ -165,7 +165,6 @@ add_executable(nedit-ng
 	nedit.cpp
 	preferences.cpp
 	rbTree.cpp
-	regularExp.cpp
 	search.cpp
 	selection.cpp
 	shift.cpp
@@ -182,6 +181,7 @@ include_directories(nedit-ng
 
 target_link_libraries(nedit-ng LINK_PUBLIC
 	NUtil
+	RegExp
 	Qt5::Widgets
 	Qt5::Concurrent
 	Qt5::Network
