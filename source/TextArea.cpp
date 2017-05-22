@@ -8620,7 +8620,7 @@ void TextArea::deleteNextWordAP(EventFlags flags) {
     }
 
     pos = insertPos;
-    while (strchr(delimiters.toLatin1().data(), buffer_->BufGetCharacter(pos)) != '\0' && pos != lineEnd) {
+    while (strchr(delimiters.toLatin1().data(), buffer_->BufGetCharacter(pos)) != nullptr && pos != lineEnd) {
         pos++;
     }
 
