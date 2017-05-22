@@ -8629,3 +8629,73 @@ void TextArea::deleteNextWordAP(EventFlags flags) {
     checkAutoShowInsertPos();
     callCursorMovementCBs();
 }
+
+void TextArea::endOfSelectionAP(EventFlags flags) {
+
+    EMIT_EVENT("end_of_selection");
+
+    int start;
+    int end;
+    bool isRect;
+    int rectStart;
+    int rectEnd;
+
+    if (!buffer_->BufGetSelectionPos(&start, &end, &isRect, &rectStart, &rectEnd)) {
+        return;
+    }
+
+    if (!isRect) {
+        TextSetCursorPos(end);
+    } else {
+        TextSetCursorPos(buffer_->BufCountForwardDispChars(buffer_->BufStartOfLine(end), rectEnd));
+    }
+
+}
+
+
+void TextArea::scrollUpAP(int count, ScrollUnits units, EventFlags flags) {
+
+    EMIT_EVENT("scroll_up");
+
+    int topLineNum;
+    int horizOffset;
+    int nLines = count;
+
+    // NOTE(eteran): original code based this parameter on a string
+    // and allowed both "page" and "pages"
+    if(units == ScrollUnits::Pages) {
+        nLines *= lineStarts_.size();
+    }
+
+    TextDGetScroll(&topLineNum, &horizOffset);
+    TextDSetScroll(topLineNum-nLines, horizOffset);
+}
+
+void TextArea::scrollDownAP(int count, ScrollUnits units, EventFlags flags) {
+
+    EMIT_EVENT("scroll_down");
+
+    int topLineNum;
+    int horizOffset;
+    int nLines = count;
+
+    // NOTE(eteran): original code based this parameter on a string
+    // and allowed both "page" and "pages"
+    if(units == ScrollUnits::Pages) {
+        nLines *= lineStarts_.size();
+    }
+
+    TextDGetScroll(&topLineNum, &horizOffset);
+    TextDSetScroll(topLineNum+nLines, horizOffset);
+}
+
+
+void TextArea::scrollLeftAP(int pixels, EventFlags flags) {
+    EMIT_EVENT("scroll_left");
+    horizontalScrollBar()->setValue(horizontalScrollBar()->value() - pixels);
+}
+
+void TextArea::scrollRightAP(int pixels, EventFlags flags) {
+    EMIT_EVENT("scroll_right");
+    horizontalScrollBar()->setValue(horizontalScrollBar()->value() + pixels);
+}

@@ -58,6 +58,11 @@ public:
 
     Q_DECLARE_FLAGS(EventFlags, EventFlag)
 
+    enum class ScrollUnits {
+        Lines,
+        Pages
+    };
+
 public:
     TextArea(QWidget *parent,
         int left,
@@ -109,8 +114,6 @@ public:
     int TextFirstVisibleLine() const;
     int TextVisibleWidth() const;
     void beginningOfSelectionAP();
-    void deleteSelectionAP(EventFlags flags = NoneFlag);
-    void deleteNextWordAP(EventFlags flags = NoneFlag);
     QColor getBackgroundPixel() const;
     QColor getForegroundPixel() const;
     QFont getFont() const;
@@ -195,9 +198,15 @@ public Q_SLOTS:
 	void pageRightAP(EventFlags flags = NoneFlag);
 	void nextPageAP(EventFlags flags = NoneFlag);
 	void previousPageAP(EventFlags flags = NoneFlag);
+    void deleteSelectionAP(EventFlags flags = NoneFlag);
+    void deleteNextWordAP(EventFlags flags = NoneFlag);
+    void endOfSelectionAP(EventFlags flags = NoneFlag);
+    void scrollUpAP(int count, ScrollUnits units = ScrollUnits::Lines, EventFlags flags = NoneFlag);
+    void scrollDownAP(int count, ScrollUnits units = ScrollUnits::Lines, EventFlags flags = NoneFlag);
+    void scrollRightAP(int pixels, EventFlags flags = NoneFlag);
+    void scrollLeftAP(int pixels, EventFlags flags = NoneFlag);
     void insertStringAP(const QString &string, EventFlags flags = NoneFlag);
     void selfInsertAP(const QString &string, EventFlags flags = NoneFlag);
-
 
 private Q_SLOTS:
 	// mouse related events

@@ -311,6 +311,11 @@ TEXT_EVENT(previousPageMS,            previousPageAP)
 TEXT_EVENT(beginningOfSelectionMS,    beginningOfSelectionAP)
 TEXT_EVENT(deleteSelectionMS,         deleteSelectionAP)
 TEXT_EVENT(deleteNextWordMS,          deleteNextWordAP)
+TEXT_EVENT(deleteToEndOfLineMS,       deleteToEndOfLineAP)
+TEXT_EVENT(deleteToStartOfLineMS,     deleteToStartOfLineAP)
+TEXT_EVENT(endOfSelectionMS,          endOfSelectionAP)
+TEXT_EVENT(pageLeftMS,                pageLeftAP)
+TEXT_EVENT(pageRightMS,               pageRightAP)
 
 static const SubRoutine TextAreaSubrNames[] = {
     // Keyboard
@@ -330,10 +335,6 @@ static const SubRoutine TextAreaSubrNames[] = {
     {"copy_clipboard",            copyClipboardMS},
     {"copy-primary",              copyPrimaryMS},
     {"copy_primary",              copyPrimaryMS},
-    {"copy-to",                   nullptr},
-    {"copy_to",                   nullptr},
-    {"copy_to_or_end_drag",       nullptr},
-    {"copy-to-or-end-drag",       nullptr},
     {"cut-clipboard",             cutClipboardMS},
     {"cut_clipboard",             cutClipboardMS},
     {"cut-primary",               cutPrimaryMS},
@@ -348,22 +349,18 @@ static const SubRoutine TextAreaSubrNames[] = {
     {"delete_next_word",          deleteNextWordMS},
     {"delete-previous-word",      deletePreviousWordMS},
     {"delete_previous_word",      deletePreviousWordMS},
-    {"delete-to-start-of-line",   nullptr},
-    {"delete_to_start_of_line",   nullptr},
-    {"delete-to-end-of-line",     nullptr},
-    {"delete_to_end_of_line",     nullptr},
+    {"delete-to-start-of-line",   deleteToStartOfLineMS},
+    {"delete_to_start_of_line",   deleteToStartOfLineMS},
+    {"delete-to-end-of-line",     deleteToEndOfLineMS},
+    {"delete_to_end_of_line",     deleteToEndOfLineMS},
     {"deselect-all",              deselectAllMS},
     {"deselect_all",              deselectAllMS},
     {"end-of-file",               endOfFileMS},
     {"end_of_file",               endOfFileMS},
     {"end-of-line",               endOfLineMS},
     {"end_of_line",               endOfLineMS},
-    {"end-of-selection",          nullptr}, // NOTE(eteran): was from MainWindow in my code...
-    {"end_of_selection",          nullptr}, // NOTE(eteran): was from MainWindow in my code...
-    {"exchange",                  nullptr},
-    {"extend_adjust",             nullptr},
-    {"extend_end",                nullptr},
-    {"extend_start",              nullptr},
+    {"end-of-selection",          endOfSelectionMS}, // NOTE(eteran): was from MainWindow in my code...
+    {"end_of_selection",          endOfSelectionMS}, // NOTE(eteran): was from MainWindow in my code...
     {"focus_pane",                nullptr}, // NOTE(eteran): was from MainWindow in my code...
     {"forward_character",         forwardCharacterMS},
     {"forward-character",         forwardCharacterMS},
@@ -371,7 +368,6 @@ static const SubRoutine TextAreaSubrNames[] = {
     {"forward-paragraph",         forwardParagraphMS},
     {"forward_word",              forwardWordMS},
     {"forward-word",              forwardWordMS},
-    {"grab_focus",                nullptr},
     {"insert_string",             insertStringMS},
     {"insert-string",             insertStringMS},
     {"key_select",                keySelectMS},
@@ -383,15 +379,14 @@ static const SubRoutine TextAreaSubrNames[] = {
     {"newline-no-indent",         newlineNoIndentMS},
     {"next_page",                 nextPageMS},
     {"next-page",                 nextPageMS},
-    {"page_left",                 nullptr},
-    {"page-left",                 nullptr},
-    {"page_right",                nullptr},
-    {"page-right",                nullptr},
+    {"page_left",                 pageLeftMS},
+    {"page-left",                 pageLeftMS},
+    {"page_right",                pageRightMS},
+    {"page-right",                pageRightMS},
     {"paste_clipboard",           pasteClipboardMS},
     {"paste-clipboard",           pasteClipboardMS},
     {"previous_page",             previousPageMS},
     {"previous-page",             previousPageMS},
-    {"process_bdrag",             nullptr},
     {"process_cancel",            processCancelMS},
     {"process-cancel",            processCancelMS},
     {"process_down",              processDownMS},
@@ -415,16 +410,31 @@ static const SubRoutine TextAreaSubrNames[] = {
     {"scroll-up",                 nullptr},
     {"scroll_to_line",            nullptr},
     {"scroll-to-line",            nullptr},
-    {"secondary_adjust",          nullptr},
-    {"secondary_or_drag_adjust",  nullptr},
+    {"self_insert",               insertStringMS},
+    {"self-insert",               insertStringMS},
+
+#if 0 // NOTE(eteran): mouse event, no point in scripting...
+    {"extend_end",                nullptr},
+    {"grab_focus",                nullptr},
+    {"extend_adjust",             nullptr},
+    {"extend_start",              nullptr},
+    {"copy-to",                   nullptr},
+    {"copy_to",                   nullptr},
+    {"copy_to_or_end_drag",       nullptr},
+    {"copy-to-or-end-drag",       nullptr},
     {"secondary_or_drag_start",   nullptr},
+    {"process_bdrag",             nullptr},
+    {"secondary_or_drag_adjust",  nullptr},
     {"secondary_start",           nullptr},
+    {"secondary_adjust",          nullptr},
+    {"exchange",                  nullptr},
+#endif
+
 #if 0 // NOTE(eteran): duplicated by the main window event
     {"select-all",                selectAllMS},
     {"select_all",                selectAllMS},
 #endif
-    {"self_insert",               insertStringMS},
-    {"self-insert",               insertStringMS},
+
 #if 0 // Not mentioned in the documentation
     {"end_drag",                  nullptr},
     {"process_home",              processHomeMS},
