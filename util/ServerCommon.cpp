@@ -23,8 +23,6 @@
  * A typical example of $RUNTIME_PATH would be something like:
  * /var/run/user/1000/
  */
-
-
 QString LocalSocketName(const QString &server_name) {
 
     QString runtimePath;
@@ -32,21 +30,23 @@ QString LocalSocketName(const QString &server_name) {
     if(!runtimePaths.isEmpty()) {
         runtimePath = runtimePaths[0];
     }
+	
+	QString hostname = GetNameOfHostEx();
 
     if(!runtimePath.isEmpty()) {
         QDir().mkpath(runtimePath);
 #ifdef Q_OS_LINUX
         QByteArray display = qgetenv("DISPLAY");
-        return QString(QLatin1String("%1/nedit-ng_%2_%3_%4")).arg(runtimePath, GetNameOfHostEx(), server_name, QString::fromLatin1(display));
+        return QString(QLatin1String("%1/nedit-ng_%2_%3_%4")).arg(runtimePath, hostname, server_name, QString::fromLatin1(display));
 #else
-        return QString(QLatin1String("%1/nedit-ng_%2_%3")).arg(runtimePath, GetNameOfHostEx(), server_name);
+        return QString(QLatin1String("%1/nedit-ng_%2_%3")).arg(runtimePath, hostname, server_name);
 #endif
     } else {
 #ifdef Q_OS_LINUX
         QByteArray display = qgetenv("DISPLAY");
-        return QString(QLatin1String("nedit-ng_%1_%2_%3_%4")).arg(GetUserNameEx(), GetNameOfHostEx(), server_name, QString::fromLatin1(display));
+        return QString(QLatin1String("nedit-ng_%1_%2_%3_%4")).arg(GetUserNameEx(), hostname, server_name, QString::fromLatin1(display));
 #else
-        return QString(QLatin1String("nedit-ng_%1_%2_%3")).arg(GetUserNameEx(), GetNameOfHostEx(), server_name);
+        return QString(QLatin1String("nedit-ng_%1_%2_%3")).arg(GetUserNameEx(), hostname, server_name);
 #endif
     }
 }

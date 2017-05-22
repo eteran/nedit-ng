@@ -23,6 +23,7 @@
 
 #include "utils.h"
 
+#include <QtGlobal>
 #include <QDir>
 #include <QHostInfo>
 #include <QStandardPaths>
@@ -57,6 +58,8 @@ QString GetHomeDirEx() {
 ** allocated string.
 */
 QString GetUserNameEx() {
+
+#ifdef Q_OS_UNIX
 	/* cuserid has apparently been dropped from the ansi C standard, and if
 	   strict ansi compliance is turned on (on Sun anyhow, maybe others), calls
 	   to cuserid fail to compile.  Older versions of nedit try to use the
@@ -83,7 +86,9 @@ QString GetUserNameEx() {
 	   and let the user start nc anyway. */
 	perror("nedit: getpwuid() failed - reverting to $USER");
     return QString::fromLatin1(qgetenv("USER"));
-
+#else
+	return QString();
+#endif
 }
 
 
