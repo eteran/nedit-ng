@@ -276,6 +276,28 @@ static int routineName(DocumentWidget *document, DataValue *argList, int nArgs, 
     return true;                                                                                                          \
 }
 
+// TODO(eteran): support the method parameters (like "rect", "extend", etc...)
+#define TEXT_EVENT_I(routineName, slotName)                                                                               \
+static int routineName(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) { \
+                                                                                                                          \
+    int num;                                                                                                              \
+    if(!readArguments(argList, nArgs, 0, errMsg, &num)) {                                                                 \
+        return false;                                                                                                     \
+    }                                                                                                                     \
+                                                                                                                          \
+    if(MainWindow *window = document->toWindow()) {                                                                       \
+        if(TextArea *area = window->lastFocus_) {                                                                         \
+            area->slotName(num);                                                                                          \
+        }                                                                                                                 \
+    }                                                                                                                     \
+                                                                                                                          \
+    result->tag = NO_TAG;                                                                                                 \
+    return true;                                                                                                          \
+}
+
+TEXT_EVENT_I(scrollToLineMS,          scrollToLineAP)
+TEXT_EVENT_I(scrollLeftMS,            scrollLeftAP)
+TEXT_EVENT_I(scrollRightMS,           scrollRightAP)
 TEXT_EVENT_S(insertStringMS,          insertStringAP)
 TEXT_EVENT(backwardWordMS,            backwardWordAP)
 TEXT_EVENT(backwardCharacterMS,       backwardCharacterAP)
@@ -404,12 +426,12 @@ static const SubRoutine TextAreaSubrNames[] = {
     {"raise_window",              nullptr}, // NOTE(eteran): was from MainWindow in my code...
     {"scroll_down",               nullptr},
     {"scroll-down",               nullptr},
-    {"scroll_left",               nullptr},
-    {"scroll_right",              nullptr},
+    {"scroll_left",               scrollLeftMS},
+    {"scroll_right",              scrollRightMS},
     {"scroll_up",                 nullptr},
     {"scroll-up",                 nullptr},
-    {"scroll_to_line",            nullptr},
-    {"scroll-to-line",            nullptr},
+    {"scroll_to_line",            scrollToLineMS},
+    {"scroll-to-line",            scrollToLineMS},
     {"self_insert",               insertStringMS},
     {"self-insert",               insertStringMS},
 

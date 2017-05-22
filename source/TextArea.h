@@ -205,6 +205,7 @@ public Q_SLOTS:
     void scrollDownAP(int count, ScrollUnits units = ScrollUnits::Lines, EventFlags flags = NoneFlag);
     void scrollRightAP(int pixels, EventFlags flags = NoneFlag);
     void scrollLeftAP(int pixels, EventFlags flags = NoneFlag);
+    void scrollToLineAP(int line, EventFlags flags = NoneFlag);
     void insertStringAP(const QString &string, EventFlags flags = NoneFlag);
     void selfInsertAP(const QString &string, EventFlags flags = NoneFlag);
 

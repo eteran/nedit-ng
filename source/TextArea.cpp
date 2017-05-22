@@ -8699,3 +8699,15 @@ void TextArea::scrollRightAP(int pixels, EventFlags flags) {
     EMIT_EVENT("scroll_right");
     horizontalScrollBar()->setValue(horizontalScrollBar()->value() + pixels);
 }
+
+void TextArea::scrollToLineAP(int line, EventFlags flags) {
+
+    EMIT_EVENT("scroll_to_line");
+
+    int topLineNum;
+    int horizOffset;
+    int lineNum = line;
+
+    TextDGetScroll(&topLineNum, &horizOffset);
+    TextDSetScroll(lineNum, horizOffset);
+}
