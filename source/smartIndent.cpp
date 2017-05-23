@@ -382,11 +382,11 @@ static QString readSIMacroEx(Input &in) {
 	return QString::fromStdString(ShiftTextEx(macroStr, SHIFT_LEFT, true, 8, 8));
 }
 
-static int siParseError(const Input &input, const QString &message) {
+static int siParseError(const Input &in, const QString &message) {
 	return ParseErrorEx(
 	            nullptr,
-	            *input.string(),
-	            input.index(),
+                *in.string(),
+                in.index(),
 	            QLatin1String("smart indent specification"),
 	            message);
 

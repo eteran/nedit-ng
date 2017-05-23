@@ -57,7 +57,7 @@ void ReadMacroInitFileEx(DocumentWidget *window);
 void RegisterMacroSubroutines();
 void RepeatMacroEx(DocumentWidget *document, const char *command, int how);
 void ResumeMacroExecutionEx(DocumentWidget *window);
-void ReturnShellCommandOutputEx(DocumentWidget *window, const std::string &outText, int status);
+void ReturnShellCommandOutputEx(DocumentWidget *window, const QString &outText, int status);
 void SafeGC();
 
 /* Data attached to window during shell command execution with

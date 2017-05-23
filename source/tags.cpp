@@ -658,7 +658,7 @@ enum TFT { TFT_CHECK, TFT_ETAGS, TFT_CTAGS };
 ** Loads tagsFile into the hash table.
 ** Returns the number of added tag specifications.
 */
-static int loadTagsFile(const QString &tagsFile, int index, int recLevel) {
+static int loadTagsFile(const QString &tagSpec, int index, int recLevel) {
 
     QString tagPath;
 	int nTagsAdded = 0;
@@ -671,7 +671,7 @@ static int loadTagsFile(const QString &tagsFile, int index, int recLevel) {
 	 * definition source files are (in most cases) specified relatively inside
 	 * the tags file to the tags files directory.
 	 */
-    QString resolvedTagsFile = ResolvePathEx(tagsFile);
+    QString resolvedTagsFile = ResolvePathEx(tagSpec);
     if (resolvedTagsFile.isNull()) {
 		return 0;
 	}
@@ -825,7 +825,7 @@ int ShowTipStringEx(DocumentWidget *window, const char *text, bool anchored, int
 ** into NEdit compatible regular expressions and does the search.
 ** Etags search expressions are plain literals strings, which
 */
-static int fakeRegExSearchEx(view::string_view in_buffer, const char *searchString, int *startPos, int *endPos) {
+static int fakeRegExSearchEx(view::string_view buffer, const char *searchString, int *startPos, int *endPos) {
 	int found, searchStartPos;
 	SearchDirection dir;
 	int ctagsMode;
@@ -833,7 +833,7 @@ static int fakeRegExSearchEx(view::string_view in_buffer, const char *searchStri
 	char *outPtr;
 	const char *inPtr;
 
-	view::string_view fileString = in_buffer;
+    view::string_view fileString = buffer;
 
 	// determine search direction and start position 
 	if (*startPos != -1) { // etags mode! 

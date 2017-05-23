@@ -465,6 +465,17 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
     splitter_->addWidget(area);
 }
 
+/**
+ * @brief DocumentWidget::~DocumentWidget
+ */
+DocumentWidget::~DocumentWidget() {
+    // TODO(eteran): make the removal of callbacks in a destructor so that
+    // we can safely delete this!
+#if 0
+    delete buffer_;
+#endif
+}
+
 //------------------------------------------------------------------------------
 // Name: createTextArea
 //------------------------------------------------------------------------------
@@ -4606,20 +4617,20 @@ void DocumentWidget::gotoAP(TextArea *area, int lineNum, int column) {
 	int position;
 
 	// User specified column, but not line number
-	if (lineNum == -1) {
+    if (lineNum == -1) {
 		position = area->TextGetCursorPos();
 
 		int curCol;
-		if (!area->TextDPosToLineAndCol(position, &lineNum, &curCol)) {
+        if (!area->TextDPosToLineAndCol(position, &lineNum, &curCol)) {
 			return;
 		}
 	} else if (column == -1) {
 		// User didn't specify a column
-		SelectNumberedLineEx(this, area, lineNum);
+        SelectNumberedLineEx(this, area, lineNum);
 		return;
 	}
 
-	position = area->TextDLineAndColToPos(lineNum, column);
+    position = area->TextDLineAndColToPos(lineNum, column);
 	if (position == -1) {
 		return;
 	}
@@ -5040,8 +5051,7 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
                 dialog->show();
             }
         } else if (cmdData->flags & OUTPUT_TO_STRING) {
-            std::string output_string = outText.toStdString();
-            ReturnShellCommandOutputEx(this, output_string, exitCode);
+            ReturnShellCommandOutputEx(this, outText, exitCode);
         } else {
 
             std::string output_string = outText.toStdString();
@@ -5307,7 +5317,6 @@ void DocumentWidget::DoShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
         flags |= ACCUMULATE | ERROR_DIALOGS;
         break;
     case FROM_NONE:
-    default:
         text = std::string();
         break;
     }
@@ -5366,9 +5375,6 @@ void DocumentWidget::DoShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
                 left = right = area->TextGetCursorPos();
             }
         }
-        break;
-    default:
-        Q_ASSERT(0);
         break;
     }
 
@@ -5514,24 +5520,19 @@ void DocumentWidget::BeginLearnEx() {
 	QString cFinish = thisWindow->ui.action_Finish_Learn->shortcut().toString();
 	QString cCancel = thisWindow->ui.action_Cancel_Learn->shortcut().toString();
 
-	// Create message
-	QString message;
 	if (cFinish.isEmpty()) {
 		if (cCancel.isEmpty()) {
-			message = tr("Learn Mode -- Use menu to finish or cancel");
+            SetModeMessageEx(tr("Learn Mode -- Use menu to finish or cancel"));
 		} else {
-			message = tr("Learn Mode -- Use menu to finish, press %1 to cancel").arg(cCancel);
+            SetModeMessageEx(tr("Learn Mode -- Use menu to finish, press %1 to cancel").arg(cCancel));
 		}
 	} else {
 		if (cCancel.isEmpty()) {
-			message = tr("Learn Mode -- Press %1 to finish, use menu to cancel").arg(cFinish);
+            SetModeMessageEx(tr("Learn Mode -- Press %1 to finish, use menu to cancel").arg(cFinish));
 		} else {
-			message = tr("Learn Mode -- Press %1 to finish, %2 to cancel").arg(cFinish, cCancel);
+            SetModeMessageEx(tr("Learn Mode -- Press %1 to finish, %2 to cancel").arg(cFinish, cCancel));
 		}
 	}
-
-	// Put up the learn-mode banner
-	SetModeMessageEx(message);
 }
 
 /*
@@ -5555,4 +5556,3 @@ int DocumentWidget::ReadMacroFileEx(const QString &fileName, bool warnNotExist) 
 	// Parse fileString
 	return readCheckMacroStringEx(this, fileString, this, fileName, nullptr);
 }
-

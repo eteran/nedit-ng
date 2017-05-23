@@ -2566,14 +2566,14 @@ static int shellCmdMS(DocumentWidget *document, DataValue *argList, int nArgs, D
 ** teaching other modules about macro return globals, since other than this,
 ** they're not used outside of macro.c)
 */
-void ReturnShellCommandOutputEx(DocumentWidget *window, const std::string &outText, int status) {
-    DataValue retVal;
-    auto cmdData = static_cast<macroCmdInfoEx *>(window->macroCmdData_);
+void ReturnShellCommandOutputEx(DocumentWidget *window, const QString &outText, int status) {
 
+    auto cmdData = static_cast<macroCmdInfoEx *>(window->macroCmdData_);
     if(!cmdData) {
         return;
     }
 
+    DataValue retVal;
     retVal.tag = STRING_TAG;
     retVal.val.str = AllocNStringCpyEx(outText);
     ModifyReturnedValueEx(cmdData->context, retVal);

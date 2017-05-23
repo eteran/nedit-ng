@@ -173,19 +173,6 @@ static void translatePrefFormats(quint32 fileVer) {
         g_Settings.shell = getDefaultShell();
 	}
 
-	/* For compatability with older (4.0.3 and before) versions, the autoWrap
-	   and autoIndent resources can accept values of True and False.  Translate
-	   them into acceptable wrap and indent styles */
-    if (g_Settings.autoWrap == 3)
-        g_Settings.autoWrap = CONTINUOUS_WRAP;
-    if (g_Settings.autoWrap == 4)
-        g_Settings.autoWrap = NO_WRAP;
-
-    if (g_Settings.autoIndent == 3)
-        g_Settings.autoIndent = AUTO_INDENT;
-    if (g_Settings.autoIndent == 4)
-        g_Settings.autoIndent = NO_AUTO_INDENT;
-
 	/* setup language mode dependent info of user menus (to increase
 	   performance when switching between documents of different
 	   language modes) */

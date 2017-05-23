@@ -48,7 +48,7 @@ class DocumentWidget : public QWidget {
 	
 public:
 	DocumentWidget(const QString &name, QWidget *parent = 0, Qt::WindowFlags f = 0);
-	virtual ~DocumentWidget() = default;
+    virtual ~DocumentWidget();
 
 private Q_SLOTS:
     void flashTimerTimeout();
@@ -80,7 +80,7 @@ public Q_SLOTS:
     void findIncrAP(const QString &searchString, SearchDirection direction, SearchType searchType, bool searchWraps, bool isContinue);
 	void gotoAP(TextArea *area, const QString &args);
 	void gotoAP(TextArea *area, const QString &arg1, const QString &arg2);
-	void gotoAP(TextArea *area, int linenum, int column);
+    void gotoAP(TextArea *area, int lineNum, int column);
     void gotoMarkAP(QChar label, bool extendSel);
     void markAP(QChar ch);
     void moveDocument(MainWindow *fromWindow);
@@ -196,7 +196,7 @@ public:
     void trimUndoList(int maxLength);
 
 public:
-    static DocumentWidget *EditExistingFileEx(DocumentWidget *inWindow, const QString &name, const QString &path, int flags, const QString &geometry, int iconic, const QString &languageMode, bool tabbed, bool bgOpen);
+    static DocumentWidget *EditExistingFileEx(DocumentWidget *inDocument, const QString &name, const QString &path, int flags, const QString &geometry, int iconic, const QString &languageMode, bool tabbed, bool bgOpen);
     static QList<DocumentWidget *> allDocuments();
 
 private:
@@ -240,7 +240,7 @@ public:
     bool saveOldVersion_;              // keep old version in filename.bc
     QString modeMessage_;              // stats line banner content for learn and shell command executing modes
     IndentStyle indentStyle_;          // whether/how to auto indent
-	char matchSyntaxBased_;            // Use syntax info to show matching
+    int matchSyntaxBased_;            // Use syntax info to show matching
     ShowMatchingStyle showMatchingStyle_;           // How to show matching parens: NO_FLASH, FLASH_DELIMIT, or FLASH_RANGE
     WrapStyle wrapMode_;                    // line wrap style: NO_WRAP, NEWLINE_WRAP or CONTINUOUS_WRAP
 	dev_t device_;                     // device where the file resides

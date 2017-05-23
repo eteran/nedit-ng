@@ -71,7 +71,7 @@ static int loadMenuItemStringEx(const QString &inString, QVector<MenuData> &menu
 static QString stripLanguageModeEx(const QString &menuItemName);
 static QString writeMenuItemStringEx(const QVector<MenuData> &menuItems, DialogTypes listType);
 static userMenuInfo *parseMenuItemRec(MenuItem *item);
-static void parseMenuItemName(const QString &menuItemName, userMenuInfo *info);
+static void parseMenuItemName(const QString &menuItemName, const std::unique_ptr<userMenuInfo> &info);
 static void setDefaultIndex(const QVector<MenuData> &infoList, int index);
 
 /*
@@ -493,7 +493,7 @@ void parseMenuItemList(QVector<MenuData> &itemList) {
 static userMenuInfo *parseMenuItemRec(MenuItem *item) {
 
 	// allocate a new user menu info element 
-	auto newInfo = new userMenuInfo;
+    auto newInfo = std::make_unique<userMenuInfo>();
 
 	/* determine sub-menu depth and allocate some memory
 	   for hierarchical ID; init. ID with {0,.., 0} */
@@ -506,7 +506,7 @@ static userMenuInfo *parseMenuItemRec(MenuItem *item) {
 	// assign language mode info to new user menu info element 
     parseMenuItemName(item->name, newInfo);
 
-	return newInfo;
+    return newInfo.release();
 }
 
 /*
@@ -514,8 +514,7 @@ static userMenuInfo *parseMenuItemRec(MenuItem *item) {
 ** Extract language mode related info out of given menu item name string.
 ** Store this info in given user menu info structure.
 */
-static void parseMenuItemName(const QString &menuItemName, userMenuInfo *info) {
-
+static void parseMenuItemName(const QString &menuItemName, const std::unique_ptr<userMenuInfo> &info) {
 
     int index = menuItemName.indexOf(QLatin1Char('@'));
     if(index != -1) {
@@ -547,47 +546,6 @@ static void parseMenuItemName(const QString &menuItemName, userMenuInfo *info) {
             info->umiLanguageModes = languageModes;
         }
     }
-
-#if 0
-    if (const char *atPtr = strchr(menuItemName, '@')) {
-		if (!strcmp(atPtr + 1, "*")) {
-            /* only language is "*": this is for all but language specific macros */
-            info->umiIsDefault = true;
-			return;
-		}
-
-        QVector<int> languageModes;
-
-		// setup a list of all language modes related to given menu item 
-		while (atPtr) {
-
-            const char *endPtr;
-
-			// extract language mode name after "@" sign 
-            for (endPtr = atPtr + 1; isalnum((uint8_t)*endPtr) || *endPtr == '_' || *endPtr == '-' || *endPtr == ' ' || *endPtr == '+' || *endPtr == '$' || *endPtr == '#'; endPtr++) {
-				;
-            }
-
-			/* lookup corresponding language mode index; if PLAIN is
-			   returned then this means, that language mode name after
-			   "@" is unknown (i.e. not defined) */
-
-            int languageMode = FindLanguageMode(QString::fromLatin1(atPtr + 1, endPtr - (atPtr + 1)));
-            if (languageMode == PLAIN_LANGUAGE_MODE) {
-                languageModes.push_back(UNKNOWN_LANGUAGE_MODE);
-			} else {
-                languageModes.push_back(languageMode);
-			}
-
-			// look for next "@" 
-			atPtr = strchr(endPtr, '@');
-		}
-
-        if (!languageModes.isEmpty()) {
-            info->umiLanguageModes = languageModes;
-		}
-	}
-#endif
 }
 
 /*
