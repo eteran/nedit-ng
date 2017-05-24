@@ -3286,7 +3286,6 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
         // I'm putting an assert here. I think this code may possibly be
         // technically unreachable due to proper NUL handling at a different
         // layer
-        Q_ASSERT(strlen(&fileString[0]) == static_cast<size_t>(readLen));
         buffer_->BufSetAllEx(view::string_view(&fileString[0], readLen));
         ignoreModify_ = false;
     }
