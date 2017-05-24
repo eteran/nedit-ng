@@ -469,11 +469,45 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
  * @brief DocumentWidget::~DocumentWidget
  */
 DocumentWidget::~DocumentWidget() {
-    // TODO(eteran): make the removal of callbacks in a destructor so that
-    // we can safely delete this!
-#if 0
+
+
+    // first delete all of the text area's so that they can properly
+    // remove themselves from the buffer's callbacks
+    const QList<TextArea *> textAreas = textPanes();
+    qDeleteAll(textAreas);
+
+    // NOTE(eteran): there used to be some logic about syncronizing the multi-file
+    //               replace dialog. It was complex and error prone. Simpler to
+    //               just make the multi-file replace dialog modal and avoid the
+    //               issue all together
+
+    // Free syntax highlighting patterns, if any. w/o redisplaying
+    FreeHighlightingDataEx(this);
+
+    /* remove the buffer modification callbacks so the buffer will be
+       deallocated when the last text widget is destroyed */
+    buffer_->BufRemoveModifyCB(modifiedCB, this);
+    buffer_->BufRemoveModifyCB(SyntaxHighlightModifyCBEx, this);
+
+    // free the undo and redo lists
+    ClearUndoList();
+    ClearRedoList();
+
+    if(auto window = toWindow()) {
+
+        // update window menus
+        window->InvalidateWindowMenus();
+
+        // Close of window running a macro may have been disabled.
+        MainWindow::CheckCloseDimEx();
+
+        // NOTE(eteran): No need to explicitly sync this with the tab context menu
+        //               because they are set to be in sync when the context menu is shown
+        window->ui.action_Detach_Tab->setEnabled(window->TabCount() > 1);
+        window->ui.action_Move_Tab_To->setEnabled(MainWindow::allWindows().size() > 1);
+    }
+
     delete buffer_;
-#endif
 }
 
 //------------------------------------------------------------------------------
@@ -2977,40 +3011,10 @@ void DocumentWidget::CloseWindow() {
         return;
     }
 
-    // NOTE(eteran): there used to be some logic about syncronizing the multi-file
-    //               replace dialog. It was complex and error prone. Simpler to
-    //               just make the multi-file replace dialog modal and avoid the
-    //               issue all together
-
-    // TODO(eteran): just put this into the destructor and make things simple...
-
-    // Free syntax highlighting patterns, if any. w/o redisplaying
-    FreeHighlightingDataEx(this);
-
-    /* remove the buffer modification callbacks so the buffer will be
-       deallocated when the last text widget is destroyed */
-    buffer_->BufRemoveModifyCB(modifiedCB, this);
-    buffer_->BufRemoveModifyCB(SyntaxHighlightModifyCBEx, this);
-
-    // free the undo and redo lists
-    ClearUndoList();
-    ClearRedoList();
-
-    // remove the window from the global window list, update window menus
-    window->InvalidateWindowMenus();
-    MainWindow::CheckCloseDimEx(); // Close of window running a macro may have been disabled.
-
-    // NOTE(eteran): No need to explicitly sync this with the tab context menu
-    //               because they are set to be in sync when the context menu is shown
-
-    // TODO(eteran): I'd like to move this to an event on the tab widget itself,
-    // so it's more automatic
-    window->ui.action_Detach_Tab->setEnabled(window->TabCount() > 1);
-    window->ui.action_Move_Tab_To->setEnabled(MainWindow::allWindows().size() > 1);
-
-    // deallocate the window data structure
+    // deallocate the document data structure
     delete this;
 
+    // if we deleted the last tab, then we can close the window too
     if(window->TabCount() == 0) {
         delete window;
     }
