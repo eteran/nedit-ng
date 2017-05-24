@@ -106,32 +106,33 @@ bool CommandRecorder::eventFilter(QObject *obj, QEvent *event) {
 }
 
 void CommandRecorder::lastActionHook(QObject *obj, const TextEditEvent *ev) {
+
+#if 0
 	qDebug("Text Event! : %s", qPrintable(ev->toString()));
+#endif
 
-    int i;
-
+#if 0
     // Find the curr to which this action belongs
     QList<DocumentWidget *> documents = DocumentWidget::allDocuments();
-    auto curr = documents.begin();
-    for (; curr != documents.end(); ++curr) {
 
-        DocumentWidget *const document = *curr;
-		QList<TextArea *> textPanes = document->textPanes();
+    auto curr = std::find_if(documents.begin(), documents.end(), [obj](DocumentWidget *document) {
+        QList<TextArea *> textPanes = document->textPanes();
 
-        for (i = 0; i < textPanes.size(); i++) {
-            if (textPanes[i] == obj) {
-                break;
+        for(TextArea *area : textPanes) {
+            if (area == obj) {
+                return true;
             }
         }
 
-        if (i < textPanes.size()) {
-            break;
-        }
-    }
+        return false;
+    });
 
     if(curr == documents.end()) {
         return;
     }
+#else
+    Q_UNUSED(obj);
+#endif
 
     /* The last action is recorded for the benefit of repeating the last
        action.  Don't record repeat_macro and wipe out the real action */
@@ -156,42 +157,6 @@ void CommandRecorder::lastActionHook(QObject *obj, const TextEditEvent *ev) {
             macroRecordBuffer.append(QLatin1Char('\n'));
         }
     }
-
-
-
-#if 0
-    WindowInfo *window;
-    int i;
-    char *actionString;
-
-    /* Select only actions in text panes in the window for which this
-       action hook is recording macros (from clientData). */
-    for (window=WindowList; window!=NULL; window=window->next) {
-    if (window->textArea == w)
-        break;
-    for (i=0; i<window->nPanes; i++) {
-            if (window->textPanes[i] == w)
-                break;
-    }
-    if (i < window->nPanes)
-        break;
-    }
-    if (window == NULL || window != (WindowInfo *)clientData)
-        return;
-
-    /* beep on un-recordable operations which require a mouse position, to
-       remind the user that the action was not recorded */
-    if (isMouseAction(actionName)) {
-        XBell(XtDisplay(w), 0);
-        return;
-    }
-
-    /* Record the action and its parameters */
-    actionString = actionToString(w, actionName, event, params, *numParams);
-    if (actionString != NULL) {
-    BufInsert(MacroRecordBuf, MacroRecordBuf->length, actionString);
-    }
-#endif
 }
 
 /**
