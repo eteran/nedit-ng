@@ -828,9 +828,8 @@ int ShowTipStringEx(DocumentWidget *window, const char *text, bool anchored, int
 static int fakeRegExSearchEx(view::string_view buffer, const char *searchString, int *startPos, int *endPos) {
 	int found, searchStartPos;
 	SearchDirection dir;
-	int ctagsMode;
+    bool ctagsMode;
 	char searchSubs[3 * MAXLINE + 3];
-	char *outPtr;
 	const char *inPtr;
 
     view::string_view fileString = buffer;
@@ -839,23 +838,23 @@ static int fakeRegExSearchEx(view::string_view buffer, const char *searchString,
 	if (*startPos != -1) { // etags mode! 
 		dir = SEARCH_FORWARD;
 		searchStartPos = *startPos;
-		ctagsMode = 0;
+        ctagsMode = false;
 	} else if (searchString[0] == '/') {
 		dir = SEARCH_FORWARD;
 		searchStartPos = 0;
-		ctagsMode = 1;
+        ctagsMode = true;
 	} else if (searchString[0] == '?') {
 		dir = SEARCH_BACKWARD;
 		// searchStartPos = window->buffer_->length; 
 		searchStartPos = fileString.size();
-		ctagsMode = 1;
+        ctagsMode = true;
 	} else {
 		qWarning("NEdit: Error parsing tag file search string");
         return false;
 	}
 
 	// Build the search regex. 
-	outPtr = searchSubs;
+    char *outPtr = searchSubs;
 	if (ctagsMode) {
 		inPtr = searchString + 1; // searchString[0] is / or ? --> search dir 
 		if (*inPtr == '^') {

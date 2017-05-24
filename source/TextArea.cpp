@@ -675,7 +675,8 @@ void TextArea::deletePreviousWordAP(EventFlags flags) {
 	}
 
 	pos = std::max(insertPos - 1, 0);
-    while (strchr(delimiters.data(), buffer_->BufGetCharacter(pos)) != nullptr && pos != lineStart) {
+
+    while (delimiters.indexOf(buffer_->BufGetCharacter(pos)) != -1 && pos != lineStart) {
 		pos--;
 	}
 
@@ -5522,12 +5523,12 @@ int TextArea::startOfWord(int pos) {
 	int startPos;
     QByteArray delimiters = P_delimiters.toLatin1();
 
-	char c = buffer_->BufGetCharacter(pos);
+    const char c = buffer_->BufGetCharacter(pos);
 
 	if (c == ' ' || c == '\t') {
 		if (!spanBackward(buffer_, pos, " \t", false, &startPos))
             return 0;
-    } else if (strchr(delimiters.data(), c)) {
+    } else if (delimiters.indexOf(c) != -1) {
         if (!spanBackward(buffer_, pos, delimiters, true, &startPos))
 			return 0;
 	} else {
@@ -5541,12 +5542,12 @@ int TextArea::endOfWord(int pos) {
 	int endPos;
     QByteArray delimiters = P_delimiters.toLatin1();
 
-	char c = buffer_->BufGetCharacter(pos);
+    const char c = buffer_->BufGetCharacter(pos);
 
 	if (c == ' ' || c == '\t') {
 		if (!spanForward(buffer_, pos, " \t", false, &endPos))
 			return buffer_->BufGetLength();
-    } else if (strchr(delimiters.data(), c)) {
+    } else if (delimiters.indexOf(c) != -1) {
         if (!spanForward(buffer_, pos, delimiters, true, &endPos))
 			return buffer_->BufGetLength();
 	} else {
@@ -6001,7 +6002,7 @@ void TextArea::backwardWordAP(EventFlags flags) {
 	}
 
     pos = std::max(insertPos - 1, 0);
-    while (strchr(delimiters, buffer_->BufGetCharacter(pos)) != nullptr && pos > 0) {
+    while (delimiters.indexOf(buffer_->BufGetCharacter(pos)) != -1 && pos > 0) {
 		pos--;
 	}
 
@@ -6017,7 +6018,7 @@ void TextArea::forwardWordAP(EventFlags flags) {
 
     EMIT_EVENT("forward_word");
 
-    int pos, insertPos = cursorPos_;
+    int insertPos = cursorPos_;
     QByteArray delimiters = P_delimiters.toLatin1();
 	bool silent = flags & NoBellFlag;
 
@@ -6026,23 +6027,24 @@ void TextArea::forwardWordAP(EventFlags flags) {
 		ringIfNecessary(silent);
 		return;
 	}
-	pos = insertPos;
+
+    int pos = insertPos;
 
 	if (flags & TailFlag) {
 		for (; pos < buffer_->BufGetLength(); pos++) {
-            if (strchr(delimiters, buffer_->BufGetCharacter(pos)) == nullptr) {
+            if (delimiters.indexOf(buffer_->BufGetCharacter(pos)) == -1) {
 				break;
 			}
 		}
-        if (strchr(delimiters, buffer_->BufGetCharacter(pos)) == nullptr) {
+        if (delimiters.indexOf(buffer_->BufGetCharacter(pos)) == -1) {
 			pos = endOfWord(pos);
 		}
 	} else {
-        if (strchr(delimiters, buffer_->BufGetCharacter(pos)) == nullptr) {
+        if (delimiters.indexOf(buffer_->BufGetCharacter(pos)) == -1) {
 			pos = endOfWord(pos);
 		}
 		for (; pos < buffer_->BufGetLength(); pos++) {
-            if (strchr(delimiters, buffer_->BufGetCharacter(pos)) == nullptr) {
+            if (delimiters.indexOf(buffer_->BufGetCharacter(pos)) == -1) {
 				break;
 			}
 		}
@@ -8601,7 +8603,7 @@ void TextArea::deleteNextWordAP(EventFlags flags) {
 
     int insertPos = TextDGetInsertPosition();
     int pos, lineEnd = buffer_->BufEndOfLine(insertPos);
-    QString delimiters = P_delimiters;
+    QByteArray delimiters = P_delimiters.toLatin1();
     bool silent = flags & NoBellFlag;
 
     cancelDrag();
@@ -8620,7 +8622,7 @@ void TextArea::deleteNextWordAP(EventFlags flags) {
     }
 
     pos = insertPos;
-    while (strchr(delimiters.toLatin1().data(), buffer_->BufGetCharacter(pos)) != nullptr && pos != lineEnd) {
+    while (delimiters.indexOf(buffer_->BufGetCharacter(pos)) != -1 && pos != lineEnd) {
         pos++;
     }
 
