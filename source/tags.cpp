@@ -633,7 +633,7 @@ static int scanETagsLine(const char *line, const char *tagPath, int index, char 
 		if (!(strncmp(posCOM + 1, "include", 7))) {
 			if (*file != '/') {
 				if ((strlen(tagPath) + strlen(file)) >= MAXPATHLEN) {
-					qWarning("tags.c: MAXPATHLEN overflow");
+                    qWarning("NEdit: tags.c: MAXPATHLEN overflow");
 					*file = 0; // invalidate 
 					return 0;
 				}
@@ -733,7 +733,7 @@ static QList<Tag> LookupTagFromList(QList<tagFile> *FileList, const char *name, 
 		
             if (tf.loaded) {
                 if (stat(tf.filename.toLatin1().data(), &statbuf) != 0) { //
-					qWarning("NEdit: Error getting status for tag file %s", tf.filename.toLatin1().data());
+                    qWarning("NEdit: Error getting status for tag file %s", tf.filename.toLatin1().data());
 				} else {
                     if (tf.date == statbuf.st_mtime) {
 						// current tags file tf is already loaded and up to date 
@@ -1378,7 +1378,7 @@ static int nextTFBlock(FILE *fp, char *header, char **body, int *blkLine, int *c
 		if (!status)
 			return TF_ERROR_EOF;
 		if (lineEmpty(line)) {
-			qWarning("nedit: Warning: empty '* language *' block in calltips file.");
+            qWarning("NEdit: Warning: empty '* language *' block in calltips file.");
 			return TF_ERROR;
 		}
 		*blkLine = *currLine;
@@ -1393,7 +1393,7 @@ static int nextTFBlock(FILE *fp, char *header, char **body, int *blkLine, int *c
 		if (!status)
 			return TF_ERROR_EOF;
 		if (lineEmpty(line)) {
-			qWarning("nedit: Warning: empty '* version *' block in calltips file.");
+            qWarning("NEdit: Warning: empty '* version *' block in calltips file.");
 			return TF_ERROR;
 		}
 		*blkLine = *currLine;
@@ -1432,7 +1432,7 @@ static int nextTFBlock(FILE *fp, char *header, char **body, int *blkLine, int *c
 
 	// Warn about any unneeded extra lines (which are ignored). 
 	if (dummy1 + 1 < *currLine && code != TF_BLOCK) {
-		qWarning("nedit: Warning: extra lines in language or version block ignored.");
+        qWarning("NEdit: Warning: extra lines in language or version block ignored.");
 	}
 
 	return code;
@@ -1471,7 +1471,7 @@ static int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
     QList<tf_alias> aliases;
 
 	if (recLevel > MAX_TAG_INCLUDE_RECURSION_LEVEL) {
-		qWarning("nedit: Warning: Reached recursion limit before loading calltips file:\n\t%s", tipsFile.toLatin1().data());
+        qWarning("NEdit: Warning: Reached recursion limit before loading calltips file:\n\t%s", tipsFile.toLatin1().data());
 		return 0;
 	}
 
@@ -1501,7 +1501,7 @@ static int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
         int code = nextTFBlock(fp, header, &body, &blkLine, &currLine);
 
 		if (code == TF_ERROR_EOF) {
-			qWarning("nedit: Warning: unexpected EOF in calltips file.");
+            qWarning("NEdit: Warning: unexpected EOF in calltips file.");
 			break;
 		}
 
@@ -1519,23 +1519,24 @@ static int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
 			delete [] body;
 			break;
 		case TF_INCLUDE:
-			/* nextTFBlock returns a colon-separated list of tips files
-			    in body */
+            // nextTFBlock returns a colon-separated list of tips files in body
 			for (tipIncFile = strtok(body, ":"); tipIncFile; tipIncFile = strtok(nullptr, ":")) {
-				/* qDebug("nedit: DEBUG: including tips file '%s'", tipIncFile); */
+#if 0
+                qDebug("NEdit: including tips file '%s'", tipIncFile);
+#endif
                 nTipsAdded += loadTipsFile(QString::fromLatin1(tipIncFile), index, recLevel + 1);
 			}
 			delete [] body;
 			break;
 		case TF_LANGUAGE:
-			/* Switch to the new language mode if it's valid, else ignore
-			    it. */
+            // Switch to the new language mode if it's valid, else ignore it.
 			oldLangMode = langMode;
             langMode = FindLanguageMode(QString::fromLatin1(header));
 			if (langMode == PLAIN_LANGUAGE_MODE && strcmp(header, "Plain")) {
-				fprintf(stderr, "nedit: Error reading calltips file:\n\t%s\n"
-				                "Unknown language mode: \"%s\"\n",
-                        tipsFile.toLatin1().data(), header);
+
+                qWarning("NEdit: Error reading calltips file:\n\t%s\nUnknown language mode: \"%s\"",
+                         tipsFile.toLatin1().data(), header);
+
 				langMode = oldLangMode;
 			}
 			break;

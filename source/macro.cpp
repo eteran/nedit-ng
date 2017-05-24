@@ -964,7 +964,7 @@ void ReplayEx(DocumentWidget *window) {
 
         Program *prog = ParseMacroEx(replayMacro, &errMsg, &stoppedAt);
         if(!prog) {
-			qWarning("NEdit internal error, learn/replay macro syntax error: %s", qPrintable(errMsg));
+            qWarning("NEdit: internal error, learn/replay macro syntax error: %s", qPrintable(errMsg));
             return;
         }
 
@@ -1491,7 +1491,7 @@ void RepeatMacroEx(DocumentWidget *document, const char *command, int how) {
     // Parse the resulting macro into an executable program "prog"
     Program *const prog = ParseMacro(&loopedCmd[0], &errMsg, &stoppedAt);
     if(!prog) {
-		qWarning("NEdit internal error, repeat macro syntax wrong: %s", errMsg);
+        qWarning("NEdit: internal error, repeat macro syntax wrong: %s", errMsg);
         return;
     }
 

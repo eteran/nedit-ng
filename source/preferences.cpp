@@ -1415,7 +1415,7 @@ bool ParseErrorEx(QWidget *toDialog, const QString &string, int stoppedAt, const
 	QString errorLine = QString(QLatin1String("%1<==")).arg(string.mid(c, len));
 
 	if(!toDialog) {
-		qWarning("NEdit: %s in %s:\n%s", qPrintable(message), qPrintable(errorIn), qPrintable(errorLine));
+        qWarning("NEdit: %s in %s:\n%s", qPrintable(message), qPrintable(errorIn), qPrintable(errorLine));
 	} else {
 		QMessageBox::warning(toDialog, QLatin1String("Parse Error"), QString(QLatin1String("%1 in %2:\n%3")).arg(message, errorIn, errorLine));
 	}

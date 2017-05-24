@@ -1595,7 +1595,7 @@ void MainWindow::ReadNEditDB() {
 		std::string::size_type index = line.find_first_of(neditDBBadFilenameChars);
 		if(index != std::string::npos) {
             // non-filename characters
-			qWarning("nedit: History file may be corrupted");
+            qWarning("NEdit: History file may be corrupted");
             continue;
         }
 
@@ -2979,7 +2979,7 @@ void MainWindow::indentGroupTriggered(QAction *action) {
         } else if(action == ui.action_Indent_Smart) {
             document->SetAutoIndent(SMART_INDENT);
         } else {
-			qWarning("nedit: set_auto_indent invalid argument");
+            qWarning("NEdit: set_auto_indent invalid argument");
         }
     }
 }
@@ -2993,7 +2993,7 @@ void MainWindow::wrapGroupTriggered(QAction *action) {
         } else if(action == ui.action_Wrap_Continuous) {
             document->SetAutoWrap(CONTINUOUS_WRAP);
         } else {
-			qWarning("nedit: set_wrap_text invalid argument");
+            qWarning("NEdit: set_wrap_text invalid argument");
         }
     }
 }
@@ -3077,7 +3077,7 @@ void MainWindow::matchingGroupTriggered(QAction *action) {
         } else if(action == ui.action_Matching_Range) {
             document->SetShowMatching(FLASH_RANGE);
         } else {
-			qWarning("nedit: Invalid argument for set_show_matching");
+            qWarning("NEdit: Invalid argument for set_show_matching");
         }
     }
 }
@@ -3120,7 +3120,7 @@ void MainWindow::defaultIndentGroupTriggered(QAction *action) {
     } else if(action == ui.action_Default_Indent_Smart) {
         SetPrefAutoIndent(SMART_INDENT);
     } else {
-		qWarning("nedit: invalid default indent");
+        qWarning("NEdit: invalid default indent");
     }
 }
 
@@ -3152,7 +3152,7 @@ void MainWindow::defaultWrapGroupTriggered(QAction *action) {
     } else if(action == ui.action_Default_Wrap_Continuous) {
         SetPrefWrap(CONTINUOUS_WRAP);
     } else {
-		qWarning("nedit: invalid default wrap");
+        qWarning("NEdit: invalid default wrap");
     }
 }
 
@@ -3175,7 +3175,7 @@ void MainWindow::defaultTagCollisionsGroupTriggered(QAction *action) {
     } else if(action == ui.action_Default_Tag_Smart) {
         SetPrefSmartTags(true);
     } else {
-		qWarning("nedit: invalid default collisions");
+        qWarning("NEdit: invalid default collisions");
     }
 }
 

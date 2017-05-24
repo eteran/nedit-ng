@@ -160,7 +160,7 @@ void Settings::loadPreferences() {
 
 void Settings::importSettings(const QString &filename) {
     if(!settingsLoaded_) {
-		qWarning("nedit: Warning, importing while no previous settings loaded!");
+        qWarning("NEdit: Warning, importing while no previous settings loaded!");
     }
 
     QSettings settings(filename, QSettings::IniFormat);

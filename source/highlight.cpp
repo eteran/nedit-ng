@@ -881,7 +881,7 @@ static HighlightData *compilePatternsEx(DocumentWidget *dialogParent, HighlightP
         try {
             compiledPats[patternNum].subPatternRE = new regexp(bigPattern, REDFLT_STANDARD);
         } catch(const regex_error &e) {
-			qWarning("Error compiling syntax highlight patterns:\n%s", e.what());
+            qWarning("NEdit: Error compiling syntax highlight patterns:\n%s", e.what());
             return nullptr;
         }
     }

@@ -3044,7 +3044,7 @@ void DocumentWidget::open(const QString &fullpath) {
     QString pathname;
 
     if (ParseFilenameEx(fullpath, &filename, &pathname) != 0 || filename.size() + pathname.size() > MAXPATHLEN - 1) {
-		qWarning("nedit: invalid file name for open action: %s", qPrintable(fullpath));
+        qWarning("NEdit: invalid file name for open action: %s", qPrintable(fullpath));
         return;
     }
 
@@ -4651,7 +4651,7 @@ void DocumentWidget::gotoAP(TextArea *area, const QString &arg1, const QString &
 		  line              (macro call)
 		  line, column      (macro call) */
 	if ((!StringToNum(arg1, &lineNum) || !StringToNum(arg2, &column))) {
-		qWarning("nedit: goto_line_number action requires line and/or column number");
+        qWarning("NEdit: goto_line_number action requires line and/or column number");
 		return;
 	}
 
@@ -4668,7 +4668,7 @@ void DocumentWidget::gotoAP(TextArea *area, const QString &args) {
           line              (macro call)
           line, column      (macro call) */
 	if ((StringToLineAndCol(args.toLatin1().data(), &lineNum, &column) == -1)) {
-		qWarning("nedit: goto_line_number action requires line and/or column number");
+        qWarning("NEdit: goto_line_number action requires line and/or column number");
         return;
     }
 
@@ -5063,7 +5063,7 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
             auto area = cmdData->area;
             buf = area->TextGetBuffer();
             if (!buf->BufSubstituteNullCharsEx(output_string)) {
-				qWarning("nedit: Too much binary data in shell cmd output");
+                qWarning("NEdit: Too much binary data in shell cmd output");
                 output_string.clear();
             }
 

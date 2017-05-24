@@ -380,7 +380,7 @@ static int loadMenuItemString(const char *inString, QVector<MenuData> &menuItems
             }
         }
     } catch(const ParseError &ex) {
-		qWarning("NEdit: Parse error in user defined menu item, %s", ex.what());
+        qWarning("NEdit: Parse error in user defined menu item, %s", ex.what());
         return false;
     }
 }
