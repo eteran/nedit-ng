@@ -351,8 +351,8 @@ static const SubRoutine TextAreaSubrNames[] = {
     {"beginning_of_file",         beginningOfFileMS},
     {"beginning-of-line",         beginingOfLineMS},
     {"beginning_of_line",         beginingOfLineMS},
-    {"beginning-of-selection",    beginningOfSelectionMS}, // NOTE(eteran): was from MainWindow in my code...
-    {"beginning_of_selection",    beginningOfSelectionMS}, // NOTE(eteran): was from MainWindow in my code...
+    {"beginning-of-selection",    beginningOfSelectionMS},
+    {"beginning_of_selection",    beginningOfSelectionMS},
     {"copy-clipboard",            copyClipboardMS},
     {"copy_clipboard",            copyClipboardMS},
     {"copy-primary",              copyPrimaryMS},
@@ -381,8 +381,8 @@ static const SubRoutine TextAreaSubrNames[] = {
     {"end_of_file",               endOfFileMS},
     {"end-of-line",               endOfLineMS},
     {"end_of_line",               endOfLineMS},
-    {"end-of-selection",          endOfSelectionMS}, // NOTE(eteran): was from MainWindow in my code...
-    {"end_of_selection",          endOfSelectionMS}, // NOTE(eteran): was from MainWindow in my code...
+    {"end-of-selection",          endOfSelectionMS},
+    {"end_of_selection",          endOfSelectionMS},
     {"focus_pane",                nullptr}, // NOTE(eteran): was from MainWindow in my code...
     {"forward_character",         forwardCharacterMS},
     {"forward-character",         forwardCharacterMS},
@@ -457,7 +457,7 @@ static const SubRoutine TextAreaSubrNames[] = {
     {"select_all",                selectAllMS},
 #endif
 
-#if 0 // Not mentioned in the documentation
+#if 0 // NOTE(eteran): Not mentioned in the documentation
     {"end_drag",                  nullptr},
     {"process_home",              processHomeMS},
     {"process-home",              processHomeMS},
