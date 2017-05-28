@@ -369,8 +369,6 @@ private:
 	int getAbsTopLineNum();
 	CursorStyles getCursorStyle() const;
 
-
-
 private:
 	QVector<QColor> bgClassPixel_;                 // table of colors for each BG class
 	QVector<uint8_t> bgClass_;                    // obtains index into bgClassPixel[]
