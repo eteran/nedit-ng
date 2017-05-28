@@ -14,6 +14,10 @@ if(ENABLE_LTO)
         set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -flto")
 endif()
 
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING "Choose the type of build, options are: Debug Release RelWithDebInfo MinSizeRel." FORCE)
+endif()
+
 
 
 add_definitions(-DQT_NO_CAST_FROM_ASCII)
