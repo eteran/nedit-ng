@@ -81,11 +81,10 @@ CommandRecorder::CommandRecorder(QObject *parent) : QObject(parent), macroRecord
  */
 CommandRecorder *CommandRecorder::getInstance() {
 
-    instanceMutex.lock();
+    QMutexLocker locker(&instanceMutex);
     if(!instance) {
         instance = new CommandRecorder;
     }
-    instanceMutex.unlock();
 
     return instance;
 }
