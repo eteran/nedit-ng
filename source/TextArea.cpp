@@ -8565,7 +8565,9 @@ int TextArea::TextVisibleWidth() const {
     return rect_.width();
 }
 
-void TextArea::beginningOfSelectionAP() {
+void TextArea::beginningOfSelectionAP(EventFlags flags) {
+
+    EMIT_EVENT("beginning_of_selection");
 
     int start;
     int end;

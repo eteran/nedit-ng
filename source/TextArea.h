@@ -112,8 +112,7 @@ public:
     int TextDMaxFontWidth(bool considerStyles) const;
     int TextNumVisibleLines() const;
     int TextFirstVisibleLine() const;
-    int TextVisibleWidth() const;
-    void beginningOfSelectionAP();
+    int TextVisibleWidth() const;    
     QColor getBackgroundPixel() const;
     QColor getForegroundPixel() const;
     QFont getFont() const;
@@ -161,6 +160,7 @@ private:
 	bool clickTracker(QMouseEvent *event, bool inDoubleClickHandler);
 
 public Q_SLOTS:    
+    void beginningOfSelectionAP(EventFlags flags = NoneFlag);
 	void forwardCharacterAP(EventFlags flags = NoneFlag);
 	void backwardCharacterAP(EventFlags flags = NoneFlag);
 	void processUpAP(EventFlags flags = NoneFlag);

@@ -238,18 +238,69 @@ struct SubRoutine {
     BuiltInSubrEx function;
 };
 
-// TODO(eteran): support the method parameters (like "rect", "extend", etc...)
+/**
+ * @brief flagsFromArguments
+ * @param argList
+ * @param nArgs
+ * @param firstFlag
+ * @param flags
+ * @return true if all arguments were valid flags, false otherwise
+ */
+bool flagsFromArguments(DataValue *argList, int nArgs, int firstFlag, TextArea::EventFlags *flags) {
+    TextArea::EventFlags f = TextArea::NoneFlag;
+    for(int i = firstFlag; i < nArgs; ++i) {
+        if(strcmp(argList[i].val.str.rep, "absolute") == 0) {
+            f |= TextArea::AbsoluteFlag;
+        } else if(strcmp(argList[i].val.str.rep, "column") == 0) {
+            f |= TextArea::ColumnFlag;
+        } else if(strcmp(argList[i].val.str.rep, "copy") == 0) {
+            f |= TextArea::CopyFlag;
+        } else if(strcmp(argList[i].val.str.rep, "down") == 0) {
+            f |= TextArea::DownFlag;
+        } else if(strcmp(argList[i].val.str.rep, "extend") == 0) {
+            f |= TextArea::ExtendFlag;
+        } else if(strcmp(argList[i].val.str.rep, "left") == 0) {
+            f |= TextArea::LeftFlag;
+        } else if(strcmp(argList[i].val.str.rep, "overlay") == 0) {
+            f |= TextArea::OverlayFlag;
+        } else if(strcmp(argList[i].val.str.rep, "rect") == 0) {
+            f |= TextArea::RectFlag;
+        } else if(strcmp(argList[i].val.str.rep, "right") == 0) {
+            f |= TextArea::RightFlag;
+        } else if(strcmp(argList[i].val.str.rep, "up") == 0) {
+            f |= TextArea::UpFlag;
+        } else if(strcmp(argList[i].val.str.rep, "wrap") == 0) {
+            f |= TextArea::WrapFlag;
+        } else if(strcmp(argList[i].val.str.rep, "tail") == 0) {
+            f |= TextArea::TailFlag;
+        } else if(strcmp(argList[i].val.str.rep, "stutter") == 0) {
+            f |= TextArea::StutterFlag;
+        } else if(strcmp(argList[i].val.str.rep, "scrollbar") == 0) {
+            f |= TextArea::ScrollbarFlag;
+        } else if(strcmp(argList[i].val.str.rep, "nobell") == 0) {
+            f |= TextArea::NoBellFlag;
+        } else {
+            return false;
+        }
+    }
+
+    *flags = f;
+    return true;
+}
+
+
 #define TEXT_EVENT(routineName, slotName)                                                                                 \
 static int routineName(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) { \
                                                                                                                           \
-    Q_UNUSED(argList)                                                                                                     \
-    if(nArgs != 0) {                                                                                                      \
-        return wrongNArgsErr(errMsg);                                                                                     \
+    TextArea::EventFlags flags = TextArea::NoneFlag;                                                                      \
+    if(!flagsFromArguments(argList, nArgs, 0, &flags)) {                                                                  \
+        *errMsg = "%s called with invalid argument";                                                                      \
+        return false;                                                                                                     \
     }                                                                                                                     \
                                                                                                                           \
     if(MainWindow *window = document->toWindow()) {                                                                       \
         if(TextArea *area = window->lastFocus_) {                                                                         \
-            area->slotName();                                                                                             \
+            area->slotName(flags);                                                                                        \
         }                                                                                                                 \
     }                                                                                                                     \
                                                                                                                           \
@@ -257,18 +308,27 @@ static int routineName(DocumentWidget *document, DataValue *argList, int nArgs, 
     return true;                                                                                                          \
 }
 
-// TODO(eteran): support the method parameters (like "rect", "extend", etc...)
 #define TEXT_EVENT_S(routineName, slotName)                                                                               \
 static int routineName(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) { \
                                                                                                                           \
+    if(nArgs < 1) {                                                                                                       \
+        return wrongNArgsErr(errMsg);                                                                                     \
+    }                                                                                                                     \
+                                                                                                                          \
     QString string;                                                                                                       \
-    if(!readArguments(argList, nArgs, 0, errMsg, &string)) {                                                              \
+    if(!readArgument(argList[0], &string, errMsg)) {                                                                      \
+        return false;                                                                                                     \
+    }                                                                                                                     \
+                                                                                                                          \
+    TextArea::EventFlags flags = TextArea::NoneFlag;                                                                      \
+    if(!flagsFromArguments(argList, nArgs, 1, &flags)) {                                                                  \
+        *errMsg = "%s called with invalid argument";                                                                      \
         return false;                                                                                                     \
     }                                                                                                                     \
                                                                                                                           \
     if(MainWindow *window = document->toWindow()) {                                                                       \
         if(TextArea *area = window->lastFocus_) {                                                                         \
-            area->slotName(string);                                                                                       \
+            area->slotName(string, flags);                                                                                \
         }                                                                                                                 \
     }                                                                                                                     \
                                                                                                                           \
@@ -276,18 +336,27 @@ static int routineName(DocumentWidget *document, DataValue *argList, int nArgs, 
     return true;                                                                                                          \
 }
 
-// TODO(eteran): support the method parameters (like "rect", "extend", etc...)
 #define TEXT_EVENT_I(routineName, slotName)                                                                               \
 static int routineName(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) { \
                                                                                                                           \
+    if(nArgs < 1) {                                                                                                       \
+        return wrongNArgsErr(errMsg);                                                                                     \
+    }                                                                                                                     \
+                                                                                                                          \
     int num;                                                                                                              \
-    if(!readArguments(argList, nArgs, 0, errMsg, &num)) {                                                                 \
+    if(!readArgument(argList[0], &num, errMsg)) {                                                                         \
+        return false;                                                                                                     \
+    }                                                                                                                     \
+                                                                                                                          \
+    TextArea::EventFlags flags = TextArea::NoneFlag;                                                                      \
+    if(!flagsFromArguments(argList, nArgs, 1, &flags)) {                                                                  \
+        *errMsg = "%s called with invalid argument";                                                                      \
         return false;                                                                                                     \
     }                                                                                                                     \
                                                                                                                           \
     if(MainWindow *window = document->toWindow()) {                                                                       \
         if(TextArea *area = window->lastFocus_) {                                                                         \
-            area->slotName(num);                                                                                          \
+            area->slotName(num, flags);                                                                                   \
         }                                                                                                                 \
     }                                                                                                                     \
                                                                                                                           \
@@ -1910,7 +1979,6 @@ static int getSelectionMS(DocumentWidget *window, DataValue *argList, int nArgs,
 			text = QLatin1String("");
 		}
 		
-
         // Return the text as an allocated string
         result->tag = STRING_TAG;
         result->val.str = AllocNStringCpyEx(text);
