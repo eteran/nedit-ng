@@ -3387,11 +3387,11 @@ int TextArea::styleOfPos(int lineStartPos, int lineLen, int lineIndex, int dispI
 	if (lineIndex >= lineLen) {
 		style = FILL_MASK;
     } else if (styleBuffer_) {
-        style = (uint8_t)styleBuffer_->BufGetCharacter(pos);
+        style = static_cast<uint8_t>(styleBuffer_->BufGetCharacter(pos));
 		if (style == unfinishedStyle_) {
 			// encountered "unfinished" style, trigger parsing
 			(unfinishedHighlightCB_)(this, pos, highlightCBArg_);
-            style = (uint8_t)styleBuffer_->BufGetCharacter(pos);
+            style = static_cast<uint8_t>(styleBuffer_->BufGetCharacter(pos));
 		}
 	}
 
@@ -3412,7 +3412,7 @@ int TextArea::styleOfPos(int lineStartPos, int lineLen, int lineIndex, int dispI
 	/* store in the BACKLIGHT_MASK portion of style the background color class
 	   of the character thisChar */
 	if (!bgClass_.isEmpty()) {
-		style |= (bgClass_[(uint8_t)thisChar] << BACKLIGHT_SHIFT);
+        style |= (bgClass_[static_cast<uint8_t>(thisChar)] << BACKLIGHT_SHIFT);
 	}
 	return style;
 }
@@ -3928,7 +3928,7 @@ void TextArea::TextSetBuffer(TextBuffer *buffer) {
 //------------------------------------------------------------------------------
 void TextArea::StopHandlingXSelections() {
 
-	for (auto it = buffer_->modifyProcs_.begin(); it != buffer_->modifyProcs_.end(); ++it) {
+    for (auto it = buffer_->modifyProcs_.begin(); it != buffer_->modifyProcs_.end(); ++it) {
 		auto &pair = *it;
 		if (pair.first == modifiedCB && pair.second == this) {
 			buffer_->modifyProcs_.erase(it);
@@ -4012,8 +4012,9 @@ void TextArea::TextDSetCursorStyle(CursorStyles style) {
 // Name: TextDBlankCursor
 //------------------------------------------------------------------------------
 void TextArea::TextDBlankCursor() {
-	if (!cursorOn_)
+    if (!cursorOn_) {
 		return;
+    }
 
 	blankCursorProtrusions();
     cursorOn_ = false;
@@ -4219,7 +4220,6 @@ void TextArea::TextDRedrawCalltip(int calltipID) {
 
         QDesktopWidget *desktop = QApplication::desktop();
 
-
 		// make sure tip doesn't run off right or left side of screen
         if (abs.x() + tipWidth >= desktop->width() - CALLTIP_EDGE_GUARD) {
             abs.setX(desktop->width() - tipWidth - CALLTIP_EDGE_GUARD);
@@ -4322,7 +4322,7 @@ void TextArea::TextDSetupBGClasses(const QString &s, QVector<QColor> *pp_bgClass
 			// starting the classes at 0, which allows NUL characters
 			// to be styled correctly. I am not aware of any negative
 			// side effects of this.
-			const uint8_t nextClass = class_no++;
+            const uint8_t nextClass = static_cast<uint8_t>(class_no++);
 
             QColor pix = AllocColor(color);
             bgClassPixel[nextClass] = pix;
