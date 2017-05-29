@@ -16,6 +16,7 @@
 #include <QRect>
 #include <QTime>
 #include <QVector>
+#include <memory>
 
 class CallTipWidget;
 class QMenu;
@@ -407,7 +408,7 @@ private:
 	bool pointerHidden_;                          // true if the mouse pointer is hidden
 
     // moved from textP
-	TextBuffer *dragOrigBuf_;        // backup buffer copy used during block dragging of selections
+    std::unique_ptr<TextBuffer> dragOrigBuf_;        // backup buffer copy used during block dragging of selections
 	int dragXOffset_;                // offsets between cursor location and actual insertion point in drag
 	int dragYOffset_;                // offsets between cursor location and actual insertion point in drag
 	BlockDragTypes dragType_;        // style of block drag operation

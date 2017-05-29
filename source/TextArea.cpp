@@ -4614,53 +4614,53 @@ void TextArea::TextDMakeInsertPosVisible() {
 */
 void TextArea::CancelBlockDrag() {
 
-	TextBuffer *origBuf = dragOrigBuf_;
-	TextSelection *origSel = &origBuf->primary_;
-	int modRangeStart = -1, origModRangeEnd, bufModRangeEnd;
+    auto origBuf = std::move(dragOrigBuf_);
+    TextSelection *origSel = &origBuf->primary_;
+    int modRangeStart = -1, origModRangeEnd, bufModRangeEnd;
 
-	/* If the operation was a move, make the modify range reflect the
-	   removal of the text from the starting position */
-	if (dragSourceDeleted_ != 0) {
-		trackModifyRange(&modRangeStart, &bufModRangeEnd, &origModRangeEnd, dragSourceDeletePos_, dragSourceInserted_, dragSourceDeleted_);
-	}
+    /* If the operation was a move, make the modify range reflect the
+       removal of the text from the starting position */
+    if (dragSourceDeleted_ != 0) {
+        trackModifyRange(&modRangeStart, &bufModRangeEnd, &origModRangeEnd, dragSourceDeletePos_, dragSourceInserted_, dragSourceDeleted_);
+    }
 
-	/* Include the insert being undone from the last step in the modified
-	   range. */
-	trackModifyRange(&modRangeStart, &bufModRangeEnd, &origModRangeEnd, dragInsertPos_, dragInserted_, dragDeleted_);
+    /* Include the insert being undone from the last step in the modified
+       range. */
+    trackModifyRange(&modRangeStart, &bufModRangeEnd, &origModRangeEnd, dragInsertPos_, dragInserted_, dragDeleted_);
 
-	// Make the changes in the buffer
-	std::string repText = origBuf->BufGetRangeEx(modRangeStart, origModRangeEnd);
-	buffer_->BufReplaceEx(modRangeStart, bufModRangeEnd, repText);
+    // Make the changes in the buffer
+    std::string repText = origBuf->BufGetRangeEx(modRangeStart, origModRangeEnd);
+    buffer_->BufReplaceEx(modRangeStart, bufModRangeEnd, repText);
 
-	// Reset the selection and cursor position
-	if (origSel->rectangular) {
-		buffer_->BufRectSelect(origSel->start, origSel->end, origSel->rectStart, origSel->rectEnd);
-	} else {
-		buffer_->BufSelect(origSel->start, origSel->end);
-	}
-	TextDSetInsertPosition(buffer_->cursorPosHint_);
+    // Reset the selection and cursor position
+    if (origSel->rectangular) {
+        buffer_->BufRectSelect(origSel->start, origSel->end, origSel->rectStart, origSel->rectEnd);
+    } else {
+        buffer_->BufSelect(origSel->start, origSel->end);
+    }
+    TextDSetInsertPosition(buffer_->cursorPosHint_);
 
-	for(auto &c : movedCallbacks_) {
-		c.first(this, c.second);
-	}
+    for(auto &c : movedCallbacks_) {
+        c.first(this, c.second);
+    }
 
-	emTabsBeforeCursor_ = 0;
+    emTabsBeforeCursor_ = 0;
 
-	// Free the backup buffer
-	delete origBuf;
+    // Free the backup buffer
+    origBuf.reset();
 
-	// Indicate end of drag
-	dragState_ = DRAG_CANCELED;
+    // Indicate end of drag
+    dragState_ = DRAG_CANCELED;
 
-	// Call finish-drag calback
-	DragEndEvent endStruct;
-	endStruct.startPos       = 0;
-	endStruct.nCharsDeleted  = 0;
-	endStruct.nCharsInserted = 0;
+    // Call finish-drag calback
+    DragEndEvent endStruct;
+    endStruct.startPos       = 0;
+    endStruct.nCharsDeleted  = 0;
+    endStruct.nCharsInserted = 0;
 
-	for(auto &c : dragEndCallbacks_) {
-		c.first(this, &endStruct, c.second);
-	}
+    for(auto &c : dragEndCallbacks_) {
+        c.first(this, &endStruct, c.second);
+    }
 }
 
 /*
@@ -6690,8 +6690,7 @@ void TextArea::FinishBlockDrag() {
 	std::string deletedText = dragOrigBuf_->BufGetRangeEx(modRangeStart, origModRangeEnd);
 
 	// Free the backup buffer
-	delete dragOrigBuf_;
-	dragOrigBuf_ = nullptr;
+    dragOrigBuf_.reset();
 
 	// Return to normal drag state
 	dragState_ = NOT_CLICKED;
@@ -6896,12 +6895,11 @@ void TextArea::BeginBlockDrag() {
 
 	/* Save a copy of the whole text buffer as a backup, and for
 	   deriving changes */
-	dragOrigBuf_ = new TextBuffer;
+    dragOrigBuf_ = std::make_unique<TextBuffer>();
 	dragOrigBuf_->BufSetTabDistance(buffer_->tabDist_);
 	dragOrigBuf_->useTabs_ = buffer_->useTabs_;
 
-	std::string text = buffer_->BufGetAllEx();
-	dragOrigBuf_->BufSetAllEx(text);
+    dragOrigBuf_->BufSetAllEx(buffer_->BufGetAllEx());
 
 	if (sel->rectangular) {
 		dragOrigBuf_->BufRectSelect(sel->start, sel->end, sel->rectStart, sel->rectEnd);
@@ -6983,10 +6981,10 @@ void TextArea::BlockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
     QFontMetrics fm(viewport()->font());
     int fontHeight             = ascent_ + descent_;
 	int fontWidth              = fm.maxWidth();
-	TextBuffer *origBuf        = dragOrigBuf_;
+    auto &origBuf              = dragOrigBuf_;
 	int dragXOffset            = dragXOffset_;
-	TextSelection *origSel     = &origBuf->primary_;
-	bool rectangular           = origSel->rectangular;
+    TextSelection *origSel     = &origBuf->primary_;
+    bool rectangular           = origSel->rectangular;
 	BlockDragTypes oldDragType = dragType_;
 	int nLines                 = dragNLines_;
 	int insLineNum;
