@@ -346,8 +346,8 @@ private:
 	bool deletePendingSelection();
 	int startOfWord(int pos);
 	int endOfWord(int pos);
-	bool spanBackward(TextBuffer *buf, int startPos, const char *searchChars, int ignoreSpace, int *foundPos);
-	bool spanForward(TextBuffer *buf, int startPos, const char *searchChars, int ignoreSpace, int *foundPos);
+    bool spanBackward(TextBuffer *buf, int startPos, const QByteArray &searchChars, bool ignoreSpace, int *foundPos);
+    bool spanForward(TextBuffer *buf, int startPos, const QByteArray &searchChars, bool ignoreSpace, int *foundPos);
 	QShortcut *createShortcut(const QString &name, const QKeySequence &keySequence, const char *member);
 	void CopyToClipboard();
 	void InsertClipboard(bool isColumnar);

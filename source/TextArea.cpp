@@ -4682,7 +4682,6 @@ void TextArea::callCursorMovementCBs() {
 */
 void TextArea::checkMoveSelectionChange(EventFlags flags, int startPos) {
 
-
 	bool extend = flags & ExtendFlag;
 	if (extend) {
 		bool rect = flags & RectFlag;
@@ -4700,7 +4699,6 @@ void TextArea::checkMoveSelectionChange(EventFlags flags, int startPos) {
 */
 void TextArea::keyMoveExtendSelection(int origPos, bool rectangular) {
 
-	//XKeyEvent *e = &event->xkey;
 	TextSelection *sel = &buffer_->primary_;
 	int newPos         = cursorPos_;
 	int startPos;
@@ -4769,13 +4767,13 @@ void TextArea::keyMoveExtendSelection(int origPos, bool rectangular) {
 
 	} else if (rectangular) { // no sel -> rect
 
-		origCol = buffer_->BufCountDispChars(buffer_->BufStartOfLine(origPos), origPos);
-		newCol = buffer_->BufCountDispChars(buffer_->BufStartOfLine(newPos), newPos);
-		startCol = std::min(newCol, origCol);
-		endCol = std::max(newCol, origCol);
-		startPos = buffer_->BufStartOfLine(std::min(origPos, newPos));
-		endPos = buffer_->BufEndOfLine(std::max(origPos, newPos));
-		anchor_ = origPos;
+        origCol     = buffer_->BufCountDispChars(buffer_->BufStartOfLine(origPos), origPos);
+        newCol      = buffer_->BufCountDispChars(buffer_->BufStartOfLine(newPos), newPos);
+        startCol    = std::min(newCol, origCol);
+        endCol      = std::max(newCol, origCol);
+        startPos    = buffer_->BufStartOfLine(std::min(origPos, newPos));
+        endPos      = buffer_->BufEndOfLine(std::max(origPos, newPos));
+        anchor_     = origPos;
 		rectAnchor_ = origCol;
 		buffer_->BufRectSelect(startPos, endPos, startCol, endCol);
 
@@ -5019,8 +5017,10 @@ int TextArea::pendingSelection() {
 std::string TextArea::wrapTextEx(view::string_view startLine, view::string_view text, int bufOffset, int wrapMargin, int *breakBefore) {
 
 	int startLineLen = startLine.size();
-	int colNum, pos, lineStartPos, limitPos, breakAt, charsAdded;
-	int firstBreak = -1, tabDist = buffer_->tabDist_;
+    int breakAt;
+    int charsAdded;
+    int firstBreak = -1;
+    int tabDist = buffer_->tabDist_;
 	std::string wrappedText;
 
 	// Create a temporary text buffer and load it with the strings
@@ -5032,10 +5032,11 @@ std::string TextArea::wrapTextEx(view::string_view startLine, view::string_view 
 	   exceeded.  limitPos enforces no breaks in the "startLine" part of the
 	   string (if requested), and prevents re-scanning of long unbreakable
 	   lines for each character beyond the margin */
-	colNum = 0;
-	pos = 0;
-	lineStartPos = 0;
-	limitPos = breakBefore == nullptr ? startLineLen : 0;
+    int colNum       = 0;
+    int pos          = 0;
+    int lineStartPos = 0;
+    int limitPos     = (breakBefore == nullptr) ? startLineLen : 0;
+
 	while (pos < wrapBuf->BufGetLength()) {
 		char c = wrapBuf->BufGetCharacter(pos);
 		if (c == '\n') {
@@ -5077,18 +5078,19 @@ void TextArea::TextDOverstrikeEx(view::string_view text) {
 	int startPos    = cursorPos_;
 	int lineStart   = buffer_->BufStartOfLine(startPos);
 	int textLen     = text.size();
-	int p, endPos, indent, startIndent, endIndent;
+    int p;
+    int endPos;
 
 	std::string paddedText;
 	bool paddedTextSet = false;
 
 	// determine how many displayed character positions are covered
-	startIndent = buffer_->BufCountDispChars(lineStart, startPos);
-	indent = startIndent;
+    int startIndent = buffer_->BufCountDispChars(lineStart, startPos);
+    int indent = startIndent;
 	for (char ch : text) {
 		indent += TextBuffer::BufCharWidth(ch, indent, buffer_->tabDist_, buffer_->nullSubsChar_);
 	}
-	endIndent = indent;
+    int endIndent = indent;
 
 	/* find which characters to remove, and if necessary generate additional
 	   padding to make up for removed control characters at the end */
@@ -5161,7 +5163,7 @@ int TextArea::wrapLine(TextBuffer *buf, int bufOffset, int lineStartPos, int lin
 
 	/* Scan backward for whitespace or BOL.  If BOL, return false, no
 	   whitespace in line at which to wrap */
-	for (p = lineEndPos;; p--) {
+    for (p = lineEndPos;; p--) {
 		if (p < lineStartPos || p < limitPos) {
             return false;
 		}
@@ -5493,8 +5495,9 @@ bool TextArea::deletePendingSelection() {
 		checkAutoShowInsertPos();
 		callCursorMovementCBs();
 		return true;
-	} else
+    } else {
         return false;
+    }
 }
 
 int TextArea::startOfWord(int pos) {
@@ -5504,7 +5507,7 @@ int TextArea::startOfWord(int pos) {
     const char c = buffer_->BufGetCharacter(pos);
 
 	if (c == ' ' || c == '\t') {
-		if (!spanBackward(buffer_, pos, " \t", false, &startPos))
+        if (!spanBackward(buffer_, pos, QByteArray::fromRawData(" \t", 2), false, &startPos))
             return 0;
     } else if (delimiters.indexOf(c) != -1) {
         if (!spanBackward(buffer_, pos, delimiters, true, &startPos))
@@ -5523,7 +5526,7 @@ int TextArea::endOfWord(int pos) {
     const char c = buffer_->BufGetCharacter(pos);
 
 	if (c == ' ' || c == '\t') {
-		if (!spanForward(buffer_, pos, " \t", false, &endPos))
+        if (!spanForward(buffer_, pos, QByteArray::fromRawData(" \t", 2), false, &endPos))
 			return buffer_->BufGetLength();
     } else if (delimiters.indexOf(c) != -1) {
         if (!spanForward(buffer_, pos, delimiters, true, &endPos))
@@ -5541,25 +5544,32 @@ int TextArea::endOfWord(int pos) {
 ** result in "foundPos" returns True if found, false if not. If ignoreSpace is
 ** set, then Space, Tab, and Newlines are ignored in searchChars.
 */
-bool TextArea::spanBackward(TextBuffer *buf, int startPos, const char *searchChars, int ignoreSpace, int *foundPos) {
-	int pos;
-	const char *c;
+bool TextArea::spanBackward(TextBuffer *buf, int startPos, const QByteArray &searchChars, bool ignoreSpace, int *foundPos) {
 
 	if (startPos == 0) {
 		*foundPos = 0;
         return false;
 	}
-	pos = startPos == 0 ? 0 : startPos - 1;
+
+    int pos = (startPos == 0) ? 0 : startPos - 1;
 	while (pos >= 0) {
-		for (c = searchChars; *c != '\0'; c++)
-			if (!(ignoreSpace && (*c == ' ' || *c == '\t' || *c == '\n')))
-				if (buf->BufGetCharacter(pos) == *c)
-					break;
-		if (*c == 0) {
+
+        auto it = std::find_if(searchChars.begin(), searchChars.end(), [ignoreSpace, buf, pos](char ch) {
+            if (!(ignoreSpace && (ch == ' ' || ch == '\t' || ch == '\n'))) {
+                if (buf->BufGetCharacter(pos) == ch) {
+                    return true;
+                }
+            }
+
+            return false;
+        });
+
+        if(it == searchChars.end()) {
 			*foundPos = pos;
 			return true;
 		}
-		pos--;
+
+        pos--;
 	}
 	*foundPos = 0;
     return false;
@@ -5571,22 +5581,27 @@ bool TextArea::spanBackward(TextBuffer *buf, int startPos, const char *searchCha
 ** result in "foundPos" returns True if found, false if not. If ignoreSpace
 ** is set, then Space, Tab, and Newlines are ignored in searchChars.
 */
-bool TextArea::spanForward(TextBuffer *buf, int startPos, const char *searchChars, int ignoreSpace, int *foundPos) {
-
-	const char *c;
+bool TextArea::spanForward(TextBuffer *buf, int startPos, const QByteArray &searchChars, bool ignoreSpace, int *foundPos) {
 
 	int pos = startPos;
 	while (pos < buf->BufGetLength()) {
-		for (c = searchChars; *c != '\0'; c++)
-			if (!(ignoreSpace && (*c == ' ' || *c == '\t' || *c == '\n')))
-				if (buf->BufGetCharacter(pos) == *c)
-					break;
-		if (*c == 0) {
+
+        auto it = std::find_if(searchChars.begin(), searchChars.end(), [ignoreSpace, buf, pos](char ch) {
+            if (!(ignoreSpace && (ch == ' ' || ch == '\t' || ch == '\n'))) {
+                if (buf->BufGetCharacter(pos) == ch) {
+                    return true;
+                }
+            }
+            return false;
+        });
+
+        if (it == searchChars.end()) {
 			*foundPos = pos;
 			return true;
 		}
 		pos++;
 	}
+
 	*foundPos = buf->BufGetLength();
     return false;
 }
@@ -5957,7 +5972,6 @@ void TextArea::backwardWordAP(EventFlags flags) {
 
     EMIT_EVENT("backward_word");
 
-    int pos;
     int insertPos = cursorPos_;
     QByteArray delimiters = P_delimiters.toLatin1();
 	bool silent = flags & NoBellFlag;
@@ -5968,7 +5982,7 @@ void TextArea::backwardWordAP(EventFlags flags) {
 		return;
 	}
 
-    pos = std::max(insertPos - 1, 0);
+    int pos = std::max(insertPos - 1, 0);
     while (delimiters.indexOf(buffer_->BufGetCharacter(pos)) != -1 && pos > 0) {
 		pos--;
 	}
