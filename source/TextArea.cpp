@@ -6339,7 +6339,6 @@ bool TextArea::clickTracker(QMouseEvent *event, bool inDoubleClickHandler) {
             mouseDoubleClickEvent(event);
             return false;
         }
-        break;
     case 3:
         mouseTripleClickEvent(event);
         return false;
@@ -6747,7 +6746,7 @@ void TextArea::secondaryOrDragStartAP(QMouseEvent *event, EventFlags flags) {
 	/* If the click was outside of the primary selection, this is not
 	   a drag, start a secondary selection */
     if (!buffer_->primary_.selected || !TextDInSelection(event->pos())) {
-		secondaryStartAP(event);
+        secondaryStartAP(event, flags | SupressRecording);
 		return;
 	}
 
@@ -6830,7 +6829,7 @@ void TextArea::secondaryOrDragAdjustAP(QMouseEvent *event, EventFlags flags) {
 	/* Only dragging of blocks of text is handled in this action proc.
 	   Otherwise, defer to secondaryAdjust to handle the rest */
 	if (dragState != CLICKED_IN_SELECTION && dragState != PRIMARY_BLOCK_DRAG) {
-		secondaryAdjustAP(event, flags);
+        secondaryAdjustAP(event, flags | SupressRecording);
 		return;
 	}
 
@@ -7450,7 +7449,7 @@ void TextArea::moveToOrEndDragAP(QMouseEvent *event, EventFlags flags) {
 	DragStates dragState = dragState_;
 
 	if (dragState != PRIMARY_BLOCK_DRAG) {
-		moveToAP(event, flags);
+        moveToAP(event, flags | SupressRecording);
 		return;
 	}
 
