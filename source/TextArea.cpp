@@ -3116,14 +3116,15 @@ void TextArea::redrawLineNumbers(QPainter *painter, bool clearAll) {
 		if (lineStart != -1 && (lineStart == 0 || buffer_->BufGetCharacter(lineStart - 1) == '\n')) {
 
             char lineNumString[12];
-			sprintf(lineNumString, "%*d", nCols, line);
+            snprintf(lineNumString, sizeof(lineNumString), "%*d", nCols, line);
 
 			auto s = QString::fromLatin1(lineNumString);
 			painter->drawText(lineNumLeft_, y + ascent_, s);
 			line++;
 		} else {
-			if (visLine == 0)
+            if (visLine == 0) {
 				line++;
+            }
 		}
 		y += lineHeight;
 	}
@@ -4050,48 +4051,38 @@ void TextArea::offsetLineStarts(int newTopLineNum) {
 	if (lineDelta == 0)
 		return;
 
-	/* {   int i;
-		printf("Scroll, lineDelta %d\n", lineDelta);
-		printf("lineStarts Before: ");
-        for(i=0; i<nVisLines; i++) printf("%d ", lineStarts_[i]);
-		printf("\n");
-	} */
-
 	/* Find the new value for firstChar by counting lines from the nearest
 	   known line start (start or end of buffer, or the closest value in the
 	   lineStarts array) */
 	lastLineNum = oldTopLineNum + nVisLines - 1;
 	if (newTopLineNum < oldTopLineNum && newTopLineNum < -lineDelta) {
 		firstChar_ = TextDCountForwardNLines(0, newTopLineNum - 1, true);
-		// printf("counting forward %d lines from start\n", newTopLineNum-1);
 	} else if (newTopLineNum < oldTopLineNum) {
 		firstChar_ = TextDCountBackwardNLines(firstChar_, -lineDelta);
-		// printf("counting backward %d lines from firstChar\n", -lineDelta);
 	} else if (newTopLineNum < lastLineNum) {
         firstChar_ = lineStarts_[newTopLineNum - oldTopLineNum];
-        /* printf("taking new start from lineStarts_[%d]\n",
-			newTopLineNum - oldTopLineNum); */
 	} else if (newTopLineNum - lastLineNum < nBufferLines_ - newTopLineNum) {
         firstChar_ = TextDCountForwardNLines(lineStarts_[nVisLines - 1], newTopLineNum - lastLineNum, true);
-		/* printf("counting forward %d lines from start of last line\n",
-			newTopLineNum - lastLineNum); */
 	} else {
 		firstChar_ = TextDCountBackwardNLines(buffer_->BufGetLength(), nBufferLines_ - newTopLineNum + 1);
-		/* printf("counting backward %d lines from end\n",
-				nBufferLines_ - newTopLineNum + 1); */
 	}
 
 	// Fill in the line starts array
 	if (lineDelta < 0 && -lineDelta < nVisLines) {
-		for (i = nVisLines - 1; i >= -lineDelta; i--)
+        for (i = nVisLines - 1; i >= -lineDelta; i--) {
             lineStarts_[i] = lineStarts_[i + lineDelta];
+        }
+
 		calcLineStarts(0, -lineDelta);
 	} else if (lineDelta > 0 && lineDelta < nVisLines) {
-		for (i = 0; i < nVisLines - lineDelta; i++)
+        for (i = 0; i < nVisLines - lineDelta; i++) {
             lineStarts_[i] = lineStarts_[i + lineDelta];
+        }
+
 		calcLineStarts(nVisLines - lineDelta, nVisLines - 1);
-	} else
+    } else {
 		calcLineStarts(0, nVisLines);
+    }
 
 	// Set lastChar and topLineNum
 	calcLastChar();
@@ -4100,12 +4091,6 @@ void TextArea::offsetLineStarts(int newTopLineNum) {
 	/* If we're numbering lines or being asked to maintain an absolute line
 	   number, re-calculate the absolute line number */
 	offsetAbsLineNum(oldFirstChar);
-
-	/* {   int i;
-		printf("lineStarts After: ");
-        for(i=0; i<nVisLines; i++) printf("%d ", lineStarts_[i]);
-		printf("\n");
-	} */
 }
 
 /*
@@ -8063,11 +8048,10 @@ void TextArea::addSmartIndentCallback(smartIndentCBEx callback, void *arg) {
 }
 
 bool TextArea::focusNextPrevChild(bool next) {
-	if(true) { // !tabChangesFocus()
-        return false;
-	} else {
-		return QAbstractScrollArea::focusNextPrevChild(next);
-	}
+
+    // Prevent tab from changing focus
+    Q_UNUSED(next);
+    return false;
 }
 
 
@@ -8216,12 +8200,6 @@ void TextArea::TextDSetFont(const QFont &font) {
 
     TextDResize(width, height);
 
-#if 0
-    /* if the shell window doesn't get resized, and the new fonts are
-       of smaller sizes, sometime we get some residual text on the
-       blank space at the bottom part of text area. Clear it here. */
-    clearRect(gc_, rect_.left, rect_.top + rect_.height - maxAscent - maxDescent, rect_.width, maxAscent + maxDescent);
-#endif
     // Redisplay
     TextDRedisplayRect(rect_);
 
@@ -8285,8 +8263,7 @@ std::string TextArea::TextGetWrappedEx(int startPos, int endPos) {
     outBuf->BufCopyFromBuf(buffer_, fromPos, endPos, outPos);
 
     // return the contents of the output buffer as a string
-    std::string outString = outBuf->BufGetAllEx();
-    return outString;
+    return outBuf->BufGetAllEx();
 }
 
 void TextArea::setStyleBuffer(TextBuffer *buffer) {
@@ -8335,8 +8312,8 @@ void TextArea::insertStringAP(const QString &string, EventFlags flags) {
 ** is proportional, since there are no absolute columns.
 */
 int TextArea::TextDLineAndColToPos(int lineNum, int column) {
+
     int i;
-    int lineEnd;
     int lineStart = 0;
 
     // Count lines
@@ -8344,7 +8321,7 @@ int TextArea::TextDLineAndColToPos(int lineNum, int column) {
         lineNum = 1;
     }
 
-    lineEnd = -1;
+    int lineEnd = -1;
     for (i = 1; i <= lineNum && lineEnd < buffer_->BufGetLength(); i++) {
         lineStart = lineEnd + 1;
         lineEnd = buffer_->BufEndOfLine(lineStart);
@@ -8582,7 +8559,7 @@ void TextArea::deleteNextWordAP(EventFlags flags) {
     EMIT_EVENT("delete_next_word");
 
     int insertPos = TextDGetInsertPosition();
-    int pos, lineEnd = buffer_->BufEndOfLine(insertPos);
+    int lineEnd = buffer_->BufEndOfLine(insertPos);
     QByteArray delimiters = P_delimiters.toLatin1();
     bool silent = flags & NoBellFlag;
 
@@ -8601,7 +8578,7 @@ void TextArea::deleteNextWordAP(EventFlags flags) {
         return;
     }
 
-    pos = insertPos;
+    int pos = insertPos;
     while (delimiters.indexOf(buffer_->BufGetCharacter(pos)) != -1 && pos != lineEnd) {
         pos++;
     }
@@ -8668,7 +8645,7 @@ void TextArea::scrollDownAP(int count, ScrollUnits units, EventFlags flags) {
     }
 
     TextDGetScroll(&topLineNum, &horizOffset);
-    TextDSetScroll(topLineNum+nLines, horizOffset);
+    TextDSetScroll(topLineNum + nLines, horizOffset);
 }
 
 

@@ -246,7 +246,7 @@ public:
 	int TextDOffsetWrappedColumn(int row, int column);
 	void TextDGetScroll(int *topLineNum, int *horizOffset);
     int TextDInSelection(const QPoint &p);
-	int TextGetCursorPos() const;
+    int TextGetCursorPos() const;
 	int TextDGetInsertPosition() const;
 	int TextDPosToLineAndCol(int pos, int *lineNum, int *column);
     void TextDSetScroll(int topLineNum, int horizOffset);
