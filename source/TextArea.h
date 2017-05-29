@@ -275,7 +275,6 @@ public:
 	void TextDOverstrikeEx(view::string_view text);
 	void TextDInsertEx(view::string_view text);
     void TextCutClipboard();
-	void TextCopyClipboard();
 	void TextPasteClipboard();
 	void TextColPasteClipboard();
 	int TextDOffsetWrappedRow(int row) const;
@@ -309,7 +308,7 @@ private:
 	void updateVScrollBarRange();
 	void offsetAbsLineNum(int oldFirstChar);
 	void findLineEnd(int startPos, int startPosIsLineStart, int *lineEnd, int *nextLineStart);
-	int updateHScrollBarRange();
+    bool updateHScrollBarRange();
 	int emptyLinesVisible() const;
 	int posToVisibleLineNum(int pos, int *lineNum);
 	void blankCursorProtrusions();

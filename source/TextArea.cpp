@@ -645,7 +645,14 @@ void TextArea::copyClipboardAP(EventFlags flags) {
 
     EMIT_EVENT("copy_clipboard");
 
-	TextCopyClipboard();
+    cancelDrag();
+
+    if (!buffer_->primary_.selected) {
+        QApplication::beep();
+        return;
+    }
+
+    CopyToClipboard();
 }
 
 void TextArea::deletePreviousWordAP(EventFlags flags) {
@@ -653,7 +660,6 @@ void TextArea::deletePreviousWordAP(EventFlags flags) {
     EMIT_EVENT("delete_previous_word");
 
 	int insertPos = cursorPos_;
-	int pos;
 	int lineStart = buffer_->BufStartOfLine(insertPos);
 
     QByteArray delimiters = P_delimiters.toLatin1();
@@ -674,7 +680,7 @@ void TextArea::deletePreviousWordAP(EventFlags flags) {
 		return;
 	}
 
-	pos = std::max(insertPos - 1, 0);
+    int pos = std::max(insertPos - 1, 0);
 
     while (delimiters.indexOf(buffer_->BufGetCharacter(pos)) != -1 && pos != lineStart) {
 		pos--;
@@ -693,11 +699,13 @@ void TextArea::beginningOfLineAP(EventFlags flags) {
 	int insertPos = cursorPos_;
 
 	cancelDrag();
-	if (flags & AbsoluteFlag) {
+
+    if (flags & AbsoluteFlag) {
 		TextDSetInsertPosition(buffer_->BufStartOfLine(insertPos));
 	} else {
 		TextDSetInsertPosition(TextDStartOfLine(insertPos));
 	}
+
 	checkMoveSelectionChange(flags, insertPos);
 	checkAutoShowInsertPos();
 	callCursorMovementCBs();
@@ -863,12 +871,12 @@ void TextArea::selfInsertAP(const QString &string, EventFlags flags) {
 
     EMIT_EVENT_ARG("insert_string", string);
 
-    std::string s = string.toStdString();
-
     cancelDrag();
     if (checkReadOnly()) {
         return;
     }
+
+    std::string s = string.toStdString();
 
     TakeMotifDestination();
 
@@ -1489,11 +1497,6 @@ void TextArea::mouseMoveEvent(QMouseEvent *event) {
 		mousePanAP(event);
 	} else if(event->buttons() == Qt::MiddleButton) {
 
-		//"Shift Ctrl Button2<MotionNotify>: secondary_or_drag_adjust(\"rect\", \"copy\", \"overlay\")\n"
-		//"Shift Button2<MotionNotify>: secondary_or_drag_adjust(\"copy\")\n"
-		//"Ctrl Button2<MotionNotify>: secondary_or_drag_adjust(\"rect\", \"overlay\")\n"
-		//"Button2<MotionNotify>: secondary_or_drag_adjust()\n"
-
 		if(event->modifiers() == (Qt::ControlModifier | Qt::ShiftModifier)) {
 			secondaryOrDragAdjustAP(event, RectFlag | OverlayFlag | CopyFlag);
 		} else if(event->modifiers() == (Qt::ShiftModifier)) {
@@ -1702,8 +1705,9 @@ void TextArea::bufModifiedCallback(int pos, int nInserted, int nDeleted, int nRe
     int wrapModEnd   = 0;
 
 	// buffer modification cancels vertical cursor motion column
-	if (nInserted != 0 || nDeleted != 0)
+    if (nInserted != 0 || nDeleted != 0) {
 		cursorPreferredCol_ = -1;
+    }
 
 	/* Count the number of lines inserted and deleted, and in the case
 	   of continuous wrap mode, how much has changed */
@@ -1867,15 +1871,20 @@ void TextArea::measureDeletedLines(int pos, int nDeleted) {
 	*/
 	if (pos >= firstChar_ && pos <= lastChar_) {
 		int i;
-		for (i = nVisLines - 1; i > 0; i--)
-            if (lineStarts_[i] != -1 && pos >= lineStarts_[i])
+        for (i = nVisLines - 1; i > 0; i--) {
+            if (lineStarts_[i] != -1 && pos >= lineStarts_[i]) {
 				break;
+            }
+        }
+
 		if (i > 0) {
             countFrom = lineStarts_[i - 1];
-		} else
+        } else {
 			countFrom = buffer_->BufStartOfLine(pos);
-	} else
+        }
+    } else {
 		countFrom = buffer_->BufStartOfLine(pos);
+    }
 
 	/*
 	** Move forward through the (new) text one line at a time, counting
@@ -1888,11 +1897,14 @@ void TextArea::measureDeletedLines(int pos, int nDeleted) {
 		   or the end of the buffer, that's far enough */
 		wrappedLineCounter(buffer_, lineStart, buffer_->BufGetLength(), 1, true, 0, &retPos, &retLines, &retLineStart, &retLineEnd);
 		if (retPos >= buffer_->BufGetLength()) {
-			if (retPos != retLineEnd)
+            if (retPos != retLineEnd) {
 				nLines++;
+            }
 			break;
-		} else
+        } else {
 			lineStart = retPos;
+        }
+
 		nLines++;
 		if (lineStart > pos + nDeleted && buffer_->BufGetCharacter(lineStart - 1) == '\n') {
 			break;
@@ -1980,7 +1992,7 @@ void TextArea::wrappedLineCounter(const TextBuffer *buf, int startPos, int maxPo
 	colNum = 0;
 	width = 0;
 	for (p = lineStart; p < buf->BufGetLength(); p++) {
-		uint8_t c = buf->BufGetCharacter(p);
+        const char c = buf->BufGetCharacter(p);
 
 		/* If the character was a newline, count the line and start over,
 		   otherwise, add it to the width and column counts */
@@ -2014,7 +2026,7 @@ void TextArea::wrappedLineCounter(const TextBuffer *buf, int startPos, int maxPo
 		if (colNum > wrapMargin || width > maxWidth) {
 			foundBreak = false;
 			for (b = p; b >= lineStart; b--) {
-				c = buf->BufGetCharacter(b);
+                const char c = buf->BufGetCharacter(b);
 				if (c == '\t' || c == ' ') {
 					newLineStart = b + 1;
 					if (countPixels) {
@@ -2088,11 +2100,11 @@ int TextArea::measurePropChar(const char c, int colNum, int pos) const {
 	if(!styleBuf) {
 		style = 0;
 	} else {
-		style = (uint8_t)styleBuf->BufGetCharacter(pos);
+        style = static_cast<uint8_t>(styleBuf->BufGetCharacter(pos));
 		if (style == unfinishedStyle_) {
 			// encountered "unfinished" style, trigger parsing
 			(unfinishedHighlightCB_)(this, pos, highlightCBArg_);
-			style = (uint8_t)styleBuf->BufGetCharacter(pos);
+            style = static_cast<uint8_t>(styleBuf->BufGetCharacter(pos));
 		}
 	}
 	return stringWidth(expChar, charLen, style);
@@ -2342,25 +2354,15 @@ void TextArea::updateLineStarts(int pos, int charsInserted, int charsDeleted, in
 	int charDelta = charsInserted - charsDeleted;
 	int lineDelta = linesInserted - linesDeleted;
 
-	/* {   int i;
-		printf("linesDeleted %d, linesInserted %d, charsInserted %d, charsDeleted %d\n",
-				linesDeleted, linesInserted, charsInserted, charsDeleted);
-		printf("lineStarts Before: ");
-        for(i=0; i<nVisLines; i++) printf("%d ", lineStarts_[i]);
-		printf("\n");
-	} */
 	/* If all of the changes were before the displayed text, the display
 	   doesn't change, just update the top line num and offset the line
 	   start entries and first and last characters */
 	if (pos + charsDeleted < firstChar_) {
 		topLineNum_ += lineDelta;
-        for (i = 0; i < nVisLines && lineStarts_[i] != -1; i++)
+        for (i = 0; i < nVisLines && lineStarts_[i] != -1; i++) {
             lineStarts_[i] += charDelta;
-		/* {   int i;
-			printf("lineStarts after delete doesn't touch: ");
-            for(i=0; i<nVisLines; i++) printf("%d ", lineStarts_[i]);
-			printf("\n");
-		} */
+        }
+
 		firstChar_ += charDelta;
 		lastChar_ += charDelta;
 		*scrolled = false;
@@ -2383,11 +2385,7 @@ void TextArea::updateLineStarts(int pos, int charsInserted, int charsDeleted, in
 				firstChar_ = TextDCountForwardNLines(0, topLineNum_ - 1, true);
 		}
 		calcLineStarts(0, nVisLines - 1);
-		/* {   int i;
-			printf("lineStarts after delete encroaches: ");
-            for(i=0; i<nVisLines; i++) printf("%d ", lineStarts_[i]);
-			printf("\n");
-		} */
+
 		// calculate lastChar by finding the end of the last displayed line
 		calcLastChar();
 		*scrolled = true;
@@ -2413,21 +2411,13 @@ void TextArea::updateLineStarts(int pos, int charsInserted, int charsDeleted, in
 			for (i = std::max(0, lineOfPos + 1); i < nVisLines + lineDelta; i++)
                 lineStarts_[i] = lineStarts_[i - lineDelta] + (lineStarts_[i - lineDelta] == -1 ? 0 : charDelta);
 		}
-		/* {   int i;
-			printf("lineStarts after salvage: ");
-            for(i=0; i<nVisLines; i++) printf("%d ", lineStarts_[i]);
-			printf("\n");
-		} */
+
 		// fill in the missing line starts
 		if (linesInserted >= 0)
 			calcLineStarts(lineOfPos + 1, lineOfPos + linesInserted);
 		if (lineDelta < 0)
 			calcLineStarts(nVisLines + lineDelta, nVisLines);
-		/* {   int i;
-			printf("lineStarts after recalculation: ");
-            for(i=0; i<nVisLines; i++) printf("%d ", lineStarts_[i]);
-			printf("\n");
-		} */
+
 		// calculate lastChar by finding the end of the last displayed line
 		calcLastChar();
 		*scrolled = false;
@@ -2440,11 +2430,7 @@ void TextArea::updateLineStarts(int pos, int charsInserted, int charsDeleted, in
 		posToVisibleLineNum(pos, &lineOfPos);
 		calcLineStarts(lineOfPos, lineOfPos + linesInserted);
 		calcLastChar();
-		/* {
-			printf("lineStarts after insert at end: ");
-            for(int i=0; i<nVisLines; i++) printf("%d ", lineStarts_[i]);
-			printf("\n");
-		} */
+
 		*scrolled = false;
 		return;
 	}
@@ -2756,7 +2742,7 @@ void TextArea::findLineEnd(int startPos, int startPosIsLineStart, int *lineEnd, 
 //       of displayed text, particularly since it's usually called for each typed
 // character!
 //------------------------------------------------------------------------------
-int TextArea::updateHScrollBarRange() {
+bool TextArea::updateHScrollBarRange() {
 	int maxWidth = 0;
 	int sliderMax;
 	int sliderWidth;
@@ -2785,15 +2771,6 @@ int TextArea::updateHScrollBarRange() {
     horizontalScrollBar()->setMaximum(std::max(sliderMax - rect_.width(), 0));
     horizontalScrollBar()->setPageStep(std::max(rect_.width() - 100, 10));
 	horizontalScrollBar()->setValue(horizOffset_);
-
-#if 0
-	XtVaSetValues(getHorizontalScrollbar(),
-		XmNmaximum,       sliderMax,
-		XmNsliderSize,    sliderWidth,
-		XmNpageIncrement, std::max(rect_.width - 100, 10),
-		XmNvalue,         horizOffset_,
-		nullptr);
-#endif
 
 	// Return True if scroll position was changed
 	return origHOffset != horizOffset_;
@@ -3113,8 +3090,7 @@ void TextArea::redrawLineNumbers(QPainter *painter, bool clearAll) {
 	int y;
 	int line;
 	int visLine;
-	int nCols;
-	char lineNumString[12];
+	int nCols;	
     QFontMetrics fm(viewport()->font());
     int lineHeight = ascent_ + descent_;
 	int charWidth  = fm.maxWidth();
@@ -3138,6 +3114,8 @@ void TextArea::redrawLineNumbers(QPainter *painter, bool clearAll) {
 
 		int lineStart = lineStarts_[visLine];
 		if (lineStart != -1 && (lineStart == 0 || buffer_->BufGetCharacter(lineStart - 1) == '\n')) {
+
+            char lineNumString[12];
 			sprintf(lineNumString, "%*d", nCols, line);
 
 			auto s = QString::fromLatin1(lineNumString);
@@ -5715,17 +5693,6 @@ void TextArea::CopyToClipboard() {
 	buffer_->BufUnsubstituteNullCharsEx(text);
 
 	QApplication::clipboard()->setText(QString::fromStdString(text));
-}
-
-void TextArea::TextCopyClipboard() {
-	cancelDrag();
-
-	if (!buffer_->primary_.selected) {
-		QApplication::beep();
-		return;
-	}
-
-	CopyToClipboard();
 }
 
 void TextArea::TextPasteClipboard() {
