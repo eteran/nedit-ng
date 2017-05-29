@@ -4571,7 +4571,7 @@ void TextArea::TextDMakeInsertPosVisible() {
 			linesFromTop = TextDCountLines(firstChar_, cursorPos, true);
 	}
 	if (topLine < 1) {
-		qCritical("nedit: internal consistency check tl1 failed");
+        qCritical("NEdit: internal consistency check tl1 failed");
 		topLine = 1;
 	}
 

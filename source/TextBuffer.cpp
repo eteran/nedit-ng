@@ -848,7 +848,7 @@ void TextBuffer::BufInsertColEx(int column, int startPos, view::string_view text
 	insertColEx(column, lineStartPos, text, &insertDeleted, &nInserted, &cursorPosHint_);
 
 	if (nDeleted != insertDeleted) {
-		qCritical("NEdit internal consistency check ins1 failed");
+        qCritical("NEdit: internal consistency check ins1 failed");
 	}
 
 	callModifyCBs(lineStartPos, nDeleted, nInserted, 0, deletedText);
@@ -961,7 +961,7 @@ void TextBuffer::BufOverlayRectEx(int startPos, int rectStart, int rectEnd, view
 	overlayRectEx(lineStartPos, rectStart, rectEnd, text, &insertDeleted, &nInserted, &cursorPosHint_);
 
     if (nDeleted != insertDeleted) {
-		qCritical("NEdit internal consistency check ovly1 failed");
+        qCritical("NEdit: internal consistency check ovly1 failed");
     }
     callModifyCBs(lineStartPos, nDeleted, nInserted, 0, deletedText);
 
@@ -1274,7 +1274,7 @@ void TextBuffer::BufRemoveModifyCB(bufModifyCallbackProc bufModifiedCB, void *cb
 		}
 	}
 
-	qCritical("NEdit Internal Error: Can't find modify CB to remove");
+    qCritical("NEdit: Internal Error: Can't find modify CB to remove");
 }
 
 /*
@@ -1295,7 +1295,7 @@ void TextBuffer::BufRemovePreDeleteCB(bufPreDeleteCallbackProc bufPreDeleteCB, v
 		}
 	}
 
-	qCritical("NEdit Internal Error: Can't find pre-delete CB to remove");
+    qCritical("NEdit: Internal Error: Can't find pre-delete CB to remove");
 }
 
 /*

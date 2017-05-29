@@ -1243,7 +1243,7 @@ static void incrementalReparse(WindowHighlightData *highlightData, TextBuffer *b
 			beginParse = endAt;
 			endParse = forwardOneContext(buf, context, std::max<int>(endAt, std::max<int>(lastModified(styleBuf), lastMod)));
 			if (is_plain(parseInStyle)) {
-				qCritical("NEdit internal error: incr. reparse fell short");
+                qCritical("NEdit: internal error: incr. reparse fell short");
 				return;
 			}
 			parseInStyle = parentStyleOf(parentStyles, parseInStyle);
@@ -1479,7 +1479,7 @@ static bool parseString(HighlightData *pattern, const char **string, char **styl
 					if (subPat->colorOnly) {
 						if (!subExecuted) {
 							if (!pattern->endRE->ExecRE(savedStartPtr, savedStartPtr + 1, false, savedPrevChar, succChar, delimiters.toLatin1().data(), lookBehindTo, match_till)) {
-								qCritical("Internal error, failed to recover end match in parseString");
+                                qCritical("NEdit: Internal error, failed to recover end match in parseString");
 								return false;
 							}
 							subExecuted = true;
@@ -1519,7 +1519,7 @@ static bool parseString(HighlightData *pattern, const char **string, char **styl
 		}
 		
 		if (i == pattern->nSubPatterns) {
-			qCritical("Internal error, failed to match in parseString");
+            qCritical("NEdit: Internal error, failed to match in parseString");
 			return false;
 		}
 
@@ -1583,7 +1583,7 @@ static bool parseString(HighlightData *pattern, const char **string, char **styl
 			if (subSubPat->colorOnly) {
 				if (!subExecuted) {
 					if (!subPat->startRE->ExecRE(savedStartPtr, savedStartPtr + 1, false, savedPrevChar, succChar, delimiters.toLatin1().data(), lookBehindTo, match_till)) {
-						qCritical("Internal error, failed to recover start match in parseString");
+                        qCritical("NEdit: Internal error, failed to recover start match in parseString");
 						return false;
 					}
 					subExecuted = true;

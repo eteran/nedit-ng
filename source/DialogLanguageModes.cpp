@@ -279,7 +279,7 @@ std::unique_ptr<LanguageMode> DialogLanguageModes::readLMDialogFields(Mode mode)
 			}
 			return nullptr;
         } else if (!DeleteTagsFileEx(tipsFile, TIP, false)) {
-			qCritical("nedit: Internal error: Trouble deleting calltips file(s):\n  \"%s\"", qPrintable(tipsFile));
+            qCritical("NEdit: Internal error: Trouble deleting calltips file(s):\n  \"%s\"", qPrintable(tipsFile));
 		}
 	}
     lm->defTipsFile = !tipsFile.isEmpty() ? tipsFile : QString();
