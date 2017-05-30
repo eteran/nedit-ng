@@ -29,6 +29,7 @@
 
 #include <QString>
 #include <QVector>
+#include <memory>
 
 class MenuItem;
 
@@ -56,8 +57,8 @@ struct userMenuInfo {
 };
 
 struct MenuData {
-	MenuItem     *item;
-    userMenuInfo *info;
+    std::shared_ptr<MenuItem>     item;
+    std::shared_ptr<userMenuInfo> info;
 };
 
 int LoadBGMenuCmdsStringEx(const QString &inString);

@@ -18,7 +18,7 @@ DialogShellMenu::DialogShellMenu(QWidget *parent, Qt::WindowFlags f) : Dialog(pa
     ui.editAccelerator->setMaximumSequenceLength(1);
 
 	for(MenuData &data : ShellMenuData) {
-		auto ptr  = new MenuItem(*data.item);
+        auto ptr  = new MenuItem(*data.item.get());
 		auto item = new QListWidgetItem(ptr->name);
 		item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(ptr));
 		ui.listItems->addItem(item);
@@ -430,7 +430,7 @@ bool DialogShellMenu::applyDialogChanges() {
 	int count = ui.listItems->count();
 	for(int i = 0; i < count; ++i) {
 		auto ptr = itemFromIndex(i);		
-		ShellMenuData.push_back({ new MenuItem(*ptr), nullptr });
+        ShellMenuData.push_back({ std::make_unique<MenuItem>(*ptr), nullptr });
 	}
 
     parseMenuItemList(ShellMenuData);

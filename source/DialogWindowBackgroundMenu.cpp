@@ -18,7 +18,7 @@ DialogWindowBackgroundMenu::DialogWindowBackgroundMenu(QWidget *parent, Qt::Wind
     ui.editAccelerator->setMaximumSequenceLength(1);
 
 	for(MenuData &data : BGMenuData) {
-		auto ptr  = new MenuItem(*data.item);
+        auto ptr  = new MenuItem(*data.item.get());
 		auto item = new QListWidgetItem(ptr->name);
 		item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(ptr));
 		ui.listItems->addItem(item);
@@ -449,7 +449,7 @@ bool DialogWindowBackgroundMenu::applyDialogChanges() {
 	int count = ui.listItems->count();
 	for(int i = 0; i < count; ++i) {
 		auto ptr = itemFromIndex(i);
-		BGMenuData.push_back({ new MenuItem(*ptr), nullptr });
+        BGMenuData.push_back({ std::make_unique<MenuItem>(*ptr), nullptr });
 	}
 
     parseMenuItemList(BGMenuData);

@@ -18,7 +18,7 @@ DialogMacros::DialogMacros(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, 
     ui.editAccelerator->setMaximumSequenceLength(1);
 
 	for(MenuData &data : MacroMenuData) {
-		auto ptr  = new MenuItem(*data.item);
+        auto ptr  = new MenuItem(*data.item.get());
 		auto item = new QListWidgetItem(ptr->name);
 		item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(ptr));
 		ui.listItems->addItem(item);
@@ -448,7 +448,7 @@ bool DialogMacros::applyDialogChanges() {
 	int count = ui.listItems->count();
 	for(int i = 0; i < count; ++i) {
 		auto ptr = itemFromIndex(i);
-		MacroMenuData.push_back({ new MenuItem(*ptr), nullptr });
+        MacroMenuData.push_back({ std::make_unique<MenuItem>(*ptr), nullptr });
 	}
 
     parseMenuItemList(MacroMenuData);

@@ -70,8 +70,8 @@ static int loadMenuItemString(const char *inString, QVector<MenuData> &menuItems
 static int loadMenuItemStringEx(const QString &inString, QVector<MenuData> &menuItems, DialogTypes listType);
 static QString stripLanguageModeEx(const QString &menuItemName);
 static QString writeMenuItemStringEx(const QVector<MenuData> &menuItems, DialogTypes listType);
-static userMenuInfo *parseMenuItemRec(MenuItem *item);
-static void parseMenuItemName(const QString &menuItemName, const std::unique_ptr<userMenuInfo> &info);
+static std::shared_ptr<userMenuInfo> parseMenuItemRec(const std::shared_ptr<MenuItem> &item);
+static void parseMenuItemName(const QString &menuItemName, const std::shared_ptr<userMenuInfo> &info);
 static void setDefaultIndex(const QVector<MenuData> &infoList, int index);
 
 /*
@@ -154,7 +154,7 @@ static QString writeMenuItemStringEx(const QVector<MenuData> &menuItems, DialogT
     auto outPtr = std::back_inserter(outStr);
 
     for (const MenuData &data : menuItems) {
-        MenuItem *f = data.item;
+        auto &f = data.item;
 
         QString accStr = f->shortcut.toString();
         *outPtr++ = QLatin1Char('\t');
@@ -368,15 +368,14 @@ static int loadMenuItemString(const char *inString, QVector<MenuData> &menuItems
             bool found = false;
             for (MenuData &data: menuItems) {
                 if (data.item->name == f->name) {
-                    delete data.item;
-                    data.item = f.release();
+                    data.item = std::move(f);
                     found = true;
                     break;
                 }
             }
 
             if (!found) {
-                menuItems.push_back({f.release(), nullptr});
+                menuItems.push_back({ std::move(f), nullptr});
             }
         }
     } catch(const ParseError &ex) {
@@ -473,7 +472,7 @@ void parseMenuItemList(QVector<MenuData> &itemList) {
 
 	// 2nd pass: solve "default" dependencies 
 	for (int i = 0; i < itemList.size(); i++) {
-		userMenuInfo *info = itemList[i].info;
+        const std::shared_ptr<userMenuInfo> &info = itemList[i].info;
 
 		/* If the user menu item is a default one, then scan the list for
 		   items with the same name and a language mode specified.
@@ -490,10 +489,10 @@ void parseMenuItemList(QVector<MenuData> &itemList) {
 ** Parse a single menu item. Allocate & setup a user menu info element
 ** holding extracted info.
 */
-static userMenuInfo *parseMenuItemRec(MenuItem *item) {
+static std::shared_ptr<userMenuInfo> parseMenuItemRec(const std::shared_ptr<MenuItem> &item) {
 
 	// allocate a new user menu info element 
-    auto newInfo = std::make_unique<userMenuInfo>();
+    auto newInfo = std::make_shared<userMenuInfo>();
 
 	/* determine sub-menu depth and allocate some memory
 	   for hierarchical ID; init. ID with {0,.., 0} */
@@ -506,7 +505,7 @@ static userMenuInfo *parseMenuItemRec(MenuItem *item) {
 	// assign language mode info to new user menu info element 
     parseMenuItemName(item->name, newInfo);
 
-    return newInfo.release();
+    return newInfo;
 }
 
 /*
@@ -514,7 +513,7 @@ static userMenuInfo *parseMenuItemRec(MenuItem *item) {
 ** Extract language mode related info out of given menu item name string.
 ** Store this info in given user menu info structure.
 */
-static void parseMenuItemName(const QString &menuItemName, const std::unique_ptr<userMenuInfo> &info) {
+static void parseMenuItemName(const QString &menuItemName, const std::shared_ptr<userMenuInfo> &info) {
 
     int index = menuItemName.indexOf(QLatin1Char('@'));
     if(index != -1) {
@@ -571,7 +570,7 @@ static void setDefaultIndex(const QVector<MenuData> &infoList, int index) {
        index of the current default item. */
 
     for (const MenuData &data: infoList) {
-        userMenuInfo *info = data.info;
+        const std::shared_ptr<userMenuInfo> &info = data.info;
 
         if (!info->umiIsDefault && info->umiName == defaultMenuName) {
             info->umiDefaultIndex = index;
@@ -580,11 +579,6 @@ static void setDefaultIndex(const QVector<MenuData> &infoList, int index) {
 }
 
 void freeUserMenuInfoList(QVector<MenuData> &menuList) {
-    for(MenuData &data: menuList) {
-        delete data.item;
-        delete data.info;
-	}
-
     menuList.clear();
 }
 
