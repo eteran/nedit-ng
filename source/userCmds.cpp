@@ -371,17 +371,14 @@ static int loadMenuItemString(const char *inString, QVector<MenuData> &menuItems
             f->shortcut  = shortcut;
 
             // add/replace menu record in the list
-            bool found = false;
-            for (MenuData &data: menuItems) {
-                if (data.item->name == f->name) {
-                    data.item = std::move(f);
-                    found = true;
-                    break;
-                }
-            }
+            auto it = std::find_if(menuItems.begin(), menuItems.end(), [&f](MenuData &data) {
+                return data.item->name == f->name;
+            });
 
-            if (!found) {
+            if(it == menuItems.end()) {
                 menuItems.push_back({ std::move(f), nullptr});
+            } else {
+                it->item = std::move(f);
             }
         }
     } catch(const ParseError &ex) {
