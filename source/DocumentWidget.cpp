@@ -911,7 +911,6 @@ void DocumentWidget::dragEndCallback(TextArea *area, DragEndEvent *data) {
     // versions of the modified callback. The code will eventually call
     // "UpdateStatsLine(nullptr)", which will force it to fall back on the
     // "lastFocus_" variable. Which **probably** points to the correct widget.
-    // TODO(eteran): improve this somehow!
     Q_UNUSED(area);
 
 	// restore recording of undo information
@@ -4269,9 +4268,11 @@ void DocumentWidget::splitPane() {
 	}
 
     // TODO(eteran): copy common state from an existing text area!
-    //               this includes the BGMenu, and the syntax highlighting
-    //               and probably a few other things too!
+    // what do we REALLY need to copy?
     auto area = createTextArea(buffer_);
+
+    AttachHighlightToWidgetEx(area, this);
+
     splitter_->addWidget(area);
     area->setFocus();
 }

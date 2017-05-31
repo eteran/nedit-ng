@@ -1128,7 +1128,7 @@ void MainWindow::addToGroup(QActionGroup *group, QMenu *menu) {
 */
 void MainWindow::UpdateUserMenus(DocumentWidget *document) {
 
-    // TODO(eteran): the old code used to only do this if the language mode changed
+    // NOTE(eteran): the old code used to only do this if the language mode changed
     //               we should probably restore that behavior
 
     /* update user menus, which are shared over all documents, only
