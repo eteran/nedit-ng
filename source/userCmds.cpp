@@ -138,13 +138,19 @@ void SetupUserMenuInfo() {
 ** (i.e. add / move / delete of language modes etc).
 */
 void UpdateUserMenuInfo() {
-	freeUserMenuInfoList(ShellMenuData);
+    for(auto &item : ShellMenuData) {
+        item.info.reset();
+    }
     parseMenuItemList(ShellMenuData);
 
-	freeUserMenuInfoList(MacroMenuData);
+    for(auto &item : MacroMenuData) {
+        item.info.reset();
+    }
     parseMenuItemList(MacroMenuData);
 
-	freeUserMenuInfoList(BGMenuData);
+    for(auto &item : BGMenuData) {
+        item.info.reset();
+    }
     parseMenuItemList(BGMenuData);
 }
 
@@ -568,20 +574,11 @@ static void setDefaultIndex(const QVector<MenuData> &infoList, int index) {
     /* Scan the list for items with the same name and a language mode
        specified. If one is found, then set the default index to the
        index of the current default item. */
-
     for (const MenuData &data: infoList) {
-        const std::shared_ptr<userMenuInfo> &info = data.info;
-
-        if (!info->umiIsDefault && info->umiName == defaultMenuName) {
-            info->umiDefaultIndex = index;
+        if(const std::shared_ptr<userMenuInfo> &info = data.info) {
+            if (!info->umiIsDefault && info->umiName == defaultMenuName) {
+                info->umiDefaultIndex = index;
+            }
         }
     }
 }
-
-void freeUserMenuInfoList(QVector<MenuData> &menuList) {
-    menuList.clear();
-}
-
-
-
-

@@ -444,7 +444,7 @@ bool DialogWindowBackgroundMenu::applyDialogChanges() {
 	selection->setText(current->name);
 
 	// Update the menu information
-	freeUserMenuInfoList(BGMenuData);
+    BGMenuData.clear();
 
 	int count = ui.listItems->count();
 	for(int i = 0; i < count; ++i) {

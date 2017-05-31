@@ -69,7 +69,6 @@ QString WriteMacroCmdsStringEx();
 QString WriteShellCmdsStringEx();
 void SetupUserMenuInfo();
 void UpdateUserMenuInfo();
-void freeUserMenuInfoList(QVector<MenuData> &menuList);
 void parseMenuItemList(QVector<MenuData> &itemList);
 
 extern QVector<MenuData> ShellMenuData;

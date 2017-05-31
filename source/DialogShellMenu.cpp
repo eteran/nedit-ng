@@ -425,7 +425,7 @@ bool DialogShellMenu::applyDialogChanges() {
     selection->setData(Qt::UserRole, reinterpret_cast<qulonglong>(current.release()));
 
 	// Update the menu information
-	freeUserMenuInfoList(ShellMenuData);
+    ShellMenuData.clear();
 
 	int count = ui.listItems->count();
 	for(int i = 0; i < count; ++i) {
