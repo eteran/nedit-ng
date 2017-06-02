@@ -8,6 +8,7 @@
 
 class TextEditEvent;
 class DocumentWidget;
+class WindowMenuEvent;
 
 class CommandRecorder : public QObject {
 	Q_OBJECT
@@ -30,6 +31,7 @@ public:
 
 private:
     void lastActionHook(QObject *obj, const TextEditEvent *ev);
+    void lastActionHook(QObject *obj, const WindowMenuEvent *ev);
     QString actionToString(const TextEditEvent *ev);
     bool isMouseAction(const TextEditEvent *ev) const;
     bool isRedundantAction(const TextEditEvent *ev) const;

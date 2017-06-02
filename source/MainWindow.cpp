@@ -42,6 +42,7 @@
 #include "utils.h"
 #include "CommandRecorder.h"
 #include "file.h"
+#include "WindowMenuEvent.h"
 
 #include <QClipboard>
 #include <QFile>
@@ -69,6 +70,12 @@
 #if !defined(DONT_HAVE_GLOB)
 #include <glob.h>
 #endif
+
+#define EMIT_EVENT(name)                                \
+    do {                                                \
+        WindowMenuEvent menuEvent(QLatin1String(name)); \
+        QApplication::sendEvent(this, &menuEvent);      \
+    } while(0)
 
 namespace {
 
@@ -635,6 +642,8 @@ QString MainWindow::PromptForExistingFileEx(const QString &path, const QString &
 // Name: on_action_Open_triggered
 //------------------------------------------------------------------------------
 void MainWindow::on_action_Open_triggered() {
+
+    EMIT_EVENT("open_dialog");
 
     if(auto doc = currentDocument()) {
         QString filename = PromptForExistingFileEx(doc->path_, tr("Open File"));

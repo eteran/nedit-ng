@@ -1,6 +1,7 @@
 
 #include "CommandRecorder.h"
 #include "TextEditEvent.h"
+#include "WindowMenuEvent.h"
 #include "DocumentWidget.h"
 #include <QMutex>
 #include <QtDebug>
@@ -99,9 +100,18 @@ bool CommandRecorder::eventFilter(QObject *obj, QEvent *event) {
 
     if(event->type() == TextEditEvent::eventType) {
         lastActionHook(obj, static_cast<TextEditEvent *>(event));
+    } else if(event->type() == WindowMenuEvent::eventType) {
+        lastActionHook(obj, static_cast<WindowMenuEvent *>(event));
     }
 
     return false;
+}
+
+void CommandRecorder::lastActionHook(QObject *obj, const WindowMenuEvent *ev) {
+    Q_UNUSED(obj);
+    Q_UNUSED(ev);
+
+    qDebug("Menu Event! : %s", qPrintable(ev->toString()));
 }
 
 void CommandRecorder::lastActionHook(QObject *obj, const TextEditEvent *ev) {
