@@ -452,7 +452,6 @@ static const SubRoutine TextAreaSubrNames[] = {
     {"end_of_line",               endOfLineMS},
     {"end-of-selection",          endOfSelectionMS},
     {"end_of_selection",          endOfSelectionMS},
-    {"focus_pane",                nullptr}, // NOTE(eteran): was from MainWindow in my code...
     {"forward_character",         forwardCharacterMS},
     {"forward-character",         forwardCharacterMS},
     {"forward_paragraph",         forwardParagraphMS},
@@ -492,7 +491,6 @@ static const SubRoutine TextAreaSubrNames[] = {
     {"process-tab",               processTabMS},
     {"process_up",                processUpMS},
     {"process-up",                processUpMS},
-    {"raise_window",              nullptr}, // NOTE(eteran): was from MainWindow in my code...
     {"scroll_down",               nullptr},
     {"scroll-down",               nullptr},
     {"scroll_left",               scrollLeftMS},
@@ -503,6 +501,11 @@ static const SubRoutine TextAreaSubrNames[] = {
     {"scroll-to-line",            scrollToLineMS},
     {"self_insert",               insertStringMS},
     {"self-insert",               insertStringMS},
+
+#if 0 // NOTE(eteran): do these make sense to support
+    {"focus_pane",                nullptr}, // NOTE(eteran): was from MainWindow in my code...
+    {"raise_window",              nullptr}, // NOTE(eteran): was from MainWindow in my code...
+#endif
 
 #if 0 // NOTE(eteran): mouse event, no point in scripting...
     {"extend_end",                nullptr},
@@ -611,7 +614,7 @@ WINDOW_MENU_EVENT(shiftRightTabMS,                   action_Shift_Right_Tabs)
 WINDOW_MENU_EVENT(splitPaneMS,                       on_action_Split_Pane_triggered)
 WINDOW_MENU_EVENT(undoMS,                            on_action_Undo_triggered)
 WINDOW_MENU_EVENT(uppercaseMS,                       on_action_Upper_case_triggered)
-WINDOW_MENU_EVENT(openMS,                            on_action_Open_triggered)
+WINDOW_MENU_EVENT(openDialogMS,                      on_action_Open_triggered)
 WINDOW_MENU_EVENT(revertToSavedDialogMS,             on_action_Revert_to_Saved_triggered)
 WINDOW_MENU_EVENT(markDialogMS,                      on_action_Mark_triggered)
 WINDOW_MENU_EVENT(gotoMarkDialogMS,                  on_action_Goto_Mark_triggered)
@@ -622,8 +625,8 @@ static const SubRoutine MenuMacroSubrNames[] = {
     // File
 	{ "new",                          nullptr },
 	{ "open",                         nullptr },
-    { "open-dialog",                  openMS },
-    { "open_dialog",                  openMS },
+    { "open-dialog",                  openDialogMS },
+    { "open_dialog",                  openDialogMS },
     { "open-selected",                openSelectedMS },
     { "open_selected",                openSelectedMS },
     { "close",                        closeMS },
