@@ -15,6 +15,9 @@ public:
     WindowMenuEvent(const QString &macroString) : QEvent(eventType), macroString_(macroString) {
     }
 
+    WindowMenuEvent(const QString &macroString, const QString &argument) : QEvent(eventType), macroString_(macroString), argument_(argument)  {
+    }
+
 public:
     QString argumentString() const {
         return QString();
@@ -31,6 +34,7 @@ public:
 
 private:
     QString macroString_;
+    QString argument_;
 };
 
 #endif

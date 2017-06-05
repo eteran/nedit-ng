@@ -547,7 +547,6 @@ static const SubRoutine TextAreaSubrNames[] = {
         document = MacroRunWindowEx();                                                                                        \
                                                                                                                               \
 	    QString string;                                                                                                       \
-                                                                                                                              \
         if(!readArguments(argList, nArgs, 0, errMsg, &string)) {                                                              \
             return false;                                                                                                     \
         }                                                                                                                     \
@@ -583,6 +582,7 @@ static const SubRoutine TextAreaSubrNames[] = {
 // these functions will look like
 WINDOW_MENU_EVENT_S(includeFileMS,                   action_Include_File)
 WINDOW_MENU_EVENT_S(gotoLineNumberMS,                action_Goto_Line_Number)
+WINDOW_MENU_EVENT_S(openMS,                          action_Open)
 
 WINDOW_MENU_EVENT(closeMS,                           on_action_Close_triggered)
 WINDOW_MENU_EVENT(closePaneMS,                       on_action_Close_Pane_triggered)
@@ -620,19 +620,97 @@ WINDOW_MENU_EVENT(markDialogMS,                      on_action_Mark_triggered)
 WINDOW_MENU_EVENT(gotoMarkDialogMS,                  on_action_Goto_Mark_triggered)
 WINDOW_MENU_EVENT(showTipMS,                         on_action_Show_Calltip_triggered)
 
+static int newMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+
+    // ensure that we are dealing with the document which currently has the focus
+    document = MacroRunWindowEx();
+
+    if(nArgs > 1) {
+        return wrongNArgsErr(errMsg);
+    }
+
+    NewMode mode = NewMode::Prefs;
+
+    if(nArgs == 1) {
+        std::string string;
+        if(!readArguments(argList, nArgs, 0, errMsg, &string)) {
+            return false;
+        }
+
+        static const struct {
+            view::string_view name;
+            NewMode type;
+        } openTypeStrings [] = {
+            { "tab",      NewMode::Tab },
+            { "window",   NewMode::Window },
+            { "prefs",    NewMode::Prefs },
+            { "opposite", NewMode::Opposite }
+        };
+
+        for(const auto &entry : openTypeStrings) {
+            if (view::icasecmp(view::string_view(string), entry.name)) {
+                mode = entry.type;
+                break;
+            }
+        }
+    }
+
+    if(MainWindow *window = document->toWindow()) {
+        window->action_New(mode);
+    }
+
+    result->tag = NO_TAG;
+    return true;
+}
+
+static int saveAsMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+
+    // ensure that we are dealing with the document which currently has the focus
+    document = MacroRunWindowEx();
+
+    if(nArgs > 2 || nArgs == 0) {
+        return wrongNArgsErr(errMsg);
+    }
+
+    QString filename;
+    if (!readArgument(argList[0], &filename, errMsg)) {
+        return false;
+    }
+
+    bool wrapped = false;
+
+    // NOTE(eteran): "wrapped" optional argument is not documented
+    if(nArgs == 2) {
+        std::string string;
+        if(!readArguments(argList, nArgs, 1, errMsg, &string)) {
+            return false;
+        }
+
+        if(view::icasecmp(view::string_view(string), view::string_view("wrapped"))) {
+            wrapped = true;
+        }
+    }
+
+    if(MainWindow *window = document->toWindow()) {
+        window->action_Save_As(filename, wrapped);
+    }
+
+    result->tag = NO_TAG;
+    return true;
+}
 
 static const SubRoutine MenuMacroSubrNames[] = {
     // File
-	{ "new",                          nullptr },
-	{ "open",                         nullptr },
+    { "new",                          newMS },
+    { "open",                         openMS },
     { "open-dialog",                  openDialogMS },
     { "open_dialog",                  openDialogMS },
     { "open-selected",                openSelectedMS },
     { "open_selected",                openSelectedMS },
     { "close",                        closeMS },
     { "save",                         saveMS },
-	{ "save-as",                      nullptr },
-	{ "save_as",                      nullptr },
+    { "save-as",                      saveAsMS },
+    { "save_as",                      saveAsMS },
     { "save-as-dialog",               saveAsDialogMS },
     { "save_as_dialog",               saveAsDialogMS },
     { "revert_to_saved_dialog",       revertToSavedDialogMS },

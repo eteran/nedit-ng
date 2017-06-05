@@ -67,6 +67,7 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
+
 #if !defined(DONT_HAVE_GLOB)
 #include <glob.h>
 #endif
@@ -75,6 +76,12 @@
     do {                                                \
         WindowMenuEvent menuEvent(QLatin1String(name)); \
         QApplication::sendEvent(this, &menuEvent);      \
+    } while(0)
+
+#define EMIT_EVENT_ARG(name, arg)                            \
+    do {                                                     \
+        WindowMenuEvent menuEvent(QLatin1String(name), arg); \
+        QApplication::sendEvent(this, &menuEvent);           \
     } while(0)
 
 namespace {
@@ -641,6 +648,18 @@ QString MainWindow::PromptForExistingFileEx(const QString &path, const QString &
 //------------------------------------------------------------------------------
 // Name: on_action_Open_triggered
 //------------------------------------------------------------------------------
+void MainWindow::action_Open(const QString &filename) {
+
+    EMIT_EVENT_ARG("open_dialog", filename);
+
+    if(auto doc = currentDocument()) {
+        doc->open(filename);
+    }
+}
+
+//------------------------------------------------------------------------------
+// Name: on_action_Open_triggered
+//------------------------------------------------------------------------------
 void MainWindow::on_action_Open_triggered() {
 
     EMIT_EVENT("open_dialog");
@@ -651,7 +670,7 @@ void MainWindow::on_action_Open_triggered() {
             return;
         }
 
-        doc->open(filename);
+        action_Open(filename);
     }
 
     CheckCloseDimEx();
