@@ -30,5 +30,6 @@
 		<file>res/DefaultPatternSet25.txt</file>
 		<file>res/DefaultPatternSet26.txt</file>
 		<file>res/DefaultPatternSet27.txt</file>
+		<file>res/nedit.png</file>
 	</qresource>
 </RCC>

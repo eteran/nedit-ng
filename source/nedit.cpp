@@ -114,6 +114,7 @@ int main(int argc, char *argv[]) {
 #endif
 
 	QApplication app(argc, argv);
+	QApplication::setWindowIcon(QIcon(QLatin1String(":/res/nedit.png")));
 
 	// Initialize global symbols and subroutines used in the macro language
 	InitMacroGlobals();
