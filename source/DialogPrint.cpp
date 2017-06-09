@@ -20,10 +20,10 @@
 namespace {
 
 /* Separator between directory references in PATH environmental variable */
-constexpr const char SEPARATOR = ':';
+constexpr char SEPARATOR = ':';
 
 /* Maximum length of an error returned by IssuePrintCommand() */
-constexpr const int MAX_PRINT_ERROR_LENGTH = 1024;
+constexpr int MAX_PRINT_ERROR_LENGTH = 1024;
 
 QString PrintCommand;  /* print command string */
 QString CopiesOption;  /* # of copies argument string */

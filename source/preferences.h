@@ -43,7 +43,7 @@ class QDialog;
 class Input;
 class Settings;
 
-constexpr const int PLAIN_LANGUAGE_MODE = -1;
+constexpr int PLAIN_LANGUAGE_MODE = -1;
 
 bool GetPrefFocusOnRaise();
 bool GetPrefForceOSConversion();

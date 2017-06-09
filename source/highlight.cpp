@@ -53,19 +53,19 @@
 namespace {
 
 // How much re-parsing to do when an unfinished style is encountered 
-constexpr const int PASS_2_REPARSE_CHUNK_SIZE = 1000;
+constexpr int PASS_2_REPARSE_CHUNK_SIZE = 1000;
 
 /* Initial forward expansion of parsing region in incremental reparsing,
    when style changes propagate forward beyond the original modification.
    This distance is increased by a factor of two for each subsequent step. */
-constexpr const int REPARSE_CHUNK_SIZE = 80;
+constexpr int REPARSE_CHUNK_SIZE = 80;
 
 /* Meanings of style buffer characters (styles). Don't use plain 'A' or 'B';
    it causes problems with EBCDIC coding (possibly negative offsets when
    subtracting 'A'). */
-constexpr const char UNFINISHED_STYLE = ASCII_A;
+constexpr char UNFINISHED_STYLE = ASCII_A;
 
-constexpr const char PLAIN_STYLE = (ASCII_A + 1);
+constexpr char PLAIN_STYLE = (ASCII_A + 1);
 
 constexpr bool is_plain(int style) {
 	return (style == PLAIN_STYLE || style == UNFINISHED_STYLE);

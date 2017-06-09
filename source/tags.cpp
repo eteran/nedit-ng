@@ -60,14 +60,14 @@
 
 namespace {
 
-constexpr const int MAXLINE                         = 2048;
-constexpr const int MAX_TAG_LEN                     = 256;
-constexpr const int MAXDUPTAGS                      = 100;
-constexpr const int MAX_TAG_INCLUDE_RECURSION_LEVEL = 5;
+constexpr int MAXLINE						  = 2048;
+constexpr int MAX_TAG_LEN					  = 256;
+constexpr int MAXDUPTAGS					  = 100;
+constexpr int MAX_TAG_INCLUDE_RECURSION_LEVEL = 5;
 
 /* Take this many lines when making a tip from a tag.
    (should probably be a language-dependent option, but...) */
-constexpr const int TIP_DEFAULT_LINES = 4;
+constexpr int TIP_DEFAULT_LINES = 4;
 
 }
 

@@ -112,7 +112,7 @@ public:
 		size_ -= n;
 	}
 
-	constexpr  void remove_suffix(size_type n) {
+	constexpr void remove_suffix(size_type n) {
 		size_ -= n;
 	}
 
@@ -647,14 +647,14 @@ struct hash_constants;
 
 template <>
 struct hash_constants<uint64_t>{
-	static constexpr const uint64_t FNV_offset_basis = 0xcbf29ce484222325ull;
-	static constexpr const uint64_t FNV_prime        = 1099511628211ull;
+	static constexpr uint64_t FNV_offset_basis = 0xcbf29ce484222325ull;
+	static constexpr uint64_t FNV_prime        = 1099511628211ull;
 };
 
 template <>
 struct hash_constants<uint32_t>{
-	static constexpr const uint32_t FNV_offset_basis = 0x811c9dc5;
-	static constexpr const uint32_t FNV_prime        = 16777619;
+	static constexpr uint32_t FNV_offset_basis = 0x811c9dc5;
+	static constexpr uint32_t FNV_prime        = 16777619;
 };
 
 }

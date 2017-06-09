@@ -84,7 +84,7 @@
 namespace {
 
 // How long to wait (msec) before putting up Macro Command banner 
-constexpr const int BANNER_WAIT_TIME = 6000;
+constexpr int BANNER_WAIT_TIME = 6000;
 
 }
 

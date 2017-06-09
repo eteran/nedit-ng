@@ -33,18 +33,18 @@
 
 namespace {
 
-constexpr const int PROGRAM_SIZE      = 4096; // Maximum program size
-constexpr const int MAX_ERR_MSG_LEN   = 256;  // Max. length for error messages
-constexpr const int LOOP_STACK_SIZE   = 200;  // (Approx.) Number of break/continue stmts allowed per program
-constexpr const int INSTRUCTION_LIMIT = 100;  // Number of instructions the interpreter is allowed to execute before preempting and returning to allow other things to run
+constexpr int PROGRAM_SIZE  	= 4096; // Maximum program size
+constexpr int MAX_ERR_MSG_LEN	= 256;  // Max. length for error messages
+constexpr int LOOP_STACK_SIZE	= 200;  // (Approx.) Number of break/continue stmts allowed per program
+constexpr int INSTRUCTION_LIMIT = 100;  // Number of instructions the interpreter is allowed to execute before preempting and returning to allow other things to run
 
 /* Temporary markers placed in a branch address location to designate
    which loop address (break or continue) the location needs */
 
-constexpr const int NEEDS_BREAK    = 1;
-constexpr const int NEEDS_CONTINUE = 2;
+constexpr int NEEDS_BREAK	 = 1;
+constexpr int NEEDS_CONTINUE = 2;
 
-constexpr const int N_ARGS_ARG_SYM = -1; // special arg number meaning $n_args value
+constexpr int N_ARGS_ARG_SYM = -1; // special arg number meaning $n_args value
 
 enum OpStatusCodes {
 	STAT_OK = 2, 
@@ -52,6 +52,12 @@ enum OpStatusCodes {
 	STAT_ERROR, 
 	STAT_PREEMPT
 };
+
+/* Message strings used in macros (so they don't get repeated every time
+   the macros are used */
+constexpr char StackOverflowMsg[]  = "macro stack overflow";
+constexpr char StackUnderflowMsg[] = "macro stack underflow";
+constexpr char StringToNumberMsg[] = "string could not be converted to number";
 
 }
 
@@ -148,11 +154,7 @@ static QList<char *> AllocatedStrings;
 
 static QList<ArrayEntry *> AllocatedSparseArrayEntries;
 
-/* Message strings used in macros (so they don't get repeated every time
-   the macros are used */
-constexpr static const char StackOverflowMsg[]  = "macro stack overflow";
-constexpr static const char StackUnderflowMsg[] = "macro stack underflow";
-constexpr static const char StringToNumberMsg[] = "string could not be converted to number";
+
 
 // Temporary global data for use while accumulating programs
 static QList<Symbol *> LocalSymList; // symbols local to the program

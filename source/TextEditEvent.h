@@ -9,7 +9,7 @@
 
 class TextEditEvent : public QEvent {
 public:
-    static constexpr const QEvent::Type eventType = static_cast<QEvent::Type>(QEvent::User + 1);
+    static constexpr QEvent::Type eventType = static_cast<QEvent::Type>(QEvent::User + 1);
 
 public:
     TextEditEvent(const QString &macroString, const QString &argument, TextArea::EventFlags flags) : QEvent(eventType), macroString_(macroString), argument_(argument), flags_(flags) {

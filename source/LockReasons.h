@@ -7,9 +7,9 @@
 class LockReasons {
 private:
 	// This handles all the different reasons files can be locked
-	constexpr static const uint32_t USER_LOCKED_BIT                 = 1;
-	constexpr static const uint32_t PERM_LOCKED_BIT                 = 2;
-	constexpr static const uint32_t TOO_MUCH_BINARY_DATA_LOCKED_BIT = 4;
+	static constexpr uint32_t USER_LOCKED_BIT				  = 1;
+	static constexpr uint32_t PERM_LOCKED_BIT				  = 2;
+	static constexpr uint32_t TOO_MUCH_BINARY_DATA_LOCKED_BIT = 4;
 	
 public:
 	LockReasons() : reasons_(0) {

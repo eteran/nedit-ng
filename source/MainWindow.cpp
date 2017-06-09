@@ -4055,7 +4055,7 @@ void MainWindow::on_action_New_Window_triggered() {
 //------------------------------------------------------------------------------
 void MainWindow::on_action_Exit_triggered() {
 
-	constexpr const int DF_MAX_MSG_LENGTH = 2048;
+	constexpr int DF_MAX_MSG_LENGTH = 2048;
 
     QList<DocumentWidget *> documents = DocumentWidget::allDocuments();
 
