@@ -2625,7 +2625,7 @@ bool StringToNum(const std::string &string, int *number) {
         ++it;
     }
 
-    while (isdigit((uint8_t)*it)) {
+    while (isdigit(static_cast<unsigned char>(*it))) {
         ++it;
     }
 
@@ -2648,30 +2648,35 @@ bool StringToNum(const std::string &string, int *number) {
 }
 
 bool StringToNum(const char *string, int *number) {
-	const char *c = string;
+    auto p = string;
 
-	while (*c == ' ' || *c == '\t') {
-		++c;
-	}
-	if (*c == '+' || *c == '-') {
-		++c;
-	}
-	while (isdigit((uint8_t)*c)) {
-		++c;
-	}
-	while (*c == ' ' || *c == '\t') {
-		++c;
-	}
-    if (*c != '\0') {
-		// if everything went as expected, we should be at end, but we're not 
+    while (*p == ' ' || *p == '\t') {
+        ++p;
+    }
+
+    if (*p == '+' || *p == '-') {
+        ++p;
+    }
+
+    while (isdigit(static_cast<unsigned char>(*p))) {
+        ++p;
+    }
+
+    while (*p == ' ' || *p == '\t') {
+        ++p;
+    }
+
+    if (*p != '\0') {
+        // if everything went as expected, we should be at end, but we're not
         return false;
-	}
-	if (number) {
-		if (sscanf(string, "%d", number) != 1) {
-			// This case is here to support old behavior 
-			*number = 0;
-		}
-	}
+    }
+
+    if (number) {
+        if (sscanf(string, "%d", number) != 1) {
+            // This case is here to support old behavior
+            *number = 0;
+        }
+    }
     return true;
 }
 
@@ -2689,7 +2694,7 @@ static void dumpVal(DataValue dv) {
 			printf("s=<nullptr>");
 		} else {
 			for (k = 0; k < sizeof(s) - 1 && src[k]; k++) {
-				s[k] = isprint(src[k]) ? src[k] : '?';
+				s[k] = isprint(static_cast<unsigned char>(src[k])) ? src[k] : '?';
 			}
 			s[k] = 0;
 			printf("s=\"%s\"%s[%d]", s, src[k] ? "..." : "", strlen(src));

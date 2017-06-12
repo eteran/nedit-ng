@@ -189,7 +189,7 @@ static void changeCaseEx(DocumentWidget *window, TextArea *area, bool makeUpper)
             return;
         }
         *bufChar = buf->BufGetCharacter(cursorPos - 1);
-        *bufChar = makeUpper ? toupper((uint8_t)*bufChar) : tolower((uint8_t)*bufChar);
+        *bufChar = makeUpper ? toupper(static_cast<unsigned char>(*bufChar)) : tolower(static_cast<unsigned char>(*bufChar));
         buf->BufReplaceEx(cursorPos - 1, cursorPos, bufChar);
     } else {
         bool modified = false;
@@ -198,7 +198,7 @@ static void changeCaseEx(DocumentWidget *window, TextArea *area, bool makeUpper)
 
         for(char &ch: text) {
             char oldChar = ch;
-            ch = makeUpper ? toupper((uint8_t)ch) : tolower((uint8_t)ch);
+            ch = makeUpper ? toupper(static_cast<unsigned char>(ch)) : tolower(static_cast<unsigned char>(ch));
             if (ch != oldChar) {
                 modified = true;
             }

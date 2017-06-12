@@ -629,7 +629,7 @@ bool icasecmp(basic_string_view<Ch, Tr> lhs, basic_string_view<Ch, Tr> rhs) {
     using std::toupper;
 
     return lhs.size() == rhs.size() && std::equal(lhs.cbegin(), lhs.cend(), rhs.cbegin(), [](Ch l1, Ch r1) {
-        return toupper(l1) == toupper(r1);
+        return toupper(static_cast<unsigned char>(l1)) == toupper(static_cast<unsigned char>(r1));
     });
 }
 

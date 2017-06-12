@@ -4080,7 +4080,7 @@ int DocumentWidget::findDef(TextArea *area, const QString &value, Mode search_ty
 
 		// should be of type text???
 		QString::const_iterator p;
-		for (p = value.begin(); p != value.end() && isascii(p->toLatin1()); ++p) {
+		for (p = value.begin(); p != value.end() && isascii(static_cast<unsigned char>(p->toLatin1())); ++p) {
 		}
 
 		if (p == value.end()) {
