@@ -31,6 +31,7 @@ public:
     static QString configFile();
     static QString historyFile();
     static QString autoLoadMacroFile();
+    static QString styleFile();
 
 public:
     bool appendLF;
