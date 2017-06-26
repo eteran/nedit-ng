@@ -67,18 +67,15 @@ QString GetUserNameEx() {
 	   results in the user-name of the original terminal being used, which is
 	   not correct when the user uses the su command.  Now, getpwuid only: */
 
-	static char *userName = nullptr;
+	static QString user_name;
 
-	if (userName) {
-        return QString::fromLatin1(userName);
+	if (!user_name.isNull()) {
+        return user_name;
 	}
 
 	if(const struct passwd *passwdEntry = getpwuid(getuid())) {
-		// NOTE(eteran): so, this is effecively a one time memory leak.
-		//               it is tollerable, but probably should be 
-		//               improved in the future.
-		userName = qstrdup(passwdEntry->pw_name);
-        return QString::fromLatin1(userName);
+		user_name = QString::fromLatin1(passwdEntry->pw_name);
+        return user_name;
 	}
 	
 	/* This is really serious, but sometimes username service
