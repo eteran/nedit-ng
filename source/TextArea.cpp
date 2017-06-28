@@ -1590,31 +1590,21 @@ void TextArea::mouseReleaseEvent(QMouseEvent *event) {
 		switch(event->modifiers() & (Qt::ShiftModifier | Qt::ControlModifier | Qt::AltModifier | Qt::MetaModifier)) {
 		case Qt::ControlModifier:
 			copyToOrEndDragAP(event, OverlayFlag);
-			break;
+            break;
 		case Qt::MetaModifier:
-			exchangeAP(event);
-			break;
-		case Qt::AltModifier:
-			exchangeAP(event);
-			break;
+        case Qt::AltModifier:
+            exchangeAP(event);
+            break;
 		case Qt::ShiftModifier:
 			moveToOrEndDragAP(event, CopyFlag);
-			break;
+            break;
 		case Qt::ShiftModifier | Qt::ControlModifier:
 			moveToOrEndDragAP(event, CopyFlag | OverlayFlag);
-			break;
+            break;
 		default:
+            copyToOrEndDragAP(event);
 			break;
-		}
-
-		DragStates dragState = dragState_;
-
-		if (dragState != PRIMARY_BLOCK_DRAG) {
-			copyToAP(event);
-			return;
-		}
-
-		FinishBlockDrag();
+        }
 	}
 }
 
@@ -6621,7 +6611,7 @@ void TextArea::copyToAP(QMouseEvent *event, EventFlags flags) {
 	DragStates dragState = dragState_;
 	TextSelection *secondary = &buffer_->secondary_;
 	TextSelection *primary   = &buffer_->primary_;
-	int rectangular = secondary->rectangular;
+    bool rectangular = secondary->rectangular;
 	int insertPos;
 
 	endDrag();

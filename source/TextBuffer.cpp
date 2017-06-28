@@ -801,7 +801,8 @@ void TextBuffer::BufRemove(int start, int end) {
 }
 
 void TextBuffer::BufCopyFromBuf(TextBuffer *fromBuf, int fromStart, int fromEnd, int toPos) {
-	int length = fromEnd - fromStart;
+
+    const int length = fromEnd - fromStart;
 	int part1Length;
 
 	/* Prepare the buffer to receive the new text.  If the new text fits in
@@ -838,13 +839,16 @@ void TextBuffer::BufCopyFromBuf(TextBuffer *fromBuf, int fromStart, int fromEnd,
 ** at startPos) are returned in these arguments
 */
 void TextBuffer::BufInsertColEx(int column, int startPos, view::string_view text, int *charsInserted, int *charsDeleted) {
-	int nLines, lineStartPos, nDeleted, insertDeleted, nInserted;
 
-	nLines = countLinesEx(text);
-	lineStartPos = BufStartOfLine(startPos);
-	nDeleted = BufEndOfLine(BufCountForwardNLines(startPos, nLines)) - lineStartPos;
-	callPreDeleteCBs(lineStartPos, nDeleted);
+    const int nLines       = countLinesEx(text);
+    const int lineStartPos = BufStartOfLine(startPos);
+    const int nDeleted     = BufEndOfLine(BufCountForwardNLines(startPos, nLines)) - lineStartPos;
+
+    callPreDeleteCBs(lineStartPos, nDeleted);
 	std::string deletedText = BufGetRangeEx(lineStartPos, lineStartPos + nDeleted);
+
+    int insertDeleted;
+    int nInserted;
 	insertColEx(column, lineStartPos, text, &insertDeleted, &nInserted, &cursorPosHint_);
 
 	if (nDeleted != insertDeleted) {
