@@ -1519,16 +1519,14 @@ void TextArea::mousePressEvent(QMouseEvent *event) {
 		switch(event->modifiers() & (Qt::ShiftModifier | Qt::ControlModifier | Qt::AltModifier | Qt::MetaModifier)) {
 		case Qt::ShiftModifier | Qt::ControlModifier:
 			extendStartAP(event, RectFlag);
-			break;
+            return;
 		case Qt::ShiftModifier:
 			extendStartAP(event);
-			break;
+            return;
 		case Qt::ControlModifier | Qt::AltModifier:
+        case Qt::ControlModifier | Qt::MetaModifier:
 			moveDestinationAP(event);
-			break;
-		case Qt::ControlModifier | Qt::MetaModifier:
-			moveDestinationAP(event);
-			break;
+            return;
 		default:
 			break;
 		}
