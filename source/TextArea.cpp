@@ -98,36 +98,36 @@ enum positionTypes {
 	CHARACTER_POS
 };
 
-const int NO_HINT = -1;
+constexpr int NO_HINT = -1;
 
-const int CALLTIP_EDGE_GUARD = 5;
+constexpr int CALLTIP_EDGE_GUARD = 5;
 
 /* Number of pixels of motion from the initial (grab-focus) button press
    required to begin recognizing a mouse drag for the purpose of making a
    selection */
-const int SELECT_THRESHOLD = 5;
+constexpr int SELECT_THRESHOLD = 5;
 
 // Length of delay in milliseconds for vertical autoscrolling
-const int VERTICAL_SCROLL_DELAY = 50;
+constexpr int VERTICAL_SCROLL_DELAY = 50;
 
 /* Masks for text drawing methods.  These are or'd together to form an
    integer which describes what drawing calls to use to draw a string */
-const int FILL_SHIFT         = 8;
-const int SECONDARY_SHIFT    = 9;
-const int PRIMARY_SHIFT      = 10;
-const int HIGHLIGHT_SHIFT    = 11;
-const int STYLE_LOOKUP_SHIFT = 0;
-const int BACKLIGHT_SHIFT    = 12;
+constexpr int FILL_SHIFT         = 8;
+constexpr int SECONDARY_SHIFT    = 9;
+constexpr int PRIMARY_SHIFT      = 10;
+constexpr int HIGHLIGHT_SHIFT    = 11;
+constexpr int STYLE_LOOKUP_SHIFT = 0;
+constexpr int BACKLIGHT_SHIFT    = 12;
 
-const int FILL_MASK         = (1 << FILL_SHIFT);
-const int SECONDARY_MASK    = (1 << SECONDARY_SHIFT);
-const int PRIMARY_MASK      = (1 << PRIMARY_SHIFT);
-const int HIGHLIGHT_MASK    = (1 << HIGHLIGHT_SHIFT);
-const int STYLE_LOOKUP_MASK = (0xff << STYLE_LOOKUP_SHIFT);
-const int BACKLIGHT_MASK    = (0xff << BACKLIGHT_SHIFT);
+constexpr int FILL_MASK         = (1 << FILL_SHIFT);
+constexpr int SECONDARY_MASK    = (1 << SECONDARY_SHIFT);
+constexpr int PRIMARY_MASK      = (1 << PRIMARY_SHIFT);
+constexpr int HIGHLIGHT_MASK    = (1 << HIGHLIGHT_SHIFT);
+constexpr int STYLE_LOOKUP_MASK = (0xff << STYLE_LOOKUP_SHIFT);
+constexpr int BACKLIGHT_MASK    = (0xff << BACKLIGHT_SHIFT);
 
-const int RANGESET_SHIFT = 20;
-const int RANGESET_MASK  = (0x3F << RANGESET_SHIFT);
+constexpr int RANGESET_SHIFT = 20;
+constexpr int RANGESET_MASK  = (0x3F << RANGESET_SHIFT);
 
 /* If you use both 32-Bit Style mask layout:
    Bits +----------------+----------------+----------------+----------------+
@@ -136,7 +136,8 @@ const int RANGESET_MASK  = (0x3F << RANGESET_SHIFT);
         +----------------+----------------+----------------+----------------+
    Type |             r r| r r r r b b b b| b b b b H 1 2 F| s s s s s s s s|
         +----------------+----------------+----------------+----------------+
-   where: s - style lookup value (8 bits)
+   where:
+        s - style lookup value (8 bits)
         F - fill (1 bit)
         2 - secondary selection  (1 bit)
         1 - primary selection (1 bit)
@@ -148,7 +149,7 @@ const int RANGESET_MASK  = (0x3F << RANGESET_SHIFT);
 /* Maximum displayable line length (how many characters will fit across the
    widest window).  This amount of memory is temporarily allocated from the
    stack in the redisplayLine routine for drawing strings */
-const int MAX_DISP_LINE_LEN = 1000;
+constexpr int MAX_DISP_LINE_LEN = 1000;
 
 template <class T>
 T min3(T i1, T i2, T i3) {
@@ -174,7 +175,7 @@ bool offscreenV(QDesktopWidget *desktop, int top, int height) {
 QString expandAllTabsEx(const QString &text, int tab_width) {
 
     // First count 'em
-	int nTabs = static_cast<int>(std::count(text.begin(), text.end(), QLatin1Char('\t')));
+    const int nTabs = static_cast<int>(std::count(text.begin(), text.end(), QLatin1Char('\t')));
 
     if (nTabs == 0) {
         return text;
@@ -258,18 +259,18 @@ int findRelativeLineStart(const TextBuffer *buf, int referencePos, int reference
 ** Callback attached to the text buffer to receive delete information before
 ** the modifications are actually made.
 */
-void bufPreDeleteCB(int pos, int nDeleted, void *cbArg) {
+void bufPreDeleteCB(int pos, int nDeleted, void *arg) {
 
-    auto area = static_cast<TextArea *>(cbArg);
+    auto area = static_cast<TextArea *>(arg);
     area->bufPreDeleteCallback(pos, nDeleted);
 }
 
 /*
 ** Callback attached to the text buffer to receive modification information
 */
-void bufModifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *cbArg) {
+void bufModifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *arg) {
 
-    auto area = static_cast<TextArea *>(cbArg);
+    auto area = static_cast<TextArea *>(arg);
     area->bufModifiedCallback(pos, nInserted, nDeleted, nRestyled, deletedText);
 }
 
@@ -284,9 +285,9 @@ void bufModifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view::st
 ** (Being in the middle of a modify callback, this has a somewhat complicated
 ** result, since later callbacks will see the second modifications first).
 */
-void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *cbArg) {
-	auto area = static_cast<TextArea *>(cbArg);
-	area->modifiedCallback(pos, nInserted, nDeleted, nRestyled, deletedText, cbArg);
+void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *arg) {
+    auto area = static_cast<TextArea *>(arg);
+    area->modifiedCallback(pos, nInserted, nDeleted, nRestyled, deletedText, arg);
 }
 
 /*
@@ -536,24 +537,6 @@ TextArea::TextArea(QWidget *parent,
     setWordDelimiters(P_delimiters);
 #endif
 
-
-#if 1
-	const int marginWidth      = P_marginWidth;
-	const int marginHeight     = P_marginHeight;
-	const int lineNumAreaWidth = P_lineNumCols == 0 ? 0 : P_marginWidth + fm.maxWidth() * P_lineNumCols;
-
-	/* Reject widths and heights less than a character, which the text
-	   display can't tolerate.  This is not strictly legal, but I've seen
-	   it done in other widgets and it seems to do no serious harm.  NEdit
-	   prevents panes from getting smaller than one line, but sometimes
-	   splitting windows on Linux 2.0 systems (same Motif, why the change in
-	   behavior?), causes one or two resize calls with < 1 line of height.
-	   Fixing it here is 100x easier than re-designing TextDisplay.c */
-
-	setMinimumWidth(fm.maxWidth() + (marginWidth * 2) + lineNumAreaWidth);
-    setMinimumHeight(ascent_ + descent_ + (marginHeight * 2));
-#endif
-
 #if 0
 	// NOTE(eteran): this seems to be a viable approach for shortcuts
 	new QShortcut(QKeySequence(tr("Ctrl+K")), this, SLOT(DebugSlot()), Q_NULLPTR, Qt::WidgetShortcut);
@@ -602,11 +585,13 @@ void TextArea::endOfLineAP(EventFlags flags) {
 	int insertPos = cursorPos_;
 
 	cancelDrag();
-	if (flags & AbsoluteFlag) {
+
+    if (flags & AbsoluteFlag) {
 		TextDSetInsertPosition(buffer_->BufEndOfLine(insertPos));
 	} else {
 		TextDSetInsertPosition(TextDEndOfLine(insertPos, false));
 	}
+
 	checkMoveSelectionChange(flags, insertPos);
 	checkAutoShowInsertPos();
 	callCursorMovementCBs();
@@ -626,7 +611,6 @@ void TextArea::deleteNextCharacterAP(EventFlags flags) {
 	}
 
     TakeMotifDestination();
-
 	if (deletePendingSelection()) {
 		return;
 	}
@@ -646,7 +630,6 @@ void TextArea::copyClipboardAP(EventFlags flags) {
     EMIT_EVENT("copy_clipboard");
 
     cancelDrag();
-
     if (!buffer_->primary_.selected) {
         QApplication::beep();
         return;
@@ -736,27 +719,31 @@ void TextArea::deletePreviousCharacterAP(EventFlags flags) {
 	bool silent = flags & NoBellFlag;
 
 	cancelDrag();
-	if (checkReadOnly())
+    if (checkReadOnly()) {
 		return;
+    }
 
     TakeMotifDestination();
-	if (deletePendingSelection())
+    if (deletePendingSelection()) {
 		return;
+    }
 
 	if (insertPos == 0) {
 		ringIfNecessary(silent);
 		return;
 	}
 
-	if (deleteEmulatedTab())
+    if (deleteEmulatedTab()) {
 		return;
+    }
 
 	if (P_overstrike) {
 		char c = buffer_->BufGetCharacter(insertPos - 1);
-		if (c == '\n')
+        if (c == '\n') {
 			buffer_->BufRemove(insertPos - 1, insertPos);
-		else if (c != '\t')
+        } else if (c != '\t') {
 			buffer_->BufReplaceEx(insertPos - 1, insertPos, " ");
+        }
 	} else {
 		buffer_->BufRemove(insertPos - 1, insertPos);
 	}
@@ -792,7 +779,6 @@ void TextArea::processUpAP(EventFlags flags) {
 	bool abs    = flags & AbsoluteFlag;
 
 	cancelDrag();
-
 	if (!TextDMoveUp(abs)) {
 		ringIfNecessary(silent);
 	}
@@ -838,6 +824,7 @@ void TextArea::forwardCharacterAP(EventFlags flags) {
 	if (!TextDMoveRight()) {
 		ringIfNecessary(silent);
 	}
+
 	checkMoveSelectionChange(flags, insertPos);
 	checkAutoShowInsertPos();
 	callCursorMovementCBs();
@@ -859,7 +846,6 @@ void TextArea::backwardCharacterAP(EventFlags flags) {
 	}
 
 	checkMoveSelectionChange(flags, insertPos);
-
 	checkAutoShowInsertPos();
 	callCursorMovementCBs();
 }
@@ -1027,9 +1013,9 @@ void TextArea::focusInEvent(QFocusEvent *event) {
 	}
 
 	TextDUnblankCursor();
-
     QAbstractScrollArea::focusInEvent(event);
 }
+
 void TextArea::focusOutEvent(QFocusEvent *event) {
 
 	Q_UNUSED(event);
@@ -1044,7 +1030,6 @@ void TextArea::focusOutEvent(QFocusEvent *event) {
 
 	// If there's a calltip displayed, kill it.
 	TextDKillCalltip(0);
-
     QAbstractScrollArea::focusOutEvent(event);
 }
 
@@ -1422,25 +1407,20 @@ void TextArea::keyPressEvent(QKeyEvent *event) {
     // In Motif, they are apparently still caught, but just do nothing, in Qt, it acts like
     // they don't exist, so they get sent to widgets lower in the chain (such as this one)
     // resulting in the suprising ability to type in some funny characters
-    if ((event->key() == Qt::Key_W) && (event->modifiers() == (Qt::ControlModifier))) {
-        QApplication::beep();
-        return;
-    } else if ((event->key() == Qt::Key_X) && (event->modifiers() == (Qt::ControlModifier))) {
-        QApplication::beep();
-        return;
-    } else if ((event->key() == Qt::Key_D) && (event->modifiers() == (Qt::ControlModifier))) {
-        QApplication::beep();
-        return;
-    } else if ((event->key() == Qt::Key_Apostrophe) && (event->modifiers() == (Qt::ControlModifier))) {
-        QApplication::beep();
-        return;
-    } else if ((event->key() == Qt::Key_Period) && (event->modifiers() == (Qt::ControlModifier))) {
-        QApplication::beep();
-        return;
+    if(event->modifiers() == Qt::ControlModifier) {
+        switch(event->key()) {
+        case Qt::Key_W:
+        case Qt::Key_X:
+        case Qt::Key_D:
+        case Qt::Key_Apostrophe:
+        case Qt::Key_Period:
+            QApplication::beep();
+            return;
+        }
     }
 
     QString text = event->text();
-    if(text.size() == 0) {
+    if(text.isEmpty()) {
         return;
     }
 
@@ -1844,13 +1824,12 @@ void TextArea::hideOrShowHScrollBar() {
 // Name:
 //------------------------------------------------------------------------------
 void TextArea::measureDeletedLines(int pos, int nDeleted) {
-	int retPos;
-	int retLines;
-	int retLineStart;
-	int retLineEnd;
+    int retPos;
+    int retLines;
+    int retLineStart;
+    int retLineEnd;
 	int nVisLines   = nVisibleLines_;
 	int countFrom;
-	int lineStart;
 	int nLines = 0;
 	/*
 	** Determine where to begin searching: either the previous newline, or
@@ -1879,10 +1858,10 @@ void TextArea::measureDeletedLines(int pos, int nDeleted) {
 	** displayed lines, and looking for either a real newline, or for the
 	** line starts to re-sync with the original line starts array
 	*/
-	lineStart = countFrom;
+    int lineStart = countFrom;
 	while (true) {
 		/* advance to the next line.  If the line ended in a real newline
-		   or the end of the buffer, that's far enough */
+           or the end of the buffer, that's far enough */
 		wrappedLineCounter(buffer_, lineStart, buffer_->BufGetLength(), 1, true, 0, &retPos, &retLines, &retLineStart, &retLineEnd);
 		if (retPos >= buffer_->BufGetLength()) {
             if (retPos != retLineEnd) {
@@ -1911,6 +1890,7 @@ void TextArea::measureDeletedLines(int pos, int nDeleted) {
 		   of calculation when it's really needed (continuous wrap + variable
 		   font width). */
 	}
+
 	nLinesDeleted_ = nLines;
 	suppressResync_ = true;
 }
@@ -1939,11 +1919,8 @@ void TextArea::wrappedLineCounter(const TextBuffer *buf, int startPos, int maxPo
 	int lineStart;
 	int newLineStart = 0;
 	int b;
-	int p;
-	int colNum;
 	int wrapMargin;
 	int maxWidth;
-	int width;
 	int countPixels;
 	int i;
 	int foundBreak;
@@ -1967,19 +1944,20 @@ void TextArea::wrappedLineCounter(const TextBuffer *buf, int startPos, int maxPo
 
 	/* Find the start of the line if the start pos is not marked as a
 	   line start. */
-	if (startPosIsLineStart)
+    if (startPosIsLineStart) {
 		lineStart = startPos;
-	else
+    } else {
 		lineStart = TextDStartOfLine(startPos);
+    }
 
 	/*
 	** Loop until position exceeds maxPos or line count exceeds maxLines.
 	** (actually, contines beyond maxPos to end of line containing maxPos,
 	** in case later characters cause a word wrap back before maxPos)
 	*/
-	colNum = 0;
-	width = 0;
-	for (p = lineStart; p < buf->BufGetLength(); p++) {
+    int colNum = 0;
+    int width = 0;
+    for (int p = lineStart; p < buf->BufGetLength(); p++) {
         const char c = buf->BufGetCharacter(p);
 
 		/* If the character was a newline, count the line and start over,

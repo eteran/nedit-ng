@@ -136,7 +136,7 @@ int weighted_at_or_before(int *table, int base, int len, int val) {
 
 	while (lo <= hi) {
 		// Beware of integer overflow when multiplying large numbers! 
-		mid = lo + (int)((hi - lo) * (double)(val - min) / (max - min));
+        mid = lo + static_cast<int>((hi - lo) * static_cast<double>(val - min) / (max - min));
 		// we won't worry about min == max - values should be unique 
 
 		if (val == table[mid])

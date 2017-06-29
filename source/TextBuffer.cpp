@@ -656,24 +656,27 @@ view::string_view TextBuffer::BufAsStringEx() {
 */
 void TextBuffer::BufSetAllEx(view::string_view text) {
 
-    int length = text.size();
+    const int length = text.size();
 
 	callPreDeleteCBs(0, length_);
 
 	// Save information for redisplay, and get rid of the old buffer
-	std::string deletedText = BufGetAllEx();
-    int deletedLength = length_;
-	delete [] buf_;
+    const std::string deletedText = BufGetAllEx();
+    const int deletedLength = length_;
+
+    delete [] buf_;
 
 	// Start a new buffer with a gap of PreferredGapSize in the center
 	buf_ = new char[length + PreferredGapSize + 1];
 	buf_[length + PreferredGapSize] = '\0';
-	length_ = length;
+
+    length_   = length;
 	gapStart_ = length / 2;
-	gapEnd_ = gapStart_ + PreferredGapSize;
+    gapEnd_   = gapStart_ + PreferredGapSize;
 
 	memcpy(buf_, &text[0], gapStart_);
 	memcpy(&buf_[gapEnd_], &text[gapStart_], length - gapStart_);
+
 #ifdef PURIFY
 	std::fill(&buf_[gapStart_], &buf_[gapEnd_], '.');
 #endif

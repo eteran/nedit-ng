@@ -39,8 +39,8 @@
 
 namespace {
 
-const int rbTreeNodeRed   = 0;
-const int rbTreeNodeBlack = 1;
+constexpr int rbTreeNodeRed   = 0;
+constexpr int rbTreeNodeBlack = 1;
 
 /*
 ** rotate a node left

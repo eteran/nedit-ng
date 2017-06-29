@@ -61,39 +61,39 @@ void ShiftSelectionEx(DocumentWidget *window, TextArea *area, ShiftDirection dir
     bool isRect;
     int rectStart;
     int rectEnd;
-    int newEndPos;
-    int cursorPos;
-    int origLength;
     int shiftDist;
     TextBuffer *buf = window->buffer_;
     std::string text;
 
-    auto textD = area;
-
     // get selection, if no text selected, use current insert position
     if (!buf->BufGetSelectionPos(&selStart, &selEnd, &isRect, &rectStart, &rectEnd)) {
-        cursorPos = textD->TextGetCursorPos();
+
+        const int cursorPos = area->TextGetCursorPos();
         selStart = buf->BufStartOfLine(cursorPos);
         selEnd = buf->BufEndOfLine(cursorPos);
-        if (selEnd < buf->BufGetLength())
+
+        if (selEnd < buf->BufGetLength()) {
             selEnd++;
+        }
+
         buf->BufSelect(selStart, selEnd);
         isRect = false;
         text = buf->BufGetRangeEx(selStart, selEnd);
+
     } else if (isRect) {
-        cursorPos = textD->TextGetCursorPos();
-        origLength = buf->BufGetLength();
+        const int cursorPos = area->TextGetCursorPos();
+        int origLength = buf->BufGetLength();
         shiftRectEx(window, area, direction, byTab, selStart, selEnd, rectStart, rectEnd);
 
-        auto textD = area;
-        textD->TextSetCursorPos((cursorPos < (selEnd + selStart) / 2) ? selStart : cursorPos + (buf->BufGetLength() - origLength));
+        area->TextSetCursorPos((cursorPos < (selEnd + selStart) / 2) ? selStart : cursorPos + (buf->BufGetLength() - origLength));
         return;
     } else {
         selStart = buf->BufStartOfLine(selStart);
         if (selEnd != 0 && buf->BufGetCharacter(selEnd - 1) != '\n') {
             selEnd = buf->BufEndOfLine(selEnd);
-            if (selEnd < buf->BufGetLength())
+            if (selEnd < buf->BufGetLength()) {
                 selEnd++;
+            }
         }
         buf->BufSelect(selStart, selEnd);
         text = buf->BufGetRangeEx(selStart, selEnd);
@@ -103,14 +103,15 @@ void ShiftSelectionEx(DocumentWidget *window, TextArea *area, ShiftDirection dir
     if (byTab) {
         int emTabDist = area->getEmulateTabs();
         shiftDist = emTabDist == 0 ? buf->tabDist_ : emTabDist;
-    } else
+    } else {
         shiftDist = 1;
+    }
 
     std::string shiftedText = ShiftTextEx(text, direction, buf->useTabs_, buf->tabDist_, shiftDist);
 
     buf->BufReplaceSelectedEx(shiftedText);
 
-    newEndPos = selStart + shiftedText.size();
+    const int newEndPos = selStart + shiftedText.size();
     buf->BufSelect(selStart, newEndPos);
 }
 
@@ -130,29 +131,34 @@ static void shiftRectEx(DocumentWidget *window, TextArea *area, int direction, b
     // Calculate the the left/right offset for the new rectangle
     if (byTab) {
         int emTabDist = area->getEmulateTabs();
-        offset = emTabDist == 0 ? buf->tabDist_ : emTabDist;
-    } else
+        offset = (emTabDist == 0) ? buf->tabDist_ : emTabDist;
+    } else {
         offset = 1;
-    offset *= direction == SHIFT_LEFT ? -1 : 1;
-    if (rectStart + offset < 0)
+    }
+
+    offset *= (direction == SHIFT_LEFT) ? -1 : 1;
+
+    if (rectStart + offset < 0) {
         offset = -rectStart;
+    }
 
     /* Create a temporary buffer for the lines containing the selection, to
        hide the intermediate steps from the display update routines */
-    auto tempBuf = std::make_unique<TextBuffer>();
-    tempBuf->tabDist_ = buf->tabDist_;
-    tempBuf->useTabs_ = buf->useTabs_;
+    TextBuffer tempBuf;
+    tempBuf.tabDist_ = buf->tabDist_;
+    tempBuf.useTabs_ = buf->useTabs_;
+
     std::string text = buf->BufGetRangeEx(selStart, selEnd);
-    tempBuf->BufSetAllEx(text);
+    tempBuf.BufSetAllEx(text);
 
     // Do the shift in the temporary buffer
     text = buf->BufGetTextInRectEx(selStart, selEnd, rectStart, rectEnd);
-    tempBuf->BufRemoveRect(0, selEnd - selStart, rectStart, rectEnd);
-    tempBuf->BufInsertColEx(rectStart + offset, 0, text, nullptr, nullptr);
+    tempBuf.BufRemoveRect(0, selEnd - selStart, rectStart, rectEnd);
+    tempBuf.BufInsertColEx(rectStart + offset, 0, text, nullptr, nullptr);
 
     // Make the change in the real buffer
-    buf->BufReplaceEx(selStart, selEnd, tempBuf->BufAsStringEx());
-    buf->BufRectSelect(selStart, selStart + tempBuf->BufGetLength(), rectStart + offset, rectEnd + offset);
+    buf->BufReplaceEx(selStart, selEnd, tempBuf.BufAsStringEx());
+    buf->BufRectSelect(selStart, selStart + tempBuf.BufGetLength(), rectStart + offset, rectEnd + offset);
 }
 
 
