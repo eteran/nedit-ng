@@ -33,7 +33,6 @@ private:
 
 public:
 	Ui::DialogPrint ui;
-	static bool PreferencesLoaded;
 	QString PrintFileName_;
 	QString PrintJobName_;
 };

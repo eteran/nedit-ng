@@ -19,9 +19,6 @@
 
 namespace {
 
-/* Separator between directory references in PATH environmental variable */
-constexpr char SEPARATOR = ':';
-
 /* Maximum length of an error returned by IssuePrintCommand() */
 constexpr int MAX_PRINT_ERROR_LENGTH = 1024;
 
@@ -38,10 +35,11 @@ QString Queue;                    /* queue name last entered by user */
 QString Host;                     /* host name last entered by user */
 QString CmdText;                  /* print command last entered by user */
 bool CmdFieldModified = false;    /* user last changed the print command field, so don't trust the rest */
+bool PreferencesLoaded = false;
 
 }
 
-bool DialogPrint::PreferencesLoaded = false;
+
 
 
 //------------------------------------------------------------------------------
