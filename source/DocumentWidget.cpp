@@ -703,7 +703,7 @@ int DocumentWidget::matchLanguageMode() {
 	}
 
     for (int i = 0; i < LanguageModes.size(); i++) {
-        for(const QString &ext : LanguageModes[i].extensions) {
+        Q_FOREACH(const QString &ext, LanguageModes[i].extensions) {
 
             if(filename_.midRef(0, fileNameLen).endsWith(ext)) {
                 return i;
@@ -4422,7 +4422,7 @@ void DocumentWidget::moveDocument(MainWindow *fromWindow) {
         // move top document
         if (dialog->moveAllSelected()) {
             // move all documents
-            for(DocumentWidget *document : fromWindow->openDocuments()) {
+            Q_FOREACH(DocumentWidget *document, fromWindow->openDocuments()) {
                 targetWin->ui.tabWidget->addTab(document, document->filename_);
                 targetWin->show();
             }
@@ -4447,7 +4447,7 @@ void DocumentWidget::ShowStatsLine(bool state) {
        the top line number in absolute (non-wrapped) lines, because it can
        be a costly calculation, and is only needed for displaying line
        numbers, either in the stats line, or along the left margin */
-    for(TextArea *area : textPanes()) {
+    Q_FOREACH(TextArea *area, textPanes()) {
         area->TextDMaintainAbsLineNum(state);
     }
 
@@ -4456,7 +4456,7 @@ void DocumentWidget::ShowStatsLine(bool state) {
 }
 
 void DocumentWidget::setWrapMargin(int margin) {
-    for(TextArea *area : textPanes()) {
+    Q_FOREACH(TextArea *area, textPanes()) {
         area->setWrapMargin(margin);
     }
 }
@@ -4510,7 +4510,7 @@ void DocumentWidget::SetFonts(const QString &fontName, const QString &italicName
 #endif
     int oldTextHeight = 0;
 
-    for(TextArea *area : textPanes()) {
+    Q_FOREACH(TextArea *area, textPanes()) {
         textHeight = area->height();
         oldTextHeight += textHeight - 2 * marginHeight;
     }
@@ -4546,7 +4546,7 @@ void DocumentWidget::SetFonts(const QString &fontName, const QString &italicName
 
     // Change the primary font in all the widgets
     if (primaryChanged) {
-        for(TextArea *area : textPanes()) {
+        Q_FOREACH(TextArea *area, textPanes()) {
             area->setFont(fontStruct_);
         }
     }
@@ -4599,7 +4599,7 @@ void DocumentWidget::SetBacklightChars(const QString &applyBacklightTypes) {
         backlightCharTypes_ = QString();
     }
 
-    for (TextArea *area : textPanes()) {
+    Q_FOREACH(TextArea *area, textPanes()) {
         area->setBacklightCharTypes(backlightCharTypes_);
     }
 }
@@ -4609,7 +4609,7 @@ void DocumentWidget::SetBacklightChars(const QString &applyBacklightTypes) {
 */
 void DocumentWidget::SetOverstrike(bool overstrike) {
 
-    for (TextArea *area : textPanes()) {
+    Q_FOREACH(TextArea *area, textPanes()) {
         area->setOverstrike(overstrike);
     }
 
@@ -4691,7 +4691,7 @@ void DocumentWidget::SetColors(const QString &textFg, const QString &textBg, con
 
 
     // Update all panes
-    for(TextArea *area : textPanes()) {
+    Q_FOREACH(TextArea *area, textPanes()) {
         area->setForegroundPixel(textFgPix); // NOTE(eteran): seems redundant
         area->setBackgroundPixel(textBgPix); // NOTE(eteran): seems redundant
         area->TextDSetColors(textFgPix, textBgPix, selectFgPix, selectBgPix, hiliteFgPix, hiliteBgPix, lineNoFgPix, cursorFgPix);
@@ -5476,7 +5476,7 @@ void DocumentWidget::ShellCmdToMacroStringEx(const std::string &command, const s
 */
 void DocumentWidget::SetAutoScroll(int margin) {
 
-    for(TextArea *area : textPanes()) {
+    Q_FOREACH(TextArea *area, textPanes()) {
         area->setCursorVPadding(margin);
     }
 }
@@ -5509,7 +5509,7 @@ void DocumentWidget::BeginLearnEx() {
 	}
 
 	// dim the inappropriate menus and items, and undim finish and cancel
-	for(MainWindow *window : MainWindow::allWindows()) {
+	Q_FOREACH(MainWindow *window, MainWindow::allWindows()) {
 		window->ui.action_Learn_Keystrokes->setEnabled(false);
 	}
 
