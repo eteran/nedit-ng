@@ -4,10 +4,10 @@
 namespace {
 
 struct X11Color {
-	int     r;
-	int     g;
-	int     b;
-	QString name;
+	int           r;
+	int           g;
+	int           b;
+	QLatin1String name;
 };
 
 const X11Color colors[] = {
