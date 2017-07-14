@@ -77,6 +77,6 @@ int ShowTipStringEx(DocumentWidget *window, const char *text, bool anchored, int
 void editTaggedLocationEx(TextArea *area, int i);
 void showMatchingCalltipEx(TextArea *area, int i);
 
-int findAllMatchesEx(DocumentWidget *document, TextArea *area, const char *string);
+int findAllMatchesEx(DocumentWidget *document, TextArea *area, const QString &string);
 
 #endif

@@ -91,8 +91,6 @@ enum {
     OUTPUT_TO_STRING  = 32
 };
 
-constexpr int MAX_TAG_LEN = 256;
-
 struct CharMatchTable {
     char c;
     char match;
@@ -4075,51 +4073,35 @@ int DocumentWidget::findDef(TextArea *area, const QString &value, Mode search_ty
 	int status = 0;
 
 	searchMode = search_type;
-	int l = value.size();
-	if (l <= MAX_TAG_LEN) {
 
-		// should be of type text???
-		QString::const_iterator p;
-		for (p = value.begin(); p != value.end() && isascii(static_cast<unsigned char>(p->toLatin1())); ++p) {
-		}
+    // make sure that the whole value is ascii
+    auto p = std::find_if(value.begin(), value.end(), [](QChar ch) {
+        return !::isascii(ch.toLatin1());
+    });
 
-		if (p == value.end()) {
+    if (p == value.end()) {
 
-			// NOTE(eteran): findAllMatchesEx will set the global tagName
-			// to point to this static buffer. I hate this design, but it's
-			// what we have for now...
-			static char tagText[MAX_TAG_LEN + 1];
-			const int ml = ((l < MAX_TAG_LEN) ? (l) : (MAX_TAG_LEN));
-			strncpy(tagText, value.toLatin1().data(), ml);
-			tagText[ml] = '\0';
+        // See if we can find the tip/tag
+        status = findAllMatchesEx(this, area, value);
 
-			// See if we can find the tip/tag
-			status = findAllMatchesEx(this, area, tagText);
+        // If we didn't find a requested calltip, see if we can use a tag
+        if (status == 0 && search_type == TIP && !TagsFileList.isEmpty()) {
+            searchMode = TIP_FROM_TAG;
+            status = findAllMatchesEx(this, area, value);
+        }
 
-			// If we didn't find a requested calltip, see if we can use a tag
-			if (status == 0 && search_type == TIP && !TagsFileList.isEmpty()) {
-				searchMode = TIP_FROM_TAG;
-				status = findAllMatchesEx(this, area, tagText);
-			}
-
-			if (status == 0) {
-				// Didn't find any matches
-				if (searchMode == TIP_FROM_TAG || searchMode == TIP) {
-					tagsShowCalltipEx(area, tr("No match for \"%1\" in calltips or tags.").arg(tagName));
-				} else {
-					QMessageBox::warning(this, tr("Tags"), tr("\"%1\" not found in tags %2").arg(tagName, (TagsFileList.size() > 1) ? tr("files") : tr("file")));
-				}
-			}
-
-		} else {
-			qWarning("NEdit: Can't handle non 8-bit text");
-			QApplication::beep();
-		}
-
-	} else {
-		qWarning("NEdit: Tag Length too long.");
-		QApplication::beep();
-	}
+        if (status == 0) {
+            // Didn't find any matches
+            if (searchMode == TIP_FROM_TAG || searchMode == TIP) {
+                tagsShowCalltipEx(area, tr("No match for \"%1\" in calltips or tags.").arg(tagName));
+            } else {
+                QMessageBox::warning(this, tr("Tags"), tr("\"%1\" not found in tags %2").arg(tagName, (TagsFileList.size() > 1) ? tr("files") : tr("file")));
+            }
+        }
+    } else {
+        qWarning("NEdit: Can't handle non 8-bit text");
+        QApplication::beep();
+    }
 
 	return status;
 }

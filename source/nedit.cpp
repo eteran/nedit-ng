@@ -396,7 +396,7 @@ int main(int argc, char *argv[]) {
     // Begin remembering last command invoked for "Repeat" menu item
     qApp->installEventFilter(CommandRecorder::getInstance());
 
-    // Set up communication over dbus!
+    // Set up communication server!
     std::unique_ptr<NeditServer> server;
     if (IsServer) {
         server = std::make_unique<NeditServer>();

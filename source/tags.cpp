@@ -61,7 +61,6 @@
 namespace {
 
 constexpr int MAXLINE						  = 2048;
-constexpr int MAX_TAG_LEN					  = 256;
 constexpr int MAXDUPTAGS					  = 100;
 constexpr int MAX_TAG_INCLUDE_RECURSION_LEVEL = 5;
 
@@ -87,9 +86,9 @@ static int fakeRegExSearchEx(view::string_view buffer, const char *searchString,
 static void updateMenuItems();
 static int addTag(const char *name, const char *file, int lang, const char *search, int posInf, const char *path, int index);
 static bool delTag(int index);
-static QList<Tag> getTag(const char *name, int search_type);
+static QList<Tag> getTag(const QString &name, int search_type);
 static void createSelectMenuEx(DocumentWidget *document, TextArea *area, const QStringList &args);
-static QList<Tag> LookupTag(const char *name, int search_type);
+static QList<Tag> LookupTag(const QString &name, int search_type);
 
 static int searchLine(char *line, const char *regex);
 static void rstrip(char *dst, const char *src);
@@ -158,12 +157,12 @@ static QList<tagFile> *tagListByType(int type) {
     }
 }
 
-static QList<Tag> getTagFromTable(QMultiHash<QString, Tag> *table, const char *name) {
-    return table->values(QString::fromLatin1(name));
+static QList<Tag> getTagFromTable(QMultiHash<QString, Tag> *table, const QString &name) {
+    return table->values(name);
 }
 
 //      Retrieve a Tag structure from the hash table 
-static QList<Tag> getTag(const char *name, int search_type) {
+static QList<Tag> getTag(const QString &name, int search_type) {
 
 	if (search_type == TIP) {
         return getTagFromTable(&Tips, name);
@@ -713,7 +712,7 @@ static int loadTagsFile(const QString &tagSpec, int index, int recLevel) {
 	return nTagsAdded;
 }
 
-static QList<Tag> LookupTagFromList(QList<tagFile> *FileList, const char *name, int search_type) {
+static QList<Tag> LookupTagFromList(QList<tagFile> *FileList, const QString &name, int search_type) {
 
 	/*
 	** Go through the list of all tags Files:
@@ -725,7 +724,7 @@ static QList<Tag> LookupTagFromList(QList<tagFile> *FileList, const char *name, 
 	** to find multiple tags specs.
 	**
 	*/
-	if (name) {
+    if (!name.isNull()) {
         for(tagFile &tf : *FileList) {
 
 			struct stat statbuf;
@@ -783,7 +782,7 @@ static QList<Tag> LookupTagFromList(QList<tagFile> *FileList, const char *name, 
 ** Return Value: TRUE:  tag spec found
 **               FALSE: no (more) definitions found.
 */
-static QList<Tag> LookupTag(const char *name, int search_type) {
+static QList<Tag> LookupTag(const QString &name, int search_type) {
 
 	searchMode = search_type;
 	if (searchMode == TIP) {
@@ -915,7 +914,7 @@ static int fakeRegExSearchEx(view::string_view buffer, const char *searchString,
 /*      Finds all matches and handles tag "collisions". Prompts user with a
         list of collided tags in the hash table and allows the user to select
         the correct one. */
-int findAllMatchesEx(DocumentWidget *document, TextArea *area, const char *string) {
+int findAllMatchesEx(DocumentWidget *document, TextArea *area, const QString &string) {
 
     QString filename;
     QString pathname;
@@ -926,11 +925,12 @@ int findAllMatchesEx(DocumentWidget *document, TextArea *area, const char *strin
     int nMatches = 0;
 
     // verify that the string is reasonable as a tag
-    if (*string == '\0' || strlen(string) > MAX_TAG_LEN) {
+    if(string.isEmpty()) {
         QApplication::beep();
         return -1;
     }
-	tagName = QString::fromLatin1(string);
+
+    tagName = string;
 
     QList<Tag> tags = LookupTag(string, searchMode);
 
@@ -1558,7 +1558,7 @@ static int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
 
     // Now resolve any aliases
     for(const tf_alias &tmp_alias : aliases) {
-        QList<Tag> tags = getTag(tmp_alias.dest.c_str(), TIP);
+        QList<Tag> tags = getTag(QString::fromStdString(tmp_alias.dest), TIP);
         if (tags.isEmpty()) {
 			fprintf(stderr, "nedit: Can't find destination of alias \"%s\"\n"
 			                "  in calltips file:\n   \"%s\"\n",
