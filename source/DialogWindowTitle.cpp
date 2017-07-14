@@ -5,7 +5,7 @@
 #include "nedit.h"
 #include "Help.h"
 #include "preferences.h"
-#include "util/clearcase.h"
+#include "util/ClearCase.h"
 #include "util/fileUtils.h"
 #include "util/utils.h"
 #include <QRegExp>

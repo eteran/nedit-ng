@@ -26,7 +26,7 @@
 *                                                                              *
 *******************************************************************************/
 
-#include "clearcase.h"
+#include "ClearCase.h"
 #include <QString>
 
 namespace {

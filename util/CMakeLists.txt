@@ -7,7 +7,7 @@ find_package(Qt5 5.4.0 REQUIRED Widgets Network)
 add_library (NUtil 
 	fileUtils.cpp 
 	utils.cpp 
-	clearcase.cpp
+	ClearCase.cpp
 	ServerCommon.cpp
 )
 

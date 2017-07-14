@@ -25,7 +25,7 @@
 #include "SignalBlocker.h"
 #include "TextArea.h"
 #include "TextBuffer.h"
-#include "clearcase.h"
+#include "util/ClearCase.h"
 #include "file.h"
 #include "highlight.h"
 #include "highlightData.h"

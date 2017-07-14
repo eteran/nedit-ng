@@ -12,7 +12,7 @@ public:
     static constexpr QEvent::Type eventType = static_cast<QEvent::Type>(QEvent::User + 2);
 
 public:
-    WindowMenuEvent(const QString &macroString) : QEvent(eventType), macroString_(macroString) {
+    explicit WindowMenuEvent(const QString &macroString) : QEvent(eventType), macroString_(macroString) {
     }
 
     WindowMenuEvent(const QString &macroString, const QString &argument) : QEvent(eventType), macroString_(macroString), argument_(argument)  {

@@ -18,7 +18,7 @@
 #include "UndoInfo.h"
 #include "WindowHighlightData.h"
 #include "calltips.h"
-#include "clearcase.h"
+#include "util/ClearCase.h"
 #include "DragEndEvent.h"
 #include "EditFlags.h"
 #include "fileUtils.h"

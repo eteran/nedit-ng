@@ -44,7 +44,7 @@
 #include "util/fileUtils.h"
 #include "util/utils.h"
 #include "util/system.h"
-#include "util/clearcase.h"
+#include "util/ClearCase.h"
 #include "util/ServerCommon.h"
 #include "version.h"
 

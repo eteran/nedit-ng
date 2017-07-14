@@ -41,7 +41,7 @@
 #include "tags.h"
 #include "userCmds.h"
 #include "Input.h"
-#include "util/clearcase.h"
+#include "util/ClearCase.h"
 #include <QInputDialog>
 #include <QMessageBox>
 #include <QPushButton>
