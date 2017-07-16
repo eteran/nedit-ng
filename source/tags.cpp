@@ -88,7 +88,7 @@ static int addTag(const char *name, const char *file, int lang, const char *sear
 static bool delTag(int index);
 static QList<Tag> getTag(const QString &name, int search_type);
 static void createSelectMenuEx(DocumentWidget *document, TextArea *area, const QStringList &args);
-static QList<Tag> LookupTag(const QString &name, int search_type);
+static QList<Tag> LookupTag(const QString &name, Mode search_type);
 
 static int searchLine(char *line, const char *regex);
 static void rstrip(char *dst, const char *src);
@@ -120,7 +120,7 @@ QList<tagFile> TipsFileList;
 
 /* These are all transient global variables -- they don't hold any state
     between tag/tip lookups */
-int searchMode = TAG;
+Mode searchMode = TAG;
 QString tagName;
 static char tagFiles[MAXDUPTAGS][MAXPATHLEN];
 static char tagSearch[MAXDUPTAGS][MAXPATHLEN];
@@ -279,7 +279,7 @@ static int tagFileIndex = 0;
 ** (not starting with [/~]) and extend the tag files list if in
 ** windowPath a tags file matching the relative spec has been found.
 */
-bool AddRelTagsFileEx(const QString &tagSpec, const QString &windowPath, int file_type) {
+bool AddRelTagsFileEx(const QString &tagSpec, const QString &windowPath, Mode file_type) {
 
     bool added = false;
 
@@ -347,7 +347,7 @@ bool AddRelTagsFileEx(const QString &tagSpec, const QString &windowPath, int fil
 **  Returns True if all files were found in the FileList or loaded successfully,
 **  FALSE otherwise.
 */
-bool AddTagsFileEx(const QString &tagSpec, int file_type) {
+bool AddTagsFileEx(const QString &tagSpec, Mode file_type) {
 
     bool added = true;
 
@@ -412,7 +412,7 @@ bool AddTagsFileEx(const QString &tagSpec, int file_type) {
  * If "force_unload" is true, a calltips file will be deleted even if its
  * refcount is nonzero.
  */
-int DeleteTagsFileEx(const QString &tagSpec, int file_type, bool force_unload) {
+int DeleteTagsFileEx(const QString &tagSpec, Mode file_type, bool force_unload) {
 
     if(tagSpec.isEmpty()) {
         return false;
@@ -574,7 +574,7 @@ static int scanCTagsLine(const QString &line, const char *tagPath, int index) {
  * Return value: Number of tag specs added.
  */
 static int scanETagsLine(const char *line, const char *tagPath, int index, char *file, int recLevel) {
-	char name[MAXLINE], searchString[MAXLINE];	
+    char name[MAXLINE], searchString[MAXLINE];
 	int pos;
 	int len;
 	const char *posDEL;
@@ -782,7 +782,7 @@ static QList<Tag> LookupTagFromList(QList<tagFile> *FileList, const QString &nam
 ** Return Value: TRUE:  tag spec found
 **               FALSE: no (more) definitions found.
 */
-static QList<Tag> LookupTag(const QString &name, int search_type) {
+static QList<Tag> LookupTag(const QString &name, Mode search_type) {
 
 	searchMode = search_type;
 	if (searchMode == TIP) {
@@ -1233,24 +1233,24 @@ static int searchLine(char *line, const char *regex) {
 
 // Check if a line has non-ws characters 
 static bool lineEmpty(const char *line) {
-	while (*line && *line != '\n') {
-		if (*line != ' ' && *line != '\t')
+    while (*line && *line != '\n') {
+        if (*line != ' ' && *line != '\t')
             return false;
-		++line;
-	}
+        ++line;
+    }
     return true;
 }
 
 // Remove trailing whitespace from a line 
 static void rstrip(char *dst, const char *src) {
-	int wsStart, dummy2;
+    int wsStart, dummy2;
 	// Strip trailing whitespace 
     if (SearchString(src, QLatin1String("\\s*\\n"), SEARCH_FORWARD, SEARCH_REGEX, false, 0, &wsStart, &dummy2, nullptr, nullptr, nullptr)) {
-		if (dst != src)
-			memcpy(dst, src, wsStart);
-		dst[wsStart] = 0;
-	} else if (dst != src)
-		strcpy(dst, src);
+        if (dst != src)
+            memcpy(dst, src, wsStart);
+        dst[wsStart] = 0;
+    } else if (dst != src)
+        strcpy(dst, src);
 }
 
 /*
@@ -1266,120 +1266,120 @@ static void rstrip(char *dst, const char *src) {
 **      currLine:   Used to keep track of the current line in the file.
 */
 static int nextTFBlock(FILE *fp, char *header, char **body, int *blkLine, int *currLine) {
-	// These are the different kinds of tokens 
-	const char *commenTF_regex = "^\\s*\\* comment \\*\\s*$";
-	const char *version_regex = "^\\s*\\* version \\*\\s*$";
-	const char *include_regex = "^\\s*\\* include \\*\\s*$";
-	const char *language_regex = "^\\s*\\* language \\*\\s*$";
-	const char *alias_regex = "^\\s*\\* alias \\*\\s*$";
-	char line[MAXLINE], *status;
-	int dummy1;
-	int code;
+    // These are the different kinds of tokens
+    const char *commenTF_regex = "^\\s*\\* comment \\*\\s*$";
+    const char *version_regex = "^\\s*\\* version \\*\\s*$";
+    const char *include_regex = "^\\s*\\* include \\*\\s*$";
+    const char *language_regex = "^\\s*\\* language \\*\\s*$";
+    const char *alias_regex = "^\\s*\\* alias \\*\\s*$";
+    char line[MAXLINE], *status;
+    int dummy1;
+    int code;
 
 	// Skip blank lines and comments 
 	while (true) {
-		// Skip blank lines 
-		while ((status = fgets(line, MAXLINE, fp))) {
+        // Skip blank lines
+        while ((status = fgets(line, MAXLINE, fp))) {
 			++(*currLine);
 			if (!lineEmpty(line))
 				break;
 		}
 
 		// Check for error or EOF 
-		if (!status)
-			return TF_EOF;
+        if (!status)
+            return TF_EOF;
 
 		// We've got a non-blank line -- is it a comment block? 
-		if (!searchLine(line, commenTF_regex))
-			break;
+        if (!searchLine(line, commenTF_regex))
+            break;
 
-		// Skip the comment (non-blank lines) 
-		while ((status = fgets(line, MAXLINE, fp))) {
-			++(*currLine);
-			if (lineEmpty(line))
-				break;
-		}
+        // Skip the comment (non-blank lines)
+        while ((status = fgets(line, MAXLINE, fp))) {
+            ++(*currLine);
+            if (lineEmpty(line))
+                break;
+        }
 
-		if (!status)
-			return TF_EOF;
+        if (!status)
+            return TF_EOF;
 	}
 
 	// Now we know it's a meaningful block 
-	dummy1 = searchLine(line, include_regex);
-	if (dummy1 || searchLine(line, alias_regex)) {
+    dummy1 = searchLine(line, include_regex);
+    if (dummy1 || searchLine(line, alias_regex)) {
 		// INCLUDE or ALIAS block 
-		int incLen, incPos, i, incLines;
+        int incLen, incPos, i, incLines;
 
 		// fprintf(stderr, "Starting include/alias at line %i\n", *currLine); 
-		if (dummy1)
+        if (dummy1)
 			code = TF_INCLUDE;
-		else {
+        else {
 			code = TF_ALIAS;
-			// Need to read the header line for an alias 
-			status = fgets(line, MAXLINE, fp);
+            // Need to read the header line for an alias
+            status = fgets(line, MAXLINE, fp);
 			++(*currLine);
-			if (!status)
-				return TF_ERROR_EOF;
-			if (lineEmpty(line)) {
-				fprintf(stderr, "nedit: Warning: empty '* alias *' "
-				                "block in calltips file.\n");
+            if (!status)
+                return TF_ERROR_EOF;
+            if (lineEmpty(line)) {
+                fprintf(stderr, "nedit: Warning: empty '* alias *' "
+                                "block in calltips file.\n");
 				return TF_ERROR;
-			}
+            }
 			rstrip(header, line);
 		}
-		incPos = ftell(fp);
+        incPos = ftell(fp);
 		*blkLine = *currLine + 1; // Line of first actual filename/alias 
-		if (incPos < 0)
-			return TF_ERROR;
-		// Figure out how long the block is 
-		while ((status = fgets(line, MAXLINE, fp)) || feof(fp)) {
+        if (incPos < 0)
+            return TF_ERROR;
+        // Figure out how long the block is
+        while ((status = fgets(line, MAXLINE, fp)) || feof(fp)) {
 			++(*currLine);
-			if (feof(fp) || lineEmpty(line))
-				break;
+            if (feof(fp) || lineEmpty(line))
+                break;
 		}
-		incLen = ftell(fp) - incPos;
-		incLines = *currLine - *blkLine;
+        incLen = ftell(fp) - incPos;
+        incLines = *currLine - *blkLine;
 		// Correct currLine for the empty line it read at the end 
 		--(*currLine);
 		if (incLines == 0) {
 			fprintf(stderr, "nedit: Warning: empty '* include *' or"
 			                " '* alias *' block in calltips file.\n");
 			return TF_ERROR;
-		}
+        }
 		// Make space for the filenames/alias sources 
 		*body = new char[incLen + 1];
-		*body[0] = '\0';
-		if (fseek(fp, incPos, SEEK_SET) != 0) {
+        *body[0] = '\0';
+        if (fseek(fp, incPos, SEEK_SET) != 0) {
 			delete [] *body;
 			return TF_ERROR;
-		}
+        }
 		// Read all the lines in the block 
 		// qDebug("Copying lines");
-		for (i = 0; i < incLines; i++) {
-			status = fgets(line, MAXLINE, fp);
-			if (!status) {
+        for (i = 0; i < incLines; i++) {
+            status = fgets(line, MAXLINE, fp);
+            if (!status) {
 				delete [] *body;
 				return TF_ERROR_EOF;
-			}
+            }
 			rstrip(line, line);
-			if (i) {
+            if (i) {
 				strcat(*body, ":");
 			}
-			strcat(*body, line);
+            strcat(*body, line);
 		}
 		// qDebug("Finished include/alias at line %i", *currLine);
 	}
 
-	else if (searchLine(line, language_regex)) {
-		// LANGUAGE block 
-		status = fgets(line, MAXLINE, fp);
+    else if (searchLine(line, language_regex)) {
+        // LANGUAGE block
+        status = fgets(line, MAXLINE, fp);
 		++(*currLine);
-		if (!status)
-			return TF_ERROR_EOF;
+        if (!status)
+            return TF_ERROR_EOF;
 		if (lineEmpty(line)) {
             qWarning("NEdit: Warning: empty '* language *' block in calltips file.");
 			return TF_ERROR;
-		}
+        }
 		*blkLine = *currLine;
 		rstrip(header, line);
 		code = TF_LANGUAGE;
@@ -1406,13 +1406,13 @@ static int nextTFBlock(FILE *fp, char *header, char **body, int *blkLine, int *c
 		    Strip trailing whitespace. */
 		rstrip(header, line);
 
-		status = fgets(line, MAXLINE, fp);
+        status = fgets(line, MAXLINE, fp);
 		++(*currLine);
-		if (!status)
-			return TF_ERROR_EOF;
+        if (!status)
+            return TF_ERROR_EOF;
 		if (lineEmpty(line)) {
-			fprintf(stderr, "nedit: Warning: empty calltip block:\n"
-			                "   \"%s\"\n",
+            fprintf(stderr, "nedit: Warning: empty calltip block:\n"
+                            "   \"%s\"\n",
 			        header);
 			return TF_ERROR;
 		}
@@ -1422,8 +1422,8 @@ static int nextTFBlock(FILE *fp, char *header, char **body, int *blkLine, int *c
 	}
 
 	// Skip the rest of the block 
-	dummy1 = *currLine;
-	while (fgets(line, MAXLINE, fp)) {
+    dummy1 = *currLine;
+    while (fgets(line, MAXLINE, fp)) {
 		++(*currLine);
 		if (lineEmpty(line))
 			break;
@@ -1458,9 +1458,9 @@ static void free_alias_list(QList<tf_alias> *aliases) {
 ** why calltips and tags share so much code.
 */
 static int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
-	FILE *fp = nullptr;
+    FILE *fp = nullptr;
 	char header[MAXLINE];
-	
+
 	char *tipIncFile;
     int nTipsAdded = 0;
     int langMode = PLAIN_LANGUAGE_MODE;
@@ -1489,9 +1489,9 @@ static int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
     // Get the path to the tips file
     ParseFilenameEx(resolvedTipsFile, nullptr, &tipPath);
 
-	// Open the file 
-	if ((fp = ::fopen(resolvedTipsFile.toLatin1().data(), "r")) == nullptr) {
-		return 0;
+    // Open the file
+    if ((fp = ::fopen(resolvedTipsFile.toLatin1().data(), "r")) == nullptr) {
+        return 0;
     }
 
     Q_FOREVER {
@@ -1553,8 +1553,8 @@ static int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
 		}
 	}
 
-	// NOTE(eteran): fix resource leak
-	::fclose(fp);
+    // NOTE(eteran): fix resource leak
+    ::fclose(fp);
 
     // Now resolve any aliases
     for(const tf_alias &tmp_alias : aliases) {

@@ -34,6 +34,14 @@
 class DocumentWidget;
 class TextArea;
 
+// file_type and search_type arguments are to select between tips and tags,
+// and should be one of TAG or TIP.  TIP_FROM_TAG is for ShowTipString.
+enum Mode {
+    TAG,
+    TIP_FROM_TAG,
+    TIP
+};
+
 struct tagFile {
     QString     filename;
 	time_t      date;
@@ -45,7 +53,7 @@ struct tagFile {
 extern QList<tagFile> TagsFileList; // list of loaded tags files
 extern QList<tagFile> TipsFileList; // list of loaded calltips tag files
 
-extern int searchMode;
+extern Mode searchMode;
 extern QString tagName;
 
 extern bool globAnchored;
@@ -54,19 +62,11 @@ extern int globHAlign;
 extern int globVAlign;
 extern int globAlignMode;
 
-// file_type and search_type arguments are to select between tips and tags,
-// and should be one of TAG or TIP.  TIP_FROM_TAG is for ShowTipString.
-enum Mode {
-	TAG, 
-	TIP_FROM_TAG, 
-	TIP
-};
-
-bool AddRelTagsFileEx(const QString &tagSpec, const QString &windowPath, int file_type);
+bool AddRelTagsFileEx(const QString &tagSpec, const QString &windowPath, Mode file_type);
 
 // tagSpec is a colon-delimited list of filenames 
-bool AddTagsFileEx(const QString &tagSpec, int file_type);
-int DeleteTagsFileEx(const QString &tagSpec, int file_type, bool force_unload);
+bool AddTagsFileEx(const QString &tagSpec, Mode file_type);
+int DeleteTagsFileEx(const QString &tagSpec, Mode file_type, bool force_unload);
 int tagsShowCalltipEx(TextArea *area, const QString &text);
 
 // Routines for handling tags or tips from the current selection
