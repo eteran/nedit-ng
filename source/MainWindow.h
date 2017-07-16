@@ -7,6 +7,7 @@
 #include "SearchType.h"
 #include "SmartIndentEvent.h"
 #include "NewMode.h"
+#include "CloseMode.h"
 #include <QMainWindow>
 #include <QPointer>
 
@@ -104,6 +105,15 @@ public Q_SLOTS:
     void action_New(NewMode mode = NewMode::Prefs);
     void action_Open(const QString &filename);
 	void action_Save_As(const QString &filename, bool wrapped);
+    void action_Close(CloseMode mode = CloseMode::Prompt);
+    void action_Load_Macro_File(const QString &filename);
+    void action_Load_Tags_File(const QString &filename);
+    void action_Unload_Tags_File(const QString &filename);
+    void action_Load_Tips_File(const QString &filename);
+    void action_Unload_Tips_File(const QString &filename);
+    void action_Find(const QString &string, SearchDirection direction, SearchType type, bool searchWrap);
+
+
     void action_Shift_Left_Tabs();
     void action_Shift_Right_Tabs();
     void action_Shift_Find();
@@ -279,13 +289,6 @@ public Q_SLOTS:
     void on_action_About_triggered();
     void on_action_About_Qt_triggered();
     void on_action_Help_triggered();
-
-public Q_SLOTS:
-    void unloadTipsAP(const QString &filename);
-    void unloadTagsAP(const QString &filename);
-    void loadTipsAP(const QString &filename);
-    void loadTagsAP(const QString &filename);
-    void loadMacroAP(const QString &filename);
 
 private Q_SLOTS:
 	void deleteTabButtonClicked();

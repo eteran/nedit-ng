@@ -676,18 +676,26 @@ void MainWindow::on_action_Open_triggered() {
     CheckCloseDimEx();
 }
 
-//------------------------------------------------------------------------------
-// Name: on_action_Close_triggered
-//------------------------------------------------------------------------------
-void MainWindow::on_action_Close_triggered() {
+/**
+ * @brief action_Close_triggered
+ * @param mode
+ */
+void MainWindow::action_Close(CloseMode mode) {
     if(auto doc = currentDocument()) {
-        doc->actionClose(CloseMode::Prompt);
+        doc->actionClose(mode);
     }
 }
 
-//------------------------------------------------------------------------------
-// Name: on_action_About_triggered
-//------------------------------------------------------------------------------
+/**
+ * @brief MainWindow::on_action_Close_triggered
+ */
+void MainWindow::on_action_Close_triggered() {
+    action_Close(CloseMode::Prompt);
+}
+
+/**
+ * @brief MainWindow::on_action_About_triggered
+ */
 void MainWindow::on_action_About_triggered() {
     static auto dialog = new DialogAbout(this);
 	dialog->exec();
@@ -2793,18 +2801,18 @@ void MainWindow::updateTagsFileMenuEx() {
 void MainWindow::unloadTipsFileCB(QAction *action) {
     auto filename = action->data().toString();
     if(!filename.isEmpty()) {
-        unloadTipsAP(filename);
+        action_Unload_Tips_File(filename);
     }
 }
 
 void MainWindow::unloadTagsFileCB(QAction *action) {
     auto filename = action->data().toString();
     if(!filename.isEmpty()) {
-        unloadTagsAP(filename);
+        action_Unload_Tags_File(filename);
     }
 }
 
-void MainWindow::unloadTipsAP(const QString &filename) {
+void MainWindow::action_Unload_Tips_File(const QString &filename) {
 
     if (DeleteTagsFileEx(filename, TIP, true)) {
 
@@ -2814,7 +2822,7 @@ void MainWindow::unloadTipsAP(const QString &filename) {
     }
 }
 
-void MainWindow::unloadTagsAP(const QString &filename) {
+void MainWindow::action_Unload_Tags_File(const QString &filename) {
 
     if (DeleteTagsFileEx(filename, TAG, true)) {
 
@@ -2825,14 +2833,14 @@ void MainWindow::unloadTagsAP(const QString &filename) {
 }
 
 
-void MainWindow::loadTipsAP(const QString &filename) {
+void MainWindow::action_Load_Tips_File(const QString &filename) {
 
     if (!AddTagsFileEx(filename, TIP)) {
         QMessageBox::warning(this, tr("Error Reading File"), tr("Error reading tips file:\n'%1'\ntips not loaded").arg(filename));
     }
 }
 
-void MainWindow::loadTagsAP(const QString &filename) {
+void MainWindow::action_Load_Tags_File(const QString &filename) {
 
     if (!AddTagsFileEx(filename, TAG)) {
         QMessageBox::warning(this, tr("Error Reading File"), tr("Error reading ctags file:\n'%1'\ntags not loaded").arg(filename));
@@ -2847,7 +2855,7 @@ void MainWindow::on_action_Load_Calltips_File_triggered() {
             return;
         }
 
-        loadTipsAP(filename);
+        action_Load_Tips_File(filename);
         updateTipsFileMenuEx();
     }
 }
@@ -2860,7 +2868,7 @@ void MainWindow::on_action_Load_Tags_File_triggered() {
             return;
         }
 
-        loadTagsAP(filename);
+        action_Load_Tags_File(filename);
         updateTagsFileMenuEx();
     }
 }
@@ -2872,11 +2880,11 @@ void MainWindow::on_action_Load_Macro_File_triggered() {
             return;
         }
 
-        loadMacroAP(filename);
+        action_Load_Macro_File(filename);
     }
 }
 
-void MainWindow::loadMacroAP(const QString &filename) {
+void MainWindow::action_Load_Macro_File(const QString &filename) {
     if(auto doc = currentDocument()) {
 		doc->ReadMacroFileEx(filename, true);
     }
@@ -4420,4 +4428,23 @@ void MainWindow::DimPasteReplayBtns(bool enabled) {
     if(WindowBackgroundMenu) {
         WindowBackgroundMenu->setPasteReplayEnabled(enabled);
     }
+}
+
+/**
+ * @brief MainWindow::action_Find
+ * @param string
+ * @param direction
+ * @param keepDialogs
+ * @param type
+ */
+void MainWindow::action_Find(const QString &string, SearchDirection direction, SearchType type, bool searchWrap) {
+
+    SearchAndSelectEx(
+        this,
+        currentDocument(),
+        lastFocus_,
+        direction,
+        string,
+        type,
+        searchWrap);
 }

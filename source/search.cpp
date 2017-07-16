@@ -60,8 +60,8 @@ int NHist = 0;
 
 struct SearchSelectedCallData {
 	SearchDirection direction;
-	SearchType searchType;
-	int searchWrap;
+    SearchType      searchType;
+    bool            searchWrap;
 };
 
 
@@ -366,7 +366,7 @@ bool SearchAndSelectSameEx(MainWindow *window, DocumentWidget *document, TextAre
 ** the window when found (or beep or put up a dialog if not found).  Also
 ** adds the search string to the global search history.
 */
-bool SearchAndSelectEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, const QString &searchString, SearchType searchType, int searchWrap) {
+bool SearchAndSelectEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, const QString &searchString, SearchType searchType, bool searchWrap) {
     int startPos;
     int endPos;
     int beginPos;
@@ -439,7 +439,7 @@ bool SearchAndSelectEx(MainWindow *window, DocumentWidget *document, TextArea *a
     return true;
 }
 
-void SearchForSelectedEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, SearchType searchType, int searchWrap) {
+void SearchForSelectedEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, SearchType searchType, bool searchWrap) {
 
     // skip if we can't get the selection data or it's too long
     // should be of type text???
@@ -745,7 +745,7 @@ void eraseFlashEx(DocumentWidget *document) {
 ** Search and replace using previously entered search strings (from dialog
 ** or selection).
 */
-bool ReplaceSameEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, int searchWrap) {
+bool ReplaceSameEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, bool searchWrap) {
     if (NHist < 1) {
         QApplication::beep();
         return false;
@@ -766,7 +766,7 @@ bool ReplaceSameEx(MainWindow *window, DocumentWidget *document, TextArea *area,
 ** Search and replace using previously entered search strings (from dialog
 ** or selection).
 */
-bool ReplaceFindSameEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, int searchWrap) {
+bool ReplaceFindSameEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, bool searchWrap) {
     if (NHist < 1) {
         QApplication::beep();
         return false;
@@ -787,7 +787,7 @@ bool ReplaceFindSameEx(MainWindow *window, DocumentWidget *document, TextArea *a
 ** Replace selection with "replaceString" and search for string "searchString" in window "window",
 ** using algorithm "searchType" and direction "direction"
 */
-bool ReplaceAndSearchEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, const QString &searchString, const QString &replaceString, SearchType searchType, int searchWrap) {
+bool ReplaceAndSearchEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, const QString &searchString, const QString &replaceString, SearchType searchType, bool searchWrap) {
     int startPos = 0;
     int endPos = 0;
     int replaceLen = 0;
@@ -1367,7 +1367,7 @@ static void iSearchTryBeepOnWrapEx(MainWindow *window, SearchDirection direction
 /*
 ** Search the text in "window", attempting to match "searchString"
 */
-bool SearchWindowEx(MainWindow *window, DocumentWidget *document, SearchDirection direction, const QString &searchString, SearchType searchType, int searchWrap, int beginPos, int *startPos, int *endPos, int *extentBW, int *extentFW) {
+bool SearchWindowEx(MainWindow *window, DocumentWidget *document, SearchDirection direction, const QString &searchString, SearchType searchType, bool searchWrap, int beginPos, int *startPos, int *endPos, int *extentBW, int *extentFW) {
     bool found;
     int fileEnd = document->buffer_->BufGetLength() - 1;
     bool outsideBounds;
@@ -1451,7 +1451,7 @@ bool SearchWindowEx(MainWindow *window, DocumentWidget *document, SearchDirectio
             }
             if (!found) {
                 if (GetPrefSearchDlogs()) {
-                    QMessageBox::information(nullptr /*parent*/, QLatin1String("String not found"), QLatin1String("String was not found"));
+                    QMessageBox::information(document, QLatin1String("String not found"), QLatin1String("String was not found"));
                 } else {
                     QApplication::beep();
                 }

@@ -38,6 +38,7 @@
 #include "IndentStyle.h"
 #include "CommandRecorder.h"
 #include "Input.h"
+#include "CloseMode.h"
 #include "MainWindow.h"
 #include "RangesetTable.h"
 #include "SearchDirection.h"
@@ -492,7 +493,6 @@ static const SubRoutine TextAreaSubrNames[] = {
 
 #define WINDOW_MENU_EVENT_S(routineName, slotName)                                                                            \
     static int routineName(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) { \
-        Q_UNUSED(argList);                                                                                                    \
                                                                                                                               \
 	    /* ensure that we are dealing with the document which currently has the focus */                                      \
         document = MacroRunWindowEx();                                                                                        \
@@ -534,8 +534,12 @@ static const SubRoutine TextAreaSubrNames[] = {
 WINDOW_MENU_EVENT_S(includeFileMS,                   action_Include_File)
 WINDOW_MENU_EVENT_S(gotoLineNumberMS,                action_Goto_Line_Number)
 WINDOW_MENU_EVENT_S(openMS,                          action_Open)
+WINDOW_MENU_EVENT_S(loadMacroFileMS,                 action_Load_Macro_File)
+WINDOW_MENU_EVENT_S(loadTagsFileMS,                  action_Load_Tags_File)
+WINDOW_MENU_EVENT_S(unloadTagsFileMS,                action_Unload_Tags_File)
+WINDOW_MENU_EVENT_S(loadTipsFileMS,                  action_Load_Tips_File)
+WINDOW_MENU_EVENT_S(unloadTipsFileMS,                action_Unload_Tips_File)
 
-WINDOW_MENU_EVENT(closeMS,                           on_action_Close_triggered)
 WINDOW_MENU_EVENT(closePaneMS,                       on_action_Close_Pane_triggered)
 WINDOW_MENU_EVENT(deleteMS,                          on_action_Delete_triggered)
 WINDOW_MENU_EVENT(exitMS,                            on_action_Exit_triggered)
@@ -570,6 +574,48 @@ WINDOW_MENU_EVENT(revertToSavedDialogMS,             on_action_Revert_to_Saved_t
 WINDOW_MENU_EVENT(markDialogMS,                      on_action_Mark_triggered)
 WINDOW_MENU_EVENT(gotoMarkDialogMS,                  on_action_Goto_Mark_triggered)
 WINDOW_MENU_EVENT(showTipMS,                         on_action_Show_Calltip_triggered)
+
+static int closeMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+
+    // ensure that we are dealing with the document which currently has the focus
+    document = MacroRunWindowEx();
+
+    if(nArgs > 1) {
+        return wrongNArgsErr(errMsg);
+    }
+
+    CloseMode mode = CloseMode::Prompt;
+
+    if(nArgs == 1) {
+        std::string string;
+        if(!readArguments(argList, nArgs, 0, errMsg, &string)) {
+            return false;
+        }
+
+        static const struct {
+            view::string_view name;
+            CloseMode type;
+        } openTypeStrings [] = {
+            { "prompt", CloseMode::Prompt },
+            { "save",   CloseMode::Save },
+            { "nosave", CloseMode::NoSave },
+        };
+
+        for(const auto &entry : openTypeStrings) {
+            if (view::icasecmp(view::string_view(string), entry.name)) {
+                mode = entry.type;
+                break;
+            }
+        }
+    }
+
+    if(MainWindow *window = document->toWindow()) {
+        window->action_Close(mode);
+    }
+
+    result->tag = NO_TAG;
+    return true;
+}
 
 static int newMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
@@ -650,6 +696,87 @@ static int saveAsMS(DocumentWidget *document, DataValue *argList, int nArgs, Dat
     return true;
 }
 
+struct SearchParameters {
+    SearchDirection direction;
+    bool            wrap;
+    SearchType      type;
+};
+
+static int parseSearchArgument(SearchParameters *params, const QString &arg) {
+    if(arg == QLatin1String("literal")) {
+        params->type = SearchType::SEARCH_LITERAL;
+        return true;
+    } else if(arg == QLatin1String("case")) {
+        params->type = SearchType::SEARCH_CASE_SENSE;
+        return true;
+    } else if(arg == QLatin1String("regex")) {
+        params->type = SearchType::SEARCH_REGEX;
+        return true;
+    } else if(arg == QLatin1String("word")) {
+        params->type = SearchType::SEARCH_LITERAL_WORD;
+        return true;
+    } else if(arg == QLatin1String("caseWord")) {
+        params->type = SearchType::SEARCH_CASE_SENSE_WORD;
+        return true;
+    } else if(arg == QLatin1String("regexNoCase")) {
+       params->type = SearchType::SEARCH_REGEX_NOCASE;
+       return true;
+    } else if(arg == QLatin1String("forward")) {
+        params->direction = SearchDirection::SEARCH_FORWARD;
+        return true;
+    } else if(arg == QLatin1String("backward")) {
+        params->direction = SearchDirection::SEARCH_BACKWARD;
+        return true;
+    } else if(arg == QLatin1String("wrap")) {
+        params->wrap = true;
+        return true;
+    } else if(arg == QLatin1String("nowrap")) {
+        params->wrap = false;
+        return true;
+    }
+
+    return false;
+}
+
+static int findMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+
+    // find( search-string [, search-direction] [, search-type] [, search-wrap] )
+
+    // ensure that we are dealing with the document which currently has the focus
+    document = MacroRunWindowEx();
+
+    if(nArgs > 4 || nArgs == 0) {
+        return wrongNArgsErr(errMsg);
+    }
+
+    SearchParameters params = {
+        SearchDirection::SEARCH_FORWARD,
+        false,
+        SearchType::SEARCH_LITERAL
+    };
+
+    QString string;
+    if(!readArguments(argList, nArgs, 1, errMsg, &string)) {
+        return false;
+    }
+
+    for(int i = 1; i < nArgs; ++i) {
+        QString arg;
+        if (!readArgument(argList[i], &arg, errMsg)) {
+            return false;
+        }
+
+        parseSearchArgument(&params, arg);
+    }
+
+    if(MainWindow *window = document->toWindow()) {
+        window->action_Find(string, params.direction, params.type, params.wrap);
+    }
+
+    result->tag = NO_TAG;
+    return true;
+}
+
 static const SubRoutine MenuMacroSubrNames[] = {
     // File
     { "new",                          newMS },
@@ -663,17 +790,18 @@ static const SubRoutine MenuMacroSubrNames[] = {
     { "revert_to_saved_dialog",       revertToSavedDialogMS },
     { "include_file",                 includeFileMS },
     { "include_file_dialog",          includeFileDialogMS },
-	{ "load_macro_file",              nullptr },
+    { "load_macro_file",              loadMacroFileMS },
     { "load_macro_file_dialog",       loadMacroFileDialogMS },
-	{ "load_tags_file",               nullptr },
+    { "load_tags_file",               loadTagsFileMS },
     { "load_tags_file_dialog",        loadTagsFileDialogMS },
-    { "unload_tags_file",             nullptr },
-	{ "load_tips_file",               nullptr },
+    { "unload_tags_file",             unloadTagsFileMS },
+    { "load_tips_file",               loadTipsFileMS },
     { "load_tips_file_dialog",        loadTipsFileDialogMS },
-	{ "unload_tips_file",             nullptr },
+    { "unload_tips_file",             unloadTipsFileMS },
     { "print",                        printMS },
     { "print_selection",              printSelectionMS },
     { "exit",                         exitMS },
+
     // Edit
     { "undo",                         undoMS },
     { "redo",                         redoMS },
@@ -687,9 +815,10 @@ static const SubRoutine MenuMacroSubrNames[] = {
     { "lowercase",                    lowercaseMS },
     { "fill_paragraph",               fillParagraphMS },
     { "control_code_dialog",          insertControlCodeDialogMS },
+
     // Search
-	{ "find",                         nullptr },
-    { "find_dialog",                  findDialogMS },
+    { "find",                         findMS },
+    { "find_dialog",                  findDialogMS }, // NOTE(eteran): here
 	{ "find_again",                   nullptr },
 	{ "find_selection",               nullptr },
     { "replace",                      nullptr },
@@ -708,6 +837,7 @@ static const SubRoutine MenuMacroSubrNames[] = {
     { "select_to_matching",           nullptr },
     { "find_definition",              findDefinitionMS },
     { "show_tip",                     showTipMS },
+
     // Shell
     { "filter_selection_dialog",      nullptr },
     { "filter_selection",             nullptr },
@@ -715,16 +845,19 @@ static const SubRoutine MenuMacroSubrNames[] = {
     { "execute_command_dialog",       nullptr },
     { "execute_command_line",         nullptr },
     { "shell_menu_command",           nullptr },
+
     // Macro
     { "macro_menu_command",           nullptr },
     { "repeat_macro",                 nullptr },
     { "repeat_dialog",                nullptr },
+
     // Windows
     { "split_pane",                   splitPaneMS },
     { "close_pane",                   closePaneMS },
     { "detach_document",              nullptr },
     { "detach_document_dialog",       nullptr },
     { "move_document_dialog",         nullptr },
+
     // Preferences
     { "set_auto_indent",              nullptr },
     { "set_em_tab_dist",              nullptr },
