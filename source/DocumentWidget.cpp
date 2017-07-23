@@ -684,7 +684,7 @@ int DocumentWidget::matchLanguageMode() {
             int beginPos;
             int endPos;
 
-            if (SearchString(first200, LanguageModes[i].recognitionExpr, SEARCH_FORWARD, SEARCH_REGEX, false, 0, &beginPos, &endPos, nullptr, nullptr, nullptr)) {
+            if (SearchString(first200, LanguageModes[i].recognitionExpr, SEARCH_FORWARD, SEARCH_REGEX, WrapMode::NoWrap, 0, &beginPos, &endPos, nullptr, nullptr, nullptr)) {
 				return i;
 			}
 		}
@@ -3709,7 +3709,7 @@ void DocumentWidget::replaceInSelAP(const QString &searchString, const QString &
                 searchType);
 }
 
-void DocumentWidget::replaceFindAP(const QString &searchString, const QString &replaceString, SearchDirection direction, SearchType searchType, bool searchWraps) {
+void DocumentWidget::replaceFindAP(const QString &searchString, const QString &replaceString, SearchDirection direction, SearchType searchType, WrapMode searchWraps) {
 
     if (CheckReadOnly()) {
         return;
@@ -3726,7 +3726,7 @@ void DocumentWidget::replaceFindAP(const QString &searchString, const QString &r
                 searchWraps);
 }
 
-void DocumentWidget::findAP(const QString &searchString, SearchDirection direction, SearchType searchType, bool searchWraps) {
+void DocumentWidget::findAP(const QString &searchString, SearchDirection direction, SearchType searchType, WrapMode searchWraps) {
 
     SearchAndSelectEx(
                 toWindow(),
@@ -3738,7 +3738,7 @@ void DocumentWidget::findAP(const QString &searchString, SearchDirection directi
                 searchWraps);
 }
 
-void DocumentWidget::findIncrAP(const QString &searchString, SearchDirection direction, SearchType searchType, bool searchWraps, bool isContinue) {
+void DocumentWidget::findIncrAP(const QString &searchString, SearchDirection direction, SearchType searchType, WrapMode searchWraps, bool isContinue) {
 
     SearchAndSelectIncrementalEx(
                 toWindow(),
@@ -3752,7 +3752,7 @@ void DocumentWidget::findIncrAP(const QString &searchString, SearchDirection dir
 
 }
 
-void DocumentWidget::replaceAP(const QString &searchString, const QString &replaceString, SearchDirection direction, SearchType searchType, bool searchWraps) {
+void DocumentWidget::replaceAP(const QString &searchString, const QString &replaceString, SearchDirection direction, SearchType searchType, WrapMode searchWraps) {
 
     if (CheckReadOnly()) {
         return;

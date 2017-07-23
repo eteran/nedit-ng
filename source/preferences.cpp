@@ -365,8 +365,8 @@ void SetPrefSearchWraps(bool state) {
     g_Settings.searchWraps = state;
 }
 
-int GetPrefSearchWraps() {
-    return g_Settings.searchWraps;
+WrapMode GetPrefSearchWraps() {
+    return g_Settings.searchWraps ? WrapMode::Wrap : WrapMode::NoWrap;
 }
 
 int GetPrefStickyCaseSenseBtn() {

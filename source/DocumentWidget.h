@@ -15,6 +15,7 @@
 #include "UndoInfo.h"
 #include "CloseMode.h"
 #include "WrapStyle.h"
+#include "WrapMode.h"
 #include "userCmds.h"
 #include "util/FileFormats.h"
 
@@ -75,9 +76,9 @@ public Q_SLOTS:
     void bannerTimeoutProc();
     void closePane();
     void execAP(TextArea *area, const QString &command);
-    void findAP(const QString &searchString, SearchDirection direction, SearchType searchType, bool searchWraps);
+    void findAP(const QString &searchString, SearchDirection direction, SearchType searchType, WrapMode searchWraps);
 	void findDefinitionHelper(TextArea *area, const QString &arg, Mode search_type);
-    void findIncrAP(const QString &searchString, SearchDirection direction, SearchType searchType, bool searchWraps, bool isContinue);
+    void findIncrAP(const QString &searchString, SearchDirection direction, SearchType searchType, WrapMode searchWraps, bool isContinue);
 	void gotoAP(TextArea *area, const QString &args);
 	void gotoAP(TextArea *area, const QString &arg1, const QString &arg2);
     void gotoAP(TextArea *area, int lineNum, int column);
@@ -85,9 +86,9 @@ public Q_SLOTS:
     void markAP(QChar ch);
     void moveDocument(MainWindow *fromWindow);
     void open(const QString &fullpath);
-    void replaceAP(const QString &searchString, const QString &replaceString, SearchDirection direction, SearchType searchType, bool searchWraps);
+    void replaceAP(const QString &searchString, const QString &replaceString, SearchDirection direction, SearchType searchType, WrapMode searchWraps);
     void replaceAllAP(const QString &searchString, const QString &replaceString, SearchType searchType);
-    void replaceFindAP(const QString &searchString, const QString &replaceString, SearchDirection direction, SearchType searchType, bool searchWraps);
+    void replaceFindAP(const QString &searchString, const QString &replaceString, SearchDirection direction, SearchType searchType, WrapMode searchWraps);
     void replaceInSelAP(const QString &searchString, const QString &replaceString, SearchType searchType);
     void setLanguageMode(const QString &mode);
     void splitPane();

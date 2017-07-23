@@ -545,7 +545,6 @@ WINDOW_MENU_EVENT(deleteMS,                          on_action_Delete_triggered)
 WINDOW_MENU_EVENT(exitMS,                            on_action_Exit_triggered)
 WINDOW_MENU_EVENT(fillParagraphMS,                   on_action_Fill_Paragraph_triggered)
 WINDOW_MENU_EVENT(findDefinitionMS,                  on_action_Find_Definition_triggered)
-WINDOW_MENU_EVENT(findDialogMS,                      on_action_Find_triggered)
 WINDOW_MENU_EVENT(gotoLineNumberDialogMS,            on_action_Goto_Line_Number_triggered)
 WINDOW_MENU_EVENT(gotoMatchingMS,                    on_action_Goto_Matching_triggered)
 WINDOW_MENU_EVENT(includeFileDialogMS,               on_action_Include_File_triggered)
@@ -696,42 +695,53 @@ static int saveAsMS(DocumentWidget *document, DataValue *argList, int nArgs, Dat
     return true;
 }
 
-struct SearchParameters {
-    SearchDirection direction;
-    bool            wrap;
-    SearchType      type;
+enum SearchFields {
+    Direction, Wrap, Type, Keep
 };
 
-static int parseSearchArgument(SearchParameters *params, const QString &arg) {
-    if(arg == QLatin1String("literal")) {
+struct SearchParameters {
+    SearchDirection direction;
+    WrapMode        wrap;
+    SearchType      type;
+    bool            keep;
+};
+
+static int parseSearchArgument(SearchParameters *params, const QString &arg, int fields) {
+    if(arg == QLatin1String("literal") && (fields & SearchFields::Type)) {
         params->type = SearchType::SEARCH_LITERAL;
         return true;
-    } else if(arg == QLatin1String("case")) {
+    } else if(arg == QLatin1String("case") && (fields & SearchFields::Type)) {
         params->type = SearchType::SEARCH_CASE_SENSE;
         return true;
-    } else if(arg == QLatin1String("regex")) {
+    } else if(arg == QLatin1String("regex") && (fields & SearchFields::Type)) {
         params->type = SearchType::SEARCH_REGEX;
         return true;
-    } else if(arg == QLatin1String("word")) {
+    } else if(arg == QLatin1String("word") && (fields & SearchFields::Type)) {
         params->type = SearchType::SEARCH_LITERAL_WORD;
         return true;
-    } else if(arg == QLatin1String("caseWord")) {
+    } else if(arg == QLatin1String("caseWord") && (fields & SearchFields::Type)) {
         params->type = SearchType::SEARCH_CASE_SENSE_WORD;
         return true;
-    } else if(arg == QLatin1String("regexNoCase")) {
-       params->type = SearchType::SEARCH_REGEX_NOCASE;
-       return true;
-    } else if(arg == QLatin1String("forward")) {
+    } else if(arg == QLatin1String("regexNoCase") && (fields & SearchFields::Type)) {
+        params->type = SearchType::SEARCH_REGEX_NOCASE;
+        return true;
+    } else if(arg == QLatin1String("forward") && (fields & SearchFields::Direction)) {
         params->direction = SearchDirection::SEARCH_FORWARD;
         return true;
-    } else if(arg == QLatin1String("backward")) {
+    } else if(arg == QLatin1String("backward") && (fields & SearchFields::Direction)) {
         params->direction = SearchDirection::SEARCH_BACKWARD;
         return true;
-    } else if(arg == QLatin1String("wrap")) {
-        params->wrap = true;
+    } else if(arg == QLatin1String("wrap") && (fields & SearchFields::Wrap)) {
+        params->wrap = WrapMode::Wrap;
         return true;
-    } else if(arg == QLatin1String("nowrap")) {
-        params->wrap = false;
+    } else if(arg == QLatin1String("nowrap") && (fields & SearchFields::Wrap)) {
+        params->wrap = WrapMode::NoWrap;
+        return true;
+    } else if(arg == QLatin1String("keep") && (fields & SearchFields::Keep)) {
+        params->keep = true;
+        return true;
+    } else if(arg == QLatin1String("nokeep") && (fields & SearchFields::Keep)) {
+        params->keep = false;
         return true;
     }
 
@@ -751,8 +761,9 @@ static int findMS(DocumentWidget *document, DataValue *argList, int nArgs, DataV
 
     SearchParameters params = {
         SearchDirection::SEARCH_FORWARD,
-        false,
-        SearchType::SEARCH_LITERAL
+        WrapMode::NoWrap,
+        SearchType::SEARCH_LITERAL,
+        false
     };
 
     QString string;
@@ -766,11 +777,73 @@ static int findMS(DocumentWidget *document, DataValue *argList, int nArgs, DataV
             return false;
         }
 
-        parseSearchArgument(&params, arg);
+        parseSearchArgument(&params, arg, Direction | Wrap | Type);
     }
 
     if(MainWindow *window = document->toWindow()) {
         window->action_Find(string, params.direction, params.type, params.wrap);
+    }
+
+    result->tag = NO_TAG;
+    return true;
+}
+
+static int findDialogMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+
+    // find( search-string [, search-direction] [, search-type] [, search-wrap] )
+
+    // ensure that we are dealing with the document which currently has the focus
+    document = MacroRunWindowEx();
+
+    SearchParameters params = {
+        SearchDirection::SEARCH_FORWARD,
+        WrapMode::NoWrap,
+        SearchType::SEARCH_LITERAL,
+        false
+    };
+
+    for(int i = 0; i < nArgs; ++i) {
+        QString arg;
+        if (!readArgument(argList[i], &arg, errMsg)) {
+            return false;
+        }
+
+        parseSearchArgument(&params, arg, Direction | Type | Keep);
+    }
+
+    if(MainWindow *window = document->toWindow()) {
+        window->action_Find_Dialog(params.direction, params.type, params.keep);
+    }
+
+    result->tag = NO_TAG;
+    return true;
+}
+
+static int findAgainMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+
+    // find( search-string [, search-direction] [, search-type] [, search-wrap] )
+
+    // ensure that we are dealing with the document which currently has the focus
+    document = MacroRunWindowEx();
+
+    SearchParameters params = {
+        SearchDirection::SEARCH_FORWARD,
+        WrapMode::NoWrap,
+        SearchType::SEARCH_LITERAL,
+        false
+    };
+
+    for(int i = 0; i < nArgs; ++i) {
+        QString arg;
+        if (!readArgument(argList[i], &arg, errMsg)) {
+            return false;
+        }
+
+        parseSearchArgument(&params, arg, Direction | Wrap);
+    }
+
+    if(MainWindow *window = document->toWindow()) {
+        window->action_Find_Again(params.direction, params.wrap);
     }
 
     result->tag = NO_TAG;
@@ -818,9 +891,9 @@ static const SubRoutine MenuMacroSubrNames[] = {
 
     // Search
     { "find",                         findMS },
-    { "find_dialog",                  findDialogMS }, // NOTE(eteran): here
-	{ "find_again",                   nullptr },
-	{ "find_selection",               nullptr },
+    { "find_dialog",                  findDialogMS },
+    { "find_again",                   findAgainMS },
+    { "find_selection",               nullptr }, // NOTE(eteran): here
     { "replace",                      nullptr },
     { "replace_dialog",               replaceDialogMS },
     { "replace_all",                  replaceAllMS },
@@ -2435,8 +2508,9 @@ static int searchMS(DocumentWidget *window, DataValue *argList, int nArgs, DataV
 */
 static int searchStringMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     int beginPos;
-    bool wrap;
+    WrapMode wrap;
     bool found = false;
+    bool iWrap;
     int foundStart;
     int foundEnd;
 	SearchType type;
@@ -2454,13 +2528,15 @@ static int searchStringMS(DocumentWidget *window, DataValue *argList, int nArgs,
 		return false;
     if (!readArgument(argList[2], &beginPos, errMsg))
 		return false;
-	if (!readSearchArgs(&argList[3], nArgs - 3, &direction, &type, &wrap, errMsg))
+    if (!readSearchArgs(&argList[3], nArgs - 3, &direction, &type, &iWrap, errMsg))
 		return false;
+
+    wrap = (iWrap ? WrapMode::Wrap : WrapMode::NoWrap);
 
     int len = argList[0].val.str.len;
 	if (beginPos > len) {
 		if (direction == SEARCH_FORWARD) {
-			if (wrap) {
+            if (wrap == WrapMode::Wrap) {
 				beginPos = 0; // Wrap immediately 
 			} else {
                 found = false;
@@ -2471,7 +2547,7 @@ static int searchStringMS(DocumentWidget *window, DataValue *argList, int nArgs,
 		}
 	} else if (beginPos < 0) {
 		if (direction == SEARCH_BACKWARD) {
-			if (wrap) {
+            if (wrap == WrapMode::Wrap) {
 				beginPos = len; // Wrap immediately 
 			} else {
                 found = false;
@@ -3443,7 +3519,7 @@ static int splitMS(DocumentWidget *window, DataValue *argList, int nArgs, DataVa
                     splitStr,
                     SEARCH_FORWARD,
                     searchType,
-                    false,
+                    WrapMode::NoWrap,
                     beginPos,
                     &foundStart,
                     &foundEnd,
@@ -3518,7 +3594,7 @@ static int splitMS(DocumentWidget *window, DataValue *argList, int nArgs, DataVa
                         splitStr,
                         SEARCH_FORWARD,
                         searchType,
-                        false,
+                        WrapMode::NoWrap,
                         strLength,
                         &foundStart,
                         &foundEnd,

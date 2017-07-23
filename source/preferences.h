@@ -30,6 +30,7 @@
 #include "IndentStyle.h"
 #include "SearchType.h"
 #include "WrapStyle.h"
+#include "WrapMode.h"
 #include "util/string_view.h"
 
 #include <QList>
@@ -92,7 +93,7 @@ int GetPrefRows();
 bool GetPrefSaveOldVersion();
 bool GetPrefSearchDlogs();
 SearchType GetPrefSearch();
-int GetPrefSearchWraps();
+WrapMode GetPrefSearchWraps();
 int GetPrefShowMatching();
 int GetPrefShowPathInWindowsMenu();
 int GetPrefSmartTags();

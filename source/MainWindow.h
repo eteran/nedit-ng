@@ -8,6 +8,7 @@
 #include "SmartIndentEvent.h"
 #include "NewMode.h"
 #include "CloseMode.h"
+#include "WrapMode.h"
 #include <QMainWindow>
 #include <QPointer>
 
@@ -111,7 +112,9 @@ public Q_SLOTS:
     void action_Unload_Tags_File(const QString &filename);
     void action_Load_Tips_File(const QString &filename);
     void action_Unload_Tips_File(const QString &filename);
-    void action_Find(const QString &string, SearchDirection direction, SearchType type, bool searchWrap);
+    void action_Find(const QString &string, SearchDirection direction, SearchType type, WrapMode searchWrap);
+    void action_Find_Dialog(SearchDirection direction, SearchType type, bool keepDialog);
+    void action_Find_Again(SearchDirection direction, WrapMode wrap);
 
 
     void action_Shift_Left_Tabs();

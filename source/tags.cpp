@@ -890,14 +890,14 @@ static int fakeRegExSearchEx(view::string_view buffer, const char *searchString,
 	}
 	*outPtr = 0; // Terminate searchSubs 
 
-    found = SearchString(fileString, QString::fromLatin1(searchSubs), dir, SEARCH_REGEX, false, searchStartPos, startPos, endPos, nullptr, nullptr, nullptr);
+    found = SearchString(fileString, QString::fromLatin1(searchSubs), dir, SEARCH_REGEX, WrapMode::NoWrap, searchStartPos, startPos, endPos, nullptr, nullptr, nullptr);
 
 	if (!found && !ctagsMode) {
 		/* position of the target definition could have been drifted before
 		   startPos, if nothing has been found by now try searching backward
 		   again from startPos.
 		*/
-        found = SearchString(fileString, QString::fromLatin1(searchSubs), SEARCH_BACKWARD, SEARCH_REGEX, false, searchStartPos, startPos, endPos, nullptr, nullptr, nullptr);
+        found = SearchString(fileString, QString::fromLatin1(searchSubs), SEARCH_BACKWARD, SEARCH_REGEX, WrapMode::NoWrap, searchStartPos, startPos, endPos, nullptr, nullptr, nullptr);
 	}
 
 	// return the result 
@@ -1119,7 +1119,7 @@ void showMatchingCalltipEx(TextArea *area, int i) {
 
             // 4. Find the end of the calltip (delimited by an empty line)
             endPos = startPos;
-			bool found = SearchString(fileString.c_str(), QLatin1String("\\n\\s*\\n"), SEARCH_FORWARD, SEARCH_REGEX, false, startPos, &endPos, &dummy, nullptr, nullptr, nullptr);
+            bool found = SearchString(fileString.c_str(), QLatin1String("\\n\\s*\\n"), SEARCH_FORWARD, SEARCH_REGEX, WrapMode::NoWrap, startPos, &endPos, &dummy, nullptr, nullptr, nullptr);
             if (!found) {
                 // Just take 4 lines
 				moveAheadNLinesEx(fileString, &endPos, TIP_DEFAULT_LINES);
@@ -1228,7 +1228,7 @@ enum tftoken_types { TF_EOF, TF_BLOCK, TF_VERSION, TF_INCLUDE, TF_LANGUAGE, TF_A
 static int searchLine(char *line, const char *regex) {
     int dummy1;
     int dummy2;
-    return SearchString(line, QString::fromLatin1(regex), SEARCH_FORWARD, SEARCH_REGEX, false, 0, &dummy1, &dummy2, nullptr, nullptr, nullptr);
+    return SearchString(line, QString::fromLatin1(regex), SEARCH_FORWARD, SEARCH_REGEX, WrapMode::NoWrap, 0, &dummy1, &dummy2, nullptr, nullptr, nullptr);
 }
 
 // Check if a line has non-ws characters 
@@ -1245,7 +1245,7 @@ static bool lineEmpty(const char *line) {
 static void rstrip(char *dst, const char *src) {
     int wsStart, dummy2;
 	// Strip trailing whitespace 
-    if (SearchString(src, QLatin1String("\\s*\\n"), SEARCH_FORWARD, SEARCH_REGEX, false, 0, &wsStart, &dummy2, nullptr, nullptr, nullptr)) {
+    if (SearchString(src, QLatin1String("\\s*\\n"), SEARCH_FORWARD, SEARCH_REGEX, WrapMode::NoWrap, 0, &wsStart, &dummy2, nullptr, nullptr, nullptr)) {
         if (dst != src)
             memcpy(dst, src, wsStart);
         dst[wsStart] = 0;

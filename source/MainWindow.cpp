@@ -319,7 +319,7 @@ void MainWindow::setupMenuDefaults() {
 
     // Default Search Settings
     no_signals(ui.action_Default_Search_Verbose)->setChecked(GetPrefSearchDlogs());
-    no_signals(ui.action_Default_Search_Wrap_Around)->setChecked(GetPrefSearchWraps());
+    no_signals(ui.action_Default_Search_Wrap_Around)->setChecked(GetPrefSearchWraps() == WrapMode::Wrap);
     no_signals(ui.action_Default_Search_Beep_On_Search_Wrap)->setChecked(GetPrefBeepOnSearchWrap());
     no_signals(ui.action_Default_Search_Keep_Dialogs_Up)->setChecked(GetPrefKeepSearchDlogs());
 
@@ -2092,18 +2092,6 @@ void MainWindow::on_action_Goto_Selected_triggered() {
 //------------------------------------------------------------------------------
 // Name:
 //------------------------------------------------------------------------------
-void MainWindow::on_action_Find_triggered() {
-    DoFindDlogEx(
-        this,
-        currentDocument(),
-        SEARCH_FORWARD,
-        GetPrefKeepSearchDlogs(),
-        GetPrefSearch());
-}
-
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
 void MainWindow::action_Shift_Find() {
     DoFindDlogEx(
         this,
@@ -2111,19 +2099,6 @@ void MainWindow::action_Shift_Find() {
         SEARCH_BACKWARD,
         GetPrefKeepSearchDlogs(),
         GetPrefSearch());
-}
-
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
-void MainWindow::on_action_Find_Again_triggered() {
-
-    SearchAndSelectSameEx(
-        this,
-        currentDocument(),
-        lastFocus_,
-        SEARCH_FORWARD,
-        GetPrefSearchWraps());
 }
 
 //------------------------------------------------------------------------------
@@ -4437,7 +4412,7 @@ void MainWindow::DimPasteReplayBtns(bool enabled) {
  * @param keepDialogs
  * @param type
  */
-void MainWindow::action_Find(const QString &string, SearchDirection direction, SearchType type, bool searchWrap) {
+void MainWindow::action_Find(const QString &string, SearchDirection direction, SearchType type, WrapMode searchWrap) {
 
     SearchAndSelectEx(
         this,
@@ -4447,4 +4422,52 @@ void MainWindow::action_Find(const QString &string, SearchDirection direction, S
         string,
         type,
         searchWrap);
+}
+
+/**
+ * @brief MainWindow::action_Find
+ * @param string
+ * @param direction
+ * @param keepDialogs
+ * @param type
+ */
+void MainWindow::action_Find_Dialog(SearchDirection direction, SearchType type, bool keepDialog) {
+    DoFindDlogEx(
+        this,
+        currentDocument(),
+        direction,
+        keepDialog,
+        type);
+}
+
+/**
+ * @brief MainWindow::on_action_Find_triggered
+ */
+void MainWindow::on_action_Find_triggered() {
+    action_Find_Dialog(
+        SEARCH_FORWARD,
+        GetPrefSearch(),
+        GetPrefKeepSearchDlogs());
+}
+
+/**
+ * @brief MainWindow::action_FindAgain
+ * @param direction
+ * @param wrap
+ */
+void MainWindow::action_Find_Again(SearchDirection direction, WrapMode wrap) {
+    SearchAndSelectSameEx(
+        this,
+        currentDocument(),
+        lastFocus_,
+        direction,
+        wrap);
+}
+
+/**
+ * @brief MainWindow::on_action_Find_Again_triggered
+ */
+void MainWindow::on_action_Find_Again_triggered() {
+
+    action_Find_Again(SEARCH_FORWARD, GetPrefSearchWraps());
 }
