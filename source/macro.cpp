@@ -224,9 +224,9 @@ static int readSearchArgs(DataValue *argList, int nArgs, SearchDirection *search
 static bool wrongNArgsErr(const char **errMsg);
 static bool tooFewArgsErr(const char **errMsg);
 static int strCaseCmpEx(const std::string &str1, const std::string &str2);
-static bool readArgument(DataValue dv, int *result, const char **errMsg);
-static bool readArgument(DataValue dv, std::string *result, const char **errMsg);
-static bool readArgument(DataValue dv, QString *result, const char **errMsg);
+static bool readArgument(DataValue dv, int *result, const char **errMsg = nullptr);
+static bool readArgument(DataValue dv, std::string *result, const char **errMsg = nullptr);
+static bool readArgument(DataValue dv, QString *result, const char **errMsg = nullptr);
 
 template <class T, class ...Ts>
 bool readArguments(DataValue *argList, int nArgs, int index, const char **errMsg, T arg, Ts...args);
@@ -574,6 +574,143 @@ WINDOW_MENU_EVENT(markDialogMS,                      on_action_Mark_triggered)
 WINDOW_MENU_EVENT(gotoMarkDialogMS,                  on_action_Goto_Mark_triggered)
 WINDOW_MENU_EVENT(showTipMS,                         on_action_Show_Calltip_triggered)
 
+
+
+
+/*
+** Scans action argument list for arguments "forward" or "backward" to
+** determine search direction for search and replace actions.  "ignoreArgs"
+** tells the routine how many required arguments there are to ignore before
+** looking for keywords
+*/
+static SearchDirection searchDirection(DataValue *argList, int nArgs, int index) {
+    for(int i = index; i < nArgs; ++i) {
+        QString arg;
+        if (!readArgument(argList[i], &arg)) {
+            return SEARCH_FORWARD;
+        }
+
+        if (arg.compare(QLatin1String("forward"), Qt::CaseInsensitive) == 0)
+            return SEARCH_FORWARD;
+
+        if (arg.compare(QLatin1String("backward"), Qt::CaseInsensitive) == 0)
+            return SEARCH_BACKWARD;
+    }
+
+    return SEARCH_FORWARD;
+}
+
+
+/*
+** Scans action argument list for arguments "keep" or "nokeep" to
+** determine whether to keep dialogs up for search and replace.  "ignoreArgs"
+** tells the routine how many required arguments there are to ignore before
+** looking for keywords
+*/
+static int searchKeepDialogs(DataValue *argList, int nArgs, int index) {
+    for(int i = index; i < nArgs; ++i) {
+        QString arg;
+        if (!readArgument(argList[i], &arg)) {
+            return GetPrefKeepSearchDlogs();
+        }
+
+        if (arg.compare(QLatin1String("keep"), Qt::CaseInsensitive) == 0)
+            return true;
+
+        if (arg.compare(QLatin1String("nokeep"), Qt::CaseInsensitive) == 0)
+            return false;
+    }
+
+    return GetPrefKeepSearchDlogs();
+}
+
+
+/*
+** Scans action argument list for arguments "wrap" or "nowrap" to
+** determine search direction for search and replace actions.  "ignoreArgs"
+** tells the routine how many required arguments there are to ignore before
+** looking for keywords
+*/
+static WrapMode searchWrap(DataValue *argList, int nArgs, int index) {
+    for(int i = index; i < nArgs; ++i) {
+        QString arg;
+        if (!readArgument(argList[i], &arg)) {
+            return GetPrefSearchWraps();
+        }
+
+        if (arg.compare(QLatin1String("wrap"), Qt::CaseInsensitive) == 0)
+            return WrapMode::Wrap;
+
+        if (arg.compare(QLatin1String("nowrap"), Qt::CaseInsensitive) == 0)
+            return WrapMode::NoWrap;
+    }
+
+    return GetPrefSearchWraps();
+}
+
+/*
+** Parses a search type description string. If the string contains a valid
+** search type description, returns TRUE and writes the corresponding
+** SearchType in searchType. Returns FALSE and leaves searchType untouched
+** otherwise. (Originally written by Markus Schwarzenberg; slightly adapted).
+*/
+bool StringToSearchType(view::string_view string, SearchType *searchType) {
+
+    static const struct {
+        view::string_view name;
+        SearchType type;
+    } searchTypeStrings[] = {
+        { "literal",     SearchType::SEARCH_LITERAL },
+        { "case",        SearchType::SEARCH_CASE_SENSE },
+        { "regex",       SearchType::SEARCH_REGEX },
+        { "word",        SearchType::SEARCH_LITERAL_WORD },
+        { "caseWord",    SearchType::SEARCH_CASE_SENSE_WORD },
+        { "regexNoCase", SearchType::SEARCH_REGEX_NOCASE },
+    };
+
+    for(const auto &entry : searchTypeStrings) {
+        if (view::icasecmp(string, entry.name)) {
+            *searchType = entry.type;
+            return true;
+        }
+    }
+
+    *searchType = GetPrefSearch();
+    return false;
+}
+
+
+/*
+** Scans action argument list for arguments "literal", "case" or "regex" to
+** determine search type for search and replace actions.  "ignoreArgs"
+** tells the routine how many required arguments there are to ignore before
+** looking for keywords
+*/
+static SearchType searchType(DataValue *argList, int nArgs, int index) {
+    const char *errMsg = nullptr;
+    for(int i = index; i < nArgs; ++i) {
+        QString arg;
+        if (!readArgument(argList[i], &arg, &errMsg)) {
+            return GetPrefSearch();
+        }
+
+        if (arg.compare(QLatin1String("literal"), Qt::CaseInsensitive) == 0)
+            return SearchType::SEARCH_LITERAL;
+        if (arg.compare(QLatin1String("case"), Qt::CaseInsensitive) == 0)
+            return SearchType::SEARCH_CASE_SENSE;
+        if (arg.compare(QLatin1String("regex"), Qt::CaseInsensitive) == 0)
+            return SearchType::SEARCH_REGEX;
+        if (arg.compare(QLatin1String("word"), Qt::CaseInsensitive) == 0)
+            return SearchType::SEARCH_LITERAL_WORD;
+        if (arg.compare(QLatin1String("caseWord"), Qt::CaseInsensitive) == 0)
+            return SearchType::SEARCH_CASE_SENSE_WORD;
+        if (arg.compare(QLatin1String("regexNoCase"), Qt::CaseInsensitive) == 0)
+            return SearchType::SEARCH_REGEX_NOCASE;
+    }
+
+    return GetPrefSearch();
+}
+
 static int closeMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     // ensure that we are dealing with the document which currently has the focus
@@ -677,12 +814,12 @@ static int saveAsMS(DocumentWidget *document, DataValue *argList, int nArgs, Dat
 
     // NOTE(eteran): "wrapped" optional argument is not documented
     if(nArgs == 2) {
-        std::string string;
+        QString string;
         if(!readArguments(argList, nArgs, 1, errMsg, &string)) {
             return false;
         }
 
-        if(view::icasecmp(view::string_view(string), view::string_view("wrapped"))) {
+        if(string.compare(QLatin1String("wrapped"), Qt::CaseInsensitive) == 0) {
             wrapped = true;
         }
     }
@@ -693,59 +830,6 @@ static int saveAsMS(DocumentWidget *document, DataValue *argList, int nArgs, Dat
 
     result->tag = NO_TAG;
     return true;
-}
-
-enum SearchFields {
-    Direction, Wrap, Type, Keep
-};
-
-struct SearchParameters {
-    SearchDirection direction;
-    WrapMode        wrap;
-    SearchType      type;
-    bool            keep;
-};
-
-static int parseSearchArgument(SearchParameters *params, const QString &arg, int fields) {
-    if(arg == QLatin1String("literal") && (fields & SearchFields::Type)) {
-        params->type = SearchType::SEARCH_LITERAL;
-        return true;
-    } else if(arg == QLatin1String("case") && (fields & SearchFields::Type)) {
-        params->type = SearchType::SEARCH_CASE_SENSE;
-        return true;
-    } else if(arg == QLatin1String("regex") && (fields & SearchFields::Type)) {
-        params->type = SearchType::SEARCH_REGEX;
-        return true;
-    } else if(arg == QLatin1String("word") && (fields & SearchFields::Type)) {
-        params->type = SearchType::SEARCH_LITERAL_WORD;
-        return true;
-    } else if(arg == QLatin1String("caseWord") && (fields & SearchFields::Type)) {
-        params->type = SearchType::SEARCH_CASE_SENSE_WORD;
-        return true;
-    } else if(arg == QLatin1String("regexNoCase") && (fields & SearchFields::Type)) {
-        params->type = SearchType::SEARCH_REGEX_NOCASE;
-        return true;
-    } else if(arg == QLatin1String("forward") && (fields & SearchFields::Direction)) {
-        params->direction = SearchDirection::SEARCH_FORWARD;
-        return true;
-    } else if(arg == QLatin1String("backward") && (fields & SearchFields::Direction)) {
-        params->direction = SearchDirection::SEARCH_BACKWARD;
-        return true;
-    } else if(arg == QLatin1String("wrap") && (fields & SearchFields::Wrap)) {
-        params->wrap = WrapMode::Wrap;
-        return true;
-    } else if(arg == QLatin1String("nowrap") && (fields & SearchFields::Wrap)) {
-        params->wrap = WrapMode::NoWrap;
-        return true;
-    } else if(arg == QLatin1String("keep") && (fields & SearchFields::Keep)) {
-        params->keep = true;
-        return true;
-    } else if(arg == QLatin1String("nokeep") && (fields & SearchFields::Keep)) {
-        params->keep = false;
-        return true;
-    }
-
-    return false;
 }
 
 static int findMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -759,29 +843,17 @@ static int findMS(DocumentWidget *document, DataValue *argList, int nArgs, DataV
         return wrongNArgsErr(errMsg);
     }
 
-    SearchParameters params = {
-        SearchDirection::SEARCH_FORWARD,
-        WrapMode::NoWrap,
-        SearchType::SEARCH_LITERAL,
-        false
-    };
-
     QString string;
     if(!readArguments(argList, nArgs, 1, errMsg, &string)) {
         return false;
     }
 
-    for(int i = 1; i < nArgs; ++i) {
-        QString arg;
-        if (!readArgument(argList[i], &arg, errMsg)) {
-            return false;
-        }
-
-        parseSearchArgument(&params, arg, Direction | Wrap | Type);
-    }
+    SearchDirection direction = searchDirection(argList, nArgs, 1);
+    SearchType      type      = searchType(argList, nArgs, 1);
+    WrapMode        wrap      = searchWrap(argList, nArgs, 1);
 
     if(MainWindow *window = document->toWindow()) {
-        window->action_Find(string, params.direction, params.type, params.wrap);
+        window->action_Find(string, direction, type, wrap);
     }
 
     result->tag = NO_TAG;
@@ -790,27 +862,17 @@ static int findMS(DocumentWidget *document, DataValue *argList, int nArgs, DataV
 
 static int findDialogMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
+    Q_UNUSED(errMsg);
+
     // ensure that we are dealing with the document which currently has the focus
     document = MacroRunWindowEx();
 
-    SearchParameters params = {
-        SearchDirection::SEARCH_FORWARD,
-        WrapMode::NoWrap,
-        SearchType::SEARCH_LITERAL,
-        false
-    };
-
-    for(int i = 0; i < nArgs; ++i) {
-        QString arg;
-        if (!readArgument(argList[i], &arg, errMsg)) {
-            return false;
-        }
-
-        parseSearchArgument(&params, arg, Direction | Type | Keep);
-    }
+    SearchDirection direction = searchDirection(argList, nArgs, 0);
+    SearchType      type      = searchType(argList, nArgs, 0);
+    bool            keep      = searchKeepDialogs(argList, nArgs, 0);
 
     if(MainWindow *window = document->toWindow()) {
-        window->action_Find_Dialog(params.direction, params.type, params.keep);
+        window->action_Find_Dialog(direction, type, keep);
     }
 
     result->tag = NO_TAG;
@@ -819,27 +881,16 @@ static int findDialogMS(DocumentWidget *document, DataValue *argList, int nArgs,
 
 static int findAgainMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
+    Q_UNUSED(errMsg);
+
     // ensure that we are dealing with the document which currently has the focus
     document = MacroRunWindowEx();
 
-    SearchParameters params = {
-        SearchDirection::SEARCH_FORWARD,
-        WrapMode::NoWrap,
-        SearchType::SEARCH_LITERAL,
-        false
-    };
-
-    for(int i = 0; i < nArgs; ++i) {
-        QString arg;
-        if (!readArgument(argList[i], &arg, errMsg)) {
-            return false;
-        }
-
-        parseSearchArgument(&params, arg, Direction | Wrap);
-    }
+    SearchDirection direction = searchDirection(argList, nArgs, 0);
+    WrapMode        wrap      = searchWrap(argList, nArgs, 0);
 
     if(MainWindow *window = document->toWindow()) {
-        window->action_Find_Again(params.direction, params.wrap);
+        window->action_Find_Again(direction, wrap);
     }
 
     result->tag = NO_TAG;
@@ -848,27 +899,17 @@ static int findAgainMS(DocumentWidget *document, DataValue *argList, int nArgs, 
 
 static int findSelectionMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
+    Q_UNUSED(errMsg);
+
     // ensure that we are dealing with the document which currently has the focus
     document = MacroRunWindowEx();
 
-    SearchParameters params = {
-        SearchDirection::SEARCH_FORWARD,
-        WrapMode::NoWrap,
-        SearchType::SEARCH_LITERAL,
-        false
-    };
-
-    for(int i = 0; i < nArgs; ++i) {
-        QString arg;
-        if (!readArgument(argList[i], &arg, errMsg)) {
-            return false;
-        }
-
-        parseSearchArgument(&params, arg, Direction | Type | Wrap);
-    }
+    SearchDirection direction = searchDirection(argList, nArgs, 0);
+    SearchType      type      = searchType(argList, nArgs, 0);
+    WrapMode        wrap      = searchWrap(argList, nArgs, 0);
 
     if(MainWindow *window = document->toWindow()) {
-        window->action_Find_Selection(params.direction, params.type, params.wrap);
+        window->action_Find_Selection(direction, type, wrap);
     }
 
     result->tag = NO_TAG;
@@ -2622,7 +2663,6 @@ static int replaceInStringMS(DocumentWidget *window, DataValue *argList, int nAr
     std::string string;
     QString searchStr;
     std::string replaceStr;
-    std::string argStr;
 	SearchType searchType = SEARCH_LITERAL;
 	int copyStart;
 	int copyEnd;
@@ -2641,6 +2681,8 @@ static int replaceInStringMS(DocumentWidget *window, DataValue *argList, int nAr
 
 	for (i = 3; i < nArgs; i++) {
 		// Read the optional search type and force arguments 
+        std::string argStr;
+
         if (!readArgument(argList[i], &argStr, errMsg))
 			return false;
 
@@ -5403,7 +5445,9 @@ static bool readArgument(DataValue dv, int *result, const char **errMsg) {
         char *endp;
         long val = strtol(p, &endp, 10);
         if (endp == p || *endp != '\0' || ((val == LONG_MIN || val == LONG_MAX) && errno == ERANGE)) {
-            *errMsg = "%s called with non-integer argument";
+            if(errMsg) {
+                *errMsg = "%s called with non-integer argument";
+            }
             return false;
         }
 
@@ -5411,7 +5455,9 @@ static bool readArgument(DataValue dv, int *result, const char **errMsg) {
 		return true;
 	}
 
-    *errMsg = "%s called with unknown object";
+    if(errMsg) {
+        *errMsg = "%s called with unknown object";
+    }
     return false;
 }
 
@@ -5432,7 +5478,9 @@ static bool readArgument(DataValue dv, std::string *result, const char **errMsg)
         *result = std::to_string(dv.val.n);
         return true;
     default:
-        *errMsg = "%s called with unknown object";
+        if(errMsg) {
+            *errMsg = "%s called with unknown object";
+        }
         return false;
     }
 }
@@ -5447,7 +5495,9 @@ static bool readArgument(DataValue dv, QString *result, const char **errMsg) {
         *result = QString::number(dv.val.n);
         return true;
     default:
-        *errMsg = "%s called with unknown object";
+        if(errMsg) {
+            *errMsg = "%s called with unknown object";
+        }
         return false;
     }
 }

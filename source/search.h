@@ -37,9 +37,7 @@ class DocumentWidget;
 class MainWindow;
 class TextArea;
 
-constexpr int MAX_SEARCH_HISTORY = 100; /* Maximum length of search string history */
-
-
+constexpr int MAX_SEARCH_HISTORY = 100; // Maximum length of search string history
 
 bool ReplaceAllEx(MainWindow *window, DocumentWidget *document, TextArea *area, const QString &searchString, const QString &replaceString, SearchType searchType);
 bool ReplaceAndSearchEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, const QString &searchString, const QString &replaceString, SearchType searchType, WrapMode searchWrap);
@@ -72,16 +70,6 @@ enum ReplaceAllDefaultScope {
 };
 
 /*
-** Parses a search type description string. If the string contains a valid
-** search type description, returns TRUE and writes the corresponding
-** SearchType in searchType. Returns FALSE and leaves searchType untouched
-** otherwise.
-*/
-bool StringToSearchType(view::string_view string, SearchType *searchType);
-bool StringToSearchDirection(view::string_view string, SearchDirection *searchDirection);
-bool StringToSearchWrap(view::string_view string, WrapMode *searchWraps);
-
-/*
 ** History of search actions.
 */
 struct SelectionInfo {
@@ -101,7 +89,6 @@ struct SearchReplaceHistoryEntry {
     QString    search;
     QString    replace;
     SearchType type;
-
 };
 
 extern int NHist;
