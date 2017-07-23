@@ -1990,7 +1990,18 @@ static bool searchMatchesSelectionEx(DocumentWidget *window, const QString &sear
     // search for the string in the selection (we are only interested
     // in an exact match, but the procedure SearchString does important
     // stuff like applying the correct matching algorithm)
-    bool found = SearchString(string, searchString, SEARCH_FORWARD, searchType, WrapMode::NoWrap, beginPos, &startPos, &endPos, &extentBW, &extentFW, GetWindowDelimitersEx(window).toLatin1().data());
+    bool found = SearchString(
+                string,
+                searchString,
+                SEARCH_FORWARD,
+                searchType,
+                WrapMode::NoWrap,
+                beginPos,
+                &startPos,
+                &endPos,
+                &extentBW,
+                &extentFW,
+                GetWindowDelimitersEx(window).toLatin1().data());
 
     // decide if it is an exact match
     if (!found) {
