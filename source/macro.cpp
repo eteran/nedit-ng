@@ -790,8 +790,6 @@ static int findMS(DocumentWidget *document, DataValue *argList, int nArgs, DataV
 
 static int findDialogMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
-    // find( search-string [, search-direction] [, search-type] [, search-wrap] )
-
     // ensure that we are dealing with the document which currently has the focus
     document = MacroRunWindowEx();
 
@@ -821,8 +819,6 @@ static int findDialogMS(DocumentWidget *document, DataValue *argList, int nArgs,
 
 static int findAgainMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
-    // find( search-string [, search-direction] [, search-type] [, search-wrap] )
-
     // ensure that we are dealing with the document which currently has the focus
     document = MacroRunWindowEx();
 
@@ -844,6 +840,35 @@ static int findAgainMS(DocumentWidget *document, DataValue *argList, int nArgs, 
 
     if(MainWindow *window = document->toWindow()) {
         window->action_Find_Again(params.direction, params.wrap);
+    }
+
+    result->tag = NO_TAG;
+    return true;
+}
+
+static int findSelectionMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+
+    // ensure that we are dealing with the document which currently has the focus
+    document = MacroRunWindowEx();
+
+    SearchParameters params = {
+        SearchDirection::SEARCH_FORWARD,
+        WrapMode::NoWrap,
+        SearchType::SEARCH_LITERAL,
+        false
+    };
+
+    for(int i = 0; i < nArgs; ++i) {
+        QString arg;
+        if (!readArgument(argList[i], &arg, errMsg)) {
+            return false;
+        }
+
+        parseSearchArgument(&params, arg, Direction | Type | Wrap);
+    }
+
+    if(MainWindow *window = document->toWindow()) {
+        window->action_Find_Selection(params.direction, params.type, params.wrap);
     }
 
     result->tag = NO_TAG;
@@ -893,8 +918,8 @@ static const SubRoutine MenuMacroSubrNames[] = {
     { "find",                         findMS },
     { "find_dialog",                  findDialogMS },
     { "find_again",                   findAgainMS },
-    { "find_selection",               nullptr }, // NOTE(eteran): here
-    { "replace",                      nullptr },
+    { "find_selection",               findSelectionMS },
+    { "replace",                      nullptr }, // NOTE(eteran): here
     { "replace_dialog",               replaceDialogMS },
     { "replace_all",                  replaceAllMS },
     { "replace_in_selection",         replaceAllInSelectionMS },

@@ -115,6 +115,7 @@ public Q_SLOTS:
     void action_Find(const QString &string, SearchDirection direction, SearchType type, WrapMode searchWrap);
     void action_Find_Dialog(SearchDirection direction, SearchType type, bool keepDialog);
     void action_Find_Again(SearchDirection direction, WrapMode wrap);
+    void action_Find_Selection(SearchDirection direction, SearchType type, WrapMode wrap);
 
 
     void action_Shift_Left_Tabs();

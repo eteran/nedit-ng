@@ -2116,20 +2116,6 @@ void MainWindow::action_Shift_Find_Again() {
 //------------------------------------------------------------------------------
 // Name:
 //------------------------------------------------------------------------------
-void MainWindow::on_action_Find_Selection_triggered() {
-
-    SearchForSelectedEx(
-        this,
-        currentDocument(),
-        lastFocus_,
-        SEARCH_FORWARD,
-        GetPrefSearch(),
-        GetPrefSearchWraps());
-}
-
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
 void MainWindow::action_Shift_Find_Selection_triggered() {
     SearchForSelectedEx(
         this,
@@ -4468,6 +4454,28 @@ void MainWindow::action_Find_Again(SearchDirection direction, WrapMode wrap) {
  * @brief MainWindow::on_action_Find_Again_triggered
  */
 void MainWindow::on_action_Find_Again_triggered() {
-
     action_Find_Again(SEARCH_FORWARD, GetPrefSearchWraps());
+}
+
+/**
+ * @brief MainWindow::action_Find_Selection
+ */
+void MainWindow::action_Find_Selection(SearchDirection direction, SearchType type, WrapMode wrap) {
+    SearchForSelectedEx(
+        this,
+        currentDocument(),
+        lastFocus_,
+        direction,
+        type,
+        wrap);
+}
+
+/**
+ * @brief MainWindow::on_action_Find_Selection_triggered
+ */
+void MainWindow::on_action_Find_Selection_triggered() {
+    action_Find_Selection(
+                SEARCH_FORWARD,
+                GetPrefSearch(),
+                GetPrefSearchWraps());
 }
