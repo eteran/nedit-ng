@@ -618,21 +618,6 @@ basic_string_view<Ch, Tr> substr(const Ch *first, const Ch *last) {
 
 }
 
-// useful for case insensitive comparisons between things that can be converted
-// to a string_view
-/**
- * Returns true if the strings are equal, otherwise false
- */
-template <class Ch, class Tr = std::char_traits<Ch>>
-bool icasecmp(basic_string_view<Ch, Tr> lhs, basic_string_view<Ch, Tr> rhs) {
-
-    using std::toupper;
-
-    return lhs.size() == rhs.size() && std::equal(lhs.cbegin(), lhs.cend(), rhs.cbegin(), [](Ch l1, Ch r1) {
-        return toupper(static_cast<unsigned char>(l1)) == toupper(static_cast<unsigned char>(r1));
-    });
-}
-
 }
 
 //--------------------------------------------------------------------------
