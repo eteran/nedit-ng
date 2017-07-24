@@ -220,10 +220,10 @@ static int filenameDialogMS(DocumentWidget *document, DataValue *argList, int nA
 static int replaceAllInSelectionMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 static int replaceAllMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 
-static int readSearchArgs(DataValue *argList, int nArgs, SearchDirection *searchDirection, SearchType *searchType, bool *wrap, const char **errMsg);
+static int readSearchArgs(DataValue *argList, int nArgs, SearchDirection *searchDirection, SearchType *searchType, WrapMode *wrap, const char **errMsg);
 static bool wrongNArgsErr(const char **errMsg);
 static bool tooFewArgsErr(const char **errMsg);
-static int strCaseCmpEx(const std::string &str1, const std::string &str2);
+
 static bool readArgument(DataValue dv, int *result, const char **errMsg = nullptr);
 static bool readArgument(DataValue dv, std::string *result, const char **errMsg = nullptr);
 static bool readArgument(DataValue dv, QString *result, const char **errMsg = nullptr);
@@ -654,22 +654,22 @@ static WrapMode searchWrap(DataValue *argList, int nArgs, int index) {
 ** SearchType in searchType. Returns FALSE and leaves searchType untouched
 ** otherwise. (Originally written by Markus Schwarzenberg; slightly adapted).
 */
-bool StringToSearchType(view::string_view string, SearchType *searchType) {
+bool StringToSearchType(const QString &string, SearchType *searchType) {
 
     static const struct {
-        view::string_view name;
+        QString name;
         SearchType type;
     } searchTypeStrings[] = {
-        { "literal",     SearchType::SEARCH_LITERAL },
-        { "case",        SearchType::SEARCH_CASE_SENSE },
-        { "regex",       SearchType::SEARCH_REGEX },
-        { "word",        SearchType::SEARCH_LITERAL_WORD },
-        { "caseWord",    SearchType::SEARCH_CASE_SENSE_WORD },
-        { "regexNoCase", SearchType::SEARCH_REGEX_NOCASE },
+        { QLatin1String("literal"),     SearchType::SEARCH_LITERAL },
+        { QLatin1String("case"),        SearchType::SEARCH_CASE_SENSE },
+        { QLatin1String("regex"),       SearchType::SEARCH_REGEX },
+        { QLatin1String("word"),        SearchType::SEARCH_LITERAL_WORD },
+        { QLatin1String("caseWord"),    SearchType::SEARCH_CASE_SENSE_WORD },
+        { QLatin1String("regexNoCase"), SearchType::SEARCH_REGEX_NOCASE },
     };
 
     for(const auto &entry : searchTypeStrings) {
-        if (view::icasecmp(string, entry.name)) {
+        if (string.compare(entry.name, Qt::CaseInsensitive) == 0) {
             *searchType = entry.type;
             return true;
         }
@@ -723,22 +723,22 @@ static int closeMS(DocumentWidget *document, DataValue *argList, int nArgs, Data
     CloseMode mode = CloseMode::Prompt;
 
     if(nArgs == 1) {
-        std::string string;
+        QString string;
         if(!readArguments(argList, nArgs, 0, errMsg, &string)) {
             return false;
         }
 
         static const struct {
-            view::string_view name;
+            QLatin1String name;
             CloseMode type;
         } openTypeStrings [] = {
-            { "prompt", CloseMode::Prompt },
-            { "save",   CloseMode::Save },
-            { "nosave", CloseMode::NoSave },
+            { QLatin1String("prompt"), CloseMode::Prompt },
+            { QLatin1String("save"),   CloseMode::Save },
+            { QLatin1String("nosave"), CloseMode::NoSave },
         };
 
         for(const auto &entry : openTypeStrings) {
-            if (view::icasecmp(view::string_view(string), entry.name)) {
+            if (string.compare(entry.name, Qt::CaseInsensitive) == 0) {
                 mode = entry.type;
                 break;
             }
@@ -765,23 +765,23 @@ static int newMS(DocumentWidget *document, DataValue *argList, int nArgs, DataVa
     NewMode mode = NewMode::Prefs;
 
     if(nArgs == 1) {
-        std::string string;
+        QString string;
         if(!readArguments(argList, nArgs, 0, errMsg, &string)) {
             return false;
         }
 
         static const struct {
-            view::string_view name;
+            QLatin1String name;
             NewMode type;
         } openTypeStrings [] = {
-            { "tab",      NewMode::Tab },
-            { "window",   NewMode::Window },
-            { "prefs",    NewMode::Prefs },
-            { "opposite", NewMode::Opposite }
+            { QLatin1String("tab"),      NewMode::Tab },
+            { QLatin1String("window"),   NewMode::Window },
+            { QLatin1String("prefs"),    NewMode::Prefs },
+            { QLatin1String("opposite"), NewMode::Opposite }
         };
 
         for(const auto &entry : openTypeStrings) {
-            if (view::icasecmp(view::string_view(string), entry.name)) {
+            if (string.compare(entry.name, Qt::CaseInsensitive) == 0) {
                 mode = entry.type;
                 break;
             }
@@ -2576,7 +2576,6 @@ static int searchStringMS(DocumentWidget *window, DataValue *argList, int nArgs,
     int beginPos;
     WrapMode wrap;
     bool found = false;
-    bool iWrap;
     int foundStart;
     int foundEnd;
 	SearchType type;
@@ -2594,10 +2593,8 @@ static int searchStringMS(DocumentWidget *window, DataValue *argList, int nArgs,
 		return false;
     if (!readArgument(argList[2], &beginPos, errMsg))
 		return false;
-    if (!readSearchArgs(&argList[3], nArgs - 3, &direction, &type, &iWrap, errMsg))
+    if (!readSearchArgs(&argList[3], nArgs - 3, &direction, &type, &wrap, errMsg))
 		return false;
-
-    wrap = (iWrap ? WrapMode::Wrap : WrapMode::NoWrap);
 
     int len = argList[0].val.str.len;
 	if (beginPos > len) {
@@ -2681,14 +2678,14 @@ static int replaceInStringMS(DocumentWidget *window, DataValue *argList, int nAr
 
 	for (i = 3; i < nArgs; i++) {
 		// Read the optional search type and force arguments 
-        std::string argStr;
+        QString argStr;
 
         if (!readArgument(argList[i], &argStr, errMsg))
 			return false;
 
 		if (!StringToSearchType(argStr, &searchType)) {
 			// It's not a search type.  is it "copy"? 
-            if (argStr == "copy") {
+            if (argStr == QLatin1String("copy")) {
                 force = true;
 			} else {
 				*errMsg = "unrecognized argument to %s";
@@ -2731,23 +2728,24 @@ static int replaceInStringMS(DocumentWidget *window, DataValue *argList, int nAr
 	return true;
 }
 
-static int readSearchArgs(DataValue *argList, int nArgs, SearchDirection *searchDirection, SearchType *searchType, bool *wrap, const char **errMsg) {
+static int readSearchArgs(DataValue *argList, int nArgs, SearchDirection *searchDirection, SearchType *searchType, WrapMode *wrap, const char **errMsg) {
 
-    std::string argStr;
+    QString argStr;
 
-    *wrap = false;
+    *wrap            = WrapMode::NoWrap;
 	*searchDirection = SEARCH_FORWARD;
-	*searchType = SEARCH_LITERAL;
+    *searchType      = SEARCH_LITERAL;
+
     for (int i = 0; i < nArgs; i++) {
         if (!readArgument(argList[i], &argStr, errMsg))
 			return false;
-        else if (argStr == "wrap")
-            *wrap = true;
-        else if (argStr == "nowrap")
-            *wrap = false;
-        else if (argStr == "backward")
+        else if (argStr == QLatin1String("wrap"))
+            *wrap = WrapMode::Wrap;
+        else if (argStr == QLatin1String("nowrap"))
+            *wrap = WrapMode::NoWrap;
+        else if (argStr == QLatin1String("backward"))
 			*searchDirection = SEARCH_BACKWARD;
-        else if (argStr == "forward")
+        else if (argStr == QLatin1String("forward"))
 			*searchDirection = SEARCH_FORWARD;
 		else if (!StringToSearchType(argStr, searchType)) {
 			*errMsg = "Unrecognized argument to %s";
@@ -3469,9 +3467,9 @@ static int stringCompareMS(DocumentWidget *window, DataValue *argList, int nArgs
 
     Q_UNUSED(window);
 
-    std::string leftStr;
-    std::string rightStr;
-    std::string argStr;
+    QString leftStr;
+    QString rightStr;
+    QString argStr;
     bool considerCase = true;
 	int i;
 	int compareResult;
@@ -3490,21 +3488,24 @@ static int stringCompareMS(DocumentWidget *window, DataValue *argList, int nArgs
 	for (i = 2; i < nArgs; ++i) {
         if (!readArgument(argList[i], &argStr, errMsg))
 			return false;
-        else if (argStr == "case")
+        else if (argStr == QLatin1String("case"))
             considerCase = true;
-        else if (argStr == "nocase")
+        else if (argStr == QLatin1String("nocase"))
             considerCase = false;
 		else {
 			*errMsg = "Unrecognized argument to %s";
 			return false;
 		}
 	}
-	if (considerCase) {
+
+    if (considerCase) {
         compareResult = leftStr.compare(rightStr);
-		compareResult = (compareResult > 0) ? 1 : ((compareResult < 0) ? -1 : 0);
 	} else {
-        compareResult = strCaseCmpEx(leftStr, rightStr);
+        compareResult = leftStr.compare(rightStr, Qt::CaseInsensitive);
 	}
+
+    compareResult = qBound(-1, compareResult, 1);
+
 	result->tag = INT_TAG;
 	result->val.n = compareResult;
 	return true;
@@ -3526,7 +3527,6 @@ static int splitMS(DocumentWidget *window, DataValue *argList, int nArgs, DataVa
     std::string sourceStr;
     QString splitStr;
     bool validSplit = true;
-    std::string typeSplitStr;
 	SearchType searchType;
 	int foundStart;
 	int foundEnd;
@@ -3555,6 +3555,7 @@ static int splitMS(DocumentWidget *window, DataValue *argList, int nArgs, DataVa
         return false;
 	}
 
+    QString typeSplitStr;
     if (nArgs > 2 && readArgument(argList[2], &typeSplitStr, errMsg)) {
 		if (!StringToSearchType(typeSplitStr, &searchType)) {
 			*errMsg = "unrecognized argument to %s";
@@ -5394,39 +5395,6 @@ static bool wrongNArgsErr(const char **errMsg) {
 static bool tooFewArgsErr(const char **errMsg) {
     *errMsg = "Too few arguments to function %s";
     return false;
-}
-
-/*
-** strCaseCmp compares its arguments and returns 0 if the two strings
-** are equal IGNORING case differences.  Otherwise returns 1 or -1
-** depending on relative comparison.
-*/
-static int strCaseCmpEx(const std::string &str1, const std::string &str2) {
-
-    using std::toupper;
-
-    auto it1 = str1.begin();
-    auto it2 = str2.begin();
-
-    while(it1 != str1.end() && it2 != str2.end()) {
-
-        auto ch1 = static_cast<uint8_t>(*it1);
-        auto ch2 = static_cast<uint8_t>(*it2);
-
-        int cmp1 = static_cast<uint8_t>(toupper(ch1));
-        int cmp2 = static_cast<uint8_t>(toupper(ch2));
-
-        if (cmp1 > cmp2) {
-            return 1;
-        } else if (cmp1 < cmp2) {
-            return -1;
-        }
-
-        ++it1;
-        ++it2;
-    }
-
-    return 0;
 }
 
 /*
