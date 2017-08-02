@@ -539,6 +539,7 @@ WINDOW_MENU_EVENT_S(loadTagsFileMS,                  action_Load_Tags_File)
 WINDOW_MENU_EVENT_S(unloadTagsFileMS,                action_Unload_Tags_File)
 WINDOW_MENU_EVENT_S(loadTipsFileMS,                  action_Load_Tips_File)
 WINDOW_MENU_EVENT_S(unloadTipsFileMS,                action_Unload_Tips_File)
+WINDOW_MENU_EVENT_S(markMS,                          action_Mark)
 
 WINDOW_MENU_EVENT(closePaneMS,                       on_action_Close_Pane_triggered)
 WINDOW_MENU_EVENT(deleteMS,                          on_action_Delete_triggered)
@@ -546,6 +547,7 @@ WINDOW_MENU_EVENT(exitMS,                            on_action_Exit_triggered)
 WINDOW_MENU_EVENT(fillParagraphMS,                   on_action_Fill_Paragraph_triggered)
 WINDOW_MENU_EVENT(findDefinitionMS,                  on_action_Find_Definition_triggered)
 WINDOW_MENU_EVENT(gotoLineNumberDialogMS,            on_action_Goto_Line_Number_triggered)
+WINDOW_MENU_EVENT(gotoSelectedMS,                    on_action_Goto_Selected_triggered)
 WINDOW_MENU_EVENT(gotoMatchingMS,                    on_action_Goto_Matching_triggered)
 WINDOW_MENU_EVENT(includeFileDialogMS,               on_action_Include_File_triggered)
 WINDOW_MENU_EVENT(insertControlCodeDialogMS,         on_action_Insert_Ctrl_Code_triggered)
@@ -557,7 +559,6 @@ WINDOW_MENU_EVENT(openSelectedMS,                    on_action_Open_Selected_tri
 WINDOW_MENU_EVENT(printMS,                           on_action_Print_triggered)
 WINDOW_MENU_EVENT(printSelectionMS,                  on_action_Print_Selection_triggered)
 WINDOW_MENU_EVENT(redoMS,                            on_action_Redo_triggered)
-WINDOW_MENU_EVENT(replaceDialogMS,                   on_action_Replace_triggered)
 WINDOW_MENU_EVENT(saveAsDialogMS,                    on_action_Save_As_triggered)
 WINDOW_MENU_EVENT(saveMS,                            on_action_Save_triggered)
 WINDOW_MENU_EVENT(selectAllMS,                       on_action_Select_All_triggered)
@@ -573,9 +574,6 @@ WINDOW_MENU_EVENT(revertToSavedDialogMS,             on_action_Revert_to_Saved_t
 WINDOW_MENU_EVENT(markDialogMS,                      on_action_Mark_triggered)
 WINDOW_MENU_EVENT(gotoMarkDialogMS,                  on_action_Goto_Mark_triggered)
 WINDOW_MENU_EVENT(showTipMS,                         on_action_Show_Calltip_triggered)
-
-
-
 
 /*
 ** Scans action argument list for arguments "forward" or "backward" to
@@ -654,6 +652,8 @@ static WrapMode searchWrap(DataValue *argList, int nArgs, int index) {
 ** SearchType in searchType. Returns FALSE and leaves searchType untouched
 ** otherwise. (Originally written by Markus Schwarzenberg; slightly adapted).
 */
+// TODO(eteran): this is redundant to the "searchType" function below
+// let's factor it out...
 bool StringToSearchType(const QString &string, SearchType *searchType) {
 
     static const struct {
@@ -815,7 +815,7 @@ static int saveAsMS(DocumentWidget *document, DataValue *argList, int nArgs, Dat
     // NOTE(eteran): "wrapped" optional argument is not documented
     if(nArgs == 2) {
         QString string;
-        if(!readArguments(argList, nArgs, 1, errMsg, &string)) {
+        if(!readArgument(argList[1], &string, errMsg)) {
             return false;
         }
 
@@ -844,7 +844,7 @@ static int findMS(DocumentWidget *document, DataValue *argList, int nArgs, DataV
     }
 
     QString string;
-    if(!readArguments(argList, nArgs, 1, errMsg, &string)) {
+    if(!readArguments(argList, nArgs, 0, errMsg, &string)) {
         return false;
     }
 
@@ -916,6 +916,77 @@ static int findSelectionMS(DocumentWidget *document, DataValue *argList, int nAr
     return true;
 }
 
+static int replaceMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+
+    Q_UNUSED(errMsg);
+
+    // ensure that we are dealing with the document which currently has the focus
+    document = MacroRunWindowEx();
+
+    if(nArgs > 5 || nArgs < 2) {
+        return wrongNArgsErr(errMsg);
+    }
+
+    QString searchString;
+    QString replaceString;
+    if(!readArguments(argList, nArgs, 0, errMsg, &searchString, &replaceString)) {
+        return false;
+    }
+
+    SearchDirection direction = searchDirection(argList, nArgs, 2);
+    SearchType      type      = searchType(argList, nArgs, 2);
+    WrapMode        wrap      = searchWrap(argList, nArgs, 2);
+
+    if(MainWindow *window = document->toWindow()) {
+        window->action_Replace(direction, searchString, replaceString, type, wrap);
+    }
+
+    result->tag = NO_TAG;
+    return true;
+}
+
+static int replaceDialogMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+
+    Q_UNUSED(errMsg);
+
+    // ensure that we are dealing with the document which currently has the focus
+    document = MacroRunWindowEx();
+
+    SearchDirection direction = searchDirection(argList, nArgs, 0);
+    SearchType      type      = searchType(argList, nArgs, 0);
+    bool            keep      = searchKeepDialogs(argList, nArgs, 0);
+
+    if(MainWindow *window = document->toWindow()) {
+        window->action_Replace_Dialog(direction, type, keep);
+    }
+
+    result->tag = NO_TAG;
+    return true;
+}
+
+static int replaceAgainMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+
+    // replace_in_selection( search-string, replace-string [, search-type] )
+
+    // ensure that we are dealing with the document which currently has the focus
+    document = MacroRunWindowEx();
+
+    if(nArgs != 2) {
+        return wrongNArgsErr(errMsg);
+    }
+
+    WrapMode wrap             = searchWrap(argList, nArgs, 0);
+    SearchDirection direction = searchDirection(argList, nArgs, 0);
+
+    if(MainWindow *window = document->toWindow()) {
+        window->action_Replace_Again(direction, wrap);
+    }
+
+    result->tag = NO_TAG;
+
+    return true;
+}
+
 static const SubRoutine MenuMacroSubrNames[] = {
     // File
     { "new",                          newMS },
@@ -960,16 +1031,16 @@ static const SubRoutine MenuMacroSubrNames[] = {
     { "find_dialog",                  findDialogMS },
     { "find_again",                   findAgainMS },
     { "find_selection",               findSelectionMS },
-    { "replace",                      nullptr }, // NOTE(eteran): here
+    { "replace",                      replaceMS },
     { "replace_dialog",               replaceDialogMS },
     { "replace_all",                  replaceAllMS },
     { "replace_in_selection",         replaceAllInSelectionMS },
-    { "replace_again",                nullptr },
+    { "replace_again",                replaceAgainMS },
     { "goto_line_number",             gotoLineNumberMS },
     { "goto_line_number_dialog",      gotoLineNumberDialogMS },
-    { "goto_selected",                nullptr },
-    { "mark",                         nullptr },
-    { "mark_dialog",                  markDialogMS },
+    { "goto_selected",                gotoSelectedMS },
+    { "mark",                         markMS },
+    { "mark_dialog",                  markDialogMS }, // NOTE(eteran): here
     { "goto_mark",                    nullptr },
     { "goto_mark_dialog",             gotoMarkDialogMS },
     { "goto_matching",                gotoMatchingMS },
@@ -3199,75 +3270,51 @@ static int calltipIDMV(DocumentWidget *document, DataValue *argList, int nArgs, 
 
 static int replaceAllInSelectionMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
+    // replace_in_selection( search-string, replace-string [, search-type] )
+
     // ensure that we are dealing with the document which currently has the focus
     document = MacroRunWindowEx();
 
     //  Get the argument list.
     QString searchString;
     QString replaceString;
-    QString typeString;
 
-    if(!readArguments(argList, nArgs, 0, errMsg, &searchString, &replaceString, &typeString)) {
+    if(!readArguments(argList, nArgs, 0, errMsg, &searchString, &replaceString)) {
         return false;
     }
 
-    SearchType searchType;
-    if(typeString == QLatin1String("literal")) {
-        searchType = SEARCH_LITERAL;
-    } else if(typeString == QLatin1String("case")) {
-        searchType = SEARCH_CASE_SENSE;
-    } else if(typeString == QLatin1String("regex")) {
-        searchType = SEARCH_REGEX;
-    } else if(typeString == QLatin1String("word")) {
-        searchType = SEARCH_LITERAL_WORD;
-    } else if(typeString == QLatin1String("caseWord")) {
-        searchType = SEARCH_CASE_SENSE_WORD;
-    } else if(typeString == QLatin1String("regexNoCase")) {
-        searchType = SEARCH_REGEX_NOCASE;
-    } else {
-        return false;
-    }
+    SearchType type = searchType(argList, nArgs, 2);
 
     result->tag = INT_TAG;
     result->val.n = 0;
-    document->replaceInSelAP(searchString, replaceString, searchType);
+    document->replaceInSelAP(searchString, replaceString, type);
     return true;
 }
 
 static int replaceAllMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
+    // replace_all( search-string, replace-string [, search-type] )
+
     // ensure that we are dealing with the document which currently has the focus
     document = MacroRunWindowEx();
+
+    if (nArgs < 2 || nArgs > 3) {
+        return wrongNArgsErr(errMsg);
+    }
 
     //  Get the argument list.
     QString searchString;
     QString replaceString;
-    QString typeString;
 
-    if(!readArguments(argList, nArgs, 0, errMsg, &searchString, &replaceString, &typeString)) {
+    if(!readArguments(argList, nArgs, 0, errMsg, &searchString, &replaceString)) {
         return false;
     }
 
-    SearchType searchType;
-    if(typeString == QLatin1String("literal")) {
-        searchType = SEARCH_LITERAL;
-    } else if(typeString == QLatin1String("case")) {
-        searchType = SEARCH_CASE_SENSE;
-    } else if(typeString == QLatin1String("regex")) {
-        searchType = SEARCH_REGEX;
-    } else if(typeString == QLatin1String("word")) {
-        searchType = SEARCH_LITERAL_WORD;
-    } else if(typeString == QLatin1String("caseWord")) {
-        searchType = SEARCH_CASE_SENSE_WORD;
-    } else if(typeString == QLatin1String("regexNoCase")) {
-        searchType = SEARCH_REGEX_NOCASE;
-    } else {
-        return false;
-    }
+    SearchType type = searchType(argList, nArgs, 2);
 
     result->tag = INT_TAG;
     result->val.n = 0;
-    document->replaceAllAP(searchString, replaceString, searchType);
+    document->replaceAllAP(searchString, replaceString, type);
     return true;
 }
 

@@ -3679,6 +3679,7 @@ bool DocumentWidget::includeFile(const QString &name) {
     return true;
 }
 
+// TODO(eteran): use version in MainWindow...
 void DocumentWidget::replaceAllAP(const QString &searchString, const QString &replaceString, SearchType searchType) {
 
     if (CheckReadOnly()) {
@@ -3694,6 +3695,7 @@ void DocumentWidget::replaceAllAP(const QString &searchString, const QString &re
                 searchType);
 }
 
+// TODO(eteran): use version in MainWindow...
 void DocumentWidget::replaceInSelAP(const QString &searchString, const QString &replaceString, SearchType searchType) {
 
     if (CheckReadOnly()) {
@@ -3709,6 +3711,7 @@ void DocumentWidget::replaceInSelAP(const QString &searchString, const QString &
                 searchType);
 }
 
+// TODO(eteran): use version in MainWindow...
 void DocumentWidget::replaceFindAP(const QString &searchString, const QString &replaceString, SearchDirection direction, SearchType searchType, WrapMode searchWraps) {
 
     if (CheckReadOnly()) {
@@ -3726,6 +3729,7 @@ void DocumentWidget::replaceFindAP(const QString &searchString, const QString &r
                 searchWraps);
 }
 
+// TODO(eteran): use version in MainWindow...
 void DocumentWidget::findAP(const QString &searchString, SearchDirection direction, SearchType searchType, WrapMode searchWraps) {
 
     SearchAndSelectEx(
@@ -3737,6 +3741,7 @@ void DocumentWidget::findAP(const QString &searchString, SearchDirection directi
                 searchType,
                 searchWraps);
 }
+
 
 void DocumentWidget::findIncrAP(const QString &searchString, SearchDirection direction, SearchType searchType, WrapMode searchWraps, bool isContinue) {
 
@@ -3752,6 +3757,7 @@ void DocumentWidget::findIncrAP(const QString &searchString, SearchDirection dir
 
 }
 
+// TODO(eteran): use version in MainWindow...
 void DocumentWidget::replaceAP(const QString &searchString, const QString &replaceString, SearchDirection direction, SearchType searchType, WrapMode searchWraps) {
 
     if (CheckReadOnly()) {

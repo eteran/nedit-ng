@@ -2447,22 +2447,6 @@ void MainWindow::EndISearchEx() {
     TempShowISearch(false);
 }
 
-void MainWindow::on_action_Replace_triggered() {
-    if(auto doc = currentDocument()) {
-        if (doc->CheckReadOnly()) {
-            return;
-        }
-
-        DoFindReplaceDlogEx(
-                    this,
-                    currentDocument(),
-                    lastFocus_,
-                    SEARCH_FORWARD,
-                    GetPrefKeepSearchDlogs(),
-                    GetPrefSearch());
-    }
-}
-
 void MainWindow::action_Shift_Replace_triggered() {
     if(auto doc = currentDocument()) {
         if (doc->CheckReadOnly()) {
@@ -2510,36 +2494,54 @@ void MainWindow::action_Shift_Replace_Find_Again_triggered() {
     }
 }
 
+void MainWindow::action_Replace_Again(SearchDirection direction, WrapMode wrap) {
+    if(auto doc = currentDocument()) {
+        if (doc->CheckReadOnly()) {
+            return;
+        }
+
+        ReplaceSameEx(
+                    this,
+                    currentDocument(),
+                    lastFocus_,
+                    direction,
+                    wrap);
+    }
+}
+
+/**
+ * @brief MainWindow::on_action_Replace_Again_triggered
+ */
 void MainWindow::on_action_Replace_Again_triggered() {
-    if(auto doc = currentDocument()) {
-        if (doc->CheckReadOnly()) {
-            return;
-        }
-
-        ReplaceSameEx(
-                    this,
-                    currentDocument(),
-                    lastFocus_,
-                    SEARCH_FORWARD,
-                    GetPrefSearchWraps());
-    }
+    action_Replace_Again(SEARCH_FORWARD, GetPrefSearchWraps());
 }
 
+/**
+ * @brief MainWindow::action_Shift_Replace_Again_triggered
+ */
 void MainWindow::action_Shift_Replace_Again_triggered() {
-    if(auto doc = currentDocument()) {
-        if (doc->CheckReadOnly()) {
-            return;
-        }
+    action_Replace_Again(SEARCH_BACKWARD, GetPrefSearchWraps());
+}
 
-        ReplaceSameEx(
-                    this,
-                    currentDocument(),
-                    lastFocus_,
-                    SEARCH_BACKWARD,
-                    GetPrefSearchWraps());
+/**
+ * @brief MainWindow::action_Mark
+ * @param mark
+ */
+void MainWindow::action_Mark(const QString &mark) {
+    if (mark.size() != 1 || !isalpha(static_cast<uint8_t>(mark[0].toLatin1()))) {
+        qInfo("NEdit: mark action requires a single-letter label");
+        QApplication::beep();
+        return;
+    }
+
+    if(auto doc = currentDocument()) {
+        doc->markAP(mark[0]);
     }
 }
 
+/**
+ * @brief MainWindow::on_action_Mark_triggered
+ */
 void MainWindow::on_action_Mark_triggered() {
 
     bool ok;
@@ -2558,53 +2560,47 @@ void MainWindow::on_action_Mark_triggered() {
         return;
     }
 
-    if (result.size() != 1 || !isalpha(static_cast<uint8_t>(result[0].toLatin1()))) {
-        QApplication::beep();
-        return;
-    }
-
-    if(auto doc = currentDocument()) {
-        doc->markAP(result[0]);
-    }
+    action_Mark(result);
 }
 
+/**
+ * @brief MainWindow::action_Mark_Shortcut_triggered
+ */
 void MainWindow::action_Mark_Shortcut_triggered() {
 
     if(auto shortcut = qobject_cast<QShortcut *>(sender())) {
         QKeySequence sequence = shortcut->key();
 
-        if(auto doc = currentDocument()) {
-            switch(sequence[1]) {
-            case Qt::Key_A: doc->markAP(QLatin1Char('A')); break;
-            case Qt::Key_B: doc->markAP(QLatin1Char('B')); break;
-            case Qt::Key_C: doc->markAP(QLatin1Char('C')); break;
-            case Qt::Key_D: doc->markAP(QLatin1Char('D')); break;
-            case Qt::Key_E: doc->markAP(QLatin1Char('E')); break;
-            case Qt::Key_F: doc->markAP(QLatin1Char('F')); break;
-            case Qt::Key_G: doc->markAP(QLatin1Char('G')); break;
-            case Qt::Key_H: doc->markAP(QLatin1Char('H')); break;
-            case Qt::Key_I: doc->markAP(QLatin1Char('I')); break;
-            case Qt::Key_J: doc->markAP(QLatin1Char('J')); break;
-            case Qt::Key_K: doc->markAP(QLatin1Char('K')); break;
-            case Qt::Key_L: doc->markAP(QLatin1Char('L')); break;
-            case Qt::Key_M: doc->markAP(QLatin1Char('M')); break;
-            case Qt::Key_N: doc->markAP(QLatin1Char('N')); break;
-            case Qt::Key_O: doc->markAP(QLatin1Char('O')); break;
-            case Qt::Key_P: doc->markAP(QLatin1Char('P')); break;
-            case Qt::Key_Q: doc->markAP(QLatin1Char('Q')); break;
-            case Qt::Key_R: doc->markAP(QLatin1Char('R')); break;
-            case Qt::Key_S: doc->markAP(QLatin1Char('S')); break;
-            case Qt::Key_T: doc->markAP(QLatin1Char('T')); break;
-            case Qt::Key_U: doc->markAP(QLatin1Char('U')); break;
-            case Qt::Key_V: doc->markAP(QLatin1Char('V')); break;
-            case Qt::Key_W: doc->markAP(QLatin1Char('W')); break;
-            case Qt::Key_X: doc->markAP(QLatin1Char('X')); break;
-            case Qt::Key_Y: doc->markAP(QLatin1Char('Y')); break;
-            case Qt::Key_Z: doc->markAP(QLatin1Char('Z')); break;
-            default:
-                QApplication::beep();
-                break;
-            }
+        switch(sequence[1]) {
+        case Qt::Key_A: action_Mark(QLatin1String("A")); break;
+        case Qt::Key_B: action_Mark(QLatin1String("B")); break;
+        case Qt::Key_C: action_Mark(QLatin1String("C")); break;
+        case Qt::Key_D: action_Mark(QLatin1String("D")); break;
+        case Qt::Key_E: action_Mark(QLatin1String("E")); break;
+        case Qt::Key_F: action_Mark(QLatin1String("F")); break;
+        case Qt::Key_G: action_Mark(QLatin1String("G")); break;
+        case Qt::Key_H: action_Mark(QLatin1String("H")); break;
+        case Qt::Key_I: action_Mark(QLatin1String("I")); break;
+        case Qt::Key_J: action_Mark(QLatin1String("J")); break;
+        case Qt::Key_K: action_Mark(QLatin1String("K")); break;
+        case Qt::Key_L: action_Mark(QLatin1String("L")); break;
+        case Qt::Key_M: action_Mark(QLatin1String("M")); break;
+        case Qt::Key_N: action_Mark(QLatin1String("N")); break;
+        case Qt::Key_O: action_Mark(QLatin1String("O")); break;
+        case Qt::Key_P: action_Mark(QLatin1String("P")); break;
+        case Qt::Key_Q: action_Mark(QLatin1String("Q")); break;
+        case Qt::Key_R: action_Mark(QLatin1String("R")); break;
+        case Qt::Key_S: action_Mark(QLatin1String("S")); break;
+        case Qt::Key_T: action_Mark(QLatin1String("T")); break;
+        case Qt::Key_U: action_Mark(QLatin1String("U")); break;
+        case Qt::Key_V: action_Mark(QLatin1String("V")); break;
+        case Qt::Key_W: action_Mark(QLatin1String("W")); break;
+        case Qt::Key_X: action_Mark(QLatin1String("X")); break;
+        case Qt::Key_Y: action_Mark(QLatin1String("Y")); break;
+        case Qt::Key_Z: action_Mark(QLatin1String("Z")); break;
+        default:
+            QApplication::beep();
+            break;
         }
     }
 }
@@ -4470,6 +4466,7 @@ void MainWindow::action_Find_Selection(SearchDirection direction, SearchType typ
         wrap);
 }
 
+
 /**
  * @brief MainWindow::on_action_Find_Selection_triggered
  */
@@ -4478,4 +4475,81 @@ void MainWindow::on_action_Find_Selection_triggered() {
                 SEARCH_FORWARD,
                 GetPrefSearch(),
                 GetPrefSearchWraps());
+}
+
+/**
+ * @brief MainWindow::action_Replace
+ * @param direction
+ * @param searchString
+ * @param replaceString
+ * @param type
+ * @param wrap
+ */
+void MainWindow::action_Replace(SearchDirection direction, const QString &searchString, const QString &replaceString, SearchType type, WrapMode wrap) {
+    if(auto doc = currentDocument()) {
+        if (doc->CheckReadOnly()) {
+            return;
+        }
+
+        SearchAndReplaceEx(
+                    this,
+                    doc,
+                    lastFocus_,
+                    direction,
+                    searchString,
+                    replaceString,
+                    type,
+                    wrap);
+    }
+}
+
+/**
+ * @brief action_Replace_Dialog
+ * @param direction
+ * @param type
+ * @param keepDialog
+ */
+void MainWindow::action_Replace_Dialog(SearchDirection direction, SearchType type, bool keepDialog) {
+    if(auto doc = currentDocument()) {
+        if (doc->CheckReadOnly()) {
+            return;
+        }
+
+        DoFindReplaceDlogEx(
+                    this,
+                    currentDocument(),
+                    lastFocus_,
+                    direction,
+                    keepDialog,
+                    type);
+    }
+}
+
+/**
+ * @brief MainWindow::on_action_Replace_triggered
+ */
+void MainWindow::on_action_Replace_triggered() {
+    action_Replace_Dialog(SEARCH_FORWARD, GetPrefSearch(), GetPrefKeepSearchDlogs());
+}
+
+/**
+ * @brief MainWindow::action_Replace_All
+ * @param searchString
+ * @param replaceString
+ * @param type
+ */
+void MainWindow::action_Replace_All(const QString &searchString, const QString &replaceString, SearchType type) {
+    if(auto doc = currentDocument()) {
+        if (doc->CheckReadOnly()) {
+            return;
+        }
+
+        ReplaceAllEx(
+                    this,
+                    currentDocument(),
+                    lastFocus_,
+                    searchString,
+                    replaceString,
+                    type);
+    }
 }
