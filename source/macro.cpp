@@ -540,12 +540,12 @@ WINDOW_MENU_EVENT_S(unloadTagsFileMS,                action_Unload_Tags_File)
 WINDOW_MENU_EVENT_S(loadTipsFileMS,                  action_Load_Tips_File)
 WINDOW_MENU_EVENT_S(unloadTipsFileMS,                action_Unload_Tips_File)
 WINDOW_MENU_EVENT_S(markMS,                          action_Mark)
+WINDOW_MENU_EVENT_S(filterSelectionMS,               action_Filter_Selection)
 
 WINDOW_MENU_EVENT(closePaneMS,                       on_action_Close_Pane_triggered)
 WINDOW_MENU_EVENT(deleteMS,                          on_action_Delete_triggered)
 WINDOW_MENU_EVENT(exitMS,                            on_action_Exit_triggered)
 WINDOW_MENU_EVENT(fillParagraphMS,                   on_action_Fill_Paragraph_triggered)
-WINDOW_MENU_EVENT(findDefinitionMS,                  on_action_Find_Definition_triggered)
 WINDOW_MENU_EVENT(gotoLineNumberDialogMS,            on_action_Goto_Line_Number_triggered)
 WINDOW_MENU_EVENT(gotoSelectedMS,                    on_action_Goto_Selected_triggered)
 WINDOW_MENU_EVENT(gotoMatchingMS,                    on_action_Goto_Matching_triggered)
@@ -572,8 +572,9 @@ WINDOW_MENU_EVENT(uppercaseMS,                       on_action_Upper_case_trigge
 WINDOW_MENU_EVENT(openDialogMS,                      on_action_Open_triggered)
 WINDOW_MENU_EVENT(revertToSavedDialogMS,             on_action_Revert_to_Saved_triggered)
 WINDOW_MENU_EVENT(markDialogMS,                      on_action_Mark_triggered)
-WINDOW_MENU_EVENT(gotoMarkDialogMS,                  on_action_Goto_Mark_triggered)
 WINDOW_MENU_EVENT(showTipMS,                         on_action_Show_Calltip_triggered)
+WINDOW_MENU_EVENT(selectToMatchingMS,                action_Shift_Goto_Matching_triggered)
+WINDOW_MENU_EVENT(filterSelectionDialogMS,           on_action_Filter_Selection_triggered)
 
 /*
 ** Scans action argument list for arguments "forward" or "backward" to
@@ -987,6 +988,101 @@ static int replaceAgainMS(DocumentWidget *document, DataValue *argList, int nArg
     return true;
 }
 
+static int gotoMarkMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+
+    // goto_mark( mark, [, extend] )
+
+    // ensure that we are dealing with the document which currently has the focus
+    document = MacroRunWindowEx();
+
+    if(nArgs > 2 || nArgs < 1) {
+        return wrongNArgsErr(errMsg);
+    }
+
+    bool extend = false;
+
+    QString mark;
+    if(!readArguments(argList, nArgs, 0, errMsg, &mark)) {
+        return false;
+    }
+
+    // NOTE(eteran): "wrapped" optional argument is not documented
+    if(nArgs == 2) {
+        QString argument;
+        if(!readArgument(argList[1], &argument, errMsg)) {
+            return false;
+        }
+
+        if(argument.compare(QLatin1String("extend"), Qt::CaseInsensitive) == 0) {
+            extend = true;
+        }
+    }
+
+    if(MainWindow *window = document->toWindow()) {
+        window->action_Goto_Mark(mark, extend);
+    }
+
+    result->tag = NO_TAG;
+    return true;
+}
+
+static int gotoMarkDialogMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+    // goto_mark( mark, [, extend] )
+
+    // ensure that we are dealing with the document which currently has the focus
+    document = MacroRunWindowEx();
+
+    if(nArgs > 1) {
+        return wrongNArgsErr(errMsg);
+    }
+
+    bool extend = false;
+
+    if(nArgs == 1) {
+        QString argument;
+        if(!readArgument(argList[1], &argument, errMsg)) {
+            return false;
+        }
+
+        if(argument.compare(QLatin1String("extend"), Qt::CaseInsensitive) == 0) {
+            extend = true;
+        }
+    }
+
+    if(MainWindow *window = document->toWindow()) {
+        window->action_Goto_Mark_Dialog(extend);
+    }
+
+    result->tag = NO_TAG;
+    return true;
+}
+
+static int findDefinitionMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+    // find_definition( [ argument ] )
+
+    // ensure that we are dealing with the document which currently has the focus
+    document = MacroRunWindowEx();
+
+    if(nArgs > 1) {
+        return wrongNArgsErr(errMsg);
+    }
+
+    QString argument;
+
+    if(nArgs == 1) {
+        if(!readArgument(argList[1], &argument, errMsg)) {
+            return false;
+        }
+    }
+
+    if(MainWindow *window = document->toWindow()) {
+        window->action_Find_Definition(argument);
+    }
+
+    result->tag = NO_TAG;
+    return true;
+}
+
 static const SubRoutine MenuMacroSubrNames[] = {
     // File
     { "new",                          newMS },
@@ -1040,18 +1136,18 @@ static const SubRoutine MenuMacroSubrNames[] = {
     { "goto_line_number_dialog",      gotoLineNumberDialogMS },
     { "goto_selected",                gotoSelectedMS },
     { "mark",                         markMS },
-    { "mark_dialog",                  markDialogMS }, // NOTE(eteran): here
-    { "goto_mark",                    nullptr },
+    { "mark_dialog",                  markDialogMS },
+    { "goto_mark",                    gotoMarkMS },
     { "goto_mark_dialog",             gotoMarkDialogMS },
     { "goto_matching",                gotoMatchingMS },
-    { "select_to_matching",           nullptr },
+    { "select_to_matching",           selectToMatchingMS },
     { "find_definition",              findDefinitionMS },
     { "show_tip",                     showTipMS },
 
     // Shell
-    { "filter_selection_dialog",      nullptr },
-    { "filter_selection",             nullptr },
-    { "execute_command",              nullptr },
+    { "filter_selection_dialog",      filterSelectionDialogMS },
+    { "filter_selection",             filterSelectionMS },
+    { "execute_command",              nullptr }, // NOTE(eteran): here
     { "execute_command_dialog",       nullptr },
     { "execute_command_line",         nullptr },
     { "shell_menu_command",           nullptr },

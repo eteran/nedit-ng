@@ -4018,22 +4018,6 @@ void DocumentWidget::SelectToMatchingCharacter(TextArea *area) {
     area->setAutoShowInsertPos(true);
 }
 
-/**
- * @brief DocumentWidget::FindDefCalltip
- * @param area
- */
-void DocumentWidget::FindDefCalltip(TextArea *area) {
-    FindDefCalltip(area, QString());
-}
-
-/**
- * @brief DocumentWidget::FindDefinition
- * @param area
- */
-void DocumentWidget::FindDefinition(TextArea *area) {
-    FindDefinition(area, QString());
-}
-
 /*
 ** See findDefHelper
 */

@@ -2529,7 +2529,7 @@ void MainWindow::action_Shift_Replace_Again_triggered() {
  */
 void MainWindow::action_Mark(const QString &mark) {
     if (mark.size() != 1 || !isalpha(static_cast<uint8_t>(mark[0].toLatin1()))) {
-        qInfo("NEdit: mark action requires a single-letter label");
+        qInfo("NEdit: action requires a single-letter label");
         QApplication::beep();
         return;
     }
@@ -2605,10 +2605,23 @@ void MainWindow::action_Mark_Shortcut_triggered() {
     }
 }
 
-void MainWindow::on_action_Goto_Mark_triggered() {
+void MainWindow::action_Goto_Mark(const QString &mark, bool extend) {
+    if (mark.size() != 1 || !isalpha(static_cast<uint8_t>(mark[0].toLatin1()))) {
+        qInfo("NEdit: action requires a single-letter label");
+        QApplication::beep();
+        return;
+    }
 
-    bool extend = (QApplication::keyboardModifiers() & Qt::SHIFT);
+    if(auto doc = currentDocument()) {
+        doc->gotoMarkAP(mark[0], extend);
+    }
+}
 
+/**
+ * @brief MainWindow::action_Goto_Mark_Dialog
+ * @param extend
+ */
+void MainWindow::action_Goto_Mark_Dialog(bool extend) {
     bool ok;
     QString result = QInputDialog::getText(
         this,
@@ -2625,14 +2638,16 @@ void MainWindow::on_action_Goto_Mark_triggered() {
         return;
     }
 
-    if (result.size() != 1 || !isalpha(static_cast<uint8_t>(result[0].toLatin1()))) {
-        QApplication::beep();
-        return;
-    }
+    action_Goto_Mark(result, extend);
+}
 
-    if(auto doc = currentDocument()) {
-        doc->gotoMarkAP(result[0], extend);
-    }
+/**
+ * @brief MainWindow::on_action_Goto_Mark_triggered
+ */
+void MainWindow::on_action_Goto_Mark_triggered() {
+
+    bool extend = (QApplication::keyboardModifiers() & Qt::SHIFT);
+    action_Goto_Mark_Dialog(extend);
 }
 
 
@@ -2640,38 +2655,36 @@ void MainWindow::action_Shift_Goto_Mark_Shortcut_triggered() {
     if(auto shortcut = qobject_cast<QShortcut *>(sender())) {
         QKeySequence sequence = shortcut->key();
 
-        if(auto doc = currentDocument()) {
-            switch(sequence[1]) {
-            case Qt::Key_A: doc->gotoMarkAP(QLatin1Char('A'), true); break;
-            case Qt::Key_B: doc->gotoMarkAP(QLatin1Char('B'), true); break;
-            case Qt::Key_C: doc->gotoMarkAP(QLatin1Char('C'), true); break;
-            case Qt::Key_D: doc->gotoMarkAP(QLatin1Char('D'), true); break;
-            case Qt::Key_E: doc->gotoMarkAP(QLatin1Char('E'), true); break;
-            case Qt::Key_F: doc->gotoMarkAP(QLatin1Char('F'), true); break;
-            case Qt::Key_G: doc->gotoMarkAP(QLatin1Char('G'), true); break;
-            case Qt::Key_H: doc->gotoMarkAP(QLatin1Char('H'), true); break;
-            case Qt::Key_I: doc->gotoMarkAP(QLatin1Char('I'), true); break;
-            case Qt::Key_J: doc->gotoMarkAP(QLatin1Char('J'), true); break;
-            case Qt::Key_K: doc->gotoMarkAP(QLatin1Char('K'), true); break;
-            case Qt::Key_L: doc->gotoMarkAP(QLatin1Char('L'), true); break;
-            case Qt::Key_M: doc->gotoMarkAP(QLatin1Char('M'), true); break;
-            case Qt::Key_N: doc->gotoMarkAP(QLatin1Char('N'), true); break;
-            case Qt::Key_O: doc->gotoMarkAP(QLatin1Char('O'), true); break;
-            case Qt::Key_P: doc->gotoMarkAP(QLatin1Char('P'), true); break;
-            case Qt::Key_Q: doc->gotoMarkAP(QLatin1Char('Q'), true); break;
-            case Qt::Key_R: doc->gotoMarkAP(QLatin1Char('R'), true); break;
-            case Qt::Key_S: doc->gotoMarkAP(QLatin1Char('S'), true); break;
-            case Qt::Key_T: doc->gotoMarkAP(QLatin1Char('T'), true); break;
-            case Qt::Key_U: doc->gotoMarkAP(QLatin1Char('U'), true); break;
-            case Qt::Key_V: doc->gotoMarkAP(QLatin1Char('V'), true); break;
-            case Qt::Key_W: doc->gotoMarkAP(QLatin1Char('W'), true); break;
-            case Qt::Key_X: doc->gotoMarkAP(QLatin1Char('X'), true); break;
-            case Qt::Key_Y: doc->gotoMarkAP(QLatin1Char('Y'), true); break;
-            case Qt::Key_Z: doc->gotoMarkAP(QLatin1Char('Z'), true); break;
-            default:
-                QApplication::beep();
-                break;
-            }
+        switch(sequence[1]) {
+        case Qt::Key_A: action_Goto_Mark(QLatin1String("A"), true); break;
+        case Qt::Key_B: action_Goto_Mark(QLatin1String("B"), true); break;
+        case Qt::Key_C: action_Goto_Mark(QLatin1String("C"), true); break;
+        case Qt::Key_D: action_Goto_Mark(QLatin1String("D"), true); break;
+        case Qt::Key_E: action_Goto_Mark(QLatin1String("E"), true); break;
+        case Qt::Key_F: action_Goto_Mark(QLatin1String("F"), true); break;
+        case Qt::Key_G: action_Goto_Mark(QLatin1String("G"), true); break;
+        case Qt::Key_H: action_Goto_Mark(QLatin1String("H"), true); break;
+        case Qt::Key_I: action_Goto_Mark(QLatin1String("I"), true); break;
+        case Qt::Key_J: action_Goto_Mark(QLatin1String("J"), true); break;
+        case Qt::Key_K: action_Goto_Mark(QLatin1String("K"), true); break;
+        case Qt::Key_L: action_Goto_Mark(QLatin1String("L"), true); break;
+        case Qt::Key_M: action_Goto_Mark(QLatin1String("M"), true); break;
+        case Qt::Key_N: action_Goto_Mark(QLatin1String("N"), true); break;
+        case Qt::Key_O: action_Goto_Mark(QLatin1String("O"), true); break;
+        case Qt::Key_P: action_Goto_Mark(QLatin1String("P"), true); break;
+        case Qt::Key_Q: action_Goto_Mark(QLatin1String("Q"), true); break;
+        case Qt::Key_R: action_Goto_Mark(QLatin1String("R"), true); break;
+        case Qt::Key_S: action_Goto_Mark(QLatin1String("S"), true); break;
+        case Qt::Key_T: action_Goto_Mark(QLatin1String("T"), true); break;
+        case Qt::Key_U: action_Goto_Mark(QLatin1String("U"), true); break;
+        case Qt::Key_V: action_Goto_Mark(QLatin1String("V"), true); break;
+        case Qt::Key_W: action_Goto_Mark(QLatin1String("W"), true); break;
+        case Qt::Key_X: action_Goto_Mark(QLatin1String("X"), true); break;
+        case Qt::Key_Y: action_Goto_Mark(QLatin1String("Y"), true); break;
+        case Qt::Key_Z: action_Goto_Mark(QLatin1String("Z"), true); break;
+        default:
+            QApplication::beep();
+            break;
         }
     }
 }
@@ -2680,38 +2693,36 @@ void MainWindow::action_Goto_Mark_Shortcut_triggered() {
     if(auto shortcut = qobject_cast<QShortcut *>(sender())) {
         QKeySequence sequence = shortcut->key();
 
-        if(auto doc = currentDocument()) {
-            switch(sequence[1]) {
-            case Qt::Key_A: doc->gotoMarkAP(QLatin1Char('A'), false); break;
-            case Qt::Key_B: doc->gotoMarkAP(QLatin1Char('B'), false); break;
-            case Qt::Key_C: doc->gotoMarkAP(QLatin1Char('C'), false); break;
-            case Qt::Key_D: doc->gotoMarkAP(QLatin1Char('D'), false); break;
-            case Qt::Key_E: doc->gotoMarkAP(QLatin1Char('E'), false); break;
-            case Qt::Key_F: doc->gotoMarkAP(QLatin1Char('F'), false); break;
-            case Qt::Key_G: doc->gotoMarkAP(QLatin1Char('G'), false); break;
-            case Qt::Key_H: doc->gotoMarkAP(QLatin1Char('H'), false); break;
-            case Qt::Key_I: doc->gotoMarkAP(QLatin1Char('I'), false); break;
-            case Qt::Key_J: doc->gotoMarkAP(QLatin1Char('J'), false); break;
-            case Qt::Key_K: doc->gotoMarkAP(QLatin1Char('K'), false); break;
-            case Qt::Key_L: doc->gotoMarkAP(QLatin1Char('L'), false); break;
-            case Qt::Key_M: doc->gotoMarkAP(QLatin1Char('M'), false); break;
-            case Qt::Key_N: doc->gotoMarkAP(QLatin1Char('N'), false); break;
-            case Qt::Key_O: doc->gotoMarkAP(QLatin1Char('O'), false); break;
-            case Qt::Key_P: doc->gotoMarkAP(QLatin1Char('P'), false); break;
-            case Qt::Key_Q: doc->gotoMarkAP(QLatin1Char('Q'), false); break;
-            case Qt::Key_R: doc->gotoMarkAP(QLatin1Char('R'), false); break;
-            case Qt::Key_S: doc->gotoMarkAP(QLatin1Char('S'), false); break;
-            case Qt::Key_T: doc->gotoMarkAP(QLatin1Char('T'), false); break;
-            case Qt::Key_U: doc->gotoMarkAP(QLatin1Char('U'), false); break;
-            case Qt::Key_V: doc->gotoMarkAP(QLatin1Char('V'), false); break;
-            case Qt::Key_W: doc->gotoMarkAP(QLatin1Char('W'), false); break;
-            case Qt::Key_X: doc->gotoMarkAP(QLatin1Char('X'), false); break;
-            case Qt::Key_Y: doc->gotoMarkAP(QLatin1Char('Y'), false); break;
-            case Qt::Key_Z: doc->gotoMarkAP(QLatin1Char('Z'), false); break;
-            default:
-                QApplication::beep();
-                break;
-            }
+        switch(sequence[1]) {
+        case Qt::Key_A: action_Goto_Mark(QLatin1String("A"), false); break;
+        case Qt::Key_B: action_Goto_Mark(QLatin1String("B"), false); break;
+        case Qt::Key_C: action_Goto_Mark(QLatin1String("C"), false); break;
+        case Qt::Key_D: action_Goto_Mark(QLatin1String("D"), false); break;
+        case Qt::Key_E: action_Goto_Mark(QLatin1String("E"), false); break;
+        case Qt::Key_F: action_Goto_Mark(QLatin1String("F"), false); break;
+        case Qt::Key_G: action_Goto_Mark(QLatin1String("G"), false); break;
+        case Qt::Key_H: action_Goto_Mark(QLatin1String("H"), false); break;
+        case Qt::Key_I: action_Goto_Mark(QLatin1String("I"), false); break;
+        case Qt::Key_J: action_Goto_Mark(QLatin1String("J"), false); break;
+        case Qt::Key_K: action_Goto_Mark(QLatin1String("K"), false); break;
+        case Qt::Key_L: action_Goto_Mark(QLatin1String("L"), false); break;
+        case Qt::Key_M: action_Goto_Mark(QLatin1String("M"), false); break;
+        case Qt::Key_N: action_Goto_Mark(QLatin1String("N"), false); break;
+        case Qt::Key_O: action_Goto_Mark(QLatin1String("O"), false); break;
+        case Qt::Key_P: action_Goto_Mark(QLatin1String("P"), false); break;
+        case Qt::Key_Q: action_Goto_Mark(QLatin1String("Q"), false); break;
+        case Qt::Key_R: action_Goto_Mark(QLatin1String("R"), false); break;
+        case Qt::Key_S: action_Goto_Mark(QLatin1String("S"), false); break;
+        case Qt::Key_T: action_Goto_Mark(QLatin1String("T"), false); break;
+        case Qt::Key_U: action_Goto_Mark(QLatin1String("U"), false); break;
+        case Qt::Key_V: action_Goto_Mark(QLatin1String("V"), false); break;
+        case Qt::Key_W: action_Goto_Mark(QLatin1String("W"), false); break;
+        case Qt::Key_X: action_Goto_Mark(QLatin1String("X"), false); break;
+        case Qt::Key_Y: action_Goto_Mark(QLatin1String("Y"), false); break;
+        case Qt::Key_Z: action_Goto_Mark(QLatin1String("Z"), false); break;
+        default:
+            QApplication::beep();
+            break;
         }
     }
 }
@@ -2844,18 +2855,6 @@ void MainWindow::on_action_Load_Macro_File_triggered() {
 void MainWindow::action_Load_Macro_File(const QString &filename) {
     if(auto doc = currentDocument()) {
 		doc->ReadMacroFileEx(filename, true);
-    }
-}
-
-void MainWindow::on_action_Show_Calltip_triggered() {
-    if(auto doc = currentDocument()) {
-        doc->FindDefCalltip(lastFocus_);
-    }
-}
-
-void MainWindow::on_action_Find_Definition_triggered() {
-    if(auto doc = currentDocument()) {
-        doc->FindDefinition(lastFocus_);
     }
 }
 
@@ -4189,35 +4188,6 @@ void MainWindow::on_action_Execute_Command_Line_triggered() {
     }
 }
 
-void MainWindow::on_action_Filter_Selection_triggered() {
-    if(auto doc = currentDocument()) {
-        static DialogFilter *dialog = nullptr;
-
-        if (doc->CheckReadOnly()) {
-            return;
-        }
-
-        if (!doc->buffer_->primary_.selected) {
-            QApplication::beep();
-            return;
-        }
-
-        if(!dialog) {
-            dialog = new DialogFilter(this);
-        }
-
-        int r = dialog->exec();
-        if(!r) {
-            return;
-        }
-
-        QString filterText = dialog->ui.textFilter->text();
-        if(!filterText.isEmpty()) {
-            doc->filterSelection(filterText);
-        }
-    }
-}
-
 void MainWindow::on_action_Cancel_Shell_Command_triggered() {
     if(auto doc = currentDocument()) {
         doc->AbortShellCommandEx();
@@ -4551,5 +4521,87 @@ void MainWindow::action_Replace_All(const QString &searchString, const QString &
                     searchString,
                     replaceString,
                     type);
+    }
+}
+
+void MainWindow::action_Show_Tip(const QString &argument) {
+    if(auto doc = currentDocument()) {
+        doc->FindDefCalltip(lastFocus_, argument);
+    }
+}
+
+/**
+ * @brief MainWindow::action_Find_Definition
+ * @param argument
+ */
+void MainWindow::action_Find_Definition(const QString &argument) {
+     if(auto doc = currentDocument()) {
+         doc->FindDefinition(lastFocus_, argument);
+     }
+}
+
+/**
+ * @brief MainWindow::on_action_Find_Definition_triggered
+ */
+void MainWindow::on_action_Find_Definition_triggered() {
+    action_Find_Definition(QString());
+}
+
+/**
+ * @brief MainWindow::on_action_Show_Calltip_triggered
+ */
+void MainWindow::on_action_Show_Calltip_triggered() {
+    action_Show_Tip(QString());
+}
+
+/**
+ * @brief action_Filter_Selection
+ * @param filter
+ */
+void MainWindow::action_Filter_Selection(const QString &filter) {
+    if(auto doc = currentDocument()) {
+
+        if (doc->CheckReadOnly()) {
+            return;
+        }
+
+        if (!doc->buffer_->primary_.selected) {
+            QApplication::beep();
+            return;
+        }
+
+        if(!filter.isEmpty()) {
+            doc->filterSelection(filter);
+        }
+    }
+}
+
+void MainWindow::on_action_Filter_Selection_triggered() {
+
+    // NOTE(eteran): if we change the order of operations here,
+    // then we can remove the redundancies with this and action_Filter_Selection
+    if(auto doc = currentDocument()) {
+        static DialogFilter *dialog = nullptr;
+
+        if (doc->CheckReadOnly()) {
+            return;
+        }
+
+        if (!doc->buffer_->primary_.selected) {
+            QApplication::beep();
+            return;
+        }
+
+        if(!dialog) {
+            dialog = new DialogFilter(this);
+        }
+
+        int r = dialog->exec();
+        if(!r) {
+            return;
+        }
+
+        QString filterText = dialog->ui.textFilter->text();
+        action_Filter_Selection(filterText);
     }
 }

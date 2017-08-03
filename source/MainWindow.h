@@ -121,6 +121,11 @@ public Q_SLOTS:
     void action_Replace_All(const QString &searchString, const QString &replaceString, SearchType type);
     void action_Replace_Again(SearchDirection direction, WrapMode wrap);
     void action_Mark(const QString &mark);
+    void action_Goto_Mark(const QString &mark, bool extend);
+    void action_Goto_Mark_Dialog(bool extend);
+    void action_Find_Definition(const QString &argument);
+    void action_Show_Tip(const QString &argument);
+    void action_Filter_Selection(const QString &filter);
 
     void action_Shift_Left_Tabs();
     void action_Shift_Right_Tabs();
