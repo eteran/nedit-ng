@@ -2858,29 +2858,6 @@ void MainWindow::action_Load_Macro_File(const QString &filename) {
     }
 }
 
-void MainWindow::on_action_Execute_Command_triggered() {
-    if(auto doc = currentDocument()) {
-        static DialogExecuteCommand *dialog = nullptr;
-
-        if (doc->CheckReadOnly())
-            return;
-
-        if(!dialog) {
-            dialog = new DialogExecuteCommand(this);
-        }
-
-        int r = dialog->exec();
-        if(!r) {
-            return;
-        }
-
-        QString commandText = dialog->ui.textCommand->text();
-        if(!commandText.isEmpty()) {
-            doc->execAP(lastFocus_, commandText);
-        }
-    }
-}
-
 void MainWindow::on_action_Detach_Tab_triggered() {
     if(TabCount() > 1) {
         if(auto doc = currentDocument()) {
@@ -4195,14 +4172,6 @@ void MainWindow::on_action_Cancel_Shell_Command_triggered() {
 }
 
 
-void MainWindow::shellTriggered(QAction *action) {
-    if(auto doc = currentDocument()) {
-        const int index = action->data().toInt();
-        const QString name = ShellMenuData[index].item->name;
-        doc->DoNamedShellMenuCmd(lastFocus_, name, false);
-    }
-}
-
 void MainWindow::on_action_Learn_Keystrokes_triggered() {
     if(auto doc = currentDocument()) {
 		doc->BeginLearnEx();
@@ -4225,28 +4194,6 @@ void MainWindow::on_action_Replay_Keystrokes_triggered() {
 void MainWindow::on_action_Cancel_Learn_triggered() {
     if(auto doc = currentDocument()) {
         CancelMacroOrLearnEx(doc);
-    }
-}
-
-void MainWindow::macroTriggered(QAction *action) {
-
-    // TODO(eteran): implement what this comment says!
-    /* Don't allow users to execute a macro command from the menu (or accel)
-       if there's already a macro command executing, UNLESS the macro is
-       directly called from another one.  NEdit can't handle
-       running multiple, independent uncoordinated, macros in the same
-       window.  Macros may invoke macro menu commands recursively via the
-       macro_menu_command action proc, which is important for being able to
-       repeat any operation, and to embed macros within eachother at any
-       level, however, a call here with a macro running means that THE USER
-       is explicitly invoking another macro via the menu or an accelerator,
-       UNLESS the macro event marker is set */
-
-    if(auto doc = currentDocument()) {
-        const int index = action->data().toInt();
-        const QString name = MacroMenuData[index].item->name;
-        doc->DoNamedMacroMenuCmd(lastFocus_, name, false);
-
     }
 }
 
@@ -4576,6 +4523,9 @@ void MainWindow::action_Filter_Selection(const QString &filter) {
     }
 }
 
+/**
+ * @brief MainWindow::on_action_Filter_Selection_triggered
+ */
 void MainWindow::on_action_Filter_Selection_triggered() {
 
     // NOTE(eteran): if we change the order of operations here,
@@ -4603,5 +4553,109 @@ void MainWindow::on_action_Filter_Selection_triggered() {
 
         QString filterText = dialog->ui.textFilter->text();
         action_Filter_Selection(filterText);
+    }
+}
+
+/**
+ * @brief MainWindow::action_Execute_Command
+ * @param command
+ */
+void MainWindow::action_Execute_Command(const QString &command) {
+    if(auto doc = currentDocument()) {
+
+        if (doc->CheckReadOnly())
+            return;
+
+        if(!command.isEmpty()) {
+            doc->execAP(lastFocus_, command);
+        }
+    }
+}
+
+/**
+ * @brief MainWindow::on_action_Execute_Command_triggered
+ */
+void MainWindow::on_action_Execute_Command_triggered() {
+
+    // NOTE(eteran): if we change the order of operations here,
+    // then we can remove the redundancies with this and action_Execute_Command
+    if(auto doc = currentDocument()) {
+        static DialogExecuteCommand *dialog = nullptr;
+
+        if (doc->CheckReadOnly())
+            return;
+
+        if(!dialog) {
+            dialog = new DialogExecuteCommand(this);
+        }
+
+        int r = dialog->exec();
+        if(!r) {
+            return;
+        }
+
+        QString commandText = dialog->ui.textCommand->text();
+        action_Execute_Command(commandText);
+    }
+}
+
+/**
+ * @brief MainWindow::shellTriggered
+ * @param action
+ */
+void MainWindow::shellTriggered(QAction *action) {
+    const int index = action->data().toInt();
+    const QString name = ShellMenuData[index].item->name;
+    action_Shell_Menu_Command(name);
+}
+
+/**
+ * @brief MainWindow::action_Shell_Menu_Command
+ * @param command
+ */
+void MainWindow::action_Shell_Menu_Command(const QString &name) {
+    if(auto doc = currentDocument()) {
+        doc->DoNamedShellMenuCmd(lastFocus_, name, false);
+    }
+}
+
+void MainWindow::macroTriggered(QAction *action) {
+
+    // TODO(eteran): implement what this comment says!
+    /* Don't allow users to execute a macro command from the menu (or accel)
+       if there's already a macro command executing, UNLESS the macro is
+       directly called from another one.  NEdit can't handle
+       running multiple, independent uncoordinated, macros in the same
+       window.  Macros may invoke macro menu commands recursively via the
+       macro_menu_command action proc, which is important for being able to
+       repeat any operation, and to embed macros within eachother at any
+       level, however, a call here with a macro running means that THE USER
+       is explicitly invoking another macro via the menu or an accelerator,
+       UNLESS the macro event marker is set */
+
+    const int index = action->data().toInt();
+    const QString name = MacroMenuData[index].item->name;
+    action_Macro_Menu_Command(name);
+}
+
+/**
+ * @brief MainWindow::action_Macro_Menu_Command
+ * @param name
+ */
+void MainWindow::action_Macro_Menu_Command(const QString &name) {
+
+    if(auto doc = currentDocument()) {
+        doc->DoNamedMacroMenuCmd(lastFocus_, name, false);
+    }
+}
+
+/**
+ * @brief MainWindow::action_Repeat_Macro
+ * @param macro
+ * @param how
+ */
+void MainWindow::action_Repeat_Macro(const QString &macro, int how) {
+    if(auto doc = currentDocument()) {
+        doc->repeatMacro(macro, how);
     }
 }

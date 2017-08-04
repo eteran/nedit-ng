@@ -369,6 +369,7 @@ TEXT_EVENT_I(scrollToLineMS,          scrollToLineAP)
 TEXT_EVENT_I(scrollLeftMS,            scrollLeftAP)
 TEXT_EVENT_I(scrollRightMS,           scrollRightAP)
 TEXT_EVENT_S(insertStringMS,          insertStringAP)
+
 TEXT_EVENT(backwardWordMS,            backwardWordAP)
 TEXT_EVENT(backwardCharacterMS,       backwardCharacterAP)
 TEXT_EVENT(copyClipboardMS,           copyClipboardAP)
@@ -452,10 +453,10 @@ static const SubRoutine TextAreaSubrNames[] = {
     {"process_shift_up",          processShiftUpMS},
     {"process_tab",               processTabMS},
     {"process_up",                processUpMS},
-    {"scroll_down",               nullptr},
+    {"scroll_down",               nullptr}, // TODO(eteran): implement this
     {"scroll_left",               scrollLeftMS},
     {"scroll_right",              scrollRightMS},
-    {"scroll_up",                 nullptr},
+    {"scroll_up",                 nullptr}, // TODO(eteran): implement this
     {"scroll_to_line",            scrollToLineMS},
     {"self_insert",               insertStringMS},
 
@@ -541,6 +542,9 @@ WINDOW_MENU_EVENT_S(loadTipsFileMS,                  action_Load_Tips_File)
 WINDOW_MENU_EVENT_S(unloadTipsFileMS,                action_Unload_Tips_File)
 WINDOW_MENU_EVENT_S(markMS,                          action_Mark)
 WINDOW_MENU_EVENT_S(filterSelectionMS,               action_Filter_Selection)
+WINDOW_MENU_EVENT_S(executeCommandMS,                action_Execute_Command)
+WINDOW_MENU_EVENT_S(shellMenuCommandMS,              action_Shell_Menu_Command)
+WINDOW_MENU_EVENT_S(macroMenuCommandMS,              action_Macro_Menu_Command)
 
 WINDOW_MENU_EVENT(closePaneMS,                       on_action_Close_Pane_triggered)
 WINDOW_MENU_EVENT(deleteMS,                          on_action_Delete_triggered)
@@ -575,6 +579,10 @@ WINDOW_MENU_EVENT(markDialogMS,                      on_action_Mark_triggered)
 WINDOW_MENU_EVENT(showTipMS,                         on_action_Show_Calltip_triggered)
 WINDOW_MENU_EVENT(selectToMatchingMS,                action_Shift_Goto_Matching_triggered)
 WINDOW_MENU_EVENT(filterSelectionDialogMS,           on_action_Filter_Selection_triggered)
+WINDOW_MENU_EVENT(executeCommandDialogMS,            on_action_Execute_Command_triggered)
+WINDOW_MENU_EVENT(executeCommandLineMS,              on_action_Execute_Command_Line_triggered)
+WINDOW_MENU_EVENT(repeatMacroDialogMS,               on_action_Repeat_triggered)
+WINDOW_MENU_EVENT(detachDocumentMS,                  on_action_Detach_Tab_triggered)
 
 /*
 ** Scans action argument list for arguments "forward" or "backward" to
@@ -1083,6 +1091,42 @@ static int findDefinitionMS(DocumentWidget *document, DataValue *argList, int nA
     return true;
 }
 
+static int repeatMacroMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+    // repeat_macro( how/count, method )
+
+    // ensure that we are dealing with the document which currently has the focus
+    document = MacroRunWindowEx();
+
+    QString howString;
+    QString method;
+
+    if(!readArguments(argList, nArgs, 0, errMsg, &howString, &method)) {
+        return false;
+    }
+
+    int how;
+
+    if(howString.compare(QLatin1String("in_selection"), Qt::CaseInsensitive) == 0) {
+        how = REPEAT_IN_SEL;
+    } else if(howString.compare(QLatin1String("to_end"), Qt::CaseInsensitive) == 0) {
+        how = REPEAT_TO_END;
+    } else {
+        bool ok;
+        how = howString.toInt(&ok);
+        if(!ok) {
+            qInfo("NEdit: repeat_macro requires method/count");
+            return false;
+        }
+    }
+
+    if(MainWindow *window = document->toWindow()) {
+        window->action_Repeat_Macro(method, how);
+    }
+
+    result->tag = NO_TAG;
+    return true;
+}
+
 static const SubRoutine MenuMacroSubrNames[] = {
     // File
     { "new",                          newMS },
@@ -1147,20 +1191,20 @@ static const SubRoutine MenuMacroSubrNames[] = {
     // Shell
     { "filter_selection_dialog",      filterSelectionDialogMS },
     { "filter_selection",             filterSelectionMS },
-    { "execute_command",              nullptr }, // NOTE(eteran): here
-    { "execute_command_dialog",       nullptr },
-    { "execute_command_line",         nullptr },
-    { "shell_menu_command",           nullptr },
+    { "execute_command",              executeCommandMS },
+    { "execute_command_dialog",       executeCommandDialogMS },
+    { "execute_command_line",         executeCommandLineMS },
+    { "shell_menu_command",           shellMenuCommandMS },
 
     // Macro
-    { "macro_menu_command",           nullptr },
-    { "repeat_macro",                 nullptr },
-    { "repeat_dialog",                nullptr },
+    { "macro_menu_command",           macroMenuCommandMS },
+    { "repeat_macro",                 repeatMacroMS },
+    { "repeat_dialog",                repeatMacroDialogMS },
 
     // Windows
     { "split_pane",                   splitPaneMS },
     { "close_pane",                   closePaneMS },
-    { "detach_document",              nullptr },
+    { "detach_document",              detachDocumentMS }, // NOTE(eteran): here
     { "detach_document_dialog",       nullptr },
     { "move_document_dialog",         nullptr },
 
@@ -3355,9 +3399,9 @@ static int killCalltipMS(DocumentWidget *document, DataValue *argList, int nArgs
  */
 static int calltipIDMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
-    (void)errMsg;
-    (void)nArgs;
-    (void)argList;
+    Q_UNUSED(errMsg);
+    Q_UNUSED(nArgs);
+    Q_UNUSED(argList);
 
     result->tag = INT_TAG;
     result->val.n = document->toWindow()->lastFocus_->TextDGetCalltipID(0);
@@ -3642,7 +3686,7 @@ static int stringCompareMS(DocumentWidget *window, DataValue *argList, int nArgs
 	}
 
     if (considerCase) {
-        compareResult = leftStr.compare(rightStr);
+        compareResult = leftStr.compare(rightStr, Qt::CaseSensitive);
 	} else {
         compareResult = leftStr.compare(rightStr, Qt::CaseInsensitive);
 	}
@@ -4106,9 +4150,9 @@ static int wrapTextMV(DocumentWidget *window, DataValue *argList, int nArgs, Dat
 
 static int highlightSyntaxMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
-    (void)errMsg;
-    (void)nArgs;
-    (void)argList;
+    Q_UNUSED(errMsg);
+    Q_UNUSED(nArgs);
+    Q_UNUSED(argList);
 
 	result->tag = INT_TAG;
 	result->val.n = window->highlightSyntax_ ? 1 : 0;
@@ -4117,9 +4161,9 @@ static int highlightSyntaxMV(DocumentWidget *window, DataValue *argList, int nAr
 
 static int makeBackupCopyMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
-    (void)errMsg;
-    (void)nArgs;
-    (void)argList;
+    Q_UNUSED(errMsg);
+    Q_UNUSED(nArgs);
+    Q_UNUSED(argList);
 
 	result->tag = INT_TAG;
 	result->val.n = window->saveOldVersion_ ? 1 : 0;
@@ -4128,9 +4172,9 @@ static int makeBackupCopyMV(DocumentWidget *window, DataValue *argList, int nArg
 
 static int incBackupMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
-    (void)errMsg;
-    (void)nArgs;
-    (void)argList;
+    Q_UNUSED(errMsg);
+    Q_UNUSED(nArgs);
+    Q_UNUSED(argList);
 
 	result->tag = INT_TAG;
 	result->val.n = window->autoSave_ ? 1 : 0;
@@ -4139,9 +4183,9 @@ static int incBackupMV(DocumentWidget *window, DataValue *argList, int nArgs, Da
 
 static int showMatchingMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
-    (void)errMsg;
-    (void)nArgs;
-    (void)argList;
+    Q_UNUSED(errMsg);
+    Q_UNUSED(nArgs);
+    Q_UNUSED(argList);
 
 	char *res = nullptr;
 
@@ -4168,9 +4212,9 @@ static int showMatchingMV(DocumentWidget *window, DataValue *argList, int nArgs,
 
 static int matchSyntaxBasedMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
-    (void)errMsg;
-    (void)nArgs;
-    (void)argList;
+    Q_UNUSED(errMsg);
+    Q_UNUSED(nArgs);
+    Q_UNUSED(argList);
 
 	result->tag = INT_TAG;
 	result->val.n = window->matchSyntaxBased_ ? 1 : 0;
@@ -4179,9 +4223,9 @@ static int matchSyntaxBasedMV(DocumentWidget *window, DataValue *argList, int nA
 
 static int overTypeModeMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
-    (void)errMsg;
-    (void)nArgs;
-    (void)argList;
+    Q_UNUSED(errMsg);
+    Q_UNUSED(nArgs);
+    Q_UNUSED(argList);
 
 	result->tag = INT_TAG;
 	result->val.n = window->overstrike_ ? 1 : 0;
@@ -4190,9 +4234,9 @@ static int overTypeModeMV(DocumentWidget *window, DataValue *argList, int nArgs,
 
 static int readOnlyMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
-    (void)errMsg;
-    (void)nArgs;
-    (void)argList;
+    Q_UNUSED(errMsg);
+    Q_UNUSED(nArgs);
+    Q_UNUSED(argList);
 
 	result->tag = INT_TAG;
 	result->val.n = (window->lockReasons_.isAnyLocked()) ? 1 : 0;
@@ -4201,9 +4245,9 @@ static int readOnlyMV(DocumentWidget *window, DataValue *argList, int nArgs, Dat
 
 static int lockedMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
-    (void)errMsg;
-    (void)nArgs;
-    (void)argList;
+    Q_UNUSED(errMsg);
+    Q_UNUSED(nArgs);
+    Q_UNUSED(argList);
 
 	result->tag = INT_TAG;
 	result->val.n = (window->lockReasons_.isUserLocked()) ? 1 : 0;
@@ -4212,36 +4256,36 @@ static int lockedMV(DocumentWidget *window, DataValue *argList, int nArgs, DataV
 
 static int fileFormatMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
-    (void)errMsg;
-    (void)nArgs;
-    (void)argList;
+    Q_UNUSED(errMsg);
+    Q_UNUSED(nArgs);
+    Q_UNUSED(argList);
 
-	char *res = nullptr;
+    QString res;
 
 	switch (window->fileFormat_) {
 	case UNIX_FILE_FORMAT:
-		res = PERM_ALLOC_STR("unix");
+        res = QLatin1String("unix");
 		break;
 	case DOS_FILE_FORMAT:
-		res = PERM_ALLOC_STR("dos");
+        res = QLatin1String("dos");
 		break;
 	case MAC_FILE_FORMAT:
-		res = PERM_ALLOC_STR("macintosh");
+        res = QLatin1String("macintosh");
 		break;
 	default:
 		*errMsg = "Invalid linefeed style value encountered in %s";
 		return false;
 	}
-	result->tag = STRING_TAG;
-	result->val.str.rep = res;
-	result->val.str.len = strlen(res);
+
+    result->tag     = STRING_TAG;
+    result->val.str = AllocNStringCpyEx(res);
 	return true;
 }
 
 static int fontNameMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
-    (void)errMsg;
-    (void)nArgs;
-    (void)argList;
+    Q_UNUSED(errMsg);
+    Q_UNUSED(nArgs);
+    Q_UNUSED(argList);
 
 	result->tag = STRING_TAG;
     result->val.str = AllocNStringCpyEx(window->fontName_);
@@ -4249,9 +4293,9 @@ static int fontNameMV(DocumentWidget *window, DataValue *argList, int nArgs, Dat
 }
 
 static int fontNameItalicMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
-    (void)errMsg;
-    (void)nArgs;
-    (void)argList;
+    Q_UNUSED(errMsg);
+    Q_UNUSED(nArgs);
+    Q_UNUSED(argList);
 
 	result->tag = STRING_TAG;
     result->val.str = AllocNStringCpyEx(window->italicFontName_);
@@ -4259,9 +4303,9 @@ static int fontNameItalicMV(DocumentWidget *window, DataValue *argList, int nArg
 }
 
 static int fontNameBoldMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
-    (void)errMsg;
-    (void)nArgs;
-    (void)argList;
+    Q_UNUSED(errMsg);
+    Q_UNUSED(nArgs);
+    Q_UNUSED(argList);
 
 	result->tag = STRING_TAG;
     result->val.str = AllocNStringCpyEx(window->boldFontName_);
@@ -4269,9 +4313,9 @@ static int fontNameBoldMV(DocumentWidget *window, DataValue *argList, int nArgs,
 }
 
 static int fontNameBoldItalicMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
-    (void)errMsg;
-    (void)nArgs;
-    (void)argList;
+    Q_UNUSED(errMsg);
+    Q_UNUSED(nArgs);
+    Q_UNUSED(argList);
 
 	result->tag = STRING_TAG;
     result->val.str = AllocNStringCpyEx(window->boldItalicFontName_);
@@ -4280,9 +4324,9 @@ static int fontNameBoldItalicMV(DocumentWidget *window, DataValue *argList, int 
 
 static int subscriptSepMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     Q_UNUSED(window);
-    (void)errMsg;
-    (void)nArgs;
-    (void)argList;
+    Q_UNUSED(errMsg);
+    Q_UNUSED(nArgs);
+    Q_UNUSED(argList);
 
 	result->tag = STRING_TAG;
 	result->val.str.rep = PERM_ALLOC_STR(ARRAY_DIM_SEP);
@@ -4291,9 +4335,9 @@ static int subscriptSepMV(DocumentWidget *window, DataValue *argList, int nArgs,
 }
 
 static int minFontWidthMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
-    (void)errMsg;
-    (void)nArgs;
-    (void)argList;
+    Q_UNUSED(errMsg);
+    Q_UNUSED(nArgs);
+    Q_UNUSED(argList);
 
     auto textD = window->firstPane();
 	result->tag = INT_TAG;
@@ -4302,9 +4346,9 @@ static int minFontWidthMV(DocumentWidget *window, DataValue *argList, int nArgs,
 }
 
 static int maxFontWidthMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
-    (void)errMsg;
-    (void)nArgs;
-    (void)argList;
+    Q_UNUSED(errMsg);
+    Q_UNUSED(nArgs);
+    Q_UNUSED(argList);
 
     auto textD = window->firstPane();
 	result->tag = INT_TAG;
@@ -4313,9 +4357,9 @@ static int maxFontWidthMV(DocumentWidget *window, DataValue *argList, int nArgs,
 }
 
 static int topLineMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
-    (void)errMsg;
-    (void)nArgs;
-    (void)argList;
+    Q_UNUSED(errMsg);
+    Q_UNUSED(nArgs);
+    Q_UNUSED(argList);
 
 	result->tag = INT_TAG;
 	
@@ -4325,9 +4369,9 @@ static int topLineMV(DocumentWidget *window, DataValue *argList, int nArgs, Data
 }
 
 static int numDisplayLinesMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
-    (void)errMsg;
-    (void)nArgs;
-    (void)argList;
+    Q_UNUSED(errMsg);
+    Q_UNUSED(nArgs);
+    Q_UNUSED(argList);
 
     auto textD    = window->toWindow()->lastFocus_;
 	result->tag   = INT_TAG;
@@ -4337,9 +4381,9 @@ static int numDisplayLinesMV(DocumentWidget *window, DataValue *argList, int nAr
 
 static int displayWidthMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
-    (void)errMsg;
-    (void)nArgs;
-    (void)argList;
+    Q_UNUSED(errMsg);
+    Q_UNUSED(nArgs);
+    Q_UNUSED(argList);
 
     auto textD    = window->toWindow()->lastFocus_;
 	result->tag   = INT_TAG;
@@ -4349,22 +4393,22 @@ static int displayWidthMV(DocumentWidget *window, DataValue *argList, int nArgs,
 
 static int activePaneMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
-    (void)nArgs;
-    (void)argList;
-    (void)errMsg;
+    Q_UNUSED(nArgs);
+    Q_UNUSED(argList);
+    Q_UNUSED(errMsg);
 
-	result->tag = INT_TAG;
+    result->tag   = INT_TAG;
     result->val.n = window->WidgetToPaneIndex(window->toWindow()->lastFocus_);
 	return true;
 }
 
 static int nPanesMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
-    (void)nArgs;
-    (void)argList;
-    (void)errMsg;
+    Q_UNUSED(nArgs);
+    Q_UNUSED(argList);
+    Q_UNUSED(errMsg);
 
-	result->tag = INT_TAG;
+    result->tag   = INT_TAG;
     result->val.n = window->textPanesCount();
 	return true;
 }
@@ -4372,11 +4416,11 @@ static int nPanesMV(DocumentWidget *window, DataValue *argList, int nArgs, DataV
 static int emptyArrayMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(window);
-    (void)nArgs;
-    (void)argList;
-    (void)errMsg;
+    Q_UNUSED(nArgs);
+    Q_UNUSED(argList);
+    Q_UNUSED(errMsg);
 
-	result->tag = ARRAY_TAG;
+    result->tag          = ARRAY_TAG;
 	result->val.arrayPtr = nullptr;
 	return true;
 }
@@ -4384,43 +4428,43 @@ static int emptyArrayMV(DocumentWidget *window, DataValue *argList, int nArgs, D
 static int serverNameMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(window);
-    (void)nArgs;
-    (void)argList;
-    (void)errMsg;
+    Q_UNUSED(nArgs);
+    Q_UNUSED(argList);
+    Q_UNUSED(errMsg);
 
-	result->tag = STRING_TAG;
+    result->tag     = STRING_TAG;
     result->val.str = AllocNStringCpyEx(GetPrefServerName());
 	return true;
 }
 
 static int tabDistMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
-    (void)nArgs;
-    (void)argList;
-    (void)errMsg;
+    Q_UNUSED(nArgs);
+    Q_UNUSED(argList);
+    Q_UNUSED(errMsg);
 
-	result->tag = INT_TAG;
+    result->tag   = INT_TAG;
 	result->val.n = window->buffer_->tabDist_;
 	return true;
 }
 
 static int emTabDistMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
-    (void)nArgs;
-    (void)argList;
-    (void)errMsg;
+    Q_UNUSED(nArgs);
+    Q_UNUSED(argList);
+    Q_UNUSED(errMsg);
 
     int dist = window->firstPane()->getEmulateTabs();
 
-	result->tag = INT_TAG;
+    result->tag   = INT_TAG;
 	result->val.n = dist;
 	return true;
 }
 
 static int useTabsMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
-    (void)nArgs;
-    (void)argList;
-    (void)errMsg;
+    Q_UNUSED(nArgs);
+    Q_UNUSED(argList);
+    Q_UNUSED(errMsg);
 
 	result->tag = INT_TAG;
 	result->val.n = window->buffer_->useTabs_;
@@ -4429,9 +4473,9 @@ static int useTabsMV(DocumentWidget *window, DataValue *argList, int nArgs, Data
 
 static int modifiedMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
-    (void)nArgs;
-    (void)argList;
-    (void)errMsg;
+    Q_UNUSED(nArgs);
+    Q_UNUSED(argList);
+    Q_UNUSED(errMsg);
 
 	result->tag = INT_TAG;
 	result->val.n = window->fileChanged_;
@@ -4440,9 +4484,9 @@ static int modifiedMV(DocumentWidget *window, DataValue *argList, int nArgs, Dat
 
 static int languageModeMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
-    (void)nArgs;
-    (void)argList;
-    (void)errMsg;
+    Q_UNUSED(nArgs);
+    Q_UNUSED(argList);
+    Q_UNUSED(errMsg);
 
 	QString lmName = LanguageModeName(window->languageMode_);
 
@@ -4462,8 +4506,8 @@ static int languageModeMV(DocumentWidget *window, DataValue *argList, int nArgs,
 */
 static int rangesetListMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
-    (void)nArgs;
-    (void)argList;
+    Q_UNUSED(nArgs);
+    Q_UNUSED(argList);
 
 	RangesetTable *rangesetTable = window->buffer_->rangesetTable_;
 	DataValue element;

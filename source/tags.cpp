@@ -577,9 +577,6 @@ static int scanETagsLine(const char *line, const char *tagPath, int index, char 
     char name[MAXLINE], searchString[MAXLINE];
 	int pos;
 	int len;
-	const char *posDEL;
-	const char *posSOH;
-	const char *posCOM;
 
 	// check for destination file separator  
 	if (line[0] == 12) { // <np> 
@@ -588,9 +585,10 @@ static int scanETagsLine(const char *line, const char *tagPath, int index, char 
 	}
 
 	// check for standard definition line 
-	posDEL = strchr(line, '\177');
-	posSOH = strchr(line, '\001');
-	posCOM = strrchr(line, ',');
+    const char *posDEL = strchr(line, '\177');
+    const char *posSOH = strchr(line, '\001');
+    const char *posCOM = strrchr(line, ',');
+
 	if (*file && posDEL && (posSOH > posDEL) && (posCOM > posSOH)) {
 		// exuberant ctags -e style  
 		len = std::min<int>(MAXLINE - 1, posDEL - line);
@@ -603,6 +601,7 @@ static int scanETagsLine(const char *line, const char *tagPath, int index, char 
 		// No ability to set language mode for the moment 
 		return addTag(name, file, PLAIN_LANGUAGE_MODE, searchString, pos, tagPath, index);
 	}
+
 	if (*file && posDEL && (posCOM > posDEL)) {
 		// old etags style, part  name<soh>  is missing here! 
 		len = std::min<int>(MAXLINE - 1, posDEL - line);
@@ -623,6 +622,7 @@ static int scanETagsLine(const char *line, const char *tagPath, int index, char 
 		pos = atoi(posCOM + 1);
 		return addTag(name, file, PLAIN_LANGUAGE_MODE, searchString, pos, tagPath, index);
 	}
+
 	// check for destination file spec 
 	if (*line && posCOM) {
 		len = std::min<int>(MAXPATHLEN - 1, posCOM - line);
@@ -647,6 +647,7 @@ static int scanETagsLine(const char *line, const char *tagPath, int index, char 
 			}
 		}
 	}
+
 	return 0;
 }
 
