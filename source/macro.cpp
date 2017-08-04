@@ -583,6 +583,7 @@ WINDOW_MENU_EVENT(executeCommandDialogMS,            on_action_Execute_Command_t
 WINDOW_MENU_EVENT(executeCommandLineMS,              on_action_Execute_Command_Line_triggered)
 WINDOW_MENU_EVENT(repeatMacroDialogMS,               on_action_Repeat_triggered)
 WINDOW_MENU_EVENT(detachDocumentMS,                  on_action_Detach_Tab_triggered)
+WINDOW_MENU_EVENT(moveDocumentMS,                    on_action_Move_Tab_To_triggered)
 
 /*
 ** Scans action argument list for arguments "forward" or "backward" to
@@ -1014,7 +1015,6 @@ static int gotoMarkMS(DocumentWidget *document, DataValue *argList, int nArgs, D
         return false;
     }
 
-    // NOTE(eteran): "wrapped" optional argument is not documented
     if(nArgs == 2) {
         QString argument;
         if(!readArgument(argList[1], &argument, errMsg)) {
@@ -1127,6 +1127,60 @@ static int repeatMacroMS(DocumentWidget *document, DataValue *argList, int nArgs
     return true;
 }
 
+static int detachDocumentDialogMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+
+    Q_UNUSED(argList);
+    Q_UNUSED(nArgs);
+    Q_UNUSED(result);
+    Q_UNUSED(errMsg);
+
+    // ensure that we are dealing with the document which currently has the focus
+    document = MacroRunWindowEx();
+
+    if(MainWindow *window = document->toWindow()) {
+        if(window->TabCount() < 2) {
+            return false;
+        }
+
+        int r = QMessageBox::question(
+                    nullptr,
+                    QLatin1String("Detach Tab"),
+                    QString(QLatin1String("Detach %1?")).arg(document->filename_), QMessageBox::Yes | QMessageBox::No);
+
+        if(r == QMessageBox::Yes) {
+            window->action_Detach_Document(document);
+        }
+    }
+
+    return true;
+}
+
+static int setAutoIndentMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+    Q_UNUSED(document);
+
+    QString string;
+    if(!readArguments(argList, nArgs, 0, errMsg, &string)) {
+        qInfo("NEdit: set_auto_indent requires argument");
+        return false;
+    }
+
+    // ensure that we are dealing with the document which currently has the focus
+    document = MacroRunWindowEx();
+
+    if(string == QLatin1String("off")) {
+        document->SetAutoIndent(NO_AUTO_INDENT);
+    } else if(string == QLatin1String("on")) {
+        document->SetAutoIndent(AUTO_INDENT);
+    } else if(string == QLatin1String("smart")) {
+        document->SetAutoIndent(SMART_INDENT);
+    } else {
+        qInfo("NEdit: set_auto_indent invalid argument");
+    }
+
+    result->tag = NO_TAG;
+    return true;
+}
+
 static const SubRoutine MenuMacroSubrNames[] = {
     // File
     { "new",                          newMS },
@@ -1204,13 +1258,13 @@ static const SubRoutine MenuMacroSubrNames[] = {
     // Windows
     { "split_pane",                   splitPaneMS },
     { "close_pane",                   closePaneMS },
-    { "detach_document",              detachDocumentMS }, // NOTE(eteran): here
-    { "detach_document_dialog",       nullptr },
-    { "move_document_dialog",         nullptr },
+    { "detach_document",              detachDocumentMS },
+    { "detach_document_dialog",       detachDocumentDialogMS },
+    { "move_document_dialog",         moveDocumentMS },
 
     // Preferences
-    { "set_auto_indent",              nullptr },
-    { "set_em_tab_dist",              nullptr },
+    { "set_auto_indent",              setAutoIndentMS },
+    { "set_em_tab_dist",              nullptr }, // NOTE(eteran): here
     { "set_fonts",                    nullptr },
     { "set_highlight_syntax",         nullptr },
     { "set_incremental_backup",       nullptr },

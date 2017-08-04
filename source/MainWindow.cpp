@@ -2858,17 +2858,6 @@ void MainWindow::action_Load_Macro_File(const QString &filename) {
     }
 }
 
-void MainWindow::on_action_Detach_Tab_triggered() {
-    if(TabCount() > 1) {
-        if(auto doc = currentDocument()) {
-            auto new_window = new MainWindow(nullptr);
-
-            new_window->ui.tabWidget->addTab(doc, doc->filename_);
-            new_window->show();
-        }
-    }
-}
-
 void MainWindow::on_action_Print_triggered() {
     if(auto doc = currentDocument()) {
         doc->PrintWindow(lastFocus_, false);
@@ -4657,5 +4646,20 @@ void MainWindow::action_Macro_Menu_Command(const QString &name) {
 void MainWindow::action_Repeat_Macro(const QString &macro, int how) {
     if(auto doc = currentDocument()) {
         doc->repeatMacro(macro, how);
+    }
+}
+
+void MainWindow::on_action_Detach_Tab_triggered() {
+    if(auto doc = currentDocument()) {
+        action_Detach_Document(doc);
+    }
+}
+
+void MainWindow::action_Detach_Document(DocumentWidget *document) {
+    if(TabCount() > 1) {
+        auto new_window = new MainWindow(nullptr);
+
+        new_window->ui.tabWidget->addTab(document, document->filename_);
+        new_window->show();
     }
 }
