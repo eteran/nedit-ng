@@ -37,6 +37,7 @@
 #include "HighlightPattern.h"
 #include "IndentStyle.h"
 #include "CommandRecorder.h"
+#include "SignalBlocker.h"
 #include "Input.h"
 #include "CloseMode.h"
 #include "MainWindow.h"
@@ -1224,6 +1225,122 @@ static int setFontsMS(DocumentWidget *document, DataValue *argList, int nArgs, D
     return true;
 }
 
+
+#define ACTION_BOOL_PARAM_OR_TOGGLE(newState, nArgs, argList, oValue, actionName) \
+    do {                                                                          \
+        switch(nArgs) {                                                           \
+        case 1:                                                                   \
+            if(!readArguments(argList, nArgs, 0, errMsg, &newState)) {            \
+                return false;                                                     \
+            }                                                                     \
+            break;                                                                \
+        case 0:                                                                   \
+            newState = !(oValue);                                                 \
+            break;                                                                \
+        default:                                                                  \
+            qInfo("NEdit: %s requires 0 or 1 arguments", actionName);             \
+            return false;                                                         \
+        }                                                                         \
+    } while(0)
+
+
+
+static int setHighlightSyntaxMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+
+    document = MacroRunWindowEx();
+    int newState;
+
+    ACTION_BOOL_PARAM_OR_TOGGLE(newState, nArgs, argList, document->highlightSyntax_, "set_highlight_syntax");
+
+    document->highlightSyntax_ = newState;
+
+    if(document->IsTopDocument()) {
+        if(auto win = document->toWindow()) {
+            no_signals(win->ui.action_Highlight_Syntax)->setChecked(newState);
+        }
+    }
+
+    if (document->highlightSyntax_) {
+        StartHighlightingEx(document, true);
+    } else {
+        document->StopHighlightingEx();
+    }
+
+    result->tag = NO_TAG;
+    return true;
+}
+
+static int setIncrementalBackupMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+    document = MacroRunWindowEx();
+    int newState;
+
+    ACTION_BOOL_PARAM_OR_TOGGLE(newState, nArgs, argList, document->autoSave_, "set_incremental_backup");
+
+    document->autoSave_ = newState;
+
+    if(document->IsTopDocument()) {
+        if(auto win = document->toWindow()) {
+            no_signals(win->ui.action_Highlight_Syntax)->setChecked(newState);
+        }
+    }
+
+    result->tag = NO_TAG;
+    return true;
+}
+
+static int setIncrementalSearchLineMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+    document = MacroRunWindowEx();
+
+    MainWindow *win = document->toWindow();
+    if(!win) {
+        return false;
+    }
+
+    int newState;
+    ACTION_BOOL_PARAM_OR_TOGGLE(newState, nArgs, argList, win->showISearchLine_, "set_incremental_search_line");
+
+    win->ui.action_Incremental_Search_Line->setChecked(newState);
+
+    result->tag = NO_TAG;
+    return true;
+}
+
+static int setLockedMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+
+    document = MacroRunWindowEx();
+    int newState;
+
+    ACTION_BOOL_PARAM_OR_TOGGLE(newState, nArgs, argList, document->lockReasons_.isUserLocked(), "set_locked");
+
+    document->lockReasons_.setUserLocked(newState);
+
+    if(document->IsTopDocument()) {
+        if(auto win = document->toWindow()) {
+            no_signals(win->ui.action_Read_Only)->setChecked(document->lockReasons_.isAnyLocked());
+            win->UpdateWindowTitle(document);
+            win->UpdateWindowReadOnly(document);
+        }
+    }
+
+    result->tag = NO_TAG;
+    return true;
+}
+
+static int setLanguageModeMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+
+    document = MacroRunWindowEx();
+
+    QString languageMode;
+    if(!readArguments(argList, nArgs, 0, errMsg, &languageMode)) {
+        qInfo("NEdit: set_language_mode requires argument");
+        return false;
+    }
+
+    document->SetLanguageMode(FindLanguageMode(languageMode), false);
+    result->tag = NO_TAG;
+    return true;
+}
+
 static const SubRoutine MenuMacroSubrNames[] = {
     // File
     { "new",                          newMS },
@@ -1309,12 +1426,12 @@ static const SubRoutine MenuMacroSubrNames[] = {
     { "set_auto_indent",              setAutoIndentMS },
     { "set_em_tab_dist",              setEmTabDistMS },
     { "set_fonts",                    setFontsMS },
-    { "set_highlight_syntax",         nullptr }, // NOTE(eteran): here
-    { "set_incremental_backup",       nullptr },
-    { "set_incremental_search_line",  nullptr },
-    { "set_language_mode",            nullptr },
-    { "set_locked",                   nullptr },
-    { "set_make_backup_copy",         nullptr },
+    { "set_highlight_syntax",         setHighlightSyntaxMS },
+    { "set_incremental_backup",       setIncrementalBackupMS },
+    { "set_incremental_search_line",  setIncrementalSearchLineMS },
+    { "set_language_mode",            setLanguageModeMS },
+    { "set_locked",                   setLockedMS },
+    { "set_make_backup_copy",         nullptr }, // NOTE(eteran): here
     { "set_overtype_mode",            nullptr },
     { "set_show_line_numbers",        nullptr },
     { "set_show_matching",            nullptr },
