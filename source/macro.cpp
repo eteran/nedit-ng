@@ -1156,7 +1156,6 @@ static int detachDocumentDialogMS(DocumentWidget *document, DataValue *argList, 
 }
 
 static int setAutoIndentMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
-    Q_UNUSED(document);
 
     QString string;
     if(!readArguments(argList, nArgs, 0, errMsg, &string)) {
@@ -1176,6 +1175,50 @@ static int setAutoIndentMS(DocumentWidget *document, DataValue *argList, int nAr
     } else {
         qInfo("NEdit: set_auto_indent invalid argument");
     }
+
+    result->tag = NO_TAG;
+    return true;
+}
+
+static int setEmTabDistMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+
+    int number;
+    if(!readArguments(argList, nArgs, 0, errMsg, &number)) {
+        qInfo("NEdit: set_em_tab_dist requires argument");
+        return false;
+    }
+
+    // ensure that we are dealing with the document which currently has the focus
+    document = MacroRunWindowEx();
+
+    if (number < 1000) {
+        if (number < 0) {
+            number = 0;
+        }
+        document->SetEmTabDist(number);
+    } else {
+        qInfo("NEdit: set_em_tab_dist requires integer argument >= -1 and < 1000");
+    }
+
+    result->tag = NO_TAG;
+    return true;
+}
+
+static int setFontsMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+
+    // ensure that we are dealing with the document which currently has the focus
+    document = MacroRunWindowEx();
+
+    QString fontName;
+    QString italicName;
+    QString boldName;
+    QString boldItalicName;
+    if(!readArguments(argList, nArgs, 0, errMsg, &fontName, &italicName, &boldName, &boldItalicName)) {
+        qInfo("NEdit: set_fonts requires 4 arguments");
+        return false;
+    }
+
+    document->SetFonts(fontName, italicName, boldName, boldItalicName);
 
     result->tag = NO_TAG;
     return true;
@@ -1264,9 +1307,9 @@ static const SubRoutine MenuMacroSubrNames[] = {
 
     // Preferences
     { "set_auto_indent",              setAutoIndentMS },
-    { "set_em_tab_dist",              nullptr }, // NOTE(eteran): here
-    { "set_fonts",                    nullptr },
-    { "set_highlight_syntax",         nullptr },
+    { "set_em_tab_dist",              setEmTabDistMS },
+    { "set_fonts",                    setFontsMS },
+    { "set_highlight_syntax",         nullptr }, // NOTE(eteran): here
     { "set_incremental_backup",       nullptr },
     { "set_incremental_search_line",  nullptr },
     { "set_language_mode",            nullptr },
