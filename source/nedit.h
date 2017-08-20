@@ -53,10 +53,6 @@ enum virtKeyOverride {
     VIRT_KEY_OVERRIDE_ALWAYS
 };
 
-#define NO_FLASH_STRING      "off"
-#define FLASH_DELIMIT_STRING "delimiter"
-#define FLASH_RANGE_STRING   "range"
-
 /* determine a safe size for a string to hold an integer-like number contained in xType */
 #define TYPE_INT_STR_SIZE(xType) ((sizeof(xType) * 3) + 2)
 

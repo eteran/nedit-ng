@@ -83,21 +83,25 @@
 #include <sys/stat.h>
 #include <type_traits>
 
+#define NO_FLASH_STRING      "off"
+#define FLASH_DELIMIT_STRING "delimiter"
+#define FLASH_RANGE_STRING   "range"
+
 namespace {
 
-// How long to wait (msec) before putting up Macro Command banner 
+// How long to wait (msec) before putting up Macro Command banner
 constexpr int BANNER_WAIT_TIME = 6000;
 
 }
 
 
-// The following definitions cause an exit from the macro with a message 
-// added if (1) to remove compiler warnings on solaris 
+// The following definitions cause an exit from the macro with a message
+// added if (1) to remove compiler warnings on solaris
 #define M_FAILURE(s)   \
     do {               \
         *errMsg = s;   \
         return false;  \
-	} while (0)
+    } while (0)
 
 #define M_ARRAY_INSERT_FAILURE() M_FAILURE("array element failed to insert: %s")
 
@@ -141,9 +145,9 @@ static int stringDialogMS(DocumentWidget *window, DataValue *argList, int nArgs,
 static int calltipMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 static int killCalltipMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 
-// T Balinski 
+// T Balinski
 static int listDialogMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-// T Balinski End 
+// T Balinski End
 
 static int stringCompareMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 static int splitMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
@@ -496,16 +500,16 @@ static const SubRoutine TextAreaSubrNames[] = {
 #define WINDOW_MENU_EVENT_S(routineName, slotName)                                                                            \
     static int routineName(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) { \
                                                                                                                               \
-	    /* ensure that we are dealing with the document which currently has the focus */                                      \
+        /* ensure that we are dealing with the document which currently has the focus */                                      \
         document = MacroRunWindowEx();                                                                                        \
                                                                                                                               \
-	    QString string;                                                                                                       \
+        QString string;                                                                                                       \
         if(!readArguments(argList, nArgs, 0, errMsg, &string)) {                                                              \
             return false;                                                                                                     \
         }                                                                                                                     \
                                                                                                                               \
         if(MainWindow *window = document->toWindow()) {                                                                       \
-	        window->slotName(string);                                                                                         \
+            window->slotName(string);                                                                                         \
         }                                                                                                                     \
                                                                                                                               \
         result->tag = NO_TAG;                                                                                                 \
@@ -516,7 +520,7 @@ static const SubRoutine TextAreaSubrNames[] = {
     static int routineName(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) { \
         Q_UNUSED(argList);                                                                                                    \
                                                                                                                               \
-	    /* ensure that we are dealing with the document which currently has the focus */                                      \
+        /* ensure that we are dealing with the document which currently has the focus */                                      \
         document = MacroRunWindowEx();                                                                                        \
                                                                                                                               \
         if(nArgs != 0) {                                                                                                      \
@@ -1115,7 +1119,7 @@ static int repeatMacroMS(DocumentWidget *document, DataValue *argList, int nArgs
         bool ok;
         how = howString.toInt(&ok);
         if(!ok) {
-            qInfo("NEdit: repeat_macro requires method/count");
+            qWarning("NEdit: repeat_macro requires method/count");
             return false;
         }
     }
@@ -1160,7 +1164,7 @@ static int setAutoIndentMS(DocumentWidget *document, DataValue *argList, int nAr
 
     QString string;
     if(!readArguments(argList, nArgs, 0, errMsg, &string)) {
-        qInfo("NEdit: set_auto_indent requires argument");
+        qWarning("NEdit: set_auto_indent requires argument");
         return false;
     }
 
@@ -1174,7 +1178,7 @@ static int setAutoIndentMS(DocumentWidget *document, DataValue *argList, int nAr
     } else if(string == QLatin1String("smart")) {
         document->SetAutoIndent(SMART_INDENT);
     } else {
-        qInfo("NEdit: set_auto_indent invalid argument");
+        qWarning("NEdit: set_auto_indent invalid argument");
     }
 
     result->tag = NO_TAG;
@@ -1185,7 +1189,7 @@ static int setEmTabDistMS(DocumentWidget *document, DataValue *argList, int nArg
 
     int number;
     if(!readArguments(argList, nArgs, 0, errMsg, &number)) {
-        qInfo("NEdit: set_em_tab_dist requires argument");
+        qWarning("NEdit: set_em_tab_dist requires argument");
         return false;
     }
 
@@ -1198,7 +1202,7 @@ static int setEmTabDistMS(DocumentWidget *document, DataValue *argList, int nArg
         }
         document->SetEmTabDist(number);
     } else {
-        qInfo("NEdit: set_em_tab_dist requires integer argument >= -1 and < 1000");
+        qWarning("NEdit: set_em_tab_dist requires integer argument >= -1 and < 1000");
     }
 
     result->tag = NO_TAG;
@@ -1215,7 +1219,7 @@ static int setFontsMS(DocumentWidget *document, DataValue *argList, int nArgs, D
     QString boldName;
     QString boldItalicName;
     if(!readArguments(argList, nArgs, 0, errMsg, &fontName, &italicName, &boldName, &boldItalicName)) {
-        qInfo("NEdit: set_fonts requires 4 arguments");
+        qWarning("NEdit: set_fonts requires 4 arguments");
         return false;
     }
 
@@ -1238,7 +1242,7 @@ static int setFontsMS(DocumentWidget *document, DataValue *argList, int nArgs, D
             newState = !(oValue);                                                 \
             break;                                                                \
         default:                                                                  \
-            qInfo("NEdit: %s requires 0 or 1 arguments", actionName);             \
+            qWarning("NEdit: %s requires 0 or 1 arguments", actionName);             \
             return false;                                                         \
         }                                                                         \
     } while(0)
@@ -1305,6 +1309,25 @@ static int setIncrementalSearchLineMS(DocumentWidget *document, DataValue *argLi
     return true;
 }
 
+static int setMakeBackupCopyMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+
+    document = MacroRunWindowEx();
+    int newState;
+
+    ACTION_BOOL_PARAM_OR_TOGGLE(newState, nArgs, argList, document->saveOldVersion_, "set_make_backup_copy");
+
+    if (document->IsTopDocument()) {
+        if(auto win = document->toWindow()) {
+            no_signals(win->ui.action_Make_Backup_Copy)->setChecked(newState);
+        }
+    }
+
+    document->saveOldVersion_ = newState;
+
+    result->tag = NO_TAG;
+    return true;
+}
+
 static int setLockedMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     document = MacroRunWindowEx();
@@ -1332,7 +1355,7 @@ static int setLanguageModeMS(DocumentWidget *document, DataValue *argList, int n
 
     QString languageMode;
     if(!readArguments(argList, nArgs, 0, errMsg, &languageMode)) {
-        qInfo("NEdit: set_language_mode requires argument");
+        qWarning("NEdit: set_language_mode requires argument");
         return false;
     }
 
@@ -1340,6 +1363,251 @@ static int setLanguageModeMS(DocumentWidget *document, DataValue *argList, int n
     result->tag = NO_TAG;
     return true;
 }
+
+static int setOvertypeModeMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+
+    document = MacroRunWindowEx();
+    int newState;
+
+    ACTION_BOOL_PARAM_OR_TOGGLE(newState, nArgs, argList, document->saveOldVersion_, "set_overtype_mode");
+
+    if(document->IsTopDocument()) {
+        if(auto win = document->toWindow()) {
+            no_signals(win->ui.action_Overtype)->setChecked(newState);
+        }
+    }
+
+    document->SetOverstrike(newState);
+    result->tag = NO_TAG;
+    return true;
+}
+
+static int setShowLineNumbersMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+
+    document = MacroRunWindowEx();
+
+    auto win = document->toWindow();
+
+    if(!win) {
+        return false;
+    }
+
+    int newState;
+
+    ACTION_BOOL_PARAM_OR_TOGGLE(newState, nArgs, argList, win->showLineNumbers_, "set_overtype_mode");
+
+    no_signals(win->ui.action_Show_Line_Numbers)->setChecked(newState);
+
+    win->showLineNumbers_ = newState;
+    result->tag = NO_TAG;
+    return true;
+}
+
+static int setShowMatchingMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+
+    document = MacroRunWindowEx();
+
+    if (nArgs > 0) {
+        QString arg;
+        if(!readArgument(argList[0], &arg, errMsg)) {
+            return false;
+        }
+
+        if (arg == QLatin1String(NO_FLASH_STRING)) {
+            document->SetShowMatching(NO_FLASH);
+        } else if (arg == QLatin1String(FLASH_DELIMIT_STRING)) {
+            document->SetShowMatching(FLASH_DELIMIT);
+        } else if (arg == QLatin1String(FLASH_RANGE_STRING)) {
+            document->SetShowMatching(FLASH_RANGE);
+        }
+        /* For backward compatibility with pre-5.2 versions, we also
+           accept 0 and 1 as aliases for NO_FLASH and FLASH_DELIMIT.
+           It is quite unlikely, though, that anyone ever used this
+           action procedure via the macro language or a key binding,
+           so this can probably be left out safely. */
+        else if (arg == QLatin1String("0")) {
+           document->SetShowMatching(NO_FLASH);
+        } else if (arg == QLatin1String("1")) {
+           document->SetShowMatching(FLASH_DELIMIT);
+        } else {
+            qWarning("NEdit: Invalid argument for set_show_matching");
+        }
+    } else {
+        qWarning("NEdit: set_show_matching requires argument");
+    }
+
+
+    result->tag = NO_TAG;
+    return true;
+}
+
+static int setMatchSyntaxBasedMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+
+    document = MacroRunWindowEx();
+
+    int newState;
+
+    ACTION_BOOL_PARAM_OR_TOGGLE(newState, nArgs, argList, document->matchSyntaxBased_, "set_match_syntax_based");
+
+    if(document->IsTopDocument()) {
+        if(auto win = document->toWindow()) {
+            no_signals(win->ui.action_Matching_Syntax)->setChecked(newState);
+        }
+    }
+
+    document->matchSyntaxBased_ = newState;
+    result->tag = NO_TAG;
+    return true;
+}
+
+static int setStatisticsLineMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+
+    document = MacroRunWindowEx();
+
+    int newState;
+
+    ACTION_BOOL_PARAM_OR_TOGGLE(newState, nArgs, argList, document->showStats_, "set_statistics_line");
+
+    // stats line is a shell-level item, so we toggle the button state
+    // regardless of it's 'topness'
+    if(auto win = document->toWindow()) {
+        no_signals(win->ui.action_Statistics_Line)->setChecked(newState);
+    }
+
+    document->showStats_ = newState;
+    result->tag = NO_TAG;
+    return true;
+}
+
+static int setTabDistMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+
+    document = MacroRunWindowEx();
+
+    if (nArgs > 0) {
+        int newTabDist = 0;
+        if(!readArguments(argList, nArgs, 0, errMsg, &newTabDist) && newTabDist > 0 && newTabDist <= MAX_EXP_CHAR_LEN) {
+            document->SetTabDist(newTabDist);
+        } else {
+            qWarning("NEdit: set_tab_dist requires integer argument > 0 and <= %d", MAX_EXP_CHAR_LEN);
+        }
+    } else {
+        qWarning("NEdit: set_tab_dist requires argument");
+    }
+
+    result->tag = NO_TAG;
+    return true;
+}
+
+static int setUseTabsMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+
+    document = MacroRunWindowEx();
+
+    int newState;
+    ACTION_BOOL_PARAM_OR_TOGGLE(newState, nArgs, argList, document->buffer_->useTabs_, "set_use_tabs");
+
+    document->buffer_->useTabs_ = newState;
+    result->tag = NO_TAG;
+    return true;
+}
+
+static int setWrapMarginMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+
+    document = MacroRunWindowEx();
+
+    if (nArgs > 0) {
+        int newMargin = 0;
+        if(!readArguments(argList, nArgs, 0, errMsg, &newMargin) && newMargin > 0 && newMargin <= 1000) {
+
+            QList<TextArea *> panes = document->textPanes();
+
+            for(TextArea *area : panes) {
+                area->setWrapMargin(newMargin);
+            }
+        } else {
+            qWarning("NEdit: set_wrap_margin requires integer argument >= 0 and < 1000");
+        }
+    } else {
+        qWarning("NEdit: set_wrap_margin requires argument");
+    }
+
+    result->tag = NO_TAG;
+    return true;
+}
+
+static int setWrapTextMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+
+    document = MacroRunWindowEx();
+
+    if (nArgs > 0) {
+
+        QString arg;
+        if(!readArgument(argList[0], &arg, errMsg)) {
+            return false;
+        }
+
+        if (arg == QLatin1String("none")) {
+            document->SetAutoWrap(NO_WRAP);
+        } else if (arg == QLatin1String("auto")) {
+            document->SetAutoWrap(NEWLINE_WRAP);
+        } else if (arg == QLatin1String("continuous")) {
+           document->SetAutoWrap(CONTINUOUS_WRAP);
+        } else {
+            qWarning("NEdit: set_wrap_text invalid argument");
+        }
+    } else {
+        qWarning("NEdit: set_wrap_text requires argument");
+    }
+
+    result->tag = NO_TAG;
+    return true;
+}
+
+static int findIncrMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+
+    document = MacroRunWindowEx();
+
+    auto win = document->toWindow();
+
+    if(!win) {
+        return false;
+    }
+
+    int i;
+    bool continued = false;
+
+    QString arg;
+    if(!readArgument(argList[0], &arg, errMsg)) {
+        qWarning("NEdit: find action requires search string argument");
+        return false;
+    }
+
+
+    for (i = 1; i < nArgs; ++i)  {
+        QString arg2;
+        if(!readArgument(argList[0], &arg2, errMsg)) {
+            return false;
+        }
+
+        if(arg2.compare(QLatin1String("continued"), Qt::CaseSensitive) == 0) {
+            continued = true;
+        }
+    }
+
+    SearchAndSelectIncrementalEx(
+        win,
+        document,
+        win->lastFocus_,
+        searchDirection(argList, nArgs, 1),
+        arg,
+        searchType(argList, nArgs, 1),
+        searchWrap(argList, nArgs, 1),
+        continued);
+
+    result->tag = NO_TAG;
+    return true;
+}
+
+
 
 static const SubRoutine MenuMacroSubrNames[] = {
     // File
@@ -1431,153 +1699,153 @@ static const SubRoutine MenuMacroSubrNames[] = {
     { "set_incremental_search_line",  setIncrementalSearchLineMS },
     { "set_language_mode",            setLanguageModeMS },
     { "set_locked",                   setLockedMS },
-    { "set_make_backup_copy",         nullptr }, // NOTE(eteran): here
-    { "set_overtype_mode",            nullptr },
-    { "set_show_line_numbers",        nullptr },
-    { "set_show_matching",            nullptr },
-    { "set_match_syntax_based",       nullptr },
-    { "set_statistics_line",          nullptr },
-    { "set_tab_dist",                 nullptr },
-    { "set_use_tabs",                 nullptr },
-    { "set_wrap_margin",              nullptr },
-    { "set_wrap_text",                nullptr },
+    { "set_make_backup_copy",         setMakeBackupCopyMS },
+    { "set_overtype_mode",            setOvertypeModeMS },
+    { "set_show_line_numbers",        setShowLineNumbersMS },
+    { "set_show_matching",            setShowMatchingMS },
+    { "set_match_syntax_based",       setMatchSyntaxBasedMS },
+    { "set_statistics_line",          setStatisticsLineMS },
+    { "set_tab_dist",                 setTabDistMS },
+    { "set_use_tabs",                 setUseTabsMS },
+    { "set_wrap_margin",              setWrapMarginMS },
+    { "set_wrap_text",                setWrapTextMS },
 
     // Deprecated
-    { "match",                        nullptr },
+    { "match",                        selectToMatchingMS },
 
-#if 0 // These aren't mentioned in the documentation...
-	{ "find_incremental",             nullptr },
-	{ "start_incremental_find",       nullptr },
-	{ "replace_find",                 nullptr },
-	{ "replace_find_same",            nullptr },
-	{ "replace_find_again",           nullptr },
-	{ "next_document",                nullptr },
-	{ "previous_document",            nullptr },
-	{ "last_document",                nullptr },
-	{ "bg_menu_command",              nullptr },
-	{ "post_window_bg_menu",          nullptr },
-	{ "post_tab_context_menu",        nullptr },	
+#if 1 // These aren't mentioned in the documentation...
+    { "find_incremental",             findIncrMS },
+    { "start_incremental_find",       nullptr }, // NOTE(eteran): here
+    { "replace_find",                 nullptr },
+    { "replace_find_same",            nullptr },
+    { "replace_find_again",           nullptr },
+    { "next_document",                nullptr },
+    { "previous_document",            nullptr },
+    { "last_document",                nullptr },
+    { "bg_menu_command",              nullptr },
+    { "post_window_bg_menu",          nullptr },
+    { "post_tab_context_menu",        nullptr },
 #endif
 
 };
 
 
-// Built-in subroutines and variables for the macro language 
+// Built-in subroutines and variables for the macro language
 static const SubRoutine MacroSubrs[] = {
-	{ "length",                  lengthMS },
-	{ "get_range",               getRangeMS },
-	{ "t_print",                 tPrintMS },
-	{ "dialog",                  dialogMS },
-	{ "string_dialog",           stringDialogMS },
-	{ "replace_range",           replaceRangeMS },
-	{ "replace_selection",       replaceSelectionMS },
-	{ "set_cursor_pos",          setCursorPosMS },
-	{ "get_character",           getCharacterMS },
-	{ "min",                     minMS },
-	{ "max",                     maxMS },
-	{ "search",                  searchMS },
-	{ "search_string",           searchStringMS },
-	{ "substring",               substringMS },
-	{ "replace_substring",       replaceSubstringMS },
-	{ "read_file",               readFileMS },
-	{ "write_file",              writeFileMS },
-	{ "append_file",             appendFileMS },
-	{ "beep",                    beepMS },
-	{ "get_selection",           getSelectionMS },
-	{ "valid_number",            validNumberMS },
-	{ "replace_in_string",       replaceInStringMS },
-	{ "select",                  selectMS },
-	{ "select_rectangle",        selectRectangleMS },
-	{ "focus_window",            focusWindowMS },
-	{ "shell_command",           shellCmdMS },
-	{ "string_to_clipboard",     stringToClipboardMS },
-	{ "clipboard_to_string",     clipboardToStringMS },
-	{ "toupper",                 toupperMS },
-	{ "tolower",                 tolowerMS },
-	{ "list_dialog",             listDialogMS },
-	{ "getenv",                  getenvMS },
-	{ "string_compare",          stringCompareMS },
-	{ "split",                   splitMS },
-	{ "calltip",                 calltipMS },
-	{ "kill_calltip",            killCalltipMS },
-#if 0 // DISABLED for 5.4          
-	{ "set_backlight_string",    setBacklightStringMS },
+    { "length",                  lengthMS },
+    { "get_range",               getRangeMS },
+    { "t_print",                 tPrintMS },
+    { "dialog",                  dialogMS },
+    { "string_dialog",           stringDialogMS },
+    { "replace_range",           replaceRangeMS },
+    { "replace_selection",       replaceSelectionMS },
+    { "set_cursor_pos",          setCursorPosMS },
+    { "get_character",           getCharacterMS },
+    { "min",                     minMS },
+    { "max",                     maxMS },
+    { "search",                  searchMS },
+    { "search_string",           searchStringMS },
+    { "substring",               substringMS },
+    { "replace_substring",       replaceSubstringMS },
+    { "read_file",               readFileMS },
+    { "write_file",              writeFileMS },
+    { "append_file",             appendFileMS },
+    { "beep",                    beepMS },
+    { "get_selection",           getSelectionMS },
+    { "valid_number",            validNumberMS },
+    { "replace_in_string",       replaceInStringMS },
+    { "select",                  selectMS },
+    { "select_rectangle",        selectRectangleMS },
+    { "focus_window",            focusWindowMS },
+    { "shell_command",           shellCmdMS },
+    { "string_to_clipboard",     stringToClipboardMS },
+    { "clipboard_to_string",     clipboardToStringMS },
+    { "toupper",                 toupperMS },
+    { "tolower",                 tolowerMS },
+    { "list_dialog",             listDialogMS },
+    { "getenv",                  getenvMS },
+    { "string_compare",          stringCompareMS },
+    { "split",                   splitMS },
+    { "calltip",                 calltipMS },
+    { "kill_calltip",            killCalltipMS },
+#if 0 // DISABLED for 5.4
+    { "set_backlight_string",    setBacklightStringMS },
 #endif
-	{ "rangeset_create",         rangesetCreateMS },
-	{ "rangeset_destroy",        rangesetDestroyMS },
-	{ "rangeset_add",            rangesetAddMS },
-	{ "rangeset_subtract",       rangesetSubtractMS },
-	{ "rangeset_invert",         rangesetInvertMS },
-	{ "rangeset_info",           rangesetInfoMS },
-	{ "rangeset_range",          rangesetRangeMS },
-	{ "rangeset_includes",       rangesetIncludesPosMS },
-	{ "rangeset_set_color",      rangesetSetColorMS },
-	{ "rangeset_set_name",       rangesetSetNameMS },
-	{ "rangeset_set_mode",       rangesetSetModeMS },
-	{ "rangeset_get_by_name",    rangesetGetByNameMS },
-	{ "get_pattern_by_name",     getPatternByNameMS },
-	{ "get_pattern_at_pos",      getPatternAtPosMS },
-	{ "get_style_by_name",       getStyleByNameMS },
-	{ "get_style_at_pos",        getStyleAtPosMS },
-	{ "filename_dialog",         filenameDialogMS },
+    { "rangeset_create",         rangesetCreateMS },
+    { "rangeset_destroy",        rangesetDestroyMS },
+    { "rangeset_add",            rangesetAddMS },
+    { "rangeset_subtract",       rangesetSubtractMS },
+    { "rangeset_invert",         rangesetInvertMS },
+    { "rangeset_info",           rangesetInfoMS },
+    { "rangeset_range",          rangesetRangeMS },
+    { "rangeset_includes",       rangesetIncludesPosMS },
+    { "rangeset_set_color",      rangesetSetColorMS },
+    { "rangeset_set_name",       rangesetSetNameMS },
+    { "rangeset_set_mode",       rangesetSetModeMS },
+    { "rangeset_get_by_name",    rangesetGetByNameMS },
+    { "get_pattern_by_name",     getPatternByNameMS },
+    { "get_pattern_at_pos",      getPatternAtPosMS },
+    { "get_style_by_name",       getStyleByNameMS },
+    { "get_style_at_pos",        getStyleAtPosMS },
+    { "filename_dialog",         filenameDialogMS },
 };
 
 static SubRoutine SpecialVars[] = {
-	{ "$cursor",                  cursorMV },
-	{ "$line",                    lineMV },
-	{ "$column",                  columnMV },
-	{ "$file_name",               fileNameMV },
-	{ "$file_path",               filePathMV },
-	{ "$text_length",             lengthMV },
-	{ "$selection_start",         selectionStartMV },
-	{ "$selection_end",           selectionEndMV },
-	{ "$selection_left",          selectionLeftMV },
-	{ "$selection_right",         selectionRightMV },
-	{ "$wrap_margin",             wrapMarginMV },
-	{ "$tab_dist",                tabDistMV },
-	{ "$em_tab_dist",             emTabDistMV },
-	{ "$use_tabs",                useTabsMV },
-	{ "$language_mode",           languageModeMV },
-	{ "$modified",                modifiedMV },
-	{ "$statistics_line",         statisticsLineMV },
-	{ "$incremental_search_line", incSearchLineMV },
-	{ "$show_line_numbers",       showLineNumbersMV },
-	{ "$auto_indent",             autoIndentMV },
-	{ "$wrap_text",               wrapTextMV },
-	{ "$highlight_syntax",        highlightSyntaxMV },
-	{ "$make_backup_copy",        makeBackupCopyMV },
-	{ "$incremental_backup",      incBackupMV },
-	{ "$show_matching",           showMatchingMV },
-	{ "$match_syntax_based",      matchSyntaxBasedMV },
-	{ "$overtype_mode",           overTypeModeMV },
-	{ "$read_only",               readOnlyMV },
-	{ "$locked",                  lockedMV },
-	{ "$file_format",             fileFormatMV },
-	{ "$font_name",               fontNameMV },
-	{ "$font_name_italic",        fontNameItalicMV },
-	{ "$font_name_bold",          fontNameBoldMV },
-	{ "$font_name_bold_italic",   fontNameBoldItalicMV },
-	{ "$sub_sep",                 subscriptSepMV },
-	{ "$min_font_width",          minFontWidthMV },
-	{ "$max_font_width",          maxFontWidthMV },
-	{ "$top_line",                topLineMV },
-	{ "$n_display_lines",         numDisplayLinesMV },
-	{ "$display_width",           displayWidthMV },
-	{ "$active_pane",             activePaneMV },
-	{ "$n_panes",                 nPanesMV },
-	{ "$empty_array",             emptyArrayMV },
-	{ "$server_name",             serverNameMV },
-	{ "$calltip_ID",              calltipIDMV },
+    { "$cursor",                  cursorMV },
+    { "$line",                    lineMV },
+    { "$column",                  columnMV },
+    { "$file_name",               fileNameMV },
+    { "$file_path",               filePathMV },
+    { "$text_length",             lengthMV },
+    { "$selection_start",         selectionStartMV },
+    { "$selection_end",           selectionEndMV },
+    { "$selection_left",          selectionLeftMV },
+    { "$selection_right",         selectionRightMV },
+    { "$wrap_margin",             wrapMarginMV },
+    { "$tab_dist",                tabDistMV },
+    { "$em_tab_dist",             emTabDistMV },
+    { "$use_tabs",                useTabsMV },
+    { "$language_mode",           languageModeMV },
+    { "$modified",                modifiedMV },
+    { "$statistics_line",         statisticsLineMV },
+    { "$incremental_search_line", incSearchLineMV },
+    { "$show_line_numbers",       showLineNumbersMV },
+    { "$auto_indent",             autoIndentMV },
+    { "$wrap_text",               wrapTextMV },
+    { "$highlight_syntax",        highlightSyntaxMV },
+    { "$make_backup_copy",        makeBackupCopyMV },
+    { "$incremental_backup",      incBackupMV },
+    { "$show_matching",           showMatchingMV },
+    { "$match_syntax_based",      matchSyntaxBasedMV },
+    { "$overtype_mode",           overTypeModeMV },
+    { "$read_only",               readOnlyMV },
+    { "$locked",                  lockedMV },
+    { "$file_format",             fileFormatMV },
+    { "$font_name",               fontNameMV },
+    { "$font_name_italic",        fontNameItalicMV },
+    { "$font_name_bold",          fontNameBoldMV },
+    { "$font_name_bold_italic",   fontNameBoldItalicMV },
+    { "$sub_sep",                 subscriptSepMV },
+    { "$min_font_width",          minFontWidthMV },
+    { "$max_font_width",          maxFontWidthMV },
+    { "$top_line",                topLineMV },
+    { "$n_display_lines",         numDisplayLinesMV },
+    { "$display_width",           displayWidthMV },
+    { "$active_pane",             activePaneMV },
+    { "$n_panes",                 nPanesMV },
+    { "$empty_array",             emptyArrayMV },
+    { "$server_name",             serverNameMV },
+    { "$calltip_ID",              calltipIDMV },
 #if 0 // // DISABLED for 5.4
-	{ "$backlight_string",        backlightStringMV},
+    { "$backlight_string",        backlightStringMV},
 #endif
-	{ "$rangeset_list",           rangesetListMV },
+    { "$rangeset_list",           rangesetListMV },
     { "$VERSION",                 versionMV }
 };
-									
 
 
-// Global symbols for returning values from built-in functions 
+
+// Global symbols for returning values from built-in functions
 #define N_RETURN_GLOBALS 5
 enum retGlobalSyms {
     STRING_DIALOG_BUTTON,
@@ -1601,20 +1869,20 @@ static Symbol *ReturnGlobals[N_RETURN_GLOBALS];
 ** editor information
 */
 void RegisterMacroSubroutines() {
-	static DataValue subrPtr = INIT_DATA_VALUE;
-	static DataValue noValue = INIT_DATA_VALUE;
+    static DataValue subrPtr = INIT_DATA_VALUE;
+    static DataValue noValue = INIT_DATA_VALUE;
 
-	/* Install symbols for built-in routines and variables, with pointers
-	   to the appropriate c routines to do the work */
+    /* Install symbols for built-in routines and variables, with pointers
+       to the appropriate c routines to do the work */
     for(const SubRoutine &routine : MacroSubrs) {
         subrPtr.val.subr = routine.function;
         InstallSymbol(routine.name, C_FUNCTION_SYM, subrPtr);
-	}
-	
+    }
+
     for(const SubRoutine &routine : SpecialVars) {
         subrPtr.val.subr = routine.function;
         InstallSymbol(routine.name, PROC_VALUE_SYM, subrPtr);
-	}
+    }
 
     // NOTE(eteran): things that were in the menu action list
     for(const SubRoutine &routine : MenuMacroSubrNames) {
@@ -1628,10 +1896,10 @@ void RegisterMacroSubroutines() {
         InstallSymbol(routine.name, C_FUNCTION_SYM, subrPtr);
     }
 
-	/* Define global variables used for return values, remember their
-	   locations so they can be set without a LookupSymbol call */
-	for (unsigned int i = 0; i < N_RETURN_GLOBALS; i++)
-		ReturnGlobals[i] = InstallSymbol(ReturnGlobalNames[i], GLOBAL_SYM, noValue);
+    /* Define global variables used for return values, remember their
+       locations so they can be set without a LookupSymbol call */
+    for (unsigned int i = 0; i < N_RETURN_GLOBALS; i++)
+        ReturnGlobals[i] = InstallSymbol(ReturnGlobalNames[i], GLOBAL_SYM, noValue);
 }
 
 void FinishLearnEx() {
@@ -1641,8 +1909,8 @@ void FinishLearnEx() {
         return;
     }
 
-	DocumentWidget *document = CommandRecorder::getInstance()->macroRecordWindowEx;
-	Q_ASSERT(document);
+    DocumentWidget *document = CommandRecorder::getInstance()->macroRecordWindowEx;
+    Q_ASSERT(document);
 
     CommandRecorder::getInstance()->stopRecording();
 
@@ -1651,12 +1919,12 @@ void FinishLearnEx() {
         window->ui.action_Learn_Keystrokes->setEnabled(true);
     }
 
-	if (document->IsTopDocument()) {
-		if(MainWindow *window = document->toWindow()) {
-			window->ui.action_Finish_Learn->setEnabled(false);
-			window->ui.action_Cancel_Learn->setEnabled(false);
-		}
-	}
+    if (document->IsTopDocument()) {
+        if(MainWindow *window = document->toWindow()) {
+            window->ui.action_Finish_Learn->setEnabled(false);
+            window->ui.action_Cancel_Learn->setEnabled(false);
+        }
+    }
 
     // Undim the replay and paste-macro buttons
     for(MainWindow *window : MainWindow::allWindows()) {
@@ -1665,8 +1933,8 @@ void FinishLearnEx() {
 
     MainWindow::DimPasteReplayBtns(true);
 
-	// Clear learn-mode banner
-	document->ClearModeMessageEx();
+    // Clear learn-mode banner
+    document->ClearModeMessageEx();
 }
 
 /*
@@ -1686,7 +1954,7 @@ static void cancelLearnEx() {
         return;
     }
 
-	DocumentWidget *document = CommandRecorder::getInstance()->macroRecordWindowEx;
+    DocumentWidget *document = CommandRecorder::getInstance()->macroRecordWindowEx;
 
     // Undim the menu items dimmed during learn
     for(MainWindow *window : MainWindow::allWindows()) {
@@ -1743,7 +2011,7 @@ void ReadMacroInitFileEx(DocumentWidget *window) {
     static bool initFileLoaded = false;
 
     if (!initFileLoaded) {
-		window->ReadMacroFileEx(autoloadName, false);
+        window->ReadMacroFileEx(autoloadName, false);
         initFileLoaded = true;
     }
 }
@@ -1753,7 +2021,7 @@ void ReadMacroInitFileEx(DocumentWidget *window) {
 ** parsing errors in a dialog posted over window->shell_.
 */
 int ReadMacroStringEx(DocumentWidget *window, const QString &string, const QString &errIn) {
-	return readCheckMacroStringEx(window, string, window, errIn, nullptr);
+    return readCheckMacroStringEx(window, string, window, errIn, nullptr);
 }
 
 /*
@@ -1763,7 +2031,7 @@ int ReadMacroStringEx(DocumentWidget *window, const QString &string, const QStri
 */
 bool CheckMacroStringEx(QWidget *dialogParent, const QString &string, const QString &errIn, int *errPos) {
     Q_ASSERT(errPos);
-	return readCheckMacroStringEx(dialogParent, string, nullptr, errIn, errPos);
+    return readCheckMacroStringEx(dialogParent, string, nullptr, errIn, errPos);
 }
 
 /*
@@ -1789,85 +2057,85 @@ Program *ParseMacroEx(const QString &expr, QString *message, int *stoppedAt) {
 
 int readCheckMacroStringEx(QWidget *dialogParent, const QString &string, DocumentWidget *runWindow, const QString &errIn, int *errPos) {
 
-	Input in(&string);
+    Input in(&string);
 
     DataValue subrPtr;
     QStack<Program *> progStack;
 
-	while (!in.atEnd()) {
+    while (!in.atEnd()) {
 
         // skip over white space and comments
-		while (*in == QLatin1Char(' ') || *in == QLatin1Char('\t') || *in == QLatin1Char('\n') || *in == QLatin1Char('#')) {
-			if (*in == QLatin1Char('#')) {
-				while (!in.atEnd() && *in != QLatin1Char('\n')) {
-					++in;
+        while (*in == QLatin1Char(' ') || *in == QLatin1Char('\t') || *in == QLatin1Char('\n') || *in == QLatin1Char('#')) {
+            if (*in == QLatin1Char('#')) {
+                while (!in.atEnd() && *in != QLatin1Char('\n')) {
+                    ++in;
                 }
             } else {
-				++in;
+                ++in;
             }
         }
 
-		if (in.atEnd()) {
+        if (in.atEnd()) {
             break;
         }
 
         // look for define keyword, and compile and store defined routines
-		if (in.match(QLatin1String("define"))  && (in[6] == QLatin1Char(' ') || in[6] == QLatin1Char('\t'))) {
-			in += 6;
-			in.skipWhitespace();
+        if (in.match(QLatin1String("define"))  && (in[6] == QLatin1Char(' ') || in[6] == QLatin1Char('\t'))) {
+            in += 6;
+            in.skipWhitespace();
 
-			QString subrName;
-			auto namePtr = std::back_inserter(subrName);
+            QString subrName;
+            auto namePtr = std::back_inserter(subrName);
 
-			while ((*in).isLetterOrNumber() || *in == QLatin1Char('_')) {
-				*namePtr++ = *in++;
+            while ((*in).isLetterOrNumber() || *in == QLatin1Char('_')) {
+                *namePtr++ = *in++;
             }
 
-			if ((*in).isLetterOrNumber() || *in == QLatin1Char('_')) {
-				return ParseErrorEx(
-				            dialogParent,
-				            *in.string(),
-				            in.index(),
-				            errIn,
-				            QLatin1String("subroutine name too long"));
+            if ((*in).isLetterOrNumber() || *in == QLatin1Char('_')) {
+                return ParseErrorEx(
+                            dialogParent,
+                            *in.string(),
+                            in.index(),
+                            errIn,
+                            QLatin1String("subroutine name too long"));
             }
 
-			in.skipWhitespaceNL();
+            in.skipWhitespaceNL();
 
-			if (*in != QLatin1Char('{')) {
-				if(errPos) {
-					*errPos = in.index();
-				}
-				return ParseErrorEx(
-				            dialogParent,
-				            *in.string(),
-				            in.index(),
-				            errIn,
-				            QLatin1String("expected '{'"));
+            if (*in != QLatin1Char('{')) {
+                if(errPos) {
+                    *errPos = in.index();
+                }
+                return ParseErrorEx(
+                            dialogParent,
+                            *in.string(),
+                            in.index(),
+                            errIn,
+                            QLatin1String("expected '{'"));
             }
 
-			QString code = in.mid();
-			int stoppedAt;
-			QString errMsg;
-			Program *const prog = ParseMacroEx(code, &errMsg, &stoppedAt);
+            QString code = in.mid();
+            int stoppedAt;
+            QString errMsg;
+            Program *const prog = ParseMacroEx(code, &errMsg, &stoppedAt);
             if(!prog) {
                 if(errPos) {
-					*errPos = in.index() + stoppedAt;
+                    *errPos = in.index() + stoppedAt;
                 }
 
-				return ParseErrorEx(
-				            dialogParent,
-				            code,
-				            stoppedAt,
-				            errIn,
-				            errMsg);
+                return ParseErrorEx(
+                            dialogParent,
+                            code,
+                            stoppedAt,
+                            errIn,
+                            errMsg);
             }
             if (runWindow) {
-				Symbol *sym = LookupSymbol(subrName.toStdString());
+                Symbol *sym = LookupSymbol(subrName.toStdString());
                 if(!sym) {
                     subrPtr.val.prog = prog;
                     subrPtr.tag = NO_TAG;
-					sym = InstallSymbol(subrName.toStdString(), MACRO_FUNCTION_SYM, subrPtr);
+                    sym = InstallSymbol(subrName.toStdString(), MACRO_FUNCTION_SYM, subrPtr);
                 } else {
                     if (sym->type == MACRO_FUNCTION_SYM) {
                         FreeProgram(sym->value.val.prog);
@@ -1879,7 +2147,7 @@ int readCheckMacroStringEx(QWidget *dialogParent, const QString &string, Documen
                 }
             }
 
-			in += stoppedAt;
+            in += stoppedAt;
 
             /* Parse and execute immediate (outside of any define) macro commands
                and WAIT for them to finish executing before proceeding.  Note that
@@ -1887,21 +2155,21 @@ int readCheckMacroStringEx(QWidget *dialogParent, const QString &string, Documen
                definitions in a file which is loaded from another macro file, it
                will probably run the code blocks in reverse order! */
         } else {
-			QString code = in.mid();
-			int stoppedAt;
-			QString errMsg;
-			Program *const prog = ParseMacroEx(code, &errMsg, &stoppedAt);
+            QString code = in.mid();
+            int stoppedAt;
+            QString errMsg;
+            Program *const prog = ParseMacroEx(code, &errMsg, &stoppedAt);
             if(!prog) {
                 if (errPos) {
-					*errPos = in.index() + stoppedAt;
+                    *errPos = in.index() + stoppedAt;
                 }
 
-				return ParseErrorEx(
-				            dialogParent,
-				            code,
-				            stoppedAt,
-				            errIn,
-				            errMsg);
+                return ParseErrorEx(
+                            dialogParent,
+                            code,
+                            stoppedAt,
+                            errIn,
+                            errMsg);
             }
 
             if (runWindow) {
@@ -1931,7 +2199,7 @@ int readCheckMacroStringEx(QWidget *dialogParent, const QString &string, Documen
                     progStack.push(prog);
                 }
             }
-			in += stoppedAt;
+            in += stoppedAt;
         }
     }
 
@@ -2166,11 +2434,11 @@ void SafeGC() {
 
     for(DocumentWidget *document : DocumentWidget::allDocuments()) {
         if (document->macroCmdData_ != nullptr || InSmartIndentMacrosEx(document)) {
-			return;
-		}
-	}
-	
-	GarbageCollectStrings();
+            return;
+        }
+    }
+
+    GarbageCollectStrings();
 }
 
 /*
@@ -2253,7 +2521,7 @@ void RepeatMacroEx(DocumentWidget *document, const char *command, int how) {
     }
 
     // run the executable program
-	runMacroEx(document, prog);
+    runMacroEx(document, prog);
 }
 
 
@@ -2264,42 +2532,42 @@ void RepeatMacroEx(DocumentWidget *document, const char *command, int how) {
 #if 0
 void learnActionHook(Widget w, XtPointer clientData, String actionName, XEvent *event, String *params, Cardinal *numParams) {
 
-	int i;
-	char *actionString;
+    int i;
+    char *actionString;
 
-	/* Select only actions in text panes in the curr for which this
-	   action hook is recording macros (from clientData). */
-	auto curr = WindowList.begin();
-	for (; curr != WindowList.end(); ++curr) {
-	
-		Document *const window = *curr;
-	
-		if (window->textArea_ == w)
-			break;
-		for (i = 0; i < window->textPanes_.size(); i++) {
-			if (window->textPanes_[i] == w)
-				break;
-		}
-		if (i < window->textPanes_.size())
-			break;
-	}
-	
-	if (curr == WindowList.end() || *curr != static_cast<Document *>(clientData))
-		return;
+    /* Select only actions in text panes in the curr for which this
+       action hook is recording macros (from clientData). */
+    auto curr = WindowList.begin();
+    for (; curr != WindowList.end(); ++curr) {
 
-	/* beep on un-recordable operations which require a mouse position, to
-	   remind the user that the action was not recorded */
-	if (isMouseAction(actionName)) {
-		QApplication::beep();
-		return;
-	}
+        Document *const window = *curr;
 
-	// Record the action and its parameters 
-	actionString = actionToString(w, actionName, event, params, *numParams);
-	if (actionString) {
-		MacroRecordBuf->BufAppendEx(actionString);
-		XtFree(actionString);
-	}
+        if (window->textArea_ == w)
+            break;
+        for (i = 0; i < window->textPanes_.size(); i++) {
+            if (window->textPanes_[i] == w)
+                break;
+        }
+        if (i < window->textPanes_.size())
+            break;
+    }
+
+    if (curr == WindowList.end() || *curr != static_cast<Document *>(clientData))
+        return;
+
+    /* beep on un-recordable operations which require a mouse position, to
+       remind the user that the action was not recorded */
+    if (isMouseAction(actionName)) {
+        QApplication::beep();
+        return;
+    }
+
+    // Record the action and its parameters
+    actionString = actionToString(w, actionName, event, params, *numParams);
+    if (actionString) {
+        MacroRecordBuf->BufAppendEx(actionString);
+        XtFree(actionString);
+    }
 }
 #endif
 
@@ -2358,10 +2626,10 @@ static int lengthMS(DocumentWidget *document, DataValue *argList, int nArgs, Dat
     if(!readArguments(argList, nArgs, 0, errMsg, &string)) {
         return false;
     }
-	
-	result->tag   = INT_TAG;
+
+    result->tag   = INT_TAG;
     result->val.n = static_cast<int>(string.size());
-	return true;
+    return true;
 }
 
 /*
@@ -2371,131 +2639,131 @@ static int minMS(DocumentWidget *document, DataValue *argList, int nArgs, DataVa
 
     Q_UNUSED(document);
 
-	int minVal;
-	int value;
+    int minVal;
+    int value;
 
-	if (nArgs == 1) {
+    if (nArgs == 1) {
         return tooFewArgsErr(errMsg);
-	}
-	
+    }
+
     if (!readArgument(argList[0], &minVal, errMsg)) {
-		return false;
-	}
-	
-	for (int i = 0; i < nArgs; i++) {
+        return false;
+    }
+
+    for (int i = 0; i < nArgs; i++) {
         if (!readArgument(argList[i], &value, errMsg)) {
-			return false;
-		}
-		
-		minVal = std::min(minVal, value);
-	}
-	
-	result->tag   = INT_TAG;
-	result->val.n = minVal;
-	return true;
+            return false;
+        }
+
+        minVal = std::min(minVal, value);
+    }
+
+    result->tag   = INT_TAG;
+    result->val.n = minVal;
+    return true;
 }
 
 static int maxMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     Q_UNUSED(document);
 
-	int maxVal;
-	int value;
+    int maxVal;
+    int value;
 
-	if (nArgs == 1) {
+    if (nArgs == 1) {
         return tooFewArgsErr(errMsg);
-	}
-	
-    if (!readArgument(argList[0], &maxVal, errMsg)) {
-		return false;
-	}
-	
-	for (int i = 0; i < nArgs; i++) {
-        if (!readArgument(argList[i], &value, errMsg)) {
-			return false;
-		}
-		
-		maxVal = std::max(maxVal, value);
-	}
+    }
 
-	result->tag   = INT_TAG;
-	result->val.n = maxVal;
-	return true;
+    if (!readArgument(argList[0], &maxVal, errMsg)) {
+        return false;
+    }
+
+    for (int i = 0; i < nArgs; i++) {
+        if (!readArgument(argList[i], &value, errMsg)) {
+            return false;
+        }
+
+        maxVal = std::max(maxVal, value);
+    }
+
+    result->tag   = INT_TAG;
+    result->val.n = maxVal;
+    return true;
 }
 
 static int focusWindowMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     QString string;
 
-	/* Read the argument representing the window to focus to, and translate
+    /* Read the argument representing the window to focus to, and translate
        it into a pointer to a real DocumentWidget */
-	if (nArgs != 1) {
+    if (nArgs != 1) {
         return wrongNArgsErr(errMsg);
-	}
+    }
 
     QList<DocumentWidget *> documents = DocumentWidget::allDocuments();
     QList<DocumentWidget *>::iterator w;
 
     if (!readArgument(argList[0], &string, errMsg)) {
-		return false;
+        return false;
     } else if (string == QLatin1String("last")) {
         w = documents.begin();
     } else if (string == QLatin1String("next")) {
 
         auto curr = std::find_if(documents.begin(), documents.end(), [window](DocumentWidget *doc) {
             return doc == window;
-		});
-		
+        });
+
         if(curr != documents.end()) {
-			w = std::next(curr);
-		}
+            w = std::next(curr);
+        }
     } else if (string.size() >= MAXPATHLEN) {
-		*errMsg = "Pathname too long in focus_window()";
-		return false;
-	} else {
-		// just use the plain name as supplied 
+        *errMsg = "Pathname too long in focus_window()";
+        return false;
+    } else {
+        // just use the plain name as supplied
         w = std::find_if(documents.begin(), documents.end(), [&string](DocumentWidget *doc) {
-			QString fullname = doc->FullPath();
+            QString fullname = doc->FullPath();
             return fullname == string;
-		});
-		
-		// didn't work? try normalizing the string passed in 
+        });
+
+        // didn't work? try normalizing the string passed in
         if(w == documents.end()) {
 
             QString normalizedString = NormalizePathnameEx(string);
             if(normalizedString.isNull()) {
-				//  Something is broken with the input pathname. 
-				*errMsg = "Pathname too long in focus_window()";
-				return false;
-			}
-			
-            w = std::find_if(documents.begin(), documents.end(), [&normalizedString](DocumentWidget *win) {
-				QString fullname = win->FullPath();
-                return fullname == normalizedString;
-			});
-		}
-	}
+                //  Something is broken with the input pathname.
+                *errMsg = "Pathname too long in focus_window()";
+                return false;
+            }
 
-	// If no matching window was found, return empty string and do nothing 
+            w = std::find_if(documents.begin(), documents.end(), [&normalizedString](DocumentWidget *win) {
+                QString fullname = win->FullPath();
+                return fullname == normalizedString;
+            });
+        }
+    }
+
+    // If no matching window was found, return empty string and do nothing
     if(w == documents.end()) {
-		result->tag         = STRING_TAG;
-		result->val.str.rep = PERM_ALLOC_STR("");
-		result->val.str.len = 0;
-		return true;
-	}
-	
+        result->tag         = STRING_TAG;
+        result->val.str.rep = PERM_ALLOC_STR("");
+        result->val.str.len = 0;
+        return true;
+    }
+
     DocumentWidget *const document = *w;
 
-	// Change the focused window to the requested one 
+    // Change the focused window to the requested one
     SetMacroFocusWindowEx(document);
 
-	// turn on syntax highlight that might have been deferred 
+    // turn on syntax highlight that might have been deferred
     if ((document)->highlightSyntax_ && !(document)->highlightData_) {
         StartHighlightingEx(document, false);
-	}
+    }
 
-	// Return the name of the window 
+    // Return the name of the window
     result->tag     = STRING_TAG;
     result->val.str = AllocNStringCpyEx(QString(QLatin1String("%1%2")).arg(document->path_, document->filename_));
-	return true;
+    return true;
 }
 
 /*
@@ -2505,33 +2773,33 @@ static int focusWindowMS(DocumentWidget *window, DataValue *argList, int nArgs, 
 static int getRangeMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     int from;
     int to;
-	TextBuffer *buf = window->buffer_;
+    TextBuffer *buf = window->buffer_;
 
-	// Validate arguments and convert to int 
+    // Validate arguments and convert to int
     if(!readArguments(argList, nArgs, 0, errMsg, &from, &to)) {
         return false;
     }
 
     from = qBound(0, from, buf->BufGetLength());
     to   = qBound(0, to,   buf->BufGetLength());
-		
-	if (from > to) {
+
+    if (from > to) {
         qSwap(from, to);
-	}
+    }
 
-	/* Copy text from buffer (this extra copy could be avoided if TextBuffer.c
-	   provided a routine for writing into a pre-allocated string) */
-	result->tag = STRING_TAG;
+    /* Copy text from buffer (this extra copy could be avoided if TextBuffer.c
+       provided a routine for writing into a pre-allocated string) */
+    result->tag = STRING_TAG;
 
-	std::string rangeText = buf->BufGetRangeEx(from, to);
-	buf->BufUnsubstituteNullCharsEx(rangeText);
+    std::string rangeText = buf->BufGetRangeEx(from, to);
+    buf->BufUnsubstituteNullCharsEx(rangeText);
 
     result->val.str = AllocNStringCpyEx(rangeText);
 
     /* Note: after the un-substitution, it is possible that strlen() != len,
-	   but that's because strlen() can't deal with 0-characters. */
+       but that's because strlen() can't deal with 0-characters. */
 
-	return true;
+    return true;
 }
 
 /*
@@ -2540,7 +2808,7 @@ static int getRangeMS(DocumentWidget *window, DataValue *argList, int nArgs, Dat
 */
 static int getCharacterMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     int pos;
-	TextBuffer *buf = window->buffer_;
+    TextBuffer *buf = window->buffer_;
 
     // Validate arguments and convert to int
     if(!readArguments(argList, nArgs, 0, errMsg, &pos)) {
@@ -2549,16 +2817,16 @@ static int getCharacterMS(DocumentWidget *window, DataValue *argList, int nArgs,
 
     pos = qBound(0, pos, buf->BufGetLength());
 
-	// Return the character in a pre-allocated string) 
-	result->tag = STRING_TAG;
-	AllocNString(&result->val.str, 2);
-	result->val.str.rep[0] = buf->BufGetCharacter(pos);
+    // Return the character in a pre-allocated string)
+    result->tag = STRING_TAG;
+    AllocNString(&result->val.str, 2);
+    result->val.str.rep[0] = buf->BufGetCharacter(pos);
 
-	buf->BufUnsubstituteNullChars(result->val.str.rep, result->val.str.len);
-	/* Note: after the un-substitution, it is possible that strlen() != len,
-	   but that's because strlen() can't deal with 0-characters. */
+    buf->BufUnsubstituteNullChars(result->val.str.rep, result->val.str.len);
+    /* Note: after the un-substitution, it is possible that strlen() != len,
+       but that's because strlen() can't deal with 0-characters. */
 
-	return true;
+    return true;
 }
 
 /*
@@ -2568,43 +2836,43 @@ static int getCharacterMS(DocumentWidget *window, DataValue *argList, int nArgs,
 static int replaceRangeMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     int from;
     int to;
-	TextBuffer *buf = window->buffer_;
-	std::string string;
+    TextBuffer *buf = window->buffer_;
+    std::string string;
 
-	// Validate arguments and convert to int 
+    // Validate arguments and convert to int
     if(!readArguments(argList, nArgs, 0, errMsg, &from, &to, &string)) {
         return false;
     }
 
     from = qBound(0, from, buf->BufGetLength());
     to   = qBound(0, to,   buf->BufGetLength());
-		
-	if (from > to) {
+
+    if (from > to) {
         qSwap(from, to);
-	}
+    }
 
-	// Don't allow modifications if the window is read-only 
-	if (window->lockReasons_.isAnyLocked()) {
+    // Don't allow modifications if the window is read-only
+    if (window->lockReasons_.isAnyLocked()) {
         QApplication::beep();
-		result->tag = NO_TAG;
-		return true;
-	}
+        result->tag = NO_TAG;
+        return true;
+    }
 
-	/* There are no null characters in the string (because macro strings
-	   still have null termination), but if the string contains the
-	   character used by the buffer for null substitution, it could
-	   theoretically become a null.  In the highly unlikely event that
-	   all of the possible substitution characters in the buffer are used
-	   up, stop the macro and tell the user of the failure */
-	if (!window->buffer_->BufSubstituteNullCharsEx(string)) {
-		*errMsg = "Too much binary data in file";
-		return false;
-	}
+    /* There are no null characters in the string (because macro strings
+       still have null termination), but if the string contains the
+       character used by the buffer for null substitution, it could
+       theoretically become a null.  In the highly unlikely event that
+       all of the possible substitution characters in the buffer are used
+       up, stop the macro and tell the user of the failure */
+    if (!window->buffer_->BufSubstituteNullCharsEx(string)) {
+        *errMsg = "Too much binary data in file";
+        return false;
+    }
 
-	// Do the replace 
-	buf->BufReplaceEx(from, to, string);
-	result->tag = NO_TAG;
-	return true;
+    // Do the replace
+    buf->BufReplaceEx(from, to, string);
+    result->tag = NO_TAG;
+    return true;
 }
 
 /*
@@ -2614,33 +2882,33 @@ static int replaceRangeMS(DocumentWidget *window, DataValue *argList, int nArgs,
 static int replaceSelectionMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     std::string string;
 
-	// Validate argument and convert to string 
+    // Validate argument and convert to string
     if(!readArguments(argList, nArgs, 0, errMsg, &string)) {
         return false;
     }
 
-	// Don't allow modifications if the window is read-only 
-	if (window->lockReasons_.isAnyLocked()) {
+    // Don't allow modifications if the window is read-only
+    if (window->lockReasons_.isAnyLocked()) {
         QApplication::beep();
-		result->tag = NO_TAG;
-		return true;
-	}
+        result->tag = NO_TAG;
+        return true;
+    }
 
-	/* There are no null characters in the string (because macro strings
-	   still have null termination), but if the string contains the
-	   character used by the buffer for null substitution, it could
-	   theoretically become a null.  In the highly unlikely event that
-	   all of the possible substitution characters in the buffer are used
-	   up, stop the macro and tell the user of the failure */
-	if (!window->buffer_->BufSubstituteNullCharsEx(string)) {
-		*errMsg = "Too much binary data in file";
-		return false;
-	}
+    /* There are no null characters in the string (because macro strings
+       still have null termination), but if the string contains the
+       character used by the buffer for null substitution, it could
+       theoretically become a null.  In the highly unlikely event that
+       all of the possible substitution characters in the buffer are used
+       up, stop the macro and tell the user of the failure */
+    if (!window->buffer_->BufSubstituteNullCharsEx(string)) {
+        *errMsg = "Too much binary data in file";
+        return false;
+    }
 
-	// Do the replace 
-	window->buffer_->BufReplaceSelectedEx(string);
-	result->tag = NO_TAG;
-	return true;
+    // Do the replace
+    window->buffer_->BufReplaceSelectedEx(string);
+    result->tag = NO_TAG;
+    return true;
 }
 
 /*
@@ -2650,36 +2918,36 @@ static int replaceSelectionMS(DocumentWidget *window, DataValue *argList, int nA
 */
 static int getSelectionMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
-	/* Read argument list to check for "any" keyword, and get the appropriate
-	   selection */
-	if (nArgs != 0 && nArgs != 1) {
+    /* Read argument list to check for "any" keyword, and get the appropriate
+       selection */
+    if (nArgs != 0 && nArgs != 1) {
         return wrongNArgsErr(errMsg);
-	}
+    }
 
-	if (nArgs == 1) {
-		if (argList[0].tag != STRING_TAG || strcmp(argList[0].val.str.rep, "any")) {
-			*errMsg = "Unrecognized argument to %s";
-			return false;
-		}
-		
-		QString text = GetAnySelectionEx(window);
-		if (text.isNull()) {
-			text = QLatin1String("");
-		}
-		
+    if (nArgs == 1) {
+        if (argList[0].tag != STRING_TAG || strcmp(argList[0].val.str.rep, "any")) {
+            *errMsg = "Unrecognized argument to %s";
+            return false;
+        }
+
+        QString text = GetAnySelectionEx(window);
+        if (text.isNull()) {
+            text = QLatin1String("");
+        }
+
         // Return the text as an allocated string
         result->tag = STRING_TAG;
         result->val.str = AllocNStringCpyEx(text);
-	} else {
+    } else {
         std::string selText = window->buffer_->BufGetSelectionTextEx();
-		window->buffer_->BufUnsubstituteNullCharsEx(selText);
+        window->buffer_->BufUnsubstituteNullCharsEx(selText);
 
         // Return the text as an allocated string
         result->tag = STRING_TAG;
         result->val.str = AllocNStringCpyEx(selText);
-	}
+    }
 
-	return true;
+    return true;
 }
 
 /*
@@ -2695,10 +2963,10 @@ static int validNumberMS(DocumentWidget *window, DataValue *argList, int nArgs, 
         return false;
     }
 
-	result->tag = INT_TAG;
-	result->val.n = StringToNum(string, nullptr);
+    result->tag = INT_TAG;
+    result->val.n = StringToNum(string, nullptr);
 
-	return true;
+    return true;
 }
 
 /*
@@ -2713,7 +2981,7 @@ static int replaceSubstringMS(DocumentWidget *window, DataValue *argList, int nA
     std::string string;
     std::string replStr;
 
-	// Validate arguments and convert to int 
+    // Validate arguments and convert to int
     if(!readArguments(argList, nArgs, 0, errMsg, &string, &from, &to, &replStr)) {
         return false;
     }
@@ -2723,17 +2991,17 @@ static int replaceSubstringMS(DocumentWidget *window, DataValue *argList, int nA
     from = qBound(0, from, length);
     to   = qBound(0, to,   length);
 
-	if (from > to) {
+    if (from > to) {
         qSwap(from, to);
-	}
+    }
 
-	// Allocate a new string and do the replacement 
-	result->tag = STRING_TAG;
+    // Allocate a new string and do the replacement
+    result->tag = STRING_TAG;
 
     string.replace(from, to - from, replStr);
     result->val.str = AllocNStringCpyEx(string);
 
-	return true;
+    return true;
 }
 
 /*
@@ -2749,17 +3017,17 @@ static int substringMS(DocumentWidget *window, DataValue *argList, int nArgs, Da
     int length;
     std::string string;
 
-	// Validate arguments and convert to int 
+    // Validate arguments and convert to int
     if (nArgs != 2 && nArgs != 3) {
         return wrongNArgsErr(errMsg);
     }
 
     if (!readArgument(argList[0], &string, errMsg)) {
-		return false;
+        return false;
     }
 
     if (!readArgument(argList[1], &from, errMsg)) {
-		return false;
+        return false;
     }
 
     length = string.size();
@@ -2767,7 +3035,7 @@ static int substringMS(DocumentWidget *window, DataValue *argList, int nArgs, Da
 
     if (nArgs == 3) {
         if (!readArgument(argList[2], &to, errMsg)) {
-			return false;
+            return false;
         }
     }
 
@@ -2779,10 +3047,10 @@ static int substringMS(DocumentWidget *window, DataValue *argList, int nArgs, Da
     if (to > length)   to = length;
     if (from > to)     to = from;
 
-	// Allocate a new string and copy the sub-string into it 
+    // Allocate a new string and copy the sub-string into it
     result->tag     = STRING_TAG;
     result->val.str = AllocNStringCpyEx(string.substr(from, to - from));
-	return true;
+    return true;
 }
 
 static int toupperMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -2795,15 +3063,15 @@ static int toupperMS(DocumentWidget *window, DataValue *argList, int nArgs, Data
         return false;
     }
 
-	// Allocate a new string and copy an uppercased version of the string it 
+    // Allocate a new string and copy an uppercased version of the string it
     for(char &ch : string) {
         ch = toupper(static_cast<uint8_t>(ch));
     }
 
-	result->tag = STRING_TAG;
+    result->tag = STRING_TAG;
     result->val.str = AllocNStringCpyEx(string);
 
-	return true;
+    return true;
 }
 
 static int tolowerMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -2833,12 +3101,12 @@ static int stringToClipboardMS(DocumentWidget *window, DataValue *argList, int n
 
     QString string;
 
-	// Get the string argument 
+    // Get the string argument
     if(!readArguments(argList, nArgs, 0, errMsg, &string)) {
         return false;
     }
 
-	result->tag = NO_TAG;
+    result->tag = NO_TAG;
     QApplication::clipboard()->setText(string, QClipboard::Clipboard);
     return true;
 }
@@ -2848,12 +3116,12 @@ static int clipboardToStringMS(DocumentWidget *window, DataValue *argList, int n
     Q_UNUSED(window);
     Q_UNUSED(argList);
 
-	// Should have no arguments 
+    // Should have no arguments
     if (nArgs != 0) {
         return wrongNArgsErr(errMsg);
     }
 
-	// Ask if there's a string in the clipboard, and get its length 
+    // Ask if there's a string in the clipboard, and get its length
     const QMimeData *data = QApplication::clipboard()->mimeData(QClipboard::Clipboard);
     if(!data->hasText()) {
         result->tag = STRING_TAG;
@@ -2865,7 +3133,7 @@ static int clipboardToStringMS(DocumentWidget *window, DataValue *argList, int n
         result->val.str = AllocNStringCpyEx(data->text());
     }
 
-	return true;
+    return true;
 }
 
 /*
@@ -2887,7 +3155,7 @@ static int readFileMS(DocumentWidget *window, DataValue *argList, int nArgs, Dat
     // Read the whole file into an allocated string
     std::ifstream file(name, std::ios::binary);
     if(file) {
-		std::string contents(std::istreambuf_iterator<char>{file}, std::istreambuf_iterator<char>{});
+        std::string contents(std::istreambuf_iterator<char>{file}, std::istreambuf_iterator<char>{});
         result->tag = STRING_TAG;
         result->val.str = AllocNStringCpyEx(contents);
 
@@ -2924,34 +3192,34 @@ static int writeOrAppendFile(bool append, DocumentWidget *window, DataValue *arg
 
     std::string name;
     std::string string;
-	FILE *fp;
+    FILE *fp;
 
-	// Validate argument 
+    // Validate argument
     if(!readArguments(argList, nArgs, 0, errMsg, &string, &name)) {
         return false;
     }
 
-	// open the file 
+    // open the file
     if ((fp = fopen(name.c_str(), append ? "a" : "w")) == nullptr) {
-		result->tag = INT_TAG;
+        result->tag = INT_TAG;
         result->val.n = false;
-		return true;
-	}
+        return true;
+    }
 
-	// write the string to the file 
+    // write the string to the file
     fwrite(string.data(), 1, string.size(), fp);
-	if (ferror(fp)) {
-		fclose(fp);
-		result->tag = INT_TAG;
+    if (ferror(fp)) {
+        fclose(fp);
+        result->tag = INT_TAG;
         result->val.n = false;
-		return true;
-	}
-	fclose(fp);
+        return true;
+    }
+    fclose(fp);
 
-	// return the status 
-	result->tag = INT_TAG;
+    // return the status
+    result->tag = INT_TAG;
     result->val.n = true;
-	return true;
+    return true;
 }
 
 /*
@@ -2967,21 +3235,21 @@ static int writeOrAppendFile(bool append, DocumentWidget *window, DataValue *arg
 ** also returns the ending position of the match in $searchEndPos
 */
 static int searchMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
-	DataValue newArgList[9];
+    DataValue newArgList[9];
 
-	/* Use the search string routine, by adding the buffer contents as
-	   the string argument */
-	if (nArgs > 8)
+    /* Use the search string routine, by adding the buffer contents as
+       the string argument */
+    if (nArgs > 8)
         return wrongNArgsErr(errMsg);
 
-	/* we remove constness from BufAsStringEx() result since we know
-	   searchStringMS will not modify the result */
-	newArgList[0].tag = STRING_TAG;
-	newArgList[0].val.str.rep = const_cast<char *>(window->buffer_->BufAsString());
-	newArgList[0].val.str.len = window->buffer_->BufGetLength();
+    /* we remove constness from BufAsStringEx() result since we know
+       searchStringMS will not modify the result */
+    newArgList[0].tag = STRING_TAG;
+    newArgList[0].val.str.rep = const_cast<char *>(window->buffer_->BufAsString());
+    newArgList[0].val.str.len = window->buffer_->BufGetLength();
 
-	// copy other arguments to the new argument list 
-	memcpy(&newArgList[1], argList, nArgs * sizeof(DataValue));
+    // copy other arguments to the new argument list
+    memcpy(&newArgList[1], argList, nArgs * sizeof(DataValue));
 
     return searchStringMS(window, newArgList, nArgs + 1, result, errMsg);
 }
@@ -3003,48 +3271,48 @@ static int searchStringMS(DocumentWidget *window, DataValue *argList, int nArgs,
     bool found = false;
     int foundStart;
     int foundEnd;
-	SearchType type;
+    SearchType type;
     bool skipSearch = false;
     std::string string;
     QString searchStr;
-	SearchDirection direction;
+    SearchDirection direction;
 
-	// Validate arguments and convert to proper types 
-	if (nArgs < 3)
+    // Validate arguments and convert to proper types
+    if (nArgs < 3)
         return tooFewArgsErr(errMsg);
     if (!readArgument(argList[0], &string, errMsg))
-		return false;
+        return false;
     if (!readArgument(argList[1], &searchStr, errMsg))
-		return false;
+        return false;
     if (!readArgument(argList[2], &beginPos, errMsg))
-		return false;
+        return false;
     if (!readSearchArgs(&argList[3], nArgs - 3, &direction, &type, &wrap, errMsg))
-		return false;
+        return false;
 
     int len = argList[0].val.str.len;
-	if (beginPos > len) {
-		if (direction == SEARCH_FORWARD) {
+    if (beginPos > len) {
+        if (direction == SEARCH_FORWARD) {
             if (wrap == WrapMode::Wrap) {
-				beginPos = 0; // Wrap immediately 
-			} else {
+                beginPos = 0; // Wrap immediately
+            } else {
                 found = false;
                 skipSearch = true;
-			}
-		} else {
-			beginPos = len;
-		}
-	} else if (beginPos < 0) {
-		if (direction == SEARCH_BACKWARD) {
+            }
+        } else {
+            beginPos = len;
+        }
+    } else if (beginPos < 0) {
+        if (direction == SEARCH_BACKWARD) {
             if (wrap == WrapMode::Wrap) {
-				beginPos = len; // Wrap immediately 
-			} else {
+                beginPos = len; // Wrap immediately
+            } else {
                 found = false;
                 skipSearch = true;
-			}
-		} else {
-			beginPos = 0;
-		}
-	}
+            }
+        } else {
+            beginPos = 0;
+        }
+    }
 
     if (!skipSearch) {
         found = SearchString(
@@ -3061,12 +3329,12 @@ static int searchStringMS(DocumentWidget *window, DataValue *argList, int nArgs,
                     GetWindowDelimitersEx(window).toLatin1().data());
     }
 
-	// Return the results 
-	ReturnGlobals[SEARCH_END]->value.tag = INT_TAG;
-	ReturnGlobals[SEARCH_END]->value.val.n = found ? foundEnd : 0;
-	result->tag = INT_TAG;
-	result->val.n = found ? foundStart : -1;
-	return true;
+    // Return the results
+    ReturnGlobals[SEARCH_END]->value.tag = INT_TAG;
+    ReturnGlobals[SEARCH_END]->value.val.n = found ? foundEnd : 0;
+    result->tag = INT_TAG;
+    result->val.n = found ? foundStart : -1;
+    return true;
 }
 
 /*
@@ -3085,41 +3353,41 @@ static int replaceInStringMS(DocumentWidget *window, DataValue *argList, int nAr
     std::string string;
     QString searchStr;
     std::string replaceStr;
-	SearchType searchType = SEARCH_LITERAL;
-	int copyStart;
-	int copyEnd;
+    SearchType searchType = SEARCH_LITERAL;
+    int copyStart;
+    int copyEnd;
     bool force = false;
-	int i;
+    int i;
 
-	// Validate arguments and convert to proper types 
-	if (nArgs < 3 || nArgs > 5)
+    // Validate arguments and convert to proper types
+    if (nArgs < 3 || nArgs > 5)
         return wrongNArgsErr(errMsg);
     if (!readArgument(argList[0], &string, errMsg))
-		return false;
+        return false;
     if (!readArgument(argList[1], &searchStr, errMsg))
-		return false;
+        return false;
     if (!readArgument(argList[2], &replaceStr, errMsg))
-		return false;
+        return false;
 
-	for (i = 3; i < nArgs; i++) {
-		// Read the optional search type and force arguments 
+    for (i = 3; i < nArgs; i++) {
+        // Read the optional search type and force arguments
         QString argStr;
 
         if (!readArgument(argList[i], &argStr, errMsg))
-			return false;
+            return false;
 
-		if (!StringToSearchType(argStr, &searchType)) {
-			// It's not a search type.  is it "copy"? 
+        if (!StringToSearchType(argStr, &searchType)) {
+            // It's not a search type.  is it "copy"?
             if (argStr == QLatin1String("copy")) {
                 force = true;
-			} else {
-				*errMsg = "unrecognized argument to %s";
-				return false;
-			}
-		}
-	}
+            } else {
+                *errMsg = "unrecognized argument to %s";
+                return false;
+            }
+        }
+    }
 
-	// Do the replace 
+    // Do the replace
     bool ok;
     std::string replacedStr = ReplaceAllInStringEx(
                 string,
@@ -3131,16 +3399,16 @@ static int replaceInStringMS(DocumentWidget *window, DataValue *argList, int nAr
                 GetWindowDelimitersEx(window).toLatin1().data(),
                 &ok);
 
-	// Return the results 
-	result->tag = STRING_TAG;
+    // Return the results
+    result->tag = STRING_TAG;
     if(!ok) {
-		if (force) {
+        if (force) {
             result->val.str = AllocNStringCpyEx(string);
-		} else {
-			result->val.str.rep = PERM_ALLOC_STR("");
-			result->val.str.len = 0;
-		}
-	} else {
+        } else {
+            result->val.str.rep = PERM_ALLOC_STR("");
+            result->val.str.len = 0;
+        }
+    } else {
         std::string new_string;
         new_string.reserve(string.size() + replacedStr.size());
 
@@ -3148,9 +3416,9 @@ static int replaceInStringMS(DocumentWidget *window, DataValue *argList, int nAr
         new_string.append(replacedStr);
         new_string.append(string.substr(copyEnd));
         result->val.str = AllocNStringCpyEx(new_string);
-	}
+    }
 
-	return true;
+    return true;
 }
 
 static int readSearchArgs(DataValue *argList, int nArgs, SearchDirection *searchDirection, SearchType *searchType, WrapMode *wrap, const char **errMsg) {
@@ -3158,78 +3426,78 @@ static int readSearchArgs(DataValue *argList, int nArgs, SearchDirection *search
     QString argStr;
 
     *wrap            = WrapMode::NoWrap;
-	*searchDirection = SEARCH_FORWARD;
+    *searchDirection = SEARCH_FORWARD;
     *searchType      = SEARCH_LITERAL;
 
     for (int i = 0; i < nArgs; i++) {
         if (!readArgument(argList[i], &argStr, errMsg))
-			return false;
+            return false;
         else if (argStr == QLatin1String("wrap"))
             *wrap = WrapMode::Wrap;
         else if (argStr == QLatin1String("nowrap"))
             *wrap = WrapMode::NoWrap;
         else if (argStr == QLatin1String("backward"))
-			*searchDirection = SEARCH_BACKWARD;
+            *searchDirection = SEARCH_BACKWARD;
         else if (argStr == QLatin1String("forward"))
-			*searchDirection = SEARCH_FORWARD;
-		else if (!StringToSearchType(argStr, searchType)) {
-			*errMsg = "Unrecognized argument to %s";
-			return false;
-		}
-	}
-	return true;
+            *searchDirection = SEARCH_FORWARD;
+        else if (!StringToSearchType(argStr, searchType)) {
+            *errMsg = "Unrecognized argument to %s";
+            return false;
+        }
+    }
+    return true;
 }
 
 static int setCursorPosMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     int pos;
 
-	// Get argument and convert to int 
+    // Get argument and convert to int
     if(!readArguments(argList, nArgs, 0, errMsg, &pos)) {
         return false;
     }
 
     // Set the position
     auto textD = window->toWindow()->lastFocus_;
-	textD->TextSetCursorPos(pos);
-	result->tag = NO_TAG;
-	return true;
+    textD->TextSetCursorPos(pos);
+    result->tag = NO_TAG;
+    return true;
 }
 
 static int selectMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     int start;
     int end;
 
-	// Get arguments and convert to int 
+    // Get arguments and convert to int
     if(!readArguments(argList, nArgs, 0, errMsg, &start, &end)) {
         return false;
     }
 
-	// Verify integrity of arguments 
-	if (start > end) {
+    // Verify integrity of arguments
+    if (start > end) {
         qSwap(start, end);
-	}
+    }
 
     start = qBound(0, start, window->buffer_->BufGetLength());
     end   = qBound(0, end,   window->buffer_->BufGetLength());
 
-	// Make the selection 
-	window->buffer_->BufSelect(start, end);
-	result->tag = NO_TAG;
-	return true;
+    // Make the selection
+    window->buffer_->BufSelect(start, end);
+    result->tag = NO_TAG;
+    return true;
 }
 
 static int selectRectangleMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     int start, end, left, right;
 
-	// Get arguments and convert to int 
+    // Get arguments and convert to int
     if(!readArguments(argList, nArgs, 0, errMsg, &start, &end, &left, &right)) {
         return false;
     }
 
-	// Make the selection 
-	window->buffer_->BufRectSelect(start, end, left, right);
-	result->tag = NO_TAG;
-	return true;
+    // Make the selection
+    window->buffer_->BufRectSelect(start, end, left, right);
+    result->tag = NO_TAG;
+    return true;
 }
 
 /*
@@ -3245,8 +3513,8 @@ static int beepMS(DocumentWidget *window, DataValue *argList, int nArgs, DataVal
     }
 
     QApplication::beep();
-	result->tag = NO_TAG;
-	return true;
+    result->tag = NO_TAG;
+    return true;
 }
 
 static int tPrintMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -3261,15 +3529,15 @@ static int tPrintMS(DocumentWidget *window, DataValue *argList, int nArgs, DataV
 
     for (int i = 0; i < nArgs; i++) {
         if (!readArgument(argList[i], &string, errMsg)) {
-			return false;
+            return false;
         }
 
         printf("%s%s", string.c_str(), i == nArgs - 1 ? "" : " ");
-	}
+    }
 
     fflush(stdout);
-	result->tag = NO_TAG;
-	return true;
+    result->tag = NO_TAG;
+    return true;
 }
 
 /*
@@ -3281,7 +3549,7 @@ static int getenvMS(DocumentWidget *window, DataValue *argList, int nArgs, DataV
 
     std::string name;
 
-	// Get name of variable to get 
+    // Get name of variable to get
     if(!readArguments(argList, nArgs, 0, errMsg, &name)) {
         *errMsg = "argument to %s must be a string";
         return false;
@@ -3289,10 +3557,10 @@ static int getenvMS(DocumentWidget *window, DataValue *argList, int nArgs, DataV
 
     QByteArray value = qgetenv(name.c_str());
 
-	// Return the text as an allocated string 
-	result->tag = STRING_TAG;
+    // Return the text as an allocated string
+    result->tag = STRING_TAG;
     result->val.str = AllocNStringCpyEx(QString::fromLocal8Bit(value));
-	return true;
+    return true;
 }
 
 static int shellCmdMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -3304,17 +3572,17 @@ static int shellCmdMS(DocumentWidget *document, DataValue *argList, int nArgs, D
         return false;
     }
 
-	/* Shell command execution requires that the macro be suspended, so
-	   this subroutine can't be run if macro execution can't be interrupted */
+    /* Shell command execution requires that the macro be suspended, so
+       this subroutine can't be run if macro execution can't be interrupted */
     if (!MacroRunWindowEx()->macroCmdData_) {
-		*errMsg = "%s can't be called from non-suspendable context";
-		return false;
-	}
+        *errMsg = "%s can't be called from non-suspendable context";
+        return false;
+    }
 
     document->ShellCmdToMacroStringEx(cmdString, inputString);
-	result->tag = INT_TAG;
-	result->val.n = 0;
-	return true;
+    result->tag = INT_TAG;
+    result->val.n = 0;
+    return true;
 }
 
 /*
@@ -3343,127 +3611,127 @@ static int dialogMS(DocumentWidget *document, DataValue *argList, int nArgs, Dat
 
     QString btnLabel;
     QString message;
-	long i;
+    long i;
 
-	/* Ignore the focused window passed as the function argument and put
-	   the dialog up over the window which is executing the macro */
+    /* Ignore the focused window passed as the function argument and put
+       the dialog up over the window which is executing the macro */
     document = MacroRunWindowEx();
     auto cmdData = static_cast<macroCmdInfoEx *>(document->macroCmdData_);
 
-	/* Dialogs require macro to be suspended and interleaved with other macros.
-	   This subroutine can't be run if macro execution can't be interrupted */
-	if (!cmdData) {
-		*errMsg = "%s can't be called from non-suspendable context";
-		return false;
-	}
+    /* Dialogs require macro to be suspended and interleaved with other macros.
+       This subroutine can't be run if macro execution can't be interrupted */
+    if (!cmdData) {
+        *errMsg = "%s can't be called from non-suspendable context";
+        return false;
+    }
 
-	/* Read and check the arguments.  The first being the dialog message,
-	   and the rest being the button labels */
-	if (nArgs == 0) {
-		*errMsg = "%s subroutine called with no arguments";
-		return false;
-	}
+    /* Read and check the arguments.  The first being the dialog message,
+       and the rest being the button labels */
+    if (nArgs == 0) {
+        *errMsg = "%s subroutine called with no arguments";
+        return false;
+    }
     if (!readArgument(argList[0], &message, errMsg)) {
-		return false;
-	}
+        return false;
+    }
 
-	// check that all button labels can be read 
-	for (i = 1; i < nArgs; i++) {
+    // check that all button labels can be read
+    for (i = 1; i < nArgs; i++) {
         if (!readArgument(argList[i], &btnLabel, errMsg)) {
-			return false;
-		}
-	}
-	
-	// Stop macro execution until the dialog is complete 
-	PreemptMacro();
-	
-	// Return placeholder result.  Value will be changed by button callback 
-	result->tag = INT_TAG;
-	result->val.n = 0;		
-	
-	auto prompt = new DialogPrompt(nullptr /*parent*/);
+            return false;
+        }
+    }
+
+    // Stop macro execution until the dialog is complete
+    PreemptMacro();
+
+    // Return placeholder result.  Value will be changed by button callback
+    result->tag = INT_TAG;
+    result->val.n = 0;
+
+    auto prompt = new DialogPrompt(nullptr /*parent*/);
     prompt->setMessage(message);
-	if (nArgs == 1) {
-		prompt->addButton(QDialogButtonBox::Ok);
-	} else {
-		for(int i = 1; i < nArgs; ++i) {		
+    if (nArgs == 1) {
+        prompt->addButton(QDialogButtonBox::Ok);
+    } else {
+        for(int i = 1; i < nArgs; ++i) {
             readArgument(argList[i], &btnLabel, errMsg);
             prompt->addButton(btnLabel);
-		}
-	}	
-	prompt->exec();
-	result->val.n = prompt->result();
+        }
+    }
+    prompt->exec();
+    result->val.n = prompt->result();
     ModifyReturnedValueEx(cmdData->context, *result);
-	delete prompt;
-	
+    delete prompt;
+
     ResumeMacroExecutionEx(document);
-	return true;
+    return true;
 }
 
 static int stringDialogMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     QString btnLabel;
     QString message;
-	long i;
+    long i;
 
-	/* Ignore the focused window passed as the function argument and put
-	   the dialog up over the window which is executing the macro */
+    /* Ignore the focused window passed as the function argument and put
+       the dialog up over the window which is executing the macro */
     document = MacroRunWindowEx();
     auto cmdData = static_cast<macroCmdInfoEx *>(document->macroCmdData_);
 
-	/* Dialogs require macro to be suspended and interleaved with other macros.
-	   This subroutine can't be run if macro execution can't be interrupted */
-	if (!cmdData) {
-		*errMsg = "%s can't be called from non-suspendable context";
-		return false;
-	}
+    /* Dialogs require macro to be suspended and interleaved with other macros.
+       This subroutine can't be run if macro execution can't be interrupted */
+    if (!cmdData) {
+        *errMsg = "%s can't be called from non-suspendable context";
+        return false;
+    }
 
-	/* Read and check the arguments.  The first being the dialog message,
-	   and the rest being the button labels */
-	if (nArgs == 0) {
-		*errMsg = "%s subroutine called with no arguments";
-		return false;
-	}
+    /* Read and check the arguments.  The first being the dialog message,
+       and the rest being the button labels */
+    if (nArgs == 0) {
+        *errMsg = "%s subroutine called with no arguments";
+        return false;
+    }
     if (!readArgument(argList[0], &message, errMsg)) {
-		return false;
-	}
-	
-	// check that all button labels can be read 
-	for (i = 1; i < nArgs; i++) {
+        return false;
+    }
+
+    // check that all button labels can be read
+    for (i = 1; i < nArgs; i++) {
         if (!readArgument(argList[i], &btnLabel, errMsg)) {
-			return false;
-		}
-	}
+            return false;
+        }
+    }
 
-	// Stop macro execution until the dialog is complete 
-	PreemptMacro();
-	
-	// Return placeholder result.  Value will be changed by button callback 
-	result->tag = INT_TAG;
-	result->val.n = 0;	
+    // Stop macro execution until the dialog is complete
+    PreemptMacro();
 
-	auto prompt = std::make_unique<DialogPromptString>(nullptr /*parent*/);
+    // Return placeholder result.  Value will be changed by button callback
+    result->tag = INT_TAG;
+    result->val.n = 0;
+
+    auto prompt = std::make_unique<DialogPromptString>(nullptr /*parent*/);
     prompt->setMessage(message);
-	if (nArgs == 1) {
-		prompt->addButton(QDialogButtonBox::Ok);
-	} else {
-		for(int i = 1; i < nArgs; ++i) {		
+    if (nArgs == 1) {
+        prompt->addButton(QDialogButtonBox::Ok);
+    } else {
+        for(int i = 1; i < nArgs; ++i) {
             readArgument(argList[i], &btnLabel, errMsg);
             prompt->addButton(btnLabel);
-		}
-	}	
-	prompt->exec();
-	
-	// Return the button number in the global variable $string_dialog_button 
-	ReturnGlobals[STRING_DIALOG_BUTTON]->value.tag = INT_TAG;
-	ReturnGlobals[STRING_DIALOG_BUTTON]->value.val.n = prompt->result();
-	
-	result->tag = STRING_TAG;
-	result->val.str = AllocNStringCpyEx(prompt->text());
+        }
+    }
+    prompt->exec();
+
+    // Return the button number in the global variable $string_dialog_button
+    ReturnGlobals[STRING_DIALOG_BUTTON]->value.tag = INT_TAG;
+    ReturnGlobals[STRING_DIALOG_BUTTON]->value.val.n = prompt->result();
+
+    result->tag = STRING_TAG;
+    result->val.str = AllocNStringCpyEx(prompt->text());
     ModifyReturnedValueEx(cmdData->context, *result);
 
     ResumeMacroExecutionEx(document);
-	return true;
+    return true;
 }
 
 /*
@@ -3503,88 +3771,88 @@ static int calltipMS(DocumentWidget *document, DataValue *argList, int nArgs, Da
     int vAlign = TIP_BELOW;
     int alignMode = TIP_SLOPPY;
 
-	// Read and check the string 
-	if (nArgs < 1) {
-		*errMsg = "%s subroutine called with too few arguments";
-		return false;
-	}
-	if (nArgs > 6) {
-		*errMsg = "%s subroutine called with too many arguments";
-		return false;
-	}
+    // Read and check the string
+    if (nArgs < 1) {
+        *errMsg = "%s subroutine called with too few arguments";
+        return false;
+    }
+    if (nArgs > 6) {
+        *errMsg = "%s subroutine called with too many arguments";
+        return false;
+    }
 
-	// Read the tip text or key 
+    // Read the tip text or key
     if (!readArgument(argList[0], &tipText, errMsg))
-		return false;
+        return false;
 
-	// Read the anchor position (-1 for unanchored) 
-	if (nArgs > 1) {
+    // Read the anchor position (-1 for unanchored)
+    if (nArgs > 1) {
         if (!readArgument(argList[1], &anchorPos, errMsg))
-			return false;
-	} else {
-		anchorPos = -1;
-	}
-	if (anchorPos >= 0)
+            return false;
+    } else {
+        anchorPos = -1;
+    }
+    if (anchorPos >= 0)
         anchored = true;
 
-	// Any further args are directives for relative positioning 
-	for (i = 2; i < nArgs; ++i) {
+    // Any further args are directives for relative positioning
+    for (i = 2; i < nArgs; ++i) {
         if (!readArgument(argList[i], &txtArg, errMsg)) {
-			return false;
-		}
-		switch (txtArg[0]) {
-		case 'c':
+            return false;
+        }
+        switch (txtArg[0]) {
+        case 'c':
             if (txtArg == "center")
-				goto bad_arg;
-			hAlign = TIP_CENTER;
-			break;
-		case 'r':
+                goto bad_arg;
+            hAlign = TIP_CENTER;
+            break;
+        case 'r':
             if (txtArg == "right")
-				goto bad_arg;
-			hAlign = TIP_RIGHT;
-			break;
-		case 'a':
+                goto bad_arg;
+            hAlign = TIP_RIGHT;
+            break;
+        case 'a':
             if (txtArg == "above")
-				goto bad_arg;
-			vAlign = TIP_ABOVE;
-			break;
-		case 's':
+                goto bad_arg;
+            vAlign = TIP_ABOVE;
+            break;
+        case 's':
             if (txtArg == "strict")
-				goto bad_arg;
-			alignMode = TIP_STRICT;
-			break;
-		case 't':
+                goto bad_arg;
+            alignMode = TIP_STRICT;
+            break;
+        case 't':
             if (txtArg == "tipText") {
-				mode = -1;
+                mode = -1;
             } else if (txtArg == "tipKey") {
-				mode = TIP;
+                mode = TIP;
             } else if (txtArg == "tagKey") {
-				mode = TIP_FROM_TAG;
+                mode = TIP_FROM_TAG;
             } else {
-				goto bad_arg;
+                goto bad_arg;
             }
-			break;
-		default:
-			goto bad_arg;
-		}
-	}
+            break;
+        default:
+            goto bad_arg;
+        }
+    }
 
-	result->tag = INT_TAG;
+    result->tag = INT_TAG;
     if (mode < 0) {
         lookup = false;
     }
-	// Look up (maybe) a calltip and display it 
+    // Look up (maybe) a calltip and display it
     result->val.n = ShowTipStringEx(document, tipText.c_str(), anchored, anchorPos, lookup, mode, hAlign, vAlign, alignMode);
 
-	return true;
+    return true;
 
 bad_arg:
-	/* This is how the (more informative) global var. version would work,
-	    assuming there was a global buffer called msg.  */
-	/* sprintf(msg, "unrecognized argument to %%s: \"%s\"", txtArg);
-	*errMsg = msg; */
-	*errMsg = "unrecognized argument to %s";
-	return false;
+    /* This is how the (more informative) global var. version would work,
+        assuming there was a global buffer called msg.  */
+    /* sprintf(msg, "unrecognized argument to %%s: \"%s\"", txtArg);
+    *errMsg = msg; */
+    *errMsg = "unrecognized argument to %s";
+    return false;
 }
 
 /*
@@ -3593,19 +3861,19 @@ bad_arg:
 static int killCalltipMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     int calltipID = 0;
 
-	if (nArgs > 1) {
-		*errMsg = "%s subroutine called with too many arguments";
-		return false;
-	}
-	if (nArgs > 0) {
+    if (nArgs > 1) {
+        *errMsg = "%s subroutine called with too many arguments";
+        return false;
+    }
+    if (nArgs > 0) {
         if (!readArgument(argList[0], &calltipID, errMsg))
-			return false;
-	}
+            return false;
+    }
 
     document->toWindow()->lastFocus_->TextDKillCalltip(calltipID);
 
-	result->tag = NO_TAG;
-	return true;
+    result->tag = NO_TAG;
+    return true;
 }
 
 /*
@@ -3619,7 +3887,7 @@ static int calltipIDMV(DocumentWidget *document, DataValue *argList, int nArgs, 
 
     result->tag = INT_TAG;
     result->val.n = document->toWindow()->lastFocus_->TextDGetCalltipID(0);
-	return true;
+    return true;
 }
 
 static int replaceAllInSelectionMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -3701,167 +3969,167 @@ static int filenameDialogMS(DocumentWidget *window, DataValue *argList, int nArg
     QString defaultFilter;
     QString defaultName;
 
-	
-	/* Ignore the focused window passed as the function argument and put
-	   the dialog up over the window which is executing the macro */
+
+    /* Ignore the focused window passed as the function argument and put
+       the dialog up over the window which is executing the macro */
     window = MacroRunWindowEx();
 
-	/* Dialogs require macro to be suspended and interleaved with other macros.
-	   This subroutine can't be run if macro execution can't be interrupted */
+    /* Dialogs require macro to be suspended and interleaved with other macros.
+       This subroutine can't be run if macro execution can't be interrupted */
     if (!window->macroCmdData_) {
-		M_FAILURE("%s can't be called from non-suspendable context");
-	}
+        M_FAILURE("%s can't be called from non-suspendable context");
+    }
 
-	//  Get the argument list.  
+    //  Get the argument list.
     if (nArgs > 0 && !readArgument(argList[0], &title, errMsg)) {
-		return false;
-	}
+        return false;
+    }
 
     if (nArgs > 1 && !readArgument(argList[1], &mode, errMsg)) {
-		return false;
-	}
+        return false;
+    }
     if ((mode != QLatin1String("exist")) != 0 && (mode != QLatin1String("new"))) {
-		M_FAILURE("Invalid value for mode in %s");
-	}
+        M_FAILURE("Invalid value for mode in %s");
+    }
 
     if (nArgs > 2 && !readArgument(argList[2], &defaultPath, errMsg)) {
-		return false;
-	}
+        return false;
+    }
 
     if (nArgs > 3 && !readArgument(argList[3], &defaultFilter,  errMsg)) {
-		return false;
-	}
+        return false;
+    }
 
     if (nArgs > 4 && !readArgument(argList[4], &defaultName, errMsg)) {
-		return false;
-	}
+        return false;
+    }
 
-	if (nArgs > 5) {
-		M_FAILURE("%s called with too many arguments. Expects at most 5 arguments.");
-	}
+    if (nArgs > 5) {
+        M_FAILURE("%s called with too many arguments. Expects at most 5 arguments.");
+    }
 
     //  Set default directory
     if (defaultPath.isEmpty()) {
         defaultPath = window->path_;
-	}
+    }
 
     //  Set default filter
     if(defaultFilter.isEmpty()) {
         defaultFilter = QLatin1String("*");
     }
 
-	bool gfnResult;
+    bool gfnResult;
     QString filename;
     if (mode == QLatin1String("exist")) {
         // NOTE(eteran); filters probably don't work quite the same with Qt's dialog
         QString existingFile = QFileDialog::getOpenFileName(/*this*/ nullptr, title, defaultPath, defaultFilter, nullptr);
-		if(!existingFile.isNull()) {
+        if(!existingFile.isNull()) {
             filename = existingFile;
-			gfnResult = true;
-		} else {
+            gfnResult = true;
+        } else {
             gfnResult = false;
-		}
-	} else {
+        }
+    } else {
         // NOTE(eteran); filters probably don't work quite the same with Qt's dialog
         QString newFile = QFileDialog::getSaveFileName(/*this*/ nullptr, title, defaultPath, defaultFilter, nullptr);
-		if(!newFile.isNull()) {
+        if(!newFile.isNull()) {
             filename  = newFile;
-			gfnResult = true;
-		} else {
+            gfnResult = true;
+        } else {
             gfnResult = false;
-		}
-	} //  Invalid values are weeded out above.  
+        }
+    } //  Invalid values are weeded out above.
 
 
-	result->tag = STRING_TAG;
-	if (gfnResult == true) {
-		//  Got a string, copy it to the result  
+    result->tag = STRING_TAG;
+    if (gfnResult == true) {
+        //  Got a string, copy it to the result
         result->val.str = AllocNStringCpyEx(filename);
-	} else {
-		// User cancelled.  Return "" 
-		result->val.str.rep = PERM_ALLOC_STR("");
-		result->val.str.len = 0;
-	}
+    } else {
+        // User cancelled.  Return ""
+        result->val.str.rep = PERM_ALLOC_STR("");
+        result->val.str.len = 0;
+    }
 
-	return true;
+    return true;
 }
 
-// T Balinski 
+// T Balinski
 static int listDialogMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     QString btnLabel;
     QString message;
     QString text;
-	long i;
+    long i;
 
-	/* Ignore the focused window passed as the function argument and put
-	   the dialog up over the window which is executing the macro */
+    /* Ignore the focused window passed as the function argument and put
+       the dialog up over the window which is executing the macro */
     window = MacroRunWindowEx();
     auto cmdData = static_cast<macroCmdInfoEx *>(window->macroCmdData_);
 
-	/* Dialogs require macro to be suspended and interleaved with other macros.
-	   This subroutine can't be run if macro execution can't be interrupted */
-	if (!cmdData) {
-		*errMsg = "%s can't be called from non-suspendable context";
-		return false;
-	}
-
-	/* Read and check the arguments.  The first being the dialog message,
-	   and the rest being the button labels */
-	if (nArgs < 2) {
-		*errMsg = "%s subroutine called with no message, string or arguments";
-		return false;
-	}
-
-    if (!readArgument(argList[0], &message, errMsg))
-		return false;
-
-    if (!readArgument(argList[1], &text, errMsg))
-		return false;
-
-    if (text.isEmpty()) {
-		*errMsg = "%s subroutine called with empty list data";
-		return false;
-	}
-
-	// check that all button labels can be read 
-	for (i = 2; i < nArgs; i++) {
-        if (!readArgument(argList[i], &btnLabel, errMsg)) {
-			return false;
-		}
-	}
-					
-	// Stop macro execution until the dialog is complete 
-	PreemptMacro();
-	
-	// Return placeholder result.  Value will be changed by button callback 
-	result->tag = INT_TAG;
-	result->val.n = 0;	
-
-	auto prompt = std::make_unique<DialogPromptList>(nullptr /*parent*/);
-    prompt->setMessage(message);
-    prompt->setList(text);
-	if (nArgs == 2) {
-		prompt->addButton(QDialogButtonBox::Ok);
-	} else {
-		for(int i = 2; i < nArgs; ++i) {		
-            readArgument(argList[i], &btnLabel, errMsg);
-            prompt->addButton(btnLabel);
-		}
+    /* Dialogs require macro to be suspended and interleaved with other macros.
+       This subroutine can't be run if macro execution can't be interrupted */
+    if (!cmdData) {
+        *errMsg = "%s can't be called from non-suspendable context";
+        return false;
     }
 
-	prompt->exec();
-	
-	// Return the button number in the global variable $string_dialog_button 
-	ReturnGlobals[STRING_DIALOG_BUTTON]->value.tag = INT_TAG;
-	ReturnGlobals[STRING_DIALOG_BUTTON]->value.val.n = prompt->result();
-	
-	result->tag = STRING_TAG;
-	result->val.str = AllocNStringCpyEx(prompt->text());
+    /* Read and check the arguments.  The first being the dialog message,
+       and the rest being the button labels */
+    if (nArgs < 2) {
+        *errMsg = "%s subroutine called with no message, string or arguments";
+        return false;
+    }
+
+    if (!readArgument(argList[0], &message, errMsg))
+        return false;
+
+    if (!readArgument(argList[1], &text, errMsg))
+        return false;
+
+    if (text.isEmpty()) {
+        *errMsg = "%s subroutine called with empty list data";
+        return false;
+    }
+
+    // check that all button labels can be read
+    for (i = 2; i < nArgs; i++) {
+        if (!readArgument(argList[i], &btnLabel, errMsg)) {
+            return false;
+        }
+    }
+
+    // Stop macro execution until the dialog is complete
+    PreemptMacro();
+
+    // Return placeholder result.  Value will be changed by button callback
+    result->tag = INT_TAG;
+    result->val.n = 0;
+
+    auto prompt = std::make_unique<DialogPromptList>(nullptr /*parent*/);
+    prompt->setMessage(message);
+    prompt->setList(text);
+    if (nArgs == 2) {
+        prompt->addButton(QDialogButtonBox::Ok);
+    } else {
+        for(int i = 2; i < nArgs; ++i) {
+            readArgument(argList[i], &btnLabel, errMsg);
+            prompt->addButton(btnLabel);
+        }
+    }
+
+    prompt->exec();
+
+    // Return the button number in the global variable $string_dialog_button
+    ReturnGlobals[STRING_DIALOG_BUTTON]->value.tag = INT_TAG;
+    ReturnGlobals[STRING_DIALOG_BUTTON]->value.val.n = prompt->result();
+
+    result->tag = STRING_TAG;
+    result->val.str = AllocNStringCpyEx(prompt->text());
     ModifyReturnedValueEx(cmdData->context, *result);
 
     ResumeMacroExecutionEx(window);
-	return true;
+    return true;
 }
 
 static int stringCompareMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -3872,44 +4140,44 @@ static int stringCompareMS(DocumentWidget *window, DataValue *argList, int nArgs
     QString rightStr;
     QString argStr;
     bool considerCase = true;
-	int i;
-	int compareResult;
+    int i;
+    int compareResult;
 
 
-	if (nArgs < 2) {
-		return (wrongNArgsErr(errMsg));
-	}
+    if (nArgs < 2) {
+        return (wrongNArgsErr(errMsg));
+    }
 
     if (!readArgument(argList[0], &leftStr, errMsg))
-		return false;
+        return false;
 
     if (!readArgument(argList[1], &rightStr, errMsg))
-		return false;
+        return false;
 
-	for (i = 2; i < nArgs; ++i) {
+    for (i = 2; i < nArgs; ++i) {
         if (!readArgument(argList[i], &argStr, errMsg))
-			return false;
+            return false;
         else if (argStr == QLatin1String("case"))
             considerCase = true;
         else if (argStr == QLatin1String("nocase"))
             considerCase = false;
-		else {
-			*errMsg = "Unrecognized argument to %s";
-			return false;
-		}
-	}
+        else {
+            *errMsg = "Unrecognized argument to %s";
+            return false;
+        }
+    }
 
     if (considerCase) {
         compareResult = leftStr.compare(rightStr, Qt::CaseSensitive);
-	} else {
+    } else {
         compareResult = leftStr.compare(rightStr, Qt::CaseInsensitive);
-	}
+    }
 
     compareResult = qBound(-1, compareResult, 1);
 
-	result->tag = INT_TAG;
-	result->val.n = compareResult;
-	return true;
+    result->tag = INT_TAG;
+    result->val.n = compareResult;
+    return true;
 }
 
 /*
@@ -3928,60 +4196,60 @@ static int splitMS(DocumentWidget *window, DataValue *argList, int nArgs, DataVa
     std::string sourceStr;
     QString splitStr;
     bool validSplit = true;
-	SearchType searchType;
-	int foundStart;
-	int foundEnd;
-	int elementEnd;
+    SearchType searchType;
+    int foundStart;
+    int foundEnd;
+    int elementEnd;
     char indexStr[TYPE_INT_STR_SIZE(int)];
     char *allocIndexStr;
-	DataValue element;
-	int elementLen;
+    DataValue element;
+    int elementLen;
 
-	if (nArgs < 2) {
-		return (wrongNArgsErr(errMsg));
-	}
+    if (nArgs < 2) {
+        return (wrongNArgsErr(errMsg));
+    }
     if (!readArgument(argList[0], &sourceStr, errMsg)) {
-		*errMsg = "first argument must be a string: %s";
+        *errMsg = "first argument must be a string: %s";
         return false;
-	}
+    }
     if (!readArgument(argList[1], &splitStr, errMsg)) {
         validSplit = false;
-	} else {
+    } else {
         if (splitStr.isEmpty()) {
             validSplit = false;
-		}
-	}
+        }
+    }
     if(!validSplit) {
-		*errMsg = "second argument must be a non-empty string: %s";
+        *errMsg = "second argument must be a non-empty string: %s";
         return false;
-	}
+    }
 
     QString typeSplitStr;
     if (nArgs > 2 && readArgument(argList[2], &typeSplitStr, errMsg)) {
-		if (!StringToSearchType(typeSplitStr, &searchType)) {
-			*errMsg = "unrecognized argument to %s";
+        if (!StringToSearchType(typeSplitStr, &searchType)) {
+            *errMsg = "unrecognized argument to %s";
             return false;
-		}
-	} else {
-		searchType = SEARCH_LITERAL;
-	}
+        }
+    } else {
+        searchType = SEARCH_LITERAL;
+    }
 
-	result->tag = ARRAY_TAG;
-	result->val.arrayPtr = ArrayNew();
+    result->tag = ARRAY_TAG;
+    result->val.arrayPtr = ArrayNew();
 
     int beginPos  = 0;
     int lastEnd   = 0;
     int indexNum  = 0;
     int strLength = sourceStr.size();
     bool found    = true;
-	while (found && beginPos < strLength) {
-		sprintf(indexStr, "%d", indexNum);
-		allocIndexStr = AllocString(strlen(indexStr) + 1);
-		if (!allocIndexStr) {
-			*errMsg = "array element failed to allocate key: %s";
+    while (found && beginPos < strLength) {
+        sprintf(indexStr, "%d", indexNum);
+        allocIndexStr = AllocString(strlen(indexStr) + 1);
+        if (!allocIndexStr) {
+            *errMsg = "array element failed to allocate key: %s";
             return false;
-		}
-		strcpy(allocIndexStr, indexStr);
+        }
+        strcpy(allocIndexStr, indexStr);
 
         found = SearchString(
                     sourceStr,
@@ -3996,68 +4264,68 @@ static int splitMS(DocumentWidget *window, DataValue *argList, int nArgs, DataVa
                     nullptr,
                     GetWindowDelimitersEx(window).toLatin1().data());
 
-		elementEnd = found ? foundStart : strLength;
-		elementLen = elementEnd - lastEnd;
-		element.tag = STRING_TAG;
-		if (!AllocNStringNCpy(&element.val.str, &sourceStr[lastEnd], elementLen)) {
-			*errMsg = "failed to allocate element value: %s";
+        elementEnd = found ? foundStart : strLength;
+        elementLen = elementEnd - lastEnd;
+        element.tag = STRING_TAG;
+        if (!AllocNStringNCpy(&element.val.str, &sourceStr[lastEnd], elementLen)) {
+            *errMsg = "failed to allocate element value: %s";
             return false;
-		}
+        }
 
-		if (!ArrayInsert(result, allocIndexStr, &element)) {
-			M_ARRAY_INSERT_FAILURE();
-		}
+        if (!ArrayInsert(result, allocIndexStr, &element)) {
+            M_ARRAY_INSERT_FAILURE();
+        }
 
-		if (found) {
-			if (foundStart == foundEnd) {
-				beginPos = foundEnd + 1; // Avoid endless loop for 0-width match 
-			} else {
-				beginPos = foundEnd;
-			}
-		} else {
-			beginPos = strLength; // Break the loop 
-		}
-		lastEnd = foundEnd;
-		++indexNum;
-	}
-	if (found) {
-		sprintf(indexStr, "%d", indexNum);
-		allocIndexStr = AllocString(strlen(indexStr) + 1);
-		if (!allocIndexStr) {
-			*errMsg = "array element failed to allocate key: %s";
+        if (found) {
+            if (foundStart == foundEnd) {
+                beginPos = foundEnd + 1; // Avoid endless loop for 0-width match
+            } else {
+                beginPos = foundEnd;
+            }
+        } else {
+            beginPos = strLength; // Break the loop
+        }
+        lastEnd = foundEnd;
+        ++indexNum;
+    }
+    if (found) {
+        sprintf(indexStr, "%d", indexNum);
+        allocIndexStr = AllocString(strlen(indexStr) + 1);
+        if (!allocIndexStr) {
+            *errMsg = "array element failed to allocate key: %s";
             return false;
-		}
-		strcpy(allocIndexStr, indexStr);
-		element.tag = STRING_TAG;
-		if (lastEnd == strLength) {
-			// The pattern mathed the end of the string. Add an empty chunk. 
-			element.val.str.rep = PERM_ALLOC_STR("");
-			element.val.str.len = 0;
+        }
+        strcpy(allocIndexStr, indexStr);
+        element.tag = STRING_TAG;
+        if (lastEnd == strLength) {
+            // The pattern mathed the end of the string. Add an empty chunk.
+            element.val.str.rep = PERM_ALLOC_STR("");
+            element.val.str.len = 0;
 
-			if (!ArrayInsert(result, allocIndexStr, &element)) {
-				M_ARRAY_INSERT_FAILURE();
-			}
-		} else {
-			/* We skipped the last character to prevent an endless loop.
-			   Add it to the list. */
-			elementLen = strLength - lastEnd;
-			if (!AllocNStringNCpy(&element.val.str, &sourceStr[lastEnd], elementLen)) {
-				*errMsg = "failed to allocate element value: %s";
+            if (!ArrayInsert(result, allocIndexStr, &element)) {
+                M_ARRAY_INSERT_FAILURE();
+            }
+        } else {
+            /* We skipped the last character to prevent an endless loop.
+               Add it to the list. */
+            elementLen = strLength - lastEnd;
+            if (!AllocNStringNCpy(&element.val.str, &sourceStr[lastEnd], elementLen)) {
+                *errMsg = "failed to allocate element value: %s";
                 return false;
-			}
+            }
 
-			if (!ArrayInsert(result, allocIndexStr, &element)) {
-				M_ARRAY_INSERT_FAILURE();
-			}
+            if (!ArrayInsert(result, allocIndexStr, &element)) {
+                M_ARRAY_INSERT_FAILURE();
+            }
 
-			/* If the pattern can match zero-length strings, we may have to
-			   add a final empty chunk.
-			   For instance:  split("abc\n", "$", "regex")
-			     -> matches before \n and at end of string
-			     -> expected output: "abc", "\n", ""
-			   The '\n' gets added in the lines above, but we still have to
-			   verify whether the pattern also matches the end of the string,
-			   and add an empty chunk in case it does. */
+            /* If the pattern can match zero-length strings, we may have to
+               add a final empty chunk.
+               For instance:  split("abc\n", "$", "regex")
+                 -> matches before \n and at end of string
+                 -> expected output: "abc", "\n", ""
+               The '\n' gets added in the lines above, but we still have to
+               verify whether the pattern also matches the end of the string,
+               and add an empty chunk in case it does. */
             found = SearchString(
                         sourceStr,
                         splitStr,
@@ -4070,25 +4338,25 @@ static int splitMS(DocumentWidget *window, DataValue *argList, int nArgs, DataVa
                         nullptr,
                         nullptr,
                         GetWindowDelimitersEx(window).toLatin1().data());
-			if (found) {
-				++indexNum;
-				sprintf(indexStr, "%d", indexNum);
-				allocIndexStr = AllocString(strlen(indexStr) + 1);
-				if (!allocIndexStr) {
-					*errMsg = "array element failed to allocate key: %s";
+            if (found) {
+                ++indexNum;
+                sprintf(indexStr, "%d", indexNum);
+                allocIndexStr = AllocString(strlen(indexStr) + 1);
+                if (!allocIndexStr) {
+                    *errMsg = "array element failed to allocate key: %s";
                     return false;
-				}
-				strcpy(allocIndexStr, indexStr);
-				element.tag = STRING_TAG;
-				element.val.str.rep = PERM_ALLOC_STR("");
-				element.val.str.len = 0;
+                }
+                strcpy(allocIndexStr, indexStr);
+                element.tag = STRING_TAG;
+                element.val.str.rep = PERM_ALLOC_STR("");
+                element.val.str.len = 0;
 
-				if (!ArrayInsert(result, allocIndexStr, &element)) {
-					M_ARRAY_INSERT_FAILURE();
-				}
-			}
-		}
-	}
+                if (!ArrayInsert(result, allocIndexStr, &element)) {
+                    M_ARRAY_INSERT_FAILURE();
+                }
+            }
+        }
+    }
     return true;
 }
 
@@ -4135,9 +4403,9 @@ static int cursorMV(DocumentWidget *window, DataValue *argList, int nArgs, DataV
     Q_UNUSED(argList);
 
     auto textD    = window->toWindow()->lastFocus_;
-	result->tag   = INT_TAG;
-	result->val.n = textD->TextGetCursorPos();
-	return true;
+    result->tag   = INT_TAG;
+    result->val.n = textD->TextGetCursorPos();
+    return true;
 }
 
 static int lineMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -4150,15 +4418,15 @@ static int lineMV(DocumentWidget *window, DataValue *argList, int nArgs, DataVal
     int colNum;
 
     auto textD  = window->toWindow()->lastFocus_;
-	result->tag = INT_TAG;
+    result->tag = INT_TAG;
     int cursorPos   = textD->TextGetCursorPos();
-	
-	if (!textD->TextDPosToLineAndCol(cursorPos, &line, &colNum)) {
-		line = window->buffer_->BufCountLines(0, cursorPos) + 1;
-	}
-	
-	result->val.n = line;
-	return true;
+
+    if (!textD->TextDPosToLineAndCol(cursorPos, &line, &colNum)) {
+        line = window->buffer_->BufCountLines(0, cursorPos) + 1;
+    }
+
+    result->val.n = line;
+    return true;
 }
 
 static int columnMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -4167,13 +4435,13 @@ static int columnMV(DocumentWidget *window, DataValue *argList, int nArgs, DataV
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
 
-	TextBuffer *buf = window->buffer_;
+    TextBuffer *buf = window->buffer_;
 
     auto textD    = window->toWindow()->lastFocus_;
-	result->tag   = INT_TAG;
-	int cursorPos = textD->TextGetCursorPos();
-	result->val.n = buf->BufCountDispChars(buf->BufStartOfLine(cursorPos), cursorPos);
-	return true;
+    result->tag   = INT_TAG;
+    int cursorPos = textD->TextGetCursorPos();
+    result->val.n = buf->BufCountDispChars(buf->BufStartOfLine(cursorPos), cursorPos);
+    return true;
 }
 
 static int fileNameMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -4184,7 +4452,7 @@ static int fileNameMV(DocumentWidget *window, DataValue *argList, int nArgs, Dat
 
     result->tag     = STRING_TAG;
     result->val.str = AllocNStringCpyEx(window->filename_);
-	return true;
+    return true;
 }
 
 static int filePathMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -4195,7 +4463,7 @@ static int filePathMV(DocumentWidget *window, DataValue *argList, int nArgs, Dat
 
     result->tag     = STRING_TAG;
     result->val.str = AllocNStringCpyEx(window->path_);
-	return true;
+    return true;
 }
 
 static int lengthMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -4204,9 +4472,9 @@ static int lengthMV(DocumentWidget *window, DataValue *argList, int nArgs, DataV
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
 
-	result->tag = INT_TAG;
-	result->val.n = window->buffer_->BufGetLength();
-	return true;
+    result->tag = INT_TAG;
+    result->val.n = window->buffer_->BufGetLength();
+    return true;
 }
 
 static int selectionStartMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -4215,9 +4483,9 @@ static int selectionStartMV(DocumentWidget *window, DataValue *argList, int nArg
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
 
-	result->tag = INT_TAG;
-	result->val.n = window->buffer_->primary_.selected ? window->buffer_->primary_.start : -1;
-	return true;
+    result->tag = INT_TAG;
+    result->val.n = window->buffer_->primary_.selected ? window->buffer_->primary_.start : -1;
+    return true;
 }
 
 static int selectionEndMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -4226,9 +4494,9 @@ static int selectionEndMV(DocumentWidget *window, DataValue *argList, int nArgs,
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
 
-	result->tag = INT_TAG;
-	result->val.n = window->buffer_->primary_.selected ? window->buffer_->primary_.end : -1;
-	return true;
+    result->tag = INT_TAG;
+    result->val.n = window->buffer_->primary_.selected ? window->buffer_->primary_.end : -1;
+    return true;
 }
 
 static int selectionLeftMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -4237,11 +4505,11 @@ static int selectionLeftMV(DocumentWidget *window, DataValue *argList, int nArgs
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
 
-	TextSelection *sel = &window->buffer_->primary_;
+    TextSelection *sel = &window->buffer_->primary_;
 
-	result->tag = INT_TAG;
-	result->val.n = sel->selected && sel->rectangular ? sel->rectStart : -1;
-	return true;
+    result->tag = INT_TAG;
+    result->val.n = sel->selected && sel->rectangular ? sel->rectStart : -1;
+    return true;
 }
 
 static int selectionRightMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -4250,11 +4518,11 @@ static int selectionRightMV(DocumentWidget *window, DataValue *argList, int nArg
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
 
-	TextSelection *sel = &window->buffer_->primary_;
+    TextSelection *sel = &window->buffer_->primary_;
 
-	result->tag = INT_TAG;
-	result->val.n = sel->selected && sel->rectangular ? sel->rectEnd : -1;
-	return true;
+    result->tag = INT_TAG;
+    result->val.n = sel->selected && sel->rectangular ? sel->rectEnd : -1;
+    return true;
 }
 
 static int wrapMarginMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -4266,9 +4534,9 @@ static int wrapMarginMV(DocumentWidget *window, DataValue *argList, int nArgs, D
     int margin = window->firstPane()->getWrapMargin();
     int nCols  = window->firstPane()->getColumns();
 
-	result->tag = INT_TAG;
-	result->val.n = (margin == 0) ? nCols : margin;
-	return true;
+    result->tag = INT_TAG;
+    result->val.n = (margin == 0) ? nCols : margin;
+    return true;
 }
 
 static int statisticsLineMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -4277,9 +4545,9 @@ static int statisticsLineMV(DocumentWidget *window, DataValue *argList, int nArg
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
 
-	result->tag = INT_TAG;
-	result->val.n = window->showStats_ ? 1 : 0;
-	return true;
+    result->tag = INT_TAG;
+    result->val.n = window->showStats_ ? 1 : 0;
+    return true;
 }
 
 static int incSearchLineMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -4288,9 +4556,9 @@ static int incSearchLineMV(DocumentWidget *window, DataValue *argList, int nArgs
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
 
-	result->tag = INT_TAG;
+    result->tag = INT_TAG;
     result->val.n = window->toWindow()->showISearchLine_ ? 1 : 0;
-	return true;
+    return true;
 }
 
 static int showLineNumbersMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -4299,9 +4567,9 @@ static int showLineNumbersMV(DocumentWidget *window, DataValue *argList, int nAr
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
 
-	result->tag = INT_TAG;
+    result->tag = INT_TAG;
     result->val.n = window->toWindow()->showLineNumbers_ ? 1 : 0;
-	return true;
+    return true;
 }
 
 static int autoIndentMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -4310,27 +4578,27 @@ static int autoIndentMV(DocumentWidget *window, DataValue *argList, int nArgs, D
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
 
-	char *res = nullptr;
+    char *res = nullptr;
 
-	switch (window->indentStyle_) {
-	case NO_AUTO_INDENT:
-		res = PERM_ALLOC_STR("off");
-		break;
-	case AUTO_INDENT:
-		res = PERM_ALLOC_STR("on");
-		break;
-	case SMART_INDENT:
-		res = PERM_ALLOC_STR("smart");
+    switch (window->indentStyle_) {
+    case NO_AUTO_INDENT:
+        res = PERM_ALLOC_STR("off");
+        break;
+    case AUTO_INDENT:
+        res = PERM_ALLOC_STR("on");
+        break;
+    case SMART_INDENT:
+        res = PERM_ALLOC_STR("smart");
         break;
     case DEFAULT_INDENT:
-		*errMsg = "Invalid indent style value encountered in %s";
-		return false;
-	}
+        *errMsg = "Invalid indent style value encountered in %s";
+        return false;
+    }
 
-	result->tag = STRING_TAG;
-	result->val.str.rep = res;
-	result->val.str.len = strlen(res);
-	return true;
+    result->tag = STRING_TAG;
+    result->val.str.rep = res;
+    result->val.str.len = strlen(res);
+    return true;
 }
 
 static int wrapTextMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -4339,27 +4607,27 @@ static int wrapTextMV(DocumentWidget *window, DataValue *argList, int nArgs, Dat
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
 
-	char *res = nullptr;
+    char *res = nullptr;
 
-	switch (window->wrapMode_) {
-	case NO_WRAP:
-		res = PERM_ALLOC_STR("none");
-		break;
-	case NEWLINE_WRAP:
-		res = PERM_ALLOC_STR("auto");
-		break;
-	case CONTINUOUS_WRAP:
-		res = PERM_ALLOC_STR("continuous");
-		break;
+    switch (window->wrapMode_) {
+    case NO_WRAP:
+        res = PERM_ALLOC_STR("none");
+        break;
+    case NEWLINE_WRAP:
+        res = PERM_ALLOC_STR("auto");
+        break;
+    case CONTINUOUS_WRAP:
+        res = PERM_ALLOC_STR("continuous");
+        break;
     case DEFAULT_WRAP:
-		*errMsg = "Invalid wrap style value encountered in %s";
-		return false;
+        *errMsg = "Invalid wrap style value encountered in %s";
+        return false;
     }
 
-	result->tag = STRING_TAG;
-	result->val.str.rep = res;
-	result->val.str.len = strlen(res);
-	return true;
+    result->tag = STRING_TAG;
+    result->val.str.rep = res;
+    result->val.str.len = strlen(res);
+    return true;
 }
 
 static int highlightSyntaxMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -4368,9 +4636,9 @@ static int highlightSyntaxMV(DocumentWidget *window, DataValue *argList, int nAr
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
 
-	result->tag = INT_TAG;
-	result->val.n = window->highlightSyntax_ ? 1 : 0;
-	return true;
+    result->tag = INT_TAG;
+    result->val.n = window->highlightSyntax_ ? 1 : 0;
+    return true;
 }
 
 static int makeBackupCopyMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -4379,9 +4647,9 @@ static int makeBackupCopyMV(DocumentWidget *window, DataValue *argList, int nArg
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
 
-	result->tag = INT_TAG;
-	result->val.n = window->saveOldVersion_ ? 1 : 0;
-	return true;
+    result->tag = INT_TAG;
+    result->val.n = window->saveOldVersion_ ? 1 : 0;
+    return true;
 }
 
 static int incBackupMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -4390,9 +4658,9 @@ static int incBackupMV(DocumentWidget *window, DataValue *argList, int nArgs, Da
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
 
-	result->tag = INT_TAG;
-	result->val.n = window->autoSave_ ? 1 : 0;
-	return true;
+    result->tag = INT_TAG;
+    result->val.n = window->autoSave_ ? 1 : 0;
+    return true;
 }
 
 static int showMatchingMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -4401,27 +4669,27 @@ static int showMatchingMV(DocumentWidget *window, DataValue *argList, int nArgs,
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
 
-	char *res = nullptr;
+    char *res = nullptr;
 
-	switch (window->showMatchingStyle_) {
-	case NO_FLASH:
-		res = PERM_ALLOC_STR(NO_FLASH_STRING);
-		break;
-	case FLASH_DELIMIT:
-		res = PERM_ALLOC_STR(FLASH_DELIMIT_STRING);
-		break;
-	case FLASH_RANGE:
-		res = PERM_ALLOC_STR(FLASH_RANGE_STRING);
-		break;
-	default:
-		*errMsg = "Invalid match flashing style value encountered in %s";
-		return false;
-		break;
-	}
-	result->tag = STRING_TAG;
-	result->val.str.rep = res;
-	result->val.str.len = strlen(res);
-	return true;
+    switch (window->showMatchingStyle_) {
+    case NO_FLASH:
+        res = PERM_ALLOC_STR(NO_FLASH_STRING);
+        break;
+    case FLASH_DELIMIT:
+        res = PERM_ALLOC_STR(FLASH_DELIMIT_STRING);
+        break;
+    case FLASH_RANGE:
+        res = PERM_ALLOC_STR(FLASH_RANGE_STRING);
+        break;
+    default:
+        *errMsg = "Invalid match flashing style value encountered in %s";
+        return false;
+        break;
+    }
+    result->tag = STRING_TAG;
+    result->val.str.rep = res;
+    result->val.str.len = strlen(res);
+    return true;
 }
 
 static int matchSyntaxBasedMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -4430,9 +4698,9 @@ static int matchSyntaxBasedMV(DocumentWidget *window, DataValue *argList, int nA
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
 
-	result->tag = INT_TAG;
-	result->val.n = window->matchSyntaxBased_ ? 1 : 0;
-	return true;
+    result->tag = INT_TAG;
+    result->val.n = window->matchSyntaxBased_ ? 1 : 0;
+    return true;
 }
 
 static int overTypeModeMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -4441,9 +4709,9 @@ static int overTypeModeMV(DocumentWidget *window, DataValue *argList, int nArgs,
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
 
-	result->tag = INT_TAG;
-	result->val.n = window->overstrike_ ? 1 : 0;
-	return true;
+    result->tag = INT_TAG;
+    result->val.n = window->overstrike_ ? 1 : 0;
+    return true;
 }
 
 static int readOnlyMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -4452,9 +4720,9 @@ static int readOnlyMV(DocumentWidget *window, DataValue *argList, int nArgs, Dat
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
 
-	result->tag = INT_TAG;
-	result->val.n = (window->lockReasons_.isAnyLocked()) ? 1 : 0;
-	return true;
+    result->tag = INT_TAG;
+    result->val.n = (window->lockReasons_.isAnyLocked()) ? 1 : 0;
+    return true;
 }
 
 static int lockedMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -4463,9 +4731,9 @@ static int lockedMV(DocumentWidget *window, DataValue *argList, int nArgs, DataV
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
 
-	result->tag = INT_TAG;
-	result->val.n = (window->lockReasons_.isUserLocked()) ? 1 : 0;
-	return true;
+    result->tag = INT_TAG;
+    result->val.n = (window->lockReasons_.isUserLocked()) ? 1 : 0;
+    return true;
 }
 
 static int fileFormatMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -4476,24 +4744,24 @@ static int fileFormatMV(DocumentWidget *window, DataValue *argList, int nArgs, D
 
     QString res;
 
-	switch (window->fileFormat_) {
-	case UNIX_FILE_FORMAT:
+    switch (window->fileFormat_) {
+    case UNIX_FILE_FORMAT:
         res = QLatin1String("unix");
-		break;
-	case DOS_FILE_FORMAT:
+        break;
+    case DOS_FILE_FORMAT:
         res = QLatin1String("dos");
-		break;
-	case MAC_FILE_FORMAT:
+        break;
+    case MAC_FILE_FORMAT:
         res = QLatin1String("macintosh");
-		break;
-	default:
-		*errMsg = "Invalid linefeed style value encountered in %s";
-		return false;
-	}
+        break;
+    default:
+        *errMsg = "Invalid linefeed style value encountered in %s";
+        return false;
+    }
 
     result->tag     = STRING_TAG;
     result->val.str = AllocNStringCpyEx(res);
-	return true;
+    return true;
 }
 
 static int fontNameMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -4501,9 +4769,9 @@ static int fontNameMV(DocumentWidget *window, DataValue *argList, int nArgs, Dat
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
 
-	result->tag = STRING_TAG;
+    result->tag = STRING_TAG;
     result->val.str = AllocNStringCpyEx(window->fontName_);
-	return true;
+    return true;
 }
 
 static int fontNameItalicMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -4511,9 +4779,9 @@ static int fontNameItalicMV(DocumentWidget *window, DataValue *argList, int nArg
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
 
-	result->tag = STRING_TAG;
+    result->tag = STRING_TAG;
     result->val.str = AllocNStringCpyEx(window->italicFontName_);
-	return true;
+    return true;
 }
 
 static int fontNameBoldMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -4521,9 +4789,9 @@ static int fontNameBoldMV(DocumentWidget *window, DataValue *argList, int nArgs,
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
 
-	result->tag = STRING_TAG;
+    result->tag = STRING_TAG;
     result->val.str = AllocNStringCpyEx(window->boldFontName_);
-	return true;
+    return true;
 }
 
 static int fontNameBoldItalicMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -4531,9 +4799,9 @@ static int fontNameBoldItalicMV(DocumentWidget *window, DataValue *argList, int 
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
 
-	result->tag = STRING_TAG;
+    result->tag = STRING_TAG;
     result->val.str = AllocNStringCpyEx(window->boldItalicFontName_);
-	return true;
+    return true;
 }
 
 static int subscriptSepMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -4542,10 +4810,10 @@ static int subscriptSepMV(DocumentWidget *window, DataValue *argList, int nArgs,
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
 
-	result->tag = STRING_TAG;
-	result->val.str.rep = PERM_ALLOC_STR(ARRAY_DIM_SEP);
-	result->val.str.len = strlen(result->val.str.rep);
-	return true;
+    result->tag = STRING_TAG;
+    result->val.str.rep = PERM_ALLOC_STR(ARRAY_DIM_SEP);
+    result->val.str.len = strlen(result->val.str.rep);
+    return true;
 }
 
 static int minFontWidthMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -4554,9 +4822,9 @@ static int minFontWidthMV(DocumentWidget *window, DataValue *argList, int nArgs,
     Q_UNUSED(argList);
 
     auto textD = window->firstPane();
-	result->tag = INT_TAG;
-	result->val.n = textD->TextDMinFontWidth(window->highlightSyntax_);
-	return true;
+    result->tag = INT_TAG;
+    result->val.n = textD->TextDMinFontWidth(window->highlightSyntax_);
+    return true;
 }
 
 static int maxFontWidthMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -4565,9 +4833,9 @@ static int maxFontWidthMV(DocumentWidget *window, DataValue *argList, int nArgs,
     Q_UNUSED(argList);
 
     auto textD = window->firstPane();
-	result->tag = INT_TAG;
-	result->val.n = textD->TextDMaxFontWidth(window->highlightSyntax_);
-	return true;
+    result->tag = INT_TAG;
+    result->val.n = textD->TextDMaxFontWidth(window->highlightSyntax_);
+    return true;
 }
 
 static int topLineMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -4575,11 +4843,11 @@ static int topLineMV(DocumentWidget *window, DataValue *argList, int nArgs, Data
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
 
-	result->tag = INT_TAG;
-	
+    result->tag = INT_TAG;
+
     auto textD = window->toWindow()->lastFocus_;
-	result->val.n = textD->TextFirstVisibleLine();
-	return true;
+    result->val.n = textD->TextFirstVisibleLine();
+    return true;
 }
 
 static int numDisplayLinesMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -4588,9 +4856,9 @@ static int numDisplayLinesMV(DocumentWidget *window, DataValue *argList, int nAr
     Q_UNUSED(argList);
 
     auto textD    = window->toWindow()->lastFocus_;
-	result->tag   = INT_TAG;
-	result->val.n = textD->TextNumVisibleLines();
-	return true;
+    result->tag   = INT_TAG;
+    result->val.n = textD->TextNumVisibleLines();
+    return true;
 }
 
 static int displayWidthMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -4600,9 +4868,9 @@ static int displayWidthMV(DocumentWidget *window, DataValue *argList, int nArgs,
     Q_UNUSED(argList);
 
     auto textD    = window->toWindow()->lastFocus_;
-	result->tag   = INT_TAG;
-	result->val.n = textD->TextVisibleWidth();
-	return true;
+    result->tag   = INT_TAG;
+    result->val.n = textD->TextVisibleWidth();
+    return true;
 }
 
 static int activePaneMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -4613,7 +4881,7 @@ static int activePaneMV(DocumentWidget *window, DataValue *argList, int nArgs, D
 
     result->tag   = INT_TAG;
     result->val.n = window->WidgetToPaneIndex(window->toWindow()->lastFocus_);
-	return true;
+    return true;
 }
 
 static int nPanesMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -4624,7 +4892,7 @@ static int nPanesMV(DocumentWidget *window, DataValue *argList, int nArgs, DataV
 
     result->tag   = INT_TAG;
     result->val.n = window->textPanesCount();
-	return true;
+    return true;
 }
 
 static int emptyArrayMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -4635,8 +4903,8 @@ static int emptyArrayMV(DocumentWidget *window, DataValue *argList, int nArgs, D
     Q_UNUSED(errMsg);
 
     result->tag          = ARRAY_TAG;
-	result->val.arrayPtr = nullptr;
-	return true;
+    result->val.arrayPtr = nullptr;
+    return true;
 }
 
 static int serverNameMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -4648,7 +4916,7 @@ static int serverNameMV(DocumentWidget *window, DataValue *argList, int nArgs, D
 
     result->tag     = STRING_TAG;
     result->val.str = AllocNStringCpyEx(GetPrefServerName());
-	return true;
+    return true;
 }
 
 static int tabDistMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -4658,8 +4926,8 @@ static int tabDistMV(DocumentWidget *window, DataValue *argList, int nArgs, Data
     Q_UNUSED(errMsg);
 
     result->tag   = INT_TAG;
-	result->val.n = window->buffer_->tabDist_;
-	return true;
+    result->val.n = window->buffer_->tabDist_;
+    return true;
 }
 
 static int emTabDistMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -4671,8 +4939,8 @@ static int emTabDistMV(DocumentWidget *window, DataValue *argList, int nArgs, Da
     int dist = window->firstPane()->getEmulateTabs();
 
     result->tag   = INT_TAG;
-	result->val.n = dist;
-	return true;
+    result->val.n = dist;
+    return true;
 }
 
 static int useTabsMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -4680,9 +4948,9 @@ static int useTabsMV(DocumentWidget *window, DataValue *argList, int nArgs, Data
     Q_UNUSED(argList);
     Q_UNUSED(errMsg);
 
-	result->tag = INT_TAG;
-	result->val.n = window->buffer_->useTabs_;
-	return true;
+    result->tag = INT_TAG;
+    result->val.n = window->buffer_->useTabs_;
+    return true;
 }
 
 static int modifiedMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -4691,9 +4959,9 @@ static int modifiedMV(DocumentWidget *window, DataValue *argList, int nArgs, Dat
     Q_UNUSED(argList);
     Q_UNUSED(errMsg);
 
-	result->tag = INT_TAG;
-	result->val.n = window->fileChanged_;
-	return true;
+    result->tag = INT_TAG;
+    result->val.n = window->fileChanged_;
+    return true;
 }
 
 static int languageModeMV(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -4702,18 +4970,18 @@ static int languageModeMV(DocumentWidget *window, DataValue *argList, int nArgs,
     Q_UNUSED(argList);
     Q_UNUSED(errMsg);
 
-	QString lmName = LanguageModeName(window->languageMode_);
+    QString lmName = LanguageModeName(window->languageMode_);
 
-	if(lmName.isNull()) {
-		lmName = QLatin1String("Plain");
-	}
-	
-	result->tag = STRING_TAG;
+    if(lmName.isNull()) {
+        lmName = QLatin1String("Plain");
+    }
+
+    result->tag = STRING_TAG;
     result->val.str = AllocNStringCpyEx(lmName);
-	return true;
+    return true;
 }
 
-// -------------------------------------------------------------------------- 
+// --------------------------------------------------------------------------
 
 /*
 ** Range set macro variables and functions
@@ -4723,28 +4991,28 @@ static int rangesetListMV(DocumentWidget *window, DataValue *argList, int nArgs,
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
 
-	RangesetTable *rangesetTable = window->buffer_->rangesetTable_;
-	DataValue element;
+    RangesetTable *rangesetTable = window->buffer_->rangesetTable_;
+    DataValue element;
 
-	result->tag = ARRAY_TAG;
-	result->val.arrayPtr = ArrayNew();
+    result->tag = ARRAY_TAG;
+    result->val.arrayPtr = ArrayNew();
 
-	if(!rangesetTable) {
-		return true;
-	}
+    if(!rangesetTable) {
+        return true;
+    }
 
     uint8_t *rangesetList = RangesetTable::RangesetGetList(rangesetTable);
     int nRangesets = strlen((char *)rangesetList);
     for (int i = 0; i < nRangesets; i++) {
-		element.tag = INT_TAG;
-		element.val.n = rangesetList[i];
+        element.tag = INT_TAG;
+        element.val.n = rangesetList[i];
 
         if (!ArrayInsert(result, AllocStringCpyEx(std::to_string(nRangesets - i - 1)), &element)) {
-			M_FAILURE("Failed to insert array element in %s");
+            M_FAILURE("Failed to insert array element in %s");
         }
-	}
+    }
 
-	return true;
+    return true;
 }
 
 /*
@@ -4766,9 +5034,9 @@ static int versionMV(DocumentWidget *window, DataValue *argList, int nArgs, Data
 
     static const unsigned version = NEDIT_VERSION;
 
-	result->tag = INT_TAG;
-	result->val.n = version;
-	return true;
+    result->tag = INT_TAG;
+    result->val.n = version;
+    return true;
 }
 
 /*
@@ -4783,43 +5051,43 @@ static int rangesetCreateMS(DocumentWidget *window, DataValue *argList, int nArg
     int label;
     int i;
     int nRangesetsRequired;
-	DataValue element;
+    DataValue element;
 
-	RangesetTable *rangesetTable = window->buffer_->rangesetTable_;
+    RangesetTable *rangesetTable = window->buffer_->rangesetTable_;
 
-	if (nArgs > 1)
+    if (nArgs > 1)
         return wrongNArgsErr(errMsg);
 
-	if(!rangesetTable) {
-		rangesetTable = new RangesetTable(window->buffer_);
-		window->buffer_->rangesetTable_ = rangesetTable;
-	}
+    if(!rangesetTable) {
+        rangesetTable = new RangesetTable(window->buffer_);
+        window->buffer_->rangesetTable_ = rangesetTable;
+    }
 
-	if (nArgs == 0) {
-		label = rangesetTable->RangesetCreate();
+    if (nArgs == 0) {
+        label = rangesetTable->RangesetCreate();
 
-		result->tag = INT_TAG;
-		result->val.n = label;
-		return true;
-	} else {
+        result->tag = INT_TAG;
+        result->val.n = label;
+        return true;
+    } else {
         if (!readArgument(argList[0], &nRangesetsRequired, errMsg))
-			return false;
+            return false;
 
-		result->tag = ARRAY_TAG;
-		result->val.arrayPtr = ArrayNew();
+        result->tag = ARRAY_TAG;
+        result->val.arrayPtr = ArrayNew();
 
-		if (nRangesetsRequired > rangesetTable->nRangesetsAvailable())
-			return true;
+        if (nRangesetsRequired > rangesetTable->nRangesetsAvailable())
+            return true;
 
-		for (i = 0; i < nRangesetsRequired; i++) {
-			element.tag = INT_TAG;
-			element.val.n = rangesetTable->RangesetCreate();
+        for (i = 0; i < nRangesetsRequired; i++) {
+            element.tag = INT_TAG;
+            element.val.n = rangesetTable->RangesetCreate();
 
             ArrayInsert(result, AllocStringCpyEx(std::to_string(i)), &element);
-		}
+        }
 
-		return true;
-	}
+        return true;
+    }
 }
 
 /*
@@ -4827,55 +5095,55 @@ static int rangesetCreateMS(DocumentWidget *window, DataValue *argList, int nArg
 */
 static int rangesetDestroyMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     RangesetTable *rangesetTable = window->buffer_->rangesetTable_;
-	DataValue *array;
-	DataValue element;
-	char keyString[TYPE_INT_STR_SIZE(int)];
-	int deleteLabels[N_RANGESETS];
-	int i, arraySize;
-	int label = 0;
+    DataValue *array;
+    DataValue element;
+    char keyString[TYPE_INT_STR_SIZE(int)];
+    int deleteLabels[N_RANGESETS];
+    int i, arraySize;
+    int label = 0;
 
-	if (nArgs != 1) {
+    if (nArgs != 1) {
         return wrongNArgsErr(errMsg);
-	}
+    }
 
-	if (argList[0].tag == ARRAY_TAG) {
-		array = &argList[0];
-		arraySize = ArraySize(array);
+    if (argList[0].tag == ARRAY_TAG) {
+        array = &argList[0];
+        arraySize = ArraySize(array);
 
-		if (arraySize > N_RANGESETS) {
-			M_FAILURE("Too many elements in array in %s");
-		}
+        if (arraySize > N_RANGESETS) {
+            M_FAILURE("Too many elements in array in %s");
+        }
 
-		for (i = 0; i < arraySize; i++) {
-			sprintf(keyString, "%d", i);
+        for (i = 0; i < arraySize; i++) {
+            sprintf(keyString, "%d", i);
 
-			if (!ArrayGet(array, keyString, &element)) {
-				M_FAILURE("Invalid key in array in %s");
-			}
+            if (!ArrayGet(array, keyString, &element)) {
+                M_FAILURE("Invalid key in array in %s");
+            }
 
             if (!readArgument(element, &label, errMsg) || !RangesetTable::RangesetLabelOK(label)) {
-				M_FAILURE("Invalid rangeset label in array in %s");
-			}
+                M_FAILURE("Invalid rangeset label in array in %s");
+            }
 
-			deleteLabels[i] = label;
-		}
+            deleteLabels[i] = label;
+        }
 
-		for (i = 0; i < arraySize; i++) {
-			rangesetTable->RangesetForget(deleteLabels[i]);
-		}
-	} else {
+        for (i = 0; i < arraySize; i++) {
+            rangesetTable->RangesetForget(deleteLabels[i]);
+        }
+    } else {
         if (!readArgument(argList[0], &label, errMsg) || !RangesetTable::RangesetLabelOK(label)) {
-			M_FAILURE("Invalid rangeset label in %s");
-		}
+            M_FAILURE("Invalid rangeset label in %s");
+        }
 
-		if (rangesetTable) {
-			rangesetTable->RangesetForget(label);
-		}
-	}
+        if (rangesetTable) {
+            rangesetTable->RangesetForget(label);
+        }
+    }
 
-	// set up result 
-	result->tag = NO_TAG;
-	return true;
+    // set up result
+    result->tag = NO_TAG;
+    return true;
 }
 
 /*
@@ -4885,48 +5153,48 @@ static int rangesetDestroyMS(DocumentWidget *window, DataValue *argList, int nAr
 */
 static int rangesetGetByNameMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
-	Rangeset *rangeset;
-	int label;
+    Rangeset *rangeset;
+    int label;
     std::string name;
-	RangesetTable *rangesetTable = window->buffer_->rangesetTable_;
-	uint8_t *rangesetList;
+    RangesetTable *rangesetTable = window->buffer_->rangesetTable_;
+    uint8_t *rangesetList;
     int insertIndex = 0;
-	DataValue element;
+    DataValue element;
 
     if(!readArguments(argList, nArgs, 0, errMsg, &name)) {
         M_FAILURE("First parameter is not a name string in %s");
     }
 
-	result->tag = ARRAY_TAG;
-	result->val.arrayPtr = ArrayNew();
+    result->tag = ARRAY_TAG;
+    result->val.arrayPtr = ArrayNew();
 
-	if(!rangesetTable) {
-		return true;
-	}
+    if(!rangesetTable) {
+        return true;
+    }
 
     rangesetList = RangesetTable::RangesetGetList(rangesetTable);
     int nRangesets = strlen((char *)rangesetList);
     for (int i = 0; i < nRangesets; ++i) {
-		label = rangesetList[i];
-		rangeset = rangesetTable->RangesetFetch(label);
-		if (rangeset) {
+        label = rangesetList[i];
+        rangeset = rangesetTable->RangesetFetch(label);
+        if (rangeset) {
             QString rangeset_name = rangeset->RangesetGetName();
 
             if(rangeset_name == QString::fromStdString(name)) {
 
-				element.tag = INT_TAG;
-				element.val.n = label;
+                element.tag = INT_TAG;
+                element.val.n = label;
 
                 if (!ArrayInsert(result, AllocStringCpyEx(std::to_string(insertIndex)), &element)) {
-					M_FAILURE("Failed to insert array element in %s");
+                    M_FAILURE("Failed to insert array element in %s");
                 }
 
-				++insertIndex;
-			}
-		}
-	}
+                ++insertIndex;
+            }
+        }
+    }
 
-	return true;
+    return true;
 }
 
 /*
@@ -4937,96 +5205,96 @@ static int rangesetGetByNameMS(DocumentWidget *window, DataValue *argList, int n
 ** index of the newly added range (cases b and c), or 0 (case a).
 */
 static int rangesetAddMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
-	TextBuffer *buffer = window->buffer_;
-	RangesetTable *rangesetTable = buffer->rangesetTable_;
-	Rangeset *sourceRangeset;
-	int start, end, rectStart, rectEnd, maxpos, index;
-	bool isRect;
-	int label = 0;
+    TextBuffer *buffer = window->buffer_;
+    RangesetTable *rangesetTable = buffer->rangesetTable_;
+    Rangeset *sourceRangeset;
+    int start, end, rectStart, rectEnd, maxpos, index;
+    bool isRect;
+    int label = 0;
 
-	if (nArgs < 1 || nArgs > 3)
+    if (nArgs < 1 || nArgs > 3)
         return wrongNArgsErr(errMsg);
 
     if (!readArgument(argList[0], &label, errMsg) || !RangesetTable::RangesetLabelOK(label)) {
-		M_FAILURE("First parameter is an invalid rangeset label in %s");
-	}
+        M_FAILURE("First parameter is an invalid rangeset label in %s");
+    }
 
-	if(!rangesetTable) {
-		M_FAILURE("Rangeset does not exist in %s");
-	}
+    if(!rangesetTable) {
+        M_FAILURE("Rangeset does not exist in %s");
+    }
 
-	Rangeset *targetRangeset = rangesetTable->RangesetFetch(label);
+    Rangeset *targetRangeset = rangesetTable->RangesetFetch(label);
 
-	if(!targetRangeset) {
-		M_FAILURE("Rangeset does not exist in %s");
-	}
+    if(!targetRangeset) {
+        M_FAILURE("Rangeset does not exist in %s");
+    }
 
-	start = end = -1;
+    start = end = -1;
 
-	if (nArgs == 1) {
-		// pick up current selection in this window 
-		if (!buffer->BufGetSelectionPos(&start, &end, &isRect, &rectStart, &rectEnd) || isRect) {
-			M_FAILURE("Selection missing or rectangular in call to %s");
-		}
-		if (!targetRangeset->RangesetAddBetween(start, end)) {
-			M_FAILURE("Failure to add selection in %s");
-		}
-	}
+    if (nArgs == 1) {
+        // pick up current selection in this window
+        if (!buffer->BufGetSelectionPos(&start, &end, &isRect, &rectStart, &rectEnd) || isRect) {
+            M_FAILURE("Selection missing or rectangular in call to %s");
+        }
+        if (!targetRangeset->RangesetAddBetween(start, end)) {
+            M_FAILURE("Failure to add selection in %s");
+        }
+    }
 
-	if (nArgs == 2) {
-		// add ranges taken from a second set 
+    if (nArgs == 2) {
+        // add ranges taken from a second set
         if (!readArgument(argList[1], &label, errMsg) || !RangesetTable::RangesetLabelOK(label)) {
-			M_FAILURE("Second parameter is an invalid rangeset label in %s");
-		}
+            M_FAILURE("Second parameter is an invalid rangeset label in %s");
+        }
 
-		sourceRangeset = rangesetTable->RangesetFetch(label);
-		if(!sourceRangeset) {
-			M_FAILURE("Second rangeset does not exist in %s");
-		}
+        sourceRangeset = rangesetTable->RangesetFetch(label);
+        if(!sourceRangeset) {
+            M_FAILURE("Second rangeset does not exist in %s");
+        }
 
-		targetRangeset->RangesetAdd(sourceRangeset);
-	}
+        targetRangeset->RangesetAdd(sourceRangeset);
+    }
 
-	if (nArgs == 3) {
-		// add a range bounded by the start and end positions in $2, $3 
+    if (nArgs == 3) {
+        // add a range bounded by the start and end positions in $2, $3
         if (!readArgument(argList[1], &start, errMsg)) {
-			return false;
-		}
+            return false;
+        }
         if (!readArgument(argList[2], &end, errMsg)) {
-			return false;
-		}
+            return false;
+        }
 
-		// make sure range is in order and fits buffer size 
-		maxpos = buffer->BufGetLength();
-		if (start < 0)
-			start = 0;
-		if (start > maxpos)
-			start = maxpos;
-		if (end < 0)
-			end = 0;
-		if (end > maxpos)
-			end = maxpos;
-		if (start > end) {
+        // make sure range is in order and fits buffer size
+        maxpos = buffer->BufGetLength();
+        if (start < 0)
+            start = 0;
+        if (start > maxpos)
+            start = maxpos;
+        if (end < 0)
+            end = 0;
+        if (end > maxpos)
+            end = maxpos;
+        if (start > end) {
             qSwap(start, end);
-		}
+        }
 
-		if ((start != end) && !targetRangeset->RangesetAddBetween(start, end)) {
-			M_FAILURE("Failed to add range in %s");
-		}
-	}
+        if ((start != end) && !targetRangeset->RangesetAddBetween(start, end)) {
+            M_FAILURE("Failed to add range in %s");
+        }
+    }
 
-	// (to) which range did we just add? 
-	if (nArgs != 2 && start >= 0) {
-		start = (start + end) / 2; // "middle" of added range 
+    // (to) which range did we just add?
+    if (nArgs != 2 && start >= 0) {
+        start = (start + end) / 2; // "middle" of added range
         index = 1 + targetRangeset->RangesetFindRangeOfPos(start, false);
-	} else {
-		index = 0;
-	}
+    } else {
+        index = 0;
+    }
 
-	// set up result 
-	result->tag = INT_TAG;
-	result->val.n = index;
-	return true;
+    // set up result
+    result->tag = INT_TAG;
+    result->val.n = index;
+    return true;
 }
 
 /*
@@ -5037,77 +5305,77 @@ static int rangesetAddMS(DocumentWidget *window, DataValue *argList, int nArgs, 
 */
 static int rangesetSubtractMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     TextBuffer *buffer = window->buffer_;
-	RangesetTable *rangesetTable = buffer->rangesetTable_;
-	Rangeset *targetRangeset, *sourceRangeset;
-	int start, end, rectStart, rectEnd, maxpos;
-	bool isRect;
-	int label = 0;
+    RangesetTable *rangesetTable = buffer->rangesetTable_;
+    Rangeset *targetRangeset, *sourceRangeset;
+    int start, end, rectStart, rectEnd, maxpos;
+    bool isRect;
+    int label = 0;
 
-	if (nArgs < 1 || nArgs > 3) {
+    if (nArgs < 1 || nArgs > 3) {
         return wrongNArgsErr(errMsg);
-	}
+    }
 
     if (!readArgument(argList[0], &label, errMsg) || !RangesetTable::RangesetLabelOK(label)) {
-		M_FAILURE("First parameter is an invalid rangeset label in %s");
-	}
+        M_FAILURE("First parameter is an invalid rangeset label in %s");
+    }
 
-	if(!rangesetTable) {
-		M_FAILURE("Rangeset does not exist in %s");
-	}
+    if(!rangesetTable) {
+        M_FAILURE("Rangeset does not exist in %s");
+    }
 
-	targetRangeset = rangesetTable->RangesetFetch(label);
-	if(!targetRangeset) {
-		M_FAILURE("Rangeset does not exist in %s");
-	}
+    targetRangeset = rangesetTable->RangesetFetch(label);
+    if(!targetRangeset) {
+        M_FAILURE("Rangeset does not exist in %s");
+    }
 
-	if (nArgs == 1) {
-		// remove current selection in this window 
-		if (!buffer->BufGetSelectionPos(&start, &end, &isRect, &rectStart, &rectEnd) || isRect) {
-			M_FAILURE("Selection missing or rectangular in call to %s");
-		}
-		targetRangeset->RangesetRemoveBetween(start, end);
-	}
+    if (nArgs == 1) {
+        // remove current selection in this window
+        if (!buffer->BufGetSelectionPos(&start, &end, &isRect, &rectStart, &rectEnd) || isRect) {
+            M_FAILURE("Selection missing or rectangular in call to %s");
+        }
+        targetRangeset->RangesetRemoveBetween(start, end);
+    }
 
-	if (nArgs == 2) {
-		// remove ranges taken from a second set 
+    if (nArgs == 2) {
+        // remove ranges taken from a second set
         if (!readArgument(argList[1], &label, errMsg) || !RangesetTable::RangesetLabelOK(label)) {
-			M_FAILURE("Second parameter is an invalid rangeset label in %s");
-		}
+            M_FAILURE("Second parameter is an invalid rangeset label in %s");
+        }
 
-		sourceRangeset = rangesetTable->RangesetFetch(label);
-		if(!sourceRangeset) {
-			M_FAILURE("Second rangeset does not exist in %s");
-		}
-		targetRangeset->RangesetRemove(sourceRangeset);
-	}
+        sourceRangeset = rangesetTable->RangesetFetch(label);
+        if(!sourceRangeset) {
+            M_FAILURE("Second rangeset does not exist in %s");
+        }
+        targetRangeset->RangesetRemove(sourceRangeset);
+    }
 
-	if (nArgs == 3) {
-		// remove a range bounded by the start and end positions in $2, $3 
+    if (nArgs == 3) {
+        // remove a range bounded by the start and end positions in $2, $3
         if (!readArgument(argList[1], &start, errMsg))
-			return false;
+            return false;
         if (!readArgument(argList[2], &end, errMsg))
-			return false;
+            return false;
 
-		// make sure range is in order and fits buffer size 
-		maxpos = buffer->BufGetLength();
-		if (start < 0)
-			start = 0;
-		if (start > maxpos)
-			start = maxpos;
-		if (end < 0)
-			end = 0;
-		if (end > maxpos)
-			end = maxpos;
-		if (start > end) {
+        // make sure range is in order and fits buffer size
+        maxpos = buffer->BufGetLength();
+        if (start < 0)
+            start = 0;
+        if (start > maxpos)
+            start = maxpos;
+        if (end < 0)
+            end = 0;
+        if (end > maxpos)
+            end = maxpos;
+        if (start > end) {
             qSwap(start, end);
-		}
+        }
 
-		targetRangeset->RangesetRemoveBetween(start, end);
-	}
+        targetRangeset->RangesetRemoveBetween(start, end);
+    }
 
-	// set up result 
-	result->tag = NO_TAG;
-	return true;
+    // set up result
+    result->tag = NO_TAG;
+    return true;
 }
 
 /*
@@ -5117,7 +5385,7 @@ static int rangesetSubtractMS(DocumentWidget *window, DataValue *argList, int nA
 */
 static int rangesetInvertMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
-	RangesetTable *rangesetTable = window->buffer_->rangesetTable_;
+    RangesetTable *rangesetTable = window->buffer_->rangesetTable_;
     int label;
 
     if(!readArguments(argList, nArgs, 0, errMsg, &label)) {
@@ -5125,25 +5393,25 @@ static int rangesetInvertMS(DocumentWidget *window, DataValue *argList, int nArg
     }
 
     if (!RangesetTable::RangesetLabelOK(label)) {
-		M_FAILURE("First parameter is an invalid rangeset label in %s");
-	}
+        M_FAILURE("First parameter is an invalid rangeset label in %s");
+    }
 
-	if(!rangesetTable) {
-		M_FAILURE("Rangeset does not exist in %s");
-	}
+    if(!rangesetTable) {
+        M_FAILURE("Rangeset does not exist in %s");
+    }
 
-	Rangeset *rangeset = rangesetTable->RangesetFetch(label);
-	if(!rangeset) {
-		M_FAILURE("Rangeset does not exist in %s");
-	}
+    Rangeset *rangeset = rangesetTable->RangesetFetch(label);
+    if(!rangeset) {
+        M_FAILURE("Rangeset does not exist in %s");
+    }
 
-	if (rangeset->RangesetInverse() < 0) {
-		M_FAILURE("Problem inverting rangeset in %s");
-	}
+    if (rangeset->RangesetInverse() < 0) {
+        M_FAILURE("Problem inverting rangeset in %s");
+    }
 
-	// set up result 
-	result->tag = NO_TAG;
-	return true;
+    // set up result
+    result->tag = NO_TAG;
+    return true;
 }
 
 /*
@@ -5153,8 +5421,8 @@ static int rangesetInvertMS(DocumentWidget *window, DataValue *argList, int nArg
 */
 static int rangesetInfoMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     RangesetTable *rangesetTable = window->buffer_->rangesetTable_;
-	Rangeset *rangeset = nullptr;
-	DataValue element;
+    Rangeset *rangeset = nullptr;
+    DataValue element;
     int label;
 
     if(!readArguments(argList, nArgs, 0, errMsg, &label)) {
@@ -5162,62 +5430,62 @@ static int rangesetInfoMS(DocumentWidget *window, DataValue *argList, int nArgs,
     }
 
     if (!RangesetTable::RangesetLabelOK(label)) {
-		M_FAILURE("First parameter is an invalid rangeset label in %s");
-	}
-
-	if (rangesetTable) {
-		rangeset = rangesetTable->RangesetFetch(label);
-	}
-
-	int count;
-	bool defined;
-	QString color;
-	QString name;
-	const char *mode;
-
-	if(rangeset) {
-		rangeset->RangesetGetInfo(&defined, &label, &count, &color, &name, &mode);
-	} else {
-		defined = false;
-		label = 0;
-		count = 0;
-		mode  = "";
+        M_FAILURE("First parameter is an invalid rangeset label in %s");
     }
 
-	// set up result 
-	result->tag = ARRAY_TAG;
-	result->val.arrayPtr = ArrayNew();
+    if (rangesetTable) {
+        rangeset = rangesetTable->RangesetFetch(label);
+    }
 
-	element.tag = INT_TAG;
-	element.val.n = defined;
-	if (!ArrayInsert(result, PERM_ALLOC_STR("defined"), &element))
-		M_FAILURE("Failed to insert array element \"defined\" in %s");
+    int count;
+    bool defined;
+    QString color;
+    QString name;
+    const char *mode;
 
-	element.tag = INT_TAG;
-	element.val.n = count;
-	if (!ArrayInsert(result, PERM_ALLOC_STR("count"), &element))
-		M_FAILURE("Failed to insert array element \"count\" in %s");
+    if(rangeset) {
+        rangeset->RangesetGetInfo(&defined, &label, &count, &color, &name, &mode);
+    } else {
+        defined = false;
+        label = 0;
+        count = 0;
+        mode  = "";
+    }
 
-	element.tag = STRING_TAG;
+    // set up result
+    result->tag = ARRAY_TAG;
+    result->val.arrayPtr = ArrayNew();
+
+    element.tag = INT_TAG;
+    element.val.n = defined;
+    if (!ArrayInsert(result, PERM_ALLOC_STR("defined"), &element))
+        M_FAILURE("Failed to insert array element \"defined\" in %s");
+
+    element.tag = INT_TAG;
+    element.val.n = count;
+    if (!ArrayInsert(result, PERM_ALLOC_STR("count"), &element))
+        M_FAILURE("Failed to insert array element \"count\" in %s");
+
+    element.tag = STRING_TAG;
     element.val.str = AllocNStringCpyEx(color);
 
-	if (!ArrayInsert(result, PERM_ALLOC_STR("color"), &element))
-		M_FAILURE("Failed to insert array element \"color\" in %s");
+    if (!ArrayInsert(result, PERM_ALLOC_STR("color"), &element))
+        M_FAILURE("Failed to insert array element \"color\" in %s");
 
-	element.tag = STRING_TAG;
+    element.tag = STRING_TAG;
     element.val.str = AllocNStringCpyEx(name);
 
-	if (!ArrayInsert(result, PERM_ALLOC_STR("name"), &element)) {
-		M_FAILURE("Failed to insert array element \"name\" in %s");
-	}
+    if (!ArrayInsert(result, PERM_ALLOC_STR("name"), &element)) {
+        M_FAILURE("Failed to insert array element \"name\" in %s");
+    }
 
-	element.tag = STRING_TAG;
-	if (!AllocNStringCpy(&element.val.str, mode))
-		M_FAILURE("Failed to allocate array value \"mode\" in %s");
-	if (!ArrayInsert(result, PERM_ALLOC_STR("mode"), &element))
-		M_FAILURE("Failed to insert array element \"mode\" in %s");
+    element.tag = STRING_TAG;
+    if (!AllocNStringCpy(&element.val.str, mode))
+        M_FAILURE("Failed to allocate array value \"mode\" in %s");
+    if (!ArrayInsert(result, PERM_ALLOC_STR("mode"), &element))
+        M_FAILURE("Failed to insert array element \"mode\" in %s");
 
-	return true;
+    return true;
 }
 
 /*
@@ -5228,58 +5496,58 @@ static int rangesetInfoMS(DocumentWidget *window, DataValue *argList, int nArgs,
 */
 static int rangesetRangeMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     TextBuffer *buffer = window->buffer_;
-	RangesetTable *rangesetTable = buffer->rangesetTable_;
-	Rangeset *rangeset;
-	int start, end, dummy, rangeIndex, ok;
-	DataValue element;
-	int label = 0;
+    RangesetTable *rangesetTable = buffer->rangesetTable_;
+    Rangeset *rangeset;
+    int start, end, dummy, rangeIndex, ok;
+    DataValue element;
+    int label = 0;
 
-	if (nArgs < 1 || nArgs > 2) {
+    if (nArgs < 1 || nArgs > 2) {
         return wrongNArgsErr(errMsg);
-	}
+    }
 
     if (!readArgument(argList[0], &label, errMsg) || !RangesetTable::RangesetLabelOK(label)) {
-		M_FAILURE("First parameter is an invalid rangeset label in %s");
-	}
+        M_FAILURE("First parameter is an invalid rangeset label in %s");
+    }
 
-	if(!rangesetTable) {
-		M_FAILURE("Rangeset does not exist in %s");
-	}
+    if(!rangesetTable) {
+        M_FAILURE("Rangeset does not exist in %s");
+    }
 
     ok = false;
-	rangeset = rangesetTable->RangesetFetch(label);
-	if (rangeset) {
-		if (nArgs == 1) {
-			rangeIndex = rangeset->RangesetGetNRanges() - 1;
-			ok  = rangeset->RangesetFindRangeNo(0, &start, &dummy);
-			ok &= rangeset->RangesetFindRangeNo(rangeIndex, &dummy, &end);
-			rangeIndex = -1;
-		} else if (nArgs == 2) {
+    rangeset = rangesetTable->RangesetFetch(label);
+    if (rangeset) {
+        if (nArgs == 1) {
+            rangeIndex = rangeset->RangesetGetNRanges() - 1;
+            ok  = rangeset->RangesetFindRangeNo(0, &start, &dummy);
+            ok &= rangeset->RangesetFindRangeNo(rangeIndex, &dummy, &end);
+            rangeIndex = -1;
+        } else if (nArgs == 2) {
             if (!readArgument(argList[1], &rangeIndex, errMsg)) {
-				return false;
-			}
-			ok = rangeset->RangesetFindRangeNo(rangeIndex - 1, &start, &end);
-		}
-	}
+                return false;
+            }
+            ok = rangeset->RangesetFindRangeNo(rangeIndex - 1, &start, &end);
+        }
+    }
 
-	// set up result 
-	result->tag = ARRAY_TAG;
-	result->val.arrayPtr = ArrayNew();
+    // set up result
+    result->tag = ARRAY_TAG;
+    result->val.arrayPtr = ArrayNew();
 
-	if (!ok)
-		return true;
+    if (!ok)
+        return true;
 
-	element.tag = INT_TAG;
-	element.val.n = start;
-	if (!ArrayInsert(result, PERM_ALLOC_STR("start"), &element))
-		M_FAILURE("Failed to insert array element \"start\" in %s");
+    element.tag = INT_TAG;
+    element.val.n = start;
+    if (!ArrayInsert(result, PERM_ALLOC_STR("start"), &element))
+        M_FAILURE("Failed to insert array element \"start\" in %s");
 
-	element.tag = INT_TAG;
-	element.val.n = end;
-	if (!ArrayInsert(result, PERM_ALLOC_STR("end"), &element))
-		M_FAILURE("Failed to insert array element \"end\" in %s");
+    element.tag = INT_TAG;
+    element.val.n = end;
+    if (!ArrayInsert(result, PERM_ALLOC_STR("end"), &element))
+        M_FAILURE("Failed to insert array element \"end\" in %s");
 
-	return true;
+    return true;
 }
 
 /*
@@ -5289,48 +5557,48 @@ static int rangesetRangeMS(DocumentWidget *window, DataValue *argList, int nArgs
 ** fails if parameters were bad.
 */
 static int rangesetIncludesPosMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
-	TextBuffer *buffer = document->buffer_;
-	RangesetTable *rangesetTable = buffer->rangesetTable_;
-	int rangeIndex, maxpos;
-	int label = 0;
+    TextBuffer *buffer = document->buffer_;
+    RangesetTable *rangesetTable = buffer->rangesetTable_;
+    int rangeIndex, maxpos;
+    int label = 0;
 
-	if (nArgs < 1 || nArgs > 2) {
+    if (nArgs < 1 || nArgs > 2) {
         return wrongNArgsErr(errMsg);
-	}
+    }
 
     if (!readArgument(argList[0], &label, errMsg) || !RangesetTable::RangesetLabelOK(label)) {
-		M_FAILURE("First parameter is an invalid rangeset label in %s");
-	}
+        M_FAILURE("First parameter is an invalid rangeset label in %s");
+    }
 
-	if(!rangesetTable) {
-		M_FAILURE("Rangeset does not exist in %s");
-	}
+    if(!rangesetTable) {
+        M_FAILURE("Rangeset does not exist in %s");
+    }
 
-	Rangeset *rangeset = rangesetTable->RangesetFetch(label);
-	if(!rangeset) {
-		M_FAILURE("Rangeset does not exist in %s");
-	}
+    Rangeset *rangeset = rangesetTable->RangesetFetch(label);
+    if(!rangeset) {
+        M_FAILURE("Rangeset does not exist in %s");
+    }
 
-	int pos = 0;
-	if (nArgs == 1) {
-		auto textD = document->toWindow()->lastFocus_;
-		pos = textD->TextGetCursorPos();
-	} else if (nArgs == 2) {
+    int pos = 0;
+    if (nArgs == 1) {
+        auto textD = document->toWindow()->lastFocus_;
+        pos = textD->TextGetCursorPos();
+    } else if (nArgs == 2) {
         if (!readArgument(argList[1], &pos, errMsg))
-			return false;
-	}
+            return false;
+    }
 
-	maxpos = buffer->BufGetLength();
-	if (pos < 0 || pos > maxpos) {
-		rangeIndex = 0;
-	} else {
+    maxpos = buffer->BufGetLength();
+    if (pos < 0 || pos > maxpos) {
+        rangeIndex = 0;
+    } else {
         rangeIndex = rangeset->RangesetFindRangeOfPos(pos, false) + 1;
-	}
+    }
 
-	// set up result 
-	result->tag = INT_TAG;
-	result->val.n = rangeIndex;
-	return true;
+    // set up result
+    result->tag = INT_TAG;
+    result->val.n = rangeIndex;
+    return true;
 }
 
 /*
@@ -5340,37 +5608,37 @@ static int rangesetIncludesPosMS(DocumentWidget *document, DataValue *argList, i
 */
 static int rangesetSetColorMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
-	TextBuffer *buffer = window->buffer_;
-	RangesetTable *rangesetTable = buffer->rangesetTable_;
-	int label = 0;
+    TextBuffer *buffer = window->buffer_;
+    RangesetTable *rangesetTable = buffer->rangesetTable_;
+    int label = 0;
 
-	if (nArgs != 2) {
+    if (nArgs != 2) {
         return wrongNArgsErr(errMsg);
-	}
+    }
 
     if (!readArgument(argList[0], &label, errMsg) || !RangesetTable::RangesetLabelOK(label)) {
-		M_FAILURE("First parameter is an invalid rangeset label in %s");
-	}
+        M_FAILURE("First parameter is an invalid rangeset label in %s");
+    }
 
-	if(!rangesetTable) {
-		M_FAILURE("Rangeset does not exist in %s");
-	}
+    if(!rangesetTable) {
+        M_FAILURE("Rangeset does not exist in %s");
+    }
 
     Rangeset *rangeset = rangesetTable->RangesetFetch(label);
-	if(!rangeset) {
-		M_FAILURE("Rangeset does not exist in %s");
-	}
+    if(!rangeset) {
+        M_FAILURE("Rangeset does not exist in %s");
+    }
 
-	std::string color_name;
-	if (!readArgument(argList[1], &color_name, errMsg)) {
-		M_FAILURE("Second parameter is not a color name string in %s");
-	}
+    std::string color_name;
+    if (!readArgument(argList[1], &color_name, errMsg)) {
+        M_FAILURE("Second parameter is not a color name string in %s");
+    }
 
     rangeset->RangesetAssignColorName(color_name);
 
-	// set up result 
-	result->tag = NO_TAG;
-	return true;
+    // set up result
+    result->tag = NO_TAG;
+    return true;
 }
 
 /*
@@ -5380,36 +5648,36 @@ static int rangesetSetColorMS(DocumentWidget *window, DataValue *argList, int nA
 static int rangesetSetNameMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     TextBuffer *buffer = window->buffer_;
-	RangesetTable *rangesetTable = buffer->rangesetTable_;
-	int label = 0;
+    RangesetTable *rangesetTable = buffer->rangesetTable_;
+    int label = 0;
 
-	if (nArgs != 2) {
+    if (nArgs != 2) {
         return wrongNArgsErr(errMsg);
-	}
+    }
 
     if (!readArgument(argList[0], &label, errMsg) || !RangesetTable::RangesetLabelOK(label)) {
-		M_FAILURE("First parameter is an invalid rangeset label in %s");
-	}
+        M_FAILURE("First parameter is an invalid rangeset label in %s");
+    }
 
-	if(!rangesetTable) {
-		M_FAILURE("Rangeset does not exist in %s");
-	}
+    if(!rangesetTable) {
+        M_FAILURE("Rangeset does not exist in %s");
+    }
 
-	Rangeset *rangeset = rangesetTable->RangesetFetch(label);
-	if(!rangeset) {
-		M_FAILURE("Rangeset does not exist in %s");
-	}
+    Rangeset *rangeset = rangesetTable->RangesetFetch(label);
+    if(!rangeset) {
+        M_FAILURE("Rangeset does not exist in %s");
+    }
 
-	std::string name;
-	if (!readArgument(argList[1], &name, errMsg)) {
-		M_FAILURE("Second parameter is not a valid name string in %s");
-	}
+    std::string name;
+    if (!readArgument(argList[1], &name, errMsg)) {
+        M_FAILURE("Second parameter is not a valid name string in %s");
+    }
 
     rangeset->RangesetAssignName(name);
 
-	// set up result 
-	result->tag = NO_TAG;
-	return true;
+    // set up result
+    result->tag = NO_TAG;
+    return true;
 }
 
 /*
@@ -5418,46 +5686,46 @@ static int rangesetSetNameMS(DocumentWidget *window, DataValue *argList, int nAr
 */
 static int rangesetSetModeMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
-	TextBuffer *buffer = window->buffer_;
-	RangesetTable *rangesetTable = buffer->rangesetTable_;
-	Rangeset *rangeset;
-	int label = 0;
+    TextBuffer *buffer = window->buffer_;
+    RangesetTable *rangesetTable = buffer->rangesetTable_;
+    Rangeset *rangeset;
+    int label = 0;
 
-	if (nArgs < 1 || nArgs > 2) {
+    if (nArgs < 1 || nArgs > 2) {
         return wrongNArgsErr(errMsg);
-	}
+    }
 
     if (!readArgument(argList[0], &label, errMsg) || !RangesetTable::RangesetLabelOK(label)) {
-		M_FAILURE("First parameter is an invalid rangeset label in %s");
-	}
+        M_FAILURE("First parameter is an invalid rangeset label in %s");
+    }
 
-	if(!rangesetTable) {
-		M_FAILURE("Rangeset does not exist in %s");
-	}
+    if(!rangesetTable) {
+        M_FAILURE("Rangeset does not exist in %s");
+    }
 
-	rangeset = rangesetTable->RangesetFetch(label);
-	if(!rangeset) {
-		M_FAILURE("Rangeset does not exist in %s");
-	}
+    rangeset = rangesetTable->RangesetFetch(label);
+    if(!rangeset) {
+        M_FAILURE("Rangeset does not exist in %s");
+    }
 
-	std::string update_fn_name;
-	if (nArgs == 2) {
-		if (!readArgument(argList[1], &update_fn_name,  errMsg)) {
-			M_FAILURE("Second parameter is not a string in %s");
-		}
-	}
+    std::string update_fn_name;
+    if (nArgs == 2) {
+        if (!readArgument(argList[1], &update_fn_name,  errMsg)) {
+            M_FAILURE("Second parameter is not a string in %s");
+        }
+    }
 
     int ok = rangeset->RangesetChangeModifyResponse(update_fn_name.c_str());
-	if (!ok) {
-		M_FAILURE("Second parameter is not a valid mode in %s");
-	}
+    if (!ok) {
+        M_FAILURE("Second parameter is not a valid mode in %s");
+    }
 
-	// set up result 
-	result->tag = NO_TAG;
-	return true;
+    // set up result
+    result->tag = NO_TAG;
+    return true;
 }
 
-// -------------------------------------------------------------------------- 
+// --------------------------------------------------------------------------
 
 /*
 ** Routines to get details directly from the window.
@@ -5574,19 +5842,19 @@ static int fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWid
 static int getStyleByNameMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     std::string styleName;
 
-	// Validate number of arguments 
+    // Validate number of arguments
     if(!readArguments(argList, nArgs, 0, errMsg, &styleName)) {
         M_FAILURE("First parameter is not a string in %s");
     }
 
     // Prepare result
-	result->tag = ARRAY_TAG;
-	result->val.arrayPtr = nullptr;
+    result->tag = ARRAY_TAG;
+    result->val.arrayPtr = nullptr;
 
     if (!NamedStyleExists(QString::fromStdString(styleName))) {
-		// if the given name is invalid we just return an empty array. 
-		return true;
-	}
+        // if the given name is invalid we just return an empty array.
+        return true;
+    }
 
     return fillStyleResultEx(
                 result,
@@ -5611,41 +5879,41 @@ static int getStyleByNameMS(DocumentWidget *window, DataValue *argList, int nArg
 **
 */
 static int getStyleAtPosMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
-	int patCode;
-	int bufferPos;
-	TextBuffer *buf = window->buffer_;
+    int patCode;
+    int bufferPos;
+    TextBuffer *buf = window->buffer_;
 
-	// Validate number of arguments 
+    // Validate number of arguments
     if(!readArguments(argList, nArgs, 0, errMsg, &bufferPos)) {
         return false;
     }
 
-	// Prepare result 
-	result->tag = ARRAY_TAG;
-	result->val.arrayPtr = nullptr;
+    // Prepare result
+    result->tag = ARRAY_TAG;
+    result->val.arrayPtr = nullptr;
 
-	//  Verify sane buffer position 
-	if ((bufferPos < 0) || (bufferPos >= buf->BufGetLength())) {
-		/*  If the position is not legal, we cannot guess anything about
-		    the style, so we return an empty array. */
-		return true;
-	}
+    //  Verify sane buffer position
+    if ((bufferPos < 0) || (bufferPos >= buf->BufGetLength())) {
+        /*  If the position is not legal, we cannot guess anything about
+            the style, so we return an empty array. */
+        return true;
+    }
 
-	// Determine pattern code 
+    // Determine pattern code
     patCode = HighlightCodeOfPosEx(window, bufferPos);
-	if (patCode == 0) {
-		// if there is no pattern we just return an empty array. 
-		return true;
-	}
+    if (patCode == 0) {
+        // if there is no pattern we just return an empty array.
+        return true;
+    }
 
     return fillStyleResultEx(
-		result, 
-		errMsg, 
-		window, 
+        result,
+        errMsg,
+        window,
         HighlightStyleOfCodeEx(window, patCode).toLatin1().data(),
         true,
-		patCode, 
-		bufferPos);
+        patCode,
+        bufferPos);
 }
 
 /*
@@ -5713,20 +5981,20 @@ static int getPatternByNameMS(DocumentWidget *document, DataValue *argList, int 
 
     std::string patternName;
 
-	// Begin of building the result. 
-	result->tag = ARRAY_TAG;
-	result->val.arrayPtr = nullptr;
+    // Begin of building the result.
+    result->tag = ARRAY_TAG;
+    result->val.arrayPtr = nullptr;
 
-	// Validate number of arguments 
+    // Validate number of arguments
     if(!readArguments(argList, nArgs, 0, errMsg, &patternName)) {
-		M_FAILURE("First parameter is not a string in %s");
-	}
+        M_FAILURE("First parameter is not a string in %s");
+    }
 
     HighlightPattern *pattern = FindPatternOfWindowEx(document, QString::fromStdString(patternName));
-	if(!pattern) {
-		// The pattern's name is unknown. 
-		return true;
-	}
+    if(!pattern) {
+        // The pattern's name is unknown.
+        return true;
+    }
 
     return fillPatternResultEx(
                 result,
@@ -5748,49 +6016,49 @@ static int getPatternByNameMS(DocumentWidget *document, DataValue *argList, int 
 */
 static int getPatternAtPosMS(DocumentWidget *window, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     int bufferPos;
-	TextBuffer *buffer = window->buffer_;
+    TextBuffer *buffer = window->buffer_;
 
-	// Begin of building the result. 
-	result->tag = ARRAY_TAG;
-	result->val.arrayPtr = nullptr;
+    // Begin of building the result.
+    result->tag = ARRAY_TAG;
+    result->val.arrayPtr = nullptr;
 
-	// Validate number of arguments 
+    // Validate number of arguments
     if(!readArguments(argList, nArgs, 0, errMsg, &bufferPos)) {
         return false;
     }
 
-	/* The most straightforward case: Get a pattern, style and extent
-	   for a buffer position. */
+    /* The most straightforward case: Get a pattern, style and extent
+       for a buffer position. */
 
-	/*  Verify sane buffer position
-	 *  You would expect that buffer->length would be among the sane
-	 *  positions, but we have n characters and n+1 buffer positions. */
-	if ((bufferPos < 0) || (bufferPos >= buffer->BufGetLength())) {
-		/*  If the position is not legal, we cannot guess anything about
-		    the highlighting pattern, so we return an empty array. */
-		return true;
-	}
+    /*  Verify sane buffer position
+     *  You would expect that buffer->length would be among the sane
+     *  positions, but we have n characters and n+1 buffer positions. */
+    if ((bufferPos < 0) || (bufferPos >= buffer->BufGetLength())) {
+        /*  If the position is not legal, we cannot guess anything about
+            the highlighting pattern, so we return an empty array. */
+        return true;
+    }
 
-	// Determine the highlighting pattern used 
+    // Determine the highlighting pattern used
     int patCode = HighlightCodeOfPosEx(window, bufferPos);
-	if (patCode == 0) {
-		// if there is no highlighting pattern we just return an empty array. 
-		return true;
-	}
+    if (patCode == 0) {
+        // if there is no highlighting pattern we just return an empty array.
+        return true;
+    }
 
     return fillPatternResultEx(
-		result, 
-		errMsg, 
-		window, 
+        result,
+        errMsg,
+        window,
         HighlightNameOfCodeEx(window, patCode).toLatin1().data(),
         true,
         HighlightStyleOfCodeEx(window, patCode).toLatin1().data(),
-		bufferPos);
+        bufferPos);
 }
 
 static bool wrongNArgsErr(const char **errMsg) {
-	*errMsg = "Wrong number of arguments to function %s";
-	return false;
+    *errMsg = "Wrong number of arguments to function %s";
+    return false;
 }
 
 static bool tooFewArgsErr(const char **errMsg) {
@@ -5805,10 +6073,10 @@ static bool tooFewArgsErr(const char **errMsg) {
 */
 static bool readArgument(DataValue dv, int *result, const char **errMsg) {
 
-	if (dv.tag == INT_TAG) {
-		*result = dv.val.n;
-		return true;
-	} else if (dv.tag == STRING_TAG) {
+    if (dv.tag == INT_TAG) {
+        *result = dv.val.n;
+        return true;
+    } else if (dv.tag == STRING_TAG) {
 
         char *p = dv.val.str.rep;
         char *endp;
@@ -5820,9 +6088,9 @@ static bool readArgument(DataValue dv, int *result, const char **errMsg) {
             return false;
         }
 
-		*result = static_cast<int>(val);
-		return true;
-	}
+        *result = static_cast<int>(val);
+        return true;
+    }
 
     if(errMsg) {
         *errMsg = "%s called with unknown object";
