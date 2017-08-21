@@ -1588,7 +1588,7 @@ static int findIncrMS(DocumentWidget *document, DataValue *argList, int nArgs, D
             return false;
         }
 
-        if(arg2.compare(QLatin1String("continued"), Qt::CaseSensitive) == 0) {
+        if(arg2.compare(QLatin1String("continued"), Qt::CaseInsensitive) == 0) {
             continued = true;
         }
     }
