@@ -86,8 +86,6 @@ DialogPrint::DialogPrint(const QString &PrintFileName, const QString &jobName, Q
 			ui.labelHost->setText(tr("Host"));
 		}
 	}
-
-	resize(width(), minimumSizeHint().height());
 	
 	if(CmdFieldModified) {
 		// if they printed in the past, restore the command they used
