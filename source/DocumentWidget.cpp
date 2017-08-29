@@ -1257,7 +1257,7 @@ QString DocumentWidget::getWindowsMenuEntry() {
 
 void DocumentWidget::setLanguageMode(const QString &mode) {
 
-    // TODO(eteran): this is inefficient, we started with the mode number
+    // NOTE(eteran): this is inefficient, we started with the mode number
     //               converted it to a string, and now we look up the number
     //               again to pass to this function. We should just pass the
     //               number and skip the round trip

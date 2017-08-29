@@ -3020,13 +3020,6 @@ void MainWindow::on_action_Incremental_Backup_toggled(bool state) {
 
 void MainWindow::matchingGroupTriggered(QAction *action) {
 
-    // TODO(eteran): implement the backwards compatibility at the macro level
-    /* For backward compatibility with pre-5.2 versions, we also
-       accept 0 and 1 as aliases for NO_FLASH and FLASH_DELIMIT.
-       It is quite unlikely, though, that anyone ever used this
-       action procedure via the macro language or a key binding,
-       so this can probably be left out safely. */
-
     if(auto document = currentDocument()) {
         if(action == ui.action_Matching_Off) {
             document->SetShowMatching(NO_FLASH);
