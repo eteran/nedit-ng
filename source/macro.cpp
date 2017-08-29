@@ -3012,26 +3012,20 @@ static int substringMS(DocumentWidget *window, DataValue *argList, int nArgs, Da
 
     Q_UNUSED(window);
 
-    int from;
-    int to;
-    int length;
-    std::string string;
-
     // Validate arguments and convert to int
     if (nArgs != 2 && nArgs != 3) {
         return wrongNArgsErr(errMsg);
     }
 
-    if (!readArgument(argList[0], &string, errMsg)) {
+    int from;
+    QString string;
+
+    if(!readArguments(argList, nArgs, 0, errMsg, &string, &from)) {
         return false;
     }
 
-    if (!readArgument(argList[1], &from, errMsg)) {
-        return false;
-    }
-
-    length = string.size();
-    to     = string.size();
+    int length = string.size();
+    int to     = string.size();
 
     if (nArgs == 3) {
         if (!readArgument(argList[2], &to, errMsg)) {
@@ -3049,7 +3043,7 @@ static int substringMS(DocumentWidget *window, DataValue *argList, int nArgs, Da
 
     // Allocate a new string and copy the sub-string into it
     result->tag     = STRING_TAG;
-    result->val.str = AllocNStringCpyEx(string.substr(from, to - from));
+    result->val.str = AllocNStringCpyEx(string.mid(from, to - from));
     return true;
 }
 
