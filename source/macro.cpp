@@ -1607,7 +1607,27 @@ static int findIncrMS(DocumentWidget *document, DataValue *argList, int nArgs, D
     return true;
 }
 
+static int startIncrFindMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
+    Q_UNUSED(errMsg);
+
+    document = MacroRunWindowEx();
+
+    auto win = document->toWindow();
+
+    if(!win) {
+        return false;
+    }
+
+    BeginISearchEx(
+                win,
+                document,
+                win->lastFocus_,
+                searchDirection(argList, nArgs, 0));
+
+    result->tag = NO_TAG;
+    return true;
+}
 
 static const SubRoutine MenuMacroSubrNames[] = {
     // File
@@ -1715,8 +1735,8 @@ static const SubRoutine MenuMacroSubrNames[] = {
 
 #if 1 // These aren't mentioned in the documentation...
     { "find_incremental",             findIncrMS },
-    { "start_incremental_find",       nullptr }, // NOTE(eteran): here
-    { "replace_find",                 nullptr },
+    { "start_incremental_find",       startIncrFindMS },
+    { "replace_find",                 nullptr }, // NOTE(eteran): here
     { "replace_find_same",            nullptr },
     { "replace_find_again",           nullptr },
     { "next_document",                nullptr },
