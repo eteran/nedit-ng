@@ -3913,7 +3913,7 @@ void MainWindow::action_Save_As(const QString &filename, bool wrapped) {
 void MainWindow::on_action_Save_As_triggered() {
     if(auto document = currentDocument()) {
 
-		bool addWrap;
+		bool addWrap = false;
         FileFormats fileFormat;
 
         QString fullname = PromptForNewFileEx(document, tr("Save File As"), &fileFormat, &addWrap);

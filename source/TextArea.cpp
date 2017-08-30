@@ -6588,7 +6588,6 @@ void TextArea::copyToAP(QMouseEvent *event, EventFlags flags) {
 	TextSelection *secondary = &buffer_->secondary_;
 	TextSelection *primary   = &buffer_->primary_;
     bool rectangular = secondary->rectangular;
-	int insertPos;
 
 	endDrag();
 	if (!((dragState == SECONDARY_DRAG && secondary->selected) || (dragState == SECONDARY_RECT_DRAG && secondary->selected) || dragState == SECONDARY_CLICKED || dragState == NOT_CLICKED)) {
@@ -6607,11 +6606,12 @@ void TextArea::copyToAP(QMouseEvent *event, EventFlags flags) {
 			TextDBlankCursor();
 			std::string textToCopy = buffer_->BufGetSecSelectTextEx();
 			if (primary->selected && rectangular) {
-				insertPos = cursorPos_;
+				int insertPos = cursorPos_;
+				Q_UNUSED(insertPos);
 				buffer_->BufReplaceSelectedEx(textToCopy);
 				TextDSetInsertPosition(buffer_->cursorPosHint_);
 			} else if (rectangular) {
-				insertPos = cursorPos_;
+				int insertPos = cursorPos_;
 				int lineStart = buffer_->BufStartOfLine(insertPos);
 				int column = buffer_->BufCountDispChars(lineStart, insertPos);
 				buffer_->BufInsertColEx(column, lineStart, textToCopy, nullptr, nullptr);
@@ -6751,6 +6751,7 @@ void TextArea::secondaryStartAP(QMouseEvent *event, EventFlags flags) {
 		buffer_->BufSecondarySelect(anchor, pos);
 	} else {
 		anchor = pos;
+		Q_UNUSED(anchor);
 	}
 
 	/* Record the site of the initial button press and the initial character
@@ -7416,7 +7417,6 @@ void TextArea::moveToAP(QMouseEvent *event, EventFlags flags) {
 	TextSelection *secondary = &buffer_->secondary_;
 	TextSelection *primary   = &buffer_->primary_;
 
-	int insertPos;
 	int rectangular = secondary->rectangular;
 
 	endDrag();
@@ -7434,11 +7434,12 @@ void TextArea::moveToAP(QMouseEvent *event, EventFlags flags) {
 		if (motifDestOwner_) {
 			std::string textToCopy = buffer_->BufGetSecSelectTextEx();
 			if (primary->selected && rectangular) {
-				insertPos = cursorPos_;
+				int insertPos = cursorPos_;
+				Q_UNUSED(insertPos);
 				buffer_->BufReplaceSelectedEx(textToCopy);
 				TextDSetInsertPosition(buffer_->cursorPosHint_);
 			} else if (rectangular) {
-				insertPos = cursorPos_;
+				int insertPos = cursorPos_;
 				int lineStart = buffer_->BufStartOfLine(insertPos);
 				int column = buffer_->BufCountDispChars(lineStart, insertPos);
 				buffer_->BufInsertColEx(column, lineStart, textToCopy, nullptr, nullptr);

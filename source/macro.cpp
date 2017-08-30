@@ -1619,11 +1619,7 @@ static int startIncrFindMS(DocumentWidget *document, DataValue *argList, int nAr
         return false;
     }
 
-    BeginISearchEx(
-                win,
-                document,
-                win->lastFocus_,
-                searchDirection(argList, nArgs, 0));
+    win->BeginISearchEx(searchDirection(argList, nArgs, 0));
 
     result->tag = NO_TAG;
     return true;

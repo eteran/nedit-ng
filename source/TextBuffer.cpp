@@ -312,6 +312,8 @@ void insertColInLineEx(view::string_view line, view::string_view insLine, int co
 	if (!insLine.empty()) {
         std::string retabbedStr = realignTabsEx(insLine, 0, indent, tabDist, useTabs, nullSubsChar);
         len = retabbedStr.size();
+		
+		Q_UNUSED(len);
 
 		for (char ch : retabbedStr) {
 			*outPtr++ = ch;
@@ -525,6 +527,8 @@ void overlayRectInLineEx(view::string_view line, view::string_view insLine, int 
     if (!insLine.empty()) {
         std::string retabbedStr = realignTabsEx(insLine, 0, rectStart, tabDist, useTabs, nullSubsChar);
         len = retabbedStr.size();
+		
+		Q_UNUSED(len);
 
         for (char c : retabbedStr) {
             *outPtr++ = c;
@@ -544,6 +548,8 @@ void overlayRectInLineEx(view::string_view line, view::string_view insLine, int 
     len = addPadding(outPtr, outIndent, postRectIndent, tabDist, useTabs, nullSubsChar);
     outPtr += len;
     outIndent = postRectIndent;
+	
+	Q_UNUSED(outIndent);
 
     /* copy the text beyond "rectEnd" */
     std::copy(linePtr, line.end(), outPtr);
@@ -951,10 +957,13 @@ void TextBuffer::overlayRectEx(int startPos, int rectStart, int rectEnd, view::s
 ** If rectEnd equals -1, the width of the inserted text is measured first.
 */
 void TextBuffer::BufOverlayRectEx(int startPos, int rectStart, int rectEnd, view::string_view text, int *charsInserted, int *charsDeleted) {
-	int insertDeleted, nInserted;
 
+	int insertDeleted;
+	int nInserted;
 	int nLines = countLinesEx(text);
 	int lineStartPos = BufStartOfLine(startPos);
+	
+	Q_UNUSED(lineStartPos);
 
 	if (rectEnd == -1) {
 		rectEnd = rectStart + textWidthEx(text, tabDist_, nullSubsChar_);

@@ -583,8 +583,12 @@ WindowHighlightData *createHighlightDataEx(DocumentWidget *document, PatternSet 
        0 should have a default style of UNFINISHED_STYLE.  With no pass 2
        patterns, unstyled areas of pass 1 patterns should be PLAIN_STYLE
        to avoid triggering re-parsing every time they are encountered */
-    int noPass1 = nPass1Patterns == 0;
-    int noPass2 = nPass2Patterns == 0;
+    int noPass1 = (nPass1Patterns == 0);
+    int noPass2 = (nPass2Patterns == 0);
+	
+	// NOTE(eteran): I **think** that the consequence of the above code is
+	// that (noPass1 && noPass2) cannot ever be the case
+	Q_ASSERT(noPass1 || noPass2);
 
     if (noPass2) {
         pass1Pats[0].style = PLAIN_STYLE;
@@ -1522,6 +1526,8 @@ static bool parseString(HighlightData *pattern, const char **string, char **styl
             qCritical("NEdit: Internal error, failed to match in parseString");
 			return false;
 		}
+		
+		Q_ASSERT(subPat);
 
 		// the sub-pattern is a simple match, just color it 
 		if (!subPat->subPatternRE) {

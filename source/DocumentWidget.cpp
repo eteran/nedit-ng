@@ -291,7 +291,9 @@ DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inDocument, c
         if (tabbed) {
 			if(auto win = inDocument->toWindow()) {
                 document = win->CreateDocument(name);
-            }
+            } else {
+				return nullptr;
+			}
         } else {
             MainWindow *const win = new MainWindow();
             document = win->CreateDocument(name);
@@ -1128,7 +1130,9 @@ void DocumentWidget::SetTabDist(int tabDist) {
         ignoreModify_ = true;
 
         const QList<TextArea *> textAreas = textPanes();
-        for(int paneIndex = 0; paneIndex < textAreas.size(); ++paneIndex) {
+		const int paneCount = textAreas.size();
+		
+        for(int paneIndex = 0; paneIndex < paneCount; ++paneIndex) {
             TextArea *area = textAreas[paneIndex];
 
             area->TextDGetScroll(&saveVScrollPositions[paneIndex], &saveHScrollPositions[paneIndex]);
@@ -1138,7 +1142,7 @@ void DocumentWidget::SetTabDist(int tabDist) {
 
         buffer_->BufSetTabDistance(tabDist);
 
-        for(int paneIndex = 0; paneIndex < textAreas.size(); ++paneIndex) {
+        for(int paneIndex = 0; paneIndex < paneCount; ++paneIndex) {
             TextArea *area = textAreas[paneIndex];
 
             area->setModifyingTabDist(0);
@@ -2431,7 +2435,7 @@ bool DocumentWidget::doSave() {
 
         messageBox.exec();
         if(messageBox.clickedButton() == buttonSaveAs) {
-            return SaveWindowAs(QString(), 0);
+            return SaveWindowAs(QString(), false);
         }
 
         return false;
@@ -2688,9 +2692,10 @@ void DocumentWidget::addWrapNewlines() {
     int horizOffset;
 
     const QList<TextArea *> textAreas = textPanes();
+	const int paneCount = textAreas.size();
 
     // save the insert and scroll positions of each pane
-    for(int i = 0; i < textAreas.size(); ++i) {
+    for(int i = 0; i < paneCount; ++i) {
         TextArea *area = textAreas[i];
         insertPositions[i] = area->TextGetCursorPos();
         area->TextDGetScroll(&topLines[i], &horizOffset);
@@ -2703,7 +2708,7 @@ void DocumentWidget::addWrapNewlines() {
     buffer_->BufSetAllEx(fileString);
 
     // restore the insert and scroll positions of each pane
-    for(int i = 0; i < textAreas.size(); ++i) {
+    for(int i = 0; i < paneCount; ++i) {
         TextArea *area = textAreas[i];
         area->TextSetCursorPos(insertPositions[i]);
         area->TextDSetScroll(topLines[i], 0);
@@ -4466,24 +4471,20 @@ void DocumentWidget::SetFonts(const QString &fontName, const QString &italicName
 
     // TODO(eteran): do we want the WINDOW width/height? or the widget's?
     //               I suspect we want the widget
+	int marginHeight    = textD->getMarginHeight();
 #if 0
+	int textHeight      = textD->height();
     int oldWindowWidth  = textD->width();
     int oldWindowHeight = textD->height();
+    int marginWidth     = textD->getMarginWidth();
+    QFont oldFont       = textD->getFont();
+    int oldTextWidth    = textD->getRect().width + textD->getLineNumWidth();
 #endif
-    int marginHeight     = textD->getMarginHeight();
-#if 0
-    int marginWidth      = textD->getMarginWidth();
-    QFont oldFont = textD->getFont();
-#endif
-    int textHeight    = textD->height();
 
-#if 0
-    int oldTextWidth = textD->getRect().width + textD->getLineNumWidth();
-#endif
     int oldTextHeight = 0;
 
     Q_FOREACH(TextArea *area, textPanes()) {
-        textHeight = area->height();
+        int textHeight = area->height();
         oldTextHeight += textHeight - 2 * marginHeight;
     }
 
