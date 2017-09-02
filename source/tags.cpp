@@ -1521,9 +1521,7 @@ static int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
 		case TF_INCLUDE:
             // nextTFBlock returns a colon-separated list of tips files in body
 			for (tipIncFile = strtok(body, ":"); tipIncFile; tipIncFile = strtok(nullptr, ":")) {
-#if 0
-                qDebug("NEdit: including tips file '%s'", tipIncFile);
-#endif
+                // qDebug("NEdit: including tips file '%s'", tipIncFile);
                 nTipsAdded += loadTipsFile(QString::fromLatin1(tipIncFile), index, recLevel + 1);
 			}
 			delete [] body;

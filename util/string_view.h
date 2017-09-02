@@ -46,13 +46,6 @@ public:
 
 	basic_string_view &operator=(const basic_string_view &rhs) noexcept = default;
 
-#if 0
-	template <class A>
-	basic_string_view(const std::basic_string<Ch, Tr, A> &str, size_type pos, size_type count = npos)  : data_(nullptr), size_(0) {
-		basic_string_view(str).substr(pos, count).swap(*this);
-	}
-#endif
-
 public:
 	constexpr const_iterator begin() const noexcept  { return data_; }
 	constexpr const_iterator cbegin() const noexcept { return data_; }
