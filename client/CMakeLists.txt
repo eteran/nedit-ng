@@ -26,10 +26,7 @@ target_link_libraries(nc-ng LINK_PUBLIC
 set_property(TARGET nc-ng PROPERTY CXX_STANDARD 14)
 set_property(TARGET nc-ng PROPERTY CXX_EXTENSIONS OFF)
 
-set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -Wc++-compat -Wwrite-strings -Wunused") # -ffunction-sections -fdata-sections
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -W -Wall -pedantic -Wunused") #-Wuseless-cast -Wold-style-cast -ffunction-sections -fdata-sections
-
-set(CMAKE_C_FLAGS_DEBUG   "${CMAKE_C_FLAGS_DEBUG}   -ggdb3")
+set(CMAKE_CXX_FLAGS       "${CMAKE_CXX_FLAGS} -W -Wall -pedantic -Wunused") #-Wuseless-cast -Wold-style-cast -ffunction-sections -fdata-sections
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -ggdb3")
 
 set_target_properties(nc-ng
