@@ -1625,6 +1625,115 @@ static int startIncrFindMS(DocumentWidget *document, DataValue *argList, int nAr
     return true;
 }
 
+static int replaceFindMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+
+    document = MacroRunWindowEx();
+
+    auto win = document->toWindow();
+
+    if(!win) {
+        return false;
+    }
+
+    if (document->CheckReadOnly()) {
+        return false;
+    }
+
+    QString searchString;
+    QString replaceString;
+    if(!readArguments(argList, nArgs, 0, errMsg, &searchString, &replaceString)) {
+        QMessageBox::warning(
+                    document,
+                    QLatin1String("Error in replace_find"),
+                    QLatin1String("replace_find action requires search and replace string arguments"));
+        return false;
+    }
+
+
+    ReplaceAndSearchEx(
+                win,
+                document,
+                win->lastFocus_,
+                searchDirection(argList, nArgs, 2),
+                searchString,
+                replaceString,
+                searchType(argList, nArgs, 2),
+                searchWrap(argList, nArgs, 0));
+
+    result->tag = NO_TAG;
+    return true;
+
+}
+
+static int replaceFindSameMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+
+    Q_UNUSED(argList);
+    Q_UNUSED(nArgs);
+    Q_UNUSED(errMsg);
+
+    document = MacroRunWindowEx();
+
+    auto win = document->toWindow();
+
+    if(!win) {
+        return false;
+    }
+
+    if (document->CheckReadOnly()) {
+        return false;
+    }
+
+    ReplaceFindSameEx(
+                win,
+                document,
+                win->lastFocus_,
+                searchDirection(argList, nArgs, 0),
+                searchWrap(argList, nArgs, 0));
+
+    result->tag = NO_TAG;
+    return true;
+}
+
+static int nextDocumentMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+
+    Q_UNUSED(argList);
+    Q_UNUSED(nArgs);
+    Q_UNUSED(errMsg);
+
+    document = MacroRunWindowEx();
+
+    auto win = document->toWindow();
+
+    if(!win) {
+        return false;
+    }
+
+    win->action_Next_Document();
+
+    result->tag = NO_TAG;
+    return true;
+}
+
+static int prevDocumentMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+
+    Q_UNUSED(argList);
+    Q_UNUSED(nArgs);
+    Q_UNUSED(errMsg);
+
+    document = MacroRunWindowEx();
+
+    auto win = document->toWindow();
+
+    if(!win) {
+        return false;
+    }
+
+    win->action_Prev_Document();
+
+    result->tag = NO_TAG;
+    return true;
+}
+
 static const SubRoutine MenuMacroSubrNames[] = {
     // File
     { "new",                          newMS },
@@ -1732,12 +1841,12 @@ static const SubRoutine MenuMacroSubrNames[] = {
 #if 1 // These aren't mentioned in the documentation...
     { "find_incremental",             findIncrMS },
     { "start_incremental_find",       startIncrFindMS },
-    { "replace_find",                 nullptr }, // NOTE(eteran): here
-    { "replace_find_same",            nullptr },
-    { "replace_find_again",           nullptr },
-    { "next_document",                nullptr },
-    { "previous_document",            nullptr },
-    { "last_document",                nullptr },
+    { "replace_find",                 replaceFindMS },
+    { "replace_find_same",            replaceFindSameMS },
+    { "replace_find_again",           replaceFindSameMS },
+    { "next_document",                nextDocumentMS },
+    { "previous_document",            prevDocumentMS },
+    { "last_document",                nullptr }, // NOTE(eteran): here
     { "bg_menu_command",              nullptr },
     { "post_window_bg_menu",          nullptr },
     { "post_tab_context_menu",        nullptr },
