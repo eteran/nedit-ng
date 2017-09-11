@@ -25,6 +25,7 @@ class QShortcut;
 class QTimer;
 class TextArea;
 class TextBuffer;
+class DocumentWidget;
 struct DragEndEvent;
 struct SmartIndentEvent;
 
@@ -65,15 +66,16 @@ public:
     };
 
 public:
-    TextArea(QWidget *parent,
-        int left,
-        int top,
-        int width,
-        int height,
-        int lineNumLeft,
-        int lineNumWidth,
-        TextBuffer *buffer,
-        QFont fontStruct);
+    TextArea(DocumentWidget *document,
+             QWidget *parent,
+            int left,
+            int top,
+            int width,
+            int height,
+            int lineNumLeft,
+            int lineNumWidth,
+            TextBuffer *buffer,
+            QFont fontStruct);
 
     TextArea(const TextArea &other) = delete;
 	TextArea& operator=(const TextArea &) = delete;

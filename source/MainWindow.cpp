@@ -90,10 +90,11 @@ bool currentlyBusy = false;
 long busyStartTime = 0;
 bool modeMessageSet = false;
 
-QPointer<DialogShellMenu>            WindowShellMenu      = nullptr;
-QPointer<DialogWindowBackgroundMenu> WindowBackgroundMenu = nullptr;
-QPointer<DialogMacros>               WindowMacros         = nullptr;
-QPointer<DialogSmartIndent>          SmartIndentDlg       = nullptr;
+QPointer<DialogShellMenu>            WindowShellMenu;
+QPointer<DialogWindowBackgroundMenu> WindowBackgroundMenu;
+QPointer<DialogMacros>               WindowMacros;
+QPointer<DialogSmartIndent>          SmartIndentDlg;
+QPointer<DocumentWidget>             lastFocusDocument;
 
 const char neditDBBadFilenameChars[] = "\n";
 
@@ -3671,8 +3672,10 @@ void MainWindow::action_Prev_Document() {
 }
 
 void MainWindow::action_Last_Document() {
-    // this will put the focus on whatever document last had the focus
-    // TODO(eteran): implement!
+
+    if(lastFocusDocument) {
+        lastFocusDocument->RaiseFocusDocumentWindow(true);
+    }
 }
 
 DocumentWidget *MainWindow::EditNewFileEx(MainWindow *inWindow, QString geometry, bool iconic, const QString &languageMode, const QString &defaultPath) {
@@ -4236,7 +4239,12 @@ void MainWindow::on_action_Repeat_triggered() {
 
 void MainWindow::focusChanged(QWidget *from, QWidget *to) {
 
-    Q_UNUSED(from);
+
+    if(auto area = qobject_cast<TextArea *>(from)) {
+        if(auto document = DocumentWidget::documentFrom(area)) {
+            lastFocusDocument = document;
+        }
+    }
 
     if(auto area = qobject_cast<TextArea *>(to)) {
         if(auto document = DocumentWidget::documentFrom(area)) {

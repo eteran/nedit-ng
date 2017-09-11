@@ -5,6 +5,7 @@
 #include "DragStates.h"
 #include "MultiClickStates.h"
 #include "RangesetTable.h"
+#include "DocumentWidget.h"
 #include "TextBuffer.h"
 #include "calltips.h"
 #include "DragEndEvent.h"
@@ -354,15 +355,17 @@ bool isModifier(QKeyEvent *e) {
 
 }
 
-TextArea::TextArea(QWidget *parent,
-    int left,
-    int top,
-    int width,
-    int height,
-    int lineNumLeft,
-    int lineNumWidth,
-	TextBuffer *buffer,
-    QFont fontStruct) : QAbstractScrollArea(parent) {
+TextArea::TextArea(
+        DocumentWidget *document,
+        QWidget *parent,
+        int left,
+        int top,
+        int width,
+        int height,
+        int lineNumLeft,
+        int lineNumWidth,
+        TextBuffer *buffer,
+        QFont fontStruct) : QAbstractScrollArea(parent) {
 
 	setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 	setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
@@ -385,7 +388,7 @@ TextArea::TextArea(QWidget *parent,
     connect(clickTimer_, SIGNAL(timeout()), this, SLOT(clickTimeout()));
     clickCount_ = 0;
 
-	// defaults for the "resources
+    // defaults for the "resources"
     P_marginWidth        = 5;
     P_marginHeight       = 5;
 	P_pendingDelete      = true;
@@ -408,44 +411,28 @@ TextArea::TextArea(QWidget *parent,
 	};
 #endif
 
-    // TODO(eteran): these previously were set by the constructor of the TextDisplay Motif widget initializer
-	//               so we need a better way to pass this info to this widget...
-	P_rows           = 24;
-	P_columns        = 80;
-	P_lineNumCols    = 0;
-	P_emulateTabs    = 0;
-	P_readOnly       = false;
-    P_delimiters     = QLatin1String(".,/\\`'!@#%^&*()-=+{}[]\":;<>?");
-	P_wrapMargin     = 0;
-	P_autoIndent     = true;
-	P_smartIndent    = false;
-	P_autoWrap       = true;
-	P_continuousWrap = true;
-	P_overstrike     = false;
+    P_rows           = GetPrefRows();
+    P_columns        = GetPrefCols();
+    P_readOnly       = document->lockReasons_.isAnyLocked();
+    P_delimiters     = GetPrefDelimiters();
+    P_wrapMargin     = GetPrefWrapMargin();
+    P_autoIndent     = document->indentStyle_ == AUTO_INDENT;
+    P_smartIndent    = document->indentStyle_ == SMART_INDENT;;
+    P_autoWrap       = document->wrapMode_ == NEWLINE_WRAP;
+    P_continuousWrap = document->wrapMode_ == CONTINUOUS_WRAP;;
+    P_overstrike     = document->overstrike_;
     P_hidePointer    = GetPrefTypingHidesPointer();
     P_cursorVPadding = GetVerticalAutoScroll();
 
+    // TODO(eteran): these previously were set by the constructor of the TextDisplay Motif widget initializer
+    //               so we need a better way to pass this info to this widget...
+    P_lineNumCols    = 0;
+    P_emulateTabs    = 0;
 
 #if 0
-	textNrows,               rows,
-	textNcolumns,            cols,
 	textNlineNumCols,        lineNumCols,
 	textNemulateTabs,        emTabDist,
-	textNreadOnly,           window->lockReasons_.isAnyLocked(),
-	textNwordDelimiters,     delimiters,
-	textNwrapMargin,         wrapMargin,
-	textNautoIndent,         (window->indentStyle_ == AUTO_INDENT),
-	textNsmartIndent,        (window->indentStyle_ == SMART_INDENT),
-	textNautoWrap,           (window->wrapMode_    == NEWLINE_WRAP),
-	textNcontinuousWrap,     (window->wrapMode_    == CONTINUOUS_WRAP),
-	textNoverstrike,         window->overstrike_,
-	textNhidePointer,        (Boolean)GetPrefTypingHidesPointer(),
-	textNcursorVPadding,     GetVerticalAutoScroll(),
 #endif
-
-	// TODO(eteran): remove this temporary override
-	P_continuousWrap = false;
-	P_autoWrap       = false;
 
     fontStruct.setStyleStrategy(QFont::ForceIntegerMetrics);
     QFontMetrics fm(fontStruct);
@@ -495,8 +482,6 @@ TextArea::TextArea(QWidget *parent,
 
     bgClassPixel_ = QVector<QColor>();
 	bgClass_      = QVector<uint8_t>();
-	setBacklightCharTypes(QString()); // TODO(eteran): used to be set by resource textNbacklightCharTypes
-									  // which came from window->backlightCharTypes_ originally
 
 	suppressResync_      = false;
 	nLinesDeleted_       = 0;
@@ -4224,7 +4209,7 @@ void TextArea::TextDSetupBGClasses(const QString &s, QVector<QColor> *pp_bgClass
 		return;
 	}
 
-	uint8_t bgClass[256]    = {};
+    uint8_t bgClass[256]     = {};
 	QColor bgClassPixel[256] = {};
 
 

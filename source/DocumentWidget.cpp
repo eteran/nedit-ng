@@ -412,7 +412,7 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 	
 	if (backlightChars_) {
         QString cTypes = GetPrefBacklightCharTypes();
-        if (!cTypes.isNull() && backlightChars_) {
+        if (!cTypes.isNull()) {
             backlightCharTypes_ = cTypes;
 		}
 	}
@@ -462,6 +462,7 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 
     static int n = 0;
     area->setObjectName(tr("TextArea_%1").arg(n++));
+    area->setBacklightCharTypes(backlightCharTypes_);
     splitter_->addWidget(area);
 }
 
@@ -524,6 +525,7 @@ TextArea *DocumentWidget::createTextArea(TextBuffer *buffer) {
     int h = P_marginHeight;
 
     auto area = new TextArea(this,
+                             this,
                              l,
                              h,
                              100,
@@ -1000,12 +1002,6 @@ void DocumentWidget::documentRaised() {
 
 void DocumentWidget::RaiseDocument() {
     if(auto win = toWindow()) {
-
-        // TODO(eteran): this used to do some tracking for the last active
-        //               window/document here. I think there is likely a better
-        //               approach
-
-
         // set the document as top document
         // show the new top document
         // NOTE(eteran): indirectly triggers a call to documentRaised()

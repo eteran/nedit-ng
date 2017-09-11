@@ -321,7 +321,7 @@ public:
     QList<QAction *>   previousOpenFilesList_;
 	QPointer<QDialog>  dialogFind_;
 	QPointer<QDialog>  dialogReplace_;
-	QPointer<TextArea> lastFocus_;
+	QPointer<TextArea> lastFocus_;    
     bool               showLineNumbers_; // is the line number display shown
 	bool               showISearchLine_; // is incr. search line to be shown
     int fHistIndex_;                   // history placeholders for

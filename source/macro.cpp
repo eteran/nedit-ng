@@ -1734,6 +1734,52 @@ static int prevDocumentMS(DocumentWidget *document, DataValue *argList, int nArg
     return true;
 }
 
+static int lastDocumentMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+
+    Q_UNUSED(argList);
+    Q_UNUSED(nArgs);
+    Q_UNUSED(errMsg);
+
+    document = MacroRunWindowEx();
+
+    auto win = document->toWindow();
+
+    if(!win) {
+        return false;
+    }
+
+    win->action_Last_Document();
+
+    result->tag = NO_TAG;
+    return true;
+}
+
+static int backgroundMenuCommand(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+
+    Q_UNUSED(argList);
+    Q_UNUSED(nArgs);
+    Q_UNUSED(errMsg);
+
+    document = MacroRunWindowEx();
+
+    auto win = document->toWindow();
+
+    if(!win) {
+        return false;
+    }
+
+    QString name;
+    if(!readArguments(argList, nArgs, 0, errMsg, &name)) {
+        qWarning("NEdit: bg_menu_command requires item-name argument\n");
+        return false;
+    }
+
+    document->DoNamedBGMenuCmd(win->lastFocus_, name, true);
+
+    result->tag = NO_TAG;
+    return true;
+}
+
 static const SubRoutine MenuMacroSubrNames[] = {
     // File
     { "new",                          newMS },
@@ -1838,7 +1884,7 @@ static const SubRoutine MenuMacroSubrNames[] = {
     // Deprecated
     { "match",                        selectToMatchingMS },
 
-#if 1 // These aren't mentioned in the documentation...
+    // These aren't mentioned in the documentation...
     { "find_incremental",             findIncrMS },
     { "start_incremental_find",       startIncrFindMS },
     { "replace_find",                 replaceFindMS },
@@ -1846,8 +1892,9 @@ static const SubRoutine MenuMacroSubrNames[] = {
     { "replace_find_again",           replaceFindSameMS },
     { "next_document",                nextDocumentMS },
     { "previous_document",            prevDocumentMS },
-    { "last_document",                nullptr }, // NOTE(eteran): here
-    { "bg_menu_command",              nullptr },
+    { "last_document",                lastDocumentMS },
+    { "bg_menu_command",              backgroundMenuCommand },
+#if 0 // NOTE(eteran): what are these for? are they needed?
     { "post_window_bg_menu",          nullptr },
     { "post_tab_context_menu",        nullptr },
 #endif
