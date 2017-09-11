@@ -438,10 +438,11 @@ private:
 	int            emTabsBeforeCursor_; // If non-zero, number of consecutive emulated tabs just entered.  Saved so chars can be deleted as a unit
     QMenu *bgMenu_;
 private:
-	QColor highlightFGPixel_;   // Highlight colors are used when flashing matching parens
-	QColor highlightBGPixel_;
-	QColor lineNumFGPixel_;     // Color for drawing line numbers
-	QColor cursorFGPixel_;
+    QColor highlightFGPixel_;   // Highlight colors are used when flashing matching parens
+    QColor highlightBGPixel_;
+    QColor lineNumFGPixel_;     // Color for drawing line numbers
+    QColor cursorFGPixel_;
+    QFont  font_;
 
 private:
 	bool        P_pendingDelete;
