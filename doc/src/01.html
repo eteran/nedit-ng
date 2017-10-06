@@ -1,3 +1,8 @@
+{% extends "base.html" %}
+
+{% block title %}Getting Started (1){% endblock %}
+
+{% block content %}
 <h1>Welcome to NEdit!</h1>
 <p>NEdit is a standard <abbr title="Graphical User Interface">GUI</abbr> style text editor for programs and plain-text files.  Users of Macintosh and MS Windows based text editors should find NEdit a familiar and comfortable environment.  NEdit provides all of the standard menu, dialog, editing, and mouse support, as well as all of the standard shortcuts to which the users of modern GUI based environments are accustomed.  For users of older style Unix editors, welcome to the world of mouse-based editing!</p>
 
@@ -12,7 +17,6 @@
 	<li><a href="07.html">Shifting and Filling</a></li>
 	</ul>
 </div>
-
 
 <p>Programmers should also read the introductory section under the &quot;Features for Programming&quot; section:</p>
 <div>
@@ -46,4 +50,7 @@
 
 <p>(how much of the filename you need to type depends on the other files in the directory).  See the section called &quot;<a href="06.html">Keyboard Shortcuts</a>&quot; for more details.</p>
 <p><small>* Users who have set their keyboard focus mode to &quot;pointer&quot; should set &quot;Popups Under Pointer&quot; in the Default Settings menu to avoid the additional step of moving the mouse into the dialog.</small></p>
+{% endblock %}
 
+{% block prev %}01.html{% endblock %}
+{% block next %}02.html{% endblock %}

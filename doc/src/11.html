@@ -1,3 +1,8 @@
+{% extends "base.html" %}
+
+{% block title %}Tab Stops/Emulated Tab Stops (11){% endblock %}
+
+{% block content %}
 <h2>Changing the Tab Stop Distance</h2>			
 <p>Tab stops are important for programming in languages which use indentation to show nesting, as short-hand for producing white-space for leading indents. As a programmer, you have to decide how to use indentation, and how or whether tab characters map to your indentation scheme.</p>
 <p>Ideally, tab characters map directly to the amount of indent that you use to distinguish nesting levels in your code.  Unfortunately, the Unix standard for interpretation of tab characters is eight characters (probably dating back to mechanical capabilities of the original teletype), which is usually too coarse for a single indent.</p>
@@ -7,3 +12,7 @@
 <h2>Emulated Tab Stops</h2>
 <p>An alternative to changing the interpretation of the tab character is tab stop emulation.  In the Tab Stops... dialog(s), turning on Emulated Tabs causes the <kbd>Tab</kbd> key to insert the correct number of spaces and/or tabs to bring the cursor the next emulated tab stop, as if tabs were set at the emulated tab distance rather than the hardware tab distance. Backspacing immediately after entering an emulated tab will delete the fictitious tab as a unit, but as soon as you move the cursor away from the spot, NEdit will forget that the collection of spaces and tabs is a tab, and will treat it as separate characters.  To enter a real tab character with &quot;Emulate Tabs&quot; turned on, use <kbd>Ctrl</kbd> + <kbd>Tab</kbd>.</p>
 <p>It is also possible to tell NEdit not to insert ANY tab characters at all in the course of processing emulated tabs, and in shifting and rectangular insertion/deletion operations, for programmers who worry about the misinterpretation of tab characters on other systems.</p>
+{% endblock %}
+
+{% block prev %}10.html{% endblock %}
+{% block next %}12.html{% endblock %}

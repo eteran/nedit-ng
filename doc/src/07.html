@@ -1,3 +1,8 @@
+{% extends "base.html" %}
+
+{% block title %}Shifting and Filling (7){% endblock %}
+
+{% block content %}
 <h2>Shift Left, Shift Right</h2>
 
 <p>While shifting blocks of text is most important for programmers (See &quot;Features for Programming&quot;), it is also useful for other tasks, such as creating indented paragraphs.</p>
@@ -13,3 +18,7 @@
 <p>There are three ways to use Fill Paragraph.  The simplest is, while you are typing text, and there is no selection, simply select Fill Paragraph (or type <kbd>Ctrl</kbd> + <kbd>J</kbd>), and NEdit will arrange the text in the paragraph adjacent to the cursor.  A paragraph, in this case, means an area of text delimited by blank lines.</p>
 <p>The second way to use Fill Paragraph is with a selection.  If you select a range of text and then chose Fill Paragraph, all of the text in the selection will be filled.  Again, continuous text between blank lines is interpreted as paragraphs and filled individually, respecting leading indents and blank lines.</p>
 <p>The third, and most versatile, way to use Fill Paragraph is with a rectangular selection.  Fill Paragraph treats rectangular selections differently from other commands.  Instead of simply filling the text inside the rectangular selection, NEdit interprets the right edge of the selection as the requested wrap margin.  Text to the left of the selection is not disturbed (the usual interpretation of a rectangular selection), but text to the right of the selection is included in the operation and is pulled in to the selected region.  This method enables you to fill text to an arbitrary right margin, without going back and forth to the wrap-margin dialog, as well as to exclude text to the left of the selection such as comment bars or other text columns.</p>
+{% endblock %}
+
+{% block prev %}06.html{% endblock %}
+{% block next %}08.html{% endblock %}

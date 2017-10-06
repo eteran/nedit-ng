@@ -1,3 +1,8 @@
+{% extends "base.html" %}
+
+{% block title %}Rangesets (25){% endblock %}
+
+{% block content %}
 <p>Rangesets are a tool of the macro language to tag parts, or ranges, of the text, which shall be viewed as a group. A range is merely a contiguous range of characters between a start and an end position in the document, and a set of ranges belonging together is called a rangeset. So, a rangeset is nothing but an in general non-contiguous part of the text.</p>
 <p>Rangesets can be assigned a background color to make them visible: characters within all ranges of a rangeset will have the background color of the rangeset. (If more than one rangeset includes a given character, its background color will be that of the most recently created rangeset which has a color defined.)</p>
 <p>Applications of rangesets are for example:</p>
@@ -73,3 +78,7 @@
 <dt><code>rangeset_set_mode( r, type )</code></dt>
 <dd>Changes the behaviour of the rangeset r when modifications to the text buffer occur.  type can be one of the following: &quot;maintain&quot; (the default), &quot;break&quot;, &quot;include&quot;, &quot;exclude&quot;, &quot;ins_del&quot; or &quot;del_ins&quot;. (These modes are described above.)
 </dl>
+{% endblock %}
+
+{% block prev %}24.html{% endblock %}
+{% block next %}26.html{% endblock %}

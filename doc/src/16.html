@@ -1,3 +1,8 @@
+{% extends "base.html" %}
+
+{% block title %}Basic Regular Expression Syntax (16){% endblock %}
+
+{% block content %}
 <p>Regular expressions (regex's) are useful as a way to match inexact sequences of characters.  They can be used in the 'Find...' and 'Replace...' search dialogs and are at the core of Color Syntax Highlighting patterns.  To specify a regular expression in a search dialog, simply click on the 'Regular Expression' radio button in the dialog.</p>
 <p>A regex is a specification of a pattern to be matched in the searched text. This pattern consists of a sequence of tokens, each being able to match a single character or a sequence of characters in the text, or assert that a specific position within the text has been reached (the latter is called an anchor.)  Tokens (also called atoms) can be modified by adding one of a number of special quantifier tokens immediately after the token.  A quantifier token specifies how many times the previous token must be matched (see below.)</p>
 <p>Tokens can be grouped together using one of a number of grouping constructs, the most common being plain parentheses.  Tokens that are grouped in this way are also collectively considered to be a regex atom, since this new larger atom may also be modified by a quantifier.</p>
@@ -86,3 +91,7 @@
 
 <h2>Comments</h2>
 <p>Comments are of the form <code>'(?#&lt;comment text&gt;)'</code> and can be inserted anywhere and have no effect on the execution of the regular expression.  They can be handy for documenting very complex regular expressions.  Note that a comment begins with '(?#' and ends at the first occurrence of an ending parenthesis, or the end of the regular expression... period.  Comments do not recognize any escape sequences.</p>
+{% endblock %}
+
+{% block prev %}15.html{% endblock %}
+{% block next %}17.html{% endblock %}

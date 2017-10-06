@@ -1,4 +1,8 @@
+{% extends "base.html" %}
 
+{% block title %}Key Bindings (31){% endblock %}
+
+{% block content %}
 <p>There are several ways to change key bindings in NEdit.  The easiest way to add a new key binding in NEdit is to define a macro in Preferences &#x2192; Default Settings &#x2192; Customize Menus &#x2192; Macro Menu.  However, if you want to change existing bindings or add a significant number of new key bindings you will need to do so via X resources.</p>
 <p>Before reading this section, you must understand how to set X resources (see the help section &quot;<a href="30.html">X Resources</a>&quot;).  Since setting X resources is tricky, it is also helpful when working on key-binding, to set some easier-to-verify resource at the same time, as a simple check that the NEdit program is actually seeing your changes.  The appres program is also very helpful in checking that the resource settings that you make, actually reach the program for which they are intended in the correct form.</p>
 
@@ -29,3 +33,7 @@ nedit*editMenu.cut.acceleratorText: Ctrl+X</code></pre>
 nedit*searchMenu.find.accelerator: Alt&lt;Key&gt;f
 nedit*searchMenu.findShift.accelerator: Shift Alt&lt;Key&gt;f</code></pre>
 
+{% endblock %}
+
+{% block prev %}30.html{% endblock %}
+{% block next %}32.html{% endblock %}

@@ -1,3 +1,8 @@
+{% extends "base.html" %}
+
+{% block title %}X Resources (30){% endblock %}
+
+{% block content %}
 <p>NEdit has additional options to those provided in the Preferences menu which are set using X resources.  Like most other X programs, NEdit can be customized to vastly unnecessary proportions, from initial window positions down to the font and shadow colors of each individual button (A complete discussion of how to do this is left to books on the X Window System).  Key binding (see &quot;<a href="31.html">Key Binding</a>&quot; is one of the most useful of these resource settable options.</p>
 <p>X resources are usually specified in a file called .Xdefaults or .Xresources in your home directory (on VMS this is sys$login:decw$xdefaults.dat).  On some systems, this file is read and its information attached to the X server (your screen) when you start X.  On other systems, the .Xdefaults file is read each time you run an X program.  When X resource values are attached to the X server, changes to the resource file are not available to application programs until you either run the xrdb program with the appropriate file as input, or re-start the X server.</p>
 
@@ -203,3 +208,7 @@
 <dd>Vertical scroll bar.</dd>
 
 </dl>
+{% endblock %}
+
+{% block prev %}29.html{% endblock %}
+{% block next %}31.html{% endblock %}

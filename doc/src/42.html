@@ -1,3 +1,8 @@
+{% extends "base.html" %}
+
+{% block title %}Customize Window Title Dialog (42){% endblock %}
+
+{% block content %}
 <p>The Customize Window Title dialog allows you to customize and test the way information will be displayed in each window's title field.</p>
 
 <h3>Definition of the title</h3>
@@ -25,7 +30,7 @@
 <p>The format string and the component buttons are continously synchronized.</p>
 <p>The default format is:</p>
 
-<pre><code>{%c} [%s] %f (%S) - %d</code></pre>
+<pre><code>{{ '{%c}' }} [%s] %f (%S) - %d</code></pre>
 
 <p>The resulting title will only contain elements with a value. Hence, the title is compressed as follows:</p>
 
@@ -42,3 +47,7 @@
 <h3>Previewing the settings</h3>
 <p>The lower part of the dialog can be used to test the selected title under various conditions. For some of the components that are selected for display, various states can be enforced on the preview.</p>
 <p>For instance, components that are not always active (such the NEdit server name) can be turned on or off in the preview.</p>
+{% endblock %}
+
+{% block prev %}41.html{% endblock %}
+{% block next %}42.html{% endblock %}

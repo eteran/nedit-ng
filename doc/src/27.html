@@ -1,3 +1,8 @@
+{% extends "base.html" %}
+
+{% block title %}Action Routines (27){% endblock %}
+
+{% block content %}
 <p>All of the editing capabilities of NEdit are represented as a special type of subroutine, called an action routine, which can be invoked from both macros and translation table entries (see &quot;<a href="31.html">Key Binding</a>&quot; in the Customizing section of the Help menu).</p>
 
 <h2>Actions Representing Menu Commands</h2>
@@ -349,3 +354,7 @@
 <dt><code><strong>self_insert()</strong></code><dt>
 <dd><p>To be attached to a key-press event, inserts the character equivalent of the key pressed. </p></dd>
 </dl>
+{% endblock %}
+
+{% block prev %}26.html{% endblock %}
+{% block next %}28.html{% endblock %}

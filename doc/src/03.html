@@ -1,3 +1,8 @@
+{% extends "base.html" %}
+
+{% block title %}Finding and Replacing Text (3){% endblock %}
+
+{% block content %}
 <p>The Search menu contains a number of commands for finding and replacing text. </p>
 <p>The Find... and Replace... commands present dialogs for entering text for searching and replacing.  These dialogs also allow you to choose whether you want the search to be sensitive to upper and lower case, or whether to use the standard Unix pattern matching characters (regular expressions). Searches begin at the current text insertion position.</p>
 <p>Find Again and Replace Again repeat the last find or replace command without prompting for search strings.  To selectively replace text, use the two commands in combination: Find Again, then Replace Again if the highlighted string should be replaced, or Find Again again to go to the next string.</p>
@@ -13,3 +18,7 @@
 
 <h2>Replacement in Multiple Documents</h2>
 <p>You can do the same replacement in more than one document at the same time. To do that, enter the search and replacement string in the replacement dialog as usual, then press the 'Multiple Documents...' button. NEdit will open another dialog where you can pick any document in which the replacement should take place. Then press 'Replace' in this dialog to do the replacement. All attributes (Regular Expression, Case, etc.) are used as selected in the main dialog.</p>
+{% endblock %}
+
+{% block prev %}02.html{% endblock %}
+{% block next %}04.html{% endblock %}

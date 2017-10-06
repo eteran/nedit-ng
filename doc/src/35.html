@@ -1,3 +1,8 @@
+{% extends "base.html" %}
+
+{% block title %}Client/Server Mode (35){% endblock %}
+
+{% block content %}
 <p>NEdit can be operated on its own, or as a two-part client/server application.  Client/server mode is useful for integrating NEdit with software development environments, mailers, and other programs; or just as a quick way to open files from the shell command line without starting a new NEdit session.</p>
 <p>To run NEdit in server mode, type:</p>
 
@@ -88,3 +93,7 @@ correct:     nc -line 25 file.c</code></pre>
 <h3>Communication</h3>
 <p>Communication between nc and nedit is done through the X display. So as long as the X Window System is set up and working properly, nc will work properly as well. nc uses the DISPLAY environment variable, the machine name and your user name to find the appropriate server, meaning, if you have several machines sharing a common file system, nc will not be able to find a server that is running on a machine with a different host name, even though it may be perfectly appropriate for editing a given file.</p>
 <p>The command which nc uses to start an nedit server is settable via the X resource nc.serverCommand, by default, &quot;nedit -server&quot;.</p>
+{% endblock %}
+
+{% block prev %}34.html{% endblock %}
+{% block next %}36.html{% endblock %}

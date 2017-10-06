@@ -1,3 +1,8 @@
+{% extends "base.html" %}
+
+{% block title %}NEdit Command Line (34){% endblock %}
+
+{% block content %}
 <pre><strong>nedit</strong> [-<strong>read</strong>] [-<strong>create</strong>] [-<strong>line</strong> n | +n] [-<strong>server</strong>]
       [-<strong>do</strong> command] [-<strong>tags</strong> file] [-<strong>tabs</strong> n] [-<strong>wrap</strong>]
       [-<strong>nowrap</strong>] [-<strong>autowrap</strong>] [-<strong>autoindent</strong>] [-<strong>noautoindent</strong>]
@@ -106,3 +111,7 @@
 <dd>Treats all subsequent arguments as file names, even if they start with a dash. This is so NEdit can access files that begin with the dash character.</dd>
 
 </dl>
+{% endblock %}
+
+{% block prev %}33.html{% endblock %}
+{% block next %}35.html{% endblock %}

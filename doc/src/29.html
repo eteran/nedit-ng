@@ -1,3 +1,8 @@
+{% extends "base.html" %}
+
+{% block title %}Preferences (29){% endblock %}
+
+{% block content %}
 <p>The Preferences menu allows you to set options for both the current editing window, and default values for newly created windows and future NEdit sessions.  Options in the Preferences menu itself (not in the Default Settings sub-menu) take effect immediately and refer to the current window only.  Options in the Default Settings sub-menu provide initial settings for future windows created using the New or Open commands; options affecting all windows are also set here.</p>
 <p>Preferences set in the Default Settings sub-menu are saved in a file that NEdit reads at startup time, cf. <a href="Autoload Files">Autoload Files</a>, by selecting Save Defaults.</p>
 
@@ -171,3 +176,7 @@ nedit.languageModes: My Language:.my::::::
 nedit.styles: Loop:blue:Bold
 </code></pre>
 <p>Resources are in the format of X resource files, but the format of text within multiple-item resources like highlight patterns, language modes, macros, styles, etc., are private to NEdit.  Each resource is a string which ends at the first newline character not escaped with \, so you must be careful about how you treat ends of lines.  While you can generally just cut and paste indented sections, if something which was originally in the middle of a resource string is now at the end, you must remove the \ line continuation character(s) so it will not join the next line into the resource.  Conversely, if something which was originally at the end of a resource is now in the middle, you'll have to add continuation character(s) to make sure that the resource string is properly continued from beginning to end, and possibly newline character(s) (\n) to make sure that it is properly separated from the next item.</p>
+{% endblock %}
+
+{% block prev %}28.html{% endblock %}
+{% block next %}30.html{% endblock %}

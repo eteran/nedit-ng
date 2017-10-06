@@ -1,3 +1,8 @@
+{% extends "base.html" %}
+
+{% block title %}Advanced Topics (19){% endblock %}
+
+{% block content %}
 <h2>Substitutions</h2>
 <p>Regular expression substitution can be used to program automatic editing operations.  For example, the following are search and replace strings to find occurrences of the 'C' language subroutine 'get_x', reverse the first and second parameters, add a third parameter of NULL, and change the name to 'new_get_x':</p>
 
@@ -20,3 +25,7 @@ August 2006, O'Reilly &amp; Associates
 ISBN 0-596-52812-4</pre>
 
 <p>The first end second editions of this book are still useful for basic introduction to regexes and contain many useful tips and tricks.</p>
+{% endblock %}
+
+{% block prev %}18.html{% endblock %}
+{% block next %}20.html{% endblock %}

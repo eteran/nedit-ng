@@ -1,3 +1,8 @@
+{% extends "base.html" %}
+
+{% block title %}Macro Language (23){% endblock %}
+
+{% block content %}
 <p>Macros can be called from Macro menu commands, window background menu commands, within the smart-indent framework, from the autoload macro file, cf. <a href="29.html">Preferences</a>, and from the command line. Macro menu and window background menu commands are defined under Preferences &#x2192; Default Settings &#x2192; Customize Menus.  Help on creating items in these menus can be found in the section <a href="29.html">Preferences</a>.</p>
 <p>NEdit's macro language is a simple interpreter with integer arithmetic, dynamic strings, and C-style looping constructs (very similar to the procedural portion of the Unix awk program).  From the macro language, you can call the same action routines which are bound to keyboard keys and menu items, as well additional subroutines for accessing and manipulating editor data, which are specific to the macro language (these are listed in the sections titled &quot;<a href="24.html">Macro Subroutines</a>&quot;, and &quot;<a href="27.html">Action Routines</a>&quot;).</p>
 
@@ -263,3 +268,7 @@ x[2, 2] = 3</code></pre>
 
 <p>Loops may contain break and continue statements.  A <strong>break</strong> statement causes an exit from the innermost loop, a <strong>continue</strong> statement transfers control to the end of the loop.</p>
 
+{% endblock %}
+
+{% block prev %}22.html{% endblock %}
+{% block next %}24.html{% endblock %}

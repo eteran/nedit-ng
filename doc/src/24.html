@@ -1,3 +1,8 @@
+{% extends "base.html" %}
+
+{% block title %}Macro Subroutines (24){% endblock %}
+
+{% block content %}
 <h2>Built in Variables</h2>
 <p>These variables are read-only and cannot be changed by direct assignment.
 
@@ -193,3 +198,7 @@
 <dt><code>match()</code></dt>
 <dd><strong>DEPRECATED</strong> Use select_to_matching() instead.</dd>
 </dl>
+{% endblock %}
+
+{% block prev %}23.html{% endblock %}
+{% block next %}25.html{% endblock %}

@@ -1,3 +1,8 @@
+{% extends "base.html" %}
+
+{% block title %}Highlighting Patterns (32){% endblock %}
+
+{% block content %}
 <h2>Writing Syntax Highlighting Patterns</h2>
 <p>Patterns are the mechanism by which language syntax highlighting is implemented in NEdit (see <a href="13.html">Syntax Highlighting</a> under the heading of Features for Programming). To create syntax highlighting patterns for a new language, or to modify existing patterns, select &quot;Recognition Patterns&quot; from &quot;Syntax Highlighting&quot; sub-section of the &quot;Default Settings&quot; sub-menu of the &quot;Preferences&quot; menu.</p>
 <p>First, a word of caution.  As with regular expression matching in general, it is quite possible to write patterns which are so inefficient that they essentially lock up the editor as they recursively re-examine the entire contents of the file thousands of times.  With the multiplicity of patterns, the possibility of a lock-up is significantly increased in syntax highlighting.  When working on highlighting patterns, be sure to save your work frequently.</p>
@@ -31,3 +36,7 @@
 <p>The context requirements of a pattern set state how much additional text around any change must be examined to guarantee that the patterns will match what they are intended to match.  Context requirements are a promise by NEdit to the pattern writer, that the regular expressions in his/her patterns will be matched against at least &lt;line context&gt; lines and &lt;character context&gt; characters, around any modified text.  Combining line and character requirements guarantee that both will be met.</p>
 <p>Automatic re-parsing happens on EVERY KEYSTROKE, so the amount of context which must be examined is very critical to typing efficiency.  The more complicated your patterns, the more critical the context becomes.  To cover all of the keywords in a typical language, without affecting the maximum rate at which users can enter text, you may be limited to just a few lines and/or a few hundred characters of context.</p>
 <p>The default context distance is 1 line, with no minimum character requirement.  There are several benefits to sticking with this default.  One is simply that it is easy to understand and to comply with.  Regular expression notation is designed around single line matching.  To span lines in a regular expression, you must explicitly mention the newline character &quot;\n&quot;, and matches which are restricted to a single line are virtually immune to lock-ups.  Also, if you can code your patterns to work within a single line of context, without an additional character-range context requirement, the parser can take advantage the fact that patterns don't cross line boundaries, and nearly double its efficiency over a one-line and 1-character context requirement.  (In a single line context, you are allowed to match newlines, but only as the first and/or last character.</p>
+{% endblock %}
+
+{% block prev %}31.html{% endblock %}
+{% block next %}33.html{% endblock %}

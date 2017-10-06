@@ -1,3 +1,8 @@
+{% extends "base.html" %}
+
+{% block title %}Programming with NEdit (10){% endblock %}
+
+{% block content %}
 <p>Though general in appearance, NEdit has many features intended specifically for programmers.  Major programming-related topics are listed in separate sections under the heading: &quot;Features for Programming&quot;: <a href="13.html">Syntax Highlighting</a>, <a href="11.html">Tab Stops/Emulated Tab Stops</a>, <a href="14.html">Finding Declarations (ctags)</a>, <a href="15.html">Calltips</a>, and <a href="12.html">Auto/Smart Indent</a>.  Minor topics related to programming are discussed below:</p>
 
 <h2>Language Modes</h2>
@@ -24,3 +29,7 @@
 <h2>Interface to Programming Tools</h2>
 <p>Integrated software development environments such as SGI's CaseVision and Centerline Software's Code Center, can be interfaced directly with NEdit via the client server interface.  These tools allow you to click directly on compiler and runtime error messages and request NEdit to open files, and select lines of interest.  The easiest method is usually to use the tool's interface for character-based editors like vi, to invoke nc, but programmatic interfaces can also be derived using the source code for nc.</p>
 <p>There are also some simple compile/review, grep, ctree, and ctags browsers available in the NEdit contrib directory on <a href="ftp://ftp.nedit.org">ftp.nedit.org</a>.</p>
+{% endblock %}
+
+{% block prev %}09.html{% endblock %}
+{% block next %}11.html{% endblock %}

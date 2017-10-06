@@ -1,3 +1,8 @@
+{% extends "base.html" %}
+
+{% block title %}Example Regular Expressions (20){% endblock %}
+
+{% block content %}
 <p>The following are regular expression examples which will match:</p>
 
 <dl>
@@ -22,3 +27,7 @@
 	<dt>Upper case words with possible punctuation.</dt>
 	<dd><code>&lt;[A-Z][^a-z\s]*&gt;</code></dd>						
 </dl>
+{% endblock %}
+
+{% block prev %}19.html{% endblock %}
+{% block next %}21.html{% endblock %}

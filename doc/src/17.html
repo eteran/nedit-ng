@@ -1,3 +1,8 @@
+{% extends "base.html" %}
+
+{% block title %}Metacharacters (17){% endblock %}
+
+{% block content %}
 <h2>Escaping Metacharacters</h2>
 <p>In a regular expression (regex), most ordinary characters match themselves. For example, 'ab%' would match anywhere 'a' followed by 'b' followed by '%' appeared in the text.  Other characters don't match themselves, but are metacharacters. For example, backslash is a special metacharacter which 'escapes' or changes the meaning of the character following it. Thus, to match a literal backslash would require a regular expression to have two backslashes in sequence. NEdit provides the following escape sequences so that metacharacters that are used by the regex syntax can be specified as ordinary characters.</p>
 
@@ -48,3 +53,7 @@
 </dl>
 
 <p>The '\y' token matches any single character that is one of the characters that NEdit recognizes as a word delimiter character, while the '\Y' token matches any character that is <em>not</em> a word delimiter character.  Word delimiter characters are dynamic in nature, meaning that the user can change them through preference settings.  For this reason, they must be handled differently by the regular expression engine.  As a consequence of this, '\y' and '\Y' cannot be used within a character class specification.</p>
+{% endblock %}
+
+{% block prev %}16.html{% endblock %}
+{% block next %}18.html{% endblock %}

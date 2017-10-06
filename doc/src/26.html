@@ -1,3 +1,8 @@
+{% extends "base.html" %}
+
+{% block title %}Highlighting Information (26){% endblock %}
+
+{% block content %}
 <p>The user can interrogate the current window to determine the color highlighting used on a particular piece of text. The following functions provide information on the highlighting pattern against which text at a particular position has been matched, its style, color and font attributes (whether the font is supposed to be bold and/or italic).</p>
 <p>These macro functions permit macro writers to generate formatted output which allows NEdit highlighting to be reproduced. This is suitable for the generation of HTML or Postscript output, for example.</p>
 <p>Note that if any of the functions is used while in Plain mode or while syntax highlighting is off, the behaviour is undefined.</p>
@@ -56,3 +61,7 @@
 	<p>If 'pos' is invalid, an empty array is returned.</p>
 </dd>
 </dl>
+{% endblock %}
+
+{% block prev %}25.html{% endblock %}
+{% block next %}27.html{% endblock %}
