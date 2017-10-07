@@ -36,7 +36,6 @@
 #include "TextArea.h"
 #include "TextBuffer.h"
 #include "WrapStyle.h"
-#include "file.h"
 #include "highlight.h"
 #include "nedit.h"
 #include "preferences.h"

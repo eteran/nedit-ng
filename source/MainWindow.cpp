@@ -26,7 +26,6 @@
 #include "TextArea.h"
 #include "TextBuffer.h"
 #include "util/ClearCase.h"
-#include "file.h"
 #include "highlight.h"
 #include "highlightData.h"
 #include "macro.h"
@@ -41,7 +40,6 @@
 #include "util/fileUtils.h"
 #include "utils.h"
 #include "CommandRecorder.h"
-#include "file.h"
 #include "WindowMenuEvent.h"
 
 #include <QClipboard>
@@ -4083,14 +4081,14 @@ bool MainWindow::CloseAllDocumentInWindow() {
     if (TabCount() == 1) {
         // only one document in the window
         if(DocumentWidget *document = currentDocument()) {
-            return document->CloseFileAndWindow(PROMPT_SBC_DIALOG_RESPONSE);
+            return document->CloseFileAndWindow(CloseMode::Prompt);
         }
     } else {
 
         // close all _modified_ documents belong to this window
         for(DocumentWidget *document : openDocuments()) {
             if (document->fileChanged_) {
-                if (!document->CloseFileAndWindow(PROMPT_SBC_DIALOG_RESPONSE)) {
+                if (!document->CloseFileAndWindow(CloseMode::Prompt)) {
                     return false;
                 }
             }
@@ -4098,7 +4096,7 @@ bool MainWindow::CloseAllDocumentInWindow() {
 
         // if there's still documents left in the window...
         for(DocumentWidget *document : openDocuments()) {
-            if (!document->CloseFileAndWindow(PROMPT_SBC_DIALOG_RESPONSE)) {
+            if (!document->CloseFileAndWindow(CloseMode::Prompt)) {
                 return false;
             }
         }
@@ -4120,7 +4118,7 @@ void MainWindow::closeEvent(QCloseEvent *event) {
 
         if (TabCount() == 1) {
             if(DocumentWidget *document = currentDocument()) {
-                document->CloseFileAndWindow(PROMPT_SBC_DIALOG_RESPONSE);
+                document->CloseFileAndWindow(CloseMode::Prompt);
             }
         } else {
             int resp = QMessageBox::Cancel;

@@ -29,7 +29,6 @@
 #include "MainWindow.h"
 #include "TextArea.h"
 #include "TextBuffer.h"
-#include "file.h"
 #include "menu.h"
 #include "nedit.h"
 #include "preferences.h"

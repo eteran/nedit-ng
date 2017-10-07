@@ -66,8 +66,8 @@ const QString FontTypeNames[] = {
 };
 
 
-DialogDrawingStyles *DrawingStyles = nullptr;
-DialogSyntaxPatterns *SyntaxPatterns = nullptr;
+QPointer<DialogDrawingStyles>  DrawingStyles;
+QPointer<DialogSyntaxPatterns> SyntaxPatterns;
 
 }
 

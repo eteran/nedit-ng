@@ -129,7 +129,7 @@ public:
     bool findMatchingCharEx(char toMatch, void *styleToMatch, int charPos, int startLimit, int endLimit, int *matchPos);
     bool includeFile(const QString &name);
     bool writeBckVersion();
-    int CloseFileAndWindow(int preResponse);
+    int CloseFileAndWindow(CloseMode preResponse);
     int SaveWindow();
     int SaveWindowAs(const QString &newName, bool addWrap);
     int WidgetToPaneIndex(TextArea *area) const;

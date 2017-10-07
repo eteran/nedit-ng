@@ -13,7 +13,6 @@
 #include "SmartIndentEntry.h"
 #include "TextArea.h"
 #include "TextBuffer.h"
-#include "file.h"
 #include "Settings.h"
 #include "UndoInfo.h"
 #include "WindowHighlightData.h"
@@ -57,6 +56,8 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+
+
 
 
 namespace {
@@ -2635,7 +2636,7 @@ int DocumentWidget::SaveWindowAs(const QString &newName, bool addWrap) {
             }
 
             if (otherWindow == MainWindow::FindWindowWithFile(filename, pathname)) {
-                if (!otherWindow->CloseFileAndWindow(PROMPT_SBC_DIALOG_RESPONSE)) {
+                if (!otherWindow->CloseFileAndWindow(CloseMode::Prompt)) {
                     return false;
                 }
             }
@@ -2873,7 +2874,7 @@ int DocumentWidget::fileWasModifiedExternally() {
     return true;
 }
 
-int DocumentWidget::CloseFileAndWindow(int preResponse) {
+int DocumentWidget::CloseFileAndWindow(CloseMode preResponse) {
 
     // Make sure that the window is not in iconified state
     if (fileChanged_) {
@@ -2893,31 +2894,22 @@ int DocumentWidget::CloseFileAndWindow(int preResponse) {
         CloseWindow();
         // up-to-date windows don't have outstanding backup files to close
     } else {
+
 		int response;
-        if (preResponse == PROMPT_SBC_DIALOG_RESPONSE) {
-
-            int resp = QMessageBox::warning(this, tr("Save File"), tr("Save %1 before closing?").arg(filename_), QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
-
-            // TODO(eteran): factor out the need for this mapping...
-            switch(resp) {
-            case QMessageBox::Yes:
-                response = 1;
-                break;
-            case QMessageBox::No:
-                response = 2;
-                break;
-            case QMessageBox::Cancel:
-            default:
-                response = 3;
-                break;
-            }
-
-        } else {
-            response = preResponse;
+        switch(preResponse) {
+        case CloseMode::Prompt:
+            response = QMessageBox::warning(this, tr("Save File"), tr("Save %1 before closing?").arg(filename_), QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+            break;
+        case CloseMode::Save:
+            response = QMessageBox::Yes;
+            break;
+        case CloseMode::NoSave:
+            response = QMessageBox::No;
+            break;
         }
 
         switch(response) {
-        case YES_SBC_DIALOG_RESPONSE:
+        case QMessageBox::Yes:
             // Save
 			if (int stat = SaveWindow()) {
 				Q_UNUSED(stat);
@@ -2927,7 +2919,7 @@ int DocumentWidget::CloseFileAndWindow(int preResponse) {
             }
             break;
 
-        case NO_SBC_DIALOG_RESPONSE:
+        case QMessageBox::No:
             // Don't Save
             RemoveBackupFile();
             CloseWindow();
@@ -3569,23 +3561,8 @@ void DocumentWidget::bannerTimeoutProc() {
 
 void DocumentWidget::actionClose(CloseMode mode) {
 
-    int preResponse;
-
-    switch(mode) {
-    case CloseMode::Prompt:
-        preResponse = PROMPT_SBC_DIALOG_RESPONSE;
-        break;
-    case CloseMode::Save:
-        preResponse = YES_SBC_DIALOG_RESPONSE;
-        break;
-    case CloseMode::NoSave:
-    default:
-        preResponse = NO_SBC_DIALOG_RESPONSE;
-        break;
-    }
-
     if(auto win = toWindow()) {
-        CloseFileAndWindow(preResponse);
+        CloseFileAndWindow(mode);
         win->CheckCloseDimEx();
     }
 }
