@@ -23,11 +23,19 @@ Input &Input::operator+=(int n) {
  * @return
  */
 QChar Input::operator*() const {
-	if(atEnd()) {
-		return QLatin1Char('\0');
-	}
+    return read();
+}
 
-	return string_->at(index_);
+/**
+ * @brief Input::read
+ * @return
+ */
+QChar Input::read() const {
+    if(atEnd()) {
+        return QLatin1Char('\0');
+    }
+
+    return string_->at(index_);
 }
 
 QChar Input::operator[](int index) const {
@@ -157,7 +165,20 @@ bool Input::match(const QString &s) const {
 }
 
 /**
- * @brief Input::segment
+ * @brief Input::match
+ * @param ch
+ * @return
+ */
+bool Input::match(QChar ch) const {
+    if(index_ >= string_->size()) {
+        return false;
+    }
+
+    return string_->at(index_) == ch;
+}
+
+/**
+ * @brief Input::mid
  * @param length
  * @return
  */
@@ -166,7 +187,7 @@ QString Input::mid(int length) const {
 }
 
 /**
- * @brief Input::segment
+ * @brief Input::mid
  * @return
  */
 QString Input::mid() const {
@@ -205,4 +226,33 @@ int Input::index() const {
  */
 const QString *Input::string() const {
 	return string_;
+}
+
+/**
+ * @brief Input::remaining
+ * @return
+ */
+int Input::remaining() const {
+    return string_->size() - index_;
+}
+
+/**
+ * @brief Input::readUntil
+ * @param ch
+ * @return
+ */
+QString Input::readUntil(QChar ch) {
+    QString result;
+
+    while(!atEnd()) {
+        QChar c = string_->at(index_);
+        if(c == ch) {
+            break;
+        }
+
+        result.append(c);
+        ++index_;
+    }
+
+    return result;
 }

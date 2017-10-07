@@ -37,10 +37,14 @@ public:
 
 public:
 	bool match(const QString &s) const;
+    bool match(QChar ch) const;
 	int find(const QString &s) const;
 	int find(QChar ch) const;
 	QString mid(int length) const;
 	QString mid() const;
+    int remaining() const;
+    QString readUntil(QChar ch);
+    QChar read() const;
 
 public:
 	const QString *string() const;

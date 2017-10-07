@@ -31,6 +31,7 @@
 #include "file.h"
 #include "macro.h"
 #include "parse.h"
+#include "Input.h"
 #include "preferences.h"
 #include <QTextStream>
 #include <QVector>
@@ -65,8 +66,7 @@ private:
 
 }
 
-static QString copyMacroToEnd(const char **inPtr);
-static int loadMenuItemString(const char *inString, QVector<MenuData> &menuItems, DialogTypes listType);
+static QString copyMacroToEndEx(Input &in);
 static int loadMenuItemStringEx(const QString &inString, QVector<MenuData> &menuItems, DialogTypes listType);
 static QString stripLanguageModeEx(const QString &menuItemName);
 static QString writeMenuItemStringEx(const QVector<MenuData> &menuItems, DialogTypes listType);
@@ -234,58 +234,53 @@ static QString writeMenuItemStringEx(const QVector<MenuData> &menuItems, DialogT
 }
 
 static int loadMenuItemStringEx(const QString &inString, QVector<MenuData> &menuItems, DialogTypes listType) {
-	// TODO(eteran): better implementation
-	return loadMenuItemString(inString.toLatin1().data(), menuItems, listType);
-}
-
-static int loadMenuItemString(const char *inString, QVector<MenuData> &menuItems, DialogTypes listType) {
 
     try {
-        const char *inPtr = inString;
+        Input in(&inString);
 
         Q_FOREVER {
 
             // remove leading whitespace
-            while (*inPtr == ' ' || *inPtr == '\t')
-                inPtr++;
+            in.skipWhitespace();
 
             // end of string in proper place
-            if (*inPtr == '\0') {
+            if(in.atEnd()) {
                 return true;
             }
 
             // read name field
-            int nameLen = strcspn(inPtr, ":");
-            if (nameLen == 0)
+            QString nameStr = in.readUntil(QLatin1Char(':'));
+            if(nameStr.isEmpty()) {
                 throw ParseError("no name field");
+            }
 
-            auto nameStr = QString::fromLatin1(inPtr, nameLen);
-
-            inPtr += nameLen;
-            if (*inPtr == '\0')
+            if(in.atEnd()) {
                 throw ParseError("end not expected");
-            inPtr++;
+            }
+
+            ++in;
 
             // read accelerator field
-            int accLen = strcspn(inPtr, ":");
+            QString accStr = in.readUntil(QLatin1Char(':'));
 
-            auto accStr = QString::fromLatin1(inPtr, accLen);
-
-            inPtr += accLen;
-            if (*inPtr == '\0')
+            if(in.atEnd()) {
                 throw ParseError("end not expected");
-            inPtr++;
+            }
+
+            ++in;
 
             // read flags field
-            InSrcs input = FROM_NONE;
+            InSrcs input    = FROM_NONE;
             OutDests output = TO_SAME_WINDOW;
-            bool repInput = false;
-            bool saveFirst = false;
-            bool loadAfter = false;
-            for (; *inPtr != ':'; inPtr++) {
+            bool repInput   = false;
+            bool saveFirst  = false;
+            bool loadAfter  = false;
+
+            for(; !in.atEnd() && *in != QLatin1Char(':'); ++in) {
+
                 if (listType == SHELL_CMDS) {
 
-                    switch(*inPtr) {
+                    switch((*in).toLatin1()) {
                     case 'I':
                         input = FROM_SELECTION;
                         break;
@@ -314,7 +309,7 @@ static int loadMenuItemString(const char *inString, QVector<MenuData> &menuItems
                         throw ParseError("unreadable flag field");
                     }
                 } else {
-                    switch(*inPtr) {
+                    switch((*in).toLatin1()) {
                     case 'R':
                         input = FROM_SELECTION;
                         break;
@@ -323,41 +318,40 @@ static int loadMenuItemString(const char *inString, QVector<MenuData> &menuItems
                     }
                 }
             }
-            inPtr++;
+            ++in;
 
             QString cmdStr;
 
             // read command field
             if (listType == SHELL_CMDS) {
-				if (*inPtr++ != '\n') {
+
+                if (*in++ != QLatin1Char('\n')) {
                     throw ParseError("command must begin with newline");
-				}
+                }
 
-				// leading whitespace
-				while (*inPtr == ' ' || *inPtr == '\t') {
-                    inPtr++;
-				}
+                // leading whitespace
+                in.skipWhitespace();
 
-                int cmdLen = strcspn(inPtr, "\n");
-                if (cmdLen == 0)
+                cmdStr = in.readUntil(QLatin1Char('\n'));
+
+                if (cmdStr.isEmpty()) {
                     throw ParseError("shell command field is empty");
+                }
 
-                cmdStr = QString::fromLatin1(inPtr, cmdLen);
-                inPtr += cmdLen;
             } else {
-                QString p = copyMacroToEnd(&inPtr);
+
+                QString p = copyMacroToEndEx(in);
                 if(p.isNull()) {
                     return false;
                 }
 
                 cmdStr = p;
             }
-            while (*inPtr == ' ' || *inPtr == '\t' || *inPtr == '\n') {
-                inPtr++; // skip trailing whitespace & newline
-            }
+
+            in.skipWhitespaceNL();
 
             // parse the accelerator field
-            QKeySequence shortcut = QKeySequence::fromString(accStr);
+            auto shortcut = QKeySequence::fromString(accStr);
 
             // create a menu item record
             auto f = std::make_unique<MenuItem>();
@@ -376,7 +370,7 @@ static int loadMenuItemString(const char *inString, QVector<MenuData> &menuItems
             });
 
             if(it == menuItems.end()) {
-                menuItems.push_back({ std::move(f), nullptr});
+                menuItems.push_back({ std::move(f), nullptr });
             } else {
                 it->item = std::move(f);
             }
@@ -395,68 +389,74 @@ static int loadMenuItemString(const char *inString, QVector<MenuData> &menuItems
 ** to be re-generated from the text as needed, but compile time is
 ** negligible for most macros.
 */
-static QString copyMacroToEnd(const char **inPtr) {
+static QString copyMacroToEndEx(Input &in) {
 
-    const char *&ptr = *inPtr;
-    const char *begin = ptr;
-    const char *errMsg;
-
+    Input input = in;
 
     // Skip over whitespace to find make sure there's a beginning brace
     // to anchor the parse (if not, it will take the whole file)
-    ptr += strspn(ptr, " \t\n");
+    input.skipWhitespaceNL();
 
-    if (*ptr != '{') {
-        ParseErrorEx(nullptr, QString::fromLatin1(ptr), ptr - 1 - begin, QLatin1String("macro menu item"), QLatin1String("expecting '{'"));
-        return QString();
-	}
+    QString code = input.mid();
 
-	// Parse the input 
-    const char *stoppedAt;
-    Program *const prog = ParseMacro(ptr, &errMsg, &stoppedAt);
-	if(!prog) {
-        ParseErrorEx(nullptr, QString::fromLatin1(ptr), stoppedAt - begin, QLatin1String("macro menu item"), QString::fromLatin1(errMsg));
+    if (code[0] != QLatin1Char('{')) {
+        ParseErrorEx(nullptr, code, input.index() - in.index(), QLatin1String("macro menu item"), QLatin1String("expecting '{'"));
         return QString();
-	}
-	FreeProgram(prog);
+    }
+
+    // Parse the input
+    int stoppedAt;
+    QString errMsg;
+
+    Program *const prog = ParseMacroEx(code, &errMsg, &stoppedAt);
+    if(!prog) {
+        ParseErrorEx(nullptr, code, stoppedAt, QLatin1String("macro menu item"), errMsg);
+        return QString();
+    }
+    FreeProgram(prog);
 
     // Copy and return the body of the macro, stripping outer braces and
     // extra leading tabs added by the writer routine
-    ptr++;
-    ptr += strspn(ptr, " \t");
+    ++input;
+    input.skipWhitespace();
 
-    if (*ptr == '\n') {
-        ptr++;
+    if (*input == QLatin1Char('\n')) {
+        ++input;
     }
 
-    if (*ptr == '\t') {
-        ptr++;
+    if (*input == QLatin1Char('\t')) {
+        ++input;
     }
 
-    if (*ptr == '\t') {
-        ptr++;
+    if (*input == QLatin1Char('\t')) {
+        ++input;
     }
 
     QString retStr;
-    retStr.reserve(stoppedAt - ptr + 1);
+    retStr.reserve(stoppedAt - input.index());
 
     auto retPtr = std::back_inserter(retStr);
 
-    for (const char *p = ptr; p < stoppedAt - 1; p++) {
-		if (!strncmp(p, "\n\t\t", 3)) {
+
+    while(input.index() != stoppedAt + in.index()) {
+        if(input.match(QLatin1String("\n\t\t"))) {
             *retPtr++ = QLatin1Char('\n');
-			p += 2;
+            input += 3;
         } else {
-            *retPtr++ = QChar::fromLatin1(*p);
+            *retPtr++ = *input++;
         }
-	}
+    }
 
     if(retStr.endsWith(QLatin1Char('\t'))) {
         retStr.chop(1);
     }
 
-    ptr = stoppedAt;
-	return retStr;
+    // NOTE(eteran): move past the trailing '}'
+    ++input;
+
+    in = input;
+
+    return retStr;
 }
 
 /*
