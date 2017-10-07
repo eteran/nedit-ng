@@ -49,7 +49,7 @@ class DocumentWidget : public QWidget {
 	
 public:
 	DocumentWidget(const QString &name, QWidget *parent = 0, Qt::WindowFlags f = 0);
-    virtual ~DocumentWidget();
+    virtual ~DocumentWidget() noexcept;
 
 private Q_SLOTS:
     void flashTimerTimeout();

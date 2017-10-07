@@ -20,7 +20,7 @@ private:
 
 public:
 	DialogSyntaxPatterns(QWidget *parent = 0, Qt::WindowFlags f = 0);
-	virtual ~DialogSyntaxPatterns();
+    virtual ~DialogSyntaxPatterns() noexcept;
 
 public:
 	void setLanguageName(const QString &name);

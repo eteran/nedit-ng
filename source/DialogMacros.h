@@ -19,7 +19,7 @@ private:
 
 public:
 	DialogMacros(QWidget *parent = 0, Qt::WindowFlags f = 0);
-	virtual ~DialogMacros();
+    virtual ~DialogMacros() noexcept;
 
 public:
 	void setPasteReplayEnabled(bool enabled);

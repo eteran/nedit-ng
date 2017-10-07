@@ -469,7 +469,7 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 /**
  * @brief DocumentWidget::~DocumentWidget
  */
-DocumentWidget::~DocumentWidget() {
+DocumentWidget::~DocumentWidget() noexcept {
 
 
     // first delete all of the text area's so that they can properly

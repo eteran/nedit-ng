@@ -32,7 +32,7 @@ DialogWindowBackgroundMenu::DialogWindowBackgroundMenu(QWidget *parent, Qt::Wind
 //------------------------------------------------------------------------------
 // Name: ~DialogWindowBackgroundMenu
 //------------------------------------------------------------------------------
-DialogWindowBackgroundMenu::~DialogWindowBackgroundMenu() {
+DialogWindowBackgroundMenu::~DialogWindowBackgroundMenu() noexcept {
 	for(int i = 0; i < ui.listItems->count(); ++i) {
 	    delete itemFromIndex(i);
 	}

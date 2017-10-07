@@ -20,7 +20,7 @@ private:
 
 public:
 	DialogShellMenu(QWidget *parent = 0, Qt::WindowFlags f = 0);
-	virtual ~DialogShellMenu();
+    virtual ~DialogShellMenu() noexcept;
 
 private Q_SLOTS:
 	void on_buttonNew_clicked();

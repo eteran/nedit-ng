@@ -32,7 +32,7 @@ DialogShellMenu::DialogShellMenu(QWidget *parent, Qt::WindowFlags f) : Dialog(pa
 //------------------------------------------------------------------------------
 // Name: ~DialogShellMenu
 //------------------------------------------------------------------------------
-DialogShellMenu::~DialogShellMenu() {
+DialogShellMenu::~DialogShellMenu() noexcept {
 	for(int i = 0; i < ui.listItems->count(); ++i) {
 	    delete itemFromIndex(i);
 	}

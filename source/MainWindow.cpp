@@ -3981,8 +3981,6 @@ void MainWindow::on_action_New_Window_triggered() {
 //------------------------------------------------------------------------------
 void MainWindow::on_action_Exit_triggered() {
 
-	constexpr int DF_MAX_MSG_LENGTH = 2048;
-
     QList<DocumentWidget *> documents = DocumentWidget::allDocuments();
 
     if (!CheckPrefsChangesSavedEx()) {
@@ -4003,6 +4001,8 @@ void MainWindow::on_action_Exit_triggered() {
             DocumentWidget *const document  = documents[i];
 
             QString filename = tr("%1%2").arg(document->filename_, document->fileChanged_ ? tr("*") : tr(""));
+
+            constexpr int DF_MAX_MSG_LENGTH = 2048;
 
             if (exitMsg.size() + filename.size() + 30 >= DF_MAX_MSG_LENGTH) {
                 exitMsg.append(tr("..."));

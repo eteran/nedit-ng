@@ -144,7 +144,7 @@ void NeditServer::newConnection() {
         int readFlag       = file[QLatin1String("read")].toInt();
         int createFlag     = file[QLatin1String("create")].toInt();
         int iconicFlag     = file[QLatin1String("iconic")].toInt();
-        int tabbed         = file[QLatin1String("is_tabbed")].toInt();
+        tabbed             = file[QLatin1String("is_tabbed")].toInt();
         QString fullname   = file[QLatin1String("path")].toString();
         QString doCommand  = file[QLatin1String("toDoCommand")].toString();
         QString langMode   = file[QLatin1String("langMode")].toString();

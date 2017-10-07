@@ -19,7 +19,7 @@ private:
 
 public:
 	DialogDrawingStyles(QWidget *parent = 0, Qt::WindowFlags f = 0);
-	virtual ~DialogDrawingStyles();
+    virtual ~DialogDrawingStyles() noexcept;
 
 public Q_SLOTS:
 	void setStyleByName(const QString &name);

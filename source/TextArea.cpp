@@ -876,7 +876,7 @@ void TextArea::selfInsertAP(const QString &string, EventFlags flags) {
 //------------------------------------------------------------------------------
 // Name: ~TextArea
 //------------------------------------------------------------------------------
-TextArea::~TextArea() {
+TextArea::~TextArea() noexcept {
     buffer_->BufRemoveModifyCB(bufModifiedCB, this);
     buffer_->BufRemovePreDeleteCB(bufPreDeleteCB, this);
 }
@@ -8118,7 +8118,7 @@ void TextArea::TextDSetFont(const QFont &font) {
 
             // NOTE(eteran): old code tested for nullptr? can this still be null?
             QFontMetrics styleFM(styleTable_[i].font);
-            QFontInfo     styleFI(styleTable_[i].font);
+            QFontInfo    styleFI(styleTable_[i].font);
 
             if ((styleFM.maxWidth() != fontWidth || !styleFI.fixedPitch())) {
                 fontWidth = -1;

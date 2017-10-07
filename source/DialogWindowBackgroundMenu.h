@@ -12,7 +12,7 @@ class DialogWindowBackgroundMenu : public Dialog {
 	Q_OBJECT
 public:
 	DialogWindowBackgroundMenu(QWidget *parent = 0, Qt::WindowFlags f = 0);
-	virtual ~DialogWindowBackgroundMenu();
+    virtual ~DialogWindowBackgroundMenu() noexcept;
 
 public:
 	void setPasteReplayEnabled(bool enabled);

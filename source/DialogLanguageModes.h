@@ -19,7 +19,7 @@ private:
 
 public:
 	DialogLanguageModes(QWidget *parent = 0, Qt::WindowFlags f = 0);
-	virtual ~DialogLanguageModes();
+    virtual ~DialogLanguageModes() noexcept;
 
 private Q_SLOTS:
 	void on_buttonBox_accepted();

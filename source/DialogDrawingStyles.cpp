@@ -39,7 +39,7 @@ DialogDrawingStyles::DialogDrawingStyles(QWidget *parent, Qt::WindowFlags f) : D
 //------------------------------------------------------------------------------
 // Name: ~DialogDrawingStyles
 //------------------------------------------------------------------------------
-DialogDrawingStyles::~DialogDrawingStyles() {
+DialogDrawingStyles::~DialogDrawingStyles() noexcept {
 
 	for(int i = 0; i < ui.listItems->count(); ++i) {
 	    delete itemFromIndex(i);

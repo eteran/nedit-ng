@@ -49,7 +49,7 @@ DialogSyntaxPatterns::DialogSyntaxPatterns(QWidget *parent, Qt::WindowFlags f) :
 //------------------------------------------------------------------------------
 // Name: ~DialogSyntaxPatterns
 //------------------------------------------------------------------------------
-DialogSyntaxPatterns::~DialogSyntaxPatterns() {
+DialogSyntaxPatterns::~DialogSyntaxPatterns() noexcept {
 	for(int i = 0; i < ui.listItems->count(); ++i) {
 	    delete itemFromIndex(i);
 	}

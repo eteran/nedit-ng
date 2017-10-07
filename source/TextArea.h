@@ -79,7 +79,7 @@ public:
 
     TextArea(const TextArea &other) = delete;
 	TextArea& operator=(const TextArea &) = delete;
-	virtual ~TextArea();
+    virtual ~TextArea() noexcept;
 
 public:
     // NOTE(eteran): if these aren't expected to have side effects, then some

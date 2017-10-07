@@ -48,7 +48,7 @@ DialogLanguageModes::DialogLanguageModes(QWidget *parent, Qt::WindowFlags f) : D
 //------------------------------------------------------------------------------
 // Name: ~DialogLanguageModes
 //------------------------------------------------------------------------------
-DialogLanguageModes::~DialogLanguageModes() {
+DialogLanguageModes::~DialogLanguageModes() noexcept {
 	for(int i = 0; i < ui.listItems->count(); ++i) {
 		delete itemFromIndex(i);
 	}

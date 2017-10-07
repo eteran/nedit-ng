@@ -32,7 +32,7 @@ DialogMacros::DialogMacros(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, 
 //------------------------------------------------------------------------------
 // Name: ~DialogMacros
 //------------------------------------------------------------------------------
-DialogMacros::~DialogMacros() {
+DialogMacros::~DialogMacros() noexcept {
 	for(int i = 0; i < ui.listItems->count(); ++i) {
 	    delete itemFromIndex(i);
 	}
