@@ -92,7 +92,7 @@ static QList<Tag> LookupTag(const QString &name, Mode search_type);
 
 static int searchLine(char *line, const char *regex);
 static void rstrip(char *dst, const char *src);
-static int nextTFBlock(FILE *fp, char *header, char **tiptext, int *lineAt, int *lineNo);
+static int nextTFBlock(FILE *fp, char *header, char **body, int *blkLine, int *currLine);
 static int loadTipsFile(const QString &tipsFile, int index, int recLevel);
 static QMultiHash<QString, Tag> *hashTableByType(int type);
 static QList<tagFile> *tagListByType(int type);
@@ -1281,7 +1281,7 @@ static int nextTFBlock(FILE *fp, char *header, char **body, int *blkLine, int *c
 	while (true) {
         // Skip blank lines
         while ((status = fgets(line, MAXLINE, fp))) {
-			++(*currLine);
+            ++(*currLine);
 			if (!lineEmpty(line))
 				break;
 		}
@@ -1318,7 +1318,7 @@ static int nextTFBlock(FILE *fp, char *header, char **body, int *blkLine, int *c
 			code = TF_ALIAS;
             // Need to read the header line for an alias
             status = fgets(line, MAXLINE, fp);
-			++(*currLine);
+            ++(*currLine);
             if (!status)
                 return TF_ERROR_EOF;
             if (lineEmpty(line)) {
@@ -1329,29 +1329,29 @@ static int nextTFBlock(FILE *fp, char *header, char **body, int *blkLine, int *c
 			rstrip(header, line);
 		}
         incPos = ftell(fp);
-		*blkLine = *currLine + 1; // Line of first actual filename/alias 
+        *blkLine = *currLine + 1; // Line of first actual filename/alias
         if (incPos < 0)
             return TF_ERROR;
         // Figure out how long the block is
         while ((status = fgets(line, MAXLINE, fp)) || feof(fp)) {
-			++(*currLine);
+            ++(*currLine);
             if (feof(fp) || lineEmpty(line))
                 break;
 		}
         incLen = ftell(fp) - incPos;
         incLines = *currLine - *blkLine;
 		// Correct currLine for the empty line it read at the end 
-		--(*currLine);
+        --(*currLine);
 		if (incLines == 0) {
 			fprintf(stderr, "nedit: Warning: empty '* include *' or"
 			                " '* alias *' block in calltips file.\n");
 			return TF_ERROR;
         }
 		// Make space for the filenames/alias sources 
-		*body = new char[incLen + 1];
+        *body = new char[incLen + 1];
         *body[0] = '\0';
         if (fseek(fp, incPos, SEEK_SET) != 0) {
-			delete [] *body;
+            delete [] *body;
 			return TF_ERROR;
         }
 		// Read all the lines in the block 
@@ -1359,12 +1359,12 @@ static int nextTFBlock(FILE *fp, char *header, char **body, int *blkLine, int *c
         for (i = 0; i < incLines; i++) {
             status = fgets(line, MAXLINE, fp);
             if (!status) {
-				delete [] *body;
+                delete [] *body;
 				return TF_ERROR_EOF;
             }
 			rstrip(line, line);
             if (i) {
-				strcat(*body, ":");
+                strcat(*body, ":");
 			}
             strcat(*body, line);
 		}
@@ -1374,14 +1374,14 @@ static int nextTFBlock(FILE *fp, char *header, char **body, int *blkLine, int *c
     else if (searchLine(line, language_regex)) {
         // LANGUAGE block
         status = fgets(line, MAXLINE, fp);
-		++(*currLine);
+        ++(*currLine);
         if (!status)
             return TF_ERROR_EOF;
 		if (lineEmpty(line)) {
             qWarning("NEdit: Warning: empty '* language *' block in calltips file.");
 			return TF_ERROR;
         }
-		*blkLine = *currLine;
+        *blkLine = *currLine;
 		rstrip(header, line);
 		code = TF_LANGUAGE;
 	}
@@ -1389,14 +1389,14 @@ static int nextTFBlock(FILE *fp, char *header, char **body, int *blkLine, int *c
 	else if (searchLine(line, version_regex)) {
 		// VERSION block 
 		status = fgets(line, MAXLINE, fp);
-		++(*currLine);
+        ++(*currLine);
 		if (!status)
 			return TF_ERROR_EOF;
 		if (lineEmpty(line)) {
             qWarning("NEdit: Warning: empty '* version *' block in calltips file.");
 			return TF_ERROR;
 		}
-		*blkLine = *currLine;
+        *blkLine = *currLine;
 		rstrip(header, line);
 		code = TF_VERSION;
 	}
@@ -1408,7 +1408,7 @@ static int nextTFBlock(FILE *fp, char *header, char **body, int *blkLine, int *c
 		rstrip(header, line);
 
         status = fgets(line, MAXLINE, fp);
-		++(*currLine);
+        ++(*currLine);
         if (!status)
             return TF_ERROR_EOF;
 		if (lineEmpty(line)) {
@@ -1417,21 +1417,21 @@ static int nextTFBlock(FILE *fp, char *header, char **body, int *blkLine, int *c
 			        header);
 			return TF_ERROR;
 		}
-		*blkLine = *currLine;
-		*body = strdup(line);
+        *blkLine = *currLine;
+        *body = strdup(line);
 		code = TF_BLOCK;
 	}
 
 	// Skip the rest of the block 
     dummy1 = *currLine;
     while (fgets(line, MAXLINE, fp)) {
-		++(*currLine);
+        ++(*currLine);
 		if (lineEmpty(line))
 			break;
 	}
 
 	// Warn about any unneeded extra lines (which are ignored). 
-	if (dummy1 + 1 < *currLine && code != TF_BLOCK) {
+    if (dummy1 + 1 < *currLine && code != TF_BLOCK) {
         qWarning("NEdit: Warning: extra lines in language or version block ignored.");
 	}
 
