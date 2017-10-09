@@ -54,20 +54,20 @@ class AsciiTextCodec : public QTextCodec {
 public:
     virtual ~AsciiTextCodec() = default;
 
-    virtual QByteArray name() const {
+    virtual QByteArray name() const override {
         return "US_ASCII";
     }
 
-    virtual QList<QByteArray> aliases() const {
+    virtual QList<QByteArray> aliases() const override {
         QList<QByteArray> ret;
         return ret;
     }
 
-    virtual int mibEnum () const {
+    virtual int mibEnum () const override {
         return 3;
     }
 protected:
-    virtual QByteArray convertFromUnicode(const QChar *input, int number, ConverterState *state) const {
+    virtual QByteArray convertFromUnicode(const QChar *input, int number, ConverterState *state) const override {
         Q_UNUSED(input);
         Q_UNUSED(number);
         Q_UNUSED(state);
@@ -75,7 +75,7 @@ protected:
         return b;
     }
 
-    virtual QString convertToUnicode(const char *chars, int len, ConverterState *state) const {
+    virtual QString convertToUnicode(const char *chars, int len, ConverterState *state) const override {
 
         Q_UNUSED(state);
 
@@ -373,7 +373,7 @@ TextArea::TextArea(
 	setFocusPolicy(Qt::WheelFocus);
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
-    connect(verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(verticalScrollBar_valueChanged(int)));
+    connect(verticalScrollBar(),   SIGNAL(valueChanged(int)), this, SLOT(verticalScrollBar_valueChanged(int)));
     connect(horizontalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(horizontalScrollBar_valueChanged(int)));
 
 	autoScrollTimer_  = new QTimer(this);
@@ -389,6 +389,7 @@ TextArea::TextArea(
     clickCount_ = 0;
 
     // defaults for the "resources"
+    P_lineNumCols        = 0;
     P_marginWidth        = 5;
     P_marginHeight       = 5;
 	P_pendingDelete      = true;
@@ -417,22 +418,13 @@ TextArea::TextArea(
     P_delimiters     = GetPrefDelimiters();
     P_wrapMargin     = GetPrefWrapMargin();
     P_autoIndent     = document->indentStyle_ == AUTO_INDENT;
-    P_smartIndent    = document->indentStyle_ == SMART_INDENT;;
+    P_smartIndent    = document->indentStyle_ == SMART_INDENT;
     P_autoWrap       = document->wrapMode_ == NEWLINE_WRAP;
-    P_continuousWrap = document->wrapMode_ == CONTINUOUS_WRAP;;
+    P_continuousWrap = document->wrapMode_ == CONTINUOUS_WRAP;
     P_overstrike     = document->overstrike_;
     P_hidePointer    = GetPrefTypingHidesPointer();
     P_cursorVPadding = GetVerticalAutoScroll();
-
-    // TODO(eteran): these previously were set by the constructor of the TextDisplay Motif widget initializer
-    //               so we need a better way to pass this info to this widget...
-    P_lineNumCols    = 0;
-    P_emulateTabs    = 0;
-
-#if 0
-	textNlineNumCols,        lineNumCols,
-    textNemulateTabs,        emTabDist,
-#endif
+    P_emulateTabs    = GetPrefEmTabDist(PLAIN_LANGUAGE_MODE);
 
     fontStruct.setStyleStrategy(QFont::ForceIntegerMetrics);
     QFontMetrics fm(fontStruct);
@@ -1615,7 +1607,7 @@ void TextArea::resizeEvent(QResizeEvent *event) {
 	int width            = event->size().width();
 	int marginWidth      = P_marginWidth;
 	int marginHeight     = P_marginHeight;
-	int lineNumAreaWidth = P_lineNumCols == 0 ? 0 : P_marginWidth + fm.maxWidth() * P_lineNumCols;
+    int lineNumAreaWidth = (P_lineNumCols == 0) ? 0 : P_marginWidth + fm.maxWidth() * P_lineNumCols;
 
 	P_columns = (width - marginWidth * 2 - lineNumAreaWidth) / fm.maxWidth();
     P_rows    = (height - marginHeight * 2) / (ascent_ + descent_);
@@ -2105,9 +2097,17 @@ int TextArea::TextDStartOfLine(int pos) const {
 ** both for delimiting where the line starts need to be recalculated, and
 ** for deciding what part of the text to redisplay.
 */
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
+/**
+ * @brief TextArea::findWrapRangeEx
+ * @param deletedText
+ * @param pos
+ * @param nInserted
+ * @param nDeleted
+ * @param modRangeStart
+ * @param modRangeEnd
+ * @param linesInserted
+ * @param linesDeleted
+ */
 void TextArea::findWrapRangeEx(view::string_view deletedText, int pos, int nInserted, int nDeleted, int *modRangeStart, int *modRangeEnd, int *linesInserted, int *linesDeleted) {
 
 	int length;
@@ -2620,8 +2620,11 @@ void TextArea::updateVScrollBarRange() {
 //       it can pass "startPosIsLineStart" as True to make the call more efficient
 //       by avoiding the additional step of scanning back to the last newline.
 //------------------------------------------------------------------------------
-int TextArea::TextDCountForwardNLines(const int startPos, const unsigned nLines, bool startPosIsLineStart) {
-	int retLines, retPos, retLineStart, retLineEnd;
+int TextArea::TextDCountForwardNLines(int startPos, unsigned int nLines, bool startPosIsLineStart) {
+    int retLines;
+    int retPos;
+    int retLineStart;
+    int retLineEnd;
 
 	// if we're not wrapping use more efficient BufCountForwardNLines
 	if (!P_continuousWrap) {
@@ -3135,7 +3138,7 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 	bool hasCursor = false;
 	int dispIndexOffset;
 	int cursorPos = cursorPos_;
-	char outStr[MAX_DISP_LINE_LEN];
+    char outStr[MAX_DISP_LINE_LEN];
 	char baseChar;
 
     QFontMetrics fm(font_);
@@ -3221,7 +3224,7 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 	   draw parts whenever the style changes (also note if the cursor is on
 	   this line, and where it should be drawn to take advantage of the x
 	   position which we've gone to so much trouble to calculate) */
-	char *outPtr = outStr;
+    char *outPtr = outStr;
 
 	outIndex = outStartIndex;
 	x = startX;

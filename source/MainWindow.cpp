@@ -1312,8 +1312,6 @@ int MainWindow::updateGutterWidth() {
 
         XtVaGetValues(shell_, XmNwidth, &windowWidth, nullptr);
         XtVaSetValues(shell_, XmNwidth, (Dimension)windowWidth + (newColsDiff * fontWidth), nullptr);
-
-        UpdateWMSizeHints();
     }
 #endif
 
@@ -1498,10 +1496,6 @@ void MainWindow::ShowLineNumbers(bool state) {
         }
 
     }
-#if 0
-    // Tell WM that the non-expandable part of the this has changed size
-    UpdateWMSizeHints();
-#endif
 }
 
 /*

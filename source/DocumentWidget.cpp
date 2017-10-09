@@ -995,10 +995,6 @@ void DocumentWidget::documentRaised() {
             dialog->UpdateReplaceActionButtons();
         }
     }
-
-#if 0
-    UpdateWMSizeHints();
-#endif
 }
 
 void DocumentWidget::RaiseDocument() {
@@ -1297,7 +1293,6 @@ void DocumentWidget::StopHighlightingEx() {
         /* Re-size the window to fit the primary font properly & tell the window
            manager about the potential line-height change as well */
         updateWindowHeight(window, oldFontHeight);
-        window->UpdateWMSizeHints();
         window->UpdateMinPaneHeights();
     #endif
     }
@@ -4499,16 +4494,6 @@ void DocumentWidget::SetFonts(const QString &fontName, const QString &italicName
     if (highlightData_) {
         UpdateHighlightStylesEx(this);
     }
-
-    /* Change the this manager size hints.
-       Note: this has to be done _before_ we set the new sizes. ICCCM2
-       compliant this managers (such as fvwm2) would otherwise resize
-       the this twice: once because of the new sizes requested, and once
-       because of the new size increments, resulting in an overshoot. */
-#if 0
-    UpdateWMSizeHints();
-#endif
-
 
 #if 0 // TODO(eteran): do we need to worry about these things explicitly anymore ?
     /* Use the information from the old this to re-size the this to a

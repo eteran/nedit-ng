@@ -593,7 +593,7 @@ void ConvertFromMacFileStringEx(std::string *fileString) {
 */
 bool ConvertToDosFileStringEx(std::string &fileString) {
 
-	/* How long a string will we need? */
+    // How long a string will we need?
 	size_t outLength = 0;
 	for (char ch : fileString) {
 		if (ch == '\n') {
@@ -602,13 +602,12 @@ bool ConvertToDosFileStringEx(std::string &fileString) {
 		outLength++;
 	}
 
-	/* Allocate the new string */
 	std::string outString;
 	outString.reserve(outLength);
 
 	auto outPtr = std::back_inserter(outString);
 
-	/* Do the conversion, free the old string */
+    // Do the conversion, free the old string
 	for (char ch : fileString) {
 		if (ch == '\n') {
 			*outPtr++ = '\r';

@@ -501,8 +501,8 @@ static std::shared_ptr<userMenuInfo> parseMenuItemRec(const std::shared_ptr<Menu
 	newInfo->umiName = stripLanguageModeEx(item->name);
 
 	// init. remaining parts of user menu info element 
-    newInfo->umiIsDefault          = false;
-    newInfo->umiDefaultIndex       = -1;
+    newInfo->umiIsDefault    = false;
+    newInfo->umiDefaultIndex = -1;
 
 	// assign language mode info to new user menu info element 
     parseMenuItemName(item->name, newInfo);

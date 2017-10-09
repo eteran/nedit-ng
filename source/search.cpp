@@ -1519,7 +1519,6 @@ bool SearchString(view::string_view string, const QString &searchString, SearchD
 */
 static bool searchLiteralWord(view::string_view string, view::string_view searchString, bool caseSense, SearchDirection direction, WrapMode wrap, int beginPos, int *startPos, int *endPos, const char *delimiters) {
 
-
 	// TODO(eteran): rework this code in terms of iterators, it will be more clean
 
 	std::string lcString;
@@ -1533,16 +1532,19 @@ static bool searchLiteralWord(view::string_view string, view::string_view search
 			auto ucPtr = ucString.begin();
 			auto lcPtr = lcString.begin();
 			const char *tempPtr = filePtr;
+
 			while (*tempPtr == *ucPtr || *tempPtr == *lcPtr) {
 				tempPtr++;
 				ucPtr++;
 				lcPtr++;
-				if (ucPtr == ucString.end()                                                            // matched whole string 
-			    	&& (cignore_R || isspace((uint8_t)*tempPtr) || strchr(delimiters, *tempPtr)) // next char right delimits word ? 
-			    	&& (cignore_L || filePtr == &string[0] ||                                          // border case 
-                        isspace((uint8_t)filePtr[-1]) || strchr(delimiters, filePtr[-1]))) {       /* next char left delimits word ? */
-					*startPos = filePtr - &string[0];
-					*endPos = tempPtr - &string[0];
+
+                if (ucPtr == ucString.end() &&                                                                   // matched whole string
+                    (cignore_R || isspace(static_cast<uint8_t>(*tempPtr)) || strchr(delimiters, *tempPtr)) &&    // next char right delimits word ?
+                    (cignore_L || filePtr == &string[0] ||                                                       // border case
+                     isspace(static_cast<uint8_t>(filePtr[-1])) || strchr(delimiters, filePtr[-1]))) {           // next char left delimits word ?
+
+                    *startPos = filePtr - &string[0];
+                    *endPos   = tempPtr - &string[0];
 					return true;
 				}
 			}
@@ -1556,13 +1558,13 @@ static bool searchLiteralWord(view::string_view string, view::string_view search
 	QByteArray delimiterString = GetPrefDelimiters().toLatin1();
 	if(!delimiters) {
 		delimiters = delimiterString.data();
-	}
+    }
 
-	if (isspace((uint8_t)searchString[0]) || strchr(delimiters, searchString[0])) {
+    if (isspace(static_cast<uint8_t>(searchString[0])) || strchr(delimiters, searchString[0])) {
 		cignore_L = true;
 	}
 
-	if (isspace((uint8_t)searchString[searchString.size() - 1]) || strchr(delimiters, searchString[searchString.size() - 1])) {
+    if (isspace(static_cast<uint8_t>(searchString[searchString.size() - 1])) || strchr(delimiters, searchString[searchString.size() - 1])) {
 		cignore_R = true;
 	}
 

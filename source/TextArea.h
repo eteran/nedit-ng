@@ -236,7 +236,7 @@ public:
 	int TextDCountBackwardNLines(int startPos, int nLines);
 	void TextDRedisplayRect(int left, int top, int width, int height);
     void TextDRedisplayRect(const QRect &rect);
-	int TextDCountForwardNLines(const int startPos, const unsigned nLines, bool startPosIsLineStart);
+    int TextDCountForwardNLines(int startPos, unsigned int nLines, bool startPosIsLineStart);
 	void TextSetBuffer(TextBuffer *buffer);
     int TextDPositionToXY(int pos, int *x, int *y);
     int TextDPositionToXY(int pos, QPoint *coord);

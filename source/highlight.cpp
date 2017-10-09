@@ -252,7 +252,6 @@ void StartHighlightingEx(DocumentWidget *document, bool warn) {
     /* Re-size the window to fit the highlight fonts properly & tell the
        window manager about the potential line-height change as well */
     updateWindowHeight(window, oldFontHeight);
-    window->UpdateWMSizeHints();
     window->UpdateMinPaneHeights();
 #endif
 
@@ -1782,14 +1781,11 @@ static char getPrevChar(TextBuffer *buf, int pos) {
 */
 static regexp *compileREAndWarnEx(DocumentWidget *parent, view::string_view re) {
 
-    Q_UNUSED(parent);
-
     try {
         return new regexp(re, REDFLT_STANDARD);
     } catch(const regex_error &e) {
 
-        // NOTE(eteran): was DF_MAX_MSG_LENGTH (2047 + 1024)
-        const size_t maxLength = 4096;
+        constexpr size_t maxLength = 4096;
 
         /* Prevent buffer overflow. If the re is too long, truncate it and append ... */
         std::string boundedRe = re.to_string();
@@ -1799,7 +1795,10 @@ static regexp *compileREAndWarnEx(DocumentWidget *parent, view::string_view re) 
             boundedRe.append("...");
         }
 
-        QMessageBox::warning(parent, QLatin1String("Error in Regex"), QString(QLatin1String("Error in syntax highlighting regular expression:\n%1\n%2")).arg(QString::fromStdString(boundedRe), QString::fromLatin1(e.what())));
+        QMessageBox::warning(
+                    parent,
+                    DocumentWidget::tr("Error in Regex"),
+                    DocumentWidget::tr("Error in syntax highlighting regular expression:\n%1\n%2").arg(QString::fromStdString(boundedRe), QString::fromLatin1(e.what())));
         return nullptr;
     }
 

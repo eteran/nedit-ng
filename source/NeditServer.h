@@ -15,7 +15,6 @@ public:
     virtual ~NeditServer() = default;
 
 public Q_SLOTS:
-    void processCommand(const QString &command);
     void newConnection();
 
 private:

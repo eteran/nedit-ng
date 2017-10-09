@@ -55,6 +55,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <unordered_map>
+#include <sstream>
 
 
 namespace {
@@ -83,7 +84,7 @@ enum searchDirection { FORWARD, BACKWARD };
 static int loadTagsFile(const QString &tagSpec, int index, int recLevel);
 static int fakeRegExSearchEx(view::string_view buffer, const char *searchString, int *startPos, int *endPos);
 static void updateMenuItems();
-static int addTag(const char *name, const char *file, int lang, const char *search, int posInf, const char *path, int index);
+static int addTag(const std::string &name, const char *file, int lang, const char *search, int posInf, const char *path, int index);
 static bool delTag(int index);
 static QList<Tag> getTag(const QString &name, int search_type);
 static void createSelectMenuEx(DocumentWidget *document, TextArea *area, const QStringList &args);
@@ -91,7 +92,7 @@ static QList<Tag> LookupTag(const QString &name, Mode search_type);
 
 static int searchLine(char *line, const char *regex);
 static void rstrip(char *dst, const char *src);
-static int nextTFBlock(FILE *fp, char *header, char **body, int *blkLine, int *currLine);
+static int nextTFBlock(FILE *fp, char *header, std::string &body, int *blkLine, int *currLine);
 static int loadTipsFile(const QString &tipsFile, int index, int recLevel);
 static QMultiHash<QString, Tag> *hashTableByType(int type);
 static QList<tagFile> *tagListByType(int type);
@@ -176,7 +177,7 @@ static QList<Tag> getTag(const QString &name, int search_type) {
 **   (We don't return boolean as the return value is used as counter increment!)
 **
 */
-static int addTag(const char *name, const char *file, int lang, const char *search, int posInf, const char *path, int index) {
+static int addTag(const std::string &name, const char *file, int lang, const char *search, int posInf, const char *path, int index) {
 
     QMultiHash<QString, Tag> *table;
 
@@ -195,7 +196,7 @@ static int addTag(const char *name, const char *file, int lang, const char *sear
 
     newFile = NormalizePathnameEx(newFile);
 
-    QList<Tag> tags = table->values(QString::fromLatin1(name));
+    QList<Tag> tags = table->values(QString::fromStdString(name));
     for(const Tag &t : tags) {
 
         if (lang != t.language) {
@@ -238,7 +239,7 @@ static int addTag(const char *name, const char *file, int lang, const char *sear
     t.path         = path;
     t.index        = index;
 
-    table->insert(QString::fromLatin1(name), t);
+    table->insert(QString::fromStdString(name), t);
     return 1;
 }
 
@@ -1232,25 +1233,35 @@ static int searchLine(char *line, const char *regex) {
 }
 
 // Check if a line has non-ws characters 
-static bool lineEmpty(const char *line) {
-    while (*line && *line != '\n') {
-        if (*line != ' ' && *line != '\t')
+static bool lineEmpty(const view::string_view line) {
+
+    for(char ch : line) {
+        if(ch == '\n') {
+            break;
+        }
+
+        if (ch != ' ' && ch != '\t') {
             return false;
-        ++line;
+        }
     }
     return true;
 }
 
 // Remove trailing whitespace from a line 
 static void rstrip(char *dst, const char *src) {
-    int wsStart, dummy2;
-	// Strip trailing whitespace 
+
+    int wsStart;
+    int dummy2;
+
+    // Strip trailing whitespace
     if (SearchString(src, QLatin1String("\\s*\\n"), SEARCH_FORWARD, SEARCH_REGEX, WrapMode::NoWrap, 0, &wsStart, &dummy2, nullptr, nullptr, nullptr)) {
-        if (dst != src)
+        if (dst != src) {
             memcpy(dst, src, wsStart);
-        dst[wsStart] = 0;
-    } else if (dst != src)
+        }
+        dst[wsStart] = '\0';
+    } else if (dst != src) {
         strcpy(dst, src);
+    }
 }
 
 /*
@@ -1265,14 +1276,16 @@ static void rstrip(char *dst, const char *src) {
 **                  after the "* xxxx *" line.
 **      currLine:   Used to keep track of the current line in the file.
 */
-static int nextTFBlock(FILE *fp, char *header, char **body, int *blkLine, int *currLine) {
+static int nextTFBlock(FILE *fp, char *header, std::string &body, int *blkLine, int *currLine) {
+
     // These are the different kinds of tokens
     const char *commenTF_regex = "^\\s*\\* comment \\*\\s*$";
-    const char *version_regex = "^\\s*\\* version \\*\\s*$";
-    const char *include_regex = "^\\s*\\* include \\*\\s*$";
+    const char *version_regex  = "^\\s*\\* version \\*\\s*$";
+    const char *include_regex  = "^\\s*\\* include \\*\\s*$";
     const char *language_regex = "^\\s*\\* language \\*\\s*$";
-    const char *alias_regex = "^\\s*\\* alias \\*\\s*$";
-    char line[MAXLINE], *status;
+    const char *alias_regex    = "^\\s*\\* alias \\*\\s*$";
+    char line[MAXLINE];
+    char *status;
     int dummy1;
     int code;
 
@@ -1308,12 +1321,15 @@ static int nextTFBlock(FILE *fp, char *header, char **body, int *blkLine, int *c
     dummy1 = searchLine(line, include_regex);
     if (dummy1 || searchLine(line, alias_regex)) {
 		// INCLUDE or ALIAS block 
-        int incLen, incPos, i, incLines;
+
+        long incPos;
+        int i;
+        int incLines;
 
 		// fprintf(stderr, "Starting include/alias at line %i\n", *currLine); 
-        if (dummy1)
+        if (dummy1) {
 			code = TF_INCLUDE;
-        else {
+        } else {
 			code = TF_ALIAS;
             // Need to read the header line for an alias
             status = fgets(line, MAXLINE, fp);
@@ -1337,7 +1353,7 @@ static int nextTFBlock(FILE *fp, char *header, char **body, int *blkLine, int *c
             if (feof(fp) || lineEmpty(line))
                 break;
 		}
-        incLen = ftell(fp) - incPos;
+
         incLines = *currLine - *blkLine;
 		// Correct currLine for the empty line it read at the end 
         --(*currLine);
@@ -1346,31 +1362,27 @@ static int nextTFBlock(FILE *fp, char *header, char **body, int *blkLine, int *c
 			                " '* alias *' block in calltips file.\n");
 			return TF_ERROR;
         }
-		// Make space for the filenames/alias sources 
-        *body = new char[incLen + 1];
-        *body[0] = '\0';
+
+        // Make space for the filenames/alias sources
         if (fseek(fp, incPos, SEEK_SET) != 0) {
-            delete [] *body;
 			return TF_ERROR;
         }
+
 		// Read all the lines in the block 
 		// qDebug("Copying lines");
         for (i = 0; i < incLines; i++) {
             status = fgets(line, MAXLINE, fp);
             if (!status) {
-                delete [] *body;
 				return TF_ERROR_EOF;
             }
 			rstrip(line, line);
             if (i) {
-                strcat(*body, ":");
+                body.push_back(':');
 			}
-            strcat(*body, line);
+            body.append(line);
 		}
 		// qDebug("Finished include/alias at line %i", *currLine);
-	}
-
-    else if (searchLine(line, language_regex)) {
+    } else if (searchLine(line, language_regex)) {
         // LANGUAGE block
         status = fgets(line, MAXLINE, fp);
         ++(*currLine);
@@ -1383,9 +1395,7 @@ static int nextTFBlock(FILE *fp, char *header, char **body, int *blkLine, int *c
         *blkLine = *currLine;
 		rstrip(header, line);
 		code = TF_LANGUAGE;
-	}
-
-	else if (searchLine(line, version_regex)) {
+    } else if (searchLine(line, version_regex)) {
 		// VERSION block 
 		status = fgets(line, MAXLINE, fp);
         ++(*currLine);
@@ -1398,9 +1408,7 @@ static int nextTFBlock(FILE *fp, char *header, char **body, int *blkLine, int *c
         *blkLine = *currLine;
 		rstrip(header, line);
 		code = TF_VERSION;
-	}
-
-	else {
+    } else {
 		// Calltip block 
 		/*  The first line is the key, the rest is the tip.
 		    Strip trailing whitespace. */
@@ -1411,13 +1419,11 @@ static int nextTFBlock(FILE *fp, char *header, char **body, int *blkLine, int *c
         if (!status)
             return TF_ERROR_EOF;
 		if (lineEmpty(line)) {
-            fprintf(stderr, "nedit: Warning: empty calltip block:\n"
-                            "   \"%s\"\n",
-			        header);
+            qWarning("NEdit: Warning: empty calltip block:\n   \"%s\"", header);
 			return TF_ERROR;
 		}
         *blkLine = *currLine;
-        *body = strdup(line);
+        body = line;
 		code = TF_BLOCK;
 	}
 
@@ -1440,16 +1446,8 @@ static int nextTFBlock(FILE *fp, char *header, char **body, int *blkLine, int *c
 // A struct for describing a calltip alias 
 struct tf_alias {    
 	std::string dest;
-	char *sources;
+    std::string sources;
 };
-
-// Deallocate a linked-list of aliases 
-static void free_alias_list(QList<tf_alias> *aliases) {
-
-    for(tf_alias &alias : *aliases) {
-        delete [] alias.sources;
-	}
-}
 
 /*
 ** Load a calltips file and insert all of the entries into the global tips
@@ -1461,7 +1459,6 @@ static int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
     FILE *fp = nullptr;
 	char header[MAXLINE];
 
-	char *tipIncFile;
     int nTipsAdded = 0;
     int langMode = PLAIN_LANGUAGE_MODE;
     int oldLangMode;
@@ -1496,8 +1493,8 @@ static int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
 
     Q_FOREVER {
 		int blkLine = 0;
-		char *body = nullptr;
-        int code = nextTFBlock(fp, header, &body, &blkLine, &currLine);
+        std::string body;
+        int code = nextTFBlock(fp, header, body, &blkLine, &currLine);
 
 		if (code == TF_ERROR_EOF) {
             qWarning("NEdit: Warning: unexpected EOF in calltips file.");
@@ -1515,16 +1512,18 @@ static int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
 			    want to have to deal with adding escape characters for
 			    regex metacharacters that might appear in the string */
             nTipsAdded += addTag(header, resolvedTipsFile.toLatin1().data(), langMode, "", blkLine, tipPath.toLatin1().data(), index);
-			delete [] body;
 			break;
 		case TF_INCLUDE:
+        {
             // nextTFBlock returns a colon-separated list of tips files in body
-			for (tipIncFile = strtok(body, ":"); tipIncFile; tipIncFile = strtok(nullptr, ":")) {
+            std::stringstream ss(body);
+            std::string tipIncFile;
+            while (getline(ss, tipIncFile, ':')) {
                 // qDebug("NEdit: including tips file '%s'", tipIncFile);
-                nTipsAdded += loadTipsFile(QString::fromLatin1(tipIncFile), index, recLevel + 1);
-			}
-			delete [] body;
-			break;
+                nTipsAdded += loadTipsFile(QString::fromStdString(tipIncFile), index, recLevel + 1);
+            }
+            break;
+        }
 		case TF_LANGUAGE:
             // Switch to the new language mode if it's valid, else ignore it.
 			oldLangMode = langMode;
@@ -1564,12 +1563,14 @@ static int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
 		} else {
 
             const Tag *t = &tags[0];
-            for (char *src = strtok(tmp_alias.sources, ":"); src; src = strtok(nullptr, ":")) {
+
+            std::stringstream ss(tmp_alias.sources);
+            std::string src;
+            while (getline(ss, src, ':')) {
                 addTag(src, resolvedTipsFile.toLatin1().data(), t->language, "", t->posInf, tipPath.toLatin1().data(), index);
             }
 		}
 	}
 
-    free_alias_list(&aliases);
 	return nTipsAdded;
 }

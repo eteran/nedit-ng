@@ -1472,7 +1472,7 @@ int TextBuffer::BufCountLines(int startPos, int endPos) const {
 ** Find the first character of the line "nLines" forward from "startPos"
 ** in "buf" and return its position
 */
-int TextBuffer::BufCountForwardNLines(int startPos, unsigned nLines) const {
+int TextBuffer::BufCountForwardNLines(int startPos, unsigned int nLines) const {
 	int pos, gapLen = gapEnd_ - gapStart_;
 	unsigned lineCount = 0;
 

@@ -28,8 +28,8 @@
  * @return
  */
 QString Settings::configFile() {
-    QString configDir  = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
-    QString configFile = QString(QLatin1String("%1/%2/%3")).arg(configDir, QLatin1String("nedit-ng"), QLatin1String("config.ini"));
+    QString configDir = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
+    auto configFile   = tr("%1/%2/%3").arg(configDir, tr("nedit-ng"), tr("config.ini"));
     return configFile;
 }
 
@@ -38,8 +38,8 @@ QString Settings::configFile() {
  * @return
  */
 QString Settings::historyFile() {
-    QString configDir  = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
-    QString configFile = QString(QLatin1String("%1/%2/%3")).arg(configDir, QLatin1String("nedit-ng"), QLatin1String("history"));
+    QString configDir = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
+    auto configFile   = tr("%1/%2/%3").arg(configDir, tr("nedit-ng"), tr("history"));
     return configFile;
 }
 
@@ -48,8 +48,8 @@ QString Settings::historyFile() {
  * @return
  */
 QString Settings::autoLoadMacroFile() {
-    QString configDir  = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
-    QString configFile = QString(QLatin1String("%1/%2/%3")).arg(configDir, QLatin1String("nedit-ng"), QLatin1String("autoload.nm"));
+    QString configDir = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
+    auto configFile   = tr("%1/%2/%3").arg(configDir, tr("nedit-ng"), tr("autoload.nm"));
     return configFile;
 }
 
@@ -58,17 +58,14 @@ QString Settings::autoLoadMacroFile() {
  * @return
  */
 QString Settings::styleFile() {
-    QString configDir  = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
-    QString configFile = QString(QLatin1String("%1/%2/%3")).arg(configDir, QLatin1String("nedit-ng"), QLatin1String("style.qss"));
+    QString configDir = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
+    auto configFile   = tr("%1/%2/%3").arg(configDir, tr("nedit-ng"), tr("style.qss"));
     return configFile;
 }
 
-
-
-
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
+/**
+ * @brief Settings::loadPreferences
+ */
 void Settings::loadPreferences() {
 
     QString filename = configFile();
@@ -171,6 +168,10 @@ void Settings::loadPreferences() {
     settingsLoaded_ = true;
 }
 
+/**
+ * @brief Settings::importSettings
+ * @param filename
+ */
 void Settings::importSettings(const QString &filename) {
     if(!settingsLoaded_) {
         qWarning("NEdit: Warning, importing while no previous settings loaded!");
@@ -267,9 +268,10 @@ void Settings::importSettings(const QString &filename) {
     honorSymlinks                     = settings.value(tr("nedit.honorSymlinks"),                     honorSymlinks).toBool();
 }
 
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
+/**
+ * @brief Settings::savePreferences
+ * @return
+ */
 bool Settings::savePreferences() {
     QString filename = configFile();
     QSettings settings(filename, QSettings::IniFormat);
