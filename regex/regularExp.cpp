@@ -2710,14 +2710,7 @@ look_behind_to string            end           match_to
 */
 bool regexp::ExecRE(const char *string, const char *end, bool reverse, char prev_char, char succ_char, const char *delimiters, const char *look_behind_to, const char *match_to) {
 
-	// TODO(eteran): some of these checks, I'd prefer as asserts
-	//               but for now, we will maintain old behavior
-
-	// Check for valid parameters. 
-	if (!string) {
-		reg_error("NULL parameter to 'ExecRE'");
-		return false;
-	}
+    assert(string);
 
 	// Check validity of program. 
 	if (U_CHAR_AT(this->program) != MAGIC) {

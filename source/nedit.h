@@ -48,8 +48,8 @@ enum TruncSubstitution {
 };
 
 enum virtKeyOverride {
-	VIRT_KEY_OVERRIDE_NEVER, 
-	VIRT_KEY_OVERRIDE_AUTO,
+    VIRT_KEY_OVERRIDE_NEVER,
+    VIRT_KEY_OVERRIDE_AUTO,
     VIRT_KEY_OVERRIDE_ALWAYS
 };
 

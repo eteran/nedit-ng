@@ -1622,6 +1622,14 @@ static bool searchLiteral(view::string_view string, view::string_view searchStri
 	std::string lcString;
 	std::string ucString;
 
+    if (caseSense) {
+        lcString = searchString.to_string();
+        ucString = searchString.to_string();
+    } else {
+        ucString = upCaseStringEx(searchString);
+        lcString = downCaseStringEx(searchString);
+    }
+
     auto do_search2 = [&](const char *filePtr) {
 		if (*filePtr == ucString[0] || *filePtr == lcString[0]) {
 			// matched first character 
@@ -1652,13 +1660,7 @@ static bool searchLiteral(view::string_view string, view::string_view searchStri
         return false;
 	};
 
-	if (caseSense) {
-		lcString = searchString.to_string();
-		ucString = searchString.to_string();
-	} else {
-		ucString = upCaseStringEx(searchString);
-		lcString = downCaseStringEx(searchString);
-	}
+
 
 	if (direction == SEARCH_FORWARD) {
 
@@ -1678,7 +1680,7 @@ static bool searchLiteral(view::string_view string, view::string_view searchStri
 		}
 
 		// search from start of file to beginPos 
-		// TODO(eteran): this used to include "mid", but that seems redundant given that we already looked there
+        // NOTE(eteran): this used to include "mid", but that seems redundant given that we already looked there
 		//               in the first loop
 		for (auto filePtr = first; filePtr != mid; ++filePtr) {
             if(do_search2(filePtr)) {
@@ -1841,7 +1843,6 @@ static bool backwardRegexSearch(view::string_view string, view::string_view sear
 
 static std::string upCaseStringEx(view::string_view inString) {
 
-
 	std::string str;
 	str.reserve(inString.size());
 	std::transform(inString.begin(), inString.end(), std::back_inserter(str), [](char ch) {
@@ -1851,7 +1852,8 @@ static std::string upCaseStringEx(view::string_view inString) {
 }
 
 static std::string downCaseStringEx(view::string_view inString) {
-	std::string str;
+
+    std::string str;
 	str.reserve(inString.size());
 	std::transform(inString.begin(), inString.end(), std::back_inserter(str), [](char ch) {
         return tolower(static_cast<uint8_t>(ch));
