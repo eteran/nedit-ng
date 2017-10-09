@@ -7616,7 +7616,7 @@ void TextArea::setFont(const QFont &font) {
 	// did the font change?
 	if (P_lineNumCols != 0) {
 		reconfigure = true;
-	}
+    }
 
     TextDSetFont(newFont);
 
