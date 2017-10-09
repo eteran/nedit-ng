@@ -4468,10 +4468,10 @@ void DocumentWidget::SetFonts(const QString &fontName, const QString &italicName
     }
 
     if (highlightChanged) {
-        italicFontName_     = italicName;
+        italicFontName_ = italicName;
         italicFontStruct_.fromString(italicName);
 
-        boldFontName_       = boldName;
+        boldFontName_ = boldName;
         boldFontStruct_.fromString(boldName);
 
         boldItalicFontName_ = boldItalicName;
