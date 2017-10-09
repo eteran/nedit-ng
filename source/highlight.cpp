@@ -507,8 +507,8 @@ WindowHighlightData *createHighlightDataEx(DocumentWidget *document, PatternSet 
 
     /* Sort patterns into those to be used in pass 1 parsing, and those to
        be used in pass 2, and add default pattern (0) to each list */
-    int nPass1Patterns = 1;
-    int nPass2Patterns = 1;
+    size_t nPass1Patterns = 1;
+    size_t nPass2Patterns = 1;
     for (int i = 0; i < nPatterns; i++) {
         if (patternSrc[i].flags & DEFER_PARSING) {
             nPass2Patterns++;
@@ -519,7 +519,6 @@ WindowHighlightData *createHighlightDataEx(DocumentWidget *document, PatternSet 
 
     auto pass1PatternSrc = new HighlightPattern[nPass1Patterns];
     auto pass2PatternSrc = new HighlightPattern[nPass2Patterns];
-
 
     HighlightPattern *p1Ptr = pass1PatternSrc;
     HighlightPattern *p2Ptr = pass2PatternSrc;
@@ -656,7 +655,7 @@ WindowHighlightData *createHighlightDataEx(DocumentWidget *document, PatternSet 
     setStyleTablePtr(styleTablePtr++, noPass2 ? &pass1PatternSrc[0] : &pass2PatternSrc[0]);
 
     // explicit styles (pass 1)
-    for (int i = 1; i < nPass1Patterns; i++) {
+    for (size_t i = 1; i < nPass1Patterns; i++) {
         styleTablePtr->underline = false;
         setStyleTablePtr(styleTablePtr++, &pass1PatternSrc[i]);
     }
