@@ -116,6 +116,13 @@ int main(int argc, char *argv[]) {
 	QApplication app(argc, argv);
 	QApplication::setWindowIcon(QIcon(QLatin1String(":/res/nedit.png")));
 
+    // NOTE(eteran): I experienced with Qt 5.9 an issue with font rendering
+    // where the metrics in the painter were different than the metrics
+    // in the font itself. I consider it a Qt bug, but I can't reproduce it
+    // with a small example :-/. Fortunately, this attribute seems to work
+    // around the issue.
+    app.setAttribute(Qt::AA_DisableHighDpiScaling);
+
     // Enable a Qt style sheet if present
     QString styleFile = Settings::styleFile();
     QFile file(styleFile);
