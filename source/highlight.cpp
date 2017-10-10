@@ -456,7 +456,7 @@ WindowHighlightData *createHighlightDataEx(DocumentWidget *document, PatternSet 
     int nPatterns    = patSet->patterns.size();
     int contextLines = patSet->lineContext;
     int contextChars = patSet->charContext;
-    int i;
+
     HighlightData *pass1Pats;
     HighlightData *pass2Pats;
 
@@ -593,11 +593,11 @@ WindowHighlightData *createHighlightDataEx(DocumentWidget *document, PatternSet 
         pass2Pats[0].style = PLAIN_STYLE;
     }
 
-    for (i = 1; i < nPass1Patterns; i++) {
+    for (size_t i = 1; i < nPass1Patterns; i++) {
         pass1Pats[i].style = PLAIN_STYLE + i;
     }
 
-    for (i = 1; i < nPass2Patterns; i++) {
+    for (size_t i = 1; i < nPass2Patterns; i++) {
         pass2Pats[i].style = PLAIN_STYLE + (noPass1 ? 0 : nPass1Patterns - 1) + i;
     }
 
@@ -610,11 +610,11 @@ WindowHighlightData *createHighlightDataEx(DocumentWidget *document, PatternSet 
     *parentStylesPtr++ = '\0';
     *parentStylesPtr++ = '\0';
 
-    for (int i = 1; i < nPass1Patterns; i++) {
+    for (size_t i = 1; i < nPass1Patterns; i++) {
         *parentStylesPtr++ = pass1PatternSrc[i].subPatternOf.isNull() ? PLAIN_STYLE : pass1Pats[indexOfNamedPattern(pass1PatternSrc, nPass1Patterns, pass1PatternSrc[i].subPatternOf)].style;
     }
 
-    for (int i = 1; i < nPass2Patterns; i++) {
+    for (size_t i = 1; i < nPass2Patterns; i++) {
         *parentStylesPtr++ = pass2PatternSrc[i].subPatternOf.isNull() ? PLAIN_STYLE : pass2Pats[indexOfNamedPattern(pass2PatternSrc, nPass2Patterns, pass2PatternSrc[i].subPatternOf)].style;
     }
 
@@ -661,7 +661,7 @@ WindowHighlightData *createHighlightDataEx(DocumentWidget *document, PatternSet 
     }
 
     // explicit styles (pass 2)
-    for (int i = 1; i < nPass2Patterns; i++) {
+    for (size_t i = 1; i < nPass2Patterns; i++) {
         styleTablePtr->underline = false;
         setStyleTablePtr(styleTablePtr++, &pass2PatternSrc[i]);
     }
