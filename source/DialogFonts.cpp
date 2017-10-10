@@ -3,6 +3,7 @@
 #include "DocumentWidget.h"
 #include "TextArea.h"
 #include "nedit.h"
+#include "Font.h"
 #include "preferences.h"
 #include <QFontDialog>
 #include <QPushButton>
@@ -67,7 +68,7 @@ void DialogFonts::on_buttonFontBoldItalic_clicked() {
 void DialogFonts::on_buttonFill_clicked() {
 
     QFont font;
-    font.fromString(ui.editFontPrimary->text());
+    font = Font::fromString(ui.editFontPrimary->text());
 
     QFont boldFont(font);
     boldFont.setBold(true);
@@ -201,10 +202,7 @@ DialogFonts::FontStatus DialogFonts::checkFontStatus(const QString &font) {
 		return BAD_FONT;
 	}
 
-    QFont f;
-    f.fromString(testName);
-    f.setStyleStrategy(QFont::ForceIntegerMetrics);
-
+    QFont f = Font::fromString(testName);
     QFontMetrics fm(f);
 
     const int testWidth  = fm.width(QLatin1Char('i')); // NOTE(eteran): min-width?
@@ -217,10 +215,7 @@ DialogFonts::FontStatus DialogFonts::checkFontStatus(const QString &font) {
 		return BAD_FONT;
     }
 
-    QFont primaryFont;
-    primaryFont.fromString(primaryName);
-    primaryFont.setStyleStrategy(QFont::ForceIntegerMetrics);
-
+    QFont primaryFont = Font::fromString(primaryName);	
     QFontMetrics primaryFm(primaryFont);
 
     const int primaryWidth  = primaryFm.width(QLatin1Char('i')); // NOTE(eteran): min-width?
@@ -247,9 +242,8 @@ void DialogFonts::browseFont(QLineEdit *lineEdit) {
     //               style, (ex. sometimes they call it "regular") will default
     //               to the first style in the list
     bool ok;
-    QFont currFont;
-    currFont.fromString(lineEdit->text());
-    QFont newFont = QFontDialog::getFont(&ok, currFont, this);
+    QFont currFont = Font::fromString(lineEdit->text());
+    QFont newFont  = QFontDialog::getFont(&ok, currFont, this);
 
     if(ok) {
         lineEdit->setText(newFont.toString());

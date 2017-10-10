@@ -26,6 +26,7 @@
 #include "interpret.h"
 #include "macro.h"
 #include "nedit.h"
+#include "Font.h"
 #include "parse.h"
 #include "preferences.h"
 #include "search.h"
@@ -4461,25 +4462,18 @@ void DocumentWidget::SetFonts(const QString &fontName, const QString &italicName
     int oldFontHeight = textD->fontAscent() + textD->fontDescent();
 #endif
     if (primaryChanged) {
-        fontName_ = fontName;
-
-        fontStruct_.fromString(fontName_);
-        fontStruct_.setStyleStrategy(QFont::ForceIntegerMetrics);
+        fontName_   = fontName;
+        fontStruct_ = Font::fromString(fontName_);
     }
 
     if (highlightChanged) {
-        italicFontName_ = italicName;
-        italicFontStruct_.fromString(italicName);
-
-        boldFontName_ = boldName;
-        boldFontStruct_.fromString(boldName);
-
-        boldItalicFontName_ = boldItalicName;
-        boldItalicFontStruct_.fromString(boldItalicName);
-
-        italicFontStruct_.setStyleStrategy(QFont::ForceIntegerMetrics);
-        boldFontStruct_.setStyleStrategy(QFont::ForceIntegerMetrics);
-        boldItalicFontStruct_.setStyleStrategy(QFont::ForceIntegerMetrics);
+        italicFontName_       = italicName;
+        boldFontName_         = boldName;
+        boldItalicFontName_   = boldItalicName;
+		
+        italicFontStruct_     = Font::fromString(italicName);
+        boldFontStruct_       = Font::fromString(boldName);
+        boldItalicFontStruct_ = Font::fromString(boldItalicName);
     }
 
     // Change the primary font in all the widgets

@@ -38,6 +38,7 @@
 #include "nedit.h"
 #include "search.h"
 #include "smartIndent.h"
+#include "Font.h"
 #include "tags.h"
 #include "userCmds.h"
 #include "Input.h"
@@ -153,15 +154,10 @@ static void translatePrefFormats(quint32 fileVer) {
 	}
 
 	// translate the font names into fontLists suitable for the text widget 
-    g_Settings.plainFontStruct.fromString(g_Settings.textFont);
-    g_Settings.boldFontStruct.fromString(g_Settings.boldHighlightFont);
-    g_Settings.italicFontStruct.fromString(g_Settings.italicHighlightFont);
-    g_Settings.boldItalicFontStruct.fromString(g_Settings.boldItalicHighlightFont);
-
-    g_Settings.plainFontStruct.setStyleStrategy(QFont::ForceIntegerMetrics);
-    g_Settings.boldFontStruct.setStyleStrategy(QFont::ForceIntegerMetrics);
-    g_Settings.italicFontStruct.setStyleStrategy(QFont::ForceIntegerMetrics);
-    g_Settings.boldItalicFontStruct.setStyleStrategy(QFont::ForceIntegerMetrics);
+    g_Settings.plainFontStruct      = Font::fromString(g_Settings.textFont);
+    g_Settings.boldFontStruct       = Font::fromString(g_Settings.boldHighlightFont);
+    g_Settings.italicFontStruct     = Font::fromString(g_Settings.italicHighlightFont);
+    g_Settings.boldItalicFontStruct = Font::fromString(g_Settings.boldItalicHighlightFont);
 
 	/*
 	**  The default set for the comand shell in PrefDescrip ("DEFAULT") is
@@ -746,9 +742,8 @@ void SetPrefFont(const QString &fontName) {
     if(g_Settings.textFont != fontName) {
         PrefsHaveChanged = true;
     }
-    g_Settings.textFont = fontName;
-    g_Settings.plainFontStruct.fromString(fontName);
-    g_Settings.plainFontStruct.setStyleStrategy(QFont::ForceIntegerMetrics);
+    g_Settings.textFont        = fontName;
+    g_Settings.plainFontStruct = Font::fromString(fontName);
 }
 
 void SetPrefBoldFont(const QString &fontName) {
@@ -756,8 +751,7 @@ void SetPrefBoldFont(const QString &fontName) {
         PrefsHaveChanged = true;
     }
     g_Settings.boldHighlightFont = fontName;
-    g_Settings.boldFontStruct.fromString(fontName);
-    g_Settings.boldFontStruct.setStyleStrategy(QFont::ForceIntegerMetrics);
+    g_Settings.boldFontStruct    = Font::fromString(fontName);
 }
 
 void SetPrefItalicFont(const QString &fontName) {
@@ -765,8 +759,7 @@ void SetPrefItalicFont(const QString &fontName) {
         PrefsHaveChanged = true;
     }
     g_Settings.italicHighlightFont = fontName;
-    g_Settings.italicFontStruct.fromString(fontName);
-    g_Settings.italicFontStruct.setStyleStrategy(QFont::ForceIntegerMetrics);
+    g_Settings.italicFontStruct    = Font::fromString(fontName);
 }
 
 void SetPrefBoldItalicFont(const QString &fontName) {
@@ -774,8 +767,7 @@ void SetPrefBoldItalicFont(const QString &fontName) {
         PrefsHaveChanged = true;
     }
     g_Settings.boldItalicHighlightFont = fontName;
-    g_Settings.boldItalicFontStruct.fromString(fontName);
-    g_Settings.boldItalicFontStruct.setStyleStrategy(QFont::ForceIntegerMetrics);
+    g_Settings.boldItalicFontStruct    = Font::fromString(fontName);
 }
 
 QString GetPrefFontName() {

@@ -30,6 +30,7 @@
 #include <QTextCodec>
 #include <QTimer>
 #include <memory>
+#include "Font.h"
 
 #define EMIT_EVENT(name)                                         \
 	do {                                                         \
@@ -426,7 +427,6 @@ TextArea::TextArea(
     P_cursorVPadding = GetVerticalAutoScroll();
     P_emulateTabs    = GetPrefEmTabDist(PLAIN_LANGUAGE_MODE);
 
-    fontStruct.setStyleStrategy(QFont::ForceIntegerMetrics);
     QFontMetrics fm(fontStruct);
 	QFontInfo    fi(fontStruct);
 
@@ -1568,8 +1568,6 @@ void TextArea::mouseReleaseEvent(QMouseEvent *event) {
 //------------------------------------------------------------------------------
 void TextArea::paintEvent(QPaintEvent *event) {
 
-	QPainter painter(viewport());
-
 	QRect rect = event->rect();
 	const int top    = rect.top();
 	const int left   = rect.left();
@@ -1581,20 +1579,31 @@ void TextArea::paintEvent(QPaintEvent *event) {
     const int firstLine  = (top - rect_.top() - fontHeight + 1) / fontHeight;
     const int lastLine   = (top + height - rect_.top()) / fontHeight;
 
-	painter.save();
-    painter.setClipRect(QRect(rect_.left(), rect_.top(), rect_.width(), rect_.height() - rect_.height() % (ascent_ + descent_)));
+    QPainter painter(viewport());
+    {
+        painter.save();
+        painter.setClipRect(QRect(rect_.left(), rect_.top(), rect_.width(), rect_.height() - rect_.height() % (ascent_ + descent_)));
 
-	// draw the lines of text
-	for (int line = firstLine; line <= lastLine; line++) {
-		redisplayLine(&painter, line, left, left + width, 0, INT_MAX);
-	}
+        // draw the lines of text
+        for (int line = firstLine; line <= lastLine; line++) {
+            redisplayLine(&painter, line, left, left + width, 0, INT_MAX);
+        }
 
-	painter.restore();
+        painter.restore();
+    }
 
-	// draw the line numbers if exposed area includes them
-	if (lineNumWidth_ != 0 && left <= lineNumLeft_ + lineNumWidth_) {
-		redrawLineNumbers(&painter, false);
-	}
+    {
+        /* Make sure we reset the clipping range for the line numbers */
+        painter.save();
+        painter.setClipRect(QRect(lineNumLeft_, rect_.top(), lineNumWidth_, rect_.height()));
+
+        // draw the line numbers if exposed area includes them
+        if (lineNumWidth_ != 0 && left <= lineNumLeft_ + lineNumWidth_) {
+            redrawLineNumbers(&painter, false);
+        }
+
+        painter.restore();
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -3040,40 +3049,24 @@ void TextArea::redrawLineNumbersEx(bool clearAll) {
 void TextArea::redrawLineNumbers(QPainter *painter, bool clearAll) {
 
 	Q_UNUSED(clearAll);
+    const int lineHeight = ascent_ + descent_;
 
-	int y;
-	int line;
-	int visLine;
-	int nCols;	
-    QFontMetrics fm(font_);
-    int lineHeight = ascent_ + descent_;
-	int charWidth  = fm.maxWidth();
-
-	/* Don't draw if lineNumWidth == 0 (line numbers are hidden), or widget is
-	   not yet realized */
-	if (lineNumWidth_ == 0 /*|| window == 0*/)
+    // Don't draw if lineNumWidth == 0 (line numbers are hidden)
+    if (lineNumWidth_ == 0) {
 		return;
-
-	/* Make sure we reset the clipping range for the line numbers GC, because
-	   the GC may be shared (eg, if the line numbers and text have the same
-	   color) and therefore the clipping ranges may be invalid. */
-	painter->save();
-    painter->setClipRect(QRect(lineNumLeft_, rect_.top(), lineNumWidth_, rect_.height()));
+    }
 
 	// Draw the line numbers, aligned to the text
-	nCols = std::min(11, lineNumWidth_ / charWidth);
-    y = rect_.top();
-	line = getAbsTopLineNum();
-	for (visLine = 0; visLine < nVisibleLines_; visLine++) {
+    int y     = rect_.top();
+    int line  = getAbsTopLineNum();
+
+    for (int visLine = 0; visLine < nVisibleLines_; visLine++) {
 
 		int lineStart = lineStarts_[visLine];
 		if (lineStart != -1 && (lineStart == 0 || buffer_->BufGetCharacter(lineStart - 1) == '\n')) {
-
-            char lineNumString[12];
-            snprintf(lineNumString, sizeof(lineNumString), "%*d", nCols, line);
-
-			auto s = QString::fromLatin1(lineNumString);
-			painter->drawText(lineNumLeft_, y + ascent_, s);
+            auto s = QString::number(line);
+            QRect rect(lineNumLeft_, y, lineNumWidth_, ascent_ + descent_);
+            painter->drawText(rect, Qt::TextSingleLine | Qt::TextDontClip | Qt::AlignVCenter | Qt::AlignRight, s);
 			line++;
 		} else {
             if (visLine == 0) {
@@ -3082,8 +3075,6 @@ void TextArea::redrawLineNumbers(QPainter *painter, bool clearAll) {
 		}
 		y += lineHeight;
 	}
-
-	painter->restore();
 }
 
 /*
@@ -3180,8 +3171,6 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
         qWarning("NEdit: Internal Error, bad font measurement");
 		return;
 	}
-
-	painter->save();
 
 	/* Rectangular selections are based on "real" line starts (after a newline
 	   or start of buffer).  Calculate the difference between the last newline
@@ -3306,8 +3295,6 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
     if (hasCursor && (y_orig != cursor_.y() || y_orig != y)) {
 		TextDRedrawCalltip(0);
 	}
-
-	painter->restore();
 }
 
 /*
@@ -3397,22 +3384,32 @@ void TextArea::drawString(QPainter *painter, int style, int x, int y, int toX, c
         DrawPlain
 	};
 
-	DrawType drawType;
+    const DrawType drawType = [](int style) {
+        // select a GC
+        if (style & (STYLE_LOOKUP_MASK | BACKLIGHT_MASK | RANGESET_MASK)) {
+            return DrawStyle;
+        } else if (style & HIGHLIGHT_MASK) {
+            return DrawHighlight;
+        } else if (style & PRIMARY_MASK) {
+            return DrawSelect;
+        } else {
+            return DrawPlain;
+        }
+    }(style);
 
-	// select a GC
-	if (style & (STYLE_LOOKUP_MASK | BACKLIGHT_MASK | RANGESET_MASK)) {
-		drawType = DrawStyle;
-	} else if (style & HIGHLIGHT_MASK) {
-		drawType = DrawHighlight;
+    switch(drawType) {
+    case DrawHighlight:
         fground = highlightFGPixel_;
         bground = highlightBGPixel_;
-	} else if (style & PRIMARY_MASK) {
-		drawType = DrawSelect;
+        break;
+    case DrawSelect:
         fground = palette().color(QPalette::HighlightedText);
         bground = palette().color(QPalette::Highlight);
-	} else {
-		drawType = DrawPlain;
-	}
+        break;
+    case DrawPlain:
+    case DrawStyle:
+        break;
+    }
 
 	if(drawType == DrawStyle) {
 
@@ -3426,12 +3423,12 @@ void TextArea::drawString(QPainter *painter, int style, int x, int y, int toX, c
 			styleRec = &styleTable_[(style & STYLE_LOOKUP_MASK) - ASCII_A];
 			underlineStyle = styleRec->underline;
 
-            X_font = styleRec->font;
+            X_font  = styleRec->font;
             fground = styleRec->color;
 			// here you could pick up specific select and highlight fground
 		} else {
 			styleRec = nullptr;
-            X_font = font_;
+            X_font  = font_;
             fground = palette().color(QPalette::Text);
 		}
 
@@ -3498,11 +3495,6 @@ void TextArea::drawString(QPainter *painter, int style, int x, int y, int toX, c
 		X_font.setUnderline(true);
 	}
 
-    QRect rect(x, y, toX - x, ascent_ + descent_);
-	// Draw the string using gc and font set above
-	painter->setPen(fground);
-
-
     // temporarily use a custom converter
     static auto asciiCodec = new AsciiTextCodec ();
     QTextCodec::setCodecForLocale(asciiCodec);
@@ -3512,18 +3504,18 @@ void TextArea::drawString(QPainter *painter, int style, int x, int y, int toX, c
     // restore it, because otherwise it messes up QString::toStdString
     QTextCodec::setCodecForLocale(nullptr);
 
+    QRect rect(x, y, toX - x, ascent_ + descent_);
+
 	// TODO(eteran): 2.0, OPTIMIZATTION: since Qt will auto-fill the BG with the
 	//               default base color we only need to play with the
 	//               background mode if drawing a non-base color.
 	//               Probably same with font
-#if 0
-	painter->setBackground(QBrush(bground));
-	painter->setBackgroundMode(Qt::OpaqueMode);
-#else
+    painter->save();
+    painter->setFont(X_font);
     painter->fillRect(rect, bground);
-#endif
-	painter->setFont(X_font);
+    painter->setPen(fground);
     painter->drawText(rect, Qt::TextSingleLine | Qt::TextDontClip | Qt::AlignVCenter | Qt::AlignLeft, s);
+    painter->restore();
 }
 
 //------------------------------------------------------------------------------
@@ -7604,21 +7596,14 @@ QFont TextArea::getFont() const {
 
 void TextArea::setFont(const QFont &font) {
 
-    QFont newFont = font;
-    newFont.setStyleStrategy(QFont::ForceIntegerMetrics);
-
 	bool reconfigure = false;
-
-    // TODO(eteran): i beleive that this set font is redundant to one
-    // that gets called in TextDSetFont
-    font_ = newFont;
 
 	// did the font change?
 	if (P_lineNumCols != 0) {
 		reconfigure = true;
     }
 
-    TextDSetFont(newFont);
+    TextDSetFont(font);
 
 	/* Setting the lineNumCols resource tells the text widget to hide or
 	   show, or change the number of columns of the line number display,

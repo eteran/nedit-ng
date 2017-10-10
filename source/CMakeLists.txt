@@ -103,6 +103,7 @@ add_executable(nedit-ng
 
 	Input.cpp
 	Help.cpp
+	Font.cpp
 	CallTipWidget.cpp
 	CommandRecorder.cpp
 	Dialog.cpp

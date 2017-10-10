@@ -366,12 +366,12 @@ void *GetHighlightInfoEx(DocumentWidget *window, int pos) {
     }
 
     // Be careful with signed/unsigned conversions. NO conversion here!
-    int style = (int)highlightData->styleBuffer->BufGetCharacter(pos);
+    auto style = static_cast<int>(highlightData->styleBuffer->BufGetCharacter(pos));
 
     // Beware of unparsed regions.
     if (style == UNFINISHED_STYLE) {
         handleUnparsedRegionEx(window, highlightData->styleBuffer, pos);
-        style = (int)highlightData->styleBuffer->BufGetCharacter(pos);
+        style = static_cast<int>(highlightData->styleBuffer->BufGetCharacter(pos));
     }
 
     if (highlightData->pass1Patterns) {
@@ -642,8 +642,6 @@ WindowHighlightData *createHighlightDataEx(DocumentWidget *document, PatternSet 
         }
 
 		p->font = FontOfNamedStyleEx(document, pat->style);
-        // just to be sure...
-        p->font.setStyleStrategy(QFont::ForceIntegerMetrics);
     };
 
     // PLAIN_STYLE (pass 1)

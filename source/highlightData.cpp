@@ -293,13 +293,13 @@ QString WriteHighlightStringEx() {
 */
 QFont FontOfNamedStyleEx(DocumentWidget *document, const QString &styleName) {
 
-    int styleNo = lookupNamedStyle(styleName);
+    const int styleNo = lookupNamedStyle(styleName);
 
     if (styleNo < 0) {
         return GetPrefDefaultFont();
     } else {
 
-        int fontNum = HighlightStyles[styleNo].font;
+        const int fontNum = HighlightStyles[styleNo].font;
 
         switch(fontNum) {
         case BOLD_FONT:

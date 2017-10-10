@@ -59,6 +59,8 @@
 #include <memory>
 #include <cstring>
 #include <sys/param.h>
+#include "TextArea.h"
+#include "TextBuffer.h"
 
 static void nextArg(int argc, char **argv, int *argIndex);
 static bool checkDoMacroArg(const char *macro);
