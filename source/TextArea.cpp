@@ -7238,22 +7238,17 @@ void TextArea::TextDSetLineNumberArea(int lineNumLeft, int lineNumWidth, int tex
     TextDRedisplayRect(0, rect_.top(), INT_MAX, rect_.height());
 }
 
-void TextArea::TextDSetWrapMode(int wrap, int wrapMargin) {
+void TextArea::TextDSetWrapMode(bool wrap, int wrapMargin) {
 
 	P_continuousWrap = wrap;
 	P_wrapMargin     = wrapMargin;
 
-    // TODO(eteran): things are bit backwards from what i'd like
-	//               this is triggered by setting the resource based
-	//               version of these values which eventually triggers
-	//               setValues(...) to call this function.
-
 	// wrapping can change change the total number of lines, re-count
 	nBufferLines_ = TextDCountLines(0, buffer_->BufGetLength(), true);
 
-	/* changing wrap margins wrap or changing from wrapped mode to non-wrapped
-	   can leave the character at the top no longer at a line start, and/or
-	   change the line number */
+    /* changing wrap margins wrap or changing from wrapped mode to non-wrapped
+     * can leave the character at the top no longer at a line start, and/or
+     * change the line number */
 	firstChar_  = TextDStartOfLine(firstChar_);
     topLineNum_ = TextDCountLines(0, firstChar_, true) + 1;
 	resetAbsLineNum();
@@ -7262,8 +7257,8 @@ void TextArea::TextDSetWrapMode(int wrap, int wrapMargin) {
 	calcLineStarts(0, nVisibleLines_);
 	calcLastChar();
 
-	/* Update the scroll bar page increment size (as well as other scroll
-	   bar parameters) */
+    /* Update the scroll bar page increment size (as well as other scroll
+     * bar parameters) */
 	updateVScrollBarRange();
 	updateHScrollBarRange();
 

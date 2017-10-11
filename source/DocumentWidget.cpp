@@ -4589,7 +4589,7 @@ void DocumentWidget::gotoAP(TextArea *area, const QString &args) {
           [line]:[column]   (menu action)
           line              (macro call)
           line, column      (macro call) */
-	if ((StringToLineAndCol(args.toLatin1().data(), &lineNum, &column) == -1)) {
+    if ((StringToLineAndCol(args, &lineNum, &column) == -1)) {
         qWarning("NEdit: goto_line_number action requires line and/or column number");
         return;
     }

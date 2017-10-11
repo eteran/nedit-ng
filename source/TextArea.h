@@ -257,7 +257,7 @@ public:
     int TextFirstVisiblePos() const;
     int TextLastVisiblePos() const;
     void TextDSetFont(const QFont &font);
-	void TextDSetWrapMode(int wrap, int wrapMargin);
+    void TextDSetWrapMode(bool wrap, int wrapMargin);
 	void textDRedisplayRange(int start, int end);
 	void TextDResize(int width, int height);
 	int TextDCountLines(int startPos, int endPos, int startPosIsLineStart);

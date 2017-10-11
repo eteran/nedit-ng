@@ -51,47 +51,48 @@
 ** Set the line and/or column number to -1 if not specified, and return -1 if
 ** both line and column numbers are not specified.
 */
-int StringToLineAndCol(const char *text, int *lineNum, int *column) {
+int StringToLineAndCol(const QString &text, int *lineNum, int *column) {
 
-	// TODO(eteran): rework this in terms of QString APIs, maybe a regex?
+    static const QRegularExpression re(QLatin1String(
+                                           "^"
+                                           "\\s*"
+                                           "(?<row>[-+]?[1-9]\\d*)?"
+                                           "\\s*"
+                                           "([:,]"
+                                           "\\s*"
+                                           "(?<col>[-+]?[1-9]\\d*))?"
+                                           "\\s*"
+                                           "$"
+                                           ));
 
-	// Get line number 
-	char *endptr;
-	const long tempNum = strtol(text, &endptr, 10);
+    QRegularExpressionMatch match = re.match(text);
+    if (match.hasMatch()) {
+        QString row = match.captured(QLatin1String("row"));
+        QString col = match.captured(QLatin1String("col"));
 
-	// If user didn't specify a line number, set lineNum to -1 
-	if (endptr == text) {
-		*lineNum = -1;
-	} else if (tempNum >= INT_MAX) {
-		*lineNum = INT_MAX;
-	} else if (tempNum < 0) {
-		*lineNum = 0;
-	} else {
-		*lineNum = static_cast<int>(tempNum);
-	}
+        bool row_ok;
+        int r = row.toInt(&row_ok);
+        if(!row_ok) {
+            r = -1;
+        } else {
+            r = qBound(0, r, INT_MAX);
+        }
 
-	// Find the next digit 
-	for (size_t textLen = strlen(endptr); textLen > 0; endptr++, textLen--) {
-		if (isdigit(static_cast<uint8_t>(*endptr)) || *endptr == '-' || *endptr == '+') {
-			break;
-		}
-	}
+        bool col_ok;
+        int c = col.toInt(&col_ok);
+        if(!col_ok) {
+            c = -1;
+        } else {
+            c = qBound(0, c, INT_MAX);
+        }
 
-	// Get column 
-	if (*endptr != '\0') {
-		const long tempNum = strtol(endptr, nullptr, 10);
-		if (tempNum >= INT_MAX) {
-			*column = INT_MAX;
-		} else if (tempNum < 0) {
-			*column = 0;
-		} else {
-			*column = static_cast<int>(tempNum);
-		}
-	} else {
-		*column = -1;
-	}
+        *lineNum = r;
+        *column  = c;
 
-	return *lineNum == -1 && *column == -1 ? -1 : 0;
+        return (r == -1 && c == -1) ? -1 : 0;
+    }
+
+    return -1;
 }
 
 /*

@@ -6,6 +6,7 @@
 #include <QMessageBox>
 #include <QRegExpValidator>
 #include <QStandardPaths>
+#include <QProcess>
 #include <QSettings>
 #include <QtDebug>
 #include <dirent.h>
@@ -300,8 +301,7 @@ void DialogPrint::on_editCommand_textEdited(const QString &text) {
 //------------------------------------------------------------------------------
 void DialogPrint::on_buttonPrint_clicked() {
 
-	// TODO(eteran): short term, we can replace this with QProcess
-	//               long term, we'll use Qt's built in print system
+    // TODO(eteran): 2.0 use Qt's built in print system
 
 	// get the print command from the command text area
 	const QString str = ui.editCommand->text();
@@ -309,33 +309,41 @@ void DialogPrint::on_buttonPrint_clicked() {
 	// add the file name and output redirection to the print command
 	QString command = tr("cat %1 | %2 2>&1").arg(PrintFileName_, str);
 
-	// Issue the print command using a popen call and recover error messages
-	// from the output stream of the command.
-	FILE *pipe = ::popen(command.toLatin1().data(), "r");
-	if(!pipe) {
-        QMessageBox::warning(this, tr("Print Error"), tr("Unable to Print:\n%1").arg(ErrorString(errno)));
-		return;
-	}
+    // create the process and connect the output streams to the readyRead events
+    QProcess process;
+    QString errorString;
+    bool success = true;
+    process.setProcessChannelMode(QProcess::MergedChannels);
 
-	char errorString[MAX_PRINT_ERROR_LENGTH] = {};
-	int nRead = ::fread(errorString, 1, MAX_PRINT_ERROR_LENGTH - 1, pipe);
-	
-	// Make sure that the print command doesn't get stuck when trying to
-	// write a lot of output on stderr (pipe may fill up). We discard
-	// the additional output, though.
-	char discarded[1024];
-	while (::fread(discarded, 1, sizeof(discarded), pipe) > 0) {
-		;
-	}
+    connect(&process, static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished), [this, &errorString, &success, &process](int exitCode, QProcess::ExitStatus exitStatus){
+        if (exitStatus != QProcess::NormalExit) {
+            QMessageBox::warning(this, tr("Print Error"), tr("Unable to Print:\n%1").arg(process.errorString()));
+            success = false;
+            return;
+        }
 
-	if (!::ferror(pipe)) {
-		errorString[nRead] = '\0';
-	}
+        if(exitCode != EXIT_SUCCESS) {
+            QMessageBox::warning(this, tr("Print Error"), tr("Unable to Print:\n%1").arg(errorString));
+            success = false;
+            return;
+        }
+    });
 
-	if (::pclose(pipe)) {
-		QMessageBox::warning(this, tr("Print Error"), tr("Unable to Print:\n%1").arg(QString::fromLatin1(errorString)));
-		return;
-	}
+    connect(&process, &QProcess::readyRead, [&errorString, &process]() {
+        errorString = QString::fromLatin1(process.readAll());
+    });
+
+    // start it off!
+    QStringList args;
+    args << QLatin1String("-c");
+    args << command;
+    process.start(GetPrefShell(), args);
+    process.closeWriteChannel();
+    process.waitForFinished();
+
+    if(!success) {
+        return;
+    }
 	
 	// Print command succeeded, so retain the current print parameters
 	if (!CopiesOption.isEmpty()) {

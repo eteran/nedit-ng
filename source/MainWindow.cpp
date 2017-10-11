@@ -2033,7 +2033,7 @@ void MainWindow::action_Goto_Line_Number(const QString &s) {
 		int lineNum;
 		int column;
 
-		if (StringToLineAndCol(s.toLatin1().data(), &lineNum, &column) == -1) {
+        if (StringToLineAndCol(s, &lineNum, &column) == -1) {
 			QApplication::beep();
 			return;
 		}
