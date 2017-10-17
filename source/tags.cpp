@@ -83,7 +83,7 @@ enum searchDirection { FORWARD, BACKWARD };
 
 static int loadTagsFile(const QString &tagSpec, int index, int recLevel);
 static int fakeRegExSearchEx(view::string_view buffer, const char *searchString, int *startPos, int *endPos);
-static int addTag(const std::string &name, const char *file, int lang, const char *search, int posInf, const char *path, int index);
+static int addTag(const std::string &name, const QString &file, int lang, const char *search, int posInf, const char *path, int index);
 static bool delTag(int index);
 static QList<Tag> getTag(const QString &name, int search_type);
 static void createSelectMenuEx(DocumentWidget *document, TextArea *area, const QStringList &args);
@@ -176,7 +176,7 @@ static QList<Tag> getTag(const QString &name, int search_type) {
 **   (We don't return boolean as the return value is used as counter increment!)
 **
 */
-static int addTag(const std::string &name, const char *file, int lang, const char *search, int posInf, const char *path, int index) {
+static int addTag(const std::string &name, const QString &file, int lang, const char *search, int posInf, const char *path, int index) {
 
     QMultiHash<QString, Tag> *table;
 
@@ -187,10 +187,10 @@ static int addTag(const std::string &name, const char *file, int lang, const cha
 	}
 
     QString newFile;
-    if (*file == '/') {
-        newFile = QString::fromLatin1(file);
+    if (file.startsWith(QLatin1Char('/'))) {
+        newFile = file;
 	} else {
-        newFile = QString(QLatin1String("%1%2")).arg(QString::fromLatin1(path), QString::fromLatin1(file));
+        newFile = QString(QLatin1String("%1%2")).arg(QString::fromLatin1(path), file);
 	}
 
     newFile = NormalizePathnameEx(newFile);
@@ -229,7 +229,7 @@ static int addTag(const std::string &name, const char *file, int lang, const cha
         return 0;
     }
 
-    Tag t = { name, file, search, path, lang, posInf, index };
+    Tag t = { name, file.toStdString(), search, path, lang, posInf, index };
 
     table->insert(QString::fromStdString(name), t);
     return 1;
@@ -552,7 +552,7 @@ static int scanCTagsLine(const QString &line, const char *tagPath, int index) {
 	// No ability to read language mode right now 
 	return addTag(
 	            name.toLatin1().data(),
-                file.toLatin1().data(),
+                file,
 	            PLAIN_LANGUAGE_MODE,
 	            searchString.toLatin1().data(),
 	            pos,
@@ -593,7 +593,7 @@ static int scanETagsLine(const char *line, const char *tagPath, int index, QStri
 		name[len] = 0;
 		pos = atoi(posCOM + 1);
 		// No ability to set language mode for the moment 
-        return addTag(name, file.toLatin1().data(), PLAIN_LANGUAGE_MODE, searchString, pos, tagPath, index);
+        return addTag(name, file, PLAIN_LANGUAGE_MODE, searchString, pos, tagPath, index);
 	}
 
     if (!file.isEmpty() && posDEL && (posCOM > posDEL)) {
@@ -616,7 +616,7 @@ static int scanETagsLine(const char *line, const char *tagPath, int index, QStri
 		strncpy(name, searchString + pos + 1, len - pos);
 		name[len - pos] = 0; // name ready 
 		pos = atoi(posCOM + 1);
-        return addTag(name, file.toLatin1().data(), PLAIN_LANGUAGE_MODE, searchString, pos, tagPath, index);
+        return addTag(name, file, PLAIN_LANGUAGE_MODE, searchString, pos, tagPath, index);
 	}
 
 	// check for destination file spec 
@@ -1509,7 +1509,7 @@ static int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
 			    For the moment I'm just using line numbers because I don't
 			    want to have to deal with adding escape characters for
 			    regex metacharacters that might appear in the string */
-            nTipsAdded += addTag(header, resolvedTipsFile.toLatin1().data(), langMode, "", blkLine, tipPath.toLatin1().data(), index);
+            nTipsAdded += addTag(header, resolvedTipsFile, langMode, "", blkLine, tipPath.toLatin1().data(), index);
 			break;
 		case TF_INCLUDE:
         {
@@ -1565,7 +1565,7 @@ static int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
             std::stringstream ss(tmp_alias.sources);
             std::string src;
             while (getline(ss, src, ':')) {
-                addTag(src, resolvedTipsFile.toLatin1().data(), t->language, "", t->posInf, tipPath.toLatin1().data(), index);
+                addTag(src, resolvedTipsFile, t->language, "", t->posInf, tipPath.toLatin1().data(), index);
             }
 		}
 	}
