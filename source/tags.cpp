@@ -83,7 +83,6 @@ enum searchDirection { FORWARD, BACKWARD };
 
 static int loadTagsFile(const QString &tagSpec, int index, int recLevel);
 static int fakeRegExSearchEx(view::string_view buffer, const char *searchString, int *startPos, int *endPos);
-static void updateMenuItems();
 static int addTag(const std::string &name, const char *file, int lang, const char *search, int posInf, const char *path, int index);
 static bool delTag(int index);
 static QList<Tag> getTag(const QString &name, int search_type);
@@ -188,7 +187,7 @@ static int addTag(const std::string &name, const char *file, int lang, const cha
 	}
 
     QString newFile;
-	if (*file == '/') {
+    if (*file == '/') {
         newFile = QString::fromLatin1(file);
 	} else {
         newFile = QString(QLatin1String("%1%2")).arg(QString::fromLatin1(path), QString::fromLatin1(file));
@@ -229,15 +228,8 @@ static int addTag(const std::string &name, const char *file, int lang, const cha
 		}
         return 0;
     }
-	
-    Tag t;
-    t.name         = name;
-    t.file         = file;
-    t.language     = lang;
-    t.searchString = search;
-    t.posInf       = posInf;
-    t.path         = path;
-    t.index        = index;
+
+    Tag t = { name, file, search, path, lang, posInf, index };
 
     table->insert(QString::fromStdString(name), t);
     return 1;
@@ -391,12 +383,13 @@ bool AddTagsFileEx(const QString &tagSpec, Mode file_type) {
             continue;
         }
 
-        tagFile tag;
-		tag.filename = pathName;
-        tag.loaded   = false;
-        tag.date     = statbuf.st_mtime;
-        tag.index    = ++tagFileIndex;
-        tag.refcount = 1;
+        tagFile tag = {
+            pathName,
+            statbuf.st_mtime,
+            false,
+            ++tagFileIndex,
+            1
+        };
 
         FileList->push_front(tag);
     }
@@ -473,7 +466,7 @@ int DeleteTagsFileEx(const QString &tagSpec, Mode file_type, bool force_unload) 
 ** Update the "Find Definition", "Unload Tags File", "Show Calltip",
 ** and "Unload Calltips File" menu items in the existing windows.
 */
-static void updateMenuItems() {
+void updateMenuItems() {
     bool tipStat = false;
     bool tagStat = false;
 
@@ -559,7 +552,7 @@ static int scanCTagsLine(const QString &line, const char *tagPath, int index) {
 	// No ability to read language mode right now 
 	return addTag(
 	            name.toLatin1().data(),
-	            file.toLatin1().data(),
+                file.toLatin1().data(),
 	            PLAIN_LANGUAGE_MODE,
 	            searchString.toLatin1().data(),
 	            pos,
@@ -580,7 +573,7 @@ static int scanETagsLine(const char *line, const char *tagPath, int index, char 
 
 	// check for destination file separator  
 	if (line[0] == 12) { // <np> 
-		*file = '\0';
+        *file = '\0';
 		return 0;
 	}
 
@@ -589,7 +582,7 @@ static int scanETagsLine(const char *line, const char *tagPath, int index, char 
     const char *posSOH = strchr(line, '\001');
     const char *posCOM = strrchr(line, ',');
 
-	if (*file && posDEL && (posSOH > posDEL) && (posCOM > posSOH)) {
+    if (*file && posDEL && (posSOH > posDEL) && (posCOM > posSOH)) {
 		// exuberant ctags -e style  
 		len = std::min<int>(MAXLINE - 1, posDEL - line);
 		strncpy(searchString, line, len);
@@ -599,10 +592,10 @@ static int scanETagsLine(const char *line, const char *tagPath, int index, char 
 		name[len] = 0;
 		pos = atoi(posCOM + 1);
 		// No ability to set language mode for the moment 
-		return addTag(name, file, PLAIN_LANGUAGE_MODE, searchString, pos, tagPath, index);
+        return addTag(name, file, PLAIN_LANGUAGE_MODE, searchString, pos, tagPath, index);
 	}
 
-	if (*file && posDEL && (posCOM > posDEL)) {
+    if (*file && posDEL && (posCOM > posDEL)) {
 		// old etags style, part  name<soh>  is missing here! 
 		len = std::min<int>(MAXLINE - 1, posDEL - line);
 		strncpy(searchString, line, len);
@@ -620,25 +613,25 @@ static int scanETagsLine(const char *line, const char *tagPath, int index, char 
 		strncpy(name, searchString + pos + 1, len - pos);
 		name[len - pos] = 0; // name ready 
 		pos = atoi(posCOM + 1);
-		return addTag(name, file, PLAIN_LANGUAGE_MODE, searchString, pos, tagPath, index);
+        return addTag(name, file, PLAIN_LANGUAGE_MODE, searchString, pos, tagPath, index);
 	}
 
 	// check for destination file spec 
 	if (*line && posCOM) {
 		len = std::min<int>(MAXPATHLEN - 1, posCOM - line);
-		strncpy(file, line, len);
-		file[len] = 0;
-		// check if that's an include file ... 
+        strncpy(file, line, len);
+        file[len] = 0;
+        // check if that's an include file ...
 		if (!(strncmp(posCOM + 1, "include", 7))) {
-			if (*file != '/') {
-				if ((strlen(tagPath) + strlen(file)) >= MAXPATHLEN) {
+            if (*file != '/') {
+                if ((strlen(tagPath) + strlen(file)) >= MAXPATHLEN) {
                     qWarning("NEdit: tags.c: MAXPATHLEN overflow");
-					*file = 0; // invalidate 
+                    *file = 0; // invalidate
 					return 0;
-				}
-				
-				char incPath[MAXPATHLEN];
-				snprintf(incPath, sizeof(incPath), "%s%s", tagPath, file);
+                }
+
+                char incPath[MAXPATHLEN];
+                snprintf(incPath, sizeof(incPath), "%s%s", tagPath, file);
 
 				CompressPathname(incPath);
                 return loadTagsFile(QString::fromLatin1(incPath), index, recLevel + 1);
@@ -703,9 +696,9 @@ static int loadTagsFile(const QString &tagSpec, int index, int recLevel) {
 		}
 		if (tagFileType == TFT_CTAGS) {
 			nTagsAdded += scanCTagsLine(QString::fromLatin1(line), tagPath.toLatin1().data(), index);
-		} else {
-			char file[MAXPATHLEN];
-			nTagsAdded += scanETagsLine(line, tagPath.toLatin1().data(), index, file, recLevel);
+        } else {
+            char file[MAXPATHLEN];
+            nTagsAdded += scanETagsLine(line, tagPath.toLatin1().data(), index, file, recLevel);
 		}
 	}
 

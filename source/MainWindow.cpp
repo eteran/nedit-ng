@@ -393,6 +393,9 @@ void MainWindow::setupMenuDefaults() {
     no_signals(ui.action_Default_Show_Path_In_Windows_Menu)->setChecked(GetPrefShowPathInWindowsMenu());
 
     updateWindowSizeMenu();
+    updateTipsFileMenuEx();
+    updateTagsFileMenuEx();
+    updateMenuItems(); // NOTE(eteran): from tags.cpp
 }
 
 //------------------------------------------------------------------------------
