@@ -3111,7 +3111,7 @@ void TextArea::redisplayLineEx(int visLineNum, int leftClip, int rightClip, int 
 //------------------------------------------------------------------------------
 // Name:
 //------------------------------------------------------------------------------
-void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, int rightClip, int leftCharIndex, int rightCharIndex) {
+void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, int rightClip, int leftCharIndex, long rightCharIndex) {
 
 	int i;
     int startX;
@@ -3149,7 +3149,7 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
     const int y = rect_.top() + visLineNum * fontHeight;
 
 	// Get the text, length, and  buffer position of the line to display
-	const int lineStartPos = lineStarts_[visLineNum];
+    const int lineStartPos = lineStarts_[visLineNum];
 	std::string lineStr;
 	if (lineStartPos == -1) {
 		lineLen = 0;
