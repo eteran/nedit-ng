@@ -46,18 +46,18 @@ Program *ParseMacroEx(const QString &expr, QString *message, int *stoppedAt);
 bool CheckMacroStringEx(QWidget *dialogParent, const QString &string, const QString &errIn, int *errPos);
 int MacroWindowCloseActionsEx(DocumentWidget *document);
 int readCheckMacroStringEx(QWidget *dialogParent, const QString &string, DocumentWidget *runWindow, const QString &errIn, int *errPos);
-int ReadMacroStringEx(DocumentWidget *window, const QString &string, const QString &errIn);
+int ReadMacroStringEx(DocumentWidget *document, const QString &string, const QString &errIn);
 void AbortMacroCommandEx(DocumentWidget *document);
 void CancelMacroOrLearnEx(DocumentWidget *document);
 void DoMacroEx(DocumentWidget *document, const QString &macro, const char *errInName);
 void FinishLearnEx();
-void ReplayEx(DocumentWidget *window);
+void ReplayEx(DocumentWidget *document);
 
-void ReadMacroInitFileEx(DocumentWidget *window);
+void ReadMacroInitFileEx(DocumentWidget *document);
 void RegisterMacroSubroutines();
 void RepeatMacroEx(DocumentWidget *document, const char *command, int how);
-void ResumeMacroExecutionEx(DocumentWidget *window);
-void ReturnShellCommandOutputEx(DocumentWidget *window, const QString &outText, int status);
+void ResumeMacroExecutionEx(DocumentWidget *document);
+void ReturnShellCommandOutputEx(DocumentWidget *document, const QString &outText, int status);
 void SafeGC();
 
 /* Data attached to window during shell command execution with

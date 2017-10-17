@@ -4845,13 +4845,8 @@ bool TextArea::checkReadOnly() const {
 */
 void TextArea::TextInsertAtCursorEx(view::string_view chars, bool allowPendingDelete, bool allowWrap) {
 
-	int wrapMargin;
-	int colNum;
-	int lineStartPos;
     QFontMetrics fm(font_);
 	int fontWidth   = fm.maxWidth();
-	int singleLine;
-	int breakAt = 0;
 
 	// Don't wrap if auto-wrap is off or suppressed, or it's just a newline
 	if (!allowWrap || !P_autoWrap || (chars[0] == '\n' && chars[1] == '\0')) {
@@ -4870,24 +4865,25 @@ void TextArea::TextInsertAtCursorEx(view::string_view chars, bool allowPendingDe
 	   it and be done (for efficiency only, this routine is called for each
 	   character typed). (Of course, it may not be significantly more efficient
 	   than the more general code below it, so it may be a waste of time!) */
-    wrapMargin = P_wrapMargin != 0 ? P_wrapMargin : rect_.width() / fontWidth;
-	lineStartPos = buffer_->BufStartOfLine(cursorPos);
-	colNum = buffer_->BufCountDispChars(lineStartPos, cursorPos);
+    int wrapMargin   = P_wrapMargin != 0 ? P_wrapMargin : rect_.width() / fontWidth;
+    int lineStartPos = buffer_->BufStartOfLine(cursorPos);
+    int colNum       = buffer_->BufCountDispChars(lineStartPos, cursorPos);
 
 	auto it = chars.begin();
 	for (; it != chars.end() && *it != '\n'; it++) {
 		colNum += TextBuffer::BufCharWidth(*it, colNum, buffer_->tabDist_, buffer_->nullSubsChar_);
 	}
 
-	singleLine = it == chars.end();
+    const bool singleLine = (it == chars.end());
 	if (colNum < wrapMargin && singleLine) {
 		simpleInsertAtCursorEx(chars, true);
 		return;
 	}
 
 	// Wrap the text
-	std::string lineStartText = buffer_->BufGetRangeEx(lineStartPos, cursorPos);
-	std::string wrappedText = wrapTextEx(lineStartText, chars, lineStartPos, wrapMargin, replaceSel ? nullptr : &breakAt);
+    int breakAt = 0;
+    std::string lineStartText = buffer_->BufGetRangeEx(lineStartPos, cursorPos);
+    std::string wrappedText = wrapTextEx(lineStartText, chars, lineStartPos, wrapMargin, replaceSel ? nullptr : &breakAt);
 
 	/* Insert the text.  Where possible, use TextDInsert which is optimized
 	   for less redraw. */
@@ -6826,10 +6822,8 @@ void TextArea::BeginBlockDrag() {
 	TextSelection *sel = &buffer_->primary_;
 	int nLines;
 	int mousePos;
-	int lineStart;
 	int x;
 	int y;
-	int lineEnd;
 
 	/* Save a copy of the whole text buffer as a backup, and for
 	   deriving changes */
@@ -6891,12 +6885,12 @@ void TextArea::BeginBlockDrag() {
 	/* For non-rectangular selections, fill in the rectangular information in
 	   the selection for overlay mode drags which are done rectangularly */
 	if (!sel->rectangular) {
-		lineStart = buffer_->BufStartOfLine(sel->start);
+        int lineStart = buffer_->BufStartOfLine(sel->start);
 		if (dragNLines_ == 0) {
 			dragOrigBuf_->primary_.rectStart = buffer_->BufCountDispChars(lineStart, sel->start);
 			dragOrigBuf_->primary_.rectEnd   = buffer_->BufCountDispChars(lineStart, sel->end);
 		} else {
-			lineEnd = buffer_->BufGetCharacter(sel->end - 1) == '\n' ? sel->end - 1 : sel->end;
+            int lineEnd = buffer_->BufGetCharacter(sel->end - 1) == '\n' ? sel->end - 1 : sel->end;
 			findTextMargins(buffer_, lineStart, lineEnd, &dragOrigBuf_->primary_.rectStart, &dragOrigBuf_->primary_.rectEnd);
 		}
 	}
@@ -6928,7 +6922,6 @@ void TextArea::BlockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
 	int insLineNum;
 	int insLineStart;
 	int insRectStart;
-	int insRectEnd;
 	int insStart;
 	int modRangeStart   = -1;
 	int tempModRangeEnd = -1;
@@ -6939,8 +6932,6 @@ void TextArea::BlockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
 	int tempEnd;
 	int insertInserted;
 	int insertDeleted;
-	int row;
-	int column;
 	int origSelLineEnd;
 	int sourceInserted;
 	int sourceDeleted;
@@ -7054,6 +7045,8 @@ void TextArea::BlockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
 	/* Find the line number and column of the insert position.  Note that in
 	   continuous wrap mode, these must be calculated as if the text were
 	   not wrapped */
+    int row;
+    int column;
 	TextDXYToUnconstrainedPosition(
         QPoint(
             std::max(0, pos.x() - dragXOffset),
@@ -7134,7 +7127,7 @@ void TextArea::BlockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
 
 	// Reset the selection and cursor position
 	if (rectangular || overlay) {
-		insRectEnd = insRectStart + origSel->rectEnd - origSel->rectStart;
+        int insRectEnd = insRectStart + origSel->rectEnd - origSel->rectStart;
 		buffer_->BufRectSelect(insStart, insStart + insertInserted, insRectStart, insRectEnd);
 		TextDSetInsertPosition(buffer_->BufCountForwardDispChars(buffer_->BufCountForwardNLines(insStart, dragNLines_), insRectEnd));
 	} else {

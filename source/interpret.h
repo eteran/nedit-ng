@@ -153,7 +153,7 @@ struct DataValue {
 
 //------------------------------------------------------------------------------
 struct ArrayEntry : public rbTreeNode {
-	char *key;
+    char *key;
 	DataValue value;
 	bool      inUse; /* we use pointers to the data to refer to the entire struct */
 };

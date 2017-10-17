@@ -42,26 +42,21 @@
 #include "regularExp.h"
 #include "selection.h"
 #include "userCmds.h"
+
 #include <QApplication>
 #include <QClipboard>
 #include <QMessageBox>
 #include <QMimeData>
 #include <QTimer>
+
 #include <algorithm>
 #include <cctype>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <memory>
-#include <sys/param.h>
 
 int NHist = 0;
-
-struct SearchSelectedCallData {
-	SearchDirection direction;
-    SearchType      searchType;
-    bool            searchWrap;
-};
 
 
 // History mechanism for search and replace strings 
@@ -85,9 +80,9 @@ static bool findMatchingCharEx(DocumentWidget *window, char toMatch, void *style
 
 
 struct CharMatchTable {
-	char c;
-	char match;
-	char direction;
+    char            c;
+    char            match;
+    SearchDirection direction;
 };
 
 #define N_MATCH_CHARS 13
@@ -369,7 +364,6 @@ bool SearchAndSelectEx(MainWindow *window, DocumentWidget *document, TextArea *a
     int startPos;
     int endPos;
     int beginPos;
-    int cursorPos;
     int selStart;
     int selEnd;
     int movedFwd = 0;
@@ -392,7 +386,7 @@ bool SearchAndSelectEx(MainWindow *window, DocumentWidget *document, TextArea *a
         selEnd = -1;
         // no selection, or no match, search relative cursor
 
-        cursorPos = area->TextGetCursorPos();
+        int cursorPos = area->TextGetCursorPos();
         if (direction == SEARCH_BACKWARD) {
             // use the insert position - 1 for backward searches
             beginPos = cursorPos - 1;
@@ -788,8 +782,7 @@ bool ReplaceFindSameEx(MainWindow *window, DocumentWidget *document, TextArea *a
 */
 bool ReplaceAndSearchEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, const QString &searchString, const QString &replaceString, SearchType searchType, WrapMode searchWrap) {
     int startPos = 0;
-    int endPos = 0;
-    int replaceLen = 0;
+    int endPos = 0;    
     int searchExtentBW;
     int searchExtentFW;
 
@@ -800,6 +793,9 @@ bool ReplaceAndSearchEx(MainWindow *window, DocumentWidget *document, TextArea *
 
     // Replace the selected text only if it matches the search string
     if (searchMatchesSelectionEx(document, searchString, searchType, &startPos, &endPos, &searchExtentBW, &searchExtentFW)) {
+
+        int replaceLen = 0;
+
         // replace the text
         if (isRegexType(searchType)) {
             char replaceResult[SEARCHMAX + 1];
@@ -845,9 +841,6 @@ bool SearchAndReplaceEx(MainWindow *window, DocumentWidget *document, TextArea *
     int replaceLen;
     int searchExtentBW;
     int searchExtentFW;
-    int found;
-    int beginPos;
-    int cursorPos;
 
     // Save a copy of search and replace strings in the search history
     saveSearchHistory(searchString, replaceString, searchType, false);
@@ -859,7 +852,8 @@ bool SearchAndReplaceEx(MainWindow *window, DocumentWidget *document, TextArea *
     if (!searchMatchesSelectionEx(document, searchString, searchType, &startPos, &endPos, &searchExtentBW, &searchExtentFW)) {
         // get the position to start the search
 
-        cursorPos = area->TextGetCursorPos();
+        int beginPos;
+        int cursorPos = area->TextGetCursorPos();
         if (direction == SEARCH_BACKWARD) {
             // use the insert position - 1 for backward searches
             beginPos = cursorPos - 1;
@@ -867,8 +861,9 @@ bool SearchAndReplaceEx(MainWindow *window, DocumentWidget *document, TextArea *
             // use the insert position for forward searches
             beginPos = cursorPos;
         }
+
         // do the search
-        found = SearchWindowEx(window, document, direction, searchString, searchType, searchWrap, beginPos, &startPos, &endPos, &searchExtentBW, &searchExtentFW);
+        bool found = SearchWindowEx(window, document, direction, searchString, searchType, searchWrap, beginPos, &startPos, &endPos, &searchExtentBW, &searchExtentFW);
         if (!found)
             return false;
     }
