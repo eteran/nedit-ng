@@ -297,6 +297,8 @@ public:
 	void modifiedCallback(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *cbArg);
 
 private:
+    void updateFontHeightMetrics(const QFont &font);
+    void updateFontWidthMetrics(const QFont &font);
 	void measureDeletedLines(int pos, int nDeleted);
     void wrappedLineCounter(const TextBuffer *buf, int startPos, int maxPos, int maxLines, bool startPosIsLineStart, int styleBufOffset, int *retPos, int *retLines, int *retLineStart, int *retLineEnd) const;
     int measurePropChar(const char c, int colNum, int pos) const;

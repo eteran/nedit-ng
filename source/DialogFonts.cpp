@@ -242,8 +242,8 @@ void DialogFonts::browseFont(QLineEdit *lineEdit) {
     //               style, (ex. sometimes they call it "regular") will default
     //               to the first style in the list
     bool ok;
-    QFont currFont = Font::fromString(lineEdit->text());
-    QFont newFont  = QFontDialog::getFont(&ok, currFont, this);
+    auto currFont = Font::fromString(lineEdit->text());
+    QFont newFont = QFontDialog::getFont(&ok, currFont, this);
 
     if(ok) {
         lineEdit->setText(newFont.toString());

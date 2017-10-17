@@ -1002,6 +1002,7 @@ void DocumentWidget::RaiseDocument() {
     if(auto win = toWindow()) {
         // set the document as top document
         // show the new top document
+
         // NOTE(eteran): indirectly triggers a call to documentRaised()
         win->ui.tabWidget->setCurrentWidget(this);
     }
@@ -2445,8 +2446,8 @@ bool DocumentWidget::doSave() {
         if (!ConvertToDosFileStringEx(fileString)) {
             QMessageBox::critical(this, tr("Out of Memory"), tr("Out of memory!  Try\nsaving in Unix format"));
 
-            // NOTE(eteran): fixes resource leak error
-            fclose(fp);
+            // NOTE(eteran): fixes resource leak
+            ::fclose(fp);
             return false;
         }
     } else if (fileFormat_ == MAC_FILE_FORMAT) {
@@ -3236,9 +3237,11 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
 		}
     }
 
+    auto contents = view::string_view(&fileString[0], readLen);
+
     // Display the file contents in the text widget
     ignoreModify_ = true;
-    buffer_->BufSetAllEx(view::string_view(&fileString[0], readLen));
+    buffer_->BufSetAllEx(contents);
     ignoreModify_ = false;
 
     /* Check that the length that the buffer thinks it has is the same
@@ -3261,20 +3264,19 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
             }
 
             lockReasons_.setTMBDLocked(true);
-            for (char *c = &fileString[0]; c < &fileString[readLen]; c++) {
+
+            for (char *c = &fileString[0]; c < &fileString[readLen]; ++c) {
                 if (*c == '\0') {
-                    *c = (char)0xfe;
+                    *c = static_cast<char>(0xfe);
                 }
             }
-            buffer_->nullSubsChar_ = (char)0xfe;
+
+            buffer_->nullSubsChar_ = static_cast<char>(0xfe);
         }
+
         ignoreModify_ = true;
 
-        // NOTE(eteran): this looks correct, but hasn't been tested, so
-        // I'm putting an assert here. I think this code may possibly be
-        // technically unreachable due to proper NUL handling at a different
-        // layer
-        buffer_->BufSetAllEx(view::string_view(&fileString[0], readLen));
+        buffer_->BufSetAllEx(contents);
         ignoreModify_ = false;
     }
 
@@ -3595,7 +3597,7 @@ bool DocumentWidget::includeFile(const QString &name) {
         return false;
     }
 
-    int fileLen = statbuf.st_size;
+    const long fileLen = statbuf.st_size;
 
     // allocate space for the whole contents of the file
     try {
@@ -4118,9 +4120,6 @@ void DocumentWidget::ExecShellCommandEx(TextArea *area, const QString &command, 
         substitutedCommand.replace(QLatin1Char('%'), fullName);
 		substitutedCommand.replace(QLatin1Char('#'), QString::number(line));
 
-
-        // NOTE(eteran): this used to be a nullptr check because the old code would
-        // produce a null string pointer if it failed to allocate.
         if(substitutedCommand.isNull()) {
             QMessageBox::critical(this, tr("Shell Command"), tr("Shell command is too long due to\n"
                                                                "filename substitutions with '%%' or\n"
@@ -4409,9 +4408,7 @@ void DocumentWidget::setWrapMargin(int margin) {
 ** Set the fonts for "window" from a font name, and updates the display.
 ** Also updates window->fontList_ which is used for statistics line.
 */
-void DocumentWidget::SetFonts(const QString &fontName, const QString &italicName, const QString &boldName, const QString &boldItalicName) {
-
-    auto textD = firstPane();
+void DocumentWidget::SetFonts(const QString &fontName, const QString &italicName, const QString &boldName, const QString &boldItalicName) {    
 
     // Check which fonts have changed
     bool primaryChanged = fontName != fontName_;
@@ -4434,18 +4431,19 @@ void DocumentWidget::SetFonts(const QString &fontName, const QString &italicName
 
     /* Get information about the current this sizing, to be used to
        determine the correct this size after the font is changed */
+#if 0
+    auto textD = firstPane();
 
     // TODO(eteran): do we want the WINDOW width/height? or the widget's?
     //               I suspect we want the widget
 	int marginHeight    = textD->getMarginHeight();
-#if 0
+
 	int textHeight      = textD->height();
     int oldWindowWidth  = textD->width();
     int oldWindowHeight = textD->height();
     int marginWidth     = textD->getMarginWidth();
     QFont oldFont       = textD->getFont();
     int oldTextWidth    = textD->getRect().width + textD->getLineNumWidth();
-#endif
 
     int oldTextHeight = 0;
 
@@ -4454,7 +4452,7 @@ void DocumentWidget::SetFonts(const QString &fontName, const QString &italicName
         oldTextHeight += textHeight - 2 * marginHeight;
     }
 
-#if 0
+
     QFontMetricsF fm(oldFont);
     int borderWidth   = oldWindowWidth - oldTextWidth;
     int borderHeight  = oldWindowHeight - oldTextHeight;

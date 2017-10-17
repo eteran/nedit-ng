@@ -53,7 +53,7 @@
 // in a way that is comparaable to how the original nedit works
 class AsciiTextCodec : public QTextCodec {
 public:
-    virtual ~AsciiTextCodec() = default;
+    virtual ~AsciiTextCodec() override = default;
 
     virtual QByteArray name() const override {
         return "US_ASCII";
@@ -2070,15 +2070,12 @@ int TextArea::measurePropChar(const char c, int colNum, int pos) const {
 //------------------------------------------------------------------------------
 int TextArea::stringWidth(const char *string, int length, int style) const {
 
-
 	if (style & STYLE_LOOKUP_MASK) {
         QFontMetrics fm(styleTable_[(style & STYLE_LOOKUP_MASK) - ASCII_A].font);
-        int ret = fm.width(QString::fromLatin1(string, length));
-        return ret;
+        return fm.width(QString::fromLatin1(string, length));
 	} else {
         QFontMetrics fm(font_);
-        int ret = fm.width(QString::fromLatin1(string, length));
-        return ret;
+        return fm.width(QString::fromLatin1(string, length));
 	}
 }
 
@@ -3496,7 +3493,7 @@ void TextArea::drawString(QPainter *painter, int style, int x, int y, int toX, c
 	}
 
     // temporarily use a custom converter
-    static auto asciiCodec = new AsciiTextCodec ();
+    static auto asciiCodec = new AsciiTextCodec();
     QTextCodec::setCodecForLocale(asciiCodec);
 
     auto s = QString::fromLatin1(string, nChars);
@@ -3506,7 +3503,7 @@ void TextArea::drawString(QPainter *painter, int style, int x, int y, int toX, c
 
     QRect rect(x, y, toX - x, ascent_ + descent_);
 
-	// TODO(eteran): 2.0, OPTIMIZATTION: since Qt will auto-fill the BG with the
+    // TODO(eteran): 2.0, OPTIMIZATION: since Qt will auto-fill the BG with the
 	//               default base color we only need to play with the
 	//               background mode if drawing a non-base color.
 	//               Probably same with font
@@ -3665,14 +3662,13 @@ QColor TextArea::getRangesetColor(int ind, QColor bground) {
 void TextArea::TextDResize(int width, int height) {
 
 	int oldVisibleLines = nVisibleLines_;
-	bool canRedraw = true;
+    bool canRedraw      = true;
     int newVisibleLines = height / (ascent_ + descent_);
-	int redrawAll = false;
-    int oldWidth = rect_.width();
-    int exactHeight = height - height % (ascent_ + descent_);
+    int redrawAll       = false;
+    int oldWidth        = rect_.width();
+    int exactHeight     = height - height % (ascent_ + descent_);
 
-    rect_.setWidth(width);
-    rect_.setHeight(height);
+    rect_.setSize({width, height});
 
 	/* In continuous wrap mode, a change in width affects the total number of
 	   lines in the buffer, and can leave the top line number incorrect, and
@@ -3713,12 +3709,14 @@ void TextArea::TextDResize(int width, int height) {
 	   bar parameters.  If updating the horizontal range caused scrolling,
 	   redraw */
 	updateVScrollBarRange();
-	if (updateHScrollBarRange())
+    if (updateHScrollBarRange()) {
 		redrawAll = true;
+    }
 
 	// If a full redraw is needed
-	if (redrawAll && canRedraw)
+    if (redrawAll && canRedraw) {
 		TextDRedisplayRect(rect_);
+    }
 
 	// Decide if the horizontal scroll bar needs to be visible
 	hideOrShowHScrollBar();
@@ -4247,7 +4245,7 @@ void TextArea::TextDSetupBGClasses(const QString &s, QVector<QColor> *pp_bgClass
 			}
 
 			// NOTE(eteran): the original code started at index 1
-			// by indexing before using it. This code post increments
+            // by incrementing before using it. This code post increments
 			// starting the classes at 0, which allows NUL characters
 			// to be styled correctly. I am not aware of any negative
 			// side effects of this.
@@ -7572,7 +7570,6 @@ void TextArea::setOverstrike(bool value) {
 		TextDSetCursorStyle(BLOCK_CURSOR);
         break;
 	default:
-		// NOTE(eteran): wasn't handled in the original code
 		break;
 	}
 }
@@ -8065,13 +8062,14 @@ TextBuffer *TextArea::getStyleBuffer() const {
     return styleBuffer_;
 }
 
-/*
-** Change the (non highlight) font
-*/
-void TextArea::TextDSetFont(const QFont &font) {
+/**
+ * @brief TextArea::updateFontHeightMetrics
+ * @param font
+ */
+void TextArea::updateFontHeightMetrics(const QFont &font) {
 
     QFontMetrics fm(font);
-    QFontInfo fi(font);
+    QFontInfo    fi(font);
 
     int maxAscent  = fm.ascent();
     int maxDescent = fm.descent();
@@ -8082,7 +8080,6 @@ void TextArea::TextDSetFont(const QFont &font) {
     /* If there is a (syntax highlighting) style table in use, find the new
        maximum font height for this text display */
     for (int i = 0; i < nStyles_; i++) {
-        // NOTE(eteran): old code tested for nullptr? can this still be null?
         QFontMetrics styleFM(styleTable_[i].font);
 
         maxAscent  = qMax(maxAscent, styleFM.ascent());
@@ -8091,6 +8088,11 @@ void TextArea::TextDSetFont(const QFont &font) {
 
     ascent_  = maxAscent;
     descent_ = maxDescent;
+}
+
+void TextArea::updateFontWidthMetrics(const QFont &font) {
+    QFontMetrics fm(font);
+    QFontInfo    fi(font);
 
     // If all of the current fonts are fixed and match in width, compute
     int fontWidth = fm.maxWidth();
@@ -8098,8 +8100,6 @@ void TextArea::TextDSetFont(const QFont &font) {
         fontWidth = -1;
     } else {
         for (int i = 0; i < nStyles_; i++) {
-
-            // NOTE(eteran): old code tested for nullptr? can this still be null?
             QFontMetrics styleFM(styleTable_[i].font);
             QFontInfo    styleFI(styleTable_[i].font);
 
@@ -8109,24 +8109,31 @@ void TextArea::TextDSetFont(const QFont &font) {
         }
     }
     fixedFontWidth_ = fontWidth;
+}
+
+/*
+** Change the (non highlight) font
+*/
+void TextArea::TextDSetFont(const QFont &font) {
+
+    // If font size changes, cursor will be redrawn in a new position
+    blankCursorProtrusions();
+
+    updateFontHeightMetrics(font);
+    updateFontWidthMetrics(font);
 
     // Don't let the height dip below one line, or bad things can happen
-    if (rect_.height() < maxAscent + maxDescent) {
-        rect_.setHeight(maxAscent + maxDescent);
+    if (rect_.height() < ascent_ + descent_) {
+        rect_.setHeight(ascent_ + descent_);
     }
 
-    /* Change the font.  In most cases, this means re-allocating the
-       affected GCs (they are shared with other widgets, and if the primary
-       font changes, must be re-allocated to change it). Unfortunately,
-       this requres recovering all of the colors from the existing GCs */
     font_ = font;
 
     // Do a full resize to force recalculation of font related parameters
-    int width  = rect_.width();
-    int height = rect_.height();
+    const int width  = rect_.width();
+    const int height = rect_.height();
 
-    rect_.setWidth(0);
-    rect_.setHeight(0);
+    rect_.setSize({0, 0});
 
     TextDResize(width, height);
 
@@ -8246,7 +8253,7 @@ int TextArea::TextDLineAndColToPos(int lineNum, int column) {
     int i;
     int lineStart = 0;
 
-    // Count lines
+    // Count lines    
     if (lineNum < 1) {
         lineNum = 1;
     }
@@ -8273,14 +8280,16 @@ int TextArea::TextDLineAndColToPos(int lineNum, int column) {
         // Count columns, expanding each character
         std::string lineStr = buffer_->BufGetRangeEx(lineStart, lineEnd);
         int outIndex = 0;
-        for (i = lineStart; i < lineEnd; i++, charIndex++) {
+        for (int i = lineStart; i < lineEnd; i++, charIndex++) {
+
             char expandedChar[MAX_EXP_CHAR_LEN];
             charLen = TextBuffer::BufExpandCharacter(lineStr[charIndex], outIndex, expandedChar, buffer_->tabDist_, buffer_->nullSubsChar_);
-            if (outIndex + charLen >= column)
-                break;
-            outIndex += charLen;
 
-            // NOTE(eteran): previous code leaked here lineStr here!
+            if (outIndex + charLen >= column) {
+                break;
+            }
+
+            outIndex += charLen;
         }
 
         /* If the column is in the middle of an expanded character, put cursor

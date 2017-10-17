@@ -277,7 +277,7 @@ bool parseCommandLine(const QStringList &args, CommandLine *commandLine) {
             ++fileCount;
 
             // These switches only affect the next filename argument, not all
-            toDoCommand.clear();
+            toDoCommand = QString();
             lineNum = 0;
         }
     }

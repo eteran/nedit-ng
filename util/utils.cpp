@@ -88,22 +88,19 @@ QString GetUserNameEx() {
 #endif
 }
 
-
-/*
-** Writes the hostname of the current system in string "hostname".
-**
-** NOTE: This function used to be called "GetHostName" but that resulted in a
-** linking conflict on VMS with the standard gethostname function, because
-** VMS links case-insensitively.
-*/
+/**
+ * @brief GetNameOfHostEx
+ * @return the hostname of the system
+ */
 QString GetNameOfHostEx() {
 	return QHostInfo::localHostName();
 }
 
-/*
-** Create a path: $HOME/filename
-** Return "" if it doesn't fit into the buffer
-*/
+/**
+ * @brief PrependHomeEx
+ * @param filename
+ * @return $HOME/filename
+ */
 QString PrependHomeEx(const QString &filename) {	
 	return QString(QLatin1String("%1/%2")).arg(GetHomeDirEx(), filename);
 }

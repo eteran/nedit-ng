@@ -157,7 +157,7 @@ static QList<ArrayEntry *> AllocatedSparseArrayEntries;
 
 
 // Temporary global data for use while accumulating programs
-static QList<Symbol *> LocalSymList; // symbols local to the program
+static QList<Symbol *> LocalSymList;     // symbols local to the program
 static Inst Prog[PROGRAM_SIZE];          // the program
 static Inst *ProgP;                      // next free spot for code gen.
 static Inst *LoopStack[LOOP_STACK_SIZE]; // addresses of break, cont stmts
@@ -267,10 +267,10 @@ Program *FinishCreatingProgram() {
 
 	int fpOffset = 0;
 
-	auto newProg      = new Program;
-	ptrdiff_t progLen = reinterpret_cast<char *>(ProgP) - reinterpret_cast<char *>(Prog);
-	size_t count      = progLen / sizeof(Inst);
-	newProg->code     = new Inst[count];
+    auto newProg            = new Program;
+    const ptrdiff_t progLen = reinterpret_cast<char *>(ProgP) - reinterpret_cast<char *>(Prog);
+    const size_t count      = progLen / sizeof(Inst);
+    newProg->code           = new Inst[count];
 
 	std::copy_n(Prog, count, newProg->code);
 
@@ -699,10 +699,7 @@ Symbol *LookupSymbol(view::string_view name) {
 */
 Symbol *InstallSymbol(const std::string &name, enum SymTypes type, const DataValue &value) {
 
-	auto s = new Symbol;
-	s->name  = name;
-	s->type  = type;
-	s->value = value;
+    auto s = new Symbol { name, type, value };
 
 	if (type == LOCAL_SYM) {
 		LocalSymList.push_front(s);
@@ -2447,22 +2444,18 @@ static int beginArrayIter() {
 ** the ARRAY_ITER instruction
 */
 static int arrayIter() {
-	Symbol *iterator;
-	Symbol *item;
+
 	DataValue *iteratorValPtr;
 	DataValue *itemValPtr;
 	ArrayEntry *thisEntry;
-	Inst *branchAddr;
+
 
 	DISASM_RT(PC - 1, 4);
 	STACKDUMP(0, 3);
 
-	item = PC->sym;
-	PC++;
-	iterator = PC->sym;
-	PC++;
-	branchAddr = PC + PC->value;
-	PC++;
+    Symbol *const item     = PC->sym; ++PC;
+    Symbol *const iterator = PC->sym; ++PC;
+    Inst *const branchAddr = PC + PC->value; ++PC;
 
 	if (item->type == LOCAL_SYM) {
 		itemValPtr = &FP_GET_SYM_VAL(FrameP, item);

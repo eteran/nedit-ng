@@ -272,7 +272,7 @@ static bool delTag(int index) {
 }
 
 // used  in AddRelTagsFile and AddTagsFile
-static int tagFileIndex = 0;
+static int16_t tagFileIndex = 0;
 
 /*
 ** AddRelTagsFile():  Rescan tagSpec for relative tag file specs
@@ -1550,7 +1550,7 @@ static int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
 		}
 	}
 
-    // NOTE(eteran): fix resource leak
+    // NOTE(eteran): fixes resource leak
     ::fclose(fp);
 
     // Now resolve any aliases

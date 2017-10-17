@@ -124,10 +124,6 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(par
     CreateLanguageModeSubMenu();
     setupMenuDefaults();
 
-    // NOTE(eteran): in the original nedit, the previous menu was populated
-    // when the user actually tried to look at the menu. It is simpler (but
-    // perhaps marginally less efficient) to just populate it when we construct
-    // the window
     setupPrevOpenMenuActions();
     updatePrevOpenMenu();
 
@@ -194,7 +190,8 @@ void MainWindow::parseGeometry(QString geometry) {
 
 		document->setMinimumSize(w, h);
 		adjustSize();
-		// NOTE(eteran): this processEvents() is to force the resize
+
+        // NOTE(eteran): this processEvents() is to force the resize
 		// to happen now, so that we can set the widget to be fully
 		// resizable again right after we make everything adjust
 		QApplication::processEvents();
@@ -429,8 +426,6 @@ void MainWindow::setupMenuStrings() {
     new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_M), this, SLOT(action_Shift_Goto_Matching_triggered()));
 
     // This is an annoying solution... we can probably do better...
-    // NOTE(eteran): this assumes that the Qt::Key constants are
-    // in numerical order!
     for(int i = Qt::Key_A; i <= Qt::Key_Z; ++i) {
         new QShortcut(QKeySequence(Qt::ALT + Qt::Key_M, i),             this, SLOT(action_Mark_Shortcut_triggered()));
         new QShortcut(QKeySequence(Qt::ALT + Qt::Key_G, i),             this, SLOT(action_Goto_Mark_Shortcut_triggered()));
@@ -833,8 +828,6 @@ void MainWindow::UpdateWindowTitle(DocumentWidget *doc) {
 
 	QString iconTitle = doc->filename_;
 
-	// TODO(eteran): 2.0, consider using a disk icon instead of this "*"
-    //               as this would be more conventional in modern program
     if (doc->fileChanged_) {
 		iconTitle.append(tr("*"));
 	}
@@ -3981,10 +3974,11 @@ void MainWindow::on_action_Exit_triggered() {
 
     /* If this is not the last window (more than one window is open),
        confirm with the user before exiting. */
+
     // NOTE(eteran): test if the current window is NOT the only window
     if (GetPrefWarnExit() && !(documents.size() < 2)) {
 
-        QString exitMsg(tr("Editing: "));
+        auto exitMsg = tr("Editing: ");
 
         /* List the windows being edited and make sure the
            user really wants to exit */
@@ -3992,7 +3986,7 @@ void MainWindow::on_action_Exit_triggered() {
         for(int i = 0; i < documents.size(); ++i) {
             DocumentWidget *const document  = documents[i];
 
-            QString filename = tr("%1%2").arg(document->filename_, document->fileChanged_ ? tr("*") : tr(""));
+            auto filename = tr("%1%2").arg(document->filename_, document->fileChanged_ ? tr("*") : tr(""));
 
             constexpr int DF_MAX_MSG_LENGTH = 2048;
 
@@ -4484,28 +4478,6 @@ void MainWindow::on_action_Show_Calltip_triggered() {
 }
 
 /**
- * @brief action_Filter_Selection
- * @param filter
- */
-void MainWindow::action_Filter_Selection(const QString &filter) {
-    if(auto doc = currentDocument()) {
-
-        if (doc->CheckReadOnly()) {
-            return;
-        }
-
-        if (!doc->buffer_->primary_.selected) {
-            QApplication::beep();
-            return;
-        }
-
-        if(!filter.isEmpty()) {
-            doc->filterSelection(filter);
-        }
-    }
-}
-
-/**
  * @brief MainWindow::on_action_Filter_Selection_triggered
  */
 void MainWindow::on_action_Filter_Selection_triggered() {
@@ -4535,6 +4507,28 @@ void MainWindow::on_action_Filter_Selection_triggered() {
 
         QString filterText = dialog->ui.textFilter->text();
         action_Filter_Selection(filterText);
+    }
+}
+
+/**
+ * @brief action_Filter_Selection
+ * @param filter
+ */
+void MainWindow::action_Filter_Selection(const QString &filter) {
+    if(auto doc = currentDocument()) {
+
+        if (doc->CheckReadOnly()) {
+            return;
+        }
+
+        if (!doc->buffer_->primary_.selected) {
+            QApplication::beep();
+            return;
+        }
+
+        if(!filter.isEmpty()) {
+            doc->filterSelection(filter);
+        }
     }
 }
 

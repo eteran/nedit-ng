@@ -2754,6 +2754,7 @@ void learnActionHook(Widget w, XtPointer clientData, String actionName, XEvent *
 ** interested in making the macros cancelable, and in continuing other work
 ** than having users run a bunch of them at once together.
 */
+
 // NOTE(eteran): we are using a QFuture to simulate this, but I'm not 100% sure
 //               that it is a perfect match. We can also try something like a
 //               sinle shot QTimer with a timeout of zero.
@@ -2765,21 +2766,22 @@ bool continueWorkProcEx(DocumentWidget *window) {
     DataValue result;
     const int stat = ContinueMacroEx(cmdData->context, &result, &errMsg);
 
-    if (stat == MACRO_ERROR) {
+    switch(stat) {
+    case MACRO_ERROR:
         finishMacroCmdExecutionEx(window);
         QMessageBox::critical(window, QLatin1String("Macro Error"), QString(QLatin1String("Error executing macro: %1")).arg(QString::fromLatin1(errMsg)));
         return true;
-    } else if (stat == MACRO_DONE) {
+    case MACRO_DONE:
         finishMacroCmdExecutionEx(window);
         return true;
-    } else if (stat == MACRO_PREEMPT) {
+    case MACRO_PREEMPT:
         cmdData->continueWorkProcID = QFuture<bool>();
         return true;
-    }
-
-    // Macro exceeded time slice, re-schedule it
-    if (stat != MACRO_TIME_LIMIT) {
-        return true; // shouldn't happen
+    default:
+        // Macro exceeded time slice, re-schedule it
+        if (stat != MACRO_TIME_LIMIT) {
+            return true; // shouldn't happen
+        }
     }
 
     return false;
