@@ -36,31 +36,18 @@
 #include <QSettings>
 #include <QString>
 #include <QProcess>
-#include <QtDebug>
 #include <QJsonDocument>
 #include <QLocalSocket>
 #include <QDataStream>
+#include <QThread>
 
-#include "util/fileUtils.h"
-#include "util/utils.h"
+#include "version.h"
 #include "util/system.h"
+#include "util/fileUtils.h"
 #include "util/ClearCase.h"
 #include "util/ServerCommon.h"
-#include "version.h"
 
-#include <cstdio>
-#include <cstdlib>
-#include <climits>
-#include <cstring>
-#include <list>
 #include <memory>
-#include <algorithm>
-
-#include <sys/param.h>
-#include <sys/types.h>
-#include <sys/utsname.h>
-#include <unistd.h>
-#include <pwd.h>
 
 namespace {
 
@@ -92,9 +79,9 @@ struct {
  * @param argv
  * @param argIndex
  */
-static void nextArg(int argc, char **argv, int *argIndex) {
-    if (*argIndex + 1 >= argc) {
-        fprintf(stderr, "nc: %s requires an argument\n%s", argv[*argIndex], cmdLineHelp);
+static void nextArg(const QStringList &args, int *argIndex) {
+    if (*argIndex + 1 >= args.size()) {
+        fprintf(stderr, "nc: %s requires an argument\n%s", args[*argIndex].toLatin1().data(), cmdLineHelp);
         exit(EXIT_FAILURE);
     }
     (*argIndex)++;
@@ -106,21 +93,21 @@ static void nextArg(int argc, char **argv, int *argIndex) {
 ** Note that the .shell string in the command line structure is large enough
 ** to hold the escaped characters.
 */
-void copyCommandLineArg(CommandLine *commandLine, const char *arg) {
+void copyCommandLineArg(CommandLine *commandLine, const QString &arg) {
 
     auto outPtr = std::back_inserter(commandLine->shell);
 
     *outPtr++ = QLatin1Char('\'');
-    for (const char *c = arg; *c != '\0'; c++) {
+    for(QChar ch : arg) {
 
-        if (*c == '\'') {
+        if (ch == QLatin1Char('\'')) {
             *outPtr++ = QLatin1Char('\'');
             *outPtr++ = QLatin1Char('\\');
         }
 
-        *outPtr++ = QChar::fromLatin1(*c);
+        *outPtr++ = ch;
 
-        if (*c == '\'') {
+        if (ch == QLatin1Char('\'')) {
             *outPtr++ = QLatin1Char('\'');
         }
     }
@@ -128,13 +115,13 @@ void copyCommandLineArg(CommandLine *commandLine, const char *arg) {
     *outPtr++ = QLatin1Char('\'');
     *outPtr++ = QLatin1Char(' ');
 }
-
-// Print version
+/**
+ * @brief printNcVersion
+ */
 void printNcVersion() {
     static const char ncHelpText[] = "nc (nedit-ng) Version %d.%d\n\n"
                                      "Built on: %s, %s, %s\n"
                                      "Built at: %s, %s\n";
-
     printf(ncHelpText,
            NEDIT_VERSION_MAJ,
            NEDIT_VERSION_REV,
@@ -145,121 +132,124 @@ void printNcVersion() {
            __TIME__);
 }
 
-/*
-** Converts command line into a command string suitable for passing to
-** the server
-*/
-bool parseCommandLine(int argc, char **argv, CommandLine *commandLine) {
+/**
+ * @brief parseCommandLine
+ * @param args
+ * @param commandLine
+ * @return
+ *
+ * Converts command line into a command string suitable for passing to the
+ * server
+ */
+bool parseCommandLine(const QStringList &args, CommandLine *commandLine) {
 
     QString name;
     QString path;
-    const char *toDoCommand = "";
-    const char *langMode = "";
-    const char *geometry = "";
-    int lineNum = 0;
-    int read = 0;
-    int create = 0;
-    int iconic = 0;
-    int tabbed = -1;
-    int i;
+    QString toDoCommand;
+    QString langMode;
+    QString geometry;
+    int lineNum   = 0;
+    int read      = 0;
+    int create    = 0;
+    int iconic    = 0;
+    int tabbed    = -1;
     int fileCount = 0;
-    int group = 0;
-    int isTabbed;
-    bool opts = true;
+    int group     = 0;
+    bool opts     = true;
 
     QVariantList commandData;
 
-    for (i = 1; i < argc; i++) {
+    for (int i = 1; i < args.size(); i++) {
 
-		view::string_view arg = argv[i];
-
-        if (opts && arg == "--") {
+        if (opts && args[i] == QLatin1String("--")) {
             opts = false; // treat all remaining arguments as filenames
             continue;
-        } else if (opts && arg == "-wait") {
+        } else if (opts && args[i] == QLatin1String("-wait")) {
             ServerPreferences.waitForClose = true;
-        } else if (opts && arg == "-svrname") {
-            nextArg(argc, argv, &i);
-            ServerPreferences.serverName = QLatin1String(argv[i]);
-        } else if (opts && arg == "-svrcmd") {
-            nextArg(argc, argv, &i);
-            ServerPreferences.serverCmd = QLatin1String(argv[i]);
-        } else if (opts && arg == "-timeout") {
-            nextArg(argc, argv, &i);
+        } else if (opts && args[i] == QLatin1String("-svrname")) {
+            nextArg(args, &i);
+            ServerPreferences.serverName = args[i];
+        } else if (opts && args[i] == QLatin1String("-svrcmd")) {
+            nextArg(args, &i);
+            ServerPreferences.serverCmd = args[i];
+        } else if (opts && args[i] == QLatin1String("-timeout")) {
+            nextArg(args, &i);
 
-            char *end = nullptr;
-            long n = strtol(argv[i], &end, 10);
-            if(*end != '\0') {
+            bool ok;
+            int n = args[i].toInt(&ok);
+            if(!ok) {
                 fprintf(stderr, "nc: argument to timeout should be a number\n");
             } else {
-                ServerPreferences.timeOut = static_cast<int>(n);
+                ServerPreferences.timeOut = n;
             }
-        } else if (opts && arg == "-do") {
-            nextArg(argc, argv, &i);
-            toDoCommand = argv[i];
-        } else if (opts && arg == "-lm") {
-            copyCommandLineArg(commandLine, argv[i]);
-            nextArg(argc, argv, &i);
-            langMode = argv[i];
-            copyCommandLineArg(commandLine, argv[i]);
-        } else if (opts && (arg == "-g" || arg == "-geometry")) {
-            copyCommandLineArg(commandLine, argv[i]);
-            nextArg(argc, argv, &i);
-            geometry = argv[i];
-            copyCommandLineArg(commandLine, argv[i]);
-        } else if (opts && arg == "-read") {
+        } else if (opts && args[i] == QLatin1String("-do")) {
+            nextArg(args, &i);
+            toDoCommand = args[i];
+        } else if (opts && args[i] == QLatin1String("-lm")) {
+            copyCommandLineArg(commandLine, args[i]);
+            nextArg(args, &i);
+            langMode = args[i];
+            copyCommandLineArg(commandLine, args[i]);
+        } else if (opts && (args[i] == QLatin1String("-g") || args[i] == QLatin1String("-geometry"))) {
+            copyCommandLineArg(commandLine, args[i]);
+            nextArg(args, &i);
+            geometry = args[i];
+            copyCommandLineArg(commandLine, args[i]);
+        } else if (opts && args[i] == QLatin1String("-read")) {
             read = 1;
-        } else if (opts && arg == "-create") {
+        } else if (opts && args[i] == QLatin1String("-create")) {
             create = 1;
-        } else if (opts && arg == "-tabbed") {
+        } else if (opts && args[i] == QLatin1String("-tabbed")) {
             tabbed = 1;
             group = 0; // override -group option
-        } else if (opts && arg == "-untabbed") {
+        } else if (opts && args[i] == QLatin1String("-untabbed")) {
             tabbed = 0;
             group = 0; // override -group option
-        } else if (opts && arg == "-group") {
+        } else if (opts && args[i] == QLatin1String("-group")) {
             group = 2; // 2: start new group, 1: in group
-        } else if (opts && (arg == "-iconic" || arg == "-icon")) {
+        } else if (opts && (args[i] == QLatin1String("-iconic") || args[i] == QLatin1String("-icon"))) {
             iconic = 1;
-            copyCommandLineArg(commandLine, argv[i]);
-        } else if (opts && arg == "-line") {
-            nextArg(argc, argv, &i);
+            copyCommandLineArg(commandLine, args[i]);
+        } else if (opts && args[i] == QLatin1String("-line")) {
+            nextArg(args, &i);
 
-            char *end = nullptr;
-            long lineArg = strtol(argv[i], &end, 10);
-            if(*end != '\0') {
+            bool ok;
+            int lineArg = args[i].toInt(&ok);
+            if(!ok) {
                 fprintf(stderr, "nc: argument to line should be a number\n");
             } else {
-                lineNum = static_cast<int>(lineArg);
+                lineNum = lineArg;
             }
-        } else if (opts && (*argv[i] == '+')) {
+        } else if (opts && (args[i][0] == QLatin1Char('+'))) {
 
-            char *end = nullptr;
-            long lineArg = strtol(argv[i], &end, 10);
-            if(*end != '\0') {
+            bool ok;
+            int lineArg = args[i].toInt(&ok);
+            if(!ok) {
                 fprintf(stderr, "nc: argument to + should be a number\n");
             } else {
-                lineNum = static_cast<int>(lineArg);
+                lineNum = lineArg;
             }
-        } else if (opts && (arg == "-ask" || arg == "-noask")) {
+        } else if (opts && (args[i] == QLatin1String("-ask") || args[i] == QLatin1String("-noask"))) {
             ; // Ignore resource-based arguments which are processed later
-        } else if (opts && (arg == "-version" || arg == "-V")) {
+        } else if (opts && (args[i] == QLatin1String("-version") || args[i] == QLatin1String("-V"))) {
             printNcVersion();
             exit(EXIT_SUCCESS);
-        } else if (opts && (arg == "-h" || arg == "-help")) {
+        } else if (opts && (args[i] == QLatin1String("-h") || args[i] == QLatin1String("-help"))) {
             fprintf(stderr, "%s", cmdLineHelp);
             exit(EXIT_SUCCESS);
-        } else if (opts && (*argv[i] == '-')) {
+        } else if (opts && (args[i][0] == QLatin1Char('-'))) {
 
-            fprintf(stderr, "nc: Unrecognized option %s\n%s", argv[i], cmdLineHelp);
+            fprintf(stderr, "nc: Unrecognized option %s\n%s", args[i].toLatin1().data(), cmdLineHelp);
             exit(EXIT_FAILURE);
         } else {
-            if (ParseFilenameEx(QString::fromLatin1(argv[i]), &name, &path) != 0) {
+            if (ParseFilenameEx(args[i], &name, &path) != 0) {
                 // An Error, most likely too long paths/strings given
                 return false;
             }
 
             path.append(name);
+
+            bool isTabbed;
 
             /* determine if file is to be openned in new tab, by
                factoring the options -group, -tabbed & -untabbed */
@@ -279,15 +269,15 @@ bool parseCommandLine(int argc, char **argv, CommandLine *commandLine) {
             file[QLatin1String("iconic")]      = iconic;
             file[QLatin1String("is_tabbed")]   = isTabbed;
             file[QLatin1String("path")]        = path;
-            file[QLatin1String("toDoCommand")] = QLatin1String(toDoCommand);
-            file[QLatin1String("langMode")]    = QLatin1String(langMode);
-            file[QLatin1String("geometry")]    = QLatin1String(geometry);
+            file[QLatin1String("toDoCommand")] = toDoCommand;
+            file[QLatin1String("langMode")]    = langMode;
+            file[QLatin1String("geometry")]    = geometry;
             commandData.append(file);
 
             ++fileCount;
 
             // These switches only affect the next filename argument, not all
-            toDoCommand = "";
+            toDoCommand.clear();
             lineNum = 0;
         }
     }
@@ -297,7 +287,7 @@ bool parseCommandLine(int argc, char **argv, CommandLine *commandLine) {
      * create a server request with an empty file name and requested
      * iconic state (and optional language mode and geometry).
      */
-    if (toDoCommand[0] != '\0' || fileCount == 0) {
+    if (!toDoCommand.isEmpty() || fileCount == 0) {
 
         QVariantMap file;
         file[QLatin1String("line_number")] = 0;
@@ -306,9 +296,9 @@ bool parseCommandLine(int argc, char **argv, CommandLine *commandLine) {
         file[QLatin1String("iconic")]      = iconic;
         file[QLatin1String("is_tabbed")]   = tabbed;
         file[QLatin1String("path")]        = QString();
-        file[QLatin1String("toDoCommand")] = QLatin1String(toDoCommand);
-        file[QLatin1String("langMode")]    = QLatin1String(langMode);
-        file[QLatin1String("geometry")]    = QLatin1String(geometry);
+        file[QLatin1String("toDoCommand")] = toDoCommand;
+        file[QLatin1String("langMode")]    = langMode;
+        file[QLatin1String("geometry")]    = geometry;
         commandData.append(file);
     }
 
@@ -317,17 +307,21 @@ bool parseCommandLine(int argc, char **argv, CommandLine *commandLine) {
     return true;
 }
 
-
-/* Reconstruct the command line in string commandLine in case we have to
- * start a server (nc command line args parallel nedit's).  Include
- * -svrname if nc wants a named server, so nedit will match. Special
- * characters are protected from the shell by escaping EVERYTHING with \
+/**
+ * @brief processCommandLine
+ * @param args
+ * @return
+ *
+ * Reconstruct the command line in string commandLine in case we have to start
+ * a server (nc command line args parallel nedit's). Include -svrname if nc
+ * wants a named server, so nedit will match. Special characters are protected
+ * from the shell by escaping EVERYTHING with '\'
  */
-CommandLine processCommandLine(int argc, char **argv) {
+CommandLine processCommandLine(const QStringList &args) {
     CommandLine commandLine;
 
     // Convert command line arguments into a command string for the server
-    if(!parseCommandLine(argc, argv, &commandLine)) {
+    if(!parseCommandLine(args, &commandLine)) {
         fprintf(stderr, "nc: Invalid commandline argument\n");
         exit(EXIT_FAILURE);
     }
@@ -335,10 +329,14 @@ CommandLine processCommandLine(int argc, char **argv) {
     return commandLine;
 }
 
-
-/*
-** Prompt the user about starting a server, with "message", then start server
-*/
+/**
+ * @brief startServer
+ * @param message
+ * @param commandLineArgs
+ * @return
+ *
+ * Prompt the user about starting a server, with "message", then start server
+ */
 int startServer(const char *message, const QString &commandLineArgs) {
 
     // prompt user whether to start server
@@ -417,7 +415,7 @@ int main(int argc, char *argv[]) {
     ServerPreferences.serverName    = settings.value(QLatin1String("nc.serverName"),    QLatin1String("")).toString();
     ServerPreferences.waitForClose  = settings.value(QLatin1String("nc.waitForClose"),  false).toBool();
     ServerPreferences.timeOut       = settings.value(QLatin1String("nc.timeOut"),       10).toInt();
-    CommandLine commandLine = processCommandLine(argc, argv);
+    CommandLine commandLine         = processCommandLine(app.arguments());
 
 
 
@@ -431,7 +429,7 @@ int main(int argc, char *argv[]) {
        session). This should have no bad side-effects for non-clearcase users */
     if (ServerPreferences.serverName.isEmpty()) {
         const QString viewTag = ClearCase::GetViewTag();
-        if (!viewTag.isNull() && viewTag.size() < MAXPATHLEN) {
+        if (!viewTag.isEmpty()) {
             ServerPreferences.serverName =  viewTag;
         }
     }
@@ -449,7 +447,7 @@ int main(int argc, char *argv[]) {
             }
 
             // give just a little bit of time for things to get going...
-            usleep(125000);
+            QThread::usleep(125000);
             continue;
         }
 

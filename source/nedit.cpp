@@ -62,8 +62,8 @@
 #include "TextArea.h"
 #include "TextBuffer.h"
 
-static void nextArg(int argc, char **argv, int *argIndex);
-static bool checkDoMacroArg(const char *macro);
+static void nextArg(const QStringList &args, int *argIndex);
+static bool checkDoMacroArg(const QString &macro);
 
 bool IsServer = false;
 
@@ -79,7 +79,7 @@ constexpr const char cmdLineHelp[] =
     "             [-h|-help] [--] [file...]\n";
 }
 
-int main(int argc, char *argv[]) {	
+int main(int argc, char *argv[]) {
 
     int lineNum = 0;
     int editFlags = EditFlags::CREATE;
@@ -94,17 +94,15 @@ int main(int argc, char *argv[]) {
     QString langMode;
     QString filename;
     QString pathname;
+    QString toDoCommand;
     QPointer<DocumentWidget> lastFileEx = nullptr;
-    char *toDoCommand = nullptr;
 
 #ifdef Q_OS_LINUX
     if (qEnvironmentVariableIsEmpty("DISPLAY")) {
 		// Respond to -V or -version even if there is no display 
 		for (int i = 1; i < argc && strcmp(argv[i], "--"); i++) {
 
-	        const view::string_view arg = argv[i];
-
-			if (arg == "-V" || arg == "-version") {
+            if (strcmp(argv[i], "-V") == 0 || strcmp(argv[i], "-version") == 0) {
                 QString infoString = DialogAbout::createInfoString();
                 printf("%s", infoString.toLatin1().data());
 				exit(EXIT_SUCCESS);
@@ -112,11 +110,13 @@ int main(int argc, char *argv[]) {
 		}
 		fputs("NEdit: Can't open display\n", stderr);
 		exit(EXIT_FAILURE);
-	}
+    }
 #endif
 
 	QApplication app(argc, argv);
 	QApplication::setWindowIcon(QIcon(QLatin1String(":/res/nedit.png")));
+
+    QStringList args = app.arguments();
 
     // NOTE(eteran): I experienced with Qt 5.9 an issue with font rendering
     // where the metrics in the painter were different than the metrics
@@ -153,18 +153,18 @@ int main(int argc, char *argv[]) {
 	/* Process -import command line argument before others which might
 	   open windows (loading preferences doesn't update menu settings,
 	   which would then be out of sync with the real preference settings) */
-	for (int i = 1; i < argc; i++) {
+    for (int i = 1; i < args.size(); ++i) {
 
-		const view::string_view arg = argv[i];
+        const QString arg = args[i];
 
-		if (arg == "--") {
+        if (arg == QLatin1String("--")) {
 			break; // treat all remaining arguments as filenames 
-		} else if (arg == "-import") {
-			nextArg(argc, argv, &i);
-            ImportPrefFile(QString::fromLatin1(argv[i]), false);
-		} else if (arg == "-importold") {
-			nextArg(argc, argv, &i);
-            ImportPrefFile(QString::fromLatin1(argv[i]), true);
+        } else if (arg == QLatin1String("-import")) {
+            nextArg(args, &i);
+            ImportPrefFile(args[i], false);
+        } else if (arg == QLatin1String("-importold")) {
+            nextArg(args, &i);
+            ImportPrefFile(args[i], true);
 		}
 	}
 
@@ -181,124 +181,130 @@ int main(int argc, char *argv[]) {
 
     bool fileSpecified = false;
 
-	for (int i = 1; i < argc; i++) {
+    for (int i = 1; i < args.size(); i++) {
 
-		const view::string_view arg = argv[i];
-
-		if (opts && arg == "--") {
+        if (opts && args[i] == QLatin1String("--")) {
 			opts = false; // treat all remaining arguments as filenames 
 			continue;
-		} else if (opts && arg == "-tags") {
-			nextArg(argc, argv, &i);
-            if (!AddTagsFileEx(QString::fromLatin1(argv[i]), TAG)) {
+        } else if (opts && args[i] == QLatin1String("-tags")) {
+            nextArg(args, &i);
+            if (!AddTagsFileEx(args[i], TAG)) {
 				fprintf(stderr, "NEdit: Unable to load tags file\n");
             }
 
-		} else if (opts && arg == "-do") {
-			nextArg(argc, argv, &i);
-            if (checkDoMacroArg(argv[i])) {
-				toDoCommand = argv[i];
+        } else if (opts && args[i] == QLatin1String("-do")) {
+            nextArg(args, &i);
+            if (checkDoMacroArg(args[i])) {
+                toDoCommand = args[i];
             }
-        } else if (opts && arg == "-svrname") {
-            nextArg(argc, argv, &i);
-            GetSettings().serverName = QString::fromLatin1(argv[i]);
-        } else if (opts && (arg == "-font" || arg == "-fn")) {
-            nextArg(argc, argv, &i);
-            GetSettings().textFont = QString::fromLatin1(argv[i]);
-        } else if (opts && arg == "-wrap") {
+        } else if (opts && args[i] == QLatin1String("-svrname")) {
+            nextArg(args, &i);
+            GetSettings().serverName = args[i];
+        } else if (opts && (args[i] == QLatin1String("-font") || args[i] == QLatin1String("-fn"))) {
+            nextArg(args, &i);
+            GetSettings().textFont = args[i];
+        } else if (opts && args[i] == QLatin1String("-wrap")) {
             GetSettings().autoWrap = CONTINUOUS_WRAP;
-        } else if (opts && arg == "-nowrap") {
+        } else if (opts && args[i] == QLatin1String("-nowrap")) {
             GetSettings().autoWrap = NO_WRAP;
-        } else if (opts && arg == "-autowrap") {
+        } else if (opts && args[i] == QLatin1String("-autowrap")) {
             GetSettings().autoWrap = NEWLINE_WRAP;
-        } else if (opts && arg == "-autoindent") {
+        } else if (opts && args[i] == QLatin1String("-autoindent")) {
             GetSettings().autoIndent = AUTO_INDENT;
-        } else if (opts && arg == "-noautoindent") {
+        } else if (opts && args[i] == QLatin1String("-noautoindent")) {
             GetSettings().autoIndent = NO_AUTO_INDENT;
-        } else if (opts && arg == "-autosave") {
+        } else if (opts && args[i] == QLatin1String("-autosave")) {
             GetSettings().autoSave = true;
-        } else if (opts && arg == "-noautosave") {
+        } else if (opts && args[i] == QLatin1String("-noautosave")) {
             GetSettings().autoSave = false;
-        } else if (opts && arg == "-rows") {
-            int n;
-            nextArg(argc, argv, &i);
-            int nRead = sscanf(argv[i], "%d", &n);
-            if (nRead != 1)
+        } else if (opts && args[i] == QLatin1String("-rows")) {
+            nextArg(args, &i);
+
+            bool ok;
+            int n = args[i].toInt(&ok);
+            if(!ok) {
                 fprintf(stderr, "NEdit: argument to rows should be a number\n");
-            else {
+            } else {
                 GetSettings().textRows = n;
             }
-        } else if (opts && arg == "-columns") {
-            int n;
-            nextArg(argc, argv, &i);
-            int nRead = sscanf(argv[i], "%d", &n);
-            if (nRead != 1)
+        } else if (opts && args[i] == QLatin1String("-columns")) {
+            nextArg(args, &i);
+
+            bool ok;
+            int n = args[i].toInt(&ok);
+            if(!ok) {
                 fprintf(stderr, "NEdit: argument to cols should be a number\n");
-            else {
+            } else {
                 GetSettings().textCols = n;
             }
-        } else if (opts && arg == "-tabs") {
-            int n;
-            nextArg(argc, argv, &i);
-            int nRead = sscanf(argv[i], "%d", &n);
-            if (nRead != 1)
+        } else if (opts && args[i] == QLatin1String("-tabs")) {
+            nextArg(args, &i);
+
+            bool ok;
+            int n = args[i].toInt(&ok);
+            if(!ok) {
                 fprintf(stderr, "NEdit: argument to tabs should be a number\n");
-            else {
+            } else {
                 GetSettings().tabDistance = n;
             }
-		} else if (opts && arg == "-read") {
+        } else if (opts && args[i] == QLatin1String("-read")) {
 			editFlags |= PREF_READ_ONLY;
-		} else if (opts && arg == "-create") {
+        } else if (opts && args[i] == QLatin1String("-create")) {
 			editFlags |= SUPPRESS_CREATE_WARN;
-		} else if (opts && arg == "-tabbed") {
+        } else if (opts && args[i] == QLatin1String("-tabbed")) {
 			tabbed = 1;
 			group = 0; // override -group option 
-		} else if (opts && arg == "-untabbed") {
+        } else if (opts && args[i] == QLatin1String("-untabbed")) {
 			tabbed = 0;
 			group = 0; // override -group option 
-		} else if (opts && arg == "-group") {
+        } else if (opts && args[i] == QLatin1String("-group")) {
 			group = 2; // 2: start new group, 1: in group 
-		} else if (opts && arg == "-line") {
-			nextArg(argc, argv, &i);
-            int nRead = sscanf(argv[i], "%d", &lineNum);
-			if (nRead != 1)
+        } else if (opts && args[i] == QLatin1String("-line")) {
+            nextArg(args, &i);
+
+            bool ok;
+            lineNum = args[i].toInt(&ok);
+            if(!ok) {
 				fprintf(stderr, "NEdit: argument to line should be a number\n");
-			else
+            } else {
 				gotoLine = true;
+            }
 		} else if (opts && (*argv[i] == '+')) {
-            int nRead = sscanf((argv[i] + 1), "%d", &lineNum);
-			if (nRead != 1)
+            bool ok;
+            lineNum = args[i].toInt(&ok);
+            if(!ok) {
 				fprintf(stderr, "NEdit: argument to + should be a number\n");
-			else
+            } else {
 				gotoLine = true;
-		} else if (opts && arg == "-server") {
+            }
+        } else if (opts && args[i] == QLatin1String("-server")) {
 			IsServer = true;
-		} else if (opts && (arg == "-iconic" || arg == "-icon")) {
+        } else if (opts && (args[i] == QLatin1String("-iconic") || args[i] == QLatin1String("-icon"))) {
 			iconic = true;
-		} else if (opts && arg == "-noiconic") {
+        } else if (opts && args[i] == QLatin1String("-noiconic")) {
 			iconic = false;
-		} else if (opts && (arg == "-geometry" || arg == "-g")) {
-			nextArg(argc, argv, &i);
-            geometry = QString::fromLatin1(argv[i]);
-		} else if (opts && arg == "-lm") {
-			nextArg(argc, argv, &i);
-            langMode = QString::fromLatin1(argv[i]);
-		} else if (opts && arg == "-import") {
-			nextArg(argc, argv, &i); // already processed, skip 
-		} else if (opts && (arg == "-V" || arg == "-version")) {
+        } else if (opts && (args[i] == QLatin1String("-geometry") || args[i] == QLatin1String("-g"))) {
+            nextArg(args, &i);
+            geometry = args[i];
+        } else if (opts && args[i] == QLatin1String("-lm")) {
+            nextArg(args, &i);
+            langMode = args[i];
+        } else if (opts && args[i] == QLatin1String("-import")) {
+            nextArg(args, &i); // already processed, skip
+        } else if (opts && (args[i] == QLatin1String("-V") || args[i] == QLatin1String("-version"))) {
             QString infoString = DialogAbout::createInfoString();
             printf("%s", infoString.toLatin1().data());
 			exit(EXIT_SUCCESS);
-		} else if (opts && (arg == "-h" || arg == "-help")) {
+        } else if (opts && (args[i] == QLatin1String("-h") || args[i] == QLatin1String("-help"))) {
 			fprintf(stderr, "%s", cmdLineHelp);
 			exit(EXIT_SUCCESS);
-		} else if (opts && (arg[0] == '-')) {
+        } else if (opts && (args[i][0] == QLatin1Char('-'))) {
 
-			fprintf(stderr, "nedit: Unrecognized option %s\n%s", argv[i], cmdLineHelp);
+            fprintf(stderr, "nedit: Unrecognized option %s\n%s", args[i].toLatin1().data(), cmdLineHelp);
 			exit(EXIT_FAILURE);
 		} else {
 
-            if (ParseFilenameEx(QString::fromLatin1(argv[i]), &filename, &pathname) == 0) {
+            if (ParseFilenameEx(args[i], &filename, &pathname) == 0) {
 				/* determine if file is to be openned in new tab, by
 				   factoring the options -group, -tabbed & -untabbed */
                 switch(group) {
@@ -363,9 +369,9 @@ int main(int argc, char *argv[]) {
                         SelectNumberedLineEx(documentEx, documentEx->firstPane(), lineNum);
                     }
 
-                    if (toDoCommand) {
-                        DoMacroEx(documentEx, QString::fromLatin1(toDoCommand), "-do macro");
-                        toDoCommand = nullptr;
+                    if (!toDoCommand.isNull()) {
+                        DoMacroEx(documentEx, toDoCommand, "-do macro");
+                        toDoCommand = QString();
                     }
                 }
 
@@ -375,7 +381,7 @@ int main(int argc, char *argv[]) {
                 }
 
 			} else {
-				fprintf(stderr, "nedit: file name too long: %s\n", argv[i]);
+                fprintf(stderr, "nedit: file name too long: %s\n", args[i].toLatin1().data());
 			}
 
 			// -line/+n does only affect the file following this switch 
@@ -396,8 +402,8 @@ int main(int argc, char *argv[]) {
         ReadMacroInitFileEx(documentEx);
         MainWindow::CheckCloseDimEx();
 
-        if (toDoCommand) {
-            DoMacroEx(documentEx, QString::fromLatin1(toDoCommand), "-do macro");
+        if (!toDoCommand.isNull()) {
+            DoMacroEx(documentEx, toDoCommand, "-do macro");
         }
 	}
 
@@ -414,9 +420,9 @@ int main(int argc, char *argv[]) {
     return app.exec();
 }
 
-static void nextArg(int argc, char **argv, int *argIndex) {
-	if (*argIndex + 1 >= argc) {
-		fprintf(stderr, "NEdit: %s requires an argument\n%s", argv[*argIndex], cmdLineHelp);
+static void nextArg(const QStringList &args, int *argIndex) {
+    if (*argIndex + 1 >= args.size()) {
+        fprintf(stderr, "NEdit: %s requires an argument\n%s", args[*argIndex].toLatin1().data(), cmdLineHelp);
 		exit(EXIT_FAILURE);
 	}
 	(*argIndex)++;
@@ -425,14 +431,14 @@ static void nextArg(int argc, char **argv, int *argIndex) {
 /*
 ** Return True if -do macro is valid, otherwise write an error on stderr
 */
-static bool checkDoMacroArg(const char *macro) {
+static bool checkDoMacroArg(const QString &macro) {
 
     QString errMsg;
     int stoppedAt;
 
 	/* Add a terminating newline (which command line users are likely to omit
 	   since they are typically invoking a single routine) */
-    auto macroString = QString::fromLatin1(macro) + QLatin1Char('\n');
+    auto macroString = macro + QLatin1Char('\n');
 
 	// Do a test parse 
     Program *const prog = ParseMacroEx(macroString, &errMsg, &stoppedAt);
