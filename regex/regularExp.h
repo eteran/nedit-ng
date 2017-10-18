@@ -124,8 +124,16 @@ public:
 	 */
 	bool execute(view::string_view string, size_t offset, size_t end_offset, char prev, char succ, const char *delimiters, bool reverse = false);	
 
-	/* Perform substitutions after a 'regexp' match. */
-	bool SubstituteRE(const char *source, char *dest, const int max) const;
+    /**
+     * Perform substitutions after a 'regexp' match.
+     *
+     * @brief SubstituteRE
+     * @param source
+     * @param dest
+     * @param max
+     * @return
+     */
+    bool SubstituteRE(const char *source, char *dest, const int max) const;
 
 public:
 	const char *startp[NSUBEXP]; /* Captured text starting locations. */
@@ -134,7 +142,7 @@ public:
 	const char *extentpFW;       /* Points to the maximum extent of text scanned by ExecRE to achieve a match (needed because of positive look-ahead.) */
 	int top_branch;              /* Zero-based index of the top branch that matches. Used by syntax highlighting only. */
 	char match_start;            /* Internal use only. */
-	char anchor;                 /* Internal use only. */
+    char anchor;                 /* Internal use only. */
 	uint8_t *program;
 };
 

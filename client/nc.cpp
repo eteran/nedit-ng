@@ -75,11 +75,10 @@ struct {
 
 /**
  * @brief nextArg
- * @param argc
- * @param argv
+ * @param args
  * @param argIndex
  */
-static void nextArg(const QStringList &args, int *argIndex) {
+void nextArg(const QStringList &args, int *argIndex) {
     if (*argIndex + 1 >= args.size()) {
         fprintf(stderr, "nc: %s requires an argument\n%s", args[*argIndex].toLatin1().data(), cmdLineHelp);
         exit(EXIT_FAILURE);

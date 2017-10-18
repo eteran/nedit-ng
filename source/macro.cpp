@@ -3493,7 +3493,7 @@ static int searchStringMS(DocumentWidget *document, DataValue *argList, int nArg
                     &foundEnd,
                     nullptr,
                     nullptr,
-                    GetWindowDelimitersEx(document).toLatin1().data());
+                    GetWindowDelimitersEx(document));
     }
 
     // Return the results
@@ -3563,7 +3563,7 @@ static int replaceInStringMS(DocumentWidget *document, DataValue *argList, int n
                 searchType,
                 &copyStart,
                 &copyEnd,
-                GetWindowDelimitersEx(document).toLatin1().data(),
+                GetWindowDelimitersEx(document),
                 &ok);
 
     // Return the results
@@ -4428,7 +4428,7 @@ static int splitMS(DocumentWidget *document, DataValue *argList, int nArgs, Data
                     &foundEnd,
                     nullptr,
                     nullptr,
-                    GetWindowDelimitersEx(document).toLatin1().data());
+                    GetWindowDelimitersEx(document));
 
         int elementEnd = found ? foundStart : strLength;
         elementLen = elementEnd - lastEnd;
@@ -4503,7 +4503,7 @@ static int splitMS(DocumentWidget *document, DataValue *argList, int nArgs, Data
                         &foundEnd,
                         nullptr,
                         nullptr,
-                        GetWindowDelimitersEx(document).toLatin1().data());
+                        GetWindowDelimitersEx(document));
             if (found) {
                 ++indexNum;
                 sprintf(indexStr, "%d", indexNum);
@@ -5908,7 +5908,7 @@ static int rangesetSetModeMS(DocumentWidget *document, DataValue *argList, int n
 **      ["style"]       Name of style
 **
 */
-static int fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWidget *document, const char *styleName, bool includeName, int patCode, int bufferPos) {
+int fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWidget *document, const char *styleName, bool includeName, int patCode, int bufferPos) {
     DataValue DV;
 
     // initialize array
@@ -5991,6 +5991,17 @@ static int fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWid
     return true;
 }
 
+int fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWidget *document, const QString &styleName, bool includeName, int patCode, int bufferPos) {
+    return fillStyleResultEx(
+                result,
+                errMsg,
+                document,
+                styleName.toLatin1().data(),
+                includeName,
+                patCode,
+                bufferPos);
+}
+
 /*
 ** Returns an array containing information about the style of name $1
 **      ["color"]       Foreground color name of style
@@ -6070,7 +6081,7 @@ static int getStyleAtPosMS(DocumentWidget *document, DataValue *argList, int nAr
         result,
         errMsg,
         document,
-        HighlightStyleOfCodeEx(document, patCode).toLatin1().data(),
+        HighlightStyleOfCodeEx(document, patCode),
         true,
         patCode,
         bufferPos);
@@ -6086,7 +6097,7 @@ static int getStyleAtPosMS(DocumentWidget *document, DataValue *argList, int nAr
 **      ["pattern"]     Name of pattern
 **
 */
-static int fillPatternResultEx(DataValue *result, const char **errMsg, DocumentWidget *document, const char *patternName, bool includeName, char *styleName, int bufferPos) {
+int fillPatternResultEx(DataValue *result, const char **errMsg, DocumentWidget *document, const char *patternName, bool includeName, char *styleName, int bufferPos) {
 
     Q_UNUSED(errMsg);
 
@@ -6128,6 +6139,17 @@ static int fillPatternResultEx(DataValue *result, const char **errMsg, DocumentW
     }
 
     return true;
+}
+
+int fillPatternResultEx(DataValue *result, const char **errMsg, DocumentWidget *document, const QString &patternName, bool includeName, const QString &styleName, int bufferPos) {
+    return fillPatternResultEx(
+                result,
+                errMsg,
+                document,
+                patternName.toLatin1().data(),
+                includeName,
+                styleName.toLatin1().data(),
+                bufferPos);
 }
 
 /*
@@ -6210,9 +6232,9 @@ static int getPatternAtPosMS(DocumentWidget *document, DataValue *argList, int n
         result,
         errMsg,
         document,
-        HighlightNameOfCodeEx(document, patCode).toLatin1().data(),
+        HighlightNameOfCodeEx(document, patCode),
         true,
-        HighlightStyleOfCodeEx(document, patCode).toLatin1().data(),
+        HighlightStyleOfCodeEx(document, patCode),
         bufferPos);
 }
 

@@ -3947,30 +3947,28 @@ static uint8_t *next_ptr(uint8_t *ptr) {
 */
 bool regexp::SubstituteRE(const char *source, char *dest, const int max) const {
 
-	const char *src;
-	const char *src_alias;
-	char *dst;
+    const char *src;
+    const char *src_alias;
+    char *dst;
 	char c;
 	char test;
 	int paren_no;
 	int len;
 	char chgcase;
-	bool anyWarnings = false;
+    bool anyWarnings = false;
 
-    if (!source || !dest) {
-		reg_error("nullptr parm to 'SubstituteRE'");
-		return false;
-	}
+    assert(source);
+    assert(dest);
 
-	if (U_CHAR_AT(this->program) != MAGIC) {
+    if (U_CHAR_AT(this->program) != MAGIC) {
 		reg_error("damaged regexp passed to 'SubstituteRE'");
 		return false;
 	}
 
-	src = source;
-	dst = dest;
+    src = source;
+    dst = dest;
 
-	while ((c = *src++) != '\0') {
+    while ((c = *src++) != '\0') {
 		chgcase = '\0';
 		paren_no = -1;
 
@@ -3982,8 +3980,8 @@ bool regexp::SubstituteRE(const char *source, char *dest, const int max) const {
 				src++;
 				c = *src++;
 
-				if (c == '\0')
-					break;
+                if (c == '\0')
+                    break;
 			}
 		}
 
@@ -3993,7 +3991,7 @@ bool regexp::SubstituteRE(const char *source, char *dest, const int max) const {
 			/* Can not pass register variable '&src' to function 'numeric_escape'
 			   so make a non-register copy that we can take the address of. */
 
-			src_alias = src;
+            src_alias = src;
 
 			if ('1' <= *src && *src <= '9') {
 				paren_no = (int)*src++ - (int)'0';
