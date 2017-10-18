@@ -5131,8 +5131,7 @@ std::string TextArea::createIndentStringEx(TextBuffer *buf, int bufOffset, int l
 	int tabDist = buffer_->tabDist_;
 	int i;
 	int useTabs = buffer_->useTabs_;
-	SmartIndentEvent smartIndent;
-
+	
 	/* If smart indent is on, call the smart indent callback.  It is not
 	   called when multi-line changes are being made (lineStartPos != 0),
 	   because smart indent needs to search back an indeterminate distance
@@ -5140,6 +5139,7 @@ std::string TextArea::createIndentStringEx(TextBuffer *buf, int bufOffset, int l
 	   but not yet committed in the buffer, would make programming smart
 	   indent more difficult for users and make everything more complicated */
 	if (P_smartIndent && (lineStartPos == 0 || buf == buffer_)) {
+		SmartIndentEvent smartIndent;
 		smartIndent.reason        = NEWLINE_INDENT_NEEDED;
 		smartIndent.pos           = lineEndPos + bufOffset;
 		smartIndent.indentRequest = 0;
@@ -5225,7 +5225,7 @@ void TextArea::newlineAndIndentAP(EventFlags flags) {
 	   indent string */
 	int cursorPos = cursorPos_;
 	int lineStartPos = buffer_->BufStartOfLine(cursorPos);
-	std::string indentStr = createIndentStringEx(buffer_, 0, lineStartPos, cursorPos, nullptr, &column);
+    std::string indentStr = createIndentStringEx(buffer_, 0, lineStartPos, cursorPos, &column);
 
 	// Insert it at the cursor
 	simpleInsertAtCursorEx(indentStr, true);
@@ -5239,90 +5239,6 @@ void TextArea::newlineAndIndentAP(EventFlags flags) {
 	}
 
 	buffer_->BufUnselect();
-}
-
-/*
-** Create and return an auto-indent string to add a newline at lineEndPos to a
-** line starting at lineStartPos in buf.  "buf" may or may not be the real
-** text buffer for the widget.  If it is not the widget's text buffer it's
-** offset position from the real buffer must be specified in "bufOffset" to
-** allow the smart-indent routines to scan back as far as necessary. The
-** string length is returned in "length" (or "length" can be passed as nullptr,
-** and the indent column is returned in "column" (if non nullptr).
-*/
-std::string TextArea::createIndentStringEx(TextBuffer *buf, int bufOffset, int lineStartPos, int lineEndPos, int *length, int *column) {
-
-	int indent = -1;
-	int tabDist = buffer_->tabDist_;
-	int i;
-	int useTabs = buffer_->useTabs_;
-
-	/* If smart indent is on, call the smart indent callback.  It is not
-	   called when multi-line changes are being made (lineStartPos != 0),
-	   because smart indent needs to search back an indeterminate distance
-	   through the buffer, and reconciling that with wrapping changes made,
-	   but not yet committed in the buffer, would make programming smart
-	   indent more difficult for users and make everything more complicated */
-	if (P_smartIndent && (lineStartPos == 0 || buf == buffer_)) {
-		SmartIndentEvent smartIndent;
-		smartIndent.reason        = NEWLINE_INDENT_NEEDED;
-		smartIndent.pos           = lineEndPos + bufOffset;
-		smartIndent.indentRequest = 0;
-		smartIndent.charsTyped    = nullptr;
-
-		for(auto &c : smartIndentCallbacks_) {
-			c.first(this, &smartIndent, c.second);
-		}
-
-		indent = smartIndent.indentRequest;
-	}
-
-	// If smart indent wasn't used, measure the indent distance of the line
-	if (indent == -1) {
-		indent = 0;
-		for (int pos = lineStartPos; pos < lineEndPos; pos++) {
-			char c = buf->BufGetCharacter(pos);
-			if (c != ' ' && c != '\t')
-				break;
-			if (c == '\t')
-				indent += tabDist - (indent % tabDist);
-			else
-				indent++;
-		}
-	}
-
-	// Allocate and create a string of tabs and spaces to achieve the indent
-	std::string indentStr;
-	indentStr.reserve(indent + 2);
-
-	auto indentPtr = std::back_inserter(indentStr);
-
-	*indentPtr++ = '\n';
-	if (useTabs) {
-		for (i = 0; i < indent / tabDist; i++) {
-			*indentPtr++ = '\t';
-		}
-
-		for (i = 0; i < indent % tabDist; i++) {
-			*indentPtr++ = ' ';
-		}
-
-	} else {
-		for (i = 0; i < indent; i++) {
-			*indentPtr++ = ' ';
-		}
-	}
-
-	// Return any requested stats
-	if(length) {
-		*length = indentStr.size();
-	}
-
-	if(column) {
-		*column = indent;
-	}
-
-	return indentStr;
 }
 
 /*
