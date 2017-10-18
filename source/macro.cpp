@@ -65,7 +65,6 @@
 #include <QClipboard>
 #include <QDialogButtonBox>
 #include <QFileDialog>
-#include <QFuture>
 #include <QMessageBox>
 #include <QMimeData>
 #include <QPushButton>
