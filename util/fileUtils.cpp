@@ -317,6 +317,30 @@ bool NormalizePathname(char *pathname) {
 	return CompressPathname(pathname);
 }
 
+QString CompressPathnameEx(const QString &pathname) {
+    char path[PATH_MAX];
+    strncpy(path, pathname.toLatin1().data(), sizeof(path));
+    path[PATH_MAX - 1] = '\0';
+
+    if(!CompressPathname(path)) {
+        return QString::fromLatin1(path);
+    }
+
+    return QString();
+}
+QString CompressPathnameEx(const std::string &pathname) {
+    char path[PATH_MAX];
+    strncpy(path, pathname.c_str(), sizeof(path));
+    path[PATH_MAX - 1] = '\0';
+
+    if(!CompressPathname(path)) {
+        return QString::fromLatin1(path);
+    }
+
+    return QString();
+}
+
+
 /*
 ** Return false if everything's fine, true else.
 **

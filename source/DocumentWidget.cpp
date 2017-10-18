@@ -40,7 +40,6 @@
 #include <QDateTime>
 #include <QDesktopServices>
 #include <QFileDialog>
-#include <QFuture>
 #include <QLabel>
 #include <QMessageBox>
 #include <QMimeData>
@@ -58,30 +57,25 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-
-
+/* data attached to window during shell command execution with
+   information for controling and communicating with the process */
+struct ShellCommandData {
+    QByteArray standardError;
+    QByteArray standardOutput;
+    QProcess *process;
+    QTimer *bannerTimer;
+    TextArea *area;
+    int flags;
+    int leftPos;
+    int rightPos;
+    bool bannerIsUp;
+    bool fromMacro;
+};
 
 namespace {
 
 // Tuning parameters
 constexpr int BANNER_WAIT_TIME = 6000; // how long to wait (msec) before putting up Shell Command Executing... banner
-
-
-/* data attached to window during shell command execution with
-   information for controling and communicating with the process */
-struct shellCmdInfoEx {
-	QByteArray standardError;
-	QByteArray standardOutput;
-	QProcess *process;
-	QTimer *bannerTimer;
-	TextArea *area;
-	int flags;
-	int leftPos;
-	int rightPos;
-	bool bannerIsUp;
-	bool fromMacro;
-};
-
 
 // flags for issueCommand
 enum {
@@ -1280,7 +1274,7 @@ void DocumentWidget::StopHighlightingEx() {
         int oldFontHeight = area->getFontHeight();
 
         // Free and remove the highlight data from the window
-        freeHighlightData(static_cast<WindowHighlightData *>(highlightData_));
+        freeHighlightData(highlightData_);
         highlightData_ = nullptr;
 
         /* Remove and detach style buffer and style table from all text
@@ -3544,9 +3538,7 @@ void DocumentWidget::bannerTimeoutProc() {
         return;
     }
 
-    auto cmdData = static_cast<macroCmdInfoEx *>(macroCmdData_);
-
-    cmdData->bannerIsUp = true;
+    macroCmdData_->bannerIsUp = true;
 
     // Extract accelerator text from menu PushButtons
     QString cCancel = window->ui.action_Cancel_Learn->shortcut().toString();
@@ -4781,9 +4773,7 @@ void DocumentWidget::issueCommandEx(MainWindow *window, TextArea *area, const QS
 
     /* Create a data structure for passing process information around
        amongst the callback routines which will process i/o and completion */
-    auto cmdData = new shellCmdInfoEx;
-    document->shellCmdData_ = cmdData;
-
+    auto cmdData = std::make_shared<ShellCommandData>();
     cmdData->process     = process;
     cmdData->flags       = flags;
     cmdData->area        = area;
@@ -4791,6 +4781,8 @@ void DocumentWidget::issueCommandEx(MainWindow *window, TextArea *area, const QS
     cmdData->fromMacro   = fromMacro;
     cmdData->leftPos     = replaceLeft;
     cmdData->rightPos    = replaceRight;
+
+    document->shellCmdData_ = cmdData;
 
     // Set up timer proc for putting up banner when process takes too long
     if (fromMacro) {
@@ -4813,7 +4805,7 @@ void DocumentWidget::issueCommandEx(MainWindow *window, TextArea *area, const QS
 ** Called when the shell sub-process stream has data.
 */
 void DocumentWidget::mergedReadProc() {
-    if(auto cmdData = static_cast<shellCmdInfoEx *>(shellCmdData_)) {
+    if(auto cmdData = shellCmdData_) {
         QByteArray data = cmdData->process->readAll();
         cmdData->standardOutput.append(data);
     }
@@ -4823,7 +4815,7 @@ void DocumentWidget::mergedReadProc() {
 ** Called when the shell sub-process stdout stream has data.
 */
 void DocumentWidget::stdoutReadProc() {
-    if(auto cmdData = static_cast<shellCmdInfoEx *>(shellCmdData_)) {
+    if(auto cmdData = shellCmdData_) {
         QByteArray data = cmdData->process->readAllStandardOutput();
         cmdData->standardOutput.append(data);
     }
@@ -4833,7 +4825,7 @@ void DocumentWidget::stdoutReadProc() {
 ** Called when the shell sub-process stderr stream has data.
 */
 void DocumentWidget::stderrReadProc() {
-    if(auto cmdData = static_cast<shellCmdInfoEx *>(shellCmdData_)) {
+    if(auto cmdData = shellCmdData_) {
         QByteArray data = cmdData->process->readAllStandardOutput();
         cmdData->standardError.append(data);
     }
@@ -4853,7 +4845,7 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
         return;
     }
 
-    auto cmdData = static_cast<shellCmdInfoEx *>(shellCmdData_);
+    auto cmdData = shellCmdData_;
     TextBuffer *buf;
     int reselectStart;
     bool cancel = false;
@@ -4862,7 +4854,9 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
     // Cancel pending timeouts
     if (cmdData->bannerTimer) {
         cmdData->bannerTimer->stop();
+
         delete cmdData->bannerTimer;
+        cmdData->bannerTimer = nullptr;
     }
 
     // Clean up waiting-for-shell-command-to-complete mode
@@ -5009,8 +5003,8 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
 
 cmdDone:
     delete cmdData->process;
-    delete cmdData;
     shellCmdData_ = nullptr;
+
     if (fromMacro) {
         ResumeMacroExecutionEx(this);
     }
@@ -5020,7 +5014,7 @@ cmdDone:
 ** Cancel the shell command in progress
 */
 void DocumentWidget::AbortShellCommandEx() {
-    if(auto cmdData = static_cast<shellCmdInfoEx *>(shellCmdData_)) {
+    if(auto cmdData = shellCmdData_) {
         if(QProcess *process = cmdData->process) {
             process->kill();
         }
@@ -5402,7 +5396,7 @@ void DocumentWidget::SetAutoScroll(int margin) {
 }
 
 void DocumentWidget::repeatMacro(const QString &macro, int how) {
-    RepeatMacroEx(this, macro.toLatin1().data(), how);
+    RepeatMacroEx(this, macro, how);
 }
 
 QList<DocumentWidget *> DocumentWidget::allDocuments() {

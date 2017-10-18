@@ -135,14 +135,15 @@ static void handleUnparsedRegionCBEx(const TextArea *area, int pos, const void *
 */
 void SyntaxHighlightModifyCBEx(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *cbArg) {
 
-    (void)nRestyled;
-    (void)deletedText;
+    Q_UNUSED(nRestyled);
+    Q_UNUSED(deletedText);
 
     auto window = static_cast<DocumentWidget *>(cbArg);
-    auto highlightData = static_cast<WindowHighlightData *>(window->highlightData_);
+    auto highlightData = window->highlightData_;
 
-    if(!highlightData)
+    if(!highlightData) {
         return;
+    }
 
     /* Restyling-only modifications (usually a primary or secondary  selection)
        don't require any processing, but clear out the style buffer selection
@@ -269,7 +270,7 @@ void FreeHighlightingDataEx(DocumentWidget *window) {
     }
 
     // Free and remove the highlight data from the window
-    freeHighlightData(static_cast<WindowHighlightData *>(window->highlightData_));
+    freeHighlightData(window->highlightData_);
     window->highlightData_ = nullptr;
 
     /* The text display may make a last desperate attempt to access highlight
@@ -285,7 +286,7 @@ void FreeHighlightingDataEx(DocumentWidget *window) {
 ** text widget and redisplay.
 */
 void AttachHighlightToWidgetEx(TextArea *area, DocumentWidget *window) {
-    auto highlightData = static_cast<WindowHighlightData *>(window->highlightData_);
+    auto highlightData = window->highlightData_;
 
     area->TextDAttachHighlightData(
                 highlightData->styleBuffer,
@@ -309,7 +310,7 @@ void RemoveWidgetHighlightEx(TextArea *area) {
 */
 void UpdateHighlightStylesEx(DocumentWidget *document) {
 
-    auto oldHighlightData = static_cast<WindowHighlightData *>(document->highlightData_);
+    auto oldHighlightData = document->highlightData_;
 
     // Do nothing if window not highlighted
     if (!document->highlightData_) {
@@ -360,7 +361,7 @@ void UpdateHighlightStylesEx(DocumentWidget *document) {
 void *GetHighlightInfoEx(DocumentWidget *window, int pos) {
 
     HighlightData *pattern = nullptr;
-    auto highlightData = static_cast<WindowHighlightData *>(window->highlightData_);
+    auto highlightData = window->highlightData_;
     if (!highlightData) {
         return nullptr;
     }
@@ -915,14 +916,14 @@ static void freePatterns(HighlightData *patterns) {
 ** Find the HighlightPattern structure with a given name in the window.
 */
 HighlightPattern *FindPatternOfWindowEx(DocumentWidget *window, const QString &name) {
-    auto hData = static_cast<WindowHighlightData *>(window->highlightData_);
-    PatternSet *set;
 
-    if (hData && (set = hData->patternSetForWindow)) {
+    if(auto hData = window->highlightData_) {
+        if (PatternSet *set = hData->patternSetForWindow) {
 
-        for(HighlightPattern &pattern : set->patterns) {
-            if (pattern.name == name) {
-                return &pattern;
+            for(HighlightPattern &pattern : set->patterns) {
+                if (pattern.name == name) {
+                    return &pattern;
+                }
             }
         }
     }
@@ -934,7 +935,7 @@ HighlightPattern *FindPatternOfWindowEx(DocumentWidget *window, const QString &n
 ** like styleOfPos() in TextDisplay.c. Returns the style code or zero.
 */
 int HighlightCodeOfPosEx(DocumentWidget *document, int pos) {
-    auto highlightData = static_cast<WindowHighlightData *>(document->highlightData_);
+    auto highlightData = document->highlightData_;
     TextBuffer *styleBuf = highlightData ? highlightData->styleBuffer : nullptr;
     int hCode = 0;
 
@@ -957,7 +958,7 @@ int HighlightCodeOfPosEx(DocumentWidget *document, int pos) {
 /* YOO: This is called from only one other function, which uses a constant
     for checkCode and never evaluates it after the call. */
 int HighlightLengthOfCodeFromPosEx(DocumentWidget *window, int pos, int *checkCode) {
-    auto highlightData = static_cast<WindowHighlightData *>(window->highlightData_);
+    auto highlightData = window->highlightData_;
     TextBuffer *styleBuf = highlightData ? highlightData->styleBuffer : nullptr;
     int oldPos = pos;
 
@@ -992,7 +993,7 @@ int HighlightLengthOfCodeFromPosEx(DocumentWidget *window, int pos, int *checkCo
 ** is used.
 */
 int StyleLengthOfCodeFromPosEx(DocumentWidget *window, int pos) {
-    auto highlightData = static_cast<WindowHighlightData *>(window->highlightData_);
+    auto highlightData = window->highlightData_;
     TextBuffer *styleBuf = highlightData ? highlightData->styleBuffer : nullptr;
     int oldPos = pos;
 
@@ -1034,7 +1035,7 @@ int StyleLengthOfCodeFromPosEx(DocumentWidget *window, int pos) {
 ** hCode (if any).
 */
 static StyleTableEntry *styleTableEntryOfCodeEx(DocumentWidget *document, int hCode) {
-    auto highlightData = static_cast<WindowHighlightData *>(document->highlightData_);
+    auto highlightData = document->highlightData_;
 
     hCode -= UNFINISHED_STYLE; // get the correct index value
     if (!highlightData || hCode < 0 || hCode >= highlightData->nStyles)
@@ -1087,8 +1088,12 @@ QColor GetHighlightBGColorOfCodeEx(DocumentWidget *document, int hCode) {
 */
 static void handleUnparsedRegionEx(const DocumentWidget *window, TextBuffer *styleBuf, const int pos) {
     TextBuffer *buf = window->buffer_;
-    int beginParse, endParse, beginSafety, endSafety, p;
-    auto highlightData = static_cast<WindowHighlightData *>(window->highlightData_);
+    int beginParse;
+    int endParse;
+    int beginSafety;
+    int endSafety;
+    int p;
+    auto highlightData = window->highlightData_;
 
     ReparseContext *context = &highlightData->contextRequirements;
     HighlightData *pass2Patterns = highlightData->pass2Patterns;

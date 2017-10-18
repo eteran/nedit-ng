@@ -43,6 +43,7 @@
 #include <QApplication>
 #include <QMessageBox>
 #include <QFile>
+#include <QFileInfo>
 #include <iostream>
 #include <fstream>
 #include <cctype>
@@ -83,7 +84,7 @@ enum searchDirection { FORWARD, BACKWARD };
 
 static int loadTagsFile(const QString &tagSpec, int index, int recLevel);
 static int fakeRegExSearchEx(view::string_view buffer, const char *searchString, int *startPos, int *endPos);
-static int addTag(const std::string &name, const QString &file, int lang, const char *search, int posInf, const char *path, int index);
+static int addTag(const QString &name, const QString &file, int lang, const QString &search, int posInf, const QString &path, int index);
 static bool delTag(int index);
 static QList<Tag> getTag(const QString &name, int search_type);
 static void createSelectMenuEx(DocumentWidget *document, TextArea *area, const QStringList &args);
@@ -97,10 +98,10 @@ static QMultiHash<QString, Tag> *hashTableByType(int type);
 static QList<tagFile> *tagListByType(int type);
 
 struct Tag {
-    std::string name;
-    std::string file;
-	std::string searchString;
-	std::string path;
+    QString name;
+    QString file;
+    QString searchString;
+    QString path;
     int language;
 	int posInf;
     int index;
@@ -121,7 +122,8 @@ QList<tagFile> TipsFileList;
     between tag/tip lookups */
 Mode searchMode = TAG;
 QString tagName;
-static char tagFiles[MAXDUPTAGS][MAXPATHLEN];
+
+static QString tagFiles[MAXDUPTAGS];
 static char tagSearch[MAXDUPTAGS][MAXPATHLEN];
 static int tagPosInf[MAXDUPTAGS];
 
@@ -176,7 +178,7 @@ static QList<Tag> getTag(const QString &name, int search_type) {
 **   (We don't return boolean as the return value is used as counter increment!)
 **
 */
-static int addTag(const std::string &name, const QString &file, int lang, const char *search, int posInf, const char *path, int index) {
+static int addTag(const QString &name, const QString &file, int lang, const QString &search, int posInf, const QString &path, int index) {
 
     QMultiHash<QString, Tag> *table;
 
@@ -187,15 +189,15 @@ static int addTag(const std::string &name, const QString &file, int lang, const 
 	}
 
     QString newFile;
-    if (file.startsWith(QLatin1Char('/'))) {
+    if (QFileInfo(file).isAbsolute()) {
         newFile = file;
 	} else {
-        newFile = QString(QLatin1String("%1%2")).arg(QString::fromLatin1(path), file);
+        newFile = QString(QLatin1String("%1%2")).arg(path, file);
 	}
 
     newFile = NormalizePathnameEx(newFile);
 
-    QList<Tag> tags = table->values(QString::fromStdString(name));
+    QList<Tag> tags = table->values(name);
     for(const Tag &t : tags) {
 
         if (lang != t.language) {
@@ -210,15 +212,13 @@ static int addTag(const std::string &name, const QString &file, int lang, const 
 			continue;
         }
 
-        Q_ASSERT(!t.file.empty());
-
-        if (t.file[0] == '/' && (newFile != QString::fromStdString(t.file))) {
+        if (QFileInfo(t.file).isAbsolute() && (newFile != t.file)) {
 			continue;
         }
 
-        if (t.file[0] != '/') {
+        if (QFileInfo(t.file).isAbsolute()) {
 
-            auto tmpFile = QString(QLatin1String("%1%2")).arg(QString::fromStdString(t.path), QString::fromStdString(t.file));
+            auto tmpFile = QString(QLatin1String("%1%2")).arg(t.path, t.file);
 
             tmpFile = NormalizePathnameEx(tmpFile);
 
@@ -229,9 +229,9 @@ static int addTag(const std::string &name, const QString &file, int lang, const 
         return 0;
     }
 
-    Tag t = { name, file.toStdString(), search, path, lang, posInf, index };
+    Tag t = { name, file, search, path, lang, posInf, index };
 
-    table->insert(QString::fromStdString(name), t);
+    table->insert(name, t);
     return 1;
 }
 
@@ -286,7 +286,7 @@ bool AddRelTagsFileEx(const QString &tagSpec, const QString &windowPath, Mode fi
     QStringList filenames = tagSpec.split(QLatin1Char(':'));
 
     for(const QString &filename : filenames) {
-        if(filename.startsWith(QLatin1Char('/')) || filename.startsWith(QLatin1Char('~'))) {
+        if(QFileInfo(filename).isAbsolute() || filename.startsWith(QLatin1Char('~'))) {
             continue;
         }
 
@@ -315,12 +315,13 @@ bool AddRelTagsFileEx(const QString &tagSpec, const QString &windowPath, Mode fi
             continue;
         }
 
-        tagFile tag;
-        tag.filename = pathName;
-        tag.loaded   = false;
-        tag.date     = statbuf.st_mtime;
-        tag.index    = ++tagFileIndex;
-        tag.refcount = 1; // NOTE(eteran): added just so there aren't any uninitialized members
+        tagFile tag = {
+            pathName,
+            statbuf.st_mtime,
+            false,
+            ++tagFileIndex,
+            1 // NOTE(eteran): added just so there aren't any uninitialized members
+        };
 
         FileList->push_front(tag);
         added = true;
@@ -355,7 +356,7 @@ bool AddTagsFileEx(const QString &tagSpec, Mode file_type) {
     for(const QString &filename : filenames) {
 
 		QString pathName;
-        if(!filename.startsWith(QLatin1Char('/'))) {
+        if(!QFileInfo(filename).isAbsolute()) {
 			pathName = QString(QLatin1String("%1/%2")).arg(GetCurrentDirEx(), filename);
         } else {
 			pathName = filename;
@@ -421,7 +422,7 @@ int DeleteTagsFileEx(const QString &tagSpec, Mode file_type, bool force_unload) 
     for(const QString &filename : filenames) {
 
         QString pathName;
-        if(!filename.startsWith(QLatin1Char('/'))) {
+        if(!QFileInfo(filename).isAbsolute()) {
             pathName = QString(QLatin1String("%1/%2")).arg(GetCurrentDirEx(), filename);
         } else {
             pathName = filename;
@@ -515,7 +516,7 @@ static int scanCTagsLine(const QString &line, const char *tagPath, int index) {
 	** Guess the end of searchString:
 	** Try to handle original ctags and exuberant ctags format:
 	*/
-	if (searchString.startsWith(QLatin1Char('/')) || searchString.startsWith(QLatin1Char('?'))) {
+    if (searchString.startsWith(QLatin1Char('/')) || searchString.startsWith(QLatin1Char('?'))) {
 
 		pos = -1; // "search expr without pos info"
 
@@ -551,12 +552,12 @@ static int scanCTagsLine(const QString &line, const char *tagPath, int index) {
 	}
 	// No ability to read language mode right now 
 	return addTag(
-	            name.toLatin1().data(),
+                name,
                 file,
 	            PLAIN_LANGUAGE_MODE,
-	            searchString.toLatin1().data(),
+                searchString,
 	            pos,
-	            tagPath,
+                QString::fromLatin1(tagPath),
 	            index);
 }
 
@@ -566,9 +567,9 @@ static int scanCTagsLine(const QString &line, const char *tagPath, int index) {
  * file = destination definition file. possibly modified. len=MAXPATHLEN!
  * Return value: Number of tag specs added.
  */
-static int scanETagsLine(const char *line, const char *tagPath, int index, QString &file, int recLevel) {
-    char name[MAXLINE];
-    char searchString[MAXLINE];
+static int scanETagsLine(const char *line, const QString &tagPath, int index, QString &file, int recLevel) {
+    QString name;
+    QString searchString;
 	int pos;
 	int len;
 
@@ -586,60 +587,62 @@ static int scanETagsLine(const char *line, const char *tagPath, int index, QStri
     if (!file.isEmpty() && posDEL && (posSOH > posDEL) && (posCOM > posSOH)) {
 		// exuberant ctags -e style  
 		len = std::min<int>(MAXLINE - 1, posDEL - line);
-		strncpy(searchString, line, len);
-		searchString[len] = 0;
+        searchString = QString::fromLatin1(line, len);
+
 		len = std::min<int>(MAXLINE - 1, (posSOH - posDEL) - 1);
-		strncpy(name, posDEL + 1, len);
-		name[len] = 0;
-		pos = atoi(posCOM + 1);
-		// No ability to set language mode for the moment 
+        name = QString::fromLatin1(posDEL + 1, len);
+
+        pos = atoi(posCOM + 1);
+
+        // No ability to set language mode for the moment
         return addTag(name, file, PLAIN_LANGUAGE_MODE, searchString, pos, tagPath, index);
 	}
 
     if (!file.isEmpty() && posDEL && (posCOM > posDEL)) {
 		// old etags style, part  name<soh>  is missing here! 
 		len = std::min<int>(MAXLINE - 1, posDEL - line);
-
-        strncpy(searchString, line, len);
-        searchString[len] = '\0';
+        searchString = QString::fromLatin1(line, len);
 
 		// guess name: take the last alnum (plus _) part of searchString 
 		while (--len >= 0) {
-            if (isalnum(static_cast<uint8_t>(searchString[len])) || (searchString[len] == '_'))
+            if (isalnum(static_cast<uint8_t>(searchString[len].toLatin1())) || (searchString[len] == QLatin1Char('_')))
 				break;
 		}
-		if (len < 0)
+
+        if (len < 0)
 			return 0;
-		pos = len;
-		while (pos >= 0 && (isalnum((uint8_t)searchString[pos]) || (searchString[pos] == '_')))
+
+        pos = len;
+
+        while (pos >= 0 && (isalnum((uint8_t)searchString[pos].toLatin1()) || (searchString[pos] == QLatin1Char('_'))))
 			pos--;
-		strncpy(name, searchString + pos + 1, len - pos);
-		name[len - pos] = 0; // name ready 
-		pos = atoi(posCOM + 1);
+
+        name = searchString.mid(pos + 1, len - pos);
+        pos = atoi(posCOM + 1);
+
         return addTag(name, file, PLAIN_LANGUAGE_MODE, searchString, pos, tagPath, index);
 	}
 
 	// check for destination file spec 
 	if (*line && posCOM) {
+
 		len = std::min<int>(MAXPATHLEN - 1, posCOM - line);
-
         file = QString::fromLatin1(line, len);
-
 
         // check if that's an include file ...
 		if (!(strncmp(posCOM + 1, "include", 7))) {
-            if (!file.startsWith((QLatin1Char('/')))) {
-                if ((strlen(tagPath) + file.size()) >= MAXPATHLEN) {
+
+            if (!file.startsWith(QLatin1Char('/'))) {
+
+                if ((tagPath.size() + file.size()) >= MAXPATHLEN) {
                     qWarning("NEdit: tags.c: MAXPATHLEN overflow");
                     file = QString(); // invalidate
 					return 0;
                 }
 
-                char incPath[MAXPATHLEN];
-                snprintf(incPath, sizeof(incPath), "%s%s", tagPath, file.toLatin1().data());
-
-				CompressPathname(incPath);
-                return loadTagsFile(QString::fromLatin1(incPath), index, recLevel + 1);
+                auto incPath = QString(QLatin1String("%1%2")).arg(tagPath, file);
+                incPath = CompressPathnameEx(incPath);
+                return loadTagsFile(incPath, index, recLevel + 1);
 			} else {
                 return loadTagsFile(file, index, recLevel + 1);
 			}
@@ -703,7 +706,7 @@ static int loadTagsFile(const QString &tagSpec, int index, int recLevel) {
 		if (tagFileType == TFT_CTAGS) {
 			nTagsAdded += scanCTagsLine(QString::fromLatin1(line), tagPath.toLatin1().data(), index);
         } else {            
-            nTagsAdded += scanETagsLine(line, tagPath.toLatin1().data(), index, filename, recLevel);
+            nTagsAdded += scanETagsLine(line, tagPath, index, filename, recLevel);
 		}
 	}
 
@@ -936,11 +939,11 @@ int findAllMatchesEx(DocumentWidget *document, TextArea *area, const QString &st
     // First look up all of the matching tags
     for(const Tag &tag : tags) {
 
-        std::string fileToSearch = tag.file;
-        std::string searchString = tag.searchString;
-        std::string tagPath      = tag.path;
-        int langMode             = tag.language;
-        int startPos             = tag.posInf;
+        QString fileToSearch = tag.file;
+        QString searchString = tag.searchString;
+        QString tagPath      = tag.path;
+        int langMode         = tag.language;
+        int startPos         = tag.posInf;
 
         /*
         ** Skip this tag if it has a language mode that doesn't match the
@@ -951,21 +954,21 @@ int findAllMatchesEx(DocumentWidget *document, TextArea *area, const QString &st
             continue;
         }
 
-        if (fileToSearch[0] == '/') {
-            strcpy(tagFiles[nMatches], fileToSearch.c_str());
+        if (QFileInfo(fileToSearch).isAbsolute()) {
+            tagFiles[nMatches] = fileToSearch;
         } else {
-            sprintf(tagFiles[nMatches], "%s%s", tagPath.c_str(), fileToSearch.c_str());
+            tagFiles[nMatches] = QString(QLatin1String("%1%2")).arg(tagPath, fileToSearch);
         }
 
-        strcpy(tagSearch[nMatches], searchString.c_str());
+        strcpy(tagSearch[nMatches], searchString.toLatin1().data());
         tagPosInf[nMatches] = startPos;
 
-        ParseFilenameEx(QString::fromLatin1(tagFiles[nMatches]), &filename, &pathname);
+        ParseFilenameEx(tagFiles[nMatches], &filename, &pathname);
 
         // Is this match in the current file?  If so, use it!
         if (GetPrefSmartTags() && document->filename_ == filename && document->path_ == pathname) {
             if (nMatches) {
-                strcpy(tagFiles[0],  tagFiles[nMatches]);
+                tagFiles[0] = tagFiles[nMatches];
                 strcpy(tagSearch[0], tagSearch[nMatches]);
                 tagPosInf[0] = tagPosInf[nMatches];
             }
@@ -992,7 +995,7 @@ int findAllMatchesEx(DocumentWidget *document, TextArea *area, const QString &st
 
     // Only one of the matches is in the same dir. as this file.  Use it.
     if (GetPrefSmartTags() && samePath == 1 && nMatches > 1) {
-        strcpy(tagFiles[0], tagFiles[pathMatch]);
+        tagFiles[0] = tagFiles[pathMatch];
         strcpy(tagSearch[0], tagSearch[pathMatch]);
         tagPosInf[0] = tagPosInf[pathMatch];
         nMatches = 1;
@@ -1002,7 +1005,7 @@ int findAllMatchesEx(DocumentWidget *document, TextArea *area, const QString &st
      */
     if (GetPrefSmartTags()) {
         for (i = 1; i < nMatches; i++) {
-            if (strcmp(tagFiles[i], tagFiles[i - 1])) {
+            if(tagFiles[i] != tagFiles[i - 1]) {
                 break;
             }
         }
@@ -1019,8 +1022,8 @@ int findAllMatchesEx(DocumentWidget *document, TextArea *area, const QString &st
 
             char temp[32 + 2 * MAXPATHLEN + MAXLINE];
 
-            ParseFilenameEx(QString::fromLatin1(tagFiles[i]), &filename, &pathname);
-            if ((i < nMatches - 1 && !strcmp(tagFiles[i], tagFiles[i + 1])) || (i > 0 && !strcmp(tagFiles[i], tagFiles[i - 1]))) {
+            ParseFilenameEx(tagFiles[i], &filename, &pathname);
+            if ((i < nMatches - 1 && (tagFiles[i] == tagFiles[i + 1])) || (i > 0 && (tagFiles[i] == tagFiles[i - 1]))) {
 
                 if (*(tagSearch[i]) && (tagPosInf[i] != -1)) { // etags
 					snprintf(temp, sizeof(temp), "%2d. %s%s %8i %s", i + 1, pathname.toLatin1().data(), filename.toLatin1().data(), tagPosInf[i], tagSearch[i]);
@@ -1087,11 +1090,11 @@ void showMatchingCalltipEx(TextArea *area, int i) {
         int endPos = 0;
 
         // 1. Open the target file
-        NormalizePathname(tagFiles[i]);
+        NormalizePathnameEx(tagFiles[i]);
 
-		std::ifstream file(tagFiles[i]);
+        std::ifstream file(tagFiles[i].toStdString());
 		if(!file) {
-			QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error opening File"), QString(QLatin1String("Error opening %1")).arg(QString::fromLatin1(tagFiles[i])));
+            QMessageBox::critical(nullptr /*parent*/, QLatin1String("Error opening File"), QString(QLatin1String("Error opening %1")).arg(tagFiles[i]));
 			return;
 		}
 
@@ -1102,13 +1105,13 @@ void showMatchingCalltipEx(TextArea *area, int i) {
         if (!*(tagSearch[i])) {
             // It's a line number, just go for it
 			if ((moveAheadNLinesEx(fileString, &startPos, tagPosInf[i] - 1)) >= 0) {
-                QMessageBox::critical(nullptr /*parent*/, QLatin1String("Tags Error"), QString(QLatin1String("%1\n not long enough for definition to be on line %2")).arg(QString::fromLatin1(tagFiles[i])).arg(tagPosInf[i]));
+                QMessageBox::critical(nullptr /*parent*/, QLatin1String("Tags Error"), QString(QLatin1String("%1\n not long enough for definition to be on line %2")).arg(tagFiles[i]).arg(tagPosInf[i]));
                 return;
             }
         } else {
             startPos = tagPosInf[i];
 			if (!fakeRegExSearchEx(fileString, tagSearch[i], &startPos, &endPos)) {
-				QMessageBox::critical(nullptr /*parent*/, QLatin1String("Tag not found"), QString(QLatin1String("Definition for %1\nnot found in %2")).arg(tagName, QString::fromLatin1(tagFiles[i])));
+                QMessageBox::critical(nullptr /*parent*/, QLatin1String("Tag not found"), QString(QLatin1String("Definition for %1\nnot found in %2")).arg(tagName, tagFiles[i]));
                 return;
             }
         }
@@ -1159,7 +1162,7 @@ void editTaggedLocationEx(TextArea *area, int i) {
 
     auto document = DocumentWidget::documentFrom(area);
 
-    ParseFilenameEx(QString::fromLatin1(tagFiles[i]), &filename, &pathname);
+    ParseFilenameEx(tagFiles[i], &filename, &pathname);
     // open the file containing the definition
     DocumentWidget::EditExistingFileEx(
                 document,
@@ -1174,7 +1177,7 @@ void editTaggedLocationEx(TextArea *area, int i) {
 
 	DocumentWidget *windowToSearch = MainWindow::FindWindowWithFile(filename, pathname);
     if(!windowToSearch) {
-        QMessageBox::warning(nullptr /*parent*/, QLatin1String("File not found"), QString(QLatin1String("File %1 not found")).arg(QString::fromLatin1(tagFiles[i])));
+        QMessageBox::warning(nullptr /*parent*/, QLatin1String("File not found"), QString(QLatin1String("File %1 not found")).arg(tagFiles[i]));
         return;
     }
 
@@ -1188,7 +1191,7 @@ void editTaggedLocationEx(TextArea *area, int i) {
 
     // search for the tags file search string in the newly opened file
     if (!fakeRegExSearchEx(windowToSearch->buffer_->BufAsStringEx(), tagSearch[i], &startPos, &endPos)) {
-		QMessageBox::warning(nullptr /*parent*/, QLatin1String("Tag Error"), QString(QLatin1String("Definition for %1\nnot found in %2")).arg(tagName, QString::fromLatin1(tagFiles[i])));
+        QMessageBox::warning(nullptr /*parent*/, QLatin1String("Tag Error"), QString(QLatin1String("Definition for %1\nnot found in %2")).arg(tagName, tagFiles[i]));
         return;
     }
 
@@ -1455,7 +1458,7 @@ struct tf_alias {
 */
 static int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
     FILE *fp = nullptr;
-	char header[MAXLINE];
+    QString header;
 
     int nTipsAdded = 0;
     int langMode = PLAIN_LANGUAGE_MODE;
@@ -1492,7 +1495,7 @@ static int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
     Q_FOREVER {
 		int blkLine = 0;
         std::string body;
-        int code = nextTFBlock(fp, header, body, &blkLine, &currLine);
+        int code = nextTFBlock(fp, header.toLatin1().data(), body, &blkLine, &currLine);
 
 		if (code == TF_ERROR_EOF) {
             qWarning("NEdit: Warning: unexpected EOF in calltips file.");
@@ -1509,7 +1512,7 @@ static int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
 			    For the moment I'm just using line numbers because I don't
 			    want to have to deal with adding escape characters for
 			    regex metacharacters that might appear in the string */
-            nTipsAdded += addTag(header, resolvedTipsFile, langMode, "", blkLine, tipPath.toLatin1().data(), index);
+            nTipsAdded += addTag(header, resolvedTipsFile, langMode, QString(), blkLine, tipPath, index);
 			break;
 		case TF_INCLUDE:
         {
@@ -1525,11 +1528,12 @@ static int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
 		case TF_LANGUAGE:
             // Switch to the new language mode if it's valid, else ignore it.
 			oldLangMode = langMode;
-            langMode = FindLanguageMode(QString::fromLatin1(header));
-			if (langMode == PLAIN_LANGUAGE_MODE && strcmp(header, "Plain")) {
+            langMode = FindLanguageMode(header);
+            if (langMode == PLAIN_LANGUAGE_MODE && header != QLatin1String("Plain")) {
 
                 qWarning("NEdit: Error reading calltips file:\n\t%s\nUnknown language mode: \"%s\"",
-                         tipsFile.toLatin1().data(), header);
+                         tipsFile.toLatin1().data(),
+                         header.toLatin1().data());
 
 				langMode = oldLangMode;
 			}
@@ -1541,7 +1545,7 @@ static int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
 			break;
 		case TF_ALIAS:
 			// Allocate a new alias struct 
-            aliases.push_front(tf_alias{ header, body });
+            aliases.push_front(tf_alias{ header.toStdString(), body });
 			break;
 		default:
 			; // Ignore TF_VERSION for now 
@@ -1565,7 +1569,7 @@ static int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
             std::stringstream ss(tmp_alias.sources);
             std::string src;
             while (getline(ss, src, ':')) {
-                addTag(src, resolvedTipsFile, t->language, "", t->posInf, tipPath.toLatin1().data(), index);
+                addTag(QString::fromStdString(src), resolvedTipsFile, t->language, QString(), t->posInf, tipPath, index);
             }
 		}
 	}

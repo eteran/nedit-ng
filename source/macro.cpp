@@ -2416,12 +2416,13 @@ static void runMacroEx(DocumentWidget *document, Program *prog) {
 
     /* Create a data structure for passing macro execution information around
        amongst the callback routines which will process i/o and completion */
-    auto cmdData = new macroCmdInfoEx;
-    document->macroCmdData_       = cmdData;
+    auto cmdData = std::make_shared<MacroCommandData>();
     cmdData->bannerIsUp         = false;
     cmdData->closeOnCompletion  = false;
     cmdData->program            = prog;
     cmdData->context            = nullptr;
+
+    document->macroCmdData_ = cmdData;
 
     // Set up timer proc for putting up banner when macro takes too long
     cmdData->bannerTimeoutID = new QTimer(document);
@@ -2457,9 +2458,8 @@ static void runMacroEx(DocumentWidget *document, Program *prog) {
 ** and not the window to which operations are focused.
 */
 void ResumeMacroExecutionEx(DocumentWidget *document) {
-    auto cmdData = static_cast<macroCmdInfoEx *>(document->macroCmdData_);
 
-    if(cmdData) {
+    if(auto cmdData = document->macroCmdData_) {
         cmdData->continueWorkProcID = QtConcurrent::run([document]() {
             return continueWorkProcEx(document);
         });
@@ -2482,7 +2482,7 @@ void AbortMacroCommandEx(DocumentWidget *document) {
     }
 
     // Free the continuation
-    FreeRestartDataEx((static_cast<macroCmdInfoEx *>(document->macroCmdData_))->context);
+    FreeRestartDataEx(document->macroCmdData_->context);
 
     // Kill the macro command
     finishMacroCmdExecutionEx(document);
@@ -2499,7 +2499,7 @@ void AbortMacroCommandEx(DocumentWidget *document) {
 ** process close the window when the macro is finished executing.
 */
 int MacroWindowCloseActionsEx(DocumentWidget *document) {
-    auto cmdData = static_cast<macroCmdInfoEx *>(document->macroCmdData_);
+    auto cmdData = document->macroCmdData_;
 
     auto recorder = CommandRecorder::getInstance();
 
@@ -2512,10 +2512,10 @@ int MacroWindowCloseActionsEx(DocumentWidget *document) {
        their focus back to the window from which they were originally run */
     if(!cmdData) {
         for(DocumentWidget *w : DocumentWidget::allDocuments()) {
-            auto mcd = static_cast<macroCmdInfoEx *>(w->macroCmdData_);
+            auto mcd = w->macroCmdData_;
             if (w == MacroRunWindowEx() && MacroFocusWindowEx() == document) {
                 SetMacroFocusWindowEx(MacroRunWindowEx());
-            } else if (mcd != nullptr && mcd->context->focusWindow == document) {
+            } else if (mcd && mcd->context->focusWindow == document) {
                 mcd->context->focusWindow = mcd->context->runWindow;
             }
         }
@@ -2545,7 +2545,7 @@ int MacroWindowCloseActionsEx(DocumentWidget *document) {
 ** the user interface state.
 */
 static void finishMacroCmdExecutionEx(DocumentWidget *document) {
-    auto cmdData = static_cast<macroCmdInfoEx *>(document->macroCmdData_);
+    auto cmdData = document->macroCmdData_;
     bool closeOnCompletion = cmdData->closeOnCompletion;
 
     // Cancel pending timeout and work proc
@@ -2567,7 +2567,6 @@ static void finishMacroCmdExecutionEx(DocumentWidget *document) {
 
     // Free execution information
     FreeProgram(cmdData->program);
-    delete cmdData;
     document->macroCmdData_ = nullptr;
 
     /* If macro closed its own window, window was made empty and untitled,
@@ -2637,6 +2636,29 @@ void DoMacroEx(DocumentWidget *document, const QString &macro, const char *errIn
     runMacroEx(document, prog);
 }
 
+/**
+ * @brief createRepeatMacro
+ * @param how
+ * @return
+ */
+QString createRepeatMacro(int how) {
+    switch(how) {
+    case REPEAT_TO_END:
+        return QLatin1String("lastCursor=-1\nstartPos=$cursor\n"
+                             "while($cursor>=startPos&&$cursor!=lastCursor){\nlastCursor=$cursor\n%1\n}\n");
+    case REPEAT_IN_SEL:
+        return QLatin1String("selStart = $selection_start\nif (selStart == -1)\nreturn\n"
+                             "selEnd = $selection_end\nset_cursor_pos(selStart)\nselect(0,0)\n"
+                             "boundText = get_range(selEnd, selEnd+10)\n"
+                             "while($cursor >= selStart && $cursor < selEnd && \\\n"
+                             "get_range(selEnd, selEnd+10) == boundText) {\n"
+                             "startLength = $text_length\n%1\n"
+                             "selEnd += $text_length - startLength\n}\n");
+    default:
+        return QLatin1String("for(i=0;i<%1;i++){\n%2\n}\n");
+    }
+}
+
 /*
 ** Dispatches a macro to which repeats macro command in "command", either
 ** an integer number of times ("how" == positive integer), or within a
@@ -2646,49 +2668,24 @@ void DoMacroEx(DocumentWidget *document, const QString &macro, const char *errIn
 ** Note that as with most macro routines, this returns BEFORE the macro is
 ** finished executing
 */
-void RepeatMacroEx(DocumentWidget *document, const char *command, int how) {
-
-    const char *errMsg;
-    const char *stoppedAt;
-    const char *loopMacro;
-
-    if(!command) {
-        return;
-    }
+void RepeatMacroEx(DocumentWidget *document, const QString &command, int how) {
 
     // Wrap a for loop and counter/tests around the command
-    switch(how) {
-    case REPEAT_TO_END:
-        loopMacro = "lastCursor=-1\nstartPos=$cursor\n"
-                    "while($cursor>=startPos&&$cursor!=lastCursor){\nlastCursor=$cursor\n%s\n}\n";
-        break;
-    case REPEAT_IN_SEL:
-        loopMacro = "selStart = $selection_start\nif (selStart == -1)\nreturn\n"
-                    "selEnd = $selection_end\nset_cursor_pos(selStart)\nselect(0,0)\n"
-                    "boundText = get_range(selEnd, selEnd+10)\n"
-                    "while($cursor >= selStart && $cursor < selEnd && \\\n"
-                    "get_range(selEnd, selEnd+10) == boundText) {\n"
-                    "startLength = $text_length\n%s\n"
-                    "selEnd += $text_length - startLength\n}\n";
-        break;
-    default:
-        loopMacro = "for(i=0;i<%d;i++){\n%s\n}\n";
-        break;
-    }
-
-
-    auto loopedCmd = std::make_unique<char[]>(strlen(command) + strlen(loopMacro) + 25);
+    QString loopMacro = createRepeatMacro(how);
+    QString loopedCmd;
 
     if (how == REPEAT_TO_END || how == REPEAT_IN_SEL) {
-        sprintf(&loopedCmd[0], loopMacro, command);
+        loopedCmd = loopMacro.arg(command);
     } else {
-        sprintf(&loopedCmd[0], loopMacro, how, command);
+        loopedCmd = loopMacro.arg(how).arg(command);
     }
 
     // Parse the resulting macro into an executable program "prog"
-    Program *const prog = ParseMacro(&loopedCmd[0], &errMsg, &stoppedAt);
+    QString errMsg;
+    int stoppedAt;
+    Program *const prog = ParseMacroEx(loopedCmd, &errMsg, &stoppedAt);
     if(!prog) {
-        qWarning("NEdit: internal error, repeat macro syntax wrong: %s", errMsg);
+        qWarning("NEdit: internal error, repeat macro syntax wrong: %s", errMsg.toLatin1().data());
         return;
     }
 
@@ -2760,7 +2757,7 @@ void learnActionHook(Widget w, XtPointer clientData, String actionName, XEvent *
 //               sinle shot QTimer with a timeout of zero.
 bool continueWorkProcEx(DocumentWidget *document) {
 
-    auto cmdData = static_cast<macroCmdInfoEx *>(document->macroCmdData_);
+    auto cmdData = document->macroCmdData_;
 
     const char *errMsg;
     DataValue result;
@@ -3765,17 +3762,17 @@ static int shellCmdMS(DocumentWidget *document, DataValue *argList, int nArgs, D
 */
 void ReturnShellCommandOutputEx(DocumentWidget *document, const QString &outText, int status) {
 
-    auto cmdData = static_cast<macroCmdInfoEx *>(document->macroCmdData_);
-    if(!cmdData) {
-        return;
-    }
+    if(auto cmdData = document->macroCmdData_) {
 
-    DataValue retVal;
-    retVal.tag = STRING_TAG;
-    retVal.val.str = AllocNStringCpyEx(outText);
-    ModifyReturnedValueEx(cmdData->context, retVal);
-    ReturnGlobals[SHELL_CMD_STATUS]->value.tag = INT_TAG;
-    ReturnGlobals[SHELL_CMD_STATUS]->value.val.n = status;
+        DataValue retVal;
+        retVal.tag     = STRING_TAG;
+        retVal.val.str = AllocNStringCpyEx(outText);
+
+        ModifyReturnedValueEx(cmdData->context, retVal);
+
+        ReturnGlobals[SHELL_CMD_STATUS]->value.tag   = INT_TAG;
+        ReturnGlobals[SHELL_CMD_STATUS]->value.val.n = status;
+    }
 }
 
 static int dialogMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
@@ -3787,7 +3784,7 @@ static int dialogMS(DocumentWidget *document, DataValue *argList, int nArgs, Dat
     /* Ignore the focused window passed as the function argument and put
        the dialog up over the window which is executing the macro */
     document = MacroRunWindowEx();
-    auto cmdData = static_cast<macroCmdInfoEx *>(document->macroCmdData_);
+    auto cmdData = document->macroCmdData_;
 
     /* Dialogs require macro to be suspended and interleaved with other macros.
        This subroutine can't be run if macro execution can't be interrupted */
@@ -3848,7 +3845,7 @@ static int stringDialogMS(DocumentWidget *document, DataValue *argList, int nArg
     /* Ignore the focused window passed as the function argument and put
        the dialog up over the window which is executing the macro */
     document = MacroRunWindowEx();
-    auto cmdData = static_cast<macroCmdInfoEx *>(document->macroCmdData_);
+    auto cmdData = document->macroCmdData_;
 
     /* Dialogs require macro to be suspended and interleaved with other macros.
        This subroutine can't be run if macro execution can't be interrupted */
@@ -4236,7 +4233,7 @@ static int listDialogMS(DocumentWidget *document, DataValue *argList, int nArgs,
     /* Ignore the focused window passed as the function argument and put
        the dialog up over the window which is executing the macro */
     document = MacroRunWindowEx();
-    auto cmdData = static_cast<macroCmdInfoEx *>(document->macroCmdData_);
+    auto cmdData = document->macroCmdData_;
 
     /* Dialogs require macro to be suspended and interleaved with other macros.
        This subroutine can't be run if macro execution can't be interrupted */
@@ -4346,7 +4343,7 @@ static int stringCompareMS(DocumentWidget *document, DataValue *argList, int nAr
 
     compareResult = qBound(-1, compareResult, 1);
 
-    result->tag = INT_TAG;
+    result->tag   = INT_TAG;
     result->val.n = compareResult;
     return true;
 }

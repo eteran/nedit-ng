@@ -53,7 +53,7 @@ bool DialogRepeat::doRepeatDialogAction() {
 		QString strTimes = ui.lineEdit->text();
 		
 		if(strTimes.isEmpty()) {
-			QMessageBox::warning(this, tr("Warning"), tr("Please supply a valur for number of times"));
+            QMessageBox::warning(this, tr("Warning"), tr("Please supply a value for number of times"));
 			return false;
 		}
 		

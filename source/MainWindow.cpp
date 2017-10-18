@@ -2772,7 +2772,6 @@ void MainWindow::unloadTagsFileCB(QAction *action) {
 void MainWindow::action_Unload_Tips_File(const QString &filename) {
 
     if (DeleteTagsFileEx(filename, TIP, true)) {
-
         for(MainWindow *window : MainWindow::allWindows()) {
             window->updateTipsFileMenuEx();
         }
@@ -2782,7 +2781,6 @@ void MainWindow::action_Unload_Tips_File(const QString &filename) {
 void MainWindow::action_Unload_Tags_File(const QString &filename) {
 
     if (DeleteTagsFileEx(filename, TAG, true)) {
-
         for(MainWindow *window : MainWindow::allWindows()) {
              window->updateTagsFileMenuEx();
         }

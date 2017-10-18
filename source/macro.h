@@ -39,8 +39,11 @@ class QTimer;
 class QWidget;
 struct RestartData;
 
-#define REPEAT_TO_END -1
-#define REPEAT_IN_SEL -2
+enum RepeatMethod {
+    REPEAT_TO_END = -1,
+    REPEAT_IN_SEL = -2,
+};
+
 
 Program *ParseMacroEx(const QString &expr, QString *message, int *stoppedAt);
 bool CheckMacroStringEx(QWidget *dialogParent, const QString &string, const QString &errIn, int *errPos);
@@ -55,14 +58,14 @@ void ReplayEx(DocumentWidget *document);
 
 void ReadMacroInitFileEx(DocumentWidget *document);
 void RegisterMacroSubroutines();
-void RepeatMacroEx(DocumentWidget *document, const char *command, int how);
+void RepeatMacroEx(DocumentWidget *document, const QString &command, int how);
 void ResumeMacroExecutionEx(DocumentWidget *document);
 void ReturnShellCommandOutputEx(DocumentWidget *document, const QString &outText, int status);
 void SafeGC();
 
 /* Data attached to window during shell command execution with
    information for controling and communicating with the process */
-struct macroCmdInfoEx {
+struct MacroCommandData {
     QTimer *bannerTimeoutID;
     Program *program;
     QFuture<bool> continueWorkProcID;

@@ -40,6 +40,8 @@ class WindowHighlightData;
 struct DragEndEvent;
 struct SmartIndentEvent;
 struct SmartIndentData;
+struct MacroCommandData;
+struct ShellCommandData;
 
 enum class Direction;
 
@@ -256,11 +258,11 @@ public:
 	time_t lastModTime_;               // time of last modification to file
 	uid_t fileUid_;                    // last recorded user id of the file
 	unsigned fileMode_;                // permissions of file being edited
-    void *highlightData_;              // info for syntax highlighting
-    void *macroCmdData_;               // same for macro commands
-    void *shellCmdData_;               // when a shell command is executing, info. about it, otherwise, nullptr
+    WindowHighlightData *highlightData_;              // info for syntax highlighting
+    std::shared_ptr<MacroCommandData> macroCmdData_;               // same for macro commands
+    std::shared_ptr<ShellCommandData> shellCmdData_;               // when a shell command is executing, info. about it, otherwise, nullptr
 	SmartIndentData *smartIndentData_;            // compiled macros for smart indent
-    bool  showStats_;                  // is stats line supposed to be shown
+    bool showStats_;                  // is stats line supposed to be shown
 
 private:
 	QSplitter *splitter_;

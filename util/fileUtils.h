@@ -51,5 +51,7 @@ void ConvertToMacFileStringEx(std::string &fileString);
 
 QString NormalizePathnameEx(const QString &pathname);
 QString NormalizePathnameEx(const std::string &pathname);
+QString CompressPathnameEx(const QString &pathname);
+QString CompressPathnameEx(const std::string &pathname);
 
 #endif
