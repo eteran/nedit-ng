@@ -498,7 +498,7 @@ static int yylex(void)
         sprintf(name, "const %d", value.val.n);
         InPtr += len;
         value.tag = INT_TAG;
-        if ((yylval.sym=LookupSymbol(name)) == nullptr)
+        if ((yylval.sym = LookupSymbol(name)) == nullptr)
             yylval.sym = InstallSymbol(name, CONST_SYM, value);
         return NUMBER;
     }

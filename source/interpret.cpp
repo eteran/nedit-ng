@@ -677,6 +677,10 @@ Symbol *InstallStringConstSymbol(const char *str) {
 /*
 ** find a symbol in the symbol table
 */
+Symbol *LookupSymbolEx(const QString &name) {
+    return LookupSymbol(name.toStdString());
+}
+
 Symbol *LookupSymbol(view::string_view name) {
 
 	for(Symbol *s : LocalSymList) {
@@ -697,6 +701,10 @@ Symbol *LookupSymbol(view::string_view name) {
 /*
 ** install symbol name in symbol table
 */
+Symbol *InstallSymbolEx(const QString &name, enum SymTypes type, const DataValue &value) {
+    return InstallSymbol(name.toStdString(), type, value);
+}
+
 Symbol *InstallSymbol(const std::string &name, enum SymTypes type, const DataValue &value) {
 
     auto s = new Symbol { name, type, value };
@@ -738,13 +746,13 @@ Symbol *PromoteToGlobal(Symbol *sym) {
 	if (sym == s) {
 		/* case a)
 		   just make this symbol a GLOBAL_SYM symbol and return */
-		fprintf(stderr, "nedit: To boldly go where no local sym has gone before: %s\n", sym->name.c_str());
+        qInfo("NEdit: To boldly go where no local sym has gone before: %s", sym->name.c_str());
 		sym->type = GLOBAL_SYM;
 		return sym;
 	} else if (nullptr != s) {
 		/* case b)
 		   sym will shadow the old symbol from the GlobalSymList */
-		fprintf(stderr, "nedit: duplicate symbol in LocalSymList and GlobalSymList: %s\n", sym->name.c_str());
+        qInfo("nedit: duplicate symbol in LocalSymList and GlobalSymList: %s", sym->name.c_str());
 	}
 
 	/* Add the symbol directly to the GlobalSymList, because InstallSymbol()

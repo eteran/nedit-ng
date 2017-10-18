@@ -53,7 +53,7 @@
 
 namespace {
 
-const char MacroEndBoundary[] = "--End-of-Macro--";
+const auto MacroEndBoundary = QLatin1String("--End-of-Macro--");
 
 DialogSmartIndent *SmartIndentDlg = nullptr;
 
@@ -367,7 +367,7 @@ static QString readSIMacroEx(Input &in) {
 	}
 
 	// Find the end of the macro
-	int macroEnd = in.find(QString::fromLatin1(MacroEndBoundary));
+    int macroEnd = in.find(MacroEndBoundary);
 	if(macroEnd == -1) {
 		return QString();
 	}
@@ -377,7 +377,7 @@ static QString readSIMacroEx(Input &in) {
 
 	// Remove leading tabs added by writer routine
 	in += macroEnd - in.index();
-	in += strlen(MacroEndBoundary);
+    in += MacroEndBoundary.size();
 
 	return QString::fromStdString(ShiftTextEx(macroStr, SHIFT_LEFT, true, 8, 8));
 }
@@ -424,7 +424,7 @@ QString WriteSmartIndentStringEx() {
 QString WriteSmartIndentCommonStringEx() {
 
 	QByteArray defaults = defaultCommonMacros();
-	if (CommonMacros == QString::fromLatin1(defaults.data(), defaults.size())) {
+    if (CommonMacros == QString::fromLatin1(defaults)) {
 		return QLatin1String("Default");
 	}
 
@@ -460,7 +460,7 @@ static void insertShiftedMacro(QTextStream &ts, const QString &macro) {
 	}
 	
 	ts << QLatin1String("\t");
-    ts << QString::fromLatin1(MacroEndBoundary);
+    ts << MacroEndBoundary;
 	ts << QLatin1String("\n");
 }
 

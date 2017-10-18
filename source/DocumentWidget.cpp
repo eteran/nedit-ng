@@ -5338,7 +5338,7 @@ bool DocumentWidget::DoNamedMacroMenuCmd(TextArea *area, const QString &name, bo
             DoMacroEx(
                 this,
                 data.item->cmd,
-                "macro menu command");
+                QLatin1String("macro menu command"));
 
             return true;
         }
@@ -5355,7 +5355,7 @@ bool DocumentWidget::DoNamedBGMenuCmd(TextArea *area, const QString &name, bool 
             DoMacroEx(
                 this,
                 data.item->cmd,
-                "background menu macro");
+                QLatin1String("background menu macro"));
 
             return true;
         }
@@ -5371,14 +5371,14 @@ int DocumentWidget::WidgetToPaneIndex(TextArea *area) const {
 ** Execute shell command "command", on input string "input", depositing the
 ** in a macro string (via a call back to ReturnShellCommandOutput).
 */
-void DocumentWidget::ShellCmdToMacroStringEx(const std::string &command, const std::string &input) {
+void DocumentWidget::ShellCmdToMacroStringEx(const QString &command, const QString &input) {
 
     // fork the command and begin processing input/output
     issueCommandEx(
                 toWindow(),
                 nullptr,
-                QString::fromStdString(command),
-                QString::fromStdString(input),
+                command,
+                input,
                 ACCUMULATE | OUTPUT_TO_STRING,
                 0,
                 0,

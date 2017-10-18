@@ -68,7 +68,7 @@ public:
     void ShowLineNumbers(bool state);
     void TempShowISearch(bool state);
     void addToGroup(QActionGroup *group, QMenu *menu);
-	void fileCB(DocumentWidget *window, const std::string &text);
+    void fileCB(DocumentWidget *window, const QString &text);
     void forceShowLineNumbers();
     void initToggleButtonsiSearch(SearchType searchType);
     void parseGeometry(QString geometry);

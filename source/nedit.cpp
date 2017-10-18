@@ -363,7 +363,7 @@ int main(int argc, char *argv[]) {
                     }
 
                     if (!toDoCommand.isNull()) {
-                        DoMacroEx(documentEx, toDoCommand, "-do macro");
+                        DoMacroEx(documentEx, toDoCommand, QLatin1String("-do macro"));
                         toDoCommand = QString();
                     }
                 }
@@ -396,7 +396,7 @@ int main(int argc, char *argv[]) {
         MainWindow::CheckCloseDimEx();
 
         if (!toDoCommand.isNull()) {
-            DoMacroEx(documentEx, toDoCommand, "-do macro");
+            DoMacroEx(documentEx, toDoCommand, QLatin1String("-do macro"));
         }
 	}
 

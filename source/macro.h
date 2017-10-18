@@ -52,7 +52,7 @@ int readCheckMacroStringEx(QWidget *dialogParent, const QString &string, Documen
 int ReadMacroStringEx(DocumentWidget *document, const QString &string, const QString &errIn);
 void AbortMacroCommandEx(DocumentWidget *document);
 void CancelMacroOrLearnEx(DocumentWidget *document);
-void DoMacroEx(DocumentWidget *document, const QString &macro, const char *errInName);
+void DoMacroEx(DocumentWidget *document, const QString &macro, const QString &errInName);
 void FinishLearnEx();
 void ReplayEx(DocumentWidget *document);
 

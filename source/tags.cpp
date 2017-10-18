@@ -90,9 +90,10 @@ static QList<Tag> getTag(const QString &name, int search_type);
 static void createSelectMenuEx(DocumentWidget *document, TextArea *area, const QStringList &args);
 static QList<Tag> LookupTag(const QString &name, Mode search_type);
 
-static int searchLine(char *line, const char *regex);
+static int searchLine(const char *line, const char *regex);
 static void rstrip(char *dst, const char *src);
-static int nextTFBlock(FILE *fp, char *header, std::string &body, int *blkLine, int *currLine);
+static QString rstrip(QString s);
+static int nextTFBlock(FILE *fp, QString &header, std::string &body, int *blkLine, int *currLine);
 static int loadTipsFile(const QString &tipsFile, int index, int recLevel);
 static QMultiHash<QString, Tag> *hashTableByType(int type);
 static QList<tagFile> *tagListByType(int type);
@@ -491,7 +492,7 @@ void updateMenuItems() {
 ** Scans one <line> from a ctags tags file (<index>) in tagPath.
 ** Return value: Number of tag specs added.
 */
-static int scanCTagsLine(const QString &line, const char *tagPath, int index) {
+static int scanCTagsLine(const QString &line, const QString &tagPath, int index) {
 
 	QRegExp regex(QLatin1String("^([^\\t]+)\\t([^\\t]+)\\t([^\\n]+)\\n$"));
 	if(!regex.exactMatch(line)) {
@@ -557,7 +558,7 @@ static int scanCTagsLine(const QString &line, const char *tagPath, int index) {
 	            PLAIN_LANGUAGE_MODE,
                 searchString,
 	            pos,
-                QString::fromLatin1(tagPath),
+                tagPath,
 	            index);
 }
 
@@ -704,7 +705,7 @@ static int loadTagsFile(const QString &tagSpec, int index, int recLevel) {
 			}
 		}
 		if (tagFileType == TFT_CTAGS) {
-			nTagsAdded += scanCTagsLine(QString::fromLatin1(line), tagPath.toLatin1().data(), index);
+            nTagsAdded += scanCTagsLine(QString::fromLatin1(line), tagPath, index);
         } else {            
             nTagsAdded += scanETagsLine(line, tagPath, index, filename, recLevel);
 		}
@@ -733,7 +734,7 @@ static QList<Tag> LookupTagFromList(QList<tagFile> *FileList, const QString &nam
 			int load_status;		
 		
             if (tf.loaded) {
-                if (stat(tf.filename.toLatin1().data(), &statbuf) != 0) { //
+                if (::stat(tf.filename.toLatin1().data(), &statbuf) != 0) { //
                     qWarning("NEdit: Error getting status for tag file %s", tf.filename.toLatin1().data());
 				} else {
                     if (tf.date == statbuf.st_mtime) {
@@ -753,7 +754,7 @@ static QList<Tag> LookupTagFromList(QList<tagFile> *FileList, const QString &nam
 			}
 
 			if (load_status) {
-                if (stat(tf.filename.toLatin1().data(), &statbuf) != 0) {
+                if (::stat(tf.filename.toLatin1().data(), &statbuf) != 0) {
                     if (!tf.loaded) {
 						// if tf->loaded == true we already have seen the error msg 
 						qWarning("NEdit: Error getting status for tag file %s", tf.filename.toLatin1().data());
@@ -890,7 +891,7 @@ static int fakeRegExSearchEx(view::string_view buffer, const char *searchString,
 			*outPtr++ = *inPtr++;
 		}
 	}
-	*outPtr = 0; // Terminate searchSubs 
+    *outPtr = '\0'; // Terminate searchSubs
 
     found = SearchString(fileString, QString::fromLatin1(searchSubs), dir, SEARCH_REGEX, WrapMode::NoWrap, searchStartPos, startPos, endPos, nullptr, nullptr, nullptr);
 
@@ -960,7 +961,7 @@ int findAllMatchesEx(DocumentWidget *document, TextArea *area, const QString &st
             tagFiles[nMatches] = QString(QLatin1String("%1%2")).arg(tagPath, fileToSearch);
         }
 
-        strcpy(tagSearch[nMatches], searchString.toLatin1().data());
+        ::strcpy(tagSearch[nMatches], searchString.toLatin1().data());
         tagPosInf[nMatches] = startPos;
 
         ParseFilenameEx(tagFiles[nMatches], &filename, &pathname);
@@ -1001,8 +1002,7 @@ int findAllMatchesEx(DocumentWidget *document, TextArea *area, const QString &st
         nMatches = 1;
     }
 
-    /*  If all of the tag entries are the same file, just use the first.
-     */
+    //  If all of the tag entries are the same file, just use the first.
     if (GetPrefSmartTags()) {
         for (i = 1; i < nMatches; i++) {
             if(tagFiles[i] != tagFiles[i - 1]) {
@@ -1020,23 +1020,26 @@ int findAllMatchesEx(DocumentWidget *document, TextArea *area, const QString &st
 
         for (i = 0; i < nMatches; i++) {
 
-            char temp[32 + 2 * MAXPATHLEN + MAXLINE];
+            QString temp;
 
             ParseFilenameEx(tagFiles[i], &filename, &pathname);
             if ((i < nMatches - 1 && (tagFiles[i] == tagFiles[i + 1])) || (i > 0 && (tagFiles[i] == tagFiles[i - 1]))) {
 
-                if (*(tagSearch[i]) && (tagPosInf[i] != -1)) { // etags
-					snprintf(temp, sizeof(temp), "%2d. %s%s %8i %s", i + 1, pathname.toLatin1().data(), filename.toLatin1().data(), tagPosInf[i], tagSearch[i]);
-                } else if (*(tagSearch[i])) { // ctags search expr
-					snprintf(temp, sizeof(temp), "%2d. %s%s          %s", i + 1, pathname.toLatin1().data(), filename.toLatin1().data(), tagSearch[i]);
-                } else { // line number only
-					snprintf(temp, sizeof(temp), "%2d. %s%s %8i", i + 1, pathname.toLatin1().data(), filename.toLatin1().data(), tagPosInf[i]);
+                if (*(tagSearch[i]) && (tagPosInf[i] != -1)) {
+                    // etags
+                    temp = QString::asprintf("%2d. %s%s %8i %s", i + 1, pathname.toLatin1().data(), filename.toLatin1().data(), tagPosInf[i], tagSearch[i]);
+                } else if (*(tagSearch[i])) {
+                    // ctags search expr
+                    temp = QString::asprintf("%2d. %s%s          %s", i + 1, pathname.toLatin1().data(), filename.toLatin1().data(), tagSearch[i]);
+                } else {
+                    // line number only
+                    temp = QString::asprintf("%2d. %s%s %8i", i + 1, pathname.toLatin1().data(), filename.toLatin1().data(), tagPosInf[i]);
                 }
             } else {
-				snprintf(temp, sizeof(temp), "%2d. %s%s", i + 1, pathname.toLatin1().data(), filename.toLatin1().data());
+                temp = QString::asprintf("%2d. %s%s", i + 1, pathname.toLatin1().data(), filename.toLatin1().data());
             }
 
-			dupTagsList.push_back(QString::fromLatin1(temp));
+            dupTagsList.push_back(temp);
         }
 
         createSelectMenuEx(document, area, dupTagsList);
@@ -1227,7 +1230,7 @@ static void createSelectMenuEx(DocumentWidget *document, TextArea *area, const Q
 enum tftoken_types { TF_EOF, TF_BLOCK, TF_VERSION, TF_INCLUDE, TF_LANGUAGE, TF_ALIAS, TF_ERROR, TF_ERROR_EOF };
 
 // A wrapper for SearchString 
-static int searchLine(char *line, const char *regex) {
+static int searchLine(const char *line, const char *regex) {
     int dummy1;
     int dummy2;
     return SearchString(line, QString::fromLatin1(regex), SEARCH_FORWARD, SEARCH_REGEX, WrapMode::NoWrap, 0, &dummy1, &dummy2, nullptr, nullptr, nullptr);
@@ -1246,6 +1249,10 @@ static bool lineEmpty(const view::string_view line) {
         }
     }
     return true;
+}
+
+static QString rstrip(QString s) {
+    return s.replace(QRegularExpression(QLatin1String("\\s*\\n")), QString());
 }
 
 // Remove trailing whitespace from a line 
@@ -1277,7 +1284,7 @@ static void rstrip(char *dst, const char *src) {
 **                  after the "* xxxx *" line.
 **      currLine:   Used to keep track of the current line in the file.
 */
-static int nextTFBlock(FILE *fp, char *header, std::string &body, int *blkLine, int *currLine) {
+static int nextTFBlock(FILE *fp, QString &header, std::string &body, int *blkLine, int *currLine) {
 
     // These are the different kinds of tokens
     const char *commenTF_regex = "^\\s*\\* comment \\*\\s*$";
@@ -1327,7 +1334,7 @@ static int nextTFBlock(FILE *fp, char *header, std::string &body, int *blkLine, 
         int i;
         int incLines;
 
-		// fprintf(stderr, "Starting include/alias at line %i\n", *currLine); 
+        // qDebug("NEdit: Starting include/alias at line %i", *currLine);
         if (dummy1) {
 			code = TF_INCLUDE;
         } else {
@@ -1338,11 +1345,10 @@ static int nextTFBlock(FILE *fp, char *header, std::string &body, int *blkLine, 
             if (!status)
                 return TF_ERROR_EOF;
             if (lineEmpty(line)) {
-                fprintf(stderr, "nedit: Warning: empty '* alias *' "
-                                "block in calltips file.\n");
+                qWarning("NEdit: Warning: empty '* alias *' block in calltips file.");
 				return TF_ERROR;
             }
-			rstrip(header, line);
+            header = rstrip(QString::fromLatin1(line));
 		}
         incPos = ftell(fp);
         *blkLine = *currLine + 1; // Line of first actual filename/alias
@@ -1359,13 +1365,12 @@ static int nextTFBlock(FILE *fp, char *header, std::string &body, int *blkLine, 
 		// Correct currLine for the empty line it read at the end 
         --(*currLine);
 		if (incLines == 0) {
-			fprintf(stderr, "nedit: Warning: empty '* include *' or"
-			                " '* alias *' block in calltips file.\n");
+            qWarning("NEdit: Warning: empty '* include *' or '* alias *' block in calltips file.");
 			return TF_ERROR;
         }
 
         // Make space for the filenames/alias sources
-        if (fseek(fp, incPos, SEEK_SET) != 0) {
+        if (::fseek(fp, incPos, SEEK_SET) != 0) {
 			return TF_ERROR;
         }
 
@@ -1394,7 +1399,7 @@ static int nextTFBlock(FILE *fp, char *header, std::string &body, int *blkLine, 
 			return TF_ERROR;
         }
         *blkLine = *currLine;
-		rstrip(header, line);
+        header = rstrip(QString::fromLatin1(line));
 		code = TF_LANGUAGE;
     } else if (searchLine(line, version_regex)) {
 		// VERSION block 
@@ -1407,20 +1412,20 @@ static int nextTFBlock(FILE *fp, char *header, std::string &body, int *blkLine, 
 			return TF_ERROR;
 		}
         *blkLine = *currLine;
-		rstrip(header, line);
+        header = rstrip(QString::fromLatin1(line));
 		code = TF_VERSION;
     } else {
 		// Calltip block 
 		/*  The first line is the key, the rest is the tip.
 		    Strip trailing whitespace. */
-		rstrip(header, line);
+        header = rstrip(QString::fromLatin1(line));
 
         status = fgets(line, MAXLINE, fp);
         ++(*currLine);
         if (!status)
             return TF_ERROR_EOF;
 		if (lineEmpty(line)) {
-            qWarning("NEdit: Warning: empty calltip block:\n   \"%s\"", header);
+            qWarning("NEdit: Warning: empty calltip block:\n   \"%s\"", header.toLatin1().data());
 			return TF_ERROR;
 		}
         *blkLine = *currLine;
@@ -1446,8 +1451,8 @@ static int nextTFBlock(FILE *fp, char *header, std::string &body, int *blkLine, 
 
 // A struct for describing a calltip alias 
 struct tf_alias {    
-	std::string dest;
-    std::string sources;
+    QString dest;
+    QString sources;
 };
 
 /*
@@ -1463,7 +1468,7 @@ static int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
     int nTipsAdded = 0;
     int langMode = PLAIN_LANGUAGE_MODE;
     int oldLangMode;
-	int currLine = 0;
+    int currLine = 0;
 
     QList<tf_alias> aliases;
 
@@ -1493,20 +1498,20 @@ static int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
     }
 
     Q_FOREVER {
-		int blkLine = 0;
+        int blkLine = 0;
         std::string body;
-        int code = nextTFBlock(fp, header.toLatin1().data(), body, &blkLine, &currLine);
+        int code = nextTFBlock(fp, header, body, &blkLine, &currLine);
 
-		if (code == TF_ERROR_EOF) {
+        if (code == TF_ERROR_EOF) {
             qWarning("NEdit: Warning: unexpected EOF in calltips file.");
 			break;
 		}
 
-		if (code == TF_EOF) {
+        if (code == TF_EOF) {
 			break;
 		}
 
-		switch (code) {
+        switch (code) {
 		case TF_BLOCK:
 			/* Add the calltip to the global hash table.
 			    For the moment I'm just using line numbers because I don't
@@ -1518,8 +1523,7 @@ static int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
         {
             // nextTFBlock returns a colon-separated list of tips files in body
             std::stringstream ss(body);
-            std::string tipIncFile;
-            while (getline(ss, tipIncFile, ':')) {
+            for (std::string tipIncFile; getline(ss, tipIncFile, ':');) {
                 // qDebug("NEdit: including tips file '%s'", tipIncFile);
                 nTipsAdded += loadTipsFile(QString::fromStdString(tipIncFile), index, recLevel + 1);
             }
@@ -1539,13 +1543,12 @@ static int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
 			}
 			break;
 		case TF_ERROR:
-			fprintf(stderr, "nedit: Warning: Recoverable error while "
-			                "reading calltips file:\n   \"%s\"\n",
-			        resolvedTipsFile.toLatin1().data());
+            qWarning("NEdit: Warning: Recoverable error while reading calltips file:\n   \"%s\"",
+                     resolvedTipsFile.toLatin1().data());
 			break;
 		case TF_ALIAS:
 			// Allocate a new alias struct 
-            aliases.push_front(tf_alias{ header.toStdString(), body });
+            aliases.push_front(tf_alias{ header, QString::fromStdString(body) });
 			break;
 		default:
 			; // Ignore TF_VERSION for now 
@@ -1557,18 +1560,20 @@ static int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
 
     // Now resolve any aliases
     for(const tf_alias &tmp_alias : aliases) {
-        QList<Tag> tags = getTag(QString::fromStdString(tmp_alias.dest), TIP);
+
+        QList<Tag> tags = getTag(tmp_alias.dest, TIP);
+
         if (tags.isEmpty()) {
-			fprintf(stderr, "nedit: Can't find destination of alias \"%s\"\n"
-			                "  in calltips file:\n   \"%s\"\n",
-                    tmp_alias.dest.c_str(), resolvedTipsFile.toLatin1().data());
+            qWarning("NEdit: Can't find destination of alias \"%s\"\n"
+                     "in calltips file:\n   \"%s\"\n",
+                     tmp_alias.dest.toLatin1().data(),
+                     resolvedTipsFile.toLatin1().data());
 		} else {
 
             const Tag *t = &tags[0];
 
-            std::stringstream ss(tmp_alias.sources);
-            std::string src;
-            while (getline(ss, src, ':')) {
+            std::stringstream ss(tmp_alias.sources.toStdString());
+            for (std::string src; getline(ss, src, ':') ;) {
                 addTag(QString::fromStdString(src), resolvedTipsFile, t->language, QString(), t->posInf, tipPath, index);
             }
 		}

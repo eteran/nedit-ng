@@ -169,7 +169,7 @@ public:
     void SetOverstrike(bool overstrike);
     void SetShowMatching(ShowMatchingStyle state);
     void SetTabDist(int tabDist);
-    void ShellCmdToMacroStringEx(const std::string &command, const std::string &input);
+    void ShellCmdToMacroStringEx(const QString &command, const QString &input);
     void StopHighlightingEx();
     void Undo();
     void UnloadLanguageModeTipsFileEx();

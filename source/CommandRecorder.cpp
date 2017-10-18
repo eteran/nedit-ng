@@ -15,14 +15,14 @@ const char EscapeChars[] = "\\\"\n\t\b\r\f\a\v";
 #endif
 
 // List of actions not useful when learning a macro sequence (also see below)
-const char *IgnoredActions[] = {
+const char *const IgnoredActions[] = {
     "focusIn",
     "focusOut"
 };
 
 /* List of actions intended to be attached to mouse buttons, which the user
    must be warned can't be recorded in a learn/replay sequence */
-const char *MouseActions[] = {
+const char *const MouseActions[] = {
     "grab_focus",
     "extend_adjust",
     "extend_start",
@@ -43,7 +43,7 @@ const char *MouseActions[] = {
 
 /* List of actions to not record because they
    generate further actions, more suitable for recording */
-const char *RedundantActions[] = {
+const char *const RedundantActions[] = {
     "open_dialog",
     "save_as_dialog",
     "revert_to_saved_dialog",

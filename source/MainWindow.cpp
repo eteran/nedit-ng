@@ -94,7 +94,7 @@ QPointer<DialogMacros>               WindowMacros;
 QPointer<DialogSmartIndent>          SmartIndentDlg;
 QPointer<DocumentWidget>             lastFocusDocument;
 
-const char neditDBBadFilenameChars[] = "\n";
+auto neditDBBadFilenameChars = QLatin1String("\n");
 
 QList<QString> PrevOpen;
 
@@ -1589,8 +1589,8 @@ void MainWindow::ReadNEditDB() {
 	}
 
     // open the file
-	std::ifstream in(fullName.toLatin1().data());
-	if(!in) {
+    QFile file(fullName);
+    if(!file.open(QIODevice::ReadOnly)) {
 		return;
 	}
 
@@ -1600,14 +1600,16 @@ void MainWindow::ReadNEditDB() {
     /* read lines of the file, lines beginning with # are considered to be
        comments and are thrown away.  Lines are subject to cursory checking,
        then just copied to the Open Previous file menu list */
-	for(std::string line; std::getline(in, line); ) {
+    QTextStream in(&file);
+    while (!in.atEnd()) {
+        QString line = in.readLine();
 
-		if(line.empty()) {
+        if(line.isEmpty()) {
 			// blank line
 			continue;
 		}
 
-        if (line[0] == '#') {
+        if (line.startsWith(QLatin1Char('#'))) {
             // comment
             continue;
         }
@@ -1617,14 +1619,12 @@ void MainWindow::ReadNEditDB() {
 		// happen as we are reading lines which are obviously delimited by
 		// '\n', but the check remains as we could hypothetically ban other
 		// characters in the future.
-		std::string::size_type index = line.find_first_of(neditDBBadFilenameChars);
-		if(index != std::string::npos) {
-            // non-filename characters
+        if(line.contains(neditDBBadFilenameChars)) {
             qWarning("NEdit: History file may be corrupted");
             continue;
         }
 
-		PrevOpen.push_back(QString::fromStdString(line));
+        PrevOpen.push_back(line);
 
         if (PrevOpen.size() >= GetPrefMaxPrevOpenFiles()) {
             // too many entries
@@ -1677,9 +1677,7 @@ void MainWindow::WriteNEditDB() {
 
         // Write the list of file names
         for(const QString &line : PrevOpen) {
-            const size_t lineLen = line.size();
-
-            if (!line.isEmpty() && !line.startsWith(QLatin1Char('#')) && strcspn(line.toLatin1().data(), neditDBBadFilenameChars) == lineLen) {
+            if (!line.isEmpty() && !line.startsWith(QLatin1Char('#')) && !line.contains(neditDBBadFilenameChars)) {
                 ts << line << tr("\n");
             }
         }
@@ -1789,7 +1787,7 @@ void MainWindow::on_action_Open_Selected_triggered() {
         // Get the selected text, if there's no selection, do nothing
         const QMimeData *mimeData = QApplication::clipboard()->mimeData(QClipboard::Selection);
         if(mimeData->hasText()) {
-            fileCB(doc, mimeData->text().toStdString());
+            fileCB(doc, mimeData->text());
         } else {
             QApplication::beep();
         }
@@ -1802,32 +1800,32 @@ void MainWindow::on_action_Open_Selected_triggered() {
 // Name: fileCB
 // Desc: opens a "selected file"
 //------------------------------------------------------------------------------
-void MainWindow::fileCB(DocumentWidget *window, const std::string &text) {
+void MainWindow::fileCB(DocumentWidget *window, const QString &text) {
 
 	// TODO(eteran): 2.0, let the user specify a list of potential paths!
     //       can we ask the system simply or similar?
     //       `gcc -print-prog-name=cc1plus` -v
     //       `gcc -print-prog-name=cc1` -v
     //       etc...
-    static const char includeDir[] = "/usr/include/";
+    static auto includeDir = QLatin1String("/usr/include/");
 
     /* get the string, or skip if we can't get the selection data, or it's
        obviously not a file name */
-    if (text.size() > MAXPATHLEN || text.empty()) {
+    if (text.size() > MAXPATHLEN || text.isEmpty()) {
         QApplication::beep();
         return;
     }
 
     QRegExp regexSystem(QLatin1String("#include\\s*<([^>]+)>"), Qt::CaseSensitive, QRegExp::RegExp2);
     QRegExp regexLocal(QLatin1String("#include\\s*\"([^\"]+)\""), Qt::CaseSensitive, QRegExp::RegExp2);
-    QString nameText = QString::fromStdString(text);
+    QString nameText = text;
 
     // extract name from #include syntax
 	// TODO(eteran): 2.0, support import/include syntax from multiple languages
     if(regexLocal.indexIn(nameText) != -1) {
         nameText = regexLocal.cap(1);
     } else if(regexSystem.indexIn(nameText) != -1) {
-		nameText = QString(QLatin1String("%1%2")).arg(QString::fromLatin1(includeDir), regexSystem.cap(1));
+        nameText = QString(QLatin1String("%1%2")).arg(includeDir, regexSystem.cap(1));
     }
 
     // strip whitespace from name

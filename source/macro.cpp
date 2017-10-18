@@ -212,10 +212,10 @@ static int rangesetIncludesPosMS(DocumentWidget *document, DataValue *argList, i
 static int rangesetSetColorMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 static int rangesetSetNameMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 static int rangesetSetModeMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int fillPatternResultEx(DataValue *result, const char **errMsg, DocumentWidget *document, const char *patternName, bool includeName, char *styleName, int bufferPos);
+static int fillPatternResultEx(DataValue *result, const char **errMsg, DocumentWidget *document, const QString &patternName, bool includeName, const QString &styleName, int bufferPos);
 static int getPatternByNameMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 static int getPatternAtPosMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWidget *document, const char *styleName, bool includeName, int patCode, int bufferPos);
+static int fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWidget *document, const QString &styleName, bool includeName, int patCode, int bufferPos);
 static int getStyleByNameMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 static int getStyleAtPosMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 static int filenameDialogMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
@@ -2302,11 +2302,11 @@ int readCheckMacroStringEx(QWidget *dialogParent, const QString &string, Documen
                             errMsg);
             }
             if (runWindow) {
-                Symbol *sym = LookupSymbol(subrName.toStdString());
+                Symbol *sym = LookupSymbolEx(subrName);
                 if(!sym) {
                     subrPtr.val.prog = prog;
                     subrPtr.tag = NO_TAG;
-                    sym = InstallSymbol(subrName.toStdString(), MACRO_FUNCTION_SYM, subrPtr);
+                    sym = InstallSymbolEx(subrName, MACRO_FUNCTION_SYM, subrPtr);
                 } else {
                     if (sym->type == MACRO_FUNCTION_SYM) {
                         FreeProgram(sym->value.val.prog);
@@ -2616,7 +2616,7 @@ void SafeGC() {
 ** Reports errors via a dialog posted over "window", integrating the name
 ** "errInName" into the message to help identify the source of the error.
 */
-void DoMacroEx(DocumentWidget *document, const QString &macro, const char *errInName) {
+void DoMacroEx(DocumentWidget *document, const QString &macro, const QString &errInName) {
 
     /* Add a terminating newline (which command line users are likely to omit
        since they are typically invoking a single routine) */
@@ -2627,7 +2627,7 @@ void DoMacroEx(DocumentWidget *document, const QString &macro, const char *errIn
     int stoppedAt;
     Program *const prog = ParseMacroEx(qMacro, &errMsg, &stoppedAt);
     if(!prog) {
-        ParseErrorEx(document, qMacro, stoppedAt, QString::fromLatin1(errInName), errMsg);
+        ParseErrorEx(document, qMacro, stoppedAt, errInName, errMsg);
         return;
     }
 
@@ -3732,8 +3732,8 @@ static int getenvMS(DocumentWidget *document, DataValue *argList, int nArgs, Dat
 
 static int shellCmdMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
-    std::string cmdString;
-    std::string inputString;
+    QString cmdString;
+    QString inputString;
 
     if(!readArguments(argList, nArgs, 0, errMsg, &cmdString, &inputString)) {
         return false;
@@ -5320,7 +5320,7 @@ static int rangesetDestroyMS(DocumentWidget *document, DataValue *argList, int n
 static int rangesetGetByNameMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Rangeset *rangeset;
-    std::string name;
+    QString name;
     RangesetTable *rangesetTable = document->buffer_->rangesetTable_;
     uint8_t *rangesetList;
     int insertIndex = 0;
@@ -5345,7 +5345,7 @@ static int rangesetGetByNameMS(DocumentWidget *document, DataValue *argList, int
         if (rangeset) {
             QString rangeset_name = rangeset->RangesetGetName();
 
-            if(rangeset_name == QString::fromStdString(name)) {
+            if(rangeset_name == name) {
 
                 element.tag = INT_TAG;
                 element.val.n = label;
@@ -5908,7 +5908,7 @@ static int rangesetSetModeMS(DocumentWidget *document, DataValue *argList, int n
 **      ["style"]       Name of style
 **
 */
-int fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWidget *document, const char *styleName, bool includeName, int patCode, int bufferPos) {
+int fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWidget *document, const QString &styleName, bool includeName, int patCode, int bufferPos) {
     DataValue DV;
 
     // initialize array
@@ -5918,12 +5918,10 @@ int fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWidget *do
     // the following array entries will be strings
     DV.tag = STRING_TAG;
 
-    auto styleNameStr = QString::fromLatin1(styleName);
-
     if (includeName) {
 
         // insert style name
-        DV.val.str = AllocNStringCpyEx(styleNameStr);
+        DV.val.str = AllocNStringCpyEx(styleName);
 
         if (!ArrayInsert(result, PERM_ALLOC_STR("style"), &DV)) {
             M_ARRAY_INSERT_FAILURE();
@@ -5931,7 +5929,7 @@ int fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWidget *do
     }
 
     // insert color name
-    DV.val.str = AllocNStringCpyEx(ColorOfNamedStyleEx(styleNameStr));
+    DV.val.str = AllocNStringCpyEx(ColorOfNamedStyleEx(styleName));
     if (!ArrayInsert(result, PERM_ALLOC_STR("color"), &DV)) {
         M_ARRAY_INSERT_FAILURE();
     }
@@ -5949,7 +5947,7 @@ int fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWidget *do
     }
 
     // Prepare array element for background color name
-    DV.val.str = AllocNStringCpyEx(BgColorOfNamedStyleEx(QString::fromLatin1(styleName)));
+    DV.val.str = AllocNStringCpyEx(BgColorOfNamedStyleEx(styleName));
     if (!ArrayInsert(result, PERM_ALLOC_STR("background"), &DV)) {
         M_ARRAY_INSERT_FAILURE();
     }
@@ -5970,13 +5968,13 @@ int fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWidget *do
     DV.tag = INT_TAG;
 
     // Put boldness value in array
-    DV.val.n = FontOfNamedStyleIsBold(QString::fromLatin1(styleName));
+    DV.val.n = FontOfNamedStyleIsBold(styleName);
     if (!ArrayInsert(result, PERM_ALLOC_STR("bold"), &DV)) {
         M_ARRAY_INSERT_FAILURE();
     }
 
     // Put italicity value in array
-    DV.val.n = FontOfNamedStyleIsItalic(QString::fromLatin1(styleName));
+    DV.val.n = FontOfNamedStyleIsItalic(styleName);
     if (!ArrayInsert(result, PERM_ALLOC_STR("italic"), &DV)) {
         M_ARRAY_INSERT_FAILURE();
     }
@@ -5991,17 +5989,6 @@ int fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWidget *do
     return true;
 }
 
-int fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWidget *document, const QString &styleName, bool includeName, int patCode, int bufferPos) {
-    return fillStyleResultEx(
-                result,
-                errMsg,
-                document,
-                styleName.toLatin1().data(),
-                includeName,
-                patCode,
-                bufferPos);
-}
-
 /*
 ** Returns an array containing information about the style of name $1
 **      ["color"]       Foreground color name of style
@@ -6011,7 +5998,7 @@ int fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWidget *do
 **
 */
 static int getStyleByNameMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
-    std::string styleName;
+    QString styleName;
 
     // Validate number of arguments
     if(!readArguments(argList, nArgs, 0, errMsg, &styleName)) {
@@ -6022,7 +6009,7 @@ static int getStyleByNameMS(DocumentWidget *document, DataValue *argList, int nA
     result->tag = ARRAY_TAG;
     result->val.arrayPtr = nullptr;
 
-    if (!NamedStyleExists(QString::fromStdString(styleName))) {
+    if (!NamedStyleExists(styleName)) {
         // if the given name is invalid we just return an empty array.
         return true;
     }
@@ -6031,7 +6018,7 @@ static int getStyleByNameMS(DocumentWidget *document, DataValue *argList, int nA
                 result,
                 errMsg,
                 document,
-                styleName.c_str(),
+                styleName,
                 false,
                 0,
                 -1);
@@ -6097,7 +6084,7 @@ static int getStyleAtPosMS(DocumentWidget *document, DataValue *argList, int nAr
 **      ["pattern"]     Name of pattern
 **
 */
-int fillPatternResultEx(DataValue *result, const char **errMsg, DocumentWidget *document, const char *patternName, bool includeName, char *styleName, int bufferPos) {
+int fillPatternResultEx(DataValue *result, const char **errMsg, DocumentWidget *document, const QString &patternName, bool includeName, const QString &styleName, int bufferPos) {
 
     Q_UNUSED(errMsg);
 
@@ -6112,7 +6099,7 @@ int fillPatternResultEx(DataValue *result, const char **errMsg, DocumentWidget *
 
     if (includeName) {
         // insert pattern name
-        DV.val.str = AllocNStringCpyEx(QString::fromLatin1(patternName));
+        DV.val.str = AllocNStringCpyEx(patternName);
 
         if (!ArrayInsert(result, PERM_ALLOC_STR("pattern"), &DV)) {
             M_ARRAY_INSERT_FAILURE();
@@ -6120,7 +6107,7 @@ int fillPatternResultEx(DataValue *result, const char **errMsg, DocumentWidget *
     }
 
     // insert style name
-    DV.val.str = AllocNStringCpyEx(QString::fromLatin1(styleName));
+    DV.val.str = AllocNStringCpyEx(styleName);
 
     if (!ArrayInsert(result, PERM_ALLOC_STR("style"), &DV)) {
         M_ARRAY_INSERT_FAILURE();
@@ -6141,17 +6128,6 @@ int fillPatternResultEx(DataValue *result, const char **errMsg, DocumentWidget *
     return true;
 }
 
-int fillPatternResultEx(DataValue *result, const char **errMsg, DocumentWidget *document, const QString &patternName, bool includeName, const QString &styleName, int bufferPos) {
-    return fillPatternResultEx(
-                result,
-                errMsg,
-                document,
-                patternName.toLatin1().data(),
-                includeName,
-                styleName.toLatin1().data(),
-                bufferPos);
-}
-
 /*
 ** Returns an array containing information about a highlighting pattern. The
 ** single parameter contains the pattern name for which this information is
@@ -6161,7 +6137,7 @@ int fillPatternResultEx(DataValue *result, const char **errMsg, DocumentWidget *
 */
 static int getPatternByNameMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
-    std::string patternName;
+    QString patternName;
 
     // Begin of building the result.
     result->tag = ARRAY_TAG;
@@ -6172,7 +6148,7 @@ static int getPatternByNameMS(DocumentWidget *document, DataValue *argList, int 
         M_FAILURE("First parameter is not a string in %s");
     }
 
-    HighlightPattern *pattern = FindPatternOfWindowEx(document, QString::fromStdString(patternName));
+    HighlightPattern *pattern = FindPatternOfWindowEx(document, patternName);
     if(!pattern) {
         // The pattern's name is unknown.
         return true;
@@ -6182,9 +6158,9 @@ static int getPatternByNameMS(DocumentWidget *document, DataValue *argList, int 
                 result,
                 errMsg,
                 document,
-                patternName.c_str(),
+                patternName,
                 false,
-                pattern->style.toLatin1().data(),
+                pattern->style,
                 -1);
 }
 
