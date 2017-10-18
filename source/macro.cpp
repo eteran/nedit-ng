@@ -305,7 +305,7 @@ static int routineName(DocumentWidget *document, DataValue *argList, int nArgs, 
                                                                                                                           \
     if(MainWindow *window = document->toWindow()) {                                                                       \
         if(TextArea *area = window->lastFocus_) {                                                                         \
-            area->slotName(flags);                                                                                        \
+            area->slotName(flags | TextArea::SupressRecording);                                                                                        \
         }                                                                                                                 \
     }                                                                                                                     \
                                                                                                                           \
@@ -333,7 +333,7 @@ static int routineName(DocumentWidget *document, DataValue *argList, int nArgs, 
                                                                                                                           \
     if(MainWindow *window = document->toWindow()) {                                                                       \
         if(TextArea *area = window->lastFocus_) {                                                                         \
-            area->slotName(string, flags);                                                                                \
+            area->slotName(string, flags | TextArea::SupressRecording);                                                                                \
         }                                                                                                                 \
     }                                                                                                                     \
                                                                                                                           \
@@ -361,7 +361,7 @@ static int routineName(DocumentWidget *document, DataValue *argList, int nArgs, 
                                                                                                                           \
     if(MainWindow *window = document->toWindow()) {                                                                       \
         if(TextArea *area = window->lastFocus_) {                                                                         \
-            area->slotName(num, flags);                                                                                   \
+            area->slotName(num, flags | TextArea::SupressRecording);                                                                                   \
         }                                                                                                                 \
     }                                                                                                                     \
                                                                                                                           \
