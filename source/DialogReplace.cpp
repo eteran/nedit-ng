@@ -561,7 +561,7 @@ void DialogReplace::initToggleButtons(SearchType searchType) {
 		}
 		break;
 	default:
-		Q_ASSERT(0);
+        Q_UNREACHABLE();
 	}
 }
 
