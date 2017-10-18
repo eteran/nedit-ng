@@ -93,7 +93,7 @@ static QList<Tag> LookupTag(const QString &name, Mode search_type);
 static int searchLine(const char *line, const char *regex);
 static void rstrip(char *dst, const char *src);
 static QString rstrip(QString s);
-static int nextTFBlock(FILE *fp, QString &header, std::string &body, int *blkLine, int *currLine);
+static int nextTFBlock(std::istream &is, QString &header, std::string &body, int *blkLine, int *currLine);
 static int loadTipsFile(const QString &tipsFile, int index, int recLevel);
 static QMultiHash<QString, Tag> *hashTableByType(int type);
 static QList<tagFile> *tagListByType(int type);
@@ -1284,7 +1284,7 @@ static void rstrip(char *dst, const char *src) {
 **                  after the "* xxxx *" line.
 **      currLine:   Used to keep track of the current line in the file.
 */
-static int nextTFBlock(FILE *fp, QString &header, std::string &body, int *blkLine, int *currLine) {
+static int nextTFBlock(std::istream &is, QString &header, std::string &body, int *blkLine, int *currLine) {
 
     // These are the different kinds of tokens
     const char *commenTF_regex = "^\\s*\\* comment \\*\\s*$";
@@ -1293,21 +1293,21 @@ static int nextTFBlock(FILE *fp, QString &header, std::string &body, int *blkLin
     const char *language_regex = "^\\s*\\* language \\*\\s*$";
     const char *alias_regex    = "^\\s*\\* alias \\*\\s*$";
     char line[MAXLINE];
-    char *status;
     int dummy1;
     int code;
 
 	// Skip blank lines and comments 
 	while (true) {
+
         // Skip blank lines
-        while ((status = fgets(line, MAXLINE, fp))) {
+        while(is.getline(line, MAXLINE)) {
             ++(*currLine);
 			if (!lineEmpty(line))
 				break;
 		}
 
 		// Check for error or EOF 
-        if (!status)
+        if (!is)
             return TF_EOF;
 
 		// We've got a non-blank line -- is it a comment block? 
@@ -1315,14 +1315,15 @@ static int nextTFBlock(FILE *fp, QString &header, std::string &body, int *blkLin
             break;
 
         // Skip the comment (non-blank lines)
-        while ((status = fgets(line, MAXLINE, fp))) {
+        while (is.getline(line, MAXLINE)) {
             ++(*currLine);
             if (lineEmpty(line))
                 break;
         }
 
-        if (!status)
+        if (!is) {
             return TF_EOF;
+        }
 	}
 
 	// Now we know it's a meaningful block 
@@ -1340,9 +1341,10 @@ static int nextTFBlock(FILE *fp, QString &header, std::string &body, int *blkLin
         } else {
 			code = TF_ALIAS;
             // Need to read the header line for an alias
-            status = fgets(line, MAXLINE, fp);
+
+            is.getline(line, MAXLINE);
             ++(*currLine);
-            if (!status)
+            if (!is)
                 return TF_ERROR_EOF;
             if (lineEmpty(line)) {
                 qWarning("NEdit: Warning: empty '* alias *' block in calltips file.");
@@ -1350,14 +1352,16 @@ static int nextTFBlock(FILE *fp, QString &header, std::string &body, int *blkLin
             }
             header = rstrip(QString::fromLatin1(line));
 		}
-        incPos = ftell(fp);
+
+        incPos = is.tellg();
         *blkLine = *currLine + 1; // Line of first actual filename/alias
         if (incPos < 0)
             return TF_ERROR;
+
         // Figure out how long the block is
-        while ((status = fgets(line, MAXLINE, fp)) || feof(fp)) {
+        while (is.getline(line, MAXLINE) || is.eof()) {
             ++(*currLine);
-            if (feof(fp) || lineEmpty(line))
+            if (is.eof() || lineEmpty(line))
                 break;
 		}
 
@@ -1370,19 +1374,19 @@ static int nextTFBlock(FILE *fp, QString &header, std::string &body, int *blkLin
         }
 
         // Make space for the filenames/alias sources
-        if (::fseek(fp, incPos, SEEK_SET) != 0) {
+        if (is.seekg(incPos, std::ios::beg)) {
 			return TF_ERROR;
         }
 
 		// Read all the lines in the block 
 		// qDebug("Copying lines");
         for (i = 0; i < incLines; i++) {
-            status = fgets(line, MAXLINE, fp);
-            if (!status) {
+            if(!is.getline(line, MAXLINE)) {
 				return TF_ERROR_EOF;
             }
 			rstrip(line, line);
-            if (i) {
+
+            if (i != 0) {
                 body.push_back(':');
 			}
             body.append(line);
@@ -1390,10 +1394,13 @@ static int nextTFBlock(FILE *fp, QString &header, std::string &body, int *blkLin
 		// qDebug("Finished include/alias at line %i", *currLine);
     } else if (searchLine(line, language_regex)) {
         // LANGUAGE block
-        status = fgets(line, MAXLINE, fp);
+        is.getline(line, MAXLINE);
         ++(*currLine);
-        if (!status)
+
+        if (!is) {
             return TF_ERROR_EOF;
+        }
+
 		if (lineEmpty(line)) {
             qWarning("NEdit: Warning: empty '* language *' block in calltips file.");
 			return TF_ERROR;
@@ -1403,9 +1410,9 @@ static int nextTFBlock(FILE *fp, QString &header, std::string &body, int *blkLin
 		code = TF_LANGUAGE;
     } else if (searchLine(line, version_regex)) {
 		// VERSION block 
-		status = fgets(line, MAXLINE, fp);
+        is.getline(line, MAXLINE);
         ++(*currLine);
-		if (!status)
+        if (!is)
 			return TF_ERROR_EOF;
 		if (lineEmpty(line)) {
             qWarning("NEdit: Warning: empty '* version *' block in calltips file.");
@@ -1420,9 +1427,9 @@ static int nextTFBlock(FILE *fp, QString &header, std::string &body, int *blkLin
 		    Strip trailing whitespace. */
         header = rstrip(QString::fromLatin1(line));
 
-        status = fgets(line, MAXLINE, fp);
+        is.getline(line, MAXLINE);
         ++(*currLine);
-        if (!status)
+        if (!is)
             return TF_ERROR_EOF;
 		if (lineEmpty(line)) {
             qWarning("NEdit: Warning: empty calltip block:\n   \"%s\"", header.toLatin1().data());
@@ -1435,7 +1442,7 @@ static int nextTFBlock(FILE *fp, QString &header, std::string &body, int *blkLin
 
 	// Skip the rest of the block 
     dummy1 = *currLine;
-    while (fgets(line, MAXLINE, fp)) {
+    while (is.getline(line, MAXLINE)) {
         ++(*currLine);
 		if (lineEmpty(line))
 			break;
@@ -1462,7 +1469,7 @@ struct tf_alias {
 ** why calltips and tags share so much code.
 */
 static int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
-    FILE *fp = nullptr;
+
     QString header;
 
     int nTipsAdded = 0;
@@ -1493,14 +1500,15 @@ static int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
     ParseFilenameEx(resolvedTipsFile, nullptr, &tipPath);
 
     // Open the file
-    if ((fp = ::fopen(resolvedTipsFile.toLatin1().data(), "r")) == nullptr) {
+    std::ifstream is(resolvedTipsFile.toStdString());
+    if(!is) {
         return 0;
     }
 
     Q_FOREVER {
         int blkLine = 0;
         std::string body;
-        int code = nextTFBlock(fp, header, body, &blkLine, &currLine);
+        int code = nextTFBlock(is, header, body, &blkLine, &currLine);
 
         if (code == TF_ERROR_EOF) {
             qWarning("NEdit: Warning: unexpected EOF in calltips file.");
@@ -1554,9 +1562,6 @@ static int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
 			; // Ignore TF_VERSION for now 
 		}
 	}
-
-    // NOTE(eteran): fixes resource leak
-    ::fclose(fp);
 
     // Now resolve any aliases
     for(const tf_alias &tmp_alias : aliases) {

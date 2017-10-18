@@ -15,51 +15,51 @@ const char EscapeChars[] = "\\\"\n\t\b\r\f\a\v";
 #endif
 
 // List of actions not useful when learning a macro sequence (also see below)
-const char *const IgnoredActions[] = {
-    "focusIn",
-    "focusOut"
+QLatin1String IgnoredActions[] = {
+    QLatin1String("focusIn"),
+    QLatin1String("focusOut")
 };
 
 /* List of actions intended to be attached to mouse buttons, which the user
    must be warned can't be recorded in a learn/replay sequence */
-const char *const MouseActions[] = {
-    "grab_focus",
-    "extend_adjust",
-    "extend_start",
-    "extend_end",
-    "secondary_or_drag_adjust",
-    "secondary_adjust",
-    "secondary_or_drag_start",
-    "secondary_start",
-    "move_destination",
-    "move_to",
-    "move_to_or_end_drag",
-    "copy_to",
-    "copy_to_or_end_drag",
-    "exchange",
-    "process_bdrag",
-    "mouse_pan"
+QLatin1String MouseActions[] = {
+    QLatin1String("grab_focus"),
+    QLatin1String("extend_adjust"),
+    QLatin1String("extend_start"),
+    QLatin1String("extend_end"),
+    QLatin1String("secondary_or_drag_adjust"),
+    QLatin1String("secondary_adjust"),
+    QLatin1String("secondary_or_drag_start"),
+    QLatin1String("secondary_start"),
+    QLatin1String("move_destination"),
+    QLatin1String("move_to"),
+    QLatin1String("move_to_or_end_drag"),
+    QLatin1String("copy_to"),
+    QLatin1String("copy_to_or_end_drag"),
+    QLatin1String("exchange"),
+    QLatin1String("process_bdrag"),
+    QLatin1String("mouse_pan")
 };
 
 /* List of actions to not record because they
    generate further actions, more suitable for recording */
-const char *const RedundantActions[] = {
-    "open_dialog",
-    "save_as_dialog",
-    "revert_to_saved_dialog",
-    "include_file_dialog",
-    "load_macro_file_dialog",
-    "load_tags_file_dialog",
-    "find_dialog",
-    "replace_dialog",
-    "goto_line_number_dialog",
-    "mark_dialog",
-    "goto_mark_dialog",
-    "control_code_dialog",
-    "filter_selection_dialog",
-    "execute_command_dialog",
-    "repeat_dialog",
-    "start_incremental_find"
+QLatin1String RedundantActions[] = {
+    QLatin1String("open_dialog"),
+    QLatin1String("save_as_dialog"),
+    QLatin1String("revert_to_saved_dialog"),
+    QLatin1String("include_file_dialog"),
+    QLatin1String("load_macro_file_dialog"),
+    QLatin1String("load_tags_file_dialog"),
+    QLatin1String("find_dialog"),
+    QLatin1String("replace_dialog"),
+    QLatin1String("goto_line_number_dialog"),
+    QLatin1String("mark_dialog"),
+    QLatin1String("goto_mark_dialog"),
+    QLatin1String("control_code_dialog"),
+    QLatin1String("filter_selection_dialog"),
+    QLatin1String("execute_command_dialog"),
+    QLatin1String("repeat_dialog"),
+    QLatin1String("start_incremental_find")
 };
 
 
@@ -175,8 +175,8 @@ void CommandRecorder::lastActionHook(QObject *obj, const TextEditEvent *ev) {
  */
 bool CommandRecorder::isMouseAction(const TextEditEvent *ev) const {
 
-    for(const char *action : MouseActions) {
-		if (QString::fromLatin1(action) == ev->actionString()) {
+    for(const QLatin1String &action : MouseActions) {
+        if (action == ev->actionString()) {
             return true;
         }
     }
@@ -191,8 +191,8 @@ bool CommandRecorder::isMouseAction(const TextEditEvent *ev) const {
  */
 bool CommandRecorder::isRedundantAction(const TextEditEvent *ev) const {
 
-    for(const char *action : RedundantActions) {
-		if (QString::fromLatin1(action) == ev->actionString()) {
+    for(const QLatin1String &action : RedundantActions) {
+        if (action == ev->actionString()) {
             return true;
         }
     }
@@ -207,8 +207,8 @@ bool CommandRecorder::isRedundantAction(const TextEditEvent *ev) const {
  */
 bool CommandRecorder::isIgnoredAction(const TextEditEvent *ev) const {
 
-    for(const char *action : IgnoredActions) {
-		if (QString::fromLatin1(action) == ev->actionString()) {
+    for(const QLatin1String &action : IgnoredActions) {
+        if (action == ev->actionString()) {
             return true;
         }
     }
