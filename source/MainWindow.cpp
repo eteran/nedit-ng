@@ -835,7 +835,6 @@ void MainWindow::UpdateWindowTitle(DocumentWidget *doc) {
 		iconTitle.append(tr("*"));
 	}
 
-    // NOTE(eteran): is the functional equivalent to "XmNiconName"?
     setWindowIconText(iconTitle);
 
 	/* If there's a find or replace dialog up in "Keep Up" mode, with a
