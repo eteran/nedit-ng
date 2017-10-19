@@ -110,7 +110,7 @@ static void passTwoParseString(HighlightData *pattern, const char *string, char 
 static void recolorSubexpr(regexp *re, int subexpr, int style, const char *string, char *styleString);
 static void handleUnparsedRegionEx(const DocumentWidget *window, TextBuffer *styleBuf, int pos);
 static HighlightData *compilePatternsEx(DocumentWidget *dialogParent, HighlightPattern *patternSrc, int nPatterns);
-static regexp *compileREAndWarnEx(DocumentWidget *parent, view::string_view re);
+static regexp *compileREAndWarnEx(DocumentWidget *parent, const QString &re);
 static void handleUnparsedRegionCBEx(const TextArea *area, int pos, const void *cbArg);
 
 /*
@@ -790,7 +790,7 @@ static HighlightData *compilePatternsEx(DocumentWidget *dialogParent, HighlightP
         if (patternSrc[i].startRE.isNull() || compiledPats[i].colorOnly) {
             compiledPats[i].startRE = nullptr;
         } else {
-            if ((compiledPats[i].startRE = compileREAndWarnEx(dialogParent, patternSrc[i].startRE.toStdString())) == nullptr) {
+            if ((compiledPats[i].startRE = compileREAndWarnEx(dialogParent, patternSrc[i].startRE)) == nullptr) {
                 return nullptr;
             }
         }
@@ -798,7 +798,7 @@ static HighlightData *compilePatternsEx(DocumentWidget *dialogParent, HighlightP
         if (patternSrc[i].endRE.isNull() || compiledPats[i].colorOnly) {
             compiledPats[i].endRE = nullptr;
         } else {
-            if ((compiledPats[i].endRE = compileREAndWarnEx(dialogParent, patternSrc[i].endRE.toStdString())) == nullptr) {
+            if ((compiledPats[i].endRE = compileREAndWarnEx(dialogParent, patternSrc[i].endRE)) == nullptr) {
                 return nullptr;
             }
         }
@@ -806,7 +806,7 @@ static HighlightData *compilePatternsEx(DocumentWidget *dialogParent, HighlightP
         if (patternSrc[i].errorRE.isNull()) {
             compiledPats[i].errorRE = nullptr;
         } else {
-            if ((compiledPats[i].errorRE = compileREAndWarnEx(dialogParent, patternSrc[i].errorRE.toStdString())) == nullptr) {
+            if ((compiledPats[i].errorRE = compileREAndWarnEx(dialogParent, patternSrc[i].errorRE)) == nullptr) {
                 return nullptr;
             }
         }
@@ -1781,26 +1781,26 @@ static char getPrevChar(TextBuffer *buf, int pos) {
 /*
 ** compile a regular expression and present a user friendly dialog on failure.
 */
-static regexp *compileREAndWarnEx(DocumentWidget *parent, view::string_view re) {
+static regexp *compileREAndWarnEx(DocumentWidget *parent, const QString &re) {
 
     try {
-        return new regexp(re, REDFLT_STANDARD);
+        return new regexp(re.toStdString(), REDFLT_STANDARD);
     } catch(const regex_error &e) {
 
-        constexpr size_t maxLength = 4096;
+        constexpr int maxLength = 4096;
 
         /* Prevent buffer overflow. If the re is too long, truncate it and append ... */
-        std::string boundedRe = re.to_string();
+        QString boundedRe = re;
 
         if (boundedRe.size() > maxLength) {
             boundedRe.resize(maxLength - 3);
-            boundedRe.append("...");
+            boundedRe.append(QLatin1String("..."));
         }
 
         QMessageBox::warning(
                     parent,
                     DocumentWidget::tr("Error in Regex"),
-                    DocumentWidget::tr("Error in syntax highlighting regular expression:\n%1\n%2").arg(QString::fromStdString(boundedRe), QString::fromLatin1(e.what())));
+                    DocumentWidget::tr("Error in syntax highlighting regular expression:\n%1\n%2").arg(boundedRe, QString::fromLatin1(e.what())));
         return nullptr;
     }
 
