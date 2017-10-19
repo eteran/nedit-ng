@@ -1619,8 +1619,6 @@ bool SearchString(view::string_view string, const QString &searchString, SearchD
 */
 static bool searchLiteralWord(view::string_view string, view::string_view searchString, bool caseSense, SearchDirection direction, WrapMode wrap, int beginPos, int *startPos, int *endPos, const char *delimiters) {
 
-	// TODO(eteran): rework this code in terms of iterators, it will be more clean
-
 	std::string lcString;
 	std::string ucString;
     bool cignore_L = false;

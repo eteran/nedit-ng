@@ -112,36 +112,13 @@ void CommandRecorder::lastActionHook(QObject *obj, const WindowMenuEvent *ev) {
     Q_UNUSED(ev);
 
     qDebug("Menu Event! : %s", qPrintable(ev->toString()));
+
+    // TODO(eteran): implement this!
 }
 
 void CommandRecorder::lastActionHook(QObject *obj, const TextEditEvent *ev) {
 
-#if 0
-	qDebug("Text Event! : %s", qPrintable(ev->toString()));
-#endif
-
-#if 0
-    // Find the curr to which this action belongs
-    QList<DocumentWidget *> documents = DocumentWidget::allDocuments();
-
-    auto curr = std::find_if(documents.begin(), documents.end(), [obj](DocumentWidget *document) {
-        QList<TextArea *> textPanes = document->textPanes();
-
-        for(TextArea *area : textPanes) {
-            if (area == obj) {
-                return true;
-            }
-        }
-
-        return false;
-    });
-
-    if(curr == documents.end()) {
-        return;
-    }
-#else
     Q_UNUSED(obj);
-#endif
 
     /* The last action is recorded for the benefit of repeating the last
        action.  Don't record repeat_macro and wipe out the real action */

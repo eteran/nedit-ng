@@ -1795,10 +1795,6 @@ void TextArea::setBacklightCharTypes(const QString &charTypes) {
 	viewport()->update();
 }
 
-QString TextArea::getBacklightCharTypes() const {
-
-}
-
 //------------------------------------------------------------------------------
 // Name:
 //------------------------------------------------------------------------------
@@ -3045,7 +3041,7 @@ void TextArea::textDRedisplayRange(int start, int end) {
 void TextArea::redrawLineNumbersEx(bool clearAll) {
 
 	Q_UNUSED(clearAll);
-	// TODO(eteran): implement clearAll vs. selective behavior
+    // TODO(eteran): implement clearAll vs. selective behavior?
 	// this will in the end redraw the entire line display area
 
     viewport()->repaint(QRect(lineNumLeft_, rect_.top(), lineNumWidth_, rect_.height()));
@@ -8474,8 +8470,6 @@ void TextArea::scrollUpAP(int count, ScrollUnits units, EventFlags flags) {
     int horizOffset;
     int nLines = count;
 
-    // NOTE(eteran): original code based this parameter on a string
-    // and allowed both "page" and "pages"
     if(units == ScrollUnits::Pages) {
         nLines *= lineStarts_.size();
     }
@@ -8492,8 +8486,6 @@ void TextArea::scrollDownAP(int count, ScrollUnits units, EventFlags flags) {
     int horizOffset;
     int nLines = count;
 
-    // NOTE(eteran): original code based this parameter on a string
-    // and allowed both "page" and "pages"
     if(units == ScrollUnits::Pages) {
         nLines *= lineStarts_.size();
     }

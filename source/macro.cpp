@@ -414,6 +414,84 @@ TEXT_EVENT(endOfSelectionMS,          endOfSelectionAP)
 TEXT_EVENT(pageLeftMS,                pageLeftAP)
 TEXT_EVENT(pageRightMS,               pageRightAP)
 
+static int scrollDownMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+
+    int count;
+    QString unitsString = QLatin1String("line");
+    switch(nArgs) {
+    case 2:
+        if(!readArguments(argList, nArgs, 0, errMsg, &count, &unitsString)) {
+            return false;
+        }
+        break;
+    case 1:
+        if(!readArguments(argList, nArgs, 0, errMsg, &count)) {
+            return false;
+        }
+        break;
+    default:
+        return wrongNArgsErr(errMsg);
+    }
+
+
+    TextArea::ScrollUnits units;
+    if(unitsString.startsWith(QLatin1String("page"))) {
+        units = TextArea::ScrollUnits::Pages;
+    } else if(unitsString.startsWith(QLatin1String("line"))) {
+        units = TextArea::ScrollUnits::Lines;
+    } else {
+        return false;
+    }
+
+    if(MainWindow *window = document->toWindow()) {
+        if(TextArea *area = window->lastFocus_) {
+            area->scrollDownAP(count, units, TextArea::SupressRecording);                                                                             \
+        }
+    }
+
+    result->tag = NO_TAG;
+    return true;
+}
+
+static int scrollUpMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+
+    int count;
+    QString unitsString = QLatin1String("line");
+    switch(nArgs) {
+    case 2:
+        if(!readArguments(argList, nArgs, 0, errMsg, &count, &unitsString)) {
+            return false;
+        }
+        break;
+    case 1:
+        if(!readArguments(argList, nArgs, 0, errMsg, &count)) {
+            return false;
+        }
+        break;
+    default:
+        return wrongNArgsErr(errMsg);
+    }
+
+
+    TextArea::ScrollUnits units;
+    if(unitsString.startsWith(QLatin1String("page"))) {
+        units = TextArea::ScrollUnits::Pages;
+    } else if(unitsString.startsWith(QLatin1String("line"))) {
+        units = TextArea::ScrollUnits::Lines;
+    } else {
+        return false;
+    }
+
+    if(MainWindow *window = document->toWindow()) {
+        if(TextArea *area = window->lastFocus_) {
+            area->scrollUpAP(count, units, TextArea::SupressRecording);                                                                             \
+        }
+    }
+
+    result->tag = NO_TAG;
+    return true;
+}
+
 static const SubRoutine TextAreaSubrNames[] = {
     // Keyboard
     {"backward_character",        backwardCharacterMS},
@@ -457,10 +535,10 @@ static const SubRoutine TextAreaSubrNames[] = {
     {"process_shift_up",          processShiftUpMS},
     {"process_tab",               processTabMS},
     {"process_up",                processUpMS},
-    {"scroll_down",               nullptr}, // TODO(eteran): implement this
+    {"scroll_down",               scrollDownMS},
     {"scroll_left",               scrollLeftMS},
     {"scroll_right",              scrollRightMS},
-    {"scroll_up",                 nullptr}, // TODO(eteran): implement this
+    {"scroll_up",                 scrollUpMS},
     {"scroll_to_line",            scrollToLineMS},
     {"self_insert",               insertStringMS},
 
@@ -6298,7 +6376,7 @@ bool readArguments(DataValue *argList, int nArgs, int index, const char **errMsg
 
     static_assert(std::is_pointer<T>::value, "Argument is not a pointer");
 
-    if((nArgs - index) != (sizeof...(args)) + 1) {
+    if(static_cast<size_t>(nArgs - index) < (sizeof...(args)) + 1) {
         return wrongNArgsErr(errMsg);
     }
 
@@ -6315,7 +6393,7 @@ bool readArguments(DataValue *argList, int nArgs, int index, const char **errMsg
 
     static_assert(std::is_pointer<T>::value, "Argument is not a pointer");
 
-    if((nArgs - index) != 1) {
+    if(static_cast<size_t>(nArgs - index) < 1) {
         return wrongNArgsErr(errMsg);
     }
 

@@ -37,8 +37,8 @@ QString PrependHomeEx(const QString &filename);
 QString ErrorString(int error);
 
 template <int (&F) (int)>
-int safe_ctype (unsigned char c) {
-    return F(c);
+int safe_ctype (int c) {
+    return F(static_cast<unsigned char>(c));
 }
 
 #endif

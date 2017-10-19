@@ -269,8 +269,7 @@ Program *FinishCreatingProgram() {
 	int fpOffset = 0;
 
     auto newProg            = new Program;
-    const ptrdiff_t progLen = reinterpret_cast<char *>(ProgP) - reinterpret_cast<char *>(Prog);
-    const size_t count      = progLen / sizeof(Inst);
+    const size_t count      = ProgP - Prog;
     newProg->code           = new Inst[count];
 
 	std::copy_n(Prog, count, newProg->code);
@@ -284,7 +283,7 @@ Program *FinishCreatingProgram() {
 		s->value.val.n = fpOffset++;
 	}
 
-	DISASM(newProg->code, ProgP - Prog);
+    DISASM(newProg->code, count);
 
 	return newProg;
 }

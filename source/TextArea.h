@@ -132,7 +132,6 @@ public:
     int getRows() const;
     int getMarginHeight() const;
     int getMarginWidth() const;
-    QString getBacklightCharTypes() const;
 
 protected:
 	virtual bool focusNextPrevChild(bool next) override;

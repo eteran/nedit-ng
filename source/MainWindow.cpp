@@ -4579,7 +4579,6 @@ void MainWindow::action_Shell_Menu_Command(const QString &name) {
 
 void MainWindow::macroTriggered(QAction *action) {
 
-    // TODO(eteran): implement what this comment says!
     /* Don't allow users to execute a macro command from the menu (or accel)
        if there's already a macro command executing, UNLESS the macro is
        directly called from another one.  NEdit can't handle
@@ -4590,6 +4589,12 @@ void MainWindow::macroTriggered(QAction *action) {
        level, however, a call here with a macro running means that THE USER
        is explicitly invoking another macro via the menu or an accelerator,
        UNLESS the macro event marker is set */
+    if(auto doc = currentDocument()) {
+        if(doc->macroCmdData_) {
+            QApplication::beep();
+            return;
+        }
+    }
 
     const int index = action->data().toInt();
     const QString name = MacroMenuData[index].item->name;

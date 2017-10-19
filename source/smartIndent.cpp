@@ -82,7 +82,7 @@ QByteArray defaultCommonMacros() {
 		QResource res(QLatin1String("res/DefaultCommonMacros.txt"));
 		if(res.isValid()) {
             // don't copy the data, if it's uncompressed, we can deal with it in place :-)
-			defaultsMacros = QByteArray::fromRawData(reinterpret_cast<const char *>(res.data()), res.size());
+            defaultsMacros = QByteArray::fromRawData(reinterpret_cast<const char *>(res.data()), res.size());
 
 			if(res.isCompressed()) {
 				defaultsMacros = qUncompress(defaultsMacros);
