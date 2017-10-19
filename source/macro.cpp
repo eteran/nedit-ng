@@ -657,6 +657,7 @@ WINDOW_MENU_EVENT(undoMS,                            on_action_Undo_triggered)
 WINDOW_MENU_EVENT(uppercaseMS,                       on_action_Upper_case_triggered)
 WINDOW_MENU_EVENT(openDialogMS,                      on_action_Open_triggered)
 WINDOW_MENU_EVENT(revertToSavedDialogMS,             on_action_Revert_to_Saved_triggered)
+WINDOW_MENU_EVENT(revertToSavedMS,                   action_Revert_to_Saved)
 WINDOW_MENU_EVENT(markDialogMS,                      on_action_Mark_triggered)
 WINDOW_MENU_EVENT(showTipMS,                         on_action_Show_Calltip_triggered)
 WINDOW_MENU_EVENT(selectToMatchingMS,                action_Shift_Goto_Matching_triggered)
@@ -666,6 +667,7 @@ WINDOW_MENU_EVENT(executeCommandLineMS,              on_action_Execute_Command_L
 WINDOW_MENU_EVENT(repeatMacroDialogMS,               on_action_Repeat_triggered)
 WINDOW_MENU_EVENT(detachDocumentMS,                  on_action_Detach_Tab_triggered)
 WINDOW_MENU_EVENT(moveDocumentMS,                    on_action_Move_Tab_To_triggered)
+WINDOW_MENU_EVENT(newOppositeMS,                     on_action_Close_Pane_triggered)
 
 /*
 ** Scans action argument list for arguments "forward" or "backward" to
@@ -1860,6 +1862,7 @@ static int backgroundMenuCommand(DocumentWidget *document, DataValue *argList, i
 static const SubRoutine MenuMacroSubrNames[] = {
     // File
     { "new",                          newMS },
+    { "new_opposite",                 newOppositeMS },
     { "open",                         openMS },
     { "open_dialog",                  openDialogMS },
     { "open_selected",                openSelectedMS },
@@ -1868,6 +1871,7 @@ static const SubRoutine MenuMacroSubrNames[] = {
     { "save_as",                      saveAsMS },
     { "save_as_dialog",               saveAsDialogMS },
     { "revert_to_saved_dialog",       revertToSavedDialogMS },
+    { "revert_to_saved",              revertToSavedMS },
     { "include_file",                 includeFileMS },
     { "include_file_dialog",          includeFileDialogMS },
     { "load_macro_file",              loadMacroFileMS },

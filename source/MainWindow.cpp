@@ -76,10 +76,16 @@
         QApplication::sendEvent(this, &menuEvent);      \
     } while(0)
 
-#define EMIT_EVENT_ARG(name, arg)                            \
-    do {                                                     \
-        WindowMenuEvent menuEvent(QLatin1String(name), arg); \
-        QApplication::sendEvent(this, &menuEvent);           \
+#define EMIT_EVENT_ARG_1(name, arg)                            \
+    do {                                                       \
+        WindowMenuEvent menuEvent(QLatin1String(name), {arg}); \
+        QApplication::sendEvent(this, &menuEvent);             \
+    } while(0)
+
+#define EMIT_EVENT_ARG_2(name, arg1, arg2)                            \
+    do {                                                              \
+        WindowMenuEvent menuEvent(QLatin1String(name), {arg1, arg2}); \
+        QApplication::sendEvent(this, &menuEvent);                    \
     } while(0)
 
 namespace {
@@ -274,7 +280,7 @@ void MainWindow::setupMenuDefaults() {
         no_signals(ui.action_Matching_Range)->setChecked(true);
         break;
     default:
-        break;
+        Q_UNREACHABLE();
     }
 
     // Default Indent
@@ -339,6 +345,7 @@ void MainWindow::setupMenuDefaults() {
         no_signals(ui.action_Default_Search_Regular_Expresison_Case_Insensitive)->setChecked(true);
         break;
     default:
+        Q_UNREACHABLE();
         break;
     }
 
@@ -592,6 +599,7 @@ void MainWindow::deleteTabButtonClicked() {
 // Name: on_action_New_triggered
 //------------------------------------------------------------------------------
 void MainWindow::on_action_New_triggered() {
+    EMIT_EVENT("new");
     action_New(NewMode::Prefs);
 }
 
@@ -647,7 +655,7 @@ QString MainWindow::PromptForExistingFileEx(const QString &path, const QString &
 //------------------------------------------------------------------------------
 void MainWindow::action_Open(const QString &filename) {
 
-    EMIT_EVENT_ARG("open_dialog", filename);
+    EMIT_EVENT_ARG_1("open", filename);
 
     if(auto doc = currentDocument()) {
         doc->open(filename);
@@ -658,8 +666,6 @@ void MainWindow::action_Open(const QString &filename) {
 // Name: on_action_Open_triggered
 //------------------------------------------------------------------------------
 void MainWindow::on_action_Open_triggered() {
-
-    EMIT_EVENT("open_dialog");
 
     if(auto doc = currentDocument()) {
         QString filename = PromptForExistingFileEx(doc->path_, tr("Open File"));
@@ -687,6 +693,7 @@ void MainWindow::action_Close(CloseMode mode) {
  * @brief MainWindow::on_action_Close_triggered
  */
 void MainWindow::on_action_Close_triggered() {
+    EMIT_EVENT("close");
     action_Close(CloseMode::Prompt);
 }
 
@@ -702,6 +709,9 @@ void MainWindow::on_action_About_triggered() {
 // Name: on_action_Select_All_triggered
 //------------------------------------------------------------------------------
 void MainWindow::on_action_Select_All_triggered() {
+
+    EMIT_EVENT("select_all");
+
 	if(TextArea *w = lastFocus_) {
 		w->selectAllAP();
 	}
@@ -711,6 +721,9 @@ void MainWindow::on_action_Select_All_triggered() {
 // Name: action_Include_File
 //------------------------------------------------------------------------------
 void MainWindow::action_Include_File(const QString &filename) {
+
+    EMIT_EVENT_ARG_1("include_file", filename);
+
     if(auto doc = currentDocument()) {
 
         if (doc->CheckReadOnly()) {
@@ -786,6 +799,9 @@ void MainWindow::on_action_Paste_Column_triggered() {
  * @brief MainWindow::on_action_Delete_triggered
  */
 void MainWindow::on_action_Delete_triggered() {
+
+    EMIT_EVENT("delete");
+
     if(auto doc = currentDocument()) {
         if (doc->CheckReadOnly()) {
             return;
@@ -1373,6 +1389,7 @@ QString MainWindow::UniqueUntitledNameEx() {
 }
 
 void MainWindow::on_action_Undo_triggered() {
+    EMIT_EVENT("undo");
     if(auto doc = currentDocument()) {
         if (doc->CheckReadOnly()) {
             return;
@@ -1382,6 +1399,7 @@ void MainWindow::on_action_Undo_triggered() {
 }
 
 void MainWindow::on_action_Redo_triggered() {
+    EMIT_EVENT("redo");
     if(auto doc = currentDocument()) {
         if (doc->CheckReadOnly()) {
             return;
@@ -1764,6 +1782,8 @@ void MainWindow::on_tabWidget_customContextMenuRequested(const QPoint &pos) {
 
 void MainWindow::on_action_Open_Selected_triggered() {
 
+    EMIT_EVENT("open_selected");
+
     if(auto doc = currentDocument()) {
 
         // Get the selected text, if there's no selection, do nothing
@@ -1875,6 +1895,9 @@ void MainWindow::fileCB(DocumentWidget *window, const QString &text) {
 // Name:
 //------------------------------------------------------------------------------
 void MainWindow::on_action_Shift_Left_triggered() {
+
+    EMIT_EVENT("shift_left");
+
     if(auto doc = currentDocument()) {
         if (doc->CheckReadOnly()) {
             return;
@@ -1888,6 +1911,8 @@ void MainWindow::on_action_Shift_Left_triggered() {
 //------------------------------------------------------------------------------
 void MainWindow::on_action_Shift_Right_triggered() {
 
+    EMIT_EVENT("shift_right");
+
     if(auto doc = currentDocument()) {
         if (doc->CheckReadOnly()) {
             return;
@@ -1900,6 +1925,9 @@ void MainWindow::on_action_Shift_Right_triggered() {
 // Name:
 //------------------------------------------------------------------------------
 void MainWindow::action_Shift_Left_Tabs() {
+
+    EMIT_EVENT("shift_left_by_tab");
+
     if(auto doc = currentDocument()) {
         if (doc->CheckReadOnly()) {
             return;
@@ -1912,6 +1940,9 @@ void MainWindow::action_Shift_Left_Tabs() {
 // Name:
 //------------------------------------------------------------------------------
 void MainWindow::action_Shift_Right_Tabs() {
+
+    EMIT_EVENT("shift_right_by_tab");
+
     if(auto doc = currentDocument()) {
         if (doc->CheckReadOnly()) {
             return;
@@ -1924,6 +1955,9 @@ void MainWindow::action_Shift_Right_Tabs() {
 // Name:
 //------------------------------------------------------------------------------
 void MainWindow::on_action_Lower_case_triggered() {
+
+    EMIT_EVENT("lowercase");
+
     if(auto doc = currentDocument()) {
         if (doc->CheckReadOnly()) {
             return;
@@ -1937,6 +1971,9 @@ void MainWindow::on_action_Lower_case_triggered() {
 // Name:
 //------------------------------------------------------------------------------
 void MainWindow::on_action_Upper_case_triggered() {
+
+    EMIT_EVENT("uppercase");
+
     if(auto doc = currentDocument()) {
         if (doc->CheckReadOnly()) {
             return;
@@ -1950,6 +1987,8 @@ void MainWindow::on_action_Upper_case_triggered() {
 // Name:
 //------------------------------------------------------------------------------
 void MainWindow::on_action_Fill_Paragraph_triggered() {
+
+    EMIT_EVENT("fill_paragraph");
 
     if(auto doc = currentDocument()) {
         if (doc->CheckReadOnly()) {
@@ -2369,7 +2408,7 @@ void MainWindow::initToggleButtonsiSearch(SearchType searchType) {
         ui.checkIFindCase->setChecked(false);
         break;
     default:
-        Q_ASSERT(0);
+        Q_UNREACHABLE();
     }
 }
 
@@ -2751,6 +2790,8 @@ void MainWindow::unloadTagsFileCB(QAction *action) {
 
 void MainWindow::action_Unload_Tips_File(const QString &filename) {
 
+    EMIT_EVENT_ARG_1("unload_tips_file", filename);
+
     if (DeleteTagsFileEx(filename, TIP, true)) {
         for(MainWindow *window : MainWindow::allWindows()) {
             window->updateTipsFileMenuEx();
@@ -2759,6 +2800,8 @@ void MainWindow::action_Unload_Tips_File(const QString &filename) {
 }
 
 void MainWindow::action_Unload_Tags_File(const QString &filename) {
+
+    EMIT_EVENT_ARG_1("unload_tags_file", filename);
 
     if (DeleteTagsFileEx(filename, TAG, true)) {
         for(MainWindow *window : MainWindow::allWindows()) {
@@ -2770,12 +2813,16 @@ void MainWindow::action_Unload_Tags_File(const QString &filename) {
 
 void MainWindow::action_Load_Tips_File(const QString &filename) {
 
+    EMIT_EVENT_ARG_1("load_tips_file", filename);
+
     if (!AddTagsFileEx(filename, TIP)) {
         QMessageBox::warning(this, tr("Error Reading File"), tr("Error reading tips file:\n'%1'\ntips not loaded").arg(filename));
     }
 }
 
 void MainWindow::action_Load_Tags_File(const QString &filename) {
+
+    EMIT_EVENT_ARG_1("load_tags_file", filename);
 
     if (!AddTagsFileEx(filename, TAG)) {
         QMessageBox::warning(this, tr("Error Reading File"), tr("Error reading ctags file:\n'%1'\ntags not loaded").arg(filename));
@@ -2820,24 +2867,36 @@ void MainWindow::on_action_Load_Macro_File_triggered() {
 }
 
 void MainWindow::action_Load_Macro_File(const QString &filename) {
+
+    EMIT_EVENT_ARG_1("load_macro_file", filename);
+
     if(auto doc = currentDocument()) {
 		doc->ReadMacroFileEx(filename, true);
     }
 }
 
 void MainWindow::on_action_Print_triggered() {
+
+    EMIT_EVENT("print");
+
     if(auto doc = currentDocument()) {
         doc->PrintWindow(lastFocus_, false);
     }
 }
 
 void MainWindow::on_action_Print_Selection_triggered() {
+
+    EMIT_EVENT("print_selection");
+
     if(auto doc = currentDocument()) {
         doc->PrintWindow(lastFocus_, true);
     }
 }
 
 void MainWindow::on_action_Split_Pane_triggered() {
+
+    EMIT_EVENT("split_pane");
+
     if(auto doc = currentDocument()) {
         doc->splitPane();
         ui.action_Close_Pane->setEnabled(doc->textPanesCount() > 1);
@@ -2845,6 +2904,9 @@ void MainWindow::on_action_Split_Pane_triggered() {
 }
 
 void MainWindow::on_action_Close_Pane_triggered() {
+
+    EMIT_EVENT("close_pane");
+
     if(auto doc = currentDocument()) {
         doc->closePane();
         ui.action_Close_Pane->setEnabled(doc->textPanesCount() > 1);
@@ -3761,6 +3823,9 @@ void MainWindow::BusyWaitEx() {
 }
 
 void MainWindow::on_action_Save_triggered() {
+
+    EMIT_EVENT("save");
+
     if(auto document = currentDocument()) {
         if (document->CheckReadOnly()) {
             return;
@@ -3871,6 +3936,14 @@ QString MainWindow::PromptForNewFileEx(DocumentWidget *document, const QString &
 }
 
 void MainWindow::action_Save_As(const QString &filename, bool wrapped) {
+
+    if(wrapped) {
+        EMIT_EVENT_ARG_2("save_as", filename, QLatin1String("wrapped"));
+    } else {
+        EMIT_EVENT_ARG_1("save_as", filename);
+    }
+
+
 	if(auto document = currentDocument()) {
 		document->SaveWindowAs(filename, wrapped);
 	}
@@ -3895,6 +3968,20 @@ void MainWindow::on_action_Save_As_triggered() {
     }
 }
 
+/**
+ * @brief MainWindow::action_Revert_to_Saved
+ */
+void MainWindow::action_Revert_to_Saved() {
+    EMIT_EVENT("revert_to_saved");
+
+    if(auto document = currentDocument()) {
+        document->RevertToSaved();
+    }
+}
+
+/**
+ * @brief MainWindow::on_action_Revert_to_Saved_triggered
+ */
 void MainWindow::on_action_Revert_to_Saved_triggered() {
 
     if(auto document = currentDocument()) {
@@ -3936,6 +4023,9 @@ void MainWindow::on_action_Revert_to_Saved_triggered() {
 //       this does the opposite
 //------------------------------------------------------------------------------
 void MainWindow::on_action_New_Window_triggered() {
+
+    EMIT_EVENT("new_window");
+
     if(auto document = currentDocument()) {
         MainWindow::EditNewFileEx(GetPrefOpenInTab() ? nullptr : this, QString(), false, QString(), document->path_);
         CheckCloseDimEx();
@@ -3946,6 +4036,8 @@ void MainWindow::on_action_New_Window_triggered() {
 // Name: on_action_Exit_triggered
 //------------------------------------------------------------------------------
 void MainWindow::on_action_Exit_triggered() {
+
+    EMIT_EVENT("exit");
 
     QList<DocumentWidget *> documents = DocumentWidget::allDocuments();
 
@@ -4576,6 +4668,10 @@ void MainWindow::action_Shell_Menu_Command(const QString &name) {
     }
 }
 
+/**
+ * @brief MainWindow::macroTriggered
+ * @param action
+ */
 void MainWindow::macroTriggered(QAction *action) {
 
     /* Don't allow users to execute a macro command from the menu (or accel)
@@ -4617,12 +4713,18 @@ void MainWindow::action_Macro_Menu_Command(const QString &name) {
  * @param how
  */
 void MainWindow::action_Repeat_Macro(const QString &macro, int how) {
+
+    EMIT_EVENT("repeat_macro");
+
     if(auto doc = currentDocument()) {
         doc->repeatMacro(macro, how);
     }
 }
 
 void MainWindow::on_action_Detach_Tab_triggered() {
+
+    EMIT_EVENT("detach_document");
+
     if(auto doc = currentDocument()) {
         action_Detach_Document(doc);
     }

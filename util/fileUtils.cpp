@@ -606,9 +606,7 @@ void ConvertFromMacFileStringEx(std::string *fileString) {
 
 /*
 ** Converts a string (which may represent the entire contents of the file) from
-** Unix to DOS format.  String is re-allocated (with malloc), and length is
-** modified.  If allocation fails, which it may, because this can potentially
-** be a huge hunk of memory, returns FALSE and no conversion is done.
+** Unix to DOS format.
 **
 ** This could be done more efficiently by asking doSave to allocate some
 ** extra memory for this, and only re-allocating if it wasn't enough.  If

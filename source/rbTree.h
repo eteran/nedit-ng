@@ -36,11 +36,11 @@ struct rbTreeNode {
 	int color;                 /* node color (rbTreeNodeBlack, rbTreeNodeRed) */
 };
 
-typedef int (*rbTreeCompareNodeCB)(rbTreeNode *left, rbTreeNode *right);
-typedef rbTreeNode *(*rbTreeAllocateNodeCB)(rbTreeNode *src);
-typedef rbTreeNode *(*rbTreeAllocateEmptyNodeCB)(void);
-typedef void (*rbTreeDisposeNodeCB)(rbTreeNode *src);
-typedef int (*rbTreeCopyToNodeCB)(rbTreeNode *dst, rbTreeNode *src);
+using rbTreeCompareNodeCB       = int (*)(rbTreeNode *left, rbTreeNode *right);
+using rbTreeAllocateNodeCB      = rbTreeNode *(*)(rbTreeNode *src);
+using rbTreeAllocateEmptyNodeCB = rbTreeNode *(*)();
+using rbTreeDisposeNodeCB       = void (*)(rbTreeNode *src);
+using rbTreeCopyToNodeCB        = int (*)(rbTreeNode *dst, rbTreeNode *src);
 
 rbTreeNode *rbTreeBegin(rbTreeNode *base);
 rbTreeNode *rbTreeReverseBegin(rbTreeNode *base);

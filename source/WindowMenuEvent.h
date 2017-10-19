@@ -15,12 +15,17 @@ public:
     explicit WindowMenuEvent(const QString &macroString) : QEvent(eventType), macroString_(macroString) {
     }
 
-    WindowMenuEvent(const QString &macroString, const QString &argument) : QEvent(eventType), macroString_(macroString), argument_(argument)  {
+    WindowMenuEvent(const QString &macroString, const QStringList &arguments) : QEvent(eventType), macroString_(macroString), arguments_(arguments)  {
     }
 
 public:
     QString argumentString() const {
-        return QString();
+        QStringList args;
+        for(const QString &arg : arguments_) {
+            // TODO(eteran): escape some characters as needed
+            args << QLatin1Char('"') + arg + QLatin1Char('"');
+        }
+        return args.join(QLatin1String(","));
     }
 
     QString toString() const {
@@ -34,7 +39,7 @@ public:
 
 private:
     QString macroString_;
-    QString argument_;
+    QStringList arguments_;
 };
 
 #endif

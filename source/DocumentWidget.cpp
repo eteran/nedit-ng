@@ -2153,7 +2153,7 @@ int DocumentWidget::cmpWinAgainstFile(const QString &fileName) {
             offset = 0;
         }
 
-		int nRead = ::fread(fileString + offset, 1, restLen, fp);
+        int nRead = ::fread(fileString + offset, 1, restLen, fp);
         if (nRead != restLen) {
             fclose(fp);
             MainWindow::AllWindowsUnbusyEx();
