@@ -503,7 +503,7 @@ TextArea::TextArea(
 	// Initialize the widget variables
 	dragState_          = NOT_CLICKED;
 	selectionOwner_     = false;
-	motifDestOwner_     = false;
+    motifDestOwner_     = true; // NOTE(eteran): was false
 	emTabsBeforeCursor_ = 0;
 
 	setGeometry(0, 0, width, height);
@@ -519,9 +519,17 @@ TextArea::TextArea(
 	new QShortcut(QKeySequence(tr("Ctrl+K")), this, SLOT(DebugSlot()), Q_NULLPTR, Qt::WidgetShortcut);
 #endif
 
+    // track when we lose ownership of the selection
+    if(QApplication::clipboard()->supportsSelection()) {
+        connect(QApplication::clipboard(), &QClipboard::selectionChanged, [this]() {
+
+            if(!QApplication::clipboard()->ownsSelection()) {
+                motifDestOwner_ = false;
+                buffer_->BufUnselect();
+            }
+        });
+    }
 }
-
-
 
 void TextArea::pasteClipboardAP(EventFlags flags) {
 
@@ -1537,8 +1545,21 @@ void TextArea::mousePressEvent(QMouseEvent *event) {
 void TextArea::mouseReleaseEvent(QMouseEvent *event) {
 
 	if(event->button() == Qt::LeftButton) {
+
+        // update the selection, we do this as infrequently as possible
+        // because Qt's model is a bit inefficient
+        switch(dragState_) {
+        case PRIMARY_DRAG:
+        case PRIMARY_RECT_DRAG:
+        case PRIMARY_BLOCK_DRAG:
+            syncronizeSelection();
+            break;
+        default:
+            break;
+        }
+
 		endDrag();
-	} else if(event->button() == Qt::RightButton) {
+    } else if(event->button() == Qt::RightButton) {
 		endDrag();
 	} else if(event->button() == Qt::MiddleButton) {
 
@@ -1561,6 +1582,8 @@ void TextArea::mouseReleaseEvent(QMouseEvent *event) {
 			break;
         }
 	}
+
+
 }
 
 //------------------------------------------------------------------------------
@@ -3908,12 +3931,12 @@ void TextArea::TextDSetBuffer(TextBuffer *buffer) {
 //------------------------------------------------------------------------------
 void TextArea::modifiedCallback(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *cbArg) {
 
-	(void)pos;
-	(void)nInserted;
-	(void)nRestyled;
-	(void)nDeleted;
-	(void)deletedText;
-	(void)cbArg;
+    Q_UNUSED(pos);
+    Q_UNUSED(nInserted);
+    Q_UNUSED(nRestyled);
+    Q_UNUSED(nDeleted);
+    Q_UNUSED(deletedText);
+    Q_UNUSED(cbArg);
 
 	bool selected = buffer_->primary_.selected;
 	bool isOwner  = selectionOwner_;
@@ -3931,8 +3954,7 @@ void TextArea::modifiedCallback(int pos, int nInserted, int nDeleted, int nResty
 	   callback from firing at a bad time. */
 
 	// Take ownership of the selection
-	if(!QApplication::clipboard()->ownsSelection()) {
-	//if (!XtOwnSelection(w_, XA_PRIMARY, time, convertSelectionCB, loseSelectionCB, nullptr)) {
+    if(!QApplication::clipboard()->ownsSelection()) {
 		buffer_->BufUnselect();
 	} else {
 		selectionOwner_ = true;
@@ -4707,6 +4729,12 @@ void TextArea::keyMoveExtendSelection(int origPos, bool rectangular) {
 		rectAnchor_ = buffer_->BufCountDispChars(buffer_->BufStartOfLine(origPos), origPos);
 		buffer_->BufSelect(anchor_, newPos);
 	}
+
+    syncronizeSelection();
+}
+
+void TextArea::syncronizeSelection() {
+    QApplication::clipboard()->setText(QString::fromStdString(buffer_->BufGetSelectionTextEx()), QClipboard::Selection);
 }
 
 /*
@@ -4717,17 +4745,21 @@ void TextArea::keyMoveExtendSelection(int origPos, bool rectangular) {
 */
 void TextArea::TakeMotifDestination() {
 
+
     if (motifDestOwner_ || P_readOnly) {
         return;
     }
 
-	// Take ownership of the MOTIF_DESTINATION selection
 #if 0
+	// Take ownership of the MOTIF_DESTINATION selection
 	if (!XtOwnSelection(w_, getAtom(XtDisplay(w_), A_MOTIF_DESTINATION), time, convertMotifDestCB, loseMotifDestCB, nullptr)) {
 		return;
 	}
-#endif
-	motifDestOwner_ = true;
+#endif    
+
+    // TODO(eteran): we don't really have any mechanism to address when we "lose"
+    // ownership of the selection and setting this to false.
+    //motifDestOwner_ = true;
 }
 
 int TextArea::TextDMoveLeft() {
@@ -6469,10 +6501,10 @@ void TextArea::copyToAP(QMouseEvent *event, EventFlags flags) {
 
     EMIT_EVENT("copy_to");
 
-	DragStates dragState = dragState_;
+    DragStates dragState     = dragState_;
 	TextSelection *secondary = &buffer_->secondary_;
 	TextSelection *primary   = &buffer_->primary_;
-    bool rectangular = secondary->rectangular;
+    bool rectangular         = secondary->rectangular;
 
 	endDrag();
 	if (!((dragState == SECONDARY_DRAG && secondary->selected) || (dragState == SECONDARY_RECT_DRAG && secondary->selected) || dragState == SECONDARY_CLICKED || dragState == NOT_CLICKED)) {

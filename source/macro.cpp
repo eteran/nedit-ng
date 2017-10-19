@@ -2347,15 +2347,6 @@ int readCheckMacroStringEx(QWidget *dialogParent, const QString &string, Documen
 
                 if (!runWindow->macroCmdData_) {
                     runMacroEx(runWindow, prog);
-
-#if 0
-                    // TODO(eteran): is this the same as like QApplication::processEvents() ?
-                    XEvent nextEvent;
-                    while (runWindow->macroCmdData_) {
-                        XtAppNextEvent(XtWidgetToApplicationContext(runWindow->shell_), &nextEvent);
-                        ServerDispatchEvent(&nextEvent);
-                    }
-#endif
                 } else {
                     /*  If we come here this means that the string was parsed
                         from within another macro via load_macro_file(). In
