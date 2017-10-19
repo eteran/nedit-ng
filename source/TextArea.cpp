@@ -5143,7 +5143,7 @@ std::string TextArea::createIndentStringEx(TextBuffer *buf, int bufOffset, int l
 		smartIndent.reason        = NEWLINE_INDENT_NEEDED;
 		smartIndent.pos           = lineEndPos + bufOffset;
 		smartIndent.indentRequest = 0;
-		smartIndent.charsTyped    = nullptr;
+        smartIndent.charsTyped    = view::string_view();
 
 		for(auto &c : smartIndentCallbacks_) {
 			c.first(this, &smartIndent, c.second);
@@ -5580,8 +5580,8 @@ void TextArea::InsertClipboard(bool isColumnar) {
 	if(!mimeData->hasText()) {
 		return;
 	}
-	std::string contents = mimeData->text().toStdString();
 
+	std::string contents = mimeData->text().toStdString();
 
 	/* If the string contains ascii-nul characters, substitute something
 	   else, or give up, warn, and refuse */

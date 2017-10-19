@@ -349,8 +349,7 @@ int LoadSmartIndentCommonStringEx(const QString &string) {
 	}
 
 	// Remove leading tabs added by writer routine
-	std::string newMacros = ShiftTextEx(in.mid().toStdString(), SHIFT_LEFT, true, 8, 8);
-	CommonMacros = QString::fromStdString(newMacros);
+    CommonMacros = ShiftTextEx(in.mid(), SHIFT_LEFT, true, 8, 8);
 	return true;
 }
 
@@ -373,13 +372,13 @@ static QString readSIMacroEx(Input &in) {
 	}
 
 	// Copy the macro
-	std::string macroStr = in.mid(macroEnd - in.index()).toStdString();
+    QString macroStr = in.mid(macroEnd - in.index());
 
 	// Remove leading tabs added by writer routine
 	in += macroEnd - in.index();
     in += MacroEndBoundary.size();
 
-	return QString::fromStdString(ShiftTextEx(macroStr, SHIFT_LEFT, true, 8, 8));
+    return ShiftTextEx(macroStr, SHIFT_LEFT, true, 8, 8);
 }
 
 static int siParseError(const Input &in, const QString &message) {
@@ -433,18 +432,17 @@ QString WriteSmartIndentCommonStringEx() {
 	}
 
 	// Shift the macro over by a tab to keep .nedit file bright and clean 
-    std::string outStr = ShiftTextEx(CommonMacros.toStdString(), SHIFT_RIGHT, true, 8, 8);
+    QString outStr = ShiftTextEx(CommonMacros, SHIFT_RIGHT, true, 8, 8);
 
 	/* Protect newlines and backslashes from translation by the resource
 	   reader */
 
 	// If there's a trailing escaped newline, remove it 
-	const size_t len = outStr.size();
-	if (len > 1 && outStr[len - 1] == '\n' && outStr[len - 2] == '\\') {
-		outStr.resize(len - 2);
-	}
+    if(outStr.endsWith(QLatin1String("\\\n"))) {
+        outStr.chop(2);
+    }
 	
-	return QString::fromStdString(outStr);
+    return outStr;
 }
 
 /*
@@ -455,8 +453,7 @@ QString WriteSmartIndentCommonStringEx() {
 static void insertShiftedMacro(QTextStream &ts, const QString &macro) {
 
 	if (!macro.isNull()) {
-		std::string shiftedMacro = ShiftTextEx(macro.toStdString(), SHIFT_RIGHT, true, 8, 8);
-		ts << QString::fromStdString(shiftedMacro);
+        ts << ShiftTextEx(macro, SHIFT_RIGHT, true, 8, 8);
 	}
 	
 	ts << QLatin1String("\t");

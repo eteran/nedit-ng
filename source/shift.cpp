@@ -35,8 +35,12 @@
 static std::string makeIndentString(int indent, int tabDist, int allowTabs);
 static std::string shiftLineLeftEx(view::string_view line, int lineLen, int tabDist, int nChars);
 static std::string shiftLineRightEx(view::string_view line, int lineLen, int tabsAllowed, int tabDist, int nChars);
+static QString shiftLineRightEx(const QString &line, int lineLen, int tabsAllowed, int tabDist, int nChars);
+static QString shiftLineLeftEx(const QString &line, int lineLen, int tabDist, int nChars);
+static std::string ShiftTextEx(view::string_view text, ShiftDirection direction, int tabsAllowed, int tabDist, int nChars);
 static int atTabStop(int pos, int tabDist);
 static int countLinesEx(view::string_view text);
+static int countLinesEx(const QString &text);
 
 template <class In>
 static int findLeftMarginEx(In first, In last, int length, int tabDist);
@@ -300,6 +304,59 @@ void FillSelectionEx(DocumentWidget *window, TextArea *area) {
 /*
 ** shift lines left and right in a multi-line text string.
 */
+QString ShiftTextEx(const QString &text, ShiftDirection direction, int tabsAllowed, int tabDist, int nChars) {
+    int bufLen;
+
+    /*
+    ** Allocate memory for shifted string.  Shift left adds a maximum of
+    ** tabDist-2 characters per line (remove one tab, add tabDist-1 spaces).
+    ** Shift right adds a maximum of nChars character per line.
+    */
+    if (direction == SHIFT_RIGHT) {
+        bufLen = text.size() + countLinesEx(text) * nChars;
+    } else {
+        bufLen = text.size() + countLinesEx(text) * tabDist;
+    }
+
+
+    QString shiftedText;
+    shiftedText.reserve(bufLen);
+
+    auto shiftedPtr = std::back_inserter(shiftedText);
+
+    /*
+    ** break into lines and call shiftLine(Left/Right) on each
+    */
+    auto lineStartPtr = text.begin();
+    auto textPtr      = text.begin();
+
+    while (true) {
+        if (textPtr == text.end() || *textPtr == QLatin1Char('\n')) {
+
+            auto segment = text.mid(lineStartPtr - text.begin());
+
+            QString shiftedLineString = (direction == SHIFT_RIGHT) ?
+                shiftLineRightEx(segment, textPtr - lineStartPtr, tabsAllowed, tabDist, nChars):
+                shiftLineLeftEx (segment, textPtr - lineStartPtr, 			   tabDist, nChars);
+
+            std::copy(shiftedLineString.begin(), shiftedLineString.end(), shiftedPtr);
+
+            if (textPtr == text.end()) {
+                // terminate string & exit loop at end of text
+                break;
+            } else {
+                // move the newline from text to shifted text
+                *shiftedPtr++ = *textPtr++;
+            }
+            // start line over
+            lineStartPtr = textPtr;
+        } else
+            textPtr++;
+    }
+
+    return shiftedText;
+}
+
 std::string ShiftTextEx(view::string_view text, ShiftDirection direction, int tabsAllowed, int tabDist, int nChars) {
 	int bufLen;
 
@@ -353,11 +410,57 @@ std::string ShiftTextEx(view::string_view text, ShiftDirection direction, int ta
 	return shiftedText;
 }
 
+static QString shiftLineRightEx(const QString &line, int lineLen, int tabsAllowed, int tabDist, int nChars) {
+    int whiteWidth, i;
+
+    auto lineInPtr = line.begin();
+    QString lineOut;
+    lineOut.reserve(lineLen + nChars);
+
+    auto lineOutPtr = std::back_inserter(lineOut);
+    whiteWidth = 0;
+    while (true) {
+        if (lineInPtr == line.end() || (lineInPtr - line.begin()) >= lineLen) {
+            // nothing on line, wipe it out
+            return lineOut;
+        } else if (*lineInPtr == QLatin1Char(' ')) {
+            // white space continues with tab, advance to next tab stop
+            whiteWidth++;
+            *lineOutPtr++ = *lineInPtr++;
+        } else if (*lineInPtr == QLatin1Char('\t')) {
+            // white space continues with tab, advance to next tab stop
+            whiteWidth = nextTab(whiteWidth, tabDist);
+            *lineOutPtr++ = *lineInPtr++;
+        } else {
+            // end of white space, add nChars of space
+            for (i = 0; i < nChars; i++) {
+                *lineOutPtr++ = QLatin1Char(' ');
+                whiteWidth++;
+                // if we're now at a tab stop, change last 8 spaces to a tab
+                if (tabsAllowed && atTabStop(whiteWidth, tabDist)) {
+
+                    lineOut.resize(lineOut.size() - tabDist);
+
+                    //lineOutPtr -= tabDist;
+                    *lineOutPtr++ = QLatin1Char('\t');
+                }
+            }
+
+            // move remainder of line
+            while (lineInPtr != line.end() && (lineInPtr - line.begin()) < lineLen) {
+                *lineOutPtr++ = *lineInPtr++;
+            }
+
+            return lineOut;
+        }
+    }
+}
+
 static std::string shiftLineRightEx(view::string_view line, int lineLen, int tabsAllowed, int tabDist, int nChars) {
-	int whiteWidth, i;
+    int whiteWidth;
 
 	auto lineInPtr = line.begin();
-	std::string lineOut;
+    std::string lineOut;
 	lineOut.reserve(lineLen + nChars);
 
 	auto lineOutPtr = std::back_inserter(lineOut);
@@ -376,7 +479,7 @@ static std::string shiftLineRightEx(view::string_view line, int lineLen, int tab
 			*lineOutPtr++ = *lineInPtr++;
 		} else {
 			// end of white space, add nChars of space 
-			for (i = 0; i < nChars; i++) {
+            for (int i = 0; i < nChars; i++) {
 				*lineOutPtr++ = ' ';
 				whiteWidth++;
 				// if we're now at a tab stop, change last 8 spaces to a tab 
@@ -399,12 +502,68 @@ static std::string shiftLineRightEx(view::string_view line, int lineLen, int tab
 	}
 }
 
+static QString shiftLineLeftEx(const QString &line, int lineLen, int tabDist, int nChars) {
+    auto lineInPtr = line.begin();
+
+    QString out;
+    out.reserve(lineLen + tabDist);
+
+    int whiteWidth = 0;
+    int lastWhiteWidth = 0;
+
+    while (true) {
+        if (lineInPtr == line.end() || (lineInPtr - line.begin()) >= lineLen) {
+            // nothing on line, wipe it out
+            return QString();
+        } else if (*lineInPtr == QLatin1Char(' ')) {
+            // white space continues with space, advance one character
+            whiteWidth++;
+            out.append(*lineInPtr++);
+        } else if (*lineInPtr == QLatin1Char('\t')) {
+            // white space continues with tab, advance to next tab stop
+            // save the position, though, in case we need to remove the tab
+            lastWhiteWidth = whiteWidth;
+            whiteWidth = nextTab(whiteWidth, tabDist);
+            out.append(*lineInPtr++);
+        } else {
+
+            // end of white space, remove nChars characters
+            for (int i = 1; i <= nChars; i++) {
+                if(!out.isEmpty()) {
+                    if (out.endsWith(QLatin1Char(' '))) {
+                        // end of white space is a space, just remove it
+                        out.chop(1);
+                    } else {
+                        /* end of white space is a tab, remove it and add
+                           back spaces */
+                        out.chop(1);
+
+                        int whiteGoal = whiteWidth - i;
+                        whiteWidth = lastWhiteWidth;
+
+                        while (whiteWidth < whiteGoal) {
+                            out.append(QLatin1Char(' '));
+                            whiteWidth++;
+                        }
+                    }
+                }
+            }
+            // move remainder of line
+            while (lineInPtr != line.end() && (lineInPtr - line.begin()) < lineLen) {
+                out.append(*lineInPtr++);
+            }
+
+            return out;
+        }
+    }
+}
+
 static std::string shiftLineLeftEx(view::string_view line, int lineLen, int tabDist, int nChars) {
 
     auto lineInPtr = line.begin();
 
-    auto lineOut = std::make_unique<char[]>(lineLen + tabDist + 1);
-    auto lineOutPtr = &lineOut[0];
+    std::string out;
+    out.reserve(lineLen + tabDist);
 
     int whiteWidth = 0;
     int lastWhiteWidth = 0;
@@ -416,31 +575,31 @@ static std::string shiftLineLeftEx(view::string_view line, int lineLen, int tabD
         } else if (*lineInPtr == ' ') {
             // white space continues with space, advance one character
             whiteWidth++;
-            *lineOutPtr++ = *lineInPtr++;
+            out.append(1, *lineInPtr++);
         } else if (*lineInPtr == '\t') {
             // white space continues with tab, advance to next tab stop
             // save the position, though, in case we need to remove the tab
             lastWhiteWidth = whiteWidth;
             whiteWidth = nextTab(whiteWidth, tabDist);
-            *lineOutPtr++ = *lineInPtr++;
+            out.append(1, *lineInPtr++);
         } else {
 
             // end of white space, remove nChars characters
             for (int i = 1; i <= nChars; i++) {
-                if (lineOutPtr > &lineOut[0]) {
-                    if (*(lineOutPtr - 1) == ' ') {
+                if(!out.empty()) {
+                    if (out.back() == ' ') {
                         // end of white space is a space, just remove it
-                        lineOutPtr--;
+                        out.pop_back();
                     } else {
                         /* end of white space is a tab, remove it and add
                            back spaces */
-                        lineOutPtr--;
+                        out.pop_back();
 
                         int whiteGoal = whiteWidth - i;
                         whiteWidth = lastWhiteWidth;
 
                         while (whiteWidth < whiteGoal) {
-                            *lineOutPtr++ = ' ';
+                            out.append(1, ' ');
                             whiteWidth++;
                         }
                     }
@@ -448,12 +607,10 @@ static std::string shiftLineLeftEx(view::string_view line, int lineLen, int tabD
             }
             // move remainder of line
             while (lineInPtr != line.end() && (lineInPtr - line.begin()) < lineLen) {
-                *lineOutPtr++ = *lineInPtr++;
+                out.append(1, *lineInPtr++);
             }
 
-            // add a null
-            *lineOutPtr = '\0';
-            return std::string(&lineOut[0]);
+            return out;
         }
     }
 }
@@ -475,6 +632,17 @@ static int countLinesEx(view::string_view text) {
 		}
 	}
 	return count;
+}
+
+static int countLinesEx(const QString &text) {
+    int count = 1;
+
+    for(QChar ch: text) {
+        if (ch == QLatin1Char('\n')) {
+            count++;
+        }
+    }
+    return count;
 }
 
 /*

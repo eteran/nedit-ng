@@ -2160,7 +2160,7 @@ void MainWindow::on_editIFind_textChanged(const QString &text) {
        correct syntax doesn't match) */
     if (isRegexType(searchType)) {
         try {
-			auto compiledRE = std::make_unique<regexp>(text.toStdString(), defaultRegexFlags(searchType));
+            auto compiledRE = make_regex(text, defaultRegexFlags(searchType));
         } catch(const regex_error &) {
             return;
         }

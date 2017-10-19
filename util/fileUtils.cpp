@@ -201,10 +201,10 @@ int ExpandTilde(char *pathname) {
  *         pathIn was no absolute path or the link is a loop.
  */
 QString ResolvePathEx(const QString &pathname) {
-    char pathResolved[MAXPATHLEN];
+    char path[MAXPATHLEN];
 
-	if(ResolvePath(pathname.toLatin1().data(), pathResolved)) {
-        return QString::fromLatin1(pathResolved);
+    if(ResolvePath(pathname.toLatin1().data(), path)) {
+        return QString::fromLatin1(path);
     }
 
     return QString();
@@ -666,7 +666,7 @@ void ConvertToMacFileStringEx(std::string &fileString) {
 */
 QString ReadAnyTextFileEx(const QString &fileName, bool forceNL) {
 
-	std::ifstream file(fileName.toLatin1().data());
+    std::ifstream file(fileName.toStdString());
 	if(!file) {
 		return QString();
 	}

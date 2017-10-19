@@ -69,9 +69,9 @@ public:
     QString RangesetGetName() const;
 	int RangesetAdd(Rangeset *plusSet);
 	int RangesetAddBetween(int start, int end);
-	bool RangesetAssignColorName(const std::string &color_name);
+    bool RangesetAssignColorName(const QString &color_name);
 	bool RangesetAssignColorPixel(const QColor &color, int ok);
-	bool RangesetAssignName(const std::string &name);
+    bool RangesetAssignName(const QString &name);
 	bool RangesetChangeModifyResponse(const char *name);
 	int RangesetCheckRangeOfPos(int pos);
 	int RangesetFindRangeNo(int index, int *start, int *end) const;

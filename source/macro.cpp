@@ -5789,7 +5789,7 @@ static int rangesetSetColorMS(DocumentWidget *document, DataValue *argList, int 
         M_FAILURE("Rangeset does not exist in %s");
     }
 
-    std::string color_name;
+    QString color_name;
     if (!readArgument(argList[1], &color_name, errMsg)) {
         M_FAILURE("Second parameter is not a color name string in %s");
     }
@@ -5828,7 +5828,7 @@ static int rangesetSetNameMS(DocumentWidget *document, DataValue *argList, int n
         M_FAILURE("Rangeset does not exist in %s");
     }
 
-    std::string name;
+    QString name;
     if (!readArgument(argList[1], &name, errMsg)) {
         M_FAILURE("Second parameter is not a valid name string in %s");
     }

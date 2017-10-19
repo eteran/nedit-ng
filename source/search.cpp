@@ -2205,3 +2205,13 @@ int defaultRegexFlags(SearchType searchType) {
 	}
 }
 
+/**
+ * @brief make_regex
+ * @param re
+ * @param flags
+ * @return
+ */
+std::unique_ptr<regexp> make_regex(const QString &re, int flags) {
+    return std::make_unique<regexp>(re.toStdString(), flags);
+}
+

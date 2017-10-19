@@ -11,6 +11,7 @@
 #include "smartIndent.h"
 #include "tags.h"
 #include "userCmds.h"
+#include "search.h"
 #include <QIntValidator>
 #include <QMessageBox>
 #include <QRegExp>
@@ -258,8 +259,7 @@ std::unique_ptr<LanguageMode> DialogLanguageModes::readLMDialogFields(Mode mode)
 	QString recognitionExpr = ui.editRegex->text();
 	if(!recognitionExpr.isEmpty()) {
 		try {
-			std::string expression = recognitionExpr.toStdString();
-			auto compiledRE = std::make_unique<regexp>(expression, REDFLT_STANDARD);
+            auto compiledRE = make_regex(recognitionExpr, REDFLT_STANDARD);
 		} catch(const regex_error &e) {
             if (mode == Mode::Verbose) {
                 QMessageBox::warning(this, tr("Regex"), tr("Recognition expression:\n%1").arg(QString::fromLatin1(e.what())));

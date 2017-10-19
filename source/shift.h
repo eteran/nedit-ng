@@ -32,11 +32,12 @@
 
 class DocumentWidget;
 class TextArea;
+class QString;
 
 void ShiftSelectionEx(DocumentWidget *window, TextArea *area, ShiftDirection direction, bool byTab);
 void UpcaseSelectionEx(DocumentWidget *window, TextArea *area);
 void DowncaseSelectionEx(DocumentWidget *window, TextArea *area);
 void FillSelectionEx(DocumentWidget *window, TextArea *area);
-std::string ShiftTextEx(view::string_view text, ShiftDirection direction, int tabsAllowed, int tabDist, int nChars);
+QString ShiftTextEx(const QString &text, ShiftDirection direction, int tabsAllowed, int tabDist, int nChars);
 
 #endif

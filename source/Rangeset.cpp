@@ -829,12 +829,12 @@ int Rangeset::RangesetAddBetween(int start, int end) {
 ** Assign a color name to a rangeset via the rangeset table.
 */
 
-bool Rangeset::RangesetAssignColorName(const std::string &color_name) {
+bool Rangeset::RangesetAssignColorName(const QString &color_name) {
 
 
     // "" invalid
-	if(!color_name.empty()) {
-		color_name_ = QString::fromStdString(color_name);
+    if(!color_name.isEmpty()) {
+        color_name_ = color_name;
     } else {
         color_name_ = QString();
     }
@@ -861,11 +861,11 @@ bool Rangeset::RangesetAssignColorPixel(const QColor &color, int ok) {
 ** Assign a name to a rangeset via the rangeset table.
 */
 
-bool Rangeset::RangesetAssignName(const std::string &name) {
+bool Rangeset::RangesetAssignName(const QString &name) {
 
 	// store new name value 
-    if(!name.empty()) {
-        name_ = QString::fromStdString(name);
+    if(!name.isEmpty()) {
+        name_ = name;
 	} else {
         name_ = QString();
 	}
