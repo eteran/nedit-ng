@@ -29,13 +29,13 @@
 
 #include "nedit.h"
 #include "util/string_view.h"
-#include <QFuture>
+#include <QTimer>
+#include <memory>
 
 class DocumentWidget;
 class MainWindow;
 class Program;
 class QString;
-class QTimer;
 class QWidget;
 struct RestartData;
 
@@ -66,12 +66,12 @@ void SafeGC();
 /* Data attached to window during shell command execution with
    information for controling and communicating with the process */
 struct MacroCommandData {
-    QTimer *bannerTimeoutID;
-    Program *program;
-    QFuture<bool> continueWorkProcID;
-    bool bannerIsUp;
-    bool closeOnCompletion;
-    RestartData *context;
+    QTimer                       bannerTimer;
+    QTimer                       continuationTimer;
+    Program *                    program           = nullptr;
+    bool                         bannerIsUp        = false;
+    bool                         closeOnCompletion = false;
+    std::shared_ptr<RestartData> context;
 };
 
 #endif

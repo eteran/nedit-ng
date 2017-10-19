@@ -63,8 +63,8 @@ constexpr char StringToNumberMsg[] = "string could not be converted to number";
 
 static void addLoopAddr(Inst *addr);
 
-static void saveContextEx(RestartData *context);
-static void restoreContextEx(RestartData *context);
+static void saveContextEx(const std::shared_ptr<RestartData> &context);
+static void restoreContextEx(const std::shared_ptr<RestartData> &context);
 static NString AllocNStringEx(int length);
 
 static int returnNoVal();
@@ -414,14 +414,18 @@ void FillLoopAddrs(Inst *breakAddr, Inst *continueAddr) {
 			qCritical("NEdit: internal error (lsu) in macro parser");
 			return;
 		}
-		if (*LoopStackPtr == nullptr)
+
+        if (*LoopStackPtr == nullptr) {
 			break;
-		if ((*LoopStackPtr)->value == NEEDS_BREAK)
+        }
+
+        if ((*LoopStackPtr)->value == NEEDS_BREAK) {
 			(*LoopStackPtr)->value = breakAddr - *LoopStackPtr;
-		else if ((*LoopStackPtr)->value == NEEDS_CONTINUE)
+        } else if ((*LoopStackPtr)->value == NEEDS_CONTINUE) {
 			(*LoopStackPtr)->value = continueAddr - *LoopStackPtr;
-		else
+        } else {
 			qCritical("NEdit: internal error (uat) in macro parser");
+        }
 	}
 }
 
@@ -432,24 +436,25 @@ void FillLoopAddrs(Inst *breakAddr, Inst *continueAddr) {
 ** (if any) can be read from "result".  If MACRO_PREEMPT is returned, the
 ** macro exceeded its alotted time-slice and scheduled...
 */
-int ExecuteMacroEx(DocumentWidget *window, Program *prog, int nArgs, DataValue *args, DataValue *result, RestartData **continuation, const char **msg) {
+int ExecuteMacroEx(DocumentWidget *document, Program *prog, int nArgs, DataValue *args, DataValue *result, std::shared_ptr<RestartData> &continuation, const char **msg) {
 
     static DataValue noValue = INIT_DATA_VALUE;
-    int i;
 
     /* Create an execution context (a stack, a stack pointer, a frame pointer,
        and a program counter) which will retain the program state across
        preemption and resumption of execution */
-    auto context         = new RestartData;
-    context->stack       = new DataValue[STACK_SIZE];
-    *continuation        = context;
+    auto context         = std::make_shared<RestartData>();
+
+    context->stack       = new DataValue[STACK_SIZE];    
     context->stackP      = context->stack;
     context->pc          = prog->code;
-    context->runWindow   = window;
-    context->focusWindow = window;
+    context->runWindow   = document;
+    context->focusWindow = document;
+
+    continuation         = context;
 
     // Push arguments and call information onto the stack
-    for (i = 0; i < nArgs; i++) {
+    for (int i = 0; i < nArgs; i++) {
         *(context->stackP++) = args[i];
     }
 
@@ -481,15 +486,15 @@ int ExecuteMacroEx(DocumentWidget *window, Program *prog, int nArgs, DataValue *
 ** Continue the execution of a suspended macro whose state is described in
 ** "continuation"
 */
-int ContinueMacroEx(RestartData *continuation, DataValue *result, const char **msg) {
+int ContinueMacroEx(const std::shared_ptr<RestartData> &continuation, DataValue *result, const char **msg) {
 
 	int instCount = 0;
-    RestartData oldContext;
+    auto oldContext = std::make_shared<RestartData>();
 
     /* To allow macros to be invoked arbitrarily (such as those automatically
        triggered within smart-indent) within executing macros, this call is
        reentrant. */
-    saveContextEx(&oldContext);
+    saveContextEx(oldContext);
 
     /*
     ** Execution Loop:  Call the succesive routine addresses in the program
@@ -508,18 +513,18 @@ int ContinueMacroEx(RestartData *continuation, DataValue *result, const char **m
         switch(status) {
         case STAT_PREEMPT:
             saveContextEx(continuation);
-            restoreContextEx(&oldContext);
+            restoreContextEx(oldContext);
             return MACRO_PREEMPT;
         case STAT_ERROR:
             *msg = ErrMsg;
             FreeRestartDataEx(continuation);
-            restoreContextEx(&oldContext);
+            restoreContextEx(oldContext);
             return MACRO_ERROR;
         case STAT_DONE:
             *msg = "";
             *result = *--StackP;
             FreeRestartDataEx(continuation);
-            restoreContextEx(&oldContext);
+            restoreContextEx(oldContext);
             return MACRO_DONE;
         case STAT_OK:
         default:
@@ -530,11 +535,13 @@ int ContinueMacroEx(RestartData *continuation, DataValue *result, const char **m
            preempt, store re-start information in continuation and give
            X, other macros, and other shell scripts a chance to execute */
 		++instCount;
+#if 1
         if (instCount >= INSTRUCTION_LIMIT) {
             saveContextEx(continuation);
-            restoreContextEx(&oldContext);
+            restoreContextEx(oldContext);
             return MACRO_TIME_LIMIT;
         }
+#endif
     }
 }
 
@@ -572,9 +579,8 @@ void RunMacroAsSubrCall(Program *prog) {
 	}
 }
 
-void FreeRestartDataEx(RestartData *context) {
+void FreeRestartDataEx(const std::shared_ptr<RestartData> &context) {
     delete [] context->stack;
-    delete context;
 }
 
 /*
@@ -591,7 +597,7 @@ void PreemptMacro() {
 ** how to return a value from a routine which preempts instead of returning
 ** a value directly).
 */
-void ModifyReturnedValueEx(RestartData *context, const DataValue &dv) {
+void ModifyReturnedValueEx(const std::shared_ptr<RestartData> &context, const DataValue &dv) {
 	if ((context->pc - 1)->func == fetchRetVal) {
         *(context->stackP - 1) = dv;
 	}
@@ -1005,7 +1011,7 @@ void GarbageCollectStrings() {
 /*
 ** Save and restore execution context to data structure "context"
 */
-static void saveContextEx(RestartData *context) {
+static void saveContextEx(const std::shared_ptr<RestartData> &context) {
     context->stack       = TheStack;
     context->stackP      = StackP;
     context->frameP      = FrameP;
@@ -1014,7 +1020,7 @@ static void saveContextEx(RestartData *context) {
     context->focusWindow = FocusWindowEx;
 }
 
-static void restoreContextEx(RestartData *context) {
+static void restoreContextEx(const std::shared_ptr<RestartData> &context) {
     TheStack           = context->stack;
     StackP             = context->stackP;
     FrameP             = context->frameP;

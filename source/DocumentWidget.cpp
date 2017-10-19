@@ -62,14 +62,14 @@
 struct ShellCommandData {
     QByteArray standardError;
     QByteArray standardOutput;
-    QProcess *process;
-    QTimer *bannerTimer;
-    TextArea *area;
-    int flags;
-    int leftPos;
-    int rightPos;
-    bool bannerIsUp;
-    bool fromMacro;
+    QProcess * process;
+    QTimer     bannerTimer;
+    TextArea * area;
+    int        flags;
+    int        leftPos;
+    int        rightPos;
+    bool       bannerIsUp;
+    bool       fromMacro;
 };
 
 namespace {
@@ -3412,8 +3412,7 @@ void DocumentWidget::executeNewlineMacroEx(SmartIndentEvent *cbInfo) {
 	SmartIndentData *winData = smartIndentData_;
     // posValue probably shouldn't be static due to re-entrance issues <slobasso>
     static DataValue posValue = {INT_TAG, {0}};
-    DataValue result;
-    RestartData *continuation;
+    DataValue result;    
     const char *errMsg;
     int stat;
 
@@ -3428,7 +3427,9 @@ void DocumentWidget::executeNewlineMacroEx(SmartIndentEvent *cbInfo) {
     // Call newline macro with the position at which to add newline/indent
     posValue.val.n = cbInfo->pos;
     ++(winData->inNewLineMacro);
-    stat = ExecuteMacroEx(this, winData->newlineMacro, 1, &posValue, &result, &continuation, &errMsg);
+
+    std::shared_ptr<RestartData> continuation;
+    stat = ExecuteMacroEx(this, winData->newlineMacro, 1, &posValue, &result, continuation, &errMsg);
 
     // Don't allow preemption or time limit.  Must get return value
     while (stat == MACRO_TIME_LIMIT) {
@@ -3495,8 +3496,7 @@ void DocumentWidget::executeModMacroEx(SmartIndentEvent *cbInfo) {
     // after 5.2 release remove inModCB and use new winData->inModMacro value
     static bool inModCB = false;
 
-    DataValue result;
-    RestartData *continuation;
+    DataValue result;    
     const char *errMsg;
 
     /* Check for inappropriate calls and prevent re-entering if the macro
@@ -3514,7 +3514,8 @@ void DocumentWidget::executeModMacroEx(SmartIndentEvent *cbInfo) {
     inModCB = true;
     ++(winData->inModMacro);
 
-    int stat = ExecuteMacroEx(this, winData->modMacro, 2, args, &result, &continuation, &errMsg);
+    std::shared_ptr<RestartData> continuation;
+    int stat = ExecuteMacroEx(this, winData->modMacro, 2, args, &result, continuation, &errMsg);
 
     while (stat == MACRO_TIME_LIMIT) {
         stat = ContinueMacroEx(continuation, &result, &errMsg);
@@ -4785,13 +4786,10 @@ void DocumentWidget::issueCommandEx(MainWindow *window, TextArea *area, const QS
     document->shellCmdData_ = cmdData;
 
     // Set up timer proc for putting up banner when process takes too long
-    if (fromMacro) {
-        cmdData->bannerTimer = nullptr;
-    } else {
-        cmdData->bannerTimer = new QTimer(document);
-        QObject::connect(cmdData->bannerTimer, SIGNAL(timeout()), document, SLOT(bannerTimeoutProc()));
-        cmdData->bannerTimer->setSingleShot(true);
-        cmdData->bannerTimer->start(BANNER_WAIT_TIME);
+    if (!fromMacro) {
+        connect(&cmdData->bannerTimer, SIGNAL(timeout()), document, SLOT(bannerTimeoutProc()));
+        cmdData->bannerTimer.setSingleShot(true);
+        cmdData->bannerTimer.start(BANNER_WAIT_TIME);
     }
 
     /* If this was called from a macro, preempt the macro until shell
@@ -4852,12 +4850,7 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
     bool fromMacro = cmdData->fromMacro;
 
     // Cancel pending timeouts
-    if (cmdData->bannerTimer) {
-        cmdData->bannerTimer->stop();
-
-        delete cmdData->bannerTimer;
-        cmdData->bannerTimer = nullptr;
-    }
+    cmdData->bannerTimer.stop();
 
     // Clean up waiting-for-shell-command-to-complete mode
     if (!cmdData->fromMacro) {

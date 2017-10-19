@@ -2392,9 +2392,7 @@ int readCheckMacroStringEx(QWidget *dialogParent, const QString &string, Documen
 ** frees prog when macro execution is complete;
 */
 static void runMacroEx(DocumentWidget *document, Program *prog) {
-    DataValue result;
-    const char *errMsg;
-    int stat;
+
 
     /* If a macro is already running, just call the program as a subroutine,
        instead of starting a new one, so we don't have to keep a separate
@@ -2424,29 +2422,31 @@ static void runMacroEx(DocumentWidget *document, Program *prog) {
     document->macroCmdData_ = cmdData;
 
     // Set up timer proc for putting up banner when macro takes too long
-    cmdData->bannerTimeoutID = new QTimer(document);
-    QObject::connect(cmdData->bannerTimeoutID, SIGNAL(timeout()), document, SLOT(bannerTimeoutProc()));
-    cmdData->bannerTimeoutID->setSingleShot(true);
-    cmdData->bannerTimeoutID->start(BANNER_WAIT_TIME);
+    QObject::connect(&cmdData->bannerTimer, SIGNAL(timeout()), document, SLOT(bannerTimeoutProc()));
+    cmdData->bannerTimer.setSingleShot(true);
+    cmdData->bannerTimer.start(BANNER_WAIT_TIME);
 
     // Begin macro execution
-    stat = ExecuteMacroEx(document, prog, 0, nullptr, &result, &cmdData->context, &errMsg);
+    DataValue result;
+    const char *errMsg;
+    const int stat = ExecuteMacroEx(document, prog, 0, nullptr, &result, cmdData->context, &errMsg);
 
-    if (stat == MACRO_ERROR) {
+    switch(stat) {
+    case MACRO_ERROR:
         finishMacroCmdExecutionEx(document);
         QMessageBox::critical(document, QLatin1String("Macro Error"), QString(QLatin1String("Error executing macro: %1")).arg(QString::fromLatin1(errMsg)));
         return;
-    }
-
-    if (stat == MACRO_DONE) {
+    case MACRO_DONE:
         finishMacroCmdExecutionEx(document);
         return;
-    }
-    if (stat == MACRO_TIME_LIMIT) {
+    case MACRO_TIME_LIMIT:
         ResumeMacroExecutionEx(document);
         return;
+    case MACRO_PREEMPT:
+        // Macro was preempted
+        break;
+
     }
-    // (stat == MACRO_PREEMPT) Macro was preempted
 }
 
 /*
@@ -2459,9 +2459,16 @@ static void runMacroEx(DocumentWidget *document, Program *prog) {
 void ResumeMacroExecutionEx(DocumentWidget *document) {
 
     if(auto cmdData = document->macroCmdData_) {
-        cmdData->continueWorkProcID = QtConcurrent::run([document]() {
-            return continueWorkProcEx(document);
+
+        // create a background task that will run so long as the function returns false
+        QObject::connect(&cmdData->continuationTimer, &QTimer::timeout, [cmdData, document]() {
+            if(continueWorkProcEx(document)) {
+                cmdData->continuationTimer.stop();
+            }
         });
+
+        // a timeout of 0 means "run whenever the event loop is idle"
+        cmdData->continuationTimer.start(0);
     }
 }
 
@@ -2548,8 +2555,8 @@ static void finishMacroCmdExecutionEx(DocumentWidget *document) {
     bool closeOnCompletion = cmdData->closeOnCompletion;
 
     // Cancel pending timeout and work proc
-    cmdData->bannerTimeoutID->stop();
-    cmdData->continueWorkProcID.cancel();
+    cmdData->bannerTimer.stop();
+    cmdData->continuationTimer.stop();
 
     // Clean up waiting-for-macro-command-to-complete mode
     document->setCursor(Qt::ArrowCursor);
@@ -2771,16 +2778,13 @@ bool continueWorkProcEx(DocumentWidget *document) {
         finishMacroCmdExecutionEx(document);
         return true;
     case MACRO_PREEMPT:
-        cmdData->continueWorkProcID = QFuture<bool>();
         return true;
-    default:
+    case MACRO_TIME_LIMIT:
         // Macro exceeded time slice, re-schedule it
-        if (stat != MACRO_TIME_LIMIT) {
-            return true; // shouldn't happen
-        }
+        return false;
+    default:
+        return true;
     }
-
-    return false;
 }
 
 
