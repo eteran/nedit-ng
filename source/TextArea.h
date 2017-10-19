@@ -132,6 +132,7 @@ public:
     int getRows() const;
     int getMarginHeight() const;
     int getMarginWidth() const;
+    QString getBacklightCharTypes() const;
 
 protected:
 	virtual bool focusNextPrevChild(bool next) override;
@@ -341,7 +342,6 @@ private:
 	void callCursorMovementCBs();
 	void checkMoveSelectionChange(EventFlags flags, int startPos);
 	void keyMoveExtendSelection(int origPos, bool rectangular);
-    void TakeMotifDestination();
 	bool checkReadOnly() const;
 	void simpleInsertAtCursorEx(view::string_view chars, bool allowPendingDelete);
 	int pendingSelection();
@@ -366,7 +366,6 @@ private:
     void adjustSelection(const QPoint &coord);
     void checkAutoScroll(const QPoint &coord);
 	void FinishBlockDrag();
-	void SendSecondarySelection(bool removeAfter);
 	void BeginBlockDrag();
     void BlockDragSelection(const QPoint &pos, BlockDragTypes dragType);
     void adjustSecondarySelection(const QPoint &coord);
@@ -433,7 +432,6 @@ private:
     QPoint btnDownCoord_;             // Mark the position of last btn down action for deciding when to begin paying attention to motion actions, and where to paste columns
     QPoint mouseCoord_;               // Last known mouse position in drag operation (for autoscroll)
 	bool selectionOwner_;            // True if widget owns the selection
-	bool motifDestOwner_;            // " "            owns the motif destination
 	QTimer *autoScrollTimer_;
 	QTimer *cursorBlinkTimer_;
 	QTimer *clickTimer_;

@@ -4202,9 +4202,14 @@ void DocumentWidget::splitPane() {
 		return;
 	}
 
+    auto area = createTextArea(buffer_);
+
     // TODO(eteran): copy common state from an existing text area!
     // what do we REALLY need to copy?
-    auto area = createTextArea(buffer_);
+    if(auto activeArea = qobject_cast<TextArea *>(splitter_->widget(0))) {
+        area->setLineNumCols(activeArea->getLineNumCols());
+        area->setBacklightCharTypes(backlightCharTypes_);
+    }
 
     AttachHighlightToWidgetEx(area, this);
 

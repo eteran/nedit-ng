@@ -503,7 +503,6 @@ TextArea::TextArea(
 	// Initialize the widget variables
 	dragState_          = NOT_CLICKED;
 	selectionOwner_     = false;
-    motifDestOwner_     = true; // NOTE(eteran): was false
 	emTabsBeforeCursor_ = 0;
 
 	setGeometry(0, 0, width, height);
@@ -522,9 +521,7 @@ TextArea::TextArea(
     // track when we lose ownership of the selection
     if(QApplication::clipboard()->supportsSelection()) {
         connect(QApplication::clipboard(), &QClipboard::selectionChanged, [this]() {
-
             if(!QApplication::clipboard()->ownsSelection()) {
-                motifDestOwner_ = false;
                 buffer_->BufUnselect();
             }
         });
@@ -595,7 +592,6 @@ void TextArea::deleteNextCharacterAP(EventFlags flags) {
 		return;
 	}
 
-    TakeMotifDestination();
 	if (deletePendingSelection()) {
 		return;
 	}
@@ -638,7 +634,6 @@ void TextArea::deletePreviousWordAP(EventFlags flags) {
 		return;
 	}
 
-    TakeMotifDestination();
 	if (deletePendingSelection()) {
 		return;
 	}
@@ -690,7 +685,7 @@ void TextArea::processCancelAP(EventFlags flags) {
 	TextDKillCalltip(0);
 
 	if (dragState == PRIMARY_DRAG || dragState == PRIMARY_RECT_DRAG) {
-		buffer_->BufUnselect();
+        buffer_->BufUnselect();
 	}
 
 	cancelDrag();
@@ -708,7 +703,6 @@ void TextArea::deletePreviousCharacterAP(EventFlags flags) {
 		return;
     }
 
-    TakeMotifDestination();
     if (deletePendingSelection()) {
 		return;
     }
@@ -848,8 +842,6 @@ void TextArea::selfInsertAP(const QString &string, EventFlags flags) {
     }
 
     std::string s = string.toStdString();
-
-    TakeMotifDestination();
 
     if (!buffer_->BufSubstituteNullCharsEx(s)) {
         QMessageBox::critical(this, tr("Error"), tr("Too much binary data"));
@@ -1007,10 +999,7 @@ void TextArea::focusOutEvent(QFocusEvent *event) {
 
 	cursorBlinkTimer_->stop();
 
-	// Leave a dim or destination cursor
-    // TODO(eteran): perhaps abandon this concept of "motifDestOwner_" and
-    // just always show it as a caret when it doesn't have focus?
-    TextDSetCursorStyle(motifDestOwner_ ? CARET_CURSOR : DIM_CURSOR);
+    TextDSetCursorStyle(CARET_CURSOR);
 	TextDUnblankCursor();
 
 	// If there's a calltip displayed, kill it.
@@ -1442,6 +1431,7 @@ void TextArea::mouseTripleClickEvent(QMouseEvent *event) {
 void TextArea::mouseQuadrupleClickEvent(QMouseEvent *event) {
 	if (event->button() == Qt::LeftButton) {
 		buffer_->BufSelect(0, buffer_->BufGetLength());
+        syncronizeSelection();
 	}
 }
 
@@ -1504,18 +1494,13 @@ void TextArea::mousePressEvent(QMouseEvent *event) {
 		   multi-clicking.  Also record the timestamp for multi-click processing */
 		dragState_ = PRIMARY_CLICKED;
 
-		/* Become owner of the MOTIF_DESTINATION selection, making this widget
-		   the designated recipient of secondary quick actions in Motif XmText
-		   widgets and in other NEdit text widgets */
-        TakeMotifDestination();
-
 		// Check for possible multi-click sequence in progress
 		if(!clickTracker(event, false)) {
 			return;
 		}
 
 		// Clear any existing selections
-		buffer_->BufUnselect();
+        buffer_->BufUnselect();
 
 		// Move the cursor to the pointer location
 		moveDestinationAP(event);
@@ -1553,6 +1538,11 @@ void TextArea::mouseReleaseEvent(QMouseEvent *event) {
         case PRIMARY_RECT_DRAG:
         case PRIMARY_BLOCK_DRAG:
             syncronizeSelection();
+            break;
+        case PRIMARY_CLICKED:
+            if(QApplication::clipboard()->ownsSelection()) {
+                syncronizeSelection();
+            }
             break;
         default:
             break;
@@ -1803,6 +1793,10 @@ void TextArea::bufModifiedCallback(int pos, int nInserted, int nDeleted, int nRe
 void TextArea::setBacklightCharTypes(const QString &charTypes) {
 	TextDSetupBGClassesEx(charTypes);
 	viewport()->update();
+}
+
+QString TextArea::getBacklightCharTypes() const {
+
 }
 
 //------------------------------------------------------------------------------
@@ -3955,7 +3949,7 @@ void TextArea::modifiedCallback(int pos, int nInserted, int nDeleted, int nResty
 
 	// Take ownership of the selection
     if(!QApplication::clipboard()->ownsSelection()) {
-		buffer_->BufUnselect();
+        buffer_->BufUnselect();
 	} else {
 		selectionOwner_ = true;
 	}
@@ -4581,8 +4575,10 @@ void TextArea::CancelBlockDrag() {
     // Reset the selection and cursor position
     if (origSel->rectangular) {
         buffer_->BufRectSelect(origSel->start, origSel->end, origSel->rectStart, origSel->rectEnd);
+        syncronizeSelection();
     } else {
         buffer_->BufSelect(origSel->start, origSel->end);
+        syncronizeSelection();
     }
     TextDSetInsertPosition(buffer_->cursorPosHint_);
 
@@ -4633,7 +4629,7 @@ void TextArea::checkMoveSelectionChange(EventFlags flags, int startPos) {
 		bool rect = flags & RectFlag;
 		keyMoveExtendSelection(startPos, rect);
 	} else {
-		buffer_->BufUnselect();
+        buffer_->BufUnselect();
 	}
 }
 
@@ -4671,7 +4667,8 @@ void TextArea::keyMoveExtendSelection(int origPos, bool rectangular) {
 		endCol   = std::max(rectAnchor_, newCol);
 		startPos = buffer_->BufStartOfLine(std::min(anchor_, newPos));
 		endPos   = buffer_->BufEndOfLine(std::max(anchor_, newPos));
-		buffer_->BufRectSelect(startPos, endPos, startCol, endCol);
+        buffer_->BufRectSelect(startPos, endPos, startCol, endCol);
+        syncronizeSelection();
 
 	} else if (sel->selected && rectangular) { // plain -> rect
 
@@ -4687,7 +4684,8 @@ void TextArea::keyMoveExtendSelection(int origPos, bool rectangular) {
 		rectAnchor      = buffer_->BufCountDispChars(anchorLineStart, anchor);
 		anchor_         = anchor;
 		rectAnchor_     = rectAnchor;
-		buffer_->BufRectSelect(buffer_->BufStartOfLine(std::min(anchor, newPos)), buffer_->BufEndOfLine(std::max(anchor, newPos)), std::min(rectAnchor, newCol), std::max(rectAnchor, newCol));
+        buffer_->BufRectSelect(buffer_->BufStartOfLine(std::min(anchor, newPos)), buffer_->BufEndOfLine(std::max(anchor, newPos)), std::min(rectAnchor, newCol), std::max(rectAnchor, newCol));
+        syncronizeSelection();
 
 	} else if (sel->selected && sel->rectangular) { // rect -> plain
 
@@ -4701,6 +4699,7 @@ void TextArea::keyMoveExtendSelection(int origPos, bool rectangular) {
 		}
 
 		buffer_->BufSelect(anchor, newPos);
+        syncronizeSelection();
 
 	} else if (sel->selected) { // plain -> plain
 
@@ -4709,7 +4708,9 @@ void TextArea::keyMoveExtendSelection(int origPos, bool rectangular) {
 		} else {
 			anchor = sel->start;
 		}
+
 		buffer_->BufSelect(anchor, newPos);
+        syncronizeSelection();
 
 	} else if (rectangular) { // no sel -> rect
 
@@ -4721,13 +4722,15 @@ void TextArea::keyMoveExtendSelection(int origPos, bool rectangular) {
         endPos      = buffer_->BufEndOfLine(std::max(origPos, newPos));
         anchor_     = origPos;
 		rectAnchor_ = origCol;
-		buffer_->BufRectSelect(startPos, endPos, startCol, endCol);
+        buffer_->BufRectSelect(startPos, endPos, startCol, endCol);
+        syncronizeSelection();
 
 	} else { // no sel -> plain
 
 		anchor_ = origPos;
 		rectAnchor_ = buffer_->BufCountDispChars(buffer_->BufStartOfLine(origPos), origPos);
 		buffer_->BufSelect(anchor_, newPos);
+        syncronizeSelection();
 	}
 
     syncronizeSelection();
@@ -4735,31 +4738,6 @@ void TextArea::keyMoveExtendSelection(int origPos, bool rectangular) {
 
 void TextArea::syncronizeSelection() {
     QApplication::clipboard()->setText(QString::fromStdString(buffer_->BufGetSelectionTextEx()), QClipboard::Selection);
-}
-
-/*
-** Take ownership of the MOTIF_DESTINATION selection.  This is Motif's private
-** selection type for designating a widget to receive the result of
-** secondary quick action requests.  The NEdit text widget uses this also
-** for compatibility with Motif text widgets.
-*/
-void TextArea::TakeMotifDestination() {
-
-
-    if (motifDestOwner_ || P_readOnly) {
-        return;
-    }
-
-#if 0
-	// Take ownership of the MOTIF_DESTINATION selection
-	if (!XtOwnSelection(w_, getAtom(XtDisplay(w_), A_MOTIF_DESTINATION), time, convertMotifDestCB, loseMotifDestCB, nullptr)) {
-		return;
-	}
-#endif    
-
-    // TODO(eteran): we don't really have any mechanism to address when we "lose"
-    // ownership of the selection and setting this to false.
-    //motifDestOwner_ = true;
 }
 
 int TextArea::TextDMoveLeft() {
@@ -5235,9 +5213,8 @@ void TextArea::newlineNoIndentAP(EventFlags flags) {
 		return;
 	}
 
-    TakeMotifDestination();
 	simpleInsertAtCursorEx("\n", true);
-	buffer_->BufUnselect();
+    buffer_->BufUnselect();
 }
 
 void TextArea::newlineAndIndentAP(EventFlags flags) {
@@ -5251,7 +5228,6 @@ void TextArea::newlineAndIndentAP(EventFlags flags) {
 	}
 
 	cancelDrag();
-    TakeMotifDestination();
 
 	/* Create a string containing a newline followed by auto or smart
 	   indent string */
@@ -5270,7 +5246,7 @@ void TextArea::newlineAndIndentAP(EventFlags flags) {
 		emTabsBeforeCursor_ = column / P_emulateTabs;
 	}
 
-	buffer_->BufUnselect();
+    buffer_->BufUnselect();
 }
 
 /*
@@ -5553,7 +5529,6 @@ void TextArea::TextCutClipboard() {
 		return;
 	}
 
-    TakeMotifDestination();
 	CopyToClipboard();
 	buffer_->BufRemoveSelected();
 	TextDSetInsertPosition(buffer_->cursorPosHint_);
@@ -5584,7 +5559,6 @@ void TextArea::TextPasteClipboard() {
 		return;
 	}
 
-    TakeMotifDestination();
 	InsertClipboard(false);
 	callCursorMovementCBs();
 }
@@ -5595,7 +5569,6 @@ void TextArea::TextColPasteClipboard() {
 		return;
 	}
 
-    TakeMotifDestination();
 	InsertClipboard(true);
 	callCursorMovementCBs();
 }
@@ -5983,7 +5956,6 @@ void TextArea::processTabAP(EventFlags flags) {
 	}
 
 	cancelDrag();
-    TakeMotifDestination();
 
 	// If emulated tabs are off, just insert a tab
 	if (emTabDist <= 0) {
@@ -6034,7 +6006,7 @@ void TextArea::processTabAP(EventFlags flags) {
 	// Restore and ++ emTabsBeforeCursor cleared by TextInsertAtCursorEx
 	emTabsBeforeCursor_ = emTabsBeforeCursor + 1;
 
-	buffer_->BufUnselect();
+    buffer_->BufUnselect();
 }
 
 /*
@@ -6057,6 +6029,7 @@ void TextArea::selectWord(int pointerX) {
 	}
 
 	buffer_->BufSelect(startOfWord(insertPos), endOfWord(insertPos));
+    syncronizeSelection();
 }
 
 /*
@@ -6069,7 +6042,10 @@ void TextArea::selectLine() {
 
 	int endPos = buffer_->BufEndOfLine(insertPos);
 	int startPos = buffer_->BufStartOfLine(insertPos);
-	buffer_->BufSelect(startPos, std::min(endPos + 1, buffer_->BufGetLength()));
+
+    buffer_->BufSelect(startPos, std::min(endPos + 1, buffer_->BufGetLength()));
+    syncronizeSelection();
+
 	TextDSetInsertPosition(endPos);
 }
 
@@ -6235,6 +6211,7 @@ void TextArea::selectAllAP(EventFlags flags) {
 
 	cancelDrag();
 	buffer_->BufSelect(0, buffer_->BufGetLength());
+    syncronizeSelection();
 }
 
 /**
@@ -6246,7 +6223,7 @@ void TextArea::deselectAllAP(EventFlags flags) {
     EMIT_EVENT("deselect_all");
 
 	cancelDrag();
-	buffer_->BufUnselect();
+    buffer_->BufUnselect();
 }
 
 /**
@@ -6296,9 +6273,11 @@ void TextArea::extendStartAP(QMouseEvent *event, EventFlags flags) {
 
 	// Make the new selection
 	if (flags & RectFlag) {
-		buffer_->BufRectSelect(buffer_->BufStartOfLine(std::min(anchor, newPos)), buffer_->BufEndOfLine(std::max(anchor, newPos)), std::min(rectAnchor, column), std::max(rectAnchor, column));
+        buffer_->BufRectSelect(buffer_->BufStartOfLine(std::min(anchor, newPos)), buffer_->BufEndOfLine(std::max(anchor, newPos)), std::min(rectAnchor, column), std::max(rectAnchor, column));
+        syncronizeSelection();
 	} else {
 		buffer_->BufSelect(std::min(anchor, newPos), std::max(anchor, newPos));
+        syncronizeSelection();
 	}
 
 	/* Never mind the motion threshold, go right to dragging since
@@ -6372,21 +6351,29 @@ void TextArea::adjustSelection(const QPoint &coord) {
 		int endCol   = std::max(rectAnchor_, col);
 		startPos     = buffer_->BufStartOfLine(std::min(anchor_, newPos));
 		endPos       = buffer_->BufEndOfLine(std::max(anchor_, newPos));
-		buffer_->BufRectSelect(startPos, endPos, startCol, endCol);
+        buffer_->BufRectSelect(startPos, endPos, startCol, endCol);
+        syncronizeSelection();
 
 	} else if (clickCount_ == 1) { //multiClickState_ == ONE_CLICK) {
 		startPos = startOfWord(std::min(anchor_, newPos));
 		endPos   = endOfWord(std::max(anchor_, newPos));
-		buffer_->BufSelect(startPos, endPos);
+
+        buffer_->BufSelect(startPos, endPos);
+        syncronizeSelection();
+
 		newPos   = newPos < anchor_ ? startPos : endPos;
 
 	} else if (clickCount_ == 2) { //multiClickState_ == TWO_CLICKS) {
 		startPos = buffer_->BufStartOfLine(std::min(anchor_, newPos));
 		endPos   = buffer_->BufEndOfLine(std::max(anchor_, newPos));
-		buffer_->BufSelect(startPos, std::min(endPos + 1, buffer_->BufGetLength()));
+
+        buffer_->BufSelect(startPos, std::min(endPos + 1, buffer_->BufGetLength()));
+        syncronizeSelection();
+
 		newPos   = newPos < anchor_ ? startPos : endPos;
 	} else {
 		buffer_->BufSelect(anchor_, newPos);
+        syncronizeSelection();
 	}
 
 	// Move the cursor
@@ -6437,7 +6424,6 @@ void TextArea::deleteToStartOfLineAP(EventFlags flags) {
 		return;
 	}
 
-    TakeMotifDestination();
 	if (deletePendingSelection()) {
 		return;
 	}
@@ -6511,36 +6497,32 @@ void TextArea::copyToAP(QMouseEvent *event, EventFlags flags) {
 		return;
 	}
 
-	if (!(secondary->selected && !motifDestOwner_)) {
-		if (checkReadOnly()) {
-			buffer_->BufSecondaryUnselect();
-			return;
-		}
-	}
+    if (checkReadOnly()) {
+        buffer_->BufSecondaryUnselect();
+        return;
+    }
 
 	if (secondary->selected) {
-		if (motifDestOwner_) {
-			TextDBlankCursor();
-			std::string textToCopy = buffer_->BufGetSecSelectTextEx();
-			if (primary->selected && rectangular) {
-				int insertPos = cursorPos_;
-				Q_UNUSED(insertPos);
-				buffer_->BufReplaceSelectedEx(textToCopy);
-				TextDSetInsertPosition(buffer_->cursorPosHint_);
-			} else if (rectangular) {
-				int insertPos = cursorPos_;
-				int lineStart = buffer_->BufStartOfLine(insertPos);
-				int column = buffer_->BufCountDispChars(lineStart, insertPos);
-				buffer_->BufInsertColEx(column, lineStart, textToCopy, nullptr, nullptr);
-				TextDSetInsertPosition(buffer_->cursorPosHint_);
-			} else
-				TextInsertAtCursorEx(textToCopy, true, P_autoWrapPastedText);
 
-			buffer_->BufSecondaryUnselect();
-			TextDUnblankCursor();
-		} else {
-			SendSecondarySelection(false);
-		}
+        TextDBlankCursor();
+        std::string textToCopy = buffer_->BufGetSecSelectTextEx();
+        if (primary->selected && rectangular) {
+            int insertPos = cursorPos_;
+            Q_UNUSED(insertPos);
+            buffer_->BufReplaceSelectedEx(textToCopy);
+            TextDSetInsertPosition(buffer_->cursorPosHint_);
+        } else if (rectangular) {
+            int insertPos = cursorPos_;
+            int lineStart = buffer_->BufStartOfLine(insertPos);
+            int column = buffer_->BufCountDispChars(lineStart, insertPos);
+            buffer_->BufInsertColEx(column, lineStart, textToCopy, nullptr, nullptr);
+            TextDSetInsertPosition(buffer_->cursorPosHint_);
+        } else {
+            TextInsertAtCursorEx(textToCopy, true, P_autoWrapPastedText);
+        }
+
+        buffer_->BufSecondaryUnselect();
+        TextDUnblankCursor();
 
 	} else if (primary->selected) {
 		std::string textToCopy = buffer_->BufGetSelectionTextEx();
@@ -6586,20 +6568,6 @@ void TextArea::FinishBlockDrag() {
 	for(auto &c : dragEndCallbacks_) {
 		c.first(this, &endStruct, c.second);
 	}
-}
-
-/*
-** Insert the secondary selection at the motif destination by initiating
-** an INSERT_SELECTION request to the current owner of the MOTIF_DESTINATION
-** selection.  Upon completion, unselect the secondary selection.  If
-** "removeAfter" is true, also delete the secondary selection from the
-** widget's buffer upon completion.
-*/
-void TextArea::SendSecondarySelection(bool removeAfter) {
-	Q_UNUSED(removeAfter);
-#if 0
-	sendSecondary(time, getAtom(XtDisplay(w_), A_MOTIF_DESTINATION), removeAfter ? REMOVE_SECONDARY : UNSELECT_SECONDARY, nullptr, 0);
-#endif
 }
 
 /**
@@ -6782,9 +6750,11 @@ void TextArea::BeginBlockDrag() {
     dragOrigBuf_->BufSetAllEx(buffer_->BufGetAllEx());
 
 	if (sel->rectangular) {
-		dragOrigBuf_->BufRectSelect(sel->start, sel->end, sel->rectStart, sel->rectEnd);
+        dragOrigBuf_->BufRectSelect(sel->start, sel->end, sel->rectStart, sel->rectEnd);
+        syncronizeSelection();
 	} else {
 		dragOrigBuf_->BufSelect(sel->start, sel->end);
+        syncronizeSelection();
 	}
 
 	/* Record the mouse pointer offsets from the top left corner of the
@@ -7076,10 +7046,14 @@ void TextArea::BlockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
 	// Reset the selection and cursor position
 	if (rectangular || overlay) {
         int insRectEnd = insRectStart + origSel->rectEnd - origSel->rectStart;
-		buffer_->BufRectSelect(insStart, insStart + insertInserted, insRectStart, insRectEnd);
+        buffer_->BufRectSelect(insStart, insStart + insertInserted, insRectStart, insRectEnd);
+        syncronizeSelection();
+
 		TextDSetInsertPosition(buffer_->BufCountForwardDispChars(buffer_->BufCountForwardNLines(insStart, dragNLines_), insRectEnd));
 	} else {
 		buffer_->BufSelect(insStart, insStart + origSel->end - origSel->start);
+        syncronizeSelection();
+
 		TextDSetInsertPosition(insStart + origSel->end - origSel->start);
 	}
 
@@ -7226,7 +7200,7 @@ void TextArea::deleteToEndOfLineAP(EventFlags flags) {
 	cancelDrag();
 	if (checkReadOnly())
 		return;
-    TakeMotifDestination();
+
 	if (deletePendingSelection()) {
 		return;
 	}
@@ -7340,33 +7314,33 @@ void TextArea::moveToAP(QMouseEvent *event, EventFlags flags) {
 	}
 
 	if (secondary->selected) {
-		if (motifDestOwner_) {
-			std::string textToCopy = buffer_->BufGetSecSelectTextEx();
-			if (primary->selected && rectangular) {
-				int insertPos = cursorPos_;
-				Q_UNUSED(insertPos);
-				buffer_->BufReplaceSelectedEx(textToCopy);
-				TextDSetInsertPosition(buffer_->cursorPosHint_);
-			} else if (rectangular) {
-				int insertPos = cursorPos_;
-				int lineStart = buffer_->BufStartOfLine(insertPos);
-				int column = buffer_->BufCountDispChars(lineStart, insertPos);
-				buffer_->BufInsertColEx(column, lineStart, textToCopy, nullptr, nullptr);
-				TextDSetInsertPosition(buffer_->cursorPosHint_);
-			} else
-				TextInsertAtCursorEx(textToCopy, true, P_autoWrapPastedText);
 
-			buffer_->BufRemoveSecSelect();
-			buffer_->BufSecondaryUnselect();
-		} else
-			SendSecondarySelection(true);
+        std::string textToCopy = buffer_->BufGetSecSelectTextEx();
+        if (primary->selected && rectangular) {
+            int insertPos = cursorPos_;
+            Q_UNUSED(insertPos);
+            buffer_->BufReplaceSelectedEx(textToCopy);
+            TextDSetInsertPosition(buffer_->cursorPosHint_);
+        } else if (rectangular) {
+            int insertPos = cursorPos_;
+            int lineStart = buffer_->BufStartOfLine(insertPos);
+            int column = buffer_->BufCountDispChars(lineStart, insertPos);
+            buffer_->BufInsertColEx(column, lineStart, textToCopy, nullptr, nullptr);
+            TextDSetInsertPosition(buffer_->cursorPosHint_);
+        } else {
+            TextInsertAtCursorEx(textToCopy, true, P_autoWrapPastedText);
+        }
+
+        buffer_->BufRemoveSecSelect();
+        buffer_->BufSecondaryUnselect();
+
 	} else if (primary->selected) {
 		std::string textToCopy = buffer_->BufGetRangeEx(primary->start, primary->end);
         TextDSetInsertPosition(TextDXYToPosition(event->pos()));
 		TextInsertAtCursorEx(textToCopy, false, P_autoWrapPastedText);
 
 		buffer_->BufRemoveSelected();
-		buffer_->BufUnselect();
+        buffer_->BufUnselect();
 	} else {
         TextDSetInsertPosition(TextDXYToPosition(event->pos()));
 		MovePrimarySelection(false);
@@ -7424,6 +7398,8 @@ void TextArea::exchangeAP(QMouseEvent *event, EventFlags flags) {
 		TextDSetInsertPosition(buffer_->cursorPosHint_);
 	} else {
 		buffer_->BufSelect(newPrimaryStart, newPrimaryEnd);
+        syncronizeSelection();
+
 		TextDSetInsertPosition(newPrimaryEnd);
 	}
 	checkAutoShowInsertPos();
@@ -8430,7 +8406,6 @@ void TextArea::deleteSelectionAP(EventFlags flags) {
         return;
     }
 
-    TakeMotifDestination();
     deletePendingSelection();
 }
 
@@ -8448,7 +8423,6 @@ void TextArea::deleteNextWordAP(EventFlags flags) {
         return;
     }
 
-    TakeMotifDestination();
     if (deletePendingSelection()) {
         return;
     }

@@ -1459,22 +1459,6 @@ void MainWindow::ShowLineNumbers(bool state) {
     int reqCols = 0;
     if (state) {
         reqCols = updateLineNumDisp();
-    } else {
-        // NOTE(eteran): here reqCols is 0, so the code at the bottom of this
-        // branch seems redundant to the code at the very bottom of this branch
-#if 0
-        Dimension windowWidth;
-        XtVaGetValues(shell_, XmNwidth, &windowWidth, nullptr);
-        int marginWidth = textD_of(textArea_)->getMarginWidth();
-        XtVaSetValues(shell_, XmNwidth, windowWidth - textD->getRect().left + marginWidth, nullptr);
-#endif
-
-        if(DocumentWidget *doc = currentDocument()) {
-            QList<TextArea *> areas = doc->textPanes();
-            for(TextArea *area : areas) {
-                area->setLineNumCols(0);
-            }
-        }
     }
 
     /* line numbers panel is shell-level, hence other
@@ -1482,7 +1466,6 @@ void MainWindow::ShowLineNumbers(bool state) {
     QList<DocumentWidget *> docs = openDocuments();
     for(DocumentWidget *doc : docs) {
 
-        // TODO(eteran): seems redundant now...
         showLineNumbers_ = state;
 
         QList<TextArea *> areas = doc->textPanes();

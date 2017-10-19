@@ -286,15 +286,15 @@ void FreeHighlightingDataEx(DocumentWidget *window) {
 ** text widget and redisplay.
 */
 void AttachHighlightToWidgetEx(TextArea *area, DocumentWidget *window) {
-    auto highlightData = window->highlightData_;
-
-    area->TextDAttachHighlightData(
-                highlightData->styleBuffer,
-                highlightData->styleTable,
-                highlightData->nStyles,
-                UNFINISHED_STYLE,
-                handleUnparsedRegionCBEx,
-                window);
+    if(auto highlightData = window->highlightData_) {
+        area->TextDAttachHighlightData(
+                    highlightData->styleBuffer,
+                    highlightData->styleTable,
+                    highlightData->nStyles,
+                    UNFINISHED_STYLE,
+                    handleUnparsedRegionCBEx,
+                    window);
+    }
 }
 
 /*
