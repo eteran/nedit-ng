@@ -3227,7 +3227,7 @@ static int toupperMS(DocumentWidget *document, DataValue *argList, int nArgs, Da
 
     // Allocate a new string and copy an uppercased version of the string it
     for(char &ch : string) {
-        ch = toupper(static_cast<uint8_t>(ch));
+        ch = safe_ctype<toupper>(ch);
     }
 
     result->tag = STRING_TAG;
@@ -3248,7 +3248,7 @@ static int tolowerMS(DocumentWidget *document, DataValue *argList, int nArgs, Da
 
     // Allocate a new string and copy an uppercased version of the string it
     for(char &ch : string) {
-        ch = tolower(static_cast<uint8_t>(ch));
+        ch = safe_ctype<tolower>(ch);
     }
 
     result->tag = STRING_TAG;

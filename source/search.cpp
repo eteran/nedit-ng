@@ -27,6 +27,7 @@
 *******************************************************************************/
 
 #include "search.h"
+#include "utils.h"
 #include "DialogFind.h"
 #include "DialogMultiReplace.h"
 #include "DialogReplace.h"
@@ -1638,9 +1639,9 @@ static bool searchLiteralWord(view::string_view string, view::string_view search
 				lcPtr++;
 
                 if (ucPtr == ucString.end() &&                                                                   // matched whole string
-                    (cignore_R || isspace(static_cast<uint8_t>(*tempPtr)) || strchr(delimiters, *tempPtr)) &&    // next char right delimits word ?
+                    (cignore_R || safe_ctype<isspace>(*tempPtr) || strchr(delimiters, *tempPtr)) &&    // next char right delimits word ?
                     (cignore_L || filePtr == &string[0] ||                                                       // border case
-                     isspace(static_cast<uint8_t>(filePtr[-1])) || strchr(delimiters, filePtr[-1]))) {           // next char left delimits word ?
+                     safe_ctype<isspace>(filePtr[-1]) || strchr(delimiters, filePtr[-1]))) {           // next char left delimits word ?
 
                     *startPos = filePtr - &string[0];
                     *endPos   = tempPtr - &string[0];
@@ -1659,11 +1660,11 @@ static bool searchLiteralWord(view::string_view string, view::string_view search
 		delimiters = delimiterString.data();
     }
 
-    if (isspace(static_cast<uint8_t>(searchString[0])) || strchr(delimiters, searchString[0])) {
+    if (safe_ctype<isspace>(searchString[0]) || strchr(delimiters, searchString[0])) {
 		cignore_L = true;
 	}
 
-    if (isspace(static_cast<uint8_t>(searchString[searchString.size() - 1])) || strchr(delimiters, searchString[searchString.size() - 1])) {
+    if (safe_ctype<isspace>(searchString[searchString.size() - 1]) || strchr(delimiters, searchString[searchString.size() - 1])) {
 		cignore_R = true;
 	}
 

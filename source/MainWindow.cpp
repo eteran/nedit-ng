@@ -2498,7 +2498,7 @@ void MainWindow::action_Shift_Replace_Again_triggered() {
  * @param mark
  */
 void MainWindow::action_Mark(const QString &mark) {
-    if (mark.size() != 1 || !isalpha(static_cast<uint8_t>(mark[0].toLatin1()))) {
+    if (mark.size() != 1 || !safe_ctype<isalpha>(mark[0].toLatin1())) {
         qWarning("NEdit: action requires a single-letter label");
         QApplication::beep();
         return;
@@ -2576,7 +2576,7 @@ void MainWindow::action_Mark_Shortcut_triggered() {
 }
 
 void MainWindow::action_Goto_Mark(const QString &mark, bool extend) {
-    if (mark.size() != 1 || !isalpha(static_cast<uint8_t>(mark[0].toLatin1()))) {
+    if (mark.size() != 1 || !safe_ctype<isalpha>(mark[0].toLatin1())) {
         qWarning("NEdit: action requires a single-letter label");
         QApplication::beep();
         return;

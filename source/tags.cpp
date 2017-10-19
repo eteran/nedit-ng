@@ -879,13 +879,13 @@ static int fakeRegExSearchEx(view::string_view buffer, const char *searchString,
 			 */
 			*outPtr++ = '\\';
 			*outPtr++ = *inPtr++;
-		} else if (isspace((uint8_t)*inPtr)) { // col. multiple spaces 
+        } else if (safe_ctype<isspace>(*inPtr)) { // col. multiple spaces
 			*outPtr++ = '\\';
 			*outPtr++ = 's';
 			*outPtr++ = '+';
 			do {
 				inPtr++;
-			} while (isspace((uint8_t)*inPtr));
+            } while (safe_ctype<isspace>(*inPtr));
 		} else { // simply copy all other characters 
 			*outPtr++ = *inPtr++;
 		}

@@ -4032,7 +4032,7 @@ int DocumentWidget::findDef(TextArea *area, const QString &value, Mode search_ty
 
     // make sure that the whole value is ascii
     auto p = std::find_if(value.begin(), value.end(), [](QChar ch) {
-        return !::isascii(ch.toLatin1());
+        return !safe_ctype<isascii>(ch.toLatin1());
     });
 
     if (p == value.end()) {

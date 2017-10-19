@@ -29,6 +29,7 @@
 #include "interpret.h"
 #include "DocumentWidget.h"
 #include "menu.h"
+#include "utils.h"
 #include <cmath>
 
 namespace {
@@ -2632,7 +2633,7 @@ bool StringToNum(const std::string &string, int *number) {
         ++it;
     }
 
-    while (isdigit(static_cast<unsigned char>(*it))) {
+    while (safe_ctype<isdigit>(*it)) {
         ++it;
     }
 
@@ -2665,7 +2666,7 @@ bool StringToNum(const char *string, int *number) {
         ++p;
     }
 
-    while (isdigit(static_cast<unsigned char>(*p))) {
+    while (safe_ctype<isdigit>(*p)) {
         ++p;
     }
 
@@ -2687,7 +2688,7 @@ bool StringToNum(const char *string, int *number) {
     return true;
 }
 
-#ifdef DEBUG_DISASSEMBLER // dumping values in disassembly or stack dump 
+#if defined(DEBUG_DISASSEMBLER) // dumping values in disassembly or stack dump
 static void dumpVal(DataValue dv) {
 	switch (dv.tag) {
 	case INT_TAG:
@@ -2701,7 +2702,7 @@ static void dumpVal(DataValue dv) {
 			printf("s=<nullptr>");
 		} else {
 			for (k = 0; k < sizeof(s) - 1 && src[k]; k++) {
-				s[k] = isprint(static_cast<unsigned char>(src[k])) ? src[k] : '?';
+                s[k] = safe_ctype<isprint>(src[k]) ? src[k] : '?';
 			}
 			s[k] = 0;
 			printf("s=\"%s\"%s[%d]", s, src[k] ? "..." : "", strlen(src));

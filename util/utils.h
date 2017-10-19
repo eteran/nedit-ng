@@ -36,4 +36,9 @@ QString GetUserNameEx();
 QString PrependHomeEx(const QString &filename);
 QString ErrorString(int error);
 
+template <int (&F) (int)>
+int safe_ctype (unsigned char c) {
+    return F(c);
+}
+
 #endif
