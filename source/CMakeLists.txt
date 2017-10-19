@@ -158,7 +158,6 @@ add_executable(nedit-ng
 	highlightData.cpp
 	interpret.cpp
 	macro.cpp
-	menu.cpp
 	nedit.cpp
 	preferences.cpp
 	rbTree.cpp

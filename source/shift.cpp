@@ -30,6 +30,7 @@
 #include "DocumentWidget.h"
 #include "TextArea.h"
 #include "TextBuffer.h"
+#include "utils.h"
 #include <memory>
 
 static std::string makeIndentString(int indent, int tabDist, int allowTabs);
@@ -199,7 +200,7 @@ static void changeCaseEx(DocumentWidget *window, TextArea *area, bool makeUpper)
             return;
         }
         *bufChar = buf->BufGetCharacter(cursorPos - 1);
-        *bufChar = makeUpper ? toupper(static_cast<unsigned char>(*bufChar)) : tolower(static_cast<unsigned char>(*bufChar));
+        *bufChar = makeUpper ? safe_ctype<toupper>(*bufChar) : safe_ctype<tolower>(*bufChar);
         buf->BufReplaceEx(cursorPos - 1, cursorPos, bufChar);
     } else {
         bool modified = false;
@@ -208,7 +209,7 @@ static void changeCaseEx(DocumentWidget *window, TextArea *area, bool makeUpper)
 
         for(char &ch: text) {
             char oldChar = ch;
-            ch = makeUpper ? toupper(static_cast<unsigned char>(ch)) : tolower(static_cast<unsigned char>(ch));
+            ch = makeUpper ? safe_ctype<toupper>(ch) : safe_ctype<tolower>(ch);
             if (ch != oldChar) {
                 modified = true;
             }

@@ -1948,7 +1948,7 @@ static std::string upCaseStringEx(view::string_view inString) {
 	std::string str;
 	str.reserve(inString.size());
 	std::transform(inString.begin(), inString.end(), std::back_inserter(str), [](char ch) {
-        return toupper(static_cast<uint8_t>(ch));
+        return safe_ctype<toupper>(ch);
 	});
 	return str;
 }
@@ -1958,7 +1958,7 @@ static std::string downCaseStringEx(view::string_view inString) {
     std::string str;
 	str.reserve(inString.size());
 	std::transform(inString.begin(), inString.end(), std::back_inserter(str), [](char ch) {
-        return tolower(static_cast<uint8_t>(ch));
+        return safe_ctype<tolower>(ch);
 	});
 	return str;
 }
