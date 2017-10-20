@@ -875,6 +875,8 @@ bool SearchAndReplaceEx(MainWindow *window, DocumentWidget *document, TextArea *
         char replaceResult[SEARCHMAX];
         const std::string foundString = document->buffer_->BufGetRangeEx(searchExtentBW, searchExtentFW + 1);
 
+        QString delimieters = GetWindowDelimitersEx(document);
+
         replaceUsingREEx(
             searchString.toLatin1().data(),
             replaceString.toLatin1().data(),
@@ -883,7 +885,7 @@ bool SearchAndReplaceEx(MainWindow *window, DocumentWidget *document, TextArea *
             replaceResult,
             SEARCHMAX,
             startPos == 0 ? '\0' : document->buffer_->BufGetCharacter(startPos - 1),
-            GetWindowDelimitersEx(document).toLatin1().data(),
+            delimieters.isNull() ? nullptr :delimieters.toLatin1().data(),
             defaultRegexFlags(searchType));
 
         document->buffer_->BufReplaceEx(startPos, endPos, replaceResult);
@@ -1186,6 +1188,8 @@ bool ReplaceAllEx(MainWindow *window, DocumentWidget *document, TextArea *area, 
     // view the entire text buffer from the text area widget as a string
     view::string_view fileString = document->buffer_->BufAsStringEx();
 
+    QString delimieters = GetWindowDelimitersEx(document);
+
     bool ok;
     std::string newFileString = ReplaceAllInStringEx(
                 fileString,
@@ -1194,7 +1198,7 @@ bool ReplaceAllEx(MainWindow *window, DocumentWidget *document, TextArea *area, 
                 searchType,
                 &copyStart,
                 &copyEnd,
-                GetWindowDelimitersEx(document).toLatin1().data(),
+                delimieters.isNull() ? nullptr : delimieters.toLatin1().data(),
                 &ok);
 
     if(!ok) {
@@ -1244,7 +1248,7 @@ std::string ReplaceAllInStringEx(view::string_view inString, const QString &sear
                 searchType,
                 copyStart,
                 copyEnd,
-                delimiters.toLatin1().data(),
+                delimiters.isNull() ? nullptr : delimiters.toLatin1().data(),
                 ok);
 }
 
@@ -1570,6 +1574,7 @@ bool SearchWindowEx(MainWindow *window, DocumentWidget *document, SearchDirectio
 ** characters, or simply passed as null for the default delimiter set.
 */
 bool SearchString(view::string_view string, const QString &searchString, SearchDirection direction, SearchType searchType, WrapMode wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const QString &delimiters) {
+
     return SearchString(
                 string,
                 searchString,
@@ -1581,7 +1586,8 @@ bool SearchString(view::string_view string, const QString &searchString, SearchD
                 endPos,
                 searchExtentBW,
                 searchExtentFW,
-                delimiters.toLatin1().data());
+                delimiters.isNull() ? nullptr : delimiters.toLatin1().data());
+
 }
 
 bool SearchString(view::string_view string, const QString &searchString, SearchDirection direction, SearchType searchType, WrapMode wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters) {
@@ -2088,7 +2094,7 @@ static bool replaceUsingREEx(const QString &searchStr, const QString &replaceStr
                 destStr,
                 maxDestLen,
                 prevChar,
-                delimiters.toLatin1().data(),
+                delimiters.isNull() ? nullptr : delimiters.toLatin1().data(),
                 defaultFlags);
 }
 

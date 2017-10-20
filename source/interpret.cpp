@@ -155,8 +155,6 @@ static QList<char *> AllocatedStrings;
 
 static QList<ArrayEntry *> AllocatedSparseArrayEntries;
 
-
-
 // Temporary global data for use while accumulating programs
 static QList<Symbol *> LocalSymList;     // symbols local to the program
 static Inst Prog[PROGRAM_SIZE];          // the program
@@ -171,8 +169,8 @@ static DataValue *FrameP;                      // frame pointer (start of local 
 static Inst *PC;                               // program counter during execution
 static char *ErrMsg;                           // global for returning error messages from executing functions
 
-static DocumentWidget *InitiatingWindowEx = nullptr;   // window from which macro was run
-static DocumentWidget *FocusWindowEx;                  // window on which macro commands operate
+static DocumentWidget *InitiatingWindowEx;     // window from which macro was run
+static DocumentWidget *FocusWindowEx;          // window on which macro commands operate
 
 static bool PreemptRequest;                    // passes preemption requests from called routines back up to the interpreter
 
@@ -213,7 +211,8 @@ void InitMacroGlobals() {
 	static DataValue dv = INIT_DATA_VALUE;
 
 	// Add action routines from NEdit menus and text widget 
-#if 0 // NOTE(eteran): we are replacing these with wrappers around Q_SLOTS
+    // NOTE(eteran): we are replacing these with wrappers around Q_SLOTS
+#if 0
     XtActionsRec *actions;
     int nActions;
 
@@ -2694,7 +2693,7 @@ static void dumpVal(DataValue dv) {
 		printf("i=%d", dv.val.n);
 		break;
 	case STRING_TAG: {
-		int k;
+        size_t k;
 		char s[21];
 		char *src = dv.val.str.rep;
 		if (!src) {
@@ -2704,7 +2703,7 @@ static void dumpVal(DataValue dv) {
                 s[k] = safe_ctype<isprint>(src[k]) ? src[k] : '?';
 			}
 			s[k] = 0;
-			printf("s=\"%s\"%s[%d]", s, src[k] ? "..." : "", strlen(src));
+            printf("s=\"%s\"%s[%lu]", s, src[k] ? "..." : "", strlen(src));
 		}
 	} break;
 	case ARRAY_TAG:
@@ -2714,11 +2713,11 @@ static void dumpVal(DataValue dv) {
 		if (!dv.val.inst) {
 			printf("<no value>");
 		} else {
-			printf("?%8p", dv.val.inst);
+            printf("?%8p", static_cast<void *>(dv.val.inst));
 		}
 		break;
 	default:
-		printf("UNKNOWN DATA TAG %d ?%8p", dv.tag, dv.val.inst);
+        printf("UNKNOWN DATA TAG %d ?%8p", dv.tag, static_cast<void *>(dv.val.inst));
 		break;
 	}
 }
@@ -2775,7 +2774,7 @@ static void disasm(Inst *inst, int nInstr) {
 
 	printf("\n");
 	for (i = 0; i < nInstr; ++i) {
-		printf("Prog %8p ", &inst[i]);
+        printf("Prog %8p ", static_cast<void *>(&inst[i]));
 		for (j = 0; j < N_OPS; ++j) {
 			if (inst[i].func == OpFns[j]) {
 				printf("%22s ", opNames[j]);
@@ -2787,7 +2786,7 @@ static void disasm(Inst *inst, int nInstr) {
 					}
 					++i;
 				} else if (j == OP_BRANCH || j == OP_BRANCH_FALSE || j == OP_BRANCH_NEVER || j == OP_BRANCH_TRUE) {
-					printf("to=(%d) %p", inst[i + 1].value, &inst[i + 1] + inst[i + 1].value);
+                    printf("to=(%d) %p", inst[i + 1].value, static_cast<void *>(&inst[i + 1] + inst[i + 1].value));
 					++i;
 				} else if (j == OP_SUBR_CALL) {
 					printf("%s (%d arg)", inst[i + 1].sym->name.c_str(), inst[i + 2].value);
@@ -2796,7 +2795,7 @@ static void disasm(Inst *inst, int nInstr) {
 					printf("%s in", inst[i + 1].sym->name.c_str());
 					++i;
 				} else if (j == OP_ARRAY_ITER) {
-					printf("%s = %s++ end-loop=(%d) %p", inst[i + 1].sym->name.c_str(), inst[i + 2].sym->name.c_str(), inst[i + 3].value, &inst[i + 3] + inst[i + 3].value);
+                    printf("%s = %s++ end-loop=(%d) %p", inst[i + 1].sym->name.c_str(), inst[i + 2].sym->name.c_str(), inst[i + 3].value, static_cast<void *>(&inst[i + 3] + inst[i + 3].value));
 					i += 3;
 				} else if (j == OP_ARRAY_REF || j == OP_ARRAY_DELETE || j == OP_ARRAY_ASSIGN) {
 					printf("nDim=%d", inst[i + 1].value);
@@ -2831,7 +2830,7 @@ static void stackdump(int n, int extra) {
 	char buffer[sizeof(STACK_DUMP_ARG_PREFIX) + TYPE_INT_STR_SIZE(int)];
 	printf("Stack ----->\n");
 	for (i = 0; i < n + extra; i++) {
-		char *pos = "";
+        const char *pos = "";
 		DataValue *dv = &StackP[-i - 1];
 		if (dv < TheStack) {
 			printf("--------------Stack base--------------\n");
@@ -2840,7 +2839,7 @@ static void stackdump(int n, int extra) {
 		offset = dv - FrameP;
 
 		printf("%4.4s", i < n ? ">>>>" : "");
-		printf("%8p ", dv);
+        printf("%8p ", static_cast<void *>(dv));
 		switch (offset) {
 		case 0:
 			pos = "FrameP";
@@ -2859,7 +2858,8 @@ static void stackdump(int n, int extra) {
 			break;
 		default:
 			if (offset < -FP_TO_ARGS_DIST && offset >= -FP_TO_ARGS_DIST - nArgs) {
-				sprintf(pos = buffer, STACK_DUMP_ARG_PREFIX "%d", offset + FP_TO_ARGS_DIST + nArgs + 1);
+                pos = buffer;
+                sprintf(buffer, STACK_DUMP_ARG_PREFIX "%d", offset + FP_TO_ARGS_DIST + nArgs + 1);
 			}
 			break;
 		}

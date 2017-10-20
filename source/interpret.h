@@ -102,13 +102,6 @@ enum Operations {
 	OP_PUSH_ARG_ARRAY
 };
 
-enum TypeTags {
-	NO_TAG, 
-	INT_TAG, 
-	STRING_TAG, 
-	ARRAY_TAG
-};
-
 enum ExecReturnCodes {
 	MACRO_TIME_LIMIT, 
 	MACRO_PREEMPT, 
@@ -136,17 +129,26 @@ struct NString {
 // but first we need to figure out what to do about the fact that half of these
 // entries get used with a "NO_TAG" type.
 
+enum TypeTags {
+    NO_TAG,
+    INT_TAG,
+    STRING_TAG,
+    ARRAY_TAG
+};
+
 struct DataValue {
 	TypeTags tag;
 	
 	union {
         int            n;
         NString        str;
-        BuiltInSubrEx  subr;
-		Program*       prog;
-        Inst*          inst;
-		DataValue*     dataval;
         ArrayEntry*    arrayPtr;
+
+        BuiltInSubrEx  subr;    // no tag?
+        Program*       prog;    // no tag?
+        Inst*          inst;    // no tag?
+        DataValue*     dataval; // no tag?
+
 	} val;
 };
 

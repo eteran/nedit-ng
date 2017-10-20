@@ -23,6 +23,10 @@ public:
     virtual bool eventFilter(QObject *obj, QEvent *event) override;
 
 public:
+    static QString escapeString(const QString &s);
+    static QString quoteString(const QString &s);
+
+public:
     void startRecording(DocumentWidget *document);
     void stopRecording();
     void cancelRecording();

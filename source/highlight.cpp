@@ -1452,7 +1452,15 @@ static bool parseString(HighlightData *pattern, const char **string, char **styl
 	const char *stringPtr = *string;
 	char *stylePtr        = *styleString;
 	
-	while (pattern->subPatternRE->ExecRE(stringPtr, anchored ? *string + 1 : *string + length + 1, false, *prevChar, succChar, delimiters.toLatin1().data(), lookBehindTo, match_till)) {
+    while (pattern->subPatternRE->ExecRE(
+               stringPtr,
+               anchored ? *string + 1 : *string + length + 1,
+               false,
+               *prevChar,
+               succChar,
+               delimiters.isNull() ? nullptr : delimiters.toLatin1().data(),
+               lookBehindTo,
+               match_till)) {
 	
 		/* Beware of the case where only one real branch exists, but that
 		   branch has sub-branches itself. In that case the top_branch refers
@@ -1479,7 +1487,15 @@ static bool parseString(HighlightData *pattern, const char **string, char **styl
 					subPat = pattern->subPatterns[i];
 					if (subPat->colorOnly) {
 						if (!subExecuted) {
-							if (!pattern->endRE->ExecRE(savedStartPtr, savedStartPtr + 1, false, savedPrevChar, succChar, delimiters.toLatin1().data(), lookBehindTo, match_till)) {
+                            if (!pattern->endRE->ExecRE(
+                                        savedStartPtr,
+                                        savedStartPtr + 1,
+                                        false,
+                                        savedPrevChar,
+                                        succChar,
+                                        delimiters.isNull() ? nullptr : delimiters.toLatin1().data(),
+                                        lookBehindTo,
+                                        match_till)) {
                                 qCritical("NEdit: Internal error, failed to recover end match in parseString");
 								return false;
 							}
@@ -1585,7 +1601,15 @@ static bool parseString(HighlightData *pattern, const char **string, char **styl
 			subSubPat = subPat->subPatterns[i];
 			if (subSubPat->colorOnly) {
 				if (!subExecuted) {
-					if (!subPat->startRE->ExecRE(savedStartPtr, savedStartPtr + 1, false, savedPrevChar, succChar, delimiters.toLatin1().data(), lookBehindTo, match_till)) {
+                    if (!subPat->startRE->ExecRE(
+                                savedStartPtr,
+                                savedStartPtr + 1,
+                                false,
+                                savedPrevChar,
+                                succChar,
+                                delimiters.isNull() ? nullptr : delimiters.toLatin1().data(),
+                                lookBehindTo,
+                                match_till)) {
                         qCritical("NEdit: Internal error, failed to recover start match in parseString");
 						return false;
 					}

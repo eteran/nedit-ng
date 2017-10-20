@@ -11,7 +11,6 @@ namespace {
 #if 0
 // Arrays for translating escape characters in escapeStringChars
 const char ReplaceChars[] = "\\\"ntbrfav";
-const char EscapeChars[] = "\\\"\n\t\b\r\f\a\v";
 #endif
 
 // List of actions not useful when learning a macro sequence (also see below)
@@ -62,10 +61,38 @@ QLatin1String RedundantActions[] = {
     QLatin1String("start_incremental_find")
 };
 
-
 CommandRecorder *instance = nullptr;
 QMutex instanceMutex;
 
+}
+
+/**
+ * @brief CommandRecorder::quoteString
+ * @param s
+ * @return
+ */
+QString CommandRecorder::quoteString(const QString &s) {
+    return tr("\"%1\"").arg(s);
+}
+
+/**
+ * @brief CommandRecorder::escapeString
+ * @param s
+ * @return
+ */
+QString CommandRecorder::escapeString(const QString &s) {
+
+    static const QString EscapeChars = QLatin1String("\\\"\n\t\b\r\f\a\v");
+
+    QString r;
+    r.reserve(s.size());
+    for(QChar ch : s) {
+        if(EscapeChars.contains(ch)) {
+            r.append(QLatin1Char('\\'));
+        }
+        r.append(ch);
+    }
+    return r;
 }
 
 /**
@@ -110,8 +137,6 @@ bool CommandRecorder::eventFilter(QObject *obj, QEvent *event) {
 void CommandRecorder::lastActionHook(QObject *obj, const WindowMenuEvent *ev) {
     Q_UNUSED(obj);
     Q_UNUSED(ev);
-
-    qDebug("Menu Event! : %s", qPrintable(ev->toString()));
 
     // TODO(eteran): implement this!
 }

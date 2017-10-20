@@ -3373,12 +3373,12 @@ void MainWindow::defaultSyntaxGroupTriggered(QAction *action) {
 }
 
 void MainWindow::on_action_Default_Syntax_Recognition_Patterns_triggered() {
-    // TODO(eteran): eventually move this logic to be local
+    // TODO(eteran): 2.0, eventually move this logic to be local
     EditHighlightPatterns(this);
 }
 
 void MainWindow::on_action_Default_Syntax_Text_Drawing_Styles_triggered() {
-    // TODO(eteran): eventually move this logic to be local
+    // TODO(eteran): 2.0, eventually move this logic to be local
     EditHighlightStyles(this, QString());
 }
 
@@ -4256,6 +4256,7 @@ bool MainWindow::CloseAllFilesAndWindowsEx() {
         // I don't think such measures are necessary anymore. But I will
         // include the original comment just in case..
         //
+
         /*
          * When we're exiting through a macro, the document running the
          * macro does not disappear from the list, so we could get stuck

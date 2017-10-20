@@ -734,7 +734,7 @@ static QList<Tag> LookupTagFromList(QList<tagFile> *FileList, const QString &nam
 		
             if (tf.loaded) {
                 if (::stat(tf.filename.toLatin1().data(), &statbuf) != 0) { //
-                    qWarning("NEdit: Error getting status for tag file %s", tf.filename.toLatin1().data());
+                    qWarning("NEdit: Error getting status for tag file %s", qPrintable(tf.filename));
 				} else {
                     if (tf.date == statbuf.st_mtime) {
 						// current tags file tf is already loaded and up to date 
@@ -1432,7 +1432,7 @@ static int nextTFBlock(std::istream &is, QString &header, QString &body, int *bl
         if (!is)
             return TF_ERROR_EOF;
 		if (lineEmpty(line)) {
-            qWarning("NEdit: Warning: empty calltip block:\n   \"%s\"", header.toLatin1().data());
+            qWarning("NEdit: Warning: empty calltip block:\n   \"%s\"", qPrintable(header));
 			return TF_ERROR;
 		}
         *blkLine = *currLine;
@@ -1480,7 +1480,7 @@ static int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
     QList<tf_alias> aliases;
 
 	if (recLevel > MAX_TAG_INCLUDE_RECURSION_LEVEL) {
-        qWarning("NEdit: Warning: Reached recursion limit before loading calltips file:\n\t%s", tipsFile.toLatin1().data());
+        qWarning("NEdit: Warning: Reached recursion limit before loading calltips file:\n\t%s", qPrintable(tipsFile));
 		return 0;
 	}
 
@@ -1533,7 +1533,7 @@ static int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
             auto ss = body;
             QStringList segments = ss.split(QLatin1Char(':'));
             for(const QString &tipIncFile : segments) {
-                //qDebug("NEdit: including tips file '%s'", tipIncFile.toLatin1().data());
+                //qDebug("NEdit: including tips file '%s'", qPrintable(tipIncFile));
                 nTipsAdded += loadTipsFile(tipIncFile, index, recLevel + 1);
             }
             break;

@@ -88,7 +88,10 @@ void rangesetRefreshAllRanges(Rangeset *rangeset) {
 ** chosen appropriately.
 */
 
-// TODO(eteran): is this just an implementation of std::lower_bound?
+// NOTE(eteran): this just an implementation of std::lower_bound.
+//               though it is probably better to replace the fundamental
+//               data-structures instead of replacing a few random
+//               functions
 int at_or_before(int *table, int base, int len, int val) {
 	int lo, mid = 0, hi;
 
@@ -583,8 +586,9 @@ int Rangeset::RangesetFindRangeOfPos(int pos, int incl_end) const {
 	}
 	
     auto ranges = reinterpret_cast<int *>(ranges_); // { s1,e1, s2,e2, s3,e3,... }
-    int len = n_ranges_ * 2;
-	int ind = at_or_before(ranges, 0, len, pos);
+    const int len = n_ranges_ * 2;
+
+    int ind = at_or_before(ranges, 0, len, pos);
 
 	if (ind == len)
 		return -1; // beyond end 

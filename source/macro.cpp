@@ -751,7 +751,7 @@ static WrapMode searchWrap(DataValue *argList, int nArgs, int index) {
 bool StringToSearchType(const QString &string, SearchType *searchType) {
 
     static const struct {
-        QString name;
+        QLatin1String name;
         SearchType type;
     } searchTypeStrings[] = {
         { QLatin1String("literal"),     SearchType::SEARCH_LITERAL },
@@ -2764,7 +2764,7 @@ void RepeatMacroEx(DocumentWidget *document, const QString &command, int how) {
     int stoppedAt;
     Program *const prog = ParseMacroEx(loopedCmd, &errMsg, &stoppedAt);
     if(!prog) {
-        qWarning("NEdit: internal error, repeat macro syntax wrong: %s", errMsg.toLatin1().data());
+        qWarning("NEdit: internal error, repeat macro syntax wrong: %s", qPrintable(errMsg));
         return;
     }
 
@@ -2831,9 +2831,6 @@ void learnActionHook(Widget w, XtPointer clientData, String actionName, XEvent *
 ** than having users run a bunch of them at once together.
 */
 
-// NOTE(eteran): we are using a QFuture to simulate this, but I'm not 100% sure
-//               that it is a perfect match. We can also try something like a
-//               sinle shot QTimer with a timeout of zero.
 bool continueWorkProcEx(DocumentWidget *document) {
 
     auto cmdData = document->macroCmdData_;

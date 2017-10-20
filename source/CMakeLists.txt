@@ -125,6 +125,8 @@ add_executable(nedit-ng
 	DialogPromptList.cpp
 	DialogPromptString.cpp
 	DialogRepeat.cpp
+	TextEditEvent.cpp
+	WindowMenuEvent.cpp
 	DialogReplace.cpp
 	DialogShellMenu.cpp
 	DialogSmartIndent.cpp

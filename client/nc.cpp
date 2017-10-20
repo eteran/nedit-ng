@@ -80,7 +80,7 @@ struct {
  */
 void nextArg(const QStringList &args, int *argIndex) {
     if (*argIndex + 1 >= args.size()) {
-        fprintf(stderr, "nc: %s requires an argument\n%s", args[*argIndex].toLatin1().data(), cmdLineHelp);
+        fprintf(stderr, "nc: %s requires an argument\n%s", qPrintable(args[*argIndex]), cmdLineHelp);
         exit(EXIT_FAILURE);
     }
     (*argIndex)++;
@@ -238,7 +238,7 @@ bool parseCommandLine(const QStringList &args, CommandLine *commandLine) {
             exit(EXIT_SUCCESS);
         } else if (opts && (args[i][0] == QLatin1Char('-'))) {
 
-            fprintf(stderr, "nc: Unrecognized option %s\n%s", args[i].toLatin1().data(), cmdLineHelp);
+            fprintf(stderr, "nc: Unrecognized option %s\n%s", qPrintable(args[i]), cmdLineHelp);
             exit(EXIT_FAILURE);
         } else {
             if (ParseFilenameEx(args[i], &name, &path) != 0) {

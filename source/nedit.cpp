@@ -104,7 +104,7 @@ int main(int argc, char *argv[]) {
 
             if (strcmp(argv[i], "-V") == 0 || strcmp(argv[i], "-version") == 0) {
                 QString infoString = DialogAbout::createInfoString();
-                printf("%s", infoString.toLatin1().data());
+                printf("%s", qPrintable(infoString));
 				exit(EXIT_SUCCESS);
 			}
 		}
@@ -286,14 +286,14 @@ int main(int argc, char *argv[]) {
             nextArg(args, &i); // already processed, skip
         } else if (opts && (args[i] == QLatin1String("-V") || args[i] == QLatin1String("-version"))) {
             QString infoString = DialogAbout::createInfoString();
-            printf("%s", infoString.toLatin1().data());
+            printf("%s", qPrintable(infoString));
 			exit(EXIT_SUCCESS);
         } else if (opts && (args[i] == QLatin1String("-h") || args[i] == QLatin1String("-help"))) {
 			fprintf(stderr, "%s", cmdLineHelp);
 			exit(EXIT_SUCCESS);
         } else if (opts && (args[i][0] == QLatin1Char('-'))) {
 
-            fprintf(stderr, "nedit: Unrecognized option %s\n%s", args[i].toLatin1().data(), cmdLineHelp);
+            fprintf(stderr, "nedit: Unrecognized option %s\n%s", qPrintable(args[i]), cmdLineHelp);
 			exit(EXIT_FAILURE);
 		} else {
 
@@ -374,7 +374,7 @@ int main(int argc, char *argv[]) {
                 }
 
 			} else {
-                fprintf(stderr, "nedit: file name too long: %s\n", args[i].toLatin1().data());
+                fprintf(stderr, "nedit: file name too long: %s\n", qPrintable(args[i]));
 			}
 
 			// -line/+n does only affect the file following this switch 
@@ -415,7 +415,7 @@ int main(int argc, char *argv[]) {
 
 static void nextArg(const QStringList &args, int *argIndex) {
     if (*argIndex + 1 >= args.size()) {
-        fprintf(stderr, "NEdit: %s requires an argument\n%s", args[*argIndex].toLatin1().data(), cmdLineHelp);
+        fprintf(stderr, "NEdit: %s requires an argument\n%s", qPrintable(args[*argIndex]), cmdLineHelp);
 		exit(EXIT_FAILURE);
 	}
 	(*argIndex)++;
