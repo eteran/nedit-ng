@@ -4091,8 +4091,7 @@ static int calltipIDMV(DocumentWidget *document, DataValue *argList, int nArgs, 
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
 
-    result->tag = INT_TAG;
-    result->val.n = document->toWindow()->lastFocus_->TextDGetCalltipID(0);
+    *result = to_value(document->toWindow()->lastFocus_->TextDGetCalltipID(0));
     return true;
 }
 
@@ -4113,8 +4112,7 @@ static int replaceAllInSelectionMS(DocumentWidget *document, DataValue *argList,
 
     SearchType type = searchType(argList, nArgs, 2);
 
-    result->tag = INT_TAG;
-    result->val.n = 0;
+    *result = to_value(0);
     document->replaceInSelAP(searchString, replaceString, type);
     return true;
 }
@@ -4140,9 +4138,9 @@ static int replaceAllMS(DocumentWidget *document, DataValue *argList, int nArgs,
 
     SearchType type = searchType(argList, nArgs, 2);
 
-    result->tag = INT_TAG;
-    result->val.n = 0;
     document->replaceAllAP(searchString, replaceString, type);
+
+    *result = to_value(0);
     return true;
 }
 
@@ -4308,8 +4306,7 @@ static int listDialogMS(DocumentWidget *document, DataValue *argList, int nArgs,
     PreemptMacro();
 
     // Return placeholder result.  Value will be changed by button callback
-    result->tag = INT_TAG;
-    result->val.n = 0;
+    *result = to_value(0);
 
     auto prompt = std::make_unique<DialogPromptList>(nullptr /*parent*/);
     prompt->setMessage(message);
@@ -4326,8 +4323,7 @@ static int listDialogMS(DocumentWidget *document, DataValue *argList, int nArgs,
     prompt->exec();
 
     // Return the button number in the global variable $string_dialog_button
-    ReturnGlobals[STRING_DIALOG_BUTTON]->value.tag = INT_TAG;
-    ReturnGlobals[STRING_DIALOG_BUTTON]->value.val.n = prompt->result();
+    ReturnGlobals[STRING_DIALOG_BUTTON]->value = to_value(prompt->result());
 
     *result = to_value(prompt->text());
     ModifyReturnedValueEx(cmdData->context, *result);
@@ -4379,8 +4375,7 @@ static int stringCompareMS(DocumentWidget *document, DataValue *argList, int nAr
 
     compareResult = qBound(-1, compareResult, 1);
 
-    result->tag   = INT_TAG;
-    result->val.n = compareResult;
+    *result = to_value(compareResult);
     return true;
 }
 
@@ -4406,7 +4401,6 @@ static int splitMS(DocumentWidget *document, DataValue *argList, int nArgs, Data
     char indexStr[TYPE_INT_STR_SIZE(int)];
     char *allocIndexStr;
     DataValue element;
-    int elementLen;
 
     if (nArgs < 2) {
         return (wrongNArgsErr(errMsg));
@@ -4437,8 +4431,7 @@ static int splitMS(DocumentWidget *document, DataValue *argList, int nArgs, Data
         searchType = SEARCH_LITERAL;
     }
 
-    result->tag = ARRAY_TAG;
-    result->val.arrayPtr = ArrayNew();
+    *result = to_value(array_new());
 
     int beginPos  = 0;
     int lastEnd   = 0;
@@ -4446,6 +4439,7 @@ static int splitMS(DocumentWidget *document, DataValue *argList, int nArgs, Data
     int strLength = sourceStr.size();
     bool found    = true;
     while (found && beginPos < strLength) {
+
         sprintf(indexStr, "%d", indexNum);
         allocIndexStr = AllocString(strlen(indexStr) + 1);
         if (!allocIndexStr) {
@@ -4453,6 +4447,8 @@ static int splitMS(DocumentWidget *document, DataValue *argList, int nArgs, Data
             return false;
         }
         strcpy(allocIndexStr, indexStr);
+
+
 
         found = SearchString(
                     sourceStr,
@@ -4468,13 +4464,11 @@ static int splitMS(DocumentWidget *document, DataValue *argList, int nArgs, Data
                     GetWindowDelimitersEx(document));
 
         int elementEnd = found ? foundStart : strLength;
-        elementLen = elementEnd - lastEnd;
-        element.tag = STRING_TAG;
-        if (!AllocNStringNCpy(&element.val.str, &sourceStr[lastEnd], elementLen)) {
-            *errMsg = "failed to allocate element value: %s";
-            return false;
-        }
+        int elementLen = elementEnd - lastEnd;
 
+        std::string str(&sourceStr[lastEnd], elementLen);
+
+        element = to_value(str);
         if (!ArrayInsert(result, allocIndexStr, &element)) {
             M_ARRAY_INSERT_FAILURE();
         }
@@ -4488,10 +4482,12 @@ static int splitMS(DocumentWidget *document, DataValue *argList, int nArgs, Data
         } else {
             beginPos = strLength; // Break the loop
         }
+
         lastEnd = foundEnd;
         ++indexNum;
     }
     if (found) {
+
         sprintf(indexStr, "%d", indexNum);
         allocIndexStr = AllocString(strlen(indexStr) + 1);
         if (!allocIndexStr) {
@@ -4499,11 +4495,10 @@ static int splitMS(DocumentWidget *document, DataValue *argList, int nArgs, Data
             return false;
         }
         strcpy(allocIndexStr, indexStr);
-        element.tag = STRING_TAG;
+
         if (lastEnd == strLength) {
             // The pattern mathed the end of the string. Add an empty chunk.
-            element.val.str.rep = PERM_ALLOC_STR("");
-            element.val.str.len = 0;
+            element = to_value(std::string());
 
             if (!ArrayInsert(result, allocIndexStr, &element)) {
                 M_ARRAY_INSERT_FAILURE();
@@ -4511,12 +4506,10 @@ static int splitMS(DocumentWidget *document, DataValue *argList, int nArgs, Data
         } else {
             /* We skipped the last character to prevent an endless loop.
                Add it to the list. */
-            elementLen = strLength - lastEnd;
-            if (!AllocNStringNCpy(&element.val.str, &sourceStr[lastEnd], elementLen)) {
-                *errMsg = "failed to allocate element value: %s";
-                return false;
-            }
+            int elementLen = strLength - lastEnd;
+            std::string str(&sourceStr[lastEnd], elementLen);
 
+            element = to_value(str);
             if (!ArrayInsert(result, allocIndexStr, &element)) {
                 M_ARRAY_INSERT_FAILURE();
             }
@@ -4582,7 +4575,7 @@ static int setBacklightStringMS(DocumentWidget *document, DataValue *argList, in
           *errMsg = "%s not called with a string parameter";
           return false;
       }
-      backlightString = QString::fromLatin1(argList[0].val.str.rep);
+      backlightString = QString::fromLatin1(argList[0].val.str.rep, argList[0].val.str.len);
     } else {
       return wrongNArgsErr(errMsg);
     }
@@ -4604,9 +4597,8 @@ static int cursorMV(DocumentWidget *document, DataValue *argList, int nArgs, Dat
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
 
-    auto textD    = document->toWindow()->lastFocus_;
-    result->tag   = INT_TAG;
-    result->val.n = textD->TextGetCursorPos();
+    auto textD = document->toWindow()->lastFocus_;
+    *result = to_value(textD->TextGetCursorPos());
     return true;
 }
 
@@ -4620,14 +4612,13 @@ static int lineMV(DocumentWidget *document, DataValue *argList, int nArgs, DataV
     int colNum;
 
     auto textD  = document->toWindow()->lastFocus_;
-    result->tag = INT_TAG;
     int cursorPos   = textD->TextGetCursorPos();
 
     if (!textD->TextDPosToLineAndCol(cursorPos, &line, &colNum)) {
         line = document->buffer_->BufCountLines(0, cursorPos) + 1;
     }
 
-    result->val.n = line;
+    *result = to_value(line);
     return true;
 }
 
@@ -4640,9 +4631,9 @@ static int columnMV(DocumentWidget *document, DataValue *argList, int nArgs, Dat
     TextBuffer *buf = document->buffer_;
 
     auto textD    = document->toWindow()->lastFocus_;
-    result->tag   = INT_TAG;
     int cursorPos = textD->TextGetCursorPos();
-    result->val.n = buf->BufCountDispChars(buf->BufStartOfLine(cursorPos), cursorPos);
+
+    *result = to_value(buf->BufCountDispChars(buf->BufStartOfLine(cursorPos), cursorPos));
     return true;
 }
 
@@ -4672,8 +4663,7 @@ static int lengthMV(DocumentWidget *document, DataValue *argList, int nArgs, Dat
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
 
-    result->tag = INT_TAG;
-    result->val.n = document->buffer_->BufGetLength();
+    *result = to_value(document->buffer_->BufGetLength());
     return true;
 }
 
@@ -4683,8 +4673,7 @@ static int selectionStartMV(DocumentWidget *document, DataValue *argList, int nA
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
 
-    result->tag = INT_TAG;
-    result->val.n = document->buffer_->primary_.selected ? document->buffer_->primary_.start : -1;
+    *result = to_value(document->buffer_->primary_.selected ? document->buffer_->primary_.start : -1);
     return true;
 }
 
@@ -4694,8 +4683,7 @@ static int selectionEndMV(DocumentWidget *document, DataValue *argList, int nArg
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
 
-    result->tag = INT_TAG;
-    result->val.n = document->buffer_->primary_.selected ? document->buffer_->primary_.end : -1;
+    *result = to_value(document->buffer_->primary_.selected ? document->buffer_->primary_.end : -1);
     return true;
 }
 
@@ -4707,8 +4695,7 @@ static int selectionLeftMV(DocumentWidget *document, DataValue *argList, int nAr
 
     TextSelection *sel = &document->buffer_->primary_;
 
-    result->tag = INT_TAG;
-    result->val.n = sel->selected && sel->rectangular ? sel->rectStart : -1;
+    *result = to_value(sel->selected && sel->rectangular ? sel->rectStart : -1);
     return true;
 }
 
@@ -4720,8 +4707,7 @@ static int selectionRightMV(DocumentWidget *document, DataValue *argList, int nA
 
     TextSelection *sel = &document->buffer_->primary_;
 
-    result->tag = INT_TAG;
-    result->val.n = sel->selected && sel->rectangular ? sel->rectEnd : -1;
+    *result = to_value(sel->selected && sel->rectangular ? sel->rectEnd : -1);
     return true;
 }
 
@@ -4734,8 +4720,7 @@ static int wrapMarginMV(DocumentWidget *document, DataValue *argList, int nArgs,
     int margin = document->firstPane()->getWrapMargin();
     int nCols  = document->firstPane()->getColumns();
 
-    result->tag = INT_TAG;
-    result->val.n = (margin == 0) ? nCols : margin;
+    *result = to_value((margin == 0) ? nCols : margin);
     return true;
 }
 
@@ -4745,8 +4730,7 @@ static int statisticsLineMV(DocumentWidget *document, DataValue *argList, int nA
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
 
-    result->tag = INT_TAG;
-    result->val.n = document->showStats_ ? 1 : 0;
+    *result = to_value(document->showStats_ ? 1 : 0);
     return true;
 }
 
@@ -4756,8 +4740,7 @@ static int incSearchLineMV(DocumentWidget *document, DataValue *argList, int nAr
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
 
-    result->tag = INT_TAG;
-    result->val.n = document->toWindow()->showISearchLine_ ? 1 : 0;
+    *result = to_value(document->toWindow()->showISearchLine_ ? 1 : 0);
     return true;
 }
 
@@ -4767,8 +4750,7 @@ static int showLineNumbersMV(DocumentWidget *document, DataValue *argList, int n
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
 
-    result->tag = INT_TAG;
-    result->val.n = document->toWindow()->showLineNumbers_ ? 1 : 0;
+    *result = to_value(document->toWindow()->showLineNumbers_ ? 1 : 0);
     return true;
 }
 
@@ -4832,8 +4814,7 @@ static int highlightSyntaxMV(DocumentWidget *document, DataValue *argList, int n
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
 
-    result->tag = INT_TAG;
-    result->val.n = document->highlightSyntax_ ? 1 : 0;
+    *result = to_value(document->highlightSyntax_ ? 1 : 0);
     return true;
 }
 
@@ -4843,8 +4824,7 @@ static int makeBackupCopyMV(DocumentWidget *document, DataValue *argList, int nA
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
 
-    result->tag = INT_TAG;
-    result->val.n = document->saveOldVersion_ ? 1 : 0;
+    *result = to_value(document->saveOldVersion_ ? 1 : 0);
     return true;
 }
 
@@ -4854,8 +4834,7 @@ static int incBackupMV(DocumentWidget *document, DataValue *argList, int nArgs, 
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
 
-    result->tag = INT_TAG;
-    result->val.n = document->autoSave_ ? 1 : 0;
+    *result = to_value(document->autoSave_ ? 1 : 0);
     return true;
 }
 
@@ -4877,10 +4856,6 @@ static int showMatchingMV(DocumentWidget *document, DataValue *argList, int nArg
     case FLASH_RANGE:
         res = QLatin1String(FLASH_RANGE_STRING);
         break;
-    default:
-        *errMsg = "Invalid match flashing style value encountered in %s";
-        return false;
-        break;
     }
 
     *result = to_value(res);
@@ -4893,8 +4868,7 @@ static int matchSyntaxBasedMV(DocumentWidget *document, DataValue *argList, int 
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
 
-    result->tag = INT_TAG;
-    result->val.n = document->matchSyntaxBased_ ? 1 : 0;
+    *result = to_value(document->matchSyntaxBased_ ? 1 : 0);
     return true;
 }
 
@@ -4904,8 +4878,7 @@ static int overTypeModeMV(DocumentWidget *document, DataValue *argList, int nArg
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
 
-    result->tag = INT_TAG;
-    result->val.n = document->overstrike_ ? 1 : 0;
+    *result = to_value(document->overstrike_ ? 1 : 0);
     return true;
 }
 
@@ -4915,8 +4888,7 @@ static int readOnlyMV(DocumentWidget *document, DataValue *argList, int nArgs, D
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
 
-    result->tag = INT_TAG;
-    result->val.n = (document->lockReasons_.isAnyLocked()) ? 1 : 0;
+    *result = to_value((document->lockReasons_.isAnyLocked()) ? 1 : 0);
     return true;
 }
 
@@ -4926,8 +4898,7 @@ static int lockedMV(DocumentWidget *document, DataValue *argList, int nArgs, Dat
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
 
-    result->tag = INT_TAG;
-    result->val.n = (document->lockReasons_.isUserLocked()) ? 1 : 0;
+    *result = to_value((document->lockReasons_.isUserLocked()) ? 1 : 0);
     return true;
 }
 
@@ -5007,8 +4978,7 @@ static int minFontWidthMV(DocumentWidget *document, DataValue *argList, int nArg
     Q_UNUSED(argList);
 
     auto textD = document->firstPane();
-    result->tag = INT_TAG;
-    result->val.n = textD->TextDMinFontWidth(document->highlightSyntax_);
+    *result = to_value(textD->TextDMinFontWidth(document->highlightSyntax_));
     return true;
 }
 
@@ -5018,8 +4988,7 @@ static int maxFontWidthMV(DocumentWidget *document, DataValue *argList, int nArg
     Q_UNUSED(argList);
 
     auto textD = document->firstPane();
-    result->tag = INT_TAG;
-    result->val.n = textD->TextDMaxFontWidth(document->highlightSyntax_);
+    *result = to_value(textD->TextDMaxFontWidth(document->highlightSyntax_));
     return true;
 }
 
@@ -5028,10 +4997,8 @@ static int topLineMV(DocumentWidget *document, DataValue *argList, int nArgs, Da
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
 
-    result->tag = INT_TAG;
-
     auto textD = document->toWindow()->lastFocus_;
-    result->val.n = textD->TextFirstVisibleLine();
+    *result = to_value(textD->TextFirstVisibleLine());
     return true;
 }
 
@@ -5041,8 +5008,7 @@ static int numDisplayLinesMV(DocumentWidget *document, DataValue *argList, int n
     Q_UNUSED(argList);
 
     auto textD    = document->toWindow()->lastFocus_;
-    result->tag   = INT_TAG;
-    result->val.n = textD->TextNumVisibleLines();
+    *result = to_value(textD->TextNumVisibleLines());
     return true;
 }
 
@@ -5053,8 +5019,7 @@ static int displayWidthMV(DocumentWidget *document, DataValue *argList, int nArg
     Q_UNUSED(argList);
 
     auto textD    = document->toWindow()->lastFocus_;
-    result->tag   = INT_TAG;
-    result->val.n = textD->TextVisibleWidth();
+    *result = to_value(textD->TextVisibleWidth());
     return true;
 }
 
@@ -5064,8 +5029,7 @@ static int activePaneMV(DocumentWidget *document, DataValue *argList, int nArgs,
     Q_UNUSED(argList);
     Q_UNUSED(errMsg);
 
-    result->tag   = INT_TAG;
-    result->val.n = document->WidgetToPaneIndex(document->toWindow()->lastFocus_);
+    *result = to_value(document->WidgetToPaneIndex(document->toWindow()->lastFocus_));
     return true;
 }
 
@@ -5075,8 +5039,7 @@ static int nPanesMV(DocumentWidget *document, DataValue *argList, int nArgs, Dat
     Q_UNUSED(argList);
     Q_UNUSED(errMsg);
 
-    result->tag   = INT_TAG;
-    result->val.n = document->textPanesCount();
+    *result = to_value(document->textPanesCount());
     return true;
 }
 
@@ -5087,8 +5050,7 @@ static int emptyArrayMV(DocumentWidget *document, DataValue *argList, int nArgs,
     Q_UNUSED(argList);
     Q_UNUSED(errMsg);
 
-    result->tag          = ARRAY_TAG;
-    result->val.arrayPtr = nullptr;
+    *result = to_value(array_empty());
     return true;
 }
 
@@ -5109,8 +5071,7 @@ static int tabDistMV(DocumentWidget *document, DataValue *argList, int nArgs, Da
     Q_UNUSED(argList);
     Q_UNUSED(errMsg);
 
-    result->tag   = INT_TAG;
-    result->val.n = document->buffer_->tabDist_;
+    *result = to_value(document->buffer_->tabDist_);
     return true;
 }
 
@@ -5122,8 +5083,7 @@ static int emTabDistMV(DocumentWidget *document, DataValue *argList, int nArgs, 
 
     int dist = document->firstPane()->getEmulateTabs();
 
-    result->tag   = INT_TAG;
-    result->val.n = dist;
+    *result = to_value(dist);
     return true;
 }
 
@@ -5132,8 +5092,7 @@ static int useTabsMV(DocumentWidget *document, DataValue *argList, int nArgs, Da
     Q_UNUSED(argList);
     Q_UNUSED(errMsg);
 
-    result->tag = INT_TAG;
-    result->val.n = document->buffer_->useTabs_;
+    *result = to_value(document->buffer_->useTabs_);
     return true;
 }
 
@@ -5143,8 +5102,7 @@ static int modifiedMV(DocumentWidget *document, DataValue *argList, int nArgs, D
     Q_UNUSED(argList);
     Q_UNUSED(errMsg);
 
-    result->tag = INT_TAG;
-    result->val.n = document->fileChanged_;
+    *result = to_value(document->fileChanged_);
     return true;
 }
 
@@ -5177,8 +5135,7 @@ static int rangesetListMV(DocumentWidget *document, DataValue *argList, int nArg
     RangesetTable *rangesetTable = document->buffer_->rangesetTable_;
     DataValue element;
 
-    result->tag = ARRAY_TAG;
-    result->val.arrayPtr = ArrayNew();
+    *result = to_value(array_new());
 
     if(!rangesetTable) {
         return true;
@@ -5187,8 +5144,8 @@ static int rangesetListMV(DocumentWidget *document, DataValue *argList, int nArg
     uint8_t *rangesetList = RangesetTable::RangesetGetList(rangesetTable);
     int nRangesets = strlen((char *)rangesetList);
     for (int i = 0; i < nRangesets; i++) {
-        element.tag = INT_TAG;
-        element.val.n = rangesetList[i];
+
+        element = to_value(rangesetList[i]);
 
         if (!ArrayInsert(result, AllocStringCpyEx(std::to_string(nRangesets - i - 1)), &element)) {
             M_FAILURE("Failed to insert array element in %s");
@@ -5215,10 +5172,7 @@ static int versionMV(DocumentWidget *document, DataValue *argList, int nArgs, Da
     Q_UNUSED(argList);
     Q_UNUSED(document);
 
-    static const unsigned version = NEDIT_VERSION;
-
-    result->tag = INT_TAG;
-    result->val.n = version;
+    *result = to_value(NEDIT_VERSION);
     return true;
 }
 
@@ -5247,23 +5201,19 @@ static int rangesetCreateMS(DocumentWidget *document, DataValue *argList, int nA
 
     if (nArgs == 0) {
         int label = rangesetTable->RangesetCreate();
-
-        result->tag = INT_TAG;
-        result->val.n = label;
+        *result = to_value(label);
         return true;
     } else {
         if (!readArgument(argList[0], &nRangesetsRequired, errMsg))
             return false;
 
-        result->tag = ARRAY_TAG;
-        result->val.arrayPtr = ArrayNew();
+        *result = to_value(array_new());
 
         if (nRangesetsRequired > rangesetTable->nRangesetsAvailable())
             return true;
 
         for (int i = 0; i < nRangesetsRequired; i++) {
-            element.tag = INT_TAG;
-            element.val.n = rangesetTable->RangesetCreate();
+            element = to_value(rangesetTable->RangesetCreate());
 
             ArrayInsert(result, AllocStringCpyEx(std::to_string(i)), &element);
         }
@@ -5347,8 +5297,7 @@ static int rangesetGetByNameMS(DocumentWidget *document, DataValue *argList, int
         M_FAILURE("First parameter is not a name string in %s");
     }
 
-    result->tag = ARRAY_TAG;
-    result->val.arrayPtr = ArrayNew();
+    *result = to_value(array_new());
 
     if(!rangesetTable) {
         return true;
@@ -5364,8 +5313,7 @@ static int rangesetGetByNameMS(DocumentWidget *document, DataValue *argList, int
 
             if(rangeset_name == name) {
 
-                element.tag = INT_TAG;
-                element.val.n = label;
+                element = to_value(label);
 
                 if (!ArrayInsert(result, AllocStringCpyEx(std::to_string(insertIndex)), &element)) {
                     M_FAILURE("Failed to insert array element in %s");
@@ -5472,8 +5420,7 @@ static int rangesetAddMS(DocumentWidget *document, DataValue *argList, int nArgs
     }
 
     // set up result
-    result->tag = INT_TAG;
-    result->val.n = index;
+    *result = to_value(index);
     return true;
 }
 
@@ -5627,16 +5574,13 @@ static int rangesetInfoMS(DocumentWidget *document, DataValue *argList, int nArg
     }
 
     // set up result
-    result->tag = ARRAY_TAG;
-    result->val.arrayPtr = ArrayNew();
+    *result = to_value(array_new());
 
-    element.tag = INT_TAG;
-    element.val.n = defined;
+    element = to_value(defined);
     if (!ArrayInsert(result, PERM_ALLOC_STR("defined"), &element))
         M_FAILURE("Failed to insert array element \"defined\" in %s");
 
-    element.tag = INT_TAG;
-    element.val.n = count;
+    element = to_value(count);
     if (!ArrayInsert(result, PERM_ALLOC_STR("count"), &element))
         M_FAILURE("Failed to insert array element \"count\" in %s");
 
@@ -5701,20 +5645,16 @@ static int rangesetRangeMS(DocumentWidget *document, DataValue *argList, int nAr
         }
     }
 
-    // set up result
-    result->tag = ARRAY_TAG;
-    result->val.arrayPtr = ArrayNew();
+    *result = to_value(array_new());
 
     if (!ok)
         return true;
 
-    element.tag = INT_TAG;
-    element.val.n = start;
+    element = to_value(start);
     if (!ArrayInsert(result, PERM_ALLOC_STR("start"), &element))
         M_FAILURE("Failed to insert array element \"start\" in %s");
 
-    element.tag = INT_TAG;
-    element.val.n = end;
+    element = to_value(end);
     if (!ArrayInsert(result, PERM_ALLOC_STR("end"), &element))
         M_FAILURE("Failed to insert array element \"end\" in %s");
 
@@ -5767,8 +5707,7 @@ static int rangesetIncludesPosMS(DocumentWidget *document, DataValue *argList, i
     }
 
     // set up result
-    result->tag = INT_TAG;
-    result->val.n = rangeIndex;
+    *result = to_value(rangeIndex);
     return true;
 }
 
@@ -5922,9 +5861,7 @@ static int rangesetSetModeMS(DocumentWidget *document, DataValue *argList, int n
 int fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWidget *document, const QString &styleName, bool includeName, int patCode, int bufferPos) {
     DataValue DV;
 
-    // initialize array
-    result->tag = ARRAY_TAG;
-    result->val.arrayPtr = ArrayNew();
+    *result = to_value(array_new());
 
     if (includeName) {
 
@@ -5972,17 +5909,14 @@ int fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWidget *do
         }
     }
 
-    // the following array entries will be integers
-    DV.tag = INT_TAG;
-
     // Put boldness value in array
-    DV.val.n = FontOfNamedStyleIsBold(styleName);
+    DV = to_value(FontOfNamedStyleIsBold(styleName));
     if (!ArrayInsert(result, PERM_ALLOC_STR("bold"), &DV)) {
         M_ARRAY_INSERT_FAILURE();
     }
 
     // Put italicity value in array
-    DV.val.n = FontOfNamedStyleIsItalic(styleName);
+    DV = to_value(FontOfNamedStyleIsItalic(styleName));
     if (!ArrayInsert(result, PERM_ALLOC_STR("italic"), &DV)) {
         M_ARRAY_INSERT_FAILURE();
     }
@@ -6013,9 +5947,7 @@ static int getStyleByNameMS(DocumentWidget *document, DataValue *argList, int nA
         M_FAILURE("First parameter is not a string in %s");
     }
 
-    // Prepare result
-    result->tag = ARRAY_TAG;
-    result->val.arrayPtr = nullptr;
+    *result = to_value(array_empty());
 
     if (!NamedStyleExists(styleName)) {
         // if the given name is invalid we just return an empty array.
@@ -6054,9 +5986,7 @@ static int getStyleAtPosMS(DocumentWidget *document, DataValue *argList, int nAr
         return false;
     }
 
-    // Prepare result
-    result->tag = ARRAY_TAG;
-    result->val.arrayPtr = nullptr;
+    *result = to_value(array_empty());
 
     //  Verify sane buffer position
     if ((bufferPos < 0) || (bufferPos >= buf->BufGetLength())) {
@@ -6098,9 +6028,7 @@ int fillPatternResultEx(DataValue *result, const char **errMsg, DocumentWidget *
 
     DataValue DV;
 
-    // initialize array
-    result->tag = ARRAY_TAG;
-    result->val.arrayPtr = ArrayNew();
+    *result = to_value(array_new());
 
     // the following array entries will be strings
 
@@ -6118,13 +6046,10 @@ int fillPatternResultEx(DataValue *result, const char **errMsg, DocumentWidget *
         M_ARRAY_INSERT_FAILURE();
     }
 
-    // the following array entries will be integers
-    DV.tag = INT_TAG;
-
     if (bufferPos >= 0) {
         // insert extent
         int checkCode = 0;
-        DV.val.n = HighlightLengthOfCodeFromPosEx(document, bufferPos, &checkCode);
+        DV = to_value(HighlightLengthOfCodeFromPosEx(document, bufferPos, &checkCode));
         if (!ArrayInsert(result, PERM_ALLOC_STR("extent"), &DV)) {
             M_ARRAY_INSERT_FAILURE();
         }
@@ -6144,9 +6069,7 @@ static int getPatternByNameMS(DocumentWidget *document, DataValue *argList, int 
 
     QString patternName;
 
-    // Begin of building the result.
-    result->tag = ARRAY_TAG;
-    result->val.arrayPtr = nullptr;
+    *result = to_value(array_empty());
 
     // Validate number of arguments
     if(!readArguments(argList, nArgs, 0, errMsg, &patternName)) {
@@ -6181,9 +6104,7 @@ static int getPatternAtPosMS(DocumentWidget *document, DataValue *argList, int n
     int bufferPos;
     TextBuffer *buffer = document->buffer_;
 
-    // Begin of building the result.
-    result->tag = ARRAY_TAG;
-    result->val.arrayPtr = nullptr;
+    *result = to_value(array_empty());
 
     // Validate number of arguments
     if(!readArguments(argList, nArgs, 0, errMsg, &bufferPos)) {

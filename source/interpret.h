@@ -226,14 +226,14 @@ int ExecuteMacroEx(DocumentWidget *window, Program *prog, int nArgs, DataValue *
 int ContinueMacroEx(const std::shared_ptr<RestartData> &continuation, DataValue *result, const char **msg);
 void RunMacroAsSubrCall(Program *prog);
 void PreemptMacro();
+
 char *AllocString(int length);
-char *AllocStringCpyEx(const std::string &s);
 int AllocNString(NString *string, int length);
+
+char *AllocStringCpyEx(const std::string &s);
 NString AllocNStringCpyEx(const QString &s);
 NString AllocNStringCpyEx(const std::string &s);
 NString AllocNStringCpyEx(const view::string_view s);
-int AllocNStringNCpy(NString *string, const char *s, int length);
-int AllocNStringCpy(NString *string, const char *s);
 void GarbageCollectStrings();
 void FreeRestartDataEx(const std::shared_ptr<RestartData> &context);
 Symbol *PromoteToGlobal(Symbol *sym);
@@ -249,7 +249,24 @@ bool StringToNum(const std::string &string, int *number);
 bool StringToNum(const QString &string, int *number);
 
 
-inline DataValue to_value() {
+struct array_empty {};
+struct array_new   {};
+
+inline DataValue to_value(const array_empty &) {
+    DataValue DV;
+    DV.tag          = ARRAY_TAG;
+    DV.val.arrayPtr = nullptr;
+    return DV;
+}
+
+inline DataValue to_value(const array_new &) {
+    DataValue DV;
+    DV.tag          = ARRAY_TAG;
+    DV.val.arrayPtr = ArrayNew();
+    return DV;
+}
+
+constexpr inline DataValue to_value() {
     DataValue DV = INIT_DATA_VALUE;
     return DV;
 }
@@ -265,6 +282,14 @@ inline DataValue to_value(bool n) {
     DataValue DV;
     DV.tag   = INT_TAG;
     DV.val.n = n ? 1 : 0;
+    return DV;
+}
+
+// TODO(eteran): 2.0, deprecate this API in favor of std::string/QString
+inline DataValue to_value(const char *str) {
+    DataValue DV;
+    DV.tag     = STRING_TAG;
+    DV.val.str = AllocNStringCpyEx(view::string_view(str));
     return DV;
 }
 

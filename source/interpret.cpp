@@ -673,9 +673,7 @@ Symbol *InstallStringConstSymbol(const char *str) {
 
 	auto stringName = ARRAY_STRING_CONST_SYM_PREFIX + std::to_string(stringConstIndex++);
 
-	DataValue value;
-    value.tag = STRING_TAG;
-    AllocNStringCpy(&value.val.str, str);
+    DataValue value = to_value(str);
     return InstallSymbol(stringName, CONST_SYM, value);
 }
 
@@ -831,22 +829,6 @@ int AllocNString(NString *string, int length) {
     return true;
 }
 
-/*
- * Allocate a new NString buffer of length chars (terminating \0 NOT included),
- * and copy at most length characters of the given string.
- * The buffer length is properly set and the buffer is guaranteed to be
- * \0-terminated.
- */
-int AllocNStringNCpy(NString *string, const char *s, int length) {
-	if (!AllocNString(string, length + 1)) // add extra char for forced \0 
-        return false;
-	if (!s)
-		s = "";
-	strncpy(string->rep, s, length);
-	string->len = strlen(string->rep); // re-calculate! 
-    return true;
-}
-
 // Allocate a new copy of string s
 char *AllocStringCpyEx(const std::string &s) {
 
@@ -854,25 +836,6 @@ char *AllocStringCpyEx(const std::string &s) {
     memcpy(str, s.data(), s.size());
     str[s.size()] = '\0';
     return str;
-}
-
-/*
- * Allocate a new NString buffer, containing a copy of the given string.
- * The length is set to the length of the string and resulting string is
- * guaranteed to be \0-terminated.
- */
-int AllocNStringCpy(NString *string, const char *s) {
-	size_t length = s ? strlen(s) : 0;
-
-	if (!AllocNString(string, length + 1)) {
-        return false;
-	}
-
-	if (s) {
-		strncpy(string->rep, s, length);
-        string->rep[length] = '\0';
-	}
-    return true;
 }
 
 NString AllocNStringCpyEx(const QString &s) {
