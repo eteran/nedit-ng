@@ -248,4 +248,38 @@ bool StringToNum(const char *string, int *number);
 bool StringToNum(const std::string &string, int *number);
 bool StringToNum(const QString &string, int *number);
 
+
+inline DataValue to_value() {
+    DataValue DV = INIT_DATA_VALUE;
+    return DV;
+}
+
+inline DataValue to_value(int n) {
+    DataValue DV;
+    DV.tag   = INT_TAG;
+    DV.val.n = n;
+    return DV;
+}
+
+inline DataValue to_value(bool n) {
+    DataValue DV;
+    DV.tag   = INT_TAG;
+    DV.val.n = n ? 1 : 0;
+    return DV;
+}
+
+inline DataValue to_value(const std::string &str) {
+    DataValue DV;
+    DV.tag     = STRING_TAG;
+    DV.val.str = AllocNStringCpyEx(str);
+    return DV;
+}
+
+inline DataValue to_value(const QString &str) {
+    DataValue DV;
+    DV.tag     = STRING_TAG;
+    DV.val.str = AllocNStringCpyEx(str);
+    return DV;
+}
+
 #endif
