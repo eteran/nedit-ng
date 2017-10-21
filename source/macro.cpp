@@ -3957,7 +3957,7 @@ static int stringDialogMS(DocumentWidget *document, DataValue *argList, int nArg
 */
 static int calltipMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
-    std::string tipText;
+    QString tipText;
     std::string txtArg;
     bool anchored = false;
     bool lookup = true;
@@ -4041,7 +4041,7 @@ static int calltipMS(DocumentWidget *document, DataValue *argList, int nArgs, Da
     // Look up (maybe) a calltip and display it
     *result = to_value(ShowTipStringEx(
                            document,
-                           tipText.c_str(),
+                           tipText,
                            anchored,
                            anchorPos,
                            lookup,
