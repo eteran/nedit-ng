@@ -2865,14 +2865,12 @@ static int lengthMS(DocumentWidget *document, DataValue *argList, int nArgs, Dat
 
     Q_UNUSED(document);
 
-    std::string string;
-
+    QString string;
     if(!readArguments(argList, nArgs, 0, errMsg, &string)) {
         return false;
     }
 
-    result->tag   = INT_TAG;
-    result->val.n = static_cast<int>(string.size());
+    *result = to_value(string.size());
     return true;
 }
 
@@ -2902,8 +2900,7 @@ static int minMS(DocumentWidget *document, DataValue *argList, int nArgs, DataVa
         minVal = std::min(minVal, value);
     }
 
-    result->tag   = INT_TAG;
-    result->val.n = minVal;
+    *result = to_value(minVal);
     return true;
 }
 
@@ -2929,8 +2926,7 @@ static int maxMS(DocumentWidget *document, DataValue *argList, int nArgs, DataVa
         maxVal = std::max(maxVal, value);
     }
 
-    result->tag   = INT_TAG;
-    result->val.n = maxVal;
+    *result = to_value(maxVal);
     return true;
 }
 
@@ -3197,9 +3193,7 @@ static int validNumberMS(DocumentWidget *document, DataValue *argList, int nArgs
         return false;
     }
 
-    result->tag = INT_TAG;
-    result->val.n = StringToNum(string, nullptr);
-
+    *result = to_value(StringToNum(string, nullptr));
     return true;
 }
 
@@ -3379,13 +3373,11 @@ static int readFileMS(DocumentWidget *document, DataValue *argList, int nArgs, D
         *result = to_value(contents);
 
         // Return the results
-        ReturnGlobals[READ_STATUS]->value.tag = INT_TAG;
-        ReturnGlobals[READ_STATUS]->value.val.n = true;
+        ReturnGlobals[READ_STATUS]->value = to_value(true);
         return true;
     }
 
-    ReturnGlobals[READ_STATUS]->value.tag = INT_TAG;
-    ReturnGlobals[READ_STATUS]->value.val.n = false;
+    ReturnGlobals[READ_STATUS]->value = to_value(false);
 
     *result = to_value(std::string());
     return true;
@@ -3419,8 +3411,7 @@ static int writeOrAppendFile(bool append, DocumentWidget *document, DataValue *a
 
     // open the file
     if ((fp = fopen(name.c_str(), append ? "a" : "w")) == nullptr) {
-        result->tag = INT_TAG;
-        result->val.n = false;
+        *result = to_value(false);
         return true;
     }
 
@@ -3428,15 +3419,14 @@ static int writeOrAppendFile(bool append, DocumentWidget *document, DataValue *a
     fwrite(string.data(), 1, string.size(), fp);
     if (ferror(fp)) {
         fclose(fp);
-        result->tag = INT_TAG;
-        result->val.n = false;
+
+        *result = to_value(false);
         return true;
     }
     fclose(fp);
 
     // return the status
-    result->tag = INT_TAG;
-    result->val.n = true;
+    *result = to_value(true);
     return true;
 }
 
@@ -3548,10 +3538,8 @@ static int searchStringMS(DocumentWidget *document, DataValue *argList, int nArg
     }
 
     // Return the results
-    ReturnGlobals[SEARCH_END]->value.tag = INT_TAG;
-    ReturnGlobals[SEARCH_END]->value.val.n = found ? foundEnd : 0;
-    result->tag = INT_TAG;
-    result->val.n = found ? foundStart : -1;
+    ReturnGlobals[SEARCH_END]->value = to_value(found ? foundEnd : 0);
+    *result = to_value(found ? foundStart : -1);
     return true;
 }
 
@@ -3797,8 +3785,7 @@ static int shellCmdMS(DocumentWidget *document, DataValue *argList, int nArgs, D
     }
 
     document->ShellCmdToMacroStringEx(cmdString, inputString);
-    result->tag = INT_TAG;
-    result->val.n = 0;
+    *result = to_value(0);
     return true;
 }
 
@@ -3817,8 +3804,7 @@ void ReturnShellCommandOutputEx(DocumentWidget *document, const QString &outText
 
         ModifyReturnedValueEx(cmdData->context, retVal);
 
-        ReturnGlobals[SHELL_CMD_STATUS]->value.tag   = INT_TAG;
-        ReturnGlobals[SHELL_CMD_STATUS]->value.val.n = status;
+        ReturnGlobals[SHELL_CMD_STATUS]->value = to_value(status);
     }
 }
 
@@ -3861,8 +3847,7 @@ static int dialogMS(DocumentWidget *document, DataValue *argList, int nArgs, Dat
     PreemptMacro();
 
     // Return placeholder result.  Value will be changed by button callback
-    result->tag = INT_TAG;
-    result->val.n = 0;
+    *result = to_value(0);
 
     auto prompt = new DialogPrompt(nullptr /*parent*/);
     prompt->setMessage(message);
@@ -3922,8 +3907,7 @@ static int stringDialogMS(DocumentWidget *document, DataValue *argList, int nArg
     PreemptMacro();
 
     // Return placeholder result.  Value will be changed by button callback
-    result->tag = INT_TAG;
-    result->val.n = 0;
+    *result = to_value(0);
 
     auto prompt = std::make_unique<DialogPromptString>(nullptr /*parent*/);
     prompt->setMessage(message);
@@ -3938,8 +3922,7 @@ static int stringDialogMS(DocumentWidget *document, DataValue *argList, int nArg
     prompt->exec();
 
     // Return the button number in the global variable $string_dialog_button
-    ReturnGlobals[STRING_DIALOG_BUTTON]->value.tag = INT_TAG;
-    ReturnGlobals[STRING_DIALOG_BUTTON]->value.val.n = prompt->result();
+    ReturnGlobals[STRING_DIALOG_BUTTON]->value = to_value(prompt->result());
 
     *result = to_value(prompt->text());
     ModifyReturnedValueEx(cmdData->context, *result);
@@ -4051,12 +4034,21 @@ static int calltipMS(DocumentWidget *document, DataValue *argList, int nArgs, Da
         }
     }
 
-    result->tag = INT_TAG;
     if (mode < 0) {
         lookup = false;
     }
+
     // Look up (maybe) a calltip and display it
-    result->val.n = ShowTipStringEx(document, tipText.c_str(), anchored, anchorPos, lookup, mode, hAlign, vAlign, alignMode);
+    *result = to_value(ShowTipStringEx(
+                           document,
+                           tipText.c_str(),
+                           anchored,
+                           anchorPos,
+                           lookup,
+                           mode,
+                           hAlign,
+                           vAlign,
+                           alignMode));
 
     return true;
 
