@@ -60,6 +60,8 @@ public:
 
 public:
 	bool BufSubstituteNullChars(char *string, int length);
+
+private:
 	void BufUnsubstituteNullChars(char *string, int length) const;
 
 public:

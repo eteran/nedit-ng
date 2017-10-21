@@ -2991,9 +2991,7 @@ static int focusWindowMS(DocumentWidget *document, DataValue *argList, int nArgs
 
     // If no matching window was found, return empty string and do nothing
     if(it == documents.end()) {
-        result->tag         = STRING_TAG;
-        result->val.str.rep = PERM_ALLOC_STR("");
-        result->val.str.len = 0;
+        *result = to_value(std::string());
         return true;
     }
 
@@ -3008,8 +3006,7 @@ static int focusWindowMS(DocumentWidget *document, DataValue *argList, int nArgs
     }
 
     // Return the name of the window
-    result->tag     = STRING_TAG;
-    result->val.str = AllocNStringCpyEx(QString(QLatin1String("%1%2")).arg(target_document->path_, target_document->filename_));
+    *result = to_value(QString(QLatin1String("%1%2")).arg(target_document->path_, target_document->filename_));
     return true;
 }
 
@@ -3036,16 +3033,11 @@ static int getRangeMS(DocumentWidget *document, DataValue *argList, int nArgs, D
 
     /* Copy text from buffer (this extra copy could be avoided if TextBuffer.c
        provided a routine for writing into a pre-allocated string) */
-    result->tag = STRING_TAG;
 
     std::string rangeText = buf->BufGetRangeEx(from, to);
     buf->BufUnsubstituteNullCharsEx(rangeText);
 
-    result->val.str = AllocNStringCpyEx(rangeText);
-
-    /* Note: after the un-substitution, it is possible that strlen() != len,
-       but that's because strlen() can't deal with 0-characters. */
-
+    *result = to_value(rangeText);
     return true;
 }
 
@@ -3065,14 +3057,11 @@ static int getCharacterMS(DocumentWidget *document, DataValue *argList, int nArg
     pos = qBound(0, pos, buf->BufGetLength());
 
     // Return the character in a pre-allocated string)
-    result->tag = STRING_TAG;
-    AllocNString(&result->val.str, 2);
-    result->val.str.rep[0] = buf->BufGetCharacter(pos);
+    std::string str(1, buf->BufGetCharacter(pos));
 
-    buf->BufUnsubstituteNullChars(result->val.str.rep, result->val.str.len);
-    /* Note: after the un-substitution, it is possible that strlen() != len,
-       but that's because strlen() can't deal with 0-characters. */
+    buf->BufUnsubstituteNullCharsEx(str);
 
+    *result = to_value(str);
     return true;
 }
 
@@ -3183,15 +3172,13 @@ static int getSelectionMS(DocumentWidget *document, DataValue *argList, int nArg
         }
 
         // Return the text as an allocated string
-        result->tag = STRING_TAG;
-        result->val.str = AllocNStringCpyEx(text);
+        *result = to_value(text);
     } else {
         std::string selText = document->buffer_->BufGetSelectionTextEx();
         document->buffer_->BufUnsubstituteNullCharsEx(selText);
 
         // Return the text as an allocated string
-        result->tag = STRING_TAG;
-        result->val.str = AllocNStringCpyEx(selText);
+        *result = to_value(selText);
     }
 
     return true;
@@ -3225,8 +3212,8 @@ static int replaceSubstringMS(DocumentWidget *document, DataValue *argList, int 
 
     int from;
     int to;
-    std::string string;
-    std::string replStr;
+    QString string;
+    QString replStr;
 
     // Validate arguments and convert to int
     if(!readArguments(argList, nArgs, 0, errMsg, &string, &from, &to, &replStr)) {
@@ -3243,10 +3230,8 @@ static int replaceSubstringMS(DocumentWidget *document, DataValue *argList, int 
     }
 
     // Allocate a new string and do the replacement
-    result->tag = STRING_TAG;
-
     string.replace(from, to - from, replStr);
-    result->val.str = AllocNStringCpyEx(string);
+    *result = to_value(string);
 
     return true;
 }
@@ -3289,8 +3274,7 @@ static int substringMS(DocumentWidget *document, DataValue *argList, int nArgs, 
     if (from > to)     to = from;
 
     // Allocate a new string and copy the sub-string into it
-    result->tag     = STRING_TAG;
-    result->val.str = AllocNStringCpyEx(string.mid(from, to - from));
+    *result = to_value(string.mid(from, to - from));
     return true;
 }
 
@@ -3309,9 +3293,7 @@ static int toupperMS(DocumentWidget *document, DataValue *argList, int nArgs, Da
         ch = safe_ctype<toupper>(ch);
     }
 
-    result->tag = STRING_TAG;
-    result->val.str = AllocNStringCpyEx(string);
-
+    *result = to_value(string);
     return true;
 }
 
@@ -3330,9 +3312,7 @@ static int tolowerMS(DocumentWidget *document, DataValue *argList, int nArgs, Da
         ch = safe_ctype<tolower>(ch);
     }
 
-    result->tag = STRING_TAG;
-    result->val.str = AllocNStringCpyEx(string);
-
+    *result = to_value(string);
     return true;
 }
 
@@ -3347,8 +3327,9 @@ static int stringToClipboardMS(DocumentWidget *document, DataValue *argList, int
         return false;
     }
 
-    result->tag = NO_TAG;
     QApplication::clipboard()->setText(string, QClipboard::Clipboard);
+
+    *result = to_value();
     return true;
 }
 
@@ -3365,13 +3346,10 @@ static int clipboardToStringMS(DocumentWidget *document, DataValue *argList, int
     // Ask if there's a string in the clipboard, and get its length
     const QMimeData *data = QApplication::clipboard()->mimeData(QClipboard::Clipboard);
     if(!data->hasText()) {
-        result->tag = STRING_TAG;
-        result->val.str.rep = PERM_ALLOC_STR("");
-        result->val.str.len = 0;
+        *result = to_value(std::string());
     } else {
         // Allocate a new string to hold the data
-        result->tag = STRING_TAG;
-        result->val.str = AllocNStringCpyEx(data->text());
+        *result = to_value(data->text());
     }
 
     return true;
@@ -3397,8 +3375,8 @@ static int readFileMS(DocumentWidget *document, DataValue *argList, int nArgs, D
     std::ifstream file(name, std::ios::binary);
     if(file) {
         std::string contents(std::istreambuf_iterator<char>{file}, std::istreambuf_iterator<char>{});
-        result->tag = STRING_TAG;
-        result->val.str = AllocNStringCpyEx(contents);
+
+        *result = to_value(contents);
 
         // Return the results
         ReturnGlobals[READ_STATUS]->value.tag = INT_TAG;
@@ -3408,9 +3386,8 @@ static int readFileMS(DocumentWidget *document, DataValue *argList, int nArgs, D
 
     ReturnGlobals[READ_STATUS]->value.tag = INT_TAG;
     ReturnGlobals[READ_STATUS]->value.val.n = false;
-    result->tag = STRING_TAG;
-    result->val.str.rep = PERM_ALLOC_STR("");
-    result->val.str.len = 0;
+
+    *result = to_value(std::string());
     return true;
 }
 
@@ -3641,13 +3618,12 @@ static int replaceInStringMS(DocumentWidget *document, DataValue *argList, int n
                 &ok);
 
     // Return the results
-    result->tag = STRING_TAG;
+
     if(!ok) {
         if (force) {
-            result->val.str = AllocNStringCpyEx(string);
+            *result = to_value(string);
         } else {
-            result->val.str.rep = PERM_ALLOC_STR("");
-            result->val.str.len = 0;
+            *result = to_value(std::string());
         }
     } else {
         std::string new_string;
@@ -3656,7 +3632,8 @@ static int replaceInStringMS(DocumentWidget *document, DataValue *argList, int n
         new_string.append(string.substr(0, copyStart));
         new_string.append(replacedStr);
         new_string.append(string.substr(copyEnd));
-        result->val.str = AllocNStringCpyEx(new_string);
+
+        *result = to_value(new_string);
     }
 
     return true;
@@ -3799,8 +3776,7 @@ static int getenvMS(DocumentWidget *document, DataValue *argList, int nArgs, Dat
     QByteArray value = qgetenv(name.c_str());
 
     // Return the text as an allocated string
-    result->tag = STRING_TAG;
-    result->val.str = AllocNStringCpyEx(QString::fromLocal8Bit(value));
+    *result = to_value(QString::fromLocal8Bit(value));
     return true;
 }
 
@@ -3837,9 +3813,7 @@ void ReturnShellCommandOutputEx(DocumentWidget *document, const QString &outText
 
     if(auto cmdData = document->macroCmdData_) {
 
-        DataValue retVal;
-        retVal.tag     = STRING_TAG;
-        retVal.val.str = AllocNStringCpyEx(outText);
+        DataValue retVal = to_value(outText);
 
         ModifyReturnedValueEx(cmdData->context, retVal);
 
@@ -3967,8 +3941,7 @@ static int stringDialogMS(DocumentWidget *document, DataValue *argList, int nArg
     ReturnGlobals[STRING_DIALOG_BUTTON]->value.tag = INT_TAG;
     ReturnGlobals[STRING_DIALOG_BUTTON]->value.val.n = prompt->result();
 
-    result->tag = STRING_TAG;
-    result->val.str = AllocNStringCpyEx(prompt->text());
+    *result = to_value(prompt->text());
     ModifyReturnedValueEx(cmdData->context, *result);
 
     ResumeMacroExecutionEx(document);
@@ -4282,14 +4255,13 @@ static int filenameDialogMS(DocumentWidget *document, DataValue *argList, int nA
     } //  Invalid values are weeded out above.
 
 
-    result->tag = STRING_TAG;
+
     if (gfnResult == true) {
         //  Got a string, copy it to the result
-        result->val.str = AllocNStringCpyEx(filename);
+        *result = to_value(filename);
     } else {
         // User cancelled.  Return ""
-        result->val.str.rep = PERM_ALLOC_STR("");
-        result->val.str.len = 0;
+        *result = to_value(std::string());
     }
 
     return true;
@@ -4365,8 +4337,7 @@ static int listDialogMS(DocumentWidget *document, DataValue *argList, int nArgs,
     ReturnGlobals[STRING_DIALOG_BUTTON]->value.tag = INT_TAG;
     ReturnGlobals[STRING_DIALOG_BUTTON]->value.val.n = prompt->result();
 
-    result->tag = STRING_TAG;
-    result->val.str = AllocNStringCpyEx(prompt->text());
+    *result = to_value(prompt->text());
     ModifyReturnedValueEx(cmdData->context, *result);
 
     ResumeMacroExecutionEx(document);
@@ -4580,6 +4551,7 @@ static int splitMS(DocumentWidget *document, DataValue *argList, int nArgs, Data
                         GetWindowDelimitersEx(document));
             if (found) {
                 ++indexNum;
+
                 sprintf(indexStr, "%d", indexNum);
                 allocIndexStr = AllocString(strlen(indexStr) + 1);
                 if (!allocIndexStr) {
@@ -4587,10 +4559,8 @@ static int splitMS(DocumentWidget *document, DataValue *argList, int nArgs, Data
                     return false;
                 }
                 strcpy(allocIndexStr, indexStr);
-                element.tag = STRING_TAG;
-                element.val.str.rep = PERM_ALLOC_STR("");
-                element.val.str.len = 0;
 
+                element = to_value();
                 if (!ArrayInsert(result, allocIndexStr, &element)) {
                     M_ARRAY_INSERT_FAILURE();
                 }
@@ -4690,8 +4660,7 @@ static int fileNameMV(DocumentWidget *document, DataValue *argList, int nArgs, D
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
 
-    result->tag     = STRING_TAG;
-    result->val.str = AllocNStringCpyEx(document->filename_);
+    *result = to_value(document->filename_);
     return true;
 }
 
@@ -4701,8 +4670,7 @@ static int filePathMV(DocumentWidget *document, DataValue *argList, int nArgs, D
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
 
-    result->tag     = STRING_TAG;
-    result->val.str = AllocNStringCpyEx(document->path_);
+    *result = to_value(document->path_);
     return true;
 }
 
@@ -4818,26 +4786,24 @@ static int autoIndentMV(DocumentWidget *document, DataValue *argList, int nArgs,
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
 
-    char *res = nullptr;
+    QLatin1String res;
 
     switch (document->indentStyle_) {
     case NO_AUTO_INDENT:
-        res = PERM_ALLOC_STR("off");
+        res = QLatin1String("off");
         break;
     case AUTO_INDENT:
-        res = PERM_ALLOC_STR("on");
+        res = QLatin1String("on");
         break;
     case SMART_INDENT:
-        res = PERM_ALLOC_STR("smart");
+        res = QLatin1String("smart");
         break;
     case DEFAULT_INDENT:
         *errMsg = "Invalid indent style value encountered in %s";
         return false;
     }
 
-    result->tag = STRING_TAG;
-    result->val.str.rep = res;
-    result->val.str.len = strlen(res);
+    *result = to_value(res);
     return true;
 }
 
@@ -4847,26 +4813,24 @@ static int wrapTextMV(DocumentWidget *document, DataValue *argList, int nArgs, D
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
 
-    char *res = nullptr;
+    QLatin1String res;
 
     switch (document->wrapMode_) {
     case NO_WRAP:
-        res = PERM_ALLOC_STR("none");
+        res = QLatin1String("none");
         break;
     case NEWLINE_WRAP:
-        res = PERM_ALLOC_STR("auto");
+        res = QLatin1String("auto");
         break;
     case CONTINUOUS_WRAP:
-        res = PERM_ALLOC_STR("continuous");
+        res = QLatin1String("continuous");
         break;
     case DEFAULT_WRAP:
         *errMsg = "Invalid wrap style value encountered in %s";
         return false;
     }
 
-    result->tag = STRING_TAG;
-    result->val.str.rep = res;
-    result->val.str.len = strlen(res);
+    *result = to_value(res);
     return true;
 }
 
@@ -4909,26 +4873,25 @@ static int showMatchingMV(DocumentWidget *document, DataValue *argList, int nArg
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
 
-    char *res = nullptr;
+    QLatin1String res;
 
     switch (document->showMatchingStyle_) {
     case NO_FLASH:
-        res = PERM_ALLOC_STR(NO_FLASH_STRING);
+        res = QLatin1String(NO_FLASH_STRING);
         break;
     case FLASH_DELIMIT:
-        res = PERM_ALLOC_STR(FLASH_DELIMIT_STRING);
+        res = QLatin1String(FLASH_DELIMIT_STRING);
         break;
     case FLASH_RANGE:
-        res = PERM_ALLOC_STR(FLASH_RANGE_STRING);
+        res = QLatin1String(FLASH_RANGE_STRING);
         break;
     default:
         *errMsg = "Invalid match flashing style value encountered in %s";
         return false;
         break;
     }
-    result->tag = STRING_TAG;
-    result->val.str.rep = res;
-    result->val.str.len = strlen(res);
+
+    *result = to_value(res);
     return true;
 }
 
@@ -4982,7 +4945,7 @@ static int fileFormatMV(DocumentWidget *document, DataValue *argList, int nArgs,
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
 
-    QString res;
+    QLatin1String res;
 
     switch (document->fileFormat_) {
     case UNIX_FILE_FORMAT:
@@ -4994,13 +4957,9 @@ static int fileFormatMV(DocumentWidget *document, DataValue *argList, int nArgs,
     case MAC_FILE_FORMAT:
         res = QLatin1String("macintosh");
         break;
-    default:
-        *errMsg = "Invalid linefeed style value encountered in %s";
-        return false;
     }
 
-    result->tag     = STRING_TAG;
-    result->val.str = AllocNStringCpyEx(res);
+    *result = to_value(res);
     return true;
 }
 
@@ -5009,8 +4968,7 @@ static int fontNameMV(DocumentWidget *document, DataValue *argList, int nArgs, D
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
 
-    result->tag = STRING_TAG;
-    result->val.str = AllocNStringCpyEx(document->fontName_);
+    *result = to_value(document->fontName_);
     return true;
 }
 
@@ -5019,8 +4977,7 @@ static int fontNameItalicMV(DocumentWidget *document, DataValue *argList, int nA
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
 
-    result->tag = STRING_TAG;
-    result->val.str = AllocNStringCpyEx(document->italicFontName_);
+    *result = to_value(document->italicFontName_);
     return true;
 }
 
@@ -5029,8 +4986,7 @@ static int fontNameBoldMV(DocumentWidget *document, DataValue *argList, int nArg
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
 
-    result->tag = STRING_TAG;
-    result->val.str = AllocNStringCpyEx(document->boldFontName_);
+    *result = to_value(document->boldFontName_);
     return true;
 }
 
@@ -5039,8 +4995,7 @@ static int fontNameBoldItalicMV(DocumentWidget *document, DataValue *argList, in
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
 
-    result->tag = STRING_TAG;
-    result->val.str = AllocNStringCpyEx(document->boldItalicFontName_);
+    *result = to_value(document->boldItalicFontName_);
     return true;
 }
 
@@ -5050,9 +5005,7 @@ static int subscriptSepMV(DocumentWidget *document, DataValue *argList, int nArg
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
 
-    result->tag = STRING_TAG;
-    result->val.str.rep = PERM_ALLOC_STR(ARRAY_DIM_SEP);
-    result->val.str.len = strlen(result->val.str.rep);
+    *result = to_value(std::string(ARRAY_DIM_SEP, 1));
     return true;
 }
 
@@ -5154,8 +5107,7 @@ static int serverNameMV(DocumentWidget *document, DataValue *argList, int nArgs,
     Q_UNUSED(argList);
     Q_UNUSED(errMsg);
 
-    result->tag     = STRING_TAG;
-    result->val.str = AllocNStringCpyEx(GetPrefServerName());
+    *result = to_value(GetPrefServerName());
     return true;
 }
 
@@ -5216,8 +5168,7 @@ static int languageModeMV(DocumentWidget *document, DataValue *argList, int nArg
         lmName = QLatin1String("Plain");
     }
 
-    result->tag = STRING_TAG;
-    result->val.str = AllocNStringCpyEx(lmName);
+    *result = to_value(lmName);
     return true;
 }
 
@@ -5697,22 +5648,16 @@ static int rangesetInfoMS(DocumentWidget *document, DataValue *argList, int nArg
     if (!ArrayInsert(result, PERM_ALLOC_STR("count"), &element))
         M_FAILURE("Failed to insert array element \"count\" in %s");
 
-    element.tag = STRING_TAG;
-    element.val.str = AllocNStringCpyEx(color);
-
+    element = to_value(color);
     if (!ArrayInsert(result, PERM_ALLOC_STR("color"), &element))
         M_FAILURE("Failed to insert array element \"color\" in %s");
 
-    element.tag = STRING_TAG;
-    element.val.str = AllocNStringCpyEx(name);
-
+    element = to_value(name);
     if (!ArrayInsert(result, PERM_ALLOC_STR("name"), &element)) {
         M_FAILURE("Failed to insert array element \"name\" in %s");
     }
 
-    element.tag = STRING_TAG;
-    if (!AllocNStringCpy(&element.val.str, mode))
-        M_FAILURE("Failed to allocate array value \"mode\" in %s");
+    element = to_value(mode);
     if (!ArrayInsert(result, PERM_ALLOC_STR("mode"), &element))
         M_FAILURE("Failed to insert array element \"mode\" in %s");
 
@@ -5989,13 +5934,10 @@ int fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWidget *do
     result->tag = ARRAY_TAG;
     result->val.arrayPtr = ArrayNew();
 
-    // the following array entries will be strings
-    DV.tag = STRING_TAG;
-
     if (includeName) {
 
         // insert style name
-        DV.val.str = AllocNStringCpyEx(styleName);
+        DV = to_value(styleName);
 
         if (!ArrayInsert(result, PERM_ALLOC_STR("style"), &DV)) {
             M_ARRAY_INSERT_FAILURE();
@@ -6003,7 +5945,7 @@ int fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWidget *do
     }
 
     // insert color name
-    DV.val.str = AllocNStringCpyEx(ColorOfNamedStyleEx(styleName));
+    DV = to_value(ColorOfNamedStyleEx(styleName));
     if (!ArrayInsert(result, PERM_ALLOC_STR("color"), &DV)) {
         M_ARRAY_INSERT_FAILURE();
     }
@@ -6013,7 +5955,7 @@ int fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWidget *do
        in other words, only if we have a pattern code) */
     if (patCode) {
         QColor color = HighlightColorValueOfCodeEx(document, patCode);
-        DV.val.str = AllocNStringCpyEx(color.name());
+        DV = to_value(color.name());
 
         if (!ArrayInsert(result, PERM_ALLOC_STR("rgb"), &DV)) {
             M_ARRAY_INSERT_FAILURE();
@@ -6021,7 +5963,7 @@ int fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWidget *do
     }
 
     // Prepare array element for background color name
-    DV.val.str = AllocNStringCpyEx(BgColorOfNamedStyleEx(styleName));
+    DV = to_value(BgColorOfNamedStyleEx(styleName));
     if (!ArrayInsert(result, PERM_ALLOC_STR("background"), &DV)) {
         M_ARRAY_INSERT_FAILURE();
     }
@@ -6031,7 +5973,7 @@ int fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWidget *do
        in other words, only if we have a pattern code) */
     if (patCode) {
         QColor color = GetHighlightBGColorOfCodeEx(document, patCode);
-        DV.val.str = AllocNStringCpyEx(color.name());
+        DV = to_value(color.name());
 
         if (!ArrayInsert(result, PERM_ALLOC_STR("back_rgb"), &DV)) {
             M_ARRAY_INSERT_FAILURE();
@@ -6169,20 +6111,17 @@ int fillPatternResultEx(DataValue *result, const char **errMsg, DocumentWidget *
     result->val.arrayPtr = ArrayNew();
 
     // the following array entries will be strings
-    DV.tag = STRING_TAG;
 
     if (includeName) {
         // insert pattern name
-        DV.val.str = AllocNStringCpyEx(patternName);
-
+        DV = to_value(patternName);
         if (!ArrayInsert(result, PERM_ALLOC_STR("pattern"), &DV)) {
             M_ARRAY_INSERT_FAILURE();
         }
     }
 
     // insert style name
-    DV.val.str = AllocNStringCpyEx(styleName);
-
+    DV = to_value(styleName);
     if (!ArrayInsert(result, PERM_ALLOC_STR("style"), &DV)) {
         M_ARRAY_INSERT_FAILURE();
     }
@@ -6305,11 +6244,12 @@ static bool tooFewArgsErr(const char **errMsg) {
 */
 static bool readArgument(DataValue dv, int *result, const char **errMsg) {
 
-    if (dv.tag == INT_TAG) {
+    switch(dv.tag) {
+    case INT_TAG:
         *result = dv.val.n;
         return true;
-    } else if (dv.tag == STRING_TAG) {
-
+    case STRING_TAG:
+    {
         char *p = dv.val.str.rep;
         char *endp;
         long val = strtol(p, &endp, 10);
@@ -6323,11 +6263,12 @@ static bool readArgument(DataValue dv, int *result, const char **errMsg) {
         *result = static_cast<int>(val);
         return true;
     }
-
-    if(errMsg) {
-        *errMsg = "%s called with unknown object";
+    default:
+        if(errMsg) {
+            *errMsg = "%s called with unknown object";
+        }
+        return false;
     }
-    return false;
 }
 
 /*

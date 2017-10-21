@@ -2022,17 +2022,16 @@ void MainWindow::on_action_Insert_Ctrl_Code_triggered() {
         bool ok;
         int n = QInputDialog::getInt(this, tr("Insert Ctrl Code"), tr("ASCII Character Code:"), 0, 0, 255, 1, &ok);
         if(ok) {
-            char charCodeString[2];
-            charCodeString[0] = static_cast<uint8_t>(n);
-            charCodeString[1] = '\0';
+            std::string str(1, static_cast<char>(n));
 
-            if (!doc->buffer_->BufSubstituteNullChars(charCodeString, 1)) {
+
+            if (!doc->buffer_->BufSubstituteNullCharsEx(str)) {
                 QMessageBox::critical(this, tr("Error"), tr("Too much binary data"));
                 return;
             }
 
             if(TextArea *w = lastFocus_) {
-                w->insertStringAP(QString::fromLatin1(charCodeString));
+                w->insertStringAP(QString::fromStdString(str));
             }
         }
     }
