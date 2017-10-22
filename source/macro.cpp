@@ -109,122 +109,122 @@ static void runMacroEx(DocumentWidget *document, Program *prog);
 static void finishMacroCmdExecutionEx(DocumentWidget *document);
 static bool continueWorkProcEx(DocumentWidget *document);
 
-static int lengthMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int minMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int maxMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int focusWindowMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int getRangeMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int getCharacterMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int replaceRangeMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int replaceSelectionMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int getSelectionMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int validNumberMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int replaceInStringMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int replaceSubstringMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int readFileMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int writeFileMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int appendFileMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int writeOrAppendFile(bool append, DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int substringMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int toupperMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int tolowerMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int stringToClipboardMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int clipboardToStringMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int searchMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int searchStringMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int setCursorPosMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int beepMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int selectMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int selectRectangleMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int tPrintMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int getenvMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int shellCmdMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int dialogMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int stringDialogMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int calltipMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int killCalltipMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool lengthMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool minMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool maxMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool focusWindowMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool getRangeMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool getCharacterMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool replaceRangeMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool replaceSelectionMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool getSelectionMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool validNumberMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool replaceInStringMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool replaceSubstringMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool readFileMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool writeFileMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool appendFileMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool writeOrAppendFile(bool append, DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool substringMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool toupperMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool tolowerMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool stringToClipboardMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool clipboardToStringMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool searchMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool searchStringMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool setCursorPosMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool beepMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool selectMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool selectRectangleMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool tPrintMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool getenvMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool shellCmdMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool dialogMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool stringDialogMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool calltipMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool killCalltipMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 
 // T Balinski
-static int listDialogMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool listDialogMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 // T Balinski End
 
-static int stringCompareMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int splitMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool stringCompareMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool splitMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 #if 0 // DISASBLED for 5.4
-static int setBacklightStringMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool setBacklightStringMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 #endif
-static int cursorMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int lineMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int columnMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int fileNameMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int filePathMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int lengthMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int selectionStartMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int selectionEndMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int selectionLeftMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int selectionRightMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int statisticsLineMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int incSearchLineMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int showLineNumbersMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int autoIndentMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int wrapTextMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int highlightSyntaxMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int makeBackupCopyMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int incBackupMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int showMatchingMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int matchSyntaxBasedMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int overTypeModeMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int readOnlyMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int lockedMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int fileFormatMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int fontNameMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int fontNameItalicMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int fontNameBoldMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int fontNameBoldItalicMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int subscriptSepMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int minFontWidthMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int maxFontWidthMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int wrapMarginMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int topLineMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int numDisplayLinesMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int displayWidthMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int activePaneMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int nPanesMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int emptyArrayMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int serverNameMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int tabDistMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int emTabDistMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int useTabsMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int modifiedMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int languageModeMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int calltipIDMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int rangesetListMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int versionMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int rangesetCreateMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int rangesetDestroyMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int rangesetGetByNameMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int rangesetAddMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int rangesetSubtractMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int rangesetInvertMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int rangesetInfoMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int rangesetRangeMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int rangesetIncludesPosMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int rangesetSetColorMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int rangesetSetNameMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int rangesetSetModeMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int fillPatternResultEx(DataValue *result, const char **errMsg, DocumentWidget *document, const QString &patternName, bool includeName, const QString &styleName, int bufferPos);
-static int getPatternByNameMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int getPatternAtPosMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWidget *document, const QString &styleName, bool includeName, int patCode, int bufferPos);
-static int getStyleByNameMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int getStyleAtPosMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int filenameDialogMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool cursorMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool lineMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool columnMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool fileNameMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool filePathMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool lengthMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool selectionStartMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool selectionEndMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool selectionLeftMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool selectionRightMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool statisticsLineMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool incSearchLineMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool showLineNumbersMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool autoIndentMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool wrapTextMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool highlightSyntaxMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool makeBackupCopyMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool incBackupMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool showMatchingMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool matchSyntaxBasedMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool overTypeModeMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool readOnlyMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool lockedMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool fileFormatMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool fontNameMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool fontNameItalicMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool fontNameBoldMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool fontNameBoldItalicMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool subscriptSepMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool minFontWidthMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool maxFontWidthMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool wrapMarginMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool topLineMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool numDisplayLinesMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool displayWidthMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool activePaneMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool nPanesMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool emptyArrayMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool serverNameMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool tabDistMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool emTabDistMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool useTabsMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool modifiedMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool languageModeMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool calltipIDMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool rangesetListMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool versionMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool rangesetCreateMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool rangesetDestroyMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool rangesetGetByNameMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool rangesetAddMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool rangesetSubtractMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool rangesetInvertMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool rangesetInfoMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool rangesetRangeMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool rangesetIncludesPosMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool rangesetSetColorMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool rangesetSetNameMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool rangesetSetModeMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool fillPatternResultEx(DataValue *result, const char **errMsg, DocumentWidget *document, const QString &patternName, bool includeName, const QString &styleName, int bufferPos);
+static bool getPatternByNameMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool getPatternAtPosMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWidget *document, const QString &styleName, bool includeName, int patCode, int bufferPos);
+static bool getStyleByNameMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool getStyleAtPosMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool filenameDialogMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 
 // MainWindow scoped functions
-static int replaceAllInSelectionMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
-static int replaceAllMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool replaceAllInSelectionMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
+static bool replaceAllMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 
-static int readSearchArgs(DataValue *argList, int nArgs, SearchDirection *searchDirection, SearchType *searchType, WrapMode *wrap, const char **errMsg);
+static bool readSearchArgs(DataValue *argList, int nArgs, SearchDirection *searchDirection, SearchType *searchType, WrapMode *wrap, const char **errMsg);
 static bool wrongNArgsErr(const char **errMsg);
 static bool tooFewArgsErr(const char **errMsg);
 
@@ -295,7 +295,7 @@ bool flagsFromArguments(DataValue *argList, int nArgs, int firstFlag, TextArea::
 
 
 #define TEXT_EVENT(routineName, slotName)                                                                                 \
-static int routineName(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) { \
+static bool routineName(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) { \
                                                                                                                           \
     TextArea::EventFlags flags = TextArea::NoneFlag;                                                                      \
     if(!flagsFromArguments(argList, nArgs, 0, &flags)) {                                                                  \
@@ -314,7 +314,7 @@ static int routineName(DocumentWidget *document, DataValue *argList, int nArgs, 
 }
 
 #define TEXT_EVENT_S(routineName, slotName)                                                                               \
-static int routineName(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) { \
+static bool routineName(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) { \
                                                                                                                           \
     if(nArgs < 1) {                                                                                                       \
         return wrongNArgsErr(errMsg);                                                                                     \
@@ -342,7 +342,7 @@ static int routineName(DocumentWidget *document, DataValue *argList, int nArgs, 
 }
 
 #define TEXT_EVENT_I(routineName, slotName)                                                                               \
-static int routineName(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) { \
+static bool routineName(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) { \
                                                                                                                           \
     if(nArgs < 1) {                                                                                                       \
         return wrongNArgsErr(errMsg);                                                                                     \
@@ -414,7 +414,7 @@ TEXT_EVENT(endOfSelectionMS,          endOfSelectionAP)
 TEXT_EVENT(pageLeftMS,                pageLeftAP)
 TEXT_EVENT(pageRightMS,               pageRightAP)
 
-static int scrollDownMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool scrollDownMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     int count;
     QString unitsString = QLatin1String("line");
@@ -453,7 +453,7 @@ static int scrollDownMS(DocumentWidget *document, DataValue *argList, int nArgs,
     return true;
 }
 
-static int scrollUpMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool scrollUpMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     int count;
     QString unitsString = QLatin1String("line");
@@ -575,7 +575,7 @@ static const SubRoutine TextAreaSubrNames[] = {
 
 
 #define WINDOW_MENU_EVENT_S(routineName, slotName)                                                                            \
-    static int routineName(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) { \
+    static bool routineName(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) { \
                                                                                                                               \
         /* ensure that we are dealing with the document which currently has the focus */                                      \
         document = MacroRunWindowEx();                                                                                        \
@@ -594,7 +594,7 @@ static const SubRoutine TextAreaSubrNames[] = {
     }
 
 #define WINDOW_MENU_EVENT(routineName, slotName)                                                                              \
-    static int routineName(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) { \
+    static bool routineName(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) { \
         Q_UNUSED(argList);                                                                                                    \
                                                                                                                               \
         /* ensure that we are dealing with the document which currently has the focus */                                      \
@@ -805,7 +805,7 @@ static SearchType searchType(DataValue *argList, int nArgs, int index) {
     return GetPrefSearch();
 }
 
-static int closeMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool closeMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     // ensure that we are dealing with the document which currently has the focus
     document = MacroRunWindowEx();
@@ -847,7 +847,7 @@ static int closeMS(DocumentWidget *document, DataValue *argList, int nArgs, Data
     return true;
 }
 
-static int newMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool newMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     // ensure that we are dealing with the document which currently has the focus
     document = MacroRunWindowEx();
@@ -890,7 +890,7 @@ static int newMS(DocumentWidget *document, DataValue *argList, int nArgs, DataVa
     return true;
 }
 
-static int saveAsMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool saveAsMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     // ensure that we are dealing with the document which currently has the focus
     document = MacroRunWindowEx();
@@ -926,7 +926,7 @@ static int saveAsMS(DocumentWidget *document, DataValue *argList, int nArgs, Dat
     return true;
 }
 
-static int findMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool findMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     // find( search-string [, search-direction] [, search-type] [, search-wrap] )
 
@@ -954,7 +954,7 @@ static int findMS(DocumentWidget *document, DataValue *argList, int nArgs, DataV
     return true;
 }
 
-static int findDialogMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool findDialogMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
 
@@ -973,7 +973,7 @@ static int findDialogMS(DocumentWidget *document, DataValue *argList, int nArgs,
     return true;
 }
 
-static int findAgainMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool findAgainMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
 
@@ -991,7 +991,7 @@ static int findAgainMS(DocumentWidget *document, DataValue *argList, int nArgs, 
     return true;
 }
 
-static int findSelectionMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool findSelectionMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
 
@@ -1010,7 +1010,7 @@ static int findSelectionMS(DocumentWidget *document, DataValue *argList, int nAr
     return true;
 }
 
-static int replaceMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool replaceMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
 
@@ -1039,7 +1039,7 @@ static int replaceMS(DocumentWidget *document, DataValue *argList, int nArgs, Da
     return true;
 }
 
-static int replaceDialogMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool replaceDialogMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
 
@@ -1058,7 +1058,7 @@ static int replaceDialogMS(DocumentWidget *document, DataValue *argList, int nAr
     return true;
 }
 
-static int replaceAgainMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool replaceAgainMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     // replace_in_selection( search-string, replace-string [, search-type] )
 
@@ -1081,7 +1081,7 @@ static int replaceAgainMS(DocumentWidget *document, DataValue *argList, int nArg
     return true;
 }
 
-static int gotoMarkMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool gotoMarkMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     // goto_mark( mark, [, extend] )
 
@@ -1118,7 +1118,7 @@ static int gotoMarkMS(DocumentWidget *document, DataValue *argList, int nArgs, D
     return true;
 }
 
-static int gotoMarkDialogMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool gotoMarkDialogMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     // goto_mark( mark, [, extend] )
 
     // ensure that we are dealing with the document which currently has the focus
@@ -1149,7 +1149,7 @@ static int gotoMarkDialogMS(DocumentWidget *document, DataValue *argList, int nA
     return true;
 }
 
-static int findDefinitionMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool findDefinitionMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     // find_definition( [ argument ] )
 
     // ensure that we are dealing with the document which currently has the focus
@@ -1175,7 +1175,7 @@ static int findDefinitionMS(DocumentWidget *document, DataValue *argList, int nA
     return true;
 }
 
-static int repeatMacroMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool repeatMacroMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     // repeat_macro( how/count, method )
 
     // ensure that we are dealing with the document which currently has the focus
@@ -1211,7 +1211,7 @@ static int repeatMacroMS(DocumentWidget *document, DataValue *argList, int nArgs
     return true;
 }
 
-static int detachDocumentDialogMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool detachDocumentDialogMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(argList);
     Q_UNUSED(nArgs);
@@ -1239,7 +1239,7 @@ static int detachDocumentDialogMS(DocumentWidget *document, DataValue *argList, 
     return true;
 }
 
-static int setAutoIndentMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool setAutoIndentMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     QString string;
     if(!readArguments(argList, nArgs, 0, errMsg, &string)) {
@@ -1264,7 +1264,7 @@ static int setAutoIndentMS(DocumentWidget *document, DataValue *argList, int nAr
     return true;
 }
 
-static int setEmTabDistMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool setEmTabDistMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     int number;
     if(!readArguments(argList, nArgs, 0, errMsg, &number)) {
@@ -1288,7 +1288,7 @@ static int setEmTabDistMS(DocumentWidget *document, DataValue *argList, int nArg
     return true;
 }
 
-static int setFontsMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool setFontsMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     // ensure that we are dealing with the document which currently has the focus
     document = MacroRunWindowEx();
@@ -1328,7 +1328,7 @@ static int setFontsMS(DocumentWidget *document, DataValue *argList, int nArgs, D
 
 
 
-static int setHighlightSyntaxMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool setHighlightSyntaxMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     document = MacroRunWindowEx();
     int newState;
@@ -1353,7 +1353,7 @@ static int setHighlightSyntaxMS(DocumentWidget *document, DataValue *argList, in
     return true;
 }
 
-static int setIncrementalBackupMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool setIncrementalBackupMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     document = MacroRunWindowEx();
     int newState;
 
@@ -1371,7 +1371,7 @@ static int setIncrementalBackupMS(DocumentWidget *document, DataValue *argList, 
     return true;
 }
 
-static int setIncrementalSearchLineMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool setIncrementalSearchLineMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     document = MacroRunWindowEx();
 
     MainWindow *win = document->toWindow();
@@ -1388,7 +1388,7 @@ static int setIncrementalSearchLineMS(DocumentWidget *document, DataValue *argLi
     return true;
 }
 
-static int setMakeBackupCopyMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool setMakeBackupCopyMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     document = MacroRunWindowEx();
     int newState;
@@ -1407,7 +1407,7 @@ static int setMakeBackupCopyMS(DocumentWidget *document, DataValue *argList, int
     return true;
 }
 
-static int setLockedMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool setLockedMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     document = MacroRunWindowEx();
     int newState;
@@ -1428,7 +1428,7 @@ static int setLockedMS(DocumentWidget *document, DataValue *argList, int nArgs, 
     return true;
 }
 
-static int setLanguageModeMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool setLanguageModeMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     document = MacroRunWindowEx();
 
@@ -1443,7 +1443,7 @@ static int setLanguageModeMS(DocumentWidget *document, DataValue *argList, int n
     return true;
 }
 
-static int setOvertypeModeMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool setOvertypeModeMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     document = MacroRunWindowEx();
     int newState;
@@ -1461,7 +1461,7 @@ static int setOvertypeModeMS(DocumentWidget *document, DataValue *argList, int n
     return true;
 }
 
-static int setShowLineNumbersMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool setShowLineNumbersMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     document = MacroRunWindowEx();
 
@@ -1482,7 +1482,7 @@ static int setShowLineNumbersMS(DocumentWidget *document, DataValue *argList, in
     return true;
 }
 
-static int setShowMatchingMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool setShowMatchingMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     document = MacroRunWindowEx();
 
@@ -1520,7 +1520,7 @@ static int setShowMatchingMS(DocumentWidget *document, DataValue *argList, int n
     return true;
 }
 
-static int setMatchSyntaxBasedMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool setMatchSyntaxBasedMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     document = MacroRunWindowEx();
 
@@ -1539,7 +1539,7 @@ static int setMatchSyntaxBasedMS(DocumentWidget *document, DataValue *argList, i
     return true;
 }
 
-static int setStatisticsLineMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool setStatisticsLineMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     document = MacroRunWindowEx();
 
@@ -1558,7 +1558,7 @@ static int setStatisticsLineMS(DocumentWidget *document, DataValue *argList, int
     return true;
 }
 
-static int setTabDistMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool setTabDistMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     document = MacroRunWindowEx();
 
@@ -1577,7 +1577,7 @@ static int setTabDistMS(DocumentWidget *document, DataValue *argList, int nArgs,
     return true;
 }
 
-static int setUseTabsMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool setUseTabsMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     document = MacroRunWindowEx();
 
@@ -1589,7 +1589,7 @@ static int setUseTabsMS(DocumentWidget *document, DataValue *argList, int nArgs,
     return true;
 }
 
-static int setWrapMarginMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool setWrapMarginMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     document = MacroRunWindowEx();
 
@@ -1613,7 +1613,7 @@ static int setWrapMarginMS(DocumentWidget *document, DataValue *argList, int nAr
     return true;
 }
 
-static int setWrapTextMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool setWrapTextMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     document = MacroRunWindowEx();
 
@@ -1641,7 +1641,7 @@ static int setWrapTextMS(DocumentWidget *document, DataValue *argList, int nArgs
     return true;
 }
 
-static int findIncrMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool findIncrMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     document = MacroRunWindowEx();
 
@@ -1686,7 +1686,7 @@ static int findIncrMS(DocumentWidget *document, DataValue *argList, int nArgs, D
     return true;
 }
 
-static int startIncrFindMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool startIncrFindMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
 
@@ -1704,7 +1704,7 @@ static int startIncrFindMS(DocumentWidget *document, DataValue *argList, int nAr
     return true;
 }
 
-static int replaceFindMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool replaceFindMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     document = MacroRunWindowEx();
 
@@ -1744,7 +1744,7 @@ static int replaceFindMS(DocumentWidget *document, DataValue *argList, int nArgs
 
 }
 
-static int replaceFindSameMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool replaceFindSameMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(argList);
     Q_UNUSED(nArgs);
@@ -1773,7 +1773,7 @@ static int replaceFindSameMS(DocumentWidget *document, DataValue *argList, int n
     return true;
 }
 
-static int nextDocumentMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool nextDocumentMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(argList);
     Q_UNUSED(nArgs);
@@ -1793,7 +1793,7 @@ static int nextDocumentMS(DocumentWidget *document, DataValue *argList, int nArg
     return true;
 }
 
-static int prevDocumentMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool prevDocumentMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(argList);
     Q_UNUSED(nArgs);
@@ -1813,7 +1813,7 @@ static int prevDocumentMS(DocumentWidget *document, DataValue *argList, int nArg
     return true;
 }
 
-static int lastDocumentMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool lastDocumentMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(argList);
     Q_UNUSED(nArgs);
@@ -1833,7 +1833,7 @@ static int lastDocumentMS(DocumentWidget *document, DataValue *argList, int nArg
     return true;
 }
 
-static int backgroundMenuCommand(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool backgroundMenuCommandMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(argList);
     Q_UNUSED(nArgs);
@@ -1974,7 +1974,7 @@ static const SubRoutine MenuMacroSubrNames[] = {
     { "next_document",                nextDocumentMS },
     { "previous_document",            prevDocumentMS },
     { "last_document",                lastDocumentMS },
-    { "bg_menu_command",              backgroundMenuCommand },
+    { "bg_menu_command",              backgroundMenuCommandMS },
 #if 0 // NOTE(eteran): what are these for? are they needed?
     { "post_window_bg_menu",          nullptr },
     { "post_tab_context_menu",        nullptr },
@@ -2861,7 +2861,7 @@ bool continueWorkProcEx(DocumentWidget *document) {
 /*
 ** Built-in macro subroutine for getting the length of a string
 */
-static int lengthMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool lengthMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(document);
 
@@ -2877,7 +2877,7 @@ static int lengthMS(DocumentWidget *document, DataValue *argList, int nArgs, Dat
 /*
 ** Built-in macro subroutines for min and max
 */
-static int minMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool minMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(document);
 
@@ -2904,7 +2904,7 @@ static int minMS(DocumentWidget *document, DataValue *argList, int nArgs, DataVa
     return true;
 }
 
-static int maxMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool maxMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     Q_UNUSED(document);
 
     int maxVal;
@@ -2930,7 +2930,7 @@ static int maxMS(DocumentWidget *document, DataValue *argList, int nArgs, DataVa
     return true;
 }
 
-static int focusWindowMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool focusWindowMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
 
     /* Read the argument representing the window to focus to, and translate
@@ -3010,7 +3010,7 @@ static int focusWindowMS(DocumentWidget *document, DataValue *argList, int nArgs
 ** Built-in macro subroutine for getting text from the current window's text
 ** buffer
 */
-static int getRangeMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool getRangeMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     int from;
     int to;
     TextBuffer *buf = document->buffer_;
@@ -3041,7 +3041,7 @@ static int getRangeMS(DocumentWidget *document, DataValue *argList, int nArgs, D
 ** Built-in macro subroutine for getting a single character at the position
 ** given, from the current window
 */
-static int getCharacterMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool getCharacterMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     int pos;
     TextBuffer *buf = document->buffer_;
 
@@ -3065,7 +3065,7 @@ static int getCharacterMS(DocumentWidget *document, DataValue *argList, int nArg
 ** Built-in macro subroutine for replacing text in the current window's text
 ** buffer
 */
-static int replaceRangeMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool replaceRangeMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     int from;
     int to;
     TextBuffer *buf = document->buffer_;
@@ -3111,7 +3111,7 @@ static int replaceRangeMS(DocumentWidget *document, DataValue *argList, int nArg
 ** Built-in macro subroutine for replacing the primary-selection selected
 ** text in the current window's text buffer
 */
-static int replaceSelectionMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool replaceSelectionMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     std::string string;
 
     // Validate argument and convert to string
@@ -3148,7 +3148,7 @@ static int replaceSelectionMS(DocumentWidget *document, DataValue *argList, int 
 ** the primary selection in the current window's text buffer, or in any
 ** part of screen if "any" argument is given
 */
-static int getSelectionMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool getSelectionMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     /* Read argument list to check for "any" keyword, and get the appropriate
        selection */
@@ -3184,7 +3184,7 @@ static int getSelectionMS(DocumentWidget *document, DataValue *argList, int nArg
 ** Built-in macro subroutine for determining if implicit conversion of
 ** a string to number will succeed or fail
 */
-static int validNumberMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool validNumberMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     Q_UNUSED(document);
 
     std::string string;
@@ -3200,7 +3200,7 @@ static int validNumberMS(DocumentWidget *document, DataValue *argList, int nArgs
 /*
 ** Built-in macro subroutine for replacing a substring within another string
 */
-static int replaceSubstringMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool replaceSubstringMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(document);
 
@@ -3234,7 +3234,7 @@ static int replaceSubstringMS(DocumentWidget *document, DataValue *argList, int 
 ** Built-in macro subroutine for getting a substring of a string.
 ** Called as substring(string, from [, to])
 */
-static int substringMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool substringMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(document);
 
@@ -3272,7 +3272,7 @@ static int substringMS(DocumentWidget *document, DataValue *argList, int nArgs, 
     return true;
 }
 
-static int toupperMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool toupperMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(document);
     std::string string;
@@ -3291,7 +3291,7 @@ static int toupperMS(DocumentWidget *document, DataValue *argList, int nArgs, Da
     return true;
 }
 
-static int tolowerMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool tolowerMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(document);
     std::string string;
@@ -3310,7 +3310,7 @@ static int tolowerMS(DocumentWidget *document, DataValue *argList, int nArgs, Da
     return true;
 }
 
-static int stringToClipboardMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool stringToClipboardMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(document);
 
@@ -3327,7 +3327,7 @@ static int stringToClipboardMS(DocumentWidget *document, DataValue *argList, int
     return true;
 }
 
-static int clipboardToStringMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool clipboardToStringMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(document);
     Q_UNUSED(argList);
@@ -3355,7 +3355,7 @@ static int clipboardToStringMS(DocumentWidget *document, DataValue *argList, int
 ** file as a string in the subroutine return value.  On failure, returns
 ** the empty string "" and an 0 $readStatus.
 */
-static int readFileMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool readFileMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     Q_UNUSED(document);
 
     std::string name;
@@ -3388,15 +3388,15 @@ static int readFileMS(DocumentWidget *document, DataValue *argList, int nArgs, D
 ** to a file named in parameter $2. Returns 1 on successful write, or 0 if
 ** unsuccessful.
 */
-static int writeFileMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool writeFileMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     return writeOrAppendFile(false, document, argList, nArgs, result, errMsg);
 }
 
-static int appendFileMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool appendFileMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     return writeOrAppendFile(true, document, argList, nArgs, result, errMsg);
 }
 
-static int writeOrAppendFile(bool append, DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool writeOrAppendFile(bool append, DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(document);
 
@@ -3442,7 +3442,7 @@ static int writeOrAppendFile(bool append, DocumentWidget *document, DataValue *a
 ** Returns the starting position of the match, or -1 if nothing matched.
 ** also returns the ending position of the match in $searchEndPos
 */
-static int searchMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool searchMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     DataValue newArgList[9];
 
     /* Use the search string routine, by adding the buffer contents as
@@ -3473,7 +3473,7 @@ static int searchMS(DocumentWidget *document, DataValue *argList, int nArgs, Dat
 ** Returns the starting position of the match, or -1 if nothing matched.
 ** also returns the ending position of the match in $searchEndPos
 */
-static int searchStringMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool searchStringMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     int beginPos;
     WrapMode wrap;
     bool found = false;
@@ -3554,7 +3554,7 @@ static int searchStringMS(DocumentWidget *document, DataValue *argList, int nArg
 ** were performed and "copy" was specified, returns a copy of the original
 ** string.  Otherwise returns an empty string ("").
 */
-static int replaceInStringMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool replaceInStringMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     std::string string;
     QString searchStr;
@@ -3627,7 +3627,7 @@ static int replaceInStringMS(DocumentWidget *document, DataValue *argList, int n
     return true;
 }
 
-static int readSearchArgs(DataValue *argList, int nArgs, SearchDirection *searchDirection, SearchType *searchType, WrapMode *wrap, const char **errMsg) {
+static bool readSearchArgs(DataValue *argList, int nArgs, SearchDirection *searchDirection, SearchType *searchType, WrapMode *wrap, const char **errMsg) {
 
     QString argStr;
 
@@ -3654,7 +3654,7 @@ static int readSearchArgs(DataValue *argList, int nArgs, SearchDirection *search
     return true;
 }
 
-static int setCursorPosMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool setCursorPosMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     int pos;
 
     // Get argument and convert to int
@@ -3669,7 +3669,7 @@ static int setCursorPosMS(DocumentWidget *document, DataValue *argList, int nArg
     return true;
 }
 
-static int selectMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool selectMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     int start;
     int end;
 
@@ -3692,7 +3692,7 @@ static int selectMS(DocumentWidget *document, DataValue *argList, int nArgs, Dat
     return true;
 }
 
-static int selectRectangleMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool selectRectangleMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     int start, end, left, right;
 
     // Get arguments and convert to int
@@ -3709,7 +3709,7 @@ static int selectRectangleMS(DocumentWidget *document, DataValue *argList, int n
 /*
 ** Macro subroutine to ring the bell
 */
-static int beepMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool beepMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(argList);
     Q_UNUSED(document);
@@ -3723,7 +3723,7 @@ static int beepMS(DocumentWidget *document, DataValue *argList, int nArgs, DataV
     return true;
 }
 
-static int tPrintMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool tPrintMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(document);
 
@@ -3749,7 +3749,7 @@ static int tPrintMS(DocumentWidget *document, DataValue *argList, int nArgs, Dat
 /*
 ** Built-in macro subroutine for getting the value of an environment variable
 */
-static int getenvMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool getenvMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(document);
 
@@ -3768,7 +3768,7 @@ static int getenvMS(DocumentWidget *document, DataValue *argList, int nArgs, Dat
     return true;
 }
 
-static int shellCmdMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool shellCmdMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     QString cmdString;
     QString inputString;
@@ -3808,7 +3808,7 @@ void ReturnShellCommandOutputEx(DocumentWidget *document, const QString &outText
     }
 }
 
-static int dialogMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool dialogMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     QString btnLabel;
     QString message;
@@ -3868,7 +3868,7 @@ static int dialogMS(DocumentWidget *document, DataValue *argList, int nArgs, Dat
     return true;
 }
 
-static int stringDialogMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool stringDialogMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     QString btnLabel;
     QString message;
@@ -3955,7 +3955,7 @@ static int stringDialogMS(DocumentWidget *document, DataValue *argList, int nArg
 ** Does this need to go on IgnoredActions?  I don't think so, since
 ** showing a calltip may be part of the action you want to learn.
 */
-static int calltipMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool calltipMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     QString tipText;
     std::string txtArg;
@@ -4064,7 +4064,7 @@ bad_arg:
 /*
 ** A subroutine to kill the current calltip
 */
-static int killCalltipMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool killCalltipMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     int calltipID = 0;
 
     if (nArgs > 1) {
@@ -4085,7 +4085,7 @@ static int killCalltipMS(DocumentWidget *document, DataValue *argList, int nArgs
 /*
  * A subroutine to get the ID of the current calltip, or 0 if there is none.
  */
-static int calltipIDMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool calltipIDMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
     Q_UNUSED(nArgs);
@@ -4095,7 +4095,7 @@ static int calltipIDMV(DocumentWidget *document, DataValue *argList, int nArgs, 
     return true;
 }
 
-static int replaceAllInSelectionMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool replaceAllInSelectionMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     // replace_in_selection( search-string, replace-string [, search-type] )
 
@@ -4117,7 +4117,7 @@ static int replaceAllInSelectionMS(DocumentWidget *document, DataValue *argList,
     return true;
 }
 
-static int replaceAllMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool replaceAllMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     // replace_all( search-string, replace-string [, search-type] )
 
@@ -4165,7 +4165,7 @@ static int replaceAllMS(DocumentWidget *document, DataValue *argList, int nArgs,
 **
 ** Note that defaultName doesn't work on all *tifs.  :-(
 */
-static int filenameDialogMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool filenameDialogMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     QString title           = QLatin1String("Choose Filename");
     QString mode            = QLatin1String("exist");
@@ -4258,7 +4258,7 @@ static int filenameDialogMS(DocumentWidget *document, DataValue *argList, int nA
 }
 
 // T Balinski
-static int listDialogMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool listDialogMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     QString btnLabel;
     QString message;
@@ -4332,7 +4332,7 @@ static int listDialogMS(DocumentWidget *document, DataValue *argList, int nArgs,
     return true;
 }
 
-static int stringCompareMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool stringCompareMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(document);
 
@@ -4342,7 +4342,6 @@ static int stringCompareMS(DocumentWidget *document, DataValue *argList, int nAr
     bool considerCase = true;
     int i;
     int compareResult;
-
 
     if (nArgs < 2) {
         return (wrongNArgsErr(errMsg));
@@ -4390,7 +4389,7 @@ static int stringCompareMS(DocumentWidget *document, DataValue *argList, int nAr
 ** array sub-scripts
 */
 
-static int splitMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool splitMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     std::string sourceStr;
     QString splitStr;
@@ -4562,7 +4561,7 @@ static int splitMS(DocumentWidget *document, DataValue *argList, int nArgs, Data
 ** will be cleared, turning off backlighting.
 */
 #if 0 // DISABLED for 5.4
-static int setBacklightStringMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool setBacklightStringMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(result);
 
@@ -4591,7 +4590,7 @@ static int setBacklightStringMS(DocumentWidget *document, DataValue *argList, in
 }
 #endif
 
-static int cursorMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool cursorMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
     Q_UNUSED(nArgs);
@@ -4602,7 +4601,7 @@ static int cursorMV(DocumentWidget *document, DataValue *argList, int nArgs, Dat
     return true;
 }
 
-static int lineMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool lineMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
     Q_UNUSED(nArgs);
@@ -4622,7 +4621,7 @@ static int lineMV(DocumentWidget *document, DataValue *argList, int nArgs, DataV
     return true;
 }
 
-static int columnMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool columnMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
     Q_UNUSED(nArgs);
@@ -4637,7 +4636,7 @@ static int columnMV(DocumentWidget *document, DataValue *argList, int nArgs, Dat
     return true;
 }
 
-static int fileNameMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool fileNameMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
     Q_UNUSED(nArgs);
@@ -4647,7 +4646,7 @@ static int fileNameMV(DocumentWidget *document, DataValue *argList, int nArgs, D
     return true;
 }
 
-static int filePathMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool filePathMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
     Q_UNUSED(nArgs);
@@ -4657,7 +4656,7 @@ static int filePathMV(DocumentWidget *document, DataValue *argList, int nArgs, D
     return true;
 }
 
-static int lengthMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool lengthMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
     Q_UNUSED(nArgs);
@@ -4667,7 +4666,7 @@ static int lengthMV(DocumentWidget *document, DataValue *argList, int nArgs, Dat
     return true;
 }
 
-static int selectionStartMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool selectionStartMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
     Q_UNUSED(nArgs);
@@ -4677,7 +4676,7 @@ static int selectionStartMV(DocumentWidget *document, DataValue *argList, int nA
     return true;
 }
 
-static int selectionEndMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool selectionEndMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
     Q_UNUSED(nArgs);
@@ -4687,7 +4686,7 @@ static int selectionEndMV(DocumentWidget *document, DataValue *argList, int nArg
     return true;
 }
 
-static int selectionLeftMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool selectionLeftMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
     Q_UNUSED(nArgs);
@@ -4699,7 +4698,7 @@ static int selectionLeftMV(DocumentWidget *document, DataValue *argList, int nAr
     return true;
 }
 
-static int selectionRightMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool selectionRightMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
     Q_UNUSED(nArgs);
@@ -4711,7 +4710,7 @@ static int selectionRightMV(DocumentWidget *document, DataValue *argList, int nA
     return true;
 }
 
-static int wrapMarginMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool wrapMarginMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
     Q_UNUSED(nArgs);
@@ -4724,7 +4723,7 @@ static int wrapMarginMV(DocumentWidget *document, DataValue *argList, int nArgs,
     return true;
 }
 
-static int statisticsLineMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool statisticsLineMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
     Q_UNUSED(nArgs);
@@ -4734,7 +4733,7 @@ static int statisticsLineMV(DocumentWidget *document, DataValue *argList, int nA
     return true;
 }
 
-static int incSearchLineMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool incSearchLineMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
     Q_UNUSED(nArgs);
@@ -4744,7 +4743,7 @@ static int incSearchLineMV(DocumentWidget *document, DataValue *argList, int nAr
     return true;
 }
 
-static int showLineNumbersMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool showLineNumbersMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
     Q_UNUSED(nArgs);
@@ -4754,7 +4753,7 @@ static int showLineNumbersMV(DocumentWidget *document, DataValue *argList, int n
     return true;
 }
 
-static int autoIndentMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool autoIndentMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
     Q_UNUSED(nArgs);
@@ -4781,7 +4780,7 @@ static int autoIndentMV(DocumentWidget *document, DataValue *argList, int nArgs,
     return true;
 }
 
-static int wrapTextMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool wrapTextMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
     Q_UNUSED(nArgs);
@@ -4808,7 +4807,7 @@ static int wrapTextMV(DocumentWidget *document, DataValue *argList, int nArgs, D
     return true;
 }
 
-static int highlightSyntaxMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool highlightSyntaxMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
     Q_UNUSED(nArgs);
@@ -4818,7 +4817,7 @@ static int highlightSyntaxMV(DocumentWidget *document, DataValue *argList, int n
     return true;
 }
 
-static int makeBackupCopyMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool makeBackupCopyMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
     Q_UNUSED(nArgs);
@@ -4828,7 +4827,7 @@ static int makeBackupCopyMV(DocumentWidget *document, DataValue *argList, int nA
     return true;
 }
 
-static int incBackupMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool incBackupMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
     Q_UNUSED(nArgs);
@@ -4838,7 +4837,7 @@ static int incBackupMV(DocumentWidget *document, DataValue *argList, int nArgs, 
     return true;
 }
 
-static int showMatchingMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool showMatchingMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
     Q_UNUSED(nArgs);
@@ -4862,7 +4861,7 @@ static int showMatchingMV(DocumentWidget *document, DataValue *argList, int nArg
     return true;
 }
 
-static int matchSyntaxBasedMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool matchSyntaxBasedMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
     Q_UNUSED(nArgs);
@@ -4872,7 +4871,7 @@ static int matchSyntaxBasedMV(DocumentWidget *document, DataValue *argList, int 
     return true;
 }
 
-static int overTypeModeMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool overTypeModeMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
     Q_UNUSED(nArgs);
@@ -4882,7 +4881,7 @@ static int overTypeModeMV(DocumentWidget *document, DataValue *argList, int nArg
     return true;
 }
 
-static int readOnlyMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool readOnlyMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
     Q_UNUSED(nArgs);
@@ -4892,7 +4891,7 @@ static int readOnlyMV(DocumentWidget *document, DataValue *argList, int nArgs, D
     return true;
 }
 
-static int lockedMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool lockedMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
     Q_UNUSED(nArgs);
@@ -4902,7 +4901,7 @@ static int lockedMV(DocumentWidget *document, DataValue *argList, int nArgs, Dat
     return true;
 }
 
-static int fileFormatMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool fileFormatMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
     Q_UNUSED(nArgs);
@@ -4926,7 +4925,7 @@ static int fileFormatMV(DocumentWidget *document, DataValue *argList, int nArgs,
     return true;
 }
 
-static int fontNameMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool fontNameMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     Q_UNUSED(errMsg);
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
@@ -4935,7 +4934,7 @@ static int fontNameMV(DocumentWidget *document, DataValue *argList, int nArgs, D
     return true;
 }
 
-static int fontNameItalicMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool fontNameItalicMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     Q_UNUSED(errMsg);
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
@@ -4944,7 +4943,7 @@ static int fontNameItalicMV(DocumentWidget *document, DataValue *argList, int nA
     return true;
 }
 
-static int fontNameBoldMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool fontNameBoldMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     Q_UNUSED(errMsg);
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
@@ -4953,7 +4952,7 @@ static int fontNameBoldMV(DocumentWidget *document, DataValue *argList, int nArg
     return true;
 }
 
-static int fontNameBoldItalicMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool fontNameBoldItalicMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     Q_UNUSED(errMsg);
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
@@ -4962,7 +4961,7 @@ static int fontNameBoldItalicMV(DocumentWidget *document, DataValue *argList, in
     return true;
 }
 
-static int subscriptSepMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool subscriptSepMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     Q_UNUSED(document);
     Q_UNUSED(errMsg);
     Q_UNUSED(nArgs);
@@ -4972,7 +4971,7 @@ static int subscriptSepMV(DocumentWidget *document, DataValue *argList, int nArg
     return true;
 }
 
-static int minFontWidthMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool minFontWidthMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     Q_UNUSED(errMsg);
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
@@ -4982,7 +4981,7 @@ static int minFontWidthMV(DocumentWidget *document, DataValue *argList, int nArg
     return true;
 }
 
-static int maxFontWidthMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool maxFontWidthMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     Q_UNUSED(errMsg);
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
@@ -4992,7 +4991,7 @@ static int maxFontWidthMV(DocumentWidget *document, DataValue *argList, int nArg
     return true;
 }
 
-static int topLineMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool topLineMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     Q_UNUSED(errMsg);
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
@@ -5002,7 +5001,7 @@ static int topLineMV(DocumentWidget *document, DataValue *argList, int nArgs, Da
     return true;
 }
 
-static int numDisplayLinesMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool numDisplayLinesMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     Q_UNUSED(errMsg);
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
@@ -5012,7 +5011,7 @@ static int numDisplayLinesMV(DocumentWidget *document, DataValue *argList, int n
     return true;
 }
 
-static int displayWidthMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool displayWidthMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
     Q_UNUSED(nArgs);
@@ -5023,7 +5022,7 @@ static int displayWidthMV(DocumentWidget *document, DataValue *argList, int nArg
     return true;
 }
 
-static int activePaneMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool activePaneMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
@@ -5033,7 +5032,7 @@ static int activePaneMV(DocumentWidget *document, DataValue *argList, int nArgs,
     return true;
 }
 
-static int nPanesMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool nPanesMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
@@ -5043,7 +5042,7 @@ static int nPanesMV(DocumentWidget *document, DataValue *argList, int nArgs, Dat
     return true;
 }
 
-static int emptyArrayMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool emptyArrayMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(document);
     Q_UNUSED(nArgs);
@@ -5054,7 +5053,7 @@ static int emptyArrayMV(DocumentWidget *document, DataValue *argList, int nArgs,
     return true;
 }
 
-static int serverNameMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool serverNameMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(document);
     Q_UNUSED(nArgs);
@@ -5065,7 +5064,7 @@ static int serverNameMV(DocumentWidget *document, DataValue *argList, int nArgs,
     return true;
 }
 
-static int tabDistMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool tabDistMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
@@ -5075,7 +5074,7 @@ static int tabDistMV(DocumentWidget *document, DataValue *argList, int nArgs, Da
     return true;
 }
 
-static int emTabDistMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool emTabDistMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
@@ -5087,7 +5086,7 @@ static int emTabDistMV(DocumentWidget *document, DataValue *argList, int nArgs, 
     return true;
 }
 
-static int useTabsMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool useTabsMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
     Q_UNUSED(errMsg);
@@ -5096,7 +5095,7 @@ static int useTabsMV(DocumentWidget *document, DataValue *argList, int nArgs, Da
     return true;
 }
 
-static int modifiedMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool modifiedMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
@@ -5106,7 +5105,7 @@ static int modifiedMV(DocumentWidget *document, DataValue *argList, int nArgs, D
     return true;
 }
 
-static int languageModeMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool languageModeMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
@@ -5127,7 +5126,7 @@ static int languageModeMV(DocumentWidget *document, DataValue *argList, int nArg
 /*
 ** Range set macro variables and functions
 */
-static int rangesetListMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool rangesetListMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
@@ -5165,7 +5164,7 @@ static int rangesetListMV(DocumentWidget *document, DataValue *argList, int nArg
 **  different point revisions. This is done because the macro interface
 **  does not change for the same version.
 */
-static int versionMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool versionMV(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
     Q_UNUSED(nArgs);
@@ -5184,7 +5183,7 @@ static int versionMV(DocumentWidget *document, DataValue *argList, int nArgs, Da
 ** If called with no arguments, returns a single rangeset label (not an array),
 ** or an empty string if there are no rangesets available.
 */
-static int rangesetCreateMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool rangesetCreateMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     int nRangesetsRequired;
     DataValue element;
@@ -5225,7 +5224,7 @@ static int rangesetCreateMS(DocumentWidget *document, DataValue *argList, int nA
 /*
 ** Built-in macro subroutine for forgetting a range set.
 */
-static int rangesetDestroyMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool rangesetDestroyMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     RangesetTable *rangesetTable = document->buffer_->rangesetTable_;
     DataValue element;        
     int label = 0;
@@ -5284,7 +5283,7 @@ static int rangesetDestroyMS(DocumentWidget *document, DataValue *argList, int n
 ** Arguments are $1: range set name.
 ** return value is an array indexed 0 to n, with the rangeset labels as values;
 */
-static int rangesetGetByNameMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool rangesetGetByNameMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     Rangeset *rangeset;
     QString name;
@@ -5334,7 +5333,7 @@ static int rangesetGetByNameMS(DocumentWidget *document, DataValue *argList, int
 ** if any to specify range to add - must not be rectangular). Returns the
 ** index of the newly added range (cases b and c), or 0 (case a).
 */
-static int rangesetAddMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool rangesetAddMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     TextBuffer *buffer = document->buffer_;
     RangesetTable *rangesetTable = buffer->rangesetTable_;
     int start;
@@ -5430,7 +5429,7 @@ static int rangesetAddMS(DocumentWidget *document, DataValue *argList, int nArgs
 ** to RangesetSubtract()/RangesetSubtractBetween(), the handling of an
 ** undefined destination range, and that it returns no value.
 */
-static int rangesetSubtractMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool rangesetSubtractMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     TextBuffer *buffer = document->buffer_;
     RangesetTable *rangesetTable = buffer->rangesetTable_;
     int start, end, rectStart, rectEnd;
@@ -5504,7 +5503,7 @@ static int rangesetSubtractMS(DocumentWidget *document, DataValue *argList, int 
 ** label (one alphabetic character). Returns nothing. Fails if range set
 ** undefined.
 */
-static int rangesetInvertMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool rangesetInvertMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     RangesetTable *rangesetTable = document->buffer_->rangesetTable_;
     int label;
@@ -5540,7 +5539,7 @@ static int rangesetInvertMS(DocumentWidget *document, DataValue *argList, int nA
 ** argument of a rangeset label.  Returns an array with the following keys:
 **    defined, count, color, mode.
 */
-static int rangesetInfoMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool rangesetInfoMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     RangesetTable *rangesetTable = document->buffer_->rangesetTable_;
     Rangeset *rangeset = nullptr;
     DataValue element;
@@ -5606,7 +5605,7 @@ static int rangesetInfoMS(DocumentWidget *document, DataValue *argList, int nArg
 ** ranges, otherwise select the individual range specified.  Returns
 ** an array with the keys "start" and "end" and values
 */
-static int rangesetRangeMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool rangesetRangeMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     TextBuffer *buffer = document->buffer_;
     RangesetTable *rangesetTable = buffer->rangesetTable_;
     Rangeset *rangeset;
@@ -5667,7 +5666,7 @@ static int rangesetRangeMS(DocumentWidget *document, DataValue *argList, int nAr
 ** false (zero) if not in a range, range index (1-based) if in a range;
 ** fails if parameters were bad.
 */
-static int rangesetIncludesPosMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool rangesetIncludesPosMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     TextBuffer *buffer = document->buffer_;
     RangesetTable *rangesetTable = buffer->rangesetTable_;
     int rangeIndex, maxpos;
@@ -5716,7 +5715,7 @@ static int rangesetIncludesPosMS(DocumentWidget *document, DataValue *argList, i
 ** found/applied. If no color is applied, any current color is removed. Returns
 ** true if the rangeset is valid.
 */
-static int rangesetSetColorMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool rangesetSetColorMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     TextBuffer *buffer = document->buffer_;
     RangesetTable *rangesetTable = buffer->rangesetTable_;
@@ -5755,7 +5754,7 @@ static int rangesetSetColorMS(DocumentWidget *document, DataValue *argList, int 
 ** Set the name of a range set's ranges. Returns
 ** true if the rangeset is valid.
 */
-static int rangesetSetNameMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool rangesetSetNameMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     TextBuffer *buffer = document->buffer_;
     RangesetTable *rangesetTable = buffer->rangesetTable_;
@@ -5794,7 +5793,7 @@ static int rangesetSetNameMS(DocumentWidget *document, DataValue *argList, int n
 ** Change a range's modification response. Returns true if the rangeset is
 ** valid and the response type name is valid.
 */
-static int rangesetSetModeMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool rangesetSetModeMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     TextBuffer *buffer = document->buffer_;
     RangesetTable *rangesetTable = buffer->rangesetTable_;
@@ -5858,7 +5857,7 @@ static int rangesetSetModeMS(DocumentWidget *document, DataValue *argList, int n
 **      ["style"]       Name of style
 **
 */
-int fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWidget *document, const QString &styleName, bool includeName, int patCode, int bufferPos) {
+static bool fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWidget *document, const QString &styleName, bool includeName, int patCode, int bufferPos) {
     DataValue DV;
 
     *result = to_value(array_new());
@@ -5939,7 +5938,7 @@ int fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWidget *do
 **      ["italic"]      '1' if style is italic, '0' otherwise
 **
 */
-static int getStyleByNameMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool getStyleByNameMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     QString styleName;
 
     // Validate number of arguments
@@ -5976,7 +5975,7 @@ static int getStyleByNameMS(DocumentWidget *document, DataValue *argList, int nA
 **      ["extent"]      Forward distance from position over which style applies
 **
 */
-static int getStyleAtPosMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool getStyleAtPosMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     int patCode;
     int bufferPos;
     TextBuffer *buf = document->buffer_;
@@ -6022,7 +6021,7 @@ static int getStyleAtPosMS(DocumentWidget *document, DataValue *argList, int nAr
 **      ["pattern"]     Name of pattern
 **
 */
-int fillPatternResultEx(DataValue *result, const char **errMsg, DocumentWidget *document, const QString &patternName, bool includeName, const QString &styleName, int bufferPos) {
+bool fillPatternResultEx(DataValue *result, const char **errMsg, DocumentWidget *document, const QString &patternName, bool includeName, const QString &styleName, int bufferPos) {
 
     Q_UNUSED(errMsg);
 
@@ -6065,7 +6064,7 @@ int fillPatternResultEx(DataValue *result, const char **errMsg, DocumentWidget *
 ** The returned array looks like this:
 **      ["style"]       Name of style
 */
-static int getPatternByNameMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool getPatternByNameMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
 
     QString patternName;
 
@@ -6100,7 +6099,7 @@ static int getPatternByNameMS(DocumentWidget *document, DataValue *argList, int 
 **      ["style"]       Name of style
 **      ["extent"]      Distance from position over which this pattern applies
 */
-static int getPatternAtPosMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
+static bool getPatternAtPosMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     int bufferPos;
     TextBuffer *buffer = document->buffer_;
 

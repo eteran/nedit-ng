@@ -117,7 +117,7 @@ union Inst {
 	Symbol *sym;
 };
 
-typedef int (*BuiltInSubrEx)(DocumentWidget *document, struct DataValue *argList, int nArgs, struct DataValue *result, const char **errMsg);
+using BuiltInSubrEx = bool (*)(DocumentWidget *document, struct DataValue *argList, int nArgs, struct DataValue *result, const char **errMsg);
 
 struct NString {
 	char *rep;
