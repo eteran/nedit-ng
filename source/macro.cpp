@@ -305,11 +305,11 @@ static bool routineName(DocumentWidget *document, DataValue *argList, int nArgs,
                                                                                                                           \
     if(MainWindow *window = document->toWindow()) {                                                                       \
         if(TextArea *area = window->lastFocus_) {                                                                         \
-            area->slotName(flags | TextArea::SupressRecording);                                                                                        \
+            area->slotName(flags | TextArea::SupressRecording);                                                           \
         }                                                                                                                 \
     }                                                                                                                     \
                                                                                                                           \
-    result->tag = NO_TAG;                                                                                                 \
+    *result = to_value();                                                                                                 \
     return true;                                                                                                          \
 }
 
@@ -337,7 +337,7 @@ static bool routineName(DocumentWidget *document, DataValue *argList, int nArgs,
         }                                                                                                                 \
     }                                                                                                                     \
                                                                                                                           \
-    result->tag = NO_TAG;                                                                                                 \
+    *result = to_value();                                                                                                 \
     return true;                                                                                                          \
 }
 
@@ -365,7 +365,7 @@ static bool routineName(DocumentWidget *document, DataValue *argList, int nArgs,
         }                                                                                                                 \
     }                                                                                                                     \
                                                                                                                           \
-    result->tag = NO_TAG;                                                                                                 \
+    *result = to_value();                                                                                                 \
     return true;                                                                                                          \
 }
 
@@ -449,7 +449,7 @@ static bool scrollDownMS(DocumentWidget *document, DataValue *argList, int nArgs
         }
     }
 
-    result->tag = NO_TAG;
+    *result = to_value();
     return true;
 }
 
@@ -488,7 +488,7 @@ static bool scrollUpMS(DocumentWidget *document, DataValue *argList, int nArgs, 
         }
     }
 
-    result->tag = NO_TAG;
+    *result = to_value();
     return true;
 }
 
@@ -589,7 +589,7 @@ static const SubRoutine TextAreaSubrNames[] = {
             window->slotName(string);                                                                                         \
         }                                                                                                                     \
                                                                                                                               \
-        result->tag = NO_TAG;                                                                                                 \
+        *result = to_value();                                                                                                 \
         return true;                                                                                                          \
     }
 
@@ -608,7 +608,7 @@ static const SubRoutine TextAreaSubrNames[] = {
             window->slotName();                                                                                               \
         }                                                                                                                     \
                                                                                                                               \
-        result->tag = NO_TAG;                                                                                                 \
+        *result = to_value();                                                                                                 \
         return true;                                                                                                          \
     }
 
@@ -843,7 +843,7 @@ static bool closeMS(DocumentWidget *document, DataValue *argList, int nArgs, Dat
         window->action_Close(mode);
     }
 
-    result->tag = NO_TAG;
+    *result = to_value();
     return true;
 }
 
@@ -886,7 +886,7 @@ static bool newMS(DocumentWidget *document, DataValue *argList, int nArgs, DataV
         window->action_New(mode);
     }
 
-    result->tag = NO_TAG;
+    *result = to_value();
     return true;
 }
 
@@ -922,7 +922,7 @@ static bool saveAsMS(DocumentWidget *document, DataValue *argList, int nArgs, Da
         window->action_Save_As(filename, wrapped);
     }
 
-    result->tag = NO_TAG;
+    *result = to_value();
     return true;
 }
 
@@ -950,7 +950,7 @@ static bool findMS(DocumentWidget *document, DataValue *argList, int nArgs, Data
         window->action_Find(string, direction, type, wrap);
     }
 
-    result->tag = NO_TAG;
+    *result = to_value();
     return true;
 }
 
@@ -969,7 +969,7 @@ static bool findDialogMS(DocumentWidget *document, DataValue *argList, int nArgs
         window->action_Find_Dialog(direction, type, keep);
     }
 
-    result->tag = NO_TAG;
+    *result = to_value();
     return true;
 }
 
@@ -987,7 +987,7 @@ static bool findAgainMS(DocumentWidget *document, DataValue *argList, int nArgs,
         window->action_Find_Again(direction, wrap);
     }
 
-    result->tag = NO_TAG;
+    *result = to_value();
     return true;
 }
 
@@ -1006,7 +1006,7 @@ static bool findSelectionMS(DocumentWidget *document, DataValue *argList, int nA
         window->action_Find_Selection(direction, type, wrap);
     }
 
-    result->tag = NO_TAG;
+    *result = to_value();
     return true;
 }
 
@@ -1035,7 +1035,7 @@ static bool replaceMS(DocumentWidget *document, DataValue *argList, int nArgs, D
         window->action_Replace(direction, searchString, replaceString, type, wrap);
     }
 
-    result->tag = NO_TAG;
+    *result = to_value();
     return true;
 }
 
@@ -1054,7 +1054,7 @@ static bool replaceDialogMS(DocumentWidget *document, DataValue *argList, int nA
         window->action_Replace_Dialog(direction, type, keep);
     }
 
-    result->tag = NO_TAG;
+    *result = to_value();
     return true;
 }
 
@@ -1076,7 +1076,7 @@ static bool replaceAgainMS(DocumentWidget *document, DataValue *argList, int nAr
         window->action_Replace_Again(direction, wrap);
     }
 
-    result->tag = NO_TAG;
+    *result = to_value();
 
     return true;
 }
@@ -1114,7 +1114,7 @@ static bool gotoMarkMS(DocumentWidget *document, DataValue *argList, int nArgs, 
         window->action_Goto_Mark(mark, extend);
     }
 
-    result->tag = NO_TAG;
+    *result = to_value();
     return true;
 }
 
@@ -1145,7 +1145,7 @@ static bool gotoMarkDialogMS(DocumentWidget *document, DataValue *argList, int n
         window->action_Goto_Mark_Dialog(extend);
     }
 
-    result->tag = NO_TAG;
+    *result = to_value();
     return true;
 }
 
@@ -1171,7 +1171,7 @@ static bool findDefinitionMS(DocumentWidget *document, DataValue *argList, int n
         window->action_Find_Definition(argument);
     }
 
-    result->tag = NO_TAG;
+    *result = to_value();
     return true;
 }
 
@@ -1207,7 +1207,7 @@ static bool repeatMacroMS(DocumentWidget *document, DataValue *argList, int nArg
         window->action_Repeat_Macro(method, how);
     }
 
-    result->tag = NO_TAG;
+    *result = to_value();
     return true;
 }
 
@@ -1260,7 +1260,7 @@ static bool setAutoIndentMS(DocumentWidget *document, DataValue *argList, int nA
         qWarning("NEdit: set_auto_indent invalid argument");
     }
 
-    result->tag = NO_TAG;
+    *result = to_value();
     return true;
 }
 
@@ -1284,7 +1284,7 @@ static bool setEmTabDistMS(DocumentWidget *document, DataValue *argList, int nAr
         qWarning("NEdit: set_em_tab_dist requires integer argument >= -1 and < 1000");
     }
 
-    result->tag = NO_TAG;
+    *result = to_value();
     return true;
 }
 
@@ -1304,7 +1304,7 @@ static bool setFontsMS(DocumentWidget *document, DataValue *argList, int nArgs, 
 
     document->SetFonts(fontName, italicName, boldName, boldItalicName);
 
-    result->tag = NO_TAG;
+    *result = to_value();
     return true;
 }
 
@@ -1349,7 +1349,7 @@ static bool setHighlightSyntaxMS(DocumentWidget *document, DataValue *argList, i
         document->StopHighlightingEx();
     }
 
-    result->tag = NO_TAG;
+    *result = to_value();
     return true;
 }
 
@@ -1367,7 +1367,7 @@ static bool setIncrementalBackupMS(DocumentWidget *document, DataValue *argList,
         }
     }
 
-    result->tag = NO_TAG;
+    *result = to_value();
     return true;
 }
 
@@ -1384,7 +1384,7 @@ static bool setIncrementalSearchLineMS(DocumentWidget *document, DataValue *argL
 
     win->ui.action_Incremental_Search_Line->setChecked(newState);
 
-    result->tag = NO_TAG;
+    *result = to_value();
     return true;
 }
 
@@ -1403,7 +1403,7 @@ static bool setMakeBackupCopyMS(DocumentWidget *document, DataValue *argList, in
 
     document->saveOldVersion_ = newState;
 
-    result->tag = NO_TAG;
+    *result = to_value();
     return true;
 }
 
@@ -1424,7 +1424,7 @@ static bool setLockedMS(DocumentWidget *document, DataValue *argList, int nArgs,
         }
     }
 
-    result->tag = NO_TAG;
+    *result = to_value();
     return true;
 }
 
@@ -1439,7 +1439,7 @@ static bool setLanguageModeMS(DocumentWidget *document, DataValue *argList, int 
     }
 
     document->SetLanguageMode(FindLanguageMode(languageMode), false);
-    result->tag = NO_TAG;
+    *result = to_value();
     return true;
 }
 
@@ -1457,7 +1457,7 @@ static bool setOvertypeModeMS(DocumentWidget *document, DataValue *argList, int 
     }
 
     document->SetOverstrike(newState);
-    result->tag = NO_TAG;
+    *result = to_value();
     return true;
 }
 
@@ -1478,7 +1478,7 @@ static bool setShowLineNumbersMS(DocumentWidget *document, DataValue *argList, i
     no_signals(win->ui.action_Show_Line_Numbers)->setChecked(newState);
 
     win->showLineNumbers_ = newState;
-    result->tag = NO_TAG;
+    *result = to_value();
     return true;
 }
 
@@ -1516,7 +1516,7 @@ static bool setShowMatchingMS(DocumentWidget *document, DataValue *argList, int 
     }
 
 
-    result->tag = NO_TAG;
+    *result = to_value();
     return true;
 }
 
@@ -1535,7 +1535,7 @@ static bool setMatchSyntaxBasedMS(DocumentWidget *document, DataValue *argList, 
     }
 
     document->matchSyntaxBased_ = newState;
-    result->tag = NO_TAG;
+    *result = to_value();
     return true;
 }
 
@@ -1554,7 +1554,7 @@ static bool setStatisticsLineMS(DocumentWidget *document, DataValue *argList, in
     }
 
     document->showStats_ = newState;
-    result->tag = NO_TAG;
+    *result = to_value();
     return true;
 }
 
@@ -1573,7 +1573,7 @@ static bool setTabDistMS(DocumentWidget *document, DataValue *argList, int nArgs
         qWarning("NEdit: set_tab_dist requires argument");
     }
 
-    result->tag = NO_TAG;
+    *result = to_value();
     return true;
 }
 
@@ -1585,7 +1585,7 @@ static bool setUseTabsMS(DocumentWidget *document, DataValue *argList, int nArgs
     ACTION_BOOL_PARAM_OR_TOGGLE(newState, nArgs, argList, document->buffer_->useTabs_, "set_use_tabs");
 
     document->buffer_->useTabs_ = newState;
-    result->tag = NO_TAG;
+    *result = to_value();
     return true;
 }
 
@@ -1609,7 +1609,7 @@ static bool setWrapMarginMS(DocumentWidget *document, DataValue *argList, int nA
         qWarning("NEdit: set_wrap_margin requires argument");
     }
 
-    result->tag = NO_TAG;
+    *result = to_value();
     return true;
 }
 
@@ -1637,7 +1637,7 @@ static bool setWrapTextMS(DocumentWidget *document, DataValue *argList, int nArg
         qWarning("NEdit: set_wrap_text requires argument");
     }
 
-    result->tag = NO_TAG;
+    *result = to_value();
     return true;
 }
 
@@ -1682,7 +1682,7 @@ static bool findIncrMS(DocumentWidget *document, DataValue *argList, int nArgs, 
         searchWrap(argList, nArgs, 1),
         continued);
 
-    result->tag = NO_TAG;
+    *result = to_value();
     return true;
 }
 
@@ -1700,7 +1700,7 @@ static bool startIncrFindMS(DocumentWidget *document, DataValue *argList, int nA
 
     win->BeginISearchEx(searchDirection(argList, nArgs, 0));
 
-    result->tag = NO_TAG;
+    *result = to_value();
     return true;
 }
 
@@ -1739,7 +1739,7 @@ static bool replaceFindMS(DocumentWidget *document, DataValue *argList, int nArg
                 searchType(argList, nArgs, 2),
                 searchWrap(argList, nArgs, 0));
 
-    result->tag = NO_TAG;
+    *result = to_value();
     return true;
 
 }
@@ -1769,7 +1769,7 @@ static bool replaceFindSameMS(DocumentWidget *document, DataValue *argList, int 
                 searchDirection(argList, nArgs, 0),
                 searchWrap(argList, nArgs, 0));
 
-    result->tag = NO_TAG;
+    *result = to_value();
     return true;
 }
 
@@ -1789,7 +1789,7 @@ static bool nextDocumentMS(DocumentWidget *document, DataValue *argList, int nAr
 
     win->action_Next_Document();
 
-    result->tag = NO_TAG;
+    *result = to_value();
     return true;
 }
 
@@ -1809,7 +1809,7 @@ static bool prevDocumentMS(DocumentWidget *document, DataValue *argList, int nAr
 
     win->action_Prev_Document();
 
-    result->tag = NO_TAG;
+    *result = to_value();
     return true;
 }
 
@@ -1829,7 +1829,7 @@ static bool lastDocumentMS(DocumentWidget *document, DataValue *argList, int nAr
 
     win->action_Last_Document();
 
-    result->tag = NO_TAG;
+    *result = to_value();
     return true;
 }
 
@@ -1855,7 +1855,7 @@ static bool backgroundMenuCommandMS(DocumentWidget *document, DataValue *argList
 
     document->DoNamedBGMenuCmd(win->lastFocus_, name, true);
 
-    result->tag = NO_TAG;
+    *result = to_value();
     return true;
 }
 
@@ -3086,7 +3086,7 @@ static bool replaceRangeMS(DocumentWidget *document, DataValue *argList, int nAr
     // Don't allow modifications if the window is read-only
     if (document->lockReasons_.isAnyLocked()) {
         QApplication::beep();
-        result->tag = NO_TAG;
+        *result = to_value();
         return true;
     }
 
@@ -3103,7 +3103,7 @@ static bool replaceRangeMS(DocumentWidget *document, DataValue *argList, int nAr
 
     // Do the replace
     buf->BufReplaceEx(from, to, string);
-    result->tag = NO_TAG;
+    *result = to_value();
     return true;
 }
 
@@ -3122,7 +3122,7 @@ static bool replaceSelectionMS(DocumentWidget *document, DataValue *argList, int
     // Don't allow modifications if the window is read-only
     if (document->lockReasons_.isAnyLocked()) {
         QApplication::beep();
-        result->tag = NO_TAG;
+        *result = to_value();
         return true;
     }
 
@@ -3139,7 +3139,7 @@ static bool replaceSelectionMS(DocumentWidget *document, DataValue *argList, int
 
     // Do the replace
     document->buffer_->BufReplaceSelectedEx(string);
-    result->tag = NO_TAG;
+    *result = to_value();
     return true;
 }
 
@@ -3665,7 +3665,7 @@ static bool setCursorPosMS(DocumentWidget *document, DataValue *argList, int nAr
     // Set the position
     auto textD = document->toWindow()->lastFocus_;
     textD->TextSetCursorPos(pos);
-    result->tag = NO_TAG;
+    *result = to_value();
     return true;
 }
 
@@ -3688,7 +3688,7 @@ static bool selectMS(DocumentWidget *document, DataValue *argList, int nArgs, Da
 
     // Make the selection
     document->buffer_->BufSelect(start, end);
-    result->tag = NO_TAG;
+    *result = to_value();
     return true;
 }
 
@@ -3702,7 +3702,7 @@ static bool selectRectangleMS(DocumentWidget *document, DataValue *argList, int 
 
     // Make the selection
     document->buffer_->BufRectSelect(start, end, left, right);
-    result->tag = NO_TAG;
+    *result = to_value();
     return true;
 }
 
@@ -3719,7 +3719,7 @@ static bool beepMS(DocumentWidget *document, DataValue *argList, int nArgs, Data
     }
 
     QApplication::beep();
-    result->tag = NO_TAG;
+    *result = to_value();
     return true;
 }
 
@@ -3742,7 +3742,7 @@ static bool tPrintMS(DocumentWidget *document, DataValue *argList, int nArgs, Da
     }
 
     fflush(stdout);
-    result->tag = NO_TAG;
+    *result = to_value();
     return true;
 }
 
@@ -4078,7 +4078,7 @@ static bool killCalltipMS(DocumentWidget *document, DataValue *argList, int nArg
 
     document->toWindow()->lastFocus_->TextDKillCalltip(calltipID);
 
-    result->tag = NO_TAG;
+    *result = to_value();
     return true;
 }
 
@@ -4393,29 +4393,21 @@ static bool splitMS(DocumentWidget *document, DataValue *argList, int nArgs, Dat
 
     std::string sourceStr;
     QString splitStr;
-    bool validSplit = true;
     SearchType searchType;
     int foundStart;
     int foundEnd;
-    char indexStr[TYPE_INT_STR_SIZE(int)];
-    char *allocIndexStr;
     DataValue element;
 
     if (nArgs < 2) {
         return (wrongNArgsErr(errMsg));
     }
+
     if (!readArgument(argList[0], &sourceStr, errMsg)) {
         *errMsg = "first argument must be a string: %s";
         return false;
     }
-    if (!readArgument(argList[1], &splitStr, errMsg)) {
-        validSplit = false;
-    } else {
-        if (splitStr.isEmpty()) {
-            validSplit = false;
-        }
-    }
-    if(!validSplit) {
+
+    if (!readArgument(argList[1], &splitStr, errMsg) || splitStr.isEmpty()) {
         *errMsg = "second argument must be a non-empty string: %s";
         return false;
     }
@@ -4439,15 +4431,8 @@ static bool splitMS(DocumentWidget *document, DataValue *argList, int nArgs, Dat
     bool found    = true;
     while (found && beginPos < strLength) {
 
-        sprintf(indexStr, "%d", indexNum);
-        allocIndexStr = AllocString(strlen(indexStr) + 1);
-        if (!allocIndexStr) {
-            *errMsg = "array element failed to allocate key: %s";
-            return false;
-        }
-        strcpy(allocIndexStr, indexStr);
-
-
+        auto indexStr      = std::to_string(indexNum);
+        auto allocIndexStr = AllocStringCpyEx(indexStr);
 
         found = SearchString(
                     sourceStr,
@@ -4485,15 +4470,11 @@ static bool splitMS(DocumentWidget *document, DataValue *argList, int nArgs, Dat
         lastEnd = foundEnd;
         ++indexNum;
     }
+
     if (found) {
 
-        sprintf(indexStr, "%d", indexNum);
-        allocIndexStr = AllocString(strlen(indexStr) + 1);
-        if (!allocIndexStr) {
-            *errMsg = "array element failed to allocate key: %s";
-            return false;
-        }
-        strcpy(allocIndexStr, indexStr);
+        auto indexStr = std::to_string(indexNum);
+        auto allocIndexStr = AllocStringCpyEx(indexStr);
 
         if (lastEnd == strLength) {
             // The pattern mathed the end of the string. Add an empty chunk.
@@ -4536,13 +4517,8 @@ static bool splitMS(DocumentWidget *document, DataValue *argList, int nArgs, Dat
             if (found) {
                 ++indexNum;
 
-                sprintf(indexStr, "%d", indexNum);
-                allocIndexStr = AllocString(strlen(indexStr) + 1);
-                if (!allocIndexStr) {
-                    *errMsg = "array element failed to allocate key: %s";
-                    return false;
-                }
-                strcpy(allocIndexStr, indexStr);
+                auto indexStr = std::to_string(indexNum);
+                auto allocIndexStr = AllocStringCpyEx(indexStr);
 
                 element = to_value();
                 if (!ArrayInsert(result, allocIndexStr, &element)) {
@@ -5274,7 +5250,7 @@ static bool rangesetDestroyMS(DocumentWidget *document, DataValue *argList, int 
     }
 
     // set up result
-    result->tag = NO_TAG;
+    *result = to_value();
     return true;
 }
 
@@ -5494,7 +5470,7 @@ static bool rangesetSubtractMS(DocumentWidget *document, DataValue *argList, int
     }
 
     // set up result
-    result->tag = NO_TAG;
+    *result = to_value();
     return true;
 }
 
@@ -5530,7 +5506,7 @@ static bool rangesetInvertMS(DocumentWidget *document, DataValue *argList, int n
     }
 
     // set up result
-    result->tag = NO_TAG;
+    *result = to_value();
     return true;
 }
 
@@ -5746,7 +5722,7 @@ static bool rangesetSetColorMS(DocumentWidget *document, DataValue *argList, int
     rangeset->RangesetAssignColorName(color_name);
 
     // set up result
-    result->tag = NO_TAG;
+    *result = to_value();
     return true;
 }
 
@@ -5785,7 +5761,7 @@ static bool rangesetSetNameMS(DocumentWidget *document, DataValue *argList, int 
     rangeset->RangesetAssignName(name);
 
     // set up result
-    result->tag = NO_TAG;
+    *result = to_value();
     return true;
 }
 
@@ -5830,7 +5806,7 @@ static bool rangesetSetModeMS(DocumentWidget *document, DataValue *argList, int 
     }
 
     // set up result
-    result->tag = NO_TAG;
+    *result = to_value();
     return true;
 }
 
