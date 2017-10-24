@@ -81,12 +81,14 @@ protected:
         Q_UNUSED(state);
 
         QString s;
+        s.reserve(len);
+
         for(int i = 0; i < len; ++i) {
             quint32 ch = chars[i] & 0xff;
             if(ch < 0x80 || ch >= 0xa0) {
                 s.append(QChar(ch));
             } else {
-                s.append(QChar::Null);
+                s.append(QChar::ReplacementCharacter);
             }
         }
         return s;
@@ -519,6 +521,7 @@ TextArea::TextArea(
 #endif
 
     // track when we lose ownership of the selection
+    // TODO(eteran): why does this sometimes crash?
     if(QApplication::clipboard()->supportsSelection()) {
         connect(QApplication::clipboard(), &QClipboard::selectionChanged, [this]() {
             if(!QApplication::clipboard()->ownsSelection()) {
@@ -2083,12 +2086,19 @@ int TextArea::measurePropChar(const char c, int colNum, int pos) const {
 //------------------------------------------------------------------------------
 int TextArea::stringWidth(const char *string, int length, int style) const {
 
+
+#if 1
+    static auto asciiCodec = new AsciiTextCodec();
+    QString str = asciiCodec->toUnicode(string, length);
+#else
+    auto str = QString::fromLatin1(string, length);
+#endif
 	if (style & STYLE_LOOKUP_MASK) {
         QFontMetrics fm(styleTable_[(style & STYLE_LOOKUP_MASK) - ASCII_A].font);
-        return fm.width(QString::fromLatin1(string, length));
+        return fm.width(str);
 	} else {
         QFontMetrics fm(font_);
-        return fm.width(QString::fromLatin1(string, length));
+        return fm.width(str);
 	}
 }
 
@@ -3507,12 +3517,17 @@ void TextArea::drawString(QPainter *painter, int style, int x, int y, int toX, c
 
     // temporarily use a custom converter
     static auto asciiCodec = new AsciiTextCodec();
+
+#if 0
     QTextCodec::setCodecForLocale(asciiCodec);
 
     auto s = QString::fromLatin1(string, nChars);
 
     // restore it, because otherwise it messes up QString::toStdString
     QTextCodec::setCodecForLocale(nullptr);
+#else
+    auto s = asciiCodec->toUnicode(string, nChars);
+#endif
 
     QRect rect(x, y, toX - x, ascent_ + descent_);
 

@@ -1091,6 +1091,8 @@ std::string TextBuffer::BufGetTextInRectEx(int start, int end, int rectStart, in
 	start = BufStartOfLine(start);
 	end   = BufEndOfLine(end);
 
+    assert(end > start);
+
 	std::string textOut;
 	textOut.reserve(end - start);
 
