@@ -606,7 +606,7 @@ void DocumentWidget::RefreshTabState() {
         static const auto saveIcon = QIcon::fromTheme(QLatin1String("document-save"));
         if(!saveIcon.isNull()) {
             tabWidget->setTabIcon(index, fileChanged_ ? saveIcon : QIcon());
-            tabWidget->setTabText(index, filename_);
+            labelString = filename_;
         } else {
             /* Set tab label to document's filename. Position of
                "*" (modified) will change per label alignment setting */
@@ -615,9 +615,9 @@ void DocumentWidget::RefreshTabState() {
 
             QString labelString;
             if (alignment != Qt::AlignRight) {
-                tabWidget->setTabText(index, tr("%1%2").arg(fileChanged_ ? tr("*") : tr(""), filename_));
+                labelString = tr("%1%2").arg(fileChanged_ ? tr("*") : tr(""), filename_);
             } else {
-                tabWidget->setTabText(index, tr("%2%1").arg(fileChanged_ ? tr("*") : tr(""), filename_));
+                labelString = tr("%2%1").arg(fileChanged_ ? tr("*") : tr(""), filename_);
             }
         }
 
@@ -628,6 +628,7 @@ void DocumentWidget::RefreshTabState() {
 			tipString = labelString;
 		}
 
+        tabWidget->setTabText(index, labelString);
         tabWidget->setTabToolTip(index, tipString);
 	}
 }
