@@ -5,6 +5,7 @@
 #include "ShowMatchingStyle.h"
 #include "WrapStyle.h"
 #include "ReplaceScope.h"
+#include "search.h"
 #include "nedit.h"
 #include <QSettings>
 #include <QStandardPaths>

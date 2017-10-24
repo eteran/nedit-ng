@@ -2,8 +2,9 @@ cmake_minimum_required(VERSION 3.0)
 
 project (nedit CXX)
 
-option(ENABLE_ASAN "Enable various santiziers")
-option(ENABLE_LTO  "Enable Link Time Optimization")
+option(ENABLE_ASAN   "Enable various santiziers")
+option(ENABLE_LTO    "Enable Link Time Optimization")
+option(REPLACE_SCOPE "Use Alternative Search Dialog")
 
 if(ENABLE_ASAN)
 	set(CMAKE_CXX_FLAGS        "${CMAKE_CXX_FLAGS}        -g3 -fsanitize=address -fsanitize=undefined")
@@ -21,11 +22,13 @@ if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING "Choose the type of build, options are: Debug Release RelWithDebInfo MinSizeRel." FORCE)
 endif()
 
+if(REPLACE_SCOPE)
+	add_definitions(-DREPLACE_SCOPE)
+endif()
 
 
 add_definitions(-DQT_NO_CAST_FROM_ASCII)
 add_definitions(-DQT_NO_CAST_TO_ASCII)
-#add_definitions(-DREPLACE_SCOPE)
 
 add_subdirectory (util)
 add_subdirectory (source)
