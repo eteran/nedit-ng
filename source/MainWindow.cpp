@@ -4067,7 +4067,7 @@ void MainWindow::on_action_Exit_triggered() {
                 break;
             }
 
-            // NOTE(eteran): test if this is the last window
+            // if this is the last window, use proper grammar :-)
             if (i == (documents.size() - 1)) {
                 exitMsg.append(tr("and %1.").arg(filename));
             } else {

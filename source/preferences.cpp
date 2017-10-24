@@ -1385,9 +1385,7 @@ static bool modeErrorEx(const Input &in, const QString &message) {
 bool ParseErrorEx(QWidget *toDialog, const QString &string, int stoppedAt, const QString &errorIn, const QString &message) {
 
 	// NOTE(eteran): hack to work around the fact that stoppedAt can be a "one past the end iterator"
-	if(stoppedAt == string.size()) {
-		stoppedAt = string.size() - 1;
-	}
+    stoppedAt = qBound(0, stoppedAt, string.size() - 1);
 
 	int nNonWhite = 0;
 	int c;

@@ -438,7 +438,6 @@ bool DialogLanguageModes::updateLMList(Mode mode) {
                     if (oldModeName == itemFromIndex(i)->name) {
                         QString newDelimiters = itemFromIndex(i)->delimiters;
 
-                        // NOTE(eteran): should this include empty string?
                         if(newDelimiters.isNull()) {
                             newDelimiters = GetPrefDelimiters();
                         }
