@@ -3567,85 +3567,45 @@ bool DocumentWidget::includeFile(const QString &name) {
         return false;
     }
 
-	// TODO(eteran): 2.0, replace this with a memory map of the file
-
-    // Open the file
-    FILE *fp = ::fopen(name.toLatin1().data(), "rb");
-    if(!fp) {
-        QMessageBox::critical(this, tr("Error opening File"), tr("Could not open %1:\n%2").arg(name, ErrorString(errno)));
+    QFile file(name);
+    file.open(QFile::ReadOnly);
+    uchar *memory = file.map(0, file.size());
+    if (!memory) {
+        QMessageBox::critical(this, tr("Error opening File"), file.errorString());
         return false;
     }
 
-    struct stat statbuf;
+    auto fileString = std::string(reinterpret_cast<char *>(memory), file.size());
 
-    // Get the length of the file
-    if (::fstat(fileno(fp), &statbuf) != 0) {
-        QMessageBox::critical(this, tr("Error opening File"), tr("Error opening %1").arg(name));
-        fclose(fp);
-        return false;
+    file.unmap(memory);
+
+    // Detect and convert DOS and Macintosh format files
+    switch (FormatOfFileEx(fileString)) {
+    case DOS_FILE_FORMAT:
+        ConvertFromDosFileStringEx(&fileString, nullptr);
+        break;
+    case MAC_FILE_FORMAT:
+        ConvertFromMacFileStringEx(&fileString);
+        break;
+    case UNIX_FILE_FORMAT:
+        //  Default is Unix, no conversion necessary.
+        break;
     }
 
-    if (S_ISDIR(statbuf.st_mode)) {
-        QMessageBox::critical(this, tr("Error opening File"), tr("Can't open directory %1").arg(name));
-        fclose(fp);
-        return false;
+    // If the file contained ascii nulls, re-map them
+    if (!buffer_->BufSubstituteNullCharsEx(fileString)) {
+        QMessageBox::critical(this, tr("Error opening File"), tr("Too much binary data in file"));
     }
 
-    const long fileLen = statbuf.st_size;
-
-    // allocate space for the whole contents of the file
-    try {
-        auto fileString = std::make_unique<char[]>(fileLen + 1); // +1 = space for null
-
-        // read the file into fileString and terminate with a null
-		int readLen = ::fread(&fileString[0], 1, fileLen, fp);
-        if (::ferror(fp)) {
-            QMessageBox::critical(this, tr("Error opening File"), tr("Error reading %1:\n%2").arg(name, ErrorString(errno)));
-            ::fclose(fp);
-            return false;
+    /* insert the contents of the file in the selection or at the insert
+       position in the window if no selection exists */
+    if (buffer_->primary_.selected) {
+        buffer_->BufReplaceSelectedEx(fileString);
+    } else {
+        if(auto win = toWindow()) {
+            auto textD = win->lastFocus_;
+            buffer_->BufInsertEx(textD->TextGetCursorPos(), fileString);
         }
-        fileString[readLen] = '\0';
-
-        // Detect and convert DOS and Macintosh format files
-        switch (FormatOfFileEx(view::string_view(&fileString[0], readLen))) {
-        case DOS_FILE_FORMAT:
-            ConvertFromDosFileString(&fileString[0], &readLen, nullptr);
-            break;
-        case MAC_FILE_FORMAT:
-            ConvertFromMacFileString(&fileString[0], readLen);
-            break;
-        case UNIX_FILE_FORMAT:
-            //  Default is Unix, no conversion necessary.
-            break;
-        }
-
-        // If the file contained ascii nulls, re-map them
-        if (!buffer_->BufSubstituteNullChars(&fileString[0], readLen)) {
-            QMessageBox::critical(this, tr("Error opening File"), tr("Too much binary data in file"));
-        }
-
-        // close the file
-        if (::fclose(fp) != 0) {
-            // unlikely error
-            QMessageBox::warning(this, tr("Error opening File"), tr("Unable to close file"));
-            // we read it successfully, so continue
-        }
-
-        /* insert the contents of the file in the selection or at the insert
-           position in the window if no selection exists */
-        if (buffer_->primary_.selected) {
-            buffer_->BufReplaceSelectedEx(view::string_view(&fileString[0], readLen));
-        } else {
-            if(auto win = toWindow()) {
-                auto textD = win->lastFocus_;
-                buffer_->BufInsertEx(textD->TextGetCursorPos(), view::string_view(&fileString[0], readLen));
-            }
-        }
-
-    } catch(const std::bad_alloc &) {
-        QMessageBox::critical(this, tr("Error opening File"), tr("File is too large to include"));
-        fclose(fp);
-        return false;
     }
 
     return true;
