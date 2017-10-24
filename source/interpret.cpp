@@ -624,6 +624,7 @@ Symbol *InstallIteratorSymbol() {
 
 	auto symbolName = ARRAY_ITER_SYM_PREFIX + std::to_string(interatorNameIndex++);
 
+    // TODO(eteran): bug? this looks like the wrong tag...
 	DataValue value;
 	value.tag = INT_TAG;
 	value.val.arrayPtr = nullptr;
@@ -868,7 +869,7 @@ static void MarkArrayContentsAsUsed(ArrayEntry *arrayPtr) {
 				if (globalSEUse->value.val.str.rep[-1] == 0) {
 					globalSEUse->value.val.str.rep[-1] = 1;
 				}
-			} else if (globalSEUse->value.tag == ARRAY_TAG) {
+            } else if (is_array(globalSEUse->value)) {
 				MarkArrayContentsAsUsed(globalSEUse->value.val.arrayPtr);
 			}
 		}
@@ -901,7 +902,7 @@ void GarbageCollectStrings() {
 			if (s->value.val.str.rep[-1] == 0) {
 				s->value.val.str.rep[-1] = 1;
 			}
-		} else if (s->value.tag == ARRAY_TAG) {
+        } else if (is_array(s->value)) {
 			MarkArrayContentsAsUsed(s->value.val.arrayPtr);
 		}
 	}
@@ -957,17 +958,19 @@ static void restoreContextEx(const std::shared_ptr<RestartData> &context) {
     FocusWindowEx      = context->focusWindow;
 }
 
-#define POP(dataVal)                                                                               \
-	if (StackP == TheStack)                                                                        \
-	    return execError(StackUnderflowMsg);                                                   \
+#define POP(dataVal)                                                           \
+    if (StackP == TheStack)                                                    \
+        return execError(StackUnderflowMsg);                                   \
 	dataVal = *--StackP;
 
-#define PUSH(dataVal)                                                                              \
-	if (StackP >= &TheStack[STACK_SIZE])                                                           \
-	    return execError(StackOverflowMsg);                                                    \
+
+#define PUSH(dataVal)                                                          \
+    if (StackP >= &TheStack[STACK_SIZE])                                       \
+        return execError(StackOverflowMsg);                                    \
 	*StackP++ = dataVal;
 
-#define PEEK(dataVal, peekIndex) dataVal = *(StackP - peekIndex - 1);
+#define PEEK(dataVal, peekIndex)                                               \
+    dataVal = *(StackP - peekIndex - 1);
 
 #define POP_INT(number)                                                        \
     if (StackP == TheStack)                                                    \
@@ -1016,19 +1019,16 @@ static void restoreContextEx(const std::shared_ptr<RestartData> &context) {
 	    return execError("can't convert array to string");                                         \
 	}
 
-#define PUSH_INT(number)                                                                           \
-	if (StackP >= &TheStack[STACK_SIZE])                                                           \
-	    return execError(StackOverflowMsg);                                                    \
-	StackP->tag   = INT_TAG;                                                                       \
-	StackP->val.n = number;                                                                        \
-	StackP++;
+#define PUSH_INT(number)                                                       \
+    if (StackP >= &TheStack[STACK_SIZE])                                       \
+        return execError(StackOverflowMsg);                                    \
+    *StackP++ = to_value(static_cast<int>(number));
 
-#define PUSH_STRING(string, length)                                                                \
-	if (StackP >= &TheStack[STACK_SIZE])                                                           \
-	    return execError(StackOverflowMsg);                                                    \
-	StackP->tag     = STRING_TAG;                                                                  \
-	StackP->val.str = NString({string, size_t(length)});                                           \
-	StackP++;
+
+#define PUSH_STRING(string, length)                                            \
+    if (StackP >= &TheStack[STACK_SIZE])                                       \
+        return execError(StackOverflowMsg);                                    \
+    *StackP++ = to_value(string, length);
 
 #define BINARY_NUMERIC_OPERATION(operator)                                                         \
 	int n1, n2;                                                                                    \
@@ -1076,12 +1076,12 @@ static int pushSymVal() {
 			return execError("referenced undefined argument: %s", s->name.c_str());
 		}
 		if (argNum == N_ARGS_ARG_SYM) {
-			symVal.tag = INT_TAG;
-			symVal.val.n = nArgs;
+            symVal = to_value(nArgs);
 		} else {
 			symVal = FP_GET_ARG_N(FrameP, argNum);
 		}
 	} else if (s->type == PROC_VALUE_SYM) {
+
 		const char *errMsg;
         if (!(s->value.val.subr)(FocusWindowEx, nullptr, 0, &symVal, &errMsg)) {
 			return execError(errMsg, s->name.c_str());
@@ -1133,9 +1133,10 @@ static int pushArgArray() {
 
 	nArgs = FP_GET_ARG_COUNT(FrameP);
 	resultArray = &FP_GET_ARG_ARRAY_CACHE(FrameP);
-	if (resultArray->tag != ARRAY_TAG) {
-		resultArray->tag = ARRAY_TAG;
-		resultArray->val.arrayPtr = ArrayNew();
+
+    if (!is_array(*resultArray)) {
+
+        *resultArray = to_value(array_new());
 
 		for (int argNum = 0; argNum < nArgs; ++argNum) {
 
@@ -1228,7 +1229,7 @@ static int assign() {
 
 	POP(value)
 
-	if (value.tag == ARRAY_TAG) {
+    if (is_array(value)) {
 		return ArrayCopy(dataPtr, &value);
 	}
 
@@ -1269,12 +1270,14 @@ static int add() {
 	STACKDUMP(2, 3);
 
 	PEEK(rightVal, 0)
-	if (rightVal.tag == ARRAY_TAG) {
+    if (is_array(rightVal)) {
+
 		PEEK(leftVal, 1)
-		if (leftVal.tag == ARRAY_TAG) {
-			ArrayEntry *leftIter, *rightIter;
-			resultArray.tag = ARRAY_TAG;
-			resultArray.val.arrayPtr = ArrayNew();
+        if (is_array(leftVal)) {
+
+            ArrayEntry *leftIter, *rightIter;
+
+            resultArray = to_value(array_new());
 
 			POP(rightVal)
 			POP(leftVal)
@@ -1334,12 +1337,12 @@ static int subtract() {
 	STACKDUMP(2, 3);
 
 	PEEK(rightVal, 0)
-	if (rightVal.tag == ARRAY_TAG) {
+    if(is_array(rightVal)) {
 		PEEK(leftVal, 1)
-		if (leftVal.tag == ARRAY_TAG) {
+        if(is_array(leftVal)) {
 			ArrayEntry *leftIter, *rightIter;
-			resultArray.tag = ARRAY_TAG;
-			resultArray.val.arrayPtr = ArrayNew();
+
+            resultArray = to_value(array_new());
 
 			POP(rightVal)
 			POP(leftVal)
@@ -1513,12 +1516,12 @@ static int bitAnd() {
 	STACKDUMP(2, 3);
 
 	PEEK(rightVal, 0)
-	if (rightVal.tag == ARRAY_TAG) {
+    if(is_array(rightVal)) {
 		PEEK(leftVal, 1)
-		if (leftVal.tag == ARRAY_TAG) {
+        if(is_array(leftVal)) {
 			ArrayEntry *leftIter, *rightIter;
-			resultArray.tag = ARRAY_TAG;
-			resultArray.val.arrayPtr = ArrayNew();
+
+            resultArray = to_value(array_new());
 
 			POP(rightVal)
 			POP(leftVal)
@@ -1568,12 +1571,12 @@ static int bitOr() {
 	STACKDUMP(2, 3);
 
 	PEEK(rightVal, 0)
-	if (rightVal.tag == ARRAY_TAG) {
+    if(is_array(rightVal)) {
 		PEEK(leftVal, 1)
-		if (leftVal.tag == ARRAY_TAG) {
+        if(is_array(leftVal)) {
 			ArrayEntry *leftIter, *rightIter;
-			resultArray.tag = ARRAY_TAG;
-			resultArray.val.arrayPtr = ArrayNew();
+
+            resultArray = to_value(array_new());
 
 			POP(rightVal)
 			POP(leftVal)
@@ -1926,7 +1929,7 @@ int ArrayCopy(DataValue *dstArray, DataValue *srcArray) {
     ArrayEntry *srcIter = arrayIterateFirst(srcArray);
 
     while (srcIter) {
-		if (srcIter->value.tag == ARRAY_TAG) {
+        if (is_array(srcIter->value)) {
 			int errNum;
 			DataValue tmpArray;
 
@@ -2193,7 +2196,7 @@ static int arrayRef() {
 		}
 
 		POP(srcArray)
-		if (srcArray.tag == ARRAY_TAG) {
+        if (is_array(srcArray)) {
 			if (!ArrayGet(&srcArray, keyString, &valueItem)) {
 				return execError("referenced array value not in array: %s", keyString);
 			}
@@ -2204,7 +2207,7 @@ static int arrayRef() {
 		}
 	} else {
 		POP(srcArray)
-		if (srcArray.tag == ARRAY_TAG) {
+        if (is_array(srcArray)) {
 			PUSH_INT(ArraySize(&srcArray))
 			return STAT_OK;
 		} else {
@@ -2243,10 +2246,10 @@ static int arrayAssign() {
 
 		POP(dstArray)
 
-		if (dstArray.tag != ARRAY_TAG && dstArray.tag != NO_TAG) {
+        if (!is_array(dstArray) && dstArray.tag != NO_TAG) {
 			return execError("cannot assign array element of non-array");
 		}
-		if (srcValue.tag == ARRAY_TAG) {
+        if (is_array(srcValue)) {
 			DataValue arrayCopyValue;
 
 			errNum = ArrayCopy(&arrayCopyValue, &srcValue);
@@ -2298,7 +2301,7 @@ static int arrayRefAndAssignSetup() {
 		}
 
 		PEEK(srcArray, nDim)
-		if (srcArray.tag == ARRAY_TAG) {
+        if (is_array(srcArray)) {
 			if (!ArrayGet(&srcArray, keyString, &valueItem)) {
 				return execError("referenced array value not in array: %s", keyString);
 			}
@@ -2328,30 +2331,28 @@ static int arrayRefAndAssignSetup() {
 **      arrayVal is the data value holding the array in question
 */
 static int beginArrayIter() {
-	Symbol *iterator;
-	DataValue *iteratorValPtr;
+
 	DataValue arrayVal;
 
 	DISASM_RT(PC - 1, 2);
 	STACKDUMP(1, 3);
 
-	iterator = PC->sym;
-	PC++;
+    Symbol *iterator = PC++->sym;
 
 	POP(arrayVal)
 
-	if (iterator->type == LOCAL_SYM) {
-		iteratorValPtr = &FP_GET_SYM_VAL(FrameP, iterator);
-	} else {
-		return execError("bad temporary iterator: %s", iterator->name.c_str());
+    if (iterator->type != LOCAL_SYM) {
+        return execError("bad temporary iterator: %s", iterator->name.c_str());
 	}
 
+    DataValue *iteratorValPtr = &FP_GET_SYM_VAL(FrameP, iterator);
 
-	if (arrayVal.tag != ARRAY_TAG) {
+
+    if (!is_array(arrayVal)) {
 		return execError("can't iterate non-array");
 	}
 
-    // TODO(eteran): bug? this looks liek the wrong tag...
+    // TODO(eteran): bug? this looks like the wrong tag...
     iteratorValPtr->tag = INT_TAG;
 	iteratorValPtr->val.arrayPtr = arrayIterateFirst(&arrayVal);
 	return STAT_OK;
@@ -2381,12 +2382,9 @@ static int beginArrayIter() {
 */
 static int arrayIter() {
 
-	DataValue *iteratorValPtr;
 	DataValue *itemValPtr;
-	ArrayEntry *thisEntry;
 
-
-	DISASM_RT(PC - 1, 4);
+    DISASM_RT(PC - 1, 4);
 	STACKDUMP(0, 3);
 
     Symbol *const item     = PC->sym; ++PC;
@@ -2402,13 +2400,14 @@ static int arrayIter() {
 	}
 	itemValPtr->tag = NO_TAG;
 
-	if (iterator->type == LOCAL_SYM) {
-		iteratorValPtr = &FP_GET_SYM_VAL(FrameP, iterator);
-	} else {
-		return execError("bad temporary iterator: %s", iterator->name.c_str());
-	}
+    if (iterator->type != LOCAL_SYM) {
+        return execError("bad temporary iterator: %s", iterator->name.c_str());
+    }
 
-	thisEntry = iteratorValPtr->val.arrayPtr;
+    DataValue *iteratorValPtr = &FP_GET_SYM_VAL(FrameP, iterator);
+
+    ArrayEntry *thisEntry = iteratorValPtr->val.arrayPtr;
+
 	if (thisEntry && thisEntry->color != -1) {
 
         *itemValPtr = to_value(thisEntry->key, strlen(thisEntry->key));
@@ -2417,6 +2416,7 @@ static int arrayIter() {
 	} else {
 		PC = branchAddr;
 	}
+
 	return STAT_OK;
 }
 
@@ -2443,11 +2443,12 @@ static int inArray() {
 	STACKDUMP(2, 3);
 
 	POP(theArray)
-	if (theArray.tag != ARRAY_TAG) {
+    if (!is_array(theArray)) {
 		return execError("operator in on non-array");
 	}
+
 	PEEK(leftArray, 0)
-	if (leftArray.tag == ARRAY_TAG) {
+    if (is_array(leftArray)) {
 
 		POP(leftArray)
 		inResult = 1;
@@ -2497,7 +2498,7 @@ static int deleteArrayElement() {
 	}
 
 	POP(theArray)
-	if (theArray.tag == ARRAY_TAG) {
+    if (is_array(theArray)) {
 		if (nDim > 0) {
 			ArrayDelete(&theArray, keyString);
 		} else {
@@ -2707,7 +2708,7 @@ static void disasm(Inst *inst, int nInstr) {
 				if (j == OP_PUSH_SYM || j == OP_ASSIGN) {
 					Symbol *sym = inst[i + 1].sym;
 					printf("%s", sym->name.c_str());
-					if (sym->value.tag == STRING_TAG && strncmp(sym->name.c_str(), "string #", 8) == 0) {
+                    if (is_string(sym->value) && strncmp(sym->name.c_str(), "string #", 8) == 0) {
 						dumpVal(sym->value);
 					}
 					++i;

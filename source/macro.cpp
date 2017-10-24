@@ -5168,7 +5168,7 @@ static bool rangesetDestroyMS(DocumentWidget *document, DataValue *argList, int 
         M_FAILURE("Wrong number of arguments to function %s");
     }
 
-    if (argList[0].tag == ARRAY_TAG) {
+    if (is_array(argList[0])) {
         DataValue *array = &argList[0];
         int arraySize = ArraySize(array);
 
@@ -5181,14 +5181,13 @@ static bool rangesetDestroyMS(DocumentWidget *document, DataValue *argList, int 
         for (int i = 0; i < arraySize; i++) {
 
             char keyString[TYPE_INT_STR_SIZE(int)];
-
             sprintf(keyString, "%d", i);
 
             if (!ArrayGet(array, keyString, &element)) {
                 M_FAILURE("Invalid key in array in %s");
             }
 
-            if (!readArgument(element, &label, errMsg) || !RangesetTable::RangesetLabelOK(label)) {
+            if (!readArgument(element, &label) || !RangesetTable::RangesetLabelOK(label)) {
                 M_FAILURE("Invalid rangeset label in array in %s");
             }
 
@@ -5199,7 +5198,7 @@ static bool rangesetDestroyMS(DocumentWidget *document, DataValue *argList, int 
             rangesetTable->RangesetForget(deleteLabels[i]);
         }
     } else {
-        if (!readArgument(argList[0], &label, errMsg) || !RangesetTable::RangesetLabelOK(label)) {
+        if (!readArgument(argList[0], &label) || !RangesetTable::RangesetLabelOK(label)) {
             M_FAILURE("Invalid rangeset label in %s");
         }
 
