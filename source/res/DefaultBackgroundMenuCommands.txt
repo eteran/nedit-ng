@@ -1,0 +1,15 @@
+	Undo::: {
+		undo()
+	}
+	Redo::: {
+		redo()
+	}
+	Cut::R: {
+		cut_clipboard()
+	}
+	Copy::R: {
+		copy_clipboard()
+	}
+	Paste::: {
+		paste_clipboard()
+	}
