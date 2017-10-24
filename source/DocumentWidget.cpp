@@ -512,8 +512,8 @@ DocumentWidget::~DocumentWidget() noexcept {
 //------------------------------------------------------------------------------
 TextArea *DocumentWidget::createTextArea(TextBuffer *buffer) {
 
-    int P_marginWidth  = 5;
-    int P_marginHeight = 5;
+    int P_marginWidth  = 2;
+    int P_marginHeight = 2;
     int lineNumCols    = 0;
     int marginWidth    = 0;
     int charWidth      = 0;

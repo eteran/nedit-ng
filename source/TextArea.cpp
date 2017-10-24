@@ -393,8 +393,8 @@ TextArea::TextArea(
 
     // defaults for the "resources"
     P_lineNumCols        = 0;
-    P_marginWidth        = 5;
-    P_marginHeight       = 5;
+    P_marginWidth        = 2;
+    P_marginHeight       = 2;
 	P_pendingDelete      = true;
 	P_heavyCursor        = false;
 	P_autoShowInsertPos  = true;
