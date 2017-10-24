@@ -223,8 +223,6 @@ static bool replaceAllInSelectionMS(DocumentWidget *document, DataValue *argList
 static bool replaceAllMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 
 static bool readSearchArgs(DataValue *argList, int nArgs, SearchDirection *searchDirection, SearchType *searchType, WrapMode *wrap, const char **errMsg);
-static bool wrongNArgsErr(const char **errMsg);
-static bool tooFewArgsErr(const char **errMsg);
 
 static bool readArgument(DataValue dv, int *result, const char **errMsg = nullptr);
 static bool readArgument(DataValue dv, std::string *result, const char **errMsg = nullptr);
@@ -314,7 +312,7 @@ static bool routineName(DocumentWidget *document, DataValue *argList, int nArgs,
 static bool routineName(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) { \
                                                                                                                           \
     if(nArgs < 1) {                                                                                                       \
-        return wrongNArgsErr(errMsg);                                                                                     \
+        M_FAILURE("Wrong number of arguments to function %s");                                                            \
     }                                                                                                                     \
                                                                                                                           \
     QString string;                                                                                                       \
@@ -341,7 +339,7 @@ static bool routineName(DocumentWidget *document, DataValue *argList, int nArgs,
 static bool routineName(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) { \
                                                                                                                           \
     if(nArgs < 1) {                                                                                                       \
-        return wrongNArgsErr(errMsg);                                                                                     \
+        M_FAILURE("Wrong number of arguments to function %s");                                                            \
     }                                                                                                                     \
                                                                                                                           \
     int num;                                                                                                              \
@@ -425,7 +423,7 @@ static bool scrollDownMS(DocumentWidget *document, DataValue *argList, int nArgs
         }
         break;
     default:
-        return wrongNArgsErr(errMsg);
+        M_FAILURE("Wrong number of arguments to function %s");
     }
 
 
@@ -464,7 +462,7 @@ static bool scrollUpMS(DocumentWidget *document, DataValue *argList, int nArgs, 
         }
         break;
     default:
-        return wrongNArgsErr(errMsg);
+        M_FAILURE("Wrong number of arguments to function %s");
     }
 
 
@@ -596,7 +594,7 @@ static const SubRoutine TextAreaSubrNames[] = {
         document = MacroRunWindowEx();                                                                                        \
                                                                                                                               \
         if(nArgs != 0) {                                                                                                      \
-            return wrongNArgsErr(errMsg);                                                                                     \
+            M_FAILURE("Wrong number of arguments to function %s");                                                                                     \
         }                                                                                                                     \
                                                                                                                               \
         if(MainWindow *window = document->toWindow()) {                                                                       \
@@ -776,10 +774,11 @@ bool StringToSearchType(const QString &string, SearchType *searchType) {
 ** looking for keywords
 */
 static SearchType searchType(DataValue *argList, int nArgs, int index) {
-    const char *errMsg = nullptr;
+
     for(int i = index; i < nArgs; ++i) {
         QString arg;
-        if (!readArgument(argList[i], &arg, &errMsg)) {
+
+        if (!readArgument(argList[i], &arg)) {
             return GetPrefSearch();
         }
 
@@ -806,7 +805,7 @@ static bool closeMS(DocumentWidget *document, DataValue *argList, int nArgs, Dat
     document = MacroRunWindowEx();
 
     if(nArgs > 1) {
-        return wrongNArgsErr(errMsg);
+        M_FAILURE("Wrong number of arguments to function %s");
     }
 
     CloseMode mode = CloseMode::Prompt;
@@ -848,7 +847,7 @@ static bool newMS(DocumentWidget *document, DataValue *argList, int nArgs, DataV
     document = MacroRunWindowEx();
 
     if(nArgs > 1) {
-        return wrongNArgsErr(errMsg);
+        M_FAILURE("Wrong number of arguments to function %s");
     }
 
     NewMode mode = NewMode::Prefs;
@@ -891,7 +890,7 @@ static bool saveAsMS(DocumentWidget *document, DataValue *argList, int nArgs, Da
     document = MacroRunWindowEx();
 
     if(nArgs > 2 || nArgs == 0) {
-        return wrongNArgsErr(errMsg);
+        M_FAILURE("Wrong number of arguments to function %s");
     }
 
     QString filename;
@@ -929,7 +928,7 @@ static bool findMS(DocumentWidget *document, DataValue *argList, int nArgs, Data
     document = MacroRunWindowEx();
 
     if(nArgs > 4 || nArgs == 0) {
-        return wrongNArgsErr(errMsg);
+        M_FAILURE("Wrong number of arguments to function %s");
     }
 
     QString string;
@@ -1013,7 +1012,7 @@ static bool replaceMS(DocumentWidget *document, DataValue *argList, int nArgs, D
     document = MacroRunWindowEx();
 
     if(nArgs > 5 || nArgs < 2) {
-        return wrongNArgsErr(errMsg);
+        M_FAILURE("Wrong number of arguments to function %s");
     }
 
     QString searchString;
@@ -1061,7 +1060,7 @@ static bool replaceAgainMS(DocumentWidget *document, DataValue *argList, int nAr
     document = MacroRunWindowEx();
 
     if(nArgs != 2) {
-        return wrongNArgsErr(errMsg);
+        M_FAILURE("Wrong number of arguments to function %s");
     }
 
     WrapMode wrap             = searchWrap(argList, nArgs, 0);
@@ -1084,7 +1083,7 @@ static bool gotoMarkMS(DocumentWidget *document, DataValue *argList, int nArgs, 
     document = MacroRunWindowEx();
 
     if(nArgs > 2 || nArgs < 1) {
-        return wrongNArgsErr(errMsg);
+        M_FAILURE("Wrong number of arguments to function %s");
     }
 
     bool extend = false;
@@ -1120,7 +1119,7 @@ static bool gotoMarkDialogMS(DocumentWidget *document, DataValue *argList, int n
     document = MacroRunWindowEx();
 
     if(nArgs > 1) {
-        return wrongNArgsErr(errMsg);
+        M_FAILURE("Wrong number of arguments to function %s");
     }
 
     bool extend = false;
@@ -1151,7 +1150,7 @@ static bool findDefinitionMS(DocumentWidget *document, DataValue *argList, int n
     document = MacroRunWindowEx();
 
     if(nArgs > 1) {
-        return wrongNArgsErr(errMsg);
+        M_FAILURE("Wrong number of arguments to function %s");
     }
 
     QString argument;
@@ -2299,7 +2298,7 @@ Program *ParseMacroEx(const QString &expr, QString *message, int *stoppedAt) {
     Program *p = ParseMacro(ptr, &msg, &e);
 
     *message = QString::fromLatin1(msg);
-    *stoppedAt = (e - ptr);
+    *stoppedAt = static_cast<int>(e - ptr);
     return p;
 }
 
@@ -2879,7 +2878,7 @@ static bool minMS(DocumentWidget *document, DataValue *argList, int nArgs, DataV
     int value;
 
     if (nArgs == 1) {
-        return tooFewArgsErr(errMsg);
+        M_FAILURE("Too few arguments to function %s");
     }
 
     if (!readArgument(argList[0], &minVal, errMsg)) {
@@ -2905,7 +2904,7 @@ static bool maxMS(DocumentWidget *document, DataValue *argList, int nArgs, DataV
     int value;
 
     if (nArgs == 1) {
-        return tooFewArgsErr(errMsg);
+        M_FAILURE("Too few arguments to function %s");
     }
 
     if (!readArgument(argList[0], &maxVal, errMsg)) {
@@ -2930,7 +2929,7 @@ static bool focusWindowMS(DocumentWidget *document, DataValue *argList, int nArg
     /* Read the argument representing the window to focus to, and translate
        it into a pointer to a real DocumentWidget */
     if (nArgs != 1) {
-        return wrongNArgsErr(errMsg);
+        M_FAILURE("Wrong number of arguments to function %s");
     }
 
     QString string;
@@ -3143,7 +3142,7 @@ static bool getSelectionMS(DocumentWidget *document, DataValue *argList, int nAr
     /* Read argument list to check for "any" keyword, and get the appropriate
        selection */
     if (nArgs != 0 && nArgs != 1) {
-        return wrongNArgsErr(errMsg);
+        M_FAILURE("Wrong number of arguments to function %s");
     }
 
     if (nArgs == 1) {
@@ -3229,7 +3228,7 @@ static bool substringMS(DocumentWidget *document, DataValue *argList, int nArgs,
 
     // Validate arguments and convert to int
     if (nArgs != 2 && nArgs != 3) {
-        return wrongNArgsErr(errMsg);
+        M_FAILURE("Wrong number of arguments to function %s");
     }
 
     int from;
@@ -3323,7 +3322,7 @@ static bool clipboardToStringMS(DocumentWidget *document, DataValue *argList, in
 
     // Should have no arguments
     if (nArgs != 0) {
-        return wrongNArgsErr(errMsg);
+        M_FAILURE("Wrong number of arguments to function %s");
     }
 
     // Ask if there's a string in the clipboard, and get its length
@@ -3437,7 +3436,7 @@ static bool searchMS(DocumentWidget *document, DataValue *argList, int nArgs, Da
     /* Use the search string routine, by adding the buffer contents as
        the string argument */
     if (nArgs > 8)
-        return wrongNArgsErr(errMsg);
+        M_FAILURE("Wrong number of arguments to function %s");
 
     /* we remove constness from BufAsStringEx() result since we know
        searchStringMS will not modify the result */
@@ -3446,7 +3445,7 @@ static bool searchMS(DocumentWidget *document, DataValue *argList, int nArgs, Da
     newArgList[0] = to_value(str, size);
 
     // copy other arguments to the new argument list
-    memcpy(&newArgList[1], argList, nArgs * sizeof(DataValue));
+    std::copy_n(argList, nArgs, &newArgList[1]);
 
     return searchStringMS(document, newArgList, nArgs + 1, result, errMsg);
 }
@@ -3465,9 +3464,9 @@ static bool searchMS(DocumentWidget *document, DataValue *argList, int nArgs, Da
 static bool searchStringMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     int beginPos;
     WrapMode wrap;
-    bool found = false;
-    int foundStart;
-    int foundEnd;
+    bool found     = false;
+    int foundStart = -1;
+    int foundEnd   = 0;
     SearchType type;
     bool skipSearch = false;
     std::string string;
@@ -3476,7 +3475,7 @@ static bool searchStringMS(DocumentWidget *document, DataValue *argList, int nAr
 
     // Validate arguments and convert to proper types
     if (nArgs < 3)
-        return tooFewArgsErr(errMsg);
+        M_FAILURE("Too few arguments to function %s");
     if (!readArgument(argList[0], &string, errMsg))
         return false;
     if (!readArgument(argList[1], &searchStr, errMsg))
@@ -3556,7 +3555,7 @@ static bool replaceInStringMS(DocumentWidget *document, DataValue *argList, int 
 
     // Validate arguments and convert to proper types
     if (nArgs < 3 || nArgs > 5)
-        return wrongNArgsErr(errMsg);
+        M_FAILURE("Wrong number of arguments to function %s");
     if (!readArgument(argList[0], &string, errMsg))
         return false;
     if (!readArgument(argList[1], &searchStr, errMsg))
@@ -3576,7 +3575,7 @@ static bool replaceInStringMS(DocumentWidget *document, DataValue *argList, int 
             if (argStr == QLatin1String("copy")) {
                 force = true;
             } else {
-                M_FAILURE("unrecognized argument to %s");
+                M_FAILURE("Unrecognized argument to %s");
             }
         }
     }
@@ -3702,7 +3701,7 @@ static bool beepMS(DocumentWidget *document, DataValue *argList, int nArgs, Data
     Q_UNUSED(document);
 
     if (nArgs != 0) {
-        return wrongNArgsErr(errMsg);
+        M_FAILURE("Wrong number of arguments to function %s");
     }
 
     QApplication::beep();
@@ -3717,7 +3716,7 @@ static bool tPrintMS(DocumentWidget *document, DataValue *argList, int nArgs, Da
     std::string string;
 
     if (nArgs == 0) {
-        return tooFewArgsErr(errMsg);
+        M_FAILURE("Too few arguments to function %s");
     }
 
     for (int i = 0; i < nArgs; i++) {
@@ -3979,22 +3978,22 @@ static bool calltipMS(DocumentWidget *document, DataValue *argList, int nArgs, D
         switch (txtArg[0]) {
         case 'c':
             if (txtArg == "center")
-                goto bad_arg;
+                M_FAILURE("Unrecognized argument to %s");
             hAlign = TIP_CENTER;
             break;
         case 'r':
             if (txtArg == "right")
-                goto bad_arg;
+                M_FAILURE("Unrecognized argument to %s");
             hAlign = TIP_RIGHT;
             break;
         case 'a':
             if (txtArg == "above")
-                goto bad_arg;
+                M_FAILURE("Unrecognized argument to %s");
             vAlign = TIP_ABOVE;
             break;
         case 's':
             if (txtArg == "strict")
-                goto bad_arg;
+                M_FAILURE("Unrecognized argument to %s");
             alignMode = TIP_STRICT;
             break;
         case 't':
@@ -4005,11 +4004,11 @@ static bool calltipMS(DocumentWidget *document, DataValue *argList, int nArgs, D
             } else if (txtArg == "tagKey") {
                 mode = TIP_FROM_TAG;
             } else {
-                goto bad_arg;
+                M_FAILURE("Unrecognized argument to %s");
             }
             break;
         default:
-            goto bad_arg;
+            M_FAILURE("Unrecognized argument to %s");
         }
     }
 
@@ -4030,13 +4029,6 @@ static bool calltipMS(DocumentWidget *document, DataValue *argList, int nArgs, D
                            alignMode));
 
     return true;
-
-bad_arg:
-    /* This is how the (more informative) global var. version would work,
-        assuming there was a global buffer called msg.  */
-    /* sprintf(msg, "unrecognized argument to %%s: \"%s\"", txtArg);
-    *errMsg = msg; */
-    M_FAILURE("unrecognized argument to %s");
 }
 
 /*
@@ -4102,7 +4094,7 @@ static bool replaceAllMS(DocumentWidget *document, DataValue *argList, int nArgs
     document = MacroRunWindowEx();
 
     if (nArgs < 2 || nArgs > 3) {
-        return wrongNArgsErr(errMsg);
+        M_FAILURE("Wrong number of arguments to function %s");
     }
 
     //  Get the argument list.
@@ -4318,7 +4310,7 @@ static bool stringCompareMS(DocumentWidget *document, DataValue *argList, int nA
     int compareResult;
 
     if (nArgs < 2) {
-        return (wrongNArgsErr(errMsg));
+        M_FAILURE("Wrong number of arguments to function %s");
     }
 
     if (!readArgument(argList[0], &leftStr, errMsg))
@@ -4372,7 +4364,7 @@ static bool splitMS(DocumentWidget *document, DataValue *argList, int nArgs, Dat
     DataValue element;
 
     if (nArgs < 2) {
-        return (wrongNArgsErr(errMsg));
+        M_FAILURE("Wrong number of arguments to function %s");
     }
 
     if (!readArgument(argList[0], &sourceStr, errMsg)) {
@@ -4386,7 +4378,7 @@ static bool splitMS(DocumentWidget *document, DataValue *argList, int nArgs, Dat
     QString typeSplitStr;
     if (nArgs > 2 && readArgument(argList[2], &typeSplitStr, errMsg)) {
         if (!StringToSearchType(typeSplitStr, &searchType)) {
-            M_FAILURE("unrecognized argument to %s");
+            M_FAILURE("Unrecognized argument to %s");
         }
     } else {
         searchType = SEARCH_LITERAL;
@@ -4521,7 +4513,7 @@ static bool setBacklightStringMS(DocumentWidget *document, DataValue *argList, i
       }
       backlightString = QString::fromLatin1(argList[0].val.str.rep, argList[0].val.str.len);
     } else {
-      return wrongNArgsErr(errMsg);
+      M_FAILURE("Wrong number of arguments to function %s");
     }
 
     if (backlightString == QLatin1String("default"))
@@ -5084,8 +5076,8 @@ static bool rangesetListMV(DocumentWidget *document, DataValue *argList, int nAr
     }
 
     uint8_t *rangesetList = RangesetTable::RangesetGetList(rangesetTable);
-    int nRangesets = strlen((char *)rangesetList);
-    for (int i = 0; i < nRangesets; i++) {
+    size_t nRangesets = strlen(reinterpret_cast<char *>(rangesetList));
+    for (size_t i = 0; i < nRangesets; i++) {
 
         element = to_value(rangesetList[i]);
 
@@ -5134,7 +5126,7 @@ static bool rangesetCreateMS(DocumentWidget *document, DataValue *argList, int n
     RangesetTable *rangesetTable = document->buffer_->rangesetTable_;
 
     if (nArgs > 1)
-        return wrongNArgsErr(errMsg);
+        M_FAILURE("Wrong number of arguments to function %s");
 
     if(!rangesetTable) {
         rangesetTable = new RangesetTable(document->buffer_);
@@ -5169,11 +5161,11 @@ static bool rangesetCreateMS(DocumentWidget *document, DataValue *argList, int n
 */
 static bool rangesetDestroyMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     RangesetTable *rangesetTable = document->buffer_->rangesetTable_;
-    DataValue element;        
+    DataValue element;
     int label = 0;
 
     if (nArgs != 1) {
-        return wrongNArgsErr(errMsg);
+        M_FAILURE("Wrong number of arguments to function %s");
     }
 
     if (argList[0].tag == ARRAY_TAG) {
@@ -5246,8 +5238,8 @@ static bool rangesetGetByNameMS(DocumentWidget *document, DataValue *argList, in
     }
 
     rangesetList = RangesetTable::RangesetGetList(rangesetTable);
-    int nRangesets = strlen((char *)rangesetList);
-    for (int i = 0; i < nRangesets; ++i) {
+    size_t nRangesets = strlen(reinterpret_cast<char *>(rangesetList));
+    for (size_t i = 0; i < nRangesets; ++i) {
         int label = rangesetList[i];
         rangeset = rangesetTable->RangesetFetch(label);
         if (rangeset) {
@@ -5288,7 +5280,7 @@ static bool rangesetAddMS(DocumentWidget *document, DataValue *argList, int nArg
     int label = 0;
 
     if (nArgs < 1 || nArgs > 3)
-        return wrongNArgsErr(errMsg);
+        M_FAILURE("Wrong number of arguments to function %s");
 
     if (!readArgument(argList[0], &label, errMsg) || !RangesetTable::RangesetLabelOK(label)) {
         M_FAILURE("First parameter is an invalid rangeset label in %s");
@@ -5380,7 +5372,7 @@ static bool rangesetSubtractMS(DocumentWidget *document, DataValue *argList, int
     int label = 0;
 
     if (nArgs < 1 || nArgs > 3) {
-        return wrongNArgsErr(errMsg);
+        M_FAILURE("Wrong number of arguments to function %s");
     }
 
     if (!readArgument(argList[0], &label, errMsg) || !RangesetTable::RangesetLabelOK(label)) {
@@ -5560,7 +5552,7 @@ static bool rangesetRangeMS(DocumentWidget *document, DataValue *argList, int nA
     int label = 0;
 
     if (nArgs < 1 || nArgs > 2) {
-        return wrongNArgsErr(errMsg);
+        M_FAILURE("Wrong number of arguments to function %s");
     }
 
     if (!readArgument(argList[0], &label, errMsg) || !RangesetTable::RangesetLabelOK(label)) {
@@ -5616,7 +5608,7 @@ static bool rangesetIncludesPosMS(DocumentWidget *document, DataValue *argList, 
     int label = 0;
 
     if (nArgs < 1 || nArgs > 2) {
-        return wrongNArgsErr(errMsg);
+        M_FAILURE("Wrong number of arguments to function %s");
     }
 
     if (!readArgument(argList[0], &label, errMsg) || !RangesetTable::RangesetLabelOK(label)) {
@@ -5665,7 +5657,7 @@ static bool rangesetSetColorMS(DocumentWidget *document, DataValue *argList, int
     int label = 0;
 
     if (nArgs != 2) {
-        return wrongNArgsErr(errMsg);
+        M_FAILURE("Wrong number of arguments to function %s");
     }
 
     if (!readArgument(argList[0], &label, errMsg) || !RangesetTable::RangesetLabelOK(label)) {
@@ -5704,7 +5696,7 @@ static bool rangesetSetNameMS(DocumentWidget *document, DataValue *argList, int 
     int label = 0;
 
     if (nArgs != 2) {
-        return wrongNArgsErr(errMsg);
+        M_FAILURE("Wrong number of arguments to function %s");
     }
 
     if (!readArgument(argList[0], &label, errMsg) || !RangesetTable::RangesetLabelOK(label)) {
@@ -5744,7 +5736,7 @@ static bool rangesetSetModeMS(DocumentWidget *document, DataValue *argList, int 
     int label = 0;
 
     if (nArgs < 1 || nArgs > 2) {
-        return wrongNArgsErr(errMsg);
+        M_FAILURE("Wrong number of arguments to function %s");
     }
 
     if (!readArgument(argList[0], &label, errMsg) || !RangesetTable::RangesetLabelOK(label)) {
@@ -6082,14 +6074,6 @@ static bool getPatternAtPosMS(DocumentWidget *document, DataValue *argList, int 
         bufferPos);
 }
 
-static bool wrongNArgsErr(const char **errMsg) {
-    M_FAILURE("Wrong number of arguments to function %s");
-}
-
-static bool tooFewArgsErr(const char **errMsg) {
-    M_FAILURE("Too few arguments to function %s");
-}
-
 /*
 ** Get an integer value from a tagged DataValue structure.  Return True
 ** if conversion succeeded, and store result in *result, otherwise
@@ -6108,7 +6092,7 @@ static bool readArgument(DataValue dv, int *result, const char **errMsg) {
         long val = strtol(p, &endp, 10);
         if (endp == p || *endp != '\0' || ((val == LONG_MIN || val == LONG_MAX) && errno == ERANGE)) {
             if(errMsg) {
-                *errMsg = "%s called with non-integer argument";
+                M_FAILURE("%s called with non-integer argument");
             }
             return false;
         }
@@ -6118,7 +6102,7 @@ static bool readArgument(DataValue dv, int *result, const char **errMsg) {
     }
     default:
         if(errMsg) {
-            *errMsg = "%s called with unknown object";
+            M_FAILURE("%s called with unknown object");
         }
         return false;
     }
@@ -6142,7 +6126,7 @@ static bool readArgument(DataValue dv, std::string *result, const char **errMsg)
         return true;
     default:
         if(errMsg) {
-            *errMsg = "%s called with unknown object";
+            M_FAILURE("%s called with unknown object");
         }
         return false;
     }
@@ -6159,7 +6143,7 @@ static bool readArgument(DataValue dv, QString *result, const char **errMsg) {
         return true;
     default:
         if(errMsg) {
-            *errMsg = "%s called with unknown object";
+            M_FAILURE("%s called with unknown object");
         }
         return false;
     }
@@ -6172,7 +6156,7 @@ bool readArguments(DataValue *argList, int nArgs, int index, const char **errMsg
     static_assert(std::is_pointer<T>::value, "Argument is not a pointer");
 
     if(static_cast<size_t>(nArgs - index) < (sizeof...(args)) + 1) {
-        return wrongNArgsErr(errMsg);
+        M_FAILURE("Wrong number of arguments to function %s");
     }
 
     bool ret = readArgument(argList[index], arg, errMsg);
@@ -6189,7 +6173,7 @@ bool readArguments(DataValue *argList, int nArgs, int index, const char **errMsg
     static_assert(std::is_pointer<T>::value, "Argument is not a pointer");
 
     if(static_cast<size_t>(nArgs - index) < 1) {
-        return wrongNArgsErr(errMsg);
+        M_FAILURE("Wrong number of arguments to function %s");
     }
 
     return readArgument(argList[index], arg, errMsg);
