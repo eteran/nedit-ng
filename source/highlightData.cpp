@@ -209,16 +209,12 @@ QString WriteStylesStringEx() {
 ** Read a string representing highlight pattern sets and add them
 ** to the PatternSets list of loaded highlight patterns.  Note that the
 ** patterns themselves are not parsed until they are actually used.
-**
-** The argument convertOld, reads patterns in pre 5.1 format (which means
-** that they may contain regular expressions are of the older syntax where
-** braces were not quoted, and \0 was a legal substitution character).
 */
 bool LoadHighlightStringEx(const QString &string) {
 
 	Input in(&string);
 
-	for (;;) {
+    Q_FOREVER {
 
 		// Read each pattern set, abort on error 
 		std::unique_ptr<PatternSet> patSet = readPatternSetEx(in);
@@ -227,15 +223,13 @@ bool LoadHighlightStringEx(const QString &string) {
 		}
 
 		// Add/change the pattern set in the list 
-        auto it = PatternSets.begin();
-        for (; it != PatternSets.end(); ++it) {
-            if (it->languageMode == patSet->languageMode) {
-                *it = *patSet;
-				break;
-			}
-		}
+        auto it = std::find_if(PatternSets.begin(), PatternSets.end(), [&patSet](const PatternSet &patternSet) {
+            return patternSet.languageMode == patSet->languageMode;
+        });
 
-        if (it == PatternSets.end()) {
+        if(it != PatternSets.end()) {
+            *it = *patSet;
+        } else {
             PatternSets.push_back(*patSet);
 		}
 
@@ -256,7 +250,6 @@ QString WriteHighlightStringEx() {
 
     QString str;
     QTextStream out(&str);
-
 
     for (const PatternSet &patSet : PatternSets) {
         if (patSet.patterns.isEmpty()) {
@@ -474,7 +467,8 @@ static std::unique_ptr<PatternSet> readPatternSetEx(Input &in) {
 	auto patSet = std::make_unique<PatternSet>();
 
 	// read language mode field
-	patSet->languageMode = ReadSymbolicFieldEx(in);
+    QString l = ReadSymbolicFieldEx(in);
+    patSet->languageMode = l;
 
 	if (patSet->languageMode.isNull()) {
 		return highlightErrorEx(in, QLatin1String("language mode must be specified"));
