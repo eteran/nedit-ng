@@ -617,7 +617,7 @@ QString DialogWindowTitle::FormatWindowTitleInternal(const QString &filename, co
 			case '9':
 				if (*format_it == QLatin1Char('d')) {
 					dirNamePresent = true;
-					noOfComponents = c.toLatin1() - '0';
+                    noOfComponents = c.digitValue();
 					format_it++; // delete the argument 
 
 					if (filenameSet) {
