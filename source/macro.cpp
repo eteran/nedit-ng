@@ -102,8 +102,6 @@ constexpr int BANNER_WAIT_TIME = 6000;
         return false;  \
     } while (0)
 
-#define M_ARRAY_INSERT_FAILURE() M_FAILURE("array element failed to insert: %s")
-
 static void cancelLearnEx();
 static void runMacroEx(DocumentWidget *document, Program *prog);
 static void finishMacroCmdExecutionEx(DocumentWidget *document);
@@ -299,8 +297,7 @@ static bool routineName(DocumentWidget *document, DataValue *argList, int nArgs,
                                                                                                                           \
     TextArea::EventFlags flags = TextArea::NoneFlag;                                                                      \
     if(!flagsFromArguments(argList, nArgs, 0, &flags)) {                                                                  \
-        *errMsg = "%s called with invalid argument";                                                                      \
-        return false;                                                                                                     \
+        M_FAILURE("%s called with invalid argument");                                                                     \
     }                                                                                                                     \
                                                                                                                           \
     if(MainWindow *window = document->toWindow()) {                                                                       \
@@ -327,13 +324,12 @@ static bool routineName(DocumentWidget *document, DataValue *argList, int nArgs,
                                                                                                                           \
     TextArea::EventFlags flags = TextArea::NoneFlag;                                                                      \
     if(!flagsFromArguments(argList, nArgs, 1, &flags)) {                                                                  \
-        *errMsg = "%s called with invalid argument";                                                                      \
-        return false;                                                                                                     \
+        M_FAILURE("%s called with invalid argument");                                                                     \
     }                                                                                                                     \
                                                                                                                           \
     if(MainWindow *window = document->toWindow()) {                                                                       \
         if(TextArea *area = window->lastFocus_) {                                                                         \
-            area->slotName(string, flags | TextArea::SupressRecording);                                                                                \
+            area->slotName(string, flags | TextArea::SupressRecording);                                                   \
         }                                                                                                                 \
     }                                                                                                                     \
                                                                                                                           \
@@ -355,13 +351,12 @@ static bool routineName(DocumentWidget *document, DataValue *argList, int nArgs,
                                                                                                                           \
     TextArea::EventFlags flags = TextArea::NoneFlag;                                                                      \
     if(!flagsFromArguments(argList, nArgs, 1, &flags)) {                                                                  \
-        *errMsg = "%s called with invalid argument";                                                                      \
-        return false;                                                                                                     \
+        M_FAILURE("%s called with invalid argument");                                                                     \
     }                                                                                                                     \
                                                                                                                           \
     if(MainWindow *window = document->toWindow()) {                                                                       \
         if(TextArea *area = window->lastFocus_) {                                                                         \
-            area->slotName(num, flags | TextArea::SupressRecording);                                                                                   \
+            area->slotName(num, flags | TextArea::SupressRecording);                                                      \
         }                                                                                                                 \
     }                                                                                                                     \
                                                                                                                           \
@@ -2386,8 +2381,7 @@ int readCheckMacroStringEx(QWidget *dialogParent, const QString &string, Documen
             if (runWindow) {
                 Symbol *sym = LookupSymbolEx(subrName);
                 if(!sym) {
-                    subrPtr.val.prog = prog;
-                    subrPtr.tag = NO_TAG;
+                    subrPtr = to_value(prog);
                     sym = InstallSymbolEx(subrName, MACRO_FUNCTION_SYM, subrPtr);
                 } else {
                     if (sym->type == MACRO_FUNCTION_SYM) {
@@ -2959,8 +2953,7 @@ static bool focusWindowMS(DocumentWidget *document, DataValue *argList, int nArg
             it = std::next(curr);
         }
     } else if (string.size() >= MAXPATHLEN) {
-        *errMsg = "Pathname too long in focus_window()";
-        return false;
+        M_FAILURE("Pathname too long in focus_window()");
     } else {
         // just use the plain name as supplied
         it = std::find_if(documents.begin(), documents.end(), [&string](DocumentWidget *doc) {
@@ -2974,8 +2967,7 @@ static bool focusWindowMS(DocumentWidget *document, DataValue *argList, int nArg
             QString normalizedString = NormalizePathnameEx(string);
             if(normalizedString.isNull()) {
                 //  Something is broken with the input pathname.
-                *errMsg = "Pathname too long in focus_window()";
-                return false;
+                M_FAILURE("Pathname too long in focus_window()");
             }
 
             it = std::find_if(documents.begin(), documents.end(), [&normalizedString](DocumentWidget *win) {
@@ -3097,8 +3089,7 @@ static bool replaceRangeMS(DocumentWidget *document, DataValue *argList, int nAr
        all of the possible substitution characters in the buffer are used
        up, stop the macro and tell the user of the failure */
     if (!document->buffer_->BufSubstituteNullCharsEx(string)) {
-        *errMsg = "Too much binary data in file";
-        return false;
+        M_FAILURE("Too much binary data in file");
     }
 
     // Do the replace
@@ -3133,8 +3124,7 @@ static bool replaceSelectionMS(DocumentWidget *document, DataValue *argList, int
        all of the possible substitution characters in the buffer are used
        up, stop the macro and tell the user of the failure */
     if (!document->buffer_->BufSubstituteNullCharsEx(string)) {
-        *errMsg = "Too much binary data in file";
-        return false;
+        M_FAILURE("Too much binary data in file");
     }
 
     // Do the replace
@@ -3157,9 +3147,8 @@ static bool getSelectionMS(DocumentWidget *document, DataValue *argList, int nAr
     }
 
     if (nArgs == 1) {
-        if (argList[0].tag != STRING_TAG || strcmp(argList[0].val.str.rep, "any")) {
-            *errMsg = "Unrecognized argument to %s";
-            return false;
+        if (!is_string(argList[0]) || strcmp(argList[0].val.str.rep, "any")) {
+            M_FAILURE("Unrecognized argument to %s");
         }
 
         QString text = GetAnySelectionEx(document);
@@ -3452,9 +3441,9 @@ static bool searchMS(DocumentWidget *document, DataValue *argList, int nArgs, Da
 
     /* we remove constness from BufAsStringEx() result since we know
        searchStringMS will not modify the result */
-    newArgList[0].tag = STRING_TAG;
-    newArgList[0].val.str.rep = const_cast<char *>(document->buffer_->BufAsString());
-    newArgList[0].val.str.len = document->buffer_->BufGetLength();
+    auto str = const_cast<char *>(document->buffer_->BufAsString());
+    int size = document->buffer_->BufGetLength();
+    newArgList[0] = to_value(str, size);
 
     // copy other arguments to the new argument list
     memcpy(&newArgList[1], argList, nArgs * sizeof(DataValue));
@@ -3587,8 +3576,7 @@ static bool replaceInStringMS(DocumentWidget *document, DataValue *argList, int 
             if (argStr == QLatin1String("copy")) {
                 force = true;
             } else {
-                *errMsg = "unrecognized argument to %s";
-                return false;
+                M_FAILURE("unrecognized argument to %s");
             }
         }
     }
@@ -3647,8 +3635,7 @@ static bool readSearchArgs(DataValue *argList, int nArgs, SearchDirection *searc
         else if (argStr == QLatin1String("forward"))
             *searchDirection = SEARCH_FORWARD;
         else if (!StringToSearchType(argStr, searchType)) {
-            *errMsg = "Unrecognized argument to %s";
-            return false;
+            M_FAILURE("Unrecognized argument to %s");
         }
     }
     return true;
@@ -3757,8 +3744,7 @@ static bool getenvMS(DocumentWidget *document, DataValue *argList, int nArgs, Da
 
     // Get name of variable to get
     if(!readArguments(argList, nArgs, 0, errMsg, &name)) {
-        *errMsg = "argument to %s must be a string";
-        return false;
+        M_FAILURE("argument to %s must be a string");
     }
 
     QByteArray value = qgetenv(name.c_str());
@@ -3780,8 +3766,7 @@ static bool shellCmdMS(DocumentWidget *document, DataValue *argList, int nArgs, 
     /* Shell command execution requires that the macro be suspended, so
        this subroutine can't be run if macro execution can't be interrupted */
     if (!MacroRunWindowEx()->macroCmdData_) {
-        *errMsg = "%s can't be called from non-suspendable context";
-        return false;
+        M_FAILURE("%s can't be called from non-suspendable context");
     }
 
     document->ShellCmdToMacroStringEx(cmdString, inputString);
@@ -3822,15 +3807,13 @@ static bool dialogMS(DocumentWidget *document, DataValue *argList, int nArgs, Da
     /* Dialogs require macro to be suspended and interleaved with other macros.
        This subroutine can't be run if macro execution can't be interrupted */
     if (!cmdData) {
-        *errMsg = "%s can't be called from non-suspendable context";
-        return false;
+        M_FAILURE("%s can't be called from non-suspendable context");
     }
 
     /* Read and check the arguments.  The first being the dialog message,
        and the rest being the button labels */
     if (nArgs == 0) {
-        *errMsg = "%s subroutine called with no arguments";
-        return false;
+        M_FAILURE("%s subroutine called with no arguments");
     }
     if (!readArgument(argList[0], &message, errMsg)) {
         return false;
@@ -3882,15 +3865,13 @@ static bool stringDialogMS(DocumentWidget *document, DataValue *argList, int nAr
     /* Dialogs require macro to be suspended and interleaved with other macros.
        This subroutine can't be run if macro execution can't be interrupted */
     if (!cmdData) {
-        *errMsg = "%s can't be called from non-suspendable context";
-        return false;
+        M_FAILURE("%s can't be called from non-suspendable context");
     }
 
     /* Read and check the arguments.  The first being the dialog message,
        and the rest being the button labels */
     if (nArgs == 0) {
-        *errMsg = "%s subroutine called with no arguments";
-        return false;
+        M_FAILURE("%s subroutine called with no arguments");
     }
     if (!readArgument(argList[0], &message, errMsg)) {
         return false;
@@ -3970,12 +3951,10 @@ static bool calltipMS(DocumentWidget *document, DataValue *argList, int nArgs, D
 
     // Read and check the string
     if (nArgs < 1) {
-        *errMsg = "%s subroutine called with too few arguments";
-        return false;
+        M_FAILURE("%s subroutine called with too few arguments");
     }
     if (nArgs > 6) {
-        *errMsg = "%s subroutine called with too many arguments";
-        return false;
+        M_FAILURE("%s subroutine called with too many arguments");
     }
 
     // Read the tip text or key
@@ -4057,8 +4036,7 @@ bad_arg:
         assuming there was a global buffer called msg.  */
     /* sprintf(msg, "unrecognized argument to %%s: \"%s\"", txtArg);
     *errMsg = msg; */
-    *errMsg = "unrecognized argument to %s";
-    return false;
+    M_FAILURE("unrecognized argument to %s");
 }
 
 /*
@@ -4068,8 +4046,7 @@ static bool killCalltipMS(DocumentWidget *document, DataValue *argList, int nArg
     int calltipID = 0;
 
     if (nArgs > 1) {
-        *errMsg = "%s subroutine called with too many arguments";
-        return false;
+        M_FAILURE("%s subroutine called with too many arguments");
     }
     if (nArgs > 0) {
         if (!readArgument(argList[0], &calltipID, errMsg))
@@ -4273,15 +4250,13 @@ static bool listDialogMS(DocumentWidget *document, DataValue *argList, int nArgs
     /* Dialogs require macro to be suspended and interleaved with other macros.
        This subroutine can't be run if macro execution can't be interrupted */
     if (!cmdData) {
-        *errMsg = "%s can't be called from non-suspendable context";
-        return false;
+        M_FAILURE("%s can't be called from non-suspendable context");
     }
 
     /* Read and check the arguments.  The first being the dialog message,
        and the rest being the button labels */
     if (nArgs < 2) {
-        *errMsg = "%s subroutine called with no message, string or arguments";
-        return false;
+        M_FAILURE("%s subroutine called with no message, string or arguments");
     }
 
     if (!readArgument(argList[0], &message, errMsg))
@@ -4291,8 +4266,7 @@ static bool listDialogMS(DocumentWidget *document, DataValue *argList, int nArgs
         return false;
 
     if (text.isEmpty()) {
-        *errMsg = "%s subroutine called with empty list data";
-        return false;
+        M_FAILURE("%s subroutine called with empty list data");
     }
 
     // check that all button labels can be read
@@ -4361,8 +4335,7 @@ static bool stringCompareMS(DocumentWidget *document, DataValue *argList, int nA
         else if (argStr == QLatin1String("nocase"))
             considerCase = false;
         else {
-            *errMsg = "Unrecognized argument to %s";
-            return false;
+            M_FAILURE("Unrecognized argument to %s");
         }
     }
 
@@ -4403,20 +4376,17 @@ static bool splitMS(DocumentWidget *document, DataValue *argList, int nArgs, Dat
     }
 
     if (!readArgument(argList[0], &sourceStr, errMsg)) {
-        *errMsg = "first argument must be a string: %s";
-        return false;
+        M_FAILURE("first argument must be a string: %s");
     }
 
     if (!readArgument(argList[1], &splitStr, errMsg) || splitStr.isEmpty()) {
-        *errMsg = "second argument must be a non-empty string: %s";
-        return false;
+        M_FAILURE("second argument must be a non-empty string: %s");
     }
 
     QString typeSplitStr;
     if (nArgs > 2 && readArgument(argList[2], &typeSplitStr, errMsg)) {
         if (!StringToSearchType(typeSplitStr, &searchType)) {
-            *errMsg = "unrecognized argument to %s";
-            return false;
+            M_FAILURE("unrecognized argument to %s");
         }
     } else {
         searchType = SEARCH_LITERAL;
@@ -4454,7 +4424,7 @@ static bool splitMS(DocumentWidget *document, DataValue *argList, int nArgs, Dat
 
         element = to_value(str);
         if (!ArrayInsert(result, allocIndexStr, &element)) {
-            M_ARRAY_INSERT_FAILURE();
+            M_FAILURE("array element failed to insert: %s");
         }
 
         if (found) {
@@ -4481,7 +4451,7 @@ static bool splitMS(DocumentWidget *document, DataValue *argList, int nArgs, Dat
             element = to_value(std::string());
 
             if (!ArrayInsert(result, allocIndexStr, &element)) {
-                M_ARRAY_INSERT_FAILURE();
+                M_FAILURE("array element failed to insert: %s");
             }
         } else {
             /* We skipped the last character to prevent an endless loop.
@@ -4491,7 +4461,7 @@ static bool splitMS(DocumentWidget *document, DataValue *argList, int nArgs, Dat
 
             element = to_value(str);
             if (!ArrayInsert(result, allocIndexStr, &element)) {
-                M_ARRAY_INSERT_FAILURE();
+                M_FAILURE("array element failed to insert: %s");
             }
 
             /* If the pattern can match zero-length strings, we may have to
@@ -4522,7 +4492,7 @@ static bool splitMS(DocumentWidget *document, DataValue *argList, int nArgs, Dat
 
                 element = to_value();
                 if (!ArrayInsert(result, allocIndexStr, &element)) {
-                    M_ARRAY_INSERT_FAILURE();
+                    M_FAILURE("array element failed to insert: %s");
                 }
             }
         }
@@ -4546,9 +4516,8 @@ static bool setBacklightStringMS(DocumentWidget *document, DataValue *argList, i
     if (nArgs == 0) {
       backlightString = GetPrefBacklightCharTypes();
     } else if (nArgs == 1) {
-      if (argList[0].tag != STRING_TAG) {
-          *errMsg = "%s not called with a string parameter";
-          return false;
+      if (!is_string(argList[0])) {
+          M_FAILURE("%s not called with a string parameter");
       }
       backlightString = QString::fromLatin1(argList[0].val.str.rep, argList[0].val.str.len);
     } else {
@@ -4748,8 +4717,7 @@ static bool autoIndentMV(DocumentWidget *document, DataValue *argList, int nArgs
         res = QLatin1String("smart");
         break;
     case DEFAULT_INDENT:
-        *errMsg = "Invalid indent style value encountered in %s";
-        return false;
+        M_FAILURE("Invalid indent style value encountered in %s");
     }
 
     *result = to_value(res);
@@ -4775,8 +4743,7 @@ static bool wrapTextMV(DocumentWidget *document, DataValue *argList, int nArgs, 
         res = QLatin1String("continuous");
         break;
     case DEFAULT_WRAP:
-        *errMsg = "Invalid wrap style value encountered in %s";
-        return false;
+        M_FAILURE("Invalid wrap style value encountered in %s");
     }
 
     *result = to_value(res);
@@ -5844,14 +5811,14 @@ static bool fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWi
         DV = to_value(styleName);
 
         if (!ArrayInsert(result, PERM_ALLOC_STR("style"), &DV)) {
-            M_ARRAY_INSERT_FAILURE();
+            M_FAILURE("array element failed to insert: %s");
         }
     }
 
     // insert color name
     DV = to_value(ColorOfNamedStyleEx(styleName));
     if (!ArrayInsert(result, PERM_ALLOC_STR("color"), &DV)) {
-        M_ARRAY_INSERT_FAILURE();
+        M_FAILURE("array element failed to insert: %s");
     }
 
     /* Prepare array element for color value
@@ -5862,14 +5829,14 @@ static bool fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWi
         DV = to_value(color.name());
 
         if (!ArrayInsert(result, PERM_ALLOC_STR("rgb"), &DV)) {
-            M_ARRAY_INSERT_FAILURE();
+            M_FAILURE("array element failed to insert: %s");
         }
     }
 
     // Prepare array element for background color name
     DV = to_value(BgColorOfNamedStyleEx(styleName));
     if (!ArrayInsert(result, PERM_ALLOC_STR("background"), &DV)) {
-        M_ARRAY_INSERT_FAILURE();
+        M_FAILURE("array element failed to insert: %s");
     }
 
     /* Prepare array element for background color value
@@ -5880,27 +5847,27 @@ static bool fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWi
         DV = to_value(color.name());
 
         if (!ArrayInsert(result, PERM_ALLOC_STR("back_rgb"), &DV)) {
-            M_ARRAY_INSERT_FAILURE();
+            M_FAILURE("array element failed to insert: %s");
         }
     }
 
     // Put boldness value in array
     DV = to_value(FontOfNamedStyleIsBold(styleName));
     if (!ArrayInsert(result, PERM_ALLOC_STR("bold"), &DV)) {
-        M_ARRAY_INSERT_FAILURE();
+        M_FAILURE("array element failed to insert: %s");
     }
 
     // Put italicity value in array
     DV = to_value(FontOfNamedStyleIsItalic(styleName));
     if (!ArrayInsert(result, PERM_ALLOC_STR("italic"), &DV)) {
-        M_ARRAY_INSERT_FAILURE();
+        M_FAILURE("array element failed to insert: %s");
     }
 
     if (bufferPos >= 0) {
         // insert extent
         DV.val.n = StyleLengthOfCodeFromPosEx(document, bufferPos);
         if (!ArrayInsert(result, PERM_ALLOC_STR("extent"), &DV)) {
-            M_ARRAY_INSERT_FAILURE();
+            M_FAILURE("array element failed to insert: %s");
         }
     }
     return true;
@@ -6011,14 +5978,14 @@ bool fillPatternResultEx(DataValue *result, const char **errMsg, DocumentWidget 
         // insert pattern name
         DV = to_value(patternName);
         if (!ArrayInsert(result, PERM_ALLOC_STR("pattern"), &DV)) {
-            M_ARRAY_INSERT_FAILURE();
+            M_FAILURE("array element failed to insert: %s");
         }
     }
 
     // insert style name
     DV = to_value(styleName);
     if (!ArrayInsert(result, PERM_ALLOC_STR("style"), &DV)) {
-        M_ARRAY_INSERT_FAILURE();
+        M_FAILURE("array element failed to insert: %s");
     }
 
     if (bufferPos >= 0) {
@@ -6026,7 +5993,7 @@ bool fillPatternResultEx(DataValue *result, const char **errMsg, DocumentWidget 
         int checkCode = 0;
         DV = to_value(HighlightLengthOfCodeFromPosEx(document, bufferPos, &checkCode));
         if (!ArrayInsert(result, PERM_ALLOC_STR("extent"), &DV)) {
-            M_ARRAY_INSERT_FAILURE();
+            M_FAILURE("array element failed to insert: %s");
         }
     }
 
@@ -6116,13 +6083,11 @@ static bool getPatternAtPosMS(DocumentWidget *document, DataValue *argList, int 
 }
 
 static bool wrongNArgsErr(const char **errMsg) {
-    *errMsg = "Wrong number of arguments to function %s";
-    return false;
+    M_FAILURE("Wrong number of arguments to function %s");
 }
 
 static bool tooFewArgsErr(const char **errMsg) {
-    *errMsg = "Too few arguments to function %s";
-    return false;
+    M_FAILURE("Too few arguments to function %s");
 }
 
 /*

@@ -62,6 +62,8 @@ constexpr char StringToNumberMsg[] = "string could not be converted to number";
 
 }
 
+static char *AllocString(int length);
+
 static void addLoopAddr(Inst *addr);
 
 static void saveContextEx(const std::shared_ptr<RestartData> &context);
@@ -457,17 +459,10 @@ int ExecuteMacroEx(DocumentWidget *document, Program *prog, int nArgs, DataValue
         *(context->stackP++) = args[i];
     }
 
-    context->stackP->val.subr = nullptr; // return PC
-    context->stackP->tag = NO_TAG;
-    context->stackP++;
-
-    *(context->stackP++) = noValue; // old FrameP
-
-    context->stackP->tag = NO_TAG; // nArgs
-    context->stackP->val.n = nArgs;
-    context->stackP++;
-
-    *(context->stackP++) = noValue; // cached arg array
+    *(context->stackP++) = to_value();      // return PC
+    *(context->stackP++) = to_value();      // old FrameP
+    *(context->stackP++) = to_value(nArgs); // nArgs
+    *(context->stackP++) = to_value();      // cached arg array
 
     context->frameP = context->stackP;
 
@@ -534,7 +529,7 @@ int ContinueMacroEx(const std::shared_ptr<RestartData> &continuation, DataValue 
            preempt, store re-start information in continuation and give
            X, other macros, and other shell scripts a chance to execute */
 		++instCount;
-#if 1
+#if 1 // NOTE(eteran): this enables preemption, useful to disable it for debugging things
         if (instCount >= INSTRUCTION_LIMIT) {
             saveContextEx(continuation);
             restoreContextEx(oldContext);
@@ -552,28 +547,19 @@ int ContinueMacroEx(const std::shared_ptr<RestartData> &continuation, DataValue 
 ** additional work.
 */
 void RunMacroAsSubrCall(Program *prog) {
-	static DataValue noValue = INIT_DATA_VALUE;
 
 	/* See subroutine "callSubroutine" for a description of the stack frame
-	   for a subroutine call */
-	StackP->tag = NO_TAG;
-	StackP->val.inst = PC; // return PC 
-	StackP++;
-
-	StackP->tag = NO_TAG;
-	StackP->val.dataval = FrameP; // old FrameP 
-	StackP++;
-
-	StackP->tag = NO_TAG; // nArgs 
-	StackP->val.n = 0;
-	StackP++;
-
-	*(StackP++) = noValue; // cached arg array 
+       for a subroutine call */
+    *StackP++ = to_value(PC);     // return PC
+    *StackP++ = to_value(FrameP); // old FrameP
+    *StackP++ = to_value(0);      // nArgs
+    *StackP++ = to_value();       // cached arg array
 
 	FrameP = StackP;
 	PC = prog->code;
+
 	for(Symbol *s : prog->localSymList) {
-		FP_GET_SYM_VAL(FrameP, s) = noValue;
+        FP_GET_SYM_VAL(FrameP, s) = to_value();
 		StackP++;
 	}
 }
@@ -652,7 +638,7 @@ Symbol *InstallIteratorSymbol() {
 Symbol *LookupStringConstSymbol(const char *value) {
 
 	for(Symbol *s: GlobalSymList) {
-		if (s->type == CONST_SYM && s->value.tag == STRING_TAG && !strcmp(s->value.val.str.rep, value)) {
+        if (s->type == CONST_SYM && is_string(s->value) && strcmp(s->value.val.str.rep, value) == 0) {
 			return s;
 		}
 	}
@@ -808,27 +794,6 @@ NString AllocNStringEx(int length) {
     return str;
 }
 
-/*
- * Allocate a new NString buffer of length chars (terminating \0 included),
- * The buffer length is initialized to length-1 and the terminating \0 is
- * filled in.
- */
-int AllocNString(NString *string, int length) {
-    auto mem = new char[length + 1];
-	if (!mem) {
-		string->rep = nullptr;
-		string->len = 0;
-        return false;
-	}
-
-	AllocatedStrings.push_back(mem);
-
-	string->rep = mem + 1;
-	string->rep[length - 1] = '\0'; // forced \0 
-	string->len = length - 1;
-    return true;
-}
-
 // Allocate a new copy of string s
 char *AllocStringCpyEx(const std::string &s) {
 
@@ -847,7 +812,7 @@ NString AllocNStringCpyEx(const QString &s) {
         return string;
     }
 
-    size_t length = s.size();
+    int length = s.size();
 
     NString string = AllocNStringEx(length + 1);
     memcpy(string.rep, s.toLatin1().data(), length);
@@ -898,7 +863,7 @@ static void MarkArrayContentsAsUsed(ArrayEntry *arrayPtr) {
 				globalSEUse->key[-1] = 1;
 			}
 
-			if (globalSEUse->value.tag == STRING_TAG) {
+            if (is_string(globalSEUse->value)) {
 				// test first because it may be read-only static string 
 				if (globalSEUse->value.val.str.rep[-1] == 0) {
 					globalSEUse->value.val.str.rep[-1] = 1;
@@ -930,7 +895,8 @@ void GarbageCollectStrings() {
 	/* Sweep the global symbol list, marking which strings are still
 	   referenced */
 	for (Symbol *s: GlobalSymList) {
-		if (s->value.tag == STRING_TAG) {
+
+        if (is_string(s->value)) {
 			// test first because it may be read-only static string 
 			if (s->value.val.str.rep[-1] == 0) {
 				s->value.val.str.rep[-1] = 1;
@@ -1003,29 +969,31 @@ static void restoreContextEx(const std::shared_ptr<RestartData> &context) {
 
 #define PEEK(dataVal, peekIndex) dataVal = *(StackP - peekIndex - 1);
 
-#define POP_INT(number)                                                                            \
-	if (StackP == TheStack)                                                                        \
-	    return execError(StackUnderflowMsg);                                                   \
-	--StackP;                                                                                      \
-	if (StackP->tag == STRING_TAG) {                                                               \
-		if (!StringToNum(StackP->val.str.rep, &number))                                            \
-	        return execError(StringToNumberMsg);                                               \
-	} else if (StackP->tag == INT_TAG)                                                             \
-		number = StackP->val.n;                                                                    \
-	else                                                                                           \
+#define POP_INT(number)                                                        \
+    if (StackP == TheStack)                                                    \
+        return execError(StackUnderflowMsg);                                   \
+    --StackP;                                                                  \
+    if (is_string(*StackP)) {                                                  \
+        if (!StringToNum(StackP->val.str.rep, &number))                        \
+            return execError(StringToNumberMsg);                               \
+    } else if (is_integer(*StackP))                                            \
+        number = StackP->val.n;                                                \
+    else                                                                       \
 	    return execError("can't convert array to integer");
 
-#define POP_STRING(string)                                                                         \
-	if (StackP == TheStack)                                                                        \
-	    return execError(StackUnderflowMsg);                                                   \
-	--StackP;                                                                                      \
-	if (StackP->tag == INT_TAG) {                                                                  \
-		string = AllocString(TYPE_INT_STR_SIZE(int));                                              \
-		sprintf(string, "%d", StackP->val.n);                                                      \
-	} else if (StackP->tag == STRING_TAG)                                                          \
-		string = StackP->val.str.rep;                                                              \
-	else                                                                                           \
-	    return execError("can't convert array to string");
+
+#define POP_STRING(string)                                                     \
+    if (StackP == TheStack)                                                    \
+        return execError(StackUnderflowMsg);                                   \
+    --StackP;                                                                  \
+    if (is_integer(*StackP)) {                                                 \
+        string = AllocString(TYPE_INT_STR_SIZE(int));                          \
+        sprintf(string, "%d", StackP->val.n);                                  \
+    } else if (is_string(*StackP)) {                                           \
+        string = StackP->val.str.rep;                                          \
+    } else {                                                                   \
+        return execError("can't convert array to string");                     \
+    }
 
 #define PEEK_STRING(string, peekIndex)                                                             \
 	if ((StackP - peekIndex - 1)->tag == INT_TAG) {                                                \
@@ -1211,8 +1179,7 @@ static int pushArraySymVal() {
 	}
 
 	if (initEmpty && dataPtr->tag == NO_TAG) {
-		dataPtr->tag = ARRAY_TAG;
-		dataPtr->val.arrayPtr = ArrayNew();
+        *dataPtr = to_value(array_new());
 	}
 
 	if (dataPtr->tag == NO_TAG) {
@@ -1490,35 +1457,37 @@ static int le() {
 ** where resValue is 1 for true, 0 for false
 */
 static int eq() {
-	DataValue v1, v2;
+    DataValue v1;
+    DataValue v2;
 
 	DISASM_RT(PC - 1, 1);
 	STACKDUMP(2, 3);
 
 	POP(v1)
 	POP(v2)
-	if (v1.tag == INT_TAG && v2.tag == INT_TAG) {
-		v1.val.n = v1.val.n == v2.val.n;
-	} else if (v1.tag == STRING_TAG && v2.tag == STRING_TAG) {
-		v1.val.n = !strcmp(v1.val.str.rep, v2.val.str.rep);
-	} else if (v1.tag == STRING_TAG && v2.tag == INT_TAG) {
+
+    if (is_integer(v1) && is_integer(v2)) {
+        v1 = to_value(v1.val.n == v2.val.n);
+    } else if (is_string(v1) && is_string(v2)) {
+        v1 = to_value(strcmp(v1.val.str.rep, v2.val.str.rep) == 0);
+    } else if (is_string(v1) && is_integer(v2)) {
 		int number;
 		if (!StringToNum(v1.val.str.rep, &number)) {
-			v1.val.n = 0;
+            v1 = to_value(0);
 		} else {
-			v1.val.n = number == v2.val.n;
+            v1 = to_value(number == v2.val.n);
 		}
-	} else if (v2.tag == STRING_TAG && v1.tag == INT_TAG) {
+    } else if (is_string(v2) && is_integer(v1)) {
 		int number;
 		if (!StringToNum(v2.val.str.rep, &number)) {
-			v1.val.n = 0;
+            v1 = to_value(0);
 		} else {
-			v1.val.n = number == v1.val.n;
+            v1 = to_value(number == v1.val.n);
 		}
 	} else {
 		return execError("incompatible types to compare");
 	}
-	v1.tag = INT_TAG;
+
 	PUSH(v1)
 	return STAT_OK;
 }
@@ -1747,11 +1716,8 @@ static int callSubroutine() {
 	Program *prog;
 	const char *errMsg;
 
-    Symbol *sym = PC->sym;
-	PC++;
-
-    int nArgs = PC->value;
-	PC++;
+    Symbol *sym = PC++->sym;
+    int nArgs   = PC++->value;
 
 	DISASM_RT(PC - 3, 3);
 	STACKDUMP(nArgs, 3);
@@ -1790,23 +1756,14 @@ static int callSubroutine() {
 	*/
 	if (sym->type == MACRO_FUNCTION_SYM) {
 
-		StackP->tag = NO_TAG; // return PC
-		StackP->val.inst = PC;
-		StackP++;
-
-		StackP->tag = NO_TAG; // old FrameP 
-		StackP->val.dataval = FrameP;
-		StackP++;
-
-		StackP->tag = NO_TAG; // nArgs 
-		StackP->val.n = nArgs;
-		StackP++;
-
-		*(StackP++) = noValue; // cached arg array 
+        *StackP++ = to_value(PC); // return PC
+        *StackP++ = to_value(FrameP); // old FrameP
+        *StackP++ = to_value(nArgs); // nArgs
+        *StackP++ = to_value(); // cached arg array
 
 		FrameP = StackP;
-		prog = sym->value.val.prog;
-		PC = prog->code;
+        prog   = sym->value.val.prog;
+        PC     = prog->code;
 
 		for(Symbol *s : prog->localSymList) {
 			FP_GET_SYM_VAL(FrameP, s) = noValue;
@@ -1963,13 +1920,12 @@ static int branchNever() {
 ** modified, only replaced
 */
 int ArrayCopy(DataValue *dstArray, DataValue *srcArray) {
-	ArrayEntry *srcIter;
 
-	dstArray->tag = ARRAY_TAG;
-	dstArray->val.arrayPtr = ArrayNew();
+    *dstArray = to_value(array_new());
 
-	srcIter = arrayIterateFirst(srcArray);
-	while (srcIter) {
+    ArrayEntry *srcIter = arrayIterateFirst(srcArray);
+
+    while (srcIter) {
 		if (srcIter->value.tag == ARRAY_TAG) {
 			int errNum;
 			DataValue tmpArray;
@@ -2001,38 +1957,40 @@ int ArrayCopy(DataValue *dstArray, DataValue *srcArray) {
 */
 static int makeArrayKeyFromArgs(int nArgs, char **keyString, int leaveParams) {
 	DataValue tmpVal;
-	int sepLen = strlen(ARRAY_DIM_SEP);
+    static const int sepLen = strlen(ARRAY_DIM_SEP);
 	int keyLength = 0;
-	int i;
 
 	keyLength = sepLen * (nArgs - 1);
-	for (i = nArgs - 1; i >= 0; --i) {
+    for (int i = nArgs - 1; i >= 0; --i) {
 		PEEK(tmpVal, i)
-		if (tmpVal.tag == INT_TAG) {
+        if (is_integer(tmpVal)) {
 			keyLength += TYPE_INT_STR_SIZE(tmpVal.val.n);
-		} else if (tmpVal.tag == STRING_TAG) {
+        } else if (is_string(tmpVal)) {
 			keyLength += tmpVal.val.str.len;
 		} else {
 			return execError("can only index array with string or int.");
 		}
 	}
+
 	*keyString = AllocString(keyLength + 1);
 	(*keyString)[0] = '\0';
-	for (i = nArgs - 1; i >= 0; --i) {
+
+    for (int i = nArgs - 1; i >= 0; --i) {
 		if (i != nArgs - 1) {
 			strcat(*keyString, ARRAY_DIM_SEP);
 		}
 		PEEK(tmpVal, i)
-		if (tmpVal.tag == INT_TAG) {
+        if (is_integer(tmpVal)) {
 			sprintf(&((*keyString)[strlen(*keyString)]), "%d", tmpVal.val.n);
-		} else if (tmpVal.tag == STRING_TAG) {
+        } else if (is_string(tmpVal)) {
 			strcat(*keyString, tmpVal.val.str.rep);
 		} else {
 			return execError("can only index array with string or int.");
 		}
 	}
+
 	if (!leaveParams) {
-		for (i = nArgs - 1; i >= 0; --i) {
+        for (int i = nArgs - 1; i >= 0; --i) {
 			POP(tmpVal)
 		}
 	}
@@ -2388,11 +2346,13 @@ static int beginArrayIter() {
 		return execError("bad temporary iterator: %s", iterator->name.c_str());
 	}
 
-	iteratorValPtr->tag = INT_TAG;
+
 	if (arrayVal.tag != ARRAY_TAG) {
 		return execError("can't iterate non-array");
 	}
 
+    // TODO(eteran): bug? this looks liek the wrong tag...
+    iteratorValPtr->tag = INT_TAG;
 	iteratorValPtr->val.arrayPtr = arrayIterateFirst(&arrayVal);
 	return STAT_OK;
 }
@@ -2450,8 +2410,8 @@ static int arrayIter() {
 
 	thisEntry = iteratorValPtr->val.arrayPtr;
 	if (thisEntry && thisEntry->color != -1) {
-		itemValPtr->tag = STRING_TAG;
-		itemValPtr->val.str = NString{thisEntry->key, strlen(thisEntry->key)};
+
+        *itemValPtr = to_value(thisEntry->key, strlen(thisEntry->key));
 
 		iteratorValPtr->val.arrayPtr = arrayIterateNext(thisEntry);
 	} else {
@@ -2578,7 +2538,10 @@ int execError(const char *s1, T ... args) {
 
 bool StringToNum(const QString &string, int *number) {
     bool ok;
-    *number = string.toInt(&ok);
+    int n = string.toInt(&ok);
+    if(number) {
+        *number = n;
+    }
     return ok;
 
 }

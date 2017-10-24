@@ -227,8 +227,8 @@ int ContinueMacroEx(const std::shared_ptr<RestartData> &continuation, DataValue 
 void RunMacroAsSubrCall(Program *prog);
 void PreemptMacro();
 
-char *AllocString(int length);
-int AllocNString(NString *string, int length);
+
+
 
 char *AllocStringCpyEx(const std::string &s);
 NString AllocNStringCpyEx(const QString &s);
@@ -300,11 +300,53 @@ inline DataValue to_value(const std::string &str) {
     return DV;
 }
 
+// TODO(eteran): 2.0, deprecate this API
+inline DataValue to_value(char *str, int size) {
+    DataValue DV;
+    DV.tag     = STRING_TAG;
+    DV.val.str.rep = str;
+    DV.val.str.len = size;
+    return DV;
+}
+
 inline DataValue to_value(const QString &str) {
     DataValue DV;
     DV.tag     = STRING_TAG;
     DV.val.str = AllocNStringCpyEx(str);
     return DV;
+}
+
+inline DataValue to_value(Program *prog) {
+    DataValue DV;
+    DV.tag      = NO_TAG;
+    DV.val.prog = prog;
+    return DV;
+}
+
+inline DataValue to_value(Inst *inst) {
+    DataValue DV;
+    DV.tag      = NO_TAG;
+    DV.val.inst = inst;
+    return DV;
+}
+
+inline DataValue to_value(DataValue *v) {
+    DataValue DV;
+    DV.tag         = NO_TAG;
+    DV.val.dataval = v;
+    return DV;
+}
+
+inline bool is_integer(const DataValue &dv) {
+    return dv.tag == INT_TAG;
+}
+
+inline bool is_string(const DataValue &dv) {
+    return dv.tag == STRING_TAG;
+}
+
+inline bool is_array(const DataValue &dv) {
+    return dv.tag == ARRAY_TAG;
 }
 
 #endif

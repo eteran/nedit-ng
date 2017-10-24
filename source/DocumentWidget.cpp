@@ -3450,7 +3450,7 @@ void DocumentWidget::executeNewlineMacroEx(SmartIndentEvent *cbInfo) {
     }
 
     // Validate and return the result
-    if (result.tag != INT_TAG || result.val.n < -1 || result.val.n > 1000) {
+    if (!is_integer(result) || result.val.n < -1 || result.val.n > 1000) {
         QMessageBox::critical(this, tr("Smart Indent"), tr("Smart indent macros must return\ninteger indent distance"));
         EndSmartIndentEx(this);
         return;
@@ -3493,6 +3493,7 @@ void DocumentWidget::executeModMacroEx(SmartIndentEvent *cbInfo) {
     // args probably shouldn't be static due to future re-entrance issues <slobasso>
     static DataValue args[2] = {{INT_TAG, {0}}, {STRING_TAG, {0}}};
 
+    // TODO(eteran): remove things as this comment says we should!
     // after 5.2 release remove inModCB and use new winData->inModMacro value
     static bool inModCB = false;
 
