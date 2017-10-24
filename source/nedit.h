@@ -27,9 +27,6 @@
 #ifndef NEDIT_H_
 #define NEDIT_H_
 
-#include "ShowMatchingStyle.h"
-#include "TextSelection.h"
-
 /* Tuning parameters */
 #define SEARCHMAX 5119         /* Maximum length of search/replace strings */
 #define MAX_PANES 6            /* Max # of ADDITIONAL text editing panes  that can be added to a window */

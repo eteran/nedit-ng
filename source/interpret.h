@@ -40,16 +40,10 @@ struct ArrayEntry;
 struct DataValue;
 struct Symbol;
 
-// Maximum stack size
-#define STACK_SIZE 1024
-
 // Max. symbol name length
 #define MAX_SYM_LEN 100
 
-// Special value for the send_event field of events passed to action routines.  Tells them that they were called from a macro
-#define MACRO_EVENT_MARKER 2
-
-/* determine a safe size for a string to hold an integer-like number contained in xType */
+// determine a safe size for a string to hold an integer-like number contained in xType
 #define TYPE_INT_STR_SIZE(xType) ((sizeof(xType) * 3) + 2)
 
 #define ARRAY_DIM_SEP "\034"
@@ -286,15 +280,7 @@ inline DataValue to_value(bool n) {
     return DV;
 }
 
-// TODO(eteran): 2.0, deprecate this API in favor of std::string/QString
-inline DataValue to_value(const char *str) {
-    DataValue DV;
-    DV.tag     = STRING_TAG;
-    DV.val.str = AllocNStringCpyEx(view::string_view(str));
-    return DV;
-}
-
-inline DataValue to_value(const std::string &str) {
+inline DataValue to_value(view::string_view str) {
     DataValue DV;
     DV.tag     = STRING_TAG;
     DV.val.str = AllocNStringCpyEx(str);

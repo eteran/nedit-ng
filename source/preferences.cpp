@@ -35,7 +35,6 @@
 #include "TextBuffer.h"
 #include "highlight.h"
 #include "highlightData.h"
-#include "nedit.h"
 #include "search.h"
 #include "smartIndent.h"
 #include "Font.h"

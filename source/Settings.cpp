@@ -4,7 +4,7 @@
 #include "SearchType.h"
 #include "ShowMatchingStyle.h"
 #include "WrapStyle.h"
-#include "search.h" // For ReplaceScope enum
+#include "ReplaceScope.h"
 #include "nedit.h"
 #include <QSettings>
 #include <QStandardPaths>

@@ -39,7 +39,6 @@
 #include "WindowHighlightData.h"
 #include "X11Colors.h"
 #include "highlightData.h"
-#include "nedit.h"
 #include "preferences.h"
 #include "regularExp.h"
 #include <QMessageBox>
@@ -75,8 +74,8 @@ constexpr bool is_plain(int style) {
    with pass2 patterns */
 constexpr bool equivalent_style(int style1, int style2, int firstPass2Style) {
 	return (style1 == style2) || 
-		   (style1 == UNFINISHED_STYLE && (style2 == PLAIN_STYLE || (uint8_t)style2 >= firstPass2Style)) || 
-		   (style2 == UNFINISHED_STYLE && (style1 == PLAIN_STYLE || (uint8_t)style1 >= firstPass2Style));
+           (style1 == UNFINISHED_STYLE && (style2 == PLAIN_STYLE || static_cast<uint8_t>(style2) >= firstPass2Style)) ||
+           (style2 == UNFINISHED_STYLE && (style1 == PLAIN_STYLE || static_cast<uint8_t>(style1) >= firstPass2Style));
 }
 
 /* Scanning context can be reduced (with big efficiency gains) if we

@@ -33,10 +33,21 @@
 
 namespace {
 
-constexpr int PROGRAM_SIZE  	= 4096; // Maximum program size
-constexpr int MAX_ERR_MSG_LEN	= 256;  // Max. length for error messages
-constexpr int LOOP_STACK_SIZE	= 200;  // (Approx.) Number of break/continue stmts allowed per program
-constexpr int INSTRUCTION_LIMIT = 100;  // Number of instructions the interpreter is allowed to execute before preempting and returning to allow other things to run
+// Maximum program size
+constexpr int PROGRAM_SIZE  	= 4096;
+
+// Max. length for error messages
+constexpr int MAX_ERR_MSG_LEN	= 256;
+
+// (Approx.) Number of break/continue stmts allowed per program
+constexpr int LOOP_STACK_SIZE	= 200;
+
+// Number of instructions the interpreter is allowed to execute before
+// preempting and returning to allow other things to run
+constexpr int INSTRUCTION_LIMIT = 100;
+
+// Maximum stack size
+constexpr int STACK_SIZE        = 1024;
 
 /* Temporary markers placed in a branch address location to designate
    which loop address (break or continue) the location needs */
@@ -55,9 +66,18 @@ enum OpStatusCodes {
 
 /* Message strings used in macros (so they don't get repeated every time
    the macros are used */
-constexpr char StackOverflowMsg[]  = "macro stack overflow";
-constexpr char StackUnderflowMsg[] = "macro stack underflow";
-constexpr char StringToNumberMsg[] = "string could not be converted to number";
+constexpr char StackOverflowMsg[]          = "macro stack overflow";
+constexpr char StackUnderflowMsg[]         = "macro stack underflow";
+constexpr char StringToNumberMsg[]         = "string could not be converted to number";
+constexpr char ArrayToIntMsg[]             = "can't convert array to integer";
+constexpr char ArrayToStringMsg[]          = "can't convert array to string";
+constexpr char DivisionByZeroMsg[]         = "division by zero";
+constexpr char ModuloByZeroMsg[]           = "modulo by zero";
+constexpr char ArrayInsertionFailureMsg[]  = "array insertion failure";
+constexpr char IndexNonArrayMsg[]          = "operator [] on non-array";
+constexpr char MixArraysWithNonArraysMsg[] = "can't mix math with arrays and non-arrays";
+constexpr char ArrayCopyFailedMsg[]        = "array copy failed";
+constexpr char BadIndexTypeMsg[]           = "can only index array with string or int.";
 
 }
 
@@ -197,9 +217,9 @@ static int (*OpFns[N_OPS])() = {returnNoVal, returnVal,      pushSymVal, dupStac
 #define FP_GET_RET_PC(xFrameP)          (FP_GET_ITEM(xFrameP, FP_RET_PC_INDEX).val.inst)
 
 #define FP_ARG_START_INDEX(xFrameP)     (-(FP_GET_ARG_COUNT(xFrameP) + FP_TO_ARGS_DIST))
-#define FP_GET_ARG_N(xFrameP, xN) (FP_GET_ITEM(xFrameP, xN + FP_ARG_START_INDEX(xFrameP)))
-#define FP_GET_SYM_N(xFrameP, xN) (FP_GET_ITEM(xFrameP, xN))
-#define FP_GET_SYM_VAL(xFrameP, xSym) (FP_GET_SYM_N(xFrameP, xSym->value.val.n))
+#define FP_GET_ARG_N(xFrameP, xN)       (FP_GET_ITEM(xFrameP, xN + FP_ARG_START_INDEX(xFrameP)))
+#define FP_GET_SYM_N(xFrameP, xN)       (FP_GET_ITEM(xFrameP, xN))
+#define FP_GET_SYM_VAL(xFrameP, xSym)   (FP_GET_SYM_N(xFrameP, xSym->value.val.n))
 
 /*
 ** Initialize macro language global variables.  Must be called before
@@ -616,19 +636,18 @@ void SetMacroFocusWindowEx(DocumentWidget *window) {
 ** install an array iteration symbol
 ** it is tagged as an integer but holds an array node pointer
 */
-#define ARRAY_ITER_SYM_PREFIX "aryiter "
 Symbol *InstallIteratorSymbol() {
 
-	static int interatorNameIndex = 0;
+    static int iteratorNameIndex = 0;
 
-	auto symbolName = ARRAY_ITER_SYM_PREFIX + std::to_string(interatorNameIndex++);
+    auto symbolName = QString(QLatin1String("aryiter %1")).arg(iteratorNameIndex++);
 
     // TODO(eteran): bug? this looks like the wrong tag...
 	DataValue value;
 	value.tag = INT_TAG;
 	value.val.arrayPtr = nullptr;
 
-    return InstallSymbol(symbolName, LOCAL_SYM, value);
+    return InstallSymbolEx(symbolName, LOCAL_SYM, value);
 }
 
 /*
@@ -648,7 +667,6 @@ Symbol *LookupStringConstSymbol(const char *value) {
 /*
 ** install string str in the global symbol table with a string name
 */
-#define ARRAY_STRING_CONST_SYM_PREFIX "string #"
 Symbol *InstallStringConstSymbol(const char *str) {
 
     static int stringConstIndex = 0;
@@ -657,10 +675,10 @@ Symbol *InstallStringConstSymbol(const char *str) {
 		return sym;
 	}
 
-	auto stringName = ARRAY_STRING_CONST_SYM_PREFIX + std::to_string(stringConstIndex++);
+    auto stringName = QString(QLatin1String("string #%1")).arg(stringConstIndex++);
 
     DataValue value = to_value(str);
-    return InstallSymbol(stringName, CONST_SYM, value);
+    return InstallSymbolEx(stringName, CONST_SYM, value);
 }
 
 /*
@@ -981,7 +999,7 @@ static void restoreContextEx(const std::shared_ptr<RestartData> &context) {
     } else if (is_integer(*StackP))                                            \
         number = StackP->val.n;                                                \
     else                                                                       \
-	    return execError("can't convert array to integer");
+        return execError(ArrayToIntMsg);
 
 
 #define POP_STRING(string)                                                     \
@@ -994,28 +1012,28 @@ static void restoreContextEx(const std::shared_ptr<RestartData> &context) {
     } else if (is_string(*StackP)) {                                           \
         string = StackP->val.str.rep;                                          \
     } else {                                                                   \
-        return execError("can't convert array to string");                     \
+        return execError(ArrayToStringMsg);                                    \
     }
 
-#define PEEK_STRING(string, peekIndex)                                                             \
-	if ((StackP - peekIndex - 1)->tag == INT_TAG) {                                                \
-		string = AllocString(TYPE_INT_STR_SIZE(int));                                              \
-		sprintf(string, "%d", (StackP - peekIndex - 1)->val.n);                                    \
-	} else if ((StackP - peekIndex - 1)->tag == STRING_TAG) {                                      \
-		string = (StackP - peekIndex - 1)->val.str.rep;                                            \
-	} else {                                                                                       \
-	    return execError("can't convert array to string");                                         \
+#define PEEK_STRING(string, peekIndex)                                         \
+    if ((StackP - peekIndex - 1)->tag == INT_TAG) {                            \
+        string = AllocString(TYPE_INT_STR_SIZE(int));                          \
+        sprintf(string, "%d", (StackP - peekIndex - 1)->val.n);                \
+    } else if ((StackP - peekIndex - 1)->tag == STRING_TAG) {                  \
+        string = (StackP - peekIndex - 1)->val.str.rep;                        \
+    } else {                                                                   \
+        return execError(ArrayToStringMsg);                                    \
 	}
 
-#define PEEK_INT(number, peekIndex)                                                                \
-	if ((StackP - peekIndex - 1)->tag == STRING_TAG) {                                             \
-		if (!StringToNum((StackP - peekIndex - 1)->val.str.rep, &number)) {                        \
-	        return execError(StringToNumberMsg);                                               \
-		}                                                                                          \
-	} else if ((StackP - peekIndex - 1)->tag == INT_TAG) {                                         \
-		number = (StackP - peekIndex - 1)->val.n;                                                  \
-	} else {                                                                                       \
-	    return execError("can't convert array to string");                                         \
+#define PEEK_INT(number, peekIndex)                                            \
+    if ((StackP - peekIndex - 1)->tag == STRING_TAG) {                         \
+        if (!StringToNum((StackP - peekIndex - 1)->val.str.rep, &number)) {    \
+            return execError(StringToNumberMsg);                               \
+        }                                                                      \
+    } else if ((StackP - peekIndex - 1)->tag == INT_TAG) {                     \
+        number = (StackP - peekIndex - 1)->val.n;                              \
+    } else {                                                                   \
+        return execError(ArrayToStringMsg);                                    \
 	}
 
 #define PUSH_INT(number)                                                       \
@@ -1143,7 +1161,7 @@ static int pushArgArray() {
 
 			argVal = FP_GET_ARG_N(FrameP, argNum);
 			if (!ArrayInsert(resultArray, AllocStringCpyEx(intStr), &argVal)) {
-				return execError("array insertion failure");
+                return execError(ArrayInsertionFailureMsg);
 			}
 		}
 	}
@@ -1306,12 +1324,12 @@ static int add() {
 					rightIter = arrayIterateNext(rightIter);
 				}
 				if (!insertResult) {
-					return execError("array insertion failure");
+                    return execError(ArrayInsertionFailureMsg);
 				}
 			}
 			PUSH(resultArray)
 		} else {
-			return execError("can't mix math with arrays and non-arrays");
+            return execError(MixArraysWithNonArraysMsg);
 		}
 	} else {
 		POP_INT(n2)
@@ -1366,12 +1384,12 @@ static int subtract() {
 					leftIter = arrayIterateNext(leftIter);
 				}
 				if (!insertResult) {
-					return execError("array insertion failure");
+                    return execError(ArrayInsertionFailureMsg);
 				}
 			}
 			PUSH(resultArray)
 		} else {
-			return execError("can't mix math with arrays and non-arrays");
+            return execError(MixArraysWithNonArraysMsg);
 		}
 	} else {
 		POP_INT(n2)
@@ -1403,7 +1421,7 @@ static int divide() {
 	POP_INT(n2)
 	POP_INT(n1)
 	if (n2 == 0) {
-		return execError("division by zero");
+        return execError(DivisionByZeroMsg);
 	}
 	PUSH_INT(n1 / n2)
 	return STAT_OK;
@@ -1418,7 +1436,7 @@ static int modulo() {
 	POP_INT(n2)
 	POP_INT(n1)
 	if (n2 == 0) {
-		return execError("modulo by zero");
+        return execError(ModuloByZeroMsg);
 	}
 	PUSH_INT(n1 % n2)
 	return STAT_OK;
@@ -1540,12 +1558,12 @@ static int bitAnd() {
 					rightIter = arrayIterateNext(rightIter);
 				}
 				if (!insertResult) {
-					return execError("array insertion failure");
+                    return execError(ArrayInsertionFailureMsg);
 				}
 			}
 			PUSH(resultArray)
 		} else {
-			return execError("can't mix math with arrays and non-arrays");
+            return execError(MixArraysWithNonArraysMsg);
 		}
 	} else {
 		POP_INT(n2)
@@ -1604,12 +1622,12 @@ static int bitOr() {
 					rightIter = arrayIterateNext(rightIter);
 				}
 				if (!insertResult) {
-					return execError("array insertion failure");
+                    return execError(ArrayInsertionFailureMsg);
 				}
 			}
 			PUSH(resultArray)
 		} else {
-			return execError("can't mix math with arrays and non-arrays");
+            return execError(MixArraysWithNonArraysMsg);
 		}
 	} else {
 		POP_INT(n2)
@@ -1937,11 +1955,11 @@ int ArrayCopy(DataValue *dstArray, DataValue *srcArray) {
 				return errNum;
 			}
 			if (!ArrayInsert(dstArray, srcIter->key, &tmpArray)) {
-				return execError("array copy failed");
+                return execError(ArrayCopyFailedMsg);
 			}
 		} else {
 			if (!ArrayInsert(dstArray, srcIter->key, &srcIter->value)) {
-				return execError("array copy failed");
+                return execError(ArrayCopyFailedMsg);
 			}
 		}
 		srcIter = arrayIterateNext(srcIter);
@@ -1970,7 +1988,7 @@ static int makeArrayKeyFromArgs(int nArgs, char **keyString, int leaveParams) {
         } else if (is_string(tmpVal)) {
 			keyLength += tmpVal.val.str.len;
 		} else {
-			return execError("can only index array with string or int.");
+            return execError(BadIndexTypeMsg);
 		}
 	}
 
@@ -1987,7 +2005,7 @@ static int makeArrayKeyFromArgs(int nArgs, char **keyString, int leaveParams) {
         } else if (is_string(tmpVal)) {
 			strcat(*keyString, tmpVal.val.str.rep);
 		} else {
-			return execError("can only index array with string or int.");
+            return execError(BadIndexTypeMsg);
 		}
 	}
 
@@ -2202,7 +2220,7 @@ static int arrayRef() {
 			PUSH(valueItem)
 			return STAT_OK;
 		} else {
-			return execError("operator [] on non-array");
+            return execError(IndexNonArrayMsg);
 		}
 	} else {
 		POP(srcArray)
@@ -2210,7 +2228,7 @@ static int arrayRef() {
 			PUSH_INT(ArraySize(&srcArray))
 			return STAT_OK;
 		} else {
-			return execError("operator [] on non-array");
+            return execError(IndexNonArrayMsg);
 		}
 	}
 }
@@ -2310,7 +2328,7 @@ static int arrayRefAndAssignSetup() {
 			}
 			return STAT_OK;
 		} else {
-			return execError("operator [] on non-array");
+            return execError(IndexNonArrayMsg);
 		}
 	} else {
 		return execError("array[] not an lvalue");
