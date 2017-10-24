@@ -603,22 +603,23 @@ void DocumentWidget::RefreshTabState() {
 
 		QString labelString;
 
-		/* Set tab label to document's filename. Position of
-		   "*" (modified) will change per label alignment setting */
+        static const auto saveIcon = QIcon::fromTheme(QLatin1String("document-save"));
+        if(!saveIcon.isNull()) {
+            tabWidget->setTabIcon(index, fileChanged_ ? saveIcon : QIcon());
+            tabWidget->setTabText(index, filename_);
+        } else {
+            /* Set tab label to document's filename. Position of
+               "*" (modified) will change per label alignment setting */
+            QStyle *style = tabWidget->tabBar()->style();
+            int alignment = style->styleHint(QStyle::SH_TabBar_Alignment);
 
-		// TODO(eteran): 2.0, consider switching the "*" here
-        //               with a "disk" icon, which is more conventional
-        //               and more robust with regard to themeing
-        QStyle *style = tabWidget->tabBar()->style();
-		int alignment = style->styleHint(QStyle::SH_TabBar_Alignment);
-
-		if (alignment != Qt::AlignRight) {
-			labelString = tr("%1%2").arg(fileChanged_ ? tr("*") : tr(""), filename_);
-		} else {
-			labelString = tr("%2%1").arg(fileChanged_ ? tr("*") : tr(""), filename_);
-		}
-
-		tabWidget->setTabText(index, labelString);
+            QString labelString;
+            if (alignment != Qt::AlignRight) {
+                tabWidget->setTabText(index, tr("%1%2").arg(fileChanged_ ? tr("*") : tr(""), filename_));
+            } else {
+                tabWidget->setTabText(index, tr("%2%1").arg(fileChanged_ ? tr("*") : tr(""), filename_));
+            }
+        }
 
 		QString tipString;
 		if (GetPrefShowPathInWindowsMenu() && filenameSet_) {
