@@ -28,7 +28,6 @@
 
 #include "interpret.h"
 #include "DocumentWidget.h"
-#include "menu.h"
 #include "utils.h"
 #include <cmath>
 
@@ -190,7 +189,7 @@ static int (*OpFns[N_OPS])() = {returnNoVal, returnVal,      pushSymVal, dupStac
 #define FP_RET_PC_INDEX          (-4)
 #define FP_TO_ARGS_DIST           (4) // should be 0 - (above index) 
 
-#define FP_GET_ITEM(xFrameP, xIndex) (*(xFrameP + xIndex))
+#define FP_GET_ITEM(xFrameP, xIndex) (xFrameP[(xIndex)])
 
 #define FP_GET_ARG_ARRAY_CACHE(xFrameP) (FP_GET_ITEM(xFrameP, FP_ARG_ARRAY_CACHE_INDEX))
 #define FP_GET_ARG_COUNT(xFrameP)       (FP_GET_ITEM(xFrameP, FP_ARG_COUNT_INDEX).val.n)

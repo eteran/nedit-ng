@@ -53,9 +53,6 @@ enum virtKeyOverride {
     VIRT_KEY_OVERRIDE_ALWAYS
 };
 
-/* determine a safe size for a string to hold an integer-like number contained in xType */
-#define TYPE_INT_STR_SIZE(xType) ((sizeof(xType) * 3) + 2)
-
 extern bool IsServer;
 
 #endif

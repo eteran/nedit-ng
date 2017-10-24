@@ -27,7 +27,6 @@
 #ifndef INTERPRET_H_
 #define INTERPRET_H_
 
-#include "nedit.h"
 #include "rbTree.h"
 #include "util/string_view.h"
 #include <QList>
@@ -41,9 +40,21 @@ struct ArrayEntry;
 struct DataValue;
 struct Symbol;
 
-#define STACK_SIZE         1024  // Maximum stack size
-#define MAX_SYM_LEN        100   // Max. symbol name length
-#define MACRO_EVENT_MARKER 2     // Special value for the send_event field of events passed to action routines.  Tells them that they were called from a macro
+// Maximum stack size
+#define STACK_SIZE 1024
+
+// Max. symbol name length
+#define MAX_SYM_LEN 100
+
+// Special value for the send_event field of events passed to action routines.  Tells them that they were called from a macro
+#define MACRO_EVENT_MARKER 2
+
+/* determine a safe size for a string to hold an integer-like number contained in xType */
+#define TYPE_INT_STR_SIZE(xType) ((sizeof(xType) * 3) + 2)
+
+#define ARRAY_DIM_SEP "\034"
+
+#define INIT_DATA_VALUE {NO_TAG, {0}}
 
 enum SymTypes {
     CONST_SYM,
@@ -109,8 +120,6 @@ enum ExecReturnCodes {
 	MACRO_ERROR
 };
 
-#define ARRAY_DIM_SEP "\034"
-
 union Inst {
 	int (*func)();
 	int value;
@@ -151,8 +160,6 @@ struct DataValue {
 
 	} val;
 };
-
-#define INIT_DATA_VALUE {NO_TAG, {0}}
 
 //------------------------------------------------------------------------------
 struct ArrayEntry : public rbTreeNode {
