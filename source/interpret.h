@@ -218,17 +218,11 @@ int AddBreakAddr(Inst *addr);
 int AddContinueAddr(Inst *addr);
 void FillLoopAddrs(Inst *breakAddr, Inst *continueAddr);
 
-/* create a permanently allocated static string (only for use with static strings) */
-#define PERM_ALLOC_STR(xStr) ((const_cast<char *>("\001" xStr)) + 1)
-
 /* Routines for executing programs */
 int ExecuteMacroEx(DocumentWidget *window, Program *prog, int nArgs, DataValue *args, DataValue *result, std::shared_ptr<RestartData> &continuation, const char **msg);
 int ContinueMacroEx(const std::shared_ptr<RestartData> &continuation, DataValue *result, const char **msg);
 void RunMacroAsSubrCall(Program *prog);
 void PreemptMacro();
-
-
-
 
 char *AllocStringCpyEx(const std::string &s);
 NString AllocNStringCpyEx(const QString &s);

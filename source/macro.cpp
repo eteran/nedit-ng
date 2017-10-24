@@ -5511,24 +5511,24 @@ static bool rangesetInfoMS(DocumentWidget *document, DataValue *argList, int nAr
     *result = to_value(array_new());
 
     element = to_value(defined);
-    if (!ArrayInsert(result, PERM_ALLOC_STR("defined"), &element))
+    if (!ArrayInsert(result, AllocStringCpyEx("defined"), &element))
         M_FAILURE("Failed to insert array element \"defined\" in %s");
 
     element = to_value(count);
-    if (!ArrayInsert(result, PERM_ALLOC_STR("count"), &element))
+    if (!ArrayInsert(result, AllocStringCpyEx("count"), &element))
         M_FAILURE("Failed to insert array element \"count\" in %s");
 
     element = to_value(color);
-    if (!ArrayInsert(result, PERM_ALLOC_STR("color"), &element))
+    if (!ArrayInsert(result, AllocStringCpyEx("color"), &element))
         M_FAILURE("Failed to insert array element \"color\" in %s");
 
     element = to_value(name);
-    if (!ArrayInsert(result, PERM_ALLOC_STR("name"), &element)) {
+    if (!ArrayInsert(result, AllocStringCpyEx("name"), &element)) {
         M_FAILURE("Failed to insert array element \"name\" in %s");
     }
 
     element = to_value(mode);
-    if (!ArrayInsert(result, PERM_ALLOC_STR("mode"), &element))
+    if (!ArrayInsert(result, AllocStringCpyEx("mode"), &element))
         M_FAILURE("Failed to insert array element \"mode\" in %s");
 
     return true;
@@ -5585,11 +5585,11 @@ static bool rangesetRangeMS(DocumentWidget *document, DataValue *argList, int nA
         return true;
 
     element = to_value(start);
-    if (!ArrayInsert(result, PERM_ALLOC_STR("start"), &element))
+    if (!ArrayInsert(result, AllocStringCpyEx("start"), &element))
         M_FAILURE("Failed to insert array element \"start\" in %s");
 
     element = to_value(end);
-    if (!ArrayInsert(result, PERM_ALLOC_STR("end"), &element))
+    if (!ArrayInsert(result, AllocStringCpyEx("end"), &element))
         M_FAILURE("Failed to insert array element \"end\" in %s");
 
     return true;
@@ -5802,14 +5802,14 @@ static bool fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWi
         // insert style name
         DV = to_value(styleName);
 
-        if (!ArrayInsert(result, PERM_ALLOC_STR("style"), &DV)) {
+        if (!ArrayInsert(result, AllocStringCpyEx("style"), &DV)) {
             M_FAILURE("array element failed to insert: %s");
         }
     }
 
     // insert color name
     DV = to_value(ColorOfNamedStyleEx(styleName));
-    if (!ArrayInsert(result, PERM_ALLOC_STR("color"), &DV)) {
+    if (!ArrayInsert(result, AllocStringCpyEx("color"), &DV)) {
         M_FAILURE("array element failed to insert: %s");
     }
 
@@ -5820,14 +5820,14 @@ static bool fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWi
         QColor color = HighlightColorValueOfCodeEx(document, patCode);
         DV = to_value(color.name());
 
-        if (!ArrayInsert(result, PERM_ALLOC_STR("rgb"), &DV)) {
+        if (!ArrayInsert(result, AllocStringCpyEx("rgb"), &DV)) {
             M_FAILURE("array element failed to insert: %s");
         }
     }
 
     // Prepare array element for background color name
     DV = to_value(BgColorOfNamedStyleEx(styleName));
-    if (!ArrayInsert(result, PERM_ALLOC_STR("background"), &DV)) {
+    if (!ArrayInsert(result, AllocStringCpyEx("background"), &DV)) {
         M_FAILURE("array element failed to insert: %s");
     }
 
@@ -5838,27 +5838,27 @@ static bool fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWi
         QColor color = GetHighlightBGColorOfCodeEx(document, patCode);
         DV = to_value(color.name());
 
-        if (!ArrayInsert(result, PERM_ALLOC_STR("back_rgb"), &DV)) {
+        if (!ArrayInsert(result, AllocStringCpyEx("back_rgb"), &DV)) {
             M_FAILURE("array element failed to insert: %s");
         }
     }
 
     // Put boldness value in array
     DV = to_value(FontOfNamedStyleIsBold(styleName));
-    if (!ArrayInsert(result, PERM_ALLOC_STR("bold"), &DV)) {
+    if (!ArrayInsert(result, AllocStringCpyEx("bold"), &DV)) {
         M_FAILURE("array element failed to insert: %s");
     }
 
     // Put italicity value in array
     DV = to_value(FontOfNamedStyleIsItalic(styleName));
-    if (!ArrayInsert(result, PERM_ALLOC_STR("italic"), &DV)) {
+    if (!ArrayInsert(result, AllocStringCpyEx("italic"), &DV)) {
         M_FAILURE("array element failed to insert: %s");
     }
 
     if (bufferPos >= 0) {
         // insert extent
         DV.val.n = StyleLengthOfCodeFromPosEx(document, bufferPos);
-        if (!ArrayInsert(result, PERM_ALLOC_STR("extent"), &DV)) {
+        if (!ArrayInsert(result, AllocStringCpyEx("extent"), &DV)) {
             M_FAILURE("array element failed to insert: %s");
         }
     }
@@ -5969,14 +5969,14 @@ bool fillPatternResultEx(DataValue *result, const char **errMsg, DocumentWidget 
     if (includeName) {
         // insert pattern name
         DV = to_value(patternName);
-        if (!ArrayInsert(result, PERM_ALLOC_STR("pattern"), &DV)) {
+        if (!ArrayInsert(result, AllocStringCpyEx("pattern"), &DV)) {
             M_FAILURE("array element failed to insert: %s");
         }
     }
 
     // insert style name
     DV = to_value(styleName);
-    if (!ArrayInsert(result, PERM_ALLOC_STR("style"), &DV)) {
+    if (!ArrayInsert(result, AllocStringCpyEx("style"), &DV)) {
         M_FAILURE("array element failed to insert: %s");
     }
 
@@ -5984,7 +5984,7 @@ bool fillPatternResultEx(DataValue *result, const char **errMsg, DocumentWidget 
         // insert extent
         int checkCode = 0;
         DV = to_value(HighlightLengthOfCodeFromPosEx(document, bufferPos, &checkCode));
-        if (!ArrayInsert(result, PERM_ALLOC_STR("extent"), &DV)) {
+        if (!ArrayInsert(result, AllocStringCpyEx("extent"), &DV)) {
             M_FAILURE("array element failed to insert: %s");
         }
     }

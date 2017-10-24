@@ -741,7 +741,7 @@ Symbol *PromoteToGlobal(Symbol *sym) {
 	} else if (nullptr != s) {
 		/* case b)
 		   sym will shadow the old symbol from the GlobalSymList */
-        qInfo("nedit: duplicate symbol in LocalSymList and GlobalSymList: %s", sym->name.c_str());
+        qInfo("NEdit: duplicate symbol in LocalSymList and GlobalSymList: %s", sym->name.c_str());
 	}
 
 	/* Add the symbol directly to the GlobalSymList, because InstallSymbol()
