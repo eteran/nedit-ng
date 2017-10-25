@@ -161,14 +161,14 @@ void Settings::loadPreferences() {
     italicHighlightFont               = settings.value(tr("nedit.italicHighlightFont"), 		      QLatin1String("Courier New,10,-1,5,50,1,0,0,0,0")).toString();
     boldItalicHighlightFont           = settings.value(tr("nedit.boldItalicHighlightFont"), 	      QLatin1String("Courier New,10,-1,5,75,1,0,0,0,0")).toString();
 
-    colors[TEXT_FG_COLOR]                       = settings.value(tr("nedit.textFgColor"), 				      QLatin1String(NEDIT_DEFAULT_FG)).toString();
-    colors[TEXT_BG_COLOR]                       = settings.value(tr("nedit.textBgColor"), 				      QLatin1String(NEDIT_DEFAULT_TEXT_BG)).toString();
-    colors[SELECT_FG_COLOR]                     = settings.value(tr("nedit.selectFgColor"),				      QLatin1String(NEDIT_DEFAULT_SEL_FG)).toString();
-    colors[SELECT_BG_COLOR]                     = settings.value(tr("nedit.selectBgColor"),				      QLatin1String(NEDIT_DEFAULT_SEL_BG)).toString();
-    colors[HILITE_FG_COLOR]                     = settings.value(tr("nedit.hiliteFgColor"),				      QLatin1String(NEDIT_DEFAULT_HI_FG)).toString();
-    colors[HILITE_BG_COLOR]                     = settings.value(tr("nedit.hiliteBgColor"),				      QLatin1String(NEDIT_DEFAULT_HI_BG)).toString();
-    colors[LINENO_FG_COLOR]                     = settings.value(tr("nedit.lineNoFgColor"),				      QLatin1String(NEDIT_DEFAULT_LINENO_FG)).toString();
-    colors[CURSOR_FG_COLOR]                     = settings.value(tr("nedit.cursorFgColor"),				      QLatin1String(NEDIT_DEFAULT_CURSOR_FG)).toString();
+    colors[TEXT_FG_COLOR]             = settings.value(tr("nedit.textFgColor"), 				      QLatin1String(NEDIT_DEFAULT_FG)).toString();
+    colors[TEXT_BG_COLOR]             = settings.value(tr("nedit.textBgColor"), 				      QLatin1String(NEDIT_DEFAULT_TEXT_BG)).toString();
+    colors[SELECT_FG_COLOR]           = settings.value(tr("nedit.selectFgColor"),				      QLatin1String(NEDIT_DEFAULT_SEL_FG)).toString();
+    colors[SELECT_BG_COLOR]           = settings.value(tr("nedit.selectBgColor"),				      QLatin1String(NEDIT_DEFAULT_SEL_BG)).toString();
+    colors[HILITE_FG_COLOR]           = settings.value(tr("nedit.hiliteFgColor"),				      QLatin1String(NEDIT_DEFAULT_HI_FG)).toString();
+    colors[HILITE_BG_COLOR]           = settings.value(tr("nedit.hiliteBgColor"),				      QLatin1String(NEDIT_DEFAULT_HI_BG)).toString();
+    colors[LINENO_FG_COLOR]           = settings.value(tr("nedit.lineNoFgColor"),				      QLatin1String(NEDIT_DEFAULT_LINENO_FG)).toString();
+    colors[CURSOR_FG_COLOR]           = settings.value(tr("nedit.cursorFgColor"),				      QLatin1String(NEDIT_DEFAULT_CURSOR_FG)).toString();
 
     tooltipBgColor                    = settings.value(tr("nedit.tooltipBgColor"),  			      QLatin1String("LemonChiffon1")).toString();
     shell                             = settings.value(tr("nedit.shell"),						      QLatin1String("DEFAULT")).toString();
