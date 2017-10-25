@@ -141,7 +141,6 @@ add_executable(nedit-ng
 	ElidedLabel.cpp
 	HighlightPattern.cpp
 	KeySequenceEdit.cpp
-	LanguageMode.cpp
 	MainWindow.cpp
 	MenuItem.cpp
 	NeditServer.cpp

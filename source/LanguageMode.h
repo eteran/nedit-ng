@@ -17,29 +17,15 @@ public:
     static constexpr int DEFAULT_EM_TAB_DIST = -1;
 	
 public:
-	LanguageMode();
-	LanguageMode(const LanguageMode &)            = default;
-	LanguageMode& operator=(const LanguageMode &) = default;
-	LanguageMode(LanguageMode &&)                 = default;
-	LanguageMode& operator=(LanguageMode &&)      = default;
-	
-public:
-	void swap(LanguageMode &other);
-	
-public:
 	QString     name;
 	QStringList extensions;
 	QString     recognitionExpr;
 	QString     defTipsFile;
 	QString     delimiters;
-    WrapStyle   wrapStyle;
-    IndentStyle indentStyle;
-	int         tabDist;
-	int         emTabDist;
+    WrapStyle   wrapStyle       = NO_WRAP;
+    IndentStyle indentStyle     = NO_AUTO_INDENT;
+    int         tabDist         = DEFAULT_TAB_DIST;
+    int         emTabDist       = DEFAULT_EM_TAB_DIST;
 };
-
-inline void swap(LanguageMode &lhs, LanguageMode &rhs) {
-    lhs.swap(rhs);
-}
 
 #endif
