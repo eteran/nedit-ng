@@ -38,5 +38,7 @@
         <file>res/DefaultHighlightPatterns.txt</file>
         <file>res/DefaultSmartIndentInit.txt</file>
         <file>res/DefaultSmartIndentInitCommon.txt</file>
+        <file>res/DefaultMacroCommands.txt</file>
+        <file>res/DefaultLanguageModes.txt</file>
     </qresource>
 </RCC>

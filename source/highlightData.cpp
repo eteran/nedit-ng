@@ -390,7 +390,7 @@ bool LMHasHighlightPatterns(const QString &languageMode) {
 	}
 	
 	
-	return SyntaxPatterns != nullptr && SyntaxPatterns->LMHasHighlightPatterns(languageMode);
+    return SyntaxPatterns && SyntaxPatterns->LMHasHighlightPatterns(languageMode);
 }
 
 /*
