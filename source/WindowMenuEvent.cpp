@@ -26,10 +26,10 @@ QString WindowMenuEvent::argumentString() const {
     QStringList args;
 
     std::transform(arguments_.begin(), arguments_.end(), std::back_inserter(args), [](const QString &arg) {
-        return QLatin1Char('"') + CommandRecorder::escapeString(arg) + QLatin1Char('"');
+        return CommandRecorder::quoteString(CommandRecorder::escapeString(arg));
     });
 
-    return args.join(QLatin1String(","));
+    return args.join(QLatin1Char(','));
 }
 
 /**

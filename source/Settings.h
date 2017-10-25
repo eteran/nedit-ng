@@ -63,6 +63,7 @@ public:
     bool warnExit;
     bool warnFileMods;
     bool warnRealFileMods;
+    int fileVersion;
     int autoIndent;
     WrapStyle autoWrap;
     int emulateTabs;
@@ -76,7 +77,6 @@ public:
     QString boldHighlightFont;
     QString boldItalicHighlightFont;
     QString colors[8];
-    QString fileVersion;
     QString geometry;
     QString highlightPatterns;
     QString italicHighlightFont;

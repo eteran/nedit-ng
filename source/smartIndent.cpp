@@ -94,6 +94,7 @@ QByteArray defaultCommonMacros() {
 	return defaultsMacros;
 }
 
+// TODO(eteran): 2.0, what would be the best way to move this structure to a resource file and have it be more maintainable?
 SmartIndentEntry DefaultIndentSpecs[N_DEFAULT_INDENT_SPECS] = {
 	{
 		QLatin1String("C")

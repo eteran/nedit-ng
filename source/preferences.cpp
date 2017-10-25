@@ -56,6 +56,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+constexpr int ConfigFileVersion = 1;
+
 #define N_WRAP_STYLES 3
 static const char *AutoWrapTypes[N_WRAP_STYLES + 3] = {"None", "Newline", "Continuous", "True", "False", nullptr};
 
@@ -195,7 +197,7 @@ void SaveNEditPrefsEx(QWidget *parent, bool quietly) {
         }
     }
 
-    g_Settings.fileVersion           = QLatin1String("1.0");
+    g_Settings.fileVersion           = ConfigFileVersion;
     g_Settings.shellCommands         = WriteShellCmdsStringEx();
     g_Settings.macroCommands         = WriteMacroCmdsStringEx();
     g_Settings.bgMenuCommands        = WriteBGMenuCmdsStringEx();

@@ -97,7 +97,7 @@ void Settings::loadPreferences() {
     QString filename = configFile();
     QSettings settings(filename, QSettings::IniFormat);
 
-    fileVersion   = settings.value(tr("nedit.fileVersion"),   QLatin1String("1.0")).toString();
+    fileVersion   = settings.value(tr("nedit.fileVersion"),   1).toInt();
 
 #if defined(Q_OS_LINUX)
     shellCommands = settings.value(tr("nedit.shellCommands"), loadResource(QLatin1String("res/DefaultShellCommandsLinux.txt"))).toString();
@@ -206,7 +206,7 @@ void Settings::importSettings(const QString &filename) {
 
     QSettings settings(filename, QSettings::IniFormat);
 
-    fileVersion           = settings.value(tr("nedit.fileVersion"),           fileVersion).toString();
+    fileVersion           = settings.value(tr("nedit.fileVersion"),           fileVersion).toInt();
     shellCommands         = settings.value(tr("nedit.shellCommands"),         shellCommands).toString();
     macroCommands         = settings.value(tr("nedit.macroCommands"),         macroCommands).toString();
     bgMenuCommands        = settings.value(tr("nedit.bgMenuCommands"),        bgMenuCommands).toString();
