@@ -3015,7 +3015,7 @@ static bool getRangeMS(DocumentWidget *document, DataValue *argList, int nArgs, 
     to   = qBound(0, to,   buf->BufGetLength());
 
     if (from > to) {
-        qSwap(from, to);
+        std::swap(from, to);
     }
 
     /* Copy text from buffer (this extra copy could be avoided if TextBuffer.c
@@ -3071,7 +3071,7 @@ static bool replaceRangeMS(DocumentWidget *document, DataValue *argList, int nAr
     to   = qBound(0, to,   buf->BufGetLength());
 
     if (from > to) {
-        qSwap(from, to);
+        std::swap(from, to);
     }
 
     // Don't allow modifications if the window is read-only
@@ -3208,7 +3208,7 @@ static bool replaceSubstringMS(DocumentWidget *document, DataValue *argList, int
     to   = qBound(0, to,   length);
 
     if (from > to) {
-        qSwap(from, to);
+        std::swap(from, to);
     }
 
     // Allocate a new string and do the replacement
@@ -3666,7 +3666,7 @@ static bool selectMS(DocumentWidget *document, DataValue *argList, int nArgs, Da
 
     // Verify integrity of arguments
     if (start > end) {
-        qSwap(start, end);
+        std::swap(start, end);
     }
 
     start = qBound(0, start, document->buffer_->BufGetLength());
@@ -5336,7 +5336,7 @@ static bool rangesetAddMS(DocumentWidget *document, DataValue *argList, int nArg
         end   = qBound(0, end, maxpos);
 
         if (start > end) {
-            qSwap(start, end);
+            std::swap(start, end);
         }
 
         if ((start != end) && !targetRangeset->RangesetAddBetween(start, end)) {
@@ -5421,7 +5421,7 @@ static bool rangesetSubtractMS(DocumentWidget *document, DataValue *argList, int
         end   = qBound(0, end, maxpos);
 
         if (start > end) {
-            qSwap(start, end);
+            std::swap(start, end);
         }
 
         targetRangeset->RangesetRemoveBetween(start, end);
