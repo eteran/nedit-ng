@@ -27,6 +27,7 @@
 #include <QDir>
 #include <QHostInfo>
 #include <QStandardPaths>
+#include <QResource>
 
 #include <cstdlib>
 #include <cstdio>
@@ -112,4 +113,26 @@ QString PrependHomeEx(const QString &filename) {
  */
 QString ErrorString(int error) {
     return QString::fromLatin1(strerror(error));
+}
+
+/**
+ * @brief loadResource
+ * @param resource
+ * @return
+ */
+QByteArray loadResource(const QString &resource) {
+
+    QResource res(resource);
+    if(!res.isValid()) {
+        qFatal("Failed to load internal resource");
+    }
+
+    // don't copy the data, if it's uncompressed, we can deal with it in place :-)
+    auto defaults = QByteArray::fromRawData(reinterpret_cast<const char *>(res.data()), res.size());
+
+    if(res.isCompressed()) {
+        defaults = qUncompress(defaults);
+    }
+
+    return defaults;
 }

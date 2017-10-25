@@ -42,9 +42,9 @@
 #include "preferences.h"
 #include "Input.h"
 #include "shift.h"
+#include "utils.h"
 
 #include <QMessageBox>
-#include <QResource>
 #include <QtDebug>
 #include <climits>
 #include <cstdio>
@@ -74,24 +74,8 @@ static QString readSIMacroEx(Input &in);
  */
 QByteArray defaultCommonMacros() {
 
-	static bool loaded = false;
-	static QByteArray defaultsMacros;
-	
-	if(!loaded) {
-		QResource res(QLatin1String("res/DefaultCommonMacros.txt"));
-		if(res.isValid()) {
-            // don't copy the data, if it's uncompressed, we can deal with it in place :-)
-            defaultsMacros = QByteArray::fromRawData(reinterpret_cast<const char *>(res.data()), res.size());
-
-			if(res.isCompressed()) {
-				defaultsMacros = qUncompress(defaultsMacros);
-			}
-
-			loaded = true;
-		}
-	}
-	
-	return defaultsMacros;
+    static QByteArray defaultMacros = loadResource(QLatin1String("res/DefaultCommonMacros.txt"));
+    return defaultMacros;
 }
 
 // TODO(eteran): 2.0, what would be the best way to move this structure to a resource file and have it be more maintainable?

@@ -7,10 +7,10 @@
 #include "ReplaceScope.h"
 #include "search.h"
 #include "nedit.h"
+#include "utils.h"
 #include <QtDebug>
 #include <QSettings>
 #include <QStandardPaths>
-#include <QResource>
 
 // Some default colors
 #define NEDIT_DEFAULT_FG        "#221f1e"
@@ -21,33 +21,6 @@
 #define NEDIT_DEFAULT_HI_BG     "red"          /* matching parens. */
 #define NEDIT_DEFAULT_LINENO_FG "black"
 #define NEDIT_DEFAULT_CURSOR_FG "black"
-
-namespace {
-
-/**
- * @brief loadResource
- * @param resource
- * @return
- */
-QString loadResource(const QString &resource) {
-
-    QResource res(resource);
-    if(!res.isValid()) {
-        qFatal("Failed to load internal resource");
-    }
-
-    // don't copy the data, if it's uncompressed, we can deal with it in place :-)
-    auto defaultCommands = QByteArray::fromRawData(reinterpret_cast<const char *>(res.data()), res.size());
-
-    if(res.isCompressed()) {
-        defaultCommands = qUncompress(defaultCommands);
-    }
-
-    return QString::fromLatin1(defaultCommands);
-}
-
-}
-
 
 /**
  * @brief Settings::configFile
