@@ -12,8 +12,8 @@ class DialogMoveDocument : public Dialog {
 public:
 	Q_OBJECT
 public:
-	DialogMoveDocument(QWidget *parent = 0, Qt::WindowFlags f = 0);
-    virtual ~DialogMoveDocument() = default;
+    DialogMoveDocument(QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Q_NULLPTR);
+    virtual ~DialogMoveDocument() override = default;
 	
 public:
     void addItem(MainWindow *window);

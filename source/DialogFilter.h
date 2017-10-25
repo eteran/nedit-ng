@@ -9,8 +9,8 @@
 class DialogFilter : public Dialog {
 	Q_OBJECT
 public:
-	DialogFilter(QWidget *parent = 0, Qt::WindowFlags f = 0);
-    virtual ~DialogFilter() = default;
+    DialogFilter(QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Q_NULLPTR);
+    virtual ~DialogFilter() override = default;
 	
 protected:
 	virtual void keyPressEvent(QKeyEvent *event) override;

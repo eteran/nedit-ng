@@ -11,8 +11,8 @@ class MenuItem;
 class DialogWindowBackgroundMenu : public Dialog {
 	Q_OBJECT
 public:
-	DialogWindowBackgroundMenu(QWidget *parent = 0, Qt::WindowFlags f = 0);
-    virtual ~DialogWindowBackgroundMenu() noexcept;
+    DialogWindowBackgroundMenu(QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Q_NULLPTR);
+    virtual ~DialogWindowBackgroundMenu() noexcept override;
 
 public:
 	void setPasteReplayEnabled(bool enabled);

@@ -18,8 +18,8 @@ private:
     };
 
 public:
-	DialogDrawingStyles(QWidget *parent = 0, Qt::WindowFlags f = 0);
-    virtual ~DialogDrawingStyles() noexcept;
+    DialogDrawingStyles(QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Q_NULLPTR);
+    virtual ~DialogDrawingStyles() noexcept override;
 
 public Q_SLOTS:
 	void setStyleByName(const QString &name);

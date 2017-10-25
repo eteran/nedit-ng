@@ -12,8 +12,8 @@ class DialogReplace;
 class DialogMultiReplace : public Dialog {
 	Q_OBJECT
 public:
-    DialogMultiReplace(MainWindow *window, DocumentWidget *document, DialogReplace *replace, QWidget *parent = 0, Qt::WindowFlags f = 0);
-    virtual ~DialogMultiReplace() = default;
+    DialogMultiReplace(MainWindow *window, DocumentWidget *document, DialogReplace *replace, QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Q_NULLPTR);
+    virtual ~DialogMultiReplace() override = default;
 
 private Q_SLOTS:
 	void on_checkShowPaths_toggled(bool checked);

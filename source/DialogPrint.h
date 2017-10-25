@@ -8,8 +8,8 @@
 class DialogPrint : public Dialog {
 	Q_OBJECT
 public:
-	DialogPrint(const QString &PrintFileName, const QString &jobName, QWidget *parent = 0, Qt::WindowFlags f = 0);
-    virtual ~DialogPrint() = default;
+    DialogPrint(const QString &PrintFileName, const QString &jobName, QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Q_NULLPTR);
+    virtual ~DialogPrint() override = default;
 
 private Q_SLOTS:
 	void on_spinCopies_valueChanged(int n);

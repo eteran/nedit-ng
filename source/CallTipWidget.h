@@ -8,8 +8,8 @@
 class CallTipWidget : public QWidget {
 	Q_OBJECT
 public:
-    CallTipWidget(QWidget *parent = 0, Qt::WindowFlags f = 0);
-    virtual ~CallTipWidget() = default;
+    CallTipWidget(QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Q_NULLPTR);
+    virtual ~CallTipWidget() override = default;
 	
 public:
 	void setText(const QString &text);

@@ -14,8 +14,8 @@ struct UpdateState;
 class DialogWindowTitle : public Dialog {
 	Q_OBJECT
 public:
-    DialogWindowTitle(DocumentWidget *document, QWidget *parent = 0, Qt::WindowFlags f = 0);
-    virtual ~DialogWindowTitle() = default;
+    DialogWindowTitle(DocumentWidget *document, QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Q_NULLPTR);
+    virtual ~DialogWindowTitle() override = default;
 
 private Q_SLOTS:
 	void on_checkFileName_toggled(bool checked);

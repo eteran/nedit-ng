@@ -9,8 +9,8 @@ class DialogOutput : public Dialog {
 	Q_OBJECT
 
 public:
-	DialogOutput(QWidget *parent = 0, Qt::WindowFlags f = 0);
-    virtual ~DialogOutput() = default;
+    DialogOutput(QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Q_NULLPTR);
+    virtual ~DialogOutput() override = default;
 
 public Q_SLOTS:
 	void setText(const QString &text);

@@ -10,8 +10,8 @@ class DocumentWidget;
 class DialogRepeat : public Dialog {
 	Q_OBJECT
 public:
-	DialogRepeat(DocumentWidget *document, QWidget *parent = 0, Qt::WindowFlags f = 0);
-    virtual ~DialogRepeat() = default;
+    DialogRepeat(DocumentWidget *document, QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Q_NULLPTR);
+    virtual ~DialogRepeat() override = default;
 
 public Q_SLOTS:
 	void setCommand(const QString &command);	

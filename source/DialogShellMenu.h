@@ -19,8 +19,8 @@ private:
     };
 
 public:
-	DialogShellMenu(QWidget *parent = 0, Qt::WindowFlags f = 0);
-    virtual ~DialogShellMenu() noexcept;
+    DialogShellMenu(QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Q_NULLPTR);
+    virtual ~DialogShellMenu() noexcept override;
 
 private Q_SLOTS:
 	void on_buttonNew_clicked();

@@ -12,8 +12,8 @@ class SmartIndentEntry;
 class DialogSmartIndent : public Dialog {
 	Q_OBJECT
 public:
-    DialogSmartIndent(DocumentWidget *document, QWidget *parent = 0, Qt::WindowFlags f = 0);
-    virtual ~DialogSmartIndent() = default;
+    DialogSmartIndent(DocumentWidget *document, QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Q_NULLPTR);
+    virtual ~DialogSmartIndent() override = default;
 
 public:
 	void updateLanguageModes();

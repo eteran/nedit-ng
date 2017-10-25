@@ -50,8 +50,8 @@ class DocumentWidget : public QWidget {
 	friend class MainWindow;
 	
 public:
-	DocumentWidget(const QString &name, QWidget *parent = 0, Qt::WindowFlags f = 0);
-    virtual ~DocumentWidget() noexcept;
+    DocumentWidget(const QString &name, QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Q_NULLPTR);
+    virtual ~DocumentWidget() noexcept override;
 
 private Q_SLOTS:
     void flashTimerTimeout();

@@ -20,8 +20,8 @@ private:
 	};
 	
 public:
-    DialogFonts(DocumentWidget *document, bool forWindow, QWidget *parent = 0, Qt::WindowFlags f = 0);
-    virtual ~DialogFonts() = default;
+    DialogFonts(DocumentWidget *document, bool forWindow, QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Q_NULLPTR);
+    virtual ~DialogFonts() override = default;
 
 private Q_SLOTS:
 	void on_buttonPrimaryFont_clicked();

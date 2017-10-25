@@ -8,8 +8,8 @@
 class DialogSmartIndentCommon : public Dialog {
 	Q_OBJECT
 public:
-	DialogSmartIndentCommon(QWidget *parent = 0, Qt::WindowFlags f = 0);
-    virtual ~DialogSmartIndentCommon() = default;
+    DialogSmartIndentCommon(QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Q_NULLPTR);
+    virtual ~DialogSmartIndentCommon() override = default;
 
 private:
 	bool checkSmartIndentCommonDialogData();

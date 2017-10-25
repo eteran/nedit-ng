@@ -8,8 +8,8 @@
 class DialogPromptList : public Dialog {
 	Q_OBJECT
 public:
-	DialogPromptList(QWidget *parent = 0, Qt::WindowFlags f = 0);
-    virtual ~DialogPromptList() = default;
+    DialogPromptList(QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Q_NULLPTR);
+    virtual ~DialogPromptList() override = default;
 
 public:
 	int result() const {
