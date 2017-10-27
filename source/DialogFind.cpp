@@ -7,8 +7,7 @@
 #include "nedit.h"
 #include "preferences.h"
 #include "regularExp.h"
-#include "SearchType.h"
-#include "search.h"
+#include "search.h" // for the search type enum
 #include <QApplication>
 #include <QClipboard>
 #include <QKeyEvent>

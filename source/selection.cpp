@@ -30,6 +30,7 @@
 #include "TextArea.h"
 #include "TextBuffer.h"
 #include "menu.h"
+#include "nedit.h"
 #include "preferences.h"
 #include "util/fileUtils.h"
 #include <QApplication>

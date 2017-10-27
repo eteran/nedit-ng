@@ -27,6 +27,7 @@
 #ifndef MACRO_H_
 #define MACRO_H_
 
+#include "nedit.h"
 #include "util/string_view.h"
 #include <QTimer>
 #include <memory>

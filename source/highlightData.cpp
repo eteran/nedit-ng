@@ -39,6 +39,7 @@
 #include "PatternSet.h"
 #include "TextBuffer.h"
 #include "highlight.h"
+#include "nedit.h"
 #include "Input.h"
 #include "preferences.h"
 #include "regularExp.h"
