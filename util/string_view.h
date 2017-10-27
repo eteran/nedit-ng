@@ -237,7 +237,7 @@ public:
 
 		for(int i = pos - 1; i >= 0; --i) {
 			if(compare(i, v.size(), v) == 0) {
-				return i;
+				return static_cast<size_type>(i);
 			}
 		}
 
@@ -302,7 +302,7 @@ public:
 		for(int i = pos - 1; i >= 0; --i) {
 			for(char ch : v) {
 				if(data_[i] == ch) {
-					return i;
+					return static_cast<size_type>(i);
 				}
 			}
 		}
@@ -651,7 +651,7 @@ struct hash<view::string_view> {
 
 		result_type h = detail::hash_constants<result_type>::FNV_offset_basis;;
 		for(char ch : key) {
-			h = (h * detail::hash_constants<result_type>::FNV_prime) ^ ch;
+			h = (h * detail::hash_constants<result_type>::FNV_prime) ^ static_cast<unsigned char>(ch);
 		}
 		return h;
 	}
@@ -668,7 +668,7 @@ struct hash<view::wstring_view> {
 
 		result_type h = detail::hash_constants<result_type>::FNV_offset_basis;
 		while(p != last) {
-			h = (h * detail::hash_constants<result_type>::FNV_prime) ^ *p++;
+			h = (h * detail::hash_constants<result_type>::FNV_prime) ^ static_cast<unsigned char>(*p++);
 		}
 		return h;
 	}
@@ -685,7 +685,7 @@ struct hash<view::u16string_view> {
 
 		result_type h = detail::hash_constants<result_type>::FNV_offset_basis;
 		while(p != last) {
-			h = (h * detail::hash_constants<result_type>::FNV_prime) ^ *p++;
+			h = (h * detail::hash_constants<result_type>::FNV_prime) ^ static_cast<unsigned char>(*p++);
 		}
 		return h;
 	}
@@ -702,7 +702,7 @@ struct hash<view::u32string_view> {
 
 		result_type h = detail::hash_constants<result_type>::FNV_offset_basis;
 		while(p != last) {
-			h = (h * detail::hash_constants<result_type>::FNV_prime) ^ *p++;
+			h = (h * detail::hash_constants<result_type>::FNV_prime) ^ static_cast<unsigned char>(*p++);
 		}
 		return h;
 	}
