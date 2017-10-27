@@ -9,12 +9,12 @@
 class DialogFilter : public Dialog {
 	Q_OBJECT
 public:
-    DialogFilter(QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Q_NULLPTR);
-    virtual ~DialogFilter() override = default;
+    DialogFilter(QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
+    ~DialogFilter() override = default;
 	
 protected:
-	virtual void keyPressEvent(QKeyEvent *event) override;
-	virtual void showEvent(QShowEvent *event) override;
+	void keyPressEvent(QKeyEvent *event) override;
+	void showEvent(QShowEvent *event) override;
 	
 private Q_SLOTS:
 	void on_buttonBox_accepted();

@@ -8,8 +8,8 @@
 class DialogPromptList : public Dialog {
 	Q_OBJECT
 public:
-    DialogPromptList(QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Q_NULLPTR);
-    virtual ~DialogPromptList() override = default;
+    DialogPromptList(QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
+    ~DialogPromptList() override = default;
 
 public:
 	int result() const {
@@ -30,7 +30,7 @@ private Q_SLOTS:
 	void on_buttonBox_clicked(QAbstractButton *button);
 	
 private:
-	virtual void showEvent(QShowEvent *event) override;
+	void showEvent(QShowEvent *event) override;
 
 private:
 	Ui::DialogPromptList ui;

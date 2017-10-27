@@ -218,7 +218,6 @@ void DialogShellMenu::on_listItems_itemSelectionChanged() {
 				
 		switch(ptr->input) {
 		case FROM_SELECTION:
-		default:
 			ui.radioFromSelection->setChecked(true);
 			break;
 		case FROM_WINDOW:
@@ -234,7 +233,6 @@ void DialogShellMenu::on_listItems_itemSelectionChanged() {
 		
 		switch(ptr->output) {
 		case TO_SAME_WINDOW:
-		default:
 			ui.radioToSameDocument->setChecked(true);
 			break;
 		case TO_DIALOG:

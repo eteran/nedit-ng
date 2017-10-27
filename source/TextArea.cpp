@@ -53,22 +53,22 @@
 // in a way that is comparaable to how the original nedit works
 class AsciiTextCodec : public QTextCodec {
 public:
-    virtual ~AsciiTextCodec() override = default;
+    ~AsciiTextCodec() override = default;
 
-    virtual QByteArray name() const override {
+    QByteArray name() const override {
         return "US_ASCII";
     }
 
-    virtual QList<QByteArray> aliases() const override {
+    QList<QByteArray> aliases() const override {
         QList<QByteArray> ret;
         return ret;
     }
 
-    virtual int mibEnum () const override {
+    int mibEnum () const override {
         return 3;
     }
 protected:
-    virtual QByteArray convertFromUnicode(const QChar *input, int number, ConverterState *state) const override {
+    QByteArray convertFromUnicode(const QChar *input, int number, ConverterState *state) const override {
         Q_UNUSED(input);
         Q_UNUSED(number);
         Q_UNUSED(state);
@@ -76,7 +76,7 @@ protected:
         return b;
     }
 
-    virtual QString convertToUnicode(const char *chars, int len, ConverterState *state) const override {
+    QString convertToUnicode(const char *chars, int len, ConverterState *state) const override {
 
         Q_UNUSED(state);
 

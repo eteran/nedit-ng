@@ -9,12 +9,12 @@
 class DialogExecuteCommand : public Dialog {
 	Q_OBJECT
 public:
-    DialogExecuteCommand(QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Q_NULLPTR);
-    virtual ~DialogExecuteCommand() override = default;
+    DialogExecuteCommand(QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
+    ~DialogExecuteCommand() override = default;
 
 protected:
-	virtual void keyPressEvent(QKeyEvent *event) override;
-	virtual void showEvent(QShowEvent *event) override;
+	void keyPressEvent(QKeyEvent *event) override;
+	void showEvent(QShowEvent *event) override;
 
 private Q_SLOTS:
 	void on_buttonBox_accepted();

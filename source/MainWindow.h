@@ -25,8 +25,8 @@ class MainWindow : public QMainWindow {
     friend class DialogReplace;
 
 public:
-    MainWindow (QWidget *parent = 0, Qt::WindowFlags flags = 0);
-	virtual ~MainWindow() = default;
+    MainWindow (QWidget *parent = Q_NULLPTR, Qt::WindowFlags flags = Qt::WindowFlags());
+    ~MainWindow() override = default;
 	
 private:
 	void setupMenuGroups();
@@ -43,9 +43,9 @@ public:
     void UpdateUserMenus(DocumentWidget *document);
 
 private:
-    virtual void keyPressEvent(QKeyEvent *event) override;
-    virtual void closeEvent(QCloseEvent *event) override;
-    virtual bool eventFilter(QObject *object, QEvent *event) override;
+    void keyPressEvent(QKeyEvent *event) override;
+    void closeEvent(QCloseEvent *event) override;
+    bool eventFilter(QObject *object, QEvent *event) override;
 
 public:
 	DialogReplace *getDialogReplace() const;	

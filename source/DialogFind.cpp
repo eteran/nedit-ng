@@ -186,8 +186,6 @@ void DialogFind::initToggleButtons(SearchType searchType) {
 			ui.checkWord->setEnabled(false);
 		}
 		break;
-	default:
-        Q_UNREACHABLE();
 	}
 }
 

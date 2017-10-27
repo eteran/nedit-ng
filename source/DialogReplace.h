@@ -22,12 +22,12 @@ class DialogMultiReplace;
 class DialogReplace : public Dialog {
 	Q_OBJECT
 public:
-    DialogReplace(MainWindow *window, DocumentWidget *document, QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Q_NULLPTR);
-    virtual ~DialogReplace() override = default;
+    DialogReplace(MainWindow *window, DocumentWidget *document, QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
+    ~DialogReplace() override = default;
 	
 protected:
-	virtual void keyPressEvent(QKeyEvent *event) override;
-	virtual void showEvent(QShowEvent *event) override;
+	void keyPressEvent(QKeyEvent *event) override;
+	void showEvent(QShowEvent *event) override;
 	
 public:
     void setDocument(DocumentWidget *document);

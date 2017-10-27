@@ -18,8 +18,8 @@ private:
     };
 
 public:
-    DialogLanguageModes(QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Q_NULLPTR);
-    virtual ~DialogLanguageModes() noexcept override;
+    DialogLanguageModes(QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
+    ~DialogLanguageModes() noexcept override;
 
 private Q_SLOTS:
 	void on_buttonBox_accepted();

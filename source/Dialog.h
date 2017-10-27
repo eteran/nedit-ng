@@ -7,11 +7,11 @@
 class Dialog : public QDialog {
 	Q_OBJECT
 public:
-    Dialog(QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Q_NULLPTR);
-    virtual ~Dialog() override = default;
+    Dialog(QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
+    ~Dialog() override = default;
 
 public:
-	virtual void showEvent(QShowEvent *event) override;
+	void showEvent(QShowEvent *event) override;
 };
 
 #endif

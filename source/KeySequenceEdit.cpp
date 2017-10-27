@@ -76,7 +76,7 @@ void KeySequenceEdit::finishEditing() {
 // Name: KeySequenceEdit
 // Desc: Constructor
 //------------------------------------------------------------------------------
-KeySequenceEdit::KeySequenceEdit(QWidget *parent) : QWidget(parent, 0), prevKey_(-1), releaseTimer_(0), maximumSequenceLength_(4), modifierRequired_(false) {
+KeySequenceEdit::KeySequenceEdit(QWidget *parent, Qt::WindowFlags f) : QWidget(parent, f), prevKey_(-1), releaseTimer_(0), maximumSequenceLength_(4), modifierRequired_(false) {
 	
     lineEdit_ = new QLineEdit(this);	
 	lineEdit_->setContextMenuPolicy(Qt::PreventContextMenu);
@@ -100,7 +100,7 @@ KeySequenceEdit::KeySequenceEdit(QWidget *parent) : QWidget(parent, 0), prevKey_
 // Name: KeySequenceEdit
 // Desc: Constructor
 //------------------------------------------------------------------------------
-KeySequenceEdit::KeySequenceEdit(const QKeySequence &keySequence, QWidget *parent) : KeySequenceEdit(parent) {
+KeySequenceEdit::KeySequenceEdit(const QKeySequence &keySequence, QWidget *parent, Qt::WindowFlags f) : KeySequenceEdit(parent, f) {
     setKeySequence(keySequence);
 }
 

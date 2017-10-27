@@ -292,7 +292,7 @@ inline DataValue to_value(char *str, int size) {
     DataValue DV;
     DV.tag     = STRING_TAG;
     DV.val.str.rep = str;
-    DV.val.str.len = size;
+    DV.val.str.len = static_cast<size_t>(size);
     return DV;
 }
 

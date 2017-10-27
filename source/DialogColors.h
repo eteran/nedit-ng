@@ -11,8 +11,8 @@ class QLabel;
 class DialogColors : public Dialog {
 	Q_OBJECT
 public:
-    DialogColors(QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Q_NULLPTR);
-    virtual ~DialogColors() override = default;
+    DialogColors(QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
+    ~DialogColors() override = default;
 
 private Q_SLOTS:
 	void on_buttonFG_clicked();

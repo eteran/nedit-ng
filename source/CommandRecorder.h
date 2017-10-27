@@ -17,10 +17,10 @@ public:
 
 private:
     explicit CommandRecorder(QObject *parent = Q_NULLPTR);
-    virtual ~CommandRecorder() override = default;
+    ~CommandRecorder() override = default;
 
 public:
-    virtual bool eventFilter(QObject *obj, QEvent *event) override;
+    bool eventFilter(QObject *obj, QEvent *event) override;
 
 public:
     static QString escapeString(const QString &s);

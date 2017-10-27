@@ -279,8 +279,6 @@ void MainWindow::setupMenuDefaults() {
     case FLASH_RANGE:
         no_signals(ui.action_Matching_Range)->setChecked(true);
         break;
-    default:
-        Q_UNREACHABLE();
     }
 
     // Default Indent
@@ -343,9 +341,6 @@ void MainWindow::setupMenuDefaults() {
         break;
     case SEARCH_REGEX_NOCASE:
         no_signals(ui.action_Default_Search_Regular_Expresison_Case_Insensitive)->setChecked(true);
-        break;
-    default:
-        Q_UNREACHABLE();
         break;
     }
 
@@ -2406,8 +2401,6 @@ void MainWindow::initToggleButtonsiSearch(SearchType searchType) {
         ui.checkIFindRegex->setChecked(true);
         ui.checkIFindCase->setChecked(false);
         break;
-    default:
-        Q_UNREACHABLE();
     }
 }
 

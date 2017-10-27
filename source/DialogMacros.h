@@ -18,8 +18,8 @@ private:
     };
 
 public:
-    DialogMacros(QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Q_NULLPTR);
-    virtual ~DialogMacros() noexcept override;
+    DialogMacros(QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
+    ~DialogMacros() noexcept override;
 
 public:
 	void setPasteReplayEnabled(bool enabled);

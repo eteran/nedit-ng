@@ -560,8 +560,6 @@ void DialogReplace::initToggleButtons(SearchType searchType) {
 			ui.checkWord->setEnabled(false);
 		}
 		break;
-	default:
-        Q_UNREACHABLE();
 	}
 }
 

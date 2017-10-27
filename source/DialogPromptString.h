@@ -8,11 +8,11 @@
 class DialogPromptString : public Dialog {
 	Q_OBJECT
 public:
-    DialogPromptString(QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Q_NULLPTR);
-    virtual ~DialogPromptString() override = default;
+    DialogPromptString(QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
+    ~DialogPromptString() override = default;
 
 private:
-    virtual void showEvent(QShowEvent *event) override;
+    void showEvent(QShowEvent *event) override;
 
 public:
 	int result() const {

@@ -8,8 +8,8 @@
 class DialogAbout : public Dialog {
 	Q_OBJECT
 public:
-    DialogAbout(QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Q_NULLPTR);
-    virtual ~DialogAbout() override = default;
+    DialogAbout(QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
+    ~DialogAbout() override = default;
 
 public:
     static QString createInfoString();

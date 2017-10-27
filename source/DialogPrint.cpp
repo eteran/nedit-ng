@@ -20,9 +20,6 @@
 
 namespace {
 
-/* Maximum length of an error returned by IssuePrintCommand() */
-constexpr int MAX_PRINT_ERROR_LENGTH = 1024;
-
 QString PrintCommand;  /* print command string */
 QString CopiesOption;  /* # of copies argument string */
 QString QueueOption;   /* queue name argument string */

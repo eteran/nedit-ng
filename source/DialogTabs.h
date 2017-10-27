@@ -16,8 +16,8 @@ class DialogTabs : public Dialog {
 public:
 	Q_OBJECT
 public:
-    DialogTabs(DocumentWidget *document, QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Q_NULLPTR);
-    virtual ~DialogTabs() override = default;
+    DialogTabs(DocumentWidget *document, QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
+    ~DialogTabs() override = default;
 
 private Q_SLOTS:
 	void on_checkEmulateTabs_toggled(bool checked);

@@ -16,12 +16,12 @@ class DocumentWidget;
 class DialogFind : public Dialog {
 	Q_OBJECT
 public:
-    DialogFind(MainWindow *window, DocumentWidget *document, QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Q_NULLPTR);
-    virtual ~DialogFind() override = default;
+    DialogFind(MainWindow *window, DocumentWidget *document, QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
+    ~DialogFind() override = default;
 	
 protected:
-	virtual void keyPressEvent(QKeyEvent *event) override;
-	virtual void showEvent(QShowEvent *event) override;
+	void keyPressEvent(QKeyEvent *event) override;
+	void showEvent(QShowEvent *event) override;
 
 public:
     void setDocument(DocumentWidget *document);

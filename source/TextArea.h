@@ -79,7 +79,7 @@ public:
 
     TextArea(const TextArea &other) = delete;
 	TextArea& operator=(const TextArea &) = delete;
-    virtual ~TextArea() noexcept;
+    ~TextArea() noexcept override;
 
 public:
     // NOTE(eteran): if these aren't expected to have side effects, then some
@@ -134,21 +134,21 @@ public:
     int getMarginWidth() const;
 
 protected:
-	virtual bool focusNextPrevChild(bool next) override;
-	virtual void contextMenuEvent(QContextMenuEvent *event) override;
-	virtual void dragEnterEvent(QDragEnterEvent *event) override;
-	virtual void dragLeaveEvent(QDragLeaveEvent *event) override;
-	virtual void dragMoveEvent(QDragMoveEvent *event) override;
-	virtual void dropEvent(QDropEvent *event) override;
-	virtual void keyPressEvent(QKeyEvent *event) override;
-	virtual void mouseDoubleClickEvent(QMouseEvent *event) override;
-	virtual void mouseMoveEvent(QMouseEvent *event) override;
-	virtual void mousePressEvent(QMouseEvent *event) override;
-	virtual void mouseReleaseEvent(QMouseEvent *event) override;
-	virtual void paintEvent(QPaintEvent *event) override;
-	virtual void resizeEvent(QResizeEvent *event) override;
-	virtual void focusInEvent(QFocusEvent *event) override;
-	virtual void focusOutEvent(QFocusEvent *event) override;
+	bool focusNextPrevChild(bool next) override;
+	void contextMenuEvent(QContextMenuEvent *event) override;
+	void dragEnterEvent(QDragEnterEvent *event) override;
+	void dragLeaveEvent(QDragLeaveEvent *event) override;
+	void dragMoveEvent(QDragMoveEvent *event) override;
+	void dropEvent(QDropEvent *event) override;
+	void keyPressEvent(QKeyEvent *event) override;
+	void mouseDoubleClickEvent(QMouseEvent *event) override;
+	void mouseMoveEvent(QMouseEvent *event) override;
+	void mousePressEvent(QMouseEvent *event) override;
+	void mouseReleaseEvent(QMouseEvent *event) override;
+	void paintEvent(QPaintEvent *event) override;
+	void resizeEvent(QResizeEvent *event) override;
+	void focusInEvent(QFocusEvent *event) override;
+	void focusOutEvent(QFocusEvent *event) override;
 	virtual void mouseTripleClickEvent(QMouseEvent *event);
 	virtual void mouseQuadrupleClickEvent(QMouseEvent *event);
 

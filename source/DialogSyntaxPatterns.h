@@ -19,8 +19,8 @@ private:
     };
 
 public:
-    DialogSyntaxPatterns(QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Q_NULLPTR);
-    virtual ~DialogSyntaxPatterns() noexcept override;
+    DialogSyntaxPatterns(QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
+    ~DialogSyntaxPatterns() noexcept override;
 
 public:
 	void setLanguageName(const QString &name);

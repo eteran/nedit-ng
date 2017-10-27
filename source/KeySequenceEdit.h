@@ -17,9 +17,9 @@ class KeySequenceEdit : public QWidget {
 	Q_DISABLE_COPY(KeySequenceEdit)
 
 public:
-    explicit KeySequenceEdit(QWidget *parent = 0);
-    explicit KeySequenceEdit(const QKeySequence &keySequence, QWidget *parent = 0);
-    virtual ~KeySequenceEdit() = default;
+    explicit KeySequenceEdit(QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
+    explicit KeySequenceEdit(const QKeySequence &keySequence, QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
+    ~KeySequenceEdit() override = default;
 
 public:
     QKeySequence keySequence() const;
@@ -38,10 +38,10 @@ Q_SIGNALS:
 	void maximumSequenceLengthChanged(int maximum);
 
 protected:
-    virtual bool event(QEvent *) override;
-    virtual void keyPressEvent(QKeyEvent *) override;
-    virtual void keyReleaseEvent(QKeyEvent *)override;
-    virtual void timerEvent(QTimerEvent *)override;
+    bool event(QEvent *) override;
+    void keyPressEvent(QKeyEvent *) override;
+    void keyReleaseEvent(QKeyEvent *) override;
+    void timerEvent(QTimerEvent *) override;
 
 private:
     void resetState();
