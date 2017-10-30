@@ -28,7 +28,6 @@
 #define MACRO_H_
 
 #include "nedit.h"
-#include "util/string_view.h"
 #include <QTimer>
 #include <memory>
 
@@ -59,7 +58,6 @@ void ReplayEx(DocumentWidget *document);
 void ReadMacroInitFileEx(DocumentWidget *document);
 void RegisterMacroSubroutines();
 void RepeatMacroEx(DocumentWidget *document, const QString &command, int how);
-void ResumeMacroExecutionEx(DocumentWidget *document);
 void ReturnShellCommandOutputEx(DocumentWidget *document, const QString &outText, int status);
 void SafeGC();
 

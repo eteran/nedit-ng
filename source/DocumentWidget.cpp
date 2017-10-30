@@ -4967,7 +4967,7 @@ cmdDone:
     shellCmdData_ = nullptr;
 
     if (fromMacro) {
-        ResumeMacroExecutionEx(this);
+        ResumeMacroExecutionEx();
     }
 }
 
@@ -5434,4 +5434,181 @@ int DocumentWidget::ReadMacroFileEx(const QString &fileName, bool warnNotExist) 
 
 	// Parse fileString
 	return readCheckMacroStringEx(this, fileString, this, fileName, nullptr);
+}
+
+/*
+** Run a pre-compiled macro, changing the interface state to reflect that
+** a macro is running, and handling preemption, resumption, and cancellation.
+** frees prog when macro execution is complete;
+*/
+void DocumentWidget::runMacroEx(Program *prog) {
+
+
+    /* If a macro is already running, just call the program as a subroutine,
+       instead of starting a new one, so we don't have to keep a separate
+       context, and the macros will serialize themselves automatically */
+    if (macroCmdData_) {
+        RunMacroAsSubrCall(prog);
+        return;
+    }
+
+    // put up a watch cursor over the waiting window
+    setCursor(Qt::BusyCursor);
+
+    // enable the cancel menu item
+    if(MainWindow *win = toWindow()) {
+        win->ui.action_Cancel_Learn->setText(tr("Cancel Macro"));
+        win->ui.action_Cancel_Learn->setEnabled(true);
+    }
+
+    /* Create a data structure for passing macro execution information around
+       amongst the callback routines which will process i/o and completion */
+    auto cmdData = std::make_shared<MacroCommandData>();
+    cmdData->bannerIsUp         = false;
+    cmdData->closeOnCompletion  = false;
+    cmdData->program            = prog;
+    cmdData->context            = nullptr;
+
+    macroCmdData_ = cmdData;
+
+    // Set up timer proc for putting up banner when macro takes too long
+    QObject::connect(&cmdData->bannerTimer, SIGNAL(timeout()), this, SLOT(bannerTimeoutProc()));
+    cmdData->bannerTimer.setSingleShot(true);
+    cmdData->bannerTimer.start(BANNER_WAIT_TIME);
+
+    // Begin macro execution
+    DataValue result;
+    const char *errMsg;
+    const int stat = ExecuteMacroEx(this, prog, 0, nullptr, &result, cmdData->context, &errMsg);
+
+    switch(stat) {
+    case MACRO_ERROR:
+        finishMacroCmdExecutionEx();
+        QMessageBox::critical(this, tr("Macro Error"), tr("Error executing macro: %1").arg(QString::fromLatin1(errMsg)));
+        return;
+    case MACRO_DONE:
+        finishMacroCmdExecutionEx();
+        return;
+    case MACRO_TIME_LIMIT:
+        ResumeMacroExecutionEx();
+        return;
+    case MACRO_PREEMPT:
+        // Macro was preempted
+        break;
+
+    }
+}
+
+/*
+** Clean up after the execution of a macro command: free memory, and restore
+** the user interface state.
+*/
+void DocumentWidget::finishMacroCmdExecutionEx() {
+    auto cmdData = macroCmdData_;
+    bool closeOnCompletion = cmdData->closeOnCompletion;
+
+    // Cancel pending timeout and work proc
+    cmdData->bannerTimer.stop();
+    cmdData->continuationTimer.stop();
+
+    // Clean up waiting-for-macro-command-to-complete mode
+    setCursor(Qt::ArrowCursor);
+
+    // enable the cancel menu item
+    if(MainWindow *win = toWindow()) {
+        win->ui.action_Cancel_Learn->setText(tr("Cancel Learn"));
+        win->ui.action_Cancel_Learn->setEnabled(false);
+    }
+
+    if (cmdData->bannerIsUp) {
+        ClearModeMessageEx();
+    }
+
+    // Free execution information
+    FreeProgram(cmdData->program);
+    macroCmdData_ = nullptr;
+
+    /* If macro closed its own window, window was made empty and untitled,
+       but close was deferred until completion.  This is completion, so if
+       the window is still empty, do the close */
+    if (closeOnCompletion && !filenameSet_ && !fileChanged_) {
+        CloseWindow();
+    }
+
+    // If no other macros are executing, do garbage collection
+    SafeGC();
+
+    /* In processing the .neditmacro file (and possibly elsewhere), there
+       is an event loop which waits for macro completion.  Send an event
+       to wake up that loop, otherwise execution will stall until the user
+       does something to the window. */
+    if (!closeOnCompletion) {
+        // TODO(eteran): find the equivalent to this...
+#if 0
+        XClientMessageEvent event;
+        event.format = 8;
+        event.type = ClientMessage;
+        XSendEvent(XtDisplay(window->shell_), XtWindow(window->shell_), False, NoEventMask, (XEvent *)&event);
+#endif
+    }
+}
+
+/*
+** Work proc for continuing execution of a preempted macro.
+**
+** Xt WorkProcs are designed to run first-in first-out, which makes them
+** very bad at sharing time between competing tasks.  For this reason, it's
+** usually bad to use work procs anywhere where their execution is likely to
+** overlap.  Using a work proc instead of a timer proc (which I usually
+** prefer) here means macros will probably share time badly, but we're more
+** interested in making the macros cancelable, and in continuing other work
+** than having users run a bunch of them at once together.
+*/
+DocumentWidget::MacroContinuationCode DocumentWidget::continueWorkProcEx() {
+
+    auto cmdData = macroCmdData_;
+
+    const char *errMsg;
+    DataValue result;
+    const int stat = ContinueMacroEx(cmdData->context, &result, &errMsg);
+
+    switch(stat) {
+    case MACRO_ERROR:
+        finishMacroCmdExecutionEx();
+        QMessageBox::critical(this, tr("Macro Error"), tr("Error executing macro: %1").arg(QString::fromLatin1(errMsg)));
+        return MacroContinuationCode::Stop;
+    case MACRO_DONE:
+        finishMacroCmdExecutionEx();
+        return MacroContinuationCode::Stop;
+    case MACRO_PREEMPT:
+        return MacroContinuationCode::Stop;
+    case MACRO_TIME_LIMIT:
+        // Macro exceeded time slice, re-schedule it
+        return MacroContinuationCode::Continue;
+    default:
+        return MacroContinuationCode::Stop;
+    }
+}
+
+/*
+** Continue with macro execution after preemption.  Called by the routines
+** whose actions cause preemption when they have completed their lengthy tasks.
+** Re-establishes macro execution work proc.  Window must be the window in
+** which the macro is executing (the window to which macroCmdData is attached),
+** and not the window to which operations are focused.
+*/
+void DocumentWidget::ResumeMacroExecutionEx() {
+
+    if(auto cmdData = macroCmdData_) {
+
+        // create a background task that will run so long as the function returns false
+        QObject::connect(&cmdData->continuationTimer, &QTimer::timeout, [cmdData, this]() {
+            if(continueWorkProcEx() == MacroContinuationCode::Stop) {
+                cmdData->continuationTimer.stop();
+            }
+        });
+
+        // a timeout of 0 means "run whenever the event loop is idle"
+        cmdData->continuationTimer.start(0);
+    }
 }

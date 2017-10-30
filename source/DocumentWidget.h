@@ -37,6 +37,7 @@ class TextBuffer;
 class UndoInfo;
 class HighlightData;
 class WindowHighlightData;
+class Program;
 struct DragEndEvent;
 struct SmartIndentEvent;
 struct SmartIndentData;
@@ -48,6 +49,11 @@ enum class Direction;
 class DocumentWidget : public QWidget {
 	Q_OBJECT
 	friend class MainWindow;
+
+public:
+    enum MacroContinuationCode {
+        Continue, Stop
+    };
 	
 public:
     DocumentWidget(const QString &name, QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
@@ -105,6 +111,10 @@ public:
 
 public:
 	void BeginLearnEx();
+    void runMacroEx(Program *prog);
+    void finishMacroCmdExecutionEx();
+    void ResumeMacroExecutionEx();
+    MacroContinuationCode continueWorkProcEx();
 	int ReadMacroFileEx(const QString &fileName, bool warnNotExist);
 	int matchLanguageMode();
 	void DetermineLanguageMode(bool forceNewDefaults);

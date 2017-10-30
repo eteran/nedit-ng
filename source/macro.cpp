@@ -70,29 +70,21 @@
 #include <QPushButton>
 #include <QStack>
 #include <QString>
-#include <QTimer>
 #include <QWidget>
-#include <QtConcurrent>
 #include <QtDebug>
 
 #include <fstream>
 #include <functional>
 #include <memory>
+#include <type_traits>
+
 #include <sys/param.h>
 #include <sys/stat.h>
-#include <type_traits>
+
 
 #define NO_FLASH_STRING      "off"
 #define FLASH_DELIMIT_STRING "delimiter"
 #define FLASH_RANGE_STRING   "range"
-
-namespace {
-
-// How long to wait (msec) before putting up Macro Command banner
-constexpr int BANNER_WAIT_TIME = 6000;
-
-}
-
 
 // The following definitions cause an exit from the macro with a message
 // added if (1) to remove compiler warnings on solaris
@@ -103,9 +95,6 @@ constexpr int BANNER_WAIT_TIME = 6000;
     } while (0)
 
 static void cancelLearnEx();
-static void runMacroEx(DocumentWidget *document, Program *prog);
-static void finishMacroCmdExecutionEx(DocumentWidget *document);
-static bool continueWorkProcEx(DocumentWidget *document);
 
 static bool lengthMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 static bool minMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
@@ -2241,7 +2230,7 @@ void ReplayEx(DocumentWidget *document) {
         }
 
         // run the executable program
-        runMacroEx(document, prog);
+        document->runMacroEx(prog);
     }
 }
 
@@ -2421,7 +2410,7 @@ int readCheckMacroStringEx(QWidget *dialogParent, const QString &string, Documen
             if (runWindow) {
 
                 if (!runWindow->macroCmdData_) {
-                    runMacroEx(runWindow, prog);
+                    runWindow->runMacroEx(prog);
                 } else {
                     /*  If we come here this means that the string was parsed
                         from within another macro via load_macro_file(). In
@@ -2453,92 +2442,6 @@ int readCheckMacroStringEx(QWidget *dialogParent, const QString &string, Documen
 }
 
 /*
-** Run a pre-compiled macro, changing the interface state to reflect that
-** a macro is running, and handling preemption, resumption, and cancellation.
-** frees prog when macro execution is complete;
-*/
-static void runMacroEx(DocumentWidget *document, Program *prog) {
-
-
-    /* If a macro is already running, just call the program as a subroutine,
-       instead of starting a new one, so we don't have to keep a separate
-       context, and the macros will serialize themselves automatically */
-    if (document->macroCmdData_) {
-        RunMacroAsSubrCall(prog);
-        return;
-    }
-
-    // put up a watch cursor over the waiting window
-    document->setCursor(Qt::BusyCursor);
-
-    // enable the cancel menu item
-    if(MainWindow *win = document->toWindow()) {
-        win->ui.action_Cancel_Learn->setText(QLatin1String("Cancel Macro"));
-        win->ui.action_Cancel_Learn->setEnabled(true);
-    }
-
-    /* Create a data structure for passing macro execution information around
-       amongst the callback routines which will process i/o and completion */
-    auto cmdData = std::make_shared<MacroCommandData>();
-    cmdData->bannerIsUp         = false;
-    cmdData->closeOnCompletion  = false;
-    cmdData->program            = prog;
-    cmdData->context            = nullptr;
-
-    document->macroCmdData_ = cmdData;
-
-    // Set up timer proc for putting up banner when macro takes too long
-    QObject::connect(&cmdData->bannerTimer, SIGNAL(timeout()), document, SLOT(bannerTimeoutProc()));
-    cmdData->bannerTimer.setSingleShot(true);
-    cmdData->bannerTimer.start(BANNER_WAIT_TIME);
-
-    // Begin macro execution
-    DataValue result;
-    const char *errMsg;
-    const int stat = ExecuteMacroEx(document, prog, 0, nullptr, &result, cmdData->context, &errMsg);
-
-    switch(stat) {
-    case MACRO_ERROR:
-        finishMacroCmdExecutionEx(document);
-        QMessageBox::critical(document, QLatin1String("Macro Error"), QString(QLatin1String("Error executing macro: %1")).arg(QString::fromLatin1(errMsg)));
-        return;
-    case MACRO_DONE:
-        finishMacroCmdExecutionEx(document);
-        return;
-    case MACRO_TIME_LIMIT:
-        ResumeMacroExecutionEx(document);
-        return;
-    case MACRO_PREEMPT:
-        // Macro was preempted
-        break;
-
-    }
-}
-
-/*
-** Continue with macro execution after preemption.  Called by the routines
-** whose actions cause preemption when they have completed their lengthy tasks.
-** Re-establishes macro execution work proc.  Window must be the window in
-** which the macro is executing (the window to which macroCmdData is attached),
-** and not the window to which operations are focused.
-*/
-void ResumeMacroExecutionEx(DocumentWidget *document) {
-
-    if(auto cmdData = document->macroCmdData_) {
-
-        // create a background task that will run so long as the function returns false
-        QObject::connect(&cmdData->continuationTimer, &QTimer::timeout, [cmdData, document]() {
-            if(continueWorkProcEx(document)) {
-                cmdData->continuationTimer.stop();
-            }
-        });
-
-        // a timeout of 0 means "run whenever the event loop is idle"
-        cmdData->continuationTimer.start(0);
-    }
-}
-
-/*
 ** Cancel the macro command in progress (user cancellation via GUI)
 */
 void AbortMacroCommandEx(DocumentWidget *document) {
@@ -2557,7 +2460,7 @@ void AbortMacroCommandEx(DocumentWidget *document) {
     FreeRestartDataEx(document->macroCmdData_->context);
 
     // Kill the macro command
-    finishMacroCmdExecutionEx(document);
+    document->finishMacroCmdExecutionEx();
 }
 
 /*
@@ -2608,62 +2511,8 @@ int MacroWindowCloseActionsEx(DocumentWidget *document) {
     FreeRestartDataEx(cmdData->context);
 
     // Kill the macro command
-    finishMacroCmdExecutionEx(document);
+    document->finishMacroCmdExecutionEx();
     return true;
-}
-
-/*
-** Clean up after the execution of a macro command: free memory, and restore
-** the user interface state.
-*/
-static void finishMacroCmdExecutionEx(DocumentWidget *document) {
-    auto cmdData = document->macroCmdData_;
-    bool closeOnCompletion = cmdData->closeOnCompletion;
-
-    // Cancel pending timeout and work proc
-    cmdData->bannerTimer.stop();
-    cmdData->continuationTimer.stop();
-
-    // Clean up waiting-for-macro-command-to-complete mode
-    document->setCursor(Qt::ArrowCursor);
-
-    // enable the cancel menu item
-    if(MainWindow *win = document->toWindow()) {
-        win->ui.action_Cancel_Learn->setText(QLatin1String("Cancel Learn"));
-        win->ui.action_Cancel_Learn->setEnabled(false);
-    }
-
-    if (cmdData->bannerIsUp) {
-        document->ClearModeMessageEx();
-    }
-
-    // Free execution information
-    FreeProgram(cmdData->program);
-    document->macroCmdData_ = nullptr;
-
-    /* If macro closed its own window, window was made empty and untitled,
-       but close was deferred until completion.  This is completion, so if
-       the window is still empty, do the close */
-    if (closeOnCompletion && !document->filenameSet_ && !document->fileChanged_) {
-        document->CloseWindow();
-    }
-
-    // If no other macros are executing, do garbage collection
-    SafeGC();
-
-    /* In processing the .neditmacro file (and possibly elsewhere), there
-       is an event loop which waits for macro completion.  Send an event
-       to wake up that loop, otherwise execution will stall until the user
-       does something to the window. */
-    if (!closeOnCompletion) {
-#if 0
-        XClientMessageEvent event;
-        // TODO(eteran): find the equivalent to this...
-        event.format = 8;
-        event.type = ClientMessage;
-        XSendEvent(XtDisplay(window->shell_), XtWindow(window->shell_), False, NoEventMask, (XEvent *)&event);
-#endif
-    }
 }
 
 /*
@@ -2705,7 +2554,7 @@ void DoMacroEx(DocumentWidget *document, const QString &macro, const QString &er
     }
 
     // run the executable program (prog is freed upon completion)
-    runMacroEx(document, prog);
+    document->runMacroEx(prog);
 }
 
 /**
@@ -2762,7 +2611,7 @@ void RepeatMacroEx(DocumentWidget *document, const QString &command, int how) {
     }
 
     // run the executable program
-    runMacroEx(document, prog);
+    document->runMacroEx(prog);
 }
 
 
@@ -2812,43 +2661,7 @@ void learnActionHook(Widget w, XtPointer clientData, String actionName, XEvent *
 }
 #endif
 
-/*
-** Work proc for continuing execution of a preempted macro.
-**
-** Xt WorkProcs are designed to run first-in first-out, which makes them
-** very bad at sharing time between competing tasks.  For this reason, it's
-** usually bad to use work procs anywhere where their execution is likely to
-** overlap.  Using a work proc instead of a timer proc (which I usually
-** prefer) here means macros will probably share time badly, but we're more
-** interested in making the macros cancelable, and in continuing other work
-** than having users run a bunch of them at once together.
-*/
 
-bool continueWorkProcEx(DocumentWidget *document) {
-
-    auto cmdData = document->macroCmdData_;
-
-    const char *errMsg;
-    DataValue result;
-    const int stat = ContinueMacroEx(cmdData->context, &result, &errMsg);
-
-    switch(stat) {
-    case MACRO_ERROR:
-        finishMacroCmdExecutionEx(document);
-        QMessageBox::critical(document, QLatin1String("Macro Error"), QString(QLatin1String("Error executing macro: %1")).arg(QString::fromLatin1(errMsg)));
-        return true;
-    case MACRO_DONE:
-        finishMacroCmdExecutionEx(document);
-        return true;
-    case MACRO_PREEMPT:
-        return true;
-    case MACRO_TIME_LIMIT:
-        // Macro exceeded time slice, re-schedule it
-        return false;
-    default:
-        return true;
-    }
-}
 
 
 /*
@@ -3846,7 +3659,7 @@ static bool dialogMS(DocumentWidget *document, DataValue *argList, int nArgs, Da
     ModifyReturnedValueEx(cmdData->context, *result);
     delete prompt;
 
-    ResumeMacroExecutionEx(document);
+    document->ResumeMacroExecutionEx();
     return true;
 }
 
@@ -3907,7 +3720,7 @@ static bool stringDialogMS(DocumentWidget *document, DataValue *argList, int nAr
     *result = to_value(prompt->text());
     ModifyReturnedValueEx(cmdData->context, *result);
 
-    ResumeMacroExecutionEx(document);
+    document->ResumeMacroExecutionEx();
     return true;
 }
 
@@ -4294,7 +4107,7 @@ static bool listDialogMS(DocumentWidget *document, DataValue *argList, int nArgs
     *result = to_value(prompt->text());
     ModifyReturnedValueEx(cmdData->context, *result);
 
-    ResumeMacroExecutionEx(document);
+    document->ResumeMacroExecutionEx();
     return true;
 }
 
