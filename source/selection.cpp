@@ -125,9 +125,12 @@ void SelectNumberedLineEx(DocumentWidget *document, TextArea *area, int lineNum)
     int lineEnd;
 
     // count lines to find the start and end positions for the selection
-    if (lineNum < 1)
+    if (lineNum < 1) {
         lineNum = 1;
+    }
+
     lineEnd = -1;
+
     for (i = 1; i <= lineNum && lineEnd < document->buffer_->BufGetLength(); i++) {
         lineStart = lineEnd + 1;
         lineEnd = document->buffer_->BufEndOfLine( lineStart);
@@ -149,6 +152,7 @@ void SelectNumberedLineEx(DocumentWidget *document, TextArea *area, int lineNum)
         document->buffer_->BufSelect(lineStart, lineStart);
         QApplication::beep();
     }
+
     document->MakeSelectionVisible(area);
 
     area->TextSetCursorPos(lineStart);
@@ -164,9 +168,11 @@ void AddMarkEx(MainWindow *window, DocumentWidget *document, TextArea *area, QCh
 
 	int index;
     for (index = 0; index < document->nMarks_; index++) {
-        if (document->markTable_[index].label == label.toLatin1())
+        if (document->markTable_[index].label == label) {
             break;
+        }
     }
+
     if (index >= MAX_MARKS) {
         qWarning("NEdit: no more marks allowed"); // shouldn't happen
         return;
@@ -177,9 +183,8 @@ void AddMarkEx(MainWindow *window, DocumentWidget *document, TextArea *area, QCh
     }
 
     // store the cursor location and selection position in the table
-    document->markTable_[index].label = label.toLatin1();
-    memcpy(&document->markTable_[index].sel, &document->buffer_->primary_, sizeof(TextSelection));
-
+    document->markTable_[index].label     = label;
+    document->markTable_[index].sel       = document->buffer_->primary_;
     document->markTable_[index].cursorPos = area->TextGetCursorPos();
 }
 

@@ -2,7 +2,7 @@
 #ifndef DIALOG_FIND_H_
 #define DIALOG_FIND_H_
 
-#include "SearchDirection.h"
+#include "Direction.h"
 #include "SearchType.h"
 
 #include "Dialog.h"
@@ -30,7 +30,7 @@ public:
 	void fUpdateActionButtons();
 	
 private:
-    bool getFindDlogInfoEx(SearchDirection *direction, QString *searchString, SearchType *searchType);
+    bool getFindDlogInfoEx(Direction *direction, QString *searchString, SearchType *searchType);
 	
 public:
 	bool keepDialog() const;

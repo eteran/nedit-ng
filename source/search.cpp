@@ -69,40 +69,41 @@ static bool replaceUsingREEx(view::string_view searchStr, const char *replaceStr
 static bool replaceUsingREEx(const QString &searchStr, const QString &replaceStr, view::string_view sourceStr, int beginPos, char *destStr, int maxDestLen, int prevChar, const QString &delimiters, int defaultFlags);
 
 static bool forwardRegexSearch(view::string_view string, view::string_view searchString, WrapMode wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags);
-static bool searchRegex(view::string_view string, view::string_view searchString, SearchDirection direction, WrapMode wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags);
+static bool searchRegex(view::string_view string, view::string_view searchString, Direction direction, WrapMode wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags);
 static int countWindows(void);
-static bool searchLiteral(view::string_view string, view::string_view searchString, bool caseSense, SearchDirection direction, WrapMode wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW);
-static bool searchLiteralWord(view::string_view string, view::string_view searchString, bool caseSense, SearchDirection direction, WrapMode wrap, int beginPos, int *startPos, int *endPos, const char *delimiters);
+static bool searchLiteral(view::string_view string, view::string_view searchString, bool caseSense, Direction direction, WrapMode wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW);
+static bool searchLiteralWord(view::string_view string, view::string_view searchString, bool caseSense, Direction direction, WrapMode wrap, int beginPos, int *startPos, int *endPos, const char *delimiters);
 static bool searchMatchesSelectionEx(DocumentWidget *window, const QString &searchString, SearchType searchType, int *left, int *right, int *searchExtentBW, int *searchExtentFW);
-static void iSearchRecordLastBeginPosEx(MainWindow *window, SearchDirection direction, int initPos);
-static void iSearchTryBeepOnWrapEx(MainWindow *window, SearchDirection direction, int beginPos, int startPos);
+static void iSearchRecordLastBeginPosEx(MainWindow *window, Direction direction, int initPos);
+static void iSearchTryBeepOnWrapEx(MainWindow *window, Direction direction, int beginPos, int startPos);
 static std::string upCaseStringEx(view::string_view inString);
 static std::string downCaseStringEx(view::string_view inString);
 static bool findMatchingCharEx(DocumentWidget *window, char toMatch, void *styleToMatch, int charPos, int startLimit, int endLimit, int *matchPos);
 
 
 struct CharMatchTable {
-    char            c;
-    char            match;
-    SearchDirection direction;
+    char      c;
+    char      match;
+    Direction direction;
 };
 
 #define N_MATCH_CHARS 13
 #define N_FLASH_CHARS 6
+
 static CharMatchTable MatchingChars[N_MATCH_CHARS] = {
-    {'{', '}', SEARCH_FORWARD},
-    {'}', '{', SEARCH_BACKWARD},
-    {'(', ')', SEARCH_FORWARD},
-    {')', '(', SEARCH_BACKWARD},
-    {'[', ']', SEARCH_FORWARD},
-    {']', '[', SEARCH_BACKWARD},
-    {'<', '>', SEARCH_FORWARD},
-    {'>', '<', SEARCH_BACKWARD},
-    {'/', '/', SEARCH_FORWARD},
-    {'"', '"', SEARCH_FORWARD},
-    {'\'', '\'', SEARCH_FORWARD},
-    {'`', '`', SEARCH_FORWARD},
-    {'\\', '\\', SEARCH_FORWARD},
+    {'{', '}', Direction::FORWARD},
+    {'}', '{', Direction::BACKWARD},
+    {'(', ')', Direction::FORWARD},
+    {')', '(', Direction::BACKWARD},
+    {'[', ']', Direction::FORWARD},
+    {']', '[', Direction::BACKWARD},
+    {'<', '>', Direction::FORWARD},
+    {'>', '<', Direction::BACKWARD},
+    {'/', '/', Direction::FORWARD},
+    {'"', '"', Direction::FORWARD},
+    {'\'', '\'', Direction::FORWARD},
+    {'`', '`', Direction::FORWARD},
+    {'\\', '\\', Direction::FORWARD},
 };
 
 
@@ -178,7 +179,7 @@ static bool selectionSpansMultipleLines(DocumentWidget *document) {
 }
 #endif
 
-void DoFindReplaceDlogEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, int keepDialogs, SearchType searchType) {
+void DoFindReplaceDlogEx(MainWindow *window, DocumentWidget *document, TextArea *area, Direction direction, int keepDialogs, SearchType searchType) {
 
     Q_UNUSED(area);
 
@@ -205,7 +206,7 @@ void DoFindReplaceDlogEx(MainWindow *window, DocumentWidget *document, TextArea 
     dialog->initToggleButtons(searchType);
 
     // Set the initial direction based on the direction argument
-    dialog->ui.checkBackward->setChecked(direction == SEARCH_FORWARD ? false : true);
+    dialog->ui.checkBackward->setChecked(direction == Direction::FORWARD ? false : true);
 
     // Set the state of the Keep Dialog Up button
     dialog->ui.checkKeep->setChecked(keepDialogs);
@@ -251,7 +252,7 @@ void DoFindReplaceDlogEx(MainWindow *window, DocumentWidget *document, TextArea 
     dialog->show();
 }
 
-void DoFindDlogEx(MainWindow *window, DocumentWidget *document, SearchDirection direction, int keepDialogs, SearchType searchType) {
+void DoFindDlogEx(MainWindow *window, DocumentWidget *document, Direction direction, int keepDialogs, SearchType searchType) {
 
     if(!window->dialogFind_) {
         window->dialogFind_ = new DialogFind(window, document, window);
@@ -271,7 +272,7 @@ void DoFindDlogEx(MainWindow *window, DocumentWidget *document, SearchDirection 
     dialog->initToggleButtons(searchType);
 
     // Set the initial direction based on the direction argument
-    dialog->ui.checkBackward->setChecked(direction == SEARCH_FORWARD ? false : true);
+    dialog->ui.checkBackward->setChecked(direction == Direction::FORWARD ? false : true);
 
     // Set the state of the Keep Dialog Up button
     dialog->ui.checkKeep->setChecked(keepDialogs);
@@ -341,7 +342,7 @@ int countWritableWindows() {
 ** in "searchType", and return TRUE as the function value.  Otherwise,
 ** return FALSE.
 */
-bool SearchAndSelectSameEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, WrapMode searchWrap) {
+bool SearchAndSelectSameEx(MainWindow *window, DocumentWidget *document, TextArea *area, Direction direction, WrapMode searchWrap) {
     if (NHist < 1) {
         QApplication::beep();
         return false;
@@ -362,7 +363,7 @@ bool SearchAndSelectSameEx(MainWindow *window, DocumentWidget *document, TextAre
 ** the window when found (or beep or put up a dialog if not found).  Also
 ** adds the search string to the global search history.
 */
-bool SearchAndSelectEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, const QString &searchString, SearchType searchType, WrapMode searchWrap) {
+bool SearchAndSelectEx(MainWindow *window, DocumentWidget *document, TextArea *area, Direction direction, const QString &searchString, SearchType searchType, WrapMode searchWrap) {
     int startPos;
     int endPos;
     int beginPos;
@@ -377,7 +378,7 @@ bool SearchAndSelectEx(MainWindow *window, DocumentWidget *document, TextArea *a
        string that was found on the last search	*/
     if (searchMatchesSelectionEx(document, searchString, searchType, &selStart, &selEnd, nullptr, nullptr)) {
         // selection matches search string, start before or after sel.
-        if (direction == SEARCH_BACKWARD) {
+        if (direction == Direction::BACKWARD) {
             beginPos = selStart - 1;
         } else {
             beginPos = selStart + 1;
@@ -389,7 +390,7 @@ bool SearchAndSelectEx(MainWindow *window, DocumentWidget *document, TextArea *a
         // no selection, or no match, search relative cursor
 
         int cursorPos = area->TextGetCursorPos();
-        if (direction == SEARCH_BACKWARD) {
+        if (direction == Direction::BACKWARD) {
             // use the insert position - 1 for backward searches
             beginPos = cursorPos - 1;
         } else {
@@ -414,7 +415,7 @@ bool SearchAndSelectEx(MainWindow *window, DocumentWidget *document, TextArea *a
     /* if the search matched an empty string (possible with regular exps)
        beginning at the start of the search, go to the next occurrence,
        otherwise repeated finds will get "stuck" at zero-length matches */
-    if (direction == SEARCH_FORWARD && beginPos == startPos && beginPos == endPos) {
+    if (direction == Direction::FORWARD && beginPos == startPos && beginPos == endPos) {
         if (!movedFwd && !SearchWindowEx(window, document, direction, searchString, searchType, searchWrap, beginPos + 1, &startPos, &endPos, nullptr, nullptr))
             return false;
     }
@@ -434,7 +435,7 @@ bool SearchAndSelectEx(MainWindow *window, DocumentWidget *document, TextArea *a
     return true;
 }
 
-void SearchForSelectedEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, SearchType searchType, WrapMode searchWrap) {
+void SearchForSelectedEx(MainWindow *window, DocumentWidget *document, TextArea *area, Direction direction, SearchType searchType, WrapMode searchWrap) {
 
     // skip if we can't get the selection data or it's too long
     // should be of type text???
@@ -488,9 +489,9 @@ void SearchForSelectedEx(MainWindow *window, DocumentWidget *document, TextArea 
 ** Reset window->iSearchLastBeginPos_ to the resulting initial
 ** search begin position for incremental searches.
 */
-static void iSearchRecordLastBeginPosEx(MainWindow *window, SearchDirection direction, int initPos) {
+static void iSearchRecordLastBeginPosEx(MainWindow *window, Direction direction, int initPos) {
     window->iSearchLastBeginPos_ = initPos;
-    if (direction == SEARCH_BACKWARD)
+    if (direction == Direction::BACKWARD)
         window->iSearchLastBeginPos_--;
 }
 
@@ -501,7 +502,7 @@ static void iSearchRecordLastBeginPosEx(MainWindow *window, SearchDirection dire
 ** recorded, search from that original position, otherwise, search from the
 ** current cursor position.
 */
-bool SearchAndSelectIncrementalEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, const QString &searchString, SearchType searchType, WrapMode searchWrap, bool continued) {
+bool SearchAndSelectIncrementalEx(MainWindow *window, DocumentWidget *document, TextArea *area, Direction direction, const QString &searchString, SearchType searchType, WrapMode searchWrap, bool continued) {
     int beginPos;
     int startPos;
     int endPos;
@@ -520,7 +521,7 @@ bool SearchAndSelectIncrementalEx(MainWindow *window, DocumentWidget *document, 
        clear the selection, set the cursor back to what would be the
        beginning of the search, and return. */
     if (searchString.isEmpty()) {
-        int beepBeginPos = (direction == SEARCH_BACKWARD) ? beginPos - 1 : beginPos;
+        int beepBeginPos = (direction == Direction::BACKWARD) ? beginPos - 1 : beginPos;
         iSearchTryBeepOnWrapEx(window, direction, beepBeginPos, beepBeginPos);
         iSearchRecordLastBeginPosEx(window, direction, window->iSearchStartPos_);
         document->buffer_->BufUnselect();
@@ -539,7 +540,7 @@ bool SearchAndSelectIncrementalEx(MainWindow *window, DocumentWidget *document, 
     }
 
     // begin at insert position - 1 for backward searches
-    if (direction == SEARCH_BACKWARD)
+    if (direction == Direction::BACKWARD)
         beginPos--;
 
     // do the search.  SearchWindow does appropriate dialogs and beeps
@@ -551,7 +552,7 @@ bool SearchAndSelectIncrementalEx(MainWindow *window, DocumentWidget *document, 
     /* if the search matched an empty string (possible with regular exps)
        beginning at the start of the search, go to the next occurrence,
        otherwise repeated finds will get "stuck" at zero-length matches */
-    if (direction == SEARCH_FORWARD && beginPos == startPos && beginPos == endPos)
+    if (direction == Direction::FORWARD && beginPos == startPos && beginPos == endPos)
         if (!SearchWindowEx(window, document, direction, searchString, searchType, searchWrap, beginPos + 1, &startPos, &endPos, nullptr, nullptr))
             return false;
 
@@ -621,7 +622,7 @@ void FlashMatchingEx(DocumentWidget *document, TextArea *area) {
     int endPos;
     int searchPos;
 
-    if (MatchingChars[matchIndex].direction == SEARCH_BACKWARD) {
+    if (MatchingChars[matchIndex].direction == Direction::BACKWARD) {
         startPos = constrain ? area->TextFirstVisiblePos() : 0;
         endPos = pos;
         searchPos = endPos;
@@ -642,7 +643,7 @@ void FlashMatchingEx(DocumentWidget *document, TextArea *area) {
         document->buffer_->BufHighlight(matchPos, matchPos + 1);
     } else {
         // ... or the whole range.
-        if (MatchingChars[matchIndex].direction == SEARCH_BACKWARD) {
+        if (MatchingChars[matchIndex].direction == Direction::BACKWARD) {
             document->buffer_->BufHighlight(matchPos, pos + 1);
         } else {
             document->buffer_->BufHighlight(matchPos + 1, pos);
@@ -656,7 +657,7 @@ void FlashMatchingEx(DocumentWidget *document, TextArea *area) {
 static bool findMatchingCharEx(DocumentWidget *window, char toMatch, void *styleToMatch, int charPos, int startLimit, int endLimit, int *matchPos) {
     int nestDepth;
     int matchIndex;
-    int direction;
+    Direction direction;
     int beginPos;
     int pos;
     char matchChar;
@@ -682,9 +683,9 @@ static bool findMatchingCharEx(DocumentWidget *window, char toMatch, void *style
     direction = MatchingChars[matchIndex].direction;
 
     // find it in the buffer
-    beginPos = (direction == SEARCH_FORWARD) ? charPos + 1 : charPos - 1;
+    beginPos = (direction == Direction::FORWARD) ? charPos + 1 : charPos - 1;
     nestDepth = 1;
-    if (direction == SEARCH_FORWARD) {
+    if (direction == Direction::FORWARD) {
         for (pos = beginPos; pos < endLimit; pos++) {
             c = buf->BufGetCharacter(pos);
             if (c == matchChar) {
@@ -704,7 +705,7 @@ static bool findMatchingCharEx(DocumentWidget *window, char toMatch, void *style
                     nestDepth++;
             }
         }
-    } else { // SEARCH_BACKWARD
+    } else { // Direction::BACKWARD
         for (pos = beginPos; pos >= startLimit; pos--) {
             c = buf->BufGetCharacter(pos);
             if (c == matchChar) {
@@ -740,7 +741,7 @@ void eraseFlashEx(DocumentWidget *document) {
 ** Search and replace using previously entered search strings (from dialog
 ** or selection).
 */
-bool ReplaceSameEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, WrapMode searchWrap) {
+bool ReplaceSameEx(MainWindow *window, DocumentWidget *document, TextArea *area, Direction direction, WrapMode searchWrap) {
     if (NHist < 1) {
         QApplication::beep();
         return false;
@@ -761,7 +762,7 @@ bool ReplaceSameEx(MainWindow *window, DocumentWidget *document, TextArea *area,
 ** Search and replace using previously entered search strings (from dialog
 ** or selection).
 */
-bool ReplaceFindSameEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, WrapMode searchWrap) {
+bool ReplaceFindSameEx(MainWindow *window, DocumentWidget *document, TextArea *area, Direction direction, WrapMode searchWrap) {
     if (NHist < 1) {
         QApplication::beep();
         return false;
@@ -782,7 +783,7 @@ bool ReplaceFindSameEx(MainWindow *window, DocumentWidget *document, TextArea *a
 ** Replace selection with "replaceString" and search for string "searchString" in window "window",
 ** using algorithm "searchType" and direction "direction"
 */
-bool ReplaceAndSearchEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, const QString &searchString, const QString &replaceString, SearchType searchType, WrapMode searchWrap) {
+bool ReplaceAndSearchEx(MainWindow *window, DocumentWidget *document, TextArea *area, Direction direction, const QString &searchString, const QString &replaceString, SearchType searchType, WrapMode searchWrap) {
     int startPos = 0;
     int endPos = 0;    
     int searchExtentBW;
@@ -823,7 +824,7 @@ bool ReplaceAndSearchEx(MainWindow *window, DocumentWidget *document, TextArea *
 
         // Position the cursor so the next search will work correctly based
         // on the direction of the search
-        area->TextSetCursorPos(startPos + ((direction == SEARCH_FORWARD) ? replaceLen : 0));
+        area->TextSetCursorPos(startPos + ((direction == Direction::FORWARD) ? replaceLen : 0));
         replaced = true;
     }
 
@@ -837,7 +838,7 @@ bool ReplaceAndSearchEx(MainWindow *window, DocumentWidget *document, TextArea *
 ** "searchType" and direction "direction", and replace it with "replaceString"
 ** Also adds the search and replace strings to the global search history.
 */
-bool SearchAndReplaceEx(MainWindow *window, DocumentWidget *document, TextArea *area, SearchDirection direction, const QString &searchString, const QString &replaceString, SearchType searchType, WrapMode searchWrap) {
+bool SearchAndReplaceEx(MainWindow *window, DocumentWidget *document, TextArea *area, Direction direction, const QString &searchString, const QString &replaceString, SearchType searchType, WrapMode searchWrap) {
     int startPos;
     int endPos;
     int replaceLen;
@@ -856,7 +857,7 @@ bool SearchAndReplaceEx(MainWindow *window, DocumentWidget *document, TextArea *
 
         int beginPos;
         int cursorPos = area->TextGetCursorPos();
-        if (direction == SEARCH_BACKWARD) {
+        if (direction == Direction::BACKWARD) {
             // use the insert position - 1 for backward searches
             beginPos = cursorPos - 1;
         } else {
@@ -885,7 +886,7 @@ bool SearchAndReplaceEx(MainWindow *window, DocumentWidget *document, TextArea *
             replaceResult,
             SEARCHMAX,
             startPos == 0 ? '\0' : document->buffer_->BufGetCharacter(startPos - 1),
-            delimieters.isNull() ? nullptr :delimieters.toLatin1().data(),
+            delimieters.isNull() ? nullptr : delimieters.toLatin1().data(),
             defaultRegexFlags(searchType));
 
         document->buffer_->BufReplaceEx(startPos, endPos, replaceResult);
@@ -907,7 +908,7 @@ bool SearchAndReplaceEx(MainWindow *window, DocumentWidget *document, TextArea *
        nothing) */
     area->setAutoShowInsertPos(false);
 
-    area->TextSetCursorPos(startPos + ((direction == SEARCH_FORWARD) ? replaceLen : 0));
+    area->TextSetCursorPos(startPos + ((direction == Direction::FORWARD) ? replaceLen : 0));
     document->MakeSelectionVisible(area);
     area->setAutoShowInsertPos(true);
 
@@ -1040,7 +1041,7 @@ void ReplaceInSelectionEx(MainWindow *window, DocumentWidget *document, TextArea
         found = SearchString(
                     fileString,
                     searchString,
-                    SEARCH_FORWARD,
+                    Direction::FORWARD,
                     searchType,
                     WrapMode::NoWrap,
                     beginPos,
@@ -1281,7 +1282,7 @@ std::string ReplaceAllInStringEx(view::string_view inString, const QString &sear
         found = SearchString(
                     inString,
                     searchString,
-                    SEARCH_FORWARD,
+                    Direction::FORWARD,
                     searchType,
                     WrapMode::NoWrap,
                     beginPos,
@@ -1343,7 +1344,7 @@ std::string ReplaceAllInStringEx(view::string_view inString, const QString &sear
 	lastEndPos = 0;
 
     while (found) {
-        found = SearchString(inString, searchString, SEARCH_FORWARD, searchType, WrapMode::NoWrap, beginPos, &startPos, &endPos, &searchExtentBW, &searchExtentFW, delimiters);
+        found = SearchString(inString, searchString, Direction::FORWARD, searchType, WrapMode::NoWrap, beginPos, &startPos, &endPos, &searchExtentBW, &searchExtentFW, delimiters);
 		if (found) {
 			if (beginPos != 0) {
 
@@ -1388,9 +1389,9 @@ std::string ReplaceAllInStringEx(view::string_view inString, const QString &sear
 ** Emit a beep if the search wrapped over BOF/EOF compared to
 ** the last startPos of the current incremental search.
 */
-static void iSearchTryBeepOnWrapEx(MainWindow *window, SearchDirection direction, int beginPos, int startPos) {
+static void iSearchTryBeepOnWrapEx(MainWindow *window, Direction direction, int beginPos, int startPos) {
     if (GetPrefBeepOnSearchWrap()) {
-        if (direction == SEARCH_FORWARD) {
+        if (direction == Direction::FORWARD) {
             if ((startPos >= beginPos && window->iSearchLastBeginPos_ < beginPos) || (startPos < beginPos && window->iSearchLastBeginPos_ >= beginPos)) {
                 QApplication::beep();
             }
@@ -1405,7 +1406,7 @@ static void iSearchTryBeepOnWrapEx(MainWindow *window, SearchDirection direction
 /*
 ** Search the text in "window", attempting to match "searchString"
 */
-bool SearchWindowEx(MainWindow *window, DocumentWidget *document, SearchDirection direction, const QString &searchString, SearchType searchType, WrapMode searchWrap, int beginPos, int *startPos, int *endPos, int *extentBW, int *extentFW) {
+bool SearchWindowEx(MainWindow *window, DocumentWidget *document, Direction direction, const QString &searchString, SearchType searchType, WrapMode searchWrap, int beginPos, int *startPos, int *endPos, int *extentBW, int *extentFW) {
     bool found;
     int fileEnd = document->buffer_->BufGetLength() - 1;
     bool outsideBounds;
@@ -1421,7 +1422,7 @@ bool SearchWindowEx(MainWindow *window, DocumentWidget *document, SearchDirectio
     /* If we're already outside the boundaries, we must consider wrapping
        immediately (Note: fileEnd+1 is a valid starting position. Consider
        searching for $ at the end of a file ending with \n.) */
-    if ((direction == SEARCH_FORWARD && beginPos > fileEnd + 1) || (direction == SEARCH_BACKWARD && beginPos < 0)) {
+    if ((direction == Direction::FORWARD && beginPos > fileEnd + 1) || (direction == Direction::BACKWARD && beginPos < 0)) {
         outsideBounds = true;
     } else {
         outsideBounds = false;
@@ -1459,7 +1460,7 @@ bool SearchWindowEx(MainWindow *window, DocumentWidget *document, SearchDirectio
 
         if (!found) {
             if (searchWrap == WrapMode::Wrap) {
-                if (direction == SEARCH_FORWARD && beginPos != 0) {
+                if (direction == Direction::FORWARD && beginPos != 0) {
                     if (GetPrefBeepOnSearchWrap()) {
                         QApplication::beep();
                     } else if (GetPrefSearchDlogs()) {
@@ -1491,7 +1492,7 @@ bool SearchWindowEx(MainWindow *window, DocumentWidget *document, SearchDirectio
                                 extentFW,
                                 GetWindowDelimitersEx(document));
 
-                } else if (direction == SEARCH_BACKWARD && beginPos != fileEnd) {
+                } else if (direction == Direction::BACKWARD && beginPos != fileEnd) {
                     if (GetPrefBeepOnSearchWrap()) {
                         QApplication::beep();
                     } else if (GetPrefSearchDlogs()) {
@@ -1533,7 +1534,7 @@ bool SearchWindowEx(MainWindow *window, DocumentWidget *document, SearchDirectio
         }
     } else { // incremental search
         if (outsideBounds && searchWrap == WrapMode::Wrap) {
-            if (direction == SEARCH_FORWARD) {
+            if (direction == Direction::FORWARD) {
                 beginPos = 0;
             } else {
                 beginPos = fileEnd + 1;
@@ -1573,7 +1574,7 @@ bool SearchWindowEx(MainWindow *window, DocumentWidget *document, SearchDirectio
 ** alternative set of word delimiters for regular expression "<" and ">"
 ** characters, or simply passed as null for the default delimiter set.
 */
-bool SearchString(view::string_view string, const QString &searchString, SearchDirection direction, SearchType searchType, WrapMode wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const QString &delimiters) {
+bool SearchString(view::string_view string, const QString &searchString, Direction direction, SearchType searchType, WrapMode wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const QString &delimiters) {
 
     return SearchString(
                 string,
@@ -1590,7 +1591,7 @@ bool SearchString(view::string_view string, const QString &searchString, SearchD
 
 }
 
-bool SearchString(view::string_view string, const QString &searchString, SearchDirection direction, SearchType searchType, WrapMode wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters) {
+bool SearchString(view::string_view string, const QString &searchString, Direction direction, SearchType searchType, WrapMode wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters) {
 	switch (searchType) {
 	case SEARCH_CASE_SENSE_WORD:
         return searchLiteralWord(string, searchString.toLatin1().data(), true, direction, wrap, beginPos, startPos, endPos, delimiters);
@@ -1623,7 +1624,7 @@ bool SearchString(view::string_view string, const QString &searchString, SearchD
 **  will suffice in that case.
 **
 */
-static bool searchLiteralWord(view::string_view string, view::string_view searchString, bool caseSense, SearchDirection direction, WrapMode wrap, int beginPos, int *startPos, int *endPos, const char *delimiters) {
+static bool searchLiteralWord(view::string_view string, view::string_view searchString, bool caseSense, Direction direction, WrapMode wrap, int beginPos, int *startPos, int *endPos, const char *delimiters) {
 
 	std::string lcString;
 	std::string ucString;
@@ -1680,7 +1681,7 @@ static bool searchLiteralWord(view::string_view string, view::string_view search
 		lcString = downCaseStringEx(searchString);
 	}
 
-	if (direction == SEARCH_FORWARD) {
+    if (direction == Direction::FORWARD) {
 		// search from beginPos to end of string 
 		for (auto filePtr = string.begin() + beginPos; filePtr != string.end(); filePtr++) {
             if(do_search_word2(filePtr)) {
@@ -1698,7 +1699,7 @@ static bool searchLiteralWord(view::string_view string, view::string_view search
 		}
         return false;
 	} else {
-		// SEARCH_BACKWARD 
+        // Direction::BACKWARD
 		// search from beginPos to start of file. A negative begin pos 
 		// says begin searching from the far end of the file 
 		if (beginPos >= 0) {
@@ -1722,7 +1723,7 @@ static bool searchLiteralWord(view::string_view string, view::string_view search
 	}
 }
 
-static bool searchLiteral(view::string_view string, view::string_view searchString, bool caseSense, SearchDirection direction, WrapMode wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW) {
+static bool searchLiteral(view::string_view string, view::string_view searchString, bool caseSense, Direction direction, WrapMode wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW) {
 
 
 	std::string lcString;
@@ -1768,7 +1769,7 @@ static bool searchLiteral(view::string_view string, view::string_view searchStri
 
 
 
-	if (direction == SEARCH_FORWARD) {
+    if (direction == Direction::FORWARD) {
 
 		auto first = string.begin();
 		auto mid   = first + beginPos;
@@ -1796,7 +1797,7 @@ static bool searchLiteral(view::string_view string, view::string_view searchStri
 
         return false;
 	} else {
-		// SEARCH_BACKWARD 
+        // Direction::BACKWARD
 		// search from beginPos to start of file.  A negative begin pos	
 		// says begin searching from the far end of the file 
 
@@ -1828,8 +1829,8 @@ static bool searchLiteral(view::string_view string, view::string_view searchStri
 	}
 }
 
-static bool searchRegex(view::string_view string, view::string_view searchString, SearchDirection direction, WrapMode wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags) {
-	if (direction == SEARCH_FORWARD)
+static bool searchRegex(view::string_view string, view::string_view searchString, Direction direction, WrapMode wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags) {
+    if (direction == Direction::FORWARD)
 		return forwardRegexSearch(string, searchString, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW, delimiters, defaultFlags);
 	else
 		return backwardRegexSearch(string, searchString, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW, delimiters, defaultFlags);
@@ -2027,7 +2028,7 @@ static bool searchMatchesSelectionEx(DocumentWidget *window, const QString &sear
     bool found = SearchString(
                 string,
                 searchString,
-                SEARCH_FORWARD,
+                Direction::FORWARD,
                 searchType,
                 WrapMode::NoWrap,
                 beginPos,

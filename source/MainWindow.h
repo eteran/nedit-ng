@@ -3,7 +3,7 @@
 #define MAIN_WINDOW_H_
 
 #include "FileFormats.h"
-#include "SearchDirection.h"
+#include "Direction.h"
 #include "SearchType.h"
 #include "SmartIndentEvent.h"
 #include "NewMode.h"
@@ -63,7 +63,7 @@ public:
     bool CloseAllDocumentInWindow();
     int updateGutterWidth();
     int updateLineNumDisp();
-    void BeginISearchEx(SearchDirection direction);
+    void BeginISearchEx(Direction direction);
     void EndISearchEx();
     void ShowLineNumbers(bool state);
     void TempShowISearch(bool state);
@@ -112,14 +112,14 @@ public Q_SLOTS:
     void action_Unload_Tags_File(const QString &filename);
     void action_Load_Tips_File(const QString &filename);
     void action_Unload_Tips_File(const QString &filename);
-    void action_Find(const QString &string, SearchDirection direction, SearchType type, WrapMode searchWrap);
-    void action_Find_Dialog(SearchDirection direction, SearchType type, bool keepDialog);
-    void action_Find_Again(SearchDirection direction, WrapMode wrap);
-    void action_Find_Selection(SearchDirection direction, SearchType type, WrapMode wrap);
-    void action_Replace(SearchDirection direction, const QString &searchString, const QString &replaceString, SearchType type, WrapMode wrap);
-    void action_Replace_Dialog(SearchDirection direction, SearchType type, bool keepDialog);
+    void action_Find(const QString &string, Direction direction, SearchType type, WrapMode searchWrap);
+    void action_Find_Dialog(Direction direction, SearchType type, bool keepDialog);
+    void action_Find_Again(Direction direction, WrapMode wrap);
+    void action_Find_Selection(Direction direction, SearchType type, WrapMode wrap);
+    void action_Replace(Direction direction, const QString &searchString, const QString &replaceString, SearchType type, WrapMode wrap);
+    void action_Replace_Dialog(Direction direction, SearchType type, bool keepDialog);
     void action_Replace_All(const QString &searchString, const QString &replaceString, SearchType type);
-    void action_Replace_Again(SearchDirection direction, WrapMode wrap);
+    void action_Replace_Again(Direction direction, WrapMode wrap);
     void action_Mark(const QString &mark);
     void action_Goto_Mark(const QString &mark, bool extend);
     void action_Goto_Mark_Dialog(bool extend);

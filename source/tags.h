@@ -30,6 +30,7 @@
 #include <ctime>
 #include <QString>
 #include <QList>
+#include <QDateTime>
 
 class DocumentWidget;
 class TextArea;
@@ -44,7 +45,7 @@ enum Mode {
 
 struct tagFile {
     QString     filename;
-	time_t      date;
+    QDateTime   date;
 	bool        loaded;
     int16_t     index;
     int16_t     refcount; // Only tips files are refcounted, not tags files

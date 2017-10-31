@@ -42,7 +42,7 @@
 #include "CloseMode.h"
 #include "MainWindow.h"
 #include "RangesetTable.h"
-#include "SearchDirection.h"
+#include "Direction.h"
 #include "Settings.h"
 #include "TextArea.h"
 #include "TextBuffer.h"
@@ -211,7 +211,7 @@ static bool filenameDialogMS(DocumentWidget *document, DataValue *argList, int n
 static bool replaceAllInSelectionMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 static bool replaceAllMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg);
 
-static bool readSearchArgs(DataValue *argList, int nArgs, SearchDirection *searchDirection, SearchType *searchType, WrapMode *wrap, const char **errMsg);
+static bool readSearchArgs(DataValue *argList, int nArgs, Direction *searchDirection, SearchType *searchType, WrapMode *wrap, const char **errMsg);
 
 static bool readArgument(DataValue dv, int *result, const char **errMsg = nullptr);
 static bool readArgument(DataValue dv, std::string *result, const char **errMsg = nullptr);
@@ -657,21 +657,21 @@ WINDOW_MENU_EVENT(newOppositeMS,                     on_action_Close_Pane_trigge
 ** tells the routine how many required arguments there are to ignore before
 ** looking for keywords
 */
-static SearchDirection searchDirection(DataValue *argList, int nArgs, int index) {
+static Direction searchDirection(DataValue *argList, int nArgs, int index) {
     for(int i = index; i < nArgs; ++i) {
         QString arg;
         if (!readArgument(argList[i], &arg)) {
-            return SEARCH_FORWARD;
+            return Direction::FORWARD;
         }
 
         if (arg.compare(QLatin1String("forward"), Qt::CaseInsensitive) == 0)
-            return SEARCH_FORWARD;
+            return Direction::FORWARD;
 
         if (arg.compare(QLatin1String("backward"), Qt::CaseInsensitive) == 0)
-            return SEARCH_BACKWARD;
+            return Direction::BACKWARD;
     }
 
-    return SEARCH_FORWARD;
+    return Direction::FORWARD;
 }
 
 
@@ -925,7 +925,7 @@ static bool findMS(DocumentWidget *document, DataValue *argList, int nArgs, Data
         return false;
     }
 
-    SearchDirection direction = searchDirection(argList, nArgs, 1);
+    Direction direction = searchDirection(argList, nArgs, 1);
     SearchType      type      = searchType(argList, nArgs, 1);
     WrapMode        wrap      = searchWrap(argList, nArgs, 1);
 
@@ -944,7 +944,7 @@ static bool findDialogMS(DocumentWidget *document, DataValue *argList, int nArgs
     // ensure that we are dealing with the document which currently has the focus
     document = MacroRunWindowEx();
 
-    SearchDirection direction = searchDirection(argList, nArgs, 0);
+    Direction direction = searchDirection(argList, nArgs, 0);
     SearchType      type      = searchType(argList, nArgs, 0);
     bool            keep      = searchKeepDialogs(argList, nArgs, 0);
 
@@ -963,7 +963,7 @@ static bool findAgainMS(DocumentWidget *document, DataValue *argList, int nArgs,
     // ensure that we are dealing with the document which currently has the focus
     document = MacroRunWindowEx();
 
-    SearchDirection direction = searchDirection(argList, nArgs, 0);
+    Direction direction = searchDirection(argList, nArgs, 0);
     WrapMode        wrap      = searchWrap(argList, nArgs, 0);
 
     if(MainWindow *window = document->toWindow()) {
@@ -981,7 +981,7 @@ static bool findSelectionMS(DocumentWidget *document, DataValue *argList, int nA
     // ensure that we are dealing with the document which currently has the focus
     document = MacroRunWindowEx();
 
-    SearchDirection direction = searchDirection(argList, nArgs, 0);
+    Direction direction = searchDirection(argList, nArgs, 0);
     SearchType      type      = searchType(argList, nArgs, 0);
     WrapMode        wrap      = searchWrap(argList, nArgs, 0);
 
@@ -1010,7 +1010,7 @@ static bool replaceMS(DocumentWidget *document, DataValue *argList, int nArgs, D
         return false;
     }
 
-    SearchDirection direction = searchDirection(argList, nArgs, 2);
+    Direction direction = searchDirection(argList, nArgs, 2);
     SearchType      type      = searchType(argList, nArgs, 2);
     WrapMode        wrap      = searchWrap(argList, nArgs, 2);
 
@@ -1029,7 +1029,7 @@ static bool replaceDialogMS(DocumentWidget *document, DataValue *argList, int nA
     // ensure that we are dealing with the document which currently has the focus
     document = MacroRunWindowEx();
 
-    SearchDirection direction = searchDirection(argList, nArgs, 0);
+    Direction direction = searchDirection(argList, nArgs, 0);
     SearchType      type      = searchType(argList, nArgs, 0);
     bool            keep      = searchKeepDialogs(argList, nArgs, 0);
 
@@ -1052,8 +1052,8 @@ static bool replaceAgainMS(DocumentWidget *document, DataValue *argList, int nAr
         M_FAILURE("Wrong number of arguments to function %s");
     }
 
-    WrapMode wrap             = searchWrap(argList, nArgs, 0);
-    SearchDirection direction = searchDirection(argList, nArgs, 0);
+    WrapMode wrap       = searchWrap(argList, nArgs, 0);
+    Direction direction = searchDirection(argList, nArgs, 0);
 
     if(MainWindow *window = document->toWindow()) {
         window->action_Replace_Again(direction, wrap);
@@ -3284,7 +3284,7 @@ static bool searchStringMS(DocumentWidget *document, DataValue *argList, int nAr
     bool skipSearch = false;
     std::string string;
     QString searchStr;
-    SearchDirection direction;
+    Direction direction;
 
     // Validate arguments and convert to proper types
     if (nArgs < 3)
@@ -3300,7 +3300,7 @@ static bool searchStringMS(DocumentWidget *document, DataValue *argList, int nAr
 
     int len = argList[0].val.str.len;
     if (beginPos > len) {
-        if (direction == SEARCH_FORWARD) {
+        if (direction == Direction::FORWARD) {
             if (wrap == WrapMode::Wrap) {
                 beginPos = 0; // Wrap immediately
             } else {
@@ -3311,7 +3311,7 @@ static bool searchStringMS(DocumentWidget *document, DataValue *argList, int nAr
             beginPos = len;
         }
     } else if (beginPos < 0) {
-        if (direction == SEARCH_BACKWARD) {
+        if (direction == Direction::BACKWARD) {
             if (wrap == WrapMode::Wrap) {
                 beginPos = len; // Wrap immediately
             } else {
@@ -3427,12 +3427,12 @@ static bool replaceInStringMS(DocumentWidget *document, DataValue *argList, int 
     return true;
 }
 
-static bool readSearchArgs(DataValue *argList, int nArgs, SearchDirection *searchDirection, SearchType *searchType, WrapMode *wrap, const char **errMsg) {
+static bool readSearchArgs(DataValue *argList, int nArgs, Direction *searchDirection, SearchType *searchType, WrapMode *wrap, const char **errMsg) {
 
     QString argStr;
 
     *wrap            = WrapMode::NoWrap;
-    *searchDirection = SEARCH_FORWARD;
+    *searchDirection = Direction::FORWARD;
     *searchType      = SEARCH_LITERAL;
 
     for (int i = 0; i < nArgs; i++) {
@@ -3443,9 +3443,9 @@ static bool readSearchArgs(DataValue *argList, int nArgs, SearchDirection *searc
         else if (argStr == QLatin1String("nowrap"))
             *wrap = WrapMode::NoWrap;
         else if (argStr == QLatin1String("backward"))
-            *searchDirection = SEARCH_BACKWARD;
+            *searchDirection = Direction::BACKWARD;
         else if (argStr == QLatin1String("forward"))
-            *searchDirection = SEARCH_FORWARD;
+            *searchDirection = Direction::FORWARD;
         else if (!StringToSearchType(argStr, searchType)) {
             M_FAILURE("Unrecognized argument to %s");
         }
@@ -4212,7 +4212,7 @@ static bool splitMS(DocumentWidget *document, DataValue *argList, int nArgs, Dat
         found = SearchString(
                     sourceStr,
                     splitStr,
-                    SEARCH_FORWARD,
+                    Direction::FORWARD,
                     searchType,
                     WrapMode::NoWrap,
                     beginPos,
@@ -4280,7 +4280,7 @@ static bool splitMS(DocumentWidget *document, DataValue *argList, int nArgs, Dat
             found = SearchString(
                         sourceStr,
                         splitStr,
-                        SEARCH_FORWARD,
+                        Direction::FORWARD,
                         searchType,
                         WrapMode::NoWrap,
                         strLength,

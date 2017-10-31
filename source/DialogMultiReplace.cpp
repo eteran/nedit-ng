@@ -29,7 +29,7 @@ void DialogMultiReplace::on_buttonReplace_clicked() {
 
     QString searchString;
     QString replaceString;
-	SearchDirection direction;
+    Direction direction;
 	SearchType searchType;	
 
 	int nSelected = ui.listFiles->selectedItems().size();

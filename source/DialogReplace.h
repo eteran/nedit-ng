@@ -2,7 +2,7 @@
 #ifndef DIALOG_REPLACE_H_
 #define DIALOG_REPLACE_H_
 
-#include "SearchDirection.h"
+#include "Direction.h"
 #include "SearchType.h"
 #include "Dialog.h"
 #include <QPointer>
@@ -40,7 +40,7 @@ public:
 	void rSetActionButtons(bool replaceBtn, bool replaceFindBtn, bool replaceAndFindBtn, bool replaceInWinBtn, bool replaceInSelBtn, bool replaceAllBtn);
 #endif
 	void UpdateReplaceActionButtons();
-    bool getReplaceDlogInfo(SearchDirection *direction, QString *searchString, QString *replaceString, SearchType *searchType);
+    bool getReplaceDlogInfo(Direction *direction, QString *searchString, QString *replaceString, SearchType *searchType);
 	void collectWritableWindows();
 
 public:

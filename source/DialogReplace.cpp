@@ -151,7 +151,7 @@ void DialogReplace::on_buttonFind_clicked() {
 	
     QString searchString;
     QString replaceString;
-	SearchDirection direction;
+    Direction direction;
 	SearchType searchType;
 	
 	// Validate and fetch the find and replace strings from the dialog 
@@ -184,7 +184,7 @@ void DialogReplace::on_buttonReplace_clicked() {
 
     QString searchString;
     QString replaceString;
-	SearchDirection direction;
+    Direction direction;
 	SearchType searchType;
 	
 	// Validate and fetch the find and replace strings from the dialog 
@@ -211,7 +211,7 @@ void DialogReplace::on_buttonReplaceFind_clicked() {
 
     QString searchString;
     QString replaceString;
-	SearchDirection direction;
+    Direction direction;
 	SearchType searchType;
 	
 	// Validate and fetch the find and replace strings from the dialog 
@@ -272,7 +272,7 @@ void DialogReplace::on_buttonAll_clicked() {
 
     QString searchString;
     QString replaceString;
-    SearchDirection direction;
+    Direction direction;
     SearchType searchType;
 
     // Validate and fetch the find and replace strings from the dialog
@@ -340,7 +340,7 @@ void DialogReplace::on_buttonWindow_clicked() {
 
     QString searchString;
     QString replaceString;
-	SearchDirection direction;
+    Direction direction;
 	SearchType searchType;
 	
 
@@ -367,7 +367,7 @@ void DialogReplace::on_buttonSelection_clicked() {
 
     QString searchString;
     QString replaceString;
-	SearchDirection direction;
+    Direction direction;
 	SearchType searchType;
 	
 
@@ -394,7 +394,7 @@ void DialogReplace::on_buttonMulti_clicked() {
 
     QString searchString;
     QString replaceString;
-	SearchDirection direction;
+    Direction direction;
 	SearchType searchType;
 
 	// Validate and fetch the find and replace strings from the dialog 
@@ -631,7 +631,7 @@ void DialogReplace::rSetActionButtons(bool replaceBtn, bool replaceFindBtn, bool
 ** return search type in "searchType", and return TRUE as the function
 ** value.  Otherwise, return FALSE.
 */
-bool DialogReplace::getReplaceDlogInfo(SearchDirection *direction, QString *searchString, QString *replaceString, SearchType *searchType) {
+bool DialogReplace::getReplaceDlogInfo(Direction *direction, QString *searchString, QString *replaceString, SearchType *searchType) {
 
 	/* Get the search and replace strings, search type, and direction
 	   from the dialog */
@@ -670,7 +670,7 @@ bool DialogReplace::getReplaceDlogInfo(SearchDirection *direction, QString *sear
 		}
 	}
 
-	*direction = ui.checkBackward->isChecked() ? SEARCH_BACKWARD : SEARCH_FORWARD;
+    *direction = ui.checkBackward->isChecked() ? Direction::BACKWARD : Direction::FORWARD;
 
 	// Return strings 
 	if (replaceText.size() >= SEARCHMAX) {

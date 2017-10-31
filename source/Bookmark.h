@@ -3,13 +3,15 @@
 #define BOOKMARK_H_
 
 #include "TextSelection.h"
+#include <QChar>
 
-#define MAX_MARKS 36        /* max. # of bookmarks (one per letter & #) */
+// max. # of bookmarks (one per letter & #)
+#define MAX_MARKS 36
 
-/* Element in bookmark table */
+// Element in bookmark table
 struct Bookmark {
-	char label;
-	int cursorPos;
+    QChar         label;
+    int           cursorPos;
 	TextSelection sel;
 };
 

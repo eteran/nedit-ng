@@ -87,28 +87,29 @@ enum {
     OUTPUT_TO_STRING  = 32
 };
 
+// TODO(eteran): duplicated in search!
 struct CharMatchTable {
-    char c;
-    char match;
-    char direction;
+    char      c;
+    char      match;
+    Direction direction;
 };
 
 constexpr int N_MATCH_CHARS = 13;
 
 static const CharMatchTable MatchingChars[N_MATCH_CHARS] = {
-    {'{', '}',   SEARCH_FORWARD},
-    {'}', '{',   SEARCH_BACKWARD},
-    {'(', ')',   SEARCH_FORWARD},
-    {')', '(',   SEARCH_BACKWARD},
-    {'[', ']',   SEARCH_FORWARD},
-    {']', '[',   SEARCH_BACKWARD},
-    {'<', '>',   SEARCH_FORWARD},
-    {'>', '<',   SEARCH_BACKWARD},
-    {'/', '/',   SEARCH_FORWARD},
-    {'"', '"',   SEARCH_FORWARD},
-    {'\'', '\'', SEARCH_FORWARD},
-    {'`', '`',   SEARCH_FORWARD},
-    {'\\', '\\', SEARCH_FORWARD},
+    {'{', '}',   Direction::FORWARD},
+    {'}', '{',   Direction::BACKWARD},
+    {'(', ')',   Direction::FORWARD},
+    {')', '(',   Direction::BACKWARD},
+    {'[', ']',   Direction::FORWARD},
+    {']', '[',   Direction::BACKWARD},
+    {'<', '>',   Direction::FORWARD},
+    {'>', '<',   Direction::BACKWARD},
+    {'/', '/',   Direction::FORWARD},
+    {'"', '"',   Direction::FORWARD},
+    {'\'', '\'', Direction::FORWARD},
+    {'`', '`',   Direction::FORWARD},
+    {'\\', '\\', Direction::FORWARD},
 };
 
 /*
@@ -686,7 +687,7 @@ int DocumentWidget::matchLanguageMode() {
             int beginPos;
             int endPos;
 
-            if (SearchString(first200, LanguageModes[i].recognitionExpr, SEARCH_FORWARD, SEARCH_REGEX, WrapMode::NoWrap, 0, &beginPos, &endPos, nullptr, nullptr, nullptr)) {
+            if (SearchString(first200, LanguageModes[i].recognitionExpr, Direction::FORWARD, SEARCH_REGEX, WrapMode::NoWrap, 0, &beginPos, &endPos, nullptr, nullptr, nullptr)) {
 				return i;
 			}
 		}
@@ -3643,7 +3644,7 @@ void DocumentWidget::replaceInSelAP(const QString &searchString, const QString &
                 searchType);
 }
 
-void DocumentWidget::replaceFindAP(const QString &searchString, const QString &replaceString, SearchDirection direction, SearchType searchType, WrapMode searchWraps) {
+void DocumentWidget::replaceFindAP(const QString &searchString, const QString &replaceString, Direction direction, SearchType searchType, WrapMode searchWraps) {
 
     if (CheckReadOnly()) {
         return;
@@ -3660,7 +3661,7 @@ void DocumentWidget::replaceFindAP(const QString &searchString, const QString &r
                 searchWraps);
 }
 
-void DocumentWidget::findAP(const QString &searchString, SearchDirection direction, SearchType searchType, WrapMode searchWraps) {
+void DocumentWidget::findAP(const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWraps) {
 
     SearchAndSelectEx(
                 toWindow(),
@@ -3673,7 +3674,7 @@ void DocumentWidget::findAP(const QString &searchString, SearchDirection directi
 }
 
 
-void DocumentWidget::findIncrAP(const QString &searchString, SearchDirection direction, SearchType searchType, WrapMode searchWraps, bool isContinue) {
+void DocumentWidget::findIncrAP(const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWraps, bool isContinue) {
 
     SearchAndSelectIncrementalEx(
                 toWindow(),
@@ -3687,7 +3688,7 @@ void DocumentWidget::findIncrAP(const QString &searchString, SearchDirection dir
 
 }
 
-void DocumentWidget::replaceAP(const QString &searchString, const QString &replaceString, SearchDirection direction, SearchType searchType, WrapMode searchWraps) {
+void DocumentWidget::replaceAP(const QString &searchString, const QString &replaceString, Direction direction, SearchType searchType, WrapMode searchWraps) {
 
     if (CheckReadOnly()) {
         return;
@@ -3729,7 +3730,7 @@ void DocumentWidget::gotoMarkAP(QChar label, bool extendSel) {
             // look up the mark in the mark table
             label = label.toUpper();
             for (index = 0; index < nMarks_; index++) {
-                if (markTable_[index].label == label.toLatin1())
+                if (markTable_[index].label == label)
                     break;
             }
 
@@ -3848,13 +3849,13 @@ bool DocumentWidget::findMatchingCharEx(char toMatch, void *styleToMatch, int ch
         return false;
     }
 
-    char matchChar = MatchingChars[matchIndex].match;
-    int direction  = MatchingChars[matchIndex].direction;
+    char matchChar       = MatchingChars[matchIndex].match;
+    Direction direction  = MatchingChars[matchIndex].direction;
 
     // find it in the buffer
-    beginPos = (direction == SEARCH_FORWARD) ? charPos + 1 : charPos - 1;
+    beginPos = (direction == Direction::FORWARD) ? charPos + 1 : charPos - 1;
     nestDepth = 1;
-    if (direction == SEARCH_FORWARD) {
+    if (direction == Direction::FORWARD) {
         for (pos = beginPos; pos < endLimit; pos++) {
 			char c = buf->BufGetCharacter(pos);
             if (c == matchChar) {
@@ -3876,7 +3877,7 @@ bool DocumentWidget::findMatchingCharEx(char toMatch, void *styleToMatch, int ch
                     nestDepth++;
             }
         }
-    } else { // SEARCH_BACKWARD
+    } else { // Direction::BACKWARD
         for (pos = beginPos; pos >= startLimit; pos--) {
 			char c = buf->BufGetCharacter(pos);
             if (c == matchChar) {

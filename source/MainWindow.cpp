@@ -2098,7 +2098,7 @@ void MainWindow::action_Shift_Find() {
     DoFindDlogEx(
         this,
         currentDocument(),
-        SEARCH_BACKWARD,
+        Direction::BACKWARD,
         GetPrefKeepSearchDlogs(),
         GetPrefSearch());
 }
@@ -2111,7 +2111,7 @@ void MainWindow::action_Shift_Find_Again() {
         this,
         currentDocument(),
         lastFocus_,
-        SEARCH_BACKWARD,
+        Direction::BACKWARD,
         GetPrefSearchWraps());
 }
 
@@ -2123,7 +2123,7 @@ void MainWindow::action_Shift_Find_Selection_triggered() {
         this,
         currentDocument(),
         lastFocus_,
-        SEARCH_BACKWARD,
+        Direction::BACKWARD,
         GetPrefSearch(),
         GetPrefSearchWraps());
 }
@@ -2132,14 +2132,14 @@ void MainWindow::action_Shift_Find_Selection_triggered() {
 // Name:
 //------------------------------------------------------------------------------
 void MainWindow::on_action_Find_Incremental_triggered() {
-    BeginISearchEx(SEARCH_FORWARD);
+    BeginISearchEx(Direction::FORWARD);
 }
 
 //------------------------------------------------------------------------------
 // Name:
 //------------------------------------------------------------------------------
 void MainWindow::action_Shift_Find_Incremental_triggered() {
-    BeginISearchEx(SEARCH_BACKWARD);
+    BeginISearchEx(Direction::BACKWARD);
 }
 
 //------------------------------------------------------------------------------
@@ -2167,7 +2167,7 @@ void MainWindow::on_editIFind_textChanged(const QString &text) {
         }
     }
 
-    const SearchDirection direction = ui.checkIFindReverse->isChecked() ? SEARCH_BACKWARD : SEARCH_FORWARD;
+    const Direction direction = ui.checkIFindReverse->isChecked() ? Direction::BACKWARD : Direction::FORWARD;
 
     /* If the search type is a regular expression, test compile it.  If it
        fails, silently skip it.  (This allows users to compose the expression
@@ -2225,11 +2225,11 @@ void MainWindow::on_editIFind_returnPressed() {
             searchType = SEARCH_LITERAL;
     }
 
-    SearchDirection direction = ui.checkIFindReverse->isChecked() ? SEARCH_BACKWARD : SEARCH_FORWARD;
+    Direction direction = ui.checkIFindReverse->isChecked() ? Direction::BACKWARD : Direction::FORWARD;
 
     // Reverse the search direction if the Ctrl or Shift key was pressed
     if(QApplication::keyboardModifiers() & (Qt::CTRL | Qt::SHIFT)) {
-        direction = (direction == SEARCH_FORWARD) ? SEARCH_BACKWARD : SEARCH_FORWARD;
+        direction = (direction == Direction::FORWARD) ? Direction::BACKWARD : Direction::FORWARD;
     }
 
     // find the text and mark it
@@ -2407,11 +2407,11 @@ void MainWindow::initToggleButtonsiSearch(SearchType searchType) {
 /*
 ** Pop up and clear the incremental search line and prepare to search.
 */
-void MainWindow::BeginISearchEx(SearchDirection direction) {
+void MainWindow::BeginISearchEx(Direction direction) {
 
     iSearchStartPos_ = -1;
 	ui.editIFind->setText(QLatin1String(""));
-    no_signals(ui.checkIFindReverse)->setChecked(direction == SEARCH_BACKWARD);
+    no_signals(ui.checkIFindReverse)->setChecked(direction == Direction::BACKWARD);
 
 
     /* Note: in contrast to the replace and find dialogs, the regex and
@@ -2457,7 +2457,7 @@ void MainWindow::action_Shift_Replace_triggered() {
                     this,
                     currentDocument(),
                     lastFocus_,
-                    SEARCH_BACKWARD,
+                    Direction::BACKWARD,
                     GetPrefKeepSearchDlogs(),
                     GetPrefSearch());
     }
@@ -2474,7 +2474,7 @@ void MainWindow::on_action_Replace_Find_Again_triggered() {
                     this,
                     currentDocument(),
                     lastFocus_,
-                    SEARCH_FORWARD,
+                    Direction::FORWARD,
                     GetPrefSearchWraps());
     }
 }
@@ -2489,12 +2489,12 @@ void MainWindow::action_Shift_Replace_Find_Again_triggered() {
                     this,
                     currentDocument(),
                     lastFocus_,
-                    SEARCH_BACKWARD,
+                    Direction::BACKWARD,
                     GetPrefSearchWraps());
     }
 }
 
-void MainWindow::action_Replace_Again(SearchDirection direction, WrapMode wrap) {
+void MainWindow::action_Replace_Again(Direction direction, WrapMode wrap) {
     if(auto doc = currentDocument()) {
         if (doc->CheckReadOnly()) {
             return;
@@ -2513,14 +2513,14 @@ void MainWindow::action_Replace_Again(SearchDirection direction, WrapMode wrap) 
  * @brief MainWindow::on_action_Replace_Again_triggered
  */
 void MainWindow::on_action_Replace_Again_triggered() {
-    action_Replace_Again(SEARCH_FORWARD, GetPrefSearchWraps());
+    action_Replace_Again(Direction::FORWARD, GetPrefSearchWraps());
 }
 
 /**
  * @brief MainWindow::action_Shift_Replace_Again_triggered
  */
 void MainWindow::action_Shift_Replace_Again_triggered() {
-    action_Replace_Again(SEARCH_BACKWARD, GetPrefSearchWraps());
+    action_Replace_Again(Direction::BACKWARD, GetPrefSearchWraps());
 }
 
 /**
@@ -4353,7 +4353,7 @@ void MainWindow::DimPasteReplayBtns(bool enabled) {
  * @param keepDialogs
  * @param type
  */
-void MainWindow::action_Find(const QString &string, SearchDirection direction, SearchType type, WrapMode searchWrap) {
+void MainWindow::action_Find(const QString &string, Direction direction, SearchType type, WrapMode searchWrap) {
 
     SearchAndSelectEx(
         this,
@@ -4372,7 +4372,7 @@ void MainWindow::action_Find(const QString &string, SearchDirection direction, S
  * @param keepDialogs
  * @param type
  */
-void MainWindow::action_Find_Dialog(SearchDirection direction, SearchType type, bool keepDialog) {
+void MainWindow::action_Find_Dialog(Direction direction, SearchType type, bool keepDialog) {
     DoFindDlogEx(
         this,
         currentDocument(),
@@ -4386,7 +4386,7 @@ void MainWindow::action_Find_Dialog(SearchDirection direction, SearchType type, 
  */
 void MainWindow::on_action_Find_triggered() {
     action_Find_Dialog(
-        SEARCH_FORWARD,
+        Direction::FORWARD,
         GetPrefSearch(),
         GetPrefKeepSearchDlogs());
 }
@@ -4396,7 +4396,7 @@ void MainWindow::on_action_Find_triggered() {
  * @param direction
  * @param wrap
  */
-void MainWindow::action_Find_Again(SearchDirection direction, WrapMode wrap) {
+void MainWindow::action_Find_Again(Direction direction, WrapMode wrap) {
     SearchAndSelectSameEx(
         this,
         currentDocument(),
@@ -4409,13 +4409,13 @@ void MainWindow::action_Find_Again(SearchDirection direction, WrapMode wrap) {
  * @brief MainWindow::on_action_Find_Again_triggered
  */
 void MainWindow::on_action_Find_Again_triggered() {
-    action_Find_Again(SEARCH_FORWARD, GetPrefSearchWraps());
+    action_Find_Again(Direction::FORWARD, GetPrefSearchWraps());
 }
 
 /**
  * @brief MainWindow::action_Find_Selection
  */
-void MainWindow::action_Find_Selection(SearchDirection direction, SearchType type, WrapMode wrap) {
+void MainWindow::action_Find_Selection(Direction direction, SearchType type, WrapMode wrap) {
     SearchForSelectedEx(
         this,
         currentDocument(),
@@ -4431,7 +4431,7 @@ void MainWindow::action_Find_Selection(SearchDirection direction, SearchType typ
  */
 void MainWindow::on_action_Find_Selection_triggered() {
     action_Find_Selection(
-                SEARCH_FORWARD,
+                Direction::FORWARD,
                 GetPrefSearch(),
                 GetPrefSearchWraps());
 }
@@ -4444,7 +4444,7 @@ void MainWindow::on_action_Find_Selection_triggered() {
  * @param type
  * @param wrap
  */
-void MainWindow::action_Replace(SearchDirection direction, const QString &searchString, const QString &replaceString, SearchType type, WrapMode wrap) {
+void MainWindow::action_Replace(Direction direction, const QString &searchString, const QString &replaceString, SearchType type, WrapMode wrap) {
     if(auto doc = currentDocument()) {
         if (doc->CheckReadOnly()) {
             return;
@@ -4468,7 +4468,7 @@ void MainWindow::action_Replace(SearchDirection direction, const QString &search
  * @param type
  * @param keepDialog
  */
-void MainWindow::action_Replace_Dialog(SearchDirection direction, SearchType type, bool keepDialog) {
+void MainWindow::action_Replace_Dialog(Direction direction, SearchType type, bool keepDialog) {
     if(auto doc = currentDocument()) {
         if (doc->CheckReadOnly()) {
             return;
@@ -4488,7 +4488,7 @@ void MainWindow::action_Replace_Dialog(SearchDirection direction, SearchType typ
  * @brief MainWindow::on_action_Replace_triggered
  */
 void MainWindow::on_action_Replace_triggered() {
-    action_Replace_Dialog(SEARCH_FORWARD, GetPrefSearch(), GetPrefKeepSearchDlogs());
+    action_Replace_Dialog(Direction::FORWARD, GetPrefSearch(), GetPrefKeepSearchDlogs());
 }
 
 /**

@@ -930,11 +930,15 @@ HighlightPattern *DialogSyntaxPatterns::readDialogFields(Mode mode) {
 		}
 
 		pat->startRE = outStr;
-		QByteArray regexString = pat->startRE.toLatin1();
 
-		if (strspn(regexString.data(), "&\\123456789 \t") != static_cast<size_t>(pat->startRE.size()) || (pat->startRE[0] != QLatin1Char('\\') && pat->startRE[0] != QLatin1Char('&')) || strstr(regexString.data(), "\\\\")) {
+        static const QRegularExpression re(QLatin1String("[^&\\\\123456789 \\t]"));
+        if (pat->startRE.contains(re) || (pat->startRE[0] != QLatin1Char('\\') && pat->startRE[0] != QLatin1Char('&')) || pat->startRE.contains(QLatin1String("\\\\"))) {
+
             if (mode == Mode::Verbose) {
-				QMessageBox::warning(this, tr("Pattern Error"), tr("The expression field in patterns which specify highlighting for a parent, must contain only sub-expression references in regular expression replacement form (&\\1\\2 etc.).  See Help -> Regular Expressions and Help -> Syntax Highlighting for more information"));
+                QMessageBox::warning(
+                            this,
+                            tr("Pattern Error"),
+                            tr("The expression field in patterns which specify highlighting for a parent, must contain only sub-expression references in regular expression replacement form (&\\1\\2 etc.).  See Help -> Regular Expressions and Help -> Syntax Highlighting for more information"));
 			}
 			return nullptr;
 		}

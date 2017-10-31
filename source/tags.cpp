@@ -40,11 +40,13 @@
 #include "selection.h"
 #include "util/fileUtils.h"
 #include "util/utils.h"
+
 #include <QApplication>
 #include <QMessageBox>
 #include <QTextStream>
 #include <QFile>
 #include <QFileInfo>
+
 #include <iostream>
 #include <fstream>
 #include <cctype>
@@ -52,13 +54,10 @@
 #include <memory>
 #include <cstdlib>
 #include <cstring>
-#include <sys/param.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <unistd.h>
 #include <unordered_map>
 #include <sstream>
 
+#include <sys/param.h>
 
 namespace {
 
@@ -80,8 +79,6 @@ struct Tag;
 **    ctags, search expr specfd:  ctags search expr   | -1
 **    etags  (emacs tags)         etags search string | search start pos
 */
-
-enum searchDirection { FORWARD, BACKWARD };
 
 static int loadTagsFile(const QString &tagSpec, int index, int recLevel);
 static int fakeRegExSearchEx(view::string_view buffer, const char *searchString, int *startPos, int *endPos);
@@ -312,14 +309,15 @@ bool AddRelTagsFileEx(const QString &tagSpec, const QString &windowPath, Mode fi
         }
 
         // or if the file isn't found...
-        struct stat statbuf;
-		if (::stat(pathName.toLatin1().data(), &statbuf) != 0) {
+        QFileInfo fileInfo(pathName);
+        QDateTime timestamp = fileInfo.lastModified();
+        if (timestamp.isNull()) {
             continue;
         }
 
         tagFile tag = {
             pathName,
-            statbuf.st_mtime,
+            timestamp,
             false,
             ++tagFileIndex,
             1 // NOTE(eteran): added just so there aren't any uninitialized members
@@ -379,8 +377,10 @@ bool AddTagsFileEx(const QString &tagSpec, Mode file_type) {
             continue;
         }
 
-        struct stat statbuf;
-		if (::stat(pathName.toLatin1().data(), &statbuf) != 0) {
+        QFileInfo fileInfo(pathName);
+        QDateTime timestamp = fileInfo.lastModified();
+
+        if (timestamp.isNull()) {
             // Problem reading this tags file.  Return FALSE
             added = false;
             continue;
@@ -388,7 +388,7 @@ bool AddTagsFileEx(const QString &tagSpec, Mode file_type) {
 
         tagFile tag = {
             pathName,
-            statbuf.st_mtime,
+            timestamp,
             false,
             ++tagFileIndex,
             1
@@ -729,18 +729,22 @@ static QList<Tag> LookupTagFromList(QList<tagFile> *FileList, const QString &nam
     if (!name.isNull()) {
         for(tagFile &tf : *FileList) {
 
-			struct stat statbuf;
-			int load_status;		
+            int load_status;
 		
             if (tf.loaded) {
-                if (::stat(tf.filename.toLatin1().data(), &statbuf) != 0) { //
+
+                QFileInfo fileInfo(tf.filename);
+                QDateTime timestamp = fileInfo.lastModified();
+
+                if (timestamp.isNull()) {
                     qWarning("NEdit: Error getting status for tag file %s", qPrintable(tf.filename));
-				} else {
-                    if (tf.date == statbuf.st_mtime) {
-						// current tags file tf is already loaded and up to date 
-						continue;
-					}
-				}
+                } else {
+                    if (tf.date == timestamp) {
+                        // current tags file tf is already loaded and up to date
+                        continue;
+                    }
+                }
+
 				// tags file has been modified, delete it's entries and reload it 
                 delTag(tf.index);
 			}
@@ -752,15 +756,19 @@ static QList<Tag> LookupTagFromList(QList<tagFile> *FileList, const QString &nam
                 load_status = loadTagsFile(tf.filename, tf.index, 0);
 			}
 
-			if (load_status) {
-                if (::stat(tf.filename.toLatin1().data(), &statbuf) != 0) {
+            if (load_status) {
+
+                QFileInfo fileInfo(tf.filename);
+                QDateTime timestamp = fileInfo.lastModified();
+
+                if (timestamp.isNull()) {
                     if (!tf.loaded) {
-						// if tf->loaded == true we already have seen the error msg 
-						qWarning("NEdit: Error getting status for tag file %s", tf.filename.toLatin1().data());
-					}
-				} else {
-                    tf.date = statbuf.st_mtime;
-				}
+                        // if tf->loaded == true we already have seen the error msg
+                        qWarning("NEdit: Error getting status for tag file %s", tf.filename.toLatin1().data());
+                    }
+                } else {
+                    tf.date = timestamp;
+                }
                 tf.loaded = true;
 			} else {
                 tf.loaded = false;
@@ -828,7 +836,7 @@ int ShowTipStringEx(DocumentWidget *window, const QString &text, bool anchored, 
 */
 static int fakeRegExSearchEx(view::string_view buffer, const char *searchString, int *startPos, int *endPos) {
 	int found, searchStartPos;
-	SearchDirection dir;
+    Direction dir;
     bool ctagsMode;
 	char searchSubs[3 * MAXLINE + 3];
 	const char *inPtr;
@@ -837,15 +845,15 @@ static int fakeRegExSearchEx(view::string_view buffer, const char *searchString,
 
 	// determine search direction and start position 
 	if (*startPos != -1) { // etags mode! 
-		dir = SEARCH_FORWARD;
+        dir = Direction::FORWARD;
 		searchStartPos = *startPos;
         ctagsMode = false;
 	} else if (searchString[0] == '/') {
-		dir = SEARCH_FORWARD;
+        dir = Direction::FORWARD;
 		searchStartPos = 0;
         ctagsMode = true;
 	} else if (searchString[0] == '?') {
-		dir = SEARCH_BACKWARD;
+        dir = Direction::BACKWARD;
 		// searchStartPos = window->buffer_->length; 
 		searchStartPos = fileString.size();
         ctagsMode = true;
@@ -899,7 +907,7 @@ static int fakeRegExSearchEx(view::string_view buffer, const char *searchString,
 		   startPos, if nothing has been found by now try searching backward
 		   again from startPos.
 		*/
-        found = SearchString(fileString, QString::fromLatin1(searchSubs), SEARCH_BACKWARD, SEARCH_REGEX, WrapMode::NoWrap, searchStartPos, startPos, endPos, nullptr, nullptr, nullptr);
+        found = SearchString(fileString, QString::fromLatin1(searchSubs), Direction::BACKWARD, SEARCH_REGEX, WrapMode::NoWrap, searchStartPos, startPos, endPos, nullptr, nullptr, nullptr);
 	}
 
 	// return the result 
@@ -1123,7 +1131,7 @@ void showMatchingCalltipEx(TextArea *area, int i) {
 
             // 4. Find the end of the calltip (delimited by an empty line)
             endPos = startPos;
-            bool found = SearchString(fileString.c_str(), QLatin1String("\\n\\s*\\n"), SEARCH_FORWARD, SEARCH_REGEX, WrapMode::NoWrap, startPos, &endPos, &dummy, nullptr, nullptr, nullptr);
+            bool found = SearchString(fileString.c_str(), QLatin1String("\\n\\s*\\n"), Direction::FORWARD, SEARCH_REGEX, WrapMode::NoWrap, startPos, &endPos, &dummy, nullptr, nullptr, nullptr);
             if (!found) {
                 // Just take 4 lines
 				moveAheadNLinesEx(fileString, &endPos, TIP_DEFAULT_LINES);
@@ -1232,7 +1240,7 @@ enum tftoken_types { TF_EOF, TF_BLOCK, TF_VERSION, TF_INCLUDE, TF_LANGUAGE, TF_A
 static int searchLine(const char *line, const char *regex) {
     int dummy1;
     int dummy2;
-    return SearchString(line, QString::fromLatin1(regex), SEARCH_FORWARD, SEARCH_REGEX, WrapMode::NoWrap, 0, &dummy1, &dummy2, nullptr, nullptr, nullptr);
+    return SearchString(line, QString::fromLatin1(regex), Direction::FORWARD, SEARCH_REGEX, WrapMode::NoWrap, 0, &dummy1, &dummy2, nullptr, nullptr, nullptr);
 }
 
 // Check if a line has non-ws characters 
@@ -1261,7 +1269,7 @@ static void rstrip(char *dst, const char *src) {
     int dummy2;
 
     // Strip trailing whitespace
-    if (SearchString(src, QLatin1String("\\s*\\n"), SEARCH_FORWARD, SEARCH_REGEX, WrapMode::NoWrap, 0, &wsStart, &dummy2, nullptr, nullptr, nullptr)) {
+    if (SearchString(src, QLatin1String("\\s*\\n"), Direction::FORWARD, SEARCH_REGEX, WrapMode::NoWrap, 0, &wsStart, &dummy2, nullptr, nullptr, nullptr)) {
         if (dst != src) {
             memcpy(dst, src, wsStart);
         }
@@ -1545,15 +1553,15 @@ static int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
             if (langMode == PLAIN_LANGUAGE_MODE && header != QLatin1String("Plain")) {
 
                 qWarning("NEdit: Error reading calltips file:\n\t%s\nUnknown language mode: \"%s\"",
-                         tipsFile.toLatin1().data(),
-                         header.toLatin1().data());
+                         qPrintable(tipsFile),
+                         qPrintable(header));
 
 				langMode = oldLangMode;
 			}
 			break;
 		case TF_ERROR:
             qWarning("NEdit: Warning: Recoverable error while reading calltips file:\n   \"%s\"",
-                     resolvedTipsFile.toLatin1().data());
+                     qPrintable(resolvedTipsFile));
 			break;
 		case TF_ALIAS:
 			// Allocate a new alias struct 

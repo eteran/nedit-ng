@@ -214,7 +214,7 @@ void DialogFind::setTextField(DocumentWidget *document) {
 //------------------------------------------------------------------------------
 void DialogFind::on_buttonFind_clicked() {
 
-	SearchDirection direction;
+    Direction direction;
 	SearchType searchType;
 	
 	// fetch find string, direction and type from the dialog 
@@ -243,7 +243,7 @@ void DialogFind::on_buttonFind_clicked() {
 ** in "searchType", and return TRUE as the function value.  Otherwise,
 ** return FALSE.
 */
-bool DialogFind::getFindDlogInfoEx(SearchDirection *direction, QString *searchString, SearchType *searchType) {
+bool DialogFind::getFindDlogInfoEx(Direction *direction, QString *searchString, SearchType *searchType) {
 
 	// Get the search string, search type, and direction from the dialog 
 	QString findText = ui.textFind->text();
@@ -282,7 +282,7 @@ bool DialogFind::getFindDlogInfoEx(SearchDirection *direction, QString *searchSt
 		}
 	}
 
-	*direction = ui.checkBackward->isChecked() ? SEARCH_BACKWARD : SEARCH_FORWARD;
+    *direction = ui.checkBackward->isChecked() ? Direction::BACKWARD : Direction::FORWARD;
 
 	if (isRegexType(*searchType)) {
 	}
