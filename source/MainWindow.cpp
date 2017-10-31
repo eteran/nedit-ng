@@ -1413,7 +1413,7 @@ DocumentWidget *MainWindow::FindWindowWithFile(const QString &name, const QStrin
     /* I don't think this algorithm will work on vms so I am disabling it for now */
     if (!GetPrefHonorSymlinks()) {
 
-        QString fullname = QString(QLatin1String("%1%2")).arg(path, name);
+        QString fullname = tr("%1%2").arg(path, name);
 
         struct stat attribute;
         if (::stat(fullname.toLatin1().data(), &attribute) == 0) {
@@ -2528,7 +2528,7 @@ void MainWindow::action_Shift_Replace_Again_triggered() {
  * @param mark
  */
 void MainWindow::action_Mark(const QString &mark) {
-    if (mark.size() != 1 || !safe_ctype<isalpha>(mark[0].toLatin1())) {
+    if (mark.size() != 1 || !mark[0].isLetter()) {
         qWarning("NEdit: action requires a single-letter label");
         QApplication::beep();
         return;
@@ -2606,7 +2606,7 @@ void MainWindow::action_Mark_Shortcut_triggered() {
 }
 
 void MainWindow::action_Goto_Mark(const QString &mark, bool extend) {
-    if (mark.size() != 1 || !safe_ctype<isalpha>(mark[0].toLatin1())) {
+    if (mark.size() != 1 || !mark[0].isLetter()) {
         qWarning("NEdit: action requires a single-letter label");
         QApplication::beep();
         return;

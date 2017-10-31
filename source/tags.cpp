@@ -764,7 +764,7 @@ static QList<Tag> LookupTagFromList(QList<tagFile> *FileList, const QString &nam
                 if (timestamp.isNull()) {
                     if (!tf.loaded) {
                         // if tf->loaded == true we already have seen the error msg
-                        qWarning("NEdit: Error getting status for tag file %s", tf.filename.toLatin1().data());
+                        qWarning("NEdit: Error getting status for tag file %s", qPrintable(tf.filename));
                     }
                 } else {
                     tf.date = timestamp;
@@ -1580,8 +1580,8 @@ static int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
         if (tags.isEmpty()) {
             qWarning("NEdit: Can't find destination of alias \"%s\"\n"
                      "in calltips file:\n   \"%s\"\n",
-                     tmp_alias.dest.toLatin1().data(),
-                     resolvedTipsFile.toLatin1().data());
+                     qPrintable(tmp_alias.dest),
+                     qPrintable(resolvedTipsFile));
 		} else {
 
             const Tag &first_tag = tags[0];
