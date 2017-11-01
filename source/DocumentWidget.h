@@ -115,6 +115,8 @@ public:
     void finishMacroCmdExecutionEx();
     void ResumeMacroExecutionEx();
     MacroContinuationCode continueWorkProcEx();
+    void FlashMatchingEx(TextArea *area);
+    void eraseFlashEx();
 	int ReadMacroFileEx(const QString &fileName, bool warnNotExist);
 	int matchLanguageMode();
 	void DetermineLanguageMode(bool forceNewDefaults);

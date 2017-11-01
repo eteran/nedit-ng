@@ -56,12 +56,8 @@ std::string ReplaceAllInStringEx(view::string_view inString, const QString &sear
 std::string ReplaceAllInStringEx(view::string_view inString, const QString &searchString, const char *replaceString, SearchType searchType, int *copyStart, int *copyEnd, const QString &delimiters, bool *ok);
 void DoFindDlogEx(MainWindow *window, DocumentWidget *document, Direction direction, int keepDialogs, SearchType searchType);
 void DoFindReplaceDlogEx(MainWindow *window, DocumentWidget *document, TextArea *area, Direction direction, int keepDialogs, SearchType searchType);
-void FlashMatchingEx(DocumentWidget *document, TextArea *area);
 void ReplaceInSelectionEx(MainWindow *window, DocumentWidget *document, TextArea *area, const QString &searchString, const QString &replaceString, SearchType searchType);
 void SearchForSelectedEx(MainWindow *window, DocumentWidget *document, TextArea *area, Direction direction, SearchType searchType, WrapMode searchWrap);
-
-void eraseFlashEx(DocumentWidget *document);
-
 
 /* Default scope if selection exists when replace dialog pops up.
    "Smart" means "In Selection" if the selection spans more than

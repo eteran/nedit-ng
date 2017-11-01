@@ -97,6 +97,8 @@ protected:
 
 namespace {
 
+auto asciiCodec = new AsciiTextCodec;
+
 enum positionTypes {
 	CURSOR_POS,
 	CHARACTER_POS
@@ -2086,13 +2088,8 @@ int TextArea::measurePropChar(const char c, int colNum, int pos) const {
 //------------------------------------------------------------------------------
 int TextArea::stringWidth(const char *string, int length, int style) const {
 
-
-#if 1
-    static auto asciiCodec = new AsciiTextCodec();
     QString str = asciiCodec->toUnicode(string, length);
-#else
-    auto str = QString::fromLatin1(string, length);
-#endif
+
 	if (style & STYLE_LOOKUP_MASK) {
         QFontMetrics fm(styleTable_[(style & STYLE_LOOKUP_MASK) - ASCII_A].font);
         return fm.width(str);
@@ -2854,7 +2851,7 @@ int TextArea::measureVisLine(int visLineNum) {
 	if (!styleBuffer_) {
 		for (i = 0; i < lineLen; i++) {
 			len = buffer_->BufGetExpandedChar(lineStartPos + i, charCount, expandedChar);
-            width += fm.width(QString::fromLatin1(expandedChar, len));
+            width += fm.width(asciiCodec->toUnicode(expandedChar, len));
 			charCount += len;
 		}
 	} else {
@@ -2864,7 +2861,7 @@ int TextArea::measureVisLine(int visLineNum) {
             int style = static_cast<uint8_t>(styleChar) - ASCII_A;
 
             QFontMetrics styleFm(styleTable_[style].font);
-            width += styleFm.width(QString::fromLatin1(expandedChar, len));
+            width += styleFm.width(asciiCodec->toUnicode(expandedChar, len));
 
 			charCount += len;
 		}
@@ -3515,19 +3512,7 @@ void TextArea::drawString(QPainter *painter, int style, int x, int y, int toX, c
 		X_font.setUnderline(true);
 	}
 
-    // temporarily use a custom converter
-    static auto asciiCodec = new AsciiTextCodec();
-
-#if 0
-    QTextCodec::setCodecForLocale(asciiCodec);
-
-    auto s = QString::fromLatin1(string, nChars);
-
-    // restore it, because otherwise it messes up QString::toStdString
-    QTextCodec::setCodecForLocale(nullptr);
-#else
     auto s = asciiCodec->toUnicode(string, nChars);
-#endif
 
     QRect rect(x, y, toX - x, ascent_ + descent_);
 

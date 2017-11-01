@@ -74,7 +74,6 @@ static QString readSIMacroEx(Input &in);
  * @return
  */
 QByteArray defaultCommonMacros() {
-
     static QByteArray defaultMacros = loadResource(QLatin1String("res/DefaultCommonMacros.txt"));
     return defaultMacros;
 }

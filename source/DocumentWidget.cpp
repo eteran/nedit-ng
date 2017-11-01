@@ -87,16 +87,15 @@ enum {
     OUTPUT_TO_STRING  = 32
 };
 
-// TODO(eteran): duplicated in search!
 struct CharMatchTable {
     char      c;
     char      match;
     Direction direction;
 };
 
-constexpr int N_MATCH_CHARS = 13;
+constexpr int N_FLASH_CHARS = 6;
 
-static const CharMatchTable MatchingChars[N_MATCH_CHARS] = {
+constexpr CharMatchTable MatchingChars[] = {
     {'{', '}',   Direction::FORWARD},
     {'}', '{',   Direction::BACKWARD},
     {'(', ')',   Direction::FORWARD},
@@ -792,7 +791,7 @@ void DocumentWidget::movedCallback(TextArea *area) {
 	UpdateStatsLine(area);
 
 	// Check the character before the cursor for matchable characters
-    FlashMatchingEx(this, area);
+    FlashMatchingEx(area);
 
 	// Check for changes to read-only status and/or file modifications
     CheckForChangesToFileEx();
@@ -1363,7 +1362,7 @@ QString DocumentWidget::GetWindowDelimiters() const {
 }
 
 void DocumentWidget::flashTimerTimeout() {
-    eraseFlashEx(this);
+    eraseFlashEx();
 }
 
 /*
@@ -3826,7 +3825,6 @@ void DocumentWidget::GotoMatchingCharacter(TextArea *area) {
 
 bool DocumentWidget::findMatchingCharEx(char toMatch, void *styleToMatch, int charPos, int startLimit, int endLimit, int *matchPos) {
     int nestDepth;
-    int matchIndex;
     int beginPos;
     int pos;
     void *style = nullptr;
@@ -3839,18 +3837,17 @@ bool DocumentWidget::findMatchingCharEx(char toMatch, void *styleToMatch, int ch
     }
 
     // Look up the matching character and match direction
-    for (matchIndex = 0; matchIndex < N_MATCH_CHARS; matchIndex++) {
-        if (MatchingChars[matchIndex].c == toMatch) {
-            break;
-        }
-    }
+    auto matchIt = std::find_if(std::begin(MatchingChars), std::end(MatchingChars), [toMatch](const CharMatchTable &entry) {
+        return entry.c == toMatch;
+    });
 
-    if (matchIndex == N_MATCH_CHARS) {
+
+    if(matchIt == std::end(MatchingChars)) {
         return false;
     }
 
-    char matchChar       = MatchingChars[matchIndex].match;
-    Direction direction  = MatchingChars[matchIndex].direction;
+    char matchChar       = matchIt->match;
+    Direction direction  = matchIt->direction;
 
     // find it in the buffer
     beginPos = (direction == Direction::FORWARD) ? charPos + 1 : charPos - 1;
@@ -5612,4 +5609,99 @@ void DocumentWidget::ResumeMacroExecutionEx() {
         // a timeout of 0 means "run whenever the event loop is idle"
         cmdData->continuationTimer.start(0);
     }
+}
+
+/*
+** Check the character before the insertion cursor of textW and flash
+** matching parenthesis, brackets, or braces, by temporarily highlighting
+** the matching character (a timer procedure is scheduled for removing the
+** highlights)
+*/
+void DocumentWidget::FlashMatchingEx(TextArea *area) {
+
+    // if a marker is already drawn, erase it and cancel the timeout
+    if (flashTimer_->isActive()) {
+        eraseFlashEx();
+        flashTimer_->stop();
+    }
+
+    // no flashing required
+    if (showMatchingStyle_ == NO_FLASH) {
+        return;
+    }
+
+    // don't flash matching characters if there's a selection
+    if (buffer_->primary_.selected) {
+        return;
+    }
+
+    // get the character to match and the position to start from
+    int pos = area->TextGetCursorPos() - 1;
+    if (pos < 0) {
+        return;
+    }
+
+    char c = buffer_->BufGetCharacter(pos);
+
+    void *style = GetHighlightInfoEx(this, pos);
+
+    int matchIndex;
+    int matchPos;
+
+    // is the character one we want to flash?
+    for (matchIndex = 0; matchIndex < N_FLASH_CHARS; matchIndex++) {
+        if (MatchingChars[matchIndex].c == c)
+            break;
+    }
+
+    if (matchIndex == N_FLASH_CHARS) {
+        return;
+    }
+
+    /* constrain the search to visible text only when in single-pane mode
+       AND using delimiter flashing (otherwise search the whole buffer) */
+    int constrain = ((textPanes().size() == 0) && (showMatchingStyle_ == FLASH_DELIMIT));
+
+    int startPos;
+    int endPos;
+    int searchPos;
+
+    if (MatchingChars[matchIndex].direction == Direction::BACKWARD) {
+        startPos = constrain ? area->TextFirstVisiblePos() : 0;
+        endPos = pos;
+        searchPos = endPos;
+    } else {
+        startPos = pos;
+        endPos = constrain ? area->TextLastVisiblePos() : buffer_->BufGetLength();
+        searchPos = startPos;
+    }
+
+    // do the search
+    if (!findMatchingCharEx(c, style, searchPos, startPos, endPos, &matchPos)) {
+        return;
+    }
+
+
+    if (showMatchingStyle_ == FLASH_DELIMIT) {
+        // Highlight either the matching character ...
+        buffer_->BufHighlight(matchPos, matchPos + 1);
+    } else {
+        // ... or the whole range.
+        if (MatchingChars[matchIndex].direction == Direction::BACKWARD) {
+            buffer_->BufHighlight(matchPos, pos + 1);
+        } else {
+            buffer_->BufHighlight(matchPos + 1, pos);
+        }
+    }
+
+    flashTimer_->start();
+    flashPos_ = matchPos;
+}
+
+/*
+** Erase the marker drawn on a matching parenthesis bracket or brace
+** character.
+*/
+void DocumentWidget::eraseFlashEx() {
+    buffer_->BufUnhighlight();
 }
