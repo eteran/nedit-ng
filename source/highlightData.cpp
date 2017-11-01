@@ -43,10 +43,12 @@
 #include "Input.h"
 #include "preferences.h"
 #include "regularExp.h"
+#include "utils.h"
+
 #include <QMessageBox>
 #include <QPushButton>
-#include <QResource>
 #include <QtDebug>
+
 #include <algorithm>
 #include <climits>
 #include <cstdio>
@@ -56,15 +58,14 @@
 namespace {
 
 // Names for the fonts that can be used for syntax highlighting 
-const int N_FONT_TYPES = 4;
+constexpr int N_FONT_TYPES = 4;
 
-const QString FontTypeNames[] = {
+const QLatin1String FontTypeNames[] = {
     QLatin1String("Plain"),
     QLatin1String("Italic"),
     QLatin1String("Bold"),
     QLatin1String("Bold Italic")
 };
-
 
 QPointer<DialogDrawingStyles>  DrawingStyles;
 QPointer<DialogSyntaxPatterns> SyntaxPatterns;
@@ -131,7 +132,6 @@ bool LoadStylesStringEx(const QString &string) {
 			if(!s.isNull()) {
                 hs.bgColor = s;
 			}
-	
 		}
 		
 		if (!SkipDelimiterEx(in, &errMsg)) {
@@ -140,6 +140,7 @@ bool LoadStylesStringEx(const QString &string) {
 
 		// read the font type 
 		QString fontStr = ReadSymbolicFieldEx(in);
+
 		for (i = 0; i < N_FONT_TYPES; i++) {
             if (FontTypeNames[i] == fontStr) {
                 hs.font = i;
@@ -151,17 +152,16 @@ bool LoadStylesStringEx(const QString &string) {
 			return styleErrorEx(in, QLatin1String("unrecognized font type"));
 		}
 
-		/* pattern set was read correctly, add/change it in the list */\
-		for (i = 0; i < HighlightStyles.size(); i++) {
-            if (HighlightStyles[i].name == hs.name) {
-                HighlightStyles[i] = hs;
-				break;
-			}
-		}
-		
-		if (i == HighlightStyles.size()) {
+        // pattern set was read correctly, add/change it in the list
+        auto it = std::find_if(HighlightStyles.begin(), HighlightStyles.end(), [&hs](const HighlightStyle &entry) {
+            return entry.name == hs.name;
+        });
+
+        if(it == HighlightStyles.end()) {
             HighlightStyles.push_back(hs);
-		}
+        } else {
+            *it = hs;
+        }
 
 		// if the string ends here, we're done
 		in.skipWhitespaceNL();
@@ -665,16 +665,12 @@ std::unique_ptr<PatternSet> readDefaultPatternSet(QByteArray &patternData, const
 
 std::unique_ptr<PatternSet> readDefaultPatternSet(const QString &langModeName) {
 	for(int i = 0; i < 28; ++i) {
-		QResource res(QString(QLatin1String("res/DefaultPatternSet%1.txt")).arg(i, 2, 10, QLatin1Char('0')));
 
-		if(res.isValid()) {
-            // don't copy the data, if it's uncompressed, we can deal with it in place :-)
-			auto data = QByteArray::fromRawData(reinterpret_cast<const char *>(res.data()), res.size());
-			
-			if(res.isCompressed()) {
-				data = qUncompress(data);
-			}
+        auto name = QString(QLatin1String("res/DefaultPatternSet%1.txt")).arg(i, 2, 10, QLatin1Char('0'));
 
+        QByteArray data = loadResource(name);
+
+        if(!data.isNull()) {
 			if(std::unique_ptr<PatternSet> patternSet = readDefaultPatternSet(data, langModeName)) {
 				return patternSet;
 			}
