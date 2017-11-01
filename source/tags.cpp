@@ -88,8 +88,7 @@ static QList<Tag> getTag(const QString &name, int search_type);
 static void createSelectMenuEx(DocumentWidget *document, TextArea *area, const QStringList &args);
 static QList<Tag> LookupTag(const QString &name, Mode search_type);
 
-static int searchLine(const char *line, const char *regex);
-static void rstrip(char *dst, const char *src);
+static int searchLine(const std::string &line, const std::string &regex);
 static QString rstrip(QString s);
 static int nextTFBlock(std::istream &is, QString &header, QString &body, int *blkLine, int *currLine);
 static int loadTipsFile(const QString &tipsFile, int index, int recLevel);
@@ -1234,13 +1233,22 @@ static void createSelectMenuEx(DocumentWidget *document, TextArea *area, const Q
  *           Functions for loading Calltips files                   *
  ********************************************************************/
 
-enum tftoken_types { TF_EOF, TF_BLOCK, TF_VERSION, TF_INCLUDE, TF_LANGUAGE, TF_ALIAS, TF_ERROR, TF_ERROR_EOF };
+enum tftoken_types {
+    TF_EOF,
+    TF_BLOCK,
+    TF_VERSION,
+    TF_INCLUDE,
+    TF_LANGUAGE,
+    TF_ALIAS,
+    TF_ERROR,
+    TF_ERROR_EOF
+};
 
-// A wrapper for SearchString 
-static int searchLine(const char *line, const char *regex) {
+// A wrapper for SearchString
+static int searchLine(const std::string &line, const std::string &regex) {
     int dummy1;
     int dummy2;
-    return SearchString(line, QString::fromLatin1(regex), Direction::FORWARD, SEARCH_REGEX, WrapMode::NoWrap, 0, &dummy1, &dummy2, nullptr, nullptr, nullptr);
+    return SearchString(line.c_str(), QString::fromStdString(regex), Direction::FORWARD, SEARCH_REGEX, WrapMode::NoWrap, 0, &dummy1, &dummy2, nullptr, nullptr, nullptr);
 }
 
 // Check if a line has non-ws characters 
@@ -1260,23 +1268,6 @@ static bool lineEmpty(const view::string_view line) {
 
 static QString rstrip(QString s) {
     return s.replace(QRegularExpression(QLatin1String("\\s*\\n")), QString());
-}
-
-// Remove trailing whitespace from a line 
-static void rstrip(char *dst, const char *src) {
-
-    int wsStart;
-    int dummy2;
-
-    // Strip trailing whitespace
-    if (SearchString(src, QLatin1String("\\s*\\n"), Direction::FORWARD, SEARCH_REGEX, WrapMode::NoWrap, 0, &wsStart, &dummy2, nullptr, nullptr, nullptr)) {
-        if (dst != src) {
-            memcpy(dst, src, wsStart);
-        }
-        dst[wsStart] = '\0';
-    } else if (dst != src) {
-        strcpy(dst, src);
-    }
 }
 
 /*
@@ -1299,7 +1290,7 @@ static int nextTFBlock(std::istream &is, QString &header, QString &body, int *bl
     const char *include_regex  = "^\\s*\\* include \\*\\s*$";
     const char *language_regex = "^\\s*\\* language \\*\\s*$";
     const char *alias_regex    = "^\\s*\\* alias \\*\\s*$";
-    char line[MAXLINE];
+    std::string line;
     int dummy1;
     int code;
 
@@ -1307,7 +1298,7 @@ static int nextTFBlock(std::istream &is, QString &header, QString &body, int *bl
 	while (true) {
 
         // Skip blank lines
-        while(is.getline(line, MAXLINE)) {
+        while(std::getline(is, line)) {
             ++(*currLine);
 			if (!lineEmpty(line))
 				break;
@@ -1322,7 +1313,7 @@ static int nextTFBlock(std::istream &is, QString &header, QString &body, int *bl
             break;
 
         // Skip the comment (non-blank lines)
-        while (is.getline(line, MAXLINE)) {
+        while (std::getline(is, line)) {
             ++(*currLine);
             if (lineEmpty(line))
                 break;
@@ -1349,7 +1340,7 @@ static int nextTFBlock(std::istream &is, QString &header, QString &body, int *bl
 			code = TF_ALIAS;
             // Need to read the header line for an alias
 
-            is.getline(line, MAXLINE);
+            std::getline(is, line);
             ++(*currLine);
             if (!is)
                 return TF_ERROR_EOF;
@@ -1357,7 +1348,7 @@ static int nextTFBlock(std::istream &is, QString &header, QString &body, int *bl
                 qWarning("NEdit: Warning: empty '* alias *' block in calltips file.");
 				return TF_ERROR;
             }
-            header = rstrip(QString::fromLatin1(line));
+            header = rstrip(QString::fromStdString(line));
 		}
 
         incPos = is.tellg();
@@ -1366,7 +1357,7 @@ static int nextTFBlock(std::istream &is, QString &header, QString &body, int *bl
             return TF_ERROR;
 
         // Figure out how long the block is
-        while (is.getline(line, MAXLINE) || is.eof()) {
+        while (std::getline(is, line) || is.eof()) {
             ++(*currLine);
             if (is.eof() || lineEmpty(line))
                 break;
@@ -1388,21 +1379,22 @@ static int nextTFBlock(std::istream &is, QString &header, QString &body, int *bl
 		// Read all the lines in the block 
 		// qDebug("Copying lines");
         for (i = 0; i < incLines; i++) {
-            if(!is.getline(line, MAXLINE)) {
+            if(!std::getline(is, line)) {
 				return TF_ERROR_EOF;
             }
-			rstrip(line, line);
+
+            QString currentLine = rstrip(QString::fromStdString((line)));
 
             if (i != 0) {
                 body.push_back(QLatin1Char(':'));
 			}
 
-            body.append(QString::fromLatin1((line)));
+            body.append((currentLine));
 		}
 		// qDebug("Finished include/alias at line %i", *currLine);
     } else if (searchLine(line, language_regex)) {
         // LANGUAGE block
-        is.getline(line, MAXLINE);
+        std::getline(is, line);
         ++(*currLine);
 
         if (!is) {
@@ -1414,11 +1406,11 @@ static int nextTFBlock(std::istream &is, QString &header, QString &body, int *bl
 			return TF_ERROR;
         }
         *blkLine = *currLine;
-        header = rstrip(QString::fromLatin1(line));
+        header = rstrip(QString::fromStdString(line));
 		code = TF_LANGUAGE;
     } else if (searchLine(line, version_regex)) {
 		// VERSION block 
-        is.getline(line, MAXLINE);
+        std::getline(is, line);
         ++(*currLine);
         if (!is)
 			return TF_ERROR_EOF;
@@ -1427,15 +1419,15 @@ static int nextTFBlock(std::istream &is, QString &header, QString &body, int *bl
 			return TF_ERROR;
 		}
         *blkLine = *currLine;
-        header = rstrip(QString::fromLatin1(line));
+        header = rstrip(QString::fromStdString(line));
 		code = TF_VERSION;
     } else {
 		// Calltip block 
 		/*  The first line is the key, the rest is the tip.
 		    Strip trailing whitespace. */
-        header = rstrip(QString::fromLatin1(line));
+        header = rstrip(QString::fromStdString(line));
 
-        is.getline(line, MAXLINE);
+        std::getline(is, line);
         ++(*currLine);
         if (!is)
             return TF_ERROR_EOF;
@@ -1444,13 +1436,13 @@ static int nextTFBlock(std::istream &is, QString &header, QString &body, int *bl
 			return TF_ERROR;
 		}
         *blkLine = *currLine;
-        body = QString::fromLatin1(line);
+        body = QString::fromStdString(line);
 		code = TF_BLOCK;
 	}
 
 	// Skip the rest of the block 
     dummy1 = *currLine;
-    while (is.getline(line, MAXLINE)) {
+    while (std::getline(is, line)) {
         ++(*currLine);
 		if (lineEmpty(line))
 			break;

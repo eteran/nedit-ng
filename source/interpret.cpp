@@ -31,6 +31,9 @@
 #include "utils.h"
 #include <cmath>
 
+// This enables preemption, useful to disable it for debugging things
+#define ENABLE_PREEMPTION
+
 namespace {
 
 constexpr int PROGRAM_SIZE  	= 4096; // Maximum program size
@@ -495,12 +498,12 @@ int ContinueMacroEx(const std::shared_ptr<RestartData> &continuation, DataValue 
     */
     restoreContextEx(continuation);
     ErrMsg = nullptr;
-    for (;;) {
+    Q_FOREVER {
 
         // Execute an instruction
 		Inst *inst = PC++;
 
-		int status = (inst->func)();
+        auto status = static_cast<OpStatusCodes>((inst->func)());
 
         // If error return was not STAT_OK, return to caller
         switch(status) {
@@ -520,7 +523,6 @@ int ContinueMacroEx(const std::shared_ptr<RestartData> &continuation, DataValue 
             restoreContextEx(oldContext);
             return MACRO_DONE;
         case STAT_OK:
-        default:
             break;
         }
 
@@ -528,7 +530,7 @@ int ContinueMacroEx(const std::shared_ptr<RestartData> &continuation, DataValue 
            preempt, store re-start information in continuation and give
            X, other macros, and other shell scripts a chance to execute */
 		++instCount;
-#if 1 // NOTE(eteran): this enables preemption, useful to disable it for debugging things
+#if defined(ENABLE_PREEMPTION)
         if (instCount >= INSTRUCTION_LIMIT) {
             saveContextEx(continuation);
             restoreContextEx(oldContext);
@@ -616,19 +618,18 @@ void SetMacroFocusWindowEx(DocumentWidget *window) {
 ** install an array iteration symbol
 ** it is tagged as an integer but holds an array node pointer
 */
-#define ARRAY_ITER_SYM_PREFIX "aryiter "
 Symbol *InstallIteratorSymbol() {
 
 	static int interatorNameIndex = 0;
 
-	auto symbolName = ARRAY_ITER_SYM_PREFIX + std::to_string(interatorNameIndex++);
+    auto symbolName = QString(QLatin1String("aryiter %1")).arg(interatorNameIndex++);
 
     // TODO(eteran): bug? this looks like the wrong tag...
 	DataValue value;
-	value.tag = INT_TAG;
+    value.tag          = INT_TAG;
 	value.val.arrayPtr = nullptr;
 
-    return InstallSymbol(symbolName, LOCAL_SYM, value);
+    return InstallSymbolEx(symbolName, LOCAL_SYM, value);
 }
 
 /*
@@ -648,7 +649,6 @@ Symbol *LookupStringConstSymbol(const char *value) {
 /*
 ** install string str in the global symbol table with a string name
 */
-#define ARRAY_STRING_CONST_SYM_PREFIX "string #"
 Symbol *InstallStringConstSymbol(const char *str) {
 
     static int stringConstIndex = 0;
@@ -657,10 +657,10 @@ Symbol *InstallStringConstSymbol(const char *str) {
 		return sym;
 	}
 
-	auto stringName = ARRAY_STRING_CONST_SYM_PREFIX + std::to_string(stringConstIndex++);
+    auto stringName = QString(QLatin1String("string #%1")).arg(stringConstIndex++);
 
     DataValue value = to_value(str);
-    return InstallSymbol(stringName, CONST_SYM, value);
+    return InstallSymbolEx(stringName, CONST_SYM, value);
 }
 
 /*
