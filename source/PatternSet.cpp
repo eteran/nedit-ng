@@ -1,31 +1,13 @@
 
 #include "PatternSet.h"
-#include "HighlightPattern.h"
 
-#include <algorithm>
+// NOTE(eteran): comparisons do NOT include the "languageMode"
 
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
-PatternSet::PatternSet() : lineContext(0), charContext(0) {
-}
-
-
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
-void PatternSet::swap(PatternSet &other) {
-	using std::swap;
-
-	swap(languageMode, other.languageMode);
-	swap(lineContext,  other.lineContext);
-	swap(charContext,  other.charContext);
-	swap(patterns,     other.patterns);
-}
-
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
+/**
+ * @brief PatternSet::operator !=
+ * @param rhs
+ * @return
+ */
 bool PatternSet::operator!=(const PatternSet &rhs) const {
 
 	if (this->lineContext != rhs.lineContext) {
@@ -43,9 +25,11 @@ bool PatternSet::operator!=(const PatternSet &rhs) const {
 	return false;
 }
 
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
+/**
+ * @brief PatternSet::operator ==
+ * @param rhs
+ * @return
+ */
 bool PatternSet::operator==(const PatternSet &rhs) const {
 	return !(*this != rhs);
 }

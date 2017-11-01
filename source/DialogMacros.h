@@ -7,7 +7,7 @@
 #include <memory>
 #include "ui_DialogMacros.h"
 
-class MenuItem;
+struct MenuItem;
 
 class DialogMacros : public Dialog {
 	Q_OBJECT

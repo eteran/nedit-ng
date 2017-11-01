@@ -6,7 +6,7 @@
 #include <QList>
 #include "ui_DialogWindowBackgroundMenu.h"
 
-class MenuItem;
+struct MenuItem;
 
 class DialogWindowBackgroundMenu : public Dialog {
 	Q_OBJECT

@@ -31,7 +31,7 @@
 #include <QVector>
 #include <memory>
 
-class MenuItem;
+struct MenuItem;
 
 // types of current dialog and/or menu 
 enum DialogTypes {

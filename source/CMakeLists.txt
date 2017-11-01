@@ -142,7 +142,6 @@ add_executable(nedit-ng
 	HighlightPattern.cpp
 	KeySequenceEdit.cpp
 	MainWindow.cpp
-	MenuItem.cpp
 	NeditServer.cpp
 	PatternSet.cpp
 	Rangeset.cpp

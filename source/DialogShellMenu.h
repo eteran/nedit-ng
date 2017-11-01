@@ -7,7 +7,7 @@
 #include <memory>
 #include "ui_DialogShellMenu.h"
 
-class MenuItem;
+struct MenuItem;
 
 class DialogShellMenu : public Dialog {
 	Q_OBJECT
