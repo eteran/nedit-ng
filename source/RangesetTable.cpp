@@ -51,7 +51,7 @@ static void rangesetClone(Rangeset *destRangeset, const Rangeset *srcRangeset) {
 static void RangesetTableListSet(RangesetTable *table) {
 
     for (int i = 0; i < table->n_set_; i++) {
-        table->list_[i] = rangeset_labels[(int)table->order_[i]];
+        table->list_[i] = rangeset_labels[static_cast<int>(table->order_[i])];
 	}
 	
     table->list_[table->n_set_] = '\0';
@@ -133,9 +133,9 @@ RangesetTable::RangesetTable(TextBuffer *buffer) {
 
 	for (i = 0; i < N_RANGESETS; i++) {
         set_[i].RangesetInit(rangeset_labels[i], buffer);
-        order_[i] = (uint8_t)i;
+        order_[i] = static_cast<uint8_t>(i);
         active_[i] = 0;
-        depth_[i] = (uint8_t)i;
+        depth_[i] = static_cast<uint8_t>(i);
 	}
 
     n_set_ = 0;
@@ -223,7 +223,7 @@ int RangesetTable::RangesetFindIndex(RangesetTable *table, int label, int must_b
 	}
 
     if (table) {
-        auto p_label = (uint8_t *)strchr((char *)rangeset_labels, label);
+        auto p_label = reinterpret_cast<uint8_t *>(strchr(reinterpret_cast<char *>(rangeset_labels), label));
 		if (p_label) {
 			int i = p_label - rangeset_labels;
             if (!must_be_active || table->active_[i])
@@ -248,7 +248,7 @@ int RangesetTable::RangesetIndex1ofPos(RangesetTable *table, int pos, int needs_
 		return 0;
 
     for (i = 0; i < table->n_set_; i++) {
-        Rangeset *rangeset = &table->set_[(int)table->order_[i]];
+        Rangeset *rangeset = &table->set_[static_cast<int>(table->order_[i])];
 		if (rangeset->RangesetCheckRangeOfPos(pos) >= 0) {
             if (needs_color && rangeset->color_set_ >= 0 && !rangeset->color_name_.isNull())
                 return table->order_[i] + 1;
@@ -289,7 +289,7 @@ int RangesetTable::nRangesetsAvailable() const {
 
 
 uint8_t *RangesetTable::RangesetGetList(RangesetTable *table) {
-	return table ? table->list_ : (uint8_t *)"";
+    return table ? table->list_ : const_cast<uint8_t *>(reinterpret_cast<const uint8_t *>(""));
 }
 
 void RangesetTable::RangesetTableUpdatePos(RangesetTable *table, int pos, int ins, int del) {
@@ -298,7 +298,7 @@ void RangesetTable::RangesetTableUpdatePos(RangesetTable *table, int pos, int in
 		return;
 
     for (int i = 0; i < table->n_set_; i++) {
-        Rangeset *p = &table->set_[(int)table->order_[i]];
+        Rangeset *p = &table->set_[static_cast<int>(table->order_[i])];
 		p->update_fn_(p, pos, ins, del);
 	}
 }
@@ -309,7 +309,7 @@ void RangesetTable::RangesetTableUpdatePos(RangesetTable *table, int pos, int in
 
 int RangesetTable::RangesetCreate() {
 
-    size_t firstAvailableIndex = strspn((char *)rangeset_labels, (char *)list_);
+    size_t firstAvailableIndex = strspn(reinterpret_cast<char *>(rangeset_labels), reinterpret_cast<char *>(list_));
 
 	if (firstAvailableIndex >= sizeof(rangeset_labels))
 		return 0;
@@ -386,5 +386,5 @@ Range *RangesetTable::RangesRealloc(Range *ranges, int n) {
 */
 
 int RangesetTable::RangesetLabelOK(int label) {
-	return strchr((char *)rangeset_labels, label) != nullptr;
+    return strchr(reinterpret_cast<char *>(rangeset_labels), label) != nullptr;
 }

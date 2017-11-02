@@ -1021,7 +1021,7 @@ static void restoreContextEx(const std::shared_ptr<RestartData> &context) {
 #define PUSH_INT(number)                                                       \
     if (StackP >= &TheStack[STACK_SIZE])                                       \
         return execError(StackOverflowMsg);                                    \
-    *StackP++ = to_value(static_cast<int>(number));
+    *StackP++ = to_value(number);
 
 
 #define PUSH_STRING(string, length)                                            \
@@ -1657,15 +1657,15 @@ static int power() {
 			n3 = 0;
 		} else {
 			// allow error to occur 
-			n3 = (int)pow((double)n1, (double)n2);
+            n3 = static_cast<int>(pow(static_cast<double>(n1), static_cast<double>(n2)));
 		}
 	} else {
 		if ((n1 < 0) && (n2 & 1)) {
 			// round to nearest integer for negative values
-			n3 = (int)(pow((double)n1, (double)n2) - (double)0.5);
+            n3 = static_cast<int>(pow(static_cast<double>(n1), static_cast<double>(n2)) - 0.5);
 		} else {
 			// round to nearest integer for positive values
-			n3 = (int)(pow((double)n1, (double)n2) + (double)0.5);
+            n3 = static_cast<int>(pow(static_cast<double>(n1), static_cast<double>(n2)) + 0.5);
 		}
 	}
 	PUSH_INT(n3)
@@ -2207,7 +2207,7 @@ static int arrayRef() {
 	} else {
 		POP(srcArray)
         if (is_array(srcArray)) {
-			PUSH_INT(ArraySize(&srcArray))
+            PUSH_INT(static_cast<int>(ArraySize(&srcArray)))
 			return STAT_OK;
 		} else {
 			return execError("operator [] on non-array");

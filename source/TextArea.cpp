@@ -4513,13 +4513,13 @@ void TextArea::TextDMakeInsertPosVisible() {
 
 	if (do_padding) {
 		// Keep the cursor away from the top or bottom of screen.
-		if (nVisibleLines_ <= 2 * (int)cursorVPadding) {
+        if (nVisibleLines_ <= 2 * cursorVPadding) {
 			topLine += (linesFromTop - nVisibleLines_ / 2);
 			topLine = std::max(topLine, 1);
-		} else if (linesFromTop < (int)cursorVPadding) {
+        } else if (linesFromTop < cursorVPadding) {
 			topLine -= (cursorVPadding - linesFromTop);
 			topLine = std::max(topLine, 1);
-		} else if (linesFromTop > nVisibleLines_ - (int)cursorVPadding - 1) {
+        } else if (linesFromTop > nVisibleLines_ - cursorVPadding - 1) {
 			topLine += (linesFromTop - (nVisibleLines_ - cursorVPadding - 1));
 		}
 	}

@@ -2768,7 +2768,7 @@ bool DocumentWidget::writeBckVersion() {
         }
 
         // write to the file
-        ssize_t bytes_written = ::write(out_fd, &io_buffer[0], (size_t)bytes_read);
+        ssize_t bytes_written = ::write(out_fd, &io_buffer[0], static_cast<size_t>(bytes_read));
         if (bytes_written != bytes_read) {
             ::close(in_fd);
             ::close(out_fd);

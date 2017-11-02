@@ -694,7 +694,8 @@ int Rangeset::RangesetAdd(Rangeset *plusSet) {
 
 	if (nOrigRanges == 0) {
 		// no ranges in destination: just copy the ranges from the other set 
-		memcpy(newRanges, plusRanges, nPlusRanges * sizeof(Range));
+        std::copy_n(plusRanges, nPlusRanges, newRanges);
+
         RangesetTable::RangesFree(ranges_);
         ranges_ = newRanges;
         n_ranges_ = nPlusRanges;
@@ -769,7 +770,7 @@ int Rangeset::RangesetAdd(Rangeset *plusSet) {
 
 int Rangeset::RangesetAddBetween(int start, int end) {
 	int i, j;
-    auto rangeTable = (int *)ranges_;
+    auto rangeTable = reinterpret_cast<int*>(ranges_);
 
 	if (start > end) {
 		// quietly sort the positions 
@@ -782,7 +783,7 @@ int Rangeset::RangesetAddBetween(int start, int end) {
 
 	if (n == 0) { // make sure we have space 
         ranges_ = RangesetTable::RangesNew(1);
-        rangeTable = (int *)ranges_;
+        rangeTable = reinterpret_cast<int*>(ranges_);
 		i = 0;
 	} else
 		i = rangesetWeightedAtOrBefore(this, start);
@@ -919,7 +920,7 @@ int Rangeset::RangesetCheckRangeOfPos(int pos) {
 	if (len == 0)
 		return -1; // no ranges 
 
-    auto ranges = (int *)ranges_; // { s1,e1, s2,e2, s3,e3,... }
+    auto ranges = reinterpret_cast<int*>(ranges_); // { s1,e1, s2,e2, s3,e3,... }
     int last = last_index_;
 
 	// try to profit from the last lookup by using its index 
@@ -1069,7 +1070,7 @@ int Rangeset::RangesetRemove(Rangeset *minusSet) {
 int Rangeset::RangesetRemoveBetween(int start, int end) {
 	int j;
 	
-    auto rangeTable = (int *)ranges_;
+    auto rangeTable = reinterpret_cast<int*>(ranges_);
 
 	if (start > end) {
 		// quietly sort the positions 

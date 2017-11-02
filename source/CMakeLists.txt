@@ -185,9 +185,7 @@ target_link_libraries(nedit-ng LINK_PUBLIC
 set_property(TARGET nedit-ng PROPERTY CXX_EXTENSIONS OFF)
 set_property(TARGET nedit-ng PROPERTY CXX_STANDARD 14)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -W -Wall -pedantic -Wunused -Wzero-as-null-pointer-constant -Wuseless-cast -Wold-style-cast")
-
-# SET_TARGET_PROPERTIES(nedit-ng PROPERTIES LINK_FLAGS "-Wl,--gc-sections,--print-gc-sections")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -W -Wall -pedantic -Wunused -Wzero-as-null-pointer-constant")
 
 set_target_properties(nedit-ng
 	PROPERTIES
