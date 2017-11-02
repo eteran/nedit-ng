@@ -3440,8 +3440,8 @@ static bool setCursorPosMS(DocumentWidget *document, DataValue *argList, int nAr
     }
 
     // Set the position
-    auto textD = document->toWindow()->lastFocus_;
-    textD->TextSetCursorPos(pos);
+    TextArea *area = document->toWindow()->lastFocus_;
+    area->TextSetCursorPos(pos);
     *result = to_value();
     return true;
 }
@@ -4324,8 +4324,8 @@ static bool cursorMV(DocumentWidget *document, DataValue *argList, int nArgs, Da
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
 
-    auto textD = document->toWindow()->lastFocus_;
-    *result = to_value(textD->TextGetCursorPos());
+    TextArea *area = document->toWindow()->lastFocus_;
+    *result = to_value(area->TextGetCursorPos());
     return true;
 }
 
@@ -4338,10 +4338,10 @@ static bool lineMV(DocumentWidget *document, DataValue *argList, int nArgs, Data
     int line;
     int colNum;
 
-    auto textD  = document->toWindow()->lastFocus_;
-    int cursorPos   = textD->TextGetCursorPos();
+    TextArea *area  = document->toWindow()->lastFocus_;
+    int cursorPos   = area->TextGetCursorPos();
 
-    if (!textD->TextDPosToLineAndCol(cursorPos, &line, &colNum)) {
+    if (!area->TextDPosToLineAndCol(cursorPos, &line, &colNum)) {
         line = document->buffer_->BufCountLines(0, cursorPos) + 1;
     }
 
@@ -4357,8 +4357,8 @@ static bool columnMV(DocumentWidget *document, DataValue *argList, int nArgs, Da
 
     TextBuffer *buf = document->buffer_;
 
-    auto textD    = document->toWindow()->lastFocus_;
-    int cursorPos = textD->TextGetCursorPos();
+    TextArea *area    = document->toWindow()->lastFocus_;
+    int cursorPos = area->TextGetCursorPos();
 
     *result = to_value(buf->BufCountDispChars(buf->BufStartOfLine(cursorPos), cursorPos));
     return true;
@@ -4702,8 +4702,8 @@ static bool minFontWidthMV(DocumentWidget *document, DataValue *argList, int nAr
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
 
-    auto textD = document->firstPane();
-    *result = to_value(textD->TextDMinFontWidth(document->highlightSyntax_));
+    TextArea *area = document->firstPane();
+    *result = to_value(area->TextDMinFontWidth(document->highlightSyntax_));
     return true;
 }
 
@@ -4712,8 +4712,8 @@ static bool maxFontWidthMV(DocumentWidget *document, DataValue *argList, int nAr
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
 
-    auto textD = document->firstPane();
-    *result = to_value(textD->TextDMaxFontWidth(document->highlightSyntax_));
+    TextArea *area = document->firstPane();
+    *result = to_value(area->TextDMaxFontWidth(document->highlightSyntax_));
     return true;
 }
 
@@ -4722,8 +4722,8 @@ static bool topLineMV(DocumentWidget *document, DataValue *argList, int nArgs, D
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
 
-    auto textD = document->toWindow()->lastFocus_;
-    *result = to_value(textD->TextFirstVisibleLine());
+    TextArea *area = document->toWindow()->lastFocus_;
+    *result = to_value(area->TextFirstVisibleLine());
     return true;
 }
 
@@ -4732,8 +4732,8 @@ static bool numDisplayLinesMV(DocumentWidget *document, DataValue *argList, int 
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
 
-    auto textD    = document->toWindow()->lastFocus_;
-    *result = to_value(textD->TextNumVisibleLines());
+    TextArea *area    = document->toWindow()->lastFocus_;
+    *result = to_value(area->TextNumVisibleLines());
     return true;
 }
 
@@ -4743,8 +4743,8 @@ static bool displayWidthMV(DocumentWidget *document, DataValue *argList, int nAr
     Q_UNUSED(nArgs);
     Q_UNUSED(argList);
 
-    auto textD    = document->toWindow()->lastFocus_;
-    *result = to_value(textD->TextVisibleWidth());
+    TextArea *area    = document->toWindow()->lastFocus_;
+    *result = to_value(area->TextVisibleWidth());
     return true;
 }
 
@@ -5394,7 +5394,7 @@ static bool rangesetRangeMS(DocumentWidget *document, DataValue *argList, int nA
 static bool rangesetIncludesPosMS(DocumentWidget *document, DataValue *argList, int nArgs, DataValue *result, const char **errMsg) {
     TextBuffer *buffer = document->buffer_;
     RangesetTable *rangesetTable = buffer->rangesetTable_;
-    int rangeIndex, maxpos;
+    int rangeIndex;
     int label = 0;
 
     if (nArgs < 1 || nArgs > 2) {
@@ -5416,14 +5416,15 @@ static bool rangesetIncludesPosMS(DocumentWidget *document, DataValue *argList, 
 
     int pos = 0;
     if (nArgs == 1) {
-        auto textD = document->toWindow()->lastFocus_;
-        pos = textD->TextGetCursorPos();
+        TextArea *area = document->toWindow()->lastFocus_;
+        pos = area->TextGetCursorPos();
     } else if (nArgs == 2) {
-        if (!readArgument(argList[1], &pos, errMsg))
+        if (!readArgument(argList[1], &pos, errMsg)) {
             return false;
+        }
     }
 
-    maxpos = buffer->BufGetLength();
+    int maxpos = buffer->BufGetLength();
     if (pos < 0 || pos > maxpos) {
         rangeIndex = 0;
     } else {
