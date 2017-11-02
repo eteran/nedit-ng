@@ -28,63 +28,41 @@
 *******************************************************************************/
 
 #include "macro.h"
-#include "version.h"
+#include "CommandRecorder.h"
 #include "DialogPrompt.h"
 #include "DialogPromptList.h"
 #include "DialogPromptString.h"
-#include "DialogRepeat.h"
+#include "Direction.h"
 #include "DocumentWidget.h"
 #include "HighlightPattern.h"
-#include "IndentStyle.h"
-#include "CommandRecorder.h"
-#include "SignalBlocker.h"
 #include "Input.h"
-#include "CloseMode.h"
 #include "MainWindow.h"
 #include "RangesetTable.h"
-#include "Direction.h"
-#include "Settings.h"
+#include "SearchType.h"
+#include "SignalBlocker.h"
 #include "TextArea.h"
 #include "TextBuffer.h"
-#include "WrapStyle.h"
+#include "WrapMode.h"
 #include "calltips.h"
 #include "highlight.h"
 #include "highlightData.h"
 #include "interpret.h"
 #include "parse.h"
+#include "preferences.h"
 #include "search.h"
 #include "selection.h"
 #include "smartIndent.h"
-#include "string_view.h"
-#include "tags.h"
-#include "userCmds.h"
 #include "util/fileUtils.h"
 #include "util/utils.h"
-
-#include <QApplication>
+#include "version.h"
 #include <QClipboard>
 #include <QDialogButtonBox>
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QMimeData>
-#include <QPushButton>
 #include <QStack>
-#include <QString>
-#include <QWidget>
-#include <QtDebug>
-
 #include <fstream>
-#include <functional>
-#include <memory>
-#include <type_traits>
-
 #include <sys/param.h>
-#include <sys/stat.h>
-
-
-#define NO_FLASH_STRING      "off"
-#define FLASH_DELIMIT_STRING "delimiter"
-#define FLASH_RANGE_STRING   "range"
 
 // The following definitions cause an exit from the macro with a message
 // added if (1) to remove compiler warnings on solaris
@@ -1475,11 +1453,11 @@ static bool setShowMatchingMS(DocumentWidget *document, DataValue *argList, int 
             return false;
         }
 
-        if (arg == QLatin1String(NO_FLASH_STRING)) {
+        if (arg == QLatin1String("off")) {
             document->SetShowMatching(NO_FLASH);
-        } else if (arg == QLatin1String(FLASH_DELIMIT_STRING)) {
+        } else if (arg == QLatin1String("delimiter")) {
             document->SetShowMatching(FLASH_DELIMIT);
-        } else if (arg == QLatin1String(FLASH_RANGE_STRING)) {
+        } else if (arg == QLatin1String("range")) {
             document->SetShowMatching(FLASH_RANGE);
         }
         /* For backward compatibility with pre-5.2 versions, we also
@@ -4595,13 +4573,13 @@ static bool showMatchingMV(DocumentWidget *document, DataValue *argList, int nAr
 
     switch (document->showMatchingStyle_) {
     case NO_FLASH:
-        res = QLatin1String(NO_FLASH_STRING);
+        res = QLatin1String("off");
         break;
     case FLASH_DELIMIT:
-        res = QLatin1String(FLASH_DELIMIT_STRING);
+        res = QLatin1String("delimiter");
         break;
     case FLASH_RANGE:
-        res = QLatin1String(FLASH_RANGE_STRING);
+        res = QLatin1String("range");
         break;
     }
 
