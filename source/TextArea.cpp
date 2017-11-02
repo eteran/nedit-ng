@@ -4129,7 +4129,7 @@ void TextArea::TextDRedrawCalltip(int calltipID) {
 		rel_x = calltip_.pos;
     }
 
-    int lineHeight = ascent_ + descent_;
+    int lineHeight  = ascent_ + descent_;
     int tipWidth    = calltipWidget_->width();
     int tipHeight   = calltipWidget_->height();
     int borderWidth = 1; // TODO(eteran): get the actual border width!
@@ -4139,20 +4139,27 @@ void TextArea::TextDRedrawCalltip(int calltipID) {
 	rel_y += lineHeight / 2 + borderWidth;
 
 	// Adjust rel_x for horizontal alignment modes
-	if (calltip_.hAlign == TIP_CENTER)
-		rel_x -= tipWidth / 2;
-	else if (calltip_.hAlign == TIP_RIGHT)
-		rel_x -= tipWidth;
+    switch(calltip_.hAlign) {
+    case TIP_CENTER:
+        rel_x -= tipWidth / 2;
+        break;
+    case TIP_RIGHT:
+        rel_x -= tipWidth;
+        break;
+    }
 
-	// Adjust rel_y for vertical alignment modes
-	if (calltip_.vAlign == TIP_ABOVE) {
-		flip_delta = tipHeight + lineHeight + 2 * borderWidth;
-		rel_y -= flip_delta;
-	} else
-		flip_delta = -(tipHeight + lineHeight + 2 * borderWidth);
+    // Adjust rel_y for vertical alignment modes
+    switch(calltip_.vAlign) {
+    case TIP_ABOVE:
+        flip_delta = tipHeight + lineHeight + 2 * borderWidth;
+        rel_y -= flip_delta;
+        break;
+    default:
+        flip_delta = -(tipHeight + lineHeight + 2 * borderWidth);
+        break;
+    }
 
     QPoint abs = mapToGlobal(QPoint(rel_x, rel_y));
-
 
 	// If we're not in strict mode try to keep the tip on-screen
 	if (calltip_.alignMode == TIP_SLOPPY) {

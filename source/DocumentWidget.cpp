@@ -3477,16 +3477,19 @@ void DocumentWidget::executeModMacroEx(SmartIndentEvent *cbInfo) {
     // args probably shouldn't be static due to future re-entrance issues <slobasso>
     static DataValue args[2] = {{INT_TAG, {0}}, {STRING_TAG, {0}}};
 
-    // TODO(eteran): remove things as this comment says we should!
-    // after 5.2 release remove inModCB and use new winData->inModMacro value
-    static bool inModCB = false;
+    // NOTE(eteran): this used to be a static flag that was set and unset
+    // surrounding the ExecuteMacroEx call but the original nedit authors
+    // indicated that winData->inModMacro was intended to replace it.
+    // The idea being that a macro in one window shouldn't prevent an unrelated
+    // macro from executing
+    const bool inModCB = winData->inModMacro > 0;
 
-    DataValue result;    
+    DataValue result;
     QString errMsg;
 
     /* Check for inappropriate calls and prevent re-entering if the macro
        makes a buffer modification */
-    if (winData == nullptr || winData->modMacro == nullptr || inModCB) {
+    if (winData == nullptr || winData->modMacro == nullptr || inModCB > 0) {
         return;
     }
 
@@ -3496,7 +3499,6 @@ void DocumentWidget::executeModMacroEx(SmartIndentEvent *cbInfo) {
     args[0].val.n   = cbInfo->pos;
     args[1].val.str = AllocNStringCpyEx(cbInfo->charsTyped);
 
-    inModCB = true;
     ++(winData->inModMacro);
 
     std::shared_ptr<RestartData> continuation;
@@ -3507,7 +3509,6 @@ void DocumentWidget::executeModMacroEx(SmartIndentEvent *cbInfo) {
     }
 
     --(winData->inModMacro);
-    inModCB = false;
 
     // Process errors in macro execution
     if (stat == MACRO_PREEMPT || stat == MACRO_ERROR) {
