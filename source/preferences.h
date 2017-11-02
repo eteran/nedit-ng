@@ -31,6 +31,7 @@
 #include "SearchType.h"
 #include "WrapStyle.h"
 #include "WrapMode.h"
+#include "Settings.h"
 #include "util/string_view.h"
 
 #include <QList>
@@ -54,7 +55,7 @@ bool GetPrefUndoModifiesSelection();
 QString GetPrefBacklightCharTypes();
 QString GetPrefBoldFontName();
 QString GetPrefBoldItalicFontName();
-QString GetPrefColorName(int index);
+QString GetPrefColorName(ColorTypes index);
 QString GetPrefDelimiters();
 QString GetPrefFontName();
 QString GetPrefGeometry();
@@ -137,7 +138,7 @@ void SetPrefBacklightChars(bool state);
 void SetPrefBeepOnSearchWrap(bool state);
 void SetPrefBoldFont(const QString &fontName);
 void SetPrefBoldItalicFont(const QString &fontName);
-void SetPrefColorName(int index, const QString &name);
+void SetPrefColorName(ColorTypes index, const QString &name);
 void SetPrefCols(int nCols);
 void SetPrefEmTabDist(int tabDist);
 void SetPrefFindReplaceUsesSelection(bool state);

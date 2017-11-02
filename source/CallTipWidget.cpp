@@ -26,7 +26,8 @@ CallTipWidget::CallTipWidget(QWidget *parent, Qt::WindowFlags f) : QWidget(paren
 void CallTipWidget::setText(const QString &text) {
 	ui.labelTip->setText(text);
 	ui.labelTip->adjustSize();
-	resize(minimumSize());
+
+    resize(minimumSize());
 }
 
 /**

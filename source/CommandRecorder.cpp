@@ -136,7 +136,6 @@ bool CommandRecorder::eventFilter(QObject *obj, QEvent *event) {
 
 void CommandRecorder::lastActionHook(QObject *obj, const WindowMenuEvent *ev) {
     Q_UNUSED(obj);
-    Q_UNUSED(ev);
 
     /* The last action is recorded for the benefit of repeating the last
        action.  Don't record repeat_macro and wipe out the real action */

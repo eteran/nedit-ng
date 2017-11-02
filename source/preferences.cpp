@@ -31,7 +31,6 @@
 #include "DocumentWidget.h"
 #include "LanguageMode.h"
 #include "MainWindow.h"
-#include "Settings.h"
 #include "TextBuffer.h"
 #include "highlight.h"
 #include "highlightData.h"
@@ -43,6 +42,7 @@
 #include "userCmds.h"
 #include "Input.h"
 #include "util/ClearCase.h"
+
 #include <QInputDialog>
 #include <QMessageBox>
 #include <QPushButton>
@@ -728,11 +728,11 @@ QString GetPrefDelimiters() {
     return g_Settings.wordDelimiters;
 }
 
-QString GetPrefColorName(int index) {
+QString GetPrefColorName(ColorTypes index) {
     return g_Settings.colors[index];
 }
 
-void SetPrefColorName(int index, const QString &name) {
+void SetPrefColorName(ColorTypes index, const QString &name) {
 	if(g_Settings.colors[index] != name) {
         PrefsHaveChanged = true;
     }

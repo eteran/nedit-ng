@@ -199,7 +199,10 @@ void DialogColors::on_editCursor_textChanged(const QString &text) {
 void DialogColors::on_buttonBox_clicked(QAbstractButton *button) {
 	if(ui.buttonBox->standardButton(button) == QDialogButtonBox::Apply) {
 		if (!verifyAllColors()) {
-			QMessageBox::critical(this, tr("Invalid Colors"), tr("All colors must be valid to be applied."));
+            QMessageBox::critical(
+                        this,
+                        tr("Invalid Colors"),
+                        tr("All colors must be valid to be applied."));
 			return;
 		}
 		updateColors();
@@ -211,7 +214,10 @@ void DialogColors::on_buttonBox_clicked(QAbstractButton *button) {
  */
 void DialogColors::on_buttonBox_accepted() {
 	if (!verifyAllColors()) {
-		QMessageBox::critical(this, tr("Invalid Colors"), tr("All colors must be valid to proceed."));
+        QMessageBox::critical(
+                    this,
+                    tr("Invalid Colors"),
+                    tr("All colors must be valid to proceed."));
 		return;
 	}
 	updateColors();
@@ -227,13 +233,12 @@ void DialogColors::on_buttonBox_accepted() {
  */
 bool DialogColors::verifyAllColors() {
 
-	// Maybe just check for empty strings in error widgets instead? 
-    return checkColorStatus(ui.editFG->text()) &&
-           checkColorStatus(ui.editBG->text()) &&
+    return checkColorStatus(ui.editFG->text())          &&
+           checkColorStatus(ui.editBG->text())          &&
            checkColorStatus(ui.editSelectionFG->text()) &&
            checkColorStatus(ui.editSelectionBG->text()) &&
-           checkColorStatus(ui.editMatchFG->text()) &&
-           checkColorStatus(ui.editMatchBG->text()) &&
+           checkColorStatus(ui.editMatchFG->text())     &&
+           checkColorStatus(ui.editMatchBG->text())     &&
            checkColorStatus(ui.editLineNumbers->text()) &&
            checkColorStatus(ui.editCursor->text());
 }

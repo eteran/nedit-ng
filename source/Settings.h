@@ -17,7 +17,6 @@ enum ColorTypes {
     HILITE_BG_COLOR,
     LINENO_FG_COLOR,
     CURSOR_FG_COLOR,
-    NUM_COLORS
 };
 
 class Settings : QObject {
