@@ -622,7 +622,7 @@ void MainWindow::action_New(NewMode mode) {
 
 	QString path;
 
-    if(auto doc = currentDocument()) {
+    if(DocumentWidget *doc = currentDocument()) {
         path = doc->path_;
     }
 
@@ -652,7 +652,7 @@ void MainWindow::action_Open(const QString &filename) {
 
     EMIT_EVENT_ARG_1("open", filename);
 
-    if(auto doc = currentDocument()) {
+    if(DocumentWidget *doc = currentDocument()) {
         doc->open(filename);
     }
 }
@@ -662,7 +662,7 @@ void MainWindow::action_Open(const QString &filename) {
 //------------------------------------------------------------------------------
 void MainWindow::on_action_Open_triggered() {
 
-    if(auto doc = currentDocument()) {
+    if(DocumentWidget *doc = currentDocument()) {
         QString filename = PromptForExistingFileEx(doc->path_, tr("Open File"));
         if (filename.isNull()) {
             return;
@@ -679,7 +679,7 @@ void MainWindow::on_action_Open_triggered() {
  * @param mode
  */
 void MainWindow::action_Close(CloseMode mode) {
-    if(auto doc = currentDocument()) {
+    if(DocumentWidget *doc = currentDocument()) {
         doc->actionClose(mode);
     }
 }
@@ -719,7 +719,7 @@ void MainWindow::action_Include_File(const QString &filename) {
 
     EMIT_EVENT_ARG_1("include_file", filename);
 
-    if(auto doc = currentDocument()) {
+    if(DocumentWidget *doc = currentDocument()) {
 
         if (doc->CheckReadOnly()) {
             return;
@@ -738,7 +738,7 @@ void MainWindow::action_Include_File(const QString &filename) {
 //------------------------------------------------------------------------------
 void MainWindow::on_action_Include_File_triggered() {
 
-    if(auto doc = currentDocument()) {
+    if(DocumentWidget *doc = currentDocument()) {
 
         if (doc->CheckReadOnly()) {
             return;
@@ -797,7 +797,7 @@ void MainWindow::on_action_Delete_triggered() {
 
     EMIT_EVENT("delete");
 
-    if(auto doc = currentDocument()) {
+    if(DocumentWidget *doc = currentDocument()) {
         if (doc->CheckReadOnly()) {
             return;
         }
@@ -941,8 +941,6 @@ void MainWindow::UpdateWindowReadOnly(DocumentWidget *doc) {
 	ui.action_Read_Only->setEnabled(!doc->lockReasons_.isAnyLockedIgnoringUser());
 }
 
-
-
 /*
 ** check if tab bar is to be shown on this window
 */
@@ -1025,8 +1023,6 @@ QList<DocumentWidget *> MainWindow::openDocuments() const {
     }
     return list;
 }
-
-
 
 /*
 ** Make sure the close menu item is dimmed appropriately for the current
@@ -1385,7 +1381,7 @@ QString MainWindow::UniqueUntitledNameEx() {
 
 void MainWindow::on_action_Undo_triggered() {
     EMIT_EVENT("undo");
-    if(auto doc = currentDocument()) {
+    if(DocumentWidget *doc = currentDocument()) {
         if (doc->CheckReadOnly()) {
             return;
         }
@@ -1395,7 +1391,7 @@ void MainWindow::on_action_Undo_triggered() {
 
 void MainWindow::on_action_Redo_triggered() {
     EMIT_EVENT("redo");
-    if(auto doc = currentDocument()) {
+    if(DocumentWidget *doc = currentDocument()) {
         if (doc->CheckReadOnly()) {
             return;
         }
@@ -1716,7 +1712,7 @@ void MainWindow::openPrevCB(QAction *action) {
 
     QString filename = action->data().toString();
 
-    if(auto doc = currentDocument()) {
+    if(DocumentWidget *doc = currentDocument()) {
         if (filename.isNull()) {
             return;
         }
@@ -1779,7 +1775,7 @@ void MainWindow::on_action_Open_Selected_triggered() {
 
     EMIT_EVENT("open_selected");
 
-    if(auto doc = currentDocument()) {
+    if(DocumentWidget *doc = currentDocument()) {
 
         // Get the selected text, if there's no selection, do nothing
         const QMimeData *mimeData = QApplication::clipboard()->mimeData(QClipboard::Selection);
@@ -1893,7 +1889,7 @@ void MainWindow::on_action_Shift_Left_triggered() {
 
     EMIT_EVENT("shift_left");
 
-    if(auto doc = currentDocument()) {
+    if(DocumentWidget *doc = currentDocument()) {
         if (doc->CheckReadOnly()) {
             return;
         }
@@ -1908,7 +1904,7 @@ void MainWindow::on_action_Shift_Right_triggered() {
 
     EMIT_EVENT("shift_right");
 
-    if(auto doc = currentDocument()) {
+    if(DocumentWidget *doc = currentDocument()) {
         if (doc->CheckReadOnly()) {
             return;
         }
@@ -1923,7 +1919,7 @@ void MainWindow::action_Shift_Left_Tabs() {
 
     EMIT_EVENT("shift_left_by_tab");
 
-    if(auto doc = currentDocument()) {
+    if(DocumentWidget *doc = currentDocument()) {
         if (doc->CheckReadOnly()) {
             return;
         }
@@ -1938,7 +1934,7 @@ void MainWindow::action_Shift_Right_Tabs() {
 
     EMIT_EVENT("shift_right_by_tab");
 
-    if(auto doc = currentDocument()) {
+    if(DocumentWidget *doc = currentDocument()) {
         if (doc->CheckReadOnly()) {
             return;
         }
@@ -1953,7 +1949,7 @@ void MainWindow::on_action_Lower_case_triggered() {
 
     EMIT_EVENT("lowercase");
 
-    if(auto doc = currentDocument()) {
+    if(DocumentWidget *doc = currentDocument()) {
         if (doc->CheckReadOnly()) {
             return;
         }
@@ -1969,7 +1965,7 @@ void MainWindow::on_action_Upper_case_triggered() {
 
     EMIT_EVENT("uppercase");
 
-    if(auto doc = currentDocument()) {
+    if(DocumentWidget *doc = currentDocument()) {
         if (doc->CheckReadOnly()) {
             return;
         }
@@ -1985,7 +1981,7 @@ void MainWindow::on_action_Fill_Paragraph_triggered() {
 
     EMIT_EVENT("fill_paragraph");
 
-    if(auto doc = currentDocument()) {
+    if(DocumentWidget *doc = currentDocument()) {
         if (doc->CheckReadOnly()) {
             return;
         }
@@ -2008,7 +2004,7 @@ void MainWindow::on_action_Insert_Form_Feed_triggered() {
 //------------------------------------------------------------------------------
 void MainWindow::on_action_Insert_Ctrl_Code_triggered() {
 
-    if(auto doc = currentDocument()) {
+    if(DocumentWidget *doc = currentDocument()) {
 
         if (doc->CheckReadOnly()) {
             return;
@@ -2037,7 +2033,7 @@ void MainWindow::on_action_Insert_Ctrl_Code_triggered() {
  * @param s
  */
 void MainWindow::action_Goto_Line_Number(const QString &s) {
-	if(auto doc = currentDocument()) {
+    if(DocumentWidget *doc = currentDocument()) {
 
 		int lineNum;
 		int column;
@@ -2078,7 +2074,7 @@ void MainWindow::on_action_Goto_Line_Number_triggered() {
 // Name:
 //------------------------------------------------------------------------------
 void MainWindow::on_action_Goto_Selected_triggered() {
-    if(auto doc = currentDocument()) {
+    if(DocumentWidget *doc = currentDocument()) {
 
         const QMimeData *mimeData = QApplication::clipboard()->mimeData(QClipboard::Selection);
         if(mimeData->hasText()) {
@@ -2186,7 +2182,7 @@ void MainWindow::on_editIFind_textChanged(const QString &text) {
        there's an incremental search already in progress, mark the operation
        as "continued" so the search routine knows to re-start the search
        from the original starting position */
-    if(auto doc = currentDocument()) {
+    if(DocumentWidget *doc = currentDocument()) {
 		doc->findIncrAP(text, direction, searchType, GetPrefSearchWraps(), iSearchStartPos_ != -1);
     }
 }
@@ -2233,7 +2229,7 @@ void MainWindow::on_editIFind_returnPressed() {
     }
 
     // find the text and mark it
-    if(auto doc = currentDocument()) {
+    if(DocumentWidget *doc = currentDocument()) {
         doc->findAP(searchString, direction, searchType, GetPrefSearchWraps());
     }
 }
@@ -2448,7 +2444,7 @@ void MainWindow::EndISearchEx() {
 }
 
 void MainWindow::action_Shift_Replace_triggered() {
-    if(auto doc = currentDocument()) {
+    if(DocumentWidget *doc = currentDocument()) {
         if (doc->CheckReadOnly()) {
             return;
         }
@@ -2465,7 +2461,7 @@ void MainWindow::action_Shift_Replace_triggered() {
 
 void MainWindow::on_action_Replace_Find_Again_triggered() {
 
-    if(auto doc = currentDocument()) {
+    if(DocumentWidget *doc = currentDocument()) {
         if (doc->CheckReadOnly()) {
             return;
         }
@@ -2480,7 +2476,7 @@ void MainWindow::on_action_Replace_Find_Again_triggered() {
 }
 
 void MainWindow::action_Shift_Replace_Find_Again_triggered() {
-    if(auto doc = currentDocument()) {
+    if(DocumentWidget *doc = currentDocument()) {
         if (doc->CheckReadOnly()) {
             return;
         }
@@ -2495,7 +2491,7 @@ void MainWindow::action_Shift_Replace_Find_Again_triggered() {
 }
 
 void MainWindow::action_Replace_Again(Direction direction, WrapMode wrap) {
-    if(auto doc = currentDocument()) {
+    if(DocumentWidget *doc = currentDocument()) {
         if (doc->CheckReadOnly()) {
             return;
         }
@@ -2534,7 +2530,7 @@ void MainWindow::action_Mark(const QString &mark) {
         return;
     }
 
-    if(auto doc = currentDocument()) {
+    if(DocumentWidget *doc = currentDocument()) {
         doc->markAP(mark[0]);
     }
 }
@@ -2612,7 +2608,7 @@ void MainWindow::action_Goto_Mark(const QString &mark, bool extend) {
         return;
     }
 
-    if(auto doc = currentDocument()) {
+    if(DocumentWidget *doc = currentDocument()) {
         doc->gotoMarkAP(mark[0], extend);
     }
 }
@@ -2728,13 +2724,13 @@ void MainWindow::action_Goto_Mark_Shortcut_triggered() {
 }
 
 void MainWindow::on_action_Goto_Matching_triggered() {
-    if(auto doc = currentDocument()) {
+    if(DocumentWidget *doc = currentDocument()) {
         doc->GotoMatchingCharacter(lastFocus_);
     }
 }
 
 void MainWindow::action_Shift_Goto_Matching_triggered() {
-    if(auto doc = currentDocument()) {
+    if(DocumentWidget *doc = currentDocument()) {
         doc->SelectToMatchingCharacter(lastFocus_);
     }
 }
@@ -2823,7 +2819,7 @@ void MainWindow::action_Load_Tags_File(const QString &filename) {
 
 void MainWindow::on_action_Load_Calltips_File_triggered() {
 
-    if(auto doc = currentDocument()) {
+    if(DocumentWidget *doc = currentDocument()) {
         QString filename = PromptForExistingFileEx(doc->path_, tr("Load Calltips File"));
         if (filename.isNull()) {
             return;
@@ -2836,7 +2832,7 @@ void MainWindow::on_action_Load_Calltips_File_triggered() {
 
 void MainWindow::on_action_Load_Tags_File_triggered() {
 
-    if(auto doc = currentDocument()) {
+    if(DocumentWidget *doc = currentDocument()) {
         QString filename = PromptForExistingFileEx(doc->path_, tr("Load Tags File"));
         if (filename.isNull()) {
             return;
@@ -2848,7 +2844,7 @@ void MainWindow::on_action_Load_Tags_File_triggered() {
 }
 
 void MainWindow::on_action_Load_Macro_File_triggered() {
-    if(auto doc = currentDocument()) {
+    if(DocumentWidget *doc = currentDocument()) {
         QString filename = PromptForExistingFileEx(doc->path_, tr("Load Macro File"));
         if (filename.isNull()) {
             return;
@@ -2862,7 +2858,7 @@ void MainWindow::action_Load_Macro_File(const QString &filename) {
 
     EMIT_EVENT_ARG_1("load_macro_file", filename);
 
-    if(auto doc = currentDocument()) {
+    if(DocumentWidget *doc = currentDocument()) {
 		doc->ReadMacroFileEx(filename, true);
     }
 }
@@ -2871,7 +2867,7 @@ void MainWindow::on_action_Print_triggered() {
 
     EMIT_EVENT("print");
 
-    if(auto doc = currentDocument()) {
+    if(DocumentWidget *doc = currentDocument()) {
         doc->PrintWindow(lastFocus_, false);
     }
 }
@@ -2880,7 +2876,7 @@ void MainWindow::on_action_Print_Selection_triggered() {
 
     EMIT_EVENT("print_selection");
 
-    if(auto doc = currentDocument()) {
+    if(DocumentWidget *doc = currentDocument()) {
         doc->PrintWindow(lastFocus_, true);
     }
 }
@@ -2889,7 +2885,7 @@ void MainWindow::on_action_Split_Pane_triggered() {
 
     EMIT_EVENT("split_pane");
 
-    if(auto doc = currentDocument()) {
+    if(DocumentWidget *doc = currentDocument()) {
         doc->splitPane();
         ui.action_Close_Pane->setEnabled(doc->textPanesCount() > 1);
     }
@@ -2899,14 +2895,14 @@ void MainWindow::on_action_Close_Pane_triggered() {
 
     EMIT_EVENT("close_pane");
 
-    if(auto doc = currentDocument()) {
+    if(DocumentWidget *doc = currentDocument()) {
         doc->closePane();
         ui.action_Close_Pane->setEnabled(doc->textPanesCount() > 1);
     }
 }
 
 void MainWindow::on_action_Move_Tab_To_triggered() {
-    if(auto doc = currentDocument()) {
+    if(DocumentWidget *doc = currentDocument()) {
         doc->moveDocument(this);
     }
 }
@@ -2950,7 +2946,7 @@ void MainWindow::on_action_Show_Line_Numbers_toggled(bool state) {
 
 void MainWindow::indentGroupTriggered(QAction *action) {
 
-    if(auto document = currentDocument()) {
+    if(DocumentWidget *document = currentDocument()) {
         if(action == ui.action_Indent_Off) {
             document->SetAutoIndent(NO_AUTO_INDENT);
 		} else if(action == ui.action_Indent_On) {
@@ -2964,7 +2960,7 @@ void MainWindow::indentGroupTriggered(QAction *action) {
 }
 
 void MainWindow::wrapGroupTriggered(QAction *action) {
-    if(auto document = currentDocument()) {
+    if(DocumentWidget *document = currentDocument()) {
         if(action == ui.action_Wrap_None) {
             document->SetAutoWrap(NO_WRAP);
         } else if(action == ui.action_Wrap_Auto_Newline) {
@@ -2978,7 +2974,7 @@ void MainWindow::wrapGroupTriggered(QAction *action) {
 }
 
 void MainWindow::on_action_Wrap_Margin_triggered() {
-    if(auto document = currentDocument()) {
+    if(DocumentWidget *document = currentDocument()) {
 
 		auto dialog = std::make_unique<DialogWrapMargin>(document, this);
 
@@ -2993,14 +2989,14 @@ void MainWindow::on_action_Wrap_Margin_triggered() {
 }
 
 void MainWindow::on_action_Tab_Stops_triggered() {
-    if(auto document = currentDocument()) {
+    if(DocumentWidget *document = currentDocument()) {
 		auto dialog = std::make_unique<DialogTabs>(document, this);
         dialog->exec();
     }
 }
 
 void MainWindow::on_action_Text_Fonts_triggered() {
-    if(auto document = currentDocument()) {
+    if(DocumentWidget *document = currentDocument()) {
 
         document->dialogFonts_ = new DialogFonts(document, true, this);
         document->dialogFonts_->exec();
@@ -3009,7 +3005,7 @@ void MainWindow::on_action_Text_Fonts_triggered() {
 }
 
 void MainWindow::on_action_Highlight_Syntax_toggled(bool state) {
-    if(auto document = currentDocument()) {
+    if(DocumentWidget *document = currentDocument()) {
 
         document->highlightSyntax_ = state;
 
@@ -3022,26 +3018,26 @@ void MainWindow::on_action_Highlight_Syntax_toggled(bool state) {
 }
 
 void MainWindow::on_action_Apply_Backlighting_toggled(bool state) {
-    if(auto document = currentDocument()) {
+    if(DocumentWidget *document = currentDocument()) {
         document->SetBacklightChars(state ? GetPrefBacklightCharTypes() : QString());
     }
 }
 
 void MainWindow::on_action_Make_Backup_Copy_toggled(bool state) {
-    if(auto document = currentDocument()) {
+    if(DocumentWidget *document = currentDocument()) {
         document->saveOldVersion_ = state;
     }
 }
 
 void MainWindow::on_action_Incremental_Backup_toggled(bool state) {
-    if(auto document = currentDocument()) {
+    if(DocumentWidget *document = currentDocument()) {
         document->autoSave_ = state;
     }
 }
 
 void MainWindow::matchingGroupTriggered(QAction *action) {
 
-    if(auto document = currentDocument()) {
+    if(DocumentWidget *document = currentDocument()) {
         if(action == ui.action_Matching_Off) {
             document->SetShowMatching(NO_FLASH);
         } else if(action == ui.action_Matching_Delimiter) {
@@ -3055,19 +3051,19 @@ void MainWindow::matchingGroupTriggered(QAction *action) {
 }
 
 void MainWindow::on_action_Matching_Syntax_toggled(bool state) {
-    if(auto document = currentDocument()) {
+    if(DocumentWidget *document = currentDocument()) {
         document->matchSyntaxBased_ = state;
     }
 }
 
 void MainWindow::on_action_Overtype_toggled(bool state) {
-    if(auto document = currentDocument()) {
+    if(DocumentWidget *document = currentDocument()) {
         document->SetOverstrike(state);
     }
 }
 
 void MainWindow::on_action_Read_Only_toggled(bool state) {
-    if(auto document = currentDocument()) {
+    if(DocumentWidget *document = currentDocument()) {
         document->lockReasons_.setUserLocked(state);
         UpdateWindowTitle(document);
         UpdateWindowReadOnly(document);
@@ -3101,7 +3097,7 @@ void MainWindow::on_action_Default_Program_Smart_Indent_triggered() {
     if (!SmartIndentDlg) {
         // We pass this document so that the dialog can show the information for the currently
         // active language mode
-        if(auto document = currentDocument()) {
+        if(DocumentWidget *document = currentDocument()) {
             SmartIndentDlg = new DialogSmartIndent(document, this);
         }
     }
@@ -3179,7 +3175,7 @@ void MainWindow::on_action_Default_Tab_Stops_triggered() {
 }
 
 void MainWindow::on_action_Default_Text_Fonts_triggered() {
-    if(auto document = currentDocument()) {
+    if(DocumentWidget *document = currentDocument()) {
         document->dialogFonts_ = new DialogFonts(nullptr, false, this);
         document->dialogFonts_->exec();
         delete document->dialogFonts_;
@@ -3187,7 +3183,7 @@ void MainWindow::on_action_Default_Text_Fonts_triggered() {
 }
 
 void MainWindow::on_action_Default_Colors_triggered() {
-    if(auto document = currentDocument()) {
+    if(DocumentWidget *document = currentDocument()) {
         if(!document->dialogColors_) {
             document->dialogColors_ = new DialogColors(this);
         }
@@ -3255,7 +3251,7 @@ void MainWindow::on_action_Default_Show_Path_In_Windows_Menu_toggled(bool state)
 }
 
 void MainWindow::on_action_Default_Customize_Window_Title_triggered() {
-    if(auto document = currentDocument()) {
+    if(DocumentWidget *document = currentDocument()) {
 		auto dialog = std::make_unique<DialogWindowTitle>(document, this);
         dialog->exec();
     }
@@ -3818,7 +3814,7 @@ void MainWindow::on_action_Save_triggered() {
 
     EMIT_EVENT("save");
 
-    if(auto document = currentDocument()) {
+    if(DocumentWidget *document = currentDocument()) {
         if (document->CheckReadOnly()) {
             return;
         }
@@ -3936,7 +3932,7 @@ void MainWindow::action_Save_As(const QString &filename, bool wrapped) {
     }
 
 
-	if(auto document = currentDocument()) {
+    if(DocumentWidget *document = currentDocument()) {
 		document->SaveWindowAs(filename, wrapped);
 	}
 }
@@ -3945,7 +3941,7 @@ void MainWindow::action_Save_As(const QString &filename, bool wrapped) {
  * @brief MainWindow::on_action_Save_As_triggered
  */
 void MainWindow::on_action_Save_As_triggered() {
-    if(auto document = currentDocument()) {
+    if(DocumentWidget *document = currentDocument()) {
 
 		bool addWrap = false;
         FileFormats fileFormat;
@@ -3966,7 +3962,7 @@ void MainWindow::on_action_Save_As_triggered() {
 void MainWindow::action_Revert_to_Saved() {
     EMIT_EVENT("revert_to_saved");
 
-    if(auto document = currentDocument()) {
+    if(DocumentWidget *document = currentDocument()) {
         document->RevertToSaved();
     }
 }
@@ -3976,7 +3972,7 @@ void MainWindow::action_Revert_to_Saved() {
  */
 void MainWindow::on_action_Revert_to_Saved_triggered() {
 
-    if(auto document = currentDocument()) {
+    if(DocumentWidget *document = currentDocument()) {
         // re-reading file is irreversible, prompt the user first
         if (document->fileChanged_) {
 
@@ -4018,7 +4014,7 @@ void MainWindow::on_action_New_Window_triggered() {
 
     EMIT_EVENT("new_window");
 
-    if(auto document = currentDocument()) {
+    if(DocumentWidget *document = currentDocument()) {
         MainWindow::EditNewFileEx(GetPrefOpenInTab() ? nullptr : this, QString(), false, QString(), document->path_);
         CheckCloseDimEx();
     }
@@ -4192,7 +4188,7 @@ void MainWindow::closeEvent(QCloseEvent *event) {
 }
 
 void MainWindow::on_action_Execute_Command_Line_triggered() {
-    if(auto doc = currentDocument()) {
+    if(DocumentWidget *doc = currentDocument()) {
         if (doc->CheckReadOnly()) {
             return;
         }
@@ -4202,33 +4198,33 @@ void MainWindow::on_action_Execute_Command_Line_triggered() {
 }
 
 void MainWindow::on_action_Cancel_Shell_Command_triggered() {
-    if(auto doc = currentDocument()) {
+    if(DocumentWidget *doc = currentDocument()) {
         doc->AbortShellCommandEx();
     }
 }
 
 
 void MainWindow::on_action_Learn_Keystrokes_triggered() {
-    if(auto doc = currentDocument()) {
+    if(DocumentWidget *doc = currentDocument()) {
 		doc->BeginLearnEx();
     }
 }
 
 void MainWindow::on_action_Finish_Learn_triggered() {
-    if(auto doc = currentDocument()) {
+    if(DocumentWidget *doc = currentDocument()) {
         Q_UNUSED(doc);
         FinishLearnEx();
     }
 }
 
 void MainWindow::on_action_Replay_Keystrokes_triggered() {
-    if(auto doc = currentDocument()) {
+    if(DocumentWidget *doc = currentDocument()) {
         ReplayEx(doc);
     }
 }
 
 void MainWindow::on_action_Cancel_Learn_triggered() {
-    if(auto doc = currentDocument()) {
+    if(DocumentWidget *doc = currentDocument()) {
         CancelMacroOrLearnEx(doc);
     }
 }
@@ -4445,7 +4441,7 @@ void MainWindow::on_action_Find_Selection_triggered() {
  * @param wrap
  */
 void MainWindow::action_Replace(Direction direction, const QString &searchString, const QString &replaceString, SearchType type, WrapMode wrap) {
-    if(auto doc = currentDocument()) {
+    if(DocumentWidget *doc = currentDocument()) {
         if (doc->CheckReadOnly()) {
             return;
         }
@@ -4469,7 +4465,7 @@ void MainWindow::action_Replace(Direction direction, const QString &searchString
  * @param keepDialog
  */
 void MainWindow::action_Replace_Dialog(Direction direction, SearchType type, bool keepDialog) {
-    if(auto doc = currentDocument()) {
+    if(DocumentWidget *doc = currentDocument()) {
         if (doc->CheckReadOnly()) {
             return;
         }
@@ -4498,7 +4494,7 @@ void MainWindow::on_action_Replace_triggered() {
  * @param type
  */
 void MainWindow::action_Replace_All(const QString &searchString, const QString &replaceString, SearchType type) {
-    if(auto doc = currentDocument()) {
+    if(DocumentWidget *doc = currentDocument()) {
         if (doc->CheckReadOnly()) {
             return;
         }
@@ -4514,7 +4510,7 @@ void MainWindow::action_Replace_All(const QString &searchString, const QString &
 }
 
 void MainWindow::action_Show_Tip(const QString &argument) {
-    if(auto doc = currentDocument()) {
+    if(DocumentWidget *doc = currentDocument()) {
         doc->FindDefCalltip(lastFocus_, argument);
     }
 }
@@ -4524,7 +4520,7 @@ void MainWindow::action_Show_Tip(const QString &argument) {
  * @param argument
  */
 void MainWindow::action_Find_Definition(const QString &argument) {
-     if(auto doc = currentDocument()) {
+     if(DocumentWidget *doc = currentDocument()) {
          doc->FindDefinition(lastFocus_, argument);
      }
 }
@@ -4550,7 +4546,7 @@ void MainWindow::on_action_Filter_Selection_triggered() {
 
     // NOTE(eteran): if we change the order of operations here,
     // then we can remove the redundancies with this and action_Filter_Selection
-    if(auto doc = currentDocument()) {
+    if(DocumentWidget *doc = currentDocument()) {
         static DialogFilter *dialog = nullptr;
 
         if (doc->CheckReadOnly()) {
@@ -4581,7 +4577,7 @@ void MainWindow::on_action_Filter_Selection_triggered() {
  * @param filter
  */
 void MainWindow::action_Filter_Selection(const QString &filter) {
-    if(auto doc = currentDocument()) {
+    if(DocumentWidget *doc = currentDocument()) {
 
         if (doc->CheckReadOnly()) {
             return;
@@ -4603,7 +4599,7 @@ void MainWindow::action_Filter_Selection(const QString &filter) {
  * @param command
  */
 void MainWindow::action_Execute_Command(const QString &command) {
-    if(auto doc = currentDocument()) {
+    if(DocumentWidget *doc = currentDocument()) {
 
         if (doc->CheckReadOnly())
             return;
@@ -4621,7 +4617,7 @@ void MainWindow::on_action_Execute_Command_triggered() {
 
     // NOTE(eteran): if we change the order of operations here,
     // then we can remove the redundancies with this and action_Execute_Command
-    if(auto doc = currentDocument()) {
+    if(DocumentWidget *doc = currentDocument()) {
         static DialogExecuteCommand *dialog = nullptr;
 
         if (doc->CheckReadOnly())
@@ -4656,7 +4652,7 @@ void MainWindow::shellTriggered(QAction *action) {
  * @param command
  */
 void MainWindow::action_Shell_Menu_Command(const QString &name) {
-    if(auto doc = currentDocument()) {
+    if(DocumentWidget *doc = currentDocument()) {
         doc->DoNamedShellMenuCmd(lastFocus_, name, false);
     }
 }
@@ -4677,7 +4673,7 @@ void MainWindow::macroTriggered(QAction *action) {
        level, however, a call here with a macro running means that THE USER
        is explicitly invoking another macro via the menu or an accelerator,
        UNLESS the macro event marker is set */
-    if(auto doc = currentDocument()) {
+    if(DocumentWidget *doc = currentDocument()) {
         if(doc->macroCmdData_) {
             QApplication::beep();
             return;
@@ -4695,7 +4691,7 @@ void MainWindow::macroTriggered(QAction *action) {
  */
 void MainWindow::action_Macro_Menu_Command(const QString &name) {
 
-    if(auto doc = currentDocument()) {
+    if(DocumentWidget *doc = currentDocument()) {
         doc->DoNamedMacroMenuCmd(lastFocus_, name, false);
     }
 }
@@ -4709,7 +4705,7 @@ void MainWindow::action_Repeat_Macro(const QString &macro, int how) {
 
     EMIT_EVENT("repeat_macro");
 
-    if(auto doc = currentDocument()) {
+    if(DocumentWidget *doc = currentDocument()) {
         doc->repeatMacro(macro, how);
     }
 }
@@ -4718,7 +4714,7 @@ void MainWindow::on_action_Detach_Tab_triggered() {
 
     EMIT_EVENT("detach_document");
 
-    if(auto doc = currentDocument()) {
+    if(DocumentWidget *doc = currentDocument()) {
         action_Detach_Document(doc);
     }
 }
