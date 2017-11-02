@@ -1326,27 +1326,6 @@ void DocumentWidget::freeHighlightData(WindowHighlightData *hd) {
 }
 
 /*
-** Free a pattern list and all of its allocated components
-*/
-void DocumentWidget::freePatterns(HighlightData *patterns) {
-
-    if(patterns) {
-        for (int i = 0; patterns[i].style != 0; i++) {
-            delete patterns[i].startRE;
-            delete patterns[i].endRE;
-            delete patterns[i].errorRE;
-            delete patterns[i].subPatternRE;
-        }
-
-        for (int i = 0; patterns[i].style != 0; i++) {
-            delete [] patterns[i].subPatterns;
-        }
-
-        delete [] patterns;
-    }
-}
-
-/*
 ** Get the set of word delimiters for the language mode set in the current
 ** window.  Returns nullptr when no language mode is set (it would be easy to
 ** return the default delimiter set when the current language mode is "Plain",
@@ -3415,7 +3394,7 @@ void DocumentWidget::executeNewlineMacroEx(SmartIndentEvent *cbInfo) {
     // posValue probably shouldn't be static due to re-entrance issues <slobasso>
     static DataValue posValue = {INT_TAG, {0}};
     DataValue result;    
-    const char *errMsg;
+    QString errMsg;
     int stat;
 
     /* Beware of recursion: the newline macro may insert a string which
@@ -3446,14 +3425,17 @@ void DocumentWidget::executeNewlineMacroEx(SmartIndentEvent *cbInfo) {
 
     // Process errors in macro execution
     if (stat == MACRO_PREEMPT || stat == MACRO_ERROR) {
-        QMessageBox::critical(this, tr("Smart Indent"), tr("Error in smart indent macro:\n%1").arg(stat == MACRO_ERROR ? QString::fromLatin1(errMsg) : tr("dialogs and shell commands not permitted")));
+        QMessageBox::critical(
+                    this,
+                    tr("Smart Indent"),
+                    tr("Error in smart indent macro:\n%1").arg(stat == MACRO_ERROR ? errMsg : tr("dialogs and shell commands not permitted")));
         EndSmartIndentEx(this);
         return;
     }
 
     // Validate and return the result
     if (!is_integer(result) || result.val.n < -1 || result.val.n > 1000) {
-        QMessageBox::critical(this, tr("Smart Indent"), tr("Smart indent macros must return\ninteger indent distance"));
+        QMessageBox::critical(this, tr("Smart Indent"), tr("Smart indent macros must return integer indent distance"));
         EndSmartIndentEx(this);
         return;
     }
@@ -3500,7 +3482,7 @@ void DocumentWidget::executeModMacroEx(SmartIndentEvent *cbInfo) {
     static bool inModCB = false;
 
     DataValue result;    
-    const char *errMsg;
+    QString errMsg;
 
     /* Check for inappropriate calls and prevent re-entering if the macro
        makes a buffer modification */
@@ -3529,7 +3511,10 @@ void DocumentWidget::executeModMacroEx(SmartIndentEvent *cbInfo) {
 
     // Process errors in macro execution
     if (stat == MACRO_PREEMPT || stat == MACRO_ERROR) {
-        QMessageBox::critical(this, tr("Smart Indent"), tr("Error in smart indent modification macro:\n%1").arg(stat == MACRO_ERROR ? QString::fromLatin1(errMsg) : tr("dialogs and shell commands not permitted")));
+        QMessageBox::critical(
+                    this,
+                    tr("Smart Indent"),
+                    tr("Error in smart indent modification macro:\n%1").arg(stat == MACRO_ERROR ? errMsg : tr("dialogs and shell commands not permitted")));
         EndSmartIndentEx(this);
         return;
     }
@@ -5476,13 +5461,13 @@ void DocumentWidget::runMacroEx(Program *prog) {
 
     // Begin macro execution
     DataValue result;
-    const char *errMsg;
+    QString errMsg;
     const int stat = ExecuteMacroEx(this, prog, 0, nullptr, &result, cmdData->context, &errMsg);
 
     switch(stat) {
     case MACRO_ERROR:
         finishMacroCmdExecutionEx();
-        QMessageBox::critical(this, tr("Macro Error"), tr("Error executing macro: %1").arg(QString::fromLatin1(errMsg)));
+        QMessageBox::critical(this, tr("Macro Error"), tr("Error executing macro: %1").arg(errMsg));
         return;
     case MACRO_DONE:
         finishMacroCmdExecutionEx();
@@ -5502,12 +5487,12 @@ void DocumentWidget::runMacroEx(Program *prog) {
 ** the user interface state.
 */
 void DocumentWidget::finishMacroCmdExecutionEx() {
-    auto cmdData = macroCmdData_;
-    bool closeOnCompletion = cmdData->closeOnCompletion;
+
+    bool closeOnCompletion = macroCmdData_->closeOnCompletion;
 
     // Cancel pending timeout and work proc
-    cmdData->bannerTimer.stop();
-    cmdData->continuationTimer.stop();
+    macroCmdData_->bannerTimer.stop();
+    macroCmdData_->continuationTimer.stop();
 
     // Clean up waiting-for-macro-command-to-complete mode
     setCursor(Qt::ArrowCursor);
@@ -5518,12 +5503,12 @@ void DocumentWidget::finishMacroCmdExecutionEx() {
         win->ui.action_Cancel_Learn->setEnabled(false);
     }
 
-    if (cmdData->bannerIsUp) {
+    if (macroCmdData_->bannerIsUp) {
         ClearModeMessageEx();
     }
 
     // Free execution information
-    FreeProgram(cmdData->program);
+    FreeProgram(macroCmdData_->program);
     macroCmdData_ = nullptr;
 
     /* If macro closed its own window, window was made empty and untitled,
@@ -5564,16 +5549,14 @@ void DocumentWidget::finishMacroCmdExecutionEx() {
 */
 DocumentWidget::MacroContinuationCode DocumentWidget::continueWorkProcEx() {
 
-    auto cmdData = macroCmdData_;
-
-    const char *errMsg;
+    QString errMsg;
     DataValue result;
-    const int stat = ContinueMacroEx(cmdData->context, &result, &errMsg);
+    const int stat = ContinueMacroEx(macroCmdData_->context, &result, &errMsg);
 
     switch(stat) {
     case MACRO_ERROR:
         finishMacroCmdExecutionEx();
-        QMessageBox::critical(this, tr("Macro Error"), tr("Error executing macro: %1").arg(QString::fromLatin1(errMsg)));
+        QMessageBox::critical(this, tr("Macro Error"), tr("Error executing macro: %1").arg(errMsg));
         return MacroContinuationCode::Stop;
     case MACRO_DONE:
         finishMacroCmdExecutionEx();

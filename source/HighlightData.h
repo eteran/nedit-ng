@@ -3,14 +3,15 @@
 #define HIGHLIGHT_DATA_H_X_
 
 #include "regularExp.h"
+#include <memory>
 
 // "Compiled" version of pattern specification 
 class HighlightData {
 public:
-	regexp *startRE;
-	regexp *endRE;
-	regexp *errorRE;
-	regexp *subPatternRE;
+    std::shared_ptr<regexp> startRE;
+    std::shared_ptr<regexp> endRE;
+    std::shared_ptr<regexp> errorRE;
+    std::shared_ptr<regexp> subPatternRE;
 	char style;
 	int colorOnly;
 	int startSubexprs[NSUBEXP + 1];

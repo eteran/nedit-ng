@@ -3359,7 +3359,7 @@ static bool replaceInStringMS(DocumentWidget *document, DataValue *argList, int 
 
     std::string string;
     QString searchStr;
-    std::string replaceStr;
+    QString replaceStr;
     SearchType searchType = SEARCH_LITERAL;
     int copyStart;
     int copyEnd;
@@ -3398,7 +3398,7 @@ static bool replaceInStringMS(DocumentWidget *document, DataValue *argList, int 
     std::string replacedStr = ReplaceAllInStringEx(
                 string,
                 searchStr,
-                replaceStr.c_str(),
+                replaceStr,
                 searchType,
                 &copyStart,
                 &copyEnd,

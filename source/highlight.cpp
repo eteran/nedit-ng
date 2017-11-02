@@ -103,14 +103,13 @@ static int lastModified(TextBuffer *styleBuf);
 static int parentStyleOf(const QByteArray &parentStyles, int style);
 static int parseBufferRange(HighlightData *pass1Patterns, HighlightData *pass2Patterns, TextBuffer *buf, TextBuffer *styleBuf, ReparseContext *contextRequirements, int beginParse, int endParse, const QString &delimiters);
 static void fillStyleString(const char **stringPtr, char **stylePtr, const char *toPtr, char style, char *prevChar);
-static void freePatterns(HighlightData *patterns);
 static void incrementalReparse(WindowHighlightData *highlightData, TextBuffer *buf, int pos, int nInserted, const QString &delimiters);
 static void modifyStyleBuf(TextBuffer *styleBuf, char *styleString, int startPos, int endPos, int firstPass2Style);
 static void passTwoParseString(HighlightData *pattern, const char *string, char *styleString, int length, char *prevChar, const QString &delimiters, const char *lookBehindTo, const char *match_till);
-static void recolorSubexpr(regexp *re, int subexpr, int style, const char *string, char *styleString);
+static void recolorSubexpr(const std::shared_ptr<regexp> &re, int subexpr, int style, const char *string, char *styleString);
 static void handleUnparsedRegionEx(const DocumentWidget *window, TextBuffer *styleBuf, int pos);
-static HighlightData *compilePatternsEx(DocumentWidget *dialogParent, HighlightPattern *patternSrc, int nPatterns);
-static regexp *compileREAndWarnEx(DocumentWidget *parent, const QString &re);
+static HighlightData *compilePatternsEx(DocumentWidget *document, HighlightPattern *patternSrc, int nPatterns);
+static std::shared_ptr<regexp> compileREAndWarnEx(DocumentWidget *parent, const QString &re);
 static void handleUnparsedRegionCBEx(const TextArea *area, int pos, const void *cbArg);
 
 /*
@@ -692,7 +691,7 @@ WindowHighlightData *createHighlightDataEx(DocumentWidget *document, PatternSet 
 ** actually used by the code.  Output is a tree of HighlightData structures
 ** containing compiled regular expressions and style information.
 */
-static HighlightData *compilePatternsEx(DocumentWidget *dialogParent, HighlightPattern *patternSrc, int nPatterns) {
+static HighlightData *compilePatternsEx(DocumentWidget *document, HighlightPattern *patternSrc, int nPatterns) {
     int length;
     int subPatIndex;
     int subExprNum;
@@ -742,11 +741,16 @@ static HighlightData *compilePatternsEx(DocumentWidget *dialogParent, HighlightP
         compiledPats[i].userStyleIndex = IndexOfNamedStyle(patternSrc[i].style);
 
         if (compiledPats[i].colorOnly && compiledPats[i].nSubPatterns != 0) {
-            QMessageBox::warning(nullptr /*window->shell_*/, QLatin1String("Color-only Pattern"), QString(QLatin1String("Color-only pattern \"%1\" may not have subpatterns")).arg(patternSrc[i].name));
+            QMessageBox::warning(
+                        document,
+                        QLatin1String("Color-only Pattern"),
+                        QString(QLatin1String("Color-only pattern \"%1\" may not have subpatterns")).arg(patternSrc[i].name));
             return nullptr;
         }
 
         int nSubExprs = 0;
+
+        // TODO(eteran): rework this in terms of iterators and remove scanf usage
         if (!patternSrc[i].startRE.isNull()) {
             QByteArray bytes = patternSrc[i].startRE.toLatin1();
             const char *s = bytes.data();
@@ -763,8 +767,12 @@ static HighlightData *compilePatternsEx(DocumentWidget *dialogParent, HighlightP
                 }
             }
         }
+
         compiledPats[i].startSubexprs[nSubExprs] = -1;
+
         nSubExprs = 0;
+
+        // TODO(eteran): rework this in terms of iterators and remove scanf usage
         if (!patternSrc[i].endRE.isNull()) {
             QByteArray bytes = patternSrc[i].endRE.toLatin1();
             const char *s = bytes.data();
@@ -790,7 +798,8 @@ static HighlightData *compilePatternsEx(DocumentWidget *dialogParent, HighlightP
         if (patternSrc[i].startRE.isNull() || compiledPats[i].colorOnly) {
             compiledPats[i].startRE = nullptr;
         } else {
-            if ((compiledPats[i].startRE = compileREAndWarnEx(dialogParent, patternSrc[i].startRE)) == nullptr) {
+            compiledPats[i].startRE = compileREAndWarnEx(document, patternSrc[i].startRE);
+            if (!compiledPats[i].startRE) {
                 return nullptr;
             }
         }
@@ -798,7 +807,8 @@ static HighlightData *compilePatternsEx(DocumentWidget *dialogParent, HighlightP
         if (patternSrc[i].endRE.isNull() || compiledPats[i].colorOnly) {
             compiledPats[i].endRE = nullptr;
         } else {
-            if ((compiledPats[i].endRE = compileREAndWarnEx(dialogParent, patternSrc[i].endRE)) == nullptr) {
+            compiledPats[i].endRE = compileREAndWarnEx(document, patternSrc[i].endRE);
+            if (!compiledPats[i].endRE) {
                 return nullptr;
             }
         }
@@ -806,7 +816,8 @@ static HighlightData *compilePatternsEx(DocumentWidget *dialogParent, HighlightP
         if (patternSrc[i].errorRE.isNull()) {
             compiledPats[i].errorRE = nullptr;
         } else {
-            if ((compiledPats[i].errorRE = compileREAndWarnEx(dialogParent, patternSrc[i].errorRE)) == nullptr) {
+            compiledPats[i].errorRE = compileREAndWarnEx(document, patternSrc[i].errorRE);
+            if (!compiledPats[i].errorRE) {
                 return nullptr;
             }
         }
@@ -876,7 +887,7 @@ static HighlightData *compilePatternsEx(DocumentWidget *dialogParent, HighlightP
         bigPattern.pop_back(); // remove last '|' character
 
         try {
-            compiledPats[patternNum].subPatternRE = new regexp(bigPattern, REDFLT_STANDARD);
+            compiledPats[patternNum].subPatternRE = std::make_shared<regexp>(bigPattern, REDFLT_STANDARD);
         } catch(const regex_error &e) {
             qWarning("NEdit: Error compiling syntax highlight patterns:\n%s", e.what());
             return nullptr;
@@ -894,16 +905,9 @@ static HighlightData *compilePatternsEx(DocumentWidget *dialogParent, HighlightP
 /*
 ** Free a pattern list and all of its allocated components
 */
-static void freePatterns(HighlightData *patterns) {
+void freePatterns(HighlightData *patterns) {
 
 	if(patterns) {
-		for (int i = 0; patterns[i].style != 0; i++) {
-			delete patterns[i].startRE;
-			delete patterns[i].endRE;
-			delete patterns[i].errorRE;
-			delete patterns[i].subPatternRE;
-		}
-	
 		for (int i = 0; patterns[i].style != 0; i++) {
 			delete [] patterns[i].subPatterns;
 		}
@@ -1501,8 +1505,10 @@ static bool parseString(HighlightData *pattern, const char **string, char **styl
 							}
 							subExecuted = true;
 						}
-						for (subExpr = subPat->endSubexprs; *subExpr != -1; subExpr++)
+
+                        for (subExpr = subPat->endSubexprs; *subExpr != -1; subExpr++) {
 							recolorSubexpr(pattern->endRE, *subExpr, subPat->style, *string, *styleString);
+                        }
 					}
 				}
 				*string = stringPtr;
@@ -1805,10 +1811,10 @@ static char getPrevChar(TextBuffer *buf, int pos) {
 /*
 ** compile a regular expression and present a user friendly dialog on failure.
 */
-static regexp *compileREAndWarnEx(DocumentWidget *parent, const QString &re) {
+static std::shared_ptr<regexp> compileREAndWarnEx(DocumentWidget *parent, const QString &re) {
 
     try {
-        return new regexp(re.toStdString(), REDFLT_STANDARD);
+        return std::make_shared<regexp>(re.toStdString(), REDFLT_STANDARD);
     } catch(const regex_error &e) {
 
         constexpr int maxLength = 4096;
@@ -2042,7 +2048,7 @@ static int forwardOneContext(TextBuffer *buf, ReparseContext *context, int fromP
 ** sub-expression, "subExpr", of regular expression "re" applies to the
 ** corresponding portion of "string".
 */
-static void recolorSubexpr(regexp *re, int subexpr, int style, const char *string, char *styleString) {
+static void recolorSubexpr(const std::shared_ptr<regexp> &re, int subexpr, int style, const char *string, char *styleString) {
 
 	const char *stringPtr = re->startp[subexpr];
 	char *stylePtr        = &styleString[stringPtr - string];

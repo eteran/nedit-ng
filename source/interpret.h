@@ -226,8 +226,8 @@ int AddContinueAddr(Inst *addr);
 void FillLoopAddrs(Inst *breakAddr, Inst *continueAddr);
 
 /* Routines for executing programs */
-int ExecuteMacroEx(DocumentWidget *window, Program *prog, int nArgs, DataValue *args, DataValue *result, std::shared_ptr<RestartData> &continuation, const char **msg);
-int ContinueMacroEx(const std::shared_ptr<RestartData> &continuation, DataValue *result, const char **msg);
+int ExecuteMacroEx(DocumentWidget *window, Program *prog, int nArgs, DataValue *args, DataValue *result, std::shared_ptr<RestartData> &continuation, QString *msg);
+int ContinueMacroEx(const std::shared_ptr<RestartData> &continuation, DataValue *result, QString *msg);
 void RunMacroAsSubrCall(Program *prog);
 void PreemptMacro();
 

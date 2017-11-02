@@ -680,14 +680,14 @@ bool SearchAndReplaceEx(MainWindow *window, DocumentWidget *document, TextArea *
         QString delimieters = GetWindowDelimitersEx(document);
 
         replaceUsingREEx(
-            searchString.toLatin1().data(),
-            replaceString.toLatin1().data(),
+            searchString,
+            replaceString,
             foundString,
             startPos - searchExtentBW,
             replaceResult,
             SEARCHMAX,
             startPos == 0 ? '\0' : document->buffer_->BufGetCharacter(startPos - 1),
-            delimieters.isNull() ? nullptr : delimieters.toLatin1().data(),
+            delimieters,
             defaultRegexFlags(searchType));
 
         document->buffer_->BufReplaceEx(startPos, endPos, replaceResult);
@@ -996,17 +996,17 @@ bool ReplaceAllEx(MainWindow *window, DocumentWidget *document, TextArea *area, 
     std::string newFileString = ReplaceAllInStringEx(
                 fileString,
                 searchString,
-                replaceString.toLatin1().data(),
+                replaceString,
                 searchType,
                 &copyStart,
                 &copyEnd,
-                delimieters.isNull() ? nullptr : delimieters.toLatin1().data(),
+                delimieters,
                 &ok);
 
     if(!ok) {
         if (document->multiFileBusy_) {
-            document->replaceFailed_ = true; /* only needed during multi-file
-                                             replacements */
+            // only needed during multi-file replacements
+            document->replaceFailed_ = true;
         } else if (GetPrefSearchDlogs()) {
 
             if (auto dialog = qobject_cast<DialogFind *>(window->dialogFind_)) {
@@ -1021,8 +1021,10 @@ bool ReplaceAllEx(MainWindow *window, DocumentWidget *document, TextArea *area, 
             }
 
             QMessageBox::information(document, QLatin1String("String not found"), QLatin1String("String was not found"));
-        } else
+        } else {
             QApplication::beep();
+        }
+
         return false;
     }
 
@@ -1041,20 +1043,7 @@ bool ReplaceAllEx(MainWindow *window, DocumentWidget *document, TextArea *area, 
 ** first replacement (returned in "copyStart", and the end of the last
 ** replacement (returned in "copyEnd")
 */
-std::string ReplaceAllInStringEx(view::string_view inString, const QString &searchString, const char *replaceString, SearchType searchType, int *copyStart, int *copyEnd, const QString &delimiters, bool *ok) {
-
-    return ReplaceAllInStringEx(
-                inString,
-                searchString,
-                replaceString,
-                searchType,
-                copyStart,
-                copyEnd,
-                delimiters.isNull() ? nullptr : delimiters.toLatin1().data(),
-                ok);
-}
-
-std::string ReplaceAllInStringEx(view::string_view inString, const QString &searchString, const char *replaceString, SearchType searchType, int *copyStart, int *copyEnd, const char *delimiters, bool *ok) {
+std::string ReplaceAllInStringEx(view::string_view inString, const QString &searchString, const QString &replaceString, SearchType searchType, int *copyStart, int *copyEnd, const QString &delimiters, bool *ok) {
     int startPos;
     int endPos;
     int lastEndPos;
@@ -1070,7 +1059,7 @@ std::string ReplaceAllInStringEx(view::string_view inString, const QString &sear
 
 	/* rehearse the search first to determine the size of the buffer needed
 	   to hold the substituted text.  No substitution done here yet */
-    int replaceLen = strlen(replaceString);
+    int replaceLen = replaceString.size();
     bool found     = true;
     int nFound     = 0;
     int removeLen  = 0;
@@ -1107,9 +1096,9 @@ std::string ReplaceAllInStringEx(view::string_view inString, const QString &sear
 				char replaceResult[SEARCHMAX];
 
 				replaceUsingREEx(
-                    searchString.toLatin1().data(),
+                    searchString,
 					replaceString,
-					&inString[searchExtentBW],
+                    &inString[searchExtentBW],
 					startPos - searchExtentBW,
 					replaceResult,
 					SEARCHMAX,
@@ -1118,10 +1107,13 @@ std::string ReplaceAllInStringEx(view::string_view inString, const QString &sear
 					defaultRegexFlags(searchType));
 
 				addLen += strlen(replaceResult);
-			} else
+            } else {
 				addLen += replaceLen;
-			if (inString[endPos] == '\0')
+            }
+
+            if (inString[endPos] == '\0') {
 				break;
+            }
 		}
 	}
 
@@ -1156,7 +1148,7 @@ std::string ReplaceAllInStringEx(view::string_view inString, const QString &sear
 				char replaceResult[SEARCHMAX];
 
 				replaceUsingREEx(
-                    searchString.toLatin1().data(),
+                    searchString,
 					replaceString,
 					&inString[searchExtentBW],
 					startPos - searchExtentBW,
@@ -1168,7 +1160,7 @@ std::string ReplaceAllInStringEx(view::string_view inString, const QString &sear
 
                 outString.append(replaceResult);
 			} else {
-                outString.append(replaceString);
+                outString.append(replaceString.toStdString());
 			}
 
 			lastEndPos = endPos;
@@ -1640,7 +1632,7 @@ static bool searchRegex(view::string_view string, view::string_view searchString
 static bool forwardRegexSearch(view::string_view string, view::string_view searchString, WrapMode wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags) {
 
 	try {
-		regexp compiledRE(searchString, defaultFlags);
+        regexp compiledRE(searchString, defaultFlags);
 
 		// search from beginPos to end of string 
 		if (compiledRE.execute(string, beginPos, delimiters, false)) {

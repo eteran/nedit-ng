@@ -138,7 +138,22 @@ void CommandRecorder::lastActionHook(QObject *obj, const WindowMenuEvent *ev) {
     Q_UNUSED(obj);
     Q_UNUSED(ev);
 
-    // TODO(eteran): implement this!
+    /* The last action is recorded for the benefit of repeating the last
+       action.  Don't record repeat_macro and wipe out the real action */
+    if(ev->actionString() == QLatin1String("repeat_macro")) {
+        return;
+    }
+
+    // Record the action and its parameters
+    QString actionString = actionToString(ev);
+    if (!actionString.isNull()) {
+        lastCommand = actionString;
+
+        if(isRecording_) {
+            macroRecordBuffer.append(actionString);
+            macroRecordBuffer.append(QLatin1Char('\n'));
+        }
+    }
 }
 
 void CommandRecorder::lastActionHook(QObject *obj, const TextEditEvent *ev) {
@@ -230,6 +245,15 @@ QString CommandRecorder::actionToString(const TextEditEvent *ev) {
 
     return ev->toString();
 }
+
+/*
+** Create a macro string to represent an invocation of an action routine.
+** Returns nullptr for non-operational or un-recordable actions.
+*/
+QString CommandRecorder::actionToString(const WindowMenuEvent *ev) {
+    return ev->toString();
+}
+
 
 /**
  * @brief CommandRecorder::startRecording

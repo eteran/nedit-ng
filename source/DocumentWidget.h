@@ -197,7 +197,6 @@ public:
     void executeNewlineMacroEx(SmartIndentEvent *cbInfo);
     void filterSelection(const QString &filterText);
     void freeHighlightData(WindowHighlightData *hd);
-    void freePatterns(HighlightData *patterns);
     void issueCommandEx(MainWindow *window, TextArea *area, const QString &command, const QString &input, int flags, int replaceLeft, int replaceRight, bool fromMacro);
     void reapplyLanguageMode(int mode, bool forceDefaults);
     void refreshMenuBar();

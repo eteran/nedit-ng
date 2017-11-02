@@ -439,7 +439,7 @@ void FillLoopAddrs(Inst *breakAddr, Inst *continueAddr) {
 ** (if any) can be read from "result".  If MACRO_PREEMPT is returned, the
 ** macro exceeded its alotted time-slice and scheduled...
 */
-int ExecuteMacroEx(DocumentWidget *document, Program *prog, int nArgs, DataValue *args, DataValue *result, std::shared_ptr<RestartData> &continuation, const char **msg) {
+int ExecuteMacroEx(DocumentWidget *document, Program *prog, int nArgs, DataValue *args, DataValue *result, std::shared_ptr<RestartData> &continuation, QString *msg) {
 
     static DataValue noValue = INIT_DATA_VALUE;
 
@@ -482,7 +482,7 @@ int ExecuteMacroEx(DocumentWidget *document, Program *prog, int nArgs, DataValue
 ** Continue the execution of a suspended macro whose state is described in
 ** "continuation"
 */
-int ContinueMacroEx(const std::shared_ptr<RestartData> &continuation, DataValue *result, const char **msg) {
+int ContinueMacroEx(const std::shared_ptr<RestartData> &continuation, DataValue *result, QString *msg) {
 
 	int instCount = 0;
     auto oldContext = std::make_shared<RestartData>();
@@ -512,12 +512,12 @@ int ContinueMacroEx(const std::shared_ptr<RestartData> &continuation, DataValue 
             restoreContextEx(oldContext);
             return MACRO_PREEMPT;
         case STAT_ERROR:
-            *msg = ErrMsg;
+            *msg = QString::fromLatin1(ErrMsg);
             FreeRestartDataEx(continuation);
             restoreContextEx(oldContext);
             return MACRO_ERROR;
         case STAT_DONE:
-            *msg = "";
+            *msg = QString();
             *result = *--StackP;
             FreeRestartDataEx(continuation);
             restoreContextEx(oldContext);
