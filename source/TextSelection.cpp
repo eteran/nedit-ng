@@ -3,13 +3,6 @@
 #include <algorithm>
 
 //------------------------------------------------------------------------------
-// Name: TextSelection
-//------------------------------------------------------------------------------
-TextSelection::TextSelection() : selected(false), rectangular(false), zeroWidth(false), start(0), end(0), rectStart(0), rectEnd(0) {
-
-}
-
-//------------------------------------------------------------------------------
 // Name: setSelection
 //------------------------------------------------------------------------------
 void TextSelection::setSelection(int newStart, int newEnd) {
@@ -83,7 +76,6 @@ void TextSelection::updateSelection(int pos, int nDeleted, int nInserted) {
 int TextSelection::inSelection(int pos, int lineStartPos, int dispIndex) const {
 	return this->selected && ((!this->rectangular && pos >= this->start && pos < this->end) || (this->rectangular && pos >= this->start && lineStartPos <= this->end && dispIndex >= this->rectStart && dispIndex < this->rectEnd));
 }
-
 
 /*
 ** Return true if the selection "this" is rectangular, and touches a

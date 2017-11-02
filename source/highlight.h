@@ -28,6 +28,7 @@
 #define HIGHLIGHT_H_
 
 #include "util/string_view.h"
+#include "Style.h"
 
 class DocumentWidget;
 class HighlightPattern;
@@ -61,7 +62,7 @@ QString HighlightStyleOfCodeEx(DocumentWidget *document, int hCode);
 void AttachHighlightToWidgetEx(TextArea *area, DocumentWidget *window);
 void freeHighlightData(WindowHighlightData *hd);
 void FreeHighlightingDataEx(DocumentWidget *window);
-void *GetHighlightInfoEx(DocumentWidget *window, int pos);
+Style GetHighlightInfoEx(DocumentWidget *window, int pos);
 void RemoveWidgetHighlightEx(TextArea *area);
 void StartHighlightingEx(DocumentWidget *document, bool warn);
 void SyntaxHighlightModifyCBEx(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *cbArg);

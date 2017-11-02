@@ -29,11 +29,11 @@ class DocumentWidget;
 struct DragEndEvent;
 struct SmartIndentEvent;
 
-typedef void (*unfinishedStyleCBProcEx)(const TextArea *, int, const void *);
-typedef void (*cursorMovedCBEx)(TextArea *, void *);
-typedef void (*dragStartCBEx)(TextArea *, void *);
-typedef void (*dragEndCBEx)(TextArea *, DragEndEvent *, void *);
-typedef void (*smartIndentCBEx)(TextArea *, SmartIndentEvent *, void *);
+using unfinishedStyleCBProcEx = void (*)(const TextArea *, int, const void *);
+using cursorMovedCBEx         = void (*)(TextArea *, void *);
+using dragStartCBEx           = void (*)(TextArea *, void *);
+using dragEndCBEx             = void (*)(TextArea *, DragEndEvent *, void *);
+using smartIndentCBEx         = void (*)(TextArea *, SmartIndentEvent *, void *);
 
 class TextArea : public QAbstractScrollArea {
 	Q_OBJECT

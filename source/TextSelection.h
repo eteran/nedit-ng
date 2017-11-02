@@ -4,12 +4,6 @@
 
 class TextSelection {
 public:
-	TextSelection();
-	TextSelection(const TextSelection &) = default;
-	TextSelection &operator=(const TextSelection &) = default;
-	~TextSelection() = default;
-
-public:
 	int getSelectionPos(int *start, int *end, bool *isRect, int *rectStart, int *rectEnd);
 	int inSelection(int pos, int lineStartPos, int dispIndex) const;
 	int rangeTouchesRectSel(int rangeStart, int rangeEnd) const;
@@ -21,13 +15,13 @@ public:
 	explicit operator bool() const { return selected; }
 
 public:
-	bool selected;    // True if the selection is active
-	bool rectangular; // True if the selection is rectangular
-	bool zeroWidth;   // Width 0 selections aren't "real" selections, but they can be useful when creating rectangular selections from the keyboard.
-	int start;        // Pos. of start of selection, or if rectangular start of line containing it.
-	int end;          // Pos. of end of selection, or if rectangular end of line containing it.
-	int rectStart;    // Indent of left edge of rect. selection
-	int rectEnd;      // Indent of right edge of rect. selection
+    bool selected    = false;    // True if the selection is active
+    bool rectangular = false; // True if the selection is rectangular
+    bool zeroWidth   = false;   // Width 0 selections aren't "real" selections, but they can be useful when creating rectangular selections from the keyboard.
+    int start        = 0;        // Pos. of start of selection, or if rectangular start of line containing it.
+    int end          = 0;          // Pos. of end of selection, or if rectangular end of line containing it.
+    int rectStart    = 0;    // Indent of left edge of rect. selection
+    int rectEnd      = 0;      // Indent of right edge of rect. selection
 };
 
 #endif

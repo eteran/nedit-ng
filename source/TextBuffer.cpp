@@ -43,11 +43,12 @@ namespace {
 /* Initial size for the buffer gap (empty space in the buffer where text might
  * be inserted if the user is typing sequential chars)
  */
-const int PreferredGapSize = 80;
+constexpr int PreferredGapSize = 80;
 
-const char *ControlCodeTable[32] = {"nul", "soh", "stx", "etx", "eot", "enq", "ack", "bel", "bs",  "ht", "nl",  "vt",  "np", "cr", "so", "si",
-                                    "dle", "dc1", "dc2", "dc3", "dc4", "nak", "syn", "etb", "can", "em", "sub", "esc", "fs", "gs", "rs", "us"};
-
+const char *const ControlCodeTable[32] = {
+    "nul", "soh", "stx", "etx", "eot", "enq", "ack", "bel", "bs",  "ht", "nl",  "vt",  "np", "cr", "so", "si",
+    "dle", "dc1", "dc2", "dc3", "dc4", "nak", "syn", "etb", "can", "em", "sub", "esc", "fs", "gs", "rs", "us"
+};
 
 /*
 ** Convert sequences of spaces into tabs.  The threshold for conversion is
@@ -65,7 +66,7 @@ std::string unexpandTabsEx(view::string_view text, int startIndent, int tabDist,
         if (text[pos] == ' ') {
 
             char expandedChar[MAX_EXP_CHAR_LEN];
-            int len = TextBuffer::BufExpandCharacter('\t', indent, expandedChar, tabDist, nullSubsChar);
+            const int len = TextBuffer::BufExpandCharacter('\t', indent, expandedChar, tabDist, nullSubsChar);
 
             const auto cmp = text.compare(pos, len, expandedChar, len);
 
@@ -215,7 +216,9 @@ void subsCharsEx(std::string &string, char fromChar, char toChar) {
 */
 char chooseNullSubsChar(bool hist[256]) {
 
-    static char replacements[] = {1, 2, 3, 4, 5, 6, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 28, 29, 30, 31, 11, 7};
+    static const char replacements[] = {
+        1, 2, 3, 4, 5, 6, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 28, 29, 30, 31, 11, 7
+    };
 
     for(char ch : replacements) {
         if (hist[static_cast<uint8_t>(ch)] == 0) {

@@ -797,9 +797,12 @@ const X11Color colors[] = {
 
 }
 
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
+/**
+ * @brief X11Colors::fromString
+ * @param s
+ * @return returns a QColor which matches the name.
+ * Intended to mimic the X11 color set
+ */
 QColor X11Colors::fromString(const QString &s) {
 
 	for(X11Color color : colors) {

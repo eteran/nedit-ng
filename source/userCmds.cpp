@@ -138,17 +138,17 @@ void SetupUserMenuInfo() {
 */
 void UpdateUserMenuInfo() {
     for(auto &item : ShellMenuData) {
-        item.info.reset();
+        item.info = nullptr;
     }
     parseMenuItemList(ShellMenuData);
 
     for(auto &item : MacroMenuData) {
-        item.info.reset();
+        item.info = nullptr;
     }
     parseMenuItemList(MacroMenuData);
 
     for(auto &item : BGMenuData) {
-        item.info.reset();
+        item.info = nullptr;
     }
     parseMenuItemList(BGMenuData);
 }

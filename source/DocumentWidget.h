@@ -8,6 +8,7 @@
 #include "LockReasons.h"
 #include "MenuItem.h"
 #include "Direction.h"
+#include "Style.h"
 #include "SearchType.h"
 #include "ShowMatchingStyle.h"
 #include "string_view.h"
@@ -140,7 +141,7 @@ public:
     bool bckError(const QString &errString, const QString &file);
     bool doOpen(const QString &name, const QString &path, int flags);
     bool doSave();
-    bool findMatchingCharEx(char toMatch, void *styleToMatch, int charPos, int startLimit, int endLimit, int *matchPos);
+    bool findMatchingCharEx(char toMatch, Style styleToMatch, int charPos, int startLimit, int endLimit, int *matchPos);
     bool includeFile(const QString &name);
     bool writeBckVersion();
     int CloseFileAndWindow(CloseMode preResponse);

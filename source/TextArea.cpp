@@ -7994,9 +7994,6 @@ void TextArea::updateFontHeightMetrics(const QFont &font) {
     int maxAscent  = fm.ascent();
     int maxDescent = fm.descent();
 
-    // If font size changes, cursor will be redrawn in a new position
-    blankCursorProtrusions();
-
     /* If there is a (syntax highlighting) style table in use, find the new
        maximum font height for this text display */
     for (int i = 0; i < nStyles_; i++) {
@@ -8126,7 +8123,6 @@ std::string TextArea::TextGetWrappedEx(int startPos, int endPos) {
 void TextArea::setStyleBuffer(TextBuffer *buffer) {
     styleBuffer_ = buffer;
 }
-
 
 int TextArea::getWrapMargin() const {
     return P_wrapMargin;
@@ -8340,12 +8336,10 @@ int TextArea::TextDMinFontWidth(bool considerStyles) const {
             QFontMetrics fm(styleTable_[i].font);
 
             // NOTE(eteran): this was min_bounds.width, we just assume that 'i' is the thinnest character
-            int thisWidth = fm.width(QLatin1Char('i'));
-            if (thisWidth < fontWidth) {
-                fontWidth = thisWidth;
-            }
+            fontWidth = std::min(fontWidth, fm.width(QLatin1Char('i')));
         }
     }
+
 	return fontWidth;
 }
 
@@ -8354,16 +8348,13 @@ int TextArea::TextDMaxFontWidth(bool considerStyles) const {
     QFontMetrics fm(font_);
 
     int fontWidth = fm.maxWidth();
-
     if (considerStyles) {
         for (int i = 0; i < nStyles_; ++i) {
             QFontMetrics fm(styleTable_[i].font);
-            int thisWidth = fm.maxWidth();
-            if (thisWidth > fontWidth) {
-                fontWidth = thisWidth;
-            }
+            fontWidth = std::max(fontWidth, fm.maxWidth());
         }
     }
+
 	return fontWidth;
 }
 
@@ -8465,9 +8456,7 @@ void TextArea::endOfSelectionAP(EventFlags flags) {
     } else {
         TextSetCursorPos(buffer_->BufCountForwardDispChars(buffer_->BufStartOfLine(end), rectEnd));
     }
-
 }
-
 
 void TextArea::scrollUpAP(int count, ScrollUnits units, EventFlags flags) {
 
@@ -8482,7 +8471,7 @@ void TextArea::scrollUpAP(int count, ScrollUnits units, EventFlags flags) {
     }
 
     TextDGetScroll(&topLineNum, &horizOffset);
-    TextDSetScroll(topLineNum-nLines, horizOffset);
+    TextDSetScroll(topLineNum - nLines, horizOffset);
 }
 
 void TextArea::scrollDownAP(int count, ScrollUnits units, EventFlags flags) {
@@ -8518,8 +8507,7 @@ void TextArea::scrollToLineAP(int line, EventFlags flags) {
 
     int topLineNum;
     int horizOffset;
-    int lineNum = line;
 
     TextDGetScroll(&topLineNum, &horizOffset);
-    TextDSetScroll(lineNum, horizOffset);
+    TextDSetScroll(line, horizOffset);
 }

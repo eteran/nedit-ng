@@ -3809,11 +3809,11 @@ void DocumentWidget::GotoMatchingCharacter(TextArea *area) {
     area->setAutoShowInsertPos(true);
 }
 
-bool DocumentWidget::findMatchingCharEx(char toMatch, void *styleToMatch, int charPos, int startLimit, int endLimit, int *matchPos) {
+bool DocumentWidget::findMatchingCharEx(char toMatch, Style styleToMatch, int charPos, int startLimit, int endLimit, int *matchPos) {
     int nestDepth;
     int beginPos;
     int pos;
-    void *style = nullptr;
+    Style style;
     TextBuffer *buf = buffer_;
     bool matchSyntaxBased = matchSyntaxBased_;
 
@@ -5627,7 +5627,7 @@ void DocumentWidget::FlashMatchingEx(TextArea *area) {
 
     char c = buffer_->BufGetCharacter(pos);
 
-    void *style = GetHighlightInfoEx(this, pos);
+    Style style = GetHighlightInfoEx(this, pos);
 
     int matchIndex;
     int matchPos;

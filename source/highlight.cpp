@@ -357,12 +357,12 @@ void UpdateHighlightStylesEx(DocumentWidget *document) {
 ** pointer is returned for two positions, the corresponding characters have
 ** the same highlight style.
 **/
-void *GetHighlightInfoEx(DocumentWidget *window, int pos) {
+Style GetHighlightInfoEx(DocumentWidget *window, int pos) {
 
     HighlightData *pattern = nullptr;
     auto highlightData = window->highlightData_;
     if (!highlightData) {
-        return nullptr;
+        return Style();
     }
 
     // Be careful with signed/unsigned conversions. NO conversion here!
@@ -383,9 +383,10 @@ void *GetHighlightInfoEx(DocumentWidget *window, int pos) {
     }
 
     if (!pattern) {
-        return nullptr;
+        return Style();
     }
-    return reinterpret_cast<void *>(pattern->userStyleIndex);
+
+    return Style(reinterpret_cast<void *>(pattern->userStyleIndex));
 }
 
 /*
