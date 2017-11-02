@@ -15,9 +15,19 @@ target_include_directories (RegExp PUBLIC
 target_link_libraries(RegExp LINK_PUBLIC
 )
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -W -Wall -pedantic -Wunused") #-Wuseless-cast
-
 set_property(TARGET RegExp PROPERTY CXX_STANDARD 14)
 set_property(TARGET RegExp PROPERTY CXX_EXTENSIONS OFF)
+
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+	set_target_properties(RegExp 
+		PROPERTIES 
+		COMPILE_FLAGS "-W -Wall -pedantic -Wunused -Wzero-as-null-pointer-constant -ggdb3")
+else()
+	set_target_properties(RegExp
+		PROPERTIES 
+		COMPILE_FLAGS "-W -Wall -pedantic -Wunused -Wzero-as-null-pointer-constant")
+endif()
+
+
 
 

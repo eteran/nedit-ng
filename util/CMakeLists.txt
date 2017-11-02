@@ -21,9 +21,18 @@ target_link_libraries(NUtil LINK_PUBLIC
 	Qt5::Network
 )
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -W -Wall -pedantic -Wunused") #-Wuseless-cast
-
 set_property(TARGET NUtil PROPERTY CXX_STANDARD 14)
 set_property(TARGET NUtil PROPERTY CXX_EXTENSIONS OFF)
+
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+	set_target_properties(NUtil 
+		PROPERTIES 
+		COMPILE_FLAGS "-W -Wall -pedantic -Wunused -Wzero-as-null-pointer-constant -ggdb3")
+else()
+	set_target_properties(NUtil
+		PROPERTIES 
+		COMPILE_FLAGS "-W -Wall -pedantic -Wunused -Wzero-as-null-pointer-constant")
+endif()
+
 
 

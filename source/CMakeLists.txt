@@ -185,7 +185,15 @@ target_link_libraries(nedit-ng LINK_PUBLIC
 set_property(TARGET nedit-ng PROPERTY CXX_EXTENSIONS OFF)
 set_property(TARGET nedit-ng PROPERTY CXX_STANDARD 14)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -W -Wall -pedantic -Wunused -Wzero-as-null-pointer-constant")
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+	set_target_properties(nedit-ng 
+		PROPERTIES 
+		COMPILE_FLAGS "-W -Wall -pedantic -Wunused -Wzero-as-null-pointer-constant -ggdb3")
+else()
+	set_target_properties(nedit-ng
+		PROPERTIES 
+		COMPILE_FLAGS "-W -Wall -pedantic -Wunused -Wzero-as-null-pointer-constant")
+endif()
 
 set_target_properties(nedit-ng
 	PROPERTIES
