@@ -9,14 +9,7 @@
 #include <QProcess>
 #include <QSettings>
 #include <QtDebug>
-#include <dirent.h>
-#include <iostream>
 #include <fstream>
-#include <string>
-#include <sys/param.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <unistd.h>
 
 namespace {
 
@@ -35,14 +28,89 @@ QString CmdText;                  /* print command last entered by user */
 bool CmdFieldModified = false;    /* user last changed the print command field, so don't trust the rest */
 bool PreferencesLoaded = false;
 
+/**
+ * Is flpr present in the search path and is it executable ?
+ *
+ * @brief flprPresent
+ * @return
+ */
+bool flprPresent() {
+    /* Is flpr present in the search path and is it executable ? */
+    QString path = QStandardPaths::findExecutable(QLatin1String("flpr"));
+    return !path.isEmpty();
 }
 
+/**
+ * @brief foundTag
+ * @param tagfilename
+ * @param tagname
+ * @return
+ */
+QByteArray foundTag(const char *tagfilename, const char *tagname) {
 
+    char tagformat[512];
+    snprintf(tagformat, sizeof(tagformat), "%s %%s", tagname);
 
+    std::ifstream file(tagfilename);
+    for(std::string line; std::getline(file, line); ) {
+        char result_buffer[1024];
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+        // NOTE(eteran): format string vuln?
+        if (sscanf(line.c_str(), tagformat, result_buffer) != 0) {
+            return QByteArray(result_buffer);
+        }
+    }
+
+    return QByteArray();
+}
+
+/**
+ * @brief getFlprQueueDefault
+ * @return
+ */
+QString getFlprQueueDefault() {
+
+    QByteArray defqueue = qgetenv("FLPQUE");
+    if(defqueue.isNull()) {
+        defqueue = foundTag("/usr/local/etc/flp.defaults", "queue");
+    }
+
+    return QString::fromLatin1(defqueue);
+}
+
+/**
+ * @brief getFlprHostDefault
+ * @return
+ */
+QString getFlprHostDefault() {
+
+    QByteArray defhost = qgetenv("FLPHOST");
+    if(defhost.isNull()) {
+        defhost = foundTag("/usr/local/etc/flp.defaults", "host");
+    }
+
+    return QString::fromLatin1(defhost);
+}
+
+/**
+ * @brief getLprQueueDefault
+ * @return
+ */
+QString getLprQueueDefault() {
+
+    QByteArray defqueue = qgetenv("PRINTER");
+    return QString::fromLatin1(defqueue);
+}
+
+}
+
+/**
+ * @brief DialogPrint::DialogPrint
+ * @param PrintFileName
+ * @param jobName
+ * @param parent
+ * @param f
+ */
 DialogPrint::DialogPrint(const QString &PrintFileName, const QString &jobName, QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f) {
 	ui.setupUi(this);
 	
@@ -145,105 +213,42 @@ void DialogPrint::LoadPrintPreferencesEx(bool lookForFlpr) {
     PreferencesLoaded = true;
 }
 
-/*
-** Is flpr present in the search path and is it executable ?
-*/
-bool DialogPrint::flprPresent() {
-	/* Is flpr present in the search path and is it executable ? */
-    QString path = QStandardPaths::findExecutable(QLatin1String("flpr"));
-    return !path.isEmpty();
-}
-
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
-QString DialogPrint::getFlprQueueDefault() {
-
-    QByteArray defqueue = qgetenv("FLPQUE");
-    if(defqueue.isNull()) {
-        defqueue = foundTag("/usr/local/etc/flp.defaults", "queue");
-    }
-
-    return QString::fromLatin1(defqueue);
-}
-
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
-QString DialogPrint::getFlprHostDefault() {
-
-    QByteArray defhost = qgetenv("FLPHOST");
-    if(defhost.isNull()) {
-        defhost = foundTag("/usr/local/etc/flp.defaults", "host");
-    }
-
-    return QString::fromLatin1(defhost);
-}
-
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
-QString DialogPrint::getLprQueueDefault() {
-
-    QByteArray defqueue = qgetenv("PRINTER");
-    return QString::fromLatin1(defqueue);
-}
-
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
-QByteArray DialogPrint::foundTag(const char *tagfilename, const char *tagname) {
-
-	char tagformat[512];
-	snprintf(tagformat, sizeof(tagformat), "%s %%s", tagname);
-
-    std::ifstream file(tagfilename);
-    for(std::string line; std::getline(file, line); ) {
-        char result_buffer[1024];
-
-        // NOTE(eteran): format string vuln?
-        if (sscanf(line.c_str(), tagformat, result_buffer) != 0) {
-            return QByteArray(result_buffer);
-        }
-    }
-
-    return QByteArray();
-}
-
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogPrint::on_spinCopies_valueChanged
+ * @param n
+ */
 void DialogPrint::on_spinCopies_valueChanged(int n) {
 	Q_UNUSED(n);
 	updatePrintCmd();
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogPrint::on_editQueue_textChanged
+ * @param text
+ */
 void DialogPrint::on_editQueue_textChanged(const QString &text) {
 	Q_UNUSED(text);
 	updatePrintCmd();
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogPrint::on_editHost_textChanged
+ * @param text
+ */
 void DialogPrint::on_editHost_textChanged(const QString &text) {
 	Q_UNUSED(text);
 	updatePrintCmd();
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogPrint::updatePrintCmd
+ */
 void DialogPrint::updatePrintCmd() {
 
 	QString copiesArg;
 	QString queueArg;	
 	QString hostArg;
 	QString jobArg;
-
 
 	// read each text field in the dialog and generate the corresponding
 	// command argument
@@ -285,17 +290,18 @@ void DialogPrint::updatePrintCmd() {
 	CmdFieldModified = false;
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogPrint::on_editCommand_textEdited
+ * @param text
+ */
 void DialogPrint::on_editCommand_textEdited(const QString &text) {
 	Q_UNUSED(text);
 	CmdFieldModified = true;
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogPrint::on_buttonPrint_clicked
+ */
 void DialogPrint::on_buttonPrint_clicked() {
 
     // TODO(eteran): 2.0 use Qt's built in print system
@@ -327,7 +333,7 @@ void DialogPrint::on_buttonPrint_clicked() {
     });
 
     connect(&process, &QProcess::readyRead, [&errorString, &process]() {
-        errorString = QString::fromLatin1(process.readAll());
+        errorString = QString::fromLocal8Bit(process.readAll());
     });
 
     // start it off!
@@ -358,4 +364,3 @@ void DialogPrint::on_buttonPrint_clicked() {
 	CmdText = ui.editCommand->text();	
 	accept();
 }
-

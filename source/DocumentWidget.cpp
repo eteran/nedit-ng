@@ -686,7 +686,7 @@ int DocumentWidget::matchLanguageMode() {
             int beginPos;
             int endPos;
 
-            if (SearchString(first200, LanguageModes[i].recognitionExpr, Direction::FORWARD, SEARCH_REGEX, WrapMode::NoWrap, 0, &beginPos, &endPos, nullptr, nullptr, nullptr)) {
+            if (SearchString(first200, LanguageModes[i].recognitionExpr, Direction::FORWARD, SEARCH_REGEX, WrapMode::NoWrap, 0, &beginPos, &endPos, nullptr, nullptr, QString())) {
 				return i;
 			}
 		}
@@ -4795,9 +4795,7 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
         return;
     }
 
-    auto cmdData = shellCmdData_;
-    TextBuffer *buf;
-    int reselectStart;
+    auto cmdData = shellCmdData_;    
     bool cancel = false;
     bool fromMacro = cmdData->fromMacro;
 
@@ -4840,7 +4838,6 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
         QByteArray data = cmdData->process->readAll();
         cmdData->standardOutput.append(data);
         outText = QString::fromLocal8Bit(cmdData->standardOutput);
-
     }
 
     /* Present error and stderr-information dialogs.  If a command returned
@@ -4901,7 +4898,6 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
     }
 
     {
-
         /* If output is to a dialog, present the dialog.  Otherwise insert the
            (remaining) output in the text widget as requested, and move the
            insert point to the end */
@@ -4920,14 +4916,14 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
             std::string output_string = outText.toStdString();
 
             auto area = cmdData->area;
-            buf = area->TextGetBuffer();
+            TextBuffer *buf = area->TextGetBuffer();
             if (!buf->BufSubstituteNullCharsEx(output_string)) {
                 qWarning("NEdit: Too much binary data in shell cmd output");
                 output_string.clear();
             }
 
             if (cmdData->flags & REPLACE_SELECTION) {
-                reselectStart = buf->primary_.rectangular ? -1 : buf->primary_.start;
+                int reselectStart = buf->primary_.rectangular ? -1 : buf->primary_.start;
                 buf->BufReplaceSelectedEx(output_string);
 
                 area->TextSetCursorPos(buf->cursorPosHint_);

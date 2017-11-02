@@ -88,7 +88,7 @@ static QList<Tag> getTag(const QString &name, int search_type);
 static void createSelectMenuEx(DocumentWidget *document, TextArea *area, const QStringList &args);
 static QList<Tag> LookupTag(const QString &name, Mode search_type);
 
-static int searchLine(const std::string &line, const std::string &regex);
+static bool searchLine(const std::string &line, const std::string &regex);
 static QString rstrip(QString s);
 static int nextTFBlock(std::istream &is, QString &header, QString &body, int *blkLine, int *currLine);
 static int loadTipsFile(const QString &tipsFile, int index, int recLevel);
@@ -900,14 +900,14 @@ static int fakeRegExSearchEx(view::string_view buffer, const char *searchString,
 	}
     *outPtr = '\0'; // Terminate searchSubs
 
-    found = SearchString(fileString, QString::fromLatin1(searchSubs), dir, SEARCH_REGEX, WrapMode::NoWrap, searchStartPos, startPos, endPos, nullptr, nullptr, nullptr);
+    found = SearchString(fileString, QString::fromLatin1(searchSubs), dir, SEARCH_REGEX, WrapMode::NoWrap, searchStartPos, startPos, endPos, nullptr, nullptr, QString());
 
 	if (!found && !ctagsMode) {
 		/* position of the target definition could have been drifted before
 		   startPos, if nothing has been found by now try searching backward
 		   again from startPos.
 		*/
-        found = SearchString(fileString, QString::fromLatin1(searchSubs), Direction::BACKWARD, SEARCH_REGEX, WrapMode::NoWrap, searchStartPos, startPos, endPos, nullptr, nullptr, nullptr);
+        found = SearchString(fileString, QString::fromLatin1(searchSubs), Direction::BACKWARD, SEARCH_REGEX, WrapMode::NoWrap, searchStartPos, startPos, endPos, nullptr, nullptr, QString());
 	}
 
 	// return the result 
@@ -1140,7 +1140,7 @@ void showMatchingCalltipEx(TextArea *area, int i) {
 
             // 4. Find the end of the calltip (delimited by an empty line)
             endPos = startPos;
-            bool found = SearchString(fileString.c_str(), QLatin1String("\\n\\s*\\n"), Direction::FORWARD, SEARCH_REGEX, WrapMode::NoWrap, startPos, &endPos, &dummy, nullptr, nullptr, nullptr);
+            bool found = SearchString(fileString.c_str(), QLatin1String("\\n\\s*\\n"), Direction::FORWARD, SEARCH_REGEX, WrapMode::NoWrap, startPos, &endPos, &dummy, nullptr, nullptr, QString());
             if (!found) {
                 // Just take 4 lines
 				moveAheadNLinesEx(fileString, &endPos, TIP_DEFAULT_LINES);
@@ -1265,10 +1265,21 @@ enum tftoken_types {
 };
 
 // A wrapper for SearchString
-static int searchLine(const std::string &line, const std::string &regex) {
+static bool searchLine(const std::string &line, const std::string &regex) {
     int dummy1;
     int dummy2;
-    return SearchString(line.c_str(), QString::fromStdString(regex), Direction::FORWARD, SEARCH_REGEX, WrapMode::NoWrap, 0, &dummy1, &dummy2, nullptr, nullptr, nullptr);
+    return SearchString(
+                line.c_str(),
+                QString::fromStdString(regex),
+                Direction::FORWARD,
+                SEARCH_REGEX,
+                WrapMode::NoWrap,
+                0,
+                &dummy1,
+                &dummy2,
+                nullptr,
+                nullptr,
+                QString());
 }
 
 // Check if a line has non-ws characters 

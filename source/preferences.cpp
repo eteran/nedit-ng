@@ -68,8 +68,8 @@ static const char *AutoIndentTypes[N_INDENT_STYLES + 3] = {"None", "Auto", "Smar
 
 /* suplement wrap and indent styles w/ a value meaning "use default" for
    the override fields in the language modes dialog */
-#define DEFAULT_TAB_DIST -1
-#define DEFAULT_EM_TAB_DIST -1
+constexpr int DEFAULT_TAB_DIST     = -1;
+constexpr int DEFAULT_EM_TAB_DIST  = -1;
 
 // list of available language modes and language specific preferences 
 QList<LanguageMode> LanguageModes;
@@ -81,7 +81,6 @@ bool PrefsHaveChanged = false;
 /* Module-global variable set when user uses -import to load additional
    preferences on top of the defaults.  Contains name of file loaded */
 QString ImportedFile;
-
 
 static void translatePrefFormats(quint32 fileVer);
 static QStringList readExtensionListEx(Input &in);
@@ -984,19 +983,22 @@ static int loadLanguageModesStringEx(const QString &string) {
 		QString styleName = ReadSymbolicFieldEx(in);
 		if(styleName.isNull()) {
 			lm.indentStyle = DEFAULT_INDENT;
-		} else {
+		} else {                     
 			for (i = 0; i < N_INDENT_STYLES; i++) {
 				if (styleName == QString::fromLatin1(AutoIndentTypes[i])) {
 					lm.indentStyle = static_cast<IndentStyle>(i);
 					break;
 				}
 			}
-			if (i == N_INDENT_STYLES)
+
+            if (i == N_INDENT_STYLES) {
 				return modeErrorEx(in, QLatin1String("unrecognized indent style"));
+            }
 		}
 
-		if (!SkipDelimiterEx(in, &errMsg))
+        if (!SkipDelimiterEx(in, &errMsg)) {
 			return modeErrorEx(in, errMsg);
+        }
 
 		// read the wrap style
 		styleName = ReadSymbolicFieldEx(in);
@@ -1009,11 +1011,15 @@ static int loadLanguageModesStringEx(const QString &string) {
 					break;
 				}
 			}
-			if (i == N_WRAP_STYLES)
+
+            if (i == N_WRAP_STYLES) {
 				return modeErrorEx(in, QLatin1String("unrecognized wrap style"));
+            }
 		}
-		if (!SkipDelimiterEx(in, &errMsg))
+
+        if (!SkipDelimiterEx(in, &errMsg)) {
 			return modeErrorEx(in, errMsg);
+        }
 
 		// read the tab distance
 		if (in.atEnd() || *in == QLatin1Char('\n') || *in == QLatin1Char(':')) {

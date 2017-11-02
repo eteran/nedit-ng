@@ -64,6 +64,8 @@ int NHist = 0;
 SearchReplaceHistoryEntry SearchReplaceHistory[MAX_SEARCH_HISTORY];
 static int HistStart = 0;
 
+static bool SearchString(view::string_view string, const QString &searchString, Direction direction, SearchType searchType, WrapMode wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters);
+
 static bool backwardRegexSearch(view::string_view string, view::string_view searchString, WrapMode wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags);
 static bool replaceUsingREEx(view::string_view searchStr, const char *replaceStr, view::string_view sourceStr, int beginPos, char *destStr, int maxDestLen, int prevChar, const char *delimiters, int defaultFlags);
 static bool replaceUsingREEx(const QString &searchStr, const QString &replaceStr, view::string_view sourceStr, int beginPos, char *destStr, int maxDestLen, int prevChar, const QString &delimiters, int defaultFlags);
@@ -1384,7 +1386,7 @@ bool SearchString(view::string_view string, const QString &searchString, Directi
 
 }
 
-bool SearchString(view::string_view string, const QString &searchString, Direction direction, SearchType searchType, WrapMode wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters) {
+static bool SearchString(view::string_view string, const QString &searchString, Direction direction, SearchType searchType, WrapMode wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters) {
 	switch (searchType) {
 	case SEARCH_CASE_SENSE_WORD:
         return searchLiteralWord(string, searchString.toLatin1().data(), true, direction, wrap, beginPos, startPos, endPos, delimiters);
@@ -1398,9 +1400,9 @@ bool SearchString(view::string_view string, const QString &searchString, Directi
         return searchRegex(string, searchString.toLatin1().data(), direction, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW, delimiters, REDFLT_STANDARD);
 	case SEARCH_REGEX_NOCASE:
         return searchRegex(string, searchString.toLatin1().data(), direction, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW, delimiters, REDFLT_CASE_INSENSITIVE);
-	default:
-		Q_UNREACHABLE();
 	}
+
+    Q_UNREACHABLE();
 }
 
 /*

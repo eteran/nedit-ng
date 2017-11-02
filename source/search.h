@@ -49,7 +49,6 @@ bool SearchAndReplaceEx(MainWindow *window, DocumentWidget *document, TextArea *
 bool SearchAndSelectIncrementalEx(MainWindow *window, DocumentWidget *document, TextArea *area, Direction direction, const QString &searchString, SearchType searchType, WrapMode searchWrap, bool continued);
 bool SearchAndSelectSameEx(MainWindow *window, DocumentWidget *document, TextArea *area, Direction direction, WrapMode searchWrap);
 bool SearchAndSelectEx(MainWindow *window, DocumentWidget *document, TextArea *area, Direction direction, const QString &searchString, SearchType searchType, WrapMode searchWrap);
-bool SearchString(view::string_view string, const QString &searchString, Direction direction, SearchType searchType, WrapMode wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters);
 bool SearchString(view::string_view string, const QString &searchString, Direction direction, SearchType searchType, WrapMode wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const QString &delimiters);
 bool SearchWindowEx(MainWindow *window, DocumentWidget *document, Direction direction, const QString &searchString, SearchType searchType, WrapMode searchWrap, int beginPos, int *startPos, int *endPos, int *extentBW, int *extentFW);
 std::string ReplaceAllInStringEx(view::string_view inString, const QString &searchString, const QString &replaceString, SearchType searchType, int *copyStart, int *copyEnd, const QString &delimiters, bool *ok);

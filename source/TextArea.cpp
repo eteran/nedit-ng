@@ -4740,7 +4740,8 @@ void TextArea::keyMoveExtendSelection(int origPos, bool rectangular) {
 }
 
 void TextArea::syncronizeSelection() {
-    QApplication::clipboard()->setText(QString::fromStdString(buffer_->BufGetSelectionTextEx()), QClipboard::Selection);
+    std::string text = buffer_->BufGetSelectionTextEx();
+    QApplication::clipboard()->setText(QString::fromStdString(text), QClipboard::Selection);
 }
 
 int TextArea::TextDMoveLeft() {

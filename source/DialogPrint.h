@@ -24,13 +24,6 @@ private:
 public:
     static void LoadPrintPreferencesEx(bool lookForFlpr);
 
-private:	
-	static bool flprPresent();
-    static QString getFlprQueueDefault();
-    static QString getFlprHostDefault();
-    static QString getLprQueueDefault();
-    static QByteArray foundTag(const char *tagfilename, const char *tagname);
-
 public:
 	Ui::DialogPrint ui;
 	QString PrintFileName_;

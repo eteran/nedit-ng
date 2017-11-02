@@ -682,6 +682,7 @@ QString ReadAnyTextFileEx(const QString &fileName, bool forceNL) {
 	case UNIX_FILE_FORMAT:
 		break;
 	}
+
 	if(contents.empty()) {
 		return QString();
 	}
