@@ -14,7 +14,7 @@
 #define ADD_SYM(sym) if (!AddSym(sym, &ErrMsg)) return 1
 #define ADD_IMMED(val) if (!AddImmediate(val, &ErrMsg)) return 1
 #define ADD_BR_OFF(to) if (!AddBranchOffset(to, &ErrMsg)) return 1
-#define SET_BR_OFF(from, to) ((from)->value) = ((Inst *)(to)) - ((Inst *)(from))
+#define SET_BR_OFF(from, to) ((from)->value) = ((to)) - ((from))
 
 /* Max. length for a string constant (... there shouldn't be a maximum) */
 #define MAX_STRING_CONST_LEN 5000
@@ -107,7 +107,7 @@ stmt:       simpstmt '\n' blank
             | for '(' SYMBOL IN arrayexpr ')' {
                 Symbol *iterSym = InstallIteratorSymbol();
                 ADD_OP(OP_BEGIN_ARRAY_ITER); ADD_SYM(iterSym);
-                ADD_OP(OP_ARRAY_ITER); ADD_SYM($3); ADD_SYM(iterSym); ADD_BR_OFF(0);
+                ADD_OP(OP_ARRAY_ITER); ADD_SYM($3); ADD_SYM(iterSym); ADD_BR_OFF(nullptr);
             }
                 blank block {
                     ADD_OP(OP_BRANCH); ADD_BR_OFF($5+2);
@@ -115,13 +115,13 @@ stmt:       simpstmt '\n' blank
                     FillLoopAddrs(GetPC(), $5+2);
             }
             | BREAK '\n' blank {
-                ADD_OP(OP_BRANCH); ADD_BR_OFF(0);
+                ADD_OP(OP_BRANCH); ADD_BR_OFF(nullptr);
                 if (AddBreakAddr(GetPC()-1)) {
                     yyerror("break outside loop"); YYERROR;
                 }
             }
             | CONTINUE '\n' blank {
-                ADD_OP(OP_BRANCH); ADD_BR_OFF(0);
+                ADD_OP(OP_BRANCH); ADD_BR_OFF(nullptr);
                 if (AddContinueAddr(GetPC()-1)) {
                     yyerror("continue outside loop"); YYERROR;
                 }
@@ -396,24 +396,24 @@ for:    FOR {
         }
         ;
 else:   ELSE {
-            ADD_OP(OP_BRANCH); $$ = GetPC(); ADD_BR_OFF(0);
+            ADD_OP(OP_BRANCH); $$ = GetPC(); ADD_BR_OFF(nullptr);
         }
         ;
 cond:   /* nothing */ {
-            ADD_OP(OP_BRANCH_NEVER); $$ = GetPC(); ADD_BR_OFF(0);
+            ADD_OP(OP_BRANCH_NEVER); $$ = GetPC(); ADD_BR_OFF(nullptr);
         }
         | numexpr {
-            ADD_OP(OP_BRANCH_FALSE); $$ = GetPC(); ADD_BR_OFF(0);
+            ADD_OP(OP_BRANCH_FALSE); $$ = GetPC(); ADD_BR_OFF(nullptr);
         }
         ;
 and:    AND {
             ADD_OP(OP_DUP); ADD_OP(OP_BRANCH_FALSE); $$ = GetPC();
-            ADD_BR_OFF(0);
+            ADD_BR_OFF(nullptr);
         }
         ;
 or:     OR {
             ADD_OP(OP_DUP); ADD_OP(OP_BRANCH_TRUE); $$ = GetPC();
-            ADD_BR_OFF(0);
+            ADD_BR_OFF(nullptr);
         }
         ;
 blank:  /* nothing */
@@ -492,7 +492,7 @@ static int yylex(void)
     }
 
     /* process number tokens */
-    if (isdigit((uint8_t)*InPtr))  { /* number */
+    if (isdigit(static_cast<uint8_t>(*InPtr)))  { /* number */
         char name[28];
         sscanf(InPtr, "%d%n", &value.val.n, &len);
         sprintf(name, "const %d", value.val.n);
@@ -507,11 +507,11 @@ static int yylex(void)
        by this parser, considered end of input.  Another special case
        is action routine names which are allowed to contain '-' despite
        the ambiguity, handled in matchesActionRoutine. */
-    if (isalpha((uint8_t)*InPtr) || *InPtr == '$') {
+    if (isalpha(static_cast<uint8_t>(*InPtr)) || *InPtr == '$') {
         if ((s=matchesActionRoutine(&InPtr)) == nullptr) {
             char symName[MAX_SYM_LEN+1], *p = symName;
             *p++ = *InPtr++;
-            while (isalnum((uint8_t)*InPtr) || *InPtr=='_') {
+            while (isalnum(static_cast<uint8_t>(*InPtr)) || *InPtr=='_') {
                 if (p >= symName + MAX_SYM_LEN)
                     InPtr++;
                 else
@@ -588,7 +588,7 @@ static int yylex(void)
                           InPtr++;
                         }
                         if (hexValue != 0) {
-                            *p++ = (char)hexValue;
+                            *p++ = static_cast<char>(hexValue);
                         }
                         else {
                             InPtr = backslash + 1; /* just skip the backslash */
@@ -623,7 +623,7 @@ static int yylex(void)
                             }
                         }
                         if (octValue != 0) {
-                            *p++ = (char)octValue;
+                            *p++ = static_cast<char>(octValue);
                         }
                         else {
                             InPtr = backslash + 1; /* just skip the backslash */
@@ -731,8 +731,8 @@ static Symbol *matchesActionRoutine(const char **inPtr)
     Symbol *s;
 
     symPtr = symbolName;
-    for (c = *inPtr; isalnum((uint8_t)*c) || *c=='_' ||
-            ( *c=='-' && isalnum((uint8_t)(*(c+1)))); c++) {
+    for (c = *inPtr; isalnum(static_cast<uint8_t>(*c)) || *c=='_' ||
+            ( *c=='-' && isalnum(static_cast<uint8_t>(*(c+1)))); c++) {
         if (*c == '-')
             hasDash = true;
         *symPtr++ = *c;
