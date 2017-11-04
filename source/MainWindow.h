@@ -132,6 +132,7 @@ public Q_SLOTS:
     void action_Repeat_Macro(const QString &macro, int how);
     void action_Detach_Document(DocumentWidget *document);
     void action_Revert_to_Saved();
+    void action_Insert_Ctrl_Code(const QString &str);
 
     void action_Shift_Left_Tabs();
     void action_Shift_Right_Tabs();

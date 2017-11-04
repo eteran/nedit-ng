@@ -27,6 +27,7 @@
 #ifndef INTERPRET_H_
 #define INTERPRET_H_
 
+#include "gsl/span"
 #include "rbTree.h"
 #include "util/string_view.h"
 #include <QList>
@@ -126,7 +127,7 @@ union Inst {
 	Symbol *sym;
 };
 
-using BuiltInSubrEx = bool (*)(DocumentWidget *document, struct DataValue *argList, int nArgs, struct DataValue *result, const char **errMsg);
+using BuiltInSubrEx = bool (*)(DocumentWidget *document, gsl::span<DataValue> args, struct DataValue *result, const char **errMsg);
 
 struct NString {
 	char *rep;

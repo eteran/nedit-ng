@@ -88,6 +88,18 @@
         QApplication::sendEvent(this, &menuEvent);                    \
     } while(0)
 
+#define EMIT_EVENT_ARG_3(name, arg1, arg2, arg3)                            \
+    do {                                                                    \
+        WindowMenuEvent menuEvent(QLatin1String(name), {arg1, arg2, arg3}); \
+        QApplication::sendEvent(this, &menuEvent);                          \
+    } while(0)
+
+#define EMIT_EVENT_ARG_4(name, arg1, arg2, arg3, arg4)                            \
+    do {                                                                          \
+        WindowMenuEvent menuEvent(QLatin1String(name), {arg1, arg2, arg3, arg4}); \
+        QApplication::sendEvent(this, &menuEvent);                                \
+    } while(0)
+
 namespace {
 
 bool currentlyBusy = false;
@@ -1999,6 +2011,29 @@ void MainWindow::on_action_Insert_Form_Feed_triggered() {
     }
 }
 
+void MainWindow::action_Insert_Ctrl_Code(const QString &str) {
+
+    EMIT_EVENT_ARG_1("insert_string", str);
+
+    if(DocumentWidget *doc = currentDocument()) {
+
+        if (doc->CheckReadOnly()) {
+            return;
+        }
+
+        auto s = str.toStdString();
+
+        if (!doc->buffer_->BufSubstituteNullCharsEx(s)) {
+            QMessageBox::critical(this, tr("Error"), tr("Too much binary data"));
+            return;
+        }
+
+        if(TextArea *w = lastFocus_) {
+            w->insertStringAP(QString::fromStdString(s));
+        }
+    }
+}
+
 //------------------------------------------------------------------------------
 // Name:
 //------------------------------------------------------------------------------
@@ -2013,17 +2048,8 @@ void MainWindow::on_action_Insert_Ctrl_Code_triggered() {
         bool ok;
         int n = QInputDialog::getInt(this, tr("Insert Ctrl Code"), tr("ASCII Character Code:"), 0, 0, 255, 1, &ok);
         if(ok) {
-            std::string str(1, static_cast<char>(n));
-
-
-            if (!doc->buffer_->BufSubstituteNullCharsEx(str)) {
-                QMessageBox::critical(this, tr("Error"), tr("Too much binary data"));
-                return;
-            }
-
-            if(TextArea *w = lastFocus_) {
-                w->insertStringAP(QString::fromStdString(str));
-            }
+            QString str(QChar::fromLatin1(static_cast<char>(n)));
+            action_Insert_Ctrl_Code(str);
         }
     }
 }
@@ -2529,6 +2555,8 @@ void MainWindow::action_Mark(const QString &mark) {
         QApplication::beep();
         return;
     }
+
+    EMIT_EVENT_ARG_1("mark", mark);
 
     if(DocumentWidget *doc = currentDocument()) {
         doc->markAP(mark[0]);
