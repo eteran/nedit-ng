@@ -250,7 +250,7 @@ public:
     int TextDXYToPosition(const QPoint &coord);
 	int TextDOffsetWrappedColumn(int row, int column);
 	void TextDGetScroll(int *topLineNum, int *horizOffset);
-    int TextDInSelection(const QPoint &p);
+    bool TextDInSelection(const QPoint &p);
     int TextGetCursorPos() const;
 	int TextDGetInsertPosition() const;
 	int TextDPosToLineAndCol(int pos, int *lineNum, int *column);
@@ -359,9 +359,11 @@ private:
 	void InsertClipboard(bool isColumnar);
 	void InsertPrimarySelection(bool isColumnar);
 	void xyToUnconstrainedPos(int x, int y, int *row, int *column, int posType);
+    void xyToUnconstrainedPos(const QPoint &pos, int *row, int *column, int posType);
 	void selectWord(int pointerX);
 	void selectLine();
 	int xyToPos(int x, int y, int posType);
+    int xyToPos(const QPoint &pos, int posType);
 	void endDrag();
     void adjustSelection(const QPoint &coord);
     void checkAutoScroll(const QPoint &coord);

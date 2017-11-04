@@ -5746,6 +5746,10 @@ void TextArea::TextDXYToUnconstrainedPosition(const QPoint &coord, int *row, int
 ** coordinates to the nearest position between characters, and CHARACTER_POS
 ** means translate the position to the nearest character cell.
 */
+void TextArea::xyToUnconstrainedPos(const QPoint &pos, int *row, int *column, int posType) {
+    xyToUnconstrainedPos(pos.x(), pos.y(), row, column, posType);
+}
+
 void TextArea::xyToUnconstrainedPos(int x, int y, int *row, int *column, int posType) {
 
     QFontMetrics fm(font_);
@@ -6061,7 +6065,7 @@ void TextArea::moveDestinationAP(QMouseEvent *event) {
 ** Translate window coordinates to the nearest text cursor position.
 */
 int TextArea::TextDXYToPosition(const QPoint &coord) {
-    return xyToPos(coord.x(), coord.y(), CURSOR_POS);
+    return xyToPos(coord, CURSOR_POS);
 }
 
 /*
@@ -6071,6 +6075,10 @@ int TextArea::TextDXYToPosition(const QPoint &coord) {
 ** position, and CHARACTER_POS means return the position of the character
 ** closest to (x, y).
 */
+int TextArea::xyToPos(const QPoint &pos, int posType) {
+    return xyToPos(pos.x(), pos.y(), posType);
+}
+
 int TextArea::xyToPos(int x, int y, int posType) {
 	int charIndex;
 	int lineStart;
@@ -6224,6 +6232,7 @@ void TextArea::deselectAllAP(EventFlags flags) {
 
 	cancelDrag();
     buffer_->BufUnselect();
+    syncronizeSelection();
 }
 
 /**
@@ -6445,19 +6454,22 @@ void TextArea::mousePanAP(QMouseEvent *event, EventFlags flags) {
 	int topLineNum;
 	int horizOffset;
 
-
-	if (dragState_ == MOUSE_PAN) {
+    switch(dragState_) {
+    case MOUSE_PAN:
         TextDSetScroll((btnDownCoord_.y() - event->y() + lineHeight / 2) / lineHeight, btnDownCoord_.x() - event->x());
-	} else if (dragState_ == NOT_CLICKED) {
-		TextDGetScroll(&topLineNum, &horizOffset);
+        break;
+    case NOT_CLICKED:
+        TextDGetScroll(&topLineNum, &horizOffset);
         btnDownCoord_.setX(event->x() + horizOffset);
         btnDownCoord_.setY(event->y() + topLineNum * lineHeight);
-		dragState_ = MOUSE_PAN;
+        dragState_ = MOUSE_PAN;
 
-		viewport()->setCursor(Qt::SizeAllCursor);
-	} else {
-		cancelDrag();
-	}
+        viewport()->setCursor(Qt::SizeAllCursor);
+        break;
+    default:
+        cancelDrag();
+        break;
+    }
 }
 
 /*
@@ -6600,12 +6612,14 @@ void TextArea::secondaryOrDragStartAP(QMouseEvent *event, EventFlags flags) {
 /*
 ** Return True if position (x, y) is inside of the primary selection
 */
-int TextArea::TextDInSelection(const QPoint &p) {
-	int row;
-	int column;
-    int pos = xyToPos(p.x(), p.y(), CHARACTER_POS);
+bool TextArea::TextDInSelection(const QPoint &p) {
 
-    xyToUnconstrainedPos(p.x(), p.y(), &row, &column, CHARACTER_POS);
+    int pos = xyToPos(p, CHARACTER_POS);
+
+    int row;
+    int column;
+    xyToUnconstrainedPos(p, &row, &column, CHARACTER_POS);
+
     if (buffer_->primary_.rangeTouchesRectSel(firstChar_, lastChar_)) {
 		column = TextDOffsetWrappedColumn(row, column);
     }
