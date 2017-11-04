@@ -4585,9 +4585,7 @@ void TextArea::CancelBlockDrag() {
     }
     TextDSetInsertPosition(buffer_->cursorPosHint_);
 
-    for(auto &c : movedCallbacks_) {
-        c.first(this, c.second);
-    }
+    callMovedCBs();
 
     emTabsBeforeCursor_ = 0;
 
@@ -4615,9 +4613,7 @@ void TextArea::CancelBlockDrag() {
 */
 void TextArea::callCursorMovementCBs() {
 	emTabsBeforeCursor_ = 0;
-	for(auto &c : movedCallbacks_) {
-		c.first(this, c.second);
-	}
+    callMovedCBs();
 }
 
 /*
@@ -7051,32 +7047,40 @@ void TextArea::BlockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
 	if (rectangular || overlay) {
         int insRectEnd = insRectStart + origSel->rectEnd - origSel->rectStart;
         buffer_->BufRectSelect(insStart, insStart + insertInserted, insRectStart, insRectEnd);
+#if 0 // NOTE(eteran): if we just move a selection, no need to update the selection
         syncronizeSelection();
-
+#endif
 		TextDSetInsertPosition(buffer_->BufCountForwardDispChars(buffer_->BufCountForwardNLines(insStart, dragNLines_), insRectEnd));
 	} else {
 		buffer_->BufSelect(insStart, insStart + origSel->end - origSel->start);
+#if 0 // NOTE(eteran): if we just move a selection, no need to update the selection
         syncronizeSelection();
-
+#endif
 		TextDSetInsertPosition(insStart + origSel->end - origSel->start);
 	}
 
 	TextDUnblankCursor();
 
-	for(auto &c : movedCallbacks_) {
-		c.first(this, c.second);
-	}
+    callMovedCBs();
 
 	emTabsBeforeCursor_ = 0;
 }
 
+void TextArea::callMovedCBs() {
+    for(auto &c : movedCallbacks_) {
+        c.first(this, c.second);
+    }
+}
+
 void TextArea::adjustSecondarySelection(const QPoint &coord) {
 
-	int row;
-	int col;
+
 	int newPos = TextDXYToPosition(coord);
 
 	if (dragState_ == SECONDARY_RECT_DRAG) {
+
+        int row;
+        int col;
 		TextDXYToUnconstrainedPosition(coord, &row, &col);
 		col          = TextDOffsetWrappedColumn(row, col);
 		int startCol = std::min(rectAnchor_, col);
@@ -7266,7 +7270,8 @@ void TextArea::cutPrimaryAP(EventFlags flags) {
 */
 void TextArea::MovePrimarySelection(bool isColumnar) {
 	Q_UNUSED(isColumnar);
-	qDebug() << "TODO(eteran) implement this!";
+
+    // TODO(eteran): implement MovePrimarySelection
 #if 0
 	static Atom targets[2] = {XA_STRING};
 	static int isColFlag;
@@ -7299,7 +7304,7 @@ void TextArea::moveToAP(QMouseEvent *event, EventFlags flags) {
 
     EMIT_EVENT("move_to");
 
-	DragStates dragState   = dragState_;
+    DragStates dragState = dragState_;
 
 	TextSelection *secondary = &buffer_->secondary_;
 	TextSelection *primary   = &buffer_->primary_;
@@ -7359,7 +7364,9 @@ void TextArea::exchangeAP(QMouseEvent *event, EventFlags flags) {
 	TextSelection *sec     = &buffer_->secondary_;
 	TextSelection *primary = &buffer_->primary_;
 
-	int newPrimaryStart, newPrimaryEnd, secWasRect;
+    int newPrimaryStart;
+    int newPrimaryEnd;
+    int secWasRect;
 	DragStates dragState = dragState_; // save before endDrag
 	bool silent = flags & NoBellFlag;
 
@@ -7509,12 +7516,8 @@ QFont TextArea::getFont() const {
 
 void TextArea::setFont(const QFont &font) {
 
-	bool reconfigure = false;
-
-	// did the font change?
-	if (P_lineNumCols != 0) {
-		reconfigure = true;
-    }
+    // did the font change?
+    const bool reconfigure = (P_lineNumCols != 0);
 
     TextDSetFont(font);
 

@@ -300,6 +300,7 @@ public:
 	void modifiedCallback(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *cbArg);
 
 private:
+    void callMovedCBs();
     void updateFontHeightMetrics(const QFont &font);
     void updateFontWidthMetrics(const QFont &font);
 	void measureDeletedLines(int pos, int nDeleted);
