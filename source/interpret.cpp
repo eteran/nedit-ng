@@ -958,93 +958,88 @@ static void restoreContextEx(const std::shared_ptr<RestartData> &context) {
 }
 
 #define POP(dataVal)                                                           \
-    if (StackP == TheStack)                                                    \
-        return execError(StackUnderflowMsg);                                   \
-	dataVal = *--StackP;
-
+    do {                                                                       \
+        if (StackP == TheStack)                                                \
+            return execError(StackUnderflowMsg);                               \
+        dataVal = *--StackP;                                                   \
+    } while(0)
 
 #define PUSH(dataVal)                                                          \
-    if (StackP >= &TheStack[STACK_SIZE])                                       \
-        return execError(StackOverflowMsg);                                    \
-	*StackP++ = dataVal;
+    do {                                                                       \
+        if (StackP >= &TheStack[STACK_SIZE])                                   \
+            return execError(StackOverflowMsg);                                \
+        *StackP++ = dataVal;                                                   \
+    } while(0)
 
 #define PEEK(dataVal, peekIndex)                                               \
-    dataVal = *(StackP - peekIndex - 1);
+    do {                                                                       \
+        dataVal = *(StackP - peekIndex - 1);                                   \
+    } while(0)
 
 #define POP_INT(number)                                                        \
-    if (StackP == TheStack)                                                    \
-        return execError(StackUnderflowMsg);                                   \
-    --StackP;                                                                  \
-    if (is_string(*StackP)) {                                                  \
-        if (!StringToNum(StackP->val.str.rep, &number))                        \
-            return execError(StringToNumberMsg);                               \
-    } else if (is_integer(*StackP))                                            \
-        number = StackP->val.n;                                                \
-    else                                                                       \
-	    return execError("can't convert array to integer");
+    do {                                                                       \
+        if (StackP == TheStack)                                                \
+            return execError(StackUnderflowMsg);                               \
+        --StackP;                                                              \
+        if (is_string(*StackP)) {                                              \
+            if (!StringToNum(StackP->val.str.rep, &number))                    \
+                return execError(StringToNumberMsg);                           \
+        } else if (is_integer(*StackP))                                        \
+            number = StackP->val.n;                                            \
+        else                                                                   \
+            return execError("can't convert array to integer");                \
+    } while(0)
 
 
-#define POP_STRING(string)                                                     \
-    if (StackP == TheStack)                                                    \
-        return execError(StackUnderflowMsg);                                   \
-    --StackP;                                                                  \
-    if (is_integer(*StackP)) {                                                 \
-        string = AllocString(TYPE_INT_STR_SIZE(int));                          \
-        sprintf(string, "%d", StackP->val.n);                                  \
-    } else if (is_string(*StackP)) {                                           \
-        string = StackP->val.str.rep;                                          \
-    } else {                                                                   \
-        return execError("can't convert array to string");                     \
-    }
-
-#define PEEK_STRING(string, peekIndex)                                                             \
-	if ((StackP - peekIndex - 1)->tag == INT_TAG) {                                                \
-		string = AllocString(TYPE_INT_STR_SIZE(int));                                              \
-		sprintf(string, "%d", (StackP - peekIndex - 1)->val.n);                                    \
-	} else if ((StackP - peekIndex - 1)->tag == STRING_TAG) {                                      \
-		string = (StackP - peekIndex - 1)->val.str.rep;                                            \
-	} else {                                                                                       \
-	    return execError("can't convert array to string");                                         \
-	}
-
-#define PEEK_INT(number, peekIndex)                                                                \
-	if ((StackP - peekIndex - 1)->tag == STRING_TAG) {                                             \
-		if (!StringToNum((StackP - peekIndex - 1)->val.str.rep, &number)) {                        \
-	        return execError(StringToNumberMsg);                                               \
-		}                                                                                          \
-	} else if ((StackP - peekIndex - 1)->tag == INT_TAG) {                                         \
-		number = (StackP - peekIndex - 1)->val.n;                                                  \
-	} else {                                                                                       \
-	    return execError("can't convert array to string");                                         \
-	}
+#define POP_STRING(string_ref)                                                 \
+    do {                                                                       \
+        if (StackP == TheStack)                                                \
+            return execError(StackUnderflowMsg);                               \
+        --StackP;                                                              \
+        if (is_integer(*StackP)) {                                             \
+            string_ref = std::to_string(StackP->val.n);                        \
+        } else if (is_string(*StackP)) {                                       \
+            string_ref = std::string(StackP->val.str.rep, StackP->val.str.len);\
+        } else {                                                               \
+            return execError("can't convert array to string");                 \
+        }                                                                      \
+    } while(0)
 
 #define PUSH_INT(number)                                                       \
-    if (StackP >= &TheStack[STACK_SIZE])                                       \
-        return execError(StackOverflowMsg);                                    \
-    *StackP++ = to_value(number);
+    do {                                                                       \
+        if (StackP >= &TheStack[STACK_SIZE])                                   \
+            return execError(StackOverflowMsg);                                \
+        *StackP++ = to_value(number);                                          \
+    } while(0)
 
 
-#define PUSH_STRING(string, length)                                            \
-    if (StackP >= &TheStack[STACK_SIZE])                                       \
-        return execError(StackOverflowMsg);                                    \
-    *StackP++ = to_value(string, length);
+#define PUSH_STRING(string)                                                    \
+    do {                                                                       \
+        if (StackP >= &TheStack[STACK_SIZE])                                   \
+            return execError(StackOverflowMsg);                                \
+        *StackP++ = to_value(string);                                          \
+    } while(0)
 
-#define BINARY_NUMERIC_OPERATION(operator)                                                         \
-	int n1, n2;                                                                                    \
-	DISASM_RT(PC - 1, 1);                                                                          \
-	STACKDUMP(2, 3);                                                                               \
-	POP_INT(n2)                                                                                    \
-	POP_INT(n1)                                                                                    \
-	PUSH_INT(n1 operator n2)                                                                       \
-	return STAT_OK;
+#define BINARY_NUMERIC_OPERATION(operator)                                     \
+    do {                                                                       \
+        int n1, n2;                                                            \
+        DISASM_RT(PC - 1, 1);                                                  \
+        STACKDUMP(2, 3);                                                       \
+        POP_INT(n2);                                                           \
+        POP_INT(n1);                                                           \
+        PUSH_INT(n1 operator n2);                                              \
+        return STAT_OK;                                                        \
+    } while(0)
 
-#define UNARY_NUMERIC_OPERATION(operator)                                                          \
-	int n;                                                                                         \
-	DISASM_RT(PC - 1, 1);                                                                          \
-	STACKDUMP(1, 3);                                                                               \
-	POP_INT(n)                                                                                     \
-	PUSH_INT(operator n)                                                                           \
-	return STAT_OK;
+#define UNARY_NUMERIC_OPERATION(operator)                                      \
+    do {                                                                       \
+        int n;                                                                 \
+        DISASM_RT(PC - 1, 1);                                                  \
+        STACKDUMP(1, 3);                                                       \
+        POP_INT(n);                                                            \
+        PUSH_INT(operator n);                                                  \
+        return STAT_OK;                                                        \
+    } while(0)
 
 /*
 ** copy a symbol's value onto the stack
@@ -1091,7 +1086,7 @@ static int pushSymVal() {
 		return execError("variable not set: %s", s->name.c_str());
 	}
 
-	PUSH(symVal)
+    PUSH(symVal);
 
 	return STAT_OK;
 }
@@ -1102,7 +1097,7 @@ static int pushArgVal() {
 	DISASM_RT(PC - 1, 1);
 	STACKDUMP(1, 3);
 
-	POP_INT(argNum)
+    POP_INT(argNum);
 	--argNum;
 	nArgs = FP_GET_ARG_COUNT(FrameP);
 	if (argNum >= nArgs || argNum < 0) {
@@ -1186,7 +1181,7 @@ static int pushArraySymVal() {
 		return execError("variable not set: %s", sym->name.c_str());
 	}
 
-	PUSH(*dataPtr)
+    PUSH(*dataPtr);
 
 	return STAT_OK;
 }
@@ -1200,15 +1195,14 @@ static int pushArraySymVal() {
 **         TheStack-> next, ...
 */
 static int assign() {
-	Symbol *sym;
+
 	DataValue *dataPtr;
 	DataValue value;
 
 	DISASM_RT(PC - 1, 2);
 	STACKDUMP(1, 3);
 
-	sym = PC->sym;
-	PC++;
+    Symbol *sym = PC++->sym;
 
 	if (sym->type != GLOBAL_SYM && sym->type != LOCAL_SYM) {
 		if (sym->type == ARG_SYM) {
@@ -1226,7 +1220,7 @@ static int assign() {
 		dataPtr = &sym->value;
 	}
 
-	POP(value)
+    POP(value);
 
     if (is_array(value)) {
 		return ArrayCopy(dataPtr, &value);
@@ -1247,8 +1241,8 @@ static int dupStack() {
 	DISASM_RT(PC - 1, 1);
 	STACKDUMP(1, 3);
 
-	PEEK(value, 0)
-	PUSH(value)
+    PEEK(value, 0);
+    PUSH(value);
 
 	return STAT_OK;
 }
@@ -1268,18 +1262,18 @@ static int add() {
 	DISASM_RT(PC - 1, 1);
 	STACKDUMP(2, 3);
 
-	PEEK(rightVal, 0)
+    PEEK(rightVal, 0);
     if (is_array(rightVal)) {
 
-		PEEK(leftVal, 1)
+        PEEK(leftVal, 1);
         if (is_array(leftVal)) {
 
             ArrayEntry *leftIter, *rightIter;
 
             resultArray = to_value(array_new());
 
-			POP(rightVal)
-			POP(leftVal)
+            POP(rightVal);
+            POP(leftVal);
 			leftIter = arrayIterateFirst(&leftVal);
 			rightIter = arrayIterateFirst(&rightVal);
 			while (leftIter || rightIter) {
@@ -1309,14 +1303,14 @@ static int add() {
 					return execError("array insertion failure");
 				}
 			}
-			PUSH(resultArray)
+            PUSH(resultArray);
 		} else {
 			return execError("can't mix math with arrays and non-arrays");
 		}
 	} else {
-		POP_INT(n2)
-		POP_INT(n1)
-		PUSH_INT(n1 + n2)
+        POP_INT(n2);
+        POP_INT(n1);
+        PUSH_INT(n1 + n2);
 	}
 	return STAT_OK;
 }
@@ -1335,16 +1329,16 @@ static int subtract() {
 	DISASM_RT(PC - 1, 1);
 	STACKDUMP(2, 3);
 
-	PEEK(rightVal, 0)
+    PEEK(rightVal, 0);
     if(is_array(rightVal)) {
-		PEEK(leftVal, 1)
+        PEEK(leftVal, 1);
         if(is_array(leftVal)) {
 			ArrayEntry *leftIter, *rightIter;
 
             resultArray = to_value(array_new());
 
-			POP(rightVal)
-			POP(leftVal)
+            POP(rightVal);
+            POP(leftVal);
 			leftIter = arrayIterateFirst(&leftVal);
 			rightIter = arrayIterateFirst(&rightVal);
 			while (leftIter) {
@@ -1369,14 +1363,14 @@ static int subtract() {
 					return execError("array insertion failure");
 				}
 			}
-			PUSH(resultArray)
+            PUSH(resultArray);
 		} else {
 			return execError("can't mix math with arrays and non-arrays");
 		}
 	} else {
-		POP_INT(n2)
-		POP_INT(n1)
-		PUSH_INT(n1 - n2)
+        POP_INT(n2);
+        POP_INT(n1);
+        PUSH_INT(n1 - n2);
 	}
 	return STAT_OK;
 }
@@ -1391,7 +1385,7 @@ static int subtract() {
 ** After:  TheStack-> resValue, next, ...
 */
 static int multiply() {
-	BINARY_NUMERIC_OPERATION(*)
+    BINARY_NUMERIC_OPERATION(*);
 }
 
 static int divide() {
@@ -1400,12 +1394,12 @@ static int divide() {
 	DISASM_RT(PC - 1, 1);
 	STACKDUMP(2, 3);
 
-	POP_INT(n2)
-	POP_INT(n1)
+    POP_INT(n2);
+    POP_INT(n1);
 	if (n2 == 0) {
 		return execError("division by zero");
 	}
-	PUSH_INT(n1 / n2)
+    PUSH_INT(n1 / n2);
 	return STAT_OK;
 }
 
@@ -1415,41 +1409,41 @@ static int modulo() {
 	DISASM_RT(PC - 1, 1);
 	STACKDUMP(2, 3);
 
-	POP_INT(n2)
-	POP_INT(n1)
+    POP_INT(n2);
+    POP_INT(n1);
 	if (n2 == 0) {
 		return execError("modulo by zero");
 	}
-	PUSH_INT(n1 % n2)
+    PUSH_INT(n1 % n2);
 	return STAT_OK;
 }
 
 static int negate() {
-	UNARY_NUMERIC_OPERATION(-)
+    UNARY_NUMERIC_OPERATION(-);
 }
 
 static int increment() {
-	UNARY_NUMERIC_OPERATION(++)
+    UNARY_NUMERIC_OPERATION(++);
 }
 
 static int decrement() {
-	UNARY_NUMERIC_OPERATION(--)
+    UNARY_NUMERIC_OPERATION(--);
 }
 
 static int gt() {
-	BINARY_NUMERIC_OPERATION(> )
+    BINARY_NUMERIC_OPERATION(> );
 }
 
 static int lt() {
-	BINARY_NUMERIC_OPERATION(< )
+    BINARY_NUMERIC_OPERATION(< );
 }
 
 static int ge() {
-	BINARY_NUMERIC_OPERATION(>= )
+    BINARY_NUMERIC_OPERATION(>= );
 }
 
 static int le() {
-	BINARY_NUMERIC_OPERATION(<= )
+    BINARY_NUMERIC_OPERATION(<= );
 }
 
 /*
@@ -1465,8 +1459,8 @@ static int eq() {
 	DISASM_RT(PC - 1, 1);
 	STACKDUMP(2, 3);
 
-	POP(v1)
-	POP(v2)
+    POP(v1);
+    POP(v2);
 
     if (is_integer(v1) && is_integer(v2)) {
         v1 = to_value(v1.val.n == v2.val.n);
@@ -1490,7 +1484,7 @@ static int eq() {
 		return execError("incompatible types to compare");
 	}
 
-	PUSH(v1)
+    PUSH(v1);
 	return STAT_OK;
 }
 
@@ -1514,16 +1508,16 @@ static int bitAnd() {
 	DISASM_RT(PC - 1, 1);
 	STACKDUMP(2, 3);
 
-	PEEK(rightVal, 0)
+    PEEK(rightVal, 0);
     if(is_array(rightVal)) {
-		PEEK(leftVal, 1)
+        PEEK(leftVal, 1);
         if(is_array(leftVal)) {
 			ArrayEntry *leftIter, *rightIter;
 
             resultArray = to_value(array_new());
 
-			POP(rightVal)
-			POP(leftVal)
+            POP(rightVal);
+            POP(leftVal);
 			leftIter = arrayIterateFirst(&leftVal);
 			rightIter = arrayIterateFirst(&rightVal);
 			while (leftIter && rightIter) {
@@ -1543,14 +1537,14 @@ static int bitAnd() {
 					return execError("array insertion failure");
 				}
 			}
-			PUSH(resultArray)
+            PUSH(resultArray);
 		} else {
 			return execError("can't mix math with arrays and non-arrays");
 		}
 	} else {
-		POP_INT(n2)
-		POP_INT(n1)
-		PUSH_INT(n1 & n2)
+        POP_INT(n2);
+        POP_INT(n1);
+        PUSH_INT(n1 & n2);
 	}
 	return STAT_OK;
 }
@@ -1569,16 +1563,16 @@ static int bitOr() {
 	DISASM_RT(PC - 1, 1);
 	STACKDUMP(2, 3);
 
-	PEEK(rightVal, 0)
+    PEEK(rightVal, 0);
     if(is_array(rightVal)) {
-		PEEK(leftVal, 1)
+        PEEK(leftVal, 1);
         if(is_array(leftVal)) {
 			ArrayEntry *leftIter, *rightIter;
 
             resultArray = to_value(array_new());
 
-			POP(rightVal)
-			POP(leftVal)
+            POP(rightVal);
+            POP(leftVal);
 			leftIter = arrayIterateFirst(&leftVal);
 			rightIter = arrayIterateFirst(&rightVal);
 			while (leftIter || rightIter) {
@@ -1607,28 +1601,28 @@ static int bitOr() {
 					return execError("array insertion failure");
 				}
 			}
-			PUSH(resultArray)
+            PUSH(resultArray);
 		} else {
 			return execError("can't mix math with arrays and non-arrays");
 		}
 	} else {
-		POP_INT(n2)
-		POP_INT(n1)
-		PUSH_INT(n1 | n2)
+        POP_INT(n2);
+        POP_INT(n1);
+        PUSH_INT(n1 | n2);
 	}
 	return STAT_OK;
 }
 
 static int logicalAnd() {
-	BINARY_NUMERIC_OPERATION(&&)
+    BINARY_NUMERIC_OPERATION(&&);
 }
 
 static int logicalOr() {
-	BINARY_NUMERIC_OPERATION(|| )
+    BINARY_NUMERIC_OPERATION(|| );
 }
 
 static int logicalNot() {
-	UNARY_NUMERIC_OPERATION(!)
+    UNARY_NUMERIC_OPERATION(!);
 }
 
 /*
@@ -1642,8 +1636,8 @@ static int power() {
 	DISASM_RT(PC - 1, 1);
 	STACKDUMP(2, 3);
 
-	POP_INT(n2)
-	POP_INT(n1)
+    POP_INT(n2);
+    POP_INT(n1);
 	/*  We need to round to deal with pow() giving results slightly above
 	    or below the real result since it deals with floating point numbers.
 	    Note: We're not really wanting rounded results, we merely
@@ -1668,7 +1662,7 @@ static int power() {
             n3 = static_cast<int>(pow(static_cast<double>(n1), static_cast<double>(n2)) + 0.5);
 		}
 	}
-	PUSH_INT(n3)
+    PUSH_INT(n3);
 	return errCheck("exponentiation");
 }
 
@@ -1678,20 +1672,18 @@ static int power() {
 ** After:  TheStack-> result, next, ...
 */
 static int concat() {
-    char *s1, *s2;
+    std::string s1;
+    std::string s2;
 
 	DISASM_RT(PC - 1, 1);
 	STACKDUMP(2, 3);
 
-	POP_STRING(s2)
-	POP_STRING(s1)
+    POP_STRING(s2);
+    POP_STRING(s1);
 
-	int len1 = strlen(s1);
-	int len2 = strlen(s2);
-    char *out = AllocString(len1 + len2 + 1);
-	strncpy(out, s1, len1);
-	strcpy(&out[len1], s2);
-	PUSH_STRING(out, len1 + len2)
+    std::string out = s1 + s2;
+
+    PUSH_STRING(out);
 	return STAT_OK;
 }
 
@@ -1876,7 +1868,7 @@ static int branchTrue() {
 	DISASM_RT(PC - 1, 2);
 	STACKDUMP(1, 3);
 
-	POP_INT(value)
+    POP_INT(value);
 	addr = PC + PC->value;
 	PC++;
 
@@ -1891,7 +1883,7 @@ static int branchFalse() {
 	DISASM_RT(PC - 1, 2);
 	STACKDUMP(1, 3);
 
-	POP_INT(value)
+    POP_INT(value);
 	addr = PC + PC->value;
 	PC++;
 
@@ -1964,7 +1956,7 @@ static int makeArrayKeyFromArgs(int nArgs, char **keyString, int leaveParams) {
 
 	keyLength = sepLen * (nArgs - 1);
     for (int i = nArgs - 1; i >= 0; --i) {
-		PEEK(tmpVal, i)
+        PEEK(tmpVal, i);
         if (is_integer(tmpVal)) {
 			keyLength += TYPE_INT_STR_SIZE(tmpVal.val.n);
         } else if (is_string(tmpVal)) {
@@ -1981,7 +1973,7 @@ static int makeArrayKeyFromArgs(int nArgs, char **keyString, int leaveParams) {
 		if (i != nArgs - 1) {
 			strcat(*keyString, ARRAY_DIM_SEP);
 		}
-		PEEK(tmpVal, i)
+        PEEK(tmpVal, i);
         if (is_integer(tmpVal)) {
 			sprintf(&((*keyString)[strlen(*keyString)]), "%d", tmpVal.val.n);
         } else if (is_string(tmpVal)) {
@@ -1993,7 +1985,7 @@ static int makeArrayKeyFromArgs(int nArgs, char **keyString, int leaveParams) {
 
 	if (!leaveParams) {
         for (int i = nArgs - 1; i >= 0; --i) {
-			POP(tmpVal)
+            POP(tmpVal);
 		}
 	}
     return STAT_OK;
@@ -2194,20 +2186,20 @@ static int arrayRef() {
 			return errNum;
 		}
 
-		POP(srcArray)
+        POP(srcArray);
         if (is_array(srcArray)) {
 			if (!ArrayGet(&srcArray, keyString, &valueItem)) {
 				return execError("referenced array value not in array: %s", keyString);
 			}
-			PUSH(valueItem)
+            PUSH(valueItem);
 			return STAT_OK;
 		} else {
 			return execError("operator [] on non-array");
 		}
 	} else {
-		POP(srcArray)
+        POP(srcArray);
         if (is_array(srcArray)) {
-            PUSH_INT(static_cast<int>(ArraySize(&srcArray)))
+            PUSH_INT(static_cast<int>(ArraySize(&srcArray)));
 			return STAT_OK;
 		} else {
 			return execError("operator [] on non-array");
@@ -2236,14 +2228,14 @@ static int arrayAssign() {
 	STACKDUMP(nDim, 3);
 
 	if (nDim > 0) {
-		POP(srcValue)
+        POP(srcValue);
 
 		int errNum = makeArrayKeyFromArgs(nDim, &keyString, 0);
 		if (errNum != STAT_OK) {
 			return errNum;
 		}
 
-		POP(dstArray)
+        POP(dstArray);
 
         if (!is_array(dstArray) && dstArray.tag != NO_TAG) {
 			return execError("cannot assign array element of non-array");
@@ -2290,7 +2282,7 @@ static int arrayRefAndAssignSetup() {
 	STACKDUMP(nDim + 1, 3);
 
 	if (binaryOp) {
-		POP(moveExpr)
+        POP(moveExpr);
 	}
 
 	if (nDim > 0) {
@@ -2299,14 +2291,14 @@ static int arrayRefAndAssignSetup() {
 			return errNum;
 		}
 
-		PEEK(srcArray, nDim)
+        PEEK(srcArray, nDim);
         if (is_array(srcArray)) {
 			if (!ArrayGet(&srcArray, keyString, &valueItem)) {
 				return execError("referenced array value not in array: %s", keyString);
 			}
-			PUSH(valueItem)
+            PUSH(valueItem);
 			if (binaryOp) {
-				PUSH(moveExpr)
+                PUSH(moveExpr);
 			}
 			return STAT_OK;
 		} else {
@@ -2338,7 +2330,7 @@ static int beginArrayIter() {
 
     Symbol *iterator = PC++->sym;
 
-	POP(arrayVal)
+    POP(arrayVal);
 
     if (iterator->type != LOCAL_SYM) {
         return execError("bad temporary iterator: %s", iterator->name.c_str());
@@ -2441,15 +2433,15 @@ static int inArray() {
 	DISASM_RT(PC - 1, 1);
 	STACKDUMP(2, 3);
 
-	POP(theArray)
+    POP(theArray);
     if (!is_array(theArray)) {
 		return execError("operator in on non-array");
 	}
 
-	PEEK(leftArray, 0)
+    PEEK(leftArray, 0);
     if (is_array(leftArray)) {
 
-		POP(leftArray)
+        POP(leftArray);
 		inResult = 1;
 		ArrayEntry *iter = arrayIterateFirst(&leftArray);
 		while (inResult && iter) {
@@ -2457,13 +2449,15 @@ static int inArray() {
 			iter = arrayIterateNext(iter);
 		}
 	} else {
-		char *keyStr;
-		POP_STRING(keyStr)
-		if (ArrayGet(&theArray, keyStr, &theValue)) {
+        std::string keyStr;
+        POP_STRING(keyStr);
+
+        char *key = AllocStringCpyEx(keyStr);
+        if (ArrayGet(&theArray, key, &theValue)) {
 			inResult = 1;
 		}
 	}
-	PUSH_INT(inResult)
+    PUSH_INT(inResult);
 	return STAT_OK;
 }
 
@@ -2496,7 +2490,7 @@ static int deleteArrayElement() {
 		}
 	}
 
-	POP(theArray)
+    POP(theArray);
     if (is_array(theArray)) {
 		if (nDim > 0) {
 			ArrayDelete(&theArray, keyString);
