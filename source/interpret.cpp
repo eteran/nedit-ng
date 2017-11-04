@@ -1082,7 +1082,7 @@ static int pushSymVal() {
 	} else if (s->type == PROC_VALUE_SYM) {
 
 		const char *errMsg;
-        if (!(s->value.val.subr)(FocusWindowEx, gsl::span<DataValue>(), &symVal, &errMsg)) {
+        if (!(s->value.val.subr)(FocusWindowEx, Arguments(), &symVal, &errMsg)) {
 			return execError(errMsg, s->name.c_str());
 		}
 	} else
@@ -1735,7 +1735,7 @@ static int callSubroutine() {
 
 		// Call the function and check for preemption 
         PreemptRequest = false;
-        if (!sym->value.val.subr(FocusWindowEx, gsl::span<DataValue>(StackP, nArgs), &result, &errMsg)) {
+        if (!sym->value.val.subr(FocusWindowEx, Arguments(StackP, nArgs), &result, &errMsg)) {
             return execError(errMsg, sym->name.c_str());
         }
 

@@ -74,132 +74,132 @@
 
 static void cancelLearnEx();
 
-static bool lengthMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool minMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool maxMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool focusWindowMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool getRangeMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool getCharacterMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool replaceRangeMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool replaceSelectionMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool getSelectionMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool validNumberMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool replaceInStringMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool replaceSubstringMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool readFileMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool writeFileMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool appendFileMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool writeOrAppendFile(bool append, DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool substringMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool toupperMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool tolowerMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool stringToClipboardMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool clipboardToStringMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool searchMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool searchStringMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool setCursorPosMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool beepMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool selectMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool selectRectangleMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool tPrintMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool getenvMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool shellCmdMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool dialogMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool stringDialogMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool calltipMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool killCalltipMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
+static bool lengthMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool minMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool maxMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool focusWindowMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool getRangeMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool getCharacterMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool replaceRangeMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool replaceSelectionMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool getSelectionMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool validNumberMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool replaceInStringMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool replaceSubstringMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool readFileMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool writeFileMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool appendFileMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool writeOrAppendFile(bool append, DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool substringMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool toupperMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool tolowerMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool stringToClipboardMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool clipboardToStringMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool searchMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool searchStringMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool setCursorPosMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool beepMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool selectMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool selectRectangleMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool tPrintMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool getenvMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool shellCmdMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool dialogMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool stringDialogMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool calltipMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool killCalltipMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
 
 // T Balinski
-static bool listDialogMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
+static bool listDialogMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
 // T Balinski End
 
-static bool stringCompareMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool splitMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
+static bool stringCompareMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool splitMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
 #if 0 // DISASBLED for 5.4
-static bool setBacklightStringMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
+static bool setBacklightStringMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
 #endif
-static bool cursorMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool lineMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool columnMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool fileNameMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool filePathMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool lengthMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool selectionStartMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool selectionEndMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool selectionLeftMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool selectionRightMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool statisticsLineMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool incSearchLineMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool showLineNumbersMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool autoIndentMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool wrapTextMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool highlightSyntaxMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool makeBackupCopyMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool incBackupMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool showMatchingMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool matchSyntaxBasedMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool overTypeModeMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool readOnlyMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool lockedMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool fileFormatMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool fontNameMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool fontNameItalicMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool fontNameBoldMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool fontNameBoldItalicMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool subscriptSepMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool minFontWidthMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool maxFontWidthMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool wrapMarginMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool topLineMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool numDisplayLinesMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool displayWidthMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool activePaneMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool nPanesMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool emptyArrayMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool serverNameMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool tabDistMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool emTabDistMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool useTabsMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool modifiedMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool languageModeMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool calltipIDMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool rangesetListMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool versionMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool rangesetCreateMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool rangesetDestroyMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool rangesetGetByNameMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool rangesetAddMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool rangesetSubtractMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool rangesetInvertMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool rangesetInfoMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool rangesetRangeMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool rangesetIncludesPosMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool rangesetSetColorMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool rangesetSetNameMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool rangesetSetModeMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
+static bool cursorMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool lineMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool columnMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool fileNameMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool filePathMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool lengthMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool selectionStartMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool selectionEndMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool selectionLeftMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool selectionRightMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool statisticsLineMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool incSearchLineMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool showLineNumbersMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool autoIndentMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool wrapTextMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool highlightSyntaxMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool makeBackupCopyMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool incBackupMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool showMatchingMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool matchSyntaxBasedMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool overTypeModeMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool readOnlyMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool lockedMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool fileFormatMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool fontNameMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool fontNameItalicMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool fontNameBoldMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool fontNameBoldItalicMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool subscriptSepMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool minFontWidthMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool maxFontWidthMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool wrapMarginMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool topLineMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool numDisplayLinesMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool displayWidthMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool activePaneMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool nPanesMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool emptyArrayMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool serverNameMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool tabDistMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool emTabDistMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool useTabsMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool modifiedMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool languageModeMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool calltipIDMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool rangesetListMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool versionMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool rangesetCreateMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool rangesetDestroyMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool rangesetGetByNameMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool rangesetAddMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool rangesetSubtractMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool rangesetInvertMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool rangesetInfoMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool rangesetRangeMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool rangesetIncludesPosMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool rangesetSetColorMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool rangesetSetNameMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool rangesetSetModeMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
 static bool fillPatternResultEx(DataValue *result, const char **errMsg, DocumentWidget *document, const QString &patternName, bool includeName, const QString &styleName, int bufferPos);
-static bool getPatternByNameMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool getPatternAtPosMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
+static bool getPatternByNameMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool getPatternAtPosMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
 static bool fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWidget *document, const QString &styleName, bool includeName, int patCode, int bufferPos);
-static bool getStyleByNameMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool getStyleAtPosMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool filenameDialogMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
+static bool getStyleByNameMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool getStyleAtPosMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool filenameDialogMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
 
 // MainWindow scoped functions
-static bool replaceAllInSelectionMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
-static bool replaceAllMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg);
+static bool replaceAllInSelectionMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+static bool replaceAllMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
 
-static bool readSearchArgs(gsl::span<DataValue> arguments, Direction *searchDirection, SearchType *searchType, WrapMode *wrap, const char **errMsg);
+static bool readSearchArgs(Arguments arguments, Direction *searchDirection, SearchType *searchType, WrapMode *wrap, const char **errMsg);
 
 static bool readArgument(DataValue dv, int *result, const char **errMsg = nullptr);
 static bool readArgument(DataValue dv, std::string *result, const char **errMsg = nullptr);
 static bool readArgument(DataValue dv, QString *result, const char **errMsg = nullptr);
 
 template <class T, class ...Ts>
-bool readArguments(gsl::span<DataValue> arguments, int index, const char **errMsg, T arg, Ts...args);
+bool readArguments(Arguments arguments, int index, const char **errMsg, T arg, Ts...args);
 
 template <class T>
-bool readArguments(gsl::span<DataValue> arguments, int index, const char **errMsg, T arg);
+bool readArguments(Arguments arguments, int index, const char **errMsg, T arg);
 
 struct SubRoutine {
     const char   *name;
@@ -214,7 +214,7 @@ struct SubRoutine {
  * @param flags
  * @return true if all arguments were valid flags, false otherwise
  */
-bool flagsFromArguments(gsl::span<DataValue> arguments, int firstFlag, TextArea::EventFlags *flags) {
+bool flagsFromArguments(Arguments arguments, int firstFlag, TextArea::EventFlags *flags) {
     TextArea::EventFlags f = TextArea::NoneFlag;
     for(int i = firstFlag; i < arguments.size(); ++i) {
         if(strcmp(arguments[i].val.str.rep, "absolute") == 0) {
@@ -258,7 +258,7 @@ bool flagsFromArguments(gsl::span<DataValue> arguments, int firstFlag, TextArea:
 
 
 #define TEXT_EVENT(routineName, slotName)                                                                                 \
-static bool routineName(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) { \
+static bool routineName(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) { \
                                                                                                                           \
     TextArea::EventFlags flags = TextArea::NoneFlag;                                                                      \
     if(!flagsFromArguments(arguments, 0, &flags)) {                                                                  \
@@ -276,7 +276,7 @@ static bool routineName(DocumentWidget *document, gsl::span<DataValue> arguments
 }
 
 #define TEXT_EVENT_S(routineName, slotName)                                                                               \
-static bool routineName(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) { \
+static bool routineName(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) { \
                                                                                                                           \
     if(arguments.size() < 1) {                                                                                                       \
         M_FAILURE("Wrong number of arguments to function %s");                                                            \
@@ -303,7 +303,7 @@ static bool routineName(DocumentWidget *document, gsl::span<DataValue> arguments
 }
 
 #define TEXT_EVENT_I(routineName, slotName)                                                                               \
-static bool routineName(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) { \
+static bool routineName(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) { \
                                                                                                                           \
     if(arguments.size() < 1) {                                                                                                       \
         M_FAILURE("Wrong number of arguments to function %s");                                                            \
@@ -374,7 +374,7 @@ TEXT_EVENT(endOfSelectionMS,          endOfSelectionAP)
 TEXT_EVENT(pageLeftMS,                pageLeftAP)
 TEXT_EVENT(pageRightMS,               pageRightAP)
 
-static bool scrollDownMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool scrollDownMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     int count;
     QString unitsString = QLatin1String("line");
@@ -413,7 +413,7 @@ static bool scrollDownMS(DocumentWidget *document, gsl::span<DataValue> argument
     return true;
 }
 
-static bool scrollUpMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool scrollUpMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     int count;
     QString unitsString = QLatin1String("line");
@@ -535,7 +535,7 @@ static const SubRoutine TextAreaSubrNames[] = {
 
 
 #define WINDOW_MENU_EVENT_S(routineName, slotName)                                                                            \
-    static bool routineName(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) { \
+    static bool routineName(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) { \
                                                                                                                               \
         /* ensure that we are dealing with the document which currently has the focus */                                      \
         document = MacroRunWindowEx();                                                                                        \
@@ -554,7 +554,7 @@ static const SubRoutine TextAreaSubrNames[] = {
     }
 
 #define WINDOW_MENU_EVENT(routineName, slotName)                                                                                \
-    static bool routineName(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) { \
+    static bool routineName(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) { \
                                                                                                                                 \
         /* ensure that we are dealing with the document which currently has the focus */                                        \
         document = MacroRunWindowEx();                                                                                          \
@@ -634,7 +634,7 @@ WINDOW_MENU_EVENT(newOppositeMS,                     on_action_Close_Pane_trigge
 ** tells the routine how many required arguments there are to ignore before
 ** looking for keywords
 */
-static Direction searchDirection(gsl::span<DataValue> arguments, int index) {
+static Direction searchDirection(Arguments arguments, int index) {
     for(int i = index; i < arguments.size(); ++i) {
         QString arg;
         if (!readArgument(arguments[i], &arg)) {
@@ -658,7 +658,7 @@ static Direction searchDirection(gsl::span<DataValue> arguments, int index) {
 ** tells the routine how many required arguments there are to ignore before
 ** looking for keywords
 */
-static int searchKeepDialogs(gsl::span<DataValue> arguments, int index) {
+static int searchKeepDialogs(Arguments arguments, int index) {
     for(int i = index; i < arguments.size(); ++i) {
         QString arg;
         if (!readArgument(arguments[i], &arg)) {
@@ -682,7 +682,7 @@ static int searchKeepDialogs(gsl::span<DataValue> arguments, int index) {
 ** tells the routine how many required arguments there are to ignore before
 ** looking for keywords
 */
-static WrapMode searchWrap(gsl::span<DataValue> arguments, int index) {
+static WrapMode searchWrap(Arguments arguments, int index) {
     for(int i = index; i < arguments.size(); ++i) {
         QString arg;
         if (!readArgument(arguments[i], &arg)) {
@@ -739,7 +739,7 @@ bool StringToSearchType(const QString &string, SearchType *searchType) {
 ** tells the routine how many required arguments there are to ignore before
 ** looking for keywords
 */
-static SearchType searchType(gsl::span<DataValue> arguments, int index) {
+static SearchType searchType(Arguments arguments, int index) {
 
     for(int i = index; i < arguments.size(); ++i) {
         QString arg;
@@ -765,7 +765,7 @@ static SearchType searchType(gsl::span<DataValue> arguments, int index) {
     return GetPrefSearch();
 }
 
-static bool closeMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool closeMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     // ensure that we are dealing with the document which currently has the focus
     document = MacroRunWindowEx();
@@ -807,7 +807,7 @@ static bool closeMS(DocumentWidget *document, gsl::span<DataValue> arguments, Da
     return true;
 }
 
-static bool newMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool newMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     // ensure that we are dealing with the document which currently has the focus
     document = MacroRunWindowEx();
@@ -850,7 +850,7 @@ static bool newMS(DocumentWidget *document, gsl::span<DataValue> arguments, Data
     return true;
 }
 
-static bool saveAsMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool saveAsMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     // ensure that we are dealing with the document which currently has the focus
     document = MacroRunWindowEx();
@@ -886,7 +886,7 @@ static bool saveAsMS(DocumentWidget *document, gsl::span<DataValue> arguments, D
     return true;
 }
 
-static bool findMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool findMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     // find( search-string [, search-direction] [, search-type] [, search-wrap] )
 
@@ -914,7 +914,7 @@ static bool findMS(DocumentWidget *document, gsl::span<DataValue> arguments, Dat
     return true;
 }
 
-static bool findDialogMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool findDialogMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
 
@@ -933,7 +933,7 @@ static bool findDialogMS(DocumentWidget *document, gsl::span<DataValue> argument
     return true;
 }
 
-static bool findAgainMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool findAgainMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
 
@@ -951,7 +951,7 @@ static bool findAgainMS(DocumentWidget *document, gsl::span<DataValue> arguments
     return true;
 }
 
-static bool findSelectionMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool findSelectionMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
 
@@ -970,7 +970,7 @@ static bool findSelectionMS(DocumentWidget *document, gsl::span<DataValue> argum
     return true;
 }
 
-static bool replaceMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool replaceMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
 
@@ -999,7 +999,7 @@ static bool replaceMS(DocumentWidget *document, gsl::span<DataValue> arguments, 
     return true;
 }
 
-static bool replaceDialogMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool replaceDialogMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
 
@@ -1018,7 +1018,7 @@ static bool replaceDialogMS(DocumentWidget *document, gsl::span<DataValue> argum
     return true;
 }
 
-static bool replaceAgainMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool replaceAgainMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     // replace_in_selection( search-string, replace-string [, search-type] )
 
@@ -1041,7 +1041,7 @@ static bool replaceAgainMS(DocumentWidget *document, gsl::span<DataValue> argume
     return true;
 }
 
-static bool gotoMarkMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool gotoMarkMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     // goto_mark( mark, [, extend] )
 
@@ -1078,7 +1078,7 @@ static bool gotoMarkMS(DocumentWidget *document, gsl::span<DataValue> arguments,
     return true;
 }
 
-static bool gotoMarkDialogMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool gotoMarkDialogMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
     // goto_mark( mark, [, extend] )
 
     // ensure that we are dealing with the document which currently has the focus
@@ -1109,7 +1109,7 @@ static bool gotoMarkDialogMS(DocumentWidget *document, gsl::span<DataValue> argu
     return true;
 }
 
-static bool findDefinitionMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool findDefinitionMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
     // find_definition( [ argument ] )
 
     // ensure that we are dealing with the document which currently has the focus
@@ -1135,7 +1135,7 @@ static bool findDefinitionMS(DocumentWidget *document, gsl::span<DataValue> argu
     return true;
 }
 
-static bool repeatMacroMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool repeatMacroMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
     // repeat_macro( how/count, method )
 
     // ensure that we are dealing with the document which currently has the focus
@@ -1171,7 +1171,7 @@ static bool repeatMacroMS(DocumentWidget *document, gsl::span<DataValue> argumen
     return true;
 }
 
-static bool detachDocumentDialogMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool detachDocumentDialogMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(arguments);
     Q_UNUSED(result);
@@ -1198,7 +1198,7 @@ static bool detachDocumentDialogMS(DocumentWidget *document, gsl::span<DataValue
     return true;
 }
 
-static bool setAutoIndentMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool setAutoIndentMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     QString string;
     if(!readArguments(arguments, 0, errMsg, &string)) {
@@ -1223,7 +1223,7 @@ static bool setAutoIndentMS(DocumentWidget *document, gsl::span<DataValue> argum
     return true;
 }
 
-static bool setEmTabDistMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool setEmTabDistMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     int number;
     if(!readArguments(arguments, 0, errMsg, &number)) {
@@ -1247,7 +1247,7 @@ static bool setEmTabDistMS(DocumentWidget *document, gsl::span<DataValue> argume
     return true;
 }
 
-static bool setFontsMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool setFontsMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     // ensure that we are dealing with the document which currently has the focus
     document = MacroRunWindowEx();
@@ -1287,7 +1287,7 @@ static bool setFontsMS(DocumentWidget *document, gsl::span<DataValue> arguments,
 
 
 
-static bool setHighlightSyntaxMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool setHighlightSyntaxMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     document = MacroRunWindowEx();
     int newState;
@@ -1312,7 +1312,7 @@ static bool setHighlightSyntaxMS(DocumentWidget *document, gsl::span<DataValue> 
     return true;
 }
 
-static bool setIncrementalBackupMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool setIncrementalBackupMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
     document = MacroRunWindowEx();
     int newState;
 
@@ -1330,7 +1330,7 @@ static bool setIncrementalBackupMS(DocumentWidget *document, gsl::span<DataValue
     return true;
 }
 
-static bool setIncrementalSearchLineMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool setIncrementalSearchLineMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
     document = MacroRunWindowEx();
 
     MainWindow *win = document->toWindow();
@@ -1347,7 +1347,7 @@ static bool setIncrementalSearchLineMS(DocumentWidget *document, gsl::span<DataV
     return true;
 }
 
-static bool setMakeBackupCopyMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool setMakeBackupCopyMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     document = MacroRunWindowEx();
     int newState;
@@ -1366,7 +1366,7 @@ static bool setMakeBackupCopyMS(DocumentWidget *document, gsl::span<DataValue> a
     return true;
 }
 
-static bool setLockedMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool setLockedMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     document = MacroRunWindowEx();
     int newState;
@@ -1387,7 +1387,7 @@ static bool setLockedMS(DocumentWidget *document, gsl::span<DataValue> arguments
     return true;
 }
 
-static bool setLanguageModeMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool setLanguageModeMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     document = MacroRunWindowEx();
 
@@ -1402,7 +1402,7 @@ static bool setLanguageModeMS(DocumentWidget *document, gsl::span<DataValue> arg
     return true;
 }
 
-static bool setOvertypeModeMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool setOvertypeModeMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     document = MacroRunWindowEx();
     int newState;
@@ -1420,7 +1420,7 @@ static bool setOvertypeModeMS(DocumentWidget *document, gsl::span<DataValue> arg
     return true;
 }
 
-static bool setShowLineNumbersMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool setShowLineNumbersMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     document = MacroRunWindowEx();
 
@@ -1441,7 +1441,7 @@ static bool setShowLineNumbersMS(DocumentWidget *document, gsl::span<DataValue> 
     return true;
 }
 
-static bool setShowMatchingMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool setShowMatchingMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     document = MacroRunWindowEx();
 
@@ -1479,7 +1479,7 @@ static bool setShowMatchingMS(DocumentWidget *document, gsl::span<DataValue> arg
     return true;
 }
 
-static bool setMatchSyntaxBasedMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool setMatchSyntaxBasedMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     document = MacroRunWindowEx();
 
@@ -1498,7 +1498,7 @@ static bool setMatchSyntaxBasedMS(DocumentWidget *document, gsl::span<DataValue>
     return true;
 }
 
-static bool setStatisticsLineMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool setStatisticsLineMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     document = MacroRunWindowEx();
 
@@ -1517,7 +1517,7 @@ static bool setStatisticsLineMS(DocumentWidget *document, gsl::span<DataValue> a
     return true;
 }
 
-static bool setTabDistMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool setTabDistMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     document = MacroRunWindowEx();
 
@@ -1536,7 +1536,7 @@ static bool setTabDistMS(DocumentWidget *document, gsl::span<DataValue> argument
     return true;
 }
 
-static bool setUseTabsMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool setUseTabsMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     document = MacroRunWindowEx();
 
@@ -1548,7 +1548,7 @@ static bool setUseTabsMS(DocumentWidget *document, gsl::span<DataValue> argument
     return true;
 }
 
-static bool setWrapMarginMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool setWrapMarginMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     document = MacroRunWindowEx();
 
@@ -1572,7 +1572,7 @@ static bool setWrapMarginMS(DocumentWidget *document, gsl::span<DataValue> argum
     return true;
 }
 
-static bool setWrapTextMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool setWrapTextMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     document = MacroRunWindowEx();
 
@@ -1600,7 +1600,7 @@ static bool setWrapTextMS(DocumentWidget *document, gsl::span<DataValue> argumen
     return true;
 }
 
-static bool findIncrMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool findIncrMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     document = MacroRunWindowEx();
 
@@ -1645,7 +1645,7 @@ static bool findIncrMS(DocumentWidget *document, gsl::span<DataValue> arguments,
     return true;
 }
 
-static bool startIncrFindMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool startIncrFindMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
 
@@ -1663,7 +1663,7 @@ static bool startIncrFindMS(DocumentWidget *document, gsl::span<DataValue> argum
     return true;
 }
 
-static bool replaceFindMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool replaceFindMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     document = MacroRunWindowEx();
 
@@ -1703,7 +1703,7 @@ static bool replaceFindMS(DocumentWidget *document, gsl::span<DataValue> argumen
 
 }
 
-static bool replaceFindSameMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool replaceFindSameMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(arguments);
     Q_UNUSED(errMsg);
@@ -1731,7 +1731,7 @@ static bool replaceFindSameMS(DocumentWidget *document, gsl::span<DataValue> arg
     return true;
 }
 
-static bool nextDocumentMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool nextDocumentMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(arguments);
     Q_UNUSED(errMsg);
@@ -1750,7 +1750,7 @@ static bool nextDocumentMS(DocumentWidget *document, gsl::span<DataValue> argume
     return true;
 }
 
-static bool prevDocumentMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool prevDocumentMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(arguments);
     Q_UNUSED(errMsg);
@@ -1769,7 +1769,7 @@ static bool prevDocumentMS(DocumentWidget *document, gsl::span<DataValue> argume
     return true;
 }
 
-static bool lastDocumentMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool lastDocumentMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(arguments);
     Q_UNUSED(errMsg);
@@ -1788,7 +1788,7 @@ static bool lastDocumentMS(DocumentWidget *document, gsl::span<DataValue> argume
     return true;
 }
 
-static bool backgroundMenuCommandMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool backgroundMenuCommandMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(arguments);
     Q_UNUSED(errMsg);
@@ -2638,7 +2638,7 @@ void learnActionHook(Widget w, XtPointer clientData, String actionName, XEvent *
 /*
 ** Built-in macro subroutine for getting the length of a string
 */
-static bool lengthMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool lengthMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(document);
 
@@ -2654,7 +2654,7 @@ static bool lengthMS(DocumentWidget *document, gsl::span<DataValue> arguments, D
 /*
 ** Built-in macro subroutines for min and max
 */
-static bool minMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool minMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(document);
 
@@ -2681,7 +2681,7 @@ static bool minMS(DocumentWidget *document, gsl::span<DataValue> arguments, Data
     return true;
 }
 
-static bool maxMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool maxMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
     Q_UNUSED(document);
 
     int maxVal;
@@ -2707,7 +2707,7 @@ static bool maxMS(DocumentWidget *document, gsl::span<DataValue> arguments, Data
     return true;
 }
 
-static bool focusWindowMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool focusWindowMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
 
     /* Read the argument representing the window to focus to, and translate
@@ -2785,7 +2785,7 @@ static bool focusWindowMS(DocumentWidget *document, gsl::span<DataValue> argumen
 ** Built-in macro subroutine for getting text from the current window's text
 ** buffer
 */
-static bool getRangeMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool getRangeMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
     int from;
     int to;
     TextBuffer *buf = document->buffer_;
@@ -2816,7 +2816,7 @@ static bool getRangeMS(DocumentWidget *document, gsl::span<DataValue> arguments,
 ** Built-in macro subroutine for getting a single character at the position
 ** given, from the current window
 */
-static bool getCharacterMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool getCharacterMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
     int pos;
     TextBuffer *buf = document->buffer_;
 
@@ -2840,7 +2840,7 @@ static bool getCharacterMS(DocumentWidget *document, gsl::span<DataValue> argume
 ** Built-in macro subroutine for replacing text in the current window's text
 ** buffer
 */
-static bool replaceRangeMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool replaceRangeMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
     int from;
     int to;
     TextBuffer *buf = document->buffer_;
@@ -2885,7 +2885,7 @@ static bool replaceRangeMS(DocumentWidget *document, gsl::span<DataValue> argume
 ** Built-in macro subroutine for replacing the primary-selection selected
 ** text in the current window's text buffer
 */
-static bool replaceSelectionMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool replaceSelectionMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
     std::string string;
 
     // Validate argument and convert to string
@@ -2921,7 +2921,7 @@ static bool replaceSelectionMS(DocumentWidget *document, gsl::span<DataValue> ar
 ** the primary selection in the current window's text buffer, or in any
 ** part of screen if "any" argument is given
 */
-static bool getSelectionMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool getSelectionMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     /* Read argument list to check for "any" keyword, and get the appropriate
        selection */
@@ -2956,7 +2956,7 @@ static bool getSelectionMS(DocumentWidget *document, gsl::span<DataValue> argume
 ** Built-in macro subroutine for determining if implicit conversion of
 ** a string to number will succeed or fail
 */
-static bool validNumberMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool validNumberMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
     Q_UNUSED(document);
 
     std::string string;
@@ -2972,7 +2972,7 @@ static bool validNumberMS(DocumentWidget *document, gsl::span<DataValue> argumen
 /*
 ** Built-in macro subroutine for replacing a substring within another string
 */
-static bool replaceSubstringMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool replaceSubstringMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(document);
 
@@ -3006,7 +3006,7 @@ static bool replaceSubstringMS(DocumentWidget *document, gsl::span<DataValue> ar
 ** Built-in macro subroutine for getting a substring of a string.
 ** Called as substring(string, from [, to])
 */
-static bool substringMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool substringMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(document);
 
@@ -3044,7 +3044,7 @@ static bool substringMS(DocumentWidget *document, gsl::span<DataValue> arguments
     return true;
 }
 
-static bool toupperMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool toupperMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(document);
     std::string string;
@@ -3063,7 +3063,7 @@ static bool toupperMS(DocumentWidget *document, gsl::span<DataValue> arguments, 
     return true;
 }
 
-static bool tolowerMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool tolowerMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(document);
     std::string string;
@@ -3082,7 +3082,7 @@ static bool tolowerMS(DocumentWidget *document, gsl::span<DataValue> arguments, 
     return true;
 }
 
-static bool stringToClipboardMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool stringToClipboardMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(document);
 
@@ -3099,7 +3099,7 @@ static bool stringToClipboardMS(DocumentWidget *document, gsl::span<DataValue> a
     return true;
 }
 
-static bool clipboardToStringMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool clipboardToStringMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(document);
 
@@ -3126,7 +3126,7 @@ static bool clipboardToStringMS(DocumentWidget *document, gsl::span<DataValue> a
 ** file as a string in the subroutine return value.  On failure, returns
 ** the empty string "" and an 0 $readStatus.
 */
-static bool readFileMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool readFileMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
     Q_UNUSED(document);
 
     std::string name;
@@ -3159,15 +3159,15 @@ static bool readFileMS(DocumentWidget *document, gsl::span<DataValue> arguments,
 ** to a file named in parameter $2. Returns 1 on successful write, or 0 if
 ** unsuccessful.
 */
-static bool writeFileMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool writeFileMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
     return writeOrAppendFile(false, document, arguments, result, errMsg);
 }
 
-static bool appendFileMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool appendFileMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
     return writeOrAppendFile(true, document, arguments, result, errMsg);
 }
 
-static bool writeOrAppendFile(bool append, DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool writeOrAppendFile(bool append, DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(document);
 
@@ -3213,7 +3213,7 @@ static bool writeOrAppendFile(bool append, DocumentWidget *document, gsl::span<D
 ** Returns the starting position of the match, or -1 if nothing matched.
 ** also returns the ending position of the match in $searchEndPos
 */
-static bool searchMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool searchMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
     DataValue newArgList[9];
 
     /* Use the search string routine, by adding the buffer contents as
@@ -3232,7 +3232,7 @@ static bool searchMS(DocumentWidget *document, gsl::span<DataValue> arguments, D
 
     return searchStringMS(
                 document,
-                gsl::span<DataValue>(newArgList, arguments.size() + 1),
+                Arguments(newArgList, arguments.size() + 1),
                 result,
                 errMsg);
 }
@@ -3248,7 +3248,7 @@ static bool searchMS(DocumentWidget *document, gsl::span<DataValue> arguments, D
 ** Returns the starting position of the match, or -1 if nothing matched.
 ** also returns the ending position of the match in $searchEndPos
 */
-static bool searchStringMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool searchStringMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
     int beginPos;
     WrapMode wrap;
     bool found     = false;
@@ -3329,7 +3329,7 @@ static bool searchStringMS(DocumentWidget *document, gsl::span<DataValue> argume
 ** were performed and "copy" was specified, returns a copy of the original
 ** string.  Otherwise returns an empty string ("").
 */
-static bool replaceInStringMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool replaceInStringMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     std::string string;
     QString searchStr;
@@ -3401,7 +3401,7 @@ static bool replaceInStringMS(DocumentWidget *document, gsl::span<DataValue> arg
     return true;
 }
 
-static bool readSearchArgs(gsl::span<DataValue> arguments, Direction *searchDirection, SearchType *searchType, WrapMode *wrap, const char **errMsg) {
+static bool readSearchArgs(Arguments arguments, Direction *searchDirection, SearchType *searchType, WrapMode *wrap, const char **errMsg) {
 
     QString argStr;
 
@@ -3427,7 +3427,7 @@ static bool readSearchArgs(gsl::span<DataValue> arguments, Direction *searchDire
     return true;
 }
 
-static bool setCursorPosMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool setCursorPosMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
     int pos;
 
     // Get argument and convert to int
@@ -3442,7 +3442,7 @@ static bool setCursorPosMS(DocumentWidget *document, gsl::span<DataValue> argume
     return true;
 }
 
-static bool selectMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool selectMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
     int start;
     int end;
 
@@ -3465,7 +3465,7 @@ static bool selectMS(DocumentWidget *document, gsl::span<DataValue> arguments, D
     return true;
 }
 
-static bool selectRectangleMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool selectRectangleMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
     int start, end, left, right;
 
     // Get arguments and convert to int
@@ -3482,7 +3482,7 @@ static bool selectRectangleMS(DocumentWidget *document, gsl::span<DataValue> arg
 /*
 ** Macro subroutine to ring the bell
 */
-static bool beepMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool beepMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(document);
 
@@ -3495,7 +3495,7 @@ static bool beepMS(DocumentWidget *document, gsl::span<DataValue> arguments, Dat
     return true;
 }
 
-static bool tPrintMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool tPrintMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(document);
 
@@ -3521,7 +3521,7 @@ static bool tPrintMS(DocumentWidget *document, gsl::span<DataValue> arguments, D
 /*
 ** Built-in macro subroutine for getting the value of an environment variable
 */
-static bool getenvMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool getenvMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(document);
 
@@ -3539,7 +3539,7 @@ static bool getenvMS(DocumentWidget *document, gsl::span<DataValue> arguments, D
     return true;
 }
 
-static bool shellCmdMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool shellCmdMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     QString cmdString;
     QString inputString;
@@ -3578,7 +3578,7 @@ void ReturnShellCommandOutputEx(DocumentWidget *document, const QString &outText
     }
 }
 
-static bool dialogMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool dialogMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     QString btnLabel;
     QString message;
@@ -3636,7 +3636,7 @@ static bool dialogMS(DocumentWidget *document, gsl::span<DataValue> arguments, D
     return true;
 }
 
-static bool stringDialogMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool stringDialogMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     QString btnLabel;
     QString message;
@@ -3721,7 +3721,7 @@ static bool stringDialogMS(DocumentWidget *document, gsl::span<DataValue> argume
 ** Does this need to go on IgnoredActions?  I don't think so, since
 ** showing a calltip may be part of the action you want to learn.
 */
-static bool calltipMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool calltipMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     QString tipText;
     std::string txtArg;
@@ -3820,7 +3820,7 @@ static bool calltipMS(DocumentWidget *document, gsl::span<DataValue> arguments, 
 /*
 ** A subroutine to kill the current calltip
 */
-static bool killCalltipMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool killCalltipMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
     int calltipID = 0;
 
     if (arguments.size() > 1) {
@@ -3840,7 +3840,7 @@ static bool killCalltipMS(DocumentWidget *document, gsl::span<DataValue> argumen
 /*
  * A subroutine to get the ID of the current calltip, or 0 if there is none.
  */
-static bool calltipIDMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool calltipIDMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
     Q_UNUSED(arguments);
@@ -3849,7 +3849,7 @@ static bool calltipIDMV(DocumentWidget *document, gsl::span<DataValue> arguments
     return true;
 }
 
-static bool replaceAllInSelectionMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool replaceAllInSelectionMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     // replace_in_selection( search-string, replace-string [, search-type] )
 
@@ -3871,7 +3871,7 @@ static bool replaceAllInSelectionMS(DocumentWidget *document, gsl::span<DataValu
     return true;
 }
 
-static bool replaceAllMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool replaceAllMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     // replace_all( search-string, replace-string [, search-type] )
 
@@ -3919,7 +3919,7 @@ static bool replaceAllMS(DocumentWidget *document, gsl::span<DataValue> argument
 **
 ** Note that defaultName doesn't work on all *tifs.  :-(
 */
-static bool filenameDialogMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool filenameDialogMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     QString title           = QLatin1String("Choose Filename");
     QString mode            = QLatin1String("exist");
@@ -4012,7 +4012,7 @@ static bool filenameDialogMS(DocumentWidget *document, gsl::span<DataValue> argu
 }
 
 // T Balinski
-static bool listDialogMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool listDialogMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     QString btnLabel;
     QString message;
@@ -4084,7 +4084,7 @@ static bool listDialogMS(DocumentWidget *document, gsl::span<DataValue> argument
     return true;
 }
 
-static bool stringCompareMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool stringCompareMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(document);
 
@@ -4140,7 +4140,7 @@ static bool stringCompareMS(DocumentWidget *document, gsl::span<DataValue> argum
 ** array sub-scripts
 */
 
-static bool splitMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool splitMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     std::string sourceStr;
     QString splitStr;
@@ -4285,7 +4285,7 @@ static bool splitMS(DocumentWidget *document, gsl::span<DataValue> arguments, Da
 ** will be cleared, turning off backlighting.
 */
 #if 0 // DISABLED for 5.4
-static bool setBacklightStringMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool setBacklightStringMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(result);
 
@@ -4313,7 +4313,7 @@ static bool setBacklightStringMS(DocumentWidget *document, gsl::span<DataValue> 
 }
 #endif
 
-static bool cursorMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool cursorMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
     Q_UNUSED(arguments);
@@ -4323,7 +4323,7 @@ static bool cursorMV(DocumentWidget *document, gsl::span<DataValue> arguments, D
     return true;
 }
 
-static bool lineMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool lineMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
     Q_UNUSED(arguments);
@@ -4342,7 +4342,7 @@ static bool lineMV(DocumentWidget *document, gsl::span<DataValue> arguments, Dat
     return true;
 }
 
-static bool columnMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool columnMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
     Q_UNUSED(arguments);
@@ -4356,7 +4356,7 @@ static bool columnMV(DocumentWidget *document, gsl::span<DataValue> arguments, D
     return true;
 }
 
-static bool fileNameMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool fileNameMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
     Q_UNUSED(arguments);
@@ -4365,7 +4365,7 @@ static bool fileNameMV(DocumentWidget *document, gsl::span<DataValue> arguments,
     return true;
 }
 
-static bool filePathMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool filePathMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
     Q_UNUSED(arguments);
@@ -4374,7 +4374,7 @@ static bool filePathMV(DocumentWidget *document, gsl::span<DataValue> arguments,
     return true;
 }
 
-static bool lengthMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool lengthMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
     Q_UNUSED(arguments);
@@ -4383,7 +4383,7 @@ static bool lengthMV(DocumentWidget *document, gsl::span<DataValue> arguments, D
     return true;
 }
 
-static bool selectionStartMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool selectionStartMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
     Q_UNUSED(arguments);
@@ -4392,7 +4392,7 @@ static bool selectionStartMV(DocumentWidget *document, gsl::span<DataValue> argu
     return true;
 }
 
-static bool selectionEndMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool selectionEndMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
     Q_UNUSED(arguments);
@@ -4401,7 +4401,7 @@ static bool selectionEndMV(DocumentWidget *document, gsl::span<DataValue> argume
     return true;
 }
 
-static bool selectionLeftMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool selectionLeftMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
     Q_UNUSED(arguments);
@@ -4412,7 +4412,7 @@ static bool selectionLeftMV(DocumentWidget *document, gsl::span<DataValue> argum
     return true;
 }
 
-static bool selectionRightMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool selectionRightMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
     Q_UNUSED(arguments);
@@ -4423,7 +4423,7 @@ static bool selectionRightMV(DocumentWidget *document, gsl::span<DataValue> argu
     return true;
 }
 
-static bool wrapMarginMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool wrapMarginMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
     Q_UNUSED(arguments);
@@ -4435,7 +4435,7 @@ static bool wrapMarginMV(DocumentWidget *document, gsl::span<DataValue> argument
     return true;
 }
 
-static bool statisticsLineMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool statisticsLineMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
     Q_UNUSED(arguments);
@@ -4444,7 +4444,7 @@ static bool statisticsLineMV(DocumentWidget *document, gsl::span<DataValue> argu
     return true;
 }
 
-static bool incSearchLineMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool incSearchLineMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
     Q_UNUSED(arguments);
@@ -4453,7 +4453,7 @@ static bool incSearchLineMV(DocumentWidget *document, gsl::span<DataValue> argum
     return true;
 }
 
-static bool showLineNumbersMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool showLineNumbersMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
     Q_UNUSED(arguments);
@@ -4462,7 +4462,7 @@ static bool showLineNumbersMV(DocumentWidget *document, gsl::span<DataValue> arg
     return true;
 }
 
-static bool autoIndentMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool autoIndentMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
     Q_UNUSED(arguments);
@@ -4487,7 +4487,7 @@ static bool autoIndentMV(DocumentWidget *document, gsl::span<DataValue> argument
     return true;
 }
 
-static bool wrapTextMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool wrapTextMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
     Q_UNUSED(arguments);
@@ -4512,7 +4512,7 @@ static bool wrapTextMV(DocumentWidget *document, gsl::span<DataValue> arguments,
     return true;
 }
 
-static bool highlightSyntaxMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool highlightSyntaxMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
     Q_UNUSED(arguments);
@@ -4521,7 +4521,7 @@ static bool highlightSyntaxMV(DocumentWidget *document, gsl::span<DataValue> arg
     return true;
 }
 
-static bool makeBackupCopyMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool makeBackupCopyMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
     Q_UNUSED(arguments);
@@ -4530,7 +4530,7 @@ static bool makeBackupCopyMV(DocumentWidget *document, gsl::span<DataValue> argu
     return true;
 }
 
-static bool incBackupMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool incBackupMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
     Q_UNUSED(arguments);
@@ -4539,7 +4539,7 @@ static bool incBackupMV(DocumentWidget *document, gsl::span<DataValue> arguments
     return true;
 }
 
-static bool showMatchingMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool showMatchingMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
     Q_UNUSED(arguments);
@@ -4562,7 +4562,7 @@ static bool showMatchingMV(DocumentWidget *document, gsl::span<DataValue> argume
     return true;
 }
 
-static bool matchSyntaxBasedMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool matchSyntaxBasedMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
     Q_UNUSED(arguments);
@@ -4571,7 +4571,7 @@ static bool matchSyntaxBasedMV(DocumentWidget *document, gsl::span<DataValue> ar
     return true;
 }
 
-static bool overTypeModeMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool overTypeModeMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
     Q_UNUSED(arguments);
@@ -4580,7 +4580,7 @@ static bool overTypeModeMV(DocumentWidget *document, gsl::span<DataValue> argume
     return true;
 }
 
-static bool readOnlyMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool readOnlyMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
     Q_UNUSED(arguments);
@@ -4589,7 +4589,7 @@ static bool readOnlyMV(DocumentWidget *document, gsl::span<DataValue> arguments,
     return true;
 }
 
-static bool lockedMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool lockedMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
     Q_UNUSED(arguments);
@@ -4598,7 +4598,7 @@ static bool lockedMV(DocumentWidget *document, gsl::span<DataValue> arguments, D
     return true;
 }
 
-static bool fileFormatMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool fileFormatMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
     Q_UNUSED(arguments);
@@ -4621,7 +4621,7 @@ static bool fileFormatMV(DocumentWidget *document, gsl::span<DataValue> argument
     return true;
 }
 
-static bool fontNameMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool fontNameMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
     Q_UNUSED(errMsg);
     Q_UNUSED(arguments);
 
@@ -4629,7 +4629,7 @@ static bool fontNameMV(DocumentWidget *document, gsl::span<DataValue> arguments,
     return true;
 }
 
-static bool fontNameItalicMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool fontNameItalicMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
     Q_UNUSED(errMsg);
     Q_UNUSED(arguments);
 
@@ -4637,7 +4637,7 @@ static bool fontNameItalicMV(DocumentWidget *document, gsl::span<DataValue> argu
     return true;
 }
 
-static bool fontNameBoldMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool fontNameBoldMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
     Q_UNUSED(errMsg);
     Q_UNUSED(arguments);
 
@@ -4645,7 +4645,7 @@ static bool fontNameBoldMV(DocumentWidget *document, gsl::span<DataValue> argume
     return true;
 }
 
-static bool fontNameBoldItalicMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool fontNameBoldItalicMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
     Q_UNUSED(errMsg);
     Q_UNUSED(arguments);
 
@@ -4653,7 +4653,7 @@ static bool fontNameBoldItalicMV(DocumentWidget *document, gsl::span<DataValue> 
     return true;
 }
 
-static bool subscriptSepMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool subscriptSepMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
     Q_UNUSED(document);
     Q_UNUSED(errMsg);
     Q_UNUSED(arguments);
@@ -4662,7 +4662,7 @@ static bool subscriptSepMV(DocumentWidget *document, gsl::span<DataValue> argume
     return true;
 }
 
-static bool minFontWidthMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool minFontWidthMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
     Q_UNUSED(errMsg);
     Q_UNUSED(arguments);
 
@@ -4671,7 +4671,7 @@ static bool minFontWidthMV(DocumentWidget *document, gsl::span<DataValue> argume
     return true;
 }
 
-static bool maxFontWidthMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool maxFontWidthMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
     Q_UNUSED(errMsg);
     Q_UNUSED(arguments);
 
@@ -4680,7 +4680,7 @@ static bool maxFontWidthMV(DocumentWidget *document, gsl::span<DataValue> argume
     return true;
 }
 
-static bool topLineMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool topLineMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
     Q_UNUSED(errMsg);
     Q_UNUSED(arguments);
 
@@ -4689,7 +4689,7 @@ static bool topLineMV(DocumentWidget *document, gsl::span<DataValue> arguments, 
     return true;
 }
 
-static bool numDisplayLinesMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool numDisplayLinesMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
     Q_UNUSED(errMsg);
     Q_UNUSED(arguments);
 
@@ -4698,7 +4698,7 @@ static bool numDisplayLinesMV(DocumentWidget *document, gsl::span<DataValue> arg
     return true;
 }
 
-static bool displayWidthMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool displayWidthMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
     Q_UNUSED(arguments);
@@ -4708,7 +4708,7 @@ static bool displayWidthMV(DocumentWidget *document, gsl::span<DataValue> argume
     return true;
 }
 
-static bool activePaneMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool activePaneMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(arguments);
     Q_UNUSED(errMsg);
@@ -4717,7 +4717,7 @@ static bool activePaneMV(DocumentWidget *document, gsl::span<DataValue> argument
     return true;
 }
 
-static bool nPanesMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool nPanesMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(arguments);
     Q_UNUSED(errMsg);
@@ -4726,7 +4726,7 @@ static bool nPanesMV(DocumentWidget *document, gsl::span<DataValue> arguments, D
     return true;
 }
 
-static bool emptyArrayMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool emptyArrayMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(document);
     Q_UNUSED(arguments);
@@ -4736,7 +4736,7 @@ static bool emptyArrayMV(DocumentWidget *document, gsl::span<DataValue> argument
     return true;
 }
 
-static bool serverNameMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool serverNameMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(document);
     Q_UNUSED(arguments);
@@ -4746,7 +4746,7 @@ static bool serverNameMV(DocumentWidget *document, gsl::span<DataValue> argument
     return true;
 }
 
-static bool tabDistMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool tabDistMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(arguments);
     Q_UNUSED(errMsg);
@@ -4755,7 +4755,7 @@ static bool tabDistMV(DocumentWidget *document, gsl::span<DataValue> arguments, 
     return true;
 }
 
-static bool emTabDistMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool emTabDistMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(arguments);
     Q_UNUSED(errMsg);
@@ -4766,7 +4766,7 @@ static bool emTabDistMV(DocumentWidget *document, gsl::span<DataValue> arguments
     return true;
 }
 
-static bool useTabsMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool useTabsMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(arguments);
     Q_UNUSED(errMsg);
@@ -4775,7 +4775,7 @@ static bool useTabsMV(DocumentWidget *document, gsl::span<DataValue> arguments, 
     return true;
 }
 
-static bool modifiedMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool modifiedMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(arguments);
     Q_UNUSED(errMsg);
@@ -4784,7 +4784,7 @@ static bool modifiedMV(DocumentWidget *document, gsl::span<DataValue> arguments,
     return true;
 }
 
-static bool languageModeMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool languageModeMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(arguments);
     Q_UNUSED(errMsg);
@@ -4804,7 +4804,7 @@ static bool languageModeMV(DocumentWidget *document, gsl::span<DataValue> argume
 /*
 ** Range set macro variables and functions
 */
-static bool rangesetListMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool rangesetListMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(arguments);
 
@@ -4841,7 +4841,7 @@ static bool rangesetListMV(DocumentWidget *document, gsl::span<DataValue> argume
 **  different point revisions. This is done because the macro interface
 **  does not change for the same version.
 */
-static bool versionMV(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool versionMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Q_UNUSED(errMsg);
     Q_UNUSED(arguments);
@@ -4859,7 +4859,7 @@ static bool versionMV(DocumentWidget *document, gsl::span<DataValue> arguments, 
 ** If called with no arguments, returns a single rangeset label (not an array),
 ** or an empty string if there are no rangesets available.
 */
-static bool rangesetCreateMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool rangesetCreateMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     int nRangesetsRequired;
     DataValue element;
@@ -4900,7 +4900,7 @@ static bool rangesetCreateMS(DocumentWidget *document, gsl::span<DataValue> argu
 /*
 ** Built-in macro subroutine for forgetting a range set.
 */
-static bool rangesetDestroyMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool rangesetDestroyMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
     RangesetTable *rangesetTable = document->buffer_->rangesetTable_;
     DataValue element;
     int label = 0;
@@ -4958,7 +4958,7 @@ static bool rangesetDestroyMS(DocumentWidget *document, gsl::span<DataValue> arg
 ** Arguments are $1: range set name.
 ** return value is an array indexed 0 to n, with the rangeset labels as values;
 */
-static bool rangesetGetByNameMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool rangesetGetByNameMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     Rangeset *rangeset;
     QString name;
@@ -5008,7 +5008,7 @@ static bool rangesetGetByNameMS(DocumentWidget *document, gsl::span<DataValue> a
 ** if any to specify range to add - must not be rectangular). Returns the
 ** index of the newly added range (cases b and c), or 0 (case a).
 */
-static bool rangesetAddMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool rangesetAddMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
     TextBuffer *buffer = document->buffer_;
     RangesetTable *rangesetTable = buffer->rangesetTable_;
     int start;
@@ -5104,7 +5104,7 @@ static bool rangesetAddMS(DocumentWidget *document, gsl::span<DataValue> argumen
 ** to RangesetSubtract()/RangesetSubtractBetween(), the handling of an
 ** undefined destination range, and that it returns no value.
 */
-static bool rangesetSubtractMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool rangesetSubtractMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
     TextBuffer *buffer = document->buffer_;
     RangesetTable *rangesetTable = buffer->rangesetTable_;
     int start, end, rectStart, rectEnd;
@@ -5178,7 +5178,7 @@ static bool rangesetSubtractMS(DocumentWidget *document, gsl::span<DataValue> ar
 ** label (one alphabetic character). Returns nothing. Fails if range set
 ** undefined.
 */
-static bool rangesetInvertMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool rangesetInvertMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     RangesetTable *rangesetTable = document->buffer_->rangesetTable_;
     int label;
@@ -5214,7 +5214,7 @@ static bool rangesetInvertMS(DocumentWidget *document, gsl::span<DataValue> argu
 ** argument of a rangeset label.  Returns an array with the following keys:
 **    defined, count, color, mode.
 */
-static bool rangesetInfoMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool rangesetInfoMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
     RangesetTable *rangesetTable = document->buffer_->rangesetTable_;
     Rangeset *rangeset = nullptr;
     DataValue element;
@@ -5280,7 +5280,7 @@ static bool rangesetInfoMS(DocumentWidget *document, gsl::span<DataValue> argume
 ** ranges, otherwise select the individual range specified.  Returns
 ** an array with the keys "start" and "end" and values
 */
-static bool rangesetRangeMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool rangesetRangeMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
     TextBuffer *buffer = document->buffer_;
     RangesetTable *rangesetTable = buffer->rangesetTable_;
     Rangeset *rangeset;
@@ -5341,7 +5341,7 @@ static bool rangesetRangeMS(DocumentWidget *document, gsl::span<DataValue> argum
 ** false (zero) if not in a range, range index (1-based) if in a range;
 ** fails if parameters were bad.
 */
-static bool rangesetIncludesPosMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool rangesetIncludesPosMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
     TextBuffer *buffer = document->buffer_;
     RangesetTable *rangesetTable = buffer->rangesetTable_;
     int rangeIndex;
@@ -5391,7 +5391,7 @@ static bool rangesetIncludesPosMS(DocumentWidget *document, gsl::span<DataValue>
 ** found/applied. If no color is applied, any current color is removed. Returns
 ** true if the rangeset is valid.
 */
-static bool rangesetSetColorMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool rangesetSetColorMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     TextBuffer *buffer = document->buffer_;
     RangesetTable *rangesetTable = buffer->rangesetTable_;
@@ -5430,7 +5430,7 @@ static bool rangesetSetColorMS(DocumentWidget *document, gsl::span<DataValue> ar
 ** Set the name of a range set's ranges. Returns
 ** true if the rangeset is valid.
 */
-static bool rangesetSetNameMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool rangesetSetNameMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     TextBuffer *buffer = document->buffer_;
     RangesetTable *rangesetTable = buffer->rangesetTable_;
@@ -5469,7 +5469,7 @@ static bool rangesetSetNameMS(DocumentWidget *document, gsl::span<DataValue> arg
 ** Change a range's modification response. Returns true if the rangeset is
 ** valid and the response type name is valid.
 */
-static bool rangesetSetModeMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool rangesetSetModeMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     TextBuffer *buffer = document->buffer_;
     RangesetTable *rangesetTable = buffer->rangesetTable_;
@@ -5614,7 +5614,7 @@ static bool fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWi
 **      ["italic"]      '1' if style is italic, '0' otherwise
 **
 */
-static bool getStyleByNameMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool getStyleByNameMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
     QString styleName;
 
     // Validate number of arguments
@@ -5651,7 +5651,7 @@ static bool getStyleByNameMS(DocumentWidget *document, gsl::span<DataValue> argu
 **      ["extent"]      Forward distance from position over which style applies
 **
 */
-static bool getStyleAtPosMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool getStyleAtPosMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
     int patCode;
     int bufferPos;
     TextBuffer *buf = document->buffer_;
@@ -5740,7 +5740,7 @@ bool fillPatternResultEx(DataValue *result, const char **errMsg, DocumentWidget 
 ** The returned array looks like this:
 **      ["style"]       Name of style
 */
-static bool getPatternByNameMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool getPatternByNameMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     QString patternName;
 
@@ -5775,7 +5775,7 @@ static bool getPatternByNameMS(DocumentWidget *document, gsl::span<DataValue> ar
 **      ["style"]       Name of style
 **      ["extent"]      Distance from position over which this pattern applies
 */
-static bool getPatternAtPosMS(DocumentWidget *document, gsl::span<DataValue> arguments, DataValue *result, const char **errMsg) {
+static bool getPatternAtPosMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
     int bufferPos;
     TextBuffer *buffer = document->buffer_;
 
@@ -5892,7 +5892,7 @@ static bool readArgument(DataValue dv, QString *result, const char **errMsg) {
 
 
 template <class T, class ...Ts>
-bool readArguments(gsl::span<DataValue> arguments, int index, const char **errMsg, T arg, Ts...args) {
+bool readArguments(Arguments arguments, int index, const char **errMsg, T arg, Ts...args) {
 
     static_assert(std::is_pointer<T>::value, "Argument is not a pointer");
 
@@ -5909,7 +5909,7 @@ bool readArguments(gsl::span<DataValue> arguments, int index, const char **errMs
 }
 
 template <class T>
-bool readArguments(gsl::span<DataValue> arguments, int index, const char **errMsg, T arg) {
+bool readArguments(Arguments arguments, int index, const char **errMsg, T arg) {
 
     static_assert(std::is_pointer<T>::value, "Argument is not a pointer");
 
