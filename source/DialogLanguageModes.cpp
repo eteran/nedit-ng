@@ -157,13 +157,13 @@ void DialogLanguageModes::on_listItems_itemSelectionChanged() {
 		}
 
 		switch(language->indentStyle) {
-		case 0:
+        case IndentStyle::None:
 			ui.radioIndentNone->setChecked(true);
 			break;
-		case 1:
+        case IndentStyle::Auto:
 			ui.radioIndentAuto->setChecked(true);
 			break;
-		case 2:
+        case IndentStyle::Smart:
 			ui.radioIndentSmart->setChecked(true);
 			break;
 		default:
@@ -336,13 +336,13 @@ std::unique_ptr<LanguageMode> DialogLanguageModes::readLMDialogFields(Mode mode)
 
 	// read indent style
 	if(ui.radioIndentNone->isChecked()) {
-		lm->indentStyle = NO_AUTO_INDENT;
+        lm->indentStyle = IndentStyle::None;
 	} else if(ui.radioIndentAuto->isChecked()) {
-		lm->indentStyle = AUTO_INDENT;
+        lm->indentStyle = IndentStyle::Auto;
 	} else if(ui.radioIndentSmart->isChecked()) {
-		lm->indentStyle = SMART_INDENT;
+        lm->indentStyle = IndentStyle::Smart;
 	} else if(ui.radioIndentDefault->isChecked()) {
-		lm->indentStyle = DEFAULT_INDENT;
+        lm->indentStyle = IndentStyle::Default;
 	}
 
 	// read wrap style

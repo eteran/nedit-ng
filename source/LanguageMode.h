@@ -23,7 +23,7 @@ public:
 	QString     defTipsFile;
 	QString     delimiters;
     WrapStyle   wrapStyle       = NO_WRAP;
-    IndentStyle indentStyle     = NO_AUTO_INDENT;
+    IndentStyle indentStyle     = IndentStyle::None;
     int         tabDist         = DEFAULT_TAB_DIST;
     int         emTabDist       = DEFAULT_EM_TAB_DIST;
 };

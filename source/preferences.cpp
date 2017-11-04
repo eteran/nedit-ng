@@ -285,7 +285,7 @@ int GetPrefReplaceDefScope() {
 }
 #endif
 
-void SetPrefAutoIndent(int state) {
+void SetPrefAutoIndent(IndentStyle state) {
     if(g_Settings.autoIndent != state) {
         PrefsHaveChanged = true;
     }
@@ -293,7 +293,7 @@ void SetPrefAutoIndent(int state) {
 }
 
 IndentStyle GetPrefAutoIndent(int langMode) {
-    if (langMode == PLAIN_LANGUAGE_MODE || LanguageModes[langMode].indentStyle == DEFAULT_INDENT) {
+    if (langMode == PLAIN_LANGUAGE_MODE || LanguageModes[langMode].indentStyle == IndentStyle::Default) {
         return static_cast<IndentStyle>(g_Settings.autoIndent);
     }
 
@@ -982,7 +982,7 @@ static int loadLanguageModesStringEx(const QString &string) {
 		// read the indent style
 		QString styleName = ReadSymbolicFieldEx(in);
 		if(styleName.isNull()) {
-			lm.indentStyle = DEFAULT_INDENT;
+            lm.indentStyle = IndentStyle::Default;
 		} else {                     
 			for (i = 0; i < N_INDENT_STYLES; i++) {
 				if (styleName == QString::fromLatin1(AutoIndentTypes[i])) {
@@ -1108,8 +1108,8 @@ static QString WriteLanguageModesStringEx() {
         }
 
         out << QLatin1Char(':');
-        if (language.indentStyle != DEFAULT_INDENT) {
-            out << QString::fromLatin1(AutoIndentTypes[language.indentStyle]);
+        if (language.indentStyle != IndentStyle::Default) {
+            out << QString::fromLatin1(AutoIndentTypes[static_cast<int>(language.indentStyle)]);
         }
 
         out << QLatin1Char(':');

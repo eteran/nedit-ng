@@ -88,7 +88,7 @@ void Settings::loadPreferences() {
     smartIndentInitCommon = settings.value(tr("nedit.smartIndentInitCommon"), loadResource(QLatin1String("res/DefaultSmartIndentInitCommon.txt"))).toString();
     autoWrap              = static_cast<WrapStyle>(settings.value(tr("nedit.autoWrap"),              CONTINUOUS_WRAP).toInt());
     wrapMargin            = settings.value(tr("nedit.wrapMargin"),            0).toInt();
-    autoIndent            = settings.value(tr("nedit.autoIndent"),            AUTO_INDENT).toInt();
+    autoIndent            = static_cast<IndentStyle>(settings.value(tr("nedit.autoIndent"),            static_cast<int>(IndentStyle::Auto)).toInt());
     autoSave              = settings.value(tr("nedit.autoSave"),              true).toBool();
     openInTab             = settings.value(tr("nedit.openInTab"),             true).toBool();
     saveOldVersion        = settings.value(tr("nedit.saveOldVersion"),        false).toBool();
@@ -190,7 +190,7 @@ void Settings::importSettings(const QString &filename) {
     smartIndentInitCommon = settings.value(tr("nedit.smartIndentInitCommon"), smartIndentInitCommon).toString();
     autoWrap              = static_cast<WrapStyle>(settings.value(tr("nedit.autoWrap"), autoWrap).toInt());
     wrapMargin            = settings.value(tr("nedit.wrapMargin"),            wrapMargin).toInt();
-    autoIndent            = settings.value(tr("nedit.autoIndent"),            autoIndent).toInt();
+    autoIndent            = static_cast<IndentStyle>(settings.value(tr("nedit.autoIndent"),            static_cast<int>(autoIndent)).toInt());
     autoSave              = settings.value(tr("nedit.autoSave"),              autoSave).toBool();
     openInTab             = settings.value(tr("nedit.openInTab"),             openInTab).toBool();
     saveOldVersion        = settings.value(tr("nedit.saveOldVersion"),        saveOldVersion).toBool();
@@ -287,7 +287,7 @@ bool Settings::savePreferences() {
     settings.setValue(tr("nedit.smartIndentInitCommon"), smartIndentInitCommon);
     settings.setValue(tr("nedit.autoWrap"), autoWrap);
     settings.setValue(tr("nedit.wrapMargin"), wrapMargin);
-    settings.setValue(tr("nedit.autoIndent"), autoIndent);
+    settings.setValue(tr("nedit.autoIndent"), static_cast<int>(autoIndent));
     settings.setValue(tr("nedit.autoSave"), autoSave);
     settings.setValue(tr("nedit.openInTab"), openInTab);
     settings.setValue(tr("nedit.saveOldVersion"), saveOldVersion);

@@ -203,9 +203,9 @@ int main(int argc, char *argv[]) {
         } else if (opts && args[i] == QLatin1String("-autowrap")) {
             GetSettings().autoWrap = NEWLINE_WRAP;
         } else if (opts && args[i] == QLatin1String("-autoindent")) {
-            GetSettings().autoIndent = AUTO_INDENT;
+            GetSettings().autoIndent = IndentStyle::Auto;
         } else if (opts && args[i] == QLatin1String("-noautoindent")) {
-            GetSettings().autoIndent = NO_AUTO_INDENT;
+            GetSettings().autoIndent = IndentStyle::None;
         } else if (opts && args[i] == QLatin1String("-autosave")) {
             GetSettings().autoSave = true;
         } else if (opts && args[i] == QLatin1String("-noautosave")) {

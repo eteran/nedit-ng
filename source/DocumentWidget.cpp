@@ -1050,7 +1050,7 @@ void DocumentWidget::reapplyLanguageMode(int mode, bool forceDefaults) {
         QString oldlanguageModeName = LanguageModeName(oldMode);
 
         bool emTabDistIsDef     = oldEmTabDist == GetPrefEmTabDist(oldMode);
-        bool indentStyleIsDef   = indentStyle_ == GetPrefAutoIndent(oldMode)   || (GetPrefAutoIndent(oldMode) == SMART_INDENT && indentStyle_ == AUTO_INDENT && !SmartIndentMacrosAvailable(LanguageModeName(oldMode)));
+        bool indentStyleIsDef   = indentStyle_ == GetPrefAutoIndent(oldMode)   || (GetPrefAutoIndent(oldMode) == IndentStyle::Smart && indentStyle_ == IndentStyle::Auto && !SmartIndentMacrosAvailable(LanguageModeName(oldMode)));
 		bool highlightIsDef     = highlightSyntax_ == GetPrefHighlightSyntax() || (GetPrefHighlightSyntax() && FindPatternSet(!oldlanguageModeName.isNull() ? oldlanguageModeName : QLatin1String("")) == nullptr);
         WrapStyle wrapMode      = wrapModeIsDef                                || forceDefaults ? GetPrefWrap(mode)        : wrapMode_;
         int tabDist             = tabDistIsDef                                 || forceDefaults ? GetPrefTabDist(mode)     : buffer_->BufGetTabDistance();
@@ -1071,8 +1071,8 @@ void DocumentWidget::reapplyLanguageMode(int mode, bool forceDefaults) {
 
         // Turn off requested options which are not available
         highlight = haveHighlightPatterns && highlight;
-        if (indentStyle == SMART_INDENT && !haveSmartIndentMacros) {
-            indentStyle = AUTO_INDENT;
+        if (indentStyle == IndentStyle::Smart && !haveSmartIndentMacros) {
+            indentStyle = IndentStyle::Auto;
         }
 
         // Change highlighting
@@ -1088,9 +1088,9 @@ void DocumentWidget::reapplyLanguageMode(int mode, bool forceDefaults) {
         }
 
         // Force a change of smart indent macros (SetAutoIndent will re-start)
-        if (indentStyle_ == SMART_INDENT) {
+        if (indentStyle_ == IndentStyle::Smart) {
             EndSmartIndentEx(this);
-            indentStyle_ = AUTO_INDENT;
+            indentStyle_ = IndentStyle::Auto;
         }
 
         // set requested wrap, indent, and tabs
@@ -1160,12 +1160,12 @@ void DocumentWidget::SetEmTabDist(int emTabDist) {
 ** Set autoindent state to one of  NO_AUTO_INDENT, AUTO_INDENT, or SMART_INDENT.
 */
 void DocumentWidget::SetAutoIndent(IndentStyle state) {
-    bool autoIndent  = (state == AUTO_INDENT);
-    bool smartIndent = (state == SMART_INDENT);
+    bool autoIndent  = (state == IndentStyle::Auto);
+    bool smartIndent = (state == IndentStyle::Smart);
 
-    if (indentStyle_ == SMART_INDENT && !smartIndent) {
+    if (indentStyle_ == IndentStyle::Smart && !smartIndent) {
         EndSmartIndentEx(this);
-    } else if (smartIndent && indentStyle_ != SMART_INDENT) {
+    } else if (smartIndent && indentStyle_ != IndentStyle::Smart) {
         BeginSmartIndentEx(true);
     }
 
@@ -1181,7 +1181,7 @@ void DocumentWidget::SetAutoIndent(IndentStyle state) {
         if(auto win = toWindow()) {
             no_signals(win->ui.action_Indent_Smart)->setChecked(smartIndent);
             no_signals(win->ui.action_Indent_On)->setChecked(autoIndent);
-            no_signals(win->ui.action_Indent_Off)->setChecked(state == NO_AUTO_INDENT);
+            no_signals(win->ui.action_Indent_Off)->setChecked(state == IndentStyle::None);
         }
     }
 }

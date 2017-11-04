@@ -422,8 +422,8 @@ TextArea::TextArea(
     P_readOnly       = document->lockReasons_.isAnyLocked();
     P_delimiters     = GetPrefDelimiters();
     P_wrapMargin     = GetPrefWrapMargin();
-    P_autoIndent     = document->indentStyle_ == AUTO_INDENT;
-    P_smartIndent    = document->indentStyle_ == SMART_INDENT;
+    P_autoIndent     = document->indentStyle_ == IndentStyle::Auto;
+    P_smartIndent    = document->indentStyle_ == IndentStyle::Smart;
     P_autoWrap       = document->wrapMode_ == NEWLINE_WRAP;
     P_continuousWrap = document->wrapMode_ == CONTINUOUS_WRAP;
     P_overstrike     = document->overstrike_;

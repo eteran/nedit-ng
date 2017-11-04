@@ -131,7 +131,7 @@ void MarkPrefsChanged();
 void RestoreNEditPrefs();
 void SaveNEditPrefsEx(QWidget *parent, bool quietly);
 void SetPrefAppendLF(bool state);
-void SetPrefAutoIndent(int state);
+void SetPrefAutoIndent(IndentStyle state);
 void SetPrefAutoSave(bool state);
 void SetPrefAutoScroll(bool state);
 void SetPrefBacklightChars(bool state);

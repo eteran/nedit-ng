@@ -6,6 +6,7 @@
 #include <QObject>
 #include <QString>
 #include "WrapStyle.h"
+#include "IndentStyle.h"
 
 // Identifiers for the different colors that can be adjusted.
 enum ColorTypes {
@@ -63,7 +64,7 @@ public:
     bool warnFileMods;
     bool warnRealFileMods;
     int fileVersion;
-    int autoIndent;
+    IndentStyle autoIndent;
     WrapStyle autoWrap;
     int emulateTabs;
     int searchMethod;

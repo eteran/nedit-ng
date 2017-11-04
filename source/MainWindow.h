@@ -8,6 +8,7 @@
 #include "SmartIndentEvent.h"
 #include "NewMode.h"
 #include "CloseMode.h"
+#include "IndentStyle.h"
 #include "WrapMode.h"
 #include <QMainWindow>
 #include <QPointer>
@@ -155,6 +156,8 @@ public Q_SLOTS:
     void action_Next_Document();
     void action_Prev_Document();
     void action_Last_Document();
+
+    void setAutoIndent(IndentStyle state);
 
 public Q_SLOTS:
     // groups

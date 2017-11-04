@@ -253,13 +253,13 @@ void MainWindow::setupMenuDefaults() {
 
     // based on document, which defaults to this
     switch(GetPrefAutoIndent(PLAIN_LANGUAGE_MODE)) {
-    case NO_AUTO_INDENT:
+    case IndentStyle::None:
         no_signals(ui.action_Indent_Off)->setChecked(true);
         break;
-    case AUTO_INDENT:
+    case IndentStyle::Auto:
         no_signals(ui.action_Indent_On)->setChecked(true);
         break;
-    case SMART_INDENT:
+    case IndentStyle::Smart:
         no_signals(ui.action_Indent_Smart)->setChecked(true);
         break;
     default:
@@ -295,13 +295,13 @@ void MainWindow::setupMenuDefaults() {
 
     // Default Indent
     switch(GetPrefAutoIndent(PLAIN_LANGUAGE_MODE)) {
-    case NO_AUTO_INDENT:
+    case IndentStyle::None:
         no_signals(ui.action_Default_Indent_Off)->setChecked(true);
         break;
-    case AUTO_INDENT:
+    case IndentStyle::Auto:
         no_signals(ui.action_Default_Indent_On)->setChecked(true);
         break;
-    case SMART_INDENT:
+    case IndentStyle::Smart:
         no_signals(ui.action_Default_Indent_Smart)->setChecked(true);
         break;
     default:
@@ -2972,18 +2972,24 @@ void MainWindow::on_action_Show_Line_Numbers_toggled(bool state) {
    ShowLineNumbers(state);
 }
 
-void MainWindow::indentGroupTriggered(QAction *action) {
+void MainWindow::setAutoIndent(IndentStyle state) {
+
+    EMIT_EVENT_ARG_1("set_auto_indent", to_string(state));
 
     if(DocumentWidget *document = currentDocument()) {
-        if(action == ui.action_Indent_Off) {
-            document->SetAutoIndent(NO_AUTO_INDENT);
-		} else if(action == ui.action_Indent_On) {
-            document->SetAutoIndent(AUTO_INDENT);
-        } else if(action == ui.action_Indent_Smart) {
-            document->SetAutoIndent(SMART_INDENT);
-        } else {
-            qWarning("NEdit: set_auto_indent invalid argument");
-        }
+        document->SetAutoIndent(state);
+    }
+}
+
+void MainWindow::indentGroupTriggered(QAction *action) {
+    if(action == ui.action_Indent_Off) {
+        setAutoIndent(IndentStyle::None);
+    } else if(action == ui.action_Indent_On) {
+        setAutoIndent(IndentStyle::Auto);
+    } else if(action == ui.action_Indent_Smart) {
+        setAutoIndent(IndentStyle::Smart);
+    } else {
+        qWarning("NEdit: set_auto_indent invalid argument");
     }
 }
 
@@ -3110,11 +3116,11 @@ void MainWindow::on_action_Default_Language_Modes_triggered() {
 void MainWindow::defaultIndentGroupTriggered(QAction *action) {
 
     if(action == ui.action_Default_Indent_Off) {
-        SetPrefAutoIndent(NO_AUTO_INDENT);
+        SetPrefAutoIndent(IndentStyle::None);
     } else if(action == ui.action_Default_Indent_On) {
-        SetPrefAutoIndent(AUTO_INDENT);
+        SetPrefAutoIndent(IndentStyle::Auto);
     } else if(action == ui.action_Default_Indent_Smart) {
-        SetPrefAutoIndent(SMART_INDENT);
+        SetPrefAutoIndent(IndentStyle::Smart);
     } else {
         qWarning("NEdit: invalid default indent");
     }

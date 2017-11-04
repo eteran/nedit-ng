@@ -1210,11 +1210,11 @@ static bool setAutoIndentMS(DocumentWidget *document, Arguments arguments, DataV
     document = MacroRunWindowEx();
 
     if(string == QLatin1String("off")) {
-        document->SetAutoIndent(NO_AUTO_INDENT);
+        document->SetAutoIndent(IndentStyle::None);
     } else if(string == QLatin1String("on")) {
-        document->SetAutoIndent(AUTO_INDENT);
+        document->SetAutoIndent(IndentStyle::Auto);
     } else if(string == QLatin1String("smart")) {
-        document->SetAutoIndent(SMART_INDENT);
+        document->SetAutoIndent(IndentStyle::Smart);
     } else {
         qWarning("NEdit: set_auto_indent invalid argument");
     }
@@ -4470,16 +4470,12 @@ static bool autoIndentMV(DocumentWidget *document, Arguments arguments, DataValu
     QLatin1String res;
 
     switch (document->indentStyle_) {
-    case NO_AUTO_INDENT:
-        res = QLatin1String("off");
+    case IndentStyle::None:
+    case IndentStyle::Auto:
+    case IndentStyle::Smart:
+        res = to_string(document->indentStyle_);
         break;
-    case AUTO_INDENT:
-        res = QLatin1String("on");
-        break;
-    case SMART_INDENT:
-        res = QLatin1String("smart");
-        break;
-    case DEFAULT_INDENT:
+    case IndentStyle::Default:
         M_FAILURE("Invalid indent style value encountered in %s");
     }
 

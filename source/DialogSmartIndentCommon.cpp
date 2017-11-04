@@ -138,7 +138,7 @@ bool DialogSmartIndentCommon::updateSmartIndentCommonData() {
 	   re-initialize the smart indent macros (in case they have initialization
 	   data which depends on common data) */
     for(DocumentWidget *document : documents) {
-        if (document->indentStyle_ == SMART_INDENT && document->languageMode_ != PLAIN_LANGUAGE_MODE) {
+        if (document->indentStyle_ == IndentStyle::Smart && document->languageMode_ != PLAIN_LANGUAGE_MODE) {
             EndSmartIndentEx(document);
             document->BeginSmartIndentEx(false);
 		}
