@@ -3444,7 +3444,7 @@ void DocumentWidget::executeNewlineMacroEx(SmartIndentEvent *cbInfo) {
 }
 
 /*
-** Set showMatching state to one of NO_FLASH, FLASH_DELIMIT or FLASH_RANGE.
+** Set showMatching state to one of None, Delimeter or Range.
 ** Update the menu to reflect the change of state.
 */
 void DocumentWidget::SetShowMatching(ShowMatchingStyle state) {
@@ -3452,13 +3452,13 @@ void DocumentWidget::SetShowMatching(ShowMatchingStyle state) {
     if (IsTopDocument()) {
         if(auto win = toWindow()) {
             switch(state) {
-            case NO_FLASH:
+            case ShowMatchingStyle::None:
                 no_signals(win->ui.action_Matching_Off)->setChecked(true);
                 break;
-            case FLASH_DELIMIT:
+            case ShowMatchingStyle::Delimeter:
                 no_signals(win->ui.action_Matching_Delimiter)->setChecked(true);
                 break;
-            case FLASH_RANGE:
+            case ShowMatchingStyle::Range:
                 no_signals(win->ui.action_Matching_Range)->setChecked(true);
                 break;
             }
@@ -5606,7 +5606,7 @@ void DocumentWidget::FlashMatchingEx(TextArea *area) {
     }
 
     // no flashing required
-    if (showMatchingStyle_ == NO_FLASH) {
+    if (showMatchingStyle_ == ShowMatchingStyle::None) {
         return;
     }
 
@@ -5640,7 +5640,7 @@ void DocumentWidget::FlashMatchingEx(TextArea *area) {
 
     /* constrain the search to visible text only when in single-pane mode
        AND using delimiter flashing (otherwise search the whole buffer) */
-    int constrain = ((textPanes().size() == 0) && (showMatchingStyle_ == FLASH_DELIMIT));
+    int constrain = ((textPanes().size() == 0) && (showMatchingStyle_ == ShowMatchingStyle::Delimeter));
 
     int startPos;
     int endPos;
@@ -5662,7 +5662,7 @@ void DocumentWidget::FlashMatchingEx(TextArea *area) {
     }
 
 
-    if (showMatchingStyle_ == FLASH_DELIMIT) {
+    if (showMatchingStyle_ == ShowMatchingStyle::Delimeter) {
         // Highlight either the matching character ...
         buffer_->BufHighlight(matchPos, matchPos + 1);
     } else {

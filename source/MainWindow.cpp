@@ -235,63 +235,10 @@ void MainWindow::setupTabBar() {
     ui.tabWidget->tabBar()->installEventFilter(this);
 }
 
-//------------------------------------------------------------------------------
-// Name: setupMenuDefaults
-//------------------------------------------------------------------------------
-void MainWindow::setupMenuDefaults() {
-
-    // active settings
-    no_signals(ui.action_Statistics_Line)->setChecked(GetPrefStatsLine());
-    no_signals(ui.action_Incremental_Search_Line)->setChecked(GetPrefISearchLine());
-    no_signals(ui.action_Show_Line_Numbers)->setChecked(GetPrefLineNums());
-    no_signals(ui.action_Highlight_Syntax)->setChecked(GetPrefHighlightSyntax());
-    no_signals(ui.action_Apply_Backlighting)->setChecked(GetPrefBacklightChars());
-    no_signals(ui.action_Make_Backup_Copy)->setChecked(GetPrefAutoSave());
-    no_signals(ui.action_Incremental_Backup)->setChecked(GetPrefSaveOldVersion());
-    no_signals(ui.action_Matching_Syntax)->setChecked(GetPrefMatchSyntaxBased());
-
-
-    // based on document, which defaults to this
-    switch(GetPrefAutoIndent(PLAIN_LANGUAGE_MODE)) {
-    case IndentStyle::None:
-        no_signals(ui.action_Indent_Off)->setChecked(true);
-        break;
-    case IndentStyle::Auto:
-        no_signals(ui.action_Indent_On)->setChecked(true);
-        break;
-    case IndentStyle::Smart:
-        no_signals(ui.action_Indent_Smart)->setChecked(true);
-        break;
-    default:
-        break;
-    }
-
-    // based on document, which defaults to this
-    switch(GetPrefWrap(PLAIN_LANGUAGE_MODE)) {
-    case NO_WRAP:
-        no_signals(ui.action_Wrap_None)->setChecked(true);
-        break;
-    case NEWLINE_WRAP:
-        no_signals(ui.action_Wrap_Auto_Newline)->setChecked(true);
-        break;
-    case CONTINUOUS_WRAP:
-        no_signals(ui.action_Wrap_Continuous)->setChecked(true);
-        break;
-    default:
-        break;
-    }
-
-    switch(static_cast<ShowMatchingStyle>(GetPrefShowMatching())) {
-    case NO_FLASH:
-        no_signals(ui.action_Matching_Off)->setChecked(true);
-        break;
-    case FLASH_DELIMIT:
-        no_signals(ui.action_Matching_Delimiter)->setChecked(true);
-        break;
-    case FLASH_RANGE:
-        no_signals(ui.action_Matching_Range)->setChecked(true);
-        break;
-    }
+/**
+ * @brief MainWindow::setupGlobalPrefenceDefaults
+ */
+void MainWindow::setupGlobalPrefenceDefaults() {
 
     // Default Indent
     switch(GetPrefAutoIndent(PLAIN_LANGUAGE_MODE)) {
@@ -321,12 +268,6 @@ void MainWindow::setupMenuDefaults() {
         break;
     default:
         break;
-    }
-
-    if(GetPrefSmartTags()) {
-        no_signals(ui.action_Default_Tag_Smart)->setChecked(true);
-    } else {
-        no_signals(ui.action_Default_Tag_Show_All)->setChecked(true);
     }
 
     // Default Search Settings
@@ -383,13 +324,13 @@ void MainWindow::setupMenuDefaults() {
     no_signals(ui.action_Default_Incremental_Backup)->setChecked(GetPrefAutoSave());
 
     switch(GetPrefShowMatching()) {
-    case NO_FLASH:
+    case ShowMatchingStyle::None:
         no_signals(ui.action_Default_Matching_Off)->setChecked(true);
         break;
-    case FLASH_DELIMIT:
+    case ShowMatchingStyle::Delimeter:
         no_signals(ui.action_Default_Matching_Delimiter)->setChecked(true);
         break;
-    case FLASH_RANGE:
+    case ShowMatchingStyle::Range:
         no_signals(ui.action_Default_Matching_Range)->setChecked(true);
         break;
     }
@@ -405,6 +346,79 @@ void MainWindow::setupMenuDefaults() {
 
     no_signals(ui.action_Default_Sort_Open_Prev_Menu)->setChecked(GetPrefSortOpenPrevMenu());
     no_signals(ui.action_Default_Show_Path_In_Windows_Menu)->setChecked(GetPrefShowPathInWindowsMenu());
+}
+
+/**
+ * @brief MainWindow::setupDocumentPrefernceDefaults
+ */
+void MainWindow::setupDocumentPrefernceDefaults() {
+
+    // based on document, which defaults to this
+    switch(GetPrefAutoIndent(PLAIN_LANGUAGE_MODE)) {
+    case IndentStyle::None:
+        no_signals(ui.action_Indent_Off)->setChecked(true);
+        break;
+    case IndentStyle::Auto:
+        no_signals(ui.action_Indent_On)->setChecked(true);
+        break;
+    case IndentStyle::Smart:
+        no_signals(ui.action_Indent_Smart)->setChecked(true);
+        break;
+    default:
+        break;
+    }
+
+    // based on document, which defaults to this
+    switch(GetPrefWrap(PLAIN_LANGUAGE_MODE)) {
+    case NO_WRAP:
+        no_signals(ui.action_Wrap_None)->setChecked(true);
+        break;
+    case NEWLINE_WRAP:
+        no_signals(ui.action_Wrap_Auto_Newline)->setChecked(true);
+        break;
+    case CONTINUOUS_WRAP:
+        no_signals(ui.action_Wrap_Continuous)->setChecked(true);
+        break;
+    default:
+        break;
+    }
+
+    switch(static_cast<ShowMatchingStyle>(GetPrefShowMatching())) {
+    case ShowMatchingStyle::None:
+        no_signals(ui.action_Matching_Off)->setChecked(true);
+        break;
+    case ShowMatchingStyle::Delimeter:
+        no_signals(ui.action_Matching_Delimiter)->setChecked(true);
+        break;
+    case ShowMatchingStyle::Range:
+        no_signals(ui.action_Matching_Range)->setChecked(true);
+        break;
+    }
+
+    if(GetPrefSmartTags()) {
+        no_signals(ui.action_Default_Tag_Smart)->setChecked(true);
+    } else {
+        no_signals(ui.action_Default_Tag_Show_All)->setChecked(true);
+    }
+}
+
+//------------------------------------------------------------------------------
+// Name: setupMenuDefaults
+//------------------------------------------------------------------------------
+void MainWindow::setupMenuDefaults() {
+
+    // active settings
+    no_signals(ui.action_Statistics_Line)->setChecked(GetPrefStatsLine());
+    no_signals(ui.action_Incremental_Search_Line)->setChecked(GetPrefISearchLine());
+    no_signals(ui.action_Show_Line_Numbers)->setChecked(GetPrefLineNums());
+    no_signals(ui.action_Highlight_Syntax)->setChecked(GetPrefHighlightSyntax());
+    no_signals(ui.action_Apply_Backlighting)->setChecked(GetPrefBacklightChars());
+    no_signals(ui.action_Make_Backup_Copy)->setChecked(GetPrefAutoSave());
+    no_signals(ui.action_Incremental_Backup)->setChecked(GetPrefSaveOldVersion());
+    no_signals(ui.action_Matching_Syntax)->setChecked(GetPrefMatchSyntaxBased());
+
+    setupGlobalPrefenceDefaults();
+    setupDocumentPrefernceDefaults();
 
     updateWindowSizeMenu();
     updateTipsFileMenuEx();
@@ -3073,11 +3087,11 @@ void MainWindow::matchingGroupTriggered(QAction *action) {
 
     if(DocumentWidget *document = currentDocument()) {
         if(action == ui.action_Matching_Off) {
-            document->SetShowMatching(NO_FLASH);
+            document->SetShowMatching(ShowMatchingStyle::None);
         } else if(action == ui.action_Matching_Delimiter) {
-            document->SetShowMatching(FLASH_DELIMIT);
+            document->SetShowMatching(ShowMatchingStyle::Delimeter);
         } else if(action == ui.action_Matching_Range) {
-            document->SetShowMatching(FLASH_RANGE);
+            document->SetShowMatching(ShowMatchingStyle::Range);
         } else {
             qWarning("NEdit: Invalid argument for set_show_matching");
         }
@@ -3521,17 +3535,17 @@ void MainWindow::on_action_Default_Incremental_Backup_toggled(bool state) {
 
 void MainWindow::defaultMatchingGroupTriggered(QAction *action) {
     if(action == ui.action_Default_Matching_Off) {
-        SetPrefShowMatching(NO_FLASH);
+        SetPrefShowMatching(ShowMatchingStyle::None);
         for(MainWindow *window : allWindows()) {
             no_signals(window->ui.action_Default_Matching_Off)->setChecked(true);
         }
     } else if(action == ui.action_Default_Matching_Delimiter) {
-        SetPrefShowMatching(FLASH_DELIMIT);
+        SetPrefShowMatching(ShowMatchingStyle::Delimeter);
         for(MainWindow *window : allWindows()) {
             no_signals(window->ui.action_Default_Matching_Delimiter)->setChecked(true);
         }
     } else if(action == ui.action_Default_Matching_Range) {
-        SetPrefShowMatching(FLASH_RANGE);
+        SetPrefShowMatching(ShowMatchingStyle::Range);
         for(MainWindow *window : allWindows()) {
             no_signals(window->ui.action_Default_Matching_Range)->setChecked(true);
         }

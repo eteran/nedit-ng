@@ -601,14 +601,14 @@ int GetPrefInsertTabs() {
     return g_Settings.insertTabs;
 }
 
-void SetPrefShowMatching(int state) {
+void SetPrefShowMatching(ShowMatchingStyle state) {
     if(g_Settings.showMatching != state) {
         PrefsHaveChanged = true;
     }
     g_Settings.showMatching = state;
 }
 
-int GetPrefShowMatching() {
+ShowMatchingStyle GetPrefShowMatching() {
     return g_Settings.showMatching;
 }
 

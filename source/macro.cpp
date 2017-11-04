@@ -1452,21 +1452,21 @@ static bool setShowMatchingMS(DocumentWidget *document, Arguments arguments, Dat
         }
 
         if (arg == QLatin1String("off")) {
-            document->SetShowMatching(NO_FLASH);
+            document->SetShowMatching(ShowMatchingStyle::None);
         } else if (arg == QLatin1String("delimiter")) {
-            document->SetShowMatching(FLASH_DELIMIT);
+            document->SetShowMatching(ShowMatchingStyle::Delimeter);
         } else if (arg == QLatin1String("range")) {
-            document->SetShowMatching(FLASH_RANGE);
+            document->SetShowMatching(ShowMatchingStyle::Range);
         }
         /* For backward compatibility with pre-5.2 versions, we also
-           accept 0 and 1 as aliases for NO_FLASH and FLASH_DELIMIT.
+           accept 0 and 1 as aliases for None and Delimeter.
            It is quite unlikely, though, that anyone ever used this
            action procedure via the macro language or a key binding,
            so this can probably be left out safely. */
         else if (arg == QLatin1String("0")) {
-           document->SetShowMatching(NO_FLASH);
+           document->SetShowMatching(ShowMatchingStyle::None);
         } else if (arg == QLatin1String("1")) {
-           document->SetShowMatching(FLASH_DELIMIT);
+           document->SetShowMatching(ShowMatchingStyle::Delimeter);
         } else {
             qWarning("NEdit: Invalid argument for set_show_matching");
         }
@@ -4543,13 +4543,13 @@ static bool showMatchingMV(DocumentWidget *document, Arguments arguments, DataVa
     QLatin1String res;
 
     switch (document->showMatchingStyle_) {
-    case NO_FLASH:
+    case ShowMatchingStyle::None:
         res = QLatin1String("off");
         break;
-    case FLASH_DELIMIT:
+    case ShowMatchingStyle::Delimeter:
         res = QLatin1String("delimiter");
         break;
-    case FLASH_RANGE:
+    case ShowMatchingStyle::Range:
         res = QLatin1String("range");
         break;
     }

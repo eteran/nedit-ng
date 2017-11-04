@@ -7,6 +7,7 @@
 #include <QString>
 #include "WrapStyle.h"
 #include "IndentStyle.h"
+#include "ShowMatchingStyle.h"
 
 // Identifiers for the different colors that can be adjusted.
 enum ColorTypes {
@@ -68,7 +69,7 @@ public:
     WrapStyle autoWrap;
     int emulateTabs;
     int searchMethod;
-    int showMatching;
+    ShowMatchingStyle showMatching;
     int tabDistance;
     int textCols;
     int textRows;

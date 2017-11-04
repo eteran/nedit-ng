@@ -36,6 +36,8 @@ private:
 	void setupMenuAlternativeMenus();
     void CreateLanguageModeSubMenu();
     void setupMenuDefaults();
+    void setupGlobalPrefenceDefaults();
+    void setupDocumentPrefernceDefaults();
     void setupPrevOpenMenuActions();
     QMenu *createUserMenu(DocumentWidget *document, const QVector<MenuData> &data);
 

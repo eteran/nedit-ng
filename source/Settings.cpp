@@ -88,11 +88,11 @@ void Settings::loadPreferences() {
     smartIndentInitCommon = settings.value(tr("nedit.smartIndentInitCommon"), loadResource(QLatin1String("res/DefaultSmartIndentInitCommon.txt"))).toString();
     autoWrap              = static_cast<WrapStyle>(settings.value(tr("nedit.autoWrap"),              CONTINUOUS_WRAP).toInt());
     wrapMargin            = settings.value(tr("nedit.wrapMargin"),            0).toInt();
-    autoIndent            = static_cast<IndentStyle>(settings.value(tr("nedit.autoIndent"),            static_cast<int>(IndentStyle::Auto)).toInt());
+    autoIndent            = static_cast<IndentStyle>(settings.value(tr("nedit.autoIndent"), static_cast<int>(IndentStyle::Auto)).toInt());
     autoSave              = settings.value(tr("nedit.autoSave"),              true).toBool();
     openInTab             = settings.value(tr("nedit.openInTab"),             true).toBool();
     saveOldVersion        = settings.value(tr("nedit.saveOldVersion"),        false).toBool();
-    showMatching          = settings.value(tr("nedit.showMatching"),          FLASH_DELIMIT).toInt();
+    showMatching          = static_cast<ShowMatchingStyle>(settings.value(tr("nedit.showMatching"), static_cast<int>(ShowMatchingStyle::Delimeter)).toInt());
     matchSyntaxBased      = settings.value(tr("nedit.matchSyntaxBased"),      true).toBool();
     highlightSyntax       = settings.value(tr("nedit.highlightSyntax"),       true).toBool();
     backlightChars        = settings.value(tr("nedit.backlightChars"),        false).toBool();
@@ -194,7 +194,7 @@ void Settings::importSettings(const QString &filename) {
     autoSave              = settings.value(tr("nedit.autoSave"),              autoSave).toBool();
     openInTab             = settings.value(tr("nedit.openInTab"),             openInTab).toBool();
     saveOldVersion        = settings.value(tr("nedit.saveOldVersion"),        saveOldVersion).toBool();
-    showMatching          = settings.value(tr("nedit.showMatching"),          showMatching).toInt();
+    showMatching          = static_cast<ShowMatchingStyle>(settings.value(tr("nedit.showMatching"),          static_cast<int>(showMatching)).toInt());
     matchSyntaxBased      = settings.value(tr("nedit.matchSyntaxBased"),      matchSyntaxBased).toBool();
     highlightSyntax       = settings.value(tr("nedit.highlightSyntax"),       highlightSyntax).toBool();
     backlightChars        = settings.value(tr("nedit.backlightChars"),        backlightChars).toBool();
@@ -291,7 +291,7 @@ bool Settings::savePreferences() {
     settings.setValue(tr("nedit.autoSave"), autoSave);
     settings.setValue(tr("nedit.openInTab"), openInTab);
     settings.setValue(tr("nedit.saveOldVersion"), saveOldVersion);
-    settings.setValue(tr("nedit.showMatching"), showMatching);
+    settings.setValue(tr("nedit.showMatching"), static_cast<int>(showMatching));
     settings.setValue(tr("nedit.matchSyntaxBased"), matchSyntaxBased);
     settings.setValue(tr("nedit.highlightSyntax"), highlightSyntax);
     settings.setValue(tr("nedit.backlightChars"), backlightChars);
