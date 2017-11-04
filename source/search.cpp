@@ -1506,9 +1506,8 @@ static bool searchLiteralWord(view::string_view string, view::string_view search
 		}
         if (wrap == WrapMode::NoWrap)
             return false;
+
 		// search from end of file to beginPos 
-		/*... this strlen call is extreme inefficiency, but it's not obvious */
-		// how to get the text string length from the text widget (under 1.1)
 		for (auto filePtr = string.begin() + string.size(); filePtr >= string.begin() + beginPos; filePtr--) {
             if(do_search_word2(filePtr)) {
 				return true;

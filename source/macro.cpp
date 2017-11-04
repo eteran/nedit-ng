@@ -5236,7 +5236,7 @@ static bool rangesetInfoMS(DocumentWidget *document, Arguments arguments, DataVa
     bool defined;
     QString color;
     QString name;
-    const char *mode;
+    QString mode;
 
     if(rangeset) {
         rangeset->RangesetGetInfo(&defined, &label, &count, &color, &name, &mode);
@@ -5244,7 +5244,6 @@ static bool rangesetInfoMS(DocumentWidget *document, Arguments arguments, DataVa
         defined = false;
         label = 0;
         count = 0;
-        mode  = "";
     }
 
     // set up result
@@ -5493,14 +5492,14 @@ static bool rangesetSetModeMS(DocumentWidget *document, Arguments arguments, Dat
         M_FAILURE("Rangeset does not exist in %s");
     }
 
-    std::string update_fn_name;
+    QString update_fn_name;
     if (arguments.size() == 2) {
         if (!readArgument(arguments[1], &update_fn_name,  errMsg)) {
             M_FAILURE("Second parameter is not a string in %s");
         }
     }
 
-    int ok = rangeset->RangesetChangeModifyResponse(update_fn_name.c_str());
+    int ok = rangeset->RangesetChangeModifyResponse(update_fn_name);
     if (!ok) {
         M_FAILURE("Second parameter is not a valid mode in %s");
     }

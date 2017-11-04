@@ -1465,7 +1465,9 @@ static int eq() {
     if (is_integer(v1) && is_integer(v2)) {
         v1 = to_value(v1.val.n == v2.val.n);
     } else if (is_string(v1) && is_string(v2)) {
-        v1 = to_value(strcmp(v1.val.str.rep, v2.val.str.rep) == 0);
+        auto s1 = view::string_view(v1.val.str.rep, v1.val.str.len);
+        auto s2 = view::string_view(v2.val.str.rep, v2.val.str.len);
+        v1 = to_value(s1 == s2);
     } else if (is_string(v1) && is_integer(v2)) {
 		int number;
 		if (!StringToNum(v1.val.str.rep, &number)) {
@@ -2031,7 +2033,9 @@ static int arrayEntryCopyToNode(rbTreeNode *dst, rbTreeNode *src) {
 ** compare two array nodes returning an integer value similar to strcmp()
 */
 static int arrayEntryCompare(rbTreeNode *left, rbTreeNode *right) {
-	return strcmp(static_cast<ArrayEntry *>(left)->key, static_cast<ArrayEntry *>(right)->key);
+    auto lkey = static_cast<ArrayEntry *>(left)->key;
+    auto rkey = static_cast<ArrayEntry *>(right)->key;
+    return strcmp(lkey, rkey);
 }
 
 /*

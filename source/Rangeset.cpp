@@ -51,15 +51,15 @@ RangesetUpdateFn rangesetBreakMaintain;
 #define DEFAULT_UPDATE_FN_NAME "maintain"
 
 struct {
-    const char *name;
+    QLatin1String name;
 	RangesetUpdateFn *update_fn;
 } RangesetUpdateMap[] = {
-    {DEFAULT_UPDATE_FN_NAME, rangesetInsDelMaintain},
-    {"ins_del", rangesetInsDelMaintain},
-    {"include", rangesetInclMaintain},
-    {"del_ins", rangesetDelInsMaintain},
-    {"exclude", rangesetExclMaintain},
-    {"break", rangesetBreakMaintain}
+    {QLatin1String(DEFAULT_UPDATE_FN_NAME), rangesetInsDelMaintain},
+    {QLatin1String("ins_del"), rangesetInsDelMaintain},
+    {QLatin1String("include"), rangesetInclMaintain},
+    {QLatin1String("del_ins"), rangesetDelInsMaintain},
+    {QLatin1String("exclude"), rangesetExclMaintain},
+    {QLatin1String("break"), rangesetBreakMaintain}
 };
 
 
@@ -855,7 +855,7 @@ bool Rangeset::RangesetAssignColorName(const QString &color_name) {
 ** false, the color_set flag is set to an invalid (negative) value.
 */
 
-bool Rangeset::RangesetAssignColorPixel(const QColor &color, int ok) {
+bool Rangeset::RangesetAssignColorPixel(const QColor &color, bool ok) {
     color_set_ = ok ? 1 : -1;
 	color_ = color;
 	return true;
@@ -884,14 +884,14 @@ bool Rangeset::RangesetAssignName(const QString &name) {
 ** if the update function name was found, else false.
 */
 
-bool Rangeset::RangesetChangeModifyResponse(const char *name) {
+bool Rangeset::RangesetChangeModifyResponse(QString name) {
 
-    if(!name) {
-		name = DEFAULT_UPDATE_FN_NAME;
+    if(name.isNull()) {
+        name = QLatin1String(DEFAULT_UPDATE_FN_NAME);
     }
 
 	for(auto &entry : RangesetUpdateMap) {
-        if (strcmp(entry.name, name) == 0) {
+        if (entry.name == name) {
             update_fn_   = entry.update_fn;
             update_name_ = entry.name;
 			return true;
@@ -1164,7 +1164,7 @@ RangesetInfo Rangeset::RangesetGetInfo() const {
 /*
 ** Get information about rangeset.
 */
-void Rangeset::RangesetGetInfo(bool *defined, int *label, int *count, QString *color, QString *name, const char **mode) const {
+void Rangeset::RangesetGetInfo(bool *defined, int *label, int *count, QString *color, QString *name, QString *mode) const {
     *defined = true;
 	*label = static_cast<int>(label_);
     *count = n_ranges_;
@@ -1203,5 +1203,5 @@ void Rangeset::RangesetInit(int label, TextBuffer *buf) {
 
 	maxpos_ = buf->BufGetLength();
 
-    RangesetChangeModifyResponse(DEFAULT_UPDATE_FN_NAME);
+    RangesetChangeModifyResponse(QLatin1String(DEFAULT_UPDATE_FN_NAME));
 }

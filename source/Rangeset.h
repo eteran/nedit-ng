@@ -49,12 +49,10 @@ struct RangesetInfo {
 	int         count;
 	QString     color;
 	QString     name;
-	const char *mode;
+    QString     mode;
 };
 
-
-
-typedef Rangeset *RangesetUpdateFn(Rangeset *rangeset, int pos, int ins, int del);
+using RangesetUpdateFn = Rangeset *(Rangeset *rangeset, int pos, int ins, int del);
 
 class Rangeset {
 public:
@@ -70,9 +68,9 @@ public:
 	int RangesetAdd(Rangeset *plusSet);
 	int RangesetAddBetween(int start, int end);
     bool RangesetAssignColorName(const QString &color_name);
-	bool RangesetAssignColorPixel(const QColor &color, int ok);
+    bool RangesetAssignColorPixel(const QColor &color, bool ok);
     bool RangesetAssignName(const QString &name);
-	bool RangesetChangeModifyResponse(const char *name);
+    bool RangesetChangeModifyResponse(QString name);
 	int RangesetCheckRangeOfPos(int pos);
 	int RangesetFindRangeNo(int index, int *start, int *end) const;
 	int RangesetFindRangeOfPos(int pos, int incl_end) const;
@@ -82,7 +80,7 @@ public:
 	int RangesetRemove(Rangeset *minusSet);
 	int RangesetRemoveBetween(int start, int end);
 	void RangesetEmpty();
-	void RangesetGetInfo(bool *defined, int *label, int *count, QString *color, QString *name, const char **mode) const;
+    void RangesetGetInfo(bool *defined, int *label, int *count, QString *color, QString *name, QString *mode) const;
 	RangesetInfo RangesetGetInfo() const;
 
 	void RangesetRefreshRange(int start, int end) const;
@@ -90,7 +88,7 @@ public:
 
 public:
     RangesetUpdateFn *update_fn_; // modification update function
-    const char *update_name_;     // update function name
+    QString update_name_;         // update function name
     int maxpos_;                  // text buffer maxpos
     int last_index_;              // a place to start looking
     int n_ranges_;                // how many ranges in ranges

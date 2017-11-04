@@ -1687,11 +1687,8 @@ static void passTwoParseString(HighlightData *pattern, const char *string, char 
 			stringPtr = parseStart;
 			stylePtr = &styleString[parseStart - string];
 
-			match_till = parseEnd;
+            match_till = parseEnd;
 
-
-			// printf("pass2 parsing %d chars\n", strlen(stringPtr)); 
-			
 			parseString(
 				pattern, 
 				&stringPtr, 
