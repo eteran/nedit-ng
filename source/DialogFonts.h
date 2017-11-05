@@ -44,7 +44,7 @@ private:
 private:
 	Ui::DialogFonts ui;
     DocumentWidget *document_;
-	int forWindow_;
+    bool forWindow_;
 };
 
 #endif

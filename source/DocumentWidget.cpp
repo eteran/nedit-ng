@@ -387,7 +387,7 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 	fileGid_               = 0;
 	filenameSet_           = false;
 	fileFormat_            = UNIX_FILE_FORMAT;
-	lastModTime_           = 0;
+    lastModTime_           = 0;
 	filename_              = name;
 	autoSaveCharCount_     = 0;
 	autoSaveOpCount_       = 0;
@@ -3250,7 +3250,6 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
         }
 
         ignoreModify_ = true;
-
         buffer_->BufSetAllEx(contents);
         ignoreModify_ = false;
     }
@@ -5398,7 +5397,7 @@ void DocumentWidget::BeginLearnEx() {
 ** Read an NEdit macro file.  Extends the syntax of the macro parser with
 ** define keyword, and allows intermixing of defines with immediate actions.
 */
-int DocumentWidget::ReadMacroFileEx(const QString &fileName, bool warnNotExist) {
+bool DocumentWidget::ReadMacroFileEx(const QString &fileName, bool warnNotExist) {
 
 	/* read-in macro file and force a terminating \n, to prevent syntax
 	** errors with statements on the last line
@@ -5422,7 +5421,6 @@ int DocumentWidget::ReadMacroFileEx(const QString &fileName, bool warnNotExist) 
 ** frees prog when macro execution is complete;
 */
 void DocumentWidget::runMacroEx(Program *prog) {
-
 
     /* If a macro is already running, just call the program as a subroutine,
        instead of starting a new one, so we don't have to keep a separate
@@ -5465,17 +5463,15 @@ void DocumentWidget::runMacroEx(Program *prog) {
     case MACRO_ERROR:
         finishMacroCmdExecutionEx();
         QMessageBox::critical(this, tr("Macro Error"), tr("Error executing macro: %1").arg(errMsg));
-        return;
+        break;
     case MACRO_DONE:
         finishMacroCmdExecutionEx();
-        return;
+        break;
     case MACRO_TIME_LIMIT:
         ResumeMacroExecutionEx();
-        return;
-    case MACRO_PREEMPT:
-        // Macro was preempted
         break;
-
+    case MACRO_PREEMPT:
+        break;
     }
 }
 
@@ -5640,7 +5636,7 @@ void DocumentWidget::FlashMatchingEx(TextArea *area) {
 
     /* constrain the search to visible text only when in single-pane mode
        AND using delimiter flashing (otherwise search the whole buffer) */
-    int constrain = ((textPanes().size() == 0) && (showMatchingStyle_ == ShowMatchingStyle::Delimeter));
+    bool constrain = (textPanes().empty() && (showMatchingStyle_ == ShowMatchingStyle::Delimeter));
 
     int startPos;
     int endPos;
@@ -5660,7 +5656,6 @@ void DocumentWidget::FlashMatchingEx(TextArea *area) {
     if (!findMatchingCharEx(c, style, searchPos, startPos, endPos, &matchPos)) {
         return;
     }
-
 
     if (showMatchingStyle_ == ShowMatchingStyle::Delimeter) {
         // Highlight either the matching character ...

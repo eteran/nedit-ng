@@ -1297,8 +1297,6 @@ int MainWindow::updateLineNumDisp() {
 /*
 **  Set the new gutter width in the window. Sadly, the only way to do this is
 **  to set it on every single document, so we have to iterate over them.
-**
-**  (Iteration taken from TabCount(); is there a better way to do it?)
 */
 int MainWindow::updateGutterWidth() {
 
@@ -1315,15 +1313,11 @@ int MainWindow::updateGutterWidth() {
             /* Is the width of the line number area sufficient to display all the
                line numbers in the file?  If not, expand line number field, and the
                this width. */
-            if (lineNumCols > maxCols) {
-                maxCols = lineNumCols;
-            }
+            maxCols = std::max(maxCols, lineNumCols);
 
-            int tmpReqCols = area->getBufferLinesCount() < 1 ? 1 : static_cast<int>(log10(static_cast<double>(area->getBufferLinesCount()) + 1)) + 1;
+            const int tmpReqCols = area->getBufferLinesCount() < 1 ? 1 : static_cast<int>(log10(static_cast<double>(area->getBufferLinesCount()) + 1)) + 1;
 
-            if (tmpReqCols > reqCols) {
-                reqCols = tmpReqCols;
-            }
+            reqCols = std::max(reqCols, tmpReqCols);
         }
     }
 
@@ -1342,7 +1336,6 @@ int MainWindow::updateGutterWidth() {
         XtVaSetValues(shell_, XmNwidth, (Dimension)windowWidth + (newColsDiff * fontWidth), nullptr);
     }
 #endif
-
 
     for(DocumentWidget *document : documents) {
         if(TextArea *area = document->firstPane()) {
@@ -1440,7 +1433,7 @@ DocumentWidget *MainWindow::FindWindowWithFile(const QString &name, const QStrin
         struct stat attribute;
         if (::stat(fullname.toLatin1().data(), &attribute) == 0) {
             auto it = std::find_if(documents.begin(), documents.end(), [attribute](DocumentWidget *document){
-                return attribute.st_dev == document->device_ && attribute.st_ino == document->inode_;
+                return (attribute.st_dev == document->device_) && (attribute.st_ino == document->inode_);
             });
 
             if(it != documents.end()) {
@@ -1468,7 +1461,7 @@ DocumentWidget *MainWindow::FindWindowWithFile(const QString &name, const QStrin
 ** counts are required.
 */
 void MainWindow::forceShowLineNumbers() {
-    bool showLineNum = showLineNumbers_;
+    const bool showLineNum = showLineNumbers_;
     if (showLineNum) {
         showLineNumbers_ = false;
         ShowLineNumbers(showLineNum);
@@ -1507,7 +1500,6 @@ void MainWindow::ShowLineNumbers(bool state) {
             //  reqCols should really be cast here, but into what? XmRInt?
             area->setLineNumCols(reqCols);
         }
-
     }
 }
 
@@ -1545,7 +1537,6 @@ void MainWindow::AddToPrevOpenMenu(const QString &filename) {
         PrevOpen.pop_back();
     }
 
-    // Add it to the list
     PrevOpen.push_front(filename);
 
     // Mark the Previously Opened Files menu as invalid in all windows
@@ -1559,7 +1550,6 @@ void MainWindow::AddToPrevOpenMenu(const QString &filename) {
         }
     }
 
-    // Write the menu contents to disk to restore in later sessions
     WriteNEditDB();
 }
 
@@ -2944,6 +2934,9 @@ void MainWindow::on_action_Close_Pane_triggered() {
 }
 
 void MainWindow::on_action_Move_Tab_To_triggered() {
+
+    EMIT_EVENT("move_document_dialog");
+
     if(DocumentWidget *doc = currentDocument()) {
         doc->moveDocument(this);
     }
@@ -3483,8 +3476,6 @@ void MainWindow::on_action_Default_Tab_Sort_Tabs_Alphabetically_toggled(bool sta
     }
 }
 
-
-
 void MainWindow::on_action_Default_Show_Tooltips_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
     SetPrefToolTips(state);
@@ -3768,7 +3759,6 @@ DocumentWidget *MainWindow::EditNewFileEx(MainWindow *inWindow, QString geometry
 
         inWindow = win;
     }
-
 
     document->filename_ = name;
     document->path_     = !defaultPath.isEmpty() ? defaultPath : GetCurrentDirEx();

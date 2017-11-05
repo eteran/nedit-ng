@@ -53,7 +53,8 @@ class DocumentWidget : public QWidget {
 
 public:
     enum MacroContinuationCode {
-        Continue, Stop
+        Continue,
+        Stop
     };
 	
 public:
@@ -118,7 +119,7 @@ public:
     MacroContinuationCode continueWorkProcEx();
     void FlashMatchingEx(TextArea *area);
     void eraseFlashEx();
-	int ReadMacroFileEx(const QString &fileName, bool warnNotExist);
+    bool ReadMacroFileEx(const QString &fileName, bool warnNotExist);
 	int matchLanguageMode();
 	void DetermineLanguageMode(bool forceNewDefaults);
 	void RefreshTabState();
@@ -267,7 +268,7 @@ public:
 	int undoMemUsed_;                  // amount of memory (in bytes) dedicated to the undo list
     QList<UndoInfo> redo_;             // info for redoing last undone op
     QList<UndoInfo> undo_;             // info for undoing last operation
-	time_t lastModTime_;               // time of last modification to file
+    time_t lastModTime_;               // time of last modification to file
 	uid_t fileUid_;                    // last recorded user id of the file
 	unsigned fileMode_;                // permissions of file being edited
     WindowHighlightData *highlightData_;              // info for syntax highlighting

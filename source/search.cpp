@@ -434,7 +434,7 @@ void SearchForSelectedEx(MainWindow *window, DocumentWidget *document, TextArea 
         return;
     }
 
-    if (searchString.size() == 0) {
+    if (searchString.isEmpty()) {
         QApplication::beep();
         return;
     }

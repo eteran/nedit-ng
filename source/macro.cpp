@@ -2262,7 +2262,7 @@ Program *ParseMacroEx(const QString &expr, QString *message, int *stoppedAt) {
     return p;
 }
 
-int readCheckMacroStringEx(QWidget *dialogParent, const QString &string, DocumentWidget *runWindow, const QString &errIn, int *errPos) {
+bool readCheckMacroStringEx(QWidget *dialogParent, const QString &string, DocumentWidget *runWindow, const QString &errIn, int *errPos) {
 
     Input in(&string);
 
