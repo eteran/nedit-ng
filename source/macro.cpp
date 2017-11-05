@@ -3173,7 +3173,6 @@ static bool writeOrAppendFile(bool append, DocumentWidget *document, Arguments a
 
     std::string name;
     std::string string;
-    FILE *fp;
 
     // Validate argument
     if(!readArguments(arguments, 0, errMsg, &string, &name)) {
@@ -3181,20 +3180,20 @@ static bool writeOrAppendFile(bool append, DocumentWidget *document, Arguments a
     }
 
     // open the file
-    if ((fp = fopen(name.c_str(), append ? "a" : "w")) == nullptr) {
+    FILE *fp = fopen(name.c_str(), append ? "a" : "w");
+    if (!fp) {
         *result = to_value(false);
         return true;
     }
+
+    auto _ = gsl::finally([fp] { ::fclose(fp); });
 
     // write the string to the file
-    fwrite(string.data(), 1, string.size(), fp);
-    if (ferror(fp)) {
-        fclose(fp);
-
+    ::fwrite(string.data(), 1, string.size(), fp);
+    if (::ferror(fp)) {
         *result = to_value(false);
         return true;
     }
-    fclose(fp);
 
     // return the status
     *result = to_value(true);

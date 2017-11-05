@@ -35,6 +35,7 @@
 #include "SmartIndentEvent.h"
 #include "tags.h"
 #include "utils.h"
+#include "gsl/gsl_util"
 #include <QBoxLayout>
 #include <QClipboard>
 #include <QDateTime>
@@ -2010,9 +2011,9 @@ void DocumentWidget::CheckForChangesToFileEx() {
             fileUid_  = statbuf.st_uid;
             fileGid_  = statbuf.st_gid;
 
-            FILE *fp;
-			if ((fp = ::fopen(fullname.toLatin1().data(), "r"))) {
-                fclose(fp);
+            FILE *fp = ::fopen(fullname.toLatin1().data(), "r");
+            if (fp) {
+                ::fclose(fp);
 
 				bool readOnly = ::access(fullname.toLatin1().data(), W_OK) != 0;
 
@@ -2095,8 +2096,9 @@ int DocumentWidget::cmpWinAgainstFile(const QString &fileName) {
         return 1;
     }
 
-    if (fstat(fileno(fp), &statbuf) != 0) {
-        fclose(fp);
+    auto _ = gsl::finally([fp] { ::fclose(fp); });
+
+    if (::fstat(fileno(fp), &statbuf) != 0) {
         return 1;
     }
 
@@ -2104,13 +2106,11 @@ int DocumentWidget::cmpWinAgainstFile(const QString &fileName) {
     // For DOS files, we can't simply check the length
     if (fileFormat != DOS_FILE_FORMAT) {
         if (fileLen != buf->BufGetLength()) {
-            fclose(fp);
             return 1;
         }
     } else {
         // If a DOS file is smaller on disk, it's certainly different
         if (fileLen < buf->BufGetLength()) {
-            fclose(fp);
             return 1;
         }
     }
@@ -2136,7 +2136,6 @@ int DocumentWidget::cmpWinAgainstFile(const QString &fileName) {
 
         int nRead = ::fread(fileString + offset, 1, restLen, fp);
         if (nRead != restLen) {
-            fclose(fp);
             MainWindow::AllWindowsUnbusyEx();
             return 1;
         }
@@ -2146,7 +2145,6 @@ int DocumentWidget::cmpWinAgainstFile(const QString &fileName) {
 
         // check for on-disk file format changes, but only for the first hunk
         if (bufPos == 0 && fileFormat != FormatOfFileEx(view::string_view(fileString, nRead))) {
-            fclose(fp);
             MainWindow::AllWindowsUnbusyEx();
             return 1;
         }
@@ -2166,7 +2164,6 @@ int DocumentWidget::cmpWinAgainstFile(const QString &fileName) {
         buf->BufSubstituteNullChars(fileString, nRead);
         rv = buf->BufCmpEx(bufPos, view::string_view(fileString, nRead));
         if (rv) {
-            fclose(fp);
             MainWindow::AllWindowsUnbusyEx();
             return rv;
         }
@@ -2175,7 +2172,6 @@ int DocumentWidget::cmpWinAgainstFile(const QString &fileName) {
     }
 
     MainWindow::AllWindowsUnbusyEx();
-    fclose(fp);
     if (pendingCR) {
         rv = buf->BufCmpEx(bufPos, view::string_view(&pendingCR, 1));
         if (rv) {
@@ -2270,7 +2266,11 @@ int DocumentWidget::WriteBackupFile() {
     int fd = ::open(name.toLatin1().data(), O_CREAT | O_EXCL | O_WRONLY, S_IRUSR | S_IWUSR);
     if (fd < 0 || (fp = fdopen(fd, "w")) == nullptr) {
 
-        QMessageBox::warning(this, tr("Error writing Backup"), tr("Unable to save backup for %1:\n%2\nAutomatic backup is now off").arg(filename_, ErrorString(errno)));
+        QMessageBox::warning(
+                    this,
+                    tr("Error writing Backup"),
+                    tr("Unable to save backup for %1:\n%2\nAutomatic backup is now off").arg(filename_, ErrorString(errno)));
+
         autoSave_ = false;
 
         if(auto win = toWindow()) {
@@ -2290,19 +2290,18 @@ int DocumentWidget::WriteBackupFile() {
         fileString.append("\n"); // null terminator no longer needed
     }
 
+    auto _ = gsl::finally([fp] { ::fclose(fp); });
+
     // write out the file
 	::fwrite(fileString.data(), 1, fileString.size(), fp);
     if (::ferror(fp)) {
-        QMessageBox::critical(this, tr("Error saving Backup"), tr("Error while saving backup for %1:\n%2\nAutomatic backup is now off").arg(filename_, ErrorString(errno)));
-        ::fclose(fp);
+        QMessageBox::critical(
+                    this,
+                    tr("Error saving Backup"),
+                    tr("Error while saving backup for %1:\n%2\nAutomatic backup is now off").arg(filename_, ErrorString(errno)));
 
 		QFile::remove(name);
         autoSave_ = false;
-        return false;
-    }
-
-    // close the backup file
-	if (::fclose(fp) != 0) {
         return false;
     }
 
@@ -2410,6 +2409,8 @@ bool DocumentWidget::doSave() {
         return false;
     }
 
+    auto _ = gsl::finally([fp] { ::fclose(fp); });
+
     // get the text buffer contents and its length
     std::string fileString = buffer_->BufGetAllEx();
 
@@ -2420,9 +2421,6 @@ bool DocumentWidget::doSave() {
     if (fileFormat_ == DOS_FILE_FORMAT) {
         if (!ConvertToDosFileStringEx(fileString)) {
             QMessageBox::critical(this, tr("Out of Memory"), tr("Out of memory!  Try\nsaving in Unix format"));
-
-            // NOTE(eteran): fixes resource leak
-            ::fclose(fp);
             return false;
         }
     } else if (fileFormat_ == MAC_FILE_FORMAT) {
@@ -2434,15 +2432,7 @@ bool DocumentWidget::doSave() {
 
     if (ferror(fp)) {
         QMessageBox::critical(this, tr("Error saving File"), tr("%2 not saved:\n%2").arg(filename_, ErrorString(errno)));
-        ::fclose(fp);
-
 		QFile::remove(fullname);
-        return false;
-    }
-
-    // close the file
-    if (::fclose(fp) != 0) {
-        QMessageBox::critical(this, tr("Error closing File"), tr("Error closing file:\n%1").arg(ErrorString(errno)));
         return false;
     }
 
@@ -3127,11 +3117,12 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
         }
     }
 
+    auto _ = gsl::finally([fp] { ::fclose(fp); });
+
     /* Get the length of the file, the protection mode, and the time of the
        last modification to the file */
 	struct stat statbuf;
     if (::fstat(fileno(fp), &statbuf) != 0) {
-        ::fclose(fp);
         filenameSet_ = false; // Temp. prevent check for changes.
         QMessageBox::critical(this, tr("Error opening File"), tr("Error opening %1").arg(name));
         filenameSet_ = true;
@@ -3139,7 +3130,6 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
     }
 
     if (S_ISDIR(statbuf.st_mode)) {
-        ::fclose(fp);
         filenameSet_ = false; // Temp. prevent check for changes.
         QMessageBox::critical(this, tr("Error opening File"), tr("Can't open directory %1").arg(name));
         filenameSet_ = true;
@@ -3148,7 +3138,6 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
 
 #ifdef S_ISBLK
     if (S_ISBLK(statbuf.st_mode)) {
-        ::fclose(fp);
         filenameSet_ = false; // Temp. prevent check for changes.
         QMessageBox::critical(this, tr("Error opening File"), tr("Can't open block device %1").arg(name));
         filenameSet_ = true;
@@ -3162,7 +3151,6 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
     auto fileString = std::make_unique<char[]>(fileLen + 1); // +1 = space for null
 
     if(!fileString) {
-        ::fclose(fp);
         filenameSet_ = false; // Temp. prevent check for changes.
         QMessageBox::critical(this, tr("Error while opening File"), tr("File is too large to edit"));
         filenameSet_ = true;
@@ -3172,20 +3160,12 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
     // Read the file into fileString and terminate with a null
 	int readLen = ::fread(&fileString[0], 1, fileLen, fp);
 	if (::ferror(fp)) {
-        ::fclose(fp);
         filenameSet_ = false; // Temp. prevent check for changes.
         QMessageBox::critical(this, tr("Error while opening File"), tr("Error reading %1:\n%2").arg(name, ErrorString(errno)));
         filenameSet_ = true;
         return false;
     }
     fileString[readLen] = '\0';
-
-    // Close the file
-    if (::fclose(fp) != 0) {
-        // unlikely error
-        QMessageBox::warning(this, tr("Error while opening File"), tr("Unable to close file"));
-        // we read it successfully, so continue
-    }
 
     /* Any errors that happen after this point leave the window in a
        "broken" state, and thus RevertToSaved will abandon the window if
