@@ -66,10 +66,12 @@
 
 // The following definitions cause an exit from the macro with a message
 // added if (1) to remove compiler warnings on solaris
-#define M_FAILURE(s)   \
-    do {               \
-        *errMsg = s;   \
-        return false;  \
+#define M_FAILURE(s)     \
+    do {                 \
+        if(errMsg) {     \
+            *errMsg = s; \
+        }                \
+        return false;    \
     } while (0)
 
 static void cancelLearnEx();
@@ -3528,7 +3530,7 @@ static bool getenvMS(DocumentWidget *document, Arguments arguments, DataValue *r
 
     // Get name of variable to get
     if(!readArguments(arguments, 0, errMsg, &name)) {
-        M_FAILURE("argument to %s must be a string");
+        M_FAILURE("Argument to %s must be a string");
     }
 
     QByteArray value = qgetenv(name.c_str());
@@ -4153,11 +4155,11 @@ static bool splitMS(DocumentWidget *document, Arguments arguments, DataValue *re
     }
 
     if (!readArgument(arguments[0], &sourceStr, errMsg)) {
-        M_FAILURE("first argument must be a string: %s");
+        M_FAILURE("First argument must be a string: %s");
     }
 
     if (!readArgument(arguments[1], &splitStr, errMsg) || splitStr.isEmpty()) {
-        M_FAILURE("second argument must be a non-empty string: %s");
+        M_FAILURE("Second argument must be a non-empty string: %s");
     }
 
     QString typeSplitStr;
@@ -4201,7 +4203,7 @@ static bool splitMS(DocumentWidget *document, Arguments arguments, DataValue *re
 
         element = to_value(str);
         if (!ArrayInsert(result, allocIndexStr, &element)) {
-            M_FAILURE("array element failed to insert: %s");
+            M_FAILURE("Array element failed to insert: %s");
         }
 
         if (found) {
@@ -4228,7 +4230,7 @@ static bool splitMS(DocumentWidget *document, Arguments arguments, DataValue *re
             element = to_value(std::string());
 
             if (!ArrayInsert(result, allocIndexStr, &element)) {
-                M_FAILURE("array element failed to insert: %s");
+                M_FAILURE("Array element failed to insert: %s");
             }
         } else {
             /* We skipped the last character to prevent an endless loop.
@@ -4238,7 +4240,7 @@ static bool splitMS(DocumentWidget *document, Arguments arguments, DataValue *re
 
             element = to_value(str);
             if (!ArrayInsert(result, allocIndexStr, &element)) {
-                M_FAILURE("array element failed to insert: %s");
+                M_FAILURE("Array element failed to insert: %s");
             }
 
             /* If the pattern can match zero-length strings, we may have to
@@ -4269,7 +4271,7 @@ static bool splitMS(DocumentWidget *document, Arguments arguments, DataValue *re
 
                 element = to_value();
                 if (!ArrayInsert(result, allocIndexStr, &element)) {
-                    M_FAILURE("array element failed to insert: %s");
+                    M_FAILURE("Array element failed to insert: %s");
                 }
             }
         }
@@ -5538,14 +5540,14 @@ static bool fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWi
         DV = to_value(styleName);
 
         if (!ArrayInsert(result, AllocStringCpyEx("style"), &DV)) {
-            M_FAILURE("array element failed to insert: %s");
+            M_FAILURE("Array element failed to insert: %s");
         }
     }
 
     // insert color name
     DV = to_value(ColorOfNamedStyleEx(styleName));
     if (!ArrayInsert(result, AllocStringCpyEx("color"), &DV)) {
-        M_FAILURE("array element failed to insert: %s");
+        M_FAILURE("Array element failed to insert: %s");
     }
 
     /* Prepare array element for color value
@@ -5556,14 +5558,14 @@ static bool fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWi
         DV = to_value(color.name());
 
         if (!ArrayInsert(result, AllocStringCpyEx("rgb"), &DV)) {
-            M_FAILURE("array element failed to insert: %s");
+            M_FAILURE("Array element failed to insert: %s");
         }
     }
 
     // Prepare array element for background color name
     DV = to_value(BgColorOfNamedStyleEx(styleName));
     if (!ArrayInsert(result, AllocStringCpyEx("background"), &DV)) {
-        M_FAILURE("array element failed to insert: %s");
+        M_FAILURE("Array element failed to insert: %s");
     }
 
     /* Prepare array element for background color value
@@ -5574,27 +5576,27 @@ static bool fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWi
         DV = to_value(color.name());
 
         if (!ArrayInsert(result, AllocStringCpyEx("back_rgb"), &DV)) {
-            M_FAILURE("array element failed to insert: %s");
+            M_FAILURE("Array element failed to insert: %s");
         }
     }
 
     // Put boldness value in array
     DV = to_value(FontOfNamedStyleIsBold(styleName));
     if (!ArrayInsert(result, AllocStringCpyEx("bold"), &DV)) {
-        M_FAILURE("array element failed to insert: %s");
+        M_FAILURE("Array element failed to insert: %s");
     }
 
     // Put italicity value in array
     DV = to_value(FontOfNamedStyleIsItalic(styleName));
     if (!ArrayInsert(result, AllocStringCpyEx("italic"), &DV)) {
-        M_FAILURE("array element failed to insert: %s");
+        M_FAILURE("Array element failed to insert: %s");
     }
 
     if (bufferPos >= 0) {
         // insert extent
         DV.val.n = StyleLengthOfCodeFromPosEx(document, bufferPos);
         if (!ArrayInsert(result, AllocStringCpyEx("extent"), &DV)) {
-            M_FAILURE("array element failed to insert: %s");
+            M_FAILURE("Array element failed to insert: %s");
         }
     }
     return true;
@@ -5705,14 +5707,14 @@ bool fillPatternResultEx(DataValue *result, const char **errMsg, DocumentWidget 
         // insert pattern name
         DV = to_value(patternName);
         if (!ArrayInsert(result, AllocStringCpyEx("pattern"), &DV)) {
-            M_FAILURE("array element failed to insert: %s");
+            M_FAILURE("Array element failed to insert: %s");
         }
     }
 
     // insert style name
     DV = to_value(styleName);
     if (!ArrayInsert(result, AllocStringCpyEx("style"), &DV)) {
-        M_FAILURE("array element failed to insert: %s");
+        M_FAILURE("Array element failed to insert: %s");
     }
 
     if (bufferPos >= 0) {
@@ -5720,7 +5722,7 @@ bool fillPatternResultEx(DataValue *result, const char **errMsg, DocumentWidget 
         int checkCode = 0;
         DV = to_value(HighlightLengthOfCodeFromPosEx(document, bufferPos, &checkCode));
         if (!ArrayInsert(result, AllocStringCpyEx("extent"), &DV)) {
-            M_FAILURE("array element failed to insert: %s");
+            M_FAILURE("Array element failed to insert: %s");
         }
     }
 
@@ -5822,24 +5824,18 @@ static bool readArgument(DataValue dv, int *result, const char **errMsg) {
         return true;
     case STRING_TAG:
     {
-        char *p = dv.val.str.rep;
-        char *endp;
-        long val = strtol(p, &endp, 10);
-        if (endp == p || *endp != '\0' || ((val == LONG_MIN || val == LONG_MAX) && errno == ERANGE)) {
-            if(errMsg) {
-                M_FAILURE("%s called with non-integer argument");
-            }
-            return false;
+        auto s = QString::fromLatin1(dv.val.str.rep, dv.val.str.len);
+        bool ok;
+        int val = s.toInt(&ok);
+        if(!ok) {
+           M_FAILURE("%s called with non-integer argument");
         }
 
-        *result = static_cast<int>(val);
+        *result = val;
         return true;
     }
     default:
-        if(errMsg) {
-            M_FAILURE("%s called with unknown object");
-        }
-        return false;
+        M_FAILURE("%s called with unknown object");
     }
 }
 
@@ -5860,10 +5856,7 @@ static bool readArgument(DataValue dv, std::string *result, const char **errMsg)
         *result = std::to_string(dv.val.n);
         return true;
     default:
-        if(errMsg) {
-            M_FAILURE("%s called with unknown object");
-        }
-        return false;
+        M_FAILURE("%s called with unknown object");
     }
 }
 
@@ -5877,10 +5870,7 @@ static bool readArgument(DataValue dv, QString *result, const char **errMsg) {
         *result = QString::number(dv.val.n);
         return true;
     default:
-        if(errMsg) {
-            M_FAILURE("%s called with unknown object");
-        }
-        return false;
+        M_FAILURE("%s called with unknown object");
     }
 }
 
