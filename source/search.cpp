@@ -33,12 +33,12 @@
 #include "DialogReplace.h"
 #include "DocumentWidget.h"
 #include "MainWindow.h"
+#include "TruncSubstitution.h"
 #include "SignalBlocker.h"
 #include "TextArea.h"
 #include "TextBuffer.h"
 #include "WrapStyle.h"
 #include "highlight.h"
-#include "nedit.h"
 #include "preferences.h"
 #include "regularExp.h"
 #include "selection.h"
@@ -740,12 +740,12 @@ static bool prefOrUserCancelsSubstEx(MainWindow *window, DocumentWidget *documen
     bool cancel = true;
 
     switch (GetPrefTruncSubstitution()) {
-    case TRUNCSUBST_SILENT:
+    case TruncSubstitution::Silent:
         //  silently fail the operation
         cancel = true;
         break;
 
-    case TRUNCSUBST_FAIL:
+    case TruncSubstitution::Fail:
         //  fail the operation and pop up a dialog informing the user
         QApplication::beep();
 
@@ -755,7 +755,7 @@ static bool prefOrUserCancelsSubstEx(MainWindow *window, DocumentWidget *documen
         cancel = true;
         break;
 
-    case TRUNCSUBST_WARN:
+    case TruncSubstitution::Warn:
         //  pop up dialog and ask for confirmation
         QApplication::beep();
 
@@ -773,7 +773,7 @@ static bool prefOrUserCancelsSubstEx(MainWindow *window, DocumentWidget *documen
         }
         break;
 
-    case TRUNCSUBST_IGNORE:
+    case TruncSubstitution::Ignore:
         //  silently conclude the operation; THIS WILL DESTROY DATA.
         cancel = false;
         break;

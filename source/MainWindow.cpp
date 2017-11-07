@@ -1,5 +1,6 @@
 
 #include "MainWindow.h"
+#include "nedit.h"
 #include "DialogAbout.h"
 #include "DialogColors.h"
 #include "DialogExecuteCommand.h"
@@ -30,7 +31,6 @@
 #include "highlightData.h"
 #include "macro.h"
 #include "memory.h"
-#include "nedit.h"
 #include "preferences.h"
 #include "regularExp.h"
 #include "search.h"
@@ -101,6 +101,9 @@
     } while(0)
 
 namespace {
+
+// Min. # of columns in line number display
+constexpr int MIN_LINE_NUM_COLS    = 4;
 
 bool currentlyBusy = false;
 long busyStartTime = 0;

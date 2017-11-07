@@ -1,13 +1,9 @@
 
 #include "Settings.h"
-#include "IndentStyle.h"
-#include "SearchType.h"
-#include "ShowMatchingStyle.h"
-#include "WrapStyle.h"
-#include "ReplaceScope.h"
 #include "search.h"
-#include "nedit.h"
 #include "utils.h"
+#include "VirtKeyOverride.h"
+#include "TruncSubstitution.h"
 #include <QtDebug>
 #include <QSettings>
 #include <QStandardPaths>
@@ -157,12 +153,12 @@ void Settings::loadPreferences() {
     alwaysCheckRelativeTagsSpecs      = settings.value(tr("nedit.alwaysCheckRelativeTagsSpecs"),      true).toBool();
     prefFileRead                      = settings.value(tr("nedit.prefFileRead"),				      false).toBool();
     findReplaceUsesSelection          = settings.value(tr("nedit.findReplaceUsesSelection"),	      false).toBool();
-    overrideDefaultVirtualKeyBindings = settings.value(tr("nedit.overrideDefaultVirtualKeyBindings"), VIRT_KEY_OVERRIDE_AUTO).toInt();
+    overrideDefaultVirtualKeyBindings = static_cast<VirtKeyOverride>(settings.value(tr("nedit.overrideDefaultVirtualKeyBindings"), static_cast<int>(VirtKeyOverride::VIRT_KEY_OVERRIDE_AUTO)).toInt());
     titleFormat                       = settings.value(tr("nedit.titleFormat"),                       QLatin1String("{%c} [%s] %f (%S) - %d")).toString();
     undoModifiesSelection             = settings.value(tr("nedit.undoModifiesSelection"),             true).toBool();
     focusOnRaise                      = settings.value(tr("nedit.focusOnRaise"),                      false).toBool();
     forceOSConversion                 = settings.value(tr("nedit.forceOSConversion"),                 true).toBool();
-    truncSubstitution                 = settings.value(tr("nedit.truncSubstitution"),                 TRUNCSUBST_FAIL).toInt();
+    truncSubstitution                 = static_cast<TruncSubstitution>(settings.value(tr("nedit.truncSubstitution"),                 static_cast<int>(TruncSubstitution::Fail)).toInt());
     honorSymlinks                     = settings.value(tr("nedit.honorSymlinks"),                     true).toBool();
 
     settingsLoaded_ = true;
@@ -259,12 +255,12 @@ void Settings::importSettings(const QString &filename) {
     alwaysCheckRelativeTagsSpecs      = settings.value(tr("nedit.alwaysCheckRelativeTagsSpecs"),      alwaysCheckRelativeTagsSpecs).toBool();
     prefFileRead                      = settings.value(tr("nedit.prefFileRead"),				      prefFileRead).toBool();
     findReplaceUsesSelection          = settings.value(tr("nedit.findReplaceUsesSelection"),	      findReplaceUsesSelection).toBool();
-    overrideDefaultVirtualKeyBindings = settings.value(tr("nedit.overrideDefaultVirtualKeyBindings"), overrideDefaultVirtualKeyBindings).toInt();
+    overrideDefaultVirtualKeyBindings = static_cast<VirtKeyOverride>(settings.value(tr("nedit.overrideDefaultVirtualKeyBindings"), static_cast<int>(overrideDefaultVirtualKeyBindings)).toInt());
     titleFormat                       = settings.value(tr("nedit.titleFormat"),                       titleFormat).toString();
     undoModifiesSelection             = settings.value(tr("nedit.undoModifiesSelection"),             undoModifiesSelection).toBool();
     focusOnRaise                      = settings.value(tr("nedit.focusOnRaise"),                      focusOnRaise).toBool();
     forceOSConversion                 = settings.value(tr("nedit.forceOSConversion"),                 forceOSConversion).toBool();
-    truncSubstitution                 = settings.value(tr("nedit.truncSubstitution"),                 truncSubstitution).toInt();
+    truncSubstitution                 = static_cast<TruncSubstitution>(settings.value(tr("nedit.truncSubstitution"),                 static_cast<int>(truncSubstitution)).toInt());
     honorSymlinks                     = settings.value(tr("nedit.honorSymlinks"),                     honorSymlinks).toBool();
 }
 
@@ -353,12 +349,12 @@ bool Settings::savePreferences() {
     settings.setValue(tr("nedit.alwaysCheckRelativeTagsSpecs"), alwaysCheckRelativeTagsSpecs);
     settings.setValue(tr("nedit.prefFileRead"), prefFileRead);
     settings.setValue(tr("nedit.findReplaceUsesSelection"), findReplaceUsesSelection);
-    settings.setValue(tr("nedit.overrideDefaultVirtualKeyBindings"), overrideDefaultVirtualKeyBindings);
+    settings.setValue(tr("nedit.overrideDefaultVirtualKeyBindings"), static_cast<int>(overrideDefaultVirtualKeyBindings));
     settings.setValue(tr("nedit.titleFormat"), titleFormat);
     settings.setValue(tr("nedit.undoModifiesSelection"), undoModifiesSelection);
     settings.setValue(tr("nedit.focusOnRaise"), focusOnRaise);
     settings.setValue(tr("nedit.forceOSConversion"), forceOSConversion);
-    settings.setValue(tr("nedit.truncSubstitution"), truncSubstitution);
+    settings.setValue(tr("nedit.truncSubstitution"), static_cast<int>(truncSubstitution));
     settings.setValue(tr("nedit.honorSymlinks"), honorSymlinks);
 
     settings.sync();

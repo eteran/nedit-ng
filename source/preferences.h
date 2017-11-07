@@ -31,6 +31,7 @@
 #include "SearchType.h"
 #include "WrapStyle.h"
 #include "WrapMode.h"
+#include "TruncSubstitution.h"
 #include "Settings.h"
 #include "util/string_view.h"
 
@@ -88,7 +89,7 @@ int GetPrefMapDelete();
 int GetPrefMatchSyntaxBased();
 int GetPrefMaxPrevOpenFiles();
 bool GetPrefOpenInTab();
-int GetPrefOverrideVirtKeyBindings();
+VirtKeyOverride GetPrefOverrideVirtKeyBindings();
 bool GetPrefRepositionDialogs();
 int GetPrefRows();
 bool GetPrefSaveOldVersion();
@@ -107,7 +108,7 @@ int GetPrefTabBarHideOne();
 int GetPrefTabBar();
 int GetPrefTabDist(int langMode);
 int GetPrefToolTips();
-int GetPrefTruncSubstitution();
+TruncSubstitution GetPrefTruncSubstitution();
 int GetPrefTypingHidesPointer();
 int GetPrefWarnExit();
 int GetPrefWarnFileMods();

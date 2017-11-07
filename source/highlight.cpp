@@ -39,7 +39,6 @@
 #include "WindowHighlightData.h"
 #include "X11Colors.h"
 #include "highlightData.h"
-#include "nedit.h"
 #include "preferences.h"
 #include "regularExp.h"
 #include <QMessageBox>

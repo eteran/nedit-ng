@@ -4,7 +4,6 @@
 #include "MainWindow.h"
 #include "TextArea.h"
 #include "TextBuffer.h"
-#include "nedit.h"
 #include "preferences.h"
 #include "regularExp.h"
 #include "search.h" // for the search type enum

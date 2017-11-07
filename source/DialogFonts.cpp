@@ -2,7 +2,6 @@
 #include "DialogFonts.h"
 #include "DocumentWidget.h"
 #include "TextArea.h"
-#include "nedit.h"
 #include "Font.h"
 #include "preferences.h"
 #include <QFontDialog>

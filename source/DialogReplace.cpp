@@ -3,7 +3,6 @@
 #include "DialogMultiReplace.h"
 #include "DocumentWidget.h"
 #include "MainWindow.h"
-#include "nedit.h"
 #include "preferences.h"
 #include "regularExp.h"
 #include "search.h" // for the search type enum

@@ -27,32 +27,6 @@
 #ifndef NEDIT_H_
 #define NEDIT_H_
 
-#include "ShowMatchingStyle.h"
-#include "TextSelection.h"
-
-/* Tuning parameters */
-#define SEARCHMAX 5119         /* Maximum length of search/replace strings */
-#define MAX_PANES 6            /* Max # of ADDITIONAL text editing panes  that can be added to a window */
-
-#define AUTOSAVE_CHAR_LIMIT 80 /* set higher on VMS becaus saving is slower */
-#define AUTOSAVE_OP_LIMIT   8  /* number of distinct editing operations user can do before NEdit gens. new backup file */
-#define MIN_LINE_NUM_COLS 4 /* Min. # of columns in line number display */
-
-/*  This enum must be kept in parallel to the array TruncSubstitutionModes[]
-    in preferences.c  */
-enum TruncSubstitution {
-    TRUNCSUBST_SILENT,
-    TRUNCSUBST_FAIL,
-    TRUNCSUBST_WARN,
-    TRUNCSUBST_IGNORE
-};
-
-enum virtKeyOverride {
-    VIRT_KEY_OVERRIDE_NEVER,
-    VIRT_KEY_OVERRIDE_AUTO,
-    VIRT_KEY_OVERRIDE_ALWAYS
-};
-
 extern bool IsServer;
 
 #endif

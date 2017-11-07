@@ -34,7 +34,6 @@
 #include "TextBuffer.h"
 #include "highlight.h"
 #include "highlightData.h"
-#include "nedit.h"
 #include "search.h"
 #include "smartIndent.h"
 #include "Font.h"
@@ -866,11 +865,11 @@ bool GetPrefHonorSymlinks() {
     return g_Settings.honorSymlinks;
 }
 
-int GetPrefOverrideVirtKeyBindings() {
+VirtKeyOverride GetPrefOverrideVirtKeyBindings() {
     return g_Settings.overrideDefaultVirtualKeyBindings;
 }
 
-int GetPrefTruncSubstitution() {
+TruncSubstitution GetPrefTruncSubstitution() {
     return g_Settings.truncSubstitution;
 }
 

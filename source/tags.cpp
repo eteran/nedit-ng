@@ -34,7 +34,6 @@
 #include "TextArea.h"
 #include "TextBuffer.h"
 #include "calltips.h"
-#include "nedit.h"
 #include "preferences.h"
 #include "search.h"
 #include "selection.h"

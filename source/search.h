@@ -39,7 +39,11 @@ class DocumentWidget;
 class MainWindow;
 class TextArea;
 
-constexpr int MAX_SEARCH_HISTORY = 100; // Maximum length of search string history
+// Maximum length of search string history
+constexpr int MAX_SEARCH_HISTORY = 100;
+
+// Maximum length of search/replace strings
+constexpr int SEARCHMAX = 5119;
 
 bool ReplaceAllEx(MainWindow *window, DocumentWidget *document, TextArea *area, const QString &searchString, const QString &replaceString, SearchType searchType);
 bool ReplaceAndSearchEx(MainWindow *window, DocumentWidget *document, TextArea *area, Direction direction, const QString &searchString, const QString &replaceString, SearchType searchType, WrapMode searchWrap);

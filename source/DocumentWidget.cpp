@@ -25,7 +25,6 @@
 #include "highlightData.h"
 #include "interpret.h"
 #include "macro.h"
-#include "nedit.h"
 #include "Font.h"
 #include "parse.h"
 #include "preferences.h"
@@ -75,8 +74,17 @@ struct ShellCommandData {
 
 namespace {
 
-// Tuning parameters
-constexpr int BANNER_WAIT_TIME = 6000; // how long to wait (msec) before putting up Shell Command Executing... banner
+// set higher on VMS becaus saving is slower
+constexpr int AUTOSAVE_CHAR_LIMIT  = 80;
+
+// number of distinct editing operations user can do before NEdit gens. new backup file
+constexpr int AUTOSAVE_OP_LIMIT    = 8;
+
+// Max # of ADDITIONAL text editing panes  that can be added to a window
+constexpr int MAX_PANES  = 6;
+
+// how long to wait (msec) before putting up Shell Command Executing... banner
+constexpr int BANNER_WAIT_TIME = 6000;
 
 // flags for issueCommand
 enum {

@@ -3,7 +3,6 @@
 #include "DialogReplace.h"
 #include "DocumentWidget.h"
 #include "MainWindow.h"
-#include "nedit.h"
 #include "preferences.h"
 #include "search.h"
 #include <QMessageBox>

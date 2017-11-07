@@ -38,7 +38,6 @@
 #include "WrapStyle.h"
 #include "interpret.h"
 #include "macro.h"
-#include "nedit.h"
 #include "parse.h"
 #include "preferences.h"
 #include "Input.h"
