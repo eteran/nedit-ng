@@ -172,13 +172,13 @@ void DialogLanguageModes::on_listItems_itemSelectionChanged() {
 		}
 
 		switch(language->wrapStyle) {
-		case 0:
+        case WrapStyle::None:
 			ui.radioWrapNone->setChecked(true);
 			break;
-		case 1:
+        case WrapStyle::Newline:
 			ui.radioWrapAuto->setChecked(true);
 			break;
-		case 2:
+        case WrapStyle::Continuous:
 			ui.radioWrapContinuous->setChecked(true);
 			break;
 		default:
@@ -347,13 +347,13 @@ std::unique_ptr<LanguageMode> DialogLanguageModes::readLMDialogFields(Mode mode)
 
 	// read wrap style
 	if(ui.radioWrapNone->isChecked()) {
-		lm->wrapStyle = NO_WRAP;
+        lm->wrapStyle = WrapStyle::None;
 	} else if(ui.radioWrapAuto->isChecked()) {
-		lm->wrapStyle = NEWLINE_WRAP;
+        lm->wrapStyle = WrapStyle::Newline;
 	} else if(ui.radioWrapContinuous->isChecked()) {
-		lm->wrapStyle = CONTINUOUS_WRAP;
+        lm->wrapStyle = WrapStyle::Continuous;
 	} else if(ui.radioWrapDefault->isChecked()) {
-		lm->wrapStyle = DEFAULT_WRAP;
+        lm->wrapStyle = WrapStyle::Default;
 	}
 
     return lm;

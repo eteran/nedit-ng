@@ -123,7 +123,7 @@ static bool selectionSpansMultipleLines(DocumentWidget *document) {
 		return true;
 	}
 
-    if (document->wrapMode_ != CONTINUOUS_WRAP) {
+    if (document->wrapMode_ != Continuous) {
         return false; // Same line
 	}
 

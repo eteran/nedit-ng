@@ -242,7 +242,7 @@ void SetPrefWrap(WrapStyle state) {
 }
 
 WrapStyle GetPrefWrap(int langMode) {
-    if (langMode == PLAIN_LANGUAGE_MODE || LanguageModes[langMode].wrapStyle == DEFAULT_WRAP) {
+    if (langMode == PLAIN_LANGUAGE_MODE || LanguageModes[langMode].wrapStyle == WrapStyle::Default) {
         return g_Settings.autoWrap;
     }
 
@@ -1002,7 +1002,7 @@ static int loadLanguageModesStringEx(const QString &string) {
 		// read the wrap style
 		styleName = ReadSymbolicFieldEx(in);
 		if(styleName.isNull()) {
-			lm.wrapStyle = DEFAULT_WRAP;
+            lm.wrapStyle = WrapStyle::Default;
 		} else {
 			for (i = 0; i < N_WRAP_STYLES; i++) {
 				if ((styleName == QString::fromLatin1(AutoWrapTypes[i]))) {
@@ -1112,8 +1112,8 @@ static QString WriteLanguageModesStringEx() {
         }
 
         out << QLatin1Char(':');
-        if (language.wrapStyle != DEFAULT_WRAP) {
-            out << QString::fromLatin1(AutoWrapTypes[language.wrapStyle]);
+        if (language.wrapStyle != WrapStyle::Default) {
+            out << QString::fromLatin1(AutoWrapTypes[static_cast<int>(language.wrapStyle)]);
         }
 
         out << QLatin1Char(':');

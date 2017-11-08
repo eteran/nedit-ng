@@ -21,11 +21,10 @@ inline QLatin1String to_string(IndentStyle style) {
     case IndentStyle::Smart:
         return QLatin1String("smart");
     case IndentStyle::Default:
-        // NOTE(eteran): should not happen
-        break;
+        return QLatin1String("default");
     }
 
-    return QLatin1String();
+    Q_UNREACHABLE();
 }
 
 #endif

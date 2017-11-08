@@ -1196,11 +1196,11 @@ void DocumentWidget::SetAutoIndent(IndentStyle state) {
 }
 
 /*
-** Select auto-wrap mode, one of NO_WRAP, NEWLINE_WRAP, or CONTINUOUS_WRAP
+** Select auto-wrap mode, one of None, Newline, or Continuous
 */
 void DocumentWidget::SetAutoWrap(WrapStyle state) {
-    const bool autoWrap = (state == NEWLINE_WRAP);
-    const bool contWrap = (state == CONTINUOUS_WRAP);
+    const bool autoWrap = (state == WrapStyle::Newline);
+    const bool contWrap = (state == WrapStyle::Continuous);
 
     const QList<TextArea *> textAreas = textPanes();
     for(TextArea *area : textAreas) {
@@ -1214,7 +1214,7 @@ void DocumentWidget::SetAutoWrap(WrapStyle state) {
         if(auto win = toWindow()) {
             no_signals(win->ui.action_Wrap_Auto_Newline)->setChecked(autoWrap);
             no_signals(win->ui.action_Wrap_Continuous)->setChecked(contWrap);
-            no_signals(win->ui.action_Wrap_None)->setChecked(state == NO_WRAP);
+            no_signals(win->ui.action_Wrap_None)->setChecked(state == WrapStyle::None);
         }
     }
 }
@@ -2539,7 +2539,7 @@ int DocumentWidget::SaveWindowAs(const QString &newName, bool addWrap) {
                     });
 
 
-                    if (wrapMode_ == CONTINUOUS_WRAP) {
+                    if (wrapMode_ == WrapStyle::Continuous) {
                         layout->addWidget(wrapCheck, row, 1, 1, 1);
                     }
 

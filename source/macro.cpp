@@ -208,6 +208,28 @@ struct SubRoutine {
     BuiltInSubrEx function;
 };
 
+namespace {
+
+const char InvalidArgument[]        = "%s called with invalid argument";
+const char TooFewArguments[]        = "%s subroutine called with too few arguments";
+const char TooManyArguments[]       = "%s subroutine called with too many arguments";
+const char UnknownObject[]          = "%s called with unknown object";
+const char NotAnInteger[]           = "%s called with non-integer argument";
+const char NotAString[]             = "%s not called with a string parameter";
+const char InvalidContext[]         = "%s can't be called from non-suspendable context";
+const char NeedsArguments[]         = "%s subroutine called with no arguments";
+const char WrongNumberOfArguments[] = "Wrong number of arguments to function %s";
+const char UnrecognizedArgument[]   = "Unrecognized argument to %s";
+const char InsertFailed[]           = "Array element failed to insert: %s";
+const char TooMuchBinaryData[]      = "Too much binary data in file";
+const char RangesetDoesNotExist[]   = "Rangeset does not exist in %s";
+const char PathnameTooLong[]        = "Pathname too long in %s";
+const char InvalidArrayKey[]        = "Invalid key in array in %s";
+const char InvalidIndentStyle[]     = "Invalid indent style value encountered in %s";
+const char InvalidWrapStyle[]       = "Invalid wrap style value encountered in %s";
+
+}
+
 /**
  * @brief flagsFromArguments
  * @param argList
@@ -264,7 +286,7 @@ static bool routineName(DocumentWidget *document, Arguments arguments, DataValue
                                                                                                                           \
     TextArea::EventFlags flags = TextArea::NoneFlag;                                                                      \
     if(!flagsFromArguments(arguments, 0, &flags)) {                                                                  \
-        M_FAILURE("%s called with invalid argument");                                                                     \
+        M_FAILURE(InvalidArgument);                                                                     \
     }                                                                                                                     \
                                                                                                                           \
     if(MainWindow *window = document->toWindow()) {                                                                       \
@@ -281,7 +303,7 @@ static bool routineName(DocumentWidget *document, Arguments arguments, DataValue
 static bool routineName(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) { \
                                                                                                                           \
     if(arguments.size() < 1) {                                                                                                       \
-        M_FAILURE("Wrong number of arguments to function %s");                                                            \
+        M_FAILURE(WrongNumberOfArguments);                                                            \
     }                                                                                                                     \
                                                                                                                           \
     QString string;                                                                                                       \
@@ -291,7 +313,7 @@ static bool routineName(DocumentWidget *document, Arguments arguments, DataValue
                                                                                                                           \
     TextArea::EventFlags flags = TextArea::NoneFlag;                                                                      \
     if(!flagsFromArguments(arguments, 1, &flags)) {                                                                  \
-        M_FAILURE("%s called with invalid argument");                                                                     \
+        M_FAILURE(InvalidArgument);                                                                     \
     }                                                                                                                     \
                                                                                                                           \
     if(MainWindow *window = document->toWindow()) {                                                                       \
@@ -308,7 +330,7 @@ static bool routineName(DocumentWidget *document, Arguments arguments, DataValue
 static bool routineName(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) { \
                                                                                                                           \
     if(arguments.size() < 1) {                                                                                                       \
-        M_FAILURE("Wrong number of arguments to function %s");                                                            \
+        M_FAILURE(WrongNumberOfArguments);                                                            \
     }                                                                                                                     \
                                                                                                                           \
     int num;                                                                                                              \
@@ -318,7 +340,7 @@ static bool routineName(DocumentWidget *document, Arguments arguments, DataValue
                                                                                                                           \
     TextArea::EventFlags flags = TextArea::NoneFlag;                                                                      \
     if(!flagsFromArguments(arguments, 1, &flags)) {                                                                  \
-        M_FAILURE("%s called with invalid argument");                                                                     \
+        M_FAILURE(InvalidArgument);                                                                     \
     }                                                                                                                     \
                                                                                                                           \
     if(MainWindow *window = document->toWindow()) {                                                                       \
@@ -392,7 +414,7 @@ static bool scrollDownMS(DocumentWidget *document, Arguments arguments, DataValu
         }
         break;
     default:
-        M_FAILURE("Wrong number of arguments to function %s");
+        M_FAILURE(WrongNumberOfArguments);
     }
 
 
@@ -431,7 +453,7 @@ static bool scrollUpMS(DocumentWidget *document, Arguments arguments, DataValue 
         }
         break;
     default:
-        M_FAILURE("Wrong number of arguments to function %s");
+        M_FAILURE(WrongNumberOfArguments);
     }
 
 
@@ -562,7 +584,7 @@ static const SubRoutine TextAreaSubrNames[] = {
         document = MacroRunWindowEx();                                                                                          \
                                                                                                                                 \
         if(!arguments.empty()) {                                                                                                \
-            M_FAILURE("Wrong number of arguments to function %s");                                                              \
+            M_FAILURE(WrongNumberOfArguments);                                                              \
         }                                                                                                                       \
                                                                                                                                 \
         if(MainWindow *window = document->toWindow()) {                                                                         \
@@ -773,7 +795,7 @@ static bool closeMS(DocumentWidget *document, Arguments arguments, DataValue *re
     document = MacroRunWindowEx();
 
     if(arguments.size() > 1) {
-        M_FAILURE("Wrong number of arguments to function %s");
+        M_FAILURE(WrongNumberOfArguments);
     }
 
     CloseMode mode = CloseMode::Prompt;
@@ -815,7 +837,7 @@ static bool newMS(DocumentWidget *document, Arguments arguments, DataValue *resu
     document = MacroRunWindowEx();
 
     if(arguments.size() > 1) {
-        M_FAILURE("Wrong number of arguments to function %s");
+        M_FAILURE(WrongNumberOfArguments);
     }
 
     NewMode mode = NewMode::Prefs;
@@ -858,7 +880,7 @@ static bool saveAsMS(DocumentWidget *document, Arguments arguments, DataValue *r
     document = MacroRunWindowEx();
 
     if(arguments.size() > 2 || arguments.empty()) {
-        M_FAILURE("Wrong number of arguments to function %s");
+        M_FAILURE(WrongNumberOfArguments);
     }
 
     QString filename;
@@ -896,7 +918,7 @@ static bool findMS(DocumentWidget *document, Arguments arguments, DataValue *res
     document = MacroRunWindowEx();
 
     if(arguments.size() > 4 || arguments.empty()) {
-        M_FAILURE("Wrong number of arguments to function %s");
+        M_FAILURE(WrongNumberOfArguments);
     }
 
     QString string;
@@ -980,7 +1002,7 @@ static bool replaceMS(DocumentWidget *document, Arguments arguments, DataValue *
     document = MacroRunWindowEx();
 
     if(arguments.size() > 5 || arguments.size() < 2) {
-        M_FAILURE("Wrong number of arguments to function %s");
+        M_FAILURE(WrongNumberOfArguments);
     }
 
     QString searchString;
@@ -1028,7 +1050,7 @@ static bool replaceAgainMS(DocumentWidget *document, Arguments arguments, DataVa
     document = MacroRunWindowEx();
 
     if(arguments.size() != 2) {
-        M_FAILURE("Wrong number of arguments to function %s");
+        M_FAILURE(WrongNumberOfArguments);
     }
 
     WrapMode wrap       = searchWrap(arguments, 0);
@@ -1051,7 +1073,7 @@ static bool gotoMarkMS(DocumentWidget *document, Arguments arguments, DataValue 
     document = MacroRunWindowEx();
 
     if(arguments.size() > 2 || arguments.size() < 1) {
-        M_FAILURE("Wrong number of arguments to function %s");
+        M_FAILURE(WrongNumberOfArguments);
     }
 
     bool extend = false;
@@ -1087,7 +1109,7 @@ static bool gotoMarkDialogMS(DocumentWidget *document, Arguments arguments, Data
     document = MacroRunWindowEx();
 
     if(arguments.size() > 1) {
-        M_FAILURE("Wrong number of arguments to function %s");
+        M_FAILURE(WrongNumberOfArguments);
     }
 
     bool extend = false;
@@ -1118,7 +1140,7 @@ static bool findDefinitionMS(DocumentWidget *document, Arguments arguments, Data
     document = MacroRunWindowEx();
 
     if(arguments.size() > 1) {
-        M_FAILURE("Wrong number of arguments to function %s");
+        M_FAILURE(WrongNumberOfArguments);
     }
 
     QString argument;
@@ -1586,11 +1608,11 @@ static bool setWrapTextMS(DocumentWidget *document, Arguments arguments, DataVal
         }
 
         if (arg == QLatin1String("none")) {
-            document->SetAutoWrap(NO_WRAP);
+            document->SetAutoWrap(WrapStyle::None);
         } else if (arg == QLatin1String("auto")) {
-            document->SetAutoWrap(NEWLINE_WRAP);
+            document->SetAutoWrap(WrapStyle::Newline);
         } else if (arg == QLatin1String("continuous")) {
-           document->SetAutoWrap(CONTINUOUS_WRAP);
+           document->SetAutoWrap(WrapStyle::Continuous);
         } else {
             qWarning("NEdit: set_wrap_text invalid argument");
         }
@@ -2664,7 +2686,7 @@ static bool minMS(DocumentWidget *document, Arguments arguments, DataValue *resu
     int value;
 
     if (arguments.size() == 1) {
-        M_FAILURE("Too few arguments to function %s");
+        M_FAILURE(TooFewArguments);
     }
 
     if (!readArgument(arguments[0], &minVal, errMsg)) {
@@ -2690,7 +2712,7 @@ static bool maxMS(DocumentWidget *document, Arguments arguments, DataValue *resu
     int value;
 
     if (arguments.size() == 1) {
-        M_FAILURE("Too few arguments to function %s");
+        M_FAILURE(TooFewArguments);
     }
 
     if (!readArgument(arguments[0], &maxVal, errMsg)) {
@@ -2715,7 +2737,7 @@ static bool focusWindowMS(DocumentWidget *document, Arguments arguments, DataVal
     /* Read the argument representing the window to focus to, and translate
        it into a pointer to a real DocumentWidget */
     if (arguments.size() != 1) {
-        M_FAILURE("Wrong number of arguments to function %s");
+        M_FAILURE(WrongNumberOfArguments);
     }
 
     QString string;
@@ -2738,7 +2760,7 @@ static bool focusWindowMS(DocumentWidget *document, Arguments arguments, DataVal
             it = std::next(curr);
         }
     } else if (string.size() >= MAXPATHLEN) {
-        M_FAILURE("Pathname too long in focus_window()");
+        M_FAILURE(PathnameTooLong);
     } else {
         // just use the plain name as supplied
         it = std::find_if(documents.begin(), documents.end(), [&string](DocumentWidget *doc) {
@@ -2752,7 +2774,7 @@ static bool focusWindowMS(DocumentWidget *document, Arguments arguments, DataVal
             QString normalizedString = NormalizePathnameEx(string);
             if(normalizedString.isNull()) {
                 //  Something is broken with the input pathname.
-                M_FAILURE("Pathname too long in focus_window()");
+                M_FAILURE(PathnameTooLong);
             }
 
             it = std::find_if(documents.begin(), documents.end(), [&normalizedString](DocumentWidget *win) {
@@ -2874,7 +2896,7 @@ static bool replaceRangeMS(DocumentWidget *document, Arguments arguments, DataVa
        all of the possible substitution characters in the buffer are used
        up, stop the macro and tell the user of the failure */
     if (!document->buffer_->BufSubstituteNullCharsEx(string)) {
-        M_FAILURE("Too much binary data in file");
+        M_FAILURE(TooMuchBinaryData);
     }
 
     // Do the replace
@@ -2909,7 +2931,7 @@ static bool replaceSelectionMS(DocumentWidget *document, Arguments arguments, Da
        all of the possible substitution characters in the buffer are used
        up, stop the macro and tell the user of the failure */
     if (!document->buffer_->BufSubstituteNullCharsEx(string)) {
-        M_FAILURE("Too much binary data in file");
+        M_FAILURE(TooMuchBinaryData);
     }
 
     // Do the replace
@@ -2928,12 +2950,12 @@ static bool getSelectionMS(DocumentWidget *document, Arguments arguments, DataVa
     /* Read argument list to check for "any" keyword, and get the appropriate
        selection */
     if (!arguments.empty() && arguments.size() != 1) {
-        M_FAILURE("Wrong number of arguments to function %s");
+        M_FAILURE(WrongNumberOfArguments);
     }
 
     if (arguments.size() == 1) {
         if (!is_string(arguments[0]) || strcmp(arguments[0].val.str.rep, "any")) {
-            M_FAILURE("Unrecognized argument to %s");
+            M_FAILURE(UnrecognizedArgument);
         }
 
         QString text = GetAnySelectionEx(document);
@@ -3014,7 +3036,7 @@ static bool substringMS(DocumentWidget *document, Arguments arguments, DataValue
 
     // Validate arguments and convert to int
     if (arguments.size() != 2 && arguments.size() != 3) {
-        M_FAILURE("Wrong number of arguments to function %s");
+        M_FAILURE(WrongNumberOfArguments);
     }
 
     int from;
@@ -3107,7 +3129,7 @@ static bool clipboardToStringMS(DocumentWidget *document, Arguments arguments, D
 
     // Should have no arguments
     if (!arguments.empty()) {
-        M_FAILURE("Wrong number of arguments to function %s");
+        M_FAILURE(WrongNumberOfArguments);
     }
 
     // Ask if there's a string in the clipboard, and get its length
@@ -3220,7 +3242,7 @@ static bool searchMS(DocumentWidget *document, Arguments arguments, DataValue *r
     /* Use the search string routine, by adding the buffer contents as
        the string argument */
     if (arguments.size() > 8)
-        M_FAILURE("Wrong number of arguments to function %s");
+        M_FAILURE(WrongNumberOfArguments);
 
     /* we remove constness from BufAsStringEx() result since we know
        searchStringMS will not modify the result */
@@ -3263,7 +3285,7 @@ static bool searchStringMS(DocumentWidget *document, Arguments arguments, DataVa
 
     // Validate arguments and convert to proper types
     if (arguments.size() < 3)
-        M_FAILURE("Too few arguments to function %s");
+        M_FAILURE(TooFewArguments);
     if (!readArgument(arguments[0], &string, errMsg))
         return false;
     if (!readArgument(arguments[1], &searchStr, errMsg))
@@ -3343,7 +3365,7 @@ static bool replaceInStringMS(DocumentWidget *document, Arguments arguments, Dat
 
     // Validate arguments and convert to proper types
     if (arguments.size() < 3 || arguments.size() > 5)
-        M_FAILURE("Wrong number of arguments to function %s");
+        M_FAILURE(WrongNumberOfArguments);
     if (!readArgument(arguments[0], &string, errMsg))
         return false;
     if (!readArgument(arguments[1], &searchStr, errMsg))
@@ -3363,7 +3385,7 @@ static bool replaceInStringMS(DocumentWidget *document, Arguments arguments, Dat
             if (argStr == QLatin1String("copy")) {
                 force = true;
             } else {
-                M_FAILURE("Unrecognized argument to %s");
+                M_FAILURE(UnrecognizedArgument);
             }
         }
     }
@@ -3422,7 +3444,7 @@ static bool readSearchArgs(Arguments arguments, Direction *searchDirection, Sear
         else if (argStr == QLatin1String("forward"))
             *searchDirection = Direction::FORWARD;
         else if (!StringToSearchType(argStr, searchType)) {
-            M_FAILURE("Unrecognized argument to %s");
+            M_FAILURE(UnrecognizedArgument);
         }
     }
     return true;
@@ -3488,7 +3510,7 @@ static bool beepMS(DocumentWidget *document, Arguments arguments, DataValue *res
     Q_UNUSED(document);
 
     if (!arguments.empty()) {
-        M_FAILURE("Wrong number of arguments to function %s");
+        M_FAILURE(WrongNumberOfArguments);
     }
 
     QApplication::beep();
@@ -3503,7 +3525,7 @@ static bool tPrintMS(DocumentWidget *document, Arguments arguments, DataValue *r
     std::string string;
 
     if (arguments.empty()) {
-        M_FAILURE("Too few arguments to function %s");
+        M_FAILURE(TooFewArguments);
     }
 
     for (int i = 0; i < arguments.size(); i++) {
@@ -3530,7 +3552,7 @@ static bool getenvMS(DocumentWidget *document, Arguments arguments, DataValue *r
 
     // Get name of variable to get
     if(!readArguments(arguments, 0, errMsg, &name)) {
-        M_FAILURE("Argument to %s must be a string");
+        M_FAILURE(NotAString);
     }
 
     QByteArray value = qgetenv(name.c_str());
@@ -3552,7 +3574,7 @@ static bool shellCmdMS(DocumentWidget *document, Arguments arguments, DataValue 
     /* Shell command execution requires that the macro be suspended, so
        this subroutine can't be run if macro execution can't be interrupted */
     if (!MacroRunWindowEx()->macroCmdData_) {
-        M_FAILURE("%s can't be called from non-suspendable context");
+        M_FAILURE(InvalidContext);
     }
 
     document->ShellCmdToMacroStringEx(cmdString, inputString);
@@ -3593,13 +3615,13 @@ static bool dialogMS(DocumentWidget *document, Arguments arguments, DataValue *r
     /* Dialogs require macro to be suspended and interleaved with other macros.
        This subroutine can't be run if macro execution can't be interrupted */
     if (!cmdData) {
-        M_FAILURE("%s can't be called from non-suspendable context");
+        M_FAILURE(InvalidContext);
     }
 
     /* Read and check the arguments.  The first being the dialog message,
        and the rest being the button labels */
     if (arguments.empty()) {
-        M_FAILURE("%s subroutine called with no arguments");
+        M_FAILURE(NeedsArguments);
     }
     if (!readArgument(arguments[0], &message, errMsg)) {
         return false;
@@ -3651,13 +3673,13 @@ static bool stringDialogMS(DocumentWidget *document, Arguments arguments, DataVa
     /* Dialogs require macro to be suspended and interleaved with other macros.
        This subroutine can't be run if macro execution can't be interrupted */
     if (!cmdData) {
-        M_FAILURE("%s can't be called from non-suspendable context");
+        M_FAILURE(InvalidContext);
     }
 
     /* Read and check the arguments.  The first being the dialog message,
        and the rest being the button labels */
     if (arguments.empty()) {
-        M_FAILURE("%s subroutine called with no arguments");
+        M_FAILURE(NeedsArguments);
     }
     if (!readArgument(arguments[0], &message, errMsg)) {
         return false;
@@ -3737,10 +3759,10 @@ static bool calltipMS(DocumentWidget *document, Arguments arguments, DataValue *
 
     // Read and check the string
     if (arguments.size() < 1) {
-        M_FAILURE("%s subroutine called with too few arguments");
+        M_FAILURE(TooFewArguments);
     }
     if (arguments.size() > 6) {
-        M_FAILURE("%s subroutine called with too many arguments");
+        M_FAILURE(TooManyArguments);
     }
 
     // Read the tip text or key
@@ -3765,22 +3787,22 @@ static bool calltipMS(DocumentWidget *document, Arguments arguments, DataValue *
         switch (txtArg[0]) {
         case 'c':
             if (txtArg == "center")
-                M_FAILURE("Unrecognized argument to %s");
+                M_FAILURE(UnrecognizedArgument);
             hAlign = TIP_CENTER;
             break;
         case 'r':
             if (txtArg == "right")
-                M_FAILURE("Unrecognized argument to %s");
+                M_FAILURE(UnrecognizedArgument);
             hAlign = TIP_RIGHT;
             break;
         case 'a':
             if (txtArg == "above")
-                M_FAILURE("Unrecognized argument to %s");
+                M_FAILURE(UnrecognizedArgument);
             vAlign = TIP_ABOVE;
             break;
         case 's':
             if (txtArg == "strict")
-                M_FAILURE("Unrecognized argument to %s");
+                M_FAILURE(UnrecognizedArgument);
             alignMode = TIP_STRICT;
             break;
         case 't':
@@ -3791,11 +3813,11 @@ static bool calltipMS(DocumentWidget *document, Arguments arguments, DataValue *
             } else if (txtArg == "tagKey") {
                 mode = TIP_FROM_TAG;
             } else {
-                M_FAILURE("Unrecognized argument to %s");
+                M_FAILURE(UnrecognizedArgument);
             }
             break;
         default:
-            M_FAILURE("Unrecognized argument to %s");
+            M_FAILURE(UnrecognizedArgument);
         }
     }
 
@@ -3825,7 +3847,7 @@ static bool killCalltipMS(DocumentWidget *document, Arguments arguments, DataVal
     int calltipID = 0;
 
     if (arguments.size() > 1) {
-        M_FAILURE("%s subroutine called with too many arguments");
+        M_FAILURE(TooManyArguments);
     }
     if (arguments.size() > 0) {
         if (!readArgument(arguments[0], &calltipID, errMsg))
@@ -3880,7 +3902,7 @@ static bool replaceAllMS(DocumentWidget *document, Arguments arguments, DataValu
     document = MacroRunWindowEx();
 
     if (arguments.size() < 2 || arguments.size() > 3) {
-        M_FAILURE("Wrong number of arguments to function %s");
+        M_FAILURE(WrongNumberOfArguments);
     }
 
     //  Get the argument list.
@@ -3936,7 +3958,7 @@ static bool filenameDialogMS(DocumentWidget *document, Arguments arguments, Data
     /* Dialogs require macro to be suspended and interleaved with other macros.
        This subroutine can't be run if macro execution can't be interrupted */
     if (!document->macroCmdData_) {
-        M_FAILURE("%s can't be called from non-suspendable context");
+        M_FAILURE(InvalidContext);
     }
 
     //  Get the argument list.
@@ -4028,7 +4050,7 @@ static bool listDialogMS(DocumentWidget *document, Arguments arguments, DataValu
     /* Dialogs require macro to be suspended and interleaved with other macros.
        This subroutine can't be run if macro execution can't be interrupted */
     if (!cmdData) {
-        M_FAILURE("%s can't be called from non-suspendable context");
+        M_FAILURE(InvalidContext);
     }
 
     /* Read and check the arguments.  The first being the dialog message,
@@ -4097,7 +4119,7 @@ static bool stringCompareMS(DocumentWidget *document, Arguments arguments, DataV
     int compareResult;
 
     if (arguments.size() < 2) {
-        M_FAILURE("Wrong number of arguments to function %s");
+        M_FAILURE(WrongNumberOfArguments);
     }
 
     if (!readArgument(arguments[0], &leftStr, errMsg))
@@ -4114,7 +4136,7 @@ static bool stringCompareMS(DocumentWidget *document, Arguments arguments, DataV
         else if (argStr == QLatin1String("nocase"))
             considerCase = false;
         else {
-            M_FAILURE("Unrecognized argument to %s");
+            M_FAILURE(UnrecognizedArgument);
         }
     }
 
@@ -4151,7 +4173,7 @@ static bool splitMS(DocumentWidget *document, Arguments arguments, DataValue *re
     DataValue element;
 
     if (arguments.size() < 2) {
-        M_FAILURE("Wrong number of arguments to function %s");
+        M_FAILURE(WrongNumberOfArguments);
     }
 
     if (!readArgument(arguments[0], &sourceStr, errMsg)) {
@@ -4165,7 +4187,7 @@ static bool splitMS(DocumentWidget *document, Arguments arguments, DataValue *re
     QString typeSplitStr;
     if (arguments.size() > 2 && readArgument(arguments[2], &typeSplitStr, errMsg)) {
         if (!StringToSearchType(typeSplitStr, &searchType)) {
-            M_FAILURE("Unrecognized argument to %s");
+            M_FAILURE(UnrecognizedArgument);
         }
     } else {
         searchType = SEARCH_LITERAL;
@@ -4203,7 +4225,7 @@ static bool splitMS(DocumentWidget *document, Arguments arguments, DataValue *re
 
         element = to_value(str);
         if (!ArrayInsert(result, allocIndexStr, &element)) {
-            M_FAILURE("Array element failed to insert: %s");
+            M_FAILURE(InsertFailed);
         }
 
         if (found) {
@@ -4230,7 +4252,7 @@ static bool splitMS(DocumentWidget *document, Arguments arguments, DataValue *re
             element = to_value(std::string());
 
             if (!ArrayInsert(result, allocIndexStr, &element)) {
-                M_FAILURE("Array element failed to insert: %s");
+                M_FAILURE(InsertFailed);
             }
         } else {
             /* We skipped the last character to prevent an endless loop.
@@ -4240,7 +4262,7 @@ static bool splitMS(DocumentWidget *document, Arguments arguments, DataValue *re
 
             element = to_value(str);
             if (!ArrayInsert(result, allocIndexStr, &element)) {
-                M_FAILURE("Array element failed to insert: %s");
+                M_FAILURE(InsertFailed);
             }
 
             /* If the pattern can match zero-length strings, we may have to
@@ -4271,7 +4293,7 @@ static bool splitMS(DocumentWidget *document, Arguments arguments, DataValue *re
 
                 element = to_value();
                 if (!ArrayInsert(result, allocIndexStr, &element)) {
-                    M_FAILURE("Array element failed to insert: %s");
+                    M_FAILURE(InsertFailed);
                 }
             }
         }
@@ -4288,55 +4310,59 @@ static bool splitMS(DocumentWidget *document, Arguments arguments, DataValue *re
 #if 0 // DISABLED for 5.4
 static bool setBacklightStringMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
-    Q_UNUSED(result);
-
     QString backlightString;
 
-    if (nArgs == 0) {
-      backlightString = GetPrefBacklightCharTypes();
+    if (arguments.empty()) {
+        backlightString = GetPrefBacklightCharTypes();
     } else if (arguments.size() == 1) {
-      if (!is_string(arguments[0])) {
-          M_FAILURE("%s not called with a string parameter");
-      }
-      backlightString = QString::fromLatin1(arguments[0].val.str.rep, arguments[0].val.str.len);
+        if (!is_string(arguments[0])) {
+            M_FAILURE(NotAString);
+        }
+        backlightString = QString::fromLatin1(arguments[0].val.str.rep, arguments[0].val.str.len);
     } else {
-      M_FAILURE("Wrong number of arguments to function %s");
+        M_FAILURE(WrongNumberOfArguments);
     }
 
-    if (backlightString == QLatin1String("default"))
-      backlightString = GetPrefBacklightCharTypes();
+    if (backlightString == QLatin1String("default")) {
+        backlightString = GetPrefBacklightCharTypes();
+    }
 
-    if (backlightString.isEmpty())  /* empty string param */
-      backlightString = QString();  /* turns of backlighting */
+    if (backlightString.isEmpty()) {
+        backlightString = QString();  /* turns off backlighting */
+    }
 
     document->SetBacklightChars(backlightString);
+    *result = to_value();
     return true;
 }
 #endif
 
 static bool cursorMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
-    Q_UNUSED(errMsg);
-    Q_UNUSED(arguments);
+    if(!arguments.empty()) {
+        M_FAILURE(TooManyArguments);
+    }
 
-    TextArea *area = document->toWindow()->lastFocus_;
-    *result = to_value(area->TextGetCursorPos());
+    TextArea *area  = document->toWindow()->lastFocus_;
+    *result         = to_value(area->TextGetCursorPos());
     return true;
 }
 
 static bool lineMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
-    Q_UNUSED(errMsg);
-    Q_UNUSED(arguments);
+    if(!arguments.empty()) {
+        M_FAILURE(TooManyArguments);
+    }
 
     int line;
     int colNum;
 
+    TextBuffer *buf = document->buffer_;
     TextArea *area  = document->toWindow()->lastFocus_;
     int cursorPos   = area->TextGetCursorPos();
 
     if (!area->TextDPosToLineAndCol(cursorPos, &line, &colNum)) {
-        line = document->buffer_->BufCountLines(0, cursorPos) + 1;
+        line = buf->BufCountLines(0, cursorPos) + 1;
     }
 
     *result = to_value(line);
@@ -4345,13 +4371,13 @@ static bool lineMV(DocumentWidget *document, Arguments arguments, DataValue *res
 
 static bool columnMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
-    Q_UNUSED(errMsg);
-    Q_UNUSED(arguments);
+    if(!arguments.empty()) {
+        M_FAILURE(TooManyArguments);
+    }
 
     TextBuffer *buf = document->buffer_;
-
-    TextArea *area    = document->toWindow()->lastFocus_;
-    int cursorPos = area->TextGetCursorPos();
+    TextArea *area  = document->toWindow()->lastFocus_;
+    int cursorPos   = area->TextGetCursorPos();
 
     *result = to_value(buf->BufCountDispChars(buf->BufStartOfLine(cursorPos), cursorPos));
     return true;
@@ -4359,8 +4385,9 @@ static bool columnMV(DocumentWidget *document, Arguments arguments, DataValue *r
 
 static bool fileNameMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
-    Q_UNUSED(errMsg);
-    Q_UNUSED(arguments);
+    if(!arguments.empty()) {
+        M_FAILURE(TooManyArguments);
+    }
 
     *result = to_value(document->filename_);
     return true;
@@ -4368,8 +4395,9 @@ static bool fileNameMV(DocumentWidget *document, Arguments arguments, DataValue 
 
 static bool filePathMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
-    Q_UNUSED(errMsg);
-    Q_UNUSED(arguments);
+    if(!arguments.empty()) {
+        M_FAILURE(TooManyArguments);
+    }
 
     *result = to_value(document->path_);
     return true;
@@ -4377,8 +4405,9 @@ static bool filePathMV(DocumentWidget *document, Arguments arguments, DataValue 
 
 static bool lengthMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
-    Q_UNUSED(errMsg);
-    Q_UNUSED(arguments);
+    if(!arguments.empty()) {
+        M_FAILURE(TooManyArguments);
+    }
 
     *result = to_value(document->buffer_->BufGetLength());
     return true;
@@ -4386,8 +4415,9 @@ static bool lengthMV(DocumentWidget *document, Arguments arguments, DataValue *r
 
 static bool selectionStartMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
-    Q_UNUSED(errMsg);
-    Q_UNUSED(arguments);
+    if(!arguments.empty()) {
+        M_FAILURE(TooManyArguments);
+    }
 
     *result = to_value(document->buffer_->primary_.selected ? document->buffer_->primary_.start : -1);
     return true;
@@ -4395,8 +4425,9 @@ static bool selectionStartMV(DocumentWidget *document, Arguments arguments, Data
 
 static bool selectionEndMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
-    Q_UNUSED(errMsg);
-    Q_UNUSED(arguments);
+    if(!arguments.empty()) {
+        M_FAILURE(TooManyArguments);
+    }
 
     *result = to_value(document->buffer_->primary_.selected ? document->buffer_->primary_.end : -1);
     return true;
@@ -4404,8 +4435,9 @@ static bool selectionEndMV(DocumentWidget *document, Arguments arguments, DataVa
 
 static bool selectionLeftMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
-    Q_UNUSED(errMsg);
-    Q_UNUSED(arguments);
+    if(!arguments.empty()) {
+        M_FAILURE(TooManyArguments);
+    }
 
     TextSelection *sel = &document->buffer_->primary_;
 
@@ -4415,8 +4447,9 @@ static bool selectionLeftMV(DocumentWidget *document, Arguments arguments, DataV
 
 static bool selectionRightMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
-    Q_UNUSED(errMsg);
-    Q_UNUSED(arguments);
+    if(!arguments.empty()) {
+        M_FAILURE(TooManyArguments);
+    }
 
     TextSelection *sel = &document->buffer_->primary_;
 
@@ -4426,8 +4459,9 @@ static bool selectionRightMV(DocumentWidget *document, Arguments arguments, Data
 
 static bool wrapMarginMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
-    Q_UNUSED(errMsg);
-    Q_UNUSED(arguments);
+    if(!arguments.empty()) {
+        M_FAILURE(TooManyArguments);
+    }
 
     int margin = document->firstPane()->getWrapMargin();
     int nCols  = document->firstPane()->getColumns();
@@ -4438,8 +4472,9 @@ static bool wrapMarginMV(DocumentWidget *document, Arguments arguments, DataValu
 
 static bool statisticsLineMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
-    Q_UNUSED(errMsg);
-    Q_UNUSED(arguments);
+    if(!arguments.empty()) {
+        M_FAILURE(TooManyArguments);
+    }
 
     *result = to_value(document->showStats_ ? 1 : 0);
     return true;
@@ -4447,8 +4482,9 @@ static bool statisticsLineMV(DocumentWidget *document, Arguments arguments, Data
 
 static bool incSearchLineMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
-    Q_UNUSED(errMsg);
-    Q_UNUSED(arguments);
+    if(!arguments.empty()) {
+        M_FAILURE(TooManyArguments);
+    }
 
     *result = to_value(document->toWindow()->showISearchLine_ ? 1 : 0);
     return true;
@@ -4456,8 +4492,9 @@ static bool incSearchLineMV(DocumentWidget *document, Arguments arguments, DataV
 
 static bool showLineNumbersMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
-    Q_UNUSED(errMsg);
-    Q_UNUSED(arguments);
+    if(!arguments.empty()) {
+        M_FAILURE(TooManyArguments);
+    }
 
     *result = to_value(document->toWindow()->showLineNumbers_ ? 1 : 0);
     return true;
@@ -4465,46 +4502,30 @@ static bool showLineNumbersMV(DocumentWidget *document, Arguments arguments, Dat
 
 static bool autoIndentMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
-    Q_UNUSED(errMsg);
-    Q_UNUSED(arguments);
-
-    QLatin1String res;
-
-    switch (document->indentStyle_) {
-    case IndentStyle::None:
-    case IndentStyle::Auto:
-    case IndentStyle::Smart:
-        res = to_string(document->indentStyle_);
-        break;
-    case IndentStyle::Default:
-        M_FAILURE("Invalid indent style value encountered in %s");
+    if(!arguments.empty()) {
+        M_FAILURE(TooManyArguments);
     }
 
+    if(document->indentStyle_ == IndentStyle::Default) {
+        M_FAILURE(InvalidIndentStyle);
+    }
+
+    QLatin1String res = to_string(document->indentStyle_);
     *result = to_value(res);
     return true;
 }
 
 static bool wrapTextMV(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
-    Q_UNUSED(errMsg);
-    Q_UNUSED(arguments);
-
-    QLatin1String res;
-
-    switch (document->wrapMode_) {
-    case NO_WRAP:
-        res = QLatin1String("none");
-        break;
-    case NEWLINE_WRAP:
-        res = QLatin1String("auto");
-        break;
-    case CONTINUOUS_WRAP:
-        res = QLatin1String("continuous");
-        break;
-    case DEFAULT_WRAP:
-        M_FAILURE("Invalid wrap style value encountered in %s");
+    if(!arguments.empty()) {
+        M_FAILURE(TooManyArguments);
     }
 
+    if(document->wrapMode_ == WrapStyle::Default) {
+        M_FAILURE(InvalidWrapStyle);
+    }
+
+    QLatin1String res = to_string(document->wrapMode_);
     *result = to_value(res);
     return true;
 }
@@ -4821,7 +4842,7 @@ static bool rangesetListMV(DocumentWidget *document, Arguments arguments, DataVa
         element = to_value(rangesetList[i]);
 
         if (!ArrayInsert(result, AllocStringCpyEx(std::to_string(nRangesets - i - 1)), &element)) {
-            M_FAILURE("Failed to insert array element in %s");
+            M_FAILURE(InsertFailed);
         }
     }
 
@@ -4864,7 +4885,7 @@ static bool rangesetCreateMS(DocumentWidget *document, Arguments arguments, Data
     RangesetTable *rangesetTable = document->buffer_->rangesetTable_;
 
     if (arguments.size() > 1)
-        M_FAILURE("Wrong number of arguments to function %s");
+        M_FAILURE(WrongNumberOfArguments);
 
     if(!rangesetTable) {
         rangesetTable = new RangesetTable(document->buffer_);
@@ -4903,7 +4924,7 @@ static bool rangesetDestroyMS(DocumentWidget *document, Arguments arguments, Dat
     int label = 0;
 
     if (arguments.size() != 1) {
-        M_FAILURE("Wrong number of arguments to function %s");
+        M_FAILURE(WrongNumberOfArguments);
     }
 
     if (is_array(arguments[0])) {
@@ -4922,7 +4943,7 @@ static bool rangesetDestroyMS(DocumentWidget *document, Arguments arguments, Dat
             sprintf(keyString, "%d", i);
 
             if (!ArrayGet(array, keyString, &element)) {
-                M_FAILURE("Invalid key in array in %s");
+                M_FAILURE(InvalidArrayKey);
             }
 
             if (!readArgument(element, &label) || !RangesetTable::RangesetLabelOK(label)) {
@@ -4987,7 +5008,7 @@ static bool rangesetGetByNameMS(DocumentWidget *document, Arguments arguments, D
                 element = to_value(label);
 
                 if (!ArrayInsert(result, AllocStringCpyEx(std::to_string(insertIndex)), &element)) {
-                    M_FAILURE("Failed to insert array element in %s");
+                    M_FAILURE(InsertFailed);
                 }
 
                 ++insertIndex;
@@ -5017,20 +5038,20 @@ static bool rangesetAddMS(DocumentWidget *document, Arguments arguments, DataVal
     int label = 0;
 
     if (arguments.size() < 1 || arguments.size() > 3)
-        M_FAILURE("Wrong number of arguments to function %s");
+        M_FAILURE(WrongNumberOfArguments);
 
     if (!readArgument(arguments[0], &label, errMsg) || !RangesetTable::RangesetLabelOK(label)) {
         M_FAILURE("First parameter is an invalid rangeset label in %s");
     }
 
     if(!rangesetTable) {
-        M_FAILURE("Rangeset does not exist in %s");
+        M_FAILURE(RangesetDoesNotExist);
     }
 
     Rangeset *targetRangeset = rangesetTable->RangesetFetch(label);
 
     if(!targetRangeset) {
-        M_FAILURE("Rangeset does not exist in %s");
+        M_FAILURE(RangesetDoesNotExist);
     }
 
     start = end = -1;
@@ -5109,7 +5130,7 @@ static bool rangesetSubtractMS(DocumentWidget *document, Arguments arguments, Da
     int label = 0;
 
     if (arguments.size() < 1 || arguments.size() > 3) {
-        M_FAILURE("Wrong number of arguments to function %s");
+        M_FAILURE(WrongNumberOfArguments);
     }
 
     if (!readArgument(arguments[0], &label, errMsg) || !RangesetTable::RangesetLabelOK(label)) {
@@ -5117,12 +5138,12 @@ static bool rangesetSubtractMS(DocumentWidget *document, Arguments arguments, Da
     }
 
     if(!rangesetTable) {
-        M_FAILURE("Rangeset does not exist in %s");
+        M_FAILURE(RangesetDoesNotExist);
     }
 
     Rangeset *targetRangeset = rangesetTable->RangesetFetch(label);
     if(!targetRangeset) {
-        M_FAILURE("Rangeset does not exist in %s");
+        M_FAILURE(RangesetDoesNotExist);
     }
 
     if (arguments.size() == 1) {
@@ -5189,12 +5210,12 @@ static bool rangesetInvertMS(DocumentWidget *document, Arguments arguments, Data
     }
 
     if(!rangesetTable) {
-        M_FAILURE("Rangeset does not exist in %s");
+        M_FAILURE(RangesetDoesNotExist);
     }
 
     Rangeset *rangeset = rangesetTable->RangesetFetch(label);
     if(!rangeset) {
-        M_FAILURE("Rangeset does not exist in %s");
+        M_FAILURE(RangesetDoesNotExist);
     }
 
     if (rangeset->RangesetInverse() < 0) {
@@ -5288,7 +5309,7 @@ static bool rangesetRangeMS(DocumentWidget *document, Arguments arguments, DataV
     int label = 0;
 
     if (arguments.size() < 1 || arguments.size() > 2) {
-        M_FAILURE("Wrong number of arguments to function %s");
+        M_FAILURE(WrongNumberOfArguments);
     }
 
     if (!readArgument(arguments[0], &label, errMsg) || !RangesetTable::RangesetLabelOK(label)) {
@@ -5296,7 +5317,7 @@ static bool rangesetRangeMS(DocumentWidget *document, Arguments arguments, DataV
     }
 
     if(!rangesetTable) {
-        M_FAILURE("Rangeset does not exist in %s");
+        M_FAILURE(RangesetDoesNotExist);
     }
 
     bool ok = false;
@@ -5344,7 +5365,7 @@ static bool rangesetIncludesPosMS(DocumentWidget *document, Arguments arguments,
     int label = 0;
 
     if (arguments.size() < 1 || arguments.size() > 2) {
-        M_FAILURE("Wrong number of arguments to function %s");
+        M_FAILURE(WrongNumberOfArguments);
     }
 
     if (!readArgument(arguments[0], &label, errMsg) || !RangesetTable::RangesetLabelOK(label)) {
@@ -5352,12 +5373,12 @@ static bool rangesetIncludesPosMS(DocumentWidget *document, Arguments arguments,
     }
 
     if(!rangesetTable) {
-        M_FAILURE("Rangeset does not exist in %s");
+        M_FAILURE(RangesetDoesNotExist);
     }
 
     Rangeset *rangeset = rangesetTable->RangesetFetch(label);
     if(!rangeset) {
-        M_FAILURE("Rangeset does not exist in %s");
+        M_FAILURE(RangesetDoesNotExist);
     }
 
     int pos = 0;
@@ -5394,7 +5415,7 @@ static bool rangesetSetColorMS(DocumentWidget *document, Arguments arguments, Da
     int label = 0;
 
     if (arguments.size() != 2) {
-        M_FAILURE("Wrong number of arguments to function %s");
+        M_FAILURE(WrongNumberOfArguments);
     }
 
     if (!readArgument(arguments[0], &label, errMsg) || !RangesetTable::RangesetLabelOK(label)) {
@@ -5402,12 +5423,12 @@ static bool rangesetSetColorMS(DocumentWidget *document, Arguments arguments, Da
     }
 
     if(!rangesetTable) {
-        M_FAILURE("Rangeset does not exist in %s");
+        M_FAILURE(RangesetDoesNotExist);
     }
 
     Rangeset *rangeset = rangesetTable->RangesetFetch(label);
     if(!rangeset) {
-        M_FAILURE("Rangeset does not exist in %s");
+        M_FAILURE(RangesetDoesNotExist);
     }
 
     QString color_name;
@@ -5433,7 +5454,7 @@ static bool rangesetSetNameMS(DocumentWidget *document, Arguments arguments, Dat
     int label = 0;
 
     if (arguments.size() != 2) {
-        M_FAILURE("Wrong number of arguments to function %s");
+        M_FAILURE(WrongNumberOfArguments);
     }
 
     if (!readArgument(arguments[0], &label, errMsg) || !RangesetTable::RangesetLabelOK(label)) {
@@ -5441,12 +5462,12 @@ static bool rangesetSetNameMS(DocumentWidget *document, Arguments arguments, Dat
     }
 
     if(!rangesetTable) {
-        M_FAILURE("Rangeset does not exist in %s");
+        M_FAILURE(RangesetDoesNotExist);
     }
 
     Rangeset *rangeset = rangesetTable->RangesetFetch(label);
     if(!rangeset) {
-        M_FAILURE("Rangeset does not exist in %s");
+        M_FAILURE(RangesetDoesNotExist);
     }
 
     QString name;
@@ -5473,7 +5494,7 @@ static bool rangesetSetModeMS(DocumentWidget *document, Arguments arguments, Dat
     int label = 0;
 
     if (arguments.size() < 1 || arguments.size() > 2) {
-        M_FAILURE("Wrong number of arguments to function %s");
+        M_FAILURE(WrongNumberOfArguments);
     }
 
     if (!readArgument(arguments[0], &label, errMsg) || !RangesetTable::RangesetLabelOK(label)) {
@@ -5481,12 +5502,12 @@ static bool rangesetSetModeMS(DocumentWidget *document, Arguments arguments, Dat
     }
 
     if(!rangesetTable) {
-        M_FAILURE("Rangeset does not exist in %s");
+        M_FAILURE(RangesetDoesNotExist);
     }
 
     rangeset = rangesetTable->RangesetFetch(label);
     if(!rangeset) {
-        M_FAILURE("Rangeset does not exist in %s");
+        M_FAILURE(RangesetDoesNotExist);
     }
 
     QString update_fn_name;
@@ -5540,14 +5561,14 @@ static bool fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWi
         DV = to_value(styleName);
 
         if (!ArrayInsert(result, AllocStringCpyEx("style"), &DV)) {
-            M_FAILURE("Array element failed to insert: %s");
+            M_FAILURE(InsertFailed);
         }
     }
 
     // insert color name
     DV = to_value(ColorOfNamedStyleEx(styleName));
     if (!ArrayInsert(result, AllocStringCpyEx("color"), &DV)) {
-        M_FAILURE("Array element failed to insert: %s");
+        M_FAILURE(InsertFailed);
     }
 
     /* Prepare array element for color value
@@ -5558,14 +5579,14 @@ static bool fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWi
         DV = to_value(color.name());
 
         if (!ArrayInsert(result, AllocStringCpyEx("rgb"), &DV)) {
-            M_FAILURE("Array element failed to insert: %s");
+            M_FAILURE(InsertFailed);
         }
     }
 
     // Prepare array element for background color name
     DV = to_value(BgColorOfNamedStyleEx(styleName));
     if (!ArrayInsert(result, AllocStringCpyEx("background"), &DV)) {
-        M_FAILURE("Array element failed to insert: %s");
+        M_FAILURE(InsertFailed);
     }
 
     /* Prepare array element for background color value
@@ -5576,27 +5597,27 @@ static bool fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWi
         DV = to_value(color.name());
 
         if (!ArrayInsert(result, AllocStringCpyEx("back_rgb"), &DV)) {
-            M_FAILURE("Array element failed to insert: %s");
+            M_FAILURE(InsertFailed);
         }
     }
 
     // Put boldness value in array
     DV = to_value(FontOfNamedStyleIsBold(styleName));
     if (!ArrayInsert(result, AllocStringCpyEx("bold"), &DV)) {
-        M_FAILURE("Array element failed to insert: %s");
+        M_FAILURE(InsertFailed);
     }
 
     // Put italicity value in array
     DV = to_value(FontOfNamedStyleIsItalic(styleName));
     if (!ArrayInsert(result, AllocStringCpyEx("italic"), &DV)) {
-        M_FAILURE("Array element failed to insert: %s");
+        M_FAILURE(InsertFailed);
     }
 
     if (bufferPos >= 0) {
         // insert extent
         DV.val.n = StyleLengthOfCodeFromPosEx(document, bufferPos);
         if (!ArrayInsert(result, AllocStringCpyEx("extent"), &DV)) {
-            M_FAILURE("Array element failed to insert: %s");
+            M_FAILURE(InsertFailed);
         }
     }
     return true;
@@ -5707,14 +5728,14 @@ bool fillPatternResultEx(DataValue *result, const char **errMsg, DocumentWidget 
         // insert pattern name
         DV = to_value(patternName);
         if (!ArrayInsert(result, AllocStringCpyEx("pattern"), &DV)) {
-            M_FAILURE("Array element failed to insert: %s");
+            M_FAILURE(InsertFailed);
         }
     }
 
     // insert style name
     DV = to_value(styleName);
     if (!ArrayInsert(result, AllocStringCpyEx("style"), &DV)) {
-        M_FAILURE("Array element failed to insert: %s");
+        M_FAILURE(InsertFailed);
     }
 
     if (bufferPos >= 0) {
@@ -5722,7 +5743,7 @@ bool fillPatternResultEx(DataValue *result, const char **errMsg, DocumentWidget 
         int checkCode = 0;
         DV = to_value(HighlightLengthOfCodeFromPosEx(document, bufferPos, &checkCode));
         if (!ArrayInsert(result, AllocStringCpyEx("extent"), &DV)) {
-            M_FAILURE("Array element failed to insert: %s");
+            M_FAILURE(InsertFailed);
         }
     }
 
@@ -5828,14 +5849,14 @@ static bool readArgument(DataValue dv, int *result, const char **errMsg) {
         bool ok;
         int val = s.toInt(&ok);
         if(!ok) {
-           M_FAILURE("%s called with non-integer argument");
+           M_FAILURE(NotAnInteger);
         }
 
         *result = val;
         return true;
     }
     default:
-        M_FAILURE("%s called with unknown object");
+        M_FAILURE(UnknownObject);
     }
 }
 
@@ -5856,7 +5877,7 @@ static bool readArgument(DataValue dv, std::string *result, const char **errMsg)
         *result = std::to_string(dv.val.n);
         return true;
     default:
-        M_FAILURE("%s called with unknown object");
+        M_FAILURE(UnknownObject);
     }
 }
 
@@ -5870,7 +5891,7 @@ static bool readArgument(DataValue dv, QString *result, const char **errMsg) {
         *result = QString::number(dv.val.n);
         return true;
     default:
-        M_FAILURE("%s called with unknown object");
+        M_FAILURE(UnknownObject);
     }
 }
 
@@ -5881,7 +5902,7 @@ bool readArguments(Arguments arguments, int index, const char **errMsg, T arg, T
     static_assert(std::is_pointer<T>::value, "Argument is not a pointer");
 
     if(static_cast<size_t>(arguments.size() - index) < (sizeof...(args)) + 1) {
-        M_FAILURE("Wrong number of arguments to function %s");
+        M_FAILURE(WrongNumberOfArguments);
     }
 
     bool ret = readArgument(arguments[index], arg, errMsg);
@@ -5898,7 +5919,7 @@ bool readArguments(Arguments arguments, int index, const char **errMsg, T arg) {
     static_assert(std::is_pointer<T>::value, "Argument is not a pointer");
 
     if(static_cast<size_t>(arguments.size() - index) < 1) {
-        M_FAILURE("Wrong number of arguments to function %s");
+        M_FAILURE(WrongNumberOfArguments);
     }
 
     return readArgument(arguments[index], arg, errMsg);

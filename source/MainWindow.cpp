@@ -260,13 +260,13 @@ void MainWindow::setupGlobalPrefenceDefaults() {
 
     // Default Wrap
     switch(GetPrefWrap(PLAIN_LANGUAGE_MODE)) {
-    case NO_WRAP:
+    case WrapStyle::None:
         no_signals(ui.action_Default_Wrap_None)->setChecked(true);
         break;
-    case NEWLINE_WRAP:
+    case WrapStyle::Newline:
         no_signals(ui.action_Default_Wrap_Auto_Newline)->setChecked(true);
         break;
-    case CONTINUOUS_WRAP:
+    case WrapStyle::Continuous:
         no_signals(ui.action_Default_Wrap_Continuous)->setChecked(true);
         break;
     default:
@@ -373,13 +373,13 @@ void MainWindow::setupDocumentPrefernceDefaults() {
 
     // based on document, which defaults to this
     switch(GetPrefWrap(PLAIN_LANGUAGE_MODE)) {
-    case NO_WRAP:
+    case WrapStyle::None:
         no_signals(ui.action_Wrap_None)->setChecked(true);
         break;
-    case NEWLINE_WRAP:
+    case WrapStyle::Newline:
         no_signals(ui.action_Wrap_Auto_Newline)->setChecked(true);
         break;
-    case CONTINUOUS_WRAP:
+    case WrapStyle::Continuous:
         no_signals(ui.action_Wrap_Continuous)->setChecked(true);
         break;
     default:
@@ -3006,11 +3006,11 @@ void MainWindow::indentGroupTriggered(QAction *action) {
 void MainWindow::wrapGroupTriggered(QAction *action) {
     if(DocumentWidget *document = currentDocument()) {
         if(action == ui.action_Wrap_None) {
-            document->SetAutoWrap(NO_WRAP);
+            document->SetAutoWrap(WrapStyle::None);
         } else if(action == ui.action_Wrap_Auto_Newline) {
-            document->SetAutoWrap(NEWLINE_WRAP);
+            document->SetAutoWrap(WrapStyle::Newline);
         } else if(action == ui.action_Wrap_Continuous) {
-            document->SetAutoWrap(CONTINUOUS_WRAP);
+            document->SetAutoWrap(WrapStyle::Continuous);
         } else {
             qWarning("NEdit: set_wrap_text invalid argument");
         }
@@ -3158,11 +3158,11 @@ void MainWindow::on_action_Default_Program_Smart_Indent_triggered() {
 void MainWindow::defaultWrapGroupTriggered(QAction *action) {
 
     if(action == ui.action_Default_Wrap_None) {
-        SetPrefWrap(NO_WRAP);
+        SetPrefWrap(WrapStyle::None);
     } else if(action == ui.action_Default_Wrap_Auto_Newline) {
-        SetPrefWrap(NEWLINE_WRAP);
+        SetPrefWrap(WrapStyle::Newline);
     } else if(action == ui.action_Default_Wrap_Continuous) {
-        SetPrefWrap(CONTINUOUS_WRAP);
+        SetPrefWrap(WrapStyle::Continuous);
     } else {
         qWarning("NEdit: invalid default wrap");
     }
@@ -3941,7 +3941,7 @@ QString MainWindow::PromptForNewFileEx(DocumentWidget *document, const QString &
             });
 
 
-            if (document->wrapMode_ == CONTINUOUS_WRAP) {
+            if (document->wrapMode_ == WrapStyle::Continuous) {
                 layout->addWidget(wrapCheck, row, 1, 1, 1);
             }
 

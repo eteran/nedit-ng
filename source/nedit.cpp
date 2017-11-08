@@ -197,11 +197,11 @@ int main(int argc, char *argv[]) {
             nextArg(args, &i);
             GetSettings().textFont = args[i];
         } else if (opts && args[i] == QLatin1String("-wrap")) {
-            GetSettings().autoWrap = CONTINUOUS_WRAP;
+            GetSettings().autoWrap = WrapStyle::Continuous;
         } else if (opts && args[i] == QLatin1String("-nowrap")) {
-            GetSettings().autoWrap = NO_WRAP;
+            GetSettings().autoWrap = WrapStyle::None;
         } else if (opts && args[i] == QLatin1String("-autowrap")) {
-            GetSettings().autoWrap = NEWLINE_WRAP;
+            GetSettings().autoWrap = WrapStyle::Newline;
         } else if (opts && args[i] == QLatin1String("-autoindent")) {
             GetSettings().autoIndent = IndentStyle::Auto;
         } else if (opts && args[i] == QLatin1String("-noautoindent")) {

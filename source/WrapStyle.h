@@ -2,11 +2,30 @@
 #ifndef WRAP_STYLE_H_
 #define WRAP_STYLE_H_
 
-enum WrapStyle {
-	DEFAULT_WRAP    = -1,
-	NO_WRAP         = 0, 
-	NEWLINE_WRAP    = 1, 
-	CONTINUOUS_WRAP = 2
+#include <QLatin1String>
+
+enum class WrapStyle {
+    Default    = -1,
+    None       = 0,
+    Newline    = 1,
+    Continuous = 2
 };
+
+inline QLatin1String to_string(WrapStyle style) {
+
+    switch(style) {
+    case WrapStyle::None:
+        return QLatin1String("none");
+    case WrapStyle::Newline:
+        return QLatin1String("auto");
+    case WrapStyle::Continuous:
+        return QLatin1String("continuous");
+    case WrapStyle::Default:
+        return QLatin1String("default");
+    }
+
+    Q_UNREACHABLE();
+}
+
 
 #endif

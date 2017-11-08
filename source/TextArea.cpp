@@ -424,8 +424,8 @@ TextArea::TextArea(
     P_wrapMargin     = GetPrefWrapMargin();
     P_autoIndent     = document->indentStyle_ == IndentStyle::Auto;
     P_smartIndent    = document->indentStyle_ == IndentStyle::Smart;
-    P_autoWrap       = document->wrapMode_ == NEWLINE_WRAP;
-    P_continuousWrap = document->wrapMode_ == CONTINUOUS_WRAP;
+    P_autoWrap       = document->wrapMode_ == WrapStyle::Newline;
+    P_continuousWrap = document->wrapMode_ == WrapStyle::Continuous;
     P_overstrike     = document->overstrike_;
     P_hidePointer    = GetPrefTypingHidesPointer();
     P_cursorVPadding = GetVerticalAutoScroll();

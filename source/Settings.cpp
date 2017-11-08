@@ -82,7 +82,7 @@ void Settings::loadPreferences() {
     styles                = settings.value(tr("nedit.styles"),                loadResource(QLatin1String("res/DefaultStyles.txt"))).toString();
     smartIndentInit       = settings.value(tr("nedit.smartIndentInit"),       loadResource(QLatin1String("res/DefaultSmartIndentInit.txt"))).toString();
     smartIndentInitCommon = settings.value(tr("nedit.smartIndentInitCommon"), loadResource(QLatin1String("res/DefaultSmartIndentInitCommon.txt"))).toString();
-    autoWrap              = static_cast<WrapStyle>(settings.value(tr("nedit.autoWrap"),              CONTINUOUS_WRAP).toInt());
+    autoWrap              = static_cast<WrapStyle>(settings.value(tr("nedit.autoWrap"),              static_cast<int>(WrapStyle::Continuous)).toInt());
     wrapMargin            = settings.value(tr("nedit.wrapMargin"),            0).toInt();
     autoIndent            = static_cast<IndentStyle>(settings.value(tr("nedit.autoIndent"), static_cast<int>(IndentStyle::Auto)).toInt());
     autoSave              = settings.value(tr("nedit.autoSave"),              true).toBool();
@@ -184,7 +184,7 @@ void Settings::importSettings(const QString &filename) {
     styles                = settings.value(tr("nedit.styles"),                styles).toString();
     smartIndentInit       = settings.value(tr("nedit.smartIndentInit"),       smartIndentInit).toString();
     smartIndentInitCommon = settings.value(tr("nedit.smartIndentInitCommon"), smartIndentInitCommon).toString();
-    autoWrap              = static_cast<WrapStyle>(settings.value(tr("nedit.autoWrap"), autoWrap).toInt());
+    autoWrap              = static_cast<WrapStyle>(settings.value(tr("nedit.autoWrap"), static_cast<int>(autoWrap)).toInt());
     wrapMargin            = settings.value(tr("nedit.wrapMargin"),            wrapMargin).toInt();
     autoIndent            = static_cast<IndentStyle>(settings.value(tr("nedit.autoIndent"),            static_cast<int>(autoIndent)).toInt());
     autoSave              = settings.value(tr("nedit.autoSave"),              autoSave).toBool();
@@ -281,7 +281,7 @@ bool Settings::savePreferences() {
     settings.setValue(tr("nedit.styles"), styles);
     settings.setValue(tr("nedit.smartIndentInit"), smartIndentInit);
     settings.setValue(tr("nedit.smartIndentInitCommon"), smartIndentInitCommon);
-    settings.setValue(tr("nedit.autoWrap"), autoWrap);
+    settings.setValue(tr("nedit.autoWrap"), static_cast<int>(autoWrap));
     settings.setValue(tr("nedit.wrapMargin"), wrapMargin);
     settings.setValue(tr("nedit.autoIndent"), static_cast<int>(autoIndent));
     settings.setValue(tr("nedit.autoSave"), autoSave);

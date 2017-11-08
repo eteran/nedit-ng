@@ -256,7 +256,7 @@ public:
     IndentStyle indentStyle_;          // whether/how to auto indent
     int matchSyntaxBased_;            // Use syntax info to show matching
     ShowMatchingStyle showMatchingStyle_;           // How to show matching parens: None, Delimeter, or Range
-    WrapStyle wrapMode_;                    // line wrap style: NO_WRAP, NEWLINE_WRAP or CONTINUOUS_WRAP
+    WrapStyle wrapMode_;                    // line wrap style: None, Newline or Continuous
 	dev_t device_;                     // device where the file resides
 	gid_t fileGid_;                    // last recorded group id of the file
 	ino_t inode_;                      // file's inode
