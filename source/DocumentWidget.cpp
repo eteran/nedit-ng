@@ -3421,13 +3421,13 @@ void DocumentWidget::executeNewlineMacroEx(SmartIndentEvent *cbInfo) {
     }
 
     // Validate and return the result
-    if (!is_integer(result) || result.val.n < -1 || result.val.n > 1000) {
+    if (!is_integer(result) || to_integer(result) < -1 || to_integer(result) > 1000) {
         QMessageBox::critical(this, tr("Smart Indent"), tr("Smart indent macros must return integer indent distance"));
         EndSmartIndentEx(this);
         return;
     }
 
-    cbInfo->indentRequest = result.val.n;
+    cbInfo->indentRequest = to_integer(result);
 }
 
 /*

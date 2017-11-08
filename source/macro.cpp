@@ -210,23 +210,38 @@ struct SubRoutine {
 
 namespace {
 
-const char InvalidArgument[]        = "%s called with invalid argument";
-const char TooFewArguments[]        = "%s subroutine called with too few arguments";
-const char TooManyArguments[]       = "%s subroutine called with too many arguments";
-const char UnknownObject[]          = "%s called with unknown object";
-const char NotAnInteger[]           = "%s called with non-integer argument";
-const char NotAString[]             = "%s not called with a string parameter";
-const char InvalidContext[]         = "%s can't be called from non-suspendable context";
-const char NeedsArguments[]         = "%s subroutine called with no arguments";
-const char WrongNumberOfArguments[] = "Wrong number of arguments to function %s";
-const char UnrecognizedArgument[]   = "Unrecognized argument to %s";
-const char InsertFailed[]           = "Array element failed to insert: %s";
-const char TooMuchBinaryData[]      = "Too much binary data in file";
-const char RangesetDoesNotExist[]   = "Rangeset does not exist in %s";
-const char PathnameTooLong[]        = "Pathname too long in %s";
-const char InvalidArrayKey[]        = "Invalid key in array in %s";
-const char InvalidIndentStyle[]     = "Invalid indent style value encountered in %s";
-const char InvalidWrapStyle[]       = "Invalid wrap style value encountered in %s";
+const char ArrayFull[]                   = "Too many elements in array in %s";
+const char InvalidMode[]                 = "Invalid value for mode in %s";
+const char InvalidArgument[]             = "%s called with invalid argument";
+const char TooFewArguments[]             = "%s subroutine called with too few arguments";
+const char TooManyArguments[]            = "%s subroutine called with too many arguments";
+const char UnknownObject[]               = "%s called with unknown object";
+const char NotAnInteger[]                = "%s called with non-integer argument";
+const char NotAString[]                  = "%s not called with a string parameter";
+const char InvalidContext[]              = "%s can't be called from non-suspendable context";
+const char NeedsArguments[]              = "%s subroutine called with no arguments";
+const char WrongNumberOfArguments[]      = "Wrong number of arguments to function %s";
+const char UnrecognizedArgument[]        = "Unrecognized argument to %s";
+const char InsertFailed[]                = "Array element failed to insert: %s";
+const char TooMuchBinaryData[]           = "Too much binary data in file";
+const char RangesetDoesNotExist[]        = "Rangeset does not exist in %s";
+const char Rangeset2DoesNotExist[]       = "Second rangeset does not exist in %s";
+const char PathnameTooLong[]             = "Pathname too long in %s";
+const char InvalidArrayKey[]             = "Invalid key in array in %s";
+const char InvalidIndentStyle[]          = "Invalid indent style value encountered in %s";
+const char InvalidWrapStyle[]            = "Invalid wrap style value encountered in %s";
+const char EmptyList[]                   = "%s subroutine called with empty list data";
+const char Param1InvalidRangesetLabel[]  = "First parameter is an invalid rangeset label in %s";
+const char Param2InvalidRangesetLabel[]  = "Second parameter is an invalid rangeset label in %s";
+const char InvalidRangesetLabel[]        = "Invalid rangeset label in %s";
+const char InvalidRangesetLabelInArray[] = "Invalid rangeset label in array in %s";
+const char Param1NotAString[]            = "First parameter is not a string in %s";
+const char Param2NotAString[]            = "Second parameter is not a string in %s";
+const char SelectionMissing[]            = "Selection missing or rectangular in call to %s";
+const char FailedToAddRange[]            = "Failed to add range in %s";
+const char FailedToInvertRangeset[]      = "Problem inverting rangeset in %s";
+const char FailedToAddSelection[]        = "Failure to add selection in %s";
+const char Param2CannotBeEmptyString[]   = "Second argument must be a non-empty string: %s";
 
 }
 
@@ -2093,6 +2108,7 @@ static const char *ReturnGlobalNames[N_RETURN_GLOBALS] = {
     "$shell_cmd_status",
     "$list_dialog_button"
 };
+
 static Symbol *ReturnGlobals[N_RETURN_GLOBALS];
 
 /*
@@ -2520,7 +2536,7 @@ int MacroWindowCloseActionsEx(DocumentWidget *document) {
 void SafeGC() {
 
     for(DocumentWidget *document : DocumentWidget::allDocuments()) {
-        if (document->macroCmdData_ != nullptr || InSmartIndentMacrosEx(document)) {
+        if (document->macroCmdData_ || InSmartIndentMacrosEx(document)) {
             return;
         }
     }
@@ -2656,9 +2672,6 @@ void learnActionHook(Widget w, XtPointer clientData, String actionName, XEvent *
 }
 #endif
 
-
-
-
 /*
 ** Built-in macro subroutine for getting the length of a string
 */
@@ -2682,18 +2695,17 @@ static bool minMS(DocumentWidget *document, Arguments arguments, DataValue *resu
 
     Q_UNUSED(document);
 
-    int minVal;
-    int value;
-
     if (arguments.size() == 1) {
         M_FAILURE(TooFewArguments);
     }
 
+    int minVal;
     if (!readArgument(arguments[0], &minVal, errMsg)) {
         return false;
     }
 
     for (const DataValue &dv : arguments) {
+        int value;
         if (!readArgument(dv, &value, errMsg)) {
             return false;
         }
@@ -2706,20 +2718,20 @@ static bool minMS(DocumentWidget *document, Arguments arguments, DataValue *resu
 }
 
 static bool maxMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
-    Q_UNUSED(document);
 
-    int maxVal;
-    int value;
+    Q_UNUSED(document);
 
     if (arguments.size() == 1) {
         M_FAILURE(TooFewArguments);
     }
 
+    int maxVal;
     if (!readArgument(arguments[0], &maxVal, errMsg)) {
         return false;
     }
 
     for (const DataValue &dv : arguments) {
+        int value;
         if (!readArgument(dv, &value, errMsg)) {
             return false;
         }
@@ -3640,7 +3652,7 @@ static bool dialogMS(DocumentWidget *document, Arguments arguments, DataValue *r
     // Return placeholder result.  Value will be changed by button callback
     *result = to_value(0);
 
-    auto prompt = new DialogPrompt(nullptr /*parent*/);
+    auto prompt = new DialogPrompt(document);
     prompt->setMessage(message);
     if (arguments.size() == 1) {
         prompt->addButton(QDialogButtonBox::Ok);
@@ -3698,7 +3710,7 @@ static bool stringDialogMS(DocumentWidget *document, Arguments arguments, DataVa
     // Return placeholder result.  Value will be changed by button callback
     *result = to_value(0);
 
-    auto prompt = std::make_unique<DialogPromptString>(nullptr /*parent*/);
+    auto prompt = std::make_unique<DialogPromptString>(document);
     prompt->setMessage(message);
     if (arguments.size() == 1) {
         prompt->addButton(QDialogButtonBox::Ok);
@@ -3970,7 +3982,7 @@ static bool filenameDialogMS(DocumentWidget *document, Arguments arguments, Data
         return false;
     }
     if ((mode != QLatin1String("exist")) != 0 && (mode != QLatin1String("new"))) {
-        M_FAILURE("Invalid value for mode in %s");
+        M_FAILURE(InvalidMode);
     }
 
     if (arguments.size() > 2 && !readArgument(arguments[2], &defaultPath, errMsg)) {
@@ -3986,7 +3998,7 @@ static bool filenameDialogMS(DocumentWidget *document, Arguments arguments, Data
     }
 
     if (arguments.size() > 5) {
-        M_FAILURE("%s called with too many arguments. Expects at most 5 arguments.");
+        M_FAILURE(TooManyArguments);
     }
 
     //  Set default directory
@@ -4003,7 +4015,7 @@ static bool filenameDialogMS(DocumentWidget *document, Arguments arguments, Data
     QString filename;
     if (mode == QLatin1String("exist")) {
         // NOTE(eteran); filters probably don't work quite the same with Qt's dialog
-        QString existingFile = QFileDialog::getOpenFileName(/*this*/ nullptr, title, defaultPath, defaultFilter, nullptr);
+        QString existingFile = QFileDialog::getOpenFileName(document, title, defaultPath, defaultFilter, nullptr);
         if(!existingFile.isNull()) {
             filename = existingFile;
             gfnResult = true;
@@ -4012,7 +4024,7 @@ static bool filenameDialogMS(DocumentWidget *document, Arguments arguments, Data
         }
     } else {
         // NOTE(eteran); filters probably don't work quite the same with Qt's dialog
-        QString newFile = QFileDialog::getSaveFileName(/*this*/ nullptr, title, defaultPath, defaultFilter, nullptr);
+        QString newFile = QFileDialog::getSaveFileName(document, title, defaultPath, defaultFilter, nullptr);
         if(!newFile.isNull()) {
             filename  = newFile;
             gfnResult = true;
@@ -4056,17 +4068,19 @@ static bool listDialogMS(DocumentWidget *document, Arguments arguments, DataValu
     /* Read and check the arguments.  The first being the dialog message,
        and the rest being the button labels */
     if (arguments.size() < 2) {
-        M_FAILURE("%s subroutine called with no message, string or arguments");
+        M_FAILURE(TooFewArguments);
     }
 
-    if (!readArgument(arguments[0], &message, errMsg))
+    if (!readArgument(arguments[0], &message, errMsg)) {
         return false;
+    }
 
-    if (!readArgument(arguments[1], &text, errMsg))
+    if (!readArgument(arguments[1], &text, errMsg)) {
         return false;
+    }
 
     if (text.isEmpty()) {
-        M_FAILURE("%s subroutine called with empty list data");
+        M_FAILURE(EmptyList);
     }
 
     // check that all button labels can be read
@@ -4082,7 +4096,7 @@ static bool listDialogMS(DocumentWidget *document, Arguments arguments, DataValu
     // Return placeholder result.  Value will be changed by button callback
     *result = to_value(0);
 
-    auto prompt = std::make_unique<DialogPromptList>(nullptr /*parent*/);
+    auto prompt = std::make_unique<DialogPromptList>(document);
     prompt->setMessage(message);
     prompt->setList(text);
 
@@ -4177,11 +4191,11 @@ static bool splitMS(DocumentWidget *document, Arguments arguments, DataValue *re
     }
 
     if (!readArgument(arguments[0], &sourceStr, errMsg)) {
-        M_FAILURE("First argument must be a string: %s");
+        M_FAILURE(Param1NotAString);
     }
 
     if (!readArgument(arguments[1], &splitStr, errMsg) || splitStr.isEmpty()) {
-        M_FAILURE("Second argument must be a non-empty string: %s");
+        M_FAILURE(Param2CannotBeEmptyString);
     }
 
     QString typeSplitStr;
@@ -4318,7 +4332,7 @@ static bool setBacklightStringMS(DocumentWidget *document, Arguments arguments, 
         if (!is_string(arguments[0])) {
             M_FAILURE(NotAString);
         }
-        backlightString = QString::fromLatin1(arguments[0].val.str.rep, arguments[0].val.str.len);
+        backlightString = to_qstring(arguments[0]);
     } else {
         M_FAILURE(WrongNumberOfArguments);
     }
@@ -4932,7 +4946,7 @@ static bool rangesetDestroyMS(DocumentWidget *document, Arguments arguments, Dat
         int arraySize = ArraySize(array);
 
         if (arraySize > N_RANGESETS) {
-            M_FAILURE("Too many elements in array in %s");
+            M_FAILURE(ArrayFull);
         }
 
         int deleteLabels[N_RANGESETS];
@@ -4947,7 +4961,7 @@ static bool rangesetDestroyMS(DocumentWidget *document, Arguments arguments, Dat
             }
 
             if (!readArgument(element, &label) || !RangesetTable::RangesetLabelOK(label)) {
-                M_FAILURE("Invalid rangeset label in array in %s");
+                M_FAILURE(InvalidRangesetLabelInArray);
             }
 
             deleteLabels[i] = label;
@@ -4958,7 +4972,7 @@ static bool rangesetDestroyMS(DocumentWidget *document, Arguments arguments, Dat
         }
     } else {
         if (!readArgument(arguments[0], &label) || !RangesetTable::RangesetLabelOK(label)) {
-            M_FAILURE("Invalid rangeset label in %s");
+            M_FAILURE(InvalidRangesetLabel);
         }
 
         if (rangesetTable) {
@@ -4986,7 +5000,7 @@ static bool rangesetGetByNameMS(DocumentWidget *document, Arguments arguments, D
     DataValue element;
 
     if(!readArguments(arguments, 0, errMsg, &name)) {
-        M_FAILURE("First parameter is not a name string in %s");
+        M_FAILURE(Param1NotAString);
     }
 
     *result = to_value(array_new());
@@ -5041,7 +5055,7 @@ static bool rangesetAddMS(DocumentWidget *document, Arguments arguments, DataVal
         M_FAILURE(WrongNumberOfArguments);
 
     if (!readArgument(arguments[0], &label, errMsg) || !RangesetTable::RangesetLabelOK(label)) {
-        M_FAILURE("First parameter is an invalid rangeset label in %s");
+        M_FAILURE(Param1InvalidRangesetLabel);
     }
 
     if(!rangesetTable) {
@@ -5059,22 +5073,22 @@ static bool rangesetAddMS(DocumentWidget *document, Arguments arguments, DataVal
     if (arguments.size() == 1) {
         // pick up current selection in this window
         if (!buffer->BufGetSelectionPos(&start, &end, &isRect, &rectStart, &rectEnd) || isRect) {
-            M_FAILURE("Selection missing or rectangular in call to %s");
+            M_FAILURE(SelectionMissing);
         }
         if (!targetRangeset->RangesetAddBetween(start, end)) {
-            M_FAILURE("Failure to add selection in %s");
+            M_FAILURE(FailedToAddSelection);
         }
     }
 
     if (arguments.size() == 2) {
         // add ranges taken from a second set
         if (!readArgument(arguments[1], &label, errMsg) || !RangesetTable::RangesetLabelOK(label)) {
-            M_FAILURE("Second parameter is an invalid rangeset label in %s");
+            M_FAILURE(Param2InvalidRangesetLabel);
         }
 
         Rangeset *sourceRangeset = rangesetTable->RangesetFetch(label);
         if(!sourceRangeset) {
-            M_FAILURE("Second rangeset does not exist in %s");
+            M_FAILURE(Rangeset2DoesNotExist);
         }
 
         targetRangeset->RangesetAdd(sourceRangeset);
@@ -5099,7 +5113,7 @@ static bool rangesetAddMS(DocumentWidget *document, Arguments arguments, DataVal
         }
 
         if ((start != end) && !targetRangeset->RangesetAddBetween(start, end)) {
-            M_FAILURE("Failed to add range in %s");
+            M_FAILURE(FailedToAddRange);
         }
     }
 
@@ -5134,7 +5148,7 @@ static bool rangesetSubtractMS(DocumentWidget *document, Arguments arguments, Da
     }
 
     if (!readArgument(arguments[0], &label, errMsg) || !RangesetTable::RangesetLabelOK(label)) {
-        M_FAILURE("First parameter is an invalid rangeset label in %s");
+        M_FAILURE(Param1InvalidRangesetLabel);
     }
 
     if(!rangesetTable) {
@@ -5149,7 +5163,7 @@ static bool rangesetSubtractMS(DocumentWidget *document, Arguments arguments, Da
     if (arguments.size() == 1) {
         // remove current selection in this window
         if (!buffer->BufGetSelectionPos(&start, &end, &isRect, &rectStart, &rectEnd) || isRect) {
-            M_FAILURE("Selection missing or rectangular in call to %s");
+            M_FAILURE(SelectionMissing);
         }
         targetRangeset->RangesetRemoveBetween(start, end);
     }
@@ -5157,12 +5171,12 @@ static bool rangesetSubtractMS(DocumentWidget *document, Arguments arguments, Da
     if (arguments.size() == 2) {
         // remove ranges taken from a second set
         if (!readArgument(arguments[1], &label, errMsg) || !RangesetTable::RangesetLabelOK(label)) {
-            M_FAILURE("Second parameter is an invalid rangeset label in %s");
+            M_FAILURE(Param2InvalidRangesetLabel);
         }
 
         Rangeset *sourceRangeset = rangesetTable->RangesetFetch(label);
         if(!sourceRangeset) {
-            M_FAILURE("Second rangeset does not exist in %s");
+            M_FAILURE(Rangeset2DoesNotExist);
         }
         targetRangeset->RangesetRemove(sourceRangeset);
     }
@@ -5206,7 +5220,7 @@ static bool rangesetInvertMS(DocumentWidget *document, Arguments arguments, Data
     }
 
     if (!RangesetTable::RangesetLabelOK(label)) {
-        M_FAILURE("First parameter is an invalid rangeset label in %s");
+        M_FAILURE(Param1InvalidRangesetLabel);
     }
 
     if(!rangesetTable) {
@@ -5219,7 +5233,7 @@ static bool rangesetInvertMS(DocumentWidget *document, Arguments arguments, Data
     }
 
     if (rangeset->RangesetInverse() < 0) {
-        M_FAILURE("Problem inverting rangeset in %s");
+        M_FAILURE(FailedToInvertRangeset);
     }
 
     // set up result
@@ -5243,7 +5257,7 @@ static bool rangesetInfoMS(DocumentWidget *document, Arguments arguments, DataVa
     }
 
     if (!RangesetTable::RangesetLabelOK(label)) {
-        M_FAILURE("First parameter is an invalid rangeset label in %s");
+        M_FAILURE(Param1InvalidRangesetLabel);
     }
 
     if (rangesetTable) {
@@ -5269,24 +5283,24 @@ static bool rangesetInfoMS(DocumentWidget *document, Arguments arguments, DataVa
 
     element = to_value(defined);
     if (!ArrayInsert(result, AllocStringCpyEx("defined"), &element))
-        M_FAILURE("Failed to insert array element \"defined\" in %s");
+        M_FAILURE(InsertFailed);
 
     element = to_value(count);
     if (!ArrayInsert(result, AllocStringCpyEx("count"), &element))
-        M_FAILURE("Failed to insert array element \"count\" in %s");
+        M_FAILURE(InsertFailed);
 
     element = to_value(color);
     if (!ArrayInsert(result, AllocStringCpyEx("color"), &element))
-        M_FAILURE("Failed to insert array element \"color\" in %s");
+        M_FAILURE(InsertFailed);
 
     element = to_value(name);
     if (!ArrayInsert(result, AllocStringCpyEx("name"), &element)) {
-        M_FAILURE("Failed to insert array element \"name\" in %s");
+        M_FAILURE(InsertFailed);
     }
 
     element = to_value(mode);
     if (!ArrayInsert(result, AllocStringCpyEx("mode"), &element))
-        M_FAILURE("Failed to insert array element \"mode\" in %s");
+        M_FAILURE(InsertFailed);
 
     return true;
 }
@@ -5313,7 +5327,7 @@ static bool rangesetRangeMS(DocumentWidget *document, Arguments arguments, DataV
     }
 
     if (!readArgument(arguments[0], &label, errMsg) || !RangesetTable::RangesetLabelOK(label)) {
-        M_FAILURE("First parameter is an invalid rangeset label in %s");
+        M_FAILURE(Param1InvalidRangesetLabel);
     }
 
     if(!rangesetTable) {
@@ -5343,11 +5357,11 @@ static bool rangesetRangeMS(DocumentWidget *document, Arguments arguments, DataV
 
     element = to_value(start);
     if (!ArrayInsert(result, AllocStringCpyEx("start"), &element))
-        M_FAILURE("Failed to insert array element \"start\" in %s");
+        M_FAILURE(InsertFailed);
 
     element = to_value(end);
     if (!ArrayInsert(result, AllocStringCpyEx("end"), &element))
-        M_FAILURE("Failed to insert array element \"end\" in %s");
+        M_FAILURE(InsertFailed);
 
     return true;
 }
@@ -5369,7 +5383,7 @@ static bool rangesetIncludesPosMS(DocumentWidget *document, Arguments arguments,
     }
 
     if (!readArgument(arguments[0], &label, errMsg) || !RangesetTable::RangesetLabelOK(label)) {
-        M_FAILURE("First parameter is an invalid rangeset label in %s");
+        M_FAILURE(Param1InvalidRangesetLabel);
     }
 
     if(!rangesetTable) {
@@ -5419,7 +5433,7 @@ static bool rangesetSetColorMS(DocumentWidget *document, Arguments arguments, Da
     }
 
     if (!readArgument(arguments[0], &label, errMsg) || !RangesetTable::RangesetLabelOK(label)) {
-        M_FAILURE("First parameter is an invalid rangeset label in %s");
+        M_FAILURE(Param1InvalidRangesetLabel);
     }
 
     if(!rangesetTable) {
@@ -5433,7 +5447,7 @@ static bool rangesetSetColorMS(DocumentWidget *document, Arguments arguments, Da
 
     QString color_name;
     if (!readArgument(arguments[1], &color_name, errMsg)) {
-        M_FAILURE("Second parameter is not a color name string in %s");
+        M_FAILURE(Param2NotAString);
     }
 
     rangeset->RangesetAssignColorName(color_name);
@@ -5458,7 +5472,7 @@ static bool rangesetSetNameMS(DocumentWidget *document, Arguments arguments, Dat
     }
 
     if (!readArgument(arguments[0], &label, errMsg) || !RangesetTable::RangesetLabelOK(label)) {
-        M_FAILURE("First parameter is an invalid rangeset label in %s");
+        M_FAILURE(Param1InvalidRangesetLabel);
     }
 
     if(!rangesetTable) {
@@ -5472,7 +5486,7 @@ static bool rangesetSetNameMS(DocumentWidget *document, Arguments arguments, Dat
 
     QString name;
     if (!readArgument(arguments[1], &name, errMsg)) {
-        M_FAILURE("Second parameter is not a valid name string in %s");
+        M_FAILURE(Param2NotAString);
     }
 
     rangeset->RangesetAssignName(name);
@@ -5498,7 +5512,7 @@ static bool rangesetSetModeMS(DocumentWidget *document, Arguments arguments, Dat
     }
 
     if (!readArgument(arguments[0], &label, errMsg) || !RangesetTable::RangesetLabelOK(label)) {
-        M_FAILURE("First parameter is an invalid rangeset label in %s");
+        M_FAILURE(Param1InvalidRangesetLabel);
     }
 
     if(!rangesetTable) {
@@ -5513,13 +5527,13 @@ static bool rangesetSetModeMS(DocumentWidget *document, Arguments arguments, Dat
     QString update_fn_name;
     if (arguments.size() == 2) {
         if (!readArgument(arguments[1], &update_fn_name,  errMsg)) {
-            M_FAILURE("Second parameter is not a string in %s");
+            M_FAILURE(Param2NotAString);
         }
     }
 
-    int ok = rangeset->RangesetChangeModifyResponse(update_fn_name);
+    bool ok = rangeset->RangesetChangeModifyResponse(update_fn_name);
     if (!ok) {
-        M_FAILURE("Second parameter is not a valid mode in %s");
+        M_FAILURE(InvalidMode);
     }
 
     // set up result
@@ -5636,7 +5650,7 @@ static bool getStyleByNameMS(DocumentWidget *document, Arguments arguments, Data
 
     // Validate number of arguments
     if(!readArguments(arguments, 0, errMsg, &styleName)) {
-        M_FAILURE("First parameter is not a string in %s");
+        M_FAILURE(Param1NotAString);
     }
 
     *result = to_value(array_empty());
@@ -5765,7 +5779,7 @@ static bool getPatternByNameMS(DocumentWidget *document, Arguments arguments, Da
 
     // Validate number of arguments
     if(!readArguments(arguments, 0, errMsg, &patternName)) {
-        M_FAILURE("First parameter is not a string in %s");
+        M_FAILURE(Param1NotAString);
     }
 
     HighlightPattern *pattern = FindPatternOfWindowEx(document, patternName);
@@ -5841,11 +5855,11 @@ static bool readArgument(DataValue dv, int *result, const char **errMsg) {
 
     switch(dv.tag) {
     case INT_TAG:
-        *result = dv.val.n;
+        *result = to_integer(dv);
         return true;
     case STRING_TAG:
     {
-        auto s = QString::fromLatin1(dv.val.str.rep, dv.val.str.len);
+        auto s = to_qstring(dv);
         bool ok;
         int val = s.toInt(&ok);
         if(!ok) {
@@ -5871,10 +5885,10 @@ static bool readArgument(DataValue dv, std::string *result, const char **errMsg)
 
     switch(dv.tag) {
     case STRING_TAG:
-        *result = dv.val.str.rep;
+        *result = to_string(dv).to_string();
         return true;
     case INT_TAG:
-        *result = std::to_string(dv.val.n);
+        *result = std::to_string(to_integer(dv));
         return true;
     default:
         M_FAILURE(UnknownObject);
@@ -5885,10 +5899,10 @@ static bool readArgument(DataValue dv, QString *result, const char **errMsg) {
 
     switch(dv.tag) {
     case STRING_TAG:
-        *result = QString::fromLatin1(dv.val.str.rep, dv.val.str.len);
+        *result = to_qstring(dv);
         return true;
     case INT_TAG:
-        *result = QString::number(dv.val.n);
+        *result = QString::number(to_integer(dv));
         return true;
     default:
         M_FAILURE(UnknownObject);

@@ -1049,15 +1049,15 @@ static void restoreContextEx(const std::shared_ptr<RestartData> &context) {
 **         TheStack-> [symVal], next, ...
 */
 static int pushSymVal() {
-    Symbol *s;
-	int nArgs, argNum;
+
+    int nArgs;
+    int argNum;
 	DataValue symVal;
 
 	DISASM_RT(PC - 1, 2);
 	STACKDUMP(0, 3);
 
-    s = PC->sym;
-	PC++;
+    Symbol *s = PC++->sym;
 
 	if (s->type == LOCAL_SYM) {
 		symVal = FP_GET_SYM_VAL(FrameP, s);
@@ -1065,7 +1065,7 @@ static int pushSymVal() {
 		symVal = s->value;
 	} else if (s->type == ARG_SYM) {
 		nArgs = FP_GET_ARG_COUNT(FrameP);
-		argNum = s->value.val.n;
+        argNum = to_integer(s->value);
 		if (argNum >= nArgs) {
 			return execError("referenced undefined argument: %s", s->name.c_str());
 		}
@@ -1463,24 +1463,26 @@ static int eq() {
     POP(v2);
 
     if (is_integer(v1) && is_integer(v2)) {
-        v1 = to_value(v1.val.n == v2.val.n);
+        auto n1 = to_integer(v1);
+        auto n2 = to_integer(v2);
+        v1 = to_value(n1 == n2);
     } else if (is_string(v1) && is_string(v2)) {
-        auto s1 = view::string_view(v1.val.str.rep, v1.val.str.len);
-        auto s2 = view::string_view(v2.val.str.rep, v2.val.str.len);
+        auto s1 = to_string(v1);
+        auto s2 = to_string(v2);
         v1 = to_value(s1 == s2);
     } else if (is_string(v1) && is_integer(v2)) {
 		int number;
 		if (!StringToNum(v1.val.str.rep, &number)) {
             v1 = to_value(0);
 		} else {
-            v1 = to_value(number == v2.val.n);
+            v1 = to_value(number == to_integer(v2));
 		}
     } else if (is_string(v2) && is_integer(v1)) {
 		int number;
 		if (!StringToNum(v2.val.str.rep, &number)) {
             v1 = to_value(0);
 		} else {
-            v1 = to_value(number == v1.val.n);
+            v1 = to_value(number == to_integer(v1));
 		}
 	} else {
 		return execError("incompatible types to compare");
@@ -1954,9 +1956,8 @@ int ArrayCopy(DataValue *dstArray, DataValue *srcArray) {
 static int makeArrayKeyFromArgs(int nArgs, char **keyString, int leaveParams) {
 	DataValue tmpVal;
     static const int sepLen = strlen(ARRAY_DIM_SEP);
-	int keyLength = 0;
 
-	keyLength = sepLen * (nArgs - 1);
+    int keyLength = sepLen * (nArgs - 1);
     for (int i = nArgs - 1; i >= 0; --i) {
         PEEK(tmpVal, i);
         if (is_integer(tmpVal)) {
@@ -2614,7 +2615,7 @@ bool StringToNum(const char *string, int *number) {
 static void dumpVal(DataValue dv) {
 	switch (dv.tag) {
 	case INT_TAG:
-		printf("i=%d", dv.val.n);
+        printf("i=%d", to_integer(dv));
 		break;
 	case STRING_TAG: {
         size_t k;

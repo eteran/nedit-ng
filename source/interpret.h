@@ -352,4 +352,19 @@ inline bool is_array(const DataValue &dv) {
     return dv.tag == ARRAY_TAG;
 }
 
+inline view::string_view to_string(const DataValue &dv) {
+    Q_ASSERT(is_string(dv));
+    return view::string_view(dv.val.str.rep, dv.val.str.len);
+}
+
+inline QString to_qstring(const DataValue &dv) {
+    Q_ASSERT(is_string(dv));
+    return QString::fromLatin1(dv.val.str.rep, dv.val.str.len);
+}
+
+inline int to_integer(const DataValue &dv) {
+    Q_ASSERT(is_integer(dv));
+    return dv.val.n;
+}
+
 #endif
