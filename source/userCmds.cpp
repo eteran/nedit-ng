@@ -32,6 +32,7 @@
 #include "parse.h"
 #include "Input.h"
 #include "preferences.h"
+#include "raise.h"
 #include <QTextStream>
 #include <QVector>
 #include <memory>
@@ -250,11 +251,11 @@ static int loadMenuItemStringEx(const QString &inString, QVector<MenuData> &menu
             // read name field
             QString nameStr = in.readUntil(QLatin1Char(':'));
             if(nameStr.isEmpty()) {
-                throw ParseError("no name field");
+                raise<ParseError>("no name field");
             }
 
             if(in.atEnd()) {
-                throw ParseError("end not expected");
+                raise<ParseError>("end not expected");
             }
 
             ++in;
@@ -263,7 +264,7 @@ static int loadMenuItemStringEx(const QString &inString, QVector<MenuData> &menu
             QString accStr = in.readUntil(QLatin1Char(':'));
 
             if(in.atEnd()) {
-                throw ParseError("end not expected");
+                raise<ParseError>("end not expected");
             }
 
             ++in;
@@ -305,7 +306,7 @@ static int loadMenuItemStringEx(const QString &inString, QVector<MenuData> &menu
                         loadAfter = true;
                         break;
                     default:
-                        throw ParseError("unreadable flag field");
+                        raise<ParseError>("unreadable flag field");
                     }
                 } else {
                     switch((*in).toLatin1()) {
@@ -313,7 +314,7 @@ static int loadMenuItemStringEx(const QString &inString, QVector<MenuData> &menu
                         input = FROM_SELECTION;
                         break;
                     default:
-                        throw ParseError("unreadable flag field");
+                        raise<ParseError>("unreadable flag field");
                     }
                 }
             }
@@ -325,7 +326,7 @@ static int loadMenuItemStringEx(const QString &inString, QVector<MenuData> &menu
             if (listType == SHELL_CMDS) {
 
                 if (*in++ != QLatin1Char('\n')) {
-                    throw ParseError("command must begin with newline");
+                    raise<ParseError>("command must begin with newline");
                 }
 
                 // leading whitespace
@@ -334,7 +335,7 @@ static int loadMenuItemStringEx(const QString &inString, QVector<MenuData> &menu
                 cmdStr = in.readUntil(QLatin1Char('\n'));
 
                 if (cmdStr.isEmpty()) {
-                    throw ParseError("shell command field is empty");
+                    raise<ParseError>("shell command field is empty");
                 }
 
             } else {
