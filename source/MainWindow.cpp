@@ -1849,7 +1849,7 @@ void MainWindow::fileCB(DocumentWidget *window, const QString &text) {
     nameText = ExpandTildeEx(nameText);
 
     // If path name is relative, make it refer to current window's directory
-    if (nameText[0] != QLatin1Char('/')) {
+    if (!QFileInfo(nameText).isAbsolute()) {
 		nameText = QString(QLatin1String("%1%2")).arg(window->path_, nameText);
     }
 

@@ -41,6 +41,7 @@
 #include <memory>
 #include <iostream>
 #include <fstream>
+#include <string>
 
 #include <sys/types.h>
 #include <sys/param.h>
@@ -48,12 +49,7 @@
 #include <unistd.h>
 #include <pwd.h>
 
-static int ExpandTilde(char *pathname);
 static int ResolvePath(const char *pathIn, char *pathResolved);
-
-#ifndef MAXSYMLINKS /* should be defined in <sys/param.h> */
-#define MAXSYMLINKS 20
-#endif
 
 /* Parameters to algorithm used to auto-detect DOS format files.  NEdit will
    scan up to the lesser of FORMAT_SAMPLE_LINES lines and FORMAT_SAMPLE_CHARS
@@ -122,68 +118,40 @@ int ParseFilenameEx(const QString &fullname, QString *filename, QString *pathnam
 */
 QString ExpandTildeEx(const QString &pathname) {
 #ifdef Q_OS_UNIX
-    char path[PATH_MAX];
-    strncpy(path, pathname.toLatin1().data(), sizeof(path));
-    path[PATH_MAX - 1] = '\0';
+    struct passwd *passwdEntry;
 
-    if(ExpandTilde(path)) {
-        return QString::fromLatin1(path);
+    if (!pathname.startsWith(QLatin1Char('~'))) {
+        return QString();
     }
 
-    return QString();
+    int end = pathname.indexOf(QLatin1Char('/'));
+    if(end == -1) {
+        end = pathname.size();
+    }
+
+    QStringRef username = pathname.midRef(1, end - 1);
+
+    /* We might consider to re-use the GetHomeDirEx() function,
+       but to keep the code more similar for both cases ... */
+    if (username.isEmpty()) {
+        passwdEntry = getpwuid(getuid());
+        if ((passwdEntry == nullptr) || (*(passwdEntry->pw_dir) == '\0')) {
+            /* This is really serious, so just exit. */
+            qFatal("getpwuid() failed ");
+        }
+    } else {
+        passwdEntry = getpwnam(username.toLatin1().data());
+        if ((passwdEntry == nullptr) || (*(passwdEntry->pw_dir) == '\0')) {
+            /* username was just an input by the user, this is no indication
+             * for some (serious) problems */
+            return QString();
+        }
+    }
+
+    return QString(QLatin1String("%1/%2")).arg(QString::fromLatin1(passwdEntry->pw_dir), pathname.mid(end));
 #else
     return pathname;
 #endif
-}
-
-int ExpandTilde(char *pathname) {
-	struct passwd *passwdEntry;
-    char username[MAXPATHLEN];
-    char temp[MAXPATHLEN];
-	unsigned len_left;
-
-    if (pathname[0] != '~') {
-        return true;
-    }
-
-    char *nameEnd = strchr(&pathname[1], '/');
-	if(!nameEnd) {
-		nameEnd = pathname + strlen(pathname);
-	}
-
-	strncpy(username, &pathname[1], nameEnd - &pathname[1]);
-	username[nameEnd - &pathname[1]] = '\0';
-
-	/* We might consider to re-use the GetHomeDirEx() function,
-	   but to keep the code more similar for both cases ... */
-	if (username[0] == '\0') {
-		passwdEntry = getpwuid(getuid());
-		if ((passwdEntry == nullptr) || (*(passwdEntry->pw_dir) == '\0')) {
-			/* This is really serious, so just exit. */
-			perror("NEdit/nc: getpwuid() failed ");
-			exit(EXIT_FAILURE);
-		}
-	} else {
-		passwdEntry = getpwnam(username);
-		if ((passwdEntry == nullptr) || (*(passwdEntry->pw_dir) == '\0')) {
-			/* username was just an input by the user, this is no
-		   indication for some (serious) problems */
-            return false;
-		}
-	}
-
-	strcpy(temp, passwdEntry->pw_dir);
-	strcat(temp, "/");
-
-	len_left = sizeof(temp) - strlen(temp) - 1;
-	if (len_left < strlen(nameEnd)) {
-		/* It won't work out */
-        return false;
-	}
-
-	strcat(temp, nameEnd);
-	strcpy(pathname, temp);
-    return true;
 }
 
 /*
