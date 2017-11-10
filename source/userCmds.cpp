@@ -55,8 +55,6 @@ public:
 	explicit ParseError(const std::string &s) : s_(s) {
     }
 
-    virtual ~ParseError() = default;
-
     const char *what() const noexcept {
         return s_.c_str();
     }
@@ -74,6 +72,34 @@ static std::shared_ptr<userMenuInfo> parseMenuItemRec(const std::shared_ptr<Menu
 static void parseMenuItemName(const QString &menuItemName, const std::shared_ptr<userMenuInfo> &info);
 static void setDefaultIndex(const QVector<MenuData> &infoList, int index);
 
+
+QVector<MenuData> &selectMenu(DialogTypes type) {
+    switch(type) {
+    case DialogTypes::SHELL_CMDS:
+        return ShellMenuData;
+    case DialogTypes::MACRO_CMDS:
+        return MacroMenuData;
+    case DialogTypes::BG_MENU_CMDS:
+        return BGMenuData;
+    }
+
+    Q_UNREACHABLE();
+}
+
+MenuData *findMenuItem(const QString &name, DialogTypes type) {
+
+    QVector<MenuData> &v = selectMenu(type);
+
+    for(MenuData &data: v) {
+        if (data.item->name == name) {
+            return &data;
+        }
+    }
+
+    return nullptr;
+}
+
+
 /*
 ** Generate a text string for the preferences file describing the contents
 ** of the shell cmd list.  This string is not exactly of the form that it
@@ -81,7 +107,7 @@ static void setDefaultIndex(const QVector<MenuData> &infoList, int index);
 ** to a resource file such that it will read back in that form.
 */
 QString WriteShellCmdsStringEx() {
-	return writeMenuItemStringEx(ShellMenuData, SHELL_CMDS);
+    return writeMenuItemStringEx(ShellMenuData, DialogTypes::SHELL_CMDS);
 }
 
 /*
@@ -92,11 +118,11 @@ QString WriteShellCmdsStringEx() {
 ** in that form.
 */
 QString WriteMacroCmdsStringEx() {
-	return writeMenuItemStringEx(MacroMenuData, MACRO_CMDS);
+    return writeMenuItemStringEx(MacroMenuData, DialogTypes::MACRO_CMDS);
 }
 
 QString WriteBGMenuCmdsStringEx() {
-	return writeMenuItemStringEx(BGMenuData, BG_MENU_CMDS);
+    return writeMenuItemStringEx(BGMenuData, DialogTypes::BG_MENU_CMDS);
 }
 
 /*
@@ -104,7 +130,7 @@ QString WriteBGMenuCmdsStringEx() {
 ** internal list used for constructing shell menus
 */
 int LoadShellCmdsStringEx(const QString &inString) {
-	return loadMenuItemStringEx(inString, ShellMenuData, SHELL_CMDS);
+    return loadMenuItemStringEx(inString, ShellMenuData, DialogTypes::SHELL_CMDS);
 }
 
 /*
@@ -112,12 +138,12 @@ int LoadShellCmdsStringEx(const QString &inString) {
 ** and add them to the internal lists used for constructing menus
 */
 int LoadMacroCmdsStringEx(const QString &inString) {
-	return loadMenuItemStringEx(inString, MacroMenuData, MACRO_CMDS);
+    return loadMenuItemStringEx(inString, MacroMenuData, DialogTypes::MACRO_CMDS);
 }
 
 
 int LoadBGMenuCmdsStringEx(const QString &inString) {
-	return loadMenuItemStringEx(inString, BGMenuData, BG_MENU_CMDS);
+    return loadMenuItemStringEx(inString, BGMenuData, DialogTypes::BG_MENU_CMDS);
 }
 
 /*
@@ -173,7 +199,7 @@ static QString writeMenuItemStringEx(const QVector<MenuData> &menuItems, DialogT
         std::copy(accStr.begin(), accStr.end(), outPtr);
 
         *outPtr++ = QLatin1Char(':');
-        if (listType == SHELL_CMDS) {
+        if (listType == DialogTypes::SHELL_CMDS) {
             switch(f->input) {
             case FROM_SELECTION: *outPtr++ = QLatin1Char('I'); break;
             case FROM_WINDOW:    *outPtr++ = QLatin1Char('A'); break;
@@ -217,7 +243,7 @@ static QString writeMenuItemStringEx(const QVector<MenuData> &menuItems, DialogT
                 *outPtr++ = (c);
         }
 
-        if (listType == MACRO_CMDS || listType == BG_MENU_CMDS) {
+        if (listType == DialogTypes::MACRO_CMDS || listType == DialogTypes::BG_MENU_CMDS) {
 
             if(outStr.endsWith(QLatin1Char('\t'))) {
                 outStr.chop(1);
@@ -278,7 +304,7 @@ static int loadMenuItemStringEx(const QString &inString, QVector<MenuData> &menu
 
             for(; !in.atEnd() && *in != QLatin1Char(':'); ++in) {
 
-                if (listType == SHELL_CMDS) {
+                if (listType == DialogTypes::SHELL_CMDS) {
 
                     switch((*in).toLatin1()) {
                     case 'I':
@@ -323,7 +349,7 @@ static int loadMenuItemStringEx(const QString &inString, QVector<MenuData> &menu
             QString cmdStr;
 
             // read command field
-            if (listType == SHELL_CMDS) {
+            if (listType == DialogTypes::SHELL_CMDS) {
 
                 if (*in++ != QLatin1Char('\n')) {
                     raise<ParseError>("command must begin with newline");

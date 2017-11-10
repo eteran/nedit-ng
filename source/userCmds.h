@@ -33,12 +33,14 @@
 
 struct MenuItem;
 
-// types of current dialog and/or menu 
-enum DialogTypes {
-	SHELL_CMDS,
-	MACRO_CMDS,
-	BG_MENU_CMDS
+
+// types of current dialog and/or menu
+enum class DialogTypes {
+    SHELL_CMDS,
+    MACRO_CMDS,
+    BG_MENU_CMDS
 };
+
 
 /* Structure holding info about a single menu item.
    According to above example there exist 5 user menu items:
@@ -70,6 +72,7 @@ QString WriteShellCmdsStringEx();
 void SetupUserMenuInfo();
 void UpdateUserMenuInfo();
 void parseMenuItemList(QVector<MenuData> &itemList);
+MenuData *findMenuItem(const QString &name, DialogTypes type);
 
 extern QVector<MenuData> ShellMenuData;
 extern QVector<MenuData> BGMenuData;

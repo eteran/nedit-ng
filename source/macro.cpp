@@ -3617,7 +3617,7 @@ static bool dialogMS(DocumentWidget *document, Arguments arguments, DataValue *r
 
     QString btnLabel;
     QString message;
-    long i;
+    int i;
 
     /* Ignore the focused window passed as the function argument and put
        the dialog up over the window which is executing the macro */
@@ -3635,6 +3635,7 @@ static bool dialogMS(DocumentWidget *document, Arguments arguments, DataValue *r
     if (arguments.empty()) {
         M_FAILURE(NeedsArguments);
     }
+
     if (!readArgument(arguments[0], &message, errMsg)) {
         return false;
     }
@@ -3652,7 +3653,8 @@ static bool dialogMS(DocumentWidget *document, Arguments arguments, DataValue *r
     // Return placeholder result.  Value will be changed by button callback
     *result = to_value(0);
 
-    auto prompt = new DialogPrompt(document);
+    // NOTE(eteran): passing document here breaks things...
+    auto prompt = std::make_unique<DialogPrompt>(nullptr);
     prompt->setMessage(message);
     if (arguments.size() == 1) {
         prompt->addButton(QDialogButtonBox::Ok);
@@ -3663,9 +3665,9 @@ static bool dialogMS(DocumentWidget *document, Arguments arguments, DataValue *r
         }
     }
     prompt->exec();
+
     result->val.n = prompt->result();
     ModifyReturnedValueEx(cmdData->context, *result);
-    delete prompt;
 
     document->ResumeMacroExecutionEx();
     return true;
@@ -3710,7 +3712,8 @@ static bool stringDialogMS(DocumentWidget *document, Arguments arguments, DataVa
     // Return placeholder result.  Value will be changed by button callback
     *result = to_value(0);
 
-    auto prompt = std::make_unique<DialogPromptString>(document);
+    // NOTE(eteran): passing document here breaks things...
+    auto prompt = std::make_unique<DialogPromptString>(nullptr);
     prompt->setMessage(message);
     if (arguments.size() == 1) {
         prompt->addButton(QDialogButtonBox::Ok);
@@ -4096,7 +4099,8 @@ static bool listDialogMS(DocumentWidget *document, Arguments arguments, DataValu
     // Return placeholder result.  Value will be changed by button callback
     *result = to_value(0);
 
-    auto prompt = std::make_unique<DialogPromptList>(document);
+    // NOTE(eteran): passing document here breaks things...
+    auto prompt = std::make_unique<DialogPromptList>(nullptr);
     prompt->setMessage(message);
     prompt->setList(text);
 

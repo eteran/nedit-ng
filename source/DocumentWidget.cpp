@@ -5080,26 +5080,26 @@ bool DocumentWidget::DoNamedShellMenuCmd(TextArea *area, const QString &name, bo
         return false;
     }
 
-    for(MenuData &data: ShellMenuData) {
-        if (data.item->name == name) {
-            if (data.item->output == TO_SAME_WINDOW && CheckReadOnly()) {
-                return false;
-            }
+    if(MenuData *p = findMenuItem(name, DialogTypes::SHELL_CMDS)) {
 
-            DoShellMenuCmd(
-                window,
-                area,
-                data.item->cmd,
-                data.item->input,
-                data.item->output,
-                data.item->repInput,
-                data.item->saveFirst,
-                data.item->loadAfter,
-                fromMacro);
-
-            return true;
+        if (p->item->output == TO_SAME_WINDOW && CheckReadOnly()) {
+            return false;
         }
+
+        DoShellMenuCmd(
+            window,
+            area,
+            p->item->cmd,
+            p->item->input,
+            p->item->output,
+            p->item->repInput,
+            p->item->saveFirst,
+            p->item->loadAfter,
+            fromMacro);
+
+        return true;
     }
+
     return false;
 }
 
@@ -5260,17 +5260,15 @@ bool DocumentWidget::DoNamedMacroMenuCmd(TextArea *area, const QString &name, bo
     Q_UNUSED(fromMacro);
     Q_UNUSED(area);
 
-    for(MenuData &data: MacroMenuData) {
-        if (data.item->name == name) {
+    if(MenuData *p = findMenuItem(name, DialogTypes::MACRO_CMDS)) {
+        DoMacroEx(
+            this,
+            p->item->cmd,
+            QLatin1String("macro menu command"));
 
-            DoMacroEx(
-                this,
-                data.item->cmd,
-                QLatin1String("macro menu command"));
-
-            return true;
-        }
+        return true;
     }
+
     return false;
 }
 
@@ -5278,16 +5276,15 @@ bool DocumentWidget::DoNamedBGMenuCmd(TextArea *area, const QString &name, bool 
     Q_UNUSED(fromMacro);
     Q_UNUSED(area);
 
-    for(MenuData &data: BGMenuData) {
-        if (data.item->name == name) {
-            DoMacroEx(
-                this,
-                data.item->cmd,
-                QLatin1String("background menu macro"));
+    if(MenuData *p = findMenuItem(name, DialogTypes::BG_MENU_CMDS)) {
+        DoMacroEx(
+            this,
+            p->item->cmd,
+            QLatin1String("background menu macro"));
 
-            return true;
-        }
+        return true;
     }
+
     return false;
 }
 
