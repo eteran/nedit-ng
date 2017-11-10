@@ -67,8 +67,8 @@ static int HistStart = 0;
 static bool SearchString(view::string_view string, const QString &searchString, Direction direction, SearchType searchType, WrapMode wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters);
 
 static bool backwardRegexSearch(view::string_view string, view::string_view searchString, WrapMode wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags);
-static bool replaceUsingREEx(view::string_view searchStr, const char *replaceStr, view::string_view sourceStr, int beginPos, char *destStr, int maxDestLen, int prevChar, const char *delimiters, int defaultFlags);
-static bool replaceUsingREEx(const QString &searchStr, const QString &replaceStr, view::string_view sourceStr, int beginPos, char *destStr, int maxDestLen, int prevChar, const QString &delimiters, int defaultFlags);
+static bool replaceUsingREEx(view::string_view searchStr, const char *replaceStr, view::string_view sourceStr, int beginPos, std::string &dest, int prevChar, const char *delimiters, int defaultFlags);
+static bool replaceUsingREEx(const QString &searchStr, const QString &replaceStr, view::string_view sourceStr, int beginPos, std::string &dest, int prevChar, const QString &delimiters, int defaultFlags);
 
 static bool forwardRegexSearch(view::string_view string, view::string_view searchString, WrapMode wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags);
 static bool searchRegex(view::string_view string, view::string_view searchString, Direction direction, WrapMode wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags);
@@ -441,10 +441,10 @@ void SearchForSelectedEx(MainWindow *window, DocumentWidget *document, TextArea 
 
     /* Use the passed method for searching, unless it is regex, since this
        kind of search is by definition a literal search */
-    if (searchType == SEARCH_REGEX) {
-        searchType = SEARCH_CASE_SENSE;
-    } else if (searchType == SEARCH_REGEX_NOCASE) {
-        searchType = SEARCH_LITERAL;
+    if (searchType == SearchType::Regex) {
+        searchType = SearchType::CaseSense;
+    } else if (searchType == SearchType::RegexNoCase) {
+        searchType = SearchType::Literal;
     }
 
     // search for it in the window
@@ -604,7 +604,7 @@ bool ReplaceAndSearchEx(MainWindow *window, DocumentWidget *document, TextArea *
 
         // replace the text
         if (isRegexType(searchType)) {
-            char replaceResult[SEARCHMAX + 1];
+            std::string replaceResult;
             const std::string foundString = document->buffer_->BufGetRangeEx(searchExtentBW, searchExtentFW + 1);
 
             replaceUsingREEx(
@@ -613,13 +613,12 @@ bool ReplaceAndSearchEx(MainWindow *window, DocumentWidget *document, TextArea *
                 foundString,
                 startPos - searchExtentBW,
                 replaceResult,
-                SEARCHMAX,
                 startPos == 0 ? '\0' : document->buffer_->BufGetCharacter(startPos - 1),
                 GetWindowDelimitersEx(document),
                 defaultRegexFlags(searchType));
 
             document->buffer_->BufReplaceEx(startPos, endPos, replaceResult);
-            replaceLen = strlen(replaceResult);
+            replaceLen = replaceResult.size();
         } else {
             document->buffer_->BufReplaceEx(startPos, endPos, replaceString.toLatin1().data());
             replaceLen = replaceString.size();
@@ -676,7 +675,7 @@ bool SearchAndReplaceEx(MainWindow *window, DocumentWidget *document, TextArea *
 
     // replace the text
     if (isRegexType(searchType)) {
-        char replaceResult[SEARCHMAX];
+        std::string replaceResult;
         const std::string foundString = document->buffer_->BufGetRangeEx(searchExtentBW, searchExtentFW + 1);
 
         QString delimieters = GetWindowDelimitersEx(document);
@@ -687,13 +686,12 @@ bool SearchAndReplaceEx(MainWindow *window, DocumentWidget *document, TextArea *
             foundString,
             startPos - searchExtentBW,
             replaceResult,
-            SEARCHMAX,
             startPos == 0 ? '\0' : document->buffer_->BufGetCharacter(startPos - 1),
             delimieters,
             defaultRegexFlags(searchType));
 
         document->buffer_->BufReplaceEx(startPos, endPos, replaceResult);
-        replaceLen = strlen(replaceResult);
+        replaceLen = replaceResult.size();
     } else {
         document->buffer_->BufReplaceEx(startPos, endPos, replaceString.toLatin1().data());
         replaceLen = replaceString.size();
@@ -889,7 +887,7 @@ void ReplaceInSelectionEx(MainWindow *window, DocumentWidget *document, TextArea
 
         // replace the string and compensate for length change
         if (isRegexType(searchType)) {
-            char replaceResult[SEARCHMAX];
+            std::string replaceResult;
             const std::string foundString = tempBuf->BufGetRangeEx(extentBW + realOffset, extentFW + realOffset + 1);
 
             substSuccess = replaceUsingREEx(
@@ -898,7 +896,6 @@ void ReplaceInSelectionEx(MainWindow *window, DocumentWidget *document, TextArea
                             foundString,
                             startPos - extentBW,
                             replaceResult,
-                            sizeof(replaceResult),
                             (startPos + realOffset) == 0 ? '\0' : tempBuf->BufGetCharacter(startPos + realOffset - 1),
                             GetWindowDelimitersEx(document),
                             defaultRegexFlags(searchType));
@@ -916,7 +913,7 @@ void ReplaceInSelectionEx(MainWindow *window, DocumentWidget *document, TextArea
             }
 
             tempBuf->BufReplaceEx(startPos + realOffset, endPos + realOffset, replaceResult);
-            replaceLen = strlen(replaceResult);
+            replaceLen = replaceResult.size();
         } else {
             // at this point plain substitutions (should) always work
             tempBuf->BufReplaceEx(startPos + realOffset, endPos + realOffset, replaceString.toLatin1().data());
@@ -1095,7 +1092,7 @@ std::string ReplaceAllInStringEx(view::string_view inString, const QString &sear
 			nFound++;
 			removeLen += endPos - startPos;
 			if (isRegexType(searchType)) {
-				char replaceResult[SEARCHMAX];
+                std::string replaceResult;
 
 				replaceUsingREEx(
                     searchString,
@@ -1103,12 +1100,11 @@ std::string ReplaceAllInStringEx(view::string_view inString, const QString &sear
                     &inString[searchExtentBW],
 					startPos - searchExtentBW,
 					replaceResult,
-					SEARCHMAX,
 					startPos == 0 ? '\0' : inString[startPos - 1],
 					delimiters,
 					defaultRegexFlags(searchType));
 
-				addLen += strlen(replaceResult);
+                addLen += replaceResult.size();
             } else {
 				addLen += replaceLen;
             }
@@ -1147,7 +1143,7 @@ std::string ReplaceAllInStringEx(view::string_view inString, const QString &sear
 			}
 
 			if (isRegexType(searchType)) {
-				char replaceResult[SEARCHMAX];
+                std::string replaceResult;
 
 				replaceUsingREEx(
                     searchString,
@@ -1155,7 +1151,6 @@ std::string ReplaceAllInStringEx(view::string_view inString, const QString &sear
 					&inString[searchExtentBW],
 					startPos - searchExtentBW,
 					replaceResult,
-					SEARCHMAX,
 					startPos == 0 ? '\0' : inString[startPos - 1],
 					delimiters,
 					defaultRegexFlags(searchType));
@@ -1388,17 +1383,17 @@ bool SearchString(view::string_view string, const QString &searchString, Directi
 
 static bool SearchString(view::string_view string, const QString &searchString, Direction direction, SearchType searchType, WrapMode wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters) {
 	switch (searchType) {
-	case SEARCH_CASE_SENSE_WORD:
+    case SearchType::CaseSenseWord:
         return searchLiteralWord(string, searchString.toLatin1().data(), true, direction, wrap, beginPos, startPos, endPos, delimiters);
-	case SEARCH_LITERAL_WORD:
+    case SearchType::LiteralWord:
         return searchLiteralWord(string, searchString.toLatin1().data(), false, direction, wrap, beginPos, startPos, endPos, delimiters);
-	case SEARCH_CASE_SENSE:
+    case SearchType::CaseSense:
         return searchLiteral(string, searchString.toLatin1().data(), true, direction, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW);
-	case SEARCH_LITERAL:
+    case SearchType::Literal:
         return searchLiteral(string, searchString.toLatin1().data(), false, direction, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW);
-	case SEARCH_REGEX:
+    case SearchType::Regex:
         return searchRegex(string, searchString.toLatin1().data(), direction, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW, delimiters, REDFLT_STANDARD);
-	case SEARCH_REGEX_NOCASE:
+    case SearchType::RegexNoCase:
         return searchRegex(string, searchString.toLatin1().data(), direction, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW, delimiters, REDFLT_CASE_INSENSITIVE);
 	}
 
@@ -1869,25 +1864,25 @@ static bool searchMatchesSelectionEx(DocumentWidget *window, const QString &sear
 ** code to continue using strings to represent the search and replace
 ** items.
 */
-static bool replaceUsingREEx(view::string_view searchStr, const char *replaceStr, view::string_view sourceStr, int beginPos, char *destStr, int maxDestLen, int prevChar, const char *delimiters, int defaultFlags) {
-	try {
-		regexp compiledRE(searchStr, defaultFlags);
-		compiledRE.execute(sourceStr, beginPos, sourceStr.size(), prevChar, '\0', delimiters, false);
-		return compiledRE.SubstituteRE(replaceStr, destStr, maxDestLen);
+static bool replaceUsingREEx(view::string_view searchStr, const char *replaceStr, view::string_view sourceStr, int beginPos, std::string &dest, int prevChar, const char *delimiters, int defaultFlags) {
+    try {
+        regexp compiledRE(searchStr, defaultFlags);
+        compiledRE.execute(sourceStr, beginPos, sourceStr.size(), prevChar, '\0', delimiters, false);
+        return compiledRE.SubstituteRE(replaceStr, dest);
     } catch(const regex_error &e) {
         Q_UNUSED(e);
         return false;
-	}
+    }
 }
 
-static bool replaceUsingREEx(const QString &searchStr, const QString &replaceStr, view::string_view sourceStr, int beginPos, char *destStr, int maxDestLen, int prevChar, const QString &delimiters, int defaultFlags) {
+
+static bool replaceUsingREEx(const QString &searchStr, const QString &replaceStr, view::string_view sourceStr, int beginPos, std::string &dest, int prevChar, const QString &delimiters, int defaultFlags) {
     return replaceUsingREEx(
                 searchStr.toLatin1().data(),
                 replaceStr.toLatin1().data(),
                 sourceStr,
                 beginPos,
-                destStr,
-                maxDestLen,
+                dest,
                 prevChar,
                 delimiters.isNull() ? nullptr : delimiters.toLatin1().data(),
                 defaultFlags);
@@ -1986,7 +1981,7 @@ int historyIndex(int nCycles) {
 ** Checks whether a search mode in one of the regular expression modes.
 */
 bool isRegexType(SearchType searchType) {
-	return searchType == SEARCH_REGEX || searchType == SEARCH_REGEX_NOCASE;
+    return searchType == SearchType::Regex || searchType == SearchType::RegexNoCase;
 }
 
 /*
@@ -1995,9 +1990,9 @@ bool isRegexType(SearchType searchType) {
 */
 int defaultRegexFlags(SearchType searchType) {
 	switch (searchType) {
-	case SEARCH_REGEX:
+    case SearchType::Regex:
 		return REDFLT_STANDARD;
-	case SEARCH_REGEX_NOCASE:
+    case SearchType::RegexNoCase:
 		return REDFLT_CASE_INSENSITIVE;
 	default:
 		// We should never get here, but just in case ... 

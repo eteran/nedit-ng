@@ -124,7 +124,7 @@ void DialogFind::initToggleButtons(SearchType searchType) {
 	/* Set the initial search type and remember the corresponding case
 	   sensitivity states in case sticky case sensitivity is required. */
 	switch (searchType) {
-	case SEARCH_LITERAL:
+    case SearchType::Literal:
 		lastLiteralCase_ = false;
 		lastRegexCase_   = true;
 		ui.checkRegex->setChecked(false);
@@ -134,7 +134,7 @@ void DialogFind::initToggleButtons(SearchType searchType) {
 			ui.checkWord->setEnabled(true);
 		}
 		break;
-	case SEARCH_CASE_SENSE:
+    case SearchType::CaseSense:
 		lastLiteralCase_ = true;
 		lastRegexCase_   = true;
 		ui.checkRegex->setChecked(false);
@@ -144,7 +144,7 @@ void DialogFind::initToggleButtons(SearchType searchType) {
 			ui.checkWord->setEnabled(true);
 		}
 		break;
-	case SEARCH_LITERAL_WORD:
+    case SearchType::LiteralWord:
 		lastLiteralCase_ = false;
 		lastRegexCase_   = true;
 		ui.checkRegex->setChecked(false);
@@ -154,7 +154,7 @@ void DialogFind::initToggleButtons(SearchType searchType) {
 			ui.checkWord->setEnabled(true);
 		}
 		break;
-	case SEARCH_CASE_SENSE_WORD:
+    case SearchType::CaseSenseWord:
 		lastLiteralCase_ = true;
 		lastRegexCase_   = true;
 		ui.checkRegex->setChecked(false);
@@ -164,7 +164,7 @@ void DialogFind::initToggleButtons(SearchType searchType) {
 			ui.checkWord->setEnabled(true);
 		}
 		break;
-	case SEARCH_REGEX:
+    case SearchType::Regex:
 		lastLiteralCase_ = false;
 		lastRegexCase_   = true;
 		ui.checkRegex->setChecked(true);
@@ -174,7 +174,7 @@ void DialogFind::initToggleButtons(SearchType searchType) {
 			ui.checkWord->setEnabled(false);
 		}
 		break;
-	case SEARCH_REGEX_NOCASE:
+    case SearchType::RegexNoCase:
 		lastLiteralCase_ = false;
 		lastRegexCase_   = false;
 		ui.checkRegex->setChecked(true);
@@ -250,10 +250,10 @@ bool DialogFind::getFindDlogInfoEx(Direction *direction, QString *searchString, 
 	if (ui.checkRegex->isChecked()) {
 		int regexDefault;
 		if (ui.checkCase->isChecked()) {
-			*searchType  = SEARCH_REGEX;
+            *searchType  = SearchType::Regex;
 			regexDefault = REDFLT_STANDARD;
 		} else {
-			*searchType  = SEARCH_REGEX_NOCASE;
+            *searchType  = SearchType::RegexNoCase;
 			regexDefault = REDFLT_CASE_INSENSITIVE;
 		}
 		/* If the search type is a regular expression, test compile it
@@ -267,15 +267,15 @@ bool DialogFind::getFindDlogInfoEx(Direction *direction, QString *searchString, 
 	} else {
 		if (ui.checkCase->isChecked()) {
 			if (ui.checkWord->isChecked()) {
-				*searchType = SEARCH_CASE_SENSE_WORD;
+                *searchType = SearchType::CaseSenseWord;
 			} else {
-				*searchType = SEARCH_CASE_SENSE;
+                *searchType = SearchType::CaseSense;
 			}
 		} else {
 			if (ui.checkWord->isChecked()) {
-				*searchType = SEARCH_LITERAL_WORD;
+                *searchType = SearchType::LiteralWord;
 			} else {
-				*searchType = SEARCH_LITERAL;
+                *searchType = SearchType::Literal;
 			}
 		}
 	}

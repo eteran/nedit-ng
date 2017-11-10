@@ -695,7 +695,7 @@ int DocumentWidget::matchLanguageMode() {
             int beginPos;
             int endPos;
 
-            if (SearchString(first200, LanguageModes[i].recognitionExpr, Direction::FORWARD, SEARCH_REGEX, WrapMode::NoWrap, 0, &beginPos, &endPos, nullptr, nullptr, QString())) {
+            if (SearchString(first200, LanguageModes[i].recognitionExpr, Direction::FORWARD, SearchType::Regex, WrapMode::NoWrap, 0, &beginPos, &endPos, nullptr, nullptr, QString())) {
 				return i;
 			}
 		}

@@ -7,6 +7,7 @@
 #include "ShowMatchingStyle.h"
 #include "TruncSubstitution.h"
 #include "VirtKeyOverride.h"
+#include "SearchType.h"
 
 #include <QFont>
 #include <QObject>
@@ -71,7 +72,7 @@ public:
     IndentStyle autoIndent;
     WrapStyle autoWrap;
     int emulateTabs;
-    int searchMethod;
+    SearchType searchMethod;
     ShowMatchingStyle showMatching;
     int tabDistance;
     int textCols;

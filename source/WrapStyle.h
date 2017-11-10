@@ -28,7 +28,7 @@ inline QLatin1String to_string(WrapStyle style) {
     Q_UNREACHABLE();
 }
 
-Q_DECLARE_METATYPE(WrapStyle);
+Q_DECLARE_METATYPE(WrapStyle)
 
 
 #endif

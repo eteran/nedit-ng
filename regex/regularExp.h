@@ -33,9 +33,8 @@
 #include <cstdint>
 #include <string>
 
-/* Number of text capturing parentheses allowed. */
-
-#define NSUBEXP 50u
+// Number of text capturing parentheses allowed.
+constexpr auto NSUBEXP = 50u;
 
 
 /* Flags for CompileRE default settings (Markus Schwarzenberg) */
@@ -130,10 +129,9 @@ public:
      * @brief SubstituteRE
      * @param source
      * @param dest
-     * @param max
      * @return
      */
-    bool SubstituteRE(const char *source, char *dest, const int max) const;
+    bool SubstituteRE(view::string_view source, std::string &dest) const;
 
 public:
 	const char *startp[NSUBEXP]; /* Captured text starting locations. */

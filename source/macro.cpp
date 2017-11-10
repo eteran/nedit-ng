@@ -752,12 +752,12 @@ bool StringToSearchType(const QString &string, SearchType *searchType) {
         QLatin1String name;
         SearchType type;
     } searchTypeStrings[] = {
-        { QLatin1String("literal"),     SearchType::SEARCH_LITERAL },
-        { QLatin1String("case"),        SearchType::SEARCH_CASE_SENSE },
-        { QLatin1String("regex"),       SearchType::SEARCH_REGEX },
-        { QLatin1String("word"),        SearchType::SEARCH_LITERAL_WORD },
-        { QLatin1String("caseWord"),    SearchType::SEARCH_CASE_SENSE_WORD },
-        { QLatin1String("regexNoCase"), SearchType::SEARCH_REGEX_NOCASE },
+        { QLatin1String("literal"),     SearchType::Literal },
+        { QLatin1String("case"),        SearchType::CaseSense },
+        { QLatin1String("regex"),       SearchType::Regex },
+        { QLatin1String("word"),        SearchType::LiteralWord },
+        { QLatin1String("caseWord"),    SearchType::CaseSenseWord },
+        { QLatin1String("regexNoCase"), SearchType::RegexNoCase },
     };
 
     for(const auto &entry : searchTypeStrings) {
@@ -788,17 +788,17 @@ static SearchType searchType(Arguments arguments, int index) {
         }
 
         if (arg.compare(QLatin1String("literal"), Qt::CaseInsensitive) == 0)
-            return SearchType::SEARCH_LITERAL;
+            return SearchType::Literal;
         if (arg.compare(QLatin1String("case"), Qt::CaseInsensitive) == 0)
-            return SearchType::SEARCH_CASE_SENSE;
+            return SearchType::CaseSense;
         if (arg.compare(QLatin1String("regex"), Qt::CaseInsensitive) == 0)
-            return SearchType::SEARCH_REGEX;
+            return SearchType::Regex;
         if (arg.compare(QLatin1String("word"), Qt::CaseInsensitive) == 0)
-            return SearchType::SEARCH_LITERAL_WORD;
+            return SearchType::LiteralWord;
         if (arg.compare(QLatin1String("caseWord"), Qt::CaseInsensitive) == 0)
-            return SearchType::SEARCH_CASE_SENSE_WORD;
+            return SearchType::CaseSenseWord;
         if (arg.compare(QLatin1String("regexNoCase"), Qt::CaseInsensitive) == 0)
-            return SearchType::SEARCH_REGEX_NOCASE;
+            return SearchType::RegexNoCase;
     }
 
     return GetPrefSearch();
@@ -3369,7 +3369,7 @@ static bool replaceInStringMS(DocumentWidget *document, Arguments arguments, Dat
     std::string string;
     QString searchStr;
     QString replaceStr;
-    SearchType searchType = SEARCH_LITERAL;
+    auto searchType = SearchType::Literal;
     int copyStart;
     int copyEnd;
     bool force = false;
@@ -3442,7 +3442,7 @@ static bool readSearchArgs(Arguments arguments, Direction *searchDirection, Sear
 
     *wrap            = WrapMode::NoWrap;
     *searchDirection = Direction::FORWARD;
-    *searchType      = SEARCH_LITERAL;
+    *searchType      = SearchType::Literal;
 
     for (const DataValue &dv : arguments) {
         if (!readArgument(dv, &argStr, errMsg))
@@ -4208,7 +4208,7 @@ static bool splitMS(DocumentWidget *document, Arguments arguments, DataValue *re
             M_FAILURE(UnrecognizedArgument);
         }
     } else {
-        searchType = SEARCH_LITERAL;
+        searchType = SearchType::Literal;
     }
 
     *result = to_value(array_new());

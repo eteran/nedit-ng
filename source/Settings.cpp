@@ -126,7 +126,7 @@ void Settings::loadPreferences() {
     warnFileMods          = settings.value(tr("nedit.warnFileMods"),          true).toBool();
     warnRealFileMods      = settings.value(tr("nedit.warnRealFileMods"),      true).toBool();
     warnExit              = settings.value(tr("nedit.warnExit"),              true).toBool();
-    searchMethod          = settings.value(tr("nedit.searchMethod"),          SEARCH_LITERAL).toInt();
+    searchMethod          = settings.value(tr("nedit.searchMethod"),          QVariant::fromValue(SearchType::Literal)).value<SearchType>();
 #if defined(REPLACE_SCOPE)
     replaceDefaultScope   = settings.value(tr("nedit.replaceDefaultScope"),   REPL_DEF_SCOPE_SMART).toInt();
 #endif
@@ -228,7 +228,7 @@ void Settings::importSettings(const QString &filename) {
     warnFileMods          = settings.value(tr("nedit.warnFileMods"),          warnFileMods).toBool();
     warnRealFileMods      = settings.value(tr("nedit.warnRealFileMods"),      warnRealFileMods).toBool();
     warnExit              = settings.value(tr("nedit.warnExit"),              warnExit).toBool();
-    searchMethod          = settings.value(tr("nedit.searchMethod"),          searchMethod).toInt();
+    searchMethod          = settings.value(tr("nedit.searchMethod"),          QVariant::fromValue(searchMethod)).value<SearchType>();
 #if defined(REPLACE_SCOPE)
     replaceDefaultScope   = settings.value(tr("nedit.replaceDefaultScope"),   replaceDefaultScope).toInt();
 #endif
@@ -325,7 +325,7 @@ bool Settings::savePreferences() {
     settings.setValue(tr("nedit.warnFileMods"), warnFileMods);
     settings.setValue(tr("nedit.warnRealFileMods"), warnRealFileMods);
     settings.setValue(tr("nedit.warnExit"), warnExit);
-    settings.setValue(tr("nedit.searchMethod"), searchMethod);
+    settings.setValue(tr("nedit.searchMethod"), QVariant::fromValue(searchMethod));
 #if defined(REPLACE_SCOPE)
 	settings.setValue(tr("nedit.replaceDefaultScope"),     replaceDefaultScope);
 #endif

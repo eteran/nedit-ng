@@ -280,22 +280,22 @@ void MainWindow::setupGlobalPrefenceDefaults() {
     no_signals(ui.action_Default_Search_Keep_Dialogs_Up)->setChecked(GetPrefKeepSearchDlogs());
 
     switch(GetPrefSearch()) {
-    case SEARCH_LITERAL:
+    case SearchType::Literal:
         no_signals(ui.action_Default_Search_Literal)->setChecked(true);
         break;
-    case SEARCH_CASE_SENSE:
+    case SearchType::CaseSense:
         no_signals(ui.action_Default_Search_Literal_Case_Sensitive)->setChecked(true);
         break;
-    case SEARCH_LITERAL_WORD:
+    case SearchType::LiteralWord:
         no_signals(ui.action_Default_Search_Literal_Whole_Word)->setChecked(true);
         break;
-    case SEARCH_CASE_SENSE_WORD:
+    case SearchType::CaseSenseWord:
         no_signals(ui.action_Default_Search_Literal_Case_Sensitive_Whole_Word)->setChecked(true);
         break;
-    case SEARCH_REGEX:
+    case SearchType::Regex:
         no_signals(ui.action_Default_Search_Regular_Expression)->setChecked(true);
         break;
-    case SEARCH_REGEX_NOCASE:
+    case SearchType::RegexNoCase:
         no_signals(ui.action_Default_Search_Regular_Expresison_Case_Insensitive)->setChecked(true);
         break;
     }
@@ -2184,15 +2184,15 @@ void MainWindow::on_editIFind_textChanged(const QString &text) {
 
     if(ui.checkIFindCase->isChecked()) {
         if (ui.checkIFindRegex->isChecked()) {
-            searchType = SEARCH_REGEX;
+            searchType = SearchType::Regex;
         } else {
-            searchType = SEARCH_CASE_SENSE;
+            searchType = SearchType::CaseSense;
         }
     } else {
         if (ui.checkIFindRegex->isChecked()) {
-            searchType = SEARCH_REGEX_NOCASE;
+            searchType = SearchType::RegexNoCase;
         } else {
-            searchType = SEARCH_LITERAL;
+            searchType = SearchType::Literal;
         }
     }
 
@@ -2244,14 +2244,14 @@ void MainWindow::on_editIFind_returnPressed() {
 
     if (ui.checkIFindCase->isChecked()) {
         if (ui.checkIFindRegex->isChecked())
-            searchType = SEARCH_REGEX;
+            searchType = SearchType::Regex;
         else
-            searchType = SEARCH_CASE_SENSE;
+            searchType = SearchType::CaseSense;
     } else {
         if (ui.checkIFindRegex->isChecked())
-            searchType = SEARCH_REGEX_NOCASE;
+            searchType = SearchType::RegexNoCase;
         else
-            searchType = SEARCH_LITERAL;
+            searchType = SearchType::Literal;
     }
 
     Direction direction = ui.checkIFindReverse->isChecked() ? Direction::BACKWARD : Direction::FORWARD;
@@ -2394,37 +2394,37 @@ void MainWindow::initToggleButtonsiSearch(SearchType searchType) {
        sensitivity states in case sticky case sensitivity is required. */
 
     switch (searchType) {
-    case SEARCH_LITERAL:
+    case SearchType::Literal:
         iSearchLastLiteralCase_ = false;
         iSearchLastRegexCase_   = true;
         ui.checkIFindRegex->setChecked(false);
         ui.checkIFindCase->setChecked(false);
         break;
-    case SEARCH_CASE_SENSE:
+    case SearchType::CaseSense:
         iSearchLastLiteralCase_ = true;
         iSearchLastRegexCase_   = true;
         ui.checkIFindRegex->setChecked(false);
         ui.checkIFindCase->setChecked(true);
         break;
-    case SEARCH_LITERAL_WORD:
+    case SearchType::LiteralWord:
         iSearchLastLiteralCase_ = false;
         iSearchLastRegexCase_   = true;
         ui.checkIFindRegex->setChecked(false);
         ui.checkIFindCase->setChecked(false);
         break;
-    case SEARCH_CASE_SENSE_WORD:
+    case SearchType::CaseSenseWord:
         iSearchLastLiteralCase_ = true;
         iSearchLastRegexCase_   = true;
         ui.checkIFindRegex->setChecked(false);
         ui.checkIFindCase->setChecked(true);
         break;
-    case SEARCH_REGEX:
+    case SearchType::Regex:
         iSearchLastLiteralCase_ = false;
         iSearchLastRegexCase_   = true;
         ui.checkIFindRegex->setChecked(true);
         ui.checkIFindCase->setChecked(true);
         break;
-    case SEARCH_REGEX_NOCASE:
+    case SearchType::RegexNoCase:
         iSearchLastLiteralCase_ = false;
         iSearchLastRegexCase_   = false;
         ui.checkIFindRegex->setChecked(true);
@@ -2470,7 +2470,7 @@ void MainWindow::EndISearchEx() {
     iSearchStartPos_ = -1;
 
     // Mark the end of incremental search history overwriting
-    saveSearchHistory(QLatin1String(""), QString(), SEARCH_LITERAL, false);
+    saveSearchHistory(QLatin1String(""), QString(), SearchType::Literal, false);
 
     // Pop down the search line (if it's not pegged up in Preferences)
     TempShowISearch(false);
@@ -3358,32 +3358,32 @@ void MainWindow::defaultReplaceScopeGroupTriggered(QAction *action) {
 void MainWindow::defaultSearchGroupTriggered(QAction *action) {
 
     if(action == ui.action_Default_Search_Literal) {
-        SetPrefSearch(SEARCH_LITERAL);
+        SetPrefSearch(SearchType::Literal);
         for(MainWindow *window : allWindows()) {
             no_signals(window->ui.action_Default_Search_Literal)->setChecked(true);
         }
     } else if(action == ui.action_Default_Search_Literal_Case_Sensitive) {
-        SetPrefSearch(SEARCH_CASE_SENSE);
+        SetPrefSearch(SearchType::CaseSense);
         for(MainWindow *window : allWindows()) {
             no_signals(window->ui.action_Default_Search_Literal_Case_Sensitive)->setChecked(true);
         }
     } else if(action == ui.action_Default_Search_Literal_Whole_Word) {
-        SetPrefSearch(SEARCH_LITERAL_WORD);
+        SetPrefSearch(SearchType::LiteralWord);
         for(MainWindow *window : allWindows()) {
             no_signals(window->ui.action_Default_Search_Literal_Whole_Word)->setChecked(true);
         }
     } else if(action == ui.action_Default_Search_Literal_Case_Sensitive_Whole_Word) {
-        SetPrefSearch(SEARCH_CASE_SENSE_WORD);
+        SetPrefSearch(SearchType::CaseSenseWord);
         for(MainWindow *window : allWindows()) {
             no_signals(window->ui.action_Default_Search_Literal_Case_Sensitive_Whole_Word)->setChecked(true);
         }
     } else if(action == ui.action_Default_Search_Regular_Expression) {
-        SetPrefSearch(SEARCH_REGEX);
+        SetPrefSearch(SearchType::Regex);
         for(MainWindow *window : allWindows()) {
             no_signals(window->ui.action_Default_Search_Regular_Expression)->setChecked(true);
         }
     } else if(action == ui.action_Default_Search_Regular_Expresison_Case_Insensitive) {
-        SetPrefSearch(SEARCH_REGEX_NOCASE);
+        SetPrefSearch(SearchType::RegexNoCase);
         for(MainWindow *window : allWindows()) {
             no_signals(window->ui.action_Default_Search_Regular_Expresison_Case_Insensitive)->setChecked(true);
         }

@@ -897,14 +897,14 @@ static int fakeRegExSearchEx(view::string_view buffer, const char *searchString,
 	}
     *outPtr = '\0'; // Terminate searchSubs
 
-    found = SearchString(fileString, QString::fromLatin1(searchSubs), dir, SEARCH_REGEX, WrapMode::NoWrap, searchStartPos, startPos, endPos, nullptr, nullptr, QString());
+    found = SearchString(fileString, QString::fromLatin1(searchSubs), dir, SearchType::Regex, WrapMode::NoWrap, searchStartPos, startPos, endPos, nullptr, nullptr, QString());
 
 	if (!found && !ctagsMode) {
 		/* position of the target definition could have been drifted before
 		   startPos, if nothing has been found by now try searching backward
 		   again from startPos.
 		*/
-        found = SearchString(fileString, QString::fromLatin1(searchSubs), Direction::BACKWARD, SEARCH_REGEX, WrapMode::NoWrap, searchStartPos, startPos, endPos, nullptr, nullptr, QString());
+        found = SearchString(fileString, QString::fromLatin1(searchSubs), Direction::BACKWARD, SearchType::Regex, WrapMode::NoWrap, searchStartPos, startPos, endPos, nullptr, nullptr, QString());
 	}
 
 	// return the result 
@@ -1137,7 +1137,7 @@ void showMatchingCalltipEx(TextArea *area, int i) {
 
             // 4. Find the end of the calltip (delimited by an empty line)
             endPos = startPos;
-            bool found = SearchString(fileString.c_str(), QLatin1String("\\n\\s*\\n"), Direction::FORWARD, SEARCH_REGEX, WrapMode::NoWrap, startPos, &endPos, &dummy, nullptr, nullptr, QString());
+            bool found = SearchString(fileString.c_str(), QLatin1String("\\n\\s*\\n"), Direction::FORWARD, SearchType::Regex, WrapMode::NoWrap, startPos, &endPos, &dummy, nullptr, nullptr, QString());
             if (!found) {
                 // Just take 4 lines
 				moveAheadNLinesEx(fileString, &endPos, TIP_DEFAULT_LINES);
@@ -1269,7 +1269,7 @@ static bool searchLine(const std::string &line, const std::string &regex) {
                 line.c_str(),
                 QString::fromStdString(regex),
                 Direction::FORWARD,
-                SEARCH_REGEX,
+                SearchType::Regex,
                 WrapMode::NoWrap,
                 0,
                 &dummy1,

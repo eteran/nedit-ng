@@ -2,16 +2,20 @@
 #ifndef SEARCH_TYPE_H_
 #define SEARCH_TYPE_H_
 
+#include <QMetaType>
+
 /*
-** Schwarzenberg: added SEARCH_LITERAL_WORD .. SEARCH_REGEX_NOCASE
+** Schwarzenberg: added LiteralWord .. RegexNoCase
 */
-enum SearchType {
-	SEARCH_LITERAL,
-	SEARCH_CASE_SENSE,
-	SEARCH_REGEX,
-	SEARCH_LITERAL_WORD,
-	SEARCH_CASE_SENSE_WORD,
-	SEARCH_REGEX_NOCASE,
+enum class SearchType {
+    Literal,
+    CaseSense,
+    Regex,
+    LiteralWord,
+    CaseSenseWord,
+    RegexNoCase,
 };
+
+Q_DECLARE_METATYPE(SearchType)
 
 #endif
