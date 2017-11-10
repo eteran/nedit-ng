@@ -110,7 +110,7 @@ SmartIndentEntry DefaultIndentSpecs[N_DEFAULT_INDENT_SPECS] = {
 		              "    return -1\n"
 		              "return measureIndent($1) + defaultIndent($pyIndentDist)\n")
 		,
-		QString()
+        QLatin1String()
 	},{
 		QLatin1String("Matlab")
 		,
@@ -194,12 +194,12 @@ SmartIndentEntry DefaultIndentSpecs[N_DEFAULT_INDENT_SPECS] = {
 		,
 		QLatin1String("return matlabNewlineMacro($1)\n")
 		,
-		QString()
+        QLatin1String()
 	}
 };
 
 void EndSmartIndentEx(DocumentWidget *document) {
-	SmartIndentData *winData = document->smartIndentData_;
+    auto winData = document->smartIndentData_;
 
 	if(!winData) {
         return;
@@ -212,7 +212,6 @@ void EndSmartIndentEx(DocumentWidget *document) {
 
     FreeProgram(winData->newlineMacro);
 
-    delete winData;
 	document->smartIndentData_ = nullptr;
 }
 
@@ -224,7 +223,7 @@ int SmartIndentMacrosAvailable(const QString &languageModeName) {
 }
 
 bool InSmartIndentMacrosEx(DocumentWidget *document) {
-	SmartIndentData *winData = document->smartIndentData_;
+    auto winData = document->smartIndentData_;
 	return winData && (winData->inModMacro || winData->inNewLineMacro);
 }
 

@@ -3320,7 +3320,7 @@ static int match(uint8_t *prog, int *branch_index_param) {
 			if (AT_END_OF_STRING(Reg_Input))
 				MATCH_RETURN(0); // See comment for ANY_OF. 
 
-			if (strchr(reinterpret_cast<char *>(OPERAND(scan)), *Reg_Input)) {
+            if (strchr(reinterpret_cast<char *>(OPERAND(scan)), *Reg_Input) != nullptr) {
 				MATCH_RETURN(0);
 			}
 

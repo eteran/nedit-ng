@@ -46,8 +46,10 @@ namespace {
 constexpr int PreferredGapSize = 80;
 
 const char *const ControlCodeTable[32] = {
-    "nul", "soh", "stx", "etx", "eot", "enq", "ack", "bel", "bs",  "ht", "nl",  "vt",  "np", "cr", "so", "si",
-    "dle", "dc1", "dc2", "dc3", "dc4", "nak", "syn", "etb", "can", "em", "sub", "esc", "fs", "gs", "rs", "us"
+    "nul", "soh", "stx", "etx", "eot", "enq", "ack", "bel",
+    "bs",  "ht",  "nl",  "vt",  "np",  "cr",  "so",  "si",
+    "dle", "dc1", "dc2", "dc3", "dc4", "nak", "syn", "etb",
+    "can", "em",  "sub", "esc", "fs",  "gs",  "rs",  "us"
 };
 
 /*
@@ -217,7 +219,10 @@ void subsCharsEx(std::string &string, char fromChar, char toChar) {
 char chooseNullSubsChar(bool hist[256]) {
 
     static const char replacements[] = {
-        1, 2, 3, 4, 5, 6, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 28, 29, 30, 31, 11, 7
+        1,   2,  3,  4,  5,  6, 14, 15,
+        16, 17, 18, 19, 20, 21, 22, 23,
+        24, 25, 26, 28, 29, 30, 31, 11,
+        7
     };
 
     for(char ch : replacements) {
@@ -262,14 +267,13 @@ int addPadding(char *string, int startIndent, int toIndent, int tabDist, int use
 ** to position the cursor).
 */
 void insertColInLineEx(view::string_view line, view::string_view insLine, int column, int insWidth, int tabDist, int useTabs, char nullSubsChar, char *outStr, int *outLen, int *endOffset) {
-    int indent;
-    int toIndent;
+
     int len = 0;
     int postColIndent;
 
 	// copy the line up to "column"
-	char *outPtr = outStr;
-	indent = 0;
+    char *outPtr = outStr;
+    int indent = 0;
 
 	auto linePtr = line.begin();
 	for (; linePtr != line.end(); ++linePtr) {
@@ -292,12 +296,14 @@ void insertColInLineEx(view::string_view line, view::string_view insLine, int co
 			*outPtr++ = *linePtr++;
 			indent += len;
 		}
-	} else
+    } else {
 		postColIndent = indent;
+    }
 
 	// If there's no text after the column and no text to insert, that's all
 	if (insLine.empty() && linePtr == line.end()) {
-		*outLen = *endOffset = outPtr - outStr;
+        *outLen    = outPtr - outStr;
+        *endOffset = outPtr - outStr;
 		return;
 	}
 
@@ -331,8 +337,8 @@ void insertColInLineEx(view::string_view line, view::string_view insLine, int co
 
 	/* Pad out to column + width of inserted text + (additional original
 	   offset due to non-breaking character at column) */
-	toIndent = column + insWidth + postColIndent - column;
-	len = addPadding(outPtr, indent, toIndent, tabDist, useTabs, nullSubsChar);
+    int toIndent = column + insWidth + postColIndent - column;
+    len      = addPadding(outPtr, indent, toIndent, tabDist, useTabs, nullSubsChar);
 	outPtr += len;
 	indent = toIndent;
 
@@ -2064,10 +2070,10 @@ void TextBuffer::insertColEx(int column, int startPos, view::string_view insText
 	auto insPtr = insText.begin();
 	while (true) {
 		int lineEnd = BufEndOfLine(lineStart);
-		std::string line = BufGetRangeEx(lineStart, lineEnd);
+        std::string line    = BufGetRangeEx(lineStart, lineEnd);
 		std::string insLine = copyLineEx(insPtr, insText.end());
-		insPtr += insLine.size();
-		insertColInLineEx(line, insLine, column, insWidth, tabDist_, useTabs_, nullSubsChar_, outPtr, &len, &endOffset);
+        insPtr += insLine.size();
+        insertColInLineEx(line, insLine, column, insWidth, tabDist_, useTabs_, nullSubsChar_, outPtr, &len, &endOffset);
 #if 0
         /* Earlier comments claimed that trailing whitespace could multiply on                                                                                                                                                                   \
            the ends of lines, but insertColInLine looks like it should never                                                                                                                                                                        \
@@ -2079,28 +2085,29 @@ void TextBuffer::insertColEx(int column, int startPos, view::string_view insText
                 len--;
         }
 #endif
-		outPtr += len;
+        outPtr += len;
 		*outPtr++ = '\n';
-		lineStart = lineEnd < length_ ? lineEnd + 1 : length_;
-		if (insPtr == insText.end())
-			break;
+        lineStart = lineEnd < length_ ? lineEnd + 1 : length_;
+        if (insPtr == insText.end())
+            break;
 		insPtr++;
-	}
-
-    if (outPtr != outStr) {
-		outPtr--; // trim back off extra newline
     }
 
-	*outPtr = '\0';
+    if (outPtr != outStr) {
+        outPtr--; // trim back off extra newline
+    }
+
+    *outPtr = '\0';
 
 	// replace the text between start and end with the new stuff
 	deleteRange(start, end);
-	insertEx(start, outStr);
-	*nInserted = outPtr - outStr;
-	*nDeleted = end - start;
-	*endPos = start + (outPtr - outStr) - len + endOffset;
+    insertEx(start, outStr);
 
-	delete [] outStr;
+    *nInserted = outPtr - outStr;
+    *nDeleted  = end - start;
+    *endPos    = start + (outPtr - outStr) - len + endOffset;
+
+    delete [] outStr;
 }
 
 void TextBuffer::moveGap(int pos) {
@@ -2172,12 +2179,12 @@ void TextBuffer::redisplaySelection(TextSelection *oldSelection, TextSelection *
 	}
 
 	if (!oldSelection->selected) {
-		callModifyCBs(newStart, 0, 0, newEnd - newStart, std::string());
+        callModifyCBs(newStart, 0, 0, newEnd - newStart, view::string_view());
 		return;
 	}
 
 	if (!newSelection->selected) {
-		callModifyCBs(oldStart, 0, 0, oldEnd - oldStart, std::string());
+        callModifyCBs(oldStart, 0, 0, oldEnd - oldStart, view::string_view());
 		return;
 	}
 
@@ -2192,8 +2199,8 @@ void TextBuffer::redisplaySelection(TextSelection *oldSelection, TextSelection *
 	/* If the selections are non-contiguous, do two separate updates
 	   and return */
 	if (oldEnd < newStart || newEnd < oldStart) {
-		callModifyCBs(oldStart, 0, 0, oldEnd - oldStart, std::string());
-		callModifyCBs(newStart, 0, 0, newEnd - newStart, std::string());
+        callModifyCBs(oldStart, 0, 0, oldEnd - oldStart, view::string_view());
+        callModifyCBs(newStart, 0, 0, newEnd - newStart, view::string_view());
 		return;
 	}
 
@@ -2206,11 +2213,11 @@ void TextBuffer::redisplaySelection(TextSelection *oldSelection, TextSelection *
 	int ch2Start = std::min<int>(oldEnd, newEnd);
 
 	if (ch1Start != ch1End) {
-		callModifyCBs(ch1Start, 0, 0, ch1End - ch1Start, std::string());
+        callModifyCBs(ch1Start, 0, 0, ch1End - ch1Start, view::string_view());
 	}
 
 	if (ch2Start != ch2End) {
-		callModifyCBs(ch2Start, 0, 0, ch2End - ch2Start, std::string());
+        callModifyCBs(ch2Start, 0, 0, ch2End - ch2Start, view::string_view());
 	}
 }
 

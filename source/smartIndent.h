@@ -51,7 +51,7 @@ const SmartIndentEntry *findIndentSpec(const QString &modeName);
 
 extern QString CommonMacros;
 
-#define N_DEFAULT_INDENT_SPECS 4
+constexpr int N_DEFAULT_INDENT_SPECS  = 4;
 
 extern SmartIndentEntry DefaultIndentSpecs[N_DEFAULT_INDENT_SPECS];
 extern QList<SmartIndentEntry> SmartIndentSpecs;

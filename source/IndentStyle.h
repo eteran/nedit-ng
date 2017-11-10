@@ -3,6 +3,7 @@
 #define INDENT_STYLE_H_
 
 #include <QString>
+#include <QMetaType>
 
 enum class IndentStyle {
     Default = -1,
@@ -26,5 +27,7 @@ inline QLatin1String to_string(IndentStyle style) {
 
     Q_UNREACHABLE();
 }
+
+Q_DECLARE_METATYPE(IndentStyle)
 
 #endif

@@ -73,7 +73,7 @@ void TextSelection::updateSelection(int pos, int nDeleted, int nInserted) {
 ** Return true if position "pos" with indentation "dispIndex" is in
 ** selection "this"
 */
-int TextSelection::inSelection(int pos, int lineStartPos, int dispIndex) const {
+bool TextSelection::inSelection(int pos, int lineStartPos, int dispIndex) const {
 	return this->selected && ((!this->rectangular && pos >= this->start && pos < this->end) || (this->rectangular && pos >= this->start && lineStartPos <= this->end && dispIndex >= this->rectStart && dispIndex < this->rectEnd));
 }
 
@@ -81,6 +81,6 @@ int TextSelection::inSelection(int pos, int lineStartPos, int dispIndex) const {
 ** Return true if the selection "this" is rectangular, and touches a
 ** buffer position withing "rangeStart" to "rangeEnd"
 */
-int TextSelection::rangeTouchesRectSel(int rangeStart, int rangeEnd) const {
+bool TextSelection::rangeTouchesRectSel(int rangeStart, int rangeEnd) const {
 	return this->selected && this->rectangular && this->end >= rangeStart && this->start <= rangeEnd;
 }

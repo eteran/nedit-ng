@@ -525,9 +525,12 @@ TextArea::TextArea(
     // track when we lose ownership of the selection
     // TODO(eteran): why does this sometimes crash?
     if(QApplication::clipboard()->supportsSelection()) {
-        connect(QApplication::clipboard(), &QClipboard::selectionChanged, [this]() {
+
+        connect(QApplication::clipboard(), &QClipboard::selectionChanged, [self = QPointer<TextArea>(this)]() {
             if(!QApplication::clipboard()->ownsSelection()) {
-                buffer_->BufUnselect();
+                if(self) {
+                    self->buffer_->BufUnselect();
+                }
             }
         });
     }
@@ -631,7 +634,6 @@ void TextArea::deletePreviousWordAP(EventFlags flags) {
 	int insertPos = cursorPos_;
 	int lineStart = buffer_->BufStartOfLine(insertPos);
 
-    QByteArray delimiters = P_delimiters.toLatin1();
     bool silent = flags & NoBellFlag;
 
 	cancelDrag();
@@ -650,7 +652,7 @@ void TextArea::deletePreviousWordAP(EventFlags flags) {
 
     int pos = std::max(insertPos - 1, 0);
 
-    while (delimiters.indexOf(buffer_->BufGetCharacter(pos)) != -1 && pos != lineStart) {
+    while (P_delimiters.indexOf(QChar::fromLatin1(buffer_->BufGetCharacter(pos))) != -1 && pos != lineStart) {
 		pos--;
 	}
 
@@ -980,8 +982,6 @@ void TextArea::autoScrollTimerTimeout() {
 //------------------------------------------------------------------------------
 void TextArea::focusInEvent(QFocusEvent *event) {
 
-	Q_UNUSED(event);
-
 	// If the timer is not already started, start it
 	if(!cursorBlinkTimer_->isActive()) {
 		cursorBlinkTimer_->start(P_cursorBlinkRate);
@@ -999,8 +999,6 @@ void TextArea::focusInEvent(QFocusEvent *event) {
 }
 
 void TextArea::focusOutEvent(QFocusEvent *event) {
-
-	Q_UNUSED(event);
 
 	cursorBlinkTimer_->stop();
 
@@ -1445,7 +1443,6 @@ void TextArea::mouseQuadrupleClickEvent(QMouseEvent *event) {
 // Note: "extend_adjust", "extend_adjust('rect')", "mouse_pan"
 //------------------------------------------------------------------------------
 void TextArea::mouseMoveEvent(QMouseEvent *event) {
-	Q_UNUSED(event);
 
 	if(event->buttons() == Qt::LeftButton) {
 		if(event->modifiers() & Qt::ControlModifier) {
@@ -1491,9 +1488,6 @@ void TextArea::mousePressEvent(QMouseEvent *event) {
 			break;
 		}
 
-		int row;
-		int column;
-
 		/* Indicate state for future events, PRIMARY_CLICKED indicates that
 		   the proper initialization has been done for primary dragging and/or
 		   multi-clicking.  Also record the timestamp for multi-click processing */
@@ -1514,9 +1508,13 @@ void TextArea::mousePressEvent(QMouseEvent *event) {
 		   position so subsequent motion events and clicking can decide when and
 		   where to begin a primary selection */
         btnDownCoord_ = event->pos();
-		anchor_ = cursorPos_;
+        anchor_       = cursorPos_;
+
+        int row;
+        int column;
         TextDXYToUnconstrainedPosition(event->pos(), &row, &column);
-		column = TextDOffsetWrappedColumn(row, column);
+
+        column      = TextDOffsetWrappedColumn(row, column);
 		rectAnchor_ = column;
 
 	} else if(event->button() == Qt::RightButton) {
@@ -1577,8 +1575,6 @@ void TextArea::mouseReleaseEvent(QMouseEvent *event) {
 			break;
         }
 	}
-
-
 }
 
 //------------------------------------------------------------------------------
@@ -2012,12 +2008,14 @@ void TextArea::wrappedLineCounter(const TextBuffer *buf, int startPos, int maxPo
 					break;
 				}
 			}
+
 			if (!foundBreak) { // no whitespace, just break at margin
 				newLineStart = std::max(p, lineStart + 1);
 				colNum = TextBuffer::BufCharWidth(c, colNum, tabDist, nullSubsChar);
 				if (countPixels)
 					width = measurePropChar(c, colNum, p + styleBufOffset);
 			}
+
 			if (p >= maxPos) {
 				*retPos = maxPos;
 				*retLines = maxPos < newLineStart ? nLines : nLines + 1;
@@ -2025,6 +2023,7 @@ void TextArea::wrappedLineCounter(const TextBuffer *buf, int startPos, int maxPo
 				*retLineEnd = maxPos;
 				return;
 			}
+
 			nLines++;
 			if (nLines >= maxLines) {
 				*retPos = foundBreak ? b + 1 : std::max(p, lineStart + 1);
@@ -2033,6 +2032,7 @@ void TextArea::wrappedLineCounter(const TextBuffer *buf, int startPos, int maxPo
 				*retLineEnd = foundBreak ? b : p;
 				return;
 			}
+
 			lineStart = newLineStart;
 		}
 	}
@@ -2067,6 +2067,7 @@ int TextArea::measurePropChar(const char c, int colNum, int pos) const {
 	TextBuffer *styleBuf = styleBuffer_;
 
 	int charLen = TextBuffer::BufExpandCharacter(c, colNum, expChar, buffer_->tabDist_, buffer_->nullSubsChar_);
+
 	if(!styleBuf) {
 		style = 0;
 	} else {
@@ -2077,6 +2078,7 @@ int TextArea::measurePropChar(const char c, int colNum, int pos) const {
             style = static_cast<uint8_t>(styleBuf->BufGetCharacter(pos));
 		}
 	}
+
 	return stringWidth(expChar, charLen, style);
 }
 

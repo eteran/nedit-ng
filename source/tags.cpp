@@ -104,8 +104,6 @@ struct Tag {
     int index;
 };
 
-/* Hash table of tags, implemented as an array.  Each bin contains a
-    nullptr-terminated linked list of parsed tags */
 static QMultiHash<QString, Tag> Tags;
 
 // list of loaded tags files 

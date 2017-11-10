@@ -35,7 +35,7 @@
 
 // Maximum length in characters of a tab or control character expansion
 // of a single buffer character
-#define MAX_EXP_CHAR_LEN 20
+constexpr int MAX_EXP_CHAR_LEN = 20;
 
 #if 0
 #define PURIFY
@@ -43,8 +43,8 @@
 
 class RangesetTable;
 
-typedef void (*bufModifyCallbackProc)(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *cbArg);
-typedef void (*bufPreDeleteCallbackProc)(int pos, int nDeleted, void *cbArg);
+using bufModifyCallbackProc    = void (*)(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *user);
+using bufPreDeleteCallbackProc = void (*)(int pos, int nDeleted, void *user);
 
 class TextBuffer {
 public:

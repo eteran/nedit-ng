@@ -11,6 +11,7 @@
 #include "Style.h"
 #include "SearchType.h"
 #include "ShowMatchingStyle.h"
+#include "smartIndent.h"
 #include "string_view.h"
 #include "tags.h"
 #include "UndoInfo.h"
@@ -274,7 +275,7 @@ public:
     WindowHighlightData *highlightData_;              // info for syntax highlighting
     std::shared_ptr<MacroCommandData> macroCmdData_;               // same for macro commands
     std::shared_ptr<ShellCommandData> shellCmdData_;               // when a shell command is executing, info. about it, otherwise, nullptr
-	SmartIndentData *smartIndentData_;            // compiled macros for smart indent
+    std::shared_ptr<SmartIndentData>  smartIndentData_;            // compiled macros for smart indent
     bool showStats_;                  // is stats line supposed to be shown
 
 private:

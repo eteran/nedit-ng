@@ -3377,7 +3377,7 @@ void DocumentWidget::RefreshMenuToggleStates() {
 */
 void DocumentWidget::executeNewlineMacroEx(SmartIndentEvent *cbInfo) {
 
-	SmartIndentData *winData = smartIndentData_;
+    auto winData = smartIndentData_;
     // posValue probably shouldn't be static due to re-entrance issues <slobasso>
     static DataValue posValue = {INT_TAG, {0}};
     DataValue result;    
@@ -3459,7 +3459,7 @@ void DocumentWidget::SetShowMatching(ShowMatchingStyle state) {
 */
 void DocumentWidget::executeModMacroEx(SmartIndentEvent *cbInfo) {
 
-	SmartIndentData *winData = smartIndentData_;
+    auto winData = smartIndentData_;
 
     // args probably shouldn't be static due to future re-entrance issues <slobasso>
     static DataValue args[2] = {{INT_TAG, {0}}, {STRING_TAG, {0}}};
@@ -4232,11 +4232,10 @@ void DocumentWidget::BeginSmartIndentEx(int warn) {
     }
 
     // Compile the newline and modify macros and attach them to the window
-	auto winData = std::make_unique<SmartIndentData>();
+    auto winData = std::make_shared<SmartIndentData>();
     winData->inNewLineMacro = false;
     winData->inModMacro     = false;
     winData->newlineMacro   = ParseMacroEx(indentMacros->newlineMacro, &errMsg, &stoppedAt);
-
 
     if (!winData->newlineMacro) {
         ParseErrorEx(this, indentMacros->newlineMacro, stoppedAt, tr("newline macro"), errMsg);
@@ -4256,7 +4255,7 @@ void DocumentWidget::BeginSmartIndentEx(int warn) {
         }
     }
 
-	smartIndentData_ = winData.release();
+    smartIndentData_ = winData;
 }
 
 /*

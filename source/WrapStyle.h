@@ -3,6 +3,7 @@
 #define WRAP_STYLE_H_
 
 #include <QLatin1String>
+#include <QMetaType>
 
 enum class WrapStyle {
     Default    = -1,
@@ -26,6 +27,8 @@ inline QLatin1String to_string(WrapStyle style) {
 
     Q_UNREACHABLE();
 }
+
+Q_DECLARE_METATYPE(WrapStyle);
 
 
 #endif
