@@ -195,14 +195,14 @@ static int (*OpFns[N_OPS])() = {returnNoVal, returnVal,      pushSymVal, dupStac
 #define FP_GET_ITEM(xFrameP, xIndex) (xFrameP[(xIndex)])
 
 #define FP_GET_ARG_ARRAY_CACHE(xFrameP) (FP_GET_ITEM(xFrameP, FP_ARG_ARRAY_CACHE_INDEX))
-#define FP_GET_ARG_COUNT(xFrameP)       (FP_GET_ITEM(xFrameP, FP_ARG_COUNT_INDEX).val.n)
-#define FP_GET_OLD_FP(xFrameP)          (FP_GET_ITEM(xFrameP, FP_OLD_FP_INDEX).val.dataval)
-#define FP_GET_RET_PC(xFrameP)          (FP_GET_ITEM(xFrameP, FP_RET_PC_INDEX).val.inst)
+#define FP_GET_ARG_COUNT(xFrameP)       (to_integer(FP_GET_ITEM(xFrameP, FP_ARG_COUNT_INDEX)))
+#define FP_GET_OLD_FP(xFrameP)          (to_data_value(FP_GET_ITEM(xFrameP, FP_OLD_FP_INDEX)))
+#define FP_GET_RET_PC(xFrameP)          (to_instruction(FP_GET_ITEM(xFrameP, FP_RET_PC_INDEX)))
 
 #define FP_ARG_START_INDEX(xFrameP)     (-(FP_GET_ARG_COUNT(xFrameP) + FP_TO_ARGS_DIST))
-#define FP_GET_ARG_N(xFrameP, xN) (FP_GET_ITEM(xFrameP, xN + FP_ARG_START_INDEX(xFrameP)))
-#define FP_GET_SYM_N(xFrameP, xN) (FP_GET_ITEM(xFrameP, xN))
-#define FP_GET_SYM_VAL(xFrameP, xSym) (FP_GET_SYM_N(xFrameP, xSym->value.val.n))
+#define FP_GET_ARG_N(xFrameP, xN)       (FP_GET_ITEM(xFrameP, xN + FP_ARG_START_INDEX(xFrameP)))
+#define FP_GET_SYM_N(xFrameP, xN)       (FP_GET_ITEM(xFrameP, xN))
+#define FP_GET_SYM_VAL(xFrameP, xSym)   (FP_GET_SYM_N(xFrameP, to_integer(xSym->value)))
 
 /*
 ** Initialize macro language global variables.  Must be called before
@@ -211,37 +211,15 @@ static int (*OpFns[N_OPS])() = {returnNoVal, returnVal,      pushSymVal, dupStac
 */
 void InitMacroGlobals() {
 
-	static char argName[3] = "$x";
-	static DataValue dv = INIT_DATA_VALUE;
-
-	// Add action routines from NEdit menus and text widget 
-    // NOTE(eteran): we are replacing these with wrappers around Q_SLOTS
-#if 0
-    XtActionsRec *actions;
-    int nActions;
-
-	actions = GetMenuActions(&nActions);
-	for (i = 0; i < nActions; i++) {
-		dv.val.xtproc = actions[i].proc;
-		InstallSymbol(actions[i].string, ACTION_ROUTINE_SYM, dv);
-	}
-	actions = TextGetActions(&nActions);
-	for (i = 0; i < nActions; i++) {
-		dv.val.xtproc = actions[i].proc;
-		InstallSymbol(actions[i].string, ACTION_ROUTINE_SYM, dv);
-	}
-#endif
-
 	// Add subroutine argument symbols ($1, $2, ..., $9) 
     for (int i = 0; i < 9; i++) {
+        static char argName[3] = "$x";
         argName[1] = static_cast<char>('1' + i);
-		dv.val.n = i;
-		InstallSymbol(argName, ARG_SYM, dv);
+        InstallSymbol(argName, ARG_SYM, to_value(i));
 	}
 
 	// Add special symbol $n_args 
-	dv.val.n = N_ARGS_ARG_SYM;
-	InstallSymbol("$n_args", ARG_SYM, dv);
+    InstallSymbol("$n_args", ARG_SYM, to_value(N_ARGS_ARG_SYM));
 }
 
 /*
@@ -282,8 +260,8 @@ Program *FinishCreatingProgram() {
 
 	/* Local variables' values are stored on the stack.  Here we assign
 	   frame pointer offsets to them. */
-	for(Symbol *s : newProg->localSymList) {
-		s->value.val.n = fpOffset++;
+    for(Symbol *s : newProg->localSymList) {
+        s->value = to_value(fpOffset++);
 	}
 
     DISASM(newProg->code, count);
@@ -300,55 +278,55 @@ void FreeProgram(Program *prog) {
 /*
 ** Add an operator (instruction) to the end of the current program
 */
-int AddOp(int op, const char **msg) {
+bool AddOp(int op, const char **msg) {
 	if (ProgP >= &Prog[PROGRAM_SIZE]) {
 		*msg = "macro too large";
-		return 0;
+        return false;
 	}
 	ProgP->func = OpFns[op];
 	ProgP++;
-	return 1;
+    return true;
 }
 
 /*
 ** Add a symbol operand to the current program
 */
-int AddSym(Symbol *sym, const char **msg) {
+bool AddSym(Symbol *sym, const char **msg) {
 	if (ProgP >= &Prog[PROGRAM_SIZE]) {
 		*msg = "macro too large";
-		return 0;
+        return false;
 	}
 	ProgP->sym = sym;
 	ProgP++;
-	return 1;
+    return true;
 }
 
 /*
 ** Add an immediate value operand to the current program
 */
-int AddImmediate(int value, const char **msg) {
+bool AddImmediate(int value, const char **msg) {
 	if (ProgP >= &Prog[PROGRAM_SIZE]) {
 		*msg = "macro too large";
-		return 0;
+        return false;
 	}
 	ProgP->value = value;
 	ProgP++;
-	return 1;
+    return true;
 }
 
 /*
 ** Add a branch offset operand to the current program
 */
-int AddBranchOffset(Inst *to, const char **msg) {
+bool AddBranchOffset(Inst *to, const char **msg) {
 	if (ProgP >= &Prog[PROGRAM_SIZE]) {
 		*msg = "macro too large";
-		return 0;
+        return false;
 	}
 	// Should be ptrdiff_t for branch offsets 
 	ProgP->value = to - ProgP;
 	ProgP++;
 
-	return 1;
+    return true;
 }
 
 /*
@@ -386,20 +364,20 @@ void StartLoopAddrList() {
 	addLoopAddr(nullptr);
 }
 
-int AddBreakAddr(Inst *addr) {
+bool AddBreakAddr(Inst *addr) {
 	if (LoopStackPtr == LoopStack)
-		return 1;
+        return true;
 	addLoopAddr(addr);
 	addr->value = NEEDS_BREAK;
-	return 0;
+    return false;
 }
 
-int AddContinueAddr(Inst *addr) {
+bool AddContinueAddr(Inst *addr) {
 	if (LoopStackPtr == LoopStack)
-		return 1;
+        return true;
 	addLoopAddr(addr);
 	addr->value = NEEDS_CONTINUE;
-	return 0;
+    return false;
 }
 
 static void addLoopAddr(Inst *addr) {
@@ -439,7 +417,7 @@ void FillLoopAddrs(Inst *breakAddr, Inst *continueAddr) {
 ** (if any) can be read from "result".  If MACRO_PREEMPT is returned, the
 ** macro exceeded its alotted time-slice and scheduled...
 */
-int ExecuteMacroEx(DocumentWidget *document, Program *prog, int nArgs, DataValue *args, DataValue *result, std::shared_ptr<RestartData> &continuation, QString *msg) {
+int ExecuteMacroEx(DocumentWidget *document, Program *prog, gsl::span<DataValue> arguments, DataValue *result, std::shared_ptr<RestartData> &continuation, QString *msg) {
 
     static DataValue noValue = INIT_DATA_VALUE;
 
@@ -457,14 +435,14 @@ int ExecuteMacroEx(DocumentWidget *document, Program *prog, int nArgs, DataValue
     continuation         = context;
 
     // Push arguments and call information onto the stack
-    for (int i = 0; i < nArgs; i++) {
-        *(context->stackP++) = args[i];
+    for(const DataValue &dv : arguments) {
+        *(context->stackP++) = dv;
     }
 
-    *(context->stackP++) = to_value();      // return PC
-    *(context->stackP++) = to_value();      // old FrameP
-    *(context->stackP++) = to_value(nArgs); // nArgs
-    *(context->stackP++) = to_value();      // cached arg array
+    *(context->stackP++) = to_value();                                   // return PC
+    *(context->stackP++) = to_value();                                   // old FrameP
+    *(context->stackP++) = to_value(static_cast<int>(arguments.size())); // nArgs
+    *(context->stackP++) = to_value();                                   // cached arg array
 
     context->frameP = context->stackP;
 
@@ -638,8 +616,8 @@ Symbol *InstallIteratorSymbol() {
 */
 Symbol *LookupStringConstSymbol(const char *value) {
 
-	for(Symbol *s: GlobalSymList) {
-        if (s->type == CONST_SYM && is_string(s->value) && strcmp(s->value.val.str.rep, value) == 0) {
+    for(Symbol *s: GlobalSymList) {
+        if (s->type == CONST_SYM && is_string(s->value) && to_string(s->value) == value) {
 			return s;
 		}
 	}
@@ -672,13 +650,13 @@ Symbol *LookupSymbolEx(const QString &name) {
 
 Symbol *LookupSymbol(view::string_view name) {
 
-	for(Symbol *s : LocalSymList) {
+    for(Symbol *s : LocalSymList) {
 		if (s->name == name) {
 			return s;
 		}
 	}
 
-	for(Symbol *s: GlobalSymList) {
+    for(Symbol *s: GlobalSymList) {
 		if (s->name == name) {
 			return s;
 		}
@@ -864,9 +842,9 @@ static void MarkArrayContentsAsUsed(ArrayEntry *arrayPtr) {
 			}
 
             if (is_string(globalSEUse->value)) {
-				// test first because it may be read-only static string 
-				if (globalSEUse->value.val.str.rep[-1] == 0) {
-					globalSEUse->value.val.str.rep[-1] = 1;
+                // test first because it may be read-only static string
+                if (globalSEUse->value.val.str.rep[-1] == 0) {
+                    globalSEUse->value.val.str.rep[-1] = 1;
 				}
             } else if (is_array(globalSEUse->value)) {
 				MarkArrayContentsAsUsed(globalSEUse->value.val.arrayPtr);
@@ -1077,7 +1055,7 @@ static int pushSymVal() {
 	} else if (s->type == PROC_VALUE_SYM) {
 
 		const char *errMsg;
-        if (!(s->value.val.subr)(FocusWindowEx, Arguments(), &symVal, &errMsg)) {
+        if (!(to_subroutine(s->value))(FocusWindowEx, Arguments(), &symVal, &errMsg)) {
 			return execError(errMsg, s->name.c_str());
 		}
 	} else
@@ -1731,7 +1709,7 @@ static int callSubroutine() {
 
 		// Call the function and check for preemption 
         PreemptRequest = false;
-        if (!sym->value.val.subr(FocusWindowEx, Arguments(StackP, nArgs), &result, &errMsg)) {
+        if (!to_subroutine(sym->value)(FocusWindowEx, Arguments(StackP, nArgs), &result, &errMsg)) {
             return execError(errMsg, sym->name.c_str());
         }
 
@@ -1760,7 +1738,7 @@ static int callSubroutine() {
         *StackP++ = to_value(); // cached arg array
 
 		FrameP = StackP;
-        prog   = sym->value.val.prog;
+        prog   = to_program(sym->value);
         PC     = prog->code;
 
 		for(Symbol *s : prog->localSymList) {
@@ -1867,32 +1845,34 @@ static int branch() {
 */
 static int branchTrue() {
 	int value;
-	Inst *addr;
 
 	DISASM_RT(PC - 1, 2);
 	STACKDUMP(1, 3);
 
     POP_INT(value);
-	addr = PC + PC->value;
+    Inst *addr = PC + PC->value;
 	PC++;
 
-	if (value)
+    if (value) {
 		PC = addr;
+    }
+
 	return STAT_OK;
 }
 static int branchFalse() {
 	int value;
-	Inst *addr;
 
 	DISASM_RT(PC - 1, 2);
 	STACKDUMP(1, 3);
 
     POP_INT(value);
-	addr = PC + PC->value;
+    Inst * addr = PC + PC->value;
 	PC++;
 
-	if (!value)
+    if (!value) {
 		PC = addr;
+    }
+
 	return STAT_OK;
 }
 
@@ -1961,26 +1941,27 @@ static int makeArrayKeyFromArgs(int nArgs, char **keyString, int leaveParams) {
     for (int i = nArgs - 1; i >= 0; --i) {
         PEEK(tmpVal, i);
         if (is_integer(tmpVal)) {
-			keyLength += TYPE_INT_STR_SIZE(tmpVal.val.n);
+            keyLength += TYPE_INT_STR_SIZE(to_integer(tmpVal));
         } else if (is_string(tmpVal)) {
-			keyLength += tmpVal.val.str.len;
+            keyLength += to_string(tmpVal).size();
 		} else {
 			return execError("can only index array with string or int.");
 		}
 	}
 
-	*keyString = AllocString(keyLength + 1);
-	(*keyString)[0] = '\0';
+
+    std::string str;
 
     for (int i = nArgs - 1; i >= 0; --i) {
 		if (i != nArgs - 1) {
-			strcat(*keyString, ARRAY_DIM_SEP);
+            str.append(ARRAY_DIM_SEP);
 		}
         PEEK(tmpVal, i);
         if (is_integer(tmpVal)) {
-			sprintf(&((*keyString)[strlen(*keyString)]), "%d", tmpVal.val.n);
+            str.append(std::to_string(to_integer(tmpVal)));
         } else if (is_string(tmpVal)) {
-			strcat(*keyString, tmpVal.val.str.rep);
+            auto s = to_string(tmpVal);
+            str.append(s.begin(), s.end());
 		} else {
 			return execError("can only index array with string or int.");
 		}
@@ -1991,6 +1972,9 @@ static int makeArrayKeyFromArgs(int nArgs, char **keyString, int leaveParams) {
             POP(tmpVal);
 		}
 	}
+
+    *keyString = AllocStringCpyEx(str);
+
     return STAT_OK;
 }
 
@@ -2001,7 +1985,7 @@ static int makeArrayKeyFromArgs(int nArgs, char **keyString, int leaveParams) {
 static rbTreeNode *arrayEmptyAllocator() {
 	ArrayEntry *newNode = allocateSparseArrayEntry();
 	if (newNode) {
-		newNode->key = nullptr;
+        newNode->key       = nullptr;
 		newNode->value.tag = NO_TAG;
 	}
 	return newNode;
@@ -2383,18 +2367,22 @@ static int arrayIter() {
     DISASM_RT(PC - 1, 4);
 	STACKDUMP(0, 3);
 
-    Symbol *const item     = PC->sym; ++PC;
-    Symbol *const iterator = PC->sym; ++PC;
+    Symbol *const item     = PC++->sym;
+    Symbol *const iterator = PC++->sym;
     Inst *const branchAddr = PC + PC->value; ++PC;
 
-	if (item->type == LOCAL_SYM) {
-		itemValPtr = &FP_GET_SYM_VAL(FrameP, item);
-	} else if (item->type == GLOBAL_SYM) {
+    switch(item->type) {
+    case LOCAL_SYM:
+        itemValPtr = &FP_GET_SYM_VAL(FrameP, item);
+        break;
+    case GLOBAL_SYM:
 		itemValPtr = &(item->value);
-	} else {
+        break;
+    default:
 		return execError("can't assign to: %s", item->name.c_str());
 	}
-	itemValPtr->tag = NO_TAG;
+
+    *itemValPtr = to_value();
 
     if (iterator->type != LOCAL_SYM) {
         return execError("bad temporary iterator: %s", iterator->name.c_str());
@@ -2406,7 +2394,8 @@ static int arrayIter() {
 
 	if (thisEntry && thisEntry->color != -1) {
 
-        *itemValPtr = to_value(thisEntry->key, strlen(thisEntry->key));
+        auto key_string = view::string_view(thisEntry->key, strlen(thisEntry->key));
+        *itemValPtr = to_value(key_string);
 
 		iteratorValPtr->val.arrayPtr = arrayIterateNext(thisEntry);
 	} else {
@@ -2634,15 +2623,16 @@ static void dumpVal(DataValue dv) {
 	case ARRAY_TAG:
 		printf("<array>");
 		break;
-	case NO_TAG:
-		if (!dv.val.inst) {
+    case NO_TAG:
+    case INSTRUCTION_TAG:
+        if (!to_instruction(dv)) {
 			printf("<no value>");
 		} else {
-            printf("?%8p", static_cast<void *>(dv.val.inst));
+            printf("?%8p", static_cast<void *>(to_instruction(dv)));
 		}
 		break;
 	default:
-        printf("UNKNOWN DATA TAG %d ?%8p", dv.tag, static_cast<void *>(dv.val.inst));
+        printf("UNKNOWN DATA TAG %d ?%8p", dv.tag, static_cast<void *>(to_instruction(dv)));
 		break;
 	}
 }

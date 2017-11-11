@@ -3379,7 +3379,10 @@ void DocumentWidget::executeNewlineMacroEx(SmartIndentEvent *cbInfo) {
 
     auto winData = smartIndentData_;
     // posValue probably shouldn't be static due to re-entrance issues <slobasso>
-    static DataValue posValue = {INT_TAG, {0}};
+    static DataValue posValue[1] = {
+        {INT_TAG, {0}}
+    };
+
     DataValue result;    
     QString errMsg;
     int stat;
@@ -3393,11 +3396,11 @@ void DocumentWidget::executeNewlineMacroEx(SmartIndentEvent *cbInfo) {
     }
 
     // Call newline macro with the position at which to add newline/indent
-    posValue.val.n = cbInfo->pos;
+    posValue[0] = to_value(cbInfo->pos);
     ++(winData->inNewLineMacro);
 
     std::shared_ptr<RestartData> continuation;
-    stat = ExecuteMacroEx(this, winData->newlineMacro, 1, &posValue, &result, continuation, &errMsg);
+    stat = ExecuteMacroEx(this, winData->newlineMacro, posValue, &result, continuation, &errMsg);
 
     // Don't allow preemption or time limit.  Must get return value
     while (stat == MACRO_TIME_LIMIT) {
@@ -3462,7 +3465,10 @@ void DocumentWidget::executeModMacroEx(SmartIndentEvent *cbInfo) {
     auto winData = smartIndentData_;
 
     // args probably shouldn't be static due to future re-entrance issues <slobasso>
-    static DataValue args[2] = {{INT_TAG, {0}}, {STRING_TAG, {0}}};
+    static DataValue args[2] = {
+        {INT_TAG, {0}},
+        {STRING_TAG, {0}}
+    };
 
     // NOTE(eteran): this used to be a static flag that was set and unset
     // surrounding the ExecuteMacroEx call but the original nedit authors
@@ -3483,13 +3489,13 @@ void DocumentWidget::executeModMacroEx(SmartIndentEvent *cbInfo) {
     /* Call modification macro with the position of the modification,
        and the character(s) inserted.  Don't allow
        preemption or time limit.  Execution must not overlap or re-enter */
-    args[0].val.n   = cbInfo->pos;
-    args[1].val.str = AllocNStringCpyEx(cbInfo->charsTyped);
+    args[0] = to_value(cbInfo->pos);
+    args[1] = to_value(cbInfo->charsTyped);
 
     ++(winData->inModMacro);
 
     std::shared_ptr<RestartData> continuation;
-    int stat = ExecuteMacroEx(this, winData->modMacro, 2, args, &result, continuation, &errMsg);
+    int stat = ExecuteMacroEx(this, winData->modMacro, args, &result, continuation, &errMsg);
 
     while (stat == MACRO_TIME_LIMIT) {
         stat = ContinueMacroEx(continuation, &result, &errMsg);
@@ -5441,7 +5447,7 @@ void DocumentWidget::runMacroEx(Program *prog) {
     // Begin macro execution
     DataValue result;
     QString errMsg;
-    const int stat = ExecuteMacroEx(this, prog, 0, nullptr, &result, cmdData->context, &errMsg);
+    const int stat = ExecuteMacroEx(this, prog, gsl::span<DataValue>(), &result, cmdData->context, &errMsg);
 
     switch(stat) {
     case MACRO_ERROR:

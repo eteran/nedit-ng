@@ -256,35 +256,35 @@ const char Param2CannotBeEmptyString[]   = "Second argument must be a non-empty 
 bool flagsFromArguments(Arguments arguments, int firstFlag, TextArea::EventFlags *flags) {
     TextArea::EventFlags f = TextArea::NoneFlag;
     for(int i = firstFlag; i < arguments.size(); ++i) {
-        if(strcmp(arguments[i].val.str.rep, "absolute") == 0) {
+        if(to_string(arguments[i]) == "absolute") {
             f |= TextArea::AbsoluteFlag;
-        } else if(strcmp(arguments[i].val.str.rep, "column") == 0) {
+        } else if(to_string(arguments[i]) == "column") {
             f |= TextArea::ColumnFlag;
-        } else if(strcmp(arguments[i].val.str.rep, "copy") == 0) {
+        } else if(to_string(arguments[i]) == "copy") {
             f |= TextArea::CopyFlag;
-        } else if(strcmp(arguments[i].val.str.rep, "down") == 0) {
+        } else if(to_string(arguments[i]) == "down") {
             f |= TextArea::DownFlag;
-        } else if(strcmp(arguments[i].val.str.rep, "extend") == 0) {
+        } else if(to_string(arguments[i]) == "extend") {
             f |= TextArea::ExtendFlag;
-        } else if(strcmp(arguments[i].val.str.rep, "left") == 0) {
+        } else if(to_string(arguments[i]) == "left") {
             f |= TextArea::LeftFlag;
-        } else if(strcmp(arguments[i].val.str.rep, "overlay") == 0) {
+        } else if(to_string(arguments[i]) == "overlay") {
             f |= TextArea::OverlayFlag;
-        } else if(strcmp(arguments[i].val.str.rep, "rect") == 0) {
+        } else if(to_string(arguments[i]) == "rect") {
             f |= TextArea::RectFlag;
-        } else if(strcmp(arguments[i].val.str.rep, "right") == 0) {
+        } else if(to_string(arguments[i]) == "right") {
             f |= TextArea::RightFlag;
-        } else if(strcmp(arguments[i].val.str.rep, "up") == 0) {
+        } else if(to_string(arguments[i]) == "up") {
             f |= TextArea::UpFlag;
-        } else if(strcmp(arguments[i].val.str.rep, "wrap") == 0) {
+        } else if(to_string(arguments[i]) == "wrap") {
             f |= TextArea::WrapFlag;
-        } else if(strcmp(arguments[i].val.str.rep, "tail") == 0) {
+        } else if(to_string(arguments[i]) == "tail") {
             f |= TextArea::TailFlag;
-        } else if(strcmp(arguments[i].val.str.rep, "stutter") == 0) {
+        } else if(to_string(arguments[i]) == "stutter") {
             f |= TextArea::StutterFlag;
-        } else if(strcmp(arguments[i].val.str.rep, "scrollbar") == 0) {
+        } else if(to_string(arguments[i]) == "scrollbar") {
             f |= TextArea::ScrollbarFlag;
-        } else if(strcmp(arguments[i].val.str.rep, "nobell") == 0) {
+        } else if(to_string(arguments[i]) == "nobell") {
             f |= TextArea::NoBellFlag;
         } else {
             return false;
@@ -297,11 +297,11 @@ bool flagsFromArguments(Arguments arguments, int firstFlag, TextArea::EventFlags
 
 
 #define TEXT_EVENT(routineName, slotName)                                                                                 \
-static bool routineName(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) { \
+static bool routineName(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {          \
                                                                                                                           \
     TextArea::EventFlags flags = TextArea::NoneFlag;                                                                      \
-    if(!flagsFromArguments(arguments, 0, &flags)) {                                                                  \
-        M_FAILURE(InvalidArgument);                                                                     \
+    if(!flagsFromArguments(arguments, 0, &flags)) {                                                                       \
+        M_FAILURE(InvalidArgument);                                                                                       \
     }                                                                                                                     \
                                                                                                                           \
     if(MainWindow *window = document->toWindow()) {                                                                       \
@@ -315,20 +315,20 @@ static bool routineName(DocumentWidget *document, Arguments arguments, DataValue
 }
 
 #define TEXT_EVENT_S(routineName, slotName)                                                                               \
-static bool routineName(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) { \
+static bool routineName(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {          \
                                                                                                                           \
-    if(arguments.size() < 1) {                                                                                                       \
-        M_FAILURE(WrongNumberOfArguments);                                                            \
+    if(arguments.size() < 1) {                                                                                            \
+        M_FAILURE(WrongNumberOfArguments);                                                                                \
     }                                                                                                                     \
                                                                                                                           \
     QString string;                                                                                                       \
-    if(!readArgument(arguments[0], &string, errMsg)) {                                                                      \
+    if(!readArgument(arguments[0], &string, errMsg)) {                                                                    \
         return false;                                                                                                     \
     }                                                                                                                     \
                                                                                                                           \
     TextArea::EventFlags flags = TextArea::NoneFlag;                                                                      \
-    if(!flagsFromArguments(arguments, 1, &flags)) {                                                                  \
-        M_FAILURE(InvalidArgument);                                                                     \
+    if(!flagsFromArguments(arguments, 1, &flags)) {                                                                       \
+        M_FAILURE(InvalidArgument);                                                                                       \
     }                                                                                                                     \
                                                                                                                           \
     if(MainWindow *window = document->toWindow()) {                                                                       \
@@ -342,20 +342,20 @@ static bool routineName(DocumentWidget *document, Arguments arguments, DataValue
 }
 
 #define TEXT_EVENT_I(routineName, slotName)                                                                               \
-static bool routineName(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) { \
+static bool routineName(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {          \
                                                                                                                           \
-    if(arguments.size() < 1) {                                                                                                       \
-        M_FAILURE(WrongNumberOfArguments);                                                            \
+    if(arguments.size() < 1) {                                                                                            \
+        M_FAILURE(WrongNumberOfArguments);                                                                                \
     }                                                                                                                     \
                                                                                                                           \
     int num;                                                                                                              \
-    if(!readArgument(arguments[0], &num, errMsg)) {                                                                         \
+    if(!readArgument(arguments[0], &num, errMsg)) {                                                                       \
         return false;                                                                                                     \
     }                                                                                                                     \
                                                                                                                           \
     TextArea::EventFlags flags = TextArea::NoneFlag;                                                                      \
-    if(!flagsFromArguments(arguments, 1, &flags)) {                                                                  \
-        M_FAILURE(InvalidArgument);                                                                     \
+    if(!flagsFromArguments(arguments, 1, &flags)) {                                                                       \
+        M_FAILURE(InvalidArgument);                                                                                       \
     }                                                                                                                     \
                                                                                                                           \
     if(MainWindow *window = document->toWindow()) {                                                                       \
@@ -2122,24 +2122,24 @@ void RegisterMacroSubroutines() {
     /* Install symbols for built-in routines and variables, with pointers
        to the appropriate c routines to do the work */
     for(const SubRoutine &routine : MacroSubrs) {
-        subrPtr.val.subr = routine.function;
+        subrPtr = to_value(routine.function);
         InstallSymbol(routine.name, C_FUNCTION_SYM, subrPtr);
     }
 
     for(const SubRoutine &routine : SpecialVars) {
-        subrPtr.val.subr = routine.function;
+        subrPtr = to_value(routine.function);
         InstallSymbol(routine.name, PROC_VALUE_SYM, subrPtr);
     }
 
     // NOTE(eteran): things that were in the menu action list
     for(const SubRoutine &routine : MenuMacroSubrNames) {
-        subrPtr.val.subr = routine.function;
+        subrPtr = to_value(routine.function);
         InstallSymbol(routine.name, C_FUNCTION_SYM, subrPtr);
     }
 
     // NOTE(eteran): things that were in the text widget action list
     for(const SubRoutine &routine : TextAreaSubrNames) {
-        subrPtr.val.subr = routine.function;
+        subrPtr = to_value(routine.function);
         InstallSymbol(routine.name, C_FUNCTION_SYM, subrPtr);
     }
 
@@ -2384,12 +2384,12 @@ bool readCheckMacroStringEx(QWidget *dialogParent, const QString &string, Docume
                     sym = InstallSymbolEx(subrName, MACRO_FUNCTION_SYM, subrPtr);
                 } else {
                     if (sym->type == MACRO_FUNCTION_SYM) {
-                        FreeProgram(sym->value.val.prog);
+                        FreeProgram(to_program(sym->value));
                     } else {
                         sym->type = MACRO_FUNCTION_SYM;
                     }
 
-                    sym->value.val.prog = prog;
+                    sym->value = to_value(prog);
                 }
             }
 
@@ -2966,7 +2966,7 @@ static bool getSelectionMS(DocumentWidget *document, Arguments arguments, DataVa
     }
 
     if (arguments.size() == 1) {
-        if (!is_string(arguments[0]) || strcmp(arguments[0].val.str.rep, "any")) {
+        if (!is_string(arguments[0]) || to_string(arguments[0]) != "any") {
             M_FAILURE(UnrecognizedArgument);
         }
 
@@ -3307,7 +3307,7 @@ static bool searchStringMS(DocumentWidget *document, Arguments arguments, DataVa
     if (!readSearchArgs(arguments.subspan(3), &direction, &type, &wrap, errMsg))
         return false;
 
-    int len = arguments[0].val.str.len;
+    int len = to_string(arguments[0]).size();
     if (beginPos > len) {
         if (direction == Direction::FORWARD) {
             if (wrap == WrapMode::Wrap) {
@@ -5633,7 +5633,7 @@ static bool fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWi
 
     if (bufferPos >= 0) {
         // insert extent
-        DV.val.n = StyleLengthOfCodeFromPosEx(document, bufferPos);
+        DV = to_value(StyleLengthOfCodeFromPosEx(document, bufferPos));
         if (!ArrayInsert(result, AllocStringCpyEx("extent"), &DV)) {
             M_FAILURE(InsertFailed);
         }
@@ -5857,12 +5857,12 @@ static bool getPatternAtPosMS(DocumentWidget *document, Arguments arguments, Dat
 */
 static bool readArgument(DataValue dv, int *result, const char **errMsg) {
 
-    switch(dv.tag) {
-    case INT_TAG:
+    if(is_integer(dv)) {
         *result = to_integer(dv);
         return true;
-    case STRING_TAG:
-    {
+    }
+
+    if(is_string(dv)) {
         auto s = to_qstring(dv);
         bool ok;
         int val = s.toInt(&ok);
@@ -5873,9 +5873,9 @@ static bool readArgument(DataValue dv, int *result, const char **errMsg) {
         *result = val;
         return true;
     }
-    default:
-        M_FAILURE(UnknownObject);
-    }
+
+    M_FAILURE(UnknownObject);
+
 }
 
 /*
@@ -5887,30 +5887,32 @@ static bool readArgument(DataValue dv, int *result, const char **errMsg) {
 */
 static bool readArgument(DataValue dv, std::string *result, const char **errMsg) {
 
-    switch(dv.tag) {
-    case STRING_TAG:
+    if(is_string(dv)) {
         *result = to_string(dv).to_string();
         return true;
-    case INT_TAG:
+    }
+
+    if(is_integer(dv)) {
         *result = std::to_string(to_integer(dv));
         return true;
-    default:
-        M_FAILURE(UnknownObject);
     }
+
+    M_FAILURE(UnknownObject);
 }
 
 static bool readArgument(DataValue dv, QString *result, const char **errMsg) {
 
-    switch(dv.tag) {
-    case STRING_TAG:
+    if(is_string(dv)) {
         *result = to_qstring(dv);
         return true;
-    case INT_TAG:
+    }
+
+    if(is_integer(dv)) {
         *result = QString::number(to_integer(dv));
         return true;
-    default:
-        M_FAILURE(UnknownObject);
     }
+
+    M_FAILURE(UnknownObject);
 }
 
 

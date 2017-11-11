@@ -137,14 +137,17 @@ struct NString {
 
 
 // NOTE(eteran): we can eventually replace this with boost::variant,
-// but first we need to figure out what to do about the fact that half of these
-// entries get used with a "NO_TAG" type.
 
 enum TypeTags {
     NO_TAG,
     INT_TAG,
     STRING_TAG,
-    ARRAY_TAG
+    ARRAY_TAG,
+
+    PROGRAM_TAG,
+    SUBROUTINE_TAG,
+    INSTRUCTION_TAG,
+    DATAVALUE_TAG,
 };
 
 struct DataValue {
@@ -155,10 +158,10 @@ struct DataValue {
         NString        str;
         ArrayEntry*    arrayPtr;
 
-        BuiltInSubrEx  subr;    // no tag?
-        Program*       prog;    // no tag?
-        Inst*          inst;    // no tag?
-        DataValue*     dataval; // no tag?
+        BuiltInSubrEx  subr;
+        Program*       prog;
+        Inst*          inst;
+        DataValue*     dataval;
 
 	} val;
 };
@@ -207,28 +210,28 @@ int ArrayCopy(DataValue *dstArray, DataValue *srcArray);
 
 /* Routines for creating a program, (accumulated beginning with
    BeginCreatingProgram and returned via FinishCreatingProgram) */
-void BeginCreatingProgram();
-int AddOp(int op, const char **msg);
-int AddSym(Symbol *sym, const char **msg);
-int AddImmediate(int value, const char **msg);
-int AddBranchOffset(Inst *to, const char **msg);
+bool AddBranchOffset(Inst *to, const char **msg);
+bool AddBreakAddr(Inst *addr);
+bool AddContinueAddr(Inst *addr);
+bool AddImmediate(int value, const char **msg);
+bool AddOp(int op, const char **msg);
+bool AddSym(Symbol *sym, const char **msg);
 Inst *GetPC();
+Program *FinishCreatingProgram();
 Symbol *InstallIteratorSymbol();
-Symbol *LookupStringConstSymbol(const char *value);
 Symbol *InstallStringConstSymbol(const char *str);
-Symbol *LookupSymbol(view::string_view name);
-Symbol *LookupSymbolEx(const QString &name);
 Symbol *InstallSymbol(const std::string &name, SymTypes type, const DataValue &value);
 Symbol *InstallSymbolEx(const QString &name, enum SymTypes type, const DataValue &value);
-Program *FinishCreatingProgram();
-void SwapCode(Inst *start, Inst *boundary, Inst *end);
-void StartLoopAddrList();
-int AddBreakAddr(Inst *addr);
-int AddContinueAddr(Inst *addr);
+Symbol *LookupStringConstSymbol(const char *value);
+Symbol *LookupSymbolEx(const QString &name);
+Symbol *LookupSymbol(view::string_view name);
+void BeginCreatingProgram();
 void FillLoopAddrs(Inst *breakAddr, Inst *continueAddr);
+void StartLoopAddrList();
+void SwapCode(Inst *start, Inst *boundary, Inst *end);
 
 /* Routines for executing programs */
-int ExecuteMacroEx(DocumentWidget *window, Program *prog, int nArgs, DataValue *args, DataValue *result, std::shared_ptr<RestartData> &continuation, QString *msg);
+int ExecuteMacroEx(DocumentWidget *window, Program *prog, gsl::span<DataValue> arguments, DataValue *result, std::shared_ptr<RestartData> &continuation, QString *msg);
 int ContinueMacroEx(const std::shared_ptr<RestartData> &continuation, DataValue *result, QString *msg);
 void RunMacroAsSubrCall(Program *prog);
 void PreemptMacro();
@@ -296,7 +299,7 @@ inline DataValue to_value(const char *str) {
     return DV;
 }
 
-inline DataValue to_value(const std::string &str) {
+inline DataValue to_value(const view::string_view str) {
     DataValue DV;
     DV.tag     = STRING_TAG;
     DV.val.str = AllocNStringCpyEx(str);
@@ -340,6 +343,13 @@ inline DataValue to_value(DataValue *v) {
     return DV;
 }
 
+inline DataValue to_value(BuiltInSubrEx routine) {
+    DataValue DV;
+    DV.tag      = NO_TAG;
+    DV.val.subr = routine;
+    return DV;
+}
+
 inline bool is_integer(const DataValue &dv) {
     return dv.tag == INT_TAG;
 }
@@ -352,6 +362,22 @@ inline bool is_array(const DataValue &dv) {
     return dv.tag == ARRAY_TAG;
 }
 
+inline bool is_code(const DataValue &dv) {
+    return dv.tag == PROGRAM_TAG;
+}
+
+inline bool is_subroutine(const DataValue &dv) {
+    return dv.tag == SUBROUTINE_TAG;
+}
+
+inline bool is_instruction(const DataValue &dv) {
+    return dv.tag == INSTRUCTION_TAG;
+}
+
+inline bool is_data_value(const DataValue &dv) {
+    return dv.tag == DATAVALUE_TAG;
+}
+
 inline view::string_view to_string(const DataValue &dv) {
     Q_ASSERT(is_string(dv));
     return view::string_view(dv.val.str.rep, dv.val.str.len);
@@ -359,12 +385,32 @@ inline view::string_view to_string(const DataValue &dv) {
 
 inline QString to_qstring(const DataValue &dv) {
     Q_ASSERT(is_string(dv));
-    return QString::fromLatin1(dv.val.str.rep, dv.val.str.len);
+    return QString::fromLatin1(dv.val.str.rep, static_cast<int>(dv.val.str.len));
 }
 
 inline int to_integer(const DataValue &dv) {
     Q_ASSERT(is_integer(dv));
     return dv.val.n;
+}
+
+inline Program *to_program(const DataValue &dv) {
+    //Q_ASSERT(is_code(dv));
+    return dv.val.prog;
+}
+
+inline BuiltInSubrEx to_subroutine(const DataValue &dv) {
+    //Q_ASSERT(is_subroutine(dv));
+    return dv.val.subr;
+}
+
+inline DataValue *to_data_value(const DataValue &dv) {
+    //Q_ASSERT(is_data_value(dv));
+    return dv.val.dataval;
+}
+
+inline Inst *to_instruction(const DataValue &dv) {
+    //Q_ASSERT(is_instruction(dv));
+    return dv.val.inst;
 }
 
 #endif
