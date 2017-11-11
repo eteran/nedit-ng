@@ -448,7 +448,6 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 	device_                = 0;
     inode_                 = 0;
 
-    // TODO(eteran): inherit from current value, not default state?
     showStats_             = GetPrefStatsLine();
 	
     ShowStatsLine(showStats_);
@@ -5471,7 +5470,7 @@ void DocumentWidget::runMacroEx(Program *prog) {
 */
 void DocumentWidget::finishMacroCmdExecutionEx() {
 
-    bool closeOnCompletion = macroCmdData_->closeOnCompletion;
+    const bool closeOnCompletion = macroCmdData_->closeOnCompletion;
 
     // Cancel pending timeout and work proc
     macroCmdData_->bannerTimer.stop();
@@ -5519,17 +5518,10 @@ void DocumentWidget::finishMacroCmdExecutionEx() {
     }
 }
 
-/*
-** Work proc for continuing execution of a preempted macro.
-**
-** Xt WorkProcs are designed to run first-in first-out, which makes them
-** very bad at sharing time between competing tasks.  For this reason, it's
-** usually bad to use work procs anywhere where their execution is likely to
-** overlap.  Using a work proc instead of a timer proc (which I usually
-** prefer) here means macros will probably share time badly, but we're more
-** interested in making the macros cancelable, and in continuing other work
-** than having users run a bunch of them at once together.
-*/
+/**
+ * @brief DocumentWidget::continueWorkProcEx
+ * @return
+ */
 DocumentWidget::MacroContinuationCode DocumentWidget::continueWorkProcEx() {
 
     QString errMsg;

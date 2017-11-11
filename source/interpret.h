@@ -143,11 +143,6 @@ enum TypeTags {
     INT_TAG,
     STRING_TAG,
     ARRAY_TAG,
-
-    PROGRAM_TAG,
-    SUBROUTINE_TAG,
-    INSTRUCTION_TAG,
-    DATAVALUE_TAG,
 };
 
 struct DataValue {
@@ -250,8 +245,8 @@ DocumentWidget *MacroFocusWindowEx();
 void SetMacroFocusWindowEx(DocumentWidget *window);
 
 /* function used for implicit conversion from string to number */
-bool StringToNum(const char *string, int *number);
 bool StringToNum(const std::string &string, int *number);
+bool StringToNum(view::string_view string, int *number);
 bool StringToNum(const QString &string, int *number);
 
 
@@ -360,22 +355,6 @@ inline bool is_string(const DataValue &dv) {
 
 inline bool is_array(const DataValue &dv) {
     return dv.tag == ARRAY_TAG;
-}
-
-inline bool is_code(const DataValue &dv) {
-    return dv.tag == PROGRAM_TAG;
-}
-
-inline bool is_subroutine(const DataValue &dv) {
-    return dv.tag == SUBROUTINE_TAG;
-}
-
-inline bool is_instruction(const DataValue &dv) {
-    return dv.tag == INSTRUCTION_TAG;
-}
-
-inline bool is_data_value(const DataValue &dv) {
-    return dv.tag == DATAVALUE_TAG;
 }
 
 inline view::string_view to_string(const DataValue &dv) {

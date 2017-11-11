@@ -12,15 +12,6 @@ private:
 	static constexpr uint32_t TOO_MUCH_BINARY_DATA_LOCKED_BIT = 4;
 	
 public:
-	LockReasons() : reasons_(0) {
-	}
-	
-	LockReasons(const LockReasons &)            = default;
-	LockReasons(LockReasons &&)                 = default;
-	LockReasons& operator=(const LockReasons &) = default;
-	LockReasons& operator=(LockReasons &&)      = default;
-
-public:
 	bool isUserLocked() const {
 		return (reasons_ & USER_LOCKED_BIT) != 0;
 	}
@@ -71,7 +62,7 @@ private:
 	}
 
 private:
-	uint32_t reasons_;
+    uint32_t reasons_ = 0;
 };
 
 #endif

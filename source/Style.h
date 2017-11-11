@@ -4,8 +4,9 @@
 
 class Style {
 public:
-    Style() : value_(nullptr) {
-    }
+    Style()                         = default;
+    Style(const Style &)            = default;
+    Style& operator=(const Style &) = default;
 
     explicit Style(void *v) : value_(v) {
     }
@@ -16,7 +17,7 @@ public:
     }
 
 private:
-    void *value_;
+    void *value_ = nullptr;
 };
 
 #endif

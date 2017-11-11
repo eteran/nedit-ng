@@ -960,10 +960,10 @@ static void restoreContextEx(const std::shared_ptr<RestartData> &context) {
             return execError(StackUnderflowMsg);                               \
         --StackP;                                                              \
         if (is_string(*StackP)) {                                              \
-            if (!StringToNum(StackP->val.str.rep, &number))                    \
+            if (!StringToNum(to_string(*StackP), &number))                     \
                 return execError(StringToNumberMsg);                           \
         } else if (is_integer(*StackP))                                        \
-            number = StackP->val.n;                                            \
+            number = to_integer(*StackP);                                      \
         else                                                                   \
             return execError("can't convert array to integer");                \
     } while(0)
@@ -1450,14 +1450,15 @@ static int eq() {
         v1 = to_value(s1 == s2);
     } else if (is_string(v1) && is_integer(v2)) {
 		int number;
-		if (!StringToNum(v1.val.str.rep, &number)) {
+        if (!StringToNum(to_string(v1), &number)) {
             v1 = to_value(0);
 		} else {
             v1 = to_value(number == to_integer(v2));
 		}
     } else if (is_string(v2) && is_integer(v1)) {
 		int number;
-		if (!StringToNum(v2.val.str.rep, &number)) {
+        std::string s2 = to_string(v1).to_string();
+        if (!StringToNum(s2, &number)) {
             v1 = to_value(0);
 		} else {
             v1 = to_value(number == to_integer(v1));
@@ -2163,8 +2164,7 @@ static int arrayRef() {
 	DataValue valueItem;
 	char *keyString = nullptr;
 
-	int nDim = PC->value;
-	PC++;
+    int nDim = PC++->value;
 
 	DISASM_RT(PC - 2, 2);
 	STACKDUMP(nDim, 3);
@@ -2210,8 +2210,7 @@ static int arrayAssign() {
 	DataValue dstArray;
 	int nDim;
 
-	nDim = PC->value;
-	PC++;
+    nDim = PC++->value;
 
 	DISASM_RT(PC - 2, 1);
 	STACKDUMP(nDim, 3);
@@ -2333,7 +2332,7 @@ static int beginArrayIter() {
 	}
 
     // TODO(eteran): bug? this looks like the wrong tag...
-    iteratorValPtr->tag = INT_TAG;
+    iteratorValPtr->tag          = INT_TAG;
 	iteratorValPtr->val.arrayPtr = arrayIterateFirst(&arrayVal);
 	return STAT_OK;
 }
@@ -2467,18 +2466,14 @@ static int inArray() {
 static int deleteArrayElement() {
 	DataValue theArray;
 	char *keyString = nullptr;
-	int nDim;
 
-	nDim = PC->value;
-	PC++;
+    int nDim = PC++->value;
 
 	DISASM_RT(PC - 2, 2);
 	STACKDUMP(nDim + 1, 3);
 
 	if (nDim > 0) {
-		int errNum;
-
-		errNum = makeArrayKeyFromArgs(nDim, &keyString, 0);
+        int errNum = makeArrayKeyFromArgs(nDim, &keyString, 0);
 		if (errNum != STAT_OK) {
 			return errNum;
 		}
@@ -2534,6 +2529,10 @@ bool StringToNum(const QString &string, int *number) {
 
 }
 
+bool StringToNum(view::string_view string, int *number) {
+    return StringToNum(string.to_string(), number);
+}
+
 bool StringToNum(const std::string &string, int *number) {
     auto it = string.begin();
 
@@ -2560,39 +2559,6 @@ bool StringToNum(const std::string &string, int *number) {
 
     if (number) {
         if (sscanf(string.c_str(), "%d", number) != 1) {
-            // This case is here to support old behavior
-            *number = 0;
-        }
-    }
-    return true;
-}
-
-bool StringToNum(const char *string, int *number) {
-    auto p = string;
-
-    while (*p == ' ' || *p == '\t') {
-        ++p;
-    }
-
-    if (*p == '+' || *p == '-') {
-        ++p;
-    }
-
-    while (safe_ctype<isdigit>(*p)) {
-        ++p;
-    }
-
-    while (*p == ' ' || *p == '\t') {
-        ++p;
-    }
-
-    if (*p != '\0') {
-        // if everything went as expected, we should be at end, but we're not
-        return false;
-    }
-
-    if (number) {
-        if (sscanf(string, "%d", number) != 1) {
             // This case is here to support old behavior
             *number = 0;
         }
@@ -2696,7 +2662,7 @@ static void disasm(Inst *inst, int nInstr) {
 				if (j == OP_PUSH_SYM || j == OP_ASSIGN) {
 					Symbol *sym = inst[i + 1].sym;
 					printf("%s", sym->name.c_str());
-                    if (is_string(sym->value) && strncmp(sym->name.c_str(), "string #", 8) == 0) {
+                    if (is_string(sym->value) && sym->name.compare(0, 8, "string #") == 0) {
 						dumpVal(sym->value);
 					}
 					++i;

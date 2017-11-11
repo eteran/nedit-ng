@@ -50,7 +50,7 @@ class TextBuffer {
 public:
 	TextBuffer();
 	explicit TextBuffer(int requestedSize);
-	TextBuffer(const TextBuffer &) = delete;
+    TextBuffer(const TextBuffer &)            = delete;
 	TextBuffer &operator=(const TextBuffer &) = delete;
 	~TextBuffer();
 
