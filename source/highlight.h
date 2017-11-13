@@ -29,19 +29,15 @@
 
 #include "util/string_view.h"
 #include "Style.h"
-#include <memory>
 
-class DocumentWidget;
+class TextArea;
 class HighlightPattern;
-class PatternSet;
+class WindowHighlightData;
+class TextBuffer;
+class ReparseContext;
 class QColor;
 class QString;
-class TextArea;
-class WindowHighlightData;
 class HighlightData;
-class TextBuffer;
-class StyleTableEntry;
-class ReparseContext;
 
 // Pattern flags for modifying pattern matching behavior
 enum {
@@ -67,12 +63,13 @@ constexpr char PLAIN_STYLE = (ASCII_A + 1);
 QColor AllocColor(const QString &colorName);
 void RemoveWidgetHighlightEx(TextArea *area);
 void SyntaxHighlightModifyCBEx(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *user);
-std::shared_ptr<WindowHighlightData> createHighlightDataEx(DocumentWidget *document, PatternSet *patSet);
 HighlightData *patternOfStyle(HighlightData *patterns, int style);
 char getPrevChar(TextBuffer *buf, int pos);
 int backwardOneContext(TextBuffer *buf, ReparseContext *context, int fromPos);
 int forwardOneContext(TextBuffer *buf, ReparseContext *context, int fromPos);
 bool parseString(HighlightData *pattern, const char **string, char **styleString, int length, char *prevChar, bool anchored, const QString &delimiters, const char *lookBehindTo, const char *match_till);
 void handleUnparsedRegionCBEx(const TextArea *area, int pos, const void *user);
+int indexOfNamedPattern(HighlightPattern *patList, int nPats, const QString &patName);
+int findTopLevelParentIndex(HighlightPattern *patList, int nPats, int index);
 
 #endif

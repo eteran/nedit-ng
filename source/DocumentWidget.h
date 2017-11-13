@@ -48,6 +48,7 @@ struct ShellCommandData;
 class PatternSet;
 class HighlightPattern;
 class StyleTableEntry;
+class regexp;
 
 enum class Direction : uint8_t;
 
@@ -227,6 +228,9 @@ public:
     void handleUnparsedRegionEx(const std::shared_ptr<TextBuffer> &styleBuf, int pos) const;
     void StartHighlightingEx(bool warn);
     void AttachHighlightToWidgetEx(TextArea *area);
+    std::shared_ptr<WindowHighlightData> createHighlightDataEx(PatternSet *patSet);
+    HighlightData *compilePatternsEx(HighlightPattern *patternSrc, int nPatterns);
+    std::shared_ptr<regexp> compileREAndWarnEx(const QString &re);
 
 public:
     static DocumentWidget *EditExistingFileEx(DocumentWidget *inDocument, const QString &name, const QString &path, int flags, const QString &geometry, int iconic, const QString &languageMode, bool tabbed, bool bgOpen);

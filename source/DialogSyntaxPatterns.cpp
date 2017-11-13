@@ -1011,8 +1011,7 @@ bool DialogSyntaxPatterns::TestHighlightPatterns(PatternSet *patSet) {
 	/* Compile the patterns (passing a random window as a source for fonts, and
 	   parent for dialogs, since we really don't care what fonts are used) */
     for(DocumentWidget *document : DocumentWidget::allDocuments()) {
-
-        if(std::shared_ptr<WindowHighlightData> highlightData = createHighlightDataEx(document, patSet)) {
+        if(std::shared_ptr<WindowHighlightData> highlightData = document->createHighlightDataEx(patSet)) {
 			return true;
 		}
 	}
