@@ -74,8 +74,6 @@
         return false;    \
     } while (0)
 
-static void cancelLearnEx();
-
 static bool lengthMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
 static bool minMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
 static bool maxMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
@@ -304,7 +302,7 @@ static bool routineName(DocumentWidget *document, Arguments arguments, DataValue
         M_FAILURE(InvalidArgument);                                                                                       \
     }                                                                                                                     \
                                                                                                                           \
-    if(MainWindow *window = document->toWindow()) {                                                                       \
+    if(auto window = MainWindow::fromDocument(document)) {                                                                       \
         if(TextArea *area = window->lastFocus_) {                                                                         \
             area->slotName(flags | TextArea::SupressRecording);                                                           \
         }                                                                                                                 \
@@ -331,7 +329,7 @@ static bool routineName(DocumentWidget *document, Arguments arguments, DataValue
         M_FAILURE(InvalidArgument);                                                                                       \
     }                                                                                                                     \
                                                                                                                           \
-    if(MainWindow *window = document->toWindow()) {                                                                       \
+    if(auto window = MainWindow::fromDocument(document)) {                                                                       \
         if(TextArea *area = window->lastFocus_) {                                                                         \
             area->slotName(string, flags | TextArea::SupressRecording);                                                   \
         }                                                                                                                 \
@@ -358,7 +356,7 @@ static bool routineName(DocumentWidget *document, Arguments arguments, DataValue
         M_FAILURE(InvalidArgument);                                                                                       \
     }                                                                                                                     \
                                                                                                                           \
-    if(MainWindow *window = document->toWindow()) {                                                                       \
+    if(auto window = MainWindow::fromDocument(document)) {                                                                       \
         if(TextArea *area = window->lastFocus_) {                                                                         \
             area->slotName(num, flags | TextArea::SupressRecording);                                                      \
         }                                                                                                                 \
@@ -442,7 +440,7 @@ static bool scrollDownMS(DocumentWidget *document, Arguments arguments, DataValu
         return false;
     }
 
-    if(MainWindow *window = document->toWindow()) {
+    if(auto window = MainWindow::fromDocument(document)) {
         if(TextArea *area = window->lastFocus_) {
             area->scrollDownAP(count, units, TextArea::SupressRecording);                                                                             \
         }
@@ -481,7 +479,7 @@ static bool scrollUpMS(DocumentWidget *document, Arguments arguments, DataValue 
         return false;
     }
 
-    if(MainWindow *window = document->toWindow()) {
+    if(auto window = MainWindow::fromDocument(document)) {
         if(TextArea *area = window->lastFocus_) {
             area->scrollUpAP(count, units, TextArea::SupressRecording);                                                                             \
         }
@@ -584,7 +582,7 @@ static const SubRoutine TextAreaSubrNames[] = {
             return false;                                                                                                     \
         }                                                                                                                     \
                                                                                                                               \
-        if(MainWindow *window = document->toWindow()) {                                                                       \
+        if(auto window = MainWindow::fromDocument(document)) {                                                                       \
             window->slotName(string);                                                                                         \
         }                                                                                                                     \
                                                                                                                               \
@@ -602,7 +600,7 @@ static const SubRoutine TextAreaSubrNames[] = {
             M_FAILURE(WrongNumberOfArguments);                                                              \
         }                                                                                                                       \
                                                                                                                                 \
-        if(MainWindow *window = document->toWindow()) {                                                                         \
+        if(auto window = MainWindow::fromDocument(document)) {                                                                         \
             window->slotName();                                                                                                 \
         }                                                                                                                       \
                                                                                                                                 \
@@ -838,7 +836,7 @@ static bool closeMS(DocumentWidget *document, Arguments arguments, DataValue *re
         }
     }
 
-    if(MainWindow *window = document->toWindow()) {
+    if(auto window = MainWindow::fromDocument(document)) {
         window->action_Close(mode);
     }
 
@@ -881,7 +879,7 @@ static bool newMS(DocumentWidget *document, Arguments arguments, DataValue *resu
         }
     }
 
-    if(MainWindow *window = document->toWindow()) {
+    if(auto window = MainWindow::fromDocument(document)) {
         window->action_New(mode);
     }
 
@@ -917,7 +915,7 @@ static bool saveAsMS(DocumentWidget *document, Arguments arguments, DataValue *r
         }
     }
 
-    if(MainWindow *window = document->toWindow()) {
+    if(auto window = MainWindow::fromDocument(document)) {
         window->action_Save_As(filename, wrapped);
     }
 
@@ -945,7 +943,7 @@ static bool findMS(DocumentWidget *document, Arguments arguments, DataValue *res
     SearchType      type      = searchType(arguments, 1);
     WrapMode        wrap      = searchWrap(arguments, 1);
 
-    if(MainWindow *window = document->toWindow()) {
+    if(auto window = MainWindow::fromDocument(document)) {
         window->action_Find(string, direction, type, wrap);
     }
 
@@ -964,7 +962,7 @@ static bool findDialogMS(DocumentWidget *document, Arguments arguments, DataValu
     SearchType      type      = searchType(arguments, 0);
     bool            keep      = searchKeepDialogs(arguments, 0);
 
-    if(MainWindow *window = document->toWindow()) {
+    if(auto window = MainWindow::fromDocument(document)) {
         window->action_Find_Dialog(direction, type, keep);
     }
 
@@ -982,7 +980,7 @@ static bool findAgainMS(DocumentWidget *document, Arguments arguments, DataValue
     Direction direction = searchDirection(arguments, 0);
     WrapMode        wrap      = searchWrap(arguments, 0);
 
-    if(MainWindow *window = document->toWindow()) {
+    if(auto window = MainWindow::fromDocument(document)) {
         window->action_Find_Again(direction, wrap);
     }
 
@@ -1001,7 +999,7 @@ static bool findSelectionMS(DocumentWidget *document, Arguments arguments, DataV
     SearchType      type      = searchType(arguments, 0);
     WrapMode        wrap      = searchWrap(arguments, 0);
 
-    if(MainWindow *window = document->toWindow()) {
+    if(auto window = MainWindow::fromDocument(document)) {
         window->action_Find_Selection(direction, type, wrap);
     }
 
@@ -1030,7 +1028,7 @@ static bool replaceMS(DocumentWidget *document, Arguments arguments, DataValue *
     SearchType      type      = searchType(arguments, 2);
     WrapMode        wrap      = searchWrap(arguments, 2);
 
-    if(MainWindow *window = document->toWindow()) {
+    if(auto window = MainWindow::fromDocument(document)) {
         window->action_Replace(direction, searchString, replaceString, type, wrap);
     }
 
@@ -1049,7 +1047,7 @@ static bool replaceDialogMS(DocumentWidget *document, Arguments arguments, DataV
     SearchType      type      = searchType(arguments, 0);
     bool            keep      = searchKeepDialogs(arguments, 0);
 
-    if(MainWindow *window = document->toWindow()) {
+    if(auto window = MainWindow::fromDocument(document)) {
         window->action_Replace_Dialog(direction, type, keep);
     }
 
@@ -1071,7 +1069,7 @@ static bool replaceAgainMS(DocumentWidget *document, Arguments arguments, DataVa
     WrapMode wrap       = searchWrap(arguments, 0);
     Direction direction = searchDirection(arguments, 0);
 
-    if(MainWindow *window = document->toWindow()) {
+    if(auto window = MainWindow::fromDocument(document)) {
         window->action_Replace_Again(direction, wrap);
     }
 
@@ -1109,7 +1107,7 @@ static bool gotoMarkMS(DocumentWidget *document, Arguments arguments, DataValue 
         }
     }
 
-    if(MainWindow *window = document->toWindow()) {
+    if(auto window = MainWindow::fromDocument(document)) {
         window->action_Goto_Mark(mark, extend);
     }
 
@@ -1140,7 +1138,7 @@ static bool gotoMarkDialogMS(DocumentWidget *document, Arguments arguments, Data
         }
     }
 
-    if(MainWindow *window = document->toWindow()) {
+    if(auto window = MainWindow::fromDocument(document)) {
         window->action_Goto_Mark_Dialog(extend);
     }
 
@@ -1166,7 +1164,7 @@ static bool findDefinitionMS(DocumentWidget *document, Arguments arguments, Data
         }
     }
 
-    if(MainWindow *window = document->toWindow()) {
+    if(auto window = MainWindow::fromDocument(document)) {
         window->action_Find_Definition(argument);
     }
 
@@ -1202,7 +1200,7 @@ static bool repeatMacroMS(DocumentWidget *document, Arguments arguments, DataVal
         }
     }
 
-    if(MainWindow *window = document->toWindow()) {
+    if(auto window = MainWindow::fromDocument(document)) {
         window->action_Repeat_Macro(method, how);
     }
 
@@ -1219,7 +1217,7 @@ static bool detachDocumentDialogMS(DocumentWidget *document, Arguments arguments
     // ensure that we are dealing with the document which currently has the focus
     document = MacroRunWindowEx();
 
-    if(MainWindow *window = document->toWindow()) {
+    if(auto window = MainWindow::fromDocument(document)) {
         if(window->TabCount() < 2) {
             return false;
         }
@@ -1336,7 +1334,7 @@ static bool setHighlightSyntaxMS(DocumentWidget *document, Arguments arguments, 
     document->highlightSyntax_ = newState;
 
     if(document->IsTopDocument()) {
-        if(auto win = document->toWindow()) {
+        if(auto win = MainWindow::fromDocument(document)) {
             no_signals(win->ui.action_Highlight_Syntax)->setChecked(newState);
         }
     }
@@ -1360,7 +1358,7 @@ static bool setIncrementalBackupMS(DocumentWidget *document, Arguments arguments
     document->autoSave_ = newState;
 
     if(document->IsTopDocument()) {
-        if(auto win = document->toWindow()) {
+        if(auto win = MainWindow::fromDocument(document)) {
             no_signals(win->ui.action_Highlight_Syntax)->setChecked(newState);
         }
     }
@@ -1372,7 +1370,7 @@ static bool setIncrementalBackupMS(DocumentWidget *document, Arguments arguments
 static bool setIncrementalSearchLineMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
     document = MacroRunWindowEx();
 
-    MainWindow *win = document->toWindow();
+    auto win = MainWindow::fromDocument(document);
     if(!win) {
         return false;
     }
@@ -1394,7 +1392,7 @@ static bool setMakeBackupCopyMS(DocumentWidget *document, Arguments arguments, D
     ACTION_BOOL_PARAM_OR_TOGGLE(newState, arguments, document->saveOldVersion_, "set_make_backup_copy");
 
     if (document->IsTopDocument()) {
-        if(auto win = document->toWindow()) {
+        if(auto win = MainWindow::fromDocument(document)) {
             no_signals(win->ui.action_Make_Backup_Copy)->setChecked(newState);
         }
     }
@@ -1415,7 +1413,7 @@ static bool setLockedMS(DocumentWidget *document, Arguments arguments, DataValue
     document->lockReasons_.setUserLocked(newState);
 
     if(document->IsTopDocument()) {
-        if(auto win = document->toWindow()) {
+        if(auto win = MainWindow::fromDocument(document)) {
             no_signals(win->ui.action_Read_Only)->setChecked(document->lockReasons_.isAnyLocked());
             win->UpdateWindowTitle(document);
             win->UpdateWindowReadOnly(document);
@@ -1449,7 +1447,7 @@ static bool setOvertypeModeMS(DocumentWidget *document, Arguments arguments, Dat
     ACTION_BOOL_PARAM_OR_TOGGLE(newState, arguments, document->saveOldVersion_, "set_overtype_mode");
 
     if(document->IsTopDocument()) {
-        if(auto win = document->toWindow()) {
+        if(auto win = MainWindow::fromDocument(document)) {
             no_signals(win->ui.action_Overtype)->setChecked(newState);
         }
     }
@@ -1463,7 +1461,7 @@ static bool setShowLineNumbersMS(DocumentWidget *document, Arguments arguments, 
 
     document = MacroRunWindowEx();
 
-    auto win = document->toWindow();
+    auto win = MainWindow::fromDocument(document);
 
     if(!win) {
         return false;
@@ -1527,7 +1525,7 @@ static bool setMatchSyntaxBasedMS(DocumentWidget *document, Arguments arguments,
     ACTION_BOOL_PARAM_OR_TOGGLE(newState, arguments, document->matchSyntaxBased_, "set_match_syntax_based");
 
     if(document->IsTopDocument()) {
-        if(auto win = document->toWindow()) {
+        if(auto win = MainWindow::fromDocument(document)) {
             no_signals(win->ui.action_Matching_Syntax)->setChecked(newState);
         }
     }
@@ -1547,7 +1545,7 @@ static bool setStatisticsLineMS(DocumentWidget *document, Arguments arguments, D
 
     // stats line is a shell-level item, so we toggle the button state
     // regardless of it's 'topness'
-    if(auto win = document->toWindow()) {
+    if(auto win = MainWindow::fromDocument(document)) {
         no_signals(win->ui.action_Statistics_Line)->setChecked(newState);
     }
 
@@ -1643,7 +1641,7 @@ static bool findIncrMS(DocumentWidget *document, Arguments arguments, DataValue 
 
     document = MacroRunWindowEx();
 
-    auto win = document->toWindow();
+    auto win = MainWindow::fromDocument(document);
 
     if(!win) {
         return false;
@@ -1690,7 +1688,7 @@ static bool startIncrFindMS(DocumentWidget *document, Arguments arguments, DataV
 
     document = MacroRunWindowEx();
 
-    auto win = document->toWindow();
+    auto win = MainWindow::fromDocument(document);
 
     if(!win) {
         return false;
@@ -1706,7 +1704,7 @@ static bool replaceFindMS(DocumentWidget *document, Arguments arguments, DataVal
 
     document = MacroRunWindowEx();
 
-    auto win = document->toWindow();
+    auto win = MainWindow::fromDocument(document);
 
     if(!win) {
         return false;
@@ -1749,7 +1747,7 @@ static bool replaceFindSameMS(DocumentWidget *document, Arguments arguments, Dat
 
     document = MacroRunWindowEx();
 
-    auto win = document->toWindow();
+    auto win = MainWindow::fromDocument(document);
 
     if(!win) {
         return false;
@@ -1777,7 +1775,7 @@ static bool nextDocumentMS(DocumentWidget *document, Arguments arguments, DataVa
 
     document = MacroRunWindowEx();
 
-    auto win = document->toWindow();
+    auto win = MainWindow::fromDocument(document);
 
     if(!win) {
         return false;
@@ -1796,7 +1794,7 @@ static bool prevDocumentMS(DocumentWidget *document, Arguments arguments, DataVa
 
     document = MacroRunWindowEx();
 
-    auto win = document->toWindow();
+    auto win = MainWindow::fromDocument(document);
 
     if(!win) {
         return false;
@@ -1815,7 +1813,7 @@ static bool lastDocumentMS(DocumentWidget *document, Arguments arguments, DataVa
 
     document = MacroRunWindowEx();
 
-    auto win = document->toWindow();
+    auto win = MainWindow::fromDocument(document);
 
     if(!win) {
         return false;
@@ -1834,7 +1832,7 @@ static bool backgroundMenuCommandMS(DocumentWidget *document, Arguments argument
 
     document = MacroRunWindowEx();
 
-    auto win = document->toWindow();
+    auto win = MainWindow::fromDocument(document);
 
     if(!win) {
         return false;
@@ -2149,120 +2147,6 @@ void RegisterMacroSubroutines() {
         ReturnGlobals[i] = InstallSymbol(ReturnGlobalNames[i], GLOBAL_SYM, noValue);
 }
 
-void FinishLearnEx() {
-
-    // If we're not in learn mode, return
-    if(!CommandRecorder::getInstance()->isRecording()) {
-        return;
-    }
-
-    DocumentWidget *document = CommandRecorder::getInstance()->macroRecordWindowEx;
-    Q_ASSERT(document);
-
-    CommandRecorder::getInstance()->stopRecording();
-
-    // Undim the menu items dimmed during learn
-    for(MainWindow *window : MainWindow::allWindows()) {
-        window->ui.action_Learn_Keystrokes->setEnabled(true);
-    }
-
-    if (document->IsTopDocument()) {
-        if(MainWindow *window = document->toWindow()) {
-            window->ui.action_Finish_Learn->setEnabled(false);
-            window->ui.action_Cancel_Learn->setEnabled(false);
-        }
-    }
-
-    // Undim the replay and paste-macro buttons
-    for(MainWindow *window : MainWindow::allWindows()) {
-        window->ui.action_Replay_Keystrokes->setEnabled(true);
-    }
-
-    MainWindow::DimPasteReplayBtns(true);
-
-    // Clear learn-mode banner
-    document->ClearModeMessageEx();
-}
-
-/*
-** Cancel Learn mode, or macro execution (they're bound to the same menu item)
-*/
-void CancelMacroOrLearnEx(DocumentWidget *document) {
-    if(CommandRecorder::getInstance()->isRecording()) {
-        cancelLearnEx();
-    } else if (document->macroCmdData_) {
-        AbortMacroCommandEx(document);
-    }
-}
-
-static void cancelLearnEx() {
-    // If we're not in learn mode, return
-    if(!CommandRecorder::getInstance()->isRecording()) {
-        return;
-    }
-
-    DocumentWidget *document = CommandRecorder::getInstance()->macroRecordWindowEx;
-
-    // Undim the menu items dimmed during learn
-    for(MainWindow *window : MainWindow::allWindows()) {
-        window->ui.action_Learn_Keystrokes->setEnabled(true);
-    }
-
-    if (document->IsTopDocument()) {
-        MainWindow *win = document->toWindow();
-        win->ui.action_Finish_Learn->setEnabled(false);
-        win->ui.action_Cancel_Learn->setEnabled(false);
-    }
-
-    // Clear learn-mode banner
-    document->ClearModeMessageEx();
-}
-
-/*
-** Execute the learn/replay sequence stored in "window"
-*/
-void ReplayEx(DocumentWidget *document) {
-
-    QString replayMacro = CommandRecorder::getInstance()->replayMacro;
-
-    // Verify that a replay macro exists and it's not empty and that
-    // we're not already running a macro
-    if (!replayMacro.isEmpty() && document->macroCmdData_ == nullptr) {
-
-        /* Parse the replay macro (it's stored in text form) and compile it into
-           an executable program "prog" */
-        QString errMsg;
-        int stoppedAt;
-
-        Program *prog = ParseMacroEx(replayMacro, &errMsg, &stoppedAt);
-        if(!prog) {
-            qWarning("NEdit: internal error, learn/replay macro syntax error: %s", qPrintable(errMsg));
-            return;
-        }
-
-        // run the executable program
-        document->runMacroEx(prog);
-    }
-}
-
-/*
-**  Read the initial NEdit macro file if one exists.
-*/
-void ReadMacroInitFileEx(DocumentWidget *document) {
-
-    const QString autoloadName = Settings::autoLoadMacroFile();
-    if(autoloadName.isNull()) {
-        return;
-    }
-
-    static bool initFileLoaded = false;
-
-    if (!initFileLoaded) {
-        document->ReadMacroFileEx(autoloadName, false);
-        initFileLoaded = true;
-    }
-}
-
 /*
 ** Parse and execute a macro string including macro definitions.  Report
 ** parsing errors in a dialog posted over window->shell_.
@@ -2452,79 +2336,9 @@ bool readCheckMacroStringEx(QWidget *dialogParent, const QString &string, Docume
     return true;
 }
 
-/*
-** Cancel the macro command in progress (user cancellation via GUI)
-*/
-void AbortMacroCommandEx(DocumentWidget *document) {
-    if (!document->macroCmdData_)
-        return;
 
-    /* If there's both a macro and a shell command executing, the shell command
-       must have been called from the macro.  When called from a macro, shell
-       commands don't put up cancellation controls of their own, but rely
-       instead on the macro cancellation mechanism (here) */
-    if (document->shellCmdData_) {
-        document->AbortShellCommandEx();
-    }
 
-    // Free the continuation
-    FreeRestartDataEx(document->macroCmdData_->context);
 
-    // Kill the macro command
-    document->finishMacroCmdExecutionEx();
-}
-
-/*
-** Call this before closing a window, to clean up macro references to the
-** window, stop any macro which might be running from it, free associated
-** memory, and check that a macro is not attempting to close the window from
-** which it is run.  If this is being called from a macro, and the window
-** this routine is examining is the window from which the macro was run, this
-** routine will return False, and the caller must NOT CLOSE THE WINDOW.
-** Instead, empty it and make it Untitled, and let the macro completion
-** process close the window when the macro is finished executing.
-*/
-int MacroWindowCloseActionsEx(DocumentWidget *document) {
-    auto cmdData = document->macroCmdData_;
-
-    auto recorder = CommandRecorder::getInstance();
-
-    if (recorder->isRecording() && recorder->macroRecordWindowEx == document) {
-        FinishLearnEx();
-    }
-
-    /* If no macro is executing in the window, allow the close, but check
-       if macros executing in other windows have it as focus.  If so, set
-       their focus back to the window from which they were originally run */
-    if(!cmdData) {
-        for(DocumentWidget *w : DocumentWidget::allDocuments()) {
-            auto mcd = w->macroCmdData_;
-            if (w == MacroRunWindowEx() && MacroFocusWindowEx() == document) {
-                SetMacroFocusWindowEx(MacroRunWindowEx());
-            } else if (mcd && mcd->context->focusWindow == document) {
-                mcd->context->focusWindow = mcd->context->runWindow;
-            }
-        }
-
-        return true;
-    }
-
-    /* If the macro currently running (and therefore calling us, because
-       execution must otherwise return to the main loop to execute any
-       commands), is running in this window, tell the caller not to close,
-       and schedule window close on completion of macro */
-    if (document == MacroRunWindowEx()) {
-        cmdData->closeOnCompletion = true;
-        return false;
-    }
-
-    // Free the continuation
-    FreeRestartDataEx(cmdData->context);
-
-    // Kill the macro command
-    document->finishMacroCmdExecutionEx();
-    return true;
-}
 
 /*
 ** Do garbage collection of strings if there are no macros currently
@@ -2544,86 +2358,6 @@ void SafeGC() {
     GarbageCollectStrings();
 }
 
-/*
-** Executes macro string "macro" using the lastFocus pane in "window".
-** Reports errors via a dialog posted over "window", integrating the name
-** "errInName" into the message to help identify the source of the error.
-*/
-void DoMacroEx(DocumentWidget *document, const QString &macro, const QString &errInName) {
-
-    /* Add a terminating newline (which command line users are likely to omit
-       since they are typically invoking a single routine) */
-    QString qMacro = macro + QLatin1Char('\n');
-    QString errMsg;
-
-    // Parse the macro and report errors if it fails
-    int stoppedAt;
-    Program *const prog = ParseMacroEx(qMacro, &errMsg, &stoppedAt);
-    if(!prog) {
-        ParseErrorEx(document, qMacro, stoppedAt, errInName, errMsg);
-        return;
-    }
-
-    // run the executable program (prog is freed upon completion)
-    document->runMacroEx(prog);
-}
-
-/**
- * @brief createRepeatMacro
- * @param how
- * @return
- */
-QString createRepeatMacro(int how) {
-    switch(how) {
-    case REPEAT_TO_END:
-        return QLatin1String("lastCursor=-1\nstartPos=$cursor\n"
-                             "while($cursor>=startPos&&$cursor!=lastCursor){\nlastCursor=$cursor\n%1\n}\n");
-    case REPEAT_IN_SEL:
-        return QLatin1String("selStart = $selection_start\nif (selStart == -1)\nreturn\n"
-                             "selEnd = $selection_end\nset_cursor_pos(selStart)\nselect(0,0)\n"
-                             "boundText = get_range(selEnd, selEnd+10)\n"
-                             "while($cursor >= selStart && $cursor < selEnd && \\\n"
-                             "get_range(selEnd, selEnd+10) == boundText) {\n"
-                             "startLength = $text_length\n%1\n"
-                             "selEnd += $text_length - startLength\n}\n");
-    default:
-        return QLatin1String("for(i=0;i<%1;i++){\n%2\n}\n");
-    }
-}
-
-/*
-** Dispatches a macro to which repeats macro command in "command", either
-** an integer number of times ("how" == positive integer), or within a
-** selected range ("how" == REPEAT_IN_SEL), or to the end of the window
-** ("how == REPEAT_TO_END).
-**
-** Note that as with most macro routines, this returns BEFORE the macro is
-** finished executing
-*/
-void RepeatMacroEx(DocumentWidget *document, const QString &command, int how) {
-
-    // Wrap a for loop and counter/tests around the command
-    QString loopMacro = createRepeatMacro(how);
-    QString loopedCmd;
-
-    if (how == REPEAT_TO_END || how == REPEAT_IN_SEL) {
-        loopedCmd = loopMacro.arg(command);
-    } else {
-        loopedCmd = loopMacro.arg(how).arg(command);
-    }
-
-    // Parse the resulting macro into an executable program "prog"
-    QString errMsg;
-    int stoppedAt;
-    Program *const prog = ParseMacroEx(loopedCmd, &errMsg, &stoppedAt);
-    if(!prog) {
-        qWarning("NEdit: internal error, repeat macro syntax wrong: %s", qPrintable(errMsg));
-        return;
-    }
-
-    // run the executable program
-    document->runMacroEx(prog);
-}
 
 
 /*
@@ -3471,7 +3205,7 @@ static bool setCursorPosMS(DocumentWidget *document, Arguments arguments, DataVa
     }
 
     // Set the position
-    TextArea *area = document->toWindow()->lastFocus_;
+    TextArea *area = MainWindow::fromDocument(document)->lastFocus_;
     area->TextSetCursorPos(pos);
     *result = to_value();
     return true;
@@ -3869,7 +3603,7 @@ static bool killCalltipMS(DocumentWidget *document, Arguments arguments, DataVal
             return false;
     }
 
-    document->toWindow()->lastFocus_->TextDKillCalltip(calltipID);
+    MainWindow::fromDocument(document)->lastFocus_->TextDKillCalltip(calltipID);
 
     *result = to_value();
     return true;
@@ -3883,7 +3617,7 @@ static bool calltipIDMV(DocumentWidget *document, Arguments arguments, DataValue
     Q_UNUSED(errMsg);
     Q_UNUSED(arguments);
 
-    *result = to_value(document->toWindow()->lastFocus_->TextDGetCalltipID(0));
+    *result = to_value(MainWindow::fromDocument(document)->lastFocus_->TextDGetCalltipID(0));
     return true;
 }
 
@@ -4361,7 +4095,7 @@ static bool cursorMV(DocumentWidget *document, Arguments arguments, DataValue *r
         M_FAILURE(TooManyArguments);
     }
 
-    TextArea *area  = document->toWindow()->lastFocus_;
+    TextArea *area  = MainWindow::fromDocument(document)->lastFocus_;
     *result         = to_value(area->TextGetCursorPos());
     return true;
 }
@@ -4376,7 +4110,7 @@ static bool lineMV(DocumentWidget *document, Arguments arguments, DataValue *res
     int colNum;
 
     TextBuffer *buf = document->buffer_;
-    TextArea *area  = document->toWindow()->lastFocus_;
+    TextArea *area  = MainWindow::fromDocument(document)->lastFocus_;
     int cursorPos   = area->TextGetCursorPos();
 
     if (!area->TextDPosToLineAndCol(cursorPos, &line, &colNum)) {
@@ -4394,7 +4128,7 @@ static bool columnMV(DocumentWidget *document, Arguments arguments, DataValue *r
     }
 
     TextBuffer *buf = document->buffer_;
-    TextArea *area  = document->toWindow()->lastFocus_;
+    TextArea *area  = MainWindow::fromDocument(document)->lastFocus_;
     int cursorPos   = area->TextGetCursorPos();
 
     *result = to_value(buf->BufCountDispChars(buf->BufStartOfLine(cursorPos), cursorPos));
@@ -4504,7 +4238,7 @@ static bool incSearchLineMV(DocumentWidget *document, Arguments arguments, DataV
         M_FAILURE(TooManyArguments);
     }
 
-    *result = to_value(document->toWindow()->showISearchLine_ ? 1 : 0);
+    *result = to_value(MainWindow::fromDocument(document)->showISearchLine_ ? 1 : 0);
     return true;
 }
 
@@ -4514,7 +4248,7 @@ static bool showLineNumbersMV(DocumentWidget *document, Arguments arguments, Dat
         M_FAILURE(TooManyArguments);
     }
 
-    *result = to_value(document->toWindow()->showLineNumbers_ ? 1 : 0);
+    *result = to_value(MainWindow::fromDocument(document)->showLineNumbers_ ? 1 : 0);
     return true;
 }
 
@@ -4720,7 +4454,7 @@ static bool topLineMV(DocumentWidget *document, Arguments arguments, DataValue *
     Q_UNUSED(errMsg);
     Q_UNUSED(arguments);
 
-    TextArea *area = document->toWindow()->lastFocus_;
+    TextArea *area = MainWindow::fromDocument(document)->lastFocus_;
     *result = to_value(area->TextFirstVisibleLine());
     return true;
 }
@@ -4729,7 +4463,7 @@ static bool numDisplayLinesMV(DocumentWidget *document, Arguments arguments, Dat
     Q_UNUSED(errMsg);
     Q_UNUSED(arguments);
 
-    TextArea *area    = document->toWindow()->lastFocus_;
+    TextArea *area    = MainWindow::fromDocument(document)->lastFocus_;
     *result = to_value(area->TextNumVisibleLines());
     return true;
 }
@@ -4739,7 +4473,7 @@ static bool displayWidthMV(DocumentWidget *document, Arguments arguments, DataVa
     Q_UNUSED(errMsg);
     Q_UNUSED(arguments);
 
-    TextArea *area    = document->toWindow()->lastFocus_;
+    TextArea *area    = MainWindow::fromDocument(document)->lastFocus_;
     *result = to_value(area->TextVisibleWidth());
     return true;
 }
@@ -4749,7 +4483,7 @@ static bool activePaneMV(DocumentWidget *document, Arguments arguments, DataValu
     Q_UNUSED(arguments);
     Q_UNUSED(errMsg);
 
-    *result = to_value(document->WidgetToPaneIndex(document->toWindow()->lastFocus_));
+    *result = to_value(document->WidgetToPaneIndex(MainWindow::fromDocument(document)->lastFocus_));
     return true;
 }
 
@@ -5401,7 +5135,7 @@ static bool rangesetIncludesPosMS(DocumentWidget *document, Arguments arguments,
 
     int pos = 0;
     if (arguments.size() == 1) {
-        TextArea *area = document->toWindow()->lastFocus_;
+        TextArea *area = MainWindow::fromDocument(document)->lastFocus_;
         pos = area->TextGetCursorPos();
     } else if (arguments.size() == 2) {
         if (!readArgument(arguments[1], &pos, errMsg)) {

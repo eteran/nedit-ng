@@ -84,6 +84,7 @@ public:
     void updateWindowSizeMenus();
 
 public:
+    static MainWindow *fromDocument(const DocumentWidget *document);
     static void DimPasteReplayBtns(bool enabled);
     static void ReadNEditDB();
     static void WriteNEditDB();

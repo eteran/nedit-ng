@@ -819,9 +819,9 @@ int ShowTipStringEx(DocumentWidget *window, const QString &text, bool anchored, 
 
     // If this isn't a lookup request, just display it.
     if (!lookup)
-        return tagsShowCalltipEx(window->toWindow()->lastFocus_, text);
+        return tagsShowCalltipEx(MainWindow::fromDocument(window)->lastFocus_, text);
     else
-        return window->findDef(window->toWindow()->lastFocus_, text, static_cast<Mode>(search_type));
+        return window->findDef(MainWindow::fromDocument(window)->lastFocus_, text, static_cast<Mode>(search_type));
 }
 
 /*
@@ -1179,7 +1179,7 @@ void editTaggedLocationEx(TextArea *area, int i) {
     QString filename;
     QString pathname;
 
-    auto document = DocumentWidget::documentFrom(area);
+    auto document = DocumentWidget::fromArea(area);
 
     ParseFilenameEx(tagFiles[i], &filename, &pathname);
 

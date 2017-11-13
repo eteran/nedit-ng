@@ -245,6 +245,29 @@ UndoTypes determineUndoType(int nInserted, int nDeleted) {
     }
 }
 
+/**
+ * @brief createRepeatMacro
+ * @param how
+ * @return
+ */
+QString createRepeatMacro(int how) {
+    switch(how) {
+    case REPEAT_TO_END:
+        return QLatin1String("lastCursor=-1\nstartPos=$cursor\n"
+                             "while($cursor>=startPos&&$cursor!=lastCursor){\nlastCursor=$cursor\n%1\n}\n");
+    case REPEAT_IN_SEL:
+        return QLatin1String("selStart = $selection_start\nif (selStart == -1)\nreturn\n"
+                             "selEnd = $selection_end\nset_cursor_pos(selStart)\nselect(0,0)\n"
+                             "boundText = get_range(selEnd, selEnd+10)\n"
+                             "while($cursor >= selStart && $cursor < selEnd && \\\n"
+                             "get_range(selEnd, selEnd+10) == boundText) {\n"
+                             "startLength = $text_length\n%1\n"
+                             "selEnd += $text_length - startLength\n}\n");
+    default:
+        return QLatin1String("for(i=0;i<%1;i++){\n%2\n}\n");
+    }
+}
+
 }
 
 /*
@@ -295,7 +318,7 @@ DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inDocument, c
         win->parseGeometry(geometry);
 	} else if (inDocument->filenameSet_ || inDocument->fileChanged_ || inDocument->macroCmdData_) {
         if (tabbed) {
-			if(auto win = inDocument->toWindow()) {
+            if(auto win = MainWindow::fromDocument(inDocument)) {
                 document = win->CreateDocument(name);
             } else {
 				return nullptr;
@@ -321,7 +344,7 @@ DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inDocument, c
         }
     }
 
-    MainWindow *const win = document->toWindow();
+    MainWindow *const win = MainWindow::fromDocument(document);
     if(!win) {
         return nullptr;
     }
@@ -499,7 +522,7 @@ DocumentWidget::~DocumentWidget() noexcept {
     ClearUndoList();
     ClearRedoList();
 
-    if(auto window = toWindow()) {
+    if(auto window = MainWindow::fromDocument(this)) {
 
         // update window menus
         window->InvalidateWindowMenus();
@@ -578,16 +601,12 @@ TextArea *DocumentWidget::createTextArea(TextBuffer *buffer) {
     return area;
 }
 
-MainWindow *DocumentWidget::toWindow() const {
-    return qobject_cast<MainWindow *>(window());
-}
-
 /*
 ** Change the window appearance and the window data structure to show
 ** that the file it contains has been modified
 */
 void DocumentWidget::SetWindowModified(bool modified) {
-    if(auto win = toWindow()) {
+    if(auto win = MainWindow::fromDocument(this)) {
 		if (!fileChanged_ && modified) {
 			win->ui.action_Close->setEnabled(true);
 			fileChanged_ = true;
@@ -606,7 +625,7 @@ void DocumentWidget::SetWindowModified(bool modified) {
 */
 void DocumentWidget::RefreshTabState() {
 
-    if(auto w = toWindow()) {
+    if(auto w = MainWindow::fromDocument(this)) {
         QTabWidget *tabWidget = w->ui.tabWidget;
 		int index = tabWidget->indexOf(this);
 
@@ -667,7 +686,7 @@ void DocumentWidget::SetLanguageMode(int mode, bool forceNewDefaults) {
 
 	// Select the correct language mode in the sub-menu
     if (IsTopDocument()) {
-        if(auto win = toWindow()) {
+        if(auto win = MainWindow::fromDocument(this)) {
             QList<QAction *> languages = win->ui.action_Language_Mode->menu()->actions();
             for(QAction *action : languages) {
                 if(action->data().value<int>() == mode) {
@@ -739,7 +758,7 @@ void DocumentWidget::UpdateStatsLine(TextArea *area) {
         return;
     }
 
-    if(auto win = toWindow()) {
+    if(auto win = MainWindow::fromDocument(this)) {
         if(!area) {
             area = win->lastFocus_;
             if(!area) {
@@ -850,7 +869,7 @@ void DocumentWidget::modifiedCallback(int pos, int nInserted, int nDeleted, int 
         UpdateMarkTable(pos, nInserted, nDeleted);
     }
 
-    if(auto win = toWindow()) {
+    if(auto win = MainWindow::fromDocument(this)) {
         // Check and dim/undim selection related menu items
         if ((win->wasSelected_ && !selected) || (!win->wasSelected_ && selected)) {
             win->wasSelected_ = selected;
@@ -958,7 +977,7 @@ void DocumentWidget::smartIndentCallback(TextArea *area, SmartIndentEvent *data)
 */
 void DocumentWidget::RaiseFocusDocumentWindow(bool focus) {
     RaiseDocument();
-    if(auto win = toWindow()) {
+    if(auto win = MainWindow::fromDocument(this)) {
 
         if(!win->isMaximized()) {
             win->showNormal();
@@ -996,7 +1015,7 @@ void DocumentWidget::documentRaised() {
 
     /* Make sure that the "In Selection" button tracks the presence of a
        selection and that the this inherits the proper search scope. */
-    if(auto win = toWindow()) {
+    if(auto win = MainWindow::fromDocument(this)) {
         if(auto dialog = win->getDialogReplace()) {
             dialog->UpdateReplaceActionButtons();
         }
@@ -1004,7 +1023,7 @@ void DocumentWidget::documentRaised() {
 }
 
 void DocumentWidget::RaiseDocument() {
-    if(auto win = toWindow()) {
+    if(auto win = MainWindow::fromDocument(this)) {
         // set the document as top document
         // show the new top document
 
@@ -1019,7 +1038,7 @@ void DocumentWidget::RaiseDocument() {
 */
 void DocumentWidget::reapplyLanguageMode(int mode, bool forceDefaults) {
 
-    if(auto win = toWindow()) {
+    if(auto win = MainWindow::fromDocument(this)) {
         const int oldMode = languageMode_;
 
         /* If the mode is the same, and changes aren't being forced (as might
@@ -1187,7 +1206,7 @@ void DocumentWidget::SetAutoIndent(IndentStyle state) {
     }
 
     if (IsTopDocument()) {
-        if(auto win = toWindow()) {
+        if(auto win = MainWindow::fromDocument(this)) {
             no_signals(win->ui.action_Indent_Smart)->setChecked(smartIndent);
             no_signals(win->ui.action_Indent_On)->setChecked(autoIndent);
             no_signals(win->ui.action_Indent_Off)->setChecked(state == IndentStyle::None);
@@ -1211,7 +1230,7 @@ void DocumentWidget::SetAutoWrap(WrapStyle state) {
     wrapMode_ = state;
 
     if (IsTopDocument()) {
-        if(auto win = toWindow()) {
+        if(auto win = MainWindow::fromDocument(this)) {
             no_signals(win->ui.action_Wrap_Auto_Newline)->setChecked(autoWrap);
             no_signals(win->ui.action_Wrap_Continuous)->setChecked(contWrap);
             no_signals(win->ui.action_Wrap_None)->setChecked(state == WrapStyle::None);
@@ -1238,7 +1257,7 @@ QList<TextArea *> DocumentWidget::textPanes() const {
 }
 
 bool DocumentWidget::IsTopDocument() const {
-    if(auto window = toWindow()) {
+    if(auto window = MainWindow::fromDocument(this)) {
         return window->currentDocument() == this;
     }
 
@@ -1344,7 +1363,7 @@ void DocumentWidget::DimSelectionDepUserMenuItems(bool enabled) {
         return;
     }
 
-    if(auto win = toWindow()) {
+    if(auto win = MainWindow::fromDocument(this)) {
         dimSelDepItemsInMenu(win->ui.menu_Shell, ShellMenuData, enabled);
         dimSelDepItemsInMenu(win->ui.menu_Macro, MacroMenuData, enabled);
         dimSelDepItemsInMenu(contextMenu_,       BGMenuData,    enabled);
@@ -1536,7 +1555,7 @@ void DocumentWidget::addUndoItem(const UndoInfo &undo) {
 
     // Make the undo menu item sensitive now that there's something to undo
     if (undo_.empty()) {
-        if(auto win = toWindow()) {
+        if(auto win = MainWindow::fromDocument(this)) {
             win->ui.action_Undo->setEnabled(true);
         }
     }
@@ -1567,7 +1586,7 @@ void DocumentWidget::addUndoItem(const UndoInfo &undo) {
 void DocumentWidget::addRedoItem(const UndoInfo &redo) {
     // Make the redo menu item sensitive now that there's something to redo
     if (redo_.empty()) {
-        if(auto win = toWindow()) {
+        if(auto win = MainWindow::fromDocument(this)) {
             win->ui.action_Redo->setEnabled(true);
         }
     }
@@ -1595,7 +1614,7 @@ void DocumentWidget::removeUndoItem() {
 
     // if there are no more undo records left, dim the Undo menu item
     if (undo_.empty()) {
-        if(auto win = toWindow()) {
+        if(auto win = MainWindow::fromDocument(this)) {
             win->ui.action_Undo->setEnabled(false);
         }
     }
@@ -1610,7 +1629,7 @@ void DocumentWidget::removeRedoItem() {
 
     // if there are no more redo records left, dim the Redo menu item
     if (redo_.empty()) {
-        if(auto win = toWindow()) {
+        if(auto win = MainWindow::fromDocument(this)) {
             win->ui.action_Redo->setEnabled(false);
         }
     }
@@ -1645,7 +1664,7 @@ void DocumentWidget::trimUndoList(int maxLength) {
 
 void DocumentWidget::Undo() {
 
-    if(auto win = toWindow()) {
+    if(auto win = MainWindow::fromDocument(this)) {
         int restoredTextLength;
 
         // return if nothing to undo
@@ -1698,7 +1717,7 @@ void DocumentWidget::Undo() {
 
 void DocumentWidget::Redo() {
 
-    if(auto win = toWindow()) {
+    if(auto win = MainWindow::fromDocument(this)) {
         int restoredTextLength;
 
         // return if nothing to redo
@@ -1923,13 +1942,13 @@ void DocumentWidget::CheckForChangesToFileEx() {
     if (!IsTopDocument()) {
         silent = true;
     } else {
-        MainWindow *win = toWindow();
+        auto win = MainWindow::fromDocument(this);
         if(!win->isVisible()) {
             silent = true;
         }
     }
 
-    if(auto win = toWindow()) {
+    if(auto win = MainWindow::fromDocument(this)) {
         // Get the file mode and modification time
         QString fullname = FullPath();
 
@@ -2177,7 +2196,7 @@ int DocumentWidget::cmpWinAgainstFile(const QString &fileName) {
 
 void DocumentWidget::RevertToSaved() {
 
-    if(auto win = toWindow()) {
+    if(auto win = MainWindow::fromDocument(this)) {
         int insertPositions[MAX_PANES];
         int topLines[MAX_PANES];
         int horizOffsets[MAX_PANES];
@@ -2262,7 +2281,7 @@ int DocumentWidget::WriteBackupFile() {
 
         autoSave_ = false;
 
-        if(auto win = toWindow()) {
+        if(auto win = MainWindow::fromDocument(this)) {
             no_signals(win->ui.action_Incremental_Backup)->setChecked(false);
         }
         return false;
@@ -2447,7 +2466,7 @@ bool DocumentWidget::doSave() {
 
 int DocumentWidget::SaveWindowAs(const QString &newName, bool addWrap) {
 
-    if(auto win = toWindow()) {
+    if(auto win = MainWindow::fromDocument(this)) {
 
         int  retVal;
         QString fullname;
@@ -2664,7 +2683,7 @@ void DocumentWidget::addWrapNewlines() {
 
     /* Show the user that something has happened by turning off
        Continuous Wrap mode */
-    if(auto win = toWindow()) {
+    if(auto win = MainWindow::fromDocument(this)) {
         no_signals(win->ui.action_Wrap_Continuous)->setChecked(false);
     }
 }
@@ -2788,7 +2807,7 @@ bool DocumentWidget::bckError(const QString &errString, const QString &file) {
     if(messageBox.clickedButton() == buttonTurnOff) {
         saveOldVersion_ = false;
 
-        if(auto win = toWindow()) {
+        if(auto win = MainWindow::fromDocument(this)) {
             no_signals(win->ui.action_Make_Backup_Copy)->setChecked(false);
         }
     }
@@ -2889,7 +2908,7 @@ int DocumentWidget::CloseFileAndWindow(CloseMode preResponse) {
 */
 void DocumentWidget::CloseWindow() {
 
-    MainWindow *window = toWindow();
+    auto window = MainWindow::fromDocument(this);
     if(!window) {
         return;
     }
@@ -2900,7 +2919,7 @@ void DocumentWidget::CloseWindow() {
     /* Clean up macro references to the doomed window.  If a macro is
        executing, stop it.  If macro is calling this (closing its own
        window), leave the window alive until the macro completes */
-    bool keepWindow = !MacroWindowCloseActionsEx(this);
+    bool keepWindow = !MacroWindowCloseActionsEx();
 
     // Kill shell sub-process and free related memory
     AbortShellCommandEx();
@@ -2963,7 +2982,7 @@ void DocumentWidget::CloseWindow() {
     }
 }
 
-DocumentWidget *DocumentWidget::documentFrom(TextArea *area) {
+DocumentWidget *DocumentWidget::fromArea(TextArea *area) {
 
     if(!area) {
         return nullptr;
@@ -3002,14 +3021,14 @@ void DocumentWidget::open(const QString &fullpath) {
                 GetPrefOpenInTab(),
                 false);
 
-    if(auto win = toWindow()) {
+    if(auto win = MainWindow::fromDocument(this)) {
         win->CheckCloseDimEx();
     }
 }
 
 bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags) {
 
-    MainWindow *window = toWindow();
+    auto window = MainWindow::fromDocument(this);
     if(!window) {
         return false;
     }
@@ -3251,7 +3270,7 @@ void DocumentWidget::RefreshWindowStates() {
         return;
     }
 
-    if(auto win = toWindow()) {
+    if(auto win = MainWindow::fromDocument(this)) {
 
         if (modeMessageDisplayed_) {
             ui.labelFileAndSize->setText(modeMessage_);
@@ -3291,7 +3310,7 @@ void DocumentWidget::RefreshWindowStates() {
 ** settings of the top document.
 */
 void DocumentWidget::refreshMenuBar() {
-    if(auto win = toWindow()) {
+    if(auto win = MainWindow::fromDocument(this)) {
         RefreshMenuToggleStates();
 
         // Add/remove language specific menu items
@@ -3312,7 +3331,7 @@ void DocumentWidget::RefreshMenuToggleStates() {
         return;
     }
 
-    if(auto win = toWindow()) {
+    if(auto win = MainWindow::fromDocument(this)) {
         // File menu
         win->ui.action_Print_Selection->setEnabled(win->wasSelected_);
 
@@ -3421,7 +3440,7 @@ void DocumentWidget::executeNewlineMacroEx(SmartIndentEvent *cbInfo) {
 void DocumentWidget::SetShowMatching(ShowMatchingStyle state) {
     showMatchingStyle_ = state;
     if (IsTopDocument()) {
-        if(auto win = toWindow()) {
+        if(auto win = MainWindow::fromDocument(this)) {
             switch(state) {
             case ShowMatchingStyle::None:
                 no_signals(win->ui.action_Matching_Off)->setChecked(true);
@@ -3497,7 +3516,7 @@ void DocumentWidget::executeModMacroEx(SmartIndentEvent *cbInfo) {
 
 void DocumentWidget::bannerTimeoutProc() {
 
-    MainWindow *window = toWindow();
+    auto window = MainWindow::fromDocument(this);
     if(!window) {
         return;
     }
@@ -3517,7 +3536,7 @@ void DocumentWidget::bannerTimeoutProc() {
 
 void DocumentWidget::actionClose(CloseMode mode) {
 
-    if(auto win = toWindow()) {
+    if(auto win = MainWindow::fromDocument(this)) {
         CloseFileAndWindow(mode);
         win->CheckCloseDimEx();
     }
@@ -3564,7 +3583,7 @@ bool DocumentWidget::includeFile(const QString &name) {
     if (buffer_->primary_.selected) {
         buffer_->BufReplaceSelectedEx(fileString);
     } else {
-        if(auto win = toWindow()) {
+        if(auto win = MainWindow::fromDocument(this)) {
             auto textD = win->lastFocus_;
             buffer_->BufInsertEx(textD->TextGetCursorPos(), fileString);
         }
@@ -3580,9 +3599,9 @@ void DocumentWidget::replaceAllAP(const QString &searchString, const QString &re
     }
 
     ReplaceAllEx(
-                toWindow(),
+                MainWindow::fromDocument(this),
                 this,
-                toWindow()->lastFocus_,
+                MainWindow::fromDocument(this)->lastFocus_,
                 searchString,
                 replaceString,
                 searchType);
@@ -3595,9 +3614,9 @@ void DocumentWidget::replaceInSelAP(const QString &searchString, const QString &
     }
 
     ReplaceInSelectionEx(
-                toWindow(),
+                MainWindow::fromDocument(this),
                 this,
-                toWindow()->lastFocus_,
+                MainWindow::fromDocument(this)->lastFocus_,
                 searchString,
                 replaceString,
                 searchType);
@@ -3610,9 +3629,9 @@ void DocumentWidget::replaceFindAP(const QString &searchString, const QString &r
     }
 
     ReplaceAndSearchEx(
-                toWindow(),
+                MainWindow::fromDocument(this),
                 this,
-                toWindow()->lastFocus_,
+                MainWindow::fromDocument(this)->lastFocus_,
                 direction,
                 searchString,
                 replaceString,
@@ -3623,9 +3642,9 @@ void DocumentWidget::replaceFindAP(const QString &searchString, const QString &r
 void DocumentWidget::findAP(const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWraps) {
 
     SearchAndSelectEx(
-                toWindow(),
+                MainWindow::fromDocument(this),
                 this,
-                toWindow()->lastFocus_,
+                MainWindow::fromDocument(this)->lastFocus_,
                 direction,
                 searchString,
                 searchType,
@@ -3636,9 +3655,9 @@ void DocumentWidget::findAP(const QString &searchString, Direction direction, Se
 void DocumentWidget::findIncrAP(const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWraps, bool isContinue) {
 
     SearchAndSelectIncrementalEx(
-                toWindow(),
+                MainWindow::fromDocument(this),
                 this,
-                toWindow()->lastFocus_,
+                MainWindow::fromDocument(this)->lastFocus_,
                 direction,
                 searchString,
                 searchType,
@@ -3654,9 +3673,9 @@ void DocumentWidget::replaceAP(const QString &searchString, const QString &repla
     }
 
     SearchAndReplaceEx(
-                toWindow(),
+                MainWindow::fromDocument(this),
                 this,
-                toWindow()->lastFocus_,
+                MainWindow::fromDocument(this)->lastFocus_,
                 direction,
                 searchString,
                 replaceString,
@@ -3672,15 +3691,15 @@ void DocumentWidget::markAP(QChar ch) {
     }
 
     AddMarkEx(
-            toWindow(),
+            MainWindow::fromDocument(this),
             this,
-            toWindow()->lastFocus_,
+            MainWindow::fromDocument(this)->lastFocus_,
             ch);
 }
 
 void DocumentWidget::gotoMarkAP(QChar label, bool extendSel) {
 
-    if(MainWindow *win = toWindow()) {
+    if(auto win = MainWindow::fromDocument(this)) {
 
         if(TextArea *area = win->lastFocus_) {
 
@@ -4002,7 +4021,7 @@ void DocumentWidget::execAP(TextArea *area, const QString &command) {
 ** selection.
 */
 void DocumentWidget::ExecShellCommandEx(TextArea *area, const QString &command, bool fromMacro) {
-    if(auto win = toWindow()) {
+    if(auto win = MainWindow::fromDocument(this)) {
         int flags = 0;
 
         // Can't do two shell commands at once in the same window
@@ -4144,7 +4163,7 @@ void DocumentWidget::splitPane() {
 void DocumentWidget::closePane() {
 
     if(splitter_->count() > 1) {
-        TextArea *lastFocus = toWindow()->lastFocus_;
+        TextArea *lastFocus = MainWindow::fromDocument(this)->lastFocus_;
         for(int i = 0; i < splitter_->count(); ++i) {
             if(auto area = qobject_cast<TextArea *>(splitter_->widget(i))) {
                 if(area == lastFocus) {
@@ -4199,7 +4218,7 @@ void DocumentWidget::BeginSmartIndentEx(int warn) {
     /* Make sure that the initial macro file is loaded before we execute
        any of the smart-indent macros. Smart-indent macros may reference
        routines defined in that file. */
-    ReadMacroInitFileEx(this);
+    ReadMacroInitFileEx();
 
     /* Compile and run the common and language-specific initialization macros
        (Note that when these return, the immediate commands in the file have not
@@ -4763,7 +4782,7 @@ void DocumentWidget::stderrReadProc() {
 */
 void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStatus) {
 
-    MainWindow *window = toWindow();
+    auto window = MainWindow::fromDocument(this);
     if(!window) {
         return;
     }
@@ -4941,7 +4960,7 @@ void DocumentWidget::AbortShellCommandEx() {
 */
 void DocumentWidget::ExecCursorLineEx(TextArea *area, bool fromMacro) {
 
-    MainWindow *window = toWindow();
+    auto window = MainWindow::fromDocument(this);
     if(!window) {
         return;
     }
@@ -5021,7 +5040,7 @@ void DocumentWidget::filterSelection(const QString &filterText) {
 */
 void DocumentWidget::FilterSelection(const QString &command, bool fromMacro) {
 
-    MainWindow *window = toWindow();
+    auto window = MainWindow::fromDocument(this);
     if(!window) {
         return;
     }
@@ -5061,7 +5080,7 @@ void DocumentWidget::FilterSelection(const QString &command, bool fromMacro) {
 */
 bool DocumentWidget::DoNamedShellMenuCmd(TextArea *area, const QString &name, bool fromMacro) {
 
-    MainWindow *window = toWindow();
+    auto window = MainWindow::fromDocument(this);
     if(!window) {
         return false;
     }
@@ -5176,7 +5195,7 @@ void DocumentWidget::DoShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
                     QString(),
                     path_)) {
 
-            inWindow  = document->toWindow();
+            inWindow  = MainWindow::fromDocument(document);
             outWidget = document->firstPane();
             left      = 0;
             right     = 0;
@@ -5248,7 +5267,6 @@ bool DocumentWidget::DoNamedMacroMenuCmd(TextArea *area, const QString &name, bo
 
     if(MenuData *p = findMenuItem(name, DialogTypes::MACRO_CMDS)) {
         DoMacroEx(
-            this,
             p->item->cmd,
             tr("macro menu command"));
 
@@ -5264,7 +5282,6 @@ bool DocumentWidget::DoNamedBGMenuCmd(TextArea *area, const QString &name, bool 
 
     if(MenuData *p = findMenuItem(name, DialogTypes::BG_MENU_CMDS)) {
         DoMacroEx(
-            this,
             p->item->cmd,
             tr("background menu macro"));
 
@@ -5286,7 +5303,7 @@ void DocumentWidget::ShellCmdToMacroStringEx(const QString &command, const QStri
 
     // fork the command and begin processing input/output
     issueCommandEx(
-                toWindow(),
+                MainWindow::fromDocument(this),
                 nullptr,
                 command,
                 input,
@@ -5307,7 +5324,41 @@ void DocumentWidget::SetAutoScroll(int margin) {
 }
 
 void DocumentWidget::repeatMacro(const QString &macro, int how) {
-    RepeatMacroEx(this, macro, how);
+    RepeatMacroEx(macro, how);
+}
+
+/*
+** Dispatches a macro to which repeats macro command in "command", either
+** an integer number of times ("how" == positive integer), or within a
+** selected range ("how" == REPEAT_IN_SEL), or to the end of the window
+** ("how == REPEAT_TO_END).
+**
+** Note that as with most macro routines, this returns BEFORE the macro is
+** finished executing
+*/
+void DocumentWidget::RepeatMacroEx(const QString &command, int how) {
+
+    // Wrap a for loop and counter/tests around the command
+    QString loopMacro = createRepeatMacro(how);
+    QString loopedCmd;
+
+    if (how == REPEAT_TO_END || how == REPEAT_IN_SEL) {
+        loopedCmd = loopMacro.arg(command);
+    } else {
+        loopedCmd = loopMacro.arg(how).arg(command);
+    }
+
+    // Parse the resulting macro into an executable program "prog"
+    QString errMsg;
+    int stoppedAt;
+    Program *const prog = ParseMacroEx(loopedCmd, &errMsg, &stoppedAt);
+    if(!prog) {
+        qWarning("NEdit: internal error, repeat macro syntax wrong: %s", qPrintable(errMsg));
+        return;
+    }
+
+    // run the executable program
+    runMacroEx(prog);
 }
 
 QList<DocumentWidget *> DocumentWidget::allDocuments() {
@@ -5328,7 +5379,7 @@ void DocumentWidget::BeginLearnEx() {
 		return;
 	}
 
-	MainWindow *thisWindow = toWindow();
+    MainWindow *thisWindow = MainWindow::fromDocument(this);
 	if(!thisWindow) {
 		return;
 	}
@@ -5405,7 +5456,7 @@ void DocumentWidget::runMacroEx(Program *prog) {
     setCursor(Qt::BusyCursor);
 
     // enable the cancel menu item
-    if(MainWindow *win = toWindow()) {
+    if(auto win = MainWindow::fromDocument(this)) {
         win->ui.action_Cancel_Learn->setText(tr("Cancel Macro"));
         win->ui.action_Cancel_Learn->setEnabled(true);
     }
@@ -5462,7 +5513,7 @@ void DocumentWidget::finishMacroCmdExecutionEx() {
     setCursor(Qt::ArrowCursor);
 
     // enable the cancel menu item
-    if(MainWindow *win = toWindow()) {
+    if(auto win = MainWindow::fromDocument(this)) {
         win->ui.action_Cancel_Learn->setText(tr("Cancel Learn"));
         win->ui.action_Cancel_Learn->setEnabled(false);
     }
@@ -6640,4 +6691,216 @@ std::shared_ptr<regexp> DocumentWidget::compileREAndWarnEx(const QString &re) {
         return nullptr;
     }
 
+}
+
+/*
+** Call this before closing a window, to clean up macro references to the
+** window, stop any macro which might be running from it, free associated
+** memory, and check that a macro is not attempting to close the window from
+** which it is run.  If this is being called from a macro, and the window
+** this routine is examining is the window from which the macro was run, this
+** routine will return False, and the caller must NOT CLOSE THE WINDOW.
+** Instead, empty it and make it Untitled, and let the macro completion
+** process close the window when the macro is finished executing.
+*/
+int DocumentWidget::MacroWindowCloseActionsEx() {
+    auto cmdData = macroCmdData_;
+
+    auto recorder = CommandRecorder::getInstance();
+
+    if (recorder->isRecording() && recorder->macroRecordWindowEx == this) {
+        FinishLearnEx();
+    }
+
+    /* If no macro is executing in the window, allow the close, but check
+       if macros executing in other windows have it as focus.  If so, set
+       their focus back to the window from which they were originally run */
+    if(!cmdData) {
+        for(DocumentWidget *w : DocumentWidget::allDocuments()) {
+            auto mcd = w->macroCmdData_;
+            if (w == MacroRunWindowEx() && MacroFocusWindowEx() == this) {
+                SetMacroFocusWindowEx(MacroRunWindowEx());
+            } else if (mcd && mcd->context->focusWindow == this) {
+                mcd->context->focusWindow = mcd->context->runWindow;
+            }
+        }
+
+        return true;
+    }
+
+    /* If the macro currently running (and therefore calling us, because
+       execution must otherwise return to the main loop to execute any
+       commands), is running in this window, tell the caller not to close,
+       and schedule window close on completion of macro */
+    if (MacroRunWindowEx() == this) {
+        cmdData->closeOnCompletion = true;
+        return false;
+    }
+
+    // Free the continuation
+    FreeRestartDataEx(cmdData->context);
+
+    // Kill the macro command
+    finishMacroCmdExecutionEx();
+    return true;
+}
+
+/*
+** Cancel the macro command in progress (user cancellation via GUI)
+*/
+void DocumentWidget::AbortMacroCommandEx() {
+    if (!macroCmdData_)
+        return;
+
+    /* If there's both a macro and a shell command executing, the shell command
+       must have been called from the macro.  When called from a macro, shell
+       commands don't put up cancellation controls of their own, but rely
+       instead on the macro cancellation mechanism (here) */
+    if (shellCmdData_) {
+        AbortShellCommandEx();
+    }
+
+    // Free the continuation
+    FreeRestartDataEx(macroCmdData_->context);
+
+    // Kill the macro command
+    finishMacroCmdExecutionEx();
+}
+
+/*
+** Cancel Learn mode, or macro execution (they're bound to the same menu item)
+*/
+void DocumentWidget::CancelMacroOrLearnEx() {
+    if(CommandRecorder::getInstance()->isRecording()) {
+        cancelLearnEx();
+    } else if (macroCmdData_) {
+        AbortMacroCommandEx();
+    }
+}
+
+void DocumentWidget::cancelLearnEx() {
+    // If we're not in learn mode, return
+    if(!CommandRecorder::getInstance()->isRecording()) {
+        return;
+    }
+
+    DocumentWidget *document = CommandRecorder::getInstance()->macroRecordWindowEx;
+
+    // Undim the menu items dimmed during learn
+    for(MainWindow *window : MainWindow::allWindows()) {
+        window->ui.action_Learn_Keystrokes->setEnabled(true);
+    }
+
+    if (document->IsTopDocument()) {
+        auto win = MainWindow::fromDocument(document);
+        win->ui.action_Finish_Learn->setEnabled(false);
+        win->ui.action_Cancel_Learn->setEnabled(false);
+    }
+
+    // Clear learn-mode banner
+    document->ClearModeMessageEx();
+}
+
+/*
+** Execute the learn/replay sequence stored in "window"
+*/
+void DocumentWidget::ReplayEx() {
+
+    QString replayMacro = CommandRecorder::getInstance()->replayMacro;
+
+    // Verify that a replay macro exists and it's not empty and that
+    // we're not already running a macro
+    if (!replayMacro.isEmpty() && !macroCmdData_) {
+
+        /* Parse the replay macro (it's stored in text form) and compile it into
+           an executable program "prog" */
+        QString errMsg;
+        int stoppedAt;
+
+        Program *prog = ParseMacroEx(replayMacro, &errMsg, &stoppedAt);
+        if(!prog) {
+            qWarning("NEdit: internal error, learn/replay macro syntax error: %s", qPrintable(errMsg));
+            return;
+        }
+
+        // run the executable program
+        runMacroEx(prog);
+    }
+}
+
+void DocumentWidget::FinishLearnEx() {
+
+    // If we're not in learn mode, return
+    if(!CommandRecorder::getInstance()->isRecording()) {
+        return;
+    }
+
+    DocumentWidget *document = CommandRecorder::getInstance()->macroRecordWindowEx;
+    Q_ASSERT(document);
+
+    CommandRecorder::getInstance()->stopRecording();
+
+    // Undim the menu items dimmed during learn
+    for(MainWindow *window : MainWindow::allWindows()) {
+        window->ui.action_Learn_Keystrokes->setEnabled(true);
+    }
+
+    if (document->IsTopDocument()) {
+        if(auto window = MainWindow::fromDocument(document)) {
+            window->ui.action_Finish_Learn->setEnabled(false);
+            window->ui.action_Cancel_Learn->setEnabled(false);
+        }
+    }
+
+    // Undim the replay and paste-macro buttons
+    for(MainWindow *window : MainWindow::allWindows()) {
+        window->ui.action_Replay_Keystrokes->setEnabled(true);
+    }
+
+    MainWindow::DimPasteReplayBtns(true);
+
+    // Clear learn-mode banner
+    document->ClearModeMessageEx();
+}
+
+/*
+** Executes macro string "macro" using the lastFocus pane in "window".
+** Reports errors via a dialog posted over "window", integrating the name
+** "errInName" into the message to help identify the source of the error.
+*/
+void DocumentWidget::DoMacroEx(const QString &macro, const QString &errInName) {
+
+    /* Add a terminating newline (which command line users are likely to omit
+       since they are typically invoking a single routine) */
+    QString qMacro = macro + QLatin1Char('\n');
+    QString errMsg;
+
+    // Parse the macro and report errors if it fails
+    int stoppedAt;
+    Program *const prog = ParseMacroEx(qMacro, &errMsg, &stoppedAt);
+    if(!prog) {
+        ParseErrorEx(this, qMacro, stoppedAt, errInName, errMsg);
+        return;
+    }
+
+    // run the executable program (prog is freed upon completion)
+    runMacroEx(prog);
+}
+
+/*
+**  Read the initial NEdit macro file if one exists.
+*/
+void DocumentWidget::ReadMacroInitFileEx() {
+
+    const QString autoloadName = Settings::autoLoadMacroFile();
+    if(autoloadName.isNull()) {
+        return;
+    }
+
+    static bool initFileLoaded = false;
+
+    if (!initFileLoaded) {
+        ReadMacroFileEx(autoloadName, false);
+        initFileLoaded = true;
+    }
 }

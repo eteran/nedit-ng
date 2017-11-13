@@ -350,12 +350,12 @@ int main(int argc, char *argv[]) {
                 if (documentEx) {
 
                     // raise the last tab of previous window
-                    if (lastFileEx && lastFileEx->toWindow() != documentEx->toWindow()) {
+                    if (lastFileEx && MainWindow::fromDocument(lastFileEx) != MainWindow::fromDocument(documentEx)) {
                         lastFileEx->RaiseDocument();
                     }
 
                     if (!macroFileReadEx) {
-                        ReadMacroInitFileEx(documentEx);
+                        documentEx->ReadMacroInitFileEx();
                         macroFileReadEx = true;
                     }
                     if (gotoLine) {
@@ -363,7 +363,7 @@ int main(int argc, char *argv[]) {
                     }
 
                     if (!toDoCommand.isNull()) {
-                        DoMacroEx(documentEx, toDoCommand, QLatin1String("-do macro"));
+                        documentEx->DoMacroEx(toDoCommand, QLatin1String("-do macro"));
                         toDoCommand = QString();
                     }
                 }
@@ -392,11 +392,11 @@ int main(int argc, char *argv[]) {
 	if (!fileSpecified) {
         DocumentWidget *documentEx = MainWindow::EditNewFileEx(nullptr, geometry, iconic, langMode, QString());
 
-        ReadMacroInitFileEx(documentEx);
+        documentEx->ReadMacroInitFileEx();
         MainWindow::CheckCloseDimEx();
 
         if (!toDoCommand.isNull()) {
-            DoMacroEx(documentEx, toDoCommand, QLatin1String("-do macro"));
+            documentEx->DoMacroEx(toDoCommand, QLatin1String("-do macro"));
         }
 	}
 

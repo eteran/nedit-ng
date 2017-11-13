@@ -4253,20 +4253,19 @@ void MainWindow::on_action_Learn_Keystrokes_triggered() {
 
 void MainWindow::on_action_Finish_Learn_triggered() {
     if(DocumentWidget *doc = currentDocument()) {
-        Q_UNUSED(doc);
-        FinishLearnEx();
+        doc->FinishLearnEx();
     }
 }
 
 void MainWindow::on_action_Replay_Keystrokes_triggered() {
     if(DocumentWidget *doc = currentDocument()) {
-        ReplayEx(doc);
+        doc->ReplayEx();
     }
 }
 
 void MainWindow::on_action_Cancel_Learn_triggered() {
     if(DocumentWidget *doc = currentDocument()) {
-        CancelMacroOrLearnEx(doc);
+        doc->CancelMacroOrLearnEx();
     }
 }
 
@@ -4330,13 +4329,13 @@ void MainWindow::focusChanged(QWidget *from, QWidget *to) {
 
 
     if(auto area = qobject_cast<TextArea *>(from)) {
-        if(auto document = DocumentWidget::documentFrom(area)) {
+        if(auto document = DocumentWidget::fromArea(area)) {
             lastFocusDocument = document;
         }
     }
 
     if(auto area = qobject_cast<TextArea *>(to)) {
-        if(auto document = DocumentWidget::documentFrom(area)) {
+        if(auto document = DocumentWidget::fromArea(area)) {
             // record which window pane last had the keyboard focus
             lastFocus_ = area;
 
@@ -4767,4 +4766,8 @@ void MainWindow::action_Detach_Document(DocumentWidget *document) {
         new_window->ui.tabWidget->addTab(document, document->filename_);
         new_window->show();
     }
+}
+
+MainWindow *MainWindow::fromDocument(const DocumentWidget *document) {
+    return qobject_cast<MainWindow *>(document->window());
 }

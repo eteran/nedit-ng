@@ -37,7 +37,7 @@ MainWindow *findWindowOnDesktopEx(int tabbed, long currentDesktop) {
                 continue;
             }
 
-            MainWindow *window = document->toWindow();
+            auto window = MainWindow::fromDocument(document);
 
             // No check for top document here!
             if (isLocatedOnDesktopEx(window, currentDesktop)) {
@@ -112,7 +112,7 @@ void NeditServer::newConnection() {
         QList<DocumentWidget *> documents = DocumentWidget::allDocuments();
 
         auto it = std::find_if(documents.begin(), documents.end(), [currentDesktop](DocumentWidget *document) {
-                return (!document->filenameSet_ && !document->fileChanged_ && isLocatedOnDesktopEx(document->toWindow(), currentDesktop));
+                return (!document->filenameSet_ && !document->fileChanged_ && isLocatedOnDesktopEx(MainWindow::fromDocument(document), currentDesktop));
         });
 
         if (it == documents.end()) {
@@ -158,7 +158,7 @@ void NeditServer::newConnection() {
             QList<DocumentWidget *> documents = DocumentWidget::allDocuments();
 
             auto it = std::find_if(documents.begin(), documents.end(), [currentDesktop](DocumentWidget *w) {
-                    return (!w->filenameSet_ && !w->fileChanged_ && isLocatedOnDesktopEx(w->toWindow(), currentDesktop));
+                    return (!w->filenameSet_ && !w->fileChanged_ && isLocatedOnDesktopEx(MainWindow::fromDocument(w), currentDesktop));
             });
 
             if (doCommand.isEmpty()) {
@@ -195,7 +195,7 @@ void NeditServer::newConnection() {
                     } else {
                         (*win)->RaiseDocumentWindow();
                     }
-                    DoMacroEx(*win, doCommand, QLatin1String("-do macro"));
+                    (*win)->DoMacroEx(doCommand, QLatin1String("-do macro"));
                 }
             }
 
@@ -234,7 +234,7 @@ void NeditServer::newConnection() {
                         true);
 
             if (document) {
-                if (lastFileEx && document->toWindow() != lastFileEx->toWindow()) {
+                if (lastFileEx && MainWindow::fromDocument(document) != MainWindow::fromDocument(lastFileEx)) {
                     lastFileEx->RaiseDocument();
                 }
             }
@@ -259,7 +259,7 @@ void NeditServer::newConnection() {
                 if (document->macroCmdData_) {
                     QApplication::beep();
                 } else {
-                    DoMacroEx(document, doCommand, QLatin1String("-do macro"));
+                    document->DoMacroEx(doCommand, QLatin1String("-do macro"));
                 }
             }
 

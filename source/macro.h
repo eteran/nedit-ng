@@ -45,18 +45,10 @@ enum RepeatMethod {
 
 Program *ParseMacroEx(const QString &expr, QString *message, int *stoppedAt);
 bool CheckMacroStringEx(QWidget *dialogParent, const QString &string, const QString &errIn, int *errPos);
-int MacroWindowCloseActionsEx(DocumentWidget *document);
 bool readCheckMacroStringEx(QWidget *dialogParent, const QString &string, DocumentWidget *runWindow, const QString &errIn, int *errPos);
 int ReadMacroStringEx(DocumentWidget *document, const QString &string, const QString &errIn);
-void AbortMacroCommandEx(DocumentWidget *document);
-void CancelMacroOrLearnEx(DocumentWidget *document);
-void DoMacroEx(DocumentWidget *document, const QString &macro, const QString &errInName);
-void FinishLearnEx();
-void ReplayEx(DocumentWidget *document);
 
-void ReadMacroInitFileEx(DocumentWidget *document);
 void RegisterMacroSubroutines();
-void RepeatMacroEx(DocumentWidget *document, const QString &command, int how);
 void ReturnShellCommandOutputEx(DocumentWidget *document, const QString &outText, int status);
 void SafeGC();
 
