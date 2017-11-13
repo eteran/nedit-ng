@@ -29,6 +29,7 @@
 
 #include "util/string_view.h"
 #include "Style.h"
+#include <memory>
 
 class DocumentWidget;
 class HighlightPattern;
@@ -38,6 +39,9 @@ class QString;
 class TextArea;
 class WindowHighlightData;
 class HighlightData;
+class TextBuffer;
+class StyleTableEntry;
+class ReparseContext;
 
 // Pattern flags for modifying pattern matching behavior
 enum {
@@ -46,28 +50,29 @@ enum {
 	COLOR_ONLY               = 4
 };
 
+// How much re-parsing to do when an unfinished style is encountered
+constexpr int PASS_2_REPARSE_CHUNK_SIZE = 1000;
+
 // Don't use plain 'A' or 'B' for style indices, it causes problems
 // with EBCDIC coding (possibly negative offsets when subtracting 'A').
 constexpr auto ASCII_A = static_cast<char>(65);
 
-HighlightPattern *FindPatternOfWindowEx(DocumentWidget *window, const QString &name);
-int HighlightCodeOfPosEx(DocumentWidget *document, int pos);
-int HighlightLengthOfCodeFromPosEx(DocumentWidget *window, int pos, int *checkCode);
-int StyleLengthOfCodeFromPosEx(DocumentWidget *window, int pos);
+/* Meanings of style buffer characters (styles). Don't use plain 'A' or 'B';
+   it causes problems with EBCDIC coding (possibly negative offsets when
+   subtracting 'A'). */
+constexpr char UNFINISHED_STYLE = ASCII_A;
+
+constexpr char PLAIN_STYLE = (ASCII_A + 1);
+
 QColor AllocColor(const QString &colorName);
-QColor GetHighlightBGColorOfCodeEx(DocumentWidget *document, int hCode);
-QColor HighlightColorValueOfCodeEx(DocumentWidget *document, int hCode);
-QString HighlightNameOfCodeEx(DocumentWidget *document, int hCode);
-QString HighlightStyleOfCodeEx(DocumentWidget *document, int hCode);
-void AttachHighlightToWidgetEx(TextArea *area, DocumentWidget *window);
-void freeHighlightData(WindowHighlightData *hd);
-void FreeHighlightingDataEx(DocumentWidget *window);
-Style GetHighlightInfoEx(DocumentWidget *window, int pos);
 void RemoveWidgetHighlightEx(TextArea *area);
-void StartHighlightingEx(DocumentWidget *document, bool warn);
-void SyntaxHighlightModifyCBEx(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *cbArg);
-void UpdateHighlightStylesEx(DocumentWidget *document);
-WindowHighlightData *createHighlightDataEx(DocumentWidget *document, PatternSet *patSet);
-void freePatterns(HighlightData *patterns);
+void SyntaxHighlightModifyCBEx(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *user);
+std::shared_ptr<WindowHighlightData> createHighlightDataEx(DocumentWidget *document, PatternSet *patSet);
+HighlightData *patternOfStyle(HighlightData *patterns, int style);
+char getPrevChar(TextBuffer *buf, int pos);
+int backwardOneContext(TextBuffer *buf, ReparseContext *context, int fromPos);
+int forwardOneContext(TextBuffer *buf, ReparseContext *context, int fromPos);
+bool parseString(HighlightData *pattern, const char **string, char **styleString, int length, char *prevChar, bool anchored, const QString &delimiters, const char *lookBehindTo, const char *match_till);
+void handleUnparsedRegionCBEx(const TextArea *area, int pos, const void *user);
 
 #endif

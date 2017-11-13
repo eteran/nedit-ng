@@ -102,6 +102,7 @@ add_executable(nedit-ng
 	${UI_H}
 
 	Input.cpp
+	WindowHighlightData.cpp
 	Help.cpp
 	Font.cpp
 	CallTipWidget.cpp

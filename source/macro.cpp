@@ -1342,7 +1342,7 @@ static bool setHighlightSyntaxMS(DocumentWidget *document, Arguments arguments, 
     }
 
     if (document->highlightSyntax_) {
-        StartHighlightingEx(document, true);
+        document->StartHighlightingEx(true);
     } else {
         document->StopHighlightingEx();
     }
@@ -2808,8 +2808,8 @@ static bool focusWindowMS(DocumentWidget *document, Arguments arguments, DataVal
     SetMacroFocusWindowEx(target_document);
 
     // turn on syntax highlight that might have been deferred
-    if ((target_document)->highlightSyntax_ && !(target_document)->highlightData_) {
-        StartHighlightingEx(target_document, false);
+    if (target_document->highlightSyntax_ && !target_document->highlightData_) {
+        target_document->StartHighlightingEx(false);
     }
 
     // Return the name of the window
@@ -5593,7 +5593,7 @@ static bool fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWi
        (only possible if we pass through the dynamic highlight pattern tables
        in other words, only if we have a pattern code) */
     if (patCode) {
-        QColor color = HighlightColorValueOfCodeEx(document, patCode);
+        QColor color = document->HighlightColorValueOfCodeEx(patCode);
         DV = to_value(color.name());
 
         if (!ArrayInsert(result, AllocStringCpyEx("rgb"), &DV)) {
@@ -5611,7 +5611,7 @@ static bool fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWi
        (only possible if we pass through the dynamic highlight pattern tables
        in other words, only if we have a pattern code) */
     if (patCode) {
-        QColor color = GetHighlightBGColorOfCodeEx(document, patCode);
+        QColor color = document->GetHighlightBGColorOfCodeEx(patCode);
         DV = to_value(color.name());
 
         if (!ArrayInsert(result, AllocStringCpyEx("back_rgb"), &DV)) {
@@ -5633,7 +5633,7 @@ static bool fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWi
 
     if (bufferPos >= 0) {
         // insert extent
-        DV = to_value(StyleLengthOfCodeFromPosEx(document, bufferPos));
+        DV = to_value(document->StyleLengthOfCodeFromPosEx(bufferPos));
         if (!ArrayInsert(result, AllocStringCpyEx("extent"), &DV)) {
             M_FAILURE(InsertFailed);
         }
@@ -5687,7 +5687,7 @@ static bool getStyleByNameMS(DocumentWidget *document, Arguments arguments, Data
 **
 */
 static bool getStyleAtPosMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
-    int patCode;
+
     int bufferPos;
     TextBuffer *buf = document->buffer_;
 
@@ -5706,7 +5706,7 @@ static bool getStyleAtPosMS(DocumentWidget *document, Arguments arguments, DataV
     }
 
     // Determine pattern code
-    patCode = HighlightCodeOfPosEx(document, bufferPos);
+    int patCode = document->HighlightCodeOfPosEx(bufferPos);
     if (patCode == 0) {
         // if there is no pattern we just return an empty array.
         return true;
@@ -5716,7 +5716,7 @@ static bool getStyleAtPosMS(DocumentWidget *document, Arguments arguments, DataV
         result,
         errMsg,
         document,
-        HighlightStyleOfCodeEx(document, patCode),
+        document->HighlightStyleOfCodeEx(patCode),
         true,
         patCode,
         bufferPos);
@@ -5759,7 +5759,7 @@ bool fillPatternResultEx(DataValue *result, const char **errMsg, DocumentWidget 
     if (bufferPos >= 0) {
         // insert extent
         int checkCode = 0;
-        DV = to_value(HighlightLengthOfCodeFromPosEx(document, bufferPos, &checkCode));
+        DV = to_value(document->HighlightLengthOfCodeFromPosEx(bufferPos, &checkCode));
         if (!ArrayInsert(result, AllocStringCpyEx("extent"), &DV)) {
             M_FAILURE(InsertFailed);
         }
@@ -5786,7 +5786,7 @@ static bool getPatternByNameMS(DocumentWidget *document, Arguments arguments, Da
         M_FAILURE(Param1NotAString);
     }
 
-    HighlightPattern *pattern = FindPatternOfWindowEx(document, patternName);
+    HighlightPattern *pattern = document->FindPatternOfWindowEx(patternName);
     if(!pattern) {
         // The pattern's name is unknown.
         return true;
@@ -5834,7 +5834,7 @@ static bool getPatternAtPosMS(DocumentWidget *document, Arguments arguments, Dat
     }
 
     // Determine the highlighting pattern used
-    int patCode = HighlightCodeOfPosEx(document, bufferPos);
+    int patCode = document->HighlightCodeOfPosEx(bufferPos);
     if (patCode == 0) {
         // if there is no highlighting pattern we just return an empty array.
         return true;
@@ -5844,9 +5844,9 @@ static bool getPatternAtPosMS(DocumentWidget *document, Arguments arguments, Dat
         result,
         errMsg,
         document,
-        HighlightNameOfCodeEx(document, patCode),
+        document->HighlightNameOfCodeEx(patCode),
         true,
-        HighlightStyleOfCodeEx(document, patCode),
+        document->HighlightStyleOfCodeEx(patCode),
         bufferPos);
 }
 

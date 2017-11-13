@@ -45,6 +45,9 @@ struct SmartIndentEvent;
 struct SmartIndentData;
 struct MacroCommandData;
 struct ShellCommandData;
+class PatternSet;
+class HighlightPattern;
+class StyleTableEntry;
 
 enum class Direction : uint8_t;
 
@@ -199,7 +202,6 @@ public:
     void executeModMacroEx(SmartIndentEvent *cbInfo);
     void executeNewlineMacroEx(SmartIndentEvent *cbInfo);
     void filterSelection(const QString &filterText);
-    void freeHighlightData(WindowHighlightData *hd);
     void issueCommandEx(MainWindow *window, TextArea *area, const QString &command, const QString &input, int flags, int replaceLeft, int replaceRight, bool fromMacro);
     void reapplyLanguageMode(int mode, bool forceDefaults);
     void refreshMenuBar();
@@ -209,6 +211,22 @@ public:
     void safeCloseEx();
 	void setWrapMargin(int margin);
     void trimUndoList(int maxLength);
+    PatternSet *findPatternsForWindowEx(bool warn);
+    void FreeHighlightingDataEx();
+    void UpdateHighlightStylesEx();
+    HighlightPattern *FindPatternOfWindowEx(const QString &name);
+    QColor GetHighlightBGColorOfCodeEx(int hCode);
+    Style GetHighlightInfoEx(int pos);
+    int StyleLengthOfCodeFromPosEx(int pos);
+    QString HighlightNameOfCodeEx(int hCode);
+    QString HighlightStyleOfCodeEx(int hCode);
+    QColor HighlightColorValueOfCodeEx(int hCode);
+    StyleTableEntry *styleTableEntryOfCodeEx(int hCode);
+    int HighlightCodeOfPosEx(int pos);
+    int HighlightLengthOfCodeFromPosEx(int pos, int *checkCode);
+    void handleUnparsedRegionEx(const std::shared_ptr<TextBuffer> &styleBuf, int pos) const;
+    void StartHighlightingEx(bool warn);
+    void AttachHighlightToWidgetEx(TextArea *area);
 
 public:
     static DocumentWidget *EditExistingFileEx(DocumentWidget *inDocument, const QString &name, const QString &path, int flags, const QString &geometry, int iconic, const QString &languageMode, bool tabbed, bool bgOpen);
@@ -272,10 +290,10 @@ public:
     time_t lastModTime_;               // time of last modification to file
 	uid_t fileUid_;                    // last recorded user id of the file
 	unsigned fileMode_;                // permissions of file being edited
-    WindowHighlightData *highlightData_;              // info for syntax highlighting
-    std::shared_ptr<MacroCommandData> macroCmdData_;               // same for macro commands
-    std::shared_ptr<ShellCommandData> shellCmdData_;               // when a shell command is executing, info. about it, otherwise, nullptr
-    std::shared_ptr<SmartIndentData>  smartIndentData_;            // compiled macros for smart indent
+    std::shared_ptr<WindowHighlightData> highlightData_;              // info for syntax highlighting
+    std::shared_ptr<MacroCommandData>    macroCmdData_;               // same for macro commands
+    std::shared_ptr<ShellCommandData>    shellCmdData_;               // when a shell command is executing, info. about it, otherwise, nullptr
+    std::shared_ptr<SmartIndentData>     smartIndentData_;            // compiled macros for smart indent
     bool showStats_;                  // is stats line supposed to be shown
 
 private:

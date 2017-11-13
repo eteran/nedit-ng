@@ -27,13 +27,13 @@
 #ifndef X_SMART_INDENT_H_
 #define X_SMART_INDENT_H_
 
-#include "preferences.h"
-#include "util/string_view.h"
+#include <QList>
 
 class QString;
 class QByteArray;
 class SmartIndentEntry;
 class DocumentWidget;
+class Program;
 
 bool InSmartIndentMacrosEx(DocumentWidget *document);
 int LMHasSmartIndentMacros(const QString &languageMode);
@@ -47,22 +47,17 @@ void EndSmartIndentEx(DocumentWidget *document);
 void RenameSmartIndentMacros(const QString &oldName, const QString &newName);
 void UpdateLangModeMenuSmartIndent();
 QByteArray defaultCommonMacros();
-const SmartIndentEntry *findIndentSpec(const QString &modeName);
+const SmartIndentEntry *findIndentSpec(const QString &name);
+const SmartIndentEntry *findDefaultIndentSpec(const QString &name);
 
 extern QString CommonMacros;
-
-constexpr int N_DEFAULT_INDENT_SPECS  = 4;
-
-extern SmartIndentEntry DefaultIndentSpecs[N_DEFAULT_INDENT_SPECS];
 extern QList<SmartIndentEntry> SmartIndentSpecs;
-
-class Program;
 
 struct SmartIndentData {
     Program *newlineMacro;
-    int inNewLineMacro;
+    int      inNewLineMacro;
     Program *modMacro;
-    int inModMacro;
+    int      inModMacro;
 };
 
 #endif 

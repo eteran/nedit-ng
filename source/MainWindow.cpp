@@ -3042,7 +3042,7 @@ void MainWindow::on_action_Tab_Stops_triggered() {
 void MainWindow::on_action_Text_Fonts_triggered() {
     if(DocumentWidget *document = currentDocument()) {
 
-        document->dialogFonts_ = new DialogFonts(document, true, this);
+        document->dialogFonts_ = new DialogFonts(document, this);
         document->dialogFonts_->exec();
         delete document->dialogFonts_;
     }
@@ -3054,7 +3054,7 @@ void MainWindow::on_action_Highlight_Syntax_toggled(bool state) {
         document->highlightSyntax_ = state;
 
         if (document->highlightSyntax_) {
-            StartHighlightingEx(document, true);
+            document->StartHighlightingEx(true);
         } else {
             document->StopHighlightingEx();
         }
@@ -3220,7 +3220,7 @@ void MainWindow::on_action_Default_Tab_Stops_triggered() {
 
 void MainWindow::on_action_Default_Text_Fonts_triggered() {
     if(DocumentWidget *document = currentDocument()) {
-        document->dialogFonts_ = new DialogFonts(nullptr, false, this);
+        document->dialogFonts_ = new DialogFonts(nullptr, this);
         document->dialogFonts_->exec();
         delete document->dialogFonts_;
     }

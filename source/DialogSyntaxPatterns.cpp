@@ -787,7 +787,7 @@ bool DialogSyntaxPatterns::updatePatternSet() {
                         document->toWindow()->ui.action_Highlight_Syntax->setEnabled(true);
                         no_signals(document->toWindow()->ui.action_Highlight_Syntax)->setChecked(true);
 					}
-                    StartHighlightingEx(document, true);
+                    document->StartHighlightingEx(true);
 				}
 			}
 		} else {
@@ -1012,8 +1012,7 @@ bool DialogSyntaxPatterns::TestHighlightPatterns(PatternSet *patSet) {
 	   parent for dialogs, since we really don't care what fonts are used) */
     for(DocumentWidget *document : DocumentWidget::allDocuments()) {
 
-        if(WindowHighlightData *highlightData = createHighlightDataEx(document, patSet)) {
-            freeHighlightData(highlightData);
+        if(std::shared_ptr<WindowHighlightData> highlightData = createHighlightDataEx(document, patSet)) {
 			return true;
 		}
 	}

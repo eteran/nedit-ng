@@ -2064,7 +2064,7 @@ void TextArea::wrappedLineCounter(const TextBuffer *buf, int startPos, int maxPo
 int TextArea::measurePropChar(const char c, int colNum, int pos) const {
 	int style;
 	char expChar[MAX_EXP_CHAR_LEN];
-	TextBuffer *styleBuf = styleBuffer_;
+    const std::shared_ptr<TextBuffer> &styleBuf = styleBuffer_;
 
 	int charLen = TextBuffer::BufExpandCharacter(c, colNum, expChar, buffer_->tabDist_, buffer_->nullSubsChar_);
 
@@ -4054,7 +4054,6 @@ void TextArea::offsetLineStarts(int newTopLineNum) {
 ** horizontally by pixel offset from the left margin
 */
 void TextArea::TextDSetScroll(int topLineNum, int horizOffset) {
-
 
 	int vPadding = P_cursorVPadding;
 
@@ -7973,7 +7972,7 @@ int TextArea::getFontHeight() const {
 **
 ** Style buffers, tables and their associated memory are managed by the caller.
 */
-void TextArea::TextDAttachHighlightData(TextBuffer *styleBuffer, StyleTableEntry *styleTable, int nStyles, char unfinishedStyle, unfinishedStyleCBProcEx unfinishedHighlightCB, void *cbArg) {
+void TextArea::TextDAttachHighlightData(const std::shared_ptr<TextBuffer> &styleBuffer, StyleTableEntry *styleTable, int nStyles, char unfinishedStyle, unfinishedStyleCBProcEx unfinishedHighlightCB, void *cbArg) {
     styleBuffer_           = styleBuffer;
     styleTable_            = styleTable;
     nStyles_               = nStyles;
@@ -7998,7 +7997,7 @@ int TextArea::TextLastVisiblePos() const {
     return lastChar_;
 }
 
-TextBuffer *TextArea::getStyleBuffer() const {
+const std::shared_ptr<TextBuffer> &TextArea::getStyleBuffer() const {
     return styleBuffer_;
 }
 
@@ -8140,7 +8139,7 @@ std::string TextArea::TextGetWrappedEx(int startPos, int endPos) {
     return outBuf->BufGetAllEx();
 }
 
-void TextArea::setStyleBuffer(TextBuffer *buffer) {
+void TextArea::setStyleBuffer(const std::shared_ptr<TextBuffer> &buffer) {
     styleBuffer_ = buffer;
 }
 

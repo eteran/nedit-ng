@@ -189,6 +189,54 @@ void CommandRecorder::lastActionHook(QObject *obj, const TextEditEvent *ev) {
  * @param ev
  * @return
  */
+bool CommandRecorder::isMouseAction(const WindowMenuEvent *ev) const {
+
+    for(const QLatin1String &action : MouseActions) {
+        if (action == ev->actionString()) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/**
+ * @brief CommandRecorder::isRedundantAction
+ * @param ev
+ * @return
+ */
+bool CommandRecorder::isRedundantAction(const WindowMenuEvent *ev) const {
+
+    for(const QLatin1String &action : RedundantActions) {
+        if (action == ev->actionString()) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/**
+ * @brief CommandRecorder::isIgnoredAction
+ * @param ev
+ * @return
+ */
+bool CommandRecorder::isIgnoredAction(const WindowMenuEvent *ev) const {
+
+    for(const QLatin1String &action : IgnoredActions) {
+        if (action == ev->actionString()) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/**
+ * @brief CommandRecorder::isMouseAction
+ * @param ev
+ * @return
+ */
 bool CommandRecorder::isMouseAction(const TextEditEvent *ev) const {
 
     for(const QLatin1String &action : MouseActions) {
@@ -250,6 +298,11 @@ QString CommandRecorder::actionToString(const TextEditEvent *ev) {
 ** Returns nullptr for non-operational or un-recordable actions.
 */
 QString CommandRecorder::actionToString(const WindowMenuEvent *ev) {
+
+    if (isIgnoredAction(ev) || isRedundantAction(ev) || isMouseAction(ev)) {
+        return QString();
+    }
+
     return ev->toString();
 }
 

@@ -52,9 +52,131 @@
 
 namespace {
 
+constexpr int N_DEFAULT_INDENT_SPECS  = 4;
 const auto MacroEndBoundary = QLatin1String("--End-of-Macro--");
 
 DialogSmartIndent *SmartIndentDlg = nullptr;
+
+// TODO(eteran): 2.0, what would be the best way to move this structure to a resource file and have it be more maintainable?
+const SmartIndentEntry DefaultIndentSpecs[N_DEFAULT_INDENT_SPECS] = {
+    {
+        QLatin1String("C")
+        ,
+        QLatin1String("# C Macros and tuning parameters are shared with C++, and are declared\n"
+                      "# in the common section.  Press Common / Shared Initialization above.\n")
+        ,
+        QLatin1String("return cFindSmartIndentDist($1)\n")
+        ,
+        QLatin1String("if ($2 == \"}\" || $2 == \"{\" || $2 == \"#\")\n"
+                      "    cBraceOrPound($1, $2)\n")
+    },{
+        QLatin1String("C++")
+        ,
+        QLatin1String("# C++ Macros and tuning parameters are shared with C, and are declared\n"
+                      "# in the common section.  Press Common / Shared Initialization above.\n")
+        ,
+        QLatin1String("return cFindSmartIndentDist($1)\n")
+        ,
+        QLatin1String("if ($2 == \"}\" || $2 == \"{\" || $2 == \"#\")\n"
+                      "    cBraceOrPound($1, $2)\n")
+    },{
+        QLatin1String("Python")
+        ,
+        QLatin1String("# Number of characters in a normal indent level.  May be a number, or the\n"
+                      "# string \"default\", meaning, guess the value from the current tab settings.\n"
+                      "$pyIndentDist = \"default\"\n")
+        ,
+        QLatin1String("if (get_range($1-1, $1) != \":\")\n"
+                      "    return -1\n"
+                      "return measureIndent($1) + defaultIndent($pyIndentDist)\n")
+        ,
+        QLatin1String()
+    },{
+        QLatin1String("Matlab")
+        ,
+        QLatin1String("# Number of spaces to indent \"case\" statements\n"
+                      "$caseDepth = 2\n"
+                      "define matlabNewlineMacro\n"
+                      "{\n"
+                      "   if (!$em_tab_dist)\n"
+                      "        tabsize = $tab_dist\n"
+                      "   else\n"
+                      " 	   tabsize = $em_tab_dist\n"
+                      "   startLine = startOfLine($1)\n"
+                      "   indentLevel = measureIndent($1)\n"
+                      "\n"
+                      "   # If this line is continued on next, return default:\n"
+                      "   lastLine = get_range(startLine, $1)\n"
+                      "   if (search_string(lastLine, \"...\", 0) != -1) {\n"
+                      " 	 if ($n_args == 2)\n"
+                      " 		return matlabNewlineMacro(startLine - 1, 1)\n"
+                      " 	 else {\n"
+                      " 		return -1\n"
+                      " 	 }\n"
+                      "   }\n"
+                      "\n"
+                      "   # Correct the indentLevel if this was a continued line.\n"
+                      "   while (startLine > 1)\n"
+                      "   {\n"
+                      " 	 endLine = startLine - 1\n"
+                      " 	 startLine = startOfLine(endLine)\n"
+                      " 	 lastLine = get_range(startLine, endLine)\n"
+                      " 	 # No \"...\" means we've found the root\n"
+                      " 	 if (search_string(lastLine, \"...\", 0) == -1) {\n"
+                      " 		startLine = endLine + 1\n"
+                      " 		break\n"
+                      " 	 }\n"
+                      "   }\n"
+                      "   indentLevel = measureIndent(startLine)\n"
+                      "\n"
+                      "   # Get the first word of the indentLevel line\n"
+                      "   FWend = search(\">|\\n\", startLine + indentLevel, \"regex\")\n"
+                      "   # This search fails on EOF\n"
+                      "   if (FWend == -1)\n"
+                      " 	 FWend = $1\n"
+                      "\n"
+                      "   firstWord = get_range(startLine + indentLevel, FWend)\n"
+                      "\n"
+                      "   # How shall we change the indent level based on the first word?\n"
+                      "   if (search_string(firstWord, \\\n"
+                      " 		\"<for>|<function>|<if>|<switch>|<try>|<while>\", 0, \"regex\") == 0) {\n"
+                      " 	 return indentLevel + tabsize\n"
+                      "   }\n"
+                      "   else if ((firstWord == \"end\") || (search_string(firstWord, \\\n"
+                      " 		   \"<case>|<catch>|<else>|<elseif>|<otherwise>\", 0, \"regex\") == 0)) {\n"
+                      " 	 # Get the last indent level \n"
+                      " 	 if (startLine > 0) # avoid infinite loop\n"
+                      "    last_indent = matlabNewlineMacro(startLine - 1, 1)\n"
+                      " 	 else\n"
+                      " 		last_indent = indentLevel\n"
+                      "\n"
+                      " 	 # Re-indent this line\n"
+                      " 	 if ($n_args == 1) {\n"
+                      " 		if (firstWord == \"case\" || firstWord == \"otherwise\")\n"
+                      " 		   replace_range(startLine, startLine + indentLevel, \\\n"
+                      " 						 makeIndentString(last_indent - tabsize + $caseDepth))\n"
+                      " 		else\n"
+                      " 		   replace_range(startLine, startLine + indentLevel, \\\n"
+                      " 						 makeIndentString(last_indent - tabsize))\n"
+                      " 	 }\n"
+                      "\n"
+                      " 	 if (firstWord == \"end\") {\n"
+                      " 		return max(last_indent - tabsize, 0)\n"
+                      " 	 }\n"
+                      " 	 else {\n"
+                      " 		return last_indent\n"
+                      " 	 }\n"
+                      "   } \n"
+                      "   else {\n"
+                      " 	 return indentLevel\n"
+                      "   }\n"
+                      "}\n")
+        ,
+        QLatin1String("return matlabNewlineMacro($1)\n")
+        ,
+        QLatin1String()
+    }
+};
 
 }
 
@@ -76,127 +198,6 @@ QByteArray defaultCommonMacros() {
     static QByteArray defaultMacros = loadResource(QLatin1String("res/DefaultCommonMacros.txt"));
     return defaultMacros;
 }
-
-// TODO(eteran): 2.0, what would be the best way to move this structure to a resource file and have it be more maintainable?
-SmartIndentEntry DefaultIndentSpecs[N_DEFAULT_INDENT_SPECS] = {
-	{
-		QLatin1String("C")
-		,
-		QLatin1String("# C Macros and tuning parameters are shared with C++, and are declared\n"
-		              "# in the common section.  Press Common / Shared Initialization above.\n")
-		,
-		QLatin1String("return cFindSmartIndentDist($1)\n")
-		,
-		QLatin1String("if ($2 == \"}\" || $2 == \"{\" || $2 == \"#\")\n"
-		              "    cBraceOrPound($1, $2)\n")
-	},{
-		QLatin1String("C++")
-		,
-		QLatin1String("# C++ Macros and tuning parameters are shared with C, and are declared\n"
-		              "# in the common section.  Press Common / Shared Initialization above.\n")
-		,
-		QLatin1String("return cFindSmartIndentDist($1)\n")
-		,
-		QLatin1String("if ($2 == \"}\" || $2 == \"{\" || $2 == \"#\")\n"
-		              "    cBraceOrPound($1, $2)\n")
-	},{
-		QLatin1String("Python")
-		,
-		QLatin1String("# Number of characters in a normal indent level.  May be a number, or the\n"
-		              "# string \"default\", meaning, guess the value from the current tab settings.\n"
-		              "$pyIndentDist = \"default\"\n")
-		,
-		QLatin1String("if (get_range($1-1, $1) != \":\")\n"
-		              "    return -1\n"
-		              "return measureIndent($1) + defaultIndent($pyIndentDist)\n")
-		,
-        QLatin1String()
-	},{
-		QLatin1String("Matlab")
-		,
-		QLatin1String("# Number of spaces to indent \"case\" statements\n"
-		              "$caseDepth = 2\n"
-		              "define matlabNewlineMacro\n"
-		              "{\n"
-		              "   if (!$em_tab_dist)\n"
-		              "        tabsize = $tab_dist\n"
-		              "   else\n"
-		              " 	   tabsize = $em_tab_dist\n"
-		              "   startLine = startOfLine($1)\n"
-		              "   indentLevel = measureIndent($1)\n"
-		              "\n"
-		              "   # If this line is continued on next, return default:\n"
-		              "   lastLine = get_range(startLine, $1)\n"
-		              "   if (search_string(lastLine, \"...\", 0) != -1) {\n"
-		              " 	 if ($n_args == 2)\n"
-		              " 		return matlabNewlineMacro(startLine - 1, 1)\n"
-		              " 	 else {\n"
-		              " 		return -1\n"
-		              " 	 }\n"
-		              "   }\n"
-		              "\n"
-		              "   # Correct the indentLevel if this was a continued line.\n"
-		              "   while (startLine > 1)\n"
-		              "   {\n"
-		              " 	 endLine = startLine - 1\n"
-		              " 	 startLine = startOfLine(endLine)\n"
-		              " 	 lastLine = get_range(startLine, endLine)\n"
-		              " 	 # No \"...\" means we've found the root\n"
-		              " 	 if (search_string(lastLine, \"...\", 0) == -1) {\n"
-		              " 		startLine = endLine + 1\n"
-		              " 		break\n"
-					  " 	 }\n"
-					  "   }\n"
-					  "   indentLevel = measureIndent(startLine)\n"
-		              "\n"
-		              "   # Get the first word of the indentLevel line\n"
-		              "   FWend = search(\">|\\n\", startLine + indentLevel, \"regex\")\n"
-		              "   # This search fails on EOF\n"
-		              "   if (FWend == -1)\n"
-		              " 	 FWend = $1\n"
-		              "\n"
-		              "   firstWord = get_range(startLine + indentLevel, FWend)\n"
-		              "\n"
-		              "   # How shall we change the indent level based on the first word?\n"
-		              "   if (search_string(firstWord, \\\n"
-		              " 		\"<for>|<function>|<if>|<switch>|<try>|<while>\", 0, \"regex\") == 0) {\n"
-		              " 	 return indentLevel + tabsize\n"
-		              "   }\n"
-		              "   else if ((firstWord == \"end\") || (search_string(firstWord, \\\n"
-					  " 		   \"<case>|<catch>|<else>|<elseif>|<otherwise>\", 0, \"regex\") == 0)) {\n"
-		              " 	 # Get the last indent level \n"
-		              " 	 if (startLine > 0) # avoid infinite loop\n"
-		              "    last_indent = matlabNewlineMacro(startLine - 1, 1)\n"
-		              " 	 else\n"
-		              " 		last_indent = indentLevel\n"
-		              "\n"
-		              " 	 # Re-indent this line\n"
-		              " 	 if ($n_args == 1) {\n"
-		              " 		if (firstWord == \"case\" || firstWord == \"otherwise\")\n"
-		              " 		   replace_range(startLine, startLine + indentLevel, \\\n"
-		              " 						 makeIndentString(last_indent - tabsize + $caseDepth))\n"
-		              " 		else\n"
-		              " 		   replace_range(startLine, startLine + indentLevel, \\\n"
-		              " 						 makeIndentString(last_indent - tabsize))\n"
-		              " 	 }\n"
-					  "\n"
-					  " 	 if (firstWord == \"end\") {\n"
-					  " 		return max(last_indent - tabsize, 0)\n"
-					  " 	 }\n"
-					  " 	 else {\n"
-					  " 		return last_indent\n"
-					  " 	 }\n"
-					  "   } \n"
-					  "   else {\n"
-					  " 	 return indentLevel\n"
-					  "   }\n"
-					  "}\n")
-		,
-		QLatin1String("return matlabNewlineMacro($1)\n")
-		,
-        QLatin1String()
-	}
-};
 
 void EndSmartIndentEx(DocumentWidget *document) {
     auto winData = document->smartIndentData_;
@@ -445,23 +446,38 @@ static void insertShiftedMacro(QTextStream &ts, const QString &macro) {
 
 static bool isDefaultIndentSpec(const SmartIndentEntry *indentSpec) {
 
-	for (int i = 0; i < N_DEFAULT_INDENT_SPECS; i++) {
-		if (indentSpec->lmName == DefaultIndentSpecs[i].lmName) {
-			return (*indentSpec == DefaultIndentSpecs[i]);
+    for(const SmartIndentEntry &entry : DefaultIndentSpecs) {
+        if (indentSpec->lmName == entry.lmName) {
+            return (*indentSpec == entry);
 		}
 	}
 	return false;
 }
 
-const SmartIndentEntry *findIndentSpec(const QString &modeName) {
+const SmartIndentEntry *findDefaultIndentSpec(const QString &name) {
 
-    if(modeName.isNull()) {
+    if(name.isNull()) {
+        return nullptr;
+    }
+
+    for(const SmartIndentEntry &entry : DefaultIndentSpecs) {
+        if (entry.lmName == name) {
+            return &entry;
+        }
+    }
+
+    return nullptr;
+}
+
+const SmartIndentEntry *findIndentSpec(const QString &name) {
+
+    if(name.isNull()) {
 		return nullptr;
 	}
 
-    for(const SmartIndentEntry &sis : SmartIndentSpecs) {
-        if (sis.lmName == modeName) {
-            return &sis;
+    for(const SmartIndentEntry &entry : SmartIndentSpecs) {
+        if (entry.lmName == name) {
+            return &entry;
 		}
 	}
 	return nullptr;

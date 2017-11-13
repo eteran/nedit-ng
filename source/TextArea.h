@@ -108,7 +108,7 @@ public:
 	void setAutoIndent(bool value);
 	void setSmartIndent(bool value);
     void setModifyingTabDist(int tabDist);
-    void setStyleBuffer(TextBuffer *buffer);
+    void setStyleBuffer(const std::shared_ptr<TextBuffer> &buffer);
 
 public:
     int TextDMinFontWidth(bool considerStyles) const;
@@ -126,7 +126,7 @@ public:
     int fontDescent() const;
     int fontAscent() const;
     QTimer *cursorBlinkTimer() const;
-    TextBuffer *getStyleBuffer() const;
+    const std::shared_ptr<TextBuffer> &getStyleBuffer() const;
     int getLineNumWidth() const;
     int getLineNumLeft() const;
     int getRows() const;
@@ -256,7 +256,7 @@ public:
 	int TextDPosToLineAndCol(int pos, int *lineNum, int *column);
     void TextDSetScroll(int topLineNum, int horizOffset);
     void TextSetCursorPos(int pos);
-    void TextDAttachHighlightData(TextBuffer *styleBuffer, StyleTableEntry *styleTable, int nStyles, char unfinishedStyle, unfinishedStyleCBProcEx unfinishedHighlightCB, void *cbArg);
+    void TextDAttachHighlightData(const std::shared_ptr<TextBuffer> &styleBuffer, StyleTableEntry *styleTable, int nStyles, char unfinishedStyle, unfinishedStyleCBProcEx unfinishedHighlightCB, void *cbArg);
     int TextFirstVisiblePos() const;
     int TextLastVisiblePos() const;
     void TextDSetFont(const QFont &font);
@@ -391,7 +391,7 @@ private:
 	int nVisibleLines_;                           // # of visible (displayed) lines
 	int nBufferLines_;                            // # of newlines in the buffer
 	TextBuffer *buffer_;                          // Contains text to be displayed
-	TextBuffer *styleBuffer_;                     // Optional parallel buffer containing color and font information
+    std::shared_ptr<TextBuffer> styleBuffer_;                     // Optional parallel buffer containing color and font information
 	int firstChar_;                               // Buffer positions of first and last displayed character (lastChar points either to a newline or one character beyond the end of the buffer)
 	int lastChar_;
     QVector<int> lineStarts_;

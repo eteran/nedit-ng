@@ -4,6 +4,7 @@
 
 #include "ReparseContext.h"
 #include <QByteArray>
+#include <memory>
 
 class HighlightData;
 class PatternSet;
@@ -14,14 +15,16 @@ class TextBuffer;
 // information (for both drawing and incremental reparsing)
 class WindowHighlightData {
 public:
-	HighlightData*   pass1Patterns;
-	HighlightData*   pass2Patterns;
-	QByteArray       parentStyles;
-	ReparseContext   contextRequirements;
-	StyleTableEntry* styleTable;
-	int              nStyles;
-	TextBuffer*      styleBuffer;
-	PatternSet*      patternSetForWindow;
+    ~WindowHighlightData();
+public:
+    StyleTableEntry*                 styleTable          = nullptr;
+    HighlightData*                   pass1Patterns       = nullptr;
+    HighlightData*                   pass2Patterns       = nullptr;
+    std::shared_ptr<TextBuffer>      styleBuffer         = nullptr;
+    PatternSet*                      patternSetForWindow = nullptr;
+    QByteArray                       parentStyles;
+    ReparseContext                   contextRequirements = { 0, 0 };
+    int                              nStyles             = 0;
 };
 
 #endif

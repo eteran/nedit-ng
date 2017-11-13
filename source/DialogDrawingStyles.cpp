@@ -436,7 +436,7 @@ bool DialogDrawingStyles::updateHSList() {
 
 	// Redisplay highlighted windows which use changed style(s) 
     for(DocumentWidget *document : DocumentWidget::allDocuments()) {
-        UpdateHighlightStylesEx(document);
+        document->UpdateHighlightStylesEx();
 	}
 
 	// Note that preferences have been changed 

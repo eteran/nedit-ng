@@ -132,28 +132,27 @@ void DialogSmartIndent::on_buttonDelete_clicked() {
 //------------------------------------------------------------------------------
 void DialogSmartIndent::on_buttonRestore_clicked() {
 
-	int i;
-
-	// Find the default indent spec 
-	for (i = 0; i < N_DEFAULT_INDENT_SPECS; i++) {
-		if (languageMode_ == DefaultIndentSpecs[i].lmName) {
-			break;
-		}
-	}
-
-	if (i == N_DEFAULT_INDENT_SPECS) {
-		QMessageBox::warning(this, tr("Smart Indent"), tr("There are no default indent macros for language mode %1").arg(languageMode_));
-		return;
-	}
-
-    const SmartIndentEntry &defaultIS = DefaultIndentSpecs[i];
+    const SmartIndentEntry *defaultIS = findDefaultIndentSpec(languageMode_);
+    if(!defaultIS) {
+        QMessageBox::warning(
+                    this,
+                    tr("Smart Indent"),
+                    tr("There are no default indent macros for language mode %1").arg(languageMode_));
+        return;
+    }
 	
-	int resp = QMessageBox::question(this, tr("Discard Changes"), tr("Are you sure you want to discard all changes to smart indent macros for language mode %1?").arg(languageMode_), QMessageBox::Discard | QMessageBox::Cancel);
+    int resp = QMessageBox::question(
+                this,
+                tr("Discard Changes"),
+                tr("Are you sure you want to discard all changes to smart indent macros for language mode %1?").arg(languageMode_),
+                QMessageBox::Discard | QMessageBox::Cancel);
+
 	if(resp == QMessageBox::Cancel) {
 		return;
 	}
 
 	// if a stored version of the indent macros exist, replace them, if not, add a new one
+    int i;
     for (i = 0; i < SmartIndentSpecs.size(); i++) {
         if (languageMode_ == SmartIndentSpecs[i].lmName) {
 			break;
@@ -161,13 +160,13 @@ void DialogSmartIndent::on_buttonRestore_clicked() {
 	}
 	
     if (i < SmartIndentSpecs.size()) {
-        SmartIndentSpecs[i] = defaultIS;
+        SmartIndentSpecs[i] = *defaultIS;
 	} else {
-        SmartIndentSpecs.push_back(defaultIS);
+        SmartIndentSpecs.push_back(*defaultIS);
 	}
 
 	// Update the dialog 
-    setSmartIndentDialogData(&defaultIS);
+    setSmartIndentDialogData(defaultIS);
 }
 
 //------------------------------------------------------------------------------

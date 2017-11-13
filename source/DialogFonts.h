@@ -10,17 +10,17 @@ class DocumentWidget;
 class DialogFonts : public Dialog {
 	Q_OBJECT
 private:
-	// Return values for checkFontStatus 
-	enum FontStatus {
-		GOOD_FONT,
-		BAD_PRIMARY,
-		BAD_FONT,
-		BAD_SIZE,
-		BAD_SPACING
-	};
-	
+    // Return values for checkFontStatus
+    enum FontStatus {
+        GOOD_FONT,
+        BAD_PRIMARY,
+        BAD_FONT,
+        BAD_SIZE,
+        BAD_SPACING
+    };
+
 public:
-    DialogFonts(DocumentWidget *document, bool forWindow, QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
+    DialogFonts(DocumentWidget *document, QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
     ~DialogFonts() override = default;
 
 private Q_SLOTS:
@@ -44,7 +44,6 @@ private:
 private:
 	Ui::DialogFonts ui;
     DocumentWidget *document_;
-    bool forWindow_;
 };
 
 #endif

@@ -10,17 +10,17 @@
 //------------------------------------------------------------------------------
 // Name:
 //------------------------------------------------------------------------------
-DialogFonts::DialogFonts(DocumentWidget *document, bool forWindow, QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f), document_(document), forWindow_(forWindow) {
+DialogFonts::DialogFonts(DocumentWidget *document, QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f), document_(document) {
 	ui.setupUi(this);
 
-	if(!forWindow) {
+    if(!document_) {
 		ui.buttonBox->removeButton(ui.buttonBox->button(QDialogButtonBox::Apply));
 		ui.buttonBox->removeButton(ui.buttonBox->button(QDialogButtonBox::Close));
 		ui.buttonBox->addButton(QDialogButtonBox::Cancel);
 	}
 
 	// Set initial values
-	if (forWindow) {
+    if (document_) {
         ui.editFontPrimary->setText(document->fontName_);
         ui.editFontBold->setText(document->boldFontName_);
         ui.editFontItalic->setText(document->italicFontName_);
@@ -72,16 +72,19 @@ void DialogFonts::on_buttonFill_clicked() {
     QFont boldFont(font);
     boldFont.setBold(true);
     boldFont.setItalic(false);
+    boldFont.setStyleName(QLatin1String("Bold"));
     ui.editFontBold->setText(boldFont.toString());
 
     QFont italicFont(font);
     italicFont.setItalic(true);
     italicFont.setBold(false);
+    italicFont.setStyleName(QLatin1String("Italic"));
     ui.editFontItalic->setText(italicFont.toString());
 
     QFont boldItalicFont(font);
     boldItalicFont.setBold(true);
     boldItalicFont.setItalic(true);
+    boldItalicFont.setStyleName(QLatin1String("Bold Italic"));
     ui.editFontBoldItalic->setText(boldItalicFont.toString());
 }
 
@@ -112,7 +115,7 @@ void DialogFonts::updateFonts() {
 	QString boldName       = ui.editFontBold->text();
 	QString boldItalicName = ui.editFontBoldItalic->text();
 
-	if (forWindow_) {
+    if (document_) {
         document_->SetFonts(fontName, italicName, boldName, boldItalicName);
 	} else {
         SetPrefFont(fontName);
