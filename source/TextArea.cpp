@@ -6337,10 +6337,10 @@ void TextArea::extendAdjustAP(QMouseEvent *event, EventFlags flags) {
 
 	/* Record the new position for the autoscrolling timer routine, and
 	   engage or disengage the timer if the mouse is in/out of the window */
-	checkAutoScroll({event->x(), event->y()});
+    checkAutoScroll(event->pos());
 
 	// Adjust the selection and move the cursor
-	adjustSelection({event->x(), event->y()});
+    adjustSelection(event->pos());
 }
 
 /*
