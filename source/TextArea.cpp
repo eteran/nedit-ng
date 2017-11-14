@@ -7975,13 +7975,13 @@ int TextArea::getFontHeight() const {
 **
 ** Style buffers, tables and their associated memory are managed by the caller.
 */
-void TextArea::TextDAttachHighlightData(const std::shared_ptr<TextBuffer> &styleBuffer, StyleTableEntry *styleTable, int nStyles, char unfinishedStyle, unfinishedStyleCBProcEx unfinishedHighlightCB, void *cbArg) {
+void TextArea::TextDAttachHighlightData(const std::shared_ptr<TextBuffer> &styleBuffer, StyleTableEntry *styleTable, long nStyles, char unfinishedStyle, unfinishedStyleCBProcEx unfinishedHighlightCB, void *user) {
     styleBuffer_           = styleBuffer;
     styleTable_            = styleTable;
     nStyles_               = nStyles;
     unfinishedStyle_       = unfinishedStyle;
     unfinishedHighlightCB_ = unfinishedHighlightCB;
-    highlightCBArg_        = cbArg;
+    highlightCBArg_        = user;
 
     /* Call TextDSetFont to combine font information from style table and
        primary font, adjust font-related parameters, and then redisplay */

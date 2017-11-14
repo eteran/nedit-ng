@@ -24,7 +24,7 @@ public:
     PatternSet*                      patternSetForWindow = nullptr;
     QByteArray                       parentStyles;
     ReparseContext                   contextRequirements = { 0, 0 };
-    int                              nStyles             = 0;
+    long                             nStyles             = 0;
 };
 
 #endif

@@ -16,6 +16,4 @@ enum class SearchType {
     RegexNoCase,
 };
 
-Q_DECLARE_METATYPE(SearchType)
-
 #endif

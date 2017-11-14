@@ -200,7 +200,7 @@ QByteArray defaultCommonMacros() {
 }
 
 void EndSmartIndentEx(DocumentWidget *document) {
-    auto winData = document->smartIndentData_;
+    const std::unique_ptr<SmartIndentData> &winData = document->smartIndentData_;
 
 	if(!winData) {
         return;
@@ -224,7 +224,7 @@ int SmartIndentMacrosAvailable(const QString &languageModeName) {
 }
 
 bool InSmartIndentMacrosEx(DocumentWidget *document) {
-    auto winData = document->smartIndentData_;
+    const std::unique_ptr<SmartIndentData> &winData = document->smartIndentData_;
 	return winData && (winData->inModMacro || winData->inNewLineMacro);
 }
 

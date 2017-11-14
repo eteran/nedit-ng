@@ -10,6 +10,4 @@ enum class ShowMatchingStyle {
     Range
 };
 
-Q_DECLARE_METATYPE(ShowMatchingStyle)
-
 #endif

@@ -124,7 +124,7 @@ constexpr CharMatchTable MatchingChars[] = {
 /*
  * Number of bytes read at once by cmpWinAgainstFile
  */
-constexpr int PREFERRED_CMPBUF_LEN = 0x8000;
+constexpr auto PREFERRED_CMPBUF_LEN = 0x8000L;
 
 /* Maximum frequency in miliseconds of checking for external modifications.
    The periodic check is only performed on buffer modification, and the check
@@ -419,7 +419,7 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 	fileUid_               = 0;
 	fileGid_               = 0;
 	filenameSet_           = false;
-	fileFormat_            = UNIX_FILE_FORMAT;
+    fileFormat_            = FileFormats::Unix;
     lastModTime_           = 0;
 	filename_              = name;
 	autoSaveCharCount_     = 0;
@@ -771,10 +771,10 @@ void DocumentWidget::UpdateStatsLine(TextArea *area) {
 
 		QString format;
 		switch(fileFormat_) {
-		case DOS_FILE_FORMAT:
+        case FileFormats::Dos:
 			format = tr(" DOS");
 			break;
-		case MAC_FILE_FORMAT:
+        case FileFormats::Mac:
 			format = tr(" Mac");
 			break;
 		default:
@@ -1665,7 +1665,6 @@ void DocumentWidget::trimUndoList(int maxLength) {
 void DocumentWidget::Undo() {
 
     if(auto win = MainWindow::fromDocument(this)) {
-        int restoredTextLength;
 
         // return if nothing to undo
         if (undo_.empty()) {
@@ -1684,7 +1683,7 @@ void DocumentWidget::Undo() {
         // use the saved undo information to reverse changes
         buffer_->BufReplaceEx(undo.startPos, undo.endPos, undo.oldText);
 
-        restoredTextLength = undo.oldText.size();
+        int restoredTextLength = undo.oldText.size();
         if (!buffer_->primary_.selected || GetPrefUndoModifiesSelection()) {
             /* position the cursor in the focus pane after the changed text
                to show the user where the undo was done */
@@ -1718,7 +1717,6 @@ void DocumentWidget::Undo() {
 void DocumentWidget::Redo() {
 
     if(auto win = MainWindow::fromDocument(this)) {
-        int restoredTextLength;
 
         // return if nothing to redo
         if (redo_.empty()) {
@@ -1735,7 +1733,7 @@ void DocumentWidget::Redo() {
         // use the saved redo information to reverse changes
         buffer_->BufReplaceEx(redo.startPos, redo.endPos, redo.oldText);
 
-        restoredTextLength = redo.oldText.size();
+        int restoredTextLength = redo.oldText.size();
         if (!buffer_->primary_.selected || GetPrefUndoModifiesSelection()) {
             /* position the cursor in the focus pane after the changed text
                to show the user where the undo was done */
@@ -2110,9 +2108,9 @@ int DocumentWidget::cmpWinAgainstFile(const QString &fileName) {
         return 1;
     }
 
-    int fileLen = statbuf.st_size;
+    const long fileLen = statbuf.st_size;
     // For DOS files, we can't simply check the length
-    if (fileFormat != DOS_FILE_FORMAT) {
+    if (fileFormat != FileFormats::Dos) {
         if (fileLen != buf->BufGetLength()) {
             return 1;
         }
@@ -2127,7 +2125,7 @@ int DocumentWidget::cmpWinAgainstFile(const QString &fileName) {
        the user should be given a clue about what is happening. */
     QString message = tr("Comparing externally modified 1s ...").arg(filename_);
 
-    int restLen = std::min(PREFERRED_CMPBUF_LEN, fileLen);
+    long restLen = std::min(PREFERRED_CMPBUF_LEN, fileLen);
     int bufPos  = 0;
     int filePos = 0;
 
@@ -2158,13 +2156,13 @@ int DocumentWidget::cmpWinAgainstFile(const QString &fileName) {
         }
 
         switch(fileFormat) {
-        case MAC_FILE_FORMAT:
+        case FileFormats::Mac:
             ConvertFromMacFileString(fileString, nRead);
             break;
-        case DOS_FILE_FORMAT:
+        case FileFormats::Dos:
             ConvertFromDosFileString(fileString, &nRead, &pendingCR);
             break;
-		case UNIX_FILE_FORMAT:
+        case FileFormats::Unix:
             break;
         }
 
@@ -2426,12 +2424,12 @@ bool DocumentWidget::doSave() {
     buffer_->BufUnsubstituteNullCharsEx(fileString);
 
     // If the file is to be saved in DOS or Macintosh format, reconvert
-    if (fileFormat_ == DOS_FILE_FORMAT) {
+    if (fileFormat_ == FileFormats::Dos) {
         if (!ConvertToDosFileStringEx(fileString)) {
             QMessageBox::critical(this, tr("Out of Memory"), tr("Out of memory!  Try\nsaving in Unix format"));
             return false;
         }
-    } else if (fileFormat_ == MAC_FILE_FORMAT) {
+    } else if (fileFormat_ == FileFormats::Mac) {
         ConvertToMacFileStringEx(fileString);
     }
 
@@ -2488,13 +2486,13 @@ int DocumentWidget::SaveWindowAs(const QString &newName, bool addWrap) {
                     auto macCheck  = new QRadioButton(tr("&Macintosh"));
 
                     switch(fileFormat_) {
-                    case DOS_FILE_FORMAT:
+                    case FileFormats::Dos:
                         dosCheck->setChecked(true);
                         break;
-                    case MAC_FILE_FORMAT:
+                    case FileFormats::Mac:
                         macCheck->setChecked(true);
                         break;
-                    case UNIX_FILE_FORMAT:
+                    case FileFormats::Unix:
                         unixCheck->setChecked(true);
                         break;
                     }
@@ -2545,11 +2543,11 @@ int DocumentWidget::SaveWindowAs(const QString &newName, bool addWrap) {
 
                     if(dialog.exec()) {
                         if(dosCheck->isChecked()) {
-                            fileFormat_ = DOS_FILE_FORMAT;
+                            fileFormat_ = FileFormats::Dos;
                         } else if(macCheck->isChecked()) {
-                            fileFormat_ = MAC_FILE_FORMAT;
+                            fileFormat_ = FileFormats::Mac;
                         } else if(unixCheck->isChecked()) {
-                            fileFormat_ = UNIX_FILE_FORMAT;
+                            fileFormat_ = FileFormats::Unix;
                         }
 
                         addWrap = wrapCheck->isChecked();
@@ -2850,12 +2848,13 @@ int DocumentWidget::CloseFileAndWindow(CloseMode preResponse) {
        or if the user wants to ignore external modifications then
        just close it.  Otherwise ask for confirmation first. */
     if (!fileChanged_ &&
-        // Normal File
-        ((!fileMissing_ && lastModTime_ > 0) ||
-         // New File
-         (fileMissing_ && lastModTime_ == 0) ||
-         // File deleted/modified externally, ignored by user.
-         !GetPrefWarnFileMods())) {
+            /* Normal File */
+            ((!fileMissing_ && lastModTime_ > 0) ||
+             /* New File */
+             (fileMissing_ && lastModTime_ == 0) ||
+             /* File deleted/modified externally, ignored by user. */
+             !GetPrefWarnFileMods())) {
+
         CloseWindow();
         // up-to-date windows don't have outstanding backup files to close
     } else {
@@ -2871,21 +2870,17 @@ int DocumentWidget::CloseFileAndWindow(CloseMode preResponse) {
         case CloseMode::NoSave:
             response = QMessageBox::No;
             break;
-		default:
-			Q_UNREACHABLE();
         }
 
         switch(response) {
         case QMessageBox::Yes:
             // Save
-			if (int stat = SaveWindow()) {
-				Q_UNUSED(stat);
+            if (SaveWindow()) {
                 CloseWindow();
             } else {
                 return false;
             }
             break;
-
         case QMessageBox::No:
             // Don't Save
             RemoveBackupFile();
@@ -2895,6 +2890,7 @@ int DocumentWidget::CloseFileAndWindow(CloseMode preResponse) {
             return false;
         }
     }
+
     return true;
 }
 
@@ -2937,7 +2933,7 @@ void DocumentWidget::CloseWindow() {
         fileUid_      = 0;
         fileGid_      = 0;
         filename_     = name;
-		path_         = QLatin1String("");
+        path_         = QString();
         ignoreModify_ = true;
 
         buffer_->BufSetAllEx("");
@@ -2947,7 +2943,7 @@ void DocumentWidget::CloseWindow() {
         filenameSet_  = false;
         fileMissing_  = true;
         fileChanged_  = false;
-        fileFormat_   = UNIX_FILE_FORMAT;
+        fileFormat_   = FileFormats::Unix;
         lastModTime_  = 0;
         device_       = 0;
         inode_        = 0;
@@ -3148,7 +3144,7 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
     }
 #endif
 
-	const auto fileLen = static_cast<int>(statbuf.st_size);
+    const long fileLen = statbuf.st_size;
 
     // Allocate space for the whole contents of the file (unfortunately)
     try {
@@ -3178,13 +3174,13 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
         // Detect and convert DOS and Macintosh format files
         if (GetPrefForceOSConversion()) {
             switch (FormatOfFileEx(view::string_view(&fileString[0], readLen))) {
-            case DOS_FILE_FORMAT:
+            case FileFormats::Dos:
                 ConvertFromDosFileString(&fileString[0], &readLen, nullptr);
                 break;
-            case MAC_FILE_FORMAT:
+            case FileFormats::Mac:
                 ConvertFromMacFileString(&fileString[0], readLen);
                 break;
-            case UNIX_FILE_FORMAT:
+            case FileFormats::Unix:
                 break;
             }
         }
@@ -3372,7 +3368,7 @@ void DocumentWidget::RefreshMenuToggleStates() {
 */
 void DocumentWidget::executeNewlineMacroEx(SmartIndentEvent *cbInfo) {
 
-    auto winData = smartIndentData_;
+    const std::unique_ptr<SmartIndentData> &winData = smartIndentData_;
     // posValue probably shouldn't be static due to re-entrance issues <slobasso>
     static DataValue posValue[1] = {
         {INT_TAG, {0}}
@@ -3457,7 +3453,7 @@ void DocumentWidget::SetShowMatching(ShowMatchingStyle state) {
 */
 void DocumentWidget::executeModMacroEx(SmartIndentEvent *cbInfo) {
 
-    auto winData = smartIndentData_;
+    const std::unique_ptr<SmartIndentData> &winData = smartIndentData_;
 
     // args probably shouldn't be static due to future re-entrance issues <slobasso>
     static DataValue args[2] = {
@@ -3557,13 +3553,13 @@ bool DocumentWidget::includeFile(const QString &name) {
 
     // Detect and convert DOS and Macintosh format files
     switch (FormatOfFileEx(fileString)) {
-    case DOS_FILE_FORMAT:
+    case FileFormats::Dos:
         ConvertFromDosFileStringEx(&fileString, nullptr);
         break;
-    case MAC_FILE_FORMAT:
+    case FileFormats::Mac:
         ConvertFromMacFileStringEx(&fileString);
         break;
-    case UNIX_FILE_FORMAT:
+    case FileFormats::Unix:
         //  Default is Unix, no conversion necessary.
         break;
     }
@@ -4204,7 +4200,10 @@ void DocumentWidget::BeginSmartIndentEx(int warn) {
     const SmartIndentEntry *indentMacros = findIndentSpec(modeName);
     if(!indentMacros) {
         if (warn) {
-            QMessageBox::warning(this, tr("Smart Indent"), tr("Smart indent is not available in languagemode\n%1.\n\nYou can create new smart indent macros in the\nPreferences -> Default Settings -> Smart Indent\ndialog, or choose a different language mode from:\nPreferences -> Language Mode.").arg(modeName));
+            QMessageBox::warning(
+                        this,
+                        tr("Smart Indent"),
+                        tr("Smart indent is not available in languagemode\n%1.\n\nYou can create new smart indent macros in the\nPreferences -> Default Settings -> Smart Indent\ndialog, or choose a different language mode from:\nPreferences -> Language Mode.").arg(modeName));
         }
         return;
     }
@@ -4233,7 +4232,7 @@ void DocumentWidget::BeginSmartIndentEx(int warn) {
     }
 
     // Compile the newline and modify macros and attach them to the window
-    auto winData = std::make_shared<SmartIndentData>();
+    auto winData = std::make_unique<SmartIndentData>();
     winData->inNewLineMacro = false;
     winData->inModMacro     = false;
     winData->newlineMacro   = ParseMacroEx(indentMacros->newlineMacro, &errMsg, &stoppedAt);
@@ -4256,7 +4255,7 @@ void DocumentWidget::BeginSmartIndentEx(int warn) {
         }
     }
 
-    smartIndentData_ = winData;
+    smartIndentData_ = std::move(winData);
 }
 
 /*
@@ -4713,7 +4712,7 @@ void DocumentWidget::issueCommandEx(MainWindow *window, TextArea *area, const QS
 
     /* Create a data structure for passing process information around
        amongst the callback routines which will process i/o and completion */
-    auto cmdData = std::make_shared<ShellCommandData>();
+    auto cmdData = std::make_unique<ShellCommandData>();
     cmdData->process     = process;
     cmdData->flags       = flags;
     cmdData->area        = area;
@@ -4722,13 +4721,13 @@ void DocumentWidget::issueCommandEx(MainWindow *window, TextArea *area, const QS
     cmdData->leftPos     = replaceLeft;
     cmdData->rightPos    = replaceRight;
 
-    document->shellCmdData_ = cmdData;
+    document->shellCmdData_ = std::move(cmdData);
 
     // Set up timer proc for putting up banner when process takes too long
     if (!fromMacro) {
-        connect(&cmdData->bannerTimer, SIGNAL(timeout()), document, SLOT(bannerTimeoutProc()));
-        cmdData->bannerTimer.setSingleShot(true);
-        cmdData->bannerTimer.start(BANNER_WAIT_TIME);
+        connect(&document->shellCmdData_->bannerTimer, SIGNAL(timeout()), document, SLOT(bannerTimeoutProc()));
+        document->shellCmdData_->bannerTimer.setSingleShot(true);
+        document->shellCmdData_->bannerTimer.start(BANNER_WAIT_TIME);
     }
 
     /* If this was called from a macro, preempt the macro until shell
@@ -4742,7 +4741,7 @@ void DocumentWidget::issueCommandEx(MainWindow *window, TextArea *area, const QS
 ** Called when the shell sub-process stream has data.
 */
 void DocumentWidget::mergedReadProc() {
-    if(auto cmdData = shellCmdData_) {
+    if(const std::unique_ptr<ShellCommandData> &cmdData = shellCmdData_) {
         QByteArray data = cmdData->process->readAll();
         cmdData->standardOutput.append(data);
     }
@@ -4752,7 +4751,7 @@ void DocumentWidget::mergedReadProc() {
 ** Called when the shell sub-process stdout stream has data.
 */
 void DocumentWidget::stdoutReadProc() {
-    if(auto cmdData = shellCmdData_) {
+    if(const std::unique_ptr<ShellCommandData> &cmdData = shellCmdData_) {
         QByteArray data = cmdData->process->readAllStandardOutput();
         cmdData->standardOutput.append(data);
     }
@@ -4762,7 +4761,7 @@ void DocumentWidget::stdoutReadProc() {
 ** Called when the shell sub-process stderr stream has data.
 */
 void DocumentWidget::stderrReadProc() {
-    if(auto cmdData = shellCmdData_) {
+    if(const std::unique_ptr<ShellCommandData> &cmdData = shellCmdData_) {
         QByteArray data = cmdData->process->readAllStandardOutput();
         cmdData->standardError.append(data);
     }
@@ -4782,7 +4781,7 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
         return;
     }
 
-    auto cmdData = shellCmdData_;    
+    const std::unique_ptr<ShellCommandData> &cmdData = shellCmdData_;
     bool cancel = false;
     bool fromMacro = cmdData->fromMacro;
 
@@ -4942,7 +4941,7 @@ cmdDone:
 ** Cancel the shell command in progress
 */
 void DocumentWidget::AbortShellCommandEx() {
-    if(auto cmdData = shellCmdData_) {
+    if(const std::unique_ptr<ShellCommandData> &cmdData = shellCmdData_) {
         if(QProcess *process = cmdData->process) {
             process->kill();
         }
@@ -5458,23 +5457,23 @@ void DocumentWidget::runMacroEx(Program *prog) {
 
     /* Create a data structure for passing macro execution information around
        amongst the callback routines which will process i/o and completion */
-    auto cmdData = std::make_shared<MacroCommandData>();
+    auto cmdData = std::make_unique<MacroCommandData>();
     cmdData->bannerIsUp         = false;
     cmdData->closeOnCompletion  = false;
     cmdData->program            = prog;
     cmdData->context            = nullptr;
 
-    macroCmdData_ = cmdData;
+    macroCmdData_ = std::move(cmdData);
 
     // Set up timer proc for putting up banner when macro takes too long
-    QObject::connect(&cmdData->bannerTimer, SIGNAL(timeout()), this, SLOT(bannerTimeoutProc()));
-    cmdData->bannerTimer.setSingleShot(true);
-    cmdData->bannerTimer.start(BANNER_WAIT_TIME);
+    QObject::connect(&macroCmdData_->bannerTimer, SIGNAL(timeout()), this, SLOT(bannerTimeoutProc()));
+    macroCmdData_->bannerTimer.setSingleShot(true);
+    macroCmdData_->bannerTimer.start(BANNER_WAIT_TIME);
 
     // Begin macro execution
     DataValue result;
     QString errMsg;
-    const int stat = ExecuteMacroEx(this, prog, gsl::span<DataValue>(), &result, cmdData->context, &errMsg);
+    const int stat = ExecuteMacroEx(this, prog, {}, &result, macroCmdData_->context, &errMsg);
 
     switch(stat) {
     case MACRO_ERROR:
@@ -5583,10 +5582,10 @@ DocumentWidget::MacroContinuationCode DocumentWidget::continueWorkProcEx() {
 */
 void DocumentWidget::ResumeMacroExecutionEx() {
 
-    if(auto cmdData = macroCmdData_) {
+    if(const std::unique_ptr<MacroCommandData> &cmdData = macroCmdData_) {
 
         // create a background task that will run so long as the function returns false
-        QObject::connect(&cmdData->continuationTimer, &QTimer::timeout, [cmdData, this]() {
+        QObject::connect(&cmdData->continuationTimer, &QTimer::timeout, [&cmdData, this]() {
             if(continueWorkProcEx() == MacroContinuationCode::Stop) {
                 cmdData->continuationTimer.stop();
             }
@@ -5758,10 +5757,10 @@ void DocumentWidget::FreeHighlightingDataEx() {
 */
 void DocumentWidget::UpdateHighlightStylesEx() {
 
-    std::shared_ptr<WindowHighlightData> oldHighlightData = highlightData_;
+    std::unique_ptr<WindowHighlightData> &oldHighlightData = highlightData_;
 
     // Do nothing if window not highlighted
-    if (!highlightData_) {
+    if (!oldHighlightData) {
         return;
     }
 
@@ -5773,8 +5772,8 @@ void DocumentWidget::UpdateHighlightStylesEx() {
     }
 
     // Build new patterns
-    std::shared_ptr<WindowHighlightData> highlightData = createHighlightDataEx(patterns);
-    if(!highlightData) {
+    std::unique_ptr<WindowHighlightData> newHighlightData = createHighlightDataEx(patterns);
+    if(!newHighlightData) {
         StopHighlightingEx();
         return;
     }
@@ -5783,11 +5782,9 @@ void DocumentWidget::UpdateHighlightStylesEx() {
        preserve all of the effort that went in to parsing the buffer
        by swapping it with the empty one in highlightData (which is then
        freed in freeHighlightData) */
-    const std::shared_ptr<TextBuffer> &styleBuffer = oldHighlightData->styleBuffer;
+    std::swap(oldHighlightData->styleBuffer, newHighlightData->styleBuffer);
 
-    oldHighlightData->styleBuffer = highlightData->styleBuffer;
-    highlightData->styleBuffer    = styleBuffer;
-    highlightData_      = highlightData;
+    highlightData_ = std::move(newHighlightData);
 
     /* Attach new highlight information to text widgets in each pane
        (and redraw) */
@@ -5799,9 +5796,9 @@ void DocumentWidget::UpdateHighlightStylesEx() {
 /*
 ** Find the HighlightPattern structure with a given name in the window.
 */
-HighlightPattern *DocumentWidget::FindPatternOfWindowEx(const QString &name) {
+HighlightPattern *DocumentWidget::FindPatternOfWindowEx(const QString &name) const {
 
-    if(auto hData = highlightData_) {
+    if(const std::unique_ptr<WindowHighlightData> &hData = highlightData_) {
         if (PatternSet *set = hData->patternSetForWindow) {
 
             for(HighlightPattern &pattern : set->patterns) {
@@ -5814,7 +5811,7 @@ HighlightPattern *DocumentWidget::FindPatternOfWindowEx(const QString &name) {
     return nullptr;
 }
 
-QColor DocumentWidget::GetHighlightBGColorOfCodeEx(int hCode) {
+QColor DocumentWidget::GetHighlightBGColorOfCodeEx(int hCode) const {
     StyleTableEntry *entry = styleTableEntryOfCodeEx(hCode);
 
     if (entry && !entry->bgColorName.isNull()) {
@@ -5838,7 +5835,7 @@ QColor DocumentWidget::GetHighlightBGColorOfCodeEx(int hCode) {
 Style DocumentWidget::GetHighlightInfoEx(int pos) {
 
     HighlightData *pattern = nullptr;
-    auto highlightData = highlightData_;
+    const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_;
     if (!highlightData) {
         return Style();
     }
@@ -5873,7 +5870,7 @@ Style DocumentWidget::GetHighlightInfoEx(int pos) {
 ** is used.
 */
 int DocumentWidget::StyleLengthOfCodeFromPosEx(int pos) {
-    auto highlightData = highlightData_;
+    const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_;
     const std::shared_ptr<TextBuffer> &styleBuf = highlightData ? highlightData->styleBuffer : nullptr;
     int oldPos = pos;
 
@@ -5910,22 +5907,20 @@ int DocumentWidget::StyleLengthOfCodeFromPosEx(int pos) {
     return pos - oldPos;
 }
 
-
-
 /*
 ** Functions to return style information from the highlighting style table.
 */
-QString DocumentWidget::HighlightNameOfCodeEx(int hCode) {
+QString DocumentWidget::HighlightNameOfCodeEx(int hCode) const {
     StyleTableEntry *entry = styleTableEntryOfCodeEx(hCode);
     return entry ? entry->highlightName : QString();
 }
 
-QString DocumentWidget::HighlightStyleOfCodeEx(int hCode) {
+QString DocumentWidget::HighlightStyleOfCodeEx(int hCode) const {
     StyleTableEntry *entry = styleTableEntryOfCodeEx(hCode);
     return entry ? entry->styleName : QString();
 }
 
-QColor DocumentWidget::HighlightColorValueOfCodeEx(int hCode) {
+QColor DocumentWidget::HighlightColorValueOfCodeEx(int hCode) const {
     StyleTableEntry *entry = styleTableEntryOfCodeEx(hCode);
     if (entry) {
         return entry->color;
@@ -5939,8 +5934,8 @@ QColor DocumentWidget::HighlightColorValueOfCodeEx(int hCode) {
 ** Returns a pointer to the entry in the style table for the entry of code
 ** hCode (if any).
 */
-StyleTableEntry *DocumentWidget::styleTableEntryOfCodeEx(int hCode) {
-    auto highlightData = highlightData_;
+StyleTableEntry *DocumentWidget::styleTableEntryOfCodeEx(int hCode) const {
+    const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_;
 
     hCode -= UNFINISHED_STYLE; // get the correct index value
     if (!highlightData || hCode < 0 || hCode >= highlightData->nStyles)
@@ -5954,7 +5949,7 @@ StyleTableEntry *DocumentWidget::styleTableEntryOfCodeEx(int hCode) {
 ** like styleOfPos() in TextDisplay.c. Returns the style code or zero.
 */
 int DocumentWidget::HighlightCodeOfPosEx(int pos) {
-    auto highlightData = highlightData_;
+    const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_;
     const std::shared_ptr<TextBuffer> &styleBuf = highlightData ? highlightData->styleBuffer : nullptr;
     int hCode = 0;
 
@@ -5977,7 +5972,7 @@ int DocumentWidget::HighlightCodeOfPosEx(int pos) {
 /* YOO: This is called from only one other function, which uses a constant
     for checkCode and never evaluates it after the call. */
 int DocumentWidget::HighlightLengthOfCodeFromPosEx(int pos, int *checkCode) {
-    auto highlightData = highlightData_;
+    const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_;
     const std::shared_ptr<TextBuffer> &styleBuf = highlightData ? highlightData->styleBuffer : nullptr;
     int oldPos = pos;
 
@@ -6017,8 +6012,8 @@ int DocumentWidget::HighlightLengthOfCodeFromPosEx(int pos, int *checkCode) {
 */
 void DocumentWidget::handleUnparsedRegionEx(const std::shared_ptr<TextBuffer> &styleBuf, int pos) const {
 
-    TextBuffer *buf    = buffer_;
-    auto highlightData = highlightData_;
+    TextBuffer *buf = buffer_;
+    const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_;
 
     ReparseContext *context = &highlightData->contextRequirements;
     HighlightData *pass2Patterns = highlightData->pass2Patterns;
@@ -6119,7 +6114,7 @@ void DocumentWidget::StartHighlightingEx(bool warn) {
     }
 
     // Compile the patterns
-    std::shared_ptr<WindowHighlightData> highlightData = createHighlightDataEx(patterns);
+    std::unique_ptr<WindowHighlightData> highlightData = createHighlightDataEx(patterns);
     if(!highlightData) {
         return;
     }
@@ -6132,8 +6127,8 @@ void DocumentWidget::StartHighlightingEx(bool warn) {
 
     /* Parse the buffer with pass 1 patterns.  If there are none, initialize
        the style buffer to all UNFINISHED_STYLE to trigger parsing later */
-    auto styleString = new char[bufLength + 1];
-    char *stylePtr = styleString;
+    auto styleString = std::make_unique<char[]>(bufLength + 1);
+    char *stylePtr = &styleString[0];
 
     if (!highlightData->pass1Patterns) {
         for (int i = 0; i < bufLength; i++) {
@@ -6157,11 +6152,10 @@ void DocumentWidget::StartHighlightingEx(bool warn) {
             match_to);
     }
 
-    highlightData->styleBuffer->BufSetAllEx(view::string_view(styleString, std::distance(styleString, stylePtr)));
-    delete [] styleString;
+    highlightData->styleBuffer->BufSetAllEx(view::string_view(&styleString[0], std::distance(&styleString[0], stylePtr)));
 
     // install highlight pattern data in the window data structure
-    highlightData_ = highlightData;
+    highlightData_ = std::move(highlightData);
 
 #if 0
     int oldFontHeight;
@@ -6192,7 +6186,7 @@ void DocumentWidget::StartHighlightingEx(bool warn) {
 ** text widget and redisplay.
 */
 void DocumentWidget::AttachHighlightToWidgetEx(TextArea *area) {
-    if(auto highlightData = highlightData_) {
+    if(const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_) {
         area->TextDAttachHighlightData(
                     highlightData->styleBuffer,
                     highlightData->styleTable,
@@ -6209,7 +6203,7 @@ void DocumentWidget::AttachHighlightToWidgetEx(TextArea *area) {
 ** are encountered, warns user with a dialog and returns nullptr.  To free the
 ** allocated components of the returned data structure, use freeHighlightData.
 */
-std::shared_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(PatternSet *patSet) {
+std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(PatternSet *patSet) {
 
     HighlightPattern *patternSrc = &patSet->patterns[0];
     int nPatterns    = patSet->patterns.size();
@@ -6431,7 +6425,7 @@ std::shared_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
     auto styleBuf = std::make_shared<TextBuffer>();
 
     // Collect all of the highlighting information in a single structure
-    auto highlightData = std::make_shared<WindowHighlightData>();
+    auto highlightData = std::make_unique<WindowHighlightData>();
     highlightData->pass1Patterns              = pass1Pats;
     highlightData->pass2Patterns              = pass2Pats;
     highlightData->parentStyles               = parentStyles;
@@ -6476,7 +6470,9 @@ HighlightData *DocumentWidget::compilePatternsEx(HighlightPattern *patternSrc, i
     }
 
     for (int i = 0; i < nPatterns; i++) {
-        compiledPats[i].subPatterns = (compiledPats[i].nSubPatterns == 0) ? nullptr : new HighlightData *[compiledPats[i].nSubPatterns];
+        compiledPats[i].subPatterns = (compiledPats[i].nSubPatterns == 0) ?
+                    nullptr :
+                    new HighlightData *[compiledPats[i].nSubPatterns];
     }
 
     for (int i = 0; i < nPatterns; i++) {
@@ -6594,7 +6590,7 @@ HighlightData *DocumentWidget::compilePatternsEx(HighlightPattern *patternSrc, i
         length += (compiledPats[patternNum].colorOnly || patternSrc[patternNum].errorRE.isNull()) ? 0 : patternSrc[patternNum].errorRE.size() + 5;
 
         for (int i = 0; i < compiledPats[patternNum].nSubPatterns; i++) {
-            int subPatIndex = compiledPats[patternNum].subPatterns[i] - compiledPats;
+            long subPatIndex = compiledPats[patternNum].subPatterns[i] - compiledPats;
             length += compiledPats[subPatIndex].colorOnly ? 0 : patternSrc[subPatIndex].startRE.size() + 5;
         }
 
@@ -6627,7 +6623,7 @@ HighlightData *DocumentWidget::compilePatternsEx(HighlightPattern *patternSrc, i
         }
 
         for (int i = 0; i < compiledPats[patternNum].nSubPatterns; i++) {
-            int subPatIndex = compiledPats[patternNum].subPatterns[i] - compiledPats;
+            long subPatIndex = compiledPats[patternNum].subPatterns[i] - compiledPats;
 
             if (compiledPats[subPatIndex].colorOnly) {
                 continue;
@@ -6699,7 +6695,7 @@ std::shared_ptr<regexp> DocumentWidget::compileREAndWarnEx(const QString &re) {
 ** process close the window when the macro is finished executing.
 */
 int DocumentWidget::MacroWindowCloseActionsEx() {
-    auto cmdData = macroCmdData_;
+    const std::unique_ptr<MacroCommandData> &cmdData = macroCmdData_;
 
     auto recorder = CommandRecorder::getInstance();
 
@@ -6711,9 +6707,9 @@ int DocumentWidget::MacroWindowCloseActionsEx() {
        if macros executing in other windows have it as focus.  If so, set
        their focus back to the window from which they were originally run */
     if(!cmdData) {
-        for(DocumentWidget *w : DocumentWidget::allDocuments()) {
-            auto mcd = w->macroCmdData_;
-            if (w == MacroRunWindowEx() && MacroFocusWindowEx() == this) {
+        for(DocumentWidget *document : DocumentWidget::allDocuments()) {
+            const std::unique_ptr<MacroCommandData> &mcd = document->macroCmdData_;
+            if (document == MacroRunWindowEx() && MacroFocusWindowEx() == this) {
                 SetMacroFocusWindowEx(MacroRunWindowEx());
             } else if (mcd && mcd->context->focusWindow == this) {
                 mcd->context->focusWindow = mcd->context->runWindow;
@@ -6731,9 +6727,6 @@ int DocumentWidget::MacroWindowCloseActionsEx() {
         cmdData->closeOnCompletion = true;
         return false;
     }
-
-    // Free the continuation
-    FreeRestartDataEx(cmdData->context);
 
     // Kill the macro command
     finishMacroCmdExecutionEx();
@@ -6755,9 +6748,6 @@ void DocumentWidget::AbortMacroCommandEx() {
         AbortShellCommandEx();
     }
 
-    // Free the continuation
-    FreeRestartDataEx(macroCmdData_->context);
-
     // Kill the macro command
     finishMacroCmdExecutionEx();
 }
@@ -6773,29 +6763,6 @@ void DocumentWidget::CancelMacroOrLearnEx() {
     }
 }
 
-void DocumentWidget::cancelLearnEx() {
-    // If we're not in learn mode, return
-    if(!CommandRecorder::getInstance()->isRecording()) {
-        return;
-    }
-
-    DocumentWidget *document = CommandRecorder::getInstance()->macroRecordWindowEx;
-
-    // Undim the menu items dimmed during learn
-    for(MainWindow *window : MainWindow::allWindows()) {
-        window->ui.action_Learn_Keystrokes->setEnabled(true);
-    }
-
-    if (document->IsTopDocument()) {
-        auto win = MainWindow::fromDocument(document);
-        win->ui.action_Finish_Learn->setEnabled(false);
-        win->ui.action_Cancel_Learn->setEnabled(false);
-    }
-
-    // Clear learn-mode banner
-    document->ClearModeMessageEx();
-}
-
 /*
 ** Execute the learn/replay sequence stored in "window"
 */
@@ -6807,8 +6774,6 @@ void DocumentWidget::ReplayEx() {
     // we're not already running a macro
     if (!replayMacro.isEmpty() && !macroCmdData_) {
 
-        /* Parse the replay macro (it's stored in text form) and compile it into
-           an executable program "prog" */
         QString errMsg;
         int stoppedAt;
 
@@ -6818,14 +6783,34 @@ void DocumentWidget::ReplayEx() {
             return;
         }
 
-        // run the executable program
         runMacroEx(prog);
     }
 }
 
+void DocumentWidget::cancelLearnEx() {
+
+    if(!CommandRecorder::getInstance()->isRecording()) {
+        return;
+    }
+
+    DocumentWidget *document = CommandRecorder::getInstance()->macroRecordWindowEx;
+    Q_ASSERT(document);
+
+    for(MainWindow *window : MainWindow::allWindows()) {
+        window->ui.action_Learn_Keystrokes->setEnabled(true);
+    }
+
+    if (document->IsTopDocument()) {
+        auto window = MainWindow::fromDocument(document);
+        window->ui.action_Finish_Learn->setEnabled(false);
+        window->ui.action_Cancel_Learn->setEnabled(false);
+    }
+
+    document->ClearModeMessageEx();
+}
+
 void DocumentWidget::FinishLearnEx() {
 
-    // If we're not in learn mode, return
     if(!CommandRecorder::getInstance()->isRecording()) {
         return;
     }
@@ -6835,7 +6820,6 @@ void DocumentWidget::FinishLearnEx() {
 
     CommandRecorder::getInstance()->stopRecording();
 
-    // Undim the menu items dimmed during learn
     for(MainWindow *window : MainWindow::allWindows()) {
         window->ui.action_Learn_Keystrokes->setEnabled(true);
     }
@@ -6847,14 +6831,12 @@ void DocumentWidget::FinishLearnEx() {
         }
     }
 
-    // Undim the replay and paste-macro buttons
     for(MainWindow *window : MainWindow::allWindows()) {
         window->ui.action_Replay_Keystrokes->setEnabled(true);
     }
 
     MainWindow::DimPasteReplayBtns(true);
 
-    // Clear learn-mode banner
     document->ClearModeMessageEx();
 }
 

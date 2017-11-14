@@ -10,6 +10,4 @@ enum class VirtKeyOverride {
     VIRT_KEY_OVERRIDE_ALWAYS
 };
 
-Q_DECLARE_METATYPE(VirtKeyOverride)
-
 #endif

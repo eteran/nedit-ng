@@ -27,6 +27,21 @@ auto DEFAULT_BOLD_FONT        = QLatin1String("Courier New,10,-1,5,75,0,0,0,0,0"
 auto DEFAULT_ITALIC_FONT      = QLatin1String("Courier New,10,-1,5,50,1,0,0,0,0");
 auto DEFAULT_BOLD_ITALIC_FONT = QLatin1String("Courier New,10,-1,5,75,1,0,0,0,0");
 
+template <class T>
+using IsEnum = typename std::enable_if<std::is_enum<T>::value>::type;
+
+template <class T, class = IsEnum<T>>
+T readEnum(QSettings &settings, const QString &key, const T &defaultValue = T()) {
+    // TODO(eteran): maybe we want to somehow validate the enum value at runtime?
+    // it is not going to be pretty regardless of how we do it...
+    return static_cast<T>(settings.value(key, static_cast<int>(defaultValue)).toInt());
+}
+
+template <class T, class = IsEnum<T>>
+void writeEnum(QSettings &settings, const QString &key, const T &value) {
+    settings.setValue(key, static_cast<int>(value));
+}
+
 }
 
 /**
@@ -93,13 +108,18 @@ void Settings::loadPreferences() {
     styles                = settings.value(tr("nedit.styles"),                loadResource(QLatin1String("res/DefaultStyles.txt"))).toString();
     smartIndentInit       = settings.value(tr("nedit.smartIndentInit"),       loadResource(QLatin1String("res/DefaultSmartIndentInit.txt"))).toString();
     smartIndentInitCommon = settings.value(tr("nedit.smartIndentInitCommon"), loadResource(QLatin1String("res/DefaultSmartIndentInitCommon.txt"))).toString();
-    autoWrap              = settings.value(tr("nedit.autoWrap"),              QVariant::fromValue(WrapStyle::Continuous)).value<WrapStyle>();
+
+    autoWrap                          = readEnum(settings, tr("nedit.autoWrap"),                          WrapStyle::Continuous);
+    autoIndent                        = readEnum(settings, tr("nedit.autoIndent"),                        IndentStyle::Auto);
+    showMatching                      = readEnum(settings, tr("nedit.showMatching"),                      ShowMatchingStyle::Delimeter);
+    searchMethod                      = readEnum(settings, tr("nedit.searchMethod"),                      SearchType::Literal);
+    overrideDefaultVirtualKeyBindings = readEnum(settings, tr("nedit.overrideDefaultVirtualKeyBindings"), VirtKeyOverride::VIRT_KEY_OVERRIDE_AUTO);
+    truncSubstitution                 = readEnum(settings, tr("nedit.truncSubstitution"),                 TruncSubstitution::Fail);
+
     wrapMargin            = settings.value(tr("nedit.wrapMargin"),            0).toInt();
-    autoIndent            = settings.value(tr("nedit.autoIndent"),            QVariant::fromValue(IndentStyle::Auto)).value<IndentStyle>();
     autoSave              = settings.value(tr("nedit.autoSave"),              true).toBool();
     openInTab             = settings.value(tr("nedit.openInTab"),             true).toBool();
     saveOldVersion        = settings.value(tr("nedit.saveOldVersion"),        false).toBool();
-    showMatching          = settings.value(tr("nedit.showMatching"),          QVariant::fromValue(ShowMatchingStyle::Delimeter)).value<ShowMatchingStyle>();
     matchSyntaxBased      = settings.value(tr("nedit.matchSyntaxBased"),      true).toBool();
     highlightSyntax       = settings.value(tr("nedit.highlightSyntax"),       true).toBool();
     backlightChars        = settings.value(tr("nedit.backlightChars"),        false).toBool();
@@ -126,7 +146,7 @@ void Settings::loadPreferences() {
     warnFileMods          = settings.value(tr("nedit.warnFileMods"),          true).toBool();
     warnRealFileMods      = settings.value(tr("nedit.warnRealFileMods"),      true).toBool();
     warnExit              = settings.value(tr("nedit.warnExit"),              true).toBool();
-    searchMethod          = settings.value(tr("nedit.searchMethod"),          QVariant::fromValue(SearchType::Literal)).value<SearchType>();
+
 #if defined(REPLACE_SCOPE)
     replaceDefaultScope   = settings.value(tr("nedit.replaceDefaultScope"),   REPL_DEF_SCOPE_SMART).toInt();
 #endif
@@ -163,13 +183,11 @@ void Settings::loadPreferences() {
     typingHidesPointer                = settings.value(tr("nedit.typingHidesPointer"),  		      false).toBool();
     alwaysCheckRelativeTagsSpecs      = settings.value(tr("nedit.alwaysCheckRelativeTagsSpecs"),      true).toBool();
     prefFileRead                      = settings.value(tr("nedit.prefFileRead"),				      false).toBool();
-    findReplaceUsesSelection          = settings.value(tr("nedit.findReplaceUsesSelection"),	      false).toBool();
-    overrideDefaultVirtualKeyBindings = settings.value(tr("nedit.overrideDefaultVirtualKeyBindings"), QVariant::fromValue(VirtKeyOverride::VIRT_KEY_OVERRIDE_AUTO)).value<VirtKeyOverride>();
+    findReplaceUsesSelection          = settings.value(tr("nedit.findReplaceUsesSelection"),	      false).toBool();    
     titleFormat                       = settings.value(tr("nedit.titleFormat"),                       QLatin1String("{%c} [%s] %f (%S) - %d")).toString();
     undoModifiesSelection             = settings.value(tr("nedit.undoModifiesSelection"),             true).toBool();
     focusOnRaise                      = settings.value(tr("nedit.focusOnRaise"),                      false).toBool();
-    forceOSConversion                 = settings.value(tr("nedit.forceOSConversion"),                 true).toBool();
-    truncSubstitution                 = settings.value(tr("nedit.truncSubstitution"),                 QVariant::fromValue(TruncSubstitution::Fail)).value<TruncSubstitution>();
+    forceOSConversion                 = settings.value(tr("nedit.forceOSConversion"),                 true).toBool();    
     honorSymlinks                     = settings.value(tr("nedit.honorSymlinks"),                     true).toBool();
 
     settingsLoaded_ = true;
@@ -195,13 +213,18 @@ void Settings::importSettings(const QString &filename) {
     styles                = settings.value(tr("nedit.styles"),                styles).toString();
     smartIndentInit       = settings.value(tr("nedit.smartIndentInit"),       smartIndentInit).toString();
     smartIndentInitCommon = settings.value(tr("nedit.smartIndentInitCommon"), smartIndentInitCommon).toString();
-    autoWrap              = settings.value(tr("nedit.autoWrap"),              QVariant::fromValue(autoWrap)).value<WrapStyle>();
+
+    autoWrap                          = readEnum(settings, tr("nedit.autoWrap"),                          autoWrap);
+    autoIndent                        = readEnum(settings, tr("nedit.autoIndent"),                        autoIndent);
+    showMatching                      = readEnum(settings, tr("nedit.showMatching"),                      showMatching);
+    searchMethod                      = readEnum(settings, tr("nedit.searchMethod"),                      searchMethod);
+    overrideDefaultVirtualKeyBindings = readEnum(settings, tr("nedit.overrideDefaultVirtualKeyBindings"), overrideDefaultVirtualKeyBindings);
+    truncSubstitution                 = readEnum(settings, tr("nedit.truncSubstitution"),                 truncSubstitution);
+
     wrapMargin            = settings.value(tr("nedit.wrapMargin"),            wrapMargin).toInt();
-    autoIndent            = settings.value(tr("nedit.autoIndent"),            QVariant::fromValue(autoIndent)).value<IndentStyle>();
     autoSave              = settings.value(tr("nedit.autoSave"),              autoSave).toBool();
     openInTab             = settings.value(tr("nedit.openInTab"),             openInTab).toBool();
     saveOldVersion        = settings.value(tr("nedit.saveOldVersion"),        saveOldVersion).toBool();
-    showMatching          = settings.value(tr("nedit.showMatching"),          QVariant::fromValue(showMatching)).value<ShowMatchingStyle>();
     matchSyntaxBased      = settings.value(tr("nedit.matchSyntaxBased"),      matchSyntaxBased).toBool();
     highlightSyntax       = settings.value(tr("nedit.highlightSyntax"),       highlightSyntax).toBool();
     backlightChars        = settings.value(tr("nedit.backlightChars"),        backlightChars).toBool();
@@ -228,7 +251,7 @@ void Settings::importSettings(const QString &filename) {
     warnFileMods          = settings.value(tr("nedit.warnFileMods"),          warnFileMods).toBool();
     warnRealFileMods      = settings.value(tr("nedit.warnRealFileMods"),      warnRealFileMods).toBool();
     warnExit              = settings.value(tr("nedit.warnExit"),              warnExit).toBool();
-    searchMethod          = settings.value(tr("nedit.searchMethod"),          QVariant::fromValue(searchMethod)).value<SearchType>();
+
 #if defined(REPLACE_SCOPE)
     replaceDefaultScope   = settings.value(tr("nedit.replaceDefaultScope"),   replaceDefaultScope).toInt();
 #endif
@@ -265,13 +288,11 @@ void Settings::importSettings(const QString &filename) {
     typingHidesPointer                = settings.value(tr("nedit.typingHidesPointer"),  		      typingHidesPointer).toBool();
     alwaysCheckRelativeTagsSpecs      = settings.value(tr("nedit.alwaysCheckRelativeTagsSpecs"),      alwaysCheckRelativeTagsSpecs).toBool();
     prefFileRead                      = settings.value(tr("nedit.prefFileRead"),				      prefFileRead).toBool();
-    findReplaceUsesSelection          = settings.value(tr("nedit.findReplaceUsesSelection"),	      findReplaceUsesSelection).toBool();
-    overrideDefaultVirtualKeyBindings = settings.value(tr("nedit.overrideDefaultVirtualKeyBindings"), QVariant::fromValue(overrideDefaultVirtualKeyBindings)).value<VirtKeyOverride>();
+    findReplaceUsesSelection          = settings.value(tr("nedit.findReplaceUsesSelection"),	      findReplaceUsesSelection).toBool();    
     titleFormat                       = settings.value(tr("nedit.titleFormat"),                       titleFormat).toString();
     undoModifiesSelection             = settings.value(tr("nedit.undoModifiesSelection"),             undoModifiesSelection).toBool();
     focusOnRaise                      = settings.value(tr("nedit.focusOnRaise"),                      focusOnRaise).toBool();
-    forceOSConversion                 = settings.value(tr("nedit.forceOSConversion"),                 forceOSConversion).toBool();
-    truncSubstitution                 = settings.value(tr("nedit.truncSubstitution"),                 QVariant::fromValue(truncSubstitution)).value<TruncSubstitution>();
+    forceOSConversion                 = settings.value(tr("nedit.forceOSConversion"),                 forceOSConversion).toBool();    
     honorSymlinks                     = settings.value(tr("nedit.honorSymlinks"),                     honorSymlinks).toBool();
 }
 
@@ -292,13 +313,18 @@ bool Settings::savePreferences() {
     settings.setValue(tr("nedit.styles"), styles);
     settings.setValue(tr("nedit.smartIndentInit"), smartIndentInit);
     settings.setValue(tr("nedit.smartIndentInitCommon"), smartIndentInitCommon);
-    settings.setValue(tr("nedit.autoWrap"), QVariant::fromValue(autoWrap));
+
+    writeEnum(settings, tr("nedit.autoWrap"),                          autoWrap);
+    writeEnum(settings, tr("nedit.autoIndent"),                        autoIndent);
+    writeEnum(settings, tr("nedit.showMatching"),                      showMatching);
+    writeEnum(settings, tr("nedit.searchMethod"),                      searchMethod);
+    writeEnum(settings, tr("nedit.overrideDefaultVirtualKeyBindings"), overrideDefaultVirtualKeyBindings);
+    writeEnum(settings, tr("nedit.truncSubstitution"),                 truncSubstitution);
+
     settings.setValue(tr("nedit.wrapMargin"), wrapMargin);
-    settings.setValue(tr("nedit.autoIndent"), QVariant::fromValue(autoIndent));
     settings.setValue(tr("nedit.autoSave"), autoSave);
     settings.setValue(tr("nedit.openInTab"), openInTab);
     settings.setValue(tr("nedit.saveOldVersion"), saveOldVersion);
-    settings.setValue(tr("nedit.showMatching"), QVariant::fromValue(showMatching));
     settings.setValue(tr("nedit.matchSyntaxBased"), matchSyntaxBased);
     settings.setValue(tr("nedit.highlightSyntax"), highlightSyntax);
     settings.setValue(tr("nedit.backlightChars"), backlightChars);
@@ -324,8 +350,7 @@ bool Settings::savePreferences() {
     settings.setValue(tr("nedit.pathInWindowsMenu"), pathInWindowsMenu);
     settings.setValue(tr("nedit.warnFileMods"), warnFileMods);
     settings.setValue(tr("nedit.warnRealFileMods"), warnRealFileMods);
-    settings.setValue(tr("nedit.warnExit"), warnExit);
-    settings.setValue(tr("nedit.searchMethod"), QVariant::fromValue(searchMethod));
+    settings.setValue(tr("nedit.warnExit"), warnExit);    
 #if defined(REPLACE_SCOPE)
 	settings.setValue(tr("nedit.replaceDefaultScope"),     replaceDefaultScope);
 #endif
@@ -360,12 +385,10 @@ bool Settings::savePreferences() {
     settings.setValue(tr("nedit.alwaysCheckRelativeTagsSpecs"), alwaysCheckRelativeTagsSpecs);
     settings.setValue(tr("nedit.prefFileRead"), prefFileRead);
     settings.setValue(tr("nedit.findReplaceUsesSelection"), findReplaceUsesSelection);
-    settings.setValue(tr("nedit.overrideDefaultVirtualKeyBindings"), QVariant::fromValue(overrideDefaultVirtualKeyBindings));
     settings.setValue(tr("nedit.titleFormat"), titleFormat);
     settings.setValue(tr("nedit.undoModifiesSelection"), undoModifiesSelection);
     settings.setValue(tr("nedit.focusOnRaise"), focusOnRaise);
-    settings.setValue(tr("nedit.forceOSConversion"), forceOSConversion);
-    settings.setValue(tr("nedit.truncSubstitution"), QVariant::fromValue(truncSubstitution));
+    settings.setValue(tr("nedit.forceOSConversion"), forceOSConversion);    
     settings.setValue(tr("nedit.honorSymlinks"), honorSymlinks);
 
     settings.sync();

@@ -151,7 +151,7 @@ private:
 	char *buf_;         // allocated memory where the text is stored
 	int gapStart_;      // points to the first character of the gap
 	int gapEnd_;        // points to the first char after the gap
-	int length_;        // length of the text in the buffer (the length of the buffer itself must be calculated: gapEnd gapStart + length)
+    int length_;        // length of the text in the buffer (the length of the buffer itself must be calculated: gapEnd gapStart + length)
 	
 public:
 	// TODO(eteran): accessors

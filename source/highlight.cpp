@@ -77,13 +77,13 @@ bool can_cross_line_boundaries(const ReparseContext *contextRequirements) {
 
 }
 
-static int findSafeParseRestartPos(TextBuffer *buf, const std::shared_ptr<WindowHighlightData> &highlightData, int *pos);
+static int findSafeParseRestartPos(TextBuffer *buf, const std::unique_ptr<WindowHighlightData> &highlightData, int *pos);
 static bool isParentStyle(const QByteArray &parentStyles, int style1, int style2);
 static int lastModified(const std::shared_ptr<TextBuffer> &styleBuf);
 static int parentStyleOf(const QByteArray &parentStyles, int style);
 static int parseBufferRange(HighlightData *pass1Patterns, HighlightData *pass2Patterns, TextBuffer *buf, const std::shared_ptr<TextBuffer> &styleBuf, ReparseContext *contextRequirements, int beginParse, int endParse, const QString &delimiters);
 static void fillStyleString(const char **stringPtr, char **stylePtr, const char *toPtr, char style, char *prevChar);
-static void incrementalReparse(const std::shared_ptr<WindowHighlightData> &highlightData, TextBuffer *buf, int pos, int nInserted, const QString &delimiters);
+static void incrementalReparse(const std::unique_ptr<WindowHighlightData> &highlightData, TextBuffer *buf, int pos, int nInserted, const QString &delimiters);
 static void modifyStyleBuf(const std::shared_ptr<TextBuffer> &styleBuf, char *styleString, int startPos, int endPos, int firstPass2Style);
 static void passTwoParseString(HighlightData *pattern, const char *string, char *styleString, int length, char *prevChar, const QString &delimiters, const char *lookBehindTo, const char *match_till);
 static void recolorSubexpr(const std::shared_ptr<regexp> &re, int subexpr, int style, const char *string, char *styleString);
@@ -114,7 +114,7 @@ void SyntaxHighlightModifyCBEx(int pos, int nInserted, int nDeleted, int nRestyl
     Q_UNUSED(deletedText);
 
     auto document = static_cast<DocumentWidget *>(user);
-    const std::shared_ptr<WindowHighlightData> &highlightData = document->highlightData_;
+    const std::unique_ptr<WindowHighlightData> &highlightData = document->highlightData_;
 
     if(!highlightData) {
         return;
@@ -168,7 +168,7 @@ void handleUnparsedRegionCBEx(const TextArea *area, int pos, const void *user) {
 ** been presented to the patterns.  Changes the style buffer in "highlightData"
 ** with the parsing result.
 */
-static void incrementalReparse(const std::shared_ptr<WindowHighlightData> &highlightData, TextBuffer *buf, int pos, int nInserted, const QString &delimiters) {
+static void incrementalReparse(const std::unique_ptr<WindowHighlightData> &highlightData, TextBuffer *buf, int pos, int nInserted, const QString &delimiters) {
 
     const std::shared_ptr<TextBuffer> &styleBuf = highlightData->styleBuffer;
 	HighlightData *pass1Patterns = highlightData->pass1Patterns;
@@ -837,7 +837,7 @@ static int patternIsParsable(HighlightData *pattern) {
 ** result in an incorrect re-parse.  However this will happen very rarely,
 ** and, if it does, is unlikely to result in incorrect highlighting.
 */
-static int findSafeParseRestartPos(TextBuffer *buf, const std::shared_ptr<WindowHighlightData> &highlightData, int *pos) {
+static int findSafeParseRestartPos(TextBuffer *buf, const std::unique_ptr<WindowHighlightData> &highlightData, int *pos) {
 	
 	int checkBackTo;
 	int safeParseStart;

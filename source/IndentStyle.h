@@ -28,6 +28,4 @@ inline QLatin1String to_string(IndentStyle style) {
     Q_UNREACHABLE();
 }
 
-Q_DECLARE_METATYPE(IndentStyle)
-
 #endif

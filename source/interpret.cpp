@@ -491,13 +491,11 @@ int ContinueMacroEx(const std::shared_ptr<RestartData> &continuation, DataValue 
             return MACRO_PREEMPT;
         case STAT_ERROR:
             *msg = QString::fromLatin1(ErrMsg);
-            FreeRestartDataEx(continuation);
             restoreContextEx(oldContext);
             return MACRO_ERROR;
         case STAT_DONE:
             *msg = QString();
             *result = *--StackP;
-            FreeRestartDataEx(continuation);
             restoreContextEx(oldContext);
             return MACRO_DONE;
         case STAT_OK:
@@ -541,10 +539,6 @@ void RunMacroAsSubrCall(Program *prog) {
         FP_GET_SYM_VAL(FrameP, s) = to_value();
 		StackP++;
 	}
-}
-
-void FreeRestartDataEx(const std::shared_ptr<RestartData> &context) {
-    delete [] context->stack;
 }
 
 /*

@@ -470,17 +470,17 @@ FileFormats FormatOfFileEx(view::string_view fileString) {
 		if (*p == '\n') {
 			nNewlines++;
 			if (p == fileString.begin() || *(p - 1) != '\r')
-				return UNIX_FILE_FORMAT;
+                return FileFormats::Unix;
 			if (nNewlines >= FORMAT_SAMPLE_LINES)
-				return DOS_FILE_FORMAT;
+                return FileFormats::Dos;
 		} else if (*p == '\r')
 			nReturns++;
 	}
 	if (nNewlines > 0)
-		return DOS_FILE_FORMAT;
+        return FileFormats::Dos;
 	if (nReturns > 0)
-		return MAC_FILE_FORMAT;
-	return UNIX_FILE_FORMAT;
+        return FileFormats::Mac;
+    return FileFormats::Unix;
 
 }
 
@@ -641,13 +641,13 @@ QString ReadAnyTextFileEx(const QString &fileName, bool forceNL) {
 
 	/* Convert linebreaks? */
 	switch(FormatOfFileEx(contents)) {
-	case DOS_FILE_FORMAT:
+    case FileFormats::Dos:
 		ConvertFromDosFileStringEx(&contents, nullptr);
 		break;
-	case MAC_FILE_FORMAT:
+    case FileFormats::Mac:
 		ConvertFromMacFileStringEx(&contents);
 		break;
-	case UNIX_FILE_FORMAT:
+    case FileFormats::Unix:
 		break;
 	}
 

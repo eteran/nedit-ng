@@ -256,7 +256,7 @@ public:
 	int TextDPosToLineAndCol(int pos, int *lineNum, int *column);
     void TextDSetScroll(int topLineNum, int horizOffset);
     void TextSetCursorPos(int pos);
-    void TextDAttachHighlightData(const std::shared_ptr<TextBuffer> &styleBuffer, StyleTableEntry *styleTable, int nStyles, char unfinishedStyle, unfinishedStyleCBProcEx unfinishedHighlightCB, void *cbArg);
+    void TextDAttachHighlightData(const std::shared_ptr<TextBuffer> &styleBuffer, StyleTableEntry *styleTable, long nStyles, char unfinishedStyle, unfinishedStyleCBProcEx unfinishedHighlightCB, void *user);
     int TextFirstVisiblePos() const;
     int TextLastVisiblePos() const;
     void TextDSetFont(const QFont &font);
@@ -399,7 +399,7 @@ private:
 	int absTopLineNum_;                           // In continuous wrap mode, the line number of the top line if the text were not wrapped (note that this is only maintained as needed).
 	int needAbsTopLineNum_;                       // Externally settable flag to continue maintaining absTopLineNum even if it isn't needed for line # display
 	int horizOffset_;                             // Horizontal scroll pos. in pixels
-	int nStyles_;                                 // Number of entries in styleTable
+    long nStyles_;                                // Number of entries in styleTable
 	StyleTableEntry *styleTable_;                 // Table of fonts and colors for coloring/syntax-highlighting
 	char unfinishedStyle_;                        // Style buffer entry which triggers on-the-fly reparsing of region
 	unfinishedStyleCBProcEx unfinishedHighlightCB_; // Callback to parse "unfinished" regions

@@ -3891,13 +3891,13 @@ QString MainWindow::PromptForNewFileEx(DocumentWidget *document, const QString &
             auto macCheck  = new QRadioButton(tr("&Macintosh"));
 
             switch(document->fileFormat_) {
-            case DOS_FILE_FORMAT:
+            case FileFormats::Dos:
                 dosCheck->setChecked(true);
                 break;
-            case MAC_FILE_FORMAT:
+            case FileFormats::Mac:
                 macCheck->setChecked(true);
                 break;
-            case UNIX_FILE_FORMAT:
+            case FileFormats::Unix:
                 unixCheck->setChecked(true);
                 break;
             }
@@ -3947,11 +3947,11 @@ QString MainWindow::PromptForNewFileEx(DocumentWidget *document, const QString &
 
             if(dialog.exec()) {
                 if(dosCheck->isChecked()) {
-                    document->fileFormat_ = DOS_FILE_FORMAT;
+                    document->fileFormat_ = FileFormats::Dos;
                 } else if(macCheck->isChecked()) {
-                    document->fileFormat_ = MAC_FILE_FORMAT;
+                    document->fileFormat_ = FileFormats::Mac;
                 } else if(unixCheck->isChecked()) {
-                    document->fileFormat_ = UNIX_FILE_FORMAT;
+                    document->fileFormat_ = FileFormats::Unix;
                 }
 
                 *addWrap = wrapCheck->isChecked();

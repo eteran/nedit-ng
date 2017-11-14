@@ -183,6 +183,11 @@ public:
 
 /* Information needed to re-start a preempted macro */
 struct RestartData {
+public:
+    ~RestartData() {
+        delete [] stack;
+    }
+public:
     DataValue *stack            = nullptr;
     DataValue *stackP           = nullptr;
     DataValue *frameP           = nullptr;
@@ -236,7 +241,6 @@ NString AllocNStringCpyEx(const QString &s);
 NString AllocNStringCpyEx(const std::string &s);
 NString AllocNStringCpyEx(const view::string_view s);
 void GarbageCollectStrings();
-void FreeRestartDataEx(const std::shared_ptr<RestartData> &context);
 Symbol *PromoteToGlobal(Symbol *sym);
 void FreeProgram(Program *prog);
 void ModifyReturnedValueEx(const std::shared_ptr<RestartData> &context, const DataValue &dv);

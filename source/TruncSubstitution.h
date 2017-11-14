@@ -11,6 +11,4 @@ enum class TruncSubstitution {
     Ignore,
 };
 
-Q_DECLARE_METATYPE(TruncSubstitution)
-
 #endif

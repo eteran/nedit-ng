@@ -3330,7 +3330,7 @@ static bool shellCmdMS(DocumentWidget *document, Arguments arguments, DataValue 
 */
 void ReturnShellCommandOutputEx(DocumentWidget *document, const QString &outText, int status) {
 
-    if(auto cmdData = document->macroCmdData_) {
+    if(const std::unique_ptr<MacroCommandData> &cmdData = document->macroCmdData_) {
 
         DataValue retVal = to_value(outText);
 
@@ -3349,7 +3349,7 @@ static bool dialogMS(DocumentWidget *document, Arguments arguments, DataValue *r
     /* Ignore the focused window passed as the function argument and put
        the dialog up over the window which is executing the macro */
     document = MacroRunWindowEx();
-    auto cmdData = document->macroCmdData_;
+    const std::unique_ptr<MacroCommandData> &cmdData = document->macroCmdData_;
 
     /* Dialogs require macro to be suspended and interleaved with other macros.
        This subroutine can't be run if macro execution can't be interrupted */
@@ -3409,7 +3409,7 @@ static bool stringDialogMS(DocumentWidget *document, Arguments arguments, DataVa
     /* Ignore the focused window passed as the function argument and put
        the dialog up over the window which is executing the macro */
     document = MacroRunWindowEx();
-    auto cmdData = document->macroCmdData_;
+    const std::unique_ptr<MacroCommandData> &cmdData = document->macroCmdData_;
 
     /* Dialogs require macro to be suspended and interleaved with other macros.
        This subroutine can't be run if macro execution can't be interrupted */
@@ -3787,7 +3787,7 @@ static bool listDialogMS(DocumentWidget *document, Arguments arguments, DataValu
     /* Ignore the focused window passed as the function argument and put
        the dialog up over the window which is executing the macro */
     document = MacroRunWindowEx();
-    auto cmdData = document->macroCmdData_;
+    const std::unique_ptr<MacroCommandData> &cmdData = document->macroCmdData_;
 
     /* Dialogs require macro to be suspended and interleaved with other macros.
        This subroutine can't be run if macro execution can't be interrupted */
@@ -4369,13 +4369,13 @@ static bool fileFormatMV(DocumentWidget *document, Arguments arguments, DataValu
     QLatin1String res;
 
     switch (document->fileFormat_) {
-    case UNIX_FILE_FORMAT:
+    case FileFormats::Unix:
         res = QLatin1String("unix");
         break;
-    case DOS_FILE_FORMAT:
+    case FileFormats::Dos:
         res = QLatin1String("dos");
         break;
-    case MAC_FILE_FORMAT:
+    case FileFormats::Mac:
         res = QLatin1String("macintosh");
         break;
     }
