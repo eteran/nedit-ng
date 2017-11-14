@@ -129,7 +129,7 @@ bool DialogSmartIndentCommon::updateSmartIndentCommonData() {
 	   probably won't be referenced in a smart indent initialization) */
     QList<DocumentWidget *> documents = DocumentWidget::allDocuments();
     if(!documents.empty()) {
-		if (!ReadMacroStringEx(documents[0], CommonMacros, tr("common macros"))) {
+        if (!documents[0]->ReadMacroStringEx(CommonMacros, tr("common macros"))) {
 			return false;
 		}
 	}

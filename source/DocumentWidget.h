@@ -119,6 +119,7 @@ public:
     static QList<DocumentWidget *> allDocuments();
 
 public:
+    int ReadMacroStringEx(const QString &string, const QString &errIn);
     void repeatMacro(const QString &macro, int how);
     void SetFonts(const QString &fontName, const QString &italicName, const QString &boldName, const QString &boldItalicName);
     QString FullPath() const;

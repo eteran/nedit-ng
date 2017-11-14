@@ -1347,7 +1347,7 @@ int TextBuffer::BufEndOfLine(int pos) const {
 ** for figuring tabs.  Output string is guranteed to be shorter or
 ** equal in length to MAX_EXP_CHAR_LEN
 */
-int TextBuffer::BufGetExpandedChar(int pos, const int indent, char *outStr) const {
+int TextBuffer::BufGetExpandedChar(int pos, int indent, char *outStr) const {
 	return BufExpandCharacter(BufGetCharacter(pos), indent, outStr, tabDist_, nullSubsChar_);
 }
 

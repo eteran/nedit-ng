@@ -2147,13 +2147,6 @@ void RegisterMacroSubroutines() {
         ReturnGlobals[i] = InstallSymbol(ReturnGlobalNames[i], GLOBAL_SYM, noValue);
 }
 
-/*
-** Parse and execute a macro string including macro definitions.  Report
-** parsing errors in a dialog posted over window->shell_.
-*/
-int ReadMacroStringEx(DocumentWidget *document, const QString &string, const QString &errIn) {
-    return readCheckMacroStringEx(document, string, document, errIn, nullptr);
-}
 
 /*
 ** Check a macro string containing definitions for errors.  Returns True
