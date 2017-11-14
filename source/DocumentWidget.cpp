@@ -385,7 +385,7 @@ DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inDocument, c
     QString fullname = tr("%1%2").arg(path, name);
 
     if (GetPrefAlwaysCheckRelTagsSpecs()) {
-        AddRelTagsFileEx(GetPrefTagFile(), path, TAG);
+        AddRelTagsFileEx(GetPrefTagFile(), path, TagSearchMode::TAG);
     }
 
     MainWindow::AddToPrevOpenMenu(fullname);
@@ -1052,7 +1052,7 @@ void DocumentWidget::reapplyLanguageMode(int mode, bool forceDefaults) {
 
         // Decref oldMode's default calltips file if needed
         if (oldMode != PLAIN_LANGUAGE_MODE && !LanguageModes[oldMode].defTipsFile.isNull()) {
-            DeleteTagsFileEx(LanguageModes[oldMode].defTipsFile, TIP, false);
+            DeleteTagsFileEx(LanguageModes[oldMode].defTipsFile, TagSearchMode::TIP, false);
         }
 
         // Set delimiters for all text widgets
@@ -1129,7 +1129,7 @@ void DocumentWidget::reapplyLanguageMode(int mode, bool forceDefaults) {
 
         // Load calltips files for new mode
         if (mode != PLAIN_LANGUAGE_MODE && !LanguageModes[mode].defTipsFile.isNull()) {
-            AddTagsFileEx(LanguageModes[mode].defTipsFile, TIP);
+            AddTagsFileEx(LanguageModes[mode].defTipsFile, TagSearchMode::TIP);
         }
 
         // Add/remove language specific menu items
@@ -3936,7 +3936,7 @@ void DocumentWidget::FindDefCalltip(TextArea *area, const QString &tipName) {
 	globVAlign    = TIP_BELOW;
 	globAlignMode = TIP_SLOPPY;
 
-    findDefinitionHelper(area, tipName, TIP);
+    findDefinitionHelper(area, tipName, TagSearchMode::TIP);
 
 }
 
@@ -3945,7 +3945,7 @@ void DocumentWidget::FindDefCalltip(TextArea *area, const QString &tipName) {
 ** loaded tags file and bring up the file and line that the tags file
 ** indicates.
 */
-void DocumentWidget::findDefinitionHelper(TextArea *area, const QString &arg, Mode search_type) {
+void DocumentWidget::findDefinitionHelper(TextArea *area, const QString &arg, TagSearchMode search_type) {
 	if (!arg.isNull()) {
 		findDef(area, arg, search_type);
 	} else {
@@ -3965,7 +3965,7 @@ void DocumentWidget::findDefinitionHelper(TextArea *area, const QString &arg, Mo
 ** This code path is followed if the request came from either
 ** FindDefinition or FindDefCalltip.  This should probably be refactored.
 */
-int DocumentWidget::findDef(TextArea *area, const QString &value, Mode search_type) {
+int DocumentWidget::findDef(TextArea *area, const QString &value, TagSearchMode search_type) {
 	int status = 0;
 
 	searchMode = search_type;
@@ -3981,14 +3981,14 @@ int DocumentWidget::findDef(TextArea *area, const QString &value, Mode search_ty
         status = findAllMatchesEx(this, area, value);
 
         // If we didn't find a requested calltip, see if we can use a tag
-        if (status == 0 && search_type == TIP && !TagsFileList.isEmpty()) {
-            searchMode = TIP_FROM_TAG;
+        if (status == 0 && search_type == TagSearchMode::TIP && !TagsFileList.isEmpty()) {
+            searchMode = TagSearchMode::TIP_FROM_TAG;
             status = findAllMatchesEx(this, area, value);
         }
 
         if (status == 0) {
             // Didn't find any matches
-            if (searchMode == TIP_FROM_TAG || searchMode == TIP) {
+            if (searchMode == TagSearchMode::TIP_FROM_TAG || searchMode == TagSearchMode::TIP) {
                 tagsShowCalltipEx(area, tr("No match for \"%1\" in calltips or tags.").arg(tagName));
             } else {
                 QMessageBox::warning(this, tr("Tags"), tr("\"%1\" not found in tags %2").arg(tagName, (TagsFileList.size() > 1) ? tr("files") : tr("file")));
@@ -4003,7 +4003,7 @@ int DocumentWidget::findDef(TextArea *area, const QString &value, Mode search_ty
 }
 
 void DocumentWidget::FindDefinition(TextArea *area, const QString &tagName) {
-    findDefinitionHelper(area, tagName, TAG);
+    findDefinitionHelper(area, tagName, TagSearchMode::TAG);
 }
 
 void DocumentWidget::execAP(TextArea *area, const QString &command) {
@@ -4635,7 +4635,7 @@ void DocumentWidget::UnloadLanguageModeTipsFileEx() {
 
     int mode = languageMode_;
     if (mode != PLAIN_LANGUAGE_MODE && !LanguageModes[mode].defTipsFile.isNull()) {
-        DeleteTagsFileEx(LanguageModes[mode].defTipsFile, TIP, false);
+        DeleteTagsFileEx(LanguageModes[mode].defTipsFile, TagSearchMode::TIP, false);
     }
 }
 

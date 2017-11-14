@@ -83,16 +83,16 @@ static int loadTagsFile(const QString &tagSpec, int index, int recLevel);
 static int fakeRegExSearchEx(view::string_view buffer, const char *searchString, int *startPos, int *endPos);
 static int addTag(const QString &name, const QString &file, int lang, const QString &search, int posInf, const QString &path, int index);
 static bool delTag(int index);
-static QList<Tag> getTag(const QString &name, int search_type);
+static QList<Tag> getTag(const QString &name, TagSearchMode search_type);
 static void createSelectMenuEx(DocumentWidget *document, TextArea *area, const QStringList &args);
-static QList<Tag> LookupTag(const QString &name, Mode search_type);
+static QList<Tag> LookupTag(const QString &name, TagSearchMode search_type);
 
 static bool searchLine(const std::string &line, const std::string &regex);
 static QString rstrip(QString s);
 static int nextTFBlock(std::istream &is, QString &header, QString &body, int *blkLine, int *currLine);
 static int loadTipsFile(const QString &tipsFile, int index, int recLevel);
-static QMultiHash<QString, Tag> *hashTableByType(int type);
-static QList<tagFile> *tagListByType(int type);
+static QMultiHash<QString, Tag> *hashTableByType(TagSearchMode type);
+static QList<TagFile> *tagListByType(TagSearchMode type);
 
 struct Tag {
     QString name;
@@ -107,15 +107,15 @@ struct Tag {
 static QMultiHash<QString, Tag> Tags;
 
 // list of loaded tags files 
-QList<tagFile> TagsFileList;
+QList<TagFile> TagsFileList;
 
 // Hash table of calltip tags 
 static QMultiHash<QString, Tag> Tips;
-QList<tagFile> TipsFileList;
+QList<TagFile> TipsFileList;
 
 /* These are all transient global variables -- they don't hold any state
     between tag/tip lookups */
-Mode searchMode = TAG;
+TagSearchMode searchMode = TagSearchMode::TAG;
 QString tagName;
 
 static QString tagFiles[MAXDUPTAGS];
@@ -137,16 +137,16 @@ int tagsShowCalltipEx(TextArea *area, const QString &text) {
     }
 }
 
-static QMultiHash<QString, Tag> *hashTableByType(int type) {
-    if (type == TIP) {
+static QMultiHash<QString, Tag> *hashTableByType(TagSearchMode type) {
+    if (type == TagSearchMode::TIP) {
         return &Tips;
     } else {
         return &Tags;
     }
 }
 
-static QList<tagFile> *tagListByType(int type) {
-    if (type == TAG) {
+static QList<TagFile> *tagListByType(TagSearchMode type) {
+    if (type == TagSearchMode::TAG) {
         return &TagsFileList;
     } else {
         return &TipsFileList;
@@ -158,9 +158,9 @@ static QList<Tag> getTagFromTable(QMultiHash<QString, Tag> *table, const QString
 }
 
 //      Retrieve a Tag structure from the hash table 
-static QList<Tag> getTag(const QString &name, int search_type) {
+static QList<Tag> getTag(const QString &name, TagSearchMode search_type) {
 
-	if (search_type == TIP) {
+    if (search_type == TagSearchMode::TIP) {
         return getTagFromTable(&Tips, name);
 	} else {
         return getTagFromTable(&Tags, name);
@@ -177,7 +177,7 @@ static int addTag(const QString &name, const QString &file, int lang, const QStr
 
     QMultiHash<QString, Tag> *table;
 
-	if (searchMode == TIP) {
+    if (searchMode == TagSearchMode::TIP) {
         table = &Tips;
     } else {
         table = &Tags;
@@ -266,13 +266,13 @@ static int16_t tagFileIndex = 0;
 ** (not starting with [/~]) and extend the tag files list if in
 ** windowPath a tags file matching the relative spec has been found.
 */
-bool AddRelTagsFileEx(const QString &tagSpec, const QString &windowPath, Mode file_type) {
+bool AddRelTagsFileEx(const QString &tagSpec, const QString &windowPath, TagSearchMode file_type) {
 
     bool added = false;
 
 
     searchMode = file_type;
-    QList<tagFile> *FileList = tagListByType(searchMode);
+    QList<TagFile> *FileList = tagListByType(searchMode);
 
     if(tagSpec.isEmpty()) {
         return false;
@@ -294,7 +294,7 @@ bool AddRelTagsFileEx(const QString &tagSpec, const QString &windowPath, Mode fi
 
         pathName = NormalizePathnameEx(pathName);
 
-        auto it = std::find_if(FileList->begin(), FileList->end(), [pathName](const tagFile &tag) {
+        auto it = std::find_if(FileList->begin(), FileList->end(), [pathName](const TagFile &tag) {
             return tag.filename == pathName;
         });
 
@@ -311,7 +311,7 @@ bool AddRelTagsFileEx(const QString &tagSpec, const QString &windowPath, Mode fi
             continue;
         }
 
-        tagFile tag = {
+        TagFile tag = {
             pathName,
             timestamp,
             false,
@@ -336,12 +336,12 @@ bool AddRelTagsFileEx(const QString &tagSpec, const QString &windowPath, Mode fi
 **  Returns True if all files were found in the FileList or loaded successfully,
 **  FALSE otherwise.
 */
-bool AddTagsFileEx(const QString &tagSpec, Mode file_type) {
+bool AddTagsFileEx(const QString &tagSpec, TagSearchMode file_type) {
 
     bool added = true;
 
     searchMode = file_type;
-    QList<tagFile> *FileList = tagListByType(searchMode);
+    QList<TagFile> *FileList = tagListByType(searchMode);
 
     if(tagSpec.isEmpty()) {
         return false;
@@ -360,7 +360,7 @@ bool AddTagsFileEx(const QString &tagSpec, Mode file_type) {
 
 		pathName = NormalizePathnameEx(pathName);
 
-        auto it = std::find_if(FileList->begin(), FileList->end(), [pathName](const tagFile &tag) {
+        auto it = std::find_if(FileList->begin(), FileList->end(), [pathName](const TagFile &tag) {
 			return tag.filename == pathName;
         });
 
@@ -382,7 +382,7 @@ bool AddTagsFileEx(const QString &tagSpec, Mode file_type) {
             continue;
         }
 
-        tagFile tag = {
+        TagFile tag = {
             pathName,
             timestamp,
             false,
@@ -404,14 +404,14 @@ bool AddTagsFileEx(const QString &tagSpec, Mode file_type) {
  * If "force_unload" is true, a calltips file will be deleted even if its
  * refcount is nonzero.
  */
-int DeleteTagsFileEx(const QString &tagSpec, Mode file_type, bool force_unload) {
+int DeleteTagsFileEx(const QString &tagSpec, TagSearchMode file_type, bool force_unload) {
 
     if(tagSpec.isEmpty()) {
         return false;
     }
 
     searchMode = file_type;
-    QList<tagFile> *FileList = tagListByType(searchMode);
+    QList<TagFile> *FileList = tagListByType(searchMode);
 
     bool removed = true;
 
@@ -430,7 +430,7 @@ int DeleteTagsFileEx(const QString &tagSpec, Mode file_type, bool force_unload) 
 
         auto it = FileList->begin();
         while(it != FileList->end()) {
-            tagFile &t = *it;
+            TagFile &t = *it;
 
             if (t.filename != pathName) {
                 ++it;
@@ -438,7 +438,7 @@ int DeleteTagsFileEx(const QString &tagSpec, Mode file_type, bool force_unload) 
             }
 
             // Don't unload tips files with nonzero refcounts unless forced
-            if (searchMode == TIP && !force_unload && --t.refcount > 0) {
+            if (searchMode == TagSearchMode::TIP && !force_unload && --t.refcount > 0) {
                 break;
             }
 
@@ -710,7 +710,7 @@ static int loadTagsFile(const QString &tagSpec, int index, int recLevel) {
 	return nTagsAdded;
 }
 
-static QList<Tag> LookupTagFromList(QList<tagFile> *FileList, const QString &name, int search_type) {
+static QList<Tag> LookupTagFromList(QList<TagFile> *FileList, const QString &name, TagSearchMode search_type) {
 
 	/*
 	** Go through the list of all tags Files:
@@ -723,7 +723,7 @@ static QList<Tag> LookupTagFromList(QList<tagFile> *FileList, const QString &nam
 	**
 	*/
     if (!name.isNull()) {
-        for(tagFile &tf : *FileList) {
+        for(TagFile &tf : *FileList) {
 
             int load_status;
 		
@@ -788,10 +788,10 @@ static QList<Tag> LookupTagFromList(QList<tagFile> *FileList, const QString &nam
 ** Return Value: TRUE:  tag spec found
 **               FALSE: no (more) definitions found.
 */
-static QList<Tag> LookupTag(const QString &name, Mode search_type) {
+static QList<Tag> LookupTag(const QString &name, TagSearchMode search_type) {
 
 	searchMode = search_type;
-	if (searchMode == TIP) {
+    if (searchMode == TagSearchMode::TIP) {
         return LookupTagFromList(&TipsFileList, name, search_type);
 	} else {
         return LookupTagFromList(&TagsFileList, name, search_type);
@@ -805,8 +805,8 @@ static QList<Tag> LookupTag(const QString &name, Mode search_type) {
 **                  tip and/or tag database depending on search_type
 **  search_type:    Either TIP or TIP_FROM_TAG
 */
-int ShowTipStringEx(DocumentWidget *window, const QString &text, bool anchored, int pos, bool lookup, int search_type, int hAlign, int vAlign, int alignMode) {
-    if (search_type == TAG) {
+int ShowTipStringEx(DocumentWidget *window, const QString &text, bool anchored, int pos, bool lookup, TagSearchMode search_type, int hAlign, int vAlign, int alignMode) {
+    if (search_type == TagSearchMode::TAG) {
         return 0;
     }
 
@@ -818,10 +818,11 @@ int ShowTipStringEx(DocumentWidget *window, const QString &text, bool anchored, 
     globAlignMode = alignMode;
 
     // If this isn't a lookup request, just display it.
-    if (!lookup)
+    if (!lookup) {
         return tagsShowCalltipEx(MainWindow::fromDocument(window)->lastFocus_, text);
-    else
-        return window->findDef(MainWindow::fromDocument(window)->lastFocus_, text, static_cast<Mode>(search_type));
+    } else {
+        return window->findDef(MainWindow::fromDocument(window)->lastFocus_, text, search_type);
+    }
 }
 
 /*
@@ -832,7 +833,7 @@ int ShowTipStringEx(DocumentWidget *window, const QString &text, bool anchored, 
 */
 static int fakeRegExSearchEx(view::string_view buffer, const char *searchString, int *startPos, int *endPos) {
 
-	int found, searchStartPos;
+    int searchStartPos;
     Direction dir;
     bool ctagsMode;
 	char searchSubs[3 * MAXLINE + 3];
@@ -870,6 +871,7 @@ static int fakeRegExSearchEx(view::string_view buffer, const char *searchString,
 	} else { // etags mode, no search dir spec, no leading caret 
 		inPtr = searchString;
 	}
+
 	while (*inPtr) {
 		if ((*inPtr == '\\' && inPtr[1] == '/') || (*inPtr == '\r' && inPtr[1] == '$' && !inPtr[2])) {
 			/* Remove:
@@ -895,9 +897,10 @@ static int fakeRegExSearchEx(view::string_view buffer, const char *searchString,
 			*outPtr++ = *inPtr++;
 		}
 	}
+
     *outPtr = '\0'; // Terminate searchSubs
 
-    found = SearchString(fileString, QString::fromLatin1(searchSubs), dir, SearchType::Regex, WrapMode::NoWrap, searchStartPos, startPos, endPos, nullptr, nullptr, QString());
+    bool found = SearchString(fileString, QString::fromLatin1(searchSubs), dir, SearchType::Regex, WrapMode::NoWrap, searchStartPos, startPos, endPos, nullptr, nullptr, QString());
 
 	if (!found && !ctagsMode) {
 		/* position of the target definition could have been drifted before
@@ -1054,7 +1057,7 @@ int findAllMatchesEx(DocumentWidget *document, TextArea *area, const QString &st
     **  No need for a dialog list, there is only one tag matching --
     **  Go directly to the tag
     */
-    if (searchMode == TAG) {
+    if (searchMode == TagSearchMode::TAG) {
         editTaggedLocationEx(area, 0);
     } else {
         showMatchingCalltipEx(area, 0);
@@ -1132,7 +1135,7 @@ void showMatchingCalltipEx(TextArea *area, int i) {
             }
         }
 
-        if (searchMode == TIP) {
+        if (searchMode == TagSearchMode::TIP) {
 			int dummy;
 
             // 4. Find the end of the calltip (delimited by an empty line)
@@ -1595,7 +1598,7 @@ static int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
     // Now resolve any aliases
     for(const tf_alias &tmp_alias : aliases) {
 
-        QList<Tag> tags = getTag(tmp_alias.dest, TIP);
+        QList<Tag> tags = getTag(tmp_alias.dest, TagSearchMode::TIP);
 
         if (tags.isEmpty()) {
             qWarning("NEdit: Can't find destination of alias \"%s\"\n"

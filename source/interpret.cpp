@@ -1780,8 +1780,6 @@ static int returnVal() {
 static int returnValOrNone(bool valOnStack) {
 	DataValue retVal;
 	static DataValue noValue = INIT_DATA_VALUE;
-	DataValue *newFrameP;
-	int nArgs;
 
 	DISASM_RT(PC - 1, 1);
 	STACKDUMP(StackP - FrameP + FP_GET_ARG_COUNT(FrameP) + FP_TO_ARGS_DIST, 3);
@@ -1792,9 +1790,9 @@ static int returnValOrNone(bool valOnStack) {
 	}
 
 	// get stored return information 
-    nArgs     = FP_GET_ARG_COUNT(FrameP);
-	newFrameP = FP_GET_OLD_FP(FrameP);
-    PC        = FP_GET_RET_PC(FrameP);
+    int nArgs            = FP_GET_ARG_COUNT(FrameP);
+    DataValue *newFrameP = FP_GET_OLD_FP(FrameP);
+    PC                   = FP_GET_RET_PC(FrameP);
 
 	// pop past local variables 
 	StackP = FrameP;

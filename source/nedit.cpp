@@ -165,7 +165,7 @@ int main(int argc, char *argv[]) {
 	   file resource is intended to be set and forgotten.  Running nedit in a
 	   directory without a tags should not cause it to spew out errors. */
     if (!GetPrefTagFile().isEmpty()) {
-        AddTagsFileEx(GetPrefTagFile(), TAG);
+        AddTagsFileEx(GetPrefTagFile(), TagSearchMode::TAG);
 	}
 
     if (!GetPrefServerName().isEmpty()) {
@@ -181,7 +181,7 @@ int main(int argc, char *argv[]) {
 			continue;
         } else if (opts && args[i] == QLatin1String("-tags")) {
             nextArg(args, &i);
-            if (!AddTagsFileEx(args[i], TAG)) {
+            if (!AddTagsFileEx(args[i], TagSearchMode::TAG)) {
 				fprintf(stderr, "NEdit: Unable to load tags file\n");
             }
 

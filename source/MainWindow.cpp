@@ -2774,7 +2774,7 @@ void MainWindow::updateTipsFileMenuEx() {
 
     auto tipsMenu = new QMenu(this);
 
-    for(tagFile &tf : TipsFileList) {
+    for(TagFile &tf : TipsFileList) {
         auto filename = tf.filename;
         QAction *action = tipsMenu->addAction(filename);
         action->setData(filename);
@@ -2787,7 +2787,7 @@ void MainWindow::updateTipsFileMenuEx() {
 void MainWindow::updateTagsFileMenuEx() {
     auto tagsMenu = new QMenu(this);
 
-    for(tagFile &tf : TagsFileList) {
+    for(TagFile &tf : TagsFileList) {
         auto filename = tf.filename;
         QAction *action = tagsMenu->addAction(filename);
         action->setData(filename);
@@ -2815,7 +2815,7 @@ void MainWindow::action_Unload_Tips_File(const QString &filename) {
 
     EMIT_EVENT_ARG_1("unload_tips_file", filename);
 
-    if (DeleteTagsFileEx(filename, TIP, true)) {
+    if (DeleteTagsFileEx(filename, TagSearchMode::TIP, true)) {
         for(MainWindow *window : MainWindow::allWindows()) {
             window->updateTipsFileMenuEx();
         }
@@ -2826,7 +2826,7 @@ void MainWindow::action_Unload_Tags_File(const QString &filename) {
 
     EMIT_EVENT_ARG_1("unload_tags_file", filename);
 
-    if (DeleteTagsFileEx(filename, TAG, true)) {
+    if (DeleteTagsFileEx(filename, TagSearchMode::TAG, true)) {
         for(MainWindow *window : MainWindow::allWindows()) {
              window->updateTagsFileMenuEx();
         }
@@ -2838,7 +2838,7 @@ void MainWindow::action_Load_Tips_File(const QString &filename) {
 
     EMIT_EVENT_ARG_1("load_tips_file", filename);
 
-    if (!AddTagsFileEx(filename, TIP)) {
+    if (!AddTagsFileEx(filename, TagSearchMode::TIP)) {
         QMessageBox::warning(this, tr("Error Reading File"), tr("Error reading tips file:\n'%1'\ntips not loaded").arg(filename));
     }
 }
@@ -2847,7 +2847,7 @@ void MainWindow::action_Load_Tags_File(const QString &filename) {
 
     EMIT_EVENT_ARG_1("load_tags_file", filename);
 
-    if (!AddTagsFileEx(filename, TAG)) {
+    if (!AddTagsFileEx(filename, TagSearchMode::TAG)) {
         QMessageBox::warning(this, tr("Error Reading File"), tr("Error reading ctags file:\n'%1'\ntags not loaded").arg(filename));
     }
 }

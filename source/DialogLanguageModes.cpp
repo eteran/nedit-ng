@@ -273,12 +273,12 @@ std::unique_ptr<LanguageMode> DialogLanguageModes::readLMDialogFields(Mode mode)
 	QString tipsFile = ui.editCallTips->text();
 	if(!tipsFile.isEmpty()) {
 		// Ensure that AddTagsFile will work
-		if (!AddTagsFileEx(tipsFile, TIP)) {
+        if (!AddTagsFileEx(tipsFile, TagSearchMode::TIP)) {
             if (mode == Mode::Verbose) {
 				QMessageBox::warning(this, tr("Error reading Calltips"), tr("Can't read default calltips file(s):\n  \"%1\"\n").arg(tipsFile));
 			}
 			return nullptr;
-        } else if (!DeleteTagsFileEx(tipsFile, TIP, false)) {
+        } else if (!DeleteTagsFileEx(tipsFile, TagSearchMode::TIP, false)) {
             qCritical("NEdit: Internal error: Trouble deleting calltips file(s):\n  \"%s\"", qPrintable(tipsFile));
 		}
 	}
@@ -498,7 +498,7 @@ bool DialogLanguageModes::updateLMList(Mode mode) {
         for(DocumentWidget *document: DocumentWidget::allDocuments()) {
 
             if (document->languageMode_ != PLAIN_LANGUAGE_MODE && !LanguageModes[document->languageMode_].defTipsFile.isNull()) {
-                AddTagsFileEx(LanguageModes[document->languageMode_].defTipsFile, TIP);
+                AddTagsFileEx(LanguageModes[document->languageMode_].defTipsFile, TagSearchMode::TIP);
             }
         }
 

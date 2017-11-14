@@ -191,9 +191,9 @@ static bool replaceAllMS(DocumentWidget *document, Arguments arguments, DataValu
 
 static bool readSearchArgs(Arguments arguments, Direction *searchDirection, SearchType *searchType, WrapMode *wrap, const char **errMsg);
 
-static bool readArgument(DataValue dv, int *result, const char **errMsg = nullptr);
-static bool readArgument(DataValue dv, std::string *result, const char **errMsg = nullptr);
-static bool readArgument(DataValue dv, QString *result, const char **errMsg = nullptr);
+static bool readArgument(const DataValue &dv, int *result, const char **errMsg = nullptr);
+static bool readArgument(const DataValue &dv, std::string *result, const char **errMsg = nullptr);
+static bool readArgument(const DataValue &dv, QString *result, const char **errMsg = nullptr);
 
 template <class T, class ...Ts>
 bool readArguments(Arguments arguments, int index, const char **errMsg, T arg, Ts...args);
@@ -3492,7 +3492,7 @@ static bool calltipMS(DocumentWidget *document, Arguments arguments, DataValue *
     std::string txtArg;
     bool anchored = false;
     bool lookup = true;
-    int mode = -1;
+    TagSearchMode mode = TagSearchMode::None;
     int i;
     int anchorPos;
     int hAlign = TIP_LEFT;
@@ -3549,11 +3549,11 @@ static bool calltipMS(DocumentWidget *document, Arguments arguments, DataValue *
             break;
         case 't':
             if (txtArg == "tipText") {
-                mode = -1;
+                mode = TagSearchMode::None;
             } else if (txtArg == "tipKey") {
-                mode = TIP;
+                mode = TagSearchMode::TIP;
             } else if (txtArg == "tagKey") {
-                mode = TIP_FROM_TAG;
+                mode = TagSearchMode::TIP_FROM_TAG;
             } else {
                 M_FAILURE(UnrecognizedArgument);
             }
@@ -3563,7 +3563,7 @@ static bool calltipMS(DocumentWidget *document, Arguments arguments, DataValue *
         }
     }
 
-    if (mode < 0) {
+    if (mode == TagSearchMode::None) {
         lookup = false;
     }
 
@@ -5582,7 +5582,7 @@ static bool getPatternAtPosMS(DocumentWidget *document, Arguments arguments, Dat
 ** if conversion succeeded, and store result in *result, otherwise
 ** return False with an error message in *errMsg.
 */
-static bool readArgument(DataValue dv, int *result, const char **errMsg) {
+static bool readArgument(const DataValue &dv, int *result, const char **errMsg) {
 
     if(is_integer(dv)) {
         *result = to_integer(dv);
@@ -5612,7 +5612,7 @@ static bool readArgument(DataValue dv, int *result, const char **errMsg) {
 ** is converted, write the string in the space provided by "stringStorage",
 ** which must be large enough to handle ints of the maximum size.
 */
-static bool readArgument(DataValue dv, std::string *result, const char **errMsg) {
+static bool readArgument(const DataValue &dv, std::string *result, const char **errMsg) {
 
     if(is_string(dv)) {
         *result = to_string(dv).to_string();
@@ -5627,7 +5627,7 @@ static bool readArgument(DataValue dv, std::string *result, const char **errMsg)
     M_FAILURE(UnknownObject);
 }
 
-static bool readArgument(DataValue dv, QString *result, const char **errMsg) {
+static bool readArgument(const DataValue &dv, QString *result, const char **errMsg) {
 
     if(is_string(dv)) {
         *result = to_qstring(dv);
