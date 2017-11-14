@@ -698,11 +698,10 @@ static int findLeftMarginEx(In first, In last, int length, int tabDist) {
 ** previous versions which did all paragraphs together).
 */
 static std::string fillParagraphsEx(view::string_view text, int rightMargin, int tabDist, int useTabs, char nullSubsChar, int alignWithFirst) {
-	char ch;
 
 	// Create a buffer to accumulate the filled paragraphs 
-    auto buf = std::make_unique<TextBuffer>();
-	buf->BufSetAllEx(text);
+    TextBuffer buf;
+    buf.BufSetAllEx(text);
 
 	/*
 	** Loop over paragraphs, filling each one, and accumulating the results
@@ -712,29 +711,31 @@ static std::string fillParagraphsEx(view::string_view text, int rightMargin, int
 	for (;;) {
 
 		// Skip over white space 
-		while (paraStart < buf->BufGetLength()) {
-			ch = buf->BufGetCharacter(paraStart);
-			if (ch != ' ' && ch != '\t' && ch != '\n')
+        while (paraStart < buf.BufGetLength()) {
+            char ch = buf.BufGetCharacter(paraStart);
+            if (ch != ' ' && ch != '\t' && ch != '\n') {
 				break;
+            }
+
 			paraStart++;
 		}
-		if (paraStart >= buf->BufGetLength()) {
+        if (paraStart >= buf.BufGetLength()) {
 			break;
 		}
 		
-		paraStart = buf->BufStartOfLine(paraStart);
+        paraStart = buf.BufStartOfLine(paraStart);
 
 		// Find the end of the paragraph 
-        int paraEnd = findParagraphEnd(&*buf, paraStart);
+        int paraEnd = findParagraphEnd(&buf, paraStart);
 
 		/* Operate on either the one paragraph, or to make them all identical,
 		   do all of them together (fill paragraph can format all the paragraphs
 		   it finds with identical specs if it gets passed more than one) */
-		int fillEnd = alignWithFirst ? buf->BufGetLength() : paraEnd;
+        int fillEnd = alignWithFirst ? buf.BufGetLength() : paraEnd;
 
 		/* Get the paragraph in a text string (or all of the paragraphs if
 		   we're making them all the same) */
-		std::string paraText = buf->BufGetRangeEx(paraStart, fillEnd);
+        std::string paraText = buf.BufGetRangeEx(paraStart, fillEnd);
 
 		/* Find separate left margins for the first and for the first line of
 		   the paragraph, and for rest of the remainder of the paragraph */
@@ -749,14 +750,14 @@ static std::string fillParagraphsEx(view::string_view text, int rightMargin, int
         std::string filledText = fillParagraphEx(paraText, leftMargin, firstLineIndent, rightMargin, tabDist, useTabs, nullSubsChar);
 
 		// Replace it in the buffer 
-		buf->BufReplaceEx(paraStart, fillEnd, filledText);
+        buf.BufReplaceEx(paraStart, fillEnd, filledText);
 
 		// move on to the next paragraph 
         paraStart += filledText.size();
 	}
 
 	// Free the buffer and return its contents 
-    return buf->BufGetAllEx();
+    return buf.BufGetAllEx();
 }
 
 /*
@@ -768,17 +769,14 @@ static std::string fillParagraphsEx(view::string_view text, int rightMargin, int
 */
 static std::string fillParagraphEx(view::string_view text, int leftMargin, int firstLineIndent, int rightMargin, int tabDist, int allowTabs, char nullSubsChar) {
 
-    char *b;
-    int col;
-    int cleanedLen;
-    int indentLen;
-    int leadIndentLen;
-    int nLines = 1;
-    bool inWhitespace;
+    size_t nLines = 1;
+
 
 	// remove leading spaces, convert newlines to spaces 
-    auto cleanedText = std::make_unique<char[]>(text.size() + 1);
-    char *outPtr = &cleanedText[0];
+    std::string cleanedText;
+    cleanedText.reserve(text.size());
+    auto outPtr = std::back_inserter(cleanedText);
+
     bool inMargin = true;
 	
 	for(char ch : text) {
@@ -789,8 +787,9 @@ static std::string fillParagraphEx(view::string_view text, int leftMargin, int f
 			if (inMargin) {
 				/* a newline before any text separates paragraphs, so leave
 				   it in, back up, and convert the previous space back to \n */
-                if (outPtr > &cleanedText[0] && *(outPtr - 1) == ' ') {
-					*(outPtr - 1) = '\n';
+                if (!cleanedText.empty() && cleanedText.back() == ' ') {
+                    cleanedText.pop_back();
+                    cleanedText.push_back('\n');
                 }
 
 				*outPtr++ = '\n';
@@ -804,32 +803,33 @@ static std::string fillParagraphEx(view::string_view text, int leftMargin, int f
 		}
 	}
 	
-    cleanedLen = outPtr - &cleanedText[0];
-	*outPtr = '\0';
-
 	/* Put back newlines breaking text at word boundaries within the margins.
 	   Algorithm: scan through characters, counting columns, and when the
 	   margin width is exceeded, search backward for beginning of the word
 	   and convert the last whitespace character into a newline */
-	col = firstLineIndent;
-    for (char *c = &cleanedText[0]; *c != '\0'; c++) {
-		if (*c == '\n')
+    int col = firstLineIndent;
+    bool inWhitespace;
+    for (auto it = cleanedText.begin(); it != cleanedText.end(); ++it) {
+        if (*it == '\n') {
 			col = leftMargin;
-		else
-			col += TextBuffer::BufCharWidth(*c, col, tabDist, nullSubsChar);
+        } else {
+            col += TextBuffer::BufCharWidth(*it, col, tabDist, nullSubsChar);
+        }
+
 		if (col - 1 > rightMargin) {
             inWhitespace = true;
-            for (b = c; b >= &cleanedText[0] && *b != '\n'; b--) {
+            for (auto b = it; b >= cleanedText.begin() && *b != '\n'; b--) {
 				if (*b == '\t' || *b == ' ') {
 					if (!inWhitespace) {
 						*b = '\n';
-						c = b;
+                        it = b;
 						col = leftMargin;
 						nLines++;
 						break;
 					}
-				} else
+                } else {
                     inWhitespace = false;
+                }
 			}
 		}
 	}
@@ -837,36 +837,32 @@ static std::string fillParagraphEx(view::string_view text, int leftMargin, int f
 
 	// produce a string to prepend to lines to indent them to the left margin 
     std::string leadIndentStr = makeIndentString(firstLineIndent, tabDist, allowTabs);
-    leadIndentLen = leadIndentStr.size();
-
-    std::string indentString = makeIndentString(leftMargin, tabDist, allowTabs);
-    indentLen = indentString.size();
-
+    std::string indentString  = makeIndentString(leftMargin, tabDist, allowTabs);
 
 	// allocate memory for the finished string 
-    auto outText = std::make_unique<char[]>((cleanedLen + leadIndentLen + indentLen * (nLines - 1) + 1));
-    outPtr = &outText[0];
+    std::string outText;
+    outText.reserve(cleanedText.size() + leadIndentStr.size() + indentString.size() * (nLines - 1));
+
+    auto outPtr2 = std::back_inserter(outText);
 
     // prepend the indent string to each line of the filled text
-    strncpy(outPtr, leadIndentStr.c_str(), leadIndentLen);
-    outPtr += leadIndentLen;
+    std::copy(leadIndentStr.begin(), leadIndentStr.end(), outPtr2);
 
     for (char *c = &cleanedText[0]; *c != '\0'; c++) {
-		*outPtr++ = *c;
+        *outPtr2++ = *c;
 		if (*c == '\n') {
-            strncpy(outPtr, indentString.c_str(), indentLen);
-			outPtr += indentLen;
+            std::copy(indentString.begin(), indentString.end(), outPtr2);
 		}
 	}
 
-	// convert any trailing space to newline.  Add terminating null 
-    if (*(outPtr - 1) == ' ') {
-		*(outPtr - 1) = '\n';
+    // convert any trailing space to newline.
+    if(!outText.empty() && outText.back() == ' ') {
+        outText.pop_back();
+        outText.push_back('\n');
     }
-	*outPtr = '\0';
 
 	// clean up, return result 
-    return std::string(&outText[0]);
+    return outText;
 }
 
 static std::string makeIndentString(int indent, int tabDist, int allowTabs) {
@@ -898,7 +894,7 @@ static std::string makeIndentString(int indent, int tabDist, int allowTabs) {
 */
 static int findParagraphEnd(TextBuffer *buf, int startPos) {
 
-	static char whiteChars[] = " \t";
+    static const char whiteChars[] = " \t";
 
     int pos = buf->BufEndOfLine(startPos) + 1;
 	while (pos < buf->BufGetLength()) {
@@ -912,9 +908,10 @@ static int findParagraphEnd(TextBuffer *buf, int startPos) {
 	}
 	return pos < buf->BufGetLength() ? pos : buf->BufGetLength();
 }
+
 static int findParagraphStart(TextBuffer *buf, int startPos) {
 
-	static char whiteChars[] = " \t";
+    static const char whiteChars[] = " \t";
 
 	if (startPos == 0)
 		return 0;

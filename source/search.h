@@ -70,15 +70,6 @@ enum ReplaceAllDefaultScope {
     REPL_DEF_SCOPE_SMART
 };
 
-/*
-** History of search actions.
-*/
-struct SelectionInfo {
-	bool done;
-    DocumentWidget *window;
-	char *selection;
-};
-
 // NOTE(eteran): temporarily exposing these publically
 int countWritableWindows();
 int historyIndex(int nCycles);

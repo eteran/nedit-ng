@@ -2698,9 +2698,6 @@ bool DocumentWidget::writeBckVersion() {
 	// TODO(eteran): 2.0, this is essentially just a QFile::copy("filename", "filename.bck");
     // with error reporting
 
-    struct stat statbuf;
-
-    static const size_t IO_BUFFER_SIZE = (1024 * 1024);
 
     // Do only if version backups are turned on
     if (!saveOldVersion_) {
@@ -2724,9 +2721,14 @@ bool DocumentWidget::writeBckVersion() {
         return false;
     }
 
+    auto _1 = gsl::finally([in_fd]() {
+        ::close(in_fd);
+    });
+
     /* Get permissions of the file.
        We preserve the normal permissions but not ownership, extended
        attributes, et cetera. */
+    struct stat statbuf;
     if (::fstat(in_fd, &statbuf) != 0) {
         return false;
     }
@@ -2737,26 +2739,25 @@ bool DocumentWidget::writeBckVersion() {
         return bckError(tr("Error open backup file"), bckname);
     }
 
+    auto _2 = gsl::finally([out_fd]() {
+        ::close(out_fd);
+    });
+
     // Set permissions on new file
     if (::fchmod(out_fd, statbuf.st_mode) != 0) {
-        ::close(in_fd);
-        ::close(out_fd);
-
 		QFile::remove(bckname);
         return bckError(tr("fchmod() failed"), bckname);
     }
 
     // Allocate I/O buffer
-    auto io_buffer = std::make_unique<char[]>(IO_BUFFER_SIZE);;
+    constexpr size_t IO_BUFFER_SIZE = (1024 * 1024);
+    std::vector<char> io_buffer(IO_BUFFER_SIZE);
 
     // copy loop
     for (;;) {
         ssize_t bytes_read = ::read(in_fd, &io_buffer[0], IO_BUFFER_SIZE);
 
         if (bytes_read < 0) {
-            ::close(in_fd);
-            ::close(out_fd);
-
 			QFile::remove(bckname);
             return bckError(tr("read() error"), filename_);
         }
@@ -2768,17 +2769,11 @@ bool DocumentWidget::writeBckVersion() {
         // write to the file
         ssize_t bytes_written = ::write(out_fd, &io_buffer[0], static_cast<size_t>(bytes_read));
         if (bytes_written != bytes_read) {
-            ::close(in_fd);
-            ::close(out_fd);
-
 			QFile::remove(bckname);
             return bckError(ErrorString(errno), bckname);
         }
     }
 
-    // close the input and output files
-    ::close(in_fd);
-    ::close(out_fd);
     return false;
 }
 
@@ -3156,109 +3151,109 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
 	const auto fileLen = static_cast<int>(statbuf.st_size);
 
     // Allocate space for the whole contents of the file (unfortunately)
-    auto fileString = std::make_unique<char[]>(fileLen + 1); // +1 = space for null
+    try {
+        std::vector<char> fileString(fileLen + 1); // +1 = space for null
 
-    if(!fileString) {
+        // Read the file into fileString and terminate with a null
+        int readLen = ::fread(&fileString[0], 1, fileLen, fp);
+        if (::ferror(fp)) {
+            filenameSet_ = false; // Temp. prevent check for changes.
+            QMessageBox::critical(this, tr("Error while opening File"), tr("Error reading %1:\n%2").arg(name, ErrorString(errno)));
+            filenameSet_ = true;
+            return false;
+        }
+        fileString[readLen] = '\0';
+
+        /* Any errors that happen after this point leave the window in a
+           "broken" state, and thus RevertToSaved will abandon the window if
+           window->fileMissing_ is false and doOpen fails. */
+        fileMode_    = statbuf.st_mode;
+        fileUid_     = statbuf.st_uid;
+        fileGid_     = statbuf.st_gid;
+        lastModTime_ = statbuf.st_mtime;
+        device_      = statbuf.st_dev;
+        inode_       = statbuf.st_ino;
+        fileMissing_ = false;
+
+        // Detect and convert DOS and Macintosh format files
+        if (GetPrefForceOSConversion()) {
+            switch (FormatOfFileEx(view::string_view(&fileString[0], readLen))) {
+            case DOS_FILE_FORMAT:
+                ConvertFromDosFileString(&fileString[0], &readLen, nullptr);
+                break;
+            case MAC_FILE_FORMAT:
+                ConvertFromMacFileString(&fileString[0], readLen);
+                break;
+            case UNIX_FILE_FORMAT:
+                break;
+            }
+        }
+
+        auto contents = view::string_view(&fileString[0], readLen);
+
+        // Display the file contents in the text widget
+        ignoreModify_ = true;
+        buffer_->BufSetAllEx(contents);
+        ignoreModify_ = false;
+
+        /* Check that the length that the buffer thinks it has is the same
+           as what we gave it.  If not, there were probably nuls in the file.
+           Substitute them with another character.  If that is impossible, warn
+           the user, make the file read-only, and force a substitution */
+        if (buffer_->BufGetLength() != readLen) {
+            if (!buffer_->BufSubstituteNullChars(&fileString[0], readLen)) {
+
+                QMessageBox msgbox(this);
+                msgbox.setIcon(QMessageBox::Critical);
+                msgbox.setWindowTitle(tr("Error while opening File"));
+                msgbox.setText(tr("Too much binary data in file.  You may view it, but not modify or re-save its contents."));
+                msgbox.addButton(tr("View"), QMessageBox::AcceptRole);
+                msgbox.addButton(QMessageBox::Cancel);
+                int resp = msgbox.exec();
+
+                if (resp == QMessageBox::Cancel) {
+                    return false;
+                }
+
+                lockReasons_.setTMBDLocked(true);
+
+                for (char *c = &fileString[0]; c < &fileString[readLen]; ++c) {
+                    if (*c == '\0') {
+                        *c = static_cast<char>(0xfe);
+                    }
+                }
+
+                buffer_->nullSubsChar_ = static_cast<char>(0xfe);
+            }
+
+            ignoreModify_ = true;
+            buffer_->BufSetAllEx(contents);
+            ignoreModify_ = false;
+        }
+
+        // Set window title and file changed flag
+        if ((flags & EditFlags::PREF_READ_ONLY) != 0) {
+            lockReasons_.setUserLocked(true);
+        }
+
+        if (lockReasons_.isPermLocked()) {
+            fileChanged_ = false;
+            window->UpdateWindowTitle(this);
+        } else {
+            SetWindowModified(false);
+            if (lockReasons_.isAnyLocked()) {
+                window->UpdateWindowTitle(this);
+            }
+        }
+
+        window->UpdateWindowReadOnly(this);
+        return true;
+    } catch(const std::bad_alloc &) {
         filenameSet_ = false; // Temp. prevent check for changes.
         QMessageBox::critical(this, tr("Error while opening File"), tr("File is too large to edit"));
         filenameSet_ = true;
         return false;
     }
-
-    // Read the file into fileString and terminate with a null
-	int readLen = ::fread(&fileString[0], 1, fileLen, fp);
-	if (::ferror(fp)) {
-        filenameSet_ = false; // Temp. prevent check for changes.
-        QMessageBox::critical(this, tr("Error while opening File"), tr("Error reading %1:\n%2").arg(name, ErrorString(errno)));
-        filenameSet_ = true;
-        return false;
-    }
-    fileString[readLen] = '\0';
-
-    /* Any errors that happen after this point leave the window in a
-       "broken" state, and thus RevertToSaved will abandon the window if
-       window->fileMissing_ is false and doOpen fails. */
-    fileMode_    = statbuf.st_mode;
-    fileUid_     = statbuf.st_uid;
-    fileGid_     = statbuf.st_gid;
-    lastModTime_ = statbuf.st_mtime;
-    device_      = statbuf.st_dev;
-    inode_       = statbuf.st_ino;
-    fileMissing_ = false;
-
-    // Detect and convert DOS and Macintosh format files
-    if (GetPrefForceOSConversion()) {
-		switch (FormatOfFileEx(view::string_view(&fileString[0], readLen))) {
-		case DOS_FILE_FORMAT:
-			ConvertFromDosFileString(&fileString[0], &readLen, nullptr);
-			break;
-		case MAC_FILE_FORMAT:
-			ConvertFromMacFileString(&fileString[0], readLen);
-			break;
-		case UNIX_FILE_FORMAT:
-			break;
-		}
-    }
-
-    auto contents = view::string_view(&fileString[0], readLen);
-
-    // Display the file contents in the text widget
-    ignoreModify_ = true;
-    buffer_->BufSetAllEx(contents);
-    ignoreModify_ = false;
-
-    /* Check that the length that the buffer thinks it has is the same
-       as what we gave it.  If not, there were probably nuls in the file.
-       Substitute them with another character.  If that is impossible, warn
-       the user, make the file read-only, and force a substitution */
-    if (buffer_->BufGetLength() != readLen) {
-        if (!buffer_->BufSubstituteNullChars(&fileString[0], readLen)) {
-
-            QMessageBox msgbox(this);
-            msgbox.setIcon(QMessageBox::Critical);
-            msgbox.setWindowTitle(tr("Error while opening File"));
-            msgbox.setText(tr("Too much binary data in file.  You may view it, but not modify or re-save its contents."));
-            msgbox.addButton(tr("View"), QMessageBox::AcceptRole);
-            msgbox.addButton(QMessageBox::Cancel);
-            int resp = msgbox.exec();
-
-            if (resp == QMessageBox::Cancel) {
-                return false;
-            }
-
-            lockReasons_.setTMBDLocked(true);
-
-            for (char *c = &fileString[0]; c < &fileString[readLen]; ++c) {
-                if (*c == '\0') {
-                    *c = static_cast<char>(0xfe);
-                }
-            }
-
-            buffer_->nullSubsChar_ = static_cast<char>(0xfe);
-        }
-
-        ignoreModify_ = true;
-        buffer_->BufSetAllEx(contents);
-        ignoreModify_ = false;
-    }
-
-    // Set window title and file changed flag
-	if ((flags & EditFlags::PREF_READ_ONLY) != 0) {
-        lockReasons_.setUserLocked(true);
-    }
-
-    if (lockReasons_.isPermLocked()) {
-        fileChanged_ = false;
-        window->UpdateWindowTitle(this);
-    } else {
-        SetWindowModified(false);
-        if (lockReasons_.isAnyLocked()) {
-            window->UpdateWindowTitle(this);
-        }
-    }
-
-    window->UpdateWindowReadOnly(this);
-    return true;
 }
 
 /*

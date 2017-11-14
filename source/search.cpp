@@ -827,8 +827,8 @@ void ReplaceInSelectionEx(MainWindow *window, DocumentWidget *document, TextArea
     /* create a temporary buffer in which to do the replacements to hide the
        intermediate steps from the display routines, and so everything can
        be undone in a single operation */
-    auto tempBuf = std::make_unique<TextBuffer>();
-    tempBuf->BufSetAllEx(fileString);
+    TextBuffer tempBuf;
+    tempBuf.BufSetAllEx(fileString);
 
     // search the string and do the replacements in the temporary buffer
 
@@ -888,7 +888,7 @@ void ReplaceInSelectionEx(MainWindow *window, DocumentWidget *document, TextArea
         // replace the string and compensate for length change
         if (isRegexType(searchType)) {
             std::string replaceResult;
-            const std::string foundString = tempBuf->BufGetRangeEx(extentBW + realOffset, extentFW + realOffset + 1);
+            const std::string foundString = tempBuf.BufGetRangeEx(extentBW + realOffset, extentFW + realOffset + 1);
 
             substSuccess = replaceUsingREEx(
                             searchString,
@@ -896,7 +896,7 @@ void ReplaceInSelectionEx(MainWindow *window, DocumentWidget *document, TextArea
                             foundString,
                             startPos - extentBW,
                             replaceResult,
-                            (startPos + realOffset) == 0 ? '\0' : tempBuf->BufGetCharacter(startPos + realOffset - 1),
+                            (startPos + realOffset) == 0 ? '\0' : tempBuf.BufGetCharacter(startPos + realOffset - 1),
                             GetWindowDelimitersEx(document),
                             defaultRegexFlags(searchType));
 
@@ -912,11 +912,11 @@ void ReplaceInSelectionEx(MainWindow *window, DocumentWidget *document, TextArea
                 }
             }
 
-            tempBuf->BufReplaceEx(startPos + realOffset, endPos + realOffset, replaceResult);
+            tempBuf.BufReplaceEx(startPos + realOffset, endPos + realOffset, replaceResult);
             replaceLen = replaceResult.size();
         } else {
             // at this point plain substitutions (should) always work
-            tempBuf->BufReplaceEx(startPos + realOffset, endPos + realOffset, replaceString.toLatin1().data());
+            tempBuf.BufReplaceEx(startPos + realOffset, endPos + realOffset, replaceString.toLatin1().data());
             substSuccess = true;
         }
 
@@ -934,7 +934,7 @@ void ReplaceInSelectionEx(MainWindow *window, DocumentWidget *document, TextArea
                 user does not care and wants to have a faulty replacement.  */
 
             // replace the selected range in the real buffer
-            document->buffer_->BufReplaceEx(selStart, selEnd, tempBuf->BufAsStringEx());
+            document->buffer_->BufReplaceEx(selStart, selEnd, tempBuf.BufAsStringEx());
 
             // set the insert point at the end of the last replacement
             area->TextSetCursorPos(selStart + cursorPos + realOffset);

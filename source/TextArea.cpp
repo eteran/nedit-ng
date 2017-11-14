@@ -2264,17 +2264,19 @@ void TextArea::findWrapRangeEx(view::string_view deletedText, int pos, int nInse
 	}
 
 	length = (pos - countFrom) + nDeleted + (countTo - (pos + nInserted));
-	auto deletedTextBuf = std::make_unique<TextBuffer>(length);
+    TextBuffer deletedTextBuf;
 	if (pos > countFrom)
-		deletedTextBuf->BufCopyFromBuf(buffer_, countFrom, pos, 0);
-	if (nDeleted != 0)
-		deletedTextBuf->BufInsertEx(pos - countFrom, deletedText);
-	if (countTo > pos + nInserted)
-		deletedTextBuf->BufCopyFromBuf(buffer_, pos + nInserted, countTo, pos - countFrom + nDeleted);
+        deletedTextBuf.BufCopyFromBuf(buffer_, countFrom, pos, 0);
+    if (nDeleted != 0) {
+        deletedTextBuf.BufInsertEx(pos - countFrom, deletedText);
+    }
+    if (countTo > pos + nInserted) {
+        deletedTextBuf.BufCopyFromBuf(buffer_, pos + nInserted, countTo, pos - countFrom + nDeleted);
+    }
 
 	/* Note that we need to take into account an offset for the style buffer:
 	   the deletedTextBuf can be out of sync with the style buffer. */
-	wrappedLineCounter(deletedTextBuf.get(), 0, length, INT_MAX, true, countFrom, &retPos, &retLines, &retLineStart, &retLineEnd);
+    wrappedLineCounter(&deletedTextBuf, 0, length, INT_MAX, true, countFrom, &retPos, &retLines, &retLineStart, &retLineEnd);
 
 	*linesDeleted = retLines;
 	suppressResync_ = false;
@@ -4955,9 +4957,9 @@ std::string TextArea::wrapTextEx(view::string_view startLine, view::string_view 
 	std::string wrappedText;
 
 	// Create a temporary text buffer and load it with the strings
-	auto wrapBuf = std::make_unique<TextBuffer>();
-	wrapBuf->BufInsertEx(0, startLine);
-	wrapBuf->BufAppendEx(text);
+    TextBuffer wrapBuf;
+    wrapBuf.BufInsertEx(0, startLine);
+    wrapBuf.BufAppendEx(text);
 
 	/* Scan the buffer for long lines and apply wrapLine when wrapMargin is
 	   exceeded.  limitPos enforces no breaks in the "startLine" part of the
@@ -4968,20 +4970,20 @@ std::string TextArea::wrapTextEx(view::string_view startLine, view::string_view 
     int lineStartPos = 0;
     int limitPos     = (breakBefore == nullptr) ? startLineLen : 0;
 
-	while (pos < wrapBuf->BufGetLength()) {
-		char c = wrapBuf->BufGetCharacter(pos);
+    while (pos < wrapBuf.BufGetLength()) {
+        char c = wrapBuf.BufGetCharacter(pos);
 		if (c == '\n') {
 			lineStartPos = limitPos = pos + 1;
 			colNum = 0;
 		} else {
 			colNum += TextBuffer::BufCharWidth(c, colNum, tabDist, buffer_->nullSubsChar_);
 			if (colNum > wrapMargin) {
-				if (!wrapLine(wrapBuf.get(), bufOffset, lineStartPos, pos, limitPos, &breakAt, &charsAdded)) {
+                if (!wrapLine(&wrapBuf, bufOffset, lineStartPos, pos, limitPos, &breakAt, &charsAdded)) {
 					limitPos = std::max(pos, limitPos);
 				} else {
 					lineStartPos = limitPos = breakAt + 1;
 					pos += charsAdded;
-					colNum = wrapBuf->BufCountDispChars(lineStartPos, pos + 1);
+                    colNum = wrapBuf.BufCountDispChars(lineStartPos, pos + 1);
 					if (firstBreak == -1)
 						firstBreak = breakAt;
 				}
@@ -4992,10 +4994,10 @@ std::string TextArea::wrapTextEx(view::string_view startLine, view::string_view 
 
 	// Return the wrapped text, possibly including part of startLine
 	if(!breakBefore) {
-		wrappedText = wrapBuf->BufGetRangeEx(startLineLen, wrapBuf->BufGetLength());
+        wrappedText = wrapBuf.BufGetRangeEx(startLineLen, wrapBuf.BufGetLength());
 	} else {
 		*breakBefore = firstBreak != -1 && firstBreak < startLineLen ? startLineLen - firstBreak : 0;
-		wrappedText = wrapBuf->BufGetRangeEx(startLineLen - *breakBefore, wrapBuf->BufGetLength());
+        wrappedText = wrapBuf.BufGetRangeEx(startLineLen - *breakBefore, wrapBuf.BufGetLength());
 	}
 	return wrappedText;
 }
@@ -6795,15 +6797,15 @@ void TextArea::BeginBlockDrag() {
 	dragInsertPos_ = sel->start;
 	dragInserted_ = sel->end - sel->start;
 	if (sel->rectangular) {
-        auto testBuf = std::make_unique<TextBuffer>();
+        TextBuffer testBuf;
 
 		std::string testText = buffer_->BufGetRangeEx(sel->start, sel->end);
-		testBuf->BufSetTabDistance(buffer_->tabDist_);
-		testBuf->useTabs_ = buffer_->useTabs_;
-		testBuf->BufSetAllEx(testText);
+        testBuf.BufSetTabDistance(buffer_->tabDist_);
+        testBuf.useTabs_ = buffer_->useTabs_;
+        testBuf.BufSetAllEx(testText);
 
-		testBuf->BufRemoveRect(0, sel->end - sel->start, sel->rectStart, sel->rectEnd);
-		dragDeleted_ = testBuf->BufGetLength();
+        testBuf.BufRemoveRect(0, sel->end - sel->start, sel->rectStart, sel->rectEnd);
+        dragDeleted_ = testBuf.BufGetLength();
 		dragRectStart_ = sel->rectStart;
 	} else {
 		dragDeleted_ = 0;
@@ -6896,14 +6898,14 @@ void TextArea::BlockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
 	   eventually be replaced in the real buffer.  Load the buffer with the
 	   range of characters which might be modified in this drag step
 	   (this could be tighter, but hopefully it's not too slow) */
-	auto tempBuf = std::make_unique<TextBuffer>();
-	tempBuf->tabDist_ = buffer_->tabDist_;
-	tempBuf->useTabs_ = buffer_->useTabs_;
+    TextBuffer tempBuf;
+    tempBuf.tabDist_ = buffer_->tabDist_;
+    tempBuf.useTabs_ = buffer_->useTabs_;
 	tempStart         = min3(dragInsertPos_, origSel->start, buffer_->BufCountBackwardNLines(firstChar_, nLines + 2));
 	tempEnd           = buffer_->BufCountForwardNLines(max3(dragInsertPos_, origSel->start, lastChar_), nLines + 2) + origSel->end - origSel->start;
 
 	const std::string text = origBuf->BufGetRangeEx(tempStart, tempEnd);
-	tempBuf->BufSetAllEx(text);
+    tempBuf.BufSetAllEx(text);
 
 	// If the drag type is USE_LAST, use the last dragType applied
 	if (dragType == USE_LAST) {
@@ -6942,20 +6944,20 @@ void TextArea::BlockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
 	   redo operation begun above */
 	if (dragType == DRAG_MOVE || dragType == DRAG_OVERLAY_MOVE) {
 		if (rectangular || overlay) {
-			int prevLen = tempBuf->BufGetLength();
+            int prevLen = tempBuf.BufGetLength();
 			int origSelLen = origSelLineEnd - origSelLineStart;
 
 			if (overlay) {
-				tempBuf->BufClearRect(origSelLineStart - tempStart, origSelLineEnd - tempStart, origSel->rectStart, origSel->rectEnd);
+                tempBuf.BufClearRect(origSelLineStart - tempStart, origSelLineEnd - tempStart, origSel->rectStart, origSel->rectEnd);
 			} else {
-				tempBuf->BufRemoveRect(origSelLineStart - tempStart, origSelLineEnd - tempStart, origSel->rectStart, origSel->rectEnd);
+                tempBuf.BufRemoveRect(origSelLineStart - tempStart, origSelLineEnd - tempStart, origSel->rectStart, origSel->rectEnd);
 			}
 
 			sourceDeletePos = origSelLineStart;
-			sourceInserted = origSelLen - prevLen + tempBuf->BufGetLength();
+            sourceInserted = origSelLen - prevLen + tempBuf.BufGetLength();
 			sourceDeleted = origSelLen;
 		} else {
-			tempBuf->BufRemove(origSel->start - tempStart, origSel->end - tempStart);
+            tempBuf.BufRemove(origSel->start - tempStart, origSel->end - tempStart);
 			sourceDeletePos = origSel->start;
 			sourceInserted  = 0;
 			sourceDeleted   = origSel->end - origSel->start;
@@ -7004,16 +7006,17 @@ void TextArea::BlockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
 
 	/* find the position associated with the start of the new line in the
 	   temporary buffer */
-	insLineStart = findRelativeLineStart(tempBuf.get(), referencePos - tempStart, referenceLine, insLineNum) + tempStart;
-	if (insLineStart - tempStart == tempBuf->BufGetLength())
-		insLineStart = tempBuf->BufStartOfLine(insLineStart - tempStart) + tempStart;
+    insLineStart = findRelativeLineStart(&tempBuf, referencePos - tempStart, referenceLine, insLineNum) + tempStart;
+    if (insLineStart - tempStart == tempBuf.BufGetLength()) {
+        insLineStart = tempBuf.BufStartOfLine(insLineStart - tempStart) + tempStart;
+    }
 
 	// Find the actual insert position
 	if (rectangular || overlay) {
 		insStart = insLineStart;
 		insRectStart = column;
 	} else { // note, this will fail with proportional fonts
-		insStart = tempBuf->BufCountForwardDispChars(insLineStart - tempStart, column) + tempStart;
+        insStart = tempBuf.BufCountForwardDispChars(insLineStart - tempStart, column) + tempStart;
 		insRectStart = 0;
 	}
 
@@ -7028,22 +7031,22 @@ void TextArea::BlockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
 
 		std::string insText = origBuf->BufGetTextInRectEx(origSelLineStart, origSelLineEnd, origSel->rectStart, origSel->rectEnd);
 		if (overlay) {
-			tempBuf->BufOverlayRectEx(insStart - tempStart, insRectStart, insRectStart + origSel->rectEnd - origSel->rectStart, insText, &insertInserted, &insertDeleted);
+            tempBuf.BufOverlayRectEx(insStart - tempStart, insRectStart, insRectStart + origSel->rectEnd - origSel->rectStart, insText, &insertInserted, &insertDeleted);
 		} else {
-			tempBuf->BufInsertColEx(insRectStart, insStart - tempStart, insText, &insertInserted, &insertDeleted);
+            tempBuf.BufInsertColEx(insRectStart, insStart - tempStart, insText, &insertInserted, &insertDeleted);
 		}
 		trackModifyRange(&modRangeStart, &tempModRangeEnd, &bufModRangeEnd, insStart, insertInserted, insertDeleted);
 
 	} else {
 		std::string insText = origBuf->BufGetSelectionTextEx();
-		tempBuf->BufInsertEx(insStart - tempStart, insText);
+        tempBuf.BufInsertEx(insStart - tempStart, insText);
 		trackModifyRange(&modRangeStart, &tempModRangeEnd, &bufModRangeEnd, insStart, origSel->end - origSel->start, 0);
 		insertInserted = origSel->end - origSel->start;
 		insertDeleted = 0;
 	}
 
 	// Make the changes in the real buffer
-	std::string repText = tempBuf->BufGetRangeEx(modRangeStart - tempStart, tempModRangeEnd - tempStart);
+    std::string repText = tempBuf.BufGetRangeEx(modRangeStart - tempStart, tempModRangeEnd - tempStart);
 
 	TextDBlankCursor();
 	buffer_->BufReplaceEx(modRangeStart, bufModRangeEnd, repText);
@@ -8113,7 +8116,7 @@ std::string TextArea::TextGetWrappedEx(int startPos, int endPos) {
     /* Create a text buffer with a good estimate of the size that adding
        newlines will expand it to.  Since it's a text buffer, if we guess
        wrong, it will fail softly, and simply expand the size */
-    auto outBuf = std::make_unique<TextBuffer>((endPos - startPos) + (endPos - startPos) / 5);
+    TextBuffer outBuf((endPos - startPos) + (endPos - startPos) / 5);
     int outPos = 0;
 
     /* Go (displayed) line by line through the buffer, adding newlines where
@@ -8121,22 +8124,23 @@ std::string TextArea::TextGetWrappedEx(int startPos, int endPos) {
     int fromPos = startPos;
     int toPos = TextDCountForwardNLines(startPos, 1, false);
     while (toPos < endPos) {
-        outBuf->BufCopyFromBuf(buffer_, fromPos, toPos, outPos);
+        outBuf.BufCopyFromBuf(buffer_, fromPos, toPos, outPos);
         outPos += toPos - fromPos;
-        char c = outBuf->BufGetCharacter(outPos - 1);
-        if (c == ' ' || c == '\t')
-            outBuf->BufReplaceEx(outPos - 1, outPos, "\n");
+        char c = outBuf.BufGetCharacter(outPos - 1);
+        if (c == ' ' || c == '\t') {
+            outBuf.BufReplaceEx(outPos - 1, outPos, "\n");
+        }
         else if (c != '\n') {
-            outBuf->BufInsertEx(outPos, "\n");
+            outBuf.BufInsertEx(outPos, "\n");
             outPos++;
         }
         fromPos = toPos;
         toPos = TextDCountForwardNLines(fromPos, 1, true);
     }
-    outBuf->BufCopyFromBuf(buffer_, fromPos, endPos, outPos);
+    outBuf.BufCopyFromBuf(buffer_, fromPos, endPos, outPos);
 
     // return the contents of the output buffer as a string
-    return outBuf->BufGetAllEx();
+    return outBuf.BufGetAllEx();
 }
 
 void TextArea::setStyleBuffer(const std::shared_ptr<TextBuffer> &buffer) {
