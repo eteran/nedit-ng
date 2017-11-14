@@ -4,7 +4,6 @@
 
 #include <QString>
 
-// Pattern specification structure
 class HighlightPattern {
 public:
     bool operator==(const HighlightPattern &rhs) const;

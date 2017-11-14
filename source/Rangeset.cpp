@@ -40,26 +40,24 @@
 
 namespace {
 
-// -------------------------------------------------------------------------- 
-
 RangesetUpdateFn rangesetInsDelMaintain;
 RangesetUpdateFn rangesetInclMaintain;
 RangesetUpdateFn rangesetDelInsMaintain;
 RangesetUpdateFn rangesetExclMaintain;
 RangesetUpdateFn rangesetBreakMaintain;
 
-#define DEFAULT_UPDATE_FN_NAME "maintain"
+auto DEFAULT_UPDATE_FN_NAME = QLatin1String("maintain");
 
 struct {
     QLatin1String name;
 	RangesetUpdateFn *update_fn;
 } RangesetUpdateMap[] = {
-    {QLatin1String(DEFAULT_UPDATE_FN_NAME), rangesetInsDelMaintain},
+    {DEFAULT_UPDATE_FN_NAME,   rangesetInsDelMaintain},
     {QLatin1String("ins_del"), rangesetInsDelMaintain},
     {QLatin1String("include"), rangesetInclMaintain},
     {QLatin1String("del_ins"), rangesetDelInsMaintain},
     {QLatin1String("exclude"), rangesetExclMaintain},
-    {QLatin1String("break"), rangesetBreakMaintain}
+    {QLatin1String("break"),   rangesetBreakMaintain}
 };
 
 
@@ -78,7 +76,6 @@ void rangesetRefreshAllRanges(Rangeset *rangeset) {
         rangeset->RangesetRefreshRange(rangeset->ranges_[i].start, rangeset->ranges_[i].end);
 	}
 }
-
 
 // -------------------------------------------------------------------------- 
 
@@ -162,7 +159,6 @@ int weighted_at_or_before(int *table, int base, int len, int val) {
 
 // -------------------------------------------------------------------------- 
 
-
 Rangeset *rangesetFixMaxpos(Rangeset *rangeset, int ins, int del) {
     rangeset->maxpos_ += ins - del;
 	return rangeset;
@@ -170,14 +166,12 @@ Rangeset *rangesetFixMaxpos(Rangeset *rangeset, int ins, int del) {
 
 // -------------------------------------------------------------------------- 
 
-
 /*
 ** Find the index of the first entry in the range set's ranges table (viewed as
 ** an int array) whose value is equal to or greater than pos. As a side effect,
 ** update the lasi_index value of the range set. Return's the index value. This
 ** will be twice p->n_ranges if pos is beyond the end.
 */
-
 int rangesetWeightedAtOrBefore(Rangeset *rangeset, int pos) {
 	int i;
 	int last;
@@ -208,7 +202,6 @@ int rangesetWeightedAtOrBefore(Rangeset *rangeset, int pos) {
 /*
 ** Adjusts values in tab[] by an amount delta, perhaps moving them meanwhile.
 */
-
 int rangesetShuffleToFrom(int *rangeTable, int to, int from, int n, int delta) {
 	int end, diff = from - to;
 
@@ -249,7 +242,6 @@ int rangesetShuffleToFrom(int *rangeTable, int to, int from, int n, int delta) {
 ** (start < pos && pos <= end), any text inserted will extend that range.
 ** Insertions appear to occur before deletions. This will never add new ranges.
 */
-
 Rangeset *rangesetInsDelMaintain(Rangeset *rangeset, int pos, int ins, int del) {
 
     auto rangeTable = reinterpret_cast<int *>(rangeset->ranges_);
@@ -299,7 +291,6 @@ Rangeset *rangesetInsDelMaintain(Rangeset *rangeset, int pos, int ins, int del) 
 ** Insertions appear to occur before deletions. This will never add new ranges.
 ** (Almost identical to rangesetInsDelMaintain().)
 */
-
 Rangeset *rangesetInclMaintain(Rangeset *rangeset, int pos, int ins, int del) {
 	int j;
     auto rangeTable = reinterpret_cast<int *>(rangeset->ranges_);
@@ -359,7 +350,6 @@ Rangeset *rangesetInclMaintain(Rangeset *rangeset, int pos, int ins, int del) {
 ** range. Deletions appear to occur before insertions. This will never add new
 ** ranges.
 */
-
 Rangeset *rangesetDelInsMaintain(Rangeset *rangeset, int pos, int ins, int del) {
 	int j;
     auto rangeTable = reinterpret_cast<int *>(rangeset->ranges_);
@@ -413,7 +403,6 @@ Rangeset *rangesetDelInsMaintain(Rangeset *rangeset, int pos, int ins, int del) 
 ** range. Deletions appear to occur before insertions. This will never add new
 ** ranges. (Almost identical to rangesetDelInsMaintain().)
 */
-
 Rangeset *rangesetExclMaintain(Rangeset *rangeset, int pos, int ins, int del) {
 	int j;
     auto rangeTable = reinterpret_cast<int *>(rangeset->ranges_);
@@ -471,7 +460,6 @@ Rangeset *rangesetExclMaintain(Rangeset *rangeset, int pos, int ins, int del) {
 ** may be broken in two if the deletion point pos+del does not extend beyond the
 ** end. Inserted text is never included in the range.
 */
-
 Rangeset *rangesetBreakMaintain(Rangeset *rangeset, int pos, int ins, int del) {
 	int j;
     auto rangeTable = reinterpret_cast<int *>(rangeset->ranges_);
@@ -551,7 +539,6 @@ Rangeset *rangesetBreakMaintain(Rangeset *rangeset, int pos, int ins, int del) {
 /*
 ** Return the name, if any.
 */
-
 QString Rangeset::RangesetGetName() const {
     return name_;
 }
@@ -561,7 +548,6 @@ QString Rangeset::RangesetGetName() const {
 ** rangeset. Returns the containing range's index if true, -1 otherwise.
 ** Note: ranges are indexed from zero.
 */
-
 int Rangeset::RangesetFindRangeNo(int index, int *start, int *end) const {
     if (index < 0 || n_ranges_ <= index || !ranges_) {
 		return 0;
@@ -578,7 +564,6 @@ int Rangeset::RangesetFindRangeNo(int index, int *start, int *end) const {
 ** rangeset. Returns the containing range's index if true, -1 otherwise.
 ** Note: ranges are indexed from zero.
 */
-
 int Rangeset::RangesetFindRangeOfPos(int pos, int incl_end) const {
 
     if (!n_ranges_ || !ranges_) {
@@ -606,7 +591,6 @@ int Rangeset::RangesetFindRangeOfPos(int pos, int incl_end) const {
 /*
 ** Return the color validity, if any, and the value in *color.
 */
-
 int Rangeset::RangesetGetColorValid(QColor *color) const {
 	*color = color_;
     return color_set_;
@@ -615,18 +599,15 @@ int Rangeset::RangesetGetColorValid(QColor *color) const {
 /*
 ** Get number of ranges in rangeset.
 */
-
 int Rangeset::RangesetGetNRanges() const {
     return n_ranges_;
 }
-
 
 /*
 ** Invert the rangeset (replace it with its complement in the range 0-maxpos).
 ** Returns the number of ranges if successful, -1 otherwise. Never adds more
 ** than one range.
 */
-
 int Rangeset::RangesetInverse() {
 	int n;
 
@@ -676,7 +657,6 @@ int Rangeset::RangesetInverse() {
 /*
 ** Merge the ranges in rangeset plusSet into rangeset this.
 */
-
 int Rangeset::RangesetAdd(Rangeset *plusSet) {
 	Range *oldRanges;
 
@@ -767,7 +747,6 @@ int Rangeset::RangesetAdd(Rangeset *plusSet) {
 ** Add the range indicated by the positions start and end. Returns the
 ** new number of ranges in the set.
 */
-
 int Rangeset::RangesetAddBetween(int start, int end) {
 	int i, j;
     auto rangeTable = reinterpret_cast<int*>(ranges_);
@@ -833,9 +812,7 @@ int Rangeset::RangesetAddBetween(int start, int end) {
 /*
 ** Assign a color name to a rangeset via the rangeset table.
 */
-
 bool Rangeset::RangesetAssignColorName(const QString &color_name) {
-
 
     // "" invalid
     if(!color_name.isEmpty()) {
@@ -854,18 +831,15 @@ bool Rangeset::RangesetAssignColorName(const QString &color_name) {
 ** Assign a color pixel value to a rangeset via the rangeset table. If ok is
 ** false, the color_set flag is set to an invalid (negative) value.
 */
-
 bool Rangeset::RangesetAssignColorPixel(const QColor &color, bool ok) {
     color_set_ = ok ? 1 : -1;
 	color_ = color;
 	return true;
 }
 
-
 /*
 ** Assign a name to a rangeset via the rangeset table.
 */
-
 bool Rangeset::RangesetAssignName(const QString &name) {
 
 	// store new name value 
@@ -878,16 +852,14 @@ bool Rangeset::RangesetAssignName(const QString &name) {
 	return true;
 }
 
-
 /*
 ** Change a range set's modification behaviour. Returns true (non-zero)
 ** if the update function name was found, else false.
 */
-
 bool Rangeset::RangesetChangeModifyResponse(QString name) {
 
     if(name.isNull()) {
-        name = QLatin1String(DEFAULT_UPDATE_FN_NAME);
+        name = DEFAULT_UPDATE_FN_NAME;
     }
 
 	for(auto &entry : RangesetUpdateMap) {
@@ -901,7 +873,6 @@ bool Rangeset::RangesetChangeModifyResponse(QString name) {
 	return false;
 }
 
-
 /*
 ** Find out whether the position pos is included in one of the ranges of
 ** rangeset. Returns the containing range's index if true, -1 otherwise.
@@ -911,7 +882,6 @@ bool Rangeset::RangesetChangeModifyResponse(QString name) {
 ** position. We also don't allow checking of the endpoint.
 ** Returns the including range index, or -1 if not found.
 */
-
 int Rangeset::RangesetCheckRangeOfPos(int pos) {
 
 	int index;
@@ -967,7 +937,6 @@ int Rangeset::RangesetCheckRangeOfPos(int pos) {
 /*
 ** Subtract the ranges of minusSet from this rangeset .
 */
-
 int Rangeset::RangesetRemove(Rangeset *minusSet) {
 	Range *origRanges, *minusRanges, *newRanges, *oldRanges;
 	int nOrigRanges, nMinusRanges;
@@ -1061,7 +1030,6 @@ int Rangeset::RangesetRemove(Rangeset *minusSet) {
     return n_ranges_;
 }
 
-
 /*
 ** Remove the range indicated by the positions start and end. Returns the
 ** new number of ranges in the set.
@@ -1120,9 +1088,6 @@ int Rangeset::RangesetRemoveBetween(int start, int end) {
     return n_ranges_;
 }
 
-
-
-
 /*
 ** Remove all ranges from a range set.
 */
@@ -1177,18 +1142,15 @@ void Rangeset::RangesetGetInfo(bool *defined, int *label, int *count, QString *c
 ** Refresh the given range on the screen. If the range indicated is null, we
 ** refresh the screen for the whole file.
 */
-
 void Rangeset::RangesetRefreshRange(int start, int end) const {
     if (buf_) {
         buf_->BufCheckDisplay(start, end);
 	}
 }
 
-
 /*
 ** Initialise a new range set.
 */
-
 void Rangeset::RangesetInit(int label, TextBuffer *buf) {
 	label_ = static_cast<uint8_t>(label); // a letter A-Z
     maxpos_ = 0;                   // text buffer maxpos
@@ -1203,5 +1165,5 @@ void Rangeset::RangesetInit(int label, TextBuffer *buf) {
 
 	maxpos_ = buf->BufGetLength();
 
-    RangesetChangeModifyResponse(QLatin1String(DEFAULT_UPDATE_FN_NAME));
+    RangesetChangeModifyResponse(DEFAULT_UPDATE_FN_NAME);
 }

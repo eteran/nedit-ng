@@ -148,7 +148,7 @@ bool LoadStylesStringEx(const QString &string) {
 		}
 	
 		if (i == N_FONT_TYPES) {
-			return styleErrorEx(in, QLatin1String("unrecognized font type"));
+            return styleErrorEx(in, QLatin1String("unrecognized font type"));
 		}
 
         // pattern set was read correctly, add/change it in the list

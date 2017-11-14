@@ -3,31 +3,31 @@
 
 bool HighlightPattern::operator==(const HighlightPattern &rhs) const {
 
-    if (this->flags != rhs.flags) {
+    if (flags != rhs.flags) {
         return false;
     }
 
-    if (this->name != rhs.name) {
+    if (name != rhs.name) {
         return false;
     }
 
-    if (this->startRE != rhs.startRE) {
+    if (startRE != rhs.startRE) {
         return false;
     }
 
-    if (this->endRE != rhs.endRE) {
+    if (endRE != rhs.endRE) {
         return false;
     }
 
-    if (this->errorRE != rhs.errorRE) {
+    if (errorRE != rhs.errorRE) {
         return false;
     }
 
-    if(this->style != rhs.style) {
+    if(style != rhs.style) {
         return false;
     }
 
-    if (this->subPatternOf != rhs.subPatternOf) {
+    if (subPatternOf != rhs.subPatternOf) {
         return false;
     }
 

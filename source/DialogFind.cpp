@@ -6,7 +6,7 @@
 #include "TextBuffer.h"
 #include "preferences.h"
 #include "regularExp.h"
-#include "search.h" // for the search type enum
+#include "search.h"
 #include <QApplication>
 #include <QClipboard>
 #include <QKeyEvent>

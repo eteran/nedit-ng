@@ -67,7 +67,7 @@ HighlightData *patternOfStyle(HighlightData *patterns, int style);
 char getPrevChar(TextBuffer *buf, int pos);
 int backwardOneContext(TextBuffer *buf, ReparseContext *context, int fromPos);
 int forwardOneContext(TextBuffer *buf, ReparseContext *context, int fromPos);
-bool parseString(HighlightData *pattern, const char **string, char **styleString, int length, char *prevChar, bool anchored, const QString &delimiters, const char *lookBehindTo, const char *match_till);
+bool parseString(HighlightData *pattern, const char **string, char **styleString, long length, char *prevChar, bool anchored, const QString &delimiters, const char *lookBehindTo, const char *match_till);
 void handleUnparsedRegionCBEx(const TextArea *area, int pos, const void *user);
 int indexOfNamedPattern(HighlightPattern *patList, int nPats, const QString &patName);
 int findTopLevelParentIndex(HighlightPattern *patList, int nPats, int index);

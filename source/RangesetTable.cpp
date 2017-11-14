@@ -377,8 +377,6 @@ Range *RangesetTable::RangesRealloc(Range *ranges, int n) {
 	} else {
 		return RangesFree(ranges);
 	}
-
-	return nullptr;
 }
 
 /*

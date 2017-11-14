@@ -121,14 +121,13 @@ QString GetAnySelectionEx(DocumentWidget *window) {
 void SelectNumberedLineEx(DocumentWidget *document, TextArea *area, int lineNum) {
     int i;
     int lineStart = 0;
-    int lineEnd;
 
     // count lines to find the start and end positions for the selection
     if (lineNum < 1) {
         lineNum = 1;
     }
 
-    lineEnd = -1;
+    int lineEnd = -1;
 
     for (i = 1; i <= lineNum && lineEnd < document->buffer_->BufGetLength(); i++) {
         lineStart = lineEnd + 1;

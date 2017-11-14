@@ -2650,7 +2650,7 @@ void TextArea::updateVScrollBarRange() {
 //       it can pass "startPosIsLineStart" as True to make the call more efficient
 //       by avoiding the additional step of scanning back to the last newline.
 //------------------------------------------------------------------------------
-int TextArea::TextDCountForwardNLines(int startPos, unsigned int nLines, bool startPosIsLineStart) {
+int TextArea::TextDCountForwardNLines(int startPos, int nLines, bool startPosIsLineStart) {
     int retLines;
     int retPos;
     int retLineStart;
@@ -3132,9 +3132,6 @@ void TextArea::redisplayLineEx(int visLineNum, int leftClip, int rightClip, int 
 **
 ** The cursor is also drawn if it appears on the line.
 */
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
 void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, int rightClip, int leftCharIndex, long rightCharIndex) {
 
 	int i;
@@ -3391,7 +3388,7 @@ int TextArea::styleOfPos(int lineStartPos, int lineLen, int lineIndex, int dispI
 //------------------------------------------------------------------------------
 // Name:
 //------------------------------------------------------------------------------
-void TextArea::drawString(QPainter *painter, int style, int x, int y, int toX, char *string, int nChars) {
+void TextArea::drawString(QPainter *painter, int style, int x, int y, int toX, char *string, long nChars) {
 
     QColor bground       = palette().color(QPalette::Base);
     QColor fground       = palette().color(QPalette::Text);

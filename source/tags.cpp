@@ -491,8 +491,8 @@ void updateMenuItems() {
 */
 static int scanCTagsLine(const QString &line, const QString &tagPath, int index) {
 
-	QRegExp regex(QLatin1String("^([^\\t]+)\\t([^\\t]+)\\t([^\\n]+)\\n$"));
-	if(!regex.exactMatch(line)) {
+    QRegExp regex(QLatin1String("^([^\\t]+)\\t([^\\t]+)\\t([^\\n]+)\\n$"));
+    if(!regex.exactMatch(line)) {
 		return 0;
 	}
 
@@ -500,9 +500,9 @@ static int scanCTagsLine(const QString &line, const QString &tagPath, int index)
 		return 0;
 	}
 
-	QString name         = regex.cap(1);
-	QString file         = regex.cap(2);
-	QString searchString = regex.cap(3);
+    QString name         = regex.cap(1);
+    QString file         = regex.cap(2);
+    QString searchString = regex.cap(3);
 
 	if (name.startsWith(QLatin1Char('!'))) {
 		return 0;
@@ -1511,7 +1511,8 @@ static int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
     QList<tf_alias> aliases;
 
 	if (recLevel > MAX_TAG_INCLUDE_RECURSION_LEVEL) {
-        qWarning("NEdit: Warning: Reached recursion limit before loading calltips file:\n\t%s", qPrintable(tipsFile));
+        qWarning("NEdit: Warning: Reached recursion limit before loading calltips file:\n\t%s",
+                 qPrintable(tipsFile));
 		return 0;
 	}
 

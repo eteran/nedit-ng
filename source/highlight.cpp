@@ -421,7 +421,7 @@ parseDone:
 ** the error pattern matched, if the end of the string was reached without
 ** matching the end expression, or in the unlikely event of an internal error.
 */
-bool parseString(HighlightData *pattern, const char **string, char **styleString, int length, char *prevChar, bool anchored, const QString &delimiters, const char *lookBehindTo, const char *match_till) {
+bool parseString(HighlightData *pattern, const char **string, char **styleString, long length, char *prevChar, bool anchored, const QString &delimiters, const char *lookBehindTo, const char *match_till) {
 
 	bool subExecuted;
 	int *subExpr;
@@ -673,7 +673,7 @@ static void passTwoParseString(HighlightData *pattern, const char *string, char 
 				pattern, 
 				&stringPtr, 
 				&stylePtr, 
-                std::min<int>(parseEnd - parseStart,
+                std::min(parseEnd - parseStart,
 				length - (parseStart - string)), 
 				prevChar, 
 				false, 

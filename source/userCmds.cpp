@@ -47,7 +47,7 @@ namespace {
 
 /* indicates, that an unknown (i.e. not existing) language mode
    is bound to an user menu item */
-const int UNKNOWN_LANGUAGE_MODE = -2;
+constexpr int UNKNOWN_LANGUAGE_MODE = -2;
 
 
 struct ParseError : std::exception {
@@ -102,21 +102,12 @@ MenuData *findMenuItem(const QString &name, DialogTypes type) {
 
 /*
 ** Generate a text string for the preferences file describing the contents
-** of the shell cmd list.  This string is not exactly of the form that it
-** can be read by LoadShellCmdsString, rather, it is what needs to be written
-** to a resource file such that it will read back in that form.
+** of the shell cmd list, macro menu and background menus.
 */
 QString WriteShellCmdsStringEx() {
     return writeMenuItemStringEx(ShellMenuData, DialogTypes::SHELL_CMDS);
 }
 
-/*
-** Generate a text string for the preferences file describing the contents of
-** the macro menu and background menu commands lists.  These strings are not
-** exactly of the form that it can be read by LoadMacroCmdsString, rather, it
-** is what needs to be written to a resource file such that it will read back
-** in that form.
-*/
 QString WriteMacroCmdsStringEx() {
     return writeMenuItemStringEx(MacroMenuData, DialogTypes::MACRO_CMDS);
 }
@@ -126,21 +117,17 @@ QString WriteBGMenuCmdsStringEx() {
 }
 
 /*
-** Read a string representing shell command menu items and add them to the
-** internal list used for constructing shell menus
+** Read a string representing shell command menu items, macro menu or
+** background menu and add them to the internal list used for constructing
+** menus
 */
 int LoadShellCmdsStringEx(const QString &inString) {
     return loadMenuItemStringEx(inString, ShellMenuData, DialogTypes::SHELL_CMDS);
 }
 
-/*
-** Read strings representing macro menu or background menu command menu items
-** and add them to the internal lists used for constructing menus
-*/
 int LoadMacroCmdsStringEx(const QString &inString) {
     return loadMenuItemStringEx(inString, MacroMenuData, DialogTypes::MACRO_CMDS);
 }
-
 
 int LoadBGMenuCmdsStringEx(const QString &inString) {
     return loadMenuItemStringEx(inString, BGMenuData, DialogTypes::BG_MENU_CMDS);

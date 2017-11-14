@@ -152,7 +152,7 @@ static bool selectionSpansMultipleLines(DocumentWidget *document) {
 }
 #endif
 
-void DoFindReplaceDlogEx(MainWindow *window, DocumentWidget *document, TextArea *area, Direction direction, int keepDialogs, SearchType searchType) {
+void DoFindReplaceDlogEx(MainWindow *window, DocumentWidget *document, TextArea *area, Direction direction, bool keepDialogs, SearchType searchType) {
 
     Q_UNUSED(area);
 
@@ -225,7 +225,7 @@ void DoFindReplaceDlogEx(MainWindow *window, DocumentWidget *document, TextArea 
     dialog->show();
 }
 
-void DoFindDlogEx(MainWindow *window, DocumentWidget *document, Direction direction, int keepDialogs, SearchType searchType) {
+void DoFindDlogEx(MainWindow *window, DocumentWidget *document, Direction direction, bool keepDialogs, SearchType searchType) {
 
     if(!window->dialogFind_) {
         window->dialogFind_ = new DialogFind(window, document, window);
@@ -279,12 +279,12 @@ int countWritableWindows() {
     auto last = documents.end();
 
     for(auto it = first; it != last; ++it) {
-        DocumentWidget *w = *it;
+        DocumentWidget *document = *it;
 
 		/* We must be very careful! The status check may trigger a pop-up
 		   dialog when the file has changed on disk, and the user may destroy
 		   arbitrary windows in response. */
-        w->CheckForChangesToFileEx();
+        document->CheckForChangesToFileEx();
 		int nAfter = countWindows();
 
 		if (nAfter != nBefore) {
@@ -299,7 +299,7 @@ int countWritableWindows() {
 			continue;
 		}
 		
-		if (!w->lockReasons_.isAnyLocked()) {
+        if (!document->lockReasons_.isAnyLocked()) {
 			++nWritable;
 		}
 	}
@@ -862,17 +862,21 @@ void ReplaceInSelectionEx(MainWindow *window, DocumentWidget *document, TextArea
         if (isRect) {
             lineStart = document->buffer_->BufStartOfLine(selStart + startPos);
             if (document->buffer_->BufCountDispChars(lineStart, selStart + startPos) < rectStart || document->buffer_->BufCountDispChars(lineStart, selStart + endPos) > rectEnd) {
-                if (fileString[endPos] == '\0')
+
+                if(static_cast<size_t>(endPos) == fileString.size()) {
                     break;
+                }
+
                 /* If the match starts before the left boundary of the
                    selection, and extends past it, we should not continue
                    search after the end of the (false) match, because we
                    could miss a valid match starting between the left boundary
                    and the end of the false match. */
-                if (document->buffer_->BufCountDispChars(lineStart, selStart + startPos) < rectStart && document->buffer_->BufCountDispChars(lineStart, selStart + endPos) > rectStart)
+                if (document->buffer_->BufCountDispChars(lineStart, selStart + startPos) < rectStart && document->buffer_->BufCountDispChars(lineStart, selStart + endPos) > rectStart) {
                     beginPos += 1;
-                else
+                } else {
                     beginPos = (startPos == endPos) ? endPos + 1 : endPos;
+                }
                 continue;
             }
         }

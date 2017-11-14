@@ -75,7 +75,7 @@ public:
 	int BufCountBackwardNLines(int startPos, int nLines) const;
 	int BufCountDispChars(int lineStartPos, int targetPos) const;
 	int BufCountForwardDispChars(int lineStartPos, int nChars) const;
-    int BufCountForwardNLines(int startPos, unsigned int nLines) const;
+    int BufCountForwardNLines(int startPos, int nLines) const;
 	int BufCountLines(int startPos, int endPos) const;
 	int BufEndOfLine(int pos) const;
 	int BufGetEmptySelectionPos(int *start, int *end, bool *isRect, int *rectStart, int *rectEnd);

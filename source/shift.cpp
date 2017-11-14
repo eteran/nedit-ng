@@ -34,17 +34,17 @@
 #include <memory>
 
 static std::string makeIndentString(int indent, int tabDist, int allowTabs);
-static std::string shiftLineLeftEx(view::string_view line, int lineLen, int tabDist, int nChars);
-static std::string shiftLineRightEx(view::string_view line, int lineLen, int tabsAllowed, int tabDist, int nChars);
-static QString shiftLineRightEx(const QString &line, int lineLen, int tabsAllowed, int tabDist, int nChars);
-static QString shiftLineLeftEx(const QString &line, int lineLen, int tabDist, int nChars);
+static std::string shiftLineLeftEx(view::string_view line, long lineLen, int tabDist, int nChars);
+static std::string shiftLineRightEx(view::string_view line, long lineLen, int tabsAllowed, int tabDist, int nChars);
+static QString shiftLineRightEx(const QString &line, long lineLen, int tabsAllowed, int tabDist, int nChars);
+static QString shiftLineLeftEx(const QString &line, long lineLen, int tabDist, int nChars);
 static std::string ShiftTextEx(view::string_view text, ShiftDirection direction, int tabsAllowed, int tabDist, int nChars);
 static int atTabStop(int pos, int tabDist);
 static int countLinesEx(view::string_view text);
 static int countLinesEx(const QString &text);
 
 template <class In>
-static int findLeftMarginEx(In first, In last, int length, int tabDist);
+static int findLeftMarginEx(In first, In last, long length, int tabDist);
 
 static int findParagraphEnd(TextBuffer *buf, int startPos);
 static int findParagraphStart(TextBuffer *buf, int startPos);
@@ -371,7 +371,6 @@ std::string ShiftTextEx(view::string_view text, ShiftDirection direction, int ta
 	} else {
 		bufLen = text.size() + countLinesEx(text) * tabDist;
 	}
-		
 
 	std::string shiftedText;
 	shiftedText.reserve(bufLen);
@@ -411,7 +410,7 @@ std::string ShiftTextEx(view::string_view text, ShiftDirection direction, int ta
 	return shiftedText;
 }
 
-static QString shiftLineRightEx(const QString &line, int lineLen, int tabsAllowed, int tabDist, int nChars) {
+static QString shiftLineRightEx(const QString &line, long lineLen, int tabsAllowed, int tabDist, int nChars) {
     int whiteWidth, i;
 
     auto lineInPtr = line.begin();
@@ -457,7 +456,7 @@ static QString shiftLineRightEx(const QString &line, int lineLen, int tabsAllowe
     }
 }
 
-static std::string shiftLineRightEx(view::string_view line, int lineLen, int tabsAllowed, int tabDist, int nChars) {
+static std::string shiftLineRightEx(view::string_view line, long lineLen, int tabsAllowed, int tabDist, int nChars) {
     int whiteWidth;
 
 	auto lineInPtr = line.begin();
@@ -503,7 +502,7 @@ static std::string shiftLineRightEx(view::string_view line, int lineLen, int tab
 	}
 }
 
-static QString shiftLineLeftEx(const QString &line, int lineLen, int tabDist, int nChars) {
+static QString shiftLineLeftEx(const QString &line, long lineLen, int tabDist, int nChars) {
     auto lineInPtr = line.begin();
 
     QString out;
@@ -559,7 +558,7 @@ static QString shiftLineLeftEx(const QString &line, int lineLen, int tabDist, in
     }
 }
 
-static std::string shiftLineLeftEx(view::string_view line, int lineLen, int tabDist, int nChars) {
+static std::string shiftLineLeftEx(view::string_view line, long lineLen, int tabDist, int nChars) {
 
     auto lineInPtr = line.begin();
 
@@ -653,7 +652,7 @@ static int countLinesEx(const QString &text) {
 ** comes first.
 */
 template <class In>
-static int findLeftMarginEx(In first, In last, int length, int tabDist) {
+static int findLeftMarginEx(In first, In last, long length, int tabDist) {
 
 	int col        = 0;
 	int leftMargin = INT_MAX;
@@ -741,7 +740,7 @@ static std::string fillParagraphsEx(view::string_view text, int rightMargin, int
 		   the paragraph, and for rest of the remainder of the paragraph */
 		auto it = std::find(paraText.begin(), paraText.end(), '\n');
 		
-		int firstLineLen     = std::distance(paraText.begin(), it);
+        long firstLineLen     = std::distance(paraText.begin(), it);
 		auto secondLineStart = (it == paraText.end()) ? paraText.begin() : it + 1;
 		int firstLineIndent  = findLeftMarginEx(paraText.begin(), paraText.end(), firstLineLen, tabDist);
 		int leftMargin       = findLeftMarginEx(secondLineStart,  paraText.end(), paraEnd - paraStart - (secondLineStart - paraText.begin()), tabDist);
@@ -770,7 +769,6 @@ static std::string fillParagraphsEx(view::string_view text, int rightMargin, int
 static std::string fillParagraphEx(view::string_view text, int leftMargin, int firstLineIndent, int rightMargin, int tabDist, int allowTabs, char nullSubsChar) {
 
     size_t nLines = 1;
-
 
 	// remove leading spaces, convert newlines to spaces 
     std::string cleanedText;

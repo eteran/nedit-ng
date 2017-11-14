@@ -239,7 +239,7 @@ public:
 	int TextDCountBackwardNLines(int startPos, int nLines);
 	void TextDRedisplayRect(int left, int top, int width, int height);
     void TextDRedisplayRect(const QRect &rect);
-    int TextDCountForwardNLines(int startPos, unsigned int nLines, bool startPosIsLineStart);
+    int TextDCountForwardNLines(int startPos, int nLines, bool startPosIsLineStart);
 	void TextSetBuffer(TextBuffer *buffer);
     int TextDPositionToXY(int pos, int *x, int *y);
     int TextDPositionToXY(int pos, QPoint *coord);
@@ -330,7 +330,7 @@ private:
     void redisplayLine(QPainter *painter, int visLineNum, int leftClip, int rightClip, int leftCharIndex, long rightCharIndex);
 	void redisplayLineEx(int visLineNum, int leftClip, int rightClip, int leftCharIndex, int rightCharIndex);
 	int styleOfPos(int lineStartPos, int lineLen, int lineIndex, int dispIndex, int thisChar);
-    void drawString(QPainter *painter, int style, int x, int y, int toX, char *string, int nChars);
+    void drawString(QPainter *painter, int style, int x, int y, int toX, char *string, long nChars);
 	void drawCursor(QPainter *painter, int x, int y);
 	QColor getRangesetColor(int ind, QColor bground);
 	void setScroll(int topLineNum, int horizOffset, bool updateVScrollBar, bool updateHScrollBar);

@@ -52,13 +52,12 @@
 
 namespace {
 
-constexpr int N_DEFAULT_INDENT_SPECS  = 4;
 const auto MacroEndBoundary = QLatin1String("--End-of-Macro--");
 
-DialogSmartIndent *SmartIndentDlg = nullptr;
+QPointer<DialogSmartIndent> SmartIndentDlg;
 
 // TODO(eteran): 2.0, what would be the best way to move this structure to a resource file and have it be more maintainable?
-const SmartIndentEntry DefaultIndentSpecs[N_DEFAULT_INDENT_SPECS] = {
+const SmartIndentEntry DefaultIndentSpecs[] = {
     {
         QLatin1String("C")
         ,
@@ -230,12 +229,12 @@ bool InSmartIndentMacrosEx(DocumentWidget *document) {
 
 static bool loadDefaultIndentSpec(const QString &lmName) {
 
-	for (int i = 0; i < N_DEFAULT_INDENT_SPECS; i++) {
-        if (DefaultIndentSpecs[i].lmName == lmName) {
-            SmartIndentSpecs.push_back(DefaultIndentSpecs[i]);
-			return true;
-		}
-	}
+    for(const SmartIndentEntry &entry : DefaultIndentSpecs) {
+        if (entry.lmName == lmName) {
+            SmartIndentSpecs.push_back(entry);
+            return true;
+        }
+    }
 	return false;
 }
 
@@ -493,7 +492,7 @@ int LMHasSmartIndentMacros(const QString &languageMode) {
 	}
 	
 	
-    return SmartIndentDlg != nullptr && SmartIndentDlg->hasSmartIndentMacros(languageMode);
+    return SmartIndentDlg && SmartIndentDlg->hasSmartIndentMacros(languageMode);
 }
 
 /*

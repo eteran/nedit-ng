@@ -278,8 +278,10 @@ void insertColInLineEx(view::string_view line, view::string_view insLine, int co
 	auto linePtr = line.begin();
 	for (; linePtr != line.end(); ++linePtr) {
         len = TextBuffer::BufCharWidth(*linePtr, indent, tabDist, nullSubsChar);
-		if (indent + len > column)
+        if (indent + len > column) {
 			break;
+        }
+
 		indent += len;
 		*outPtr++ = *linePtr;
 	}
@@ -290,9 +292,9 @@ void insertColInLineEx(view::string_view line, view::string_view insLine, int co
 	   accordingly. */
 	if (indent < column && linePtr != line.end()) {
 		postColIndent = indent + len;
-		if (*linePtr == '\t')
+        if (*linePtr == '\t') {
 			linePtr++;
-		else {
+        } else {
 			*outPtr++ = *linePtr++;
 			indent += len;
 		}
@@ -385,8 +387,9 @@ void deleteRectFromLine(view::string_view line, int rectStart, int rectEnd, int 
 	preRectIndent = indent;
 
 	// skip the characters between rectStart and rectEnd
-	for (; c != line.end() && indent < rectEnd; c++)
+    for (; c != line.end() && indent < rectEnd; c++) {
 		indent += TextBuffer::BufCharWidth(*c, indent, tabDist, nullSubsChar);
+    }
 	postRectIndent = indent;
 
 	// If the line ended before rectEnd, there's nothing more to do
@@ -424,8 +427,11 @@ void deleteRectFromLine(view::string_view line, int rectStart, int rectEnd, int 
 ** and return the copy as the function value, and the length of the line in
 ** "lineLen"
 */
-std::string copyLineEx(view::string_view::const_iterator first, view::string_view::const_iterator last) {
+template <class Ran>
+std::string copyLineEx(Ran first, Ran last) {
 	auto it = std::find(first, last, '\n');
+
+    // TODO(eteran): maybe return a string_view? seems like it would be more efficient.
 	return std::string(first, it);
 }
 
@@ -440,19 +446,19 @@ int countLinesEx(view::string_view string) {
 ** Measure the width in displayed characters of string "text"
 */
 int textWidthEx(view::string_view text, int tabDist, char nullSubsChar) {
-	int width = 0, maxWidth = 0;
+    int width    = 0;
+    int maxWidth = 0;
 
 	for (char ch : text) {
 		if (ch == '\n') {
-			if (width > maxWidth)
-				maxWidth = width;
-			width = 0;
-		} else
+            maxWidth = std::max(maxWidth, width);
+            width    = 0;
+        } else {
 			width += TextBuffer::BufCharWidth(ch, width, tabDist, nullSubsChar);
+        }
 	}
-	if (width > maxWidth)
-		return width;
-	return maxWidth;
+
+    return std::max(width, maxWidth);
 }
 
 /*
@@ -465,7 +471,7 @@ int textWidthEx(view::string_view text, int tabDist, char nullSubsChar) {
 **
 ** This code does not handle control characters very well, but oh well.
 */
-void overlayRectInLineEx(view::string_view line, view::string_view insLine, int rectStart, int rectEnd, int tabDist, int useTabs, char nullSubsChar, char * outStr, int *outLen, int *endOffset) {
+void overlayRectInLineEx(view::string_view line, view::string_view insLine, int rectStart, int rectEnd, int tabDist, int useTabs, char nullSubsChar, char *outStr, int *outLen, int *endOffset) {
 
     int postRectIndent;
 
@@ -517,7 +523,8 @@ void overlayRectInLineEx(view::string_view line, view::string_view insLine, int 
 
     /* If there's no text after rectStart and no text to insert, that's all */
     if (insLine.empty() && linePtr == line.end()) {
-        *outLen = *endOffset = outPtr - outStr;
+        *outLen    = outPtr - outStr;
+        *endOffset = outPtr - outStr;
         return;
     }
 
@@ -687,8 +694,8 @@ void TextBuffer::BufSetAllEx(view::string_view text) {
 	gapStart_ = length / 2;
     gapEnd_   = gapStart_ + PreferredGapSize;
 
-	memcpy(buf_, &text[0], gapStart_);
-	memcpy(&buf_[gapEnd_], &text[gapStart_], length - gapStart_);
+    std::copy_n(&text[0], gapStart_, buf_);
+    std::copy_n(&text[gapStart_], length - gapStart_, &buf_[gapEnd_]);
 
 #ifdef PURIFY
 	std::fill(&buf_[gapStart_], &buf_[gapEnd_], '.');
@@ -819,27 +826,27 @@ void TextBuffer::BufRemove(int start, int end) {
 void TextBuffer::BufCopyFromBuf(TextBuffer *fromBuf, int fromStart, int fromEnd, int toPos) {
 
     const int length = fromEnd - fromStart;
-	int part1Length;
 
 	/* Prepare the buffer to receive the new text.  If the new text fits in
 	   the current buffer, just move the gap (if necessary) to where
 	   the text should be inserted.  If the new text is too large, reallocate
 	   the buffer with a gap large enough to accomodate the new text and a
 	   gap of PreferredGapSize */
-	if (length > gapEnd_ - gapStart_)
+    if (length > gapEnd_ - gapStart_) {
 		reallocateBuf(toPos, length + PreferredGapSize);
-	else if (toPos != gapStart_)
+    } else if (toPos != gapStart_) {
 		moveGap(toPos);
+    }
 
 	// Insert the new text (toPos now corresponds to the start of the gap)
 	if (fromEnd <= fromBuf->gapStart_) {
-		memcpy(&buf_[toPos], &fromBuf->buf_[fromStart], length);
+        std::copy_n(&fromBuf->buf_[fromStart], length, &buf_[toPos]);
 	} else if (fromStart >= fromBuf->gapStart_) {
-		memcpy(&buf_[toPos], &fromBuf->buf_[fromStart + (fromBuf->gapEnd_ - fromBuf->gapStart_)], length);
+        std::copy_n(&fromBuf->buf_[fromStart + (fromBuf->gapEnd_ - fromBuf->gapStart_)], length, &buf_[toPos]);
 	} else {
-		part1Length = fromBuf->gapStart_ - fromStart;
-		memcpy(&buf_[toPos], &fromBuf->buf_[fromStart], part1Length);
-		memcpy(&buf_[toPos + part1Length], &fromBuf->buf_[fromBuf->gapEnd_], length - part1Length);
+        int part1Length = fromBuf->gapStart_ - fromStart;
+        std::copy_n(&fromBuf->buf_[fromStart], part1Length, &buf_[toPos]);
+        std::copy_n(&fromBuf->buf_[fromBuf->gapEnd_], length - part1Length, &buf_[toPos + part1Length]);
 	}
 	gapStart_ += length;
 	length_ += length;
@@ -1473,26 +1480,31 @@ int TextBuffer::BufCountLines(int startPos, int endPos) const {
 ** Find the first character of the line "nLines" forward from "startPos"
 ** in "buf" and return its position
 */
-int TextBuffer::BufCountForwardNLines(int startPos, unsigned int nLines) const {
-	int pos, gapLen = gapEnd_ - gapStart_;
-	unsigned lineCount = 0;
+int TextBuffer::BufCountForwardNLines(int startPos, int nLines) const {
 
-	if (nLines == 0)
+    int gapLen = gapEnd_ - gapStart_;
+    int lineCount = 0;
+
+    if (nLines == 0) {
 		return startPos;
+    }
 
-	pos = startPos;
+    int pos = startPos;
 	while (pos < gapStart_) {
 		if (buf_[pos++] == '\n') {
 			lineCount++;
-			if (lineCount == nLines)
+            if (lineCount == nLines) {
 				return pos;
+            }
 		}
 	}
+
 	while (pos < length_) {
 		if (buf_[pos++ + gapLen] == '\n') {
 			lineCount++;
-			if (lineCount >= nLines)
+            if (lineCount >= nLines) {
 				return pos;
+            }
 		}
 	}
 	return pos;
@@ -1626,12 +1638,11 @@ bool TextBuffer::BufSubstituteNullChars(char *string, int length) {
 	   string and the buffer, and change the buffer's null-substitution
 	   character.  If none can be found, give up and return false */
     if (histogram[static_cast<uint8_t>(nullSubsChar_)] != 0) {
-		char *bufString, newSubsChar;
 		/* here we know we can modify the file buffer directly,
 		   so we cast away constness */
-		bufString = const_cast<char *>(BufAsString());
+        auto bufString = const_cast<char *>(BufAsString());
 		histogramCharactersEx(view::string_view(bufString, length_), histogram, false);
-		newSubsChar = chooseNullSubsChar(histogram);
+        char newSubsChar = chooseNullSubsChar(histogram);
 		if (newSubsChar == '\0') {
 			return false;
 		}
@@ -1667,13 +1678,12 @@ bool TextBuffer::BufSubstituteNullCharsEx(std::string &string) {
 	   string and the buffer, and change the buffer's null-substitution
 	   character.  If none can be found, give up and return false */
     if (histogram[static_cast<uint8_t>(nullSubsChar_)] != 0) {
-		char *bufString;
-		char newSubsChar;
+
 		/* here we know we can modify the file buffer directly,
 		   so we cast away constness */
-		bufString = const_cast<char *>(BufAsString());
+        auto bufString = const_cast<char *>(BufAsString());
 		histogramCharactersEx(view::string_view(bufString, length_), histogram, false);
-		newSubsChar = chooseNullSubsChar(histogram);
+        char newSubsChar = chooseNullSubsChar(histogram);
 		if (newSubsChar == '\0') {
 			return false;
 		}
@@ -1684,8 +1694,10 @@ bool TextBuffer::BufSubstituteNullCharsEx(std::string &string) {
 
 	/* If the string contains null characters, substitute them with the
 	   buffer's null substitution character */
-	if (histogram[0] != 0)
+    if (histogram[0] != 0) {
 		subsCharsEx(string, '\0', nullSubsChar_);
+    }
+
 	return true;
 }
 
@@ -1776,15 +1788,17 @@ int TextBuffer::insertEx(int pos, view::string_view text) {
 	   the text should be inserted.  If the new text is too large, reallocate
 	   the buffer with a gap large enough to accomodate the new text and a
 	   gap of PreferredGapSize */
-	if (length > gapEnd_ - gapStart_)
+    if (length > gapEnd_ - gapStart_) {
 		reallocateBuf(pos, length + PreferredGapSize);
-	else if (pos != gapStart_)
+    } else if (pos != gapStart_) {
 		moveGap(pos);
+    }
 
 	// Insert the new text (pos now corresponds to the start of the gap)
-	memcpy(&buf_[pos], &text[0], length);
+    std::copy_n(&text[0], length, &buf_[pos]);
+
 	gapStart_ += length;
-	length_ += length;
+    length_   += length;
 	updateSelections(pos, 0, length);
 
 	return length;
@@ -2113,10 +2127,11 @@ void TextBuffer::insertColEx(int column, int startPos, view::string_view insText
 void TextBuffer::moveGap(int pos) {
 	int gapLen = gapEnd_ - gapStart_;
 
-	if (pos > gapStart_)
+    if (pos > gapStart_) {
 		memmove(&buf_[gapStart_], &buf_[gapEnd_], pos - gapStart_);
-	else
+    } else {
 		memmove(&buf_[pos + gapLen], &buf_[pos], gapStart_ - pos);
+    }
 	gapEnd_ += pos - gapStart_;
 	gapStart_ += pos - gapStart_;
 }
@@ -2127,21 +2142,21 @@ void TextBuffer::moveGap(int pos) {
 */
 void TextBuffer::reallocateBuf(int newGapStart, int newGapLen) {
 
-	int newGapEnd;
-
 	auto newBuf = new char[length_ + newGapLen + 1];
 	newBuf[length_ + PreferredGapSize] = '\0';
-	newGapEnd = newGapStart + newGapLen;
-	if (newGapStart <= gapStart_) {
-		memcpy(newBuf, buf_, newGapStart);
-		memcpy(&newBuf[newGapEnd], &buf_[newGapStart], gapStart_ - newGapStart);
-		memcpy(&newBuf[newGapEnd + gapStart_ - newGapStart], &buf_[gapEnd_], length_ - gapStart_);
+    int newGapEnd = newGapStart + newGapLen;
+
+    if (newGapStart <= gapStart_) {
+        std::copy_n(buf_, newGapStart, newBuf);
+        std::copy_n(&buf_[newGapStart], gapStart_ - newGapStart, &newBuf[newGapEnd]);
+        std::copy_n(&buf_[gapEnd_], length_ - gapStart_, &newBuf[newGapEnd + gapStart_ - newGapStart]);
 	} else { // newGapStart > gapStart_
-		memcpy(newBuf, buf_, gapStart_);
-		memcpy(&newBuf[gapStart_], &buf_[gapEnd_], newGapStart - gapStart_);
-		memcpy(&newBuf[newGapEnd], &buf_[gapEnd_ + newGapStart - gapStart_], length_ - newGapStart);
+        std::copy_n(buf_, gapStart_, newBuf);
+        std::copy_n(&buf_[gapEnd_], newGapStart - gapStart_, &newBuf[gapStart_]);
+        std::copy_n(&buf_[gapEnd_ + newGapStart - gapStart_], length_ - newGapStart, &newBuf[newGapEnd]);
 	}
-	delete [] buf_;
+
+    delete [] buf_;
 	buf_ = newBuf;
 	gapStart_ = newGapStart;
 	gapEnd_ = newGapEnd;

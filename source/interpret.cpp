@@ -770,7 +770,7 @@ NString AllocNStringEx(int length) {
 char *AllocStringCpyEx(const std::string &s) {
 
     auto str = AllocString(s.size() + 1);
-    memcpy(str, s.data(), s.size());
+    std::copy_n(s.data(), s.size(), str);
     str[s.size()] = '\0';
     return str;
 }
@@ -787,7 +787,7 @@ NString AllocNStringCpyEx(const QString &s) {
     int length = s.size();
 
     NString string = AllocNStringEx(length + 1);
-    memcpy(string.rep, s.toLatin1().data(), length);
+    std::copy_n(s.toLatin1().data(), length, string.rep);
     string.rep[length] = '\0';
 
     return string;
@@ -797,7 +797,7 @@ NString AllocNStringCpyEx(const std::string &s) {
     size_t length = s.size();
 
     NString string = AllocNStringEx(length + 1);
-    memcpy(string.rep, s.data(), length);
+    std::copy_n(s.data(), length, string.rep);
     string.rep[length] = '\0';
 
     return string;
@@ -807,7 +807,7 @@ NString AllocNStringCpyEx(const view::string_view s) {
     size_t length = s.size();
 
     NString string = AllocNStringEx(length + 1);
-    memcpy(string.rep, s.data(), length);
+    std::copy_n(s.data(), length, string.rep);
     string.rep[length] = '\0';
 
     return string;
@@ -2089,7 +2089,7 @@ void ArrayDeleteAll(DataValue *theArray) {
 /*
 ** returns the number of elements (nodes containing values) of an array
 */
-unsigned ArraySize(DataValue *theArray) {
+int ArraySize(DataValue *theArray) {
 	if (theArray->val.arrayPtr) {
 		return rbTreeSize(theArray->val.arrayPtr);
 	} else {

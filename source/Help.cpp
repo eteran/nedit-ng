@@ -9,7 +9,7 @@ namespace Help {
  * @param topic
  */
 void displayTopic(Help::Topic topic) {
-    (void)topic;
+    Q_UNUSED(topic);
     qDebug("TODO(eteran): Help System Not Yet Implemented!");
 }
 

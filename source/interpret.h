@@ -204,7 +204,7 @@ ArrayEntry *ArrayNew();
 bool ArrayInsert(DataValue *theArray, char *keyStr, DataValue *theValue);
 void ArrayDelete(DataValue *theArray, char *keyStr);
 void ArrayDeleteAll(DataValue *theArray);
-unsigned ArraySize(DataValue *theArray);
+int ArraySize(DataValue *theArray);
 bool ArrayGet(DataValue *theArray, char *keyStr, DataValue *theValue);
 int ArrayCopy(DataValue *dstArray, DataValue *srcArray);
 
