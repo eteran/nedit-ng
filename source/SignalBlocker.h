@@ -9,13 +9,26 @@ public:
 	}
 	
 	~SignalBlocker() {
-		blocked_->blockSignals(previous_);
+        if(blocked_) {
+            blocked_->blockSignals(previous_);
+        }
 	}
 	
-	SignalBlocker(const SignalBlocker &)            = default;
-	SignalBlocker(SignalBlocker &&)                 = default;
-	SignalBlocker& operator=(const SignalBlocker &) = default;
-	SignalBlocker& operator=(SignalBlocker &&)      = default;
+    SignalBlocker(const SignalBlocker &)            = delete;
+    SignalBlocker& operator=(const SignalBlocker &) = delete;
+
+    SignalBlocker(SignalBlocker &&other) : blocked_(other.blocked_), previous_(other.previous_) {
+        other.blocked_  = nullptr;
+        other.previous_ = false;
+    }
+
+    SignalBlocker& operator=(SignalBlocker &&rhs) {
+        blocked_      = rhs.blocked_;
+        previous_     = rhs.previous_;
+        rhs.blocked_  = nullptr;
+        rhs.previous_ = false;
+        return *this;
+    }
 	
 	T *operator->() {
 		return blocked_;
@@ -27,8 +40,8 @@ private:
 };
 
 template <class T>
-SignalBlocker<T> no_signals(T *blocked_) {
-	return SignalBlocker<T>(blocked_);
+SignalBlocker<T> no_signals(T *obj) {
+    return SignalBlocker<T>(obj);
 }
 
 #endif
