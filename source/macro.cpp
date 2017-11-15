@@ -2176,7 +2176,7 @@ Program *ParseMacroEx(const QString &expr, QString *message, int *stoppedAt) {
     Program *p = ParseMacro(ptr, &msg, &e);
 
     *message = QString::fromLatin1(msg);
-    *stoppedAt = static_cast<int>(e - ptr);
+    *stoppedAt = gsl::narrow<int>(e - ptr);
     return p;
 }
 
