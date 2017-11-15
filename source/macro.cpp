@@ -743,8 +743,6 @@ static WrapMode searchWrap(Arguments arguments, int index) {
 ** SearchType in searchType. Returns FALSE and leaves searchType untouched
 ** otherwise. (Originally written by Markus Schwarzenberg; slightly adapted).
 */
-// TODO(eteran): this is redundant to the "searchType" function below
-// let's factor it out...
 bool StringToSearchType(const QString &string, SearchType *searchType) {
 
     static const struct {
@@ -786,18 +784,10 @@ static SearchType searchType(Arguments arguments, int index) {
             return GetPrefSearch();
         }
 
-        if (arg.compare(QLatin1String("literal"), Qt::CaseInsensitive) == 0)
-            return SearchType::Literal;
-        if (arg.compare(QLatin1String("case"), Qt::CaseInsensitive) == 0)
-            return SearchType::CaseSense;
-        if (arg.compare(QLatin1String("regex"), Qt::CaseInsensitive) == 0)
-            return SearchType::Regex;
-        if (arg.compare(QLatin1String("word"), Qt::CaseInsensitive) == 0)
-            return SearchType::LiteralWord;
-        if (arg.compare(QLatin1String("caseWord"), Qt::CaseInsensitive) == 0)
-            return SearchType::CaseSenseWord;
-        if (arg.compare(QLatin1String("regexNoCase"), Qt::CaseInsensitive) == 0)
-            return SearchType::RegexNoCase;
+        SearchType type;
+        if(StringToSearchType(arg, &type)) {
+            return type;
+        }
     }
 
     return GetPrefSearch();

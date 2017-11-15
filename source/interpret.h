@@ -127,7 +127,7 @@ union Inst {
 	Symbol *sym;
 };
 
-using Arguments = gsl::span<DataValue>;
+using Arguments     = gsl::span<DataValue>;
 using BuiltInSubrEx = bool (*)(DocumentWidget *document, Arguments arguments, struct DataValue *result, const char **errMsg);
 
 struct NString {
