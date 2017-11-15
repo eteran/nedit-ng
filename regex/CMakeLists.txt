@@ -10,6 +10,7 @@ add_library (RegExp
 target_include_directories (RegExp PUBLIC
 	${CMAKE_CURRENT_SOURCE_DIR} 
 	${PROJECT_SOURCE_DIR}
+	${PROJECT_SOURCE_DIR}/GSL/include/
 )
 
 target_link_libraries(RegExp LINK_PUBLIC

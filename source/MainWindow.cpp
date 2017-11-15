@@ -1389,8 +1389,8 @@ QString MainWindow::UniqueUntitledNameEx() {
 
         QList<DocumentWidget *> documents = DocumentWidget::allDocuments();
 
-        auto it = std::find_if(documents.begin(), documents.end(), [name](DocumentWidget *window) {
-            return window->filename_ == name;
+        auto it = std::find_if(documents.begin(), documents.end(), [name](DocumentWidget *document) {
+            return document->filename_ == name;
         });
 
         if(it == documents.end()) {
@@ -1812,7 +1812,7 @@ void MainWindow::on_action_Open_Selected_triggered() {
 // Name: fileCB
 // Desc: opens a "selected file"
 //------------------------------------------------------------------------------
-void MainWindow::fileCB(DocumentWidget *window, const QString &text) {
+void MainWindow::fileCB(DocumentWidget *document, const QString &text) {
 
 	// TODO(eteran): 2.0, let the user specify a list of potential paths!
     //       can we ask the system simply or similar?
@@ -1850,7 +1850,7 @@ void MainWindow::fileCB(DocumentWidget *window, const QString &text) {
 
     // If path name is relative, make it refer to current window's directory
     if (!QFileInfo(nameText).isAbsolute()) {
-		nameText = QString(QLatin1String("%1%2")).arg(window->path_, nameText);
+        nameText = QString(QLatin1String("%1%2")).arg(document->path_, nameText);
     }
 
 #if !defined(DONT_HAVE_GLOB)
@@ -1866,7 +1866,7 @@ void MainWindow::fileCB(DocumentWidget *window, const QString &text) {
                 QApplication::beep();
             } else {
                 DocumentWidget::EditExistingFileEx(
-                            GetPrefOpenInTab() ? window : nullptr,
+                            GetPrefOpenInTab() ? document : nullptr,
                             filename,
                             pathname,
                             0,

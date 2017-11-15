@@ -80,7 +80,6 @@
 #include "regularExp.h"
 #include "util/raise.h"
 
-
 #include <bitset>
 #include <cassert>
 #include <cctype>
@@ -94,7 +93,7 @@
    gaurd against corrupted data; the compiled regex code really begins in the
    second byte. */
 
-#define MAGIC 0234
+constexpr uint8_t MAGIC = 0234;
 
 /* The "internal use only" fields in `regexp.h' are present to pass info from
  * `CompileRE' to `ExecRE' which permits the execute phase to run lots faster on
@@ -124,88 +123,83 @@
  * The opcodes are: */
 
 // DEFINITION            VALUE  MEANING
+enum : uint8_t {
+    END          = 1, // End of program.
 
-#define END 1 // End of program.
+    // Zero width positional assertions.
+    BOL          = 2, // Match position at beginning of line.
+    EOL          = 3, // Match position at end of line.
+    BOWORD       = 4, // Match "" representing word delimiter or BOL
+    EOWORD       = 5, // Match "" representing word delimiter or EOL
+    NOT_BOUNDARY = 6, // Not word boundary (\B, opposite of < and >)
 
-// Zero width positional assertions.
+    // Op codes with null terminated string operands.
+    EXACTLY = 7,  // Match this string.
+    SIMILAR = 8,  // Match this case insensitive string
+    ANY_OF  = 9,  // Match any character in the set.
+    ANY_BUT = 10, // Match any character not in the set.
 
-#define BOL 2          // Match position at beginning of line.
-#define EOL 3          // Match position at end of line.
-#define BOWORD 4       // Match "" representing word delimiter or BOL
-#define EOWORD 5       // Match "" representing word delimiter or EOL
-#define NOT_BOUNDARY 6 // Not word boundary (\B, opposite of < and >)
+    // Op codes to match any character.
+    ANY   = 11,   // Match any one character (implements '.')
+    EVERY = 12, // Same as ANY but matches newline.
 
-// Op codes with null terminated string operands.
+    // Shortcut escapes, \d, \D, \l, \L, \s, \S, \w, \W, \y, \Y.
+    DIGIT         = 13, // Match any digit, i.e. [0123456789]
+    NOT_DIGIT     = 14, // Match any non-digit, i.e. [^0123456789]
+    LETTER        = 15, // Match any letter character [a-zA-Z]
+    NOT_LETTER    = 16, // Match any non-letter character [^a-zA-Z]
+    SPACE         = 17, // Match any whitespace character EXCEPT \n
+    SPACE_NL      = 18, // Match any whitespace character INCLUDING \n
+    NOT_SPACE     = 19, // Match any non-whitespace character
+    NOT_SPACE_NL  = 20, // Same as NOT_SPACE but matches newline.
+    WORD_CHAR     = 21, // Match any word character [a-zA-Z0-9_]
+    NOT_WORD_CHAR = 22, // Match any non-word character [^a-zA-Z0-9_]
+    IS_DELIM      = 23, // Match any character that's a word delimiter
+    NOT_DELIM     = 24, // Match any character NOT a word delimiter
 
-#define EXACTLY 7  // Match this string.
-#define SIMILAR 8  // Match this case insensitive string
-#define ANY_OF 9   // Match any character in the set.
-#define ANY_BUT 10 // Match any character not in the set.
+    /* Quantifier nodes. (Only applied to SIMPLE nodes.  Quantifiers applied
+     * to non SIMPLE nodes or larger atoms are implemented using
+     * complex constructs.)
+     */
+    STAR          = 25, // Match this (simple) thing 0 or more times.
+    LAZY_STAR     = 26, // Minimal matching STAR
+    QUESTION      = 27, // Match this (simple) thing 0 or 1 times.
+    LAZY_QUESTION = 28, // Minimal matching QUESTION
+    PLUS          = 29, // Match this (simple) thing 1 or more times.
+    LAZY_PLUS     = 30, // Minimal matching PLUS
+    BRACE         = 31, // Match this (simple) thing m to n times.
+    LAZY_BRACE    = 32, // Minimal matching BRACE
 
-// Op codes to match any character.
+    // Nodes used to build complex constructs.
+    NOTHING    = 33, // Match empty string (always matches)
+    BRANCH     = 34, // Match this alternative, or the next...
+    BACK       = 35, // Always matches, NEXT ptr points backward.
+    INIT_COUNT = 36, // Initialize {m,n} counter to zero
+    INC_COUNT  = 37, // Increment {m,n} counter by one
+    TEST_COUNT = 38, // Test {m,n} counter against operand
 
-#define ANY 11   // Match any one character (implements '.')
-#define EVERY 12 // Same as ANY but matches newline.
+    // Back Reference nodes.
+    BACK_REF      = 39, // Match latest matched parenthesized text
+    BACK_REF_CI   = 40, // Case insensitive version of BACK_REF
+    X_REGEX_BR    = 41, // Cross-Regex Back-Ref for syntax highlighting
+    X_REGEX_BR_CI = 42, // Case insensitive version of X_REGEX_BR_CI
 
-// Shortcut escapes, \d, \D, \l, \L, \s, \S, \w, \W, \y, \Y.
+    // Various nodes used to implement parenthetical constructs.
+    POS_AHEAD_OPEN   = 43, // Begin positive look ahead
+    NEG_AHEAD_OPEN   = 44, // Begin negative look ahead
+    LOOK_AHEAD_CLOSE = 45, // End positive or negative look ahead
 
-#define DIGIT 13         // Match any digit, i.e. [0123456789]
-#define NOT_DIGIT 14     // Match any non-digit, i.e. [^0123456789]
-#define LETTER 15        // Match any letter character [a-zA-Z]
-#define NOT_LETTER 16    // Match any non-letter character [^a-zA-Z]
-#define SPACE 17         // Match any whitespace character EXCEPT \n
-#define SPACE_NL 18      // Match any whitespace character INCLUDING \n
-#define NOT_SPACE 19     // Match any non-whitespace character
-#define NOT_SPACE_NL 20  // Same as NOT_SPACE but matches newline.
-#define WORD_CHAR 21     // Match any word character [a-zA-Z0-9_]
-#define NOT_WORD_CHAR 22 // Match any non-word character [^a-zA-Z0-9_]
-#define IS_DELIM 23      // Match any character that's a word delimiter
-#define NOT_DELIM 24     // Match any character NOT a word delimiter
+    POS_BEHIND_OPEN   = 46,   // Begin positive look behind
+    NEG_BEHIND_OPEN   = 47,   // Begin negative look behind
+    LOOK_BEHIND_CLOSE = 48, // Close look behind
 
-/* Quantifier nodes. (Only applied to SIMPLE nodes.  Quantifiers applied to non
-   SIMPLE nodes or larger atoms are implemented using complex constructs.)*/
+    OPEN  = 49, // Open for capturing parentheses.
 
-#define STAR 25          // Match this (simple) thing 0 or more times.
-#define LAZY_STAR 26     // Minimal matching STAR
-#define QUESTION 27      // Match this (simple) thing 0 or 1 times.
-#define LAZY_QUESTION 28 // Minimal matching QUESTION
-#define PLUS 29          // Match this (simple) thing 1 or more times.
-#define LAZY_PLUS 30     // Minimal matching PLUS
-#define BRACE 31         // Match this (simple) thing m to n times.
-#define LAZY_BRACE 32    // Minimal matching BRACE
+    //  OPEN+1 is number 1, etc.
+    CLOSE  = (OPEN + NSUBEXP), // Close for capturing parentheses.
 
-// Nodes used to build complex constructs.
-
-#define NOTHING 33    // Match empty string (always matches)
-#define BRANCH 34     // Match this alternative, or the next...
-#define BACK 35       // Always matches, NEXT ptr points backward.
-#define INIT_COUNT 36 // Initialize {m,n} counter to zero
-#define INC_COUNT 37  // Increment {m,n} counter by one
-#define TEST_COUNT 38 // Test {m,n} counter against operand
-
-// Back Reference nodes.
-
-#define BACK_REF 39      // Match latest matched parenthesized text
-#define BACK_REF_CI 40   // Case insensitive version of BACK_REF
-#define X_REGEX_BR 41    // Cross-Regex Back-Ref for syntax highlighting
-#define X_REGEX_BR_CI 42 // Case insensitive version of X_REGEX_BR_CI
-
-// Various nodes used to implement parenthetical constructs.
-
-#define POS_AHEAD_OPEN 43   // Begin positive look ahead
-#define NEG_AHEAD_OPEN 44   // Begin negative look ahead
-#define LOOK_AHEAD_CLOSE 45 // End positive or negative look ahead
-
-#define POS_BEHIND_OPEN 46   // Begin positive look behind
-#define NEG_BEHIND_OPEN 47   // Begin negative look behind
-#define LOOK_BEHIND_CLOSE 48 // Close look behind
-
-#define OPEN 49 // Open for capturing parentheses.
-
-//  OPEN+1 is number 1, etc.
-#define CLOSE (OPEN + NSUBEXP) // Close for capturing parentheses.
-
-#define LAST_PAREN (CLOSE + NSUBEXP)
+    LAST_PAREN  = (CLOSE + NSUBEXP),
+};
 
 static_assert(LAST_PAREN <= UINT8_MAX, "Too many parentheses for storage in an uint8_t (LAST_PAREN too big.)");
 
@@ -475,24 +469,33 @@ struct len_range {
 };
 
 // Forward declarations for functions used by 'CompileRE'.
-static char literal_escape(char c);
 static char numeric_escape(char c, const char **parse);
 static uint8_t *alternative(int *flag_param, len_range *range_param);
 static uint8_t *atom(int *flag_param, len_range *range_param);
 static uint8_t *back_ref(const char *c, int *flag_param, int emit);
 static uint8_t *chunk(int paren, int *flag_param, len_range *range_param);
-static uint8_t *emit_node(int op_code);
+
+template <class T>
+char literal_escape(T ch);
+
+template <class T>
+uint8_t *emit_node(T op_code);
+
+template <class T>
+void emit_byte(T ch);
+
+template <class T>
+void emit_class_byte(T ch);
+
 static uint8_t *emit_special(uint8_t op_code, unsigned long test_val, size_t index);
-static uint8_t *insert(uint8_t op, uint8_t *opnd, long min, long max, size_t index);
+static uint8_t *insert(uint8_t op, uint8_t *insert_pos, long min, long max, size_t index);
 static uint8_t *next_ptr(uint8_t *ptr);
 static uint8_t *piece(int *flag_param, len_range *range_param);
-static uint8_t *shortcut_escape(uint8_t c, int *flag_param, int emit);
+static uint8_t *shortcut_escape(uint8_t ch, int *flag_param, int emit);
 static void branch_tail(uint8_t *ptr, int offset, uint8_t *val);
-static void emit_byte(uint8_t c);
-static void emit_class_byte(uint8_t c);
 static void offset_tail(uint8_t *ptr, int offset, uint8_t *val);
 static void reg_error(const char *str);
-static void tail(uint8_t *search_from, uint8_t *point_t);
+static void tail(uint8_t *search_from, uint8_t *point_to);
 static int init_ansi_classes();
 
 namespace {
@@ -512,27 +515,28 @@ uint8_t *OPERAND(uint8_t *p) {
 }
 
 uint16_t GET_OFFSET(uint8_t *p) {
-	return ((p[1] & 0xff) << 8) + (p[2] & 0xff);
+    return static_cast<uint16_t>(((p[1] & 0xff) << 8) + (p[2] & 0xff));
 }
 
-constexpr uint8_t PUT_OFFSET_L(uint16_t v) {
+template <class T>
+constexpr uint8_t PUT_OFFSET_L(T v) {
     return static_cast<uint8_t>((v >> 8) & 0xff);
 }
 
-constexpr uint8_t PUT_OFFSET_R(uint16_t v) {
+template <class T>
+constexpr uint8_t PUT_OFFSET_R(T v) {
     return static_cast<uint8_t>(v & 0xff);
 }
 
 uint8_t GET_LOWER(uint8_t *p) {
-	return ((p[NODE_SIZE + 0] & 0xff) << 8) + ((p[NODE_SIZE + 1]) & 0xff);
+    return static_cast<uint8_t>(((p[NODE_SIZE + 0] & 0xff) << 8) + ((p[NODE_SIZE + 1]) & 0xff));
 }
 
 uint8_t GET_UPPER(uint8_t *p) {
-	return ((p[NODE_SIZE + 2] & 0xff) << 8) + ((p[NODE_SIZE + 3]) & 0xff);
+    return static_cast<uint8_t>(((p[NODE_SIZE + 2] & 0xff) << 8) + ((p[NODE_SIZE + 3]) & 0xff));
 }
 
 // Utility definitions.
-
 bool IS_QUANTIFIER(char c) {
 	return c == '*' || c == '+' || c == '?' || c == Brace_Char;
 }
@@ -698,7 +702,6 @@ regexp::~regexp() {
  * expression is a trifle forced, but the need to tie the tails of the  *
  * branches to what follows makes it hard to avoid.                     *
  *----------------------------------------------------------------------*/
-
 uint8_t *chunk(int paren, int *flag_param, len_range *range_param) {
 
 	uint8_t *ret_val = nullptr;
@@ -708,7 +711,6 @@ uint8_t *chunk(int paren, int *flag_param, len_range *range_param) {
     int flags_local;
     int first = 1;
     int zero_width;
-    int i;
 	int old_sensitive = Is_Case_Insensitive;
 	int old_newline = Match_Newline;
 	len_range range_local;
@@ -723,7 +725,7 @@ uint8_t *chunk(int paren, int *flag_param, len_range *range_param) {
 
 	if (paren == PAREN) {
 		if (Total_Paren >= NSUBEXP) {
-            raise<regex_error>("number of ()'s > %d", (int)NSUBEXP);
+            raise<regex_error>("number of ()'s > %d", static_cast<int>(NSUBEXP));
 		}
 
 		this_paren = Total_Paren;
@@ -737,7 +739,7 @@ uint8_t *chunk(int paren, int *flag_param, len_range *range_param) {
 		*flag_param = WORST; // Look behind is zero width.
 		look_only = 1;
 		// We'll overwrite the zero length later on, so we save the ptr
-		ret_val = emit_special(paren, 0, 0);
+        ret_val = emit_special(paren, 0, 0);
 		emit_look_behind_bounds = ret_val + NODE_SIZE;
 	} else if (paren == INSENSITIVE) {
 		Is_Case_Insensitive = 1;
@@ -869,13 +871,15 @@ uint8_t *chunk(int paren, int *flag_param, len_range *range_param) {
 			if (Reg_Parse[1] == ',' || Reg_Parse[1] == '}') {
 				zero_width++;
 			} else if (Reg_Parse[1] == '0') {
-				i = 2;
+                int i = 2;
 
-				while (Reg_Parse[i] == '0')
+                while (Reg_Parse[i] == '0') {
 					i++;
+                }
 
-				if (Reg_Parse[i] == ',')
+                if (Reg_Parse[i] == ',') {
 					zero_width++;
+                }
 			}
 		}
 	}
@@ -946,7 +950,7 @@ uint8_t *alternative(int *flag_param, len_range *range_param) {
 	}
 
 	if(!chain) { // Loop ran zero times.
-		(void)emit_node(NOTHING);
+        emit_node(NOTHING);
 	}
 
 	return (ret_val);
@@ -1948,19 +1952,16 @@ uint8_t *atom(int *flag_param, len_range *range_param) {
  *
  * Returns a pointer to the START of the emitted node.
  *----------------------------------------------------------------------*/
+template <class T>
+uint8_t *emit_node(T op_code) {
 
-uint8_t *emit_node(int op_code) {
-
-	uint8_t *ret_val;
-	uint8_t *ptr;
-
-	ret_val = Code_Emit_Ptr; // Return address of start of node
+    uint8_t *ret_val = Code_Emit_Ptr; // Return address of start of node
 
 	if (ret_val == &Compute_Size) {
 		Reg_Size += NODE_SIZE;
 	} else {
-		ptr = ret_val;
-		*ptr++ = (uint8_t)op_code;
+        uint8_t *ptr = ret_val;
+        *ptr++ = static_cast<uint8_t>(op_code);
 		*ptr++ = '\0'; // Null "NEXT" pointer.
 		*ptr++ = '\0';
 
@@ -1975,13 +1976,13 @@ uint8_t *emit_node(int op_code) {
  *
  * Emit (if appropriate) a byte of code (usually part of an operand.)
  *----------------------------------------------------------------------*/
-
-void emit_byte(uint8_t c) {
+template <class T>
+void emit_byte(T ch) {
 
 	if (Code_Emit_Ptr == &Compute_Size) {
 		Reg_Size++;
 	} else {
-		*Code_Emit_Ptr++ = c;
+        *Code_Emit_Ptr++ = static_cast<uint8_t>(ch);
 	}
 }
 
@@ -1991,22 +1992,22 @@ void emit_byte(uint8_t c) {
  * Emit (if appropriate) a byte of code (usually part of a character
  * class operand.)
  *----------------------------------------------------------------------*/
-
-void emit_class_byte(uint8_t c) {
+template <class T>
+void emit_class_byte(T ch) {
 
 	if (Code_Emit_Ptr == &Compute_Size) {
 		Reg_Size++;
 
-		if (Is_Case_Insensitive && safe_ctype<isalpha>(c))
+        if (Is_Case_Insensitive && safe_ctype<isalpha>(ch))
 			Reg_Size++;
-	} else if (Is_Case_Insensitive && safe_ctype<isalpha>(c)) {
+    } else if (Is_Case_Insensitive && safe_ctype<isalpha>(ch)) {
 		/* For case insensitive character classes, emit both upper and lower case
 		   versions of alphabetical characters. */
 
-		*Code_Emit_Ptr++ = safe_ctype<tolower>(c);
-		*Code_Emit_Ptr++ = safe_ctype<toupper>(c);
+        *Code_Emit_Ptr++ = static_cast<uint8_t>(safe_ctype<tolower>(ch));
+        *Code_Emit_Ptr++ = static_cast<uint8_t>(safe_ctype<toupper>(ch));
 	} else {
-		*Code_Emit_Ptr++ = c;
+        *Code_Emit_Ptr++ = static_cast<uint8_t>(ch);
 	}
 }
 
@@ -2123,15 +2124,15 @@ uint8_t *insert(uint8_t op, uint8_t *insert_pos, long min, long max, size_t inde
 /*----------------------------------------------------------------------*
  * tail - Set the next-pointer at the end of a node chain.
  *----------------------------------------------------------------------*/
-
 void tail(uint8_t *search_from, uint8_t *point_to) {
 
 	uint8_t *scan;
 	uint8_t *next;
 	int offset;
 
-	if (search_from == &Compute_Size)
+    if (search_from == &Compute_Size) {
 		return;
+    }
 
 	// Find the last node in the chain (node with a null NEXT pointer)
 
@@ -2140,16 +2141,17 @@ void tail(uint8_t *search_from, uint8_t *point_to) {
 	for (;;) {
 		next = next_ptr(scan);
 
-		if (!next)
+        if (!next) {
 			break;
+        }
 
 		scan = next;
 	}
 
 	if (GET_OP_CODE(scan) == BACK) {
-		offset = scan - point_to;
+        offset = scan - point_to;
 	} else {
-		offset = point_to - scan;
+        offset = point_to - scan;
 	}
 
 	// Set NEXT pointer
@@ -2226,8 +2228,7 @@ void branch_tail(uint8_t *ptr, int offset, uint8_t *val) {
  *       a class.
  *
  *--------------------------------------------------------------------*/
-
-uint8_t *shortcut_escape(uint8_t c, int *flag_param, int emit) {
+uint8_t *shortcut_escape(uint8_t ch, int *flag_param, int emit) {
 
     const char *clazz = nullptr;
 	static const char codes[] = "ByYdDlLsSwW";
@@ -2240,19 +2241,19 @@ uint8_t *shortcut_escape(uint8_t c, int *flag_param, int emit) {
 		valid_codes = codes;
 	}
 
-	if (!strchr(valid_codes, static_cast<int>(c))) {
+    if (!strchr(valid_codes, static_cast<int>(ch))) {
 		return nullptr; // Not a valid shortcut escape sequence
 	} else if (emit == CHECK_ESCAPE || emit == CHECK_CLASS_ESCAPE) {
 		return ret_val; // Just checking if this is a valid shortcut escape.
 	}
 
-	switch (c) {
+    switch (ch) {
 	case 'd':
 	case 'D':
 		if (emit == EMIT_CLASS_BYTES) {
 			clazz = ASCII_Digits;
 		} else if (emit == EMIT_NODE) {
-			ret_val = (safe_ctype<islower>(c) ? emit_node(DIGIT) : emit_node(NOT_DIGIT));
+            ret_val = (safe_ctype<islower>(ch) ? emit_node(DIGIT) : emit_node(NOT_DIGIT));
 		}
 
 		break;
@@ -2262,7 +2263,7 @@ uint8_t *shortcut_escape(uint8_t c, int *flag_param, int emit) {
 		if (emit == EMIT_CLASS_BYTES) {
 			clazz = Letter_Char;
 		} else if (emit == EMIT_NODE) {
-			ret_val = (safe_ctype<islower>(c) ? emit_node(LETTER) : emit_node(NOT_LETTER));
+            ret_val = (safe_ctype<islower>(ch) ? emit_node(LETTER) : emit_node(NOT_LETTER));
 		}
 
 		break;
@@ -2276,9 +2277,9 @@ uint8_t *shortcut_escape(uint8_t c, int *flag_param, int emit) {
 			clazz = White_Space;
 		} else if (emit == EMIT_NODE) {
 			if (Match_Newline) {
-				ret_val = (safe_ctype<islower>(c) ? emit_node(SPACE_NL) : emit_node(NOT_SPACE_NL));
+                ret_val = (safe_ctype<islower>(ch) ? emit_node(SPACE_NL) : emit_node(NOT_SPACE_NL));
 			} else {
-				ret_val = (safe_ctype<islower>(c) ? emit_node(SPACE) : emit_node(NOT_SPACE));
+                ret_val = (safe_ctype<islower>(ch) ? emit_node(SPACE) : emit_node(NOT_SPACE));
 			}
 		}
 
@@ -2289,7 +2290,7 @@ uint8_t *shortcut_escape(uint8_t c, int *flag_param, int emit) {
 		if (emit == EMIT_CLASS_BYTES) {
 			clazz = Word_Char;
 		} else if (emit == EMIT_NODE) {
-			ret_val = (safe_ctype<islower>(c) ? emit_node(WORD_CHAR) : emit_node(NOT_WORD_CHAR));
+            ret_val = (safe_ctype<islower>(ch) ? emit_node(WORD_CHAR) : emit_node(NOT_WORD_CHAR));
 		}
 
 		break;
@@ -2335,7 +2336,7 @@ uint8_t *shortcut_escape(uint8_t c, int *flag_param, int emit) {
         raise<regex_error>("internal error #8 'shortcut_escape'");
 	}
 
-	if (emit == EMIT_NODE && c != 'B') {
+    if (emit == EMIT_NODE && ch != 'B') {
 		*flag_param |= (HAS_WIDTH | SIMPLE);
 	}
 
@@ -2363,14 +2364,15 @@ uint8_t *shortcut_escape(uint8_t c, int *flag_param, int emit) {
  * octal escape.  raise<regex_error> is called if \x0, \x00, \0, \00, \000, or
  * \0000 is specified.
  *--------------------------------------------------------------------*/
-
 char numeric_escape(char c, const char **parse) {
 
 	static const char digits[] = "fedcbaFEDCBA9876543210";
 
-	static const unsigned int digit_val[] = {15, 14, 13, 12, 11, 10,        // Lower case Hex digits
-	                                   15, 14, 13, 12, 11, 10,              // Upper case Hex digits
-	                                   9,  8,  7,  6,  5,  4,  3, 2, 1, 0}; // Decimal Digits
+    static const unsigned int digit_val[] = {
+        15, 14, 13, 12, 11, 10,            // Lower case Hex digits
+        15, 14, 13, 12, 11, 10,            // Upper case Hex digits
+        9,  8,  7,  6,  5,  4,  3, 2, 1, 0 // Decimal Digits
+    };
 
 	const char *scan;
 	const char *pos_ptr;
@@ -2379,7 +2381,7 @@ char numeric_escape(char c, const char **parse) {
 	unsigned int radix = 8;
 	int width = 3; // Can not be bigger than \0377
 	int pos_delta = 14;
-	int i, pos;
+    int i;
 
 	switch (c) {
 	case '0':
@@ -2406,7 +2408,7 @@ char numeric_escape(char c, const char **parse) {
 	pos_ptr = strchr(digit_str, static_cast<int>(*scan));
 
 	for (i = 0; pos_ptr != nullptr && (i < width); i++) {
-		pos = (pos_ptr - digit_str) + pos_delta;
+        const long pos = (pos_ptr - digit_str) + pos_delta;
 		value = (value * radix) + digit_val[pos];
 
 		/* If this digit makes the value over 255, treat this digit as a literal
@@ -2457,18 +2459,24 @@ char numeric_escape(char c, const char **parse) {
  * Returns the proper character value or nullptr if not a valid literal
  * escape.
  *--------------------------------------------------------------------*/
+template <class T>
+char literal_escape(T ch) {
 
-char literal_escape(char c) {
+    static const uint8_t valid_escape[] = {
+        'a', 'b', 'e', 'f', 'n', 'r', 't', 'v', '(', ')', '-', '[', ']', '<',
+        '>', '{', '}', '.', '\\', '|', '^', '$', '*', '+', '?', '&', '\0'
+    };
 
-	static const uint8_t valid_escape[] = {'a', 'b', 'e', 'f', 'n', 'r', 't', 'v', '(', ')', '-', '[', ']', '<', '>', '{', '}', '.', '\\', '|', '^', '$', '*', '+', '?', '&', '\0'};
-
-	static const uint8_t value[] = {'\a', '\b', 0x1B, // Escape character in ASCII character set.
-	                                '\f', '\n', '\r', '\t', '\v', '(', ')', '-', '[', ']', '<', '>', '{', '}', '.', '\\', '|', '^', '$', '*', '+', '?', '&', '\0'};
-
+    static const uint8_t value[] = {
+        '\a', '\b', 0x1B, // Escape character in ASCII character set.
+        '\f', '\n', '\r', '\t', '\v', '(', ')', '-', '[', ']', '<', '>', '{',
+        '}', '.', '\\', '|', '^', '$', '*', '+', '?', '&', '\0'
+    };
 
     for (int i = 0; valid_escape[i] != '\0'; i++) {
-		if (c == valid_escape[i])
-			return value[i];
+        if (static_cast<uint8_t>(ch) == valid_escape[i]) {
+            return static_cast<char>(value[i]);
+        }
 	}
 
 	return '\0';
@@ -2487,10 +2495,11 @@ char literal_escape(char c) {
  * references and are used in syntax highlighting patterns to match
  * text previously matched by another regex. *** IMPLEMENT LATER ***
  *--------------------------------------------------------------------*/
-
 uint8_t *back_ref(const char *c, int *flag_param, int emit) {
 
-	int paren_no, c_offset = 0, is_cross_regex = 0;
+    int paren_no;
+    int c_offset = 0;
+    int is_cross_regex = 0;
 
 	uint8_t *ret_val;
 
@@ -2513,7 +2522,6 @@ uint8_t *back_ref(const char *c, int *flag_param, int emit) {
 
 	if (!is_cross_regex && !Closed_Parens[paren_no]) {
         raise<regex_error>("\\%d is an illegal back reference", paren_no);
-		return nullptr;
 	}
 
 	if (emit == EMIT_NODE) {
@@ -2613,7 +2621,7 @@ static std::bitset<256> Current_Delimiters; // Current delimiter table
 
 // Forward declarations of functions used by 'ExecRE'
 
-static int attempt(regexp *prog, const char *string);
+static bool attempt(regexp *prog, const char *string);
 static int match(uint8_t *prog, int *branch_index_param);
 static unsigned long greedy(uint8_t *p, long max);
 static std::bitset<256> makeDelimiterTable(view::string_view delimiters);
@@ -2733,8 +2741,6 @@ bool regexp::ExecRE(const char *string, const char *end, bool reverse, char prev
 
 	const char *str;
 	bool ret_val = false;
-	const char **s_ptr = this->startp;
-	const char **e_ptr = this->endp;
 
 	// If caller has supplied delimiters, make a delimiter table
 	Current_Delimiters = delimiters ? makeDelimiterTable(delimiters) : Default_Delimiters;
@@ -2750,15 +2756,6 @@ bool regexp::ExecRE(const char *string, const char *end, bool reverse, char prev
 		succ_char = '\n';
 	}
 
-#if 0
-	// Initialize arrays used by shortcut_escape.
-	// TODO(eteran): this seems redundant, it was done in the regexp constructor
-	//               which MUST have been called before now
-	if (!init_ansi_classes()) {
-		goto SINGLE_RETURN;
-	}
-#endif
-
 	// Remember the beginning of the string for matching BOL
 	Start_Of_String = string;
 	Look_Behind_To  = (look_behind_to ? look_behind_to : string);
@@ -2768,8 +2765,8 @@ bool regexp::ExecRE(const char *string, const char *end, bool reverse, char prev
     Prev_Is_Delim = Current_Delimiters[static_cast<uint8_t>(prev_char)];
     Succ_Is_Delim = Current_Delimiters[static_cast<uint8_t>(succ_char)];
 
-	Total_Paren = (int)(this->program[1]);
-	Num_Braces  = (int)(this->program[2]);
+    Total_Paren = this->program[1];
+    Num_Braces  = this->program[2];
 
 	// Reset the recursion detection flag
 	Recursion_Limit_Exceeded = false;
@@ -2786,9 +2783,8 @@ bool regexp::ExecRE(const char *string, const char *end, bool reverse, char prev
 	   crashes when later trying to reference captured parens that do not exist
 	   in the compiled regex.  We only need to do the first nine since users
 	   can only specify \1, \2, ... \9. */
-	std::fill_n(s_ptr, 9, string);
-	std::fill_n(e_ptr, 9, string);
-
+    std::fill_n(this->startp, 9, string);
+    std::fill_n(this->endp,   9, string);
 
 	if (!reverse) { // Forward Search
 		if (this->anchor) {
@@ -2816,7 +2812,7 @@ bool regexp::ExecRE(const char *string, const char *end, bool reverse, char prev
 
 			for (str = string; !AT_END_OF_STRING(str) && str != end && !Recursion_Limit_Exceeded; str++) {
 
-				if (*str == (uint8_t)this->match_start) {
+                if (*str == static_cast<uint8_t>(this->match_start)) {
 					if (attempt(this, str)) {
 						ret_val = true;
 						break;
@@ -2876,7 +2872,7 @@ bool regexp::ExecRE(const char *string, const char *end, bool reverse, char prev
 
 			for (str = end; str >= string && !Recursion_Limit_Exceeded; str--) {
 
-				if (*str == (uint8_t)this->match_start) {
+                if (*str == static_cast<uint8_t>(this->match_start)) {
 					if (attempt(this, str)) {
 						ret_val = true;
 						break;
@@ -2916,20 +2912,21 @@ SINGLE_RETURN:
  *--------------------------------------------------------------------*/
 int init_ansi_classes() {
 
-    static bool initialized     = false;
-    static const int underscore = '_';
-	int word_count;
-	int letter_count;
-	int space_count;
+    static bool initialized  = false;
+
 
 	if (!initialized) {
 		initialized = true; // Only need to generate character sets once.
-		word_count = 0;
-		letter_count = 0;
-		space_count = 0;
+
+        constexpr int Underscore = '_';
+        constexpr int Newline    = '\n';
+
+        int word_count   = 0;
+        int letter_count = 0;
+        int space_count  = 0;
 
         for (int i = 1; i < static_cast<int>(UINT8_MAX); i++) {
-			if (safe_ctype<isalnum>(i) || i == underscore) {
+            if (safe_ctype<isalnum>(i) || i == Underscore) {
 				Word_Char[word_count++] = static_cast<char>(i);
 			}
 
@@ -2941,7 +2938,7 @@ int init_ansi_classes() {
 			   handled by switches within the original regex and is thus omitted
 			   here. */
 
-			if (safe_ctype<isspace>(i) && (i != (int)'\n')) {
+            if (safe_ctype<isspace>(i) && (i != Newline)) {
 				White_Space[space_count++] = static_cast<char>(i);
 			}
 
@@ -2966,44 +2963,35 @@ int init_ansi_classes() {
 /*----------------------------------------------------------------------*
  * attempt - try match at specific point, returns: 0 failure, 1 success
  *----------------------------------------------------------------------*/
+static bool attempt(regexp *prog, const char *string) {
 
-static int attempt(regexp *prog, const char *string) {
-
-	int i;
-	const char **s_ptr;
-	const char **e_ptr;
 	int branch_index = 0; // Must be set to zero !
 
 	Reg_Input     = string;
 	Start_Ptr_Ptr = prog->startp;
 	End_Ptr_Ptr   = prog->endp;
-	s_ptr         = prog->startp;
-	e_ptr         = prog->endp;
 
 	// Reset the recursion counter.
 	Recursion_Count = 0;
 
 	// Overhead due to capturing parentheses.
-
 	Extent_Ptr_BW = string;
 	Extent_Ptr_FW = nullptr;
 
-	for (i = Total_Paren + 1; i > 0; i--) {
-		*s_ptr++ = nullptr;
-		*e_ptr++ = nullptr;
-	}
+    std::fill_n(prog->startp, Total_Paren + 1, nullptr);
+    std::fill_n(prog->endp,   Total_Paren + 1, nullptr);
 
 	if (match((prog->program + REGEX_START_OFFSET), &branch_index)) {
 		prog->startp[0]  = string;
-		prog->endp[0]    = Reg_Input;       // <-- One char AFTER
-		prog->extentpBW  = Extent_Ptr_BW; //     matched string!
+        prog->endp[0]    = Reg_Input;     // <-- One char AFTER
+        prog->extentpBW  = Extent_Ptr_BW; //     matched string!
 		prog->extentpFW  = Extent_Ptr_FW;
 		prog->top_branch = branch_index;
 
-		return (1);
-	} else {
-		return (0);
-	}
+        return true;
+    }
+
+    return false;
 }
 
 /*----------------------------------------------------------------------*
@@ -3049,11 +3037,12 @@ static int match(uint8_t *prog, int *branch_index_param) {
 		switch (GET_OP_CODE(scan)) {
 		case BRANCH: {
 			const char *save;
-			int branch_index_local = 0;
 
 			if (GET_OP_CODE(next) != BRANCH) { // No choice.
 				next = OPERAND(scan);          // Avoid recursion.
 			} else {
+                int branch_index_local = 0;
+
 				do {
 					save = Reg_Input;
 
@@ -3085,13 +3074,14 @@ static int match(uint8_t *prog, int *branch_index_param) {
 				MATCH_RETURN(0);
 			}
 
-			const int len = strlen(reinterpret_cast<char *>(opnd));
+            const auto str = reinterpret_cast<const char *>(opnd);
+            const size_t len = strlen(str);
 
 			if (End_Of_String != nullptr && Reg_Input + len > End_Of_String) {
 				MATCH_RETURN(0);
 			}
 
-			if (len > 1 && strncmp(reinterpret_cast<char *>(opnd), Reg_Input, len) != 0) {
+            if (len > 1 && strncmp(str, Reg_Input, len) != 0) {
 				MATCH_RETURN(0);
 			}
 
@@ -3101,17 +3091,14 @@ static int match(uint8_t *prog, int *branch_index_param) {
 		break;
 
 		case SIMILAR: {
-			uint8_t *opnd;
 			uint8_t test;
-
-			opnd = OPERAND(scan);
+            uint8_t *opnd = OPERAND(scan);
 
 			/* Note: the SIMILAR operand was converted to lower case during
 			   regex compile. */
 
 			while ((test = *opnd++) != '\0') {
 				if (AT_END_OF_STRING(Reg_Input) || tolower(*Reg_Input++) != test) {
-
 					MATCH_RETURN(0);
 				}
 			}
@@ -3408,7 +3395,7 @@ static int match(uint8_t *prog, int *branch_index_param) {
 
 			if (lazy) {
 				if (min > REG_ZERO)
-					num_matched = greedy(next_op, min);
+                    num_matched = greedy(next_op, min);
 			} else {
 				num_matched = greedy(next_op, max);
 			}
@@ -3567,7 +3554,6 @@ static int match(uint8_t *prog, int *branch_index_param) {
 		case POS_BEHIND_OPEN:
 		case NEG_BEHIND_OPEN: {
 			const char *save;
-			int answer;
 			int offset;
 			int upper;
 			int lower;
@@ -3598,7 +3584,7 @@ static int match(uint8_t *prog, int *branch_index_param) {
 					break;
 				}
 
-				answer = match(next, nullptr); // Does the look-behind regex match?
+                int answer = match(next, nullptr); // Does the look-behind regex match?
 
                 CHECK_RECURSION_LIMIT();
 

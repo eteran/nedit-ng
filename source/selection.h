@@ -35,7 +35,7 @@ class QString;
 class TextArea;
 
 int StringToLineAndCol(const QString &text, int *lineNum, int *column);
-QString GetAnySelectionEx(DocumentWidget *window);
+QString GetAnySelectionEx(DocumentWidget *document);
 void AddMarkEx(MainWindow *window, DocumentWidget *document, TextArea *area, QChar label);
 void SelectNumberedLineEx(DocumentWidget *document, TextArea *area, int lineNum);
 

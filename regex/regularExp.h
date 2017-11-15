@@ -36,9 +36,7 @@
 // Number of text capturing parentheses allowed.
 constexpr auto NSUBEXP = 50u;
 
-
 /* Flags for CompileRE default settings (Markus Schwarzenberg) */
-
 enum RE_DEFAULT_FLAG {
 	REDFLT_STANDARD = 0,
 	REDFLT_CASE_INSENSITIVE = 1

@@ -64,7 +64,7 @@ QString GetPrefItalicFontName();
 QString GetPrefServerName();
 QString GetPrefTagFile();
 QString GetPrefTooltipBgColor();
-QString GetWindowDelimitersEx(const DocumentWidget *window);
+QString GetWindowDelimitersEx(const DocumentWidget *document);
 QString LanguageModeName(int mode);
 QString GetPrefShell();
 QString GetPrefTitleFormat();

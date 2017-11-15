@@ -231,7 +231,7 @@ void StartLoopAddrList();
 void SwapCode(Inst *start, Inst *boundary, Inst *end);
 
 /* Routines for executing programs */
-int ExecuteMacroEx(DocumentWidget *window, Program *prog, gsl::span<DataValue> arguments, DataValue *result, std::shared_ptr<RestartData> &continuation, QString *msg);
+int ExecuteMacroEx(DocumentWidget *document, Program *prog, gsl::span<DataValue> arguments, DataValue *result, std::shared_ptr<RestartData> &continuation, QString *msg);
 int ContinueMacroEx(const std::shared_ptr<RestartData> &continuation, DataValue *result, QString *msg);
 void RunMacroAsSubrCall(Program *prog);
 void PreemptMacro();
@@ -246,7 +246,7 @@ void FreeProgram(Program *prog);
 void ModifyReturnedValueEx(const std::shared_ptr<RestartData> &context, const DataValue &dv);
 DocumentWidget *MacroRunWindowEx();
 DocumentWidget *MacroFocusWindowEx();
-void SetMacroFocusWindowEx(DocumentWidget *window);
+void SetMacroFocusWindowEx(DocumentWidget *document);
 
 /* function used for implicit conversion from string to number */
 bool StringToNum(const std::string &string, int *number);

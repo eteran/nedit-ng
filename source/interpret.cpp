@@ -582,8 +582,8 @@ DocumentWidget *MacroFocusWindowEx() {
 ** Set the window to which macro subroutines and actions which operate on an
 ** implied window are directed.
 */
-void SetMacroFocusWindowEx(DocumentWidget *window) {
-    FocusWindowEx = window;
+void SetMacroFocusWindowEx(DocumentWidget *document) {
+    FocusWindowEx = document;
 }
 
 /*

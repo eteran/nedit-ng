@@ -927,11 +927,11 @@ QString LanguageModeName(int mode) {
 ** to supply delimiters for RE searching, and ExecRE can skip compiling a
 ** delimiter table when delimiters is nullptr).
 */
-QString GetWindowDelimitersEx(const DocumentWidget *window) {
-    if (window->languageMode_ == PLAIN_LANGUAGE_MODE)
+QString GetWindowDelimitersEx(const DocumentWidget *document) {
+    if (document->languageMode_ == PLAIN_LANGUAGE_MODE)
         return QString();
     else
-        return LanguageModes[window->languageMode_].delimiters;
+        return LanguageModes[document->languageMode_].delimiters;
 }
 
 

@@ -76,7 +76,7 @@ static bool searchRegex(view::string_view string, view::string_view searchString
 static int countWindows(void);
 static bool searchLiteral(view::string_view string, view::string_view searchString, bool caseSense, Direction direction, WrapMode wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW);
 static bool searchLiteralWord(view::string_view string, view::string_view searchString, bool caseSense, Direction direction, WrapMode wrap, int beginPos, int *startPos, int *endPos, const char *delimiters);
-static bool searchMatchesSelectionEx(DocumentWidget *window, const QString &searchString, SearchType searchType, int *left, int *right, int *searchExtentBW, int *searchExtentFW);
+static bool searchMatchesSelectionEx(DocumentWidget *document, const QString &searchString, SearchType searchType, int *left, int *right, int *searchExtentBW, int *searchExtentFW);
 static void iSearchRecordLastBeginPosEx(MainWindow *window, Direction direction, int initPos);
 static void iSearchTryBeepOnWrapEx(MainWindow *window, Direction direction, int beginPos, int startPos);
 static std::string upCaseStringEx(view::string_view inString);
@@ -1768,7 +1768,7 @@ static std::string downCaseStringEx(view::string_view inString) {
 ** current primary selection using search algorithm "searchType".  If true,
 ** also return the position of the selection in "left" and "right".
 */
-static bool searchMatchesSelectionEx(DocumentWidget *window, const QString &searchString, SearchType searchType, int *left, int *right, int *searchExtentBW, int *searchExtentFW) {
+static bool searchMatchesSelectionEx(DocumentWidget *document, const QString &searchString, SearchType searchType, int *left, int *right, int *searchExtentBW, int *searchExtentFW) {
     int selLen, selStart, selEnd, startPos, endPos, extentBW, extentFW, beginPos;
     int regexLookContext = isRegexType(searchType) ? 1000 : 0;
     std::string string;
@@ -1776,7 +1776,7 @@ static bool searchMatchesSelectionEx(DocumentWidget *window, const QString &sear
     bool isRect;
 
     // find length of selection, give up on no selection or too long
-    if (!window->buffer_->BufGetEmptySelectionPos(&selStart, &selEnd, &isRect, &rectStart, &rectEnd)) {
+    if (!document->buffer_->BufGetEmptySelectionPos(&selStart, &selEnd, &isRect, &rectStart, &rectEnd)) {
         return false;
     }
 
@@ -1786,8 +1786,8 @@ static bool searchMatchesSelectionEx(DocumentWidget *window, const QString &sear
 
     // if the selection is rectangular, don't match if it spans lines
     if (isRect) {
-        lineStart = window->buffer_->BufStartOfLine(selStart);
-        if (lineStart != window->buffer_->BufStartOfLine(selEnd)) {
+        lineStart = document->buffer_->BufStartOfLine(selStart);
+        if (lineStart != document->buffer_->BufStartOfLine(selEnd)) {
             return false;
         }
     }
@@ -1800,7 +1800,7 @@ static bool searchMatchesSelectionEx(DocumentWidget *window, const QString &sear
             stringStart = 0;
         }
 
-        string = window->buffer_->BufGetRangeEx(stringStart, lineStart + rectEnd + regexLookContext);
+        string = document->buffer_->BufGetRangeEx(stringStart, lineStart + rectEnd + regexLookContext);
         selLen = rectEnd - rectStart;
         beginPos = lineStart + rectStart - stringStart;
     } else {
@@ -1809,7 +1809,7 @@ static bool searchMatchesSelectionEx(DocumentWidget *window, const QString &sear
             stringStart = 0;
         }
 
-        string = window->buffer_->BufGetRangeEx(stringStart, selEnd + regexLookContext);
+        string = document->buffer_->BufGetRangeEx(stringStart, selEnd + regexLookContext);
         selLen = selEnd - selStart;
         beginPos = selStart - stringStart;
     }
@@ -1831,7 +1831,7 @@ static bool searchMatchesSelectionEx(DocumentWidget *window, const QString &sear
                 &endPos,
                 &extentBW,
                 &extentFW,
-                GetWindowDelimitersEx(window));
+                GetWindowDelimitersEx(document));
 
     // decide if it is an exact match
     if (!found) {
@@ -1844,7 +1844,7 @@ static bool searchMatchesSelectionEx(DocumentWidget *window, const QString &sear
 
     // return the start and end of the selection
     if (isRect) {
-        window->buffer_->GetSimpleSelection(left, right);
+        document->buffer_->GetSimpleSelection(left, right);
     } else {
         *left  = selStart;
         *right = selEnd;

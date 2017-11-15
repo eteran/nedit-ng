@@ -52,8 +52,8 @@ static int findParagraphStart(TextBuffer *buf, int startPos);
 static int nextTab(int pos, int tabDist);
 static std::string fillParagraphEx(view::string_view text, int leftMargin, int firstLineIndent, int rightMargin, int tabDist, int allowTabs, char nullSubsChar);
 static std::string fillParagraphsEx(view::string_view text, int rightMargin, int tabDist, int useTabs, char nullSubsChar, int alignWithFirst);
-static void changeCaseEx(DocumentWidget *window, TextArea *area, bool makeUpper);
-static void shiftRectEx(DocumentWidget *window, TextArea *area, int direction, bool byTab, int selStart, int selEnd, int rectStart, int rectEnd);
+static void changeCaseEx(DocumentWidget *document, TextArea *area, bool makeUpper);
+static void shiftRectEx(DocumentWidget *document, TextArea *area, int direction, bool byTab, int selStart, int selEnd, int rectStart, int rectEnd);
 
 
 /*
@@ -61,14 +61,14 @@ static void shiftRectEx(DocumentWidget *window, TextArea *area, int direction, b
 ** if "byTab" is true.  (The length of a tab stop is the size of an emulated
 ** tab if emulated tabs are turned on, or a hardware tab if not).
 */
-void ShiftSelectionEx(DocumentWidget *window, TextArea *area, ShiftDirection direction, bool byTab) {
+void ShiftSelectionEx(DocumentWidget *document, TextArea *area, ShiftDirection direction, bool byTab) {
     int selStart;
     int selEnd;
     bool isRect;
     int rectStart;
     int rectEnd;
     int shiftDist;
-    TextBuffer *buf = window->buffer_;
+    TextBuffer *buf = document->buffer_;
     std::string text;
 
     // get selection, if no text selected, use current insert position
@@ -89,7 +89,7 @@ void ShiftSelectionEx(DocumentWidget *window, TextArea *area, ShiftDirection dir
     } else if (isRect) {
         const int cursorPos = area->TextGetCursorPos();
         int origLength = buf->BufGetLength();
-        shiftRectEx(window, area, direction, byTab, selStart, selEnd, rectStart, rectEnd);
+        shiftRectEx(document, area, direction, byTab, selStart, selEnd, rectStart, rectEnd);
 
         area->TextSetCursorPos((cursorPos < (selEnd + selStart) / 2) ? selStart : cursorPos + (buf->BufGetLength() - origLength));
         return;
@@ -126,9 +126,9 @@ void ShiftSelectionEx(DocumentWidget *window, TextArea *area, ShiftDirection dir
 ** if "byTab" is true.  (The length of a tab stop is the size of an emulated
 ** tab if emulated tabs are turned on, or a hardware tab if not).
 */
-static void shiftRectEx(DocumentWidget *window, TextArea *area, int direction, bool byTab, int selStart, int selEnd, int rectStart, int rectEnd) {
+static void shiftRectEx(DocumentWidget *document, TextArea *area, int direction, bool byTab, int selStart, int selEnd, int rectStart, int rectEnd) {
     int offset;
-    TextBuffer *buf = window->buffer_;
+    TextBuffer *buf = document->buffer_;
 
     // Make sure selStart and SelEnd refer to whole lines
     selStart = buf->BufStartOfLine(selStart);
@@ -169,12 +169,12 @@ static void shiftRectEx(DocumentWidget *window, TextArea *area, int direction, b
 
 
 
-void UpcaseSelectionEx(DocumentWidget *window, TextArea *area) {
-    changeCaseEx(window, area, true);
+void UpcaseSelectionEx(DocumentWidget *document, TextArea *area) {
+    changeCaseEx(document, area, true);
 }
 
-void DowncaseSelectionEx(DocumentWidget *window, TextArea *area) {
-    changeCaseEx(window, area, false);
+void DowncaseSelectionEx(DocumentWidget *document, TextArea *area) {
+    changeCaseEx(document, area, false);
 }
 
 /*
@@ -182,8 +182,8 @@ void DowncaseSelectionEx(DocumentWidget *window, TextArea *area) {
 ** before the cursor if there is no selection).  If "makeUpper" is true,
 ** change to upper case, otherwise, change to lower case.
 */
-static void changeCaseEx(DocumentWidget *window, TextArea *area, bool makeUpper) {
-    TextBuffer *buf = window->buffer_;
+static void changeCaseEx(DocumentWidget *document, TextArea *area, bool makeUpper) {
+    TextBuffer *buf = document->buffer_;
     int start;
     int end;
     int rectStart;
@@ -227,8 +227,8 @@ static void changeCaseEx(DocumentWidget *window, TextArea *area, bool makeUpper)
     }
 }
 
-void FillSelectionEx(DocumentWidget *window, TextArea *area) {
-    TextBuffer *buf = window->buffer_;
+void FillSelectionEx(DocumentWidget *document, TextArea *area) {
+    TextBuffer *buf = document->buffer_;
     int left;
     int right;
     int rectStart;
@@ -237,7 +237,7 @@ void FillSelectionEx(DocumentWidget *window, TextArea *area) {
     int rightMargin;
 
     int insertPos = area->TextGetCursorPos();
-    int hasSelection = window->buffer_->primary_.selected;
+    int hasSelection = document->buffer_->primary_.selected;
     std::string text;
 
     /* Find the range of characters and get the text to fill.  If there is a

@@ -806,7 +806,7 @@ static QList<Tag> LookupTag(const QString &name, TagSearchMode search_type) {
 **                  tip and/or tag database depending on search_type
 **  search_type:    Either TIP or TIP_FROM_TAG
 */
-int ShowTipStringEx(DocumentWidget *window, const QString &text, bool anchored, int pos, bool lookup, TagSearchMode search_type, int hAlign, int vAlign, int alignMode) {
+int ShowTipStringEx(DocumentWidget *document, const QString &text, bool anchored, int pos, bool lookup, TagSearchMode search_type, int hAlign, int vAlign, int alignMode) {
     if (search_type == TagSearchMode::TAG) {
         return 0;
     }
@@ -820,9 +820,9 @@ int ShowTipStringEx(DocumentWidget *window, const QString &text, bool anchored, 
 
     // If this isn't a lookup request, just display it.
     if (!lookup) {
-        return tagsShowCalltipEx(MainWindow::fromDocument(window)->lastFocus_, text);
+        return tagsShowCalltipEx(MainWindow::fromDocument(document)->lastFocus_, text);
     } else {
-        return window->findDef(MainWindow::fromDocument(window)->lastFocus_, text, search_type);
+        return document->findDef(MainWindow::fromDocument(document)->lastFocus_, text, search_type);
     }
 }
 

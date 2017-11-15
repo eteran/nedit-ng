@@ -74,7 +74,7 @@ int tagsShowCalltipEx(TextArea *area, const QString &text);
 // Routines for handling tags or tips from the current selection
 
 //  Display (possibly finding first) a calltip.  Search type can only be TIP or TIP_FROM_TAG here.
-int ShowTipStringEx(DocumentWidget *window, const QString &text, bool anchored, int pos, bool lookup, TagSearchMode search_type, int hAlign, int vAlign, int alignMode);
+int ShowTipStringEx(DocumentWidget *document, const QString &text, bool anchored, int pos, bool lookup, TagSearchMode search_type, int hAlign, int vAlign, int alignMode);
 
 void editTaggedLocationEx(TextArea *area, int i);
 void showMatchingCalltipEx(TextArea *area, int i);
