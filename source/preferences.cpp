@@ -27,51 +27,53 @@
 *******************************************************************************/
 
 #include "preferences.h"
-#include "version.h"
 #include "DocumentWidget.h"
+#include "Font.h"
+#include "highlightData.h"
+#include "highlight.h"
+#include "Input.h"
 #include "LanguageMode.h"
 #include "MainWindow.h"
-#include "TextBuffer.h"
-#include "highlight.h"
-#include "highlightData.h"
 #include "search.h"
+#include "Settings.h"
 #include "smartIndent.h"
-#include "Font.h"
 #include "tags.h"
+#include "TextBuffer.h"
 #include "userCmds.h"
-#include "Input.h"
 #include "util/ClearCase.h"
+#include "version.h"
 
 #include <QInputDialog>
 #include <QMessageBox>
 #include <QPushButton>
-#include <QSettings>
 #include <QRegExp>
+#include <QSettings>
 #include <QStandardPaths>
 #include <QString>
 #include <QtDebug>
+
 #include <cctype>
 #include <memory>
 #include <pwd.h>
 #include <sys/types.h>
 #include <unistd.h>
 
+namespace {
+
 constexpr int ConfigFileVersion = 1;
 
 #define N_WRAP_STYLES 3
-static const char *AutoWrapTypes[N_WRAP_STYLES + 3] = {"None", "Newline", "Continuous", "True", "False", nullptr};
+const char *AutoWrapTypes[N_WRAP_STYLES + 3] = {"None", "Newline", "Continuous", "True", "False", nullptr};
 
 #define N_INDENT_STYLES 3
-static const char *AutoIndentTypes[N_INDENT_STYLES + 3] = {"None", "Auto", "Smart", "True", "False", nullptr};
-
+const char *AutoIndentTypes[N_INDENT_STYLES + 3] = {"None", "Auto", "Smart", "True", "False", nullptr};
 
 /* suplement wrap and indent styles w/ a value meaning "use default" for
    the override fields in the language modes dialog */
 constexpr int DEFAULT_TAB_DIST     = -1;
 constexpr int DEFAULT_EM_TAB_DIST  = -1;
 
-// list of available language modes and language specific preferences 
-QList<LanguageMode> LanguageModes;
+Settings g_Settings;
 
 /* Module-global variable set when any preference changes (for asking the
    user about re-saving on exit) */
@@ -81,6 +83,11 @@ bool PrefsHaveChanged = false;
    preferences on top of the defaults.  Contains name of file loaded */
 QString ImportedFile;
 
+}
+
+// list of available language modes and language specific preferences
+QList<LanguageMode> LanguageModes;
+
 static void translatePrefFormats(quint32 fileVer);
 static QStringList readExtensionListEx(Input &in);
 static QString getDefaultShell();
@@ -88,7 +95,13 @@ static int loadLanguageModesStringEx(const QString &string);
 static bool modeErrorEx(const Input &in, const QString &message);
 static QString WriteLanguageModesStringEx();
 
-static Settings g_Settings;
+QString ImportedSettingsFile() {
+    return ImportedFile;
+}
+
+bool PreferencesChanged() {
+    return PrefsHaveChanged;
+}
 
 Settings &GetSettings() {
     return g_Settings;
@@ -185,8 +198,8 @@ void SaveNEditPrefsEx(QWidget *parent, bool quietly) {
 
     if (!quietly) {
         int resp = QMessageBox::information(parent, QLatin1String("Save Preferences"),
-            ImportedFile.isNull() ? QString(QLatin1String("Default preferences will be saved in the file:\n%1\nNEdit automatically loads this file\neach time it is started.")).arg(prefFileName)
-                                  : QString(QLatin1String("Default preferences will be saved in the file:\n%1\nSAVING WILL INCORPORATE SETTINGS\nFROM FILE: %2")).arg(prefFileName, ImportedFile),
+            ImportedFile.isNull() ? QString(QLatin1String("Default preferences will be saved in the file:\n%1\nNEdit automatically loads this file each time it is started.")).arg(prefFileName)
+                                  : QString(QLatin1String("Default preferences will be saved in the file:\n%1\nSAVING WILL INCORPORATE SETTINGS FROM FILE: %2")).arg(prefFileName, ImportedFile),
                 QMessageBox::Ok | QMessageBox::Cancel);
 
 
@@ -217,9 +230,7 @@ void SaveNEditPrefsEx(QWidget *parent, bool quietly) {
 ** Load an additional preferences file on top of the existing preferences
 ** derived from defaults, the .nedit file, and X resources.
 */
-void ImportPrefFile(const QString &filename, bool convertOld) {
-    Q_UNUSED(convertOld);
-
+void ImportPrefFile(const QString &filename) {
     g_Settings.importSettings(filename);
 }
 

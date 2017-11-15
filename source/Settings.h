@@ -14,7 +14,7 @@
 #include <QString>
 
 // Identifiers for the different colors that can be adjusted.
-enum ColorTypes {
+enum ColorTypes : int {
     TEXT_FG_COLOR,
     TEXT_BG_COLOR,
     SELECT_FG_COLOR,

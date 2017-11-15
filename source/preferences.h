@@ -29,11 +29,11 @@
 
 #include "IndentStyle.h"
 #include "SearchType.h"
-#include "WrapStyle.h"
-#include "WrapMode.h"
+#include "ShowMatchingStyle.h"
 #include "TruncSubstitution.h"
-#include "Settings.h"
-#include "util/string_view.h"
+#include "VirtKeyOverride.h"
+#include "WrapMode.h"
+#include "WrapStyle.h"
 
 #include <QList>
 
@@ -45,6 +45,8 @@ class QFont;
 class QDialog;
 class Input;
 class Settings;
+
+enum ColorTypes : int;
 
 constexpr int PLAIN_LANGUAGE_MODE = -1;
 
@@ -127,7 +129,7 @@ bool SkipDelimiterEx(Input &in, QString *errMsg);
 int SkipOptSeparatorEx(QChar separator, Input &in);
 QString MakeQuotedStringEx(const QString &string);
 QString ReadSymbolicFieldEx(Input &input);
-void ImportPrefFile(const QString &filename, bool convertOld);
+void ImportPrefFile(const QString &filename);
 void MarkPrefsChanged();
 void RestoreNEditPrefs();
 void SaveNEditPrefsEx(QWidget *parent, bool quietly);
@@ -189,8 +191,9 @@ void SetPrefReplaceDefScope(int scope);
 int GetPrefReplaceDefScope();
 #endif
 
-extern QString ImportedFile;
-extern bool PrefsHaveChanged;
+bool PreferencesChanged();
+QString ImportedSettingsFile();
+
 extern QList<LanguageMode> LanguageModes;
 
 #endif

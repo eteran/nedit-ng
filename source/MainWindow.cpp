@@ -4130,17 +4130,19 @@ void MainWindow::on_action_Exit_triggered() {
 */
 bool MainWindow::CheckPrefsChangesSavedEx() {
 
-    if (!PrefsHaveChanged) {
+    if (!PreferencesChanged()) {
         return true;
     }
+
+    QString importedFile = ImportedSettingsFile();
 
     QMessageBox messageBox(this);
     messageBox.setWindowTitle(tr("Default Preferences"));
     messageBox.setIcon(QMessageBox::Question);
 
-    messageBox.setText((ImportedFile.isNull())
+    messageBox.setText((importedFile.isNull())
         ? tr("Default Preferences have changed.\nSave changes to NEdit preference file?")
-        : tr("Default Preferences have changed.  SAVING \nCHANGES WILL INCORPORATE ADDITIONAL\nSETTINGS FROM FILE: %s").arg(ImportedFile));
+        : tr("Default Preferences have changed.\nSAVING CHANGES WILL INCORPORATE ADDITIONAL SETTINGS FROM FILE: %s").arg(importedFile));
 
     QPushButton *buttonSave     = messageBox.addButton(tr("Save"), QMessageBox::AcceptRole);
     QPushButton *buttonDontSave = messageBox.addButton(tr("Don't Save"), QMessageBox::AcceptRole);

@@ -95,7 +95,7 @@ int main(int argc, char *argv[]) {
     QString filename;
     QString pathname;
     QString toDoCommand;
-    QPointer<DocumentWidget> lastFileEx = nullptr;
+    QPointer<DocumentWidget> lastFile;
 
 #ifdef Q_OS_LINUX
     if (qEnvironmentVariableIsEmpty("DISPLAY")) {
@@ -154,10 +154,7 @@ int main(int argc, char *argv[]) {
 			break; // treat all remaining arguments as filenames 
         } else if (arg == QLatin1String("-import")) {
             nextArg(args, &i);
-            ImportPrefFile(args[i], false);
-        } else if (arg == QLatin1String("-importold")) {
-            nextArg(args, &i);
-            ImportPrefFile(args[i], true);
+            ImportPrefFile(args[i]);
 		}
 	}
 
@@ -319,10 +316,10 @@ int main(int argc, char *argv[]) {
 				   items. The current file may also be raised if there're
 				   macros to execute on. */
 
-                QPointer<DocumentWidget> documentEx = nullptr;
+                QPointer<DocumentWidget> document;
 
                 if(MainWindow *window = MainWindow::firstWindow()) {
-                    documentEx = DocumentWidget::EditExistingFileEx(
+                    document = DocumentWidget::EditExistingFileEx(
                                 window->currentDocument(),
                                 filename,
                                 pathname,
@@ -333,7 +330,7 @@ int main(int argc, char *argv[]) {
                                 isTabbed,
                                 true);
                 } else {
-                    documentEx = DocumentWidget::EditExistingFileEx(
+                    document = DocumentWidget::EditExistingFileEx(
                                 nullptr,
                                 filename,
                                 pathname,
@@ -347,30 +344,30 @@ int main(int argc, char *argv[]) {
 
                 fileSpecified = true;
 
-                if (documentEx) {
+                if (document) {
 
                     // raise the last tab of previous window
-                    if (lastFileEx && MainWindow::fromDocument(lastFileEx) != MainWindow::fromDocument(documentEx)) {
-                        lastFileEx->RaiseDocument();
+                    if (lastFile && MainWindow::fromDocument(lastFile) != MainWindow::fromDocument(document)) {
+                        lastFile->RaiseDocument();
                     }
 
                     if (!macroFileReadEx) {
-                        documentEx->ReadMacroInitFileEx();
+                        document->ReadMacroInitFileEx();
                         macroFileReadEx = true;
                     }
                     if (gotoLine) {
-                        SelectNumberedLineEx(documentEx, documentEx->firstPane(), lineNum);
+                        SelectNumberedLineEx(document, document->firstPane(), lineNum);
                     }
 
                     if (!toDoCommand.isNull()) {
-                        documentEx->DoMacroEx(toDoCommand, QLatin1String("-do macro"));
+                        document->DoMacroEx(toDoCommand, QLatin1String("-do macro"));
                         toDoCommand = QString();
                     }
                 }
 
                 // register last opened file for later use
-                if (documentEx) {
-                    lastFileEx = documentEx;
+                if (document) {
+                    lastFile = document;
                 }
 
 			} else {
@@ -383,8 +380,8 @@ int main(int argc, char *argv[]) {
 	}
 
 	// Raise the last file opened 
-    if (lastFileEx) {
-        lastFileEx->RaiseDocument();
+    if (lastFile) {
+        lastFile->RaiseDocument();
     }
     MainWindow::CheckCloseDimEx();
 
