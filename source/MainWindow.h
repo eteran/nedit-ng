@@ -94,7 +94,7 @@ public:
     static QList<MainWindow *> allWindows();    
     static QString UniqueUntitledNameEx();
     static DocumentWidget *FindWindowWithFile(const QString &name, const QString &path);
-    static DocumentWidget *EditNewFileEx(MainWindow *inWindow, QString geometry, bool iconic, const QString &languageMode, const QString &defaultPath);
+    static DocumentWidget *EditNewFileEx(MainWindow *window, QString geometry, bool iconic, const QString &languageMode, const QString &defaultPath);
     static void AllWindowsBusyEx(const QString &message);
     static void AllWindowsUnbusyEx();
     static void BusyWaitEx();

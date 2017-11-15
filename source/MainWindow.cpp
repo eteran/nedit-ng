@@ -3736,31 +3736,27 @@ void MainWindow::action_Last_Document() {
     }
 }
 
-DocumentWidget *MainWindow::EditNewFileEx(MainWindow *inWindow, QString geometry, bool iconic, const QString &languageMode, const QString &defaultPath) {
+DocumentWidget *MainWindow::EditNewFileEx(MainWindow *window, QString geometry, bool iconic, const QString &languageMode, const QString &defaultPath) {
 
     DocumentWidget *document;
-
-    /*... test for creatability? */
 
     // Find a (relatively) unique name for the new file
     QString name = MainWindow::UniqueUntitledNameEx();
 
     // create new window/document
-    if (inWindow) {
-        document = inWindow->CreateDocument(name);
+    if (window) {
+        document = window->CreateDocument(name);
     } else {
-        auto win = new MainWindow();
-        document = win->CreateDocument(name);
+        window   = new MainWindow();
+        document = window->CreateDocument(name);
 
-        win->parseGeometry(geometry);
+        window->parseGeometry(geometry);
 
         if(iconic) {
-            win->showMinimized();
+            window->showMinimized();
         } else {
-            win->show();
+            window->show();
         }
-
-        inWindow = win;
     }
 
     document->filename_ = name;
@@ -3773,9 +3769,9 @@ DocumentWidget *MainWindow::EditNewFileEx(MainWindow *inWindow, QString geometry
 
     document->SetWindowModified(false);
     document->lockReasons_.clear();
-    inWindow->UpdateWindowReadOnly(document);
+    window->UpdateWindowReadOnly(document);
     document->UpdateStatsLine(nullptr);
-    inWindow->UpdateWindowTitle(document);
+    window->UpdateWindowTitle(document);
     document->RefreshTabState();
 
 
@@ -3785,13 +3781,13 @@ DocumentWidget *MainWindow::EditNewFileEx(MainWindow *inWindow, QString geometry
         document->SetLanguageMode(FindLanguageMode(languageMode), true);
     }
 
-    if (iconic && inWindow->isMinimized()) {
+    if (iconic && window->isMinimized()) {
         document->RaiseDocument();
     } else {
         document->RaiseDocumentWindow();
     }
 
-    inWindow->SortTabBar();
+    window->SortTabBar();
     return document;
 }
 
