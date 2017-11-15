@@ -2899,11 +2899,6 @@ int DocumentWidget::CloseFileAndWindow(CloseMode preResponse) {
 */
 void DocumentWidget::CloseWindow() {
 
-    auto window = MainWindow::fromDocument(this);
-    if(!window) {
-        return;
-    }
-
     // Free smart indent macro programs
     EndSmartIndentEx(this);
 
@@ -2922,6 +2917,13 @@ void DocumentWidget::CloseWindow() {
        it's running the macro calling us, don't close it, make it Untitled */
     const int windowCount   = MainWindow::allWindows().size();
     const int documentCount = DocumentWidget::allDocuments().size();
+
+    Q_EMIT documentClosed();
+
+    auto window = MainWindow::fromDocument(this);
+    if(!window) {
+        return;
+    }
 
     if (keepWindow || (windowCount == 1 && documentCount == 1)) {
 		filename_ = QLatin1String("");
@@ -3575,7 +3577,7 @@ bool DocumentWidget::includeFile(const QString &name) {
         buffer_->BufReplaceSelectedEx(fileString);
     } else {
         if(auto win = MainWindow::fromDocument(this)) {
-            auto textD = win->lastFocus_;
+            TextArea *textD = win->lastFocus_;
             buffer_->BufInsertEx(textD->TextGetCursorPos(), fileString);
         }
     }
@@ -4363,7 +4365,7 @@ void DocumentWidget::SetFonts(const QString &fontName, const QString &italicName
     /* Get information about the current this sizing, to be used to
        determine the correct this size after the font is changed */
 #if 0
-    auto textD = firstPane();
+    TextArea *textD = firstPane();
 
     // TODO(eteran): do we want the WINDOW width/height? or the widget's?
     //               I suspect we want the widget

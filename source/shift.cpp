@@ -190,7 +190,7 @@ static void changeCaseEx(DocumentWidget *document, TextArea *area, bool makeUppe
     int rectEnd;
     bool isRect;
 
-    auto textD = area;
+    TextArea *textD = area;
 
     // Get the selection.  Use character before cursor if no selection
     if (!buf->BufGetSelectionPos(&start, &end, &isRect, &rectStart, &rectEnd)) {

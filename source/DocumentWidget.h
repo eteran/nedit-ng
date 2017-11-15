@@ -66,6 +66,9 @@ public:
     DocumentWidget(const QString &name, QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
     ~DocumentWidget() noexcept override;
 
+Q_SIGNALS:
+    void documentClosed();
+
 private Q_SLOTS:
     void flashTimerTimeout();
     void customContextMenuRequested(const QPoint &pos);

@@ -26,10 +26,6 @@
 *                                                                              *
 *******************************************************************************/
 
-// TODO(eteran): make -wait option function properly again, we need some method
-//               of having the server process signal this process when a file
-//               is closed in order to maintain compatible behavior
-
 #include "Settings.h"
 
 #include <QCoreApplication>
@@ -248,12 +244,12 @@ bool parseCommandLine(const QStringList &args, CommandLine *commandLine) {
 
             path.append(name);
 
-            bool isTabbed;
+            int isTabbed;
 
             /* determine if file is to be openned in new tab, by
                factoring the options -group, -tabbed & -untabbed */
             if (group == 2) {
-                isTabbed = 0; // start a new window for new group
+                isTabbed = false; // start a new window for new group
                 group = 1;    // next file will be within group
             } else if (group == 1) {
                 isTabbed = 1; // new tab for file in group
@@ -271,6 +267,7 @@ bool parseCommandLine(const QStringList &args, CommandLine *commandLine) {
             file[QLatin1String("toDoCommand")] = toDoCommand;
             file[QLatin1String("langMode")]    = langMode;
             file[QLatin1String("geometry")]    = geometry;
+            file[QLatin1String("wait")]        = ServerPreferences.waitForClose;
             commandData.append(file);
 
             ++fileCount;
@@ -298,6 +295,7 @@ bool parseCommandLine(const QStringList &args, CommandLine *commandLine) {
         file[QLatin1String("toDoCommand")] = toDoCommand;
         file[QLatin1String("langMode")]    = langMode;
         file[QLatin1String("geometry")]    = geometry;
+        file[QLatin1String("wait")]        = ServerPreferences.waitForClose;
         commandData.append(file);
     }
 
@@ -416,8 +414,6 @@ int main(int argc, char *argv[]) {
     ServerPreferences.timeOut       = settings.value(QLatin1String("nc.timeOut"),       10).toInt();
     CommandLine commandLine         = processCommandLine(app.arguments());
 
-
-
     /* Make sure that the time out unit is at least 1 second and not too
        large either (overflow!). */
     ServerPreferences.timeOut = qBound(1, ServerPreferences.timeOut, 1000);
@@ -459,7 +455,16 @@ int main(int argc, char *argv[]) {
         socket->write(ba);
         socket->flush();
         socket->waitForBytesWritten(ServerPreferences.timeOut * 1000);
-        socket->disconnectFromServer();
+
+        // if we are enabling wait mode, we simply wait for the server
+        // to close the socket. We'll leave it to the server to track
+        // when everything is all done. Otherwise, just disconnect.
+        if(ServerPreferences.waitForClose) {
+            socket->waitForDisconnected();
+        } else {
+            socket->disconnectFromServer();
+        }
+
         return 0;
     }
 

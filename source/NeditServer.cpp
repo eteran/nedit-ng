@@ -18,6 +18,8 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QThread>
+
 #include <memory>
 #include <sys/param.h>
 
@@ -81,7 +83,8 @@ NeditServer::NeditServer(QObject *parent) : QObject(parent) {
  * @brief NeditServer::newConnection
  */
 void NeditServer::newConnection() {
-    std::unique_ptr<QLocalSocket> socket(server_->nextPendingConnection());
+
+    std::shared_ptr<QLocalSocket> socket(server_->nextPendingConnection());
 
     while (socket->bytesAvailable() < static_cast<int>(sizeof(qint32))) {
         socket->waitForReadyRead();
@@ -100,9 +103,8 @@ void NeditServer::newConnection() {
     }
 
     int lastIconic = 0;
-    int tabbed     = -1;
 
-    QPointer<DocumentWidget> lastFileEx     = nullptr;
+    QPointer<DocumentWidget> lastFile     = nullptr;
     const long               currentDesktop = QApplication::desktop()->screenNumber(QApplication::activeWindow());
 
     auto array = jsonDocument.array();
@@ -116,6 +118,9 @@ void NeditServer::newConnection() {
         });
 
         if (it == documents.end()) {
+
+            const int tabbed = -1;
+
             MainWindow::EditNewFileEx(
                         findWindowOnDesktopEx(tabbed, currentDesktop),
                         QString(),
@@ -139,15 +144,16 @@ void NeditServer::newConnection() {
 
         auto file = entry.toObject();
 
-        int lineNum        = file[QLatin1String("line_number")].toInt();
-        int readFlag       = file[QLatin1String("read")].toInt();
-        int createFlag     = file[QLatin1String("create")].toInt();
-        int iconicFlag     = file[QLatin1String("iconic")].toInt();
-        tabbed             = file[QLatin1String("is_tabbed")].toInt();
-        QString fullname   = file[QLatin1String("path")].toString();
-        QString doCommand  = file[QLatin1String("toDoCommand")].toString();
-        QString langMode   = file[QLatin1String("langMode")].toString();
-        QString geometry   = file[QLatin1String("geometry")].toString();
+        const bool wait          = file[QLatin1String("wait")].toBool();
+        const int lineNum        = file[QLatin1String("line_number")].toInt();
+        const int readFlag       = file[QLatin1String("read")].toInt();
+        const int createFlag     = file[QLatin1String("create")].toInt();
+        const int iconicFlag     = file[QLatin1String("iconic")].toInt();
+        const int tabbed         = file[QLatin1String("is_tabbed")].toInt();
+        const QString fullname   = file[QLatin1String("path")].toString();
+        const QString doCommand  = file[QLatin1String("toDoCommand")].toString();
+        const QString langMode   = file[QLatin1String("langMode")].toString();
+        const QString geometry   = file[QLatin1String("geometry")].toString();
 
         /* An empty file name means:
          *   put up an empty, Untitled window, or use an existing one
@@ -158,7 +164,7 @@ void NeditServer::newConnection() {
             QList<DocumentWidget *> documents = DocumentWidget::allDocuments();
 
             auto it = std::find_if(documents.begin(), documents.end(), [currentDesktop](DocumentWidget *w) {
-                    return (!w->filenameSet_ && !w->fileChanged_ && isLocatedOnDesktopEx(MainWindow::fromDocument(w), currentDesktop));
+                return (!w->filenameSet_ && !w->fileChanged_ && isLocatedOnDesktopEx(MainWindow::fromDocument(w), currentDesktop));
             });
 
             if (doCommand.isEmpty()) {
@@ -170,7 +176,6 @@ void NeditServer::newConnection() {
                                 iconicFlag,
                                 langMode.isEmpty() ? QString() : langMode,
                                 QString());
-
                 } else {
                     if (iconicFlag) {
                         (*it)->RaiseDocument();
@@ -205,7 +210,10 @@ void NeditServer::newConnection() {
 
         /* Process the filename by looking for the files in an
            existing window, or opening if they don't exist */
-        int editFlags = (readFlag ? EditFlags::PREF_READ_ONLY : 0) | EditFlags::CREATE | (createFlag ? EditFlags::SUPPRESS_CREATE_WARN : 0);
+        const int editFlags =
+                (readFlag ? EditFlags::PREF_READ_ONLY : 0) |
+                EditFlags::CREATE |
+                (createFlag ? EditFlags::SUPPRESS_CREATE_WARN : 0);
 
         QString filename;
         QString pathname;
@@ -222,8 +230,11 @@ void NeditServer::newConnection() {
                last file opened will be raised to restore those deferred
                items. The current file may also be raised if there're
                macros to execute on. */
+
+            MainWindow *window = findWindowOnDesktopEx(tabbed, currentDesktop);
+
             document = DocumentWidget::EditExistingFileEx(
-                        findWindowOnDesktopEx(tabbed, currentDesktop)->currentDocument(),
+                        window ? window->currentDocument() : nullptr,
                         filename,
                         pathname,
                         editFlags,
@@ -234,8 +245,8 @@ void NeditServer::newConnection() {
                         true);
 
             if (document) {
-                if (lastFileEx && MainWindow::fromDocument(document) != MainWindow::fromDocument(lastFileEx)) {
-                    lastFileEx->RaiseDocument();
+                if (lastFile && MainWindow::fromDocument(document) != MainWindow::fromDocument(lastFile)) {
+                    lastFile->RaiseDocument();
                 }
             }
         }
@@ -247,7 +258,7 @@ void NeditServer::newConnection() {
             if (lineNum > 0) {
                 // NOTE(eteran): this was previously window->lastFocus, but that
                 // is very inconvinient to get at this point in the code (now)
-                // firstPane() seems practical for npw
+                // firstPane() seems practical for now
                 SelectNumberedLineEx(document, document->firstPane(), lineNum);
             }
 
@@ -265,18 +276,32 @@ void NeditServer::newConnection() {
 
             // register the last file opened for later use
             if (document) {
-                lastFileEx = document;
+                lastFile = document;
                 lastIconic = iconicFlag;
+            }
+
+            if(wait) {
+                // by creating this lambda, we are incrmenting the reference
+                // count of the socket, so it won't be destroyed until all open
+                // documents are closed.
+                // We create the dummy QObject in order to manage the lifetime
+                // of the connection, which matters in the case of the last
+                // document being "closed" and instead of being destroyed,
+                // becomes an untitled window
+                QObject *obj = new QObject(this);
+                connect(document, &DocumentWidget::documentClosed, obj, [socket, obj]() {
+                    obj->deleteLater();
+                });
             }
         }
     }
 
     // Raise the last file opened
-    if (lastFileEx) {
+    if (lastFile) {
         if (lastIconic) {
-            lastFileEx->RaiseDocument();
+            lastFile->RaiseDocument();
         } else {
-            lastFileEx->RaiseDocumentWindow();
+            lastFile->RaiseDocumentWindow();
         }
         MainWindow::CheckCloseDimEx();
     }
