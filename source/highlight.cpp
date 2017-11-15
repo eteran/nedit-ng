@@ -41,6 +41,7 @@
 #include "highlightData.h"
 #include "preferences.h"
 #include "regularExp.h"
+#include "gsl/gsl_util"
 #include <QMessageBox>
 #include <algorithm>
 #include <climits>
@@ -328,7 +329,7 @@ static int parseBufferRange(HighlightData *pass1Patterns, HighlightData *pass2Pa
 		match_to);
 
 	// On non top-level patterns, parsing can end early 
-    endParse = std::min<int>(endParse, stringPtr - string + beginSafety);
+    endParse = std::min(endParse, gsl::narrow<int>(stringPtr - string + beginSafety));
 
 	// If there are no pass 2 patterns, we're done 
 	if (!pass2Patterns)

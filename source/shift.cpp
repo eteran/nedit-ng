@@ -31,6 +31,7 @@
 #include "TextArea.h"
 #include "TextBuffer.h"
 #include "utils.h"
+#include "gsl/gsl_util"
 #include <memory>
 
 static std::string makeIndentString(int indent, int tabDist, int allowTabs);
@@ -116,7 +117,7 @@ void ShiftSelectionEx(DocumentWidget *window, TextArea *area, ShiftDirection dir
 
     buf->BufReplaceSelectedEx(shiftedText);
 
-    const int newEndPos = selStart + shiftedText.size();
+    const int newEndPos = selStart + gsl::narrow<int>(shiftedText.size());
     buf->BufSelect(selStart, newEndPos);
 }
 
@@ -288,7 +289,7 @@ void FillSelectionEx(DocumentWidget *window, TextArea *area) {
     } else {
         buf->BufReplaceEx(left, right, filledText);
         if (hasSelection) {
-            buf->BufSelect(left, left + filledText.size());
+            buf->BufSelect(left, left + gsl::narrow<int>(filledText.size()));
         }
     }
 
@@ -297,7 +298,7 @@ void FillSelectionEx(DocumentWidget *window, TextArea *area) {
     if (hasSelection && isRect) {
         area->TextSetCursorPos(buf->cursorPosHint_);
     } else {
-        const int len = filledText.size();
+        const auto len = gsl::narrow<int>(filledText.size());
         area->TextSetCursorPos(insertPos < left ? left : (insertPos > left + len ? left + len : insertPos));
     }
 }
@@ -334,7 +335,7 @@ QString ShiftTextEx(const QString &text, ShiftDirection direction, int tabsAllow
     while (true) {
         if (textPtr == text.end() || *textPtr == QLatin1Char('\n')) {
 
-            auto segment = text.mid(lineStartPtr - text.begin());
+            auto segment = text.mid(gsl::narrow<int>(lineStartPtr - text.begin()));
 
             QString shiftedLineString = (direction == SHIFT_RIGHT) ?
                 shiftLineRightEx(segment, textPtr - lineStartPtr, tabsAllowed, tabDist, nChars):
@@ -367,9 +368,9 @@ std::string ShiftTextEx(view::string_view text, ShiftDirection direction, int ta
 	** Shift right adds a maximum of nChars character per line.
 	*/
 	if (direction == SHIFT_RIGHT) {
-		bufLen = text.size() + countLinesEx(text) * nChars;
+        bufLen = gsl::narrow<int>(text.size()) + countLinesEx(text) * nChars;
 	} else {
-		bufLen = text.size() + countLinesEx(text) * tabDist;
+        bufLen = gsl::narrow<int>(text.size()) + countLinesEx(text) * tabDist;
 	}
 
 	std::string shiftedText;
@@ -485,7 +486,7 @@ static std::string shiftLineRightEx(view::string_view line, long lineLen, int ta
 				// if we're now at a tab stop, change last 8 spaces to a tab 
 				if (tabsAllowed && atTabStop(whiteWidth, tabDist)) {
 				
-					lineOut.resize(lineOut.size() - tabDist);
+                    lineOut.resize(lineOut.size() - tabDist);
 				
 					//lineOutPtr -= tabDist;
 					*lineOutPtr++ = '\t';

@@ -22,6 +22,7 @@
 *******************************************************************************/
 
 #include "utils.h"
+#include "gsl/gsl_util"
 
 #include <QtGlobal>
 #include <QDir>
@@ -128,7 +129,7 @@ QByteArray loadResource(const QString &resource) {
     }
 
     // don't copy the data, if it's uncompressed, we can deal with it in place :-)
-    auto defaults = QByteArray::fromRawData(reinterpret_cast<const char *>(res.data()), res.size());
+    auto defaults = QByteArray::fromRawData(reinterpret_cast<const char *>(res.data()), gsl::narrow<int>(res.size()));
 
     if(res.isCompressed()) {
         defaults = qUncompress(defaults);

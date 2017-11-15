@@ -14,6 +14,7 @@ add_library (NUtil
 
 target_include_directories (NUtil PUBLIC
 	${CMAKE_CURRENT_SOURCE_DIR} 
+	${PROJECT_SOURCE_DIR}/GSL/include/
 )
 
 target_link_libraries(NUtil LINK_PUBLIC

@@ -401,9 +401,9 @@ void FillLoopAddrs(Inst *breakAddr, Inst *continueAddr) {
         }
 
         if ((*LoopStackPtr)->value == NEEDS_BREAK) {
-			(*LoopStackPtr)->value = breakAddr - *LoopStackPtr;
+            (*LoopStackPtr)->value = gsl::narrow<int>(breakAddr - *LoopStackPtr);
         } else if ((*LoopStackPtr)->value == NEEDS_CONTINUE) {
-			(*LoopStackPtr)->value = continueAddr - *LoopStackPtr;
+            (*LoopStackPtr)->value = gsl::narrow<int>(continueAddr - *LoopStackPtr);
         } else {
 			qCritical("NEdit: internal error (uat) in macro parser");
         }

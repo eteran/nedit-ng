@@ -13,6 +13,7 @@
 #include "preferences.h"
 #include "SmartIndentEvent.h"
 #include "TextEditEvent.h"
+#include "gsl/gsl_util"
 #include <QApplication>
 #include <QClipboard>
 #include <QDesktopWidget>
@@ -3513,7 +3514,7 @@ void TextArea::drawString(QPainter *painter, int style, int x, int y, int toX, c
 		X_font.setUnderline(true);
 	}
 
-    auto s = asciiCodec->toUnicode(string, nChars);
+    auto s = asciiCodec->toUnicode(string, gsl::narrow<int>(nChars));
 
     QRect rect(x, y, toX - x, ascent_ + descent_);
 
@@ -4946,7 +4947,7 @@ int TextArea::pendingSelection() {
 */
 std::string TextArea::wrapTextEx(view::string_view startLine, view::string_view text, int bufOffset, int wrapMargin, int *breakBefore) {
 
-	int startLineLen = startLine.size();
+    int startLineLen = gsl::narrow<int>(startLine.size());
     int breakAt;
     int charsAdded;
     int firstBreak = -1;
@@ -5007,7 +5008,7 @@ void TextArea::TextDOverstrikeEx(view::string_view text) {
 
 	int startPos    = cursorPos_;
 	int lineStart   = buffer_->BufStartOfLine(startPos);
-	int textLen     = text.size();
+    int textLen     = gsl::narrow<int>(text.size());
     int p;
     int endPos;
 
@@ -5066,7 +5067,7 @@ void TextArea::TextDOverstrikeEx(view::string_view text) {
 void TextArea::TextDInsertEx(view::string_view text) {
 	int pos = cursorPos_;
 
-	cursorToHint_ = pos + text.size();
+    cursorToHint_ = pos + gsl::narrow<int>(text.size());
 	buffer_->BufInsertEx(pos, text);
 	cursorToHint_ = NO_HINT;
 }
@@ -5122,7 +5123,7 @@ int TextArea::wrapLine(TextBuffer *buf, int bufOffset, int lineStartPos, int lin
 	buf->BufReplaceEx(p, p + 1, indentStr);
 
 	*breakAt = p;
-	*charsAdded = indentStr.size() - 1;
+    *charsAdded = gsl::narrow<int>(indentStr.size() - 1);
 	return true;
 }
 
@@ -5664,7 +5665,7 @@ void TextArea::copyPrimaryAP(EventFlags flags) {
 		std::string textToCopy = buffer_->BufGetSelectionTextEx();
 		insertPos = cursorPos_;
 		buffer_->BufInsertEx(insertPos, textToCopy);
-		TextDSetInsertPosition(insertPos + textToCopy.size());
+        TextDSetInsertPosition(insertPos + gsl::narrow<int>(textToCopy.size()));
 
 		checkAutoShowInsertPos();
 	} else if (rectangular) {
@@ -7264,7 +7265,7 @@ void TextArea::cutPrimaryAP(EventFlags flags) {
 		std::string textToCopy = buffer_->BufGetSelectionTextEx();
 		insertPos = cursorPos_;
 		buffer_->BufInsertEx(insertPos, textToCopy);
-		TextDSetInsertPosition(insertPos + textToCopy.size());
+        TextDSetInsertPosition(insertPos + gsl::narrow<int>(textToCopy.size()));
 
 		buffer_->BufRemoveSelected();
 		checkAutoShowInsertPos();
@@ -7417,7 +7418,7 @@ void TextArea::exchangeAP(QMouseEvent *event, EventFlags flags) {
 	buffer_->BufReplaceSecSelectEx(primaryText);
 	newPrimaryStart = primary->start;
 	buffer_->BufReplaceSelectedEx(secText);
-	newPrimaryEnd = newPrimaryStart + secText.size();
+    newPrimaryEnd = newPrimaryStart + gsl::narrow<int>(secText.size());
 
 	buffer_->BufSecondaryUnselect();
 	if (secWasRect) {

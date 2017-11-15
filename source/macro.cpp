@@ -55,6 +55,7 @@
 #include "util/fileUtils.h"
 #include "util/utils.h"
 #include "version.h"
+#include "gsl/gsl_util"
 #include <QClipboard>
 #include <QDialogButtonBox>
 #include <QFileDialog>
@@ -3034,7 +3035,7 @@ static bool searchStringMS(DocumentWidget *document, Arguments arguments, DataVa
     if (!readSearchArgs(arguments.subspan(3), &direction, &type, &wrap, errMsg))
         return false;
 
-    int len = to_string(arguments[0]).size();
+    int len = gsl::narrow<int>(to_string(arguments[0]).size());
     if (beginPos > len) {
         if (direction == Direction::FORWARD) {
             if (wrap == WrapMode::Wrap) {

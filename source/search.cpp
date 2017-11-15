@@ -43,6 +43,7 @@
 #include "regularExp.h"
 #include "selection.h"
 #include "userCmds.h"
+#include "gsl/gsl_util"
 
 #include <QApplication>
 #include <QClipboard>
@@ -618,7 +619,7 @@ bool ReplaceAndSearchEx(MainWindow *window, DocumentWidget *document, TextArea *
                 defaultRegexFlags(searchType));
 
             document->buffer_->BufReplaceEx(startPos, endPos, replaceResult);
-            replaceLen = replaceResult.size();
+            replaceLen = gsl::narrow<int>(replaceResult.size());
         } else {
             document->buffer_->BufReplaceEx(startPos, endPos, replaceString.toLatin1().data());
             replaceLen = replaceString.size();
@@ -691,7 +692,7 @@ bool SearchAndReplaceEx(MainWindow *window, DocumentWidget *document, TextArea *
             defaultRegexFlags(searchType));
 
         document->buffer_->BufReplaceEx(startPos, endPos, replaceResult);
-        replaceLen = replaceResult.size();
+        replaceLen = gsl::narrow<int>(replaceResult.size());
     } else {
         document->buffer_->BufReplaceEx(startPos, endPos, replaceString.toLatin1().data());
         replaceLen = replaceString.size();
@@ -917,7 +918,7 @@ void ReplaceInSelectionEx(MainWindow *window, DocumentWidget *document, TextArea
             }
 
             tempBuf.BufReplaceEx(startPos + realOffset, endPos + realOffset, replaceResult);
-            replaceLen = replaceResult.size();
+            replaceLen = gsl::narrow<int>(replaceResult.size());
         } else {
             // at this point plain substitutions (should) always work
             tempBuf.BufReplaceEx(startPos + realOffset, endPos + realOffset, replaceString.toLatin1().data());
@@ -1035,7 +1036,7 @@ bool ReplaceAllEx(MainWindow *window, DocumentWidget *document, TextArea *area, 
     document->buffer_->BufReplaceEx(copyStart, copyEnd, newFileString);
 
     // Move the cursor to the end of the last replacement
-    area->TextSetCursorPos(copyStart + newFileString.size());
+    area->TextSetCursorPos(copyStart + gsl::narrow<int>(newFileString.size()));
 
     return true;
 }
@@ -1113,7 +1114,7 @@ std::string ReplaceAllInStringEx(view::string_view inString, const QString &sear
 				addLen += replaceLen;
             }
 
-            if (inString[endPos] == '\0') {
+            if (endPos == gsl::narrow<int>(inString.size())) {
 				break;
             }
 		}
@@ -1168,7 +1169,7 @@ std::string ReplaceAllInStringEx(view::string_view inString, const QString &sear
 
 			// start next after match unless match was empty, then endPos+1 
 			beginPos = (startPos == endPos) ? endPos + 1 : endPos;
-            if (inString[endPos] == '\0') {
+            if (endPos == gsl::narrow<int>(inString.size())) {
 				break;
             }
 		}
@@ -1442,8 +1443,8 @@ static bool searchLiteralWord(view::string_view string, view::string_view search
                     (cignore_L || filePtr == &string[0] ||                                                       // border case
                      safe_ctype<isspace>(filePtr[-1]) || strchr(delimiters, filePtr[-1]))) {           // next char left delimits word ?
 
-                    *startPos = filePtr - &string[0];
-                    *endPos   = tempPtr - &string[0];
+                    *startPos = gsl::narrow<int>(filePtr - &string[0]);
+                    *endPos   = gsl::narrow<int>(tempPtr - &string[0]);
 					return true;
 				}
 			}
@@ -1543,8 +1544,8 @@ static bool searchLiteral(view::string_view string, view::string_view searchStri
 				lcPtr++;
 				if (ucPtr == ucString.end()) {
 					// matched whole string 
-					*startPos = filePtr - &string[0];
-					*endPos   = tempPtr - &string[0];
+                    *startPos = gsl::narrow<int>(filePtr - &string[0]);
+                    *endPos   = gsl::narrow<int>(tempPtr - &string[0]);
 					if(searchExtentBW) {
 						*searchExtentBW = *startPos;
 					}
@@ -1637,15 +1638,15 @@ static bool forwardRegexSearch(view::string_view string, view::string_view searc
 		// search from beginPos to end of string 
 		if (compiledRE.execute(string, beginPos, delimiters, false)) {
 
-			*startPos = compiledRE.startp[0] - &string[0];
-			*endPos   = compiledRE.endp[0]   - &string[0];
+            *startPos = gsl::narrow<int>(compiledRE.startp[0] - &string[0]);
+            *endPos   = gsl::narrow<int>(compiledRE.endp[0]   - &string[0]);
 
 			if(searchExtentFW) {
-				*searchExtentFW = compiledRE.extentpFW - &string[0];
+                *searchExtentFW = gsl::narrow<int>(compiledRE.extentpFW - &string[0]);
 			}
 
 			if(searchExtentBW) {
-				*searchExtentBW = compiledRE.extentpBW - &string[0];
+                *searchExtentBW = gsl::narrow<int>(compiledRE.extentpBW - &string[0]);
 			}
 
 			return true;
@@ -1659,21 +1660,22 @@ static bool forwardRegexSearch(view::string_view string, view::string_view searc
 		// search from the beginning of the string to beginPos 
 		if (compiledRE.execute(string, 0, beginPos, delimiters, false)) {
 
-			*startPos = compiledRE.startp[0] - &string[0];
-			*endPos = compiledRE.endp[0]     - &string[0];
+            *startPos = gsl::narrow<int>(compiledRE.startp[0] - &string[0]);
+            *endPos   = gsl::narrow<int>(compiledRE.endp[0]   - &string[0]);
 
 			if(searchExtentFW) {
-				*searchExtentFW = compiledRE.extentpFW - &string[0];
+                *searchExtentFW = gsl::narrow<int>(compiledRE.extentpFW - &string[0]);
 			}
 
 			if(searchExtentBW) {
-				*searchExtentBW = compiledRE.extentpBW - &string[0];
+                *searchExtentBW = gsl::narrow<int>(compiledRE.extentpBW - &string[0]);
 			}
 			return true;
 		}
 
         return false;
 	} catch(const regex_error &e) {
+        Q_UNUSED(e);
 		/* Note that this does not process errors from compiling the expression.
 		 * It assumes that the expression was checked earlier.
 		 */
@@ -1693,15 +1695,15 @@ static bool backwardRegexSearch(view::string_view string, view::string_view sear
             // NOTE(eteran): why do we use '\0' as the previous char, and not string[beginPos - 1] (assuming that beginPos > 0)?
 			if (compiledRE.execute(string, 0, beginPos, '\0', '\0', delimiters, true)) {
 
-				*startPos = compiledRE.startp[0] - &string[0];
-				*endPos   = compiledRE.endp[0]   - &string[0];
+                *startPos = gsl::narrow<int>(compiledRE.startp[0] - &string[0]);
+                *endPos   = gsl::narrow<int>(compiledRE.endp[0]   - &string[0]);
 
 				if(searchExtentFW) {
-					*searchExtentFW = compiledRE.extentpFW - &string[0];
+                    *searchExtentFW = gsl::narrow<int>(compiledRE.extentpFW - &string[0]);
 				}
 
 				if(searchExtentBW) {
-					*searchExtentBW = compiledRE.extentpBW - &string[0];
+                    *searchExtentBW = gsl::narrow<int>(compiledRE.extentpBW - &string[0]);
 				}
 
 				return true;
@@ -1720,15 +1722,15 @@ static bool backwardRegexSearch(view::string_view string, view::string_view sear
 
 		if (compiledRE.execute(string, beginPos, delimiters, true)) {
 
-			*startPos = compiledRE.startp[0] - &string[0];
-			*endPos   = compiledRE.endp[0]   - &string[0];
+            *startPos = gsl::narrow<int>(compiledRE.startp[0] - &string[0]);
+            *endPos   = gsl::narrow<int>(compiledRE.endp[0]   - &string[0]);
 
 			if(searchExtentFW) {
-				*searchExtentFW = compiledRE.extentpFW - &string[0];
+                *searchExtentFW = gsl::narrow<int>(compiledRE.extentpFW - &string[0]);
 			}
 
 			if(searchExtentBW) {
-				*searchExtentBW = compiledRE.extentpBW - &string[0];
+                *searchExtentBW = gsl::narrow<int>(compiledRE.extentpBW - &string[0]);
 			}
 
 			return true;

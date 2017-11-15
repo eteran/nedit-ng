@@ -32,6 +32,7 @@
 #include "fileUtils.h"
 #include "FileFormats.h"
 #include "utils.h"
+#include "gsl/gsl_util"
 
 #include <cstdlib>
 #include <cstdio>
@@ -185,7 +186,7 @@ int ResolvePath(const char *pathIn, char *pathResolved) {
 
 	/* !! readlink does NOT recognize loops, i.e. links like file -> ./file */
 	for (loops = 0; loops < MAXSYMLINKS; loops++) {
-		int rlResult = ::readlink(pathIn, resolveBuf, MAXPATHLEN - 1);
+        int rlResult = gsl::narrow<int>(::readlink(pathIn, resolveBuf, MAXPATHLEN - 1));
 		if (rlResult < 0) {
 
 			if (errno == EINVAL)
@@ -464,7 +465,7 @@ FileFormats FormatOfFileEx(view::string_view fileString) {
 	const char *p;
 	int nNewlines = 0;
 	int nReturns = 0;
-	int length = fileString.size();
+    int length = gsl::narrow<int>(fileString.size());
 
 	for (p = fileString.begin(); length-- != 0 && p < fileString.begin() + FORMAT_SAMPLE_CHARS; p++) {
 		if (*p == '\n') {
@@ -546,8 +547,9 @@ void ConvertFromDosFileString(char *fileString, int *length, char *pendingCR) {
 		}
 		*outPtr++ = *inPtr++;
 	}
+
 	*outPtr = '\0';
-	*length = outPtr - fileString;
+    *length = gsl::narrow<int>(outPtr - fileString);
 }
 
 void ConvertFromMacFileString(char *fileString, int length) {

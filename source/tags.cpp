@@ -39,6 +39,7 @@
 #include "selection.h"
 #include "util/fileUtils.h"
 #include "util/utils.h"
+#include "gsl/gsl_util"
 
 #include <QApplication>
 #include <QMessageBox>
@@ -853,7 +854,7 @@ static int fakeRegExSearchEx(view::string_view buffer, const char *searchString,
     } else if (searchString[0] == '?') {
         dir = Direction::BACKWARD;
 		// searchStartPos = window->buffer_->length; 
-		searchStartPos = fileString.size();
+        searchStartPos = gsl::narrow<int>(fileString.size());
         ctagsMode = true;
 	} else {
 		qWarning("NEdit: Error parsing tag file search string");

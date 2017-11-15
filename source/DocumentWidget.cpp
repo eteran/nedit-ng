@@ -1683,7 +1683,7 @@ void DocumentWidget::Undo() {
         // use the saved undo information to reverse changes
         buffer_->BufReplaceEx(undo.startPos, undo.endPos, undo.oldText);
 
-        int restoredTextLength = undo.oldText.size();
+        auto restoredTextLength = gsl::narrow<int>(undo.oldText.size());
         if (!buffer_->primary_.selected || GetPrefUndoModifiesSelection()) {
             /* position the cursor in the focus pane after the changed text
                to show the user where the undo was done */
@@ -1733,7 +1733,7 @@ void DocumentWidget::Redo() {
         // use the saved redo information to reverse changes
         buffer_->BufReplaceEx(redo.startPos, redo.endPos, redo.oldText);
 
-        int restoredTextLength = redo.oldText.size();
+        auto restoredTextLength = gsl::narrow<int>(redo.oldText.size());
         if (!buffer_->primary_.selected || GetPrefUndoModifiesSelection()) {
             /* position the cursor in the focus pane after the changed text
                to show the user where the undo was done */
@@ -2140,7 +2140,7 @@ int DocumentWidget::cmpWinAgainstFile(const QString &fileName) {
             offset = 0;
         }
 
-        int nRead = ::fread(fileString + offset, 1, restLen, fp);
+        auto nRead = gsl::narrow<int>(::fread(fileString + offset, 1, restLen, fp));
         if (nRead != restLen) {
             MainWindow::AllWindowsUnbusyEx();
             return 1;
@@ -3151,7 +3151,7 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
         std::vector<char> fileString(fileLen + 1); // +1 = space for null
 
         // Read the file into fileString and terminate with a null
-        int readLen = ::fread(&fileString[0], 1, fileLen, fp);
+        auto readLen = gsl::narrow<int>(::fread(&fileString[0], 1, fileLen, fp));
         if (::ferror(fp)) {
             filenameSet_ = false; // Temp. prevent check for changes.
             QMessageBox::critical(this, tr("Error while opening File"), tr("Error reading %1:\n%2").arg(name, ErrorString(errno)));
@@ -4914,7 +4914,7 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
 
                 area->TextSetCursorPos(buf->cursorPosHint_);
                 if (reselectStart != -1) {
-                    buf->BufSelect(reselectStart, reselectStart + output_string.size());
+                    buf->BufSelect(reselectStart, reselectStart + gsl::narrow<int>(output_string.size()));
                 }
             } else {
                 safeBufReplace(buf, &cmdData->leftPos, &cmdData->rightPos, output_string);
@@ -6315,7 +6315,7 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
     if (nPass1Patterns == 0) {
         pass1Pats = nullptr;
     } else {
-        pass1Pats = compilePatternsEx(pass1PatternSrc, nPass1Patterns);
+        pass1Pats = compilePatternsEx(pass1PatternSrc, gsl::narrow<int>(nPass1Patterns));
         if (!pass1Pats) {
             return nullptr;
         }
@@ -6324,7 +6324,7 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
     if (nPass2Patterns == 0) {
         pass2Pats = nullptr;
     } else {
-        pass2Pats = compilePatternsEx(pass2PatternSrc, nPass2Patterns);
+        pass2Pats = compilePatternsEx(pass2PatternSrc, gsl::narrow<int>(nPass2Patterns));
         if (!pass2Pats) {
             return nullptr;
         }
@@ -6347,11 +6347,11 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
     }
 
     for (size_t i = 1; i < nPass1Patterns; i++) {
-        pass1Pats[i].style = PLAIN_STYLE + i;
+        pass1Pats[i].style = gsl::narrow<char>(PLAIN_STYLE + i);
     }
 
     for (size_t i = 1; i < nPass2Patterns; i++) {
-        pass2Pats[i].style = PLAIN_STYLE + (noPass1 ? 0 : nPass1Patterns - 1) + i;
+        pass2Pats[i].style = gsl::narrow<char>(PLAIN_STYLE + (noPass1 ? 0 : nPass1Patterns - 1) + i);
     }
 
     // Create table for finding parent styles
@@ -6364,11 +6364,11 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
     *parentStylesPtr++ = '\0';
 
     for (size_t i = 1; i < nPass1Patterns; i++) {
-        *parentStylesPtr++ = pass1PatternSrc[i].subPatternOf.isNull() ? PLAIN_STYLE : pass1Pats[indexOfNamedPattern(pass1PatternSrc, nPass1Patterns, pass1PatternSrc[i].subPatternOf)].style;
+        *parentStylesPtr++ = pass1PatternSrc[i].subPatternOf.isNull() ? PLAIN_STYLE : pass1Pats[indexOfNamedPattern(pass1PatternSrc, gsl::narrow<int>(nPass1Patterns), pass1PatternSrc[i].subPatternOf)].style;
     }
 
     for (size_t i = 1; i < nPass2Patterns; i++) {
-        *parentStylesPtr++ = pass2PatternSrc[i].subPatternOf.isNull() ? PLAIN_STYLE : pass2Pats[indexOfNamedPattern(pass2PatternSrc, nPass2Patterns, pass2PatternSrc[i].subPatternOf)].style;
+        *parentStylesPtr++ = pass2PatternSrc[i].subPatternOf.isNull() ? PLAIN_STYLE : pass2Pats[indexOfNamedPattern(pass2PatternSrc, gsl::narrow<int>(nPass2Patterns), pass2PatternSrc[i].subPatternOf)].style;
     }
 
     // Set up table for mapping colors and fonts to syntax

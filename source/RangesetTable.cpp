@@ -2,6 +2,7 @@
 
 #include "RangesetTable.h"
 #include "TextBuffer.h"
+#include "gsl/gsl_util"
 #include <string>
 
 namespace {
@@ -40,7 +41,7 @@ static void rangesetClone(Rangeset *destRangeset, const Rangeset *srcRangeset) {
 
 	if (srcRangeset->ranges_) {
 		destRangeset->ranges_ = RangesetTable::RangesNew(srcRangeset->n_ranges_);
-		memcpy(destRangeset->ranges_, srcRangeset->ranges_, srcRangeset->n_ranges_ * sizeof(Range));
+        std::copy_n(srcRangeset->ranges_, srcRangeset->n_ranges_, destRangeset->ranges_);
 	}
 }
 
@@ -109,7 +110,7 @@ static int deactivateRangeset(RangesetTable *table, int active) {
 	}
 	
 	// reinsert the old one: at max (active) depth 
-    table->order_[n] = active;
+    table->order_[n]      = active;
     table->depth_[active] = n;
 
 	// and finally... 
@@ -225,7 +226,7 @@ int RangesetTable::RangesetFindIndex(RangesetTable *table, int label, int must_b
     if (table) {
         auto p_label = reinterpret_cast<uint8_t *>(strchr(reinterpret_cast<char *>(rangeset_labels), label));
 		if (p_label) {
-			int i = p_label - rangeset_labels;
+            auto i = gsl::narrow<int>(p_label - rangeset_labels);
             if (!must_be_active || table->active_[i])
 				return i;
 		}
