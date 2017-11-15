@@ -34,7 +34,7 @@ class TextArea;
 class HighlightPattern;
 class WindowHighlightData;
 class TextBuffer;
-class ReparseContext;
+struct ReparseContext;
 class QColor;
 class QString;
 class HighlightData;
