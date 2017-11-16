@@ -386,7 +386,7 @@ void MainWindow::setupDocumentPrefernceDefaults() {
         break;
     }
 
-    switch(static_cast<ShowMatchingStyle>(GetPrefShowMatching())) {
+    switch(GetPrefShowMatching()) {
     case ShowMatchingStyle::None:
         no_signals(ui.action_Matching_Off)->setChecked(true);
         break;

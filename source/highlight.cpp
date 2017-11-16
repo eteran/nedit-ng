@@ -83,7 +83,7 @@ static bool isParentStyle(const QByteArray &parentStyles, int style1, int style2
 static int lastModified(const std::shared_ptr<TextBuffer> &styleBuf);
 static int parentStyleOf(const QByteArray &parentStyles, int style);
 static int parseBufferRange(HighlightData *pass1Patterns, HighlightData *pass2Patterns, TextBuffer *buf, const std::shared_ptr<TextBuffer> &styleBuf, ReparseContext *contextRequirements, int beginParse, int endParse, const QString &delimiters);
-static void fillStyleString(const char **stringPtr, char **stylePtr, const char *toPtr, char style, char *prevChar);
+static void fillStyleString(const char **stringPtr, char **stylePtr, const char *toPtr, uint8_t style, char *prevChar);
 static void incrementalReparse(const std::unique_ptr<WindowHighlightData> &highlightData, TextBuffer *buf, int pos, int nInserted, const QString &delimiters);
 static void modifyStyleBuf(const std::shared_ptr<TextBuffer> &styleBuf, char *styleString, int startPos, int endPos, int firstPass2Style);
 static void passTwoParseString(HighlightData *pattern, const char *string, char *styleString, int length, char *prevChar, const QString &delimiters, const char *lookBehindTo, const char *match_till);
@@ -264,7 +264,7 @@ static int parseBufferRange(HighlightData *pass1Patterns, HighlightData *pass2Pa
     int beginSafety;
     int p;
     int style;
-    int firstPass2Style = pass2Patterns == nullptr ? INT_MAX : static_cast<uint8_t>(pass2Patterns[1].style);
+    int firstPass2Style = pass2Patterns == nullptr ? INT_MAX : pass2Patterns[1].style;
 
 	// Begin parsing one context distance back (or to the last style change) 
     int beginStyle = pass1Patterns->style;
@@ -653,7 +653,7 @@ static void passTwoParseString(HighlightData *pattern, const char *string, char 
 	char *s = styleString;
 	const char *c = string;
 	const char *stringPtr;
-    int firstPass2Style = static_cast<uint8_t>(pattern[1].style);
+    int firstPass2Style = pattern[1].style;
 
 	for (;; c++, s++) {
         if (!inParseRegion && c != match_till && (*s == UNFINISHED_STYLE || *s == PLAIN_STYLE || static_cast<uint8_t>(*s) >= firstPass2Style)) {
@@ -697,7 +697,7 @@ static void passTwoParseString(HighlightData *pattern, const char *string, char 
 ** character, prevChar, which is fed to regular the expression matching
 ** routines for determining word and line boundaries at the start of the string.
 */
-static void fillStyleString(const char **stringPtr, char **stylePtr, const char *toPtr, char style, char *prevChar) {
+static void fillStyleString(const char **stringPtr, char **stylePtr, const char *toPtr, uint8_t style, char *prevChar) {
 
     const long len = toPtr - *stringPtr;
 
@@ -706,7 +706,7 @@ static void fillStyleString(const char **stringPtr, char **stylePtr, const char 
     }
 
     for (long i = 0; i < len; i++) {
-		*(*stylePtr)++ = style;
+        *(*stylePtr)++ = static_cast<char>(style);
     }
 
     if(prevChar) {

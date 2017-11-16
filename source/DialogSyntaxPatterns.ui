@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>709</width>
-    <height>768</height>
+    <width>664</width>
+    <height>758</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -147,6 +147,65 @@ Language Mode...</string>
         </item>
        </layout>
       </item>
+      <item row="2" column="0" colspan="2">
+       <layout class="QGridLayout" name="gridLayout">
+        <item row="1" column="0">
+         <widget class="QComboBox" name="comboHighlightStyle"/>
+        </item>
+        <item row="0" column="3">
+         <widget class="QLabel" name="labelPatternName">
+          <property name="text">
+           <string>Pattern Name</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="4">
+         <widget class="QLabel" name="labelParentPattern">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>Parent Pattern</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QLabel" name="label_3">
+          <property name="text">
+           <string>Highlight Style</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="4">
+         <widget class="QLineEdit" name="editParentPattern">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="3">
+         <widget class="QLineEdit" name="editPatternName">
+          <property name="clearButtonEnabled">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="2">
+         <widget class="QLabel" name="label_4">
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="2">
+         <widget class="QPushButton" name="buttonHighlightStyle">
+          <property name="text">
+           <string>Add/Modify Style...</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
       <item row="0" column="1">
        <widget class="QGroupBox" name="groupBox_3">
         <property name="title">
@@ -212,65 +271,12 @@ Language Mode...</string>
          <item>
           <widget class="QRadioButton" name="radioRangeRegex">
            <property name="text">
-            <string>Highlight text &amp;between starting and ending REs</string>
+            <string>H&amp;ighlight text between starting and ending REs</string>
            </property>
           </widget>
          </item>
         </layout>
        </widget>
-      </item>
-      <item row="2" column="0" colspan="2">
-       <layout class="QGridLayout" name="gridLayout">
-        <item row="0" column="0">
-         <widget class="QLabel" name="label_3">
-          <property name="text">
-           <string>Highlight Style</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="2">
-         <widget class="QLabel" name="labelPatternName">
-          <property name="text">
-           <string>Pattern Name</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="3">
-         <widget class="QLabel" name="labelParentPattern">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="text">
-           <string>Parent Pattern</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="0">
-         <widget class="QComboBox" name="comboHighlightStyle"/>
-        </item>
-        <item row="1" column="2">
-         <widget class="QLineEdit" name="editPatternName">
-          <property name="clearButtonEnabled">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="3">
-         <widget class="QLineEdit" name="editParentPattern">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1" rowspan="2">
-         <widget class="QPushButton" name="buttonHighlightStyle">
-          <property name="text">
-           <string>Add/Modify
-Style...</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
       </item>
      </layout>
     </widget>

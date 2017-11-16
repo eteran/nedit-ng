@@ -279,7 +279,7 @@ void SetPrefSearch(SearchType searchType) {
 }
 
 SearchType GetPrefSearch() {
-    return static_cast<SearchType>(g_Settings.searchMethod);
+    return g_Settings.searchMethod;
 }
 
 #if defined(REPLACE_SCOPE)
@@ -304,7 +304,7 @@ void SetPrefAutoIndent(IndentStyle state) {
 
 IndentStyle GetPrefAutoIndent(int langMode) {
     if (langMode == PLAIN_LANGUAGE_MODE || LanguageModes[langMode].indentStyle == IndentStyle::Default) {
-        return static_cast<IndentStyle>(g_Settings.autoIndent);
+        return g_Settings.autoIndent;
     }
 
     return LanguageModes[langMode].indentStyle;

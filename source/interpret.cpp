@@ -2180,7 +2180,7 @@ static int arrayRef() {
 	} else {
         POP(srcArray);
         if (is_array(srcArray)) {
-            PUSH_INT(static_cast<int>(ArraySize(&srcArray)));
+            PUSH_INT(ArraySize(&srcArray));
 			return STAT_OK;
 		} else {
 			return execError("operator [] on non-array");

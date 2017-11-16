@@ -56,9 +56,9 @@ constexpr auto ASCII_A = static_cast<char>(65);
 /* Meanings of style buffer characters (styles). Don't use plain 'A' or 'B';
    it causes problems with EBCDIC coding (possibly negative offsets when
    subtracting 'A'). */
-constexpr char UNFINISHED_STYLE = ASCII_A;
+constexpr uint8_t UNFINISHED_STYLE = ASCII_A;
 
-constexpr char PLAIN_STYLE = (ASCII_A + 1);
+constexpr uint8_t PLAIN_STYLE = (ASCII_A + 1);
 
 QColor AllocColor(const QString &colorName);
 void RemoveWidgetHighlightEx(TextArea *area);

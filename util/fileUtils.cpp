@@ -249,10 +249,8 @@ QString NormalizePathnameEx(const QString &pathname) {
 }
 
 /*
-** Return flase if everything's fine. In fact it always return false... (No it doesn't)
-** Capable to handle arbitrary path length (>MAXPATHLEN)!
-**
-**  FIXME: Documentation
+** Return false if everything's fine. In fact it always return false...
+** (No it doesn't) Capable to handle arbitrary path length (>MAXPATHLEN)!
 */
 bool NormalizePathname(char *pathname) {
 
@@ -271,10 +269,10 @@ bool NormalizePathname(char *pathname) {
 		   on non-un*x systems */
         const size_t len = strlen(pathname); /* GetCurrentDirEx() returns non-nullptr value */
 
-		/*  Apart from the fact that people putting conditional expressions in
-		    ifs should be caned: How should len ever become 0 if GetCurrentDirEx()
-		    always returns a useful value?
-            FIXME: Check and document GetCurrentDir() return behaviour.  */
+        /*  Apart from the fact that people putting conditional expressions in
+         * ifs should be caned: How should len ever become 0 if
+         * GetCurrentDirEx() always returns a useful value?
+         */
 		if ((len == 0) ? 1 : pathname[len - 1] != '/') {
 			strcat(pathname, "/");
 		}
@@ -312,8 +310,6 @@ QString CompressPathnameEx(const std::string &pathname) {
 
 /*
 ** Return false if everything's fine, true else.
-**
-**  FIXME: Documentation
 */
 bool CompressPathname(char *pathname) {
 

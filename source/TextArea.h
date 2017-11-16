@@ -325,8 +325,8 @@ private:
 	int visLineLength(int visLineNum);
 	int wrapUsesCharacter(int lineEndPos);
 	void extendRangeForStyleMods(int *start, int *end);
-	void redrawLineNumbers(QPainter *painter, bool clearAll);
-	void redrawLineNumbersEx(bool clearAll);
+    void redrawLineNumbers(QPainter *painter);
+    void redrawLineNumbersEx();
     void redisplayLine(QPainter *painter, int visLineNum, int leftClip, int rightClip, int leftCharIndex, long rightCharIndex);
 	void redisplayLineEx(int visLineNum, int leftClip, int rightClip, int leftCharIndex, int rightCharIndex);
 	int styleOfPos(int lineStartPos, int lineLen, int lineIndex, int dispIndex, int thisChar);

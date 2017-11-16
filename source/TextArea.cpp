@@ -524,7 +524,6 @@ TextArea::TextArea(
 #endif
 
     // track when we lose ownership of the selection
-    // TODO(eteran): why does this sometimes crash?
     if(QApplication::clipboard()->supportsSelection()) {
 
         connect(QApplication::clipboard(), &QClipboard::selectionChanged, [self = QPointer<TextArea>(this)]() {
@@ -869,35 +868,37 @@ void TextArea::selfInsertAP(const QString &string, EventFlags flags) {
             c.first(this, &smartIndent, c.second);
         }
     }
-    TextInsertAtCursorEx(s, true, true);
+    TextInsertAtCursorEx(s, /*allowPendingDelete=*/true, /*allowWrap=*/true);
     buffer_->BufUnselect();
 }
 
-//------------------------------------------------------------------------------
-// Name: ~TextArea
-//------------------------------------------------------------------------------
+/**
+ * @brief TextArea::~TextArea
+ */
 TextArea::~TextArea() noexcept {
     buffer_->BufRemoveModifyCB(bufModifiedCB, this);
     buffer_->BufRemovePreDeleteCB(bufPreDeleteCB, this);
 }
 
-//------------------------------------------------------------------------------
-// Name: verticalScrollBar_valueChanged
-//------------------------------------------------------------------------------
+/**
+ * @brief TextArea::verticalScrollBar_valueChanged
+ * @param value
+ */
 void TextArea::verticalScrollBar_valueChanged(int value) {
 	TextDSetScroll(value, horizOffset_);
 }
 
-//------------------------------------------------------------------------------
-// Name: horizontalScrollBar_valueChanged
-//------------------------------------------------------------------------------
+/**
+ * @brief TextArea::horizontalScrollBar_valueChanged
+ * @param value
+ */
 void TextArea::horizontalScrollBar_valueChanged(int value) {
 	TextDSetScroll(topLineNum_, value);
 }
 
-//------------------------------------------------------------------------------
-// Name: cursorBlinkTimerTimeout
-//------------------------------------------------------------------------------
+/**
+ * @brief TextArea::cursorBlinkTimerTimeout
+ */
 void TextArea::cursorBlinkTimerTimeout() {
 
 	// Blink the cursor
@@ -1608,13 +1609,13 @@ void TextArea::paintEvent(QPaintEvent *event) {
     }
 
     {
-        /* Make sure we reset the clipping range for the line numbers */
+        // Make sure we reset the clipping range for the line numbers
         painter.save();
         painter.setClipRect(QRect(lineNumLeft_, rect_.top(), lineNumWidth_, rect_.height()));
 
         // draw the line numbers if exposed area includes them
         if (lineNumWidth_ != 0 && left <= lineNumLeft_ + lineNumWidth_) {
-            redrawLineNumbers(&painter, false);
+            redrawLineNumbers(&painter);
         }
 
         painter.restore();
@@ -1766,7 +1767,7 @@ void TextArea::bufModifiedCallback(int pos, int nInserted, int nDeleted, int nRe
 		   be affected (the insertion or removal of a line break always
 		   results in at least two lines being redrawn). */
 		if (linesInserted > 1) {
-			redrawLineNumbersEx(false);
+            redrawLineNumbersEx();
 		}
 	} else { // linesInserted != linesDeleted
 		endDispPos = lastChar_ + 1;
@@ -1774,7 +1775,7 @@ void TextArea::bufModifiedCallback(int pos, int nInserted, int nDeleted, int nRe
 			blankCursorProtrusions();
 		}
 
-		redrawLineNumbersEx(false);
+        redrawLineNumbersEx();
 	}
 
 	/* If there is a style buffer, check if the modification caused additional
@@ -3049,13 +3050,8 @@ void TextArea::textDRedisplayRange(int start, int end) {
 
 /**
  * @brief TextArea::redrawLineNumbersEx
- * @param clearAll
  */
-void TextArea::redrawLineNumbersEx(bool clearAll) {
-
-	Q_UNUSED(clearAll);
-    // TODO(eteran): implement clearAll vs. selective behavior?
-	// this will in the end redraw the entire line display area
+void TextArea::redrawLineNumbersEx() {
 
     viewport()->repaint(QRect(lineNumLeft_, rect_.top(), lineNumWidth_, rect_.height()));
 }
@@ -3069,11 +3065,9 @@ void TextArea::redrawLineNumbersEx(bool clearAll) {
  *
  * @brief TextArea::redrawLineNumbers
  * @param painter
- * @param clearAll
  */
-void TextArea::redrawLineNumbers(QPainter *painter, bool clearAll) {
+void TextArea::redrawLineNumbers(QPainter *painter) {
 
-	Q_UNUSED(clearAll);
     const int lineHeight = ascent_ + descent_;
 
     // Don't draw if lineNumWidth == 0 (line numbers are hidden)
@@ -3733,7 +3727,7 @@ void TextArea::TextDResize(int width, int height) {
 
 	/* Refresh the line number display to draw more line numbers, or
 	   erase extras */
-	redrawLineNumbersEx(true);
+    redrawLineNumbersEx();
 
 	// Redraw the calltip
 	TextDRedrawCalltip(0);
@@ -3745,9 +3739,6 @@ void TextArea::TextDResize(int width, int height) {
 ** can pass "startPosIsLineStart" as True to make the call more efficient
 ** by avoiding the additional step of scanning back to the last newline.
 */
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
 int TextArea::TextDCountLines(int startPos, int endPos, int startPosIsLineStart) {
 	int retLines, retPos, retLineStart, retLineEnd;
 
@@ -3848,7 +3839,7 @@ void TextArea::setScroll(int topLineNum, int horizOffset, bool updateVScrollBar,
 
 	// Refresh line number/calltip display if its up and we've scrolled vertically
 	if (lineDelta != 0) {
-		redrawLineNumbersEx(false);
+        redrawLineNumbersEx();
 		TextDRedrawCalltip(0);
 	}
 
@@ -4091,12 +4082,6 @@ void TextArea::TextDRedrawCalltip(int calltipID) {
     if(!calltipWidget_) {
         return;
     }
-
-	// Get the location/dimensions of the text area
-#if 0
-	Poxition txtX = getX();
-	Poxition txtY = getY();
-#endif
 
 	int rel_x;
 	int rel_y;
@@ -4390,7 +4375,7 @@ void TextArea::TextDSetColors(const QColor &textFgP, const QColor &textBgP, cons
 
 	// Redisplay
 	TextDRedisplayRect(rect_);
-	redrawLineNumbersEx(true);
+    redrawLineNumbersEx();
 }
 
 /*
@@ -8074,7 +8059,7 @@ void TextArea::TextDSetFont(const QFont &font) {
     TextDRedisplayRect(rect_);
 
     // Clean up line number area in case spacing has changed
-    redrawLineNumbersEx(true);
+    redrawLineNumbersEx();
 }
 
 int TextArea::getLineNumWidth() const {
@@ -8158,21 +8143,21 @@ void TextArea::insertStringAP(const QString &string, EventFlags flags) {
         return;
     }
 
-    QByteArray array = string.toLatin1();
+    std::string str = string.toStdString();
 
     if (P_smartIndent) {
 		SmartIndentEvent smartIndent;
         smartIndent.reason        = CHAR_TYPED;
         smartIndent.pos           = cursorPos_;
         smartIndent.indentRequest = 0;
-        smartIndent.charsTyped    = array.data();
+        smartIndent.charsTyped    = str;
 
         for(auto &c : smartIndentCallbacks_) {
             c.first(this, &smartIndent, c.second);
         }
     }
 
-    TextInsertAtCursorEx(array.data(), true, true);
+    TextInsertAtCursorEx(str, true, true);
     buffer_->BufUnselect();
 }
 

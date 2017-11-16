@@ -2925,7 +2925,7 @@ int init_ansi_classes() {
         int letter_count = 0;
         int space_count  = 0;
 
-        for (int i = 1; i < static_cast<int>(UINT8_MAX); i++) {
+        for (int i = 1; i < UINT8_MAX; i++) {
             if (safe_ctype<isalnum>(i) || i == Underscore) {
 				Word_Char[word_count++] = static_cast<char>(i);
 			}

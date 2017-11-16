@@ -433,7 +433,7 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 	saveOldVersion_        = GetPrefSaveOldVersion();
 	wrapMode_              = GetPrefWrap(PLAIN_LANGUAGE_MODE);
 	overstrike_            = false;
-    showMatchingStyle_     = static_cast<ShowMatchingStyle>(GetPrefShowMatching());
+    showMatchingStyle_     = GetPrefShowMatching();
 	matchSyntaxBased_      = GetPrefMatchSyntaxBased();
 	highlightSyntax_       = GetPrefHighlightSyntax();
 	backlightCharTypes_    = QString();
@@ -5531,20 +5531,6 @@ void DocumentWidget::finishMacroCmdExecutionEx() {
 
     // If no other macros are executing, do garbage collection
     SafeGC();
-
-    /* In processing the .neditmacro file (and possibly elsewhere), there
-       is an event loop which waits for macro completion.  Send an event
-       to wake up that loop, otherwise execution will stall until the user
-       does something to the window. */
-    if (!closeOnCompletion) {
-        // TODO(eteran): find the equivalent to this...
-#if 0
-        XClientMessageEvent event;
-        event.format = 8;
-        event.type = ClientMessage;
-        XSendEvent(XtDisplay(window->shell_), XtWindow(window->shell_), False, NoEventMask, (XEvent *)&event);
-#endif
-    }
 }
 
 /**
@@ -6024,7 +6010,7 @@ void DocumentWidget::handleUnparsedRegionEx(const std::shared_ptr<TextBuffer> &s
         return;
     }
 
-    int firstPass2Style = static_cast<uint8_t>(pass2Patterns[1].style);
+    int firstPass2Style = pass2Patterns[1].style;
 
     /* If there are no pass 2 patterns to process, do nothing (but this
        should never be triggered) */
@@ -6349,11 +6335,11 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
     }
 
     for (size_t i = 1; i < nPass1Patterns; i++) {
-        pass1Pats[i].style = gsl::narrow<char>(PLAIN_STYLE + i);
+        pass1Pats[i].style = gsl::narrow<uint8_t>(PLAIN_STYLE + i);
     }
 
     for (size_t i = 1; i < nPass2Patterns; i++) {
-        pass2Pats[i].style = gsl::narrow<char>(PLAIN_STYLE + (noPass1 ? 0 : nPass1Patterns - 1) + i);
+        pass2Pats[i].style = gsl::narrow<uint8_t>(PLAIN_STYLE + (noPass1 ? 0 : nPass1Patterns - 1) + i);
     }
 
     // Create table for finding parent styles
@@ -6366,11 +6352,15 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
     *parentStylesPtr++ = '\0';
 
     for (size_t i = 1; i < nPass1Patterns; i++) {
-        *parentStylesPtr++ = pass1PatternSrc[i].subPatternOf.isNull() ? PLAIN_STYLE : pass1Pats[indexOfNamedPattern(pass1PatternSrc, gsl::narrow<int>(nPass1Patterns), pass1PatternSrc[i].subPatternOf)].style;
+        *parentStylesPtr++ = pass1PatternSrc[i].subPatternOf.isNull() ?
+                    PLAIN_STYLE :
+                    pass1Pats[indexOfNamedPattern(pass1PatternSrc, gsl::narrow<int>(nPass1Patterns), pass1PatternSrc[i].subPatternOf)].style;
     }
 
     for (size_t i = 1; i < nPass2Patterns; i++) {
-        *parentStylesPtr++ = pass2PatternSrc[i].subPatternOf.isNull() ? PLAIN_STYLE : pass2Pats[indexOfNamedPattern(pass2PatternSrc, gsl::narrow<int>(nPass2Patterns), pass2PatternSrc[i].subPatternOf)].style;
+        *parentStylesPtr++ = pass2PatternSrc[i].subPatternOf.isNull() ?
+                    PLAIN_STYLE :
+                    pass2Pats[indexOfNamedPattern(pass2PatternSrc, gsl::narrow<int>(nPass2Patterns), pass2PatternSrc[i].subPatternOf)].style;
     }
 
     // Set up table for mapping colors and fonts to syntax
@@ -6448,8 +6438,6 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
 */
 HighlightData *DocumentWidget::compilePatternsEx(HighlightPattern *patternSrc, int nPatterns) {
     int length;
-    int subExprNum;
-    int charsRead;
     int parentIndex;
 
     /* Allocate memory for the compiled patterns.  The list is terminated
@@ -6504,48 +6492,102 @@ HighlightData *DocumentWidget::compilePatternsEx(HighlightPattern *patternSrc, i
             return nullptr;
         }
 
-        int nSubExprs = 0;
+        {
+            int nSubExprs = 0;
 
-        // TODO(eteran): rework this in terms of iterators and remove scanf usage
-        if (!patternSrc[i].startRE.isNull()) {
-            QByteArray bytes = patternSrc[i].startRE.toLatin1();
-            const char *s = bytes.data();
-            const char *ptr = s;
-            while (true) {
-                if (*ptr == '&') {
-                    compiledPats[i].startSubexprs[nSubExprs++] = 0;
-                    ptr++;
-                } else if (sscanf(ptr, "\\%d%n", &subExprNum, &charsRead) == 1) {
-                    compiledPats[i].startSubexprs[nSubExprs++] = subExprNum;
-                    ptr += charsRead;
-                } else {
-                    break;
+            // TODO(eteran): rework this in terms of iterators and remove scanf usage
+            if (!patternSrc[i].startRE.isNull()) {
+#if 1
+                int index = 0;
+                QString pattern = patternSrc[i].startRE;
+                static const QRegularExpression re(QLatin1String("(?:(&)|(?:\\\\([0-9]+)))"));
+                QRegularExpressionMatch match = re.match(pattern, index, QRegularExpression::NormalMatch, QRegularExpression::AnchoredMatchOption);
+                while(match.hasMatch()) {
+                    QString amp = match.captured(1); // 1st == "&"
+                    QString num = match.captured(2); // 2nd == "\\[0-9]+"
+
+                    if(!amp.isEmpty()) {
+                        compiledPats[i].startSubexprs[nSubExprs++] = 0;
+                        index += amp.size();
+                    } else if(!num.isEmpty()) {
+                        compiledPats[i].startSubexprs[nSubExprs++] = num.toInt();
+                        index += num.size();
+                    } else {
+                        break;
+                    }
+
+                    match = re.match(pattern, index, QRegularExpression::NormalMatch, QRegularExpression::AnchoredMatchOption);
                 }
+#else
+                int subExprNum;
+                int charsRead;
+                QByteArray bytes = patternSrc[i].startRE.toLatin1();
+                const char *s = bytes.data();
+                const char *ptr = s;
+                Q_FOREVER {
+                    if (*ptr == '&') {
+                        compiledPats[i].startSubexprs[nSubExprs++] = 0;
+                        ptr++;
+                    } else if (sscanf(ptr, "\\%d%n", &subExprNum, &charsRead) == 1) {
+                        compiledPats[i].startSubexprs[nSubExprs++] = subExprNum;
+                        ptr += charsRead;
+                    } else {
+                        break;
+                    }
+                }
+#endif
             }
+
+            compiledPats[i].startSubexprs[nSubExprs] = -1;
         }
 
-        compiledPats[i].startSubexprs[nSubExprs] = -1;
+        {
+            int nSubExprs = 0;
 
-        nSubExprs = 0;
+#if 1
+            int index = 0;
+            QString pattern = patternSrc[i].endRE;
+            static const QRegularExpression re(QLatin1String("(?:(&)|(?:\\\\([0-9]+)))"));
+            QRegularExpressionMatch match = re.match(pattern, index, QRegularExpression::NormalMatch, QRegularExpression::AnchoredMatchOption);
+            while(match.hasMatch()) {
+                QString amp = match.captured(1); // 1st == "&"
+                QString num = match.captured(2); // 2nd == "\\[0-9]+"
 
-        // TODO(eteran): rework this in terms of iterators and remove scanf usage
-        if (!patternSrc[i].endRE.isNull()) {
-            QByteArray bytes = patternSrc[i].endRE.toLatin1();
-            const char *s = bytes.data();
-            const char *ptr = s;
-            while (true) {
-                if (*ptr == '&') {
+                if(!amp.isEmpty()) {
                     compiledPats[i].endSubexprs[nSubExprs++] = 0;
-                    ptr++;
-                } else if (sscanf(ptr, "\\%d%n", &subExprNum, &charsRead) == 1) {
-                    compiledPats[i].endSubexprs[nSubExprs++] = subExprNum;
-                    ptr += charsRead;
+                    index += amp.size();
+                } else if(!num.isEmpty()) {
+                    compiledPats[i].endSubexprs[nSubExprs++] = num.toInt();
+                    index += num.size();
                 } else {
                     break;
                 }
+
+                match = re.match(pattern, index, QRegularExpression::NormalMatch, QRegularExpression::AnchoredMatchOption);
             }
+#else
+            // TODO(eteran): rework this in terms of iterators and remove scanf usage
+            if (!patternSrc[i].endRE.isNull()) {
+                int subExprNum;
+                int charsRead;
+                QByteArray bytes = patternSrc[i].endRE.toLatin1();
+                const char *s = bytes.data();
+                const char *ptr = s;
+                Q_FOREVER {
+                    if (*ptr == '&') {
+                        compiledPats[i].endSubexprs[nSubExprs++] = 0;
+                        ptr++;
+                    } else if (sscanf(ptr, "\\%d%n", &subExprNum, &charsRead) == 1) {
+                        compiledPats[i].endSubexprs[nSubExprs++] = subExprNum;
+                        ptr += charsRead;
+                    } else {
+                        break;
+                    }
+                }
+            }
+#endif
+            compiledPats[i].endSubexprs[nSubExprs] = -1;
         }
-        compiledPats[i].endSubexprs[nSubExprs] = -1;
     }
 
     // Compile regular expressions for all highlight patterns
