@@ -4838,7 +4838,7 @@ void TextArea::TextInsertAtCursorEx(view::string_view chars, bool allowPendingDe
 	int fontWidth   = fm.maxWidth();
 
 	// Don't wrap if auto-wrap is off or suppressed, or it's just a newline
-	if (!allowWrap || !P_autoWrap || (chars[0] == '\n' && chars[1] == '\0')) {
+    if (!allowWrap || !P_autoWrap || chars.compare("\n") == 0) {
 		simpleInsertAtCursorEx(chars, allowPendingDelete);
 		return;
 	}
