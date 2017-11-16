@@ -251,7 +251,7 @@ private:
 private:
 	// TODO(eteran): are these dialog's per window or per text document?
 	QPointer<QDialog> dialogColors_;
-	QPointer<QDialog> dialogFonts_; /* nullptr, unless font dialog is up */
+    QPointer<QDialog> dialogFonts_;
 
 public:
 	Bookmark markTable_[MAX_MARKS];    // marked locations in window
