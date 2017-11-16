@@ -32,38 +32,24 @@
 
 
 #include "nedit.h"
+#include "CommandRecorder.h"
 #include "DialogAbout.h"
 #include "DialogPrint.h"
 #include "DocumentWidget.h"
-#include "MainWindow.h"
-#include "NeditServer.h"
 #include "EditFlags.h"
 #include "interpret.h"
 #include "macro.h"
-#include "parse.h"
+#include "MainWindow.h"
+#include "NeditServer.h"
 #include "preferences.h"
-#include "Settings.h"
 #include "regularExp.h"
 #include "selection.h"
-#include "WrapStyle.h"
-#include "tags.h"
-#include "CommandRecorder.h"
+#include "Settings.h"
 #include "util/fileUtils.h"
 
+#include <QStringList>
 #include <QApplication>
-#include <algorithm>
-#include <cctype>
-#include <climits>
-#include <cstdio>
-#include <cstdlib>
-#include <memory>
-#include <cstring>
-#include <sys/param.h>
-#include "TextArea.h"
-#include "TextBuffer.h"
-
-static void nextArg(const QStringList &args, int *argIndex);
-static bool checkDoMacroArg(const QString &macro);
+#include <QPointer>
 
 bool IsServer = false;
 
@@ -77,6 +63,43 @@ constexpr const char cmdLineHelp[] =
     "             [-geometry geometry] [-iconic] [-noiconic] [-svrname name]\n"
     "             [-import file] [-tabbed] [-untabbed] [-group] [-V|-version]\n"
     "             [-h|-help] [--] [file...]\n";
+
+
+void nextArg(const QStringList &args, int *argIndex) {
+    if (*argIndex + 1 >= args.size()) {
+        fprintf(stderr, "NEdit: %s requires an argument\n%s",
+                qPrintable(args[*argIndex]),
+                cmdLineHelp);
+
+        exit(EXIT_FAILURE);
+    }
+    (*argIndex)++;
+}
+
+/*
+** Return True if -do macro is valid, otherwise write an error on stderr
+*/
+bool checkDoMacroArg(const QString &macro) {
+
+    QString errMsg;
+    int stoppedAt;
+
+    /* Add a terminating newline (which command line users are likely to omit
+       since they are typically invoking a single routine) */
+    auto macroString = macro + QLatin1Char('\n');
+
+    // Do a test parse
+    Program *const prog = ParseMacroEx(macroString, &errMsg, &stoppedAt);
+
+    if(!prog) {
+        ParseErrorEx(nullptr, macroString, stoppedAt, QLatin1String("argument to -do"), errMsg);
+        return false;
+    }
+
+    FreeProgram(prog);
+    return true;
+}
+
 }
 
 int main(int argc, char *argv[]) {
@@ -408,36 +431,4 @@ int main(int argc, char *argv[]) {
 
 	// Process events. 
     return app.exec();
-}
-
-static void nextArg(const QStringList &args, int *argIndex) {
-    if (*argIndex + 1 >= args.size()) {
-        fprintf(stderr, "NEdit: %s requires an argument\n%s", qPrintable(args[*argIndex]), cmdLineHelp);
-		exit(EXIT_FAILURE);
-	}
-	(*argIndex)++;
-}
-
-/*
-** Return True if -do macro is valid, otherwise write an error on stderr
-*/
-static bool checkDoMacroArg(const QString &macro) {
-
-    QString errMsg;
-    int stoppedAt;
-
-	/* Add a terminating newline (which command line users are likely to omit
-	   since they are typically invoking a single routine) */
-    auto macroString = macro + QLatin1Char('\n');
-
-	// Do a test parse 
-    Program *const prog = ParseMacroEx(macroString, &errMsg, &stoppedAt);
-
-	if(!prog) {        
-        ParseErrorEx(nullptr, macroString, stoppedAt, QLatin1String("argument to -do"), errMsg);
-        return false;
-	}
-
-	FreeProgram(prog);
-    return true;
 }

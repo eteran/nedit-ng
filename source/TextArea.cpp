@@ -3047,9 +3047,10 @@ void TextArea::textDRedisplayRange(int start, int end) {
 	redisplayLineEx(lastLine, 0, INT_MAX, 0, endIndex);
 }
 
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
+/**
+ * @brief TextArea::redrawLineNumbersEx
+ * @param clearAll
+ */
 void TextArea::redrawLineNumbersEx(bool clearAll) {
 
 	Q_UNUSED(clearAll);
@@ -3059,15 +3060,17 @@ void TextArea::redrawLineNumbersEx(bool clearAll) {
     viewport()->repaint(QRect(lineNumLeft_, rect_.top(), lineNumWidth_, rect_.height()));
 }
 
-/*
-** Refresh the line number area.  If clearAll is false, writes only over
-** the character cell areas.  Setting clearAll to True will clear out any
-** stray marks outside of the character cell area, which might have been
-** left from before a resize or font change.
-*/
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
+
+/**
+ * Refresh the line number area.  If clearAll is false, writes only over
+ * the character cell areas.  Setting clearAll to True will clear out any
+ * stray marks outside of the character cell area, which might have been
+ * left from before a resize or font change.
+ *
+ * @brief TextArea::redrawLineNumbers
+ * @param painter
+ * @param clearAll
+ */
 void TextArea::redrawLineNumbers(QPainter *painter, bool clearAll) {
 
 	Q_UNUSED(clearAll);
@@ -3104,9 +3107,6 @@ void TextArea::redrawLineNumbers(QPainter *painter, bool clearAll) {
  * calculate the rect that would be repainted and trigger an update of that
  * region. We will then repaint that region during the paint event
  */
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
 void TextArea::redisplayLineEx(int visLineNum, int leftClip, int rightClip, int leftCharIndex, int rightCharIndex) {
 
 	Q_UNUSED(leftCharIndex);
@@ -3332,9 +3332,6 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 ** Note that style is a somewhat incorrect name, drawing method would
 ** be more appropriate.
 */
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
 int TextArea::styleOfPos(int lineStartPos, int lineLen, int lineIndex, int dispIndex, int thisChar) {
 
     int style = 0;
@@ -3386,15 +3383,12 @@ int TextArea::styleOfPos(int lineStartPos, int lineLen, int lineIndex, int dispI
 ** rectangle where text would have drawn from x to toX and from y to
 ** the maximum y extent of the current font(s).
 */
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
 void TextArea::drawString(QPainter *painter, int style, int x, int y, int toX, char *string, long nChars) {
 
     QColor bground       = palette().color(QPalette::Base);
     QColor fground       = palette().color(QPalette::Text);
-	bool underlineStyle = false;
-    QFont X_font = font_;
+    bool underlineStyle  = false;
+    QFont renderFont     = font_;
 
 	enum DrawType {
         DrawStyle,
@@ -3442,12 +3436,12 @@ void TextArea::drawString(QPainter *painter, int style, int x, int y, int toX, c
 			styleRec = &styleTable_[(style & STYLE_LOOKUP_MASK) - ASCII_A];
 			underlineStyle = styleRec->underline;
 
-            X_font  = styleRec->font;
+            renderFont  = styleRec->font;
             fground = styleRec->color;
 			// here you could pick up specific select and highlight fground
 		} else {
 			styleRec = nullptr;
-            X_font  = font_;
+            renderFont = font_;
             fground = palette().color(QPalette::Text);
 		}
 
@@ -3495,7 +3489,7 @@ void TextArea::drawString(QPainter *painter, int style, int x, int y, int toX, c
 	}
 
 #if 0
-    QFontMetrics fm(X_font);
+    QFontMetrics fm(renderFont);
 
 	/* If any space around the character remains unfilled (due to use of
 	   different sized fonts for highlighting), fill in above or below
@@ -3511,7 +3505,7 @@ void TextArea::drawString(QPainter *painter, int style, int x, int y, int toX, c
 
 	// Underline if style is secondary selection
 	if (style & SECONDARY_MASK || underlineStyle) {
-		X_font.setUnderline(true);
+        renderFont.setUnderline(true);
 	}
 
     auto s = asciiCodec->toUnicode(string, gsl::narrow<int>(nChars));
@@ -3523,23 +3517,25 @@ void TextArea::drawString(QPainter *painter, int style, int x, int y, int toX, c
 	//               background mode if drawing a non-base color.
 	//               Probably same with font
     painter->save();
-    painter->setFont(X_font);
+    painter->setFont(renderFont);
     painter->fillRect(rect, bground);
     painter->setPen(fground);
     painter->drawText(rect, Qt::TextSingleLine | Qt::TextDontClip | Qt::AlignVCenter | Qt::AlignLeft, s);
     painter->restore();
 }
 
-//------------------------------------------------------------------------------
-// Name: drawCursor
-// Desc: Draw a cursor with top center at x, y.
-//------------------------------------------------------------------------------
+/**
+ * Draw a cursor with top center at x, y.
+ *
+ * @brief TextArea::drawCursor
+ * @param painter
+ * @param x
+ * @param y
+ */
 void TextArea::drawCursor(QPainter *painter, int x, int y) {
 
 	QPainterPath path;
     QFontMetrics fm(font_);
-
-	int midY;
 
     // NOTE(eteran): the original code used fontStruct_->min_bounds.width
     // this doesn't matter for fixed sized fonts, but for variable sized ones
@@ -3570,8 +3566,8 @@ void TextArea::drawCursor(QPainter *painter, int x, int y) {
 
 	// Create segments and draw cursor
 	switch(cursorStyle_) {
-	case CARET_CURSOR:
-		midY = bot - fontHeight / 5;
+    case CARET_CURSOR: {
+        const int midY = bot - fontHeight / 5;
 
 		path.moveTo(left, bot);
 		path.lineTo(x, midY);
@@ -3582,9 +3578,8 @@ void TextArea::drawCursor(QPainter *painter, int x, int y) {
 		path.moveTo(x, midY - 1);
 		path.lineTo(right, bot);
 		break;
-
-	case NORMAL_CURSOR:
-
+    }
+    case NORMAL_CURSOR: {
         path.moveTo(left, y);
         path.lineTo(right, y);
         path.moveTo(x, y);
@@ -3592,9 +3587,8 @@ void TextArea::drawCursor(QPainter *painter, int x, int y) {
         path.moveTo(left, bot);
         path.lineTo(right, bot);
         break;
-
-    case HEAVY_CURSOR:
-
+    }
+    case HEAVY_CURSOR: {
         path.moveTo(x - 1, y);
         path.lineTo(x - 1, bot);
         path.moveTo(x, y);
@@ -3606,9 +3600,9 @@ void TextArea::drawCursor(QPainter *painter, int x, int y) {
         path.moveTo(left, bot);
         path.lineTo(right, bot);
         break;
-
-	case DIM_CURSOR:
-		midY = y + fontHeight / 2;
+    }
+    case DIM_CURSOR: {
+        const int midY = y + fontHeight / 2;
 
         path.moveTo(x, y);
         path.lineTo(x, y);
@@ -3617,9 +3611,9 @@ void TextArea::drawCursor(QPainter *painter, int x, int y) {
         path.moveTo(x, bot);
         path.lineTo(x, bot);
         break;
-
-	case BLOCK_CURSOR:
-		right = x + fontWidth;
+    }
+    case BLOCK_CURSOR: {
+        right = x + fontWidth;
 
         path.moveTo(x, y);
         path.lineTo(right, y);
@@ -3630,6 +3624,7 @@ void TextArea::drawCursor(QPainter *painter, int x, int y) {
         path.moveTo(x, bot);
         path.lineTo(x, y);
         break;
+    }
     }
 
     painter->save();
@@ -5182,7 +5177,7 @@ std::string TextArea::createIndentStringEx(TextBuffer *buf, int bufOffset, int l
 
 	// Allocate and create a string of tabs and spaces to achieve the indent
 	std::string indentStr;
-	indentStr.reserve(indent + 2);
+    indentStr.reserve(gsl::narrow<size_t>(indent + 2));
 
 	auto indentPtr = std::back_inserter(indentStr);
 
@@ -5271,8 +5266,9 @@ int TextArea::deleteEmulatedTab() {
 	int startPosIndent;
 	char c;
 
-	if (emTabDist <= 0 || emTabsBeforeCursor <= 0)
+    if (emTabDist <= 0 || emTabsBeforeCursor <= 0) {
         return false;
+    }
 
 	// Find the position of the previous tab stop
 	insertPos = cursorPos_;
@@ -5307,7 +5303,7 @@ int TextArea::deleteEmulatedTab() {
 	   do a BufRemove. */
 	if (startPosIndent < toIndent) {
 
-		std::string spaceString(toIndent - startPosIndent, ' ');
+        std::string spaceString(gsl::narrow<size_t>(toIndent - startPosIndent), ' ');
 
 		buffer_->BufReplaceEx(startPos, insertPos, spaceString);
 		TextDSetInsertPosition(startPos + toIndent - startPosIndent);
@@ -5989,7 +5985,7 @@ void TextArea::processTabAP(EventFlags flags) {
 
 	// Allocate a buffer assuming all the inserted characters will be spaces
 	std::string outStr;
-	outStr.reserve(toIndent - startIndent);
+    outStr.reserve(gsl::narrow<size_t>(toIndent - startIndent));
 
 	// Add spaces and tabs to outStr until it reaches toIndent
 	auto outPtr = std::back_inserter(outStr);
@@ -8271,6 +8267,7 @@ void TextArea::TextDKillCalltip(int calltipID) {
 }
 
 int TextArea::TextDShowCalltip(const QString &text, bool anchored, int pos, int hAlign, int vAlign, int alignMode) {
+
     static int StaticCalltipID = 1;
 
     int rel_x;
