@@ -1144,7 +1144,7 @@ void showMatchingCalltipEx(TextArea *area, int i) {
 
             // 4. Find the end of the calltip (delimited by an empty line)
             endPos = startPos;
-            bool found = SearchString(fileString.c_str(), QLatin1String("\\n\\s*\\n"), Direction::FORWARD, SearchType::Regex, WrapMode::NoWrap, startPos, &endPos, &dummy, nullptr, nullptr, QString());
+            bool found = SearchString(fileString, QLatin1String("\\n\\s*\\n"), Direction::FORWARD, SearchType::Regex, WrapMode::NoWrap, startPos, &endPos, &dummy, nullptr, nullptr, QString());
             if (!found) {
                 // Just take 4 lines
 				moveAheadNLinesEx(fileString, &endPos, TIP_DEFAULT_LINES);
@@ -1273,7 +1273,7 @@ static bool searchLine(const std::string &line, const std::string &regex) {
     int dummy1;
     int dummy2;
     return SearchString(
-                line.c_str(),
+                line,
                 QString::fromStdString(regex),
                 Direction::FORWARD,
                 SearchType::Regex,

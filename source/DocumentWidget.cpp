@@ -14,6 +14,7 @@
 #include "TextArea.h"
 #include "TextBuffer.h"
 #include "Settings.h"
+#include "Input.h"
 #include "UndoInfo.h"
 #include "PatternSet.h"
 #include "WindowHighlightData.h"
@@ -1919,17 +1920,10 @@ void DocumentWidget::CheckForChangesToFileEx() {
 
     bool silent = false;
 
-    /* Update the status, but don't pop up a dialog if we're called
-       from a place where the window might be iconic (e.g., from the
-       replace dialog) or on another desktop.
-
-       This works, but I bet it costs a round-trip to the server.
-       Might be better to capture MapNotify/Unmap events instead.
-
-       For tabs that are not on top, we don't want the dialog either,
-       and we don't even need to contact the server to find out. By
-       performing this check first, we avoid a server round-trip for
-       most files in practice. */
+    /* Update the status, but don't pop up a dialog if we're called from a
+     * place where the window might be iconic (e.g., from the replace dialog)
+     * or on another desktop.
+     */
     if (!IsTopDocument()) {
         silent = true;
     } else {
@@ -1951,8 +1945,9 @@ void DocumentWidget::CheckForChangesToFileEx() {
                 return;
             }
 
-            /* Can't stat the file -- maybe it's been deleted.
-               The filename is now invalid */
+            /* Can't stat the file --
+             * maybe it's been deleted. The filename is now invalid
+             */
             fileMissing_ = true;
             lastModTime_ = 1;
             device_      = 0;
@@ -6488,98 +6483,51 @@ HighlightData *DocumentWidget::compilePatternsEx(HighlightPattern *patternSrc, i
 
         {
             int nSubExprs = 0;
-
-            // TODO(eteran): rework this in terms of iterators and remove scanf usage
             if (!patternSrc[i].startRE.isNull()) {
-#if 1
-                int index = 0;
-                QString pattern = patternSrc[i].startRE;
-                static const QRegularExpression re(QLatin1String("(?:(&)|(?:\\\\([0-9]+)))"));
-                QRegularExpressionMatch match = re.match(pattern, index, QRegularExpression::NormalMatch, QRegularExpression::AnchoredMatchOption);
-                while(match.hasMatch()) {
-                    QString amp = match.captured(1); // 1st == "&"
-                    QString num = match.captured(2); // 2nd == "\\[0-9]+"
-
-                    if(!amp.isEmpty()) {
-                        compiledPats[i].startSubexprs[nSubExprs++] = 0;
-                        index += amp.size();
-                    } else if(!num.isEmpty()) {
-                        compiledPats[i].startSubexprs[nSubExprs++] = num.toInt();
-                        index += num.size();
-                    } else {
-                        break;
-                    }
-
-                    match = re.match(pattern, index, QRegularExpression::NormalMatch, QRegularExpression::AnchoredMatchOption);
-                }
-#else
-                int subExprNum;
-                int charsRead;
-                QByteArray bytes = patternSrc[i].startRE.toLatin1();
-                const char *s = bytes.data();
-                const char *ptr = s;
+                static const QRegularExpression re(QLatin1String("[0-9]+"));
+                Input in(&patternSrc[i].startRE);
                 Q_FOREVER {
-                    if (*ptr == '&') {
+                    if(in.match(QLatin1Char('&'))) {
                         compiledPats[i].startSubexprs[nSubExprs++] = 0;
-                        ptr++;
-                    } else if (sscanf(ptr, "\\%d%n", &subExprNum, &charsRead) == 1) {
-                        compiledPats[i].startSubexprs[nSubExprs++] = subExprNum;
-                        ptr += charsRead;
+                        ++in;
+                    } else if(in.match(QLatin1Char('\\'))) {
+                        ++in;
+                        if(const int n = in.matchSize(re)) {
+                            compiledPats[i].startSubexprs[nSubExprs++] = in.midRef(n).toInt();
+                            in += n;
+                        } else {
+                            break;
+                        }
                     } else {
                         break;
                     }
                 }
-#endif
             }
-
             compiledPats[i].startSubexprs[nSubExprs] = -1;
         }
 
         {
             int nSubExprs = 0;
-
-#if 1
-            int index = 0;
-            QString pattern = patternSrc[i].endRE;
-            static const QRegularExpression re(QLatin1String("(?:(&)|(?:\\\\([0-9]+)))"));
-            QRegularExpressionMatch match = re.match(pattern, index, QRegularExpression::NormalMatch, QRegularExpression::AnchoredMatchOption);
-            while(match.hasMatch()) {
-                QString amp = match.captured(1); // 1st == "&"
-                QString num = match.captured(2); // 2nd == "\\[0-9]+"
-
-                if(!amp.isEmpty()) {
-                    compiledPats[i].endSubexprs[nSubExprs++] = 0;
-                    index += amp.size();
-                } else if(!num.isEmpty()) {
-                    compiledPats[i].endSubexprs[nSubExprs++] = num.toInt();
-                    index += num.size();
-                } else {
-                    break;
-                }
-
-                match = re.match(pattern, index, QRegularExpression::NormalMatch, QRegularExpression::AnchoredMatchOption);
-            }
-#else
-            // TODO(eteran): rework this in terms of iterators and remove scanf usage
             if (!patternSrc[i].endRE.isNull()) {
-                int subExprNum;
-                int charsRead;
-                QByteArray bytes = patternSrc[i].endRE.toLatin1();
-                const char *s = bytes.data();
-                const char *ptr = s;
+                static const QRegularExpression re(QLatin1String("[0-9]+"));
+                Input in(&patternSrc[i].endRE);
                 Q_FOREVER {
-                    if (*ptr == '&') {
+                    if(in.match(QLatin1Char('&'))) {
                         compiledPats[i].endSubexprs[nSubExprs++] = 0;
-                        ptr++;
-                    } else if (sscanf(ptr, "\\%d%n", &subExprNum, &charsRead) == 1) {
-                        compiledPats[i].endSubexprs[nSubExprs++] = subExprNum;
-                        ptr += charsRead;
+                        ++in;
+                    } else if(in.match(QLatin1Char('\\'))) {
+                        ++in;
+                        if(const int n = in.matchSize(re)) {
+                            compiledPats[i].endSubexprs[nSubExprs++] = in.midRef(n).toInt();
+                            in += n;
+                        } else {
+                            break;
+                        }
                     } else {
                         break;
                     }
                 }
             }
-#endif
             compiledPats[i].endSubexprs[nSubExprs] = -1;
         }
     }

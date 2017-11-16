@@ -2170,7 +2170,7 @@ Program *ParseMacroEx(const QString &expr, QString *message, int *stoppedAt) {
     return p;
 }
 
-bool readCheckMacroStringEx(QWidget *dialogParent, const QString &string, DocumentWidget *runWindow, const QString &errIn, int *errPos) {
+bool readCheckMacroStringEx(QWidget *dialogParent, const QString &string, DocumentWidget *runDocument, const QString &errIn, int *errPos) {
 
     Input in(&string);
 
@@ -2245,7 +2245,7 @@ bool readCheckMacroStringEx(QWidget *dialogParent, const QString &string, Docume
                             errIn,
                             errMsg);
             }
-            if (runWindow) {
+            if (runDocument) {
                 Symbol *sym = LookupSymbolEx(subrName);
                 if(!sym) {
                     subrPtr = to_value(prog);
@@ -2286,10 +2286,10 @@ bool readCheckMacroStringEx(QWidget *dialogParent, const QString &string, Docume
                             errMsg);
             }
 
-            if (runWindow) {
+            if (runDocument) {
 
-                if (!runWindow->macroCmdData_) {
-                    runWindow->runMacroEx(prog);
+                if (!runDocument->macroCmdData_) {
+                    runDocument->runMacroEx(prog);
                 } else {
                     /*  If we come here this means that the string was parsed
                         from within another macro via load_macro_file(). In
@@ -2934,7 +2934,7 @@ static bool writeOrAppendFile(bool append, DocumentWidget *document, Arguments a
     }
 
     // open the file
-    FILE *fp = fopen(name.c_str(), append ? "a" : "w");
+    FILE *fp = ::fopen(name.c_str(), append ? "a" : "w");
     if (!fp) {
         *result = to_value(false);
         return true;

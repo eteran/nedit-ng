@@ -3,6 +3,7 @@
 #define INPUT_H_
 
 #include <QString>
+#include <QRegularExpression>
 #include <cstddef>
 
 class Input {
@@ -38,10 +39,13 @@ public:
 public:
 	bool match(const QString &s) const;
     bool match(QChar ch) const;
+    int matchSize(const QRegularExpression &re) const;
 	int find(const QString &s) const;
 	int find(QChar ch) const;
 	QString mid(int length) const;
 	QString mid() const;
+    QStringRef midRef(int length) const;
+    QStringRef midRef() const;
     int remaining() const;
     QString readUntil(QChar ch);
     QChar read() const;

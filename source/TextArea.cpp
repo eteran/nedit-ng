@@ -7594,9 +7594,9 @@ void TextArea::pageRightAP(EventFlags flags) {
 
 	cancelDrag();
 	if (flags & ScrollbarFlag) {
-		int sliderMax   = horizontalScrollBar()->maximum();
-		int sliderSize  = 0; // TODO(eteran): should this be equivalent to the page in columns?
-        int horizOffset = std::min(horizOffset_ + rect_.width(), sliderMax - sliderSize);
+        const int sliderMax   = horizontalScrollBar()->maximum();
+        const int sliderSize  = 0; // TODO(eteran): should this be equivalent to the page in columns?
+        const int horizOffset = std::min(horizOffset_ + rect_.width(), sliderMax - sliderSize);
 
 		if (horizOffset_ == horizOffset) {
 			ringIfNecessary(silent);

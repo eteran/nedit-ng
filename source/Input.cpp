@@ -1,5 +1,6 @@
 
 #include "Input.h"
+#include <QRegularExpressionMatch>
 
 /**
  * @brief Input::Input
@@ -151,6 +152,16 @@ bool Input::operator!=(const Input &rhs) const {
 	return string_ != rhs.string_ || index_ != rhs.index_;
 }
 
+int Input::matchSize(const QRegularExpression &re) const {
+    QRegularExpressionMatch match = re.match(string_, index_, QRegularExpression::NormalMatch, QRegularExpression::AnchoredMatchOption);
+    if(match.hasMatch()) {
+        return match.captured(0).size();
+    }
+
+    return 0;
+}
+
+
 /**
  * @brief Input::match
  * @param s
@@ -175,6 +186,23 @@ bool Input::match(QChar ch) const {
     }
 
     return string_->at(index_) == ch;
+}
+
+/**
+ * @brief Input::midRef
+ * @param length
+ * @return
+ */
+QStringRef Input::midRef(int length) const {
+    return string_->midRef(index_, length);
+}
+
+/**
+ * @brief Input::midRef
+ * @return
+ */
+QStringRef Input::midRef() const {
+    return string_->midRef(index_);
 }
 
 /**

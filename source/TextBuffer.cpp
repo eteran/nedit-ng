@@ -152,7 +152,7 @@ std::string expandTabsEx(view::string_view text, int startIndent, int tabDist, c
 ** characters remain stationary when the text is shifted from starting at
 ** "origIndent" to starting at "newIndent".
 */
-std::string realignTabsEx(view::string_view text, int origIndent, int newIndent, int tabDist, int useTabs, char nullSubsChar) {
+std::string realignTabsEx(view::string_view text, int origIndent, int newIndent, int tabDist, bool useTabs, char nullSubsChar) {
 
 	// If the tabs settings are the same, retain original tabs
     if (origIndent % tabDist == newIndent % tabDist) {
@@ -235,28 +235,29 @@ char chooseNullSubsChar(bool hist[256]) {
 	return '\0';
 }
 
-int addPadding(char *string, int startIndent, int toIndent, int tabDist, int useTabs, char nullSubsChar) {
+int addPadding(char *string, int startIndent, int toIndent, int tabDist, bool useTabs, char nullSubsChar) {
 
 	int indent = startIndent;
-	char *outPtr = string;
+    char *out = string;
+
 	if (useTabs) {
 		while (indent < toIndent) {
 			int len = TextBuffer::BufCharWidth('\t', indent, tabDist, nullSubsChar);
 			if (len > 1 && indent + len <= toIndent) {
-				*outPtr++ = '\t';
+                *out++ = '\t';
 				indent += len;
 			} else {
-				*outPtr++ = ' ';
+                *out++ = ' ';
 				indent++;
 			}
 		}
 	} else {
 		while (indent < toIndent) {
-			*outPtr++ = ' ';
+            *out++ = ' ';
 			indent++;
 		}
 	}
-    return gsl::narrow<int>(outPtr - string);
+    return gsl::narrow<int>(out - string);
 }
 
 /*
@@ -267,7 +268,7 @@ int addPadding(char *string, int startIndent, int toIndent, int tabDist, int use
 ** the right edge of the inserted text (as a hint for routines which need
 ** to position the cursor).
 */
-void insertColInLineEx(view::string_view line, view::string_view insLine, int column, int insWidth, int tabDist, int useTabs, char nullSubsChar, char *outStr, int *outLen, int *endOffset) {
+void insertColInLineEx(view::string_view line, view::string_view insLine, int column, int insWidth, int tabDist, bool useTabs, char nullSubsChar, char *outStr, int *outLen, int *endOffset) {
 
     int len = 0;
     int postColIndent;
@@ -370,17 +371,21 @@ void insertColInLineEx(view::string_view line, view::string_view insLine, int co
 ** the beginning of the string to the point where the characters were
 ** deleted (as a hint for routines which need to position the cursor).
 */
-void deleteRectFromLine(view::string_view line, int rectStart, int rectEnd, int tabDist, int useTabs, char nullSubsChar, char *outStr, int *outLen, int *endOffset) {
-	int indent, preRectIndent, postRectIndent, len;
+void deleteRectFromLine(view::string_view line, int rectStart, int rectEnd, int tabDist, bool useTabs, char nullSubsChar, char *outStr, int *outLen, int *endOffset) {
+    int indent;
+    int preRectIndent;
+    int postRectIndent;
 
 	// copy the line up to rectStart
 	char *outPtr = outStr;
 	indent = 0;
 	auto c = line.begin();
 	for (; c != line.end(); c++) {
-		if (indent > rectStart)
+        if (indent > rectStart) {
 			break;
-		len = TextBuffer::BufCharWidth(*c, indent, tabDist, nullSubsChar);
+        }
+
+        const int len = TextBuffer::BufCharWidth(*c, indent, tabDist, nullSubsChar);
 		if (indent + len > rectStart && (indent == rectStart || *c == '\t'))
 			break;
 		indent += len;
@@ -405,7 +410,7 @@ void deleteRectFromLine(view::string_view line, int rectStart, int rectEnd, int 
 	/* fill in any space left by removed tabs or control characters
 	   which straddled the boundaries */
     indent = std::max(rectStart + postRectIndent - rectEnd, preRectIndent);
-	len = addPadding(outPtr, preRectIndent, indent, tabDist, useTabs, nullSubsChar);
+    int len = addPadding(outPtr, preRectIndent, indent, tabDist, useTabs, nullSubsChar);
 	outPtr += len;
 
 	/* Copy the rest of the line.  If the indentation has changed, preserve
@@ -414,11 +419,11 @@ void deleteRectFromLine(view::string_view line, int rectStart, int rectEnd, int 
     std::string retabbedStr = realignTabsEx(view::substr(c, line.end()), postRectIndent, indent, tabDist, useTabs, nullSubsChar);
     len = gsl::narrow<int>(retabbedStr.size());
 
-	auto it = retabbedStr.begin();
-	auto out = outPtr;
-	while(it != retabbedStr.end()) {
-		*out++ = *it++;
-	}
+    auto out = outPtr;
+    for(auto it = retabbedStr.begin(); it != retabbedStr.end(); ++it) {
+        *out++ = *it;
+    }
+
 	*out++ = '\0';
 
     *endOffset = gsl::narrow<int>(outPtr - outStr);
@@ -427,14 +432,11 @@ void deleteRectFromLine(view::string_view line, int rectStart, int rectEnd, int 
 
 /*
 ** Copy from "text" to end up to but not including newline (or end of "text")
-** and return the copy as the function value, and the length of the line in
-** "lineLen"
+** and return the copy
 */
 template <class Ran>
 std::string copyLineEx(Ran first, Ran last) {
 	auto it = std::find(first, last, '\n');
-
-    // TODO(eteran): maybe return a string_view? seems like it would be more efficient.
 	return std::string(first, it);
 }
 
@@ -474,7 +476,7 @@ int textWidthEx(view::string_view text, int tabDist, char nullSubsChar) {
 **
 ** This code does not handle control characters very well, but oh well.
 */
-void overlayRectInLineEx(view::string_view line, view::string_view insLine, int rectStart, int rectEnd, int tabDist, int useTabs, char nullSubsChar, char *outStr, int *outLen, int *endOffset) {
+void overlayRectInLineEx(view::string_view line, view::string_view insLine, int rectStart, int rectEnd, int tabDist, bool useTabs, char nullSubsChar, char *outStr, int *outLen, int *endOffset) {
 
     int postRectIndent;
 
@@ -947,7 +949,7 @@ void TextBuffer::overlayRectEx(int startPos, int rectStart, int rectEnd, view::s
         outPtr += len;
         *outPtr++ = '\n';
         lineStart = lineEnd < length_ ? lineEnd + 1 : length_;
-        if (*insPtr == '\0') {
+        if (insPtr == insText.end()) {
             break;
         }
         insPtr++;
@@ -1956,10 +1958,10 @@ void TextBuffer::deleteRect(int start, int end, int rectStart, int rectEnd, int 
 	   characters per line for padding where tabs and control characters cross
 	   the edges of the selection */
 	start = BufStartOfLine(start);
-	end = BufEndOfLine(end);
+    end   = BufEndOfLine(end);
 	int nLines = BufCountLines(start, end) + 1;
 
-	std::string text = BufGetRangeEx(start, end);
+    std::string text    = BufGetRangeEx(start, end);
     std::string expText = expandTabsEx(text, 0, tabDist_, nullSubsChar_);
     auto len = gsl::narrow<int>(expText.size());
 
@@ -1972,7 +1974,7 @@ void TextBuffer::deleteRect(int start, int end, int rectStart, int rectEnd, int 
 	while (lineStart <= length_ && lineStart <= end) {
 		int lineEnd = BufEndOfLine(lineStart);
         std::string line = BufGetRangeEx(lineStart, lineEnd);
-		deleteRectFromLine(line.c_str(), rectStart, rectEnd, tabDist_, useTabs_, nullSubsChar_, outPtr, &len, &endOffset);
+        deleteRectFromLine(line, rectStart, rectEnd, tabDist_, useTabs_, nullSubsChar_, outPtr, &len, &endOffset);
 
 		outPtr += len;
 		*outPtr++ = '\n';
@@ -2091,7 +2093,7 @@ void TextBuffer::insertColEx(int column, int startPos, view::string_view insText
 	while (true) {
 		int lineEnd = BufEndOfLine(lineStart);
         std::string line    = BufGetRangeEx(lineStart, lineEnd);
-		std::string insLine = copyLineEx(insPtr, insText.end());
+        std::string insLine = copyLineEx(insPtr, insText.end());
         insPtr += insLine.size();
         insertColInLineEx(line, insLine, column, insWidth, tabDist_, useTabs_, nullSubsChar_, outPtr, &len, &endOffset);
 #if 0
