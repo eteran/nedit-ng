@@ -3,7 +3,7 @@
 #define WRAP_STYLE_H_
 
 #include <QLatin1String>
-#include <QMetaType>
+#include <QtDebug>
 
 enum class WrapStyle {
     Default    = -1,
@@ -11,6 +11,23 @@ enum class WrapStyle {
     Newline    = 1,
     Continuous = 2
 };
+
+template <class T>
+inline T from_integer(int value);
+
+template <>
+inline WrapStyle from_integer(int value) {
+    switch(value) {
+    case static_cast<int>(WrapStyle::Default):
+    case static_cast<int>(WrapStyle::None):
+    case static_cast<int>(WrapStyle::Newline):
+    case static_cast<int>(WrapStyle::Continuous):
+        return static_cast<WrapStyle>(value);
+    default:
+        qWarning("NEdit: Invalid value for WrapStyle");
+        return WrapStyle::Default;
+    }
+}
 
 inline QLatin1String to_string(WrapStyle style) {
 

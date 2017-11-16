@@ -32,9 +32,7 @@ using IsEnum = typename std::enable_if<std::is_enum<T>::value>::type;
 
 template <class T, class = IsEnum<T>>
 T readEnum(QSettings &settings, const QString &key, const T &defaultValue = T()) {
-    // TODO(eteran): maybe we want to somehow validate the enum value at runtime?
-    // it is not going to be pretty regardless of how we do it...
-    return static_cast<T>(settings.value(key, static_cast<int>(defaultValue)).toInt());
+    return from_integer<T>(settings.value(key, static_cast<int>(defaultValue)).toInt());
 }
 
 template <class T, class = IsEnum<T>>

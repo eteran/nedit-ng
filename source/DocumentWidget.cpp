@@ -2859,7 +2859,7 @@ int DocumentWidget::CloseFileAndWindow(CloseMode preResponse) {
         // up-to-date windows don't have outstanding backup files to close
     } else {
 
-		int response;
+        int response = QMessageBox::Yes;
         switch(preResponse) {
         case CloseMode::Prompt:
             response = QMessageBox::warning(this, tr("Save File"), tr("Save %1 before closing?").arg(filename_), QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);

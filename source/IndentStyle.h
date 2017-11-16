@@ -3,7 +3,7 @@
 #define INDENT_STYLE_H_
 
 #include <QString>
-#include <QMetaType>
+#include <QtDebug>
 
 enum class IndentStyle {
     Default = -1,
@@ -11,6 +11,23 @@ enum class IndentStyle {
     Auto    = 1,
     Smart   = 2
 };
+
+template <class T>
+inline T from_integer(int value);
+
+template <>
+inline IndentStyle from_integer(int value) {
+    switch(value) {
+    case static_cast<int>(IndentStyle::Default):
+    case static_cast<int>(IndentStyle::None):
+    case static_cast<int>(IndentStyle::Auto):
+    case static_cast<int>(IndentStyle::Smart):
+        return static_cast<IndentStyle>(value);
+    default:
+        qWarning("NEdit: Invalid value for IndentStyle");
+        return IndentStyle::Default;
+    }
+}
 
 inline QLatin1String to_string(IndentStyle style) {
 
