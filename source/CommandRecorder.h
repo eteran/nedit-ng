@@ -5,6 +5,7 @@
 #include <QObject>
 #include <QEvent>
 #include <QString>
+#include <QPointer>
 
 class TextEditEvent;
 class DocumentWidget;
@@ -53,7 +54,7 @@ public:
     QString replayMacro;
 
     // Window where macro recording is taking place
-    DocumentWidget *macroRecordWindowEx;
+    QPointer<DocumentWidget> macroRecordWindowEx;
 
 private:
     QString macroRecordBuffer;

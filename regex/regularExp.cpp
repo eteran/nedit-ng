@@ -757,7 +757,7 @@ uint8_t *chunk(int paren, int *flag_param, len_range *range_param) {
 		this_branch = alternative(&flags_local, &range_local);
 
 		if (this_branch == nullptr)
-			return (nullptr);
+            return nullptr;
 
 		if (first) {
 			first = 0;
@@ -930,7 +930,7 @@ uint8_t *alternative(int *flag_param, len_range *range_param) {
 		latest = piece(&flags_local, &range_local);
 
 		if(!latest)
-			return (nullptr); // Something went wrong.
+            return nullptr; // Something went wrong.
 
 		*flag_param |= flags_local & HAS_WIDTH;
 		if (range_local.lower < 0) {
@@ -981,7 +981,7 @@ uint8_t *piece(int *flag_param, len_range *range_param) {
 	ret_val = atom(&flags_local, &range_local);
 
 	if (ret_val == nullptr)
-		return (nullptr); // Something went wrong.
+        return nullptr; // Something went wrong.
 
 	op_code = *Reg_Parse;
 
@@ -1620,7 +1620,7 @@ uint8_t *atom(int *flag_param, len_range *range_param) {
 		}
 
 		if (ret_val == nullptr)
-			return (nullptr); // Something went wrong.
+            return nullptr; // Something went wrong.
 
 		// Add HAS_WIDTH flag if it was set by call to chunk.
 
@@ -3920,12 +3920,12 @@ static uint8_t *next_ptr(uint8_t *ptr) {
 	int offset;
 
 	if (ptr == &Compute_Size)
-		return (nullptr);
+        return nullptr;
 
 	offset = GET_OFFSET(ptr);
 
 	if (offset == 0)
-		return (nullptr);
+        return nullptr;
 
 	if (GET_OP_CODE(ptr) == BACK) {
 		return (ptr - offset);

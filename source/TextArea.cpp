@@ -462,7 +462,6 @@ TextArea::TextArea(
 	needAbsTopLineNum_  = false;
 	horizOffset_        = 0;
 	fixedFontWidth_     = fi.fixedPitch() ? fm.maxWidth() : -1;
-	styleBuffer_        = nullptr;
 	styleTable_         = nullptr;
 	nStyles_            = 0;
 
@@ -473,7 +472,6 @@ TextArea::TextArea(
     lineStarts_.resize(nVisibleLines_);
 	lineStarts_[0]     = 0;
 	calltip_.ID        = 0;
-    calltipWidget_     = nullptr;
 
     std::fill_n(&lineStarts_[1], nVisibleLines_, -1);
 

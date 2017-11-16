@@ -4585,7 +4585,7 @@ void MainWindow::on_action_Filter_Selection_triggered() {
     // NOTE(eteran): if we change the order of operations here,
     // then we can remove the redundancies with this and action_Filter_Selection
     if(DocumentWidget *doc = currentDocument()) {
-        static DialogFilter *dialog = nullptr;
+        static QPointer<DialogFilter> dialog;
 
         if (doc->CheckReadOnly()) {
             return;
@@ -4656,7 +4656,7 @@ void MainWindow::on_action_Execute_Command_triggered() {
     // NOTE(eteran): if we change the order of operations here,
     // then we can remove the redundancies with this and action_Execute_Command
     if(DocumentWidget *doc = currentDocument()) {
-        static DialogExecuteCommand *dialog = nullptr;
+        static QPointer<DialogExecuteCommand> dialog;
 
         if (doc->CheckReadOnly())
             return;

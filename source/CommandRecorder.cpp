@@ -99,7 +99,7 @@ QString CommandRecorder::escapeString(const QString &s) {
  * @brief CommandRecorder::CommandRecorder
  * @param parent
  */
-CommandRecorder::CommandRecorder(QObject *parent) : QObject(parent), macroRecordWindowEx(nullptr), isRecording_(false) {
+CommandRecorder::CommandRecorder(QObject *parent) : QObject(parent), isRecording_(false) {
 
 }
 

@@ -104,8 +104,8 @@ void NeditServer::newConnection() {
 
     int lastIconic = 0;
 
-    QPointer<DocumentWidget> lastFile     = nullptr;
-    const long               currentDesktop = QApplication::desktop()->screenNumber(QApplication::activeWindow());
+    QPointer<DocumentWidget> lastFile;
+    const long currentDesktop = QApplication::desktop()->screenNumber(QApplication::activeWindow());
 
     auto array = jsonDocument.array();
     /* If the command string is empty, put up an empty, Untitled window

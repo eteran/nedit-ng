@@ -455,19 +455,12 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 	italicFontName_        = GetPrefItalicFontName();
 	boldFontName_          = GetPrefBoldFontName();
 	boldItalicFontName_    = GetPrefBoldItalicFontName();
-	dialogColors_          = nullptr;
-
     fontStruct_            = GetPrefDefaultFont();
 	italicFontStruct_      = GetPrefItalicFont();
 	boldFontStruct_        = GetPrefBoldFont();
 	boldItalicFontStruct_  = GetPrefBoldItalicFont();
 
-    dialogFonts_           = nullptr;
 	nMarks_                = 0;
-	highlightData_         = nullptr;
-	shellCmdData_          = nullptr;
-	macroCmdData_          = nullptr;
-	smartIndentData_       = nullptr;
 	languageMode_          = PLAIN_LANGUAGE_MODE;
 	device_                = 0;
     inode_                 = 0;
@@ -1908,7 +1901,7 @@ QString DocumentWidget::backupFileNameEx() {
 void DocumentWidget::CheckForChangesToFileEx() {
 
 	// TODO(eteran): 2.0, this concept can be reworked in terms of QFileSystemWatcher
-    static DocumentWidget *lastCheckWindow = nullptr;
+    static QPointer<DocumentWidget> lastCheckWindow;
     static qint64 lastCheckTime = 0;
 
     if (!filenameSet_) {
@@ -3049,6 +3042,7 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
     */
     {
         if ((fp = ::fopen(fullname.toLatin1().data(), "r"))) {
+
             if (::access(fullname.toLatin1().data(), W_OK) != 0) {
                 lockReasons_.setPermLocked(true);
             }
