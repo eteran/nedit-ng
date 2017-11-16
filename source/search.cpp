@@ -383,15 +383,17 @@ bool SearchAndSelectEx(MainWindow *window, DocumentWidget *document, TextArea *a
     iSearchRecordLastBeginPosEx(window, direction, beginPos);
 
     // do the search.  SearchWindow does appropriate dialogs and beeps
-    if (!SearchWindowEx(window, document, direction, searchString, searchType, searchWrap, beginPos, &startPos, &endPos, nullptr, nullptr))
+    if (!SearchWindowEx(window, document, direction, searchString, searchType, searchWrap, beginPos, &startPos, &endPos, nullptr, nullptr)) {
         return false;
+    }
 
     /* if the search matched an empty string (possible with regular exps)
        beginning at the start of the search, go to the next occurrence,
        otherwise repeated finds will get "stuck" at zero-length matches */
     if (direction == Direction::FORWARD && beginPos == startPos && beginPos == endPos) {
-        if (!movedFwd && !SearchWindowEx(window, document, direction, searchString, searchType, searchWrap, beginPos + 1, &startPos, &endPos, nullptr, nullptr))
+        if (!movedFwd && !SearchWindowEx(window, document, direction, searchString, searchType, searchWrap, beginPos + 1, &startPos, &endPos, nullptr, nullptr)) {
             return false;
+        }
     }
 
     // if matched text is already selected, just beep
@@ -405,6 +407,7 @@ bool SearchAndSelectEx(MainWindow *window, DocumentWidget *document, TextArea *a
     document->MakeSelectionVisible(area);
 
     area->TextSetCursorPos(endPos);
+    area->syncronizeSelection();
 
     return true;
 }
@@ -537,6 +540,7 @@ bool SearchAndSelectIncrementalEx(MainWindow *window, DocumentWidget *document, 
     document->MakeSelectionVisible(area);
 
     area->TextSetCursorPos(endPos);
+    area->syncronizeSelection();
 
     return true;
 }
@@ -948,6 +952,7 @@ void ReplaceInSelectionEx(MainWindow *window, DocumentWidget *document, TextArea
                are less useful since left/right positions are randomly adjusted) */
             if (!isRect) {
                 document->buffer_->BufSelect(selStart, selEnd + realOffset);
+                area->syncronizeSelection();
             }
         }
     } else {

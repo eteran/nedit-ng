@@ -1528,7 +1528,7 @@ void DocumentWidget::appendDeletedText(view::string_view deletedText, int delete
 
     // re-allocate, adding space for the new character(s)
     std::string comboText;
-    comboText.reserve(undo.oldText.size() + deletedLen);
+    comboText.reserve(undo.oldText.size() + gsl::narrow<size_t>(deletedLen));
 
     // copy the new character and the already deleted text to the new memory
     if (direction == Direction::FORWARD) {
@@ -4118,7 +4118,7 @@ void DocumentWidget::PrintStringEx(const std::string &string, const QString &job
 		return;
 	}
 
-	tempFile.write(string.data(), string.size());
+    tempFile.write(string.data(), gsl::narrow<int>(string.size()));
 	tempFile.close();
 
     // Print the temporary file, then delete it and return success
