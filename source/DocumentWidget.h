@@ -307,7 +307,7 @@ public:
 	uid_t fileUid_;                    // last recorded user id of the file
 	unsigned fileMode_;                // permissions of file being edited
     std::unique_ptr<WindowHighlightData> highlightData_;              // info for syntax highlighting
-    std::unique_ptr<MacroCommandData>    macroCmdData_;               // same for macro commands
+    std::shared_ptr<MacroCommandData>    macroCmdData_;               // same for macro commands
     std::unique_ptr<ShellCommandData>    shellCmdData_;               // when a shell command is executing, info. about it, otherwise, nullptr
     std::unique_ptr<SmartIndentData>     smartIndentData_;            // compiled macros for smart indent
     bool showStats_;                  // is stats line supposed to be shown
