@@ -2155,7 +2155,7 @@ int DocumentWidget::cmpWinAgainstFile(const QString &fileName) {
             break;
         }
 
-        // Beware of '\0' chars !
+        // Beware of NUL chars !
         buf->BufSubstituteNullChars(fileString, nRead);
         rv = buf->BufCmpEx(bufPos, view::string_view(fileString, nRead));
         if (rv) {

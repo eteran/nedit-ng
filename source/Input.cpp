@@ -33,7 +33,7 @@ QChar Input::operator*() const {
  */
 QChar Input::read() const {
     if(atEnd()) {
-        return QLatin1Char('\0');
+        return QChar();
     }
 
     return string_->at(index_);
@@ -41,7 +41,7 @@ QChar Input::read() const {
 
 QChar Input::operator[](int index) const {
 	if((index_ + index) >= string_->size()) {
-		return QLatin1Char('\0');
+        return QChar();
 	}
 
 	return string_->at(index_ + index);

@@ -933,8 +933,10 @@ void ReplaceInSelectionEx(MainWindow *window, DocumentWidget *document, TextArea
         // start again after match unless match was empty, then endPos+1
         beginPos = (startPos == endPos) ? endPos + 1 : endPos;
         cursorPos = endPos;
-        if (fileString[endPos] == '\0')
+
+        if (gsl::narrow<size_t>(endPos) == fileString.size()) {
             break;
+        }
     }
 
     if (anyFound) {
@@ -1697,7 +1699,7 @@ static bool backwardRegexSearch(view::string_view string, view::string_view sear
 		// says begin searching from the far end of the file.		
 		if (beginPos >= 0) {
 
-            // NOTE(eteran): why do we use '\0' as the previous char, and not string[beginPos - 1] (assuming that beginPos > 0)?
+            // NOTE(eteran): why do we use NUL as the previous char, and not string[beginPos - 1] (assuming that beginPos > 0)?
 			if (compiledRE.execute(string, 0, beginPos, '\0', '\0', delimiters, true)) {
 
                 *startPos = gsl::narrow<int>(compiledRE.startp[0] - &string[0]);

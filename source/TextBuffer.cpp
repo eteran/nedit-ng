@@ -394,7 +394,6 @@ void deleteRectFromLine(view::string_view line, int rectStart, int rectEnd, int 
 
     // If the line ended before rectEnd, there's nothing more to do
     if (c == line.end()) {
-        *outPtr = '\0';
         *endOffset = gsl::narrow<int>(outStr->size());
         return;
     }
@@ -591,7 +590,7 @@ TextBuffer::~TextBuffer() {
 */
 std::string TextBuffer::BufGetAllEx() {
 	std::string text;
-	text.reserve(length_);
+    text.reserve(gsl::narrow<size_t>(length_));
 
 	std::copy_n(buf_,           gapStart_,           std::back_inserter(text));
 	std::copy_n(&buf_[gapEnd_], length_ - gapStart_, std::back_inserter(text));
@@ -895,42 +894,42 @@ void TextBuffer::overlayRectEx(int startPos, int rectStart, int rectEnd, view::s
        must be padded to align the text beyond the inserted column.  (Space
        for additional newlines if the inserted text extends beyond the end
        of the buffer is counted with the length of insText) */
-    int start  = BufStartOfLine(startPos);
-    int nLines = countLinesEx(insText) + 1;
-    int end    = BufEndOfLine(BufCountForwardNLines(start, nLines-1));
+    const int start  = BufStartOfLine(startPos);
+    const int nLines = countLinesEx(insText) + 1;
+    const int end    = BufEndOfLine(BufCountForwardNLines(start, nLines-1));
 
-    std::string expIns = expandTabsEx(insText, 0, tabDist_, nullSubsChar_);
+    const std::string expIns = expandTabsEx(insText, 0, tabDist_, nullSubsChar_);
 
-    char *outStr = new char[end - start + expIns.size() + nLines * (rectEnd + MAX_EXP_CHAR_LEN) + 1];
+    std::string outStr;
+    outStr.reserve(gsl::narrow<size_t>(end - start) + expIns.size() + gsl::narrow<size_t>(nLines * (rectEnd + MAX_EXP_CHAR_LEN)));
 
     /* Loop over all lines in the buffer between start and end overlaying the
        text between rectStart and rectEnd and padding appropriately.  Trim
        trailing space from line (whitespace at the ends of lines otherwise
        tends to multiply, since additional padding is added to maintain it */
-    char *outPtr = outStr;
+    auto outPtr = std::back_inserter(outStr);
     int lineStart = start;
     auto insPtr = insText.begin();
 
     while (true) {
-        int lineEnd = BufEndOfLine(lineStart);
-        std::string line = BufGetRangeEx(lineStart, lineEnd);
+        const int lineEnd = BufEndOfLine(lineStart);
+        const std::string line    = BufGetRangeEx(lineStart, lineEnd);
+        const std::string insLine = copyLineEx(insPtr, insText.end());
 
-        std::string insLine = copyLineEx(insPtr, insText.end());
         len = gsl::narrow<int>(insLine.size());
-
         insPtr += len;
 
-        // TODO(eteran): remove the need for this temp
+        // TODO(eteran): remove the need for this temp?
         std::string temp;
         overlayRectInLineEx(line, insLine, rectStart, rectEnd, tabDist_, useTabs_, nullSubsChar_, &temp, &endOffset);
         len = gsl::narrow<int>(temp.size());
-        std::copy(temp.begin(), temp.end(), outPtr);
 
-        for (char *c = outPtr + len - 1; c > outPtr && (*c == ' ' || *c == '\t'); c--) {
-            len--;
+        for(auto it = outStr.rbegin(); it != outStr.rend() && (*it == ' ' || *it == '\t'); ++it) {
+            --len;
         }
 
-        outPtr += len;
+        std::copy_n(temp.begin(), len, outPtr);
+
         *outPtr++ = '\n';
         lineStart = lineEnd < length_ ? lineEnd + 1 : length_;
 
@@ -940,20 +939,18 @@ void TextBuffer::overlayRectEx(int startPos, int rectStart, int rectEnd, view::s
         insPtr++;
     }
 
-    if (outPtr != outStr) {
-        outPtr--; /* trim back off extra newline */
+    // trim back off extra newline
+    if(!outStr.empty()) {
+        outStr.pop_back();
     }
-    *outPtr = '\0';
 
-    /* replace the text between start and end with the new stuff */
+    // replace the text between start and end with the new stuff
     deleteRange(start, end);
     insertEx(start, outStr);
 
-    *nInserted = gsl::narrow<int>(outPtr - outStr);
+    *nInserted = gsl::narrow<int>(outStr.size());
     *nDeleted  = end - start;
-    *endPos    = gsl::narrow<int>(start + outPtr - outStr - len + endOffset);
-
-    delete [] outStr;
+    *endPos    = start + gsl::narrow<int>(outStr.size()) - len + endOffset;
 }
 
 /*
@@ -1646,8 +1643,10 @@ bool TextBuffer::BufSubstituteNullChars(char *string, int length) {
 
 	/* If the string contains null characters, substitute them with the
 	   buffer's null substitution character */
-	if (histogram[0] != 0)
+    if (histogram[0] != 0) {
 		subsChars(string, length, '\0', nullSubsChar_);
+    }
+
 	return true;
 }
 
@@ -1909,18 +1908,20 @@ void TextBuffer::callPreDeleteCBs(int pos, int nDeleted) const {
 ** the delete).
 */
 void TextBuffer::deleteRange(int start, int end) {
-	// if the gap is not contiguous to the area to remove, move it there
-	if (start > gapStart_)
+
+    // if the gap is not contiguous to the area to remove, move it there
+    if (start > gapStart_) {
 		moveGap(start);
-	else if (end < gapStart_)
+    } else if (end < gapStart_) {
 		moveGap(end);
+    }
 
 	// expand the gap to encompass the deleted characters
-	gapEnd_ += end - gapStart_;
-	gapStart_ -= gapStart_ - start;
+    gapEnd_   += (end - gapStart_);
+    gapStart_ -= (gapStart_ - start);
 
 	// update the length
-	length_ -= end - start;
+    length_ -= (end - start);
 
 	// fix up any selections which might be affected by the change
 	updateSelections(start, end - start, 0);
@@ -1944,18 +1945,20 @@ void TextBuffer::deleteRect(int start, int end, int rectStart, int rectEnd, int 
 	   the edges of the selection */
 	start = BufStartOfLine(start);
     end = BufEndOfLine(end);
-    int nLines = BufCountLines(start, end) + 1;
+    const int nLines = BufCountLines(start, end) + 1;
 
-    std::string text = BufGetRangeEx(start, end);
-    std::string expText = expandTabsEx(text, 0, tabDist_, nullSubsChar_);
+    const std::string text = BufGetRangeEx(start, end);
+    const std::string expText = expandTabsEx(text, 0, tabDist_, nullSubsChar_);
     auto len = gsl::narrow<int>(expText.size());
 
-    auto outStr = new char[expText.size() + nLines * MAX_EXP_CHAR_LEN * 2 + 1];
+    std::string outStr;
+    outStr.reserve(expText.size() + gsl::narrow<size_t>(nLines * MAX_EXP_CHAR_LEN * 2));
 
 	/* loop over all lines in the buffer between start and end removing
 	   the text between rectStart and rectEnd and padding appropriately */
-	int lineStart = start;
-    char *outPtr = outStr;
+    int lineStart = start;
+    auto outPtr = std::back_inserter(outStr);
+
 	while (lineStart <= length_ && lineStart <= end) {
 		int lineEnd = BufEndOfLine(lineStart);
         std::string line = BufGetRangeEx(lineStart, lineEnd);
@@ -1966,22 +1969,21 @@ void TextBuffer::deleteRect(int start, int end, int rectStart, int rectEnd, int 
         len = gsl::narrow<int>(temp.size());
         std::copy_n(temp.begin(), len, outPtr);
 
-        outPtr += len;
 		*outPtr++ = '\n';
 		lineStart = lineEnd + 1;
     }
 
-    if (outPtr != outStr) {
-        outPtr--; // trim back off extra newline
+    // trim back off extra newline
+    if (!outStr.empty()) {
+        outStr.pop_back();
     }
-    *outPtr = '\0';
 
     // replace the text between start and end with the newly created string
 	deleteRange(start, end);
 	insertEx(start, outStr);
-    *replaceLen = gsl::narrow<int>(outPtr - outStr);
-    *endPos     = gsl::narrow<int>(start + (outPtr - outStr) - len + endOffset);
-    delete [] outStr;
+
+    *replaceLen = gsl::narrow<int>(outStr.size());
+    *endPos     = start + gsl::narrow<int>(outStr.size()) - len + endOffset;
 }
 
 /*
@@ -2063,45 +2065,48 @@ void TextBuffer::insertColEx(int column, int startPos, view::string_view insText
 	   the text beyond the inserted column.  (Space for additional
 	   newlines if the inserted text extends beyond the end of the buffer
 	   is counted with the length of insText) */
-    int start = BufStartOfLine(startPos);
-    int nLines = countLinesEx(insText) + 1;
+    const int start  = BufStartOfLine(startPos);
+    const int nLines = countLinesEx(insText) + 1;
 
-    int insWidth = textWidthEx(insText, tabDist_, nullSubsChar_);
-    int end = BufEndOfLine(BufCountForwardNLines(start, nLines - 1));
-	std::string replText = BufGetRangeEx(start, end);
+    const int insWidth = textWidthEx(insText, tabDist_, nullSubsChar_);
+    const int end      = BufEndOfLine(BufCountForwardNLines(start, nLines - 1));
+    const std::string replText = BufGetRangeEx(start, end);
 
-    std::string expRep = expandTabsEx(replText, 0, tabDist_, nullSubsChar_);
-    std::string expIns = expandTabsEx(insText, 0, tabDist_, nullSubsChar_);
+    const std::string expRep = expandTabsEx(replText, 0, tabDist_, nullSubsChar_);
+    const std::string expIns = expandTabsEx(insText, 0, tabDist_, nullSubsChar_);
 
-    auto outStr = new char[expRep.size() + expIns.size() + nLines * (column + insWidth + MAX_EXP_CHAR_LEN) + 1];
+    std::string outStr;
+    outStr.reserve(expRep.size() + expIns.size() + gsl::narrow<size_t>(nLines * (column + insWidth + MAX_EXP_CHAR_LEN)));
 
     /* Loop over all lines in the buffer between start and end inserting
 	   text at column, splitting tabs and adding padding appropriately */
-    char *outPtr = outStr;
+    auto outPtr   = std::back_inserter(outStr);
 	int lineStart = start;
-    auto insPtr = insText.begin();
+    auto insPtr   = insText.begin();
+
 	while (true) {
-		int lineEnd = BufEndOfLine(lineStart);
-        std::string line    = BufGetRangeEx(lineStart, lineEnd);
-        std::string insLine = copyLineEx(insPtr, insText.end());
+        const int lineEnd = BufEndOfLine(lineStart);
+        const std::string line    = BufGetRangeEx(lineStart, lineEnd);
+        const std::string insLine = copyLineEx(insPtr, insText.end());
         insPtr += insLine.size();
 
         // TODO(eteran): remove the need for this temp
         std::string temp;
         insertColInLineEx(line, insLine, column, insWidth, tabDist_, useTabs_, nullSubsChar_, &temp, &endOffset);
         len = gsl::narrow<int>(temp.size());
-        std::copy_n(temp.begin(), len, outPtr);
 
 #if 0
         /* Earlier comments claimed that trailing whitespace could multiply on                                                                                                                                                                   \
            the ends of lines, but insertColInLine looks like it should never                                                                                                                                                                        \
            add space unnecessarily, and this trimming interfered with                                                                                                                                                                               \
            paragraph filling, so lets see if it works without it. MWE */
-        for (char *c = outPtr + len - 1; c > outPtr && (*c == ' ' || *c == '\t'); c--) {
-            len--;
+        for(auto it = temp.rbegin(); it != temp.rend() && (*it == ' ' || *it == '\t'); ++it) {
+            --len;
         }
 #endif
-        outPtr += len;
+
+        std::copy_n(temp.begin(), len, outPtr);
+
 		*outPtr++ = '\n';
         lineStart = lineEnd < length_ ? lineEnd + 1 : length_;
         if (insPtr == insText.end())
@@ -2109,24 +2114,24 @@ void TextBuffer::insertColEx(int column, int startPos, view::string_view insText
 		insPtr++;
     }
 
-    if (outPtr != outStr) {
-        outPtr--; // trim back off extra newline
+    // trim back off extra newline
+    if (!outStr.empty()) {
+        outStr.pop_back();
     }
 
-    *outPtr = '\0';
-
-	// replace the text between start and end with the new stuff
+    // replace the text between start and end with the new stuff
 	deleteRange(start, end);
     insertEx(start, outStr);
 
-    *nInserted = gsl::narrow<int>(outPtr - outStr);
+    *nInserted = gsl::narrow<int>(outStr.size());
     *nDeleted  = end - start;
-    *endPos    = gsl::narrow<int>(start + (outPtr - outStr) - len + endOffset);
-
-    delete [] outStr;
+    *endPos    = start + gsl::narrow<int>(outStr.size()) - len + endOffset;
 }
 
 void TextBuffer::moveGap(int pos) {
+
+    using std::memmove;
+
 	int gapLen = gapEnd_ - gapStart_;
 
     if (pos > gapStart_) {

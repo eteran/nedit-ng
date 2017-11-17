@@ -3206,7 +3206,10 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 
 		char expandedChar[MAX_EXP_CHAR_LEN];
 
-		charLen = charIndex >= lineLen ? 1 : TextBuffer::BufExpandCharacter(baseChar = lineStr[charIndex], outIndex, expandedChar, buffer_->tabDist_, buffer_->nullSubsChar_);
+        charLen = (charIndex >= lineLen) ?
+                    1 :
+                    TextBuffer::BufExpandCharacter(baseChar = lineStr[charIndex], outIndex, expandedChar, buffer_->tabDist_, buffer_->nullSubsChar_);
+
 		style = styleOfPos(lineStartPos, lineLen, charIndex, outIndex + dispIndexOffset, baseChar);
 		charWidth = charIndex >= lineLen ? stdCharWidth : stringWidth(expandedChar, charLen, style);
 
@@ -3245,7 +3248,10 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 		char expandedChar[MAX_EXP_CHAR_LEN];
 
 		baseChar = '\0';
-		charLen = charIndex >= lineLen ? 1 : TextBuffer::BufExpandCharacter(baseChar = lineStr[charIndex], outIndex, expandedChar, buffer_->tabDist_, buffer_->nullSubsChar_);
+        charLen = (charIndex >= lineLen) ?
+                    1 :
+                    TextBuffer::BufExpandCharacter(baseChar = lineStr[charIndex], outIndex, expandedChar, buffer_->tabDist_, buffer_->nullSubsChar_);
+
 		int charStyle = styleOfPos(lineStartPos, lineLen, charIndex, outIndex + dispIndexOffset, baseChar);
 
 		for (i = 0; i < charLen; i++) {

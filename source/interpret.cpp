@@ -761,7 +761,7 @@ NString AllocNStringEx(int length) {
     AllocatedStrings.push_back(mem);
 
     str.rep = mem + 1;
-    str.rep[length - 1] = '\0'; // forced \0
+    str.rep[length - 1] = '\0'; // forced NUL
     str.len = length - 1;
     return str;
 }

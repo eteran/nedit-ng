@@ -808,6 +808,7 @@ static std::string fillParagraphEx(view::string_view text, int leftMargin, int f
 	   and convert the last whitespace character into a newline */
     int col = firstLineIndent;
     bool inWhitespace;
+
     for (auto it = cleanedText.begin(); it != cleanedText.end(); ++it) {
         if (*it == '\n') {
 			col = leftMargin;
@@ -832,6 +833,7 @@ static std::string fillParagraphEx(view::string_view text, int leftMargin, int f
 			}
 		}
 	}
+
 	nLines++;
 
 	// produce a string to prepend to lines to indent them to the left margin 
@@ -847,9 +849,9 @@ static std::string fillParagraphEx(view::string_view text, int leftMargin, int f
     // prepend the indent string to each line of the filled text
     std::copy(leadIndentStr.begin(), leadIndentStr.end(), outPtr2);
 
-    for (char *c = &cleanedText[0]; *c != '\0'; c++) {
-        *outPtr2++ = *c;
-		if (*c == '\n') {
+    for(auto it = cleanedText.begin(); it != cleanedText.end(); ++it) {
+        *outPtr2++ = *it;
+        if (*it == '\n') {
             std::copy(indentString.begin(), indentString.end(), outPtr2);
 		}
 	}
