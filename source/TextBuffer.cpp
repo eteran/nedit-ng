@@ -152,7 +152,7 @@ std::string expandTabsEx(view::string_view text, int startIndent, int tabDist, c
 ** characters remain stationary when the text is shifted from starting at
 ** "origIndent" to starting at "newIndent".
 */
-std::string realignTabsEx(view::string_view text, int origIndent, int newIndent, int tabDist, bool useTabs, char nullSubsChar) {
+std::string realignTabsEx(view::string_view text, int origIndent, int newIndent, int tabDist, int useTabs, char nullSubsChar) {
 
 	// If the tabs settings are the same, retain original tabs
     if (origIndent % tabDist == newIndent % tabDist) {
@@ -235,29 +235,33 @@ char chooseNullSubsChar(bool hist[256]) {
 	return '\0';
 }
 
-int addPadding(char *string, int startIndent, int toIndent, int tabDist, bool useTabs, char nullSubsChar) {
+template <class Out>
+int addPaddingEx(Out out, int startIndent, int toIndent, int tabDist, int useTabs, char nullSubsChar) {
 
-	int indent = startIndent;
-    char *out = string;
+    int indent = startIndent;
+    int count  = 0;
 
-	if (useTabs) {
-		while (indent < toIndent) {
-			int len = TextBuffer::BufCharWidth('\t', indent, tabDist, nullSubsChar);
-			if (len > 1 && indent + len <= toIndent) {
+    if (useTabs) {
+        while (indent < toIndent) {
+            int len = TextBuffer::BufCharWidth('\t', indent, tabDist, nullSubsChar);
+            if (len > 1 && indent + len <= toIndent) {
                 *out++ = '\t';
-				indent += len;
-			} else {
+                ++count;
+                indent += len;
+            } else {
                 *out++ = ' ';
-				indent++;
-			}
-		}
-	} else {
-		while (indent < toIndent) {
+                ++count;
+                indent++;
+            }
+        }
+    } else {
+        while (indent < toIndent) {
             *out++ = ' ';
-			indent++;
-		}
-	}
-    return gsl::narrow<int>(out - string);
+            ++count;
+            indent++;
+        }
+    }
+    return count;
 }
 
 /*
@@ -268,98 +272,88 @@ int addPadding(char *string, int startIndent, int toIndent, int tabDist, bool us
 ** the right edge of the inserted text (as a hint for routines which need
 ** to position the cursor).
 */
-void insertColInLineEx(view::string_view line, view::string_view insLine, int column, int insWidth, int tabDist, bool useTabs, char nullSubsChar, char *outStr, int *outLen, int *endOffset) {
+void insertColInLineEx(view::string_view line, view::string_view insLine, int column, int insWidth, int tabDist, int useTabs, char nullSubsChar, std::string *outStr, int *endOffset) {
 
     int len = 0;
     int postColIndent;
 
-	// copy the line up to "column"
-    char *outPtr = outStr;
+    // copy the line up to "column"
+    auto outPtr = std::back_inserter(*outStr);
     int indent = 0;
 
-	auto linePtr = line.begin();
-	for (; linePtr != line.end(); ++linePtr) {
+    auto linePtr = line.begin();
+    for (; linePtr != line.end(); ++linePtr) {
         len = TextBuffer::BufCharWidth(*linePtr, indent, tabDist, nullSubsChar);
         if (indent + len > column) {
-			break;
+            break;
         }
 
-		indent += len;
-		*outPtr++ = *linePtr;
-	}
-
-	/* If "column" falls in the middle of a character, and the character is a
-	   tab, leave it off and leave the indent short and it will get padded
-	   later.  If it's a control character, insert it and adjust indent
-	   accordingly. */
-	if (indent < column && linePtr != line.end()) {
-		postColIndent = indent + len;
-        if (*linePtr == '\t') {
-			linePtr++;
-        } else {
-			*outPtr++ = *linePtr++;
-			indent += len;
-		}
-    } else {
-		postColIndent = indent;
+        indent += len;
+        *outPtr++ = *linePtr;
     }
 
-	// If there's no text after the column and no text to insert, that's all
-	if (insLine.empty() && linePtr == line.end()) {
-        *outLen    = gsl::narrow<int>(outPtr - outStr);
-        *endOffset = gsl::narrow<int>(outPtr - outStr);
-		return;
-	}
+    /* If "column" falls in the middle of a character, and the character is a
+       tab, leave it off and leave the indent short and it will get padded
+       later.  If it's a control character, insert it and adjust indent
+       accordingly. */
+    if (indent < column && linePtr != line.end()) {
+        postColIndent = indent + len;
+        if (*linePtr == '\t') {
+            linePtr++;
+        } else {
+            *outPtr++ = *linePtr++;
+            indent += len;
+        }
+    } else {
+        postColIndent = indent;
+    }
 
-	// pad out to column if text is too short
-	if (indent < column) {
-        len = addPadding(outPtr, indent, column, tabDist, useTabs, nullSubsChar);
-		outPtr += len;
-		indent = column;
-	}
+    // If there's no text after the column and no text to insert, that's all
+    if (insLine.empty() && linePtr == line.end()) {
+        *endOffset = gsl::narrow<int>(outStr->size());
+        return;
+    }
 
-	/* Copy the text from "insLine" (if any), recalculating the tabs as if
-	   the inserted string began at column 0 to its new column destination */
-	if (!insLine.empty()) {
+    // pad out to column if text is too short
+    if (indent < column) {
+        len = addPaddingEx(outPtr, indent, column, tabDist, useTabs, nullSubsChar);
+        indent = column;
+    }
+
+    /* Copy the text from "insLine" (if any), recalculating the tabs as if
+       the inserted string began at column 0 to its new column destination */
+    if (!insLine.empty()) {
         std::string retabbedStr = realignTabsEx(insLine, 0, indent, tabDist, useTabs, nullSubsChar);
         len = gsl::narrow<int>(retabbedStr.size());
-		
-		Q_UNUSED(len);
 
-		for (char ch : retabbedStr) {
-			*outPtr++ = ch;
-			len = TextBuffer::BufCharWidth(ch, indent, tabDist, nullSubsChar);
-			indent += len;
-		}
-	}
+        Q_UNUSED(len);
 
-	// If the original line did not extend past "column", that's all
-	if (linePtr == line.end()) {
-        *outLen    = gsl::narrow<int>(outPtr - outStr);
-        *endOffset = gsl::narrow<int>(outPtr - outStr);
-		return;
-	}
+        for (char ch : retabbedStr) {
+            *outPtr++ = ch;
+            len = TextBuffer::BufCharWidth(ch, indent, tabDist, nullSubsChar);
+            indent += len;
+        }
+    }
 
-	/* Pad out to column + width of inserted text + (additional original
-	   offset due to non-breaking character at column) */
+    // If the original line did not extend past "column", that's all
+    if (linePtr == line.end()) {
+        *endOffset = gsl::narrow<int>(outStr->size());
+        return;
+    }
+
+    /* Pad out to column + width of inserted text + (additional original
+       offset due to non-breaking character at column) */
     int toIndent = column + insWidth + postColIndent - column;
-    len      = addPadding(outPtr, indent, toIndent, tabDist, useTabs, nullSubsChar);
-	outPtr += len;
-	indent = toIndent;
+    len      = addPaddingEx(outPtr, indent, toIndent, tabDist, useTabs, nullSubsChar);
+    indent = toIndent;
 
-	// realign tabs for text beyond "column" and write it out
+    // realign tabs for text beyond "column" and write it out
     std::string retabbedStr = realignTabsEx(view::substr(linePtr, line.end()), postColIndent, indent, tabDist, useTabs, nullSubsChar);
     len = gsl::narrow<int>(retabbedStr.size());
 
-	auto it = retabbedStr.begin();
-	auto out = outPtr;
-	while(it != retabbedStr.end()) {
-		*out++ = *it++;
-	}
-	*out++ = '\0';
+    *endOffset = gsl::narrow<int>(outStr->size());
 
-    *endOffset = gsl::narrow<int>(outPtr - outStr);
-    *outLen    = gsl::narrow<int>((outPtr - outStr) + len);
+    std::copy(retabbedStr.begin(), retabbedStr.end(), outPtr);
 }
 
 /*
@@ -371,63 +365,54 @@ void insertColInLineEx(view::string_view line, view::string_view insLine, int co
 ** the beginning of the string to the point where the characters were
 ** deleted (as a hint for routines which need to position the cursor).
 */
-void deleteRectFromLine(view::string_view line, int rectStart, int rectEnd, int tabDist, bool useTabs, char nullSubsChar, char *outStr, int *outLen, int *endOffset) {
-    int indent;
-    int preRectIndent;
-    int postRectIndent;
+void deleteRectFromLine(view::string_view line, int rectStart, int rectEnd, int tabDist, int useTabs, char nullSubsChar, std::string *outStr, int *endOffset) {
 
-	// copy the line up to rectStart
-	char *outPtr = outStr;
-	indent = 0;
-	auto c = line.begin();
-	for (; c != line.end(); c++) {
-        if (indent > rectStart) {
-			break;
-        }
+    int len;
 
-        const int len = TextBuffer::BufCharWidth(*c, indent, tabDist, nullSubsChar);
-		if (indent + len > rectStart && (indent == rectStart || *c == '\t'))
-			break;
-		indent += len;
-		*outPtr++ = *c;
-	}
-	preRectIndent = indent;
-
-	// skip the characters between rectStart and rectEnd
-    for (; c != line.end() && indent < rectEnd; c++) {
-		indent += TextBuffer::BufCharWidth(*c, indent, tabDist, nullSubsChar);
+    // copy the line up to rectStart
+    auto outPtr = std::back_inserter(*outStr);
+    int indent = 0;
+    auto c = line.begin();
+    for (; c != line.end(); c++) {
+        if (indent > rectStart)
+            break;
+        len = TextBuffer::BufCharWidth(*c, indent, tabDist, nullSubsChar);
+        if (indent + len > rectStart && (indent == rectStart || *c == '\t'))
+            break;
+        indent += len;
+        *outPtr++ = *c;
     }
-	postRectIndent = indent;
 
-	// If the line ended before rectEnd, there's nothing more to do
-	if (c == line.end()) {
-		*outPtr = '\0';
-        *outLen    = gsl::narrow<int>(outPtr - outStr);
-        *endOffset = gsl::narrow<int>(outPtr - outStr);
-		return;
-	}
+    const int preRectIndent = indent;
 
-	/* fill in any space left by removed tabs or control characters
-	   which straddled the boundaries */
+    // skip the characters between rectStart and rectEnd
+    for (; c != line.end() && indent < rectEnd; c++) {
+        indent += TextBuffer::BufCharWidth(*c, indent, tabDist, nullSubsChar);
+    }
+
+    const int postRectIndent = indent;
+
+    // If the line ended before rectEnd, there's nothing more to do
+    if (c == line.end()) {
+        *outPtr = '\0';
+        *endOffset = gsl::narrow<int>(outStr->size());
+        return;
+    }
+
+    /* fill in any space left by removed tabs or control characters
+       which straddled the boundaries */
     indent = std::max(rectStart + postRectIndent - rectEnd, preRectIndent);
-    int len = addPadding(outPtr, preRectIndent, indent, tabDist, useTabs, nullSubsChar);
-	outPtr += len;
+    len = addPaddingEx(outPtr, preRectIndent, indent, tabDist, useTabs, nullSubsChar);
 
-	/* Copy the rest of the line.  If the indentation has changed, preserve
-	   the position of non-whitespace characters by converting tabs to
-	   spaces, then back to tabs with the correct offset */
+    /* Copy the rest of the line.  If the indentation has changed, preserve
+       the position of non-whitespace characters by converting tabs to
+       spaces, then back to tabs with the correct offset */
     std::string retabbedStr = realignTabsEx(view::substr(c, line.end()), postRectIndent, indent, tabDist, useTabs, nullSubsChar);
     len = gsl::narrow<int>(retabbedStr.size());
 
-    auto out = outPtr;
-    for(auto it = retabbedStr.begin(); it != retabbedStr.end(); ++it) {
-        *out++ = *it;
-    }
+    *endOffset = gsl::narrow<int>(outStr->size());
 
-	*out++ = '\0';
-
-    *endOffset = gsl::narrow<int>(outPtr - outStr);
-    *outLen    = gsl::narrow<int>((outPtr - outStr) + len);
+    std::copy(retabbedStr.begin(), retabbedStr.end(), outPtr);
 }
 
 /*
@@ -476,15 +461,15 @@ int textWidthEx(view::string_view text, int tabDist, char nullSubsChar) {
 **
 ** This code does not handle control characters very well, but oh well.
 */
-void overlayRectInLineEx(view::string_view line, view::string_view insLine, int rectStart, int rectEnd, int tabDist, bool useTabs, char nullSubsChar, char *outStr, int *outLen, int *endOffset) {
+void overlayRectInLineEx(view::string_view line, view::string_view insLine, int rectStart, int rectEnd, int tabDist, int useTabs, char nullSubsChar, std::string *outStr, int *endOffset) {
 
     int postRectIndent;
 
     /* copy the line up to "rectStart" or just before the char that contains it*/
-    char *outPtr  = outStr;
+    auto outPtr   = std::back_inserter(*outStr);
     int inIndent  = 0;
     int outIndent = 0;
-    int len = 0;
+    int len       = 0;
 
     auto linePtr = line.begin();
 
@@ -528,15 +513,13 @@ void overlayRectInLineEx(view::string_view line, view::string_view insLine, int 
 
     /* If there's no text after rectStart and no text to insert, that's all */
     if (insLine.empty() && linePtr == line.end()) {
-        *outLen    = gsl::narrow<int>(outPtr - outStr);
-        *endOffset = gsl::narrow<int>(outPtr - outStr);
+        *endOffset = gsl::narrow<int>(outStr->size());
         return;
     }
 
     /* pad out to rectStart if text is too short */
     if (outIndent < rectStart) {
-        len = addPadding(outPtr, outIndent, rectStart, tabDist, useTabs, nullSubsChar);
-        outPtr += len;
+        addPaddingEx(outPtr, outIndent, rectStart, tabDist, useTabs, nullSubsChar);
     }
 
     outIndent = rectStart;
@@ -546,8 +529,6 @@ void overlayRectInLineEx(view::string_view line, view::string_view insLine, int 
     if (!insLine.empty()) {
         std::string retabbedStr = realignTabsEx(insLine, 0, rectStart, tabDist, useTabs, nullSubsChar);
         len = gsl::narrow<int>(retabbedStr.size());
-		
-		Q_UNUSED(len);
 
         for (char c : retabbedStr) {
             *outPtr++ = c;
@@ -558,25 +539,21 @@ void overlayRectInLineEx(view::string_view line, view::string_view insLine, int 
 
     /* If the original line did not extend past "rectStart", that's all */
     if (linePtr == line.end()) {
-        *outLen    = gsl::narrow<int>(outPtr - outStr);
-        *endOffset = gsl::narrow<int>(outPtr - outStr);
-
+        *endOffset = gsl::narrow<int>(outStr->size());
         return;
     }
 
     /* Pad out to rectEnd + (additional original offset
        due to non-breaking character at right boundary) */
-    len = addPadding(outPtr, outIndent, postRectIndent, tabDist, useTabs, nullSubsChar);
-    outPtr += len;
+    addPaddingEx(outPtr, outIndent, postRectIndent, tabDist, useTabs, nullSubsChar);
     outIndent = postRectIndent;
-	
-	Q_UNUSED(outIndent);
+
+    *endOffset = gsl::narrow<int>(outStr->size());
 
     /* copy the text beyond "rectEnd" */
     std::copy(linePtr, line.end(), outPtr);
-    *endOffset = gsl::narrow<int>(outPtr - outStr);
-    *outLen    = gsl::narrow<int>(outPtr - outStr + std::distance(linePtr, line.end()));
 }
+
 }
 
 /*
@@ -933,6 +910,7 @@ void TextBuffer::overlayRectEx(int startPos, int rectStart, int rectEnd, view::s
     char *outPtr = outStr;
     int lineStart = start;
     auto insPtr = insText.begin();
+
     while (true) {
         int lineEnd = BufEndOfLine(lineStart);
         std::string line = BufGetRangeEx(lineStart, lineEnd);
@@ -941,14 +919,21 @@ void TextBuffer::overlayRectEx(int startPos, int rectStart, int rectEnd, view::s
         len = gsl::narrow<int>(insLine.size());
 
         insPtr += len;
-        overlayRectInLineEx(line, insLine, rectStart, rectEnd, tabDist_, useTabs_, nullSubsChar_, outPtr, &len, &endOffset);
+
+        // TODO(eteran): remove the need for this temp
+        std::string temp;
+        overlayRectInLineEx(line, insLine, rectStart, rectEnd, tabDist_, useTabs_, nullSubsChar_, &temp, &endOffset);
+        len = gsl::narrow<int>(temp.size());
+        std::copy(temp.begin(), temp.end(), outPtr);
 
         for (char *c = outPtr + len - 1; c > outPtr && (*c == ' ' || *c == '\t'); c--) {
             len--;
         }
+
         outPtr += len;
         *outPtr++ = '\n';
         lineStart = lineEnd < length_ ? lineEnd + 1 : length_;
+
         if (insPtr == insText.end()) {
             break;
         }
@@ -1958,10 +1943,10 @@ void TextBuffer::deleteRect(int start, int end, int rectStart, int rectEnd, int 
 	   characters per line for padding where tabs and control characters cross
 	   the edges of the selection */
 	start = BufStartOfLine(start);
-    end   = BufEndOfLine(end);
-	int nLines = BufCountLines(start, end) + 1;
+    end = BufEndOfLine(end);
+    int nLines = BufCountLines(start, end) + 1;
 
-    std::string text    = BufGetRangeEx(start, end);
+    std::string text = BufGetRangeEx(start, end);
     std::string expText = expandTabsEx(text, 0, tabDist_, nullSubsChar_);
     auto len = gsl::narrow<int>(expText.size());
 
@@ -1970,28 +1955,33 @@ void TextBuffer::deleteRect(int start, int end, int rectStart, int rectEnd, int 
 	/* loop over all lines in the buffer between start and end removing
 	   the text between rectStart and rectEnd and padding appropriately */
 	int lineStart = start;
-	char *outPtr = outStr;
+    char *outPtr = outStr;
 	while (lineStart <= length_ && lineStart <= end) {
 		int lineEnd = BufEndOfLine(lineStart);
         std::string line = BufGetRangeEx(lineStart, lineEnd);
-        deleteRectFromLine(line, rectStart, rectEnd, tabDist_, useTabs_, nullSubsChar_, outPtr, &len, &endOffset);
 
-		outPtr += len;
+        // TODO(eteran): remove the need for this temp
+        std::string temp;
+        deleteRectFromLine(line, rectStart, rectEnd, tabDist_, useTabs_, nullSubsChar_, &temp, &endOffset);
+        len = gsl::narrow<int>(temp.size());
+        std::copy_n(temp.begin(), len, outPtr);
+
+        outPtr += len;
 		*outPtr++ = '\n';
 		lineStart = lineEnd + 1;
-	}
+    }
 
-	if (outPtr != outStr) {
-		outPtr--; // trim back off extra newline
-	}
-	*outPtr = '\0';
+    if (outPtr != outStr) {
+        outPtr--; // trim back off extra newline
+    }
+    *outPtr = '\0';
 
-	// replace the text between start and end with the newly created string
+    // replace the text between start and end with the newly created string
 	deleteRange(start, end);
 	insertEx(start, outStr);
     *replaceLen = gsl::narrow<int>(outPtr - outStr);
     *endPos     = gsl::narrow<int>(start + (outPtr - outStr) - len + endOffset);
-	delete [] outStr;
+    delete [] outStr;
 }
 
 /*
@@ -2085,26 +2075,30 @@ void TextBuffer::insertColEx(int column, int startPos, view::string_view insText
 
     auto outStr = new char[expRep.size() + expIns.size() + nLines * (column + insWidth + MAX_EXP_CHAR_LEN) + 1];
 
-	/* Loop over all lines in the buffer between start and end inserting
+    /* Loop over all lines in the buffer between start and end inserting
 	   text at column, splitting tabs and adding padding appropriately */
     char *outPtr = outStr;
 	int lineStart = start;
-	auto insPtr = insText.begin();
+    auto insPtr = insText.begin();
 	while (true) {
 		int lineEnd = BufEndOfLine(lineStart);
         std::string line    = BufGetRangeEx(lineStart, lineEnd);
         std::string insLine = copyLineEx(insPtr, insText.end());
         insPtr += insLine.size();
-        insertColInLineEx(line, insLine, column, insWidth, tabDist_, useTabs_, nullSubsChar_, outPtr, &len, &endOffset);
+
+        // TODO(eteran): remove the need for this temp
+        std::string temp;
+        insertColInLineEx(line, insLine, column, insWidth, tabDist_, useTabs_, nullSubsChar_, &temp, &endOffset);
+        len = gsl::narrow<int>(temp.size());
+        std::copy_n(temp.begin(), len, outPtr);
+
 #if 0
         /* Earlier comments claimed that trailing whitespace could multiply on                                                                                                                                                                   \
            the ends of lines, but insertColInLine looks like it should never                                                                                                                                                                        \
            add space unnecessarily, and this trimming interfered with                                                                                                                                                                               \
            paragraph filling, so lets see if it works without it. MWE */
-        {
-            char *c;
-            for (c=outPtr+len-1; c>outPtr && (*c == ' ' || *c == '\t'); c--)
-                len--;
+        for (char *c = outPtr + len - 1; c > outPtr && (*c == ' ' || *c == '\t'); c--) {
+            len--;
         }
 #endif
         outPtr += len;

@@ -800,6 +800,7 @@ char getPrevChar(TextBuffer *buf, int pos) {
 }
 
 static int parentStyleOf(const QByteArray &parentStyles, int style) {
+    Q_ASSERT(style != 0);
     return parentStyles[static_cast<uint8_t>(style) - UNFINISHED_STYLE];
 }
 

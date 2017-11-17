@@ -1681,8 +1681,9 @@ void DocumentWidget::Undo() {
         if (!buffer_->primary_.selected || GetPrefUndoModifiesSelection()) {
             /* position the cursor in the focus pane after the changed text
                to show the user where the undo was done */
-            auto area = win->lastFocus_;
-            area->TextSetCursorPos(undo.startPos + restoredTextLength);
+            if(QPointer<TextArea> area = win->lastFocus_) {
+                area->TextSetCursorPos(undo.startPos + restoredTextLength);
+            }
         }
 
         if (GetPrefUndoModifiesSelection()) {
