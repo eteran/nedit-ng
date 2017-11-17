@@ -2333,7 +2333,7 @@ bool readCheckMacroStringEx(QWidget *dialogParent, const QString &string, Docume
 */
 void SafeGC() {
 
-    for(DocumentWidget *document : DocumentWidget::allDocuments()) {
+    Q_FOREACH(DocumentWidget *document, DocumentWidget::allDocuments()) {
         if (document->macroCmdData_ || InSmartIndentMacrosEx(document)) {
             return;
         }

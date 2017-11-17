@@ -178,8 +178,8 @@ static QString writeMenuItemStringEx(const QVector<MenuData> &menuItems, DialogT
         QString accStr = f->shortcut.toString();
         *outPtr++ = QLatin1Char('\t');
 
-        for (auto ch : f->name) { // Copy the command name
-            *outPtr++ = (ch);
+        Q_FOREACH(QChar ch, f->name) { // Copy the command name
+            *outPtr++ = ch;
         }
 
         *outPtr++ = QLatin1Char(':');
@@ -221,13 +221,13 @@ static QString writeMenuItemStringEx(const QVector<MenuData> &menuItems, DialogT
         *outPtr++ = QLatin1Char('\t');
         *outPtr++ = QLatin1Char('\t');
 
-        for(QChar c : f->cmd) {
-            if (c == QLatin1Char('\n')) { // and newlines to backslash-n's,
+        Q_FOREACH(QChar ch, f->cmd) {
+            if (ch == QLatin1Char('\n')) { // and newlines to backslash-n's,
                 *outPtr++ = QLatin1Char('\n');
                 *outPtr++ = QLatin1Char('\t');
                 *outPtr++ = QLatin1Char('\t');
             } else
-                *outPtr++ = (c);
+                *outPtr++ = ch;
         }
 
         if (listType == DialogTypes::MACRO_CMDS || listType == DialogTypes::BG_MENU_CMDS) {

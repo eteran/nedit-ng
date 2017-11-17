@@ -7994,7 +7994,6 @@ const std::shared_ptr<TextBuffer> &TextArea::getStyleBuffer() const {
 void TextArea::updateFontHeightMetrics(const QFont &font) {
 
     QFontMetrics fm(font);
-    QFontInfo    fi(font);
 
     int maxAscent  = fm.ascent();
     int maxDescent = fm.descent();
@@ -8004,8 +8003,8 @@ void TextArea::updateFontHeightMetrics(const QFont &font) {
     for (int i = 0; i < nStyles_; i++) {
         QFontMetrics styleFM(styleTable_[i].font);
 
-        maxAscent  = qMax(maxAscent, styleFM.ascent());
-        maxDescent = qMax(maxDescent, styleFM.descent());
+        maxAscent  = std::max(maxAscent, styleFM.ascent());
+        maxDescent = std::max(maxDescent, styleFM.descent());
     }
 
     ascent_  = maxAscent;

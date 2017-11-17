@@ -180,7 +180,7 @@ QString WriteStylesStringEx() {
     QString str;
     QTextStream out(&str);
 
-    for (const HighlightStyle  &style : HighlightStyles) {
+    Q_FOREACH(const HighlightStyle  &style, HighlightStyles) {
 
         out << QLatin1Char('\t')
             << style.name
@@ -251,7 +251,7 @@ QString WriteHighlightStringEx() {
     QString str;
     QTextStream out(&str);
 
-    for (const PatternSet &patSet : PatternSets) {
+    Q_FOREACH(const PatternSet &patSet, PatternSets) {
         if (patSet.patterns.isEmpty()) {
 			continue;
 		}

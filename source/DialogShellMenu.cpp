@@ -434,7 +434,7 @@ bool DialogShellMenu::applyDialogChanges() {
     parseMenuItemList(ShellMenuData);
 
 	// Update the menus themselves in all of the NEdit windows
-    for(MainWindow *window : MainWindow::allWindows()) {
+    Q_FOREACH(MainWindow *window, MainWindow::allWindows()) {
         window->UpdateUserMenus(window->currentDocument());
     }
 

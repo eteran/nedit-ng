@@ -27,7 +27,7 @@
 DialogLanguageModes::DialogLanguageModes(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f), previous_(nullptr) {
 	ui.setupUi(this);
 
-    for(const LanguageMode &lang : LanguageModes) {
+    Q_FOREACH (const LanguageMode &lang, LanguageModes) {
         auto ptr  = new LanguageMode(lang);
 		auto item = new QListWidgetItem(ptr->name);
 		item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(ptr));
@@ -427,7 +427,7 @@ bool DialogLanguageModes::updateLMList(Mode mode) {
         /* Fix up language mode indices in all open windows (which may change
            if the currently selected mode is deleted or has changed position),
            and update word delimiters */
-        for(DocumentWidget *document: DocumentWidget::allDocuments()) {
+        Q_FOREACH(DocumentWidget *document, DocumentWidget::allDocuments()) {
             if (document->languageMode_ != PLAIN_LANGUAGE_MODE) {
 
                 QString oldModeName = LanguageModes[document->languageMode_].name;
@@ -442,7 +442,7 @@ bool DialogLanguageModes::updateLMList(Mode mode) {
                             newDelimiters = GetPrefDelimiters();
                         }
 
-                        for(TextArea *area : document->textPanes()) {
+                        Q_FOREACH(TextArea *area, document->textPanes()) {
                             area->setWordDelimiters(newDelimiters);
                         }
 
@@ -488,14 +488,14 @@ bool DialogLanguageModes::updateLMList(Mode mode) {
 
         /* Update the menus in the window menu bars and load any needed
             calltips files */
-        for(MainWindow *win : MainWindow::allWindows()) {
+        Q_FOREACH(MainWindow *win, MainWindow::allWindows()) {
             win->updateLanguageModeSubmenu();
 
         }
 
         /* Update the menus in the window menu bars and load any needed
             calltips files */
-        for(DocumentWidget *document: DocumentWidget::allDocuments()) {
+        Q_FOREACH(DocumentWidget *document, DocumentWidget::allDocuments()) {
 
             if (document->languageMode_ != PLAIN_LANGUAGE_MODE && !LanguageModes[document->languageMode_].defTipsFile.isNull()) {
                 AddTagsFileEx(LanguageModes[document->languageMode_].defTipsFile, TagSearchMode::TIP);

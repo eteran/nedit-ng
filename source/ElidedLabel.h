@@ -14,6 +14,8 @@ public:
 public Q_SLOTS:
 	void setText(const QString &text);
 	void setElideMode(Qt::TextElideMode elideMode);
+
+public:
 	Qt::TextElideMode elideMode() const;
 
 protected:

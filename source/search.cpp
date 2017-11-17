@@ -1946,7 +1946,7 @@ void saveSearchHistory(const QString &searchString, QString replaceString, Searc
 	currentItemIsIncremental = isIncremental;
 
     if (NHist == 0) {
-        for(MainWindow *window : MainWindow::allWindows()) {
+        Q_FOREACH(MainWindow *window, MainWindow::allWindows()) {
             window->ui.action_Find_Again->setEnabled(true);
             window->ui.action_Replace_Find_Again->setEnabled(true);
             window->ui.action_Replace_Again->setEnabled(true);

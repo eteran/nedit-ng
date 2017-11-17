@@ -260,7 +260,7 @@ Program *FinishCreatingProgram() {
 
 	/* Local variables' values are stored on the stack.  Here we assign
 	   frame pointer offsets to them. */
-    for(Symbol *s : newProg->localSymList) {
+    Q_FOREACH(Symbol *s, newProg->localSymList) {
         s->value = to_value(fpOffset++);
 	}
 
@@ -447,7 +447,7 @@ int ExecuteMacroEx(DocumentWidget *document, Program *prog, gsl::span<DataValue>
     context->frameP = context->stackP;
 
     // Initialize and make room on the stack for local variables
-    for(Symbol *s : prog->localSymList) {
+    Q_FOREACH(Symbol *s, prog->localSymList) {
         FP_GET_SYM_VAL(context->frameP, s) = noValue;
         context->stackP++;
     }
@@ -535,7 +535,7 @@ void RunMacroAsSubrCall(Program *prog) {
 	FrameP = StackP;
 	PC = prog->code;
 
-	for(Symbol *s : prog->localSymList) {
+    Q_FOREACH(Symbol *s, prog->localSymList) {
         FP_GET_SYM_VAL(FrameP, s) = to_value();
 		StackP++;
 	}
@@ -610,7 +610,7 @@ Symbol *InstallIteratorSymbol() {
 */
 Symbol *LookupStringConstSymbol(const char *value) {
 
-    for(Symbol *s: GlobalSymList) {
+    Q_FOREACH(Symbol *s, GlobalSymList) {
         if (s->type == CONST_SYM && is_string(s->value) && to_string(s->value) == value) {
 			return s;
 		}
@@ -644,13 +644,13 @@ Symbol *LookupSymbolEx(const QString &name) {
 
 Symbol *LookupSymbol(view::string_view name) {
 
-    for(Symbol *s : LocalSymList) {
+    Q_FOREACH(Symbol *s, LocalSymList) {
 		if (s->name == name) {
 			return s;
 		}
 	}
 
-    for(Symbol *s: GlobalSymList) {
+    Q_FOREACH(Symbol *s, GlobalSymList) {
 		if (s->name == name) {
 			return s;
 		}
@@ -856,17 +856,17 @@ static void MarkArrayContentsAsUsed(ArrayEntry *arrayPtr) {
 void GarbageCollectStrings() {
 
 	// mark all strings as unreferenced 
-	for(char *p : AllocatedStrings) {
+    Q_FOREACH(char *p, AllocatedStrings) {
 		*p = 0;
 	}
 
-	for(ArrayEntry *thisAP : AllocatedSparseArrayEntries) {
+    Q_FOREACH(ArrayEntry *thisAP, AllocatedSparseArrayEntries) {
 		thisAP->inUse = false;
 	}
 
 	/* Sweep the global symbol list, marking which strings are still
 	   referenced */
-	for (Symbol *s: GlobalSymList) {
+    Q_FOREACH(Symbol *s, GlobalSymList) {
 
         if (is_string(s->value)) {
 			// test first because it may be read-only static string 
@@ -1736,7 +1736,7 @@ static int callSubroutine() {
         prog   = to_program(sym->value);
         PC     = prog->code;
 
-		for(Symbol *s : prog->localSymList) {
+        Q_FOREACH(Symbol *s, prog->localSymList) {
 			FP_GET_SYM_VAL(FrameP, s) = noValue;
 			StackP++;
 		}

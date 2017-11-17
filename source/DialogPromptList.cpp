@@ -39,8 +39,11 @@ void DialogPromptList::showEvent(QShowEvent *event) {
 }
 
 void DialogPromptList::on_buttonBox_clicked(QAbstractButton *button) {
-	for(int i = 0; i < ui.buttonBox->buttons().size(); ++i) {
-		if(button == ui.buttonBox->buttons()[i]) {
+
+    QList<QAbstractButton *> buttons = ui.buttonBox->buttons();
+
+    for(int i = 0; i < buttons.size(); ++i) {
+        if(button == buttons[i]) {
 			result_ = (i + 1);
 			
 			QList<QListWidgetItem *> items = ui.listWidget->selectedItems();

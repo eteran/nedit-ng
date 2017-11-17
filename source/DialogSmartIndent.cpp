@@ -35,7 +35,7 @@ void DialogSmartIndent::updateLanguageModes() {
 
 	const QString languageMode = languageMode_;
 	ui.comboLanguageMode->clear();
-    for(const LanguageMode &lang : LanguageModes) {
+    Q_FOREACH(const LanguageMode &lang, LanguageModes) {
         ui.comboLanguageMode->addItem(lang.name);
 	}
 	
@@ -225,7 +225,7 @@ bool DialogSmartIndent::updateSmartIndentData() {
 
 	/* Find windows that are currently using this indent specification and
 	   re-do the smart indent macros */
-    for(DocumentWidget *document: DocumentWidget::allDocuments()) {
+    Q_FOREACH(DocumentWidget *document, DocumentWidget::allDocuments()) {
 
         QString lmName = LanguageModeName(document->languageMode_);
 		if(!lmName.isNull()) {

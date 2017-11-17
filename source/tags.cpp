@@ -478,7 +478,7 @@ void updateMenuItems() {
         tagStat = true;
     }
 
-    for(MainWindow *window : MainWindow::allWindows()) {
+    Q_FOREACH(MainWindow *window, MainWindow::allWindows()) {
         window->ui.action_Unload_Calltips_File->setEnabled(tipStat);
         window->ui.action_Unload_Tags_File->setEnabled(tagStat);
         window->ui.action_Show_Calltip->setEnabled(tipStat || tagStat);
@@ -1512,7 +1512,7 @@ static int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
     int oldLangMode;
     int currLine = 0;
 
-    QList<tf_alias> aliases;
+    QVector<tf_alias> aliases;
 
 	if (recLevel > MAX_TAG_INCLUDE_RECURSION_LEVEL) {
         qWarning("NEdit: Warning: Reached recursion limit before loading calltips file:\n\t%s",

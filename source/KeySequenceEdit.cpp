@@ -122,6 +122,8 @@ void KeySequenceEdit::setMaximumSequenceLength(int maximum) {
 	}
 
 	maximumSequenceLength_ = maximum;
+
+    Q_EMIT maximumSequenceLengthChanged(maximum);
 }
 
 
@@ -283,6 +285,7 @@ bool KeySequenceEdit::modifierRequired() const {
 //------------------------------------------------------------------------------
 void KeySequenceEdit::setModifierRequired(bool required) {
 	modifierRequired_ = required;
+    Q_EMIT modifierRequiredChanged(required);
 }
 
 

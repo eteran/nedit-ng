@@ -30,8 +30,11 @@ void DialogPrompt::showEvent(QShowEvent *event) {
 }
 
 void DialogPrompt::on_buttonBox_clicked(QAbstractButton *button) {
-	for(int i = 0; i < ui.buttonBox->buttons().size(); ++i) {
-		if(button == ui.buttonBox->buttons()[i]) {
+
+    QList<QAbstractButton *> buttons = ui.buttonBox->buttons();
+
+    for(int i = 0; i < buttons.size(); ++i) {
+        if(button == buttons[i]) {
 			result_ = (i + 1);
 			break;
 		}

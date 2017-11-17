@@ -34,14 +34,14 @@ DialogSyntaxPatterns::DialogSyntaxPatterns(QWidget *parent, Qt::WindowFlags f) :
 	connect(ui.radioRangeRegex,  SIGNAL(toggled(bool)), this, SLOT(updateLabels()));
 
 	// populate the highlight style combo
-    for(const HighlightStyle &style : HighlightStyles) {
+    Q_FOREACH(const HighlightStyle &style, HighlightStyles) {
         ui.comboHighlightStyle->addItem(style.name);
 	}
 
     auto blocker = no_signals(ui.comboLanguageMode);
 
 	// populate language mode combo
-    for(const LanguageMode &lang : LanguageModes) {
+    Q_FOREACH(const LanguageMode &lang, LanguageModes) {
         ui.comboLanguageMode->addItem(lang.name);
 	}
 }
@@ -705,7 +705,7 @@ void DialogSyntaxPatterns::UpdateLanguageModeMenu() {
 	QString language = ui.comboLanguageMode->currentText();
 	ui.comboLanguageMode->clear();
 
-    for(const LanguageMode &lang : LanguageModes) {
+    Q_FOREACH(const LanguageMode &lang, LanguageModes) {
         ui.comboLanguageMode->addItem(lang.name);
 	}
 
@@ -723,7 +723,7 @@ void DialogSyntaxPatterns::updateHighlightStyleMenu() {
 
 	QString pattern = ui.comboHighlightStyle->currentText();
 	ui.comboHighlightStyle->clear();
-    for(const HighlightStyle &style : HighlightStyles) {
+    Q_FOREACH(const HighlightStyle &style, HighlightStyles) {
         ui.comboHighlightStyle->addItem(style.name);
 	}
 
@@ -762,7 +762,7 @@ bool DialogSyntaxPatterns::updatePatternSet() {
 	}
 
 	// Find windows that are currently using this pattern set and re-do the highlighting
-    for(DocumentWidget *document : DocumentWidget::allDocuments()) {
+    Q_FOREACH(DocumentWidget *document, DocumentWidget::allDocuments()) {
 		if (!patSet->patterns.isEmpty()) {
             if (document->languageMode_ != PLAIN_LANGUAGE_MODE && (LanguageModeName(document->languageMode_) == patSet->languageMode)) {
 				/*  The user worked on the current document's language mode, so
@@ -923,7 +923,7 @@ HighlightPattern *DialogSyntaxPatterns::readDialogFields(Mode mode) {
 
 		auto outPtr = std::back_inserter(outStr);
 
-        for(QChar ch : pat->startRE) {
+        Q_FOREACH(QChar ch, pat->startRE) {
 			if (ch != QLatin1Char(' ') && ch != QLatin1Char('\t')) {
 				*outPtr++ = ch;
 			}
@@ -1010,7 +1010,7 @@ bool DialogSyntaxPatterns::TestHighlightPatterns(PatternSet *patSet) {
 
 	/* Compile the patterns (passing a random window as a source for fonts, and
 	   parent for dialogs, since we really don't care what fonts are used) */
-    for(DocumentWidget *document : DocumentWidget::allDocuments()) {
+    Q_FOREACH(DocumentWidget *document, DocumentWidget::allDocuments()) {
         if(std::shared_ptr<WindowHighlightData> highlightData = document->createHighlightDataEx(patSet)) {
 			return true;
 		}

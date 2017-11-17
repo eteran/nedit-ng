@@ -5766,7 +5766,7 @@ void DocumentWidget::UpdateHighlightStylesEx() {
 
     /* Attach new highlight information to text widgets in each pane
        (and redraw) */
-    for (TextArea *area : textPanes()) {
+    Q_FOREACH(TextArea *area, textPanes()) {
         AttachHighlightToWidgetEx(area);
     }
 }
@@ -6694,7 +6694,7 @@ int DocumentWidget::MacroWindowCloseActionsEx() {
        if macros executing in other windows have it as focus.  If so, set
        their focus back to the window from which they were originally run */
     if(!cmdData) {
-        for(DocumentWidget *document : DocumentWidget::allDocuments()) {
+        Q_FOREACH(DocumentWidget *document, DocumentWidget::allDocuments()) {
             const std::shared_ptr<MacroCommandData> &mcd = document->macroCmdData_;
             if (document == MacroRunWindowEx() && MacroFocusWindowEx() == this) {
                 SetMacroFocusWindowEx(MacroRunWindowEx());
@@ -6783,7 +6783,7 @@ void DocumentWidget::cancelLearnEx() {
     DocumentWidget *document = CommandRecorder::getInstance()->macroRecordWindowEx;
     Q_ASSERT(document);
 
-    for(MainWindow *window : MainWindow::allWindows()) {
+    Q_FOREACH(MainWindow *window, MainWindow::allWindows()) {
         window->ui.action_Learn_Keystrokes->setEnabled(true);
     }
 
@@ -6807,7 +6807,7 @@ void DocumentWidget::FinishLearnEx() {
 
     CommandRecorder::getInstance()->stopRecording();
 
-    for(MainWindow *window : MainWindow::allWindows()) {
+    Q_FOREACH(MainWindow *window, MainWindow::allWindows()) {
         window->ui.action_Learn_Keystrokes->setEnabled(true);
     }
 
@@ -6818,7 +6818,7 @@ void DocumentWidget::FinishLearnEx() {
         }
     }
 
-    for(MainWindow *window : MainWindow::allWindows()) {
+    Q_FOREACH(MainWindow *window, MainWindow::allWindows()) {
         window->ui.action_Replay_Keystrokes->setEnabled(true);
     }
 

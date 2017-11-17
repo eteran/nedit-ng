@@ -13,7 +13,7 @@ class KeySequenceEdit : public QWidget {
 	Q_OBJECT
 	Q_PROPERTY(QKeySequence keySequence READ keySequence WRITE setKeySequence NOTIFY keySequenceChanged USER true)
 	Q_PROPERTY(int maximumSequenceLength READ maximumSequenceLength WRITE setMaximumSequenceLength NOTIFY maximumSequenceLengthChanged)
-	Q_PROPERTY(bool modifierRequired READ modifierRequired WRITE setModifierRequired)
+    Q_PROPERTY(bool modifierRequired READ modifierRequired WRITE setModifierRequired NOTIFY modifierRequiredChanged)
 	Q_DISABLE_COPY(KeySequenceEdit)
 
 public:
@@ -36,6 +36,7 @@ Q_SIGNALS:
     void editingFinished();
     void keySequenceChanged(const QKeySequence &keySequence);
 	void maximumSequenceLengthChanged(int maximum);
+    void modifierRequiredChanged(bool newValue);
 
 protected:
     bool event(QEvent *) override;
