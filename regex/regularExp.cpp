@@ -2497,9 +2497,8 @@ char literal_escape(T ch) {
  *--------------------------------------------------------------------*/
 uint8_t *back_ref(const char *c, int *flag_param, int emit) {
 
-    int paren_no;
     int c_offset = 0;
-    int is_cross_regex = 0;
+    const int is_cross_regex = 0;
 
 	uint8_t *ret_val;
 
@@ -2510,10 +2509,10 @@ uint8_t *back_ref(const char *c, int *flag_param, int emit) {
 	   is_cross_regex++;
 	} */
 
-	paren_no = (*(c + c_offset) - '0');
+    int paren_no = (*(c + c_offset) - '0');
 
-	if (!safe_ctype<isdigit>(*(c + c_offset)) || // Only \1, \2, ... \9 are supported.
-	    paren_no == 0) {             // Should be caught by numeric_escape.
+    if (!safe_ctype<isdigit>(*(c + c_offset)) || /* Only \1, \2, ... \9 are supported. */
+            paren_no == 0) {                     /* Should be caught by numeric_escape. */
 
 		return nullptr;
 	}
@@ -2593,14 +2592,7 @@ bool AT_END_OF_STRING(const char *ptr) {
 		return true;
 	}
 
-	if(*ptr == '\0') {
-		//return true;
-		//assert(false);
-	}
-
-
-
-	return false;
+    return false;
 }
 
 

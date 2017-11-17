@@ -349,7 +349,6 @@ void insertColInLineEx(view::string_view line, view::string_view insLine, int co
 
     // realign tabs for text beyond "column" and write it out
     std::string retabbedStr = realignTabsEx(view::substr(linePtr, line.end()), postColIndent, indent, tabDist, useTabs, nullSubsChar);
-    len = gsl::narrow<int>(retabbedStr.size());
 
     *endOffset = gsl::narrow<int>(outStr->size());
 
@@ -377,8 +376,10 @@ void deleteRectFromLine(view::string_view line, int rectStart, int rectEnd, int 
         if (indent > rectStart)
             break;
         len = TextBuffer::BufCharWidth(*c, indent, tabDist, nullSubsChar);
-        if (indent + len > rectStart && (indent == rectStart || *c == '\t'))
+        if (indent + len > rectStart && (indent == rectStart || *c == '\t')) {
             break;
+        }
+
         indent += len;
         *outPtr++ = *c;
     }
@@ -407,7 +408,6 @@ void deleteRectFromLine(view::string_view line, int rectStart, int rectEnd, int 
        the position of non-whitespace characters by converting tabs to
        spaces, then back to tabs with the correct offset */
     std::string retabbedStr = realignTabsEx(view::substr(c, line.end()), postRectIndent, indent, tabDist, useTabs, nullSubsChar);
-    len = gsl::narrow<int>(retabbedStr.size());
 
     *endOffset = gsl::narrow<int>(outStr->size());
 

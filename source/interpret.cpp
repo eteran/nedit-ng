@@ -2565,12 +2565,12 @@ static void dumpVal(DataValue dv) {
         printf("i=%d", to_integer(dv));
 		break;
 	case STRING_TAG: {
-        size_t k;
-		char s[21];
 		char *src = dv.val.str.rep;
 		if (!src) {
 			printf("s=<nullptr>");
 		} else {
+            size_t k;
+            char s[21];
 			for (k = 0; k < sizeof(s) - 1 && src[k]; k++) {
                 s[k] = safe_ctype<isprint>(src[k]) ? src[k] : '?';
 			}
@@ -2582,7 +2582,6 @@ static void dumpVal(DataValue dv) {
 		printf("<array>");
 		break;
     case NO_TAG:
-    case INSTRUCTION_TAG:
         if (!to_instruction(dv)) {
 			printf("<no value>");
 		} else {
@@ -2699,7 +2698,7 @@ static void disasm(Inst *inst, int nInstr) {
 static void stackdump(int n, int extra) {
 	// TheStack-> symN-sym1(FP), argArray, nArgs, oldFP, retPC, argN-arg1, next, ... 
 	int nArgs = FP_GET_ARG_COUNT(FrameP);
-	int i, offset;
+    int i;
 	char buffer[sizeof(STACK_DUMP_ARG_PREFIX) + TYPE_INT_STR_SIZE(int)];
 	printf("Stack ----->\n");
 	for (i = 0; i < n + extra; i++) {
@@ -2709,7 +2708,8 @@ static void stackdump(int n, int extra) {
 			printf("--------------Stack base--------------\n");
 			break;
 		}
-		offset = dv - FrameP;
+
+        int offset = dv - FrameP;
 
 		printf("%4.4s", i < n ? ">>>>" : "");
         printf("%8p ", static_cast<void *>(dv));
