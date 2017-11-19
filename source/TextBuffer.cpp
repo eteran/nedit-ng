@@ -832,6 +832,7 @@ void TextBuffer::BufCopyFromBuf(TextBuffer *fromBuf, int fromStart, int fromEnd,
         std::copy_n(&fromBuf->buf_[fromStart], part1Length, &buf_[toPos]);
         std::copy_n(&fromBuf->buf_[fromBuf->gapEnd_], length - part1Length, &buf_[toPos + part1Length]);
 	}
+
 	gapStart_ += length;
 	length_ += length;
 	updateSelections(toPos, 0, length);
@@ -915,11 +916,9 @@ void TextBuffer::overlayRectEx(int startPos, int rectStart, int rectEnd, view::s
         const int lineEnd = BufEndOfLine(lineStart);
         const std::string line    = BufGetRangeEx(lineStart, lineEnd);
         const std::string insLine = copyLineEx(insPtr, insText.end());
+        insPtr += insLine.size();
 
-        len = gsl::narrow<int>(insLine.size());
-        insPtr += len;
-
-        // TODO(eteran): remove the need for this temp?
+        // TODO(eteran): remove the need for this temp
         std::string temp;
         overlayRectInLineEx(line, insLine, rectStart, rectEnd, tabDist_, useTabs_, nullSubsChar_, &temp, &endOffset);
         len = gsl::narrow<int>(temp.size());
@@ -1960,8 +1959,8 @@ void TextBuffer::deleteRect(int start, int end, int rectStart, int rectEnd, int 
     auto outPtr = std::back_inserter(outStr);
 
 	while (lineStart <= length_ && lineStart <= end) {
-		int lineEnd = BufEndOfLine(lineStart);
-        std::string line = BufGetRangeEx(lineStart, lineEnd);
+        const int lineEnd = BufEndOfLine(lineStart);
+        const std::string line = BufGetRangeEx(lineStart, lineEnd);
 
         // TODO(eteran): remove the need for this temp
         std::string temp;
