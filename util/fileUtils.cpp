@@ -122,7 +122,7 @@ QString ExpandTildeEx(const QString &pathname) {
     struct passwd *passwdEntry;
 
     if (!pathname.startsWith(QLatin1Char('~'))) {
-        return QString();
+        return pathname;
     }
 
     int end = pathname.indexOf(QLatin1Char('/'));

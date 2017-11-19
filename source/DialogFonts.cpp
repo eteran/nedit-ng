@@ -72,19 +72,16 @@ void DialogFonts::on_buttonFill_clicked() {
     QFont boldFont(font);
     boldFont.setBold(true);
     boldFont.setItalic(false);
-    boldFont.setStyleName(QLatin1String("Bold"));
     ui.editFontBold->setText(boldFont.toString());
 
     QFont italicFont(font);
     italicFont.setItalic(true);
     italicFont.setBold(false);
-    italicFont.setStyleName(QLatin1String("Italic"));
     ui.editFontItalic->setText(italicFont.toString());
 
     QFont boldItalicFont(font);
     boldItalicFont.setBold(true);
     boldItalicFont.setItalic(true);
-    boldItalicFont.setStyleName(QLatin1String("Bold Italic"));
     ui.editFontBoldItalic->setText(boldItalicFont.toString());
 }
 
@@ -248,6 +245,7 @@ void DialogFonts::browseFont(QLineEdit *lineEdit) {
     QFont newFont = QFontDialog::getFont(&ok, currFont, this);
 
     if(ok) {
+        newFont.setStyleName(QString());
         lineEdit->setText(newFont.toString());
     }
 }
