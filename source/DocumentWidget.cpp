@@ -2112,7 +2112,7 @@ int DocumentWidget::cmpWinAgainstFile(const QString &fileName) {
 
     /* For large files, the comparison can take a while. If it takes too long,
        the user should be given a clue about what is happening. */
-    QString message = tr("Comparing externally modified 1s ...").arg(filename_);
+    QString message = tr("Comparing externally modified %1 ...").arg(filename_);
 
     long restLen = std::min(PREFERRED_CMPBUF_LEN, fileLen);
     int bufPos  = 0;

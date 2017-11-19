@@ -47,6 +47,8 @@ using bufModifyCallbackProc    = void (*)(int pos, int nInserted, int nDeleted, 
 using bufPreDeleteCallbackProc = void (*)(int pos, int nDeleted, void *user);
 
 class TextBuffer {
+    using Ch = char;
+    using Tr = std::char_traits<Ch>;
 public:
 	TextBuffer();
 	explicit TextBuffer(int requestedSize);
@@ -68,7 +70,7 @@ public:
 	bool BufIsEmpty() const;
 	bool BufSearchBackwardEx(int startPos, view::string_view searchChars, int *foundPos) const;	
 	bool BufSearchForwardEx(int startPos, view::string_view searchChars, int *foundPos) const;	
-	bool BufSubstituteNullCharsEx(std::string &string);
+    bool BufSubstituteNullCharsEx(std::string &string);
 	char BufGetCharacter(int pos) const;
 	const char *BufAsString();
     int BufCmpEx(int pos, view::string_view cmpText);
@@ -86,11 +88,11 @@ public:
 	int BufGetSelectionPos(int *start, int *end, bool *isRect, int *rectStart, int *rectEnd);
 	int BufGetTabDistance() const;
 	int BufStartOfLine(int pos) const;
-	std::string BufGetAllEx();
-	std::string BufGetRangeEx(int start, int end);
-	std::string BufGetSecSelectTextEx();
-	std::string BufGetSelectionTextEx();
-	std::string BufGetTextInRectEx(int start, int end, int rectStart, int rectEnd);
+    std::string BufGetAllEx();
+    std::string BufGetRangeEx(int start, int end);
+    std::string BufGetSecSelectTextEx();
+    std::string BufGetSelectionTextEx();
+    std::string BufGetTextInRectEx(int start, int end, int rectStart, int rectEnd);
 	view::string_view BufAsStringEx();
 	void BufAddHighPriorityModifyCB(bufModifyCallbackProc bufModifiedCB, void *cbArg);
 	void BufAddModifyCB(bufModifyCallbackProc bufModifiedCB, void *cbArg);
@@ -123,7 +125,7 @@ public:
 	void BufSetTabDistance(int tabDist);
 	void BufUnhighlight();
 	void BufUnselect();
-	void BufUnsubstituteNullCharsEx(std::string &string) const;
+    void BufUnsubstituteNullCharsEx(std::string &string) const;
 
 public:
 	bool GetSimpleSelection(int *left, int *right);
@@ -132,7 +134,7 @@ private:
 	bool searchBackward(int startPos, char searchChar, int *foundPos) const;
 	bool searchForward(int startPos, char searchChar, int *foundPos) const;
 	int insertEx(int pos, view::string_view text);
-	std::string getSelectionTextEx(TextSelection *sel);
+    std::string getSelectionTextEx(TextSelection *sel);
 	void callModifyCBs(int pos, int nDeleted, int nInserted, int nRestyled, view::string_view deletedText) const;
 	void callPreDeleteCBs(int pos, int nDeleted) const;
 	void deleteRange(int start, int end);
@@ -148,7 +150,7 @@ private:
 	void updateSelections(int pos, int nDeleted, int nInserted);
 	 	
 private:
-	char *buf_;         // allocated memory where the text is stored
+    Ch *buf_;         // allocated memory where the text is stored
 	int gapStart_;      // points to the first character of the gap
 	int gapEnd_;        // points to the first char after the gap
     int length_;        // length of the text in the buffer (the length of the buffer itself must be calculated: gapEnd gapStart + length)
@@ -163,7 +165,7 @@ public:
 	std::deque<std::pair<bufModifyCallbackProc, void *>> modifyProcs_;       // procedures to call when buffer is modified to redisplay contents
 	std::deque<std::pair<bufPreDeleteCallbackProc, void *>> preDeleteProcs_; // procedure to call before text is deleted from the buffer; at most one is supported.
 	int cursorPosHint_;                                                      // hint for reasonable cursor position after a buffer modification operation
-	char nullSubsChar_;                                                      // NEdit is based on C null-terminated strings, so ascii-nul characters must be substituted with something else.  This is the else, but of course, things get quite messy when you use it
+    Ch nullSubsChar_;                                                        // NEdit is based on C null-terminated strings, so ascii-nul characters must be substituted with something else.  This is the else, but of course, things get quite messy when you use it
 	RangesetTable *rangesetTable_;                                           // current range sets
 };
 

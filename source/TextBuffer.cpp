@@ -59,7 +59,7 @@ const char *const ControlCodeTable[32] = {
 ** converting double spaces after a period withing a block of text.
 */
 std::string unexpandTabsEx(view::string_view text, int startIndent, int tabDist, char nullSubsChar) {
-	std::string outStr;
+    std::string outStr;
 	outStr.reserve(text.size());
 
 	auto outPtr = std::back_inserter(outStr);
@@ -100,7 +100,7 @@ std::string unexpandTabsEx(view::string_view text, int startIndent, int tabDist,
 */
 std::string expandTabsEx(view::string_view text, int startIndent, int tabDist, char nullSubsChar) {
 
-	int outLen = 0;
+    size_t outLen = 0;
 
 	// rehearse the expansion to figure out length for output string
 	int indent = startIndent;
@@ -119,7 +119,7 @@ std::string expandTabsEx(view::string_view text, int startIndent, int tabDist, c
 	}
 
 	// do the expansion
-	std::string outStr;
+    std::string outStr;
 	outStr.reserve(outLen);
 
 	auto outPtr = std::back_inserter(outStr);
@@ -421,7 +421,7 @@ void deleteRectFromLine(view::string_view line, int rectStart, int rectEnd, int 
 template <class Ran>
 std::string copyLineEx(Ran first, Ran last) {
 	auto it = std::find(first, last, '\n');
-	return std::string(first, it);
+    return std::string(first, it);
 }
 
 /*
@@ -589,7 +589,7 @@ TextBuffer::~TextBuffer() {
 ** the returned string, which the caller must free.
 */
 std::string TextBuffer::BufGetAllEx() {
-	std::string text;
+    std::string text;
     text.reserve(gsl::narrow<size_t>(length_));
 
 	std::copy_n(buf_,           gapStart_,           std::back_inserter(text));
@@ -697,7 +697,7 @@ void TextBuffer::BufSetAllEx(view::string_view text) {
 ** include the character pointed to by "end"
 */
 std::string TextBuffer::BufGetRangeEx(int start, int end) {
-	std::string text;
+    std::string text;
 	int length;
 	int part1Length;
 
@@ -765,7 +765,7 @@ void TextBuffer::BufInsertEx(int pos, view::string_view text) {
 	// insert and redisplay
 	nInserted = insertEx(pos, text);
 	cursorPosHint_ = pos + nInserted;
-	callModifyCBs(pos, 0, nInserted, 0, std::string());
+    callModifyCBs(pos, 0, nInserted, 0, std::string());
 }
 
 /*
@@ -776,7 +776,7 @@ void TextBuffer::BufReplaceEx(int start, int end, view::string_view text) {
     auto nInserted = gsl::narrow<int>(text.size());
 
 	callPreDeleteCBs(start, end - start);
-	std::string deletedText = BufGetRangeEx(start, end);
+    std::string deletedText = BufGetRangeEx(start, end);
 	deleteRange(start, end);
 	insertEx(start, text);
 	cursorPosHint_ = start + nInserted;
@@ -801,7 +801,7 @@ void TextBuffer::BufRemove(int start, int end) {
 
 	callPreDeleteCBs(start, end - start);
 	// Remove and redisplay
-	std::string deletedText = BufGetRangeEx(start, end);
+    std::string deletedText = BufGetRangeEx(start, end);
 	deleteRange(start, end);
 	cursorPosHint_ = start;
 	callModifyCBs(start, end - start, 0, 0, deletedText);
@@ -853,7 +853,7 @@ void TextBuffer::BufInsertColEx(int column, int startPos, view::string_view text
     const int nDeleted     = BufEndOfLine(BufCountForwardNLines(startPos, nLines)) - lineStartPos;
 
     callPreDeleteCBs(lineStartPos, nDeleted);
-	std::string deletedText = BufGetRangeEx(lineStartPos, lineStartPos + nDeleted);
+    std::string deletedText = BufGetRangeEx(lineStartPos, lineStartPos + nDeleted);
 
     int insertDeleted;
     int nInserted;
@@ -976,7 +976,7 @@ void TextBuffer::BufOverlayRectEx(int startPos, int rectStart, int rectEnd, view
 	int nDeleted = BufEndOfLine(BufCountForwardNLines(startPos, nLines)) - lineStartPos;
 	callPreDeleteCBs(lineStartPos, nDeleted);
 
-	const std::string deletedText = BufGetRangeEx(lineStartPos, lineStartPos + nDeleted);
+    const std::string deletedText = BufGetRangeEx(lineStartPos, lineStartPos + nDeleted);
 	overlayRectEx(lineStartPos, rectStart, rectEnd, text, &insertDeleted, &nInserted, &cursorPosHint_);
 
     if (nDeleted != insertDeleted) {
@@ -1044,7 +1044,7 @@ void TextBuffer::BufReplaceRectEx(int start, int end, int rectStart, int rectEnd
 	}
 
 	// Save a copy of the text which will be modified for the modify CBs
-	std::string deletedText = BufGetRangeEx(start, end);
+    std::string deletedText = BufGetRangeEx(start, end);
 
 	// Delete then insert
 	deleteRect(start, end, rectStart, rectEnd, &deleteInserted, &hint);
@@ -1072,7 +1072,7 @@ void TextBuffer::BufRemoveRect(int start, int end, int rectStart, int rectEnd) {
 	start = BufStartOfLine(start);
 	end = BufEndOfLine(end);
 	callPreDeleteCBs(start, end - start);
-	std::string deletedText = BufGetRangeEx(start, end);
+    std::string deletedText = BufGetRangeEx(start, end);
 	deleteRect(start, end, rectStart, rectEnd, &nInserted, &cursorPosHint_);
 	callModifyCBs(start, end - start, nInserted, 0, deletedText);
 }
@@ -1085,7 +1085,7 @@ void TextBuffer::BufRemoveRect(int start, int end, int rectStart, int rectEnd) {
 void TextBuffer::BufClearRect(int start, int end, int rectStart, int rectEnd) {
 
 	int nLines = BufCountLines(start, end);
-	std::string newlineString(nLines, '\n');
+    std::string newlineString(nLines, '\n');
 	BufOverlayRectEx(start, rectStart, rectEnd, newlineString, nullptr, nullptr);
 }
 
@@ -1098,7 +1098,7 @@ std::string TextBuffer::BufGetTextInRectEx(int start, int end, int rectStart, in
 
     assert(end >= start);
 
-	std::string textOut;
+    std::string textOut;
 	textOut.reserve(end - start);
 
 	int lineStart = start;
@@ -1106,7 +1106,7 @@ std::string TextBuffer::BufGetTextInRectEx(int start, int end, int rectStart, in
 
 	while (lineStart <= end) {
 		findRectSelBoundariesForCopy(lineStart, rectStart, rectEnd, &selLeft, &selRight);
-		std::string textIn = BufGetRangeEx(selLeft, selRight);
+        std::string textIn = BufGetRangeEx(selLeft, selRight);
         int len = selRight - selLeft;
 
 		std::copy_n(textIn.begin(), len, outPtr);
@@ -1152,7 +1152,7 @@ void TextBuffer::BufSetTabDistance(int tabDist) {
 
 void TextBuffer::BufCheckDisplay(int start, int end) const {
 	// just to make sure colors in the selected region are up to date
-	callModifyCBs(start, 0, 0, end - start, std::string());
+    callModifyCBs(start, 0, 0, end - start, std::string());
 }
 
 void TextBuffer::BufSelect(int start, int end) {
@@ -1397,7 +1397,7 @@ int TextBuffer::BufCharWidth(char c, int indent, int tabDist, char nullSubsChar)
 	else if (c == '\t')
 		return tabDist - (indent % tabDist);
     else if (static_cast<uint8_t>(c) <= 31)
-        return strlen(ControlCodeTable[static_cast<uint8_t>(c)]) + 2;
+        return Tr::length(ControlCodeTable[static_cast<uint8_t>(c)]) + 2;
 	else if (c == 127)
 		return 5;
 	return 1;
@@ -1630,6 +1630,7 @@ bool TextBuffer::BufSubstituteNullChars(char *string, int length) {
 		/* here we know we can modify the file buffer directly,
 		   so we cast away constness */
         auto bufString = const_cast<char *>(BufAsString());
+
 		histogramCharactersEx(view::string_view(bufString, length_), histogram, false);
         char newSubsChar = chooseNullSubsChar(histogram);
 		if (newSubsChar == '\0') {
@@ -1642,7 +1643,7 @@ bool TextBuffer::BufSubstituteNullChars(char *string, int length) {
 
 	/* If the string contains null characters, substitute them with the
 	   buffer's null substitution character */
-    if (histogram[0] != 0) {
+    if (histogram[0]) {
 		subsChars(string, length, '\0', nullSubsChar_);
     }
 
@@ -1668,7 +1669,7 @@ bool TextBuffer::BufSubstituteNullCharsEx(std::string &string) {
 	   histogram the buffer text to find a character which is ok in both the
 	   string and the buffer, and change the buffer's null-substitution
 	   character.  If none can be found, give up and return false */
-    if (histogram[static_cast<uint8_t>(nullSubsChar_)] != 0) {
+    if (histogram[static_cast<uint8_t>(nullSubsChar_)]) {
 
 		/* here we know we can modify the file buffer directly,
 		   so we cast away constness */
@@ -1685,7 +1686,7 @@ bool TextBuffer::BufSubstituteNullCharsEx(std::string &string) {
 
 	/* If the string contains null characters, substitute them with the
 	   buffer's null substitution character */
-    if (histogram[0] != 0) {
+    if (histogram[0]) {
 		subsCharsEx(string, '\0', nullSubsChar_);
     }
 
@@ -1740,8 +1741,6 @@ void TextBuffer::BufUnsubstituteNullCharsEx(std::string &string) const {
 */
 int TextBuffer::BufCmpEx(int pos, view::string_view cmpText) {
 
-    using std::memcmp;
-
     auto posEnd = pos + gsl::narrow<int>(cmpText.size());
 	if (posEnd > length_) {
 		return 1;
@@ -1751,16 +1750,16 @@ int TextBuffer::BufCmpEx(int pos, view::string_view cmpText) {
 	}
 
     if (posEnd <= gapStart_) {
-        return memcmp(&buf_[pos], cmpText.data(), cmpText.size());
+        return Tr::compare(&buf_[pos], cmpText.data(), cmpText.size());
 	} else if (pos >= gapStart_) {
-        return memcmp(&buf_[pos + (gapEnd_ - gapStart_)], cmpText.data(), cmpText.size());
+        return Tr::compare(&buf_[pos + (gapEnd_ - gapStart_)], cmpText.data(), cmpText.size());
 	} else {
 		int part1Length = gapStart_ - pos;
-        int result = memcmp(&buf_[pos], cmpText.data(), part1Length);
+        int result = Tr::compare(&buf_[pos], cmpText.data(), gsl::narrow<size_t>(part1Length));
 		if (result) {
 			return result;
 		}
-        return memcmp(&buf_[gapEnd_], &cmpText[part1Length], cmpText.size() - part1Length);
+        return Tr::compare(&buf_[gapEnd_], &cmpText[part1Length], cmpText.size() - gsl::narrow<size_t>(part1Length));
 	}
 }
 
@@ -1868,7 +1867,7 @@ std::string TextBuffer::getSelectionTextEx(TextSelection *sel) {
 
 	// If there's no selection, return an allocated empty string
 	if (!*sel) {
-		return std::string();
+        return std::string();
 	}
 
 	// If the selection is not rectangular, return the selected range
@@ -2129,16 +2128,15 @@ void TextBuffer::insertColEx(int column, int startPos, view::string_view insText
 
 void TextBuffer::moveGap(int pos) {
 
-    using std::memmove;
-
-	int gapLen = gapEnd_ - gapStart_;
+    int gapLen = gapEnd_ - gapStart_;
 
     if (pos > gapStart_) {
-		memmove(&buf_[gapStart_], &buf_[gapEnd_], pos - gapStart_);
+        Tr::move(&buf_[gapStart_], &buf_[gapEnd_], gsl::narrow<size_t>(pos - gapStart_));
     } else {
-		memmove(&buf_[pos + gapLen], &buf_[pos], gapStart_ - pos);
+        Tr::move(&buf_[pos + gapLen], &buf_[pos], gsl::narrow<size_t>(gapStart_ - pos));
     }
-	gapEnd_ += pos - gapStart_;
+
+    gapEnd_ += pos - gapStart_;
 	gapStart_ += pos - gapStart_;
 }
 
@@ -2213,7 +2211,7 @@ void TextBuffer::redisplaySelection(TextSelection *oldSelection, TextSelection *
 	   if a rectangular selection changed boundaries, redisplay everything */
 	if ((oldSelection->rectangular && !newSelection->rectangular) || (!oldSelection->rectangular && newSelection->rectangular) ||
 		(oldSelection->rectangular && ((oldSelection->rectStart != newSelection->rectStart) || (oldSelection->rectEnd != newSelection->rectEnd)))) {
-		callModifyCBs(std::min<int>(oldStart, newStart), 0, 0, std::max<int>(oldEnd, newEnd) - std::min<int>(oldStart, newStart), std::string());
+        callModifyCBs(std::min<int>(oldStart, newStart), 0, 0, std::max<int>(oldEnd, newEnd) - std::min<int>(oldStart, newStart), std::string());
 		return;
 	}
 
