@@ -51,6 +51,7 @@ private:
     bool eventFilter(QObject *object, QEvent *event) override;
 
 public:
+    void EditHighlightPatterns();
 	DialogReplace *getDialogReplace() const;	
 	int TabCount();    
 	void SortTabBar();
@@ -101,6 +102,10 @@ public:
     static void CheckCloseDimEx();
     static bool CloseAllFilesAndWindowsEx();
     static void InvalidateWindowMenus();
+    static void UpdateLanguageModeMenu();
+    static void updateHighlightStyleMenu();
+    static void RenameHighlightPattern(const QString &oldName, const QString &newName);
+    static bool LMHasHighlightPatterns(const QString &languageMode);
 
 public:
 	DocumentWidget *CreateDocument(QString name);

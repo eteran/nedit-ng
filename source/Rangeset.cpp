@@ -1152,18 +1152,17 @@ void Rangeset::RangesetRefreshRange(int start, int end) const {
 ** Initialise a new range set.
 */
 void Rangeset::RangesetInit(int label, TextBuffer *buf) {
-	label_ = static_cast<uint8_t>(label); // a letter A-Z
-    maxpos_ = 0;                   // text buffer maxpos
+    label_      = static_cast<uint8_t>(label); // a letter A-Z
+    maxpos_     = 0;                   // text buffer maxpos
     last_index_ = 0;               // a place to start looking
-    n_ranges_ = 0;                 // how many ranges in ranges
-    ranges_ = nullptr;          // the ranges table
+    n_ranges_   = 0;                 // how many ranges in ranges
+    ranges_     = nullptr;          // the ranges table
 
     color_name_ = QString();
-    name_ = QString();
-    color_set_ = 0;
-	buf_ = buf;
-
-	maxpos_ = buf->BufGetLength();
+    name_       = QString();
+    color_set_  = 0;
+    buf_        = buf;
+    maxpos_     = buf->BufGetLength();
 
     RangesetChangeModifyResponse(DEFAULT_UPDATE_FN_NAME);
 }

@@ -2320,10 +2320,6 @@ bool readCheckMacroStringEx(QWidget *dialogParent, const QString &string, Docume
     return true;
 }
 
-
-
-
-
 /*
 ** Do garbage collection of strings if there are no macros currently
 ** executing.  NEdit's macro language GC strategy is to call this routine
@@ -2334,15 +2330,13 @@ bool readCheckMacroStringEx(QWidget *dialogParent, const QString &string, Docume
 void SafeGC() {
 
     Q_FOREACH(DocumentWidget *document, DocumentWidget::allDocuments()) {
-        if (document->macroCmdData_ || InSmartIndentMacrosEx(document)) {
+        if (document->macroCmdData_ || document->InSmartIndentMacrosEx()) {
             return;
         }
     }
 
     GarbageCollectStrings();
 }
-
-
 
 /*
 ** Macro recording action hook for Learn/Replay, added temporarily during
@@ -2688,7 +2682,7 @@ static bool getSelectionMS(DocumentWidget *document, Arguments arguments, DataVa
             M_FAILURE(UnrecognizedArgument);
         }
 
-        QString text = GetAnySelectionEx(document);
+        QString text = document->GetAnySelectionEx();
         if (text.isNull()) {
             text = QLatin1String("");
         }

@@ -66,9 +66,6 @@ const QLatin1String FontTypeNames[] = {
     QLatin1String("Bold Italic")
 };
 
-QPointer<DialogDrawingStyles>  DrawingStyles;
-QPointer<DialogSyntaxPatterns> SyntaxPatterns;
-
 }
 
 // list of available highlight styles 
@@ -77,7 +74,6 @@ QList<HighlightStyle> HighlightStyles;
 static bool isDefaultPatternSet(const PatternSet *patSet);
 static bool styleErrorEx(const Input &in, const QString &message);
 static QVector<HighlightPattern> readHighlightPatternsEx(Input &in, int withBraces, QString *errMsg, bool *ok);
-static int lookupNamedStyle(const QString &styleName);
 static int readHighlightPatternEx(Input &in, QString *errMsg, HighlightPattern *pattern);
 static std::unique_ptr<PatternSet> highlightErrorEx(const Input &in, const QString &message);
 static std::unique_ptr<PatternSet> readPatternSetEx(Input &in);
@@ -278,37 +274,8 @@ QString WriteHighlightStringEx() {
     return str;
 }
 
-/*
-** Find the font (font struct) associated with a named style.
-** This routine must only be called with a valid styleName (call
-** NamedStyleExists to find out whether styleName is valid).
-*/
-QFont FontOfNamedStyleEx(DocumentWidget *document, const QString &styleName) {
-
-    const int styleNo = lookupNamedStyle(styleName);
-
-    if (styleNo < 0) {
-        return GetPrefDefaultFont();
-    } else {
-
-        const int fontNum = HighlightStyles[styleNo].font;
-
-        switch(fontNum) {
-        case BOLD_FONT:
-            return document->boldFontStruct_;
-        case ITALIC_FONT:
-            return document->italicFontStruct_;
-        case BOLD_ITALIC_FONT:
-            return document->boldItalicFontStruct_;
-        case PLAIN_FONT:
-        default:
-            return document->fontStruct_;
-        }
-    }
-}
-
 int FontOfNamedStyleIsBold(const QString &styleName) {
-    int styleNo = lookupNamedStyle(styleName);
+    int styleNo = IndexOfNamedStyle(styleName);
 
     if (styleNo < 0) {
 		return 0;
@@ -319,7 +286,7 @@ int FontOfNamedStyleIsBold(const QString &styleName) {
 }
 
 int FontOfNamedStyleIsItalic(const QString &styleName) {
-    int styleNo = lookupNamedStyle(styleName);
+    int styleNo = IndexOfNamedStyle(styleName);
 
     if (styleNo < 0) {
 		return 0;
@@ -335,7 +302,7 @@ int FontOfNamedStyleIsItalic(const QString &styleName) {
 ** styleName is valid).
 */
 QString ColorOfNamedStyleEx(const QString &styleName) {
-	int styleNo = lookupNamedStyle(styleName);
+    int styleNo = IndexOfNamedStyle(styleName);
 
 	if (styleNo < 0) {
 		return QLatin1String("black");
@@ -348,7 +315,7 @@ QString ColorOfNamedStyleEx(const QString &styleName) {
 ** Find the background color associated with a named style.
 */
 QString BgColorOfNamedStyleEx(const QString &styleName) {
-	int styleNo = lookupNamedStyle(styleName);
+    int styleNo = IndexOfNamedStyle(styleName);
 
 	if (styleNo < 0) {
 		return QLatin1String("");
@@ -362,7 +329,7 @@ QString BgColorOfNamedStyleEx(const QString &styleName) {
 ** Determine whether a named style exists
 */
 bool NamedStyleExists(const QString &styleName) {
-	return lookupNamedStyle(styleName) != -1;
+    return IndexOfNamedStyle(styleName) != -1;
 }
 
 /*
@@ -378,37 +345,6 @@ PatternSet *FindPatternSet(const QString &langModeName) {
 	}
 	
 	return nullptr;
-}
-
-/*
-** Returns True if there are highlight patterns, or potential patterns
-** not yet committed in the syntax highlighting dialog for a language mode,
-*/
-bool LMHasHighlightPatterns(const QString &languageMode) {
-	if (FindPatternSet(languageMode) != nullptr) {
-		return true;
-	}
-	
-	
-    return SyntaxPatterns && SyntaxPatterns->LMHasHighlightPatterns(languageMode);
-}
-
-/*
-** Change the language mode name of pattern sets for language "oldName" to
-** "newName" in both the stored patterns, and the pattern set currently being
-** edited in the dialog.
-*/
-void RenameHighlightPattern(const QString &oldName, const QString &newName) {
-
-    for(PatternSet &patternSet : PatternSets) {
-        if (patternSet.languageMode == oldName) {
-            patternSet.languageMode = newName;
-		}
-	}
-	
-	if(SyntaxPatterns) {
-        SyntaxPatterns->RenameHighlightPattern(oldName, newName);
-	}
 }
 
 QString createPatternsString(const PatternSet *patSet, const QString &indentStr) {
@@ -535,7 +471,6 @@ static QVector<HighlightPattern> readHighlightPatternsEx(Input &in, int withBrac
 	/*
 	** parse each pattern in the list
 	*/
-
 	QVector<HighlightPattern> ret;
 
 	while (true) {
@@ -661,7 +596,6 @@ std::unique_ptr<PatternSet> readDefaultPatternSet(QByteArray &patternData, const
 ** pattern set available for that language mode, and if so, read it and
 ** return a new allocated copy of it.
 */
-
 std::unique_ptr<PatternSet> readDefaultPatternSet(const QString &langModeName) {
 	for(int i = 0; i < 28; ++i) {
 
@@ -689,8 +623,7 @@ static bool isDefaultPatternSet(const PatternSet *patSet) {
 		return false;
 	}
 	
-    bool retVal = (*patSet == *defaultPatSet);
-	return retVal;
+    return (*patSet == *defaultPatSet);
 }
 
 /*
@@ -722,6 +655,8 @@ static bool styleErrorEx(const Input &in, const QString &message) {
 */
 void EditHighlightStyles(QWidget *parent, const QString &initialStyle) {
 
+    static QPointer<DialogDrawingStyles> DrawingStyles;
+
 	if(!DrawingStyles) {
         DrawingStyles = new DialogDrawingStyles(parent);
 	}
@@ -732,76 +667,15 @@ void EditHighlightStyles(QWidget *parent, const QString &initialStyle) {
 }
 
 /*
-** Present a dialog for editing highlight pattern information
-*/
-void EditHighlightPatterns(MainWindow *window) {
-
-	if(SyntaxPatterns) {
-		SyntaxPatterns->show();
-		SyntaxPatterns->raise();
-		return;	
-	}
-	
-	if (LanguageModeName(0).isNull()) {
-	
-        QMessageBox::warning(window, QLatin1String("No Language Modes"),
-			QLatin1String("No Language Modes available for syntax highlighting\n"
-			              "Add language modes under Preferenses->Language Modes"));
-		return;
-    }
-
-    DocumentWidget *document = window->currentDocument();
-	
-    QString languageName = LanguageModeName(document->languageMode_ == PLAIN_LANGUAGE_MODE ? 0 : document->languageMode_);
-    SyntaxPatterns = new DialogSyntaxPatterns(window);
-	SyntaxPatterns->setLanguageName(languageName);
-	SyntaxPatterns->show();
-	SyntaxPatterns->raise();	
-}
-
-/*
-** If a syntax highlighting dialog is up, ask to have the option menu for
-** chosing highlight styles updated (via a call to createHighlightStylesMenu)
-*/
-void updateHighlightStyleMenu() {
-	if(!SyntaxPatterns) {
-		return;
-	}
-	
-	SyntaxPatterns->updateHighlightStyleMenu();
-}
-
-/*
-** If a syntax highlighting dialog is up, ask to have the option menu for
-** chosing language mode updated (via a call to CreateLanguageModeMenu)
-*/
-void UpdateLanguageModeMenu() {
-
-	if(!SyntaxPatterns) {
-		return;
-	}
-	
-	SyntaxPatterns->UpdateLanguageModeMenu();
-}
-
-/*
-** Find the index into the HighlightStyles array corresponding to "styleName".
+** Returns a unique number of a given style name
 ** If styleName is not found, return -1.
 */
-static int lookupNamedStyle(const QString &styleName) {
-
-	for (int i = 0; i < HighlightStyles.size(); i++) {
-        if (HighlightStyles[i].name == styleName) {
-			return i;
-		}
-	}
-	
-	return -1;
-}
-
-/*
-** Returns a unique number of a given style name
-*/
 int IndexOfNamedStyle(const QString &styleName) {
-	return lookupNamedStyle(styleName);
+    for (int i = 0; i < HighlightStyles.size(); i++) {
+        if (HighlightStyles[i].name == styleName) {
+            return i;
+        }
+    }
+
+    return -1;
 }

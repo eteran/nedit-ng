@@ -1965,6 +1965,7 @@ void TextBuffer::deleteRect(int start, int end, int rectStart, int rectEnd, int 
         std::string temp;
         deleteRectFromLine(line, rectStart, rectEnd, tabDist_, useTabs_, nullSubsChar_, &temp, &endOffset);
         len = gsl::narrow<int>(temp.size());
+
         std::copy_n(temp.begin(), len, outPtr);
 
 		*outPtr++ = '\n';

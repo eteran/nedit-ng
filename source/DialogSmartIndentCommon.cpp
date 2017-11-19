@@ -139,7 +139,7 @@ bool DialogSmartIndentCommon::updateSmartIndentCommonData() {
 	   data which depends on common data) */
     Q_FOREACH(DocumentWidget *document, documents) {
         if (document->indentStyle_ == IndentStyle::Smart && document->languageMode_ != PLAIN_LANGUAGE_MODE) {
-            EndSmartIndentEx(document);
+            document->EndSmartIndentEx();
             document->BeginSmartIndentEx(false);
 		}
 	}

@@ -14,6 +14,9 @@ public:
 public:
 	void setText(const QString &text);
 
+public:
+    void showEvent(QShowEvent *event) override;
+
 public Q_SLOTS:
     void copyText();
 

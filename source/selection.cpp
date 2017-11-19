@@ -94,29 +94,7 @@ int StringToLineAndCol(const QString &text, int *lineNum, int *column) {
     return -1;
 }
 
-/*
-** Getting the current selection by making the request, and then blocking
-** (processing events) while waiting for a reply.  On failure (timeout or
-** bad format) returns nullptr, otherwise returns the contents of the selection.
-*/
-QString GetAnySelectionEx(DocumentWidget *document) {
 
-    /* If the selection is in the window's own buffer get it from there,
-       but substitute null characters as if it were an external selection */
-    if (document->buffer_->primary_.selected) {
-        std::string text = document->buffer_->BufGetSelectionTextEx();
-        document->buffer_->BufUnsubstituteNullCharsEx(text);
-        return QString::fromStdString(text);
-    }
-
-    const QMimeData *mimeData = QApplication::clipboard()->mimeData(QClipboard::Selection);
-    if(mimeData->hasText()) {
-        return mimeData->text();
-    }
-
-    QApplication::beep();
-    return QString();
-}
 
 void SelectNumberedLineEx(DocumentWidget *document, TextArea *area, int lineNum) {
     int i;

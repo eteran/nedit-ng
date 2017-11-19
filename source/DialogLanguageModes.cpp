@@ -469,7 +469,7 @@ bool DialogLanguageModes::updateLMList(Mode mode) {
                 QString oldName = parts[0];
                 QString newName = parts[1];
 
-                RenameHighlightPattern(oldName, newName);
+                MainWindow::RenameHighlightPattern(oldName, newName);
                 RenameSmartIndentMacros(oldName, newName);
                 itemFromIndex(i)->name = newName;
             }
@@ -503,7 +503,7 @@ bool DialogLanguageModes::updateLMList(Mode mode) {
         }
 
         // If a syntax highlighting dialog is up, update its menu
-        UpdateLanguageModeMenu();
+        MainWindow::UpdateLanguageModeMenu();
 
 		// The same for the smart indent macro dialog
         UpdateLangModeMenuSmartIndent();
@@ -631,7 +631,7 @@ void DialogLanguageModes::on_buttonDelete_clicked() {
 	}
 
 	// don't allow deletion if data will be lost
-	if (LMHasHighlightPatterns(itemFromIndex(itemIndex)->name)) {
+    if (MainWindow::LMHasHighlightPatterns(itemFromIndex(itemIndex)->name)) {
 		QMessageBox::warning(this, tr("Patterns exist"), tr("This language mode has syntax highlighting patterns defined.  Please delete the patterns first, in Preferences -> Default Settings -> Syntax Highlighting, before proceeding here."));
 		return; // False;
 	}

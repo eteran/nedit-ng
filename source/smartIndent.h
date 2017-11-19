@@ -32,10 +32,8 @@
 class QString;
 class QByteArray;
 class SmartIndentEntry;
-class DocumentWidget;
 class Program;
 
-bool InSmartIndentMacrosEx(DocumentWidget *document);
 int LMHasSmartIndentMacros(const QString &languageMode);
 int LoadSmartIndentCommonStringEx(const QString &string);
 int LoadSmartIndentStringEx(const QString &string);
@@ -43,7 +41,6 @@ int SmartIndentMacrosAvailable(const QString &languageModeName);
 QString  WriteSmartIndentCommonStringEx();
 QString WriteSmartIndentStringEx();
 void EditCommonSmartIndentMacro();
-void EndSmartIndentEx(DocumentWidget *document);
 void RenameSmartIndentMacros(const QString &oldName, const QString &newName);
 void UpdateLangModeMenuSmartIndent();
 QByteArray defaultCommonMacros();

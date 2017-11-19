@@ -27,17 +27,12 @@
 #ifndef HIGHLIGHT_DATA_H_
 #define HIGHLIGHT_DATA_H_
 
-#include "highlight.h"
-#include "preferences.h"
-#include "util/string_view.h"
 #include <QList>
-#include <string>
 #include <memory>
 
 class PatternSet;
 class QString;
 class HighlightStyle;
-class MainWindow;
 
 bool LoadHighlightStringEx(const QString &string);
 bool LoadStylesStringEx(const QString &string);
@@ -45,18 +40,13 @@ bool NamedStyleExists(const QString &styleName);
 int FontOfNamedStyleIsBold(const QString &styleName);
 int FontOfNamedStyleIsItalic(const QString &styleName);
 int IndexOfNamedStyle(const QString &styleName);
-bool LMHasHighlightPatterns(const QString &languageMode);
 PatternSet *FindPatternSet(const QString &langModeName);
 QString BgColorOfNamedStyleEx(const QString &styleName);
 QString ColorOfNamedStyleEx(const QString &styleName);
 QString WriteHighlightStringEx();
 QString WriteStylesStringEx();
-void EditHighlightPatterns(MainWindow *window);
 void EditHighlightStyles(QWidget *parent, const QString &initialStyle);
 void RenameHighlightPattern(const QString &oldName, const QString &newName);
-void UpdateLanguageModeMenu();
-QFont FontOfNamedStyleEx(DocumentWidget *document, const QString &styleName);
-void updateHighlightStyleMenu();
 std::unique_ptr<PatternSet> readDefaultPatternSet(const QString &langModeName);
 
 // list of available highlight styles 

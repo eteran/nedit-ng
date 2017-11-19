@@ -6,6 +6,8 @@
 #include "DialogReplace.h"
 #include "HighlightData.h"
 #include "LanguageMode.h"
+#include "HighlightStyle.h"
+#include "FontType.h"
 #include "MainWindow.h"
 #include "Direction.h"
 #include "SignalBlocker.h"
@@ -1111,7 +1113,7 @@ void DocumentWidget::reapplyLanguageMode(int mode, bool forceDefaults) {
 
         // Force a change of smart indent macros (SetAutoIndent will re-start)
         if (indentStyle_ == IndentStyle::Smart) {
-            EndSmartIndentEx(this);
+            EndSmartIndentEx();
             indentStyle_ = IndentStyle::Auto;
         }
 
@@ -1186,7 +1188,7 @@ void DocumentWidget::SetAutoIndent(IndentStyle state) {
     bool smartIndent = (state == IndentStyle::Smart);
 
     if (indentStyle_ == IndentStyle::Smart && !smartIndent) {
-        EndSmartIndentEx(this);
+        EndSmartIndentEx();
     } else if (smartIndent && indentStyle_ != IndentStyle::Smart) {
         BeginSmartIndentEx(true);
     }
@@ -1260,7 +1262,7 @@ bool DocumentWidget::IsTopDocument() const {
 
 
 
-QString DocumentWidget::getWindowsMenuEntry() {
+QString DocumentWidget::getWindowsMenuEntry() const {
 
     QString fullTitle = tr("%1%2").arg(filename_, fileChanged_ ? tr("*") : tr(""));
 
@@ -1887,7 +1889,7 @@ void DocumentWidget::RemoveBackupFile() {
 ** Generate the name of the backup file for this window from the filename
 ** and path in the window data structure & write into name
 */
-QString DocumentWidget::backupFileNameEx() {
+QString DocumentWidget::backupFileNameEx() const {
 
     if (filenameSet_) {
         return tr("%1~%2").arg(path_, filename_);
@@ -2076,7 +2078,7 @@ QString DocumentWidget::FullPath() const {
  *   0: no difference found
  *  !0: difference found or could not compare contents.
  */
-int DocumentWidget::cmpWinAgainstFile(const QString &fileName) {
+bool DocumentWidget::cmpWinAgainstFile(const QString &fileName) const {
 
     char fileString[PREFERRED_CMPBUF_LEN + 2];
     struct stat statbuf;
@@ -2088,31 +2090,31 @@ int DocumentWidget::cmpWinAgainstFile(const QString &fileName) {
 
 	FILE *fp = ::fopen(fileName.toLatin1().data(), "r");
     if (!fp) {
-        return 1;
+        return true;
     }
 
     auto _ = gsl::finally([fp] { ::fclose(fp); });
 
     if (::fstat(fileno(fp), &statbuf) != 0) {
-        return 1;
+        return true;
     }
 
     const long fileLen = statbuf.st_size;
     // For DOS files, we can't simply check the length
     if (fileFormat != FileFormats::Dos) {
         if (fileLen != buf->BufGetLength()) {
-            return 1;
+            return true;
         }
     } else {
         // If a DOS file is smaller on disk, it's certainly different
         if (fileLen < buf->BufGetLength()) {
-            return 1;
+            return true;
         }
     }
 
     /* For large files, the comparison can take a while. If it takes too long,
        the user should be given a clue about what is happening. */
-    QString message = tr("Comparing externally modified %1 ...").arg(filename_);
+    const auto message = tr("Comparing externally modified %1 ...").arg(filename_);
 
     long restLen = std::min(PREFERRED_CMPBUF_LEN, fileLen);
     int bufPos  = 0;
@@ -2132,7 +2134,7 @@ int DocumentWidget::cmpWinAgainstFile(const QString &fileName) {
         auto nRead = gsl::narrow<int>(::fread(fileString + offset, 1, restLen, fp));
         if (nRead != restLen) {
             MainWindow::AllWindowsUnbusyEx();
-            return 1;
+            return true;
         }
         filePos += nRead;
 
@@ -2141,7 +2143,7 @@ int DocumentWidget::cmpWinAgainstFile(const QString &fileName) {
         // check for on-disk file format changes, but only for the first hunk
         if (bufPos == 0 && fileFormat != FormatOfFileEx(view::string_view(fileString, nRead))) {
             MainWindow::AllWindowsUnbusyEx();
-            return 1;
+            return true;
         }
 
         switch(fileFormat) {
@@ -2176,9 +2178,9 @@ int DocumentWidget::cmpWinAgainstFile(const QString &fileName) {
     }
 
     if (bufPos != buf->BufGetLength()) {
-        return 1;
+        return true;
     }
-    return 0;
+    return false;
 }
 
 void DocumentWidget::RevertToSaved() {
@@ -2458,7 +2460,6 @@ int DocumentWidget::SaveWindowAs(const QString &newName, bool addWrap) {
         int  retVal;
         QString fullname;
 
-
         if(newName.isNull()) {
             QFileDialog dialog(this, tr("Save File As"));
             dialog.setFileMode(QFileDialog::AnyFile);
@@ -2511,12 +2512,9 @@ int DocumentWidget::SaveWindowAs(const QString &newName, bool addWrap) {
                     connect(wrapCheck, &QCheckBox::toggled, [wrapCheck, this](bool checked) {
                         if(checked) {
                             int ret = QMessageBox::information(this, tr("Add Wrap"),
-                                tr("This operation adds permanent line breaks to\n"
-                                "match the automatic wrapping done by the\n"
-                                "Continuous Wrap mode Preferences Option.\n\n"
-                                "*** This Option is Irreversable ***\n\n"
-                                "Once newlines are inserted, continuous wrapping\n"
-                                "will no longer work automatically on these lines"),
+                                tr("This operation adds permanent line breaks to match the automatic wrapping done by the Continuous Wrap mode Preferences Option.\n\n"
+                                   "*** This Option is Irreversable ***\n\n"
+                                   "Once newlines are inserted, continuous wrapping will no longer work automatically on these lines"),
                                 QMessageBox::Ok, QMessageBox::Cancel);
 
                             if(ret != QMessageBox::Ok) {
@@ -2889,7 +2887,7 @@ int DocumentWidget::CloseFileAndWindow(CloseMode preResponse) {
 void DocumentWidget::CloseWindow() {
 
     // Free smart indent macro programs
-    EndSmartIndentEx(this);
+    EndSmartIndentEx();
 
     /* Clean up macro references to the doomed window.  If a macro is
        executing, stop it.  If macro is calling this (closing its own
@@ -2940,7 +2938,7 @@ void DocumentWidget::CloseWindow() {
         inode_        = 0;
 
         StopHighlightingEx();
-        EndSmartIndentEx(this);
+        EndSmartIndentEx();
         window->UpdateWindowTitle(this);
         window->UpdateWindowReadOnly(this);
         window->ui.action_Close->setEnabled(false);
@@ -3402,14 +3400,14 @@ void DocumentWidget::executeNewlineMacroEx(SmartIndentEvent *cbInfo) {
                     this,
                     tr("Smart Indent"),
                     tr("Error in smart indent macro:\n%1").arg(stat == MACRO_ERROR ? errMsg : tr("dialogs and shell commands not permitted")));
-        EndSmartIndentEx(this);
+        EndSmartIndentEx();
         return;
     }
 
     // Validate and return the result
     if (!is_integer(result) || to_integer(result) < -1 || to_integer(result) > 1000) {
         QMessageBox::critical(this, tr("Smart Indent"), tr("Smart indent macros must return integer indent distance"));
-        EndSmartIndentEx(this);
+        EndSmartIndentEx();
         return;
     }
 
@@ -3491,8 +3489,9 @@ void DocumentWidget::executeModMacroEx(SmartIndentEvent *cbInfo) {
         QMessageBox::critical(
                     this,
                     tr("Smart Indent"),
-                    tr("Error in smart indent modification macro:\n%1").arg(stat == MACRO_ERROR ? errMsg : tr("dialogs and shell commands not permitted")));
-        EndSmartIndentEx(this);
+                    tr("Error in smart indent modification macro:\n%1").arg((stat == MACRO_ERROR) ? errMsg : tr("dialogs and shell commands not permitted")));
+
+        EndSmartIndentEx();
         return;
     }
 }
@@ -6376,7 +6375,7 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
             p->bgColor = p->color;
         }
 
-        p->font = FontOfNamedStyleEx(this, pat->style);
+        p->font = FontOfNamedStyleEx(pat->style);
     };
 
     // PLAIN_STYLE (pass 1)
@@ -6875,4 +6874,82 @@ void DocumentWidget::ReadMacroInitFileEx() {
 */
 int DocumentWidget::ReadMacroStringEx(const QString &string, const QString &errIn) {
     return readCheckMacroStringEx(this, string, this, errIn, nullptr);
+}
+
+/**
+ * @brief DocumentWidget::EndSmartIndentEx
+ */
+void DocumentWidget::EndSmartIndentEx() {
+    const std::unique_ptr<SmartIndentData> &winData = smartIndentData_;
+
+    if(!winData) {
+        return;
+    }
+
+    // Free programs and allocated data
+    if (winData->modMacro) {
+        FreeProgram(winData->modMacro);
+    }
+
+    FreeProgram(winData->newlineMacro);
+
+    smartIndentData_ = nullptr;
+}
+
+bool DocumentWidget::InSmartIndentMacrosEx() const {
+    const std::unique_ptr<SmartIndentData> &winData = smartIndentData_;
+    return winData && (winData->inModMacro || winData->inNewLineMacro);
+}
+
+/*
+** Getting the current selection by making the request, and then blocking
+** (processing events) while waiting for a reply.  On failure (timeout or
+** bad format) returns nullptr, otherwise returns the contents of the selection.
+*/
+QString DocumentWidget::GetAnySelectionEx() {
+
+    /* If the selection is in the window's own buffer get it from there,
+       but substitute null characters as if it were an external selection */
+    if (buffer_->primary_.selected) {
+        std::string text = buffer_->BufGetSelectionTextEx();
+        buffer_->BufUnsubstituteNullCharsEx(text);
+        return QString::fromStdString(text);
+    }
+
+    const QMimeData *mimeData = QApplication::clipboard()->mimeData(QClipboard::Selection);
+    if(mimeData->hasText()) {
+        return mimeData->text();
+    }
+
+    QApplication::beep();
+    return QString();
+}
+
+/*
+** Find the font (font struct) associated with a named style.
+** This routine must only be called with a valid styleName (call
+** NamedStyleExists to find out whether styleName is valid).
+*/
+QFont DocumentWidget::FontOfNamedStyleEx(const QString &styleName) const {
+
+    const int styleNo = IndexOfNamedStyle(styleName);
+
+    if (styleNo < 0) {
+        return GetPrefDefaultFont();
+    } else {
+
+        const int fontNum = HighlightStyles[styleNo].font;
+
+        switch(fontNum) {
+        case BOLD_FONT:
+            return boldFontStruct_;
+        case ITALIC_FONT:
+            return italicFontStruct_;
+        case BOLD_ITALIC_FONT:
+            return boldItalicFontStruct_;
+        case PLAIN_FONT:
+        default:
+            return fontStruct_;
+        }
+    }
 }

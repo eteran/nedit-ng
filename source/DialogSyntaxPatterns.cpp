@@ -5,6 +5,7 @@
 #include "HighlightData.h"
 #include "HighlightStyle.h"
 #include "LanguageMode.h"
+#include "highlight.h"
 #include "MainWindow.h"
 #include "Help.h"
 #include "PatternSet.h"

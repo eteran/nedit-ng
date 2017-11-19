@@ -61,7 +61,7 @@ public:
     Rangeset& operator=(const Rangeset &) = delete;
     Rangeset(Rangeset &&)                 = delete;
     Rangeset& operator=(Rangeset &&)      = delete;
-	~Rangeset()                           = default;
+    ~Rangeset()                           = default;
 
 public:
     QString RangesetGetName() const;

@@ -13,6 +13,8 @@
 #include "DialogReplace.h"
 #include "DialogShellMenu.h"
 #include "DialogSmartIndent.h"
+#include "DialogSyntaxPatterns.h"
+#include "PatternSet.h"
 #include "DialogTabs.h"
 #include "Help.h"
 #include "DialogWindowBackgroundMenu.h"
@@ -113,6 +115,7 @@ QPointer<DialogShellMenu>            WindowShellMenu;
 QPointer<DialogWindowBackgroundMenu> WindowBackgroundMenu;
 QPointer<DialogMacros>               WindowMacros;
 QPointer<DialogSmartIndent>          SmartIndentDlg;
+QPointer<DialogSyntaxPatterns>       SyntaxPatterns;
 QPointer<DocumentWidget>             lastFocusDocument;
 
 auto neditDBBadFilenameChars = QLatin1String("\n");
@@ -3405,8 +3408,7 @@ void MainWindow::defaultSyntaxGroupTriggered(QAction *action) {
 }
 
 void MainWindow::on_action_Default_Syntax_Recognition_Patterns_triggered() {
-    // TODO(eteran): 2.0, eventually move this logic to be local
-    EditHighlightPatterns(this);
+    EditHighlightPatterns();
 }
 
 void MainWindow::on_action_Default_Syntax_Text_Drawing_Styles_triggered() {
@@ -4768,4 +4770,89 @@ void MainWindow::action_Detach_Document(DocumentWidget *document) {
 
 MainWindow *MainWindow::fromDocument(const DocumentWidget *document) {
     return qobject_cast<MainWindow *>(document->window());
+}
+
+/*
+** Present a dialog for editing highlight pattern information
+*/
+void MainWindow::EditHighlightPatterns() {
+
+    if(SyntaxPatterns) {
+        SyntaxPatterns->show();
+        SyntaxPatterns->raise();
+        return;
+    }
+
+    if (LanguageModeName(0).isNull()) {
+
+        QMessageBox::warning(this,
+                             tr("No Language Modes"),
+                             tr("No Language Modes available for syntax highlighting\n"
+                                "Add language modes under Preferenses->Language Modes"));
+        return;
+    }
+
+    DocumentWidget *document = currentDocument();
+
+    QString languageName = LanguageModeName(document->languageMode_ == PLAIN_LANGUAGE_MODE ? 0 : document->languageMode_);
+    SyntaxPatterns = new DialogSyntaxPatterns(this);
+    SyntaxPatterns->setLanguageName(languageName);
+    SyntaxPatterns->show();
+    SyntaxPatterns->raise();
+}
+
+/*
+** If a syntax highlighting dialog is up, ask to have the option menu for
+** chosing language mode updated (via a call to CreateLanguageModeMenu)
+*/
+void MainWindow::UpdateLanguageModeMenu() {
+
+    if(!SyntaxPatterns) {
+        return;
+    }
+
+    SyntaxPatterns->UpdateLanguageModeMenu();
+}
+
+/*
+** If a syntax highlighting dialog is up, ask to have the option menu for
+** chosing highlight styles updated (via a call to createHighlightStylesMenu)
+*/
+void MainWindow::updateHighlightStyleMenu() {
+    if(!SyntaxPatterns) {
+        return;
+    }
+
+    SyntaxPatterns->updateHighlightStyleMenu();
+}
+
+/*
+** Change the language mode name of pattern sets for language "oldName" to
+** "newName" in both the stored patterns, and the pattern set currently being
+** edited in the dialog.
+*/
+void MainWindow::RenameHighlightPattern(const QString &oldName, const QString &newName) {
+
+    for(PatternSet &patternSet : PatternSets) {
+        if (patternSet.languageMode == oldName) {
+            patternSet.languageMode = newName;
+        }
+    }
+
+    if(SyntaxPatterns) {
+        SyntaxPatterns->RenameHighlightPattern(oldName, newName);
+    }
+}
+
+/*
+** Returns True if there are highlight patterns, or potential patterns
+** not yet committed in the syntax highlighting dialog for a language mode,
+*/
+bool MainWindow::LMHasHighlightPatterns(const QString &languageMode) {
+    if (FindPatternSet(languageMode) != nullptr) {
+        return true;
+    }
+
+
+    return SyntaxPatterns && SyntaxPatterns->LMHasHighlightPatterns(languageMode);
 }

@@ -4,6 +4,7 @@
 #include "FontType.h"
 #include "HighlightStyle.h"
 #include "MainWindow.h"
+#include "preferences.h"
 #include "SignalBlocker.h"
 #include "X11Colors.h"
 #include "highlightData.h"
@@ -432,7 +433,7 @@ bool DialogDrawingStyles::updateHSList() {
 	}
 
 	// If a syntax highlighting dialog is up, update its menu 
-	updateHighlightStyleMenu();
+    MainWindow::updateHighlightStyleMenu();
 
 	// Redisplay highlighted windows which use changed style(s) 
     Q_FOREACH(DocumentWidget *document, DocumentWidget::allDocuments()) {

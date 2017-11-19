@@ -31,7 +31,6 @@
 #include "DialogLanguageModes.h"
 #include "DialogSmartIndent.h"
 #include "DialogSmartIndentCommon.h"
-#include "DocumentWidget.h"
 #include "IndentStyle.h"
 #include "SmartIndentEntry.h"
 #include "TextBuffer.h"
@@ -45,6 +44,7 @@
 #include "utils.h"
 
 #include <QMessageBox>
+#include <QPointer>
 #include <QtDebug>
 #include <climits>
 #include <cstdio>
@@ -198,22 +198,7 @@ QByteArray defaultCommonMacros() {
     return defaultMacros;
 }
 
-void EndSmartIndentEx(DocumentWidget *document) {
-    const std::unique_ptr<SmartIndentData> &winData = document->smartIndentData_;
 
-	if(!winData) {
-        return;
-	}
-
-    // Free programs and allocated data
-    if (winData->modMacro) {
-        FreeProgram(winData->modMacro);
-    }
-
-    FreeProgram(winData->newlineMacro);
-
-	document->smartIndentData_ = nullptr;
-}
 
 /*
 ** Returns true if there are smart indent macros for a named language
@@ -222,10 +207,7 @@ int SmartIndentMacrosAvailable(const QString &languageModeName) {
 	return findIndentSpec(languageModeName) != nullptr;
 }
 
-bool InSmartIndentMacrosEx(DocumentWidget *document) {
-    const std::unique_ptr<SmartIndentData> &winData = document->smartIndentData_;
-	return winData && (winData->inModMacro || winData->inNewLineMacro);
-}
+
 
 static bool loadDefaultIndentSpec(const QString &lmName) {
 

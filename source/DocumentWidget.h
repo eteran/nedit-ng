@@ -171,8 +171,12 @@ public:
     void StartHighlightingEx(bool warn);
     void StopHighlightingEx();
     void UpdateHighlightStylesEx();
+    void EndSmartIndentEx();
+    bool InSmartIndentMacrosEx() const;
+    QString GetAnySelectionEx();
+    QFont FontOfNamedStyleEx(const QString &styleName) const;
 
-private:
+private:    
     bool bckError(const QString &errString, const QString &file);
     bool DoNamedMacroMenuCmd(TextArea *area, const QString &name, bool fromMacro);
     bool DoNamedShellMenuCmd(TextArea *area, const QString &name, bool fromMacro);
@@ -183,7 +187,7 @@ private:
     bool writeBckVersion();
     HighlightData *compilePatternsEx(HighlightPattern *patternSrc, int nPatterns);
     int CloseFileAndWindow(CloseMode preResponse);
-    int cmpWinAgainstFile(const QString &fileName);
+    bool cmpWinAgainstFile(const QString &fileName) const;
     int fileWasModifiedExternally();
     int MacroWindowCloseActionsEx();
     int matchLanguageMode();
@@ -192,8 +196,8 @@ private:
     int WriteBackupFile();
     MacroContinuationCode continueWorkProcEx();
     PatternSet *findPatternsForWindowEx(bool warn);
-    QString backupFileNameEx();
-    QString getWindowsMenuEntry();
+    QString backupFileNameEx() const;
+    QString getWindowsMenuEntry() const;
     std::shared_ptr<regexp> compileREAndWarnEx(const QString &re);
     Style GetHighlightInfoEx(int pos);
     StyleTableEntry *styleTableEntryOfCodeEx(int hCode) const;
