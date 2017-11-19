@@ -3056,7 +3056,7 @@ static bool searchStringMS(DocumentWidget *document, Arguments arguments, DataVa
                     &foundEnd,
                     nullptr,
                     nullptr,
-                    GetWindowDelimitersEx(document));
+                    document->GetWindowDelimitersEx());
     }
 
     // Return the results
@@ -3123,7 +3123,7 @@ static bool replaceInStringMS(DocumentWidget *document, Arguments arguments, Dat
                 searchType,
                 &copyStart,
                 &copyEnd,
-                GetWindowDelimitersEx(document),
+                document->GetWindowDelimitersEx(),
                 &ok);
 
     // Return the results
@@ -3946,7 +3946,7 @@ static bool splitMS(DocumentWidget *document, Arguments arguments, DataValue *re
                     &foundEnd,
                     nullptr,
                     nullptr,
-                    GetWindowDelimitersEx(document));
+                    document->GetWindowDelimitersEx());
 
         int elementEnd = found ? foundStart : strLength;
         int elementLen = elementEnd - lastEnd;
@@ -4014,7 +4014,8 @@ static bool splitMS(DocumentWidget *document, Arguments arguments, DataValue *re
                         &foundEnd,
                         nullptr,
                         nullptr,
-                        GetWindowDelimitersEx(document));
+                        document->GetWindowDelimitersEx());
+
             if (found) {
                 ++indexNum;
 

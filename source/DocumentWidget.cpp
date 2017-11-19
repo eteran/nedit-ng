@@ -6953,3 +6953,18 @@ QFont DocumentWidget::FontOfNamedStyleEx(const QString &styleName) const {
         }
     }
 }
+
+/*
+** Get the set of word delimiters for the language mode set in the current
+** window.  Returns nullptr when no language mode is set (it would be easy to
+** return the default delimiter set when the current language mode is "Plain",
+** or the mode doesn't have its own delimiters, but this is usually used
+** to supply delimiters for RE searching, and ExecRE can skip compiling a
+** delimiter table when delimiters is nullptr).
+*/
+QString DocumentWidget::GetWindowDelimitersEx() const {
+    if (languageMode_ == PLAIN_LANGUAGE_MODE)
+        return QString();
+    else
+        return LanguageModes[languageMode_].delimiters;
+}

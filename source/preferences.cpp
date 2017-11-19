@@ -409,7 +409,7 @@ void SetPrefSortTabs(bool state) {
     g_Settings.sortTabs = state;
 }
 
-int GetPrefSortTabs() {
+bool GetPrefSortTabs() {
     return g_Settings.sortTabs;
 }
 
@@ -420,7 +420,7 @@ void SetPrefTabBar(bool state) {
     g_Settings.tabBar = state;
 }
 
-int GetPrefTabBar() {
+bool GetPrefTabBar() {
     return g_Settings.tabBar;
 }
 
@@ -508,7 +508,7 @@ void SetPrefWarnExit(bool state) {
     g_Settings.warnExit = state;
 }
 
-int GetPrefWarnExit() {
+bool GetPrefWarnExit() {
     return g_Settings.warnExit;
 }
 
@@ -519,7 +519,7 @@ void SetPrefFindReplaceUsesSelection(bool state) {
     g_Settings.findReplaceUsesSelection = state;
 }
 
-int GetPrefFindReplaceUsesSelection() {
+bool GetPrefFindReplaceUsesSelection() {
     return g_Settings.findReplaceUsesSelection;
 }
 
@@ -651,7 +651,7 @@ void SetPrefBacklightChars(bool state) {
     g_Settings.backlightChars = state;
 }
 
-int GetPrefBacklightChars() {
+bool GetPrefBacklightChars() {
     return g_Settings.backlightChars;
 }
 
@@ -684,7 +684,7 @@ void SetPrefAutoScroll(bool state) {
 	}
 }
 
-int GetPrefAutoScroll() {
+bool GetPrefAutoScroll() {
     return g_Settings.autoScroll;
 }
 
@@ -699,7 +699,7 @@ void SetPrefAppendLF(bool state) {
     g_Settings.appendLF = state;
 }
 
-int GetPrefAppendLF() {
+bool GetPrefAppendLF() {
     return g_Settings.appendLF;
 }
 
@@ -730,7 +730,7 @@ int GetPrefSmartTags() {
 }
 
 // Advanced
-int GetPrefAlwaysCheckRelTagsSpecs() {
+bool GetPrefAlwaysCheckRelTagsSpecs() {
     return g_Settings.alwaysCheckRelativeTagsSpecs;
 }
 
@@ -929,22 +929,6 @@ QString LanguageModeName(int mode) {
 	else
         return LanguageModes[mode].name;
 }
-
-/*
-** Get the set of word delimiters for the language mode set in the current
-** window.  Returns nullptr when no language mode is set (it would be easy to
-** return the default delimiter set when the current language mode is "Plain",
-** or the mode doesn't have its own delimiters, but this is usually used
-** to supply delimiters for RE searching, and ExecRE can skip compiling a
-** delimiter table when delimiters is nullptr).
-*/
-QString GetWindowDelimitersEx(const DocumentWidget *document) {
-    if (document->languageMode_ == PLAIN_LANGUAGE_MODE)
-        return QString();
-    else
-        return LanguageModes[document->languageMode_].delimiters;
-}
-
 
 static int loadLanguageModesStringEx(const QString &string) {
 	QString errMsg;

@@ -619,7 +619,7 @@ bool ReplaceAndSearchEx(MainWindow *window, DocumentWidget *document, TextArea *
                 startPos - searchExtentBW,
                 replaceResult,
                 startPos == 0 ? '\0' : document->buffer_->BufGetCharacter(startPos - 1),
-                GetWindowDelimitersEx(document),
+                document->GetWindowDelimitersEx(),
                 defaultRegexFlags(searchType));
 
             document->buffer_->BufReplaceEx(startPos, endPos, replaceResult);
@@ -683,7 +683,7 @@ bool SearchAndReplaceEx(MainWindow *window, DocumentWidget *document, TextArea *
         std::string replaceResult;
         const std::string foundString = document->buffer_->BufGetRangeEx(searchExtentBW, searchExtentFW + 1);
 
-        QString delimieters = GetWindowDelimitersEx(document);
+        QString delimieters = document->GetWindowDelimitersEx();
 
         replaceUsingREEx(
             searchString,
@@ -855,7 +855,7 @@ void ReplaceInSelectionEx(MainWindow *window, DocumentWidget *document, TextArea
                     &endPos,
                     &extentBW,
                     &extentFW,
-                    GetWindowDelimitersEx(document));
+                    document->GetWindowDelimitersEx());
 
         if (!found) {
             break;
@@ -906,7 +906,7 @@ void ReplaceInSelectionEx(MainWindow *window, DocumentWidget *document, TextArea
                             startPos - extentBW,
                             replaceResult,
                             (startPos + realOffset) == 0 ? '\0' : tempBuf.BufGetCharacter(startPos + realOffset - 1),
-                            GetWindowDelimitersEx(document),
+                            document->GetWindowDelimitersEx(),
                             defaultRegexFlags(searchType));
 
             if (!substSuccess) {
@@ -1001,7 +1001,7 @@ bool ReplaceAllEx(MainWindow *window, DocumentWidget *document, TextArea *area, 
     // view the entire text buffer from the text area widget as a string
     view::string_view fileString = document->buffer_->BufAsStringEx();
 
-    QString delimieters = GetWindowDelimitersEx(document);
+    QString delimieters = document->GetWindowDelimitersEx();
 
     bool ok;
     std::string newFileString = ReplaceAllInStringEx(
@@ -1246,7 +1246,7 @@ bool SearchWindowEx(MainWindow *window, DocumentWidget *document, Direction dire
                     endPos,
                     extentBW,
                     extentFW,
-                    GetWindowDelimitersEx(document));
+                    document->GetWindowDelimitersEx());
 
         // Avoid Motif 1.1 bug by putting away search dialog before Dialogs
         if (auto dialog = qobject_cast<DialogFind *>(window->dialogFind_)) {
@@ -1292,7 +1292,7 @@ bool SearchWindowEx(MainWindow *window, DocumentWidget *document, Direction dire
                                 endPos,
                                 extentBW,
                                 extentFW,
-                                GetWindowDelimitersEx(document));
+                                document->GetWindowDelimitersEx());
 
                 } else if (direction == Direction::BACKWARD && beginPos != fileEnd) {
                     if (GetPrefBeepOnSearchWrap()) {
@@ -1323,7 +1323,7 @@ bool SearchWindowEx(MainWindow *window, DocumentWidget *document, Direction dire
                                 endPos,
                                 extentBW,
                                 extentFW,
-                                GetWindowDelimitersEx(document));
+                                document->GetWindowDelimitersEx());
                 }
             }
             if (!found) {
@@ -1355,7 +1355,7 @@ bool SearchWindowEx(MainWindow *window, DocumentWidget *document, Direction dire
                     endPos,
                     extentBW,
                     extentFW,
-                    GetWindowDelimitersEx(document));
+                    document->GetWindowDelimitersEx());
 
         if (found) {
             iSearchTryBeepOnWrapEx(window, direction, beginPos, *startPos);
@@ -1838,7 +1838,7 @@ static bool searchMatchesSelectionEx(DocumentWidget *document, const QString &se
                 &endPos,
                 &extentBW,
                 &extentFW,
-                GetWindowDelimitersEx(document));
+                document->GetWindowDelimitersEx());
 
     // decide if it is an exact match
     if (!found) {

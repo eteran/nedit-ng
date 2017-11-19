@@ -175,6 +175,7 @@ public:
     bool InSmartIndentMacrosEx() const;
     QString GetAnySelectionEx();
     QFont FontOfNamedStyleEx(const QString &styleName) const;
+    QString GetWindowDelimitersEx() const;
 
 private:    
     bool bckError(const QString &errString, const QString &file);
