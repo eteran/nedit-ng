@@ -2939,13 +2939,16 @@ static bool writeOrAppendFile(bool append, DocumentWidget *document, Arguments a
 static bool searchMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
     DataValue newArgList[9];
 
-    /* Use the search string routine, by adding the buffer contents as
-       the string argument */
+    /* Use the search string routine, by adding the buffer contents as the
+     * string argument */
     if (arguments.size() > 8)
         M_FAILURE(WrongNumberOfArguments);
 
-    /* we remove constness from BufAsStringEx() result since we know
-       searchStringMS will not modify the result */
+    /* we remove constness from BufAsString() result since we know
+     * searchStringMS will not modify the result. NOTE(eteran):
+     * We do this instead of using a string_view, because this version of
+     * to_value() doesn't make a copy!
+     */
     auto str = const_cast<char *>(document->buffer_->BufAsString());
     int size = document->buffer_->BufGetLength();
     newArgList[0] = to_value(str, size);

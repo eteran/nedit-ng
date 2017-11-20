@@ -290,14 +290,6 @@ inline DataValue to_value(bool n) {
     return DV;
 }
 
-// TODO(eteran): 2.0, deprecate this API in favor of std::string/QString
-inline DataValue to_value(const char *str) {
-    DataValue DV;
-    DV.tag     = STRING_TAG;
-    DV.val.str = AllocNStringCpyEx(view::string_view(str));
-    return DV;
-}
-
 inline DataValue to_value(const view::string_view str) {
     DataValue DV;
     DV.tag     = STRING_TAG;
