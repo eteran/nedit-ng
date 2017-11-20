@@ -6,7 +6,7 @@
 #include <QChar>
 
 // max. # of bookmarks (one per letter & #)
-#define MAX_MARKS 36
+constexpr int MAX_MARKS = 36;
 
 // Element in bookmark table
 struct Bookmark {

@@ -213,6 +213,7 @@ add_executable(nedit-ng
 	TextArea.cpp
 	TextArea.h
 	TextBuffer.cpp
+	TextBuffer.tcc
 	TextBuffer.h
 	TextEditEvent.cpp
 	TextEditEvent.h

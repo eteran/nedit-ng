@@ -27,8 +27,8 @@
 #ifndef CALLTIPS_H_
 #define CALLTIPS_H_
 
-enum TipHAlignMode { TIP_LEFT, TIP_CENTER, TIP_RIGHT };
-enum TipVAlignMode { TIP_ABOVE, TIP_BELOW };
+enum TipHAlignMode  { TIP_LEFT, TIP_CENTER, TIP_RIGHT };
+enum TipVAlignMode  { TIP_ABOVE, TIP_BELOW };
 enum TipAlignStrict { TIP_SLOPPY, TIP_STRICT };
 
 

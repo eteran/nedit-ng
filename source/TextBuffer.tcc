@@ -2153,7 +2153,7 @@ void BasicTextBuffer<Ch, Tr>::deleteRectFromLine(view_type line, int rectStart, 
 */
 template <class Ch, class Tr>
 template <class Ran>
-auto BasicTextBuffer<Ch, Tr>::copyLineEx(Ran first, Ran last) noexcept -> string_type {
+auto BasicTextBuffer<Ch, Tr>::copyLineEx(Ran first, Ran last) -> string_type {
     auto it = std::find(first, last, Ch('\n'));
     return string_type(first, it);
 }
