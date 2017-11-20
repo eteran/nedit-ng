@@ -36,7 +36,11 @@
 #define N_RANGESETS 63
 
 class Rangeset;
-class TextBuffer;
+
+template <class Ch, class Tr>
+class BasicTextBuffer;
+
+using TextBuffer = BasicTextBuffer<char, std::char_traits<char>>;
 
 struct Range {
 	int start;

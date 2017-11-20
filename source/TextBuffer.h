@@ -43,37 +43,47 @@ constexpr int MAX_EXP_CHAR_LEN = 20;
 
 class RangesetTable;
 
-using bufModifyCallbackProc    = void (*)(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *user);
-using bufPreDeleteCallbackProc = void (*)(int pos, int nDeleted, void *user);
-
-class TextBuffer {
-    using Ch = char;
-    using Tr = std::char_traits<Ch>;
+template <class Ch = char, class Tr = std::char_traits<Ch>>
+class BasicTextBuffer {
 public:
-	TextBuffer();
-	explicit TextBuffer(int requestedSize);
-    TextBuffer(const TextBuffer &)            = delete;
-	TextBuffer &operator=(const TextBuffer &) = delete;
-	~TextBuffer();
+    using string_type = std::basic_string<Ch, Tr>;
+    using view_type   = view::basic_string_view<Ch, Tr>;
 
 public:
-	static int BufCharWidth(char c, int indent, int tabDist, char nullSubsChar);
-	static int BufExpandCharacter(char c, int indent, char *outStr, int tabDist, char nullSubsChar);
-
-public:
-	bool BufSubstituteNullChars(char *string, int length);
+    using bufModifyCallbackProc    = void (*)(int pos, int nInserted, int nDeleted, int nRestyled, view_type deletedText, void *user);
+    using bufPreDeleteCallbackProc = void (*)(int pos, int nDeleted, void *user);
 
 private:
-	void BufUnsubstituteNullChars(char *string, int length) const;
+    /* Initial size for the buffer gap (empty space in the buffer where text might
+     * be inserted if the user is typing sequential chars)
+     */
+    static constexpr int PreferredGapSize = 80;
+
+public:
+    BasicTextBuffer();
+    explicit BasicTextBuffer(int requestedSize);
+    BasicTextBuffer(const BasicTextBuffer &)            = delete;
+    BasicTextBuffer &operator=(const BasicTextBuffer &) = delete;
+    ~BasicTextBuffer();
+
+public:
+    static int BufCharWidth(Ch c, int indent, int tabDist, Ch nullSubsChar);
+    static int BufExpandCharacter(Ch c, int indent, Ch outStr[MAX_EXP_CHAR_LEN], int tabDist, Ch nullSubsChar);
+
+public:
+    bool BufSubstituteNullChars(Ch *string, int length);
+
+private:
+    void BufUnsubstituteNullChars(Ch *string, int length) const;
 
 public:
 	bool BufIsEmpty() const;
-	bool BufSearchBackwardEx(int startPos, view::string_view searchChars, int *foundPos) const;	
-	bool BufSearchForwardEx(int startPos, view::string_view searchChars, int *foundPos) const;	
-    bool BufSubstituteNullCharsEx(std::string &string);
-	char BufGetCharacter(int pos) const;
-	const char *BufAsString();
-    int BufCmpEx(int pos, view::string_view cmpText);
+    bool BufSearchBackwardEx(int startPos, view_type searchChars, int *foundPos) const;
+    bool BufSearchForwardEx(int startPos, view_type searchChars, int *foundPos) const;
+    bool BufSubstituteNullCharsEx(string_type &string);
+    Ch BufGetCharacter(int pos) const;
+    const Ch *BufAsString();
+    int BufCmpEx(int pos, view_type cmpText);
 	int BufCountBackwardNLines(int startPos, int nLines) const;
 	int BufCountDispChars(int lineStartPos, int targetPos) const;
 	int BufCountForwardDispChars(int lineStartPos, int nChars) const;
@@ -81,30 +91,30 @@ public:
 	int BufCountLines(int startPos, int endPos) const;
 	int BufEndOfLine(int pos) const;
 	int BufGetEmptySelectionPos(int *start, int *end, bool *isRect, int *rectStart, int *rectEnd);
-	int BufGetExpandedChar(int pos, int indent, char *outStr) const;
+    int BufGetExpandedChar(int pos, int indent, Ch *outStr) const;
 	int BufGetHighlightPos(int *start, int *end, bool *isRect, int *rectStart, int *rectEnd);
 	int BufGetLength() const;
 	int BufGetSecSelectPos(int *start, int *end, bool *isRect, int *rectStart, int *rectEnd);
 	int BufGetSelectionPos(int *start, int *end, bool *isRect, int *rectStart, int *rectEnd);
 	int BufGetTabDistance() const;
 	int BufStartOfLine(int pos) const;
-    std::string BufGetAllEx();
-    std::string BufGetRangeEx(int start, int end);
-    std::string BufGetSecSelectTextEx();
-    std::string BufGetSelectionTextEx();
-    std::string BufGetTextInRectEx(int start, int end, int rectStart, int rectEnd);
-	view::string_view BufAsStringEx();
+    string_type BufGetAllEx();
+    string_type BufGetRangeEx(int start, int end);
+    string_type BufGetSecSelectTextEx();
+    string_type BufGetSelectionTextEx();
+    string_type BufGetTextInRectEx(int start, int end, int rectStart, int rectEnd);
+    view_type BufAsStringEx();
 	void BufAddHighPriorityModifyCB(bufModifyCallbackProc bufModifiedCB, void *cbArg);
 	void BufAddModifyCB(bufModifyCallbackProc bufModifiedCB, void *cbArg);
 	void BufAddPreDeleteCB(bufPreDeleteCallbackProc bufPreDeleteCB, void *cbArg);
-	void BufAppendEx(view::string_view text);
+    void BufAppendEx(view_type text);
 	void BufCheckDisplay(int start, int end) const;
 	void BufClearRect(int start, int end, int rectStart, int rectEnd);
-	void BufCopyFromBuf(TextBuffer *fromBuf, int fromStart, int fromEnd, int toPos);
+    void BufCopyFromBuf(BasicTextBuffer *fromBuf, int fromStart, int fromEnd, int toPos);
 	void BufHighlight(int start, int end);
-	void BufInsertColEx(int column, int startPos, view::string_view text, int *charsInserted, int *charsDeleted);
-	void BufInsertEx(int pos, view::string_view text);
-	void BufOverlayRectEx(int startPos, int rectStart, int rectEnd, view::string_view text, int *charsInserted, int *charsDeleted);
+    void BufInsertColEx(int column, int startPos, view_type text, int *charsInserted, int *charsDeleted);
+    void BufInsertEx(int pos, view_type text);
+    void BufOverlayRectEx(int startPos, int rectStart, int rectEnd, view_type text, int *charsInserted, int *charsDeleted);
 	void BufRectHighlight(int start, int end, int rectStart, int rectEnd);
 	void BufRectSelect(int start, int end, int rectStart, int rectEnd);
 	void BufRemove(int start, int end);
@@ -113,47 +123,74 @@ public:
 	void BufRemoveRect(int start, int end, int rectStart, int rectEnd);
 	void BufRemoveSecSelect();
 	void BufRemoveSelected();
-	void BufReplaceEx(int start, int end, view::string_view text);
-	void BufReplaceRectEx(int start, int end, int rectStart, int rectEnd, view::string_view text);
-	void BufReplaceSecSelectEx(view::string_view text);	
-	void BufReplaceSelectedEx(view::string_view text);
+    void BufReplaceEx(int start, int end, view_type text);
+    void BufReplaceRectEx(int start, int end, int rectStart, int rectEnd, view_type text);
+    void BufReplaceSecSelectEx(view_type text);
+    void BufReplaceSelectedEx(view_type text);
 	void BufSecRectSelect(int start, int end, int rectStart, int rectEnd);
 	void BufSecondarySelect(int start, int end);
 	void BufSecondaryUnselect();
 	void BufSelect(int start, int end);
-	void BufSetAllEx(view::string_view text);
+    void BufSetAllEx(view_type text);
 	void BufSetTabDistance(int tabDist);
 	void BufUnhighlight();
 	void BufUnselect();
-    void BufUnsubstituteNullCharsEx(std::string &string) const;
+    void BufUnsubstituteNullCharsEx(string_type &string) const;
+
+public:
+    // TODO(eteran): 2.0, implement an STL style interface.
+    // Might allow some interesting use of algorithms
 
 public:
 	bool GetSimpleSelection(int *left, int *right);
 
 private:
-	bool searchBackward(int startPos, char searchChar, int *foundPos) const;
-	bool searchForward(int startPos, char searchChar, int *foundPos) const;
-	int insertEx(int pos, view::string_view text);
-    std::string getSelectionTextEx(TextSelection *sel);
-	void callModifyCBs(int pos, int nDeleted, int nInserted, int nRestyled, view::string_view deletedText) const;
+    bool searchBackward(int startPos, Ch searchChar, int *foundPos) const;
+    bool searchForward(int startPos, Ch searchChar, int *foundPos) const;
+    int insertEx(int pos, view_type text);
+    int insertEx(int pos, Ch ch);
+    string_type getSelectionTextEx(TextSelection *sel);
+    void callModifyCBs(int pos, int nDeleted, int nInserted, int nRestyled, view_type deletedText) const;
 	void callPreDeleteCBs(int pos, int nDeleted) const;
 	void deleteRange(int start, int end);
 	void deleteRect(int start, int end, int rectStart, int rectEnd, int *replaceLen, int *endPos);
 	void findRectSelBoundariesForCopy(int lineStartPos, int rectStart, int rectEnd, int *selStart, int *selEnd);
-	void insertColEx(int column, int startPos, view::string_view insText, int *nDeleted, int *nInserted, int *endPos);
+    void insertColEx(int column, int startPos, view_type insText, int *nDeleted, int *nInserted, int *endPos);
 	void moveGap(int pos);
-	void overlayRectEx(int startPos, int rectStart, int rectEnd, view::string_view insText, int *nDeleted, int *nInserted, int *endPos);
+    void overlayRectEx(int startPos, int rectStart, int rectEnd, view_type insText, int *nDeleted, int *nInserted, int *endPos);
 	void reallocateBuf(int newGapStart, int newGapLen);
 	void redisplaySelection(TextSelection *oldSelection, TextSelection *newSelection);
 	void removeSelected(TextSelection *sel);
-	void replaceSelectedEx(TextSelection *sel, view::string_view text); 
+    void replaceSelectedEx(TextSelection *sel, view_type text);
 	void updateSelections(int pos, int nDeleted, int nInserted);
-	 	
+
+public:
+    static string_type unexpandTabsEx(view_type text, int startIndent, int tabDist, Ch nullSubsChar);
+    static string_type expandTabsEx(view_type text, int startIndent, int tabDist, Ch nullSubsChar);
+    static string_type realignTabsEx(view_type text, int origIndent, int newIndent, int tabDist, int useTabs, Ch nullSubsChar);
+    static void histogramCharactersEx(view_type string, bool hist[256], bool init);
+    static void subsChars(Ch *string, int length, Ch fromChar, Ch toChar);
+    static void subsCharsEx(string_type &string, Ch fromChar, Ch toChar);
+    static Ch chooseNullSubsChar(bool hist[256]);
+    static void insertColInLineEx(view_type line, view_type insLine, int column, int insWidth, int tabDist, int useTabs, Ch nullSubsChar, string_type *outStr, int *endOffset);
+    static void deleteRectFromLine(view_type line, int rectStart, int rectEnd, int tabDist, int useTabs, Ch nullSubsChar, string_type *outStr, int *endOffset);
+    static int textWidthEx(view_type text, int tabDist, Ch nullSubsChar);
+    static int countLinesEx(view_type string);
+    static void overlayRectInLineEx(view_type line, view_type insLine, int rectStart, int rectEnd, int tabDist, int useTabs, Ch nullSubsChar, string_type *outStr, int *endOffset);
+    static const Ch *controlCharacter(size_t index);
+
+public:
+    template <class Out>
+    static int addPaddingEx(Out out, int startIndent, int toIndent, int tabDist, int useTabs, Ch nullSubsChar);
+
+    template <class Ran>
+    static string_type copyLineEx(Ran first, Ran last);
+
 private:
-    Ch *buf_;         // allocated memory where the text is stored
-	int gapStart_;      // points to the first character of the gap
-	int gapEnd_;        // points to the first char after the gap
-    int length_;        // length of the text in the buffer (the length of the buffer itself must be calculated: gapEnd gapStart + length)
+    Ch *buf_;      // allocated memory where the text is stored
+    int gapStart_; // points to the first character of the gap
+    int gapEnd_;   // points to the first char after the gap
+    int length_;   // length of the text in the buffer (the length of the buffer itself must be calculated: gapEnd gapStart + length)
 	
 public:
 	// TODO(eteran): accessors
@@ -168,5 +205,9 @@ public:
     Ch nullSubsChar_;                                                        // NEdit is based on C null-terminated strings, so ascii-nul characters must be substituted with something else.  This is the else, but of course, things get quite messy when you use it
 	RangesetTable *rangesetTable_;                                           // current range sets
 };
+
+#include "TextBuffer.tcc"
+
+using TextBuffer = BasicTextBuffer<char>;
 
 #endif

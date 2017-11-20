@@ -33,11 +33,16 @@
 class TextArea;
 class HighlightPattern;
 class WindowHighlightData;
-class TextBuffer;
+
 struct ReparseContext;
 class QColor;
 class QString;
 class HighlightData;
+
+template <class Ch, class Tr>
+class BasicTextBuffer;
+
+using TextBuffer = BasicTextBuffer<char, std::char_traits<char>>;
 
 // Pattern flags for modifying pattern matching behavior
 enum {

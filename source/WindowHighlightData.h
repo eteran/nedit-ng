@@ -9,7 +9,11 @@
 class HighlightData;
 class PatternSet;
 class StyleTableEntry;
-class TextBuffer;
+
+template <class Ch, class Tr>
+class BasicTextBuffer;
+
+using TextBuffer = BasicTextBuffer<char, std::char_traits<char>>;
 
 // Data structure attached to window to hold all syntax highlighting
 // information (for both drawing and incremental reparsing)
@@ -20,7 +24,7 @@ public:
     StyleTableEntry*                 styleTable          = nullptr;
     HighlightData*                   pass1Patterns       = nullptr;
     HighlightData*                   pass2Patterns       = nullptr;
-    std::shared_ptr<TextBuffer>      styleBuffer         = nullptr;
+    std::shared_ptr<TextBuffer>      styleBuffer;
     PatternSet*                      patternSetForWindow = nullptr;
     QByteArray                       parentStyles;
     ReparseContext                   contextRequirements = { 0, 0 };

@@ -35,7 +35,6 @@ class QMenu;
 class QSplitter;
 class QTimer;
 class TextArea;
-class TextBuffer;
 class UndoInfo;
 class HighlightData;
 class WindowHighlightData;
@@ -49,6 +48,11 @@ class PatternSet;
 class HighlightPattern;
 class StyleTableEntry;
 class regexp;
+
+template <class Ch, class Tr>
+class BasicTextBuffer;
+
+using TextBuffer = BasicTextBuffer<char, std::char_traits<char>>;
 
 enum class Direction : uint8_t;
 

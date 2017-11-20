@@ -24,10 +24,15 @@ class QPoint;
 class QShortcut;
 class QTimer;
 class TextArea;
-class TextBuffer;
 class DocumentWidget;
 struct DragEndEvent;
 struct SmartIndentEvent;
+
+template <class Ch, class Tr>
+class BasicTextBuffer;
+
+using TextBuffer = BasicTextBuffer<char, std::char_traits<char>>;
+
 
 using unfinishedStyleCBProcEx = void (*)(const TextArea *, int, const void *);
 using cursorMovedCBEx         = void (*)(TextArea *, void *);
