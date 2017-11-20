@@ -152,6 +152,7 @@ add_executable(nedit-ng
 	SmartIndentEntry.cpp
 	TextArea.cpp
 	TextBuffer.cpp
+	TextBuffer.tcc
 	TextSelection.cpp
 	UndoInfo.cpp
 	X11Colors.cpp

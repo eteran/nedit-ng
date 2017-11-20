@@ -50,8 +50,8 @@ static int findLeftMarginEx(In first, In last, long length, int tabDist);
 static int findParagraphEnd(TextBuffer *buf, int startPos);
 static int findParagraphStart(TextBuffer *buf, int startPos);
 static int nextTab(int pos, int tabDist);
-static std::string fillParagraphEx(view::string_view text, int leftMargin, int firstLineIndent, int rightMargin, int tabDist, int allowTabs, char nullSubsChar);
-static std::string fillParagraphsEx(view::string_view text, int rightMargin, int tabDist, int useTabs, char nullSubsChar, int alignWithFirst);
+static std::string fillParagraphEx(view::string_view text, int leftMargin, int firstLineIndent, int rightMargin, int tabDist, int allowTabs);
+static std::string fillParagraphsEx(view::string_view text, int rightMargin, int tabDist, int useTabs, int alignWithFirst);
 static void changeCaseEx(DocumentWidget *document, TextArea *area, bool makeUpper);
 static void shiftRectEx(DocumentWidget *document, TextArea *area, int direction, bool byTab, int selStart, int selEnd, int rectStart, int rectEnd);
 
@@ -280,7 +280,7 @@ void FillSelectionEx(DocumentWidget *document, TextArea *area) {
     }
 
     // Fill the text
-    std::string filledText = fillParagraphsEx(text, rightMargin, buf->tabDist_, buf->useTabs_, buf->nullSubsChar_, false);
+    std::string filledText = fillParagraphsEx(text, rightMargin, buf->tabDist_, buf->useTabs_, false);
 
     // Replace the text in the window
     if (hasSelection && isRect) {
@@ -663,7 +663,7 @@ static int findLeftMarginEx(In first, In last, long length, int tabDist) {
 	
 		switch(*it) {
 		case '\t':
-			col += TextBuffer::BufCharWidth('\t', col, tabDist, '\0');
+            col += TextBuffer::BufCharWidth('\t', col, tabDist);
 			break;
 		case ' ':
 			col++;
@@ -697,7 +697,7 @@ static int findLeftMarginEx(In first, In last, long length, int tabDist) {
 ** capability not currently used in NEdit, but carried over from code for
 ** previous versions which did all paragraphs together).
 */
-static std::string fillParagraphsEx(view::string_view text, int rightMargin, int tabDist, int useTabs, char nullSubsChar, int alignWithFirst) {
+static std::string fillParagraphsEx(view::string_view text, int rightMargin, int tabDist, int useTabs, int alignWithFirst) {
 
 	// Create a buffer to accumulate the filled paragraphs 
     TextBuffer buf;
@@ -747,7 +747,7 @@ static std::string fillParagraphsEx(view::string_view text, int rightMargin, int
 		int leftMargin       = findLeftMarginEx(secondLineStart,  paraText.end(), paraEnd - paraStart - (secondLineStart - paraText.begin()), tabDist);
 
 		// Fill the paragraph 
-        std::string filledText = fillParagraphEx(paraText, leftMargin, firstLineIndent, rightMargin, tabDist, useTabs, nullSubsChar);
+        std::string filledText = fillParagraphEx(paraText, leftMargin, firstLineIndent, rightMargin, tabDist, useTabs);
 
 		// Replace it in the buffer 
         buf.BufReplaceEx(paraStart, fillEnd, filledText);
@@ -767,7 +767,7 @@ static std::string fillParagraphsEx(view::string_view text, int rightMargin, int
 ** True) calculated using tabDist, and spaces.  Returns a newly allocated
 ** string as the function result, and the length of the new string in filledLen.
 */
-static std::string fillParagraphEx(view::string_view text, int leftMargin, int firstLineIndent, int rightMargin, int tabDist, int allowTabs, char nullSubsChar) {
+static std::string fillParagraphEx(view::string_view text, int leftMargin, int firstLineIndent, int rightMargin, int tabDist, int allowTabs) {
 
     size_t nLines = 1;
 
@@ -813,7 +813,7 @@ static std::string fillParagraphEx(view::string_view text, int leftMargin, int f
         if (*it == '\n') {
 			col = leftMargin;
         } else {
-            col += TextBuffer::BufCharWidth(*it, col, tabDist, nullSubsChar);
+            col += TextBuffer::BufCharWidth(*it, col, tabDist);
         }
 
 		if (col - 1 > rightMargin) {

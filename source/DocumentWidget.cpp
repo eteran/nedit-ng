@@ -2158,7 +2158,6 @@ bool DocumentWidget::cmpWinAgainstFile(const QString &fileName) const {
         }
 
         // Beware of NUL chars !
-        buf->BufSubstituteNullChars(fileString, nRead);
         rv = buf->BufCmpEx(bufPos, view::string_view(fileString, nRead));
         if (rv) {
             MainWindow::AllWindowsUnbusyEx();
@@ -2279,9 +2278,6 @@ int DocumentWidget::WriteBackupFile() {
     // get the text buffer contents and its length
     std::string fileString = buffer_->BufGetAllEx();
 
-    // If null characters are substituted for, put them back
-    buffer_->BufUnsubstituteNullCharsEx(fileString);
-
     // add a terminating newline if the file doesn't already have one
     if (!fileString.empty() && fileString.back() != '\n') {
         fileString.append("\n"); // null terminator no longer needed
@@ -2383,7 +2379,7 @@ bool DocumentWidget::doSave() {
              zero size on disk, and the check would falsely conclude that the
              file has changed on disk, and would pop up a warning dialog */
     if (!buffer_->BufIsEmpty() && buffer_->BufGetCharacter(buffer_->BufGetLength() - 1) != '\n' && GetPrefAppendLF()) {
-        buffer_->BufAppendEx("\n");
+        buffer_->BufAppendEx('\n');
     }
 
     // open the file
@@ -2410,9 +2406,6 @@ bool DocumentWidget::doSave() {
 
     // get the text buffer contents and its length
     std::string fileString = buffer_->BufGetAllEx();
-
-    // If null characters are substituted for, put them back
-    buffer_->BufUnsubstituteNullCharsEx(fileString);
 
     // If the file is to be saved in DOS or Macintosh format, reconvert
     if (fileFormat_ == FileFormats::Dos) {
@@ -3187,31 +3180,6 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
            Substitute them with another character.  If that is impossible, warn
            the user, make the file read-only, and force a substitution */
         if (buffer_->BufGetLength() != readLen) {
-            if (!buffer_->BufSubstituteNullChars(&fileString[0], readLen)) {
-
-                QMessageBox msgbox(this);
-                msgbox.setIcon(QMessageBox::Critical);
-                msgbox.setWindowTitle(tr("Error while opening File"));
-                msgbox.setText(tr("Too much binary data in file.  You may view it, but not modify or re-save its contents."));
-                msgbox.addButton(tr("View"), QMessageBox::AcceptRole);
-                msgbox.addButton(QMessageBox::Cancel);
-                int resp = msgbox.exec();
-
-                if (resp == QMessageBox::Cancel) {
-                    return false;
-                }
-
-                lockReasons_.setTMBDLocked(true);
-
-                for (char *c = &fileString[0]; c < &fileString[readLen]; ++c) {
-                    if (*c == '\0') {
-                        *c = static_cast<char>(0xfe);
-                    }
-                }
-
-                buffer_->nullSubsChar_ = static_cast<char>(0xfe);
-            }
-
             ignoreModify_ = true;
             buffer_->BufSetAllEx(contents);
             ignoreModify_ = false;
@@ -3553,11 +3521,6 @@ bool DocumentWidget::includeFile(const QString &name) {
     case FileFormats::Unix:
         //  Default is Unix, no conversion necessary.
         break;
-    }
-
-    // If the file contained ascii nulls, re-map them
-    if (!buffer_->BufSubstituteNullCharsEx(fileString)) {
-        QMessageBox::critical(this, tr("Error opening File"), tr("Too much binary data in file"));
     }
 
     /* insert the contents of the file in the selection or at the insert
@@ -4078,9 +4041,6 @@ void DocumentWidget::PrintWindow(TextArea *area, bool selectedOnly) {
     } else {
         fileString = area->TextGetWrappedEx(0, buf->BufGetLength());
     }
-
-    // If null characters are substituted for, put them back
-    buf->BufUnsubstituteNullCharsEx(fileString);
 
     // add a terminating newline if the file doesn't already have one
     if (!fileString.empty() && fileString.back() != '\n') {
@@ -4894,10 +4854,6 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
 
             auto area = cmdData->area;
             TextBuffer *buf = area->TextGetBuffer();
-            if (!buf->BufSubstituteNullCharsEx(output_string)) {
-                qWarning("NEdit: Too much binary data in shell cmd output");
-                output_string.clear();
-            }
 
             if (cmdData->flags & REPLACE_SELECTION) {
                 int reselectStart = buf->primary_.rectangular ? -1 : buf->primary_.start;
@@ -4975,10 +4931,9 @@ void DocumentWidget::ExecCursorLineEx(TextArea *area, bool fromMacro) {
     }
 
     std::string cmdText = buffer_->BufGetRangeEx(left, right);
-    buffer_->BufUnsubstituteNullCharsEx(cmdText);
 
     // insert a newline after the entire line
-    buffer_->BufInsertEx(insertPos, "\n");
+    buffer_->BufInsertEx(insertPos, '\n');
 
     /* Substitute the current file name for % and the current line number
        for # in the shell command */
@@ -5043,7 +4998,7 @@ void DocumentWidget::FilterSelection(const QString &command, bool fromMacro) {
         QApplication::beep();
         return;
     }
-    buffer_->BufUnsubstituteNullCharsEx(text);
+
     int left  = buffer_->primary_.start;
     int right = buffer_->primary_.end;
 
@@ -5156,10 +5111,6 @@ void DocumentWidget::DoShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
         text = std::string();
         break;
     }
-
-    /* If the buffer was substituting another character for ascii-nuls,
-       put the nuls back in before exporting the text */
-    buffer_->BufUnsubstituteNullCharsEx(text);
 
     /* Assign the output destination.  If output is to a new window,
        create it, and run the command from it instead of the current
@@ -6911,9 +6862,7 @@ QString DocumentWidget::GetAnySelectionEx() {
     /* If the selection is in the window's own buffer get it from there,
        but substitute null characters as if it were an external selection */
     if (buffer_->primary_.selected) {
-        std::string text = buffer_->BufGetSelectionTextEx();
-        buffer_->BufUnsubstituteNullCharsEx(text);
-        return QString::fromStdString(text);
+        return QString::fromStdString(buffer_->BufGetSelectionTextEx());
     }
 
     const QMimeData *mimeData = QApplication::clipboard()->mimeData(QClipboard::Selection);

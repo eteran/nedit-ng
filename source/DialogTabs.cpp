@@ -75,7 +75,7 @@ void DialogTabs::on_buttonBox_accepted() {
 		return;
 	}
 
-	if (tabDist <= 0 || tabDist > MAX_EXP_CHAR_LEN) {
+    if (tabDist <= 0 || tabDist > TextBuffer::MAX_EXP_CHAR_LEN) {
 		QMessageBox::warning(this, tr("Tab Spacing"), tr("Tab spacing out of range"));
 		return;
 	}

@@ -236,7 +236,7 @@ void findTextMargins(TextBuffer *buf, int start, int end, int *leftMargin, int *
 			width = 0;
 			inWhite = true;
 		} else
-			width += TextBuffer::BufCharWidth(c, width, buf->tabDist_, buf->nullSubsChar_);
+            width += TextBuffer::BufCharWidth(c, width, buf->tabDist_);
 	}
 
 	if (width > maxWidth) {
@@ -847,11 +847,6 @@ void TextArea::selfInsertAP(const QString &string, EventFlags flags) {
     }
 
     std::string s = string.toStdString();
-
-    if (!buffer_->BufSubstituteNullCharsEx(s)) {
-        QMessageBox::critical(this, tr("Error"), tr("Too much binary data"));
-        return;
-    }
 
     /* If smart indent is on, call the smart indent callback to check the
        inserted character */
@@ -1926,7 +1921,7 @@ void TextArea::wrappedLineCounter(const TextBuffer *buf, int startPos, int maxPo
 	int foundBreak;
 	int nLines = 0;
 	int tabDist = buffer_->tabDist_;
-	char nullSubsChar = buffer_->nullSubsChar_;
+
 
 	/* If the font is fixed, or there's a wrap margin set, it's more efficient
 	   to measure in columns, than to count pixels.  Determine if we can count
@@ -1982,7 +1977,7 @@ void TextArea::wrappedLineCounter(const TextBuffer *buf, int startPos, int maxPo
 			colNum = 0;
 			width = 0;
 		} else {
-			colNum += TextBuffer::BufCharWidth(c, colNum, tabDist, nullSubsChar);
+            colNum += TextBuffer::BufCharWidth(c, colNum, tabDist);
 			if (countPixels)
 				width += measurePropChar(c, colNum, p + styleBufOffset);
 		}
@@ -2011,7 +2006,7 @@ void TextArea::wrappedLineCounter(const TextBuffer *buf, int startPos, int maxPo
 
 			if (!foundBreak) { // no whitespace, just break at margin
 				newLineStart = std::max(p, lineStart + 1);
-				colNum = TextBuffer::BufCharWidth(c, colNum, tabDist, nullSubsChar);
+                colNum = TextBuffer::BufCharWidth(c, colNum, tabDist);
 				if (countPixels)
 					width = measurePropChar(c, colNum, p + styleBufOffset);
 			}
@@ -2063,10 +2058,10 @@ void TextArea::wrappedLineCounter(const TextBuffer *buf, int startPos, int maxPo
 //------------------------------------------------------------------------------
 int TextArea::measurePropChar(const char c, int colNum, int pos) const {
 	int style;
-	char expChar[MAX_EXP_CHAR_LEN];
+    char expChar[TextBuffer::MAX_EXP_CHAR_LEN];
     const std::shared_ptr<TextBuffer> &styleBuf = styleBuffer_;
 
-	int charLen = TextBuffer::BufExpandCharacter(c, colNum, expChar, buffer_->tabDist_, buffer_->nullSubsChar_);
+    int charLen = TextBuffer::BufExpandCharacter(c, colNum, expChar, buffer_->tabDist_);
 
 	if(!styleBuf) {
 		style = 0;
@@ -2849,7 +2844,7 @@ int TextArea::measureVisLine(int visLineNum) {
 	int lineLen = visLineLength(visLineNum);
 	int charCount = 0;
 	int lineStartPos = lineStarts_[visLineNum];
-	char expandedChar[MAX_EXP_CHAR_LEN];
+    char expandedChar[TextBuffer::MAX_EXP_CHAR_LEN];
     QFontMetrics fm(font_);
 
 	if (!styleBuffer_) {
@@ -3204,11 +3199,11 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 	for (charIndex = 0;; charIndex++) {
 		baseChar = '\0';
 
-		char expandedChar[MAX_EXP_CHAR_LEN];
+        char expandedChar[TextBuffer::MAX_EXP_CHAR_LEN];
 
         charLen = (charIndex >= lineLen) ?
                     1 :
-                    TextBuffer::BufExpandCharacter(baseChar = lineStr[charIndex], outIndex, expandedChar, buffer_->tabDist_, buffer_->nullSubsChar_);
+                    TextBuffer::BufExpandCharacter(baseChar = lineStr[charIndex], outIndex, expandedChar, buffer_->tabDist_);
 
 		style = styleOfPos(lineStartPos, lineLen, charIndex, outIndex + dispIndexOffset, baseChar);
 		charWidth = charIndex >= lineLen ? stdCharWidth : stringWidth(expandedChar, charLen, style);
@@ -3245,12 +3240,12 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 			}
 		}
 
-		char expandedChar[MAX_EXP_CHAR_LEN];
+        char expandedChar[TextBuffer::MAX_EXP_CHAR_LEN];
 
 		baseChar = '\0';
         charLen = (charIndex >= lineLen) ?
                     1 :
-                    TextBuffer::BufExpandCharacter(baseChar = lineStr[charIndex], outIndex, expandedChar, buffer_->tabDist_, buffer_->nullSubsChar_);
+                    TextBuffer::BufExpandCharacter(baseChar = lineStr[charIndex], outIndex, expandedChar, buffer_->tabDist_);
 
 		int charStyle = styleOfPos(lineStartPos, lineLen, charIndex, outIndex + dispIndexOffset, baseChar);
 
@@ -3278,7 +3273,7 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 			outIndex++;
 		}
 
-		if (outPtr - outStr + MAX_EXP_CHAR_LEN >= MAX_DISP_LINE_LEN || x >= rightClip) {
+        if (outPtr - outStr + TextBuffer::MAX_EXP_CHAR_LEN >= MAX_DISP_LINE_LEN || x >= rightClip) {
 			break;
 		}
 
@@ -4321,7 +4316,7 @@ int TextArea::TextDPositionToXY(int pos, int *x, int *y) {
 	int visLineNum;
 	int outIndex;
 	int xStep;
-	char expandedChar[MAX_EXP_CHAR_LEN];
+    char expandedChar[TextBuffer::MAX_EXP_CHAR_LEN];
 
 	// If position is not displayed, return false
     if (pos < firstChar_ || (pos > lastChar_ && !emptyLinesVisible())) {
@@ -4352,7 +4347,7 @@ int TextArea::TextDPositionToXY(int pos, int *x, int *y) {
     xStep = rect_.left() - horizOffset_;
 	outIndex = 0;
     for (charIndex = 0; charIndex < pos - lineStartPos; charIndex++) {
-		int charLen = TextBuffer::BufExpandCharacter(lineStr[charIndex], outIndex, expandedChar, buffer_->tabDist_, buffer_->nullSubsChar_);
+        int charLen = TextBuffer::BufExpandCharacter(lineStr[charIndex], outIndex, expandedChar, buffer_->tabDist_);
 		int charStyle = styleOfPos(lineStartPos, lineLen, charIndex, outIndex, lineStr[charIndex]);
 		xStep += stringWidth(expandedChar, charLen, charStyle);
 		outIndex += charLen;
@@ -4866,7 +4861,7 @@ void TextArea::TextInsertAtCursorEx(view::string_view chars, bool allowPendingDe
 
 	auto it = chars.begin();
 	for (; it != chars.end() && *it != '\n'; it++) {
-		colNum += TextBuffer::BufCharWidth(*it, colNum, buffer_->tabDist_, buffer_->nullSubsChar_);
+        colNum += TextBuffer::BufCharWidth(*it, colNum, buffer_->tabDist_);
 	}
 
     const bool singleLine = (it == chars.end());
@@ -4958,7 +4953,7 @@ std::string TextArea::wrapTextEx(view::string_view startLine, view::string_view 
 			lineStartPos = limitPos = pos + 1;
 			colNum = 0;
 		} else {
-			colNum += TextBuffer::BufCharWidth(c, colNum, tabDist, buffer_->nullSubsChar_);
+            colNum += TextBuffer::BufCharWidth(c, colNum, tabDist);
 			if (colNum > wrapMargin) {
                 if (!wrapLine(&wrapBuf, bufOffset, lineStartPos, pos, limitPos, &breakAt, &charsAdded)) {
 					limitPos = std::max(pos, limitPos);
@@ -5003,7 +4998,7 @@ void TextArea::TextDOverstrikeEx(view::string_view text) {
     int startIndent = buffer_->BufCountDispChars(lineStart, startPos);
     int indent = startIndent;
 	for (char ch : text) {
-		indent += TextBuffer::BufCharWidth(ch, indent, buffer_->tabDist_, buffer_->nullSubsChar_);
+        indent += TextBuffer::BufCharWidth(ch, indent, buffer_->tabDist_);
 	}
     int endIndent = indent;
 
@@ -5016,7 +5011,7 @@ void TextArea::TextDOverstrikeEx(view::string_view text) {
 		char ch = buffer_->BufGetCharacter(p);
 		if (ch == '\n')
 			break;
-		indent += TextBuffer::BufCharWidth(ch, indent, buffer_->tabDist_, buffer_->nullSubsChar_);
+        indent += TextBuffer::BufCharWidth(ch, indent, buffer_->tabDist_);
 		if (indent == endIndent) {
 			p++;
 			break;
@@ -5271,7 +5266,7 @@ int TextArea::deleteEmulatedTab() {
 	startPos = lineStart;
 	for (pos = lineStart; pos < insertPos; pos++) {
 		c = buffer_->BufGetCharacter(pos);
-		indent += TextBuffer::BufCharWidth(c, indent, buffer_->tabDist_, buffer_->nullSubsChar_);
+        indent += TextBuffer::BufCharWidth(c, indent, buffer_->tabDist_);
 		if (indent > toIndent)
 			break;
 		startPosIndent = indent;
@@ -5343,7 +5338,7 @@ int TextArea::startOfWord(int pos) {
         if (!spanBackward(buffer_, pos, delimiters, true, &startPos))
 			return 0;
 	} else {
-        if (!buffer_->BufSearchBackwardEx(pos, delimiters.data(), &startPos))
+        if (!buffer_->BufSearchBackwardEx(pos, view::string_view(delimiters.data(), delimiters.size()), &startPos))
 			return 0;
 	}
 	return std::min(pos, startPos + 1);
@@ -5362,7 +5357,7 @@ int TextArea::endOfWord(int pos) {
         if (!spanForward(buffer_, pos, delimiters, true, &endPos))
 			return buffer_->BufGetLength();
 	} else {
-        if (!buffer_->BufSearchForwardEx(pos, delimiters.data(), &endPos))
+        if (!buffer_->BufSearchForwardEx(pos, view::string_view(delimiters.data(), delimiters.size()), &endPos))
 			return buffer_->BufGetLength();
 	}
 	return endPos;
@@ -5532,10 +5527,6 @@ void TextArea::CopyToClipboard() {
 		return;
 	}
 
-	/* If the string contained ascii-nul characters, something else was
-	   substituted in the buffer.  Put the nulls back */
-	buffer_->BufUnsubstituteNullCharsEx(text);
-
 	QApplication::clipboard()->setText(QString::fromStdString(text));
 }
 
@@ -5573,13 +5564,6 @@ void TextArea::InsertClipboard(bool isColumnar) {
 	}
 
 	std::string contents = mimeData->text().toStdString();
-
-	/* If the string contains ascii-nul characters, substitute something
-	   else, or give up, warn, and refuse */
-	if (!buf->BufSubstituteNullCharsEx(contents)) {
-        qWarning("NEdit: Too much binary data, text not pasted");
-		return;
-	}
 
 	// Insert it in the text widget
 	if (isColumnar && !buf->primary_.selected) {
@@ -5670,30 +5654,12 @@ void TextArea::copyPrimaryAP(EventFlags flags) {
 */
 void TextArea::InsertPrimarySelection(bool isColumnar) {
 
-#if 0
-	static int isColFlag;
-
-	/* Theoretically, strange things could happen if the user managed to get
-	   in any events between requesting receiving the selection data, however,
-	   getSelectionCB simply inserts the selection at the cursor.  Don't
-	   bother with further measures until real problems are observed. */
-	isColFlag = isColumnar;
-	XtGetSelectionValue(w_, XA_PRIMARY, XA_STRING, getSelectionCB, &isColFlag, time);
-#else
-
 	const QMimeData *mimeData = QApplication::clipboard()->mimeData(QClipboard::Selection);
 	if(!mimeData->hasText()) {
 		return;
 	}
 
 	std::string string = mimeData->text().toStdString();
-
-	/* If the string contains ascii-nul characters, substitute something
-	   else, or give up, warn, and refuse */
-	if (!buffer_->BufSubstituteNullCharsEx(string)) {
-        qWarning("NEdit: Too much binary data, giving up");
-		return;
-	}
 
 	// Insert it in the text widget
 	if (isColumnar) {
@@ -5712,7 +5678,6 @@ void TextArea::InsertPrimarySelection(bool isColumnar) {
 	} else {
 		TextInsertAtCursorEx(string, false, P_autoWrapPastedText);
 	}
-#endif
 }
 
 /*
@@ -5980,7 +5945,7 @@ void TextArea::processTabAP(EventFlags flags) {
 	auto outPtr = std::back_inserter(outStr);
 	indent = startIndent;
 	while (indent < toIndent) {
-		int tabWidth = TextBuffer::BufCharWidth('\t', indent, buffer_->tabDist_, buffer_->nullSubsChar_);
+        int tabWidth = TextBuffer::BufCharWidth('\t', indent, buffer_->tabDist_);
 		if (buffer_->useTabs_ && tabWidth > 1 && indent + tabWidth <= toIndent) {
 			*outPtr++ = '\t';
 			indent += tabWidth;
@@ -6073,7 +6038,7 @@ int TextArea::xyToPos(int x, int y, int posType) {
 	int visLineNum;
 	int xStep;
 	int outIndex;
-	char expandedChar[MAX_EXP_CHAR_LEN];
+    char expandedChar[TextBuffer::MAX_EXP_CHAR_LEN];
 
 	// Find the visible line number corresponding to the y coordinate
     fontHeight = ascent_ + descent_;
@@ -6099,7 +6064,7 @@ int TextArea::xyToPos(int x, int y, int posType) {
     xStep = rect_.left() - horizOffset_;
 	outIndex = 0;
 	for (charIndex = 0; charIndex < lineLen; charIndex++) {
-		int charLen   = TextBuffer::BufExpandCharacter(lineStr[charIndex], outIndex, expandedChar, buffer_->tabDist_, buffer_->nullSubsChar_);
+        int charLen   = TextBuffer::BufExpandCharacter(lineStr[charIndex], outIndex, expandedChar, buffer_->tabDist_);
 		int charStyle = styleOfPos(lineStart, lineLen, charIndex, outIndex, lineStr[charIndex]);
 		int charWidth = stringWidth(expandedChar, charLen, charStyle);
 
@@ -8113,7 +8078,7 @@ std::string TextArea::TextGetWrappedEx(int startPos, int endPos) {
             outBuf.BufReplaceEx(outPos - 1, outPos, "\n");
         }
         else if (c != '\n') {
-            outBuf.BufInsertEx(outPos, "\n");
+            outBuf.BufInsertEx(outPos, '\n');
             outPos++;
         }
         fromPos = toPos;
@@ -8203,8 +8168,8 @@ int TextArea::TextDLineAndColToPos(int lineNum, int column) {
         int outIndex = 0;
         for (int i = lineStart; i < lineEnd; i++, charIndex++) {
 
-            char expandedChar[MAX_EXP_CHAR_LEN];
-            charLen = TextBuffer::BufExpandCharacter(lineStr[charIndex], outIndex, expandedChar, buffer_->tabDist_, buffer_->nullSubsChar_);
+            char expandedChar[TextBuffer::MAX_EXP_CHAR_LEN];
+            charLen = TextBuffer::BufExpandCharacter(lineStr[charIndex], outIndex, expandedChar, buffer_->tabDist_);
 
             if (outIndex + charLen >= column) {
                 break;

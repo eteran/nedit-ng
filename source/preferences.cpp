@@ -578,8 +578,8 @@ int GetPrefTabDist(int langMode) {
 		return 1;
     }
 
-    if (tabDist > MAX_EXP_CHAR_LEN) {
-		return MAX_EXP_CHAR_LEN;
+    if (tabDist > TextBuffer::MAX_EXP_CHAR_LEN) {
+        return TextBuffer::MAX_EXP_CHAR_LEN;
     }
 
 	return tabDist;

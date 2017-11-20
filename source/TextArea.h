@@ -382,7 +382,7 @@ private:
 	CursorStyles getCursorStyle() const;
 
 private:
-	QVector<QColor> bgClassPixel_;                 // table of colors for each BG class
+    QVector<QColor> bgClassPixel_;                // table of colors for each BG class
 	QVector<uint8_t> bgClass_;                    // obtains index into bgClassPixel[]
     QRect rect_;
 	int lineNumLeft_;
@@ -413,14 +413,14 @@ private:
 	int descent_;
 	int fixedFontWidth_;                          // Font width if all current fonts are fixed and match in width, else -1
     QPointer<CallTipWidget> calltipWidget_;
-	CallTip calltip_;                       // The info for the calltip itself
-	bool suppressResync_;                          // Suppress resynchronization of line starts during buffer updates
+    CallTip calltip_;                             // The info for the calltip itself
+    bool suppressResync_;                         // Suppress resynchronization of line starts during buffer updates
 	int nLinesDeleted_;                           // Number of lines deleted during buffer modification (only used when resynchronization is suppressed)
 	int modifyingTabDist_;                        // Whether tab distance is being modified
 	bool pointerHidden_;                          // true if the mouse pointer is hidden
 
     // moved from textP
-    std::unique_ptr<TextBuffer> dragOrigBuf_;        // backup buffer copy used during block dragging of selections
+    std::unique_ptr<TextBuffer> dragOrigBuf_;     // backup buffer copy used during block dragging of selections
 	int dragXOffset_;                // offsets between cursor location and actual insertion point in drag
 	int dragYOffset_;                // offsets between cursor location and actual insertion point in drag
 	BlockDragTypes dragType_;        // style of block drag operation
@@ -436,15 +436,15 @@ private:
 	int anchor_;                     // Anchor for drag operations
 	int rectAnchor_;                 // Anchor for rectangular drag operations
 	DragStates dragState_;           // Why is the mouse being dragged and what is being acquired
-    QPoint btnDownCoord_;             // Mark the position of last btn down action for deciding when to begin paying attention to motion actions, and where to paste columns
-    QPoint mouseCoord_;               // Last known mouse position in drag operation (for autoscroll)
+    QPoint btnDownCoord_;            // Mark the position of last btn down action for deciding when to begin paying attention to motion actions, and where to paste columns
+    QPoint mouseCoord_;              // Last known mouse position in drag operation (for autoscroll)
 	bool selectionOwner_;            // True if widget owns the selection
 	QTimer *autoScrollTimer_;
 	QTimer *cursorBlinkTimer_;
 	QTimer *clickTimer_;
 	int clickCount_;
 	QPoint clickPos_;
-	int            emTabsBeforeCursor_; // If non-zero, number of consecutive emulated tabs just entered.  Saved so chars can be deleted as a unit
+    int emTabsBeforeCursor_; // If non-zero, number of consecutive emulated tabs just entered.  Saved so chars can be deleted as a unit
     QMenu *bgMenu_;
 private:
     QColor highlightFGPixel_;   // Highlight colors are used when flashing matching parens

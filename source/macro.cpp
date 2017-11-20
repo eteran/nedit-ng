@@ -1551,10 +1551,10 @@ static bool setTabDistMS(DocumentWidget *document, Arguments arguments, DataValu
 
     if (arguments.size() > 0) {
         int newTabDist = 0;
-        if(!readArguments(arguments, 0, errMsg, &newTabDist) && newTabDist > 0 && newTabDist <= MAX_EXP_CHAR_LEN) {
+        if(!readArguments(arguments, 0, errMsg, &newTabDist) && newTabDist > 0 && newTabDist <= TextBuffer::MAX_EXP_CHAR_LEN) {
             document->SetTabDist(newTabDist);
         } else {
-            qWarning("NEdit: set_tab_dist requires integer argument > 0 and <= %d", MAX_EXP_CHAR_LEN);
+            qWarning("NEdit: set_tab_dist requires integer argument > 0 and <= %d", TextBuffer::MAX_EXP_CHAR_LEN);
         }
     } else {
         qWarning("NEdit: set_tab_dist requires argument");
@@ -2554,7 +2554,6 @@ static bool getRangeMS(DocumentWidget *document, Arguments arguments, DataValue 
        provided a routine for writing into a pre-allocated string) */
 
     std::string rangeText = buf->BufGetRangeEx(from, to);
-    buf->BufUnsubstituteNullCharsEx(rangeText);
 
     *result = to_value(rangeText);
     return true;
@@ -2577,8 +2576,6 @@ static bool getCharacterMS(DocumentWidget *document, Arguments arguments, DataVa
 
     // Return the character in a pre-allocated string)
     std::string str(1, buf->BufGetCharacter(pos));
-
-    buf->BufUnsubstituteNullCharsEx(str);
 
     *result = to_value(str);
     return true;
@@ -2613,16 +2610,6 @@ static bool replaceRangeMS(DocumentWidget *document, Arguments arguments, DataVa
         return true;
     }
 
-    /* There are no null characters in the string (because macro strings
-       still have null termination), but if the string contains the
-       character used by the buffer for null substitution, it could
-       theoretically become a null.  In the highly unlikely event that
-       all of the possible substitution characters in the buffer are used
-       up, stop the macro and tell the user of the failure */
-    if (!document->buffer_->BufSubstituteNullCharsEx(string)) {
-        M_FAILURE(TooMuchBinaryData);
-    }
-
     // Do the replace
     buf->BufReplaceEx(from, to, string);
     *result = to_value();
@@ -2646,16 +2633,6 @@ static bool replaceSelectionMS(DocumentWidget *document, Arguments arguments, Da
         QApplication::beep();
         *result = to_value();
         return true;
-    }
-
-    /* There are no null characters in the string (because macro strings
-       still have null termination), but if the string contains the
-       character used by the buffer for null substitution, it could
-       theoretically become a null.  In the highly unlikely event that
-       all of the possible substitution characters in the buffer are used
-       up, stop the macro and tell the user of the failure */
-    if (!document->buffer_->BufSubstituteNullCharsEx(string)) {
-        M_FAILURE(TooMuchBinaryData);
     }
 
     // Do the replace
@@ -2691,7 +2668,6 @@ static bool getSelectionMS(DocumentWidget *document, Arguments arguments, DataVa
         *result = to_value(text);
     } else {
         std::string selText = document->buffer_->BufGetSelectionTextEx();
-        document->buffer_->BufUnsubstituteNullCharsEx(selText);
 
         // Return the text as an allocated string
         *result = to_value(selText);

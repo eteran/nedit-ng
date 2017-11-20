@@ -2021,6 +2021,10 @@ void MainWindow::on_action_Insert_Form_Feed_triggered() {
     }
 }
 
+/**
+ * @brief MainWindow::action_Insert_Ctrl_Code
+ * @param str
+ */
 void MainWindow::action_Insert_Ctrl_Code(const QString &str) {
 
     EMIT_EVENT_ARG_1("insert_string", str);
@@ -2033,20 +2037,15 @@ void MainWindow::action_Insert_Ctrl_Code(const QString &str) {
 
         auto s = str.toStdString();
 
-        if (!doc->buffer_->BufSubstituteNullCharsEx(s)) {
-            QMessageBox::critical(this, tr("Error"), tr("Too much binary data"));
-            return;
-        }
-
         if(TextArea *w = lastFocus_) {
             w->insertStringAP(QString::fromStdString(s));
         }
     }
 }
 
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
+/**
+ * @brief MainWindow::on_action_Insert_Ctrl_Code_triggered
+ */
 void MainWindow::on_action_Insert_Ctrl_Code_triggered() {
 
     if(DocumentWidget *doc = currentDocument()) {

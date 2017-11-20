@@ -6,6 +6,7 @@ option(ENABLE_ASAN   "Enable address santiziers")
 option(ENABLE_TSAN   "Enable thread santiziers")
 option(ENABLE_LTO    "Enable Link Time Optimization")
 option(REPLACE_SCOPE "Use Alternative Search Dialog")
+option(PURIFY        "Fill Unused TextBuffer space")
 
 if(ENABLE_ASAN)
 	set(CMAKE_CXX_FLAGS        "${CMAKE_CXX_FLAGS}        -g3 -fsanitize=address -fsanitize=undefined -fsanitize-address-use-after-scope")
@@ -31,6 +32,10 @@ endif()
 
 if(REPLACE_SCOPE)
 	add_definitions(-DREPLACE_SCOPE)
+endif()
+
+if(PURIFY)
+	add_definitions(-DPURIFY)
 endif()
 
 
