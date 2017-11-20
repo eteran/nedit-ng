@@ -47,7 +47,7 @@ template <class Ch, class Tr>
 class BasicTextBufferIterator {
 public:
     BasicTextBufferIterator() = default;
-    BasicTextBufferIterator(BasicTextBuffer<Ch, Tr> *buffer, int index) : buffer_(buffer), index_(index) {}
+    BasicTextBufferIterator(const BasicTextBuffer<Ch, Tr> *buffer, int index) : buffer_(buffer), index_(index) {}
     BasicTextBufferIterator(const BasicTextBufferIterator &) = default;
     BasicTextBufferIterator& operator=(const BasicTextBufferIterator &) = default;
 
@@ -75,7 +75,7 @@ public:
     bool operator!=(const BasicTextBufferIterator &rhs) const { return buffer_ != rhs.buffer_ || index_ != rhs.index_; }
 
 private:
-    BasicTextBuffer<Ch, Tr> *buffer_ = nullptr;
+    const BasicTextBuffer<Ch, Tr> *buffer_ = nullptr;
     int index_ = 0;
 };
 
@@ -85,6 +85,20 @@ class BasicTextBuffer {
 public:
     using string_type = std::basic_string<Ch, Tr>;
     using view_type   = view::basic_string_view<Ch, Tr>;
+
+public:
+    using value_type             = Ch;
+    using allocator_type         = std::allocator<value_type>;
+    using size_type	             = size_t;
+    using difference_type	     = std::ptrdiff_t;
+    using reference	             = value_type&;
+    using const_reference        = const value_type&;
+    using pointer                = value_type*;
+    using const_pointer          = const value_type*;
+    using iterator               = BasicTextBufferIterator<Ch, Tr>;
+    using const_iterator	     = BasicTextBufferIterator<Ch, Tr>;
+    using reverse_iterator       = std::reverse_iterator<iterator>;
+    using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
 public:
     using bufModifyCallbackProc    = void (*)(int pos, int nInserted, int nDeleted, int nRestyled, view_type deletedText, void *user);
@@ -176,8 +190,14 @@ public:
     void BufUnselect() noexcept;
 
 public:
-    // TODO(eteran): 2.0, implement an STL style interface.
+    // TODO(eteran): 2.0, implement a more complete STL style interface.
     // Might allow some interesting use of algorithms
+    const_iterator begin() const  { return BasicTextBufferIterator<Ch, Tr>(this, 0); }
+    const_iterator end() const    { return BasicTextBufferIterator<Ch, Tr>(this, length_); }
+    const_iterator cbegin() const { return BasicTextBufferIterator<Ch, Tr>(this, 0); }
+    const_iterator cend() const   { return BasicTextBufferIterator<Ch, Tr>(this, length_); }
+    bool empty() const            { return BufIsEmpty(); }
+    size_type size() const        { return BufGetLength(); }
 
 public:
     bool GetSimpleSelection(int *left, int *right) noexcept;
