@@ -1,9 +1,7 @@
 
 #include "Settings.h"
-#include "search.h"
 #include "utils.h"
-#include "VirtKeyOverride.h"
-#include "TruncSubstitution.h"
+
 #include <QtDebug>
 #include <QSettings>
 #include <QStandardPaths>

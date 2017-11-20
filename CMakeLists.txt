@@ -57,4 +57,5 @@ add_subdirectory (util)
 add_subdirectory (source)
 add_subdirectory (client)
 add_subdirectory (regex)
+add_subdirectory (Settings)
 

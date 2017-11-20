@@ -14,13 +14,13 @@ include_directories(nc-ng
 
 add_executable(nc-ng
 	nc.cpp
-	${PROJECT_SOURCE_DIR}/source/Settings.cpp
 )
 
 target_link_libraries(nc-ng LINK_PUBLIC
 	Qt5::Widgets
 	Qt5::Network
 	NUtil
+	Settings
 )
 
 set_property(TARGET nc-ng PROPERTY CXX_STANDARD 14)

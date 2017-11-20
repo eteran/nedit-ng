@@ -4,8 +4,9 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 add_library (RegExp 
 	regularExp.cpp
+	regularExp.h
+	regex_error.h
 )
-
 
 target_include_directories (RegExp PUBLIC
 	${CMAKE_CURRENT_SOURCE_DIR} 

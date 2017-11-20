@@ -2,7 +2,7 @@
 #ifndef INDENT_STYLE_H_
 #define INDENT_STYLE_H_
 
-#include <QString>
+#include <QLatin1String>
 #include <QtDebug>
 
 enum class IndentStyle {

@@ -54,7 +54,6 @@ qt5_wrap_cpp(MOC_SOURCES
 	KeySequenceEdit.h
 	MainWindow.h
 	NeditServer.h
-	Settings.h
 	TextArea.h
 )
 
@@ -183,7 +182,6 @@ add_executable(nedit-ng
 	HighlightPattern.cpp
 	HighlightPattern.h
 	HighlightStyle.h
-	IndentStyle.h
 	Input.cpp
 	Input.h
 	KeySequenceEdit.cpp
@@ -205,11 +203,7 @@ add_executable(nedit-ng
 	RangesetTable.h
 	ReparseContext.h
 	ReplaceScope.h
-	SearchType.h
-	Settings.cpp
-	Settings.h
 	ShiftDirection.h
-	ShowMatchingStyle.h
 	SignalBlocker.h
 	SmartIndentEntry.cpp
 	SmartIndentEntry.h
@@ -224,16 +218,13 @@ add_executable(nedit-ng
 	TextEditEvent.h
 	TextSelection.cpp
 	TextSelection.h
-	TruncSubstitution.h
 	UndoInfo.cpp
 	UndoInfo.h
-	VirtKeyOverride.h
 	WindowHighlightData.cpp
 	WindowHighlightData.h
 	WindowMenuEvent.cpp
 	WindowMenuEvent.h
 	WrapMode.h
-	WrapStyle.h
 	X11Colors.cpp
 	X11Colors.h
 	calltips.h
@@ -277,6 +268,7 @@ include_directories(nedit-ng
 target_link_libraries(nedit-ng LINK_PUBLIC
 	NUtil
 	RegExp
+	Settings
 	Qt5::Widgets
 	Qt5::Network
 )
