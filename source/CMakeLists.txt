@@ -20,7 +20,6 @@ qt5_add_resources(QRC_SOURCES
 qt5_wrap_cpp(MOC_SOURCES
 	CallTipWidget.h
 	CommandRecorder.h
-	Dialog.h
 	DialogAbout.h
 	DialogColors.h
 	DialogDrawingStyles.h
@@ -29,6 +28,7 @@ qt5_wrap_cpp(MOC_SOURCES
 	DialogFilter.h
 	DialogFind.h
 	DialogFonts.h
+	Dialog.h
 	DialogLanguageModes.h
 	DialogMacros.h
 	DialogMoveDocument.h
@@ -41,8 +41,8 @@ qt5_wrap_cpp(MOC_SOURCES
 	DialogRepeat.h
 	DialogReplace.h
 	DialogShellMenu.h
-	DialogSmartIndent.h
 	DialogSmartIndentCommon.h
+	DialogSmartIndent.h
 	DialogSyntaxPatterns.h
 	DialogTabs.h
 	DialogWindowBackgroundMenu.h
@@ -55,10 +55,10 @@ qt5_wrap_cpp(MOC_SOURCES
 	MainWindow.h
 	NeditServer.h
 	Settings.h
-	TextArea.h	
+	TextArea.h
 )
 
-set(UI_FILES
+qt5_wrap_ui(UIC_SOURCES
 	CallTipWidget.ui
 	DialogAbout.ui
 	DialogColors.ui
@@ -74,15 +74,15 @@ set(UI_FILES
 	DialogMultiReplace.ui
 	DialogOutput.ui
 	DialogPrint.ui
-	DialogPrompt.ui
 	DialogPromptList.ui
 	DialogPromptString.ui
+	DialogPrompt.ui
 	DialogRepeat.ui
-	DialogReplace.ui
 	DialogReplaceScope.ui
+	DialogReplace.ui
 	DialogShellMenu.ui
-	DialogSmartIndent.ui
 	DialogSmartIndentCommon.ui
+	DialogSmartIndent.ui
 	DialogSyntaxPatterns.ui
 	DialogTabs.ui
 	DialogWindowBackgroundMenu.ui
@@ -93,82 +93,178 @@ set(UI_FILES
 	MainWindow.ui
 )
 
-qt5_wrap_ui(UI_H ${UI_FILES})
-
 add_executable(nedit-ng
 
 	${MOC_SOURCES}
 	${QRC_SOURCES}
-	${UI_H}
+	${UIC_SOURCES}
 
-	Input.cpp
-	WindowHighlightData.cpp
-	Help.cpp
-	Font.cpp
+	BlockDragTypes.h
+	Bookmark.h
+	CallTip.h
 	CallTipWidget.cpp
+	CallTipWidget.h
+	CloseMode.h
 	CommandRecorder.cpp
+	CommandRecorder.h
+	CursorStyles.h
 	Dialog.cpp
+	Dialog.h
 	DialogAbout.cpp
+	DialogAbout.h
 	DialogColors.cpp
+	DialogColors.h
 	DialogDrawingStyles.cpp
+	DialogDrawingStyles.h
 	DialogDuplicateTags.cpp
+	DialogDuplicateTags.h
 	DialogExecuteCommand.cpp
+	DialogExecuteCommand.h
 	DialogFilter.cpp
+	DialogFilter.h
 	DialogFind.cpp
+	DialogFind.h
 	DialogFonts.cpp
+	DialogFonts.h
 	DialogLanguageModes.cpp
+	DialogLanguageModes.h
 	DialogMacros.cpp
+	DialogMacros.h
 	DialogMoveDocument.cpp
+	DialogMoveDocument.h
 	DialogMultiReplace.cpp
+	DialogMultiReplace.h
 	DialogOutput.cpp
+	DialogOutput.h
 	DialogPrint.cpp
+	DialogPrint.h
 	DialogPrompt.cpp
+	DialogPrompt.h
 	DialogPromptList.cpp
+	DialogPromptList.h
 	DialogPromptString.cpp
+	DialogPromptString.h
 	DialogRepeat.cpp
-	TextEditEvent.cpp
-	WindowMenuEvent.cpp
+	DialogRepeat.h
 	DialogReplace.cpp
+	DialogReplace.h
 	DialogShellMenu.cpp
+	DialogShellMenu.h
 	DialogSmartIndent.cpp
+	DialogSmartIndent.h
 	DialogSmartIndentCommon.cpp
+	DialogSmartIndentCommon.h
 	DialogSyntaxPatterns.cpp
+	DialogSyntaxPatterns.h
 	DialogTabs.cpp
+	DialogTabs.h
 	DialogWindowBackgroundMenu.cpp
+	DialogWindowBackgroundMenu.h
 	DialogWindowSize.cpp
+	DialogWindowSize.h
 	DialogWindowTitle.cpp
+	DialogWindowTitle.h
 	DialogWrapMargin.cpp
+	DialogWrapMargin.h
+	Direction.h
 	DocumentWidget.cpp
+	DocumentWidget.h
+	DragEndEvent.h
+	DragStates.h
+	EditFlags.h
 	ElidedLabel.cpp
+	ElidedLabel.h
+	Font.cpp
+	Font.h
+	FontType.h
+	Help.cpp
+	Help.h
+	HighlightData.h
 	HighlightPattern.cpp
+	HighlightPattern.h
+	HighlightStyle.h
+	IndentStyle.h
+	Input.cpp
+	Input.h
 	KeySequenceEdit.cpp
+	KeySequenceEdit.h
+	LanguageMode.h
+	LockReasons.h
 	MainWindow.cpp
+	MainWindow.h
+	MenuItem.h
+	MultiClickStates.h
 	NeditServer.cpp
+	NeditServer.h
+	NewMode.h
 	PatternSet.cpp
+	PatternSet.h
 	Rangeset.cpp
+	Rangeset.h
 	RangesetTable.cpp
+	RangesetTable.h
+	ReparseContext.h
+	ReplaceScope.h
+	SearchType.h
 	Settings.cpp
+	Settings.h
+	ShiftDirection.h
+	ShowMatchingStyle.h
 	SignalBlocker.h
 	SmartIndentEntry.cpp
+	SmartIndentEntry.h
+	SmartIndentEvent.h
+	Style.h
+	StyleTableEntry.h
 	TextArea.cpp
+	TextArea.h
 	TextBuffer.cpp
-	TextBuffer.tcc
+	TextBuffer.h
+	TextEditEvent.cpp
+	TextEditEvent.h
 	TextSelection.cpp
+	TextSelection.h
+	TruncSubstitution.h
 	UndoInfo.cpp
+	UndoInfo.h
+	VirtKeyOverride.h
+	WindowHighlightData.cpp
+	WindowHighlightData.h
+	WindowMenuEvent.cpp
+	WindowMenuEvent.h
+	WrapMode.h
+	WrapStyle.h
 	X11Colors.cpp
+	X11Colors.h
+	calltips.h
 	highlight.cpp
+	highlight.h
 	highlightData.cpp
+	highlightData.h
 	interpret.cpp
+	interpret.h
 	macro.cpp
+	macro.h
 	nedit.cpp
+	nedit.h
+	parse.h
 	preferences.cpp
+	preferences.h
 	rbTree.cpp
+	rbTree.h
 	search.cpp
+	search.h
 	selection.cpp
+	selection.h
 	shift.cpp
+	shift.h
 	smartIndent.cpp
+	smartIndent.h
 	tags.cpp
+	tags.h
 	userCmds.cpp
+	userCmds.h
+	version.h
 
 	${BISON_parser_OUTPUT_SOURCE}
 )
