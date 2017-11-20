@@ -75,6 +75,7 @@ public:
 public:
     static int BufCharWidth(Ch c, int indent, int tabDist) noexcept;
     static int BufExpandCharacter(Ch ch, int indent, Ch outStr[MAX_EXP_CHAR_LEN], int tabDist) noexcept;
+    static int BufExpandTab(int indent, Ch outStr[MAX_EXP_CHAR_LEN], int tabDist) noexcept;
 
 public:
     bool BufIsEmpty() const noexcept;

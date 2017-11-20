@@ -42,7 +42,7 @@
 #include "preferences.h"
 #include "regularExp.h"
 #include "gsl/gsl_util"
-#include <QMessageBox>
+
 #include <algorithm>
 #include <climits>
 #include <cmath>

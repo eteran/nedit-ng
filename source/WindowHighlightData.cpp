@@ -1,6 +1,5 @@
 
 #include "WindowHighlightData.h"
-#include "TextBuffer.h"
 #include "HighlightData.h"
 #include "StyleTableEntry.h"
 #include "highlight.h"

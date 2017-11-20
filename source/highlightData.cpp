@@ -37,7 +37,6 @@
 #include "HighlightStyle.h"
 #include "MainWindow.h"
 #include "PatternSet.h"
-#include "TextBuffer.h"
 #include "highlight.h"
 #include "Input.h"
 #include "preferences.h"

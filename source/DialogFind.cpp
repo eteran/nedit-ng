@@ -3,7 +3,6 @@
 #include "DocumentWidget.h"
 #include "MainWindow.h"
 #include "TextArea.h"
-#include "TextBuffer.h"
 #include "preferences.h"
 #include "regularExp.h"
 #include "search.h"

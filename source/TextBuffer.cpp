@@ -3,3 +3,4 @@
 // Force full intantiation
 template class BasicTextBuffer<char>;
 
+

@@ -310,7 +310,7 @@ private:
     void updateFontWidthMetrics(const QFont &font);
 	void measureDeletedLines(int pos, int nDeleted);
     void wrappedLineCounter(const TextBuffer *buf, int startPos, int maxPos, int maxLines, bool startPosIsLineStart, int styleBufOffset, int *retPos, int *retLines, int *retLineStart, int *retLineEnd) const;
-    int measurePropChar(const char c, int colNum, int pos) const;
+    int measurePropChar(char ch, int colNum, int pos) const;
     int stringWidth(const char *string, int length, int style) const;
 	void findWrapRangeEx(view::string_view deletedText, int pos, int nInserted, int nDeleted, int *modRangeStart, int *modRangeEnd, int *linesInserted, int *linesDeleted);
 	void updateLineStarts(int pos, int charsInserted, int charsDeleted, int linesInserted, int linesDeleted, int *scrolled);

@@ -33,7 +33,6 @@
 #include "DialogSmartIndentCommon.h"
 #include "IndentStyle.h"
 #include "SmartIndentEntry.h"
-#include "TextBuffer.h"
 #include "WrapStyle.h"
 #include "interpret.h"
 #include "macro.h"

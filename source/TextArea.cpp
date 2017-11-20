@@ -2056,12 +2056,12 @@ void TextArea::wrappedLineCounter(const TextBuffer *buf, int startPos, int maxPo
 //------------------------------------------------------------------------------
 // Name:
 //------------------------------------------------------------------------------
-int TextArea::measurePropChar(const char c, int colNum, int pos) const {
+int TextArea::measurePropChar(char ch, int colNum, int pos) const {
 	int style;
     char expChar[TextBuffer::MAX_EXP_CHAR_LEN];
     const std::shared_ptr<TextBuffer> &styleBuf = styleBuffer_;
 
-    int charLen = TextBuffer::BufExpandCharacter(c, colNum, expChar, buffer_->tabDist_);
+    int charLen = TextBuffer::BufExpandCharacter(ch, colNum, expChar, buffer_->tabDist_);
 
 	if(!styleBuf) {
 		style = 0;
@@ -3197,10 +3197,9 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 	int outIndex = 0;
 
 	for (charIndex = 0;; charIndex++) {
-		baseChar = '\0';
 
         char expandedChar[TextBuffer::MAX_EXP_CHAR_LEN];
-
+        baseChar = '\0';
         charLen = (charIndex >= lineLen) ?
                     1 :
                     TextBuffer::BufExpandCharacter(baseChar = lineStr[charIndex], outIndex, expandedChar, buffer_->tabDist_);
@@ -3241,7 +3240,6 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 		}
 
         char expandedChar[TextBuffer::MAX_EXP_CHAR_LEN];
-
 		baseChar = '\0';
         charLen = (charIndex >= lineLen) ?
                     1 :
@@ -4347,8 +4345,9 @@ int TextArea::TextDPositionToXY(int pos, int *x, int *y) {
     xStep = rect_.left() - horizOffset_;
 	outIndex = 0;
     for (charIndex = 0; charIndex < pos - lineStartPos; charIndex++) {
-        int charLen = TextBuffer::BufExpandCharacter(lineStr[charIndex], outIndex, expandedChar, buffer_->tabDist_);
-		int charStyle = styleOfPos(lineStartPos, lineLen, charIndex, outIndex, lineStr[charIndex]);
+        const int charLen   = TextBuffer::BufExpandCharacter(lineStr[charIndex], outIndex, expandedChar, buffer_->tabDist_);
+        const int charStyle = styleOfPos(lineStartPos, lineLen, charIndex, outIndex, lineStr[charIndex]);
+
 		xStep += stringWidth(expandedChar, charLen, charStyle);
 		outIndex += charLen;
 	}
@@ -6064,9 +6063,9 @@ int TextArea::xyToPos(int x, int y, int posType) {
     xStep = rect_.left() - horizOffset_;
 	outIndex = 0;
 	for (charIndex = 0; charIndex < lineLen; charIndex++) {
-        int charLen   = TextBuffer::BufExpandCharacter(lineStr[charIndex], outIndex, expandedChar, buffer_->tabDist_);
-		int charStyle = styleOfPos(lineStart, lineLen, charIndex, outIndex, lineStr[charIndex]);
-		int charWidth = stringWidth(expandedChar, charLen, charStyle);
+        const int charLen   = TextBuffer::BufExpandCharacter(lineStr[charIndex], outIndex, expandedChar, buffer_->tabDist_);
+        const int charStyle = styleOfPos(lineStart, lineLen, charIndex, outIndex, lineStr[charIndex]);
+        const int charWidth = stringWidth(expandedChar, charLen, charStyle);
 
 		if (x < xStep + (posType == CURSOR_POS ? charWidth / 2 : charWidth)) {
 			return lineStart + charIndex;
@@ -8194,23 +8193,23 @@ int TextArea::TextDLineAndColToPos(int lineNum, int column) {
     return lineStart + charIndex;
 }
 
-int TextArea::TextDGetCalltipID(int calltipID) const {
+int TextArea::TextDGetCalltipID(int id) const {
 
-    if (calltipID == 0) {
+    if (id == 0) {
         return calltip_.ID;
-    } else if (calltipID == calltip_.ID) {
-        return calltipID;
+    } else if (id == calltip_.ID) {
+        return id;
     } else {
         return 0;
     }
 }
 
-void TextArea::TextDKillCalltip(int calltipID) {
+void TextArea::TextDKillCalltip(int id) {
     if (calltip_.ID == 0) {
         return;
     }
 
-    if (calltipID == 0 || calltipID == calltip_.ID) {
+    if (id == 0 || id == calltip_.ID) {
         if(calltipWidget_) {
             calltipWidget_->hide();
         }

@@ -872,17 +872,22 @@ int BasicTextBuffer<Ch, Tr>::BufGetExpandedChar(int pos, int indent, Ch outStr[M
 ** equal in length to MAX_EXP_CHAR_LEN
 */
 template <class Ch, class Tr>
+int BasicTextBuffer<Ch, Tr>::BufExpandTab(int indent, Ch outStr[MAX_EXP_CHAR_LEN], int tabDist) noexcept {
+    const int nSpaces = tabDist - (indent % tabDist);
+
+    for (int i = 0; i < nSpaces; i++) {
+        outStr[i] = Ch(' ');
+    }
+
+    return nSpaces;
+}
+
+template <class Ch, class Tr>
 int BasicTextBuffer<Ch, Tr>::BufExpandCharacter(Ch ch, int indent, Ch outStr[MAX_EXP_CHAR_LEN], int tabDist) noexcept {
 
     // Convert tabs to spaces
     if (ch == Ch('\t')) {
-        const int nSpaces = tabDist - (indent % tabDist);
-
-        for (int i = 0; i < nSpaces; i++) {
-            outStr[i] = Ch(' ');
-        }
-
-        return nSpaces;
+        return BufExpandTab(indent, outStr, tabDist);
     }
 
     // Convert ASCII control codes to readable character sequences
@@ -900,21 +905,21 @@ int BasicTextBuffer<Ch, Tr>::BufExpandCharacter(Ch ch, int indent, Ch outStr[MAX
 }
 
 /*
-** Return the length in displayed characters of character "c" expanded
-** for display (as discussed above in BufGetExpandedChar).
+** Return the length in displayed characters of character "ch" expanded
+** for display
 */
 template <class Ch, class Tr>
-int BasicTextBuffer<Ch, Tr>::BufCharWidth(Ch c, int indent, int tabDist) noexcept {
-    // Note, this code must parallel that in BufExpandCharacter
-    if (c == Ch('\t')) {
+int BasicTextBuffer<Ch, Tr>::BufCharWidth(Ch ch, int indent, int tabDist) noexcept {
+
+    if (ch == Ch('\t')) {
         return tabDist - (indent % tabDist);
     }
 
-    if (static_cast<size_t>(c) < 32) {
-        return Tr::length(controlCharacter(c)) + 2;
+    if (static_cast<size_t>(ch) < 32) {
+        return Tr::length(controlCharacter(ch)) + 2;
     }
 
-    if (c == 127) {
+    if (ch == 127) {
         return 5;
     }
 
@@ -1833,7 +1838,7 @@ auto BasicTextBuffer<Ch, Tr>::unexpandTabsEx(view_type text, int startIndent, in
         if (text[pos] == Ch(' ')) {
 
             Ch expandedChar[MAX_EXP_CHAR_LEN];
-            const int len = BufExpandCharacter(Ch('\t'), indent, expandedChar, tabDist);
+            const int len = BufExpandTab(indent, expandedChar, tabDist);
 
             const auto cmp = text.compare(pos, len, expandedChar, len);
 
@@ -1894,10 +1899,8 @@ auto BasicTextBuffer<Ch, Tr>::expandTabsEx(view_type text, int startIndent, int 
         if (ch == Ch('\t')) {
 
             Ch temp[MAX_EXP_CHAR_LEN];
-            Ch *temp_ptr = temp;
-            int len = BufExpandCharacter(ch, indent, temp, tabDist);
-
-            std::copy_n(temp_ptr, len, outPtr);
+            const int len = BufExpandTab(indent, temp, tabDist);
+            std::copy_n(temp, len, outPtr);
 
             indent += len;
         } else if (ch == Ch('\n')) {
