@@ -15,8 +15,8 @@
 #include <QPointer>
 #include <QRect>
 #include <QTime>
-#include <QVector>
 #include <memory>
+#include <vector>
 
 class CallTipWidget;
 class QMenu;
@@ -275,7 +275,7 @@ public:
 	void TextDBlankCursor();
 	void TextDRedrawCalltip(int calltipID);
 	void TextDSetupBGClassesEx(const QString &str);
-	void TextDSetupBGClasses(const QString &s, QVector<QColor> *pp_bgClassPixel, QVector<uint8_t> *pp_bgClass, const QColor &bgPixelDefault);
+    void TextDSetupBGClasses(const QString &s, std::vector<QColor> *pp_bgClassPixel, std::vector<uint8_t> *pp_bgClass, const QColor &bgPixelDefault);
 	int TextDMoveRight();
 	int TextDMoveLeft();
 	int TextDMoveUp(bool absolute);
@@ -382,8 +382,8 @@ private:
 	CursorStyles getCursorStyle() const;
 
 private:
-    QVector<QColor> bgClassPixel_;                // table of colors for each BG class
-	QVector<uint8_t> bgClass_;                    // obtains index into bgClassPixel[]
+    std::vector<QColor> bgClassPixel_;                // table of colors for each BG class
+    std::vector<uint8_t> bgClass_;                    // obtains index into bgClassPixel[]
     QRect rect_;
 	int lineNumLeft_;
 	int lineNumWidth_;
@@ -399,7 +399,7 @@ private:
     std::shared_ptr<TextBuffer> styleBuffer_;                     // Optional parallel buffer containing color and font information
 	int firstChar_;                               // Buffer positions of first and last displayed character (lastChar points either to a newline or one character beyond the end of the buffer)
 	int lastChar_;
-    QVector<int> lineStarts_;
+    std::vector<int> lineStarts_;
 	int topLineNum_;                              // Line number of top displayed line of file (first line of file is 1)
 	int absTopLineNum_;                           // In continuous wrap mode, the line number of the top line if the text were not wrapped (note that this is only maintained as needed).
 	int needAbsTopLineNum_;                       // Externally settable flag to continue maintaining absTopLineNum even if it isn't needed for line # display
@@ -478,10 +478,10 @@ private:
     QSize       size_;
 
 private:
-	QVector<QPair<cursorMovedCBEx, void *>> movedCallbacks_;
-	QVector<QPair<dragStartCBEx, void *>>   dragStartCallbacks_;
-	QVector<QPair<dragEndCBEx, void *>>     dragEndCallbacks_;
-	QVector<QPair<smartIndentCBEx, void *>> smartIndentCallbacks_;
+    std::vector<QPair<cursorMovedCBEx, void *>> movedCallbacks_;
+    std::vector<QPair<dragStartCBEx, void *>>   dragStartCallbacks_;
+    std::vector<QPair<dragEndCBEx, void *>>     dragEndCallbacks_;
+    std::vector<QPair<smartIndentCBEx, void *>> smartIndentCallbacks_;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(TextArea::EventFlags)

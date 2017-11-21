@@ -51,11 +51,11 @@ private:
 private:
     QLineEdit *  lineEdit_;
     QKeySequence keySequence_;
-	QVector<int> keys_;
+    QVector<int> keys_;
     int          prevKey_;
     int          releaseTimer_;
-	int          maximumSequenceLength_;
-	bool         modifierRequired_;
+    int          maximumSequenceLength_;
+    bool         modifierRequired_;
 	
 };
 

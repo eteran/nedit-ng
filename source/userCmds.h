@@ -28,7 +28,7 @@
 #define USER_CMDS_H_
 
 #include <QString>
-#include <QVector>
+#include <vector>
 #include <memory>
 
 struct MenuItem;
@@ -52,10 +52,10 @@ enum class DialogTypes {
    e.) "menuItemB2" (hierarchical ID = {1, 2, 1})
  */
 struct userMenuInfo {
-    QString      umiName;          // hierarchical name of menu item (w.o. language mode info)
-    bool         umiIsDefault;     // menu item is default one ("@*")
-    QVector<int> umiLanguageModes; // list of applicable lang. modes
-    int          umiDefaultIndex;  // array index of menu item to be used as default, if no lang. mode matches
+    QString          umiName;          // hierarchical name of menu item (w.o. language mode info)
+    bool             umiIsDefault;     // menu item is default one ("@*")
+    std::vector<int> umiLanguageModes; // list of applicable lang. modes
+    int              umiDefaultIndex;  // array index of menu item to be used as default, if no lang. mode matches
 };
 
 struct MenuData {
@@ -71,12 +71,12 @@ QString WriteMacroCmdsStringEx();
 QString WriteShellCmdsStringEx();
 void SetupUserMenuInfo();
 void UpdateUserMenuInfo();
-void parseMenuItemList(QVector<MenuData> &itemList);
+void parseMenuItemList(std::vector<MenuData> &itemList);
 MenuData *findMenuItem(const QString &name, DialogTypes type);
 
-extern QVector<MenuData> ShellMenuData;
-extern QVector<MenuData> BGMenuData;
-extern QVector<MenuData> MacroMenuData;
+extern std::vector<MenuData> ShellMenuData;
+extern std::vector<MenuData> BGMenuData;
+extern std::vector<MenuData> MacroMenuData;
 
 
 #endif

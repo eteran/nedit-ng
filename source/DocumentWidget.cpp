@@ -1367,7 +1367,7 @@ void DocumentWidget::DimSelectionDepUserMenuItems(bool enabled) {
     }
 }
 
-void DocumentWidget::dimSelDepItemsInMenu(QMenu *menuPane, const QVector<MenuData> &menuList, bool enabled) {
+void DocumentWidget::dimSelDepItemsInMenu(QMenu *menuPane, const gsl::span<MenuData> &menuList, bool enabled) {
 
     if(menuPane) {
         const QList<QAction *> actions = menuPane->actions();

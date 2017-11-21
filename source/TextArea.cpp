@@ -474,9 +474,6 @@ TextArea::TextArea(
 
     std::fill_n(&lineStarts_[1], nVisibleLines_, -1);
 
-    bgClassPixel_ = QVector<QColor>();
-	bgClass_      = QVector<uint8_t>();
-
 	suppressResync_      = false;
 	nLinesDeleted_       = 0;
 	modifyingTabDist_    = 0;
@@ -3359,7 +3356,7 @@ int TextArea::styleOfPos(int lineStartPos, int lineLen, int lineIndex, int dispI
 	}
 	/* store in the BACKLIGHT_MASK portion of style the background color class
 	   of the character thisChar */
-	if (!bgClass_.isEmpty()) {
+    if (!bgClass_.empty()) {
         style |= (bgClass_[static_cast<uint8_t>(thisChar)] << BACKLIGHT_SHIFT);
 	}
 	return style;
@@ -4187,10 +4184,10 @@ void TextArea::TextDSetupBGClassesEx(const QString &str) {
     TextDSetupBGClasses(str, &bgClassPixel_, &bgClass_, palette().color(QPalette::Base));
 }
 
-void TextArea::TextDSetupBGClasses(const QString &s, QVector<QColor> *pp_bgClassPixel, QVector<uint8_t> *pp_bgClass, const QColor &bgPixelDefault) {
+void TextArea::TextDSetupBGClasses(const QString &s, std::vector<QColor> *pp_bgClassPixel, std::vector<uint8_t> *pp_bgClass, const QColor &bgPixelDefault) {
 
-	*pp_bgClassPixel = QVector<QColor>();
-	*pp_bgClass      = QVector<uint8_t>();
+    pp_bgClassPixel->clear();
+    pp_bgClass->clear();
 
 	if (s.isEmpty()) {
 		return;
@@ -4227,7 +4224,7 @@ void TextArea::TextDSetupBGClasses(const QString &s, QVector<QColor> *pp_bgClass
 	   character background color to #f0f0f0; it is then set to red by the
 	   clause 1-31,127:red). */
 
-	int class_no = 1;
+    size_t class_no = 1;
 	QStringList formats = s.split(QLatin1Char(';'), QString::SkipEmptyParts);
 	for(const QString &format : formats) {
 
@@ -4245,7 +4242,7 @@ void TextArea::TextDSetupBGClasses(const QString &s, QVector<QColor> *pp_bgClass
 			// starting the classes at 0, which allows NUL characters
 			// to be styled correctly. I am not aware of any negative
 			// side effects of this.
-            const uint8_t nextClass = static_cast<uint8_t>(class_no++);
+            const auto nextClass = static_cast<uint8_t>(class_no++);
 
             QColor pix = AllocColor(color);
             bgClassPixel[nextClass] = pix;
@@ -4277,11 +4274,11 @@ void TextArea::TextDSetupBGClasses(const QString &s, QVector<QColor> *pp_bgClass
 		}
 	}
 
-    QVector<uint8_t> backgroundClass;
+    std::vector<uint8_t> backgroundClass;
     backgroundClass.reserve(256);
     std::copy_n(bgClass, 256, std::back_inserter(backgroundClass));
 
-    QVector<QColor> backgroundPixel;
+    std::vector<QColor> backgroundPixel;
     backgroundPixel.reserve(class_no);
     std::copy_n(bgClassPixel, class_no, std::back_inserter(backgroundPixel));
 

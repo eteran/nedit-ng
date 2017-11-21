@@ -1100,15 +1100,15 @@ void MainWindow::raiseCB() {
 ** Create either the variable Shell menu, Macro menu or Background menu
 ** items of "window" (driven by value of "menuType")
 */
-QMenu *MainWindow::createUserMenu(DocumentWidget *document, const QVector<MenuData> &data) {
+QMenu *MainWindow::createUserMenu(DocumentWidget *document, const gsl::span<MenuData> &data) {
 
     auto rootMenu = new QMenu(this);
     for(int i = 0; i < data.size(); ++i) {
         const MenuData &menuData = data[i];
 
-        bool found = menuData.info->umiLanguageModes.isEmpty();
+        bool found = menuData.info->umiLanguageModes.empty();
 
-        for(int language = 0; language < menuData.info->umiLanguageModes.size(); ++language) {
+        for(size_t language = 0; language < menuData.info->umiLanguageModes.size(); ++language) {
             if(menuData.info->umiLanguageModes[language] == document->languageMode_) {
                 found = true;
             }

@@ -14,6 +14,7 @@
 #include <QPointer>
 
 #include <vector>
+#include <gsl/span>
 
 #include "ui_MainWindow.h"
 
@@ -41,7 +42,7 @@ private:
     void setupGlobalPrefenceDefaults();
     void setupDocumentPrefernceDefaults();
     void setupPrevOpenMenuActions();
-    QMenu *createUserMenu(DocumentWidget *document, const QVector<MenuData> &data);
+    QMenu *createUserMenu(DocumentWidget *document, const gsl::span<MenuData> &data);
 
 public:
     void updateLanguageModeSubmenu();

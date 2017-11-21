@@ -34,14 +34,13 @@
 #include "preferences.h"
 #include "raise.h"
 #include <QTextStream>
-#include <QVector>
 #include <memory>
 
 /* Descriptions of the current user programmed menu items for re-generating
    menus and processing shell, macro, and background menu selections */
-QVector<MenuData> ShellMenuData;
-QVector<MenuData> MacroMenuData;
-QVector<MenuData> BGMenuData;
+std::vector<MenuData> ShellMenuData;
+std::vector<MenuData> MacroMenuData;
+std::vector<MenuData> BGMenuData;
 
 namespace {
 
@@ -65,15 +64,15 @@ private:
 }
 
 static QString copyMacroToEndEx(Input &in);
-static int loadMenuItemStringEx(const QString &inString, QVector<MenuData> &menuItems, DialogTypes listType);
+static int loadMenuItemStringEx(const QString &inString, std::vector<MenuData> &menuItems, DialogTypes listType);
 static QString stripLanguageModeEx(const QString &menuItemName);
-static QString writeMenuItemStringEx(const QVector<MenuData> &menuItems, DialogTypes listType);
+static QString writeMenuItemStringEx(const std::vector<MenuData> &menuItems, DialogTypes listType);
 static std::shared_ptr<userMenuInfo> parseMenuItemRec(const std::shared_ptr<MenuItem> &item);
 static void parseMenuItemName(const QString &menuItemName, const std::shared_ptr<userMenuInfo> &info);
-static void setDefaultIndex(const QVector<MenuData> &infoList, int index);
+static void setDefaultIndex(const std::vector<MenuData> &infoList, int index);
 
 
-QVector<MenuData> &selectMenu(DialogTypes type) {
+std::vector<MenuData> &selectMenu(DialogTypes type) {
     switch(type) {
     case DialogTypes::SHELL_CMDS:
         return ShellMenuData;
@@ -88,9 +87,7 @@ QVector<MenuData> &selectMenu(DialogTypes type) {
 
 MenuData *findMenuItem(const QString &name, DialogTypes type) {
 
-    QVector<MenuData> &v = selectMenu(type);
-
-    for(MenuData &data: v) {
+    for(MenuData &data: selectMenu(type)) {
         if (data.item->name == name) {
             return &data;
         }
@@ -167,7 +164,7 @@ void UpdateUserMenuInfo() {
     parseMenuItemList(BGMenuData);
 }
 
-static QString writeMenuItemStringEx(const QVector<MenuData> &menuItems, DialogTypes listType) {
+static QString writeMenuItemStringEx(const std::vector<MenuData> &menuItems, DialogTypes listType) {
 
     QString outStr;
     auto outPtr = std::back_inserter(outStr);
@@ -246,7 +243,7 @@ static QString writeMenuItemStringEx(const QVector<MenuData> &menuItems, DialogT
     return outStr;
 }
 
-static int loadMenuItemStringEx(const QString &inString, QVector<MenuData> &menuItems, DialogTypes listType) {
+static int loadMenuItemStringEx(const QString &inString, std::vector<MenuData> &menuItems, DialogTypes listType) {
 
     try {
         Input in(&inString);
@@ -478,7 +475,7 @@ static QString copyMacroToEndEx(Input &in) {
 ** management of user menu.
 */
 
-void parseMenuItemList(QVector<MenuData> &itemList) {
+void parseMenuItemList(std::vector<MenuData> &itemList) {
 
 	/* 1st pass: setup user menu info: extract language modes, menu name &
 	   default indication; build user menu ID */
@@ -541,7 +538,7 @@ static void parseMenuItemName(const QString &menuItemName, const std::shared_ptr
         }
 
         QVector<QStringRef> languages = languageString.split(QLatin1Char('@'), QString::SkipEmptyParts);
-        QVector<int> languageModes;
+        std::vector<int> languageModes;
 
         // setup a list of all language modes related to given menu item
         for(const QStringRef &language : languages) {
@@ -557,7 +554,7 @@ static void parseMenuItemName(const QString &menuItemName, const std::shared_ptr
             }
         }
 
-        if (!languageModes.isEmpty()) {
+        if (!languageModes.empty()) {
             info->umiLanguageModes = languageModes;
         }
     }
@@ -578,7 +575,7 @@ static QString stripLanguageModeEx(const QString &menuItemName) {
     }
 }
 
-static void setDefaultIndex(const QVector<MenuData> &infoList, int index) {
+static void setDefaultIndex(const std::vector<MenuData> &infoList, int index) {
     QString defaultMenuName = infoList[index].info->umiName;
 
     /* Scan the list for items with the same name and a language mode

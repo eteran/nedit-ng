@@ -39,6 +39,7 @@
 #include "selection.h"
 #include "util/fileUtils.h"
 #include "util/utils.h"
+
 #include <gsl/gsl_util>
 
 #include <QApplication>
@@ -1513,7 +1514,7 @@ static int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
     int oldLangMode;
     int currLine = 0;
 
-    QVector<tf_alias> aliases;
+    std::deque<tf_alias> aliases;
 
 	if (recLevel > MAX_TAG_INCLUDE_RECURSION_LEVEL) {
         qWarning("NEdit: Warning: Reached recursion limit before loading calltips file:\n\t%s",

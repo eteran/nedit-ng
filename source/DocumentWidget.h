@@ -225,7 +225,7 @@ private:
     void ClearUndoList();
     void CloseWindow();
     void DetermineLanguageMode(bool forceNewDefaults);
-    void dimSelDepItemsInMenu(QMenu *menuPane, const QVector<MenuData> &menuList, bool enabled);
+    void dimSelDepItemsInMenu(QMenu *menuPane, const gsl::span<MenuData> &menuList, bool enabled);
     void DimSelectionDepUserMenuItems(bool enabled);
     void documentRaised();
     void DoShellMenuCmd(MainWindow *inWindow, TextArea *area, const QString &command, InSrcs input, OutDests output, bool outputReplacesInput, bool saveFirst, bool loadAfter, bool fromMacro);
