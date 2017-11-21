@@ -130,7 +130,7 @@ QString ExpandTildeEx(const QString &pathname) {
         end = pathname.size();
     }
 
-    QStringRef username = pathname.midRef(1, end - 1);
+    QString username = pathname.mid(1, end - 1);
 
     /* We might consider to re-use the GetHomeDirEx() function,
        but to keep the code more similar for both cases ... */

@@ -80,7 +80,7 @@ Q_SIGNALS:
 
 private Q_SLOTS:
     void flashTimerTimeout();
-    void customContextMenuRequested(const QPoint &pos);
+    void customContextMenu(const QPoint &pos);
     void mergedReadProc();
     void stdoutReadProc();
     void stderrReadProc();

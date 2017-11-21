@@ -592,7 +592,7 @@ TextArea *DocumentWidget::createTextArea(TextBuffer *buffer) {
     // policy here, in fact, that would break things.
     //area->setContextMenuPolicy(Qt::CustomContextMenu);
 
-    connect(area, SIGNAL(customContextMenuRequested(const QPoint &)), SLOT(customContextMenuRequested(const QPoint &)));
+    connect(area, SIGNAL(customContextMenu(const QPoint &)), SLOT(customContextMenu(const QPoint &)));
 
     return area;
 }
@@ -4553,7 +4553,7 @@ void DocumentWidget::ClearModeMessageEx() {
     UpdateStatsLine(nullptr);
 }
 
-void DocumentWidget::customContextMenuRequested(const QPoint &pos) {
+void DocumentWidget::customContextMenu(const QPoint &pos) {
     if(contextMenu_) {
         contextMenu_->exec(pos);
     }
