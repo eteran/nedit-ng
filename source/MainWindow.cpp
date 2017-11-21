@@ -120,7 +120,7 @@ QPointer<DocumentWidget>             lastFocusDocument;
 
 auto neditDBBadFilenameChars = QLatin1String("\n");
 
-QList<QString> PrevOpen;
+QVector<QString> PrevOpen;
 
 /*
  * Auxiliary function for measuring elapsed time during busy waits.
@@ -923,7 +923,7 @@ void MainWindow::InvalidateWindowMenus() {
 void MainWindow::updateWindowMenu() {
 
     // Make a sorted list of windows
-    QList<DocumentWidget *> documents = DocumentWidget::allDocuments();
+    std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
 
     std::sort(documents.begin(), documents.end(), [](const DocumentWidget *a, const DocumentWidget *b) {
 
@@ -964,8 +964,7 @@ void MainWindow::UpdateWindowReadOnly(DocumentWidget *doc) {
 
 	bool state = doc->lockReasons_.isAnyLocked();
 
-    QList<TextArea *> textAreas = doc->textPanes();
-	for(TextArea *area : textAreas) {
+    for(TextArea *area : doc->textPanes()) {
 		area->setReadOnly(state);
 	}
 
@@ -1021,8 +1020,8 @@ void MainWindow::SortTabBar() {
 	}
 }
 
-QList<MainWindow *> MainWindow::allWindows() {
-    QList<MainWindow *> windows;
+std::vector<MainWindow *> MainWindow::allWindows() {
+    std::vector<MainWindow *> windows;
 
     Q_FOREACH(QWidget *widget, QApplication::topLevelWidgets()) {
         if(auto window = qobject_cast<MainWindow *>(widget)) {
@@ -1046,14 +1045,14 @@ MainWindow *MainWindow::firstWindow() {
     return nullptr;
 }
 
-QList<DocumentWidget *> MainWindow::openDocuments() const {
-    QList<DocumentWidget *> list;
+std::vector<DocumentWidget *> MainWindow::openDocuments() const {
+    std::vector<DocumentWidget *> documents;
     for(int i = 0; i < ui.tabWidget->count(); ++i) {
         if(auto document = qobject_cast<DocumentWidget *>(ui.tabWidget->widget(i))) {
-            list.push_back(document);
+            documents.push_back(document);
         }
     }
-    return list;
+    return documents;
 }
 
 /*
@@ -1063,7 +1062,7 @@ QList<DocumentWidget *> MainWindow::openDocuments() const {
 */
 void MainWindow::CheckCloseDimEx() {
 
-    QList<MainWindow *> windows = MainWindow::allWindows();
+    std::vector<MainWindow *> windows = MainWindow::allWindows();
 
     if(windows.empty()) {
         return;
@@ -1073,7 +1072,7 @@ void MainWindow::CheckCloseDimEx() {
         // if there is only one window, then *this* must be it... right?
         MainWindow *window = windows[0];
 
-        QList<DocumentWidget *> documents = window->openDocuments();
+        std::vector<DocumentWidget *> documents = window->openDocuments();
 
         if(window->TabCount() == 1 && !documents.front()->filenameSet_ && !documents.front()->fileChanged_) {
             window->ui.action_Close->setEnabled(false);
@@ -1309,7 +1308,7 @@ int MainWindow::updateGutterWidth() {
     int reqCols = MIN_LINE_NUM_COLS;
     int maxCols = 0;
 
-    QList<DocumentWidget *> documents  = openDocuments();
+    std::vector<DocumentWidget *> documents  = openDocuments();
     for(DocumentWidget *document : documents) {
         //  We found ourselves a document from this window. Pick a TextArea
         // (doesn't matter which), so we can probe some details...
@@ -1390,7 +1389,7 @@ QString MainWindow::UniqueUntitledNameEx() {
             name = tr("Untitled_%1").arg(i);
         }
 
-        QList<DocumentWidget *> documents = DocumentWidget::allDocuments();
+        std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
 
         auto it = std::find_if(documents.begin(), documents.end(), [name](DocumentWidget *document) {
             return document->filename_ == name;
@@ -1429,7 +1428,7 @@ void MainWindow::on_action_Redo_triggered() {
 */
 DocumentWidget *MainWindow::FindWindowWithFile(const QString &name, const QString &path) {
 
-    QList<DocumentWidget *> documents = DocumentWidget::allDocuments();
+    std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
 
     /* I don't think this algorithm will work on vms so I am disabling it for now */
     if (!GetPrefHonorSymlinks()) {
@@ -1496,13 +1495,11 @@ void MainWindow::ShowLineNumbers(bool state) {
 
     /* line numbers panel is shell-level, hence other
        tabbed documents in the this should synch */
-    QList<DocumentWidget *> docs = openDocuments();
-    for(DocumentWidget *doc : docs) {
+    for(DocumentWidget *doc : openDocuments()) {
 
         showLineNumbers_ = state;
 
-        QList<TextArea *> areas = doc->textPanes();
-        for(TextArea *area : areas) {
+        for(TextArea *area : doc->textPanes()) {
             //  reqCols should really be cast here, but into what? XmRInt?
             area->setLineNumCols(reqCols);
         }
@@ -1550,7 +1547,7 @@ void MainWindow::AddToPrevOpenMenu(const QString &filename) {
 
     // Undim the menu in all windows if it was previously empty
     if (PrevOpen.size() > 0) {
-        QList<MainWindow *> windows = allWindows();
+        std::vector<MainWindow *> windows = allWindows();
         for(MainWindow *window : windows) {
             window->ui.action_Open_Previous->setEnabled(true);
         }
@@ -1656,8 +1653,7 @@ void MainWindow::invalidatePrevOpenMenus() {
     /* Mark the menus invalid (to be updated when the user pulls one
        down), unless the menu is torn off, meaning it is visible to the user
        and should be updated immediately */
-    QList<MainWindow *> windows = allWindows();
-    for(MainWindow *window : windows) {
+    for(MainWindow *window : allWindows()) {
         window->updatePrevOpenMenu();
     }
 }
@@ -1713,7 +1709,7 @@ void MainWindow::updatePrevOpenMenu() {
     ReadNEditDB();
 
     // Sort the previously opened file list if requested
-    QList<QString> prevOpenSorted = PrevOpen;
+    QVector<QString> prevOpenSorted = PrevOpen;
     if (GetPrefSortOpenPrevMenu()) {
         qSort(prevOpenSorted);
     }
@@ -2960,7 +2956,7 @@ DocumentWidget *MainWindow::documentAt(int index) const {
 }
 
 void MainWindow::on_action_Statistics_Line_toggled(bool state) {
-    QList<DocumentWidget *> documents = openDocuments();
+    std::vector<DocumentWidget *> documents = openDocuments();
     for(DocumentWidget *document : documents) {
         document->ShowStatsLine(state);
     }
@@ -3665,16 +3661,16 @@ void MainWindow::action_Next_Document() {
     } else {
         if(nextIndex == tabCount) {
 
-			QList<MainWindow *> windows = MainWindow::allWindows();
-			int thisIndex  = windows.indexOf(this);
-            int nextIndex = (thisIndex + 1);
+            std::vector<MainWindow *> windows = MainWindow::allWindows();
+            auto thisIndex = std::find(windows.begin(), windows.end(), this);
+            auto nextIndex = std::next(thisIndex);
 			
-            if(nextIndex == windows.size()) {
-                nextIndex = 0;
+            if(nextIndex == windows.end()) {
+                nextIndex = windows.begin();
 			}
 
             // raise the window set the focus to the first document in it
-            MainWindow *nextWindow = windows[nextIndex];
+            MainWindow *nextWindow = *nextIndex;
             QWidget *firstWidget = nextWindow->ui.tabWidget->widget(0);
 
             Q_ASSERT(qobject_cast<DocumentWidget *>(firstWidget));
@@ -3705,16 +3701,18 @@ void MainWindow::action_Prev_Document() {
     } else {
         if(currentIndex == 0) {
 
-            QList<MainWindow *> windows = MainWindow::allWindows();
-            int thisIndex  = windows.indexOf(this);
-            int nextIndex = (thisIndex - 1);
+            std::vector<MainWindow *> windows = MainWindow::allWindows();
+            auto thisIndex = std::find(windows.begin(), windows.end(), this);
+            decltype(thisIndex) nextIndex;
 
-            if(thisIndex == 0) {
-                nextIndex = windows.size() - 1;
+            if(thisIndex == windows.begin()) {
+                nextIndex = std::prev(windows.end());
+            } else {
+                nextIndex = std::prev(thisIndex);
             }
 
             // raise the window set the focus to the first document in it
-            MainWindow *nextWindow = windows[nextIndex];
+            MainWindow *nextWindow = *nextIndex;
             QWidget *lastWidget = nextWindow->ui.tabWidget->widget(nextWindow->ui.tabWidget->count() - 1);
 
             Q_ASSERT(qobject_cast<DocumentWidget *>(lastWidget));
@@ -4065,7 +4063,7 @@ void MainWindow::on_action_Exit_triggered() {
 
     EMIT_EVENT("exit");
 
-    QList<DocumentWidget *> documents = DocumentWidget::allDocuments();
+    std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
 
     if (!CheckPrefsChangesSavedEx()) {
         return;
@@ -4082,7 +4080,7 @@ void MainWindow::on_action_Exit_triggered() {
         /* List the windows being edited and make sure the
            user really wants to exit */
         // This code assembles a list of document names being edited and elides as necessary
-        for(int i = 0; i < documents.size(); ++i) {
+        for(size_t i = 0; i < documents.size(); ++i) {
             DocumentWidget *const document  = documents[i];
 
             auto filename = tr("%1%2").arg(document->filename_, document->fileChanged_ ? tr("*") : tr(""));
@@ -4175,7 +4173,7 @@ bool MainWindow::CloseAllDocumentInWindow() {
     } else {
 
         // close all _modified_ documents belong to this window
-        Q_FOREACH(DocumentWidget *document, openDocuments()) {
+        for(DocumentWidget *document : openDocuments()) {
             if (document->fileChanged_) {
                 if (!document->CloseFileAndWindow(CloseMode::Prompt)) {
                     return false;
@@ -4184,7 +4182,7 @@ bool MainWindow::CloseAllDocumentInWindow() {
         }
 
         // if there's still documents left in the window...
-        Q_FOREACH(DocumentWidget *document, openDocuments()) {
+        for(DocumentWidget *document : openDocuments()) {
             if (!document->CloseFileAndWindow(CloseMode::Prompt)) {
                 return false;
             }
@@ -4196,8 +4194,7 @@ bool MainWindow::CloseAllDocumentInWindow() {
 
 void MainWindow::closeEvent(QCloseEvent *event) {
 
-
-    QList<MainWindow *> windows = MainWindow::allWindows();
+    std::vector<MainWindow *> windows = MainWindow::allWindows();
     if(windows.size() == 1) {
         // this is only window, then this is the same as exit
         event->ignore();
@@ -4213,12 +4210,15 @@ void MainWindow::closeEvent(QCloseEvent *event) {
             int resp = QMessageBox::Cancel;
             if (GetPrefWarnExit()) {
                 // TODO(eteran): 2.0 this is probably better off with "Ok" "Cancel", but we are being consistant with the original UI for now
-                resp = QMessageBox::question(this, tr("Close Window"), tr("Close ALL documents in this window?"), QMessageBox::Cancel, QMessageBox::Close);
+                resp = QMessageBox::question(this,
+                                             tr("Close Window"),
+                                             tr("Close ALL documents in this window?"),
+                                             QMessageBox::Cancel,
+                                             QMessageBox::Close);
             }
 
             if (resp == QMessageBox::Close) {
                 CloseAllDocumentInWindow();
-                delete this;
                 event->accept();
             } else {
                 event->ignore();

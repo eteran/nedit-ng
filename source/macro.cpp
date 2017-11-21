@@ -1584,7 +1584,7 @@ static bool setWrapMarginMS(DocumentWidget *document, Arguments arguments, DataV
         int newMargin = 0;
         if(!readArguments(arguments, 0, errMsg, &newMargin) && newMargin > 0 && newMargin <= 1000) {
 
-            QList<TextArea *> panes = document->textPanes();
+            const std::vector<TextArea *> panes = document->textPanes();
 
             for(TextArea *area : panes) {
                 area->setWrapMargin(newMargin);
@@ -2469,8 +2469,8 @@ static bool focusWindowMS(DocumentWidget *document, Arguments arguments, DataVal
         return false;
     }
 
-    QList<DocumentWidget *> documents = DocumentWidget::allDocuments();
-    QList<DocumentWidget *>::iterator it;
+    std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
+    std::vector<DocumentWidget *>::iterator it;
 
     if (string == QLatin1String("last")) {
         it = documents.begin();

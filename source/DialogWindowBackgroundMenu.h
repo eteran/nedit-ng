@@ -3,7 +3,6 @@
 #define DIALOG_WINDOW_BACKGROUND_MENU_H_
 
 #include "Dialog.h"
-#include <QList>
 #include "ui_DialogWindowBackgroundMenu.h"
 
 struct MenuItem;

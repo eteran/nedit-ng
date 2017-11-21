@@ -498,7 +498,7 @@ DocumentWidget::~DocumentWidget() noexcept {
 
     // first delete all of the text area's so that they can properly
     // remove themselves from the buffer's callbacks
-    const QList<TextArea *> textAreas = textPanes();
+    const std::vector<TextArea *> textAreas = textPanes();
     qDeleteAll(textAreas);
 
     // NOTE(eteran): there used to be some logic about syncronizing the multi-file
@@ -1059,7 +1059,7 @@ void DocumentWidget::reapplyLanguageMode(int mode, bool forceDefaults) {
             delimiters = LanguageModes[mode].delimiters;
         }
 
-        const QList<TextArea *> textAreas = textPanes();
+        const std::vector<TextArea *> textAreas = textPanes();
         for(TextArea *area : textAreas) {
             area->setWordDelimiters(delimiters);
         }
@@ -1144,7 +1144,7 @@ void DocumentWidget::SetTabDist(int tabDist) {
 
         ignoreModify_ = true;
 
-        const QList<TextArea *> textAreas = textPanes();
+        const std::vector<TextArea *> textAreas = textPanes();
 		const int paneCount = textAreas.size();
 		
         for(int paneIndex = 0; paneIndex < paneCount; ++paneIndex) {
@@ -1174,7 +1174,7 @@ void DocumentWidget::SetTabDist(int tabDist) {
 */
 void DocumentWidget::SetEmTabDist(int emTabDist) {
 
-    const QList<TextArea *> textAreas = textPanes();
+    const std::vector<TextArea *> textAreas = textPanes();
     for(TextArea *area : textAreas) {
         area->setEmulateTabs(emTabDist);
     }
@@ -1195,7 +1195,7 @@ void DocumentWidget::SetAutoIndent(IndentStyle state) {
 
     indentStyle_ = state;
 
-    const QList<TextArea *> textAreas = textPanes();
+    const std::vector<TextArea *> textAreas = textPanes();
     for(TextArea *area : textAreas) {
         area->setAutoIndent(autoIndent);
         area->setSmartIndent(smartIndent);
@@ -1217,7 +1217,7 @@ void DocumentWidget::SetAutoWrap(WrapStyle state) {
     const bool autoWrap = (state == WrapStyle::Newline);
     const bool contWrap = (state == WrapStyle::Continuous);
 
-    const QList<TextArea *> textAreas = textPanes();
+    const std::vector<TextArea *> textAreas = textPanes();
     for(TextArea *area : textAreas) {
         area->setAutoWrap(autoWrap);
         area->setContinuousWrap(contWrap);
@@ -1238,9 +1238,9 @@ int DocumentWidget::textPanesCount() const {
     return splitter_->count();
 }
 
-QList<TextArea *> DocumentWidget::textPanes() const {
+std::vector<TextArea *> DocumentWidget::textPanes() const {
 
-    QList<TextArea *> list;
+    std::vector<TextArea *> list;
     list.reserve(splitter_->count());
 
     for(int i = 0; i < splitter_->count(); ++i) {
@@ -1304,7 +1304,7 @@ void DocumentWidget::StopHighlightingEx() {
 
         /* Remove and detach style buffer and style table from all text
            display(s) of window, and redisplay without highlighting */
-        const QList<TextArea *> textAreas = textPanes();
+        const std::vector<TextArea *> textAreas = textPanes();
         for(TextArea *area : textAreas) {
             RemoveWidgetHighlightEx(area);
         }
@@ -2196,7 +2196,7 @@ void DocumentWidget::RevertToSaved() {
             return;
         }
 
-        const QList<TextArea *> textAreas = textPanes();
+        const std::vector<TextArea *> textAreas = textPanes();
         const int panesCount = textAreas.size();
 
         // save insert & scroll positions of all of the panes to restore later
@@ -2636,7 +2636,7 @@ void DocumentWidget::addWrapNewlines() {
     int topLines[MAX_PANES];
     int horizOffset;
 
-    const QList<TextArea *> textAreas = textPanes();
+    const std::vector<TextArea *> textAreas = textPanes();
 	const int paneCount = textAreas.size();
 
     // save the insert and scroll positions of each pane
@@ -2895,8 +2895,8 @@ void DocumentWidget::CloseWindow() {
 
     /* if this is the last window, or must be kept alive temporarily because
        it's running the macro calling us, don't close it, make it Untitled */
-    const int windowCount   = MainWindow::allWindows().size();
-    const int documentCount = DocumentWidget::allDocuments().size();
+    const size_t windowCount   = MainWindow::allWindows().size();
+    const size_t documentCount = DocumentWidget::allDocuments().size();
 
     Q_EMIT documentClosed();
 
@@ -3044,7 +3044,7 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
 
                 // ask user for next action if file not found
 
-                QList<DocumentWidget *> documents = DocumentWidget::allDocuments();
+                std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
                 int resp;
                 if (this == documents.front() && documents.size() == 1) {
 
@@ -3315,7 +3315,7 @@ void DocumentWidget::RefreshMenuToggleStates() {
         no_signals(win->ui.action_Close_Pane)->setEnabled(textPanesCount() > 1);
         no_signals(win->ui.action_Detach_Tab)->setEnabled(win->ui.tabWidget->count() > 1);
 
-        QList<MainWindow *> windows = MainWindow::allWindows();
+        std::vector<MainWindow *> windows = MainWindow::allWindows();
         no_signals(win->ui.action_Move_Tab_To)->setEnabled(windows.size() > 1);
     }
 }
@@ -4117,7 +4117,8 @@ void DocumentWidget::closePane() {
 
         // if we got here, that means that the last focus isn't even in this
         // document, so we'll just nominate the last one
-        QList<TextArea *> panes = textPanes();
+        std::vector<TextArea *> panes = textPanes();
+        Q_ASSERT(!panes.empty());
         delete panes.back();
     }
 }
@@ -4217,8 +4218,11 @@ void DocumentWidget::moveDocument(MainWindow *fromWindow) {
 	auto dialog = std::make_unique<DialogMoveDocument>(this);
 
     // all windows, except for the source window
-    QList<MainWindow *> allWindows = MainWindow::allWindows();
-    allWindows.removeAll(fromWindow);
+    std::vector<MainWindow *> allWindows = MainWindow::allWindows();
+
+    allWindows.erase(std::remove_if(allWindows.begin(), allWindows.end(), [fromWindow](MainWindow *window) {
+        return window == fromWindow;
+    }), allWindows.end());
 
     // stop here if there's no other window to move to
     if (allWindows.empty()) {
@@ -4564,7 +4568,7 @@ void DocumentWidget::customContextMenuRequested(const QPoint &pos) {
 */
 void DocumentWidget::safeCloseEx() {
 
-    QList<DocumentWidget *> documents = DocumentWidget::allDocuments();
+    std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
 
     auto it = std::find_if(documents.begin(), documents.end(), [this](DocumentWidget *p) {
         return p == this;
@@ -5297,12 +5301,15 @@ void DocumentWidget::RepeatMacroEx(const QString &command, int how) {
     runMacroEx(prog);
 }
 
-QList<DocumentWidget *> DocumentWidget::allDocuments() {
-    QList<MainWindow *> windows = MainWindow::allWindows();
-    QList<DocumentWidget *> documents;
+std::vector<DocumentWidget *> DocumentWidget::allDocuments() {
+    std::vector<MainWindow *> windows = MainWindow::allWindows();
+    std::vector<DocumentWidget *> documents;
 
     for(MainWindow *window : windows) {
-        documents.append(window->openDocuments());
+
+        std::vector<DocumentWidget *> openDocuments = window->openDocuments();
+
+        documents.insert(documents.end(), openDocuments.begin(), openDocuments.end());
     }
     return documents;
 
@@ -5673,8 +5680,7 @@ void DocumentWidget::FreeHighlightingDataEx() {
 
     /* The text display may make a last desperate attempt to access highlight
        information when it is destroyed, which would be a disaster. */
-    QList<TextArea *> areas = textPanes();
-    for(TextArea *area : areas) {
+    for(TextArea *area : textPanes()) {
         area->setStyleBuffer(nullptr);
     }
 }
@@ -6094,8 +6100,7 @@ void DocumentWidget::StartHighlightingEx(bool warn) {
 #endif
 
     // Attach highlight information to text widgets in each pane
-    QList<TextArea *> panes = textPanes();
-    for(TextArea *area : panes) {
+    for(TextArea *area : textPanes()) {
         AttachHighlightToWidgetEx(area);
     }
 

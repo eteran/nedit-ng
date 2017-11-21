@@ -275,7 +275,7 @@ int countWritableWindows() {
 	int nBefore = countWindows();
     int nWritable = 0;
 
-    QList<DocumentWidget *> documents = DocumentWidget::allDocuments();
+    std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
     auto first = documents.begin();
     auto last = documents.end();
 

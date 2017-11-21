@@ -3,7 +3,7 @@
 #define DIALOG_MOVE_DOCUMENT_H_
 
 #include "Dialog.h"
-#include <QList>
+#include <vector>
 #include "ui_DialogMoveDocument.h"
 
 class MainWindow;
@@ -24,8 +24,8 @@ public:
 	bool moveAllSelected() const;
 
 private:
-	Ui::DialogMoveDocument ui;
-    QList<MainWindow *>    windows_;
+    Ui::DialogMoveDocument    ui;
+    std::vector<MainWindow *> windows_;
 	
 };
 

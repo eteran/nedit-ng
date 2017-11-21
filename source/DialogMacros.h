@@ -3,7 +3,6 @@
 #define DIALOG_MACROS_H_
 
 #include "Dialog.h"
-#include <QList>
 #include <memory>
 #include "ui_DialogMacros.h"
 

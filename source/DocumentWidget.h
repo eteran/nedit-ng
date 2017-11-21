@@ -26,6 +26,8 @@
 #include <QProcess>
 #include <QWidget>
 
+#include <vector>
+
 #include "ui_DocumentWidget.h"
 
 class MainWindow;
@@ -123,7 +125,7 @@ public:
 public:
     static DocumentWidget *fromArea(TextArea *area);
     static DocumentWidget *EditExistingFileEx(DocumentWidget *inDocument, const QString &name, const QString &path, int flags, const QString &geometry, int iconic, const QString &languageMode, bool tabbed, bool bgOpen);
-    static QList<DocumentWidget *> allDocuments();
+    static std::vector<DocumentWidget *> allDocuments();
 
 public:
     bool CheckReadOnly() const;
@@ -139,7 +141,7 @@ public:
     int WidgetToPaneIndex(TextArea *area) const;
     QColor GetHighlightBGColorOfCodeEx(int hCode) const;
     QColor HighlightColorValueOfCodeEx(int hCode) const;
-    QList<TextArea *> textPanes() const;
+    std::vector<TextArea *> textPanes() const;
     QString FullPath() const;
     QString GetWindowDelimiters() const;
     QString HighlightNameOfCodeEx(int hCode) const;

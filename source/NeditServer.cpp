@@ -111,7 +111,7 @@ void NeditServer::newConnection() {
     /* If the command string is empty, put up an empty, Untitled window
        (or just pop one up if it already exists) */
     if (array.isEmpty()) {
-        QList<DocumentWidget *> documents = DocumentWidget::allDocuments();
+        std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
 
         auto it = std::find_if(documents.begin(), documents.end(), [currentDesktop](DocumentWidget *document) {
                 return (!document->filenameSet_ && !document->fileChanged_ && isLocatedOnDesktopEx(MainWindow::fromDocument(document), currentDesktop));
@@ -161,7 +161,7 @@ void NeditServer::newConnection() {
          */
         if (fullname.isEmpty()) {
 
-            QList<DocumentWidget *> documents = DocumentWidget::allDocuments();
+            std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
 
             auto it = std::find_if(documents.begin(), documents.end(), [currentDesktop](DocumentWidget *w) {
                 return (!w->filenameSet_ && !w->fileChanged_ && isLocatedOnDesktopEx(MainWindow::fromDocument(w), currentDesktop));

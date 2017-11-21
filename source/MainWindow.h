@@ -13,6 +13,8 @@
 #include <QMainWindow>
 #include <QPointer>
 
+#include <vector>
+
 #include "ui_MainWindow.h"
 
 class TextArea;
@@ -59,7 +61,7 @@ public:
 	void UpdateWindowTitle(DocumentWidget *doc);
     DocumentWidget *currentDocument() const;
     DocumentWidget *documentAt(int index) const;
-    QList<DocumentWidget *> openDocuments() const;
+    std::vector<DocumentWidget *> openDocuments() const;
     QString PromptForExistingFileEx(const QString &path, const QString &prompt);
     QString PromptForExistingFileEx(const QString &prompt);
     QString PromptForNewFileEx(DocumentWidget *document, const QString &prompt, FileFormats *fileFormat, bool *addWrap);
@@ -92,7 +94,7 @@ public:
     static void AddToPrevOpenMenu(const QString &filename);
     static void invalidatePrevOpenMenus();
     static MainWindow *firstWindow();
-    static QList<MainWindow *> allWindows();    
+    static std::vector<MainWindow *> allWindows();
     static QString UniqueUntitledNameEx();
     static DocumentWidget *FindWindowWithFile(const QString &name, const QString &path);
     static DocumentWidget *EditNewFileEx(MainWindow *window, QString geometry, bool iconic, const QString &languageMode, const QString &defaultPath);
