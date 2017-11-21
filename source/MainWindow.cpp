@@ -671,7 +671,8 @@ QString MainWindow::PromptForExistingFileEx(const QString &path, const QString &
     }
 
     if(dialog.exec()) {
-        return dialog.selectedFiles()[0];
+        const QStringList files = dialog.selectedFiles();
+        return files[0];
     }
 
     return QString();
@@ -911,7 +912,7 @@ DialogReplace *MainWindow::getDialogReplace() const {
 */
 void MainWindow::InvalidateWindowMenus() {
 
-    Q_FOREACH(MainWindow *window, MainWindow::allWindows()) {
+    for(MainWindow *window : MainWindow::allWindows()) {
         window->updateWindowMenu();
     }
 }
@@ -1082,7 +1083,7 @@ void MainWindow::CheckCloseDimEx() {
     } else {
         // if there is more than one window, then by definition, more than one
         // document is open
-        Q_FOREACH(MainWindow *window, windows) {
+        for(MainWindow *window : windows) {
             window->ui.action_Close->setEnabled(true);
         }
     }
@@ -1350,7 +1351,7 @@ int MainWindow::updateGutterWidth() {
             }
 
             //  Update all panes of this document.
-            Q_FOREACH(TextArea *pane, document->textPanes()) {
+            for(TextArea *pane : document->textPanes()) {
                 pane->setLineNumCols(reqCols);
             }
         }
@@ -2814,7 +2815,7 @@ void MainWindow::action_Unload_Tips_File(const QString &filename) {
     EMIT_EVENT_ARG_1("unload_tips_file", filename);
 
     if (DeleteTagsFileEx(filename, TagSearchMode::TIP, true)) {
-        Q_FOREACH(MainWindow *window, MainWindow::allWindows()) {
+        for(MainWindow *window : MainWindow::allWindows()) {
             window->updateTipsFileMenuEx();
         }
     }
@@ -2825,7 +2826,7 @@ void MainWindow::action_Unload_Tags_File(const QString &filename) {
     EMIT_EVENT_ARG_1("unload_tags_file", filename);
 
     if (DeleteTagsFileEx(filename, TagSearchMode::TAG, true)) {
-        Q_FOREACH(MainWindow *window, MainWindow::allWindows()) {
+        for(MainWindow *window : MainWindow::allWindows()) {
              window->updateTagsFileMenuEx();
         }
     }
@@ -3276,7 +3277,7 @@ void MainWindow::on_action_Default_Sort_Open_Prev_Menu_toggled(bool state) {
     /* Set the preference, make the other windows' menus agree,
        and invalidate their Open Previous menus */
     SetPrefSortOpenPrevMenu(state);
-    Q_FOREACH(MainWindow *window, allWindows()) {
+    for(MainWindow *window : allWindows()) {
         no_signals(window->ui.action_Default_Sort_Open_Prev_Menu)->setChecked(state);
     }
 }
@@ -3285,7 +3286,7 @@ void MainWindow::on_action_Default_Show_Path_In_Windows_Menu_toggled(bool state)
 
     // Set the preference and make the other windows' menus agree
     SetPrefShowPathInWindowsMenu(state);
-    Q_FOREACH(MainWindow *window, allWindows()) {
+    for(MainWindow *window : allWindows()) {
         no_signals(window->ui.action_Default_Show_Path_In_Windows_Menu)->setChecked(state);
     }
 
@@ -3302,7 +3303,7 @@ void MainWindow::on_action_Default_Customize_Window_Title_triggered() {
 void MainWindow::on_action_Default_Search_Verbose_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
     SetPrefSearchDlogs(state);
-    Q_FOREACH(MainWindow *window, allWindows()) {
+    for(MainWindow *window : allWindows()) {
         no_signals(window->ui.action_Default_Search_Verbose)->setChecked(state);
     }
 }
@@ -3310,7 +3311,7 @@ void MainWindow::on_action_Default_Search_Verbose_toggled(bool state) {
 void MainWindow::on_action_Default_Search_Wrap_Around_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
     SetPrefSearchWraps(state);
-    Q_FOREACH(MainWindow *window, allWindows()) {
+    for(MainWindow *window : allWindows()) {
         no_signals(window->ui.action_Default_Search_Wrap_Around)->setChecked(state);
     }
 }
@@ -3318,7 +3319,7 @@ void MainWindow::on_action_Default_Search_Wrap_Around_toggled(bool state) {
 void MainWindow::on_action_Default_Search_Beep_On_Search_Wrap_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
     SetPrefBeepOnSearchWrap(state);
-    Q_FOREACH(MainWindow *window, allWindows()) {
+    for(MainWindow *window : allWindows()) {
         no_signals(window->ui.action_Default_Search_Beep_On_Search_Wrap)->setChecked(state);
     }
 }
@@ -3326,7 +3327,7 @@ void MainWindow::on_action_Default_Search_Beep_On_Search_Wrap_toggled(bool state
 void MainWindow::on_action_Default_Search_Keep_Dialogs_Up_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
     SetPrefKeepSearchDlogs(state);
-    Q_FOREACH(MainWindow *window, allWindows()) {
+    for(MainWindow *window : allWindows()) {
         no_signals(window->ui.action_Default_Search_Keep_Dialogs_Up)->setChecked(state);
     }
 }
@@ -3336,17 +3337,17 @@ void MainWindow::defaultReplaceScopeGroupTriggered(QAction *action) {
 
     if(action == replaceScopeInWindow_) {
         SetPrefReplaceDefScope(REPL_DEF_SCOPE_WINDOW);
-        Q_FOREACH(MainWindow *window, allWindows()) {
+        for(MainWindow *window : allWindows()) {
             no_signals(window->replaceScopeInWindow_)->setChecked(true);
         }
     } else if(action == replaceScopeInSelection_) {
         SetPrefReplaceDefScope(REPL_DEF_SCOPE_SELECTION);
-        Q_FOREACH(MainWindow *window, allWindows()) {
+        for(MainWindow *window : allWindows()) {
             no_signals(window->replaceScopeInSelection_)->setChecked(true);
         }
     } else if(action == replaceScopeSmart_) {
         SetPrefReplaceDefScope(REPL_DEF_SCOPE_SMART);
-        Q_FOREACH(MainWindow *window, allWindows()) {
+        for(MainWindow *window : allWindows()) {
             no_signals(window->replaceScopeSmart_)->setChecked(true);
         }
     }
@@ -3357,32 +3358,32 @@ void MainWindow::defaultSearchGroupTriggered(QAction *action) {
 
     if(action == ui.action_Default_Search_Literal) {
         SetPrefSearch(SearchType::Literal);
-        Q_FOREACH(MainWindow *window, allWindows()) {
+        for(MainWindow *window : allWindows()) {
             no_signals(window->ui.action_Default_Search_Literal)->setChecked(true);
         }
     } else if(action == ui.action_Default_Search_Literal_Case_Sensitive) {
         SetPrefSearch(SearchType::CaseSense);
-        Q_FOREACH(MainWindow *window, allWindows()) {
+        for(MainWindow *window : allWindows()) {
             no_signals(window->ui.action_Default_Search_Literal_Case_Sensitive)->setChecked(true);
         }
     } else if(action == ui.action_Default_Search_Literal_Whole_Word) {
         SetPrefSearch(SearchType::LiteralWord);
-        Q_FOREACH(MainWindow *window, allWindows()) {
+        for(MainWindow *window : allWindows()) {
             no_signals(window->ui.action_Default_Search_Literal_Whole_Word)->setChecked(true);
         }
     } else if(action == ui.action_Default_Search_Literal_Case_Sensitive_Whole_Word) {
         SetPrefSearch(SearchType::CaseSenseWord);
-        Q_FOREACH(MainWindow *window, allWindows()) {
+        for(MainWindow *window : allWindows()) {
             no_signals(window->ui.action_Default_Search_Literal_Case_Sensitive_Whole_Word)->setChecked(true);
         }
     } else if(action == ui.action_Default_Search_Regular_Expression) {
         SetPrefSearch(SearchType::Regex);
-        Q_FOREACH(MainWindow *window, allWindows()) {
+        for(MainWindow *window : allWindows()) {
             no_signals(window->ui.action_Default_Search_Regular_Expression)->setChecked(true);
         }
     } else if(action == ui.action_Default_Search_Regular_Expresison_Case_Insensitive) {
         SetPrefSearch(SearchType::RegexNoCase);
-        Q_FOREACH(MainWindow *window, allWindows()) {
+        for(MainWindow *window : allWindows()) {
             no_signals(window->ui.action_Default_Search_Regular_Expresison_Case_Insensitive)->setChecked(true);
         }
     }
@@ -3391,12 +3392,12 @@ void MainWindow::defaultSearchGroupTriggered(QAction *action) {
 void MainWindow::defaultSyntaxGroupTriggered(QAction *action) {
     if(action == ui.action_Default_Syntax_Off) {
         SetPrefHighlightSyntax(false);
-        Q_FOREACH(MainWindow *window, allWindows()) {
+        for(MainWindow *window : allWindows()) {
             no_signals(window->ui.action_Default_Syntax_Off)->setChecked(true);
         }
     } else if(action == ui.action_Default_Syntax_On) {
         SetPrefHighlightSyntax(true);
-        Q_FOREACH(MainWindow *window, allWindows()) {
+        for(MainWindow *window : allWindows()) {
             no_signals(window->ui.action_Default_Syntax_On)->setChecked(true);
         }
     }
@@ -3414,7 +3415,7 @@ void MainWindow::on_action_Default_Syntax_Text_Drawing_Styles_triggered() {
 void MainWindow::on_action_Default_Apply_Backlighting_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
     SetPrefBacklightChars(state);
-    Q_FOREACH(MainWindow *window, allWindows()) {
+    for(MainWindow *window : allWindows()) {
         no_signals(window->ui.action_Default_Apply_Backlighting)->setChecked(state);
     }
 }
@@ -3422,7 +3423,7 @@ void MainWindow::on_action_Default_Apply_Backlighting_toggled(bool state) {
 void MainWindow::on_action_Default_Tab_Open_File_In_New_Tab_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
     SetPrefOpenInTab(state);
-    Q_FOREACH(MainWindow *window, allWindows()) {
+    for(MainWindow *window : allWindows()) {
         no_signals(window->ui.action_Default_Tab_Open_File_In_New_Tab)->setChecked(state);
 
         if(!GetPrefOpenInTab()) {
@@ -3436,7 +3437,7 @@ void MainWindow::on_action_Default_Tab_Open_File_In_New_Tab_toggled(bool state) 
 void MainWindow::on_action_Default_Tab_Show_Tab_Bar_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
     SetPrefTabBar(state);
-    Q_FOREACH(MainWindow *window, allWindows()) {
+    for(MainWindow *window : allWindows()) {
         no_signals(window->ui.action_Default_Tab_Show_Tab_Bar)->setChecked(state);
         window->ui.tabWidget->tabBar()->setVisible(state);
     }
@@ -3445,7 +3446,7 @@ void MainWindow::on_action_Default_Tab_Show_Tab_Bar_toggled(bool state) {
 void MainWindow::on_action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Open_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
     SetPrefTabBarHideOne(state);
-    Q_FOREACH(MainWindow *window, allWindows()) {
+    for(MainWindow *window : allWindows()) {
         no_signals(window->ui.action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Open)->setChecked(state);
         window->ui.tabWidget->setTabBarAutoHide(state);
     }
@@ -3454,7 +3455,7 @@ void MainWindow::on_action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Op
 void MainWindow::on_action_Default_Tab_Next_Prev_Tabs_Across_Windows_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
     SetPrefGlobalTabNavigate(state);
-    Q_FOREACH(MainWindow *window, allWindows()) {
+    for(MainWindow *window : allWindows()) {
         no_signals(window->ui.action_Default_Tab_Next_Prev_Tabs_Across_Windows)->setChecked(state);
     }
 }
@@ -3462,7 +3463,7 @@ void MainWindow::on_action_Default_Tab_Next_Prev_Tabs_Across_Windows_toggled(boo
 void MainWindow::on_action_Default_Tab_Sort_Tabs_Alphabetically_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
     SetPrefSortTabs(state);
-    Q_FOREACH(MainWindow *window, allWindows()) {
+    for(MainWindow *window : allWindows()) {
         no_signals(window->ui.action_Default_Tab_Sort_Tabs_Alphabetically)->setChecked(state);
     }
 
@@ -3470,7 +3471,7 @@ void MainWindow::on_action_Default_Tab_Sort_Tabs_Alphabetically_toggled(bool sta
        the next pointers underneath us, which is scary, but SortTabBar never
        touches windows that are earlier in the window list so it's ok. */
     if (state) {
-        Q_FOREACH(MainWindow *window, allWindows()) {
+        for(MainWindow *window : allWindows()) {
             window->SortTabBar();
         }
     }
@@ -3479,7 +3480,7 @@ void MainWindow::on_action_Default_Tab_Sort_Tabs_Alphabetically_toggled(bool sta
 void MainWindow::on_action_Default_Show_Tooltips_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
     SetPrefToolTips(state);
-    Q_FOREACH(MainWindow *window, allWindows()) {
+    for(MainWindow *window : allWindows()) {
         no_signals(window->ui.action_Default_Show_Tooltips)->setChecked(state);
     }
 }
@@ -3487,7 +3488,7 @@ void MainWindow::on_action_Default_Show_Tooltips_toggled(bool state) {
 void MainWindow::on_action_Default_Statistics_Line_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
     SetPrefStatsLine(state);
-    Q_FOREACH(MainWindow *window, allWindows()) {
+    for(MainWindow *window : allWindows()) {
         no_signals(window->ui.action_Default_Statistics_Line)->setChecked(state);
     }
 }
@@ -3495,7 +3496,7 @@ void MainWindow::on_action_Default_Statistics_Line_toggled(bool state) {
 void MainWindow::on_action_Default_Incremental_Search_Line_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
     SetPrefISearchLine(state);
-    Q_FOREACH(MainWindow *window, allWindows()) {
+    for(MainWindow *window : allWindows()) {
         no_signals(window->ui.action_Default_Incremental_Search_Line)->setChecked(state);
     }
 }
@@ -3503,7 +3504,7 @@ void MainWindow::on_action_Default_Incremental_Search_Line_toggled(bool state) {
 void MainWindow::on_action_Default_Show_Line_Numbers_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
     SetPrefLineNums(state);
-    Q_FOREACH(MainWindow *window, allWindows()) {
+    for(MainWindow *window : allWindows()) {
         no_signals(window->ui.action_Default_Show_Line_Numbers)->setChecked(state);
     }
 }
@@ -3511,7 +3512,7 @@ void MainWindow::on_action_Default_Show_Line_Numbers_toggled(bool state) {
 void MainWindow::on_action_Default_Make_Backup_Copy_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
     SetPrefSaveOldVersion(state);
-    Q_FOREACH(MainWindow *window, allWindows()) {
+    for(MainWindow *window : allWindows()) {
         no_signals(window->ui.action_Default_Make_Backup_Copy)->setChecked(state);
     }
 }
@@ -3519,7 +3520,7 @@ void MainWindow::on_action_Default_Make_Backup_Copy_toggled(bool state) {
 void MainWindow::on_action_Default_Incremental_Backup_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
     SetPrefAutoSave(state);
-    Q_FOREACH(MainWindow *window, allWindows()) {
+    for(MainWindow *window : allWindows()) {
         no_signals(window->ui.action_Default_Incremental_Backup)->setChecked(state);
     }
 }
@@ -3527,17 +3528,17 @@ void MainWindow::on_action_Default_Incremental_Backup_toggled(bool state) {
 void MainWindow::defaultMatchingGroupTriggered(QAction *action) {
     if(action == ui.action_Default_Matching_Off) {
         SetPrefShowMatching(ShowMatchingStyle::None);
-        Q_FOREACH(MainWindow *window, allWindows()) {
+        for(MainWindow *window : allWindows()) {
             no_signals(window->ui.action_Default_Matching_Off)->setChecked(true);
         }
     } else if(action == ui.action_Default_Matching_Delimiter) {
         SetPrefShowMatching(ShowMatchingStyle::Delimeter);
-        Q_FOREACH(MainWindow *window, allWindows()) {
+        for(MainWindow *window : allWindows()) {
             no_signals(window->ui.action_Default_Matching_Delimiter)->setChecked(true);
         }
     } else if(action == ui.action_Default_Matching_Range) {
         SetPrefShowMatching(ShowMatchingStyle::Range);
-        Q_FOREACH(MainWindow *window, allWindows()) {
+        for(MainWindow *window : allWindows()) {
             no_signals(window->ui.action_Default_Matching_Range)->setChecked(true);
         }
     }
@@ -3546,7 +3547,7 @@ void MainWindow::defaultMatchingGroupTriggered(QAction *action) {
 void MainWindow::on_action_Default_Matching_Syntax_Based_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
     SetPrefMatchSyntaxBased(state);
-    Q_FOREACH(MainWindow *window, allWindows()) {
+    for(MainWindow *window : allWindows()) {
         no_signals(window->ui.action_Default_Matching_Syntax_Based)->setChecked(state);
     }
 }
@@ -3554,7 +3555,7 @@ void MainWindow::on_action_Default_Matching_Syntax_Based_toggled(bool state) {
 void MainWindow::on_action_Default_Terminate_with_Line_Break_on_Save_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
     SetPrefAppendLF(state);
-    Q_FOREACH(MainWindow *window, allWindows()) {
+    for(MainWindow *window : allWindows()) {
         no_signals(window->ui.action_Default_Terminate_with_Line_Break_on_Save)->setChecked(state);
     }
 }
@@ -3562,7 +3563,7 @@ void MainWindow::on_action_Default_Terminate_with_Line_Break_on_Save_toggled(boo
 void MainWindow::on_action_Default_Popups_Under_Pointer_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
     SetPrefRepositionDialogs(state);
-    Q_FOREACH(MainWindow *window, allWindows()) {
+    for(MainWindow *window : allWindows()) {
         no_signals(window->ui.action_Default_Popups_Under_Pointer)->setChecked(state);
     }
 }
@@ -3570,7 +3571,7 @@ void MainWindow::on_action_Default_Popups_Under_Pointer_toggled(bool state) {
 void MainWindow::on_action_Default_Auto_Scroll_Near_Window_Top_Bottom_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
     SetPrefAutoScroll(state);
-    Q_FOREACH(MainWindow *window, allWindows()) {
+    for(MainWindow *window : allWindows()) {
         no_signals(window->ui.action_Default_Auto_Scroll_Near_Window_Top_Bottom)->setChecked(state);
     }
 }
@@ -3578,7 +3579,7 @@ void MainWindow::on_action_Default_Auto_Scroll_Near_Window_Top_Bottom_toggled(bo
 void MainWindow::on_action_Default_Warnings_Files_Modified_Externally_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
     SetPrefWarnFileMods(state);
-    Q_FOREACH(MainWindow *window, allWindows()) {
+    for(MainWindow *window : allWindows()) {
         no_signals(window->ui.action_Default_Warnings_Files_Modified_Externally)->setChecked(state);
         no_signals(window->ui.action_Default_Warnings_Check_Modified_File_Contents)->setEnabled(GetPrefWarnFileMods());
     }
@@ -3587,7 +3588,7 @@ void MainWindow::on_action_Default_Warnings_Files_Modified_Externally_toggled(bo
 void MainWindow::on_action_Default_Warnings_Check_Modified_File_Contents_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
     SetPrefWarnRealFileMods(state);
-    Q_FOREACH(MainWindow *window, allWindows()) {
+    for(MainWindow *window : allWindows()) {
         no_signals(window->ui.action_Default_Warnings_Check_Modified_File_Contents)->setChecked(state);
     }
 }
@@ -3595,7 +3596,7 @@ void MainWindow::on_action_Default_Warnings_Check_Modified_File_Contents_toggled
 void MainWindow::on_action_Default_Warnings_On_Exit_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
     SetPrefWarnExit(state);
-    Q_FOREACH(MainWindow *window, allWindows()) {
+    for(MainWindow *window : allWindows()) {
         no_signals(window->ui.action_Default_Warnings_On_Exit)->setChecked(state);
     }
 }
@@ -3623,7 +3624,7 @@ void MainWindow::setWindowSizeDefault(int rows, int cols) {
 }
 
 void MainWindow::updateWindowSizeMenus() {
-    Q_FOREACH(MainWindow *window, allWindows()) {
+    for(MainWindow *window : allWindows()) {
         window->updateWindowSizeMenu();
     }
 }
@@ -3796,7 +3797,7 @@ void MainWindow::AllWindowsBusyEx(const QString &message) {
         busyStartTime = getRelTimeInTenthsOfSeconds();
         modeMessageSet = false;
 
-        Q_FOREACH(DocumentWidget *document, DocumentWidget::allDocuments()) {
+        for(DocumentWidget *document : DocumentWidget::allDocuments()) {
             /* We don't the display message here yet, but defer it for
                a while. If the wait is short, we don't want
                to have it flash on and off the screen.  However,
@@ -3811,7 +3812,7 @@ void MainWindow::AllWindowsBusyEx(const QString &message) {
     } else if (!modeMessageSet && !message.isNull() && getRelTimeInTenthsOfSeconds() - busyStartTime > 10) {
 
         // Show the mode message when we've been busy for more than a second
-        Q_FOREACH(DocumentWidget *document, DocumentWidget::allDocuments()) {
+        for(DocumentWidget *document : DocumentWidget::allDocuments()) {
             document->SetModeMessageEx(message);
         }
         modeMessageSet = true;
@@ -3824,7 +3825,7 @@ void MainWindow::AllWindowsBusyEx(const QString &message) {
 
 void MainWindow::AllWindowsUnbusyEx() {
 
-    Q_FOREACH(DocumentWidget *document, DocumentWidget::allDocuments()) {
+    for(DocumentWidget *document : DocumentWidget::allDocuments()) {
         document->ClearModeMessageEx();
         document->setCursor(Qt::ArrowCursor);
     }
@@ -3950,7 +3951,8 @@ QString MainWindow::PromptForNewFileEx(DocumentWidget *document, const QString &
                 }
 
                 *addWrap = wrapCheck->isChecked();
-                filename = dialog.selectedFiles()[0];
+                const QStringList files = dialog.selectedFiles();
+                filename = files[0];
             }
 
         }
@@ -4273,7 +4275,7 @@ void MainWindow::on_action_Cancel_Learn_triggered() {
 */
 bool MainWindow::CloseAllFilesAndWindowsEx() {
 
-    Q_FOREACH(MainWindow *window, MainWindow::allWindows()) {
+    for(MainWindow *window : MainWindow::allWindows()) {
 
         // NOTE(eteran): the original code took measures to ensure that
         // if this was being called from a macro, that the window which

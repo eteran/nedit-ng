@@ -222,7 +222,6 @@ const char NeedsArguments[]              = "%s subroutine called with no argumen
 const char WrongNumberOfArguments[]      = "Wrong number of arguments to function %s";
 const char UnrecognizedArgument[]        = "Unrecognized argument to %s";
 const char InsertFailed[]                = "Array element failed to insert: %s";
-const char TooMuchBinaryData[]           = "Too much binary data in file";
 const char RangesetDoesNotExist[]        = "Rangeset does not exist in %s";
 const char Rangeset2DoesNotExist[]       = "Second rangeset does not exist in %s";
 const char PathnameTooLong[]             = "Pathname too long in %s";
@@ -2329,7 +2328,7 @@ bool readCheckMacroStringEx(QWidget *dialogParent, const QString &string, Docume
 */
 void SafeGC() {
 
-    Q_FOREACH(DocumentWidget *document, DocumentWidget::allDocuments()) {
+    for(DocumentWidget *document : DocumentWidget::allDocuments()) {
         if (document->macroCmdData_ || document->InSmartIndentMacrosEx()) {
             return;
         }

@@ -357,7 +357,7 @@ QString WriteSmartIndentStringEx() {
 	QString s;
 	QTextStream ts(&s);
 
-    Q_FOREACH(const SmartIndentEntry &sis, SmartIndentSpecs) {
+    for(const SmartIndentEntry &sis : SmartIndentSpecs) {
 
 		ts << QLatin1String("\t")
            << sis.lmName
@@ -453,7 +453,7 @@ const SmartIndentEntry *findIndentSpec(const QString &name) {
 		return nullptr;
 	}
 
-    Q_FOREACH(const SmartIndentEntry &entry, SmartIndentSpecs) {
+    for(const SmartIndentEntry &entry : SmartIndentSpecs) {
         if (entry.lmName == name) {
             return &entry;
 		}

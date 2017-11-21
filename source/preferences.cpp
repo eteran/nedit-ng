@@ -679,7 +679,7 @@ void SetPrefAutoScroll(bool state) {
 
     g_Settings.autoScroll = state;
 	
-    Q_FOREACH(DocumentWidget *document, DocumentWidget::allDocuments()) {
+    for(DocumentWidget *document : DocumentWidget::allDocuments()) {
         document->SetAutoScroll(margin);
 	}
 }
@@ -852,7 +852,7 @@ void SetPrefTitleFormat(const QString &format) {
     g_Settings.titleFormat = format;
 
     // update all windows
-    Q_FOREACH(MainWindow *window, MainWindow::allWindows()) {
+    for(MainWindow *window : MainWindow::allWindows()) {
         window->UpdateWindowTitle(window->currentDocument());
 	}
 }
@@ -1087,7 +1087,7 @@ static QString WriteLanguageModesStringEx() {
     QString str;
     QTextStream out(&str);
 
-    Q_FOREACH(const LanguageMode &language, LanguageModes) {
+    for(const LanguageMode &language : LanguageModes) {
 
         out << QLatin1Char('\t')
             << language.name

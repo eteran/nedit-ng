@@ -694,7 +694,7 @@ void DialogReplace::collectWritableWindows() {
 
     std::vector<DocumentWidget *> windows;
 
-    Q_FOREACH(DocumentWidget *document, DocumentWidget::allDocuments()) {
+    for(DocumentWidget *document : DocumentWidget::allDocuments()) {
         if (!document->lockReasons_.isAnyLocked()) {
             windows.push_back(document);
         }

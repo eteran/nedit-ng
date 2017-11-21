@@ -137,7 +137,7 @@ bool DialogSmartIndentCommon::updateSmartIndentCommonData() {
 	/* Find windows that are currently using smart indent and
 	   re-initialize the smart indent macros (in case they have initialization
 	   data which depends on common data) */
-    Q_FOREACH(DocumentWidget *document, documents) {
+    for(DocumentWidget *document : documents) {
         if (document->indentStyle_ == IndentStyle::Smart && document->languageMode_ != PLAIN_LANGUAGE_MODE) {
             document->EndSmartIndentEx();
             document->BeginSmartIndentEx(false);

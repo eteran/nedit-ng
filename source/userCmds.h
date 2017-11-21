@@ -55,7 +55,7 @@ struct userMenuInfo {
     QString          umiName;          // hierarchical name of menu item (w.o. language mode info)
     bool             umiIsDefault;     // menu item is default one ("@*")
     std::vector<int> umiLanguageModes; // list of applicable lang. modes
-    int              umiDefaultIndex;  // array index of menu item to be used as default, if no lang. mode matches
+    size_t           umiDefaultIndex;  // array index of menu item to be used as default, if no lang. mode matches
 };
 
 struct MenuData {

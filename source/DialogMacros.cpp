@@ -454,7 +454,7 @@ bool DialogMacros::applyDialogChanges() {
     parseMenuItemList(MacroMenuData);
 	
     // Update the menus themselves in all of the NEdit windows
-    Q_FOREACH(MainWindow *window, MainWindow::allWindows()) {
+    for(MainWindow *window : MainWindow::allWindows()) {
         window->UpdateUserMenus(window->currentDocument());
     }
 	

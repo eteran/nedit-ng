@@ -20,7 +20,7 @@ DialogDrawingStyles::DialogDrawingStyles(QWidget *parent, Qt::WindowFlags f) : D
 	ui.setupUi(this);
 
 	// Copy the list of highlight style information to one that the user can freely edit
-    Q_FOREACH(const HighlightStyle &style, HighlightStyles) {
+    for(const HighlightStyle &style : HighlightStyles) {
         auto ptr  = new HighlightStyle(style);
 		auto item = new QListWidgetItem(ptr->name);
 		item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(ptr));
@@ -436,7 +436,7 @@ bool DialogDrawingStyles::updateHSList() {
     MainWindow::updateHighlightStyleMenu();
 
 	// Redisplay highlighted windows which use changed style(s) 
-    Q_FOREACH(DocumentWidget *document, DocumentWidget::allDocuments()) {
+    for(DocumentWidget *document : DocumentWidget::allDocuments()) {
         document->UpdateHighlightStylesEx();
 	}
 

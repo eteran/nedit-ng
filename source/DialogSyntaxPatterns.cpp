@@ -35,14 +35,14 @@ DialogSyntaxPatterns::DialogSyntaxPatterns(QWidget *parent, Qt::WindowFlags f) :
 	connect(ui.radioRangeRegex,  SIGNAL(toggled(bool)), this, SLOT(updateLabels()));
 
 	// populate the highlight style combo
-    Q_FOREACH(const HighlightStyle &style, HighlightStyles) {
+    for(const HighlightStyle &style : HighlightStyles) {
         ui.comboHighlightStyle->addItem(style.name);
 	}
 
     auto blocker = no_signals(ui.comboLanguageMode);
 
 	// populate language mode combo
-    Q_FOREACH(const LanguageMode &lang, LanguageModes) {
+    for(const LanguageMode &lang : LanguageModes) {
         ui.comboLanguageMode->addItem(lang.name);
 	}
 }
@@ -706,7 +706,7 @@ void DialogSyntaxPatterns::UpdateLanguageModeMenu() {
 	QString language = ui.comboLanguageMode->currentText();
 	ui.comboLanguageMode->clear();
 
-    Q_FOREACH(const LanguageMode &lang, LanguageModes) {
+    for(const LanguageMode &lang : LanguageModes) {
         ui.comboLanguageMode->addItem(lang.name);
 	}
 
@@ -724,7 +724,7 @@ void DialogSyntaxPatterns::updateHighlightStyleMenu() {
 
 	QString pattern = ui.comboHighlightStyle->currentText();
 	ui.comboHighlightStyle->clear();
-    Q_FOREACH(const HighlightStyle &style, HighlightStyles) {
+    for(const HighlightStyle &style : HighlightStyles) {
         ui.comboHighlightStyle->addItem(style.name);
 	}
 

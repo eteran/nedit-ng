@@ -4250,7 +4250,7 @@ void DocumentWidget::moveDocument(MainWindow *fromWindow) {
         // move top document
         if (dialog->moveAllSelected()) {
             // move all documents
-            Q_FOREACH(DocumentWidget *document, fromWindow->openDocuments()) {
+            for(DocumentWidget *document : fromWindow->openDocuments()) {
                 targetWin->ui.tabWidget->addTab(document, document->filename_);
                 targetWin->show();
             }
@@ -4275,7 +4275,7 @@ void DocumentWidget::ShowStatsLine(bool state) {
        the top line number in absolute (non-wrapped) lines, because it can
        be a costly calculation, and is only needed for displaying line
        numbers, either in the stats line, or along the left margin */
-    Q_FOREACH(TextArea *area, textPanes()) {
+    for(TextArea *area : textPanes()) {
         area->TextDMaintainAbsLineNum(state);
     }
 
@@ -4284,7 +4284,7 @@ void DocumentWidget::ShowStatsLine(bool state) {
 }
 
 void DocumentWidget::setWrapMargin(int margin) {
-    Q_FOREACH(TextArea *area, textPanes()) {
+    for(TextArea *area : textPanes()) {
         area->setWrapMargin(margin);
     }
 }
@@ -4333,7 +4333,7 @@ void DocumentWidget::SetFonts(const QString &fontName, const QString &italicName
 
     int oldTextHeight = 0;
 
-    Q_FOREACH(TextArea *area, textPanes()) {
+    for(TextArea *area : textPanes()) {
         int textHeight = area->height();
         oldTextHeight += textHeight - 2 * marginHeight;
     }
@@ -4362,7 +4362,7 @@ void DocumentWidget::SetFonts(const QString &fontName, const QString &italicName
 
     // Change the primary font in all the widgets
     if (primaryChanged) {
-        Q_FOREACH(TextArea *area, textPanes()) {
+        for(TextArea *area : textPanes()) {
             area->setFont(fontStruct_);
         }
     }
@@ -4405,7 +4405,7 @@ void DocumentWidget::SetBacklightChars(const QString &applyBacklightTypes) {
         backlightCharTypes_ = QString();
     }
 
-    Q_FOREACH(TextArea *area, textPanes()) {
+    for(TextArea *area : textPanes()) {
         area->setBacklightCharTypes(backlightCharTypes_);
     }
 }
@@ -4415,7 +4415,7 @@ void DocumentWidget::SetBacklightChars(const QString &applyBacklightTypes) {
 */
 void DocumentWidget::SetOverstrike(bool overstrike) {
 
-    Q_FOREACH(TextArea *area, textPanes()) {
+    for(TextArea *area : textPanes()) {
         area->setOverstrike(overstrike);
     }
 
@@ -4497,7 +4497,7 @@ void DocumentWidget::SetColors(const QString &textFg, const QString &textBg, con
 
 
     // Update all panes
-    Q_FOREACH(TextArea *area, textPanes()) {
+    for(TextArea *area : textPanes()) {
         area->setForegroundPixel(textFgPix); // NOTE(eteran): seems redundant
         area->setBackgroundPixel(textBgPix); // NOTE(eteran): seems redundant
         area->TextDSetColors(textFgPix, textBgPix, selectFgPix, selectBgPix, hiliteFgPix, hiliteBgPix, lineNoFgPix, cursorFgPix);
@@ -5258,7 +5258,7 @@ void DocumentWidget::ShellCmdToMacroStringEx(const QString &command, const QStri
 */
 void DocumentWidget::SetAutoScroll(int margin) {
 
-    Q_FOREACH(TextArea *area, textPanes()) {
+    for(TextArea *area : textPanes()) {
         area->setCursorVPadding(margin);
     }
 }
@@ -5328,7 +5328,7 @@ void DocumentWidget::BeginLearnEx() {
 	}
 
 	// dim the inappropriate menus and items, and undim finish and cancel
-	Q_FOREACH(MainWindow *window, MainWindow::allWindows()) {
+    for(MainWindow *window : MainWindow::allWindows()) {
 		window->ui.action_Learn_Keystrokes->setEnabled(false);
 	}
 
@@ -5722,7 +5722,7 @@ void DocumentWidget::UpdateHighlightStylesEx() {
 
     /* Attach new highlight information to text widgets in each pane
        (and redraw) */
-    Q_FOREACH(TextArea *area, textPanes()) {
+    for(TextArea *area : textPanes()) {
         AttachHighlightToWidgetEx(area);
     }
 }
@@ -6661,7 +6661,7 @@ int DocumentWidget::MacroWindowCloseActionsEx() {
        if macros executing in other windows have it as focus.  If so, set
        their focus back to the window from which they were originally run */
     if(!cmdData) {
-        Q_FOREACH(DocumentWidget *document, DocumentWidget::allDocuments()) {
+        for(DocumentWidget *document : DocumentWidget::allDocuments()) {
             const std::shared_ptr<MacroCommandData> &mcd = document->macroCmdData_;
             if (document == MacroRunWindowEx() && MacroFocusWindowEx() == this) {
                 SetMacroFocusWindowEx(MacroRunWindowEx());
@@ -6750,7 +6750,7 @@ void DocumentWidget::cancelLearnEx() {
     DocumentWidget *document = CommandRecorder::getInstance()->macroRecordWindowEx;
     Q_ASSERT(document);
 
-    Q_FOREACH(MainWindow *window, MainWindow::allWindows()) {
+    for(MainWindow *window : MainWindow::allWindows()) {
         window->ui.action_Learn_Keystrokes->setEnabled(true);
     }
 
@@ -6774,7 +6774,7 @@ void DocumentWidget::FinishLearnEx() {
 
     CommandRecorder::getInstance()->stopRecording();
 
-    Q_FOREACH(MainWindow *window, MainWindow::allWindows()) {
+    for(MainWindow *window : MainWindow::allWindows()) {
         window->ui.action_Learn_Keystrokes->setEnabled(true);
     }
 
@@ -6785,7 +6785,7 @@ void DocumentWidget::FinishLearnEx() {
         }
     }
 
-    Q_FOREACH(MainWindow *window, MainWindow::allWindows()) {
+    for(MainWindow *window : MainWindow::allWindows()) {
         window->ui.action_Replay_Keystrokes->setEnabled(true);
     }
 

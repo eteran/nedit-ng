@@ -69,7 +69,7 @@ static QString stripLanguageModeEx(const QString &menuItemName);
 static QString writeMenuItemStringEx(const std::vector<MenuData> &menuItems, DialogTypes listType);
 static std::shared_ptr<userMenuInfo> parseMenuItemRec(const std::shared_ptr<MenuItem> &item);
 static void parseMenuItemName(const QString &menuItemName, const std::shared_ptr<userMenuInfo> &info);
-static void setDefaultIndex(const std::vector<MenuData> &infoList, int index);
+static void setDefaultIndex(const std::vector<MenuData> &infoList, size_t index);
 
 
 std::vector<MenuData> &selectMenu(DialogTypes type) {
@@ -484,7 +484,7 @@ void parseMenuItemList(std::vector<MenuData> &itemList) {
 	}
 
 	// 2nd pass: solve "default" dependencies 
-	for (int i = 0; i < itemList.size(); i++) {
+    for (size_t i = 0; i < itemList.size(); i++) {
         const std::shared_ptr<userMenuInfo> &info = itemList[i].info;
 
 		/* If the user menu item is a default one, then scan the list for
@@ -575,7 +575,7 @@ static QString stripLanguageModeEx(const QString &menuItemName) {
     }
 }
 
-static void setDefaultIndex(const std::vector<MenuData> &infoList, int index) {
+static void setDefaultIndex(const std::vector<MenuData> &infoList, size_t index) {
     QString defaultMenuName = infoList[index].info->umiName;
 
     /* Scan the list for items with the same name and a language mode

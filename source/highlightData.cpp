@@ -177,7 +177,7 @@ QString WriteStylesStringEx() {
     QString str;
     QTextStream out(&str);
 
-    Q_FOREACH(const HighlightStyle  &style, HighlightStyles) {
+    for(const HighlightStyle &style : HighlightStyles) {
 
         out << QLatin1Char('\t')
             << style.name
