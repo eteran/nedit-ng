@@ -68,7 +68,7 @@ void DialogMultiReplace::on_buttonReplace_clicked() {
 	bool noWritableLeft = true;
 
     // Perform the replacements and mark the selected files (history)
-    for (int i = 0; i < window_->writableWindows_.size(); ++i) {
+    for (size_t i = 0; i < window_->writableWindows_.size(); ++i) {
         DocumentWidget *writableWin = window_->writableWindows_[i];
 
 		if(ui.listFiles->item(i)->isSelected()) {
@@ -156,8 +156,7 @@ void DialogMultiReplace::uploadFileListItems(bool replace) {
 
         ui.listFiles->clear();
 
-        for (int i = 0; i < window_->writableWindows_.size(); ++i) {
-            DocumentWidget *document = window_->writableWindows_[i];
+        for(DocumentWidget *document : window_->writableWindows_) {
 
 			QListWidgetItem *item;
             if (usePathNames && document->filenameSet_) {

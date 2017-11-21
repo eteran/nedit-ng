@@ -692,7 +692,7 @@ bool DialogReplace::getReplaceDlogInfo(Direction *direction, QString *searchStri
 **/
 void DialogReplace::collectWritableWindows() {
 
-    QVector<DocumentWidget *> windows;
+    std::vector<DocumentWidget *> windows;
 
     Q_FOREACH(DocumentWidget *document, DocumentWidget::allDocuments()) {
         if (!document->lockReasons_.isAnyLocked()) {
@@ -704,7 +704,7 @@ void DialogReplace::collectWritableWindows() {
 		return lhs->filename_ < rhs->filename_;
 	});
 
-	window_->writableWindows_  = windows;
+    window_->writableWindows_ = windows;
 }
 
 

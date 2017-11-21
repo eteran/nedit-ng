@@ -989,16 +989,16 @@ void MainWindow::SortTabBar() {
     }
 
 	// need more than one tab to sort
-	const int nDoc = TabCount();
+    const int nDoc = TabCount();
 	if (nDoc < 2) {
 		return;
 	}
 
 	// get a list of all the documents
-	QVector<DocumentWidget *> windows;
+    std::vector<DocumentWidget *> windows;
 	windows.reserve(nDoc);
 
-	for(int i = 0; i < nDoc; ++i) {
+    for(int i = 0; i < nDoc; ++i) {
 		if(auto doc = qobject_cast<DocumentWidget *>(ui.tabWidget->widget(i))) {
 			windows.push_back(doc);
 		}
@@ -1013,7 +1013,7 @@ void MainWindow::SortTabBar() {
 	});
 
 	// shuffle around the tabs to their new indexes
-	for(int i = 0; i < windows.size(); ++i) {
+    for(size_t i = 0; i < windows.size(); ++i) {
 		int from = ui.tabWidget->indexOf(windows[i]);
 		int to   = i;
         ui.tabWidget->tabBar()->moveTab(from, to);
@@ -1248,9 +1248,9 @@ void MainWindow::updateLanguageModeSubmenu() {
     languageGroup->addAction(action);
 
 
-    for (int i = 0; i < LanguageModes.size(); i++) {
+    for (size_t i = 0; i < LanguageModes.size(); i++) {
         QAction *action = languageMenu->addAction(LanguageModes[i].name);
-        action->setData(i);
+        action->setData(gsl::narrow<int>(i));
         action->setCheckable(true);
         languageGroup->addAction(action);
     }

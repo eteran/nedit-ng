@@ -41,7 +41,7 @@
 #include "highlightData.h"
 #include "preferences.h"
 #include "regularExp.h"
-#include "gsl/gsl_util"
+#include <gsl/gsl_util>
 
 #include <algorithm>
 #include <climits>
@@ -1035,13 +1035,13 @@ HighlightData *patternOfStyle(HighlightData *patterns, int style) {
 	return nullptr;
 }
 
-int indexOfNamedPattern(HighlightPattern *patList, int nPats, const QString &patName) {
+int indexOfNamedPattern(const gsl::span<HighlightPattern> &patList, const QString &patName) {
 
     if(patName.isNull()) {
 		return -1;
 	}
 	
-	for (int i = 0; i < nPats; i++) {
+    for (int i = 0; i < patList.size(); i++) {
         if (patList[i].name == patName) {
 			return i;
 		}
@@ -1050,13 +1050,14 @@ int indexOfNamedPattern(HighlightPattern *patList, int nPats, const QString &pat
 	return -1;
 }
 
-int findTopLevelParentIndex(HighlightPattern *patList, int nPats, int index) {
+int findTopLevelParentIndex(const gsl::span<HighlightPattern> &patList, int index) {
 
-	int topIndex = index;
-	while (!patList[topIndex].subPatternOf.isNull()) {
-        topIndex = indexOfNamedPattern(patList, nPats, patList[topIndex].subPatternOf);
-		if (index == topIndex)
-			return -1; // amai: circular dependency ?! 
-	}
-	return topIndex;
+    int topIndex = index;
+    while (!patList[topIndex].subPatternOf.isNull()) {
+        topIndex = indexOfNamedPattern(patList, patList[topIndex].subPatternOf);
+        if (index == topIndex) {
+            return -1; // amai: circular dependency ?!
+        }
+    }
+    return topIndex;
 }

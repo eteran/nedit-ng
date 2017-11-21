@@ -39,7 +39,7 @@
 #include "selection.h"
 #include "util/fileUtils.h"
 #include "util/utils.h"
-#include "gsl/gsl_util"
+#include <gsl/gsl_util>
 
 #include <QApplication>
 #include <QMessageBox>
@@ -56,6 +56,7 @@
 #include <cstring>
 #include <unordered_map>
 #include <sstream>
+#include <deque>
 
 #include <sys/param.h>
 
@@ -93,7 +94,7 @@ static QString rstrip(QString s);
 static int nextTFBlock(std::istream &is, QString &header, QString &body, int *blkLine, int *currLine);
 static int loadTipsFile(const QString &tipsFile, int index, int recLevel);
 static QMultiHash<QString, Tag> *hashTableByType(TagSearchMode type);
-static QList<TagFile> *tagListByType(TagSearchMode type);
+static std::deque<TagFile> *tagListByType(TagSearchMode type);
 
 struct Tag {
     QString name;
@@ -108,11 +109,11 @@ struct Tag {
 static QMultiHash<QString, Tag> Tags;
 
 // list of loaded tags files 
-QList<TagFile> TagsFileList;
+std::deque<TagFile> TagsFileList;
 
 // Hash table of calltip tags 
 static QMultiHash<QString, Tag> Tips;
-QList<TagFile> TipsFileList;
+std::deque<TagFile> TipsFileList;
 
 /* These are all transient global variables -- they don't hold any state
     between tag/tip lookups */
@@ -146,7 +147,7 @@ static QMultiHash<QString, Tag> *hashTableByType(TagSearchMode type) {
     }
 }
 
-static QList<TagFile> *tagListByType(TagSearchMode type) {
+static std::deque<TagFile> *tagListByType(TagSearchMode type) {
     if (type == TagSearchMode::TAG) {
         return &TagsFileList;
     } else {
@@ -273,7 +274,7 @@ bool AddRelTagsFileEx(const QString &tagSpec, const QString &windowPath, TagSear
 
 
     searchMode = file_type;
-    QList<TagFile> *FileList = tagListByType(searchMode);
+    std::deque<TagFile> *FileList = tagListByType(searchMode);
 
     if(tagSpec.isEmpty()) {
         return false;
@@ -342,7 +343,7 @@ bool AddTagsFileEx(const QString &tagSpec, TagSearchMode file_type) {
     bool added = true;
 
     searchMode = file_type;
-    QList<TagFile> *FileList = tagListByType(searchMode);
+    std::deque<TagFile> *FileList = tagListByType(searchMode);
 
     if(tagSpec.isEmpty()) {
         return false;
@@ -412,7 +413,7 @@ int DeleteTagsFileEx(const QString &tagSpec, TagSearchMode file_type, bool force
     }
 
     searchMode = file_type;
-    QList<TagFile> *FileList = tagListByType(searchMode);
+    std::deque<TagFile> *FileList = tagListByType(searchMode);
 
     bool removed = true;
 
@@ -470,15 +471,15 @@ void updateMenuItems() {
     bool tipStat = false;
     bool tagStat = false;
 
-    if (!TipsFileList.isEmpty()) {
+    if (!TipsFileList.empty()) {
         tipStat = true;
     }
 
-    if (!TagsFileList.isEmpty()) {
+    if (!TagsFileList.empty()) {
         tagStat = true;
     }
 
-    Q_FOREACH(MainWindow *window, MainWindow::allWindows()) {
+    for(MainWindow *window : MainWindow::allWindows()) {
         window->ui.action_Unload_Calltips_File->setEnabled(tipStat);
         window->ui.action_Unload_Tags_File->setEnabled(tagStat);
         window->ui.action_Show_Calltip->setEnabled(tipStat || tagStat);
@@ -711,7 +712,7 @@ static int loadTagsFile(const QString &tagSpec, int index, int recLevel) {
 	return nTagsAdded;
 }
 
-static QList<Tag> LookupTagFromList(QList<TagFile> *FileList, const QString &name, TagSearchMode search_type) {
+static QList<Tag> LookupTagFromList(std::deque<TagFile> *FileList, const QString &name, TagSearchMode search_type) {
 
 	/*
 	** Go through the list of all tags Files:

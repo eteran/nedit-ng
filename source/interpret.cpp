@@ -152,15 +152,15 @@ static void stackdump(int n, int extra);
 #endif
 
 // Global symbols and function definitions 
-static QList<Symbol *> GlobalSymList;
+static std::deque<Symbol *> GlobalSymList;
 
 // List of all memory allocated for strings 
-static QList<char *> AllocatedStrings;
+static std::vector<char *> AllocatedStrings;
 
-static QList<ArrayEntry *> AllocatedSparseArrayEntries;
+static std::vector<ArrayEntry *> AllocatedSparseArrayEntries;
 
 // Temporary global data for use while accumulating programs
-static QList<Symbol *> LocalSymList;     // symbols local to the program
+static std::deque<Symbol *> LocalSymList;     // symbols local to the program
 static Inst Prog[PROGRAM_SIZE];          // the program
 static Inst *ProgP;                      // next free spot for code gen.
 static Inst *LoopStack[LOOP_STACK_SIZE]; // addresses of break, cont stmts
@@ -256,7 +256,7 @@ Program *FinishCreatingProgram() {
 	std::copy_n(Prog, count, newProg->code);
 
     newProg->localSymList = LocalSymList;
-    LocalSymList = QList<Symbol *>();
+    LocalSymList.clear();
 
 	/* Local variables' values are stored on the stack.  Here we assign
 	   frame pointer offsets to them. */

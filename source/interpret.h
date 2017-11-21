@@ -27,16 +27,20 @@
 #ifndef INTERPRET_H_
 #define INTERPRET_H_
 
-#include "gsl/span"
 #include "rbTree.h"
 #include "util/string_view.h"
-#include <QList>
+
+#include <gsl/span>
+
+#include <deque>
 #include <map>
 #include <memory>
 
+#include <QtGlobal>
+#include <QString>
+
 class DocumentWidget;
 class Program;
-class QString;
 struct ArrayEntry;
 struct DataValue;
 struct Symbol;
@@ -177,7 +181,7 @@ struct Symbol {
 
 class Program {
 public:
-    QList<Symbol *> localSymList;
+    std::deque<Symbol *> localSymList;
 	Inst *code;
 };
 

@@ -27,11 +27,12 @@
 #ifndef HIGHLIGHT_DATA_H_
 #define HIGHLIGHT_DATA_H_
 
-#include <QList>
+#include <vector>
 #include <memory>
 
 class PatternSet;
 class QString;
+class QWidget;
 class HighlightStyle;
 
 bool LoadHighlightStringEx(const QString &string);
@@ -50,7 +51,7 @@ void RenameHighlightPattern(const QString &oldName, const QString &newName);
 std::unique_ptr<PatternSet> readDefaultPatternSet(const QString &langModeName);
 
 // list of available highlight styles 
-extern QList<HighlightStyle> HighlightStyles;
-extern QList<PatternSet> PatternSets;
+extern std::vector<HighlightStyle> HighlightStyles;
+extern std::vector<PatternSet> PatternSets;
 
 #endif

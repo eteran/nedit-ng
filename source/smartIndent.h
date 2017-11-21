@@ -27,7 +27,7 @@
 #ifndef X_SMART_INDENT_H_
 #define X_SMART_INDENT_H_
 
-#include <QList>
+#include <vector>
 
 class QString;
 class QByteArray;
@@ -48,7 +48,7 @@ const SmartIndentEntry *findIndentSpec(const QString &name);
 const SmartIndentEntry *findDefaultIndentSpec(const QString &name);
 
 extern QString CommonMacros;
-extern QList<SmartIndentEntry> SmartIndentSpecs;
+extern std::vector<SmartIndentEntry> SmartIndentSpecs;
 
 struct SmartIndentData {
     Program *newlineMacro;

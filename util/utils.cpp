@@ -22,7 +22,7 @@
 *******************************************************************************/
 
 #include "utils.h"
-#include "gsl/gsl_util"
+#include <gsl/gsl_util>
 
 #include <QtGlobal>
 #include <QDir>

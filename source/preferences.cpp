@@ -86,7 +86,7 @@ QString ImportedFile;
 }
 
 // list of available language modes and language specific preferences
-QList<LanguageMode> LanguageModes;
+std::vector<LanguageMode> LanguageModes;
 
 static void translatePrefFormats(quint32 fileVer);
 static QStringList readExtensionListEx(Input &in);
@@ -898,9 +898,9 @@ void MarkPrefsChanged() {
 int FindLanguageMode(const QString &languageName) {
 
     // Compare each language mode to the one we were presented
-    for (int i = 0; i < LanguageModes.size(); i++) {
+    for (size_t i = 0; i < LanguageModes.size(); i++) {
         if (LanguageModes[i].name == languageName) {
-            return i;
+            return gsl::narrow<int>(i);
         }
     }
 
@@ -910,9 +910,9 @@ int FindLanguageMode(const QString &languageName) {
 int FindLanguageMode(const QStringRef &languageName) {
 
     // Compare each language mode to the one we were presented
-    for (int i = 0; i < LanguageModes.size(); i++) {
+    for (size_t i = 0; i < LanguageModes.size(); i++) {
         if (LanguageModes[i].name == languageName) {
-            return i;
+            return gsl::narrow<int>(i);
         }
     }
 
@@ -932,7 +932,6 @@ QString LanguageModeName(int mode) {
 
 static int loadLanguageModesStringEx(const QString &string) {
 	QString errMsg;
-	int i;
 
 	Input in(&string);
 
@@ -977,7 +976,8 @@ static int loadLanguageModesStringEx(const QString &string) {
 		QString styleName = ReadSymbolicFieldEx(in);
 		if(styleName.isNull()) {
             lm.indentStyle = IndentStyle::Default;
-		} else {                     
+        } else {
+            int i;
 			for (i = 0; i < N_INDENT_STYLES; i++) {
 				if (styleName == QString::fromLatin1(AutoIndentTypes[i])) {
 					lm.indentStyle = static_cast<IndentStyle>(i);
@@ -999,6 +999,7 @@ static int loadLanguageModesStringEx(const QString &string) {
 		if(styleName.isNull()) {
             lm.wrapStyle = WrapStyle::Default;
 		} else {
+            int i;
 			for (i = 0; i < N_WRAP_STYLES; i++) {
 				if ((styleName == QString::fromLatin1(AutoWrapTypes[i]))) {
                     lm.wrapStyle = static_cast<WrapStyle>(i);
@@ -1047,11 +1048,11 @@ static int loadLanguageModesStringEx(const QString &string) {
 		lm.delimiters = delimiters;
 
 		// After 5.3 all language modes need a default tips file field
-		if (!SkipDelimiterEx(in, &errMsg))
+        if (!SkipDelimiterEx(in, &errMsg)) {
 			return modeErrorEx(in, errMsg);
+        }
 
 		// read the default tips file
-
 		QString defTipsFile;
 		if (in.atEnd() || *in == QLatin1Char('\n')) {
 			defTipsFile = QString();
@@ -1062,16 +1063,15 @@ static int loadLanguageModesStringEx(const QString &string) {
 		lm.defTipsFile = defTipsFile;
 
 		// pattern set was read correctly, add/replace it in the list
-		for (i = 0; i < LanguageModes.size(); i++) {
-			if (LanguageModes[i].name == lm.name) {
-				LanguageModes[i] = lm;
-				break;
-			}
-		}
+        auto it = std::find_if(LanguageModes.begin(), LanguageModes.end(), [&lm](const LanguageMode &languageMode) {
+            return languageMode.name == lm.name;
+        });
 
-		if (i == LanguageModes.size()) {
-			LanguageModes.push_back(lm);
-		}
+        if(it != LanguageModes.end()) {
+            *it = lm;
+        } else {
+            LanguageModes.push_back(lm);
+        }
 
 		// if the string ends here, we're done
 		in.skipWhitespaceNL();

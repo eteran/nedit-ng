@@ -27,6 +27,9 @@
 #include <QWidget>
 
 #include <vector>
+#include <deque>
+
+#include <gsl/span>
 
 #include "ui_DocumentWidget.h"
 
@@ -192,7 +195,7 @@ private:
     bool findMatchingCharEx(char toMatch, Style styleToMatch, int charPos, int startLimit, int endLimit, int *matchPos);
     bool includeFile(const QString &name);
     bool writeBckVersion();
-    HighlightData *compilePatternsEx(HighlightPattern *patternSrc, int nPatterns);
+    HighlightData *compilePatternsEx(const gsl::span<HighlightPattern> &patternSrc);
     int CloseFileAndWindow(CloseMode preResponse);
     bool cmpWinAgainstFile(const QString &fileName) const;
     int fileWasModifiedExternally();
@@ -312,8 +315,8 @@ public:
 	int languageMode_;                 // identifies language mode currently selected in the window
 	int nMarks_;                       // number of active bookmarks
 	int undoMemUsed_;                  // amount of memory (in bytes) dedicated to the undo list
-    QList<UndoInfo> redo_;             // info for redoing last undone op
-    QList<UndoInfo> undo_;             // info for undoing last operation
+    std::deque<UndoInfo> redo_;             // info for redoing last undone op
+    std::deque<UndoInfo> undo_;             // info for undoing last operation
     time_t lastModTime_;               // time of last modification to file
 	uid_t fileUid_;                    // last recorded user id of the file
 	unsigned fileMode_;                // permissions of file being edited

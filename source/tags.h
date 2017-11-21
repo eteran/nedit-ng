@@ -28,8 +28,9 @@
 #define TAGS_H_
 
 #include <ctime>
+#include <deque>
+
 #include <QString>
-#include <QList>
 #include <QDateTime>
 
 class DocumentWidget;
@@ -52,8 +53,8 @@ struct TagFile {
     int16_t     refcount; // Only tips files are refcounted, not tags files
 };
 
-extern QList<TagFile> TagsFileList; // list of loaded tags files
-extern QList<TagFile> TipsFileList; // list of loaded calltips tag files
+extern std::deque<TagFile> TagsFileList; // list of loaded tags files
+extern std::deque<TagFile> TipsFileList; // list of loaded calltips tag files
 
 extern TagSearchMode searchMode;
 extern QString tagName;

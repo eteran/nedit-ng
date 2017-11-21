@@ -55,7 +55,7 @@
 #include "util/fileUtils.h"
 #include "util/utils.h"
 #include "version.h"
-#include "gsl/gsl_util"
+#include <gsl/gsl_util>
 #include <QClipboard>
 #include <QDialogButtonBox>
 #include <QFileDialog>

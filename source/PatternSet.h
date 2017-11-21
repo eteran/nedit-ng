@@ -4,7 +4,7 @@
 
 #include "HighlightPattern.h"
 #include <QString>
-#include <QVector>
+#include <vector>
 
 // Header for a set of patterns
 class PatternSet {
@@ -14,10 +14,10 @@ public:
 
 
 public:
-	QString                   languageMode;
-    int                       lineContext = 0;
-    int                       charContext = 0;
-	QVector<HighlightPattern> patterns;
+    QString                       languageMode;
+    int                           lineContext = 0;
+    int                           charContext = 0;
+    std::vector<HighlightPattern> patterns;
 };
 
 #endif

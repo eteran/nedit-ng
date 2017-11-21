@@ -346,7 +346,7 @@ public:
     int iSearchHistIndex_;             //   find and replace dialogs
     int iSearchLastBeginPos_;          // beg. pos. last match of current i.s.
     int iSearchStartPos_;              // start pos. of current incr. search
-    QVector<DocumentWidget *> writableWindows_;      // temporary list of writable documents, used during multi-file replacements
+    std::vector<DocumentWidget *> writableWindows_;      // temporary list of writable documents, used during multi-file replacements
     bool wasSelected_;                 // last selection state (for dim/undim of selection related menu items
 #if defined(REPLACE_SCOPE)
     QAction *replaceScopeInWindow_;

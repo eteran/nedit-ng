@@ -32,7 +32,7 @@
 #include "fileUtils.h"
 #include "FileFormats.h"
 #include "utils.h"
-#include "gsl/gsl_util"
+#include <gsl/gsl_util>
 
 #include <cstdlib>
 #include <cstdio>

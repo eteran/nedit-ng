@@ -30,6 +30,9 @@
 #include "util/string_view.h"
 #include "Style.h"
 
+#include <gsl/span>
+#include <vector>
+
 class TextArea;
 class HighlightPattern;
 class WindowHighlightData;
@@ -74,7 +77,7 @@ int backwardOneContext(TextBuffer *buf, ReparseContext *context, int fromPos);
 int forwardOneContext(TextBuffer *buf, ReparseContext *context, int fromPos);
 bool parseString(HighlightData *pattern, const char **string, char **styleString, long length, char *prevChar, bool anchored, const QString &delimiters, const char *lookBehindTo, const char *match_till);
 void handleUnparsedRegionCBEx(const TextArea *area, int pos, const void *user);
-int indexOfNamedPattern(HighlightPattern *patList, int nPats, const QString &patName);
-int findTopLevelParentIndex(HighlightPattern *patList, int nPats, int index);
+int indexOfNamedPattern(const gsl::span<HighlightPattern> &patList, const QString &patName);
+int findTopLevelParentIndex(const gsl::span<HighlightPattern> &patList, int index);
 
 #endif

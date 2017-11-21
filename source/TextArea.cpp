@@ -13,7 +13,7 @@
 #include "preferences.h"
 #include "SmartIndentEvent.h"
 #include "TextEditEvent.h"
-#include "gsl/gsl_util"
+#include <gsl/gsl_util>
 #include <QApplication>
 #include <QClipboard>
 #include <QDesktopWidget>
@@ -61,8 +61,7 @@ public:
     }
 
     QList<QByteArray> aliases() const override {
-        QList<QByteArray> ret;
-        return ret;
+        return {};
     }
 
     int mibEnum () const override {

@@ -35,7 +35,7 @@
 #include "WrapMode.h"
 #include "WrapStyle.h"
 
-#include <QList>
+#include <vector>
 
 class QWidget;
 class QString;
@@ -193,6 +193,6 @@ int GetPrefReplaceDefScope();
 bool PreferencesChanged();
 QString ImportedSettingsFile();
 
-extern QList<LanguageMode> LanguageModes;
+extern std::vector<LanguageMode> LanguageModes;
 
 #endif

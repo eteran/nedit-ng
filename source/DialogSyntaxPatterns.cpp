@@ -94,7 +94,7 @@ void DialogSyntaxPatterns::setLanguageName(const QString &name) {
 		/* Get the current information displayed by the dialog.  If it's bad,
 		   give the user the chance to throw it out or go back and fix it.  If
 		   it has changed, give the user the chance to apply discard or cancel. */
-		auto newPatSet = getDialogPatternSet();
+        std::unique_ptr<PatternSet> newPatSet = getDialogPatternSet();
 
 		if(!newPatSet) {
 			QMessageBox messageBox(this);
@@ -742,7 +742,7 @@ bool DialogSyntaxPatterns::updatePatternSet() {
 	}
 
 	// Get the current data
-	auto patSet = getDialogPatternSet();
+    std::unique_ptr<PatternSet> patSet = getDialogPatternSet();
 	if(!patSet) {
 		return false;
 	}
@@ -763,8 +763,8 @@ bool DialogSyntaxPatterns::updatePatternSet() {
 	}
 
 	// Find windows that are currently using this pattern set and re-do the highlighting
-    Q_FOREACH(DocumentWidget *document, DocumentWidget::allDocuments()) {
-		if (!patSet->patterns.isEmpty()) {
+    for(DocumentWidget *document : DocumentWidget::allDocuments()) {
+        if (!patSet->patterns.empty()) {
             if (document->languageMode_ != PLAIN_LANGUAGE_MODE && (LanguageModeName(document->languageMode_) == patSet->languageMode)) {
 				/*  The user worked on the current document's language mode, so
 				    we have to make some changes immediately. For inactive
@@ -814,13 +814,13 @@ bool DialogSyntaxPatterns::updatePatternSet() {
 //------------------------------------------------------------------------------
 bool DialogSyntaxPatterns::checkHighlightDialogData() {
 	// Get the pattern information from the dialog
-	auto patSet = getDialogPatternSet();
+    std::unique_ptr<PatternSet> patSet = getDialogPatternSet();
 	if(!patSet) {
 		return false;
 	}
 
 	// Compile the patterns
-	return patSet->patterns.isEmpty() ? true : TestHighlightPatterns(patSet.get());
+    return patSet->patterns.empty() ? true : TestHighlightPatterns(patSet.get());
 }
 
 
@@ -1011,7 +1011,7 @@ bool DialogSyntaxPatterns::TestHighlightPatterns(PatternSet *patSet) {
 
 	/* Compile the patterns (passing a random window as a source for fonts, and
 	   parent for dialogs, since we really don't care what fonts are used) */
-    Q_FOREACH(DocumentWidget *document, DocumentWidget::allDocuments()) {
+    for(DocumentWidget *document : DocumentWidget::allDocuments()) {
         if(std::shared_ptr<WindowHighlightData> highlightData = document->createHighlightDataEx(patSet)) {
 			return true;
 		}

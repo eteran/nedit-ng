@@ -32,7 +32,7 @@
 #include "RangesetTable.h"
 #include "util/string_view.h"
 
-#include "gsl/gsl_util"
+#include <gsl/gsl_util>
 
 #include <algorithm>
 #include <cassert>

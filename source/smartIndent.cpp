@@ -178,7 +178,7 @@ const SmartIndentEntry DefaultIndentSpecs[] = {
 
 }
 
-QList<SmartIndentEntry> SmartIndentSpecs;
+std::vector<SmartIndentEntry> SmartIndentSpecs;
 QString CommonMacros;
 
 static void insertShiftedMacro(QTextStream &ts, const QString &macro);
@@ -223,7 +223,6 @@ int LoadSmartIndentStringEx(const QString &string) {
 
 	Input in(&string);
 	QString errMsg;
-	int i;
 
 	for (;;) {
 		SmartIndentEntry is;
@@ -280,16 +279,15 @@ int LoadSmartIndentStringEx(const QString &string) {
 			is.modMacro = QString();
 		}
 
-		for (i = 0; i < SmartIndentSpecs.size(); i++) {
-			if (SmartIndentSpecs[i].lmName == is.lmName) {
-				SmartIndentSpecs[i] = is;
-				break;
-			}
-		}
+        auto it = std::find_if(SmartIndentSpecs.begin(), SmartIndentSpecs.end(), [&is](const SmartIndentEntry &entry) {
+            return entry.lmName == is.lmName;
+        });
 
-		if (i == SmartIndentSpecs.size()) {
-			SmartIndentSpecs.push_back(is);
-		}
+        if(it == SmartIndentSpecs.end()) {
+            SmartIndentSpecs.push_back(is);
+        } else {
+            *it = is;
+        }
 	}
 }
 

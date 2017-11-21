@@ -31,7 +31,7 @@
 #include "TextArea.h"
 #include "TextBuffer.h"
 #include "utils.h"
-#include "gsl/gsl_util"
+#include <gsl/gsl_util>
 #include <memory>
 
 static std::string makeIndentString(int indent, int tabDist, int allowTabs);

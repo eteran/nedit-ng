@@ -152,7 +152,7 @@ void DialogSmartIndent::on_buttonRestore_clicked() {
 	}
 
 	// if a stored version of the indent macros exist, replace them, if not, add a new one
-    int i;
+    size_t i;
     for (i = 0; i < SmartIndentSpecs.size(); i++) {
         if (languageMode_ == SmartIndentSpecs[i].lmName) {
 			break;
@@ -205,27 +205,24 @@ bool DialogSmartIndent::updateSmartIndentData() {
 	}
 		
 	// Get the current data 
-	auto newMacros = getSmartIndentDialogData();
+    std::unique_ptr<SmartIndentEntry> newMacros = getSmartIndentDialogData();
 
 	// Find the original macros
-	int i;
-    for (i = 0; i < SmartIndentSpecs.size(); i++) {
-        if (languageMode_ == SmartIndentSpecs[i].lmName) {
-			break;
-		}
-	}
+    auto it = std::find_if(SmartIndentSpecs.begin(), SmartIndentSpecs.end(), [this](const SmartIndentEntry &entry) {
+        return entry.lmName == languageMode_;
+    });
 
 	/* If it's a new language, add it at the end, otherwise free the
 	   existing macros and replace it */
-    if (i == SmartIndentSpecs.size()) {
+    if (it == SmartIndentSpecs.end()) {
         SmartIndentSpecs.push_back(*newMacros);
 	} else {
-        SmartIndentSpecs[i] = *newMacros;
+        *it = *newMacros;
 	}
 
 	/* Find windows that are currently using this indent specification and
 	   re-do the smart indent macros */
-    Q_FOREACH(DocumentWidget *document, DocumentWidget::allDocuments()) {
+    for(DocumentWidget *document : DocumentWidget::allDocuments()) {
 
         QString lmName = LanguageModeName(document->languageMode_);
 		if(!lmName.isNull()) {

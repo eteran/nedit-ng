@@ -43,6 +43,8 @@
 #include "regularExp.h"
 #include "utils.h"
 
+#include <gsl/gsl_util>
+
 #include <QMessageBox>
 #include <QPushButton>
 #include <QtDebug>
@@ -68,18 +70,18 @@ const QLatin1String FontTypeNames[] = {
 }
 
 // list of available highlight styles 
-QList<HighlightStyle> HighlightStyles;
+std::vector<HighlightStyle> HighlightStyles;
 
 static bool isDefaultPatternSet(const PatternSet *patSet);
 static bool styleErrorEx(const Input &in, const QString &message);
-static QVector<HighlightPattern> readHighlightPatternsEx(Input &in, int withBraces, QString *errMsg, bool *ok);
+static std::vector<HighlightPattern> readHighlightPatternsEx(Input &in, int withBraces, QString *errMsg, bool *ok);
 static int readHighlightPatternEx(Input &in, QString *errMsg, HighlightPattern *pattern);
 static std::unique_ptr<PatternSet> highlightErrorEx(const Input &in, const QString &message);
 static std::unique_ptr<PatternSet> readPatternSetEx(Input &in);
 static QString createPatternsString(const PatternSet *patSet, const QString &indentStr);
 
 // Pattern sources loaded from the .nedit file or set by the user 
-QList<PatternSet> PatternSets;
+std::vector<PatternSet> PatternSets;
 
 /*
 ** Read a string (from the  value of the styles resource) containing highlight
@@ -246,8 +248,8 @@ QString WriteHighlightStringEx() {
     QString str;
     QTextStream out(&str);
 
-    Q_FOREACH(const PatternSet &patSet, PatternSets) {
-        if (patSet.patterns.isEmpty()) {
+    for(const PatternSet &patSet : PatternSets) {
+        if (patSet.patterns.empty()) {
 			continue;
 		}
 		
@@ -437,7 +439,7 @@ static std::unique_ptr<PatternSet> readPatternSetEx(Input &in) {
 
 	// read pattern list
 	bool ok;
-	QVector<HighlightPattern> patterns = readHighlightPatternsEx(in, true, &errMsg, &ok);
+    std::vector<HighlightPattern> patterns = readHighlightPatternsEx(in, true, &errMsg, &ok);
 	if (!ok) {
 		return highlightErrorEx(in, errMsg);
 	}
@@ -453,7 +455,7 @@ static std::unique_ptr<PatternSet> readPatternSetEx(Input &in) {
 ** structures, and a language mode name.  If unsuccessful, returns nullptr with
 ** (statically allocated) message in "errMsg".
 */
-static QVector<HighlightPattern> readHighlightPatternsEx(Input &in, int withBraces, QString *errMsg, bool *ok) {
+static std::vector<HighlightPattern> readHighlightPatternsEx(Input &in, int withBraces, QString *errMsg, bool *ok) {
 	// skip over blank space
 	in.skipWhitespaceNL();
 
@@ -462,7 +464,7 @@ static QVector<HighlightPattern> readHighlightPatternsEx(Input &in, int withBrac
 		if (*in != QLatin1Char('{')) {
 			*errMsg = QLatin1String("pattern list must begin with \"{\"");
 			*ok = false;
-			return QVector<HighlightPattern>();
+            return {};
 		}
 		++in;
 	}
@@ -470,7 +472,7 @@ static QVector<HighlightPattern> readHighlightPatternsEx(Input &in, int withBrac
 	/*
 	** parse each pattern in the list
 	*/
-	QVector<HighlightPattern> ret;
+    std::vector<HighlightPattern> ret;
 
 	while (true) {
 		in.skipWhitespaceNL();
@@ -478,7 +480,7 @@ static QVector<HighlightPattern> readHighlightPatternsEx(Input &in, int withBrac
 			if (withBraces) {
 				*errMsg = QLatin1String("end of pattern list not found");
 				*ok = false;
-				return QVector<HighlightPattern>();
+                return {};
 			} else
 				break;
 		} else if (*in == QLatin1Char('}')) {
@@ -491,7 +493,7 @@ static QVector<HighlightPattern> readHighlightPatternsEx(Input &in, int withBrac
 
 		if (!readHighlightPatternEx(in, errMsg, &pat)) {
 			*ok = false;
-			return QVector<HighlightPattern>();
+            return {};
 		}
 
 		ret.push_back(pat);
@@ -670,9 +672,9 @@ void EditHighlightStyles(QWidget *parent, const QString &initialStyle) {
 ** If styleName is not found, return -1.
 */
 int IndexOfNamedStyle(const QString &styleName) {
-    for (int i = 0; i < HighlightStyles.size(); i++) {
+    for (size_t i = 0; i < HighlightStyles.size(); i++) {
         if (HighlightStyles[i].name == styleName) {
-            return i;
+            return gsl::narrow<int>(i);
         }
     }
 

@@ -43,7 +43,7 @@
 #include "regularExp.h"
 #include "selection.h"
 #include "userCmds.h"
-#include "gsl/gsl_util"
+#include <gsl/gsl_util>
 
 #include <QApplication>
 #include <QClipboard>
