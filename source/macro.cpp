@@ -4385,7 +4385,7 @@ static bool subscriptSepMV(DocumentWidget *document, Arguments arguments, DataVa
     Q_UNUSED(errMsg);
     Q_UNUSED(arguments);
 
-    *result = to_value(std::string(ARRAY_DIM_SEP, 1));
+    *result = to_value(view::string_view(ARRAY_DIM_SEP, 1));
     return true;
 }
 
@@ -4648,7 +4648,7 @@ static bool rangesetDestroyMS(DocumentWidget *document, Arguments arguments, Dat
 
         for (int i = 0; i < arraySize; i++) {
 
-            char keyString[TYPE_INT_STR_SIZE(int)];
+            char keyString[TYPE_INT_STR_SIZE<int>];
             sprintf(keyString, "%d", i);
 
             if (!ArrayGet(array, keyString, &element)) {

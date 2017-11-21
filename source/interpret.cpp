@@ -34,6 +34,9 @@
 // This enables preemption, useful to disable it for debugging things
 #define ENABLE_PREEMPTION
 
+// #define DEBUG_ASSEMBLY
+// #define DEBUG_STACK
+
 namespace {
 
 constexpr int PROGRAM_SIZE  	= 4096; // Maximum program size
@@ -127,9 +130,6 @@ static rbTreeNode *arrayAllocateNode(rbTreeNode *src);
 static int arrayEntryCopyToNode(rbTreeNode *dst, rbTreeNode *src);
 static int arrayEntryCompare(rbTreeNode *left, rbTreeNode *right);
 static void arrayDisposeNode(rbTreeNode *src);
-
-// #define DEBUG_ASSEMBLY
-// #define DEBUG_STACK
 
 #if defined(DEBUG_ASSEMBLY) || defined(DEBUG_STACK)
 #define DEBUG_DISASSEMBLER
@@ -1064,17 +1064,18 @@ static int pushSymVal() {
 }
 
 static int pushArgVal() {
-	int nArgs, argNum;
+    int argNum;
 
 	DISASM_RT(PC - 1, 1);
 	STACKDUMP(1, 3);
 
     POP_INT(argNum);
 	--argNum;
-	nArgs = FP_GET_ARG_COUNT(FrameP);
+
+    const int nArgs = FP_GET_ARG_COUNT(FrameP);
 	if (argNum >= nArgs || argNum < 0) {
-		char argStr[TYPE_INT_STR_SIZE(argNum)];
-		sprintf(argStr, "%d", argNum + 1);
+        char argStr[TYPE_INT_STR_SIZE<int>];
+        snprintf(argStr, sizeof(argStr), "%d", argNum + 1);
 		return execError("referenced undefined argument: $args[%s]", argStr);
 	}
 	PUSH(FP_GET_ARG_N(FrameP, argNum));
@@ -1928,20 +1929,6 @@ int ArrayCopy(DataValue *dstArray, DataValue *srcArray) {
 */
 static int makeArrayKeyFromArgs(int nArgs, char **keyString, int leaveParams) {
 	DataValue tmpVal;
-    static const int sepLen = strlen(ARRAY_DIM_SEP);
-
-    int keyLength = sepLen * (nArgs - 1);
-    for (int i = nArgs - 1; i >= 0; --i) {
-        PEEK(tmpVal, i);
-        if (is_integer(tmpVal)) {
-            keyLength += TYPE_INT_STR_SIZE(to_integer(tmpVal));
-        } else if (is_string(tmpVal)) {
-            keyLength += to_string(tmpVal).size();
-		} else {
-			return execError("can only index array with string or int.");
-		}
-	}
-
 
     std::string str;
 
@@ -2699,7 +2686,7 @@ static void stackdump(int n, int extra) {
 	// TheStack-> symN-sym1(FP), argArray, nArgs, oldFP, retPC, argN-arg1, next, ... 
 	int nArgs = FP_GET_ARG_COUNT(FrameP);
     int i;
-	char buffer[sizeof(STACK_DUMP_ARG_PREFIX) + TYPE_INT_STR_SIZE(int)];
+    char buffer[sizeof(STACK_DUMP_ARG_PREFIX) + TYPE_INT_STR_SIZE<int>];
 	printf("Stack ----->\n");
 	for (i = 0; i < n + extra; i++) {
         const char *pos = "";

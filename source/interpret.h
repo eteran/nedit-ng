@@ -46,16 +46,17 @@ struct DataValue;
 struct Symbol;
 
 // Maximum stack size
-#define STACK_SIZE 1024
+constexpr int  STACK_SIZE = 1024;
 
 // Max. symbol name length
-#define MAX_SYM_LEN 100
+constexpr int MAX_SYM_LEN = 100;
 
 // Special value for the send_event field of events passed to action routines.  Tells them that they were called from a macro
-#define MACRO_EVENT_MARKER 2
+constexpr int MACRO_EVENT_MARKER = 2;
 
-/* determine a safe size for a string to hold an integer-like number contained in xType */
-#define TYPE_INT_STR_SIZE(xType) ((sizeof(xType) * 3) + 2)
+// determine a safe size for a string to hold an integer-like number contained in T
+template <class T>
+constexpr int TYPE_INT_STR_SIZE = ((sizeof(T) * 3) + 2);
 
 #define ARRAY_DIM_SEP "\034"
 
