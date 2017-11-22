@@ -395,14 +395,20 @@ private Q_SLOTS:
     void focusChanged(QWidget *from, QWidget *to);
 
 public:
+    const std::vector<DocumentWidget *> &writableWindows() const { return writableWindows_; }
+    QPointer<TextArea> lastFocus() const { return lastFocus_; }
+
+public:
+    int  fHistIndex_;
+    int  rHistIndex_;
+    bool showISearchLine_;
+    bool showLineNumbers_;
+
+private:
     QList<QAction *>   previousOpenFilesList_;
 	QPointer<QDialog>  dialogFind_;
 	QPointer<QDialog>  dialogReplace_;
 	QPointer<TextArea> lastFocus_;    
-    bool               showLineNumbers_; // is the line number display shown
-	bool               showISearchLine_; // is incr. search line to be shown
-    int fHistIndex_;                   // history placeholders for
-    int rHistIndex_;
     bool iSearchLastLiteralCase_;      // idem, for literal mode
     bool iSearchLastRegexCase_;        // idem, for regex mode in incremental search bar
     int iSearchHistIndex_;             //   find and replace dialogs

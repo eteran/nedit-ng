@@ -225,7 +225,7 @@ void DialogFind::on_buttonFind_clicked() {
 	ui.textFind->setFocus();
 
 	// find the text and mark it 
-    window_->SearchAndSelectEx(document_, window_->lastFocus_, direction, searchString, searchType, GetPrefSearchWraps());
+    window_->action_Find(document_, searchString, direction, searchType, GetPrefSearchWraps());
 
 	// pop down the dialog 
 	if (!keepDialog()) {

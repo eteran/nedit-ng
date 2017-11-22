@@ -302,8 +302,8 @@ static bool routineName(DocumentWidget *document, Arguments arguments, DataValue
         M_FAILURE(InvalidArgument);                                                                                       \
     }                                                                                                                     \
                                                                                                                           \
-    if(auto window = MainWindow::fromDocument(document)) {                                                                       \
-        if(TextArea *area = window->lastFocus_) {                                                                         \
+    if(auto window = MainWindow::fromDocument(document)) {                                                                \
+        if(TextArea *area = window->lastFocus()) {                                                                        \
             area->slotName(flags | TextArea::SupressRecording);                                                           \
         }                                                                                                                 \
     }                                                                                                                     \
@@ -329,8 +329,8 @@ static bool routineName(DocumentWidget *document, Arguments arguments, DataValue
         M_FAILURE(InvalidArgument);                                                                                       \
     }                                                                                                                     \
                                                                                                                           \
-    if(auto window = MainWindow::fromDocument(document)) {                                                                       \
-        if(TextArea *area = window->lastFocus_) {                                                                         \
+    if(auto window = MainWindow::fromDocument(document)) {                                                                \
+        if(TextArea *area = window->lastFocus()) {                                                                        \
             area->slotName(string, flags | TextArea::SupressRecording);                                                   \
         }                                                                                                                 \
     }                                                                                                                     \
@@ -356,8 +356,8 @@ static bool routineName(DocumentWidget *document, Arguments arguments, DataValue
         M_FAILURE(InvalidArgument);                                                                                       \
     }                                                                                                                     \
                                                                                                                           \
-    if(auto window = MainWindow::fromDocument(document)) {                                                                       \
-        if(TextArea *area = window->lastFocus_) {                                                                         \
+    if(auto window = MainWindow::fromDocument(document)) {                                                                \
+        if(TextArea *area = window->lastFocus()) {                                                                        \
             area->slotName(num, flags | TextArea::SupressRecording);                                                      \
         }                                                                                                                 \
     }                                                                                                                     \
@@ -441,7 +441,7 @@ static bool scrollDownMS(DocumentWidget *document, Arguments arguments, DataValu
     }
 
     if(auto window = MainWindow::fromDocument(document)) {
-        if(TextArea *area = window->lastFocus_) {
+        if(TextArea *area = window->lastFocus()) {
             area->scrollDownAP(count, units, TextArea::SupressRecording);                                                                             \
         }
     }
@@ -480,7 +480,7 @@ static bool scrollUpMS(DocumentWidget *document, Arguments arguments, DataValue 
     }
 
     if(auto window = MainWindow::fromDocument(document)) {
-        if(TextArea *area = window->lastFocus_) {
+        if(TextArea *area = window->lastFocus()) {
             area->scrollUpAP(count, units, TextArea::SupressRecording);                                                                             \
         }
     }
@@ -1628,7 +1628,7 @@ static bool findIncrMS(DocumentWidget *document, Arguments arguments, DataValue 
 
     win->SearchAndSelectIncrementalEx(
         document,
-        win->lastFocus_,
+        win->lastFocus(),
         searchDirection(arguments, 1),
         arg,
         searchType(arguments, 1),
@@ -1684,7 +1684,7 @@ static bool replaceFindMS(DocumentWidget *document, Arguments arguments, DataVal
 
     win->ReplaceAndSearchEx(
                 document,
-                win->lastFocus_,
+                win->lastFocus(),
                 searchDirection(arguments, 2),
                 searchString,
                 replaceString,
@@ -1715,7 +1715,7 @@ static bool replaceFindSameMS(DocumentWidget *document, Arguments arguments, Dat
 
     win->ReplaceFindSameEx(
                 document,
-                win->lastFocus_,
+                win->lastFocus(),
                 searchDirection(arguments, 0),
                 searchWrap(arguments, 0));
 
@@ -1799,7 +1799,7 @@ static bool backgroundMenuCommandMS(DocumentWidget *document, Arguments argument
         return false;
     }
 
-    document->DoNamedBGMenuCmd(win->lastFocus_, name, true);
+    document->DoNamedBGMenuCmd(win->lastFocus(), name, true);
 
     *result = to_value();
     return true;
@@ -3126,7 +3126,7 @@ static bool setCursorPosMS(DocumentWidget *document, Arguments arguments, DataVa
     }
 
     // Set the position
-    TextArea *area = MainWindow::fromDocument(document)->lastFocus_;
+    TextArea *area = MainWindow::fromDocument(document)->lastFocus();
     area->TextSetCursorPos(pos);
     *result = to_value();
     return true;
@@ -3524,7 +3524,7 @@ static bool killCalltipMS(DocumentWidget *document, Arguments arguments, DataVal
             return false;
     }
 
-    MainWindow::fromDocument(document)->lastFocus_->TextDKillCalltip(calltipID);
+    MainWindow::fromDocument(document)->lastFocus()->TextDKillCalltip(calltipID);
 
     *result = to_value();
     return true;
@@ -3538,7 +3538,7 @@ static bool calltipIDMV(DocumentWidget *document, Arguments arguments, DataValue
     Q_UNUSED(errMsg);
     Q_UNUSED(arguments);
 
-    *result = to_value(MainWindow::fromDocument(document)->lastFocus_->TextDGetCalltipID(0));
+    *result = to_value(MainWindow::fromDocument(document)->lastFocus()->TextDGetCalltipID(0));
     return true;
 }
 
@@ -4017,7 +4017,7 @@ static bool cursorMV(DocumentWidget *document, Arguments arguments, DataValue *r
         M_FAILURE(TooManyArguments);
     }
 
-    TextArea *area  = MainWindow::fromDocument(document)->lastFocus_;
+    TextArea *area  = MainWindow::fromDocument(document)->lastFocus();
     *result         = to_value(area->TextGetCursorPos());
     return true;
 }
@@ -4032,7 +4032,7 @@ static bool lineMV(DocumentWidget *document, Arguments arguments, DataValue *res
     int colNum;
 
     TextBuffer *buf = document->buffer_;
-    TextArea *area  = MainWindow::fromDocument(document)->lastFocus_;
+    TextArea *area  = MainWindow::fromDocument(document)->lastFocus();
     int cursorPos   = area->TextGetCursorPos();
 
     if (!area->TextDPosToLineAndCol(cursorPos, &line, &colNum)) {
@@ -4050,7 +4050,7 @@ static bool columnMV(DocumentWidget *document, Arguments arguments, DataValue *r
     }
 
     TextBuffer *buf = document->buffer_;
-    TextArea *area  = MainWindow::fromDocument(document)->lastFocus_;
+    TextArea *area  = MainWindow::fromDocument(document)->lastFocus();
     int cursorPos   = area->TextGetCursorPos();
 
     *result = to_value(buf->BufCountDispChars(buf->BufStartOfLine(cursorPos), cursorPos));
@@ -4376,7 +4376,7 @@ static bool topLineMV(DocumentWidget *document, Arguments arguments, DataValue *
     Q_UNUSED(errMsg);
     Q_UNUSED(arguments);
 
-    TextArea *area = MainWindow::fromDocument(document)->lastFocus_;
+    TextArea *area = MainWindow::fromDocument(document)->lastFocus();
     *result = to_value(area->TextFirstVisibleLine());
     return true;
 }
@@ -4385,7 +4385,7 @@ static bool numDisplayLinesMV(DocumentWidget *document, Arguments arguments, Dat
     Q_UNUSED(errMsg);
     Q_UNUSED(arguments);
 
-    TextArea *area    = MainWindow::fromDocument(document)->lastFocus_;
+    TextArea *area    = MainWindow::fromDocument(document)->lastFocus();
     *result = to_value(area->TextNumVisibleLines());
     return true;
 }
@@ -4395,7 +4395,7 @@ static bool displayWidthMV(DocumentWidget *document, Arguments arguments, DataVa
     Q_UNUSED(errMsg);
     Q_UNUSED(arguments);
 
-    TextArea *area    = MainWindow::fromDocument(document)->lastFocus_;
+    TextArea *area    = MainWindow::fromDocument(document)->lastFocus();
     *result = to_value(area->TextVisibleWidth());
     return true;
 }
@@ -4405,7 +4405,7 @@ static bool activePaneMV(DocumentWidget *document, Arguments arguments, DataValu
     Q_UNUSED(arguments);
     Q_UNUSED(errMsg);
 
-    *result = to_value(document->WidgetToPaneIndex(MainWindow::fromDocument(document)->lastFocus_));
+    *result = to_value(document->WidgetToPaneIndex(MainWindow::fromDocument(document)->lastFocus()));
     return true;
 }
 
@@ -5057,7 +5057,7 @@ static bool rangesetIncludesPosMS(DocumentWidget *document, Arguments arguments,
 
     int pos = 0;
     if (arguments.size() == 1) {
-        TextArea *area = MainWindow::fromDocument(document)->lastFocus_;
+        TextArea *area = MainWindow::fromDocument(document)->lastFocus();
         pos = area->TextGetCursorPos();
     } else if (arguments.size() == 2) {
         if (!readArgument(arguments[1], &pos, errMsg)) {

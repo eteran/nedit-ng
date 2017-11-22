@@ -822,9 +822,9 @@ int ShowTipStringEx(DocumentWidget *document, const QString &text, bool anchored
 
     // If this isn't a lookup request, just display it.
     if (!lookup) {
-        return tagsShowCalltipEx(MainWindow::fromDocument(document)->lastFocus_, text);
+        return tagsShowCalltipEx(MainWindow::fromDocument(document)->lastFocus(), text);
     } else {
-        return document->findDef(MainWindow::fromDocument(document)->lastFocus_, text, search_type);
+        return document->findDef(MainWindow::fromDocument(document)->lastFocus(), text, search_type);
     }
 }
 

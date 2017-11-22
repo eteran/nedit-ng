@@ -67,9 +67,11 @@ void DialogMultiReplace::on_buttonReplace_clicked() {
 	bool replaceFailed = true;
 	bool noWritableLeft = true;
 
+    const std::vector<DocumentWidget *> &writableWindows = window_->writableWindows();
+
     // Perform the replacements and mark the selected files (history)
-    for (size_t i = 0; i < window_->writableWindows_.size(); ++i) {
-        DocumentWidget *writableWin = window_->writableWindows_[i];
+    for (size_t i = 0; i < writableWindows.size(); ++i) {
+        DocumentWidget *writableWin = writableWindows[i];
 
 		if(ui.listFiles->item(i)->isSelected()) {
 		
@@ -156,7 +158,7 @@ void DialogMultiReplace::uploadFileListItems(bool replace) {
 
         ui.listFiles->clear();
 
-        for(DocumentWidget *document : window_->writableWindows_) {
+        for(DocumentWidget *document : window_->writableWindows()) {
 
 			QListWidgetItem *item;
             if (usePathNames && document->filenameSet_) {
