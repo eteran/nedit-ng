@@ -428,16 +428,16 @@ void MainWindow::setupMenuStrings() {
 
     new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_F), this, SLOT(action_Shift_Find()));
     new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_G), this, SLOT(action_Shift_Find_Again()));
-    new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_H), this, SLOT(action_Shift_Find_Selection_triggered()));
-    new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_I), this, SLOT(action_Shift_Find_Incremental_triggered()));
-    new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_R), this, SLOT(action_Shift_Replace_triggered()));
-    new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_M), this, SLOT(action_Shift_Goto_Matching_triggered()));
+    new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_H), this, SLOT(action_Shift_Find_Selection()));
+    new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_I), this, SLOT(action_Shift_Find_Incremental()));
+    new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_R), this, SLOT(action_Shift_Replace()));
+    new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_M), this, SLOT(action_Shift_Goto_Matching()));
 
     // This is an annoying solution... we can probably do better...
     for(int i = Qt::Key_A; i <= Qt::Key_Z; ++i) {
-        new QShortcut(QKeySequence(Qt::ALT + Qt::Key_M, i),             this, SLOT(action_Mark_Shortcut_triggered()));
-        new QShortcut(QKeySequence(Qt::ALT + Qt::Key_G, i),             this, SLOT(action_Goto_Mark_Shortcut_triggered()));
-        new QShortcut(QKeySequence(Qt::SHIFT + Qt::ALT + Qt::Key_G, i), this, SLOT(action_Shift_Goto_Mark_Shortcut_triggered()));
+        new QShortcut(QKeySequence(Qt::ALT + Qt::Key_M, i),             this, SLOT(action_Mark_Shortcut()));
+        new QShortcut(QKeySequence(Qt::ALT + Qt::Key_G, i),             this, SLOT(action_Goto_Mark_Shortcut()));
+        new QShortcut(QKeySequence(Qt::SHIFT + Qt::ALT + Qt::Key_G, i), this, SLOT(action_Shift_Goto_Mark_Shortcut()));
     }
 
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_PageDown), this, SLOT(action_Next_Document()));
@@ -710,8 +710,8 @@ void MainWindow::on_action_About_triggered() {
 
 void MainWindow::action_Select_All(DocumentWidget *document) {
     Q_UNUSED(document);
-    if(TextArea *w = lastFocus_) {
-        w->selectAllAP();
+    if(TextArea *area = lastFocus_) {
+        area->selectAllAP();
     }
 }
 
@@ -774,8 +774,8 @@ void MainWindow::on_action_Include_File_triggered() {
 // Name: on_action_Cut_triggered
 //------------------------------------------------------------------------------
 void MainWindow::on_action_Cut_triggered() {
-	if(TextArea *w = lastFocus_) {
-		w->cutClipboardAP();
+    if(TextArea *area = lastFocus_) {
+        area->cutClipboardAP();
 	}
 }
 
@@ -783,8 +783,8 @@ void MainWindow::on_action_Cut_triggered() {
 // Name: on_action_Copy_triggered
 //------------------------------------------------------------------------------
 void MainWindow::on_action_Copy_triggered() {
-	if(TextArea *w = lastFocus_) {
-		w->copyClipboardAP();
+    if(TextArea *area = lastFocus_) {
+        area->copyClipboardAP();
 	}
 }
 
@@ -792,8 +792,8 @@ void MainWindow::on_action_Copy_triggered() {
 // Name: on_action_Paste_triggered
 //------------------------------------------------------------------------------
 void MainWindow::on_action_Paste_triggered() {
-	if(TextArea *w = lastFocus_) {
-		w->pasteClipboardAP();
+    if(TextArea *area = lastFocus_) {
+        area->pasteClipboardAP();
 	}
 }
 
@@ -801,8 +801,8 @@ void MainWindow::on_action_Paste_triggered() {
  * @brief MainWindow::on_action_Paste_Column_triggered
  */
 void MainWindow::on_action_Paste_Column_triggered() {
-    if(TextArea *w = lastFocus_) {
-        w->pasteClipboardAP(TextArea::RectFlag);
+    if(TextArea *area = lastFocus_) {
+        area->pasteClipboardAP(TextArea::RectFlag);
     }
 }
 
@@ -1885,7 +1885,7 @@ void MainWindow::fileCB(DocumentWidget *document, const QString &text) {
 		QApplication::beep();
 	} else {
 		DocumentWidget::EditExistingFileEx(
-		            GetPrefOpenInTab() ? window : nullptr,
+                    GetPrefOpenInTab() ? document : nullptr,
 		            filename,
 		            pathname,
 		            0,
@@ -1958,9 +1958,10 @@ void MainWindow::action_Shift_Left_Tabs() {
     }
 }
 
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
+/**
+ * @brief MainWindow::action_Shift_Right_Tabs
+ * @param document
+ */
 void MainWindow::action_Shift_Right_Tabs(DocumentWidget *document) {
 
     EMIT_EVENT("shift_right_by_tab");
@@ -1972,12 +1973,19 @@ void MainWindow::action_Shift_Right_Tabs(DocumentWidget *document) {
     ShiftSelectionEx(document, lastFocus_, SHIFT_RIGHT, true);
 }
 
+/**
+ * @brief MainWindow::action_Shift_Right_Tabs
+ */
 void MainWindow::action_Shift_Right_Tabs() {
     if(DocumentWidget *document = currentDocument()) {
         action_Shift_Right_Tabs(document);
     }
 }
 
+/**
+ * @brief MainWindow::action_Lower_case
+ * @param document
+ */
 void MainWindow::action_Lower_case(DocumentWidget *document) {
     if (document->CheckReadOnly()) {
         return;
@@ -1986,9 +1994,9 @@ void MainWindow::action_Lower_case(DocumentWidget *document) {
     DowncaseSelectionEx(document, lastFocus_);
 }
 
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
+/**
+ * @brief MainWindow::on_action_Lower_case_triggered
+ */
 void MainWindow::on_action_Lower_case_triggered() {
 
     EMIT_EVENT("lowercase");
@@ -1998,6 +2006,10 @@ void MainWindow::on_action_Lower_case_triggered() {
     }
 }
 
+/**
+ * @brief MainWindow::action_Upper_case
+ * @param document
+ */
 void MainWindow::action_Upper_case(DocumentWidget *document) {
     if (document->CheckReadOnly()) {
         return;
@@ -2006,9 +2018,9 @@ void MainWindow::action_Upper_case(DocumentWidget *document) {
     UpcaseSelectionEx(document, lastFocus_);
 }
 
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
+/**
+ * @brief MainWindow::on_action_Upper_case_triggered
+ */
 void MainWindow::on_action_Upper_case_triggered() {
 
     EMIT_EVENT("uppercase");
@@ -2025,9 +2037,9 @@ void MainWindow::action_Fill_Paragraph(DocumentWidget *document) {
     FillSelectionEx(document, lastFocus_);
 }
 
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
+/**
+ * @brief MainWindow::on_action_Fill_Paragraph_triggered
+ */
 void MainWindow::on_action_Fill_Paragraph_triggered() {
 
     EMIT_EVENT("fill_paragraph");
@@ -2037,18 +2049,19 @@ void MainWindow::on_action_Fill_Paragraph_triggered() {
     }
 }
 
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
+/**
+ * @brief MainWindow::on_action_Insert_Form_Feed_triggered
+ */
 void MainWindow::on_action_Insert_Form_Feed_triggered() {
 
-    if(TextArea *w = lastFocus_) {
-        w->insertStringAP(QLatin1String("\f"));
+    if(TextArea *area = lastFocus_) {
+        area->insertStringAP(QLatin1String("\f"));
     }
 }
 
 /**
  * @brief MainWindow::action_Insert_Ctrl_Code
+ * @param document
  * @param str
  */
 void MainWindow::action_Insert_Ctrl_Code(DocumentWidget *document, const QString &str) {
@@ -2061,11 +2074,15 @@ void MainWindow::action_Insert_Ctrl_Code(DocumentWidget *document, const QString
 
     auto s = str.toStdString();
 
-    if(TextArea *w = lastFocus_) {
-        w->insertStringAP(QString::fromStdString(s));
+    if(TextArea *area = lastFocus_) {
+        area->insertStringAP(QString::fromStdString(s));
     }
 }
 
+/**
+ * @brief MainWindow::action_Insert_Ctrl_Code
+ * @param document
+ */
 void MainWindow::action_Insert_Ctrl_Code(DocumentWidget *document) {
     if (document->CheckReadOnly()) {
         return;
@@ -2103,11 +2120,15 @@ void MainWindow::action_Goto_Line_Number(DocumentWidget *document, const QString
         return;
     }
 
-    if(TextArea *w = lastFocus_) {
-        document->gotoAP(w, s);
+    if(TextArea *area = lastFocus_) {
+        document->gotoAP(area, s);
     }
 }
 
+/**
+ * @brief MainWindow::action_Goto_Line_Number
+ * @param document
+ */
 void MainWindow::action_Goto_Line_Number(DocumentWidget *document) {
     bool ok;
     QString text = QInputDialog::getText(
@@ -2137,12 +2158,13 @@ void MainWindow::on_action_Goto_Line_Number_triggered() {
 
 void MainWindow::action_Goto_Selected(DocumentWidget *document) {
     const QMimeData *mimeData = QApplication::clipboard()->mimeData(QClipboard::Selection);
-    if(mimeData->hasText()) {
-        if(TextArea *w = lastFocus_) {
-            document->gotoAP(w, mimeData->text());
-        }
-    } else {
+    if(!mimeData->hasText()) {
         QApplication::beep();
+        return;
+    }
+
+    if(TextArea *area = lastFocus_) {
+        document->gotoAP(area, mimeData->text());
     }
 }
 
@@ -2233,7 +2255,7 @@ void MainWindow::action_Find_Selection(DocumentWidget *document, Direction direc
 //------------------------------------------------------------------------------
 // Name:
 //------------------------------------------------------------------------------
-void MainWindow::action_Shift_Find_Selection_triggered(DocumentWidget *document) {
+void MainWindow::action_Shift_Find_Selection(DocumentWidget *document) {
     action_Find_Selection(
         document,
         Direction::BACKWARD,
@@ -2241,9 +2263,9 @@ void MainWindow::action_Shift_Find_Selection_triggered(DocumentWidget *document)
         GetPrefSearchWraps());
 }
 
-void MainWindow::action_Shift_Find_Selection_triggered() {
+void MainWindow::action_Shift_Find_Selection() {
     if(DocumentWidget *document = currentDocument()) {
-        action_Shift_Find_Selection_triggered(document);
+        action_Shift_Find_Selection(document);
     }
 }
 
@@ -2257,14 +2279,14 @@ void MainWindow::on_action_Find_Incremental_triggered() {
 //------------------------------------------------------------------------------
 // Name:
 //------------------------------------------------------------------------------
-void MainWindow::action_Shift_Find_Incremental_triggered(DocumentWidget *document) {
+void MainWindow::action_Shift_Find_Incremental(DocumentWidget *document) {
     Q_UNUSED(document);
     BeginISearchEx(Direction::BACKWARD);
 }
 
-void MainWindow::action_Shift_Find_Incremental_triggered() {
+void MainWindow::action_Shift_Find_Incremental() {
     if(DocumentWidget *document = currentDocument()) {
-        action_Shift_Find_Incremental_triggered(document);
+        action_Shift_Find_Incremental(document);
     }
 }
 
@@ -2573,7 +2595,7 @@ void MainWindow::EndISearchEx() {
     TempShowISearch(false);
 }
 
-void MainWindow::action_Shift_Replace_triggered(DocumentWidget *document) {
+void MainWindow::action_Shift_Replace(DocumentWidget *document) {
     if (document->CheckReadOnly()) {
         return;
     }
@@ -2586,9 +2608,9 @@ void MainWindow::action_Shift_Replace_triggered(DocumentWidget *document) {
                 GetPrefSearch());
 }
 
-void MainWindow::action_Shift_Replace_triggered() {
+void MainWindow::action_Shift_Replace() {
     if(DocumentWidget *document = currentDocument()) {
-        action_Shift_Replace_triggered(document);
+        action_Shift_Replace(document);
     }
 }
 
@@ -2607,7 +2629,7 @@ void MainWindow::on_action_Replace_Find_Again_triggered() {
     }
 }
 
-void MainWindow::action_Shift_Replace_Find_Again_triggered(DocumentWidget *document) {
+void MainWindow::action_Shift_Replace_Find_Again(DocumentWidget *document) {
     if (document->CheckReadOnly()) {
         return;
     }
@@ -2644,7 +2666,7 @@ void MainWindow::on_action_Replace_Again_triggered() {
 /**
  * @brief MainWindow::action_Shift_Replace_Again_triggered
  */
-void MainWindow::action_Shift_Replace_Again_triggered() {
+void MainWindow::action_Shift_Replace_Again() {
     action_Replace_Again(
                 currentDocument(),
                 Direction::BACKWARD,
@@ -2699,7 +2721,7 @@ void MainWindow::on_action_Mark_triggered() {
 /**
  * @brief MainWindow::action_Mark_Shortcut_triggered
  */
-void MainWindow::action_Mark_Shortcut_triggered() {
+void MainWindow::action_Mark_Shortcut() {
 
     if(auto shortcut = qobject_cast<QShortcut *>(sender())) {
         QKeySequence sequence = shortcut->key();
@@ -2784,7 +2806,7 @@ void MainWindow::on_action_Goto_Mark_triggered() {
 }
 
 
-void MainWindow::action_Shift_Goto_Mark_Shortcut_triggered() {
+void MainWindow::action_Shift_Goto_Mark_Shortcut() {
 
     if(auto shortcut = qobject_cast<QShortcut *>(sender())) {
         QKeySequence sequence = shortcut->key();
@@ -2825,7 +2847,7 @@ void MainWindow::action_Shift_Goto_Mark_Shortcut_triggered() {
     }
 }
 
-void MainWindow::action_Goto_Mark_Shortcut_triggered() {
+void MainWindow::action_Goto_Mark_Shortcut() {
     if(auto shortcut = qobject_cast<QShortcut *>(sender())) {
         QKeySequence sequence = shortcut->key();
 
@@ -2879,7 +2901,7 @@ void MainWindow::action_Shift_Goto_Matching(DocumentWidget *document) {
     document->SelectToMatchingCharacter(lastFocus_);
 }
 
-void MainWindow::action_Shift_Goto_Matching_triggered() {
+void MainWindow::action_Shift_Goto_Matching() {
     if(DocumentWidget *document = currentDocument()) {
         action_Shift_Goto_Matching(document);
     }
