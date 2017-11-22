@@ -185,6 +185,15 @@ public:
     QString GetAnySelectionEx();
     QFont FontOfNamedStyleEx(const QString &styleName) const;
     QString GetWindowDelimitersEx() const;
+    void SetUseTabs(bool value);
+    void SetHighlightSyntax(bool value);
+    void SetIncrementalBackup(bool value);
+    void SetLocked(bool value);
+
+public:
+#if defined(REPLACE_SCOPE)
+    bool selectionSpansMultipleLines();
+#endif
 
 private:    
     bool bckError(const QString &errString, const QString &file);

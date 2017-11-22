@@ -225,7 +225,7 @@ void DialogFind::on_buttonFind_clicked() {
 	ui.textFind->setFocus();
 
 	// find the text and mark it 
-    SearchAndSelectEx(window_, document_, window_->lastFocus_, direction, searchString, searchType, GetPrefSearchWraps());
+    window_->SearchAndSelectEx(document_, window_->lastFocus_, direction, searchString, searchType, GetPrefSearchWraps());
 
 	// pop down the dialog 
 	if (!keepDialog()) {
@@ -237,9 +237,8 @@ void DialogFind::on_buttonFind_clicked() {
 ** Fetch and verify (particularly regular expression) search string,
 ** direction, and search type from the Find dialog.  If the search string
 ** is ok, save a copy in the search history, copy it to "searchString",
-** which is assumed to be at least SEARCHMAX in length, return search type
-** in "searchType", and return TRUE as the function value.  Otherwise,
-** return FALSE.
+** return search type in "searchType", and return TRUE as the function value.
+** Otherwise, return FALSE.
 */
 bool DialogFind::getFindDlogInfoEx(Direction *direction, QString *searchString, SearchType *searchType) {
 
@@ -284,12 +283,6 @@ bool DialogFind::getFindDlogInfoEx(Direction *direction, QString *searchString, 
 	if (isRegexType(*searchType)) {
 	}
 
-	// Return the search string 
-	if (findText.size() >= SEARCHMAX) {
-		QMessageBox::warning(this, tr("String too long"), tr("Search string too long."));
-        return false;
-	}
-	
     *searchString = findText;
     return true;
 }

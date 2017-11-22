@@ -572,18 +572,18 @@ static const SubRoutine TextAreaSubrNames[] = {
 
 
 #define WINDOW_MENU_EVENT_S(routineName, slotName)                                                                            \
-    static bool routineName(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) { \
+    static bool routineName(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {          \
                                                                                                                               \
         /* ensure that we are dealing with the document which currently has the focus */                                      \
-        document = MacroRunWindowEx();                                                                                        \
+        document = MacroRunDocumentEx();                                                                                      \
                                                                                                                               \
         QString string;                                                                                                       \
-        if(!readArguments(arguments, 0, errMsg, &string)) {                                                              \
+        if(!readArguments(arguments, 0, errMsg, &string)) {                                                                   \
             return false;                                                                                                     \
         }                                                                                                                     \
                                                                                                                               \
-        if(auto window = MainWindow::fromDocument(document)) {                                                                       \
-            window->slotName(string);                                                                                         \
+        if(auto window = MainWindow::fromDocument(document)) {                                                                \
+            window->slotName(document, string);                                                                               \
         }                                                                                                                     \
                                                                                                                               \
         *result = to_value();                                                                                                 \
@@ -591,17 +591,17 @@ static const SubRoutine TextAreaSubrNames[] = {
     }
 
 #define WINDOW_MENU_EVENT(routineName, slotName)                                                                                \
-    static bool routineName(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) { \
+    static bool routineName(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {            \
                                                                                                                                 \
         /* ensure that we are dealing with the document which currently has the focus */                                        \
-        document = MacroRunWindowEx();                                                                                          \
+        document = MacroRunDocumentEx();                                                                                        \
                                                                                                                                 \
         if(!arguments.empty()) {                                                                                                \
-            M_FAILURE(WrongNumberOfArguments);                                                              \
+            M_FAILURE(WrongNumberOfArguments);                                                                                  \
         }                                                                                                                       \
                                                                                                                                 \
-        if(auto window = MainWindow::fromDocument(document)) {                                                                         \
-            window->slotName();                                                                                                 \
+        if(auto window = MainWindow::fromDocument(document)) {                                                                  \
+            window->slotName(document);                                                                                         \
         }                                                                                                                       \
                                                                                                                                 \
         *result = to_value();                                                                                                   \
@@ -624,46 +624,46 @@ WINDOW_MENU_EVENT_S(executeCommandMS,                action_Execute_Command)
 WINDOW_MENU_EVENT_S(shellMenuCommandMS,              action_Shell_Menu_Command)
 WINDOW_MENU_EVENT_S(macroMenuCommandMS,              action_Macro_Menu_Command)
 
-WINDOW_MENU_EVENT(closePaneMS,                       on_action_Close_Pane_triggered)
-WINDOW_MENU_EVENT(deleteMS,                          on_action_Delete_triggered)
-WINDOW_MENU_EVENT(exitMS,                            on_action_Exit_triggered)
-WINDOW_MENU_EVENT(fillParagraphMS,                   on_action_Fill_Paragraph_triggered)
-WINDOW_MENU_EVENT(gotoLineNumberDialogMS,            on_action_Goto_Line_Number_triggered)
-WINDOW_MENU_EVENT(gotoSelectedMS,                    on_action_Goto_Selected_triggered)
-WINDOW_MENU_EVENT(gotoMatchingMS,                    on_action_Goto_Matching_triggered)
-WINDOW_MENU_EVENT(includeFileDialogMS,               on_action_Include_File_triggered)
-WINDOW_MENU_EVENT(insertControlCodeDialogMS,         on_action_Insert_Ctrl_Code_triggered)
-WINDOW_MENU_EVENT(loadMacroFileDialogMS,             on_action_Load_Macro_File_triggered)
-WINDOW_MENU_EVENT(loadTagsFileDialogMS,              on_action_Load_Tags_File_triggered)
-WINDOW_MENU_EVENT(loadTipsFileDialogMS,              on_action_Load_Calltips_File_triggered)
-WINDOW_MENU_EVENT(lowercaseMS,                       on_action_Lower_case_triggered)
-WINDOW_MENU_EVENT(openSelectedMS,                    on_action_Open_Selected_triggered)
-WINDOW_MENU_EVENT(printMS,                           on_action_Print_triggered)
-WINDOW_MENU_EVENT(printSelectionMS,                  on_action_Print_Selection_triggered)
-WINDOW_MENU_EVENT(redoMS,                            on_action_Redo_triggered)
-WINDOW_MENU_EVENT(saveAsDialogMS,                    on_action_Save_As_triggered)
-WINDOW_MENU_EVENT(saveMS,                            on_action_Save_triggered)
-WINDOW_MENU_EVENT(selectAllMS,                       on_action_Select_All_triggered)
-WINDOW_MENU_EVENT(shiftLeftMS,                       on_action_Shift_Left_triggered)
+WINDOW_MENU_EVENT(closePaneMS,                       action_Close_Pane)
+WINDOW_MENU_EVENT(deleteMS,                          action_Delete)
+WINDOW_MENU_EVENT(exitMS,                            action_Exit)
+WINDOW_MENU_EVENT(fillParagraphMS,                   action_Fill_Paragraph)
+WINDOW_MENU_EVENT(gotoLineNumberDialogMS,            action_Goto_Line_Number)
+WINDOW_MENU_EVENT(gotoSelectedMS,                    action_Goto_Selected)
+WINDOW_MENU_EVENT(gotoMatchingMS,                    action_Goto_Matching)
+WINDOW_MENU_EVENT(includeFileDialogMS,               action_Include_File)
+WINDOW_MENU_EVENT(insertControlCodeDialogMS,         action_Insert_Ctrl_Code)
+WINDOW_MENU_EVENT(loadMacroFileDialogMS,             action_Load_Macro_File)
+WINDOW_MENU_EVENT(loadTagsFileDialogMS,              action_Load_Tags_File)
+WINDOW_MENU_EVENT(loadTipsFileDialogMS,              action_Load_Calltips_File)
+WINDOW_MENU_EVENT(lowercaseMS,                       action_Lower_case)
+WINDOW_MENU_EVENT(openSelectedMS,                    action_Open_Selected)
+WINDOW_MENU_EVENT(printMS,                           action_Print)
+WINDOW_MENU_EVENT(printSelectionMS,                  action_Print_Selection)
+WINDOW_MENU_EVENT(redoMS,                            action_Redo)
+WINDOW_MENU_EVENT(saveAsDialogMS,                    action_Save_As)
+WINDOW_MENU_EVENT(saveMS,                            action_Save)
+WINDOW_MENU_EVENT(selectAllMS,                       action_Select_All)
+WINDOW_MENU_EVENT(shiftLeftMS,                       action_Shift_Left)
 WINDOW_MENU_EVENT(shiftLeftTabMS,                    action_Shift_Left_Tabs)
-WINDOW_MENU_EVENT(shiftRightMS,                      on_action_Shift_Right_triggered)
+WINDOW_MENU_EVENT(shiftRightMS,                      action_Shift_Right)
 WINDOW_MENU_EVENT(shiftRightTabMS,                   action_Shift_Right_Tabs)
-WINDOW_MENU_EVENT(splitPaneMS,                       on_action_Split_Pane_triggered)
-WINDOW_MENU_EVENT(undoMS,                            on_action_Undo_triggered)
-WINDOW_MENU_EVENT(uppercaseMS,                       on_action_Upper_case_triggered)
-WINDOW_MENU_EVENT(openDialogMS,                      on_action_Open_triggered)
-WINDOW_MENU_EVENT(revertToSavedDialogMS,             on_action_Revert_to_Saved_triggered)
+WINDOW_MENU_EVENT(splitPaneMS,                       action_Split_Pane)
+WINDOW_MENU_EVENT(undoMS,                            action_Undo)
+WINDOW_MENU_EVENT(uppercaseMS,                       action_Upper_case)
+WINDOW_MENU_EVENT(openDialogMS,                      action_Open)
+WINDOW_MENU_EVENT(revertToSavedDialogMS,             action_Revert_to_Saved)
 WINDOW_MENU_EVENT(revertToSavedMS,                   action_Revert_to_Saved)
-WINDOW_MENU_EVENT(markDialogMS,                      on_action_Mark_triggered)
-WINDOW_MENU_EVENT(showTipMS,                         on_action_Show_Calltip_triggered)
-WINDOW_MENU_EVENT(selectToMatchingMS,                action_Shift_Goto_Matching_triggered)
-WINDOW_MENU_EVENT(filterSelectionDialogMS,           on_action_Filter_Selection_triggered)
-WINDOW_MENU_EVENT(executeCommandDialogMS,            on_action_Execute_Command_triggered)
-WINDOW_MENU_EVENT(executeCommandLineMS,              on_action_Execute_Command_Line_triggered)
-WINDOW_MENU_EVENT(repeatMacroDialogMS,               on_action_Repeat_triggered)
-WINDOW_MENU_EVENT(detachDocumentMS,                  on_action_Detach_Tab_triggered)
-WINDOW_MENU_EVENT(moveDocumentMS,                    on_action_Move_Tab_To_triggered)
-WINDOW_MENU_EVENT(newOppositeMS,                     on_action_Close_Pane_triggered)
+WINDOW_MENU_EVENT(markDialogMS,                      action_Mark)
+WINDOW_MENU_EVENT(showTipMS,                         action_Show_Calltip)
+WINDOW_MENU_EVENT(selectToMatchingMS,                action_Shift_Goto_Matching)
+WINDOW_MENU_EVENT(filterSelectionDialogMS,           action_Filter_Selection)
+WINDOW_MENU_EVENT(executeCommandDialogMS,            action_Execute_Command)
+WINDOW_MENU_EVENT(executeCommandLineMS,              action_Execute_Command_Line)
+WINDOW_MENU_EVENT(repeatMacroDialogMS,               action_Repeat)
+WINDOW_MENU_EVENT(detachDocumentMS,                  action_Detach_Document)
+WINDOW_MENU_EVENT(moveDocumentMS,                    action_Move_Tab_To)
+WINDOW_MENU_EVENT(newOppositeMS,                     action_Close_Pane)
 
 /*
 ** Scans action argument list for arguments "forward" or "backward" to
@@ -795,7 +795,7 @@ static SearchType searchType(Arguments arguments, int index) {
 static bool closeMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     // ensure that we are dealing with the document which currently has the focus
-    document = MacroRunWindowEx();
+    document = MacroRunDocumentEx();
 
     if(arguments.size() > 1) {
         M_FAILURE(WrongNumberOfArguments);
@@ -827,7 +827,7 @@ static bool closeMS(DocumentWidget *document, Arguments arguments, DataValue *re
     }
 
     if(auto window = MainWindow::fromDocument(document)) {
-        window->action_Close(mode);
+        window->action_Close(document, mode);
     }
 
     *result = to_value();
@@ -837,7 +837,7 @@ static bool closeMS(DocumentWidget *document, Arguments arguments, DataValue *re
 static bool newMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     // ensure that we are dealing with the document which currently has the focus
-    document = MacroRunWindowEx();
+    document = MacroRunDocumentEx();
 
     if(arguments.size() > 1) {
         M_FAILURE(WrongNumberOfArguments);
@@ -870,7 +870,7 @@ static bool newMS(DocumentWidget *document, Arguments arguments, DataValue *resu
     }
 
     if(auto window = MainWindow::fromDocument(document)) {
-        window->action_New(mode);
+        window->action_New(document, mode);
     }
 
     *result = to_value();
@@ -880,7 +880,7 @@ static bool newMS(DocumentWidget *document, Arguments arguments, DataValue *resu
 static bool saveAsMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     // ensure that we are dealing with the document which currently has the focus
-    document = MacroRunWindowEx();
+    document = MacroRunDocumentEx();
 
     if(arguments.size() > 2 || arguments.empty()) {
         M_FAILURE(WrongNumberOfArguments);
@@ -906,7 +906,7 @@ static bool saveAsMS(DocumentWidget *document, Arguments arguments, DataValue *r
     }
 
     if(auto window = MainWindow::fromDocument(document)) {
-        window->action_Save_As(filename, wrapped);
+        window->action_Save_As(document, filename, wrapped);
     }
 
     *result = to_value();
@@ -918,7 +918,7 @@ static bool findMS(DocumentWidget *document, Arguments arguments, DataValue *res
     // find( search-string [, search-direction] [, search-type] [, search-wrap] )
 
     // ensure that we are dealing with the document which currently has the focus
-    document = MacroRunWindowEx();
+    document = MacroRunDocumentEx();
 
     if(arguments.size() > 4 || arguments.empty()) {
         M_FAILURE(WrongNumberOfArguments);
@@ -934,7 +934,7 @@ static bool findMS(DocumentWidget *document, Arguments arguments, DataValue *res
     WrapMode        wrap      = searchWrap(arguments, 1);
 
     if(auto window = MainWindow::fromDocument(document)) {
-        window->action_Find(string, direction, type, wrap);
+        window->action_Find(document, string, direction, type, wrap);
     }
 
     *result = to_value();
@@ -946,14 +946,14 @@ static bool findDialogMS(DocumentWidget *document, Arguments arguments, DataValu
     Q_UNUSED(errMsg);
 
     // ensure that we are dealing with the document which currently has the focus
-    document = MacroRunWindowEx();
+    document = MacroRunDocumentEx();
 
     Direction direction = searchDirection(arguments, 0);
     SearchType      type      = searchType(arguments, 0);
     bool            keep      = searchKeepDialogs(arguments, 0);
 
     if(auto window = MainWindow::fromDocument(document)) {
-        window->action_Find_Dialog(direction, type, keep);
+        window->action_Find_Dialog(document, direction, type, keep);
     }
 
     *result = to_value();
@@ -965,13 +965,13 @@ static bool findAgainMS(DocumentWidget *document, Arguments arguments, DataValue
     Q_UNUSED(errMsg);
 
     // ensure that we are dealing with the document which currently has the focus
-    document = MacroRunWindowEx();
+    document = MacroRunDocumentEx();
 
     Direction direction = searchDirection(arguments, 0);
     WrapMode        wrap      = searchWrap(arguments, 0);
 
     if(auto window = MainWindow::fromDocument(document)) {
-        window->action_Find_Again(direction, wrap);
+        window->action_Find_Again(document, direction, wrap);
     }
 
     *result = to_value();
@@ -983,14 +983,14 @@ static bool findSelectionMS(DocumentWidget *document, Arguments arguments, DataV
     Q_UNUSED(errMsg);
 
     // ensure that we are dealing with the document which currently has the focus
-    document = MacroRunWindowEx();
+    document = MacroRunDocumentEx();
 
     Direction direction = searchDirection(arguments, 0);
     SearchType      type      = searchType(arguments, 0);
     WrapMode        wrap      = searchWrap(arguments, 0);
 
     if(auto window = MainWindow::fromDocument(document)) {
-        window->action_Find_Selection(direction, type, wrap);
+        window->action_Find_Selection(document, direction, type, wrap);
     }
 
     *result = to_value();
@@ -1002,7 +1002,7 @@ static bool replaceMS(DocumentWidget *document, Arguments arguments, DataValue *
     Q_UNUSED(errMsg);
 
     // ensure that we are dealing with the document which currently has the focus
-    document = MacroRunWindowEx();
+    document = MacroRunDocumentEx();
 
     if(arguments.size() > 5 || arguments.size() < 2) {
         M_FAILURE(WrongNumberOfArguments);
@@ -1019,7 +1019,7 @@ static bool replaceMS(DocumentWidget *document, Arguments arguments, DataValue *
     WrapMode        wrap      = searchWrap(arguments, 2);
 
     if(auto window = MainWindow::fromDocument(document)) {
-        window->action_Replace(direction, searchString, replaceString, type, wrap);
+        window->action_Replace(document, direction, searchString, replaceString, type, wrap);
     }
 
     *result = to_value();
@@ -1031,14 +1031,14 @@ static bool replaceDialogMS(DocumentWidget *document, Arguments arguments, DataV
     Q_UNUSED(errMsg);
 
     // ensure that we are dealing with the document which currently has the focus
-    document = MacroRunWindowEx();
+    document = MacroRunDocumentEx();
 
     Direction direction = searchDirection(arguments, 0);
     SearchType      type      = searchType(arguments, 0);
     bool            keep      = searchKeepDialogs(arguments, 0);
 
     if(auto window = MainWindow::fromDocument(document)) {
-        window->action_Replace_Dialog(direction, type, keep);
+        window->action_Replace_Dialog(document, direction, type, keep);
     }
 
     *result = to_value();
@@ -1050,7 +1050,7 @@ static bool replaceAgainMS(DocumentWidget *document, Arguments arguments, DataVa
     // replace_in_selection( search-string, replace-string [, search-type] )
 
     // ensure that we are dealing with the document which currently has the focus
-    document = MacroRunWindowEx();
+    document = MacroRunDocumentEx();
 
     if(arguments.size() != 2) {
         M_FAILURE(WrongNumberOfArguments);
@@ -1060,7 +1060,7 @@ static bool replaceAgainMS(DocumentWidget *document, Arguments arguments, DataVa
     Direction direction = searchDirection(arguments, 0);
 
     if(auto window = MainWindow::fromDocument(document)) {
-        window->action_Replace_Again(direction, wrap);
+        window->action_Replace_Again(document, direction, wrap);
     }
 
     *result = to_value();
@@ -1073,7 +1073,7 @@ static bool gotoMarkMS(DocumentWidget *document, Arguments arguments, DataValue 
     // goto_mark( mark, [, extend] )
 
     // ensure that we are dealing with the document which currently has the focus
-    document = MacroRunWindowEx();
+    document = MacroRunDocumentEx();
 
     if(arguments.size() > 2 || arguments.size() < 1) {
         M_FAILURE(WrongNumberOfArguments);
@@ -1098,7 +1098,7 @@ static bool gotoMarkMS(DocumentWidget *document, Arguments arguments, DataValue 
     }
 
     if(auto window = MainWindow::fromDocument(document)) {
-        window->action_Goto_Mark(mark, extend);
+        window->action_Goto_Mark(document, mark, extend);
     }
 
     *result = to_value();
@@ -1109,7 +1109,7 @@ static bool gotoMarkDialogMS(DocumentWidget *document, Arguments arguments, Data
     // goto_mark( mark, [, extend] )
 
     // ensure that we are dealing with the document which currently has the focus
-    document = MacroRunWindowEx();
+    document = MacroRunDocumentEx();
 
     if(arguments.size() > 1) {
         M_FAILURE(WrongNumberOfArguments);
@@ -1129,7 +1129,7 @@ static bool gotoMarkDialogMS(DocumentWidget *document, Arguments arguments, Data
     }
 
     if(auto window = MainWindow::fromDocument(document)) {
-        window->action_Goto_Mark_Dialog(extend);
+        window->action_Goto_Mark_Dialog(document, extend);
     }
 
     *result = to_value();
@@ -1140,7 +1140,7 @@ static bool findDefinitionMS(DocumentWidget *document, Arguments arguments, Data
     // find_definition( [ argument ] )
 
     // ensure that we are dealing with the document which currently has the focus
-    document = MacroRunWindowEx();
+    document = MacroRunDocumentEx();
 
     if(arguments.size() > 1) {
         M_FAILURE(WrongNumberOfArguments);
@@ -1155,7 +1155,7 @@ static bool findDefinitionMS(DocumentWidget *document, Arguments arguments, Data
     }
 
     if(auto window = MainWindow::fromDocument(document)) {
-        window->action_Find_Definition(argument);
+        window->action_Find_Definition(document, argument);
     }
 
     *result = to_value();
@@ -1166,7 +1166,7 @@ static bool repeatMacroMS(DocumentWidget *document, Arguments arguments, DataVal
     // repeat_macro( how/count, method )
 
     // ensure that we are dealing with the document which currently has the focus
-    document = MacroRunWindowEx();
+    document = MacroRunDocumentEx();
 
     QString howString;
     QString method;
@@ -1191,7 +1191,7 @@ static bool repeatMacroMS(DocumentWidget *document, Arguments arguments, DataVal
     }
 
     if(auto window = MainWindow::fromDocument(document)) {
-        window->action_Repeat_Macro(method, how);
+        window->action_Repeat_Macro(document, method, how);
     }
 
     *result = to_value();
@@ -1205,7 +1205,7 @@ static bool detachDocumentDialogMS(DocumentWidget *document, Arguments arguments
     Q_UNUSED(errMsg);
 
     // ensure that we are dealing with the document which currently has the focus
-    document = MacroRunWindowEx();
+    document = MacroRunDocumentEx();
 
     if(auto window = MainWindow::fromDocument(document)) {
         if(window->TabCount() < 2) {
@@ -1234,7 +1234,7 @@ static bool setAutoIndentMS(DocumentWidget *document, Arguments arguments, DataV
     }
 
     // ensure that we are dealing with the document which currently has the focus
-    document = MacroRunWindowEx();
+    document = MacroRunDocumentEx();
 
     if(string == QLatin1String("off")) {
         document->SetAutoIndent(IndentStyle::None);
@@ -1259,7 +1259,7 @@ static bool setEmTabDistMS(DocumentWidget *document, Arguments arguments, DataVa
     }
 
     // ensure that we are dealing with the document which currently has the focus
-    document = MacroRunWindowEx();
+    document = MacroRunDocumentEx();
 
     if (number < 1000) {
         if (number < 0) {
@@ -1277,7 +1277,7 @@ static bool setEmTabDistMS(DocumentWidget *document, Arguments arguments, DataVa
 static bool setFontsMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     // ensure that we are dealing with the document which currently has the focus
-    document = MacroRunWindowEx();
+    document = MacroRunDocumentEx();
 
     QString fontName;
     QString italicName;
@@ -1316,59 +1316,36 @@ static bool setFontsMS(DocumentWidget *document, Arguments arguments, DataValue 
 
 static bool setHighlightSyntaxMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
-    document = MacroRunWindowEx();
+    document = MacroRunDocumentEx();
     int newState;
 
     ACTION_BOOL_PARAM_OR_TOGGLE(newState, arguments, document->highlightSyntax_, "set_highlight_syntax");
 
-    document->highlightSyntax_ = newState;
-
-    if(document->IsTopDocument()) {
-        if(auto win = MainWindow::fromDocument(document)) {
-            no_signals(win->ui.action_Highlight_Syntax)->setChecked(newState);
-        }
-    }
-
-    if (document->highlightSyntax_) {
-        document->StartHighlightingEx(true);
-    } else {
-        document->StopHighlightingEx();
-    }
-
+    document->SetHighlightSyntax(newState);
     *result = to_value();
     return true;
 }
 
 static bool setIncrementalBackupMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
-    document = MacroRunWindowEx();
+    document = MacroRunDocumentEx();
     int newState;
 
     ACTION_BOOL_PARAM_OR_TOGGLE(newState, arguments, document->autoSave_, "set_incremental_backup");
 
-    document->autoSave_ = newState;
-
-    if(document->IsTopDocument()) {
-        if(auto win = MainWindow::fromDocument(document)) {
-            no_signals(win->ui.action_Highlight_Syntax)->setChecked(newState);
-        }
-    }
-
+    document->SetIncrementalBackup(newState);
     *result = to_value();
     return true;
 }
 
 static bool setIncrementalSearchLineMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
-    document = MacroRunWindowEx();
+    document = MacroRunDocumentEx();
 
-    auto win = MainWindow::fromDocument(document);
-    if(!win) {
-        return false;
+    if(auto win = MainWindow::fromDocument(document)) {
+        int newState;
+        ACTION_BOOL_PARAM_OR_TOGGLE(newState, arguments, win->showISearchLine_, "set_incremental_search_line");
+
+        win->SetIncrementalSearchLineMS(newState);
     }
-
-    int newState;
-    ACTION_BOOL_PARAM_OR_TOGGLE(newState, arguments, win->showISearchLine_, "set_incremental_search_line");
-
-    win->ui.action_Incremental_Search_Line->setChecked(newState);
 
     *result = to_value();
     return true;
@@ -1376,7 +1353,7 @@ static bool setIncrementalSearchLineMS(DocumentWidget *document, Arguments argum
 
 static bool setMakeBackupCopyMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
-    document = MacroRunWindowEx();
+    document = MacroRunDocumentEx();
     int newState;
 
     ACTION_BOOL_PARAM_OR_TOGGLE(newState, arguments, document->saveOldVersion_, "set_make_backup_copy");
@@ -1395,28 +1372,19 @@ static bool setMakeBackupCopyMS(DocumentWidget *document, Arguments arguments, D
 
 static bool setLockedMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
-    document = MacroRunWindowEx();
+    document = MacroRunDocumentEx();
     int newState;
 
     ACTION_BOOL_PARAM_OR_TOGGLE(newState, arguments, document->lockReasons_.isUserLocked(), "set_locked");
 
-    document->lockReasons_.setUserLocked(newState);
-
-    if(document->IsTopDocument()) {
-        if(auto win = MainWindow::fromDocument(document)) {
-            no_signals(win->ui.action_Read_Only)->setChecked(document->lockReasons_.isAnyLocked());
-            win->UpdateWindowTitle(document);
-            win->UpdateWindowReadOnly(document);
-        }
-    }
-
+    document->SetLocked(newState);
     *result = to_value();
     return true;
 }
 
 static bool setLanguageModeMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
-    document = MacroRunWindowEx();
+    document = MacroRunDocumentEx();
 
     QString languageMode;
     if(!readArguments(arguments, 0, errMsg, &languageMode)) {
@@ -1431,7 +1399,7 @@ static bool setLanguageModeMS(DocumentWidget *document, Arguments arguments, Dat
 
 static bool setOvertypeModeMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
-    document = MacroRunWindowEx();
+    document = MacroRunDocumentEx();
     int newState;
 
     ACTION_BOOL_PARAM_OR_TOGGLE(newState, arguments, document->saveOldVersion_, "set_overtype_mode");
@@ -1449,7 +1417,7 @@ static bool setOvertypeModeMS(DocumentWidget *document, Arguments arguments, Dat
 
 static bool setShowLineNumbersMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
-    document = MacroRunWindowEx();
+    document = MacroRunDocumentEx();
 
     auto win = MainWindow::fromDocument(document);
 
@@ -1470,7 +1438,7 @@ static bool setShowLineNumbersMS(DocumentWidget *document, Arguments arguments, 
 
 static bool setShowMatchingMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
-    document = MacroRunWindowEx();
+    document = MacroRunDocumentEx();
 
     if (arguments.size() > 0) {
         QString arg;
@@ -1508,7 +1476,7 @@ static bool setShowMatchingMS(DocumentWidget *document, Arguments arguments, Dat
 
 static bool setMatchSyntaxBasedMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
-    document = MacroRunWindowEx();
+    document = MacroRunDocumentEx();
 
     int newState;
 
@@ -1527,7 +1495,7 @@ static bool setMatchSyntaxBasedMS(DocumentWidget *document, Arguments arguments,
 
 static bool setStatisticsLineMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
-    document = MacroRunWindowEx();
+    document = MacroRunDocumentEx();
 
     int newState;
 
@@ -1546,7 +1514,7 @@ static bool setStatisticsLineMS(DocumentWidget *document, Arguments arguments, D
 
 static bool setTabDistMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
-    document = MacroRunWindowEx();
+    document = MacroRunDocumentEx();
 
     if (arguments.size() > 0) {
         int newTabDist = 0;
@@ -1565,19 +1533,19 @@ static bool setTabDistMS(DocumentWidget *document, Arguments arguments, DataValu
 
 static bool setUseTabsMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
-    document = MacroRunWindowEx();
+    document = MacroRunDocumentEx();
 
     int newState;
     ACTION_BOOL_PARAM_OR_TOGGLE(newState, arguments, document->buffer_->useTabs_, "set_use_tabs");
 
-    document->buffer_->useTabs_ = newState;
+    document->SetUseTabs(newState);
     *result = to_value();
     return true;
 }
 
 static bool setWrapMarginMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
-    document = MacroRunWindowEx();
+    document = MacroRunDocumentEx();
 
     if (arguments.size() > 0) {
         int newMargin = 0;
@@ -1601,7 +1569,7 @@ static bool setWrapMarginMS(DocumentWidget *document, Arguments arguments, DataV
 
 static bool setWrapTextMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
-    document = MacroRunWindowEx();
+    document = MacroRunDocumentEx();
 
     if (arguments.size() > 0) {
 
@@ -1629,7 +1597,7 @@ static bool setWrapTextMS(DocumentWidget *document, Arguments arguments, DataVal
 
 static bool findIncrMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
-    document = MacroRunWindowEx();
+    document = MacroRunDocumentEx();
 
     auto win = MainWindow::fromDocument(document);
 
@@ -1658,8 +1626,7 @@ static bool findIncrMS(DocumentWidget *document, Arguments arguments, DataValue 
         }
     }
 
-    SearchAndSelectIncrementalEx(
-        win,
+    win->SearchAndSelectIncrementalEx(
         document,
         win->lastFocus_,
         searchDirection(arguments, 1),
@@ -1676,7 +1643,7 @@ static bool startIncrFindMS(DocumentWidget *document, Arguments arguments, DataV
 
     Q_UNUSED(errMsg);
 
-    document = MacroRunWindowEx();
+    document = MacroRunDocumentEx();
 
     auto win = MainWindow::fromDocument(document);
 
@@ -1692,7 +1659,7 @@ static bool startIncrFindMS(DocumentWidget *document, Arguments arguments, DataV
 
 static bool replaceFindMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
-    document = MacroRunWindowEx();
+    document = MacroRunDocumentEx();
 
     auto win = MainWindow::fromDocument(document);
 
@@ -1715,8 +1682,7 @@ static bool replaceFindMS(DocumentWidget *document, Arguments arguments, DataVal
     }
 
 
-    ReplaceAndSearchEx(
-                win,
+    win->ReplaceAndSearchEx(
                 document,
                 win->lastFocus_,
                 searchDirection(arguments, 2),
@@ -1735,7 +1701,7 @@ static bool replaceFindSameMS(DocumentWidget *document, Arguments arguments, Dat
     Q_UNUSED(arguments);
     Q_UNUSED(errMsg);
 
-    document = MacroRunWindowEx();
+    document = MacroRunDocumentEx();
 
     auto win = MainWindow::fromDocument(document);
 
@@ -1747,8 +1713,7 @@ static bool replaceFindSameMS(DocumentWidget *document, Arguments arguments, Dat
         return false;
     }
 
-    ReplaceFindSameEx(
-                win,
+    win->ReplaceFindSameEx(
                 document,
                 win->lastFocus_,
                 searchDirection(arguments, 0),
@@ -1763,7 +1728,7 @@ static bool nextDocumentMS(DocumentWidget *document, Arguments arguments, DataVa
     Q_UNUSED(arguments);
     Q_UNUSED(errMsg);
 
-    document = MacroRunWindowEx();
+    document = MacroRunDocumentEx();
 
     auto win = MainWindow::fromDocument(document);
 
@@ -1782,7 +1747,7 @@ static bool prevDocumentMS(DocumentWidget *document, Arguments arguments, DataVa
     Q_UNUSED(arguments);
     Q_UNUSED(errMsg);
 
-    document = MacroRunWindowEx();
+    document = MacroRunDocumentEx();
 
     auto win = MainWindow::fromDocument(document);
 
@@ -1801,7 +1766,7 @@ static bool lastDocumentMS(DocumentWidget *document, Arguments arguments, DataVa
     Q_UNUSED(arguments);
     Q_UNUSED(errMsg);
 
-    document = MacroRunWindowEx();
+    document = MacroRunDocumentEx();
 
     auto win = MainWindow::fromDocument(document);
 
@@ -1820,7 +1785,7 @@ static bool backgroundMenuCommandMS(DocumentWidget *document, Arguments argument
     Q_UNUSED(arguments);
     Q_UNUSED(errMsg);
 
-    document = MacroRunWindowEx();
+    document = MacroRunDocumentEx();
 
     auto win = MainWindow::fromDocument(document);
 
@@ -3275,7 +3240,7 @@ static bool shellCmdMS(DocumentWidget *document, Arguments arguments, DataValue 
 
     /* Shell command execution requires that the macro be suspended, so
        this subroutine can't be run if macro execution can't be interrupted */
-    if (!MacroRunWindowEx()->macroCmdData_) {
+    if (!MacroRunDocumentEx()->macroCmdData_) {
         M_FAILURE(InvalidContext);
     }
 
@@ -3311,7 +3276,7 @@ static bool dialogMS(DocumentWidget *document, Arguments arguments, DataValue *r
 
     /* Ignore the focused window passed as the function argument and put
        the dialog up over the window which is executing the macro */
-    document = MacroRunWindowEx();
+    document = MacroRunDocumentEx();
     const std::shared_ptr<MacroCommandData> &cmdData = document->macroCmdData_;
 
     /* Dialogs require macro to be suspended and interleaved with other macros.
@@ -3371,7 +3336,7 @@ static bool stringDialogMS(DocumentWidget *document, Arguments arguments, DataVa
 
     /* Ignore the focused window passed as the function argument and put
        the dialog up over the window which is executing the macro */
-    document = MacroRunWindowEx();
+    document = MacroRunDocumentEx();
     const std::shared_ptr<MacroCommandData> &cmdData = document->macroCmdData_;
 
     /* Dialogs require macro to be suspended and interleaved with other macros.
@@ -3582,7 +3547,7 @@ static bool replaceAllInSelectionMS(DocumentWidget *document, Arguments argument
     // replace_in_selection( search-string, replace-string [, search-type] )
 
     // ensure that we are dealing with the document which currently has the focus
-    document = MacroRunWindowEx();
+    document = MacroRunDocumentEx();
 
     //  Get the argument list.
     QString searchString;
@@ -3604,7 +3569,7 @@ static bool replaceAllMS(DocumentWidget *document, Arguments arguments, DataValu
     // replace_all( search-string, replace-string [, search-type] )
 
     // ensure that we are dealing with the document which currently has the focus
-    document = MacroRunWindowEx();
+    document = MacroRunDocumentEx();
 
     if (arguments.size() < 2 || arguments.size() > 3) {
         M_FAILURE(WrongNumberOfArguments);
@@ -3658,7 +3623,7 @@ static bool filenameDialogMS(DocumentWidget *document, Arguments arguments, Data
 
     /* Ignore the focused window passed as the function argument and put
        the dialog up over the window which is executing the macro */
-    document = MacroRunWindowEx();
+    document = MacroRunDocumentEx();
 
     /* Dialogs require macro to be suspended and interleaved with other macros.
        This subroutine can't be run if macro execution can't be interrupted */
@@ -3749,7 +3714,7 @@ static bool listDialogMS(DocumentWidget *document, Arguments arguments, DataValu
 
     /* Ignore the focused window passed as the function argument and put
        the dialog up over the window which is executing the macro */
-    document = MacroRunWindowEx();
+    document = MacroRunDocumentEx();
     const std::shared_ptr<MacroCommandData> &cmdData = document->macroCmdData_;
 
     /* Dialogs require macro to be suspended and interleaved with other macros.

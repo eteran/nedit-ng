@@ -16,6 +16,7 @@
 #include "DialogSyntaxPatterns.h"
 #include "PatternSet.h"
 #include "DialogTabs.h"
+#include "ReplaceAllDefaultScope.h"
 #include "Help.h"
 #include "DialogWindowBackgroundMenu.h"
 #include "DialogWindowSize.h"
@@ -71,36 +72,6 @@
 #if !defined(DONT_HAVE_GLOB)
 #include <glob.h>
 #endif
-
-#define EMIT_EVENT(name)                                \
-    do {                                                \
-        WindowMenuEvent menuEvent(QLatin1String(name)); \
-        QApplication::sendEvent(this, &menuEvent);      \
-    } while(0)
-
-#define EMIT_EVENT_ARG_1(name, arg)                            \
-    do {                                                       \
-        WindowMenuEvent menuEvent(QLatin1String(name), {arg}); \
-        QApplication::sendEvent(this, &menuEvent);             \
-    } while(0)
-
-#define EMIT_EVENT_ARG_2(name, arg1, arg2)                            \
-    do {                                                              \
-        WindowMenuEvent menuEvent(QLatin1String(name), {arg1, arg2}); \
-        QApplication::sendEvent(this, &menuEvent);                    \
-    } while(0)
-
-#define EMIT_EVENT_ARG_3(name, arg1, arg2, arg3)                            \
-    do {                                                                    \
-        WindowMenuEvent menuEvent(QLatin1String(name), {arg1, arg2, arg3}); \
-        QApplication::sendEvent(this, &menuEvent);                          \
-    } while(0)
-
-#define EMIT_EVENT_ARG_4(name, arg1, arg2, arg3, arg4)                            \
-    do {                                                                          \
-        WindowMenuEvent menuEvent(QLatin1String(name), {arg1, arg2, arg3, arg4}); \
-        QApplication::sendEvent(this, &menuEvent);                                \
-    } while(0)
 
 namespace {
 
@@ -627,13 +598,15 @@ void MainWindow::deleteTabButtonClicked() {
 //------------------------------------------------------------------------------
 void MainWindow::on_action_New_triggered() {
     EMIT_EVENT("new");
-    action_New(NewMode::Prefs);
+    action_New(currentDocument(), NewMode::Prefs);
 }
 
 //------------------------------------------------------------------------------
 // Name: on_action_New_triggered
 //------------------------------------------------------------------------------
-void MainWindow::action_New(NewMode mode) {
+void MainWindow::action_New(DocumentWidget *document, NewMode mode) {
+
+    Q_ASSERT(document);
 
     bool openInTab = true;
 
@@ -652,16 +625,18 @@ void MainWindow::action_New(NewMode mode) {
         break;
     }
 
-	QString path;
-
-    if(DocumentWidget *doc = currentDocument()) {
-        path = doc->path_;
-    }
+    QString path = document->path_;
 
     MainWindow::EditNewFileEx(openInTab ? this : nullptr, QString(), false, QString(), path);
     MainWindow::CheckCloseDimEx();
 }
 
+/**
+ * @brief MainWindow::PromptForExistingFileEx
+ * @param path
+ * @param prompt
+ * @return
+ */
 QString MainWindow::PromptForExistingFileEx(const QString &path, const QString &prompt) {
     QFileDialog dialog(this, prompt);
     dialog.setOptions(QFileDialog::DontUseNativeDialog);
@@ -678,43 +653,43 @@ QString MainWindow::PromptForExistingFileEx(const QString &path, const QString &
     return QString();
 }
 
+
 //------------------------------------------------------------------------------
 // Name: on_action_Open_triggered
 //------------------------------------------------------------------------------
-void MainWindow::action_Open(const QString &filename) {
+void MainWindow::action_Open(DocumentWidget *document, const QString &filename) {
 
     EMIT_EVENT_ARG_1("open", filename);
-
-    if(DocumentWidget *doc = currentDocument()) {
-        doc->open(filename);
-    }
+    document->open(filename);
 }
 
-//------------------------------------------------------------------------------
-// Name: on_action_Open_triggered
-//------------------------------------------------------------------------------
-void MainWindow::on_action_Open_triggered() {
-
-    if(DocumentWidget *doc = currentDocument()) {
-        QString filename = PromptForExistingFileEx(doc->path_, tr("Open File"));
-        if (filename.isNull()) {
-            return;
-        }
-
-        action_Open(filename);
+void MainWindow::action_Open(DocumentWidget *document) {
+    QString filename = PromptForExistingFileEx(document->path_, tr("Open File"));
+    if (filename.isNull()) {
+        return;
     }
 
+    action_Open(document, filename);
     CheckCloseDimEx();
 }
 
 /**
- * @brief action_Close_triggered
+ * @brief MainWindow::on_action_Open_triggered
+ */
+void MainWindow::on_action_Open_triggered() {
+
+    if(DocumentWidget *document = currentDocument()) {
+        action_Open(document);
+    }
+}
+
+/**
+ * @brief MainWindow::action_Close
+ * @param document
  * @param mode
  */
-void MainWindow::action_Close(CloseMode mode) {
-    if(DocumentWidget *doc = currentDocument()) {
-        doc->actionClose(mode);
-    }
+void MainWindow::action_Close(DocumentWidget *document, CloseMode mode) {
+    document->actionClose(mode);
 }
 
 /**
@@ -722,7 +697,7 @@ void MainWindow::action_Close(CloseMode mode) {
  */
 void MainWindow::on_action_Close_triggered() {
     EMIT_EVENT("close");
-    action_Close(CloseMode::Prompt);
+    action_Close(currentDocument(), CloseMode::Prompt);
 }
 
 /**
@@ -733,37 +708,56 @@ void MainWindow::on_action_About_triggered() {
 	dialog->exec();
 }
 
+void MainWindow::action_Select_All(DocumentWidget *document) {
+    Q_UNUSED(document);
+    if(TextArea *w = lastFocus_) {
+        w->selectAllAP();
+    }
+}
+
 //------------------------------------------------------------------------------
 // Name: on_action_Select_All_triggered
 //------------------------------------------------------------------------------
 void MainWindow::on_action_Select_All_triggered() {
 
     EMIT_EVENT("select_all");
+    if(DocumentWidget *document = currentDocument()) {
+        action_Select_All(document);
+    }
 
-	if(TextArea *w = lastFocus_) {
-		w->selectAllAP();
-	}
+
 }
 
 //------------------------------------------------------------------------------
 // Name: action_Include_File
 //------------------------------------------------------------------------------
-void MainWindow::action_Include_File(const QString &filename) {
+void MainWindow::action_Include_File(DocumentWidget *document, const QString &filename) {
 
     EMIT_EVENT_ARG_1("include_file", filename);
 
-    if(DocumentWidget *doc = currentDocument()) {
-
-        if (doc->CheckReadOnly()) {
-            return;
-        }
-
-        if (filename.isNull()) {
-            return;
-        }
-
-        doc->includeFile(filename);
+    if (document->CheckReadOnly()) {
+        return;
     }
+
+    if (filename.isNull()) {
+        return;
+    }
+
+    document->includeFile(filename);
+}
+
+void MainWindow::action_Include_File(DocumentWidget *document) {
+    if (document->CheckReadOnly()) {
+        return;
+    }
+
+    QString filename = PromptForExistingFileEx(document->path_, tr("Include File"));
+
+    if (filename.isNull()) {
+        return;
+    }
+
+    document->includeFile(filename);
 }
 
 //------------------------------------------------------------------------------
@@ -771,19 +765,8 @@ void MainWindow::action_Include_File(const QString &filename) {
 //------------------------------------------------------------------------------
 void MainWindow::on_action_Include_File_triggered() {
 
-    if(DocumentWidget *doc = currentDocument()) {
-
-        if (doc->CheckReadOnly()) {
-            return;
-        }
-
-        QString filename = PromptForExistingFileEx(doc->path_, tr("Include File"));
-
-        if (filename.isNull()) {
-            return;
-        }
-
-        doc->includeFile(filename);
+    if(DocumentWidget *document = currentDocument()) {
+        action_Include_File(document);
     }
 }
 
@@ -823,6 +806,14 @@ void MainWindow::on_action_Paste_Column_triggered() {
     }
 }
 
+void MainWindow::action_Delete(DocumentWidget *document) {
+    if (document->CheckReadOnly()) {
+        return;
+    }
+
+    document->buffer_->BufRemoveSelected();
+}
+
 /**
  * @brief MainWindow::on_action_Delete_triggered
  */
@@ -830,12 +821,8 @@ void MainWindow::on_action_Delete_triggered() {
 
     EMIT_EVENT("delete");
 
-    if(DocumentWidget *doc = currentDocument()) {
-        if (doc->CheckReadOnly()) {
-            return;
-        }
-
-        doc->buffer_->BufRemoveSelected();
+    if(DocumentWidget *document = currentDocument()) {
+        action_Delete(document);
     }
 }
 
@@ -976,7 +963,7 @@ void MainWindow::UpdateWindowReadOnly(DocumentWidget *doc) {
 /*
 ** check if tab bar is to be shown on this window
 */
-int MainWindow::TabCount() {
+size_t MainWindow::TabCount() const {
 	return ui.tabWidget->count();
 }
 
@@ -990,7 +977,7 @@ void MainWindow::SortTabBar() {
     }
 
 	// need more than one tab to sort
-    const int nDoc = TabCount();
+    const size_t nDoc = TabCount();
 	if (nDoc < 2) {
 		return;
 	}
@@ -999,9 +986,9 @@ void MainWindow::SortTabBar() {
     std::vector<DocumentWidget *> windows;
 	windows.reserve(nDoc);
 
-    for(int i = 0; i < nDoc; ++i) {
-		if(auto doc = qobject_cast<DocumentWidget *>(ui.tabWidget->widget(i))) {
-			windows.push_back(doc);
+    for(size_t i = 0; i < nDoc; ++i) {
+        if(auto document = documentAt(i)) {
+            windows.push_back(document);
 		}
 	}
 
@@ -1049,7 +1036,7 @@ MainWindow *MainWindow::firstWindow() {
 std::vector<DocumentWidget *> MainWindow::openDocuments() const {
     std::vector<DocumentWidget *> documents;
     for(int i = 0; i < ui.tabWidget->count(); ++i) {
-        if(auto document = qobject_cast<DocumentWidget *>(ui.tabWidget->widget(i))) {
+        if(auto document = documentAt(i)) {
             documents.push_back(document);
         }
     }
@@ -1063,7 +1050,7 @@ std::vector<DocumentWidget *> MainWindow::openDocuments() const {
 */
 void MainWindow::CheckCloseDimEx() {
 
-    std::vector<MainWindow *> windows = MainWindow::allWindows();
+    const std::vector<MainWindow *> windows = MainWindow::allWindows();
 
     if(windows.empty()) {
         return;
@@ -1404,23 +1391,31 @@ QString MainWindow::UniqueUntitledNameEx() {
     return QString();
 }
 
+void MainWindow::action_Undo(DocumentWidget *document) {
+    if (document->CheckReadOnly()) {
+        return;
+    }
+    document->Undo();
+}
+
 void MainWindow::on_action_Undo_triggered() {
     EMIT_EVENT("undo");
-    if(DocumentWidget *doc = currentDocument()) {
-        if (doc->CheckReadOnly()) {
-            return;
-        }
-        doc->Undo();
+    if(DocumentWidget *document = currentDocument()) {
+        action_Undo(document);
     }
+}
+
+void MainWindow::action_Redo(DocumentWidget *document) {
+    if (document->CheckReadOnly()) {
+        return;
+    }
+    document->Redo();
 }
 
 void MainWindow::on_action_Redo_triggered() {
     EMIT_EVENT("redo");
-    if(DocumentWidget *doc = currentDocument()) {
-        if (doc->CheckReadOnly()) {
-            return;
-        }
-        doc->Redo();
+    if(DocumentWidget *document = currentDocument()) {
+        action_Redo(document);
     }
 }
 
@@ -1731,19 +1726,19 @@ void MainWindow::openPrevCB(QAction *action) {
 
     QString filename = action->data().toString();
 
-    if(DocumentWidget *doc = currentDocument()) {
+    if(DocumentWidget *document = currentDocument()) {
         if (filename.isNull()) {
             return;
         }
 
-        doc->open(filename);
+        document->open(filename);
     }
 
     CheckCloseDimEx();
 }
 
 void MainWindow::on_tabWidget_currentChanged(int index) {
-    if(auto document = qobject_cast<DocumentWidget *>(ui.tabWidget->widget(index))) {
+    if(auto document = documentAt(index)) {
         document->documentRaised();
     }
 }
@@ -1790,22 +1785,26 @@ void MainWindow::on_tabWidget_customContextMenuRequested(const QPoint &pos) {
     }
 }
 
+void MainWindow::action_Open_Selected(DocumentWidget *document) {
+
+    // Get the selected text, if there's no selection, do nothing
+    const QMimeData *mimeData = QApplication::clipboard()->mimeData(QClipboard::Selection);
+    if(mimeData->hasText()) {
+        fileCB(document, mimeData->text());
+    } else {
+        QApplication::beep();
+    }
+
+    CheckCloseDimEx();
+}
+
 void MainWindow::on_action_Open_Selected_triggered() {
 
     EMIT_EVENT("open_selected");
 
-    if(DocumentWidget *doc = currentDocument()) {
-
-        // Get the selected text, if there's no selection, do nothing
-        const QMimeData *mimeData = QApplication::clipboard()->mimeData(QClipboard::Selection);
-        if(mimeData->hasText()) {
-            fileCB(doc, mimeData->text());
-        } else {
-            QApplication::beep();
-        }
+    if(DocumentWidget *document = currentDocument()) {
+        action_Open_Selected(document);
     }
-
-    CheckCloseDimEx();
 }
 
 //------------------------------------------------------------------------------
@@ -1901,6 +1900,13 @@ void MainWindow::fileCB(DocumentWidget *document, const QString &text) {
     CheckCloseDimEx();
 }
 
+void MainWindow::action_Shift_Left(DocumentWidget *document) {
+    if (document->CheckReadOnly()) {
+        return;
+    }
+    ShiftSelectionEx(document, lastFocus_, SHIFT_LEFT, false);
+}
+
 //------------------------------------------------------------------------------
 // Name:
 //------------------------------------------------------------------------------
@@ -1908,12 +1914,16 @@ void MainWindow::on_action_Shift_Left_triggered() {
 
     EMIT_EVENT("shift_left");
 
-    if(DocumentWidget *doc = currentDocument()) {
-        if (doc->CheckReadOnly()) {
-            return;
-        }
-        ShiftSelectionEx(doc, lastFocus_, SHIFT_LEFT, false);
+    if(DocumentWidget *document = currentDocument()) {
+        action_Shift_Left(document);
     }
+}
+
+void MainWindow::action_Shift_Right(DocumentWidget *document) {
+    if (document->CheckReadOnly()) {
+        return;
+    }
+    ShiftSelectionEx(document, lastFocus_, SHIFT_RIGHT, false);
 }
 
 //------------------------------------------------------------------------------
@@ -1923,42 +1933,57 @@ void MainWindow::on_action_Shift_Right_triggered() {
 
     EMIT_EVENT("shift_right");
 
-    if(DocumentWidget *doc = currentDocument()) {
-        if (doc->CheckReadOnly()) {
-            return;
-        }
-        ShiftSelectionEx(doc, lastFocus_, SHIFT_RIGHT, false);
+    if(DocumentWidget *document = currentDocument()) {
+        action_Shift_Right(document);
     }
 }
 
 //------------------------------------------------------------------------------
 // Name:
 //------------------------------------------------------------------------------
-void MainWindow::action_Shift_Left_Tabs() {
+void MainWindow::action_Shift_Left_Tabs(DocumentWidget *document) {
 
     EMIT_EVENT("shift_left_by_tab");
 
-    if(DocumentWidget *doc = currentDocument()) {
-        if (doc->CheckReadOnly()) {
-            return;
-        }
-        ShiftSelectionEx(doc, lastFocus_, SHIFT_LEFT, true);
+    if (document->CheckReadOnly()) {
+        return;
+    }
+
+    ShiftSelectionEx(document, lastFocus_, SHIFT_LEFT, true);
+}
+
+void MainWindow::action_Shift_Left_Tabs() {
+    if(DocumentWidget *document = currentDocument()) {
+        action_Shift_Left_Tabs(document);
     }
 }
 
 //------------------------------------------------------------------------------
 // Name:
 //------------------------------------------------------------------------------
-void MainWindow::action_Shift_Right_Tabs() {
+void MainWindow::action_Shift_Right_Tabs(DocumentWidget *document) {
 
     EMIT_EVENT("shift_right_by_tab");
 
-    if(DocumentWidget *doc = currentDocument()) {
-        if (doc->CheckReadOnly()) {
-            return;
-        }
-        ShiftSelectionEx(doc, lastFocus_, SHIFT_RIGHT, true);
+    if (document->CheckReadOnly()) {
+        return;
     }
+
+    ShiftSelectionEx(document, lastFocus_, SHIFT_RIGHT, true);
+}
+
+void MainWindow::action_Shift_Right_Tabs() {
+    if(DocumentWidget *document = currentDocument()) {
+        action_Shift_Right_Tabs(document);
+    }
+}
+
+void MainWindow::action_Lower_case(DocumentWidget *document) {
+    if (document->CheckReadOnly()) {
+        return;
+    }
+
+    DowncaseSelectionEx(document, lastFocus_);
 }
 
 //------------------------------------------------------------------------------
@@ -1968,13 +1993,17 @@ void MainWindow::on_action_Lower_case_triggered() {
 
     EMIT_EVENT("lowercase");
 
-    if(DocumentWidget *doc = currentDocument()) {
-        if (doc->CheckReadOnly()) {
-            return;
-        }
-
-        DowncaseSelectionEx(doc, lastFocus_);
+    if(DocumentWidget *document = currentDocument()) {
+        action_Lower_case(document);
     }
+}
+
+void MainWindow::action_Upper_case(DocumentWidget *document) {
+    if (document->CheckReadOnly()) {
+        return;
+    }
+
+    UpcaseSelectionEx(document, lastFocus_);
 }
 
 //------------------------------------------------------------------------------
@@ -1984,13 +2013,16 @@ void MainWindow::on_action_Upper_case_triggered() {
 
     EMIT_EVENT("uppercase");
 
-    if(DocumentWidget *doc = currentDocument()) {
-        if (doc->CheckReadOnly()) {
-            return;
-        }
-
-        UpcaseSelectionEx(doc, lastFocus_);
+    if(DocumentWidget *document = currentDocument()) {
+        action_Upper_case(document);
     }
+}
+
+void MainWindow::action_Fill_Paragraph(DocumentWidget *document) {
+    if (document->CheckReadOnly()) {
+        return;
+    }
+    FillSelectionEx(document, lastFocus_);
 }
 
 //------------------------------------------------------------------------------
@@ -2000,11 +2032,8 @@ void MainWindow::on_action_Fill_Paragraph_triggered() {
 
     EMIT_EVENT("fill_paragraph");
 
-    if(DocumentWidget *doc = currentDocument()) {
-        if (doc->CheckReadOnly()) {
-            return;
-        }
-        FillSelectionEx(doc, lastFocus_);
+    if(DocumentWidget *document = currentDocument()) {
+        action_Fill_Paragraph(document);
     }
 }
 
@@ -2022,21 +2051,31 @@ void MainWindow::on_action_Insert_Form_Feed_triggered() {
  * @brief MainWindow::action_Insert_Ctrl_Code
  * @param str
  */
-void MainWindow::action_Insert_Ctrl_Code(const QString &str) {
+void MainWindow::action_Insert_Ctrl_Code(DocumentWidget *document, const QString &str) {
 
     EMIT_EVENT_ARG_1("insert_string", str);
 
-    if(DocumentWidget *doc = currentDocument()) {
+    if (document->CheckReadOnly()) {
+        return;
+    }
 
-        if (doc->CheckReadOnly()) {
-            return;
-        }
+    auto s = str.toStdString();
 
-        auto s = str.toStdString();
+    if(TextArea *w = lastFocus_) {
+        w->insertStringAP(QString::fromStdString(s));
+    }
+}
 
-        if(TextArea *w = lastFocus_) {
-            w->insertStringAP(QString::fromStdString(s));
-        }
+void MainWindow::action_Insert_Ctrl_Code(DocumentWidget *document) {
+    if (document->CheckReadOnly()) {
+        return;
+    }
+
+    bool ok;
+    int n = QInputDialog::getInt(this, tr("Insert Ctrl Code"), tr("ASCII Character Code:"), 0, 0, 255, 1, &ok);
+    if(ok) {
+        QString str(QChar::fromLatin1(static_cast<char>(n)));
+        action_Insert_Ctrl_Code(document, str);
     }
 }
 
@@ -2045,18 +2084,8 @@ void MainWindow::action_Insert_Ctrl_Code(const QString &str) {
  */
 void MainWindow::on_action_Insert_Ctrl_Code_triggered() {
 
-    if(DocumentWidget *doc = currentDocument()) {
-
-        if (doc->CheckReadOnly()) {
-            return;
-        }
-
-        bool ok;
-        int n = QInputDialog::getInt(this, tr("Insert Ctrl Code"), tr("ASCII Character Code:"), 0, 0, 255, 1, &ok);
-        if(ok) {
-            QString str(QChar::fromLatin1(static_cast<char>(n)));
-            action_Insert_Ctrl_Code(str);
-        }
+    if(DocumentWidget *document = currentDocument()) {
+        action_Insert_Ctrl_Code(document);
     }
 }
 
@@ -2064,96 +2093,158 @@ void MainWindow::on_action_Insert_Ctrl_Code_triggered() {
  * @brief MainWindow::action_Goto_Line_Number
  * @param s
  */
-void MainWindow::action_Goto_Line_Number(const QString &s) {
-    if(DocumentWidget *doc = currentDocument()) {
+void MainWindow::action_Goto_Line_Number(DocumentWidget *document, const QString &s) {
 
-		int lineNum;
-		int column;
+    int lineNum;
+    int column;
 
-        if (StringToLineAndCol(s, &lineNum, &column) == -1) {
-			QApplication::beep();
-			return;
-		}
+    if (StringToLineAndCol(s, &lineNum, &column) == -1) {
+        QApplication::beep();
+        return;
+    }
 
-		if(TextArea *w = lastFocus_) {
-			doc->gotoAP(w, s);
-		}
-	}
+    if(TextArea *w = lastFocus_) {
+        document->gotoAP(w, s);
+    }
+}
+
+void MainWindow::action_Goto_Line_Number(DocumentWidget *document) {
+    bool ok;
+    QString text = QInputDialog::getText(
+                       this,
+                       tr("Goto Line Number"),
+                       tr("Goto Line (and/or Column)  Number:"),
+                       QLineEdit::Normal,
+                       QString(),
+                       &ok);
+
+    if (!ok) {
+        return;
+    }
+
+    action_Goto_Line_Number(document, text);
 }
 
 /**
  * @brief MainWindow::on_action_Goto_Line_Number_triggered
  */
 void MainWindow::on_action_Goto_Line_Number_triggered() {
+    if(DocumentWidget *document = currentDocument()) {
+        action_Goto_Line_Number(document);
+    }
 
-	bool ok;
-	QString text = QInputDialog::getText(
-	                   this,
-	                   tr("Goto Line Number"),
-	                   tr("Goto Line (and/or Column)  Number:"),
-	                   QLineEdit::Normal,
-	                   QString(),
-	                   &ok);
-
-	if (!ok) {
-		return;
-	}
-
-	action_Goto_Line_Number(text);
 }
 
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
-void MainWindow::on_action_Goto_Selected_triggered() {
-    if(DocumentWidget *doc = currentDocument()) {
-
-        const QMimeData *mimeData = QApplication::clipboard()->mimeData(QClipboard::Selection);
-        if(mimeData->hasText()) {
-            if(TextArea *w = lastFocus_) {
-				doc->gotoAP(w, mimeData->text());
-            }
-        } else {
-            QApplication::beep();
+void MainWindow::action_Goto_Selected(DocumentWidget *document) {
+    const QMimeData *mimeData = QApplication::clipboard()->mimeData(QClipboard::Selection);
+    if(mimeData->hasText()) {
+        if(TextArea *w = lastFocus_) {
+            document->gotoAP(w, mimeData->text());
         }
+    } else {
+        QApplication::beep();
     }
 }
 
 //------------------------------------------------------------------------------
 // Name:
 //------------------------------------------------------------------------------
-void MainWindow::action_Shift_Find() {
-    DoFindDlogEx(
-        this,
-        currentDocument(),
-        Direction::BACKWARD,
-        GetPrefKeepSearchDlogs(),
-        GetPrefSearch());
+void MainWindow::on_action_Goto_Selected_triggered() {
+    if(DocumentWidget *document = currentDocument()) {
+        action_Goto_Selected(document);
+    }
 }
 
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
-void MainWindow::action_Shift_Find_Again() {
+/**
+ * @brief MainWindow::action_Find
+ * @param string
+ * @param direction
+ * @param keepDialogs
+ * @param type
+ */
+void MainWindow::action_Find_Dialog(DocumentWidget *document, Direction direction, SearchType type, bool keepDialog) {
+    DoFindDlogEx(
+        document,
+        direction,
+        keepDialog,
+        type);
+}
+
+void MainWindow::action_Shift_Find(DocumentWidget *document) {
+    action_Find_Dialog(
+        document,
+        Direction::BACKWARD,
+        GetPrefSearch(),
+        GetPrefKeepSearchDlogs());
+}
+
+/**
+ * @brief MainWindow::action_Shift_Find
+ * @param document
+ */
+void MainWindow::action_Shift_Find() {
+    if(DocumentWidget *document = currentDocument()) {
+        action_Shift_Find(document);
+    }
+}
+
+/**
+ * @brief MainWindow::action_FindAgain
+ * @param direction
+ * @param wrap
+ */
+void MainWindow::action_Find_Again(DocumentWidget *document, Direction direction, WrapMode wrap) {
     SearchAndSelectSameEx(
-        this,
-        currentDocument(),
+        document,
         lastFocus_,
+        direction,
+        wrap);
+}
+
+void MainWindow::action_Shift_Find_Again(DocumentWidget *document) {
+    action_Find_Again(
+        document,
         Direction::BACKWARD,
         GetPrefSearchWraps());
 }
 
+/**
+ * @brief MainWindow::action_Shift_Find_Again
+ * @param document
+ */
+void MainWindow::action_Shift_Find_Again() {
+    if(DocumentWidget *document = currentDocument()) {
+        action_Shift_Find_Again(document);
+    }
+}
+
+/**
+ * @brief MainWindow::action_Find_Selection
+ */
+void MainWindow::action_Find_Selection(DocumentWidget *document, Direction direction, SearchType type, WrapMode wrap) {
+    SearchForSelectedEx(
+        document,
+        lastFocus_,
+        direction,
+        type,
+        wrap);
+}
+
 //------------------------------------------------------------------------------
 // Name:
 //------------------------------------------------------------------------------
-void MainWindow::action_Shift_Find_Selection_triggered() {
-    SearchForSelectedEx(
-        this,
-        currentDocument(),
-        lastFocus_,
+void MainWindow::action_Shift_Find_Selection_triggered(DocumentWidget *document) {
+    action_Find_Selection(
+        document,
         Direction::BACKWARD,
         GetPrefSearch(),
         GetPrefSearchWraps());
+}
+
+void MainWindow::action_Shift_Find_Selection_triggered() {
+    if(DocumentWidget *document = currentDocument()) {
+        action_Shift_Find_Selection_triggered(document);
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -2166,8 +2257,15 @@ void MainWindow::on_action_Find_Incremental_triggered() {
 //------------------------------------------------------------------------------
 // Name:
 //------------------------------------------------------------------------------
-void MainWindow::action_Shift_Find_Incremental_triggered() {
+void MainWindow::action_Shift_Find_Incremental_triggered(DocumentWidget *document) {
+    Q_UNUSED(document);
     BeginISearchEx(Direction::BACKWARD);
+}
+
+void MainWindow::action_Shift_Find_Incremental_triggered() {
+    if(DocumentWidget *document = currentDocument()) {
+        action_Shift_Find_Incremental_triggered(document);
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -2214,8 +2312,8 @@ void MainWindow::on_editIFind_textChanged(const QString &text) {
        there's an incremental search already in progress, mark the operation
        as "continued" so the search routine knows to re-start the search
        from the original starting position */
-    if(DocumentWidget *doc = currentDocument()) {
-		doc->findIncrAP(text, direction, searchType, GetPrefSearchWraps(), iSearchStartPos_ != -1);
+    if(DocumentWidget *document = currentDocument()) {
+        document->findIncrAP(text, direction, searchType, GetPrefSearchWraps(), iSearchStartPos_ != -1);
     }
 }
 
@@ -2261,8 +2359,8 @@ void MainWindow::on_editIFind_returnPressed() {
     }
 
     // find the text and mark it
-    if(DocumentWidget *doc = currentDocument()) {
-        doc->findAP(searchString, direction, searchType, GetPrefSearchWraps());
+    if(DocumentWidget *document = currentDocument()) {
+        document->findAP(searchString, direction, searchType, GetPrefSearchWraps());
     }
 }
 
@@ -2475,31 +2573,33 @@ void MainWindow::EndISearchEx() {
     TempShowISearch(false);
 }
 
-void MainWindow::action_Shift_Replace_triggered() {
-    if(DocumentWidget *doc = currentDocument()) {
-        if (doc->CheckReadOnly()) {
-            return;
-        }
+void MainWindow::action_Shift_Replace_triggered(DocumentWidget *document) {
+    if (document->CheckReadOnly()) {
+        return;
+    }
 
-        DoFindReplaceDlogEx(
-                    this,
-                    currentDocument(),
-                    lastFocus_,
-                    Direction::BACKWARD,
-                    GetPrefKeepSearchDlogs(),
-                    GetPrefSearch());
+    DoFindReplaceDlogEx(
+                document,
+                lastFocus_,
+                Direction::BACKWARD,
+                GetPrefKeepSearchDlogs(),
+                GetPrefSearch());
+}
+
+void MainWindow::action_Shift_Replace_triggered() {
+    if(DocumentWidget *document = currentDocument()) {
+        action_Shift_Replace_triggered(document);
     }
 }
 
 void MainWindow::on_action_Replace_Find_Again_triggered() {
 
-    if(DocumentWidget *doc = currentDocument()) {
-        if (doc->CheckReadOnly()) {
+    if(DocumentWidget *document = currentDocument()) {
+        if (document->CheckReadOnly()) {
             return;
         }
 
         ReplaceFindSameEx(
-                    this,
                     currentDocument(),
                     lastFocus_,
                     Direction::FORWARD,
@@ -2507,55 +2607,56 @@ void MainWindow::on_action_Replace_Find_Again_triggered() {
     }
 }
 
-void MainWindow::action_Shift_Replace_Find_Again_triggered() {
-    if(DocumentWidget *doc = currentDocument()) {
-        if (doc->CheckReadOnly()) {
-            return;
-        }
-
-        ReplaceFindSameEx(
-                    this,
-                    currentDocument(),
-                    lastFocus_,
-                    Direction::BACKWARD,
-                    GetPrefSearchWraps());
+void MainWindow::action_Shift_Replace_Find_Again_triggered(DocumentWidget *document) {
+    if (document->CheckReadOnly()) {
+        return;
     }
+
+    ReplaceFindSameEx(
+                document,
+                lastFocus_,
+                Direction::BACKWARD,
+                GetPrefSearchWraps());
 }
 
-void MainWindow::action_Replace_Again(Direction direction, WrapMode wrap) {
-    if(DocumentWidget *doc = currentDocument()) {
-        if (doc->CheckReadOnly()) {
-            return;
-        }
-
-        ReplaceSameEx(
-                    this,
-                    currentDocument(),
-                    lastFocus_,
-                    direction,
-                    wrap);
+void MainWindow::action_Replace_Again(DocumentWidget *document, Direction direction, WrapMode wrap) {
+    if (document->CheckReadOnly()) {
+        return;
     }
+
+    ReplaceSameEx(
+                document,
+                lastFocus_,
+                direction,
+                wrap);
 }
 
 /**
  * @brief MainWindow::on_action_Replace_Again_triggered
  */
 void MainWindow::on_action_Replace_Again_triggered() {
-    action_Replace_Again(Direction::FORWARD, GetPrefSearchWraps());
+    action_Replace_Again(
+                currentDocument(),
+                Direction::FORWARD,
+                GetPrefSearchWraps());
 }
 
 /**
  * @brief MainWindow::action_Shift_Replace_Again_triggered
  */
 void MainWindow::action_Shift_Replace_Again_triggered() {
-    action_Replace_Again(Direction::BACKWARD, GetPrefSearchWraps());
+    action_Replace_Again(
+                currentDocument(),
+                Direction::BACKWARD,
+                GetPrefSearchWraps());
 }
 
 /**
  * @brief MainWindow::action_Mark
  * @param mark
  */
-void MainWindow::action_Mark(const QString &mark) {
+void MainWindow::action_Mark(DocumentWidget *document, const QString &mark) {
+
     if (mark.size() != 1 || !mark[0].isLetter()) {
         qWarning("NEdit: action requires a single-letter label");
         QApplication::beep();
@@ -2563,25 +2664,18 @@ void MainWindow::action_Mark(const QString &mark) {
     }
 
     EMIT_EVENT_ARG_1("mark", mark);
-
-    if(DocumentWidget *doc = currentDocument()) {
-        doc->markAP(mark[0]);
-    }
+    document->markAP(mark[0]);
 }
 
-/**
- * @brief MainWindow::on_action_Mark_triggered
- */
-void MainWindow::on_action_Mark_triggered() {
-
+void MainWindow::action_Mark(DocumentWidget *document) {
     bool ok;
     QString result = QInputDialog::getText(
         this,
         tr("Mark"),
         tr("Enter a single letter label to use for recalling\n"
-              "the current selection and cursor position.\n\n"
-              "(To skip this dialog, use the accelerator key,\n"
-              "followed immediately by a letter key (a-z))"),
+           "the current selection and cursor position.\n\n"
+           "(To skip this dialog, use the accelerator key,\n"
+           "followed immediately by a letter key (a-z))"),
         QLineEdit::Normal,
         QString(),
         &ok);
@@ -2590,7 +2684,16 @@ void MainWindow::on_action_Mark_triggered() {
         return;
     }
 
-    action_Mark(result);
+    action_Mark(document, result);
+}
+
+/**
+ * @brief MainWindow::on_action_Mark_triggered
+ */
+void MainWindow::on_action_Mark_triggered() {
+    if(DocumentWidget *document = currentDocument()) {
+        action_Mark(document);
+    }
 }
 
 /**
@@ -2601,33 +2704,35 @@ void MainWindow::action_Mark_Shortcut_triggered() {
     if(auto shortcut = qobject_cast<QShortcut *>(sender())) {
         QKeySequence sequence = shortcut->key();
 
+        DocumentWidget *document = currentDocument();
+
         switch(sequence[1]) {
-        case Qt::Key_A: action_Mark(QLatin1String("A")); break;
-        case Qt::Key_B: action_Mark(QLatin1String("B")); break;
-        case Qt::Key_C: action_Mark(QLatin1String("C")); break;
-        case Qt::Key_D: action_Mark(QLatin1String("D")); break;
-        case Qt::Key_E: action_Mark(QLatin1String("E")); break;
-        case Qt::Key_F: action_Mark(QLatin1String("F")); break;
-        case Qt::Key_G: action_Mark(QLatin1String("G")); break;
-        case Qt::Key_H: action_Mark(QLatin1String("H")); break;
-        case Qt::Key_I: action_Mark(QLatin1String("I")); break;
-        case Qt::Key_J: action_Mark(QLatin1String("J")); break;
-        case Qt::Key_K: action_Mark(QLatin1String("K")); break;
-        case Qt::Key_L: action_Mark(QLatin1String("L")); break;
-        case Qt::Key_M: action_Mark(QLatin1String("M")); break;
-        case Qt::Key_N: action_Mark(QLatin1String("N")); break;
-        case Qt::Key_O: action_Mark(QLatin1String("O")); break;
-        case Qt::Key_P: action_Mark(QLatin1String("P")); break;
-        case Qt::Key_Q: action_Mark(QLatin1String("Q")); break;
-        case Qt::Key_R: action_Mark(QLatin1String("R")); break;
-        case Qt::Key_S: action_Mark(QLatin1String("S")); break;
-        case Qt::Key_T: action_Mark(QLatin1String("T")); break;
-        case Qt::Key_U: action_Mark(QLatin1String("U")); break;
-        case Qt::Key_V: action_Mark(QLatin1String("V")); break;
-        case Qt::Key_W: action_Mark(QLatin1String("W")); break;
-        case Qt::Key_X: action_Mark(QLatin1String("X")); break;
-        case Qt::Key_Y: action_Mark(QLatin1String("Y")); break;
-        case Qt::Key_Z: action_Mark(QLatin1String("Z")); break;
+        case Qt::Key_A: action_Mark(document, QLatin1String("A")); break;
+        case Qt::Key_B: action_Mark(document, QLatin1String("B")); break;
+        case Qt::Key_C: action_Mark(document, QLatin1String("C")); break;
+        case Qt::Key_D: action_Mark(document, QLatin1String("D")); break;
+        case Qt::Key_E: action_Mark(document, QLatin1String("E")); break;
+        case Qt::Key_F: action_Mark(document, QLatin1String("F")); break;
+        case Qt::Key_G: action_Mark(document, QLatin1String("G")); break;
+        case Qt::Key_H: action_Mark(document, QLatin1String("H")); break;
+        case Qt::Key_I: action_Mark(document, QLatin1String("I")); break;
+        case Qt::Key_J: action_Mark(document, QLatin1String("J")); break;
+        case Qt::Key_K: action_Mark(document, QLatin1String("K")); break;
+        case Qt::Key_L: action_Mark(document, QLatin1String("L")); break;
+        case Qt::Key_M: action_Mark(document, QLatin1String("M")); break;
+        case Qt::Key_N: action_Mark(document, QLatin1String("N")); break;
+        case Qt::Key_O: action_Mark(document, QLatin1String("O")); break;
+        case Qt::Key_P: action_Mark(document, QLatin1String("P")); break;
+        case Qt::Key_Q: action_Mark(document, QLatin1String("Q")); break;
+        case Qt::Key_R: action_Mark(document, QLatin1String("R")); break;
+        case Qt::Key_S: action_Mark(document, QLatin1String("S")); break;
+        case Qt::Key_T: action_Mark(document, QLatin1String("T")); break;
+        case Qt::Key_U: action_Mark(document, QLatin1String("U")); break;
+        case Qt::Key_V: action_Mark(document, QLatin1String("V")); break;
+        case Qt::Key_W: action_Mark(document, QLatin1String("W")); break;
+        case Qt::Key_X: action_Mark(document, QLatin1String("X")); break;
+        case Qt::Key_Y: action_Mark(document, QLatin1String("Y")); break;
+        case Qt::Key_Z: action_Mark(document, QLatin1String("Z")); break;
         default:
             QApplication::beep();
             break;
@@ -2635,23 +2740,21 @@ void MainWindow::action_Mark_Shortcut_triggered() {
     }
 }
 
-void MainWindow::action_Goto_Mark(const QString &mark, bool extend) {
+void MainWindow::action_Goto_Mark(DocumentWidget *document, const QString &mark, bool extend) {
     if (mark.size() != 1 || !mark[0].isLetter()) {
         qWarning("NEdit: action requires a single-letter label");
         QApplication::beep();
         return;
     }
 
-    if(DocumentWidget *doc = currentDocument()) {
-        doc->gotoMarkAP(mark[0], extend);
-    }
+    document->gotoMarkAP(mark[0], extend);
 }
 
 /**
  * @brief MainWindow::action_Goto_Mark_Dialog
  * @param extend
  */
-void MainWindow::action_Goto_Mark_Dialog(bool extend) {
+void MainWindow::action_Goto_Mark_Dialog(DocumentWidget *document, bool extend) {
     bool ok;
     QString result = QInputDialog::getText(
         this,
@@ -2668,7 +2771,7 @@ void MainWindow::action_Goto_Mark_Dialog(bool extend) {
         return;
     }
 
-    action_Goto_Mark(result, extend);
+    action_Goto_Mark(document, result, extend);
 }
 
 /**
@@ -2677,41 +2780,44 @@ void MainWindow::action_Goto_Mark_Dialog(bool extend) {
 void MainWindow::on_action_Goto_Mark_triggered() {
 
     bool extend = (QApplication::keyboardModifiers() & Qt::SHIFT);
-    action_Goto_Mark_Dialog(extend);
+    action_Goto_Mark_Dialog(currentDocument(), extend);
 }
 
 
 void MainWindow::action_Shift_Goto_Mark_Shortcut_triggered() {
+
     if(auto shortcut = qobject_cast<QShortcut *>(sender())) {
         QKeySequence sequence = shortcut->key();
 
+        DocumentWidget *document = currentDocument();
+
         switch(sequence[1]) {
-        case Qt::Key_A: action_Goto_Mark(QLatin1String("A"), true); break;
-        case Qt::Key_B: action_Goto_Mark(QLatin1String("B"), true); break;
-        case Qt::Key_C: action_Goto_Mark(QLatin1String("C"), true); break;
-        case Qt::Key_D: action_Goto_Mark(QLatin1String("D"), true); break;
-        case Qt::Key_E: action_Goto_Mark(QLatin1String("E"), true); break;
-        case Qt::Key_F: action_Goto_Mark(QLatin1String("F"), true); break;
-        case Qt::Key_G: action_Goto_Mark(QLatin1String("G"), true); break;
-        case Qt::Key_H: action_Goto_Mark(QLatin1String("H"), true); break;
-        case Qt::Key_I: action_Goto_Mark(QLatin1String("I"), true); break;
-        case Qt::Key_J: action_Goto_Mark(QLatin1String("J"), true); break;
-        case Qt::Key_K: action_Goto_Mark(QLatin1String("K"), true); break;
-        case Qt::Key_L: action_Goto_Mark(QLatin1String("L"), true); break;
-        case Qt::Key_M: action_Goto_Mark(QLatin1String("M"), true); break;
-        case Qt::Key_N: action_Goto_Mark(QLatin1String("N"), true); break;
-        case Qt::Key_O: action_Goto_Mark(QLatin1String("O"), true); break;
-        case Qt::Key_P: action_Goto_Mark(QLatin1String("P"), true); break;
-        case Qt::Key_Q: action_Goto_Mark(QLatin1String("Q"), true); break;
-        case Qt::Key_R: action_Goto_Mark(QLatin1String("R"), true); break;
-        case Qt::Key_S: action_Goto_Mark(QLatin1String("S"), true); break;
-        case Qt::Key_T: action_Goto_Mark(QLatin1String("T"), true); break;
-        case Qt::Key_U: action_Goto_Mark(QLatin1String("U"), true); break;
-        case Qt::Key_V: action_Goto_Mark(QLatin1String("V"), true); break;
-        case Qt::Key_W: action_Goto_Mark(QLatin1String("W"), true); break;
-        case Qt::Key_X: action_Goto_Mark(QLatin1String("X"), true); break;
-        case Qt::Key_Y: action_Goto_Mark(QLatin1String("Y"), true); break;
-        case Qt::Key_Z: action_Goto_Mark(QLatin1String("Z"), true); break;
+        case Qt::Key_A: action_Goto_Mark(document, QLatin1String("A"), true); break;
+        case Qt::Key_B: action_Goto_Mark(document, QLatin1String("B"), true); break;
+        case Qt::Key_C: action_Goto_Mark(document, QLatin1String("C"), true); break;
+        case Qt::Key_D: action_Goto_Mark(document, QLatin1String("D"), true); break;
+        case Qt::Key_E: action_Goto_Mark(document, QLatin1String("E"), true); break;
+        case Qt::Key_F: action_Goto_Mark(document, QLatin1String("F"), true); break;
+        case Qt::Key_G: action_Goto_Mark(document, QLatin1String("G"), true); break;
+        case Qt::Key_H: action_Goto_Mark(document, QLatin1String("H"), true); break;
+        case Qt::Key_I: action_Goto_Mark(document, QLatin1String("I"), true); break;
+        case Qt::Key_J: action_Goto_Mark(document, QLatin1String("J"), true); break;
+        case Qt::Key_K: action_Goto_Mark(document, QLatin1String("K"), true); break;
+        case Qt::Key_L: action_Goto_Mark(document, QLatin1String("L"), true); break;
+        case Qt::Key_M: action_Goto_Mark(document, QLatin1String("M"), true); break;
+        case Qt::Key_N: action_Goto_Mark(document, QLatin1String("N"), true); break;
+        case Qt::Key_O: action_Goto_Mark(document, QLatin1String("O"), true); break;
+        case Qt::Key_P: action_Goto_Mark(document, QLatin1String("P"), true); break;
+        case Qt::Key_Q: action_Goto_Mark(document, QLatin1String("Q"), true); break;
+        case Qt::Key_R: action_Goto_Mark(document, QLatin1String("R"), true); break;
+        case Qt::Key_S: action_Goto_Mark(document, QLatin1String("S"), true); break;
+        case Qt::Key_T: action_Goto_Mark(document, QLatin1String("T"), true); break;
+        case Qt::Key_U: action_Goto_Mark(document, QLatin1String("U"), true); break;
+        case Qt::Key_V: action_Goto_Mark(document, QLatin1String("V"), true); break;
+        case Qt::Key_W: action_Goto_Mark(document, QLatin1String("W"), true); break;
+        case Qt::Key_X: action_Goto_Mark(document, QLatin1String("X"), true); break;
+        case Qt::Key_Y: action_Goto_Mark(document, QLatin1String("Y"), true); break;
+        case Qt::Key_Z: action_Goto_Mark(document, QLatin1String("Z"), true); break;
         default:
             QApplication::beep();
             break;
@@ -2723,33 +2829,35 @@ void MainWindow::action_Goto_Mark_Shortcut_triggered() {
     if(auto shortcut = qobject_cast<QShortcut *>(sender())) {
         QKeySequence sequence = shortcut->key();
 
+        DocumentWidget *document = currentDocument();
+
         switch(sequence[1]) {
-        case Qt::Key_A: action_Goto_Mark(QLatin1String("A"), false); break;
-        case Qt::Key_B: action_Goto_Mark(QLatin1String("B"), false); break;
-        case Qt::Key_C: action_Goto_Mark(QLatin1String("C"), false); break;
-        case Qt::Key_D: action_Goto_Mark(QLatin1String("D"), false); break;
-        case Qt::Key_E: action_Goto_Mark(QLatin1String("E"), false); break;
-        case Qt::Key_F: action_Goto_Mark(QLatin1String("F"), false); break;
-        case Qt::Key_G: action_Goto_Mark(QLatin1String("G"), false); break;
-        case Qt::Key_H: action_Goto_Mark(QLatin1String("H"), false); break;
-        case Qt::Key_I: action_Goto_Mark(QLatin1String("I"), false); break;
-        case Qt::Key_J: action_Goto_Mark(QLatin1String("J"), false); break;
-        case Qt::Key_K: action_Goto_Mark(QLatin1String("K"), false); break;
-        case Qt::Key_L: action_Goto_Mark(QLatin1String("L"), false); break;
-        case Qt::Key_M: action_Goto_Mark(QLatin1String("M"), false); break;
-        case Qt::Key_N: action_Goto_Mark(QLatin1String("N"), false); break;
-        case Qt::Key_O: action_Goto_Mark(QLatin1String("O"), false); break;
-        case Qt::Key_P: action_Goto_Mark(QLatin1String("P"), false); break;
-        case Qt::Key_Q: action_Goto_Mark(QLatin1String("Q"), false); break;
-        case Qt::Key_R: action_Goto_Mark(QLatin1String("R"), false); break;
-        case Qt::Key_S: action_Goto_Mark(QLatin1String("S"), false); break;
-        case Qt::Key_T: action_Goto_Mark(QLatin1String("T"), false); break;
-        case Qt::Key_U: action_Goto_Mark(QLatin1String("U"), false); break;
-        case Qt::Key_V: action_Goto_Mark(QLatin1String("V"), false); break;
-        case Qt::Key_W: action_Goto_Mark(QLatin1String("W"), false); break;
-        case Qt::Key_X: action_Goto_Mark(QLatin1String("X"), false); break;
-        case Qt::Key_Y: action_Goto_Mark(QLatin1String("Y"), false); break;
-        case Qt::Key_Z: action_Goto_Mark(QLatin1String("Z"), false); break;
+        case Qt::Key_A: action_Goto_Mark(document, QLatin1String("A"), false); break;
+        case Qt::Key_B: action_Goto_Mark(document, QLatin1String("B"), false); break;
+        case Qt::Key_C: action_Goto_Mark(document, QLatin1String("C"), false); break;
+        case Qt::Key_D: action_Goto_Mark(document, QLatin1String("D"), false); break;
+        case Qt::Key_E: action_Goto_Mark(document, QLatin1String("E"), false); break;
+        case Qt::Key_F: action_Goto_Mark(document, QLatin1String("F"), false); break;
+        case Qt::Key_G: action_Goto_Mark(document, QLatin1String("G"), false); break;
+        case Qt::Key_H: action_Goto_Mark(document, QLatin1String("H"), false); break;
+        case Qt::Key_I: action_Goto_Mark(document, QLatin1String("I"), false); break;
+        case Qt::Key_J: action_Goto_Mark(document, QLatin1String("J"), false); break;
+        case Qt::Key_K: action_Goto_Mark(document, QLatin1String("K"), false); break;
+        case Qt::Key_L: action_Goto_Mark(document, QLatin1String("L"), false); break;
+        case Qt::Key_M: action_Goto_Mark(document, QLatin1String("M"), false); break;
+        case Qt::Key_N: action_Goto_Mark(document, QLatin1String("N"), false); break;
+        case Qt::Key_O: action_Goto_Mark(document, QLatin1String("O"), false); break;
+        case Qt::Key_P: action_Goto_Mark(document, QLatin1String("P"), false); break;
+        case Qt::Key_Q: action_Goto_Mark(document, QLatin1String("Q"), false); break;
+        case Qt::Key_R: action_Goto_Mark(document, QLatin1String("R"), false); break;
+        case Qt::Key_S: action_Goto_Mark(document, QLatin1String("S"), false); break;
+        case Qt::Key_T: action_Goto_Mark(document, QLatin1String("T"), false); break;
+        case Qt::Key_U: action_Goto_Mark(document, QLatin1String("U"), false); break;
+        case Qt::Key_V: action_Goto_Mark(document, QLatin1String("V"), false); break;
+        case Qt::Key_W: action_Goto_Mark(document, QLatin1String("W"), false); break;
+        case Qt::Key_X: action_Goto_Mark(document, QLatin1String("X"), false); break;
+        case Qt::Key_Y: action_Goto_Mark(document, QLatin1String("Y"), false); break;
+        case Qt::Key_Z: action_Goto_Mark(document, QLatin1String("Z"), false); break;
         default:
             QApplication::beep();
             break;
@@ -2757,15 +2865,23 @@ void MainWindow::action_Goto_Mark_Shortcut_triggered() {
     }
 }
 
+void MainWindow::action_Goto_Matching(DocumentWidget *document) {
+    document->GotoMatchingCharacter(lastFocus_);
+}
+
 void MainWindow::on_action_Goto_Matching_triggered() {
-    if(DocumentWidget *doc = currentDocument()) {
-        doc->GotoMatchingCharacter(lastFocus_);
+    if(DocumentWidget *document = currentDocument()) {
+        action_Goto_Matching(document);
     }
 }
 
+void MainWindow::action_Shift_Goto_Matching(DocumentWidget *document) {
+    document->SelectToMatchingCharacter(lastFocus_);
+}
+
 void MainWindow::action_Shift_Goto_Matching_triggered() {
-    if(DocumentWidget *doc = currentDocument()) {
-        doc->SelectToMatchingCharacter(lastFocus_);
+    if(DocumentWidget *document = currentDocument()) {
+        action_Shift_Goto_Matching(document);
     }
 }
 
@@ -2799,19 +2915,20 @@ void MainWindow::updateTagsFileMenuEx() {
 void MainWindow::unloadTipsFileCB(QAction *action) {
     auto filename = action->data().toString();
     if(!filename.isEmpty()) {
-        action_Unload_Tips_File(filename);
+        action_Unload_Tips_File(currentDocument(), filename);
     }
 }
 
 void MainWindow::unloadTagsFileCB(QAction *action) {
     auto filename = action->data().toString();
     if(!filename.isEmpty()) {
-        action_Unload_Tags_File(filename);
+        action_Unload_Tags_File(currentDocument(), filename);
     }
 }
 
-void MainWindow::action_Unload_Tips_File(const QString &filename) {
+void MainWindow::action_Unload_Tips_File(DocumentWidget *document, const QString &filename) {
 
+    Q_UNUSED(document);
     EMIT_EVENT_ARG_1("unload_tips_file", filename);
 
     if (DeleteTagsFileEx(filename, TagSearchMode::TIP, true)) {
@@ -2821,8 +2938,9 @@ void MainWindow::action_Unload_Tips_File(const QString &filename) {
     }
 }
 
-void MainWindow::action_Unload_Tags_File(const QString &filename) {
+void MainWindow::action_Unload_Tags_File(DocumentWidget *document, const QString &filename) {
 
+    Q_UNUSED(document);
     EMIT_EVENT_ARG_1("unload_tags_file", filename);
 
     if (DeleteTagsFileEx(filename, TagSearchMode::TAG, true)) {
@@ -2833,8 +2951,9 @@ void MainWindow::action_Unload_Tags_File(const QString &filename) {
 }
 
 
-void MainWindow::action_Load_Tips_File(const QString &filename) {
+void MainWindow::action_Load_Tips_File(DocumentWidget *document, const QString &filename) {
 
+    Q_UNUSED(document);
     EMIT_EVENT_ARG_1("load_tips_file", filename);
 
     if (!AddTagsFileEx(filename, TagSearchMode::TIP)) {
@@ -2842,105 +2961,133 @@ void MainWindow::action_Load_Tips_File(const QString &filename) {
     }
 }
 
-void MainWindow::action_Load_Tags_File(const QString &filename) {
-
-    EMIT_EVENT_ARG_1("load_tags_file", filename);
-
-    if (!AddTagsFileEx(filename, TagSearchMode::TAG)) {
-        QMessageBox::warning(this, tr("Error Reading File"), tr("Error reading ctags file:\n'%1'\ntags not loaded").arg(filename));
+void MainWindow::action_Load_Calltips_File(DocumentWidget *document) {
+    QString filename = PromptForExistingFileEx(document->path_, tr("Load Calltips File"));
+    if (filename.isNull()) {
+        return;
     }
+
+    action_Load_Tips_File(document, filename);
+    updateTipsFileMenuEx();
 }
 
 void MainWindow::on_action_Load_Calltips_File_triggered() {
 
-    if(DocumentWidget *doc = currentDocument()) {
-        QString filename = PromptForExistingFileEx(doc->path_, tr("Load Calltips File"));
-        if (filename.isNull()) {
-            return;
-        }
-
-        action_Load_Tips_File(filename);
-        updateTipsFileMenuEx();
+    if(DocumentWidget *document = currentDocument()) {
+        action_Load_Calltips_File(document);
     }
+}
+
+void MainWindow::action_Load_Tags_File(DocumentWidget *document, const QString &filename) {
+
+    EMIT_EVENT_ARG_1("load_tags_file", filename);
+
+    if (!AddTagsFileEx(filename, TagSearchMode::TAG)) {
+        QMessageBox::warning(
+                    document,
+                    tr("Error Reading File"),
+                    tr("Error reading ctags file:\n'%1'\ntags not loaded").arg(filename));
+    }
+}
+
+void MainWindow::action_Load_Tags_File(DocumentWidget *document) {
+    QString filename = PromptForExistingFileEx(document->path_, tr("Load Tags File"));
+    if (filename.isNull()) {
+        return;
+    }
+
+    action_Load_Tags_File(document, filename);
+    updateTagsFileMenuEx();
 }
 
 void MainWindow::on_action_Load_Tags_File_triggered() {
 
-    if(DocumentWidget *doc = currentDocument()) {
-        QString filename = PromptForExistingFileEx(doc->path_, tr("Load Tags File"));
-        if (filename.isNull()) {
-            return;
-        }
-
-        action_Load_Tags_File(filename);
-        updateTagsFileMenuEx();
+    if(DocumentWidget *document = currentDocument()) {
+        action_Load_Tags_File(document);
     }
+}
+
+void MainWindow::action_Load_Macro_File(DocumentWidget *document, const QString &filename) {
+
+    EMIT_EVENT_ARG_1("load_macro_file", filename);
+    document->ReadMacroFileEx(filename, true);
+}
+
+void MainWindow::action_Load_Macro_File(DocumentWidget *document) {
+    QString filename = PromptForExistingFileEx(document->path_, tr("Load Macro File"));
+    if (filename.isNull()) {
+        return;
+    }
+
+    action_Load_Macro_File(document, filename);
 }
 
 void MainWindow::on_action_Load_Macro_File_triggered() {
-    if(DocumentWidget *doc = currentDocument()) {
-        QString filename = PromptForExistingFileEx(doc->path_, tr("Load Macro File"));
-        if (filename.isNull()) {
-            return;
-        }
-
-        action_Load_Macro_File(filename);
+    if(DocumentWidget *document = currentDocument()) {
+        action_Load_Macro_File(document);
     }
 }
 
-void MainWindow::action_Load_Macro_File(const QString &filename) {
-
-    EMIT_EVENT_ARG_1("load_macro_file", filename);
-
-    if(DocumentWidget *doc = currentDocument()) {
-		doc->ReadMacroFileEx(filename, true);
-    }
+void MainWindow::action_Print(DocumentWidget *document) {
+    document->PrintWindow(lastFocus_, false);
 }
 
 void MainWindow::on_action_Print_triggered() {
 
     EMIT_EVENT("print");
-
-    if(DocumentWidget *doc = currentDocument()) {
-        doc->PrintWindow(lastFocus_, false);
+    if(DocumentWidget *document = currentDocument()) {
+        action_Print(document);
     }
+}
+
+void MainWindow::action_Print_Selection(DocumentWidget *document) {
+    document->PrintWindow(lastFocus_, true);
 }
 
 void MainWindow::on_action_Print_Selection_triggered() {
 
     EMIT_EVENT("print_selection");
-
-    if(DocumentWidget *doc = currentDocument()) {
-        doc->PrintWindow(lastFocus_, true);
+    if(DocumentWidget *document = currentDocument()) {
+        action_Print_Selection(document);
     }
+}
+
+void MainWindow::action_Split_Pane(DocumentWidget *document) {
+    document->splitPane();
+    ui.action_Close_Pane->setEnabled(document->textPanesCount() > 1);
 }
 
 void MainWindow::on_action_Split_Pane_triggered() {
 
     EMIT_EVENT("split_pane");
-
-    if(DocumentWidget *doc = currentDocument()) {
-        doc->splitPane();
-        ui.action_Close_Pane->setEnabled(doc->textPanesCount() > 1);
+    if(DocumentWidget *document = currentDocument()) {
+        action_Split_Pane(document);
     }
+}
+
+void MainWindow::action_Close_Pane(DocumentWidget *document) {
+    document->closePane();
+    ui.action_Close_Pane->setEnabled(document->textPanesCount() > 1);
 }
 
 void MainWindow::on_action_Close_Pane_triggered() {
 
     EMIT_EVENT("close_pane");
 
-    if(DocumentWidget *doc = currentDocument()) {
-        doc->closePane();
-        ui.action_Close_Pane->setEnabled(doc->textPanesCount() > 1);
+    if(DocumentWidget *document = currentDocument()) {
+        action_Close_Pane(document);
     }
+}
+
+void MainWindow::action_Move_Tab_To(DocumentWidget *document) {
+    document->moveDocument(this);
 }
 
 void MainWindow::on_action_Move_Tab_To_triggered() {
 
     EMIT_EVENT("move_document_dialog");
-
-    if(DocumentWidget *doc = currentDocument()) {
-        doc->moveDocument(this);
+    if(DocumentWidget *document = currentDocument()) {
+        action_Move_Tab_To(document);
     }
 }
 
@@ -3672,11 +3819,11 @@ void MainWindow::action_Next_Document() {
 
             // raise the window set the focus to the first document in it
             MainWindow *nextWindow = *nextIndex;
-            QWidget *firstWidget = nextWindow->ui.tabWidget->widget(0);
+            DocumentWidget *firstWidget = nextWindow->documentAt(0);
 
-            Q_ASSERT(qobject_cast<DocumentWidget *>(firstWidget));
+            Q_ASSERT(firstWidget);
 
-            if(auto document = qobject_cast<DocumentWidget *>(firstWidget)) {
+            if(auto document = firstWidget) {
                 document->RaiseFocusDocumentWindow(true);
                 nextWindow->ui.tabWidget->setCurrentWidget(document);
             }
@@ -3714,7 +3861,7 @@ void MainWindow::action_Prev_Document() {
 
             // raise the window set the focus to the first document in it
             MainWindow *nextWindow = *nextIndex;
-            QWidget *lastWidget = nextWindow->ui.tabWidget->widget(nextWindow->ui.tabWidget->count() - 1);
+            QWidget *lastWidget = nextWindow->documentAt(nextWindow->ui.tabWidget->count() - 1);
 
             Q_ASSERT(qobject_cast<DocumentWidget *>(lastWidget));
 
@@ -3847,16 +3994,19 @@ void MainWindow::BusyWaitEx() {
     }
 }
 
+void MainWindow::action_Save(DocumentWidget *document) {
+    if (document->CheckReadOnly()) {
+        return;
+    }
+
+    document->SaveWindow();
+}
+
 void MainWindow::on_action_Save_triggered() {
 
     EMIT_EVENT("save");
-
     if(DocumentWidget *document = currentDocument()) {
-        if (document->CheckReadOnly()) {
-            return;
-        }
-
-        document->SaveWindow();
+        action_Save(document);
     }
 }
 
@@ -3961,7 +4111,7 @@ QString MainWindow::PromptForNewFileEx(DocumentWidget *document, const QString &
     return filename;
 }
 
-void MainWindow::action_Save_As(const QString &filename, bool wrapped) {
+void MainWindow::action_Save_As(DocumentWidget *document, const QString &filename, bool wrapped) {
 
     if(wrapped) {
         EMIT_EVENT_ARG_2("save_as", filename, QLatin1String("wrapped"));
@@ -3969,10 +4119,20 @@ void MainWindow::action_Save_As(const QString &filename, bool wrapped) {
         EMIT_EVENT_ARG_1("save_as", filename);
     }
 
+    document->SaveWindowAs(filename, wrapped);
+}
 
-    if(DocumentWidget *document = currentDocument()) {
-		document->SaveWindowAs(filename, wrapped);
-	}
+void MainWindow::action_Save_As(DocumentWidget *document) {
+    bool addWrap = false;
+    FileFormats fileFormat;
+
+    QString fullname = PromptForNewFileEx(document, tr("Save File As"), &fileFormat, &addWrap);
+    if (fullname.isNull()) {
+        return;
+    }
+
+    document->fileFormat_ = fileFormat;
+    action_Save_As(document, fullname, addWrap);
 }
 
 /**
@@ -3980,29 +4140,16 @@ void MainWindow::action_Save_As(const QString &filename, bool wrapped) {
  */
 void MainWindow::on_action_Save_As_triggered() {
     if(DocumentWidget *document = currentDocument()) {
-
-		bool addWrap = false;
-        FileFormats fileFormat;
-
-        QString fullname = PromptForNewFileEx(document, tr("Save File As"), &fileFormat, &addWrap);
-        if (fullname.isNull()) {
-            return;
-        }
-
-        document->fileFormat_ = fileFormat;
-		action_Save_As(fullname, addWrap);
+        action_Save_As(document);
     }
 }
 
 /**
  * @brief MainWindow::action_Revert_to_Saved
  */
-void MainWindow::action_Revert_to_Saved() {
+void MainWindow::action_Revert_to_Saved(DocumentWidget *document) {
     EMIT_EVENT("revert_to_saved");
-
-    if(DocumentWidget *document = currentDocument()) {
-        document->RevertToSaved();
-    }
+    document->RevertToSaved();
 }
 
 /**
@@ -4039,7 +4186,7 @@ void MainWindow::on_action_Revert_to_Saved_triggered() {
             }
         }
 
-        document->RevertToSaved();
+        action_Revert_to_Saved(document);
     }
 }
 
@@ -4058,12 +4205,9 @@ void MainWindow::on_action_New_Window_triggered() {
     }
 }
 
-//------------------------------------------------------------------------------
-// Name: on_action_Exit_triggered
-//------------------------------------------------------------------------------
-void MainWindow::on_action_Exit_triggered() {
+void MainWindow::action_Exit(DocumentWidget *document) {
 
-    EMIT_EVENT("exit");
+    Q_UNUSED(document);
 
     std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
 
@@ -4122,6 +4266,19 @@ void MainWindow::on_action_Exit_triggered() {
     if (CloseAllFilesAndWindowsEx()) {
         QApplication::quit();
     }
+}
+
+//------------------------------------------------------------------------------
+// Name: on_action_Exit_triggered
+//------------------------------------------------------------------------------
+void MainWindow::on_action_Exit_triggered() {
+
+    EMIT_EVENT("exit");
+    if(DocumentWidget *document = currentDocument()) {
+        action_Exit(document);
+    }
+
+
 }
 
 /*
@@ -4229,44 +4386,48 @@ void MainWindow::closeEvent(QCloseEvent *event) {
     }
 }
 
-void MainWindow::on_action_Execute_Command_Line_triggered() {
-    if(DocumentWidget *doc = currentDocument()) {
-        if (doc->CheckReadOnly()) {
-            return;
-        }
+void MainWindow::action_Execute_Command_Line(DocumentWidget *document) {
+    if (document->CheckReadOnly()) {
+        return;
+    }
 
-        doc->ExecCursorLineEx(lastFocus_, false);
+    document->ExecCursorLineEx(lastFocus_, false);
+}
+
+void MainWindow::on_action_Execute_Command_Line_triggered() {
+    if(DocumentWidget *document = currentDocument()) {
+        action_Execute_Command_Line(document);
     }
 }
 
 void MainWindow::on_action_Cancel_Shell_Command_triggered() {
-    if(DocumentWidget *doc = currentDocument()) {
-        doc->AbortShellCommandEx();
+    if(DocumentWidget *document = currentDocument()) {
+        document->AbortShellCommandEx();
     }
 }
 
 
 void MainWindow::on_action_Learn_Keystrokes_triggered() {
-    if(DocumentWidget *doc = currentDocument()) {
-		doc->BeginLearnEx();
+    if(DocumentWidget *document = currentDocument()) {
+        document->BeginLearnEx();
     }
 }
 
 void MainWindow::on_action_Finish_Learn_triggered() {
-    if(DocumentWidget *doc = currentDocument()) {
-        doc->FinishLearnEx();
+    if(DocumentWidget *document = currentDocument()) {
+        document->FinishLearnEx();
     }
 }
 
 void MainWindow::on_action_Replay_Keystrokes_triggered() {
-    if(DocumentWidget *doc = currentDocument()) {
-        doc->ReplayEx();
+    if(DocumentWidget *document = currentDocument()) {
+        document->ReplayEx();
     }
 }
 
 void MainWindow::on_action_Cancel_Learn_triggered() {
-    if(DocumentWidget *doc = currentDocument()) {
-        doc->CancelMacroOrLearnEx();
+    if(DocumentWidget *document = currentDocument()) {
+        document->CancelMacroOrLearnEx();
     }
 }
 
@@ -4306,8 +4467,7 @@ bool MainWindow::CloseAllFilesAndWindowsEx() {
     return true;
 }
 
-void MainWindow::on_action_Repeat_triggered() {
-
+void MainWindow::action_Repeat(DocumentWidget *document) {
     QString LastCommand = CommandRecorder::getInstance()->lastCommand;
 
     if(LastCommand.isNull()) {
@@ -4320,9 +4480,16 @@ void MainWindow::on_action_Repeat_triggered() {
         return;
     }
 
-    auto dialog = new DialogRepeat(currentDocument(), this);
+    auto dialog = new DialogRepeat(document, this);
     dialog->setCommand(LastCommand);
     dialog->show();
+}
+
+void MainWindow::on_action_Repeat_triggered() {
+
+    if(DocumentWidget *document = currentDocument()) {
+        action_Repeat(document);
+    }
 }
 
 
@@ -4390,32 +4557,15 @@ void MainWindow::DimPasteReplayBtns(bool enabled) {
  * @param keepDialogs
  * @param type
  */
-void MainWindow::action_Find(const QString &string, Direction direction, SearchType type, WrapMode searchWrap) {
+void MainWindow::action_Find(DocumentWidget *document, const QString &string, Direction direction, SearchType type, WrapMode searchWrap) {
 
     SearchAndSelectEx(
-        this,
-        currentDocument(),
-        lastFocus_,
-        direction,
-        string,
-        type,
-        searchWrap);
-}
-
-/**
- * @brief MainWindow::action_Find
- * @param string
- * @param direction
- * @param keepDialogs
- * @param type
- */
-void MainWindow::action_Find_Dialog(Direction direction, SearchType type, bool keepDialog) {
-    DoFindDlogEx(
-        this,
-        currentDocument(),
-        direction,
-        keepDialog,
-        type);
+                document,
+                lastFocus_,
+                direction,
+                string,
+                type,
+                searchWrap);
 }
 
 /**
@@ -4423,51 +4573,28 @@ void MainWindow::action_Find_Dialog(Direction direction, SearchType type, bool k
  */
 void MainWindow::on_action_Find_triggered() {
     action_Find_Dialog(
-        Direction::FORWARD,
-        GetPrefSearch(),
-        GetPrefKeepSearchDlogs());
-}
-
-/**
- * @brief MainWindow::action_FindAgain
- * @param direction
- * @param wrap
- */
-void MainWindow::action_Find_Again(Direction direction, WrapMode wrap) {
-    SearchAndSelectSameEx(
-        this,
-        currentDocument(),
-        lastFocus_,
-        direction,
-        wrap);
+                currentDocument(),
+                Direction::FORWARD,
+                GetPrefSearch(),
+                GetPrefKeepSearchDlogs());
 }
 
 /**
  * @brief MainWindow::on_action_Find_Again_triggered
  */
 void MainWindow::on_action_Find_Again_triggered() {
-    action_Find_Again(Direction::FORWARD, GetPrefSearchWraps());
+    action_Find_Again(
+                currentDocument(),
+                Direction::FORWARD,
+                GetPrefSearchWraps());
 }
-
-/**
- * @brief MainWindow::action_Find_Selection
- */
-void MainWindow::action_Find_Selection(Direction direction, SearchType type, WrapMode wrap) {
-    SearchForSelectedEx(
-        this,
-        currentDocument(),
-        lastFocus_,
-        direction,
-        type,
-        wrap);
-}
-
 
 /**
  * @brief MainWindow::on_action_Find_Selection_triggered
  */
 void MainWindow::on_action_Find_Selection_triggered() {
     action_Find_Selection(
+                currentDocument(),
                 Direction::FORWARD,
                 GetPrefSearch(),
                 GetPrefSearchWraps());
@@ -4481,22 +4608,19 @@ void MainWindow::on_action_Find_Selection_triggered() {
  * @param type
  * @param wrap
  */
-void MainWindow::action_Replace(Direction direction, const QString &searchString, const QString &replaceString, SearchType type, WrapMode wrap) {
-    if(DocumentWidget *doc = currentDocument()) {
-        if (doc->CheckReadOnly()) {
-            return;
-        }
-
-        SearchAndReplaceEx(
-                    this,
-                    doc,
-                    lastFocus_,
-                    direction,
-                    searchString,
-                    replaceString,
-                    type,
-                    wrap);
+void MainWindow::action_Replace(DocumentWidget *document, Direction direction, const QString &searchString, const QString &replaceString, SearchType type, WrapMode wrap) {
+    if (document->CheckReadOnly()) {
+        return;
     }
+
+    SearchAndReplaceEx(
+                document,
+                lastFocus_,
+                direction,
+                searchString,
+                replaceString,
+                type,
+                wrap);
 }
 
 /**
@@ -4505,27 +4629,29 @@ void MainWindow::action_Replace(Direction direction, const QString &searchString
  * @param type
  * @param keepDialog
  */
-void MainWindow::action_Replace_Dialog(Direction direction, SearchType type, bool keepDialog) {
-    if(DocumentWidget *doc = currentDocument()) {
-        if (doc->CheckReadOnly()) {
-            return;
-        }
+void MainWindow::action_Replace_Dialog(DocumentWidget *document, Direction direction, SearchType type, bool keepDialog) {
 
-        DoFindReplaceDlogEx(
-                    this,
-                    currentDocument(),
-                    lastFocus_,
-                    direction,
-                    keepDialog,
-                    type);
+    if (document->CheckReadOnly()) {
+        return;
     }
+
+    DoFindReplaceDlogEx(
+                document,
+                lastFocus_,
+                direction,
+                keepDialog,
+                type);
 }
 
 /**
  * @brief MainWindow::on_action_Replace_triggered
  */
 void MainWindow::on_action_Replace_triggered() {
-    action_Replace_Dialog(Direction::FORWARD, GetPrefSearch(), GetPrefKeepSearchDlogs());
+    action_Replace_Dialog(
+                currentDocument(),
+                Direction::FORWARD,
+                GetPrefSearch(),
+                GetPrefKeepSearchDlogs());
 }
 
 /**
@@ -4534,50 +4660,79 @@ void MainWindow::on_action_Replace_triggered() {
  * @param replaceString
  * @param type
  */
-void MainWindow::action_Replace_All(const QString &searchString, const QString &replaceString, SearchType type) {
-    if(DocumentWidget *doc = currentDocument()) {
-        if (doc->CheckReadOnly()) {
+void MainWindow::action_Replace_All(DocumentWidget *document, const QString &searchString, const QString &replaceString, SearchType type) {
+        if (document->CheckReadOnly()) {
             return;
         }
 
         ReplaceAllEx(
-                    this,
-                    currentDocument(),
+                    document,
                     lastFocus_,
                     searchString,
                     replaceString,
                     type);
-    }
 }
 
-void MainWindow::action_Show_Tip(const QString &argument) {
-    if(DocumentWidget *doc = currentDocument()) {
-        doc->FindDefCalltip(lastFocus_, argument);
-    }
+void MainWindow::action_Show_Tip(DocumentWidget *document, const QString &argument) {
+    document->FindDefCalltip(lastFocus_, argument);
 }
 
 /**
  * @brief MainWindow::action_Find_Definition
  * @param argument
  */
-void MainWindow::action_Find_Definition(const QString &argument) {
-     if(DocumentWidget *doc = currentDocument()) {
-         doc->FindDefinition(lastFocus_, argument);
-     }
+void MainWindow::action_Find_Definition(DocumentWidget *document, const QString &argument) {
+    document->FindDefinition(lastFocus_, argument);
+}
+
+void MainWindow::action_Find_Definition(DocumentWidget *document) {
+    action_Find_Definition(document, QString());
 }
 
 /**
  * @brief MainWindow::on_action_Find_Definition_triggered
  */
 void MainWindow::on_action_Find_Definition_triggered() {
-    action_Find_Definition(QString());
+    action_Find_Definition(currentDocument());
+}
+
+void MainWindow::action_Show_Calltip(DocumentWidget *document) {
+    action_Show_Tip(document, QString());
 }
 
 /**
  * @brief MainWindow::on_action_Show_Calltip_triggered
  */
 void MainWindow::on_action_Show_Calltip_triggered() {
-    action_Show_Tip(QString());
+    action_Show_Calltip(currentDocument());
+}
+
+void MainWindow::action_Filter_Selection(DocumentWidget *document) {
+
+    // NOTE(eteran): if we change the order of operations here,
+    // then we can remove the redundancies with this and action_Filter_Selection
+    static QPointer<DialogFilter> dialog;
+
+    if (document->CheckReadOnly()) {
+        return;
+    }
+
+    if (!document->buffer_->primary_.selected) {
+        QApplication::beep();
+        return;
+    }
+
+    if(!dialog) {
+        dialog = new DialogFilter(this);
+    }
+
+    int r = dialog->exec();
+    if(!r) {
+        return;
+    }
+
+    QString filterText = dialog->ui.textFilter->text();
+    action_Filter_Selection(document, filterText);
 }
 
 /**
@@ -4585,31 +4740,8 @@ void MainWindow::on_action_Show_Calltip_triggered() {
  */
 void MainWindow::on_action_Filter_Selection_triggered() {
 
-    // NOTE(eteran): if we change the order of operations here,
-    // then we can remove the redundancies with this and action_Filter_Selection
-    if(DocumentWidget *doc = currentDocument()) {
-        static QPointer<DialogFilter> dialog;
-
-        if (doc->CheckReadOnly()) {
-            return;
-        }
-
-        if (!doc->buffer_->primary_.selected) {
-            QApplication::beep();
-            return;
-        }
-
-        if(!dialog) {
-            dialog = new DialogFilter(this);
-        }
-
-        int r = dialog->exec();
-        if(!r) {
-            return;
-        }
-
-        QString filterText = dialog->ui.textFilter->text();
-        action_Filter_Selection(filterText);
+    if(DocumentWidget *document = currentDocument()) {
+        action_Filter_Selection(document);
     }
 }
 
@@ -4617,21 +4749,19 @@ void MainWindow::on_action_Filter_Selection_triggered() {
  * @brief action_Filter_Selection
  * @param filter
  */
-void MainWindow::action_Filter_Selection(const QString &filter) {
-    if(DocumentWidget *doc = currentDocument()) {
+void MainWindow::action_Filter_Selection(DocumentWidget *document, const QString &filter) {
 
-        if (doc->CheckReadOnly()) {
-            return;
-        }
+    if (document->CheckReadOnly()) {
+        return;
+    }
 
-        if (!doc->buffer_->primary_.selected) {
-            QApplication::beep();
-            return;
-        }
+    if (!document->buffer_->primary_.selected) {
+        QApplication::beep();
+        return;
+    }
 
-        if(!filter.isEmpty()) {
-            doc->filterSelection(filter);
-        }
+    if(!filter.isEmpty()) {
+        document->filterSelection(filter);
     }
 }
 
@@ -4639,16 +4769,36 @@ void MainWindow::action_Filter_Selection(const QString &filter) {
  * @brief MainWindow::action_Execute_Command
  * @param command
  */
-void MainWindow::action_Execute_Command(const QString &command) {
-    if(DocumentWidget *doc = currentDocument()) {
+void MainWindow::action_Execute_Command(DocumentWidget *document, const QString &command) {
 
-        if (doc->CheckReadOnly())
-            return;
+    if (document->CheckReadOnly())
+        return;
 
-        if(!command.isEmpty()) {
-            doc->execAP(lastFocus_, command);
-        }
+    if(!command.isEmpty()) {
+        document->execAP(lastFocus_, command);
     }
+}
+
+void MainWindow::action_Execute_Command(DocumentWidget *document) {
+
+    // NOTE(eteran): if we change the order of operations here,
+    // then we can remove the redundancies with this and action_Execute_Command
+    static QPointer<DialogExecuteCommand> dialog;
+
+    if (document->CheckReadOnly())
+        return;
+
+    if(!dialog) {
+        dialog = new DialogExecuteCommand(this);
+    }
+
+    int r = dialog->exec();
+    if(!r) {
+        return;
+    }
+
+    QString commandText = dialog->ui.textCommand->text();
+    action_Execute_Command(document, commandText);
 }
 
 /**
@@ -4656,25 +4806,9 @@ void MainWindow::action_Execute_Command(const QString &command) {
  */
 void MainWindow::on_action_Execute_Command_triggered() {
 
-    // NOTE(eteran): if we change the order of operations here,
-    // then we can remove the redundancies with this and action_Execute_Command
-    if(DocumentWidget *doc = currentDocument()) {
-        static QPointer<DialogExecuteCommand> dialog;
 
-        if (doc->CheckReadOnly())
-            return;
-
-        if(!dialog) {
-            dialog = new DialogExecuteCommand(this);
-        }
-
-        int r = dialog->exec();
-        if(!r) {
-            return;
-        }
-
-        QString commandText = dialog->ui.textCommand->text();
-        action_Execute_Command(commandText);
+    if(DocumentWidget *document = currentDocument()) {
+        action_Execute_Command(document);
     }
 }
 
@@ -4685,17 +4819,15 @@ void MainWindow::on_action_Execute_Command_triggered() {
 void MainWindow::shellTriggered(QAction *action) {
     const int index = action->data().toInt();
     const QString name = ShellMenuData[index].item->name;
-    action_Shell_Menu_Command(name);
+    action_Shell_Menu_Command(currentDocument(), name);
 }
 
 /**
  * @brief MainWindow::action_Shell_Menu_Command
  * @param command
  */
-void MainWindow::action_Shell_Menu_Command(const QString &name) {
-    if(DocumentWidget *doc = currentDocument()) {
-        doc->DoNamedShellMenuCmd(lastFocus_, name, false);
-    }
+void MainWindow::action_Shell_Menu_Command(DocumentWidget *document, const QString &name) {
+    document->DoNamedShellMenuCmd(lastFocus_, name, false);
 }
 
 /**
@@ -4714,27 +4846,24 @@ void MainWindow::macroTriggered(QAction *action) {
        level, however, a call here with a macro running means that THE USER
        is explicitly invoking another macro via the menu or an accelerator,
        UNLESS the macro event marker is set */
-    if(DocumentWidget *doc = currentDocument()) {
-        if(doc->macroCmdData_) {
+    if(DocumentWidget *document = currentDocument()) {
+        if(document->macroCmdData_) {
             QApplication::beep();
             return;
         }
-    }
 
-    const int index = action->data().toInt();
-    const QString name = MacroMenuData[index].item->name;
-    action_Macro_Menu_Command(name);
+        const int index = action->data().toInt();
+        const QString name = MacroMenuData[index].item->name;
+        action_Macro_Menu_Command(document, name);
+    }
 }
 
 /**
  * @brief MainWindow::action_Macro_Menu_Command
  * @param name
  */
-void MainWindow::action_Macro_Menu_Command(const QString &name) {
-
-    if(DocumentWidget *doc = currentDocument()) {
-        doc->DoNamedMacroMenuCmd(lastFocus_, name, false);
-    }
+void MainWindow::action_Macro_Menu_Command(DocumentWidget *document, const QString &name) {
+    document->DoNamedMacroMenuCmd(lastFocus_, name, false);
 }
 
 /**
@@ -4742,28 +4871,23 @@ void MainWindow::action_Macro_Menu_Command(const QString &name) {
  * @param macro
  * @param how
  */
-void MainWindow::action_Repeat_Macro(const QString &macro, int how) {
+void MainWindow::action_Repeat_Macro(DocumentWidget *document, const QString &macro, int how) {
 
     EMIT_EVENT("repeat_macro");
-
-    if(DocumentWidget *doc = currentDocument()) {
-        doc->repeatMacro(macro, how);
-    }
+    document->repeatMacro(macro, how);
 }
 
 void MainWindow::on_action_Detach_Tab_triggered() {
 
     EMIT_EVENT("detach_document");
-
-    if(DocumentWidget *doc = currentDocument()) {
-        action_Detach_Document(doc);
+    if(DocumentWidget *document = currentDocument()) {
+        action_Detach_Document(document);
     }
 }
 
 void MainWindow::action_Detach_Document(DocumentWidget *document) {
     if(TabCount() > 1) {
         auto new_window = new MainWindow(nullptr);
-
         new_window->ui.tabWidget->addTab(document, document->filename_);
         new_window->show();
     }
@@ -4856,4 +4980,1127 @@ bool MainWindow::LMHasHighlightPatterns(const QString &languageMode) {
 
 
     return SyntaxPatterns && SyntaxPatterns->LMHasHighlightPatterns(languageMode);
+}
+
+void MainWindow::SetIncrementalSearchLineMS(bool value) {
+
+    EMIT_EVENT_ARG_1("set_incremental_search_line", QString::number(value));
+
+    showISearchLine_ = value;
+    no_signals(ui.action_Incremental_Search_Line)->setChecked(value);
+}
+
+/*
+** Search the text in "document", attempting to match "searchString"
+*/
+bool MainWindow::SearchWindowEx(DocumentWidget *document, Direction direction, const QString &searchString, SearchType searchType, WrapMode searchWrap, int beginPos, int *startPos, int *endPos, int *extentBW, int *extentFW) {
+    bool found;
+    int fileEnd = document->buffer_->BufGetLength() - 1;
+    bool outsideBounds;
+
+    // reject empty string
+    if (searchString.isEmpty()) {
+        return false;
+    }
+
+    // get the entire text buffer from the text area widget
+    view::string_view fileString = document->buffer_->BufAsStringEx();
+
+    /* If we're already outside the boundaries, we must consider wrapping
+       immediately (Note: fileEnd+1 is a valid starting position. Consider
+       searching for $ at the end of a file ending with \n.) */
+    if ((direction == Direction::FORWARD && beginPos > fileEnd + 1) || (direction == Direction::BACKWARD && beginPos < 0)) {
+        outsideBounds = true;
+    } else {
+        outsideBounds = false;
+    }
+
+    /* search the string copied from the text area widget, and present
+       dialogs, or just beep.  iSearchStartPos is not a perfect indicator that
+       an incremental search is in progress.  A parameter would be better. */
+    if (iSearchStartPos_ == -1) { // normal search
+
+        found = !outsideBounds && SearchString(
+                    fileString,
+                    searchString,
+                    direction,
+                    searchType,
+                    WrapMode::NoWrap,
+                    beginPos,
+                    startPos,
+                    endPos,
+                    extentBW,
+                    extentFW,
+                    document->GetWindowDelimitersEx());
+
+
+        if (auto dialog = qobject_cast<DialogFind *>(dialogFind_)) {
+            if(!dialog->keepDialog()) {
+                dialog->hide();
+            }
+        }
+
+        if(auto dialog = getDialogReplace()) {
+            if (!dialog->keepDialog()) {
+                dialog->hide();
+            }
+        }
+
+        if (!found) {
+            if (searchWrap == WrapMode::Wrap) {
+                if (direction == Direction::FORWARD && beginPos != 0) {
+                    if (GetPrefBeepOnSearchWrap()) {
+                        QApplication::beep();
+                    } else if (GetPrefSearchDlogs()) {
+
+                        QMessageBox messageBox(document);
+                        messageBox.setWindowTitle(tr("Wrap Search"));
+                        messageBox.setIcon(QMessageBox::Question);
+                        messageBox.setText(tr("Continue search from beginning of file?"));
+                        QPushButton *buttonContinue = messageBox.addButton(tr("Continue"), QMessageBox::AcceptRole);
+                        QPushButton *buttonCancel   = messageBox.addButton(QMessageBox::Cancel);
+                        Q_UNUSED(buttonContinue);
+
+                        messageBox.exec();
+                        if(messageBox.clickedButton() == buttonCancel) {
+                            return false;
+                        }
+                    }
+
+                    found = SearchString(
+                                fileString,
+                                searchString,
+                                direction,
+                                searchType,
+                                WrapMode::NoWrap,
+                                0,
+                                startPos,
+                                endPos,
+                                extentBW,
+                                extentFW,
+                                document->GetWindowDelimitersEx());
+
+                } else if (direction == Direction::BACKWARD && beginPos != fileEnd) {
+                    if (GetPrefBeepOnSearchWrap()) {
+                        QApplication::beep();
+                    } else if (GetPrefSearchDlogs()) {
+
+                        QMessageBox messageBox(document);
+                        messageBox.setWindowTitle(tr("Wrap Search"));
+                        messageBox.setIcon(QMessageBox::Question);
+                        messageBox.setText(tr("Continue search from end of file?"));
+                        QPushButton *buttonContinue = messageBox.addButton(tr("Continue"), QMessageBox::AcceptRole);
+                        QPushButton *buttonCancel   = messageBox.addButton(QMessageBox::Cancel);
+                        Q_UNUSED(buttonContinue);
+
+                        messageBox.exec();
+                        if(messageBox.clickedButton() == buttonCancel) {
+                            return false;
+                        }
+                    }
+                    found = SearchString(
+                                fileString,
+                                searchString,
+                                direction,
+                                searchType,
+                                WrapMode::NoWrap,
+                                fileEnd + 1,
+                                startPos,
+                                endPos,
+                                extentBW,
+                                extentFW,
+                                document->GetWindowDelimitersEx());
+                }
+            }
+            if (!found) {
+                if (GetPrefSearchDlogs()) {
+                    QMessageBox::information(document, tr("String not found"), tr("String was not found"));
+                } else {
+                    QApplication::beep();
+                }
+            }
+        }
+    } else { // incremental search
+        if (outsideBounds && searchWrap == WrapMode::Wrap) {
+            if (direction == Direction::FORWARD) {
+                beginPos = 0;
+            } else {
+                beginPos = fileEnd + 1;
+            }
+            outsideBounds = false;
+        }
+
+        found = !outsideBounds && SearchString(
+                    fileString,
+                    searchString,
+                    direction,
+                    searchType,
+                    searchWrap,
+                    beginPos,
+                    startPos,
+                    endPos,
+                    extentBW,
+                    extentFW,
+                    document->GetWindowDelimitersEx());
+
+        if (found) {
+            iSearchTryBeepOnWrapEx(direction, beginPos, *startPos);
+        } else
+            QApplication::beep();
+    }
+
+    return found;
+}
+
+/*
+** Search for "searchString" in "document", and select the matching text in
+** the window when found (or beep or put up a dialog if not found).  Also
+** adds the search string to the global search history.
+*/
+bool MainWindow::SearchAndSelectEx(DocumentWidget *document, TextArea *area, Direction direction, const QString &searchString, SearchType searchType, WrapMode searchWrap) {
+    int startPos;
+    int endPos;
+    int beginPos;
+    int selStart;
+    int selEnd;
+    int movedFwd = 0;
+
+    // Save a copy of searchString in the search history
+    saveSearchHistory(searchString, QString(), searchType, false);
+
+    /* set the position to start the search so we don't find the same
+       string that was found on the last search	*/
+    if (searchMatchesSelectionEx(document, searchString, searchType, &selStart, &selEnd, nullptr, nullptr)) {
+        // selection matches search string, start before or after sel.
+        if (direction == Direction::BACKWARD) {
+            beginPos = selStart - 1;
+        } else {
+            beginPos = selStart + 1;
+            movedFwd = 1;
+        }
+    } else {
+        selStart = -1;
+        selEnd = -1;
+        // no selection, or no match, search relative cursor
+
+        int cursorPos = area->TextGetCursorPos();
+        if (direction == Direction::BACKWARD) {
+            // use the insert position - 1 for backward searches
+            beginPos = cursorPos - 1;
+        } else {
+            // use the insert position for forward searches
+            beginPos = cursorPos;
+        }
+    }
+
+    /* when the i-search bar is active and search is repeated there
+       (Return), the action "find" is called (not: "find_incremental").
+       "find" calls this function SearchAndSelect.
+       To keep track of the iSearchLastBeginPos correctly in the
+       repeated i-search case it is necessary to call the following
+       function here, otherwise there are no beeps on the repeated
+       incremental search wraps.  */
+    iSearchRecordLastBeginPosEx(direction, beginPos);
+
+    // do the search.  SearchWindow does appropriate dialogs and beeps
+    if (!SearchWindowEx(document, direction, searchString, searchType, searchWrap, beginPos, &startPos, &endPos, nullptr, nullptr)) {
+        return false;
+    }
+
+    /* if the search matched an empty string (possible with regular exps)
+       beginning at the start of the search, go to the next occurrence,
+       otherwise repeated finds will get "stuck" at zero-length matches */
+    if (direction == Direction::FORWARD && beginPos == startPos && beginPos == endPos) {
+        if (!movedFwd && !SearchWindowEx(document, direction, searchString, searchType, searchWrap, beginPos + 1, &startPos, &endPos, nullptr, nullptr)) {
+            return false;
+        }
+    }
+
+    // if matched text is already selected, just beep
+    if (selStart == startPos && selEnd == endPos) {
+        QApplication::beep();
+        return false;
+    }
+
+    // select the text found string
+    document->buffer_->BufSelect(startPos, endPos);
+    document->MakeSelectionVisible(area);
+
+    area->TextSetCursorPos(endPos);
+    area->syncronizeSelection();
+
+    return true;
+}
+
+/*
+** Search for "searchString" in "window", and select the matching text in
+** the window when found (or beep or put up a dialog if not found).  If
+** "continued" is TRUE and a prior incremental search starting position is
+** recorded, search from that original position, otherwise, search from the
+** current cursor position.
+*/
+bool MainWindow::SearchAndSelectIncrementalEx(DocumentWidget *document, TextArea *area, Direction direction, const QString &searchString, SearchType searchType, WrapMode searchWrap, bool continued) {
+    int beginPos;
+    int startPos;
+    int endPos;
+
+    /* If there's a search in progress, start the search from the original
+       starting position, otherwise search from the cursor position. */
+    if (!continued || iSearchStartPos_ == -1) {
+        iSearchStartPos_ = area->TextGetCursorPos();
+        iSearchRecordLastBeginPosEx(direction, iSearchStartPos_);
+    }
+
+    beginPos = iSearchStartPos_;
+
+    /* If the search string is empty, beep eventually if text wrapped
+       back to the initial position, re-init iSearchLastBeginPos,
+       clear the selection, set the cursor back to what would be the
+       beginning of the search, and return. */
+    if (searchString.isEmpty()) {
+        int beepBeginPos = (direction == Direction::BACKWARD) ? beginPos - 1 : beginPos;
+        iSearchTryBeepOnWrapEx(direction, beepBeginPos, beepBeginPos);
+        iSearchRecordLastBeginPosEx(direction, iSearchStartPos_);
+        document->buffer_->BufUnselect();
+
+        area->TextSetCursorPos(beginPos);
+        return true;
+    }
+
+    /* Save the string in the search history, unless we're cycling thru
+       the search history itself, which can be detected by matching the
+       search string with the search string of the current history index. */
+    if (!(iSearchHistIndex_ > 1 && (searchString == SearchReplaceHistory[historyIndex(iSearchHistIndex_)].search))) {
+        saveSearchHistory(searchString, QString(), searchType, true);
+        // Reset the incremental search history pointer to the beginning
+        iSearchHistIndex_ = 1;
+    }
+
+    // begin at insert position - 1 for backward searches
+    if (direction == Direction::BACKWARD)
+        beginPos--;
+
+    // do the search.  SearchWindow does appropriate dialogs and beeps
+    if (!SearchWindowEx(document, direction, searchString, searchType, searchWrap, beginPos, &startPos, &endPos, nullptr, nullptr))
+        return false;
+
+    iSearchLastBeginPos_ = startPos;
+
+    /* if the search matched an empty string (possible with regular exps)
+       beginning at the start of the search, go to the next occurrence,
+       otherwise repeated finds will get "stuck" at zero-length matches */
+    if (direction == Direction::FORWARD && beginPos == startPos && beginPos == endPos)
+        if (!SearchWindowEx(document, direction, searchString, searchType, searchWrap, beginPos + 1, &startPos, &endPos, nullptr, nullptr))
+            return false;
+
+    iSearchLastBeginPos_ = startPos;
+
+    // select the text found string
+    document->buffer_->BufSelect(startPos, endPos);
+    document->MakeSelectionVisible(area);
+
+    area->TextSetCursorPos(endPos);
+    area->syncronizeSelection();
+
+    return true;
+}
+
+/*
+** Replace selection with "replaceString" and search for string "searchString" in window "window",
+** using algorithm "searchType" and direction "direction"
+*/
+bool MainWindow::ReplaceAndSearchEx(DocumentWidget *document, TextArea *area, Direction direction, const QString &searchString, const QString &replaceString, SearchType searchType, WrapMode searchWrap) {
+    int startPos = 0;
+    int endPos = 0;
+    int searchExtentBW;
+    int searchExtentFW;
+
+    // Save a copy of search and replace strings in the search history
+    saveSearchHistory(searchString, replaceString, searchType, false);
+
+    bool replaced = false;
+
+    // Replace the selected text only if it matches the search string
+    if (searchMatchesSelectionEx(document, searchString, searchType, &startPos, &endPos, &searchExtentBW, &searchExtentFW)) {
+
+        int replaceLen = 0;
+
+        // replace the text
+        if (isRegexType(searchType)) {
+            std::string replaceResult;
+            const std::string foundString = document->buffer_->BufGetRangeEx(searchExtentBW, searchExtentFW + 1);
+
+            replaceUsingREEx(
+                searchString,
+                replaceString,
+                foundString,
+                startPos - searchExtentBW,
+                replaceResult,
+                startPos == 0 ? '\0' : document->buffer_->BufGetCharacter(startPos - 1),
+                document->GetWindowDelimitersEx(),
+                defaultRegexFlags(searchType));
+
+            document->buffer_->BufReplaceEx(startPos, endPos, replaceResult);
+            replaceLen = gsl::narrow<int>(replaceResult.size());
+        } else {
+            document->buffer_->BufReplaceEx(startPos, endPos, replaceString.toLatin1().data());
+            replaceLen = replaceString.size();
+        }
+
+        // Position the cursor so the next search will work correctly based
+        // on the direction of the search
+        area->TextSetCursorPos(startPos + ((direction == Direction::FORWARD) ? replaceLen : 0));
+        replaced = true;
+    }
+
+    // do the search; beeps/dialogs are taken care of
+    SearchAndSelectEx(document, area, direction, searchString, searchType, searchWrap);
+    return replaced;
+}
+
+void MainWindow::DoFindDlogEx(DocumentWidget *document, Direction direction, bool keepDialogs, SearchType searchType) {
+
+    if(!dialogFind_) {
+        dialogFind_ = new DialogFind(this, document, this);
+    }
+
+    auto dialog = qobject_cast<DialogFind *>(dialogFind_);
+
+    dialog->setTextField(document);
+
+    if(dialog->isVisible()) {
+        dialog->raise();
+        dialog->activateWindow();
+        return;
+    }
+
+    // Set the initial search type
+    dialog->initToggleButtons(searchType);
+
+    // Set the initial direction based on the direction argument
+    dialog->ui.checkBackward->setChecked(direction == Direction::FORWARD ? false : true);
+
+    // Set the state of the Keep Dialog Up button
+    dialog->ui.checkKeep->setChecked(keepDialogs);
+
+    // Set the state of the Find button
+    dialog->fUpdateActionButtons();
+
+    // start the search history mechanism at the current history item
+    fHistIndex_ = 0;
+
+    dialog->show();
+}
+
+/*
+** Fetch and verify (particularly regular expression) search string,
+** direction, and search type from the Find dialog.  If the search string
+** is ok, save a copy in the search history, copy it to "searchString",
+** return search type in "searchType", and return TRUE as the function value.
+** Otherwise, return FALSE.
+*/
+bool MainWindow::SearchAndSelectSameEx(DocumentWidget *document, TextArea *area, Direction direction, WrapMode searchWrap) {
+    if (NHist < 1) {
+        QApplication::beep();
+        return false;
+    }
+
+    return SearchAndSelectEx(
+                document,
+                area,
+                direction,
+                SearchReplaceHistory[historyIndex(1)].search,
+                SearchReplaceHistory[historyIndex(1)].type,
+                searchWrap);
+}
+
+/*
+** Search for string "searchString" in window "window", using algorithm
+** "searchType" and direction "direction", and replace it with "replaceString"
+** Also adds the search and replace strings to the global search history.
+*/
+bool MainWindow::SearchAndReplaceEx(DocumentWidget *document, TextArea *area, Direction direction, const QString &searchString, const QString &replaceString, SearchType searchType, WrapMode searchWrap) {
+    int startPos;
+    int endPos;
+    int replaceLen;
+    int searchExtentBW;
+    int searchExtentFW;
+
+    // Save a copy of search and replace strings in the search history
+    saveSearchHistory(searchString, replaceString, searchType, false);
+
+    // If the text selected in the window matches the search string,
+    // the user is probably using search then replace method, so
+    // replace the selected text regardless of where the cursor is.
+    // Otherwise, search for the string.
+    if (!searchMatchesSelectionEx(document, searchString, searchType, &startPos, &endPos, &searchExtentBW, &searchExtentFW)) {
+        // get the position to start the search
+
+        int beginPos;
+        int cursorPos = area->TextGetCursorPos();
+        if (direction == Direction::BACKWARD) {
+            // use the insert position - 1 for backward searches
+            beginPos = cursorPos - 1;
+        } else {
+            // use the insert position for forward searches
+            beginPos = cursorPos;
+        }
+
+        // do the search
+        bool found = SearchWindowEx(document, direction, searchString, searchType, searchWrap, beginPos, &startPos, &endPos, &searchExtentBW, &searchExtentFW);
+        if (!found)
+            return false;
+    }
+
+    // replace the text
+    if (isRegexType(searchType)) {
+        std::string replaceResult;
+        const std::string foundString = document->buffer_->BufGetRangeEx(searchExtentBW, searchExtentFW + 1);
+
+        QString delimieters = document->GetWindowDelimitersEx();
+
+        replaceUsingREEx(
+            searchString,
+            replaceString,
+            foundString,
+            startPos - searchExtentBW,
+            replaceResult,
+            startPos == 0 ? '\0' : document->buffer_->BufGetCharacter(startPos - 1),
+            delimieters,
+            defaultRegexFlags(searchType));
+
+        document->buffer_->BufReplaceEx(startPos, endPos, replaceResult);
+        replaceLen = gsl::narrow<int>(replaceResult.size());
+    } else {
+        document->buffer_->BufReplaceEx(startPos, endPos, replaceString.toLatin1().data());
+        replaceLen = replaceString.size();
+    }
+
+    /* after successfully completing a replace, selected text attracts
+       attention away from the area of the replacement, particularly
+       when the selection represents a previous search. so deselect */
+    document->buffer_->BufUnselect();
+
+    /* temporarily shut off autoShowInsertPos before setting the cursor
+       position so MakeSelectionVisible gets a chance to place the replaced
+       string at a pleasing position on the screen (otherwise, the cursor would
+       be automatically scrolled on screen and MakeSelectionVisible would do
+       nothing) */
+    area->setAutoShowInsertPos(false);
+
+    area->TextSetCursorPos(startPos + ((direction == Direction::FORWARD) ? replaceLen : 0));
+    document->MakeSelectionVisible(area);
+    area->setAutoShowInsertPos(true);
+
+    return true;
+}
+
+/*
+** Search and replace using previously entered search strings (from dialog
+** or selection).
+*/
+bool MainWindow::ReplaceSameEx(DocumentWidget *document, TextArea *area, Direction direction, WrapMode searchWrap) {
+    if (NHist < 1) {
+        QApplication::beep();
+        return false;
+    }
+
+    return SearchAndReplaceEx(
+                document,
+                area,
+                direction,
+                SearchReplaceHistory[historyIndex(1)].search,
+                SearchReplaceHistory[historyIndex(1)].replace,
+                SearchReplaceHistory[historyIndex(1)].type,
+                searchWrap);
+}
+
+/*
+** Search and replace using previously entered search strings (from dialog
+** or selection).
+*/
+bool MainWindow::ReplaceFindSameEx(DocumentWidget *document, TextArea *area, Direction direction, WrapMode searchWrap) {
+    if (NHist < 1) {
+        QApplication::beep();
+        return false;
+    }
+
+    return ReplaceAndSearchEx(
+                document,
+                area,
+                direction,
+                SearchReplaceHistory[historyIndex(1)].search,
+                SearchReplaceHistory[historyIndex(1)].replace,
+                SearchReplaceHistory[historyIndex(1)].type,
+                searchWrap);
+}
+
+void MainWindow::SearchForSelectedEx(DocumentWidget *document, TextArea *area, Direction direction, SearchType searchType, WrapMode searchWrap) {
+
+    // skip if we can't get the selection data or it's too long
+    // should be of type text???
+    const QMimeData *mimeData = QApplication::clipboard()->mimeData(QClipboard::Selection);
+    if(!mimeData->hasText()) {
+        if (GetPrefSearchDlogs()) {
+            QMessageBox::warning(document, tr("Wrong Selection"), tr("Selection not appropriate for searching"));
+        } else {
+            QApplication::beep();
+        }
+        return;
+    }
+
+    // make the selection the current search string
+    QString searchString = mimeData->text();
+
+    if (searchString.isEmpty()) {
+        QApplication::beep();
+        return;
+    }
+
+    /* Use the passed method for searching, unless it is regex, since this
+       kind of search is by definition a literal search */
+    if (searchType == SearchType::Regex) {
+        searchType = SearchType::CaseSense;
+    } else if (searchType == SearchType::RegexNoCase) {
+        searchType = SearchType::Literal;
+    }
+
+    // search for it in the window
+    SearchAndSelectEx(
+                document,
+                area,
+                direction,
+                searchString,
+                searchType,
+                searchWrap);
+}
+
+/*
+** Replace all occurences of "searchString" in "window" with "replaceString"
+** within the current primary selection in "window". Also adds the search and
+** replace strings to the global search history.
+*/
+void MainWindow::ReplaceInSelectionEx(DocumentWidget *document, TextArea *area, const QString &searchString, const QString &replaceString, SearchType searchType) {
+
+    int selStart;
+    int selEnd;
+    int beginPos;
+    int startPos;
+    int endPos;
+    int realOffset;
+    int replaceLen;
+    bool found;
+    bool isRect;
+    int rectStart;
+    int rectEnd;
+    int lineStart;
+    int cursorPos;
+    int extentBW;
+    int extentFW;
+    std::string fileString;
+    bool substSuccess = false;
+    bool anyFound     = false;
+    bool cancelSubst  = true;
+
+    // save a copy of search and replace strings in the search history
+    saveSearchHistory(searchString, replaceString, searchType, false);
+
+    // find out where the selection is
+    if (!document->buffer_->BufGetSelectionPos(&selStart, &selEnd, &isRect, &rectStart, &rectEnd)) {
+        return;
+    }
+
+    // get the selected text
+    if (isRect) {
+        selStart   = document->buffer_->BufStartOfLine(selStart);
+        selEnd     = document->buffer_->BufEndOfLine( selEnd);
+        fileString = document->buffer_->BufGetRangeEx(selStart, selEnd);
+    } else {
+        fileString = document->buffer_->BufGetSelectionTextEx();
+    }
+
+    /* create a temporary buffer in which to do the replacements to hide the
+       intermediate steps from the display routines, and so everything can
+       be undone in a single operation */
+    TextBuffer tempBuf;
+    tempBuf.BufSetAllEx(fileString);
+
+    // search the string and do the replacements in the temporary buffer
+
+    replaceLen = replaceString.size();
+    found      = true;
+    beginPos   = 0;
+    cursorPos  = 0;
+    realOffset = 0;
+
+    while (found) {
+        found = SearchString(
+                    fileString,
+                    searchString,
+                    Direction::FORWARD,
+                    searchType,
+                    WrapMode::NoWrap,
+                    beginPos,
+                    &startPos,
+                    &endPos,
+                    &extentBW,
+                    &extentFW,
+                    document->GetWindowDelimitersEx());
+
+        if (!found) {
+            break;
+        }
+
+        anyFound = true;
+        /* if the selection is rectangular, verify that the found
+           string is in the rectangle */
+        if (isRect) {
+            lineStart = document->buffer_->BufStartOfLine(selStart + startPos);
+            if (document->buffer_->BufCountDispChars(lineStart, selStart + startPos) < rectStart || document->buffer_->BufCountDispChars(lineStart, selStart + endPos) > rectEnd) {
+
+                if(static_cast<size_t>(endPos) == fileString.size()) {
+                    break;
+                }
+
+                /* If the match starts before the left boundary of the
+                   selection, and extends past it, we should not continue
+                   search after the end of the (false) match, because we
+                   could miss a valid match starting between the left boundary
+                   and the end of the false match. */
+                if (document->buffer_->BufCountDispChars(lineStart, selStart + startPos) < rectStart && document->buffer_->BufCountDispChars(lineStart, selStart + endPos) > rectStart) {
+                    beginPos += 1;
+                } else {
+                    beginPos = (startPos == endPos) ? endPos + 1 : endPos;
+                }
+                continue;
+            }
+        }
+
+        /* Make sure the match did not start past the end (regular expressions
+           can consider the artificial end of the range as the end of a line,
+           and match a fictional whole line beginning there) */
+        if (startPos == (selEnd - selStart)) {
+            found = false;
+            break;
+        }
+
+        // replace the string and compensate for length change
+        if (isRegexType(searchType)) {
+            std::string replaceResult;
+            const std::string foundString = tempBuf.BufGetRangeEx(extentBW + realOffset, extentFW + realOffset + 1);
+
+            substSuccess = replaceUsingREEx(
+                            searchString,
+                            replaceString,
+                            foundString,
+                            startPos - extentBW,
+                            replaceResult,
+                            (startPos + realOffset) == 0 ? '\0' : tempBuf.BufGetCharacter(startPos + realOffset - 1),
+                            document->GetWindowDelimitersEx(),
+                            defaultRegexFlags(searchType));
+
+            if (!substSuccess) {
+                cancelSubst = prefOrUserCancelsSubstEx(document);
+
+                if (cancelSubst) {
+                    //  No point in trying other substitutions.
+                    break;
+                }
+            }
+
+            tempBuf.BufReplaceEx(startPos + realOffset, endPos + realOffset, replaceResult);
+            replaceLen = gsl::narrow<int>(replaceResult.size());
+        } else {
+            // at this point plain substitutions (should) always work
+            tempBuf.BufReplaceEx(startPos + realOffset, endPos + realOffset, replaceString.toLatin1().data());
+            substSuccess = true;
+        }
+
+        realOffset += replaceLen - (endPos - startPos);
+        // start again after match unless match was empty, then endPos+1
+        beginPos = (startPos == endPos) ? endPos + 1 : endPos;
+        cursorPos = endPos;
+
+        if (gsl::narrow<size_t>(endPos) == fileString.size()) {
+            break;
+        }
+    }
+
+    if (anyFound) {
+        if (substSuccess || !cancelSubst) {
+            /*  Either the substitution was successful (the common case) or the
+                user does not care and wants to have a faulty replacement.  */
+
+            // replace the selected range in the real buffer
+            document->buffer_->BufReplaceEx(selStart, selEnd, tempBuf.BufAsStringEx());
+
+            // set the insert point at the end of the last replacement
+            area->TextSetCursorPos(selStart + cursorPos + realOffset);
+
+            /* leave non-rectangular selections selected (rect. ones after replacement
+               are less useful since left/right positions are randomly adjusted) */
+            if (!isRect) {
+                document->buffer_->BufSelect(selStart, selEnd + realOffset);
+                area->syncronizeSelection();
+            }
+        }
+    } else {
+        //  Nothing found, tell the user about it
+        if (GetPrefSearchDlogs()) {
+
+            if (auto dialog = qobject_cast<DialogFind *>(dialogFind_)) {
+                if(!dialog->keepDialog()) {
+                    dialog->hide();
+                }
+            }
+
+            if(auto dialog = getDialogReplace()) {
+                if (!dialog->keepDialog()) {
+                    dialog->hide();
+                }
+            }
+
+            QMessageBox::information(document, tr("String not found"), tr("String was not found"));
+        } else {
+            QApplication::beep();
+        }
+    }
+}
+
+/*
+**  Uses the resource nedit.truncSubstitution to determine how to deal with
+**  regex failures. This function only knows about the resource (via the usual
+**  setting getter) and asks or warns the user depending on that.
+**
+**  One could argue that the dialoging should be determined by the setting
+**  'searchDlogs'. However, the incomplete substitution is not just a question
+**  of verbosity, but of data loss. The search is successful, only the
+**  replacement fails due to an internal limitation of NEdit.
+**
+**  The parameters 'parent' and 'display' are only used to put dialogs and
+**  beeps at the right place.
+**
+**  The result is either predetermined by the resource or the user's choice.
+*/
+bool MainWindow::prefOrUserCancelsSubstEx(DocumentWidget *document) {
+
+    bool cancel = true;
+
+    switch (GetPrefTruncSubstitution()) {
+    case TruncSubstitution::Silent:
+        //  silently fail the operation
+        cancel = true;
+        break;
+
+    case TruncSubstitution::Fail:
+        //  fail the operation and pop up a dialog informing the user
+        QApplication::beep();
+
+        QMessageBox::information(document, tr("Substitution Failed"), tr("The result length of the substitution exceeded an internal limit.\n"
+                                                                         "The substitution is canceled."));
+
+        cancel = true;
+        break;
+
+    case TruncSubstitution::Warn:
+        //  pop up dialog and ask for confirmation
+        QApplication::beep();
+
+        {
+            QMessageBox messageBox(document);
+            messageBox.setWindowTitle(tr("Substitution Failed"));
+            messageBox.setIcon(QMessageBox::Warning);
+            messageBox.setText(tr("The result length of the substitution exceeded an internal limit.\n"
+                                  "Executing the substitution will result in loss of data."));
+
+            QPushButton *buttonLose   = messageBox.addButton(QLatin1String("Lose Data"), QMessageBox::AcceptRole);
+            QPushButton *buttonCancel = messageBox.addButton(QMessageBox::Cancel);
+            Q_UNUSED(buttonLose);
+
+            messageBox.exec();
+            cancel = (messageBox.clickedButton() == buttonCancel);
+        }
+        break;
+
+    case TruncSubstitution::Ignore:
+        //  silently conclude the operation; THIS WILL DESTROY DATA.
+        cancel = false;
+        break;
+    }
+
+    return cancel;
+}
+
+/*
+** Replace all occurences of "searchString" in "window" with "replaceString".
+** Also adds the search and replace strings to the global search history.
+*/
+bool MainWindow::ReplaceAllEx(DocumentWidget *document, TextArea *area, const QString &searchString, const QString &replaceString, SearchType searchType) {
+
+    int copyStart;
+    int copyEnd;
+
+    // reject empty string
+    if (searchString.isEmpty()) {
+        return false;
+    }
+
+    // save a copy of search and replace strings in the search history
+    saveSearchHistory(searchString, replaceString, searchType, false);
+
+    // view the entire text buffer from the text area widget as a string
+    view::string_view fileString = document->buffer_->BufAsStringEx();
+
+    QString delimieters = document->GetWindowDelimitersEx();
+
+    bool ok;
+    std::string newFileString = ReplaceAllInStringEx(
+                fileString,
+                searchString,
+                replaceString,
+                searchType,
+                &copyStart,
+                &copyEnd,
+                delimieters,
+                &ok);
+
+    if(!ok) {
+        if (document->multiFileBusy_) {
+            // only needed during multi-file replacements
+            document->replaceFailed_ = true;
+        } else if (GetPrefSearchDlogs()) {
+
+            if (auto dialog = qobject_cast<DialogFind *>(dialogFind_)) {
+                if(!dialog->keepDialog()) {
+                    dialog->hide();
+                }
+            }
+
+            if(auto dialog = getDialogReplace()) {
+                if (!dialog->keepDialog()) {
+                    dialog->hide();
+                }
+            }
+
+            QMessageBox::information(document, tr("String not found"), tr("String was not found"));
+        } else {
+            QApplication::beep();
+        }
+
+        return false;
+    }
+
+    // replace the contents of the text widget with the substituted text
+    document->buffer_->BufReplaceEx(copyStart, copyEnd, newFileString);
+
+    // Move the cursor to the end of the last replacement
+    area->TextSetCursorPos(copyStart + gsl::narrow<int>(newFileString.size()));
+
+    return true;
+}
+
+void MainWindow::DoFindReplaceDlogEx(DocumentWidget *document, TextArea *area, Direction direction, bool keepDialogs, SearchType searchType) {
+
+    Q_UNUSED(area);
+
+    if (!dialogReplace_) {
+        dialogReplace_ = new DialogReplace(this, document, this);
+    }
+
+    auto dialog = getDialogReplace();
+
+    dialog->setTextField(document);
+
+    // If the window is already up, just pop it to the top
+    if(dialog->isVisible()) {
+        dialog->raise();
+        dialog->activateWindow();
+        return;
+    }
+
+    // Blank the Replace with field
+    dialog->ui.textReplace->setText(QString());
+
+    // Set the initial search type
+    dialog->initToggleButtons(searchType);
+
+    // Set the initial direction based on the direction argument
+    dialog->ui.checkBackward->setChecked(direction == Direction::FORWARD ? false : true);
+
+    // Set the state of the Keep Dialog Up button
+    dialog->ui.checkKeep->setChecked(keepDialogs);
+
+#if defined(REPLACE_SCOPE)
+
+    if (wasSelected_) {
+        // If a selection exists, the default scope depends on the preference
+        // of the user.
+        switch (GetPrefReplaceDefScope()) {
+        case REPL_DEF_SCOPE_SELECTION:
+            // The user prefers selection scope, no matter what the size of
+            // the selection is.
+            dialog->ui.radioSelection->setChecked(true);
+            break;
+        case REPL_DEF_SCOPE_SMART:
+            if (document->selectionSpansMultipleLines()) {
+                /* If the selection spans multiple lines, the user most
+                   likely wants to perform a replacement in the selection */
+                dialog->ui.radioSelection->setChecked(true);
+            } else {
+                /* It's unlikely that the user wants a replacement in a
+                   tiny selection only. */
+                dialog->ui.radioWindow->setChecked(true);
+            }
+            break;
+        default:
+            // The user always wants window scope as default.
+            dialog->ui.radioWindow->setChecked(true);
+            break;
+        }
+    } else {
+        // No selection -> always choose "In Window" as default.
+        dialog->ui.radioWindow->setChecked(true);
+    }
+#endif
+
+    dialog->UpdateReplaceActionButtons();
+
+    // Start the search history mechanism at the current history item
+    rHistIndex_ = 0;
+
+    dialog->show();
+}
+
+/*
+** Reset window->iSearchLastBeginPos_ to the resulting initial
+** search begin position for incremental searches.
+*/
+void MainWindow::iSearchRecordLastBeginPosEx(Direction direction, int initPos) {
+    iSearchLastBeginPos_ = initPos;
+    if (direction == Direction::BACKWARD) {
+        iSearchLastBeginPos_--;
+    }
+}
+
+/*
+** If this is an incremental search and BeepOnSearchWrap is on:
+** Emit a beep if the search wrapped over BOF/EOF compared to
+** the last startPos of the current incremental search.
+*/
+void MainWindow::iSearchTryBeepOnWrapEx(Direction direction, int beginPos, int startPos) {
+    if (GetPrefBeepOnSearchWrap()) {
+        if (direction == Direction::FORWARD) {
+            if ((startPos >= beginPos && iSearchLastBeginPos_ < beginPos) || (startPos < beginPos && iSearchLastBeginPos_ >= beginPos)) {
+                QApplication::beep();
+            }
+        } else {
+            if ((startPos <= beginPos && iSearchLastBeginPos_ > beginPos) || (startPos > beginPos && iSearchLastBeginPos_ <= beginPos)) {
+                QApplication::beep();
+            }
+        }
+    }
+}
+
+/*
+** Return TRUE if "searchString" exactly matches the text in the window's
+** current primary selection using search algorithm "searchType".  If true,
+** also return the position of the selection in "left" and "right".
+*/
+bool MainWindow::searchMatchesSelectionEx(DocumentWidget *document, const QString &searchString, SearchType searchType, int *left, int *right, int *searchExtentBW, int *searchExtentFW) {
+
+    int selLen;
+    int selStart;
+    int selEnd;
+    int startPos;
+    int endPos;
+    int extentBW;
+    int extentFW;
+    int beginPos;
+    int regexLookContext = isRegexType(searchType) ? 1000 : 0;
+    std::string string;
+    int rectStart;
+    int rectEnd;
+    int lineStart = 0;
+    bool isRect;
+
+    // find length of selection, give up on no selection or too long
+    if (!document->buffer_->BufGetEmptySelectionPos(&selStart, &selEnd, &isRect, &rectStart, &rectEnd)) {
+        return false;
+    }
+
+    // if the selection is rectangular, don't match if it spans lines
+    if (isRect) {
+        lineStart = document->buffer_->BufStartOfLine(selStart);
+        if (lineStart != document->buffer_->BufStartOfLine(selEnd)) {
+            return false;
+        }
+    }
+
+    /* get the selected text plus some additional context for regular
+       expression lookahead */
+    if (isRect) {
+        int stringStart = lineStart + rectStart - regexLookContext;
+        if (stringStart < 0) {
+            stringStart = 0;
+        }
+
+        string = document->buffer_->BufGetRangeEx(stringStart, lineStart + rectEnd + regexLookContext);
+        selLen = rectEnd - rectStart;
+        beginPos = lineStart + rectStart - stringStart;
+    } else {
+        int stringStart = selStart - regexLookContext;
+        if (stringStart < 0) {
+            stringStart = 0;
+        }
+
+        string = document->buffer_->BufGetRangeEx(stringStart, selEnd + regexLookContext);
+        selLen = selEnd - selStart;
+        beginPos = selStart - stringStart;
+    }
+    if (string.empty()) {
+        return false;
+    }
+
+    // search for the string in the selection (we are only interested
+    // in an exact match, but the procedure SearchString does important
+    // stuff like applying the correct matching algorithm)
+    bool found = SearchString(
+                string,
+                searchString,
+                Direction::FORWARD,
+                searchType,
+                WrapMode::NoWrap,
+                beginPos,
+                &startPos,
+                &endPos,
+                &extentBW,
+                &extentFW,
+                document->GetWindowDelimitersEx());
+
+    // decide if it is an exact match
+    if (!found) {
+        return false;
+    }
+
+    if (startPos != beginPos || endPos - beginPos != selLen) {
+        return false;
+    }
+
+    // return the start and end of the selection
+    if (isRect) {
+        document->buffer_->GetSimpleSelection(left, right);
+    } else {
+        *left  = selStart;
+        *right = selEnd;
+    }
+
+    if(searchExtentBW) {
+        *searchExtentBW = *left - (startPos - extentBW);
+    }
+
+    if(searchExtentFW) {
+        *searchExtentFW = *right + extentFW - endPos;
+    }
+
+    return true;
 }

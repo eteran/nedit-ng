@@ -13,6 +13,7 @@
 #include "SignalBlocker.h"
 #include "CommandRecorder.h"
 #include "SmartIndentEntry.h"
+#include "WindowMenuEvent.h"
 #include "TextArea.h"
 #include "TextBuffer.h"
 #include "Settings.h"
@@ -38,7 +39,10 @@
 #include "SmartIndentEvent.h"
 #include "tags.h"
 #include "utils.h"
+
 #include <gsl/gsl_util>
+#include <memory>
+
 #include <QBoxLayout>
 #include <QClipboard>
 #include <QDateTime>
@@ -54,12 +58,14 @@
 #include <QTemporaryFile>
 #include <QTimer>
 #include <QtDebug>
+
 #include <fcntl.h>
-#include <memory>
 #include <sys/param.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+
+
 
 /* data attached to window during shell command execution with
    information for controling and communicating with the process */
@@ -592,7 +598,7 @@ TextArea *DocumentWidget::createTextArea(TextBuffer *buffer) {
     // policy here, in fact, that would break things.
     //area->setContextMenuPolicy(Qt::CustomContextMenu);
 
-    connect(area, SIGNAL(customContextMenu(const QPoint &)), SLOT(customContextMenu(const QPoint &)));
+    connect(area, SIGNAL(customContextMenuRequested(const QPoint &)), SLOT(customContextMenu(const QPoint &)));
 
     return area;
 }
@@ -1137,6 +1143,9 @@ void DocumentWidget::reapplyLanguageMode(int mode, bool forceDefaults) {
 **
 */
 void DocumentWidget::SetTabDist(int tabDist) {
+
+    EMIT_EVENT_ARG_1("set_tab_dist", QString::number(tabDist));
+
     if (buffer_->tabDist_ != tabDist) {
         int saveCursorPositions[MAX_PANES + 1];
         int saveVScrollPositions[MAX_PANES + 1];
@@ -1173,6 +1182,8 @@ void DocumentWidget::SetTabDist(int tabDist) {
 **
 */
 void DocumentWidget::SetEmTabDist(int emTabDist) {
+
+    EMIT_EVENT_ARG_1("set_em_tab_dist", QString::number(emTabDist));
 
     const std::vector<TextArea *> textAreas = textPanes();
     for(TextArea *area : textAreas) {
@@ -3543,13 +3554,14 @@ void DocumentWidget::replaceAllAP(const QString &searchString, const QString &re
         return;
     }
 
-    ReplaceAllEx(
-                MainWindow::fromDocument(this),
-                this,
-                MainWindow::fromDocument(this)->lastFocus_,
-                searchString,
-                replaceString,
-                searchType);
+    if(MainWindow *win = MainWindow::fromDocument(this)) {
+        win->ReplaceAllEx(
+                    this,
+                    win->lastFocus_,
+                    searchString,
+                    replaceString,
+                    searchType);
+    }
 }
 
 void DocumentWidget::replaceInSelAP(const QString &searchString, const QString &replaceString, SearchType searchType) {
@@ -3558,13 +3570,14 @@ void DocumentWidget::replaceInSelAP(const QString &searchString, const QString &
         return;
     }
 
-    ReplaceInSelectionEx(
-                MainWindow::fromDocument(this),
-                this,
-                MainWindow::fromDocument(this)->lastFocus_,
-                searchString,
-                replaceString,
-                searchType);
+    if(MainWindow *win = MainWindow::fromDocument(this)) {
+        win->ReplaceInSelectionEx(
+                    this,
+                    win->lastFocus_,
+                    searchString,
+                    replaceString,
+                    searchType);
+    }
 }
 
 void DocumentWidget::replaceFindAP(const QString &searchString, const QString &replaceString, Direction direction, SearchType searchType, WrapMode searchWraps) {
@@ -3573,59 +3586,46 @@ void DocumentWidget::replaceFindAP(const QString &searchString, const QString &r
         return;
     }
 
-    ReplaceAndSearchEx(
-                MainWindow::fromDocument(this),
-                this,
-                MainWindow::fromDocument(this)->lastFocus_,
-                direction,
-                searchString,
-                replaceString,
-                searchType,
-                searchWraps);
+    if(MainWindow *win = MainWindow::fromDocument(this)) {
+        win->ReplaceAndSearchEx(
+                    this,
+                    win->lastFocus_,
+                    direction,
+                    searchString,
+                    replaceString,
+                    searchType,
+                    searchWraps);
+    }
 }
 
 void DocumentWidget::findAP(const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWraps) {
 
-    SearchAndSelectEx(
-                MainWindow::fromDocument(this),
-                this,
-                MainWindow::fromDocument(this)->lastFocus_,
-                direction,
-                searchString,
-                searchType,
-                searchWraps);
+    if(MainWindow *win = MainWindow::fromDocument(this)) {
+        win->action_Find(this, searchString, direction, searchType, searchWraps);
+    }
 }
 
 
 void DocumentWidget::findIncrAP(const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWraps, bool isContinue) {
 
-    SearchAndSelectIncrementalEx(
-                MainWindow::fromDocument(this),
+    if(MainWindow *win = MainWindow::fromDocument(this)) {
+        win->SearchAndSelectIncrementalEx(
                 this,
-                MainWindow::fromDocument(this)->lastFocus_,
+                win->lastFocus_,
                 direction,
                 searchString,
                 searchType,
                 searchWraps,
 	            isContinue);
+    }
 
 }
 
 void DocumentWidget::replaceAP(const QString &searchString, const QString &replaceString, Direction direction, SearchType searchType, WrapMode searchWraps) {
 
-    if (CheckReadOnly()) {
-        return;
+    if(MainWindow *win = MainWindow::fromDocument(this)) {
+        win->action_Replace(this, direction, searchString, replaceString, searchType, searchWraps);
     }
-
-    SearchAndReplaceEx(
-                MainWindow::fromDocument(this),
-                this,
-                MainWindow::fromDocument(this)->lastFocus_,
-                direction,
-                searchString,
-                replaceString,
-                searchType,
-                searchWraps);
 }
 
 void DocumentWidget::markAP(QChar ch) {
@@ -4624,7 +4624,7 @@ void DocumentWidget::issueCommandEx(MainWindow *window, TextArea *area, const QS
        window as the macro, regardless of where the output is directed,
        so the user can cancel them as a unit */
     if (fromMacro) {
-        document = MacroRunWindowEx();
+        document = MacroRunDocumentEx();
     }
 
     // put up a watch cursor over the waiting window
@@ -6663,8 +6663,8 @@ int DocumentWidget::MacroWindowCloseActionsEx() {
     if(!cmdData) {
         for(DocumentWidget *document : DocumentWidget::allDocuments()) {
             const std::shared_ptr<MacroCommandData> &mcd = document->macroCmdData_;
-            if (document == MacroRunWindowEx() && MacroFocusWindowEx() == this) {
-                SetMacroFocusWindowEx(MacroRunWindowEx());
+            if (document == MacroRunDocumentEx() && MacroFocusWindowEx() == this) {
+                SetMacroFocusWindowEx(MacroRunDocumentEx());
             } else if (mcd && mcd->context->focusWindow == this) {
                 mcd->context->focusWindow = mcd->context->runWindow;
             }
@@ -6677,7 +6677,7 @@ int DocumentWidget::MacroWindowCloseActionsEx() {
        execution must otherwise return to the main loop to execute any
        commands), is running in this window, tell the caller not to close,
        and schedule window close on completion of macro */
-    if (MacroRunWindowEx() == this) {
+    if (MacroRunDocumentEx() == this) {
         cmdData->closeOnCompletion = true;
         return false;
     }
@@ -6934,3 +6934,127 @@ QString DocumentWidget::GetWindowDelimitersEx() const {
     else
         return LanguageModes[languageMode_].delimiters;
 }
+
+void DocumentWidget::SetUseTabs(bool value) {
+
+    EMIT_EVENT_ARG_1("set_use_tabs", QString::number(value));
+
+    buffer_->useTabs_ = value;
+}
+
+void DocumentWidget::SetHighlightSyntax(bool value) {
+
+    EMIT_EVENT_ARG_1("set_highlight_syntax", QString::number(value));
+
+    highlightSyntax_ = value;
+
+    if(IsTopDocument()) {
+        if(auto win = MainWindow::fromDocument(this)) {
+            no_signals(win->ui.action_Highlight_Syntax)->setChecked(value);
+        }
+    }
+
+    if (highlightSyntax_) {
+        StartHighlightingEx(true);
+    } else {
+        StopHighlightingEx();
+    }
+}
+
+void DocumentWidget::SetIncrementalBackup(bool value) {
+
+    EMIT_EVENT_ARG_1("set_incremental_backup", QString::number(value));
+
+    autoSave_ = value;
+
+    if(IsTopDocument()) {
+        if(auto win = MainWindow::fromDocument(this)) {
+            no_signals(win->ui.action_Highlight_Syntax)->setChecked(value);
+        }
+    }
+}
+
+void DocumentWidget::SetLocked(bool value) {
+    EMIT_EVENT_ARG_1("set_locked", QString::number(value));
+
+    lockReasons_.setUserLocked(value);
+
+    if(IsTopDocument()) {
+        if(auto win = MainWindow::fromDocument(this)) {
+            no_signals(win->ui.action_Read_Only)->setChecked(lockReasons_.isAnyLocked());
+            win->UpdateWindowTitle(this);
+            win->UpdateWindowReadOnly(this);
+        }
+    }
+}
+
+#if defined(REPLACE_SCOPE)
+/*
+** Checks whether a selection spans multiple lines. Used to decide on the
+** default scope for replace dialogs.
+** This routine introduces a dependency on TextDisplay.h, which is not so nice,
+** but I currently don't have a cleaner solution.
+*/
+bool DocumentWidget::selectionSpansMultipleLines() {
+    int selStart;
+    int selEnd;
+    int rectStart;
+    int rectEnd;
+    int lineStartStart;
+    int lineStartEnd;
+    bool isRect;
+    int lineWidth;
+
+    if (!buffer_->BufGetSelectionPos(&selStart, &selEnd, &isRect, &rectStart, &rectEnd)) {
+        return false;
+    }
+
+    /* This is kind of tricky. The perception of a line depends on the
+       line wrap mode being used. So in theory, we should take into
+       account the layout of the text on the screen. However, the
+       routine to calculate a line number for a given character position
+       (TextDPosToLineAndCol) only works for displayed lines, so we cannot
+       use it. Therefore, we use this simple heuristic:
+        - If a newline is found between the start and end of the selection,
+      we obviously have a multi-line selection.
+    - If no newline is found, but the distance between the start and the
+          end of the selection is larger than the number of characters
+      displayed on a line, and we're in continuous wrap mode,
+      we also assume a multi-line selection.
+    */
+
+    lineStartStart = buffer_->BufStartOfLine(selStart);
+    lineStartEnd   = buffer_->BufStartOfLine(selEnd);
+    // If the line starts differ, we have a "\n" in between.
+    if (lineStartStart != lineStartEnd) {
+        return true;
+    }
+
+    if (wrapMode_ != WrapStyle::Continuous) {
+        return false; // Same line
+    }
+
+    // Estimate the number of characters on a line
+    TextArea *area = firstPane();
+
+    int maxWidth = area->TextDMaxFontWidth(false);
+
+    if (maxWidth > 0) {
+        lineWidth = area->getRect().width() / maxWidth;
+    } else {
+        lineWidth = 1;
+    }
+
+    if (lineWidth < 1) {
+        lineWidth = 1; // Just in case
+    }
+
+    /* Estimate the numbers of line breaks from the start of the line to
+       the start and ending positions of the selection and compare.*/
+    if ((selStart - lineStartStart) / lineWidth != (selEnd - lineStartStart) / lineWidth) {
+        return true; // Spans multiple lines
+    }
+
+    return false; // Small selection; probably doesn't span lines
+}
+#endif

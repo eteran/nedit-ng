@@ -8,6 +8,7 @@
 #include "TruncSubstitution.h"
 #include "VirtKeyOverride.h"
 #include "SearchType.h"
+#include "ReplaceAllDefaultScope.h"
 
 #include <QFont>
 #include <QObject>

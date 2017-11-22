@@ -626,9 +626,8 @@ void DialogReplace::rSetActionButtons(bool replaceBtn, bool replaceFindBtn, bool
 ** Fetch and verify (particularly regular expression) search and replace
 ** strings and search type from the Replace dialog.  If the strings are ok,
 ** save a copy in the search history, copy them in to "searchString",
-** "replaceString', which are assumed to be at least SEARCHMAX in length,
-** return search type in "searchType", and return TRUE as the function
-** value.  Otherwise, return FALSE.
+** "replaceString'. return search type in "searchType", and return TRUE as
+** the function value.  Otherwise, return FALSE.
 */
 bool DialogReplace::getReplaceDlogInfo(Direction *direction, QString *searchString, QString *replaceString, SearchType *searchType) {
 
@@ -669,16 +668,6 @@ bool DialogReplace::getReplaceDlogInfo(Direction *direction, QString *searchStri
 	}
 
     *direction = ui.checkBackward->isChecked() ? Direction::BACKWARD : Direction::FORWARD;
-
-	// Return strings 
-	if (replaceText.size() >= SEARCHMAX) {
-		QMessageBox::warning(this, tr("String too long"), tr("Search string too long."));
-        return false;
-	}
-	if (replaceWithText.size() >= SEARCHMAX) {
-		QMessageBox::warning(this, tr("String too long"), tr("Replace string too long."));
-        return false;
-	}
 
     *searchString  = replaceText;
     *replaceString = replaceWithText;

@@ -108,7 +108,7 @@ void DialogTabs::on_buttonBox_accepted() {
 	} else {
         document_->SetTabDist(tabDist);
         document_->SetEmTabDist(emTabDist);
-        document_->buffer_->useTabs_ = useTabs;
+        document_->SetUseTabs(useTabs);
 	}
 	
 	accept();

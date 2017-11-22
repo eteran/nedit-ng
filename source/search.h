@@ -42,33 +42,10 @@ class TextArea;
 // Maximum length of search string history
 constexpr int MAX_SEARCH_HISTORY = 100;
 
-// Maximum length of search/replace strings
-constexpr int SEARCHMAX = 5119;
-
-bool ReplaceAllEx(MainWindow *window, DocumentWidget *document, TextArea *area, const QString &searchString, const QString &replaceString, SearchType searchType);
-bool ReplaceAndSearchEx(MainWindow *window, DocumentWidget *document, TextArea *area, Direction direction, const QString &searchString, const QString &replaceString, SearchType searchType, WrapMode searchWrap);
-bool ReplaceFindSameEx(MainWindow *window, DocumentWidget *document, TextArea *area, Direction direction, WrapMode searchWrap);
-bool ReplaceSameEx(MainWindow *window, DocumentWidget *document, TextArea *area, Direction direction, WrapMode searchWrap);
-bool SearchAndReplaceEx(MainWindow *window, DocumentWidget *document, TextArea *area, Direction direction, const QString &searchString, const QString &replaceString, SearchType searchType, WrapMode searchWrap);
-bool SearchAndSelectIncrementalEx(MainWindow *window, DocumentWidget *document, TextArea *area, Direction direction, const QString &searchString, SearchType searchType, WrapMode searchWrap, bool continued);
-bool SearchAndSelectSameEx(MainWindow *window, DocumentWidget *document, TextArea *area, Direction direction, WrapMode searchWrap);
-bool SearchAndSelectEx(MainWindow *window, DocumentWidget *document, TextArea *area, Direction direction, const QString &searchString, SearchType searchType, WrapMode searchWrap);
 bool SearchString(view::string_view string, const QString &searchString, Direction direction, SearchType searchType, WrapMode wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const QString &delimiters);
-bool SearchWindowEx(MainWindow *window, DocumentWidget *document, Direction direction, const QString &searchString, SearchType searchType, WrapMode searchWrap, int beginPos, int *startPos, int *endPos, int *extentBW, int *extentFW);
 std::string ReplaceAllInStringEx(view::string_view inString, const QString &searchString, const QString &replaceString, SearchType searchType, int *copyStart, int *copyEnd, const QString &delimiters, bool *ok);
-void DoFindDlogEx(MainWindow *window, DocumentWidget *document, Direction direction, bool keepDialogs, SearchType searchType);
-void DoFindReplaceDlogEx(MainWindow *window, DocumentWidget *document, TextArea *area, Direction direction, bool keepDialogs, SearchType searchType);
-void ReplaceInSelectionEx(MainWindow *window, DocumentWidget *document, TextArea *area, const QString &searchString, const QString &replaceString, SearchType searchType);
-void SearchForSelectedEx(MainWindow *window, DocumentWidget *document, TextArea *area, Direction direction, SearchType searchType, WrapMode searchWrap);
-
-/* Default scope if selection exists when replace dialog pops up.
-   "Smart" means "In Selection" if the selection spans more than
-   one line; "In Window" otherwise. */
-enum ReplaceAllDefaultScope {
-    REPL_DEF_SCOPE_WINDOW,
-    REPL_DEF_SCOPE_SELECTION,
-    REPL_DEF_SCOPE_SMART
-};
+bool replaceUsingREEx(view::string_view searchStr, const char *replaceStr, view::string_view sourceStr, int beginPos, std::string &dest, int prevChar, const char *delimiters, int defaultFlags);
+bool replaceUsingREEx(const QString &searchStr, const QString &replaceStr, view::string_view sourceStr, int beginPos, std::string &dest, int prevChar, const QString &delimiters, int defaultFlags);
 
 // NOTE(eteran): temporarily exposing these publically
 int countWritableWindows();

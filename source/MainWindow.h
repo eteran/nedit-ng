@@ -56,7 +56,7 @@ private:
 public:
     void EditHighlightPatterns();
 	DialogReplace *getDialogReplace() const;	
-	int TabCount();    
+    size_t TabCount() const;
 	void SortTabBar();
 	void UpdateWindowReadOnly(DocumentWidget *doc);
 	void UpdateWindowTitle(DocumentWidget *doc);
@@ -86,6 +86,24 @@ public:
     void updateWindowMenu();
     void updateWindowSizeMenu();
     void updateWindowSizeMenus();
+    void SetIncrementalSearchLineMS(bool value);
+    bool SearchWindowEx(DocumentWidget *document, Direction direction, const QString &searchString, SearchType searchType, WrapMode searchWrap, int beginPos, int *startPos, int *endPos, int *extentBW, int *extentFW);
+    bool SearchAndSelectEx(DocumentWidget *document, TextArea *area, Direction direction, const QString &searchString, SearchType searchType, WrapMode searchWrap);
+    bool SearchAndSelectIncrementalEx(DocumentWidget *document, TextArea *area, Direction direction, const QString &searchString, SearchType searchType, WrapMode searchWrap, bool continued);
+    bool ReplaceAndSearchEx(DocumentWidget *document, TextArea *area, Direction direction, const QString &searchString, const QString &replaceString, SearchType searchType, WrapMode searchWrap);
+    void DoFindDlogEx(DocumentWidget *document, Direction direction, bool keepDialogs, SearchType searchType);
+    bool SearchAndSelectSameEx(DocumentWidget *document, TextArea *area, Direction direction, WrapMode searchWrap);
+    bool SearchAndReplaceEx(DocumentWidget *document, TextArea *area, Direction direction, const QString &searchString, const QString &replaceString, SearchType searchType, WrapMode searchWrap);
+    bool ReplaceFindSameEx(DocumentWidget *document, TextArea *area, Direction direction, WrapMode searchWrap);
+    bool ReplaceSameEx(DocumentWidget *document, TextArea *area, Direction direction, WrapMode searchWrap);
+    void SearchForSelectedEx(DocumentWidget *document, TextArea *area, Direction direction, SearchType searchType, WrapMode searchWrap);
+    void ReplaceInSelectionEx(DocumentWidget *document, TextArea *area, const QString &searchString, const QString &replaceString, SearchType searchType);
+    bool prefOrUserCancelsSubstEx(DocumentWidget *document);
+    bool ReplaceAllEx(DocumentWidget *document, TextArea *area, const QString &searchString, const QString &replaceString, SearchType searchType);
+    void DoFindReplaceDlogEx(DocumentWidget *document, TextArea *area, Direction direction, bool keepDialogs, SearchType searchType);
+    void iSearchRecordLastBeginPosEx(Direction direction, int initPos);
+    void iSearchTryBeepOnWrapEx(Direction direction, int beginPos, int startPos);
+    bool searchMatchesSelectionEx(DocumentWidget *document, const QString &searchString, SearchType searchType, int *left, int *right, int *searchExtentBW, int *searchExtentFW);
 
 public:
     static MainWindow *fromDocument(const DocumentWidget *document);
@@ -113,49 +131,92 @@ public:
 public:
 	DocumentWidget *CreateDocument(QString name);
 
-public Q_SLOTS:
+public:
 	// internal variants
-    void action_New(NewMode mode = NewMode::Prefs);
-    void action_Open(const QString &filename);
-	void action_Save_As(const QString &filename, bool wrapped);
-    void action_Close(CloseMode mode = CloseMode::Prompt);
-    void action_Load_Macro_File(const QString &filename);
-    void action_Load_Tags_File(const QString &filename);
-    void action_Unload_Tags_File(const QString &filename);
-    void action_Load_Tips_File(const QString &filename);
-    void action_Unload_Tips_File(const QString &filename);
-    void action_Find(const QString &string, Direction direction, SearchType type, WrapMode searchWrap);
-    void action_Find_Dialog(Direction direction, SearchType type, bool keepDialog);
-    void action_Find_Again(Direction direction, WrapMode wrap);
-    void action_Find_Selection(Direction direction, SearchType type, WrapMode wrap);
-    void action_Replace(Direction direction, const QString &searchString, const QString &replaceString, SearchType type, WrapMode wrap);
-    void action_Replace_Dialog(Direction direction, SearchType type, bool keepDialog);
-    void action_Replace_All(const QString &searchString, const QString &replaceString, SearchType type);
-    void action_Replace_Again(Direction direction, WrapMode wrap);
-    void action_Mark(const QString &mark);
-    void action_Goto_Mark(const QString &mark, bool extend);
-    void action_Goto_Mark_Dialog(bool extend);
-    void action_Find_Definition(const QString &argument);
-    void action_Show_Tip(const QString &argument);
-    void action_Filter_Selection(const QString &filter);
-    void action_Execute_Command(const QString &command);
-    void action_Shell_Menu_Command(const QString &name);
-    void action_Macro_Menu_Command(const QString &name);
-    void action_Repeat_Macro(const QString &macro, int how);
+    void action_Open_Selected(DocumentWidget *document);
+    void action_Load_Calltips_File(DocumentWidget *document);
+    void action_Goto_Matching(DocumentWidget *document);
+    void action_Shift_Goto_Matching(DocumentWidget *document);
+    void action_Goto_Selected(DocumentWidget *document);
+    void action_Exit(DocumentWidget *document);
+    void action_New(DocumentWidget *document, NewMode mode = NewMode::Prefs);
+    void action_Open(DocumentWidget *document, const QString &filename);
+    void action_Open(DocumentWidget *document);
+    void action_Save_As(DocumentWidget *document, const QString &filename, bool wrapped);
+    void action_Save_As(DocumentWidget *document);
+    void action_Save(DocumentWidget *document);
+    void action_Select_All(DocumentWidget *document);
+    void action_Shift_Left(DocumentWidget *document);
+    void action_Shift_Right(DocumentWidget *document);
+    void action_Split_Pane(DocumentWidget *document);
+    void action_Upper_case(DocumentWidget *document);
+    void action_Close(DocumentWidget *document, CloseMode mode = CloseMode::Prompt);
+    void action_Close_Pane(DocumentWidget *document);
+    void action_Load_Macro_File(DocumentWidget *document, const QString &filename);
+    void action_Load_Macro_File(DocumentWidget *document);
+    void action_Load_Tags_File(DocumentWidget *document, const QString &filename);
+    void action_Load_Tags_File(DocumentWidget *document);
+    void action_Print(DocumentWidget *document);
+    void action_Print_Selection(DocumentWidget *document);
+    void action_Redo(DocumentWidget *document);
+    void action_Undo(DocumentWidget *document);
+    void action_Unload_Tags_File(DocumentWidget *document, const QString &filename);
+    void action_Load_Tips_File(DocumentWidget *document, const QString &filename);
+    void action_Unload_Tips_File(DocumentWidget *document, const QString &filename);
+    void action_Find(DocumentWidget *document, const QString &string, Direction direction, SearchType type, WrapMode searchWrap);
+    void action_Find_Dialog(DocumentWidget *document, Direction direction, SearchType type, bool keepDialog);
+    void action_Find_Again(DocumentWidget *document, Direction direction, WrapMode wrap);
+    void action_Find_Selection(DocumentWidget *document, Direction direction, SearchType type, WrapMode wrap);
+    void action_Replace(DocumentWidget *document, Direction direction, const QString &searchString, const QString &replaceString, SearchType type, WrapMode wrap);
+    void action_Replace_Dialog(DocumentWidget *document, Direction direction, SearchType type, bool keepDialog);
+    void action_Replace_All(DocumentWidget *document, const QString &searchString, const QString &replaceString, SearchType type);
+    void action_Replace_Again(DocumentWidget *document, Direction direction, WrapMode wrap);
+    void action_Mark(DocumentWidget *document, const QString &mark);
+    void action_Mark(DocumentWidget *document);
+    void action_Filter_Selection(DocumentWidget *document);
+    void action_Goto_Mark(DocumentWidget *document, const QString &mark, bool extend);
+    void action_Goto_Mark_Dialog(DocumentWidget *document, bool extend);
+    void action_Find_Definition(DocumentWidget *document, const QString &argument);
+    void action_Show_Tip(DocumentWidget *document, const QString &argument);
+    void action_Show_Calltip(DocumentWidget *document);
+    void action_Find_Definition(DocumentWidget *document);
+    void action_Filter_Selection(DocumentWidget *document, const QString &filter);
+    void action_Execute_Command(DocumentWidget *document, const QString &command);
+    void action_Execute_Command(DocumentWidget *document);
+    void action_Shell_Menu_Command(DocumentWidget *document, const QString &name);
+    void action_Macro_Menu_Command(DocumentWidget *document, const QString &name);
+    void action_Repeat_Macro(DocumentWidget *document, const QString &macro, int how);
     void action_Detach_Document(DocumentWidget *document);
-    void action_Revert_to_Saved();
-    void action_Insert_Ctrl_Code(const QString &str);
+    void action_Revert_to_Saved(DocumentWidget *document);
+    void action_Insert_Ctrl_Code(DocumentWidget *document, const QString &str);
 
-    void action_Shift_Left_Tabs();
-    void action_Shift_Right_Tabs();
-    void action_Shift_Find();
-    void action_Shift_Find_Again();
-    void action_Shift_Find_Selection_triggered();
-    void action_Shift_Find_Incremental_triggered();
-    void action_Shift_Replace_triggered();
-    void action_Shift_Replace_Find_Again_triggered();
-    void action_Shift_Replace_Again_triggered();
-    void action_Shift_Goto_Matching_triggered();
+    void action_Shift_Left_Tabs(DocumentWidget *document);
+    void action_Shift_Right_Tabs(DocumentWidget *document);
+    void action_Delete(DocumentWidget *document);
+    void action_Shift_Find(DocumentWidget *document);
+    void action_Shift_Find_Again(DocumentWidget *document);
+    void action_Shift_Find_Selection_triggered(DocumentWidget *document);
+    void action_Shift_Find_Incremental_triggered(DocumentWidget *document);
+    void action_Shift_Replace_triggered(DocumentWidget *document);
+    void action_Shift_Replace_Find_Again_triggered(DocumentWidget *document);
+    void action_Repeat(DocumentWidget *document);
+    void action_Execute_Command_Line(DocumentWidget *document);
+    void action_Move_Tab_To(DocumentWidget *document);
+    void action_Fill_Paragraph(DocumentWidget *document);
+    void action_Lower_case(DocumentWidget *document);
+    void action_Include_File(DocumentWidget *document, const QString &filename);
+    void action_Include_File(DocumentWidget *document);
+    void action_Insert_Ctrl_Code(DocumentWidget *document);
+    void action_Goto_Line_Number(DocumentWidget *document, const QString &s);
+    void action_Goto_Line_Number(DocumentWidget *document);
+
+    void setAutoIndent(IndentStyle state);
+
+public Q_SLOTS:
+    // has no visual shortcut at all
+    void action_Next_Document();
+    void action_Prev_Document();
+    void action_Last_Document();
 
     // These are a bit weird as they are multi-key shortcuts
     // and act a bit differently from the menu
@@ -163,12 +224,16 @@ public Q_SLOTS:
     void action_Shift_Goto_Mark_Shortcut_triggered();
     void action_Goto_Mark_Shortcut_triggered();
 
-    // has no visual shortcut at all
-    void action_Next_Document();
-    void action_Prev_Document();
-    void action_Last_Document();
-
-    void setAutoIndent(IndentStyle state);
+    // Others...
+    void action_Shift_Replace_Again_triggered();
+    void action_Shift_Goto_Matching_triggered();
+    void action_Shift_Find();
+    void action_Shift_Find_Again();
+    void action_Shift_Replace_triggered();
+    void action_Shift_Left_Tabs();
+    void action_Shift_Right_Tabs();
+    void action_Shift_Find_Selection_triggered();
+    void action_Shift_Find_Incremental_triggered();
 
 public Q_SLOTS:
     // groups
@@ -199,15 +264,11 @@ public Q_SLOTS:
 	void on_checkIFindReverse_toggled(bool value);
 
 public Q_SLOTS:
-    void action_Include_File(const QString &filename);
-	void action_Goto_Line_Number(const QString &s);
-
-public Q_SLOTS:
     // File Menu
-	void on_action_New_triggered();
-	void on_action_New_Window_triggered();
-	void on_action_Open_triggered();	
-	void on_action_Select_All_triggered();
+    void on_action_New_triggered();
+    void on_action_New_Window_triggered();
+    void on_action_Open_triggered();
+    void on_action_Select_All_triggered();
     void on_action_Open_Selected_triggered();
     void on_action_Close_triggered();
     void on_action_Include_File_triggered();

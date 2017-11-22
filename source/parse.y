@@ -20,8 +20,8 @@
 #define MAX_STRING_CONST_LEN 5000
 
 static int yyerror(const char *s);
-static int yylex(void);
-int yyparse(void);
+static int yylex();
+int yyparse();
 static int follow(char expect, int yes, int no);
 static int follow2(char expect1, int yes1, char expect2, int yes2, int no);
 static int follow_non_whitespace(char expect, int yes, int no);

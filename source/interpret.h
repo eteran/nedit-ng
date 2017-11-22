@@ -162,7 +162,6 @@ struct DataValue {
         Program*       prog;
         Inst*          inst;
         DataValue*     dataval;
-
 	} val;
 };
 
@@ -224,10 +223,10 @@ bool AddSym(Symbol *sym, const char **msg);
 Inst *GetPC();
 Program *FinishCreatingProgram();
 Symbol *InstallIteratorSymbol();
-Symbol *InstallStringConstSymbol(const char *str);
+Symbol *InstallStringConstSymbol(view::string_view str);
 Symbol *InstallSymbol(const std::string &name, SymTypes type, const DataValue &value);
 Symbol *InstallSymbolEx(const QString &name, enum SymTypes type, const DataValue &value);
-Symbol *LookupStringConstSymbol(const char *value);
+Symbol *LookupStringConstSymbol(view::string_view value);
 Symbol *LookupSymbolEx(const QString &name);
 Symbol *LookupSymbol(view::string_view name);
 void BeginCreatingProgram();
@@ -249,7 +248,7 @@ void GarbageCollectStrings();
 Symbol *PromoteToGlobal(Symbol *sym);
 void FreeProgram(Program *prog);
 void ModifyReturnedValueEx(const std::shared_ptr<RestartData> &context, const DataValue &dv);
-DocumentWidget *MacroRunWindowEx();
+DocumentWidget *MacroRunDocumentEx();
 DocumentWidget *MacroFocusWindowEx();
 void SetMacroFocusWindowEx(DocumentWidget *document);
 

@@ -565,7 +565,7 @@ void ModifyReturnedValueEx(const std::shared_ptr<RestartData> &context, const Da
 ** Called within a routine invoked from a macro, returns the window in
 ** which the macro is executing (where the banner is, not where it is focused)
 */
-DocumentWidget *MacroRunWindowEx() {
+DocumentWidget *MacroRunDocumentEx() {
     return InitiatingWindowEx;
 }
 
@@ -608,7 +608,7 @@ Symbol *InstallIteratorSymbol() {
 ** Lookup a constant string by its value. This allows reuse of string
 ** constants and fixing a leak in the interpreter.
 */
-Symbol *LookupStringConstSymbol(const char *value) {
+Symbol *LookupStringConstSymbol(view::string_view value) {
 
     for(Symbol *s : GlobalSymList) {
         if (s->type == CONST_SYM && is_string(s->value) && to_string(s->value) == value) {
@@ -621,7 +621,7 @@ Symbol *LookupStringConstSymbol(const char *value) {
 /*
 ** install string str in the global symbol table with a string name
 */
-Symbol *InstallStringConstSymbol(const char *str) {
+Symbol *InstallStringConstSymbol(view::string_view str) {
 
     static int stringConstIndex = 0;
 

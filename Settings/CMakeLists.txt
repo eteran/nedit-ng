@@ -18,6 +18,7 @@ add_library (Settings
 	TruncSubstitution.h
 	VirtKeyOverride.h
 	WrapStyle.h
+	ReplaceAllDefaultScope.h
 )
 
 target_include_directories (Settings PUBLIC

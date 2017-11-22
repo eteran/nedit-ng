@@ -24,4 +24,34 @@ private:
     QStringList arguments_;
 };
 
+#define EMIT_EVENT(name)                                \
+    do {                                                \
+        WindowMenuEvent menuEvent(QLatin1String(name)); \
+        QApplication::sendEvent(this, &menuEvent);      \
+    } while(0)
+
+#define EMIT_EVENT_ARG_1(name, arg)                            \
+    do {                                                       \
+        WindowMenuEvent menuEvent(QLatin1String(name), {arg}); \
+        QApplication::sendEvent(this, &menuEvent);             \
+    } while(0)
+
+#define EMIT_EVENT_ARG_2(name, arg1, arg2)                            \
+    do {                                                              \
+        WindowMenuEvent menuEvent(QLatin1String(name), {arg1, arg2}); \
+        QApplication::sendEvent(this, &menuEvent);                    \
+    } while(0)
+
+#define EMIT_EVENT_ARG_3(name, arg1, arg2, arg3)                            \
+    do {                                                                    \
+        WindowMenuEvent menuEvent(QLatin1String(name), {arg1, arg2, arg3}); \
+        QApplication::sendEvent(this, &menuEvent);                          \
+    } while(0)
+
+#define EMIT_EVENT_ARG_4(name, arg1, arg2, arg3, arg4)                            \
+    do {                                                                          \
+        WindowMenuEvent menuEvent(QLatin1String(name), {arg1, arg2, arg3, arg4}); \
+        QApplication::sendEvent(this, &menuEvent);                                \
+    } while(0)
+
 #endif
