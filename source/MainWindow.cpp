@@ -1221,6 +1221,15 @@ void MainWindow::UpdateUserMenus(DocumentWidget *document) {
     document->contextMenu_ = createUserMenu(document, BGMenuData);
 }
 
+void MainWindow::UpdateUserMenus() {
+    if(DocumentWidget *document = currentDocument()) {
+        UpdateUserMenus(document);
+    }
+}
+
+
+
+
 /*
 ** Re-build the language mode sub-menu using the current data stored
 ** in the master list: LanguageModes.

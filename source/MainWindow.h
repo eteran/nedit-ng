@@ -47,6 +47,7 @@ private:
 public:
     void updateLanguageModeSubmenu();
     void UpdateUserMenus(DocumentWidget *document);
+    void UpdateUserMenus();
 
 private:
     void keyPressEvent(QKeyEvent *event) override;

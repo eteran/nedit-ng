@@ -456,7 +456,7 @@ bool DialogWindowBackgroundMenu::applyDialogChanges() {
 
     // Update the menus themselves in all of the NEdit windows
     for(MainWindow *window : MainWindow::allWindows()) {
-        window->UpdateUserMenus(window->currentDocument());
+        window->UpdateUserMenus();
     }
 
 	// Note that preferences have been changed
