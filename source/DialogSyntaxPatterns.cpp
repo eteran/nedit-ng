@@ -102,7 +102,7 @@ void DialogSyntaxPatterns::setLanguageName(const QString &name) {
 			messageBox.setIcon(QMessageBox::Warning);
 			messageBox.setText(tr("Discard incomplete entry for current language mode?"));
 			QPushButton *buttonKeep    = messageBox.addButton(tr("Keep"), QMessageBox::RejectRole);
-			QPushButton *buttonDiscard = messageBox.addButton(tr("Discard"), QMessageBox::AcceptRole);
+            QPushButton *buttonDiscard = messageBox.addButton(tr("Discard"), QMessageBox::DestructiveRole);
 			Q_UNUSED(buttonDiscard);
 
 			messageBox.exec();
@@ -115,13 +115,13 @@ void DialogSyntaxPatterns::setLanguageName(const QString &name) {
 			}
 		} else if (*oldPatSet != *newPatSet) {
 
-			// TODO(eteran): 2.0, use QMessageBox::Apply | QMessageBox::Discard
+            // TODO(eteran): 2.0, use QMessageBox::Apply | QMessageBox::Discard | QMessageBox::Cancel
 			QMessageBox messageBox(this);
 			messageBox.setWindowTitle(tr("Language Mode"));
 			messageBox.setIcon(QMessageBox::Warning);
 			messageBox.setText(tr("Apply changes for language mode %1?").arg(previousLanguage_));
 			QPushButton *buttonApply   = messageBox.addButton(tr("Apply Changes"), QMessageBox::AcceptRole);
-			QPushButton *buttonDiscard = messageBox.addButton(tr("Discard Changes"), QMessageBox::RejectRole);
+            QPushButton *buttonDiscard = messageBox.addButton(tr("Discard Changes"), QMessageBox::DestructiveRole);
 			QPushButton *buttonCancel  = messageBox.addButton(QMessageBox::Cancel);
 			Q_UNUSED(buttonDiscard);
 
@@ -461,7 +461,7 @@ void DialogSyntaxPatterns::on_buttonDeletePattern_clicked() {
 	messageBox.setWindowTitle(tr("Delete Pattern"));
 	messageBox.setIcon(QMessageBox::Warning);
 	messageBox.setText(tr("Are you sure you want to delete syntax highlighting patterns for language mode %1?").arg(languageMode));
-	QPushButton *buttonYes     = messageBox.addButton(tr("Yes, Delete"), QMessageBox::AcceptRole);
+    QPushButton *buttonYes     = messageBox.addButton(tr("Yes, Delete"), QMessageBox::DestructiveRole);
 	QPushButton *buttonCancel  = messageBox.addButton(QMessageBox::Cancel);
 	Q_UNUSED(buttonYes);
 
@@ -600,7 +600,7 @@ void DialogSyntaxPatterns::on_listItems_itemSelectionChanged() {
 			messageBox.setIcon(QMessageBox::Warning);
 			messageBox.setText(tr("Discard incomplete entry for current menu item?"));
 			QPushButton *buttonKeep    = messageBox.addButton(tr("Keep"), QMessageBox::RejectRole);
-			QPushButton *buttonDiscard = messageBox.addButton(tr("Discard"), QMessageBox::AcceptRole);
+            QPushButton *buttonDiscard = messageBox.addButton(tr("Discard"), QMessageBox::DestructiveRole);
 			Q_UNUSED(buttonDiscard);
 
 			messageBox.exec();

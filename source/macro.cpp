@@ -678,17 +678,17 @@ static Direction searchDirection(Arguments arguments, int index) {
     for(int i = index; i < arguments.size(); ++i) {
         QString arg;
         if (!readArgument(arguments[i], &arg)) {
-            return Direction::FORWARD;
+            return Direction::Forward;
         }
 
         if (arg.compare(QLatin1String("forward"), Qt::CaseInsensitive) == 0)
-            return Direction::FORWARD;
+            return Direction::Forward;
 
         if (arg.compare(QLatin1String("backward"), Qt::CaseInsensitive) == 0)
-            return Direction::BACKWARD;
+            return Direction::Backward;
     }
 
-    return Direction::FORWARD;
+    return Direction::Forward;
 }
 
 
@@ -2951,7 +2951,7 @@ static bool searchStringMS(DocumentWidget *document, Arguments arguments, DataVa
 
     int len = gsl::narrow<int>(to_string(arguments[0]).size());
     if (beginPos > len) {
-        if (direction == Direction::FORWARD) {
+        if (direction == Direction::Forward) {
             if (wrap == WrapMode::Wrap) {
                 beginPos = 0; // Wrap immediately
             } else {
@@ -2962,7 +2962,7 @@ static bool searchStringMS(DocumentWidget *document, Arguments arguments, DataVa
             beginPos = len;
         }
     } else if (beginPos < 0) {
-        if (direction == Direction::BACKWARD) {
+        if (direction == Direction::Backward) {
             if (wrap == WrapMode::Wrap) {
                 beginPos = len; // Wrap immediately
             } else {
@@ -3083,7 +3083,7 @@ static bool readSearchArgs(Arguments arguments, Direction *searchDirection, Sear
     QString argStr;
 
     *wrap            = WrapMode::NoWrap;
-    *searchDirection = Direction::FORWARD;
+    *searchDirection = Direction::Forward;
     *searchType      = SearchType::Literal;
 
     for (const DataValue &dv : arguments) {
@@ -3094,9 +3094,9 @@ static bool readSearchArgs(Arguments arguments, Direction *searchDirection, Sear
         else if (argStr == QLatin1String("nowrap"))
             *wrap = WrapMode::NoWrap;
         else if (argStr == QLatin1String("backward"))
-            *searchDirection = Direction::BACKWARD;
+            *searchDirection = Direction::Backward;
         else if (argStr == QLatin1String("forward"))
-            *searchDirection = Direction::FORWARD;
+            *searchDirection = Direction::Forward;
         else if (!StringToSearchType(argStr, searchType)) {
             M_FAILURE(UnrecognizedArgument);
         }
@@ -3868,7 +3868,7 @@ static bool splitMS(DocumentWidget *document, Arguments arguments, DataValue *re
         found = SearchString(
                     sourceStr,
                     splitStr,
-                    Direction::FORWARD,
+                    Direction::Forward,
                     searchType,
                     WrapMode::NoWrap,
                     beginPos,
@@ -3936,7 +3936,7 @@ static bool splitMS(DocumentWidget *document, Arguments arguments, DataValue *re
             found = SearchString(
                         sourceStr,
                         splitStr,
-                        Direction::FORWARD,
+                        Direction::Forward,
                         searchType,
                         WrapMode::NoWrap,
                         strLength,

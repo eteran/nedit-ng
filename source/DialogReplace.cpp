@@ -667,7 +667,7 @@ bool DialogReplace::getReplaceDlogInfo(Direction *direction, QString *searchStri
 		}
 	}
 
-    *direction = ui.checkBackward->isChecked() ? Direction::BACKWARD : Direction::FORWARD;
+    *direction = ui.checkBackward->isChecked() ? Direction::Backward : Direction::Forward;
 
     *searchString  = replaceText;
     *replaceString = replaceWithText;

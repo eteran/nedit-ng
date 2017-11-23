@@ -198,7 +198,7 @@ void DialogWindowBackgroundMenu::on_listItems_itemSelectionChanged() {
 			messageBox.setIcon(QMessageBox::Warning);
 			messageBox.setText(tr("Discard incomplete entry for current menu item?"));
 			QPushButton *buttonKeep    = messageBox.addButton(tr("Keep"), QMessageBox::RejectRole);
-			QPushButton *buttonDiscard = messageBox.addButton(tr("Discard"), QMessageBox::AcceptRole);
+            QPushButton *buttonDiscard = messageBox.addButton(tr("Discard"), QMessageBox::DestructiveRole);
 			Q_UNUSED(buttonDiscard);
 
 			messageBox.exec();

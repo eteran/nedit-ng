@@ -142,7 +142,7 @@ std::string ReplaceAllInStringEx(view::string_view inString, const QString &sear
         found = SearchString(
                     inString,
                     searchString,
-                    Direction::FORWARD,
+                    Direction::Forward,
                     searchType,
                     WrapMode::NoWrap,
                     beginPos,
@@ -206,7 +206,7 @@ std::string ReplaceAllInStringEx(view::string_view inString, const QString &sear
     lastEndPos = 0;
 
     while (found) {
-        found = SearchString(inString, searchString, Direction::FORWARD, searchType, WrapMode::NoWrap, beginPos, &startPos, &endPos, &searchExtentBW, &searchExtentFW, delimiters);
+        found = SearchString(inString, searchString, Direction::Forward, searchType, WrapMode::NoWrap, beginPos, &startPos, &endPos, &searchExtentBW, &searchExtentFW, delimiters);
         if (found) {
             if (beginPos != 0) {
 
@@ -362,7 +362,7 @@ static bool searchLiteralWord(view::string_view string, view::string_view search
 		lcString = downCaseStringEx(searchString);
 	}
 
-    if (direction == Direction::FORWARD) {
+    if (direction == Direction::Forward) {
 		// search from beginPos to end of string 
 		for (auto filePtr = string.begin() + beginPos; filePtr != string.end(); filePtr++) {
             if(do_search_word2(filePtr)) {
@@ -449,7 +449,7 @@ static bool searchLiteral(view::string_view string, view::string_view searchStri
 
 
 
-    if (direction == Direction::FORWARD) {
+    if (direction == Direction::Forward) {
 
 		auto first = string.begin();
 		auto mid   = first + beginPos;
@@ -510,7 +510,7 @@ static bool searchLiteral(view::string_view string, view::string_view searchStri
 }
 
 static bool searchRegex(view::string_view string, view::string_view searchString, Direction direction, WrapMode wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags) {
-    if (direction == Direction::FORWARD)
+    if (direction == Direction::Forward)
 		return forwardRegexSearch(string, searchString, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW, delimiters, defaultFlags);
 	else
 		return backwardRegexSearch(string, searchString, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW, delimiters, defaultFlags);

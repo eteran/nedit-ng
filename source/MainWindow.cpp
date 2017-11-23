@@ -2204,7 +2204,7 @@ void MainWindow::action_Find_Dialog(DocumentWidget *document, Direction directio
 void MainWindow::action_Shift_Find(DocumentWidget *document) {
     action_Find_Dialog(
         document,
-        Direction::BACKWARD,
+        Direction::Backward,
         GetPrefSearch(),
         GetPrefKeepSearchDlogs());
 }
@@ -2235,7 +2235,7 @@ void MainWindow::action_Find_Again(DocumentWidget *document, Direction direction
 void MainWindow::action_Shift_Find_Again(DocumentWidget *document) {
     action_Find_Again(
         document,
-        Direction::BACKWARD,
+        Direction::Backward,
         GetPrefSearchWraps());
 }
 
@@ -2267,7 +2267,7 @@ void MainWindow::action_Find_Selection(DocumentWidget *document, Direction direc
 void MainWindow::action_Shift_Find_Selection(DocumentWidget *document) {
     action_Find_Selection(
         document,
-        Direction::BACKWARD,
+        Direction::Backward,
         GetPrefSearch(),
         GetPrefSearchWraps());
 }
@@ -2282,7 +2282,7 @@ void MainWindow::action_Shift_Find_Selection() {
 // Name:
 //------------------------------------------------------------------------------
 void MainWindow::on_action_Find_Incremental_triggered() {
-    BeginISearchEx(Direction::FORWARD);
+    BeginISearchEx(Direction::Forward);
 }
 
 //------------------------------------------------------------------------------
@@ -2290,7 +2290,7 @@ void MainWindow::on_action_Find_Incremental_triggered() {
 //------------------------------------------------------------------------------
 void MainWindow::action_Shift_Find_Incremental(DocumentWidget *document) {
     Q_UNUSED(document);
-    BeginISearchEx(Direction::BACKWARD);
+    BeginISearchEx(Direction::Backward);
 }
 
 void MainWindow::action_Shift_Find_Incremental() {
@@ -2324,7 +2324,7 @@ void MainWindow::on_editIFind_textChanged(const QString &text) {
         }
     }
 
-    const Direction direction = ui.checkIFindReverse->isChecked() ? Direction::BACKWARD : Direction::FORWARD;
+    const Direction direction = ui.checkIFindReverse->isChecked() ? Direction::Backward : Direction::Forward;
 
     /* If the search type is a regular expression, test compile it.  If it
        fails, silently skip it.  (This allows users to compose the expression
@@ -2382,11 +2382,11 @@ void MainWindow::on_editIFind_returnPressed() {
             searchType = SearchType::Literal;
     }
 
-    Direction direction = ui.checkIFindReverse->isChecked() ? Direction::BACKWARD : Direction::FORWARD;
+    Direction direction = ui.checkIFindReverse->isChecked() ? Direction::Backward : Direction::Forward;
 
     // Reverse the search direction if the Ctrl or Shift key was pressed
     if(QApplication::keyboardModifiers() & (Qt::CTRL | Qt::SHIFT)) {
-        direction = (direction == Direction::FORWARD) ? Direction::BACKWARD : Direction::FORWARD;
+        direction = (direction == Direction::Forward) ? Direction::Backward : Direction::Forward;
     }
 
     // find the text and mark it
@@ -2568,7 +2568,7 @@ void MainWindow::BeginISearchEx(Direction direction) {
 
     iSearchStartPos_ = -1;
 	ui.editIFind->setText(QLatin1String(""));
-    no_signals(ui.checkIFindReverse)->setChecked(direction == Direction::BACKWARD);
+    no_signals(ui.checkIFindReverse)->setChecked(direction == Direction::Backward);
 
 
     /* Note: in contrast to the replace and find dialogs, the regex and
@@ -2612,7 +2612,7 @@ void MainWindow::action_Shift_Replace(DocumentWidget *document) {
     DoFindReplaceDlogEx(
                 document,
                 lastFocus_,
-                Direction::BACKWARD,
+                Direction::Backward,
                 GetPrefKeepSearchDlogs(),
                 GetPrefSearch());
 }
@@ -2633,7 +2633,7 @@ void MainWindow::on_action_Replace_Find_Again_triggered() {
         ReplaceFindSameEx(
                     currentDocument(),
                     lastFocus_,
-                    Direction::FORWARD,
+                    Direction::Forward,
                     GetPrefSearchWraps());
     }
 }
@@ -2646,7 +2646,7 @@ void MainWindow::action_Shift_Replace_Find_Again(DocumentWidget *document) {
     ReplaceFindSameEx(
                 document,
                 lastFocus_,
-                Direction::BACKWARD,
+                Direction::Backward,
                 GetPrefSearchWraps());
 }
 
@@ -2668,7 +2668,7 @@ void MainWindow::action_Replace_Again(DocumentWidget *document, Direction direct
 void MainWindow::on_action_Replace_Again_triggered() {
     action_Replace_Again(
                 currentDocument(),
-                Direction::FORWARD,
+                Direction::Forward,
                 GetPrefSearchWraps());
 }
 
@@ -2678,7 +2678,7 @@ void MainWindow::on_action_Replace_Again_triggered() {
 void MainWindow::action_Shift_Replace_Again() {
     action_Replace_Again(
                 currentDocument(),
-                Direction::BACKWARD,
+                Direction::Backward,
                 GetPrefSearchWraps());
 }
 
@@ -4337,7 +4337,7 @@ bool MainWindow::CheckPrefsChangesSavedEx() {
         ? tr("Default Preferences have changed.\nSave changes to NEdit preference file?")
         : tr("Default Preferences have changed.\nSAVING CHANGES WILL INCORPORATE ADDITIONAL SETTINGS FROM FILE: %s").arg(importedFile));
 
-    QPushButton *buttonSave     = messageBox.addButton(tr("Save"), QMessageBox::AcceptRole);
+    QPushButton *buttonSave     = messageBox.addButton(QMessageBox::Save);
     QPushButton *buttonDontSave = messageBox.addButton(tr("Don't Save"), QMessageBox::AcceptRole);
     QPushButton *buttonCancel   = messageBox.addButton(QMessageBox::Cancel);
     Q_UNUSED(buttonCancel);
@@ -4594,6 +4594,8 @@ void MainWindow::DimPasteReplayBtns(bool enabled) {
  */
 void MainWindow::action_Find(DocumentWidget *document, const QString &string, Direction direction, SearchType type, WrapMode searchWrap) {
 
+    EMIT_EVENT_ARG_4("find", string, to_string(direction), to_string(type), to_string(searchWrap));
+
     SearchAndSelectEx(
                 document,
                 lastFocus_,
@@ -4609,7 +4611,7 @@ void MainWindow::action_Find(DocumentWidget *document, const QString &string, Di
 void MainWindow::on_action_Find_triggered() {
     action_Find_Dialog(
                 currentDocument(),
-                Direction::FORWARD,
+                Direction::Forward,
                 GetPrefSearch(),
                 GetPrefKeepSearchDlogs());
 }
@@ -4620,7 +4622,7 @@ void MainWindow::on_action_Find_triggered() {
 void MainWindow::on_action_Find_Again_triggered() {
     action_Find_Again(
                 currentDocument(),
-                Direction::FORWARD,
+                Direction::Forward,
                 GetPrefSearchWraps());
 }
 
@@ -4630,7 +4632,7 @@ void MainWindow::on_action_Find_Again_triggered() {
 void MainWindow::on_action_Find_Selection_triggered() {
     action_Find_Selection(
                 currentDocument(),
-                Direction::FORWARD,
+                Direction::Forward,
                 GetPrefSearch(),
                 GetPrefSearchWraps());
 }
@@ -4684,7 +4686,7 @@ void MainWindow::action_Replace_Dialog(DocumentWidget *document, Direction direc
 void MainWindow::on_action_Replace_triggered() {
     action_Replace_Dialog(
                 currentDocument(),
-                Direction::FORWARD,
+                Direction::Forward,
                 GetPrefSearch(),
                 GetPrefKeepSearchDlogs());
 }
@@ -5060,7 +5062,7 @@ bool MainWindow::SearchWindowEx(DocumentWidget *document, Direction direction, c
     /* If we're already outside the boundaries, we must consider wrapping
        immediately (Note: fileEnd+1 is a valid starting position. Consider
        searching for $ at the end of a file ending with \n.) */
-    if ((direction == Direction::FORWARD && beginPos > fileEnd + 1) || (direction == Direction::BACKWARD && beginPos < 0)) {
+    if ((direction == Direction::Forward && beginPos > fileEnd + 1) || (direction == Direction::Backward && beginPos < 0)) {
         outsideBounds = true;
     } else {
         outsideBounds = false;
@@ -5099,7 +5101,7 @@ bool MainWindow::SearchWindowEx(DocumentWidget *document, Direction direction, c
 
         if (!found) {
             if (searchWrap == WrapMode::Wrap) {
-                if (direction == Direction::FORWARD && beginPos != 0) {
+                if (direction == Direction::Forward && beginPos != 0) {
                     if (GetPrefBeepOnSearchWrap()) {
                         QApplication::beep();
                     } else if (GetPrefSearchDlogs()) {
@@ -5131,7 +5133,7 @@ bool MainWindow::SearchWindowEx(DocumentWidget *document, Direction direction, c
                                 extentFW,
                                 document->GetWindowDelimitersEx());
 
-                } else if (direction == Direction::BACKWARD && beginPos != fileEnd) {
+                } else if (direction == Direction::Backward && beginPos != fileEnd) {
                     if (GetPrefBeepOnSearchWrap()) {
                         QApplication::beep();
                     } else if (GetPrefSearchDlogs()) {
@@ -5173,7 +5175,7 @@ bool MainWindow::SearchWindowEx(DocumentWidget *document, Direction direction, c
         }
     } else { // incremental search
         if (outsideBounds && searchWrap == WrapMode::Wrap) {
-            if (direction == Direction::FORWARD) {
+            if (direction == Direction::Forward) {
                 beginPos = 0;
             } else {
                 beginPos = fileEnd + 1;
@@ -5223,7 +5225,7 @@ bool MainWindow::SearchAndSelectEx(DocumentWidget *document, TextArea *area, Dir
        string that was found on the last search	*/
     if (searchMatchesSelectionEx(document, searchString, searchType, &selStart, &selEnd, nullptr, nullptr)) {
         // selection matches search string, start before or after sel.
-        if (direction == Direction::BACKWARD) {
+        if (direction == Direction::Backward) {
             beginPos = selStart - 1;
         } else {
             beginPos = selStart + 1;
@@ -5235,7 +5237,7 @@ bool MainWindow::SearchAndSelectEx(DocumentWidget *document, TextArea *area, Dir
         // no selection, or no match, search relative cursor
 
         int cursorPos = area->TextGetCursorPos();
-        if (direction == Direction::BACKWARD) {
+        if (direction == Direction::Backward) {
             // use the insert position - 1 for backward searches
             beginPos = cursorPos - 1;
         } else {
@@ -5261,7 +5263,7 @@ bool MainWindow::SearchAndSelectEx(DocumentWidget *document, TextArea *area, Dir
     /* if the search matched an empty string (possible with regular exps)
        beginning at the start of the search, go to the next occurrence,
        otherwise repeated finds will get "stuck" at zero-length matches */
-    if (direction == Direction::FORWARD && beginPos == startPos && beginPos == endPos) {
+    if (direction == Direction::Forward && beginPos == startPos && beginPos == endPos) {
         if (!movedFwd && !SearchWindowEx(document, direction, searchString, searchType, searchWrap, beginPos + 1, &startPos, &endPos, nullptr, nullptr)) {
             return false;
         }
@@ -5309,7 +5311,7 @@ bool MainWindow::SearchAndSelectIncrementalEx(DocumentWidget *document, TextArea
        clear the selection, set the cursor back to what would be the
        beginning of the search, and return. */
     if (searchString.isEmpty()) {
-        int beepBeginPos = (direction == Direction::BACKWARD) ? beginPos - 1 : beginPos;
+        int beepBeginPos = (direction == Direction::Backward) ? beginPos - 1 : beginPos;
         iSearchTryBeepOnWrapEx(direction, beepBeginPos, beepBeginPos);
         iSearchRecordLastBeginPosEx(direction, iSearchStartPos_);
         document->buffer_->BufUnselect();
@@ -5328,7 +5330,7 @@ bool MainWindow::SearchAndSelectIncrementalEx(DocumentWidget *document, TextArea
     }
 
     // begin at insert position - 1 for backward searches
-    if (direction == Direction::BACKWARD)
+    if (direction == Direction::Backward)
         beginPos--;
 
     // do the search.  SearchWindow does appropriate dialogs and beeps
@@ -5340,7 +5342,7 @@ bool MainWindow::SearchAndSelectIncrementalEx(DocumentWidget *document, TextArea
     /* if the search matched an empty string (possible with regular exps)
        beginning at the start of the search, go to the next occurrence,
        otherwise repeated finds will get "stuck" at zero-length matches */
-    if (direction == Direction::FORWARD && beginPos == startPos && beginPos == endPos)
+    if (direction == Direction::Forward && beginPos == startPos && beginPos == endPos)
         if (!SearchWindowEx(document, direction, searchString, searchType, searchWrap, beginPos + 1, &startPos, &endPos, nullptr, nullptr))
             return false;
 
@@ -5400,7 +5402,7 @@ bool MainWindow::ReplaceAndSearchEx(DocumentWidget *document, TextArea *area, Di
 
         // Position the cursor so the next search will work correctly based
         // on the direction of the search
-        area->TextSetCursorPos(startPos + ((direction == Direction::FORWARD) ? replaceLen : 0));
+        area->TextSetCursorPos(startPos + ((direction == Direction::Forward) ? replaceLen : 0));
         replaced = true;
     }
 
@@ -5429,7 +5431,7 @@ void MainWindow::DoFindDlogEx(DocumentWidget *document, Direction direction, boo
     dialog->initToggleButtons(searchType);
 
     // Set the initial direction based on the direction argument
-    dialog->ui.checkBackward->setChecked(direction == Direction::FORWARD ? false : true);
+    dialog->ui.checkBackward->setChecked(direction == Direction::Forward ? false : true);
 
     // Set the state of the Keep Dialog Up button
     dialog->ui.checkKeep->setChecked(keepDialogs);
@@ -5489,7 +5491,7 @@ bool MainWindow::SearchAndReplaceEx(DocumentWidget *document, TextArea *area, Di
 
         int beginPos;
         int cursorPos = area->TextGetCursorPos();
-        if (direction == Direction::BACKWARD) {
+        if (direction == Direction::Backward) {
             // use the insert position - 1 for backward searches
             beginPos = cursorPos - 1;
         } else {
@@ -5539,7 +5541,7 @@ bool MainWindow::SearchAndReplaceEx(DocumentWidget *document, TextArea *area, Di
        nothing) */
     area->setAutoShowInsertPos(false);
 
-    area->TextSetCursorPos(startPos + ((direction == Direction::FORWARD) ? replaceLen : 0));
+    area->TextSetCursorPos(startPos + ((direction == Direction::Forward) ? replaceLen : 0));
     document->MakeSelectionVisible(area);
     area->setAutoShowInsertPos(true);
 
@@ -5688,7 +5690,7 @@ void MainWindow::ReplaceInSelectionEx(DocumentWidget *document, TextArea *area, 
         found = SearchString(
                     fileString,
                     searchString,
-                    Direction::FORWARD,
+                    Direction::Forward,
                     searchType,
                     WrapMode::NoWrap,
                     beginPos,
@@ -5976,7 +5978,7 @@ void MainWindow::DoFindReplaceDlogEx(DocumentWidget *document, TextArea *area, D
     dialog->initToggleButtons(searchType);
 
     // Set the initial direction based on the direction argument
-    dialog->ui.checkBackward->setChecked(direction == Direction::FORWARD ? false : true);
+    dialog->ui.checkBackward->setChecked(direction == Direction::Forward ? false : true);
 
     // Set the state of the Keep Dialog Up button
     dialog->ui.checkKeep->setChecked(keepDialogs);
@@ -6028,7 +6030,7 @@ void MainWindow::DoFindReplaceDlogEx(DocumentWidget *document, TextArea *area, D
 */
 void MainWindow::iSearchRecordLastBeginPosEx(Direction direction, int initPos) {
     iSearchLastBeginPos_ = initPos;
-    if (direction == Direction::BACKWARD) {
+    if (direction == Direction::Backward) {
         iSearchLastBeginPos_--;
     }
 }
@@ -6040,7 +6042,7 @@ void MainWindow::iSearchRecordLastBeginPosEx(Direction direction, int initPos) {
 */
 void MainWindow::iSearchTryBeepOnWrapEx(Direction direction, int beginPos, int startPos) {
     if (GetPrefBeepOnSearchWrap()) {
-        if (direction == Direction::FORWARD) {
+        if (direction == Direction::Forward) {
             if ((startPos >= beginPos && iSearchLastBeginPos_ < beginPos) || (startPos < beginPos && iSearchLastBeginPos_ >= beginPos)) {
                 QApplication::beep();
             }
@@ -6118,7 +6120,7 @@ bool MainWindow::searchMatchesSelectionEx(DocumentWidget *document, const QStrin
     bool found = SearchString(
                 string,
                 searchString,
-                Direction::FORWARD,
+                Direction::Forward,
                 searchType,
                 WrapMode::NoWrap,
                 beginPos,

@@ -115,19 +115,19 @@ struct CharMatchTable {
 constexpr int N_FLASH_CHARS = 6;
 
 constexpr CharMatchTable MatchingChars[] = {
-    {'{', '}',   Direction::FORWARD},
-    {'}', '{',   Direction::BACKWARD},
-    {'(', ')',   Direction::FORWARD},
-    {')', '(',   Direction::BACKWARD},
-    {'[', ']',   Direction::FORWARD},
-    {']', '[',   Direction::BACKWARD},
-    {'<', '>',   Direction::FORWARD},
-    {'>', '<',   Direction::BACKWARD},
-    {'/', '/',   Direction::FORWARD},
-    {'"', '"',   Direction::FORWARD},
-    {'\'', '\'', Direction::FORWARD},
-    {'`', '`',   Direction::FORWARD},
-    {'\\', '\\', Direction::FORWARD},
+    {'{', '}',   Direction::Forward},
+    {'}', '{',   Direction::Backward},
+    {'(', ')',   Direction::Forward},
+    {')', '(',   Direction::Backward},
+    {'[', ']',   Direction::Forward},
+    {']', '[',   Direction::Backward},
+    {'<', '>',   Direction::Forward},
+    {'>', '<',   Direction::Backward},
+    {'/', '/',   Direction::Forward},
+    {'"', '"',   Direction::Forward},
+    {'\'', '\'', Direction::Forward},
+    {'`', '`',   Direction::Forward},
+    {'\\', '\\', Direction::Forward},
 };
 
 /*
@@ -716,7 +716,7 @@ int DocumentWidget::matchLanguageMode() {
             int beginPos;
             int endPos;
 
-            if (SearchString(first200, LanguageModes[i].recognitionExpr, Direction::FORWARD, SearchType::Regex, WrapMode::NoWrap, 0, &beginPos, &endPos, nullptr, nullptr, QString())) {
+            if (SearchString(first200, LanguageModes[i].recognitionExpr, Direction::Forward, SearchType::Regex, WrapMode::NoWrap, 0, &beginPos, &endPos, nullptr, nullptr, QString())) {
                 return gsl::narrow<int>(i);
 			}
 		}
@@ -1448,7 +1448,7 @@ void DocumentWidget::SaveUndoInformation(int pos, int nInserted, int nDeleted, v
 
         // overstrike mode replacement
         if ((oldType == ONE_CHAR_REPLACE && newType == ONE_CHAR_REPLACE) && (pos == currentUndo->endPos)) {
-            appendDeletedText(deletedText, nDeleted, Direction::FORWARD);
+            appendDeletedText(deletedText, nDeleted, Direction::Forward);
             currentUndo->endPos++;
             autoSaveCharCount_++;
             return;
@@ -1456,13 +1456,13 @@ void DocumentWidget::SaveUndoInformation(int pos, int nInserted, int nDeleted, v
 
         // forward delete
         if ((oldType == ONE_CHAR_DELETE && newType == ONE_CHAR_DELETE) && (pos == currentUndo->startPos)) {
-            appendDeletedText(deletedText, nDeleted, Direction::FORWARD);
+            appendDeletedText(deletedText, nDeleted, Direction::Forward);
             return;
         }
 
         // reverse delete
         if ((oldType == ONE_CHAR_DELETE && newType == ONE_CHAR_DELETE) && (pos == currentUndo->startPos - 1)) {
-            appendDeletedText(deletedText, nDeleted, Direction::REVERSE);
+            appendDeletedText(deletedText, nDeleted, Direction::Reverse);
             currentUndo->startPos--;
             currentUndo->endPos--;
             return;
@@ -1538,7 +1538,7 @@ void DocumentWidget::appendDeletedText(view::string_view deletedText, int delete
     comboText.reserve(undo.oldText.size() + gsl::narrow<size_t>(deletedLen));
 
     // copy the new character and the already deleted text to the new memory
-    if (direction == Direction::FORWARD) {
+    if (direction == Direction::Forward) {
         comboText.append(undo.oldText);
         comboText.append(deletedText.begin(), deletedText.end());
     } else {
@@ -3797,9 +3797,9 @@ bool DocumentWidget::findMatchingCharEx(char toMatch, Style styleToMatch, int ch
     Direction direction  = matchIt->direction;
 
     // find it in the buffer
-    beginPos = (direction == Direction::FORWARD) ? charPos + 1 : charPos - 1;
+    beginPos = (direction == Direction::Forward) ? charPos + 1 : charPos - 1;
     nestDepth = 1;
-    if (direction == Direction::FORWARD) {
+    if (direction == Direction::Forward) {
         for (pos = beginPos; pos < endLimit; pos++) {
 			char c = buf->BufGetCharacter(pos);
             if (c == matchChar) {
@@ -5609,7 +5609,7 @@ void DocumentWidget::FlashMatchingEx(TextArea *area) {
     int endPos;
     int searchPos;
 
-    if (MatchingChars[matchIndex].direction == Direction::BACKWARD) {
+    if (MatchingChars[matchIndex].direction == Direction::Backward) {
         startPos = constrain ? area->TextFirstVisiblePos() : 0;
         endPos = pos;
         searchPos = endPos;
@@ -5629,7 +5629,7 @@ void DocumentWidget::FlashMatchingEx(TextArea *area) {
         buffer_->BufHighlight(matchPos, matchPos + 1);
     } else {
         // ... or the whole range.
-        if (MatchingChars[matchIndex].direction == Direction::BACKWARD) {
+        if (MatchingChars[matchIndex].direction == Direction::Backward) {
             buffer_->BufHighlight(matchPos, pos + 1);
         } else {
             buffer_->BufHighlight(matchPos + 1, pos);

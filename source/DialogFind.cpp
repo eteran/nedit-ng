@@ -278,7 +278,7 @@ bool DialogFind::getFindDlogInfoEx(Direction *direction, QString *searchString, 
 		}
 	}
 
-    *direction = ui.checkBackward->isChecked() ? Direction::BACKWARD : Direction::FORWARD;
+    *direction = ui.checkBackward->isChecked() ? Direction::Backward : Direction::Forward;
 
 	if (isRegexType(*searchType)) {
 	}

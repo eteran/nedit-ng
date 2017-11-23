@@ -826,15 +826,15 @@ static bool fakeRegExSearchEx(view::string_view buffer, const QString &searchStr
 
 	// determine search direction and start position 
 	if (*startPos != -1) { // etags mode! 
-        dir            = Direction::FORWARD;
+        dir            = Direction::Forward;
 		searchStartPos = *startPos;
         ctagsMode      = false;
     } else if (searchString.size() > 1 && searchString[0] == QLatin1Char('/')) {
-        dir            = Direction::FORWARD;
+        dir            = Direction::Forward;
 		searchStartPos = 0;
         ctagsMode      = true;
     } else if (searchString.size() > 1 && searchString[0] == QLatin1Char('?')) {
-        dir            = Direction::BACKWARD;
+        dir            = Direction::Backward;
         searchStartPos = gsl::narrow<int>(fileString.size());
         ctagsMode      = true;
 	} else {
@@ -891,7 +891,7 @@ static bool fakeRegExSearchEx(view::string_view buffer, const QString &searchStr
 		   startPos, if nothing has been found by now try searching backward
 		   again from startPos.
 		*/
-        found = SearchString(fileString, searchSubs, Direction::BACKWARD, SearchType::Regex, WrapMode::NoWrap, searchStartPos, startPos, endPos, nullptr, nullptr, QString());
+        found = SearchString(fileString, searchSubs, Direction::Backward, SearchType::Regex, WrapMode::NoWrap, searchStartPos, startPos, endPos, nullptr, nullptr, QString());
 	}
 
 	// return the result 
@@ -1124,7 +1124,7 @@ void showMatchingCalltipEx(TextArea *area, int i) {
 
             // 4. Find the end of the calltip (delimited by an empty line)
             endPos = startPos;
-            bool found = SearchString(fileString, QLatin1String("\\n\\s*\\n"), Direction::FORWARD, SearchType::Regex, WrapMode::NoWrap, startPos, &endPos, &dummy, nullptr, nullptr, QString());
+            bool found = SearchString(fileString, QLatin1String("\\n\\s*\\n"), Direction::Forward, SearchType::Regex, WrapMode::NoWrap, startPos, &endPos, &dummy, nullptr, nullptr, QString());
             if (!found) {
                 // Just take 4 lines
 				moveAheadNLinesEx(fileString, &endPos, TIP_DEFAULT_LINES);
@@ -1255,7 +1255,7 @@ static bool searchLine(const std::string &line, const std::string &regex) {
     return SearchString(
                 line,
                 QString::fromStdString(regex),
-                Direction::FORWARD,
+                Direction::Forward,
                 SearchType::Regex,
                 WrapMode::NoWrap,
                 0,
