@@ -385,8 +385,6 @@ public Q_SLOTS:
     void on_action_Help_triggered();
 
 private Q_SLOTS:
-	void deleteTabButtonClicked();
-    void action_Open_Previous(QAction *action);
     void focusChanged(QWidget *from, QWidget *to);
 
 public:

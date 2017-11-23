@@ -76,7 +76,7 @@
 namespace {
 
 // Min. # of columns in line number display
-constexpr int MIN_LINE_NUM_COLS    = 4;
+constexpr int MIN_LINE_NUM_COLS = 4;
 
 bool currentlyBusy = false;
 long busyStartTime = 0;
@@ -207,7 +207,7 @@ void MainWindow::setupTabBar() {
     deleteTabButton->setObjectName(tr("tab-close"));
 	ui.tabWidget->setCornerWidget(deleteTabButton);
 	
-    connect(deleteTabButton, &QToolButton::clicked, this, &MainWindow::deleteTabButtonClicked);
+    connect(deleteTabButton, &QToolButton::clicked, this, &MainWindow::on_action_Close_triggered);
 
     ui.tabWidget->tabBar()->installEventFilter(this);
 }
@@ -466,7 +466,22 @@ void MainWindow::setupPrevOpenMenuActions() {
 
         prevMenu->addActions(previousOpenFilesList_);
 
-        connect(prevMenu, &QMenu::triggered, this, &MainWindow::action_Open_Previous);
+        connect(prevMenu, &QMenu::triggered, [this](QAction *action) {
+
+            auto filename = action->data().toString();
+
+            if(DocumentWidget *document = currentDocument()) {
+                if (filename.isNull()) {
+                    return;
+                }
+
+                document->open(filename);
+            }
+
+            CheckCloseDimEx();
+        });
+
+
         ui.action_Open_Previous->setMenu(prevMenu);
     }
 }
@@ -584,13 +599,6 @@ void MainWindow::setupMenuGroups() {
     connect(defaultMatchingGroup,      &QActionGroup::triggered, this, &MainWindow::defaultMatchingGroupTriggered);
     connect(defaultSizeGroup,          &QActionGroup::triggered, this, &MainWindow::defaultSizeGroupTriggered);
 
-}
-
-//------------------------------------------------------------------------------
-// Name: deleteTabButtonClicked
-//------------------------------------------------------------------------------
-void MainWindow::deleteTabButtonClicked() {
-    on_action_Close_triggered();
 }
 
 //------------------------------------------------------------------------------
@@ -1722,21 +1730,6 @@ void MainWindow::updatePrevOpenMenu() {
     for(int i = prevOpenSorted.size(); i < previousOpenFilesList_.size(); ++i) {
         previousOpenFilesList_[i]->setVisible(false);
     }
-}
-
-void MainWindow::action_Open_Previous(QAction *action) {
-
-    QString filename = action->data().toString();
-
-    if(DocumentWidget *document = currentDocument()) {
-        if (filename.isNull()) {
-            return;
-        }
-
-        document->open(filename);
-    }
-
-    CheckCloseDimEx();
 }
 
 void MainWindow::on_tabWidget_currentChanged(int index) {
@@ -4505,7 +4498,10 @@ void MainWindow::action_Repeat(DocumentWidget *document) {
     QString LastCommand = CommandRecorder::getInstance()->lastCommand;
 
     if(LastCommand.isNull()) {
-        QMessageBox::warning(this, tr("Repeat Macro"), tr("No previous commands or learn/replay sequences to repeat"));
+        QMessageBox::warning(
+                    this,
+                    tr("Repeat Macro"),
+                    tr("No previous commands or learn/replay sequences to repeat"));
         return;
     }
 
@@ -4528,7 +4524,6 @@ void MainWindow::on_action_Repeat_triggered() {
 
 
 void MainWindow::focusChanged(QWidget *from, QWidget *to) {
-
 
     if(auto area = qobject_cast<TextArea *>(from)) {
         if(auto document = DocumentWidget::fromArea(area)) {
