@@ -4666,23 +4666,21 @@ void MainWindow::action_Replace_Dialog(DocumentWidget *document, Direction direc
         return;
     }
 
-    DoFindReplaceDlogEx(
-                document,
-                lastFocus_,
-                direction,
-                keepDialog,
-                type);
+    DoFindReplaceDlogEx(document,
+                        lastFocus_,
+                        direction,
+                        keepDialog,
+                        type);
 }
 
 /**
  * @brief MainWindow::on_action_Replace_triggered
  */
 void MainWindow::on_action_Replace_triggered() {
-    action_Replace_Dialog(
-                currentDocument(),
-                Direction::Forward,
-                GetPrefSearch(),
-                GetPrefKeepSearchDlogs());
+    action_Replace_Dialog(currentDocument(),
+                          Direction::Forward,
+                          GetPrefSearch(),
+                          GetPrefKeepSearchDlogs());
 }
 
 /**
@@ -4696,12 +4694,11 @@ void MainWindow::action_Replace_All(DocumentWidget *document, const QString &sea
             return;
         }
 
-        ReplaceAllEx(
-                    document,
-                    lastFocus_,
-                    searchString,
-                    replaceString,
-                    type);
+        ReplaceAllEx(document,
+                     lastFocus_,
+                     searchString,
+                     replaceString,
+                     type);
 }
 
 void MainWindow::action_Show_Tip(DocumentWidget *document, const QString &argument) {
@@ -5408,7 +5405,7 @@ bool MainWindow::ReplaceAndSearchEx(DocumentWidget *document, TextArea *area, Di
 void MainWindow::DoFindDlogEx(DocumentWidget *document, Direction direction, bool keepDialogs, SearchType searchType) {
 
     if(!dialogFind_) {
-        dialogFind_ = new DialogFind(this, document, this);
+        dialogFind_ = new DialogFind(this, document);
     }
 
     auto dialog = qobject_cast<DialogFind *>(dialogFind_);
@@ -5951,7 +5948,7 @@ void MainWindow::DoFindReplaceDlogEx(DocumentWidget *document, TextArea *area, D
     Q_UNUSED(area);
 
     if (!dialogReplace_) {
-        dialogReplace_ = new DialogReplace(this, document, this);
+        dialogReplace_ = new DialogReplace(this, document);
     }
 
     auto dialog = getDialogReplace();

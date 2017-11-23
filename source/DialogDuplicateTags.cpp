@@ -1,12 +1,13 @@
 
 #include "DialogDuplicateTags.h"
+#include "DocumentWidget.h"
 #include "tags.h"
 #include <QPushButton>
 
 //------------------------------------------------------------------------------
 // Name: DialogDuplicateTags
 //------------------------------------------------------------------------------
-DialogDuplicateTags::DialogDuplicateTags(DocumentWidget *document, TextArea *area, QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f), document_(document), area_(area) {
+DialogDuplicateTags::DialogDuplicateTags(DocumentWidget *document, TextArea *area, Qt::WindowFlags f) : Dialog(document, f), document_(document), area_(area) {
 	ui.setupUi(this);
 }
 

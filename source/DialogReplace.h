@@ -22,7 +22,7 @@ class DialogMultiReplace;
 class DialogReplace : public Dialog {
 	Q_OBJECT
 public:
-    DialogReplace(MainWindow *window, DocumentWidget *document, QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
+    DialogReplace(MainWindow *window, DocumentWidget *document, Qt::WindowFlags f = Qt::WindowFlags());
     ~DialogReplace() override = default;
 	
 protected:
@@ -69,6 +69,10 @@ private Q_SLOTS:
 public:
     MainWindow *window_;
     DocumentWidget *document_;
+
+    // temporary list of writable documents, used during multi-file replacements
+    std::vector<DocumentWidget *> writableWindows_;
+
 #if defined(REPLACE_SCOPE)
 	Ui::DialogReplaceScope ui;
 	ReplaceScope replaceScope_;

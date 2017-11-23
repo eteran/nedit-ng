@@ -16,7 +16,7 @@ class DocumentWidget;
 class DialogFind : public Dialog {
 	Q_OBJECT
 public:
-    DialogFind(MainWindow *window, DocumentWidget *document, QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
+    DialogFind(MainWindow *window, DocumentWidget *document, Qt::WindowFlags f = Qt::WindowFlags());
     ~DialogFind() override = default;
 	
 protected:

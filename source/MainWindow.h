@@ -388,7 +388,6 @@ private Q_SLOTS:
     void focusChanged(QWidget *from, QWidget *to);
 
 public:
-    const std::vector<DocumentWidget *> &writableWindows() const { return writableWindows_; }
     QPointer<TextArea> lastFocus() const { return lastFocus_; }
 
 public:
@@ -406,8 +405,7 @@ private:
     bool iSearchLastRegexCase_;        // idem, for regex mode in incremental search bar
     int iSearchHistIndex_;             //   find and replace dialogs
     int iSearchLastBeginPos_;          // beg. pos. last match of current i.s.
-    int iSearchStartPos_;              // start pos. of current incr. search
-    std::vector<DocumentWidget *> writableWindows_;      // temporary list of writable documents, used during multi-file replacements
+    int iSearchStartPos_;              // start pos. of current incr. search    
     bool wasSelected_;                 // last selection state (for dim/undim of selection related menu items
 #if defined(REPLACE_SCOPE)
     QAction *replaceScopeInWindow_;

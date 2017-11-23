@@ -108,7 +108,6 @@ public Q_SLOTS:
     void open(const QString &fullpath);
     void PrintStringEx(const std::string &string, const QString &jobName);
     void PrintWindow(TextArea *area, bool selectedOnly);
-    void replaceAllAP(const QString &searchString, const QString &replaceString, SearchType searchType);
     void replaceAP(const QString &searchString, const QString &replaceString, Direction direction, SearchType searchType, WrapMode searchWraps);
     void replaceFindAP(const QString &searchString, const QString &replaceString, Direction direction, SearchType searchType, WrapMode searchWraps);
     void replaceInSelAP(const QString &searchString, const QString &replaceString, SearchType searchType);

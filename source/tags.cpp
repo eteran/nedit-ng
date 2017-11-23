@@ -1225,7 +1225,7 @@ void editTaggedLocationEx(TextArea *area, int i) {
 //      Create a Menu for user to select from the collided tags 
 static void createSelectMenuEx(DocumentWidget *document, TextArea *area, const QStringList &args) {
 
-    auto dialog = new DialogDuplicateTags(document, area, document);
+    auto dialog = new DialogDuplicateTags(document, area);
 	dialog->setTag(tagName);
     for(int i = 0; i < args.size(); ++i) {
 		dialog->addListItem(args[i], i);

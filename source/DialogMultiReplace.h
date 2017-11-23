@@ -12,7 +12,7 @@ class DialogReplace;
 class DialogMultiReplace : public Dialog {
 	Q_OBJECT
 public:
-    DialogMultiReplace(MainWindow *window, DocumentWidget *document, DialogReplace *replace, QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
+    DialogMultiReplace(DialogReplace *replace, Qt::WindowFlags f = Qt::WindowFlags());
     ~DialogMultiReplace() override = default;
 
 private Q_SLOTS:
@@ -26,8 +26,6 @@ public:
 	
 public:
 	Ui::DialogMultiReplace ui;
-    MainWindow *window_;
-    DocumentWidget *document_;
 	DialogReplace *replace_;
 
 };

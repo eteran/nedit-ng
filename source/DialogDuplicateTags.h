@@ -11,7 +11,7 @@ class TextArea;
 class DialogDuplicateTags : public Dialog {
 	Q_OBJECT
 public:
-    DialogDuplicateTags(DocumentWidget *document, TextArea *area, QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
+    DialogDuplicateTags(DocumentWidget *document, TextArea *area, Qt::WindowFlags f = Qt::WindowFlags());
     ~DialogDuplicateTags() override = default;
 
 public:

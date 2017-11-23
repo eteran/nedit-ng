@@ -7,7 +7,7 @@
 #include "search.h"
 #include <QMessageBox>
 
-DialogMultiReplace::DialogMultiReplace(MainWindow *window, DocumentWidget *document, DialogReplace *replace, QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f), window_(window), document_(document), replace_(replace) {
+DialogMultiReplace::DialogMultiReplace(DialogReplace *replace, Qt::WindowFlags f) : Dialog(replace, f), replace_(replace) {
 	ui.setupUi(this);
 }
 
@@ -58,10 +58,9 @@ void DialogMultiReplace::on_buttonReplace_clicked() {
 	}
 
 
-	/* Fetch the find and replace strings from the dialog;
-	   they should have been validated already, but since Lesstif may not
-	   honor modal dialogs, it is possible that the user modified the
-	   strings again, so we should verify them again too. */
+    /* Fetch the find and replace strings from the dialog;
+     * they should have been validated already, but it is possible that the
+     * user modified the strings again, so we should verify them again too. */
     if (!replace_->getReplaceDlogInfo(&direction, &searchString, &replaceString, &searchType))
 		return;
 
@@ -72,7 +71,7 @@ void DialogMultiReplace::on_buttonReplace_clicked() {
 	bool replaceFailed = true;
 	bool noWritableLeft = true;
 
-    const std::vector<DocumentWidget *> &writableWindows = window_->writableWindows();
+    const std::vector<DocumentWidget *> &writableWindows = replace_->writableWindows_;
 
     // Perform the replacements and mark the selected files (history)
     for (size_t i = 0; i < writableWindows.size(); ++i) {
@@ -80,16 +79,19 @@ void DialogMultiReplace::on_buttonReplace_clicked() {
 
 		if(ui.listFiles->item(i)->isSelected()) {
 		
-			/* First check again whether the file is still writable. If the
-			   file status has changed or the file was locked in the mean time
-			   (possible due to Lesstif modal dialog bug), we just skip the
-			   window. */
+            /* First check again whether the file is still writable. If the
+             * file status has changed or the file was locked in the mean time,
+             * we just skip the window. */
 			if (!writableWin->lockReasons_.isAnyLocked()) {
 				noWritableLeft = false;
 				writableWin->multiFileReplSelected_ = true;
 				writableWin->multiFileBusy_ = true; // Avoid multi-beep/dialog 
 				writableWin->replaceFailed_ = false;
-                writableWin->replaceAllAP(searchString, replaceString, searchType);
+
+                if(auto win = MainWindow::fromDocument(writableWin)) {
+                    win->action_Replace_All(writableWin, searchString, replaceString, searchType);
+                }
+
 				writableWin->multiFileBusy_ = false;
 				if (!writableWin->replaceFailed_) {
 					replaceFailed = false;
@@ -138,7 +140,7 @@ void DialogMultiReplace::uploadFileListItems(bool replace) {
 
 	bool usePathNames = ui.checkShowPaths->isChecked();
 	
-    // NOTE(eteran): so replace seems to mean that we want to keep
+    // NOTE(eteran): so "replace" seems to mean that we want to keep
     //               existing items and possible update them, "replacing" their
     //               strings with new ones, when not in replace mode, I think the
     //               whole list is supposed to be new
@@ -148,11 +150,11 @@ void DialogMultiReplace::uploadFileListItems(bool replace) {
 		// updated names
 		for(int i = 0; i < ui.listFiles->count(); ++i) {
 	    	QListWidgetItem* item = ui.listFiles->item(i);
-            auto w = reinterpret_cast<DocumentWidget *>(item->data(Qt::UserRole).toULongLong());
-            if (usePathNames && w->filenameSet_) {
-				item->setText(w->FullPath());
+            auto document = reinterpret_cast<DocumentWidget *>(item->data(Qt::UserRole).toULongLong());
+            if (usePathNames && document->filenameSet_) {
+                item->setText(document->FullPath());
 			} else {
-				item->setText(w->filename_);
+                item->setText(document->filename_);
 			}				
 		}
 		
@@ -163,7 +165,7 @@ void DialogMultiReplace::uploadFileListItems(bool replace) {
 
         ui.listFiles->clear();
 
-        for(DocumentWidget *document : window_->writableWindows()) {
+        for(DocumentWidget *document : replace_->writableWindows_) {
 
 			QListWidgetItem *item;
             if (usePathNames && document->filenameSet_) {

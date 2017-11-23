@@ -3572,7 +3572,9 @@ static bool replaceAllMS(DocumentWidget *document, Arguments arguments, DataValu
 
     SearchType type = searchType(arguments, 2);
 
-    document->replaceAllAP(searchString, replaceString, type);
+    if(auto window = MainWindow::fromDocument(document)) {
+        window->action_Replace_All(document, searchString, replaceString, type);
+    }
 
     *result = to_value(0);
     return true;

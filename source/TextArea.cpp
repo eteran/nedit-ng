@@ -4627,12 +4627,6 @@ void TextArea::keyMoveExtendSelection(int origPos, bool rectangular) {
 	int rectAnchor;
 	int anchorLineStart;
 
-	/* Moving the cursor does not take the Motif destination, but as soon as
-	   the user selects something, grab it (I'm not sure if this distinction
-	   actually makes sense, but it's what Motif was doing, back when their
-	   secondary selections actually worked correctly) */
-	//TakeMotifDestination(e->time);
-
 	if ((sel->selected || sel->zeroWidth) && sel->rectangular && rectangular) {
 
 		// rect -> rect

@@ -856,9 +856,14 @@ void DocumentWidget::UpdateMarkTable(int pos, int nInserted, int nDeleted) {
     }
 }
 
-/*
-**
-*/
+/**
+ * @brief DocumentWidget::modifiedCallback
+ * @param pos
+ * @param nInserted
+ * @param nDeleted
+ * @param nRestyled
+ * @param deletedText
+ */
 void DocumentWidget::modifiedCallback(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText) {
 
     Q_UNUSED(nRestyled);
@@ -2045,12 +2050,7 @@ void DocumentWidget::CheckForChangesToFileEx() {
         }
 
         /* Warn the user if the file has been modified, unless checking is
-           turned off or the user has already been warned.  Popping up a dialog
-           from a focus callback (which is how this routine is usually called)
-           seems to catch Motif off guard, and if the timing is just right, the
-           dialog can be left with a still active pointer grab from a Motif menu
-           which is still in the process of popping down.  The workaround, below,
-           of calling XUngrabPointer is inelegant but seems to fix the problem. */
+         * turned off or the user has already been warned. */
         if (!silent && ((lastModTime_ != 0 && lastModTime_ != statbuf.st_mtime) || fileMissing_)) {
 
             lastModTime_ = 0; // Inhibit further warnings
@@ -3568,22 +3568,6 @@ bool DocumentWidget::includeFile(const QString &name) {
     }
 
     return true;
-}
-
-void DocumentWidget::replaceAllAP(const QString &searchString, const QString &replaceString, SearchType searchType) {
-
-    if (CheckReadOnly()) {
-        return;
-    }
-
-    if(MainWindow *win = MainWindow::fromDocument(this)) {
-        win->ReplaceAllEx(
-                    this,
-                    win->lastFocus_,
-                    searchString,
-                    replaceString,
-                    searchType);
-    }
 }
 
 void DocumentWidget::replaceInSelAP(const QString &searchString, const QString &replaceString, SearchType searchType) {

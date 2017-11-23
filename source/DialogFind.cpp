@@ -17,7 +17,7 @@
 //------------------------------------------------------------------------------
 // name:
 //------------------------------------------------------------------------------
-DialogFind::DialogFind(MainWindow *window, DocumentWidget *document, QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f), window_(window), document_(document) {
+DialogFind::DialogFind(MainWindow *window, DocumentWidget *document, Qt::WindowFlags f) : Dialog(window, f), window_(window), document_(document) {
     ui.setupUi(this);
 
     lastRegexCase_   = true;
