@@ -70,7 +70,7 @@ NeditServer::NeditServer(QObject *parent) : QObject(parent) {
     QString socketName = LocalSocketName(GetPrefServerName());
     server_ = new QLocalServer(this);
     server_->setSocketOptions(QLocalServer::UserAccessOption);
-    connect(server_, SIGNAL(newConnection()), this, SLOT(newConnection()));
+    connect(server_, &QLocalServer::newConnection, this, &NeditServer::newConnection);
 
     QLocalServer::removeServer(socketName);
 

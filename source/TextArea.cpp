@@ -378,19 +378,19 @@ TextArea::TextArea(
 	setFocusPolicy(Qt::WheelFocus);
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
-    connect(verticalScrollBar(),   SIGNAL(valueChanged(int)), this, SLOT(verticalScrollBar_valueChanged(int)));
-    connect(horizontalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(horizontalScrollBar_valueChanged(int)));
+    connect(verticalScrollBar(),   &QScrollBar::valueChanged, this, &TextArea::verticalScrollBar_valueChanged);
+    connect(horizontalScrollBar(), &QScrollBar::valueChanged, this, &TextArea::horizontalScrollBar_valueChanged);
 
 	autoScrollTimer_  = new QTimer(this);
 	cursorBlinkTimer_ = new QTimer(this);
 	clickTimer_       = new QTimer(this);
 
 	autoScrollTimer_->setSingleShot(true);
-	connect(autoScrollTimer_,  SIGNAL(timeout()), this, SLOT(autoScrollTimerTimeout()));
-	connect(cursorBlinkTimer_, SIGNAL(timeout()), this, SLOT(cursorBlinkTimerTimeout()));
+    connect(autoScrollTimer_,  &QTimer::timeout, this, &TextArea::autoScrollTimerTimeout);
+    connect(cursorBlinkTimer_, &QTimer::timeout, this, &TextArea::cursorBlinkTimerTimeout);
 
     clickTimer_->setSingleShot(true);
-    connect(clickTimer_, SIGNAL(timeout()), this, SLOT(clickTimeout()));
+    connect(clickTimer_, &QTimer::timeout, this, &TextArea::clickTimeout);
     clickCount_ = 0;
 
     // defaults for the "resources"

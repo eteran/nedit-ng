@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>664</width>
-    <height>758</height>
+    <height>742</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -55,8 +55,7 @@
      <item>
       <widget class="QPushButton" name="buttonLanguageMode">
        <property name="text">
-        <string>&amp;Add/Modify
-Language Mode...</string>
+        <string>&amp;Add/Modify Language Mode...</string>
        </property>
       </widget>
      </item>

@@ -110,7 +110,7 @@ long getRelTimeInTenthsOfSeconds() {
 MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(parent, flags) {
 	ui.setupUi(this);
 
-    connect(qApp, SIGNAL(focusChanged(QWidget *, QWidget *)), this, SLOT(focusChanged(QWidget *, QWidget *)));
+    connect(qApp, &QApplication::focusChanged, this, &MainWindow::focusChanged);
 	
 	setupMenuGroups();
 	setupTabBar();
@@ -207,7 +207,7 @@ void MainWindow::setupTabBar() {
     deleteTabButton->setObjectName(tr("tab-close"));
 	ui.tabWidget->setCornerWidget(deleteTabButton);
 	
-	connect(deleteTabButton, SIGNAL(clicked()), this, SLOT(deleteTabButtonClicked()));
+    connect(deleteTabButton, &QToolButton::clicked, this, &MainWindow::deleteTabButtonClicked);
 
     ui.tabWidget->tabBar()->installEventFilter(this);
 }
@@ -466,7 +466,7 @@ void MainWindow::setupPrevOpenMenuActions() {
 
         prevMenu->addActions(previousOpenFilesList_);
 
-        connect(prevMenu, SIGNAL(triggered(QAction *)), this, SLOT(openPrevCB(QAction *)));
+        connect(prevMenu, &QMenu::triggered, this, &MainWindow::openPrevCB);
         ui.action_Open_Previous->setMenu(prevMenu);
     }
 }
@@ -512,7 +512,7 @@ void MainWindow::setupMenuAlternativeMenus() {
     replaceScopeGroup->addAction(replaceScopeInSelection_);
     replaceScopeGroup->addAction(replaceScopeSmart_);
 
-    connect(replaceScopeGroup, SIGNAL(triggered(QAction *)), this, SLOT(defaultReplaceScopeGroupTriggered(QAction *)));
+    connect(replaceScopeGroup, &QActionGroup::triggered, this, &MainWindow::defaultReplaceScopeGroupTriggered);
 #endif
 }
 
@@ -573,16 +573,16 @@ void MainWindow::setupMenuGroups() {
 	defaultSizeGroup->addAction(ui.action_Default_Size_80_x_80);
 	defaultSizeGroup->addAction(ui.action_Default_Size_Custom);
 
-    connect(indentGroup,               SIGNAL(triggered(QAction *)), this, SLOT(indentGroupTriggered(QAction *)));
-    connect(wrapGroup,                 SIGNAL(triggered(QAction *)), this, SLOT(wrapGroupTriggered(QAction *)));
-    connect(matchingGroup,             SIGNAL(triggered(QAction *)), this, SLOT(matchingGroupTriggered(QAction *)));
-    connect(defaultIndentGroup,        SIGNAL(triggered(QAction *)), this, SLOT(defaultIndentGroupTriggered(QAction *)));
-    connect(defaultWrapGroup,          SIGNAL(triggered(QAction *)), this, SLOT(defaultWrapGroupTriggered(QAction *)));
-    connect(defaultTagCollisionsGroup, SIGNAL(triggered(QAction *)), this, SLOT(defaultTagCollisionsGroupTriggered(QAction *)));
-    connect(defaultSearchGroup,        SIGNAL(triggered(QAction *)), this, SLOT(defaultSearchGroupTriggered(QAction *)));
-    connect(defaultSyntaxGroup,        SIGNAL(triggered(QAction *)), this, SLOT(defaultSyntaxGroupTriggered(QAction *)));
-    connect(defaultMatchingGroup,      SIGNAL(triggered(QAction *)), this, SLOT(defaultMatchingGroupTriggered(QAction *)));
-    connect(defaultSizeGroup,          SIGNAL(triggered(QAction *)), this, SLOT(defaultSizeGroupTriggered(QAction *)));
+    connect(indentGroup,               &QActionGroup::triggered, this, &MainWindow::indentGroupTriggered);
+    connect(wrapGroup,                 &QActionGroup::triggered, this, &MainWindow::wrapGroupTriggered);
+    connect(matchingGroup,             &QActionGroup::triggered, this, &MainWindow::matchingGroupTriggered);
+    connect(defaultIndentGroup,        &QActionGroup::triggered, this, &MainWindow::defaultIndentGroupTriggered);
+    connect(defaultWrapGroup,          &QActionGroup::triggered, this, &MainWindow::defaultWrapGroupTriggered);
+    connect(defaultTagCollisionsGroup, &QActionGroup::triggered, this, &MainWindow::defaultTagCollisionsGroupTriggered);
+    connect(defaultSearchGroup,        &QActionGroup::triggered, this, &MainWindow::defaultSearchGroupTriggered);
+    connect(defaultSyntaxGroup,        &QActionGroup::triggered, this, &MainWindow::defaultSyntaxGroupTriggered);
+    connect(defaultMatchingGroup,      &QActionGroup::triggered, this, &MainWindow::defaultMatchingGroupTriggered);
+    connect(defaultSizeGroup,          &QActionGroup::triggered, this, &MainWindow::defaultSizeGroupTriggered);
 
 }
 
@@ -1200,7 +1200,7 @@ void MainWindow::UpdateUserMenus(DocumentWidget *document) {
     auto shellGroup = new QActionGroup(this);
     shellGroup->setExclusive(false);
     addToGroup(shellGroup, shellMenu);
-    connect(shellGroup, SIGNAL(triggered(QAction*)), this, SLOT(shellTriggered(QAction *)));
+    connect(shellGroup, &QActionGroup::triggered, this, &MainWindow::shellTriggered);
 
     auto macroMenu = createUserMenu(document, MacroMenuData);
     ui.menu_Macro->clear();
@@ -1214,7 +1214,7 @@ void MainWindow::UpdateUserMenus(DocumentWidget *document) {
     auto macroGroup = new QActionGroup(this);
     macroGroup->setExclusive(false);
     addToGroup(macroGroup, macroMenu);
-    connect(macroGroup, SIGNAL(triggered(QAction*)), this, SLOT(macroTriggered(QAction *)));
+    connect(macroGroup, &QActionGroup::triggered, this, &MainWindow::macroTriggered);
 
     /* update background menu, which is owned by a single document, only
        if language mode was changed */
@@ -1253,7 +1253,7 @@ void MainWindow::updateLanguageModeSubmenu() {
     }
 
     ui.action_Language_Mode->setMenu(languageMenu);
-    connect(languageMenu, SIGNAL(triggered(QAction *)), this, SLOT(setLangModeCB(QAction *)));
+    connect(languageMenu, &QMenu::triggered, this, &MainWindow::setLangModeCB);
 }
 
 /*
@@ -2927,7 +2927,7 @@ void MainWindow::updateTipsFileMenuEx() {
     }
 
     ui.action_Unload_Calltips_File->setMenu(tipsMenu);
-    connect(tipsMenu, SIGNAL(triggered(QAction *)), this, SLOT(unloadTipsFileCB(QAction *)));
+    connect(tipsMenu, &QMenu::triggered, this, &MainWindow::unloadTipsFileCB);
 }
 
 void MainWindow::updateTagsFileMenuEx() {
@@ -2940,7 +2940,7 @@ void MainWindow::updateTagsFileMenuEx() {
     }
 
     ui.action_Unload_Tags_File->setMenu(tagsMenu);
-    connect(tagsMenu, SIGNAL(triggered(QAction *)), this, SLOT(unloadTagsFileCB(QAction *)));
+    connect(tagsMenu, &QMenu::triggered, this, &MainWindow::unloadTagsFileCB);
 }
 
 void MainWindow::unloadTipsFileCB(QAction *action) {
@@ -4529,7 +4529,6 @@ void MainWindow::on_action_Repeat_triggered() {
 
 
 void MainWindow::focusChanged(QWidget *from, QWidget *to) {
-
 
     if(auto area = qobject_cast<TextArea *>(from)) {
         if(auto document = DocumentWidget::fromArea(area)) {

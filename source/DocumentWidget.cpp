@@ -480,7 +480,7 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 
     flashTimer_->setInterval(1500);
     flashTimer_->setSingleShot(true);
-    connect(flashTimer_, SIGNAL(timeout()), this, SLOT(flashTimerTimeout()));
+    connect(flashTimer_, &QTimer::timeout, this, &DocumentWidget::flashTimerTimeout);
 
     auto area = createTextArea(buffer_);
 
@@ -598,8 +598,7 @@ TextArea *DocumentWidget::createTextArea(TextBuffer *buffer) {
     // policy here, in fact, that would break things.
     //area->setContextMenuPolicy(Qt::CustomContextMenu);
 
-    connect(area, SIGNAL(customContextMenuRequested(const QPoint &)), SLOT(customContextMenu(const QPoint &)));
-
+    connect(area, &TextArea::customContextMenuRequested, this, &DocumentWidget::customContextMenu);
     return area;
 }
 
@@ -4663,15 +4662,18 @@ void DocumentWidget::issueCommandEx(MainWindow *window, TextArea *area, const QS
     // create the process and connect the output streams to the readyRead events
     auto process = new QProcess(this);
 
-    connect(process, SIGNAL(finished(int, QProcess::ExitStatus)), document, SLOT(processFinished(int, QProcess::ExitStatus)));
+    connect(process,
+            static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
+            document,
+            &DocumentWidget::processFinished);
 
     // support for merged output if we are not using ERROR_DIALOGS
     if (flags & ERROR_DIALOGS) {
-        connect(process, SIGNAL(readyReadStandardError()),  document, SLOT(stderrReadProc()));
-        connect(process, SIGNAL(readyReadStandardOutput()), document, SLOT(stdoutReadProc()));
+        connect(process, &QProcess::readyReadStandardError,  document, &DocumentWidget::stderrReadProc);
+        connect(process, &QProcess::readyReadStandardOutput, document, &DocumentWidget::stdoutReadProc);
     } else {
         process->setProcessChannelMode(QProcess::MergedChannels);
-        connect(process, SIGNAL(readyRead()), document, SLOT(mergedReadProc()));
+        connect(process, &QProcess::readyRead, document, &DocumentWidget::mergedReadProc);
     }
 
     // start it off!
@@ -4703,7 +4705,7 @@ void DocumentWidget::issueCommandEx(MainWindow *window, TextArea *area, const QS
 
     // Set up timer proc for putting up banner when process takes too long
     if (!fromMacro) {
-        connect(&document->shellCmdData_->bannerTimer, SIGNAL(timeout()), document, SLOT(bannerTimeoutProc()));
+        connect(&document->shellCmdData_->bannerTimer, &QTimer::timeout, document, &DocumentWidget::bannerTimeoutProc);
         document->shellCmdData_->bannerTimer.setSingleShot(true);
         document->shellCmdData_->bannerTimer.start(BANNER_WAIT_TIME);
     }
@@ -5438,7 +5440,7 @@ void DocumentWidget::runMacroEx(Program *prog) {
     macroCmdData_ = std::move(cmdData);
 
     // Set up timer proc for putting up banner when macro takes too long
-    QObject::connect(&macroCmdData_->bannerTimer, SIGNAL(timeout()), this, SLOT(bannerTimeoutProc()));
+    QObject::connect(&macroCmdData_->bannerTimer, &QTimer::timeout, this, &DocumentWidget::bannerTimeoutProc);
     macroCmdData_->bannerTimer.setSingleShot(true);
     macroCmdData_->bannerTimer.start(BANNER_WAIT_TIME);
 

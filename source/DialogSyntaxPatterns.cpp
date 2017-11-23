@@ -27,12 +27,12 @@ DialogSyntaxPatterns::DialogSyntaxPatterns(QWidget *parent, Qt::WindowFlags f) :
 	ui.editContextChars->setValidator(new QIntValidator(0, INT_MAX, this));
 	ui.editContextLines->setValidator(new QIntValidator(0, INT_MAX, this));
 
-	connect(ui.radioColoring,    SIGNAL(toggled(bool)), this, SLOT(updateLabels()));
-	connect(ui.radioPass1,       SIGNAL(toggled(bool)), this, SLOT(updateLabels()));
-	connect(ui.radioPass2,       SIGNAL(toggled(bool)), this, SLOT(updateLabels()));
-	connect(ui.radioSubPattern,  SIGNAL(toggled(bool)), this, SLOT(updateLabels()));
-	connect(ui.radioSimpleRegex, SIGNAL(toggled(bool)), this, SLOT(updateLabels()));
-	connect(ui.radioRangeRegex,  SIGNAL(toggled(bool)), this, SLOT(updateLabels()));
+    connect(ui.radioColoring,    &QRadioButton::toggled, this, &DialogSyntaxPatterns::updateLabels);
+    connect(ui.radioPass1,       &QRadioButton::toggled, this, &DialogSyntaxPatterns::updateLabels);
+    connect(ui.radioPass2,       &QRadioButton::toggled, this, &DialogSyntaxPatterns::updateLabels);
+    connect(ui.radioSubPattern,  &QRadioButton::toggled, this, &DialogSyntaxPatterns::updateLabels);
+    connect(ui.radioSimpleRegex, &QRadioButton::toggled, this, &DialogSyntaxPatterns::updateLabels);
+    connect(ui.radioRangeRegex,  &QRadioButton::toggled, this, &DialogSyntaxPatterns::updateLabels);
 
 	// populate the highlight style combo
     for(const HighlightStyle &style : HighlightStyles) {

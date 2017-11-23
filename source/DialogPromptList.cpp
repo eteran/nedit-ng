@@ -13,12 +13,12 @@ DialogPromptList::DialogPromptList(QWidget *parent, Qt::WindowFlags f) : Dialog(
 
 void DialogPromptList::addButton(const QString &text) {
 	QPushButton *btn = ui.buttonBox->addButton(text, QDialogButtonBox::AcceptRole);
-	connect(btn, SIGNAL(clicked()), this, SLOT(accept()));
+    connect(btn, &QPushButton::clicked, this, &DialogPromptList::accept);
 }
 
 void DialogPromptList::addButton(QDialogButtonBox::StandardButton button) {
 	QPushButton *btn = ui.buttonBox->addButton(button);
-	connect(btn, SIGNAL(clicked()), this, SLOT(accept()));
+    connect(btn, &QPushButton::clicked, this, &DialogPromptList::accept);
 }
 
 void DialogPromptList::setMessage(const QString &text) {
