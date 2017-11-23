@@ -466,7 +466,7 @@ void MainWindow::setupPrevOpenMenuActions() {
 
         prevMenu->addActions(previousOpenFilesList_);
 
-        connect(prevMenu, &QMenu::triggered, this, &MainWindow::openPrevCB);
+        connect(prevMenu, &QMenu::triggered, this, &MainWindow::action_Open_Previous);
         ui.action_Open_Previous->setMenu(prevMenu);
     }
 }
@@ -938,8 +938,10 @@ void MainWindow::updateWindowMenu() {
 
     for(DocumentWidget *document : documents) {
         QString title = document->getWindowsMenuEntry();
-        QAction *action = ui.menu_Windows->addAction(title, this, SLOT(raiseCB()));
-        action->setData(reinterpret_cast<qulonglong>(document));
+
+        ui.menu_Windows->addAction(title, [document]() {
+            document->RaiseFocusDocumentWindow(true);
+        });
     }
 }
 
@@ -1072,14 +1074,6 @@ void MainWindow::CheckCloseDimEx() {
         // document is open
         for(MainWindow *window : windows) {
             window->ui.action_Close->setEnabled(true);
-        }
-    }
-}
-
-void MainWindow::raiseCB() {
-    if(const auto action = qobject_cast<QAction *>(sender())) {
-        if(const auto ptr = reinterpret_cast<DocumentWidget *>(action->data().value<qulonglong>())) {
-            ptr->RaiseFocusDocumentWindow(true);
         }
     }
 }
@@ -1253,7 +1247,24 @@ void MainWindow::updateLanguageModeSubmenu() {
     }
 
     ui.action_Language_Mode->setMenu(languageMenu);
-    connect(languageMenu, &QMenu::triggered, this, &MainWindow::setLangModeCB);
+
+    connect(languageMenu, &QMenu::triggered, [this](QAction *action) {
+
+        if(auto document = qobject_cast<DocumentWidget *>(ui.tabWidget->currentWidget())) {
+            const auto mode = action->data().value<int>();
+
+            // If the mode didn't change, do nothing
+            if (document->languageMode_ == mode) {
+                return;
+            }
+
+            if(mode == PLAIN_LANGUAGE_MODE) {
+                document->setLanguageMode(QString());
+            } else {
+                document->setLanguageMode(LanguageModes[mode].name);
+            }
+        }
+    });
 }
 
 /*
@@ -1261,24 +1272,6 @@ void MainWindow::updateLanguageModeSubmenu() {
 */
 void MainWindow::CreateLanguageModeSubMenu() {
     updateLanguageModeSubmenu();
-}
-
-void MainWindow::setLangModeCB(QAction *action) {
-
-    if(auto document = qobject_cast<DocumentWidget *>(ui.tabWidget->currentWidget())) {
-        const int mode = action->data().value<int>();
-
-        // If the mode didn't change, do nothing
-        if (document->languageMode_ == mode) {
-            return;
-        }
-
-        if(mode == PLAIN_LANGUAGE_MODE) {
-            document->setLanguageMode(QString());
-        } else {
-            document->setLanguageMode(LanguageModes[mode].name);
-        }
-    }
 }
 
 /*
@@ -1731,7 +1724,7 @@ void MainWindow::updatePrevOpenMenu() {
     }
 }
 
-void MainWindow::openPrevCB(QAction *action) {
+void MainWindow::action_Open_Previous(QAction *action) {
 
     QString filename = action->data().toString();
 
@@ -1794,12 +1787,16 @@ void MainWindow::on_tabWidget_customContextMenuRequested(const QPoint &pos) {
     }
 }
 
+/**
+ * @brief MainWindow::action_Open_Selected
+ * @param document
+ */
 void MainWindow::action_Open_Selected(DocumentWidget *document) {
 
     // Get the selected text, if there's no selection, do nothing
     const QMimeData *mimeData = QApplication::clipboard()->mimeData(QClipboard::Selection);
     if(mimeData->hasText()) {
-        fileCB(document, mimeData->text());
+        openFile(document, mimeData->text());
     } else {
         QApplication::beep();
     }
@@ -1807,6 +1804,9 @@ void MainWindow::action_Open_Selected(DocumentWidget *document) {
     CheckCloseDimEx();
 }
 
+/**
+ * @brief MainWindow::on_action_Open_Selected_triggered
+ */
 void MainWindow::on_action_Open_Selected_triggered() {
 
     EMIT_EVENT("open_selected");
@@ -1816,11 +1816,12 @@ void MainWindow::on_action_Open_Selected_triggered() {
     }
 }
 
-//------------------------------------------------------------------------------
-// Name: fileCB
-// Desc: opens a "selected file"
-//------------------------------------------------------------------------------
-void MainWindow::fileCB(DocumentWidget *document, const QString &text) {
+/**
+ * @brief MainWindow::openFile
+ * @param document
+ * @param text
+ */
+void MainWindow::openFile(DocumentWidget *document, const QString &text) {
 
 	// TODO(eteran): 2.0, let the user specify a list of potential paths!
     //       can we ask the system simply or similar?
@@ -2927,7 +2928,13 @@ void MainWindow::updateTipsFileMenuEx() {
     }
 
     ui.action_Unload_Calltips_File->setMenu(tipsMenu);
-    connect(tipsMenu, &QMenu::triggered, this, &MainWindow::unloadTipsFileCB);
+
+    connect(tipsMenu, &QMenu::triggered, [this](QAction *action) {
+        auto filename = action->data().toString();
+        if(!filename.isEmpty()) {
+            action_Unload_Tips_File(currentDocument(), filename);
+        }
+    });
 }
 
 void MainWindow::updateTagsFileMenuEx() {
@@ -2940,22 +2947,14 @@ void MainWindow::updateTagsFileMenuEx() {
     }
 
     ui.action_Unload_Tags_File->setMenu(tagsMenu);
-    connect(tagsMenu, &QMenu::triggered, this, &MainWindow::unloadTagsFileCB);
+    connect(tagsMenu, &QMenu::triggered, this, [this](QAction *action) {
+        auto filename = action->data().toString();
+        if(!filename.isEmpty()) {
+            action_Unload_Tags_File(currentDocument(), filename);
+        }
+    });
 }
 
-void MainWindow::unloadTipsFileCB(QAction *action) {
-    auto filename = action->data().toString();
-    if(!filename.isEmpty()) {
-        action_Unload_Tips_File(currentDocument(), filename);
-    }
-}
-
-void MainWindow::unloadTagsFileCB(QAction *action) {
-    auto filename = action->data().toString();
-    if(!filename.isEmpty()) {
-        action_Unload_Tags_File(currentDocument(), filename);
-    }
-}
 
 void MainWindow::action_Unload_Tips_File(DocumentWidget *document, const QString &filename) {
 
@@ -4529,6 +4528,7 @@ void MainWindow::on_action_Repeat_triggered() {
 
 
 void MainWindow::focusChanged(QWidget *from, QWidget *to) {
+
 
     if(auto area = qobject_cast<TextArea *>(from)) {
         if(auto document = DocumentWidget::fromArea(area)) {

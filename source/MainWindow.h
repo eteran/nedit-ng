@@ -77,7 +77,7 @@ public:
     void ShowLineNumbers(bool state);
     void TempShowISearch(bool state);
     void addToGroup(QActionGroup *group, QMenu *menu);
-    void fileCB(DocumentWidget *document, const QString &text);
+    void openFile(DocumentWidget *document, const QString &text);
     void forceShowLineNumbers();
     void initToggleButtonsiSearch(SearchType searchType);
     void parseGeometry(QString geometry);
@@ -386,11 +386,7 @@ public Q_SLOTS:
 
 private Q_SLOTS:
 	void deleteTabButtonClicked();
-    void raiseCB();
-    void setLangModeCB(QAction *action);
-    void openPrevCB(QAction *action);
-    void unloadTipsFileCB(QAction *action);
-    void unloadTagsFileCB(QAction *action);
+    void action_Open_Previous(QAction *action);
     void focusChanged(QWidget *from, QWidget *to);
 
 public:
