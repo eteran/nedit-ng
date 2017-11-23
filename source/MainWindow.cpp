@@ -400,7 +400,7 @@ void MainWindow::setupMenuDefaults() {
     updateWindowSizeMenu();
     updateTipsFileMenuEx();
     updateTagsFileMenuEx();
-    updateMenuItems(); // NOTE(eteran): from tags.cpp
+    MainWindow::updateMenuItems();
 }
 
 //------------------------------------------------------------------------------
@@ -3380,7 +3380,11 @@ void MainWindow::on_action_Default_Command_Shell_triggered() {
     if (ok && !shell.isEmpty()) {
 
 		if(!QFile::exists(shell)) {
-            int resp = QMessageBox::warning(this, tr("Command Shell"), tr("The selected shell is not available.\nDo you want to use it anyway?"), QMessageBox::Ok | QMessageBox::Cancel);
+            int resp = QMessageBox::warning(
+                        this,
+                        tr("Command Shell"),
+                        tr("The selected shell is not available.\nDo you want to use it anyway?"),
+                        QMessageBox::Ok | QMessageBox::Cancel);
             if(resp == QMessageBox::Cancel) {
                 return;
             }
@@ -4109,7 +4113,7 @@ QString MainWindow::PromptForNewFileEx(DocumentWidget *document, const QString &
                         "*** This Option is Irreversable ***\n\n"
                         "Once newlines are inserted, continuous wrapping\n"
                         "will no longer work automatically on these lines"),
-                        QMessageBox::Ok, QMessageBox::Cancel);
+                        QMessageBox::Ok | QMessageBox::Cancel);
 
                     if(ret != QMessageBox::Ok) {
                         wrapCheck->setChecked(false);
@@ -4921,6 +4925,22 @@ void MainWindow::action_Detach_Document(DocumentWidget *document) {
         auto new_window = new MainWindow(nullptr);
         new_window->ui.tabWidget->addTab(document, document->filename_);
         new_window->show();
+    }
+}
+
+void MainWindow::action_Detach_Document_Dialog(DocumentWidget *document) {
+
+    if(TabCount() > 1) {
+
+        int r = QMessageBox::question(
+                    nullptr,
+                    tr("Detach Tab"),
+                    tr("Detach %1?").arg(document->filename_),
+                    QMessageBox::Yes | QMessageBox::No);
+
+        if(r == QMessageBox::Yes) {
+            action_Detach_Document(document);
+        }
     }
 }
 
@@ -6134,4 +6154,20 @@ bool MainWindow::searchMatchesSelectionEx(DocumentWidget *document, const QStrin
     }
 
     return true;
+}
+
+/*
+** Update the "Find Definition", "Unload Tags File", "Show Calltip",
+** and "Unload Calltips File" menu items in the existing windows.
+*/
+void MainWindow::updateMenuItems() {
+    const bool tipStat = !TipsFileList.empty();
+    const bool tagStat = !TagsFileList.empty();
+
+    for(MainWindow *window : MainWindow::allWindows()) {
+        window->ui.action_Unload_Calltips_File->setEnabled(tipStat);
+        window->ui.action_Unload_Tags_File->setEnabled(tagStat);
+        window->ui.action_Show_Calltip->setEnabled(tipStat || tagStat);
+        window->ui.action_Find_Definition->setEnabled(tagStat);
+    }
 }

@@ -1977,21 +1977,33 @@ void DocumentWidget::CheckForChangesToFileEx() {
                 case ENOENT:
                     {
                         // A component of the path file_name does not exist.
-                        int resp = QMessageBox::critical(this, tr("File not Found"), tr("File '%1' (or directory in its path)\nno longer exists.\nAnother program may have deleted or moved it.").arg(filename_), QMessageBox::Save | QMessageBox::Cancel);
+                        int resp = QMessageBox::critical(
+                                    this,
+                                    tr("File not Found"),
+                                    tr("File '%1' (or directory in its path)\nno longer exists.\nAnother program may have deleted or moved it.").arg(filename_),
+                                    QMessageBox::Save | QMessageBox::Cancel);
                         save = (resp == QMessageBox::Save);
                     }
                     break;
                 case EACCES:
                     {
                         // Search permission denied for a path component. We add one to the response because Re-Save wouldn't really make sense here.
-                        int resp = QMessageBox::critical(this, tr("Permission Denied"), tr("You no longer have access to file '%1'.\nAnother program may have changed the permissions of one of its parent directories.").arg(filename_), QMessageBox::Save | QMessageBox::Cancel);
+                        int resp = QMessageBox::critical(
+                                    this,
+                                    tr("Permission Denied"),
+                                    tr("You no longer have access to file '%1'.\nAnother program may have changed the permissions of one of its parent directories.").arg(filename_),
+                                    QMessageBox::Save | QMessageBox::Cancel);
                         save = (resp == QMessageBox::Save);
                     }
                     break;
                 default:
                     {
                         // Everything else. This hints at an internal error (eg. ENOTDIR) or at some bad state at the host.
-                        int resp = QMessageBox::critical(this, tr("File not Accessible"), tr("Error while checking the status of file '%1':\n    '%2'\nPlease make sure that no data is lost before closing this window.").arg(filename_, ErrorString(errno)), QMessageBox::Save | QMessageBox::Cancel);
+                        int resp = QMessageBox::critical(
+                                    this,
+                                    tr("File not Accessible"),
+                                    tr("Error while checking the status of file '%1':\n    '%2'\nPlease make sure that no data is lost before closing this window.").arg(filename_, ErrorString(errno)),
+                                    QMessageBox::Save | QMessageBox::Cancel);
                         save = (resp == QMessageBox::Save);
                     }
                     break;
@@ -2376,7 +2388,12 @@ bool DocumentWidget::doSave() {
     /*  Check for root and warn him if he wants to write to a file with
         none of the write bits set.  */
 	if ((getuid() == 0) && (::stat(fullname.toLatin1().data(), &statbuf) == 0) && !(statbuf.st_mode & (S_IWUSR | S_IWGRP | S_IWOTH))) {
-        int result = QMessageBox::warning(this, tr("Writing Read-only File"), tr("File '%1' is marked as read-only.\nDo you want to save anyway?").arg(filename_), QMessageBox::Save | QMessageBox::Cancel);
+        int result = QMessageBox::warning(
+                    this,
+                    tr("Writing Read-only File"),
+                    tr("File '%1' is marked as read-only.\nDo you want to save anyway?").arg(filename_),
+                    QMessageBox::Save | QMessageBox::Cancel);
+
         if (result != QMessageBox::Save) {
             return true;
         }
@@ -2515,11 +2532,13 @@ int DocumentWidget::SaveWindowAs(const QString &newName, bool addWrap) {
                     // NOTE(eteran): this seems a bit redundant to other code...
                     connect(wrapCheck, &QCheckBox::toggled, [wrapCheck, this](bool checked) {
                         if(checked) {
-                            int ret = QMessageBox::information(this, tr("Add Wrap"),
-                                tr("This operation adds permanent line breaks to match the automatic wrapping done by the Continuous Wrap mode Preferences Option.\n\n"
-                                   "*** This Option is Irreversable ***\n\n"
-                                   "Once newlines are inserted, continuous wrapping will no longer work automatically on these lines"),
-                                QMessageBox::Ok, QMessageBox::Cancel);
+                            int ret = QMessageBox::information(
+                                        this,
+                                        tr("Add Wrap"),
+                                        tr("This operation adds permanent line breaks to match the automatic wrapping done by the Continuous Wrap mode Preferences Option.\n\n"
+                                           "*** This Option is Irreversable ***\n\n"
+                                           "Once newlines are inserted, continuous wrapping will no longer work automatically on these lines"),
+                                        QMessageBox::Ok | QMessageBox::Cancel);
 
                             if(ret != QMessageBox::Ok) {
                                 wrapCheck->setChecked(false);
@@ -2853,7 +2872,11 @@ int DocumentWidget::CloseFileAndWindow(CloseMode preResponse) {
         int response = QMessageBox::Yes;
         switch(preResponse) {
         case CloseMode::Prompt:
-            response = QMessageBox::warning(this, tr("Save File"), tr("Save %1 before closing?").arg(filename_), QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+            response = QMessageBox::warning(
+                        this,
+                        tr("Save File"),
+                        tr("Save %1 before closing?").arg(filename_),
+                        QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
             break;
         case CloseMode::Save:
             response = QMessageBox::Yes;

@@ -509,7 +509,12 @@ void DialogSyntaxPatterns::on_buttonRestore_clicked() {
 		return;
 	}
 
-	int resp = QMessageBox::warning(this, tr("Discard Changes"), tr("Are you sure you want to discard all changes to syntax highlighting patterns for language mode %1?").arg(languageMode), QMessageBox::Discard | QMessageBox::Cancel);
+    int resp = QMessageBox::warning(
+                this,
+                tr("Discard Changes"),
+                tr("Are you sure you want to discard all changes to syntax highlighting patterns for language mode %1?").arg(languageMode),
+                QMessageBox::Discard | QMessageBox::Cancel);
+
 	if (resp == QMessageBox::Cancel) {
 		return;
 	}
@@ -774,7 +779,7 @@ bool DialogSyntaxPatterns::updatePatternSet() {
 					    this function or in preferences.c::reapplyLanguageMode()
 					    if the old set had no patterns, so reactivate menu entry. */
                     if (document->IsTopDocument()) {
-                        MainWindow::fromDocument(document)->ui.action_Highlight_Syntax->setEnabled(true);
+                        no_signals(MainWindow::fromDocument(document)->ui.action_Highlight_Syntax)->setEnabled(true);
 					}
 
 					//  Reactivate highlighting if it's default
@@ -785,7 +790,7 @@ bool DialogSyntaxPatterns::updatePatternSet() {
                     document->StopHighlightingEx();
 
                     if (document->IsTopDocument()) {
-                        MainWindow::fromDocument(document)->ui.action_Highlight_Syntax->setEnabled(true);
+                        no_signals(MainWindow::fromDocument(document)->ui.action_Highlight_Syntax)->setEnabled(true);
                         no_signals(MainWindow::fromDocument(document)->ui.action_Highlight_Syntax)->setChecked(true);
 					}
                     document->StartHighlightingEx(true);
@@ -798,7 +803,7 @@ bool DialogSyntaxPatterns::updatePatternSet() {
             document->highlightSyntax_ = false;
 
             if (document->IsTopDocument()) {
-                MainWindow::fromDocument(document)->ui.action_Highlight_Syntax->setEnabled(false);
+                no_signals(MainWindow::fromDocument(document)->ui.action_Highlight_Syntax)->setEnabled(false);
                 no_signals(MainWindow::fromDocument(document)->ui.action_Highlight_Syntax)->setChecked(false);
 			}
 		}

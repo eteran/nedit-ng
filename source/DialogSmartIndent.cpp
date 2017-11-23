@@ -111,7 +111,11 @@ void DialogSmartIndent::on_buttonCheck_clicked() {
 void DialogSmartIndent::on_buttonDelete_clicked() {
 
 	// NOTE(eteran): originally was "Yes, Delete"
-	int resp = QMessageBox::question(this, tr("Delete Macros"), tr("Are you sure you want to delete smart indent macros for language mode %1?").arg(languageMode_), QMessageBox::Yes | QMessageBox::Cancel);
+    int resp = QMessageBox::question(
+                this,
+                tr("Delete Macros"),
+                tr("Are you sure you want to delete smart indent macros for language mode %1?").arg(languageMode_),
+                QMessageBox::Yes | QMessageBox::Cancel);
 	if(resp == QMessageBox::Cancel) {
 		return;
 	}

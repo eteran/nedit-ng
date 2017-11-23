@@ -326,7 +326,7 @@ bool AddRelTagsFileEx(const QString &tagSpec, const QString &windowPath, TagSear
         added = true;
     }
 
-    updateMenuItems();
+    MainWindow::updateMenuItems();
     return added;
 }
 
@@ -396,7 +396,7 @@ bool AddTagsFileEx(const QString &tagSpec, TagSearchMode file_type) {
         FileList->push_front(tag);
     }
 
-    updateMenuItems();
+    MainWindow::updateMenuItems();
     return added;
 }
 
@@ -451,7 +451,7 @@ int DeleteTagsFileEx(const QString &tagSpec, TagSearchMode file_type, bool force
 
             FileList->erase(it);
 
-            updateMenuItems();
+            MainWindow::updateMenuItems();
             break;
         }
 
@@ -464,29 +464,7 @@ int DeleteTagsFileEx(const QString &tagSpec, TagSearchMode file_type, bool force
     return removed != 0;
 }
 
-/*
-** Update the "Find Definition", "Unload Tags File", "Show Calltip",
-** and "Unload Calltips File" menu items in the existing windows.
-*/
-void updateMenuItems() {
-    bool tipStat = false;
-    bool tagStat = false;
 
-    if (!TipsFileList.empty()) {
-        tipStat = true;
-    }
-
-    if (!TagsFileList.empty()) {
-        tagStat = true;
-    }
-
-    for(MainWindow *window : MainWindow::allWindows()) {
-        window->ui.action_Unload_Calltips_File->setEnabled(tipStat);
-        window->ui.action_Unload_Tags_File->setEnabled(tagStat);
-        window->ui.action_Show_Calltip->setEnabled(tipStat || tagStat);
-        window->ui.action_Find_Definition->setEnabled(tagStat);
-    }
-}
 
 /*
 ** Scans one <line> from a ctags tags file (<index>) in tagPath.

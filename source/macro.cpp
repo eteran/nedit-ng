@@ -55,14 +55,16 @@
 #include "util/fileUtils.h"
 #include "util/utils.h"
 #include "version.h"
+
 #include <gsl/gsl_util>
+#include <stack>
+#include <fstream>
+
 #include <QClipboard>
 #include <QDialogButtonBox>
 #include <QFileDialog>
-#include <QMessageBox>
 #include <QMimeData>
-#include <QStack>
-#include <fstream>
+
 #include <sys/param.h>
 
 // The following definitions cause an exit from the macro with a message
@@ -240,6 +242,7 @@ const char FailedToAddRange[]            = "Failed to add range in %s";
 const char FailedToInvertRangeset[]      = "Problem inverting rangeset in %s";
 const char FailedToAddSelection[]        = "Failure to add selection in %s";
 const char Param2CannotBeEmptyString[]   = "Second argument must be a non-empty string: %s";
+const char InvalidSearchReplaceArgs[]    = "%s action requires search and replace string arguments";
 
 }
 
@@ -1208,18 +1211,7 @@ static bool detachDocumentDialogMS(DocumentWidget *document, Arguments arguments
     document = MacroRunDocumentEx();
 
     if(auto window = MainWindow::fromDocument(document)) {
-        if(window->TabCount() < 2) {
-            return false;
-        }
-
-        int r = QMessageBox::question(
-                    nullptr,
-                    QLatin1String("Detach Tab"),
-                    QString(QLatin1String("Detach %1?")).arg(document->filename_), QMessageBox::Yes | QMessageBox::No);
-
-        if(r == QMessageBox::Yes) {
-            window->action_Detach_Document(document);
-        }
+        window->action_Detach_Document_Dialog(document);
     }
 
     return true;
@@ -1674,13 +1666,8 @@ static bool replaceFindMS(DocumentWidget *document, Arguments arguments, DataVal
     QString searchString;
     QString replaceString;
     if(!readArguments(arguments, 0, errMsg, &searchString, &replaceString)) {
-        QMessageBox::warning(
-                    document,
-                    QLatin1String("Error in replace_find"),
-                    QLatin1String("replace_find action requires search and replace string arguments"));
-        return false;
+        M_FAILURE(InvalidSearchReplaceArgs);
     }
-
 
     win->ReplaceAndSearchEx(
                 document,
@@ -2139,7 +2126,7 @@ bool readCheckMacroStringEx(QWidget *dialogParent, const QString &string, Docume
     Input in(&string);
 
     DataValue subrPtr;
-    QStack<Program *> progStack;
+    std::stack<Program *> progStack;
 
     while (!in.atEnd()) {
 

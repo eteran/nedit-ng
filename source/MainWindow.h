@@ -109,6 +109,7 @@ public:
     DocumentWidget *CreateDocument(QString name);
 
 public:
+    static void updateMenuItems();
     static MainWindow *fromDocument(const DocumentWidget *document);
     static void DimPasteReplayBtns(bool enabled);
     static void ReadNEditDB();
@@ -137,6 +138,7 @@ public:
     void action_Close_Pane(DocumentWidget *document);
     void action_Delete(DocumentWidget *document);
     void action_Detach_Document(DocumentWidget *document);
+    void action_Detach_Document_Dialog(DocumentWidget *document);
     void action_Execute_Command(DocumentWidget *document);
     void action_Execute_Command(DocumentWidget *document, const QString &command);
     void action_Execute_Command_Line(DocumentWidget *document);
