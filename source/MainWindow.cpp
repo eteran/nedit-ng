@@ -1,6 +1,6 @@
 
 #include "MainWindow.h"
-#include "nedit.h"
+#include "CommandRecorder.h"
 #include "DialogAbout.h"
 #include "DialogColors.h"
 #include "DialogExecuteCommand.h"
@@ -14,59 +14,41 @@
 #include "DialogShellMenu.h"
 #include "DialogSmartIndent.h"
 #include "DialogSyntaxPatterns.h"
-#include "PatternSet.h"
 #include "DialogTabs.h"
-#include "ReplaceAllDefaultScope.h"
-#include "Help.h"
 #include "DialogWindowBackgroundMenu.h"
 #include "DialogWindowSize.h"
 #include "DialogWindowTitle.h"
 #include "DialogWrapMargin.h"
 #include "DocumentWidget.h"
+#include "Help.h"
+#include "highlightData.h"
 #include "LanguageMode.h"
-#include "MenuItem.h"
+#include "nedit.h"
+#include "PatternSet.h"
+#include "preferences.h"
+#include "search.h"
 #include "Settings.h"
+#include "shift.h"
 #include "SignalBlocker.h"
 #include "TextArea.h"
 #include "TextBuffer.h"
 #include "util/ClearCase.h"
-#include "highlight.h"
-#include "highlightData.h"
-#include "macro.h"
-#include "memory.h"
-#include "preferences.h"
-#include "regularExp.h"
-#include "search.h"
-#include "shift.h"
-#include "tags.h"
 #include "util/fileUtils.h"
-#include "utils.h"
-#include "CommandRecorder.h"
+#include "util/utils.h"
 #include "WindowMenuEvent.h"
 
 #include <QClipboard>
-#include <QFile>
 #include <QFileDialog>
 #include <QInputDialog>
 #include <QMessageBox>
 #include <QMimeData>
 #include <QShortcut>
-#include <QToolButton>
-#include <QRegExp>
-#include <QtDebug>
-#include <QScrollBar>
 
 #include <cmath>
-#include <memory>
-#include <fstream>
-#include <iostream>
-#include <string>
 
 #include <sys/param.h>
 #include <sys/stat.h>
 #include <sys/time.h>
-#include <sys/types.h>
-#include <unistd.h>
 
 #if !defined(DONT_HAVE_GLOB)
 #include <glob.h>
@@ -78,7 +60,7 @@ namespace {
 constexpr int MIN_LINE_NUM_COLS = 4;
 
 bool currentlyBusy = false;
-long busyStartTime = 0;
+qint64 busyStartTime = 0;
 bool modeMessageSet = false;
 
 QPointer<DialogShellMenu>            WindowShellMenu;
@@ -91,15 +73,6 @@ QPointer<DocumentWidget>             lastFocusDocument;
 auto neditDBBadFilenameChars = QLatin1String("\n");
 
 QVector<QString> PrevOpen;
-
-/*
- * Auxiliary function for measuring elapsed time during busy waits.
- */
-long getRelTimeInTenthsOfSeconds() {
-    struct timeval current;
-    gettimeofday(&current, nullptr);
-    return (current.tv_sec * 10 + current.tv_usec / 100000) & 0xFFFFFFFL;
-}
 
 /*
 ** Extract the line and column number from the text string.
@@ -4056,7 +4029,7 @@ DocumentWidget *MainWindow::EditNewFileEx(MainWindow *window, QString geometry, 
 void MainWindow::AllWindowsBusyEx(const QString &message) {
 
     if (!currentlyBusy) {
-        busyStartTime = getRelTimeInTenthsOfSeconds();
+        busyStartTime = QDateTime::currentDateTimeUtc().toMSecsSinceEpoch();
         modeMessageSet = false;
 
         for(DocumentWidget *document : DocumentWidget::allDocuments()) {
@@ -4071,7 +4044,7 @@ void MainWindow::AllWindowsBusyEx(const QString &message) {
             document->setCursor(Qt::WaitCursor);
         }
 
-    } else if (!modeMessageSet && !message.isNull() && getRelTimeInTenthsOfSeconds() - busyStartTime > 10) {
+    } else if (!modeMessageSet && !message.isNull() && (QDateTime::currentDateTimeUtc().toMSecsSinceEpoch() - busyStartTime) > 1000) {
 
         // Show the mode message when we've been busy for more than a second
         for(DocumentWidget *document : DocumentWidget::allDocuments()) {
@@ -4080,7 +4053,6 @@ void MainWindow::AllWindowsBusyEx(const QString &message) {
         modeMessageSet = true;
     }
 
-    BusyWaitEx();
     currentlyBusy = true;
 }
 
@@ -4095,18 +4067,6 @@ void MainWindow::AllWindowsUnbusyEx() {
     currentlyBusy  = false;
     modeMessageSet = false;
     busyStartTime  = 0;
-}
-
-void MainWindow::BusyWaitEx() {
-    static const int timeout = 100000; /* 1/10 sec = 100 ms = 100,000 us */
-    static struct timeval last = {0, 0};
-    struct timeval current;
-    gettimeofday(&current, nullptr);
-
-    if ((current.tv_sec != last.tv_sec) || (current.tv_usec - last.tv_usec > timeout)) {
-        QApplication::processEvents();
-        last = current;
-    }
 }
 
 void MainWindow::action_Save(DocumentWidget *document) {
@@ -4187,12 +4147,9 @@ QString MainWindow::PromptForNewFileEx(DocumentWidget *document, const QString &
             QObject::connect(wrapCheck, &QCheckBox::toggled, [wrapCheck, this](bool checked) {
                 if(checked) {
                     int ret = QMessageBox::information(this, tr("Add Wrap"),
-                        tr("This operation adds permanent line breaks to\n"
-                        "match the automatic wrapping done by the\n"
-                        "Continuous Wrap mode Preferences Option.\n\n"
-                        "*** This Option is Irreversable ***\n\n"
-                        "Once newlines are inserted, continuous wrapping\n"
-                        "will no longer work automatically on these lines"),
+                        tr("This operation adds permanent line breaks to match the automatic wrapping done by the Continuous Wrap mode Preferences Option.\n\n"
+                           "*** This Option is Irreversable ***\n\n"
+                           "Once newlines are inserted, continuous wrapping will no longer work automatically on these lines"),
                         QMessageBox::Ok | QMessageBox::Cancel);
 
                     if(ret != QMessageBox::Ok) {

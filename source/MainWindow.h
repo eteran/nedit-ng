@@ -5,16 +5,16 @@
 #include "FileFormats.h"
 #include "Direction.h"
 #include "SearchType.h"
-#include "SmartIndentEvent.h"
 #include "NewMode.h"
 #include "CloseMode.h"
 #include "IndentStyle.h"
 #include "WrapMode.h"
-#include <QMainWindow>
-#include <QPointer>
 
 #include <vector>
 #include <gsl/span>
+
+#include <QMainWindow>
+#include <QPointer>
 
 #include "ui_MainWindow.h"
 
@@ -123,7 +123,6 @@ public:
     static DocumentWidget *EditNewFileEx(MainWindow *window, QString geometry, bool iconic, const QString &languageMode, const QString &defaultPath);
     static void AllWindowsBusyEx(const QString &message);
     static void AllWindowsUnbusyEx();
-    static void BusyWaitEx();
     static void CheckCloseDimEx();
     static bool CloseAllFilesAndWindowsEx();
     static void InvalidateWindowMenus();

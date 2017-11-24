@@ -2478,6 +2478,7 @@ bool DocumentWidget::doSave() {
 
 int DocumentWidget::SaveWindowAs(const QString &newName, bool addWrap) {
 
+    // NOTE(eteran): this seems a bit redundant to other code...
     if(auto win = MainWindow::fromDocument(this)) {
 
         int  retVal;
@@ -2531,7 +2532,6 @@ int DocumentWidget::SaveWindowAs(const QString &newName, bool addWrap) {
                         wrapCheck->setChecked(true);
                     }
 
-                    // NOTE(eteran): this seems a bit redundant to other code...
                     connect(wrapCheck, &QCheckBox::toggled, [wrapCheck, this](bool checked) {
                         if(checked) {
                             int ret = QMessageBox::information(
@@ -6782,10 +6782,11 @@ QFont DocumentWidget::FontOfNamedStyleEx(const QString &styleName) const {
 ** delimiter table when delimiters is nullptr).
 */
 QString DocumentWidget::GetWindowDelimitersEx() const {
-    if (languageMode_ == PLAIN_LANGUAGE_MODE)
+    if (languageMode_ == PLAIN_LANGUAGE_MODE) {
         return QString();
-    else
+    } else {
         return LanguageModes[languageMode_].delimiters;
+    }
 }
 
 void DocumentWidget::SetUseTabs(bool value) {
