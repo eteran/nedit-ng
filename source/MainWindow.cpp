@@ -37,7 +37,6 @@
 #include "preferences.h"
 #include "regularExp.h"
 #include "search.h"
-#include "selection.h"
 #include "shift.h"
 #include "tags.h"
 #include "util/fileUtils.h"
@@ -102,11 +101,63 @@ long getRelTimeInTenthsOfSeconds() {
     return (current.tv_sec * 10 + current.tv_usec / 100000) & 0xFFFFFFFL;
 }
 
+/*
+** Extract the line and column number from the text string.
+** Set the line and/or column number to -1 if not specified, and return -1 if
+** both line and column numbers are not specified.
+*/
+int StringToLineAndCol(const QString &text, int *lineNum, int *column) {
+
+    static const QRegularExpression re(QLatin1String(
+                                           "^"
+                                           "\\s*"
+                                           "(?<row>[-+]?[1-9]\\d*)?"
+                                           "\\s*"
+                                           "([:,]"
+                                           "\\s*"
+                                           "(?<col>[-+]?[1-9]\\d*))?"
+                                           "\\s*"
+                                           "$"
+                                           ));
+
+    QRegularExpressionMatch match = re.match(text);
+    if (match.hasMatch()) {
+        QString row = match.captured(QLatin1String("row"));
+        QString col = match.captured(QLatin1String("col"));
+
+        bool row_ok;
+        int r = row.toInt(&row_ok);
+        if(!row_ok) {
+            r = -1;
+        } else {
+            r = qBound(0, r, INT_MAX);
+        }
+
+        bool col_ok;
+        int c = col.toInt(&col_ok);
+        if(!col_ok) {
+            c = -1;
+        } else {
+            c = qBound(0, c, INT_MAX);
+        }
+
+        *lineNum = r;
+        *column  = c;
+
+        return (r == -1 && c == -1) ? -1 : 0;
+    }
+
+    return -1;
 }
 
-//------------------------------------------------------------------------------
-// Name: MainWindow
-//------------------------------------------------------------------------------
+
+}
+
+/**
+ * @brief MainWindow::MainWindow
+ * @param parent
+ * @param flags
+ */
 MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(parent, flags) {
 	ui.setupUi(this);
 
@@ -138,9 +189,10 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(par
     CheckCloseDimEx();
 }
 
-//------------------------------------------------------------------------------
-// Name: setDimmensions
-//------------------------------------------------------------------------------
+/**
+ * @brief MainWindow::parseGeometry
+ * @param geometry
+ */
 void MainWindow::parseGeometry(QString geometry) {
     int rows = -1;
     int cols = -1;
@@ -2118,13 +2170,17 @@ void MainWindow::action_Goto_Line_Number(DocumentWidget *document, const QString
     int lineNum;
     int column;
 
+    /* Accept various formats:
+          [line]:[column]   (menu action)
+          line              (macro call)
+          line, column      (macro call) */
     if (StringToLineAndCol(s, &lineNum, &column) == -1) {
         QApplication::beep();
         return;
     }
 
     if(TextArea *area = lastFocus_) {
-        document->gotoAP(area, s);
+        document->gotoAP(area, lineNum, column);
     }
 }
 
@@ -2159,6 +2215,10 @@ void MainWindow::on_action_Goto_Line_Number_triggered() {
 
 }
 
+/**
+ * @brief MainWindow::action_Goto_Selected
+ * @param document
+ */
 void MainWindow::action_Goto_Selected(DocumentWidget *document) {
     const QMimeData *mimeData = QApplication::clipboard()->mimeData(QClipboard::Selection);
     if(!mimeData->hasText()) {
@@ -2166,14 +2226,12 @@ void MainWindow::action_Goto_Selected(DocumentWidget *document) {
         return;
     }
 
-    if(TextArea *area = lastFocus_) {
-        document->gotoAP(area, mimeData->text());
-    }
+    action_Goto_Line_Number(document, mimeData->text());
 }
 
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
+/**
+ * @brief MainWindow::on_action_Goto_Selected_triggered
+ */
 void MainWindow::on_action_Goto_Selected_triggered() {
     if(DocumentWidget *document = currentDocument()) {
         action_Goto_Selected(document);
@@ -2318,7 +2376,9 @@ void MainWindow::on_editIFind_textChanged(const QString &text) {
         }
     }
 
-    const Direction direction = ui.checkIFindReverse->isChecked() ? Direction::Backward : Direction::Forward;
+    const Direction direction = ui.checkIFindReverse->isChecked() ?
+                Direction::Backward :
+                Direction::Forward;
 
     /* If the search type is a regular expression, test compile it.  If it
        fails, silently skip it.  (This allows users to compose the expression
@@ -2338,13 +2398,34 @@ void MainWindow::on_editIFind_textChanged(const QString &text) {
        as "continued" so the search routine knows to re-start the search
        from the original starting position */
     if(DocumentWidget *document = currentDocument()) {
-        document->findIncrAP(text, direction, searchType, GetPrefSearchWraps(), iSearchStartPos_ != -1);
+        action_Find_Incremental(document, text, direction, searchType, GetPrefSearchWraps(), iSearchStartPos_ != -1);
     }
 }
 
-//------------------------------------------------------------------------------
-// Name: on_buttonIFind_clicked
-//------------------------------------------------------------------------------
+/**
+ * @brief MainWindow::action_Find_Incremental
+ * @param document
+ * @param searchString
+ * @param direction
+ * @param searchType
+ * @param searchWraps
+ * @param isContinue
+ */
+void MainWindow::action_Find_Incremental(DocumentWidget *document, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWraps, bool isContinue) {
+
+    SearchAndSelectIncrementalEx(
+            document,
+            lastFocus_,
+            direction,
+            searchString,
+            searchType,
+            searchWraps,
+            isContinue);
+}
+
+/**
+ * @brief MainWindow::on_buttonIFind_clicked
+ */
 void MainWindow::on_buttonIFind_clicked() {
     // same as pressing return
     on_editIFind_returnPressed();
@@ -2365,15 +2446,17 @@ void MainWindow::on_editIFind_returnPressed() {
     QString searchString = ui.editIFind->text();
 
     if (ui.checkIFindCase->isChecked()) {
-        if (ui.checkIFindRegex->isChecked())
+        if (ui.checkIFindRegex->isChecked()) {
             searchType = SearchType::Regex;
-        else
+        } else {
             searchType = SearchType::CaseSense;
+        }
     } else {
-        if (ui.checkIFindRegex->isChecked())
+        if (ui.checkIFindRegex->isChecked()) {
             searchType = SearchType::RegexNoCase;
-        else
+        } else {
             searchType = SearchType::Literal;
+        }
     }
 
     Direction direction = ui.checkIFindReverse->isChecked() ? Direction::Backward : Direction::Forward;
@@ -2385,7 +2468,7 @@ void MainWindow::on_editIFind_returnPressed() {
 
     // find the text and mark it
     if(DocumentWidget *document = currentDocument()) {
-        document->findAP(searchString, direction, searchType, GetPrefSearchWraps());
+        action_Find(document, searchString, direction, searchType, GetPrefSearchWraps());
     }
 }
 
@@ -2689,7 +2772,9 @@ void MainWindow::action_Mark(DocumentWidget *document, const QString &mark) {
     }
 
     EMIT_EVENT_ARG_1("mark", mark);
-    document->markAP(mark[0]);
+
+    QChar ch = mark[0];
+    document->AddMarkEx(lastFocus_, ch);
 }
 
 void MainWindow::action_Mark(DocumentWidget *document) {
@@ -2765,6 +2850,7 @@ void MainWindow::action_Mark_Shortcut() {
     }
 }
 
+
 void MainWindow::action_Goto_Mark(DocumentWidget *document, const QString &mark, bool extend) {
     if (mark.size() != 1 || !mark[0].isLetter()) {
         qWarning("NEdit: action requires a single-letter label");
@@ -2772,7 +2858,9 @@ void MainWindow::action_Goto_Mark(DocumentWidget *document, const QString &mark,
         return;
     }
 
-    document->gotoMarkAP(mark[0], extend);
+    if(TextArea *area = lastFocus_) {
+        document->gotoMark(area, mark[0], extend);
+    }
 }
 
 /**
@@ -5559,6 +5647,23 @@ bool MainWindow::ReplaceSameEx(DocumentWidget *document, TextArea *area, Directi
                 searchWrap);
 }
 
+void MainWindow::action_Replace_Find(DocumentWidget *document, Direction direction, const QString &searchString, const QString &replaceString, SearchType searchType, WrapMode searchWraps) {
+
+    if (document->CheckReadOnly()) {
+        return;
+    }
+
+    ReplaceAndSearchEx(
+                document,
+                lastFocus_,
+                direction,
+                searchString,
+                replaceString,
+                searchType,
+                searchWraps);
+
+}
+
 /*
 ** Search and replace using previously entered search strings (from dialog
 ** or selection).
@@ -5617,6 +5722,19 @@ void MainWindow::SearchForSelectedEx(DocumentWidget *document, TextArea *area, D
                 searchString,
                 searchType,
                 searchWrap);
+}
+
+void MainWindow::action_Replace_In_Selection(DocumentWidget *document, const QString &searchString, const QString &replaceString, SearchType searchType) {
+    if (document->CheckReadOnly()) {
+        return;
+    }
+
+    ReplaceInSelectionEx(
+                document,
+                lastFocus_,
+                searchString,
+                replaceString,
+                searchType);
 }
 
 /*

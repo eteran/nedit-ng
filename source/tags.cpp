@@ -36,7 +36,6 @@
 #include "calltips.h"
 #include "preferences.h"
 #include "search.h"
-#include "selection.h"
 #include "util/fileUtils.h"
 #include "util/utils.h"
 
@@ -1195,7 +1194,7 @@ void editTaggedLocationEx(TextArea *area, int i) {
 
     if (tagSearch[i].isEmpty()) {
         // if the search string is empty, select the numbered line
-        SelectNumberedLineEx(document, area, startPos);
+        document->SelectNumberedLineEx(area, startPos);
         return;
     }
 

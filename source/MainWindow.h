@@ -142,11 +142,14 @@ public:
     void action_Execute_Command(DocumentWidget *document);
     void action_Execute_Command(DocumentWidget *document, const QString &command);
     void action_Execute_Command_Line(DocumentWidget *document);
+    void action_Find_Incremental(DocumentWidget *document, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWraps, bool isContinue);
     void action_Exit(DocumentWidget *document);
     void action_Fill_Paragraph(DocumentWidget *document);
     void action_Filter_Selection(DocumentWidget *document);
     void action_Filter_Selection(DocumentWidget *document, const QString &filter);
     void action_Find_Again(DocumentWidget *document, Direction direction, WrapMode wrap);
+    void action_Replace_In_Selection(DocumentWidget *document, const QString &searchString, const QString &replaceString, SearchType searchType);
+    void action_Replace_Find(DocumentWidget *document, Direction direction, const QString &searchString, const QString &replaceString, SearchType searchType, WrapMode searchWraps);
     void action_Find_Definition(DocumentWidget *document);
     void action_Find_Definition(DocumentWidget *document, const QString &argument);
     void action_Find_Dialog(DocumentWidget *document, Direction direction, SearchType type, bool keepDialog);

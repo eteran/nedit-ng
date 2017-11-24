@@ -221,7 +221,7 @@ void DialogReplace::on_buttonReplaceFind_clicked() {
 	ui.textFind->setFocus();
 
 	// Find the text and replace it 
-    document_->replaceFindAP(searchString, replaceString, direction, searchType, GetPrefSearchWraps());
+    window_->action_Replace_Find(document_, direction, searchString, replaceString, searchType, GetPrefSearchWraps());
 
 	// Pop down the dialog 
 	if (!keepDialog()) {
@@ -287,7 +287,7 @@ void DialogReplace::on_buttonAll_clicked() {
 
 		break;
 	case REPL_SCOPE_SEL:
-        document_->replaceInSelAP(searchString, replaceString, searchType);
+        window_->action_Replace_In_Selection(document_, searchString, replaceString, searchType);
 
         // pop down the replace dialog
         if(!keepDialog()) {
@@ -310,7 +310,7 @@ void DialogReplace::on_buttonAll_clicked() {
 
         // Create the dialog if it doesn't already exist
         if (!dialogMultiReplace_) {
-            dialogMultiReplace_ = new DialogMultiReplace(window_, document_, this, this);
+            dialogMultiReplace_ = new DialogMultiReplace(this);
         }
 
         // Raising the window doesn't make sense. It is modal, so we can't get here unless it is unmanaged
@@ -374,7 +374,7 @@ void DialogReplace::on_buttonSelection_clicked() {
 	ui.textFind->setFocus();
 
 	// do replacement 
-    document_->replaceInSelAP(searchString, replaceString, searchType);
+    window_->action_Replace_In_Selection(document_, searchString, replaceString, searchType);
 
 	// Pop down the dialog 
 	if (!keepDialog()) {

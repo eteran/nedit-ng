@@ -246,8 +246,6 @@ add_executable(nedit-ng
 	rbTree.h
 	search.cpp
 	search.h
-	selection.cpp
-	selection.h
 	shift.cpp
 	shift.h
 	smartIndent.cpp

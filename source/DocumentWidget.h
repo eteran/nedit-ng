@@ -93,29 +93,23 @@ public Q_SLOTS:
     void closePane();
     void execAP(TextArea *area, const QString &command);
     void ExecShellCommandEx(TextArea *area, const QString &command, bool fromMacro);
-    void findAP(const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWraps);
     void FindDefCalltip(TextArea *area, const QString &tipName);
     void findDefinitionHelper(TextArea *area, const QString &arg, TagSearchMode search_type);
     void FindDefinition(TextArea *area, const QString &tagName);
-    void findIncrAP(const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWraps, bool isContinue);
-    void gotoAP(TextArea *area, const QString &arg1, const QString &arg2);
-    void gotoAP(TextArea *area, const QString &args);
     void gotoAP(TextArea *area, int lineNum, int column);
-    void gotoMarkAP(QChar label, bool extendSel);
     void GotoMatchingCharacter(TextArea *area);
-    void markAP(QChar ch);
     void moveDocument(MainWindow *fromWindow);
     void open(const QString &fullpath);
     void PrintStringEx(const std::string &string, const QString &jobName);
     void PrintWindow(TextArea *area, bool selectedOnly);
-    void replaceAP(const QString &searchString, const QString &replaceString, Direction direction, SearchType searchType, WrapMode searchWraps);
-    void replaceFindAP(const QString &searchString, const QString &replaceString, Direction direction, SearchType searchType, WrapMode searchWraps);
-    void replaceInSelAP(const QString &searchString, const QString &replaceString, SearchType searchType);
     void SelectToMatchingCharacter(TextArea *area);
     void SetColors(const QString &textFg, const QString &textBg, const QString &selectFg, const QString &selectBg, const QString &hiliteFg, const QString &hiliteBg, const QString &lineNoFg, const QString &cursorFg);
     void setLanguageMode(const QString &mode);
     void ShowStatsLine(bool state);
     void splitPane();
+    void AddMarkEx(TextArea *area, QChar label);
+    void SelectNumberedLineEx(TextArea *area, int lineNum);
+    void gotoMark(TextArea *area, QChar label, bool extendSel);
 
 public:
 	void movedCallback(TextArea *area);
@@ -271,7 +265,8 @@ private:
     void UpdateStatsLine(TextArea *area);
 
 private:
-	// TODO(eteran): are these dialog's per window or per text document?
+    // TODO(eteran): 2.0, in nedit, these are owned per-document. But the effect all
+    // open documents, so they shoudl be at the very least, per-window if not global
 	QPointer<QDialog> dialogColors_;
     QPointer<QDialog> dialogFonts_;
 

@@ -34,7 +34,6 @@
 #include "parse.h"
 #include "preferences.h"
 #include "search.h"
-#include "selection.h"
 #include "smartIndent.h"
 #include "SmartIndentEvent.h"
 #include "tags.h"
@@ -1984,7 +1983,8 @@ void DocumentWidget::CheckForChangesToFileEx() {
                         int resp = QMessageBox::critical(
                                     this,
                                     tr("File not Found"),
-                                    tr("File '%1' (or directory in its path)\nno longer exists.\nAnother program may have deleted or moved it.").arg(filename_),
+                                    tr("File '%1' (or directory in its path) no longer exists.\n"
+                                       "Another program may have deleted or moved it.").arg(filename_),
                                     QMessageBox::Save | QMessageBox::Cancel);
                         save = (resp == QMessageBox::Save);
                     }
@@ -1995,7 +1995,8 @@ void DocumentWidget::CheckForChangesToFileEx() {
                         int resp = QMessageBox::critical(
                                     this,
                                     tr("Permission Denied"),
-                                    tr("You no longer have access to file '%1'.\nAnother program may have changed the permissions of one of its parent directories.").arg(filename_),
+                                    tr("You no longer have access to file '%1'.\n"
+                                       "Another program may have changed the permissions of one of its parent directories.").arg(filename_),
                                     QMessageBox::Save | QMessageBox::Cancel);
                         save = (resp == QMessageBox::Save);
                     }
@@ -2006,7 +2007,9 @@ void DocumentWidget::CheckForChangesToFileEx() {
                         int resp = QMessageBox::critical(
                                     this,
                                     tr("File not Accessible"),
-                                    tr("Error while checking the status of file '%1':\n    '%2'\nPlease make sure that no data is lost before closing this window.").arg(filename_, ErrorString(errno)),
+                                    tr("Error while checking the status of file '%1':\n"
+                                       "    '%2'\n"
+                                       "Please make sure that no data is lost before closing this window.").arg(filename_, ErrorString(errno)),
                                     QMessageBox::Save | QMessageBox::Cancel);
                         save = (resp == QMessageBox::Save);
                     }
@@ -3570,143 +3573,6 @@ bool DocumentWidget::includeFile(const QString &name) {
     return true;
 }
 
-void DocumentWidget::replaceInSelAP(const QString &searchString, const QString &replaceString, SearchType searchType) {
-
-    if (CheckReadOnly()) {
-        return;
-    }
-
-    if(MainWindow *win = MainWindow::fromDocument(this)) {
-        win->ReplaceInSelectionEx(
-                    this,
-                    win->lastFocus_,
-                    searchString,
-                    replaceString,
-                    searchType);
-    }
-}
-
-void DocumentWidget::replaceFindAP(const QString &searchString, const QString &replaceString, Direction direction, SearchType searchType, WrapMode searchWraps) {
-
-    if (CheckReadOnly()) {
-        return;
-    }
-
-    if(MainWindow *win = MainWindow::fromDocument(this)) {
-        win->ReplaceAndSearchEx(
-                    this,
-                    win->lastFocus_,
-                    direction,
-                    searchString,
-                    replaceString,
-                    searchType,
-                    searchWraps);
-    }
-}
-
-void DocumentWidget::findAP(const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWraps) {
-
-    if(MainWindow *win = MainWindow::fromDocument(this)) {
-        win->action_Find(this, searchString, direction, searchType, searchWraps);
-    }
-}
-
-
-void DocumentWidget::findIncrAP(const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWraps, bool isContinue) {
-
-    if(MainWindow *win = MainWindow::fromDocument(this)) {
-        win->SearchAndSelectIncrementalEx(
-                this,
-                win->lastFocus_,
-                direction,
-                searchString,
-                searchType,
-                searchWraps,
-	            isContinue);
-    }
-
-}
-
-void DocumentWidget::replaceAP(const QString &searchString, const QString &replaceString, Direction direction, SearchType searchType, WrapMode searchWraps) {
-
-    if(MainWindow *win = MainWindow::fromDocument(this)) {
-        win->action_Replace(this, direction, searchString, replaceString, searchType, searchWraps);
-    }
-}
-
-void DocumentWidget::markAP(QChar ch) {
-
-    if (!ch.isLetterOrNumber()) {
-		qWarning("NEdit: mark action requires a single-letter label");
-        return;
-    }
-
-    AddMarkEx(
-            MainWindow::fromDocument(this),
-            this,
-            MainWindow::fromDocument(this)->lastFocus_,
-            ch);
-}
-
-void DocumentWidget::gotoMarkAP(QChar label, bool extendSel) {
-
-    if(auto win = MainWindow::fromDocument(this)) {
-
-        if(TextArea *area = win->lastFocus_) {
-
-            int index;
-
-            // look up the mark in the mark table
-            label = label.toUpper();
-            for (index = 0; index < nMarks_; index++) {
-                if (markTable_[index].label == label)
-                    break;
-            }
-
-            if (index == nMarks_) {
-                QApplication::beep();
-                return;
-            }
-
-            // reselect marked the selection, and move the cursor to the marked pos
-            TextSelection *sel    = &markTable_[index].sel;
-            TextSelection *oldSel = &buffer_->primary_;
-
-            int cursorPos = markTable_[index].cursorPos;
-            if (extendSel) {
-
-                int oldStart = oldSel->selected ? oldSel->start : area->TextGetCursorPos();
-                int oldEnd   = oldSel->selected ? oldSel->end   : area->TextGetCursorPos();
-                int newStart = sel->selected    ? sel->start    : cursorPos;
-                int newEnd   = sel->selected    ? sel->end      : cursorPos;
-
-                buffer_->BufSelect(oldStart < newStart ? oldStart : newStart, oldEnd > newEnd ? oldEnd : newEnd);
-            } else {
-                if (sel->selected) {
-                    if (sel->rectangular) {
-                        buffer_->BufRectSelect(sel->start, sel->end, sel->rectStart, sel->rectEnd);
-                    } else {
-                        buffer_->BufSelect(sel->start, sel->end);
-                    }
-                } else {
-                    buffer_->BufUnselect();
-                }
-            }
-
-            /* Move the window into a pleasing position relative to the selection
-               or cursor.   MakeSelectionVisible is not great with multi-line
-               selections, and here we will sometimes give it one.  And to set the
-               cursor position without first using the less pleasing capability
-               of the widget itself for bringing the cursor in to view, you have to
-               first turn it off, set the position, then turn it back on. */
-            area->setAutoShowInsertPos(false);
-            area->TextSetCursorPos(cursorPos);
-            MakeSelectionVisible(area);
-            area->setAutoShowInsertPos(true);
-        }
-    }
-}
-
 void DocumentWidget::GotoMatchingCharacter(TextArea *area) {
     int selStart;
     int selEnd;
@@ -4140,7 +4006,6 @@ void DocumentWidget::closePane() {
 */
 void DocumentWidget::BeginSmartIndentEx(int warn) {
 
-
     int stoppedAt;
     QString errMsg;
     static bool initialized = false;
@@ -4149,7 +4014,10 @@ void DocumentWidget::BeginSmartIndentEx(int warn) {
     QString modeName = LanguageModeName(languageMode_);
     if(modeName.isNull()) {
         if (warn) {
-            QMessageBox::warning(this, tr("Smart Indent"), tr("No language-specific mode has been set for this file.\n\nTo use smart indent in this window, please select a\nlanguage from the Preferences -> Language Modes menu."));
+            QMessageBox::warning(
+                        this,
+                        tr("Smart Indent"),
+                        tr("No language-specific mode has been set for this file.\n\nTo use smart indent in this window, please select a language from the Preferences -> Language Modes menu."));
         }
         return;
     }
@@ -4221,7 +4089,6 @@ void DocumentWidget::BeginSmartIndentEx(int warn) {
 ** into. Do nothing if there is only one shell window opened.
 */
 void DocumentWidget::moveDocument(MainWindow *fromWindow) {
-	auto dialog = std::make_unique<DialogMoveDocument>(this);
 
     // all windows, except for the source window
     std::vector<MainWindow *> allWindows = MainWindow::allWindows();
@@ -4234,6 +4101,8 @@ void DocumentWidget::moveDocument(MainWindow *fromWindow) {
     if (allWindows.empty()) {
         return;
     }
+
+    auto dialog = std::make_unique<DialogMoveDocument>(this);
 
     // load them into the dialog
     for(MainWindow *win : allWindows) {
@@ -4442,7 +4311,7 @@ void DocumentWidget::gotoAP(TextArea *area, int lineNum, int column) {
 		}
 	} else if (column == -1) {
 		// User didn't specify a column
-        SelectNumberedLineEx(this, area, lineNum);
+        SelectNumberedLineEx(area, lineNum);
 		return;
 	}
 
@@ -4454,42 +4323,17 @@ void DocumentWidget::gotoAP(TextArea *area, int lineNum, int column) {
 	area->TextSetCursorPos(position);
 }
 
-void DocumentWidget::gotoAP(TextArea *area, const QString &arg1, const QString &arg2) {
-	int lineNum;
-	int column;
-
-	/* Accept various formats:
-		  [line]:[column]   (menu action)
-		  line              (macro call)
-		  line, column      (macro call) */
-	if ((!StringToNum(arg1, &lineNum) || !StringToNum(arg2, &column))) {
-        qWarning("NEdit: goto_line_number action requires line and/or column number");
-		return;
-	}
-
-	gotoAP(area, lineNum, column);
-}
-
-void DocumentWidget::gotoAP(TextArea *area, const QString &args) {
-
-    int lineNum;
-    int column;
-
-    /* Accept various formats:
-          [line]:[column]   (menu action)
-          line              (macro call)
-          line, column      (macro call) */
-    if ((StringToLineAndCol(args, &lineNum, &column) == -1)) {
-        qWarning("NEdit: goto_line_number action requires line and/or column number");
-        return;
-    }
-
-	gotoAP(area, lineNum, column);
-}
-
-/*
-**
-*/
+/**
+ * @brief DocumentWidget::SetColors
+ * @param textFg
+ * @param textBg
+ * @param selectFg
+ * @param selectBg
+ * @param hiliteFg
+ * @param hiliteBg
+ * @param lineNoFg
+ * @param cursorFg
+ */
 void DocumentWidget::SetColors(const QString &textFg, const QString &textBg, const QString &selectFg, const QString &selectBg, const QString &hiliteFg, const QString &hiliteBg, const QString &lineNoFg, const QString &cursorFg) {
 
     QColor textFgPix   = AllocColor(textFg);
@@ -7067,3 +6911,123 @@ bool DocumentWidget::selectionSpansMultipleLines() {
     return false; // Small selection; probably doesn't span lines
 }
 #endif
+
+void DocumentWidget::AddMarkEx(TextArea *area, QChar label) {
+
+
+    /* look for a matching mark to re-use, or advance
+       nMarks to create a new one */
+    label = label.toUpper();
+
+    int index;
+    for (index = 0; index < nMarks_; index++) {
+        if (markTable_[index].label == label) {
+            break;
+        }
+    }
+
+    if (index >= MAX_MARKS) {
+        qWarning("NEdit: no more marks allowed"); // shouldn't happen
+        return;
+    }
+
+    if (index == nMarks_) {
+        nMarks_++;
+    }
+
+    // store the cursor location and selection position in the table
+    markTable_[index].label     = label;
+    markTable_[index].sel       = buffer_->primary_;
+    markTable_[index].cursorPos = area->TextGetCursorPos();
+}
+
+void DocumentWidget::SelectNumberedLineEx(TextArea *area, int lineNum) {
+    int i;
+    int lineStart = 0;
+
+    // count lines to find the start and end positions for the selection
+    if (lineNum < 1) {
+        lineNum = 1;
+    }
+
+    int lineEnd = -1;
+
+    for (i = 1; i <= lineNum && lineEnd < buffer_->BufGetLength(); i++) {
+        lineStart = lineEnd + 1;
+        lineEnd = buffer_->BufEndOfLine( lineStart);
+    }
+
+    // highlight the line
+    if (i > lineNum) {
+        // Line was found
+        if (lineEnd < buffer_->BufGetLength()) {
+            buffer_->BufSelect(lineStart, lineEnd + 1);
+        } else {
+            // Don't select past the end of the buffer !
+            buffer_->BufSelect(lineStart, buffer_->BufGetLength());
+        }
+    } else {
+        /* Line was not found -> position the selection & cursor at the end
+           without making a real selection and beep */
+        lineStart = buffer_->BufGetLength();
+        buffer_->BufSelect(lineStart, lineStart);
+        QApplication::beep();
+    }
+
+    MakeSelectionVisible(area);
+    area->TextSetCursorPos(lineStart);
+}
+
+void DocumentWidget::gotoMark(TextArea *area, QChar label, bool extendSel) {
+    int index;
+
+    // look up the mark in the mark table
+    label = label.toUpper();
+    for (index = 0; index < nMarks_; index++) {
+        if (markTable_[index].label == label)
+            break;
+    }
+
+    if (index == nMarks_) {
+        QApplication::beep();
+        return;
+    }
+
+    // reselect marked the selection, and move the cursor to the marked pos
+    TextSelection *sel    = &markTable_[index].sel;
+    TextSelection *oldSel = &buffer_->primary_;
+
+    int cursorPos = markTable_[index].cursorPos;
+    if (extendSel) {
+
+        int oldStart = oldSel->selected ? oldSel->start : area->TextGetCursorPos();
+        int oldEnd   = oldSel->selected ? oldSel->end   : area->TextGetCursorPos();
+        int newStart = sel->selected    ? sel->start    : cursorPos;
+        int newEnd   = sel->selected    ? sel->end      : cursorPos;
+
+        buffer_->BufSelect(oldStart < newStart ? oldStart : newStart, oldEnd > newEnd ? oldEnd : newEnd);
+    } else {
+        if (sel->selected) {
+            if (sel->rectangular) {
+                buffer_->BufRectSelect(sel->start, sel->end, sel->rectStart, sel->rectEnd);
+            } else {
+                buffer_->BufSelect(sel->start, sel->end);
+            }
+        } else {
+            buffer_->BufUnselect();
+        }
+    }
+
+    // TODO(eteran): update X selections after updating the buffer
+
+    /* Move the window into a pleasing position relative to the selection
+       or cursor.   MakeSelectionVisible is not great with multi-line
+       selections, and here we will sometimes give it one.  And to set the
+       cursor position without first using the less pleasing capability
+       of the widget itself for bringing the cursor in to view, you have to
+       first turn it off, set the position, then turn it back on. */
+    area->setAutoShowInsertPos(false);
+    area->TextSetCursorPos(cursorPos);
+    MakeSelectionVisible(area);
+    area->setAutoShowInsertPos(true);
+}

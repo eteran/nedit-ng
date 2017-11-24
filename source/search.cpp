@@ -36,7 +36,6 @@
 #include "highlight.h"
 #include "preferences.h"
 #include "regularExp.h"
-#include "selection.h"
 #include "userCmds.h"
 #include <gsl/gsl_util>
 

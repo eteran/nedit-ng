@@ -43,7 +43,6 @@
 #include "NeditServer.h"
 #include "preferences.h"
 #include "regularExp.h"
-#include "selection.h"
 #include "Settings.h"
 #include "util/fileUtils.h"
 
@@ -379,7 +378,7 @@ int main(int argc, char *argv[]) {
                         macroFileReadEx = true;
                     }
                     if (gotoLine) {
-                        SelectNumberedLineEx(document, document->firstPane(), lineNum);
+                        document->SelectNumberedLineEx(document->firstPane(), lineNum);
                     }
 
                     if (!toDoCommand.isNull()) {

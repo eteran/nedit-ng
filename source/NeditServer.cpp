@@ -5,7 +5,6 @@
 #include "EditFlags.h"
 #include "macro.h"
 #include "preferences.h"
-#include "selection.h"
 
 #include "util/ServerCommon.h"
 #include "util/fileUtils.h"
@@ -259,7 +258,7 @@ void NeditServer::newConnection() {
                 // NOTE(eteran): this was previously window->lastFocus, but that
                 // is very inconvinient to get at this point in the code (now)
                 // firstPane() seems practical for now
-                SelectNumberedLineEx(document, document->firstPane(), lineNum);
+                document->SelectNumberedLineEx(document->firstPane(), lineNum);
             }
 
             if (!doCommand.isEmpty()) {

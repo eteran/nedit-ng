@@ -50,7 +50,6 @@
 #include "parse.h"
 #include "preferences.h"
 #include "search.h"
-#include "selection.h"
 #include "smartIndent.h"
 #include "util/fileUtils.h"
 #include "util/utils.h"
@@ -3546,8 +3545,11 @@ static bool replaceAllInSelectionMS(DocumentWidget *document, Arguments argument
 
     SearchType type = searchType(arguments, 2);
 
+    if(auto window = MainWindow::fromDocument(document)) {
+        window->action_Replace_In_Selection(document, searchString, replaceString, type);
+    }
+
     *result = to_value(0);
-    document->replaceInSelAP(searchString, replaceString, type);
     return true;
 }
 
