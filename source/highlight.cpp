@@ -432,10 +432,10 @@ bool parseString(HighlightData *pattern, const char **string, char **styleString
 
 	if (length <= 0) {
 		return false;
-	}
+    }
 
-	const char *stringPtr = *string;
-	char *stylePtr        = *styleString;
+    const char *stringPtr = *string;
+    char *stylePtr        = *styleString;
     const char *stringEnd = stringPtr + length;
 	
     while (pattern->subPatternRE->ExecRE(

@@ -5914,7 +5914,7 @@ void DocumentWidget::StartHighlightingEx(bool warn) {
 
     /* Parse the buffer with pass 1 patterns.  If there are none, initialize
        the style buffer to all UNFINISHED_STYLE to trigger parsing later */
-    auto styleString = std::make_unique<char[]>(bufLength + 1);
+    std::vector<char> styleString(bufLength + 1);
     char *stylePtr = &styleString[0];
 
     if (!highlightData->pass1Patterns) {
@@ -5991,8 +5991,7 @@ void DocumentWidget::AttachHighlightToWidgetEx(TextArea *area) {
 */
 std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(PatternSet *patSet) {
 
-    std::vector<HighlightPattern> & patternSrc = patSet->patterns;
-    const int nPatterns                        = patSet->patterns.size();
+    std::vector<HighlightPattern> &patterns = patSet->patterns;
 
     int contextLines = patSet->lineContext;
     int contextChars = patSet->charContext;
@@ -6001,7 +6000,7 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
     HighlightData *pass2Pats;
 
     // The highlighting code can't handle empty pattern sets, quietly say no
-    if (patternSrc.empty()) {
+    if (patterns.empty()) {
         return nullptr;
     }
 
@@ -6011,8 +6010,8 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
         return nullptr;
     }
 
-    for(const HighlightPattern &pattern : patternSrc) {
-        if (!pattern.subPatternOf.isNull() && indexOfNamedPattern(patternSrc, pattern.subPatternOf) == -1) {
+    for(const HighlightPattern &pattern : patterns) {
+        if (!pattern.subPatternOf.isNull() && indexOfNamedPattern(patterns, pattern.subPatternOf) == -1) {
             QMessageBox::warning(
                         this,
                         tr("Parent Pattern"),
@@ -6021,7 +6020,7 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
         }
     }
 
-    for(const HighlightPattern &pattern : patternSrc) {
+    for(const HighlightPattern &pattern : patterns) {
         if (!NamedStyleExists(pattern.style)) {
             QMessageBox::warning(
                         this,
@@ -6034,12 +6033,12 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
     /* Make DEFER_PARSING flags agree with top level patterns (originally,
        individual flags had to be correct and were checked here, but dialog now
        shows this setting only on top patterns which is much less confusing) */
-    for (int i = 0; i < nPatterns; i++) {
-        HighlightPattern &pattern = patternSrc[i];
+    for (size_t i = 0; i < patterns.size(); i++) {
+        HighlightPattern &pattern = patterns[i];
 
         if (!pattern.subPatternOf.isNull()) {
 
-            int parentindex = findTopLevelParentIndex(patternSrc, i);
+            int parentindex = findTopLevelParentIndex(patterns, i);
             if (parentindex == -1) {
                 QMessageBox::warning(
                             this,
@@ -6048,7 +6047,7 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
                 return nullptr;
             }
 
-            if (patternSrc[parentindex].flags & DEFER_PARSING) {
+            if (patterns[parentindex].flags & DEFER_PARSING) {
                 pattern.flags |= DEFER_PARSING;
             } else {
                 pattern.flags &= ~DEFER_PARSING;
@@ -6060,7 +6059,7 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
        be used in pass 2, and add default pattern (0) to each list */
     size_t nPass1Patterns = 1;
     size_t nPass2Patterns = 1;
-    for(const HighlightPattern &pattern : patternSrc) {
+    for(const HighlightPattern &pattern : patterns) {
         if (pattern.flags & DEFER_PARSING) {
             nPass2Patterns++;
         } else {
@@ -6091,7 +6090,7 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
     p1Ptr++;
     p2Ptr++;
 
-    for(const HighlightPattern &pattern : patternSrc) {
+    for(const HighlightPattern &pattern : patterns) {
         if (pattern.flags & DEFER_PARSING) {
             *p2Ptr++ = pattern;
         } else {
