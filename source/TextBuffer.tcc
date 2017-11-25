@@ -1159,7 +1159,7 @@ bool BasicTextBuffer<Ch, Tr>::BufSearchBackwardEx(int startPos, view_type search
 ** != 0 otherwise.
 */
 template <class Ch, class Tr>
-int BasicTextBuffer<Ch, Tr>::BufCmpEx(int pos, view_type cmpText) noexcept {
+int BasicTextBuffer<Ch, Tr>::BufCmpEx(int pos, view_type cmpText) const noexcept {
 
     auto posEnd = pos + gsl::narrow<int>(cmpText.size());
     if (posEnd > length_) {

@@ -267,7 +267,6 @@ int findRelativeLineStart(const TextBuffer *buf, int referencePos, int reference
 ** the modifications are actually made.
 */
 void bufPreDeleteCB(int pos, int nDeleted, void *arg) {
-
     auto area = static_cast<TextArea *>(arg);
     area->bufPreDeleteCallback(pos, nDeleted);
 }
@@ -474,7 +473,7 @@ TextArea::TextArea(
 
 	// Update the display to reflect the contents of the buffer
 	if(buffer) {
-		bufModifiedCB(0, buffer->BufGetLength(), 0, 0, std::string(), this);
+        bufModifiedCB(0, buffer->BufGetLength(), 0, 0, std::string(), this);
 	}
 
 	// Decide if the horizontal scroll bar needs to be visible

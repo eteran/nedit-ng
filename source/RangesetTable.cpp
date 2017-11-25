@@ -224,7 +224,7 @@ int RangesetTable::RangesetIndex1ofPos(RangesetTable *table, int pos, bool needs
 void RangesetTable::RangesetTableAssignColorPixel(int index, const QColor &color, bool ok) {
     Rangeset *rangeset = &set_[index];
 	rangeset->color_set_ = ok ? 1 : -1;
-	rangeset->color_ = color;
+    rangeset->color_ = color;
 }
 
 /*

@@ -131,7 +131,7 @@ public:
     bool BufSearchForwardEx(int startPos, view_type searchChars, int *foundPos) const noexcept;
     Ch BufGetCharacter(int pos) const noexcept;
     const Ch *BufAsString() noexcept;
-    int BufCmpEx(int pos, view_type cmpText) noexcept;
+    int BufCmpEx(int pos, view_type cmpText) const noexcept;
     int BufCountBackwardNLines(int startPos, int nLines) const noexcept;
     int BufCountDispChars(int lineStartPos, int targetPos) const noexcept;
     int BufCountForwardDispChars(int lineStartPos, int nChars) const noexcept;
