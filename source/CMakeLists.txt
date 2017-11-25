@@ -242,8 +242,6 @@ add_executable(nedit-ng
 	parse.h
 	preferences.cpp
 	preferences.h
-	rbTree.cpp
-	rbTree.h
 	search.cpp
 	search.h
 	shift.cpp
@@ -268,6 +266,7 @@ target_link_libraries(nedit-ng LINK_PUBLIC
 	NUtil
 	RegExp
 	Settings
+	rbTree
 	Qt5::Widgets
 	Qt5::Network
 )

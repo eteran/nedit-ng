@@ -27,7 +27,7 @@
 #ifndef INTERPRET_H_
 #define INTERPRET_H_
 
-#include "rbTree.h"
+#include "rbTree/rbTree.h"
 #include "util/string_view.h"
 
 #include <gsl/span>

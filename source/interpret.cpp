@@ -426,7 +426,7 @@ int ExecuteMacroEx(DocumentWidget *document, Program *prog, gsl::span<DataValue>
        preemption and resumption of execution */
     auto context         = std::make_shared<RestartData>();
 
-    context->stack       = new DataValue[STACK_SIZE];    
+    context->stack       = new DataValue[STACK_SIZE];
     context->stackP      = context->stack;
     context->pc          = prog->code;
     context->runWindow   = document;
