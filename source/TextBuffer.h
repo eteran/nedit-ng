@@ -34,9 +34,6 @@
 
 #include <gsl/gsl_util>
 
-#include <algorithm>
-#include <cassert>
-#include <cctype>
 #include <deque>
 #include <string>
 

@@ -2,6 +2,9 @@
 #ifndef TEXT_BUFFER_TCC_
 #define TEXT_BUFFER_TCC_
 
+#include <algorithm>
+#include <cassert>
+
 /*
 ** Free a text buffer
 */

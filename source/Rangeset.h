@@ -33,7 +33,7 @@
 
 #include <QColor>
 
-#define N_RANGESETS 63
+constexpr int N_RANGESETS = 63;
 
 class Rangeset;
 
@@ -44,7 +44,7 @@ using TextBuffer = BasicTextBuffer<char, std::char_traits<char>>;
 
 struct Range {
 	int start;
-	int end; /* range from [start-]end */
+    int end; /* range from [start-]end */
 };
 
 struct RangesetInfo {
@@ -87,8 +87,8 @@ public:
     void RangesetGetInfo(bool *defined, int *label, int *count, QString *color, QString *name, QString *mode) const;
 	RangesetInfo RangesetGetInfo() const;
 
-	void RangesetRefreshRange(int start, int end) const;
-	void RangesetInit(int label, TextBuffer *buf);
+    void RangesetRefreshRange(int start, int end) const;
+    void RangesetInit(int label, TextBuffer *buf);
 
 public:
     RangesetUpdateFn *update_fn_; // modification update function
