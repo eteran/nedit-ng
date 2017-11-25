@@ -28,14 +28,14 @@
 #define TEXT_BUFFER_H_
 
 #include "TextSelection.h"
-#include "Rangeset.h"
-#include "RangesetTable.h"
 #include "util/string_view.h"
 
 #include <gsl/gsl_util>
 
 #include <deque>
 #include <string>
+
+class RangesetTable;
 
 template <class Ch = char, class Tr = std::char_traits<Ch>>
 class BasicTextBuffer;
@@ -244,18 +244,18 @@ private:
     int gapStart_; // points to the first character of the gap
     int gapEnd_;   // points to the first char after the gap
     int length_;   // length of the text in the buffer (the length of the buffer itself must be calculated: gapEnd gapStart + length)
-	
+    std::deque<std::pair<bufPreDeleteCallbackProc, void *>> preDeleteProcs_; // procedure to call before text is deleted from the buffer; at most one is supported.
+    std::deque<std::pair<bufModifyCallbackProc, void *>> modifyProcs_;       // procedures to call when buffer is modified to redisplay contents
+
 public:
 	// TODO(eteran): accessors
-	TextSelection primary_;                                                  // highlighted areas
-	TextSelection secondary_;
-	TextSelection highlight_;	
-	int tabDist_;                                                            // equiv. number of characters in a tab
-	bool useTabs_;                                                           // True if buffer routines are allowed to use tabs for padding in rectangular operations
-	std::deque<std::pair<bufModifyCallbackProc, void *>> modifyProcs_;       // procedures to call when buffer is modified to redisplay contents
-	std::deque<std::pair<bufPreDeleteCallbackProc, void *>> preDeleteProcs_; // procedure to call before text is deleted from the buffer; at most one is supported.
-	int cursorPosHint_;                                                      // hint for reasonable cursor position after a buffer modification operation
-	RangesetTable *rangesetTable_;                                           // current range sets
+    TextSelection primary_;          // highlighted areas
+    TextSelection secondary_;
+    TextSelection highlight_;
+    int tabDist_;                    // equiv. number of characters in a tab
+    bool useTabs_;                   // True if buffer routines are allowed to use tabs for padding in rectangular operations
+    int cursorPosHint_;              // hint for reasonable cursor position after a buffer modification operation
+    RangesetTable *rangesetTable_;   // current range sets
 };
 
 #include "TextBuffer.tcc"

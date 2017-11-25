@@ -29,29 +29,6 @@ void RangesetBufModifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, 
 }
 
 /*
-** clone a ranges set.
-*/
-void rangesetClone(Rangeset *dest, const Rangeset *source) {
-
-    // NOTE(eteran): what about label_ and buf_ ?!
-
-    dest->update_fn_   = source->update_fn_;
-    dest->update_name_ = source->update_name_;
-    dest->maxpos_      = source->maxpos_;
-    dest->last_index_  = source->last_index_;
-    dest->n_ranges_    = source->n_ranges_;
-    dest->color_set_   = source->color_set_;
-    dest->color_       = source->color_;
-    dest->color_name_  = source->color_name_;
-    dest->name_        = source->name_;
-
-    if (source->ranges_) {
-        dest->ranges_ = RangesetTable::RangesNew(source->n_ranges_);
-        std::copy_n(source->ranges_, source->n_ranges_, dest->ranges_);
-	}
-}
-
-/*
 ** Assign the range set table list.
 */
 void RangesetTableListSet(RangesetTable *table) {
@@ -145,28 +122,11 @@ RangesetTable::RangesetTable(TextBuffer *buffer) : buf_(buffer) {
 	buffer->BufAddHighPriorityModifyCB(RangesetBufModifiedCB, this);
 }
 
-/*
-** Create a new rangeset table in the destination buffer
-** by cloning it from the source table.
-*/
-RangesetTable::RangesetTable(TextBuffer *buffer, const RangesetTable &other) : RangesetTable(buffer) {
-
-    n_set_ = other.n_set_;
-    std::copy_n(other.order_,  N_RANGESETS, order_);
-    std::copy_n(other.active_, N_RANGESETS, active_);
-    std::copy_n(other.depth_,  N_RANGESETS, depth_);
-    std::copy_n(other.list_,   N_RANGESETS, list_);
-
-	for (int i = 0; i < N_RANGESETS; i++) {
-        rangesetClone(&set_[i], &other.set_[i]);
-	}
-}
-
 RangesetTable::~RangesetTable() {
 
     buf_->BufRemoveModifyCB(RangesetBufModifiedCB, this);
 	for (int i = 0; i < N_RANGESETS; i++) {
-        set_[i].RangesetEmpty();
+        set_[i].RangesetEmpty(buf_);
 	}
 }
 	
@@ -198,7 +158,7 @@ Rangeset *RangesetTable::RangesetForget(int label) {
 		return nullptr;
 
 	if (deactivateRangeset(this, set_ind))
-        set_[set_ind].RangesetEmpty();
+        set_[set_ind].RangesetEmpty(buf_);
 
     return &set_[set_ind];
 }
@@ -215,7 +175,7 @@ QString RangesetTable::RangesetTableGetColorName(int index) {
 /*
 ** Find a range set given its label in the table.
 */
-int RangesetTable::RangesetFindIndex(RangesetTable *table, int label, int must_be_active)  {
+int RangesetTable::RangesetFindIndex(RangesetTable *table, int label, bool must_be_active)  {
 
 	if (label == 0) {
 		return -1;
@@ -240,7 +200,7 @@ int RangesetTable::RangesetFindIndex(RangesetTable *table, int label, int must_b
 ** will be skipped.
 */
 
-int RangesetTable::RangesetIndex1ofPos(RangesetTable *table, int pos, int needs_color) {
+int RangesetTable::RangesetIndex1ofPos(RangesetTable *table, int pos, bool needs_color) {
 	int i;
 
     if (!table)
@@ -328,54 +288,6 @@ int RangesetTable::RangesetCreate() {
 	}
 
 	return label;
-}
-
-Range *RangesetTable::RangesNew(int n) {
-
-	if (n != 0) {
-		/* We use a blocked allocation scheme here, with a block size of factor.
-		   Only allocations of multiples of factor will be allowed.
-		   Be sure to allocate at least one more than we really need, and
-		   round up to next higher multiple of factor, ie
-		    n = (((n + 1) + factor - 1) / factor) * factor
-		   If we choose factor = (1 << factor_bits), we can use shifts
-		   instead of multiply/divide, ie
-		        n = ((n + (1 << factor_bits)) >> factor_bits) << factor_bits
-		   or
-		    n = (1 + (n >> factor_bits)) << factor_bits
-		   Since the shifts just strip the end 1 bits, we can even get away
-		   with
-		    n = ((1 << factor_bits) + n) & (~0 << factor_bits);
-		   Finally, we decide on factor_bits according to the size of n:
-		   if n >= 256, we probably want less reallocation on growth than
-		   otherwise; choose some arbitrary values thus:
-		    factor_bits = (n >= 256) ? 6 : 4
-		   so
-		    n = (n >= 256) ? (n + (1<<6)) & (~0<<6) : (n + (1<<4)) & (~0<<4)
-		   or
-		    n = (n >= 256) ? ((n + 64) & ~63) : ((n + 16) & ~15)
-		 */
-		n = (n >= 256) ? ((n + 64) & ~63) : ((n + 16) & ~15);
-		return static_cast<Range *>(malloc(n * sizeof(Range)));
-	}
-
-	return nullptr;
-}
-
-Range *RangesetTable::RangesFree(Range *ranges) {
-	free(ranges);
-	return nullptr;
-}
-
-Range *RangesetTable::RangesRealloc(Range *ranges, int n) {
-
-	if (n > 0) {
-		// see RangesNew() for comments 
-		n = (n >= 256) ? ((n + 64) & ~63) : ((n + 16) & ~15);
-		return static_cast<Range *>(realloc(ranges, n * sizeof(Range)));
-	} else {
-		return RangesFree(ranges);
-	}
 }
 
 /*

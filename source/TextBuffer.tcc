@@ -4,6 +4,8 @@
 
 #include <algorithm>
 #include <cassert>
+#include <QtDebug>
+#include "RangesetTable.h"
 
 /*
 ** Free a text buffer
@@ -393,7 +395,7 @@ void BasicTextBuffer<Ch, Tr>::overlayRectEx(int startPos, int rectStart, int rec
         const string_type insLine = copyLineEx(insPtr, insText.end());
         insPtr += insLine.size();
 
-        // TODO(eteran): remove the need for this temp
+        // TODO(eteran): 2.0, remove the need for this temp
         string_type temp;
         overlayRectInLineEx(line, insLine, rectStart, rectEnd, tabDist_, useTabs_, &temp, &endOffset);
         len = gsl::narrow<int>(temp.size());
@@ -1422,7 +1424,7 @@ void BasicTextBuffer<Ch, Tr>::deleteRect(int start, int end, int rectStart, int 
         const int lineEnd = BufEndOfLine(lineStart);
         const string_type line = BufGetRangeEx(lineStart, lineEnd);
 
-        // TODO(eteran): remove the need for this temp
+        // TODO(eteran): 2.0, remove the need for this temp
         string_type temp;
         deleteRectFromLine(line, rectStart, rectEnd, tabDist_, useTabs_, &temp, &endOffset);
         len = gsl::narrow<int>(temp.size());
@@ -1560,7 +1562,7 @@ void BasicTextBuffer<Ch, Tr>::insertColEx(int column, int startPos, view_type in
         const string_type insLine = copyLineEx(insPtr, insText.end());
         insPtr += insLine.size();
 
-        // TODO(eteran): remove the need for this temp
+        // TODO(eteran): 2.0, remove the need for this temp
         string_type temp;
         insertColInLineEx(line, insLine, column, insWidth, tabDist_, useTabs_, &temp, &endOffset);
         len = gsl::narrow<int>(temp.size());

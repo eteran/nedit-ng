@@ -282,22 +282,6 @@ void bufModifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view::st
 }
 
 /*
-** This routine is called every time there is a modification made to the
-** buffer to which this callback is attached, with an argument of the text
-** widget that has been designated (by HandleXSelections) to handle its
-** selections.  It checks if the status of the selection in the buffer
-** has changed since last time, and owns or disowns the X selection depending
-** on the status of the primary selection in the buffer.  If it is not allowed
-** to take ownership of the selection, it unhighlights the text in the buffer
-** (Being in the middle of a modify callback, this has a somewhat complicated
-** result, since later callbacks will see the second modifications first).
-*/
-void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *arg) {
-    auto area = static_cast<TextArea *>(arg);
-    area->modifiedCallback(pos, nInserted, nDeleted, nRestyled, deletedText, arg);
-}
-
-/*
 ** Count the number of newlines in a null-terminated text string;
 */
 int countLinesEx(view::string_view string) {
@@ -502,7 +486,6 @@ TextArea::TextArea(
 
 	// Initialize the widget variables
 	dragState_          = NOT_CLICKED;
-	selectionOwner_     = false;
 	emTabsBeforeCursor_ = 0;
 
 	setGeometry(0, 0, width, height);
@@ -3840,98 +3823,6 @@ void TextArea::setScroll(int topLineNum, int horizOffset, bool updateVScrollBar,
 #if 0
 	HandleAllPendingGraphicsExposeNoExposeEvents(nullptr);
 #endif
-}
-
-//------------------------------------------------------------------------------
-// Name: TextSetBuffer
-// Desc: Set the text buffer which this widget will display and interact with.
-//       The currently attached buffer is automatically freed, ONLY if it has
-//       no additional modify procs attached (as it would if it were being
-//       displayed by another text widget).
-//------------------------------------------------------------------------------
-void TextArea::TextSetBuffer(TextBuffer *buffer) {
-	TextBuffer *oldBuf = buffer_;
-
-	StopHandlingXSelections();
-	TextDSetBuffer(buffer);
-	if (oldBuf->modifyProcs_.empty()) {
-		delete oldBuf;
-	}
-}
-
-//------------------------------------------------------------------------------
-// Name: StopHandlingXSelections
-// Desc: Discontinue ownership of selections for widget "w"'s attached buffer
-//       (if "w" was the designated selection owner)
-//------------------------------------------------------------------------------
-void TextArea::StopHandlingXSelections() {
-
-    for (auto it = buffer_->modifyProcs_.begin(); it != buffer_->modifyProcs_.end(); ++it) {
-		auto &pair = *it;
-		if (pair.first == modifiedCB && pair.second == this) {
-			buffer_->modifyProcs_.erase(it);
-			return;
-		}
-	}
-}
-
-//------------------------------------------------------------------------------
-// Name: TextDSetBuffer
-// Desc: Attach a text buffer to display, replacing the current buffer (if any)
-//------------------------------------------------------------------------------
-void TextArea::TextDSetBuffer(TextBuffer *buffer) {
-	/* If the text display is already displaying a buffer, clear it off
-	   of the display and remove our callback from it */
-	if (buffer_) {
-		bufModifiedCB(0, 0, buffer_->BufGetLength(), 0, std::string(), this);
-		buffer_->BufRemoveModifyCB(bufModifiedCB, this);
-		buffer_->BufRemovePreDeleteCB(bufPreDeleteCB, this);
-	}
-
-	/* Add the buffer to the display, and attach a callback to the buffer for
-	   receiving modification information when the buffer contents change */
-	buffer_ = buffer;
-	buffer->BufAddModifyCB(bufModifiedCB, this);
-	buffer->BufAddPreDeleteCB(bufPreDeleteCB, this);
-
-	// Update the display
-	bufModifiedCB(0, buffer->BufGetLength(), 0, 0, std::string(), this);
-}
-
-//------------------------------------------------------------------------------
-// Name: modifiedCallback
-//------------------------------------------------------------------------------
-void TextArea::modifiedCallback(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *cbArg) {
-
-    Q_UNUSED(pos);
-    Q_UNUSED(nInserted);
-    Q_UNUSED(nRestyled);
-    Q_UNUSED(nDeleted);
-    Q_UNUSED(deletedText);
-    Q_UNUSED(cbArg);
-
-	bool selected = buffer_->primary_.selected;
-	bool isOwner  = selectionOwner_;
-
-	/* If the widget owns the selection and the buffer text is still selected,
-	   or if the widget doesn't own it and there's no selection, do nothing */
-	if ((isOwner && selected) || (!isOwner && !selected)) {
-		return;
-	}
-
-	/* Don't disown the selection here.  Another application (namely: klipper)
-	   may try to take it when it thinks nobody has the selection.  We then
-	   lose it, making selection-based macro operations fail.  Disowning
-	   is really only for when the widget is destroyed to avoid a convert
-	   callback from firing at a bad time. */
-
-	// Take ownership of the selection
-    if(!QApplication::clipboard()->ownsSelection()) {
-        buffer_->BufUnselect();
-	} else {
-		selectionOwner_ = true;
-	}
-
 }
 
 //------------------------------------------------------------------------------

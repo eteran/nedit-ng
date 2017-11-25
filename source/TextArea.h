@@ -245,7 +245,6 @@ public:
 	void TextDRedisplayRect(int left, int top, int width, int height);
     void TextDRedisplayRect(const QRect &rect);
     int TextDCountForwardNLines(int startPos, int nLines, bool startPosIsLineStart);
-	void TextSetBuffer(TextBuffer *buffer);
     int TextDPositionToXY(int pos, int *x, int *y);
     int TextDPositionToXY(int pos, QPoint *coord);
 	void TextDKillCalltip(int calltipID);
@@ -269,7 +268,6 @@ public:
 	void textDRedisplayRange(int start, int end);
 	void TextDResize(int width, int height);
 	int TextDCountLines(int startPos, int endPos, int startPosIsLineStart);
-	void TextDSetBuffer(TextBuffer *buffer);
 	void TextDSetCursorStyle(CursorStyles style);
 	void TextDUnblankCursor();
 	void TextDBlankCursor();
@@ -302,7 +300,6 @@ public:
 public:
 	void bufPreDeleteCallback(int pos, int nDeleted);
 	void bufModifiedCallback(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText);
-	void modifiedCallback(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *cbArg);
 
 private:
     void callMovedCBs();
@@ -339,7 +336,6 @@ private:
 	void drawCursor(QPainter *painter, int x, int y);
 	QColor getRangesetColor(int ind, QColor bground);
 	void setScroll(int topLineNum, int horizOffset, bool updateVScrollBar, bool updateHScrollBar);
-	void StopHandlingXSelections();
 	void offsetLineStarts(int newTopLineNum);
 	void cancelDrag();
 	void checkAutoShowInsertPos();
@@ -438,7 +434,6 @@ private:
 	DragStates dragState_;           // Why is the mouse being dragged and what is being acquired
     QPoint btnDownCoord_;            // Mark the position of last btn down action for deciding when to begin paying attention to motion actions, and where to paste columns
     QPoint mouseCoord_;              // Last known mouse position in drag operation (for autoscroll)
-	bool selectionOwner_;            // True if widget owns the selection
 	QTimer *autoScrollTimer_;
 	QTimer *cursorBlinkTimer_;
 	QTimer *clickTimer_;

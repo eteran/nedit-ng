@@ -515,8 +515,6 @@ DocumentWidget::~DocumentWidget() noexcept {
     // Free syntax highlighting patterns, if any. w/o redisplaying
     FreeHighlightingDataEx();
 
-    /* remove the buffer modification callbacks so the buffer will be
-       deallocated when the last text widget is destroyed */
     buffer_->BufRemoveModifyCB(modifiedCB, this);
     buffer_->BufRemoveModifyCB(SyntaxHighlightModifyCBEx, this);
 

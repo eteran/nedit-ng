@@ -6,10 +6,11 @@
 
 class RangesetTable {
 public:
-	explicit RangesetTable(TextBuffer *buffer);	
-	RangesetTable(TextBuffer *buffer, const RangesetTable &other); // for "cloning"
+    explicit RangesetTable(TextBuffer *buffer);
+    RangesetTable(const RangesetTable &)            = delete;
+    RangesetTable& operator=(const RangesetTable &) = delete;
 	~RangesetTable();
-	
+
 public:
     QString RangesetTableGetColorName(int index);
 	int nRangesetsAvailable() const;
@@ -22,11 +23,8 @@ public:
 public:
 	static void RangesetTableUpdatePos(RangesetTable *table, int pos, int ins, int del);
     static uint8_t *RangesetGetList(RangesetTable *table);
-    static int RangesetFindIndex(RangesetTable *table, int label, int must_be_active);
-    static int RangesetIndex1ofPos(RangesetTable *table, int pos, int needs_color);
-	static Range *RangesFree(Range *ranges);
-	static Range *RangesNew(int n);
-	static Range *RangesRealloc(Range *ranges, int n);
+    static int RangesetFindIndex(RangesetTable *table, int label, bool must_be_active);
+    static int RangesetIndex1ofPos(RangesetTable *table, int pos, bool needs_color);
 	static int RangesetLabelOK(int label);
 
 public:

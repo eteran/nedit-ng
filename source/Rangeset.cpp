@@ -30,7 +30,6 @@
 *******************************************************************************/
 
 #include "Rangeset.h"
-#include "RangesetTable.h"
 #include "TextBuffer.h"
 #include <algorithm>
 #include <cctype>
@@ -71,9 +70,9 @@ bool is_end(int i) {
     return (i & 1);
 }
 
-void rangesetRefreshAllRanges(Rangeset *rangeset) {
+void rangesetRefreshAllRanges(TextBuffer *buffer, Rangeset *rangeset) {
     for (int i = 0; i < rangeset->n_ranges_; i++) {
-        rangeset->RangesetRefreshRange(rangeset->ranges_[i].start, rangeset->ranges_[i].end);
+        rangeset->RangesetRefreshRange(buffer, rangeset->ranges_[i].start, rangeset->ranges_[i].end);
 	}
 }
 
@@ -169,19 +168,19 @@ Rangeset *rangesetFixMaxpos(Rangeset *rangeset, int ins, int del) {
 /*
 ** Find the index of the first entry in the range set's ranges table (viewed as
 ** an int array) whose value is equal to or greater than pos. As a side effect,
-** update the lasi_index value of the range set. Return's the index value. This
+** update the last_index value of the range set. Return's the index value. This
 ** will be twice p->n_ranges if pos is beyond the end.
 */
 int rangesetWeightedAtOrBefore(Rangeset *rangeset, int pos) {
-	int i;
-	int last;
+
+    int i;
     auto rangeTable = reinterpret_cast<int *>(rangeset->ranges_);
 
     int n = rangeset->n_ranges_;
 	if (n == 0)
 		return 0;
 
-    last = rangeset->last_index_;
+    int last = rangeset->last_index_;
 
 	if (last >= n || last < 0)
 		last = 0;
@@ -280,7 +279,7 @@ Rangeset *rangesetInsDelMaintain(Rangeset *rangeset, int pos, int ins, int del) 
 
 	n -= j - i;
     rangeset->n_ranges_ = n / 2;
-    rangeset->ranges_ = RangesetTable::RangesRealloc(rangeset->ranges_, rangeset->n_ranges_);
+    rangeset->ranges_ = Rangeset::RangesRealloc(rangeset->ranges_, rangeset->n_ranges_);
 
 	// final adjustments 
 	return rangesetFixMaxpos(rangeset, ins, del);
@@ -338,7 +337,7 @@ Rangeset *rangesetInclMaintain(Rangeset *rangeset, int pos, int ins, int del) {
 
 	n -= j - i;
     rangeset->n_ranges_ = n / 2;
-    rangeset->ranges_ = RangesetTable::RangesRealloc(rangeset->ranges_, rangeset->n_ranges_);
+    rangeset->ranges_ = Rangeset::RangesRealloc(rangeset->ranges_, rangeset->n_ranges_);
 
 	// final adjustments 
 	return rangesetFixMaxpos(rangeset, ins, del);
@@ -391,7 +390,7 @@ Rangeset *rangesetDelInsMaintain(Rangeset *rangeset, int pos, int ins, int del) 
 
 	n -= j - i;
     rangeset->n_ranges_ = n / 2;
-    rangeset->ranges_ = RangesetTable::RangesRealloc(rangeset->ranges_, rangeset->n_ranges_);
+    rangeset->ranges_ = Rangeset::RangesRealloc(rangeset->ranges_, rangeset->n_ranges_);
 
 	// final adjustments 
 	return rangesetFixMaxpos(rangeset, ins, del);
@@ -450,7 +449,7 @@ Rangeset *rangesetExclMaintain(Rangeset *rangeset, int pos, int ins, int del) {
 
 	n -= j - i;
     rangeset->n_ranges_ = n / 2;
-    rangeset->ranges_ = RangesetTable::RangesRealloc(rangeset->ranges_, rangeset->n_ranges_);
+    rangeset->ranges_ = Rangeset::RangesRealloc(rangeset->ranges_, rangeset->n_ranges_);
 
 	// final adjustments 
 	return rangesetFixMaxpos(rangeset, ins, del);
@@ -526,7 +525,7 @@ Rangeset *rangesetBreakMaintain(Rangeset *rangeset, int pos, int ins, int del) {
 
 	n -= j - i;
     rangeset->n_ranges_ = n / 2;
-    rangeset->ranges_ = RangesetTable::RangesRealloc(rangeset->ranges_, rangeset->n_ranges_);
+    rangeset->ranges_ = Rangeset::RangesRealloc(rangeset->ranges_, rangeset->n_ranges_);
 
 	// final adjustments 
 	return rangesetFixMaxpos(rangeset, ins, del);
@@ -608,14 +607,14 @@ int Rangeset::RangesetGetNRanges() const {
 ** Returns the number of ranges if successful, -1 otherwise. Never adds more
 ** than one range.
 */
-int Rangeset::RangesetInverse() {
+int Rangeset::RangesetInverse(TextBuffer *buffer) {
 	int n;
 
     auto rangeTable = reinterpret_cast<int *>(ranges_);
 
     if (n_ranges_ == 0) {
 		if (!rangeTable) {
-            ranges_ = RangesetTable::RangesNew(1);
+            ranges_ = Rangeset::RangesNew(1);
             rangeTable = reinterpret_cast<int *>(ranges_);
 		}
 		rangeTable[0] = 0;
@@ -648,16 +647,16 @@ int Rangeset::RangesetInverse() {
 	}
 
     n_ranges_ = n / 2;
-    ranges_ = RangesetTable::RangesRealloc(reinterpret_cast<Range *>(rangeTable), n_ranges_);
+    ranges_ = Rangeset::RangesRealloc(reinterpret_cast<Range *>(rangeTable), n_ranges_);
 
-    RangesetRefreshRange(0, maxpos_);
+    RangesetRefreshRange(buffer, 0, maxpos_);
     return n_ranges_;
 }
 
 /*
 ** Merge the ranges in rangeset plusSet into rangeset this.
 */
-int Rangeset::RangesetAdd(Rangeset *plusSet) {
+int Rangeset::RangesetAdd(TextBuffer *buffer, Rangeset *plusSet) {
 	Range *oldRanges;
 
 	Range *origRanges = ranges_;
@@ -670,17 +669,17 @@ int Rangeset::RangesetAdd(Rangeset *plusSet) {
 		return nOrigRanges; // no ranges in plusSet - nothing to do 
 	}
 
-	Range *newRanges = RangesetTable::RangesNew(nOrigRanges + nPlusRanges);
+    Range *newRanges = Rangeset::RangesNew(nOrigRanges + nPlusRanges);
 
 	if (nOrigRanges == 0) {
 		// no ranges in destination: just copy the ranges from the other set 
         std::copy_n(plusRanges, nPlusRanges, newRanges);
 
-        RangesetTable::RangesFree(ranges_);
+        Rangeset::RangesFree(ranges_);
         ranges_ = newRanges;
         n_ranges_ = nPlusRanges;
 		for (nOrigRanges = 0; nOrigRanges < nPlusRanges; nOrigRanges++) {
-			RangesetRefreshRange(newRanges->start, newRanges->end);
+            RangesetRefreshRange(buffer, newRanges->start, newRanges->end);
 			newRanges++;
 		}
 		return nPlusRanges;
@@ -709,14 +708,15 @@ int Rangeset::RangesetAdd(Rangeset *plusSet) {
 		*newRanges = *origRanges++;
 		nOrigRanges--;
 		if (!isOld)
-			RangesetRefreshRange(newRanges->start, newRanges->end);
+            RangesetRefreshRange(buffer, newRanges->start, newRanges->end);
 
 		// now we must cycle over plusRanges, merging in the overlapped ranges 
 		while (nPlusRanges > 0 && newRanges->end >= plusRanges->start) {
 			do {
 				if (newRanges->end < plusRanges->end) {
-					if (isOld)
-						RangesetRefreshRange(newRanges->end, plusRanges->end);
+                    if (isOld) {
+                        RangesetRefreshRange(buffer, newRanges->end, plusRanges->end);
+                    }
 					newRanges->end = plusRanges->end;
 				}
 				plusRanges++;
@@ -737,8 +737,8 @@ int Rangeset::RangesetAdd(Rangeset *plusSet) {
 	}
 
 	// finally, forget the old rangeset values, and reallocate the new ones 
-	RangesetTable::RangesFree(oldRanges);
-    ranges_ = RangesetTable::RangesRealloc(ranges_, n_ranges_);
+    Rangeset::RangesFree(oldRanges);
+    ranges_ = Rangeset::RangesRealloc(ranges_, n_ranges_);
 
     return n_ranges_;
 }
@@ -747,7 +747,7 @@ int Rangeset::RangesetAdd(Rangeset *plusSet) {
 ** Add the range indicated by the positions start and end. Returns the
 ** new number of ranges in the set.
 */
-int Rangeset::RangesetAddBetween(int start, int end) {
+int Rangeset::RangesetAddBetween(TextBuffer *buffer, int start, int end) {
 	int i, j;
     auto rangeTable = reinterpret_cast<int*>(ranges_);
 
@@ -761,7 +761,7 @@ int Rangeset::RangesetAddBetween(int start, int end) {
     int n = 2 * n_ranges_;
 
 	if (n == 0) { // make sure we have space 
-        ranges_ = RangesetTable::RangesNew(1);
+        ranges_ = Rangeset::RangesNew(1);
         rangeTable = reinterpret_cast<int*>(ranges_);
 		i = 0;
 	} else
@@ -771,9 +771,9 @@ int Rangeset::RangesetAddBetween(int start, int end) {
 		rangeTable[n] = start;
 		rangeTable[n + 1] = end;
         n_ranges_++;
-        ranges_ = RangesetTable::RangesRealloc(ranges_, n_ranges_);
+        ranges_ = Rangeset::RangesRealloc(ranges_, n_ranges_);
 
-		RangesetRefreshRange(start, end);
+        RangesetRefreshRange(buffer, start, end);
         return n_ranges_;
 	}
 
@@ -788,7 +788,7 @@ int Rangeset::RangesetAddBetween(int start, int end) {
 			rangeTable[i] = start;                                 // load up new range's limits 
 			rangeTable[i + 1] = end;
             n_ranges_++; // we've just created a new range
-            ranges_ = RangesetTable::RangesRealloc(ranges_, n_ranges_);
+            ranges_ = Rangeset::RangesRealloc(ranges_, n_ranges_);
 		} else {
             return n_ranges_; // no change
 		}
@@ -802,17 +802,17 @@ int Rangeset::RangesetAddBetween(int start, int end) {
 			rangesetShuffleToFrom(rangeTable, i, j, n - j, 0);
 		n -= j - i;
         n_ranges_ = n / 2;
-        ranges_ = RangesetTable::RangesRealloc(ranges_, n_ranges_);
+        ranges_ = Rangeset::RangesRealloc(ranges_, n_ranges_);
 	}
 
-	RangesetRefreshRange(start, end);
+    RangesetRefreshRange(buffer, start, end);
     return n_ranges_;
 }
 
 /*
 ** Assign a color name to a rangeset via the rangeset table.
 */
-bool Rangeset::RangesetAssignColorName(const QString &color_name) {
+bool Rangeset::RangesetAssignColorName(TextBuffer *buffer, const QString &color_name) {
 
     // "" invalid
     if(!color_name.isEmpty()) {
@@ -823,7 +823,7 @@ bool Rangeset::RangesetAssignColorName(const QString &color_name) {
 
     color_set_ = 0;
 
-	rangesetRefreshAllRanges(this);
+    rangesetRefreshAllRanges(buffer, this);
 	return true;
 }
 
@@ -937,7 +937,7 @@ int Rangeset::RangesetCheckRangeOfPos(int pos) {
 /*
 ** Subtract the ranges of minusSet from this rangeset .
 */
-int Rangeset::RangesetRemove(Rangeset *minusSet) {
+int Rangeset::RangesetRemove(TextBuffer *buffer, Rangeset *minusSet) {
 	Range *origRanges, *minusRanges, *newRanges, *oldRanges;
 	int nOrigRanges, nMinusRanges;
 
@@ -951,7 +951,7 @@ int Rangeset::RangesetRemove(Rangeset *minusSet) {
 		return 0; // no ranges in this or minusSet - nothing to do 
 
 	// we must provide more space: each range in minusSet might split a range in this 
-    newRanges = RangesetTable::RangesNew(n_ranges_ + minusSet->n_ranges_);
+    newRanges = Rangeset::RangesNew(n_ranges_ + minusSet->n_ranges_);
 
 	oldRanges = origRanges;
     ranges_ = newRanges;
@@ -990,13 +990,13 @@ int Rangeset::RangesetRemove(Rangeset *minusSet) {
 			if (minusRanges->start <= origRanges->start) {
 				// origRanges->start inside *minusRanges 
 				if (minusRanges->end < origRanges->end) {
-					RangesetRefreshRange(origRanges->start, minusRanges->end);
+                    RangesetRefreshRange(buffer, origRanges->start, minusRanges->end);
 					origRanges->start = minusRanges->end; // cut off front of original *origRanges 
 					minusRanges++;                        // dealt with this *minusRanges: move on 
 					nMinusRanges--;
 				} else {
 					// all *origRanges inside *minusRanges 
-					RangesetRefreshRange(origRanges->start, origRanges->end);
+                    RangesetRefreshRange(buffer, origRanges->start, origRanges->end);
 					origRanges++; // all of *origRanges can be skipped 
 					nOrigRanges--;
 				}
@@ -1009,13 +1009,13 @@ int Rangeset::RangesetRemove(Rangeset *minusSet) {
 
 				if (minusRanges->end < origRanges->end) {
 					// all *minusRanges inside *origRanges 
-					RangesetRefreshRange(minusRanges->start, minusRanges->end);
+                    RangesetRefreshRange(buffer, minusRanges->start, minusRanges->end);
 					origRanges->start = minusRanges->end; // cut front of *origRanges upto end *minusRanges 
 					minusRanges++;                        // dealt with this *minusRanges: move on 
 					nMinusRanges--;
 				} else {
 					// minusRanges->end beyond *origRanges 
-					RangesetRefreshRange(minusRanges->start, origRanges->end);
+                    RangesetRefreshRange(buffer, minusRanges->start, origRanges->end);
 					origRanges++; // skip rest of *origRanges 
 					nOrigRanges--;
 				}
@@ -1024,8 +1024,8 @@ int Rangeset::RangesetRemove(Rangeset *minusSet) {
 	}
 
 	// finally, forget the old rangeset values, and reallocate the new ones 
-	RangesetTable::RangesFree(oldRanges);
-    ranges_ = RangesetTable::RangesRealloc(ranges_, n_ranges_);
+    Rangeset::RangesFree(oldRanges);
+    ranges_ = Rangeset::RangesRealloc(ranges_, n_ranges_);
 
     return n_ranges_;
 }
@@ -1035,7 +1035,7 @@ int Rangeset::RangesetRemove(Rangeset *minusSet) {
 ** new number of ranges in the set.
 */
 
-int Rangeset::RangesetRemoveBetween(int start, int end) {
+int Rangeset::RangesetRemoveBetween(TextBuffer *buffer, int start, int end) {
 	int j;
 	
     auto rangeTable = reinterpret_cast<int*>(ranges_);
@@ -1069,7 +1069,7 @@ int Rangeset::RangesetRemoveBetween(int start, int end) {
 			rangeTable[i + 1] = start;                             // change end of current range 
 			rangeTable[i + 2] = end;                               // change start of new range 
             n_ranges_++;                                  // we've just created a new range
-            ranges_ = RangesetTable::RangesRealloc(ranges_, n_ranges_);
+            ranges_ = Rangeset::RangesRealloc(ranges_, n_ranges_);
 		}
 	} else {
 		// removal occurs in front of rangeTable[j]: we'll be shuffling down 
@@ -1081,10 +1081,10 @@ int Rangeset::RangesetRemoveBetween(int start, int end) {
 			rangesetShuffleToFrom(rangeTable, i, j, n - j, 0);
 		n -= j - i;
         n_ranges_ = n / 2;
-        ranges_ = RangesetTable::RangesRealloc(ranges_, n_ranges_);
+        ranges_ = Rangeset::RangesRealloc(ranges_, n_ranges_);
 	}
 
-	RangesetRefreshRange(start, end);
+    RangesetRefreshRange(buffer, start, end);
     return n_ranges_;
 }
 
@@ -1092,7 +1092,7 @@ int Rangeset::RangesetRemoveBetween(int start, int end) {
 ** Remove all ranges from a range set.
 */
 
-void Rangeset::RangesetEmpty() {
+void Rangeset::RangesetEmpty(TextBuffer *buffer) {
     Range *ranges = ranges_;
 
     if (!color_name_.isNull() && color_set_ > 0) {
@@ -1102,13 +1102,14 @@ void Rangeset::RangesetEmpty() {
         while (n_ranges_--) {
             int start = ranges[n_ranges_].start;
             int end = ranges[n_ranges_].end;
-			RangesetRefreshRange(start, end);
+            RangesetRefreshRange(buffer, start, end);
 		}
 	}
 
     color_name_ = QString();
     name_ = QString();
-    ranges_ = RangesetTable::RangesFree(ranges_);
+    Rangeset::RangesFree(ranges_);
+    ranges_ = nullptr;
 }
 
 /**
@@ -1142,9 +1143,9 @@ void Rangeset::RangesetGetInfo(bool *defined, int *label, int *count, QString *c
 ** Refresh the given range on the screen. If the range indicated is null, we
 ** refresh the screen for the whole file.
 */
-void Rangeset::RangesetRefreshRange(int start, int end) const {
-    if (buf_) {
-        buf_->BufCheckDisplay(start, end);
+void Rangeset::RangesetRefreshRange(TextBuffer *buffer, int start, int end) const {
+    if (buffer) {
+        buffer->BufCheckDisplay(start, end);
 	}
 }
 
@@ -1161,8 +1162,55 @@ void Rangeset::RangesetInit(int label, TextBuffer *buf) {
     color_name_ = QString();
     name_       = QString();
     color_set_  = 0;
-    buf_        = buf;
     maxpos_     = buf->BufGetLength();
 
     RangesetChangeModifyResponse(DEFAULT_UPDATE_FN_NAME);
+}
+
+Range *Rangeset::RangesNew(int n) {
+
+    if (n != 0) {
+        /* We use a blocked allocation scheme here, with a block size of factor.
+           Only allocations of multiples of factor will be allowed.
+           Be sure to allocate at least one more than we really need, and
+           round up to next higher multiple of factor, ie
+            n = (((n + 1) + factor - 1) / factor) * factor
+           If we choose factor = (1 << factor_bits), we can use shifts
+           instead of multiply/divide, ie
+                n = ((n + (1 << factor_bits)) >> factor_bits) << factor_bits
+           or
+            n = (1 + (n >> factor_bits)) << factor_bits
+           Since the shifts just strip the end 1 bits, we can even get away
+           with
+            n = ((1 << factor_bits) + n) & (~0 << factor_bits);
+           Finally, we decide on factor_bits according to the size of n:
+           if n >= 256, we probably want less reallocation on growth than
+           otherwise; choose some arbitrary values thus:
+            factor_bits = (n >= 256) ? 6 : 4
+           so
+            n = (n >= 256) ? (n + (1<<6)) & (~0<<6) : (n + (1<<4)) & (~0<<4)
+           or
+            n = (n >= 256) ? ((n + 64) & ~63) : ((n + 16) & ~15)
+         */
+        n = (n >= 256) ? ((n + 64) & ~63) : ((n + 16) & ~15);
+        return static_cast<Range *>(malloc(n * sizeof(Range)));
+    }
+
+    return nullptr;
+}
+
+void Rangeset::RangesFree(Range *ranges) {
+    free(ranges);
+}
+
+Range *Rangeset::RangesRealloc(Range *ranges, int n) {
+
+    if (n > 0) {
+        // see RangesNew() for comments
+        n = (n >= 256) ? ((n + 64) & ~63) : ((n + 16) & ~15);
+        return static_cast<Range *>(realloc(ranges, n * sizeof(Range)));
+    } else {
+        RangesFree(ranges);
+        return nullptr;
+    }
 }

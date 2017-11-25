@@ -4726,7 +4726,7 @@ static bool rangesetAddMS(DocumentWidget *document, Arguments arguments, DataVal
         if (!buffer->BufGetSelectionPos(&start, &end, &isRect, &rectStart, &rectEnd) || isRect) {
             M_FAILURE(SelectionMissing);
         }
-        if (!targetRangeset->RangesetAddBetween(start, end)) {
+        if (!targetRangeset->RangesetAddBetween(buffer, start, end)) {
             M_FAILURE(FailedToAddSelection);
         }
     }
@@ -4742,7 +4742,7 @@ static bool rangesetAddMS(DocumentWidget *document, Arguments arguments, DataVal
             M_FAILURE(Rangeset2DoesNotExist);
         }
 
-        targetRangeset->RangesetAdd(sourceRangeset);
+        targetRangeset->RangesetAdd(buffer, sourceRangeset);
     }
 
     if (arguments.size() == 3) {
@@ -4763,7 +4763,7 @@ static bool rangesetAddMS(DocumentWidget *document, Arguments arguments, DataVal
             std::swap(start, end);
         }
 
-        if ((start != end) && !targetRangeset->RangesetAddBetween(start, end)) {
+        if ((start != end) && !targetRangeset->RangesetAddBetween(buffer, start, end)) {
             M_FAILURE(FailedToAddRange);
         }
     }
@@ -4816,7 +4816,7 @@ static bool rangesetSubtractMS(DocumentWidget *document, Arguments arguments, Da
         if (!buffer->BufGetSelectionPos(&start, &end, &isRect, &rectStart, &rectEnd) || isRect) {
             M_FAILURE(SelectionMissing);
         }
-        targetRangeset->RangesetRemoveBetween(start, end);
+        targetRangeset->RangesetRemoveBetween(buffer, start, end);
     }
 
     if (arguments.size() == 2) {
@@ -4829,7 +4829,7 @@ static bool rangesetSubtractMS(DocumentWidget *document, Arguments arguments, Da
         if(!sourceRangeset) {
             M_FAILURE(Rangeset2DoesNotExist);
         }
-        targetRangeset->RangesetRemove(sourceRangeset);
+        targetRangeset->RangesetRemove(buffer, sourceRangeset);
     }
 
     if (arguments.size() == 3) {
@@ -4848,7 +4848,7 @@ static bool rangesetSubtractMS(DocumentWidget *document, Arguments arguments, Da
             std::swap(start, end);
         }
 
-        targetRangeset->RangesetRemoveBetween(start, end);
+        targetRangeset->RangesetRemoveBetween(buffer, start, end);
     }
 
     // set up result
@@ -4863,7 +4863,8 @@ static bool rangesetSubtractMS(DocumentWidget *document, Arguments arguments, Da
 */
 static bool rangesetInvertMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
-    RangesetTable *rangesetTable = document->buffer_->rangesetTable_;
+    TextBuffer *buffer = document->buffer_;
+    RangesetTable *rangesetTable = buffer->rangesetTable_;
     int label;
 
     if(!readArguments(arguments, 0, errMsg, &label)) {
@@ -4883,7 +4884,7 @@ static bool rangesetInvertMS(DocumentWidget *document, Arguments arguments, Data
         M_FAILURE(RangesetDoesNotExist);
     }
 
-    if (rangeset->RangesetInverse() < 0) {
+    if (rangeset->RangesetInverse(buffer) < 0) {
         M_FAILURE(FailedToInvertRangeset);
     }
 
@@ -5101,7 +5102,7 @@ static bool rangesetSetColorMS(DocumentWidget *document, Arguments arguments, Da
         M_FAILURE(Param2NotAString);
     }
 
-    rangeset->RangesetAssignColorName(color_name);
+    rangeset->RangesetAssignColorName(buffer, color_name);
 
     // set up result
     *result = to_value();

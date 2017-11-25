@@ -68,10 +68,15 @@ public:
     ~Rangeset()                           = default;
 
 public:
+    static void RangesFree(Range *ranges);
+    static Range *RangesNew(int n);
+    static Range *RangesRealloc(Range *ranges, int n);
+
+public:
     QString RangesetGetName() const;
-	int RangesetAdd(Rangeset *plusSet);
-	int RangesetAddBetween(int start, int end);
-    bool RangesetAssignColorName(const QString &color_name);
+    int RangesetAdd(TextBuffer *buffer, Rangeset *plusSet);
+    int RangesetAddBetween(TextBuffer *buffer, int start, int end);
+    bool RangesetAssignColorName(TextBuffer *buffer, const QString &color_name);
     bool RangesetAssignColorPixel(const QColor &color, bool ok);
     bool RangesetAssignName(const QString &name);
     bool RangesetChangeModifyResponse(QString name);
@@ -80,14 +85,14 @@ public:
 	int RangesetFindRangeOfPos(int pos, int incl_end) const;
 	int RangesetGetColorValid(QColor *color) const;
 	int RangesetGetNRanges() const;
-	int RangesetInverse();
-	int RangesetRemove(Rangeset *minusSet);
-	int RangesetRemoveBetween(int start, int end);
-	void RangesetEmpty();
+    int RangesetInverse(TextBuffer *buffer);
+    int RangesetRemove(TextBuffer *buffer, Rangeset *minusSet);
+    int RangesetRemoveBetween(TextBuffer *buffer, int start, int end);
+    void RangesetEmpty(TextBuffer *buffer);
     void RangesetGetInfo(bool *defined, int *label, int *count, QString *color, QString *name, QString *mode) const;
 	RangesetInfo RangesetGetInfo() const;
 
-    void RangesetRefreshRange(int start, int end) const;
+    void RangesetRefreshRange(TextBuffer *buffer, int start, int end) const;
     void RangesetInit(int label, TextBuffer *buf);
 
 public:
@@ -95,14 +100,15 @@ public:
     QString update_name_;         // update function name
     int maxpos_;                  // text buffer maxpos
     int last_index_;              // a place to start looking
+
     int n_ranges_;                // how many ranges in ranges
     Range *ranges_;               // the ranges table
+
     uint8_t label_;               // a number 1-63
 
     int8_t color_set_;            // 0: unset; 1: set; -1: invalid
     QString color_name_;          // the name of an assigned color
     QColor color_;                // the value of a particular color
-    TextBuffer *buf_;             // the text buffer of the rangeset
     QString name_;                // name of rangeset
 };
 
