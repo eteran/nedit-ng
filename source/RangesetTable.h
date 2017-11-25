@@ -15,7 +15,7 @@ public:
     QString RangesetTableGetColorName(int index);
 	int nRangesetsAvailable() const;
 	int RangesetCreate();	
-    int RangesetTableAssignColorPixel(int index, const QColor &color, bool ok);
+    void RangesetTableAssignColorPixel(int index, const QColor &color, bool ok);
     int RangesetTableGetColorValid(int index, QColor *color);
 	Rangeset *RangesetFetch(int label);
 	Rangeset *RangesetForget(int label);

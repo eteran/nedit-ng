@@ -221,11 +221,10 @@ int RangesetTable::RangesetIndex1ofPos(RangesetTable *table, int pos, bool needs
 ** false, the color_set flag is set to an invalid (negative) value.
 */
 
-int RangesetTable::RangesetTableAssignColorPixel(int index, const QColor &color, bool ok) {
+void RangesetTable::RangesetTableAssignColorPixel(int index, const QColor &color, bool ok) {
     Rangeset *rangeset = &set_[index];
 	rangeset->color_set_ = ok ? 1 : -1;
 	rangeset->color_ = color;
-	return 1;
 }
 
 /*
