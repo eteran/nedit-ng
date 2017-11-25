@@ -36,6 +36,7 @@
 
 // #define DEBUG_ASSEMBLY
 // #define DEBUG_STACK
+// #define TRACK_GARBAGE_LEAKS
 
 namespace {
 
@@ -710,7 +711,7 @@ Symbol *PromoteToGlobal(Symbol *sym) {
         qInfo("NEdit: To boldly go where no local sym has gone before: %s", sym->name.c_str());
 		sym->type = GLOBAL_SYM;
 		return sym;
-	} else if (nullptr != s) {
+    } else if (s != nullptr) {
 		/* case b)
 		   sym will shadow the old symbol from the GlobalSymList */
         qInfo("NEdit: duplicate symbol in LocalSymList and GlobalSymList: %s", sym->name.c_str());
@@ -737,8 +738,6 @@ Symbol *PromoteToGlobal(Symbol *sym) {
 ** character, so to allocate space for a string of strlen == n, you must
 ** use AllocString(n+1).
 */
-
-//#define TRACK_GARBAGE_LEAKS
 
 // Allocate a new string buffer of length chars 
 char *AllocString(int length) {
@@ -788,16 +787,6 @@ NString AllocNStringCpyEx(const QString &s) {
 
     NString string = AllocNStringEx(length + 1);
     std::copy_n(s.toLatin1().data(), length, string.rep);
-    string.rep[length] = '\0';
-
-    return string;
-}
-
-NString AllocNStringCpyEx(const std::string &s) {
-    size_t length = s.size();
-
-    NString string = AllocNStringEx(length + 1);
-    std::copy_n(s.data(), length, string.rep);
     string.rep[length] = '\0';
 
     return string;

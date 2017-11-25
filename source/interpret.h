@@ -46,7 +46,7 @@ struct DataValue;
 struct Symbol;
 
 // Maximum stack size
-constexpr int  STACK_SIZE = 1024;
+constexpr int STACK_SIZE = 1024;
 
 // Max. symbol name length
 constexpr int MAX_SYM_LEN = 100;
@@ -242,7 +242,6 @@ void PreemptMacro();
 
 char *AllocStringCpyEx(const std::string &s);
 NString AllocNStringCpyEx(const QString &s);
-NString AllocNStringCpyEx(const std::string &s);
 NString AllocNStringCpyEx(const view::string_view s);
 void GarbageCollectStrings();
 Symbol *PromoteToGlobal(Symbol *sym);
