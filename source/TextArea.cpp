@@ -365,6 +365,8 @@ TextArea::TextArea(
     connect(verticalScrollBar(),   &QScrollBar::valueChanged, this, &TextArea::verticalScrollBar_valueChanged);
     connect(horizontalScrollBar(), &QScrollBar::valueChanged, this, &TextArea::horizontalScrollBar_valueChanged);
 
+    document_ = document;
+
 	autoScrollTimer_  = new QTimer(this);
 	cursorBlinkTimer_ = new QTimer(this);
 	clickTimer_       = new QTimer(this);
@@ -3333,10 +3335,11 @@ int TextArea::styleOfPos(int lineStartPos, int lineLen, int lineIndex, int dispI
 		style |= SECONDARY_MASK;
 
 	// store in the RANGESET_MASK portion of style the rangeset index for pos
-	if (buffer_->rangesetTable_) {
-        int rangesetIndex = RangesetTable::RangesetIndex1ofPos(buffer_->rangesetTable_, pos, true);
+    if (document_->rangesetTable_) {
+        int rangesetIndex = RangesetTable::RangesetIndex1ofPos(document_->rangesetTable_, pos, true);
 		style |= ((rangesetIndex << RANGESET_SHIFT) & RANGESET_MASK);
 	}
+
 	/* store in the BACKLIGHT_MASK portion of style the background color class
 	   of the character thisChar */
     if (!bgClass_.empty()) {
@@ -3615,7 +3618,7 @@ QColor TextArea::getRangesetColor(int ind, QColor bground) {
 
 	if (ind > 0) {
 		ind--;
-		RangesetTable *tab = buffer_->rangesetTable_;
+        RangesetTable *tab = document_->rangesetTable_;
 
         QColor color;
         bool valid = tab->RangesetTableGetColorValid(ind, &color);

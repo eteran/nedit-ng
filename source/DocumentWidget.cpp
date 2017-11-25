@@ -1,44 +1,45 @@
 
 #include "DocumentWidget.h"
+#include "calltips.h"
+#include "CommandRecorder.h"
 #include "DialogMoveDocument.h"
 #include "DialogOutput.h"
 #include "DialogPrint.h"
 #include "DialogReplace.h"
-#include "HighlightData.h"
-#include "LanguageMode.h"
-#include "HighlightStyle.h"
-#include "FontType.h"
-#include "MainWindow.h"
 #include "Direction.h"
-#include "SignalBlocker.h"
-#include "CommandRecorder.h"
-#include "SmartIndentEntry.h"
-#include "WindowMenuEvent.h"
-#include "TextArea.h"
-#include "TextBuffer.h"
-#include "Settings.h"
-#include "Input.h"
-#include "UndoInfo.h"
-#include "PatternSet.h"
-#include "WindowHighlightData.h"
-#include "calltips.h"
-#include "util/ClearCase.h"
 #include "DragEndEvent.h"
 #include "EditFlags.h"
 #include "fileUtils.h"
-#include "highlight.h"
-#include "X11Colors.h"
-#include "highlightData.h"
-#include "interpret.h"
-#include "macro.h"
 #include "Font.h"
+#include "FontType.h"
+#include "highlightData.h"
+#include "HighlightData.h"
+#include "highlight.h"
+#include "HighlightStyle.h"
+#include "Input.h"
+#include "interpret.h"
+#include "LanguageMode.h"
+#include "macro.h"
+#include "MainWindow.h"
 #include "parse.h"
+#include "PatternSet.h"
 #include "preferences.h"
+#include "RangesetTable.h"
 #include "search.h"
-#include "smartIndent.h"
+#include "Settings.h"
+#include "SignalBlocker.h"
+#include "SmartIndentEntry.h"
 #include "SmartIndentEvent.h"
+#include "smartIndent.h"
 #include "tags.h"
+#include "TextArea.h"
+#include "TextBuffer.h"
+#include "UndoInfo.h"
+#include "util/ClearCase.h"
 #include "utils.h"
+#include "WindowHighlightData.h"
+#include "WindowMenuEvent.h"
+#include "X11Colors.h"
 
 #include <gsl/gsl_util>
 #include <memory>
@@ -434,6 +435,7 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 	autoSaveCharCount_     = 0;
 	autoSaveOpCount_       = 0;
 	undoMemUsed_           = 0;
+    rangesetTable_         = nullptr;
 	
 	lockReasons_.clear();
 	
@@ -537,6 +539,7 @@ DocumentWidget::~DocumentWidget() noexcept {
     }
 
     delete buffer_;
+    delete rangesetTable_;
 }
 
 //------------------------------------------------------------------------------

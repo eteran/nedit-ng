@@ -441,6 +441,7 @@ private:
 	QPoint clickPos_;
     int emTabsBeforeCursor_; // If non-zero, number of consecutive emulated tabs just entered.  Saved so chars can be deleted as a unit
     QMenu *bgMenu_;
+    DocumentWidget *document_;
 private:
     QColor highlightFGPixel_;   // Highlight colors are used when flashing matching parens
     QColor highlightBGPixel_;

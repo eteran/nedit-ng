@@ -44,6 +44,7 @@ class UndoInfo;
 class HighlightData;
 class WindowHighlightData;
 class Program;
+class RangesetTable;
 struct DragEndEvent;
 struct SmartIndentEvent;
 struct SmartIndentData;
@@ -328,7 +329,7 @@ public:
     std::unique_ptr<ShellCommandData>    shellCmdData_;               // when a shell command is executing, info. about it, otherwise, nullptr
     std::unique_ptr<SmartIndentData>     smartIndentData_;            // compiled macros for smart indent
     bool showStats_;                  // is stats line supposed to be shown
-
+    RangesetTable *rangesetTable_;   // current range sets
 private:
 	QSplitter *splitter_;
 	Ui::DocumentWidget ui;

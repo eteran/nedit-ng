@@ -35,8 +35,6 @@
 #include <deque>
 #include <string>
 
-class RangesetTable;
-
 template <class Ch = char, class Tr = std::char_traits<Ch>>
 class BasicTextBuffer;
 
@@ -254,8 +252,7 @@ public:
     TextSelection highlight_;
     int tabDist_;                    // equiv. number of characters in a tab
     bool useTabs_;                   // True if buffer routines are allowed to use tabs for padding in rectangular operations
-    int cursorPosHint_;              // hint for reasonable cursor position after a buffer modification operation
-    RangesetTable *rangesetTable_;   // current range sets
+    int cursorPosHint_;              // hint for reasonable cursor position after a buffer modification operation    
 };
 
 #include "TextBuffer.tcc"

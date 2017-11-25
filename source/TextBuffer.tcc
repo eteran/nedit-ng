@@ -5,15 +5,13 @@
 #include <algorithm>
 #include <cassert>
 #include <QtDebug>
-#include "RangesetTable.h"
 
 /*
 ** Free a text buffer
 */
 template <class Ch, class Tr>
 BasicTextBuffer<Ch, Tr>::~BasicTextBuffer() noexcept {
-    delete [] buf_;
-    delete rangesetTable_;
+    delete [] buf_;    
 }
 
 /*
@@ -2321,7 +2319,7 @@ BasicTextBuffer<Ch, Tr>::BasicTextBuffer() : BasicTextBuffer(0) {
 ** will need to hold
 */
 template <class Ch, class Tr>
-BasicTextBuffer<Ch, Tr>::BasicTextBuffer(int requestedSize) : gapStart_(0), gapEnd_(PreferredGapSize), length_(0), tabDist_(8), useTabs_(true), cursorPosHint_(0), rangesetTable_(nullptr) {
+BasicTextBuffer<Ch, Tr>::BasicTextBuffer(int requestedSize) : gapStart_(0), gapEnd_(PreferredGapSize), length_(0), tabDist_(8), useTabs_(true), cursorPosHint_(0) {
 
     buf_ = new Ch[requestedSize + PreferredGapSize + 1];
     buf_[requestedSize + PreferredGapSize] = Ch();
