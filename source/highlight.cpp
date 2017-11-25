@@ -783,16 +783,6 @@ static int lastModified(const std::shared_ptr<TextBuffer> &styleBuf) {
 }
 
 /*
-** Allocate a read-only (shareable) colormap cell for a named color, from the
-** the default colormap of the screen on which the widget (w) is displayed. If
-** the colormap is full and there's no suitable substitute, print an error on
-** stderr, and return the widget's foreground color as a backup.
-*/
-QColor AllocColor(const QString &colorName) {
-     return X11Colors::fromString(colorName);
-}
-
-/*
 ** Get the character before position "pos" in buffer "buf"
 */
 char getPrevChar(TextBuffer *buf, int pos) {

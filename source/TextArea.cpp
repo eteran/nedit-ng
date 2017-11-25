@@ -11,6 +11,7 @@
 #include "DragEndEvent.h"
 #include "highlight.h"
 #include "preferences.h"
+#include "X11Colors.h"
 #include "SmartIndentEvent.h"
 #include "TextEditEvent.h"
 #include <gsl/gsl_util>
@@ -3639,7 +3640,7 @@ QColor TextArea::getRangesetColor(int ind, QColor bground) {
         if (!valid) {
             const QString color_name = tab->RangesetTableGetColorName(ind);
             if (!color_name.isNull()) {
-				color = AllocColor(color_name);
+                color = X11Colors::fromString(color_name);
 			}
 			tab->RangesetTableAssignColorPixel(ind, color, valid);
 		}
@@ -4244,7 +4245,7 @@ void TextArea::TextDSetupBGClasses(const QString &s, std::vector<QColor> *pp_bgC
 			// side effects of this.
             const auto nextClass = static_cast<uint8_t>(class_no++);
 
-            QColor pix = AllocColor(color);
+            QColor pix = X11Colors::fromString(color);
             bgClassPixel[nextClass] = pix;
 
 			QStringList rangeList = ranges.split(QLatin1Char(','), QString::SkipEmptyParts);

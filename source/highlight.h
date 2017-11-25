@@ -68,7 +68,6 @@ constexpr uint8_t UNFINISHED_STYLE = ASCII_A;
 
 constexpr uint8_t PLAIN_STYLE = (ASCII_A + 1);
 
-QColor AllocColor(const QString &colorName);
 void RemoveWidgetHighlightEx(TextArea *area);
 void SyntaxHighlightModifyCBEx(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *user);
 HighlightData *patternOfStyle(HighlightData *patterns, int style);

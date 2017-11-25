@@ -27,6 +27,7 @@
 #include "EditFlags.h"
 #include "fileUtils.h"
 #include "highlight.h"
+#include "X11Colors.h"
 #include "highlightData.h"
 #include "interpret.h"
 #include "macro.h"
@@ -565,14 +566,14 @@ TextArea *DocumentWidget::createTextArea(TextBuffer *buffer) {
                              GetPrefDefaultFont()
                              );
 
-    QColor textFgPix   = AllocColor(GetPrefColorName(TEXT_FG_COLOR));
-    QColor textBgPix   = AllocColor(GetPrefColorName(TEXT_BG_COLOR));
-    QColor selectFgPix = AllocColor(GetPrefColorName(SELECT_FG_COLOR));
-    QColor selectBgPix = AllocColor(GetPrefColorName(SELECT_BG_COLOR));
-    QColor hiliteFgPix = AllocColor(GetPrefColorName(HILITE_FG_COLOR));
-    QColor hiliteBgPix = AllocColor(GetPrefColorName(HILITE_BG_COLOR));
-    QColor lineNoFgPix = AllocColor(GetPrefColorName(LINENO_FG_COLOR));
-    QColor cursorFgPix = AllocColor(GetPrefColorName(CURSOR_FG_COLOR));
+    QColor textFgPix   = X11Colors::fromString(GetPrefColorName(TEXT_FG_COLOR));
+    QColor textBgPix   = X11Colors::fromString(GetPrefColorName(TEXT_BG_COLOR));
+    QColor selectFgPix = X11Colors::fromString(GetPrefColorName(SELECT_FG_COLOR));
+    QColor selectBgPix = X11Colors::fromString(GetPrefColorName(SELECT_BG_COLOR));
+    QColor hiliteFgPix = X11Colors::fromString(GetPrefColorName(HILITE_FG_COLOR));
+    QColor hiliteBgPix = X11Colors::fromString(GetPrefColorName(HILITE_BG_COLOR));
+    QColor lineNoFgPix = X11Colors::fromString(GetPrefColorName(LINENO_FG_COLOR));
+    QColor cursorFgPix = X11Colors::fromString(GetPrefColorName(CURSOR_FG_COLOR));
 
     area->TextDSetColors(
         textFgPix,
@@ -4336,14 +4337,14 @@ void DocumentWidget::gotoAP(TextArea *area, int lineNum, int column) {
  */
 void DocumentWidget::SetColors(const QString &textFg, const QString &textBg, const QString &selectFg, const QString &selectBg, const QString &hiliteFg, const QString &hiliteBg, const QString &lineNoFg, const QString &cursorFg) {
 
-    QColor textFgPix   = AllocColor(textFg);
-    QColor textBgPix   = AllocColor(textBg);
-    QColor selectFgPix = AllocColor(selectFg);
-    QColor selectBgPix = AllocColor(selectBg);
-    QColor hiliteFgPix = AllocColor(hiliteFg);
-    QColor hiliteBgPix = AllocColor(hiliteBg);
-    QColor lineNoFgPix = AllocColor(lineNoFg);
-    QColor cursorFgPix = AllocColor(cursorFg);
+    QColor textFgPix   = X11Colors::fromString(textFg);
+    QColor textBgPix   = X11Colors::fromString(textBg);
+    QColor selectFgPix = X11Colors::fromString(selectFg);
+    QColor selectBgPix = X11Colors::fromString(selectBg);
+    QColor hiliteFgPix = X11Colors::fromString(hiliteFg);
+    QColor hiliteBgPix = X11Colors::fromString(hiliteBg);
+    QColor lineNoFgPix = X11Colors::fromString(lineNoFg);
+    QColor cursorFgPix = X11Colors::fromString(cursorFg);
 
 
     // Update all panes
@@ -6187,10 +6188,10 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
         p->isItalic      = FontOfNamedStyleIsItalic(pat->style);
 
         // And now for the more physical stuff
-        p->color = AllocColor(p->colorName);
+        p->color = X11Colors::fromString(p->colorName);
 
         if (!p->bgColorName.isNull()) {
-            p->bgColor = AllocColor(p->bgColorName);
+            p->bgColor = X11Colors::fromString(p->bgColorName);
         } else {
             p->bgColor = p->color;
         }
