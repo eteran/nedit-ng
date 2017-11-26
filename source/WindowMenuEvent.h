@@ -5,13 +5,13 @@
 #include <QEvent>
 #include <QString>
 #include <QStringList>
+#include <QApplication>
 
 class WindowMenuEvent : public QEvent {
 public:
     static constexpr QEvent::Type eventType = static_cast<QEvent::Type>(QEvent::User + 2);
 
 public:
-    explicit WindowMenuEvent(const QString &macroString);
     WindowMenuEvent(const QString &macroString, const QStringList &arguments);
 
 public:
@@ -24,40 +24,10 @@ private:
     QStringList arguments_;
 };
 
-#define EMIT_EVENT(name)                                \
-    do {                                                \
-        WindowMenuEvent menuEvent(QLatin1String(name)); \
-        QApplication::sendEvent(this, &menuEvent);      \
-    } while(0)
-
-#define EMIT_EVENT_ARG_1(name, arg)                            \
-    do {                                                       \
-        WindowMenuEvent menuEvent(QLatin1String(name), {arg}); \
-        QApplication::sendEvent(this, &menuEvent);             \
-    } while(0)
-
-#define EMIT_EVENT_ARG_2(name, arg1, arg2)                            \
-    do {                                                              \
-        WindowMenuEvent menuEvent(QLatin1String(name), {arg1, arg2}); \
-        QApplication::sendEvent(this, &menuEvent);                    \
-    } while(0)
-
-#define EMIT_EVENT_ARG_3(name, arg1, arg2, arg3)                            \
-    do {                                                                    \
-        WindowMenuEvent menuEvent(QLatin1String(name), {arg1, arg2, arg3}); \
-        QApplication::sendEvent(this, &menuEvent);                          \
-    } while(0)
-
-#define EMIT_EVENT_ARG_4(name, arg1, arg2, arg3, arg4)                            \
-    do {                                                                          \
-        WindowMenuEvent menuEvent(QLatin1String(name), {arg1, arg2, arg3, arg4}); \
-        QApplication::sendEvent(this, &menuEvent);                                \
-    } while(0)
-
-#define EMIT_EVENT_ARG_5(name, arg1, arg2, arg3, arg4, arg5)                            \
-    do {                                                                                \
-        WindowMenuEvent menuEvent(QLatin1String(name), {arg1, arg2, arg3, arg4, arg5}); \
-        QApplication::sendEvent(this, &menuEvent);                                      \
-    } while(0)
+template<class ... Types>
+void emit_event(const char *name, Types ... args) {
+    WindowMenuEvent menuEvent(QString::fromLatin1(name), {args...});
+    QApplication::sendEvent(qApp, &menuEvent);
+}
 
 #endif

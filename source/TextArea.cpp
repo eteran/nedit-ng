@@ -34,21 +34,21 @@
 #include <memory>
 #include "Font.h"
 
-#define EMIT_EVENT(name)                                         \
-	do {                                                         \
-		if(!(flags & SupressRecording)) {                        \
-			TextEditEvent textEvent(QLatin1String(name), flags); \
-			QApplication::sendEvent(this, &textEvent);           \
-		}                                                        \
-	} while(0)
+#define EMIT_EVENT_0(name)                                       \
+    do {                                                         \
+        if(!(flags & SupressRecording)) {                        \
+            TextEditEvent textEvent(QLatin1String(name), flags); \
+            QApplication::sendEvent(this, &textEvent);           \
+        }                                                        \
+    } while(0)
 
-#define EMIT_EVENT_ARG(name, arg)                                     \
-	do {                                                              \
-		if(!(flags & SupressRecording)) {                             \
-			TextEditEvent textEvent(QLatin1String(name), arg, flags); \
-			QApplication::sendEvent(this, &textEvent);                \
-		}                                                             \
-	} while(0)
+#define EMIT_EVENT_1(name, arg)                                       \
+    do {                                                              \
+        if(!(flags & SupressRecording)) {                             \
+            TextEditEvent textEvent(QLatin1String(name), arg, flags); \
+            QApplication::sendEvent(this, &textEvent);                \
+        }                                                             \
+    } while(0)
 
 
 // NOTE(eteran): this is a bit of a hack to covert the raw c-strings to unicode
@@ -517,7 +517,7 @@ TextArea::TextArea(
 
 void TextArea::pasteClipboardAP(EventFlags flags) {
 
-    EMIT_EVENT("paste_clipboard");
+    EMIT_EVENT_0("paste_clipboard");
 
 	if (flags & RectFlag) {
 		TextColPasteClipboard();
@@ -528,14 +528,14 @@ void TextArea::pasteClipboardAP(EventFlags flags) {
 
 void TextArea::cutClipboardAP(EventFlags flags) {
 
-    EMIT_EVENT("cut_clipboard");
+    EMIT_EVENT_0("cut_clipboard");
 
     TextCutClipboard();
 }
 
 void TextArea::toggleOverstrikeAP(EventFlags flags) {
 
-    EMIT_EVENT("toggle_overstrike");
+    EMIT_EVENT_0("toggle_overstrike");
 
 	if (P_overstrike) {
 		P_overstrike = false;
@@ -549,7 +549,7 @@ void TextArea::toggleOverstrikeAP(EventFlags flags) {
 
 void TextArea::endOfLineAP(EventFlags flags) {
 
-    EMIT_EVENT("end_of_line");
+    EMIT_EVENT_0("end_of_line");
 
 	int insertPos = cursorPos_;
 
@@ -569,7 +569,7 @@ void TextArea::endOfLineAP(EventFlags flags) {
 
 void TextArea::deleteNextCharacterAP(EventFlags flags) {
 
-    EMIT_EVENT("delete_next_character");
+    EMIT_EVENT_0("delete_next_character");
 
 	int insertPos = cursorPos_;
 	bool silent = flags & NoBellFlag;
@@ -595,7 +595,7 @@ void TextArea::deleteNextCharacterAP(EventFlags flags) {
 
 void TextArea::copyClipboardAP(EventFlags flags) {
 
-    EMIT_EVENT("copy_clipboard");
+    EMIT_EVENT_0("copy_clipboard");
 
     cancelDrag();
     if (!buffer_->primary_.selected) {
@@ -608,7 +608,7 @@ void TextArea::copyClipboardAP(EventFlags flags) {
 
 void TextArea::deletePreviousWordAP(EventFlags flags) {
 
-    EMIT_EVENT("delete_previous_word");
+    EMIT_EVENT_0("delete_previous_word");
 
 	int insertPos = cursorPos_;
 	int lineStart = buffer_->BufStartOfLine(insertPos);
@@ -643,7 +643,7 @@ void TextArea::deletePreviousWordAP(EventFlags flags) {
 
 void TextArea::beginningOfLineAP(EventFlags flags) {
 
-    EMIT_EVENT("beginning_of_line");
+    EMIT_EVENT_0("beginning_of_line");
 
 	int insertPos = cursorPos_;
 
@@ -663,7 +663,7 @@ void TextArea::beginningOfLineAP(EventFlags flags) {
 
 void TextArea::processCancelAP(EventFlags flags) {
 
-    EMIT_EVENT("process_cancel");
+    EMIT_EVENT_0("process_cancel");
 
 	DragStates dragState = dragState_;
 
@@ -679,7 +679,7 @@ void TextArea::processCancelAP(EventFlags flags) {
 
 void TextArea::deletePreviousCharacterAP(EventFlags flags) {
 
-    EMIT_EVENT("delete_previous_character");
+    EMIT_EVENT_0("delete_previous_character");
 
 	int insertPos = cursorPos_;
 	bool silent = flags & NoBellFlag;
@@ -723,7 +723,7 @@ void TextArea::deletePreviousCharacterAP(EventFlags flags) {
 //------------------------------------------------------------------------------
 void TextArea::newlineAP(EventFlags flags) {
 
-    EMIT_EVENT("newline");
+    EMIT_EVENT_0("newline");
 
 	if (P_autoIndent || P_smartIndent) {
 		newlineAndIndentAP(flags | SupressRecording);
@@ -737,7 +737,7 @@ void TextArea::newlineAP(EventFlags flags) {
 //------------------------------------------------------------------------------
 void TextArea::processUpAP(EventFlags flags) {
 
-    EMIT_EVENT("process_up");
+    EMIT_EVENT_0("process_up");
 
 	int insertPos = cursorPos_;
 	bool silent = flags & NoBellFlag;
@@ -758,7 +758,7 @@ void TextArea::processUpAP(EventFlags flags) {
 //------------------------------------------------------------------------------
 void TextArea::processDownAP(EventFlags flags) {
 
-    EMIT_EVENT("process_down");
+    EMIT_EVENT_0("process_down");
 
 	int insertPos = cursorPos_;
 
@@ -780,7 +780,7 @@ void TextArea::processDownAP(EventFlags flags) {
 //------------------------------------------------------------------------------
 void TextArea::forwardCharacterAP(EventFlags flags) {
 
-    EMIT_EVENT("forward_character");
+    EMIT_EVENT_0("forward_character");
 
 	int insertPos = cursorPos_;
 	bool silent = flags & NoBellFlag;
@@ -800,7 +800,7 @@ void TextArea::forwardCharacterAP(EventFlags flags) {
 //------------------------------------------------------------------------------
 void TextArea::backwardCharacterAP(EventFlags flags) {
 
-    EMIT_EVENT("backward_character");
+    EMIT_EVENT_0("backward_character");
 
 	int insertPos = cursorPos_;
 	bool silent = flags & NoBellFlag;
@@ -820,7 +820,7 @@ void TextArea::backwardCharacterAP(EventFlags flags) {
 //------------------------------------------------------------------------------
 void TextArea::selfInsertAP(const QString &string, EventFlags flags) {
 
-    EMIT_EVENT_ARG("insert_string", string);
+    EMIT_EVENT_1("insert_string", string);
 
     cancelDrag();
     if (checkReadOnly()) {
@@ -3992,10 +3992,10 @@ void TextArea::TextDRedrawCalltip(int calltipID) {
 
     int lineHeight  = ascent_ + descent_;
     int tipWidth    = calltipWidget_->width();
-    int tipHeight   = calltipWidget_->height();
-    int borderWidth = 1; // TODO(eteran): get the actual border width!
+    int tipHeight   = calltipWidget_->height();    
 	int flip_delta;
 
+    constexpr int borderWidth = 1;
 	rel_x += borderWidth;
 	rel_y += lineHeight / 2 + borderWidth;
 
@@ -4012,11 +4012,11 @@ void TextArea::TextDRedrawCalltip(int calltipID) {
     // Adjust rel_y for vertical alignment modes
     switch(calltip_.vAlign) {
     case TIP_ABOVE:
-        flip_delta = tipHeight + lineHeight + 2 * borderWidth;
+        flip_delta = tipHeight + lineHeight + (2 * borderWidth);
         rel_y -= flip_delta;
         break;
     default:
-        flip_delta = -(tipHeight + lineHeight + 2 * borderWidth);
+        flip_delta = -(tipHeight + lineHeight + (2 * borderWidth));
         break;
     }
 
@@ -5062,7 +5062,7 @@ std::string TextArea::createIndentStringEx(TextBuffer *buf, int bufOffset, int l
 
 void TextArea::newlineNoIndentAP(EventFlags flags) {
 
-    EMIT_EVENT("newline_no_indent");
+    EMIT_EVENT_0("newline_no_indent");
 
 	cancelDrag();
 	if (checkReadOnly()) {
@@ -5075,7 +5075,7 @@ void TextArea::newlineNoIndentAP(EventFlags flags) {
 
 void TextArea::newlineAndIndentAP(EventFlags flags) {
 
-    EMIT_EVENT("newline_and_indent");
+    EMIT_EVENT_0("newline_and_indent");
 
 	int column;
 
@@ -5309,7 +5309,7 @@ bool TextArea::spanForward(TextBuffer *buf, int startPos, const QByteArray &sear
 
 void TextArea::processShiftUpAP(EventFlags flags) {
 
-    EMIT_EVENT("process_shift_up");
+    EMIT_EVENT_0("process_shift_up");
 
 	int insertPos = cursorPos_;
 	bool silent = flags & NoBellFlag;
@@ -5328,7 +5328,7 @@ void TextArea::processShiftUpAP(EventFlags flags) {
 
 void TextArea::processShiftDownAP(EventFlags flags) {
 
-    EMIT_EVENT("process_shift_down");
+    EMIT_EVENT_0("process_shift_down");
 
 	int insertPos = cursorPos_;
 	bool silent = flags & NoBellFlag;
@@ -5344,7 +5344,7 @@ void TextArea::processShiftDownAP(EventFlags flags) {
 
 void TextArea::keySelectAP(EventFlags flags) {
 
-    EMIT_EVENT("key_select");
+    EMIT_EVENT_0("key_select");
 
 	int stat;
 	int insertPos = cursorPos_;
@@ -5487,7 +5487,7 @@ void TextArea::simpleInsertAtCursorEx(view::string_view chars, bool allowPending
 
 void TextArea::copyPrimaryAP(EventFlags flags) {
 
-    EMIT_EVENT("copy_primary");
+    EMIT_EVENT_0("copy_primary");
 
 	TextSelection *primary = &buffer_->primary_;
 	bool rectangular = flags & RectFlag;
@@ -5603,7 +5603,7 @@ void TextArea::xyToUnconstrainedPos(int x, int y, int *row, int *column, int pos
 
 void TextArea::beginningOfFileAP(EventFlags flags) {
 
-    EMIT_EVENT("beginning_of_file");
+    EMIT_EVENT_0("beginning_of_file");
 
 	int insertPos = cursorPos_;
 
@@ -5622,7 +5622,7 @@ void TextArea::beginningOfFileAP(EventFlags flags) {
 
 void TextArea::endOfFileAP(EventFlags flags) {
 
-    EMIT_EVENT("end_of_file");
+    EMIT_EVENT_0("end_of_file");
 
 	int insertPos = cursorPos_;
 
@@ -5642,7 +5642,7 @@ void TextArea::endOfFileAP(EventFlags flags) {
 
 void TextArea::backwardWordAP(EventFlags flags) {
 
-    EMIT_EVENT("backward_word");
+    EMIT_EVENT_0("backward_word");
 
     int insertPos = cursorPos_;
     QByteArray delimiters = P_delimiters.toLatin1();
@@ -5669,7 +5669,7 @@ void TextArea::backwardWordAP(EventFlags flags) {
 
 void TextArea::forwardWordAP(EventFlags flags) {
 
-    EMIT_EVENT("forward_word");
+    EMIT_EVENT_0("forward_word");
 
     int insertPos = cursorPos_;
     QByteArray delimiters = P_delimiters.toLatin1();
@@ -5711,7 +5711,7 @@ void TextArea::forwardWordAP(EventFlags flags) {
 
 void TextArea::forwardParagraphAP(EventFlags flags) {
 
-    EMIT_EVENT("forward_paragraph");
+    EMIT_EVENT_0("forward_paragraph");
 
 	int pos;
 	int insertPos = cursorPos_;
@@ -5741,7 +5741,7 @@ void TextArea::forwardParagraphAP(EventFlags flags) {
 
 void TextArea::backwardParagraphAP(EventFlags flags) {
 
-    EMIT_EVENT("backward_paragraph");
+    EMIT_EVENT_0("backward_paragraph");
 
 	int parStart;
 	int pos;
@@ -5775,7 +5775,7 @@ void TextArea::backwardParagraphAP(EventFlags flags) {
 
 void TextArea::processTabAP(EventFlags flags) {
 
-    EMIT_EVENT("process_tab");
+    EMIT_EVENT_0("process_tab");
 
 	TextSelection *sel = &buffer_->primary_;
 	int emTabDist          = P_emulateTabs;
@@ -6042,7 +6042,7 @@ void TextArea::clickTimeout() {
  */
 void TextArea::selectAllAP(EventFlags flags) {
 
-    EMIT_EVENT("select_all");
+    EMIT_EVENT_0("select_all");
 
 	cancelDrag();
 	buffer_->BufSelect(0, buffer_->BufGetLength());
@@ -6055,7 +6055,7 @@ void TextArea::selectAllAP(EventFlags flags) {
  */
 void TextArea::deselectAllAP(EventFlags flags) {
 
-    EMIT_EVENT("deselect_all");
+    EMIT_EVENT_0("deselect_all");
 
 	cancelDrag();
     buffer_->BufUnselect();
@@ -6069,7 +6069,7 @@ void TextArea::deselectAllAP(EventFlags flags) {
  */
 void TextArea::extendStartAP(QMouseEvent *event, EventFlags flags) {
 
-    EMIT_EVENT("extend_start");
+    EMIT_EVENT_0("extend_start");
 
 	TextSelection *sel = &buffer_->primary_;
 	int anchor;
@@ -6135,7 +6135,7 @@ void TextArea::extendStartAP(QMouseEvent *event, EventFlags flags) {
  */
 void TextArea::extendAdjustAP(QMouseEvent *event, EventFlags flags) {
 
-    EMIT_EVENT("extend_adjust");
+    EMIT_EVENT_0("extend_adjust");
 
 	DragStates dragState = dragState_;
 	const bool rectDrag = flags & RectFlag;
@@ -6242,7 +6242,7 @@ void TextArea::checkAutoScroll(const QPoint &coord) {
 
 void TextArea::deleteToStartOfLineAP(EventFlags flags) {
 
-    EMIT_EVENT("delete_to_start_of_line");
+    EMIT_EVENT_0("delete_to_start_of_line");
 
 	int insertPos = cursorPos_;
 	int startOfLine;
@@ -6275,7 +6275,7 @@ void TextArea::deleteToStartOfLineAP(EventFlags flags) {
 
 void TextArea::mousePanAP(QMouseEvent *event, EventFlags flags) {
 
-    EMIT_EVENT("mouse_pan");
+    EMIT_EVENT_0("mouse_pan");
 
     int lineHeight = ascent_ + descent_;
 	int topLineNum;
@@ -6310,7 +6310,7 @@ void TextArea::TextDGetScroll(int *topLineNum, int *horizOffset) {
 
 void TextArea::copyToOrEndDragAP(QMouseEvent *event, EventFlags flags) {
 
-    EMIT_EVENT("copy_to_end_drag");
+    EMIT_EVENT_0("copy_to_end_drag");
 
     DragStates dragState = dragState_;
 
@@ -6324,7 +6324,7 @@ void TextArea::copyToOrEndDragAP(QMouseEvent *event, EventFlags flags) {
 
 void TextArea::copyToAP(QMouseEvent *event, EventFlags flags) {
 
-    EMIT_EVENT("copy_to");
+    EMIT_EVENT_0("copy_to");
 
     DragStates dragState     = dragState_;
 	TextSelection *secondary = &buffer_->secondary_;
@@ -6416,7 +6416,7 @@ void TextArea::FinishBlockDrag() {
  */
 void TextArea::secondaryOrDragStartAP(QMouseEvent *event, EventFlags flags) {
 
-    EMIT_EVENT("secondary_or_drag_start");
+    EMIT_EVENT_0("secondary_or_drag_start");
 
 	/* If the click was outside of the primary selection, this is not
 	   a drag, start a secondary selection */
@@ -6461,7 +6461,7 @@ bool TextArea::TextDInSelection(const QPoint &p) {
  */
 void TextArea::secondaryStartAP(QMouseEvent *event, EventFlags flags) {
 
-    EMIT_EVENT("secondary_start");
+    EMIT_EVENT_0("secondary_start");
 
 	TextSelection *sel = &buffer_->secondary_;
     int anchor, row, column;
@@ -6500,7 +6500,7 @@ void TextArea::secondaryStartAP(QMouseEvent *event, EventFlags flags) {
  */
 void TextArea::secondaryOrDragAdjustAP(QMouseEvent *event, EventFlags flags) {
 
-    EMIT_EVENT("secondary_or_drag_adjust");
+    EMIT_EVENT_0("secondary_or_drag_adjust");
 
 	DragStates dragState = dragState_;
 
@@ -6535,7 +6535,7 @@ void TextArea::secondaryOrDragAdjustAP(QMouseEvent *event, EventFlags flags) {
 
 void TextArea::secondaryAdjustAP(QMouseEvent *event, EventFlags flags) {
 
-    EMIT_EVENT("secondary_adjust");
+    EMIT_EVENT_0("secondary_adjust");
 
 	DragStates dragState = dragState_;
 	bool rectDrag = flags & RectFlag;
@@ -7035,7 +7035,7 @@ void TextArea::TextDSetWrapMode(bool wrap, int wrapMargin) {
 
 void TextArea::deleteToEndOfLineAP(EventFlags flags) {
 
-    EMIT_EVENT("delete_to_end_of_line");
+    EMIT_EVENT_0("delete_to_end_of_line");
 
 	int insertPos = cursorPos_;
 	int endOfLine;
@@ -7066,7 +7066,7 @@ void TextArea::deleteToEndOfLineAP(EventFlags flags) {
 
 void TextArea::cutPrimaryAP(EventFlags flags) {
 
-    EMIT_EVENT("cut_primary");
+    EMIT_EVENT_0("cut_primary");
 
 	TextSelection *primary = &buffer_->primary_;
 
@@ -7130,7 +7130,7 @@ void TextArea::MovePrimarySelection(bool isColumnar) {
 
 void TextArea::moveToOrEndDragAP(QMouseEvent *event, EventFlags flags) {
 
-    EMIT_EVENT("move_to_or_end_drag");
+    EMIT_EVENT_0("move_to_or_end_drag");
 
 	DragStates dragState = dragState_;
 
@@ -7144,7 +7144,7 @@ void TextArea::moveToOrEndDragAP(QMouseEvent *event, EventFlags flags) {
 
 void TextArea::moveToAP(QMouseEvent *event, EventFlags flags) {
 
-    EMIT_EVENT("move_to");
+    EMIT_EVENT_0("move_to");
 
     DragStates dragState = dragState_;
 
@@ -7201,7 +7201,7 @@ void TextArea::moveToAP(QMouseEvent *event, EventFlags flags) {
 void TextArea::exchangeAP(QMouseEvent *event, EventFlags flags) {
 
     Q_UNUSED(event);
-    EMIT_EVENT("exchange");
+    EMIT_EVENT_0("exchange");
 
 	TextSelection *sec     = &buffer_->secondary_;
 	TextSelection *primary = &buffer_->primary_;
@@ -7398,7 +7398,7 @@ void TextArea::setSmartIndent(bool value) {
 
 void TextArea::pageLeftAP(EventFlags flags) {
 
-    EMIT_EVENT("page_left");
+    EMIT_EVENT_0("page_left");
 
     QFontMetrics fm(font_);
 	int insertPos    = cursorPos_;
@@ -7431,7 +7431,7 @@ void TextArea::pageLeftAP(EventFlags flags) {
 
 void TextArea::pageRightAP(EventFlags flags) {
 
-    EMIT_EVENT("page_right");
+    EMIT_EVENT_0("page_right");
 
     QFontMetrics fm(font_);
 	int insertPos      = cursorPos_;
@@ -7471,7 +7471,7 @@ void TextArea::pageRightAP(EventFlags flags) {
 
 void TextArea::nextPageAP(EventFlags flags) {
 
-    EMIT_EVENT("next_page");
+    EMIT_EVENT_0("next_page");
 
 	int lastTopLine = std::max<int>(1, nBufferLines_ - (nVisibleLines_ - 2) + P_cursorVPadding);
 	int insertPos = cursorPos_;
@@ -7566,7 +7566,7 @@ void TextArea::nextPageAP(EventFlags flags) {
 
 void TextArea::previousPageAP(EventFlags flags) {
 
-    EMIT_EVENT("previous_page");
+    EMIT_EVENT_0("previous_page");
 
 	int insertPos = cursorPos_;
 	int column = 0;
@@ -7980,7 +7980,7 @@ int TextArea::getColumns() const {
 
 void TextArea::insertStringAP(const QString &string, EventFlags flags) {
 
-    EMIT_EVENT("insert_string");
+    EMIT_EVENT_0("insert_string");
 
     cancelDrag();
     if (checkReadOnly()) {
@@ -8219,7 +8219,7 @@ int TextArea::TextVisibleWidth() const {
 
 void TextArea::beginningOfSelectionAP(EventFlags flags) {
 
-    EMIT_EVENT("beginning_of_selection");
+    EMIT_EVENT_0("beginning_of_selection");
 
     int start;
     int end;
@@ -8240,7 +8240,7 @@ void TextArea::beginningOfSelectionAP(EventFlags flags) {
 
 void TextArea::deleteSelectionAP(EventFlags flags) {
 
-    EMIT_EVENT("delete_selection");
+    EMIT_EVENT_0("delete_selection");
 
     cancelDrag();
     if (checkReadOnly()) {
@@ -8252,7 +8252,7 @@ void TextArea::deleteSelectionAP(EventFlags flags) {
 
 void TextArea::deleteNextWordAP(EventFlags flags) {
 
-    EMIT_EVENT("delete_next_word");
+    EMIT_EVENT_0("delete_next_word");
 
     int insertPos = TextDGetInsertPosition();
     int lineEnd = buffer_->BufEndOfLine(insertPos);
@@ -8286,7 +8286,7 @@ void TextArea::deleteNextWordAP(EventFlags flags) {
 
 void TextArea::endOfSelectionAP(EventFlags flags) {
 
-    EMIT_EVENT("end_of_selection");
+    EMIT_EVENT_0("end_of_selection");
 
     int start;
     int end;
@@ -8307,7 +8307,7 @@ void TextArea::endOfSelectionAP(EventFlags flags) {
 
 void TextArea::scrollUpAP(int count, ScrollUnits units, EventFlags flags) {
 
-    EMIT_EVENT("scroll_up");
+    EMIT_EVENT_0("scroll_up");
 
     int topLineNum;
     int horizOffset;
@@ -8323,7 +8323,7 @@ void TextArea::scrollUpAP(int count, ScrollUnits units, EventFlags flags) {
 
 void TextArea::scrollDownAP(int count, ScrollUnits units, EventFlags flags) {
 
-    EMIT_EVENT("scroll_down");
+    EMIT_EVENT_0("scroll_down");
 
     int topLineNum;
     int horizOffset;
@@ -8339,18 +8339,18 @@ void TextArea::scrollDownAP(int count, ScrollUnits units, EventFlags flags) {
 
 
 void TextArea::scrollLeftAP(int pixels, EventFlags flags) {
-    EMIT_EVENT("scroll_left");
+    EMIT_EVENT_0("scroll_left");
     horizontalScrollBar()->setValue(horizontalScrollBar()->value() - pixels);
 }
 
 void TextArea::scrollRightAP(int pixels, EventFlags flags) {
-    EMIT_EVENT("scroll_right");
+    EMIT_EVENT_0("scroll_right");
     horizontalScrollBar()->setValue(horizontalScrollBar()->value() + pixels);
 }
 
 void TextArea::scrollToLineAP(int line, EventFlags flags) {
 
-    EMIT_EVENT("scroll_to_line");
+    EMIT_EVENT_0("scroll_to_line");
 
     int topLineNum;
     int horizOffset;

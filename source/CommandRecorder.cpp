@@ -127,17 +127,18 @@ CommandRecorder *CommandRecorder::getInstance() {
  */
 bool CommandRecorder::eventFilter(QObject *obj, QEvent *event) {
 
+    Q_UNUSED(obj);
+
     if(event->type() == TextEditEvent::eventType) {
-        lastActionHook(obj, static_cast<TextEditEvent *>(event));
+        lastActionHook(static_cast<TextEditEvent *>(event));
     } else if(event->type() == WindowMenuEvent::eventType) {
-        lastActionHook(obj, static_cast<WindowMenuEvent *>(event));
+        lastActionHook(static_cast<WindowMenuEvent *>(event));
     }
 
     return false;
 }
 
-void CommandRecorder::lastActionHook(QObject *obj, const WindowMenuEvent *ev) {
-    Q_UNUSED(obj);
+void CommandRecorder::lastActionHook(const WindowMenuEvent *ev) {
 
     /* The last action is recorded for the benefit of repeating the last
        action.  Don't record repeat_macro and wipe out the real action */
@@ -157,9 +158,7 @@ void CommandRecorder::lastActionHook(QObject *obj, const WindowMenuEvent *ev) {
     }
 }
 
-void CommandRecorder::lastActionHook(QObject *obj, const TextEditEvent *ev) {
-
-    Q_UNUSED(obj);
+void CommandRecorder::lastActionHook(const TextEditEvent *ev) {
 
     /* The last action is recorded for the benefit of repeating the last
        action.  Don't record repeat_macro and wipe out the real action */

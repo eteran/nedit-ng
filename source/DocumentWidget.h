@@ -84,6 +84,8 @@ private Q_SLOTS:
 
 public Q_SLOTS:
     int findDef(TextArea *area, const QString &value, TagSearchMode search_type);
+    void action_Set_Language_Mode(const QString &languageMode);
+    void AddMarkEx(TextArea *area, QChar label);
     void bannerTimeoutProc();
     void BeginSmartIndentEx(int warn);
     void closePane();
@@ -93,19 +95,17 @@ public Q_SLOTS:
     void findDefinitionHelper(TextArea *area, const QString &arg, TagSearchMode search_type);
     void FindDefinition(TextArea *area, const QString &tagName);
     void gotoAP(TextArea *area, int lineNum, int column);
+    void gotoMark(TextArea *area, QChar label, bool extendSel);
     void GotoMatchingCharacter(TextArea *area);
     void moveDocument(MainWindow *fromWindow);
     void open(const QString &fullpath);
     void PrintStringEx(const std::string &string, const QString &jobName);
     void PrintWindow(TextArea *area, bool selectedOnly);
+    void SelectNumberedLineEx(TextArea *area, int lineNum);
     void SelectToMatchingCharacter(TextArea *area);
     void SetColors(const QString &textFg, const QString &textBg, const QString &selectFg, const QString &selectBg, const QString &hiliteFg, const QString &hiliteBg, const QString &lineNoFg, const QString &cursorFg);
-    void setLanguageMode(const QString &mode);
     void ShowStatsLine(bool state);
     void splitPane();
-    void AddMarkEx(TextArea *area, QChar label);
-    void SelectNumberedLineEx(TextArea *area, int lineNum);
-    void gotoMark(TextArea *area, QChar label, bool extendSel);
 
 public:
 	void movedCallback(TextArea *area);
@@ -163,10 +163,11 @@ public:
     void SetAutoScroll(int margin);
     void SetAutoWrap(WrapStyle state);
     void SetEmTabDist(int emTabDist);
-    void SetFonts(const QString &fontName, const QString &italicName, const QString &boldName, const QString &boldItalicName);
+    void action_Set_Fonts(const QString &fontName, const QString &italicName, const QString &boldName, const QString &boldItalicName);
     void SetHighlightSyntax(bool value);
     void SetIncrementalBackup(bool value);
     void SetLanguageMode(int mode, bool forceNewDefaults);
+    void action_Set_Language_Mode(const QString &languageMode, bool forceNewDefaults);
     void SetUserLocked(bool value);
     bool GetUserLocked() const;
     void SetOverstrike(bool overstrike);

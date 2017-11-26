@@ -6,13 +6,6 @@
 /**
  * @brief WindowMenuEvent::WindowMenuEvent
  * @param macroString
- */
-WindowMenuEvent::WindowMenuEvent(const QString &macroString) : QEvent(eventType), macroString_(macroString) {
-}
-
-/**
- * @brief WindowMenuEvent::WindowMenuEvent
- * @param macroString
  * @param arguments
  */
 WindowMenuEvent::WindowMenuEvent(const QString &macroString, const QStringList &arguments) : QEvent(eventType), macroString_(macroString), arguments_(arguments)  {

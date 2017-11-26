@@ -139,6 +139,8 @@ public:
 
 public:
     // internal variants of signals
+    void action_New_Window(DocumentWidget *document);
+    void action_Set_Auto_Indent(DocumentWidget *document, IndentStyle state);
     void action_Close(DocumentWidget *document, CloseMode mode = CloseMode::Prompt);
     void action_Close_Pane(DocumentWidget *document);
     void action_Delete(DocumentWidget *document);

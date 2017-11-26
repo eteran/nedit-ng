@@ -35,8 +35,8 @@ public:
     void setRecording(bool enabled);
 
 private:
-    void lastActionHook(QObject *obj, const TextEditEvent *ev);
-    void lastActionHook(QObject *obj, const WindowMenuEvent *ev);
+    void lastActionHook(const TextEditEvent *ev);
+    void lastActionHook(const WindowMenuEvent *ev);
     QString actionToString(const TextEditEvent *ev);
     QString actionToString(const WindowMenuEvent *ev);
 

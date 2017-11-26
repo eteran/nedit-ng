@@ -1278,7 +1278,7 @@ static bool setFontsMS(DocumentWidget *document, Arguments arguments, DataValue 
         return false;
     }
 
-    document->SetFonts(fontName, italicName, boldName, boldItalicName);
+    document->action_Set_Fonts(fontName, italicName, boldName, boldItalicName);
 
     *result = to_value();
     return true;
@@ -1381,7 +1381,7 @@ static bool setLanguageModeMS(DocumentWidget *document, Arguments arguments, Dat
         return false;
     }
 
-    document->SetLanguageMode(FindLanguageMode(languageMode), false);
+    document->action_Set_Language_Mode(languageMode, false);
     *result = to_value();
     return true;
 }

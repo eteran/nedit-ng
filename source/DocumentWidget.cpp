@@ -373,7 +373,7 @@ DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inDocument, c
     if(languageMode.isNull()) {
         document->DetermineLanguageMode(true);
     } else {
-        document->SetLanguageMode(FindLanguageMode(languageMode), true);
+        document->action_Set_Language_Mode(languageMode, true);
     }
 
     // update tab label and tooltip
@@ -707,11 +707,28 @@ void DocumentWidget::SetLanguageMode(int mode, bool forceNewDefaults) {
 	}
 }
 
-/*
-** Find and return the name of the appropriate languange mode for
-** the file in "window".  Returns a pointer to a string, which will
-** remain valid until a change is made to the language modes list.
-*/
+/**
+ * @brief DocumentWidget::action_Set_Language_Mode
+ * @param languageMode
+ * @param forceNewDefaults
+ */
+void DocumentWidget::action_Set_Language_Mode(const QString &languageMode, bool forceNewDefaults) {
+    emit_event("set_language_mode", languageMode);
+    SetLanguageMode(FindLanguageMode(languageMode), forceNewDefaults);
+}
+
+/**
+ * @brief DocumentWidget::action_Set_Language_Mode
+ * @param languageMode
+ */
+void DocumentWidget::action_Set_Language_Mode(const QString &languageMode) {
+    action_Set_Language_Mode(languageMode, false);
+}
+
+/**
+ * @brief DocumentWidget::matchLanguageMode
+ * @return
+ */
 int DocumentWidget::matchLanguageMode() {
 
 	/*... look for an explicit mode statement first */
@@ -722,8 +739,19 @@ int DocumentWidget::matchLanguageMode() {
         if (!LanguageModes[i].recognitionExpr.isNull()) {
             int beginPos;
             int endPos;
+            bool result = SearchString(first200,
+                                  LanguageModes[i].recognitionExpr,
+                                  Direction::Forward,
+                                  SearchType::Regex,
+                                  WrapMode::NoWrap,
+                                  0,
+                                  &beginPos,
+                                  &endPos,
+                                  nullptr,
+                                  nullptr,
+                                  QString());
 
-            if (SearchString(first200, LanguageModes[i].recognitionExpr, Direction::Forward, SearchType::Regex, WrapMode::NoWrap, 0, &beginPos, &endPos, nullptr, nullptr, QString())) {
+            if (result) {
                 return gsl::narrow<int>(i);
 			}
 		}
@@ -1156,7 +1184,7 @@ void DocumentWidget::reapplyLanguageMode(int mode, bool forceDefaults) {
 */
 void DocumentWidget::SetTabDist(int tabDist) {
 
-    EMIT_EVENT_ARG_1("set_tab_dist", QString::number(tabDist));
+    emit_event("set_tab_dist", QString::number(tabDist));
 
     if (buffer_->tabDist_ != tabDist) {
         int saveCursorPositions[MAX_PANES + 1];
@@ -1195,7 +1223,7 @@ void DocumentWidget::SetTabDist(int tabDist) {
 */
 void DocumentWidget::SetEmTabDist(int emTabDist) {
 
-    EMIT_EVENT_ARG_1("set_em_tab_dist", QString::number(emTabDist));
+    emit_event("set_em_tab_dist", QString::number(emTabDist));
 
     const std::vector<TextArea *> textAreas = textPanes();
     for(TextArea *area : textAreas) {
@@ -1237,6 +1265,9 @@ void DocumentWidget::SetAutoIndent(IndentStyle state) {
 ** Select auto-wrap mode, one of None, Newline, or Continuous
 */
 void DocumentWidget::SetAutoWrap(WrapStyle state) {
+
+    emit_event("set_wrap_text", to_string(state));
+
     const bool autoWrap = (state == WrapStyle::Newline);
     const bool contWrap = (state == WrapStyle::Continuous);
 
@@ -1295,15 +1326,6 @@ QString DocumentWidget::getWindowsMenuEntry() const {
     }
 
     return fullTitle;
-}
-
-void DocumentWidget::setLanguageMode(const QString &mode) {
-
-    // NOTE(eteran): this is inefficient, we started with the mode number
-    //               converted it to a string, and now we look up the number
-    //               again to pass to this function. We should just pass the
-    //               number and skip the round trip
-    SetLanguageMode(FindLanguageMode(mode), false);
 }
 
 /*
@@ -1713,6 +1735,10 @@ void DocumentWidget::Undo() {
             } else {
                 buffer_->BufUnselect();
             }
+
+            if(QPointer<TextArea> area = win->lastFocus_) {
+                area->syncronizeSelection();
+            }
         }
         MakeSelectionVisible(win->lastFocus_);
 
@@ -1753,15 +1779,21 @@ void DocumentWidget::Redo() {
         if (!buffer_->primary_.selected || GetPrefUndoModifiesSelection()) {
             /* position the cursor in the focus pane after the changed text
                to show the user where the undo was done */
-            auto area = win->lastFocus_;
-            area->TextSetCursorPos(redo.startPos + restoredTextLength);
+            if(auto area = win->lastFocus_) {
+                area->TextSetCursorPos(redo.startPos + restoredTextLength);
+            }
         }
+
         if (GetPrefUndoModifiesSelection()) {
 
             if (restoredTextLength > 0) {
                 buffer_->BufSelect(redo.startPos, redo.startPos + restoredTextLength);
             } else {
                 buffer_->BufUnselect();
+            }
+
+            if(QPointer<TextArea> area = win->lastFocus_) {
+                area->syncronizeSelection();
             }
         }
         MakeSelectionVisible(win->lastFocus_);
@@ -3428,6 +3460,9 @@ void DocumentWidget::executeNewlineMacroEx(SmartIndentEvent *cbInfo) {
 ** Update the menu to reflect the change of state.
 */
 void DocumentWidget::SetShowMatching(ShowMatchingStyle state) {
+
+    emit_event("set_show_matching", to_string(state));
+
     showMatchingStyle_ = state;
     if (IsTopDocument()) {
         if(auto win = MainWindow::fromDocument(this)) {
@@ -3741,6 +3776,7 @@ void DocumentWidget::SelectToMatchingCharacter(TextArea *area) {
     area->setAutoShowInsertPos(false);
     // select the text between the matching characters
     buf->BufSelect(startPos, endPos + 1);
+    area->syncronizeSelection();
     MakeSelectionVisible(area);
     area->setAutoShowInsertPos(true);
 }
@@ -4173,7 +4209,9 @@ void DocumentWidget::setWrapMargin(int margin) {
 ** Set the fonts for "window" from a font name, and updates the display.
 ** Also updates window->fontList_ which is used for statistics line.
 */
-void DocumentWidget::SetFonts(const QString &fontName, const QString &italicName, const QString &boldName, const QString &boldItalicName) {    
+void DocumentWidget::action_Set_Fonts(const QString &fontName, const QString &italicName, const QString &boldName, const QString &boldItalicName) {
+
+    emit_event("set_fonts", fontName, italicName, boldName, boldItalicName);
 
     // Check which fonts have changed
     bool primaryChanged = fontName != fontName_;
@@ -4290,6 +4328,10 @@ void DocumentWidget::SetBacklightChars(const QString &applyBacklightTypes) {
 }
 
 void DocumentWidget::SetShowStatisticsLine(bool value) {
+
+    // TODO(eteran): support no parameter...
+    emit_event("set_statistics_line", QString::fromLatin1(value ? "1" : "0"));
+
     // stats line is a shell-level item, so we toggle the button state
     // regardless of it's 'topness'
     if(auto win = MainWindow::fromDocument(this)) {
@@ -4308,6 +4350,10 @@ bool DocumentWidget::GetMatchSyntaxBased() const {
 }
 
 void DocumentWidget::SetMatchSyntaxBased(bool value) {
+
+    // TODO(eteran): support no parameter...
+    emit_event("set_match_syntax_based", QString::fromLatin1(value ? "1" : "0"));
+
     if(IsTopDocument()) {
         if(auto win = MainWindow::fromDocument(this)) {
             no_signals(win->ui.action_Matching_Syntax)->setChecked(value);
@@ -4325,6 +4371,8 @@ bool DocumentWidget::GetOverstrike() const {
 ** Set insert/overstrike mode
 */
 void DocumentWidget::SetOverstrike(bool overstrike) {
+
+    emit_event("set_overtype_mode", QString::fromLatin1(overstrike ? "1" : "0"));
 
     if(IsTopDocument()) {
         if(auto win = MainWindow::fromDocument(this)) {
@@ -4736,6 +4784,7 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
                 area->TextSetCursorPos(buf->cursorPosHint_);
                 if (reselectStart != -1) {
                     buf->BufSelect(reselectStart, reselectStart + gsl::narrow<int>(output_string.size()));
+                    area->syncronizeSelection();
                 }
             } else {
                 safeBufReplace(buf, &cmdData->leftPos, &cmdData->rightPos, output_string);
@@ -6741,7 +6790,7 @@ bool DocumentWidget::GetUseTabs() const {
 
 void DocumentWidget::SetUseTabs(bool value) {
 
-    EMIT_EVENT_ARG_1("set_use_tabs", QString::number(value));
+    emit_event("set_use_tabs", QString::number(value));
     buffer_->useTabs_ = value;
 }
 
@@ -6751,7 +6800,7 @@ bool DocumentWidget::GetHighlightSyntax() const {
 
 void DocumentWidget::SetHighlightSyntax(bool value) {
 
-    EMIT_EVENT_ARG_1("set_highlight_syntax", QString::number(value));
+    emit_event("set_highlight_syntax", QString::number(value));
 
     highlightSyntax_ = value;
 
@@ -6773,6 +6822,9 @@ bool DocumentWidget::GetMakeBackupCopy() const {
 }
 
 void DocumentWidget::SetMakeBackupCopy(bool value) {
+
+    emit_event("set_make_backup_copy", QString::fromLatin1(value ? "1" : "0"));
+
     if (IsTopDocument()) {
         if(auto win = MainWindow::fromDocument(this)) {
             no_signals(win->ui.action_Make_Backup_Copy)->setChecked(value);
@@ -6789,7 +6841,7 @@ bool DocumentWidget::GetIncrementalBackup() const {
 
 void DocumentWidget::SetIncrementalBackup(bool value) {
 
-    EMIT_EVENT_ARG_1("set_incremental_backup", QString::number(value));
+    emit_event("set_incremental_backup", QString::number(value));
 
     autoSave_ = value;
 
@@ -6805,7 +6857,7 @@ bool DocumentWidget::GetUserLocked() const {
 }
 
 void DocumentWidget::SetUserLocked(bool value) {
-    EMIT_EVENT_ARG_1("set_locked", QString::number(value));
+    emit_event("set_locked", QString::number(value));
 
     lockReasons_.setUserLocked(value);
 
@@ -6993,9 +7045,9 @@ void DocumentWidget::gotoMark(TextArea *area, QChar label, bool extendSel) {
         } else {
             buffer_->BufUnselect();
         }
-    }
 
-    // TODO(eteran): update X selections after updating the buffer
+        area->syncronizeSelection();
+    }
 
     /* Move the window into a pleasing position relative to the selection
        or cursor.   MakeSelectionVisible is not great with multi-line

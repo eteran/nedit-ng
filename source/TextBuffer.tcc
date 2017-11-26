@@ -233,7 +233,7 @@ void BasicTextBuffer<Ch, Tr>::BufInsertEx(int pos, Ch ch) noexcept {
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufReplaceEx(int start, int end, view_type text) noexcept {
 
-    // TODO(eteran): do same type of parameter normalization as BufRemove does?
+    // TODO(eteran): 2.0, do same type of parameter normalization as BufRemove does?
 
     const auto nInserted = gsl::narrow<int>(text.size());
 

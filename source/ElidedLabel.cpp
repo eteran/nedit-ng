@@ -2,7 +2,7 @@
 #include "ElidedLabel.h"
 #include <QResizeEvent>
 
-// TODO(eteran): maybe support scrolling the text if you select it with the
+// TODO(eteran): 2.0, maybe support scrolling the text if you select it with the
 //               mouse and pan left and right?
 
 ElidedLabel::ElidedLabel(QWidget *parent, Qt::WindowFlags f) : QLabel(parent, f), elideMode_(Qt::ElideRight) {
