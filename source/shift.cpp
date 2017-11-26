@@ -108,12 +108,12 @@ void ShiftSelectionEx(DocumentWidget *document, TextArea *area, ShiftDirection d
     // shift the text by the appropriate distance
     if (byTab) {
         int emTabDist = area->getEmulateTabs();
-        shiftDist = emTabDist == 0 ? buf->tabDist_ : emTabDist;
+        shiftDist = emTabDist == 0 ? buf->BufGetTabDist() : emTabDist;
     } else {
         shiftDist = 1;
     }
 
-    std::string shiftedText = ShiftTextEx(text, direction, buf->useTabs_, buf->tabDist_, shiftDist);
+    std::string shiftedText = ShiftTextEx(text, direction, buf->BufGetUseTabs(), buf->BufGetTabDist(), shiftDist);
 
     buf->BufReplaceSelectedEx(shiftedText);
 
@@ -137,7 +137,7 @@ static void shiftRectEx(DocumentWidget *document, TextArea *area, int direction,
     // Calculate the the left/right offset for the new rectangle
     if (byTab) {
         int emTabDist = area->getEmulateTabs();
-        offset = (emTabDist == 0) ? buf->tabDist_ : emTabDist;
+        offset = (emTabDist == 0) ? buf->BufGetTabDist() : emTabDist;
     } else {
         offset = 1;
     }
@@ -151,8 +151,8 @@ static void shiftRectEx(DocumentWidget *document, TextArea *area, int direction,
     /* Create a temporary buffer for the lines containing the selection, to
        hide the intermediate steps from the display update routines */
     TextBuffer tempBuf;
-    tempBuf.tabDist_ = buf->tabDist_;
-    tempBuf.useTabs_ = buf->useTabs_;
+    tempBuf.BufSetTabDist(buf->BufGetTabDist());
+    tempBuf.BufSetUseTabs(buf->BufGetUseTabs());
 
     std::string text = buf->BufGetRangeEx(selStart, selEnd);
     tempBuf.BufSetAllEx(text);
@@ -278,7 +278,12 @@ void FillSelectionEx(DocumentWidget *document, TextArea *area) {
     }
 
     // Fill the text
-    std::string filledText = fillParagraphsEx(text, rightMargin, buf->tabDist_, buf->useTabs_, false);
+    std::string filledText = fillParagraphsEx(
+                text,
+                rightMargin,
+                buf->BufGetTabDist(),
+                buf->BufGetUseTabs(),
+                false);
 
     // Replace the text in the window
     if (hasSelection && isRect) {
@@ -294,7 +299,7 @@ void FillSelectionEx(DocumentWidget *document, TextArea *area) {
     /* Find a reasonable cursor position.  Usually insertPos is best, but
        if the text was indented, positions can shift */
     if (hasSelection && isRect) {
-        area->TextSetCursorPos(buf->cursorPosHint_);
+        area->TextSetCursorPos(buf->BufCursorPosHint());
     } else {
         const auto len = gsl::narrow<int>(filledText.size());
         area->TextSetCursorPos(insertPos < left ? left : (insertPos > left + len ? left + len : insertPos));

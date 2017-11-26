@@ -4405,7 +4405,7 @@ static bool tabDistMV(DocumentWidget *document, Arguments arguments, DataValue *
     Q_UNUSED(arguments);
     Q_UNUSED(errMsg);
 
-    *result = to_value(document->buffer_->tabDist_);
+    *result = to_value(document->buffer_->BufGetTabDist());
     return true;
 }
 
@@ -4425,7 +4425,7 @@ static bool useTabsMV(DocumentWidget *document, Arguments arguments, DataValue *
     Q_UNUSED(arguments);
     Q_UNUSED(errMsg);
 
-    *result = to_value(document->buffer_->useTabs_);
+    *result = to_value(document->buffer_->BufGetUseTabs());
     return true;
 }
 

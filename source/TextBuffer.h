@@ -38,42 +38,7 @@
 template <class Ch = char, class Tr = std::char_traits<Ch>>
 class BasicTextBuffer;
 
-template <class Ch, class Tr>
-class BasicTextBufferIterator {
-public:
-    BasicTextBufferIterator() = default;
-    BasicTextBufferIterator(const BasicTextBuffer<Ch, Tr> *buffer, int index) : buffer_(buffer), index_(index) {}
-    BasicTextBufferIterator(const BasicTextBufferIterator &) = default;
-    BasicTextBufferIterator& operator=(const BasicTextBufferIterator &) = default;
-
-public:
-    Ch operator*() const       { return buffer_->BufGetCharacter(index_); }
-    Ch operator[](int n) const { return buffer_->BufGetCharacter(index_ + n); }
-
-public:
-    BasicTextBufferIterator& operator++() { ++index_; }
-    BasicTextBufferIterator& operator--() { --index_; }
-    BasicTextBufferIterator& operator++(int) { BasicTextBufferIterator temp{*this}; ++(*this); return temp; }
-    BasicTextBufferIterator& operator--(int) { BasicTextBufferIterator temp{*this}; --(*this); return temp; }
-
-public:
-    BasicTextBufferIterator& operator+=(int n) { index_ += n; return *this; }
-    BasicTextBufferIterator& operator-=(int n) { index_ -= n; return *this; }
-    BasicTextBufferIterator operator+(int n) const { BasicTextBufferIterator temp{*this}; temp += n; return temp; }
-    BasicTextBufferIterator operator-(int n) const { BasicTextBufferIterator temp{*this}; temp -= n; return temp; }
-
-public:
-    int operator-(const BasicTextBufferIterator &rhs) const { assert(buffer_ == rhs.buffer_); return index_ - rhs.index_; }
-
-public:
-    bool operator==(const BasicTextBufferIterator &rhs) const { return buffer_ == rhs.buffer_ && index_ == rhs.index_; }
-    bool operator!=(const BasicTextBufferIterator &rhs) const { return buffer_ != rhs.buffer_ || index_ != rhs.index_; }
-
-private:
-    const BasicTextBuffer<Ch, Tr> *buffer_ = nullptr;
-    int index_ = 0;
-};
-
+#include "TextBufferIterator.h"
 
 template <class Ch, class Tr>
 class BasicTextBuffer {
@@ -124,10 +89,12 @@ public:
     static int BufExpandTab(int indent, Ch outStr[MAX_EXP_CHAR_LEN], int tabDist) noexcept;
 
 public:
+    bool BufGetUseTabs() const noexcept;
     bool BufIsEmpty() const noexcept;
     bool BufSearchBackwardEx(int startPos, view_type searchChars, int *foundPos) const noexcept;
     bool BufSearchForwardEx(int startPos, view_type searchChars, int *foundPos) const noexcept;
     Ch BufGetCharacter(int pos) const noexcept;
+    Ch& BufGetCharacter(int pos);
     const Ch *BufAsString() noexcept;
     int BufCmpEx(int pos, view_type cmpText) const noexcept;
     int BufCountBackwardNLines(int startPos, int nLines) const noexcept;
@@ -135,6 +102,7 @@ public:
     int BufCountForwardDispChars(int lineStartPos, int nChars) const noexcept;
     int BufCountForwardNLines(int startPos, int nLines) const noexcept;
     int BufCountLines(int startPos, int endPos) const noexcept;
+    int BufCursorPosHint() const noexcept;
     int BufEndOfLine(int pos) const noexcept;
     int BufGetEmptySelectionPos(int *start, int *end, bool *isRect, int *rectStart, int *rectEnd) const noexcept;
     int BufGetExpandedChar(int pos, int indent, Ch outStr[MAX_EXP_CHAR_LEN]) const noexcept;
@@ -143,6 +111,7 @@ public:
     int BufGetSecSelectPos(int *start, int *end, bool *isRect, int *rectStart, int *rectEnd) const noexcept;
     int BufGetSelectionPos(int *start, int *end, bool *isRect, int *rectStart, int *rectEnd) const noexcept;
     int BufGetTabDistance() const noexcept;
+    int BufGetTabDist() noexcept;
     int BufStartOfLine(int pos) const noexcept;
     string_type BufGetAllEx() const;
     string_type BufGetRangeEx(int start, int end) const;
@@ -153,15 +122,15 @@ public:
     void BufAddHighPriorityModifyCB(bufModifyCallbackProc bufModifiedCB, void *user);
     void BufAddModifyCB(bufModifyCallbackProc bufModifiedCB, void *user);
     void BufAddPreDeleteCB(bufPreDeleteCallbackProc bufPreDeleteCB, void *user);
-    void BufAppendEx(view_type text) noexcept;
     void BufAppendEx(Ch ch) noexcept;
+    void BufAppendEx(view_type text) noexcept;
     void BufCheckDisplay(int start, int end) const noexcept;
     void BufClearRect(int start, int end, int rectStart, int rectEnd) noexcept;
     void BufCopyFromBuf(BasicTextBuffer *fromBuf, int fromStart, int fromEnd, int toPos) noexcept;
     void BufHighlight(int start, int end) noexcept;
     void BufInsertColEx(int column, int startPos, view_type text, int *charsInserted, int *charsDeleted) noexcept;
-    void BufInsertEx(int pos, view_type text) noexcept;
     void BufInsertEx(int pos, Ch ch) noexcept;
+    void BufInsertEx(int pos, view_type text) noexcept;
     void BufOverlayRectEx(int startPos, int rectStart, int rectEnd, view_type text, int *charsInserted, int *charsDeleted) noexcept;
     void BufRectHighlight(int start, int end, int rectStart, int rectEnd) noexcept;
     void BufRectSelect(int start, int end, int rectStart, int rectEnd) noexcept;
@@ -175,14 +144,20 @@ public:
     void BufReplaceRectEx(int start, int end, int rectStart, int rectEnd, view_type text);
     void BufReplaceSecSelectEx(view_type text) noexcept;
     void BufReplaceSelectedEx(view_type text) noexcept;
-    void BufSecRectSelect(int start, int end, int rectStart, int rectEnd) noexcept;
     void BufSecondarySelect(int start, int end) noexcept;
     void BufSecondaryUnselect() noexcept;
+    void BufSecRectSelect(int start, int end, int rectStart, int rectEnd) noexcept;
     void BufSelect(int start, int end) noexcept;
     void BufSetAllEx(view_type text);
     void BufSetTabDistance(int tabDist) noexcept;
+    void BufSetUseTabs(bool useTabs) noexcept;
     void BufUnhighlight() noexcept;
     void BufUnselect() noexcept;
+
+public:
+    /* unlike BufSetTabDistance, this version doesn't execute all of the
+     * modification callbacks */
+    void BufSetTabDist(int dist) noexcept;
 
 public:
     // TODO(eteran): 2.0, implement a more complete STL style interface.
@@ -238,10 +213,10 @@ private:
     static string_type copyLineEx(Ran first, Ran last);
 
 private:
-    Ch *buf_;      // allocated memory where the text is stored
-    int gapStart_; // points to the first character of the gap
-    int gapEnd_;   // points to the first char after the gap
-    int length_;   // length of the text in the buffer (the length of the buffer itself must be calculated: gapEnd gapStart + length)
+    Ch *buf_;           // allocated memory where the text is stored
+    int gapStart_;      // points to the first character of the gap
+    int gapEnd_;        // points to the first char after the gap
+    int length_;        // length of the text in the buffer (the length of the buffer itself must be calculated: gapEnd gapStart + length)
     std::deque<std::pair<bufPreDeleteCallbackProc, void *>> preDeleteProcs_; // procedure to call before text is deleted from the buffer; at most one is supported.
     std::deque<std::pair<bufModifyCallbackProc, void *>> modifyProcs_;       // procedures to call when buffer is modified to redisplay contents
 
@@ -249,10 +224,12 @@ public:
 	// TODO(eteran): accessors
     TextSelection primary_;          // highlighted areas
     TextSelection secondary_;
-    TextSelection highlight_;
-    int tabDist_;                    // equiv. number of characters in a tab
-    bool useTabs_;                   // True if buffer routines are allowed to use tabs for padding in rectangular operations
-    int cursorPosHint_;              // hint for reasonable cursor position after a buffer modification operation    
+    TextSelection highlight_;    
+
+private:
+    int tabDist_;       // equiv. number of characters in a tab
+    bool useTabs_;      // True if buffer routines are allowed to use tabs for padding in rectangular operations
+    int cursorPosHint_; // hint for reasonable cursor position after a buffer modification operation
 };
 
 #include "TextBuffer.tcc"

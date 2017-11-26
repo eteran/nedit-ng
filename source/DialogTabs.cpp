@@ -25,7 +25,7 @@ DialogTabs::DialogTabs(DocumentWidget *document, QWidget *parent, Qt::WindowFlag
 		tabDist   = GetPrefTabDist(PLAIN_LANGUAGE_MODE);
 	} else {
 		emTabDist = ui.editEmulatedTabSpacing->text().toInt();
-        useTabs   = document->buffer_->useTabs_;
+        useTabs   = document->buffer_->BufGetUseTabs();
         tabDist   = document->buffer_->BufGetTabDistance();
 	}
 	

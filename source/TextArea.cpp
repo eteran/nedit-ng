@@ -236,7 +236,7 @@ void findTextMargins(TextBuffer *buf, int start, int end, int *leftMargin, int *
 			width = 0;
 			inWhite = true;
 		} else
-            width += TextBuffer::BufCharWidth(c, width, buf->tabDist_);
+            width += TextBuffer::BufCharWidth(c, width, buf->BufGetTabDist());
 	}
 
 	if (width > maxWidth) {
@@ -1901,7 +1901,7 @@ void TextArea::wrappedLineCounter(const TextBuffer *buf, int startPos, int maxPo
 	int i;
 	int foundBreak;
 	int nLines = 0;
-	int tabDist = buffer_->tabDist_;
+    int tabDist = buffer_->BufGetTabDist();
 
 
 	/* If the font is fixed, or there's a wrap margin set, it's more efficient
@@ -2042,7 +2042,7 @@ int TextArea::measurePropChar(char ch, int colNum, int pos) const {
     char expChar[TextBuffer::MAX_EXP_CHAR_LEN];
     const std::shared_ptr<TextBuffer> &styleBuf = styleBuffer_;
 
-    int charLen = TextBuffer::BufExpandCharacter(ch, colNum, expChar, buffer_->tabDist_);
+    int charLen = TextBuffer::BufExpandCharacter(ch, colNum, expChar, buffer_->BufGetTabDist());
 
 	if(!styleBuf) {
 		style = 0;
@@ -2821,7 +2821,7 @@ int TextArea::measureVisLine(int visLineNum) {
     char expandedChar[TextBuffer::MAX_EXP_CHAR_LEN];
     QFontMetrics fm(font_);
 
-	if (!styleBuffer_) {
+    if (!styleBuffer_) {
 		for (i = 0; i < lineLen; i++) {
 			len = buffer_->BufGetExpandedChar(lineStartPos + i, charCount, expandedChar);
             width += fm.width(asciiCodec->toUnicode(expandedChar, len));
@@ -3176,7 +3176,7 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
         baseChar = '\0';
         charLen = (charIndex >= lineLen) ?
                     1 :
-                    TextBuffer::BufExpandCharacter(baseChar = lineStr[charIndex], outIndex, expandedChar, buffer_->tabDist_);
+                    TextBuffer::BufExpandCharacter(baseChar = lineStr[charIndex], outIndex, expandedChar, buffer_->BufGetTabDist());
 
 		style = styleOfPos(lineStartPos, lineLen, charIndex, outIndex + dispIndexOffset, baseChar);
 		charWidth = charIndex >= lineLen ? stdCharWidth : stringWidth(expandedChar, charLen, style);
@@ -3217,7 +3217,7 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 		baseChar = '\0';
         charLen = (charIndex >= lineLen) ?
                     1 :
-                    TextBuffer::BufExpandCharacter(baseChar = lineStr[charIndex], outIndex, expandedChar, buffer_->tabDist_);
+                    TextBuffer::BufExpandCharacter(baseChar = lineStr[charIndex], outIndex, expandedChar, buffer_->BufGetTabDist());
 
 		int charStyle = styleOfPos(lineStartPos, lineLen, charIndex, outIndex + dispIndexOffset, baseChar);
 
@@ -4228,7 +4228,7 @@ int TextArea::TextDPositionToXY(int pos, int *x, int *y) {
     xStep = rect_.left() - horizOffset_;
 	outIndex = 0;
     for (charIndex = 0; charIndex < pos - lineStartPos; charIndex++) {
-        const int charLen   = TextBuffer::BufExpandCharacter(lineStr[charIndex], outIndex, expandedChar, buffer_->tabDist_);
+        const int charLen   = TextBuffer::BufExpandCharacter(lineStr[charIndex], outIndex, expandedChar, buffer_->BufGetTabDist());
         const int charStyle = styleOfPos(lineStartPos, lineLen, charIndex, outIndex, lineStr[charIndex]);
 
 		xStep += stringWidth(expandedChar, charLen, charStyle);
@@ -4445,7 +4445,7 @@ void TextArea::CancelBlockDrag() {
         buffer_->BufSelect(origSel->start, origSel->end);
         syncronizeSelection();
     }
-    TextDSetInsertPosition(buffer_->cursorPosHint_);
+    TextDSetInsertPosition(buffer_->BufCursorPosHint());
 
     callMovedCBs();
 
@@ -4737,7 +4737,7 @@ void TextArea::TextInsertAtCursorEx(view::string_view chars, bool allowPendingDe
 
 	auto it = chars.begin();
 	for (; it != chars.end() && *it != '\n'; it++) {
-        colNum += TextBuffer::BufCharWidth(*it, colNum, buffer_->tabDist_);
+        colNum += TextBuffer::BufCharWidth(*it, colNum, buffer_->BufGetTabDist());
 	}
 
     const bool singleLine = (it == chars.end());
@@ -4755,20 +4755,20 @@ void TextArea::TextInsertAtCursorEx(view::string_view chars, bool allowPendingDe
 	   for less redraw. */
 	if (replaceSel) {
 		buffer_->BufReplaceSelectedEx(wrappedText);
-		TextDSetInsertPosition(buffer_->cursorPosHint_);
+        TextDSetInsertPosition(buffer_->BufCursorPosHint());
 	} else if (P_overstrike) {
 		if (breakAt == 0 && singleLine)
 			TextDOverstrikeEx(wrappedText);
 		else {
 			buffer_->BufReplaceEx(cursorPos - breakAt, cursorPos, wrappedText);
-			TextDSetInsertPosition(buffer_->cursorPosHint_);
+            TextDSetInsertPosition(buffer_->BufCursorPosHint());
 		}
 	} else {
 		if (breakAt == 0) {
 			TextDInsertEx(wrappedText);
 		} else {
 			buffer_->BufReplaceEx(cursorPos - breakAt, cursorPos, wrappedText);
-			TextDSetInsertPosition(buffer_->cursorPosHint_);
+            TextDSetInsertPosition(buffer_->BufCursorPosHint());
 		}
 	}
 	checkAutoShowInsertPos();
@@ -4806,7 +4806,7 @@ std::string TextArea::wrapTextEx(view::string_view startLine, view::string_view 
     int breakAt;
     int charsAdded;
     int firstBreak = -1;
-    int tabDist = buffer_->tabDist_;
+    int tabDist = buffer_->BufGetTabDist();
 	std::string wrappedText;
 
 	// Create a temporary text buffer and load it with the strings
@@ -4874,7 +4874,7 @@ void TextArea::TextDOverstrikeEx(view::string_view text) {
     int startIndent = buffer_->BufCountDispChars(lineStart, startPos);
     int indent = startIndent;
 	for (char ch : text) {
-        indent += TextBuffer::BufCharWidth(ch, indent, buffer_->tabDist_);
+        indent += TextBuffer::BufCharWidth(ch, indent, buffer_->BufGetTabDist());
 	}
     int endIndent = indent;
 
@@ -4887,7 +4887,7 @@ void TextArea::TextDOverstrikeEx(view::string_view text) {
 		char ch = buffer_->BufGetCharacter(p);
 		if (ch == '\n')
 			break;
-        indent += TextBuffer::BufCharWidth(ch, indent, buffer_->tabDist_);
+        indent += TextBuffer::BufCharWidth(ch, indent, buffer_->BufGetTabDist());
 		if (indent == endIndent) {
 			p++;
 			break;
@@ -4994,9 +4994,9 @@ int TextArea::wrapLine(TextBuffer *buf, int bufOffset, int lineStartPos, int lin
 std::string TextArea::createIndentStringEx(TextBuffer *buf, int bufOffset, int lineStartPos, int lineEndPos, int *column) {
 
 	int indent = -1;
-	int tabDist = buffer_->tabDist_;
+    int tabDist = buffer_->BufGetTabDist();
 	int i;
-	int useTabs = buffer_->useTabs_;
+    int useTabs = buffer_->BufGetUseTabs();
 	
 	/* If smart indent is on, call the smart indent callback.  It is not
 	   called when multi-line changes are being made (lineStartPos != 0),
@@ -5142,7 +5142,7 @@ int TextArea::deleteEmulatedTab() {
 	startPos = lineStart;
 	for (pos = lineStart; pos < insertPos; pos++) {
 		c = buffer_->BufGetCharacter(pos);
-        indent += TextBuffer::BufCharWidth(c, indent, buffer_->tabDist_);
+        indent += TextBuffer::BufCharWidth(c, indent, buffer_->BufGetTabDist());
 		if (indent > toIndent)
 			break;
 		startPosIndent = indent;
@@ -5192,7 +5192,7 @@ bool TextArea::deletePendingSelection() {
 
 	if (buffer_->primary_.selected) {
 		buffer_->BufRemoveSelected();
-		TextDSetInsertPosition(buffer_->cursorPosHint_);
+        TextDSetInsertPosition(buffer_->BufCursorPosHint());
 		checkAutoShowInsertPos();
 		callCursorMovementCBs();
 		return true;
@@ -5388,7 +5388,7 @@ void TextArea::TextCutClipboard() {
 
 	CopyToClipboard();
 	buffer_->BufRemoveSelected();
-	TextDSetInsertPosition(buffer_->cursorPosHint_);
+    TextDSetInsertPosition(buffer_->BufCursorPosHint());
 	checkAutoShowInsertPos();
 }
 
@@ -5468,7 +5468,7 @@ void TextArea::simpleInsertAtCursorEx(view::string_view chars, bool allowPending
 
 	if (allowPendingDelete && pendingSelection()) {
 		buffer_->BufReplaceSelectedEx(chars);
-		TextDSetInsertPosition(buffer_->cursorPosHint_);
+        TextDSetInsertPosition(buffer_->BufCursorPosHint());
 	} else if (P_overstrike) {
 
 		size_t index = chars.find('\n');
@@ -5503,7 +5503,7 @@ void TextArea::copyPrimaryAP(EventFlags flags) {
 		insertPos = cursorPos_;
 		int col = buffer_->BufCountDispChars(buffer_->BufStartOfLine(insertPos), insertPos);
 		buffer_->BufInsertColEx(col, insertPos, textToCopy, nullptr, nullptr);
-		TextDSetInsertPosition(buffer_->cursorPosHint_);
+        TextDSetInsertPosition(buffer_->BufCursorPosHint());
 
 		checkAutoShowInsertPos();
 	} else if (primary->selected) {
@@ -5550,7 +5550,7 @@ void TextArea::InsertPrimarySelection(bool isColumnar) {
 			&column);
 
 		buffer_->BufInsertColEx(column, cursorLineStart, string, nullptr, nullptr);
-		TextDSetInsertPosition(buffer_->cursorPosHint_);
+        TextDSetInsertPosition(buffer_->BufCursorPosHint());
 	} else {
 		TextInsertAtCursorEx(string, false, P_autoWrapPastedText);
 	}
@@ -5821,8 +5821,8 @@ void TextArea::processTabAP(EventFlags flags) {
 	auto outPtr = std::back_inserter(outStr);
 	indent = startIndent;
 	while (indent < toIndent) {
-        int tabWidth = TextBuffer::BufCharWidth('\t', indent, buffer_->tabDist_);
-		if (buffer_->useTabs_ && tabWidth > 1 && indent + tabWidth <= toIndent) {
+        int tabWidth = TextBuffer::BufCharWidth('\t', indent, buffer_->BufGetTabDist());
+        if (buffer_->BufGetUseTabs() && tabWidth > 1 && indent + tabWidth <= toIndent) {
 			*outPtr++ = '\t';
 			indent += tabWidth;
 		} else {
@@ -5940,7 +5940,7 @@ int TextArea::xyToPos(int x, int y, int posType) {
     xStep = rect_.left() - horizOffset_;
 	outIndex = 0;
 	for (charIndex = 0; charIndex < lineLen; charIndex++) {
-        const int charLen   = TextBuffer::BufExpandCharacter(lineStr[charIndex], outIndex, expandedChar, buffer_->tabDist_);
+        const int charLen   = TextBuffer::BufExpandCharacter(lineStr[charIndex], outIndex, expandedChar, buffer_->BufGetTabDist());
         const int charStyle = styleOfPos(lineStart, lineLen, charIndex, outIndex, lineStr[charIndex]);
         const int charWidth = stringWidth(expandedChar, charLen, charStyle);
 
@@ -6349,13 +6349,13 @@ void TextArea::copyToAP(QMouseEvent *event, EventFlags flags) {
             int insertPos = cursorPos_;
             Q_UNUSED(insertPos);
             buffer_->BufReplaceSelectedEx(textToCopy);
-            TextDSetInsertPosition(buffer_->cursorPosHint_);
+            TextDSetInsertPosition(buffer_->BufCursorPosHint());
         } else if (rectangular) {
             int insertPos = cursorPos_;
             int lineStart = buffer_->BufStartOfLine(insertPos);
             int column = buffer_->BufCountDispChars(lineStart, insertPos);
             buffer_->BufInsertColEx(column, lineStart, textToCopy, nullptr, nullptr);
-            TextDSetInsertPosition(buffer_->cursorPosHint_);
+            TextDSetInsertPosition(buffer_->BufCursorPosHint());
         } else {
             TextInsertAtCursorEx(textToCopy, true, P_autoWrapPastedText);
         }
@@ -6585,8 +6585,8 @@ void TextArea::BeginBlockDrag() {
 	/* Save a copy of the whole text buffer as a backup, and for
 	   deriving changes */
     dragOrigBuf_ = std::make_unique<TextBuffer>();
-	dragOrigBuf_->BufSetTabDistance(buffer_->tabDist_);
-	dragOrigBuf_->useTabs_ = buffer_->useTabs_;
+    dragOrigBuf_->BufSetTabDistance(buffer_->BufGetTabDist());
+    dragOrigBuf_->BufSetUseTabs(buffer_->BufGetUseTabs());
 
     dragOrigBuf_->BufSetAllEx(buffer_->BufGetAllEx());
 
@@ -6624,8 +6624,8 @@ void TextArea::BeginBlockDrag() {
         TextBuffer testBuf;
 
 		std::string testText = buffer_->BufGetRangeEx(sel->start, sel->end);
-        testBuf.BufSetTabDistance(buffer_->tabDist_);
-        testBuf.useTabs_ = buffer_->useTabs_;
+        testBuf.BufSetTabDistance(buffer_->BufGetTabDist());
+        testBuf.BufSetUseTabs(buffer_->BufGetUseTabs());
         testBuf.BufSetAllEx(testText);
 
         testBuf.BufRemoveRect(0, sel->end - sel->start, sel->rectStart, sel->rectEnd);
@@ -6723,8 +6723,8 @@ void TextArea::BlockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
 	   range of characters which might be modified in this drag step
 	   (this could be tighter, but hopefully it's not too slow) */
     TextBuffer tempBuf;
-    tempBuf.tabDist_ = buffer_->tabDist_;
-    tempBuf.useTabs_ = buffer_->useTabs_;
+    tempBuf.BufSetTabDist(buffer_->BufGetTabDist());
+    tempBuf.BufSetUseTabs(buffer_->BufGetUseTabs());
 	tempStart         = min3(dragInsertPos_, origSel->start, buffer_->BufCountBackwardNLines(firstChar_, nLines + 2));
 	tempEnd           = buffer_->BufCountForwardNLines(max3(dragInsertPos_, origSel->start, lastChar_), nLines + 2) + origSel->end - origSel->start;
 
@@ -7083,7 +7083,7 @@ void TextArea::cutPrimaryAP(EventFlags flags) {
 		insertPos = cursorPos_;
 		int col = buffer_->BufCountDispChars(buffer_->BufStartOfLine(insertPos), insertPos);
 		buffer_->BufInsertColEx(col, insertPos, textToCopy, nullptr, nullptr);
-		TextDSetInsertPosition(buffer_->cursorPosHint_);
+        TextDSetInsertPosition(buffer_->BufCursorPosHint());
 
 		buffer_->BufRemoveSelected();
 		checkAutoShowInsertPos();
@@ -7171,13 +7171,13 @@ void TextArea::moveToAP(QMouseEvent *event, EventFlags flags) {
             int insertPos = cursorPos_;
             Q_UNUSED(insertPos);
             buffer_->BufReplaceSelectedEx(textToCopy);
-            TextDSetInsertPosition(buffer_->cursorPosHint_);
+            TextDSetInsertPosition(buffer_->BufCursorPosHint());
         } else if (rectangular) {
             int insertPos = cursorPos_;
             int lineStart = buffer_->BufStartOfLine(insertPos);
             int column = buffer_->BufCountDispChars(lineStart, insertPos);
             buffer_->BufInsertColEx(column, lineStart, textToCopy, nullptr, nullptr);
-            TextDSetInsertPosition(buffer_->cursorPosHint_);
+            TextDSetInsertPosition(buffer_->BufCursorPosHint());
         } else {
             TextInsertAtCursorEx(textToCopy, true, P_autoWrapPastedText);
         }
@@ -7248,7 +7248,7 @@ void TextArea::exchangeAP(QMouseEvent *event, EventFlags flags) {
 
 	buffer_->BufSecondaryUnselect();
 	if (secWasRect) {
-		TextDSetInsertPosition(buffer_->cursorPosHint_);
+        TextDSetInsertPosition(buffer_->BufCursorPosHint());
 	} else {
 		buffer_->BufSelect(newPrimaryStart, newPrimaryEnd);
         syncronizeSelection();
@@ -8044,7 +8044,7 @@ int TextArea::TextDLineAndColToPos(int lineNum, int column) {
         for (int i = lineStart; i < lineEnd; i++, charIndex++) {
 
             char expandedChar[TextBuffer::MAX_EXP_CHAR_LEN];
-            charLen = TextBuffer::BufExpandCharacter(lineStr[charIndex], outIndex, expandedChar, buffer_->tabDist_);
+            charLen = TextBuffer::BufExpandCharacter(lineStr[charIndex], outIndex, expandedChar, buffer_->BufGetTabDist());
 
             if (outIndex + charLen >= column) {
                 break;

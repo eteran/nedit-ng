@@ -493,7 +493,7 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 
     // Set the requested hardware tab distance and useTabs in the text buffer
     buffer_->BufSetTabDistance(GetPrefTabDist(PLAIN_LANGUAGE_MODE));
-    buffer_->useTabs_ = GetPrefInsertTabs();
+    buffer_->BufSetUseTabs(GetPrefInsertTabs());
 
     static int n = 0;
     area->setObjectName(tr("TextArea_%1").arg(n++));
@@ -1186,7 +1186,7 @@ void DocumentWidget::SetTabDist(int tabDist) {
 
     emit_event("set_tab_dist", QString::number(tabDist));
 
-    if (buffer_->tabDist_ != tabDist) {
+    if (buffer_->BufGetTabDist() != tabDist) {
         int saveCursorPositions[MAX_PANES + 1];
         int saveVScrollPositions[MAX_PANES + 1];
         int saveHScrollPositions[MAX_PANES + 1];
@@ -4781,7 +4781,7 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
                 int reselectStart = buf->primary_.rectangular ? -1 : buf->primary_.start;
                 buf->BufReplaceSelectedEx(output_string);
 
-                area->TextSetCursorPos(buf->cursorPosHint_);
+                area->TextSetCursorPos(buf->BufCursorPosHint());
                 if (reselectStart != -1) {
                     buf->BufSelect(reselectStart, reselectStart + gsl::narrow<int>(output_string.size()));
                     area->syncronizeSelection();
@@ -6785,13 +6785,13 @@ QString DocumentWidget::GetWindowDelimitersEx() const {
 }
 
 bool DocumentWidget::GetUseTabs() const {
-    return buffer_->useTabs_;
+    return buffer_->BufGetUseTabs();
 }
 
 void DocumentWidget::SetUseTabs(bool value) {
 
     emit_event("set_use_tabs", QString::number(value));
-    buffer_->useTabs_ = value;
+    buffer_->BufSetUseTabs(value);
 }
 
 bool DocumentWidget::GetHighlightSyntax() const {

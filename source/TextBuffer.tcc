@@ -182,6 +182,21 @@ Ch BasicTextBuffer<Ch, Tr>::BufGetCharacter(int pos) const noexcept {
 }
 
 /*
+** Return the character at buffer position "pos".  Positions start at 0.
+*/
+template <class Ch, class Tr>
+Ch &BasicTextBuffer<Ch, Tr>::BufGetCharacter(int pos) {
+
+    if (pos < 0 || pos >= length_)
+        throw std::out_of_range("out_of_range");
+
+    if (pos < gapStart_)
+        return buf_[pos];
+
+    return buf_[pos + (gapEnd_ - gapStart_)];
+}
+
+/*
 ** Insert null-terminated string "text" at position "pos" in "buf"
 */
 template <class Ch, class Tr>
@@ -2325,6 +2340,31 @@ BasicTextBuffer<Ch, Tr>::BasicTextBuffer(int requestedSize) : gapStart_(0), gapE
 #ifdef PURIFY
     std::fill(&buf_[gapStart_], &buf_[gapEnd_], Ch('.'));
 #endif
+}
+
+template <class Ch, class Tr>
+int BasicTextBuffer<Ch, Tr>::BufCursorPosHint() const noexcept {
+    return cursorPosHint_;
+}
+
+template <class Ch, class Tr>
+void BasicTextBuffer<Ch, Tr>::BufSetUseTabs(bool useTabs) noexcept {
+    useTabs_ = useTabs;
+}
+
+template <class Ch, class Tr>
+bool BasicTextBuffer<Ch, Tr>::BufGetUseTabs() const noexcept {
+    return useTabs_;
+}
+
+template <class Ch, class Tr>
+void BasicTextBuffer<Ch, Tr>::BufSetTabDist(int dist) noexcept {
+    tabDist_ = dist;
+}
+
+template <class Ch, class Tr>
+int BasicTextBuffer<Ch, Tr>::BufGetTabDist() noexcept {
+    return tabDist_;
 }
 
 #endif
