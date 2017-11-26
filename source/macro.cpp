@@ -970,7 +970,7 @@ static bool findAgainMS(DocumentWidget *document, Arguments arguments, DataValue
     document = MacroRunDocumentEx();
 
     Direction direction = searchDirection(arguments, 0);
-    WrapMode        wrap      = searchWrap(arguments, 0);
+    WrapMode wrap       = searchWrap(arguments, 0);
 
     if(auto window = MainWindow::fromDocument(document)) {
         window->action_Find_Again(document, direction, wrap);
@@ -988,8 +988,8 @@ static bool findSelectionMS(DocumentWidget *document, Arguments arguments, DataV
     document = MacroRunDocumentEx();
 
     Direction direction = searchDirection(arguments, 0);
-    SearchType      type      = searchType(arguments, 0);
-    WrapMode        wrap      = searchWrap(arguments, 0);
+    SearchType type     = searchType(arguments, 0);
+    WrapMode wrap       = searchWrap(arguments, 0);
 
     if(auto window = MainWindow::fromDocument(document)) {
         window->action_Find_Selection(document, direction, type, wrap);
@@ -1017,11 +1017,11 @@ static bool replaceMS(DocumentWidget *document, Arguments arguments, DataValue *
     }
 
     Direction direction = searchDirection(arguments, 2);
-    SearchType      type      = searchType(arguments, 2);
-    WrapMode        wrap      = searchWrap(arguments, 2);
+    SearchType type     = searchType(arguments, 2);
+    WrapMode   wrap     = searchWrap(arguments, 2);
 
     if(auto window = MainWindow::fromDocument(document)) {
-        window->action_Replace(document, direction, searchString, replaceString, type, wrap);
+        window->action_Replace(document, searchString, replaceString, direction, type, wrap);
     }
 
     *result = to_value();
@@ -1048,8 +1048,6 @@ static bool replaceDialogMS(DocumentWidget *document, Arguments arguments, DataV
 }
 
 static bool replaceAgainMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
-
-    // replace_in_selection( search-string, replace-string [, search-type] )
 
     // ensure that we are dealing with the document which currently has the focus
     document = MacroRunDocumentEx();
@@ -1605,7 +1603,6 @@ static bool findIncrMS(DocumentWidget *document, Arguments arguments, DataValue 
         return false;
     }
 
-
     for (i = 1; i < arguments.size(); ++i)  {
         QString arg2;
         if(!readArgument(arguments[0], &arg2, errMsg)) {
@@ -1617,11 +1614,10 @@ static bool findIncrMS(DocumentWidget *document, Arguments arguments, DataValue 
         }
     }
 
-    win->SearchAndSelectIncrementalEx(
+    win->action_Find_Incremental(
         document,
-        win->lastFocus(),
-        searchDirection(arguments, 1),
         arg,
+        searchDirection(arguments, 1),
         searchType(arguments, 1),
         searchWrap(arguments, 1),
         continued);
@@ -1668,12 +1664,11 @@ static bool replaceFindMS(DocumentWidget *document, Arguments arguments, DataVal
         M_FAILURE(InvalidSearchReplaceArgs);
     }
 
-    win->ReplaceAndSearchEx(
+    win->action_Replace_Find(
                 document,
-                win->lastFocus(),
-                searchDirection(arguments, 2),
                 searchString,
                 replaceString,
+                searchDirection(arguments, 2),
                 searchType(arguments, 2),
                 searchWrap(arguments, 0));
 
@@ -1684,7 +1679,6 @@ static bool replaceFindMS(DocumentWidget *document, Arguments arguments, DataVal
 
 static bool replaceFindSameMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
-    Q_UNUSED(arguments);
     Q_UNUSED(errMsg);
 
     document = MacroRunDocumentEx();
@@ -1699,9 +1693,8 @@ static bool replaceFindSameMS(DocumentWidget *document, Arguments arguments, Dat
         return false;
     }
 
-    win->ReplaceFindSameEx(
+    win->action_Replace_Find_Again(
                 document,
-                win->lastFocus(),
                 searchDirection(arguments, 0),
                 searchWrap(arguments, 0));
 
@@ -1785,7 +1778,7 @@ static bool backgroundMenuCommandMS(DocumentWidget *document, Arguments argument
         return false;
     }
 
-    document->DoNamedBGMenuCmd(win->lastFocus(), name, true);
+    win->DoNamedBGMenuCmd(document, win->lastFocus(), name, true);
 
     *result = to_value();
     return true;

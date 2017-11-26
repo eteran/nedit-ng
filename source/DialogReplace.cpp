@@ -195,7 +195,7 @@ void DialogReplace::on_buttonReplace_clicked() {
 	ui.textFind->setFocus();
 
 	// Find the text and replace it 
-    window_->action_Replace(document_, direction, searchString, replaceString, searchType, GetPrefSearchWraps());
+    window_->action_Replace(document_, searchString, replaceString, direction, searchType, GetPrefSearchWraps());
 
 	// Pop down the dialog 
 	if (!keepDialog()) {
@@ -221,7 +221,7 @@ void DialogReplace::on_buttonReplaceFind_clicked() {
 	ui.textFind->setFocus();
 
 	// Find the text and replace it 
-    window_->action_Replace_Find(document_, direction, searchString, replaceString, searchType, GetPrefSearchWraps());
+    window_->action_Replace_Find(document_, searchString, replaceString, direction, searchType, GetPrefSearchWraps());
 
 	// Pop down the dialog 
 	if (!keepDialog()) {

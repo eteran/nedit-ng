@@ -2294,14 +2294,10 @@ int TextArea::TextDEndOfLine(int pos, bool startPosIsLineStart) {
 }
 
 /*
-** Update the line starts array, topLineNum, firstChar and lastChar for text
-** display "textD" after a modification to the text buffer, given by the
-** position where the change began "pos", and the nmubers of characters
-** and lines inserted and deleted.
+** Update the line starts array, topLineNum, firstChar and lastChar after a
+** modification to the text buffer, given by the position where the change
+** began "pos", and the nmubers of characters and lines inserted and deleted.
 */
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
 void TextArea::updateLineStarts(int pos, int charsInserted, int charsDeleted, int linesInserted, int linesDeleted, int *scrolled) {
 
     int i;
@@ -2397,16 +2393,13 @@ void TextArea::updateLineStarts(int pos, int charsInserted, int charsDeleted, in
 }
 
 /*
-** Scan through the text in the "textD"'s buffer and recalculate the line
+** Scan through the text in the buffer and recalculate the line
 ** starts array values beginning at index "startLine" and continuing through
 ** (including) "endLine".  It assumes that the line starts entry preceding
 ** "startLine" (or firstChar if startLine is 0) is good, and re-counts
 ** newlines to fill in the requested entries.  Out of range values for
 ** "startLine" and "endLine" are acceptable.
 */
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
 void TextArea::calcLineStarts(int startLine, int endLine) {
 	int startPos;
 	int bufLen = buffer_->BufGetLength();
@@ -4309,7 +4302,7 @@ int TextArea::TextDMoveRight() {
 }
 
 /*
-** Set the position of the text insertion cursor for text display "textD"
+** Set the position of the text insertion cursor
 */
 void TextArea::TextDSetInsertPosition(int newPos) {
 	// make sure new position is ok, do nothing if it hasn't changed

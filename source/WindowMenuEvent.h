@@ -54,4 +54,10 @@ private:
         QApplication::sendEvent(this, &menuEvent);                                \
     } while(0)
 
+#define EMIT_EVENT_ARG_5(name, arg1, arg2, arg3, arg4, arg5)                            \
+    do {                                                                                \
+        WindowMenuEvent menuEvent(QLatin1String(name), {arg1, arg2, arg3, arg4, arg5}); \
+        QApplication::sendEvent(this, &menuEvent);                                      \
+    } while(0)
+
 #endif

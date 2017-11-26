@@ -126,7 +126,7 @@ public:
 
 public:
     bool CheckReadOnly() const;
-    bool DoNamedBGMenuCmd(TextArea *area, const QString &name, bool fromMacro);
+    bool InSmartIndentMacrosEx() const;
     bool IsTopDocument() const;
     bool ReadMacroFileEx(const QString &fileName, bool warnNotExist);
     HighlightPattern *FindPatternOfWindowEx(const QString &name) const;
@@ -138,18 +138,22 @@ public:
     int WidgetToPaneIndex(TextArea *area) const;
     QColor GetHighlightBGColorOfCodeEx(int hCode) const;
     QColor HighlightColorValueOfCodeEx(int hCode) const;
-    std::vector<TextArea *> textPanes() const;
+    QFont FontOfNamedStyleEx(const QString &styleName) const;
     QString FullPath() const;
+    QString GetAnySelectionEx();
     QString GetWindowDelimiters() const;
+    QString GetWindowDelimitersEx() const;
     QString HighlightNameOfCodeEx(int hCode) const;
     QString HighlightStyleOfCodeEx(int hCode) const;
     std::unique_ptr<WindowHighlightData> createHighlightDataEx(PatternSet *patSet);
+    std::vector<TextArea *> textPanes() const;
     TextArea *firstPane() const;
     void AbortShellCommandEx();
     void CancelMacroOrLearnEx();
     void CheckForChangesToFileEx();
     void ClearModeMessageEx();
     void DoMacroEx(const QString &macro, const QString &errInName);
+    void EndSmartIndentEx();
     void finishMacroCmdExecutionEx();
     void handleUnparsedRegionEx(const std::shared_ptr<TextBuffer> &styleBuf, int pos) const;
     void MakeSelectionVisible(TextArea *area);
@@ -165,24 +169,20 @@ public:
     void SetAutoWrap(WrapStyle state);
     void SetEmTabDist(int emTabDist);
     void SetFonts(const QString &fontName, const QString &italicName, const QString &boldName, const QString &boldItalicName);
+    void SetHighlightSyntax(bool value);
+    void SetIncrementalBackup(bool value);
     void SetLanguageMode(int mode, bool forceNewDefaults);
+    void SetLocked(bool value);
     void SetOverstrike(bool overstrike);
     void SetShowMatching(ShowMatchingStyle state);
     void SetTabDist(int tabDist);
+    void SetUseTabs(bool value);
     void setWrapMargin(int margin);
     void ShellCmdToMacroStringEx(const QString &command, const QString &input);
     void StartHighlightingEx(bool warn);
     void StopHighlightingEx();
     void UpdateHighlightStylesEx();
-    void EndSmartIndentEx();
-    bool InSmartIndentMacrosEx() const;
-    QString GetAnySelectionEx();
-    QFont FontOfNamedStyleEx(const QString &styleName) const;
-    QString GetWindowDelimitersEx() const;
-    void SetUseTabs(bool value);
-    void SetHighlightSyntax(bool value);
-    void SetIncrementalBackup(bool value);
-    void SetLocked(bool value);
+
 
 public:
 #if defined(REPLACE_SCOPE)
@@ -191,8 +191,6 @@ public:
 
 private:    
     bool bckError(const QString &errString, const QString &file);
-    bool DoNamedMacroMenuCmd(TextArea *area, const QString &name, bool fromMacro);
-    bool DoNamedShellMenuCmd(TextArea *area, const QString &name, bool fromMacro);
     bool doOpen(const QString &name, const QString &path, int flags);
     bool doSave();
     bool findMatchingCharEx(char toMatch, Style styleToMatch, int charPos, int startLimit, int endLimit, int *matchPos);

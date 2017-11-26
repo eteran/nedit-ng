@@ -2,6 +2,8 @@
 #ifndef RAISE_H_
 #define RAISE_H_
 
+#include <utility>
+
 template <class E, class ... Args>
 constexpr void
 #ifdef __GNUC__

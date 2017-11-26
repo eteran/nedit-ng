@@ -89,13 +89,13 @@ public:
     void updateWindowSizeMenu();
     void updateWindowSizeMenus();
     void SetIncrementalSearchLineMS(bool value);
-    bool SearchWindowEx(DocumentWidget *document, Direction direction, const QString &searchString, SearchType searchType, WrapMode searchWrap, int beginPos, int *startPos, int *endPos, int *extentBW, int *extentFW);
-    bool SearchAndSelectEx(DocumentWidget *document, TextArea *area, Direction direction, const QString &searchString, SearchType searchType, WrapMode searchWrap);
-    bool SearchAndSelectIncrementalEx(DocumentWidget *document, TextArea *area, Direction direction, const QString &searchString, SearchType searchType, WrapMode searchWrap, bool continued);
-    bool ReplaceAndSearchEx(DocumentWidget *document, TextArea *area, Direction direction, const QString &searchString, const QString &replaceString, SearchType searchType, WrapMode searchWrap);
+    bool SearchWindowEx(DocumentWidget *document, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWrap, int beginPos, int *startPos, int *endPos, int *extentBW, int *extentFW);
+    bool SearchAndSelectEx(DocumentWidget *document, TextArea *area, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWrap);
+    bool SearchAndSelectIncrementalEx(DocumentWidget *document, TextArea *area, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWrap, bool continued);
+    bool ReplaceAndSearchEx(DocumentWidget *document, TextArea *area, const QString &searchString, const QString &replaceString, Direction direction, SearchType searchType, WrapMode searchWrap);
     void DoFindDlogEx(DocumentWidget *document, Direction direction, bool keepDialogs, SearchType searchType);
     bool SearchAndSelectSameEx(DocumentWidget *document, TextArea *area, Direction direction, WrapMode searchWrap);
-    bool SearchAndReplaceEx(DocumentWidget *document, TextArea *area, Direction direction, const QString &searchString, const QString &replaceString, SearchType searchType, WrapMode searchWrap);
+    bool SearchAndReplaceEx(DocumentWidget *document, TextArea *area, const QString &searchString, const QString &replaceString, Direction direction, SearchType searchType, WrapMode searchWrap);
     bool ReplaceFindSameEx(DocumentWidget *document, TextArea *area, Direction direction, WrapMode searchWrap);
     bool ReplaceSameEx(DocumentWidget *document, TextArea *area, Direction direction, WrapMode searchWrap);
     void SearchForSelectedEx(DocumentWidget *document, TextArea *area, Direction direction, SearchType searchType, WrapMode searchWrap);
@@ -107,6 +107,9 @@ public:
     void iSearchTryBeepOnWrapEx(Direction direction, int beginPos, int startPos);
     bool searchMatchesSelectionEx(DocumentWidget *document, const QString &searchString, SearchType searchType, int *left, int *right, int *searchExtentBW, int *searchExtentFW);
     DocumentWidget *CreateDocument(QString name);
+    bool DoNamedBGMenuCmd(DocumentWidget *document, TextArea *area, const QString &name, bool fromMacro);
+    bool DoNamedMacroMenuCmd(DocumentWidget *document, TextArea *area, const QString &name, bool fromMacro);
+    bool DoNamedShellMenuCmd(DocumentWidget *document, TextArea *area, const QString &name, bool fromMacro);
 
 public:
     static void updateMenuItems();
@@ -136,23 +139,22 @@ public:
     void action_Close(DocumentWidget *document, CloseMode mode = CloseMode::Prompt);
     void action_Close_Pane(DocumentWidget *document);
     void action_Delete(DocumentWidget *document);
-    void action_Detach_Document(DocumentWidget *document);
     void action_Detach_Document_Dialog(DocumentWidget *document);
+    void action_Detach_Document(DocumentWidget *document);
     void action_Execute_Command(DocumentWidget *document);
     void action_Execute_Command(DocumentWidget *document, const QString &command);
     void action_Execute_Command_Line(DocumentWidget *document);
-    void action_Find_Incremental(DocumentWidget *document, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWraps, bool isContinue);
     void action_Exit(DocumentWidget *document);
     void action_Fill_Paragraph(DocumentWidget *document);
     void action_Filter_Selection(DocumentWidget *document);
     void action_Filter_Selection(DocumentWidget *document, const QString &filter);
     void action_Find_Again(DocumentWidget *document, Direction direction, WrapMode wrap);
-    void action_Replace_In_Selection(DocumentWidget *document, const QString &searchString, const QString &replaceString, SearchType searchType);
-    void action_Replace_Find(DocumentWidget *document, Direction direction, const QString &searchString, const QString &replaceString, SearchType searchType, WrapMode searchWraps);
+    void action_Replace_Find_Again(DocumentWidget *document, Direction direction, WrapMode wrap);
     void action_Find_Definition(DocumentWidget *document);
     void action_Find_Definition(DocumentWidget *document, const QString &argument);
     void action_Find_Dialog(DocumentWidget *document, Direction direction, SearchType type, bool keepDialog);
     void action_Find(DocumentWidget *document, const QString &string, Direction direction, SearchType type, WrapMode searchWrap);
+    void action_Find_Incremental(DocumentWidget *document, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWraps, bool isContinue);
     void action_Find_Selection(DocumentWidget *document, Direction direction, SearchType type, WrapMode wrap);
     void action_Goto_Line_Number(DocumentWidget *document);
     void action_Goto_Line_Number(DocumentWidget *document, const QString &s);
@@ -187,7 +189,9 @@ public:
     void action_Replace_Again(DocumentWidget *document, Direction direction, WrapMode wrap);
     void action_Replace_All(DocumentWidget *document, const QString &searchString, const QString &replaceString, SearchType type);
     void action_Replace_Dialog(DocumentWidget *document, Direction direction, SearchType type, bool keepDialog);
-    void action_Replace(DocumentWidget *document, Direction direction, const QString &searchString, const QString &replaceString, SearchType type, WrapMode wrap);
+    void action_Replace(DocumentWidget *document, const QString &searchString, const QString &replaceString, Direction direction, SearchType type, WrapMode wrap);
+    void action_Replace_Find(DocumentWidget *document, const QString &searchString, const QString &replaceString, Direction direction, SearchType searchType, WrapMode searchWraps);
+    void action_Replace_In_Selection(DocumentWidget *document, const QString &searchString, const QString &replaceString, SearchType searchType);
     void action_Revert_to_Saved(DocumentWidget *document);
     void action_Save_As(DocumentWidget *document);
     void action_Save_As(DocumentWidget *document, const QString &filename, bool wrapped);

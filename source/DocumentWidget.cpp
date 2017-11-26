@@ -3567,8 +3567,7 @@ bool DocumentWidget::includeFile(const QString &name) {
         buffer_->BufReplaceSelectedEx(fileString);
     } else {
         if(auto win = MainWindow::fromDocument(this)) {
-            TextArea *textD = win->lastFocus_;
-            buffer_->BufInsertEx(textD->TextGetCursorPos(), fileString);
+            buffer_->BufInsertEx(win->lastFocus_->TextGetCursorPos(), fileString);
         }
     }
 
@@ -4874,40 +4873,6 @@ void DocumentWidget::FilterSelection(const QString &command, bool fromMacro) {
 }
 
 /*
-** Search through the shell menu and execute the first command with menu item
-** name "itemName".  Returns True on successs and False on failure.
-*/
-bool DocumentWidget::DoNamedShellMenuCmd(TextArea *area, const QString &name, bool fromMacro) {
-
-    auto window = MainWindow::fromDocument(this);
-    if(!window) {
-        return false;
-    }
-
-    if(MenuData *p = findMenuItem(name, DialogTypes::SHELL_CMDS)) {
-
-        if (p->item->output == TO_SAME_WINDOW && CheckReadOnly()) {
-            return false;
-        }
-
-        DoShellMenuCmd(
-            window,
-            area,
-            p->item->cmd,
-            p->item->input,
-            p->item->output,
-            p->item->repInput,
-            p->item->saveFirst,
-            p->item->loadAfter,
-            fromMacro);
-
-        return true;
-    }
-
-    return false;
-}
-
-/*
 ** Do a shell command, with the options allowed to users (input source,
 ** output destination, save first and load after) in the shell commands
 ** menu.
@@ -5048,42 +5013,6 @@ void DocumentWidget::DoShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
                 left,
                 right,
                 fromMacro);
-}
-
-/*
-** Search through the Macro or background menu and execute the first command
-** with menu item name "itemName".  Returns True on successs and False on
-** failure.
-*/
-bool DocumentWidget::DoNamedMacroMenuCmd(TextArea *area, const QString &name, bool fromMacro) {
-
-    Q_UNUSED(fromMacro);
-    Q_UNUSED(area);
-
-    if(MenuData *p = findMenuItem(name, DialogTypes::MACRO_CMDS)) {
-        DoMacroEx(
-            p->item->cmd,
-            tr("macro menu command"));
-
-        return true;
-    }
-
-    return false;
-}
-
-bool DocumentWidget::DoNamedBGMenuCmd(TextArea *area, const QString &name, bool fromMacro) {
-    Q_UNUSED(fromMacro);
-    Q_UNUSED(area);
-
-    if(MenuData *p = findMenuItem(name, DialogTypes::BG_MENU_CMDS)) {
-        DoMacroEx(
-            p->item->cmd,
-            tr("background menu macro"));
-
-        return true;
-    }
-
-    return false;
 }
 
 int DocumentWidget::WidgetToPaneIndex(TextArea *area) const {

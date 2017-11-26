@@ -2250,6 +2250,9 @@ void MainWindow::action_Shift_Find() {
  * @param wrap
  */
 void MainWindow::action_Find_Again(DocumentWidget *document, Direction direction, WrapMode wrap) {
+
+    EMIT_EVENT_ARG_2("find_again", to_string(direction), to_string(wrap));
+
     SearchAndSelectSameEx(
         document,
         lastFocus_,
@@ -2278,6 +2281,9 @@ void MainWindow::action_Shift_Find_Again() {
  * @brief MainWindow::action_Find_Selection
  */
 void MainWindow::action_Find_Selection(DocumentWidget *document, Direction direction, SearchType type, WrapMode wrap) {
+
+    EMIT_EVENT_ARG_3("find_selection", to_string(direction), to_string(type), to_string(wrap));
+
     SearchForSelectedEx(
         document,
         lastFocus_,
@@ -2389,8 +2395,8 @@ void MainWindow::action_Find_Incremental(DocumentWidget *document, const QString
     SearchAndSelectIncrementalEx(
             document,
             lastFocus_,
-            direction,
             searchString,
+            direction,
             searchType,
             searchWraps,
             isContinue);
@@ -2654,6 +2660,10 @@ void MainWindow::EndISearchEx() {
     TempShowISearch(false);
 }
 
+/**
+ * @brief MainWindow::action_Shift_Replace
+ * @param document
+ */
 void MainWindow::action_Shift_Replace(DocumentWidget *document) {
     if (document->CheckReadOnly()) {
         return;
@@ -2667,28 +2677,21 @@ void MainWindow::action_Shift_Replace(DocumentWidget *document) {
                 GetPrefSearch());
 }
 
+/**
+ * @brief MainWindow::action_Shift_Replace
+ */
 void MainWindow::action_Shift_Replace() {
     if(DocumentWidget *document = currentDocument()) {
         action_Shift_Replace(document);
     }
 }
 
-void MainWindow::on_action_Replace_Find_Again_triggered() {
-
-    if(DocumentWidget *document = currentDocument()) {
-        if (document->CheckReadOnly()) {
-            return;
-        }
-
-        ReplaceFindSameEx(
-                    currentDocument(),
-                    lastFocus_,
-                    Direction::Forward,
-                    GetPrefSearchWraps());
-    }
-}
-
-void MainWindow::action_Shift_Replace_Find_Again(DocumentWidget *document) {
+/**
+ * @brief MainWindow::action_Replace_Find_Again
+ * @param document
+ * @param direction
+ */
+void MainWindow::action_Replace_Find_Again(DocumentWidget *document, Direction direction, WrapMode wrap) {
     if (document->CheckReadOnly()) {
         return;
     }
@@ -2696,8 +2699,26 @@ void MainWindow::action_Shift_Replace_Find_Again(DocumentWidget *document) {
     ReplaceFindSameEx(
                 document,
                 lastFocus_,
-                Direction::Backward,
-                GetPrefSearchWraps());
+                direction,
+                wrap);
+}
+
+/**
+ * @brief MainWindow::on_action_Replace_Find_Again_triggered
+ */
+void MainWindow::on_action_Replace_Find_Again_triggered() {
+
+    if(DocumentWidget *document = currentDocument()) {
+        action_Replace_Find_Again(document, Direction::Forward, GetPrefSearchWraps());
+    }
+}
+
+/**
+ * @brief MainWindow::action_Shift_Replace_Find_Again
+ * @param document
+ */
+void MainWindow::action_Shift_Replace_Find_Again(DocumentWidget *document) {
+    action_Replace_Find_Again(document, Direction::Backward, GetPrefSearchWraps());
 }
 
 void MainWindow::action_Replace_Again(DocumentWidget *document, Direction direction, WrapMode wrap) {
@@ -4638,8 +4659,8 @@ void MainWindow::action_Find(DocumentWidget *document, const QString &string, Di
     SearchAndSelectEx(
                 document,
                 lastFocus_,
-                direction,
                 string,
+                direction,
                 type,
                 searchWrap);
 }
@@ -4684,7 +4705,10 @@ void MainWindow::on_action_Find_Selection_triggered() {
  * @param type
  * @param wrap
  */
-void MainWindow::action_Replace(DocumentWidget *document, Direction direction, const QString &searchString, const QString &replaceString, SearchType type, WrapMode wrap) {
+void MainWindow::action_Replace(DocumentWidget *document, const QString &searchString, const QString &replaceString, Direction direction, SearchType type, WrapMode wrap) {
+
+    EMIT_EVENT_ARG_5("replace", searchString, replaceString, to_string(direction), to_string(type), to_string(wrap));
+
     if (document->CheckReadOnly()) {
         return;
     }
@@ -4692,9 +4716,9 @@ void MainWindow::action_Replace(DocumentWidget *document, Direction direction, c
     SearchAndReplaceEx(
                 document,
                 lastFocus_,
-                direction,
                 searchString,
                 replaceString,
+                direction,
                 type,
                 wrap);
 }
@@ -4735,17 +4759,25 @@ void MainWindow::on_action_Replace_triggered() {
  * @param type
  */
 void MainWindow::action_Replace_All(DocumentWidget *document, const QString &searchString, const QString &replaceString, SearchType type) {
-        if (document->CheckReadOnly()) {
-            return;
-        }
 
-        ReplaceAllEx(document,
-                     lastFocus_,
-                     searchString,
-                     replaceString,
-                     type);
+    EMIT_EVENT_ARG_3("replace_all", searchString, replaceString, to_string(type));
+
+    if (document->CheckReadOnly()) {
+        return;
+    }
+
+    ReplaceAllEx(document,
+                 lastFocus_,
+                 searchString,
+                 replaceString,
+                 type);
 }
 
+/**
+ * @brief MainWindow::action_Show_Tip
+ * @param document
+ * @param argument
+ */
 void MainWindow::action_Show_Tip(DocumentWidget *document, const QString &argument) {
     document->FindDefCalltip(lastFocus_, argument);
 }
@@ -4900,7 +4932,7 @@ void MainWindow::shellTriggered(QAction *action) {
  * @param command
  */
 void MainWindow::action_Shell_Menu_Command(DocumentWidget *document, const QString &name) {
-    document->DoNamedShellMenuCmd(lastFocus_, name, false);
+    DoNamedShellMenuCmd(document, lastFocus_, name, false);
 }
 
 /**
@@ -4936,7 +4968,7 @@ void MainWindow::macroTriggered(QAction *action) {
  * @param name
  */
 void MainWindow::action_Macro_Menu_Command(DocumentWidget *document, const QString &name) {
-    document->DoNamedMacroMenuCmd(lastFocus_, name, false);
+    DoNamedMacroMenuCmd(document, lastFocus_, name, false);
 }
 
 /**
@@ -4946,6 +4978,7 @@ void MainWindow::action_Macro_Menu_Command(DocumentWidget *document, const QStri
  */
 void MainWindow::action_Repeat_Macro(DocumentWidget *document, const QString &macro, int how) {
 
+    // TODO(eteran): do we record the parameters?
     EMIT_EVENT("repeat_macro");
     document->repeatMacro(macro, how);
 }
@@ -5082,7 +5115,7 @@ void MainWindow::SetIncrementalSearchLineMS(bool value) {
 /*
 ** Search the text in "document", attempting to match "searchString"
 */
-bool MainWindow::SearchWindowEx(DocumentWidget *document, Direction direction, const QString &searchString, SearchType searchType, WrapMode searchWrap, int beginPos, int *startPos, int *endPos, int *extentBW, int *extentFW) {
+bool MainWindow::SearchWindowEx(DocumentWidget *document, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWrap, int beginPos, int *startPos, int *endPos, int *extentBW, int *extentFW) {
     bool found;
     int fileEnd = document->buffer_->BufGetLength() - 1;
     bool outsideBounds;
@@ -5246,7 +5279,7 @@ bool MainWindow::SearchWindowEx(DocumentWidget *document, Direction direction, c
 ** the window when found (or beep or put up a dialog if not found).  Also
 ** adds the search string to the global search history.
 */
-bool MainWindow::SearchAndSelectEx(DocumentWidget *document, TextArea *area, Direction direction, const QString &searchString, SearchType searchType, WrapMode searchWrap) {
+bool MainWindow::SearchAndSelectEx(DocumentWidget *document, TextArea *area, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWrap) {
     int startPos;
     int endPos;
     int beginPos;
@@ -5292,7 +5325,7 @@ bool MainWindow::SearchAndSelectEx(DocumentWidget *document, TextArea *area, Dir
     iSearchRecordLastBeginPosEx(direction, beginPos);
 
     // do the search.  SearchWindow does appropriate dialogs and beeps
-    if (!SearchWindowEx(document, direction, searchString, searchType, searchWrap, beginPos, &startPos, &endPos, nullptr, nullptr)) {
+    if (!SearchWindowEx(document, searchString, direction, searchType, searchWrap, beginPos, &startPos, &endPos, nullptr, nullptr)) {
         return false;
     }
 
@@ -5300,7 +5333,7 @@ bool MainWindow::SearchAndSelectEx(DocumentWidget *document, TextArea *area, Dir
        beginning at the start of the search, go to the next occurrence,
        otherwise repeated finds will get "stuck" at zero-length matches */
     if (direction == Direction::Forward && beginPos == startPos && beginPos == endPos) {
-        if (!movedFwd && !SearchWindowEx(document, direction, searchString, searchType, searchWrap, beginPos + 1, &startPos, &endPos, nullptr, nullptr)) {
+        if (!movedFwd && !SearchWindowEx(document, searchString, direction, searchType, searchWrap, beginPos + 1, &startPos, &endPos, nullptr, nullptr)) {
             return false;
         }
     }
@@ -5328,7 +5361,7 @@ bool MainWindow::SearchAndSelectEx(DocumentWidget *document, TextArea *area, Dir
 ** recorded, search from that original position, otherwise, search from the
 ** current cursor position.
 */
-bool MainWindow::SearchAndSelectIncrementalEx(DocumentWidget *document, TextArea *area, Direction direction, const QString &searchString, SearchType searchType, WrapMode searchWrap, bool continued) {
+bool MainWindow::SearchAndSelectIncrementalEx(DocumentWidget *document, TextArea *area, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWrap, bool continued) {
     int beginPos;
     int startPos;
     int endPos;
@@ -5370,7 +5403,7 @@ bool MainWindow::SearchAndSelectIncrementalEx(DocumentWidget *document, TextArea
         beginPos--;
 
     // do the search.  SearchWindow does appropriate dialogs and beeps
-    if (!SearchWindowEx(document, direction, searchString, searchType, searchWrap, beginPos, &startPos, &endPos, nullptr, nullptr))
+    if (!SearchWindowEx(document, searchString, direction, searchType, searchWrap, beginPos, &startPos, &endPos, nullptr, nullptr))
         return false;
 
     iSearchLastBeginPos_ = startPos;
@@ -5379,7 +5412,7 @@ bool MainWindow::SearchAndSelectIncrementalEx(DocumentWidget *document, TextArea
        beginning at the start of the search, go to the next occurrence,
        otherwise repeated finds will get "stuck" at zero-length matches */
     if (direction == Direction::Forward && beginPos == startPos && beginPos == endPos)
-        if (!SearchWindowEx(document, direction, searchString, searchType, searchWrap, beginPos + 1, &startPos, &endPos, nullptr, nullptr))
+        if (!SearchWindowEx(document, searchString, direction, searchType, searchWrap, beginPos + 1, &startPos, &endPos, nullptr, nullptr))
             return false;
 
     iSearchLastBeginPos_ = startPos;
@@ -5398,7 +5431,7 @@ bool MainWindow::SearchAndSelectIncrementalEx(DocumentWidget *document, TextArea
 ** Replace selection with "replaceString" and search for string "searchString" in window "window",
 ** using algorithm "searchType" and direction "direction"
 */
-bool MainWindow::ReplaceAndSearchEx(DocumentWidget *document, TextArea *area, Direction direction, const QString &searchString, const QString &replaceString, SearchType searchType, WrapMode searchWrap) {
+bool MainWindow::ReplaceAndSearchEx(DocumentWidget *document, TextArea *area, const QString &searchString, const QString &replaceString, Direction direction, SearchType searchType, WrapMode searchWrap) {
     int startPos = 0;
     int endPos = 0;
     int searchExtentBW;
@@ -5443,7 +5476,7 @@ bool MainWindow::ReplaceAndSearchEx(DocumentWidget *document, TextArea *area, Di
     }
 
     // do the search; beeps/dialogs are taken care of
-    SearchAndSelectEx(document, area, direction, searchString, searchType, searchWrap);
+    SearchAndSelectEx(document, area, searchString, direction, searchType, searchWrap);
     return replaced;
 }
 
@@ -5496,9 +5529,9 @@ bool MainWindow::SearchAndSelectSameEx(DocumentWidget *document, TextArea *area,
 
     return SearchAndSelectEx(
                 document,
-                area,
-                direction,
+                area,                
                 SearchReplaceHistory[historyIndex(1)].search,
+                direction,
                 SearchReplaceHistory[historyIndex(1)].type,
                 searchWrap);
 }
@@ -5508,7 +5541,7 @@ bool MainWindow::SearchAndSelectSameEx(DocumentWidget *document, TextArea *area,
 ** "searchType" and direction "direction", and replace it with "replaceString"
 ** Also adds the search and replace strings to the global search history.
 */
-bool MainWindow::SearchAndReplaceEx(DocumentWidget *document, TextArea *area, Direction direction, const QString &searchString, const QString &replaceString, SearchType searchType, WrapMode searchWrap) {
+bool MainWindow::SearchAndReplaceEx(DocumentWidget *document, TextArea *area, const QString &searchString, const QString &replaceString, Direction direction, SearchType searchType, WrapMode searchWrap) {
     int startPos;
     int endPos;
     int replaceLen;
@@ -5536,7 +5569,7 @@ bool MainWindow::SearchAndReplaceEx(DocumentWidget *document, TextArea *area, Di
         }
 
         // do the search
-        bool found = SearchWindowEx(document, direction, searchString, searchType, searchWrap, beginPos, &startPos, &endPos, &searchExtentBW, &searchExtentFW);
+        bool found = SearchWindowEx(document, searchString, direction, searchType, searchWrap, beginPos, &startPos, &endPos, &searchExtentBW, &searchExtentFW);
         if (!found)
             return false;
     }
@@ -5596,15 +5629,15 @@ bool MainWindow::ReplaceSameEx(DocumentWidget *document, TextArea *area, Directi
 
     return SearchAndReplaceEx(
                 document,
-                area,
-                direction,
+                area,                
                 SearchReplaceHistory[historyIndex(1)].search,
                 SearchReplaceHistory[historyIndex(1)].replace,
+                direction,
                 SearchReplaceHistory[historyIndex(1)].type,
                 searchWrap);
 }
 
-void MainWindow::action_Replace_Find(DocumentWidget *document, Direction direction, const QString &searchString, const QString &replaceString, SearchType searchType, WrapMode searchWraps) {
+void MainWindow::action_Replace_Find(DocumentWidget *document, const QString &searchString, const QString &replaceString, Direction direction, SearchType searchType, WrapMode searchWraps) {
 
     if (document->CheckReadOnly()) {
         return;
@@ -5613,9 +5646,9 @@ void MainWindow::action_Replace_Find(DocumentWidget *document, Direction directi
     ReplaceAndSearchEx(
                 document,
                 lastFocus_,
-                direction,
                 searchString,
                 replaceString,
+                direction,
                 searchType,
                 searchWraps);
 
@@ -5633,10 +5666,10 @@ bool MainWindow::ReplaceFindSameEx(DocumentWidget *document, TextArea *area, Dir
 
     return ReplaceAndSearchEx(
                 document,
-                area,
-                direction,
+                area,                
                 SearchReplaceHistory[historyIndex(1)].search,
                 SearchReplaceHistory[historyIndex(1)].replace,
+                direction,
                 SearchReplaceHistory[historyIndex(1)].type,
                 searchWrap);
 }
@@ -5674,14 +5707,18 @@ void MainWindow::SearchForSelectedEx(DocumentWidget *document, TextArea *area, D
     // search for it in the window
     SearchAndSelectEx(
                 document,
-                area,
-                direction,
+                area,                
                 searchString,
+                direction,
                 searchType,
                 searchWrap);
 }
 
-void MainWindow::action_Replace_In_Selection(DocumentWidget *document, const QString &searchString, const QString &replaceString, SearchType searchType) {
+void MainWindow::action_Replace_In_Selection(DocumentWidget *document, const QString &searchString, const QString &replaceString, SearchType type) {
+
+
+    EMIT_EVENT_ARG_3("replace_in_selection", searchString, replaceString, to_string(type));
+
     if (document->CheckReadOnly()) {
         return;
     }
@@ -5691,7 +5728,7 @@ void MainWindow::action_Replace_In_Selection(DocumentWidget *document, const QSt
                 lastFocus_,
                 searchString,
                 replaceString,
-                searchType);
+                type);
 }
 
 /*
@@ -6238,4 +6275,69 @@ void MainWindow::updateMenuItems() {
         window->ui.action_Show_Calltip->setEnabled(tipStat || tagStat);
         window->ui.action_Find_Definition->setEnabled(tagStat);
     }
+}
+
+/*
+** Search through the shell menu and execute the first command with menu item
+** name "itemName".  Returns True on successs and False on failure.
+*/
+bool MainWindow::DoNamedShellMenuCmd(DocumentWidget *document, TextArea *area, const QString &name, bool fromMacro) {
+
+    if(MenuData *p = findMenuItem(name, DialogTypes::SHELL_CMDS)) {
+
+        if (p->item->output == TO_SAME_WINDOW && document->CheckReadOnly()) {
+            return false;
+        }
+
+        document->DoShellMenuCmd(
+            this,
+            area,
+            p->item->cmd,
+            p->item->input,
+            p->item->output,
+            p->item->repInput,
+            p->item->saveFirst,
+            p->item->loadAfter,
+            fromMacro);
+
+        return true;
+    }
+
+    return false;
+}
+
+/*
+** Search through the Macro or background menu and execute the first command
+** with menu item name "itemName".  Returns True on successs and False on
+** failure.
+*/
+bool MainWindow::DoNamedMacroMenuCmd(DocumentWidget *document, TextArea *area, const QString &name, bool fromMacro) {
+
+    Q_UNUSED(fromMacro);
+    Q_UNUSED(area);
+
+    if(MenuData *p = findMenuItem(name, DialogTypes::MACRO_CMDS)) {
+        document->DoMacroEx(
+            p->item->cmd,
+            tr("macro menu command"));
+
+        return true;
+    }
+
+    return false;
+}
+
+bool MainWindow::DoNamedBGMenuCmd(DocumentWidget *document, TextArea *area, const QString &name, bool fromMacro) {
+    Q_UNUSED(fromMacro);
+    Q_UNUSED(area);
+
+    if(MenuData *p = findMenuItem(name, DialogTypes::BG_MENU_CMDS)) {
+        document->DoMacroEx(
+            p->item->cmd,
+            tr("background menu macro"));
+
+        return true;
+    }
+
+    return false;
 }
