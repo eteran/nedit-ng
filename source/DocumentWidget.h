@@ -80,7 +80,6 @@ Q_SIGNALS:
     void documentClosed();
 
 private Q_SLOTS:
-    void flashTimerTimeout();
     void processFinished(int exitCode, QProcess::ExitStatus exitStatus);
 
 public Q_SLOTS:

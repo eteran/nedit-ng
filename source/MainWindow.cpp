@@ -459,10 +459,10 @@ void MainWindow::setupMenuStrings() {
     new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_M), this, SLOT(action_Shift_Goto_Matching()));
 
     // This is an annoying solution... we can probably do better...
-    for(int i = Qt::Key_A; i <= Qt::Key_Z; ++i) {
-        new QShortcut(QKeySequence(Qt::ALT + Qt::Key_M, i),             this, SLOT(action_Mark_Shortcut()));
-        new QShortcut(QKeySequence(Qt::ALT + Qt::Key_G, i),             this, SLOT(action_Goto_Mark_Shortcut()));
-        new QShortcut(QKeySequence(Qt::SHIFT + Qt::ALT + Qt::Key_G, i), this, SLOT(action_Shift_Goto_Mark_Shortcut()));
+    for(int key = Qt::Key_A; key <= Qt::Key_Z; ++key) {
+        new QShortcut(QKeySequence(Qt::ALT + Qt::Key_M, key),             this, SLOT(action_Mark_Shortcut()));
+        new QShortcut(QKeySequence(Qt::ALT + Qt::Key_G, key),             this, SLOT(action_Goto_Mark_Shortcut()));
+        new QShortcut(QKeySequence(Qt::SHIFT + Qt::ALT + Qt::Key_G, key), this, SLOT(action_Shift_Goto_Mark_Shortcut()));
     }
 
     new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_PageDown), this, SLOT(action_Next_Document()));

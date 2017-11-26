@@ -482,7 +482,10 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 
     flashTimer_->setInterval(1500);
     flashTimer_->setSingleShot(true);
-    connect(flashTimer_, &QTimer::timeout, this, &DocumentWidget::flashTimerTimeout);
+
+    connect(flashTimer_, &QTimer::timeout, [this]() {
+        eraseFlashEx();
+    });
 
     auto area = createTextArea(buffer_);
 
@@ -1363,10 +1366,6 @@ QString DocumentWidget::GetWindowDelimiters() const {
         return QString();
     else
         return LanguageModes[languageMode_].delimiters;
-}
-
-void DocumentWidget::flashTimerTimeout() {
-    eraseFlashEx();
 }
 
 /*
