@@ -1309,7 +1309,7 @@ static bool setHighlightSyntaxMS(DocumentWidget *document, Arguments arguments, 
 
     document = MacroRunDocumentEx();
 
-    if(boost::optional<int> next = toggle_or_bool(arguments, document->highlightSyntax_, errMsg, "set_highlight_syntax")) {
+    if(boost::optional<int> next = toggle_or_bool(arguments, document->GetHighlightSyntax(), errMsg, "set_highlight_syntax")) {
         document->SetHighlightSyntax(*next);
         *result = to_value();
         return true;
@@ -1322,7 +1322,7 @@ static bool setIncrementalBackupMS(DocumentWidget *document, Arguments arguments
 
     document = MacroRunDocumentEx();
 
-    if(boost::optional<int> next = toggle_or_bool(arguments, document->autoSave_, errMsg, "set_incremental_backup")) {
+    if(boost::optional<int> next = toggle_or_bool(arguments, document->GetIncrementalBackup(), errMsg, "set_incremental_backup")) {
         document->SetIncrementalBackup(*next);
         *result = to_value();
         return true;
@@ -1349,14 +1349,8 @@ static bool setMakeBackupCopyMS(DocumentWidget *document, Arguments arguments, D
 
     document = MacroRunDocumentEx();
 
-    if(boost::optional<int> next = toggle_or_bool(arguments, document->saveOldVersion_, errMsg, "set_make_backup_copy")) {
-        if (document->IsTopDocument()) {
-            if(auto win = MainWindow::fromDocument(document)) {
-                no_signals(win->ui.action_Make_Backup_Copy)->setChecked(*next);
-            }
-        }
-
-        document->saveOldVersion_ = *next;
+    if(boost::optional<int> next = toggle_or_bool(arguments, document->GetMakeBackupCopy(), errMsg, "set_make_backup_copy")) {
+        document->SetMakeBackupCopy(*next);
         *result = to_value();
         return true;
     }
@@ -4492,7 +4486,7 @@ static bool rangesetListMV(DocumentWidget *document, Arguments arguments, DataVa
 
     Q_UNUSED(arguments);
 
-    RangesetTable *rangesetTable = document->rangesetTable_;
+    const std::shared_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
     DataValue element;
 
     *result = to_value(array_new());
@@ -4548,14 +4542,13 @@ static bool rangesetCreateMS(DocumentWidget *document, Arguments arguments, Data
     int nRangesetsRequired;
     DataValue element;
 
-    RangesetTable *rangesetTable = document->rangesetTable_;
+    std::shared_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
 
     if (arguments.size() > 1)
         M_FAILURE(WrongNumberOfArguments);
 
     if(!rangesetTable) {
-        rangesetTable = new RangesetTable(document->buffer_);
-        document->rangesetTable_ = rangesetTable;
+        rangesetTable = std::make_shared<RangesetTable>(document->buffer_);
     }
 
     if (arguments.empty()) {
@@ -4585,7 +4578,7 @@ static bool rangesetCreateMS(DocumentWidget *document, Arguments arguments, Data
 ** Built-in macro subroutine for forgetting a range set.
 */
 static bool rangesetDestroyMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
-    RangesetTable *rangesetTable = document->rangesetTable_;
+    const std::shared_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
     DataValue element;
     int label = 0;
 
@@ -4646,7 +4639,7 @@ static bool rangesetGetByNameMS(DocumentWidget *document, Arguments arguments, D
 
     Rangeset *rangeset;
     QString name;
-    RangesetTable *rangesetTable = document->rangesetTable_;
+    const std::shared_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
     uint8_t *rangesetList;
     int insertIndex = 0;
     DataValue element;
@@ -4694,7 +4687,7 @@ static bool rangesetGetByNameMS(DocumentWidget *document, Arguments arguments, D
 */
 static bool rangesetAddMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
     TextBuffer *buffer = document->buffer_;
-    RangesetTable *rangesetTable = document->rangesetTable_;
+    const std::shared_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
     int start;
     int end;
     int rectStart;
@@ -4790,7 +4783,7 @@ static bool rangesetAddMS(DocumentWidget *document, Arguments arguments, DataVal
 */
 static bool rangesetSubtractMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
     TextBuffer *buffer = document->buffer_;
-    RangesetTable *rangesetTable = document->rangesetTable_;
+    const std::shared_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
     int start, end, rectStart, rectEnd;
     bool isRect;
     int label = 0;
@@ -4865,7 +4858,7 @@ static bool rangesetSubtractMS(DocumentWidget *document, Arguments arguments, Da
 static bool rangesetInvertMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     TextBuffer *buffer = document->buffer_;
-    RangesetTable *rangesetTable = document->rangesetTable_;
+    const std::shared_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
     int label;
 
     if(!readArguments(arguments, 0, errMsg, &label)) {
@@ -4900,7 +4893,7 @@ static bool rangesetInvertMS(DocumentWidget *document, Arguments arguments, Data
 **    defined, count, color, mode.
 */
 static bool rangesetInfoMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
-    RangesetTable *rangesetTable = document->rangesetTable_;
+    const std::shared_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
     Rangeset *rangeset = nullptr;
     DataValue element;
     int label;
@@ -4966,7 +4959,7 @@ static bool rangesetInfoMS(DocumentWidget *document, Arguments arguments, DataVa
 */
 static bool rangesetRangeMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
-    RangesetTable *rangesetTable = document->rangesetTable_;
+    const std::shared_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
     Rangeset *rangeset;
     int start = 0;
     int end = 0;
@@ -5027,7 +5020,7 @@ static bool rangesetRangeMS(DocumentWidget *document, Arguments arguments, DataV
 */
 static bool rangesetIncludesPosMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
     TextBuffer *buffer = document->buffer_;
-    RangesetTable *rangesetTable = document->rangesetTable_;
+    const std::shared_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
     int rangeIndex;
     int label = 0;
 
@@ -5078,7 +5071,7 @@ static bool rangesetIncludesPosMS(DocumentWidget *document, Arguments arguments,
 static bool rangesetSetColorMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     TextBuffer *buffer = document->buffer_;
-    RangesetTable *rangesetTable = document->rangesetTable_;
+    const std::shared_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
     int label = 0;
 
     if (arguments.size() != 2) {
@@ -5116,7 +5109,7 @@ static bool rangesetSetColorMS(DocumentWidget *document, Arguments arguments, Da
 */
 static bool rangesetSetNameMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
-    RangesetTable *rangesetTable = document->rangesetTable_;
+    const std::shared_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
     int label = 0;
 
     if (arguments.size() != 2) {
@@ -5154,7 +5147,7 @@ static bool rangesetSetNameMS(DocumentWidget *document, Arguments arguments, Dat
 */
 static bool rangesetSetModeMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
-    RangesetTable *rangesetTable = document->rangesetTable_;
+    const std::shared_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
     Rangeset *rangeset;
     int label = 0;
 

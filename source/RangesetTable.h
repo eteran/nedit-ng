@@ -3,6 +3,7 @@
 #define RANGESET_TABLE_H_
 
 #include "Rangeset.h"
+#include <memory>
 
 class RangesetTable {
 public:
@@ -19,12 +20,12 @@ public:
     int RangesetTableGetColorValid(int index, QColor *color);
 	Rangeset *RangesetFetch(int label);
 	Rangeset *RangesetForget(int label);
+    int RangesetFindIndex(int label, bool must_be_active);
 
 public:
 	static void RangesetTableUpdatePos(RangesetTable *table, int pos, int ins, int del);
-    static uint8_t *RangesetGetList(RangesetTable *table);
-    static int RangesetFindIndex(RangesetTable *table, int label, bool must_be_active);
-    static int RangesetIndex1ofPos(RangesetTable *table, int pos, bool needs_color);
+    static uint8_t *RangesetGetList(const std::shared_ptr<RangesetTable> &table);
+    static int RangesetIndex1ofPos(const std::shared_ptr<RangesetTable> &table, int pos, bool needs_color);
 	static int RangesetLabelOK(int label);
 
 public:

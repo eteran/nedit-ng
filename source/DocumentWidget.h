@@ -182,6 +182,10 @@ public:
     void StartHighlightingEx(bool warn);
     void StopHighlightingEx();
     void UpdateHighlightStylesEx();
+    bool GetHighlightSyntax() const;
+    bool GetIncrementalBackup() const;
+    bool GetMakeBackupCopy() const;
+    void SetMakeBackupCopy(bool value);
 
 
 public:
@@ -270,64 +274,63 @@ private:
     QPointer<QDialog> dialogFonts_;
 
 public:
-	Bookmark markTable_[MAX_MARKS];    // marked locations in window
-	FileFormats fileFormat_;           // whether to save the file straight (Unix format), or convert it to MS DOS style with \r\n line breaks
-	LockReasons lockReasons_;          // all ways a file can be locked
-	QString backlightCharTypes_;       // what backlighting to use
-	QString boldFontName_;
-	QString boldItalicFontName_;
-	QString filename_;                 // name component of file being edited
-	QString fontName_;                 // names of the text fonts in use
-	QString italicFontName_;
-	QString path_;                     // path component of file being edited
-	TextBuffer *buffer_;               // holds the text being edited
+    QString fontName_;                 // names of the text fonts in use
+    QString path_;                     // path component of file being edited
+    QString filename_;                 // name component of file being edited
+    QString boldFontName_;
+    QString italicFontName_;
+    QString boldItalicFontName_;
+    LockReasons lockReasons_;          // all ways a file can be locked
+    TextBuffer *buffer_;               // holds the text being edited
+    bool multiFileBusy_;               // suppresses multiple beeps/dialogs during multi-file replacements
+    bool multiFileReplSelected_;       // selected during last multi-window replacement operation (history)
+    bool filenameSet_;                 // is the window still "Untitled"?
+    bool replaceFailed_;               // flags replacements failures during multi-file replacements
+    bool highlightSyntax_;             // is syntax highlighting turned on?
+    bool fileChanged_;                 // has window been modified?
+    bool showStats_;                   // is stats line supposed to be shown
+    bool overstrike_;                  // is overstrike mode turned on ?
+    bool saveOldVersion_;              // keep old version in filename.bc
+    bool autoSave_;                    // is autosave turned on?
+    int languageMode_;                 // identifies language mode currently selected in the window
+    int matchSyntaxBased_;             // Use syntax info to show matching
+    ShowMatchingStyle showMatchingStyle_;           // How to show matching parens: None, Delimeter, or Range
+    IndentStyle indentStyle_;          // whether/how to auto indent
+    WrapStyle wrapMode_;               // line wrap style: None, Newline or Continuous
+    FileFormats fileFormat_;           // whether to save the file straight (Unix format), or convert it to MS DOS style with \r\n line breaks
+    std::unique_ptr<WindowHighlightData> highlightData_;              // info for syntax highlighting
+    std::shared_ptr<MacroCommandData>    macroCmdData_;               // same for macro commands
+    std::shared_ptr<RangesetTable> rangesetTable_;   // current range sets
 
+private:
+	Bookmark markTable_[MAX_MARKS];    // marked locations in window	
+	QString backlightCharTypes_;       // what backlighting to use
     QFont fontStruct_;
     QFont boldFontStruct_;
     QFont boldItalicFontStruct_;
-    QFont italicFontStruct_;    // fontStructs for highlighting fonts
-
+    QFont italicFontStruct_;
     QTimer *flashTimer_;               // timer for getting rid of highlighted matching paren.
-    QMenu *contextMenu_;
-
-	bool autoSave_;                    // is autosave turned on?
+    QMenu *contextMenu_;	
 	bool backlightChars_;              // is char backlighting turned on?
-	bool fileChanged_;                 // has window been modified?
-	bool fileMissing_;                 // is the window's file gone?
-	bool filenameSet_;                 // is the window still "Untitled"?
-	bool highlightSyntax_;             // is syntax highlighting turned on?
+	bool fileMissing_;                 // is the window's file gone?		
 	bool ignoreModify_;                // ignore modifications to text area
-	bool modeMessageDisplayed_;        // special stats line banner for learn and shell command executing modes
-	bool multiFileBusy_;               // suppresses multiple beeps/dialogs during multi-file replacements
-	bool multiFileReplSelected_;       // selected during last multi-window replacement operation (history)
-	bool overstrike_;                  // is overstrike mode turned on ?
-	bool replaceFailed_;               // flags replacements failures during multi-file replacements
-    bool saveOldVersion_;              // keep old version in filename.bc
+	bool modeMessageDisplayed_;        // special stats line banner for learn and shell command executing modes	    
     QString modeMessage_;              // stats line banner content for learn and shell command executing modes
-    IndentStyle indentStyle_;          // whether/how to auto indent
-    int matchSyntaxBased_;            // Use syntax info to show matching
-    ShowMatchingStyle showMatchingStyle_;           // How to show matching parens: None, Delimeter, or Range
-    WrapStyle wrapMode_;                    // line wrap style: None, Newline or Continuous
 	dev_t device_;                     // device where the file resides
 	gid_t fileGid_;                    // last recorded group id of the file
 	ino_t inode_;                      // file's inode
 	int autoSaveCharCount_;            // count of single characters typed since last backup file generated
 	int autoSaveOpCount_;              // count of editing operations ""
-	int flashPos_;                     // position saved for erasing matching paren highlight (if one is drawn)
-	int languageMode_;                 // identifies language mode currently selected in the window
+	int flashPos_;                     // position saved for erasing matching paren highlight (if one is drawn)	
 	int nMarks_;                       // number of active bookmarks
 	int undoMemUsed_;                  // amount of memory (in bytes) dedicated to the undo list
     std::deque<UndoInfo> redo_;             // info for redoing last undone op
     std::deque<UndoInfo> undo_;             // info for undoing last operation
     time_t lastModTime_;               // time of last modification to file
 	uid_t fileUid_;                    // last recorded user id of the file
-	unsigned fileMode_;                // permissions of file being edited
-    std::unique_ptr<WindowHighlightData> highlightData_;              // info for syntax highlighting
-    std::shared_ptr<MacroCommandData>    macroCmdData_;               // same for macro commands
+	unsigned fileMode_;                // permissions of file being edited    
     std::unique_ptr<ShellCommandData>    shellCmdData_;               // when a shell command is executing, info. about it, otherwise, nullptr
-    std::unique_ptr<SmartIndentData>     smartIndentData_;            // compiled macros for smart indent
-    bool showStats_;                  // is stats line supposed to be shown
-    RangesetTable *rangesetTable_;   // current range sets
+    std::unique_ptr<SmartIndentData>     smartIndentData_;            // compiled macros for smart indent    
 private:
 	QSplitter *splitter_;
 	Ui::DocumentWidget ui;

@@ -539,7 +539,6 @@ DocumentWidget::~DocumentWidget() noexcept {
     }
 
     delete buffer_;
-    delete rangesetTable_;
 }
 
 //------------------------------------------------------------------------------
@@ -6726,6 +6725,10 @@ void DocumentWidget::SetUseTabs(bool value) {
     buffer_->useTabs_ = value;
 }
 
+bool DocumentWidget::GetHighlightSyntax() const {
+    return highlightSyntax_;
+}
+
 void DocumentWidget::SetHighlightSyntax(bool value) {
 
     EMIT_EVENT_ARG_1("set_highlight_syntax", QString::number(value));
@@ -6743,6 +6746,25 @@ void DocumentWidget::SetHighlightSyntax(bool value) {
     } else {
         StopHighlightingEx();
     }
+}
+
+bool DocumentWidget::GetMakeBackupCopy() const {
+    return saveOldVersion_;
+}
+
+void DocumentWidget::SetMakeBackupCopy(bool value) {
+    if (IsTopDocument()) {
+        if(auto win = MainWindow::fromDocument(this)) {
+            no_signals(win->ui.action_Make_Backup_Copy)->setChecked(value);
+        }
+    }
+
+    saveOldVersion_ = value;
+}
+
+
+bool DocumentWidget::GetIncrementalBackup() const {
+    return autoSave_;
 }
 
 void DocumentWidget::SetIncrementalBackup(bool value) {

@@ -136,7 +136,7 @@ RangesetTable::~RangesetTable() {
 ** make_active is true, and make it the most visible.
 */
 Rangeset *RangesetTable::RangesetFetch(int label) {
-    int rangesetIndex = RangesetFindIndex(this, label, 0);
+    int rangesetIndex = RangesetFindIndex(label, 0);
 
 	if (rangesetIndex < 0)
 		return nullptr;
@@ -152,7 +152,7 @@ Rangeset *RangesetTable::RangesetFetch(int label) {
 */
 
 Rangeset *RangesetTable::RangesetForget(int label) {
-    int set_ind = RangesetFindIndex(this, label, 1);
+    int set_ind = RangesetFindIndex(label, 1);
 
 	if (set_ind < 0)
 		return nullptr;
@@ -175,20 +175,19 @@ QString RangesetTable::RangesetTableGetColorName(int index) {
 /*
 ** Find a range set given its label in the table.
 */
-int RangesetTable::RangesetFindIndex(RangesetTable *table, int label, bool must_be_active)  {
+int RangesetTable::RangesetFindIndex(int label, bool must_be_active)  {
 
 	if (label == 0) {
 		return -1;
 	}
 
-    if (table) {
-        auto p_label = reinterpret_cast<const uint8_t *>(strchr(reinterpret_cast<const char *>(rangeset_labels), label));
-		if (p_label) {
-            auto i = gsl::narrow<int>(p_label - rangeset_labels);
-            if (!must_be_active || table->active_[i])
-				return i;
-		}
-	}
+    auto p_label = reinterpret_cast<const uint8_t *>(strchr(reinterpret_cast<const char *>(rangeset_labels), label));
+    if (p_label) {
+        auto i = gsl::narrow<int>(p_label - rangeset_labels);
+        if (!must_be_active || active_[i])
+            return i;
+    }
+
 
 	return -1;
 }
@@ -200,7 +199,7 @@ int RangesetTable::RangesetFindIndex(RangesetTable *table, int label, bool must_
 ** will be skipped.
 */
 
-int RangesetTable::RangesetIndex1ofPos(RangesetTable *table, int pos, bool needs_color) {
+int RangesetTable::RangesetIndex1ofPos(const std::shared_ptr<RangesetTable> &table, int pos, bool needs_color) {
 	int i;
 
     if (!table)
@@ -246,7 +245,7 @@ int RangesetTable::nRangesetsAvailable() const {
 }
 
 
-uint8_t *RangesetTable::RangesetGetList(RangesetTable *table) {
+uint8_t *RangesetTable::RangesetGetList(const std::shared_ptr<RangesetTable> &table) {
     return table ? table->list_ : const_cast<uint8_t *>(reinterpret_cast<const uint8_t *>(""));
 }
 
@@ -274,7 +273,7 @@ int RangesetTable::RangesetCreate() {
 
 	int label = rangeset_labels[firstAvailableIndex];
 
-    int setIndex = RangesetFindIndex(this, label, 0);
+    int setIndex = RangesetFindIndex(label, 0);
 
 	if (setIndex < 0)
 		return 0;
