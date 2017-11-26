@@ -489,7 +489,7 @@ void MainWindow::setupPrevOpenMenuActions() {
 
         prevMenu->addActions(previousOpenFilesList_);
 
-        connect(prevMenu, &QMenu::triggered, [this](QAction *action) {
+        connect(prevMenu, &QMenu::triggered, this, [this](QAction *action) {
 
             auto filename = action->data().toString();
 
@@ -1282,7 +1282,7 @@ void MainWindow::updateLanguageModeSubmenu() {
 
     ui.action_Language_Mode->setMenu(languageMenu);
 
-    connect(languageMenu, &QMenu::triggered, [this](QAction *action) {
+    connect(languageMenu, &QMenu::triggered, this, [this](QAction *action) {
 
         if(auto document = qobject_cast<DocumentWidget *>(ui.tabWidget->currentWidget())) {
             const auto mode = action->data().value<int>();
@@ -3035,7 +3035,7 @@ void MainWindow::updateTipsFileMenuEx() {
 
     ui.action_Unload_Calltips_File->setMenu(tipsMenu);
 
-    connect(tipsMenu, &QMenu::triggered, [this](QAction *action) {
+    connect(tipsMenu, &QMenu::triggered, this, [this](QAction *action) {
         auto filename = action->data().toString();
         if(!filename.isEmpty()) {
             action_Unload_Tips_File(currentDocument(), filename);
@@ -4214,7 +4214,7 @@ QString MainWindow::PromptForNewFileEx(DocumentWidget *document, const QString &
                 wrapCheck->setChecked(true);
             }
 
-            QObject::connect(wrapCheck, &QCheckBox::toggled, [wrapCheck, this](bool checked) {
+            QObject::connect(wrapCheck, &QCheckBox::toggled, this, [wrapCheck, this](bool checked) {
                 if(checked) {
                     int ret = QMessageBox::information(this, tr("Add Wrap"),
                         tr("This operation adds permanent line breaks to match the automatic wrapping done by the Continuous Wrap mode Preferences Option.\n\n"

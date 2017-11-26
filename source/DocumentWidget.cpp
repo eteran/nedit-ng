@@ -483,7 +483,7 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
     flashTimer_->setInterval(1500);
     flashTimer_->setSingleShot(true);
 
-    connect(flashTimer_, &QTimer::timeout, [this]() {
+    connect(flashTimer_, &QTimer::timeout, this, [this]() {
         eraseFlashEx();
     });
 
@@ -601,7 +601,7 @@ TextArea *DocumentWidget::createTextArea(TextBuffer *buffer) {
     // policy here, in fact, that would break things.
     //area->setContextMenuPolicy(Qt::CustomContextMenu);
 
-    connect(area, &TextArea::customContextMenuRequested, [this](const QPoint &pos) {
+    connect(area, &TextArea::customContextMenuRequested, this, [this](const QPoint &pos) {
         if(contextMenu_) {
             contextMenu_->exec(pos);
         }
@@ -2569,7 +2569,7 @@ int DocumentWidget::SaveWindowAs(const QString &newName, bool addWrap) {
                         wrapCheck->setChecked(true);
                     }
 
-                    connect(wrapCheck, &QCheckBox::toggled, [wrapCheck, this](bool checked) {
+                    connect(wrapCheck, &QCheckBox::toggled, this, [wrapCheck, this](bool checked) {
                         if(checked) {
                             int ret = QMessageBox::information(
                                         this,
@@ -4581,19 +4581,19 @@ void DocumentWidget::issueCommandEx(MainWindow *window, TextArea *area, const QS
 
     // support for merged output if we are not using ERROR_DIALOGS
     if (flags & ERROR_DIALOGS) {
-        connect(process, &QProcess::readyReadStandardError, [this]() {
+        connect(process, &QProcess::readyReadStandardError, this, [this]() {
             QByteArray data = shellCmdData_->process->readAllStandardError();
             shellCmdData_->standardError.append(data);
         });
 
-        connect(process, &QProcess::readyReadStandardOutput, [this]() {
+        connect(process, &QProcess::readyReadStandardOutput, this, [this]() {
             QByteArray data = shellCmdData_->process->readAllStandardOutput();
             shellCmdData_->standardOutput.append(data);
         });
     } else {
         process->setProcessChannelMode(QProcess::MergedChannels);
 
-        connect(process, &QProcess::readyRead, [this]() {
+        connect(process, &QProcess::readyRead, this, [this]() {
             QByteArray data = shellCmdData_->process->readAll();
             shellCmdData_->standardOutput.append(data);
         });
@@ -5369,7 +5369,7 @@ void DocumentWidget::ResumeMacroExecutionEx() {
     if(const std::shared_ptr<MacroCommandData> &cmdData = macroCmdData_) {
 
         // create a background task that will run so long as the function returns false
-        connect(&cmdData->continuationTimer, &QTimer::timeout, [cmdData, this]() {
+        connect(&cmdData->continuationTimer, &QTimer::timeout, this, [cmdData, this]() {
             if(continueWorkProcEx() == MacroContinuationCode::Stop) {
                 cmdData->continuationTimer.stop();
             }
