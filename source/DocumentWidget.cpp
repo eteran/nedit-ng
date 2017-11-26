@@ -904,7 +904,7 @@ void DocumentWidget::modifiedCallback(int pos, int nInserted, int nDeleted, int 
 
     Q_UNUSED(nRestyled);
 
-    bool selected = buffer_->primary_.selected;
+    bool selected = buffer_->BufGetPrimary().selected;
 
     // update the table of bookmarks
     if (!ignoreModify_) {
@@ -1721,7 +1721,7 @@ void DocumentWidget::Undo() {
         buffer_->BufReplaceEx(undo.startPos, undo.endPos, undo.oldText);
 
         auto restoredTextLength = gsl::narrow<int>(undo.oldText.size());
-        if (!buffer_->primary_.selected || GetPrefUndoModifiesSelection()) {
+        if (!buffer_->BufGetPrimary().selected || GetPrefUndoModifiesSelection()) {
             /* position the cursor in the focus pane after the changed text
                to show the user where the undo was done */
             if(QPointer<TextArea> area = win->lastFocus_) {
@@ -1776,7 +1776,7 @@ void DocumentWidget::Redo() {
         buffer_->BufReplaceEx(redo.startPos, redo.endPos, redo.oldText);
 
         auto restoredTextLength = gsl::narrow<int>(redo.oldText.size());
-        if (!buffer_->primary_.selected || GetPrefUndoModifiesSelection()) {
+        if (!buffer_->BufGetPrimary().selected || GetPrefUndoModifiesSelection()) {
             /* position the cursor in the focus pane after the changed text
                to show the user where the undo was done */
             if(auto area = win->lastFocus_) {
@@ -3601,7 +3601,7 @@ bool DocumentWidget::includeFile(const QString &name) {
 
     /* insert the contents of the file in the selection or at the insert
        position in the window if no selection exists */
-    if (buffer_->primary_.selected) {
+    if (buffer_->BufGetPrimary().selected) {
         buffer_->BufReplaceSelectedEx(fileString);
     } else {
         if(auto win = MainWindow::fromDocument(this)) {
@@ -3935,7 +3935,7 @@ void DocumentWidget::ExecShellCommandEx(TextArea *area, const QString &command, 
 void DocumentWidget::PrintWindow(TextArea *area, bool selectedOnly) {
 
     TextBuffer *buf = buffer_;
-    TextSelection *sel = &buf->primary_;
+    const TextSelection *sel = &buf->BufGetPrimary();
     std::string fileString;
 
     /* get the contents of the text buffer from the text area widget.  Add
@@ -4778,7 +4778,7 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
             TextBuffer *buf = area->TextGetBuffer();
 
             if (cmdData->flags & REPLACE_SELECTION) {
-                int reselectStart = buf->primary_.rectangular ? -1 : buf->primary_.start;
+                int reselectStart = buf->BufGetPrimary().rectangular ? -1 : buf->BufGetPrimary().start;
                 buf->BufReplaceSelectedEx(output_string);
 
                 area->TextSetCursorPos(buf->BufCursorPosHint());
@@ -4922,8 +4922,8 @@ void DocumentWidget::FilterSelection(const QString &command, bool fromMacro) {
         return;
     }
 
-    int left  = buffer_->primary_.start;
-    int right = buffer_->primary_.end;
+    int left  = buffer_->BufGetPrimary().start;
+    int right = buffer_->BufGetPrimary().end;
 
     // Issue the command and collect its output
     issueCommandEx(
@@ -5400,7 +5400,7 @@ void DocumentWidget::FlashMatchingEx(TextArea *area) {
     }
 
     // don't flash matching characters if there's a selection
-    if (buffer_->primary_.selected) {
+    if (buffer_->BufGetPrimary().selected) {
         return;
     }
 
@@ -6726,7 +6726,7 @@ QString DocumentWidget::GetAnySelectionEx() {
 
     /* If the selection is in the window's own buffer get it from there,
        but substitute null characters as if it were an external selection */
-    if (buffer_->primary_.selected) {
+    if (buffer_->BufGetPrimary().selected) {
         return QString::fromStdString(buffer_->BufGetSelectionTextEx());
     }
 
@@ -6966,7 +6966,7 @@ void DocumentWidget::AddMarkEx(TextArea *area, QChar label) {
 
     // store the cursor location and selection position in the table
     markTable_[index].label     = label;
-    markTable_[index].sel       = buffer_->primary_;
+    markTable_[index].sel       = buffer_->BufGetPrimary();
     markTable_[index].cursorPos = area->TextGetCursorPos();
 }
 
@@ -7023,8 +7023,8 @@ void DocumentWidget::gotoMark(TextArea *area, QChar label, bool extendSel) {
     }
 
     // reselect marked the selection, and move the cursor to the marked pos
-    TextSelection *sel    = &markTable_[index].sel;
-    TextSelection *oldSel = &buffer_->primary_;
+    const TextSelection *sel    = &markTable_[index].sel;
+    const TextSelection *oldSel = &buffer_->BufGetPrimary();
 
     int cursorPos = markTable_[index].cursorPos;
     if (extendSel) {

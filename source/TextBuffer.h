@@ -153,6 +153,12 @@ public:
     void BufSetUseTabs(bool useTabs) noexcept;
     void BufUnhighlight() noexcept;
     void BufUnselect() noexcept;
+    const TextSelection &BufGetPrimary() const;
+    const TextSelection &BufGetSecondary() const;
+    const TextSelection &BufGetHighlight() const;
+    TextSelection &BufGetPrimary();
+    TextSelection &BufGetSecondary();
+    TextSelection &BufGetHighlight();
 
 public:
     /* unlike BufSetTabDistance, this version doesn't execute all of the
@@ -217,19 +223,14 @@ private:
     int gapStart_;      // points to the first character of the gap
     int gapEnd_;        // points to the first char after the gap
     int length_;        // length of the text in the buffer (the length of the buffer itself must be calculated: gapEnd gapStart + length)
-    std::deque<std::pair<bufPreDeleteCallbackProc, void *>> preDeleteProcs_; // procedure to call before text is deleted from the buffer; at most one is supported.
-    std::deque<std::pair<bufModifyCallbackProc, void *>> modifyProcs_;       // procedures to call when buffer is modified to redisplay contents
-
-public:
-	// TODO(eteran): accessors
     TextSelection primary_;          // highlighted areas
     TextSelection secondary_;
     TextSelection highlight_;    
-
-private:
     int tabDist_;       // equiv. number of characters in a tab
     bool useTabs_;      // True if buffer routines are allowed to use tabs for padding in rectangular operations
     int cursorPosHint_; // hint for reasonable cursor position after a buffer modification operation
+    std::deque<std::pair<bufPreDeleteCallbackProc, void *>> preDeleteProcs_; // procedure to call before text is deleted from the buffer; at most one is supported.
+    std::deque<std::pair<bufModifyCallbackProc, void *>> modifyProcs_;       // procedures to call when buffer is modified to redisplay contents
 };
 
 #include "TextBuffer.tcc"

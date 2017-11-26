@@ -4055,7 +4055,7 @@ static bool selectionStartMV(DocumentWidget *document, Arguments arguments, Data
         M_FAILURE(TooManyArguments);
     }
 
-    *result = to_value(document->buffer_->primary_.selected ? document->buffer_->primary_.start : -1);
+    *result = to_value(document->buffer_->BufGetPrimary().selected ? document->buffer_->BufGetPrimary().start : -1);
     return true;
 }
 
@@ -4065,7 +4065,7 @@ static bool selectionEndMV(DocumentWidget *document, Arguments arguments, DataVa
         M_FAILURE(TooManyArguments);
     }
 
-    *result = to_value(document->buffer_->primary_.selected ? document->buffer_->primary_.end : -1);
+    *result = to_value(document->buffer_->BufGetPrimary().selected ? document->buffer_->BufGetPrimary().end : -1);
     return true;
 }
 
@@ -4075,7 +4075,7 @@ static bool selectionLeftMV(DocumentWidget *document, Arguments arguments, DataV
         M_FAILURE(TooManyArguments);
     }
 
-    TextSelection *sel = &document->buffer_->primary_;
+    const TextSelection *sel = &document->buffer_->BufGetPrimary();
 
     *result = to_value(sel->selected && sel->rectangular ? sel->rectStart : -1);
     return true;
@@ -4087,7 +4087,7 @@ static bool selectionRightMV(DocumentWidget *document, Arguments arguments, Data
         M_FAILURE(TooManyArguments);
     }
 
-    TextSelection *sel = &document->buffer_->primary_;
+    const TextSelection *sel = &document->buffer_->BufGetPrimary();
 
     *result = to_value(sel->selected && sel->rectangular ? sel->rectEnd : -1);
     return true;

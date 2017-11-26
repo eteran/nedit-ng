@@ -2367,4 +2367,34 @@ int BasicTextBuffer<Ch, Tr>::BufGetTabDist() noexcept {
     return tabDist_;
 }
 
+template <class Ch, class Tr>
+const TextSelection &BasicTextBuffer<Ch, Tr>::BufGetPrimary() const {
+    return primary_;
+}
+
+template <class Ch, class Tr>
+const TextSelection &BasicTextBuffer<Ch, Tr>::BufGetSecondary() const {
+    return secondary_;
+}
+
+template <class Ch, class Tr>
+const TextSelection &BasicTextBuffer<Ch, Tr>::BufGetHighlight() const {
+    return highlight_;
+}
+
+template <class Ch, class Tr>
+TextSelection &BasicTextBuffer<Ch, Tr>::BufGetPrimary() {
+    return primary_;
+}
+
+template <class Ch, class Tr>
+TextSelection &BasicTextBuffer<Ch, Tr>::BufGetSecondary() {
+    return secondary_;
+}
+
+template <class Ch, class Tr>
+TextSelection &BasicTextBuffer<Ch, Tr>::BufGetHighlight() {
+    return highlight_;
+}
+
 #endif

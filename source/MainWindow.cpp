@@ -3247,6 +3247,10 @@ void MainWindow::on_action_Statistics_Line_toggled(bool state) {
     std::vector<DocumentWidget *> documents = openDocuments();
     for(DocumentWidget *document : documents) {
         document->ShowStatsLine(state);
+
+        if(document->IsTopDocument()) {
+            document->UpdateStatsLine(nullptr);
+        }
     }
 }
 
@@ -4889,7 +4893,7 @@ void MainWindow::action_Filter_Selection(DocumentWidget *document) {
         return;
     }
 
-    if (!document->buffer_->primary_.selected) {
+    if (!document->buffer_->BufGetPrimary().selected) {
         QApplication::beep();
         return;
     }
@@ -4929,7 +4933,7 @@ void MainWindow::action_Filter_Selection(DocumentWidget *document, const QString
         return;
     }
 
-    if (!document->buffer_->primary_.selected) {
+    if (!document->buffer_->BufGetPrimary().selected) {
         QApplication::beep();
         return;
     }
