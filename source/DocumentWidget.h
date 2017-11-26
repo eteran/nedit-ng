@@ -81,10 +81,6 @@ Q_SIGNALS:
 
 private Q_SLOTS:
     void flashTimerTimeout();
-    void customContextMenu(const QPoint &pos);
-    void mergedReadProc();
-    void stdoutReadProc();
-    void stderrReadProc();
     void processFinished(int exitCode, QProcess::ExitStatus exitStatus);
 
 public Q_SLOTS:

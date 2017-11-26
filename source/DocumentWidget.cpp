@@ -598,7 +598,12 @@ TextArea *DocumentWidget::createTextArea(TextBuffer *buffer) {
     // policy here, in fact, that would break things.
     //area->setContextMenuPolicy(Qt::CustomContextMenu);
 
-    connect(area, &TextArea::customContextMenuRequested, this, &DocumentWidget::customContextMenu);
+    connect(area, &TextArea::customContextMenuRequested, [this](const QPoint &pos) {
+        if(contextMenu_) {
+            contextMenu_->exec(pos);
+        }
+    });
+
     return area;
 }
 
@@ -4441,12 +4446,6 @@ void DocumentWidget::ClearModeMessageEx() {
     UpdateStatsLine(nullptr);
 }
 
-void DocumentWidget::customContextMenu(const QPoint &pos) {
-    if(contextMenu_) {
-        contextMenu_->exec(pos);
-    }
-}
-
 /*
 ** Checks whether a window is still alive, and closes it only if so.
 ** Intended to be used when the file could not be opened for some reason.
@@ -4535,11 +4534,22 @@ void DocumentWidget::issueCommandEx(MainWindow *window, TextArea *area, const QS
 
     // support for merged output if we are not using ERROR_DIALOGS
     if (flags & ERROR_DIALOGS) {
-        connect(process, &QProcess::readyReadStandardError,  document, &DocumentWidget::stderrReadProc);
-        connect(process, &QProcess::readyReadStandardOutput, document, &DocumentWidget::stdoutReadProc);
+        connect(process, &QProcess::readyReadStandardError, [this]() {
+            QByteArray data = shellCmdData_->process->readAllStandardError();
+            shellCmdData_->standardError.append(data);
+        });
+
+        connect(process, &QProcess::readyReadStandardOutput, [this]() {
+            QByteArray data = shellCmdData_->process->readAllStandardOutput();
+            shellCmdData_->standardOutput.append(data);
+        });
     } else {
         process->setProcessChannelMode(QProcess::MergedChannels);
-        connect(process, &QProcess::readyRead, document, &DocumentWidget::mergedReadProc);
+
+        connect(process, &QProcess::readyRead, [this]() {
+            QByteArray data = shellCmdData_->process->readAll();
+            shellCmdData_->standardOutput.append(data);
+        });
     }
 
     // start it off!
@@ -4580,36 +4590,6 @@ void DocumentWidget::issueCommandEx(MainWindow *window, TextArea *area, const QS
        command completes */
     if (fromMacro) {
         PreemptMacro();
-    }
-}
-
-/*
-** Called when the shell sub-process stream has data.
-*/
-void DocumentWidget::mergedReadProc() {
-    if(const std::unique_ptr<ShellCommandData> &cmdData = shellCmdData_) {
-        QByteArray data = cmdData->process->readAll();
-        cmdData->standardOutput.append(data);
-    }
-}
-
-/*
-** Called when the shell sub-process stdout stream has data.
-*/
-void DocumentWidget::stdoutReadProc() {
-    if(const std::unique_ptr<ShellCommandData> &cmdData = shellCmdData_) {
-        QByteArray data = cmdData->process->readAllStandardOutput();
-        cmdData->standardOutput.append(data);
-    }
-}
-
-/*
-** Called when the shell sub-process stderr stream has data.
-*/
-void DocumentWidget::stderrReadProc() {
-    if(const std::unique_ptr<ShellCommandData> &cmdData = shellCmdData_) {
-        QByteArray data = cmdData->process->readAllStandardOutput();
-        cmdData->standardError.append(data);
     }
 }
 
@@ -4696,7 +4676,7 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
             cancel = (msgBox.exec() == QMessageBox::Cancel);
 
         } else if (failure) {
-            outText.truncate(DF_MAX_MSG_LENGTH - 70); // truncate to ~DF_MAX_MSG_LENGTH characters
+            outText.truncate(DF_MAX_MSG_LENGTH);
 
             QMessageBox msgBox;
             msgBox.setWindowTitle(tr("Command Failure"));
