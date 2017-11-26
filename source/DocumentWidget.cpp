@@ -2477,7 +2477,7 @@ bool DocumentWidget::doSave() {
     // If the file is to be saved in DOS or Macintosh format, reconvert
     if (fileFormat_ == FileFormats::Dos) {
         if (!ConvertToDosFileStringEx(fileString)) {
-            QMessageBox::critical(this, tr("Out of Memory"), tr("Out of memory!  Try\nsaving in Unix format"));
+            QMessageBox::critical(this, tr("Out of Memory"), tr("Out of memory!  Try saving in Unix format"));
             return false;
         }
     } else if (fileFormat_ == FileFormats::Mac) {

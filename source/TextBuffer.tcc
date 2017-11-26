@@ -442,14 +442,14 @@ void BasicTextBuffer<Ch, Tr>::BufOverlayRectEx(int startPos, int rectStart, int 
     int nLines = countLinesEx(text);
     int lineStartPos = BufStartOfLine(startPos);
 
-    Q_UNUSED(lineStartPos);
-
     if (rectEnd == -1) {
         rectEnd = rectStart + textWidthEx(text, tabDist_);
     }
 
-    // TODO(eteran): can this **possibly** change? or is this redundant?
+#if 0
+    // NOTE(eteran): this call seems entirely redundant
     lineStartPos = BufStartOfLine(startPos);
+#endif
 
     const int nDeleted = BufEndOfLine(BufCountForwardNLines(startPos, nLines)) - lineStartPos;
     callPreDeleteCBs(lineStartPos, nDeleted);
@@ -894,7 +894,7 @@ int BasicTextBuffer<Ch, Tr>::BufExpandCharacter(Ch ch, int indent, Ch outStr[MAX
     }
 
     // Convert ASCII control codes to readable character sequences
-    if ((static_cast<size_t>(ch)) <= 31) {
+    if ((static_cast<size_t>(ch)) < 32) {
         return snprintf(outStr, MAX_EXP_CHAR_LEN, "<%s>", controlCharacter(ch));
     }
 
@@ -923,7 +923,7 @@ int BasicTextBuffer<Ch, Tr>::BufCharWidth(Ch ch, int indent, int tabDist) noexce
     }
 
     if (ch == 127) {
-        return 5;
+        return 5; // Tr::length("<del>")
     }
 
     return 1;
@@ -2060,8 +2060,6 @@ void BasicTextBuffer<Ch, Tr>::insertColInLineEx(view_type line, view_type insLin
     if (!insLine.empty()) {
         string_type retabbedStr = realignTabsEx(insLine, 0, indent, tabDist, useTabs);
         len = gsl::narrow<int>(retabbedStr.size());
-
-        Q_UNUSED(len);
 
         for (Ch ch : retabbedStr) {
             *outPtr++ = ch;
