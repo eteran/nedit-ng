@@ -56,6 +56,7 @@
 #include "version.h"
 
 #include <gsl/gsl_util>
+#include <boost/optional.hpp>
 #include <stack>
 #include <fstream>
 
@@ -1283,92 +1284,97 @@ static bool setFontsMS(DocumentWidget *document, Arguments arguments, DataValue 
     return true;
 }
 
+boost::optional<int> toggle_or_bool(Arguments arguments, int previous, const char **errMsg, const char *actionName) {
 
-#define ACTION_BOOL_PARAM_OR_TOGGLE(newState, arguments, oValue, actionName) \
-    do {                                                                          \
-        switch(arguments.size()) {                                                           \
-        case 1:                                                                   \
-            if(!readArguments(arguments, 0, errMsg, &newState)) {            \
-                return false;                                                     \
-            }                                                                     \
-            break;                                                                \
-        case 0:                                                                   \
-            newState = !(oValue);                                                 \
-            break;                                                                \
-        default:                                                                  \
-            qWarning("NEdit: %s requires 0 or 1 arguments", actionName);             \
-            return false;                                                         \
-        }                                                                         \
-    } while(0)
+    int next;
+    switch(arguments.size()) {
+    case 1:
+        if(!readArguments(arguments, 0, errMsg, &next)) {
+            return boost::none;
+        }
+        break;
+    case 0:
+        next = !previous;
+        break;
+    default:
+        qWarning("NEdit: %s requires 0 or 1 arguments", actionName);
+        return boost::none;
+    }
 
+    return next;
+}
 
 
 static bool setHighlightSyntaxMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     document = MacroRunDocumentEx();
-    int newState;
 
-    ACTION_BOOL_PARAM_OR_TOGGLE(newState, arguments, document->highlightSyntax_, "set_highlight_syntax");
+    if(boost::optional<int> next = toggle_or_bool(arguments, document->highlightSyntax_, errMsg, "set_highlight_syntax")) {
+        document->SetHighlightSyntax(*next);
+        *result = to_value();
+        return true;
+    }
 
-    document->SetHighlightSyntax(newState);
-    *result = to_value();
-    return true;
+    return false;
 }
 
 static bool setIncrementalBackupMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
+
     document = MacroRunDocumentEx();
-    int newState;
 
-    ACTION_BOOL_PARAM_OR_TOGGLE(newState, arguments, document->autoSave_, "set_incremental_backup");
+    if(boost::optional<int> next = toggle_or_bool(arguments, document->autoSave_, errMsg, "set_incremental_backup")) {
+        document->SetIncrementalBackup(*next);
+        *result = to_value();
+        return true;
+    }
 
-    document->SetIncrementalBackup(newState);
-    *result = to_value();
-    return true;
+    return false;
 }
 
 static bool setIncrementalSearchLineMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
     document = MacroRunDocumentEx();
 
     if(auto win = MainWindow::fromDocument(document)) {
-        int newState;
-        ACTION_BOOL_PARAM_OR_TOGGLE(newState, arguments, win->showISearchLine_, "set_incremental_search_line");
-
-        win->SetIncrementalSearchLineMS(newState);
+        if(boost::optional<int> next = toggle_or_bool(arguments, win->showISearchLine_, errMsg, "set_incremental_search_line")) {
+            win->SetIncrementalSearchLineMS(*next);
+            *result = to_value();
+            return true;
+        }
     }
 
-    *result = to_value();
-    return true;
+    return false;
 }
 
 static bool setMakeBackupCopyMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     document = MacroRunDocumentEx();
-    int newState;
 
-    ACTION_BOOL_PARAM_OR_TOGGLE(newState, arguments, document->saveOldVersion_, "set_make_backup_copy");
-
-    if (document->IsTopDocument()) {
-        if(auto win = MainWindow::fromDocument(document)) {
-            no_signals(win->ui.action_Make_Backup_Copy)->setChecked(newState);
+    if(boost::optional<int> next = toggle_or_bool(arguments, document->saveOldVersion_, errMsg, "set_make_backup_copy")) {
+        if (document->IsTopDocument()) {
+            if(auto win = MainWindow::fromDocument(document)) {
+                no_signals(win->ui.action_Make_Backup_Copy)->setChecked(*next);
+            }
         }
+
+        document->saveOldVersion_ = *next;
+        *result = to_value();
+        return true;
     }
 
-    document->saveOldVersion_ = newState;
-
-    *result = to_value();
-    return true;
+    return false;
 }
 
 static bool setLockedMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     document = MacroRunDocumentEx();
-    int newState;
 
-    ACTION_BOOL_PARAM_OR_TOGGLE(newState, arguments, document->lockReasons_.isUserLocked(), "set_locked");
+    if(boost::optional<int> next = toggle_or_bool(arguments, document->lockReasons_.isUserLocked(), errMsg, "set_locked")) {
+        document->SetLocked(*next);
+        *result = to_value();
+        return true;
+    }
 
-    document->SetLocked(newState);
-    *result = to_value();
-    return true;
+    return false;
 }
 
 static bool setLanguageModeMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
@@ -1389,19 +1395,20 @@ static bool setLanguageModeMS(DocumentWidget *document, Arguments arguments, Dat
 static bool setOvertypeModeMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     document = MacroRunDocumentEx();
-    int newState;
 
-    ACTION_BOOL_PARAM_OR_TOGGLE(newState, arguments, document->saveOldVersion_, "set_overtype_mode");
-
-    if(document->IsTopDocument()) {
-        if(auto win = MainWindow::fromDocument(document)) {
-            no_signals(win->ui.action_Overtype)->setChecked(newState);
+    if(boost::optional<int> next = toggle_or_bool(arguments, document->saveOldVersion_, errMsg, "set_overtype_mode")) {
+        if(document->IsTopDocument()) {
+            if(auto win = MainWindow::fromDocument(document)) {
+                no_signals(win->ui.action_Overtype)->setChecked(*next);
+            }
         }
+
+        document->SetOverstrike(*next);
+        *result = to_value();
+        return true;
     }
 
-    document->SetOverstrike(newState);
-    *result = to_value();
-    return true;
+    return false;
 }
 
 static bool setShowLineNumbersMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
@@ -1414,15 +1421,15 @@ static bool setShowLineNumbersMS(DocumentWidget *document, Arguments arguments, 
         return false;
     }
 
-    int newState;
+    if(boost::optional<int> next = toggle_or_bool(arguments, win->showLineNumbers_, errMsg, "set_overtype_mode")) {
+        no_signals(win->ui.action_Show_Line_Numbers)->setChecked(*next);
 
-    ACTION_BOOL_PARAM_OR_TOGGLE(newState, arguments, win->showLineNumbers_, "set_overtype_mode");
+        win->showLineNumbers_ = *next;
+        *result = to_value();
+        return true;
+    }
 
-    no_signals(win->ui.action_Show_Line_Numbers)->setChecked(newState);
-
-    win->showLineNumbers_ = newState;
-    *result = to_value();
-    return true;
+    return false;
 }
 
 static bool setShowMatchingMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
@@ -1467,38 +1474,38 @@ static bool setMatchSyntaxBasedMS(DocumentWidget *document, Arguments arguments,
 
     document = MacroRunDocumentEx();
 
-    int newState;
-
-    ACTION_BOOL_PARAM_OR_TOGGLE(newState, arguments, document->matchSyntaxBased_, "set_match_syntax_based");
-
-    if(document->IsTopDocument()) {
-        if(auto win = MainWindow::fromDocument(document)) {
-            no_signals(win->ui.action_Matching_Syntax)->setChecked(newState);
+    if(boost::optional<int> next = toggle_or_bool(arguments, document->matchSyntaxBased_, errMsg, "set_match_syntax_based")) {
+        if(document->IsTopDocument()) {
+            if(auto win = MainWindow::fromDocument(document)) {
+                no_signals(win->ui.action_Matching_Syntax)->setChecked(*next);
+            }
         }
+
+        document->matchSyntaxBased_ = *next;
+        *result = to_value();
+        return true;
     }
 
-    document->matchSyntaxBased_ = newState;
-    *result = to_value();
-    return true;
+    return false;
 }
 
 static bool setStatisticsLineMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
     document = MacroRunDocumentEx();
 
-    int newState;
+    if(boost::optional<int> next = toggle_or_bool(arguments, document->showStats_, errMsg, "set_statistics_line")) {
+        // stats line is a shell-level item, so we toggle the button state
+        // regardless of it's 'topness'
+        if(auto win = MainWindow::fromDocument(document)) {
+            no_signals(win->ui.action_Statistics_Line)->setChecked(*next);
+        }
 
-    ACTION_BOOL_PARAM_OR_TOGGLE(newState, arguments, document->showStats_, "set_statistics_line");
-
-    // stats line is a shell-level item, so we toggle the button state
-    // regardless of it's 'topness'
-    if(auto win = MainWindow::fromDocument(document)) {
-        no_signals(win->ui.action_Statistics_Line)->setChecked(newState);
+        document->showStats_ = *next;
+        *result = to_value();
+        return true;
     }
 
-    document->showStats_ = newState;
-    *result = to_value();
-    return true;
+    return false;
 }
 
 static bool setTabDistMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
@@ -1524,12 +1531,13 @@ static bool setUseTabsMS(DocumentWidget *document, Arguments arguments, DataValu
 
     document = MacroRunDocumentEx();
 
-    int newState;
-    ACTION_BOOL_PARAM_OR_TOGGLE(newState, arguments, document->buffer_->useTabs_, "set_use_tabs");
+    if(boost::optional<int> next = toggle_or_bool(arguments, document->buffer_->useTabs_, errMsg, "set_use_tabs")) {
+        document->SetUseTabs(*next);
+        *result = to_value();
+        return true;
+    }
 
-    document->SetUseTabs(newState);
-    *result = to_value();
-    return true;
+    return false;
 }
 
 static bool setWrapMarginMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {

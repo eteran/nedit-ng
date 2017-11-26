@@ -7,6 +7,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 find_package(BISON REQUIRED)
 find_package(Qt5 5.4.0 REQUIRED Widgets Network)
+find_package(Boost 1.35 REQUIRED)
 
 # using a different name from parse.cpp
 # because it will also output parse.h, which will conflict with the
@@ -260,6 +261,7 @@ add_executable(nedit-ng
 include_directories(nedit-ng
 	${PROJECT_SOURCE_DIR}
 	${PROJECT_SOURCE_DIR}/GSL/include/
+	${Boost_INCLUDE_DIR}
 )
 
 target_link_libraries(nedit-ng LINK_PUBLIC

@@ -1028,7 +1028,7 @@ HighlightData *patternOfStyle(HighlightData *patterns, int style) {
 int indexOfNamedPattern(const gsl::span<HighlightPattern> &patList, const QString &patName) {
 
     if(patName.isNull()) {
-		return -1;
+        return -1;
 	}
 	
     for (int i = 0; i < patList.size(); i++) {
@@ -1037,7 +1037,7 @@ int indexOfNamedPattern(const gsl::span<HighlightPattern> &patList, const QStrin
 		}
 	}
 	
-	return -1;
+    return -1;
 }
 
 int findTopLevelParentIndex(const gsl::span<HighlightPattern> &patList, int index) {
