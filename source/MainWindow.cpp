@@ -5104,6 +5104,10 @@ bool MainWindow::LMHasHighlightPatterns(const QString &languageMode) {
     return SyntaxPatterns && SyntaxPatterns->LMHasHighlightPatterns(languageMode);
 }
 
+bool MainWindow::GetIncrementalSearchLineMS() const {
+    return showISearchLine_;
+}
+
 void MainWindow::SetIncrementalSearchLineMS(bool value) {
 
     EMIT_EVENT_ARG_1("set_incremental_search_line", QString::number(value));
@@ -6340,4 +6344,13 @@ bool MainWindow::DoNamedBGMenuCmd(DocumentWidget *document, TextArea *area, cons
     }
 
     return false;
+}
+
+void MainWindow::SetShowLineNumbers(bool show) {
+    no_signals(ui.action_Show_Line_Numbers)->setChecked(show);
+    showLineNumbers_ = show;
+}
+
+bool MainWindow::GetShowLineNumbers() const {
+    return showLineNumbers_;
 }

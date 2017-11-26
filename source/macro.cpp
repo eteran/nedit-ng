@@ -1335,7 +1335,7 @@ static bool setIncrementalSearchLineMS(DocumentWidget *document, Arguments argum
     document = MacroRunDocumentEx();
 
     if(auto win = MainWindow::fromDocument(document)) {
-        if(boost::optional<int> next = toggle_or_bool(arguments, win->showISearchLine_, errMsg, "set_incremental_search_line")) {
+        if(boost::optional<int> next = toggle_or_bool(arguments, win->GetIncrementalSearchLineMS(), errMsg, "set_incremental_search_line")) {
             win->SetIncrementalSearchLineMS(*next);
             *result = to_value();
             return true;
@@ -1362,8 +1362,8 @@ static bool setLockedMS(DocumentWidget *document, Arguments arguments, DataValue
 
     document = MacroRunDocumentEx();
 
-    if(boost::optional<int> next = toggle_or_bool(arguments, document->lockReasons_.isUserLocked(), errMsg, "set_locked")) {
-        document->SetLocked(*next);
+    if(boost::optional<int> next = toggle_or_bool(arguments, document->GetUserLocked(), errMsg, "set_locked")) {
+        document->SetUserLocked(*next);
         *result = to_value();
         return true;
     }
@@ -1390,13 +1390,7 @@ static bool setOvertypeModeMS(DocumentWidget *document, Arguments arguments, Dat
 
     document = MacroRunDocumentEx();
 
-    if(boost::optional<int> next = toggle_or_bool(arguments, document->saveOldVersion_, errMsg, "set_overtype_mode")) {
-        if(document->IsTopDocument()) {
-            if(auto win = MainWindow::fromDocument(document)) {
-                no_signals(win->ui.action_Overtype)->setChecked(*next);
-            }
-        }
-
+    if(boost::optional<int> next = toggle_or_bool(arguments, document->GetOverstrike(), errMsg, "set_overtype_mode")) {
         document->SetOverstrike(*next);
         *result = to_value();
         return true;
@@ -1409,18 +1403,12 @@ static bool setShowLineNumbersMS(DocumentWidget *document, Arguments arguments, 
 
     document = MacroRunDocumentEx();
 
-    auto win = MainWindow::fromDocument(document);
-
-    if(!win) {
-        return false;
-    }
-
-    if(boost::optional<int> next = toggle_or_bool(arguments, win->showLineNumbers_, errMsg, "set_overtype_mode")) {
-        no_signals(win->ui.action_Show_Line_Numbers)->setChecked(*next);
-
-        win->showLineNumbers_ = *next;
-        *result = to_value();
-        return true;
+    if(auto win = MainWindow::fromDocument(document)) {
+        if(boost::optional<int> next = toggle_or_bool(arguments, win->GetShowLineNumbers(), errMsg, "set_show_line_numbers")) {
+            win->SetShowLineNumbers(*next);
+            *result = to_value();
+            return true;
+        }
     }
 
     return false;
@@ -1468,14 +1456,8 @@ static bool setMatchSyntaxBasedMS(DocumentWidget *document, Arguments arguments,
 
     document = MacroRunDocumentEx();
 
-    if(boost::optional<int> next = toggle_or_bool(arguments, document->matchSyntaxBased_, errMsg, "set_match_syntax_based")) {
-        if(document->IsTopDocument()) {
-            if(auto win = MainWindow::fromDocument(document)) {
-                no_signals(win->ui.action_Matching_Syntax)->setChecked(*next);
-            }
-        }
-
-        document->matchSyntaxBased_ = *next;
+    if(boost::optional<int> next = toggle_or_bool(arguments, document->GetMatchSyntaxBased(), errMsg, "set_match_syntax_based")) {
+        document->SetMatchSyntaxBased(*next);
         *result = to_value();
         return true;
     }
@@ -1487,14 +1469,8 @@ static bool setStatisticsLineMS(DocumentWidget *document, Arguments arguments, D
 
     document = MacroRunDocumentEx();
 
-    if(boost::optional<int> next = toggle_or_bool(arguments, document->showStats_, errMsg, "set_statistics_line")) {
-        // stats line is a shell-level item, so we toggle the button state
-        // regardless of it's 'topness'
-        if(auto win = MainWindow::fromDocument(document)) {
-            no_signals(win->ui.action_Statistics_Line)->setChecked(*next);
-        }
-
-        document->showStats_ = *next;
+    if(boost::optional<int> next = toggle_or_bool(arguments, document->GetShowStatisticsLine(), errMsg, "set_statistics_line")) {
+        document->SetShowStatisticsLine(*next);
         *result = to_value();
         return true;
     }
@@ -1525,7 +1501,7 @@ static bool setUseTabsMS(DocumentWidget *document, Arguments arguments, DataValu
 
     document = MacroRunDocumentEx();
 
-    if(boost::optional<int> next = toggle_or_bool(arguments, document->buffer_->useTabs_, errMsg, "set_use_tabs")) {
+    if(boost::optional<int> next = toggle_or_bool(arguments, document->GetUseTabs(), errMsg, "set_use_tabs")) {
         document->SetUseTabs(*next);
         *result = to_value();
         return true;

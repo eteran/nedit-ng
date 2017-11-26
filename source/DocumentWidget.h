@@ -172,11 +172,13 @@ public:
     void SetHighlightSyntax(bool value);
     void SetIncrementalBackup(bool value);
     void SetLanguageMode(int mode, bool forceNewDefaults);
-    void SetLocked(bool value);
+    void SetUserLocked(bool value);
+    bool GetUserLocked() const;
     void SetOverstrike(bool overstrike);
     void SetShowMatching(ShowMatchingStyle state);
     void SetTabDist(int tabDist);
     void SetUseTabs(bool value);
+    bool GetUseTabs() const;
     void setWrapMargin(int margin);
     void ShellCmdToMacroStringEx(const QString &command, const QString &input);
     void StartHighlightingEx(bool warn);
@@ -186,6 +188,11 @@ public:
     bool GetIncrementalBackup() const;
     bool GetMakeBackupCopy() const;
     void SetMakeBackupCopy(bool value);
+    bool GetOverstrike() const;
+    bool GetMatchSyntaxBased() const;
+    void SetMatchSyntaxBased(bool value);
+    void SetShowStatisticsLine(bool value);
+    bool GetShowStatisticsLine() const;
 
 
 public:
@@ -324,13 +331,14 @@ private:
 	int flashPos_;                     // position saved for erasing matching paren highlight (if one is drawn)	
 	int nMarks_;                       // number of active bookmarks
 	int undoMemUsed_;                  // amount of memory (in bytes) dedicated to the undo list
-    std::deque<UndoInfo> redo_;             // info for redoing last undone op
-    std::deque<UndoInfo> undo_;             // info for undoing last operation
+    std::deque<UndoInfo> redo_;        // info for redoing last undone op
+    std::deque<UndoInfo> undo_;        // info for undoing last operation
     time_t lastModTime_;               // time of last modification to file
 	uid_t fileUid_;                    // last recorded user id of the file
-	unsigned fileMode_;                // permissions of file being edited    
-    std::unique_ptr<ShellCommandData>    shellCmdData_;               // when a shell command is executing, info. about it, otherwise, nullptr
-    std::unique_ptr<SmartIndentData>     smartIndentData_;            // compiled macros for smart indent    
+    mode_t fileMode_;                  // permissions of file being edited
+    std::unique_ptr<ShellCommandData> shellCmdData_;               // when a shell command is executing, info. about it, otherwise, nullptr
+    std::unique_ptr<SmartIndentData>  smartIndentData_;            // compiled macros for smart indent
+
 private:
 	QSplitter *splitter_;
 	Ui::DocumentWidget ui;

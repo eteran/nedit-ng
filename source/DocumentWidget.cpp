@@ -4285,10 +4285,48 @@ void DocumentWidget::SetBacklightChars(const QString &applyBacklightTypes) {
     }
 }
 
+void DocumentWidget::SetShowStatisticsLine(bool value) {
+    // stats line is a shell-level item, so we toggle the button state
+    // regardless of it's 'topness'
+    if(auto win = MainWindow::fromDocument(this)) {
+        no_signals(win->ui.action_Statistics_Line)->setChecked(value);
+    }
+
+    showStats_ = value;
+}
+
+bool DocumentWidget::GetShowStatisticsLine() const {
+    return showStats_;
+}
+
+bool DocumentWidget::GetMatchSyntaxBased() const {
+    return matchSyntaxBased_;
+}
+
+void DocumentWidget::SetMatchSyntaxBased(bool value) {
+    if(IsTopDocument()) {
+        if(auto win = MainWindow::fromDocument(this)) {
+            no_signals(win->ui.action_Matching_Syntax)->setChecked(value);
+        }
+    }
+
+    matchSyntaxBased_ = value;
+}
+
+bool DocumentWidget::GetOverstrike() const {
+    return overstrike_;
+}
+
 /*
 ** Set insert/overstrike mode
 */
 void DocumentWidget::SetOverstrike(bool overstrike) {
+
+    if(IsTopDocument()) {
+        if(auto win = MainWindow::fromDocument(this)) {
+            no_signals(win->ui.action_Overtype)->setChecked(overstrike);
+        }
+    }
 
     for(TextArea *area : textPanes()) {
         area->setOverstrike(overstrike);
@@ -6718,10 +6756,13 @@ QString DocumentWidget::GetWindowDelimitersEx() const {
     }
 }
 
+bool DocumentWidget::GetUseTabs() const {
+    return buffer_->useTabs_;
+}
+
 void DocumentWidget::SetUseTabs(bool value) {
 
     EMIT_EVENT_ARG_1("set_use_tabs", QString::number(value));
-
     buffer_->useTabs_ = value;
 }
 
@@ -6780,7 +6821,11 @@ void DocumentWidget::SetIncrementalBackup(bool value) {
     }
 }
 
-void DocumentWidget::SetLocked(bool value) {
+bool DocumentWidget::GetUserLocked() const {
+    return lockReasons_.isUserLocked();
+}
+
+void DocumentWidget::SetUserLocked(bool value) {
     EMIT_EVENT_ARG_1("set_locked", QString::number(value));
 
     lockReasons_.setUserLocked(value);

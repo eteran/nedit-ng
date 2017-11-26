@@ -89,6 +89,7 @@ public:
     void updateWindowSizeMenu();
     void updateWindowSizeMenus();
     void SetIncrementalSearchLineMS(bool value);
+    bool GetIncrementalSearchLineMS() const;
     bool SearchWindowEx(DocumentWidget *document, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWrap, int beginPos, int *startPos, int *endPos, int *extentBW, int *extentFW);
     bool SearchAndSelectEx(DocumentWidget *document, TextArea *area, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWrap);
     bool SearchAndSelectIncrementalEx(DocumentWidget *document, TextArea *area, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWrap, bool continued);
@@ -110,6 +111,8 @@ public:
     bool DoNamedBGMenuCmd(DocumentWidget *document, TextArea *area, const QString &name, bool fromMacro);
     bool DoNamedMacroMenuCmd(DocumentWidget *document, TextArea *area, const QString &name, bool fromMacro);
     bool DoNamedShellMenuCmd(DocumentWidget *document, TextArea *area, const QString &name, bool fromMacro);
+    bool GetShowLineNumbers() const;
+    void SetShowLineNumbers(bool show);
 
 public:
     static void updateMenuItems();
