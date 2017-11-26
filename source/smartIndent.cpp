@@ -49,11 +49,11 @@
 #include <cstdio>
 #include <cstring>
 
+QPointer<DialogSmartIndent> SmartIndentDlg;
+
 namespace {
 
 const auto MacroEndBoundary = QLatin1String("--End-of-Macro--");
-
-QPointer<DialogSmartIndent> SmartIndentDlg;
 
 // TODO(eteran): 2.0, what would be the best way to move this structure to a resource file and have it be more maintainable?
 const SmartIndentEntry DefaultIndentSpecs[] = {

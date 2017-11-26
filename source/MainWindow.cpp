@@ -63,10 +63,8 @@ bool currentlyBusy = false;
 qint64 busyStartTime = 0;
 bool modeMessageSet = false;
 
-QPointer<DialogShellMenu>            WindowShellMenu;
 QPointer<DialogWindowBackgroundMenu> WindowBackgroundMenu;
 QPointer<DialogMacros>               WindowMacros;
-QPointer<DialogSmartIndent>          SmartIndentDlg;
 QPointer<DialogSyntaxPatterns>       SyntaxPatterns;
 QPointer<DocumentWidget>             lastFocusDocument;
 
@@ -2140,6 +2138,8 @@ void MainWindow::on_action_Insert_Ctrl_Code_triggered() {
  */
 void MainWindow::action_Goto_Line_Number(DocumentWidget *document, const QString &s) {
 
+    EMIT_EVENT_ARG_1("goto_line_number", s);
+
     int lineNum;
     int column;
 
@@ -2722,6 +2722,9 @@ void MainWindow::action_Shift_Replace_Find_Again(DocumentWidget *document) {
 }
 
 void MainWindow::action_Replace_Again(DocumentWidget *document, Direction direction, WrapMode wrap) {
+
+    EMIT_EVENT_ARG_2("replace_again", to_string(direction), to_string(wrap));
+
     if (document->CheckReadOnly()) {
         return;
     }
@@ -3497,6 +3500,8 @@ void MainWindow::on_action_Default_Colors_triggered() {
 */
 void MainWindow::on_action_Default_Shell_Menu_triggered() {
 
+    static QPointer<DialogShellMenu> WindowShellMenu;
+
     if(!WindowShellMenu) {
         WindowShellMenu = new DialogShellMenu(this);
     }
@@ -3904,6 +3909,8 @@ void MainWindow::updateWindowSizeMenu() {
 
 void MainWindow::action_Next_Document() {
 
+    EMIT_EVENT("next_document");
+
     bool crossWindows = GetPrefGlobalTabNavigate();
     int currentIndex  = ui.tabWidget->currentIndex();
     int nextIndex     = currentIndex + 1;
@@ -3944,6 +3951,9 @@ void MainWindow::action_Next_Document() {
 }
 
 void MainWindow::action_Prev_Document() {
+
+    EMIT_EVENT("previous_document");
+
     bool crossWindows = GetPrefGlobalTabNavigate();
     int currentIndex  = ui.tabWidget->currentIndex();
     int prevIndex     = currentIndex - 1;
@@ -3986,6 +3996,8 @@ void MainWindow::action_Prev_Document() {
 }
 
 void MainWindow::action_Last_Document() {
+
+    EMIT_EVENT("last_document");
 
     if(lastFocusDocument) {
         lastFocusDocument->RaiseFocusDocumentWindow(true);
@@ -4812,10 +4824,12 @@ void MainWindow::on_action_Show_Calltip_triggered() {
     action_Show_Calltip(currentDocument());
 }
 
+/**
+ * @brief MainWindow::action_Filter_Selection
+ * @param document
+ */
 void MainWindow::action_Filter_Selection(DocumentWidget *document) {
 
-    // NOTE(eteran): if we change the order of operations here,
-    // then we can remove the redundancies with this and action_Filter_Selection
     static QPointer<DialogFilter> dialog;
 
     if (document->CheckReadOnly()) {
@@ -4856,6 +4870,8 @@ void MainWindow::on_action_Filter_Selection_triggered() {
  */
 void MainWindow::action_Filter_Selection(DocumentWidget *document, const QString &filter) {
 
+    EMIT_EVENT_ARG_1("filter_selection", filter);
+
     if (document->CheckReadOnly()) {
         return;
     }
@@ -4876,6 +4892,8 @@ void MainWindow::action_Filter_Selection(DocumentWidget *document, const QString
  */
 void MainWindow::action_Execute_Command(DocumentWidget *document, const QString &command) {
 
+    EMIT_EVENT_ARG_1("execute_command", command);
+
     if (document->CheckReadOnly())
         return;
 
@@ -4886,8 +4904,6 @@ void MainWindow::action_Execute_Command(DocumentWidget *document, const QString 
 
 void MainWindow::action_Execute_Command(DocumentWidget *document) {
 
-    // NOTE(eteran): if we change the order of operations here,
-    // then we can remove the redundancies with this and action_Execute_Command
     static QPointer<DialogExecuteCommand> dialog;
 
     if (document->CheckReadOnly())

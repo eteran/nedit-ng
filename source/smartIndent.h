@@ -28,11 +28,13 @@
 #define X_SMART_INDENT_H_
 
 #include <vector>
+#include <QPointer>
 
 class QString;
 class QByteArray;
 class SmartIndentEntry;
 class Program;
+class DialogSmartIndent;
 
 int LMHasSmartIndentMacros(const QString &languageMode);
 int LoadSmartIndentCommonStringEx(const QString &string);
@@ -49,6 +51,7 @@ const SmartIndentEntry *findDefaultIndentSpec(const QString &name);
 
 extern QString CommonMacros;
 extern std::vector<SmartIndentEntry> SmartIndentSpecs;
+extern QPointer<DialogSmartIndent> SmartIndentDlg;
 
 struct SmartIndentData {
     Program *newlineMacro;
