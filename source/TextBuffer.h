@@ -202,8 +202,6 @@ private:
     static string_type unexpandTabsEx(view_type text, int startIndent, int tabDist);
     static string_type expandTabsEx(view_type text, int startIndent, int tabDist);
     static string_type realignTabsEx(view_type text, int origIndent, int newIndent, int tabDist, int useTabs) noexcept;
-    static void subsChars(Ch *string, int length, Ch fromChar, Ch toChar) noexcept;
-    static void subsCharsEx(string_type &string, Ch fromChar, Ch toChar) noexcept;
     static void insertColInLineEx(view_type line, view_type insLine, int column, int insWidth, int tabDist, int useTabs, string_type *outStr, int *endOffset) noexcept;
     static void deleteRectFromLine(view_type line, int rectStart, int rectEnd, int tabDist, int useTabs, string_type *outStr, int *endOffset) noexcept;
     static int textWidthEx(view_type text, int tabDist) noexcept;

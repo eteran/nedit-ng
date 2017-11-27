@@ -1957,32 +1957,6 @@ auto BasicTextBuffer<Ch, Tr>::realignTabsEx(view_type text, int origIndent, int 
     return unexpandTabsEx(expStr, newIndent, tabDist);
 }
 
-/*
-** Substitute fromChar with toChar in string.
-*/
-template <class Ch, class Tr>
-void BasicTextBuffer<Ch, Tr>::subsChars(Ch *string, int length, Ch fromChar, Ch toChar) noexcept {
-
-    for (Ch *c = string; c < &string[length]; c++) {
-        if (*c == fromChar) {
-            *c = toChar;
-        }
-    }
-}
-
-/*
-** Substitute fromChar with toChar in string.
-*/
-template <class Ch, class Tr>
-void BasicTextBuffer<Ch, Tr>::subsCharsEx(string_type &string, Ch fromChar, Ch toChar) noexcept {
-
-    for (Ch &ch : string) {
-        if (ch == fromChar) {
-            ch = toChar;
-        }
-    }
-}
-
 template <class Ch, class Tr>
 template <class Out>
 int BasicTextBuffer<Ch, Tr>::addPaddingEx(Out out, int startIndent, int toIndent, int tabDist, int useTabs) noexcept {
