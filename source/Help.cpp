@@ -1,6 +1,6 @@
 
 #include "Help.h"
-#include <QtDebug>
+#include <QMessageBox>
 
 namespace Help {
 
@@ -10,7 +10,11 @@ namespace Help {
  */
 void displayTopic(Help::Topic topic) {
     Q_UNUSED(topic);
-    qDebug("TODO(eteran): Help System Not Yet Implemented!");
+
+    QMessageBox::warning(
+                nullptr,
+                QLatin1String("Not Implemented"),
+                QLatin1String("Sorry, but the help system is not yet implemented!"));
 }
 
 }
