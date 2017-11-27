@@ -357,7 +357,7 @@ TextArea::TextArea(
 
 	setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 	setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-    setMouseTracking(false);
+    setMouseTracking(true);
 	setFocusPolicy(Qt::WheelFocus);
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
@@ -1371,6 +1371,11 @@ void TextArea::keyPressEvent(QKeyEvent *event) {
         }
     }
 
+    // if the user prefers, we can hide the pointer during typing
+    if(P_hidePointer) {
+        setCursor(Qt::BlankCursor);
+    }
+
     QString text = event->text();
     if(text.isEmpty()) {
         return;
@@ -1418,6 +1423,10 @@ void TextArea::mouseQuadrupleClickEvent(QMouseEvent *event) {
 // Note: "extend_adjust", "extend_adjust('rect')", "mouse_pan"
 //------------------------------------------------------------------------------
 void TextArea::mouseMoveEvent(QMouseEvent *event) {
+
+    if(P_hidePointer) {
+        unsetCursor();
+    }
 
 	if(event->buttons() == Qt::LeftButton) {
 		if(event->modifiers() & Qt::ControlModifier) {
