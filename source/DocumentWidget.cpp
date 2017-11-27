@@ -382,7 +382,7 @@ DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inDocument, c
     document->UpdateStatsLine(nullptr);
 
     // Add the name to the convenience menu of previously opened files
-    QString fullname = tr("%1%2").arg(path, name);
+    auto fullname = tr("%1%2").arg(path, name);
 
     if (GetPrefAlwaysCheckRelTagsSpecs()) {
         AddRelTagsFileEx(GetPrefTagFile(), path, TagSearchMode::TAG);
@@ -1338,7 +1338,7 @@ bool DocumentWidget::IsTopDocument() const {
  */
 QString DocumentWidget::getWindowsMenuEntry() const {
 
-    QString fullTitle = tr("%1%2").arg(filename_, fileChanged_ ? tr("*") : QString());
+    auto fullTitle = tr("%1%2").arg(filename_, fileChanged_ ? tr("*") : QString());
 
     if (GetPrefShowPathInWindowsMenu() && filenameSet_) {
         fullTitle.append(tr(" - "));
@@ -2804,7 +2804,7 @@ bool DocumentWidget::writeBckVersion() {
     QString fullname = FullPath();
 
     // Generate name for old version
-    QString bckname = tr("%1.bck").arg(fullname);
+    auto bckname = tr("%1.bck").arg(fullname);
 
     // Delete the old backup file
     // Errors are ignored; we'll notice them later.
@@ -4758,7 +4758,7 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
 
         if (failure && errorReport) {
             errText.remove(trailingNewlines);    // remove trailing newlines
-            errText.truncate(DF_MAX_MSG_LENGTH); // truncate to DF_MAX_MSG_LENGTH characters
+            errText.truncate(DF_MAX_MSG_LENGTH);
 
             QMessageBox msgBox;
             msgBox.setWindowTitle(tr("Warning"));
@@ -4786,7 +4786,7 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
         } else if (errorReport) {
 
             errText.remove(trailingNewlines);    // remove trailing newlines
-            errText.truncate(DF_MAX_MSG_LENGTH); // truncate to DF_MAX_MSG_LENGTH characters
+            errText.truncate(DF_MAX_MSG_LENGTH);
 
             QMessageBox msgBox;
             msgBox.setWindowTitle(tr("Information"));
@@ -4893,12 +4893,13 @@ void DocumentWidget::ExecCursorLineEx(TextArea *area, bool fromMacro) {
     int pos = area->TextGetCursorPos();
 
     if (!buffer_->GetSimpleSelection(&left, &right)) {
-        left = right = pos;
-        left = buffer_->BufStartOfLine(left);
-        right = buffer_->BufEndOfLine( right);
+        left  = pos;
+        right = pos;
+        left  = buffer_->BufStartOfLine(left);
+        right = buffer_->BufEndOfLine(right);
         insertPos = right;
     } else {
-        insertPos = buffer_->BufEndOfLine( right);
+        insertPos = buffer_->BufEndOfLine(right);
     }
 
     std::string cmdText = buffer_->BufGetRangeEx(left, right);
@@ -4908,17 +4909,20 @@ void DocumentWidget::ExecCursorLineEx(TextArea *area, bool fromMacro) {
 
     /* Substitute the current file name for % and the current line number
        for # in the shell command */
-    QString fullName = tr("%1%2").arg(path_, filename_);
+    auto fullName = tr("%1%2").arg(path_, filename_);
     area->TextDPosToLineAndCol(pos, &line, &column);
 
-    QString substitutedCommand = QString::fromStdString(cmdText);
+    auto substitutedCommand = QString::fromStdString(cmdText);
     substitutedCommand.replace(QLatin1Char('%'), fullName);
 	substitutedCommand.replace(QLatin1Char('#'), QString::number(line));
 
     if(substitutedCommand.isNull()) {
-        QMessageBox::critical(this, tr("Shell Command"), tr("Shell command is too long due to\n"
-                                                           "filename substitutions with '%%' or\n"
-                                                           "line number substitutions with '#'"));
+        QMessageBox::critical(
+                    this,
+                    tr("Shell Command"),
+                    tr("Shell command is too long due to\n"
+                       "filename substitutions with '%%' or\n"
+                       "line number substitutions with '#'"));
         return;
     }
 
@@ -4964,14 +4968,14 @@ void DocumentWidget::FilterSelection(const QString &command, bool fromMacro) {
 
     /* Get the selection and the range in character positions that it
        occupies.  Beep and return if no selection */
-    std::string text = buffer_->BufGetSelectionTextEx();
+    const std::string text = buffer_->BufGetSelectionTextEx();
     if (text.empty()) {
         QApplication::beep();
         return;
     }
 
-    int left  = buffer_->BufGetPrimary().start;
-    int right = buffer_->BufGetPrimary().end;
+    const int left  = buffer_->BufGetPrimary().start;
+    const int right = buffer_->BufGetPrimary().end;
 
     // Issue the command and collect its output
     issueCommandEx(
@@ -5006,7 +5010,7 @@ void DocumentWidget::DoShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
 
     /* Substitute the current file name for % and the current line number
        for # in the shell command */
-    QString fullName = tr("%1%2").arg(path_, filename_);
+    auto fullName = tr("%1%2").arg(path_, filename_);
     int pos = area->TextGetCursorPos();
     area->TextDPosToLineAndCol(pos, &line, &column);
 
@@ -5055,7 +5059,6 @@ void DocumentWidget::DoShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
     TextArea *outWidget = nullptr;
     switch(output) {
     case TO_DIALOG:
-        outWidget = nullptr;
         flags |= OUTPUT_TO_DIALOG;
         left  = 0;
         right = 0;
@@ -5105,8 +5108,9 @@ void DocumentWidget::DoShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
     // If the command requires the file be saved first, save it
     if (saveFirst) {
         if (!SaveWindow()) {
-            if (input != FROM_NONE)
-            return;
+            if (input != FROM_NONE) {
+                return;
+            }
         }
     }
 
@@ -5128,6 +5132,11 @@ void DocumentWidget::DoShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
                 fromMacro);
 }
 
+/**
+ * @brief DocumentWidget::WidgetToPaneIndex
+ * @param area
+ * @return
+ */
 int DocumentWidget::WidgetToPaneIndex(TextArea *area) const {
     return splitter_->indexOf(area);
 }
@@ -5160,6 +5169,11 @@ void DocumentWidget::SetAutoScroll(int margin) {
     }
 }
 
+/**
+ * @brief DocumentWidget::repeatMacro
+ * @param macro
+ * @param how
+ */
 void DocumentWidget::repeatMacro(const QString &macro, int how) {
     RepeatMacroEx(macro, how);
 }
@@ -5454,25 +5468,24 @@ void DocumentWidget::FlashMatchingEx(TextArea *area) {
     }
 
     // get the character to match and the position to start from
-    int pos = area->TextGetCursorPos() - 1;
+    const int pos = area->TextGetCursorPos() - 1;
     if (pos < 0) {
         return;
     }
 
-    char c = buffer_->BufGetCharacter(pos);
+    const char ch = buffer_->BufGetCharacter(pos);
 
     Style style = GetHighlightInfoEx(pos);
 
-    int matchIndex;
     int matchPos;
 
     // is the character one we want to flash?
-    for (matchIndex = 0; matchIndex < N_FLASH_CHARS; matchIndex++) {
-        if (MatchingChars[matchIndex].c == c)
-            break;
-    }
+    //constexpr CharMatchTable MatchingChars[];
+    auto matchIt = std::find_if(std::begin(MatchingChars), std::end(MatchingChars), [ch](const CharMatchTable &entry) {
+        return entry.c == ch;
+    });
 
-    if (matchIndex == N_FLASH_CHARS) {
+    if(matchIt == std::end(MatchingChars)) {
         return;
     }
 
@@ -5484,18 +5497,18 @@ void DocumentWidget::FlashMatchingEx(TextArea *area) {
     int endPos;
     int searchPos;
 
-    if (MatchingChars[matchIndex].direction == Direction::Backward) {
-        startPos = constrain ? area->TextFirstVisiblePos() : 0;
-        endPos = pos;
+    if (matchIt->direction == Direction::Backward) {
+        startPos  = constrain ? area->TextFirstVisiblePos() : 0;
+        endPos    = pos;
         searchPos = endPos;
     } else {
-        startPos = pos;
-        endPos = constrain ? area->TextLastVisiblePos() : buffer_->BufGetLength();
+        startPos  = pos;
+        endPos    = constrain ? area->TextLastVisiblePos() : buffer_->BufGetLength();
         searchPos = startPos;
     }
 
     // do the search
-    if (!findMatchingCharEx(c, style, searchPos, startPos, endPos, &matchPos)) {
+    if (!findMatchingCharEx(ch, style, searchPos, startPos, endPos, &matchPos)) {
         return;
     }
 
@@ -5504,7 +5517,7 @@ void DocumentWidget::FlashMatchingEx(TextArea *area) {
         buffer_->BufHighlight(matchPos, matchPos + 1);
     } else {
         // ... or the whole range.
-        if (MatchingChars[matchIndex].direction == Direction::Backward) {
+        if (matchIt->direction == Direction::Backward) {
             buffer_->BufHighlight(matchPos, pos + 1);
         } else {
             buffer_->BufHighlight(matchPos + 1, pos);
@@ -5573,7 +5586,6 @@ void DocumentWidget::FreeHighlightingDataEx() {
         return;
     }
 
-    // Free and remove the highlight data from the window
     highlightData_ = nullptr;
 
     /* The text display may make a last desperate attempt to access highlight
@@ -5657,7 +5669,7 @@ QColor DocumentWidget::GetHighlightBGColorOfCodeEx(int hCode) const {
 /*
 ** Returns the highlight style of the character at a given position of a
 ** window. To avoid breaking encapsulation, the highlight style is converted
-** to a void* pointer (no other module has to know that characters are used
+** to a Style object (no other module has to know that characters are used
 ** to represent highlight styles; that would complicate future extensions).
 ** Returns nullptr if the window has highlighting turned off.
 ** The only guarantee that this function offers, is that when the same
@@ -5702,10 +5714,10 @@ Style DocumentWidget::GetHighlightInfoEx(int pos) {
 ** is used.
 */
 int DocumentWidget::StyleLengthOfCodeFromPosEx(int pos) {
+
     const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_;
     const std::shared_ptr<TextBuffer> &styleBuf = highlightData ? highlightData->styleBuffer : nullptr;
-    int oldPos = pos;
-
+    const int oldPos = pos;
 
     if (styleBuf) {
         int hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(pos));
@@ -5743,23 +5755,30 @@ int DocumentWidget::StyleLengthOfCodeFromPosEx(int pos) {
 ** Functions to return style information from the highlighting style table.
 */
 QString DocumentWidget::HighlightNameOfCodeEx(int hCode) const {
-    StyleTableEntry *entry = styleTableEntryOfCodeEx(hCode);
-    return entry ? entry->highlightName : QString();
+    if(StyleTableEntry *entry = styleTableEntryOfCodeEx(hCode)) {
+        return entry->highlightName;
+    }
+
+    return QString();
 }
 
 QString DocumentWidget::HighlightStyleOfCodeEx(int hCode) const {
-    StyleTableEntry *entry = styleTableEntryOfCodeEx(hCode);
-    return entry ? entry->styleName : QString();
+
+    if(StyleTableEntry *entry = styleTableEntryOfCodeEx(hCode)) {
+        return entry->styleName;
+    }
+
+    return QString();
 }
 
 QColor DocumentWidget::HighlightColorValueOfCodeEx(int hCode) const {
-    StyleTableEntry *entry = styleTableEntryOfCodeEx(hCode);
-    if (entry) {
+
+    if (StyleTableEntry *entry = styleTableEntryOfCodeEx(hCode)) {
         return entry->color;
-    } else {
-        // pick up foreground color of the (first) text widget of the window
-        return firstPane()->getForegroundPixel();
     }
+
+    // pick up foreground color of the (first) text widget of the window
+    return firstPane()->getForegroundPixel();
 }
 
 /*
@@ -5770,8 +5789,10 @@ StyleTableEntry *DocumentWidget::styleTableEntryOfCodeEx(int hCode) const {
     const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_;
 
     hCode -= UNFINISHED_STYLE; // get the correct index value
-    if (!highlightData || hCode < 0 || hCode >= highlightData->nStyles)
+    if (!highlightData || hCode < 0 || hCode >= highlightData->nStyles) {
         return nullptr;
+    }
+
     return &highlightData->styleTable[hCode];
 }
 
@@ -5781,6 +5802,7 @@ StyleTableEntry *DocumentWidget::styleTableEntryOfCodeEx(int hCode) const {
 ** like styleOfPos() in TextDisplay.c. Returns the style code or zero.
 */
 int DocumentWidget::HighlightCodeOfPosEx(int pos) {
+
     const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_;
     const std::shared_ptr<TextBuffer> &styleBuf = highlightData ? highlightData->styleBuffer : nullptr;
     int hCode = 0;
@@ -5793,6 +5815,7 @@ int DocumentWidget::HighlightCodeOfPosEx(int pos) {
             hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(pos));
         }
     }
+
     return hCode;
 }
 
@@ -5804,21 +5827,27 @@ int DocumentWidget::HighlightCodeOfPosEx(int pos) {
 /* YOO: This is called from only one other function, which uses a constant
     for checkCode and never evaluates it after the call. */
 int DocumentWidget::HighlightLengthOfCodeFromPosEx(int pos, int *checkCode) {
+
     const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_;
     const std::shared_ptr<TextBuffer> &styleBuf = highlightData ? highlightData->styleBuffer : nullptr;
-    int oldPos = pos;
+    const int oldPos = pos;
 
     if (styleBuf) {
         int hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(pos));
-        if (!hCode)
+        if (!hCode) {
             return 0;
+        }
+
         if (hCode == UNFINISHED_STYLE) {
             // encountered "unfinished" style, trigger parsing
             handleUnparsedRegionEx(highlightData->styleBuffer, pos);
             hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(pos));
         }
-        if (*checkCode == 0)
+
+        if (*checkCode == 0) {
             *checkCode = hCode;
+        }
+
         while (hCode == *checkCode || hCode == UNFINISHED_STYLE) {
             if (hCode == UNFINISHED_STYLE) {
                 // encountered "unfinished" style, trigger parsing, then loop
@@ -5830,6 +5859,7 @@ int DocumentWidget::HighlightLengthOfCodeFromPosEx(int pos, int *checkCode) {
             }
         }
     }
+
     return pos - oldPos;
 }
 
@@ -5866,8 +5896,8 @@ void DocumentWidget::handleUnparsedRegionEx(const std::shared_ptr<TextBuffer> &s
     int beginSafety = backwardOneContext(buf, context, beginParse);
 
     for (int p = beginParse; p >= beginSafety; p--) {
-        char c = styleBuf->BufGetCharacter(p);
-        if (c != UNFINISHED_STYLE && c != PLAIN_STYLE && static_cast<uint8_t>(c) < firstPass2Style) {
+        char ch = styleBuf->BufGetCharacter(p);
+        if (ch != UNFINISHED_STYLE && ch != PLAIN_STYLE && static_cast<uint8_t>(ch) < firstPass2Style) {
             beginSafety = p + 1;
             break;
         }
@@ -5881,14 +5911,14 @@ void DocumentWidget::handleUnparsedRegionEx(const std::shared_ptr<TextBuffer> &s
     int endSafety = forwardOneContext(buf, context, endParse);
 
     for (int p = pos; p < endSafety; p++) {
-        char c = styleBuf->BufGetCharacter(p);
-        if (c != UNFINISHED_STYLE && c != PLAIN_STYLE && static_cast<uint8_t>(c) < firstPass2Style) {
+        char ch = styleBuf->BufGetCharacter(p);
+        if (ch != UNFINISHED_STYLE && ch != PLAIN_STYLE && static_cast<uint8_t>(ch) < firstPass2Style) {
             endParse  = std::min(endParse, p);
             endSafety = p;
             break;
-        } else if (c != UNFINISHED_STYLE && p < endParse) {
+        } else if (ch != UNFINISHED_STYLE && p < endParse) {
             endParse = p;
-            if (static_cast<uint8_t>(c) < firstPass2Style) {
+            if (static_cast<uint8_t>(ch) < firstPass2Style) {
                 endSafety = p;
             } else {
                 endSafety = forwardOneContext(buf, context, endParse);
@@ -5926,8 +5956,8 @@ void DocumentWidget::handleUnparsedRegionEx(const std::shared_ptr<TextBuffer> &s
 
     /* Update the style buffer the new style information, but only between
        beginParse and endParse.  Skip the safety region */
-    styleString[endParse - beginSafety] = '\0';
-    styleBuf->BufReplaceEx(beginParse, endParse, &styleString[beginParse - beginSafety]);
+    auto view = view::string_view(&styleString[beginParse - beginSafety], endParse - beginParse);
+    styleBuf->BufReplaceEx(beginParse, endParse, view);
 }
 
 /*
@@ -5959,7 +5989,7 @@ void DocumentWidget::StartHighlightingEx(bool warn) {
 
     /* Parse the buffer with pass 1 patterns.  If there are none, initialize
        the style buffer to all UNFINISHED_STYLE to trigger parsing later */
-    std::vector<char> styleString(bufLength + 1);
+    std::vector<char> styleString(static_cast<size_t>(bufLength) + 1);
     char *stylePtr = &styleString[0];
 
     if (!highlightData->pass1Patterns) {
@@ -5989,25 +6019,10 @@ void DocumentWidget::StartHighlightingEx(bool warn) {
     // install highlight pattern data in the window data structure
     highlightData_ = std::move(highlightData);
 
-#if 0
-    int oldFontHeight;
-    /* Get the height of the current font in the window, to be used after
-       highlighting is turned on to resize the window to make room for
-       additional highlight fonts which may be sized differently */
-    oldFontHeight = getFontHeight(window);
-#endif
-
     // Attach highlight information to text widgets in each pane
     for(TextArea *area : textPanes()) {
         AttachHighlightToWidgetEx(area);
     }
-
-#if 0
-    /* Re-size the window to fit the highlight fonts properly & tell the
-       window manager about the potential line-height change as well */
-    updateWindowHeight(window, oldFontHeight);
-    window->UpdateMinPaneHeights();
-#endif
 
     setCursor(prevCursor);
 }
@@ -6092,7 +6107,7 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
                 return nullptr;
             }
 
-            if (patterns[parentindex].flags & DEFER_PARSING) {
+            if (patterns[static_cast<size_t>(parentindex)].flags & DEFER_PARSING) {
                 pattern.flags |= DEFER_PARSING;
             } else {
                 pattern.flags &= ~DEFER_PARSING;
@@ -6296,7 +6311,7 @@ HighlightData *DocumentWidget::compilePatternsEx(const gsl::span<HighlightPatter
 
     /* Allocate memory for the compiled patterns.  The list is terminated
        by a record with style == 0. */
-    auto compiledPats = new HighlightData[patternSrc.size() + 1];
+    auto compiledPats = new HighlightData[static_cast<size_t>(patternSrc.size() + 1)];
     compiledPats[patternSrc.size()].style = 0;
 
     // Build the tree of parse expressions
@@ -6316,7 +6331,7 @@ HighlightData *DocumentWidget::compilePatternsEx(const gsl::span<HighlightPatter
     for (int i = 0; i < patternSrc.size(); i++) {
         compiledPats[i].subPatterns = (compiledPats[i].nSubPatterns == 0) ?
                     nullptr :
-                    new HighlightData *[compiledPats[i].nSubPatterns];
+                    new HighlightData *[static_cast<size_t>(compiledPats[i].nSubPatterns)];
     }
 
     for (int i = 0; i < patternSrc.size(); i++) {
@@ -6346,10 +6361,11 @@ HighlightData *DocumentWidget::compilePatternsEx(const gsl::span<HighlightPatter
             return nullptr;
         }
 
+        static const QRegularExpression re(QLatin1String("[0-9]+"));
+
         {
             int nSubExprs = 0;
             if (!patternSrc[i].startRE.isNull()) {
-                static const QRegularExpression re(QLatin1String("[0-9]+"));
                 Input in(&patternSrc[i].startRE);
                 Q_FOREVER {
                     if(in.match(QLatin1Char('&'))) {
@@ -6374,7 +6390,6 @@ HighlightData *DocumentWidget::compilePatternsEx(const gsl::span<HighlightPatter
         {
             int nSubExprs = 0;
             if (!patternSrc[i].endRE.isNull()) {
-                static const QRegularExpression re(QLatin1String("[0-9]+"));
                 Input in(&patternSrc[i].endRE);
                 Q_FOREVER {
                     if(in.match(QLatin1Char('&'))) {
@@ -6451,7 +6466,7 @@ HighlightData *DocumentWidget::compilePatternsEx(const gsl::span<HighlightPatter
         }
 
         std::string bigPattern;
-        bigPattern.reserve(length);
+        bigPattern.reserve(static_cast<size_t>(length));
 
         if (!patternSrc[patternNum].endRE.isNull()) {
             bigPattern += '(';
@@ -6761,20 +6776,22 @@ void DocumentWidget::EndSmartIndentEx() {
     smartIndentData_ = nullptr;
 }
 
+/**
+ * @brief DocumentWidget::InSmartIndentMacrosEx
+ * @return
+ */
 bool DocumentWidget::InSmartIndentMacrosEx() const {
     const std::unique_ptr<SmartIndentData> &winData = smartIndentData_;
     return winData && (winData->inModMacro || winData->inNewLineMacro);
 }
 
-/*
-** Getting the current selection by making the request, and then blocking
-** (processing events) while waiting for a reply.  On failure (timeout or
-** bad format) returns nullptr, otherwise returns the contents of the selection.
-*/
+/**
+ * @brief DocumentWidget::GetAnySelectionEx
+ * @return
+ */
 QString DocumentWidget::GetAnySelectionEx() {
 
-    /* If the selection is in the window's own buffer get it from there,
-       but substitute null characters as if it were an external selection */
+    // If the selection is in the window's own buffer get it from there
     if (buffer_->BufGetPrimary().selected) {
         return QString::fromStdString(buffer_->BufGetSelectionTextEx());
     }
@@ -6801,7 +6818,7 @@ QFont DocumentWidget::FontOfNamedStyleEx(const QString &styleName) const {
         return GetPrefDefaultFont();
     } else {
 
-        const int fontNum = HighlightStyles[styleNo].font;
+        const int fontNum = HighlightStyles[static_cast<size_t>(styleNo)].font;
 
         switch(fontNum) {
         case BOLD_FONT:
@@ -6829,24 +6846,40 @@ QString DocumentWidget::GetWindowDelimitersEx() const {
     if (languageMode_ == PLAIN_LANGUAGE_MODE) {
         return QString();
     } else {
-        return LanguageModes[languageMode_].delimiters;
+        return LanguageModes[static_cast<size_t>(languageMode_)].delimiters;
     }
 }
 
+/**
+ * @brief DocumentWidget::GetUseTabs
+ * @return
+ */
 bool DocumentWidget::GetUseTabs() const {
     return buffer_->BufGetUseTabs();
 }
 
+/**
+ * @brief DocumentWidget::SetUseTabs
+ * @param value
+ */
 void DocumentWidget::SetUseTabs(bool value) {
 
     emit_event("set_use_tabs", QString::number(value));
     buffer_->BufSetUseTabs(value);
 }
 
+/**
+ * @brief DocumentWidget::GetHighlightSyntax
+ * @return
+ */
 bool DocumentWidget::GetHighlightSyntax() const {
     return highlightSyntax_;
 }
 
+/**
+ * @brief DocumentWidget::SetHighlightSyntax
+ * @param value
+ */
 void DocumentWidget::SetHighlightSyntax(bool value) {
 
     emit_event("set_highlight_syntax", QString::number(value));
