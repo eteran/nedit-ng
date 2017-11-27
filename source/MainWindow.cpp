@@ -947,7 +947,9 @@ void MainWindow::updateWindowMenu() {
     // Make a sorted list of windows
     std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
 
-    std::sort(std::begin(documents), std::end(documents), [](const DocumentWidget *a, const DocumentWidget *b) {
+    // NOTE(eteran): on my system, I have observed a **consistent** crash
+    // when documents.size() == 17 while using std::sort. This makes zero sense at all...
+    qSort(documents.begin(), documents.end(), [](const DocumentWidget *a, const DocumentWidget *b) {
 
         // Untitled first
 
@@ -1030,7 +1032,7 @@ void MainWindow::SortTabBar() {
 	}
 
 	// sort them first by filename, then by path
-	std::sort(windows.begin(), windows.end(), [](const DocumentWidget *a, const DocumentWidget *b) {
+    qSort(windows.begin(), windows.end(), [](const DocumentWidget *a, const DocumentWidget *b) {
 		if(a->filename_ < b->filename_) {
 			return true;
 		}
