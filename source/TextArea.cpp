@@ -12,6 +12,7 @@
 #include "preferences.h"
 #include "X11Colors.h"
 #include "SmartIndentEvent.h"
+#include "LanguageMode.h"
 #include "TextEditEvent.h"
 #include <gsl/gsl_util>
 #include <QApplication>

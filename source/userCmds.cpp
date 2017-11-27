@@ -32,6 +32,7 @@
 #include "parse.h"
 #include "Input.h"
 #include "preferences.h"
+#include "LanguageMode.h"
 #include "raise.h"
 #include <QTextStream>
 #include <memory>
@@ -43,11 +44,6 @@ std::vector<MenuData> MacroMenuData;
 std::vector<MenuData> BGMenuData;
 
 namespace {
-
-/* indicates, that an unknown (i.e. not existing) language mode
-   is bound to an user menu item */
-constexpr int UNKNOWN_LANGUAGE_MODE = -2;
-
 
 struct ParseError : std::exception {
 public:
@@ -538,7 +534,7 @@ static void parseMenuItemName(const QString &menuItemName, const std::shared_ptr
         }
 
         QVector<QStringRef> languages = languageString.split(QLatin1Char('@'), QString::SkipEmptyParts);
-        std::vector<int> languageModes;
+        std::vector<size_t> languageModes;
 
         // setup a list of all language modes related to given menu item
         for(const QStringRef &language : languages) {
@@ -546,7 +542,7 @@ static void parseMenuItemName(const QString &menuItemName, const std::shared_ptr
                returned then this means, that language mode name after
                "@" is unknown (i.e. not defined) */
 
-            int languageMode = FindLanguageMode(language);
+            size_t languageMode = FindLanguageMode(language);
             if (languageMode == PLAIN_LANGUAGE_MODE) {
                 languageModes.push_back(UNKNOWN_LANGUAGE_MODE);
             } else {

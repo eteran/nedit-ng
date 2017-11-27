@@ -35,6 +35,7 @@
 #include "TextBuffer.h"
 #include "preferences.h"
 #include "search.h"
+#include "LanguageMode.h"
 #include "util/fileUtils.h"
 #include "util/utils.h"
 
@@ -82,7 +83,7 @@ struct Tag;
 
 static int loadTagsFile(const QString &tagSpec, int index, int recLevel);
 static bool fakeRegExSearchEx(view::string_view buffer, const QString &searchString, int *startPos, int *endPos);
-static int addTag(const QString &name, const QString &file, int lang, const QString &search, int posInf, const QString &path, int index);
+static int addTag(const QString &name, const QString &file, size_t lang, const QString &search, int posInf, const QString &path, int index);
 static bool delTag(int index);
 static QList<Tag> getTag(const QString &name, TagSearchMode search_type);
 static void createSelectMenuEx(DocumentWidget *document, TextArea *area, const QStringList &args);
@@ -100,9 +101,9 @@ struct Tag {
     QString file;
     QString searchString;
     QString path;
-    int language;
-	int posInf;
-    int index;
+    size_t  language;
+    int     posInf;
+    int     index;
 };
 
 static QMultiHash<QString, Tag> Tags;
@@ -174,7 +175,7 @@ static QList<Tag> getTag(const QString &name, TagSearchMode search_type) {
 **   (We don't return boolean as the return value is used as counter increment!)
 **
 */
-static int addTag(const QString &name, const QString &file, int lang, const QString &search, int posInf, const QString &path, int index) {
+static int addTag(const QString &name, const QString &file, size_t lang, const QString &search, int posInf, const QString &path, int index) {
 
     QMultiHash<QString, Tag> *table;
 
@@ -932,7 +933,7 @@ int findAllMatchesEx(DocumentWidget *document, TextArea *area, const QString &st
         QString fileToSearch = tag.file;
         QString searchString = tag.searchString;
         QString tagPath      = tag.path;
-        int langMode         = tag.language;
+        size_t langMode      = tag.language;
         int startPos         = tag.posInf;
 
         /*
@@ -1484,12 +1485,10 @@ struct tf_alias {
 static int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
 
     QString header;
-
-    int nTipsAdded = 0;
-    int langMode = PLAIN_LANGUAGE_MODE;
     int oldLangMode;
-    int currLine = 0;
-
+    int currLine    = 0;
+    int nTipsAdded  = 0;
+    size_t langMode = PLAIN_LANGUAGE_MODE;
     std::deque<tf_alias> aliases;
 
 	if (recLevel > MAX_TAG_INCLUDE_RECURSION_LEVEL) {

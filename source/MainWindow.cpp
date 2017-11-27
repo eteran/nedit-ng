@@ -1275,9 +1275,9 @@ void MainWindow::UpdateUserMenus() {
 void MainWindow::updateLanguageModeSubmenu() {
 
     auto languageGroup = new QActionGroup(this);
-    auto languageMenu = new QMenu(this);
+    auto languageMenu  = new QMenu(this);
     QAction *action = languageMenu->addAction(tr("Plain"));
-    action->setData(PLAIN_LANGUAGE_MODE);
+    action->setData(static_cast<qulonglong>(PLAIN_LANGUAGE_MODE));
     action->setCheckable(true);
     action->setChecked(true);
     languageGroup->addAction(action);
@@ -1285,7 +1285,7 @@ void MainWindow::updateLanguageModeSubmenu() {
 
     for (size_t i = 0; i < LanguageModes.size(); i++) {
         QAction *action = languageMenu->addAction(LanguageModes[i].name);
-        action->setData(gsl::narrow<int>(i));
+        action->setData(static_cast<qulonglong>(i));
         action->setCheckable(true);
         languageGroup->addAction(action);
     }
@@ -1295,7 +1295,7 @@ void MainWindow::updateLanguageModeSubmenu() {
     connect(languageMenu, &QMenu::triggered, this, [this](QAction *action) {
 
         if(auto document = qobject_cast<DocumentWidget *>(ui.tabWidget->currentWidget())) {
-            const auto mode = action->data().value<int>();
+            const auto mode = action->data().value<qulonglong>();
 
             // If the mode didn't change, do nothing
             if (document->languageMode_ == mode) {

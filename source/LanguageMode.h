@@ -7,6 +7,12 @@
 #include <QString>
 #include <QStringList>
 
+constexpr auto PLAIN_LANGUAGE_MODE = static_cast<size_t>(-1);
+
+/* indicates, that an unknown (i.e. not existing) language mode
+   is bound to an user menu item */
+constexpr auto UNKNOWN_LANGUAGE_MODE = static_cast<size_t>(-2);
+
 class LanguageMode {
 public:
 	/* 

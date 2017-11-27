@@ -677,7 +677,7 @@ void DocumentWidget::DetermineLanguageMode(bool forceNewDefaults) {
 ** true, re-establish default settings for language-specific preferences
 ** regardless of whether they were previously set by the user.
 */
-void DocumentWidget::SetLanguageMode(int mode, bool forceNewDefaults) {
+void DocumentWidget::SetLanguageMode(size_t mode, bool forceNewDefaults) {
 
     // Do mode-specific actions
     reapplyLanguageMode(mode, forceNewDefaults);
@@ -688,7 +688,7 @@ void DocumentWidget::SetLanguageMode(int mode, bool forceNewDefaults) {
             QList<QAction *> languages = win->ui.action_Language_Mode->menu()->actions();
 
             auto it = std::find_if(languages.begin(), languages.end(), [mode](QAction *action) {
-                return action->data().value<int>() == mode;
+                return action->data().value<qulonglong>() == mode;
             });
 
             if(it != languages.end()) {
@@ -720,7 +720,7 @@ void DocumentWidget::action_Set_Language_Mode(const QString &languageMode) {
  * @brief DocumentWidget::matchLanguageMode
  * @return
  */
-int DocumentWidget::matchLanguageMode() {
+size_t DocumentWidget::matchLanguageMode() const {
 
 	/*... look for an explicit mode statement first */
 
@@ -744,7 +744,7 @@ int DocumentWidget::matchLanguageMode() {
                                   QString());
 
             if (result) {
-                return gsl::narrow<int>(i);
+                return i;
 			}
 		}
 	}
@@ -762,7 +762,7 @@ int DocumentWidget::matchLanguageMode() {
     for (size_t i = 0; i < LanguageModes.size(); i++) {
         Q_FOREACH(const QString &ext, LanguageModes[i].extensions) {
             if(filename_.midRef(0, fileNameLen).endsWith(ext)) {
-                return gsl::narrow<int>(i);
+                return i;
             }
 		}
 	}
@@ -1080,12 +1080,12 @@ void DocumentWidget::RaiseDocument() {
 ** Change the language mode to the one indexed by "mode", reseting word
 ** delimiters, syntax highlighting and other mode specific parameters
 */
-void DocumentWidget::reapplyLanguageMode(int mode, bool forceDefaults) {
+void DocumentWidget::reapplyLanguageMode(size_t mode, bool forceDefaults) {
 
     const bool topDocument = IsTopDocument();
 
     if(auto win = MainWindow::fromDocument(this)) {
-        const int oldMode = languageMode_;
+        const size_t oldMode = languageMode_;
 
         /* If the mode is the same, and changes aren't being forced (as might
            happen with Save As...), don't mess with already correct settings */
@@ -4562,9 +4562,9 @@ void DocumentWidget::ClearModeMessageEx() {
 // Decref the default calltips file(s) for this window
 void DocumentWidget::UnloadLanguageModeTipsFileEx() {
 
-    const int mode = languageMode_;
-    if (mode != PLAIN_LANGUAGE_MODE && !LanguageModes[static_cast<size_t>(mode)].defTipsFile.isNull()) {
-        DeleteTagsFileEx(LanguageModes[static_cast<size_t>(mode)].defTipsFile, TagSearchMode::TIP, false);
+    const size_t mode = languageMode_;
+    if (mode != PLAIN_LANGUAGE_MODE && !LanguageModes[mode].defTipsFile.isNull()) {
+        DeleteTagsFileEx(LanguageModes[mode].defTipsFile, TagSearchMode::TIP, false);
     }
 }
 
@@ -6846,7 +6846,7 @@ QString DocumentWidget::GetWindowDelimitersEx() const {
     if (languageMode_ == PLAIN_LANGUAGE_MODE) {
         return QString();
     } else {
-        return LanguageModes[static_cast<size_t>(languageMode_)].delimiters;
+        return LanguageModes[languageMode_].delimiters;
     }
 }
 

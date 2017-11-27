@@ -166,7 +166,7 @@ public:
     void action_Set_Fonts(const QString &fontName, const QString &italicName, const QString &boldName, const QString &boldItalicName);
     void SetHighlightSyntax(bool value);
     void SetIncrementalBackup(bool value);
-    void SetLanguageMode(int mode, bool forceNewDefaults);
+    void SetLanguageMode(size_t mode, bool forceNewDefaults);
     void action_Set_Language_Mode(const QString &languageMode, bool forceNewDefaults);
     void SetUserLocked(bool value);
     bool GetUserLocked() const;
@@ -209,7 +209,7 @@ private:
     bool cmpWinAgainstFile(const QString &fileName) const;
     int fileWasModifiedExternally() const;
     int MacroWindowCloseActionsEx();
-    int matchLanguageMode();
+    size_t matchLanguageMode() const;
     int SaveWindow();
     int SaveWindowAs(const QString &newName, bool addWrap);
     int WriteBackupFile();
@@ -248,7 +248,7 @@ private:
     void FlashMatchingEx(TextArea *area);
     void FreeHighlightingDataEx();
     void issueCommandEx(MainWindow *window, TextArea *area, const QString &command, const QString &input, int flags, int replaceLeft, int replaceRight, bool fromMacro);
-    void reapplyLanguageMode(int mode, bool forceDefaults);
+    void reapplyLanguageMode(size_t mode, bool forceDefaults);
     void Redo();
     void refreshMenuBar();
     void RefreshMenuToggleStates();
@@ -295,7 +295,7 @@ public:
     bool overstrike_;                  // is overstrike mode turned on ?
     bool saveOldVersion_;              // keep old version in filename.bc
     bool autoSave_;                    // is autosave turned on?
-    int languageMode_;                 // identifies language mode currently selected in the window
+    size_t languageMode_;              // identifies language mode currently selected in the window
     int matchSyntaxBased_;             // Use syntax info to show matching
     ShowMatchingStyle showMatchingStyle_;           // How to show matching parens: None, Delimeter, or Range
     IndentStyle indentStyle_;          // whether/how to auto indent

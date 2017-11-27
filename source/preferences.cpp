@@ -252,7 +252,7 @@ void SetPrefWrap(WrapStyle state) {
     g_Settings.autoWrap = state;
 }
 
-WrapStyle GetPrefWrap(int langMode) {
+WrapStyle GetPrefWrap(size_t langMode) {
     if (langMode == PLAIN_LANGUAGE_MODE || LanguageModes[langMode].wrapStyle == WrapStyle::Default) {
         return g_Settings.autoWrap;
     }
@@ -302,7 +302,7 @@ void SetPrefAutoIndent(IndentStyle state) {
     g_Settings.autoIndent = state;
 }
 
-IndentStyle GetPrefAutoIndent(int langMode) {
+IndentStyle GetPrefAutoIndent(size_t langMode) {
     if (langMode == PLAIN_LANGUAGE_MODE || LanguageModes[langMode].indentStyle == IndentStyle::Default) {
         return g_Settings.autoIndent;
     }
@@ -562,7 +562,7 @@ void SetPrefTabDist(int tabDist) {
     g_Settings.tabDistance = tabDist;
 }
 
-int GetPrefTabDist(int langMode) {
+int GetPrefTabDist(size_t langMode) {
 	int tabDist;
 
     if (langMode == PLAIN_LANGUAGE_MODE || LanguageModes[langMode].tabDist == DEFAULT_TAB_DIST) {
@@ -592,7 +592,7 @@ void SetPrefEmTabDist(int tabDist) {
     g_Settings.emulateTabs = tabDist;
 }
 
-int GetPrefEmTabDist(int langMode) {
+int GetPrefEmTabDist(size_t langMode) {
     if (langMode == PLAIN_LANGUAGE_MODE || LanguageModes[langMode].emTabDist == DEFAULT_EM_TAB_DIST) {
         return g_Settings.emulateTabs;
     }
@@ -895,24 +895,24 @@ void MarkPrefsChanged() {
 ** Lookup a language mode by name, returning the index of the language
 ** mode or PLAIN_LANGUAGE_MODE if the name is not found
 */
-int FindLanguageMode(const QString &languageName) {
+size_t FindLanguageMode(const QString &languageName) {
 
     // Compare each language mode to the one we were presented
     for (size_t i = 0; i < LanguageModes.size(); i++) {
         if (LanguageModes[i].name == languageName) {
-            return gsl::narrow<int>(i);
+            return i;
         }
     }
 
     return PLAIN_LANGUAGE_MODE;
 }
 
-int FindLanguageMode(const QStringRef &languageName) {
+size_t FindLanguageMode(const QStringRef &languageName) {
 
     // Compare each language mode to the one we were presented
     for (size_t i = 0; i < LanguageModes.size(); i++) {
         if (LanguageModes[i].name == languageName) {
-            return gsl::narrow<int>(i);
+            return i;
         }
     }
 
@@ -923,7 +923,7 @@ int FindLanguageMode(const QStringRef &languageName) {
 ** Return the name of the current language mode set in "window", or nullptr
 ** if the current mode is "Plain".
 */
-QString LanguageModeName(int mode) {
+QString LanguageModeName(size_t mode) {
 	if (mode == PLAIN_LANGUAGE_MODE)
 		return QString();
 	else

@@ -2,6 +2,7 @@
 #include "DialogTabs.h"
 #include "DocumentWidget.h"
 #include "TextBuffer.h"
+#include "LanguageMode.h"
 #include "preferences.h"
 #include "Help.h"
 #include <QMessageBox>

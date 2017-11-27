@@ -47,7 +47,7 @@ class Settings;
 
 enum ColorTypes : int;
 
-constexpr int PLAIN_LANGUAGE_MODE = -1;
+
 
 bool GetPrefAlwaysCheckRelTagsSpecs();
 bool GetPrefAppendLF();
@@ -69,11 +69,11 @@ bool GetPrefSortTabs();
 bool GetPrefTabBar();
 bool GetPrefUndoModifiesSelection();
 bool GetPrefWarnExit();
-IndentStyle GetPrefAutoIndent(int langMode);
-int FindLanguageMode(const QString &languageName);
-int FindLanguageMode(const QStringRef &languageName);
+IndentStyle GetPrefAutoIndent(size_t langMode);
+size_t FindLanguageMode(const QString &languageName);
+size_t FindLanguageMode(const QStringRef &languageName);
 int GetPrefCols();
-int GetPrefEmTabDist(int langMode);
+int GetPrefEmTabDist(size_t langMode);
 int GetPrefGlobalTabNavigate();
 int GetPrefInsertTabs();
 int GetPrefISearchLine();
@@ -89,7 +89,7 @@ int GetPrefStatsLine();
 int GetPrefStdOpenDialog();
 int GetPrefStickyCaseSenseBtn();
 int GetPrefTabBarHideOne();
-int GetPrefTabDist(int langMode);
+int GetPrefTabDist(size_t langMode);
 int GetPrefToolTips();
 int GetPrefTypingHidesPointer();
 int GetPrefWarnFileMods();
@@ -109,13 +109,13 @@ QString GetPrefShell();
 QString GetPrefTagFile();
 QString GetPrefTitleFormat();
 QString GetPrefTooltipBgColor();
-QString LanguageModeName(int mode);
+QString LanguageModeName(size_t mode);
 SearchType GetPrefSearch();
 ShowMatchingStyle GetPrefShowMatching();
 TruncSubstitution GetPrefTruncSubstitution();
 VirtKeyOverride GetPrefOverrideVirtKeyBindings();
 WrapMode GetPrefSearchWraps();
-WrapStyle GetPrefWrap(int langMode);
+WrapStyle GetPrefWrap(size_t langMode);
 
 bool ParseErrorEx(QWidget *toDialog, const QString &string, int stoppedAt, const QString &errorIn, const QString &message);
 
