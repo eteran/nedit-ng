@@ -420,7 +420,6 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 	multiFileReplSelected_ = false;
 	multiFileBusy_         = false;
 	fileChanged_           = false;	
-    modeMessageDisplayed_  = false;
     ignoreModify_          = false;
     mode_                  = 0;
     uid_                   = 0;
@@ -833,7 +832,7 @@ void DocumentWidget::UpdateStatsLine(TextArea *area) {
 		ui.labelStats->setText(slinecol);
 
 		// Don't clobber the line if there's a special message being displayed
-		if(!modeMessageDisplayed_) {
+        if(!modeMessageDisplayed()) {
 			ui.labelFileAndSize->setText(string);
 		}
 	}
@@ -3344,7 +3343,7 @@ void DocumentWidget::RefreshWindowStates() {
 
     if(auto win = MainWindow::fromDocument(this)) {
 
-        if (modeMessageDisplayed_) {
+        if (modeMessageDisplayed()) {
             ui.labelFileAndSize->setText(modeMessage_);
         } else {
             UpdateStatsLine(nullptr);
@@ -3354,13 +3353,13 @@ void DocumentWidget::RefreshWindowStates() {
         win->UpdateWindowTitle(this);
 
         // show/hide statsline as needed
-        if (modeMessageDisplayed_ && !ui.statusFrame->isVisible()) {
+        if (modeMessageDisplayed() && !ui.statusFrame->isVisible()) {
             // turn on statline to display mode message
             ShowStatsLine(true);
         } else if (showStats_ && !ui.statusFrame->isVisible()) {
             // turn on statsline since it is enabled
             ShowStatsLine(true);
-        } else if (!showStats_ && !modeMessageDisplayed_ && ui.statusFrame->isVisible()) {
+        } else if (!showStats_ && !modeMessageDisplayed() && ui.statusFrame->isVisible()) {
             // turn off statsline since there's nothing to show
             ShowStatsLine(false);
         }
@@ -4505,16 +4504,28 @@ void DocumentWidget::SetColors(const QString &textFg, const QString &textBg, con
    }
 }
 
+/**
+ * @brief DocumentWidget::modeMessageDisplayed
+ * @return
+ */
+bool DocumentWidget::modeMessageDisplayed() const {
+    return !modeMessage_.isNull();
+}
+
 /*
 ** Display a special message in the stats line (show the stats line if it
 ** is not currently shown).
 */
 void DocumentWidget::SetModeMessageEx(const QString &message) {
+
+    if(message.isNull()) {
+        return;
+    }
+
     /* this document may be hidden (not on top) or later made hidden,
        so we save a copy of the mode message, so we can restore the
        statsline when the document is raised to top again */
-    modeMessageDisplayed_ = true;
-    modeMessage_          = message;
+    modeMessage_ = message;
 
     ui.labelFileAndSize->setText(message);
 
@@ -4532,12 +4543,11 @@ void DocumentWidget::SetModeMessageEx(const QString &message) {
 */
 void DocumentWidget::ClearModeMessageEx() {
 
-    if (!modeMessageDisplayed_) {
+    if (!modeMessageDisplayed()) {
         return;
     }
 
-    modeMessageDisplayed_ = false;
-    modeMessage_          = QString();
+    modeMessage_ = QString();
 
     /*
      * Remove the stats line only if indicated by it's window state.

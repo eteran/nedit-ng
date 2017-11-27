@@ -189,6 +189,7 @@ public:
     void SetMatchSyntaxBased(bool value);
     void SetShowStatisticsLine(bool value);
     bool GetShowStatisticsLine() const;
+    bool modeMessageDisplayed() const;
 
 
 public:
@@ -316,7 +317,6 @@ private:
 	bool backlightChars_;              // is char backlighting turned on?
 	bool fileMissing_;                 // is the window's file gone?		
 	bool ignoreModify_;                // ignore modifications to text area
-	bool modeMessageDisplayed_;        // special stats line banner for learn and shell command executing modes	    
     QString modeMessage_;              // stats line banner content for learn and shell command executing modes
     dev_t dev_;                        // device where the file resides
     gid_t gid_;                        // last recorded group id of the file
