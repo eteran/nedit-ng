@@ -947,10 +947,11 @@ void MainWindow::updateWindowMenu() {
     // Make a sorted list of windows
     std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
 
-    std::sort(documents.begin(), documents.end(), [](const DocumentWidget *a, const DocumentWidget *b) {
+    std::sort(std::begin(documents), std::end(documents), [](const DocumentWidget *a, const DocumentWidget *b) {
 
         // Untitled first
-        int rc = a->filenameSet_ == b->filenameSet_ ? 0 : a->filenameSet_ && !b->filenameSet_ ? 1 : -1;
+
+        int rc = (a->filenameSet_ == b->filenameSet_) ? 0 : a->filenameSet_ && !b->filenameSet_ ? 1 : -1;
         if (rc != 0) {
             return rc < 0;
         }
@@ -973,7 +974,7 @@ void MainWindow::updateWindowMenu() {
     for(DocumentWidget *document : documents) {
         QString title = document->getWindowsMenuEntry();
 
-        ui.menu_Windows->addAction(title, [document]() {
+        ui.menu_Windows->addAction(title, this, [document]() {
             document->RaiseFocusDocumentWindow(true);
         });
     }
@@ -1071,6 +1072,8 @@ MainWindow *MainWindow::firstWindow() {
 
 std::vector<DocumentWidget *> MainWindow::openDocuments() const {
     std::vector<DocumentWidget *> documents;
+    documents.reserve(ui.tabWidget->count());
+
     for(int i = 0; i < ui.tabWidget->count(); ++i) {
         if(auto document = documentAt(i)) {
             documents.push_back(document);
@@ -2555,7 +2558,7 @@ void MainWindow::on_checkIFindCase_toggled(bool searchCaseSense) {
     }
 
     // When search parameters (direction or search type), redo the search
-    on_editIFind_returnPressed();
+    on_editIFind_textChanged(ui.editIFind->text());
 }
 
 void MainWindow::on_checkIFindRegex_toggled(bool searchRegex) {
@@ -2575,10 +2578,7 @@ void MainWindow::on_checkIFindRegex_toggled(bool searchRegex) {
     // The iSearch bar has no Whole Word button to enable/disable.
 
     // When search parameters (direction or search type), redo the search
-    // TODO(eteran): original nedit seems to have code to do this @search.c:3071
-    //               but in practice, toggling the case/regex often doesn't seem
-    //               to change the search
-    on_editIFind_returnPressed();
+    on_editIFind_textChanged(ui.editIFind->text());
 }
 
 void MainWindow::on_checkIFindReverse_toggled(bool value) {
@@ -2586,7 +2586,7 @@ void MainWindow::on_checkIFindReverse_toggled(bool value) {
 	Q_UNUSED(value);
 
     // When search parameters (direction or search type), redo the search
-    on_editIFind_returnPressed();
+    on_editIFind_textChanged(ui.editIFind->text());
 }
 
 /*

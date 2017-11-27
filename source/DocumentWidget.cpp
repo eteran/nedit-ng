@@ -5158,6 +5158,7 @@ std::vector<DocumentWidget *> DocumentWidget::allDocuments() {
 
         std::vector<DocumentWidget *> openDocuments = window->openDocuments();
 
+        documents.reserve(documents.size() + openDocuments.size());
         documents.insert(documents.end(), openDocuments.begin(), openDocuments.end());
     }
     return documents;

@@ -458,7 +458,7 @@ TextArea::TextArea(
 	lineStarts_[0]     = 0;
 	calltip_.ID        = 0;
 
-    std::fill_n(&lineStarts_[1], nVisibleLines_, -1);
+    std::fill_n(&lineStarts_[1], nVisibleLines_ - 1, -1);
 
 	suppressResync_      = false;
 	nLinesDeleted_       = 0;
