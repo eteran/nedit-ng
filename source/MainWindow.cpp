@@ -1948,7 +1948,10 @@ void MainWindow::action_Shift_Left(DocumentWidget *document) {
     if (document->CheckReadOnly()) {
         return;
     }
-    ShiftSelectionEx(document, lastFocus_, SHIFT_LEFT, false);
+
+    if(TextArea *area = lastFocus_) {
+        ShiftSelectionEx(document, area, SHIFT_LEFT, false);
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -1968,7 +1971,10 @@ void MainWindow::action_Shift_Right(DocumentWidget *document) {
     if (document->CheckReadOnly()) {
         return;
     }
-    ShiftSelectionEx(document, lastFocus_, SHIFT_RIGHT, false);
+
+    if(TextArea *area = lastFocus_) {
+        ShiftSelectionEx(document, area, SHIFT_RIGHT, false);
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -1992,7 +1998,9 @@ void MainWindow::action_Shift_Left_Tabs(DocumentWidget *document) {
         return;
     }
 
-    ShiftSelectionEx(document, lastFocus_, SHIFT_LEFT, true);
+    if(TextArea *area = lastFocus_) {
+        ShiftSelectionEx(document, area, SHIFT_LEFT, true);
+    }
 }
 
 void MainWindow::action_Shift_Left_Tabs() {
@@ -2013,7 +2021,9 @@ void MainWindow::action_Shift_Right_Tabs(DocumentWidget *document) {
         return;
     }
 
-    ShiftSelectionEx(document, lastFocus_, SHIFT_RIGHT, true);
+    if(TextArea *area = lastFocus_) {
+        ShiftSelectionEx(document, area, SHIFT_RIGHT, true);
+    }
 }
 
 /**
@@ -2037,7 +2047,9 @@ void MainWindow::action_Lower_case(DocumentWidget *document) {
         return;
     }
 
-    DowncaseSelectionEx(document, lastFocus_);
+    if(TextArea *area = lastFocus_) {
+        DowncaseSelectionEx(document, area);
+    }
 }
 
 /**
@@ -2062,7 +2074,9 @@ void MainWindow::action_Upper_case(DocumentWidget *document) {
         return;
     }
 
-    UpcaseSelectionEx(document, lastFocus_);
+    if(TextArea *area = lastFocus_) {
+        UpcaseSelectionEx(document, area);
+    }
 }
 
 /**
@@ -2082,7 +2096,10 @@ void MainWindow::action_Fill_Paragraph(DocumentWidget *document) {
     if (document->CheckReadOnly()) {
         return;
     }
-    FillSelectionEx(document, lastFocus_);
+
+    if(TextArea *area = lastFocus_) {
+        FillSelectionEx(document, area);
+    }
 }
 
 /**
@@ -2276,11 +2293,13 @@ void MainWindow::action_Find_Again(DocumentWidget *document, Direction direction
 
     emit_event("find_again", to_string(direction), to_string(wrap));
 
-    SearchAndSelectSameEx(
-        document,
-        lastFocus_,
-        direction,
-        wrap);
+    if(TextArea *area = lastFocus_) {
+        SearchAndSelectSameEx(
+            document,
+            area,
+            direction,
+            wrap);
+    }
 }
 
 void MainWindow::action_Shift_Find_Again(DocumentWidget *document) {
@@ -2307,12 +2326,14 @@ void MainWindow::action_Find_Selection(DocumentWidget *document, Direction direc
 
     emit_event("find_selection", to_string(direction), to_string(type), to_string(wrap));
 
-    SearchForSelectedEx(
-        document,
-        lastFocus_,
-        direction,
-        type,
-        wrap);
+    if(TextArea *area = lastFocus_) {
+        SearchForSelectedEx(
+            document,
+            area,
+            direction,
+            type,
+            wrap);
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -2418,14 +2439,16 @@ void MainWindow::action_Shift_Find_Incremental() {
  */
 void MainWindow::action_Find_Incremental(DocumentWidget *document, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWraps, bool isContinue) {
 
-    SearchAndSelectIncrementalEx(
-            document,
-            lastFocus_,
-            searchString,
-            direction,
-            searchType,
-            searchWraps,
-            isContinue);
+    if(TextArea *area = lastFocus_) {
+        SearchAndSelectIncrementalEx(
+                document,
+                area,
+                searchString,
+                direction,
+                searchType,
+                searchWraps,
+                isContinue);
+    }
 }
 
 /**
@@ -2692,12 +2715,14 @@ void MainWindow::action_Shift_Replace(DocumentWidget *document) {
         return;
     }
 
-    DoFindReplaceDlogEx(
-                document,
-                lastFocus_,
-                Direction::Backward,
-                GetPrefKeepSearchDlogs(),
-                GetPrefSearch());
+    if(TextArea *area = lastFocus_) {
+        DoFindReplaceDlogEx(
+                    document,
+                    area,
+                    Direction::Backward,
+                    GetPrefKeepSearchDlogs(),
+                    GetPrefSearch());
+    }
 }
 
 /**
@@ -2719,11 +2744,13 @@ void MainWindow::action_Replace_Find_Again(DocumentWidget *document, Direction d
         return;
     }
 
-    ReplaceFindSameEx(
-                document,
-                lastFocus_,
-                direction,
-                wrap);
+    if(TextArea *area = lastFocus_) {
+        ReplaceFindSameEx(
+                    document,
+                    area,
+                    direction,
+                    wrap);
+    }
 }
 
 /**
@@ -2752,11 +2779,13 @@ void MainWindow::action_Replace_Again(DocumentWidget *document, Direction direct
         return;
     }
 
-    ReplaceSameEx(
-                document,
-                lastFocus_,
-                direction,
-                wrap);
+    if(TextArea *area = lastFocus_) {
+        ReplaceSameEx(
+                    document,
+                    area,
+                    direction,
+                    wrap);
+    }
 }
 
 /**
@@ -2794,7 +2823,9 @@ void MainWindow::action_Mark(DocumentWidget *document, const QString &mark) {
     emit_event("mark", mark);
 
     QChar ch = mark[0];
-    document->AddMarkEx(lastFocus_, ch);
+    if(TextArea *area = lastFocus_) {
+        document->AddMarkEx(area, ch);
+    }
 }
 
 void MainWindow::action_Mark(DocumentWidget *document) {
@@ -3004,7 +3035,9 @@ void MainWindow::action_Goto_Mark_Shortcut() {
 void MainWindow::action_Goto_Matching(DocumentWidget *document) {
 
     emit_event("goto_matching");
-    document->GotoMatchingCharacter(lastFocus_);
+    if(TextArea *area = lastFocus_) {
+        document->GotoMatchingCharacter(area);
+    }
 }
 
 void MainWindow::on_action_Goto_Matching_triggered() {
@@ -3016,7 +3049,9 @@ void MainWindow::on_action_Goto_Matching_triggered() {
 void MainWindow::action_Shift_Goto_Matching(DocumentWidget *document) {
 
     emit_event("select_to_matching");
-    document->SelectToMatchingCharacter(lastFocus_);
+    if(TextArea *area = lastFocus_) {
+        document->SelectToMatchingCharacter(area);
+    }
 }
 
 void MainWindow::action_Shift_Goto_Matching() {
@@ -3169,7 +3204,9 @@ void MainWindow::on_action_Load_Macro_File_triggered() {
 void MainWindow::action_Print(DocumentWidget *document) {
 
     emit_event("print");
-    document->PrintWindow(lastFocus_, false);
+    if(TextArea *area = lastFocus_) {
+        document->PrintWindow(area, false);
+    }
 }
 
 void MainWindow::on_action_Print_triggered() {
@@ -3182,7 +3219,9 @@ void MainWindow::on_action_Print_triggered() {
 void MainWindow::action_Print_Selection(DocumentWidget *document) {
 
     emit_event("print_selection");
-    document->PrintWindow(lastFocus_, true);
+    if(TextArea *area = lastFocus_) {
+        document->PrintWindow(area, true);
+    }
 }
 
 void MainWindow::on_action_Print_Selection_triggered() {
@@ -4544,7 +4583,9 @@ void MainWindow::action_Execute_Command_Line(DocumentWidget *document) {
         return;
     }
 
-    document->ExecCursorLineEx(lastFocus_, false);
+    if(TextArea *area = lastFocus_) {
+        document->ExecCursorLineEx(area, false);
+    }
 }
 
 void MainWindow::on_action_Execute_Command_Line_triggered() {
@@ -4716,13 +4757,15 @@ void MainWindow::action_Find(DocumentWidget *document, const QString &string, Di
 
     emit_event("find", string, to_string(direction), to_string(type), to_string(searchWrap));
 
-    SearchAndSelectEx(
-                document,
-                lastFocus_,
-                string,
-                direction,
-                type,
-                searchWrap);
+    if(TextArea *area = lastFocus_) {
+        SearchAndSelectEx(
+                    document,
+                    area,
+                    string,
+                    direction,
+                    type,
+                    searchWrap);
+    }
 }
 
 /**
@@ -4773,14 +4816,16 @@ void MainWindow::action_Replace(DocumentWidget *document, const QString &searchS
         return;
     }
 
-    SearchAndReplaceEx(
-                document,
-                lastFocus_,
-                searchString,
-                replaceString,
-                direction,
-                type,
-                wrap);
+    if(TextArea *area = lastFocus_) {
+        SearchAndReplaceEx(
+                    document,
+                    area,
+                    searchString,
+                    replaceString,
+                    direction,
+                    type,
+                    wrap);
+    }
 }
 
 /**
@@ -4795,11 +4840,13 @@ void MainWindow::action_Replace_Dialog(DocumentWidget *document, Direction direc
         return;
     }
 
-    DoFindReplaceDlogEx(document,
-                        lastFocus_,
-                        direction,
-                        keepDialog,
-                        type);
+    if(TextArea *area = lastFocus_) {
+        DoFindReplaceDlogEx(document,
+                            area,
+                            direction,
+                            keepDialog,
+                            type);
+    }
 }
 
 /**
@@ -4826,11 +4873,13 @@ void MainWindow::action_Replace_All(DocumentWidget *document, const QString &sea
         return;
     }
 
-    ReplaceAllEx(document,
-                 lastFocus_,
-                 searchString,
-                 replaceString,
-                 type);
+    if(TextArea *area = lastFocus_) {
+        ReplaceAllEx(document,
+                     area,
+                     searchString,
+                     replaceString,
+                     type);
+    }
 }
 
 /**
@@ -4844,7 +4893,10 @@ void MainWindow::action_Show_Tip(DocumentWidget *document, const QString &argume
     } else {
         emit_event("show_tip");
     }
-    document->FindDefCalltip(lastFocus_, argument);
+
+    if(TextArea *area = lastFocus_) {
+        document->FindDefCalltip(area, argument);
+    }
 }
 
 /**
@@ -4858,7 +4910,9 @@ void MainWindow::action_Find_Definition(DocumentWidget *document, const QString 
         emit_event("find_definition");
     }
 
-    document->FindDefinition(lastFocus_, argument);
+    if(TextArea *area = lastFocus_) {
+        document->FindDefinition(area, argument);
+    }
 }
 
 void MainWindow::action_Find_Definition(DocumentWidget *document) {
@@ -4957,7 +5011,9 @@ void MainWindow::action_Execute_Command(DocumentWidget *document, const QString 
         return;
 
     if(!command.isEmpty()) {
-        document->execAP(lastFocus_, command);
+        if(TextArea *area = lastFocus_) {
+            document->execAP(area, command);
+        }
     }
 }
 
@@ -5008,7 +5064,9 @@ void MainWindow::shellTriggered(QAction *action) {
  */
 void MainWindow::action_Shell_Menu_Command(DocumentWidget *document, const QString &name) {
     emit_event("shell_menu_command", name);
-    DoNamedShellMenuCmd(document, lastFocus_, name, false);
+    if(TextArea *area = lastFocus_) {
+        DoNamedShellMenuCmd(document, area, name, false);
+    }
 }
 
 /**
@@ -5045,7 +5103,9 @@ void MainWindow::macroTriggered(QAction *action) {
  */
 void MainWindow::action_Macro_Menu_Command(DocumentWidget *document, const QString &name) {
     emit_event("macro_menu_command", name);
-    DoNamedMacroMenuCmd(document, lastFocus_, name, false);
+    if(TextArea *area = lastFocus_) {
+        DoNamedMacroMenuCmd(document, area, name, false);
+    }
 }
 
 /**
@@ -5724,15 +5784,16 @@ void MainWindow::action_Replace_Find(DocumentWidget *document, const QString &se
         return;
     }
 
-    ReplaceAndSearchEx(
-                document,
-                lastFocus_,
-                searchString,
-                replaceString,
-                direction,
-                searchType,
-                searchWraps);
-
+    if(TextArea *area = lastFocus_) {
+        ReplaceAndSearchEx(
+                    document,
+                    area,
+                    searchString,
+                    replaceString,
+                    direction,
+                    searchType,
+                    searchWraps);
+    }
 }
 
 /*
@@ -5803,12 +5864,14 @@ void MainWindow::action_Replace_In_Selection(DocumentWidget *document, const QSt
         return;
     }
 
-    ReplaceInSelectionEx(
-                document,
-                lastFocus_,
-                searchString,
-                replaceString,
-                type);
+    if(TextArea *area = lastFocus_) {
+        ReplaceInSelectionEx(
+                    document,
+                    area,
+                    searchString,
+                    replaceString,
+                    type);
+    }
 }
 
 /*
