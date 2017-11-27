@@ -4002,6 +4002,7 @@ void DocumentWidget::splitPane() {
     if(auto activeArea = qobject_cast<TextArea *>(splitter_->widget(0))) {
         area->setLineNumCols(activeArea->getLineNumCols());
         area->setBacklightCharTypes(backlightCharTypes_);
+        area->setFont(fontStruct_);
     }
 
     AttachHighlightToWidgetEx(area);
