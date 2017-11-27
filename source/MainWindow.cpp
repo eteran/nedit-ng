@@ -628,7 +628,9 @@ void MainWindow::setupMenuGroups() {
 // Name: on_action_New_triggered
 //------------------------------------------------------------------------------
 void MainWindow::on_action_New_triggered() {    
-    action_New(currentDocument(), NewMode::Prefs);
+    if(DocumentWidget *document = currentDocument()) {
+        action_New(document, NewMode::Prefs);
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -729,8 +731,11 @@ void MainWindow::action_Close(DocumentWidget *document, CloseMode mode) {
 /**
  * @brief MainWindow::on_action_Close_triggered
  */
-void MainWindow::on_action_Close_triggered() {    
-    action_Close(currentDocument(), CloseMode::Prompt);
+void MainWindow::on_action_Close_triggered() {
+
+    if(DocumentWidget *document = currentDocument()) {
+        action_Close(document, CloseMode::Prompt);
+    }
 }
 
 /**
@@ -746,7 +751,7 @@ void MainWindow::action_Select_All(DocumentWidget *document) {
     emit_event("select_all");
 
     Q_UNUSED(document);
-    if(TextArea *area = lastFocus_) {
+    if(QPointer<TextArea> area = lastFocus_) {
         area->selectAllAP();
     }
 }
@@ -807,7 +812,7 @@ void MainWindow::on_action_Include_File_triggered() {
 // Name: on_action_Cut_triggered
 //------------------------------------------------------------------------------
 void MainWindow::on_action_Cut_triggered() {
-    if(TextArea *area = lastFocus_) {
+    if(QPointer<TextArea> area = lastFocus_) {
         area->cutClipboardAP();
 	}
 }
@@ -816,7 +821,7 @@ void MainWindow::on_action_Cut_triggered() {
 // Name: on_action_Copy_triggered
 //------------------------------------------------------------------------------
 void MainWindow::on_action_Copy_triggered() {
-    if(TextArea *area = lastFocus_) {
+    if(QPointer<TextArea> area = lastFocus_) {
         area->copyClipboardAP();
 	}
 }
@@ -825,7 +830,7 @@ void MainWindow::on_action_Copy_triggered() {
 // Name: on_action_Paste_triggered
 //------------------------------------------------------------------------------
 void MainWindow::on_action_Paste_triggered() {
-    if(TextArea *area = lastFocus_) {
+    if(QPointer<TextArea> area = lastFocus_) {
         area->pasteClipboardAP();
 	}
 }
@@ -834,7 +839,7 @@ void MainWindow::on_action_Paste_triggered() {
  * @brief MainWindow::on_action_Paste_Column_triggered
  */
 void MainWindow::on_action_Paste_Column_triggered() {
-    if(TextArea *area = lastFocus_) {
+    if(QPointer<TextArea> area = lastFocus_) {
         area->pasteClipboardAP(TextArea::RectFlag);
     }
 }
@@ -1949,7 +1954,7 @@ void MainWindow::action_Shift_Left(DocumentWidget *document) {
         return;
     }
 
-    if(TextArea *area = lastFocus_) {
+    if(QPointer<TextArea> area = lastFocus_) {
         ShiftSelectionEx(document, area, SHIFT_LEFT, false);
     }
 }
@@ -1972,7 +1977,7 @@ void MainWindow::action_Shift_Right(DocumentWidget *document) {
         return;
     }
 
-    if(TextArea *area = lastFocus_) {
+    if(QPointer<TextArea> area = lastFocus_) {
         ShiftSelectionEx(document, area, SHIFT_RIGHT, false);
     }
 }
@@ -1998,7 +2003,7 @@ void MainWindow::action_Shift_Left_Tabs(DocumentWidget *document) {
         return;
     }
 
-    if(TextArea *area = lastFocus_) {
+    if(QPointer<TextArea> area = lastFocus_) {
         ShiftSelectionEx(document, area, SHIFT_LEFT, true);
     }
 }
@@ -2021,7 +2026,7 @@ void MainWindow::action_Shift_Right_Tabs(DocumentWidget *document) {
         return;
     }
 
-    if(TextArea *area = lastFocus_) {
+    if(QPointer<TextArea> area = lastFocus_) {
         ShiftSelectionEx(document, area, SHIFT_RIGHT, true);
     }
 }
@@ -2047,7 +2052,7 @@ void MainWindow::action_Lower_case(DocumentWidget *document) {
         return;
     }
 
-    if(TextArea *area = lastFocus_) {
+    if(QPointer<TextArea> area = lastFocus_) {
         DowncaseSelectionEx(document, area);
     }
 }
@@ -2074,7 +2079,7 @@ void MainWindow::action_Upper_case(DocumentWidget *document) {
         return;
     }
 
-    if(TextArea *area = lastFocus_) {
+    if(QPointer<TextArea> area = lastFocus_) {
         UpcaseSelectionEx(document, area);
     }
 }
@@ -2097,7 +2102,7 @@ void MainWindow::action_Fill_Paragraph(DocumentWidget *document) {
         return;
     }
 
-    if(TextArea *area = lastFocus_) {
+    if(QPointer<TextArea> area = lastFocus_) {
         FillSelectionEx(document, area);
     }
 }
@@ -2117,7 +2122,7 @@ void MainWindow::on_action_Fill_Paragraph_triggered() {
  */
 void MainWindow::on_action_Insert_Form_Feed_triggered() {
 
-    if(TextArea *area = lastFocus_) {
+    if(QPointer<TextArea> area = lastFocus_) {
         area->insertStringAP(QLatin1String("\f"));
     }
 }
@@ -2137,7 +2142,7 @@ void MainWindow::action_Insert_Ctrl_Code(DocumentWidget *document, const QString
 
     auto s = str.toStdString();
 
-    if(TextArea *area = lastFocus_) {
+    if(QPointer<TextArea> area = lastFocus_) {
         area->insertStringAP(QString::fromStdString(s));
     }
 }
@@ -2189,7 +2194,7 @@ void MainWindow::action_Goto_Line_Number(DocumentWidget *document, const QString
         return;
     }
 
-    if(TextArea *area = lastFocus_) {
+    if(QPointer<TextArea> area = lastFocus_) {
         document->gotoAP(area, lineNum, column);
     }
 }
@@ -2293,7 +2298,7 @@ void MainWindow::action_Find_Again(DocumentWidget *document, Direction direction
 
     emit_event("find_again", to_string(direction), to_string(wrap));
 
-    if(TextArea *area = lastFocus_) {
+    if(QPointer<TextArea> area = lastFocus_) {
         SearchAndSelectSameEx(
             document,
             area,
@@ -2326,7 +2331,7 @@ void MainWindow::action_Find_Selection(DocumentWidget *document, Direction direc
 
     emit_event("find_selection", to_string(direction), to_string(type), to_string(wrap));
 
-    if(TextArea *area = lastFocus_) {
+    if(QPointer<TextArea> area = lastFocus_) {
         SearchForSelectedEx(
             document,
             area,
@@ -2439,7 +2444,7 @@ void MainWindow::action_Shift_Find_Incremental() {
  */
 void MainWindow::action_Find_Incremental(DocumentWidget *document, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWraps, bool isContinue) {
 
-    if(TextArea *area = lastFocus_) {
+    if(QPointer<TextArea> area = lastFocus_) {
         SearchAndSelectIncrementalEx(
                 document,
                 area,
@@ -2715,7 +2720,7 @@ void MainWindow::action_Shift_Replace(DocumentWidget *document) {
         return;
     }
 
-    if(TextArea *area = lastFocus_) {
+    if(QPointer<TextArea> area = lastFocus_) {
         DoFindReplaceDlogEx(
                     document,
                     area,
@@ -2744,7 +2749,7 @@ void MainWindow::action_Replace_Find_Again(DocumentWidget *document, Direction d
         return;
     }
 
-    if(TextArea *area = lastFocus_) {
+    if(QPointer<TextArea> area = lastFocus_) {
         ReplaceFindSameEx(
                     document,
                     area,
@@ -2779,7 +2784,7 @@ void MainWindow::action_Replace_Again(DocumentWidget *document, Direction direct
         return;
     }
 
-    if(TextArea *area = lastFocus_) {
+    if(QPointer<TextArea> area = lastFocus_) {
         ReplaceSameEx(
                     document,
                     area,
@@ -2792,20 +2797,26 @@ void MainWindow::action_Replace_Again(DocumentWidget *document, Direction direct
  * @brief MainWindow::on_action_Replace_Again_triggered
  */
 void MainWindow::on_action_Replace_Again_triggered() {
-    action_Replace_Again(
-                currentDocument(),
-                Direction::Forward,
-                GetPrefSearchWraps());
+
+    if(DocumentWidget *document = currentDocument()) {
+        action_Replace_Again(
+                    document,
+                    Direction::Forward,
+                    GetPrefSearchWraps());
+    }
 }
 
 /**
  * @brief MainWindow::action_Shift_Replace_Again_triggered
  */
 void MainWindow::action_Shift_Replace_Again() {
-    action_Replace_Again(
-                currentDocument(),
-                Direction::Backward,
-                GetPrefSearchWraps());
+
+    if(DocumentWidget *document = currentDocument()) {
+        action_Replace_Again(
+                    document,
+                    Direction::Backward,
+                    GetPrefSearchWraps());
+    }
 }
 
 /**
@@ -2823,7 +2834,7 @@ void MainWindow::action_Mark(DocumentWidget *document, const QString &mark) {
     emit_event("mark", mark);
 
     QChar ch = mark[0];
-    if(TextArea *area = lastFocus_) {
+    if(QPointer<TextArea> area = lastFocus_) {
         document->AddMarkEx(area, ch);
     }
 }
@@ -2912,7 +2923,7 @@ void MainWindow::action_Goto_Mark(DocumentWidget *document, const QString &mark,
         return;
     }
 
-    if(TextArea *area = lastFocus_) {
+    if(QPointer<TextArea> area = lastFocus_) {
         document->gotoMark(area, mark[0], extend);
     }
 }
@@ -2947,7 +2958,10 @@ void MainWindow::action_Goto_Mark_Dialog(DocumentWidget *document, bool extend) 
 void MainWindow::on_action_Goto_Mark_triggered() {
 
     bool extend = (QApplication::keyboardModifiers() & Qt::SHIFT);
-    action_Goto_Mark_Dialog(currentDocument(), extend);
+
+    if(DocumentWidget *document = currentDocument()) {
+        action_Goto_Mark_Dialog(document, extend);
+    }
 }
 
 
@@ -3035,7 +3049,7 @@ void MainWindow::action_Goto_Mark_Shortcut() {
 void MainWindow::action_Goto_Matching(DocumentWidget *document) {
 
     emit_event("goto_matching");
-    if(TextArea *area = lastFocus_) {
+    if(QPointer<TextArea> area = lastFocus_) {
         document->GotoMatchingCharacter(area);
     }
 }
@@ -3049,7 +3063,7 @@ void MainWindow::on_action_Goto_Matching_triggered() {
 void MainWindow::action_Shift_Goto_Matching(DocumentWidget *document) {
 
     emit_event("select_to_matching");
-    if(TextArea *area = lastFocus_) {
+    if(QPointer<TextArea> area = lastFocus_) {
         document->SelectToMatchingCharacter(area);
     }
 }
@@ -3075,7 +3089,9 @@ void MainWindow::updateTipsFileMenuEx() {
     connect(tipsMenu, &QMenu::triggered, this, [this](QAction *action) {
         auto filename = action->data().toString();
         if(!filename.isEmpty()) {
-            action_Unload_Tips_File(currentDocument(), filename);
+            if(DocumentWidget *document = currentDocument()) {
+                action_Unload_Tips_File(document, filename);
+            }
         }
     });
 }
@@ -3093,7 +3109,9 @@ void MainWindow::updateTagsFileMenuEx() {
     connect(tagsMenu, &QMenu::triggered, this, [this](QAction *action) {
         auto filename = action->data().toString();
         if(!filename.isEmpty()) {
-            action_Unload_Tags_File(currentDocument(), filename);
+            if(DocumentWidget *document = currentDocument()) {
+                action_Unload_Tags_File(document, filename);
+            }
         }
     });
 }
@@ -3204,7 +3222,7 @@ void MainWindow::on_action_Load_Macro_File_triggered() {
 void MainWindow::action_Print(DocumentWidget *document) {
 
     emit_event("print");
-    if(TextArea *area = lastFocus_) {
+    if(QPointer<TextArea> area = lastFocus_) {
         document->PrintWindow(area, false);
     }
 }
@@ -3219,7 +3237,7 @@ void MainWindow::on_action_Print_triggered() {
 void MainWindow::action_Print_Selection(DocumentWidget *document) {
 
     emit_event("print_selection");
-    if(TextArea *area = lastFocus_) {
+    if(QPointer<TextArea> area = lastFocus_) {
         document->PrintWindow(area, true);
     }
 }
@@ -4583,7 +4601,7 @@ void MainWindow::action_Execute_Command_Line(DocumentWidget *document) {
         return;
     }
 
-    if(TextArea *area = lastFocus_) {
+    if(QPointer<TextArea> area = lastFocus_) {
         document->ExecCursorLineEx(area, false);
     }
 }
@@ -4757,7 +4775,7 @@ void MainWindow::action_Find(DocumentWidget *document, const QString &string, Di
 
     emit_event("find", string, to_string(direction), to_string(type), to_string(searchWrap));
 
-    if(TextArea *area = lastFocus_) {
+    if(QPointer<TextArea> area = lastFocus_) {
         SearchAndSelectEx(
                     document,
                     area,
@@ -4772,32 +4790,41 @@ void MainWindow::action_Find(DocumentWidget *document, const QString &string, Di
  * @brief MainWindow::on_action_Find_triggered
  */
 void MainWindow::on_action_Find_triggered() {
-    action_Find_Dialog(
-                currentDocument(),
-                Direction::Forward,
-                GetPrefSearch(),
-                GetPrefKeepSearchDlogs());
+
+    if(DocumentWidget *document = currentDocument()) {
+        action_Find_Dialog(
+                    document,
+                    Direction::Forward,
+                    GetPrefSearch(),
+                    GetPrefKeepSearchDlogs());
+    }
 }
 
 /**
  * @brief MainWindow::on_action_Find_Again_triggered
  */
 void MainWindow::on_action_Find_Again_triggered() {
-    action_Find_Again(
-                currentDocument(),
-                Direction::Forward,
-                GetPrefSearchWraps());
+
+    if(DocumentWidget *document = currentDocument()) {
+        action_Find_Again(
+                    document,
+                    Direction::Forward,
+                    GetPrefSearchWraps());
+    }
 }
 
 /**
  * @brief MainWindow::on_action_Find_Selection_triggered
  */
 void MainWindow::on_action_Find_Selection_triggered() {
-    action_Find_Selection(
-                currentDocument(),
-                Direction::Forward,
-                GetPrefSearch(),
-                GetPrefSearchWraps());
+
+    if(DocumentWidget *document = currentDocument()) {
+        action_Find_Selection(
+                    document,
+                    Direction::Forward,
+                    GetPrefSearch(),
+                    GetPrefSearchWraps());
+    }
 }
 
 /**
@@ -4816,7 +4843,7 @@ void MainWindow::action_Replace(DocumentWidget *document, const QString &searchS
         return;
     }
 
-    if(TextArea *area = lastFocus_) {
+    if(QPointer<TextArea> area = lastFocus_) {
         SearchAndReplaceEx(
                     document,
                     area,
@@ -4840,7 +4867,7 @@ void MainWindow::action_Replace_Dialog(DocumentWidget *document, Direction direc
         return;
     }
 
-    if(TextArea *area = lastFocus_) {
+    if(QPointer<TextArea> area = lastFocus_) {
         DoFindReplaceDlogEx(document,
                             area,
                             direction,
@@ -4853,10 +4880,13 @@ void MainWindow::action_Replace_Dialog(DocumentWidget *document, Direction direc
  * @brief MainWindow::on_action_Replace_triggered
  */
 void MainWindow::on_action_Replace_triggered() {
-    action_Replace_Dialog(currentDocument(),
-                          Direction::Forward,
-                          GetPrefSearch(),
-                          GetPrefKeepSearchDlogs());
+
+    if(DocumentWidget *document = currentDocument()) {
+        action_Replace_Dialog(document,
+                              Direction::Forward,
+                              GetPrefSearch(),
+                              GetPrefKeepSearchDlogs());
+    }
 }
 
 /**
@@ -4873,7 +4903,7 @@ void MainWindow::action_Replace_All(DocumentWidget *document, const QString &sea
         return;
     }
 
-    if(TextArea *area = lastFocus_) {
+    if(QPointer<TextArea> area = lastFocus_) {
         ReplaceAllEx(document,
                      area,
                      searchString,
@@ -4894,7 +4924,7 @@ void MainWindow::action_Show_Tip(DocumentWidget *document, const QString &argume
         emit_event("show_tip");
     }
 
-    if(TextArea *area = lastFocus_) {
+    if(QPointer<TextArea> area = lastFocus_) {
         document->FindDefCalltip(area, argument);
     }
 }
@@ -4910,7 +4940,7 @@ void MainWindow::action_Find_Definition(DocumentWidget *document, const QString 
         emit_event("find_definition");
     }
 
-    if(TextArea *area = lastFocus_) {
+    if(QPointer<TextArea> area = lastFocus_) {
         document->FindDefinition(area, argument);
     }
 }
@@ -5011,7 +5041,7 @@ void MainWindow::action_Execute_Command(DocumentWidget *document, const QString 
         return;
 
     if(!command.isEmpty()) {
-        if(TextArea *area = lastFocus_) {
+        if(QPointer<TextArea> area = lastFocus_) {
             document->execAP(area, command);
         }
     }
@@ -5042,7 +5072,6 @@ void MainWindow::action_Execute_Command(DocumentWidget *document) {
  */
 void MainWindow::on_action_Execute_Command_triggered() {
 
-
     if(DocumentWidget *document = currentDocument()) {
         action_Execute_Command(document);
     }
@@ -5055,7 +5084,10 @@ void MainWindow::on_action_Execute_Command_triggered() {
 void MainWindow::shellTriggered(QAction *action) {
     const int index = action->data().toInt();
     const QString name = ShellMenuData[index].item->name;
-    action_Shell_Menu_Command(currentDocument(), name);
+
+    if(DocumentWidget *document = currentDocument()) {
+        action_Shell_Menu_Command(document, name);
+    }
 }
 
 /**
@@ -5064,7 +5096,7 @@ void MainWindow::shellTriggered(QAction *action) {
  */
 void MainWindow::action_Shell_Menu_Command(DocumentWidget *document, const QString &name) {
     emit_event("shell_menu_command", name);
-    if(TextArea *area = lastFocus_) {
+    if(QPointer<TextArea> area = lastFocus_) {
         DoNamedShellMenuCmd(document, area, name, false);
     }
 }
@@ -5103,7 +5135,7 @@ void MainWindow::macroTriggered(QAction *action) {
  */
 void MainWindow::action_Macro_Menu_Command(DocumentWidget *document, const QString &name) {
     emit_event("macro_menu_command", name);
-    if(TextArea *area = lastFocus_) {
+    if(QPointer<TextArea> area = lastFocus_) {
         DoNamedMacroMenuCmd(document, area, name, false);
     }
 }
@@ -5140,13 +5172,13 @@ void MainWindow::action_Detach_Document_Dialog(DocumentWidget *document) {
 
     if(TabCount() > 1) {
 
-        int r = QMessageBox::question(
+        int result = QMessageBox::question(
                     nullptr,
                     tr("Detach Tab"),
                     tr("Detach %1?").arg(document->filename_),
                     QMessageBox::Yes | QMessageBox::No);
 
-        if(r == QMessageBox::Yes) {
+        if(result == QMessageBox::Yes) {
             action_Detach_Document(document);
         }
     }
@@ -5190,7 +5222,6 @@ void MainWindow::EditHighlightPatterns() {
 ** chosing language mode updated (via a call to CreateLanguageModeMenu)
 */
 void MainWindow::UpdateLanguageModeMenu() {
-
     if(!SyntaxPatterns) {
         return;
     }
@@ -5236,7 +5267,6 @@ bool MainWindow::LMHasHighlightPatterns(const QString &languageMode) {
     if (FindPatternSet(languageMode) != nullptr) {
         return true;
     }
-
 
     return SyntaxPatterns && SyntaxPatterns->LMHasHighlightPatterns(languageMode);
 }
@@ -5297,9 +5327,9 @@ bool MainWindow::SearchWindowEx(DocumentWidget *document, const QString &searchS
                     document->GetWindowDelimitersEx());
 
 
-        if (auto dialog = qobject_cast<DialogFind *>(dialogFind_)) {
-            if(!dialog->keepDialog()) {
-                dialog->hide();
+        if (dialogFind_) {
+            if(!dialogFind_->keepDialog()) {
+                dialogFind_->hide();
             }
         }
 
@@ -5408,8 +5438,9 @@ bool MainWindow::SearchWindowEx(DocumentWidget *document, const QString &searchS
 
         if (found) {
             iSearchTryBeepOnWrapEx(direction, beginPos, *startPos);
-        } else
+        } else {
             QApplication::beep();
+        }
     }
 
     return found;
@@ -5627,32 +5658,30 @@ void MainWindow::DoFindDlogEx(DocumentWidget *document, Direction direction, boo
         dialogFind_ = new DialogFind(this, document);
     }
 
-    auto dialog = qobject_cast<DialogFind *>(dialogFind_);
+    dialogFind_->setTextField(document);
 
-    dialog->setTextField(document);
-
-    if(dialog->isVisible()) {
-        dialog->raise();
-        dialog->activateWindow();
+    if(dialogFind_->isVisible()) {
+        dialogFind_->raise();
+        dialogFind_->activateWindow();
         return;
     }
 
     // Set the initial search type
-    dialog->initToggleButtons(searchType);
+    dialogFind_->initToggleButtons(searchType);
 
     // Set the initial direction based on the direction argument
-    dialog->ui.checkBackward->setChecked(direction == Direction::Forward ? false : true);
+    dialogFind_->ui.checkBackward->setChecked(direction == Direction::Forward ? false : true);
 
     // Set the state of the Keep Dialog Up button
-    dialog->ui.checkKeep->setChecked(keepDialogs);
+    dialogFind_->ui.checkKeep->setChecked(keepDialogs);
 
     // Set the state of the Find button
-    dialog->fUpdateActionButtons();
+    dialogFind_->fUpdateActionButtons();
 
     // start the search history mechanism at the current history item
     fHistIndex_ = 0;
 
-    dialog->show();
+    dialogFind_->show();
 }
 
 /*
@@ -5784,7 +5813,7 @@ void MainWindow::action_Replace_Find(DocumentWidget *document, const QString &se
         return;
     }
 
-    if(TextArea *area = lastFocus_) {
+    if(QPointer<TextArea> area = lastFocus_) {
         ReplaceAndSearchEx(
                     document,
                     area,
@@ -5864,7 +5893,7 @@ void MainWindow::action_Replace_In_Selection(DocumentWidget *document, const QSt
         return;
     }
 
-    if(TextArea *area = lastFocus_) {
+    if(QPointer<TextArea> area = lastFocus_) {
         ReplaceInSelectionEx(
                     document,
                     area,

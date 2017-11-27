@@ -21,6 +21,7 @@
 class TextArea;
 class DocumentWidget;
 class DialogReplace;
+class DialogFind;
 struct MenuData;
 
 class MainWindow : public QMainWindow {
@@ -408,10 +409,10 @@ public:
     bool showLineNumbers_;
 
 private:
-    QList<QAction *>   previousOpenFilesList_;
-	QPointer<QDialog>  dialogFind_;
-	QPointer<QDialog>  dialogReplace_;
-	QPointer<TextArea> lastFocus_;    
+    QList<QAction *>     previousOpenFilesList_;
+    QPointer<DialogFind> dialogFind_;
+    QPointer<QDialog>    dialogReplace_;
+    QPointer<TextArea>   lastFocus_;
     bool iSearchLastLiteralCase_;      // idem, for literal mode
     bool iSearchLastRegexCase_;        // idem, for regex mode in incremental search bar
     int iSearchHistIndex_;             //   find and replace dialogs

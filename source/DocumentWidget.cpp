@@ -1778,7 +1778,7 @@ void DocumentWidget::Redo() {
         if (!buffer_->BufGetPrimary().selected || GetPrefUndoModifiesSelection()) {
             /* position the cursor in the focus pane after the changed text
                to show the user where the undo was done */
-            if(auto area = win->lastFocus_) {
+            if(QPointer<TextArea> area = win->lastFocus_) {
                 area->TextSetCursorPos(redo.startPos + restoredTextLength);
             }
         }
