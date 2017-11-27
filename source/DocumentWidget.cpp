@@ -1,6 +1,5 @@
 
 #include "DocumentWidget.h"
-#include "calltips.h"
 #include "CommandRecorder.h"
 #include "DialogMoveDocument.h"
 #include "DialogOutput.h"
@@ -3789,9 +3788,9 @@ void DocumentWidget::FindDefCalltip(TextArea *area, const QString &tipName) {
 	// Reset calltip parameters to reasonable defaults
 	globAnchored  = false;
 	globPos       = -1;
-	globHAlign    = TIP_LEFT;
-	globVAlign    = TIP_BELOW;
-	globAlignMode = TIP_SLOPPY;
+    globHAlign    = TipHAlignMode::Left;
+    globVAlign    = TipVAlignMode::Below;
+    globAlignMode = TipAlignStrict::Sloppy;
 
     findDefinitionHelper(area, tipName, TagSearchMode::TIP);
 

@@ -230,7 +230,6 @@ add_executable(nedit-ng
 	WrapMode.h
 	X11Colors.cpp
 	X11Colors.h
-	calltips.h
 	highlight.cpp
 	highlight.h
 	highlightData.cpp

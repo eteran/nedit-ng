@@ -33,7 +33,6 @@
 #include "MainWindow.h"
 #include "TextArea.h"
 #include "TextBuffer.h"
-#include "calltips.h"
 #include "preferences.h"
 #include "search.h"
 #include "util/fileUtils.h"
@@ -124,11 +123,11 @@ static QString tagFiles[MAXDUPTAGS];
 static QString tagSearch[MAXDUPTAGS];
 static int tagPosInf[MAXDUPTAGS];
 
-bool globAnchored;
-int globPos;
-int globHAlign;
-int globVAlign;
-int globAlignMode;
+bool           globAnchored;
+int            globPos;
+TipHAlignMode  globHAlign;
+TipVAlignMode  globVAlign;
+TipAlignStrict globAlignMode;
 
 // A wrapper for calling TextDShowCalltip
 int tagsShowCalltipEx(TextArea *area, const QString &text) {
@@ -785,7 +784,7 @@ static QList<Tag> LookupTag(const QString &name, TagSearchMode search_type) {
 **                  tip and/or tag database depending on search_type
 **  search_type:    Either TIP or TIP_FROM_TAG
 */
-int ShowTipStringEx(DocumentWidget *document, const QString &text, bool anchored, int pos, bool lookup, TagSearchMode search_type, int hAlign, int vAlign, int alignMode) {
+int ShowTipStringEx(DocumentWidget *document, const QString &text, bool anchored, int pos, bool lookup, TagSearchMode search_type, TipHAlignMode hAlign, TipVAlignMode vAlign, TipAlignStrict alignMode) {
     if (search_type == TagSearchMode::TAG) {
         return 0;
     }

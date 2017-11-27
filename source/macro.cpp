@@ -43,7 +43,6 @@
 #include "TextArea.h"
 #include "TextBuffer.h"
 #include "WrapMode.h"
-#include "calltips.h"
 #include "highlight.h"
 #include "highlightData.h"
 #include "interpret.h"
@@ -3377,12 +3376,12 @@ static bool calltipMS(DocumentWidget *document, Arguments arguments, DataValue *
     std::string txtArg;
     bool anchored = false;
     bool lookup = true;
-    TagSearchMode mode = TagSearchMode::None;
     int i;
     int anchorPos;
-    int hAlign = TIP_LEFT;
-    int vAlign = TIP_BELOW;
-    int alignMode = TIP_SLOPPY;
+    auto mode      = TagSearchMode::None;
+    auto hAlign    = TipHAlignMode::Left;
+    auto vAlign    = TipVAlignMode::Below;
+    auto alignMode = TipAlignStrict::Sloppy;
 
     // Read and check the string
     if (arguments.size() < 1) {
@@ -3415,22 +3414,22 @@ static bool calltipMS(DocumentWidget *document, Arguments arguments, DataValue *
         case 'c':
             if (txtArg == "center")
                 M_FAILURE(UnrecognizedArgument);
-            hAlign = TIP_CENTER;
+            hAlign = TipHAlignMode::Center;
             break;
         case 'r':
             if (txtArg == "right")
                 M_FAILURE(UnrecognizedArgument);
-            hAlign = TIP_RIGHT;
+            hAlign = TipHAlignMode::Right;
             break;
         case 'a':
             if (txtArg == "above")
                 M_FAILURE(UnrecognizedArgument);
-            vAlign = TIP_ABOVE;
+            vAlign = TipVAlignMode::Above;
             break;
         case 's':
             if (txtArg == "strict")
                 M_FAILURE(UnrecognizedArgument);
-            alignMode = TIP_STRICT;
+            alignMode = TipAlignStrict::Strict;
             break;
         case 't':
             if (txtArg == "tipText") {

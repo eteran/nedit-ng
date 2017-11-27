@@ -7,7 +7,6 @@
 #include "RangesetTable.h"
 #include "DocumentWidget.h"
 #include "TextBuffer.h"
-#include "calltips.h"
 #include "DragEndEvent.h"
 #include "highlight.h"
 #include "preferences.h"
@@ -3968,7 +3967,7 @@ void TextArea::TextDRedrawCalltip(int calltipID) {
 	if (calltip_.anchored) {
 		// Put it at the anchor position
 		if (!TextDPositionToXY(calltip_.pos, &rel_x, &rel_y)) {
-			if (calltip_.alignMode == TIP_STRICT) {
+            if (calltip_.alignMode == TipAlignStrict::Strict) {
 				TextDKillCalltip(calltip_.ID);
 			}
 			return;
@@ -3977,11 +3976,11 @@ void TextArea::TextDRedrawCalltip(int calltipID) {
 		if (calltip_.pos < 0) {
 			// First display of tip with cursor offscreen (detected in ShowCalltip)
             calltip_.pos = rect_.width() / 2;
-			calltip_.hAlign = TIP_CENTER;
+            calltip_.hAlign = TipHAlignMode::Center;
             rel_y = rect_.height() / 3;
 		} else if (!TextDPositionToXY(cursorPos_, &rel_x, &rel_y)) {
 			// Window has scrolled and tip is now offscreen
-			if (calltip_.alignMode == TIP_STRICT) {
+            if (calltip_.alignMode == TipAlignStrict::Strict) {
 				TextDKillCalltip(calltip_.ID);
 			}
 			return;
@@ -4000,17 +3999,19 @@ void TextArea::TextDRedrawCalltip(int calltipID) {
 
 	// Adjust rel_x for horizontal alignment modes
     switch(calltip_.hAlign) {
-    case TIP_CENTER:
+    case TipHAlignMode::Center:
         rel_x -= tipWidth / 2;
         break;
-    case TIP_RIGHT:
+    case TipHAlignMode::Right:
         rel_x -= tipWidth;
+        break;
+    default:
         break;
     }
 
     // Adjust rel_y for vertical alignment modes
     switch(calltip_.vAlign) {
-    case TIP_ABOVE:
+    case TipVAlignMode::Above:
         flip_delta = tipHeight + lineHeight + (2 * borderWidth);
         rel_y -= flip_delta;
         break;
@@ -4022,7 +4023,7 @@ void TextArea::TextDRedrawCalltip(int calltipID) {
     QPoint abs = mapToGlobal(QPoint(rel_x, rel_y));
 
 	// If we're not in strict mode try to keep the tip on-screen
-	if (calltip_.alignMode == TIP_SLOPPY) {
+    if (calltip_.alignMode == TipAlignStrict::Sloppy) {
 
         QDesktopWidget *desktop = QApplication::desktop();
 
@@ -8093,7 +8094,7 @@ void TextArea::TextDKillCalltip(int id) {
     }
 }
 
-int TextArea::TextDShowCalltip(const QString &text, bool anchored, int pos, int hAlign, int vAlign, int alignMode) {
+int TextArea::TextDShowCalltip(const QString &text, bool anchored, int pos, TipHAlignMode hAlign, TipVAlignMode vAlign, TipAlignStrict alignMode) {
 
     static int StaticCalltipID = 1;
 
@@ -8123,7 +8124,7 @@ int TextArea::TextDShowCalltip(const QString &text, bool anchored, int pos, int 
         /* Put it next to the cursor, or in the center of the window if the
             cursor is offscreen and mode != strict */
         if (!TextDPositionToXY(TextGetCursorPos(), &rel_x, &rel_y)) {
-            if (alignMode == TIP_STRICT) {
+            if (alignMode == TipAlignStrict::Strict) {
                 QApplication::beep();
                 return 0;
             }

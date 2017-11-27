@@ -27,6 +27,7 @@
 #ifndef TAGS_H_
 #define TAGS_H_
 
+#include "CallTip.h"
 #include <ctime>
 #include <deque>
 
@@ -61,9 +62,9 @@ extern QString tagName;
 
 extern bool globAnchored;
 extern int globPos;
-extern int globHAlign;
-extern int globVAlign;
-extern int globAlignMode;
+extern TipHAlignMode globHAlign;
+extern TipVAlignMode globVAlign;
+extern TipAlignStrict globAlignMode;
 
 bool AddRelTagsFileEx(const QString &tagSpec, const QString &windowPath, TagSearchMode file_type);
 
@@ -75,7 +76,7 @@ int tagsShowCalltipEx(TextArea *area, const QString &text);
 // Routines for handling tags or tips from the current selection
 
 //  Display (possibly finding first) a calltip.  Search type can only be TIP or TIP_FROM_TAG here.
-int ShowTipStringEx(DocumentWidget *document, const QString &text, bool anchored, int pos, bool lookup, TagSearchMode search_type, int hAlign, int vAlign, int alignMode);
+int ShowTipStringEx(DocumentWidget *document, const QString &text, bool anchored, int pos, bool lookup, TagSearchMode search_type, TipHAlignMode hAlign, TipVAlignMode vAlign, TipAlignStrict alignMode);
 
 void editTaggedLocationEx(TextArea *area, int i);
 void showMatchingCalltipEx(TextArea *area, int i);
