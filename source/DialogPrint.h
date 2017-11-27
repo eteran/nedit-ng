@@ -21,6 +21,9 @@ private Q_SLOTS:
 private:
 	void updatePrintCmd();
 
+protected:
+    void showEvent(QShowEvent *event) override;
+
 public:
     static void LoadPrintPreferencesEx(bool lookForFlpr);
 
