@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>437</width>
-    <height>295</height>
+    <width>371</width>
+    <height>291</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -47,7 +47,8 @@
         <string>&amp;Replace</string>
        </property>
        <property name="icon">
-        <iconset theme="edit-find-replace"/>
+        <iconset theme="edit-find-replace">
+         <normaloff>.</normaloff>.</iconset>
        </property>
       </widget>
      </item>
@@ -57,7 +58,8 @@
         <string>&amp;Select All</string>
        </property>
        <property name="icon">
-        <iconset theme="edit-select-all"/>
+        <iconset theme="edit-select-all">
+         <normaloff>.</normaloff>.</iconset>
        </property>
       </widget>
      </item>
@@ -74,7 +76,8 @@
         <string>&amp;Cancel</string>
        </property>
        <property name="icon">
-        <iconset theme="dialog-cancel"/>
+        <iconset theme="dialog-cancel">
+         <normaloff>.</normaloff>.</iconset>
        </property>
       </widget>
      </item>

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>461</width>
-    <height>284</height>
+    <width>437</width>
+    <height>277</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -163,7 +163,8 @@
         <string>W&amp;indow</string>
        </property>
        <property name="icon">
-        <iconset theme="window"/>
+        <iconset theme="window">
+         <normaloff>.</normaloff>.</iconset>
        </property>
       </widget>
      </item>
@@ -173,7 +174,8 @@
         <string>&amp;Selection</string>
        </property>
        <property name="icon">
-        <iconset theme="edit-select"/>
+        <iconset theme="edit-select">
+         <normaloff>.</normaloff>.</iconset>
        </property>
       </widget>
      </item>
@@ -183,7 +185,8 @@
         <string>&amp;Multiple Documents</string>
        </property>
        <property name="icon">
-        <iconset theme="folder-documents"/>
+        <iconset theme="folder-documents">
+         <normaloff>.</normaloff>.</iconset>
        </property>
       </widget>
      </item>
@@ -225,7 +228,8 @@
         <string>Replace &amp;&amp; Fi&amp;nd</string>
        </property>
        <property name="icon">
-        <iconset theme="edit-find-replace"/>
+        <iconset theme="edit-find-replace">
+         <normaloff>.</normaloff>.</iconset>
        </property>
       </widget>
      </item>
