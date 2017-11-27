@@ -1873,16 +1873,21 @@ void MainWindow::openFile(DocumentWidget *document, const QString &text) {
         return;
     }
 
-    QRegExp regexSystem(QLatin1String("#include\\s*<([^>]+)>"), Qt::CaseSensitive, QRegExp::RegExp2);
-    QRegExp regexLocal(QLatin1String("#include\\s*\"([^\"]+)\""), Qt::CaseSensitive, QRegExp::RegExp2);
+    static QRegularExpression reSystem(QLatin1String("#include\\s*<([^>]+)>"));
+    static QRegularExpression reLocal(QLatin1String("#include\\s*\"([^\"]+)\""));
+
     QString nameText = text;
 
     // extract name from #include syntax
 	// TODO(eteran): 2.0, support import/include syntax from multiple languages
-    if(regexLocal.indexIn(nameText) != -1) {
-        nameText = regexLocal.cap(1);
-    } else if(regexSystem.indexIn(nameText) != -1) {
-        nameText = QString(QLatin1String("%1%2")).arg(includeDir, regexSystem.cap(1));
+    QRegularExpressionMatch match = reLocal.match(nameText);
+    if(match.hasMatch()) {
+        nameText = match.captured(1);
+    } else {
+        match = reSystem.match(nameText);
+        if(match.hasMatch()) {
+            nameText = QString(QLatin1String("%1%2")).arg(includeDir, match.captured(1));
+        }
     }
 
     // strip whitespace from name

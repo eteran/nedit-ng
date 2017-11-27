@@ -1739,7 +1739,10 @@ void DocumentWidget::Undo() {
                 area->syncronizeSelection();
             }
         }
-        MakeSelectionVisible(win->lastFocus_);
+
+        if(QPointer<TextArea> area = win->lastFocus_) {
+            MakeSelectionVisible(area);
+        }
 
         /* restore the file's unmodified status if the file was unmodified
            when the change being undone was originally made.  Also, remove
@@ -4699,6 +4702,8 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
         outText = QString::fromLocal8Bit(cmdData->standardOutput);
     }
 
+    static const QRegularExpression trailingNewlines(QLatin1String("\\n+$"));
+
     /* Present error and stderr-information dialogs.  If a command returned
        error output, or if the process' exit status indicated failure,
        present the information to the user. */
@@ -4709,8 +4714,8 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
         static const int DF_MAX_MSG_LENGTH = 4096;
 
         if (failure && errorReport) {
-            errText.remove(QRegExp(QLatin1String("\n+$"))); // remove trailing newlines
-            errText.truncate(DF_MAX_MSG_LENGTH);            // truncate to DF_MAX_MSG_LENGTH characters
+            errText.remove(trailingNewlines);    // remove trailing newlines
+            errText.truncate(DF_MAX_MSG_LENGTH); // truncate to DF_MAX_MSG_LENGTH characters
 
             QMessageBox msgBox;
             msgBox.setWindowTitle(tr("Warning"));
@@ -4737,8 +4742,8 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
 
         } else if (errorReport) {
 
-            errText.remove(QRegExp(QLatin1String("\n+$"))); // remove trailing newlines
-            errText.truncate(DF_MAX_MSG_LENGTH);            // truncate to DF_MAX_MSG_LENGTH characters
+            errText.remove(trailingNewlines);    // remove trailing newlines
+            errText.truncate(DF_MAX_MSG_LENGTH); // truncate to DF_MAX_MSG_LENGTH characters
 
             QMessageBox msgBox;
             msgBox.setWindowTitle(tr("Information"));
@@ -4761,7 +4766,7 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
            (remaining) output in the text widget as requested, and move the
            insert point to the end */
         if (cmdData->flags & OUTPUT_TO_DIALOG) {
-            outText.remove(QRegExp(QLatin1String("\n+$"))); // remove trailing newlines
+            outText.remove(trailingNewlines); // remove trailing newlines
 
             if (!outText.isEmpty()) {
                 auto dialog = new DialogOutput(this);
