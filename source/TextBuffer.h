@@ -84,7 +84,7 @@ public:
     ~BasicTextBuffer() noexcept;
 
 public:
-    static int BufCharWidth(Ch c, int indent, int tabDist) noexcept;
+    static int BufCharWidth(Ch ch, int indent, int tabDist) noexcept;
     static int BufExpandCharacter(Ch ch, int indent, Ch outStr[MAX_EXP_CHAR_LEN], int tabDist) noexcept;
     static int BufExpandTab(int indent, Ch outStr[MAX_EXP_CHAR_LEN], int tabDist) noexcept;
 
@@ -106,12 +106,12 @@ public:
     int BufEndOfLine(int pos) const noexcept;
     int BufGetEmptySelectionPos(int *start, int *end, bool *isRect, int *rectStart, int *rectEnd) const noexcept;
     int BufGetExpandedChar(int pos, int indent, Ch outStr[MAX_EXP_CHAR_LEN]) const noexcept;
-    int BufGetHighlightPos(int *start, int *end, bool *isRect, int *rectStart, int *rectEnd) noexcept;
+    int BufGetHighlightPos(int *start, int *end, bool *isRect, int *rectStart, int *rectEnd) const noexcept;
     int BufGetLength() const noexcept;
     int BufGetSecSelectPos(int *start, int *end, bool *isRect, int *rectStart, int *rectEnd) const noexcept;
     int BufGetSelectionPos(int *start, int *end, bool *isRect, int *rectStart, int *rectEnd) const noexcept;
     int BufGetTabDistance() const noexcept;
-    int BufGetTabDist() noexcept;
+    int BufGetTabDist() const noexcept;
     int BufStartOfLine(int pos) const noexcept;
     string_type BufGetAllEx() const;
     string_type BufGetRangeEx(int start, int end) const;
@@ -176,7 +176,7 @@ public:
     size_type size() const        { return BufGetLength(); }
 
 public:
-    bool GetSimpleSelection(int *left, int *right) noexcept;
+    bool GetSimpleSelection(int *left, int *right) const noexcept;
 
 private:
     bool searchBackward(int startPos, Ch searchChar, int *foundPos) const noexcept;

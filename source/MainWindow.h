@@ -197,7 +197,7 @@ public:
     void action_Replace_Dialog(DocumentWidget *document, Direction direction, SearchType type, bool keepDialog);
     void action_Replace(DocumentWidget *document, const QString &searchString, const QString &replaceString, Direction direction, SearchType type, WrapMode wrap);
     void action_Replace_Find(DocumentWidget *document, const QString &searchString, const QString &replaceString, Direction direction, SearchType searchType, WrapMode searchWraps);
-    void action_Replace_In_Selection(DocumentWidget *document, const QString &searchString, const QString &replaceString, SearchType searchType);
+    void action_Replace_In_Selection(DocumentWidget *document, const QString &searchString, const QString &replaceString, SearchType type);
     void action_Revert_to_Saved(DocumentWidget *document);
     void action_Save_As(DocumentWidget *document);
     void action_Save_As(DocumentWidget *document, const QString &filename, bool wrapped);

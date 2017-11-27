@@ -779,7 +779,7 @@ void BasicTextBuffer<Ch, Tr>::BufRectHighlight(int start, int end, int rectStart
 }
 
 template <class Ch, class Tr>
-int BasicTextBuffer<Ch, Tr>::BufGetHighlightPos(int *start, int *end, bool *isRect, int *rectStart, int *rectEnd) noexcept {
+int BasicTextBuffer<Ch, Tr>::BufGetHighlightPos(int *start, int *end, bool *isRect, int *rectStart, int *rectEnd) const noexcept {
     return highlight_.getSelectionPos(start, end, isRect, rectStart, rectEnd);
 }
 
@@ -1813,7 +1813,7 @@ bool BasicTextBuffer<Ch, Tr>::BufIsEmpty() const noexcept {
 ** span lines.
 */
 template <class Ch, class Tr>
-bool BasicTextBuffer<Ch, Tr>::GetSimpleSelection(int *left, int *right) noexcept {
+bool BasicTextBuffer<Ch, Tr>::GetSimpleSelection(int *left, int *right) const noexcept {
     int selStart;
     int selEnd;
     int rectStart;
@@ -2337,7 +2337,7 @@ void BasicTextBuffer<Ch, Tr>::BufSetTabDist(int dist) noexcept {
 }
 
 template <class Ch, class Tr>
-int BasicTextBuffer<Ch, Tr>::BufGetTabDist() noexcept {
+int BasicTextBuffer<Ch, Tr>::BufGetTabDist() const noexcept {
     return tabDist_;
 }
 

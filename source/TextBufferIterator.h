@@ -20,8 +20,8 @@ public:
 public:
     BasicTextBufferIterator& operator++() { ++index_; }
     BasicTextBufferIterator& operator--() { --index_; }
-    BasicTextBufferIterator& operator++(int) { BasicTextBufferIterator temp{*this}; ++(*this); return temp; }
-    BasicTextBufferIterator& operator--(int) { BasicTextBufferIterator temp{*this}; --(*this); return temp; }
+    BasicTextBufferIterator operator++(int) { BasicTextBufferIterator temp{*this}; ++index_; return temp; }
+    BasicTextBufferIterator operator--(int) { BasicTextBufferIterator temp{*this}; --index_; return temp; }
 
 public:
     BasicTextBufferIterator& operator+=(int n) { index_ += n; return *this; }

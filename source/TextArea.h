@@ -247,8 +247,8 @@ public:
     int TextDCountForwardNLines(int startPos, int nLines, bool startPosIsLineStart);
     int TextDPositionToXY(int pos, int *x, int *y);
     int TextDPositionToXY(int pos, QPoint *coord);
-	void TextDKillCalltip(int calltipID);
-    int TextDGetCalltipID(int calltipID) const;
+    void TextDKillCalltip(int id);
+    int TextDGetCalltipID(int id) const;
 	void TextDSetColors(const QColor &textFgP, const QColor &textBgP, const QColor &selectFgP, const QColor &selectBgP, const QColor &hiliteFgP, const QColor &hiliteBgP, const QColor &lineNoFgP, const QColor &cursorFgP);
     void TextDXYToUnconstrainedPosition(const QPoint &coord, int *row, int *column);
     int TextDXYToPosition(const QPoint &coord);

@@ -72,7 +72,7 @@ bool is_end(int i) {
 
 void rangesetRefreshAllRanges(TextBuffer *buffer, Rangeset *rangeset) {
     for (int i = 0; i < rangeset->n_ranges_; i++) {
-        rangeset->RangesetRefreshRange(buffer, rangeset->ranges_[i].start, rangeset->ranges_[i].end);
+        Rangeset::RangesetRefreshRange(buffer, rangeset->ranges_[i].start, rangeset->ranges_[i].end);
 	}
 }
 
@@ -649,7 +649,7 @@ int Rangeset::RangesetInverse(TextBuffer *buffer) {
     n_ranges_ = n / 2;
     ranges_ = Rangeset::RangesRealloc(reinterpret_cast<Range *>(rangeTable), n_ranges_);
 
-    RangesetRefreshRange(buffer, 0, maxpos_);
+    Rangeset::RangesetRefreshRange(buffer, 0, maxpos_);
     return n_ranges_;
 }
 
@@ -679,7 +679,7 @@ int Rangeset::RangesetAdd(TextBuffer *buffer, Rangeset *plusSet) {
         ranges_ = newRanges;
         n_ranges_ = nPlusRanges;
 		for (nOrigRanges = 0; nOrigRanges < nPlusRanges; nOrigRanges++) {
-            RangesetRefreshRange(buffer, newRanges->start, newRanges->end);
+            Rangeset::RangesetRefreshRange(buffer, newRanges->start, newRanges->end);
 			newRanges++;
 		}
 		return nPlusRanges;
@@ -708,14 +708,14 @@ int Rangeset::RangesetAdd(TextBuffer *buffer, Rangeset *plusSet) {
 		*newRanges = *origRanges++;
 		nOrigRanges--;
 		if (!isOld)
-            RangesetRefreshRange(buffer, newRanges->start, newRanges->end);
+            Rangeset::RangesetRefreshRange(buffer, newRanges->start, newRanges->end);
 
 		// now we must cycle over plusRanges, merging in the overlapped ranges 
 		while (nPlusRanges > 0 && newRanges->end >= plusRanges->start) {
 			do {
 				if (newRanges->end < plusRanges->end) {
                     if (isOld) {
-                        RangesetRefreshRange(buffer, newRanges->end, plusRanges->end);
+                        Rangeset::RangesetRefreshRange(buffer, newRanges->end, plusRanges->end);
                     }
 					newRanges->end = plusRanges->end;
 				}
@@ -773,7 +773,7 @@ int Rangeset::RangesetAddBetween(TextBuffer *buffer, int start, int end) {
         n_ranges_++;
         ranges_ = Rangeset::RangesRealloc(ranges_, n_ranges_);
 
-        RangesetRefreshRange(buffer, start, end);
+        Rangeset::RangesetRefreshRange(buffer, start, end);
         return n_ranges_;
 	}
 
@@ -805,7 +805,7 @@ int Rangeset::RangesetAddBetween(TextBuffer *buffer, int start, int end) {
         ranges_ = Rangeset::RangesRealloc(ranges_, n_ranges_);
 	}
 
-    RangesetRefreshRange(buffer, start, end);
+    Rangeset::RangesetRefreshRange(buffer, start, end);
     return n_ranges_;
 }
 
@@ -990,13 +990,13 @@ int Rangeset::RangesetRemove(TextBuffer *buffer, Rangeset *minusSet) {
 			if (minusRanges->start <= origRanges->start) {
 				// origRanges->start inside *minusRanges 
 				if (minusRanges->end < origRanges->end) {
-                    RangesetRefreshRange(buffer, origRanges->start, minusRanges->end);
+                    Rangeset::RangesetRefreshRange(buffer, origRanges->start, minusRanges->end);
 					origRanges->start = minusRanges->end; // cut off front of original *origRanges 
 					minusRanges++;                        // dealt with this *minusRanges: move on 
 					nMinusRanges--;
 				} else {
 					// all *origRanges inside *minusRanges 
-                    RangesetRefreshRange(buffer, origRanges->start, origRanges->end);
+                    Rangeset::RangesetRefreshRange(buffer, origRanges->start, origRanges->end);
 					origRanges++; // all of *origRanges can be skipped 
 					nOrigRanges--;
 				}
@@ -1009,13 +1009,13 @@ int Rangeset::RangesetRemove(TextBuffer *buffer, Rangeset *minusSet) {
 
 				if (minusRanges->end < origRanges->end) {
 					// all *minusRanges inside *origRanges 
-                    RangesetRefreshRange(buffer, minusRanges->start, minusRanges->end);
+                    Rangeset::RangesetRefreshRange(buffer, minusRanges->start, minusRanges->end);
 					origRanges->start = minusRanges->end; // cut front of *origRanges upto end *minusRanges 
 					minusRanges++;                        // dealt with this *minusRanges: move on 
 					nMinusRanges--;
 				} else {
 					// minusRanges->end beyond *origRanges 
-                    RangesetRefreshRange(buffer, minusRanges->start, origRanges->end);
+                    Rangeset::RangesetRefreshRange(buffer, minusRanges->start, origRanges->end);
 					origRanges++; // skip rest of *origRanges 
 					nOrigRanges--;
 				}
@@ -1084,7 +1084,7 @@ int Rangeset::RangesetRemoveBetween(TextBuffer *buffer, int start, int end) {
         ranges_ = Rangeset::RangesRealloc(ranges_, n_ranges_);
 	}
 
-    RangesetRefreshRange(buffer, start, end);
+    Rangeset::RangesetRefreshRange(buffer, start, end);
     return n_ranges_;
 }
 
@@ -1102,7 +1102,7 @@ void Rangeset::RangesetEmpty(TextBuffer *buffer) {
         while (n_ranges_--) {
             int start = ranges[n_ranges_].start;
             int end = ranges[n_ranges_].end;
-            RangesetRefreshRange(buffer, start, end);
+            Rangeset::RangesetRefreshRange(buffer, start, end);
 		}
 	}
 
@@ -1143,7 +1143,7 @@ void Rangeset::RangesetGetInfo(bool *defined, int *label, int *count, QString *c
 ** Refresh the given range on the screen. If the range indicated is null, we
 ** refresh the screen for the whole file.
 */
-void Rangeset::RangesetRefreshRange(TextBuffer *buffer, int start, int end) const {
+void Rangeset::RangesetRefreshRange(TextBuffer *buffer, int start, int end) {
     if (buffer) {
         buffer->BufCheckDisplay(start, end);
 	}

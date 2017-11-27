@@ -92,7 +92,7 @@ public:
     void RangesetGetInfo(bool *defined, int *label, int *count, QString *color, QString *name, QString *mode) const;
 	RangesetInfo RangesetGetInfo() const;
 
-    void RangesetRefreshRange(TextBuffer *buffer, int start, int end) const;
+    static void RangesetRefreshRange(TextBuffer *buffer, int start, int end);
     void RangesetInit(int label, TextBuffer *buf);
 
 public:
