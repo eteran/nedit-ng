@@ -116,7 +116,7 @@ public:
 
 public:
     static DocumentWidget *fromArea(TextArea *area);
-    static DocumentWidget *EditExistingFileEx(DocumentWidget *inDocument, const QString &name, const QString &path, int flags, const QString &geometry, int iconic, const QString &languageMode, bool tabbed, bool bgOpen);
+    static DocumentWidget *EditExistingFileEx(DocumentWidget *inDocument, const QString &name, const QString &path, int flags, const QString &geometry, bool iconic, const QString &languageMode, bool tabbed, bool bgOpen);
     static std::vector<DocumentWidget *> allDocuments();
 
 public:
@@ -206,7 +206,7 @@ private:
     HighlightData *compilePatternsEx(const gsl::span<HighlightPattern> &patternSrc);
     int CloseFileAndWindow(CloseMode preResponse);
     bool cmpWinAgainstFile(const QString &fileName) const;
-    int fileWasModifiedExternally();
+    int fileWasModifiedExternally() const;
     int MacroWindowCloseActionsEx();
     int matchLanguageMode();
     int SaveWindow();
@@ -253,13 +253,12 @@ private:
     void RefreshMenuToggleStates();
     void RefreshTabState();
     void RefreshWindowStates();
-    void RemoveBackupFile();
+    void RemoveBackupFile() const;
     void removeRedoItem();
     void removeUndoItem();
     void RepeatMacroEx(const QString &command, int how);
     void ReplayEx();
     void RevertToSaved();
-    void safeCloseEx();
     void SaveUndoInformation(int pos, int nInserted, int nDeleted, view::string_view deletedText);
     void SetBacklightChars(const QString &applyBacklightTypes);
     void SetModeMessageEx(const QString &message);
@@ -303,7 +302,7 @@ public:
     FileFormats fileFormat_;           // whether to save the file straight (Unix format), or convert it to MS DOS style with \r\n line breaks
     std::unique_ptr<WindowHighlightData> highlightData_;              // info for syntax highlighting
     std::shared_ptr<MacroCommandData>    macroCmdData_;               // same for macro commands
-    std::shared_ptr<RangesetTable> rangesetTable_;   // current range sets
+    std::shared_ptr<RangesetTable>       rangesetTable_;   // current range sets
 
 private:
 	Bookmark markTable_[MAX_MARKS];    // marked locations in window	
@@ -319,9 +318,12 @@ private:
 	bool ignoreModify_;                // ignore modifications to text area
 	bool modeMessageDisplayed_;        // special stats line banner for learn and shell command executing modes	    
     QString modeMessage_;              // stats line banner content for learn and shell command executing modes
-	dev_t device_;                     // device where the file resides
-	gid_t fileGid_;                    // last recorded group id of the file
-	ino_t inode_;                      // file's inode
+    dev_t dev_;                        // device where the file resides
+    gid_t gid_;                        // last recorded group id of the file
+    ino_t ino_;                        // file's inode
+    uid_t uid_;                        // last recorded user id of the file
+    time_t lastModTime_;               // time of last modification to file
+    mode_t mode_;                      // permissions of file being edited
 	int autoSaveCharCount_;            // count of single characters typed since last backup file generated
 	int autoSaveOpCount_;              // count of editing operations ""
 	int flashPos_;                     // position saved for erasing matching paren highlight (if one is drawn)	
@@ -329,9 +331,6 @@ private:
 	int undoMemUsed_;                  // amount of memory (in bytes) dedicated to the undo list
     std::deque<UndoInfo> redo_;        // info for redoing last undone op
     std::deque<UndoInfo> undo_;        // info for undoing last operation
-    time_t lastModTime_;               // time of last modification to file
-	uid_t fileUid_;                    // last recorded user id of the file
-    mode_t fileMode_;                  // permissions of file being edited
     std::unique_ptr<ShellCommandData> shellCmdData_;               // when a shell command is executing, info. about it, otherwise, nullptr
     std::unique_ptr<SmartIndentData>  smartIndentData_;            // compiled macros for smart indent
 

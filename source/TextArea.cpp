@@ -814,9 +814,11 @@ void TextArea::backwardCharacterAP(EventFlags flags) {
 	callCursorMovementCBs();
 }
 
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
+/**
+ * @brief TextArea::selfInsertAP
+ * @param string
+ * @param flags
+ */
 void TextArea::selfInsertAP(const QString &string, EventFlags flags) {
 
     EMIT_EVENT_1("insert_string", string);
@@ -5046,7 +5048,7 @@ std::string TextArea::createIndentStringEx(TextBuffer *buf, int bufOffset, int l
 
 	// Allocate and create a string of tabs and spaces to achieve the indent
 	std::string indentStr;
-    indentStr.reserve(gsl::narrow<size_t>(indent + 2));
+    indentStr.reserve(static_cast<size_t>(indent + 2));
 
 	auto indentPtr = std::back_inserter(indentStr);
 
@@ -5172,7 +5174,7 @@ int TextArea::deleteEmulatedTab() {
 	   do a BufRemove. */
 	if (startPosIndent < toIndent) {
 
-        std::string spaceString(gsl::narrow<size_t>(toIndent - startPosIndent), ' ');
+        std::string spaceString(static_cast<size_t>(toIndent - startPosIndent), ' ');
 
 		buffer_->BufReplaceEx(startPos, insertPos, spaceString);
 		TextDSetInsertPosition(startPos + toIndent - startPosIndent);
@@ -5824,7 +5826,7 @@ void TextArea::processTabAP(EventFlags flags) {
 
 	// Allocate a buffer assuming all the inserted characters will be spaces
 	std::string outStr;
-    outStr.reserve(gsl::narrow<size_t>(toIndent - startIndent));
+    outStr.reserve(static_cast<size_t>(toIndent - startIndent));
 
 	// Add spaces and tabs to outStr until it reaches toIndent
 	auto outPtr = std::back_inserter(outStr);

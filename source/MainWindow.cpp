@@ -1477,17 +1477,17 @@ void MainWindow::on_action_Redo_triggered() {
 */
 DocumentWidget *MainWindow::FindWindowWithFile(const QString &name, const QString &path) {
 
-    std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
+    const std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
 
-    /* I don't think this algorithm will work on vms so I am disabling it for now */
     if (!GetPrefHonorSymlinks()) {
 
         QString fullname = tr("%1%2").arg(path, name);
 
         struct stat attribute;
         if (::stat(fullname.toLatin1().data(), &attribute) == 0) {
+
             auto it = std::find_if(documents.begin(), documents.end(), [attribute](DocumentWidget *document){
-                return (attribute.st_dev == document->device_) && (attribute.st_ino == document->inode_);
+                return (attribute.st_dev == document->dev_) && (attribute.st_ino == document->ino_);
             });
 
             if(it != documents.end()) {
@@ -1497,7 +1497,6 @@ DocumentWidget *MainWindow::FindWindowWithFile(const QString &name, const QStrin
               whether the filename is already in use for an unsaved document.  */
 
     }
-
 
     auto it = std::find_if(documents.begin(), documents.end(), [name, path](DocumentWidget *document) {
         return (document->filename_ == name) && (document->path_ == path);
@@ -4444,7 +4443,7 @@ void MainWindow::action_Exit(DocumentWidget *document) {
         for(size_t i = 0; i < documents.size(); ++i) {
             DocumentWidget *const document  = documents[i];
 
-            auto filename = tr("%1%2").arg(document->filename_, document->fileChanged_ ? tr("*") : tr(""));
+            auto filename = tr("%1%2").arg(document->filename_, document->fileChanged_ ? tr("*") : QString());
 
             constexpr int DF_MAX_MSG_LENGTH = 2048;
 
@@ -6054,7 +6053,7 @@ void MainWindow::ReplaceInSelectionEx(DocumentWidget *document, TextArea *area, 
         beginPos = (startPos == endPos) ? endPos + 1 : endPos;
         cursorPos = endPos;
 
-        if (gsl::narrow<size_t>(endPos) == fileString.size()) {
+        if (static_cast<size_t>(endPos) == fileString.size()) {
             break;
         }
     }

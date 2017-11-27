@@ -21,7 +21,7 @@ BasicTextBuffer<Ch, Tr>::~BasicTextBuffer() noexcept {
 template <class Ch, class Tr>
 auto BasicTextBuffer<Ch, Tr>::BufGetAllEx() const -> string_type {
     string_type text;
-    text.reserve(gsl::narrow<size_t>(length_));
+    text.reserve(static_cast<size_t>(length_));
 
     std::copy_n(buf_,           gapStart_,           std::back_inserter(text));
     std::copy_n(&buf_[gapEnd_], length_ - gapStart_, std::back_inserter(text));
@@ -392,7 +392,7 @@ void BasicTextBuffer<Ch, Tr>::overlayRectEx(int startPos, int rectStart, int rec
     const string_type expIns = expandTabsEx(insText, 0, tabDist_);
 
     string_type outStr;
-    outStr.reserve(gsl::narrow<size_t>(end - start) + expIns.size() + gsl::narrow<size_t>(nLines * (rectEnd + MAX_EXP_CHAR_LEN)));
+    outStr.reserve(static_cast<size_t>(end - start) + expIns.size() + static_cast<size_t>(nLines * (rectEnd + MAX_EXP_CHAR_LEN)));
 
     /* Loop over all lines in the buffer between start and end overlaying the
        text between rectStart and rectEnd and padding appropriately.  Trim
@@ -1426,7 +1426,7 @@ void BasicTextBuffer<Ch, Tr>::deleteRect(int start, int end, int rectStart, int 
     auto len = gsl::narrow<int>(expText.size());
 
     string_type outStr;
-    outStr.reserve(expText.size() + gsl::narrow<size_t>(nLines * MAX_EXP_CHAR_LEN * 2));
+    outStr.reserve(expText.size() + static_cast<size_t>(nLines * MAX_EXP_CHAR_LEN * 2));
 
     /* loop over all lines in the buffer between start and end removing
        the text between rectStart and rectEnd and padding appropriately */
@@ -1561,7 +1561,7 @@ void BasicTextBuffer<Ch, Tr>::insertColEx(int column, int startPos, view_type in
     const string_type expIns = expandTabsEx(insText, 0, tabDist_);
 
     string_type outStr;
-    outStr.reserve(expRep.size() + expIns.size() + gsl::narrow<size_t>(nLines * (column + insWidth + MAX_EXP_CHAR_LEN)));
+    outStr.reserve(expRep.size() + expIns.size() + static_cast<size_t>(nLines * (column + insWidth + MAX_EXP_CHAR_LEN)));
 
     /* Loop over all lines in the buffer between start and end inserting
        text at column, splitting tabs and adding padding appropriately */
