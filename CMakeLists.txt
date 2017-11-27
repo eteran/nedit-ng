@@ -24,6 +24,8 @@ if(ENABLE_LTO)
 	set(CMAKE_CXX_FLAGS        "${CMAKE_CXX_FLAGS}        -flto")
 	set(CMAKE_C_FLAGS          "${CMAKE_C_FLAGS}          -flto")
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -flto")
+	set(CMAKE_AR               "gcc-ar")
+	set(CMAKE_RANLIB           "gcc-ranlib")
 endif()
 
 if(NOT CMAKE_BUILD_TYPE)
