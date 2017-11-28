@@ -99,6 +99,38 @@ bool checkDoMacroArg(const QString &macro) {
     return true;
 }
 
+/**
+ * @brief messageHandler
+ * @param type
+ * @param context
+ * @param msg
+ */
+void messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg) {
+
+    switch (type) {
+    case QtDebugMsg:
+        fprintf(stderr, "Debug: %s (%s:%u, %s)\n", qPrintable(msg), context.file, context.line, context.function);
+        break;
+    case QtWarningMsg:
+        /* NOTE(eteran): filter out QXcbClipboard messages. They come from Qt
+         * but are unsightly, and there isn't much that I can do to
+         * prevent them */
+        if(!msg.startsWith(QLatin1String("QXcbClipboard"))) {
+            fprintf(stderr, "Warning: %s (%s:%u, %s)\n", qPrintable(msg), context.file, context.line, context.function);
+        }
+        break;
+    case QtInfoMsg:
+        fprintf(stderr, "Info: %s (%s:%u, %s)\n", qPrintable(msg), context.file, context.line, context.function);
+        break;
+    case QtCriticalMsg:
+        fprintf(stderr, "Critical: %s (%s:%u, %s)\n", qPrintable(msg), context.file, context.line, context.function);
+        break;
+    case QtFatalMsg:
+        fprintf(stderr, "Fatal: %s (%s:%u, %s)\n", qPrintable(msg), context.file, context.line, context.function);
+        abort();
+    }
+}
+
 }
 
 int main(int argc, char *argv[]) {
@@ -134,6 +166,8 @@ int main(int argc, char *argv[]) {
 		exit(EXIT_FAILURE);
     }
 #endif
+
+    qInstallMessageHandler(messageHandler);
 
 	QApplication app(argc, argv);
 	QApplication::setWindowIcon(QIcon(QLatin1String(":/res/nedit.png")));
