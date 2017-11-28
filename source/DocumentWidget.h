@@ -273,7 +273,7 @@ private:
 private:
     // TODO(eteran): 2.0, in nedit, these are owned per-document. But the effect all
     // open documents, so they shoudl be at the very least, per-window if not global
-	QPointer<QDialog> dialogColors_;
+    QPointer<QDialog> dialogColors_;
     QPointer<QDialog> dialogFonts_;
 
 public:

@@ -6,8 +6,7 @@
 #include <QLatin1String>
 
 enum class Direction : uint8_t {
-    Forward = 1,
-    Reverse = 2,
+    Forward  = 1,
     Backward = 2,
 };
 

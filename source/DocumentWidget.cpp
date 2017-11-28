@@ -1515,7 +1515,7 @@ void DocumentWidget::SaveUndoInformation(int pos, int nInserted, int nDeleted, v
 
         // reverse delete
         if ((oldType == ONE_CHAR_DELETE && newType == ONE_CHAR_DELETE) && (pos == currentUndo->startPos - 1)) {
-            appendDeletedText(deletedText, nDeleted, Direction::Reverse);
+            appendDeletedText(deletedText, nDeleted, Direction::Backward);
             currentUndo->startPos--;
             currentUndo->endPos--;
             return;

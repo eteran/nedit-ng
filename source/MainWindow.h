@@ -64,7 +64,7 @@ public:
 	void UpdateWindowReadOnly(DocumentWidget *doc);
 	void UpdateWindowTitle(DocumentWidget *doc);
     DocumentWidget *currentDocument() const;
-    DocumentWidget *documentAt(int index) const;
+    DocumentWidget *documentAt(size_t index) const;
     std::vector<DocumentWidget *> openDocuments() const;
     QString PromptForExistingFileEx(const QString &path, const QString &prompt);
     QString PromptForExistingFileEx(const QString &prompt);
