@@ -5,52 +5,59 @@
 #include "TextArea.h"
 #include "preferences.h"
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogMoveDocument::DialogMoveDocument
+ * @param parent
+ * @param f
+ */
 DialogMoveDocument::DialogMoveDocument(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f) {
 	ui.setupUi(this);
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogMoveDocument::addItem
+ * @param window
+ */
 void DialogMoveDocument::addItem(MainWindow *window) {
     windows_.push_back(window);
     ui.listDocuments->addItem(window->windowTitle());
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogMoveDocument::resetSelection
+ */
 void DialogMoveDocument::resetSelection() {
 	ui.listDocuments->setCurrentRow(0);
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogMoveDocument::setLabel
+ * @param label
+ */
 void DialogMoveDocument::setLabel(const QString &label) {
 	ui.label->setText(tr("Move %1 into window of").arg(label));
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogMoveDocument::setMultipleDocuments
+ * @param value
+ */
 void DialogMoveDocument::setMultipleDocuments(bool value) {
 	ui.checkMoveAll->setVisible(value);
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogMoveDocument::selectionIndex
+ * @return
+ */
 int DialogMoveDocument::selectionIndex() const {
 	return ui.listDocuments->currentRow();
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogMoveDocument::moveAllSelected
+ * @return
+ */
 bool DialogMoveDocument::moveAllSelected() const {
 	return ui.checkMoveAll->isChecked();
 }

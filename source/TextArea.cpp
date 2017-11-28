@@ -718,9 +718,10 @@ void TextArea::deletePreviousCharacterAP(EventFlags flags) {
 	callCursorMovementCBs();
 }
 
-//------------------------------------------------------------------------------
-// Name: newlineAP
-//------------------------------------------------------------------------------
+/**
+ * @brief TextArea::newlineAP
+ * @param flags
+ */
 void TextArea::newlineAP(EventFlags flags) {
 
     EMIT_EVENT_0("newline");
@@ -732,9 +733,10 @@ void TextArea::newlineAP(EventFlags flags) {
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name: processUpAP
-//------------------------------------------------------------------------------
+/**
+ * @brief TextArea::processUpAP
+ * @param flags
+ */
 void TextArea::processUpAP(EventFlags flags) {
 
     EMIT_EVENT_0("process_up");
@@ -753,9 +755,10 @@ void TextArea::processUpAP(EventFlags flags) {
 	callCursorMovementCBs();
 }
 
-//------------------------------------------------------------------------------
-// Name: processDownAP
-//------------------------------------------------------------------------------
+/**
+ * @brief TextArea::processDownAP
+ * @param flags
+ */
 void TextArea::processDownAP(EventFlags flags) {
 
     EMIT_EVENT_0("process_down");
@@ -775,9 +778,10 @@ void TextArea::processDownAP(EventFlags flags) {
 	callCursorMovementCBs();
 }
 
-//------------------------------------------------------------------------------
-// Name: forwardCharacterAP
-//------------------------------------------------------------------------------
+/**
+ * @brief TextArea::forwardCharacterAP
+ * @param flags
+ */
 void TextArea::forwardCharacterAP(EventFlags flags) {
 
     EMIT_EVENT_0("forward_character");
@@ -795,9 +799,10 @@ void TextArea::forwardCharacterAP(EventFlags flags) {
 	callCursorMovementCBs();
 }
 
-//------------------------------------------------------------------------------
-// Name: backwardCharacterAP
-//------------------------------------------------------------------------------
+/**
+ * @brief TextArea::backwardCharacterAP
+ * @param flags
+ */
 void TextArea::backwardCharacterAP(EventFlags flags) {
 
     EMIT_EVENT_0("backward_character");
@@ -885,9 +890,9 @@ void TextArea::cursorBlinkTimerTimeout() {
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name: autoScrollTimerTimeout
-//------------------------------------------------------------------------------
+/**
+ * @brief TextArea::autoScrollTimerTimeout
+ */
 void TextArea::autoScrollTimerTimeout() {
 
     QFontMetrics fm(font_);
@@ -955,9 +960,10 @@ void TextArea::autoScrollTimerTimeout() {
     autoScrollTimer_->start(mouseCoord.y() >= P_marginHeight && mouseCoord.y() < viewport()->height() - P_marginHeight ? (VERTICAL_SCROLL_DELAY * fontWidth) / fontHeight : VERTICAL_SCROLL_DELAY);
 }
 
-//------------------------------------------------------------------------------
-// Name: focusInEvent
-//------------------------------------------------------------------------------
+/**
+ * @brief TextArea::focusInEvent
+ * @param event
+ */
 void TextArea::focusInEvent(QFocusEvent *event) {
 
 	// If the timer is not already started, start it
@@ -988,46 +994,52 @@ void TextArea::focusOutEvent(QFocusEvent *event) {
     QAbstractScrollArea::focusOutEvent(event);
 }
 
-//------------------------------------------------------------------------------
-// Name: contextMenuEvent
-//------------------------------------------------------------------------------
+/**
+ * @brief TextArea::contextMenuEvent
+ * @param event
+ */
 void TextArea::contextMenuEvent(QContextMenuEvent *event) {
 	if(event->modifiers() != Qt::ControlModifier) {
 		Q_EMIT customContextMenuRequested(mapToGlobal(event->pos()));
     }
 }
 
-//------------------------------------------------------------------------------
-// Name: dragEnterEvent
-//------------------------------------------------------------------------------
+/**
+ * @brief TextArea::dragEnterEvent
+ * @param event
+ */
 void TextArea::dragEnterEvent(QDragEnterEvent *event) {
 	Q_UNUSED(event);
 }
 
-//------------------------------------------------------------------------------
-// Name: dragLeaveEvent
-//------------------------------------------------------------------------------
+/**
+ * @brief TextArea::dragLeaveEvent
+ * @param event
+ */
 void TextArea::dragLeaveEvent(QDragLeaveEvent *event) {
 	Q_UNUSED(event);
 }
 
-//------------------------------------------------------------------------------
-// Name: dragMoveEvent
-//------------------------------------------------------------------------------
+/**
+ * @brief TextArea::dragMoveEvent
+ * @param event
+ */
 void TextArea::dragMoveEvent(QDragMoveEvent *event) {
 	Q_UNUSED(event);
 }
 
-//------------------------------------------------------------------------------
-// Name: dropEvent
-//------------------------------------------------------------------------------
+/**
+ * @brief TextArea::dropEvent
+ * @param event
+ */
 void TextArea::dropEvent(QDropEvent *event) {
 	Q_UNUSED(event);
 }
 
-//------------------------------------------------------------------------------
-// Name: keyPressEvent
-//------------------------------------------------------------------------------
+/**
+ * @brief TextArea::keyPressEvent
+ * @param event
+ */
 void TextArea::keyPressEvent(QKeyEvent *event) {
 
     if (isModifier(event)) {
@@ -1387,9 +1399,10 @@ void TextArea::keyPressEvent(QKeyEvent *event) {
     selfInsertAP(text); // self-insert()
 }
 
-//------------------------------------------------------------------------------
-// Name: mouseDoubleClickEvent
-//------------------------------------------------------------------------------
+/**
+ * @brief TextArea::mouseDoubleClickEvent
+ * @param event
+ */
 void TextArea::mouseDoubleClickEvent(QMouseEvent *event) {
     if(event->button() == Qt::LeftButton) {
         if (!clickTracker(event, true)) {
@@ -1401,9 +1414,10 @@ void TextArea::mouseDoubleClickEvent(QMouseEvent *event) {
     }
 }
 
-//------------------------------------------------------------------------------
-// Name: mouseTripleClickEvent
-//------------------------------------------------------------------------------
+/**
+ * @brief TextArea::mouseTripleClickEvent
+ * @param event
+ */
 void TextArea::mouseTripleClickEvent(QMouseEvent *event) {
 	if (event->button() == Qt::LeftButton) {
 		selectLine();
@@ -1411,9 +1425,10 @@ void TextArea::mouseTripleClickEvent(QMouseEvent *event) {
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name: mouseQuadrupleClickEvent
-//------------------------------------------------------------------------------
+/**
+ * @brief TextArea::mouseQuadrupleClickEvent
+ * @param event
+ */
 void TextArea::mouseQuadrupleClickEvent(QMouseEvent *event) {
 	if (event->button() == Qt::LeftButton) {
 		buffer_->BufSelect(0, buffer_->BufGetLength());
@@ -1421,10 +1436,12 @@ void TextArea::mouseQuadrupleClickEvent(QMouseEvent *event) {
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name: mouseMoveEvent
-// Note: "extend_adjust", "extend_adjust('rect')", "mouse_pan"
-//------------------------------------------------------------------------------
+/**
+ * "extend_adjust", "extend_adjust('rect')", "mouse_pan"
+ *
+ * @brief TextArea::mouseMoveEvent
+ * @param event
+ */
 void TextArea::mouseMoveEvent(QMouseEvent *event) {
 
     if(P_hidePointer) {
@@ -1453,10 +1470,11 @@ void TextArea::mouseMoveEvent(QMouseEvent *event) {
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name: mousePressEvent
-// Note: "grab_focus", "extend_start", "extend_start('rect')", "mouse_pan"
-//------------------------------------------------------------------------------
+/**
+ * "grab_focus", "extend_start", "extend_start('rect')", "mouse_pan"
+ * @brief TextArea::mousePressEvent
+ * @param event
+ */
 void TextArea::mousePressEvent(QMouseEvent *event) {
 
 	if(event->button() == Qt::LeftButton) {
@@ -1513,10 +1531,12 @@ void TextArea::mousePressEvent(QMouseEvent *event) {
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name: mouseReleaseEvent
-// Note: "extend_end", "copy_to_or_end_drag", "end_drag"
-//------------------------------------------------------------------------------
+/**
+ * "extend_end", "copy_to_or_end_drag", "end_drag"
+ *
+ * @brief TextArea::mouseReleaseEvent
+ * @param event
+ */
 void TextArea::mouseReleaseEvent(QMouseEvent *event) {
 
 	if(event->button() == Qt::LeftButton) {
@@ -1564,9 +1584,10 @@ void TextArea::mouseReleaseEvent(QMouseEvent *event) {
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name: paintEvent
-//------------------------------------------------------------------------------
+/**
+ * @brief TextArea::paintEvent
+ * @param event
+ */
 void TextArea::paintEvent(QPaintEvent *event) {
 
 	QRect rect = event->rect();
@@ -1607,9 +1628,10 @@ void TextArea::paintEvent(QPaintEvent *event) {
     }
 }
 
-//------------------------------------------------------------------------------
-// Name: resizeEvent
-//------------------------------------------------------------------------------
+/**
+ * @brief TextArea::resizeEvent
+ * @param event
+ */
 void TextArea::resizeEvent(QResizeEvent *event) {
 
     QFontMetrics fm(font_);
@@ -1626,9 +1648,11 @@ void TextArea::resizeEvent(QResizeEvent *event) {
 	TextDResize(width - marginWidth * 2 - lineNumAreaWidth, height - marginHeight * 2);
 }
 
-//------------------------------------------------------------------------------
-// Name: bufPreDeleteCallback
-//------------------------------------------------------------------------------
+/**
+ * @brief TextArea::bufPreDeleteCallback
+ * @param pos
+ * @param nDeleted
+ */
 void TextArea::bufPreDeleteCallback(int pos, int nDeleted) {
 	if (P_continuousWrap && (fixedFontWidth_ == -1 || modifyingTabDist_)) {
 		/* Note: we must perform this measurement, even if there is not a
@@ -1645,9 +1669,14 @@ void TextArea::bufPreDeleteCallback(int pos, int nDeleted) {
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name: bufModifiedCallback
-//------------------------------------------------------------------------------
+/**
+ * @brief TextArea::bufModifiedCallback
+ * @param pos
+ * @param nInserted
+ * @param nDeleted
+ * @param nRestyled
+ * @param deletedText
+ */
 void TextArea::bufModifiedCallback(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText) {
 	int linesInserted;
 	int linesDeleted;
@@ -1775,17 +1804,18 @@ void TextArea::bufModifiedCallback(int pos, int nInserted, int nDeleted, int nRe
 	textDRedisplayRange(startDispPos, endDispPos);
 }
 
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
+/**
+ * @brief TextArea::setBacklightCharTypes
+ * @param charTypes
+ */
 void TextArea::setBacklightCharTypes(const QString &charTypes) {
 	TextDSetupBGClassesEx(charTypes);
 	viewport()->update();
 }
 
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
+/**
+ * @brief TextArea::hideOrShowHScrollBar
+ */
 void TextArea::hideOrShowHScrollBar() {
     QFontMetrics fm(font_);
     if (P_continuousWrap && (P_wrapMargin == 0 || P_wrapMargin * fm.maxWidth() < rect_.width())) {
@@ -1795,21 +1825,22 @@ void TextArea::hideOrShowHScrollBar() {
 	}
 }
 
-/*
-** This is a stripped-down version of the findWrapRange() function above,
-** intended to be used to calculate the number of "deleted" lines during
-** a buffer modification. It is called _before_ the modification takes place.
-**
-** This function should only be called in continuous wrap mode with a
-** non-fixed font width. In that case, it is impossible to calculate
-** the number of deleted lines, because the necessary style information
-** is no longer available _after_ the modification. In other cases, we
-** can still perform the calculation afterwards (possibly even more
-** efficiently).
-*/
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
+
+/**
+ * This is a stripped-down version of the findWrapRange() function above,
+ * intended to be used to calculate the number of "deleted" lines during a
+ * buffer modification. It is called _before_ the modification takes place.
+ *
+ * This function should only be called in continuous wrap mode with a non-fixed
+ * font width. In that case, it is impossible to calculate the number of
+ * deleted lines, because the necessary style information is no longer
+ * available _after_ the modification. In other cases, we can still perform the
+ * calculation afterwards (possibly even more efficiently).
+ *
+ * @brief TextArea::measureDeletedLines
+ * @param pos
+ * @param nDeleted
+ */
 void TextArea::measureDeletedLines(int pos, int nDeleted) {
     int retPos;
     int retLines;
@@ -1899,9 +1930,6 @@ void TextArea::measureDeletedLines(int pos, int nDeleted) {
 **   retLineStart:  Start of the line where counting ended
 **   retLineEnd:    End position of the last line traversed
 */
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
 void TextArea::wrappedLineCounter(const TextBuffer *buf, int startPos, int maxPos, int maxLines, bool startPosIsLineStart, int styleBufOffset, int *retPos, int *retLines, int *retLineStart, int *retLineEnd) const {
 	int lineStart;
 	int newLineStart = 0;
@@ -2045,9 +2073,6 @@ void TextArea::wrappedLineCounter(const TextBuffer *buf, int startPos, int maxPo
 ** insertion/deletion, though static display and wrapping and resizing
 ** should now be solid because they are now used for online help display.
 */
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
 int TextArea::measurePropChar(char ch, int colNum, int pos) const {
 	int style;
     char expChar[TextBuffer::MAX_EXP_CHAR_LEN];
@@ -2072,9 +2097,6 @@ int TextArea::measurePropChar(char ch, int colNum, int pos) const {
 /*
 ** Find the width of a string in the font of a particular style
 */
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
 int TextArea::stringWidth(const char *string, int length, int style) const {
 
     QString str = asciiCodec->toUnicode(string, length);
@@ -2285,9 +2307,6 @@ void TextArea::findWrapRangeEx(view::string_view deletedText, int pos, int nInse
 ** the start of the next line.  This is also consistent with the model used by
 ** visLineLength.
 */
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
 int TextArea::TextDEndOfLine(int pos, bool startPosIsLineStart) {
 	int retLines, retPos, retLineStart, retLineEnd;
 
@@ -2492,9 +2511,6 @@ void TextArea::calcLastChar() {
 ** Same as BufCountBackwardNLines, but takes in to account line breaks when
 ** wrapping is turned on.
 */
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
 int TextArea::TextDCountBackwardNLines(int startPos, int nLines) {
 
 	int retLines;
@@ -2525,9 +2541,6 @@ int TextArea::TextDCountBackwardNLines(int startPos, int nLines) {
 ** Return true if a separate absolute top line number is being maintained
 ** (for displaying line numbers or showing in the statistics line).
 */
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
 bool TextArea::maintainingAbsTopLineNum() const {
 	return P_continuousWrap && (lineNumWidth_ != 0 || needAbsTopLineNum_);
 }
@@ -2537,9 +2550,6 @@ bool TextArea::maintainingAbsTopLineNum() const {
 ** absolute (non-wrapped) top line number.  If mode is not continuous wrap,
 ** or the number is not being maintained, does nothing.
 */
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
 void TextArea::resetAbsLineNum() {
 	absTopLineNum_ = 1;
 	offsetAbsLineNum(0);
@@ -2549,16 +2559,17 @@ void TextArea::resetAbsLineNum() {
 ** Refresh a rectangle of the text display.  left and top are in coordinates of
 ** the text drawing window
 */
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
 void TextArea::TextDRedisplayRect(const QRect &rect) {
     TextDRedisplayRect(rect.left(), rect.top(), rect.width(), rect.height());
 }
 
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
+/**
+ * @brief TextArea::TextDRedisplayRect
+ * @param left
+ * @param top
+ * @param width
+ * @param height
+ */
 void TextArea::TextDRedisplayRect(int left, int top, int width, int height) {
 	viewport()->update(QRect(left, top, width, height));
 #if 0
@@ -2588,11 +2599,12 @@ void TextArea::TextDRedisplayRect(int left, int top, int width, int height) {
 #endif
 }
 
-//------------------------------------------------------------------------------
-// Name: updateVScrollBarRange
-// Desc: Update the minimum, maximum, slider size, page increment, and value
-//       for vertical scroll bar.
-//------------------------------------------------------------------------------
+/**
+ * Update the minimum, maximum, slider size, page increment, and value for
+ * vertical scroll bar.
+ *
+ * @brief TextArea::updateVScrollBarRange
+ */
 void TextArea::updateVScrollBarRange() {
 
 	// NOTE(eteran): so Qt's scrollbars are a little more straightforward than
@@ -2622,13 +2634,18 @@ void TextArea::updateVScrollBarRange() {
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name: TextDCountForwardNLines
-// Desc: Same as BufCountForwardNLines, but takes in to account line breaks when
-//       wrapping is turned on. If the caller knows that startPos is at a line start,
-//       it can pass "startPosIsLineStart" as True to make the call more efficient
-//       by avoiding the additional step of scanning back to the last newline.
-//------------------------------------------------------------------------------
+/**
+ * Same as BufCountForwardNLines, but takes in to account line breaks when
+ * wrapping is turned on. If the caller knows that startPos is at a line start,
+ * it can pass "startPosIsLineStart" as True to make the call more efficient by
+ * avoiding the additional step of scanning back to the last newline.
+ *
+ * @brief TextArea::TextDCountForwardNLines
+ * @param startPos
+ * @param nLines
+ * @param startPosIsLineStart
+ * @return
+ */
 int TextArea::TextDCountForwardNLines(int startPos, int nLines, bool startPosIsLineStart) {
     int retLines;
     int retPos;
@@ -2653,9 +2670,6 @@ int TextArea::TextDCountForwardNLines(int startPos, int nLines, bool startPosIsL
 /*
 ** Re-calculate absolute top line number for a change in scroll position.
 */
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
 void TextArea::offsetAbsLineNum(int oldFirstChar) {
 	if (maintainingAbsTopLineNum()) {
 		if (firstChar_ < oldFirstChar) {
@@ -2676,9 +2690,6 @@ void TextArea::offsetAbsLineNum(int oldFirstChar) {
 ** normal character, and to find that out would otherwise require counting all
 ** the way back to the beginning of the line.
 */
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
 void TextArea::findLineEnd(int startPos, int startPosIsLineStart, int *lineEnd, int *nextLineStart) {
 	int retLines, retLineStart;
 
@@ -2693,18 +2704,20 @@ void TextArea::findLineEnd(int startPos, int startPosIsLineStart, int *lineEnd, 
 	wrappedLineCounter(buffer_, startPos, buffer_->BufGetLength(), 1, startPosIsLineStart, 0, nextLineStart, &retLines, &retLineStart, lineEnd);
 }
 
-//------------------------------------------------------------------------------
-// Name: updateHScrollBarRange
-// Desc: Update the minimum, maximum, slider size, page increment, and value
-//       for the horizontal scroll bar.  If scroll position is such that there
-//       is blank space to the right of all lines of text, scroll back (adjust
-//       horizOffset but don't redraw) to take up the slack and position the
-//       right edge of the text at the right edge of the display.
-//
-//       Note, there is some cost to this routine, since it scans the whole range
-//       of displayed text, particularly since it's usually called for each typed
-// character!
-//------------------------------------------------------------------------------
+/**
+ * Update the minimum, maximum, slider size, page increment, and value for the
+ * horizontal scroll bar.  If scroll position is such that there is blank space
+ * to the right of all lines of text, scroll back (adjust horizOffset but don't
+ * redraw) to take up the slack and position the right edge of the text at the
+ * right edge of the display.
+ *
+ * Note, there is some cost to this routine, since it scans the whole range of
+ * displayed text, particularly since it's usually called for each typed
+ * character!
+ *
+ * @brief TextArea::updateHScrollBarRange
+ * @return
+ */
 bool TextArea::updateHScrollBarRange() {
 	int maxWidth = 0;
 	int sliderMax;
@@ -2739,19 +2752,24 @@ bool TextArea::updateHScrollBarRange() {
 	return origHOffset != horizOffset_;
 }
 
-//------------------------------------------------------------------------------
-// Name: emptyLinesVisible
-// Desc: Return true if there are lines visible with no corresponding buffer text
-//------------------------------------------------------------------------------
-int TextArea::emptyLinesVisible() const {
+/**
+ * Return true if there are lines visible with no corresponding buffer text
+ * @brief TextArea::emptyLinesVisible
+ * @return
+ */
+bool TextArea::emptyLinesVisible() const {
 	return nVisibleLines_ > 0 && lineStarts_[nVisibleLines_ - 1] == -1;
 }
 
-//------------------------------------------------------------------------------
-// Name: posToVisibleLineNum
-// Desc: Find the line number of position "pos" relative to the first line of
-//       displayed text. Returns False if the line is not displayed.
-//------------------------------------------------------------------------------
+/**
+ * Find the line number of position "pos" relative to the first line of
+ * displayed text. Returns False if the line is not displayed.
+ *
+ * @brief TextArea::posToVisibleLineNum
+ * @param pos
+ * @param lineNum
+ * @return
+ */
 int TextArea::posToVisibleLineNum(int pos, int *lineNum) {
 
 	if (pos < firstChar_) {
@@ -2784,13 +2802,14 @@ int TextArea::posToVisibleLineNum(int pos, int *lineNum) {
     return false;
 }
 
-//------------------------------------------------------------------------------
-// Name: blankCursorProtrusions
-// Desc:  When the cursor is at the left or right edge of the text, part of it
-//        sticks off into the clipped region beyond the text.  Normal redrawing
-//        can not overwrite this protruding part of the cursor, so it must be
-//        erased independently by calling this routine.
-//------------------------------------------------------------------------------
+/**
+ * When the cursor is at the left or right edge of the text, part of it sticks
+ * off into the clipped region beyond the text.  Normal redrawing can not
+ * overwrite this protruding part of the cursor, so it must be erased
+ * independently by calling this routine.
+ *
+ * @brief TextArea::blankCursorProtrusions
+ */
 void TextArea::blankCursorProtrusions() {
 
 	int x;
@@ -2817,10 +2836,12 @@ void TextArea::blankCursorProtrusions() {
     viewport()->update(QRect(x, cursorY, width, fontHeight));
 }
 
-//------------------------------------------------------------------------------
-// Name: measureVisLine
-// Desc: Return the width in pixels of the displayed line pointed to by "visLineNum"
-//------------------------------------------------------------------------------
+/**
+ * Return the width in pixels of the displayed line pointed to by "visLineNum"
+ * @brief TextArea::measureVisLine
+ * @param visLineNum
+ * @return
+ */
 int TextArea::measureVisLine(int visLineNum) {
 	int i;
 	int width = 0;
@@ -2852,11 +2873,14 @@ int TextArea::measureVisLine(int visLineNum) {
 	return width;
 }
 
-//------------------------------------------------------------------------------
-// Name: visLineLength
-// Desc: Return the length of a line (number of displayable characters) by examining
-//       entries in the line starts array rather than by scanning for newlines
-//------------------------------------------------------------------------------
+/**
+ * Return the length of a line (number of displayable characters) by examining
+ * entries in the line starts array rather than by scanning for newlines
+ *
+ * @brief TextArea::visLineLength
+ * @param visLineNum
+ * @return
+ */
 int TextArea::visLineLength(int visLineNum) {
 	int nextLineStart;
 	int lineStartPos = lineStarts_[visLineNum];
@@ -2894,9 +2918,6 @@ int TextArea::visLineLength(int visLineNum) {
 ** used as a wrap point, and just guesses that it wasn't.  So if an exact
 ** accounting is necessary, don't use this function.
 */
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
 int TextArea::wrapUsesCharacter(int lineEndPos) {
 
 	if (!P_continuousWrap || lineEndPos == buffer_->BufGetLength()) {
@@ -2912,9 +2933,6 @@ int TextArea::wrapUsesCharacter(int lineEndPos) {
 ** redraw requests resulting from changes to the attached style buffer (which
 ** contains auxiliary information for coloring or styling text).
 */
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
 void TextArea::extendRangeForStyleMods(int *start, int *end) {
     const TextSelection *sel = &styleBuffer_->BufGetPrimary();
 	int extended = false;
@@ -2955,9 +2973,6 @@ void TextArea::extendRangeForStyleMods(int *start, int *end) {
 ** after pos, including blank lines which are not technically part of
 ** any range of characters.
 */
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
 void TextArea::textDRedisplayRange(int start, int end) {
     int i;
     int startLine;
@@ -3614,9 +3629,12 @@ void TextArea::drawCursor(QPainter *painter, int x, int y) {
     cursor_ = QPoint(x, y);
 }
 
-//------------------------------------------------------------------------------
-// Name: getRangesetColor
-//------------------------------------------------------------------------------
+/**
+ * @brief TextArea::getRangesetColor
+ * @param ind
+ * @param bground
+ * @return
+ */
 QColor TextArea::getRangesetColor(int ind, QColor bground) {
 
 	if (ind > 0) {
@@ -3641,10 +3659,13 @@ QColor TextArea::getRangesetColor(int ind, QColor bground) {
 	return bground;
 }
 
-//------------------------------------------------------------------------------
-// Name: TextDResize
-// Desc: Change the size of the displayed text area
-//------------------------------------------------------------------------------
+/**
+ * Change the size of the displayed text area
+ *
+ * @brief TextArea::TextDResize
+ * @param width
+ * @param height
+ */
 void TextArea::TextDResize(int width, int height) {
 
 	int oldVisibleLines = nVisibleLines_;
@@ -3733,9 +3754,13 @@ int TextArea::TextDCountLines(int startPos, int endPos, int startPosIsLineStart)
 	return retLines;
 }
 
-//------------------------------------------------------------------------------
-// Name: setScroll
-//------------------------------------------------------------------------------
+/**
+ * @brief TextArea::setScroll
+ * @param topLineNum
+ * @param horizOffset
+ * @param updateVScrollBar
+ * @param updateHScrollBar
+ */
 void TextArea::setScroll(int topLineNum, int horizOffset, bool updateVScrollBar, bool updateHScrollBar) {
 
 	/* Do nothing if scroll position hasn't actually changed or there's no
@@ -3830,9 +3855,10 @@ void TextArea::setScroll(int topLineNum, int horizOffset, bool updateVScrollBar,
 #endif
 }
 
-//------------------------------------------------------------------------------
-// Name: TextDSetCursorStyle
-//------------------------------------------------------------------------------
+/**
+ * @brief TextArea::TextDSetCursorStyle
+ * @param style
+ */
 void TextArea::TextDSetCursorStyle(CursorStyles style) {
 	cursorStyle_ = style;
 	blankCursorProtrusions();
@@ -3841,9 +3867,9 @@ void TextArea::TextDSetCursorStyle(CursorStyles style) {
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name: TextDBlankCursor
-//------------------------------------------------------------------------------
+/**
+ * @brief TextArea::TextDBlankCursor
+ */
 void TextArea::TextDBlankCursor() {
     if (!cursorOn_) {
 		return;
@@ -3854,9 +3880,9 @@ void TextArea::TextDBlankCursor() {
 	textDRedisplayRange(cursorPos_ - 1, cursorPos_ + 1);
 }
 
-//------------------------------------------------------------------------------
-// Name: TextDUnblankCursor
-//------------------------------------------------------------------------------
+/**
+ * @brief TextArea::TextDUnblankCursor
+ */
 void TextArea::TextDUnblankCursor() {
 	if (!cursorOn_) {
 		cursorOn_ = true;
@@ -6041,9 +6067,9 @@ bool TextArea::clickTracker(QMouseEvent *event, bool inDoubleClickHandler) {
     return true;
 }
 
-//------------------------------------------------------------------------------
-// Name: clickTimeout
-//------------------------------------------------------------------------------
+/**
+ * @brief TextArea::clickTimeout
+ */
 void TextArea::clickTimeout() {
     clickCount_ = 0;
 }

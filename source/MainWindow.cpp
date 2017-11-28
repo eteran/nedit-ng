@@ -217,9 +217,9 @@ void MainWindow::parseGeometry(QString geometry) {
     }
 }
 
-//------------------------------------------------------------------------------
-// Name: setupTabBar
-//------------------------------------------------------------------------------
+/**
+ * @brief MainWindow::setupTabBar
+ */
 void MainWindow::setupTabBar() {
 	// create and hook up the tab close button
 	auto deleteTabButton = new QToolButton(ui.tabWidget);
@@ -402,9 +402,9 @@ void MainWindow::setupDocumentPrefernceDefaults() {
     }
 }
 
-//------------------------------------------------------------------------------
-// Name: setupMenuDefaults
-//------------------------------------------------------------------------------
+/**
+ * @brief MainWindow::setupMenuDefaults
+ */
 void MainWindow::setupMenuDefaults() {
 
     // active settings
@@ -426,11 +426,12 @@ void MainWindow::setupMenuDefaults() {
     MainWindow::updateMenuItems();
 }
 
-//------------------------------------------------------------------------------
-// Name: setupMenuStrings
-// Desc: nedit has some menu shortcuts which are different from conventional
-//       shortcuts. Fortunately, Qt has a means to do this stuff manually.
-//------------------------------------------------------------------------------
+/**
+ * nedit has some menu shortcuts which are different from conventional
+ * shortcuts. Fortunately, Qt has a means to do this stuff manually.
+ *
+ * @brief MainWindow::setupMenuStrings
+ */
 void MainWindow::setupMenuStrings() {
 
 	ui.action_Shift_Left         ->setText(tr("Shift &Left\t[Shift] Ctrl+9"));
@@ -509,10 +510,11 @@ void MainWindow::setupPrevOpenMenuActions() {
     }
 }
 
-//------------------------------------------------------------------------------
-// Name: setupMenuAlternativeMenus
-// Desc: under some configurations, menu items have different text/functionality
-//------------------------------------------------------------------------------
+/**
+ * under some configurations, menu items have different text/functionality
+ *
+ * @brief MainWindow::setupMenuAlternativeMenus
+ */
 void MainWindow::setupMenuAlternativeMenus() {
 	if(!GetPrefOpenInTab()) {
 		ui.action_New_Window->setText(tr("New &Tab"));
@@ -554,9 +556,9 @@ void MainWindow::setupMenuAlternativeMenus() {
 #endif
 }
 
-//------------------------------------------------------------------------------
-// Name: setupMenuGroups
-//------------------------------------------------------------------------------
+/**
+ * @brief MainWindow::setupMenuGroups
+ */
 void MainWindow::setupMenuGroups() {
 	auto indentGroup = new QActionGroup(this);
 	indentGroup->addAction(ui.action_Indent_Off);
@@ -624,18 +626,20 @@ void MainWindow::setupMenuGroups() {
 
 }
 
-//------------------------------------------------------------------------------
-// Name: on_action_New_triggered
-//------------------------------------------------------------------------------
+/**
+ * @brief MainWindow::on_action_New_triggered
+ */
 void MainWindow::on_action_New_triggered() {    
     if(DocumentWidget *document = currentDocument()) {
         action_New(document, NewMode::Prefs);
     }
 }
 
-//------------------------------------------------------------------------------
-// Name: on_action_New_triggered
-//------------------------------------------------------------------------------
+/**
+ * @brief MainWindow::action_New
+ * @param document
+ * @param mode
+ */
 void MainWindow::action_New(DocumentWidget *document, NewMode mode) {
 
     emit_event("new", to_string(mode));
@@ -687,10 +691,11 @@ QString MainWindow::PromptForExistingFileEx(const QString &path, const QString &
     return QString();
 }
 
-
-//------------------------------------------------------------------------------
-// Name: on_action_Open_triggered
-//------------------------------------------------------------------------------
+/**
+ * @brief MainWindow::action_Open
+ * @param document
+ * @param filename
+ */
 void MainWindow::action_Open(DocumentWidget *document, const QString &filename) {
 
     emit_event("open", filename);
@@ -756,9 +761,9 @@ void MainWindow::action_Select_All(DocumentWidget *document) {
     }
 }
 
-//------------------------------------------------------------------------------
-// Name: on_action_Select_All_triggered
-//------------------------------------------------------------------------------
+/**
+ * @brief MainWindow::on_action_Select_All_triggered
+ */
 void MainWindow::on_action_Select_All_triggered() {
 
     if(DocumentWidget *document = currentDocument()) {
@@ -766,9 +771,11 @@ void MainWindow::on_action_Select_All_triggered() {
     }
 }
 
-//------------------------------------------------------------------------------
-// Name: action_Include_File
-//------------------------------------------------------------------------------
+/**
+ * @brief MainWindow::action_Include_File
+ * @param document
+ * @param filename
+ */
 void MainWindow::action_Include_File(DocumentWidget *document, const QString &filename) {
 
     emit_event("include_file", filename);
@@ -784,6 +791,10 @@ void MainWindow::action_Include_File(DocumentWidget *document, const QString &fi
     document->includeFile(filename);
 }
 
+/**
+ * @brief MainWindow::action_Include_File
+ * @param document
+ */
 void MainWindow::action_Include_File(DocumentWidget *document) {
     if (document->CheckReadOnly()) {
         return;
@@ -798,9 +809,9 @@ void MainWindow::action_Include_File(DocumentWidget *document) {
     document->includeFile(filename);
 }
 
-//------------------------------------------------------------------------------
-// Name: on_action_Include_File_triggered
-//------------------------------------------------------------------------------
+/**
+ * @brief MainWindow::on_action_Include_File_triggered
+ */
 void MainWindow::on_action_Include_File_triggered() {
 
     if(DocumentWidget *document = currentDocument()) {
@@ -808,27 +819,27 @@ void MainWindow::on_action_Include_File_triggered() {
     }
 }
 
-//------------------------------------------------------------------------------
-// Name: on_action_Cut_triggered
-//------------------------------------------------------------------------------
+/**
+ * @brief MainWindow::on_action_Cut_triggered
+ */
 void MainWindow::on_action_Cut_triggered() {
     if(QPointer<TextArea> area = lastFocus_) {
         area->cutClipboardAP();
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name: on_action_Copy_triggered
-//------------------------------------------------------------------------------
+/**
+ * @brief MainWindow::on_action_Copy_triggered
+ */
 void MainWindow::on_action_Copy_triggered() {
     if(QPointer<TextArea> area = lastFocus_) {
         area->copyClipboardAP();
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name: on_action_Paste_triggered
-//------------------------------------------------------------------------------
+/**
+ * @brief MainWindow::on_action_Paste_triggered
+ */
 void MainWindow::on_action_Paste_triggered() {
     if(QPointer<TextArea> area = lastFocus_) {
         area->pasteClipboardAP();
@@ -1950,6 +1961,10 @@ void MainWindow::openFile(DocumentWidget *document, const QString &text) {
     CheckCloseDimEx();
 }
 
+/**
+ * @brief MainWindow::action_Shift_Left
+ * @param document
+ */
 void MainWindow::action_Shift_Left(DocumentWidget *document) {
 
     emit_event("shift_left");
@@ -1963,9 +1978,9 @@ void MainWindow::action_Shift_Left(DocumentWidget *document) {
     }
 }
 
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
+/**
+ * @brief MainWindow::on_action_Shift_Left_triggered
+ */
 void MainWindow::on_action_Shift_Left_triggered() {
 
     if(DocumentWidget *document = currentDocument()) {
@@ -1986,9 +2001,9 @@ void MainWindow::action_Shift_Right(DocumentWidget *document) {
     }
 }
 
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
+/**
+ * @brief MainWindow::on_action_Shift_Right_triggered
+ */
 void MainWindow::on_action_Shift_Right_triggered() {
 
     if(DocumentWidget *document = currentDocument()) {
@@ -1996,9 +2011,10 @@ void MainWindow::on_action_Shift_Right_triggered() {
     }
 }
 
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
+/**
+ * @brief MainWindow::action_Shift_Left_Tabs
+ * @param document
+ */
 void MainWindow::action_Shift_Left_Tabs(DocumentWidget *document) {
 
     emit_event("shift_left_by_tab");
@@ -2345,9 +2361,10 @@ void MainWindow::action_Find_Selection(DocumentWidget *document, Direction direc
     }
 }
 
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
+/**
+ * @brief MainWindow::action_Shift_Find_Selection
+ * @param document
+ */
 void MainWindow::action_Shift_Find_Selection(DocumentWidget *document) {
     action_Find_Selection(
         document,
@@ -2413,18 +2430,20 @@ void MainWindow::on_editIFind_textChanged(const QString &text) {
     }
 }
 
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
+/**
+ * @brief MainWindow::on_action_Find_Incremental_triggered
+ */
 void MainWindow::on_action_Find_Incremental_triggered() {
     BeginISearchEx(Direction::Forward);
 }
 
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
+/**
+ * @brief MainWindow::action_Shift_Find_Incremental
+ * @param document
+ */
 void MainWindow::action_Shift_Find_Incremental(DocumentWidget *document) {
     Q_UNUSED(document);
+
     BeginISearchEx(Direction::Backward);
 }
 
@@ -2468,12 +2487,13 @@ void MainWindow::on_buttonIFind_clicked() {
     on_editIFind_returnPressed();
 }
 
-//------------------------------------------------------------------------------
-// Name: on_editIFind_returnPressed
-// Desc: User pressed return in the incremental search bar.  Do a new search with
-//       the search string displayed.  The direction of the search is toggled if
-//       the Ctrl key or the Shift key is pressed when the text field is activated.
-//------------------------------------------------------------------------------
+/**
+ * User pressed return in the incremental search bar. Do a new search with the
+ * search string displayed.  The direction of the search is toggled if the Ctrl
+ * key or the Shift key is pressed when the text field is activated.
+ *
+ * @brief MainWindow::on_editIFind_returnPressed
+ */
 void MainWindow::on_editIFind_returnPressed() {
 
     SearchType searchType;
@@ -4399,17 +4419,21 @@ void MainWindow::on_action_Revert_to_Saved_triggered() {
     }
 }
 
+/**
+ * @brief MainWindow::action_New_Window
+ * @param document
+ */
 void MainWindow::action_New_Window(DocumentWidget *document) {
     emit_event("new_window");
     MainWindow::EditNewFileEx(GetPrefOpenInTab() ? nullptr : this, QString(), false, QString(), document->path_);
     CheckCloseDimEx();
 }
 
-//------------------------------------------------------------------------------
-// Name: on_action_New_Window_triggered
-// Desc: whatever the setting is for what to do with "New",
-//       this does the opposite
-//------------------------------------------------------------------------------
+/**
+ * whatever the setting is for what to do with "New", this does the opposite
+ *
+ * @brief MainWindow::on_action_New_Window_triggered
+ */
 void MainWindow::on_action_New_Window_triggered() {
 
     if(DocumentWidget *document = currentDocument()) {
@@ -4482,9 +4506,9 @@ void MainWindow::action_Exit(DocumentWidget *document) {
     }
 }
 
-//------------------------------------------------------------------------------
-// Name: on_action_Exit_triggered
-//------------------------------------------------------------------------------
+/**
+ * @brief MainWindow::on_action_Exit_triggered
+ */
 void MainWindow::on_action_Exit_triggered() {
 
     if(DocumentWidget *document = currentDocument()) {

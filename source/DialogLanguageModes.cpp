@@ -20,10 +20,11 @@
 #include <QStringList>
 #include <QtDebug>
 
-
-//------------------------------------------------------------------------------
-// Name: DialogLanguageModes
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogLanguageModes::DialogLanguageModes
+ * @param parent
+ * @param f
+ */
 DialogLanguageModes::DialogLanguageModes(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f), previous_(nullptr) {
 	ui.setupUi(this);
 
@@ -46,18 +47,20 @@ DialogLanguageModes::DialogLanguageModes(QWidget *parent, Qt::WindowFlags f) : D
 	ui.editEmulatedTabSpacing->setValidator(new QIntValidator(-1, 100, this));
 }
 
-//------------------------------------------------------------------------------
-// Name: ~DialogLanguageModes
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogLanguageModes::~DialogLanguageModes
+ */
 DialogLanguageModes::~DialogLanguageModes() noexcept {
 	for(int i = 0; i < ui.listItems->count(); ++i) {
 		delete itemFromIndex(i);
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name: itemFromIndex
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogLanguageModes::itemFromIndex
+ * @param i
+ * @return
+ */
 LanguageMode *DialogLanguageModes::itemFromIndex(int i) const {
 	if(i < ui.listItems->count()) {
 	    QListWidgetItem* item = ui.listItems->item(i);
@@ -68,9 +71,9 @@ LanguageMode *DialogLanguageModes::itemFromIndex(int i) const {
 	return nullptr;
 }
 
-//------------------------------------------------------------------------------
-// Name: on_listItems_itemSelectionChanged
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogLanguageModes::on_listItems_itemSelectionChanged
+ */
 void DialogLanguageModes::on_listItems_itemSelectionChanged() {
 
 	QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
@@ -207,9 +210,9 @@ void DialogLanguageModes::on_listItems_itemSelectionChanged() {
 	previous_ = current;
 }
 
-//------------------------------------------------------------------------------
-// Name: on_buttonBox_accepted
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogLanguageModes::on_buttonBox_accepted
+ */
 void DialogLanguageModes::on_buttonBox_accepted() {
     if (!updateLMList(Mode::Verbose)) {
 		return;
@@ -218,9 +221,10 @@ void DialogLanguageModes::on_buttonBox_accepted() {
 	accept();
 }
 
-//------------------------------------------------------------------------------
-// Name: on_buttonBox_clicked
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogLanguageModes::on_buttonBox_clicked
+ * @param button
+ */
 void DialogLanguageModes::on_buttonBox_clicked(QAbstractButton *button) {
 	if(ui.buttonBox->standardButton(button) == QDialogButtonBox::Apply) {
         updateLMList(Mode::Verbose);
@@ -361,9 +365,11 @@ std::unique_ptr<LanguageMode> DialogLanguageModes::readLMDialogFields(Mode mode)
 
 
 
-//------------------------------------------------------------------------------
-// Name: updateLanguageList
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogLanguageModes::updateLanguageList
+ * @param mode
+ * @return
+ */
 bool DialogLanguageModes::updateLanguageList(Mode mode) {
 	QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
 	if(selections.size() != 1) {
@@ -411,9 +417,11 @@ bool DialogLanguageModes::updateLanguageList(Mode mode) {
 	return false;
 }
 
-//------------------------------------------------------------------------------
-// Name: updateLMList
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogLanguageModes::updateLMList
+ * @param mode
+ * @return
+ */
 bool DialogLanguageModes::updateLMList(Mode mode) {
 
 
@@ -515,9 +523,9 @@ bool DialogLanguageModes::updateLMList(Mode mode) {
 	return true;
 }
 
-//------------------------------------------------------------------------------
-// Name: on_buttonNew_clicked
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogLanguageModes::on_buttonNew_clicked
+ */
 void DialogLanguageModes::on_buttonNew_clicked() {
 
 	if(!updateCurrentItem()) {
@@ -533,9 +541,9 @@ void DialogLanguageModes::on_buttonNew_clicked() {
 	ui.listItems->setCurrentItem(item);
 }
 
-//------------------------------------------------------------------------------
-// Name: on_buttonCopy_clicked
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogLanguageModes::on_buttonCopy_clicked
+ */
 void DialogLanguageModes::on_buttonCopy_clicked() {
 
 	if(!updateCurrentItem()) {
@@ -558,9 +566,9 @@ void DialogLanguageModes::on_buttonCopy_clicked() {
 	ui.listItems->setCurrentItem(newItem);
 }
 
-//------------------------------------------------------------------------------
-// Name: on_buttonUp_clicked
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogLanguageModes::on_buttonUp_clicked
+ */
 void DialogLanguageModes::on_buttonUp_clicked() {
 
 	QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
@@ -579,9 +587,9 @@ void DialogLanguageModes::on_buttonUp_clicked() {
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name: on_buttonDown_clicked
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogLanguageModes::on_buttonDown_clicked
+ */
 void DialogLanguageModes::on_buttonDown_clicked() {
 
 	QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
@@ -601,9 +609,9 @@ void DialogLanguageModes::on_buttonDown_clicked() {
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name: on_buttonDelete_clicked
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogLanguageModes::on_buttonDelete_clicked
+ */
 void DialogLanguageModes::on_buttonDelete_clicked() {
 
 	QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
@@ -632,13 +640,17 @@ void DialogLanguageModes::on_buttonDelete_clicked() {
 
 	// don't allow deletion if data will be lost
     if (MainWindow::LMHasHighlightPatterns(itemFromIndex(itemIndex)->name)) {
-		QMessageBox::warning(this, tr("Patterns exist"), tr("This language mode has syntax highlighting patterns defined.  Please delete the patterns first, in Preferences -> Default Settings -> Syntax Highlighting, before proceeding here."));
+        QMessageBox::warning(this,
+                             tr("Patterns exist"),
+                             tr("This language mode has syntax highlighting patterns defined.  Please delete the patterns first, in Preferences -> Default Settings -> Syntax Highlighting, before proceeding here."));
 		return; // False;
 	}
 
 	// don't allow deletion if data will be lost
     if (LMHasSmartIndentMacros(itemFromIndex(itemIndex)->name)) {
-		QMessageBox::warning(this, tr("Smart Indent Macros exist"), tr("This language mode has smart indent macros defined.  Please delete the macros first, in Preferences -> Default Settings -> Auto Indent -> Program Smart Indent, before proceeding here."));
+        QMessageBox::warning(this,
+                             tr("Smart Indent Macros exist"),
+                             tr("This language mode has smart indent macros defined.  Please delete the macros first, in Preferences -> Default Settings -> Auto Indent -> Program Smart Indent, before proceeding here."));
 		return; // False;
 	}
 
@@ -650,9 +662,11 @@ void DialogLanguageModes::on_buttonDelete_clicked() {
 	return;// True;
 }
 
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogLanguageModes::updateCurrentItem
+ * @param item
+ * @return
+ */
 bool DialogLanguageModes::updateCurrentItem(QListWidgetItem *item) {
 	// Get the current contents of the "patterns" dialog fields
     auto ptr = readLMDialogFields(Mode::Verbose);
@@ -669,9 +683,10 @@ bool DialogLanguageModes::updateCurrentItem(QListWidgetItem *item) {
 	return true;
 }
 
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogLanguageModes::updateCurrentItem
+ * @return
+ */
 bool DialogLanguageModes::updateCurrentItem() {
 	QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
 	if(selections.size() != 1) {

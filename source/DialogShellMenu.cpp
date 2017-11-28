@@ -10,9 +10,11 @@
 #include <QMessageBox>
 #include <QPushButton>
 
-//------------------------------------------------------------------------------
-// Name: DialogShellMenu
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogShellMenu::DialogShellMenu
+ * @param parent
+ * @param f
+ */
 DialogShellMenu::DialogShellMenu(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f), previous_(nullptr) {
 	ui.setupUi(this);
     ui.editAccelerator->setMaximumSequenceLength(1);
@@ -29,18 +31,20 @@ DialogShellMenu::DialogShellMenu(QWidget *parent, Qt::WindowFlags f) : Dialog(pa
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name: ~DialogShellMenu
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogShellMenu::~DialogShellMenu
+ */
 DialogShellMenu::~DialogShellMenu() noexcept {
 	for(int i = 0; i < ui.listItems->count(); ++i) {
 	    delete itemFromIndex(i);
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name: itemFromIndex
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogShellMenu::itemFromIndex
+ * @param i
+ * @return
+ */
 MenuItem *DialogShellMenu::itemFromIndex(int i) const {
 	if(i < ui.listItems->count()) {
 	    QListWidgetItem* item = ui.listItems->item(i);
@@ -51,9 +55,9 @@ MenuItem *DialogShellMenu::itemFromIndex(int i) const {
 	return nullptr;
 }
 
-//------------------------------------------------------------------------------
-// Name: on_buttonNew_clicked
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogShellMenu::on_buttonNew_clicked
+ */
 void DialogShellMenu::on_buttonNew_clicked() {
 
     // if the list isn't empty, then make sure we've updated the current one
@@ -73,9 +77,9 @@ void DialogShellMenu::on_buttonNew_clicked() {
 	ui.listItems->setCurrentItem(item);
 }
 
-//------------------------------------------------------------------------------
-// Name: on_buttonCopy_clicked
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogShellMenu::on_buttonCopy_clicked
+ */
 void DialogShellMenu::on_buttonCopy_clicked() {
 
 	if(!updateCurrentItem()) {
@@ -98,9 +102,9 @@ void DialogShellMenu::on_buttonCopy_clicked() {
 	ui.listItems->setCurrentItem(newItem);
 }
 
-//------------------------------------------------------------------------------
-// Name: on_buttonDelete_clicked
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogShellMenu::on_buttonDelete_clicked
+ */
 void DialogShellMenu::on_buttonDelete_clicked() {
 
 	QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
@@ -121,9 +125,9 @@ void DialogShellMenu::on_buttonDelete_clicked() {
 	on_listItems_itemSelectionChanged();
 }
 
-//------------------------------------------------------------------------------
-// Name: on_buttonUp_clicked
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogShellMenu::on_buttonUp_clicked
+ */
 void DialogShellMenu::on_buttonUp_clicked() {
 
 	QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
@@ -141,9 +145,9 @@ void DialogShellMenu::on_buttonUp_clicked() {
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name: on_buttonDown_clicked
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogShellMenu::on_buttonDown_clicked
+ */
 void DialogShellMenu::on_buttonDown_clicked() {
 
 	QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
@@ -161,9 +165,9 @@ void DialogShellMenu::on_buttonDown_clicked() {
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name: on_listItems_itemSelectionChanged
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogShellMenu::on_listItems_itemSelectionChanged
+ */
 void DialogShellMenu::on_listItems_itemSelectionChanged() {
 
 	QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
@@ -287,20 +291,19 @@ void DialogShellMenu::on_listItems_itemSelectionChanged() {
 	previous_ = current;
 }
 
-
-
-//------------------------------------------------------------------------------
-// Name: on_buttonBox_clicked
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogShellMenu::on_buttonBox_clicked
+ * @param button
+ */
 void DialogShellMenu::on_buttonBox_clicked(QAbstractButton *button) {
 	if(ui.buttonBox->standardButton(button) == QDialogButtonBox::Apply) {
 		applyDialogChanges();
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name: on_buttonBox_accepted
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogShellMenu::on_buttonBox_accepted
+ */
 void DialogShellMenu::on_buttonBox_accepted() {
 	// Read the dialog fields, and update the menus
 	if (!applyDialogChanges()) {
@@ -395,9 +398,10 @@ QString DialogShellMenu::ensureNewline(const QString &string) {
 	return string + QLatin1Char('\n');
 }
 
-//------------------------------------------------------------------------------
-// Name: applyDialogChanges
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogShellMenu::applyDialogChanges
+ * @return
+ */
 bool DialogShellMenu::applyDialogChanges() {
 
 	// Test compile the macro
@@ -444,16 +448,19 @@ bool DialogShellMenu::applyDialogChanges() {
 	return true;
 }
 
-//------------------------------------------------------------------------------
-// Name: on_radioToSameDocument_toggled
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogShellMenu::on_radioToSameDocument_toggled
+ * @param checked
+ */
 void DialogShellMenu::on_radioToSameDocument_toggled(bool checked) {
 	ui.checkReplaceInput->setEnabled(checked);
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogShellMenu::updateCurrentItem
+ * @param item
+ * @return
+ */
 bool DialogShellMenu::updateCurrentItem(QListWidgetItem *item) {
 	// Get the current contents of the "patterns" dialog fields 
     auto ptr = readDialogFields(Mode::Verbose);
@@ -470,9 +477,10 @@ bool DialogShellMenu::updateCurrentItem(QListWidgetItem *item) {
 	return true;
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogShellMenu::updateCurrentItem
+ * @return
+ */
 bool DialogShellMenu::updateCurrentItem() {
 	QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
 	if(selections.size() != 1) {
@@ -483,9 +491,11 @@ bool DialogShellMenu::updateCurrentItem() {
 	return updateCurrentItem(selection);	
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogShellMenu::checkCurrent
+ * @param mode
+ * @return
+ */
 bool DialogShellMenu::checkCurrent(Mode mode) {
     if(auto ptr = readDialogFields(mode)) {
 		return true;

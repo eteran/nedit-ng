@@ -3,9 +3,11 @@
 #include <QKeyEvent>
 #include <QtDebug>
 
-//------------------------------------------------------------------------------
-// name:
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogExecuteCommand::DialogExecuteCommand
+ * @param parent
+ * @param f
+ */
 DialogExecuteCommand::DialogExecuteCommand(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f), historyIndex_(0) {
 	ui.setupUi(this);
 
@@ -13,9 +15,10 @@ DialogExecuteCommand::DialogExecuteCommand(QWidget *parent, Qt::WindowFlags f) :
 	history_ << QLatin1String("");
 }
 
-//------------------------------------------------------------------------------
-// name:
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogExecuteCommand::keyPressEvent
+ * @param event
+ */
 void DialogExecuteCommand::keyPressEvent(QKeyEvent *event) {
 	if(ui.textCommand->hasFocus()) {
 		int index = historyIndex_;
@@ -43,18 +46,19 @@ void DialogExecuteCommand::keyPressEvent(QKeyEvent *event) {
 }
 
 
-//------------------------------------------------------------------------------
-// name:
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogExecuteCommand::showEvent
+ * @param event
+ */
 void DialogExecuteCommand::showEvent(QShowEvent *event) {
 	historyIndex_ = 0;
 	ui.textCommand->setText(QString());
     Dialog::showEvent(event);
 }
 
-//------------------------------------------------------------------------------
-// name:
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogExecuteCommand::on_buttonBox_accepted
+ */
 void DialogExecuteCommand::on_buttonBox_accepted() {
 
 	QString s = ui.textCommand->text();

@@ -14,9 +14,12 @@
 #include <QtDebug>
 #include <memory>
 
-//------------------------------------------------------------------------------
-// name:
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogFind::DialogFind
+ * @param window
+ * @param document
+ * @param f
+ */
 DialogFind::DialogFind(MainWindow *window, DocumentWidget *document, Qt::WindowFlags f) : Dialog(window, f), window_(window), document_(document) {
     ui.setupUi(this);
 
@@ -24,17 +27,19 @@ DialogFind::DialogFind(MainWindow *window, DocumentWidget *document, Qt::WindowF
     lastLiteralCase_ = false;
 }
 
-//------------------------------------------------------------------------------
-// name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogFind::showEvent
+ * @param event
+ */
 void DialogFind::showEvent(QShowEvent *event) {    
 	ui.textFind->setFocus();
     Dialog::showEvent(event);
 }
 
-//------------------------------------------------------------------------------
-// name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogFind::keyPressEvent
+ * @param event
+ */
 void DialogFind::keyPressEvent(QKeyEvent *event) {
 
 	if(ui.textFind->hasFocus()) {
@@ -80,16 +85,18 @@ void DialogFind::keyPressEvent(QKeyEvent *event) {
 	QDialog::keyPressEvent(event);
 }
 
-//------------------------------------------------------------------------------
-// name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogFind::on_checkBackward_toggled
+ * @param checked
+ */
 void DialogFind::on_checkBackward_toggled(bool checked) {
 	Q_UNUSED(checked);
 }
 
-//------------------------------------------------------------------------------
-// name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogFind::on_checkKeep_toggled
+ * @param checked
+ */
 void DialogFind::on_checkKeep_toggled(bool checked) {
 	if (checked) {
         setWindowTitle(tr("Find (in %1)").arg(document_->filename_));
@@ -98,17 +105,18 @@ void DialogFind::on_checkKeep_toggled(bool checked) {
 	}
 }
 
-//------------------------------------------------------------------------------
-// name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogFind::fUpdateActionButtons
+ */
 void DialogFind::fUpdateActionButtons() {
 	bool buttonState = !ui.textFind->text().isEmpty();
 	ui.buttonFind->setEnabled(buttonState);
 }
 
-//------------------------------------------------------------------------------
-// name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogFind::on_textFind_textChanged
+ * @param text
+ */
 void DialogFind::on_textFind_textChanged(const QString &text) {
 	Q_UNUSED(text);
 	fUpdateActionButtons();
@@ -186,9 +194,10 @@ void DialogFind::initToggleButtons(SearchType searchType) {
 	}
 }
 
-//------------------------------------------------------------------------------
-// name:
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogFind::setTextField
+ * @param document
+ */
 void DialogFind::setTextField(DocumentWidget *document) {
 
     Q_UNUSED(document);
@@ -207,9 +216,9 @@ void DialogFind::setTextField(DocumentWidget *document) {
     ui.textFind->setText(initialText);
 }
 
-//------------------------------------------------------------------------------
-// name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogFind::on_buttonFind_clicked
+ */
 void DialogFind::on_buttonFind_clicked() {
 
     Direction direction;
@@ -288,9 +297,10 @@ bool DialogFind::getFindDlogInfoEx(Direction *direction, QString *searchString, 
     return true;
 }
 
-//------------------------------------------------------------------------------
-// name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogFind::on_checkRegex_toggled
+ * @param checked
+ */
 void DialogFind::on_checkRegex_toggled(bool checked) {
 
 	bool searchRegex     = checked;
@@ -311,9 +321,10 @@ void DialogFind::on_checkRegex_toggled(bool checked) {
 	ui.checkWord->setEnabled(!searchRegex);
 }
 
-//------------------------------------------------------------------------------
-// name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogFind::on_checkCase_toggled
+ * @param checked
+ */
 void DialogFind::on_checkCase_toggled(bool checked) {
 
 	bool searchCaseSense = checked;
@@ -327,16 +338,18 @@ void DialogFind::on_checkCase_toggled(bool checked) {
 	}
 }
 
-//------------------------------------------------------------------------------
-// name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogFind::keepDialog
+ * @return
+ */
 bool DialogFind::keepDialog() const {
 	return ui.checkKeep->isChecked();
 }
 
-//------------------------------------------------------------------------------
-// name:
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogFind::setDocument
+ * @param document
+ */
 void DialogFind::setDocument(DocumentWidget *document) {
     document_ = document;
     if(keepDialog()) {

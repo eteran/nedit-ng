@@ -9,18 +9,20 @@
 #include "smartIndent.h"
 #include <QMessageBox>
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogSmartIndentCommon::DialogSmartIndentCommon
+ * @param parent
+ * @param f
+ */
 DialogSmartIndentCommon::DialogSmartIndentCommon(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f) {
 	ui.setupUi(this);
 	
 	ui.editCode->setPlainText(CommonMacros);
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogSmartIndentCommon::on_buttonOK_clicked
+ */
 void DialogSmartIndentCommon::on_buttonOK_clicked() {
 	// change the macro 
 	if(updateSmartIndentCommonData()) {
@@ -28,26 +30,26 @@ void DialogSmartIndentCommon::on_buttonOK_clicked() {
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogSmartIndentCommon::on_buttonApply_clicked
+ */
 void DialogSmartIndentCommon::on_buttonApply_clicked() {
 	// change the macro 
 	updateSmartIndentCommonData();
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogSmartIndentCommon::on_buttonCheck_clicked
+ */
 void DialogSmartIndentCommon::on_buttonCheck_clicked() {
 	if (checkSmartIndentCommonDialogData()) {
 		QMessageBox::information(this, tr("Macro compiled"), tr("Macros compiled without error"));
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogSmartIndentCommon::on_buttonRestore_clicked
+ */
 void DialogSmartIndentCommon::on_buttonRestore_clicked() {
     int resp = QMessageBox::question(
                 this,
@@ -66,9 +68,10 @@ void DialogSmartIndentCommon::on_buttonRestore_clicked() {
 	ui.editCode->setPlainText(CommonMacros);
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogSmartIndentCommon::checkSmartIndentCommonDialogData
+ * @return
+ */
 bool DialogSmartIndentCommon::checkSmartIndentCommonDialogData() {
 
 	QString code = ui.editCode->toPlainText();

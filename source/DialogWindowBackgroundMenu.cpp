@@ -10,9 +10,11 @@
 #include "userCmds.h"
 #include <QMessageBox>
 
-//------------------------------------------------------------------------------
-// Name: DialogWindowBackgroundMenu
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogWindowBackgroundMenu::DialogWindowBackgroundMenu
+ * @param parent
+ * @param f
+ */
 DialogWindowBackgroundMenu::DialogWindowBackgroundMenu(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f), previous_(nullptr) {
 	ui.setupUi(this);
     ui.editAccelerator->setMaximumSequenceLength(1);
@@ -29,18 +31,20 @@ DialogWindowBackgroundMenu::DialogWindowBackgroundMenu(QWidget *parent, Qt::Wind
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name: ~DialogWindowBackgroundMenu
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogWindowBackgroundMenu::~DialogWindowBackgroundMenu
+ */
 DialogWindowBackgroundMenu::~DialogWindowBackgroundMenu() noexcept {
 	for(int i = 0; i < ui.listItems->count(); ++i) {
 	    delete itemFromIndex(i);
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name: itemFromIndex
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogWindowBackgroundMenu::itemFromIndex
+ * @param i
+ * @return
+ */
 MenuItem *DialogWindowBackgroundMenu::itemFromIndex(int i) const {
 	if(i < ui.listItems->count()) {
 	    QListWidgetItem* item = ui.listItems->item(i);
@@ -51,9 +55,9 @@ MenuItem *DialogWindowBackgroundMenu::itemFromIndex(int i) const {
 	return nullptr;
 }
 
-//------------------------------------------------------------------------------
-// Name: on_buttonNew_clicked
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogWindowBackgroundMenu::on_buttonNew_clicked
+ */
 void DialogWindowBackgroundMenu::on_buttonNew_clicked() {
 
     // if the list isn't empty, then make sure we've updated the current one
@@ -73,9 +77,9 @@ void DialogWindowBackgroundMenu::on_buttonNew_clicked() {
 	ui.listItems->setCurrentItem(item);
 }
 
-//------------------------------------------------------------------------------
-// Name: on_buttonCopy_clicked
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogWindowBackgroundMenu::on_buttonCopy_clicked
+ */
 void DialogWindowBackgroundMenu::on_buttonCopy_clicked() {
 
 	if(!updateCurrentItem()) {
@@ -98,9 +102,9 @@ void DialogWindowBackgroundMenu::on_buttonCopy_clicked() {
 	ui.listItems->setCurrentItem(newItem);
 }
 
-//------------------------------------------------------------------------------
-// Name: on_buttonDelete_clicked
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogWindowBackgroundMenu::on_buttonDelete_clicked
+ */
 void DialogWindowBackgroundMenu::on_buttonDelete_clicked() {
 
 	QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
@@ -121,9 +125,9 @@ void DialogWindowBackgroundMenu::on_buttonDelete_clicked() {
 	on_listItems_itemSelectionChanged();
 }
 
-//------------------------------------------------------------------------------
-// Name: on_buttonPasteLRMacro_clicked
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogWindowBackgroundMenu::on_buttonPasteLRMacro_clicked
+ */
 void DialogWindowBackgroundMenu::on_buttonPasteLRMacro_clicked() {
 
     QString replayMacro = CommandRecorder::getInstance()->replayMacro;
@@ -135,9 +139,9 @@ void DialogWindowBackgroundMenu::on_buttonPasteLRMacro_clicked() {
     ui.editMacro->insertPlainText(replayMacro);
 }
 
-//------------------------------------------------------------------------------
-// Name: on_buttonUp_clicked
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogWindowBackgroundMenu::on_buttonUp_clicked
+ */
 void DialogWindowBackgroundMenu::on_buttonUp_clicked() {
 
 	QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
@@ -155,9 +159,9 @@ void DialogWindowBackgroundMenu::on_buttonUp_clicked() {
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name: on_buttonDown_clicked
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogWindowBackgroundMenu::on_buttonDown_clicked
+ */
 void DialogWindowBackgroundMenu::on_buttonDown_clicked() {
 
 	QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
@@ -175,9 +179,9 @@ void DialogWindowBackgroundMenu::on_buttonDown_clicked() {
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name: on_listItems_itemSelectionChanged
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogWindowBackgroundMenu::on_listItems_itemSelectionChanged
+ */
 void DialogWindowBackgroundMenu::on_listItems_itemSelectionChanged() {
 
 	QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
@@ -261,25 +265,27 @@ void DialogWindowBackgroundMenu::on_listItems_itemSelectionChanged() {
 	previous_ = current;
 }
 
-//------------------------------------------------------------------------------
-// Name: on_buttonCheck_clicked
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogWindowBackgroundMenu::on_buttonCheck_clicked
+ */
 void DialogWindowBackgroundMenu::on_buttonCheck_clicked() {
 	if (checkMacro(false)) {
-		QMessageBox::information(this, tr("Macro"), tr("Macro compiled without error"));
+        QMessageBox::information(this,
+                                 tr("Macro"),
+                                 tr("Macro compiled without error"));
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name: on_buttonApply_clicked
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogWindowBackgroundMenu::on_buttonApply_clicked
+ */
 void DialogWindowBackgroundMenu::on_buttonApply_clicked() {
 	applyDialogChanges();
 }
 
-//------------------------------------------------------------------------------
-// Name: on_buttonOK_clicked
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogWindowBackgroundMenu::on_buttonOK_clicked
+ */
 void DialogWindowBackgroundMenu::on_buttonOK_clicked() {
 
 	// Read the dialog fields, and update the menus
@@ -290,9 +296,11 @@ void DialogWindowBackgroundMenu::on_buttonOK_clicked() {
 	accept();
 }
 
-//------------------------------------------------------------------------------
-// Name: checkMacro
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogWindowBackgroundMenu::checkMacro
+ * @param silent
+ * @return
+ */
 bool DialogWindowBackgroundMenu::checkMacro(bool silent) {
 
 	MenuItem *f = readDialogFields(silent);
@@ -364,9 +372,12 @@ MenuItem *DialogWindowBackgroundMenu::readDialogFields(bool silent) {
 	return f;
 }
 
-//------------------------------------------------------------------------------
-// Name: checkMacroText
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogWindowBackgroundMenu::checkMacroText
+ * @param macro
+ * @param silent
+ * @return
+ */
 bool DialogWindowBackgroundMenu::checkMacroText(const QString &macro, bool silent) {
 
 	QString errMsg;
@@ -418,9 +429,10 @@ QString DialogWindowBackgroundMenu::ensureNewline(const QString &string) {
 	return string + QLatin1Char('\n');
 }
 
-//------------------------------------------------------------------------------
-// Name: applyDialogChanges
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogWindowBackgroundMenu::applyDialogChanges
+ * @return
+ */
 bool DialogWindowBackgroundMenu::applyDialogChanges() {
 
 	// Test compile the macro
@@ -465,13 +477,19 @@ bool DialogWindowBackgroundMenu::applyDialogChanges() {
 	return true;
 }
 
+/**
+ * @brief DialogWindowBackgroundMenu::setPasteReplayEnabled
+ * @param enabled
+ */
 void DialogWindowBackgroundMenu::setPasteReplayEnabled(bool enabled) {
 	ui.buttonPasteLRMacro->setEnabled(enabled);
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogWindowBackgroundMenu::updateCurrentItem
+ * @param item
+ * @return
+ */
 bool DialogWindowBackgroundMenu::updateCurrentItem(QListWidgetItem *item) {
 	// Get the current contents of the "patterns" dialog fields 
 	auto ptr = readDialogFields(false);
@@ -488,9 +506,10 @@ bool DialogWindowBackgroundMenu::updateCurrentItem(QListWidgetItem *item) {
 	return true;
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogWindowBackgroundMenu::updateCurrentItem
+ * @return
+ */
 bool DialogWindowBackgroundMenu::updateCurrentItem() {
 	QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
 	if(selections.size() != 1) {

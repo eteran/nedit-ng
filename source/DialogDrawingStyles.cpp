@@ -13,9 +13,11 @@
 #include <QRegExpValidator>
 #include <QtDebug>
 
-//------------------------------------------------------------------------------
-// Name: DialogDrawingStyles
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogDrawingStyles::DialogDrawingStyles
+ * @param parent
+ * @param f
+ */
 DialogDrawingStyles::DialogDrawingStyles(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f), previous_(nullptr) {
 	ui.setupUi(this);
 
@@ -37,9 +39,9 @@ DialogDrawingStyles::DialogDrawingStyles(QWidget *parent, Qt::WindowFlags f) : D
 	ui.editName->setValidator(validator);
 }
 
-//------------------------------------------------------------------------------
-// Name: ~DialogDrawingStyles
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogDrawingStyles::~DialogDrawingStyles
+ */
 DialogDrawingStyles::~DialogDrawingStyles() noexcept {
 
 	for(int i = 0; i < ui.listItems->count(); ++i) {
@@ -47,9 +49,11 @@ DialogDrawingStyles::~DialogDrawingStyles() noexcept {
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name: itemFromIndex
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogDrawingStyles::itemFromIndex
+ * @param i
+ * @return
+ */
 HighlightStyle *DialogDrawingStyles::itemFromIndex(int i) const {
 	if(i < ui.listItems->count()) {
 	    QListWidgetItem* item = ui.listItems->item(i);
@@ -60,9 +64,10 @@ HighlightStyle *DialogDrawingStyles::itemFromIndex(int i) const {
 	return nullptr;
 }
 
-//------------------------------------------------------------------------------
-// Name: setStyleByName
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogDrawingStyles::setStyleByName
+ * @param name
+ */
 void DialogDrawingStyles::setStyleByName(const QString &name) {
 
 	QList<QListWidgetItem *> items = ui.listItems->findItems(name, Qt::MatchFixedString);
@@ -73,9 +78,9 @@ void DialogDrawingStyles::setStyleByName(const QString &name) {
 	ui.listItems->setCurrentItem(items[0]);
 }
 
-//------------------------------------------------------------------------------
-// Name: on_buttonNew_clicked
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogDrawingStyles::on_buttonNew_clicked
+ */
 void DialogDrawingStyles::on_buttonNew_clicked() {
 
 	if(!updateCurrentItem()) {
@@ -91,9 +96,9 @@ void DialogDrawingStyles::on_buttonNew_clicked() {
 	ui.listItems->setCurrentItem(item);
 }
 
-//------------------------------------------------------------------------------
-// Name: on_buttonCopy_clicked
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogDrawingStyles::on_buttonCopy_clicked
+ */
 void DialogDrawingStyles::on_buttonCopy_clicked() {
 
 	if(!updateCurrentItem()) {
@@ -116,9 +121,9 @@ void DialogDrawingStyles::on_buttonCopy_clicked() {
 	ui.listItems->setCurrentItem(newItem);
 }
 
-//------------------------------------------------------------------------------
-// Name: on_buttonDelete_clicked
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogDrawingStyles::on_buttonDelete_clicked
+ */
 void DialogDrawingStyles::on_buttonDelete_clicked() {
 
 	QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
@@ -140,9 +145,9 @@ void DialogDrawingStyles::on_buttonDelete_clicked() {
 	on_listItems_itemSelectionChanged();
 }
 
-//------------------------------------------------------------------------------
-// Name: on_buttonUp_clicked
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogDrawingStyles::on_buttonUp_clicked
+ */
 void DialogDrawingStyles::on_buttonUp_clicked() {
 
     QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
@@ -161,9 +166,9 @@ void DialogDrawingStyles::on_buttonUp_clicked() {
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name: on_buttonDown_clicked
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogDrawingStyles::on_buttonDown_clicked
+ */
 void DialogDrawingStyles::on_buttonDown_clicked() {
 
 	QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
@@ -182,9 +187,9 @@ void DialogDrawingStyles::on_buttonDown_clicked() {
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name: on_listItems_itemSelectionChanged
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogDrawingStyles::on_listItems_itemSelectionChanged
+ */
 void DialogDrawingStyles::on_listItems_itemSelectionChanged() {
 
 	QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
@@ -284,9 +289,9 @@ void DialogDrawingStyles::on_listItems_itemSelectionChanged() {
 	previous_ = current;
 }
 
-//------------------------------------------------------------------------------
-// Name: on_buttonBox_accepted
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogDrawingStyles::on_buttonBox_accepted
+ */
 void DialogDrawingStyles::on_buttonBox_accepted() {
 
 	if (!updateHSList()) {
@@ -297,18 +302,21 @@ void DialogDrawingStyles::on_buttonBox_accepted() {
 }
 
 
-//------------------------------------------------------------------------------
-// Name: on_buttonBox_clicked
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogDrawingStyles::on_buttonBox_clicked
+ * @param button
+ */
 void DialogDrawingStyles::on_buttonBox_clicked(QAbstractButton *button) {
 	if(ui.buttonBox->standardButton(button) == QDialogButtonBox::Apply) {
 		updateHSList();
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name: checkCurrent
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogDrawingStyles::checkCurrent
+ * @param mode
+ * @return
+ */
 bool DialogDrawingStyles::checkCurrent(Mode mode) {
     if(auto ptr = readDialogFields(mode)) {
 		return true;
@@ -316,9 +324,11 @@ bool DialogDrawingStyles::checkCurrent(Mode mode) {
 	return false;
 }
 
-//------------------------------------------------------------------------------
-// Name: readDialogFields
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogDrawingStyles::readDialogFields
+ * @param mode
+ * @return
+ */
 std::unique_ptr<HighlightStyle> DialogDrawingStyles::readDialogFields(Mode mode) {
 
    	// Allocate a language mode structure to return 
@@ -446,9 +456,11 @@ bool DialogDrawingStyles::updateHSList() {
 	return true;
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogDrawingStyles::updateCurrentItem
+ * @param item
+ * @return
+ */
 bool DialogDrawingStyles::updateCurrentItem(QListWidgetItem *item) {
 	// Get the current contents of the "patterns" dialog fields 
     auto ptr = readDialogFields(Mode::Verbose);
@@ -465,9 +477,10 @@ bool DialogDrawingStyles::updateCurrentItem(QListWidgetItem *item) {
 	return true;
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogDrawingStyles::updateCurrentItem
+ * @return
+ */
 bool DialogDrawingStyles::updateCurrentItem() {
 	QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
 	if(selections.size() != 1) {

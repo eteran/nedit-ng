@@ -14,9 +14,12 @@
 #include "Help.h"
 #include <QMessageBox>
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogSmartIndent::DialogSmartIndent
+ * @param document
+ * @param parent
+ * @param f
+ */
 DialogSmartIndent::DialogSmartIndent(DocumentWidget *document, QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f) {
 	ui.setupUi(this);
 		
@@ -29,9 +32,9 @@ DialogSmartIndent::DialogSmartIndent(DocumentWidget *document, QWidget *parent, 
     setSmartIndentDialogData(findIndentSpec(languageMode_));
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogSmartIndent::updateLanguageModes
+ */
 void DialogSmartIndent::updateLanguageModes() {
 
 	const QString languageMode = languageMode_;
@@ -43,9 +46,10 @@ void DialogSmartIndent::updateLanguageModes() {
 	setLanguageMode(languageMode);
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogSmartIndent::setLanguageMode
+ * @param s
+ */
 void DialogSmartIndent::setLanguageMode(const QString &s) {
 	languageMode_ = s;
 	int index = ui.comboLanguageMode->findText(languageMode_, Qt::MatchFixedString | Qt::MatchCaseSensitive);
@@ -54,33 +58,34 @@ void DialogSmartIndent::setLanguageMode(const QString &s) {
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogSmartIndent::on_comboLanguageMode_currentIndexChanged
+ * @param text
+ */
 void DialogSmartIndent::on_comboLanguageMode_currentIndexChanged(const QString &text) {
 	languageMode_ = text;
     setSmartIndentDialogData(findIndentSpec(text));
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogSmartIndent::on_buttonCommon_clicked
+ */
 void DialogSmartIndent::on_buttonCommon_clicked() {
 	auto dialog = std::make_unique<DialogSmartIndentCommon>(this);
 	dialog->exec();
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogSmartIndent::on_buttonLanguageMode_clicked
+ */
 void DialogSmartIndent::on_buttonLanguageMode_clicked() {
 	auto dialog = std::make_unique<DialogLanguageModes>(this);
 	dialog->exec();
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogSmartIndent::on_buttonOK_clicked
+ */
 void DialogSmartIndent::on_buttonOK_clicked() {
 	// change the macro 
 	if (!updateSmartIndentData()) {
@@ -90,25 +95,27 @@ void DialogSmartIndent::on_buttonOK_clicked() {
 	accept();
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogSmartIndent::on_buttonApply_clicked
+ */
 void DialogSmartIndent::on_buttonApply_clicked() {
 	updateSmartIndentData();
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogSmartIndent::on_buttonCheck_clicked
+ */
 void DialogSmartIndent::on_buttonCheck_clicked() {
 	if (checkSmartIndentDialogData()) {
-		QMessageBox::information(this, tr("Macro compiled"), tr("Macros compiled without error"));
+        QMessageBox::information(this,
+                                 tr("Macro compiled"),
+                                 tr("Macros compiled without error"));
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogSmartIndent::on_buttonDelete_clicked
+ */
 void DialogSmartIndent::on_buttonDelete_clicked() {
 
 	// NOTE(eteran): originally was "Yes, Delete"
@@ -132,9 +139,9 @@ void DialogSmartIndent::on_buttonDelete_clicked() {
 	setSmartIndentDialogData(nullptr);
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogSmartIndent::on_buttonRestore_clicked
+ */
 void DialogSmartIndent::on_buttonRestore_clicked() {
 
     const SmartIndentEntry *defaultIS = findDefaultIndentSpec(languageMode_);
@@ -174,16 +181,17 @@ void DialogSmartIndent::on_buttonRestore_clicked() {
     setSmartIndentDialogData(defaultIS);
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogSmartIndent::on_buttonHelp_clicked
+ */
 void DialogSmartIndent::on_buttonHelp_clicked() {
     Help::displayTopic(Help::Topic::HELP_SMART_INDENT);
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogSmartIndent::setSmartIndentDialogData
+ * @param is
+ */
 void DialogSmartIndent::setSmartIndentDialogData(const SmartIndentEntry *is) {
 
 	if(!is) {
@@ -250,12 +258,13 @@ bool DialogSmartIndent::updateSmartIndentData() {
 	return true;
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogSmartIndent::checkSmartIndentDialogData
+ * @return
+ */
 bool DialogSmartIndent::checkSmartIndentDialogData() {
 
-	// BUGFIX(eteran): make it not check if all fields are empty...
+    // BUG(eteran): make it not check if all fields are empty...
 
 	// Check the initialization macro 
 	QString initText = ui.editInit->toPlainText();
@@ -293,7 +302,6 @@ bool DialogSmartIndent::checkSmartIndentDialogData() {
 
 	FreeProgram(prog);
 
-
 	// Test compile the modify macro 
 	QString modMacroText = ui.editModMacro->toPlainText();
 	if (!modMacroText.isEmpty()) {
@@ -317,9 +325,10 @@ bool DialogSmartIndent::checkSmartIndentDialogData() {
 	return true;
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogSmartIndent::getSmartIndentDialogData
+ * @return
+ */
 std::unique_ptr<SmartIndentEntry> DialogSmartIndent::getSmartIndentDialogData() {
 
 	auto is = std::make_unique<SmartIndentEntry>();

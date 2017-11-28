@@ -752,9 +752,9 @@ regexp::regexp(view::string_view exp, int defaultFlags) {
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
+/**
+ * @brief regexp::~regexp
+ */
 regexp::~regexp() {
 	delete [] program;
 }
@@ -2628,30 +2628,48 @@ uint8_t *back_ref(const char *c, int *flag_param, int emit) {
  *  Regex execution related code
  *======================================================================*/
 
-//------------------------------------------------------------------------------
-// Name: execute
-//------------------------------------------------------------------------------
+/**
+ * @brief regexp::execute
+ * @param string
+ * @param reverse
+ * @return
+ */
 bool regexp::execute(view::string_view string, bool reverse) {
 	return execute(string, 0, reverse);
 }
 
-//------------------------------------------------------------------------------
-// Name: execute
-//------------------------------------------------------------------------------
+/**
+ * @brief regexp::execute
+ * @param string
+ * @param offset
+ * @param reverse
+ * @return
+ */
 bool regexp::execute(view::string_view string, size_t offset, bool reverse) {
 	return execute(string, offset, nullptr, reverse);
 }
 
-//------------------------------------------------------------------------------
-// Name: execute
-//------------------------------------------------------------------------------
+/**
+ * @brief regexp::execute
+ * @param string
+ * @param offset
+ * @param delimiters
+ * @param reverse
+ * @return
+ */
 bool regexp::execute(view::string_view string, size_t offset, const char *delimiters, bool reverse) {
 	return execute(string, offset, string.size(), delimiters, reverse);
 }
 
-//------------------------------------------------------------------------------
-// Name: execute
-//------------------------------------------------------------------------------
+/**
+ * @brief regexp::execute
+ * @param string
+ * @param offset
+ * @param end_offset
+ * @param delimiters
+ * @param reverse
+ * @return
+ */
 bool regexp::execute(view::string_view string, size_t offset, size_t end_offset, const char *delimiters, bool reverse) {
 	return execute(
 		string,
@@ -2663,9 +2681,17 @@ bool regexp::execute(view::string_view string, size_t offset, size_t end_offset,
 		reverse);
 }
 
-//------------------------------------------------------------------------------
-// Name: execute
-//------------------------------------------------------------------------------
+/**
+ * @brief regexp::execute
+ * @param string
+ * @param offset
+ * @param end_offset
+ * @param prev
+ * @param succ
+ * @param delimiters
+ * @param reverse
+ * @return
+ */
 bool regexp::execute(view::string_view string, size_t offset, size_t end_offset, char prev, char succ, const char *delimiters, bool reverse) {
 	assert(offset <= end_offset);
 	assert(end_offset <= string.size());

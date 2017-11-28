@@ -10,9 +10,11 @@
 #include "userCmds.h"
 #include <QMessageBox>
 
-//------------------------------------------------------------------------------
-// Name: DialogMacros
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogMacros::DialogMacros
+ * @param parent
+ * @param f
+ */
 DialogMacros::DialogMacros(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f), previous_(nullptr) {
 	ui.setupUi(this);
     ui.editAccelerator->setMaximumSequenceLength(1);
@@ -29,18 +31,20 @@ DialogMacros::DialogMacros(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, 
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name: ~DialogMacros
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogMacros::~DialogMacros
+ */
 DialogMacros::~DialogMacros() noexcept {
 	for(int i = 0; i < ui.listItems->count(); ++i) {
 	    delete itemFromIndex(i);
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name: itemFromIndex
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogMacros::itemFromIndex
+ * @param i
+ * @return
+ */
 MenuItem *DialogMacros::itemFromIndex(int i) const {
 	if(i < ui.listItems->count()) {
 	    QListWidgetItem* item = ui.listItems->item(i);
@@ -51,9 +55,9 @@ MenuItem *DialogMacros::itemFromIndex(int i) const {
 	return nullptr;
 }
 
-//------------------------------------------------------------------------------
-// Name: on_buttonNew_clicked
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogMacros::on_buttonNew_clicked
+ */
 void DialogMacros::on_buttonNew_clicked() {
 
     // if the list isn't empty, then make sure we've updated the current one
@@ -73,9 +77,9 @@ void DialogMacros::on_buttonNew_clicked() {
 	ui.listItems->setCurrentItem(item);
 }
 
-//------------------------------------------------------------------------------
-// Name: on_buttonCopy_clicked
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogMacros::on_buttonCopy_clicked
+ */
 void DialogMacros::on_buttonCopy_clicked() {
 
 	if(!updateCurrentItem()) {
@@ -98,9 +102,9 @@ void DialogMacros::on_buttonCopy_clicked() {
 	ui.listItems->setCurrentItem(newItem);
 }
 
-//------------------------------------------------------------------------------
-// Name: on_buttonDelete_clicked
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogMacros::on_buttonDelete_clicked
+ */
 void DialogMacros::on_buttonDelete_clicked() {
 
 	QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
@@ -122,9 +126,9 @@ void DialogMacros::on_buttonDelete_clicked() {
 
 }
 
-//------------------------------------------------------------------------------
-// Name: on_buttonPasteLRMacro_clicked
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogMacros::on_buttonPasteLRMacro_clicked
+ */
 void DialogMacros::on_buttonPasteLRMacro_clicked() {
 
     QString replayMacro = CommandRecorder::getInstance()->replayMacro;
@@ -135,9 +139,9 @@ void DialogMacros::on_buttonPasteLRMacro_clicked() {
     ui.editMacro->insertPlainText(replayMacro);
 }
 
-//------------------------------------------------------------------------------
-// Name: on_buttonUp_clicked
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogMacros::on_buttonUp_clicked
+ */
 void DialogMacros::on_buttonUp_clicked() {
 
 	QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
@@ -155,9 +159,9 @@ void DialogMacros::on_buttonUp_clicked() {
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name: on_buttonDown_clicked
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogMacros::on_buttonDown_clicked
+ */
 void DialogMacros::on_buttonDown_clicked() {
 
 	QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
@@ -175,9 +179,9 @@ void DialogMacros::on_buttonDown_clicked() {
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name: on_listItems_itemSelectionChanged
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogMacros::on_listItems_itemSelectionChanged
+ */
 void DialogMacros::on_listItems_itemSelectionChanged() {
 
 	QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
@@ -261,25 +265,25 @@ void DialogMacros::on_listItems_itemSelectionChanged() {
 	previous_ = current;
 }
 
-//------------------------------------------------------------------------------
-// Name: on_buttonCheck_clicked
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogMacros::on_buttonCheck_clicked
+ */
 void DialogMacros::on_buttonCheck_clicked() {
     if (checkMacro(Mode::Verbose)) {
 		QMessageBox::information(this, tr("Macro"), tr("Macro compiled without error"));
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name: on_buttonApply_clicked
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogMacros::on_buttonApply_clicked
+ */
 void DialogMacros::on_buttonApply_clicked() {
 	applyDialogChanges();
 }
 
-//------------------------------------------------------------------------------
-// Name: on_buttonOK_clicked
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogMacros::on_buttonOK_clicked
+ */
 void DialogMacros::on_buttonOK_clicked() {
 
 	// Read the dialog fields, and update the menus
@@ -290,9 +294,11 @@ void DialogMacros::on_buttonOK_clicked() {
 	accept();
 }
 
-//------------------------------------------------------------------------------
-// Name: checkMacro
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogMacros::checkMacro
+ * @param mode
+ * @return
+ */
 bool DialogMacros::checkMacro(Mode mode) {
 
     auto f = readDialogFields(mode);
@@ -362,9 +368,12 @@ std::unique_ptr<MenuItem> DialogMacros::readDialogFields(Mode mode) {
 	return f;
 }
 
-//------------------------------------------------------------------------------
-// Name: checkMacroText
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogMacros::checkMacroText
+ * @param macro
+ * @param mode
+ * @return
+ */
 bool DialogMacros::checkMacroText(const QString &macro, Mode mode) {
 
 	QString errMsg;
@@ -416,9 +425,10 @@ QString DialogMacros::ensureNewline(const QString &string) {
 	return string + QLatin1Char('\n');
 }
 
-//------------------------------------------------------------------------------
-// Name: applyDialogChanges
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogMacros::applyDialogChanges
+ * @return
+ */
 bool DialogMacros::applyDialogChanges() {
 
 	// Test compile the macro
@@ -468,9 +478,11 @@ void DialogMacros::setPasteReplayEnabled(bool enabled) {
 	ui.buttonPasteLRMacro->setEnabled(enabled);
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogMacros::updateCurrentItem
+ * @param item
+ * @return
+ */
 bool DialogMacros::updateCurrentItem(QListWidgetItem *item) {
 	// Get the current contents of the "patterns" dialog fields 
     auto ptr = readDialogFields(Mode::Verbose);
@@ -487,9 +499,10 @@ bool DialogMacros::updateCurrentItem(QListWidgetItem *item) {
 	return true;
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogMacros::updateCurrentItem
+ * @return
+ */
 bool DialogMacros::updateCurrentItem() {
 	QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
 	if(selections.size() != 1) {

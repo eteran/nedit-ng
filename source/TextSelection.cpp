@@ -2,9 +2,11 @@
 #include "TextSelection.h"
 #include <algorithm>
 
-//------------------------------------------------------------------------------
-// Name: setSelection
-//------------------------------------------------------------------------------
+/**
+ * @brief TextSelection::setSelection
+ * @param newStart
+ * @param newEnd
+ */
 void TextSelection::setSelection(int newStart, int newEnd) {
 	selected	= (newStart != newEnd);
 	zeroWidth	= (newStart == newEnd);
@@ -13,9 +15,13 @@ void TextSelection::setSelection(int newStart, int newEnd) {
 	end 		= std::max(newStart, newEnd);
 }
 
-//------------------------------------------------------------------------------
-// Name: setRectSelect
-//------------------------------------------------------------------------------
+/**
+ * @brief TextSelection::setRectSelect
+ * @param newStart
+ * @param newEnd
+ * @param newRectStart
+ * @param newRectEnd
+ */
 void TextSelection::setRectSelect(int newStart, int newEnd, int newRectStart, int newRectEnd) {
 	selected	= (newRectStart < newRectEnd);
 	zeroWidth	= (newRectStart == newRectEnd);
@@ -26,9 +32,15 @@ void TextSelection::setRectSelect(int newStart, int newEnd, int newRectStart, in
 	rectEnd 	= newRectEnd;
 }
 
-//------------------------------------------------------------------------------
-// Name: getSelectionPos
-//------------------------------------------------------------------------------
+/**
+ * @brief TextSelection::getSelectionPos
+ * @param start
+ * @param end
+ * @param isRect
+ * @param rectStart
+ * @param rectEnd
+ * @return
+ */
 int TextSelection::getSelectionPos(int *start, int *end, bool *isRect, int *rectStart, int *rectEnd) const {
 	// Always fill in the parameters (zero-width can be requested too). 
 	*isRect = this->rectangular;
@@ -41,10 +53,14 @@ int TextSelection::getSelectionPos(int *start, int *end, bool *isRect, int *rect
 	return this->selected;
 }
 
-//------------------------------------------------------------------------------
-// Name: updateSelection
-// Desc: Update an individual selection for changes in the corresponding text
-//------------------------------------------------------------------------------
+/**
+ * Update an individual selection for changes in the corresponding text
+ *
+ * @brief TextSelection::updateSelection
+ * @param pos
+ * @param nDeleted
+ * @param nInserted
+ */
 void TextSelection::updateSelection(int pos, int nDeleted, int nInserted) {
 	if ((!selected && !zeroWidth) || pos > end) {
 		return;

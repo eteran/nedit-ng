@@ -3,9 +3,11 @@
 #include <QKeyEvent>
 #include <QtDebug>
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogFilter::DialogFilter
+ * @param parent
+ * @param f
+ */
 DialogFilter::DialogFilter(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f), historyIndex_(0) {
 	ui.setupUi(this);
 	
@@ -13,9 +15,10 @@ DialogFilter::DialogFilter(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, 
 	history_ << QLatin1String("");
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogFilter::keyPressEvent
+ * @param event
+ */
 void DialogFilter::keyPressEvent(QKeyEvent *event) {
 	if(ui.textFilter->hasFocus()) {
 		int index = historyIndex_;
@@ -42,18 +45,19 @@ void DialogFilter::keyPressEvent(QKeyEvent *event) {
 	QDialog::keyPressEvent(event);
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogFilter::showEvent
+ * @param event
+ */
 void DialogFilter::showEvent(QShowEvent *event) {
 	historyIndex_ = 0;
 	ui.textFilter->setText(QString());
     Dialog::showEvent(event);
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogFilter::on_buttonBox_accepted
+ */
 void DialogFilter::on_buttonBox_accepted() {
 
 	QString s = ui.textFilter->text();

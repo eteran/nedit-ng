@@ -18,9 +18,11 @@
 #include <QtDebug>
 #include <memory>
 
-//------------------------------------------------------------------------------
-// Name: DialogSyntaxPatterns
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogSyntaxPatterns::DialogSyntaxPatterns
+ * @param parent
+ * @param f
+ */
 DialogSyntaxPatterns::DialogSyntaxPatterns(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f), previous_(nullptr) {
 	ui.setupUi(this);
 
@@ -47,18 +49,20 @@ DialogSyntaxPatterns::DialogSyntaxPatterns(QWidget *parent, Qt::WindowFlags f) :
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name: ~DialogSyntaxPatterns
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogSyntaxPatterns::~DialogSyntaxPatterns
+ */
 DialogSyntaxPatterns::~DialogSyntaxPatterns() noexcept {
 	for(int i = 0; i < ui.listItems->count(); ++i) {
 	    delete itemFromIndex(i);
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name: itemFromIndex
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogSyntaxPatterns::itemFromIndex
+ * @param i
+ * @return
+ */
 HighlightPattern *DialogSyntaxPatterns::itemFromIndex(int i) const {
 	if(i < ui.listItems->count()) {
 	    QListWidgetItem* item = ui.listItems->item(i);
@@ -69,9 +73,10 @@ HighlightPattern *DialogSyntaxPatterns::itemFromIndex(int i) const {
 	return nullptr;
 }
 
-//------------------------------------------------------------------------------
-// Name: setLanguageName
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogSyntaxPatterns::setLanguageName
+ * @param name
+ */
 void DialogSyntaxPatterns::setLanguageName(const QString &name) {
 
 
@@ -176,9 +181,10 @@ void DialogSyntaxPatterns::setLanguageName(const QString &name) {
 	previousLanguage_ = name;
 }
 
-//------------------------------------------------------------------------------
-// Name: SetLangModeMenu
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogSyntaxPatterns::SetLangModeMenu
+ * @param name
+ */
 void DialogSyntaxPatterns::SetLangModeMenu(const QString &name) {
 
 	int index = ui.comboLanguageMode->findText(name, Qt::MatchFixedString);
@@ -189,9 +195,10 @@ void DialogSyntaxPatterns::SetLangModeMenu(const QString &name) {
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogSyntaxPatterns::setLanguageMenu
+ * @param name
+ */
 void DialogSyntaxPatterns::setLanguageMenu(const QString &name) {
 	int index = ui.comboLanguageMode->findText(name, Qt::MatchFixedString);
 	if(index != -1) {
@@ -201,9 +208,10 @@ void DialogSyntaxPatterns::setLanguageMenu(const QString &name) {
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogSyntaxPatterns::setStyleMenu
+ * @param name
+ */
 void DialogSyntaxPatterns::setStyleMenu(const QString &name) {
 
 	int index = ui.comboHighlightStyle->findText(name, Qt::MatchFixedString);
@@ -214,9 +222,9 @@ void DialogSyntaxPatterns::setStyleMenu(const QString &name) {
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name: updateLabels
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogSyntaxPatterns::updateLabels
+ */
 void DialogSyntaxPatterns::updateLabels() {
 
 	QString startLbl;
@@ -262,24 +270,25 @@ void DialogSyntaxPatterns::updateLabels() {
 	ui.groupMatching->setEnabled(matchSense);
 }
 
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogSyntaxPatterns::on_comboLanguageMode_currentIndexChanged
+ * @param currentText
+ */
 void DialogSyntaxPatterns::on_comboLanguageMode_currentIndexChanged(const QString &currentText) {
 	setLanguageName(currentText);
 }
 
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogSyntaxPatterns::on_buttonLanguageMode_clicked
+ */
 void DialogSyntaxPatterns::on_buttonLanguageMode_clicked() {
 	auto dialog = std::make_unique<DialogLanguageModes>(this);
 	dialog->exec();
 }
 
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogSyntaxPatterns::on_buttonHighlightStyle_clicked
+ */
 void DialogSyntaxPatterns::on_buttonHighlightStyle_clicked() {
 	QString style = ui.comboHighlightStyle->currentText();
 	if(!style.isEmpty()) {
@@ -287,9 +296,11 @@ void DialogSyntaxPatterns::on_buttonHighlightStyle_clicked() {
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogSyntaxPatterns::updateCurrentItem
+ * @param item
+ * @return
+ */
 bool DialogSyntaxPatterns::updateCurrentItem(QListWidgetItem *item) {
 	// Get the current contents of the "patterns" dialog fields
     auto ptr = readDialogFields(Mode::Verbose);
@@ -306,9 +317,10 @@ bool DialogSyntaxPatterns::updateCurrentItem(QListWidgetItem *item) {
 	return true;
 }
 
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogSyntaxPatterns::updateCurrentItem
+ * @return
+ */
 bool DialogSyntaxPatterns::updateCurrentItem() {
 	QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
 	if(selections.size() != 1) {
@@ -319,9 +331,9 @@ bool DialogSyntaxPatterns::updateCurrentItem() {
 	return updateCurrentItem(selection);
 }
 
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogSyntaxPatterns::on_buttonNew_clicked
+ */
 void DialogSyntaxPatterns::on_buttonNew_clicked() {
 
 	if(!updateCurrentItem()) {
@@ -337,9 +349,9 @@ void DialogSyntaxPatterns::on_buttonNew_clicked() {
 	ui.listItems->setCurrentItem(item);
 }
 
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogSyntaxPatterns::on_buttonDelete_clicked
+ */
 void DialogSyntaxPatterns::on_buttonDelete_clicked() {
 	QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
 	if(selections.size() != 1) {
@@ -359,9 +371,9 @@ void DialogSyntaxPatterns::on_buttonDelete_clicked() {
 	on_listItems_itemSelectionChanged();
 }
 
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogSyntaxPatterns::on_buttonCopy_clicked
+ */
 void DialogSyntaxPatterns::on_buttonCopy_clicked() {
 
 	if(!updateCurrentItem()) {
@@ -384,9 +396,9 @@ void DialogSyntaxPatterns::on_buttonCopy_clicked() {
 	ui.listItems->setCurrentItem(newItem);
 }
 
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogSyntaxPatterns::on_buttonUp_clicked
+ */
 void DialogSyntaxPatterns::on_buttonUp_clicked() {
 	QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
 	if(selections.size() != 1) {
@@ -403,9 +415,9 @@ void DialogSyntaxPatterns::on_buttonUp_clicked() {
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogSyntaxPatterns::on_buttonDown_clicked
+ */
 void DialogSyntaxPatterns::on_buttonDown_clicked() {
 	QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
 	if(selections.size() != 1) {
@@ -422,9 +434,9 @@ void DialogSyntaxPatterns::on_buttonDown_clicked() {
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogSyntaxPatterns::on_buttonOK_clicked
+ */
 void DialogSyntaxPatterns::on_buttonOK_clicked() {
 	// change the patterns
 	if (!updatePatternSet()) {
@@ -434,25 +446,27 @@ void DialogSyntaxPatterns::on_buttonOK_clicked() {
 	accept();
 }
 
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogSyntaxPatterns::on_buttonApply_clicked
+ */
 void DialogSyntaxPatterns::on_buttonApply_clicked() {
 	updatePatternSet();
 }
 
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogSyntaxPatterns::on_buttonCheck_clicked
+ */
 void DialogSyntaxPatterns::on_buttonCheck_clicked() {
 	if (checkHighlightDialogData()) {
-		QMessageBox::information(this, tr("Pattern compiled"), tr("Patterns compiled without error"));
+        QMessageBox::information(this,
+                                 tr("Pattern compiled"),
+                                 tr("Patterns compiled without error"));
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogSyntaxPatterns::on_buttonDeletePattern_clicked
+ */
 void DialogSyntaxPatterns::on_buttonDeletePattern_clicked() {
 
 	const QString languageMode = ui.comboLanguageMode->currentText();
@@ -496,9 +510,9 @@ void DialogSyntaxPatterns::on_buttonDeletePattern_clicked() {
 	on_listItems_itemSelectionChanged();
 }
 
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogSyntaxPatterns::on_buttonRestore_clicked
+ */
 void DialogSyntaxPatterns::on_buttonRestore_clicked() {
 
 	const QString languageMode = ui.comboLanguageMode->currentText();
@@ -553,16 +567,16 @@ void DialogSyntaxPatterns::on_buttonRestore_clicked() {
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogSyntaxPatterns::on_buttonHelp_clicked
+ */
 void DialogSyntaxPatterns::on_buttonHelp_clicked() {
     Help::displayTopic(Help::Topic::HELP_SYNTAX);
 }
 
-//------------------------------------------------------------------------------
-// Name: on_listItems_itemSelectionChanged
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogSyntaxPatterns::on_listItems_itemSelectionChanged
+ */
 void DialogSyntaxPatterns::on_listItems_itemSelectionChanged() {
 
 	QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
@@ -736,9 +750,10 @@ void DialogSyntaxPatterns::updateHighlightStyleMenu() {
 	setStyleMenu(pattern);
 }
 
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogSyntaxPatterns::updatePatternSet
+ * @return
+ */
 bool DialogSyntaxPatterns::updatePatternSet() {
 
 	// Make sure the patterns are valid and compile
@@ -814,9 +829,10 @@ bool DialogSyntaxPatterns::updatePatternSet() {
 	return true;
 }
 
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogSyntaxPatterns::checkHighlightDialogData
+ * @return
+ */
 bool DialogSyntaxPatterns::checkHighlightDialogData() {
 	// Get the pattern information from the dialog
     std::unique_ptr<PatternSet> patSet = getDialogPatternSet();
@@ -990,9 +1006,11 @@ HighlightPattern *DialogSyntaxPatterns::readDialogFields(Mode mode) {
     return pat.release();
 }
 
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogSyntaxPatterns::checkCurrentPattern
+ * @param mode
+ * @return
+ */
 bool DialogSyntaxPatterns::checkCurrentPattern(Mode mode) {
     if(auto ptr = readDialogFields(mode)) {
         delete ptr;
@@ -1025,18 +1043,22 @@ bool DialogSyntaxPatterns::TestHighlightPatterns(PatternSet *patSet) {
 	return false;
 }
 
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogSyntaxPatterns::RenameHighlightPattern
+ * @param oldName
+ * @param newName
+ */
 void DialogSyntaxPatterns::RenameHighlightPattern(const QString &oldName, const QString &newName) {
 	if (ui.comboLanguageMode->currentText() == oldName) {
 		setLanguageMenu(newName);
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name:
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogSyntaxPatterns::LMHasHighlightPatterns
+ * @param languageMode
+ * @return
+ */
 bool DialogSyntaxPatterns::LMHasHighlightPatterns(const QString &languageMode) {
 	return languageMode == ui.comboLanguageMode->currentText() && ui.listItems->count() != 0;
 }

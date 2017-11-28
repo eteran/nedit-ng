@@ -8,9 +8,12 @@
 #include <QMessageBox>
 #include <QtDebug>
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogTabs::DialogTabs
+ * @param document
+ * @param parent
+ * @param f
+ */
 DialogTabs::DialogTabs(DocumentWidget *document, QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f), document_(document) {
 
 	ui.setupUi(this);
@@ -47,17 +50,18 @@ DialogTabs::DialogTabs(DocumentWidget *document, QWidget *parent, Qt::WindowFlag
 
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogTabs::on_checkEmulateTabs_toggled
+ * @param checked
+ */
 void DialogTabs::on_checkEmulateTabs_toggled(bool checked) {
 	ui.labelEmulatedTabSpacing->setEnabled(checked);
 	ui.editEmulatedTabSpacing->setEnabled(checked);
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogTabs::on_buttonBox_accepted
+ */
 void DialogTabs::on_buttonBox_accepted() {
 
 	// get the values that the user entered and make sure they're ok 
@@ -115,9 +119,9 @@ void DialogTabs::on_buttonBox_accepted() {
 	accept();
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogTabs::on_buttonBox_helpRequested
+ */
 void DialogTabs::on_buttonBox_helpRequested() {
     Help::displayTopic(Help::Topic::HELP_TABS_DIALOG);
 }

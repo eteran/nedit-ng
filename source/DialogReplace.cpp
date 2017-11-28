@@ -14,9 +14,12 @@
 #include <QtDebug>
 #include <memory>
 
-//------------------------------------------------------------------------------
-// name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogReplace::DialogReplace
+ * @param window
+ * @param document
+ * @param f
+ */
 DialogReplace::DialogReplace(MainWindow *window, DocumentWidget *document, Qt::WindowFlags f) : Dialog(window, f), window_(window), document_(document) {
 	
 	ui.setupUi(this);
@@ -29,17 +32,19 @@ DialogReplace::DialogReplace(MainWindow *window, DocumentWidget *document, Qt::W
 #endif
 }
 
-//------------------------------------------------------------------------------
-// name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogReplace::showEvent
+ * @param event
+ */
 void DialogReplace::showEvent(QShowEvent *event) {
 	ui.textFind->setFocus();
     Dialog::showEvent(event);
 }
 
-//------------------------------------------------------------------------------
-// name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogReplace::keyPressEvent
+ * @param event
+ */
 void DialogReplace::keyPressEvent(QKeyEvent *event) {
 
 	if(ui.textFind->hasFocus()) {
@@ -117,16 +122,18 @@ void DialogReplace::keyPressEvent(QKeyEvent *event) {
 	QDialog::keyPressEvent(event);
 }
 
-//------------------------------------------------------------------------------
-// name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogReplace::on_checkBackward_toggled
+ * @param checked
+ */
 void DialogReplace::on_checkBackward_toggled(bool checked) {
 	Q_UNUSED(checked);
 }
 
-//------------------------------------------------------------------------------
-// name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogReplace::on_checkKeep_toggled
+ * @param checked
+ */
 void DialogReplace::on_checkKeep_toggled(bool checked) {
 	if (checked) {
         setWindowTitle(tr("Find/Replace (in %1)").arg(document_->filename_));
@@ -135,17 +142,18 @@ void DialogReplace::on_checkKeep_toggled(bool checked) {
 	}
 }
 
-//------------------------------------------------------------------------------
-// name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogReplace::on_textFind_textChanged
+ * @param text
+ */
 void DialogReplace::on_textFind_textChanged(const QString &text) {
 	Q_UNUSED(text);
 	UpdateReplaceActionButtons();
 }
 
-//------------------------------------------------------------------------------
-// name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogReplace::on_buttonFind_clicked
+ */
 void DialogReplace::on_buttonFind_clicked() {
 	
     QString searchString;
@@ -176,9 +184,9 @@ void DialogReplace::on_buttonFind_clicked() {
 	}
 }
 
-//------------------------------------------------------------------------------
-// name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogReplace::on_buttonReplace_clicked
+ */
 void DialogReplace::on_buttonReplace_clicked() {
 
     QString searchString;
@@ -203,9 +211,9 @@ void DialogReplace::on_buttonReplace_clicked() {
 	}
 }
 
-//------------------------------------------------------------------------------
-// name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogReplace::on_buttonReplaceFind_clicked
+ */
 void DialogReplace::on_buttonReplaceFind_clicked() {
 
     QString searchString;
@@ -230,9 +238,10 @@ void DialogReplace::on_buttonReplaceFind_clicked() {
 }
 
 #if defined(REPLACE_SCOPE)
-//------------------------------------------------------------------------------
-// name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogReplace::on_radioWindow_toggled
+ * @param checked
+ */
 void DialogReplace::on_radioWindow_toggled(bool checked) {
 	if (checked) {
 		replaceScope_ = REPL_SCOPE_WIN;
@@ -240,9 +249,10 @@ void DialogReplace::on_radioWindow_toggled(bool checked) {
 	}
 }
 
-//------------------------------------------------------------------------------
-// name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogReplace::on_radioSelection_toggled
+ * @param checked
+ */
 void DialogReplace::on_radioSelection_toggled(bool checked) {
 	if (checked) {
 		replaceScope_ = REPL_SCOPE_SEL;
@@ -250,9 +260,10 @@ void DialogReplace::on_radioSelection_toggled(bool checked) {
 	}
 }
 
-//------------------------------------------------------------------------------
-// name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogReplace::on_radioMulti_toggled
+ * @param checked
+ */
 void DialogReplace::on_radioMulti_toggled(bool checked) {
 
 	if (checked) {
@@ -261,9 +272,9 @@ void DialogReplace::on_radioMulti_toggled(bool checked) {
 	}
 }
 
-//------------------------------------------------------------------------------
-// name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogReplace::on_buttonAll_clicked
+ */
 void DialogReplace::on_buttonAll_clicked() {
 	
     QString searchString;
@@ -328,9 +339,9 @@ void DialogReplace::on_buttonAll_clicked() {
 
 #else
 
-//------------------------------------------------------------------------------
-// name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogReplace::on_buttonWindow_clicked
+ */
 void DialogReplace::on_buttonWindow_clicked() {
 
     QString searchString;
@@ -355,9 +366,9 @@ void DialogReplace::on_buttonWindow_clicked() {
 	}
 }
 
-//------------------------------------------------------------------------------
-// name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogReplace::on_buttonSelection_clicked
+ */
 void DialogReplace::on_buttonSelection_clicked() {
 
     QString searchString;
@@ -382,9 +393,9 @@ void DialogReplace::on_buttonSelection_clicked() {
 	}
 }
 
-//------------------------------------------------------------------------------
-// name: on_buttonMulti_clicked
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogReplace::on_buttonMulti_clicked
+ */
 void DialogReplace::on_buttonMulti_clicked() {
 
     QString searchString;
@@ -426,9 +437,10 @@ void DialogReplace::on_buttonMulti_clicked() {
 
 #endif
 
-//------------------------------------------------------------------------------
-// name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogReplace::on_checkRegex_toggled
+ * @param checked
+ */
 void DialogReplace::on_checkRegex_toggled(bool checked) {
 
 
@@ -449,9 +461,10 @@ void DialogReplace::on_checkRegex_toggled(bool checked) {
 	ui.checkWord->setEnabled(!searchRegex);
 }
 
-//------------------------------------------------------------------------------
-// name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogReplace::on_checkCase_toggled
+ * @param checked
+ */
 void DialogReplace::on_checkCase_toggled(bool checked) {
 
 	bool searchCaseSense = checked;
@@ -465,9 +478,10 @@ void DialogReplace::on_checkCase_toggled(bool checked) {
 	}
 }
 
-//------------------------------------------------------------------------------
-// name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogReplace::setTextField
+ * @param document
+ */
 void DialogReplace::setTextField(DocumentWidget *document) {
 
     Q_UNUSED(document);
@@ -557,17 +571,17 @@ void DialogReplace::initToggleButtons(SearchType searchType) {
 	}
 }
 
-//------------------------------------------------------------------------------
-// name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogReplace::fUpdateActionButtons
+ */
 void DialogReplace::fUpdateActionButtons() {
 	bool buttonState = !ui.textFind->text().isEmpty();
 	ui.buttonFind->setEnabled(buttonState);
 }
 
-//------------------------------------------------------------------------------
-// name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogReplace::UpdateReplaceActionButtons
+ */
 void DialogReplace::UpdateReplaceActionButtons() {
 
 #if defined(REPLACE_SCOPE)
@@ -598,6 +612,13 @@ void DialogReplace::UpdateReplaceActionButtons() {
 }
 
 #if defined(REPLACE_SCOPE)
+/**
+ * @brief DialogReplace::rSetActionButtons
+ * @param replaceBtn
+ * @param replaceFindBtn
+ * @param replaceAndFindBtn
+ * @param replaceAllBtn
+ */
 void DialogReplace::rSetActionButtons(bool replaceBtn, bool replaceFindBtn, bool replaceAndFindBtn, bool replaceAllBtn) {
 	
 	ui.buttonReplace->setEnabled(replaceBtn);
@@ -606,6 +627,15 @@ void DialogReplace::rSetActionButtons(bool replaceBtn, bool replaceFindBtn, bool
 	ui.buttonAll->setEnabled(replaceAllBtn);
 }
 #else
+/**
+ * @brief DialogReplace::rSetActionButtons
+ * @param replaceBtn
+ * @param replaceFindBtn
+ * @param replaceAndFindBtn
+ * @param replaceInWinBtn
+ * @param replaceInSelBtn
+ * @param replaceAllBtn
+ */
 void DialogReplace::rSetActionButtons(bool replaceBtn, bool replaceFindBtn, bool replaceAndFindBtn, bool replaceInWinBtn, bool replaceInSelBtn, bool replaceAllBtn) {
 
 	ui.buttonReplace->setEnabled(replaceBtn);
@@ -691,16 +721,18 @@ void DialogReplace::collectWritableWindows() {
 }
 
 
-//------------------------------------------------------------------------------
-// name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogReplace::keepDialog
+ * @return
+ */
 bool DialogReplace::keepDialog() const {
 	return ui.checkKeep->isChecked();
 }
 
-//------------------------------------------------------------------------------
-// name:
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogReplace::setDocument
+ * @param document
+ */
 void DialogReplace::setDocument(DocumentWidget *document) {
     document_ = document;
     if(keepDialog()) {

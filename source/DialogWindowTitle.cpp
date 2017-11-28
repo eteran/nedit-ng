@@ -23,9 +23,12 @@ struct UpdateState {
 	int noOfComponents;
 };
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogWindowTitle::DialogWindowTitle
+ * @param document
+ * @param parent
+ * @param f
+ */
 DialogWindowTitle::DialogWindowTitle(DocumentWidget *document, QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f) {
 	ui.setupUi(this);
 	
@@ -87,17 +90,18 @@ void DialogWindowTitle::setToggleButtons() {
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogWindowTitle::on_editFormat_textChanged
+ * @param text
+ */
 void DialogWindowTitle::on_editFormat_textChanged(const QString &text) {
 	Q_UNUSED(text);
 	formatChangedCB();
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogWindowTitle::formatChangedCB
+ */
 void DialogWindowTitle::formatChangedCB() {
 
 
@@ -131,9 +135,19 @@ void DialogWindowTitle::formatChangedCB() {
 	ui.editPreview->setText(title);
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogWindowTitle::FormatWindowTitle
+ * @param filename
+ * @param path
+ * @param clearCaseViewTag
+ * @param serverName
+ * @param isServer
+ * @param filenameSet
+ * @param lockReasons
+ * @param fileChanged
+ * @param titleFormat
+ * @return
+ */
 QString DialogWindowTitle::FormatWindowTitle(const QString &filename, const QString &path, const QString &clearCaseViewTag, const QString &serverName, bool isServer, bool filenameSet, LockReasons lockReasons, bool fileChanged, const QString &titleFormat) {
 	return FormatWindowTitleInternal(filename, path, clearCaseViewTag, serverName, isServer, filenameSet, lockReasons, fileChanged, titleFormat, nullptr);
 	
@@ -236,9 +250,10 @@ QString DialogWindowTitle::compressWindowTitle(const QString &title) {
 	return result.simplified();
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogWindowTitle::on_checkFileName_toggled
+ * @param checked
+ */
 void DialogWindowTitle::on_checkFileName_toggled(bool checked) {
 
 	if(inConstructor_) {
@@ -252,9 +267,10 @@ void DialogWindowTitle::on_checkFileName_toggled(bool checked) {
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogWindowTitle::on_checkHostName_toggled
+ * @param checked
+ */
 void DialogWindowTitle::on_checkHostName_toggled(bool checked) {
 
 	if(inConstructor_) {
@@ -268,9 +284,10 @@ void DialogWindowTitle::on_checkHostName_toggled(bool checked) {
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogWindowTitle::on_checkFileStatus_toggled
+ * @param checked
+ */
 void DialogWindowTitle::on_checkFileStatus_toggled(bool checked) {
 
 	if(inConstructor_) {
@@ -292,9 +309,10 @@ void DialogWindowTitle::on_checkFileStatus_toggled(bool checked) {
 
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogWindowTitle::on_checkBrief_toggled
+ * @param checked
+ */
 void DialogWindowTitle::on_checkBrief_toggled(bool checked) {
 
 	if(inConstructor_) {
@@ -318,9 +336,10 @@ void DialogWindowTitle::on_checkBrief_toggled(bool checked) {
 	ui.editFormat->setText(format);
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogWindowTitle::on_checkUserName_toggled
+ * @param checked
+ */
 void DialogWindowTitle::on_checkUserName_toggled(bool checked) {
 
 	if(inConstructor_) {
@@ -334,9 +353,10 @@ void DialogWindowTitle::on_checkUserName_toggled(bool checked) {
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogWindowTitle::on_checkClearCase_toggled
+ * @param checked
+ */
 void DialogWindowTitle::on_checkClearCase_toggled(bool checked) {
 
 	if(inConstructor_) {
@@ -350,9 +370,10 @@ void DialogWindowTitle::on_checkClearCase_toggled(bool checked) {
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogWindowTitle::on_checkServerName_toggled
+ * @param checked
+ */
 void DialogWindowTitle::on_checkServerName_toggled(bool checked) {
 
 	if(inConstructor_) {
@@ -366,9 +387,10 @@ void DialogWindowTitle::on_checkServerName_toggled(bool checked) {
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogWindowTitle::on_checkDirectory_toggled
+ * @param checked
+ */
 void DialogWindowTitle::on_checkDirectory_toggled(bool checked) {
 	
 	if(inConstructor_) {
@@ -403,33 +425,37 @@ void DialogWindowTitle::on_checkDirectory_toggled(bool checked) {
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogWindowTitle::on_checkFileModified_toggled
+ * @param checked
+ */
 void DialogWindowTitle::on_checkFileModified_toggled(bool checked) {
 	fileChanged_ = checked;
 	formatChangedCB();
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogWindowTitle::on_checkFileReadOnly_toggled
+ * @param checked
+ */
 void DialogWindowTitle::on_checkFileReadOnly_toggled(bool checked) {
 	lockReasons_.setPermLocked(checked);
 	formatChangedCB();
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogWindowTitle::on_checkFileLocked_toggled
+ * @param checked
+ */
 void DialogWindowTitle::on_checkFileLocked_toggled(bool checked) {
 	lockReasons_.setUserLocked(checked);
 	formatChangedCB();
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogWindowTitle::on_checkServerNamePresent_toggled
+ * @param checked
+ */
 void DialogWindowTitle::on_checkServerNamePresent_toggled(bool checked) {
 
 	if (!checked) {
@@ -441,9 +467,10 @@ void DialogWindowTitle::on_checkServerNamePresent_toggled(bool checked) {
 	formatChangedCB();
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogWindowTitle::on_checkClearCasePresent_toggled
+ * @param checked
+ */
 void DialogWindowTitle::on_checkClearCasePresent_toggled(bool checked) {
 	if (!checked) {
 		ui.checkServerEqualsCC->setChecked(false);
@@ -452,17 +479,19 @@ void DialogWindowTitle::on_checkClearCasePresent_toggled(bool checked) {
 	formatChangedCB();
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogWindowTitle::on_checkDirectoryPresent_toggled
+ * @param checked
+ */
 void DialogWindowTitle::on_checkDirectoryPresent_toggled(bool checked) {
 	Q_UNUSED(checked);
 	formatChangedCB();
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogWindowTitle::on_checkServerEqualsCC_toggled
+ * @param checked
+ */
 void DialogWindowTitle::on_checkServerEqualsCC_toggled(bool checked) {
 	if (checked) {
 		ui.checkClearCasePresent->setChecked(true);
@@ -472,9 +501,10 @@ void DialogWindowTitle::on_checkServerEqualsCC_toggled(bool checked) {
 	formatChangedCB();
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogWindowTitle::appendToFormat
+ * @param string
+ */
 void DialogWindowTitle::appendToFormat(const QString &string) {
 
 	QString format = ui.editFormat->text();
@@ -485,9 +515,10 @@ void DialogWindowTitle::appendToFormat(const QString &string) {
 	ui.editFormat->setText(buf);
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogWindowTitle::removeFromFormat
+ * @param string
+ */
 void DialogWindowTitle::removeFromFormat(const QString &string) {
 
 	QString format = ui.editFormat->text();
@@ -503,9 +534,10 @@ void DialogWindowTitle::removeFromFormat(const QString &string) {
 	ui.editFormat->setText(format);
 }
 
-//------------------------------------------------------------------------------
-// Name: on_buttonBox_clicked
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogWindowTitle::on_buttonBox_clicked
+ * @param button
+ */
 void DialogWindowTitle::on_buttonBox_clicked(QAbstractButton *button) {
 	if(ui.buttonBox->standardButton(button) == QDialogButtonBox::Apply) {
 
@@ -522,9 +554,10 @@ void DialogWindowTitle::on_buttonBox_clicked(QAbstractButton *button) {
 	}
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogWindowTitle::on_editDirectory_textChanged
+ * @param text
+ */
 void DialogWindowTitle::on_editDirectory_textChanged(const QString &text) {
 
 	if (suppressFormatUpdate_) {
@@ -544,9 +577,20 @@ void DialogWindowTitle::on_editDirectory_textChanged(const QString &text) {
 	ui.editFormat->setText(format);
 }
 
-//------------------------------------------------------------------------------
-// Name: 
-//------------------------------------------------------------------------------
+/**
+ * @brief DialogWindowTitle::FormatWindowTitleInternal
+ * @param filename
+ * @param path
+ * @param clearCaseViewTag
+ * @param serverName
+ * @param isServer
+ * @param filenameSet
+ * @param lockReasons
+ * @param fileChanged
+ * @param titleFormat
+ * @param state
+ * @return
+ */
 QString DialogWindowTitle::FormatWindowTitleInternal(const QString &filename, const QString &path, const QString &clearCaseViewTag, const QString &serverName, bool isServer, bool filenameSet, LockReasons lockReasons, bool fileChanged, const QString &titleFormat, UpdateState *state) {
 	QString title;
 

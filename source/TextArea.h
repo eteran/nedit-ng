@@ -320,7 +320,7 @@ private:
 	void offsetAbsLineNum(int oldFirstChar);
 	void findLineEnd(int startPos, int startPosIsLineStart, int *lineEnd, int *nextLineStart);
     bool updateHScrollBarRange();
-	int emptyLinesVisible() const;
+    bool emptyLinesVisible() const;
 	int posToVisibleLineNum(int pos, int *lineNum);
 	void blankCursorProtrusions();
 	int measureVisLine(int visLineNum);
