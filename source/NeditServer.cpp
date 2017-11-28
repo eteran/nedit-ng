@@ -74,7 +74,7 @@ NeditServer::NeditServer(QObject *parent) : QObject(parent) {
     QLocalServer::removeServer(socketName);
 
     if(!server_->listen(socketName)) {
-        qDebug() << "NEdit: server failed to start: " << server_->errorString();
+        qWarning() << "NEdit: server failed to start: " << server_->errorString();
     }
 }
 
