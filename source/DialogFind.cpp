@@ -60,7 +60,7 @@ void DialogFind::keyPressEvent(QKeyEvent *event) {
         QString searchStr;
 		SearchType searchType;
 		if (index == 0) {
-			searchStr  = QLatin1String("");
+            searchStr  = QString();
 			searchType = GetPrefSearch();
 		} else {
             searchStr  = SearchReplaceHistory[historyIndex(index)].search;

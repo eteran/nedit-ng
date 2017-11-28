@@ -189,7 +189,7 @@ void DialogPrint::LoadPrintPreferencesEx(bool lookForFlpr) {
         QString defaultHost  = getFlprHostDefault();
 
         PrintCommand = settings.value(tr("printCommand"),      QLatin1String("flpr")).toString();
-		CopiesOption = settings.value(tr("printCopiesOption"), QLatin1String("")).toString();
+        CopiesOption = settings.value(tr("printCopiesOption"), QString()).toString();
         QueueOption  = settings.value(tr("printQueueOption"),  QLatin1String("-q")).toString();
         NameOption   = settings.value(tr("printNameOption"),   QLatin1String("-j ")).toString();
         HostOption   = settings.value(tr("printHostOption"),   QLatin1String("-h")).toString();
@@ -204,9 +204,9 @@ void DialogPrint::LoadPrintPreferencesEx(bool lookForFlpr) {
         CopiesOption = settings.value(tr("printCopiesOption"), QLatin1String("-# ")).toString();
         QueueOption  = settings.value(tr("printQueueOption"),  QLatin1String("-P ")).toString();
         NameOption   = settings.value(tr("printNameOption"),   QLatin1String("-J ")).toString();
-		HostOption   = settings.value(tr("printHostOption"),   QLatin1String("")).toString();
+        HostOption   = settings.value(tr("printHostOption"),   QString()).toString();
         DefaultQueue = settings.value(tr("printDefaultQueue"), defaultQueue).toString();
-		DefaultHost  = settings.value(tr("printDefaultHost"),  QLatin1String("")).toString();
+        DefaultHost  = settings.value(tr("printDefaultHost"),  QString()).toString();
     }
 
     PreferencesLoaded = true;

@@ -409,7 +409,7 @@ int main(int argc, char *argv[]) {
 
     ServerPreferences.autoStart     = settings.value(QLatin1String("nc.autoStart"),     true).toBool();
     ServerPreferences.serverCmd     = settings.value(QLatin1String("nc.serverCommand"), QLatin1String("nedit-ng -server")).toString();
-    ServerPreferences.serverName    = settings.value(QLatin1String("nc.serverName"),    QLatin1String("")).toString();
+    ServerPreferences.serverName    = settings.value(QLatin1String("nc.serverName"),    QString()).toString();
     ServerPreferences.waitForClose  = settings.value(QLatin1String("nc.waitForClose"),  false).toBool();
     ServerPreferences.timeOut       = settings.value(QLatin1String("nc.timeOut"),       10).toInt();
     CommandLine commandLine         = processCommandLine(app.arguments());

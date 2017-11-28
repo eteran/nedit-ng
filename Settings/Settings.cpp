@@ -168,12 +168,12 @@ void Settings::loadPreferences() {
 
     tooltipBgColor                    = settings.value(tr("nedit.tooltipBgColor"),  			      DEFAULT_TOOLTIP_COLOR).toString();
     shell                             = settings.value(tr("nedit.shell"),						      QLatin1String("DEFAULT")).toString();
-    geometry                          = settings.value(tr("nedit.geometry"),					      QLatin1String("")).toString();
+    geometry                          = settings.value(tr("nedit.geometry"),					      QString()).toString();
     remapDeleteKey                    = settings.value(tr("nedit.remapDeleteKey"),  			      false).toBool();
     stdOpenDialog                     = settings.value(tr("nedit.stdOpenDialog"),				      false).toBool();
-    tagFile                           = settings.value(tr("nedit.tagFile"), 					      QLatin1String("")).toString();
+    tagFile                           = settings.value(tr("nedit.tagFile"), 					      QString()).toString();
     wordDelimiters                    = settings.value(tr("nedit.wordDelimiters"),  			      DEFAULT_DELIMETERS).toString();
-    serverName                        = settings.value(tr("nedit.serverName"),  				      QLatin1String("")).toString();
+    serverName                        = settings.value(tr("nedit.serverName"),  				      QString()).toString();
     maxPrevOpenFiles                  = settings.value(tr("nedit.maxPrevOpenFiles"),			      30).toInt();
     smartTags                         = settings.value(tr("nedit.smartTags"),					      true).toBool();
     typingHidesPointer                = settings.value(tr("nedit.typingHidesPointer"),  		      false).toBool();
