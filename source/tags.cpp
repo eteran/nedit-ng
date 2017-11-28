@@ -1485,7 +1485,7 @@ struct tf_alias {
 static int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
 
     QString header;
-    int oldLangMode;
+    size_t oldLangMode;
     int currLine    = 0;
     int nTipsAdded  = 0;
     size_t langMode = PLAIN_LANGUAGE_MODE;
