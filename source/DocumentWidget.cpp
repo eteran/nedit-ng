@@ -110,8 +110,6 @@ struct CharMatchTable {
     Direction direction;
 };
 
-constexpr int N_FLASH_CHARS = 6;
-
 constexpr CharMatchTable MatchingChars[] = {
     {'{', '}',   Direction::Forward},
     {'}', '{',   Direction::Backward},
@@ -1309,7 +1307,7 @@ std::vector<TextArea *> DocumentWidget::textPanes() const {
     const int count = textPanesCount();
 
     std::vector<TextArea *> list;
-    list.reserve(count);
+    list.reserve(static_cast<size_t>(count));
 
     for(int i = 0; i < count; ++i) {
         if(auto area = qobject_cast<TextArea *>(splitter_->widget(i))) {
@@ -6812,13 +6810,13 @@ QString DocumentWidget::GetAnySelectionEx() {
 */
 QFont DocumentWidget::FontOfNamedStyleEx(const QString &styleName) const {
 
-    const int styleNo = IndexOfNamedStyle(styleName);
+    const size_t styleNo = IndexOfNamedStyle(styleName);
 
-    if (styleNo < 0) {
+    if (styleNo == STYLE_NOT_FOUND) {
         return GetPrefDefaultFont();
     } else {
 
-        const int fontNum = HighlightStyles[static_cast<size_t>(styleNo)].font;
+        const int fontNum = HighlightStyles[styleNo].font;
 
         switch(fontNum) {
         case BOLD_FONT:

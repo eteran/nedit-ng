@@ -1036,7 +1036,7 @@ int indexOfNamedPattern(const gsl::span<HighlightPattern> &patList, const QStrin
 	
     for (int i = 0; i < patList.size(); i++) {
         if (patList[i].name == patName) {
-			return i;
+            return i;
 		}
 	}
 	

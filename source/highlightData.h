@@ -35,12 +35,14 @@ class QString;
 class QWidget;
 class HighlightStyle;
 
+constexpr auto STYLE_NOT_FOUND = static_cast<size_t>(-1);
+
 bool LoadHighlightStringEx(const QString &string);
 bool LoadStylesStringEx(const QString &string);
 bool NamedStyleExists(const QString &styleName);
 int FontOfNamedStyleIsBold(const QString &styleName);
 int FontOfNamedStyleIsItalic(const QString &styleName);
-int IndexOfNamedStyle(const QString &styleName);
+size_t IndexOfNamedStyle(const QString &styleName);
 PatternSet *FindPatternSet(const QString &langModeName);
 QString BgColorOfNamedStyleEx(const QString &styleName);
 QString ColorOfNamedStyleEx(const QString &styleName);

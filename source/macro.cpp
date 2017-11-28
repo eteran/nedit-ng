@@ -2700,7 +2700,7 @@ static bool toupperMS(DocumentWidget *document, Arguments arguments, DataValue *
 
     // Allocate a new string and copy an uppercased version of the string it
     for(char &ch : string) {
-        ch = safe_ctype<toupper>(ch);
+        ch = static_cast<char>(safe_ctype<toupper>(ch));
     }
 
     *result = to_value(string);
@@ -2719,7 +2719,7 @@ static bool tolowerMS(DocumentWidget *document, Arguments arguments, DataValue *
 
     // Allocate a new string and copy an uppercased version of the string it
     for(char &ch : string) {
-        ch = safe_ctype<tolower>(ch);
+        ch = static_cast<char>(safe_ctype<tolower>(ch));
     }
 
     *result = to_value(string);
@@ -2918,7 +2918,7 @@ static bool searchStringMS(DocumentWidget *document, Arguments arguments, DataVa
     if (!readSearchArgs(arguments.subspan(3), &direction, &type, &wrap, errMsg))
         return false;
 
-    int len = gsl::narrow<int>(to_string(arguments[0]).size());
+    auto len = gsl::narrow<int>(to_string(arguments[0]).size());
     if (beginPos > len) {
         if (direction == Direction::Forward) {
             if (wrap == WrapMode::Wrap) {
@@ -3049,13 +3049,13 @@ static bool replaceInStringMS(DocumentWidget *document, Arguments arguments, Dat
 
 static bool readSearchArgs(Arguments arguments, Direction *searchDirection, SearchType *searchType, WrapMode *wrap, const char **errMsg) {
 
-    QString argStr;
-
     *wrap            = WrapMode::NoWrap;
     *searchDirection = Direction::Forward;
     *searchType      = SearchType::Literal;
 
     for (const DataValue &dv : arguments) {
+
+        QString argStr;
         if (!readArgument(dv, &argStr, errMsg))
             return false;
         else if (argStr == QLatin1String("wrap"))

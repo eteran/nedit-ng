@@ -20,7 +20,7 @@ public:
 	int flags;
 	int nSubPatterns;
 	int nSubBranches; // Number of top-level branches of subPatternRE 
-	long userStyleIndex;
+    size_t userStyleIndex;
 	HighlightData **subPatterns;
 };
 

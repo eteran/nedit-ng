@@ -276,9 +276,9 @@ QString WriteHighlightStringEx() {
 }
 
 int FontOfNamedStyleIsBold(const QString &styleName) {
-    int styleNo = IndexOfNamedStyle(styleName);
+    size_t styleNo = IndexOfNamedStyle(styleName);
 
-    if (styleNo < 0) {
+    if (styleNo == STYLE_NOT_FOUND) {
 		return 0;
     }
 
@@ -287,9 +287,9 @@ int FontOfNamedStyleIsBold(const QString &styleName) {
 }
 
 int FontOfNamedStyleIsItalic(const QString &styleName) {
-    int styleNo = IndexOfNamedStyle(styleName);
+    size_t styleNo = IndexOfNamedStyle(styleName);
 
-    if (styleNo < 0) {
+    if (styleNo == STYLE_NOT_FOUND) {
 		return 0;
     }
 
@@ -303,9 +303,9 @@ int FontOfNamedStyleIsItalic(const QString &styleName) {
 ** styleName is valid).
 */
 QString ColorOfNamedStyleEx(const QString &styleName) {
-    int styleNo = IndexOfNamedStyle(styleName);
+    size_t styleNo = IndexOfNamedStyle(styleName);
 
-	if (styleNo < 0) {
+    if (styleNo == STYLE_NOT_FOUND) {
 		return QLatin1String("black");
 	}
 		
@@ -316,9 +316,9 @@ QString ColorOfNamedStyleEx(const QString &styleName) {
 ** Find the background color associated with a named style.
 */
 QString BgColorOfNamedStyleEx(const QString &styleName) {
-    int styleNo = IndexOfNamedStyle(styleName);
+    size_t styleNo = IndexOfNamedStyle(styleName);
 
-	if (styleNo < 0) {
+    if (styleNo == STYLE_NOT_FOUND) {
 		return QLatin1String("");
 	}
 	
@@ -330,7 +330,7 @@ QString BgColorOfNamedStyleEx(const QString &styleName) {
 ** Determine whether a named style exists
 */
 bool NamedStyleExists(const QString &styleName) {
-    return IndexOfNamedStyle(styleName) != -1;
+    return IndexOfNamedStyle(styleName) != STYLE_NOT_FOUND;
 }
 
 /*
@@ -671,12 +671,12 @@ void EditHighlightStyles(QWidget *parent, const QString &initialStyle) {
 ** Returns a unique number of a given style name
 ** If styleName is not found, return -1.
 */
-int IndexOfNamedStyle(const QString &styleName) {
+size_t IndexOfNamedStyle(const QString &styleName) {
     for (size_t i = 0; i < HighlightStyles.size(); i++) {
         if (HighlightStyles[i].name == styleName) {
-            return gsl::narrow<int>(i);
+            return i;
         }
     }
 
-    return -1;
+    return STYLE_NOT_FOUND;
 }
