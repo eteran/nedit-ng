@@ -1,7 +1,6 @@
 
 #include "DialogFilter.h"
 #include <QKeyEvent>
-#include <QtDebug>
 
 /**
  * @brief DialogFilter::DialogFilter

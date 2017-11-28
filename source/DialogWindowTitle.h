@@ -3,12 +3,11 @@
 #define DIALOG_WINDOW_TITLE_H_
 
 #include "Dialog.h"
-#include <QString>
 #include "LockReasons.h"
 #include "ui_DialogWindowTitle.h"
 
-class MainWindow;
 class DocumentWidget;
+class MainWindow;
 struct UpdateState;
 
 class DialogWindowTitle : public Dialog {
@@ -46,7 +45,7 @@ private:
 
 private:
 	void setToggleButtons();
-	void formatChangedCB();
+    void formatChangedCB();
 	QString FormatWindowTitleEx(const QString &filename, const QString &path, const QString &clearCaseViewTag, const QString &serverName, bool isServer, bool filenameSet, LockReasons lockReasons, bool fileChanged, const QString &titleFormat);
 	void removeFromFormat(const QString &string);
 	void appendToFormat(const QString &string);

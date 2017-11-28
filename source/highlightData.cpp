@@ -652,22 +652,6 @@ static bool styleErrorEx(const Input &in, const QString &message) {
 }
 
 /*
-** Present a dialog for editing highlight style information
-*/
-void EditHighlightStyles(QWidget *parent, const QString &initialStyle) {
-
-    static QPointer<DialogDrawingStyles> DrawingStyles;
-
-	if(!DrawingStyles) {
-        DrawingStyles = new DialogDrawingStyles(parent);
-	}
-	
-    DrawingStyles->setStyleByName(initialStyle);
-	DrawingStyles->show();
-	DrawingStyles->raise();
-}
-
-/*
 ** Returns a unique number of a given style name
 ** If styleName is not found, return -1.
 */

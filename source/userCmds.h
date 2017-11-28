@@ -32,6 +32,7 @@
 #include <memory>
 
 struct MenuItem;
+class MenuData;
 
 
 // types of current dialog and/or menu
@@ -58,11 +59,6 @@ struct userMenuInfo {
     size_t              umiDefaultIndex;  // array index of menu item to be used as default, if no lang. mode matches
 };
 
-struct MenuData {
-    std::shared_ptr<MenuItem>     item;
-    std::shared_ptr<userMenuInfo> info;
-};
-
 int LoadBGMenuCmdsStringEx(const QString &inString);
 int LoadMacroCmdsStringEx(const QString &inString);
 int LoadShellCmdsStringEx(const QString &inString);
@@ -77,6 +73,5 @@ MenuData *findMenuItem(const QString &name, DialogTypes type);
 extern std::vector<MenuData> ShellMenuData;
 extern std::vector<MenuData> BGMenuData;
 extern std::vector<MenuData> MacroMenuData;
-
 
 #endif

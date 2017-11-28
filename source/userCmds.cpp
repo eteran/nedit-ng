@@ -27,6 +27,7 @@
 *******************************************************************************/
 
 #include "userCmds.h"
+#include "MenuData.h"
 #include "MenuItem.h"
 #include "macro.h"
 #include "parse.h"

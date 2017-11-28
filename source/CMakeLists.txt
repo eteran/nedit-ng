@@ -191,6 +191,7 @@ add_executable(nedit-ng
 	LockReasons.h
 	MainWindow.cpp
 	MainWindow.h
+	MenuData.h
 	MenuItem.h
 	MultiClickStates.h
 	NeditServer.cpp

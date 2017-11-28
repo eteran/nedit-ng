@@ -23,7 +23,7 @@ public:
 		return text_;
 	}
 
-public Q_SLOTS:
+public:
 	void addButton(const QString &text);
 	void addButton(QDialogButtonBox::StandardButton button);
 	void setMessage(const QString &text);

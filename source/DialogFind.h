@@ -2,16 +2,13 @@
 #ifndef DIALOG_FIND_H_
 #define DIALOG_FIND_H_
 
+#include "Dialog.h"
 #include "Direction.h"
 #include "SearchType.h"
-
-#include "Dialog.h"
-#include <ctime>
-
 #include "ui_DialogFind.h"
 
-class MainWindow;
 class DocumentWidget;
+class MainWindow;
 
 class DialogFind : public Dialog {
 	Q_OBJECT
@@ -45,10 +42,10 @@ private Q_SLOTS:
 	
 public:
     MainWindow *window_;
-    DocumentWidget *document_;
-	Ui::DialogFind ui;
-	bool lastRegexCase_;        /* idem, for regex mode in find dialog */
-	bool lastLiteralCase_;      /* idem, for literal mode */	
+    DocumentWidget *document_;	
+    bool lastRegexCase_;   // idem, for regex mode in find dialog
+    bool lastLiteralCase_; // idem, for literal mode
+    Ui::DialogFind ui;
 };
 
 

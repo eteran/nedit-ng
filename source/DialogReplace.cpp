@@ -4,15 +4,12 @@
 #include "DocumentWidget.h"
 #include "MainWindow.h"
 #include "preferences.h"
-#include "regularExp.h"
-#include "search.h" // for the search type enum
-#include <QApplication>
+#include "search.h"
+
 #include <QClipboard>
 #include <QKeyEvent>
 #include <QMessageBox>
 #include <QMimeData>
-#include <QtDebug>
-#include <memory>
 
 /**
  * @brief DialogReplace::DialogReplace

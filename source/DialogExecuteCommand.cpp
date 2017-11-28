@@ -1,7 +1,6 @@
 
 #include "DialogExecuteCommand.h"
 #include <QKeyEvent>
-#include <QtDebug>
 
 /**
  * @brief DialogExecuteCommand::DialogExecuteCommand

@@ -3,8 +3,9 @@
 #define DIALOG_LANGUAGE_MODES_H_
 
 #include "Dialog.h"
-#include <memory>
 #include "ui_DialogLanguageModes.h"
+
+#include <memory>
 
 class LanguageMode;
 

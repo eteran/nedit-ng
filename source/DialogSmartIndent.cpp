@@ -3,15 +3,16 @@
 #include "DialogLanguageModes.h"
 #include "DialogSmartIndentCommon.h"
 #include "DocumentWidget.h"
-#include "LanguageMode.h"
-#include "MainWindow.h"
-#include "SmartIndentEntry.h"
-#include "interpret.h"
-#include "SignalBlocker.h"
-#include "macro.h"
-#include "preferences.h"
-#include "smartIndent.h"
 #include "Help.h"
+#include "interpret.h"
+#include "LanguageMode.h"
+#include "macro.h"
+#include "MainWindow.h"
+#include "preferences.h"
+#include "SignalBlocker.h"
+#include "SmartIndentEntry.h"
+#include "smartIndent.h"
+
 #include <QMessageBox>
 
 /**

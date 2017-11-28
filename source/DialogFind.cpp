@@ -2,17 +2,13 @@
 #include "DialogFind.h"
 #include "DocumentWidget.h"
 #include "MainWindow.h"
-#include "TextArea.h"
 #include "preferences.h"
-#include "regularExp.h"
 #include "search.h"
-#include <QApplication>
+
 #include <QClipboard>
 #include <QKeyEvent>
 #include <QMessageBox>
 #include <QMimeData>
-#include <QtDebug>
-#include <memory>
 
 /**
  * @brief DialogFind::DialogFind

@@ -2,28 +2,26 @@
 #include "DialogSyntaxPatterns.h"
 #include "DialogLanguageModes.h"
 #include "DocumentWidget.h"
-#include "HighlightData.h"
+#include "Help.h"
+#include "highlightData.h"
+#include "highlight.h"
 #include "HighlightStyle.h"
 #include "LanguageMode.h"
-#include "highlight.h"
 #include "MainWindow.h"
-#include "Help.h"
+#include "HighlightPattern.h"
 #include "PatternSet.h"
+#include "preferences.h"
 #include "SignalBlocker.h"
 #include "WindowHighlightData.h"
-#include "highlightData.h"
-#include "preferences.h"
-#include <QIntValidator>
+
 #include <QMessageBox>
-#include <QtDebug>
-#include <memory>
 
 /**
  * @brief DialogSyntaxPatterns::DialogSyntaxPatterns
  * @param parent
  * @param f
  */
-DialogSyntaxPatterns::DialogSyntaxPatterns(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f), previous_(nullptr) {
+DialogSyntaxPatterns::DialogSyntaxPatterns(MainWindow *window, Qt::WindowFlags f) : Dialog(window, f), previous_(nullptr), window_(window) {
 	ui.setupUi(this);
 
 	ui.editContextChars->setValidator(new QIntValidator(0, INT_MAX, this));
@@ -292,7 +290,7 @@ void DialogSyntaxPatterns::on_buttonLanguageMode_clicked() {
 void DialogSyntaxPatterns::on_buttonHighlightStyle_clicked() {
 	QString style = ui.comboHighlightStyle->currentText();
 	if(!style.isEmpty()) {
-        EditHighlightStyles(this, style);
+        window_->EditHighlightStyles(style);
 	}
 }
 

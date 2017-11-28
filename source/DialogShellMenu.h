@@ -3,9 +3,9 @@
 #define DIALOG_SHELL_MENU_H_
 
 #include "Dialog.h"
-#include <QList>
-#include <memory>
 #include "ui_DialogShellMenu.h"
+
+#include <memory>
 
 struct MenuItem;
 

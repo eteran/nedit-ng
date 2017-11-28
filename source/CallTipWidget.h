@@ -17,7 +17,7 @@ public:
 public:
     void showEvent(QShowEvent *event) override;
 
-public Q_SLOTS:
+private:
     void copyText();
 
 private:

@@ -2,58 +2,49 @@
 #ifndef DOCUMENT_WIDGET_H_
 #define DOCUMENT_WIDGET_H_
 
-
 #include "Bookmark.h"
+#include "CloseMode.h"
+#include "FileFormats.h"
 #include "IndentStyle.h"
 #include "LockReasons.h"
 #include "MenuItem.h"
-#include "Direction.h"
-#include "Style.h"
-#include "SearchType.h"
 #include "ShowMatchingStyle.h"
-#include "smartIndent.h"
 #include "string_view.h"
 #include "tags.h"
 #include "UndoInfo.h"
-#include "CloseMode.h"
+#include "MenuData.h"
 #include "WrapStyle.h"
-#include "WrapMode.h"
-#include "userCmds.h"
-#include "util/FileFormats.h"
 
-#include <QDialog>
+#include "ui_DocumentWidget.h"
+
 #include <QPointer>
 #include <QProcess>
 #include <QWidget>
 
-#include <vector>
-#include <deque>
-
 #include <gsl/span>
 
-#include "ui_DocumentWidget.h"
-
+class Style;
+class HighlightData;
+class HighlightPattern;
 class MainWindow;
+class PatternSet;
+class Program;
 class QFrame;
 class QLabel;
 class QMenu;
 class QSplitter;
 class QTimer;
+class RangesetTable;
+class regexp;
+class StyleTableEntry;
 class TextArea;
 class UndoInfo;
-class HighlightData;
 class WindowHighlightData;
-class Program;
-class RangesetTable;
 struct DragEndEvent;
-struct SmartIndentEvent;
-struct SmartIndentData;
 struct MacroCommandData;
 struct ShellCommandData;
-class PatternSet;
-class HighlightPattern;
-class StyleTableEntry;
-class regexp;
+struct SmartIndentData;
+struct SmartIndentEvent;
 
 template <class Ch, class Tr>
 class BasicTextBuffer;
@@ -79,10 +70,7 @@ public:
 Q_SIGNALS:
     void documentClosed();
 
-private Q_SLOTS:
-    void processFinished(int exitCode, QProcess::ExitStatus exitStatus);
-
-public Q_SLOTS:
+public:
     int findDef(TextArea *area, const QString &value, TagSearchMode search_type);
     void action_Set_Language_Mode(const QString &languageMode);
     void AddMarkEx(TextArea *area, QChar label);
@@ -198,6 +186,7 @@ public:
 #endif
 
 private:    
+    void processFinished(int exitCode, QProcess::ExitStatus exitStatus);
     bool bckError(const QString &errString, const QString &file);
     bool doOpen(const QString &name, const QString &path, int flags);
     bool doSave();

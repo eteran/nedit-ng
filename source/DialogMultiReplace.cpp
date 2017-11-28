@@ -4,7 +4,7 @@
 #include "DocumentWidget.h"
 #include "MainWindow.h"
 #include "preferences.h"
-#include "search.h"
+
 #include <QMessageBox>
 
 DialogMultiReplace::DialogMultiReplace(DialogReplace *replace, Qt::WindowFlags f) : Dialog(replace, f), replace_(replace) {

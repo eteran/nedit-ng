@@ -1,9 +1,6 @@
 
 #include "DialogMoveDocument.h"
-#include "DocumentWidget.h"
 #include "MainWindow.h"
-#include "TextArea.h"
-#include "preferences.h"
 
 /**
  * @brief DialogMoveDocument::DialogMoveDocument

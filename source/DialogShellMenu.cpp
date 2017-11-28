@@ -2,13 +2,12 @@
 #include "DialogShellMenu.h"
 #include "MainWindow.h"
 #include "MenuItem.h"
-#include "SignalBlocker.h"
-#include "interpret.h"
-#include "macro.h"
 #include "preferences.h"
+#include "SignalBlocker.h"
+#include "MenuData.h"
 #include "userCmds.h"
+
 #include <QMessageBox>
-#include <QPushButton>
 
 /**
  * @brief DialogShellMenu::DialogShellMenu

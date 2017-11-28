@@ -3,6 +3,7 @@
 #include "CommandRecorder.h"
 #include "DialogAbout.h"
 #include "DialogColors.h"
+#include "DialogDrawingStyles.h"
 #include "DialogExecuteCommand.h"
 #include "DialogFilter.h"
 #include "DialogFind.h"
@@ -30,8 +31,10 @@
 #include "Settings.h"
 #include "shift.h"
 #include "SignalBlocker.h"
+#include "smartIndent.h"
 #include "TextArea.h"
 #include "TextBuffer.h"
+#include "userCmds.h"
 #include "util/ClearCase.h"
 #include "util/fileUtils.h"
 #include "util/utils.h"
@@ -4176,8 +4179,7 @@ void MainWindow::on_action_Default_Syntax_Recognition_Patterns_triggered() {
  * @brief MainWindow::on_action_Default_Syntax_Text_Drawing_Styles_triggered
  */
 void MainWindow::on_action_Default_Syntax_Text_Drawing_Styles_triggered() {
-    // TODO(eteran): 2.0, eventually move this logic to be local
-    EditHighlightStyles(this, QString());
+    EditHighlightStyles(QString());
 }
 
 /**
@@ -5818,6 +5820,22 @@ void MainWindow::action_Detach_Document_Dialog(DocumentWidget *document) {
  */
 MainWindow *MainWindow::fromDocument(const DocumentWidget *document) {
     return qobject_cast<MainWindow *>(document->window());
+}
+
+/*
+** Present a dialog for editing highlight style information
+*/
+void MainWindow::EditHighlightStyles(const QString &initialStyle) {
+
+    static QPointer<DialogDrawingStyles> DrawingStyles;
+
+    if(!DrawingStyles) {
+        DrawingStyles = new DialogDrawingStyles(this);
+    }
+
+    DrawingStyles->setStyleByName(initialStyle);
+    DrawingStyles->show();
+    DrawingStyles->raise();
 }
 
 /*

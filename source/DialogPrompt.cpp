@@ -1,6 +1,5 @@
 
 #include "DialogPrompt.h"
-#include "preferences.h"
 #include <QPushButton>
 
 DialogPrompt::DialogPrompt(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f), result_(0) {

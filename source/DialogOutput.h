@@ -12,7 +12,7 @@ public:
     DialogOutput(QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
     ~DialogOutput() override = default;
 
-public Q_SLOTS:
+public:
 	void setText(const QString &text);
 
 private:

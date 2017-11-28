@@ -13,8 +13,10 @@ public:
     DialogRepeat(DocumentWidget *document, QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
     ~DialogRepeat() override = default;
 
-public Q_SLOTS:
-	void setCommand(const QString &command);	
+public:
+    void setCommand(const QString &command);
+
+private Q_SLOTS:
 	void on_buttonBox_accepted();
 	
 private:

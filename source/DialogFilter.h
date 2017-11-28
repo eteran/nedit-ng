@@ -3,8 +3,9 @@
 #define DIALOG_FILTER_H_
 
 #include "Dialog.h"
-#include <QStringList>
 #include "ui_DialogFilter.h"
+
+#include <QStringList>
 
 class DialogFilter : public Dialog {
 	Q_OBJECT

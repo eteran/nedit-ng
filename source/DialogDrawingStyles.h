@@ -3,8 +3,9 @@
 #define DIALOG_DRAWING_STYLES_H_
 
 #include "Dialog.h"
-#include <memory>
 #include "ui_DialogDrawingStyles.h"
+
+#include <memory>
 
 class HighlightStyle;
 
@@ -21,7 +22,7 @@ public:
     DialogDrawingStyles(QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
     ~DialogDrawingStyles() noexcept override;
 
-public Q_SLOTS:
+public:
 	void setStyleByName(const QString &name);
 
 private Q_SLOTS:

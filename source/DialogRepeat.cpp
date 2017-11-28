@@ -1,11 +1,10 @@
 
 #include "DialogRepeat.h"
-#include "DocumentWidget.h"
-#include "TextBuffer.h"
 #include "CommandRecorder.h"
+#include "DocumentWidget.h"
 #include "macro.h"
-#include "preferences.h"
-#include <QIntValidator>
+#include "TextBuffer.h"
+
 #include <QMessageBox>
 
 DialogRepeat::DialogRepeat(DocumentWidget *document, QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f), document_(document) {

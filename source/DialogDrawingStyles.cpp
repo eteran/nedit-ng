@@ -2,16 +2,14 @@
 #include "DialogDrawingStyles.h"
 #include "DocumentWidget.h"
 #include "FontType.h"
+#include "highlightData.h"
 #include "HighlightStyle.h"
 #include "MainWindow.h"
 #include "preferences.h"
 #include "SignalBlocker.h"
 #include "X11Colors.h"
-#include "highlightData.h"
+
 #include <QMessageBox>
-#include <QRegExp>
-#include <QRegExpValidator>
-#include <QtDebug>
 
 /**
  * @brief DialogDrawingStyles::DialogDrawingStyles

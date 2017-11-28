@@ -5,7 +5,6 @@
 #include "DialogOutput.h"
 #include "DialogPrint.h"
 #include "DialogReplace.h"
-#include "Direction.h"
 #include "DragEndEvent.h"
 #include "EditFlags.h"
 #include "fileUtils.h"
@@ -20,49 +19,35 @@
 #include "LanguageMode.h"
 #include "macro.h"
 #include "MainWindow.h"
-#include "parse.h"
 #include "PatternSet.h"
 #include "preferences.h"
-#include "RangesetTable.h"
 #include "search.h"
 #include "Settings.h"
 #include "SignalBlocker.h"
+#include "smartIndent.h"
 #include "SmartIndentEntry.h"
 #include "SmartIndentEvent.h"
-#include "smartIndent.h"
-#include "tags.h"
 #include "TextArea.h"
 #include "TextBuffer.h"
-#include "UndoInfo.h"
 #include "util/ClearCase.h"
 #include "utils.h"
 #include "WindowHighlightData.h"
 #include "WindowMenuEvent.h"
 #include "X11Colors.h"
+#include "userCmds.h"
 
-#include <gsl/gsl_util>
-#include <memory>
-
-#include <QBoxLayout>
 #include <QClipboard>
-#include <QDateTime>
-#include <QDesktopServices>
+#include <QFile>
 #include <QFileDialog>
-#include <QLabel>
 #include <QMessageBox>
 #include <QMimeData>
-#include <QProcess>
 #include <QRadioButton>
 #include <QSplitter>
-#include <QTextCodec>
 #include <QTemporaryFile>
 #include <QTimer>
-#include <QtDebug>
 
 #include <fcntl.h>
-#include <sys/param.h>
 #include <sys/stat.h>
-#include <sys/types.h>
 #include <unistd.h>
 
 /* data attached to window during shell command execution with
@@ -3102,7 +3087,7 @@ void DocumentWidget::open(const QString &fullpath) {
     QString filename;
     QString pathname;
 
-    if (ParseFilenameEx(fullpath, &filename, &pathname) != 0 || filename.size() + pathname.size() > MAXPATHLEN - 1) {
+    if (ParseFilenameEx(fullpath, &filename, &pathname) != 0) {
         qWarning("NEdit: invalid file name for open action: %s", qPrintable(fullpath));
         return;
     }

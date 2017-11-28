@@ -3,8 +3,9 @@
 #define DIALOG_MOVE_DOCUMENT_H_
 
 #include "Dialog.h"
-#include <vector>
 #include "ui_DialogMoveDocument.h"
+
+#include <vector>
 
 class MainWindow;
 

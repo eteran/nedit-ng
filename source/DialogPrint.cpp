@@ -1,14 +1,13 @@
 
 #include "DialogPrint.h"
-#include "Settings.h"
 #include "preferences.h"
-#include "utils.h"
+#include "Settings.h"
+
 #include <QMessageBox>
-#include <QRegExpValidator>
-#include <QStandardPaths>
 #include <QProcess>
 #include <QSettings>
-#include <QtDebug>
+#include <QStandardPaths>
+
 #include <fstream>
 
 namespace {

@@ -3,22 +3,14 @@
 #include "DocumentWidget.h"
 #include "LanguageMode.h"
 #include "MainWindow.h"
-#include "SignalBlocker.h"
-#include "TextArea.h"
-#include "highlightData.h"
 #include "preferences.h"
 #include "regularExp.h"
-#include "smartIndent.h"
-#include "tags.h"
-#include "userCmds.h"
 #include "search.h"
-#include <QIntValidator>
+#include "smartIndent.h"
+#include "TextArea.h"
+#include "userCmds.h"
+
 #include <QMessageBox>
-#include <QRegExp>
-#include <QRegExpValidator>
-#include <QString>
-#include <QStringList>
-#include <QtDebug>
 
 /**
  * @brief DialogLanguageModes::DialogLanguageModes

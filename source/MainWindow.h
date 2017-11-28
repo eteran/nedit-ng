@@ -58,6 +58,7 @@ private:
 public:
     void setAutoIndent(IndentStyle state);
     void EditHighlightPatterns();
+    void EditHighlightStyles(const QString &initialStyle);
 	DialogReplace *getDialogReplace() const;	
     size_t TabCount() const;
 	void SortTabBar();
@@ -138,7 +139,7 @@ public:
     static void RenameHighlightPattern(const QString &oldName, const QString &newName);
     static bool LMHasHighlightPatterns(const QString &languageMode);
 
-public:
+public Q_SLOTS:
     // internal variants of signals
     void action_New_Window(DocumentWidget *document);
     void action_Set_Auto_Indent(DocumentWidget *document, IndentStyle state);
@@ -223,7 +224,6 @@ public:
     void action_Unload_Tips_File(DocumentWidget *document, const QString &filename);
     void action_Upper_case(DocumentWidget *document);
 
-public Q_SLOTS:
     // has no visual shortcut at all
     void action_Next_Document();
     void action_Prev_Document();
@@ -246,7 +246,7 @@ public Q_SLOTS:
     void action_Shift_Find_Selection();
     void action_Shift_Find_Incremental();
 
-public Q_SLOTS:
+public:
     // groups
     void indentGroupTriggered(QAction *action);
     void wrapGroupTriggered(QAction *action);
@@ -396,7 +396,7 @@ public Q_SLOTS:
     void on_action_About_Qt_triggered();
     void on_action_Help_triggered();
 
-private Q_SLOTS:
+private:
     void focusChanged(QWidget *from, QWidget *to);
 
 public:

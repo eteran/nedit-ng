@@ -1,11 +1,10 @@
 
 #include "DialogColors.h"
 #include "DocumentWidget.h"
-#include "MainWindow.h"
-#include "X11Colors.h"
-#include "highlight.h"
-#include "Settings.h"
 #include "preferences.h"
+#include "Settings.h"
+#include "X11Colors.h"
+
 #include <QColorDialog>
 #include <QMessageBox>
 

@@ -1,7 +1,7 @@
 
 #include "DialogWindowSize.h"
 #include "preferences.h"
-#include <QIntValidator>
+
 #include <QMessageBox>
 
 DialogWindowSize::DialogWindowSize(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f) {

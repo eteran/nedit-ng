@@ -2,11 +2,9 @@
 #ifndef DIALOG_REPLACE_H_
 #define DIALOG_REPLACE_H_
 
+#include "Dialog.h"
 #include "Direction.h"
 #include "SearchType.h"
-#include "Dialog.h"
-#include <QPointer>
-#include <ctime>
 
 #if defined(REPLACE_SCOPE)
 #include "ui_DialogReplaceScope.h"
@@ -15,9 +13,11 @@
 #include "ui_DialogReplace.h"
 #endif
 
-class MainWindow;
-class DocumentWidget;
+#include <QPointer>
+
 class DialogMultiReplace;
+class DocumentWidget;
+class MainWindow;
 
 class DialogReplace : public Dialog {
 	Q_OBJECT

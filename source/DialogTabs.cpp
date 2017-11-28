@@ -1,12 +1,12 @@
 
 #include "DialogTabs.h"
 #include "DocumentWidget.h"
-#include "TextBuffer.h"
+#include "Help.h"
 #include "LanguageMode.h"
 #include "preferences.h"
-#include "Help.h"
+#include "TextBuffer.h"
+
 #include <QMessageBox>
-#include <QtDebug>
 
 /**
  * @brief DialogTabs::DialogTabs

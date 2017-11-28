@@ -3,8 +3,9 @@
 #define DIALOG_EXECUTE_COMMAND_H_
 
 #include "Dialog.h"
-#include <QStringList>
 #include "ui_DialogExecuteCommand.h"
+
+#include <QStringList>
 
 class DialogExecuteCommand : public Dialog {
 	Q_OBJECT

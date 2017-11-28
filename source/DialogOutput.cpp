@@ -1,6 +1,5 @@
 
 #include "DialogOutput.h"
-#include "preferences.h"
 
 /**
  * @brief DialogOutput::DialogOutput

@@ -1,13 +1,15 @@
 
 #include "DialogWindowBackgroundMenu.h"
-#include "MainWindow.h"
-#include "MenuItem.h"
-#include "SignalBlocker.h"
 #include "CommandRecorder.h"
 #include "interpret.h"
 #include "macro.h"
+#include "MainWindow.h"
+#include "MenuData.h"
+#include "MenuItem.h"
 #include "preferences.h"
+#include "SignalBlocker.h"
 #include "userCmds.h"
+
 #include <QMessageBox>
 
 /**

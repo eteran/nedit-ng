@@ -3,8 +3,9 @@
 #define DIALOG_SMART_INDENT_H_
 
 #include "Dialog.h"
-#include <memory>
 #include "ui_DialogSmartIndent.h"
+
+#include <memory>
 
 class DocumentWidget;
 class SmartIndentEntry;
@@ -27,7 +28,7 @@ private:
 	QString ensureNewline(const QString &string);
 	
 
-public Q_SLOTS:
+public:
 	void setLanguageMode(const QString &s);
 
 private Q_SLOTS:

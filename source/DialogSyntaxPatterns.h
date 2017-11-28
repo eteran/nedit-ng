@@ -3,11 +3,13 @@
 #define DIALOG_SYNTAX_PATTERNS_H_
 
 #include "Dialog.h"
-#include <memory>
 #include "ui_DialogSyntaxPatterns.h"
 
-class PatternSet;
+#include <memory>
+
 class HighlightPattern;
+class MainWindow;
+class PatternSet;
 
 class DialogSyntaxPatterns : public Dialog {
 	Q_OBJECT
@@ -19,7 +21,7 @@ private:
     };
 
 public:
-    DialogSyntaxPatterns(QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
+    DialogSyntaxPatterns(MainWindow *window, Qt::WindowFlags f = Qt::WindowFlags());
     ~DialogSyntaxPatterns() noexcept override;
 
 public:
@@ -30,7 +32,7 @@ public:
 	void RenameHighlightPattern(const QString &oldName, const QString &newName);
 	bool LMHasHighlightPatterns(const QString &languageMode);
 
-public Q_SLOTS:
+private Q_SLOTS:
 	void on_buttonLanguageMode_clicked();
 	void on_buttonHighlightStyle_clicked();
 	void on_buttonNew_clicked();
@@ -47,10 +49,8 @@ public Q_SLOTS:
 	void on_listItems_itemSelectionChanged();
 	void on_comboLanguageMode_currentIndexChanged(const QString &currentText);
 
-private Q_SLOTS:
-	void updateLabels();
-
 private:
+	void updateLabels();
 	bool updatePatternSet();
 	bool checkHighlightDialogData();
 	void setStyleMenu(const QString &name);
@@ -67,6 +67,7 @@ private:
 	Ui::DialogSyntaxPatterns ui;
 	QListWidgetItem *previous_;
 	QString previousLanguage_;
+    MainWindow *window_;
 };
 
 #endif

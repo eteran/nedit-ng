@@ -1,15 +1,13 @@
 
 #include "DialogWindowTitle.h"
 #include "DocumentWidget.h"
-#include "MainWindow.h"
 #include "Help.h"
 #include "nedit.h"
 #include "preferences.h"
+#include "SignalBlocker.h"
 #include "util/ClearCase.h"
 #include "util/fileUtils.h"
 #include "util/utils.h"
-#include <QRegExp>
-#include <QRegExpValidator>
 
 struct UpdateState {
 	bool fileNamePresent;
@@ -96,7 +94,7 @@ void DialogWindowTitle::setToggleButtons() {
  */
 void DialogWindowTitle::on_editFormat_textChanged(const QString &text) {
 	Q_UNUSED(text);
-	formatChangedCB();
+    formatChangedCB();
 }
 
 /**
@@ -104,35 +102,32 @@ void DialogWindowTitle::on_editFormat_textChanged(const QString &text) {
  */
 void DialogWindowTitle::formatChangedCB() {
 
+    bool filenameSet = ui.checkDirectoryPresent->isChecked();
 
-	bool filenameSet = ui.checkDirectoryPresent->isChecked();
-	
+    if (suppressFormatUpdate_) {
+        return; // Prevent recursive feedback
+    }
 
-	if (suppressFormatUpdate_) {
-		return; // Prevent recursive feedback 
-	}
+    QString format = ui.editFormat->text();
+    QString serverName;
+    if (ui.checkServerEqualsCC->isChecked() && ui.checkClearCasePresent->isChecked()) {
+        serverName = viewTag_;
+    } else {
+        serverName = ui.checkServerNamePresent->isChecked() ? serverName_ : QString();
+    }
 
-	QString format = ui.editFormat->text();
-	QString serverName;
-	if (ui.checkServerEqualsCC->isChecked() && ui.checkClearCasePresent->isChecked()) {
-		serverName = viewTag_;
-	} else {
-		serverName = ui.checkServerNamePresent->isChecked() ? serverName_ : QLatin1String("");
-	}
+    QString title = FormatWindowTitleEx(
+        filename_,
+        filenameSet_ ? path_ : tr("/a/very/long/path/used/as/example/"),
+        ui.checkClearCasePresent->isChecked() ? viewTag_ : QString(),
+        serverName,
+        isServer_,
+        filenameSet,
+        lockReasons_,
+        ui.checkFileModified->isChecked(),
+        format);
 
-
-	QString title = FormatWindowTitleEx(
-		filename_, 
-		filenameSet_ ? path_ : tr("/a/very/long/path/used/as/example/"), 
-		ui.checkClearCasePresent->isChecked() ? viewTag_ : QString(), 
-		serverName, 
-		isServer_, 
-		filenameSet, 
-		lockReasons_, 
-		ui.checkFileModified->isChecked(),
-		format);
-
-	ui.editPreview->setText(title);
+    ui.editPreview->setText(title);
 }
 
 /**
@@ -180,25 +175,25 @@ QString DialogWindowTitle::FormatWindowTitleEx(const QString &filename, const QS
 
 	/* Sync radio buttons with format string (in case the user entered
 	   the format manually) */
-	ui.checkFileName->setChecked(state.fileNamePresent);
-	ui.checkFileStatus->setChecked(state.fileStatusPresent);
-	ui.checkServerName->setChecked(state.serverNamePresent);
-	ui.checkClearCase->setChecked(state.clearCasePresent);
+    no_signals(ui.checkFileName)->setChecked(state.fileNamePresent);
+    no_signals(ui.checkFileStatus)->setChecked(state.fileStatusPresent);
+    no_signals(ui.checkServerName)->setChecked(state.serverNamePresent);
+    no_signals(ui.checkClearCase)->setChecked(state.clearCasePresent);
 
-	ui.checkDirectory->setChecked(state.dirNamePresent);
-	ui.checkHostName->setChecked(state.hostNamePresent);
-	ui.checkUserName->setChecked(state.userNamePresent);
+    no_signals(ui.checkDirectory)->setChecked(state.dirNamePresent);
+    no_signals(ui.checkHostName)->setChecked(state.hostNamePresent);
+    no_signals(ui.checkUserName)->setChecked(state.userNamePresent);
 
-	ui.checkBrief->setEnabled(state.fileStatusPresent);
+    ui.checkBrief->setEnabled(state.fileStatusPresent);
 
 
 	if (state.fileStatusPresent) {
-		ui.checkBrief->setChecked(state.shortStatus);
+        no_signals(ui.checkBrief)->setChecked(state.shortStatus);
 	}
 
 	// Directory components are also sensitive to presence of dir 
-	ui.editDirectory->setEnabled(state.dirNamePresent);
-	ui.labelDirectory->setEnabled(state.dirNamePresent);
+    ui.editDirectory->setEnabled(state.dirNamePresent);
+    ui.labelDirectory->setEnabled(state.dirNamePresent);
 
 	// Avoid erasing number when not active 
 	if (state.dirNamePresent)  {

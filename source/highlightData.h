@@ -48,7 +48,6 @@ QString BgColorOfNamedStyleEx(const QString &styleName);
 QString ColorOfNamedStyleEx(const QString &styleName);
 QString WriteHighlightStringEx();
 QString WriteStylesStringEx();
-void EditHighlightStyles(QWidget *parent, const QString &initialStyle);
 void RenameHighlightPattern(const QString &oldName, const QString &newName);
 std::unique_ptr<PatternSet> readDefaultPatternSet(const QString &langModeName);
 

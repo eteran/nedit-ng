@@ -5,9 +5,9 @@
 #include "Dialog.h"
 #include "ui_DialogMultiReplace.h"
 
-class MainWindow;
-class DocumentWidget;
 class DialogReplace;
+class DocumentWidget;
+class MainWindow;
 
 class DialogMultiReplace : public Dialog {
 	Q_OBJECT

@@ -1,8 +1,6 @@
 
 #include "DialogDuplicateTags.h"
 #include "DocumentWidget.h"
-#include "tags.h"
-#include <QPushButton>
 
 /**
  * @brief DialogDuplicateTags::DialogDuplicateTags

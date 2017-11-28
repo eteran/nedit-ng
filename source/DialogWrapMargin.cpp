@@ -1,7 +1,8 @@
 
 #include "DialogWrapMargin.h"
-#include "preferences.h"
 #include "DocumentWidget.h"
+#include "preferences.h"
+
 #include <QMessageBox>
 
 DialogWrapMargin::DialogWrapMargin(DocumentWidget *document, QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f), document_(document) {
