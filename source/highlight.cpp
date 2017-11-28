@@ -132,7 +132,7 @@ void SyntaxHighlightModifyCBEx(int pos, int nInserted, int nDeleted, int nRestyl
     /* First and foremost, the style buffer must track the text buffer
        accurately and correctly */
     if (nInserted > 0) {
-        std::string insStyle(nInserted, UNFINISHED_STYLE);
+        std::string insStyle(static_cast<size_t>(nInserted), UNFINISHED_STYLE);
         highlightData->styleBuffer->BufReplaceEx(pos, pos + nDeleted, insStyle);
     } else {
         highlightData->styleBuffer->BufRemove(pos, pos + nDeleted);
@@ -1010,7 +1010,7 @@ static void recolorSubexpr(const std::shared_ptr<regexp> &re, int subexpr, int s
 
 	const char *stringPtr = re->startp[subexpr];
 	char *stylePtr        = &styleString[stringPtr - string];
-	fillStyleString(&stringPtr, &stylePtr, re->endp[subexpr], style, nullptr);
+    fillStyleString(&stringPtr, &stylePtr, re->endp[subexpr], static_cast<uint8_t>(style), nullptr);
 }
 
 /*

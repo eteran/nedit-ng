@@ -458,7 +458,7 @@ bool DialogLanguageModes::updateLMList(Mode mode) {
                         window->updateLanguageModeSubmenu();
 
                         // update the language mode of this window (document)
-                        document->languageMode_ = i;
+                        document->languageMode_ = static_cast<size_t>(i);
                         break;
                     }
                 }

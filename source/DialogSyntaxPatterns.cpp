@@ -778,7 +778,7 @@ bool DialogSyntaxPatterns::updatePatternSet() {
         PatternSets.push_back(*patSet);
 		oldNum = 0;
 	} else {
-        oldNum = it->patterns.size();
+        oldNum = gsl::narrow<int>(it->patterns.size());
         *it = *patSet;
 	}
 

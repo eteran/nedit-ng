@@ -47,8 +47,6 @@ class Settings;
 
 enum ColorTypes : int;
 
-
-
 bool GetPrefAlwaysCheckRelTagsSpecs();
 bool GetPrefAppendLF();
 bool GetPrefAutoSave();

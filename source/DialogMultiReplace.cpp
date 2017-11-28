@@ -77,7 +77,7 @@ void DialogMultiReplace::on_buttonReplace_clicked() {
     for (size_t i = 0; i < writableWindows.size(); ++i) {
         DocumentWidget *writableWin = writableWindows[i];
 
-		if(ui.listFiles->item(i)->isSelected()) {
+        if(ui.listFiles->item(gsl::narrow<int>(i))->isSelected()) {
 		
             /* First check again whether the file is still writable. If the
              * file status has changed or the file was locked in the mean time,
