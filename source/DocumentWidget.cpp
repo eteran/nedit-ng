@@ -474,6 +474,10 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
  */
 DocumentWidget::~DocumentWidget() noexcept {
 
+    // NOTE(eteran): we probably don't need to be doing so much work here
+    // a lot (almost all?) of this will get cleaned up as a side effect of
+    // deletion anyway. But we'll save that refactor for another day
+
     // first delete all of the text area's so that they can properly
     // remove themselves from the buffer's callbacks
     const std::vector<TextArea *> textAreas = textPanes();
