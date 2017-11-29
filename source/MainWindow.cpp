@@ -1846,8 +1846,10 @@ void MainWindow::updatePrevOpenMenu() {
  * @param index
  */
 void MainWindow::on_tabWidget_currentChanged(int index) {
-    if(auto document = documentAt(static_cast<size_t>(index))) {
-        document->documentRaised();
+    if(index != -1) {
+        if(auto document = documentAt(static_cast<size_t>(index))) {
+            document->documentRaised();
+        }
     }
 }
 
@@ -5139,14 +5141,15 @@ void MainWindow::closeEvent(QCloseEvent *event) {
                 document->CloseFileAndWindow(CloseMode::Prompt);
             }
         } else {
-            int resp = QMessageBox::Cancel;
+            int resp = QMessageBox::Close;
             if (GetPrefWarnExit()) {
-                // TODO(eteran): 2.0 this is probably better off with "Ok" "Cancel", but we are being consistant with the original UI for now
+                /* TODO(eteran): 2.0 this is probably better off with
+                 * "Ok" "Cancel", but we are being consistant with the original
+                 * UI for now */
                 resp = QMessageBox::question(this,
                                              tr("Close Window"),
                                              tr("Close ALL documents in this window?"),
-                                             QMessageBox::Cancel,
-                                             QMessageBox::Close);
+                                             QMessageBox::Close | QMessageBox::Cancel);
             }
 
             if (resp == QMessageBox::Close) {

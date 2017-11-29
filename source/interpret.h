@@ -300,7 +300,7 @@ inline DataValue to_value(const view::string_view str) {
     return DV;
 }
 
-// TODO(eteran): 2.0, deprecate this API
+// NOTE(eteran): this is a non-owning API
 inline DataValue to_value(char *str, int size) {
     DataValue DV;
     DV.tag     = STRING_TAG;

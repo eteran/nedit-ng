@@ -4,8 +4,8 @@
 
 #include <memory>
 
-class MenuItem;
-class userMenuInfo;
+struct MenuItem;
+struct userMenuInfo;
 
 struct MenuData {
     std::shared_ptr<MenuItem>     item;

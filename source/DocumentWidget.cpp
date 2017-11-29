@@ -1973,7 +1973,7 @@ QString DocumentWidget::backupFileNameEx() const {
 */
 void DocumentWidget::CheckForChangesToFileEx() {
 
-	// TODO(eteran): 2.0, this concept can be reworked in terms of QFileSystemWatcher
+    // TODO(eteran): 2.0, this concept can probably be reworked in terms of QFileSystemWatcher
     static QPointer<DocumentWidget> lastCheckWindow;
     static qint64 lastCheckTime = 0;
 
@@ -2076,7 +2076,7 @@ void DocumentWidget::CheckForChangesToFileEx() {
             }
 
             // A missing or (re-)saved file can't be read-only.
-            // TODO: A document without a file can be locked though.
+            // NOTE: A document without a file can be locked though.
             // Make sure that the window was not destroyed behind our back!
             lockReasons_.setPermLocked(false);
             win->UpdateWindowTitle(this);

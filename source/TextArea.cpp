@@ -3503,7 +3503,7 @@ void TextArea::drawString(QPainter *painter, int style, int x, int y, int toX, c
 
     QRect rect(x, y, toX - x, ascent_ + descent_);
 
-    // TODO(eteran): 2.0, OPTIMIZATION: since Qt will auto-fill the BG with the
+    // TODO(eteran): 2.0, OPTIMIZATION? since Qt will auto-fill the BG with the
 	//               default base color we only need to play with the
 	//               background mode if drawing a non-base color.
 	//               Probably same with font
@@ -7163,6 +7163,7 @@ void TextArea::MovePrimarySelection(bool isColumnar) {
 	   clientData[1] for targets[0] */
 	XtGetSelectionValues(w_, XA_PRIMARY, targets, 2, getSelectionCB, clientData, time);
 #endif
+    qWarning("move_primary is not implemented");
 }
 
 

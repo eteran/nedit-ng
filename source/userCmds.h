@@ -32,7 +32,7 @@
 #include <memory>
 
 struct MenuItem;
-class MenuData;
+struct MenuData;
 
 
 // types of current dialog and/or menu
