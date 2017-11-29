@@ -50,6 +50,7 @@ private:
     std::unique_ptr<HighlightStyle> readDialogFields(Mode mode);
 	bool updateCurrentItem();
     bool updateCurrentItem(const QModelIndex &index);
+    int countPlainEntries() const;
 
 private:
 	Ui::DialogDrawingStyles ui;

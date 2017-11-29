@@ -226,7 +226,12 @@ void DialogDrawingStyles::currentChanged(const QModelIndex &current, const QMode
 
     // NOTE(eteran): this is only safe if we aren't moving due to a delete operation
     if(previous.isValid() && previous != deleted_) {
-        updateCurrentItem(previous);
+        if(!updateCurrentItem(previous)) {
+            // reselect the old item
+            canceled = true;
+            Q_EMIT restore(previous);
+            return;
+        }
     }
 
     // previous was OK, so let's update the contents of the dialog
@@ -259,15 +264,7 @@ void DialogDrawingStyles::currentChanged(const QModelIndex &current, const QMode
         // don't allow deleteing the last "Plain" entry since it's reserved
         if (style->name == tr("Plain")) {
             // unless there is more than one "Plain"
-            int count = 0;
-            for(int i = 0; i < model_->rowCount(); ++i) {
-                QModelIndex index = model_->index(i, 0);
-                auto style = reinterpret_cast<const HighlightStyle*>(index.internalPointer());
-                if(style->name == tr("Plain")) {
-                    ++count;
-                }
-            }
-
+            int count = countPlainEntries();
             if(count < 2) {
                 ui.buttonDelete->setEnabled(false);
             }
@@ -413,6 +410,13 @@ bool DialogDrawingStyles::updateHSList() {
 	// update the currently selected item's associated data
 	// and make sure it has the text updated as well
     auto ptr = reinterpret_cast<HighlightStyle*>(index.internalPointer());
+    if(ptr->name == tr("Plain") && dialogFields->name != tr("Plain")) {
+        int count = countPlainEntries();
+        if(count < 2) {
+            QMessageBox::information(this, tr("Highlight Style"), tr("There must be at least one Plain entry. Cannot rename this entry."));
+            return false;
+        }
+    }
     *ptr = *dialogFields;
 
 	// Replace the old highlight styles list with the new one from the dialog 
@@ -457,8 +461,18 @@ bool DialogDrawingStyles::updateCurrentItem(const QModelIndex &index) {
     }
 
     // update the currently selected item's associated data
-    // and make sure it has the text updated as well
+    // and make sure it has the text updated as well. Disallow renaming
+    // the last "Plain" entry though
     auto ptr = reinterpret_cast<HighlightStyle*>(index.internalPointer());
+    if(ptr->name == tr("Plain") && dialogFields->name != tr("Plain")) {
+        int count = countPlainEntries();
+        if(count < 2) {
+            QMessageBox::information(this, tr("Highlight Style"), tr("There must be at least one Plain entry. Cannot rename this entry."));
+            return false;
+        }
+    }
+
+
     *ptr = *dialogFields;
 	return true;
 }
@@ -470,4 +484,20 @@ bool DialogDrawingStyles::updateCurrentItem(const QModelIndex &index) {
 bool DialogDrawingStyles::updateCurrentItem() {
     QModelIndex index = ui.listItems->currentIndex();
     return updateCurrentItem(index);
+}
+
+/**
+ * @brief DialogDrawingStyles::countPlainEntries
+ * @return
+ */
+int DialogDrawingStyles::countPlainEntries() const {
+    int count = 0;
+    for(int i = 0; i < model_->rowCount(); ++i) {
+        QModelIndex index = model_->index(i, 0);
+        auto style = reinterpret_cast<const HighlightStyle*>(index.internalPointer());
+        if(style->name == tr("Plain")) {
+            ++count;
+        }
+    }
+    return count;
 }
