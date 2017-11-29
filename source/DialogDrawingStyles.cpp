@@ -334,7 +334,7 @@ std::unique_ptr<HighlightStyle> DialogDrawingStyles::readDialogFields(Mode mode)
 
     // read the color field 
     QString color = ui.editColorFG->text().simplified();
-    if (color.isNull()) {
+    if (color.isEmpty()) {
     	return nullptr;
     }
 
