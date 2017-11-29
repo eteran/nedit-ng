@@ -28,7 +28,6 @@
 *******************************************************************************/
 
 #include "highlightData.h"
-#include "DialogDrawingStyles.h"
 #include "DialogLanguageModes.h"
 #include "DialogSyntaxPatterns.h"
 #include "DocumentWidget.h"
@@ -86,7 +85,7 @@ std::vector<PatternSet> PatternSets;
 /*
 ** Read a string (from the  value of the styles resource) containing highlight
 ** styles information, parse it, and load it into the stored highlight style
-** list (HighlightStyles) for this NEdit session.
+** list.
 */
 bool LoadStylesStringEx(const QString &string) {
 
@@ -170,7 +169,7 @@ bool LoadStylesStringEx(const QString &string) {
 /*
 ** Create a string in the correct format for the styles resource, containing
 ** all of the highlight styles information from the stored highlight style
-** list (HighlightStyles) for this NEdit session.
+** list
 */
 QString WriteStylesStringEx() {
 

@@ -33,7 +33,7 @@
 class PatternSet;
 class QString;
 class QWidget;
-class HighlightStyle;
+struct HighlightStyle;
 
 constexpr auto STYLE_NOT_FOUND = static_cast<size_t>(-1);
 

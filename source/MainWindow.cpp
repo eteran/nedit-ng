@@ -5814,15 +5814,9 @@ MainWindow *MainWindow::fromDocument(const DocumentWidget *document) {
 */
 void MainWindow::EditHighlightStyles(const QString &initialStyle) {
 
-    static QPointer<DialogDrawingStyles> DrawingStyles;
-
-    if(!DrawingStyles) {
-        DrawingStyles = new DialogDrawingStyles(this);
-    }
-
+    auto DrawingStyles = std::make_unique<DialogDrawingStyles>(HighlightStyles, this);
     DrawingStyles->setStyleByName(initialStyle);
-    DrawingStyles->show();
-    DrawingStyles->raise();
+    DrawingStyles->exec();
 }
 
 /*
@@ -5866,10 +5860,9 @@ void MainWindow::UpdateLanguageModeMenu() {
     SyntaxPatterns->UpdateLanguageModeMenu();
 }
 
-/*
-** If a syntax highlighting dialog is up, ask to have the option menu for
-** chosing highlight styles updated (via a call to createHighlightStylesMenu)
-*/
+/**
+ * @brief MainWindow::updateHighlightStyleMenu
+ */
 void MainWindow::updateHighlightStyleMenu() {
     if(!SyntaxPatterns) {
         return;

@@ -111,6 +111,15 @@ constexpr CharMatchTable MatchingChars[] = {
     {'\\', '\\', Direction::Forward},
 };
 
+constexpr CharMatchTable FlashingChars[] = {
+    {'{', '}',   Direction::Forward},
+    {'}', '{',   Direction::Backward},
+    {'(', ')',   Direction::Forward},
+    {')', '(',   Direction::Backward},
+    {'[', ']',   Direction::Forward},
+    {']', '[',   Direction::Backward},
+};
+
 /*
  * Number of bytes read at once by cmpWinAgainstFile
  */
@@ -1344,16 +1353,13 @@ void DocumentWidget::StopHighlightingEx() {
         return;
     }
 
-    if(TextArea *area = firstPane()) {
+    // Free and remove the highlight data from the window
+    highlightData_ = nullptr;
 
-        // Free and remove the highlight data from the window
-        highlightData_ = nullptr;
-
-        /* Remove and detach style buffer and style table from all text
-           display(s) of window, and redisplay without highlighting */
-        for(TextArea *area : textPanes()) {
-            RemoveWidgetHighlightEx(area);
-        }
+    /* Remove and detach style buffer and style table from all text
+       display(s) of window, and redisplay without highlighting */
+    for(TextArea *area : textPanes()) {
+        RemoveWidgetHighlightEx(area);
     }
 }
 
@@ -5454,12 +5460,11 @@ void DocumentWidget::FlashMatchingEx(TextArea *area) {
     int matchPos;
 
     // is the character one we want to flash?
-    //constexpr CharMatchTable MatchingChars[];
-    auto matchIt = std::find_if(std::begin(MatchingChars), std::end(MatchingChars), [ch](const CharMatchTable &entry) {
+    auto matchIt = std::find_if(std::begin(FlashingChars), std::end(FlashingChars), [ch](const CharMatchTable &entry) {
         return entry.c == ch;
     });
 
-    if(matchIt == std::end(MatchingChars)) {
+    if(matchIt == std::end(FlashingChars)) {
         return;
     }
 

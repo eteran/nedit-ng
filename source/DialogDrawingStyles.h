@@ -3,11 +3,12 @@
 #define DIALOG_DRAWING_STYLES_H_
 
 #include "Dialog.h"
+#include "HighlightStyle.h"
 #include "ui_DialogDrawingStyles.h"
 
 #include <memory>
 
-class HighlightStyle;
+class HighlightStyleModel;
 
 class DialogDrawingStyles : public Dialog {
 	Q_OBJECT
@@ -19,14 +20,20 @@ private:
     };
 
 public:
-    DialogDrawingStyles(QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
-    ~DialogDrawingStyles() noexcept override;
+    DialogDrawingStyles(std::vector<HighlightStyle> &highlightStyles, QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
+    ~DialogDrawingStyles() noexcept override = default;
 
 public:
 	void setStyleByName(const QString &name);
 
+Q_SIGNALS:
+    void restore(const QModelIndex &selection);
+
 private Q_SLOTS:
-	void on_listItems_itemSelectionChanged();
+    void currentChanged(const QModelIndex &current, const QModelIndex &previous);
+    void restoreSlot(const QModelIndex &index);
+
+private Q_SLOTS:
 	void on_buttonNew_clicked();
 	void on_buttonCopy_clicked();
 	void on_buttonDelete_clicked();
@@ -36,16 +43,19 @@ private Q_SLOTS:
 	void on_buttonBox_accepted();
 	
 private:
+    void updateButtonStates(const QModelIndex &current);
+    void updateButtonStates();
 	bool updateHSList();
     bool checkCurrent(Mode mode);
     std::unique_ptr<HighlightStyle> readDialogFields(Mode mode);
-	HighlightStyle *itemFromIndex(int i) const;
 	bool updateCurrentItem();
-	bool updateCurrentItem(QListWidgetItem *item);		
+    bool updateCurrentItem(const QModelIndex &index);
 
 private:
 	Ui::DialogDrawingStyles ui;
-	QListWidgetItem *previous_;
+    HighlightStyleModel *model_;
+    std::vector<HighlightStyle> &highlightStyles_;
+    QModelIndex deleted_;
 };
 
 #endif

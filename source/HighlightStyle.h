@@ -3,13 +3,13 @@
 #define HIGHLIGHT_STYLE_H_
 
 #include <QString>
+#include "FontType.h"
 
-class HighlightStyle {
-public:
+struct HighlightStyle {
 	QString name;
 	QString color;
 	QString bgColor;
-	int     font;
+    int     font = PLAIN_FONT;
 };
 
 #endif
