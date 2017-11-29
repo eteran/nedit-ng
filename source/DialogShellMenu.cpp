@@ -23,7 +23,7 @@ DialogShellMenu::DialogShellMenu(QWidget *parent, Qt::WindowFlags f) : Dialog(pa
 
     // Copy the list of menu information to one that the user can freely edit
     for(MenuData &data : ShellMenuData) {
-        model_->addItem(*data.item);
+        model_->addItem(data.item);
     }
 
     connect(ui.listItems->selectionModel(), &QItemSelectionModel::currentChanged, this, &DialogShellMenu::currentChanged, Qt::QueuedConnection);
@@ -406,7 +406,7 @@ bool DialogShellMenu::applyDialogChanges() {
     for(int i = 0; i < model_->rowCount(); ++i) {
         QModelIndex index = model_->index(i, 0);
         auto item = model_->itemFromIndex(index);
-        ShellMenuData.push_back({ std::make_unique<MenuItem>(*item), nullptr });
+        ShellMenuData.push_back({ *item, nullptr });
     }
 
     parseMenuItemList(ShellMenuData);

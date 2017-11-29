@@ -64,7 +64,7 @@ static QString copyMacroToEndEx(Input &in);
 static int loadMenuItemStringEx(const QString &inString, std::vector<MenuData> &menuItems, DialogTypes listType);
 static QString stripLanguageModeEx(const QString &menuItemName);
 static QString writeMenuItemStringEx(const std::vector<MenuData> &menuItems, DialogTypes listType);
-static std::shared_ptr<userMenuInfo> parseMenuItemRec(const std::shared_ptr<MenuItem> &item);
+static std::shared_ptr<userMenuInfo> parseMenuItemRec(const MenuItem &item);
 static void parseMenuItemName(const QString &menuItemName, const std::shared_ptr<userMenuInfo> &info);
 static void setDefaultIndex(const std::vector<MenuData> &infoList, size_t index);
 
@@ -85,7 +85,7 @@ std::vector<MenuData> &selectMenu(DialogTypes type) {
 MenuData *findMenuItem(const QString &name, DialogTypes type) {
 
     for(MenuData &data: selectMenu(type)) {
-        if (data.item->name == name) {
+        if (data.item.name == name) {
             return &data;
         }
     }
@@ -169,10 +169,10 @@ static QString writeMenuItemStringEx(const std::vector<MenuData> &menuItems, Dia
     for (const MenuData &data : menuItems) {
         auto &f = data.item;
 
-        QString accStr = f->shortcut.toString();
+        QString accStr = f.shortcut.toString();
         *outPtr++ = QLatin1Char('\t');
 
-        Q_FOREACH(QChar ch, f->name) { // Copy the command name
+        Q_FOREACH(QChar ch, f.name) { // Copy the command name
             *outPtr++ = ch;
         }
 
@@ -181,7 +181,7 @@ static QString writeMenuItemStringEx(const std::vector<MenuData> &menuItems, Dia
 
         *outPtr++ = QLatin1Char(':');
         if (listType == DialogTypes::SHELL_CMDS) {
-            switch(f->input) {
+            switch(f.input) {
             case FROM_SELECTION: *outPtr++ = QLatin1Char('I'); break;
             case FROM_WINDOW:    *outPtr++ = QLatin1Char('A'); break;
             case FROM_EITHER:    *outPtr++ = QLatin1Char('E'); break;
@@ -189,20 +189,20 @@ static QString writeMenuItemStringEx(const std::vector<MenuData> &menuItems, Dia
                 break;
             }
 
-            switch(f->output) {
+            switch(f.output) {
             case TO_DIALOG:     *outPtr++ = QLatin1Char('D'); break;
             case TO_NEW_WINDOW: *outPtr++ = QLatin1Char('W'); break;
             default:
                 break;
             }
 
-            if (f->repInput)  *outPtr++ = QLatin1Char('X');
-            if (f->saveFirst) *outPtr++ = QLatin1Char('S');
-            if (f->loadAfter) *outPtr++ = QLatin1Char('L');
+            if (f.repInput)  *outPtr++ = QLatin1Char('X');
+            if (f.saveFirst) *outPtr++ = QLatin1Char('S');
+            if (f.loadAfter) *outPtr++ = QLatin1Char('L');
 
             *outPtr++ = QLatin1Char(':');
         } else {
-            if (f->input == FROM_SELECTION) {
+            if (f.input == FROM_SELECTION) {
                 *outPtr++ = QLatin1Char('R');
             }
 
@@ -215,7 +215,7 @@ static QString writeMenuItemStringEx(const std::vector<MenuData> &menuItems, Dia
         *outPtr++ = QLatin1Char('\t');
         *outPtr++ = QLatin1Char('\t');
 
-        Q_FOREACH(QChar ch, f->cmd) {
+        Q_FOREACH(QChar ch, f.cmd) {
             if (ch == QLatin1Char('\n')) { // and newlines to backslash-n's,
                 *outPtr++ = QLatin1Char('\n');
                 *outPtr++ = QLatin1Char('\t');
@@ -373,13 +373,13 @@ static int loadMenuItemStringEx(const QString &inString, std::vector<MenuData> &
 
             // add/replace menu record in the list
             auto it = std::find_if(menuItems.begin(), menuItems.end(), [&f](MenuData &data) {
-                return data.item->name == f->name;
+                return data.item.name == f->name;
             });
 
             if(it == menuItems.end()) {
-                menuItems.push_back({ std::move(f), nullptr });
+                menuItems.push_back({ *f, nullptr });
             } else {
-                it->item = std::move(f);
+                it->item = *f;
             }
         }
     } catch(const ParseError &ex) {
@@ -499,21 +499,21 @@ void parseMenuItemList(std::vector<MenuData> &itemList) {
 ** Parse a single menu item. Allocate & setup a user menu info element
 ** holding extracted info.
 */
-static std::shared_ptr<userMenuInfo> parseMenuItemRec(const std::shared_ptr<MenuItem> &item) {
+static std::shared_ptr<userMenuInfo> parseMenuItemRec(const MenuItem &item) {
 
 	// allocate a new user menu info element 
     auto newInfo = std::make_shared<userMenuInfo>();
 
 	/* determine sub-menu depth and allocate some memory
 	   for hierarchical ID; init. ID with {0,.., 0} */
-	newInfo->umiName = stripLanguageModeEx(item->name);
+    newInfo->umiName = stripLanguageModeEx(item.name);
 
 	// init. remaining parts of user menu info element 
     newInfo->umiIsDefault    = false;
     newInfo->umiDefaultIndex = -1;
 
 	// assign language mode info to new user menu info element 
-    parseMenuItemName(item->name, newInfo);
+    parseMenuItemName(item.name, newInfo);
 
     return newInfo;
 }

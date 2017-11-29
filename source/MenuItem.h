@@ -5,6 +5,7 @@
 #include <QKeySequence>
 #include <QString>
 #include <cstdint>
+#include <memory>
 
 // sources for command input and destinations for command output
 enum InSrcs   : uint8_t { FROM_SELECTION, FROM_WINDOW, FROM_EITHER, FROM_NONE };

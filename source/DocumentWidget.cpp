@@ -1424,7 +1424,7 @@ void DocumentWidget::dimSelDepItemsInMenu(QMenu *menuPane, const gsl::span<MenuD
                     return;
                 }
 
-                if (menuList[index].item->input == FROM_SELECTION) {
+                if (menuList[index].item.input == FROM_SELECTION) {
                     action->setEnabled(enabled);
                 }
             }

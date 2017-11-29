@@ -1201,22 +1201,22 @@ QMenu *MainWindow::createUserMenu(DocumentWidget *document, const gsl::span<Menu
                 // create the actual action or, if it represents one of our
                 // *very* common entries make it equivalent to the global
                 // QAction representing that task
-                if(menuData.item->cmd.trimmed() == QLatin1String("cut_clipboard()")) {
+                if(menuData.item.cmd.trimmed() == QLatin1String("cut_clipboard()")) {
                     parentMenu->addAction(ui.action_Cut);
-                } else if(menuData.item->cmd.trimmed() == QLatin1String("copy_clipboard()")) {
+                } else if(menuData.item.cmd.trimmed() == QLatin1String("copy_clipboard()")) {
                     parentMenu->addAction(ui.action_Copy);
-                } else if(menuData.item->cmd.trimmed() == QLatin1String("paste_clipboard()")) {
+                } else if(menuData.item.cmd.trimmed() == QLatin1String("paste_clipboard()")) {
                     parentMenu->addAction(ui.action_Paste);
-                } else if(menuData.item->cmd.trimmed() == QLatin1String("undo()")) {
+                } else if(menuData.item.cmd.trimmed() == QLatin1String("undo()")) {
                     parentMenu->addAction(ui.action_Undo);
-                } else if(menuData.item->cmd.trimmed() == QLatin1String("redo()")) {
+                } else if(menuData.item.cmd.trimmed() == QLatin1String("redo()")) {
                     parentMenu->addAction(ui.action_Redo);
                 } else {
                     QAction *action = parentMenu->addAction(name);
                     action->setData(i);
 
-                    if(!menuData.item->shortcut.isEmpty()) {
-                        action->setShortcut(menuData.item->shortcut);
+                    if(!menuData.item.shortcut.isEmpty()) {
+                        action->setShortcut(menuData.item.shortcut);
                     }
                 }
                 break;
@@ -5688,7 +5688,7 @@ void MainWindow::on_action_Execute_Command_triggered() {
  */
 void MainWindow::shellTriggered(QAction *action) {
     const auto index = action->data().toUInt();
-    const QString name = ShellMenuData[index].item->name;
+    const QString name = ShellMenuData[index].item.name;
 
     if(DocumentWidget *document = currentDocument()) {
         action_Shell_Menu_Command(document, name);
@@ -5729,7 +5729,7 @@ void MainWindow::macroTriggered(QAction *action) {
         }
 
         const auto index = action->data().toUInt();
-        const QString name = MacroMenuData[index].item->name;
+        const QString name = MacroMenuData[index].item.name;
         action_Macro_Menu_Command(document, name);
     }
 }
@@ -7127,19 +7127,19 @@ bool MainWindow::DoNamedShellMenuCmd(DocumentWidget *document, TextArea *area, c
 
     if(MenuData *p = findMenuItem(name, DialogTypes::SHELL_CMDS)) {
 
-        if (p->item->output == TO_SAME_WINDOW && document->CheckReadOnly()) {
+        if (p->item.output == TO_SAME_WINDOW && document->CheckReadOnly()) {
             return false;
         }
 
         document->DoShellMenuCmd(
             this,
             area,
-            p->item->cmd,
-            p->item->input,
-            p->item->output,
-            p->item->repInput,
-            p->item->saveFirst,
-            p->item->loadAfter,
+            p->item.cmd,
+            p->item.input,
+            p->item.output,
+            p->item.repInput,
+            p->item.saveFirst,
+            p->item.loadAfter,
             fromMacro);
 
         return true;
@@ -7160,7 +7160,7 @@ bool MainWindow::DoNamedMacroMenuCmd(DocumentWidget *document, TextArea *area, c
 
     if(MenuData *p = findMenuItem(name, DialogTypes::MACRO_CMDS)) {
         document->DoMacroEx(
-            p->item->cmd,
+            p->item.cmd,
             tr("macro menu command"));
 
         return true;
@@ -7184,7 +7184,7 @@ bool MainWindow::DoNamedBGMenuCmd(DocumentWidget *document, TextArea *area, cons
 
     if(MenuData *p = findMenuItem(name, DialogTypes::BG_MENU_CMDS)) {
         document->DoMacroEx(
-            p->item->cmd,
+            p->item.cmd,
             tr("background menu macro"));
 
         return true;
