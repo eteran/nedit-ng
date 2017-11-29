@@ -202,7 +202,7 @@ void DialogDrawingStyles::currentChanged(const QModelIndex &current, const QMode
 
     // if we are actually switching items, check that the previous one was valid
     // so we can optionally cancel
-    if(previous.isValid() && !checkCurrent(Mode::Silent)) {
+    if(previous.isValid() && previous != deleted_ && !checkCurrent(Mode::Silent)) {
         QMessageBox messageBox(this);
         messageBox.setWindowTitle(tr("Discard Entry"));
         messageBox.setIcon(QMessageBox::Warning);
