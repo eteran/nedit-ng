@@ -433,13 +433,15 @@ bool DialogMacros::applyDialogChanges() {
         *ptr = *dialogFields;
     }
 
-    MacroMenuData.clear();
+    std::vector<MenuData> newItems;
 
     for(int i = 0; i < model_->rowCount(); ++i) {
         QModelIndex index = model_->index(i, 0);
         auto item = model_->itemFromIndex(index);
-        MacroMenuData.push_back({ *item, nullptr });
+        newItems.push_back({ *item, nullptr });
     }
+
+    MacroMenuData = newItems;
 
     parseMenuItemList(MacroMenuData);
 
@@ -450,7 +452,6 @@ bool DialogMacros::applyDialogChanges() {
 	
 	// Note that preferences have been changed
 	MarkPrefsChanged();
-
 	return true;
 }
 

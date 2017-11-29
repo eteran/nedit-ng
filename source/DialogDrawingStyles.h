@@ -45,7 +45,7 @@ private Q_SLOTS:
 private:
     void updateButtonStates(const QModelIndex &current);
     void updateButtonStates();
-	bool updateHSList();
+    bool applyDialogChanges();
     bool checkCurrent(Mode mode);
     std::unique_ptr<HighlightStyle> readDialogFields(Mode mode);
 	bool updateCurrentItem();

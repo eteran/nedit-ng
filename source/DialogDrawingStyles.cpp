@@ -277,7 +277,7 @@ void DialogDrawingStyles::currentChanged(const QModelIndex &current, const QMode
  */
 void DialogDrawingStyles::on_buttonBox_accepted() {
 
-	if (!updateHSList()) {
+    if (!applyDialogChanges()) {
 		return;
 	}
 	
@@ -291,7 +291,7 @@ void DialogDrawingStyles::on_buttonBox_accepted() {
  */
 void DialogDrawingStyles::on_buttonBox_clicked(QAbstractButton *button) {
 	if(ui.buttonBox->standardButton(button) == QDialogButtonBox::Apply) {
-		updateHSList();
+        applyDialogChanges();
 	}
 }
 
@@ -393,30 +393,34 @@ std::unique_ptr<HighlightStyle> DialogDrawingStyles::readDialogFields(Mode mode)
  * @brief DialogDrawingStyles::updateHSList
  * @return
  */
-bool DialogDrawingStyles::updateHSList() {
+bool DialogDrawingStyles::applyDialogChanges() {
 
-    auto dialogFields = readDialogFields(Mode::Verbose);
-    if(!dialogFields) {
-		return false;
-	}
-
-    // Get the current selected item
-    QModelIndex index = ui.listItems->currentIndex();
-    if(!index.isValid()) {
-        return false;
-    }
-
-	// update the currently selected item's associated data
-	// and make sure it has the text updated as well
-    auto ptr = model_->itemFromIndex(index);
-    if(ptr->name == tr("Plain") && dialogFields->name != tr("Plain")) {
-        int count = countPlainEntries();
-        if(count < 2) {
-            QMessageBox::information(this, tr("Highlight Style"), tr("There must be at least one Plain entry. Cannot rename this entry."));
+    if(model_->rowCount() != 0) {
+        auto dialogFields = readDialogFields(Mode::Verbose);
+        if(!dialogFields) {
             return false;
         }
+
+        // Get the current selected item
+        QModelIndex index = ui.listItems->currentIndex();
+        if(!index.isValid()) {
+            return false;
+        }
+
+        // update the currently selected item's associated data
+        // and make sure it has the text updated as well
+        auto ptr = model_->itemFromIndex(index);
+        if(ptr->name == tr("Plain") && dialogFields->name != tr("Plain")) {
+            int count = countPlainEntries();
+            if(count < 2) {
+                QMessageBox::information(this,
+                                         tr("Highlight Style"),
+                                         tr("There must be at least one Plain entry. Cannot rename this entry."));
+                return false;
+            }
+        }
+        *ptr = *dialogFields;
     }
-    *ptr = *dialogFields;
 
 	// Replace the old highlight styles list with the new one from the dialog 
     std::vector<HighlightStyle> newStyles;

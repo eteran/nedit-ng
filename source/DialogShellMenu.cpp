@@ -401,13 +401,15 @@ bool DialogShellMenu::applyDialogChanges() {
         *ptr = *dialogFields;
     }
 
-    ShellMenuData.clear();
+    std::vector<MenuData> newItems;
 
     for(int i = 0; i < model_->rowCount(); ++i) {
         QModelIndex index = model_->index(i, 0);
         auto item = model_->itemFromIndex(index);
-        ShellMenuData.push_back({ *item, nullptr });
+        newItems.push_back({ *item, nullptr });
     }
+
+    ShellMenuData = newItems;
 
     parseMenuItemList(ShellMenuData);
 
@@ -418,7 +420,6 @@ bool DialogShellMenu::applyDialogChanges() {
 
 	// Note that preferences have been changed
 	MarkPrefsChanged();
-
 	return true;
 }
 
