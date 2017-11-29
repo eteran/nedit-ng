@@ -1346,11 +1346,6 @@ void DocumentWidget::StopHighlightingEx() {
 
     if(TextArea *area = firstPane()) {
 
-        /* Get the line height being used by the highlight fonts in the window,
-           to be used after highlighting is turned off to resize the window
-           back to the line height of the primary font */
-        const int oldFontHeight = area->getFontHeight();
-
         // Free and remove the highlight data from the window
         highlightData_ = nullptr;
 
@@ -1359,14 +1354,6 @@ void DocumentWidget::StopHighlightingEx() {
         for(TextArea *area : textPanes()) {
             RemoveWidgetHighlightEx(area);
         }
-
-        Q_UNUSED(oldFontHeight);
-    #if 0
-        /* Re-size the window to fit the primary font properly & tell the window
-           manager about the potential line-height change as well */
-        updateWindowHeight(window, oldFontHeight);
-        window->UpdateMinPaneHeights();
-    #endif
     }
 }
 

@@ -361,6 +361,6 @@ QString DialogSmartIndent::ensureNewline(const QString &string) {
 	return string + QLatin1Char('\n');	
 }
 
-bool DialogSmartIndent::hasSmartIndentMacros(const QString &languageMode) const {
-	return languageMode_ == languageMode;
+QString DialogSmartIndent::languageMode() const {
+    return languageMode_;
 }

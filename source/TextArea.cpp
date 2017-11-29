@@ -389,20 +389,6 @@ TextArea::TextArea(
 	P_autoWrapPastedText = false;
     P_cursorBlinkRate    = QApplication::cursorFlashTime() / 2;
 
-#if 0
-	static XtResource resources[] = {
-		{ textNfont,                   textCFont,                   XmRFontStruct, sizeof(XFontStruct *), XtOffset(TextWidget, text.P_fontStruct),              XmRString, (String) "fixed"                          },
-		{ textNselectForeground,       textCSelectForeground,       XmRPixel,      sizeof(Pixel),         XtOffset(TextWidget, text.P_selectFGPixel),           XmRString, (String)NEDIT_DEFAULT_SEL_FG              },
-		{ textNselectBackground,       textCSelectBackground,       XmRPixel,      sizeof(Pixel),         XtOffset(TextWidget, text.P_selectBGPixel),           XmRString, (String)NEDIT_DEFAULT_SEL_BG              },
-		{ textNhighlightForeground,    textCHighlightForeground,    XmRPixel,      sizeof(Pixel),         XtOffset(TextWidget, text.P_highlightFGPixel),        XmRString, (String)NEDIT_DEFAULT_HI_FG               },
-		{ textNhighlightBackground,    textCHighlightBackground,    XmRPixel,      sizeof(Pixel),         XtOffset(TextWidget, text.P_highlightBGPixel),        XmRString, (String)NEDIT_DEFAULT_HI_BG               },
-		{ textNlineNumForeground,      textCLineNumForeground,      XmRPixel,      sizeof(Pixel),         XtOffset(TextWidget, text.P_lineNumFGPixel),          XmRString, (String)NEDIT_DEFAULT_LINENO_FG           },
-		{ textNcursorForeground,       textCCursorForeground,       XmRPixel,      sizeof(Pixel),         XtOffset(TextWidget, text.P_cursorFGPixel),           XmRString, (String)NEDIT_DEFAULT_CURSOR_FG           },
-		{ textNcalltipForeground,      textCcalltipForeground,      XmRPixel,      sizeof(Pixel),         XtOffset(TextWidget, text.P_calltipFGPixel),          XmRString, (String)NEDIT_DEFAULT_CALLTIP_FG          },
-		{ textNcalltipBackground,      textCcalltipBackground,      XmRPixel,      sizeof(Pixel),         XtOffset(TextWidget, text.P_calltipBGPixel),          XmRString, (String)NEDIT_DEFAULT_CALLTIP_BG          },
-	};
-#endif
-
     P_rows           = GetPrefRows();
     P_columns        = GetPrefCols();
     P_readOnly       = document->lockReasons_.isAnyLocked();
@@ -491,11 +477,9 @@ TextArea::TextArea(
 
 	setGeometry(0, 0, width, height);
 
-#if 1
 	/* Add mandatory delimiters blank, tab, and newline to the list of
        delimiters. */
     setWordDelimiters(P_delimiters);
-#endif
 
 #if 0
 	// NOTE(eteran): this seems to be a viable approach for shortcuts
@@ -2572,31 +2556,6 @@ void TextArea::TextDRedisplayRect(const QRect &rect) {
  */
 void TextArea::TextDRedisplayRect(int left, int top, int width, int height) {
 	viewport()->update(QRect(left, top, width, height));
-#if 0
-	int fontHeight;
-	int firstLine;
-	int lastLine;
-	int line;
-
-	// find the line number range of the display
-    fontHeight = ascent_ + descent_;
-	firstLine = (top - rect_.top - fontHeight + 1) / fontHeight;
-	lastLine = (top + height - rect_.top) / fontHeight;
-
-	/* If the graphics contexts are shared using XtAllocateGC, their
-	   clipping rectangles may have changed since the last use */
-	resetClipRectangles();
-
-	// draw the lines of text
-	for (line = firstLine; line <= lastLine; line++) {
-		redisplayLine(line, left, left + width, 0, INT_MAX);
-	}
-
-	// draw the line numbers if exposed area includes them
-	if (lineNumWidth_ != 0 && left <= lineNumLeft_ + lineNumWidth_) {
-		redrawLineNumbers(false);
-	}
-#endif
 }
 
 /**
@@ -3791,68 +3750,19 @@ void TextArea::setScroll(int topLineNum, int horizOffset, bool updateVScrollBar,
 		updateHScrollBarRange();
 	}
 
-#if 1
 	// NOTE(eteran): the original code seemed to do some cleverness
 	//               involving copying the parts that were "moved"
 	//               to avoid doing some work. For now, we'll just repaint
 	//               the whole thing. It's not as fast/clever, but it'll work
 	viewport()->update();
-#else
-    int fontHeight  = ascent_ + descent_;
-	int origHOffset = horizOffset_;
-    int exactHeight = rect_.height - rect_.height % (ascent_ + descent_);
 
-	/* Redisplay everything if the window is partially obscured (since
-	   it's too hard to tell what displayed areas are salvageable) or
-	   if there's nothing to recover because the scroll distance is large */
-	int xOffset = origHOffset - horizOffset_;
-	int yOffset = lineDelta * fontHeight;
-
-    if (abs(xOffset) > rect_.width || abs(yOffset) > exactHeight) {
-		TextDTranlateGraphicExposeQueue(xOffset, yOffset, false);
-		TextDRedisplayRect(rect_);
-	} else {
-		/* If the window is not obscured, paint most of the window using XCopyArea
-		   from existing displayed text, and redraw only what's necessary */
-		// Recover the useable window areas by moving to the proper location
-		int srcX   = rect_.left + (xOffset >= 0 ? 0 : -xOffset);
-		int dstX   = rect_.left + (xOffset >= 0 ? xOffset : 0);
-		int width  = rect_.width - abs(xOffset);
-		int srcY   = rect_.top + (yOffset >= 0 ? 0 : -yOffset);
-		int dstY   = rect_.top + (yOffset >= 0 ? yOffset : 0);
-		int height = exactHeight - abs(yOffset);
-
-		resetClipRectangles();
-		TextDTranlateGraphicExposeQueue(xOffset, yOffset, true);
-		XCopyArea(XtDisplay(w_), window, window, gc_, srcX, srcY, width, height, dstX, dstY);
-
-		// redraw the un-recoverable parts
-		if (yOffset > 0) {
-			TextDRedisplayRect(rect_.left, rect_.top, rect_.width, yOffset);
-		} else if (yOffset < 0) {
-			TextDRedisplayRect(rect_.left, rect_.top + rect_.height + yOffset, rect_.width, -yOffset);
-		}
-		if (xOffset > 0) {
-			TextDRedisplayRect(rect_.left, rect_.top, xOffset, rect_.height);
-		} else if (xOffset < 0) {
-			TextDRedisplayRect(rect_.left + rect_.width + xOffset, rect_.top, -xOffset, rect_.height);
-		}
-		// Restore protruding parts of the cursor
-		textDRedisplayRange(cursorPos_ - 1, cursorPos_ + 1);
-	}
-#endif
-
-	int lineDelta = topLineNum_ - topLineNum;
+    const int lineDelta = topLineNum_ - topLineNum;
 
 	// Refresh line number/calltip display if its up and we've scrolled vertically
 	if (lineDelta != 0) {
         redrawLineNumbersEx();
 		TextDRedrawCalltip(0);
 	}
-
-#if 0
-	HandleAllPendingGraphicsExposeNoExposeEvents(nullptr);
-#endif
 }
 
 /**
@@ -3966,18 +3876,9 @@ void TextArea::TextDSetScroll(int topLineNum, int horizOffset) {
 		topLineNum = std::max(topLineNum_, nBufferLines_ + 2 - nVisibleLines_ + vPadding);
 	}
 
-	int sliderSize = 0;
 	int sliderMax = horizontalScrollBar()->maximum();
-#if 0
-	XtVaGetValues(getHorizontalScrollbar(), XmNsliderSize, &sliderSize, nullptr);
-#endif
-	if (horizOffset < 0) {
-		horizOffset = 0;
-	}
 
-	if (horizOffset > sliderMax - sliderSize) {
-		horizOffset = sliderMax - sliderSize;
-	}
+    horizOffset = qBound(0, horizOffset, sliderMax);
 
 	setScroll(topLineNum, horizOffset, true, true);
 }
@@ -7152,18 +7053,7 @@ void TextArea::MovePrimarySelection(bool isColumnar) {
 	Q_UNUSED(isColumnar);
 
     // TODO(eteran): implement MovePrimarySelection
-#if 0
-	static Atom targets[2] = {XA_STRING};
-	static int isColFlag;
-	static XtPointer clientData[2] = { &isColFlag, &isColFlag };
-
-	targets[1] = getAtom(XtDisplay(w_), A_DELETE);
-	isColFlag = isColumnar;
-	/* some strangeness here: the selection callback appears to be getting
-	   clientData[1] for targets[0] */
-	XtGetSelectionValues(w_, XA_PRIMARY, targets, 2, getSelectionCB, clientData, time);
-#endif
-    qWarning("move_primary is not implemented");
+    qWarning("MovePrimarySelection is not implemented");
 }
 
 
@@ -7307,6 +7197,9 @@ void TextArea::ExchangeSelections() {
 		return;
 	}
 
+    // TODO(eteran): how would we implement this?
+    qWarning("ExchangeSelections not implemented");
+
 	/* Initiate an long series of events:
 	** 1) get the primary selection,
 	** 2) replace the primary selection with this widget's secondary,
@@ -7319,9 +7212,6 @@ void TextArea::ExchangeSelections() {
 	**    It's simply not worth duplicating all of Xt's selection handling
 	**    routines for a little performance, and this would make the code
 	**    incompatible with Motif text widgets */
-#if 0
-	XtGetSelectionValue(w_, XA_PRIMARY, XA_STRING, getExchSelCB, nullptr, time);
-#endif
 }
 
 /*

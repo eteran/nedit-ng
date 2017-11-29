@@ -1411,22 +1411,6 @@ int MainWindow::updateGutterWidth() {
         }
     }
 
-#if 0
-    int newColsDiff = 0;
-    if (reqCols != maxCols) {
-        Dimension windowWidth;
-        short fontWidth;
-
-        int newColsDiff = reqCols - maxCols;
-
-        fs = textD_of(textArea_)->getFont();
-        fontWidth = fs->max_bounds.width;
-
-        XtVaGetValues(shell_, XmNwidth, &windowWidth, nullptr);
-        XtVaSetValues(shell_, XmNwidth, (Dimension)windowWidth + (newColsDiff * fontWidth), nullptr);
-    }
-#endif
-
     for(DocumentWidget *document : documents) {
         if(TextArea *area = document->firstPane()) {
             int lineNumCols = area->getLineNumCols();

@@ -471,7 +471,7 @@ int LMHasSmartIndentMacros(const QString &languageMode) {
 	}
 	
 	
-    return SmartIndentDlg && SmartIndentDlg->hasSmartIndentMacros(languageMode);
+    return SmartIndentDlg && SmartIndentDlg->languageMode() == languageMode;
 }
 
 /*

@@ -18,8 +18,9 @@ public:
 
 public:
 	void updateLanguageModes();
-	bool hasSmartIndentMacros(const QString &languageMode) const;
-	
+    void setLanguageMode(const QString &s);
+    QString languageMode() const;
+
 private:
     void setSmartIndentDialogData(const SmartIndentEntry *is);
 	bool updateSmartIndentData();
@@ -27,10 +28,6 @@ private:
 	std::unique_ptr<SmartIndentEntry>  getSmartIndentDialogData();
 	QString ensureNewline(const QString &string);
 	
-
-public:
-	void setLanguageMode(const QString &s);
-
 private Q_SLOTS:
 	void on_buttonCommon_clicked();
 	void on_buttonLanguageMode_clicked();
