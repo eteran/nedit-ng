@@ -357,7 +357,7 @@ std::unique_ptr<HighlightStyle> DialogDrawingStyles::readDialogFields(Mode mode)
 
     // read the background color field - this may be empty
 	QString bgColor = ui.editColorBG->text().simplified();
-    if (!bgColor.isNull() && bgColor.isEmpty()) {
+    if (bgColor.isEmpty()) {
         hs->bgColor = QString();
     } else {
 		hs->bgColor = bgColor;
@@ -365,7 +365,7 @@ std::unique_ptr<HighlightStyle> DialogDrawingStyles::readDialogFields(Mode mode)
 
     // Verify that the background color (if present) is a valid X color spec 
     if (!hs->bgColor.isEmpty()) {
-        rgb = X11Colors::fromString(hs->color);
+        rgb = X11Colors::fromString(hs->bgColor);
         if (!rgb.isValid()) {
             if (mode == Mode::Verbose) {
                 QMessageBox::warning(this, tr("Invalid Color"), tr("Invalid X background color specification: %1").arg(hs->bgColor));
