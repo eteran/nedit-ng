@@ -2864,10 +2864,10 @@ static bool searchMS(DocumentWidget *document, Arguments arguments, DataValue *r
         M_FAILURE(WrongNumberOfArguments);
 
     /* we remove constness from BufAsString() result since we know
-     * searchStringMS will not modify the result. NOTE(eteran):
-     * We do this instead of using a string_view, because this version of
-     * to_value() doesn't make a copy!
-     */
+     * searchStringMS will not modify the result. */
+
+    /* NOTE(eteran): We do this instead of using a string_view, because this
+     * version of to_value() doesn't make a copy! */
     auto str = const_cast<char *>(document->buffer_->BufAsString());
     int size = document->buffer_->BufGetLength();
     newArgList[0] = to_value(str, size);
