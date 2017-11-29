@@ -305,17 +305,15 @@ void DialogWindowBackgroundMenu::on_buttonOK_clicked() {
  */
 bool DialogWindowBackgroundMenu::checkMacro(bool silent) {
 
-	MenuItem *f = readDialogFields(silent);
+    auto f = readDialogFields(silent);
 	if(!f) {
 		return false;
 	}
 
 	if (!checkMacroText(f->cmd, silent)) {
-		delete f;
 		return false;
 	}
 
-	delete f;
 	return true;
 }
 
@@ -326,7 +324,7 @@ bool DialogWindowBackgroundMenu::checkMacro(bool silent) {
 ** pointer to the new MenuItem structure as the function value, or nullptr on
 ** failure.
 */
-MenuItem *DialogWindowBackgroundMenu::readDialogFields(bool silent) {
+std::unique_ptr<MenuItem> DialogWindowBackgroundMenu::readDialogFields(bool silent) {
 
 	QString nameText = ui.editName->text();
 
@@ -358,7 +356,7 @@ MenuItem *DialogWindowBackgroundMenu::readDialogFields(bool silent) {
 		return nullptr;
 	}
 
-	auto f = new MenuItem;
+    auto f = std::make_unique<MenuItem>();
 	f->name = nameText;
 	f->cmd  = cmdText;
 
@@ -454,7 +452,7 @@ bool DialogWindowBackgroundMenu::applyDialogChanges() {
 	QListWidgetItem *const selection = selections[0];
 	auto ptr = reinterpret_cast<MenuItem *>(selection->data(Qt::UserRole).toULongLong());
 	delete ptr;
-	selection->setData(Qt::UserRole, reinterpret_cast<qulonglong>(current));
+    selection->setData(Qt::UserRole, reinterpret_cast<qulonglong>(current.release()));
 	selection->setText(current->name);
 
 	// Update the menu information
@@ -503,8 +501,9 @@ bool DialogWindowBackgroundMenu::updateCurrentItem(QListWidgetItem *item) {
 	auto old = reinterpret_cast<MenuItem *>(item->data(Qt::UserRole).toULongLong());
 	delete old;
 
-	item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(ptr));
+    item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(ptr.get()));
 	item->setText(ptr->name);
+    ptr.release();
 	return true;
 }
 

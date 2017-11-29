@@ -5,6 +5,8 @@
 #include "Dialog.h"
 #include "ui_DialogWindowBackgroundMenu.h"
 
+#include <memory>
+
 struct MenuItem;
 
 class DialogWindowBackgroundMenu : public Dialog {
@@ -30,7 +32,7 @@ private Q_SLOTS:
 	
 private:
 	bool checkMacro(bool silent);
-	MenuItem *readDialogFields(bool silent);
+    std::unique_ptr<MenuItem> readDialogFields(bool silent);
 	bool checkMacroText(const QString &macro, bool silent);
 	QString ensureNewline(const QString &string);
 	bool applyDialogChanges();
