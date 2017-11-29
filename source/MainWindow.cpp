@@ -22,7 +22,7 @@
 #include "DialogWrapMargin.h"
 #include "DocumentWidget.h"
 #include "Help.h"
-#include "highlightData.h"
+#include "highlight.h"
 #include "LanguageMode.h"
 #include "nedit.h"
 #include "PatternSet.h"

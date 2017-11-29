@@ -10,7 +10,6 @@
 #include "fileUtils.h"
 #include "Font.h"
 #include "FontType.h"
-#include "highlightData.h"
 #include "HighlightData.h"
 #include "highlight.h"
 #include "HighlightStyle.h"

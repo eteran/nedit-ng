@@ -239,8 +239,6 @@ add_executable(nedit-ng
 	X11Colors.h
 	highlight.cpp
 	highlight.h
-	highlightData.cpp
-	highlightData.h
 	interpret.cpp
 	interpret.h
 	macro.cpp

@@ -3,7 +3,6 @@
 #include "DialogLanguageModes.h"
 #include "DocumentWidget.h"
 #include "Help.h"
-#include "highlightData.h"
 #include "highlight.h"
 #include "HighlightStyle.h"
 #include "LanguageMode.h"

@@ -29,7 +29,6 @@
 #include "preferences.h"
 #include "DocumentWidget.h"
 #include "Font.h"
-#include "highlightData.h"
 #include "highlight.h"
 #include "Input.h"
 #include "LanguageMode.h"

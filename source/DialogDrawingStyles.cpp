@@ -2,7 +2,7 @@
 #include "DialogDrawingStyles.h"
 #include "DocumentWidget.h"
 #include "FontType.h"
-#include "highlightData.h"
+#include "highlight.h"
 #include "HighlightStyleModel.h"
 #include "MainWindow.h"
 #include "preferences.h"

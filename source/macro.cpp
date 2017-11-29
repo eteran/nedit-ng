@@ -44,7 +44,6 @@
 #include "TextBuffer.h"
 #include "WrapMode.h"
 #include "highlight.h"
-#include "highlightData.h"
 #include "interpret.h"
 #include "parse.h"
 #include "preferences.h"
