@@ -28,7 +28,6 @@
 #define HIGHLIGHT_H_
 
 #include "util/string_view.h"
-#include "Style.h"
 
 #include <gsl/span>
 #include <vector>
@@ -40,6 +39,7 @@ class TextArea;
 class WindowHighlightData;
 struct HighlightStyle;
 struct ReparseContext;
+class Style;
 
 class QColor;
 class QString;

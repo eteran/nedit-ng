@@ -23,17 +23,18 @@
 #include "search.h"
 #include "Settings.h"
 #include "SignalBlocker.h"
-#include "smartIndent.h"
 #include "SmartIndentEntry.h"
 #include "SmartIndentEvent.h"
+#include "smartIndent.h"
+#include "Style.h"
 #include "TextArea.h"
 #include "TextBuffer.h"
+#include "userCmds.h"
 #include "util/ClearCase.h"
 #include "utils.h"
 #include "WindowHighlightData.h"
 #include "WindowMenuEvent.h"
 #include "X11Colors.h"
-#include "userCmds.h"
 
 #include <QClipboard>
 #include <QFile>
