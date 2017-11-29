@@ -8,6 +8,7 @@
 #include <memory>
 
 struct MenuItem;
+class MenuItemModel;
 
 class DialogShellMenu : public Dialog {
 	Q_OBJECT
@@ -20,7 +21,14 @@ private:
 
 public:
     DialogShellMenu(QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
-    ~DialogShellMenu() noexcept override;
+    ~DialogShellMenu() noexcept override = default;
+
+Q_SIGNALS:
+    void restore(const QModelIndex &selection);
+
+private Q_SLOTS:
+    void currentChanged(const QModelIndex &current, const QModelIndex &previous);
+    void restoreSlot(const QModelIndex &index);
 
 private Q_SLOTS:
 	void on_buttonNew_clicked();
@@ -28,24 +36,24 @@ private Q_SLOTS:
 	void on_buttonDelete_clicked();
 	void on_buttonUp_clicked();
 	void on_buttonDown_clicked();
-	void on_listItems_itemSelectionChanged();
 	void on_buttonBox_clicked(QAbstractButton *button);
 	void on_buttonBox_accepted();
 	void on_radioToSameDocument_toggled(bool checked);
 	
 private:
+    bool applyDialogChanges();
     bool checkCurrent(Mode mode);
+    bool updateCurrentItem();
+    bool updateCurrentItem(const QModelIndex &current);
+    QString ensureNewline(const QString &string);
     std::unique_ptr<MenuItem> readDialogFields(Mode mode);
-	QString ensureNewline(const QString &string);
-	bool applyDialogChanges();
-	void updateButtons();
-	MenuItem *itemFromIndex(int i) const;
-	bool updateCurrentItem();
-	bool updateCurrentItem(QListWidgetItem *item);		
-	
+    void updateButtonStates();
+    void updateButtonStates(const QModelIndex &current);
+
 private:
 	Ui::DialogShellMenu ui;
-	QListWidgetItem *previous_;
+    MenuItemModel *model_;
+    QModelIndex deleted_;
 };
 
 #endif

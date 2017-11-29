@@ -16,17 +16,16 @@ MenuItemModel::MenuItemModel(QObject *parent) : QAbstractItemModel(parent) {
  * @return
  */
 QModelIndex MenuItemModel::index(int row, int column, const QModelIndex &parent) const {
-    Q_UNUSED(parent);
 
     if(row >= rowCount(parent) || column >= columnCount(parent)) {
         return QModelIndex();
     }
 
-    if(row >= 0) {
-        return createIndex(row, column, const_cast<MenuItem *>(&items_[row]));
-    } else {
-        return createIndex(row, column);
+    if(row < 0) {
+        return QModelIndex();
     }
+
+    return createIndex(row, column);
 }
 
 /**
@@ -55,8 +54,6 @@ QVariant MenuItemModel::data(const QModelIndex &index, int role) const {
             case 0:
                 return item.name;
             }
-        } else if(role == Qt::UserRole) {
-            return QVariant();
         }
     }
 
@@ -163,4 +160,26 @@ void MenuItemModel::deleteItem(const QModelIndex &index) {
             endRemoveRows();
         }
     }
+}
+
+const MenuItem *MenuItemModel::itemFromIndex(const QModelIndex &index) const {
+    if(index.isValid()) {
+        int row = index.row();
+        if(row < rowCount()) {
+            return &items_[row];
+        }
+    }
+
+    return nullptr;
+}
+
+MenuItem *MenuItemModel::itemFromIndex(const QModelIndex &index) {
+    if(index.isValid()) {
+        int row = index.row();
+        if(row < rowCount()) {
+            return &items_[row];
+        }
+    }
+
+    return nullptr;
 }

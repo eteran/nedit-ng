@@ -56,7 +56,7 @@ void DialogDrawingStyles::setStyleByName(const QString &name) {
 
     for(int i = 0; i < model_->rowCount(); ++i) {
         QModelIndex index = model_->index(i, 0);
-        auto ptr = reinterpret_cast<const HighlightStyle*>(index.internalPointer());
+        auto ptr = model_->itemFromIndex(index);
         if(ptr->name == name) {
             ui.listItems->setCurrentIndex(index);
             break;
@@ -100,7 +100,7 @@ void DialogDrawingStyles::on_buttonCopy_clicked() {
 
     QModelIndex index = ui.listItems->currentIndex();
     if(index.isValid()) {
-        auto ptr = reinterpret_cast<const HighlightStyle*>(index.internalPointer());
+        auto ptr = model_->itemFromIndex(index);
         model_->addItem(*ptr);
 
         QModelIndex newIndex = model_->index(model_->rowCount() - 1, 0);
@@ -238,10 +238,7 @@ void DialogDrawingStyles::currentChanged(const QModelIndex &current, const QMode
     }
 
     // previous was OK, so let's update the contents of the dialog
-    if(current.isValid()) {
-
-        const auto style = reinterpret_cast<const HighlightStyle*>(current.internalPointer());
-
+    if(const auto style = model_->itemFromIndex(current)) {
         ui.editName->setText(style->name);
         ui.editColorFG->setText(style->color);
         ui.editColorBG->setText(style->bgColor);
@@ -411,7 +408,7 @@ bool DialogDrawingStyles::updateHSList() {
 
 	// update the currently selected item's associated data
 	// and make sure it has the text updated as well
-    auto ptr = reinterpret_cast<HighlightStyle*>(index.internalPointer());
+    auto ptr = model_->itemFromIndex(index);
     if(ptr->name == tr("Plain") && dialogFields->name != tr("Plain")) {
         int count = countPlainEntries();
         if(count < 2) {
@@ -426,7 +423,7 @@ bool DialogDrawingStyles::updateHSList() {
 
     for(int i = 0; i < model_->rowCount(); ++i) {
         QModelIndex index = model_->index(i, 0);
-        auto style = reinterpret_cast<const HighlightStyle*>(index.internalPointer());
+        auto style = model_->itemFromIndex(index);
         newStyles.push_back(*style);
     }
 
@@ -465,7 +462,7 @@ bool DialogDrawingStyles::updateCurrentItem(const QModelIndex &index) {
     // update the currently selected item's associated data
     // and make sure it has the text updated as well. Disallow renaming
     // the last "Plain" entry though
-    auto ptr = reinterpret_cast<HighlightStyle*>(index.internalPointer());
+    auto ptr = model_->itemFromIndex(index);
     if(ptr->name == tr("Plain") && dialogFields->name != tr("Plain")) {
         int count = countPlainEntries();
         if(count < 2) {
@@ -500,7 +497,7 @@ int DialogDrawingStyles::countPlainEntries() const {
     int count = 0;
     for(int i = 0; i < model_->rowCount(); ++i) {
         QModelIndex index = model_->index(i, 0);
-        auto style = reinterpret_cast<const HighlightStyle*>(index.internalPointer());
+        auto style = model_->itemFromIndex(index);
         if(style->name == tr("Plain")) {
             ++count;
         }

@@ -1,7 +1,7 @@
 	&spell:Alt+B:ED:
-		(cat;echo \"\") | spell
+	    (cat;echo "") | spell
 	&wc::ED:
-		wc | awk '{print $1 \" lines, \" $2 \" words, \" $3 \" characters\"}'
+	    wc | awk '{print $1 " lines, " $2 " words, " $3 " characters"}'
 	s&ort::EX:
 		sort
 	&number lines::AW:

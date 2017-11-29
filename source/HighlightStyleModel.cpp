@@ -16,17 +16,16 @@ HighlightStyleModel::HighlightStyleModel(QObject *parent) : QAbstractItemModel(p
  * @return
  */
 QModelIndex HighlightStyleModel::index(int row, int column, const QModelIndex &parent) const {
-    Q_UNUSED(parent);
 
     if(row >= rowCount(parent) || column >= columnCount(parent)) {
         return QModelIndex();
     }
 
-    if(row >= 0) {
-        return createIndex(row, column, const_cast<HighlightStyle *>(&items_[row]));
-    } else {
-        return createIndex(row, column);
+    if(row < 0) {
+        return QModelIndex();
     }
+
+    return createIndex(row, column);
 }
 
 /**
@@ -163,4 +162,36 @@ void HighlightStyleModel::deleteItem(const QModelIndex &index) {
             endRemoveRows();
         }
     }
+}
+
+/**
+ * @brief HighlightStyleModel::itemFromIndex
+ * @param index
+ * @return
+ */
+const HighlightStyle *HighlightStyleModel::itemFromIndex(const QModelIndex &index) const {
+    if(index.isValid()) {
+        int row = index.row();
+        if(row < rowCount()) {
+            return &items_[row];
+        }
+    }
+
+    return nullptr;
+}
+
+/**
+ * @brief HighlightStyleModel::itemFromIndex
+ * @param index
+ * @return
+ */
+HighlightStyle *HighlightStyleModel::itemFromIndex(const QModelIndex &index) {
+    if(index.isValid()) {
+        int row = index.row();
+        if(row < rowCount()) {
+            return &items_[row];
+        }
+    }
+
+    return nullptr;
 }

@@ -72,7 +72,7 @@ void DialogWindowBackgroundMenu::on_buttonCopy_clicked() {
 
     QModelIndex index = ui.listItems->currentIndex();
     if(index.isValid()) {
-        auto ptr = reinterpret_cast<const MenuItem*>(index.internalPointer());
+        auto ptr = model_->itemFromIndex(index);
         model_->addItem(*ptr);
 
         QModelIndex newIndex = model_->index(model_->rowCount() - 1, 0);
@@ -200,20 +200,20 @@ void DialogWindowBackgroundMenu::currentChanged(const QModelIndex &current, cons
 
     // if we are actually switching items, check that the previous one was valid
     // so we can optionally cancel
-    if(previous.isValid() && previous != deleted_ && !checkMacro(true)) {
+    if(previous.isValid() && previous != deleted_ && !checkMacro(Mode::Silent)) {
         QMessageBox messageBox(this);
         messageBox.setWindowTitle(tr("Discard Entry"));
         messageBox.setIcon(QMessageBox::Warning);
         messageBox.setText(tr("Discard incomplete entry for current menu item?"));
         QPushButton *buttonKeep    = messageBox.addButton(tr("Keep"), QMessageBox::RejectRole);
-        QPushButton *buttonDiscard = messageBox.addButton(tr("Discard"), QMessageBox::DestructiveRole);
+        QPushButton *buttonDiscard = messageBox.addButton(QMessageBox::Discard);
         Q_UNUSED(buttonDiscard);
 
         messageBox.exec();
         if (messageBox.clickedButton() == buttonKeep) {
 
             // again to cause messagebox to pop up
-            checkMacro(false);
+            checkMacro(Mode::Verbose);
 
             // reselect the old item
             canceled = true;
@@ -233,10 +233,7 @@ void DialogWindowBackgroundMenu::currentChanged(const QModelIndex &current, cons
     }
 
     // previous was OK, so let's update the contents of the dialog
-    if(current.isValid()) {
-
-        const auto ptr = reinterpret_cast<const MenuItem*>(current.internalPointer());
-
+    if(const auto ptr = model_->itemFromIndex(current)) {
         ui.editName->setText(ptr->name);
         ui.editAccelerator->setKeySequence(ptr->shortcut);
         ui.checkRequiresSelection->setChecked(ptr->input == FROM_SELECTION);
@@ -256,7 +253,7 @@ void DialogWindowBackgroundMenu::currentChanged(const QModelIndex &current, cons
  * @brief DialogWindowBackgroundMenu::on_buttonCheck_clicked
  */
 void DialogWindowBackgroundMenu::on_buttonCheck_clicked() {
-	if (checkMacro(false)) {
+    if (checkMacro(Mode::Verbose)) {
         QMessageBox::information(this,
                                  tr("Macro"),
                                  tr("Macro compiled without error"));
@@ -288,7 +285,7 @@ void DialogWindowBackgroundMenu::on_buttonOK_clicked() {
  * @param silent
  * @return
  */
-bool DialogWindowBackgroundMenu::checkMacro(bool silent) {
+bool DialogWindowBackgroundMenu::checkMacro(Mode silent) {
 
     if(auto f = readDialogFields(silent)) {
         return checkMacroText(f->cmd, silent);
@@ -303,12 +300,12 @@ bool DialogWindowBackgroundMenu::checkMacro(bool silent) {
 ** pointer to the new MenuItem structure as the function value, or nullptr on
 ** failure.
 */
-std::unique_ptr<MenuItem> DialogWindowBackgroundMenu::readDialogFields(bool silent) {
+std::unique_ptr<MenuItem> DialogWindowBackgroundMenu::readDialogFields(Mode mode) {
 
 	QString nameText = ui.editName->text();
 
 	if (nameText.isEmpty()) {
-		if (!silent) {
+        if (mode == Mode::Verbose) {
 			QMessageBox::warning(this, tr("Menu Entry"), tr("Please specify a name for the menu item"));
 		}
 		return nullptr;
@@ -316,7 +313,7 @@ std::unique_ptr<MenuItem> DialogWindowBackgroundMenu::readDialogFields(bool sile
 
 
 	if (nameText.indexOf(QLatin1Char(':')) != -1) {
-		if (!silent) {
+        if (mode == Mode::Verbose) {
 			QMessageBox::warning(this, tr("Menu Entry"), tr("Menu item names may not contain colon (:) characters"));
 		}
 		return nullptr;
@@ -324,14 +321,14 @@ std::unique_ptr<MenuItem> DialogWindowBackgroundMenu::readDialogFields(bool sile
 
 	QString cmdText = ui.editMacro->toPlainText();
 	if (cmdText.isEmpty()) {
-		if (!silent) {
+        if (mode == Mode::Verbose) {
 			QMessageBox::warning(this, tr("Command to Execute"), tr("Please specify macro command(s) to execute"));
 		}
 		return nullptr;
 	}
 
 	cmdText = ensureNewline(cmdText);
-	if (!checkMacroText(cmdText, silent)) {
+    if (!checkMacroText(cmdText, mode)) {
 		return nullptr;
 	}
 
@@ -357,14 +354,14 @@ std::unique_ptr<MenuItem> DialogWindowBackgroundMenu::readDialogFields(bool sile
  * @param silent
  * @return
  */
-bool DialogWindowBackgroundMenu::checkMacroText(const QString &macro, bool silent) {
+bool DialogWindowBackgroundMenu::checkMacroText(const QString &macro, Mode silent) {
 
 	QString errMsg;
 	int stoppedAt;
 
     Program *prog = ParseMacroEx(macro, &errMsg, &stoppedAt);
 	if(!prog) {
-		if(!silent) {
+        if(silent == Mode::Verbose) {
 			ParseErrorEx(this, macro, stoppedAt, tr("macro"), errMsg);
 		}
 		QTextCursor cursor = ui.editMacro->textCursor();
@@ -376,7 +373,7 @@ bool DialogWindowBackgroundMenu::checkMacroText(const QString &macro, bool silen
 	FreeProgram(prog);
 
 	if(stoppedAt != macro.size()) {
-		if(!silent) {
+        if(silent == Mode::Verbose) {
 			ParseErrorEx(this, macro, stoppedAt, tr("macro"), tr("syntax error"));
 		}
 		QTextCursor cursor = ui.editMacro->textCursor();
@@ -415,7 +412,7 @@ QString DialogWindowBackgroundMenu::ensureNewline(const QString &string) {
 bool DialogWindowBackgroundMenu::applyDialogChanges() {
 
     if(model_->rowCount() != 0) {
-        auto dialogFields = readDialogFields(false);
+        auto dialogFields = readDialogFields(Mode::Verbose);
         if(!dialogFields) {
             return false;
         }
@@ -428,7 +425,7 @@ bool DialogWindowBackgroundMenu::applyDialogChanges() {
 
         // update the currently selected item's associated data
         // and make sure it has the text updated as well
-        auto ptr = reinterpret_cast<MenuItem*>(index.internalPointer());
+        auto ptr = model_->itemFromIndex(index);
         *ptr = *dialogFields;
     }
 
@@ -437,7 +434,7 @@ bool DialogWindowBackgroundMenu::applyDialogChanges() {
 
     for(int i = 0; i < model_->rowCount(); ++i) {
         QModelIndex index = model_->index(i, 0);
-        auto item = reinterpret_cast<const MenuItem*>(index.internalPointer());
+        auto item = model_->itemFromIndex(index);
         BGMenuData.push_back({ std::make_unique<MenuItem>(*item), nullptr });
     }
 
@@ -469,7 +466,7 @@ void DialogWindowBackgroundMenu::setPasteReplayEnabled(bool enabled) {
  */
 bool DialogWindowBackgroundMenu::updateCurrentItem(const QModelIndex &index) {
     // Get the current contents of the "patterns" dialog fields
-    auto dialogFields = readDialogFields(false);
+    auto dialogFields = readDialogFields(Mode::Verbose);
     if(!dialogFields) {
         return false;
     }
@@ -479,10 +476,7 @@ bool DialogWindowBackgroundMenu::updateCurrentItem(const QModelIndex &index) {
         return false;
     }
 
-    // update the currently selected item's associated data
-    // and make sure it has the text updated as well. Disallow renaming
-    // the last "Plain" entry though
-    auto ptr = reinterpret_cast<MenuItem*>(index.internalPointer());
+    auto ptr = model_->itemFromIndex(index);
     *ptr = *dialogFields;
     return true;
 }

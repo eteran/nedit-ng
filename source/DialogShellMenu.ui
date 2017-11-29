@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>688</width>
-    <height>558</height>
+    <height>555</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -91,7 +91,7 @@
         </layout>
        </item>
        <item>
-        <widget class="QListWidget" name="listItems"/>
+        <widget class="QListView" name="listItems"/>
        </item>
       </layout>
      </item>
@@ -203,7 +203,7 @@ Select &quot;New&quot; to add a new command to the menu.</string>
           <item>
            <widget class="QRadioButton" name="radioFromEither">
             <property name="text">
-             <string>ei&amp;ther</string>
+             <string>e&amp;ither</string>
             </property>
            </widget>
           </item>

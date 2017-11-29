@@ -5140,7 +5140,7 @@ bool TextArea::deletePendingSelection() {
     }
 }
 
-int TextArea::startOfWord(int pos) {
+int TextArea::startOfWord(int pos) const {
 	int startPos;
     QByteArray delimiters = P_delimiters.toLatin1();
 
@@ -5159,7 +5159,7 @@ int TextArea::startOfWord(int pos) {
 	return std::min(pos, startPos + 1);
 }
 
-int TextArea::endOfWord(int pos) {
+int TextArea::endOfWord(int pos) const {
 	int endPos;
     QByteArray delimiters = P_delimiters.toLatin1();
 
@@ -5184,7 +5184,7 @@ int TextArea::endOfWord(int pos) {
 ** result in "foundPos" returns True if found, false if not. If ignoreSpace is
 ** set, then Space, Tab, and Newlines are ignored in searchChars.
 */
-bool TextArea::spanBackward(TextBuffer *buf, int startPos, const QByteArray &searchChars, bool ignoreSpace, int *foundPos) {
+bool TextArea::spanBackward(TextBuffer *buf, int startPos, const QByteArray &searchChars, bool ignoreSpace, int *foundPos) const {
 
 	if (startPos == 0) {
 		*foundPos = 0;
@@ -5221,7 +5221,7 @@ bool TextArea::spanBackward(TextBuffer *buf, int startPos, const QByteArray &sea
 ** result in "foundPos" returns True if found, false if not. If ignoreSpace
 ** is set, then Space, Tab, and Newlines are ignored in searchChars.
 */
-bool TextArea::spanForward(TextBuffer *buf, int startPos, const QByteArray &searchChars, bool ignoreSpace, int *foundPos) {
+bool TextArea::spanForward(TextBuffer *buf, int startPos, const QByteArray &searchChars, bool ignoreSpace, int *foundPos) const {
 
 	int pos = startPos;
 	while (pos < buf->BufGetLength()) {

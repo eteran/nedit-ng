@@ -26,6 +26,8 @@ public:
     void moveItemUp(const QModelIndex &index);
     void moveItemDown(const QModelIndex &index);
     void deleteItem(const QModelIndex &index);
+    HighlightStyle *itemFromIndex(const QModelIndex &index);
+    const HighlightStyle *itemFromIndex(const QModelIndex &index) const;
 
 private:
     QVector<HighlightStyle> items_;

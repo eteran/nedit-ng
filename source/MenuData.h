@@ -2,6 +2,7 @@
 #ifndef MENU_DATA_H_
 #define MENU_DATA_H_
 
+#include "MenuItem.h"
 #include <memory>
 
 struct MenuItem;

@@ -12,6 +12,13 @@ class MenuItemModel;
 
 class DialogWindowBackgroundMenu : public Dialog {
 	Q_OBJECT
+
+private:
+    enum class Mode {
+        Silent,
+        Verbose
+    };
+
 public:
     DialogWindowBackgroundMenu(QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
     ~DialogWindowBackgroundMenu() noexcept override = default;
@@ -39,12 +46,12 @@ private Q_SLOTS:
 	
 private:
     bool applyDialogChanges();
-    bool checkMacro(bool silent);
-    bool checkMacroText(const QString &macro, bool silent);
+    bool checkMacro(Mode silent);
+    bool checkMacroText(const QString &macro, Mode silent);
     bool updateCurrentItem();
     bool updateCurrentItem(const QModelIndex &index);
     QString ensureNewline(const QString &string);
-    std::unique_ptr<MenuItem> readDialogFields(bool silent);
+    std::unique_ptr<MenuItem> readDialogFields(Mode silent);
     void updateButtonStates();
     void updateButtonStates(const QModelIndex &current);
 

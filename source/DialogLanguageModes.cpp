@@ -96,7 +96,7 @@ void DialogLanguageModes::on_listItems_itemSelectionChanged() {
 			messageBox.setText(tr("Discard incomplete entry for current language mode?"));
 
 			QPushButton *buttonKeep    = messageBox.addButton(tr("Keep"), QMessageBox::RejectRole);
-            QPushButton *buttonDiscard = messageBox.addButton(tr("Discard"), QMessageBox::DestructiveRole);
+            QPushButton *buttonDiscard = messageBox.addButton(QMessageBox::Discard);
 			Q_UNUSED(buttonDiscard);
 
 			messageBox.exec();

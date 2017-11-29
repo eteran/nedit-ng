@@ -2,8 +2,8 @@
 #include "DialogShellMenu.h"
 #include "MainWindow.h"
 #include "MenuItem.h"
+#include "MenuItemModel.h"
 #include "preferences.h"
-#include "SignalBlocker.h"
 #include "MenuData.h"
 #include "userCmds.h"
 
@@ -14,66 +14,93 @@
  * @param parent
  * @param f
  */
-DialogShellMenu::DialogShellMenu(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f), previous_(nullptr) {
+DialogShellMenu::DialogShellMenu(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f) {
 	ui.setupUi(this);
     ui.editAccelerator->setMaximumSequenceLength(1);
 
-	for(MenuData &data : ShellMenuData) {
-        auto ptr  = new MenuItem(*data.item.get());
-		auto item = new QListWidgetItem(ptr->name);
-		item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(ptr));
-		ui.listItems->addItem(item);
-	}
+    model_ = new MenuItemModel(this);
+    ui.listItems->setModel(model_);
 
-	if(ui.listItems->count() != 0) {
-		ui.listItems->setCurrentRow(0);
-	}
+    // Copy the list of menu information to one that the user can freely edit
+    for(MenuData &data : ShellMenuData) {
+        model_->addItem(*data.item);
+    }
+
+    connect(ui.listItems->selectionModel(), &QItemSelectionModel::currentChanged, this, &DialogShellMenu::currentChanged, Qt::QueuedConnection);
+    connect(this, &DialogShellMenu::restore, this, &DialogShellMenu::restoreSlot, Qt::QueuedConnection);
+
+    // default to selecting the first item
+    if(model_->rowCount() != 0) {
+        QModelIndex index = model_->index(0, 0);
+        ui.listItems->setCurrentIndex(index);
+    }
 }
 
 /**
- * @brief DialogShellMenu::~DialogShellMenu
+ * @brief DialogWindowBackgroundMenu::restoreSlot
+ * @param index
  */
-DialogShellMenu::~DialogShellMenu() noexcept {
-	for(int i = 0; i < ui.listItems->count(); ++i) {
-	    delete itemFromIndex(i);
-	}
+void DialogShellMenu::restoreSlot(const QModelIndex &index) {
+    ui.listItems->setCurrentIndex(index);
 }
 
 /**
- * @brief DialogShellMenu::itemFromIndex
- * @param i
- * @return
+ * @brief DialogShellMenu::updateButtonStates
  */
-MenuItem *DialogShellMenu::itemFromIndex(int i) const {
-	if(i < ui.listItems->count()) {
-	    QListWidgetItem* item = ui.listItems->item(i);
-		auto ptr = reinterpret_cast<MenuItem *>(item->data(Qt::UserRole).toULongLong());
-		return ptr;
-	}
-	
-	return nullptr;
+void DialogShellMenu::updateButtonStates() {
+    QModelIndex index = ui.listItems->currentIndex();
+    updateButtonStates(index);
 }
+
+/**
+ * @brief DialogShellMenu::updateButtonStates
+ */
+void DialogShellMenu::updateButtonStates(const QModelIndex &current) {
+    if(current.isValid()) {
+        if(current.row() == 0) {
+            ui.buttonUp    ->setEnabled(false);
+            ui.buttonDown  ->setEnabled(model_->rowCount() > 1);
+            ui.buttonDelete->setEnabled(true);
+            ui.buttonCopy  ->setEnabled(true);
+        } else if(current.row() == model_->rowCount() - 1) {
+            ui.buttonUp    ->setEnabled(true);
+            ui.buttonDown  ->setEnabled(false);
+            ui.buttonDelete->setEnabled(true);
+            ui.buttonCopy  ->setEnabled(true);
+        } else {
+            ui.buttonUp    ->setEnabled(true);
+            ui.buttonDown  ->setEnabled(true);
+            ui.buttonDelete->setEnabled(true);
+            ui.buttonCopy  ->setEnabled(true);
+        }
+    } else {
+        ui.buttonUp    ->setEnabled(false);
+        ui.buttonDown  ->setEnabled(false);
+        ui.buttonDelete->setEnabled(false);
+        ui.buttonCopy  ->setEnabled(false);
+    }
+}
+
 
 /**
  * @brief DialogShellMenu::on_buttonNew_clicked
  */
 void DialogShellMenu::on_buttonNew_clicked() {
 
-    // if the list isn't empty, then make sure we've updated the current one
-    // before moving the focus away
-    if(ui.listItems->count() != 0) {
-        if(!updateCurrentItem()) {
-            return;
-        }
+    if(!updateCurrentItem()) {
+        return;
     }
-	
-	auto ptr  = new MenuItem;
-	ptr->name = tr("New Item");
 
-	auto item = new QListWidgetItem(ptr->name);
-	item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(ptr));
-	ui.listItems->addItem(item);
-	ui.listItems->setCurrentItem(item);
+    MenuItem item;
+    // some sensible defaults...
+    item.name  = tr("New Item");
+    model_->addItem(item);
+
+    QModelIndex index = model_->index(model_->rowCount() - 1, 0);
+    ui.listItems->setCurrentIndex(index);
+
+    ui.listItems->scrollTo(ui.listItems->currentIndex());
+    updateButtonStates();
 }
 
 /**
@@ -81,24 +108,21 @@ void DialogShellMenu::on_buttonNew_clicked() {
  */
 void DialogShellMenu::on_buttonCopy_clicked() {
 
-	if(!updateCurrentItem()) {
-		return;
-	}
+    if(!updateCurrentItem()) {
+        return;
+    }
 
-	QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
-	if(selections.size() != 1) {
-		return;
-	}
+    QModelIndex index = ui.listItems->currentIndex();
+    if(index.isValid()) {
+        auto ptr = model_->itemFromIndex(index);
+        model_->addItem(*ptr);
 
-	QListWidgetItem *const selection = selections[0];
-	auto ptr = reinterpret_cast<MenuItem *>(selection->data(Qt::UserRole).toULongLong());
-	auto newPtr = new MenuItem(*ptr);
-	auto newItem = new QListWidgetItem(newPtr->name);
-	newItem->setData(Qt::UserRole, reinterpret_cast<qulonglong>(newPtr));
+        QModelIndex newIndex = model_->index(model_->rowCount() - 1, 0);
+        ui.listItems->setCurrentIndex(newIndex);
+    }
 
-	const int i = ui.listItems->row(selection);
-	ui.listItems->insertItem(i + 1, newItem);
-	ui.listItems->setCurrentItem(newItem);
+    ui.listItems->scrollTo(ui.listItems->currentIndex());
+    updateButtonStates();
 }
 
 /**
@@ -106,22 +130,14 @@ void DialogShellMenu::on_buttonCopy_clicked() {
  */
 void DialogShellMenu::on_buttonDelete_clicked() {
 
-	QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
-	if(selections.size() != 1) {
-		return;
-	}
-	
-	// prevent usage of this item going forward
-	previous_ = nullptr;
+    QModelIndex index = ui.listItems->currentIndex();
+    if(index.isValid()) {
+        deleted_ = index;
+        model_->deleteItem(index);
+    }
 
-	QListWidgetItem *const selection = selections[0];
-	auto ptr = reinterpret_cast<MenuItem *>(selection->data(Qt::UserRole).toULongLong());
-
-	delete ptr;
-	delete selection;
-
-	// force an update of the display
-	on_listItems_itemSelectionChanged();
+    ui.listItems->scrollTo(ui.listItems->currentIndex());
+    updateButtonStates();
 }
 
 /**
@@ -129,19 +145,13 @@ void DialogShellMenu::on_buttonDelete_clicked() {
  */
 void DialogShellMenu::on_buttonUp_clicked() {
 
-	QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
-	if(selections.size() != 1) {
-		return;
-	}
+    QModelIndex index = ui.listItems->currentIndex();
+    if(index.isValid()) {
+        model_->moveItemUp(index);
+    }
 
-	QListWidgetItem *const selection = selections[0];
-	const int i = ui.listItems->row(selection);
-
-	if(i != 0) {
-		QListWidgetItem *item = ui.listItems->takeItem(i);
-		ui.listItems->insertItem(i - 1, item);
-		ui.listItems->setCurrentItem(item);
-	}
+    ui.listItems->scrollTo(ui.listItems->currentIndex());
+    updateButtonStates();
 }
 
 /**
@@ -149,145 +159,115 @@ void DialogShellMenu::on_buttonUp_clicked() {
  */
 void DialogShellMenu::on_buttonDown_clicked() {
 
-	QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
-	if(selections.size() != 1) {
-		return;
-	}
+    QModelIndex index = ui.listItems->currentIndex();
+    if(index.isValid()) {
+        model_->moveItemDown(index);
+    }
 
-	QListWidgetItem *const selection = selections[0];
-	const int i = ui.listItems->row(selection);
-
-	if(i != ui.listItems->count() - 1) {
-		QListWidgetItem *item = ui.listItems->takeItem(i);
-		ui.listItems->insertItem(i + 1, item);
-		ui.listItems->setCurrentItem(item);
-	}
+    ui.listItems->scrollTo(ui.listItems->currentIndex());
+    updateButtonStates();
 }
 
 /**
- * @brief DialogShellMenu::on_listItems_itemSelectionChanged
+ * @brief DialogShellMenu::currentChanged
+ * @param current
+ * @param previous
  */
-void DialogShellMenu::on_listItems_itemSelectionChanged() {
+void DialogShellMenu::currentChanged(const QModelIndex &current, const QModelIndex &previous) {
+    static bool canceled = false;
 
-	QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
-	if(selections.size() != 1) {
-		previous_ = nullptr;
-		return;
-	}
+    if (canceled) {
+        canceled = false;
+        return;
+    }
 
-	QListWidgetItem *const current = selections[0];
+    // if we are actually switching items, check that the previous one was valid
+    // so we can optionally cancel
+    if(previous.isValid() && previous != deleted_ && !checkCurrent(Mode::Silent)) {
+        QMessageBox messageBox(this);
+        messageBox.setWindowTitle(tr("Discard Entry"));
+        messageBox.setIcon(QMessageBox::Warning);
+        messageBox.setText(tr("Discard incomplete entry for current menu item?"));
+        QPushButton *buttonKeep    = messageBox.addButton(tr("Keep"), QMessageBox::RejectRole);
+        QPushButton *buttonDiscard = messageBox.addButton(QMessageBox::Discard);
+        Q_UNUSED(buttonDiscard);
 
-	if(previous_ != nullptr && current != nullptr && current != previous_) {
-	
-		// we want to try to save it (but not apply it yet)
-		// and then move on
-        if(!checkCurrent(Mode::Silent)) {
+        messageBox.exec();
+        if (messageBox.clickedButton() == buttonKeep) {
 
-			QMessageBox messageBox(this);
-			messageBox.setWindowTitle(tr("Discard Entry"));
-			messageBox.setIcon(QMessageBox::Warning);
-			messageBox.setText(tr("Discard incomplete entry for current highlight style?"));
-			QPushButton *buttonKeep    = messageBox.addButton(tr("Keep"), QMessageBox::RejectRole);
-            QPushButton *buttonDiscard = messageBox.addButton(tr("Discard"), QMessageBox::DestructiveRole);
-			Q_UNUSED(buttonDiscard);
+            // again to cause messagebox to pop up
+            checkCurrent(Mode::Verbose);
 
-			messageBox.exec();
-			if (messageBox.clickedButton() == buttonKeep) {
-			
-				// again to cause messagebox to pop up
-                checkCurrent(Mode::Verbose);
-				
-				// reselect the old item
-                no_signals(ui.listItems)->setCurrentItem(previous_);
-				return;
-			}
+            // reselect the old item
+            canceled = true;
+            Q_EMIT restore(previous);
+            return;
+        }
+    }
 
-			// if we get here, we are ditching changes
-		} else {
-			if(!updateCurrentItem(previous_)) {
-				return;
-			}
-		}
-	}
+    // NOTE(eteran): this is only safe if we aren't moving due to a delete operation
+    if(previous.isValid() && previous != deleted_) {
+        if(!updateCurrentItem(previous)) {
+            // reselect the old item
+            canceled = true;
+            Q_EMIT restore(previous);
+            return;
+        }
+    }
 
-	if(current) {
-		const int i = ui.listItems->row(current);
+    // previous was OK, so let's update the contents of the dialog
+    if(const auto ptr = model_->itemFromIndex(current)) {
 
-		auto ptr = reinterpret_cast<MenuItem *>(current->data(Qt::UserRole).toULongLong());
-
-		ui.editName->setText(ptr->name);
+        ui.editName->setText(ptr->name);
         ui.editAccelerator->setKeySequence(ptr->shortcut);
-		ui.editCommand->setPlainText(ptr->cmd);
-				
-		switch(ptr->input) {
-		case FROM_SELECTION:
-			ui.radioFromSelection->setChecked(true);
-			break;
-		case FROM_WINDOW:
-			ui.radioFromDocument->setChecked(true);
-			break;		
-		case FROM_EITHER:
-			ui.radioFromEither->setChecked(true);
-			break;		
-		case FROM_NONE:
-			ui.radioFromNone->setChecked(true);
-			break;		
-		}
-		
-		switch(ptr->output) {
-		case TO_SAME_WINDOW:
-			ui.radioToSameDocument->setChecked(true);
-			break;
-		case TO_DIALOG:
-			ui.radioToDialog->setChecked(true);
-			break;		
-		case TO_NEW_WINDOW:
-			ui.radioToNewDocument->setChecked(true);
-			break;		
-		}
-		
-		ui.checkReplaceInput->setChecked(ptr->repInput);	
-		ui.checkSaveBeforeExec->setChecked(ptr->saveFirst);
-		ui.checkReloadAfterExec->setChecked(ptr->loadAfter);
-		
+        ui.editCommand->setPlainText(ptr->cmd);
 
-		if(i == 0) {
-			ui.buttonUp    ->setEnabled(false);
-			ui.buttonDown  ->setEnabled(ui.listItems->count() > 1);
-			ui.buttonDelete->setEnabled(true);
-			ui.buttonCopy  ->setEnabled(true);
-		} else if(i == (ui.listItems->count() - 1)) {
-			ui.buttonUp    ->setEnabled(true);
-			ui.buttonDown  ->setEnabled(false);
-			ui.buttonDelete->setEnabled(true);
-			ui.buttonCopy  ->setEnabled(true);
-		} else {
-			ui.buttonUp    ->setEnabled(true);
-			ui.buttonDown  ->setEnabled(true);
-			ui.buttonDelete->setEnabled(true);
-			ui.buttonCopy  ->setEnabled(true);
-		}
-	} else {
-		ui.editName->setText(QString());
-		ui.editAccelerator->clear();
-		ui.editCommand->setPlainText(QString());
+        switch(ptr->input) {
+        case FROM_SELECTION:
+            ui.radioFromSelection->setChecked(true);
+            break;
+        case FROM_WINDOW:
+            ui.radioFromDocument->setChecked(true);
+            break;
+        case FROM_EITHER:
+            ui.radioFromEither->setChecked(true);
+            break;
+        case FROM_NONE:
+            ui.radioFromNone->setChecked(true);
+            break;
+        }
 
-		ui.buttonUp    ->setEnabled(false);
-		ui.buttonDown  ->setEnabled(false);
-		ui.buttonDelete->setEnabled(false);
-		ui.buttonCopy  ->setEnabled(false);
-		
-		ui.radioFromSelection->setChecked(true);
-		ui.radioToSameDocument->setChecked(true);
+        switch(ptr->output) {
+        case TO_SAME_WINDOW:
+            ui.radioToSameDocument->setChecked(true);
+            break;
+        case TO_DIALOG:
+            ui.radioToDialog->setChecked(true);
+            break;
+        case TO_NEW_WINDOW:
+            ui.radioToNewDocument->setChecked(true);
+            break;
+        }
 
-		
-		ui.checkReplaceInput->setChecked(false);	
-		ui.checkSaveBeforeExec->setChecked(false);
-		ui.checkReloadAfterExec->setChecked(false);
-				
-	}
-	
-	previous_ = current;
+        ui.checkReplaceInput->setChecked(ptr->repInput);
+        ui.checkSaveBeforeExec->setChecked(ptr->saveFirst);
+        ui.checkReloadAfterExec->setChecked(ptr->loadAfter);
+
+    } else {
+        ui.editName->setText(QString());
+        ui.editAccelerator->clear();
+        ui.editCommand->setPlainText(QString());
+
+        ui.radioFromSelection->setChecked(true);
+        ui.radioToSameDocument->setChecked(true);
+
+        ui.checkReplaceInput->setChecked(false);
+        ui.checkSaveBeforeExec->setChecked(false);
+        ui.checkReloadAfterExec->setChecked(false);
+    }
+
+    // ensure that the appropriate buttons are enabled
+    updateButtonStates(current);
 }
 
 /**
@@ -403,36 +383,31 @@ QString DialogShellMenu::ensureNewline(const QString &string) {
  */
 bool DialogShellMenu::applyDialogChanges() {
 
-	// Test compile the macro
-    auto current = readDialogFields(Mode::Verbose);
-	if(!current) {
-		return false;
-	}
+    if(model_->rowCount() != 0) {
+        auto dialogFields = readDialogFields(Mode::Verbose);
+        if(!dialogFields) {
+            return false;
+        }
 
-	// Get the current contents of the dialog fields
-	QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
-	if(selections.size() != 1) {
-		return false;
-	}
+        // Get the current selected item
+        QModelIndex index = ui.listItems->currentIndex();
+        if(!index.isValid()) {
+            return false;
+        }
 
-	// update the currently selected item's associated data
-	// and make sure it has the text updated as well
-	QListWidgetItem *const selection = selections[0];
-	auto ptr = reinterpret_cast<MenuItem *>(selection->data(Qt::UserRole).toULongLong());
-	delete ptr;
+        // update the currently selected item's associated data
+        // and make sure it has the text updated as well
+        auto ptr = model_->itemFromIndex(index);
+        *ptr = *dialogFields;
+    }
 
-
-	selection->setText(current->name);
-    selection->setData(Qt::UserRole, reinterpret_cast<qulonglong>(current.release()));
-
-	// Update the menu information
     ShellMenuData.clear();
 
-	int count = ui.listItems->count();
-	for(int i = 0; i < count; ++i) {
-		auto ptr = itemFromIndex(i);		
-        ShellMenuData.push_back({ std::make_unique<MenuItem>(*ptr), nullptr });
-	}
+    for(int i = 0; i < model_->rowCount(); ++i) {
+        QModelIndex index = model_->index(i, 0);
+        auto item = model_->itemFromIndex(index);
+        ShellMenuData.push_back({ std::make_unique<MenuItem>(*item), nullptr });
+    }
 
     parseMenuItemList(ShellMenuData);
 
@@ -460,20 +435,21 @@ void DialogShellMenu::on_radioToSameDocument_toggled(bool checked) {
  * @param item
  * @return
  */
-bool DialogShellMenu::updateCurrentItem(QListWidgetItem *item) {
-	// Get the current contents of the "patterns" dialog fields 
-    auto ptr = readDialogFields(Mode::Verbose);
-	if(!ptr) {
-		return false;
-	}
-	
-	// delete the current pattern in this slot
-	auto old = reinterpret_cast<MenuItem *>(item->data(Qt::UserRole).toULongLong());
-	delete old;
-	
-    item->setText(ptr->name);
-    item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(ptr.release()));
-	return true;
+bool DialogShellMenu::updateCurrentItem(const QModelIndex &index) {
+    // Get the current contents of the "patterns" dialog fields
+    auto dialogFields = readDialogFields(Mode::Verbose);
+    if(!dialogFields) {
+        return false;
+    }
+
+    // Get the current contents of the dialog fields
+    if(!index.isValid()) {
+        return false;
+    }
+
+    auto ptr = model_->itemFromIndex(index);
+    *ptr = *dialogFields;
+    return true;
 }
 
 /**
@@ -481,14 +457,14 @@ bool DialogShellMenu::updateCurrentItem(QListWidgetItem *item) {
  * @return
  */
 bool DialogShellMenu::updateCurrentItem() {
-	QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
-	if(selections.size() != 1) {
-		return false;
-	}
+    QModelIndex index = ui.listItems->currentIndex();
+    if(index.isValid()) {
+        return updateCurrentItem(index);
+    }
 
-	QListWidgetItem *const selection = selections[0];
-	return updateCurrentItem(selection);	
+    return true;
 }
+
 
 /**
  * @brief DialogShellMenu::checkCurrent
