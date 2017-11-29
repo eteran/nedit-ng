@@ -8,15 +8,23 @@
 #include <memory>
 
 struct MenuItem;
+class MenuItemModel;
 
 class DialogWindowBackgroundMenu : public Dialog {
 	Q_OBJECT
 public:
     DialogWindowBackgroundMenu(QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
-    ~DialogWindowBackgroundMenu() noexcept override;
+    ~DialogWindowBackgroundMenu() noexcept override = default;
 
 public:
 	void setPasteReplayEnabled(bool enabled);
+
+Q_SIGNALS:
+    void restore(const QModelIndex &selection);
+
+private Q_SLOTS:
+    void currentChanged(const QModelIndex &current, const QModelIndex &previous);
+    void restoreSlot(const QModelIndex &index);
 
 private Q_SLOTS:
 	void on_buttonNew_clicked();
@@ -24,26 +32,26 @@ private Q_SLOTS:
 	void on_buttonDelete_clicked();
 	void on_buttonUp_clicked();
 	void on_buttonDown_clicked();
-	void on_listItems_itemSelectionChanged();
 	void on_buttonPasteLRMacro_clicked();
 	void on_buttonCheck_clicked();
 	void on_buttonApply_clicked();
 	void on_buttonOK_clicked();
 	
 private:
-	bool checkMacro(bool silent);
+    bool applyDialogChanges();
+    bool checkMacro(bool silent);
+    bool checkMacroText(const QString &macro, bool silent);
+    bool updateCurrentItem();
+    bool updateCurrentItem(const QModelIndex &index);
+    QString ensureNewline(const QString &string);
     std::unique_ptr<MenuItem> readDialogFields(bool silent);
-	bool checkMacroText(const QString &macro, bool silent);
-	QString ensureNewline(const QString &string);
-	bool applyDialogChanges();
-	void updateButtons();
-	MenuItem *itemFromIndex(int i) const;
-	bool updateCurrentItem();
-	bool updateCurrentItem(QListWidgetItem *item);	
-	
+    void updateButtonStates();
+    void updateButtonStates(const QModelIndex &current);
+
 private:
 	Ui::DialogWindowBackgroundMenu ui;
-	QListWidgetItem *previous_;
+    MenuItemModel *model_;
+    QModelIndex deleted_;
 };
 
 #endif

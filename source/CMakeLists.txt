@@ -57,6 +57,7 @@ qt5_wrap_cpp(MOC_SOURCES
 	NeditServer.h
 	TextArea.h
 	HighlightStyleModel.h
+	MenuItemModel.h
 )
 
 qt5_wrap_ui(UIC_SOURCES
@@ -186,6 +187,8 @@ add_executable(nedit-ng
 	HighlightStyle.h
 	HighlightStyleModel.h
 	HighlightStyleModel.cpp
+	MenuItemModel.h
+	MenuItemModel.cpp
 	Input.cpp
 	Input.h
 	KeySequenceEdit.cpp

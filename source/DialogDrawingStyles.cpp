@@ -41,7 +41,7 @@ DialogDrawingStyles::DialogDrawingStyles(std::vector<HighlightStyle> &highlightS
 }
 
 /**
- * @brief PreferenceList::restoreSlot
+ * @brief DialogDrawingStyles::restoreSlot
  * @param index
  */
 void DialogDrawingStyles::restoreSlot(const QModelIndex &index) {
@@ -101,8 +101,6 @@ void DialogDrawingStyles::on_buttonCopy_clicked() {
     QModelIndex index = ui.listItems->currentIndex();
     if(index.isValid()) {
         auto ptr = reinterpret_cast<const HighlightStyle*>(index.internalPointer());
-
-        // TODO(eteran): add it next to the selected item instead of to the end!
         model_->addItem(*ptr);
 
         QModelIndex newIndex = model_->index(model_->rowCount() - 1, 0);
@@ -155,7 +153,7 @@ void DialogDrawingStyles::on_buttonDown_clicked() {
 }
 
 /**
- * @brief updateButtonStates
+ * @brief DialogDrawingStyles::updateButtonStates
  */
 void DialogDrawingStyles::updateButtonStates() {
     QModelIndex index = ui.listItems->currentIndex();
@@ -183,6 +181,11 @@ void DialogDrawingStyles::updateButtonStates(const QModelIndex &current) {
             ui.buttonDelete->setEnabled(true);
             ui.buttonCopy  ->setEnabled(true);
         }
+    } else {
+        ui.buttonUp    ->setEnabled(false);
+        ui.buttonDown  ->setEnabled(false);
+        ui.buttonDelete->setEnabled(false);
+        ui.buttonCopy  ->setEnabled(false);
     }
 }
 
@@ -395,7 +398,6 @@ std::unique_ptr<HighlightStyle> DialogDrawingStyles::readDialogFields(Mode mode)
  */
 bool DialogDrawingStyles::updateHSList() {
 
-	// Test compile the macro
     auto dialogFields = readDialogFields(Mode::Verbose);
     if(!dialogFields) {
 		return false;
@@ -483,7 +485,11 @@ bool DialogDrawingStyles::updateCurrentItem(const QModelIndex &index) {
  */
 bool DialogDrawingStyles::updateCurrentItem() {
     QModelIndex index = ui.listItems->currentIndex();
-    return updateCurrentItem(index);
+    if(index.isValid()) {
+        return updateCurrentItem(index);
+    }
+
+    return true;
 }
 
 /**
