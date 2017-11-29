@@ -74,7 +74,8 @@ public:
     int findDef(TextArea *area, const QString &value, TagSearchMode search_type);
     void action_Set_Language_Mode(const QString &languageMode);
     void AddMarkEx(TextArea *area, QChar label);
-    void bannerTimeoutProc();
+    void macroBannerTimeoutProc();
+    void shellBannerTimeoutProc();
     void BeginSmartIndentEx(int warn);
     void closePane();
     void execAP(TextArea *area, const QString &command);

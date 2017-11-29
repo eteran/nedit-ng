@@ -3572,9 +3572,9 @@ void DocumentWidget::executeModMacroEx(SmartIndentEvent *cbInfo) {
 }
 
 /**
- * @brief DocumentWidget::bannerTimeoutProc
+ * @brief DocumentWidget::macroBannerTimeoutProc
  */
-void DocumentWidget::bannerTimeoutProc() {
+void DocumentWidget::macroBannerTimeoutProc() {
 
     auto window = MainWindow::fromDocument(this);
     if(!window) {
@@ -3591,6 +3591,29 @@ void DocumentWidget::bannerTimeoutProc() {
         SetModeMessageEx(tr("Macro Command in Progress"));
     } else {
         SetModeMessageEx(tr("Macro Command in Progress -- Press %1 to Cancel").arg(cCancel));
+    }
+}
+
+/**
+ * @brief DocumentWidget::shellBannerTimeoutProc
+ */
+void DocumentWidget::shellBannerTimeoutProc() {
+
+    auto window = MainWindow::fromDocument(this);
+    if(!window) {
+        return;
+    }
+
+    shellCmdData_->bannerIsUp = true;
+
+    // Extract accelerator text from menu PushButtons
+    QString cCancel = window->ui.action_Cancel_Shell_Command->shortcut().toString();
+
+    // Create message
+    if (cCancel.isEmpty()) {
+        SetModeMessageEx(tr("Shell Command in Progress"));
+    } else {
+        SetModeMessageEx(tr("Shell Command in Progress -- Press %1 to Cancel").arg(cCancel));
     }
 }
 
@@ -4654,7 +4677,7 @@ void DocumentWidget::issueCommandEx(MainWindow *window, TextArea *area, const QS
 
     // Set up timer proc for putting up banner when process takes too long
     if (!fromMacro) {
-        connect(&document->shellCmdData_->bannerTimer, &QTimer::timeout, document, &DocumentWidget::bannerTimeoutProc);
+        connect(&document->shellCmdData_->bannerTimer, &QTimer::timeout, document, &DocumentWidget::shellBannerTimeoutProc);
         document->shellCmdData_->bannerTimer.setSingleShot(true);
         document->shellCmdData_->bannerTimer.start(BANNER_WAIT_TIME);
     }
@@ -5307,7 +5330,7 @@ void DocumentWidget::runMacroEx(Program *prog) {
     macroCmdData_ = std::move(cmdData);
 
     // Set up timer proc for putting up banner when macro takes too long
-    QObject::connect(&macroCmdData_->bannerTimer, &QTimer::timeout, this, &DocumentWidget::bannerTimeoutProc);
+    QObject::connect(&macroCmdData_->bannerTimer, &QTimer::timeout, this, &DocumentWidget::macroBannerTimeoutProc);
     macroCmdData_->bannerTimer.setSingleShot(true);
     macroCmdData_->bannerTimer.start(BANNER_WAIT_TIME);
 
