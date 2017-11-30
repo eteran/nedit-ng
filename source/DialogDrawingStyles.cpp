@@ -419,7 +419,7 @@ bool DialogDrawingStyles::applyDialogChanges() {
                 return false;
             }
         }
-        *ptr = *dialogFields;
+        model_->updateItem(index, *dialogFields);
     }
 
 	// Replace the old highlight styles list with the new one from the dialog 
@@ -475,8 +475,7 @@ bool DialogDrawingStyles::updateCurrentItem(const QModelIndex &index) {
         }
     }
 
-
-    *ptr = *dialogFields;
+    model_->updateItem(index, *dialogFields);
 	return true;
 }
 

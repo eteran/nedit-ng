@@ -26,7 +26,7 @@ public:
     void moveItemUp(const QModelIndex &index);
     void moveItemDown(const QModelIndex &index);
     void deleteItem(const QModelIndex &index);
-    MenuItem *itemFromIndex(const QModelIndex &index);
+    bool updateItem(const QModelIndex &index, const MenuItem &item);
     const MenuItem *itemFromIndex(const QModelIndex &index) const;
 
 private:

@@ -164,6 +164,20 @@ void LanguageModeModel::deleteItem(const QModelIndex &index) {
     }
 }
 
+bool LanguageModeModel::updateItem(const QModelIndex &index, const LanguageMode &item) {
+    if(index.isValid()) {
+        int row = index.row();
+        if(row < rowCount()) {
+            items_[row] = item;
+            static const QVector<int> roles = {Qt::DisplayRole};
+            Q_EMIT dataChanged(index, index, roles);
+            return true;
+        }
+    }
+
+    return false;
+}
+
 /**
  * @brief LanguageModeModel::itemFromIndex
  * @param index
@@ -180,18 +194,3 @@ const LanguageMode *LanguageModeModel::itemFromIndex(const QModelIndex &index) c
     return nullptr;
 }
 
-/**
- * @brief LanguageModeModel::itemFromIndex
- * @param index
- * @return
- */
-LanguageMode *LanguageModeModel::itemFromIndex(const QModelIndex &index) {
-    if(index.isValid()) {
-        int row = index.row();
-        if(row < rowCount()) {
-            return &items_[row];
-        }
-    }
-
-    return nullptr;
-}

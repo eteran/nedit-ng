@@ -165,6 +165,26 @@ void HighlightStyleModel::deleteItem(const QModelIndex &index) {
 }
 
 /**
+ * @brief HighlightStyleModel::updateItem
+ * @param index
+ * @param item
+ * @return
+ */
+bool HighlightStyleModel::updateItem(const QModelIndex &index, const HighlightStyle &item) {
+    if(index.isValid()) {
+        int row = index.row();
+        if(row < rowCount()) {
+            items_[row] = item;
+            static const QVector<int> roles = {Qt::DisplayRole};
+            Q_EMIT dataChanged(index, index, roles);
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/**
  * @brief HighlightStyleModel::itemFromIndex
  * @param index
  * @return
@@ -180,18 +200,3 @@ const HighlightStyle *HighlightStyleModel::itemFromIndex(const QModelIndex &inde
     return nullptr;
 }
 
-/**
- * @brief HighlightStyleModel::itemFromIndex
- * @param index
- * @return
- */
-HighlightStyle *HighlightStyleModel::itemFromIndex(const QModelIndex &index) {
-    if(index.isValid()) {
-        int row = index.row();
-        if(row < rowCount()) {
-            return &items_[row];
-        }
-    }
-
-    return nullptr;
-}

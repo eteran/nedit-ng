@@ -162,6 +162,20 @@ void MenuItemModel::deleteItem(const QModelIndex &index) {
     }
 }
 
+bool MenuItemModel::updateItem(const QModelIndex &index, const MenuItem &item) {
+    if(index.isValid()) {
+        int row = index.row();
+        if(row < rowCount()) {
+            items_[row] = item;
+            static const QVector<int> roles = {Qt::DisplayRole};
+            Q_EMIT dataChanged(index, index, roles);
+            return true;
+        }
+    }
+
+    return false;
+}
+
 const MenuItem *MenuItemModel::itemFromIndex(const QModelIndex &index) const {
     if(index.isValid()) {
         int row = index.row();
@@ -173,13 +187,3 @@ const MenuItem *MenuItemModel::itemFromIndex(const QModelIndex &index) const {
     return nullptr;
 }
 
-MenuItem *MenuItemModel::itemFromIndex(const QModelIndex &index) {
-    if(index.isValid()) {
-        int row = index.row();
-        if(row < rowCount()) {
-            return &items_[row];
-        }
-    }
-
-    return nullptr;
-}

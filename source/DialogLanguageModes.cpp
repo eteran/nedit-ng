@@ -140,9 +140,9 @@ void DialogLanguageModes::currentChanged(const QModelIndex &current, const QMode
     }
 
     // previous was OK, so let's update the contents of the dialog
-    if(const auto ptr = model_->itemFromIndex(current)) {
+    if(auto ptr = model_->itemFromIndex(current)) {
         QStringList extensions;
-        for(QString &extension : ptr->extensions) {
+        for(const QString &extension : ptr->extensions) {
             extensions.push_back(extension);
         }
 
@@ -376,7 +376,7 @@ bool DialogLanguageModes::updateLanguageList(Mode mode) {
         return false;
     }
 
-    if(LanguageMode *oldLM = model_->itemFromIndex(index)) {
+    if(const LanguageMode *oldLM = model_->itemFromIndex(index)) {
 
         if(auto newLM = readDialogFields(mode)) {
 
@@ -396,7 +396,7 @@ bool DialogLanguageModes::updateLanguageList(Mode mode) {
                 }
             }
 
-            *oldLM = *newLM;
+            model_->updateItem(index, *newLM);
             return true;
         }
     }
@@ -431,7 +431,7 @@ bool DialogLanguageModes::updateLMList(Mode mode) {
             for (int i = 0; i < model_->rowCount(); i++) {
 
                 QModelIndex index = model_->index(i, 0);
-                LanguageMode *lang = model_->itemFromIndex(index);
+                const LanguageMode *lang = model_->itemFromIndex(index);
 
                 QStringList parts = lang->name.split(QLatin1Char(':'));
                 QString name = (parts.size() == 2) ? parts[0] : lang->name;
@@ -462,7 +462,7 @@ bool DialogLanguageModes::updateLMList(Mode mode) {
         for (int i = 0; i < model_->rowCount(); i++) {
 
             QModelIndex index = model_->index(i, 0);
-            LanguageMode *lang = model_->itemFromIndex(index);
+            const LanguageMode *lang = model_->itemFromIndex(index);
 
             QStringList parts = lang->name.split(QLatin1Char(':'));
 
@@ -472,7 +472,12 @@ bool DialogLanguageModes::updateLMList(Mode mode) {
 
                 MainWindow::RenameHighlightPattern(oldName, newName);
                 RenameSmartIndentMacros(oldName, newName);
-                lang->name = newName;
+
+                // make a copy of the language mode, and set the new name
+                LanguageMode newLanguageMode = *lang;
+                newLanguageMode.name = newName;
+
+                model_->updateItem(index, newLanguageMode);
             }
         }
 
@@ -654,8 +659,7 @@ bool DialogLanguageModes::updateCurrentItem(const QModelIndex &index) {
         return false;
     }
 
-    auto ptr = model_->itemFromIndex(index);
-    *ptr = *dialogFields;
+    model_->updateItem(index, *dialogFields);
     return true;
 }
 

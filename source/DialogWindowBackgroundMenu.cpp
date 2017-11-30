@@ -425,8 +425,7 @@ bool DialogWindowBackgroundMenu::applyDialogChanges() {
 
         // update the currently selected item's associated data
         // and make sure it has the text updated as well
-        auto ptr = model_->itemFromIndex(index);
-        *ptr = *dialogFields;
+        model_->updateItem(index, *dialogFields);
     }
 
     std::vector<MenuData> newItems;
@@ -476,8 +475,7 @@ bool DialogWindowBackgroundMenu::updateCurrentItem(const QModelIndex &index) {
         return false;
     }
 
-    auto ptr = model_->itemFromIndex(index);
-    *ptr = *dialogFields;
+    model_->updateItem(index, *dialogFields);
     return true;
 }
 
