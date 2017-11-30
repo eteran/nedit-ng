@@ -28,13 +28,12 @@
 #define REGULAREXP_H_
 
 #include "regex_error.h"
+#include "Constants.h"
 #include "util/string_view.h"
 
+#include <array>
 #include <cstdint>
 #include <string>
-
-// Number of text capturing parentheses allowed.
-constexpr auto NSUBEXP = 50u;
 
 /* Flags for CompileRE default settings (Markus Schwarzenberg) */
 enum RE_DEFAULT_FLAG {
@@ -132,13 +131,13 @@ public:
     bool SubstituteRE(view::string_view source, std::string &dest) const;
 
 public:
-    const char *startp[NSUBEXP] = {};      /* Captured text starting locations. */
-    const char *endp[NSUBEXP]   = {};      /* Captured text ending locations. */
-    const char *extentpBW       = nullptr; /* Points to the maximum extent of text scanned by ExecRE in front of the string to achieve a match (needed because of positive look-behind.) */
-    const char *extentpFW       = nullptr; /* Points to the maximum extent of text scanned by ExecRE to achieve a match (needed because of positive look-ahead.) */
-    int top_branch;                        /* Zero-based index of the top branch that matches. Used by syntax highlighting only. */
-    char match_start;                      /* Internal use only. */
-    char anchor;                           /* Internal use only. */
+    std::array<const char *, NSUBEXP> startp; /* Captured text starting locations. */
+    std::array<const char *, NSUBEXP> endp;   /* Captured text ending locations. */
+    const char *extentpBW       = nullptr;    /* Points to the maximum extent of text scanned by ExecRE in front of the string to achieve a match (needed because of positive look-behind.) */
+    const char *extentpFW       = nullptr;    /* Points to the maximum extent of text scanned by ExecRE to achieve a match (needed because of positive look-ahead.) */
+    int top_branch;                           /* Zero-based index of the top branch that matches. Used by syntax highlighting only. */
+    char match_start;                         /* Internal use only. */
+    char anchor;                              /* Internal use only. */
     uint8_t *program            = nullptr;
 };
 

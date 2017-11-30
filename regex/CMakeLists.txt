@@ -3,9 +3,15 @@ cmake_minimum_required(VERSION 3.0)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 add_library (RegExp 
-	regularExp.cpp
-	regularExp.h
+	ExecuteContext.cpp
+	ExecuteContext.h
+	ParseContext.cpp
+	ParseContext.h
 	regex_error.h
+	regularExp.cpp
+	regularExp.h	
+	Opcodes.h
+	Constants.h
 )
 
 target_include_directories (RegExp PUBLIC
