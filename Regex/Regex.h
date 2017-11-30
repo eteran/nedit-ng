@@ -27,13 +27,13 @@
 #ifndef REGULAREXP_H_
 #define REGULAREXP_H_
 
-#include "regex_error.h"
+#include "RegexError.h"
 #include "Constants.h"
 #include "util/string_view.h"
 
 #include <array>
 #include <cstdint>
-#include <string>
+#include <bitset>
 
 /* Flags for CompileRE default settings (Markus Schwarzenberg) */
 enum RE_DEFAULT_FLAG {
@@ -43,16 +43,16 @@ enum RE_DEFAULT_FLAG {
 };
 
 
-class regexp {
+class Regex {
 public:
-	regexp(view::string_view exp, int defaultFlags);
-	~regexp();
-    regexp(const regexp &)            = delete;
-	regexp& operator=(const regexp &) = delete;
+    Regex(view::string_view exp, int defaultFlags);
+    ~Regex();
+    Regex(const Regex &)            = delete;
+    Regex& operator=(const Regex &) = delete;
 
 public:
 	/**
-	 * Match a 'regexp' structure against a string.
+     * Match a 'Regex' structure against a string.
 	 *
 	 * @param string         Text to search within
 	 * @param end            Pointer to the logical end of the string
@@ -66,7 +66,7 @@ public:
 	bool ExecRE(const char *string, const char *end, bool reverse, char prev_char, char succ_char, const char *delimiters, const char *look_behind_to, const char *match_to);
 
 	/**
-	 * Match a 'regexp' structure against a string.
+     * Match a 'Regex' structure against a string.
 	 *
 	 * @param string  Text to search within
 	 * @param reverse Backward search.
@@ -74,7 +74,7 @@ public:
 	bool execute(view::string_view string, bool reverse = false);
 
 	/**
-	 * Match a 'regexp' structure against a string.
+     * Match a 'Regex' structure against a string.
 	 *
 	 * @param prog    Compiled regex
 	 * @param string  Text to search within
@@ -84,7 +84,7 @@ public:
 	bool execute(view::string_view string, size_t offset, bool reverse = false);
 
 	/**
-	 * Match a 'regexp' structure against a string.
+     * Match a 'Regex' structure against a string.
 	 *
 	 * @param prog       Compiled regex
 	 * @param string     Text to search within
@@ -95,7 +95,7 @@ public:
 	bool execute(view::string_view string, size_t offset, const char *delimiters, bool reverse = false);
 
 	/**
-	 * Match a 'regexp' structure against a string. Will only match things between offset and end_offset
+     * Match a 'Regex' structure against a string. Will only match things between offset and end_offset
 	 *
 	 * @param prog       Compiled regex
 	 * @param string     Text to search within
@@ -107,7 +107,7 @@ public:
 	bool execute(view::string_view string, size_t offset, size_t end_offset, const char *delimiters, bool reverse = false);
 
 	/**
-	 * Match a 'regexp' structure against a string. Will only match things between offset and end_offset
+     * Match a 'Regex' structure against a string. Will only match things between offset and end_offset
 	 *
 	 * @param prog       Compiled regex
 	 * @param string     Text to search within
@@ -121,7 +121,7 @@ public:
 	bool execute(view::string_view string, size_t offset, size_t end_offset, char prev, char succ, const char *delimiters, bool reverse = false);	
 
     /**
-     * Perform substitutions after a 'regexp' match.
+     * Perform substitutions after a 'Regex' match.
      *
      * @brief SubstituteRE
      * @param source
@@ -131,21 +131,24 @@ public:
     bool SubstituteRE(view::string_view source, std::string &dest) const;
 
 public:
+    /* Builds a default delimiter table that persists across 'ExecRE' calls that
+       is identical to 'delimiters'.  Pass nullptr for "default default" set of
+       delimiters. */
+    static void SetDefaultWordDelimiters(view::string_view delimiters);
+
+public:
     std::array<const char *, NSUBEXP> startp; /* Captured text starting locations. */
     std::array<const char *, NSUBEXP> endp;   /* Captured text ending locations. */
     const char *extentpBW       = nullptr;    /* Points to the maximum extent of text scanned by ExecRE in front of the string to achieve a match (needed because of positive look-behind.) */
     const char *extentpFW       = nullptr;    /* Points to the maximum extent of text scanned by ExecRE to achieve a match (needed because of positive look-ahead.) */
-    int top_branch;                           /* Zero-based index of the top branch that matches. Used by syntax highlighting only. */
-    char match_start;                         /* Internal use only. */
-    char anchor;                              /* Internal use only. */
+    int top_branch              = 0;          /* Zero-based index of the top branch that matches. Used by syntax highlighting only. */
+    char match_start            = '\0';       /* Internal use only. */
+    char anchor                 = '\0';       /* Internal use only. */
     uint8_t *program            = nullptr;
+
+public:
+    static std::bitset<256> Default_Delimiters;
+    static std::bitset<256> makeDelimiterTable(view::string_view delimiters);
 };
-
-
-/* Builds a default delimiter table that persists across 'ExecRE' calls that
-   is identical to 'delimiters'.  Pass nullptr for "default default" set of
-   delimiters. */
-void SetREDefaultWordDelimiters(view::string_view delimiters);
-void reg_error(const char *str);
 
 #endif

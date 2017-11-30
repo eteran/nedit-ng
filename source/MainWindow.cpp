@@ -2492,7 +2492,7 @@ void MainWindow::on_editIFind_textChanged(const QString &text) {
     if (isRegexType(searchType)) {
         try {
             auto compiledRE = make_regex(text, defaultRegexFlags(searchType));
-        } catch(const regex_error &) {
+        } catch(const RegexError &) {
             return;
         }
     }

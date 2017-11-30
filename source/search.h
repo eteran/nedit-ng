@@ -31,7 +31,7 @@
 #include "SearchType.h"
 #include "WrapMode.h"
 #include "util/string_view.h"
-#include "regex/regularExp.h"
+#include "Regex/Regex.h"
 #include <QString>
 #include <memory>
 
@@ -54,7 +54,7 @@ bool isRegexType(SearchType searchType);
 void saveSearchHistory(const QString &searchString, QString replaceString, SearchType searchType, bool isIncremental);
 int defaultRegexFlags(SearchType searchType);
 
-std::unique_ptr<regexp> make_regex(const QString &re, int flags);
+std::unique_ptr<Regex> make_regex(const QString &re, int flags);
 
 struct SearchReplaceHistoryEntry {
     QString    search;

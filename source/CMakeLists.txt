@@ -274,7 +274,7 @@ include_directories(nedit-ng
 
 target_link_libraries(nedit-ng LINK_PUBLIC
 	NUtil
-	RegExp
+	Regex
 	Settings
 	rbTree
 	Qt5::Widgets

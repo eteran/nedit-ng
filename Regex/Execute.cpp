@@ -1,11 +1,11 @@
 
-#include "ExecuteContext.h"
-#include "Constants.h"
+#include "Execute.h"
 #include "Common.h"
+#include "Compile.h"
+#include "Constants.h"
 #include "Opcodes.h"
-#include "ParseContext.h"
-#include "regex_error.h"
-#include "regularExp.h"
+#include "RegexError.h"
+#include "Regex.h"
 #include "util/utils.h"
 
 #include <cstdio>
@@ -16,19 +16,10 @@
 // Address of this used as flag.
 uint8_t Compute_Size;
 
-// Default table for determining whether a character is a word delimiter.
-std::bitset<256> Default_Delimiters;
-
 namespace {
 
-/**
- * @brief GET_OFFSET
- * @param p
- * @return
- */
-uint16_t GET_OFFSET(uint8_t *p) {
-    return static_cast<uint16_t>(((p[1] & 0xff) << 8) + (p[2] & 0xff));
-}
+int match(uint8_t *prog, int *branch_index_param);
+bool attempt(Regex *prog, const char *string);
 
 /**
  * @brief AT_END_OF_STRING
@@ -279,8 +270,6 @@ unsigned long greedy(uint8_t *p, long max) {
     eContext.Reg_Input = input_str;
 
     return count;
-}
-
 }
 
 /* The next_ptr () function can consume up to 30% of the time during matching
@@ -768,8 +757,10 @@ int match(uint8_t *prog, int *branch_index_param) {
 
         case BACK_REF:
         case BACK_REF_CI:
-            // case X_REGEX_BR:
-            // case X_REGEX_BR_CI: *** IMPLEMENT LATER
+#ifdef ENABLE_CROSS_REGEX_BACKREF
+        case X_REGEX_BR:
+        case X_REGEX_BR_CI: // *** IMPLEMENT LATER
+#endif
             {
                 const char *captured;
                 const char *finish;
@@ -777,24 +768,30 @@ int match(uint8_t *prog, int *branch_index_param) {
 
                 paren_no = static_cast<int>(*OPERAND(scan));
 
-                /* if (GET_OP_CODE (scan) == X_REGEX_BR || GET_OP_CODE (scan) == X_REGEX_BR_CI) {
-
-                   if (eContext.Cross_Regex_Backref == nullptr) MATCH_RETURN (0);
+#ifdef ENABLE_CROSS_REGEX_BACKREF
+                if (GET_OP_CODE (scan) == X_REGEX_BR || GET_OP_CODE (scan) == X_REGEX_BR_CI) {
+                   if (eContext.Cross_Regex_Backref == nullptr)
+                       MATCH_RETURN (0);
 
                    captured = eContext.Cross_Regex_Backref->startp [paren_no];
                    finish   = eContext.Cross_Regex_Backref->endp   [paren_no];
-                } else { */
-                captured = eContext.Back_Ref_Start[paren_no];
-                finish = eContext.Back_Ref_End[paren_no];
-                // }
+                } else {
+#endif
+                    captured = eContext.Back_Ref_Start[paren_no];
+                    finish   = eContext.Back_Ref_End[paren_no];
+#ifdef ENABLE_CROSS_REGEX_BACKREF
+                }
+#endif
 
                 if ((captured != nullptr) && (finish != nullptr)) {
                     if (captured > finish)
                         MATCH_RETURN(0);
 
-                    if (GET_OP_CODE(scan) == BACK_REF_CI /* ||
-                      GET_OP_CODE (scan) == X_REGEX_BR_CI*/) {
-
+#ifdef ENABLE_CROSS_REGEX_BACKREF
+                    if (GET_OP_CODE(scan) == BACK_REF_CI || GET_OP_CODE (scan) == X_REGEX_BR_CI) {
+#else
+                    if (GET_OP_CODE(scan) == BACK_REF_CI) {
+#endif
                         while (captured < finish) {
                             if (AT_END_OF_STRING(eContext.Reg_Input) || tolower(*captured++) != tolower(*eContext.Reg_Input++)) {
                                 MATCH_RETURN(0);
@@ -1018,7 +1015,7 @@ int match(uint8_t *prog, int *branch_index_param) {
 /*----------------------------------------------------------------------*
  * attempt - try match at specific point, returns: false failure, true success
  *----------------------------------------------------------------------*/
-bool attempt(regexp *prog, const char *string) {
+bool attempt(Regex *prog, const char *string) {
 
     int branch_index = 0; // Must be set to zero !
 
@@ -1049,34 +1046,10 @@ bool attempt(regexp *prog, const char *string) {
     return false;
 }
 
-
-/*----------------------------------------------------------------------*
- * next_ptr - compute the address of a node's "NEXT" pointer.
- * Note: a simplified inline version is available via the NEXT_PTR() macro,
- *       but that one is only to be used at time-critical places (see the
- *       description of the macro).
- *----------------------------------------------------------------------*/
-uint8_t *next_ptr(uint8_t *ptr) {
-
-    if (ptr == &Compute_Size) {
-        return nullptr;
-    }
-
-    const int offset = GET_OFFSET(ptr);
-
-    if (offset == 0) {
-        return nullptr;
-    }
-
-    if (GET_OP_CODE(ptr) == BACK) {
-        return (ptr - offset);
-    } else {
-        return (ptr + offset);
-    }
 }
 
 /*
- * ExecRE - match a 'regexp' structure against a string
+ * match a Regex against a string
  *
  * If 'end' is non-nullptr, matches may not BEGIN past end, but may extend past
  * it.  If reverse is true, 'end' must be specified, and searching begins at
@@ -1111,8 +1084,22 @@ look_behind_to string            end           match_to
 
 */
 
-bool perform_execute(regexp *re, const char *string, const char *end, bool reverse, char prev_char, char succ_char, const char *delimiters, const char *look_behind_to, const char *match_to) {
+/**
+ * @brief Regex::ExecRE
+ * @param string
+ * @param end
+ * @param reverse
+ * @param prev_char
+ * @param succ_char
+ * @param delimiters
+ * @param look_behind_to
+ * @param match_to
+ * @return
+ */
+bool Regex::ExecRE(const char *string, const char *end, bool reverse, char prev_char, char succ_char, const char *delimiters, const char *look_behind_to, const char *match_to) {
     assert(string);
+
+    Regex *const re = this;
 
     // Check validity of program.
     if (U_CHAR_AT(re->program) != MAGIC) {
@@ -1124,7 +1111,7 @@ bool perform_execute(regexp *re, const char *string, const char *end, bool rever
     bool ret_val = false;
 
     // If caller has supplied delimiters, make a delimiter table
-    eContext.Current_Delimiters = delimiters ? makeDelimiterTable(delimiters) : Default_Delimiters;
+    eContext.Current_Delimiters = delimiters ? Regex::makeDelimiterTable(delimiters) : Regex::Default_Delimiters;
 
     // Remember the logical end of the string.
     eContext.End_Of_String = match_to;
@@ -1284,27 +1271,3 @@ SINGLE_RETURN:
 
     return ret_val;
 }
-
-/*----------------------------------------------------------------------*
- * makeDelimiterTable
- *
- * Translate a null-terminated string of delimiters into a 256 byte
- * lookup table for determining whether a character is a delimiter or
- * not.
- *----------------------------------------------------------------------*/
-std::bitset<256> makeDelimiterTable(view::string_view delimiters) {
-
-    std::bitset<256> table;
-
-    for(char ch : delimiters) {
-        table[static_cast<size_t>(ch)] = true;
-    }
-
-    table['\0'] = true; // These
-    table['\t'] = true; // characters
-    table['\n'] = true; // are always
-    table[' ']  = true; // delimiters.
-
-    return table;
-}
-

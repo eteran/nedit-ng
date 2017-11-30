@@ -35,7 +35,7 @@ class QMenu;
 class QSplitter;
 class QTimer;
 class RangesetTable;
-class regexp;
+class Regex;
 class StyleTableEntry;
 class TextArea;
 class UndoInfo;
@@ -207,7 +207,7 @@ private:
     PatternSet *findPatternsForWindowEx(bool warn);
     QString backupFileNameEx() const;
     QString getWindowsMenuEntry() const;
-    std::shared_ptr<regexp> compileREAndWarnEx(const QString &re);
+    std::shared_ptr<Regex> compileREAndWarnEx(const QString &re);
     Style GetHighlightInfoEx(int pos);
     StyleTableEntry *styleTableEntryOfCodeEx(int hCode) const;
     TextArea *createTextArea(TextBuffer *buffer);

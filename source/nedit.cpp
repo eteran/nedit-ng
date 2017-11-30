@@ -42,7 +42,7 @@
 #include "MainWindow.h"
 #include "NeditServer.h"
 #include "preferences.h"
-#include "regularExp.h"
+#include "Regex/Regex.h"
 #include "Settings.h"
 #include "util/fileUtils.h"
 
@@ -193,7 +193,7 @@ int main(int argc, char *argv[]) {
 	DialogPrint::LoadPrintPreferencesEx(true);
 
 	// Install word delimiters for regular expression matching
-	SetREDefaultWordDelimiters(GetPrefDelimiters().toLatin1().data());
+    Regex::SetDefaultWordDelimiters(GetPrefDelimiters().toLatin1().data());
 
 	/* Read the nedit dynamic database of files for the Open Previous
 	command (and eventually other information as well) */

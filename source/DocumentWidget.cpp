@@ -6509,8 +6509,8 @@ HighlightData *DocumentWidget::compilePatternsEx(const gsl::span<HighlightPatter
         bigPattern.pop_back(); // remove last '|' character
 
         try {
-            compiledPats[patternNum].subPatternRE = std::make_shared<regexp>(bigPattern, REDFLT_STANDARD);
-        } catch(const regex_error &e) {
+            compiledPats[patternNum].subPatternRE = std::make_shared<Regex>(bigPattern, REDFLT_STANDARD);
+        } catch(const RegexError &e) {
             qWarning("NEdit: Error compiling syntax highlight patterns:\n%s", e.what());
             return nullptr;
         }
@@ -6527,11 +6527,11 @@ HighlightData *DocumentWidget::compilePatternsEx(const gsl::span<HighlightPatter
 /*
 ** compile a regular expression and present a user friendly dialog on failure.
 */
-std::shared_ptr<regexp> DocumentWidget::compileREAndWarnEx(const QString &re) {
+std::shared_ptr<Regex> DocumentWidget::compileREAndWarnEx(const QString &re) {
 
     try {
-        return std::make_shared<regexp>(re.toStdString(), REDFLT_STANDARD);
-    } catch(const regex_error &e) {
+        return std::make_shared<Regex>(re.toStdString(), REDFLT_STANDARD);
+    } catch(const RegexError &e) {
 
         constexpr int maxLength = 4096;
 

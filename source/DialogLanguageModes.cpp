@@ -5,7 +5,7 @@
 #include "LanguageModeModel.h"
 #include "MainWindow.h"
 #include "preferences.h"
-#include "regularExp.h"
+#include "Regex/Regex.h"
 #include "search.h"
 #include "smartIndent.h"
 #include "TextArea.h"
@@ -263,7 +263,7 @@ std::unique_ptr<LanguageMode> DialogLanguageModes::readDialogFields(Mode mode) {
 	if(!recognitionExpr.isEmpty()) {
 		try {
             auto compiledRE = make_regex(recognitionExpr, REDFLT_STANDARD);
-		} catch(const regex_error &e) {
+        } catch(const RegexError &e) {
             if (mode == Mode::Verbose) {
                 QMessageBox::warning(this, tr("Regex"), tr("Recognition expression:\n%1").arg(QString::fromLatin1(e.what())));
 			}

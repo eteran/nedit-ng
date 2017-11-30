@@ -35,7 +35,7 @@
 #include "WrapStyle.h"
 #include "highlight.h"
 #include "preferences.h"
-#include "regularExp.h"
+#include "Regex/Regex.h"
 #include "userCmds.h"
 #include <gsl/gsl_util>
 
@@ -518,7 +518,7 @@ static bool searchRegex(view::string_view string, view::string_view searchString
 static bool forwardRegexSearch(view::string_view string, view::string_view searchString, WrapMode wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags) {
 
 	try {
-        regexp compiledRE(searchString, defaultFlags);
+        Regex compiledRE(searchString, defaultFlags);
 
 		// search from beginPos to end of string 
 		if (compiledRE.execute(string, beginPos, delimiters, false)) {
@@ -559,7 +559,7 @@ static bool forwardRegexSearch(view::string_view string, view::string_view searc
 		}
 
         return false;
-	} catch(const regex_error &e) {
+	} catch(const RegexError &e) {
         Q_UNUSED(e);
 		/* Note that this does not process errors from compiling the expression.
 		 * It assumes that the expression was checked earlier.
@@ -571,7 +571,7 @@ static bool forwardRegexSearch(view::string_view string, view::string_view searc
 static bool backwardRegexSearch(view::string_view string, view::string_view searchString, WrapMode wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags) {
 
 	try {
-		regexp compiledRE(searchString, defaultFlags);
+		Regex compiledRE(searchString, defaultFlags);
 
 		// search from beginPos to start of file.  A negative begin pos	
 		// says begin searching from the far end of the file.		
@@ -622,7 +622,7 @@ static bool backwardRegexSearch(view::string_view string, view::string_view sear
 		}
 
         return false;
-	} catch(const regex_error &e) {
+	} catch(const RegexError &e) {
         Q_UNUSED(e);
         return false;
 	}
@@ -659,10 +659,10 @@ static std::string downCaseStringEx(view::string_view inString) {
 */
 bool replaceUsingREEx(view::string_view searchStr, const char *replaceStr, view::string_view sourceStr, int beginPos, std::string &dest, int prevChar, const char *delimiters, int defaultFlags) {
     try {
-        regexp compiledRE(searchStr, defaultFlags);
+        Regex compiledRE(searchStr, defaultFlags);
         compiledRE.execute(sourceStr, beginPos, sourceStr.size(), prevChar, '\0', delimiters, false);
         return compiledRE.SubstituteRE(replaceStr, dest);
-    } catch(const regex_error &e) {
+    } catch(const RegexError &e) {
         Q_UNUSED(e);
         return false;
     }
@@ -799,7 +799,7 @@ int defaultRegexFlags(SearchType searchType) {
  * @param flags
  * @return
  */
-std::unique_ptr<regexp> make_regex(const QString &re, int flags) {
-    return std::make_unique<regexp>(re.toStdString(), flags);
+std::unique_ptr<Regex> make_regex(const QString &re, int flags) {
+    return std::make_unique<Regex>(re.toStdString(), flags);
 }
 

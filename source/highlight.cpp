@@ -46,7 +46,7 @@
 #include "WindowHighlightData.h"
 #include "X11Colors.h"
 #include "preferences.h"
-#include "regularExp.h"
+#include "Regex/Regex.h"
 #include "utils.h"
 
 #include <gsl/gsl_util>
@@ -129,7 +129,7 @@ static void fillStyleString(const char **stringPtr, char **stylePtr, const char 
 static void incrementalReparse(const std::unique_ptr<WindowHighlightData> &highlightData, TextBuffer *buf, int pos, int nInserted, const QString &delimiters);
 static void modifyStyleBuf(const std::shared_ptr<TextBuffer> &styleBuf, char *styleString, int startPos, int endPos, int firstPass2Style);
 static void passTwoParseString(HighlightData *pattern, const char *string, char *styleString, int length, char *prevChar, const QString &delimiters, const char *lookBehindTo, const char *match_till);
-static void recolorSubexpr(const std::shared_ptr<regexp> &re, int subexpr, int style, const char *string, char *styleString);
+static void recolorSubexpr(const std::shared_ptr<Regex> &re, int subexpr, int style, const char *string, char *styleString);
 
 // list of available highlight styles
 std::vector<HighlightStyle> HighlightStyles;
@@ -1054,7 +1054,7 @@ int forwardOneContext(TextBuffer *buf, ReparseContext *context, int fromPos) {
 ** sub-expression, "subExpr", of regular expression "re" applies to the
 ** corresponding portion of "string".
 */
-static void recolorSubexpr(const std::shared_ptr<regexp> &re, int subexpr, int style, const char *string, char *styleString) {
+static void recolorSubexpr(const std::shared_ptr<Regex> &re, int subexpr, int style, const char *string, char *styleString) {
 
 	const char *stringPtr = re->startp[subexpr];
 	char *stylePtr        = &styleString[stringPtr - string];

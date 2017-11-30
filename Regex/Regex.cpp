@@ -77,16 +77,18 @@
  *    especially in client code.
  */
 
-#include "regularExp.h"
-#include "Opcodes.h"
-#include "ParseContext.h"
-#include "ExecuteContext.h"
+#include "Regex.h"
+#include "Compile.h"
+#include "Execute.h"
+
+// Default table for determining whether a character is a word delimiter.
+std::bitset<256> Regex::Default_Delimiters;
 
 ExecuteContext eContext;
 ParseContext pContext;
 
 
-/* The "internal use only" fields in `regexp.h' are present to pass info from
+/* The "internal use only" fields in `Regex.h' are present to pass info from
  * `CompileRE' to `ExecRE' which permits the execute phase to run lots faster on
  * simple cases.  They are:
  *
@@ -107,71 +109,48 @@ ParseContext pContext;
  * but allows patterns to get big without disasters. */
 
 
-
-/*----------------------------------------------------------------------*
- * CompileRE
- *
- * Compiles a regular expression into the internal format used by
- * 'ExecRE'.
- *
- * The default behaviour wrt. case sensitivity and newline matching can
- * be controlled through the defaultFlags argument (Markus Schwarzenberg).
- * Future extensions are possible by using other flag bits.
- * Note that currently only the case sensitivity flag is effectively used.
- *
- * Beware that the optimization and preparation code in here knows about
- * some of the structure of the compiled regexp.
- *----------------------------------------------------------------------*/
-regexp::regexp(view::string_view exp, int defaultFlags) {
-    create_regex(this, exp, defaultFlags);
-}
-
 /**
- * @brief regexp::~regexp
+ * @brief Regex::~Regex
  */
-regexp::~regexp() {
+Regex::~Regex() {
 	delete [] program;
 }
 
-/*======================================================================*
- *  Regex execution related code
- *======================================================================*/
-
 /**
- * @brief regexp::execute
+ * @brief Regex::execute
  * @param string
  * @param reverse
  * @return
  */
-bool regexp::execute(view::string_view string, bool reverse) {
+bool Regex::execute(view::string_view string, bool reverse) {
 	return execute(string, 0, reverse);
 }
 
 /**
- * @brief regexp::execute
+ * @brief Regex::execute
  * @param string
  * @param offset
  * @param reverse
  * @return
  */
-bool regexp::execute(view::string_view string, size_t offset, bool reverse) {
+bool Regex::execute(view::string_view string, size_t offset, bool reverse) {
 	return execute(string, offset, nullptr, reverse);
 }
 
 /**
- * @brief regexp::execute
+ * @brief Regex::execute
  * @param string
  * @param offset
  * @param delimiters
  * @param reverse
  * @return
  */
-bool regexp::execute(view::string_view string, size_t offset, const char *delimiters, bool reverse) {
+bool Regex::execute(view::string_view string, size_t offset, const char *delimiters, bool reverse) {
 	return execute(string, offset, string.size(), delimiters, reverse);
 }
 
 /**
- * @brief regexp::execute
+ * @brief Regex::execute
  * @param string
  * @param offset
  * @param end_offset
@@ -179,7 +158,7 @@ bool regexp::execute(view::string_view string, size_t offset, const char *delimi
  * @param reverse
  * @return
  */
-bool regexp::execute(view::string_view string, size_t offset, size_t end_offset, const char *delimiters, bool reverse) {
+bool Regex::execute(view::string_view string, size_t offset, size_t end_offset, const char *delimiters, bool reverse) {
 	return execute(
 		string,
 		offset,
@@ -191,7 +170,7 @@ bool regexp::execute(view::string_view string, size_t offset, size_t end_offset,
 }
 
 /**
- * @brief regexp::execute
+ * @brief Regex::execute
  * @param string
  * @param offset
  * @param end_offset
@@ -201,7 +180,7 @@ bool regexp::execute(view::string_view string, size_t offset, size_t end_offset,
  * @param reverse
  * @return
  */
-bool regexp::execute(view::string_view string, size_t offset, size_t end_offset, char prev, char succ, const char *delimiters, bool reverse) {
+bool Regex::execute(view::string_view string, size_t offset, size_t end_offset, char prev, char succ, const char *delimiters, bool reverse) {
 	assert(offset <= end_offset);
 	assert(end_offset <= string.size());
 	return ExecRE(
@@ -215,45 +194,36 @@ bool regexp::execute(view::string_view string, size_t offset, size_t end_offset,
 		&string[string.size()]);
 }
 
-/**
- * @brief regexp::ExecRE
- * @param string
- * @param end
- * @param reverse
- * @param prev_char
- * @param succ_char
- * @param delimiters
- * @param look_behind_to
- * @param match_to
- * @return
- */
-bool regexp::ExecRE(const char *string, const char *end, bool reverse, char prev_char, char succ_char, const char *delimiters, const char *look_behind_to, const char *match_to) {
-    return perform_execute(this, string, end, reverse, prev_char, succ_char, delimiters, look_behind_to, match_to);
-}
 
-/*
-**  SubstituteRE - Perform substitutions after a 'regexp' match.
-**
-**  This function cleanly shortens results of more than max length to max.
-**  To give the caller a chance to react to this the function returns false
-**  on any error. The substitution will still be executed.
-*/
-bool regexp::SubstituteRE(view::string_view source, std::string &dest) const {
-    return perform_substitution(this, source, dest);
-}
 
 /*----------------------------------------------------------------------*
- * reg_error
- *----------------------------------------------------------------------*/
-void reg_error(const char *str) {
-	fprintf(stderr, "nedit: Internal error processing regular expression (%s)\n", str);
-}
-
-/*----------------------------------------------------------------------*
- * SetREDefaultWordDelimiters
+ * SetDefaultWordDelimiters
  *
  * Builds a default delimiter table that persists across 'ExecRE' calls.
  *----------------------------------------------------------------------*/
-void SetREDefaultWordDelimiters(view::string_view delimiters) {
+void Regex::SetDefaultWordDelimiters(view::string_view delimiters) {
 	Default_Delimiters = makeDelimiterTable(delimiters);
+}
+
+/*----------------------------------------------------------------------*
+ * makeDelimiterTable
+ *
+ * Translate a null-terminated string of delimiters into a 256 byte
+ * lookup table for determining whether a character is a delimiter or
+ * not.
+ *----------------------------------------------------------------------*/
+std::bitset<256> Regex::makeDelimiterTable(view::string_view delimiters) {
+
+    std::bitset<256> table;
+
+    for(char ch : delimiters) {
+        table[static_cast<size_t>(ch)] = true;
+    }
+
+    table['\0'] = true; // These
+    table['\t'] = true; // characters
+    table['\n'] = true; // are always
+    table[' ']  = true; // delimiters.
+
+    return table;
 }
