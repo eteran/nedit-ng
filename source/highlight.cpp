@@ -68,6 +68,16 @@
 
 namespace {
 
+auto NEDIT_DEFAULT_TEXT_FG         = QLatin1String("#221f1e");
+auto NEDIT_DEFAULT_TEXT_BG    = QLatin1String("#d6d2d0");
+auto NEDIT_DEFAULT_SEL_FG     = QLatin1String("#ffffff");
+auto NEDIT_DEFAULT_SEL_BG     = QLatin1String("#43ace8");
+auto NEDIT_DEFAULT_HI_FG      = QLatin1String("white");        /* These are colors for flashing */
+auto NEDIT_DEFAULT_HI_BG      = QLatin1String("red");          /* matching parens. */
+auto NEDIT_DEFAULT_LINENO_FG  = QLatin1String("black");
+auto NEDIT_DEFAULT_CURSOR_FG  = QLatin1String("black");
+
+
 // Names for the fonts that can be used for syntax highlighting
 constexpr int N_FONT_TYPES = 4;
 
@@ -1107,12 +1117,49 @@ void SaveTheme() {
         root.setAttribute(QLatin1String("name"), QLatin1String("default"));
         xml.appendChild(root);
 
+        // save basic color settings...
+        const Settings &settings = GetSettings();
+
+        {
+            QDomElement text = xml.createElement(QLatin1String("text"));
+            text.setAttribute(QLatin1String("foreground"), settings.colors[ColorTypes::TEXT_FG_COLOR]);
+            text.setAttribute(QLatin1String("background"), settings.colors[ColorTypes::TEXT_BG_COLOR]);
+            root.appendChild(text);
+        }
+
+        {
+            QDomElement selection = xml.createElement(QLatin1String("selection"));
+            selection.setAttribute(QLatin1String("foreground"), settings.colors[ColorTypes::SELECT_FG_COLOR]);
+            selection.setAttribute(QLatin1String("background"), settings.colors[ColorTypes::SELECT_BG_COLOR]);
+            root.appendChild(selection);
+        }
+
+        {
+            QDomElement highlight = xml.createElement(QLatin1String("highlight"));
+            highlight.setAttribute(QLatin1String("foreground"), settings.colors[ColorTypes::HILITE_FG_COLOR]);
+            highlight.setAttribute(QLatin1String("background"), settings.colors[ColorTypes::HILITE_BG_COLOR]);
+            root.appendChild(highlight);
+        }
+
+        {
+            QDomElement cursor = xml.createElement(QLatin1String("cursor"));
+            cursor.setAttribute(QLatin1String("foreground"), settings.colors[ColorTypes::CURSOR_FG_COLOR]);
+            root.appendChild(cursor);
+        }
+
+        {
+            QDomElement lineno = xml.createElement(QLatin1String("line-numbers"));
+            lineno.setAttribute(QLatin1String("foreground"), settings.colors[ColorTypes::LINENO_FG_COLOR]);
+            root.appendChild(lineno);
+        }
+
+        // save styles for syntax highlighting...
         for(const HighlightStyle &hs : HighlightStyles) {
             QDomElement style = xml.createElement(QLatin1String("style"));
             style.setAttribute(QLatin1String("name"), hs.name);
-            style.setAttribute(QLatin1String("color"), hs.color);
+            style.setAttribute(QLatin1String("foreground"), hs.color);
             if(!hs.bgColor.isEmpty()) {
-                style.setAttribute(QLatin1String("bgcolor"), hs.bgColor);
+                style.setAttribute(QLatin1String("background"), hs.bgColor);
             }
             style.setAttribute(QLatin1String("font"), FontTypeNames[hs.font]);
 
@@ -1138,13 +1185,33 @@ void LoadTheme() {
     QDomDocument xml;
     if(xml.setContent(&file)) {
         QDomElement root = xml.firstChildElement(QLatin1String("theme"));
+
+        // load basic color settings...
+        QDomElement text      = root.firstChildElement(QLatin1String("text"));
+        QDomElement selection = root.firstChildElement(QLatin1String("selection"));
+        QDomElement highlight = root.firstChildElement(QLatin1String("highlight"));
+        QDomElement cursor    = root.firstChildElement(QLatin1String("cursor"));
+        QDomElement lineno    = root.firstChildElement(QLatin1String("line-numbers"));
+
+        Settings &settings = GetSettings();
+
+        settings.colors[ColorTypes::TEXT_BG_COLOR]   = text.attribute(QLatin1String("background"),      NEDIT_DEFAULT_TEXT_BG);
+        settings.colors[ColorTypes::TEXT_FG_COLOR]   = text.attribute(QLatin1String("foreground"),      NEDIT_DEFAULT_TEXT_FG);
+        settings.colors[ColorTypes::SELECT_BG_COLOR] = selection.attribute(QLatin1String("background"), NEDIT_DEFAULT_SEL_BG);
+        settings.colors[ColorTypes::SELECT_FG_COLOR] = selection.attribute(QLatin1String("foreground"), NEDIT_DEFAULT_SEL_FG);
+        settings.colors[ColorTypes::HILITE_BG_COLOR] = highlight.attribute(QLatin1String("background"), NEDIT_DEFAULT_HI_BG);
+        settings.colors[ColorTypes::HILITE_FG_COLOR] = highlight.attribute(QLatin1String("foreground"), NEDIT_DEFAULT_HI_FG);
+        settings.colors[ColorTypes::CURSOR_FG_COLOR] = cursor.attribute(QLatin1String("foreground"),    NEDIT_DEFAULT_LINENO_FG);
+        settings.colors[ColorTypes::LINENO_FG_COLOR] = lineno.attribute(QLatin1String("foreground"),    NEDIT_DEFAULT_CURSOR_FG);
+
+        // load styles for syntax highlighting...
         QDomElement style = root.firstChildElement(QLatin1String("style"));
         for (; !style.isNull(); style = style.nextSiblingElement(QLatin1String("style"))) {
 
             HighlightStyle hs;
             hs.name    = style.attribute(QLatin1String("name"));
-            hs.color   = style.attribute(QLatin1String("color"));
-            hs.bgColor = style.attribute(QLatin1String("bgcolor"), QString());
+            hs.color   = style.attribute(QLatin1String("foreground"));
+            hs.bgColor = style.attribute(QLatin1String("background"), QString());
             QString font = style.attribute(QLatin1String("font"));
 
             if(hs.name.isEmpty()) {

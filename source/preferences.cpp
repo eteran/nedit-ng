@@ -152,11 +152,6 @@ static void translatePrefFormats(quint32 fileVer) {
     if (!g_Settings.highlightPatterns.isNull()) {
         LoadHighlightStringEx(g_Settings.highlightPatterns);
 	}
-#if 0
-    if (!g_Settings.styles.isNull()) {
-        LoadStylesStringEx(g_Settings.styles);
-	}
-#endif
     if (!g_Settings.languageModes.isNull()) {
         loadLanguageModesStringEx(g_Settings.languageModes);
 	}

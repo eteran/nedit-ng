@@ -1,36 +1,45 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <theme name="default">
-	<style name="Plain" color="black" font="Plain" />
-	<style name="Comment" color="gray20" font="Italic" />
-	<style name="Keyword" color="black" font="Bold" />
-	<style name="Operator" color="dark blue" font="Bold" />
-	<style name="Bracket" color="dark blue" font="Bold" />
-	<style name="Storage Type" color="brown" font="Bold" />
-	<style name="Storage Type1" color="saddle brown" font="Bold" />
-	<style name="String" color="darkGreen" font="Plain" />
-	<style name="String1" color="SeaGreen" font="Plain" />
-	<style name="String2" color="darkGreen" font="Bold" />
-	<style name="Preprocessor" color="RoyalBlue4" font="Plain" />
-	<style name="Preprocessor1" color="blue" font="Plain" />
-	<style name="Character Const" color="darkGreen" font="Plain" />
-	<style name="Numeric Const" color="darkGreen" font="Plain" />
-	<style name="Identifier" color="brown" font="Plain" />
-	<style name="Identifier1" color="RoyalBlue4" font="Plain" />
-	<style name="Identifier2" color="SteelBlue" font="Plain" />
-	<style name="Subroutine" color="brown" font="Plain" />
-	<style name="Subroutine1" color="chocolate" font="Plain" />
-	<style name="Ada Attributes" color="plum" font="Bold" />
-	<style name="Label" color="red" font="Italic" />
-	<style name="Flag" color="red" font="Bold" />
-	<style name="Text Comment" color="SteelBlue4" font="Italic" />
-	<style name="Text Key" color="VioletRed4" font="Bold" />
-	<style name="Text Key1" color="VioletRed4" font="Plain" />
-	<style name="Text Arg" color="RoyalBlue4" font="Bold" />
-	<style name="Text Arg1" color="SteelBlue4" font="Bold" />
-	<style name="Text Arg2" color="RoyalBlue4" font="Plain" />
-	<style name="Text Escape" color="gray30" font="Bold" />
-	<style name="LaTeX Math" color="darkGreen" font="Plain" />
-	<style name="Pointer" color="#660000" font="Bold" />
-	<style name="Regex" color="#009944" font="Bold" />
-	<style name="Warning" color="brown2" font="Italic" />
+
+    <!-- core colors -->
+    <text         foreground="#221f1e" background="#d6d2d0" />
+    <selection    foreground="#ffffff" background="#43ace8" />
+    <highlight    foreground="white" background="red" />
+    <cursor       foreground="black" />
+    <line-numbers foreground="black" />
+
+    <!-- syntax highlighting colors -->
+    <style name="Plain" foreground="black" font="Plain" />
+    <style name="Comment" foreground="gray20" font="Italic" />
+    <style name="Keyword" foreground="black" font="Bold" />
+    <style name="Operator" foreground="dark blue" font="Bold" />
+    <style name="Bracket" foreground="dark blue" font="Bold" />
+    <style name="Storage Type" foreground="brown" font="Bold" />
+    <style name="Storage Type1" foreground="saddle brown" font="Bold" />
+    <style name="String" foreground="darkGreen" font="Plain" />
+    <style name="String1" foreground="SeaGreen" font="Plain" />
+    <style name="String2" foreground="darkGreen" font="Bold" />
+    <style name="Preprocessor" foreground="RoyalBlue4" font="Plain" />
+    <style name="Preprocessor1" foreground="blue" font="Plain" />
+    <style name="Character Const" foreground="darkGreen" font="Plain" />
+    <style name="Numeric Const" foreground="darkGreen" font="Plain" />
+    <style name="Identifier" foreground="brown" font="Plain" />
+    <style name="Identifier1" foreground="RoyalBlue4" font="Plain" />
+    <style name="Identifier2" foreground="SteelBlue" font="Plain" />
+    <style name="Subroutine" foreground="brown" font="Plain" />
+    <style name="Subroutine1" foreground="chocolate" font="Plain" />
+    <style name="Ada Attributes" foreground="plum" font="Bold" />
+    <style name="Label" foreground="red" font="Italic" />
+    <style name="Flag" foreground="red" font="Bold" />
+    <style name="Text Comment" foreground="SteelBlue4" font="Italic" />
+    <style name="Text Key" foreground="VioletRed4" font="Bold" />
+    <style name="Text Key1" foreground="VioletRed4" font="Plain" />
+    <style name="Text Arg" foreground="RoyalBlue4" font="Bold" />
+    <style name="Text Arg1" foreground="SteelBlue4" font="Bold" />
+    <style name="Text Arg2" foreground="RoyalBlue4" font="Plain" />
+    <style name="Text Escape" foreground="gray30" font="Bold" />
+    <style name="LaTeX Math" foreground="darkGreen" font="Plain" />
+    <style name="Pointer" foreground="#660000" font="Bold" />
+    <style name="Regex" foreground="#009944" font="Bold" />
+    <style name="Warning" foreground="brown2" font="Italic" />
 </theme>

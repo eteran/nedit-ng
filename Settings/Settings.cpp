@@ -9,14 +9,6 @@
 // Some default colors
 namespace {
 
-auto NEDIT_DEFAULT_FG         = QLatin1String("#221f1e");
-auto NEDIT_DEFAULT_TEXT_BG    = QLatin1String("#d6d2d0");
-auto NEDIT_DEFAULT_SEL_FG     = QLatin1String("#ffffff");
-auto NEDIT_DEFAULT_SEL_BG     = QLatin1String("#43ace8");
-auto NEDIT_DEFAULT_HI_FG      = QLatin1String("white");        /* These are colors for flashing */
-auto NEDIT_DEFAULT_HI_BG      = QLatin1String("red");          /* matching parens. */
-auto NEDIT_DEFAULT_LINENO_FG  = QLatin1String("black");
-auto NEDIT_DEFAULT_CURSOR_FG  = QLatin1String("black");
 auto DEFAULT_DELIMETERS       = QLatin1String(".,/\\`'!|@#%^&*()-=+{}[]\":;<>?");
 auto DEFAULT_BACKLIGHT_CHARS  = QLatin1String("0-8,10-31,127:red;9:#dedede;32,160-255:#f0f0f0;128-159:orange");
 auto DEFAULT_TEXT_FONT        = QLatin1String("Courier New,10,-1,5,50,0,0,0,0,0");
@@ -164,16 +156,6 @@ void Settings::loadPreferences() {
     boldHighlightFont                 = settings.value(tr("nedit.boldHighlightFont"),			      DEFAULT_BOLD_FONT).toString();
     italicHighlightFont               = settings.value(tr("nedit.italicHighlightFont"), 		      DEFAULT_ITALIC_FONT).toString();
     boldItalicHighlightFont           = settings.value(tr("nedit.boldItalicHighlightFont"), 	      DEFAULT_BOLD_ITALIC_FONT).toString();
-
-    colors[TEXT_FG_COLOR]             = settings.value(tr("nedit.textFgColor"), 				      NEDIT_DEFAULT_FG).toString();
-    colors[TEXT_BG_COLOR]             = settings.value(tr("nedit.textBgColor"), 				      NEDIT_DEFAULT_TEXT_BG).toString();
-    colors[SELECT_FG_COLOR]           = settings.value(tr("nedit.selectFgColor"),				      NEDIT_DEFAULT_SEL_FG).toString();
-    colors[SELECT_BG_COLOR]           = settings.value(tr("nedit.selectBgColor"),				      NEDIT_DEFAULT_SEL_BG).toString();
-    colors[HILITE_FG_COLOR]           = settings.value(tr("nedit.hiliteFgColor"),				      NEDIT_DEFAULT_HI_FG).toString();
-    colors[HILITE_BG_COLOR]           = settings.value(tr("nedit.hiliteBgColor"),				      NEDIT_DEFAULT_HI_BG).toString();
-    colors[LINENO_FG_COLOR]           = settings.value(tr("nedit.lineNoFgColor"),				      NEDIT_DEFAULT_LINENO_FG).toString();
-    colors[CURSOR_FG_COLOR]           = settings.value(tr("nedit.cursorFgColor"),				      NEDIT_DEFAULT_CURSOR_FG).toString();
-
     shell                             = settings.value(tr("nedit.shell"),						      QLatin1String("DEFAULT")).toString();
     geometry                          = settings.value(tr("nedit.geometry"),					      QString()).toString();
     remapDeleteKey                    = settings.value(tr("nedit.remapDeleteKey"),  			      false).toBool();
@@ -267,16 +249,6 @@ void Settings::importSettings(const QString &filename) {
     boldHighlightFont                 = settings.value(tr("nedit.boldHighlightFont"),			      boldHighlightFont).toString();
     italicHighlightFont               = settings.value(tr("nedit.italicHighlightFont"), 		      italicHighlightFont).toString();
     boldItalicHighlightFont           = settings.value(tr("nedit.boldItalicHighlightFont"), 	      boldItalicHighlightFont).toString();
-
-    colors[TEXT_FG_COLOR]             = settings.value(tr("nedit.textFgColor"), 				      colors[TEXT_FG_COLOR]).toString();
-    colors[TEXT_BG_COLOR]             = settings.value(tr("nedit.textBgColor"), 				      colors[TEXT_BG_COLOR]).toString();
-    colors[SELECT_FG_COLOR]           = settings.value(tr("nedit.selectFgColor"),				      colors[SELECT_FG_COLOR]).toString();
-    colors[SELECT_BG_COLOR]           = settings.value(tr("nedit.selectBgColor"),				      colors[SELECT_BG_COLOR]).toString();
-    colors[HILITE_FG_COLOR]           = settings.value(tr("nedit.hiliteFgColor"),				      colors[HILITE_FG_COLOR]).toString();
-    colors[HILITE_BG_COLOR]           = settings.value(tr("nedit.hiliteBgColor"),				      colors[HILITE_BG_COLOR]).toString();
-    colors[LINENO_FG_COLOR]           = settings.value(tr("nedit.lineNoFgColor"),				      colors[LINENO_FG_COLOR]).toString();
-    colors[CURSOR_FG_COLOR]           = settings.value(tr("nedit.cursorFgColor"),				      colors[CURSOR_FG_COLOR]).toString();
-
     shell                             = settings.value(tr("nedit.shell"),						      shell).toString();
     geometry                          = settings.value(tr("nedit.geometry"),					      geometry).toString();
     remapDeleteKey                    = settings.value(tr("nedit.remapDeleteKey"),  			      remapDeleteKey).toBool();
@@ -363,14 +335,6 @@ bool Settings::savePreferences() {
     settings.setValue(tr("nedit.boldHighlightFont"), boldHighlightFont);
     settings.setValue(tr("nedit.italicHighlightFont"), italicHighlightFont);
     settings.setValue(tr("nedit.boldItalicHighlightFont"), boldItalicHighlightFont);
-    settings.setValue(tr("nedit.textFgColor"), colors[TEXT_FG_COLOR]);
-    settings.setValue(tr("nedit.textBgColor"), colors[TEXT_BG_COLOR]);
-    settings.setValue(tr("nedit.selectFgColor"), colors[SELECT_FG_COLOR]);
-    settings.setValue(tr("nedit.selectBgColor"), colors[SELECT_BG_COLOR]);
-    settings.setValue(tr("nedit.hiliteFgColor"), colors[HILITE_FG_COLOR]);
-    settings.setValue(tr("nedit.hiliteBgColor"), colors[HILITE_BG_COLOR]);
-    settings.setValue(tr("nedit.lineNoFgColor"), colors[LINENO_FG_COLOR]);
-    settings.setValue(tr("nedit.cursorFgColor"), colors[CURSOR_FG_COLOR]);
     settings.setValue(tr("nedit.shell"), shell);
     settings.setValue(tr("nedit.geometry"), geometry);
     settings.setValue(tr("nedit.remapDeleteKey"), remapDeleteKey);
