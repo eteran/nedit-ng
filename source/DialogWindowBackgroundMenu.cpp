@@ -22,6 +22,8 @@ DialogWindowBackgroundMenu::DialogWindowBackgroundMenu(QWidget *parent, Qt::Wind
 	ui.setupUi(this);
     ui.editAccelerator->setMaximumSequenceLength(1);
 
+    ui.buttonPasteLRMacro->setEnabled(!CommandRecorder::getInstance()->replayMacro.isEmpty());
+
     model_ = new MenuItemModel(this);
     ui.listItems->setModel(model_);
 

@@ -6703,8 +6703,6 @@ void DocumentWidget::FinishLearnEx() {
         window->ui.action_Replay_Keystrokes->setEnabled(true);
     }
 
-    MainWindow::DimPasteReplayBtns(true);
-
     document->ClearModeMessageEx();
 }
 

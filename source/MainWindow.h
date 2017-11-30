@@ -119,7 +119,6 @@ public:
 public:
     static void updateMenuItems();
     static MainWindow *fromDocument(const DocumentWidget *document);
-    static void DimPasteReplayBtns(bool enabled);
     static void ReadNEditDB();
     static void WriteNEditDB();
     static void AddToPrevOpenMenu(const QString &filename);

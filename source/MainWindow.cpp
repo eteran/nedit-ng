@@ -66,7 +66,6 @@ bool currentlyBusy = false;
 qint64 busyStartTime = 0;
 bool modeMessageSet = false;
 
-QPointer<DialogWindowBackgroundMenu> WindowBackgroundMenu;
 QPointer<DialogSyntaxPatterns>       SyntaxPatterns;
 QPointer<DocumentWidget>             lastFocusDocument;
 
@@ -1072,7 +1071,7 @@ void MainWindow::SortTabBar() {
 	// shuffle around the tabs to their new indexes
     for(size_t i = 0; i < windows.size(); ++i) {
 		int from = ui.tabWidget->indexOf(windows[i]);
-		int to   = i;
+        int to   = gsl::narrow<int>(i);
         ui.tabWidget->tabBar()->moveTab(from, to);
 	}
 }
@@ -3946,8 +3945,7 @@ void MainWindow::on_action_Default_Shell_Menu_triggered() {
         WindowShellMenu = new DialogShellMenu(this);
     }
 
-    WindowShellMenu->show();
-    WindowShellMenu->raise();
+    WindowShellMenu->exec();
 }
 
 /*
@@ -3965,12 +3963,8 @@ void MainWindow::on_action_Default_Macro_Menu_triggered() {
  */
 void MainWindow::on_action_Default_Window_Background_Menu_triggered() {
 
-    if(!WindowBackgroundMenu) {
-        WindowBackgroundMenu = new DialogWindowBackgroundMenu(this);
-    }
-
-    WindowBackgroundMenu->show();
-    WindowBackgroundMenu->raise();
+    auto WindowBackgroundMenu = std::make_unique<DialogWindowBackgroundMenu>(this);
+    WindowBackgroundMenu->exec();
 }
 
 /**
@@ -5336,15 +5330,6 @@ bool MainWindow::eventFilter(QObject *object, QEvent *event) {
     }
 
     return false;
-}
-
-/*
-** Dim/undim buttons for pasting replay macros into macro and bg menu dialogs
-*/
-void MainWindow::DimPasteReplayBtns(bool enabled) {
-    if(WindowBackgroundMenu) {
-        WindowBackgroundMenu->setPasteReplayEnabled(enabled);
-    }
 }
 
 /**
