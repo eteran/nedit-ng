@@ -5906,18 +5906,17 @@ int TextArea::xyToPos(int x, int y, int posType) {
 ** invloves character re-counting.
 */
 int TextArea::TextDOffsetWrappedColumn(int row, int column) {
-	int lineStart, dispLineStart;
 
 	if (!P_continuousWrap || row < 0 || row > nVisibleLines_) {
 		return column;
 	}
 
-	dispLineStart = lineStarts_[row];
+    const int dispLineStart = lineStarts_[row];
 	if (dispLineStart == -1) {
 		return column;
 	}
 
-	lineStart = buffer_->BufStartOfLine(dispLineStart);
+    const int lineStart = buffer_->BufStartOfLine(dispLineStart);
 	return column + buffer_->BufCountDispChars(lineStart, dispLineStart);
 }
 
@@ -6402,8 +6401,10 @@ void TextArea::secondaryStartAP(QMouseEvent *event, EventFlags flags) {
 
     EMIT_EVENT_0("secondary_start");
 
-    const TextSelection *sel = &buffer_->BufGetPrimary();
-    int anchor, row, column;
+    const TextSelection *sel = &buffer_->BufGetSecondary();
+    int anchor;
+    int row;
+    int column;
 
 	// Find the new anchor point and make the new selection
     int pos = TextDXYToPosition(event->pos());
