@@ -96,7 +96,6 @@ public:
     QString styles;
     QString textFont;
     QString titleFormat;
-    QString tooltipBgColor;
 #if defined(REPLACE_SCOPE)
     int replaceDefaultScope;
 #endif

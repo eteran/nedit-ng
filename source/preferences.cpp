@@ -452,7 +452,7 @@ void SetPrefToolTips(bool state) {
     g_Settings.toolTips = state;
 }
 
-int GetPrefToolTips() {
+bool GetPrefToolTips() {
     return g_Settings.toolTips;
 }
 
@@ -812,10 +812,6 @@ QFont GetPrefBoldItalicFont() {
     return g_Settings.boldItalicFontStruct;
 }
 
-QString GetPrefTooltipBgColor() {
-    return g_Settings.tooltipBgColor;
-}
-
 void SetPrefShell(const QString &shell) {
     if(g_Settings.shell != shell) {
         PrefsHaveChanged = true;
@@ -839,7 +835,7 @@ int GetPrefMaxPrevOpenFiles() {
     return g_Settings.maxPrevOpenFiles;
 }
 
-int GetPrefTypingHidesPointer() {
+bool GetPrefTypingHidesPointer() {
     return g_Settings.typingHidesPointer;
 }
 

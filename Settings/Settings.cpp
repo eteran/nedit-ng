@@ -19,7 +19,6 @@ auto NEDIT_DEFAULT_LINENO_FG  = QLatin1String("black");
 auto NEDIT_DEFAULT_CURSOR_FG  = QLatin1String("black");
 auto DEFAULT_DELIMETERS       = QLatin1String(".,/\\`'!|@#%^&*()-=+{}[]\":;<>?");
 auto DEFAULT_BACKLIGHT_CHARS  = QLatin1String("0-8,10-31,127:red;9:#dedede;32,160-255:#f0f0f0;128-159:orange");
-auto DEFAULT_TOOLTIP_COLOR    = QLatin1String("LemonChiffon1");
 auto DEFAULT_TEXT_FONT        = QLatin1String("Courier New,10,-1,5,50,0,0,0,0,0");
 auto DEFAULT_BOLD_FONT        = QLatin1String("Courier New,10,-1,5,75,0,0,0,0,0");
 auto DEFAULT_ITALIC_FONT      = QLatin1String("Courier New,10,-1,5,50,1,0,0,0,0");
@@ -166,7 +165,6 @@ void Settings::loadPreferences() {
     colors[LINENO_FG_COLOR]           = settings.value(tr("nedit.lineNoFgColor"),				      NEDIT_DEFAULT_LINENO_FG).toString();
     colors[CURSOR_FG_COLOR]           = settings.value(tr("nedit.cursorFgColor"),				      NEDIT_DEFAULT_CURSOR_FG).toString();
 
-    tooltipBgColor                    = settings.value(tr("nedit.tooltipBgColor"),  			      DEFAULT_TOOLTIP_COLOR).toString();
     shell                             = settings.value(tr("nedit.shell"),						      QLatin1String("DEFAULT")).toString();
     geometry                          = settings.value(tr("nedit.geometry"),					      QString()).toString();
     remapDeleteKey                    = settings.value(tr("nedit.remapDeleteKey"),  			      false).toBool();
@@ -271,7 +269,6 @@ void Settings::importSettings(const QString &filename) {
     colors[LINENO_FG_COLOR]           = settings.value(tr("nedit.lineNoFgColor"),				      colors[LINENO_FG_COLOR]).toString();
     colors[CURSOR_FG_COLOR]           = settings.value(tr("nedit.cursorFgColor"),				      colors[CURSOR_FG_COLOR]).toString();
 
-    tooltipBgColor                    = settings.value(tr("nedit.tooltipBgColor"),  			      tooltipBgColor).toString();
     shell                             = settings.value(tr("nedit.shell"),						      shell).toString();
     geometry                          = settings.value(tr("nedit.geometry"),					      geometry).toString();
     remapDeleteKey                    = settings.value(tr("nedit.remapDeleteKey"),  			      remapDeleteKey).toBool();
@@ -367,7 +364,6 @@ bool Settings::savePreferences() {
     settings.setValue(tr("nedit.hiliteBgColor"), colors[HILITE_BG_COLOR]);
     settings.setValue(tr("nedit.lineNoFgColor"), colors[LINENO_FG_COLOR]);
     settings.setValue(tr("nedit.cursorFgColor"), colors[CURSOR_FG_COLOR]);
-    settings.setValue(tr("nedit.tooltipBgColor"), tooltipBgColor);
     settings.setValue(tr("nedit.shell"), shell);
     settings.setValue(tr("nedit.geometry"), geometry);
     settings.setValue(tr("nedit.remapDeleteKey"), remapDeleteKey);
