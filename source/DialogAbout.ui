@@ -16,11 +16,11 @@
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="QLabel" name="label">
-     <property name="text">
-      <string>LOGO GOES HERE</string>
+     <property name="pixmap">
+      <pixmap resource="nedit.qrc">:/res/nedit.png</pixmap>
      </property>
      <property name="alignment">
-      <set>Qt::AlignCenter</set>
+      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
      </property>
     </widget>
    </item>
@@ -490,7 +490,9 @@ Public License instead of this License.
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="nedit.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>buttonBox</sender>
