@@ -696,8 +696,9 @@ int match(uint8_t *prog, int *branch_index_param) {
             save = eContext.Reg_Input;
 
             if (lazy) {
-                if (min > REG_ZERO)
+                if (min > REG_ZERO) {
                     num_matched = greedy(next_op, min);
+                }
             } else {
                 num_matched = greedy(next_op, max);
             }
@@ -764,9 +765,7 @@ int match(uint8_t *prog, int *branch_index_param) {
             {
                 const char *captured;
                 const char *finish;
-                int paren_no;
-
-                paren_no = static_cast<int>(*OPERAND(scan));
+                const uint8_t paren_no = *OPERAND(scan);
 
 #ifdef ENABLE_CROSS_REGEX_BACKREF
                 if (GET_OP_CODE (scan) == X_REGEX_BR || GET_OP_CODE (scan) == X_REGEX_BR_CI) {
@@ -942,17 +941,15 @@ int match(uint8_t *prog, int *branch_index_param) {
 
         case LOOK_AHEAD_CLOSE:
         case LOOK_BEHIND_CLOSE:
-            MATCH_RETURN(1); /* We have reached the end of the look-ahead or
-                      look-behind which implies that we matched it,
-              so return TRUE. */
+            /* We have reached the end of the look-ahead or look-behind which
+             * implies that we matched it, so return TRUE. */
+            MATCH_RETURN(1);
+
         default:
             if ((GET_OP_CODE(scan) > OPEN) && (GET_OP_CODE(scan) < OPEN + NSUBEXP)) {
 
-                int no;
-                const char *save;
-
-                no = GET_OP_CODE(scan) - OPEN;
-                save = eContext.Reg_Input;
+                uint8_t no = GET_OP_CODE(scan) - OPEN;
+                const char *save = eContext.Reg_Input;
 
                 if (no < 10) {
                     eContext.Back_Ref_Start[no] = save;
@@ -963,8 +960,9 @@ int match(uint8_t *prog, int *branch_index_param) {
                     /* Do not set 'Start_Ptr_Ptr' if some later invocation (think
                        recursion) of the same parentheses already has. */
 
-                    if (eContext.Start_Ptr_Ptr[no] == nullptr)
+                    if (eContext.Start_Ptr_Ptr[no] == nullptr) {
                         eContext.Start_Ptr_Ptr[no] = save;
+                    }
 
                     MATCH_RETURN(1);
                 } else {
@@ -972,11 +970,8 @@ int match(uint8_t *prog, int *branch_index_param) {
                 }
             } else if ((GET_OP_CODE(scan) > CLOSE) && (GET_OP_CODE(scan) < CLOSE + NSUBEXP)) {
 
-                int no;
-                const char *save;
-
-                no = GET_OP_CODE(scan) - CLOSE;
-                save = eContext.Reg_Input;
+                uint8_t no       = GET_OP_CODE(scan) - CLOSE;
+                const char *save = eContext.Reg_Input;
 
                 if (no < 10)
                     eContext.Back_Ref_End[no] = save;
@@ -985,8 +980,9 @@ int match(uint8_t *prog, int *branch_index_param) {
                     /* Do not set 'End_Ptr_Ptr' if some later invocation of the
                        same parentheses already has. */
 
-                    if (eContext.End_Ptr_Ptr[no] == nullptr)
+                    if (eContext.End_Ptr_Ptr[no] == nullptr) {
                         eContext.End_Ptr_Ptr[no] = save;
+                    }
 
                     MATCH_RETURN(1);
                 } else {

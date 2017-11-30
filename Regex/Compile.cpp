@@ -60,6 +60,16 @@ constexpr uint8_t PUT_OFFSET_R(T v) {
     return static_cast<uint8_t>(v & 0xff);
 }
 
+/**
+ * @brief IS_QUANTIFIER
+ * @param c
+ * @return
+ */
+template <class Ch>
+bool IS_QUANTIFIER(Ch ch) {
+    return ch == '*' || ch == '+' || ch == '?' || ch == pContext.Brace_Char;
+}
+
 /*--------------------------------------------------------------------*
  * init_ansi_classes
  *
@@ -112,15 +122,6 @@ bool init_ansi_classes() {
     }
 
     return true;
-}
-
-/**
- * @brief IS_QUANTIFIER
- * @param c
- * @return
- */
-bool IS_QUANTIFIER(char c) {
-    return c == '*' || c == '+' || c == '?' || c == pContext.Brace_Char;
 }
 
 /*----------------------------------------------------------------------*
@@ -1068,9 +1069,10 @@ uint8_t *piece(int *flag_param, len_range *range_param) {
 
     uint8_t *ret_val;
     uint8_t *next;
-    uint8_t op_code;
     unsigned long min_max[2] = {REG_ZERO, REG_INFINITY};
-    int flags_local, i, brace_present = 0;
+    int flags_local;
+    int i;
+    int brace_present = 0;
     bool lazy = false;
     bool comma_present = false;
     int digit_present[2] = {0, 0};
@@ -1081,7 +1083,7 @@ uint8_t *piece(int *flag_param, len_range *range_param) {
     if (ret_val == nullptr)
         return nullptr; // Something went wrong.
 
-    op_code = *pContext.Reg_Parse;
+    char op_code = *pContext.Reg_Parse;
 
     if (!IS_QUANTIFIER(op_code)) {
         *flag_param = flags_local;
