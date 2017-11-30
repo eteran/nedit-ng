@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cassert>
 #include <QtDebug>
+#include "util/raise.h"
 
 /*
 ** Free a text buffer
@@ -188,7 +189,7 @@ template <class Ch, class Tr>
 Ch &BasicTextBuffer<Ch, Tr>::BufGetCharacter(int pos) {
 
     if (pos < 0 || pos >= length_)
-        throw std::out_of_range("out_of_range");
+        raise<std::out_of_range>("out_of_range");
 
     if (pos < gapStart_)
         return buf_[pos];

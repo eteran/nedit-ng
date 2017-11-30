@@ -6,6 +6,7 @@
 #include <iterator>
 #include <stdexcept>
 #include <string>
+#include "raise.h"
 
 namespace view {
 
@@ -64,7 +65,7 @@ public:
 
 	constexpr const_reference at(size_type pos) const {
 		if(pos >= size_) {
-			throw std::out_of_range("out_of_range");
+            raise<std::out_of_range>("out_of_range");
 		}
 		return data_[pos];
 	}
@@ -137,7 +138,7 @@ public:
 public:
 	size_type copy(Ch *dest, size_type count, size_type pos = 0) const {
 		if(pos > size()) {
-			throw std::out_of_range("out_of_range");
+            raise<std::out_of_range>("out_of_range");
 		}
 
 		size_type rlen = std::min(count, size_ - pos);
@@ -150,7 +151,7 @@ public:
 	constexpr basic_string_view substr(size_type pos = 0, size_type count = npos) const {
 
 		if(pos > size()) {
-			throw std::out_of_range("out_of_range");
+            raise<std::out_of_range>("out_of_range");
 		}
 
 		size_type rlen = std::min(count, size_ - pos);
