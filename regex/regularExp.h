@@ -146,5 +146,6 @@ public:
    is identical to 'delimiters'.  Pass nullptr for "default default" set of
    delimiters. */
 void SetREDefaultWordDelimiters(view::string_view delimiters);
+void reg_error(const char *str);
 
 #endif

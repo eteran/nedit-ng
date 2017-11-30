@@ -2,9 +2,13 @@
 #ifndef PARSE_CONTEXT_H_
 #define PARSE_CONTEXT_H_
 
-#include <cstddef>
-#include <bitset>
+#include "regex_error.h"
 #include "util/string_view.h"
+#include <bitset>
+
+class regexp;
+
+extern uint8_t Compute_Size;
 
 // Array sizes for arrays used by function init_ansi_classes.
 constexpr int WHITE_SPACE_SIZE = 16;
@@ -31,5 +35,8 @@ struct ParseContext {
 };
 
 extern ParseContext pContext;
+void create_regex(regexp *re, view::string_view exp, int defaultFlags);
+bool perform_substitution(const regexp *re, view::string_view source, std::string &dest);
+
 
 #endif

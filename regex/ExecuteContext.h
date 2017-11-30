@@ -3,11 +3,14 @@
 #define EXECUTE_CONTEXT_H_
 
 #include "Constants.h"
+#include "util/string_view.h"
 #include <stdint.h>
 #include <array>
 #include <bitset>
 
 class regexp;
+
+extern uint8_t Compute_Size;
 
 // Global work variables for 'ExecRE'.
 
@@ -39,6 +42,15 @@ struct ExecuteContext {
     std::bitset<256> Current_Delimiters; // Current delimiter table
 };
 
+extern std::bitset<256> Default_Delimiters;
 extern ExecuteContext eContext;
+
+int match(uint8_t *prog, int *branch_index_param);
+bool attempt(regexp *prog, const char *string);
+uint8_t *next_ptr(uint8_t *ptr);
+bool perform_execute(regexp *re, const char *string, const char *end, bool reverse, char prev_char, char succ_char, const char *delimiters, const char *look_behind_to, const char *match_to);
+std::bitset<256> makeDelimiterTable(view::string_view delimiters);
+
+
 
 #endif
