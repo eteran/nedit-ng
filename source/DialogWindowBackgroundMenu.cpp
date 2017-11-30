@@ -354,14 +354,14 @@ std::unique_ptr<MenuItem> DialogWindowBackgroundMenu::readDialogFields(Mode mode
  * @param silent
  * @return
  */
-bool DialogWindowBackgroundMenu::checkMacroText(const QString &macro, Mode silent) {
+bool DialogWindowBackgroundMenu::checkMacroText(const QString &macro, Mode mode) {
 
 	QString errMsg;
 	int stoppedAt;
 
     Program *prog = ParseMacroEx(macro, &errMsg, &stoppedAt);
 	if(!prog) {
-        if(silent == Mode::Verbose) {
+        if(mode == Mode::Verbose) {
 			ParseErrorEx(this, macro, stoppedAt, tr("macro"), errMsg);
 		}
 		QTextCursor cursor = ui.editMacro->textCursor();
@@ -373,7 +373,7 @@ bool DialogWindowBackgroundMenu::checkMacroText(const QString &macro, Mode silen
 	FreeProgram(prog);
 
 	if(stoppedAt != macro.size()) {
-        if(silent == Mode::Verbose) {
+        if(mode == Mode::Verbose) {
 			ParseErrorEx(this, macro, stoppedAt, tr("macro"), tr("syntax error"));
 		}
 		QTextCursor cursor = ui.editMacro->textCursor();

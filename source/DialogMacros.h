@@ -45,7 +45,7 @@ private:
     bool checkMacro(Mode mode);
     bool checkMacroText(const QString &macro, Mode mode);
     bool updateCurrentItem();
-    bool updateCurrentItem(const QModelIndex &current);
+    bool updateCurrentItem(const QModelIndex &index);
     QString ensureNewline(const QString &string);
     std::unique_ptr<MenuItem> readDialogFields(Mode mode);
     void updateButtonStates();

@@ -104,9 +104,9 @@ int LanguageModeModel::rowCount(const QModelIndex &parent) const {
  * @brief LanguageModeModel::addItem
  * @param style
  */
-void LanguageModeModel::addItem(const LanguageMode &style) {
+void LanguageModeModel::addItem(const LanguageMode &languageMode) {
     beginInsertRows(QModelIndex(), rowCount(), rowCount());
-    items_.push_back(style);
+    items_.push_back(languageMode);
     endInsertRows();
 }
 
