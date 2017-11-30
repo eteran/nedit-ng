@@ -8,6 +8,7 @@
 #include <memory>
 
 class LanguageMode;
+class LanguageModeModel;
 
 class DialogLanguageModes : public Dialog {
 public:
@@ -20,7 +21,14 @@ private:
 
 public:
     DialogLanguageModes(QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
-    ~DialogLanguageModes() noexcept override;
+    ~DialogLanguageModes() noexcept override = default;
+
+Q_SIGNALS:
+    void restore(const QModelIndex &selection);
+
+private Q_SLOTS:
+    void currentChanged(const QModelIndex &current, const QModelIndex &previous);
+    void restoreSlot(const QModelIndex &index);
 
 private Q_SLOTS:
 	void on_buttonBox_accepted();
@@ -30,19 +38,21 @@ private Q_SLOTS:
 	void on_buttonDelete_clicked();
 	void on_buttonCopy_clicked();
 	void on_buttonNew_clicked();
-	void on_listItems_itemSelectionChanged();
 	
 private:
-    bool updateLMList(Mode mode);
+    bool updateCurrentItem();
+    bool updateCurrentItem(const QModelIndex &index);
     bool updateLanguageList(Mode mode);
-    std::unique_ptr<LanguageMode> readLMDialogFields(Mode mode);
-	LanguageMode *itemFromIndex(int i) const;
-	bool updateCurrentItem();
-	bool updateCurrentItem(QListWidgetItem *item);		
-	
+    bool updateLMList(Mode mode);
+    std::unique_ptr<LanguageMode> readDialogFields(Mode mode);
+    void updateButtonStates();
+    void updateButtonStates(const QModelIndex &current);
+    int countLanguageModes(const QString &name) const;
+
 private:
 	Ui::DialogLanguageModes ui;
-	QListWidgetItem *previous_;
+    LanguageModeModel *model_;
+    QModelIndex deleted_;
 };
 
 #endif

@@ -21,6 +21,7 @@ qt5_add_resources(QRC_SOURCES
 qt5_wrap_cpp(MOC_SOURCES
 	CallTipWidget.h
 	CommandRecorder.h
+	Dialog.h
 	DialogAbout.h
 	DialogColors.h
 	DialogDrawingStyles.h
@@ -29,7 +30,6 @@ qt5_wrap_cpp(MOC_SOURCES
 	DialogFilter.h
 	DialogFind.h
 	DialogFonts.h
-	Dialog.h
 	DialogLanguageModes.h
 	DialogMacros.h
 	DialogMoveDocument.h
@@ -42,8 +42,8 @@ qt5_wrap_cpp(MOC_SOURCES
 	DialogRepeat.h
 	DialogReplace.h
 	DialogShellMenu.h
-	DialogSmartIndentCommon.h
 	DialogSmartIndent.h
+	DialogSmartIndentCommon.h
 	DialogSyntaxPatterns.h
 	DialogTabs.h
 	DialogWindowBackgroundMenu.h
@@ -52,12 +52,13 @@ qt5_wrap_cpp(MOC_SOURCES
 	DialogWrapMargin.h
 	DocumentWidget.h
 	ElidedLabel.h
+	HighlightStyleModel.h
 	KeySequenceEdit.h
+	LanguageModeModel.h
 	MainWindow.h
+	MenuItemModel.h
 	NeditServer.h
 	TextArea.h
-	HighlightStyleModel.h
-	MenuItemModel.h
 )
 
 qt5_wrap_ui(UIC_SOURCES
@@ -194,6 +195,8 @@ add_executable(nedit-ng
 	KeySequenceEdit.cpp
 	KeySequenceEdit.h
 	LanguageMode.h
+	LanguageModeModel.h
+	LanguageModeModel.cpp
 	LockReasons.h
 	MainWindow.cpp
 	MainWindow.h

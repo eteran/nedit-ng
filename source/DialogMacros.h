@@ -22,9 +22,6 @@ public:
     DialogMacros(QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
     ~DialogMacros() noexcept override = default;
 
-public:
-	void setPasteReplayEnabled(bool enabled);
-
 Q_SIGNALS:
     void restore(const QModelIndex &selection);
 

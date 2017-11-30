@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>806</width>
-    <height>552</height>
+    <width>702</width>
+    <height>520</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -102,7 +102,7 @@
       </layout>
      </item>
      <item>
-      <widget class="QListWidget" name="listItems"/>
+      <widget class="QListView" name="listItems"/>
      </item>
      <item>
       <layout class="QVBoxLayout" name="verticalLayout">

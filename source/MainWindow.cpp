@@ -67,7 +67,6 @@ qint64 busyStartTime = 0;
 bool modeMessageSet = false;
 
 QPointer<DialogWindowBackgroundMenu> WindowBackgroundMenu;
-QPointer<DialogMacros>               WindowMacros;
 QPointer<DialogSyntaxPatterns>       SyntaxPatterns;
 QPointer<DocumentWidget>             lastFocusDocument;
 
@@ -3957,12 +3956,8 @@ void MainWindow::on_action_Default_Shell_Menu_triggered() {
 */
 void MainWindow::on_action_Default_Macro_Menu_triggered() {
 
-    if(!WindowMacros) {
-        WindowMacros = new DialogMacros(this);
-    }
-
-    WindowMacros->show();
-    WindowMacros->raise();
+    auto WindowMacros = std::make_shared<DialogMacros>(this);
+    WindowMacros->exec();
 }
 
 /**
@@ -5347,11 +5342,6 @@ bool MainWindow::eventFilter(QObject *object, QEvent *event) {
 ** Dim/undim buttons for pasting replay macros into macro and bg menu dialogs
 */
 void MainWindow::DimPasteReplayBtns(bool enabled) {
-
-    if(WindowMacros) {
-        WindowMacros->setPasteReplayEnabled(enabled);
-    }
-
     if(WindowBackgroundMenu) {
         WindowBackgroundMenu->setPasteReplayEnabled(enabled);
     }
@@ -5853,22 +5843,18 @@ void MainWindow::EditHighlightPatterns() {
 ** chosing language mode updated (via a call to CreateLanguageModeMenu)
 */
 void MainWindow::UpdateLanguageModeMenu() {
-    if(!SyntaxPatterns) {
-        return;
+    if(SyntaxPatterns) {
+        SyntaxPatterns->UpdateLanguageModeMenu();
     }
-
-    SyntaxPatterns->UpdateLanguageModeMenu();
 }
 
 /**
  * @brief MainWindow::updateHighlightStyleMenu
  */
 void MainWindow::updateHighlightStyleMenu() {
-    if(!SyntaxPatterns) {
-        return;
+    if(SyntaxPatterns) {
+        SyntaxPatterns->updateHighlightStyleMenu();
     }
-
-    SyntaxPatterns->updateHighlightStyleMenu();
 }
 
 /*

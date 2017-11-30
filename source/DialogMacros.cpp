@@ -21,6 +21,8 @@ DialogMacros::DialogMacros(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, 
 	ui.setupUi(this);
     ui.editAccelerator->setMaximumSequenceLength(1);
 
+    ui.buttonPasteLRMacro->setEnabled(!CommandRecorder::getInstance()->replayMacro.isEmpty());
+
     model_ = new MenuItemModel(this);
     ui.listItems->setModel(model_);
 
@@ -453,10 +455,6 @@ bool DialogMacros::applyDialogChanges() {
 	// Note that preferences have been changed
 	MarkPrefsChanged();
 	return true;
-}
-
-void DialogMacros::setPasteReplayEnabled(bool enabled) {
-	ui.buttonPasteLRMacro->setEnabled(enabled);
 }
 
 /**
