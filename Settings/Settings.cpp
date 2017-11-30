@@ -40,6 +40,16 @@ void writeEnum(QSettings &settings, const QString &key, const T &value) {
 }
 
 /**
+ * @brief Settings::themeFile
+ * @return
+ */
+QString Settings::themeFile() {
+    QString configDir = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
+    auto configFile   = tr("%1/%2/%3").arg(configDir, tr("nedit-ng"), tr("theme.xml"));
+    return configFile;
+}
+
+/**
  * @brief Settings::configFile
  * @return
  */
@@ -100,7 +110,6 @@ void Settings::loadPreferences() {
     bgMenuCommands        = settings.value(tr("nedit.bgMenuCommands"),        loadResource(QLatin1String("res/DefaultBackgroundMenuCommands.txt"))).toString();
     highlightPatterns     = settings.value(tr("nedit.highlightPatterns"),     loadResource(QLatin1String("res/DefaultHighlightPatterns.txt"))).toString();
     languageModes         = settings.value(tr("nedit.languageModes"),         loadResource(QLatin1String("res/DefaultLanguageModes.txt"))).toString();
-    styles                = settings.value(tr("nedit.styles"),                loadResource(QLatin1String("res/DefaultStyles.txt"))).toString();
     smartIndentInit       = settings.value(tr("nedit.smartIndentInit"),       loadResource(QLatin1String("res/DefaultSmartIndentInit.txt"))).toString();
     smartIndentInitCommon = settings.value(tr("nedit.smartIndentInitCommon"), loadResource(QLatin1String("res/DefaultSmartIndentInitCommon.txt"))).toString();
 
@@ -204,7 +213,6 @@ void Settings::importSettings(const QString &filename) {
     bgMenuCommands        = settings.value(tr("nedit.bgMenuCommands"),        bgMenuCommands).toString();
     highlightPatterns     = settings.value(tr("nedit.highlightPatterns"),     highlightPatterns).toString();
     languageModes         = settings.value(tr("nedit.languageModes"),         languageModes).toString();
-    styles                = settings.value(tr("nedit.styles"),                styles).toString();
     smartIndentInit       = settings.value(tr("nedit.smartIndentInit"),       smartIndentInit).toString();
     smartIndentInitCommon = settings.value(tr("nedit.smartIndentInitCommon"), smartIndentInitCommon).toString();
 
@@ -303,7 +311,6 @@ bool Settings::savePreferences() {
     settings.setValue(tr("nedit.bgMenuCommands"), bgMenuCommands);
     settings.setValue(tr("nedit.highlightPatterns"), highlightPatterns);
     settings.setValue(tr("nedit.languageModes"), languageModes);
-    settings.setValue(tr("nedit.styles"), styles);
     settings.setValue(tr("nedit.smartIndentInit"), smartIndentInit);
     settings.setValue(tr("nedit.smartIndentInitCommon"), smartIndentInitCommon);
 

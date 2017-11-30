@@ -73,8 +73,9 @@ constexpr uint8_t PLAIN_STYLE = (ASCII_A + 1);
 
 constexpr auto STYLE_NOT_FOUND = static_cast<size_t>(-1);
 
+void LoadTheme();
+void SaveTheme();
 bool LoadHighlightStringEx(const QString &string);
-bool LoadStylesStringEx(const QString &string);
 bool NamedStyleExists(const QString &styleName);
 bool parseString(HighlightData *pattern, const char **string, char **styleString, long length, char *prevChar, bool anchored, const QString &delimiters, const char *lookBehindTo, const char *match_till);
 char getPrevChar(TextBuffer *buf, int pos);
@@ -89,7 +90,6 @@ PatternSet *FindPatternSet(const QString &langModeName);
 QString BgColorOfNamedStyleEx(const QString &styleName);
 QString ColorOfNamedStyleEx(const QString &styleName);
 QString WriteHighlightStringEx();
-QString WriteStylesStringEx();
 size_t IndexOfNamedStyle(const QString &styleName);
 std::unique_ptr<PatternSet> readDefaultPatternSet(const QString &langModeName);
 void handleUnparsedRegionCBEx(const TextArea *area, int pos, const void *user);

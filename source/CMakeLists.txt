@@ -6,7 +6,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 #set(CMAKE_AUTORCC ON)
 
 find_package(BISON REQUIRED)
-find_package(Qt5 5.4.0 REQUIRED Widgets Network)
+find_package(Qt5 5.4.0 REQUIRED Widgets Network Xml)
 find_package(Boost 1.35 REQUIRED)
 
 # using a different name from parse.cpp
@@ -279,6 +279,7 @@ target_link_libraries(nedit-ng LINK_PUBLIC
 	rbTree
 	Qt5::Widgets
 	Qt5::Network
+	Qt5::Xml
 )
 
 set_property(TARGET nedit-ng PROPERTY CXX_EXTENSIONS OFF)

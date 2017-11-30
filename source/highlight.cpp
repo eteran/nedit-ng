@@ -40,6 +40,7 @@
 #include "PatternSet.h"
 #include "ReparseContext.h"
 #include "StyleTableEntry.h"
+#include "Settings.h"
 #include "TextArea.h"
 #include "TextBuffer.h"
 #include "WindowHighlightData.h"
@@ -50,9 +51,12 @@
 
 #include <gsl/gsl_util>
 
+#include <QSettings>
 #include <QMessageBox>
 #include <QPushButton>
 #include <QtDebug>
+#include <QDomDocument>
+#include <QDomElement>
 
 #include <algorithm>
 #include <climits>
@@ -102,7 +106,6 @@ bool can_cross_line_boundaries(const ReparseContext *contextRequirements) {
 
 static bool isDefaultPatternSet(const PatternSet *patSet);
 static bool isParentStyle(const QByteArray &parentStyles, int style1, int style2);
-static bool styleErrorEx(const Input &in, const QString &message);
 static int findSafeParseRestartPos(TextBuffer *buf, const std::unique_ptr<WindowHighlightData> &highlightData, int *pos);
 static int lastModified(const std::shared_ptr<TextBuffer> &styleBuf);
 static int parentStyleOf(const QByteArray &parentStyles, int style);
@@ -1090,123 +1093,97 @@ int findTopLevelParentIndex(const gsl::span<HighlightPattern> &patList, int inde
     return topIndex;
 }
 
-/*
-** Read a string (from the  value of the styles resource) containing highlight
-** styles information, parse it, and load it into the stored highlight style
-** list.
-*/
-bool LoadStylesStringEx(const QString &string) {
+void SaveTheme() {
+    QString filename = Settings::themeFile();
 
-    Input in(&string);
-    QString errMsg;
-    int i;
+    QFile file(filename);
+    if(file.open(QIODevice::WriteOnly)) {
+        QDomDocument xml;
+        QDomProcessingInstruction pi = xml.createProcessingInstruction(QLatin1String("xml"), QLatin1String("version=\"1.0\" encoding=\"UTF-8\""));
 
-    for (;;) {
+        xml.appendChild(pi);
 
-        // skip over blank space
-        in.skipWhitespace();
+        QDomElement root = xml.createElement(QLatin1String("theme"));
+        root.setAttribute(QLatin1String("name"), QLatin1String("default"));
+        xml.appendChild(root);
 
-        // Allocate a language mode structure in which to store the info.
-        HighlightStyle hs;
-
-        // read style name
-        QString name = ReadSymbolicFieldEx(in);
-        if (name.isNull()) {
-            return styleErrorEx(in, QLatin1String("style name required"));
-        }
-        hs.name = name;
-
-        if (!SkipDelimiterEx(in, &errMsg)) {
-            return styleErrorEx(in, errMsg);
-        }
-
-        // read color
-        QString color = ReadSymbolicFieldEx(in);
-        if (color.isNull()) {
-            return styleErrorEx(in, QLatin1String("color name required"));
-        }
-
-        hs.color   = color;
-        hs.bgColor = QString();
-
-        if (SkipOptSeparatorEx(QLatin1Char('/'), in)) {
-            // read bgColor
-            QString s = ReadSymbolicFieldEx(in); // no error if fails
-            if(!s.isNull()) {
-                hs.bgColor = s;
+        for(const HighlightStyle &hs : HighlightStyles) {
+            QDomElement style = xml.createElement(QLatin1String("style"));
+            style.setAttribute(QLatin1String("name"), hs.name);
+            style.setAttribute(QLatin1String("color"), hs.color);
+            if(!hs.bgColor.isEmpty()) {
+                style.setAttribute(QLatin1String("bgcolor"), hs.bgColor);
             }
+            style.setAttribute(QLatin1String("font"), FontTypeNames[hs.font]);
+
+            root.appendChild(style);
         }
 
-        if (!SkipDelimiterEx(in, &errMsg)) {
-            return styleErrorEx(in, errMsg);
-        }
-
-        // read the font type
-        QString fontStr = ReadSymbolicFieldEx(in);
-
-        for (i = 0; i < N_FONT_TYPES; i++) {
-            if (FontTypeNames[i] == fontStr) {
-                hs.font = i;
-                break;
-            }
-        }
-
-        if (i == N_FONT_TYPES) {
-            return styleErrorEx(in, QLatin1String("unrecognized font type"));
-        }
-
-        // pattern set was read correctly, add/change it in the list
-        auto it = std::find_if(HighlightStyles.begin(), HighlightStyles.end(), [&hs](const HighlightStyle &entry) {
-            return entry.name == hs.name;
-        });
-
-        if(it == HighlightStyles.end()) {
-            HighlightStyles.push_back(hs);
-        } else {
-            *it = hs;
-        }
-
-        // if the string ends here, we're done
-        in.skipWhitespaceNL();
-        if (in.atEnd()) {
-            return true;
-        }
+        QTextStream stream(&file);
+        stream << xml.toString();
     }
 }
 
-/*
-** Create a string in the correct format for the styles resource, containing
-** all of the highlight styles information from the stored highlight style
-** list
-*/
-QString WriteStylesStringEx() {
+void LoadTheme() {
+    QString filename = Settings::themeFile();
 
-    QString str;
-    QTextStream out(&str);
-
-    for(const HighlightStyle &style : HighlightStyles) {
-
-        out << QLatin1Char('\t')
-            << style.name
-            << QLatin1Char(':')
-            << style.color;
-
-        if (!style.bgColor.isNull()) {
-            out << QLatin1Char('/')
-                << style.bgColor;
+    QFile file(filename);
+    if(!file.open(QIODevice::ReadOnly)) {
+        file.setFileName(QLatin1String(":/res/DefaultStyles.xml"));
+        if(!file.open(QIODevice::ReadOnly)) {
+            qFatal("NEdit: failed to open theme file!");
         }
-
-        out << QLatin1Char(':')
-            << FontTypeNames[style.font]
-            << QLatin1Char('\n');
-
     }
 
-    // Get the output, and lop off the trailing newlines
-    if(!str.isEmpty()) {
-        str.chop(1);
+    QDomDocument xml;
+    if(xml.setContent(&file)) {
+        QDomElement root = xml.firstChildElement(QLatin1String("theme"));
+        QDomElement style = root.firstChildElement(QLatin1String("style"));
+        for (; !style.isNull(); style = style.nextSiblingElement(QLatin1String("style"))) {
+
+            HighlightStyle hs;
+            hs.name    = style.attribute(QLatin1String("name"));
+            hs.color   = style.attribute(QLatin1String("color"));
+            hs.bgColor = style.attribute(QLatin1String("bgcolor"), QString());
+            QString font = style.attribute(QLatin1String("font"));
+
+            if(hs.name.isEmpty()) {
+                qWarning("NEdit: style name required");
+                continue;
+            }
+
+            if(hs.name.isEmpty()) {
+                qWarning("NEdit: color name required in: %s", qPrintable(hs.name));
+                continue;
+            }
+
+            // map the font to it's associated integer
+            int i;
+            for (i = 0; i < N_FONT_TYPES; i++) {
+                if (FontTypeNames[i] == font) {
+                    hs.font = i;
+                    break;
+                }
+            }
+
+            if (i == N_FONT_TYPES) {
+                qWarning("NEdit: unrecognized font type %s in %s", qPrintable(font), qPrintable(hs.name));
+                continue;
+            }
+
+            // pattern set was read correctly, add/change it in the list
+            auto it = std::find_if(HighlightStyles.begin(), HighlightStyles.end(), [&hs](const HighlightStyle &entry) {
+                return entry.name == hs.name;
+            });
+
+            if(it == HighlightStyles.end()) {
+                HighlightStyles.push_back(hs);
+            } else {
+                *it = hs;
+            }
+
+        }
     }
-    return str;
 }
 
 /*
@@ -1646,16 +1623,6 @@ static std::unique_ptr<PatternSet> highlightErrorEx(const Input &in, const QStri
                 message);
 
     return nullptr;
-}
-
-static bool styleErrorEx(const Input &in, const QString &message) {
-    ParseErrorEx(
-                nullptr,
-                *in.string(),
-                in.index(),
-                QLatin1String("style specification"),
-                message);
-    return false;
 }
 
 /*

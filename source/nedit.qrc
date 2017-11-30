@@ -31,7 +31,7 @@
         <file>res/DefaultPatternSet27.txt</file>
         <file>res/nedit.png</file>
         <file>res/DefaultBackgroundMenuCommands.txt</file>
-        <file>res/DefaultStyles.txt</file>
+        <file>res/DefaultStyles.xml</file>
         <file>res/DefaultShellCommands.txt</file>
         <file>res/DefaultShellCommandsFreeBSD.txt</file>
         <file>res/DefaultShellCommandsLinux.txt</file>

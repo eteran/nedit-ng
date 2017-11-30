@@ -38,6 +38,7 @@ public:
     static QString historyFile();
     static QString autoLoadMacroFile();
     static QString styleFile();
+    static QString themeFile();
 
 public:
     bool appendLF;
@@ -93,7 +94,6 @@ public:
     QString shellCommands;
     QString smartIndentInit;
     QString smartIndentInitCommon;
-    QString styles;
     QString textFont;
     QString titleFormat;
 #if defined(REPLACE_SCOPE)

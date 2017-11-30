@@ -152,9 +152,11 @@ static void translatePrefFormats(quint32 fileVer) {
     if (!g_Settings.highlightPatterns.isNull()) {
         LoadHighlightStringEx(g_Settings.highlightPatterns);
 	}
+#if 0
     if (!g_Settings.styles.isNull()) {
         LoadStylesStringEx(g_Settings.styles);
 	}
+#endif
     if (!g_Settings.languageModes.isNull()) {
         loadLanguageModesStringEx(g_Settings.languageModes);
 	}
@@ -164,6 +166,8 @@ static void translatePrefFormats(quint32 fileVer) {
     if (!g_Settings.smartIndentInitCommon.isNull()) {
         LoadSmartIndentCommonStringEx(g_Settings.smartIndentInitCommon);
 	}
+
+    LoadTheme();
 
 	// translate the font names into fontLists suitable for the text widget 
     g_Settings.plainFontStruct      = Font::fromString(g_Settings.textFont);
@@ -214,13 +218,14 @@ void SaveNEditPrefsEx(QWidget *parent, bool quietly) {
     g_Settings.bgMenuCommands        = WriteBGMenuCmdsStringEx();
     g_Settings.highlightPatterns     = WriteHighlightStringEx();
     g_Settings.languageModes         = WriteLanguageModesStringEx();
-    g_Settings.styles                = WriteStylesStringEx();
     g_Settings.smartIndentInit       = WriteSmartIndentStringEx();
     g_Settings.smartIndentInitCommon = WriteSmartIndentCommonStringEx();
 
     if (!g_Settings.savePreferences()) {
         QMessageBox::warning(parent, QLatin1String("Save Preferences"), QString(QLatin1String("Unable to save preferences in %1")).arg(prefFileName));
     }
+
+    SaveTheme();
 
     PrefsHaveChanged = false;
 }
