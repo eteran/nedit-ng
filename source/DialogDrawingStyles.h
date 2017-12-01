@@ -47,8 +47,8 @@ private:
     void updateButtonStates(const QModelIndex &current);
     void updateButtonStates();
     bool applyDialogChanges();
-    bool checkCurrent(Mode mode);
-    std::unique_ptr<HighlightStyle> readDialogFields(Mode mode);
+    bool validateFields(Mode mode);
+    std::unique_ptr<HighlightStyle> readFields(Mode mode);
 	bool updateCurrentItem();
     bool updateCurrentItem(const QModelIndex &index);
     int countPlainEntries() const;

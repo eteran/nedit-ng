@@ -200,7 +200,7 @@ void DialogMacros::currentChanged(const QModelIndex &current, const QModelIndex 
 
     // if we are actually switching items, check that the previous one was valid
     // so we can optionally cancel
-    if(previous.isValid() && previous != deleted_ && !checkMacro(Mode::Silent)) {
+    if(previous.isValid() && previous != deleted_ && !validateFields(Mode::Silent)) {
         QMessageBox messageBox(this);
         messageBox.setWindowTitle(tr("Discard Entry"));
         messageBox.setIcon(QMessageBox::Warning);
@@ -213,7 +213,7 @@ void DialogMacros::currentChanged(const QModelIndex &current, const QModelIndex 
         if (messageBox.clickedButton() == buttonKeep) {
 
             // again to cause messagebox to pop up
-            checkMacro(Mode::Verbose);
+            validateFields(Mode::Verbose);
 
             // reselect the old item
             canceled = true;
@@ -253,7 +253,7 @@ void DialogMacros::currentChanged(const QModelIndex &current, const QModelIndex 
  * @brief DialogMacros::on_buttonCheck_clicked
  */
 void DialogMacros::on_buttonCheck_clicked() {
-    if (checkMacro(Mode::Verbose)) {
+    if (validateFields(Mode::Verbose)) {
         QMessageBox::information(this,
                                  tr("Macro"),
                                  tr("Macro compiled without error"));
@@ -281,13 +281,13 @@ void DialogMacros::on_buttonOK_clicked() {
 }
 
 /**
- * @brief DialogMacros::checkMacro
+ * @brief DialogMacros::validateFields
  * @param mode
  * @return
  */
-bool DialogMacros::checkMacro(Mode mode) {
+bool DialogMacros::validateFields(Mode mode) {
 
-    auto f = readDialogFields(mode);
+    auto f = readFields(mode);
 	if(!f) {
 		return false;
 	}
@@ -306,7 +306,7 @@ bool DialogMacros::checkMacro(Mode mode) {
 ** pointer to the new MenuItem structure as the function value, or nullptr on
 ** failure.
 */
-std::unique_ptr<MenuItem> DialogMacros::readDialogFields(Mode mode) {
+std::unique_ptr<MenuItem> DialogMacros::readFields(Mode mode) {
 
 	QString nameText = ui.editName->text();
 
@@ -418,7 +418,7 @@ QString DialogMacros::ensureNewline(const QString &string) {
 bool DialogMacros::applyDialogChanges() {
 
     if(model_->rowCount() != 0) {
-        auto dialogFields = readDialogFields(Mode::Verbose);
+        auto dialogFields = readFields(Mode::Verbose);
         if(!dialogFields) {
             return false;
         }
@@ -463,7 +463,7 @@ bool DialogMacros::applyDialogChanges() {
  */
 bool DialogMacros::updateCurrentItem(const QModelIndex &index) {
     // Get the current contents of the "patterns" dialog fields
-    auto dialogFields = readDialogFields(Mode::Verbose);
+    auto dialogFields = readFields(Mode::Verbose);
     if(!dialogFields) {
         return false;
     }

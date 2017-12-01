@@ -46,12 +46,12 @@ private Q_SLOTS:
 	
 private:
     bool applyDialogChanges();
-    bool checkMacro(Mode silent);
+    bool validateFields(Mode silent);
     bool checkMacroText(const QString &macro, Mode mode);
     bool updateCurrentItem();
     bool updateCurrentItem(const QModelIndex &index);
     QString ensureNewline(const QString &string);
-    std::unique_ptr<MenuItem> readDialogFields(Mode mode);
+    std::unique_ptr<MenuItem> readFields(Mode mode);
     void updateButtonStates();
     void updateButtonStates(const QModelIndex &current);
 

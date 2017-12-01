@@ -108,7 +108,7 @@ void DialogLanguageModes::currentChanged(const QModelIndex &current, const QMode
     //               it results in a crash when leaving invalid entries :-(
     //               we can do better of course
 #if 0
-    if(previous.isValid() && previous != deleted_ && !checkCurrent(Mode::Silent)) {
+    if(previous.isValid() && previous != deleted_ && !validateFields(Mode::Silent)) {
         QMessageBox messageBox(this);
         messageBox.setWindowTitle(tr("Discard Entry"));
         messageBox.setIcon(QMessageBox::Warning);
@@ -121,7 +121,7 @@ void DialogLanguageModes::currentChanged(const QModelIndex &current, const QMode
         if (messageBox.clickedButton() == buttonKeep) {
 
             // again to cause messagebox to pop up
-            checkCurrent(Mode::Verbose);
+            validateFields(Mode::Verbose);
 
             // reselect the old item
             canceled = true;
@@ -238,7 +238,7 @@ void DialogLanguageModes::on_buttonBox_clicked(QAbstractButton *button) {
 ** If any of the information is incorrect or missing, display a warning dialog and
 ** return nullptr.
 */
-std::unique_ptr<LanguageMode> DialogLanguageModes::readDialogFields(Mode mode) {
+std::unique_ptr<LanguageMode> DialogLanguageModes::readFields(Mode mode) {
 
 	/* Allocate a language mode structure to return, set unread fields to
 	   empty so everything can be freed on errors by freeLanguageModeRec */
@@ -380,7 +380,7 @@ bool DialogLanguageModes::updateLanguageList(Mode mode) {
 
     if(const LanguageMode *oldLM = model_->itemFromIndex(index)) {
 
-        if(auto newLM = readDialogFields(mode)) {
+        if(auto newLM = readFields(mode)) {
 
             /* If there was a name change of a non-duplicate language mode, modify the
                name to the weird format of: "old name:new name".  This signals that a
@@ -670,7 +670,7 @@ void DialogLanguageModes::on_buttonDelete_clicked() {
  */
 bool DialogLanguageModes::updateCurrentItem(const QModelIndex &index) {
     // Get the current contents of the "patterns" dialog fields
-    auto dialogFields = readDialogFields(Mode::Verbose);
+    auto dialogFields = readFields(Mode::Verbose);
     if(!dialogFields) {
         return false;
     }

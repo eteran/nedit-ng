@@ -183,7 +183,7 @@ void DialogShellMenu::currentChanged(const QModelIndex &current, const QModelInd
 
     // if we are actually switching items, check that the previous one was valid
     // so we can optionally cancel
-    if(previous.isValid() && previous != deleted_ && !checkCurrent(Mode::Silent)) {
+    if(previous.isValid() && previous != deleted_ && !validateFields(Mode::Silent)) {
         QMessageBox messageBox(this);
         messageBox.setWindowTitle(tr("Discard Entry"));
         messageBox.setIcon(QMessageBox::Warning);
@@ -196,7 +196,7 @@ void DialogShellMenu::currentChanged(const QModelIndex &current, const QModelInd
         if (messageBox.clickedButton() == buttonKeep) {
 
             // again to cause messagebox to pop up
-            checkCurrent(Mode::Verbose);
+            validateFields(Mode::Verbose);
 
             // reselect the old item
             canceled = true;
@@ -298,7 +298,7 @@ void DialogShellMenu::on_buttonBox_accepted() {
 ** pointer to the new MenuItem structure as the function value, or nullptr on
 ** failure.
 */
-std::unique_ptr<MenuItem> DialogShellMenu::readDialogFields(Mode mode) {
+std::unique_ptr<MenuItem> DialogShellMenu::readFields(Mode mode) {
 
 	QString nameText = ui.editName->text();
 	if (nameText.isEmpty()) {
@@ -384,7 +384,7 @@ QString DialogShellMenu::ensureNewline(const QString &string) {
 bool DialogShellMenu::applyDialogChanges() {
 
     if(model_->rowCount() != 0) {
-        auto dialogFields = readDialogFields(Mode::Verbose);
+        auto dialogFields = readFields(Mode::Verbose);
         if(!dialogFields) {
             return false;
         }
@@ -437,7 +437,7 @@ void DialogShellMenu::on_radioToSameDocument_toggled(bool checked) {
  */
 bool DialogShellMenu::updateCurrentItem(const QModelIndex &index) {
     // Get the current contents of the "patterns" dialog fields
-    auto dialogFields = readDialogFields(Mode::Verbose);
+    auto dialogFields = readFields(Mode::Verbose);
     if(!dialogFields) {
         return false;
     }
@@ -466,12 +466,12 @@ bool DialogShellMenu::updateCurrentItem() {
 
 
 /**
- * @brief DialogShellMenu::checkCurrent
+ * @brief DialogShellMenu::validateFields
  * @param mode
  * @return
  */
-bool DialogShellMenu::checkCurrent(Mode mode) {
-    if(auto ptr = readDialogFields(mode)) {
+bool DialogShellMenu::validateFields(Mode mode) {
+    if(auto ptr = readFields(mode)) {
 		return true;
 	}
 	

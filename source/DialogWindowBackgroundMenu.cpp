@@ -202,7 +202,7 @@ void DialogWindowBackgroundMenu::currentChanged(const QModelIndex &current, cons
 
     // if we are actually switching items, check that the previous one was valid
     // so we can optionally cancel
-    if(previous.isValid() && previous != deleted_ && !checkMacro(Mode::Silent)) {
+    if(previous.isValid() && previous != deleted_ && !validateFields(Mode::Silent)) {
         QMessageBox messageBox(this);
         messageBox.setWindowTitle(tr("Discard Entry"));
         messageBox.setIcon(QMessageBox::Warning);
@@ -215,7 +215,7 @@ void DialogWindowBackgroundMenu::currentChanged(const QModelIndex &current, cons
         if (messageBox.clickedButton() == buttonKeep) {
 
             // again to cause messagebox to pop up
-            checkMacro(Mode::Verbose);
+            validateFields(Mode::Verbose);
 
             // reselect the old item
             canceled = true;
@@ -255,7 +255,7 @@ void DialogWindowBackgroundMenu::currentChanged(const QModelIndex &current, cons
  * @brief DialogWindowBackgroundMenu::on_buttonCheck_clicked
  */
 void DialogWindowBackgroundMenu::on_buttonCheck_clicked() {
-    if (checkMacro(Mode::Verbose)) {
+    if (validateFields(Mode::Verbose)) {
         QMessageBox::information(this,
                                  tr("Macro"),
                                  tr("Macro compiled without error"));
@@ -283,13 +283,13 @@ void DialogWindowBackgroundMenu::on_buttonOK_clicked() {
 }
 
 /**
- * @brief DialogWindowBackgroundMenu::checkMacro
+ * @brief DialogWindowBackgroundMenu::validateFields
  * @param silent
  * @return
  */
-bool DialogWindowBackgroundMenu::checkMacro(Mode silent) {
+bool DialogWindowBackgroundMenu::validateFields(Mode silent) {
 
-    if(auto f = readDialogFields(silent)) {
+    if(auto f = readFields(silent)) {
         return checkMacroText(f->cmd, silent);
     }
 
@@ -302,7 +302,7 @@ bool DialogWindowBackgroundMenu::checkMacro(Mode silent) {
 ** pointer to the new MenuItem structure as the function value, or nullptr on
 ** failure.
 */
-std::unique_ptr<MenuItem> DialogWindowBackgroundMenu::readDialogFields(Mode mode) {
+std::unique_ptr<MenuItem> DialogWindowBackgroundMenu::readFields(Mode mode) {
 
 	QString nameText = ui.editName->text();
 
@@ -414,7 +414,7 @@ QString DialogWindowBackgroundMenu::ensureNewline(const QString &string) {
 bool DialogWindowBackgroundMenu::applyDialogChanges() {
 
     if(model_->rowCount() != 0) {
-        auto dialogFields = readDialogFields(Mode::Verbose);
+        auto dialogFields = readFields(Mode::Verbose);
         if(!dialogFields) {
             return false;
         }
@@ -467,7 +467,7 @@ void DialogWindowBackgroundMenu::setPasteReplayEnabled(bool enabled) {
  */
 bool DialogWindowBackgroundMenu::updateCurrentItem(const QModelIndex &index) {
     // Get the current contents of the "patterns" dialog fields
-    auto dialogFields = readDialogFields(Mode::Verbose);
+    auto dialogFields = readFields(Mode::Verbose);
     if(!dialogFields) {
         return false;
     }

@@ -205,7 +205,7 @@ void DialogDrawingStyles::currentChanged(const QModelIndex &current, const QMode
 
     // if we are actually switching items, check that the previous one was valid
     // so we can optionally cancel
-    if(previous.isValid() && previous != deleted_ && !checkCurrent(Mode::Silent)) {
+    if(previous.isValid() && previous != deleted_ && !validateFields(Mode::Silent)) {
         QMessageBox messageBox(this);
         messageBox.setWindowTitle(tr("Discard Entry"));
         messageBox.setIcon(QMessageBox::Warning);
@@ -218,7 +218,7 @@ void DialogDrawingStyles::currentChanged(const QModelIndex &current, const QMode
         if (messageBox.clickedButton() == buttonKeep) {
 
             // again to cause messagebox to pop up
-            checkCurrent(Mode::Verbose);
+            validateFields(Mode::Verbose);
 
             // reselect the old item
             canceled = true;
@@ -296,28 +296,26 @@ void DialogDrawingStyles::on_buttonBox_clicked(QAbstractButton *button) {
 }
 
 /**
- * @brief DialogDrawingStyles::checkCurrent
+ * @brief DialogDrawingStyles::validateFields
  * @param mode
  * @return
  */
-bool DialogDrawingStyles::checkCurrent(Mode mode) {
-    if(auto ptr = readDialogFields(mode)) {
+bool DialogDrawingStyles::validateFields(Mode mode) {
+    if(auto ptr = readFields(mode)) {
 		return true;
 	}
 	return false;
 }
 
 /**
- * @brief DialogDrawingStyles::readDialogFields
+ * @brief DialogDrawingStyles::readFields
  * @param mode
  * @return
  */
-std::unique_ptr<HighlightStyle> DialogDrawingStyles::readDialogFields(Mode mode) {
+std::unique_ptr<HighlightStyle> DialogDrawingStyles::readFields(Mode mode) {
 
-   	// Allocate a language mode structure to return 
     auto hs = std::make_unique<HighlightStyle>();
 
-    // read the name field 
 	QString name = ui.editName->text().simplified();
     if (name.isNull()) {
     	return nullptr;
@@ -326,7 +324,9 @@ std::unique_ptr<HighlightStyle> DialogDrawingStyles::readDialogFields(Mode mode)
 	hs->name = name;
     if (hs->name.isEmpty()) {
         if (mode == Mode::Verbose) {
-            QMessageBox::warning(this, tr("Highlight Style"), tr("Please specify a name for the highlight style"));
+            QMessageBox::warning(this,
+                                 tr("Highlight Style"),
+                                 tr("Please specify a name for the highlight style"));
         }
 
         return nullptr;
@@ -396,7 +396,7 @@ std::unique_ptr<HighlightStyle> DialogDrawingStyles::readDialogFields(Mode mode)
 bool DialogDrawingStyles::applyDialogChanges() {
 
     if(model_->rowCount() != 0) {
-        auto dialogFields = readDialogFields(Mode::Verbose);
+        auto dialogFields = readFields(Mode::Verbose);
         if(!dialogFields) {
             return false;
         }
@@ -455,7 +455,7 @@ bool DialogDrawingStyles::applyDialogChanges() {
  */
 bool DialogDrawingStyles::updateCurrentItem(const QModelIndex &index) {
 	// Get the current contents of the "patterns" dialog fields 
-    auto dialogFields = readDialogFields(Mode::Verbose);
+    auto dialogFields = readFields(Mode::Verbose);
     if(!dialogFields) {
 		return false;
 	}

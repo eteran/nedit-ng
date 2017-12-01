@@ -276,7 +276,7 @@ void DialogSyntaxPatterns::on_buttonHighlightStyle_clicked() {
  */
 bool DialogSyntaxPatterns::updateCurrentItem(const QModelIndex &index) {
     // Get the current contents of the "patterns" dialog fields
-    auto dialogFields = readDialogFields(Mode::Verbose);
+    auto dialogFields = readFields(Mode::Verbose);
     if(!dialogFields) {
         return false;
     }
@@ -570,7 +570,7 @@ void DialogSyntaxPatterns::currentChanged(const QModelIndex &current, const QMod
 
     // if we are actually switching items, check that the previous one was valid
     // so we can optionally cancel
-    if(previous.isValid() && previous != deleted_ && !checkCurrentPattern(Mode::Silent)) {
+    if(previous.isValid() && previous != deleted_ && !validateFields(Mode::Silent)) {
         QMessageBox messageBox(this);
         messageBox.setWindowTitle(tr("Discard Entry"));
         messageBox.setIcon(QMessageBox::Warning);
@@ -583,7 +583,7 @@ void DialogSyntaxPatterns::currentChanged(const QModelIndex &current, const QMod
         if (messageBox.clickedButton() == buttonKeep) {
 
             // again to cause messagebox to pop up
-            checkCurrentPattern(Mode::Verbose);
+            validateFields(Mode::Verbose);
 
             // reselect the old item
             canceled = true;
@@ -836,7 +836,7 @@ std::unique_ptr<PatternSet> DialogSyntaxPatterns::getDialogPatternSet() {
 ** telling the user what's wrong (Passing "silent" as true, suppresses these
 ** dialogs).  Returns nullptr on error.
 */
-std::unique_ptr<HighlightPattern> DialogSyntaxPatterns::readDialogFields(Mode mode) {
+std::unique_ptr<HighlightPattern> DialogSyntaxPatterns::readFields(Mode mode) {
 
     auto pat = std::make_unique<HighlightPattern>();
 
@@ -943,12 +943,12 @@ std::unique_ptr<HighlightPattern> DialogSyntaxPatterns::readDialogFields(Mode mo
 }
 
 /**
- * @brief DialogSyntaxPatterns::checkCurrentPattern
+ * @brief DialogSyntaxPatterns::validateFields
  * @param mode
  * @return
  */
-bool DialogSyntaxPatterns::checkCurrentPattern(Mode mode) {
-    if(auto ptr = readDialogFields(mode)) {
+bool DialogSyntaxPatterns::validateFields(Mode mode) {
+    if(auto ptr = readFields(mode)) {
 		return true;
 	}
 

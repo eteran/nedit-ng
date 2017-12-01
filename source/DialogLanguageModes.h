@@ -45,7 +45,7 @@ private:
     bool updateCurrentItem(const QModelIndex &index);
     bool updateLanguageList(Mode mode);
     bool updateLMList(Mode mode);
-    std::unique_ptr<LanguageMode> readDialogFields(Mode mode);
+    std::unique_ptr<LanguageMode> readFields(Mode mode);
     void updateButtonStates();
     void updateButtonStates(const QModelIndex &current);
     int countLanguageModes(const QString &name) const;

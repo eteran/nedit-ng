@@ -1064,8 +1064,6 @@ void DocumentWidget::documentRaised() {
 
 void DocumentWidget::RaiseDocument() {
     if(auto win = MainWindow::fromDocument(this)) {
-        // set the document as top document
-        // show the new top document
 
         // NOTE(eteran): indirectly triggers a call to documentRaised()
         win->ui.tabWidget->setCurrentWidget(this);

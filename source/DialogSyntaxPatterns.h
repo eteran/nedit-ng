@@ -57,13 +57,13 @@ private Q_SLOTS:
     void on_comboLanguageMode_currentIndexChanged(const QString &text);
 
 private:
-    bool checkCurrentPattern(Mode mode);
+    bool validateFields(Mode mode);
     bool checkHighlightDialogData();
     bool TestHighlightPatterns(const std::unique_ptr<PatternSet> &patSet);
     bool updateCurrentItem();
     bool updateCurrentItem(const QModelIndex &index);
     bool updatePatternSet();
-    std::unique_ptr<HighlightPattern> readDialogFields(Mode mode);
+    std::unique_ptr<HighlightPattern> readFields(Mode mode);
     std::unique_ptr<PatternSet> getDialogPatternSet();
     void setStyleMenu(const QString &name);
     void updateLabels();
