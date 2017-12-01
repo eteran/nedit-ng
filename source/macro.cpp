@@ -2039,13 +2039,11 @@ void RegisterMacroSubroutines() {
         InstallSymbol(routine.name, PROC_VALUE_SYM, subrPtr);
     }
 
-    // NOTE(eteran): things that were in the menu action list
     for(const SubRoutine &routine : MenuMacroSubrNames) {
         subrPtr = to_value(routine.function);
         InstallSymbol(routine.name, C_FUNCTION_SYM, subrPtr);
     }
 
-    // NOTE(eteran): things that were in the text widget action list
     for(const SubRoutine &routine : TextAreaSubrNames) {
         subrPtr = to_value(routine.function);
         InstallSymbol(routine.name, C_FUNCTION_SYM, subrPtr);

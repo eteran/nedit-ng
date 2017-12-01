@@ -4,6 +4,7 @@
 #include "DocumentWidget.h"
 #include "MainWindow.h"
 #include "preferences.h"
+#include "Regex/Regex.h"
 #include "search.h"
 
 #include <QClipboard>

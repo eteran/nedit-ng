@@ -27,6 +27,7 @@
 #include "nedit.h"
 #include "PatternSet.h"
 #include "preferences.h"
+#include "Regex/Regex.h"
 #include "search.h"
 #include "Settings.h"
 #include "shift.h"
@@ -1269,11 +1270,7 @@ void MainWindow::addToGroup(QActionGroup *group, QMenu *menu) {
 */
 void MainWindow::UpdateUserMenus(DocumentWidget *document) {
 
-    // NOTE(eteran): the old code used to only do this if the language mode changed
-    //               we should probably restore that behavior
-
-    /* update user menus, which are shared over all documents, only
-       if language mode was changed */
+    // update user menus, which are shared over all documents
     auto shellMenu = createUserMenu(document, ShellMenuData);
     ui.menu_Shell->clear();
     ui.menu_Shell->addAction(ui.action_Execute_Command);
@@ -1303,8 +1300,7 @@ void MainWindow::UpdateUserMenus(DocumentWidget *document) {
     addToGroup(macroGroup, macroMenu);
     connect(macroGroup, &QActionGroup::triggered, this, &MainWindow::macroTriggered);
 
-    /* update background menu, which is owned by a single document, only if
-     * language mode was changed */
+    // update background menu, which is owned by a single document
     document->contextMenu_ = createUserMenu(document, BGMenuData);
 }
 
@@ -4962,8 +4958,8 @@ void MainWindow::action_Exit(DocumentWidget *document) {
     /* If this is not the last window (more than one window is open),
        confirm with the user before exiting. */
 
-    // NOTE(eteran): test if the current window is NOT the only window
-    if (GetPrefWarnExit() && !(documents.size() < 2)) {
+    // NOTE(eteran): test if the current window is NOT the only document
+    if (GetPrefWarnExit() && documents.size() >= 2) {
 
         auto exitMsg = tr("Editing: ");
 

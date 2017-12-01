@@ -251,9 +251,6 @@ DialogFonts::FontStatus DialogFonts::checkFontStatus(const QString &font) {
 */
 void DialogFonts::browseFont(QLineEdit *lineEdit) {
 
-    // NOTE(eteran): there is a bug in pre Qt-5.8 where a font with no "normal"
-    //               style, (ex. sometimes they call it "regular") will default
-    //               to the first style in the list
     bool ok;
     auto currFont = Font::fromString(lineEdit->text());
     QFont newFont = QFontDialog::getFont(&ok, currFont, this);

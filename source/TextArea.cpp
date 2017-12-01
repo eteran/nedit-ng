@@ -52,7 +52,7 @@
 
 
 // NOTE(eteran): this is a bit of a hack to covert the raw c-strings to unicode
-// in a way that is comparaable to how the original nedit works
+// in a way that is comparable to how the original nedit works
 class AsciiTextCodec : public QTextCodec {
 public:
     ~AsciiTextCodec() override = default;
