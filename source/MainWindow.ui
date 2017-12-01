@@ -132,7 +132,7 @@
      <x>0</x>
      <y>0</y>
      <width>621</width>
-     <height>30</height>
+     <height>29</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -526,7 +526,8 @@
   </action>
   <action name="action_Open_Previous">
    <property name="icon">
-    <iconset theme="document-open-recent"/>
+    <iconset theme="document-open-recent">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Open Pre&amp;vious</string>
@@ -1055,6 +1056,9 @@
    </property>
   </action>
   <action name="action_Save_Defaults">
+   <property name="icon">
+    <iconset theme="document-save"/>
+   </property>
    <property name="text">
     <string>Sa&amp;ve Defaults...</string>
    </property>
@@ -1247,7 +1251,8 @@
   </action>
   <action name="action_Learn_Keystrokes">
    <property name="icon">
-    <iconset theme="media-record"/>
+    <iconset theme="media-record">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>&amp;Learn Keystrokes</string>
@@ -1261,7 +1266,8 @@
     <bool>false</bool>
    </property>
    <property name="icon">
-    <iconset theme="process-stop"/>
+    <iconset theme="process-stop">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>&amp;Finish Learn</string>
