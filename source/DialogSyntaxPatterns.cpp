@@ -1,5 +1,6 @@
 
 #include "DialogSyntaxPatterns.h"
+#include "DialogDrawingStyles.h"
 #include "DialogLanguageModes.h"
 #include "DocumentWidget.h"
 #include "Help.h"
@@ -252,7 +253,7 @@ void DialogSyntaxPatterns::on_comboLanguageMode_currentIndexChanged(const QStrin
  * @brief DialogSyntaxPatterns::on_buttonLanguageMode_clicked
  */
 void DialogSyntaxPatterns::on_buttonLanguageMode_clicked() {
-	auto dialog = std::make_unique<DialogLanguageModes>(this);
+    auto dialog = std::make_unique<DialogLanguageModes>(this, this);
 	dialog->exec();
 }
 
@@ -262,7 +263,9 @@ void DialogSyntaxPatterns::on_buttonLanguageMode_clicked() {
 void DialogSyntaxPatterns::on_buttonHighlightStyle_clicked() {
 	QString style = ui.comboHighlightStyle->currentText();
 	if(!style.isEmpty()) {
-        window_->EditHighlightStyles(style);
+        auto DrawingStyles = std::make_unique<DialogDrawingStyles>(this, HighlightStyles, this);
+        DrawingStyles->setStyleByName(style);
+        DrawingStyles->exec();
 	}
 }
 

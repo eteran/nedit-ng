@@ -79,7 +79,7 @@ void DialogSmartIndent::on_buttonCommon_clicked() {
  * @brief DialogSmartIndent::on_buttonLanguageMode_clicked
  */
 void DialogSmartIndent::on_buttonLanguageMode_clicked() {
-	auto dialog = std::make_unique<DialogLanguageModes>(this);
+    auto dialog = std::make_unique<DialogLanguageModes>(nullptr, this);
 	dialog->exec();
 }
 

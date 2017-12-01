@@ -6559,7 +6559,7 @@ std::shared_ptr<Regex> DocumentWidget::compileREAndWarnEx(const QString &re) {
 ** memory, and check that a macro is not attempting to close the window from
 ** which it is run.  If this is being called from a macro, and the window
 ** this routine is examining is the window from which the macro was run, this
-** routine will return False, and the caller must NOT CLOSE THE WINDOW.
+** routine will return false, and the caller must NOT CLOSE THE WINDOW.
 ** Instead, empty it and make it Untitled, and let the macro completion
 ** process close the window when the macro is finished executing.
 */

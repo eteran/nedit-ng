@@ -687,7 +687,7 @@ bool replaceUsingREEx(const QString &searchStr, const QString &replaceStr, view:
 ** Contiguous incremental searches share the same history entry (each new
 ** search modifies the current search string, until a non-incremental search
 ** is made.  To mark the end of an incremental search, call saveSearchHistory
-** again with an empty search string and isIncremental==False.
+** again with an empty search string and isIncremental==false.
 */
 void saveSearchHistory(const QString &searchString, QString replaceString, SearchType searchType, bool isIncremental) {
 

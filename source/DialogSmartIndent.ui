@@ -19,8 +19,7 @@
      <item>
       <widget class="QPushButton" name="buttonCommon">
        <property name="text">
-        <string>&amp;Common / Shared
-Initialization...</string>
+        <string>&amp;Common / Shared Initialization...</string>
        </property>
       </widget>
      </item>
@@ -63,8 +62,7 @@ Initialization...</string>
      <item>
       <widget class="QPushButton" name="buttonLanguageMode">
        <property name="text">
-        <string>&amp;Add / Modify
-Language Mode...</string>
+        <string>&amp;Add / Modify Language Mode...</string>
        </property>
       </widget>
      </item>
@@ -197,8 +195,7 @@ Language Mode...</string>
        </property>
        <property name="icon">
         <iconset theme="dialog-ok">
-         <normaloff/>
-        </iconset>
+         <normaloff>.</normaloff>.</iconset>
        </property>
        <property name="default">
         <bool>true</bool>
@@ -212,8 +209,7 @@ Language Mode...</string>
        </property>
        <property name="icon">
         <iconset theme="dialog-ok-apply">
-         <normaloff/>
-        </iconset>
+         <normaloff>.</normaloff>.</iconset>
        </property>
       </widget>
      </item>
@@ -231,8 +227,7 @@ Language Mode...</string>
        </property>
        <property name="icon">
         <iconset theme="edit-delete">
-         <normaloff/>
-        </iconset>
+         <normaloff>.</normaloff>.</iconset>
        </property>
       </widget>
      </item>
@@ -250,8 +245,7 @@ Language Mode...</string>
        </property>
        <property name="icon">
         <iconset theme="dialog-close">
-         <normaloff/>
-        </iconset>
+         <normaloff>.</normaloff>.</iconset>
        </property>
       </widget>
      </item>
@@ -262,8 +256,7 @@ Language Mode...</string>
        </property>
        <property name="icon">
         <iconset theme="help-contents">
-         <normaloff/>
-        </iconset>
+         <normaloff>.</normaloff>.</iconset>
        </property>
       </widget>
      </item>

@@ -1665,7 +1665,7 @@ std::unique_ptr<PatternSet> readDefaultPatternSet(const QString &langModeName) {
 }
 
 /*
-** Return True if patSet exactly matches one of the default pattern sets
+** Return true if patSet exactly matches one of the default pattern sets
 */
 static bool isDefaultPatternSet(const PatternSet *patSet) {
 

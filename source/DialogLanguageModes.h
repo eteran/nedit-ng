@@ -7,6 +7,7 @@
 
 #include <memory>
 
+class DialogSyntaxPatterns;
 class LanguageMode;
 class LanguageModeModel;
 
@@ -20,7 +21,7 @@ private:
     };
 
 public:
-    DialogLanguageModes(QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
+    DialogLanguageModes(DialogSyntaxPatterns *dialogSyntaxPatterns, QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
     ~DialogLanguageModes() noexcept override = default;
 
 Q_SIGNALS:
@@ -48,11 +49,13 @@ private:
     void updateButtonStates();
     void updateButtonStates(const QModelIndex &current);
     int countLanguageModes(const QString &name) const;
+    bool LMHasHighlightPatterns(const QString &name) const;
 
 private:
 	Ui::DialogLanguageModes ui;
     LanguageModeModel *model_;
     QModelIndex deleted_;
+    DialogSyntaxPatterns *dialogSyntaxPatterns_;
 };
 
 #endif

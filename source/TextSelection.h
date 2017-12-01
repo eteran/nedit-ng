@@ -15,8 +15,8 @@ public:
 	explicit operator bool() const { return selected; }
 
 public:
-    bool selected    = false; // True if the selection is active
-    bool rectangular = false; // True if the selection is rectangular
+    bool selected    = false; // true if the selection is active
+    bool rectangular = false; // true if the selection is rectangular
     bool zeroWidth   = false; // Width 0 selections aren't "real" selections, but they can be useful when creating rectangular selections from the keyboard.
     int start        = 0;     // Pos. of start of selection, or if rectangular start of line containing it.
     int end          = 0;     // Pos. of end of selection, or if rectangular end of line containing it.

@@ -1231,7 +1231,7 @@ QString ReadSymbolicFieldEx(Input &input) {
 ** parse an individual quoted string.  Anything between
 ** double quotes is acceptable, quote characters can be escaped by "".
 ** Returns allocated string "string" containing
-** argument minus quotes.  If not successful, returns False with
+** argument minus quotes.  If not successful, returns false with
 ** (statically allocated) message in "errMsg".
 */
 bool ReadQuotedStringEx(Input &in, QString *errMsg, QString *string) {
@@ -1361,7 +1361,7 @@ int SkipOptSeparatorEx(QChar separator, Input &in) {
 /*
 ** Short-hand error processing for language mode parsing errors, frees
 ** lm (if non-null), prints a formatted message explaining where the
-** error is, and returns False;
+** error is, and returns false;
 */
 static bool modeErrorEx(const Input &in, const QString &message) {
 	return ParseErrorEx(

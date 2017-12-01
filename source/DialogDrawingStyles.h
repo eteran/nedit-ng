@@ -8,6 +8,7 @@
 
 #include <memory>
 
+class DialogSyntaxPatterns;
 class HighlightStyleModel;
 
 class DialogDrawingStyles : public Dialog {
@@ -20,7 +21,7 @@ private:
     };
 
 public:
-    DialogDrawingStyles(std::vector<HighlightStyle> &highlightStyles, QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
+    DialogDrawingStyles(DialogSyntaxPatterns *dialogSyntaxPatterns, std::vector<HighlightStyle> &highlightStyles, QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
     ~DialogDrawingStyles() noexcept override = default;
 
 public:
@@ -57,6 +58,7 @@ private:
     HighlightStyleModel *model_;
     std::vector<HighlightStyle> &highlightStyles_;
     QModelIndex deleted_;
+    DialogSyntaxPatterns *dialogSyntaxPatterns_;
 };
 
 #endif

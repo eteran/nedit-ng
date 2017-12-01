@@ -1929,8 +1929,8 @@ void TextArea::wrappedLineCounter(const TextBuffer *buf, int startPos, int maxPo
 
 	/* If the font is fixed, or there's a wrap margin set, it's more efficient
 	   to measure in columns, than to count pixels.  Determine if we can count
-	   in columns (countPixels == False) or must count pixels (countPixels ==
-	   True), and set the wrap target for either pixels or columns */
+       in columns (countPixels == false) or must count pixels (countPixels ==
+       true), and set the wrap target for either pixels or columns */
 	if (fixedFontWidth_ != -1 || P_wrapMargin != 0) {
 		countPixels = false;
         wrapMargin = P_wrapMargin != 0 ? P_wrapMargin : rect_.width() / fixedFontWidth_;
@@ -2278,7 +2278,7 @@ void TextArea::findWrapRangeEx(view::string_view deletedText, int pos, int nInse
 /*
 ** Same as BufEndOfLine, but takes in to account line breaks when wrapping
 ** is turned on.  If the caller knows that startPos is at a line start, it
-** can pass "startPosIsLineStart" as True to make the call more efficient
+** can pass "startPosIsLineStart" as true to make the call more efficient
 ** by avoiding the additional step of scanning back to the last newline.
 **
 ** Note that the definition of the end of a line is less clear when continuous
@@ -2596,7 +2596,7 @@ void TextArea::updateVScrollBarRange() {
 /**
  * Same as BufCountForwardNLines, but takes in to account line breaks when
  * wrapping is turned on. If the caller knows that startPos is at a line start,
- * it can pass "startPosIsLineStart" as True to make the call more efficient by
+ * it can pass "startPosIsLineStart" as true to make the call more efficient by
  * avoiding the additional step of scanning back to the last newline.
  *
  * @brief TextArea::TextDCountForwardNLines
@@ -2707,7 +2707,7 @@ bool TextArea::updateHScrollBarRange() {
     horizontalScrollBar()->setPageStep(std::max(rect_.width() - 100, 10));
 	horizontalScrollBar()->setValue(horizOffset_);
 
-	// Return True if scroll position was changed
+    // Return true if scroll position was changed
 	return origHOffset != horizOffset_;
 }
 
@@ -2722,7 +2722,7 @@ bool TextArea::emptyLinesVisible() const {
 
 /**
  * Find the line number of position "pos" relative to the first line of
- * displayed text. Returns False if the line is not displayed.
+ * displayed text. Returns false if the line is not displayed.
  *
  * @brief TextArea::posToVisibleLineNum
  * @param pos
@@ -3010,7 +3010,7 @@ void TextArea::redrawLineNumbersEx() {
 
 /**
  * Refresh the line number area.  If clearAll is false, writes only over
- * the character cell areas.  Setting clearAll to True will clear out any
+ * the character cell areas.  Setting clearAll to true will clear out any
  * stray marks outside of the character cell area, which might have been
  * left from before a resize or font change.
  *
@@ -3706,7 +3706,7 @@ void TextArea::TextDResize(int width, int height) {
 /*
 ** Same as BufCountLines, but takes in to account wrapping if wrapping is
 ** turned on.  If the caller knows that startPos is at a line start, it
-** can pass "startPosIsLineStart" as True to make the call more efficient
+** can pass "startPosIsLineStart" as true to make the call more efficient
 ** by avoiding the additional step of scanning back to the last newline.
 */
 int TextArea::TextDCountLines(int startPos, int endPos, int startPosIsLineStart) {
@@ -4123,7 +4123,7 @@ void TextArea::TextDSetupBGClasses(const QString &s, std::vector<QColor> *pp_bgC
 /*
 ** Translate a buffer text position to the XY location where the center
 ** of the cursor would be positioned to point to that character.  Returns
-** False if the position is not displayed because it is VERTICALLY out
+** false if the position is not displayed because it is VERTICALLY out
 ** of view.  If the position is horizontally out of view, returns the
 ** x coordinate where the position would be if it were visible.
 */
@@ -4653,7 +4653,7 @@ bool TextArea::checkReadOnly() const {
 ** had been typed.  If autoWrap is on wraps the text to fit within the wrap
 ** margin, auto-indenting where the line was wrapped (but nowhere else).
 ** "allowPendingDelete" controls whether primary selections in the widget are
-** treated as pending delete selections (True), or ignored (False). "event"
+** treated as pending delete selections (true), or ignored (false). "event"
 ** is optional and is just passed on to the cursor movement callbacks.
 */
 void TextArea::TextInsertAtCursorEx(view::string_view chars, bool allowPendingDelete, bool allowWrap) {
@@ -4878,7 +4878,7 @@ void TextArea::TextDInsertEx(view::string_view text) {
 ** Wraps the end of a line beginning at lineStartPos and ending at lineEndPos
 ** in "buf", at the last white-space on the line >= limitPos.  (The implicit
 ** assumption is that just the last character of the line exceeds the wrap
-** margin, and anywhere on the line we can wrap is correct).  Returns False if
+** margin, and anywhere on the line we can wrap is correct).  Returns false if
 ** unable to wrap the line.  "breakAt", returns the character position at
 ** which the line was broken,
 **
@@ -5189,7 +5189,7 @@ int TextArea::endOfWord(int pos) const {
 /*
 ** Search backwards in buffer "buf" for the first character NOT in
 ** "searchChars",  starting with the character BEFORE "startPos", returning the
-** result in "foundPos" returns True if found, false if not. If ignoreSpace is
+** result in "foundPos" returns true if found, false if not. If ignoreSpace is
 ** set, then Space, Tab, and Newlines are ignored in searchChars.
 */
 bool TextArea::spanBackward(TextBuffer *buf, int startPos, const QByteArray &searchChars, bool ignoreSpace, int *foundPos) const {
@@ -5226,7 +5226,7 @@ bool TextArea::spanBackward(TextBuffer *buf, int startPos, const QByteArray &sea
 /*
 ** Search forwards in buffer "buf" for the first character NOT in
 ** "searchChars",  starting with the character "startPos", and returning the
-** result in "foundPos" returns True if found, false if not. If ignoreSpace
+** result in "foundPos" returns true if found, false if not. If ignoreSpace
 ** is set, then Space, Tab, and Newlines are ignored in searchChars.
 */
 bool TextArea::spanForward(TextBuffer *buf, int startPos, const QByteArray &searchChars, bool ignoreSpace, int *foundPos) const {
@@ -6383,7 +6383,7 @@ void TextArea::secondaryOrDragStartAP(QMouseEvent *event, EventFlags flags) {
 }
 
 /*
-** Return True if position (x, y) is inside of the primary selection
+** Return true if position (x, y) is inside of the primary selection
 */
 bool TextArea::TextDInSelection(const QPoint &p) {
 
@@ -7634,11 +7634,11 @@ int TextArea::TextDGetInsertPosition() const {
 
 /*
 ** If the text widget is maintaining a line number count appropriate to "pos"
-** return the line and column numbers of pos, otherwise return False.  If
+** return the line and column numbers of pos, otherwise return false.  If
 ** continuous wrap mode is on, returns the absolute line number (as opposed to
 ** the wrapped line number which is used for scrolling).  THIS ROUTINE ONLY
 ** WORKS FOR DISPLAYED LINES AND, IN CONTINUOUS WRAP MODE, ONLY WHEN THE
-** ABSOLUTE LINE NUMBER IS BEING MAINTAINED.  Otherwise, it returns False.
+** ABSOLUTE LINE NUMBER IS BEING MAINTAINED.  Otherwise, it returns false.
 */
 int TextArea::TextDPosToLineAndCol(int pos, int *lineNum, int *column) {
 

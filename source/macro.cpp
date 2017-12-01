@@ -2059,8 +2059,8 @@ void RegisterMacroSubroutines() {
 
 
 /*
-** Check a macro string containing definitions for errors.  Returns True
-** if macro compiled successfully.  Returns False and puts up
+** Check a macro string containing definitions for errors.  Returns true
+** if macro compiled successfully.  Returns false and puts up
 ** a dialog explaining if macro did not compile successfully.
 */
 bool CheckMacroStringEx(QWidget *dialogParent, const QString &string, const QString &errIn, int *errPos) {
@@ -5465,9 +5465,9 @@ static bool getPatternAtPosMS(DocumentWidget *document, Arguments arguments, Dat
 }
 
 /*
-** Get an integer value from a tagged DataValue structure.  Return True
+** Get an integer value from a tagged DataValue structure.  Return true
 ** if conversion succeeded, and store result in *result, otherwise
-** return False with an error message in *errMsg.
+** return false with an error message in *errMsg.
 */
 static bool readArgument(const DataValue &dv, int *result, const char **errMsg) {
 
@@ -5493,7 +5493,7 @@ static bool readArgument(const DataValue &dv, int *result, const char **errMsg) 
 }
 
 /*
-** Get an string value from a tagged DataValue structure.  Return True
+** Get an string value from a tagged DataValue structure.  Return true
 ** if conversion succeeded, and store result in *result, otherwise
 ** return false with an error message in *errMsg.  If an integer value
 ** is converted, write the string in the space provided by "stringStorage",

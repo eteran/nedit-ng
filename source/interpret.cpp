@@ -1819,7 +1819,7 @@ static int branch() {
 }
 
 /*
-** Conditional branches if stack value is True/False (non-zero/0) to address
+** Conditional branches if stack value is true/false (non-zero/0) to address
 ** of immediate operand (pops stack)
 **
 ** Before: Prog->  [branchDest], next, ..., (branchdest)next

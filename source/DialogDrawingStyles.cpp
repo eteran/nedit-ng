@@ -1,10 +1,10 @@
 
 #include "DialogDrawingStyles.h"
+#include "DialogSyntaxPatterns.h"
 #include "DocumentWidget.h"
 #include "FontType.h"
 #include "highlight.h"
 #include "HighlightStyleModel.h"
-#include "MainWindow.h"
 #include "preferences.h"
 #include "X11Colors.h"
 
@@ -15,7 +15,7 @@
  * @param parent
  * @param f
  */
-DialogDrawingStyles::DialogDrawingStyles(std::vector<HighlightStyle> &highlightStyles, QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f) , highlightStyles_(highlightStyles) {
+DialogDrawingStyles::DialogDrawingStyles(DialogSyntaxPatterns *dialogSyntaxPatterns, std::vector<HighlightStyle> &highlightStyles, QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f) , highlightStyles_(highlightStyles), dialogSyntaxPatterns_(dialogSyntaxPatterns) {
 	ui.setupUi(this);
 
     model_ = new HighlightStyleModel(this);
@@ -434,7 +434,9 @@ bool DialogDrawingStyles::applyDialogChanges() {
     highlightStyles_ = newStyles;
 	
 	// If a syntax highlighting dialog is up, update its menu 
-    MainWindow::updateHighlightStyleMenu();
+    if(dialogSyntaxPatterns_) {
+        dialogSyntaxPatterns_->updateHighlightStyleMenu();
+    }
 
 	// Redisplay highlighted windows which use changed style(s) 
     for(DocumentWidget *document : DocumentWidget::allDocuments()) {

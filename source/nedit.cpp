@@ -76,7 +76,7 @@ void nextArg(const QStringList &args, int *argIndex) {
 }
 
 /*
-** Return True if -do macro is valid, otherwise write an error on stderr
+** Return true if -do macro is valid, otherwise write an error on stderr
 */
 bool checkDoMacroArg(const QString &macro) {
 

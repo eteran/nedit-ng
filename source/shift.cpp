@@ -767,7 +767,7 @@ static std::string fillParagraphsEx(view::string_view text, int rightMargin, int
 ** Trim leading space, and arrange text to fill between leftMargin and
 ** rightMargin (except for the first line which fills from firstLineIndent),
 ** re-creating whitespace to the left of the text using tabs (if allowTabs is
-** True) calculated using tabDist, and spaces.  Returns a newly allocated
+** true) calculated using tabDist, and spaces.  Returns a newly allocated
 ** string as the function result, and the length of the new string in filledLen.
 */
 static std::string fillParagraphEx(view::string_view text, int leftMargin, int firstLineIndent, int rightMargin, int tabDist, int allowTabs) {

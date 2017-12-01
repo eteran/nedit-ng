@@ -1,6 +1,8 @@
 
 #include "DialogLanguageModes.h"
+#include "DialogSyntaxPatterns.h"
 #include "DocumentWidget.h"
+#include "highlight.h"
 #include "LanguageMode.h"
 #include "LanguageModeModel.h"
 #include "MainWindow.h"
@@ -18,7 +20,7 @@
  * @param parent
  * @param f
  */
-DialogLanguageModes::DialogLanguageModes(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f) {
+DialogLanguageModes::DialogLanguageModes(DialogSyntaxPatterns *dialogSyntaxPatterns, QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f), dialogSyntaxPatterns_(dialogSyntaxPatterns) {
 	ui.setupUi(this);
 
     model_ = new LanguageModeModel(this);
@@ -234,7 +236,7 @@ void DialogLanguageModes::on_buttonBox_clicked(QAbstractButton *button) {
 ** Read the fields in the language modes dialog and create a LanguageMode data
 ** structure reflecting the current state of the selected language mode in the dialog.
 ** If any of the information is incorrect or missing, display a warning dialog and
-** return nullptr.  Passing "silent" as True, suppresses the warning dialogs.
+** return nullptr.
 */
 std::unique_ptr<LanguageMode> DialogLanguageModes::readDialogFields(Mode mode) {
 
@@ -471,6 +473,10 @@ bool DialogLanguageModes::updateLMList(Mode mode) {
                 QString newName = parts[1];
 
                 MainWindow::RenameHighlightPattern(oldName, newName);
+                if(dialogSyntaxPatterns_) {
+                    dialogSyntaxPatterns_->RenameHighlightPattern(oldName, newName);
+                }
+
                 RenameSmartIndentMacros(oldName, newName);
 
                 // make a copy of the language mode, and set the new name
@@ -507,7 +513,9 @@ bool DialogLanguageModes::updateLMList(Mode mode) {
         }
 
         // If a syntax highlighting dialog is up, update its menu
-        MainWindow::UpdateLanguageModeMenu();
+        if(dialogSyntaxPatterns_) {
+            dialogSyntaxPatterns_->UpdateLanguageModeMenu();
+        }
 
 		// The same for the smart indent macro dialog
         UpdateLangModeMenuSmartIndent();
@@ -603,6 +611,19 @@ int DialogLanguageModes::countLanguageModes(const QString &name) const {
 }
 
 /**
+ * @brief DialogLanguageModes::LMHasHighlightPatterns
+ * @param name
+ * @return
+ */
+bool DialogLanguageModes::LMHasHighlightPatterns(const QString &name) const {
+    if (FindPatternSet(name) != nullptr) {
+        return true;
+    }
+
+    return dialogSyntaxPatterns_ && dialogSyntaxPatterns_->LMHasHighlightPatterns(name);
+}
+
+/**
  * @brief DialogLanguageModes::on_buttonDelete_clicked
  */
 void DialogLanguageModes::on_buttonDelete_clicked() {
@@ -616,7 +637,7 @@ void DialogLanguageModes::on_buttonDelete_clicked() {
             // Allow duplicate names to be deleted regardless of dependencies
             if(count <= 1) {
                 // don't allow deletion if data will be lost
-                if (MainWindow::LMHasHighlightPatterns(current->name)) {
+                if (LMHasHighlightPatterns(current->name)) {
                     QMessageBox::warning(this,
                                          tr("Patterns exist"),
                                          tr("This language mode has syntax highlighting patterns defined. Please delete the patterns first, in Preferences -> Default Settings -> Syntax Highlighting, before proceeding here."));

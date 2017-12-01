@@ -225,7 +225,7 @@ private:
     TextSelection secondary_;
     TextSelection highlight_;    
     int tabDist_;       // equiv. number of characters in a tab
-    bool useTabs_;      // True if buffer routines are allowed to use tabs for padding in rectangular operations
+    bool useTabs_;      // true if buffer routines are allowed to use tabs for padding in rectangular operations
     int cursorPosHint_; // hint for reasonable cursor position after a buffer modification operation
     std::deque<std::pair<bufPreDeleteCallbackProc, void *>> preDeleteProcs_; // procedure to call before text is deleted from the buffer; at most one is supported.
     std::deque<std::pair<bufModifyCallbackProc, void *>> modifyProcs_;       // procedures to call when buffer is modified to redisplay contents

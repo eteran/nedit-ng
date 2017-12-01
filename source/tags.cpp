@@ -335,7 +335,7 @@ bool AddRelTagsFileEx(const QString &tagSpec, const QString &windowPath, TagSear
 **  tags files, specified by separating them with colons. The .Xdefaults would
 **  look like this:
 **    Nedit.tags: <tagfile1>:<tagfile2>
-**  Returns True if all files were found in the FileList or loaded successfully,
+**  Returns true if all files were found in the FileList or loaded successfully,
 **  FALSE otherwise.
 */
 bool AddTagsFileEx(const QString &tagSpec, TagSearchMode file_type) {
@@ -1224,12 +1224,12 @@ void editTaggedLocationEx(TextArea *area, int i) {
 //      Create a Menu for user to select from the collided tags 
 static void createSelectMenuEx(DocumentWidget *document, TextArea *area, const QStringList &args) {
 
-    auto dialog = new DialogDuplicateTags(document, area);
+    auto dialog = std::make_unique<DialogDuplicateTags>(document, area);
 	dialog->setTag(tagName);
     for(int i = 0; i < args.size(); ++i) {
 		dialog->addListItem(args[i], i);
     }
-    dialog->show();
+    dialog->exec();
 }
 
 /********************************************************************

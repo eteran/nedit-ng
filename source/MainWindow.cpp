@@ -66,8 +66,7 @@ bool currentlyBusy = false;
 qint64 busyStartTime = 0;
 bool modeMessageSet = false;
 
-QPointer<DialogSyntaxPatterns>       SyntaxPatterns;
-QPointer<DocumentWidget>             lastFocusDocument;
+QPointer<DocumentWidget> lastFocusDocument;
 
 auto neditDBBadFilenameChars = QLatin1String("\n");
 
@@ -3780,8 +3779,8 @@ void MainWindow::on_action_Save_Defaults_triggered() {
  * @brief MainWindow::on_action_Default_Language_Modes_triggered
  */
 void MainWindow::on_action_Default_Language_Modes_triggered() {
-    auto dialog = new DialogLanguageModes(this);
-    dialog->show();
+    auto dialog = std::make_unique<DialogLanguageModes>(nullptr, this);
+    dialog->exec();
 }
 
 /**
@@ -3821,8 +3820,7 @@ void MainWindow::on_action_Default_Program_Smart_Indent_triggered() {
         return;
     }
 
-    SmartIndentDlg->show();
-    SmartIndentDlg->raise();
+    SmartIndentDlg->exec();
 }
 
 /**
@@ -3929,8 +3927,7 @@ void MainWindow::on_action_Default_Colors_triggered() {
             document->dialogColors_ = new DialogColors(this);
         }
 
-        document->dialogColors_->show();
-        document->dialogColors_->raise();
+        document->dialogColors_->exec();
     }
 }
 
@@ -5027,7 +5024,7 @@ void MainWindow::on_action_Exit_triggered() {
 
 /*
 ** Check if preferences have changed, and if so, ask the user if he wants
-** to re-save.  Returns False if user requests cancelation of Exit (or whatever
+** to re-save.  Returns false if user requests cancelation of Exit (or whatever
 ** operation triggered this call to be made).
 */
 bool MainWindow::CheckPrefsChangesSavedEx() {
@@ -5261,9 +5258,9 @@ void MainWindow::action_Repeat(DocumentWidget *document) {
         return;
     }
 
-    auto dialog = new DialogRepeat(document, this);
+    auto dialog = std::make_unique<DialogRepeat>(document, this);
     dialog->setCommand(LastCommand);
-    dialog->show();
+    dialog->exec();
 }
 
 /**
@@ -5789,7 +5786,7 @@ MainWindow *MainWindow::fromDocument(const DocumentWidget *document) {
 */
 void MainWindow::EditHighlightStyles(const QString &initialStyle) {
 
-    auto DrawingStyles = std::make_unique<DialogDrawingStyles>(HighlightStyles, this);
+    auto DrawingStyles = std::make_unique<DialogDrawingStyles>(nullptr, HighlightStyles, this);
     DrawingStyles->setStyleByName(initialStyle);
     DrawingStyles->exec();
 }
@@ -5798,12 +5795,6 @@ void MainWindow::EditHighlightStyles(const QString &initialStyle) {
 ** Present a dialog for editing highlight pattern information
 */
 void MainWindow::EditHighlightPatterns() {
-
-    if(SyntaxPatterns) {
-        SyntaxPatterns->show();
-        SyntaxPatterns->raise();
-        return;
-    }
 
     if (LanguageModeName(0).isNull()) {
 
@@ -5815,30 +5806,11 @@ void MainWindow::EditHighlightPatterns() {
     }
 
     if(DocumentWidget *document = currentDocument()) {
-        QString languageName = LanguageModeName(document->languageMode_ == PLAIN_LANGUAGE_MODE ? 0 : document->languageMode_);
-        SyntaxPatterns = new DialogSyntaxPatterns(this);
+        QString languageName = LanguageModeName((document->languageMode_ == PLAIN_LANGUAGE_MODE) ? 0 : document->languageMode_);
+
+        auto SyntaxPatterns = std::make_unique<DialogSyntaxPatterns>(this);
         SyntaxPatterns->setLanguageName(languageName);
-        SyntaxPatterns->show();
-        SyntaxPatterns->raise();
-    }
-}
-
-/*
-** If a syntax highlighting dialog is up, ask to have the option menu for
-** chosing language mode updated (via a call to CreateLanguageModeMenu)
-*/
-void MainWindow::UpdateLanguageModeMenu() {
-    if(SyntaxPatterns) {
-        SyntaxPatterns->UpdateLanguageModeMenu();
-    }
-}
-
-/**
- * @brief MainWindow::updateHighlightStyleMenu
- */
-void MainWindow::updateHighlightStyleMenu() {
-    if(SyntaxPatterns) {
-        SyntaxPatterns->updateHighlightStyleMenu();
+        SyntaxPatterns->exec();
     }
 }
 
@@ -5854,22 +5826,6 @@ void MainWindow::RenameHighlightPattern(const QString &oldName, const QString &n
             patternSet.languageMode = newName;
         }
     }
-
-    if(SyntaxPatterns) {
-        SyntaxPatterns->RenameHighlightPattern(oldName, newName);
-    }
-}
-
-/*
-** Returns True if there are highlight patterns, or potential patterns
-** not yet committed in the syntax highlighting dialog for a language mode,
-*/
-bool MainWindow::LMHasHighlightPatterns(const QString &languageMode) {
-    if (FindPatternSet(languageMode) != nullptr) {
-        return true;
-    }
-
-    return SyntaxPatterns && SyntaxPatterns->LMHasHighlightPatterns(languageMode);
 }
 
 /**
@@ -7092,7 +7048,7 @@ void MainWindow::updateMenuItems() {
 
 /*
 ** Search through the shell menu and execute the first command with menu item
-** name "itemName".  Returns True on successs and False on failure.
+** name "itemName".  Returns true on successs and false on failure.
 */
 bool MainWindow::DoNamedShellMenuCmd(DocumentWidget *document, TextArea *area, const QString &name, bool fromMacro) {
 
