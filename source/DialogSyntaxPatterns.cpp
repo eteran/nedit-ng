@@ -962,14 +962,12 @@ bool DialogSyntaxPatterns::checkCurrentPattern(Mode mode) {
 ** This is somewhat kludgy in that it uses createHighlightData, which
 ** requires a window to find the fonts to use, and just uses a random
 ** window from the window list.  Since the window is used to get the
-** dialog parent as well, in non-popups-under-pointer mode, these dialogs
-** will appear in odd places on the screen.
+** dialog parent as well, these dialogs will appear in odd places on the screen.
 */
 bool DialogSyntaxPatterns::TestHighlightPatterns(const std::unique_ptr<PatternSet> &patSet) {
 
 	/* Compile the patterns (passing a random window as a source for fonts, and
 	   parent for dialogs, since we really don't care what fonts are used) */
-
     if(PatternSet *const patternSet = patSet.get()) {
         for(DocumentWidget *document : DocumentWidget::allDocuments()) {
             if(std::shared_ptr<WindowHighlightData> highlightData = document->createHighlightDataEx(patternSet)) {
