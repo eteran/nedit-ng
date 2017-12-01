@@ -265,6 +265,7 @@ add_executable(nedit-ng
 	userCmds.cpp
 	userCmds.h
 	version.h
+	Verbosity.h
 
 	${BISON_parser_OUTPUT_SOURCE}
 )

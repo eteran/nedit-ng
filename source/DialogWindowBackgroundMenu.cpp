@@ -202,7 +202,7 @@ void DialogWindowBackgroundMenu::currentChanged(const QModelIndex &current, cons
 
     // if we are actually switching items, check that the previous one was valid
     // so we can optionally cancel
-    if(previous.isValid() && previous != deleted_ && !validateFields(Mode::Silent)) {
+    if(previous.isValid() && previous != deleted_ && !validateFields(Verbosity::Silent)) {
         QMessageBox messageBox(this);
         messageBox.setWindowTitle(tr("Discard Entry"));
         messageBox.setIcon(QMessageBox::Warning);
@@ -215,7 +215,7 @@ void DialogWindowBackgroundMenu::currentChanged(const QModelIndex &current, cons
         if (messageBox.clickedButton() == buttonKeep) {
 
             // again to cause messagebox to pop up
-            validateFields(Mode::Verbose);
+            validateFields(Verbosity::Verbose);
 
             // reselect the old item
             canceled = true;
@@ -255,7 +255,7 @@ void DialogWindowBackgroundMenu::currentChanged(const QModelIndex &current, cons
  * @brief DialogWindowBackgroundMenu::on_buttonCheck_clicked
  */
 void DialogWindowBackgroundMenu::on_buttonCheck_clicked() {
-    if (validateFields(Mode::Verbose)) {
+    if (validateFields(Verbosity::Verbose)) {
         QMessageBox::information(this,
                                  tr("Macro"),
                                  tr("Macro compiled without error"));
@@ -287,10 +287,10 @@ void DialogWindowBackgroundMenu::on_buttonOK_clicked() {
  * @param silent
  * @return
  */
-bool DialogWindowBackgroundMenu::validateFields(Mode silent) {
+bool DialogWindowBackgroundMenu::validateFields(Verbosity verbosity) {
 
-    if(auto f = readFields(silent)) {
-        return checkMacroText(f->cmd, silent);
+    if(auto f = readFields(verbosity)) {
+        return checkMacroText(f->cmd, verbosity);
     }
 
     return false;
@@ -302,12 +302,12 @@ bool DialogWindowBackgroundMenu::validateFields(Mode silent) {
 ** pointer to the new MenuItem structure as the function value, or nullptr on
 ** failure.
 */
-std::unique_ptr<MenuItem> DialogWindowBackgroundMenu::readFields(Mode mode) {
+std::unique_ptr<MenuItem> DialogWindowBackgroundMenu::readFields(Verbosity verbosity) {
 
 	QString nameText = ui.editName->text();
 
 	if (nameText.isEmpty()) {
-        if (mode == Mode::Verbose) {
+        if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(this, tr("Menu Entry"), tr("Please specify a name for the menu item"));
 		}
 		return nullptr;
@@ -315,7 +315,7 @@ std::unique_ptr<MenuItem> DialogWindowBackgroundMenu::readFields(Mode mode) {
 
 
 	if (nameText.indexOf(QLatin1Char(':')) != -1) {
-        if (mode == Mode::Verbose) {
+        if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(this, tr("Menu Entry"), tr("Menu item names may not contain colon (:) characters"));
 		}
 		return nullptr;
@@ -323,14 +323,14 @@ std::unique_ptr<MenuItem> DialogWindowBackgroundMenu::readFields(Mode mode) {
 
 	QString cmdText = ui.editMacro->toPlainText();
 	if (cmdText.isEmpty()) {
-        if (mode == Mode::Verbose) {
+        if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(this, tr("Command to Execute"), tr("Please specify macro command(s) to execute"));
 		}
 		return nullptr;
 	}
 
 	cmdText = ensureNewline(cmdText);
-    if (!checkMacroText(cmdText, mode)) {
+    if (!checkMacroText(cmdText, verbosity)) {
 		return nullptr;
 	}
 
@@ -356,14 +356,14 @@ std::unique_ptr<MenuItem> DialogWindowBackgroundMenu::readFields(Mode mode) {
  * @param silent
  * @return
  */
-bool DialogWindowBackgroundMenu::checkMacroText(const QString &macro, Mode mode) {
+bool DialogWindowBackgroundMenu::checkMacroText(const QString &macro, Verbosity verbosity) {
 
 	QString errMsg;
 	int stoppedAt;
 
     Program *prog = ParseMacroEx(macro, &errMsg, &stoppedAt);
 	if(!prog) {
-        if(mode == Mode::Verbose) {
+        if(verbosity == Verbosity::Verbose) {
 			ParseErrorEx(this, macro, stoppedAt, tr("macro"), errMsg);
 		}
 		QTextCursor cursor = ui.editMacro->textCursor();
@@ -375,7 +375,7 @@ bool DialogWindowBackgroundMenu::checkMacroText(const QString &macro, Mode mode)
 	FreeProgram(prog);
 
 	if(stoppedAt != macro.size()) {
-        if(mode == Mode::Verbose) {
+        if(verbosity == Verbosity::Verbose) {
 			ParseErrorEx(this, macro, stoppedAt, tr("macro"), tr("syntax error"));
 		}
 		QTextCursor cursor = ui.editMacro->textCursor();
@@ -414,7 +414,7 @@ QString DialogWindowBackgroundMenu::ensureNewline(const QString &string) {
 bool DialogWindowBackgroundMenu::applyDialogChanges() {
 
     if(model_->rowCount() != 0) {
-        auto dialogFields = readFields(Mode::Verbose);
+        auto dialogFields = readFields(Verbosity::Verbose);
         if(!dialogFields) {
             return false;
         }
@@ -467,7 +467,7 @@ void DialogWindowBackgroundMenu::setPasteReplayEnabled(bool enabled) {
  */
 bool DialogWindowBackgroundMenu::updateCurrentItem(const QModelIndex &index) {
     // Get the current contents of the "patterns" dialog fields
-    auto dialogFields = readFields(Mode::Verbose);
+    auto dialogFields = readFields(Verbosity::Verbose);
     if(!dialogFields) {
         return false;
     }

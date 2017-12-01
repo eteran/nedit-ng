@@ -183,7 +183,7 @@ void DialogShellMenu::currentChanged(const QModelIndex &current, const QModelInd
 
     // if we are actually switching items, check that the previous one was valid
     // so we can optionally cancel
-    if(previous.isValid() && previous != deleted_ && !validateFields(Mode::Silent)) {
+    if(previous.isValid() && previous != deleted_ && !validateFields(Verbosity::Silent)) {
         QMessageBox messageBox(this);
         messageBox.setWindowTitle(tr("Discard Entry"));
         messageBox.setIcon(QMessageBox::Warning);
@@ -196,7 +196,7 @@ void DialogShellMenu::currentChanged(const QModelIndex &current, const QModelInd
         if (messageBox.clickedButton() == buttonKeep) {
 
             // again to cause messagebox to pop up
-            validateFields(Mode::Verbose);
+            validateFields(Verbosity::Verbose);
 
             // reselect the old item
             canceled = true;
@@ -298,18 +298,18 @@ void DialogShellMenu::on_buttonBox_accepted() {
 ** pointer to the new MenuItem structure as the function value, or nullptr on
 ** failure.
 */
-std::unique_ptr<MenuItem> DialogShellMenu::readFields(Mode mode) {
+std::unique_ptr<MenuItem> DialogShellMenu::readFields(Verbosity verbosity) {
 
 	QString nameText = ui.editName->text();
 	if (nameText.isEmpty()) {
-        if (mode == Mode::Verbose) {
+        if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(this, tr("Menu Entry"), tr("Please specify a name for the menu item"));
 		}
 		return nullptr;
 	}
 
 	if (nameText.indexOf(QLatin1Char(':')) != -1) {
-        if (mode == Mode::Verbose) {
+        if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(this, tr("Menu Entry"), tr("Menu item names may not contain colon (:) characters"));
 		}
 		return nullptr;
@@ -317,7 +317,7 @@ std::unique_ptr<MenuItem> DialogShellMenu::readFields(Mode mode) {
 
 	QString cmdText = ui.editCommand->toPlainText();
 	if (cmdText.isEmpty()) {
-        if (mode == Mode::Verbose) {
+        if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(this, tr("Command to Execute"), tr("Please specify macro command(s) to execute"));
 		}
 		return nullptr;
@@ -384,7 +384,7 @@ QString DialogShellMenu::ensureNewline(const QString &string) {
 bool DialogShellMenu::applyDialogChanges() {
 
     if(model_->rowCount() != 0) {
-        auto dialogFields = readFields(Mode::Verbose);
+        auto dialogFields = readFields(Verbosity::Verbose);
         if(!dialogFields) {
             return false;
         }
@@ -437,7 +437,7 @@ void DialogShellMenu::on_radioToSameDocument_toggled(bool checked) {
  */
 bool DialogShellMenu::updateCurrentItem(const QModelIndex &index) {
     // Get the current contents of the "patterns" dialog fields
-    auto dialogFields = readFields(Mode::Verbose);
+    auto dialogFields = readFields(Verbosity::Verbose);
     if(!dialogFields) {
         return false;
     }
@@ -470,8 +470,8 @@ bool DialogShellMenu::updateCurrentItem() {
  * @param mode
  * @return
  */
-bool DialogShellMenu::validateFields(Mode mode) {
-    if(auto ptr = readFields(mode)) {
+bool DialogShellMenu::validateFields(Verbosity verbosity) {
+    if(auto ptr = readFields(verbosity)) {
 		return true;
 	}
 	

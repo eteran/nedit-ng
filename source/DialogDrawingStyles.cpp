@@ -205,7 +205,7 @@ void DialogDrawingStyles::currentChanged(const QModelIndex &current, const QMode
 
     // if we are actually switching items, check that the previous one was valid
     // so we can optionally cancel
-    if(previous.isValid() && previous != deleted_ && !validateFields(Mode::Silent)) {
+    if(previous.isValid() && previous != deleted_ && !validateFields(Verbosity::Silent)) {
         QMessageBox messageBox(this);
         messageBox.setWindowTitle(tr("Discard Entry"));
         messageBox.setIcon(QMessageBox::Warning);
@@ -218,7 +218,7 @@ void DialogDrawingStyles::currentChanged(const QModelIndex &current, const QMode
         if (messageBox.clickedButton() == buttonKeep) {
 
             // again to cause messagebox to pop up
-            validateFields(Mode::Verbose);
+            validateFields(Verbosity::Verbose);
 
             // reselect the old item
             canceled = true;
@@ -300,11 +300,11 @@ void DialogDrawingStyles::on_buttonBox_clicked(QAbstractButton *button) {
  * @param mode
  * @return
  */
-bool DialogDrawingStyles::validateFields(Mode mode) {
-    if(auto ptr = readFields(mode)) {
-		return true;
-	}
-	return false;
+bool DialogDrawingStyles::validateFields(Verbosity verbosity) {
+    if(auto ptr = readFields(verbosity)) {
+        return true;
+    }
+    return false;
 }
 
 /**
@@ -312,7 +312,7 @@ bool DialogDrawingStyles::validateFields(Mode mode) {
  * @param mode
  * @return
  */
-std::unique_ptr<HighlightStyle> DialogDrawingStyles::readFields(Mode mode) {
+std::unique_ptr<HighlightStyle> DialogDrawingStyles::readFields(Verbosity verbosity) {
 
     auto hs = std::make_unique<HighlightStyle>();
 
@@ -323,7 +323,7 @@ std::unique_ptr<HighlightStyle> DialogDrawingStyles::readFields(Mode mode) {
 
 	hs->name = name;
     if (hs->name.isEmpty()) {
-        if (mode == Mode::Verbose) {
+        if (verbosity == Verbosity::Verbose) {
             QMessageBox::warning(this,
                                  tr("Highlight Style"),
                                  tr("Please specify a name for the highlight style"));
@@ -340,7 +340,7 @@ std::unique_ptr<HighlightStyle> DialogDrawingStyles::readFields(Mode mode) {
 
 	hs->color = color;
     if (hs->color.isEmpty()) {
-        if (mode == Mode::Verbose) {
+        if (verbosity == Verbosity::Verbose) {
             QMessageBox::warning(this, tr("Style Color"), tr("Please specify a color for the highlight style"));
         }
         return nullptr;
@@ -349,7 +349,7 @@ std::unique_ptr<HighlightStyle> DialogDrawingStyles::readFields(Mode mode) {
     // Verify that the color is a valid X color spec
     QColor rgb = X11Colors::fromString(hs->color);
     if(!rgb.isValid()) {
-        if (mode == Mode::Verbose) {
+        if (verbosity == Verbosity::Verbose) {
             QMessageBox::warning(this, tr("Invalid Color"), tr("Invalid X color specification: %1").arg(hs->color));
         }
         return nullptr;
@@ -367,7 +367,7 @@ std::unique_ptr<HighlightStyle> DialogDrawingStyles::readFields(Mode mode) {
     if (!hs->bgColor.isEmpty()) {
         rgb = X11Colors::fromString(hs->bgColor);
         if (!rgb.isValid()) {
-            if (mode == Mode::Verbose) {
+            if (verbosity == Verbosity::Verbose) {
                 QMessageBox::warning(this, tr("Invalid Color"), tr("Invalid X background color specification: %1").arg(hs->bgColor));
             }
 
@@ -396,7 +396,7 @@ std::unique_ptr<HighlightStyle> DialogDrawingStyles::readFields(Mode mode) {
 bool DialogDrawingStyles::applyDialogChanges() {
 
     if(model_->rowCount() != 0) {
-        auto dialogFields = readFields(Mode::Verbose);
+        auto dialogFields = readFields(Verbosity::Verbose);
         if(!dialogFields) {
             return false;
         }
@@ -455,7 +455,7 @@ bool DialogDrawingStyles::applyDialogChanges() {
  */
 bool DialogDrawingStyles::updateCurrentItem(const QModelIndex &index) {
 	// Get the current contents of the "patterns" dialog fields 
-    auto dialogFields = readFields(Mode::Verbose);
+    auto dialogFields = readFields(Verbosity::Verbose);
     if(!dialogFields) {
 		return false;
 	}

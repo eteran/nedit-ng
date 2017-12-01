@@ -597,7 +597,7 @@ Symbol *InstallIteratorSymbol() {
 
     auto symbolName = QString(QLatin1String("aryiter %1")).arg(interatorNameIndex++);
 
-    // TODO(eteran): bug? this looks like the wrong tag...
+    // NOTE(eteran): the "incorrect" tag appears to be deliberate
 	DataValue value;
     value.tag          = INT_TAG;
 	value.val.arrayPtr = nullptr;
@@ -2299,7 +2299,7 @@ static int beginArrayIter() {
 		return execError("can't iterate non-array");
 	}
 
-    // TODO(eteran): bug? this looks like the wrong tag...
+    // NOTE(eteran): the "incorrect" tag appears to be deliberate
     iteratorValPtr->tag          = INT_TAG;
 	iteratorValPtr->val.arrayPtr = arrayIterateFirst(&arrayVal);
 	return STAT_OK;

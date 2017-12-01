@@ -3,6 +3,7 @@
 #define DIALOG_SYNTAX_PATTERNS_H_
 
 #include "Dialog.h"
+#include "Verbosity.h"
 #include "ui_DialogSyntaxPatterns.h"
 
 #include <memory>
@@ -14,12 +15,6 @@ class PatternSet;
 
 class DialogSyntaxPatterns : public Dialog {
 	Q_OBJECT
-
-private:
-    enum class Mode {
-        Silent,
-        Verbose
-    };
 
 public:
     DialogSyntaxPatterns(MainWindow *window, Qt::WindowFlags f = Qt::WindowFlags());
@@ -57,13 +52,13 @@ private Q_SLOTS:
     void on_comboLanguageMode_currentIndexChanged(const QString &text);
 
 private:
-    bool validateFields(Mode mode);
+    bool validateFields(Verbosity verbosity);
     bool checkHighlightDialogData();
     bool TestHighlightPatterns(const std::unique_ptr<PatternSet> &patSet);
     bool updateCurrentItem();
     bool updateCurrentItem(const QModelIndex &index);
     bool updatePatternSet();
-    std::unique_ptr<HighlightPattern> readFields(Mode mode);
+    std::unique_ptr<HighlightPattern> readFields(Verbosity verbosity);
     std::unique_ptr<PatternSet> getDialogPatternSet();
     void setStyleMenu(const QString &name);
     void updateLabels();

@@ -3,22 +3,17 @@
 #define DIALOG_DRAWING_STYLES_H_
 
 #include "Dialog.h"
-#include "HighlightStyle.h"
+#include "Verbosity.h"
 #include "ui_DialogDrawingStyles.h"
 
 #include <memory>
 
 class DialogSyntaxPatterns;
 class HighlightStyleModel;
+class HighlightStyle;
 
 class DialogDrawingStyles : public Dialog {
 	Q_OBJECT
-
-private:
-    enum class Mode {
-        Silent,
-        Verbose
-    };
 
 public:
     DialogDrawingStyles(DialogSyntaxPatterns *dialogSyntaxPatterns, std::vector<HighlightStyle> &highlightStyles, QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
@@ -47,8 +42,8 @@ private:
     void updateButtonStates(const QModelIndex &current);
     void updateButtonStates();
     bool applyDialogChanges();
-    bool validateFields(Mode mode);
-    std::unique_ptr<HighlightStyle> readFields(Mode mode);
+    bool validateFields(Verbosity verbosity);
+    std::unique_ptr<HighlightStyle> readFields(Verbosity verbosity);
 	bool updateCurrentItem();
     bool updateCurrentItem(const QModelIndex &index);
     int countPlainEntries() const;

@@ -3,6 +3,7 @@
 #define DIALOG_MACROS_H_
 
 #include "Dialog.h"
+#include "Verbosity.h"
 #include "ui_DialogMacros.h"
 
 #include <memory>
@@ -12,11 +13,6 @@ class MenuItemModel;
 
 class DialogMacros : public Dialog {
 	Q_OBJECT
-private:
-    enum class Mode {
-        Silent,
-        Verbose
-    };
 
 public:
     DialogMacros(QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
@@ -42,12 +38,12 @@ private Q_SLOTS:
 	
 private:
     bool applyDialogChanges();
-    bool validateFields(Mode mode);
-    bool checkMacroText(const QString &macro, Mode mode);
+    bool validateFields(Verbosity verbosity);
+    bool checkMacroText(const QString &macro, Verbosity verbosity);
     bool updateCurrentItem();
     bool updateCurrentItem(const QModelIndex &index);
     QString ensureNewline(const QString &string);
-    std::unique_ptr<MenuItem> readFields(Mode mode);
+    std::unique_ptr<MenuItem> readFields(Verbosity verbosity);
     void updateButtonStates();
     void updateButtonStates(const QModelIndex &current);
 

@@ -28,7 +28,6 @@
 #define TAGS_H_
 
 #include "CallTip.h"
-#include <ctime>
 #include <deque>
 
 #include <QString>
@@ -47,11 +46,11 @@ enum class TagSearchMode {
 };
 
 struct TagFile {
-    QString     filename;
-    QDateTime   date;
-	bool        loaded;
-    int16_t     index;
-    int16_t     refcount; // Only tips files are refcounted, not tags files
+    QString   filename;
+    QDateTime date;
+    bool      loaded;
+    int       index;
+    int       refcount; // Only tips files are refcounted, not tags files
 };
 
 extern std::deque<TagFile> TagsFileList; // list of loaded tags files

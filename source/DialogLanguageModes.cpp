@@ -107,8 +107,8 @@ void DialogLanguageModes::currentChanged(const QModelIndex &current, const QMode
     // NOTE(eteran): in the original nedit 5.6, this code is broken!
     //               it results in a crash when leaving invalid entries :-(
     //               we can do better of course
-#if 0
-    if(previous.isValid() && previous != deleted_ && !validateFields(Mode::Silent)) {
+#if 1
+    if(previous.isValid() && previous != deleted_ && !validateFields(Verbosity::Silent)) {
         QMessageBox messageBox(this);
         messageBox.setWindowTitle(tr("Discard Entry"));
         messageBox.setIcon(QMessageBox::Warning);
@@ -121,7 +121,7 @@ void DialogLanguageModes::currentChanged(const QModelIndex &current, const QMode
         if (messageBox.clickedButton() == buttonKeep) {
 
             // again to cause messagebox to pop up
-            validateFields(Mode::Verbose);
+            validateFields(Verbosity::Verbose);
 
             // reselect the old item
             canceled = true;
@@ -215,7 +215,7 @@ void DialogLanguageModes::currentChanged(const QModelIndex &current, const QMode
  * @brief DialogLanguageModes::on_buttonBox_accepted
  */
 void DialogLanguageModes::on_buttonBox_accepted() {
-    if (!updateLMList(Mode::Verbose)) {
+    if (!updateLMList(Verbosity::Verbose)) {
 		return;
 	}
 
@@ -228,7 +228,7 @@ void DialogLanguageModes::on_buttonBox_accepted() {
  */
 void DialogLanguageModes::on_buttonBox_clicked(QAbstractButton *button) {
 	if(ui.buttonBox->standardButton(button) == QDialogButtonBox::Apply) {
-        updateLMList(Mode::Verbose);
+        updateLMList(Verbosity::Verbose);
 	}
 }
 
@@ -238,7 +238,7 @@ void DialogLanguageModes::on_buttonBox_clicked(QAbstractButton *button) {
 ** If any of the information is incorrect or missing, display a warning dialog and
 ** return nullptr.
 */
-std::unique_ptr<LanguageMode> DialogLanguageModes::readFields(Mode mode) {
+std::unique_ptr<LanguageMode> DialogLanguageModes::readFields(Verbosity verbosity) {
 
 	/* Allocate a language mode structure to return, set unread fields to
 	   empty so everything can be freed on errors by freeLanguageModeRec */
@@ -247,7 +247,7 @@ std::unique_ptr<LanguageMode> DialogLanguageModes::readFields(Mode mode) {
 	// read the name field
 	QString name = ui.editName->text().simplified();
 	if (name.isEmpty()) {
-        if (mode == Mode::Verbose) {
+        if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(this, tr("Language Mode Name"), tr("Please specify a name for the language mode"));
 		}
 		return nullptr;
@@ -266,7 +266,7 @@ std::unique_ptr<LanguageMode> DialogLanguageModes::readFields(Mode mode) {
 		try {
             auto compiledRE = make_regex(recognitionExpr, REDFLT_STANDARD);
         } catch(const RegexError &e) {
-            if (mode == Mode::Verbose) {
+            if (verbosity == Verbosity::Verbose) {
                 QMessageBox::warning(this, tr("Regex"), tr("Recognition expression:\n%1").arg(QString::fromLatin1(e.what())));
 			}
 			return nullptr;
@@ -279,7 +279,7 @@ std::unique_ptr<LanguageMode> DialogLanguageModes::readFields(Mode mode) {
 	if(!tipsFile.isEmpty()) {
 		// Ensure that AddTagsFile will work
         if (!AddTagsFileEx(tipsFile, TagSearchMode::TIP)) {
-            if (mode == Mode::Verbose) {
+            if (verbosity == Verbosity::Verbose) {
 				QMessageBox::warning(this, tr("Error reading Calltips"), tr("Can't read default calltips file(s):\n  \"%1\"\n").arg(tipsFile));
 			}
 			return nullptr;
@@ -305,7 +305,7 @@ std::unique_ptr<LanguageMode> DialogLanguageModes::readFields(Mode mode) {
 
         // NOTE(eteran): redundant, validator prevents bad value
 		if (lm->tabDist <= 0 || lm->tabDist > 100) {
-            if (mode == Mode::Verbose) {
+            if (verbosity == Verbosity::Verbose) {
 				QMessageBox::warning(this, tr("Invalid Tab Spacing"), tr("Invalid tab spacing: %1").arg(lm->tabDist));
 			}
 			return nullptr;
@@ -328,7 +328,7 @@ std::unique_ptr<LanguageMode> DialogLanguageModes::readFields(Mode mode) {
 
         // NOTE(eteran): redundant, validator prevents bad value
 		if (lm->emTabDist < 0 || lm->emTabDist > 100) {
-            if (mode == Mode::Verbose) {
+            if (verbosity == Verbosity::Verbose) {
 				QMessageBox::warning(this, tr("Invalid Tab Spacing"), tr("Invalid emulated tab spacing: %1").arg(lm->emTabDist));
 			}
 			return nullptr;
@@ -371,7 +371,7 @@ std::unique_ptr<LanguageMode> DialogLanguageModes::readFields(Mode mode) {
  * @param mode
  * @return
  */
-bool DialogLanguageModes::updateLanguageList(Mode mode) {
+bool DialogLanguageModes::updateLanguageList(Verbosity verbosity) {
 
     QModelIndex index = ui.listItems->currentIndex();
     if(!index.isValid()) {
@@ -380,7 +380,7 @@ bool DialogLanguageModes::updateLanguageList(Mode mode) {
 
     if(const LanguageMode *oldLM = model_->itemFromIndex(index)) {
 
-        if(auto newLM = readFields(mode)) {
+        if(auto newLM = readFields(verbosity)) {
 
             /* If there was a name change of a non-duplicate language mode, modify the
                name to the weird format of: "old name:new name".  This signals that a
@@ -411,10 +411,10 @@ bool DialogLanguageModes::updateLanguageList(Mode mode) {
  * @param mode
  * @return
  */
-bool DialogLanguageModes::updateLMList(Mode mode) {
+bool DialogLanguageModes::updateLMList(Verbosity verbosity) {
 
 	// Get the current contents of the dialog fields
-    if(!updateLanguageList(mode)) {
+    if(!updateLanguageList(verbosity)) {
 		return false;
 	}
 
@@ -670,7 +670,7 @@ void DialogLanguageModes::on_buttonDelete_clicked() {
  */
 bool DialogLanguageModes::updateCurrentItem(const QModelIndex &index) {
     // Get the current contents of the "patterns" dialog fields
-    auto dialogFields = readFields(Mode::Verbose);
+    auto dialogFields = readFields(Verbosity::Verbose);
     if(!dialogFields) {
         return false;
     }
@@ -695,4 +695,17 @@ bool DialogLanguageModes::updateCurrentItem() {
     }
 
     return true;
+}
+
+/**
+ * @brief DialogLanguageModes::validateFields
+ * @param mode
+ * @return
+ */
+bool DialogLanguageModes::validateFields(Verbosity verbosity) {
+    if(auto ptr = readFields(verbosity)) {
+        return true;
+    }
+
+    return false;
 }

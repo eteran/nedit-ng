@@ -3,6 +3,7 @@
 #define DIALOG_LANGUAGE_MODES_H_
 
 #include "Dialog.h"
+#include "Verbosity.h"
 #include "ui_DialogLanguageModes.h"
 
 #include <memory>
@@ -14,11 +15,6 @@ class LanguageModeModel;
 class DialogLanguageModes : public Dialog {
 public:
 	Q_OBJECT
-private:
-    enum class Mode {
-        Silent,
-        Verbose
-    };
 
 public:
     DialogLanguageModes(DialogSyntaxPatterns *dialogSyntaxPatterns, QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
@@ -41,11 +37,12 @@ private Q_SLOTS:
 	void on_buttonNew_clicked();
 	
 private:
+    bool validateFields(Verbosity verbosity);
     bool updateCurrentItem();
     bool updateCurrentItem(const QModelIndex &index);
-    bool updateLanguageList(Mode mode);
-    bool updateLMList(Mode mode);
-    std::unique_ptr<LanguageMode> readFields(Mode mode);
+    bool updateLanguageList(Verbosity verbosity);
+    bool updateLMList(Verbosity verbosity);
+    std::unique_ptr<LanguageMode> readFields(Verbosity verbosity);
     void updateButtonStates();
     void updateButtonStates(const QModelIndex &current);
     int countLanguageModes(const QString &name) const;

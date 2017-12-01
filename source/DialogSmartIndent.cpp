@@ -264,7 +264,12 @@ bool DialogSmartIndent::updateSmartIndentData() {
  */
 bool DialogSmartIndent::checkSmartIndentDialogData() {
 
-    // BUG(eteran): make it not check if all fields are empty...
+    // NOTE(eteran): this throws up an error message to the user even if all
+    // fields are blank (like nedit does). This is not very user friendly
+    // since many language modes by default have no smart indent macros.
+    // This means, that by default, simply opening up this dialog and clicking
+    // "OK" will result in an error :-/. We should likely be tolerant when
+    // the dialog is entirely blank.
 
 	// Check the initialization macro 
 	QString initText = ui.editInit->toPlainText();

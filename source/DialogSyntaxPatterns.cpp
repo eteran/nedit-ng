@@ -276,7 +276,7 @@ void DialogSyntaxPatterns::on_buttonHighlightStyle_clicked() {
  */
 bool DialogSyntaxPatterns::updateCurrentItem(const QModelIndex &index) {
     // Get the current contents of the "patterns" dialog fields
-    auto dialogFields = readFields(Mode::Verbose);
+    auto dialogFields = readFields(Verbosity::Verbose);
     if(!dialogFields) {
         return false;
     }
@@ -570,7 +570,7 @@ void DialogSyntaxPatterns::currentChanged(const QModelIndex &current, const QMod
 
     // if we are actually switching items, check that the previous one was valid
     // so we can optionally cancel
-    if(previous.isValid() && previous != deleted_ && !validateFields(Mode::Silent)) {
+    if(previous.isValid() && previous != deleted_ && !validateFields(Verbosity::Silent)) {
         QMessageBox messageBox(this);
         messageBox.setWindowTitle(tr("Discard Entry"));
         messageBox.setIcon(QMessageBox::Warning);
@@ -583,7 +583,7 @@ void DialogSyntaxPatterns::currentChanged(const QModelIndex &current, const QMod
         if (messageBox.clickedButton() == buttonKeep) {
 
             // again to cause messagebox to pop up
-            validateFields(Mode::Verbose);
+            validateFields(Verbosity::Verbose);
 
             // reselect the old item
             canceled = true;
@@ -836,7 +836,7 @@ std::unique_ptr<PatternSet> DialogSyntaxPatterns::getDialogPatternSet() {
 ** telling the user what's wrong (Passing "silent" as true, suppresses these
 ** dialogs).  Returns nullptr on error.
 */
-std::unique_ptr<HighlightPattern> DialogSyntaxPatterns::readFields(Mode mode) {
+std::unique_ptr<HighlightPattern> DialogSyntaxPatterns::readFields(Verbosity verbosity) {
 
     auto pat = std::make_unique<HighlightPattern>();
 
@@ -856,7 +856,7 @@ std::unique_ptr<HighlightPattern> DialogSyntaxPatterns::readFields(Mode mode) {
 
 	pat->name = name;
 	if (pat->name.isEmpty()) {
-        if (mode == Mode::Verbose) {
+        if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(this, tr("Pattern Name"), tr("Please specify a name for the pattern"));
 		}
 		return nullptr;
@@ -865,7 +865,7 @@ std::unique_ptr<HighlightPattern> DialogSyntaxPatterns::readFields(Mode mode) {
 	// read the startRE field
 	pat->startRE = ui.editRegex->toPlainText();
 	if (pat->startRE.isEmpty()) {
-        if (mode == Mode::Verbose) {
+        if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(this, tr("Matching Regex"), tr("Please specify a regular expression to match"));
 		}
 		return nullptr;
@@ -892,7 +892,7 @@ std::unique_ptr<HighlightPattern> DialogSyntaxPatterns::readFields(Mode mode) {
         static const QRegularExpression re(QLatin1String("[^&\\\\123456789 \\t]"));
         if (pat->startRE.contains(re) || (pat->startRE[0] != QLatin1Char('\\') && pat->startRE[0] != QLatin1Char('&')) || pat->startRE.contains(QLatin1String("\\\\"))) {
 
-            if (mode == Mode::Verbose) {
+            if (verbosity == Verbosity::Verbose) {
                 QMessageBox::warning(
                             this,
                             tr("Pattern Error"),
@@ -906,7 +906,7 @@ std::unique_ptr<HighlightPattern> DialogSyntaxPatterns::readFields(Mode mode) {
 	if (ui.radioSubPattern->isChecked() || colorOnly) {
 		QString parent = ui.editParentPattern->text().simplified();
 		if (parent.isEmpty()) {
-            if (mode == Mode::Verbose) {
+            if (verbosity == Verbosity::Verbose) {
 				QMessageBox::warning(this, tr("Specify Parent Pattern"), tr("Please specify a parent pattern"));
 			}
 			return nullptr;
@@ -924,7 +924,7 @@ std::unique_ptr<HighlightPattern> DialogSyntaxPatterns::readFields(Mode mode) {
 	if (colorOnly || ui.radioRangeRegex->isChecked()) {
 		pat->endRE = ui.editRegexEnd->text();
 		if (!colorOnly && pat->endRE.isEmpty()) {
-            if (mode == Mode::Verbose) {
+            if (verbosity == Verbosity::Verbose) {
 				QMessageBox::warning(this, tr("Specify Regex"), tr("Please specify an ending regular expression"));
 			}
 			return nullptr;
@@ -947,8 +947,8 @@ std::unique_ptr<HighlightPattern> DialogSyntaxPatterns::readFields(Mode mode) {
  * @param mode
  * @return
  */
-bool DialogSyntaxPatterns::validateFields(Mode mode) {
-    if(auto ptr = readFields(mode)) {
+bool DialogSyntaxPatterns::validateFields(Verbosity verbosity) {
+    if(auto ptr = readFields(verbosity)) {
 		return true;
 	}
 

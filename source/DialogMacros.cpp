@@ -200,7 +200,7 @@ void DialogMacros::currentChanged(const QModelIndex &current, const QModelIndex 
 
     // if we are actually switching items, check that the previous one was valid
     // so we can optionally cancel
-    if(previous.isValid() && previous != deleted_ && !validateFields(Mode::Silent)) {
+    if(previous.isValid() && previous != deleted_ && !validateFields(Verbosity::Silent)) {
         QMessageBox messageBox(this);
         messageBox.setWindowTitle(tr("Discard Entry"));
         messageBox.setIcon(QMessageBox::Warning);
@@ -213,7 +213,7 @@ void DialogMacros::currentChanged(const QModelIndex &current, const QModelIndex 
         if (messageBox.clickedButton() == buttonKeep) {
 
             // again to cause messagebox to pop up
-            validateFields(Mode::Verbose);
+            validateFields(Verbosity::Verbose);
 
             // reselect the old item
             canceled = true;
@@ -253,7 +253,7 @@ void DialogMacros::currentChanged(const QModelIndex &current, const QModelIndex 
  * @brief DialogMacros::on_buttonCheck_clicked
  */
 void DialogMacros::on_buttonCheck_clicked() {
-    if (validateFields(Mode::Verbose)) {
+    if (validateFields(Verbosity::Verbose)) {
         QMessageBox::information(this,
                                  tr("Macro"),
                                  tr("Macro compiled without error"));
@@ -285,14 +285,14 @@ void DialogMacros::on_buttonOK_clicked() {
  * @param mode
  * @return
  */
-bool DialogMacros::validateFields(Mode mode) {
+bool DialogMacros::validateFields(Verbosity verbosity) {
 
-    auto f = readFields(mode);
+    auto f = readFields(verbosity);
 	if(!f) {
 		return false;
 	}
 
-    if (!checkMacroText(f->cmd, mode)) {
+    if (!checkMacroText(f->cmd, verbosity)) {
 		return false;
 	}
 
@@ -306,12 +306,12 @@ bool DialogMacros::validateFields(Mode mode) {
 ** pointer to the new MenuItem structure as the function value, or nullptr on
 ** failure.
 */
-std::unique_ptr<MenuItem> DialogMacros::readFields(Mode mode) {
+std::unique_ptr<MenuItem> DialogMacros::readFields(Verbosity verbosity) {
 
 	QString nameText = ui.editName->text();
 
 	if (nameText.isEmpty()) {
-        if (mode == Mode::Verbose) {
+        if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(this, tr("Menu Entry"), tr("Please specify a name for the menu item"));
 		}
 		return nullptr;
@@ -319,7 +319,7 @@ std::unique_ptr<MenuItem> DialogMacros::readFields(Mode mode) {
 
 
 	if (nameText.indexOf(QLatin1Char(':')) != -1) {
-        if (mode == Mode::Verbose) {
+        if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(this, tr("Menu Entry"), tr("Menu item names may not contain colon (:) characters"));
 		}
 		return nullptr;
@@ -327,14 +327,14 @@ std::unique_ptr<MenuItem> DialogMacros::readFields(Mode mode) {
 
 	QString cmdText = ui.editMacro->toPlainText();
 	if (cmdText.isEmpty()) {
-        if (mode == Mode::Verbose) {
+        if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(this, tr("Command to Execute"), tr("Please specify macro command(s) to execute"));
 		}
 		return nullptr;
 	}
 
 	cmdText = ensureNewline(cmdText);
-    if (!checkMacroText(cmdText, mode)) {
+    if (!checkMacroText(cmdText, verbosity)) {
 		return nullptr;
 	}
 
@@ -360,14 +360,14 @@ std::unique_ptr<MenuItem> DialogMacros::readFields(Mode mode) {
  * @param mode
  * @return
  */
-bool DialogMacros::checkMacroText(const QString &macro, Mode mode) {
+bool DialogMacros::checkMacroText(const QString &macro, Verbosity verbosity) {
 
 	QString errMsg;
 	int stoppedAt;
 
     Program *prog = ParseMacroEx(macro, &errMsg, &stoppedAt);
 	if(!prog) {
-        if(mode == Mode::Verbose) {
+        if(verbosity == Verbosity::Verbose) {
 			ParseErrorEx(this, macro, stoppedAt, tr("macro"), errMsg);
 		}
 		QTextCursor cursor = ui.editMacro->textCursor();
@@ -379,7 +379,7 @@ bool DialogMacros::checkMacroText(const QString &macro, Mode mode) {
 	FreeProgram(prog);
 
 	if(stoppedAt != macro.size()) {
-        if(mode == Mode::Verbose) {
+        if(verbosity == Verbosity::Verbose) {
 			ParseErrorEx(this, macro, stoppedAt, tr("macro"), tr("syntax error"));
 		}
 		QTextCursor cursor = ui.editMacro->textCursor();
@@ -418,7 +418,7 @@ QString DialogMacros::ensureNewline(const QString &string) {
 bool DialogMacros::applyDialogChanges() {
 
     if(model_->rowCount() != 0) {
-        auto dialogFields = readFields(Mode::Verbose);
+        auto dialogFields = readFields(Verbosity::Verbose);
         if(!dialogFields) {
             return false;
         }
@@ -463,7 +463,7 @@ bool DialogMacros::applyDialogChanges() {
  */
 bool DialogMacros::updateCurrentItem(const QModelIndex &index) {
     // Get the current contents of the "patterns" dialog fields
-    auto dialogFields = readFields(Mode::Verbose);
+    auto dialogFields = readFields(Verbosity::Verbose);
     if(!dialogFields) {
         return false;
     }

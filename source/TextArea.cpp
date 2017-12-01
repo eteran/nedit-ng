@@ -7206,7 +7206,7 @@ void TextArea::ExchangeSelections() {
 		return;
 	}
 
-    // TODO(eteran): how would we implement this?
+    // TODO(eteran): implement ExchangeSelections
     qWarning("ExchangeSelections not implemented");
 
 	/* Initiate an long series of events:

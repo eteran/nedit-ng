@@ -3,6 +3,7 @@
 #define DIALOG_SHELL_MENU_H_
 
 #include "Dialog.h"
+#include "Verbosity.h"
 #include "ui_DialogShellMenu.h"
 
 #include <memory>
@@ -12,12 +13,6 @@ class MenuItemModel;
 
 class DialogShellMenu : public Dialog {
 	Q_OBJECT
-
-private:
-    enum class Mode {
-        Silent,
-        Verbose
-    };
 
 public:
     DialogShellMenu(QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
@@ -42,11 +37,11 @@ private Q_SLOTS:
 	
 private:
     bool applyDialogChanges();
-    bool validateFields(Mode mode);
+    bool validateFields(Verbosity verbosity);
     bool updateCurrentItem();
     bool updateCurrentItem(const QModelIndex &index);
     QString ensureNewline(const QString &string);
-    std::unique_ptr<MenuItem> readFields(Mode mode);
+    std::unique_ptr<MenuItem> readFields(Verbosity verbosity);
     void updateButtonStates();
     void updateButtonStates(const QModelIndex &current);
 

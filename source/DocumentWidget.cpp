@@ -50,8 +50,13 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-/* data attached to window during shell command execution with
-   information for controling and communicating with the process */
+// NOTE(eteran): generally, this class reaches out to MainWindow FAR too much
+// it would be better to create some fundamental signals that MainWindow could
+// listen on and update itself as needed. This would reduce a lot fo the heavy
+// coupling seen in this class :-/.
+
+/* data attached to window during shell command execution with information for
+ * controling and communicating with the process */
 struct ShellCommandData {
     QByteArray standardError;
     QByteArray standardOutput;
