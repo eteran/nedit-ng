@@ -114,9 +114,9 @@ void HighlightStyleModel::addItem(const HighlightStyle &style) {
  * @brief HighlightStyleModel::clear
  */
 void HighlightStyleModel::clear() {
-    beginRemoveRows(QModelIndex(), 0, rowCount());
+    beginResetModel();
     items_.clear();
-    endRemoveRows();
+    endResetModel();
 }
 
 /**

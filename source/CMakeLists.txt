@@ -52,6 +52,7 @@ qt5_wrap_cpp(MOC_SOURCES
 	DialogWrapMargin.h
 	DocumentWidget.h
 	ElidedLabel.h
+	HighlightPatternModel.h
 	HighlightStyleModel.h
 	KeySequenceEdit.h
 	LanguageModeModel.h
@@ -185,23 +186,25 @@ add_executable(nedit-ng
 	HighlightData.h
 	HighlightPattern.cpp
 	HighlightPattern.h
+	HighlightPatternModel.cpp
+	HighlightPatternModel.h
 	HighlightStyle.h
-	HighlightStyleModel.h
 	HighlightStyleModel.cpp
-	MenuItemModel.h
-	MenuItemModel.cpp
+	HighlightStyleModel.h
 	Input.cpp
 	Input.h
 	KeySequenceEdit.cpp
 	KeySequenceEdit.h
 	LanguageMode.h
-	LanguageModeModel.h
 	LanguageModeModel.cpp
+	LanguageModeModel.h
 	LockReasons.h
 	MainWindow.cpp
 	MainWindow.h
 	MenuData.h
 	MenuItem.h
+	MenuItemModel.cpp
+	MenuItemModel.h
 	MultiClickStates.h
 	NeditServer.cpp
 	NeditServer.h
@@ -224,8 +227,8 @@ add_executable(nedit-ng
 	TextArea.cpp
 	TextArea.h
 	TextBuffer.cpp
-	TextBuffer.tcc
 	TextBuffer.h
+	TextBuffer.tcc
 	TextBufferIterator.h
 	TextEditEvent.cpp
 	TextEditEvent.h

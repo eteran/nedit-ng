@@ -34,6 +34,8 @@ public:
 		return blocked_;
 	}
 
+    explicit operator bool() const { return blocked_ != nullptr; }
+
 private:
 	T   *blocked_;
 	bool previous_;

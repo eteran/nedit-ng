@@ -9,7 +9,6 @@
 #include "macro.h"
 #include "MainWindow.h"
 #include "preferences.h"
-#include "SignalBlocker.h"
 #include "SmartIndentEntry.h"
 #include "smartIndent.h"
 
@@ -243,7 +242,7 @@ bool DialogSmartIndent::updateSmartIndentData() {
 			if (lmName == newMacros->lmName) {
 
                 if(auto window = MainWindow::fromDocument(document)) {
-                    no_signals(window->ui.action_Indent_Smart)->setEnabled(true);
+                    window->ui.action_Indent_Smart->setEnabled(true);
                 }
 
                 if (document->indentStyle_ == IndentStyle::Smart && document->languageMode_ != PLAIN_LANGUAGE_MODE) {

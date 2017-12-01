@@ -28,7 +28,6 @@
 
 
 #include "smartIndent.h"
-#include "DialogLanguageModes.h"
 #include "DialogSmartIndent.h"
 #include "DialogSmartIndentCommon.h"
 #include "IndentStyle.h"

@@ -114,9 +114,9 @@ void LanguageModeModel::addItem(const LanguageMode &languageMode) {
  * @brief LanguageModeModel::clear
  */
 void LanguageModeModel::clear() {
-    beginRemoveRows(QModelIndex(), 0, rowCount());
+    beginResetModel();
     items_.clear();
-    endRemoveRows();
+    endResetModel();
 }
 
 /**

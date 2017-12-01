@@ -4,10 +4,11 @@
 #include "DocumentWidget.h"
 #include "Help.h"
 #include "highlight.h"
+#include "HighlightPattern.h"
+#include "HighlightPatternModel.h"
 #include "HighlightStyle.h"
 #include "LanguageMode.h"
 #include "MainWindow.h"
-#include "HighlightPattern.h"
 #include "PatternSet.h"
 #include "preferences.h"
 #include "SignalBlocker.h"
@@ -20,8 +21,11 @@
  * @param parent
  * @param f
  */
-DialogSyntaxPatterns::DialogSyntaxPatterns(MainWindow *window, Qt::WindowFlags f) : Dialog(window, f), previous_(nullptr), window_(window) {
+DialogSyntaxPatterns::DialogSyntaxPatterns(MainWindow *window, Qt::WindowFlags f) : Dialog(window, f), window_(window) {
 	ui.setupUi(this);
+
+    model_ = new HighlightPatternModel(this);
+    ui.listItems->setModel(model_);
 
 	ui.editContextChars->setValidator(new QIntValidator(0, INT_MAX, this));
 	ui.editContextLines->setValidator(new QIntValidator(0, INT_MAX, this));
@@ -34,40 +38,29 @@ DialogSyntaxPatterns::DialogSyntaxPatterns(MainWindow *window, Qt::WindowFlags f
     connect(ui.radioRangeRegex,  &QRadioButton::toggled, this, &DialogSyntaxPatterns::updateLabels);
 
 	// populate the highlight style combo
-    for(const HighlightStyle &style : HighlightStyles) {
-        ui.comboHighlightStyle->addItem(style.name);
-	}
-
-    auto blocker = no_signals(ui.comboLanguageMode);
+    if(auto blocker = no_signals(ui.comboHighlightStyle)) {
+        for(const HighlightStyle &style : HighlightStyles) {
+            ui.comboHighlightStyle->addItem(style.name);
+        }
+    }
 
 	// populate language mode combo
-    for(const LanguageMode &lang : LanguageModes) {
-        ui.comboLanguageMode->addItem(lang.name);
-	}
+    if(auto blocker = no_signals(ui.comboLanguageMode)) {
+        for(const LanguageMode &lang : LanguageModes) {
+            ui.comboLanguageMode->addItem(lang.name);
+        }
+    }
+
+    connect(ui.listItems->selectionModel(), &QItemSelectionModel::currentChanged, this, &DialogSyntaxPatterns::currentChanged, Qt::QueuedConnection);
+    connect(this, &DialogSyntaxPatterns::restore, this, &DialogSyntaxPatterns::restoreSlot, Qt::QueuedConnection);
 }
 
 /**
- * @brief DialogSyntaxPatterns::~DialogSyntaxPatterns
+ * @brief DialogSyntaxPatterns::restoreSlot
+ * @param index
  */
-DialogSyntaxPatterns::~DialogSyntaxPatterns() noexcept {
-	for(int i = 0; i < ui.listItems->count(); ++i) {
-	    delete itemFromIndex(i);
-	}
-}
-
-/**
- * @brief DialogSyntaxPatterns::itemFromIndex
- * @param i
- * @return
- */
-HighlightPattern *DialogSyntaxPatterns::itemFromIndex(int i) const {
-	if(i < ui.listItems->count()) {
-	    QListWidgetItem* item = ui.listItems->item(i);
-		auto ptr = reinterpret_cast<HighlightPattern *>(item->data(Qt::UserRole).toULongLong());
-		return ptr;
-	}
-
-	return nullptr;
+void DialogSyntaxPatterns::restoreSlot(const QModelIndex &index) {
+    ui.listItems->setCurrentIndex(index);
 }
 
 /**
@@ -76,6 +69,7 @@ HighlightPattern *DialogSyntaxPatterns::itemFromIndex(int i) const {
  */
 void DialogSyntaxPatterns::setLanguageName(const QString &name) {
 
+    static const PatternSet emptyPatSet;
 
 	// if there is no change, do nothing
 	if(previousLanguage_== name) {
@@ -86,19 +80,18 @@ void DialogSyntaxPatterns::setLanguageName(const QString &name) {
 	// otherwise check if any uncommited changes are present
 	if(!previousLanguage_.isEmpty()) {
 
-		// Look up the original version of the patterns being edited
-		PatternSet emptyPatSet;
-		PatternSet *oldPatSet = FindPatternSet(previousLanguage_);
-		if(!oldPatSet) {
-			oldPatSet = &emptyPatSet;
+		// Look up the original version of the patterns being edited        
+        const PatternSet *activePatternSet = FindPatternSet(previousLanguage_);
+        if(!activePatternSet) {
+            activePatternSet = &emptyPatSet;
 		}
 
 		/* Get the current information displayed by the dialog.  If it's bad,
 		   give the user the chance to throw it out or go back and fix it.  If
 		   it has changed, give the user the chance to apply discard or cancel. */
-        std::unique_ptr<PatternSet> newPatSet = getDialogPatternSet();
+        std::unique_ptr<PatternSet> currentPatternSet = getDialogPatternSet();
 
-		if(!newPatSet) {
+        if(!currentPatternSet) {
 			QMessageBox messageBox(this);
 			messageBox.setWindowTitle(tr("Incomplete Language Mode"));
 			messageBox.setIcon(QMessageBox::Warning);
@@ -111,11 +104,12 @@ void DialogSyntaxPatterns::setLanguageName(const QString &name) {
 			if (messageBox.clickedButton() == buttonKeep) {
 
 				// reselect the old item
-                auto blocker = no_signals(ui.comboLanguageMode);
-				setLanguageMenu(previousLanguage_);
+                if(auto blocker = no_signals(ui.comboLanguageMode)) {
+                    SetLangModeMenu(previousLanguage_);
+                }
 				return;
 			}
-		} else if (*oldPatSet != *newPatSet) {
+        } else if (*activePatternSet != *currentPatternSet) {
 
             // TODO(eteran): 2.0, use QMessageBox::Apply | QMessageBox::Discard | QMessageBox::Cancel
 			QMessageBox messageBox(this);
@@ -131,8 +125,9 @@ void DialogSyntaxPatterns::setLanguageName(const QString &name) {
 			if (messageBox.clickedButton() == buttonCancel) {
 
 				// reselect the old item
-                auto blocker = no_signals(ui.comboLanguageMode);
-				setLanguageMenu(previousLanguage_);
+                if(auto blocker = no_signals(ui.comboLanguageMode)) {
+                    SetLangModeMenu(previousLanguage_);
+                }
 				return;
 			} else if (messageBox.clickedButton() == buttonApply) {
 				updatePatternSet();
@@ -140,25 +135,14 @@ void DialogSyntaxPatterns::setLanguageName(const QString &name) {
 		}
 	}
 
-
-	for(int i = 0; i < ui.listItems->count(); ++i) {
-	    delete itemFromIndex(i);
-	}
-
-	ui.listItems->clear();
+    model_->clear();
 
 	// Find the associated pattern set (patSet) to edit
 	if(PatternSet *patSet = FindPatternSet(name)) {
 
 		// Copy the list of highlight style information to one that the user can freely edit
-
-
 		for(HighlightPattern &pattern: patSet->patterns) {
-
-			auto ptr  = new HighlightPattern(pattern);
-			auto item = new QListWidgetItem(ptr->name);
-			item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(ptr));
-			ui.listItems->addItem(item);
+            model_->addItem(pattern);
 		}
 
 		// Fill in the dialog information for the selected language mode
@@ -167,13 +151,15 @@ void DialogSyntaxPatterns::setLanguageName(const QString &name) {
 		SetLangModeMenu(name);
 		updateLabels();
 	} else {
-		ui.editContextLines->setText(QString::number(1));
-		ui.editContextChars->setText(QString::number(1));
+        ui.editContextLines->setText(QString::number(PatternSet::DefaultLineContext));
+        ui.editContextChars->setText(QString::number(PatternSet::DefaultCharContext));
 	}
 
-	if(ui.listItems->count() != 0) {
-		ui.listItems->setCurrentRow(0);
-	}
+    // default to selecting the first item
+    if(model_->rowCount() != 0) {
+        QModelIndex index = model_->index(0, 0);
+        no_signals(ui.listItems)->setCurrentIndex(index);
+    }
 
 	previousLanguage_ = name;
 }
@@ -184,19 +170,6 @@ void DialogSyntaxPatterns::setLanguageName(const QString &name) {
  */
 void DialogSyntaxPatterns::SetLangModeMenu(const QString &name) {
 
-	int index = ui.comboLanguageMode->findText(name, Qt::MatchFixedString);
-	if(index != -1) {
-		ui.comboLanguageMode->setCurrentIndex(index);
-	} else {
-		ui.comboLanguageMode->setCurrentIndex(0);
-	}
-}
-
-/**
- * @brief DialogSyntaxPatterns::setLanguageMenu
- * @param name
- */
-void DialogSyntaxPatterns::setLanguageMenu(const QString &name) {
 	int index = ui.comboLanguageMode->findText(name, Qt::MatchFixedString);
 	if(index != -1) {
 		ui.comboLanguageMode->setCurrentIndex(index);
@@ -239,8 +212,8 @@ void DialogSyntaxPatterns::updateLabels() {
 		matchSense  = false;
 		parentSense = true;
 	} else {
-		endLbl = tr("Ending Regular Expression");
-		matchSense = true;
+        endLbl      = tr("Ending Regular Expression");
+        matchSense  = true;
 		parentSense = ui.radioSubPattern->isChecked();
 
 		if (ui.radioSimpleRegex->isChecked()) {
@@ -255,24 +228,24 @@ void DialogSyntaxPatterns::updateLabels() {
 	}
 
 	ui.labelParentPattern->setEnabled(parentSense);
-	ui.editParentPattern->setEnabled(parentSense);
-	ui.labelRegexEnd->setEnabled(endSense);
-	ui.editRegexEnd->setEnabled(endSense);
-	ui.labelRegexError->setEnabled(errSense);
-	ui.editRegexError->setEnabled(errSense);
-	ui.radioSimpleRegex->setEnabled(matchSense);
-	ui.radioRangeRegex->setEnabled(matchSense);
-	ui.labelRegex->setText(startLbl);
-	ui.labelRegexEnd->setText(endLbl);
-	ui.groupMatching->setEnabled(matchSense);
+    ui.editParentPattern ->setEnabled(parentSense);
+    ui.labelRegexEnd     ->setEnabled(endSense);
+    ui.editRegexEnd      ->setEnabled(endSense);
+    ui.labelRegexError   ->setEnabled(errSense);
+    ui.editRegexError    ->setEnabled(errSense);
+    ui.radioSimpleRegex  ->setEnabled(matchSense);
+    ui.radioRangeRegex   ->setEnabled(matchSense);
+    ui.labelRegex        ->setText(startLbl);
+    ui.labelRegexEnd     ->setText(endLbl);
+    ui.groupMatching     ->setEnabled(matchSense);
 }
 
 /**
  * @brief DialogSyntaxPatterns::on_comboLanguageMode_currentIndexChanged
  * @param currentText
  */
-void DialogSyntaxPatterns::on_comboLanguageMode_currentIndexChanged(const QString &currentText) {
-	setLanguageName(currentText);
+void DialogSyntaxPatterns::on_comboLanguageMode_currentIndexChanged(const QString &text) {
+    setLanguageName(text);
 }
 
 /**
@@ -298,20 +271,20 @@ void DialogSyntaxPatterns::on_buttonHighlightStyle_clicked() {
  * @param item
  * @return
  */
-bool DialogSyntaxPatterns::updateCurrentItem(QListWidgetItem *item) {
-	// Get the current contents of the "patterns" dialog fields
-    auto ptr = readDialogFields(Mode::Verbose);
-	if(!ptr) {
-		return false;
-	}
+bool DialogSyntaxPatterns::updateCurrentItem(const QModelIndex &index) {
+    // Get the current contents of the "patterns" dialog fields
+    auto dialogFields = readDialogFields(Mode::Verbose);
+    if(!dialogFields) {
+        return false;
+    }
 
-	// delete the current pattern in this slot
-	auto old = reinterpret_cast<HighlightPattern *>(item->data(Qt::UserRole).toULongLong());
-	delete old;
+    // Get the current contents of the dialog fields
+    if(!index.isValid()) {
+        return false;
+    }
 
-    item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(ptr));
-    item->setText(ptr->name);
-	return true;
+    model_->updateItem(index, *dialogFields);
+    return true;
 }
 
 /**
@@ -319,13 +292,12 @@ bool DialogSyntaxPatterns::updateCurrentItem(QListWidgetItem *item) {
  * @return
  */
 bool DialogSyntaxPatterns::updateCurrentItem() {
-	QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
-	if(selections.size() != 1) {
-		return false;
-	}
+    QModelIndex index = ui.listItems->currentIndex();
+    if(index.isValid()) {
+        return updateCurrentItem(index);
+    }
 
-	QListWidgetItem *const selection = selections[0];
-	return updateCurrentItem(selection);
+    return true;
 }
 
 /**
@@ -333,39 +305,34 @@ bool DialogSyntaxPatterns::updateCurrentItem() {
  */
 void DialogSyntaxPatterns::on_buttonNew_clicked() {
 
-	if(!updateCurrentItem()) {
-		return;
-	}
+    if(!updateCurrentItem()) {
+        return;
+    }
 
-	auto ptr  = new HighlightPattern;
-	ptr->name = tr("New Item");
+    HighlightPattern style;
+    // some sensible defaults...
+    style.name  = tr("New Item");
+    model_->addItem(style);
 
-	auto item = new QListWidgetItem(ptr->name);
-	item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(ptr));
-	ui.listItems->addItem(item);
-	ui.listItems->setCurrentItem(item);
+    QModelIndex index = model_->index(model_->rowCount() - 1, 0);
+    ui.listItems->setCurrentIndex(index);
+
+    ui.listItems->scrollTo(ui.listItems->currentIndex());
+    updateButtonStates();
 }
 
 /**
  * @brief DialogSyntaxPatterns::on_buttonDelete_clicked
  */
 void DialogSyntaxPatterns::on_buttonDelete_clicked() {
-	QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
-	if(selections.size() != 1) {
-		return;
-	}
+    QModelIndex index = ui.listItems->currentIndex();
+    if(index.isValid()) {
+        deleted_ = index;
+        model_->deleteItem(index);
+    }
 
-	// prevent usage of this item going forward
-	previous_ = nullptr;
-
-	QListWidgetItem *const selection = selections[0];
-	auto ptr = reinterpret_cast<HighlightPattern *>(selection->data(Qt::UserRole).toULongLong());
-
-	delete ptr;
-	delete selection;
-
-	// force an update of the display
-	on_listItems_itemSelectionChanged();
+    ui.listItems->scrollTo(ui.listItems->currentIndex());
+    updateButtonStates();
 }
 
 /**
@@ -373,62 +340,47 @@ void DialogSyntaxPatterns::on_buttonDelete_clicked() {
  */
 void DialogSyntaxPatterns::on_buttonCopy_clicked() {
 
-	if(!updateCurrentItem()) {
-		return;
-	}
+    if(!updateCurrentItem()) {
+        return;
+    }
 
-	QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
-	if(selections.size() != 1) {
-		return;
-	}
+    QModelIndex index = ui.listItems->currentIndex();
+    if(index.isValid()) {
+        auto ptr = model_->itemFromIndex(index);
+        model_->addItem(*ptr);
 
-	QListWidgetItem *const selection = selections[0];
-	auto ptr = reinterpret_cast<HighlightPattern *>(selection->data(Qt::UserRole).toULongLong());
-	auto newPtr = new HighlightPattern(*ptr);
-	auto newItem = new QListWidgetItem(newPtr->name);
-	newItem->setData(Qt::UserRole, reinterpret_cast<qulonglong>(newPtr));
+        QModelIndex newIndex = model_->index(model_->rowCount() - 1, 0);
+        ui.listItems->setCurrentIndex(newIndex);
+    }
 
-	const int i = ui.listItems->row(selection);
-	ui.listItems->insertItem(i + 1, newItem);
-	ui.listItems->setCurrentItem(newItem);
+    ui.listItems->scrollTo(ui.listItems->currentIndex());
+    updateButtonStates();
 }
 
 /**
  * @brief DialogSyntaxPatterns::on_buttonUp_clicked
  */
 void DialogSyntaxPatterns::on_buttonUp_clicked() {
-	QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
-	if(selections.size() != 1) {
-		return;
-	}
+    QModelIndex index = ui.listItems->currentIndex();
+    if(index.isValid()) {
+        model_->moveItemUp(index);
+    }
 
-	QListWidgetItem *const selection = selections[0];
-	const int i = ui.listItems->row(selection);
-
-	if(i != 0) {
-		QListWidgetItem *item = ui.listItems->takeItem(i);
-		ui.listItems->insertItem(i - 1, item);
-		ui.listItems->setCurrentItem(item);
-	}
+    ui.listItems->scrollTo(ui.listItems->currentIndex());
+    updateButtonStates();
 }
 
 /**
  * @brief DialogSyntaxPatterns::on_buttonDown_clicked
  */
 void DialogSyntaxPatterns::on_buttonDown_clicked() {
-	QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
-	if(selections.size() != 1) {
-		return;
-	}
+    QModelIndex index = ui.listItems->currentIndex();
+    if(index.isValid()) {
+        model_->moveItemDown(index);
+    }
 
-	QListWidgetItem *const selection = selections[0];
-	const int i = ui.listItems->row(selection);
-
-	if(i != ui.listItems->count() - 1) {
-		QListWidgetItem *item = ui.listItems->takeItem(i);
-		ui.listItems->insertItem(i + 1, item);
-		ui.listItems->setCurrentItem(item);
-	}
+    ui.listItems->scrollTo(ui.listItems->currentIndex());
+    updateButtonStates();
 }
 
 /**
@@ -481,7 +433,6 @@ void DialogSyntaxPatterns::on_buttonDeletePattern_clicked() {
 		return;
 	}
 
-
 	// if a stored version of the pattern set exists, delete it from the list
     auto it = PatternSets.begin();
     for (; it != PatternSets.end(); ++it) {
@@ -494,17 +445,15 @@ void DialogSyntaxPatterns::on_buttonDeletePattern_clicked() {
         PatternSets.erase(it);
 	}
 
-	// Free the old dialog information
-	for(int i = 0; i < ui.listItems->count(); ++i) {
-	    delete itemFromIndex(i);
-	}
-	ui.listItems->clear();
+    model_->clear();
 
 	// Clear out the dialog
-	ui.editContextLines->setText(QString::number(1));
-	ui.editContextChars->setText(QString::number(0));
+    ui.editContextLines->setText(QString::number(PatternSet::DefaultLineContext));
+    ui.editContextChars->setText(QString::number(PatternSet::DefaultCharContext));
 
-	on_listItems_itemSelectionChanged();
+#if 0
+    on_listItems_itemSelectionChanged();
+#endif
 }
 
 /**
@@ -541,27 +490,22 @@ void DialogSyntaxPatterns::on_buttonRestore_clicked() {
         PatternSets.push_back(*defaultPatSet);
 	}
 
-	// Free the old dialog information
-	for(int i = 0; i < ui.listItems->count(); ++i) {
-	    delete itemFromIndex(i);
-	}
-	ui.listItems->clear();
+    model_->clear();
 
 	// Update the dialog
 	for(HighlightPattern &pattern: defaultPatSet->patterns) {
-		auto ptr  = new HighlightPattern(pattern);
-		auto item = new QListWidgetItem(ptr->name);
-		item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(ptr));
-		ui.listItems->addItem(item);
+        model_->addItem(pattern);
 	}
 
 	// Fill in the dialog information for the selected language mode
 	ui.editContextLines->setText(QString::number(defaultPatSet->lineContext));
 	ui.editContextChars->setText(QString::number(defaultPatSet->charContext));
 
-	if(ui.listItems->count() != 0) {
-		ui.listItems->setCurrentRow(0);
-	}
+    // default to selecting the first item
+    if(model_->rowCount() != 0) {
+        QModelIndex index = model_->index(0, 0);
+        ui.listItems->setCurrentIndex(index);
+    }
 }
 
 /**
@@ -572,145 +516,134 @@ void DialogSyntaxPatterns::on_buttonHelp_clicked() {
 }
 
 /**
- * @brief DialogSyntaxPatterns::on_listItems_itemSelectionChanged
+ * @brief DialogSyntaxPatterns::updateButtonStates
  */
-void DialogSyntaxPatterns::on_listItems_itemSelectionChanged() {
+void DialogSyntaxPatterns::updateButtonStates(const QModelIndex &current) {
+    if(current.isValid()) {
+        if(current.row() == 0) {
+            ui.buttonUp    ->setEnabled(false);
+            ui.buttonDown  ->setEnabled(model_->rowCount() > 1);
+            ui.buttonDelete->setEnabled(true);
+            ui.buttonCopy  ->setEnabled(true);
+        } else if(current.row() == model_->rowCount() - 1) {
+            ui.buttonUp    ->setEnabled(true);
+            ui.buttonDown  ->setEnabled(false);
+            ui.buttonDelete->setEnabled(true);
+            ui.buttonCopy  ->setEnabled(true);
+        } else {
+            ui.buttonUp    ->setEnabled(true);
+            ui.buttonDown  ->setEnabled(true);
+            ui.buttonDelete->setEnabled(true);
+            ui.buttonCopy  ->setEnabled(true);
+        }
+    } else {
+        ui.buttonUp    ->setEnabled(false);
+        ui.buttonDown  ->setEnabled(false);
+        ui.buttonDelete->setEnabled(false);
+        ui.buttonCopy  ->setEnabled(false);
+    }
+}
 
-	QList<QListWidgetItem *> selections = ui.listItems->selectedItems();
-	if(selections.size() != 1) {
-		previous_ = nullptr;
+/**
+ * @brief DialogSyntaxPatterns::updateButtonStates
+ */
+void DialogSyntaxPatterns::updateButtonStates() {
+    QModelIndex index = ui.listItems->currentIndex();
+    updateButtonStates(index);
+}
 
-		// if nothing is selected, reset to defaults
-		ui.editPatternName->setText(QString());
-		ui.editParentPattern->setText(QString());
-		ui.editRegex->setPlainText(QString());
-		ui.editRegexEnd->setText(QString());
-		ui.editRegexError->setText(QString());
-		ui.radioPass1->setChecked(true);
-		ui.radioSimpleRegex->setChecked(true);
-		setStyleMenu(tr("Plain"));
+/**
+ * @brief PreferenceList::currentChanged
+ * @param current
+ * @param previous
+ */
+void DialogSyntaxPatterns::currentChanged(const QModelIndex &current, const QModelIndex &previous) {
+    static bool canceled = false;
 
-		ui.buttonUp    ->setEnabled(false);
-		ui.buttonDown  ->setEnabled(false);
-		ui.buttonDelete->setEnabled(false);
-		ui.buttonCopy  ->setEnabled(false);
+    if (canceled) {
+        canceled = false;
+        return;
+    }
 
-		return;
-	}
+    // if we are actually switching items, check that the previous one was valid
+    // so we can optionally cancel
+    if(previous.isValid() && previous != deleted_ && !checkCurrentPattern(Mode::Silent)) {
+        QMessageBox messageBox(this);
+        messageBox.setWindowTitle(tr("Discard Entry"));
+        messageBox.setIcon(QMessageBox::Warning);
+        messageBox.setText(tr("Discard incomplete entry for current menu item?"));
+        QPushButton *buttonKeep    = messageBox.addButton(tr("Keep"), QMessageBox::RejectRole);
+        QPushButton *buttonDiscard = messageBox.addButton(QMessageBox::Discard);
+        Q_UNUSED(buttonDiscard);
 
-	QListWidgetItem *const current = selections[0];
+        messageBox.exec();
+        if (messageBox.clickedButton() == buttonKeep) {
 
-	if(previous_ != nullptr && current != nullptr && current != previous_) {
+            // again to cause messagebox to pop up
+            checkCurrentPattern(Mode::Verbose);
 
-		// we want to try to save it (but not apply it yet)
-		// and then move on
-        if(!checkCurrentPattern(Mode::Silent)) {
+            // reselect the old item
+            canceled = true;
+            Q_EMIT restore(previous);
+            return;
+        }
+    }
 
-			QMessageBox messageBox(this);
-			messageBox.setWindowTitle(tr("Discard Entry"));
-			messageBox.setIcon(QMessageBox::Warning);
-			messageBox.setText(tr("Discard incomplete entry for current menu item?"));
-			QPushButton *buttonKeep    = messageBox.addButton(tr("Keep"), QMessageBox::RejectRole);
-            QPushButton *buttonDiscard = messageBox.addButton(QMessageBox::Discard);
-			Q_UNUSED(buttonDiscard);
+    // NOTE(eteran): this is only safe if we aren't moving due to a delete operation
+    if(previous.isValid() && previous != deleted_) {
+        if(!updateCurrentItem(previous)) {
+            // reselect the old item
+            canceled = true;
+            Q_EMIT restore(previous);
+            return;
+        }
+    }
 
-			messageBox.exec();
-			if (messageBox.clickedButton() == buttonKeep) {
+    // previous was OK, so let's update the contents of the dialog
+    if(const auto pattern = model_->itemFromIndex(current)) {
 
-				// again to cause messagebox to pop up
-                checkCurrentPattern(Mode::Verbose);
+        bool isSubpat    = !pattern->subPatternOf.isNull();
+        bool isDeferred  = pattern->flags & DEFER_PARSING;
+        bool isColorOnly = pattern->flags & COLOR_ONLY;
+        bool isRange     = (!pattern->endRE.isNull());
 
-				// reselect the old item
-                no_signals(ui.listItems)->setCurrentItem(previous_);
-				return;
-			}
+        ui.editPatternName->setText(pattern->name);
+        ui.editParentPattern->setText(!pattern->subPatternOf.isNull() ? pattern->subPatternOf : QString());
+        ui.editRegex->setPlainText(pattern->startRE);
+        ui.editRegexEnd->setText(pattern->endRE);
+        ui.editRegexError->setText(pattern->errorRE);
 
-			// if we get here, we are ditching changes
-		} else {
-			updateCurrentItem(previous_);
-		}
-	}
+        if(!isSubpat && !isDeferred) {
+            ui.radioPass1->setChecked(true);
+        } else if(!isSubpat && isDeferred) {
+            ui.radioPass2->setChecked(true);
+        } else if(isSubpat && !isColorOnly) {
+            ui.radioSubPattern->setChecked(true);
+        } else if(isSubpat && isColorOnly) {
+            ui.radioColoring->setChecked(true);
+        }
 
-	if(current) {
-		const int i = ui.listItems->row(current);
+        if(isRange) {
+            ui.radioRangeRegex->setChecked(true);
+        } else {
+            ui.radioSimpleRegex->setChecked(true);
+        }
 
-		auto pat = reinterpret_cast<HighlightPattern *>(current->data(Qt::UserRole).toULongLong());
+        setStyleMenu(pattern->style);
+    } else {
+        // if nothing is selected, reset to defaults
+        ui.editPatternName->setText(QString());
+        ui.editParentPattern->setText(QString());
+        ui.editRegex->setPlainText(QString());
+        ui.editRegexEnd->setText(QString());
+        ui.editRegexError->setText(QString());
+        ui.radioPass1->setChecked(true);
+        ui.radioSimpleRegex->setChecked(true);
+        setStyleMenu(tr("Plain"));
+    }
 
-		if(!pat) {
-			ui.editPatternName->setText(QString());
-			ui.editParentPattern->setText(QString());
-			ui.editRegex->setPlainText(QString());
-			ui.editRegexEnd->setText(QString());
-			ui.editRegexError->setText(QString());
-			ui.radioPass1->setChecked(true);
-			ui.radioSimpleRegex->setChecked(true);
-			setStyleMenu(tr("Plain"));
-		} else {
-			bool isSubpat    = !pat->subPatternOf.isNull();
-			bool isDeferred  = pat->flags & DEFER_PARSING;
-			bool isColorOnly = pat->flags & COLOR_ONLY;
-			bool isRange = (!pat->endRE.isNull());
-
-			ui.editPatternName->setText(pat->name);
-			ui.editParentPattern->setText(!pat->subPatternOf.isNull() ? pat->subPatternOf : QString());
-			ui.editRegex->setPlainText(pat->startRE);
-			ui.editRegexEnd->setText(pat->endRE);
-			ui.editRegexError->setText(pat->errorRE);
-
-			if(!isSubpat && !isDeferred) {
-				ui.radioPass1->setChecked(true);
-			} else if(!isSubpat && isDeferred) {
-				ui.radioPass2->setChecked(true);
-			} else if(isSubpat && !isColorOnly) {
-				ui.radioSubPattern->setChecked(true);
-			} else if(isSubpat && isColorOnly) {
-				ui.radioColoring->setChecked(true);
-			}
-
-			if(isRange) {
-				ui.radioRangeRegex->setChecked(true);
-			} else {
-				ui.radioSimpleRegex->setChecked(true);
-			}
-
-			setStyleMenu(pat->style);
-		}
-
-		updateLabels();
-
-		if(i == 0) {
-			ui.buttonUp    ->setEnabled(false);
-			ui.buttonDown  ->setEnabled(ui.listItems->count() > 1);
-			ui.buttonDelete->setEnabled(true);
-			ui.buttonCopy  ->setEnabled(true);
-		} else if(i == (ui.listItems->count() - 1)) {
-			ui.buttonUp    ->setEnabled(true);
-			ui.buttonDown  ->setEnabled(false);
-			ui.buttonDelete->setEnabled(true);
-			ui.buttonCopy  ->setEnabled(true);
-		} else {
-			ui.buttonUp    ->setEnabled(true);
-			ui.buttonDown  ->setEnabled(true);
-			ui.buttonDelete->setEnabled(true);
-			ui.buttonCopy  ->setEnabled(true);
-		}
-	} else {
-		ui.editPatternName->setText(QString());
-		ui.editParentPattern->setText(QString());
-		ui.editRegex->setPlainText(QString());
-		ui.editRegexEnd->setText(QString());
-		ui.editRegexError->setText(QString());
-		ui.radioPass1->setChecked(true);
-		ui.radioSimpleRegex->setChecked(true);
-		setStyleMenu(tr("Plain"));
-
-		ui.buttonUp    ->setEnabled(false);
-		ui.buttonDown  ->setEnabled(false);
-		ui.buttonDelete->setEnabled(false);
-		ui.buttonCopy  ->setEnabled(false);
-	}
-
-	previous_ = current;
+    updateButtonStates(current);
+    updateLabels();
 }
 
 /*
@@ -719,31 +652,35 @@ void DialogSyntaxPatterns::on_listItems_itemSelectionChanged() {
 */
 void DialogSyntaxPatterns::UpdateLanguageModeMenu() {
 
-	QString language = ui.comboLanguageMode->currentText();
-	ui.comboLanguageMode->clear();
+    if(auto blocker = no_signals(ui.comboLanguageMode)) {
 
-    for(const LanguageMode &lang : LanguageModes) {
-        ui.comboLanguageMode->addItem(lang.name);
-	}
+        const QString language = ui.comboLanguageMode->currentText();
+        ui.comboLanguageMode->clear();
 
-	SetLangModeMenu(language);
+        for(const LanguageMode &lang : LanguageModes) {
+            ui.comboLanguageMode->addItem(lang.name);
+        }
 
+        SetLangModeMenu(language);
+    }
 }
-
 
 /**
  * @brief DialogSyntaxPatterns::updateHighlightStyleMenu
  */
 void DialogSyntaxPatterns::updateHighlightStyleMenu() {
 
+    if(auto blocker = no_signals(ui.comboHighlightStyle)) {
 
-	QString pattern = ui.comboHighlightStyle->currentText();
-	ui.comboHighlightStyle->clear();
-    for(const HighlightStyle &style : HighlightStyles) {
-        ui.comboHighlightStyle->addItem(style.name);
-	}
+        QString pattern = ui.comboHighlightStyle->currentText();
+        ui.comboHighlightStyle->clear();
 
-	setStyleMenu(pattern);
+        for(const HighlightStyle &style : HighlightStyles) {
+            ui.comboHighlightStyle->addItem(style.name);
+        }
+
+        setStyleMenu(pattern);
+    }
 }
 
 /**
@@ -837,11 +774,8 @@ bool DialogSyntaxPatterns::checkHighlightDialogData() {
 	}
 
 	// Compile the patterns
-    return patSet->patterns.empty() ? true : TestHighlightPatterns(patSet.get());
+    return patSet->patterns.empty() ? true : TestHighlightPatterns(patSet);
 }
-
-
-
 
 /*
 ** Get the current information that the user has entered in the syntax
@@ -883,8 +817,11 @@ std::unique_ptr<PatternSet> DialogSyntaxPatterns::getDialogPatternSet() {
 	patSet->lineContext  = lineContext;
 	patSet->charContext  = charContext;
 
-	for (int i = 0; i < ui.listItems->count(); i++) {
-		patSet->patterns.push_back(*itemFromIndex(i));
+    for (int i = 0; i < model_->rowCount(); ++i) {
+        QModelIndex index = model_->index(i, 0);
+        if(auto pattern = model_->itemFromIndex(index)) {
+            patSet->patterns.push_back(*pattern);
+        }
 	}
 
 	return patSet;
@@ -896,7 +833,7 @@ std::unique_ptr<PatternSet> DialogSyntaxPatterns::getDialogPatternSet() {
 ** telling the user what's wrong (Passing "silent" as true, suppresses these
 ** dialogs).  Returns nullptr on error.
 */
-HighlightPattern *DialogSyntaxPatterns::readDialogFields(Mode mode) {
+std::unique_ptr<HighlightPattern> DialogSyntaxPatterns::readDialogFields(Mode mode) {
 
     auto pat = std::make_unique<HighlightPattern>();
 
@@ -999,7 +936,7 @@ HighlightPattern *DialogSyntaxPatterns::readDialogFields(Mode mode) {
 		}
 	}
 
-    return pat.release();
+    return pat;
 }
 
 /**
@@ -1009,7 +946,6 @@ HighlightPattern *DialogSyntaxPatterns::readDialogFields(Mode mode) {
  */
 bool DialogSyntaxPatterns::checkCurrentPattern(Mode mode) {
     if(auto ptr = readDialogFields(mode)) {
-        delete ptr;
 		return true;
 	}
 
@@ -1026,15 +962,18 @@ bool DialogSyntaxPatterns::checkCurrentPattern(Mode mode) {
 ** dialog parent as well, in non-popups-under-pointer mode, these dialogs
 ** will appear in odd places on the screen.
 */
-bool DialogSyntaxPatterns::TestHighlightPatterns(PatternSet *patSet) {
+bool DialogSyntaxPatterns::TestHighlightPatterns(const std::unique_ptr<PatternSet> &patSet) {
 
 	/* Compile the patterns (passing a random window as a source for fonts, and
 	   parent for dialogs, since we really don't care what fonts are used) */
-    for(DocumentWidget *document : DocumentWidget::allDocuments()) {
-        if(std::shared_ptr<WindowHighlightData> highlightData = document->createHighlightDataEx(patSet)) {
-			return true;
-		}
-	}
+
+    if(PatternSet *const patternSet = patSet.get()) {
+        for(DocumentWidget *document : DocumentWidget::allDocuments()) {
+            if(std::shared_ptr<WindowHighlightData> highlightData = document->createHighlightDataEx(patternSet)) {
+                return true;
+            }
+        }
+    }
 
 	return false;
 }
@@ -1046,7 +985,7 @@ bool DialogSyntaxPatterns::TestHighlightPatterns(PatternSet *patSet) {
  */
 void DialogSyntaxPatterns::RenameHighlightPattern(const QString &oldName, const QString &newName) {
 	if (ui.comboLanguageMode->currentText() == oldName) {
-		setLanguageMenu(newName);
+        SetLangModeMenu(newName);
 	}
 }
 
@@ -1056,5 +995,5 @@ void DialogSyntaxPatterns::RenameHighlightPattern(const QString &oldName, const 
  * @return
  */
 bool DialogSyntaxPatterns::LMHasHighlightPatterns(const QString &languageMode) {
-	return languageMode == ui.comboLanguageMode->currentText() && ui.listItems->count() != 0;
+    return languageMode == ui.comboLanguageMode->currentText() && model_->rowCount() != 0;
 }

@@ -28,8 +28,6 @@
 *******************************************************************************/
 
 #include "highlight.h"
-#include "DialogLanguageModes.h"
-#include "DialogSyntaxPatterns.h"
 #include "DocumentWidget.h"
 #include "FontType.h"
 #include "HighlightData.h"
@@ -57,6 +55,7 @@
 #include <QtDebug>
 #include <QDomDocument>
 #include <QDomElement>
+#include <QFile>
 
 #include <algorithm>
 #include <climits>

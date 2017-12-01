@@ -8,6 +8,7 @@
 #include <memory>
 
 class HighlightPattern;
+class HighlightPatternModel;
 class MainWindow;
 class PatternSet;
 
@@ -22,7 +23,7 @@ private:
 
 public:
     DialogSyntaxPatterns(MainWindow *window, Qt::WindowFlags f = Qt::WindowFlags());
-    ~DialogSyntaxPatterns() noexcept override;
+    ~DialogSyntaxPatterns() noexcept override = default;
 
 public:
 	void setLanguageName(const QString &name);
@@ -31,6 +32,13 @@ public:
 	void SetLangModeMenu(const QString &name);
 	void RenameHighlightPattern(const QString &oldName, const QString &newName);
 	bool LMHasHighlightPatterns(const QString &languageMode);
+
+Q_SIGNALS:
+    void restore(const QModelIndex &selection);
+
+private Q_SLOTS:
+    void currentChanged(const QModelIndex &current, const QModelIndex &previous);
+    void restoreSlot(const QModelIndex &index);
 
 private Q_SLOTS:
 	void on_buttonLanguageMode_clicked();
@@ -46,26 +54,26 @@ private Q_SLOTS:
 	void on_buttonDeletePattern_clicked();
 	void on_buttonRestore_clicked();
 	void on_buttonHelp_clicked();
-	void on_listItems_itemSelectionChanged();
-	void on_comboLanguageMode_currentIndexChanged(const QString &currentText);
+    void on_comboLanguageMode_currentIndexChanged(const QString &text);
 
 private:
-	void updateLabels();
-	bool updatePatternSet();
-	bool checkHighlightDialogData();
-	void setStyleMenu(const QString &name);
-	void setLanguageMenu(const QString &name);
-	std::unique_ptr<PatternSet> getDialogPatternSet();
-	HighlightPattern *itemFromIndex(int i) const;
-    HighlightPattern *readDialogFields(Mode mode);
     bool checkCurrentPattern(Mode mode);
-	bool updateCurrentItem();
-	bool updateCurrentItem(QListWidgetItem *item);
-    bool TestHighlightPatterns(PatternSet *patSet);
+    bool checkHighlightDialogData();
+    bool TestHighlightPatterns(const std::unique_ptr<PatternSet> &patSet);
+    bool updateCurrentItem();
+    bool updateCurrentItem(const QModelIndex &index);
+    bool updatePatternSet();
+    std::unique_ptr<HighlightPattern> readDialogFields(Mode mode);
+    std::unique_ptr<PatternSet> getDialogPatternSet();
+    void setStyleMenu(const QString &name);
+    void updateLabels();
+    void updateButtonStates(const QModelIndex &current);
+    void updateButtonStates();
 
 private:
 	Ui::DialogSyntaxPatterns ui;
-	QListWidgetItem *previous_;
+    HighlightPatternModel *model_;
+    QModelIndex deleted_;
 	QString previousLanguage_;
     MainWindow *window_;
 };

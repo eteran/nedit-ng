@@ -9,14 +9,16 @@
 // Header for a set of patterns
 class PatternSet {
 public:
+    static constexpr int DefaultLineContext = 1;
+    static constexpr int DefaultCharContext = 0;
+public:
 	bool operator!=(const PatternSet &rhs) const;
 	bool operator==(const PatternSet &rhs) const;
 
-
 public:
     QString                       languageMode;
-    int                           lineContext = 0;
-    int                           charContext = 0;
+    int                           lineContext = DefaultLineContext;
+    int                           charContext = DefaultCharContext;
     std::vector<HighlightPattern> patterns;
 };
 

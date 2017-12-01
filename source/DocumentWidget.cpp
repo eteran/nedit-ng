@@ -3397,15 +3397,16 @@ void DocumentWidget::RefreshMenuToggleStates() {
         no_signals(win->ui.action_Statistics_Line)->setChecked(showStats_);
         no_signals(win->ui.action_Incremental_Search_Line)->setChecked(win->showISearchLine_);
         no_signals(win->ui.action_Show_Line_Numbers)->setChecked(win->showLineNumbers_);
-        no_signals(win->ui.action_Highlight_Syntax)->setChecked(highlightSyntax_);
-        no_signals(win->ui.action_Highlight_Syntax)->setEnabled(languageMode_ != PLAIN_LANGUAGE_MODE);
+        no_signals(win->ui.action_Highlight_Syntax)->setChecked(highlightSyntax_);        
         no_signals(win->ui.action_Apply_Backlighting)->setChecked(backlightChars_);
         no_signals(win->ui.action_Make_Backup_Copy)->setChecked(saveOldVersion_);
         no_signals(win->ui.action_Incremental_Backup)->setChecked(autoSave_);
         no_signals(win->ui.action_Overtype)->setChecked(overstrike_);
         no_signals(win->ui.action_Matching_Syntax)->setChecked(matchSyntaxBased_);
         no_signals(win->ui.action_Read_Only)->setChecked(lockReasons_.isUserLocked());
-        no_signals(win->ui.action_Indent_Smart)->setEnabled(SmartIndentMacrosAvailable(LanguageModeName(languageMode_)));
+
+        win->ui.action_Indent_Smart->setEnabled(SmartIndentMacrosAvailable(LanguageModeName(languageMode_)));
+        win->ui.action_Highlight_Syntax->setEnabled(languageMode_ != PLAIN_LANGUAGE_MODE);
 
         SetAutoIndent(indentStyle_);
         SetAutoWrap(wrapMode_);
@@ -3413,12 +3414,12 @@ void DocumentWidget::RefreshMenuToggleStates() {
         SetLanguageMode(languageMode_, /*forceNewDefaults=*/false);
 
         // Windows Menu
-        no_signals(win->ui.action_Split_Pane)->setEnabled(textPanesCount() < MAX_PANES);
-        no_signals(win->ui.action_Close_Pane)->setEnabled(textPanesCount() > 1);
-        no_signals(win->ui.action_Detach_Tab)->setEnabled(win->ui.tabWidget->count() > 1);
+        win->ui.action_Split_Pane->setEnabled(textPanesCount() < MAX_PANES);
+        win->ui.action_Close_Pane->setEnabled(textPanesCount() > 1);
+        win->ui.action_Detach_Tab->setEnabled(win->ui.tabWidget->count() > 1);
 
         std::vector<MainWindow *> windows = MainWindow::allWindows();
-        no_signals(win->ui.action_Move_Tab_To)->setEnabled(windows.size() > 1);
+        win->ui.action_Move_Tab_To->setEnabled(windows.size() > 1);
     }
 }
 

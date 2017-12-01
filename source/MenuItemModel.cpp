@@ -112,9 +112,9 @@ void MenuItemModel::addItem(const MenuItem &style) {
  * @brief MenuItemModel::clear
  */
 void MenuItemModel::clear() {
-    beginRemoveRows(QModelIndex(), 0, rowCount());
+    beginResetModel();
     items_.clear();
-    endRemoveRows();
+    endResetModel();
 }
 
 /**

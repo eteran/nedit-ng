@@ -314,7 +314,7 @@ void MainWindow::setupGlobalPrefenceDefaults() {
     no_signals(ui.action_Default_Tab_Sort_Tabs_Alphabetically)->setChecked(GetPrefSortTabs());
 
     no_signals(ui.tabWidget)->tabBar()->setVisible(GetPrefTabBar());
-    no_signals(ui.tabWidget)->setTabBarAutoHide(GetPrefTabBarHideOne());
+    ui.tabWidget->setTabBarAutoHide(GetPrefTabBarHideOne());
 
     no_signals(ui.action_Default_Show_Tooltips)->setChecked(GetPrefToolTips());
     no_signals(ui.action_Default_Statistics_Line)->setChecked(GetPrefStatsLine());
@@ -342,7 +342,7 @@ void MainWindow::setupGlobalPrefenceDefaults() {
     no_signals(ui.action_Default_Warnings_Files_Modified_Externally)->setChecked(GetPrefWarnFileMods());
     no_signals(ui.action_Default_Warnings_Check_Modified_File_Contents)->setChecked(GetPrefWarnRealFileMods());
     no_signals(ui.action_Default_Warnings_On_Exit)->setChecked(GetPrefWarnExit());
-    no_signals(ui.action_Default_Warnings_Check_Modified_File_Contents)->setEnabled(GetPrefWarnFileMods());
+    ui.action_Default_Warnings_Check_Modified_File_Contents->setEnabled(GetPrefWarnFileMods());
 
     no_signals(ui.action_Default_Sort_Open_Prev_Menu)->setChecked(GetPrefSortOpenPrevMenu());
     no_signals(ui.action_Default_Show_Path_In_Windows_Menu)->setChecked(GetPrefShowPathInWindowsMenu());
@@ -4404,7 +4404,7 @@ void MainWindow::on_action_Default_Warnings_Files_Modified_Externally_toggled(bo
     SetPrefWarnFileMods(state);
     for(MainWindow *window : allWindows()) {
         no_signals(window->ui.action_Default_Warnings_Files_Modified_Externally)->setChecked(state);
-        no_signals(window->ui.action_Default_Warnings_Check_Modified_File_Contents)->setEnabled(GetPrefWarnFileMods());
+        window->ui.action_Default_Warnings_Check_Modified_File_Contents->setEnabled(GetPrefWarnFileMods());
     }
 }
 
