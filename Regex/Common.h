@@ -18,13 +18,13 @@ unsigned int U_CHAR_AT(T *p) {
 }
 
 template <class T>
-inline uint8_t *OPERAND(T *p) {
-    return reinterpret_cast<uint8_t *>(p) + NODE_SIZE;
+T *OPERAND(T *p) {
+    return p + NODE_SIZE;
 }
 
 template <class T>
-inline uint8_t GET_OP_CODE(T *p) {
-    return *p;
+uint8_t GET_OP_CODE(T *p) {
+    return *reinterpret_cast<uint8_t *>(p);
 }
 
 /*--------------------------------------------------------------------*
@@ -36,10 +36,10 @@ inline uint8_t GET_OP_CODE(T *p) {
  * Returns the proper character value or nullptr if not a valid literal
  * escape.
  *--------------------------------------------------------------------*/
-template <class T>
-char literal_escape(T ch) {
+template <class Ch>
+uint8_t literal_escape(Ch ch) {
 
-    static const uint8_t valid_escape[] = {
+    static const char valid_escape[] = {
         'a', 'b', 'e', 'f', 'n', 'r', 't', 'v', '(', ')', '-', '[', ']', '<',
         '>', '{', '}', '.', '\\', '|', '^', '$', '*', '+', '?', '&', '\0'
     };
@@ -51,12 +51,12 @@ char literal_escape(T ch) {
     };
 
     for (int i = 0; valid_escape[i] != '\0'; i++) {
-        if (static_cast<uint8_t>(ch) == valid_escape[i]) {
-            return static_cast<char>(value[i]);
+        if (static_cast<char>(ch) == valid_escape[i]) {
+            return value[i];
         }
     }
 
-    return '\0';
+    return 0;
 }
 
 /*--------------------------------------------------------------------*
@@ -73,7 +73,7 @@ char literal_escape(T ch) {
  * \0000 is specified.
  *--------------------------------------------------------------------*/
 template <class T>
-char numeric_escape(T ch, const char **parse) {
+uint8_t numeric_escape(T ch, const char **parse) {
 
     static const char digits[] = "fedcbaFEDCBA9876543210";
 
@@ -83,14 +83,11 @@ char numeric_escape(T ch, const char **parse) {
         9,  8,  7,  6,  5,  4,  3, 2, 1, 0 // Decimal Digits
     };
 
-    const char *scan;
-    const char *pos_ptr;
     const char *digit_str;
     unsigned int value = 0;
     unsigned int radix = 8;
-    int width = 3; // Can not be bigger than \0377
-    int pos_delta = 14;
-    int i;
+    int width          = 3; // Can not be bigger than \0377
+    int pos_delta      = 14;
 
     switch (ch) {
     case '0':
@@ -110,12 +107,12 @@ char numeric_escape(T ch, const char **parse) {
         return '\0'; // Not a numeric escape
     }
 
-    scan = *parse;
+    const char *scan = *parse;
     scan++; // Only change *parse on success.
 
-    pos_ptr = strchr(digit_str, static_cast<int>(*scan));
+    const char *pos_ptr = strchr(digit_str, static_cast<int>(*scan));
 
-    for (i = 0; pos_ptr != nullptr && (i < width); i++) {
+    for (int i = 0; pos_ptr != nullptr && (i < width); i++) {
         const long pos = (pos_ptr - digit_str) + pos_delta;
         value = (value * radix) + digit_val[pos];
 

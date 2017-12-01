@@ -40,7 +40,7 @@ bool AT_END_OF_STRING(const char *ptr) {
  * @param p
  * @return
  */
-uint8_t GET_LOWER(uint8_t *p) {
+uint16_t GET_LOWER(uint8_t *p) {
     return static_cast<uint8_t>(((p[NODE_SIZE + 0] & 0xff) << 8) + ((p[NODE_SIZE + 1]) & 0xff));
 }
 
@@ -49,7 +49,7 @@ uint8_t GET_LOWER(uint8_t *p) {
  * @param p
  * @return
  */
-uint8_t GET_UPPER(uint8_t *p) {
+uint16_t GET_UPPER(uint8_t *p) {
     return static_cast<uint8_t>(((p[NODE_SIZE + 2] & 0xff) << 8) + ((p[NODE_SIZE + 3]) & 0xff));
 }
 
@@ -863,10 +863,7 @@ int match(uint8_t *prog, int *branch_index_param) {
         case POS_BEHIND_OPEN:
         case NEG_BEHIND_OPEN: {
             const char *save;
-            int offset;
-            int upper;
-            int lower;
-            int found = 0;
+            bool found = false;
             const char *saved_end;
 
             save = eContext.Reg_Input;
@@ -877,15 +874,15 @@ int match(uint8_t *prog, int *branch_index_param) {
                Lookahead inside lookbehind can still cross that boundary. */
             eContext.End_Of_String = eContext.Reg_Input;
 
-            lower = GET_LOWER(scan);
-            upper = GET_UPPER(scan);
+            uint16_t lower = GET_LOWER(scan);
+            uint16_t upper = GET_UPPER(scan);
 
             /* Start with the shortest match first. This is the most
                efficient direction in general.
                Note! Negative look behind is _very_ tricky when the length
                is not constant: we have to make sure the expression doesn't
                match for _any_ of the starting positions. */
-            for (offset = lower; offset <= upper; ++offset) {
+            for (uint32_t offset = lower; offset <= upper; ++offset) {
                 eContext.Reg_Input = save - offset;
 
                 if (eContext.Reg_Input < eContext.Look_Behind_To) {
@@ -901,7 +898,7 @@ int match(uint8_t *prog, int *branch_index_param) {
                    otherwise it is invalid */
                 if (answer && eContext.Reg_Input == save) {
                     // It matched, exactly far enough
-                    found = 1;
+                    found = true;
 
                     /* Remember the last (most to the left) character position
                        that we consume in the input for a successful match.

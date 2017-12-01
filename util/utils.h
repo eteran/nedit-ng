@@ -38,8 +38,8 @@ QString PrependHomeEx(const QString &filename);
 QString ErrorString(int error);
 QByteArray loadResource(const QString &resource);
 
-template <int (&F) (int)>
-int safe_ctype (int c) {
+template <int (&F)(int), class Ch>
+int safe_ctype (Ch c) {
     return F(static_cast<unsigned char>(c));
 }
 

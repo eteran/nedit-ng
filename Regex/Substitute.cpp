@@ -19,7 +19,7 @@ bool Regex::SubstituteRE(view::string_view source, std::string &dest) const {
 
     const Regex *re = this;
 
-    char test;
+    uint8_t test;
 
     if (U_CHAR_AT(re->program) != MAGIC) {
         reg_error("damaged Regex passed to 'SubstituteRE'");

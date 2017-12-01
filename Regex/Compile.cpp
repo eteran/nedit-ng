@@ -197,7 +197,8 @@ void emit_class_byte(T ch) {
  *
  * Emit nodes that need special processing.
  *----------------------------------------------------------------------*/
-uint8_t *emit_special(uint8_t op_code, unsigned long test_val, size_t index) {
+template <class Ch>
+uint8_t *emit_special(Ch op_code, unsigned long test_val, size_t index) {
 
     uint8_t *ret_val = &Compute_Size;
     uint8_t *ptr;
@@ -541,9 +542,9 @@ void branch_tail(uint8_t *ptr, int offset, uint8_t *val) {
  * references and are used in syntax highlighting patterns to match
  * text previously matched by another regex. *** IMPLEMENT LATER ***
  *--------------------------------------------------------------------*/
-uint8_t *back_ref(const char *c, int *flag_param, int emit) {
+uint8_t *back_ref(const char *ch, int *flag_param, ShortcutEscapeFlags flags) {
 
-    int c_offset = 0;
+    size_t c_offset = 0;
     const int is_cross_regex = 0;
 
     uint8_t *ret_val;
@@ -555,10 +556,10 @@ uint8_t *back_ref(const char *c, int *flag_param, int emit) {
        is_cross_regex++;
     } */
 
-    int paren_no = (*(c + c_offset) - '0');
+    auto paren_no = static_cast<size_t>(ch[c_offset] - '0');
 
-    if (!safe_ctype<isdigit>(*(c + c_offset)) || /* Only \1, \2, ... \9 are supported. */
-            paren_no == 0) {                     /* Should be caught by numeric_escape. */
+    if (!safe_ctype<isdigit>(ch[c_offset]) || /* Only \1, \2, ... \9 are supported. */
+            paren_no == 0) {                  /* Should be caught by numeric_escape. */
 
         return nullptr;
     }
@@ -569,7 +570,7 @@ uint8_t *back_ref(const char *c, int *flag_param, int emit) {
         raise<RegexError>("\\%d is an illegal back reference", paren_no);
     }
 
-    if (emit == EMIT_NODE) {
+    if (flags == EMIT_NODE) {
         if (is_cross_regex) {
             ++pContext.Reg_Parse; /* Skip past the '~' in a cross regex back reference.
                             We only do this if we are emitting code. */
@@ -592,7 +593,7 @@ uint8_t *back_ref(const char *c, int *flag_param, int emit) {
         if (is_cross_regex || pContext.Paren_Has_Width[paren_no]) {
             *flag_param |= HAS_WIDTH;
         }
-    } else if (emit == CHECK_ESCAPE) {
+    } else if (flags == CHECK_ESCAPE) {
         ret_val = reinterpret_cast<uint8_t *>(1);
     } else {
         ret_val = nullptr;
@@ -600,8 +601,6 @@ uint8_t *back_ref(const char *c, int *flag_param, int emit) {
 
     return ret_val;
 }
-
-
 
 
 /*----------------------------------------------------------------------*
