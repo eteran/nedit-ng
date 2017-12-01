@@ -4371,7 +4371,7 @@ void DocumentWidget::SetBacklightChars(const QString &applyBacklightTypes) {
 void DocumentWidget::SetShowStatisticsLine(bool value) {
 
     // TODO(eteran): support no parameter...
-    emit_event("set_statistics_line", QString::fromLatin1(value ? "1" : "0"));
+    emit_event("set_statistics_line", value ? QLatin1String("1") : QLatin1String("0"));
 
     // stats line is a shell-level item, so we toggle the button state
     // regardless of it's 'topness'
@@ -4405,7 +4405,7 @@ bool DocumentWidget::GetMatchSyntaxBased() const {
 void DocumentWidget::SetMatchSyntaxBased(bool value) {
 
     // TODO(eteran): support no parameter...
-    emit_event("set_match_syntax_based", QString::fromLatin1(value ? "1" : "0"));
+    emit_event("set_match_syntax_based", value ? QLatin1String("1") : QLatin1String("0"));
 
     if(IsTopDocument()) {
         if(auto win = MainWindow::fromDocument(this)) {
@@ -4429,7 +4429,7 @@ bool DocumentWidget::GetOverstrike() const {
 */
 void DocumentWidget::SetOverstrike(bool overstrike) {
 
-    emit_event("set_overtype_mode", QString::fromLatin1(overstrike ? "1" : "0"));
+    emit_event("set_overtype_mode", overstrike ? QLatin1String("1") : QLatin1String("0"));
 
     if(IsTopDocument()) {
         if(auto win = MainWindow::fromDocument(this)) {
@@ -6909,7 +6909,7 @@ bool DocumentWidget::GetMakeBackupCopy() const {
 
 void DocumentWidget::SetMakeBackupCopy(bool value) {
 
-    emit_event("set_make_backup_copy", QString::fromLatin1(value ? "1" : "0"));
+    emit_event("set_make_backup_copy", value ? QLatin1String("1") : QLatin1String("0"));
 
     if (IsTopDocument()) {
         if(auto win = MainWindow::fromDocument(this)) {

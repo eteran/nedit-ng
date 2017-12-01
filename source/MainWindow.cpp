@@ -1939,7 +1939,7 @@ void MainWindow::openFile(DocumentWidget *document, const QString &text) {
     } else {
         match = reSystem.match(nameText);
         if(match.hasMatch()) {
-            nameText = QString(QLatin1String("%1%2")).arg(includeDir, match.captured(1));
+            nameText = tr("%1%2").arg(includeDir, match.captured(1));
         }
     }
 
@@ -1953,7 +1953,7 @@ void MainWindow::openFile(DocumentWidget *document, const QString &text) {
 
     // If path name is relative, make it refer to current window's directory
     if (!QFileInfo(nameText).isAbsolute()) {
-        nameText = QString(QLatin1String("%1%2")).arg(document->path_, nameText);
+        nameText = tr("%1%2").arg(document->path_, nameText);
     }
 
 #if !defined(DONT_HAVE_GLOB)
@@ -7122,7 +7122,7 @@ bool MainWindow::DoNamedBGMenuCmd(DocumentWidget *document, TextArea *area, cons
  */
 void MainWindow::SetShowLineNumbers(bool show) {
 
-    emit_event("set_show_line_numbers", QString::fromLatin1(show ? "1" : "0"));
+    emit_event("set_show_line_numbers", show ? QLatin1String("1") : QLatin1String("0"));
 
     no_signals(ui.action_Show_Line_Numbers)->setChecked(show);
     showLineNumbers_ = show;
