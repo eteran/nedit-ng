@@ -327,6 +327,9 @@ private:
 private:
 	QSplitter *splitter_;
 	Ui::DocumentWidget ui;
+
+public:
+    static DocumentWidget *LastCreated;
 };
 
 #endif

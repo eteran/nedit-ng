@@ -174,8 +174,8 @@ static DataValue *FrameP;                      // frame pointer (start of local 
 static Inst *PC;                               // program counter during execution
 static char *ErrMsg;                           // global for returning error messages from executing functions
 
-static DocumentWidget *InitiatingWindowEx;     // window from which macro was run
-static DocumentWidget *FocusWindowEx;          // window on which macro commands operate
+static DocumentWidget *InitiatingDocument;     // window from which macro was run
+static DocumentWidget *FocusDocument;          // window on which macro commands operate
 
 static bool PreemptRequest;                    // passes preemption requests from called routines back up to the interpreter
 
@@ -567,7 +567,7 @@ void ModifyReturnedValueEx(const std::shared_ptr<RestartData> &context, const Da
 ** which the macro is executing (where the banner is, not where it is focused)
 */
 DocumentWidget *MacroRunDocumentEx() {
-    return InitiatingWindowEx;
+    return InitiatingDocument;
 }
 
 /*
@@ -575,16 +575,16 @@ DocumentWidget *MacroRunDocumentEx() {
 ** the currently executing macro is focused (the window which macro commands
 ** modify, not the window from which the macro is being run)
 */
-DocumentWidget *MacroFocusWindowEx() {
-    return FocusWindowEx;
+DocumentWidget *MacroFocusDocument() {
+    return FocusDocument;
 }
 
 /*
 ** Set the window to which macro subroutines and actions which operate on an
 ** implied window are directed.
 */
-void SetMacroFocusWindowEx(DocumentWidget *document) {
-    FocusWindowEx = document;
+void SetMacroFocusDocument(DocumentWidget *document) {
+    FocusDocument = document;
 }
 
 /*
@@ -905,8 +905,8 @@ static void saveContextEx(const std::shared_ptr<RestartData> &context) {
     context->stackP      = StackP;
     context->frameP      = FrameP;
     context->pc          = PC;
-    context->runWindow   = InitiatingWindowEx;
-    context->focusWindow = FocusWindowEx;
+    context->runWindow   = InitiatingDocument;
+    context->focusWindow = FocusDocument;
 }
 
 static void restoreContextEx(const std::shared_ptr<RestartData> &context) {
@@ -914,8 +914,8 @@ static void restoreContextEx(const std::shared_ptr<RestartData> &context) {
     StackP             = context->stackP;
     FrameP             = context->frameP;
     PC                 = context->pc;
-    InitiatingWindowEx = context->runWindow;
-    FocusWindowEx      = context->focusWindow;
+    InitiatingDocument = context->runWindow;
+    FocusDocument      = context->focusWindow;
 }
 
 #define POP(dataVal)                                                           \
@@ -1038,7 +1038,7 @@ static int pushSymVal() {
 	} else if (s->type == PROC_VALUE_SYM) {
 
 		const char *errMsg;
-        if (!(to_subroutine(s->value))(FocusWindowEx, Arguments(), &symVal, &errMsg)) {
+        if (!(to_subroutine(s->value))(FocusDocument, Arguments(), &symVal, &errMsg)) {
 			return execError(errMsg, s->name.c_str());
 		}
 	} else
@@ -1674,8 +1674,7 @@ static int concat() {
 static int callSubroutine() {
 
 	static DataValue noValue = INIT_DATA_VALUE;
-	Program *prog;
-	const char *errMsg;
+    const char *errMsg = nullptr;
 
     Symbol *sym = PC++->sym;
     int nArgs   = PC++->value;
@@ -1694,7 +1693,7 @@ static int callSubroutine() {
 
 		// Call the function and check for preemption 
         PreemptRequest = false;
-        if (!to_subroutine(sym->value)(FocusWindowEx, Arguments(StackP, nArgs), &result, &errMsg)) {
+        if (!to_subroutine(sym->value)(FocusDocument, Arguments(StackP, nArgs), &result, &errMsg)) {
             return execError(errMsg, sym->name.c_str());
         }
 
@@ -1723,8 +1722,8 @@ static int callSubroutine() {
         *StackP++ = to_value(); // cached arg array
 
 		FrameP = StackP;
-        prog   = to_program(sym->value);
-        PC     = prog->code;
+        Program* prog = to_program(sym->value);
+        PC            = prog->code;
 
         for(Symbol *s : prog->localSymList) {
 			FP_GET_SYM_VAL(FrameP, s) = noValue;

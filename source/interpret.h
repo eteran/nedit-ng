@@ -248,8 +248,8 @@ Symbol *PromoteToGlobal(Symbol *sym);
 void FreeProgram(Program *prog);
 void ModifyReturnedValueEx(const std::shared_ptr<RestartData> &context, const DataValue &dv);
 DocumentWidget *MacroRunDocumentEx();
-DocumentWidget *MacroFocusWindowEx();
-void SetMacroFocusWindowEx(DocumentWidget *document);
+DocumentWidget *MacroFocusDocument();
+void SetMacroFocusDocument(DocumentWidget *document);
 
 /* function used for implicit conversion from string to number */
 bool StringToNum(const std::string &string, int *number);

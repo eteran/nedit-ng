@@ -2390,7 +2390,12 @@ static bool focusWindowMS(DocumentWidget *document, Arguments arguments, DataVal
     std::vector<DocumentWidget *>::iterator it;
 
     if (string == QLatin1String("last")) {
-        it = documents.begin();
+
+        // NOTE(eteran): the original code just used the first element, but that
+        // assumes we always use push_front. allDocuments() is in a relatively
+        // undefined order
+        it = std::find(documents.begin(), documents.end(), DocumentWidget::LastCreated);
+
     } else if (string == QLatin1String("next")) {
 
         auto curr = std::find_if(documents.begin(), documents.end(), [document](DocumentWidget *doc) {
@@ -2400,8 +2405,6 @@ static bool focusWindowMS(DocumentWidget *document, Arguments arguments, DataVal
         if(curr != documents.end()) {
             it = std::next(curr);
         }
-    } else if (string.size() >= MAXPATHLEN) {
-        M_FAILURE(PathnameTooLong);
     } else {
         // just use the plain name as supplied
         it = std::find_if(documents.begin(), documents.end(), [&string](DocumentWidget *doc) {
@@ -2434,7 +2437,7 @@ static bool focusWindowMS(DocumentWidget *document, Arguments arguments, DataVal
     DocumentWidget *const target_document = *it;
 
     // Change the focused window to the requested one
-    SetMacroFocusWindowEx(target_document);
+    SetMacroFocusDocument(target_document);
 
     // turn on syntax highlight that might have been deferred
     if (target_document->highlightSyntax_ && !target_document->highlightData_) {
@@ -2503,6 +2506,9 @@ static bool getCharacterMS(DocumentWidget *document, Arguments arguments, DataVa
 ** buffer
 */
 static bool replaceRangeMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
+
+    document = MacroFocusDocument();
+
     int from;
     int to;
     TextBuffer *buf = document->buffer_;

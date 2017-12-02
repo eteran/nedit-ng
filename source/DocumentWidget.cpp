@@ -70,6 +70,8 @@ struct ShellCommandData {
     bool       fromMacro;
 };
 
+DocumentWidget *DocumentWidget::LastCreated;
+
 namespace {
 
 // set higher on VMS becaus saving is slower
@@ -398,6 +400,8 @@ DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inDocument, c
 DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowFlags f) : QWidget(parent, f) {
 
 	ui.setupUi(this);
+
+    LastCreated = this;
 
     ui.labelFileAndSize->setElideMode(Qt::ElideLeft);
 
@@ -6588,8 +6592,8 @@ int DocumentWidget::MacroWindowCloseActionsEx() {
     if(!cmdData) {
         for(DocumentWidget *document : DocumentWidget::allDocuments()) {
             const std::shared_ptr<MacroCommandData> &mcd = document->macroCmdData_;
-            if (document == MacroRunDocumentEx() && MacroFocusWindowEx() == this) {
-                SetMacroFocusWindowEx(MacroRunDocumentEx());
+            if (document == MacroRunDocumentEx() && MacroFocusDocument() == this) {
+                SetMacroFocusDocument(MacroRunDocumentEx());
             } else if (mcd && mcd->context->focusWindow == this) {
                 mcd->context->focusWindow = mcd->context->runWindow;
             }
