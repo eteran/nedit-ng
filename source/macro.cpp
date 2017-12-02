@@ -2256,52 +2256,6 @@ void SafeGC() {
 }
 
 /*
-** Macro recording action hook for Learn/Replay, added temporarily during
-** learn.
-*/
-#if 0
-void learnActionHook(Widget w, XtPointer clientData, String actionName, XEvent *event, String *params, Cardinal *numParams) {
-
-    int i;
-    char *actionString;
-
-    /* Select only actions in text panes in the curr for which this
-       action hook is recording macros (from clientData). */
-    auto curr = WindowList.begin();
-    for (; curr != WindowList.end(); ++curr) {
-
-        Document *const window = *curr;
-
-        if (window->textArea_ == w)
-            break;
-        for (i = 0; i < window->textPanes_.size(); i++) {
-            if (window->textPanes_[i] == w)
-                break;
-        }
-        if (i < window->textPanes_.size())
-            break;
-    }
-
-    if (curr == WindowList.end() || *curr != static_cast<Document *>(clientData))
-        return;
-
-    /* beep on un-recordable operations which require a mouse position, to
-       remind the user that the action was not recorded */
-    if (isMouseAction(actionName)) {
-        QApplication::beep();
-        return;
-    }
-
-    // Record the action and its parameters
-    actionString = actionToString(w, actionName, event, params, *numParams);
-    if (actionString) {
-        MacroRecordBuf->BufAppendEx(actionString);
-        XtFree(actionString);
-    }
-}
-#endif
-
-/*
 ** Built-in macro subroutine for getting the length of a string
 */
 static bool lengthMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
@@ -2374,7 +2328,6 @@ static bool maxMS(DocumentWidget *document, Arguments arguments, DataValue *resu
 
 static bool focusWindowMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
 
-
     /* Read the argument representing the window to focus to, and translate
        it into a pointer to a real DocumentWidget */
     if (arguments.size() != 1) {
@@ -2415,7 +2368,7 @@ static bool focusWindowMS(DocumentWidget *document, Arguments arguments, DataVal
         // didn't work? try normalizing the string passed in
         if(it == documents.end()) {
 
-            QString normalizedString = NormalizePathnameEx(string);
+            const QString normalizedString = NormalizePathnameEx(string);
             if(normalizedString.isNull()) {
                 //  Something is broken with the input pathname.
                 M_FAILURE(PathnameTooLong);
@@ -2434,18 +2387,18 @@ static bool focusWindowMS(DocumentWidget *document, Arguments arguments, DataVal
         return true;
     }
 
-    DocumentWidget *const target_document = *it;
+    DocumentWidget *const target = *it;
 
     // Change the focused window to the requested one
-    SetMacroFocusDocument(target_document);
+    SetMacroFocusDocument(target);
 
     // turn on syntax highlight that might have been deferred
-    if (target_document->highlightSyntax_ && !target_document->highlightData_) {
-        target_document->StartHighlightingEx(false);
+    if (target->highlightSyntax_ && !target->highlightData_) {
+        target->StartHighlightingEx(false);
     }
 
     // Return the name of the window
-    *result = to_value(QString(QLatin1String("%1%2")).arg(target_document->path_, target_document->filename_));
+    *result = to_value(QString(QLatin1String("%1%2")).arg(target->path_, target->filename_));
     return true;
 }
 
@@ -2454,6 +2407,7 @@ static bool focusWindowMS(DocumentWidget *document, Arguments arguments, DataVal
 ** buffer
 */
 static bool getRangeMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
+
     int from;
     int to;
     TextBuffer *buf = document->buffer_;
@@ -2484,6 +2438,8 @@ static bool getRangeMS(DocumentWidget *document, Arguments arguments, DataValue 
 ** given, from the current window
 */
 static bool getCharacterMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
+
+
     int pos;
     TextBuffer *buf = document->buffer_;
 
