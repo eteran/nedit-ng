@@ -1,5 +1,6 @@
 
 #include "DialogMultiReplace.h"
+#include "DocumentModel.h"
 #include "DialogReplace.h"
 #include "DocumentWidget.h"
 #include "MainWindow.h"
@@ -9,11 +10,13 @@
 
 DialogMultiReplace::DialogMultiReplace(DialogReplace *replace, Qt::WindowFlags f) : Dialog(replace, f), replace_(replace) {
 	ui.setupUi(this);
+
+    model_ = new DocumentModel(this);
+    ui.listFiles->setModel(model_);
 }
 
 void DialogMultiReplace::on_checkShowPaths_toggled(bool checked) {
-	Q_UNUSED(checked);
-	uploadFileListItems(true);
+    model_->setShowFullPath(checked);
 }
 
 void DialogMultiReplace::on_buttonDeselectAll_clicked() {
@@ -29,9 +32,10 @@ void DialogMultiReplace::on_buttonReplace_clicked() {
     QString searchString;
     QString replaceString;
     Direction direction;
-	SearchType searchType;	
+    SearchType searchType;
 
-	int nSelected = ui.listFiles->selectedItems().size();
+    QModelIndexList selections = ui.listFiles->selectionModel()->selectedRows();
+    const int nSelected = selections.size();
 
 	if (!nSelected) {
 		QMessageBox::information(this, tr("No Files"), tr("No files selected!"));
@@ -44,7 +48,6 @@ void DialogMultiReplace::on_buttonReplace_clicked() {
 	/*
 	 * Protect the user against him/herself; Maybe this is a bit too much?
 	 */
-	 
     int res = QMessageBox::question(
                 this,
                 tr("Multi-File Replacement"),
@@ -61,9 +64,9 @@ void DialogMultiReplace::on_buttonReplace_clicked() {
     /* Fetch the find and replace strings from the dialog;
      * they should have been validated already, but it is possible that the
      * user modified the strings again, so we should verify them again too. */
-    if (!replace_->getReplaceDlogInfo(&direction, &searchString, &replaceString, &searchType))
+    if (!replace_->getReplaceDlogInfo(&direction, &searchString, &replaceString, &searchType)) {
 		return;
-
+    }
 
 	// Set the initial focus of the dialog back to the search string 
 	replace_->ui.textFind->setFocus();
@@ -77,33 +80,31 @@ void DialogMultiReplace::on_buttonReplace_clicked() {
     for (size_t i = 0; i < writableWindows.size(); ++i) {
         DocumentWidget *writableWin = writableWindows[i];
 
-        if(ui.listFiles->item(gsl::narrow<int>(i))->isSelected()) {
-		
+        QModelIndex index = model_->index(i, 0);
+        if(ui.listFiles->selectionModel()->isSelected(index)) {
+
             /* First check again whether the file is still writable. If the
              * file status has changed or the file was locked in the mean time,
              * we just skip the window. */
-			if (!writableWin->lockReasons_.isAnyLocked()) {
-				noWritableLeft = false;
-				writableWin->multiFileReplSelected_ = true;
-				writableWin->multiFileBusy_ = true; // Avoid multi-beep/dialog 
-				writableWin->replaceFailed_ = false;
+            if (!writableWin->lockReasons_.isAnyLocked()) {
+                noWritableLeft = false;
+                writableWin->multiFileBusy_ = true; // Avoid multi-beep/dialog
+                writableWin->replaceFailed_ = false;
 
                 if(auto win = MainWindow::fromDocument(writableWin)) {
                     win->action_Replace_All(writableWin, searchString, replaceString, searchType);
                 }
 
-				writableWin->multiFileBusy_ = false;
-				if (!writableWin->replaceFailed_) {
-					replaceFailed = false;
-				}
-			}			
-		} else {
-			writableWin->multiFileReplSelected_ = false;
-		}
+                writableWin->multiFileBusy_ = false;
+                if (!writableWin->replaceFailed_) {
+                    replaceFailed = false;
+                }
+            }
+        }
 
-	}
+    }
 
-	if (!replace_->keepDialog()) {
+    if (!replace_->keepDialog()) {
 		// Pop down both replace dialogs. 
 		replace_->hide();
 		hide();
@@ -111,7 +112,6 @@ void DialogMultiReplace::on_buttonReplace_clicked() {
 		// pow down only the file selection dialog
 		hide();
 	}
-
 
 	/* We suppressed multiple beeps/dialogs. If there wasn't any file in
 	   which the replacement succeeded, we should still warn the user */
@@ -136,50 +136,11 @@ void DialogMultiReplace::on_buttonReplace_clicked() {
  * Depending on the state of the "Show path names" toggle button, either
  * the file names or the path names are listed.
  */
-void DialogMultiReplace::uploadFileListItems(bool replace) {
+void DialogMultiReplace::uploadFileListItems() {
 
-	bool usePathNames = ui.checkShowPaths->isChecked();
-	
-    // NOTE(eteran): so "replace" seems to mean that we want to keep
-    //               existing items and possible update them, "replacing" their
-    //               strings with new ones, when not in replace mode, I think the
-    //               whole list is supposed to be new
-	if(replace) {
-		// we want to maintain selections, we are replacing the 
-		// existing items with equivalent items but with (possibly)
-		// updated names
-		for(int i = 0; i < ui.listFiles->count(); ++i) {
-	    	QListWidgetItem* item = ui.listFiles->item(i);
-            auto document = reinterpret_cast<DocumentWidget *>(item->data(Qt::UserRole).toULongLong());
-            if (usePathNames && document->filenameSet_) {
-                item->setText(document->FullPath());
-			} else {
-                item->setText(document->filename_);
-			}				
-		}
-		
-	} else {
-		/* Note: the windows are sorted alphabetically by _file_ name. This
-	        	 order is _not_ changed when we switch to path names. That
-	        	 would be confusing for the user */
+    model_->clear();
 
-        ui.listFiles->clear();
-
-        for(DocumentWidget *document : replace_->writableWindows_) {
-
-			QListWidgetItem *item;
-            if (usePathNames && document->filenameSet_) {
-                item = new QListWidgetItem(document->FullPath());
-			} else {
-                item = new QListWidgetItem(document->filename_);
-			}
-			
-            item->setData(Qt::UserRole, reinterpret_cast<qulonglong>(document));
-			ui.listFiles->addItem(item);
-		}
-		
-		if(ui.listFiles->selectedItems().isEmpty()) {
-			ui.listFiles->selectAll();
-		}		
-	}
+    for(DocumentWidget *document : replace_->writableWindows_) {
+        model_->addItem(document);
+    }
 }

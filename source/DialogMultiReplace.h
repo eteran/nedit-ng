@@ -6,6 +6,7 @@
 #include "ui_DialogMultiReplace.h"
 
 class DialogReplace;
+class DocumentModel;
 class DocumentWidget;
 class MainWindow;
 
@@ -22,11 +23,12 @@ private Q_SLOTS:
 	void on_buttonReplace_clicked();
 	
 public:
-	void uploadFileListItems(bool replace);
+    void uploadFileListItems();
 	
 public:
 	Ui::DialogMultiReplace ui;
 	DialogReplace *replace_;
+    DocumentModel *model_;
 
 };
 

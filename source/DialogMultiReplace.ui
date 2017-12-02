@@ -33,7 +33,7 @@
     </layout>
    </item>
    <item>
-    <widget class="QListWidget" name="listFiles">
+    <widget class="QListView" name="listFiles">
      <property name="selectionMode">
       <enum>QAbstractItemView::MultiSelection</enum>
      </property>

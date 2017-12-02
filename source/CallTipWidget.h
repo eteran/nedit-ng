@@ -14,6 +14,9 @@ public:
 public:
 	void setText(const QString &text);
 
+private Q_SLOTS:
+    void on_buttonCopy_clicked();
+
 public:
     void showEvent(QShowEvent *event) override;
 

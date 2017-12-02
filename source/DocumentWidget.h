@@ -124,6 +124,7 @@ public:
     QColor HighlightColorValueOfCodeEx(int hCode) const;
     QFont FontOfNamedStyleEx(const QString &styleName) const;
     QString FullPath() const;
+    QString FileName() const;
     QString GetAnySelectionEx();
     QString GetWindowDelimiters() const;
     QString GetWindowDelimitersEx() const;
@@ -276,7 +277,6 @@ public:
     LockReasons lockReasons_;          // all ways a file can be locked
     TextBuffer *buffer_;               // holds the text being edited
     bool multiFileBusy_;               // suppresses multiple beeps/dialogs during multi-file replacements
-    bool multiFileReplSelected_;       // selected during last multi-window replacement operation (history)
     bool filenameSet_;                 // is the window still "Untitled"?
     bool replaceFailed_;               // flags replacements failures during multi-file replacements
     bool highlightSyntax_;             // is syntax highlighting turned on?

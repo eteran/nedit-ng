@@ -36,15 +36,6 @@ DialogColors::DialogColors(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, 
 }
 
 /**
- * @brief DialogColors::checkColorStatus
- * @param text
- * @return true if the color is valid, false if it's not
- */
-bool DialogColors::checkColorStatus(const QString &text) {
-    return QColor::isValidColor(text);
-}
-
-/**
  * @brief DialogColors::chooseColor
  * @param edit
  */
@@ -67,7 +58,7 @@ void DialogColors::showColorStatus(const QString &text, QLabel *label) {
 	/* Should set the OK/Apply button sensitivity here, instead
 	   of leaving is sensitive and then complaining if an error. */
 	
-	label->setVisible(!checkColorStatus(text));
+    label->setVisible(!QColor::isValidColor(text));
 }
 
 /**
@@ -231,14 +222,14 @@ void DialogColors::on_buttonBox_accepted() {
  */
 bool DialogColors::verifyAllColors() {
 
-    return checkColorStatus(ui.editFG->text())          &&
-           checkColorStatus(ui.editBG->text())          &&
-           checkColorStatus(ui.editSelectionFG->text()) &&
-           checkColorStatus(ui.editSelectionBG->text()) &&
-           checkColorStatus(ui.editMatchFG->text())     &&
-           checkColorStatus(ui.editMatchBG->text())     &&
-           checkColorStatus(ui.editLineNumbers->text()) &&
-           checkColorStatus(ui.editCursor->text());
+    return QColor::isValidColor(ui.editFG->text())          &&
+           QColor::isValidColor(ui.editBG->text())          &&
+           QColor::isValidColor(ui.editSelectionFG->text()) &&
+           QColor::isValidColor(ui.editSelectionBG->text()) &&
+           QColor::isValidColor(ui.editMatchFG->text())     &&
+           QColor::isValidColor(ui.editMatchBG->text())     &&
+           QColor::isValidColor(ui.editLineNumbers->text()) &&
+           QColor::isValidColor(ui.editCursor->text());
 }
 
 /**

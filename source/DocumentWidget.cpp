@@ -414,7 +414,6 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
     fileMissing_           = true;
     filenameSet_           = false;
     overstrike_            = false;
-	multiFileReplSelected_ = false;
 	multiFileBusy_         = false;
 	fileChanged_           = false;	
     ignoreModify_          = false;
@@ -2150,6 +2149,14 @@ void DocumentWidget::CheckForChangesToFileEx() {
  */
 QString DocumentWidget::FullPath() const {
     return tr("%1%2").arg(path_, filename_);
+}
+
+/**
+ * @brief DocumentWidget::FileName
+ * @return
+ */
+QString DocumentWidget::FileName() const {
+    return filename_;
 }
 
 /*

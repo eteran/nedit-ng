@@ -427,7 +427,7 @@ void DialogReplace::on_buttonMulti_clicked() {
 	collectWritableWindows();
 
 	// Initialize/update the list of files. 
-	dialogMultiReplace_->uploadFileListItems(false);
+    dialogMultiReplace_->uploadFileListItems();
 
 	// Display the dialog 
     dialogMultiReplace_->exec();

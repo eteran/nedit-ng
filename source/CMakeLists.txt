@@ -50,6 +50,7 @@ qt5_wrap_cpp(MOC_SOURCES
 	DialogWindowSize.h
 	DialogWindowTitle.h
 	DialogWrapMargin.h
+	DocumentModel.h
 	DocumentWidget.h
 	ElidedLabel.h
 	HighlightPatternModel.h
@@ -171,6 +172,8 @@ add_executable(nedit-ng
 	DialogWrapMargin.cpp
 	DialogWrapMargin.h
 	Direction.h
+	DocumentModel.cpp
+	DocumentModel.h
 	DocumentWidget.cpp
 	DocumentWidget.h
 	DragEndEvent.h
@@ -236,6 +239,7 @@ add_executable(nedit-ng
 	TextSelection.h
 	UndoInfo.cpp
 	UndoInfo.h
+	Verbosity.h
 	WindowHighlightData.cpp
 	WindowHighlightData.h
 	WindowMenuEvent.cpp
@@ -265,7 +269,6 @@ add_executable(nedit-ng
 	userCmds.cpp
 	userCmds.h
 	version.h
-	Verbosity.h
 
 	${BISON_parser_OUTPUT_SOURCE}
 )

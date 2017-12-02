@@ -38,7 +38,6 @@ private Q_SLOTS:
   
 private:
 	void showColorStatus(const QString &text, QLabel *label);
-	bool checkColorStatus(const QString &text);
 	void chooseColor(QLineEdit *edit);
 	bool verifyAllColors();
 	void updateColors();
