@@ -4401,7 +4401,7 @@ static bool languageModeMV(DocumentWidget *document, Arguments arguments, DataVa
     Q_UNUSED(arguments);
     Q_UNUSED(errMsg);
 
-    QString lmName = LanguageModeName(document->languageMode_);
+    QString lmName = LanguageModeName(document->GetLanguageMode());
 
     if(lmName.isNull()) {
         lmName = QLatin1String("Plain");

@@ -409,12 +409,12 @@ private:
     QPointer<DialogFind> dialogFind_;
     QPointer<QDialog>    dialogReplace_;
     QPointer<TextArea>   lastFocus_;
-    bool iSearchLastLiteralCase_;      // idem, for literal mode
-    bool iSearchLastRegexCase_;        // idem, for regex mode in incremental search bar
-    int iSearchHistIndex_;             //   find and replace dialogs
-    int iSearchLastBeginPos_;          // beg. pos. last match of current i.s.
-    int iSearchStartPos_;              // start pos. of current incr. search    
-    bool wasSelected_;                 // last selection state (for dim/undim of selection related menu items
+    bool iSearchLastLiteralCase_ = false; // idem, for literal mode
+    bool iSearchLastRegexCase_   = true;  // idem, for regex mode in incremental search bar
+    bool wasSelected_            = false; // last selection state (for dim/undim of selection related menu items
+    int iSearchHistIndex_        = 0;     // find and replace dialogs
+    int iSearchLastBeginPos_     = 0;     // beg. pos. last match of current i.s.
+    int iSearchStartPos_         = -1;    // start pos. of current incr. search
 #if defined(REPLACE_SCOPE)
     QAction *replaceScopeInWindow_;
     QAction *replaceScopeInSelection_;

@@ -941,7 +941,7 @@ int findAllMatchesEx(DocumentWidget *document, TextArea *area, const QString &st
         ** current language mode, but don't skip anything if the window is in
         ** PLAIN_LANGUAGE_MODE.
         */
-        if (document->languageMode_ != PLAIN_LANGUAGE_MODE && GetPrefSmartTags() && langMode != PLAIN_LANGUAGE_MODE && langMode != document->languageMode_) {
+        if (document->GetLanguageMode() != PLAIN_LANGUAGE_MODE && GetPrefSmartTags() && langMode != PLAIN_LANGUAGE_MODE && langMode != document->GetLanguageMode()) {
             continue;
         }
 

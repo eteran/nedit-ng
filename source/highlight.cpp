@@ -67,7 +67,7 @@
 
 namespace {
 
-auto NEDIT_DEFAULT_TEXT_FG         = QLatin1String("#221f1e");
+auto NEDIT_DEFAULT_TEXT_FG    = QLatin1String("#221f1e");
 auto NEDIT_DEFAULT_TEXT_BG    = QLatin1String("#d6d2d0");
 auto NEDIT_DEFAULT_SEL_FG     = QLatin1String("#ffffff");
 auto NEDIT_DEFAULT_SEL_BG     = QLatin1String("#43ace8");
@@ -1055,9 +1055,11 @@ int forwardOneContext(TextBuffer *buf, ReparseContext *context, int fromPos) {
 */
 static void recolorSubexpr(const std::shared_ptr<Regex> &re, int subexpr, int style, const char *string, char *styleString) {
 
-	const char *stringPtr = re->startp[subexpr];
+    auto index = static_cast<size_t>(subexpr);
+
+    const char *stringPtr = re->startp[index];
 	char *stylePtr        = &styleString[stringPtr - string];
-    fillStyleString(&stringPtr, &stylePtr, re->endp[subexpr], static_cast<uint8_t>(style), nullptr);
+    fillStyleString(&stringPtr, &stylePtr, re->endp[index], static_cast<uint8_t>(style), nullptr);
 }
 
 /*

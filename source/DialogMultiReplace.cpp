@@ -80,7 +80,7 @@ void DialogMultiReplace::on_buttonReplace_clicked() {
             /* First check again whether the file is still writable. If the
              * file status has changed or the file was locked in the mean time,
              * we just skip the window. */
-            if (!writableWin->lockReasons_.isAnyLocked()) {
+            if (!writableWin->lockReasons().isAnyLocked()) {
                 noWritableLeft = false;
                 writableWin->multiFileBusy_ = true; // Avoid multi-beep/dialog
                 writableWin->replaceFailed_ = false;

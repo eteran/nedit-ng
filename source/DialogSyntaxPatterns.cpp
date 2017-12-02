@@ -721,7 +721,7 @@ bool DialogSyntaxPatterns::updatePatternSet() {
 	// Find windows that are currently using this pattern set and re-do the highlighting
     for(DocumentWidget *document : DocumentWidget::allDocuments()) {
         if (!patSet->patterns.empty()) {
-            if (document->languageMode_ != PLAIN_LANGUAGE_MODE && (LanguageModeName(document->languageMode_) == patSet->languageMode)) {
+            if (document->GetLanguageMode() != PLAIN_LANGUAGE_MODE && (LanguageModeName(document->GetLanguageMode()) == patSet->languageMode)) {
 				/*  The user worked on the current document's language mode, so
 				    we have to make some changes immediately. For inactive
 				    modes, the changes will be activated on activation.  */

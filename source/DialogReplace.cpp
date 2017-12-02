@@ -706,13 +706,13 @@ void DialogReplace::collectWritableWindows() {
     std::vector<DocumentWidget *> documents;
 
     for(DocumentWidget *document : DocumentWidget::allDocuments()) {
-        if (!document->lockReasons_.isAnyLocked()) {
+        if (!document->lockReasons().isAnyLocked()) {
             documents.push_back(document);
         }
     }
 
     std::sort(documents.begin(), documents.end(), [](const DocumentWidget *lhs, const DocumentWidget *rhs) {
-		return lhs->filename_ < rhs->filename_;
+        return lhs->FileName() < rhs->FileName();
 	});
 
     writableWindows_ = documents;

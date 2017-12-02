@@ -145,11 +145,6 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(par
     updatePrevOpenMenu();
 
     showISearchLine_       = GetPrefISearchLine();
-    iSearchHistIndex_      = 0;
-    iSearchStartPos_       = -1;
-    iSearchLastRegexCase_  = true;
-    iSearchLastLiteralCase_= false;
-    wasSelected_           = false;
     showLineNumbers_       = GetPrefLineNums();
 	
 	// default to hiding the optional panels
@@ -195,9 +190,9 @@ void MainWindow::parseGeometry(QString geometry) {
 
     if(DocumentWidget *document = currentDocument()) {
         QFontMetrics fm(document->fontStruct_);
-		constexpr int margin = 5;
-		int w = (fm.maxWidth() * cols) + (margin * 2);
-		int h = (fm.ascent() + fm.descent()) * rows + (margin * 2);
+
+        int w = (fm.maxWidth() * cols) + (TextArea::DefaultHMargin * 2);
+        int h = (fm.ascent() + fm.descent()) * rows + (TextArea::DefaultVMargin * 2);
 
 		// NOTE(eteran): why 17? your guess is as good as mine
 		// but getting the width/height from the actual scrollbars
@@ -5284,8 +5279,10 @@ void MainWindow::focusChanged(QWidget *from, QWidget *to) {
 
     if(auto area = qobject_cast<TextArea *>(to)) {
         if(auto document = DocumentWidget::fromArea(area)) {
-            // record which window pane last had the keyboard focus
-            lastFocus_ = area;
+            if(auto window = MainWindow::fromDocument(document)) {
+                // record which window pane last had the keyboard focus
+                window->lastFocus_ = area;
+            }
 
             // update line number statistic to reflect current focus pane
             document->UpdateStatsLine(area);

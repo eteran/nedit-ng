@@ -422,9 +422,12 @@ bool DialogLanguageModes::updateLMList(Verbosity verbosity) {
        if the currently selected mode is deleted or has changed position),
        and update word delimiters */
     for(DocumentWidget *document : DocumentWidget::allDocuments()) {
-        if (document->languageMode_ != PLAIN_LANGUAGE_MODE) {
 
-            const QString documentLanguage = LanguageModes[document->languageMode_].name;
+        const size_t languageMode = document->GetLanguageMode();
+
+        if (languageMode != PLAIN_LANGUAGE_MODE) {
+
+            const QString documentLanguage = LanguageModes[languageMode].name;
 
             // assume plain as default
             document->languageMode_ = PLAIN_LANGUAGE_MODE;
@@ -507,8 +510,9 @@ bool DialogLanguageModes::updateLMList(Verbosity verbosity) {
 
         // and load any needed calltips files ...
         for(DocumentWidget *document : DocumentWidget::allDocuments()) {
-            if (document->languageMode_ != PLAIN_LANGUAGE_MODE && !LanguageModes[document->languageMode_].defTipsFile.isNull()) {
-                AddTagsFileEx(LanguageModes[document->languageMode_].defTipsFile, TagSearchMode::TIP);
+            const size_t languageMode = document->GetLanguageMode();
+            if (languageMode != PLAIN_LANGUAGE_MODE && !LanguageModes[languageMode].defTipsFile.isNull()) {
+                AddTagsFileEx(LanguageModes[languageMode].defTipsFile, TagSearchMode::TIP);
             }
         }
 

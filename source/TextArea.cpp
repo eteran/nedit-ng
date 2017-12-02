@@ -105,8 +105,6 @@ enum positionTypes {
 	CHARACTER_POS
 };
 
-constexpr int NO_HINT = -1;
-
 constexpr int CALLTIP_EDGE_GUARD = 5;
 
 /* Number of pixels of motion from the initial (grab-focus) button press
@@ -344,17 +342,13 @@ bool isModifier(QKeyEvent *e) {
 
 }
 
-TextArea::TextArea(
-        DocumentWidget *document,
-        QWidget *parent,
-        int left,
-        int top,
-        int width,
-        int height,
-        int lineNumLeft,
-        int lineNumWidth,
-        TextBuffer *buffer,
-        QFont fontStruct) : QAbstractScrollArea(parent) {
+/**
+ * @brief TextArea::TextArea
+ * @param document
+ * @param buffer
+ * @param fontStruct
+ */
+TextArea::TextArea(DocumentWidget *document, TextBuffer *buffer, QFont fontStruct) : QAbstractScrollArea(document) {
 
 	setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 	setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
@@ -365,8 +359,7 @@ TextArea::TextArea(
     connect(verticalScrollBar(),   &QScrollBar::valueChanged, this, &TextArea::verticalScrollBar_valueChanged);
     connect(horizontalScrollBar(), &QScrollBar::valueChanged, this, &TextArea::horizontalScrollBar_valueChanged);
 
-    document_ = document;
-
+    document_         = document;
 	autoScrollTimer_  = new QTimer(this);
 	cursorBlinkTimer_ = new QTimer(this);
 	clickTimer_       = new QTimer(this);
@@ -377,21 +370,13 @@ TextArea::TextArea(
 
     clickTimer_->setSingleShot(true);
     connect(clickTimer_, &QTimer::timeout, this, &TextArea::clickTimeout);
-    clickCount_ = 0;
 
     // defaults for the "resources"
-    P_lineNumCols        = 0;
-    P_marginWidth        = 2;
-    P_marginHeight       = 2;
-	P_pendingDelete      = true;
-	P_heavyCursor        = false;
-	P_autoShowInsertPos  = true;
-	P_autoWrapPastedText = false;
-    P_cursorBlinkRate    = QApplication::cursorFlashTime() / 2;
+    P_cursorBlinkRate = QApplication::cursorFlashTime() / 2;
 
     P_rows           = GetPrefRows();
     P_columns        = GetPrefCols();
-    P_readOnly       = document->lockReasons_.isAnyLocked();
+    P_readOnly       = document->lockReasons().isAnyLocked();
     P_delimiters     = GetPrefDelimiters();
     P_wrapMargin     = GetPrefWrapMargin();
     P_autoIndent     = document->indentStyle_ == IndentStyle::Auto;
@@ -409,51 +394,13 @@ TextArea::TextArea(
 	ascent_  = fm.ascent();
 	descent_ = fm.descent();
 
-    font_ = fontStruct;
-
-	buffer_           = buffer;
-	rect_             = { left, top, width, height };
-
-    highlightFGPixel_ = Qt::white;
-    highlightBGPixel_ = Qt::red;
-    lineNumFGPixel_   = Qt::black;
-    cursorFGPixel_    = Qt::black;
-
-	cursorOn_           = true;
-	cursorPos_          = 0;
-	cursor_             = { -100, -100 };
-	cursorToHint_       = NO_HINT;
-	cursorStyle_        = NORMAL_CURSOR;
-	cursorPreferredCol_ = -1;
-	firstChar_          = 0;
-	lastChar_           = 0;
-	nBufferLines_       = 0;
-	topLineNum_         = 1;
-	absTopLineNum_      = 1;
-	needAbsTopLineNum_  = false;
-	horizOffset_        = 0;
+    font_               = fontStruct;
+    buffer_             = buffer;
 	fixedFontWidth_     = fi.fixedPitch() ? fm.maxWidth() : -1;
-	styleTable_         = nullptr;
-	nStyles_            = 0;
+    calltip_.ID         = 0;
 
-	lineNumLeft_        = lineNumLeft;
-	lineNumWidth_       = lineNumWidth;
-    nVisibleLines_      = (height - 1) / ascent_ + descent_ + 1;
-
-    lineStarts_.resize(nVisibleLines_);
-	lineStarts_[0]     = 0;
-	calltip_.ID        = 0;
-
-    std::fill_n(&lineStarts_[1], nVisibleLines_ - 1, -1);
-
-	suppressResync_      = false;
-	nLinesDeleted_       = 0;
-	modifyingTabDist_    = 0;
-	pointerHidden_       = false;
-    bgMenu_              = nullptr;
-
-	/* Attach the callback to the text buffer for receiving modification
-	   information */
+    /* Attach the callback to the text buffer for receiving modification
+     * information */
 	if (buffer) {
 		buffer->BufAddModifyCB(bufModifiedCB, this);
 		buffer->BufAddPreDeleteCB(bufPreDeleteCB, this);
@@ -467,18 +414,8 @@ TextArea::TextArea(
 	// Decide if the horizontal scroll bar needs to be visible
 	hideOrShowHScrollBar();
 
-	/* Start with the cursor blanked (widgets don't have focus on creation,
-	   the initial FocusIn event will unblank it and get blinking started) */
-	cursorOn_ = false;
-
-	// Initialize the widget variables
-	dragState_          = NOT_CLICKED;
-	emTabsBeforeCursor_ = 0;
-
-	setGeometry(0, 0, width, height);
-
-	/* Add mandatory delimiters blank, tab, and newline to the list of
-       delimiters. */
+    /* Add mandatory delimiters blank, tab, and newline to the list of
+     * delimiters. */
     setWordDelimiters(P_delimiters);
 
 #if 0
@@ -489,16 +426,18 @@ TextArea::TextArea(
     // track when we lose ownership of the selection
     if(QApplication::clipboard()->supportsSelection()) {
 
-        connect(QApplication::clipboard(), &QClipboard::selectionChanged, [self = QPointer<TextArea>(this)]() {
+        connect(QApplication::clipboard(), &QClipboard::selectionChanged, this, [this]() {
             if(!QApplication::clipboard()->ownsSelection()) {
-                if(self) {
-                    self->buffer_->BufUnselect();
-                }
+                buffer_->BufUnselect();
             }
         });
     }
 }
 
+/**
+ * @brief TextArea::pasteClipboardAP
+ * @param flags
+ */
 void TextArea::pasteClipboardAP(EventFlags flags) {
 
     EMIT_EVENT_0("paste_clipboard");
@@ -513,7 +452,6 @@ void TextArea::pasteClipboardAP(EventFlags flags) {
 void TextArea::cutClipboardAP(EventFlags flags) {
 
     EMIT_EVENT_0("cut_clipboard");
-
     TextCutClipboard();
 }
 

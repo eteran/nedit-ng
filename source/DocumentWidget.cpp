@@ -31,7 +31,7 @@
 #include "TextBuffer.h"
 #include "userCmds.h"
 #include "util/ClearCase.h"
-#include "utils.h"
+#include "util/utils.h"
 #include "WindowHighlightData.h"
 #include "WindowMenuEvent.h"
 #include "X11Colors.h"
@@ -74,7 +74,7 @@ DocumentWidget *DocumentWidget::LastCreated;
 
 namespace {
 
-// set higher on VMS becaus saving is slower
+// number of distinct chars the user can typebefore NEdit gens. new backup file
 constexpr int AUTOSAVE_CHAR_LIMIT  = 80;
 
 // number of distinct editing operations user can do before NEdit gens. new backup file
@@ -137,6 +137,7 @@ constexpr auto PREFERRED_CMPBUF_LEN = 0x8000L;
    interval is only to prevent checking on every keystroke in case of a file
    system which is slow to process stat requests (which I'm not sure exists) */
 constexpr int MOD_CHECK_INTERVAL = 3000;
+
 
 void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *user) {
     if(auto document = static_cast<DocumentWidget *>(user)) {
@@ -401,10 +402,13 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 
 	ui.setupUi(this);
 
+    // track what the last created document was so that focus_document("last")
+    // works correctly
     LastCreated = this;
 
     ui.labelFileAndSize->setElideMode(Qt::ElideLeft);
 
+    // Every document has a backing buffer
 	buffer_ = new TextBuffer();
     buffer_->BufAddModifyCB(SyntaxHighlightModifyCBEx, this);
 
@@ -415,25 +419,7 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 	ui.verticalLayout->setContentsMargins(0, 0, 0, 0);
 
 	// initialize the members
-    fileMissing_           = true;
-    filenameSet_           = false;
-    overstrike_            = false;
-	multiFileBusy_         = false;
-	fileChanged_           = false;	
-    ignoreModify_          = false;
-    mode_                  = 0;
-    uid_                   = 0;
-    gid_                   = 0;
-    dev_                   = 0;
-    ino_                   = 0;
-    autoSaveCharCount_     = 0;
-    autoSaveOpCount_       = 0;
-    undoMemUsed_           = 0;
-    lastModTime_           = 0;
-    nMarks_                = 0;
-    fileFormat_            = FileFormats::Unix;
 	filename_              = name;
-		
 	indentStyle_           = GetPrefAutoIndent(PLAIN_LANGUAGE_MODE);
 	autoSave_              = GetPrefAutoSave();
 	saveOldVersion_        = GetPrefSaveOldVersion();
@@ -451,7 +437,6 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 	}
 	
     flashTimer_            = new QTimer(this);
-    contextMenu_           = nullptr;
 	fontName_              = GetPrefFontName();
 	italicFontName_        = GetPrefItalicFontName();
 	boldFontName_          = GetPrefBoldFontName();
@@ -542,25 +527,9 @@ DocumentWidget::~DocumentWidget() noexcept {
  */
 TextArea *DocumentWidget::createTextArea(TextBuffer *buffer) {
 
-    const int P_marginWidth  = 2;
-    const int P_marginHeight = 2;
-    const int lineNumCols    = 0;
-    const int marginWidth    = 0;
-    const int charWidth      = 0;
-    const int l = P_marginWidth + ((lineNumCols == 0) ? 0 : marginWidth + charWidth * lineNumCols);
-    const int h = P_marginHeight;
-
     auto area = new TextArea(this,
-                             this,
-                             l,
-                             h,
-                             100,
-                             100,
-                             0,
-                             0,
                              buffer,
-                             GetPrefDefaultFont()
-                             );
+                             GetPrefDefaultFont());
 
     const QColor textFgPix   = X11Colors::fromString(GetPrefColorName(TEXT_FG_COLOR));
     const QColor textBgPix   = X11Colors::fromString(GetPrefColorName(TEXT_BG_COLOR));
@@ -673,6 +642,10 @@ void DocumentWidget::RefreshTabState() {
 */
 void DocumentWidget::DetermineLanguageMode(bool forceNewDefaults) {
 	SetLanguageMode(matchLanguageMode(), forceNewDefaults);
+}
+
+size_t DocumentWidget::GetLanguageMode() const {
+    return languageMode_;
 }
 
 /*
@@ -5542,7 +5515,6 @@ void DocumentWidget::FlashMatchingEx(TextArea *area) {
     }
 
     flashTimer_->start();
-    flashPos_ = matchPos;
 }
 
 /*
@@ -7156,4 +7128,12 @@ void DocumentWidget::gotoMark(TextArea *area, QChar label, bool extendSel) {
     area->TextSetCursorPos(cursorPos);
     MakeSelectionVisible(area);
     area->setAutoShowInsertPos(true);
+}
+
+/**
+ * @brief DocumentWidget::lockReasons
+ * @return
+ */
+LockReasons DocumentWidget::lockReasons() const {
+    return lockReasons_;
 }
