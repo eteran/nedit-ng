@@ -59,7 +59,6 @@ public:
     void setAutoIndent(IndentStyle state);
     void EditHighlightPatterns();
     void EditHighlightStyles(const QString &initialStyle);
-	DialogReplace *getDialogReplace() const;	
     size_t TabCount() const;
 	void SortTabBar();
 	void UpdateWindowReadOnly(DocumentWidget *doc);
@@ -132,7 +131,7 @@ public:
     static void AllWindowsUnbusyEx();
     static void CheckCloseDimEx();
     static bool CloseAllFilesAndWindowsEx();
-    static void InvalidateWindowMenus();
+    static void UpdateWindowMenus();
     static void RenameHighlightPattern(const QString &oldName, const QString &newName);
 
 public Q_SLOTS:
@@ -405,10 +404,10 @@ public:
     bool showLineNumbers_;
 
 private:
-    QList<QAction *>     previousOpenFilesList_;
-    QPointer<DialogFind> dialogFind_;
-    QPointer<QDialog>    dialogReplace_;
-    QPointer<TextArea>   lastFocus_;
+    QList<QAction *>        previousOpenFilesList_;
+    QPointer<DialogFind>    dialogFind_;
+    QPointer<DialogReplace> dialogReplace_;
+    QPointer<TextArea>      lastFocus_;
     bool iSearchLastLiteralCase_ = false; // idem, for literal mode
     bool iSearchLastRegexCase_   = true;  // idem, for regex mode in incremental search bar
     bool wasSelected_            = false; // last selection state (for dim/undim of selection related menu items

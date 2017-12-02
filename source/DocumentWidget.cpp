@@ -503,20 +503,6 @@ DocumentWidget::~DocumentWidget() noexcept {
     ClearRedoList();
 #endif
 
-    if(auto window = MainWindow::fromDocument(this)) {
-
-        // update window menus
-        window->InvalidateWindowMenus();
-
-        // Close of window running a macro may have been disabled.
-        MainWindow::CheckCloseDimEx();
-
-        // NOTE(eteran): No need to explicitly sync this with the tab context menu
-        //               because they are set to be in sync when the context menu is shown
-        window->ui.action_Detach_Tab->setEnabled(window->TabCount() > 1);
-        window->ui.action_Move_Tab_To->setEnabled(MainWindow::allWindows().size() > 1);
-    }
-
     delete buffer_;
 }
 
@@ -901,7 +887,7 @@ void DocumentWidget::modifiedCallback(int pos, int nInserted, int nDeleted, int 
 
                 DimSelectionDepUserMenuItems(selected);
 
-                if(auto dialog = win->getDialogReplace()) {
+                if(auto dialog = win->dialogReplace_) {
                     dialog->UpdateReplaceActionButtons();
                 }
             }
@@ -1037,7 +1023,7 @@ void DocumentWidget::documentRaised() {
     /* Make sure that the "In Selection" button tracks the presence of a
        selection and that the this inherits the proper search scope. */
     if(auto win = MainWindow::fromDocument(this)) {
-        if(auto dialog = win->getDialogReplace()) {
+        if(auto dialog = win->dialogReplace_) {
             dialog->UpdateReplaceActionButtons();
         }
     }
@@ -3037,6 +3023,17 @@ void DocumentWidget::CloseWindow() {
 
     // deallocate the document data structure
     delete this;
+
+    // update window menus
+    MainWindow::UpdateWindowMenus();
+
+    // Close of window running a macro may have been disabled.
+    MainWindow::CheckCloseDimEx();
+
+    // NOTE(eteran): No need to explicitly sync this with the tab context menu
+    //               because they are set to be in sync when the context menu is shown
+    window->ui.action_Detach_Tab->setEnabled(window->TabCount() > 1);
+    window->ui.action_Move_Tab_To->setEnabled(MainWindow::allWindows().size() > 1);
 
     // if we deleted the last tab, then we can close the window too
     if(window->TabCount() == 0) {

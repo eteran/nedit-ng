@@ -922,34 +922,22 @@ void MainWindow::UpdateWindowTitle(DocumentWidget *doc) {
 
 	/* If there's a find or replace dialog up in "Keep Up" mode, with a
 	   file name in the title, update it too */
-	if (auto dialog = qobject_cast<DialogFind *>(dialogFind_)) {
-        dialog->setDocument(doc);
+    if (dialogFind_) {
+        dialogFind_->setDocument(doc);
 	}
 
-	if(auto dialog = getDialogReplace()) {
-        dialog->setDocument(doc);
+    if(dialogReplace_) {
+        dialogReplace_->setDocument(doc);
 	}
 
 	// Update the Windows menus with the new name
-	InvalidateWindowMenus();
+    MainWindow::UpdateWindowMenus();
 }
 
 /**
- * @brief MainWindow::getDialogReplace
- * @return
+ * @brief MainWindow::UpdateWindowMenus
  */
-DialogReplace *MainWindow::getDialogReplace() const {
-	return qobject_cast<DialogReplace *>(dialogReplace_);
-}
-
-/*
-** Invalidate the Window menus of all NEdit windows to but don't change
-** the menus until they're needed (Originally, this was "UpdateWindowMenus",
-** but creating and destroying manu items for every window every time a
-** new window was created or something changed, made things move very
-** slowly with more than 10 or so windows).
-*/
-void MainWindow::InvalidateWindowMenus() {
+void MainWindow::UpdateWindowMenus() {
 
     for(MainWindow *window : MainWindow::allWindows()) {
         window->updateWindowMenu();
@@ -3974,7 +3962,7 @@ void MainWindow::on_action_Default_Show_Path_In_Windows_Menu_toggled(bool state)
         no_signals(window->ui.action_Default_Show_Path_In_Windows_Menu)->setChecked(state);
     }
 
-    InvalidateWindowMenus();
+    UpdateWindowMenus();
 }
 
 /**
@@ -5885,9 +5873,9 @@ bool MainWindow::SearchWindowEx(DocumentWidget *document, const QString &searchS
             }
         }
 
-        if(auto dialog = getDialogReplace()) {
-            if (!dialog->keepDialog()) {
-                dialog->hide();
+        if(dialogReplace_) {
+            if (!dialogReplace_->keepDialog()) {
+                dialogReplace_->hide();
             }
         }
 
@@ -6654,15 +6642,15 @@ void MainWindow::ReplaceInSelectionEx(DocumentWidget *document, TextArea *area, 
         //  Nothing found, tell the user about it
         if (GetPrefSearchDlogs()) {
 
-            if (auto dialog = qobject_cast<DialogFind *>(dialogFind_)) {
-                if(!dialog->keepDialog()) {
-                    dialog->hide();
+            if (dialogFind_) {
+                if(!dialogFind_->keepDialog()) {
+                    dialogFind_->hide();
                 }
             }
 
-            if(auto dialog = getDialogReplace()) {
-                if (!dialog->keepDialog()) {
-                    dialog->hide();
+            if(dialogReplace_) {
+                if (!dialogReplace_->keepDialog()) {
+                    dialogReplace_->hide();
                 }
             }
 
@@ -6774,15 +6762,15 @@ bool MainWindow::ReplaceAllEx(DocumentWidget *document, TextArea *area, const QS
             document->replaceFailed_ = true;
         } else if (GetPrefSearchDlogs()) {
 
-            if (auto dialog = qobject_cast<DialogFind *>(dialogFind_)) {
-                if(!dialog->keepDialog()) {
-                    dialog->hide();
+            if (dialogFind_) {
+                if(!dialogFind_->keepDialog()) {
+                    dialogFind_->hide();
                 }
             }
 
-            if(auto dialog = getDialogReplace()) {
-                if (!dialog->keepDialog()) {
-                    dialog->hide();
+            if(dialogReplace_) {
+                if (!dialogReplace_->keepDialog()) {
+                    dialogReplace_->hide();
                 }
             }
 
@@ -6819,28 +6807,26 @@ void MainWindow::DoFindReplaceDlogEx(DocumentWidget *document, TextArea *area, D
         dialogReplace_ = new DialogReplace(this, document);
     }
 
-    auto dialog = getDialogReplace();
-
-    dialog->setTextField(document);
+    dialogReplace_->setTextField(document);
 
     // If the window is already up, just pop it to the top
-    if(dialog->isVisible()) {
-        dialog->raise();
-        dialog->activateWindow();
+    if(dialogReplace_->isVisible()) {
+        dialogReplace_->raise();
+        dialogReplace_->activateWindow();
         return;
     }
 
     // Blank the Replace with field
-    dialog->ui.textReplace->setText(QString());
+    dialogReplace_->ui.textReplace->setText(QString());
 
     // Set the initial search type
-    dialog->initToggleButtons(searchType);
+    dialogReplace_->initToggleButtons(searchType);
 
     // Set the initial direction based on the direction argument
-    dialog->ui.checkBackward->setChecked(direction == Direction::Forward ? false : true);
+    dialogReplace_->ui.checkBackward->setChecked(direction == Direction::Forward ? false : true);
 
     // Set the state of the Keep Dialog Up button
-    dialog->ui.checkKeep->setChecked(keepDialogs);
+    dialogReplace_->ui.checkKeep->setChecked(keepDialogs);
 
 #if defined(REPLACE_SCOPE)
 
@@ -6851,36 +6837,36 @@ void MainWindow::DoFindReplaceDlogEx(DocumentWidget *document, TextArea *area, D
         case REPL_DEF_SCOPE_SELECTION:
             // The user prefers selection scope, no matter what the size of
             // the selection is.
-            dialog->ui.radioSelection->setChecked(true);
+            dialogReplace_->ui.radioSelection->setChecked(true);
             break;
         case REPL_DEF_SCOPE_SMART:
             if (document->selectionSpansMultipleLines()) {
                 /* If the selection spans multiple lines, the user most
                    likely wants to perform a replacement in the selection */
-                dialog->ui.radioSelection->setChecked(true);
+                dialogReplace_->ui.radioSelection->setChecked(true);
             } else {
                 /* It's unlikely that the user wants a replacement in a
                    tiny selection only. */
-                dialog->ui.radioWindow->setChecked(true);
+                dialogReplace_->ui.radioWindow->setChecked(true);
             }
             break;
         default:
             // The user always wants window scope as default.
-            dialog->ui.radioWindow->setChecked(true);
+            dialogReplace_->ui.radioWindow->setChecked(true);
             break;
         }
     } else {
         // No selection -> always choose "In Window" as default.
-        dialog->ui.radioWindow->setChecked(true);
+        dialogReplace_->ui.radioWindow->setChecked(true);
     }
 #endif
 
-    dialog->UpdateReplaceActionButtons();
+    dialogReplace_->UpdateReplaceActionButtons();
 
     // Start the search history mechanism at the current history item
     rHistIndex_ = 0;
 
-    dialog->show();
+    dialogReplace_->show();
 }
 
 /*
