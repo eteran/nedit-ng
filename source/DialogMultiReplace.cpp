@@ -60,7 +60,6 @@ void DialogMultiReplace::on_buttonReplace_clicked() {
 		return;
 	}
 
-
     /* Fetch the find and replace strings from the dialog;
      * they should have been validated already, but it is possible that the
      * user modified the strings again, so we should verify them again too. */
@@ -74,14 +73,9 @@ void DialogMultiReplace::on_buttonReplace_clicked() {
 	bool replaceFailed = true;
 	bool noWritableLeft = true;
 
-    const std::vector<DocumentWidget *> &writableWindows = replace_->writableWindows_;
-
     // Perform the replacements and mark the selected files (history)
-    for (size_t i = 0; i < writableWindows.size(); ++i) {
-        DocumentWidget *writableWin = writableWindows[i];
-
-        QModelIndex index = model_->index(i, 0);
-        if(ui.listFiles->selectionModel()->isSelected(index)) {
+    for(QModelIndex index : selections) {
+        if(DocumentWidget *writableWin = model_->itemFromIndex(index)) {
 
             /* First check again whether the file is still writable. If the
              * file status has changed or the file was locked in the mean time,
@@ -107,11 +101,9 @@ void DialogMultiReplace::on_buttonReplace_clicked() {
     if (!replace_->keepDialog()) {
 		// Pop down both replace dialogs. 
 		replace_->hide();
-		hide();
-	} else {
-		// pow down only the file selection dialog
-		hide();
 	}
+
+    hide();
 
 	/* We suppressed multiple beeps/dialogs. If there wasn't any file in
 	   which the replacement succeeded, we should still warn the user */
@@ -129,12 +121,8 @@ void DialogMultiReplace::on_buttonReplace_clicked() {
 }
 
 
-/*
- * Uploads the file items to the multi-file replament dialog list.
- * A boolean argument indicates whether the elements currently in the
- * list have to be replaced or not.
- * Depending on the state of the "Show path names" toggle button, either
- * the file names or the path names are listed.
+/**
+ * @brief DialogMultiReplace::uploadFileListItems
  */
 void DialogMultiReplace::uploadFileListItems() {
 
