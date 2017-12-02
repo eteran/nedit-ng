@@ -191,15 +191,9 @@ void MainWindow::parseGeometry(QString geometry) {
     if(DocumentWidget *document = currentDocument()) {
         QFontMetrics fm(document->fontStruct_);
 
-        int w = (fm.maxWidth() * cols) + (TextArea::DefaultHMargin * 2);
-        int h = (fm.ascent() + fm.descent()) * rows + (TextArea::DefaultVMargin * 2);
-
-		// NOTE(eteran): why 17? your guess is as good as mine
-		// but getting the width/height from the actual scrollbars
-		// yielded nonsense on my system (like 100px). Maybe it's a bug
-		// involving HiDPI screens? I dunno
-		w += 17; // area->verticalScrollBar()->width();
-		h += 17; // area->horizontalScrollBar()->height();
+        const int extent = qApp->style()->pixelMetric(QStyle::PM_ScrollBarExtent);
+        const int w = extent +(fm.maxWidth() * cols) + (TextArea::DefaultHMargin * 2);
+        const int h = extent + (fm.ascent() + fm.descent()) * rows + (TextArea::DefaultVMargin * 2);
 
 		document->setMinimumSize(w, h);
 		adjustSize();

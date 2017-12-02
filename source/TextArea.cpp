@@ -2310,10 +2310,10 @@ void TextArea::updateLineStarts(int pos, int charsInserted, int charsDeleted, in
             for (i = lineOfPos + 1; i < nVisLines && lineStarts_[i] != -1; i++)
                 lineStarts_[i] += charDelta;
 		} else if (lineDelta > 0) {
-			for (i = nVisLines - 1; i >= lineOfPos + lineDelta + 1; i--)
+            for (i = nVisLines - 1; i >= lineOfPos + lineDelta + 1; i--)
                 lineStarts_[i] = lineStarts_[i - lineDelta] + (lineStarts_[i - lineDelta] == -1 ? 0 : charDelta);
 		} else /* (lineDelta < 0) */ {
-			for (i = std::max(0, lineOfPos + 1); i < nVisLines + lineDelta; i++)
+            for (i = std::max(0, lineOfPos + 1); i < nVisLines + lineDelta; i++)
                 lineStarts_[i] = lineStarts_[i - lineDelta] + (lineStarts_[i - lineDelta] == -1 ? 0 : charDelta);
 		}
 
@@ -5792,39 +5792,39 @@ int TextArea::xyToPos(const QPoint &pos, int posType) {
 }
 
 int TextArea::xyToPos(int x, int y, int posType) {
-	int charIndex;
-	int lineStart;
-	int lineLen;
-	int fontHeight;
-	int visLineNum;
-	int xStep;
-	int outIndex;
-    char expandedChar[TextBuffer::MAX_EXP_CHAR_LEN];
 
 	// Find the visible line number corresponding to the y coordinate
-    fontHeight = ascent_ + descent_;
-    visLineNum = (y - rect_.top()) / fontHeight;
-	if (visLineNum < 0)
+    int fontHeight = ascent_ + descent_;
+    int visLineNum = (y - rect_.top()) / fontHeight;
+
+    if (visLineNum < 0) {
 		return firstChar_;
-	if (visLineNum >= nVisibleLines_)
+    }
+
+    if (visLineNum >= nVisibleLines_) {
 		visLineNum = nVisibleLines_ - 1;
+    }
 
 	// Find the position at the start of the line
-	lineStart = lineStarts_[visLineNum];
+    int lineStart = lineStarts_[visLineNum];
 
 	// If the line start was empty, return the last position in the buffer
-	if (lineStart == -1)
+    if (lineStart == -1) {
 		return buffer_->BufGetLength();
+    }
 
 	// Get the line text and its length
-	lineLen = visLineLength(visLineNum);
+    int lineLen = visLineLength(visLineNum);
 	std::string lineStr = buffer_->BufGetRangeEx(lineStart, lineStart + lineLen);
 
 	/* Step through character positions from the beginning of the line
 	   to find the character position corresponding to the x coordinate */
-    xStep = rect_.left() - horizOffset_;
-	outIndex = 0;
-	for (charIndex = 0; charIndex < lineLen; charIndex++) {
+    int xStep = rect_.left() - horizOffset_;
+    int outIndex = 0;
+    for (int charIndex = 0; charIndex < lineLen; charIndex++) {
+
+        char expandedChar[TextBuffer::MAX_EXP_CHAR_LEN];
+
         const int charLen   = TextBuffer::BufExpandCharacter(lineStr[charIndex], outIndex, expandedChar, buffer_->BufGetTabDist());
         const int charStyle = styleOfPos(lineStart, lineLen, charIndex, outIndex, lineStr[charIndex]);
         const int charWidth = stringWidth(expandedChar, charLen, charStyle);
@@ -7444,11 +7444,8 @@ void TextArea::previousPageAP(EventFlags flags) {
     EMIT_EVENT_0("previous_page");
 
 	int insertPos = cursorPos_;
-	int column = 0;
 	int visLineNum;
 	int lineStartPos;
-	int pos;
-	int targetLine;
 	int pageBackwardCount = std::max(1, nVisibleLines_ - 1);
 
 	bool silent         = flags & NoBellFlag;
@@ -7456,7 +7453,7 @@ void TextArea::previousPageAP(EventFlags flags) {
 
 	cancelDrag();
 	if (flags & ScrollbarFlag) { // scrollbar only
-		targetLine = std::max(topLineNum_ - pageBackwardCount, 1);
+        int targetLine = std::max(topLineNum_ - pageBackwardCount, 1);
 
 		if (targetLine == topLineNum_) {
 			ringIfNecessary(silent);
@@ -7466,22 +7463,24 @@ void TextArea::previousPageAP(EventFlags flags) {
 	} else if (flags & StutterFlag) { // Mac style
 		// move to top line of visible area
 		// if already there, page up maintaining preferrred column if required
-		targetLine = 0;
-		column = TextDPreferredColumn(&visLineNum, &lineStartPos);
+        int targetLine = 0;
+        int column = TextDPreferredColumn(&visLineNum, &lineStartPos);
 		if (lineStartPos == lineStarts_[targetLine]) {
 			if (topLineNum_ == 1 && (maintainColumn || column == 0)) {
 				ringIfNecessary(silent);
 				return;
 			}
 			targetLine = std::max(topLineNum_ - pageBackwardCount, 1);
-			pos = TextDCountBackwardNLines(insertPos, pageBackwardCount);
+
+            int pos = TextDCountBackwardNLines(insertPos, pageBackwardCount);
 			if (maintainColumn) {
 				pos = TextDPosOfPreferredCol(column, pos);
 			}
+
 			TextDSetInsertPosition(pos);
 			TextDSetScroll(targetLine, horizOffset_);
 		} else {
-			pos = lineStarts_[targetLine];
+            int pos = lineStarts_[targetLine];
 			if (maintainColumn) {
 				pos = TextDPosOfPreferredCol(column, pos);
 			}
@@ -7490,6 +7489,7 @@ void TextArea::previousPageAP(EventFlags flags) {
 		checkMoveSelectionChange(flags, insertPos);
 		checkAutoShowInsertPos();
 		callCursorMovementCBs();
+
 		if (maintainColumn) {
 			cursorPreferredCol_ = column;
 		} else {
@@ -7500,21 +7500,29 @@ void TextArea::previousPageAP(EventFlags flags) {
 			ringIfNecessary(silent);
 			return;
 		}
-		if (maintainColumn) {
+
+        int column = 0;
+
+        if (maintainColumn) {
 			column = TextDPreferredColumn(&visLineNum, &lineStartPos);
 		}
-		targetLine = topLineNum_ - (nVisibleLines_ - 1);
-		if (targetLine < 1)
+
+        int targetLine = topLineNum_ - (nVisibleLines_ - 1);
+        if (targetLine < 1) {
 			targetLine = 1;
-		pos = TextDCountBackwardNLines(insertPos, nVisibleLines_ - 1);
+        }
+
+        int pos = TextDCountBackwardNLines(insertPos, nVisibleLines_ - 1);
 		if (maintainColumn) {
 			pos = TextDPosOfPreferredCol(column, pos);
 		}
+
 		TextDSetInsertPosition(pos);
 		TextDSetScroll(targetLine, horizOffset_);
 		checkMoveSelectionChange(flags, insertPos);
 		checkAutoShowInsertPos();
 		callCursorMovementCBs();
+
 		if (maintainColumn) {
 			cursorPreferredCol_ = column;
 		} else {
