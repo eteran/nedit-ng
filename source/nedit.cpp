@@ -443,13 +443,13 @@ int main(int argc, char *argv[]) {
 
     // If no file to edit was specified, open a window to edit "Untitled"
 	if (!fileSpecified) {
-        DocumentWidget *documentEx = MainWindow::EditNewFileEx(nullptr, geometry, iconic, langMode, QString());
+        DocumentWidget *document = MainWindow::EditNewFileEx(nullptr, geometry, iconic, langMode, QString());
 
-        documentEx->ReadMacroInitFileEx();
+        document->ReadMacroInitFileEx();
         MainWindow::CheckCloseDimEx();
 
         if (!toDoCommand.isNull()) {
-            documentEx->DoMacroEx(toDoCommand, QLatin1String("-do macro"));
+            document->DoMacroEx(toDoCommand, QLatin1String("-do macro"));
         }
 	}
 

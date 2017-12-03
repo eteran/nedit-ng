@@ -133,7 +133,7 @@ public:
     void ClearModeMessageEx();
     void closePane();
     void DoMacroEx(const QString &macro, const QString &errInName);
-    void EndSmartIndentEx();
+    void EndSmartIndent();
     void execAP(TextArea *area, const QString &command);
     void ExecShellCommandEx(TextArea *area, const QString &command, bool fromMacro);
     void FindDefCalltip(TextArea *area, const QString &tipName);
@@ -225,7 +225,7 @@ private:
     void cancelLearnEx();
     void ClearRedoList();
     void ClearUndoList();
-    void CloseWindow();
+    void CloseDocument();
     void DetermineLanguageMode(bool forceNewDefaults);
     void dimSelDepItemsInMenu(QMenu *menuPane, const gsl::span<MenuData> &menuList, bool enabled);
     void DimSelectionDepUserMenuItems(bool enabled);

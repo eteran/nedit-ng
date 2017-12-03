@@ -353,7 +353,7 @@ DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inDocument, c
 
     // Open the file
     if (!document->doOpen(name, path, flags)) {
-        document->CloseWindow();
+        document->CloseDocument();
         return nullptr;
     }
 
@@ -1124,7 +1124,7 @@ void DocumentWidget::reapplyLanguageMode(size_t mode, bool forceDefaults) {
 
         // Force a change of smart indent macros (SetAutoIndent will re-start)
         if (indentStyle_ == IndentStyle::Smart) {
-            EndSmartIndentEx();
+            EndSmartIndent();
             indentStyle_ = IndentStyle::Auto;
         }
 
@@ -1206,7 +1206,7 @@ void DocumentWidget::SetAutoIndent(IndentStyle state) {
     const bool smartIndent = (state == IndentStyle::Smart);
 
     if (indentStyle_ == IndentStyle::Smart && !smartIndent) {
-        EndSmartIndentEx();
+        EndSmartIndent();
     } else if (smartIndent && indentStyle_ != IndentStyle::Smart) {
         BeginSmartIndentEx(/*warn=*/true);
     }
@@ -2275,7 +2275,7 @@ void DocumentWidget::RevertToSaved() {
                pretty rare to be reverting something that was fine only to find
                that now it has too much binary data. */
             if (!fileMissing_) {
-                CloseWindow();
+                CloseDocument();
             } else {
                 // Treat it like an externally modified file
                 lastModTime_ = 0;
@@ -2906,7 +2906,7 @@ int DocumentWidget::CloseFileAndWindow(CloseMode preResponse) {
              /* File deleted/modified externally, ignored by user. */
              !GetPrefWarnFileMods())) {
 
-        CloseWindow();
+        CloseDocument();
         // up-to-date windows don't have outstanding backup files to close
     } else {
 
@@ -2931,7 +2931,7 @@ int DocumentWidget::CloseFileAndWindow(CloseMode preResponse) {
         case QMessageBox::Yes:
             // Save
             if (SaveWindow()) {
-                CloseWindow();
+                CloseDocument();
             } else {
                 return false;
             }
@@ -2939,7 +2939,7 @@ int DocumentWidget::CloseFileAndWindow(CloseMode preResponse) {
         case QMessageBox::No:
             // Don't Save
             RemoveBackupFile();
-            CloseWindow();
+            CloseDocument();
             break;
         default:
             return false;
@@ -2952,10 +2952,10 @@ int DocumentWidget::CloseFileAndWindow(CloseMode preResponse) {
 /*
 ** Close a document, or an editor window
 */
-void DocumentWidget::CloseWindow() {
+void DocumentWidget::CloseDocument() {
 
     // Free smart indent macro programs
-    EndSmartIndentEx();
+    EndSmartIndent();
 
     /* Clean up macro references to the doomed window.  If a macro is
        executing, stop it.  If macro is calling this (closing its own
@@ -3006,7 +3006,7 @@ void DocumentWidget::CloseWindow() {
         fileFormat_   = FileFormats::Unix;
 
         StopHighlightingEx();
-        EndSmartIndentEx();
+        EndSmartIndent();
         window->UpdateWindowTitle(this);
         window->UpdateWindowReadOnly(this);
         window->ui.action_Close->setEnabled(false);
@@ -3030,8 +3030,6 @@ void DocumentWidget::CloseWindow() {
     // Close of window running a macro may have been disabled.
     MainWindow::CheckCloseDimEx();
 
-    // NOTE(eteran): No need to explicitly sync this with the tab context menu
-    //               because they are set to be in sync when the context menu is shown
     window->ui.action_Detach_Tab->setEnabled(window->TabCount() > 1);
     window->ui.action_Move_Tab_To->setEnabled(MainWindow::allWindows().size() > 1);
 
@@ -3084,9 +3082,7 @@ void DocumentWidget::open(const QString &fullpath) {
                 GetPrefOpenInTab(),
                 false);
 
-    if(auto win = MainWindow::fromDocument(this)) {
-        win->CheckCloseDimEx();
-    }
+    MainWindow::CheckCloseDimEx();
 }
 
 /**
@@ -3457,14 +3453,14 @@ void DocumentWidget::executeNewlineMacroEx(SmartIndentEvent *cbInfo) {
                     this,
                     tr("Smart Indent"),
                     tr("Error in smart indent macro:\n%1").arg(stat == MACRO_ERROR ? errMsg : tr("dialogs and shell commands not permitted")));
-        EndSmartIndentEx();
+        EndSmartIndent();
         return;
     }
 
     // Validate and return the result
     if (!is_integer(result) || to_integer(result) < -1 || to_integer(result) > 1000) {
         QMessageBox::critical(this, tr("Smart Indent"), tr("Smart indent macros must return integer indent distance"));
-        EndSmartIndentEx();
+        EndSmartIndent();
         return;
     }
 
@@ -3551,7 +3547,7 @@ void DocumentWidget::executeModMacroEx(SmartIndentEvent *cbInfo) {
                     tr("Smart Indent"),
                     tr("Error in smart indent modification macro:\n%1").arg((stat == MACRO_ERROR) ? errMsg : tr("dialogs and shell commands not permitted")));
 
-        EndSmartIndentEx();
+        EndSmartIndent();
         return;
     }
 }
@@ -3604,10 +3600,8 @@ void DocumentWidget::shellBannerTimeoutProc() {
 
 void DocumentWidget::actionClose(CloseMode mode) {
 
-    if(auto win = MainWindow::fromDocument(this)) {
-        CloseFileAndWindow(mode);
-        win->CheckCloseDimEx();
-    }
+    CloseFileAndWindow(mode);
+    MainWindow::CheckCloseDimEx();
 }
 
 bool DocumentWidget::includeFile(const QString &name) {
@@ -5063,7 +5057,7 @@ void DocumentWidget::DoShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
             outWidget = document->firstPane();
             left      = 0;
             right     = 0;
-            inWindow->CheckCloseDimEx();
+            MainWindow::CheckCloseDimEx();
         }
         break;
     case TO_SAME_WINDOW:
@@ -5373,7 +5367,7 @@ void DocumentWidget::finishMacroCmdExecutionEx() {
        but close was deferred until completion.  This is completion, so if
        the window is still empty, do the close */
     if (closeOnCompletion && !filenameSet_ && !fileChanged_) {
-        CloseWindow();
+        CloseDocument();
     }
 
     // If no other macros are executing, do garbage collection
@@ -6743,7 +6737,7 @@ int DocumentWidget::ReadMacroStringEx(const QString &string, const QString &errI
 /**
  * @brief DocumentWidget::EndSmartIndentEx
  */
-void DocumentWidget::EndSmartIndentEx() {
+void DocumentWidget::EndSmartIndent() {
     const std::unique_ptr<SmartIndentData> &winData = smartIndentData_;
 
     if(!winData) {

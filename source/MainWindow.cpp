@@ -152,7 +152,10 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(par
 
     ui.action_Statistics_Line->setChecked(GetPrefStatsLine());
 
-    CheckCloseDimEx();
+    MainWindow::CheckCloseDimEx();
+
+    ui.action_Detach_Tab->setEnabled(TabCount() > 1);
+    ui.action_Move_Tab_To->setEnabled(MainWindow::allWindows().size() > 1);
 }
 
 /**
@@ -491,7 +494,7 @@ void MainWindow::setupPrevOpenMenuActions() {
                 document->open(filename);
             }
 
-            CheckCloseDimEx();
+            MainWindow::CheckCloseDimEx();
         });
 
 
@@ -691,7 +694,7 @@ void MainWindow::action_Open(DocumentWidget *document, const QString &filename) 
 
     emit_event("open", filename);
     document->open(filename);
-    CheckCloseDimEx();
+    MainWindow::CheckCloseDimEx();
 }
 
 /**
@@ -1869,7 +1872,7 @@ void MainWindow::action_Open_Selected(DocumentWidget *document) {
         QApplication::beep();
     }
 
-    CheckCloseDimEx();
+    MainWindow::CheckCloseDimEx();
 }
 
 /**
@@ -1978,7 +1981,7 @@ void MainWindow::openFile(DocumentWidget *document, const QString &text) {
 	}
 #endif
 
-    CheckCloseDimEx();
+    MainWindow::CheckCloseDimEx();
 }
 
 /**
@@ -4901,7 +4904,7 @@ void MainWindow::on_action_Revert_to_Saved_triggered() {
 void MainWindow::action_New_Window(DocumentWidget *document) {
     emit_event("new_window");
     MainWindow::EditNewFileEx(GetPrefOpenInTab() ? nullptr : this, QString(), false, QString(), document->path_);
-    CheckCloseDimEx();
+    MainWindow::CheckCloseDimEx();
 }
 
 /**
