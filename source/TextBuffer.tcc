@@ -183,21 +183,6 @@ Ch BasicTextBuffer<Ch, Tr>::BufGetCharacter(int pos) const noexcept {
 }
 
 /*
-** Return the character at buffer position "pos".  Positions start at 0.
-*/
-template <class Ch, class Tr>
-Ch &BasicTextBuffer<Ch, Tr>::BufGetCharacter(int pos) {
-
-    if (pos < 0 || pos >= length_)
-        raise<std::out_of_range>("out_of_range");
-
-    if (pos < gapStart_)
-        return buf_[pos];
-
-    return buf_[pos + (gapEnd_ - gapStart_)];
-}
-
-/*
 ** Insert null-terminated string "text" at position "pos" in "buf"
 */
 template <class Ch, class Tr>

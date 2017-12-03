@@ -94,7 +94,6 @@ public:
     bool BufSearchBackwardEx(int startPos, view_type searchChars, int *foundPos) const noexcept;
     bool BufSearchForwardEx(int startPos, view_type searchChars, int *foundPos) const noexcept;
     Ch BufGetCharacter(int pos) const noexcept;
-    Ch& BufGetCharacter(int pos);
     const Ch *BufAsString() noexcept;
     int BufCmpEx(int pos, view_type cmpText) const noexcept;
     int BufCountBackwardNLines(int startPos, int nLines) const noexcept;
