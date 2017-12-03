@@ -370,7 +370,6 @@ private:
 	int getAbsTopLineNum();
 	CursorStyles getCursorStyle() const;
 
-private:
     bool cursorOn_               = false;
     bool needAbsTopLineNum_      = false;          // Externally settable flag to continue maintaining absTopLineNum even if it isn't needed for line # display
     bool pointerHidden_          = false;          // true if the mouse pointer is hidden
@@ -385,6 +384,7 @@ private:
     int cursorToHint_            = NO_HINT;        // Tells the buffer modified callback where to move the cursor, to reduce the number of redraw calls
     int emTabsBeforeCursor_      = 0;              // If non-zero, number of consecutive emulated tabs just entered.  Saved so chars can be deleted as a unit
     int firstChar_               = 0;              // Buffer positions of first and last displayed character (lastChar points either to a newline or one character beyond the end of the buffer)
+    int horizOffset_             = 0;              // Horizontal scroll pos. in pixels
     int lastChar_                = 0;
     int lineNumLeft_             = 0;
     int lineNumWidth_            = 0;
@@ -394,6 +394,8 @@ private:
     int nVisibleLines_           = 1;              // # of visible (displayed) lines
     int topLineNum_              = 1;              // Line number of top displayed line of file (first line of file is 1)
     long nStyles_                = 0;              // Number of entries in styleTable
+
+private:
     QColor cursorFGPixel_        = Qt::black;
     QColor highlightBGPixel_     = Qt::red;
     QColor highlightFGPixel_     = Qt::white;      // Highlight colors are used when flashing matching parens
@@ -429,8 +431,7 @@ private:
     int dragSourceInserted_;                        // # of chars. inserted when move source text was deleted
     int dragXOffset_;                               // offsets between cursor location and actual insertion point in drag
     int dragYOffset_;                               // offsets between cursor location and actual insertion point in drag
-    int fixedFontWidth_;                            // Font width if all current fonts are fixed and match in width, else -1
-    int horizOffset_;                               // Horizontal scroll pos. in pixels
+    int fixedFontWidth_;                            // Font width if all current fonts are fixed and match in width, else -1    
     int rectAnchor_;                                // Anchor for rectangular drag operations
     QRect rect_;
     QTimer *autoScrollTimer_;
