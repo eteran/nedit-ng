@@ -1125,8 +1125,7 @@ void MainWindow::CheckCloseDimEx() {
         return;
     }
 
-    if(windows.size() == 1) {
-        // if there is only one window, then *this* must be it... right?
+    if(windows.size() == 1) {        
         MainWindow *window = windows[0];
 
         std::vector<DocumentWidget *> documents = window->openDocuments();
@@ -1595,14 +1594,14 @@ void MainWindow::AddToPrevOpenMenu(const QString &filename) {
         Of course there is still Little Race Condition, which occurs if a
         Session A reads the list, then Session B reads the list and writes
         it before Session A gets a chance to write.  */
-    ReadNEditDB();
+    MainWindow::ReadNEditDB();
 
     // If the name is already in the list, move it to the start
     const int index = PrevOpen.indexOf(filename);
     if(index != -1) {
         PrevOpen.move(index, 0);
-        invalidatePrevOpenMenus();
-        WriteNEditDB();
+        MainWindow::invalidatePrevOpenMenus();
+        MainWindow::WriteNEditDB();
         return;
     }
 
@@ -1615,16 +1614,16 @@ void MainWindow::AddToPrevOpenMenu(const QString &filename) {
     PrevOpen.push_front(filename);
 
     // Mark the Previously Opened Files menu as invalid in all windows
-    invalidatePrevOpenMenus();
+    MainWindow::invalidatePrevOpenMenus();
 
     // Undim the menu in all windows if it was previously empty
     if (PrevOpen.size() > 0) {
-        for(MainWindow *window : allWindows()) {
+        for(MainWindow *window : MainWindow::allWindows()) {
             window->ui.action_Open_Previous->setEnabled(true);
         }
     }
 
-    WriteNEditDB();
+    MainWindow::WriteNEditDB();
 }
 
 /*
@@ -1726,7 +1725,7 @@ void MainWindow::invalidatePrevOpenMenus() {
     /* Mark the menus invalid (to be updated when the user pulls one
        down), unless the menu is torn off, meaning it is visible to the user
        and should be updated immediately */
-    for(MainWindow *window : allWindows()) {
+    for(MainWindow *window : MainWindow::allWindows()) {
         window->updatePrevOpenMenu();
     }
 }
@@ -1778,7 +1777,7 @@ void MainWindow::updatePrevOpenMenu() {
     }
 
     //  Read history file to get entries written by other sessions.
-    ReadNEditDB();
+    MainWindow::ReadNEditDB();
 
     // Sort the previously opened file list if requested
     QVector<QString> prevOpenSorted = PrevOpen;
@@ -3948,7 +3947,7 @@ void MainWindow::on_action_Default_Sort_Open_Prev_Menu_toggled(bool state) {
     /* Set the preference, make the other windows' menus agree,
        and invalidate their Open Previous menus */
     SetPrefSortOpenPrevMenu(state);
-    for(MainWindow *window : allWindows()) {
+    for(MainWindow *window : MainWindow::allWindows()) {
         no_signals(window->ui.action_Default_Sort_Open_Prev_Menu)->setChecked(state);
     }
 }
@@ -3961,11 +3960,11 @@ void MainWindow::on_action_Default_Show_Path_In_Windows_Menu_toggled(bool state)
 
     // Set the preference and make the other windows' menus agree
     SetPrefShowPathInWindowsMenu(state);
-    for(MainWindow *window : allWindows()) {
+    for(MainWindow *window : MainWindow::allWindows()) {
         no_signals(window->ui.action_Default_Show_Path_In_Windows_Menu)->setChecked(state);
     }
 
-    UpdateWindowMenus();
+    MainWindow::UpdateWindowMenus();
 }
 
 /**
@@ -3985,7 +3984,7 @@ void MainWindow::on_action_Default_Customize_Window_Title_triggered() {
 void MainWindow::on_action_Default_Search_Verbose_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
     SetPrefSearchDlogs(state);
-    for(MainWindow *window : allWindows()) {
+    for(MainWindow *window : MainWindow::allWindows()) {
         no_signals(window->ui.action_Default_Search_Verbose)->setChecked(state);
     }
 }
@@ -3997,7 +3996,7 @@ void MainWindow::on_action_Default_Search_Verbose_toggled(bool state) {
 void MainWindow::on_action_Default_Search_Wrap_Around_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
     SetPrefSearchWraps(state);
-    for(MainWindow *window : allWindows()) {
+    for(MainWindow *window : MainWindow::allWindows()) {
         no_signals(window->ui.action_Default_Search_Wrap_Around)->setChecked(state);
     }
 }
@@ -4009,7 +4008,7 @@ void MainWindow::on_action_Default_Search_Wrap_Around_toggled(bool state) {
 void MainWindow::on_action_Default_Search_Beep_On_Search_Wrap_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
     SetPrefBeepOnSearchWrap(state);
-    for(MainWindow *window : allWindows()) {
+    for(MainWindow *window : MainWindow::allWindows()) {
         no_signals(window->ui.action_Default_Search_Beep_On_Search_Wrap)->setChecked(state);
     }
 }
@@ -4021,7 +4020,7 @@ void MainWindow::on_action_Default_Search_Beep_On_Search_Wrap_toggled(bool state
 void MainWindow::on_action_Default_Search_Keep_Dialogs_Up_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
     SetPrefKeepSearchDlogs(state);
-    for(MainWindow *window : allWindows()) {
+    for(MainWindow *window : MainWindow::allWindows()) {
         no_signals(window->ui.action_Default_Search_Keep_Dialogs_Up)->setChecked(state);
     }
 }
@@ -4137,7 +4136,7 @@ void MainWindow::on_action_Default_Syntax_Text_Drawing_Styles_triggered() {
 void MainWindow::on_action_Default_Apply_Backlighting_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
     SetPrefBacklightChars(state);
-    for(MainWindow *window : allWindows()) {
+    for(MainWindow *window : MainWindow::allWindows()) {
         no_signals(window->ui.action_Default_Apply_Backlighting)->setChecked(state);
     }
 }
@@ -4149,7 +4148,7 @@ void MainWindow::on_action_Default_Apply_Backlighting_toggled(bool state) {
 void MainWindow::on_action_Default_Tab_Open_File_In_New_Tab_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
     SetPrefOpenInTab(state);
-    for(MainWindow *window : allWindows()) {
+    for(MainWindow *window : MainWindow::allWindows()) {
         no_signals(window->ui.action_Default_Tab_Open_File_In_New_Tab)->setChecked(state);
 
         if(!GetPrefOpenInTab()) {
@@ -4167,7 +4166,7 @@ void MainWindow::on_action_Default_Tab_Open_File_In_New_Tab_toggled(bool state) 
 void MainWindow::on_action_Default_Tab_Show_Tab_Bar_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
     SetPrefTabBar(state);
-    for(MainWindow *window : allWindows()) {
+    for(MainWindow *window : MainWindow::allWindows()) {
         no_signals(window->ui.action_Default_Tab_Show_Tab_Bar)->setChecked(state);
         window->ui.tabWidget->tabBar()->setVisible(state);
     }
@@ -4180,7 +4179,7 @@ void MainWindow::on_action_Default_Tab_Show_Tab_Bar_toggled(bool state) {
 void MainWindow::on_action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Open_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
     SetPrefTabBarHideOne(state);
-    for(MainWindow *window : allWindows()) {
+    for(MainWindow *window : MainWindow::allWindows()) {
         no_signals(window->ui.action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Open)->setChecked(state);
         window->ui.tabWidget->setTabBarAutoHide(state);
     }
@@ -4193,7 +4192,7 @@ void MainWindow::on_action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Op
 void MainWindow::on_action_Default_Tab_Next_Prev_Tabs_Across_Windows_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
     SetPrefGlobalTabNavigate(state);
-    for(MainWindow *window : allWindows()) {
+    for(MainWindow *window : MainWindow::allWindows()) {
         no_signals(window->ui.action_Default_Tab_Next_Prev_Tabs_Across_Windows)->setChecked(state);
     }
 }
@@ -4229,7 +4228,7 @@ void MainWindow::on_action_Default_Tab_Sort_Tabs_Alphabetically_toggled(bool sta
 void MainWindow::on_action_Default_Show_Tooltips_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
     SetPrefToolTips(state);
-    for(MainWindow *window : allWindows()) {
+    for(MainWindow *window : MainWindow::allWindows()) {
         no_signals(window->ui.action_Default_Show_Tooltips)->setChecked(state);
     }
 }
@@ -4241,7 +4240,7 @@ void MainWindow::on_action_Default_Show_Tooltips_toggled(bool state) {
 void MainWindow::on_action_Default_Statistics_Line_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
     SetPrefStatsLine(state);
-    for(MainWindow *window : allWindows()) {
+    for(MainWindow *window : MainWindow::allWindows()) {
         no_signals(window->ui.action_Default_Statistics_Line)->setChecked(state);
     }
 }
@@ -4253,7 +4252,7 @@ void MainWindow::on_action_Default_Statistics_Line_toggled(bool state) {
 void MainWindow::on_action_Default_Incremental_Search_Line_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
     SetPrefISearchLine(state);
-    for(MainWindow *window : allWindows()) {
+    for(MainWindow *window : MainWindow::allWindows()) {
         no_signals(window->ui.action_Default_Incremental_Search_Line)->setChecked(state);
     }
 }
@@ -4265,7 +4264,7 @@ void MainWindow::on_action_Default_Incremental_Search_Line_toggled(bool state) {
 void MainWindow::on_action_Default_Show_Line_Numbers_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
     SetPrefLineNums(state);
-    for(MainWindow *window : allWindows()) {
+    for(MainWindow *window : MainWindow::allWindows()) {
         no_signals(window->ui.action_Default_Show_Line_Numbers)->setChecked(state);
     }
 }
@@ -4277,7 +4276,7 @@ void MainWindow::on_action_Default_Show_Line_Numbers_toggled(bool state) {
 void MainWindow::on_action_Default_Make_Backup_Copy_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
     SetPrefSaveOldVersion(state);
-    for(MainWindow *window : allWindows()) {
+    for(MainWindow *window : MainWindow::allWindows()) {
         no_signals(window->ui.action_Default_Make_Backup_Copy)->setChecked(state);
     }
 }
@@ -4289,7 +4288,7 @@ void MainWindow::on_action_Default_Make_Backup_Copy_toggled(bool state) {
 void MainWindow::on_action_Default_Incremental_Backup_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
     SetPrefAutoSave(state);
-    for(MainWindow *window : allWindows()) {
+    for(MainWindow *window : MainWindow::allWindows()) {
         no_signals(window->ui.action_Default_Incremental_Backup)->setChecked(state);
     }
 }
@@ -4327,7 +4326,7 @@ void MainWindow::defaultMatchingGroupTriggered(QAction *action) {
 void MainWindow::on_action_Default_Matching_Syntax_Based_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
     SetPrefMatchSyntaxBased(state);
-    for(MainWindow *window : allWindows()) {
+    for(MainWindow *window : MainWindow::allWindows()) {
         no_signals(window->ui.action_Default_Matching_Syntax_Based)->setChecked(state);
     }
 }
@@ -4339,7 +4338,7 @@ void MainWindow::on_action_Default_Matching_Syntax_Based_toggled(bool state) {
 void MainWindow::on_action_Default_Terminate_with_Line_Break_on_Save_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
     SetPrefAppendLF(state);
-    for(MainWindow *window : allWindows()) {
+    for(MainWindow *window : MainWindow::allWindows()) {
         no_signals(window->ui.action_Default_Terminate_with_Line_Break_on_Save)->setChecked(state);
     }
 }
@@ -4351,7 +4350,7 @@ void MainWindow::on_action_Default_Terminate_with_Line_Break_on_Save_toggled(boo
 void MainWindow::on_action_Default_Popups_Under_Pointer_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
     SetPrefRepositionDialogs(state);
-    for(MainWindow *window : allWindows()) {
+    for(MainWindow *window : MainWindow::allWindows()) {
         no_signals(window->ui.action_Default_Popups_Under_Pointer)->setChecked(state);
     }
 }
@@ -4363,7 +4362,7 @@ void MainWindow::on_action_Default_Popups_Under_Pointer_toggled(bool state) {
 void MainWindow::on_action_Default_Auto_Scroll_Near_Window_Top_Bottom_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
     SetPrefAutoScroll(state);
-    for(MainWindow *window : allWindows()) {
+    for(MainWindow *window : MainWindow::allWindows()) {
         no_signals(window->ui.action_Default_Auto_Scroll_Near_Window_Top_Bottom)->setChecked(state);
     }
 }
@@ -4375,7 +4374,7 @@ void MainWindow::on_action_Default_Auto_Scroll_Near_Window_Top_Bottom_toggled(bo
 void MainWindow::on_action_Default_Warnings_Files_Modified_Externally_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
     SetPrefWarnFileMods(state);
-    for(MainWindow *window : allWindows()) {
+    for(MainWindow *window : MainWindow::allWindows()) {
         no_signals(window->ui.action_Default_Warnings_Files_Modified_Externally)->setChecked(state);
         window->ui.action_Default_Warnings_Check_Modified_File_Contents->setEnabled(GetPrefWarnFileMods());
     }
@@ -4388,7 +4387,7 @@ void MainWindow::on_action_Default_Warnings_Files_Modified_Externally_toggled(bo
 void MainWindow::on_action_Default_Warnings_Check_Modified_File_Contents_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
     SetPrefWarnRealFileMods(state);
-    for(MainWindow *window : allWindows()) {
+    for(MainWindow *window : MainWindow::allWindows()) {
         no_signals(window->ui.action_Default_Warnings_Check_Modified_File_Contents)->setChecked(state);
     }
 }
@@ -4400,7 +4399,7 @@ void MainWindow::on_action_Default_Warnings_Check_Modified_File_Contents_toggled
 void MainWindow::on_action_Default_Warnings_On_Exit_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
     SetPrefWarnExit(state);
-    for(MainWindow *window : allWindows()) {
+    for(MainWindow *window : MainWindow::allWindows()) {
         no_signals(window->ui.action_Default_Warnings_On_Exit)->setChecked(state);
     }
 }
@@ -4440,7 +4439,7 @@ void MainWindow::setWindowSizeDefault(int rows, int cols) {
  * @brief MainWindow::updateWindowSizeMenus
  */
 void MainWindow::updateWindowSizeMenus() {
-    for(MainWindow *window : allWindows()) {
+    for(MainWindow *window : MainWindow::allWindows()) {
         window->updateWindowSizeMenu();
     }
 }
@@ -4983,7 +4982,7 @@ void MainWindow::action_Exit(DocumentWidget *document) {
     }
 
     // Close all files and exit when the last one is closed
-    if (CloseAllFilesAndWindowsEx()) {
+    if (MainWindow::CloseAllFilesAndWindowsEx()) {
         QApplication::quit();
     }
 }

@@ -2676,7 +2676,7 @@ int DocumentWidget::SaveWindowAs(const QString &newName, bool addWrap) {
         RefreshTabState();
 
         // Add the name to the convenience menu of previously opened files
-        win->AddToPrevOpenMenu(fullname);
+        MainWindow::AddToPrevOpenMenu(fullname);
 
         /*  If name has changed, language mode may have changed as well, unless
             it's an Untitled window for which the user already set a language
