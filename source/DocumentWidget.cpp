@@ -3199,7 +3199,7 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
         std::vector<char> fileString(static_cast<size_t>(fileLen) + 1); // +1 = space for null
 
         // Read the file into fileString and terminate with a null
-        auto readLen = gsl::narrow<int>(::fread(&fileString[0], 1, static_cast<size_t>(fileLen), fp));
+        size_t readLen = ::fread(&fileString[0], 1, static_cast<size_t>(fileLen), fp);
         if (::ferror(fp)) {
             filenameSet_ = false; // Temp. prevent check for changes.
             QMessageBox::critical(this, tr("Error while opening File"), tr("Error reading %1:\n%2").arg(name, ErrorString(errno)));

@@ -44,8 +44,10 @@ QString ResolvePathEx(const QString &pathname);
 
 bool ConvertToDosFileStringEx(std::string &fileString);
 void ConvertFromDosFileString(char *fileString, int *length, char *pendingCR);
+void ConvertFromDosFileString(char *fileString, size_t *length, char *pendingCR);
 void ConvertFromDosFileStringEx(std::string *fileString, char *pendingCR);
 void ConvertFromMacFileString(char *fileString, int length);
+void ConvertFromMacFileString(char *fileString, size_t length);
 void ConvertFromMacFileStringEx(std::string *fileString);
 void ConvertToMacFileStringEx(std::string &fileString);
 

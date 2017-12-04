@@ -458,25 +458,32 @@ QString GetTrailingPathComponentsEx(const QString &path, int noOfComponents) {
 */
 FileFormats FormatOfFileEx(view::string_view fileString) {
 
-	const char *p;
-	int nNewlines = 0;
-	int nReturns = 0;
-    auto length = gsl::narrow<int>(fileString.size());
+    size_t nNewlines = 0;
+    size_t nReturns = 0;
 
-	for (p = fileString.begin(); length-- != 0 && p < fileString.begin() + FORMAT_SAMPLE_CHARS; p++) {
-		if (*p == '\n') {
+    for (auto it = fileString.begin(); it != fileString.end() && it < fileString.begin() + FORMAT_SAMPLE_CHARS; ++it) {
+        if (*it == '\n') {
 			nNewlines++;
-			if (p == fileString.begin() || *(p - 1) != '\r')
+            if (it == fileString.begin() || *std::prev(it) != '\r') {
                 return FileFormats::Unix;
-			if (nNewlines >= FORMAT_SAMPLE_LINES)
+            }
+
+            if (nNewlines >= FORMAT_SAMPLE_LINES) {
                 return FileFormats::Dos;
-		} else if (*p == '\r')
+            }
+        } else if (*it == '\r') {
 			nReturns++;
-	}
-	if (nNewlines > 0)
+        }
+    }
+
+    if (nNewlines > 0) {
         return FileFormats::Dos;
-	if (nReturns > 0)
+    }
+
+    if (nReturns > 0) {
         return FileFormats::Mac;
+    }
+
     return FileFormats::Unix;
 
 }
@@ -523,6 +530,43 @@ void ConvertFromDosFileStringEx(std::string *fileString, char *pendingCR) {
 	fileString->erase(out, fileString->end());
 }
 
+/**
+ * @brief ConvertFromDosFileString
+ * @param fileString
+ * @param length
+ * @param pendingCR
+ */
+void ConvertFromDosFileString(char *fileString, size_t *length, char *pendingCR) {
+    Q_ASSERT(fileString);
+    char *outPtr = fileString;
+    char *inPtr = fileString;
+    if (pendingCR)
+        *pendingCR = 0;
+    while (inPtr < fileString + *length) {
+        if (*inPtr == '\r') {
+            if (inPtr < fileString + *length - 1) {
+                if (*(inPtr + 1) == '\n')
+                    inPtr++;
+            } else {
+                if (pendingCR) {
+                    *pendingCR = *inPtr;
+                    break; /* Don't copy this trailing '\r' */
+                }
+            }
+        }
+        *outPtr++ = *inPtr++;
+    }
+
+    *outPtr = '\0';
+    *length = outPtr - fileString;
+}
+
+/**
+ * @brief ConvertFromDosFileString
+ * @param fileString
+ * @param length
+ * @param pendingCR
+ */
 void ConvertFromDosFileString(char *fileString, int *length, char *pendingCR) {
 	Q_ASSERT(fileString);
 	char *outPtr = fileString;
@@ -548,6 +592,27 @@ void ConvertFromDosFileString(char *fileString, int *length, char *pendingCR) {
     *length = gsl::narrow<int>(outPtr - fileString);
 }
 
+/**
+ * @brief ConvertFromMacFileString
+ * @param fileString
+ * @param length
+ */
+void ConvertFromMacFileString(char *fileString, size_t length) {
+    Q_ASSERT(fileString);
+    std::transform(fileString, fileString + length, fileString, [](char ch) {
+        if(ch == '\r') {
+            return '\n';
+        }
+
+        return ch;
+    });
+}
+
+/**
+ * @brief ConvertFromMacFileString
+ * @param fileString
+ * @param length
+ */
 void ConvertFromMacFileString(char *fileString, int length) {
 	Q_ASSERT(fileString);
     std::transform(fileString, fileString + length, fileString, [](char ch) {
@@ -559,6 +624,10 @@ void ConvertFromMacFileString(char *fileString, int length) {
     });
 }
 
+/**
+ * @brief ConvertFromMacFileStringEx
+ * @param fileString
+ */
 void ConvertFromMacFileStringEx(std::string *fileString) {
 	Q_ASSERT(fileString);
 	std::transform(fileString->begin(), fileString->end(), fileString->begin(), [](char ch) {
@@ -638,7 +707,7 @@ QString ReadAnyTextFileEx(const QString &fileName, bool forceNL) {
 	auto contents = std::string(std::istreambuf_iterator<char>{file}, std::istreambuf_iterator<char>{});
 
 	/* Convert linebreaks? */
-	switch(FormatOfFileEx(contents)) {
+    switch(FormatOfFileEx(contents)) {
     case FileFormats::Dos:
 		ConvertFromDosFileStringEx(&contents, nullptr);
 		break;
