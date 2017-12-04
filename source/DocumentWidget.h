@@ -70,6 +70,9 @@ public:
 
 Q_SIGNALS:
     void documentClosed();
+    void selectionChanged(DocumentWidget *document, bool selected);
+    void undoAvailable(DocumentWidget *document, bool available);
+    void redoAvailable(DocumentWidget *document, bool available);
 
 public:
 	void movedCallback(TextArea *area);
@@ -292,12 +295,6 @@ public:
     std::unique_ptr<WindowHighlightData> highlightData_;   // info for syntax highlighting
     std::shared_ptr<MacroCommandData>    macroCmdData_;    // same for macro commands
     std::shared_ptr<RangesetTable>       rangesetTable_;   // current range sets
-
-private:
-    // TODO(eteran): 2.0, in nedit, these are owned per-document. But the effect all
-    // open documents, so they shoudl be at the very least, per-window if not global
-    QPointer<QDialog> dialogColors_;
-    QPointer<QDialog> dialogFonts_;
 
 private:
     QMenu *contextMenu_    = nullptr;

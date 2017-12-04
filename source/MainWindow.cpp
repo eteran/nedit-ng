@@ -890,10 +890,59 @@ void MainWindow::on_action_Delete_triggered() {
  * @return
  */
 DocumentWidget *MainWindow::CreateDocument(QString name) {
-	auto window = new DocumentWidget(name, this);
-	int i = ui.tabWidget->addTab(window, name);
+    auto document = new DocumentWidget(name, this);
+    int i = ui.tabWidget->addTab(document, name);
 	ui.tabWidget->setCurrentIndex(i);
-	return window;
+
+    connect(document, &DocumentWidget::selectionChanged, this, &MainWindow::selectionChanged);
+    connect(document, &DocumentWidget::undoAvailable, this, &MainWindow::undoAvailable);
+    connect(document, &DocumentWidget::redoAvailable, this, &MainWindow::redoAvailable);
+
+    return document;
+}
+
+/**
+ * @brief MainWindow::undoCountChanged
+ * @param document
+ * @param count
+ */
+void MainWindow::undoAvailable(DocumentWidget *document, bool available) {
+
+    Q_UNUSED(document);
+    ui.action_Undo->setEnabled(available);
+}
+
+
+/**
+ * @brief MainWindow::redoAvailable
+ * @param document
+ * @param available
+ */
+void MainWindow::redoAvailable(DocumentWidget *document, bool available) {
+
+    Q_UNUSED(document);
+    ui.action_Redo->setEnabled(available);
+}
+
+/**
+ * @brief MainWindow::selectionChanged
+ * @param document
+ * @param selected
+ */
+void MainWindow::selectionChanged(DocumentWidget *document, bool selected) {
+
+    Q_UNUSED(document);
+
+    ui.action_Print_Selection->setEnabled(selected);
+    ui.action_Cut->setEnabled(selected);
+    ui.action_Copy->setEnabled(selected);
+    ui.action_Delete->setEnabled(selected);
+
+    /* Note we don't change the selection for items like "Open Selected" and
+     * "Find Selected". That's because it works on selections in external
+     * applications. Desensitizing it if there's no NEdit selection disables
+     * this feature. */
+    ui.action_Filter_Selection->setEnabled(selected);
 }
 
 /**
@@ -3649,9 +3698,8 @@ void MainWindow::on_action_Tab_Stops_triggered() {
 void MainWindow::on_action_Text_Fonts_triggered() {
     if(DocumentWidget *document = currentDocument()) {
 
-        document->dialogFonts_ = new DialogFonts(document, this);
-        document->dialogFonts_->exec();
-        delete document->dialogFonts_;
+        auto dialogFonts = std::make_unique<DialogFonts>(document, this);
+        dialogFonts->exec();
     }
 }
 
@@ -3896,24 +3944,16 @@ void MainWindow::on_action_Default_Tab_Stops_triggered() {
  * @brief MainWindow::on_action_Default_Text_Fonts_triggered
  */
 void MainWindow::on_action_Default_Text_Fonts_triggered() {
-    if(DocumentWidget *document = currentDocument()) {
-        document->dialogFonts_ = new DialogFonts(nullptr, this);
-        document->dialogFonts_->exec();
-        delete document->dialogFonts_;
-    }
+    auto dialogFonts = std::make_unique<DialogFonts>(nullptr, this);
+    dialogFonts->exec();
 }
 
 /**
  * @brief MainWindow::on_action_Default_Colors_triggered
  */
 void MainWindow::on_action_Default_Colors_triggered() {
-    if(DocumentWidget *document = currentDocument()) {
-        if(!document->dialogColors_) {
-            document->dialogColors_ = new DialogColors(this);
-        }
-
-        document->dialogColors_->exec();
-    }
+    auto dialogColors = std::make_unique<DialogColors>(this);
+    dialogColors->exec();
 }
 
 /*
@@ -5217,7 +5257,7 @@ bool MainWindow::CloseAllFilesAndWindowsEx() {
             return false;
         }
 
-        delete window;
+        window->deleteLater();
     }
 
     return true;

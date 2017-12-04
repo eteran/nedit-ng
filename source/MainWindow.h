@@ -390,8 +390,11 @@ public Q_SLOTS:
     void on_action_About_Qt_triggered();
     void on_action_Help_triggered();
 
-private:
+private Q_SLOTS:
     void focusChanged(QWidget *from, QWidget *to);
+    void selectionChanged(DocumentWidget *document, bool selected);
+    void undoAvailable(DocumentWidget *document, bool available);
+    void redoAvailable(DocumentWidget *document, bool available);
 
 public:
     QPointer<TextArea> lastFocus() const { return lastFocus_; }

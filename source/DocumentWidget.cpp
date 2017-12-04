@@ -873,17 +873,7 @@ void DocumentWidget::modifiedCallback(int pos, int nInserted, int nDeleted, int 
             /* do not refresh shell-level items (window, menu-bar etc)
                when motifying non-top document */
             if (IsTopDocument()) {
-                win->ui.action_Print_Selection->setEnabled(selected);
-                win->ui.action_Cut->setEnabled(selected);
-                win->ui.action_Copy->setEnabled(selected);
-                win->ui.action_Delete->setEnabled(selected);
-
-                /* Note we don't change the selection for items like
-                   "Open Selected" and "Find Selected".  That's because
-                   it works on selections in external applications.
-                   Desensitizing it if there's no NEdit selection
-                   disables this feature. */
-                win->ui.action_Filter_Selection->setEnabled(selected);
+                Q_EMIT selectionChanged(this, selected);
 
                 DimSelectionDepUserMenuItems(selected);
 
@@ -1559,13 +1549,6 @@ void DocumentWidget::appendDeletedText(view::string_view deletedText, int delete
 */
 void DocumentWidget::addUndoItem(const UndoInfo &undo) {
 
-    // Make the undo menu item sensitive now that there's something to undo
-    if (undo_.empty()) {
-        if(auto win = MainWindow::fromDocument(this)) {
-            win->ui.action_Undo->setEnabled(true);
-        }
-    }
-
     // Add the item to the beginning of the list
     undo_.push_front(undo);
 
@@ -1584,21 +1567,19 @@ void DocumentWidget::addUndoItem(const UndoInfo &undo) {
     if (undoMemUsed_ > UNDO_PURGE_LIMIT) {
         trimUndoList(UNDO_PURGE_TRIMTO);
     }
+
+    Q_EMIT undoAvailable(this, undo_.size() != 0);
 }
 
 /*
 ** Add an item (already allocated by the caller) to the this's redo list.
 */
 void DocumentWidget::addRedoItem(const UndoInfo &redo) {
-    // Make the redo menu item sensitive now that there's something to redo
-    if (redo_.empty()) {
-        if(auto win = MainWindow::fromDocument(this)) {
-            win->ui.action_Redo->setEnabled(true);
-        }
-    }
 
     // Add the item to the beginning of the list
     redo_.push_front(redo);
+
+    Q_EMIT redoAvailable(this, redo_.size() != 0);
 }
 
 /*
@@ -1618,12 +1599,7 @@ void DocumentWidget::removeUndoItem() {
     // Remove and free the item
     undo_.pop_front();
 
-    // if there are no more undo records left, dim the Undo menu item
-    if (undo_.empty()) {
-        if(auto win = MainWindow::fromDocument(this)) {
-            win->ui.action_Undo->setEnabled(false);
-        }
-    }
+    Q_EMIT undoAvailable(this, undo_.size() != 0);
 }
 
 /*
@@ -1634,12 +1610,7 @@ void DocumentWidget::removeRedoItem() {
     // Remove and free the item
     redo_.pop_front();
 
-    // if there are no more redo records left, dim the Redo menu item
-    if (redo_.empty()) {
-        if(auto win = MainWindow::fromDocument(this)) {
-            win->ui.action_Redo->setEnabled(false);
-        }
-    }
+    Q_EMIT redoAvailable(this, redo_.size() != 0);
 }
 
 
@@ -3022,7 +2993,7 @@ void DocumentWidget::CloseDocument() {
     }
 
     // deallocate the document data structure
-    delete this;
+    this->deleteLater();
 
     // update window menus
     MainWindow::UpdateWindowMenus();
@@ -3034,7 +3005,7 @@ void DocumentWidget::CloseDocument() {
 
     // if we deleted the last tab, then we can close the window too
     if(window->TabCount() == 0) {
-        delete window;
+        window->deleteLater();
     }
 }
 
@@ -4230,7 +4201,7 @@ void DocumentWidget::moveDocument(MainWindow *fromWindow) {
 
         // if we just emptied the window, then delete it
         if(fromWindow->TabCount() == 0) {
-            delete fromWindow;
+            fromWindow->deleteLater();
         }
     }
 }
