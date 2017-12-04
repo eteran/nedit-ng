@@ -1676,9 +1676,7 @@ void DocumentWidget::Undo() {
                 buffer_->BufUnselect();
             }
 
-            if(QPointer<TextArea> area = win->lastFocus_) {
-                area->syncronizeSelection();
-            }
+            syncronizeSelection();
         }
 
         if(QPointer<TextArea> area = win->lastFocus_) {
@@ -1734,9 +1732,7 @@ void DocumentWidget::Redo() {
                 buffer_->BufUnselect();
             }
 
-            if(QPointer<TextArea> area = win->lastFocus_) {
-                area->syncronizeSelection();
-            }
+            syncronizeSelection();
         }
 
         if(QPointer<TextArea> area = win->lastFocus_) {
@@ -3744,12 +3740,11 @@ void DocumentWidget::SelectToMatchingCharacter(TextArea *area) {
     int selStart;
     int selEnd;
     int matchPos;
-    TextBuffer *buf = buffer_;
 
     /* get the character to match and its position from the selection, or
        the character before the insert point if nothing is selected.
        Give up if too many characters are selected */
-    if (!buf->GetSimpleSelection(&selStart, &selEnd)) {
+    if (!buffer_->GetSimpleSelection(&selStart, &selEnd)) {
 
         selEnd = area->TextGetCursorPos();
         if (overstrike_)
@@ -3768,7 +3763,7 @@ void DocumentWidget::SelectToMatchingCharacter(TextArea *area) {
     }
 
     // Search for it in the buffer
-    if (!findMatchingCharEx(buf->BufGetCharacter(selStart), GetHighlightInfoEx(selStart), selStart, 0, buf->BufGetLength(), &matchPos)) {
+    if (!findMatchingCharEx(buffer_->BufGetCharacter(selStart), GetHighlightInfoEx(selStart), selStart, 0, buffer_->BufGetLength(), &matchPos)) {
         QApplication::beep();
         return;
     }
@@ -3782,9 +3777,11 @@ void DocumentWidget::SelectToMatchingCharacter(TextArea *area) {
        be automatically scrolled on screen and MakeSelectionVisible would do
        nothing) */
     area->setAutoShowInsertPos(false);
+
     // select the text between the matching characters
-    buf->BufSelect(startPos, endPos + 1);
-    area->syncronizeSelection();
+    buffer_->BufSelect(startPos, endPos + 1);
+    syncronizeSelection();
+
     MakeSelectionVisible(area);
     area->setAutoShowInsertPos(true);
 }
@@ -4781,9 +4778,10 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
                 buf->BufReplaceSelectedEx(output_string);
 
                 area->TextSetCursorPos(buf->BufCursorPosHint());
+
                 if (reselectStart != -1) {
                     buf->BufSelect(reselectStart, reselectStart + gsl::narrow<int>(output_string.size()));
-                    area->syncronizeSelection();
+                    syncronizeSelection();
                 }
             } else {
                 safeBufReplace(buf, &cmdData->leftPos, &cmdData->rightPos, output_string);
@@ -7032,6 +7030,7 @@ void DocumentWidget::SelectNumberedLineEx(TextArea *area, int lineNum) {
         QApplication::beep();
     }
 
+    syncronizeSelection();
     MakeSelectionVisible(area);
     area->TextSetCursorPos(lineStart);
 }
@@ -7059,10 +7058,10 @@ void DocumentWidget::gotoMark(TextArea *area, QChar label, bool extendSel) {
     int cursorPos = markTable_[index].cursorPos;
     if (extendSel) {
 
-        int oldStart = oldSel->selected ? oldSel->start : area->TextGetCursorPos();
-        int oldEnd   = oldSel->selected ? oldSel->end   : area->TextGetCursorPos();
-        int newStart = sel->selected    ? sel->start    : cursorPos;
-        int newEnd   = sel->selected    ? sel->end      : cursorPos;
+        const int oldStart = oldSel->selected ? oldSel->start : area->TextGetCursorPos();
+        const int oldEnd   = oldSel->selected ? oldSel->end   : area->TextGetCursorPos();
+        const int newStart = sel->selected    ? sel->start    : cursorPos;
+        const int newEnd   = sel->selected    ? sel->end      : cursorPos;
 
         buffer_->BufSelect(oldStart < newStart ? oldStart : newStart, oldEnd > newEnd ? oldEnd : newEnd);
     } else {
@@ -7074,10 +7073,10 @@ void DocumentWidget::gotoMark(TextArea *area, QChar label, bool extendSel) {
             }
         } else {
             buffer_->BufUnselect();
-        }
-
-        area->syncronizeSelection();
+        }        
     }
+
+    syncronizeSelection();
 
     /* Move the window into a pleasing position relative to the selection
        or cursor.   MakeSelectionVisible is not great with multi-line
@@ -7097,4 +7096,9 @@ void DocumentWidget::gotoMark(TextArea *area, QChar label, bool extendSel) {
  */
 LockReasons DocumentWidget::lockReasons() const {
     return lockReasons_;
+}
+
+void DocumentWidget::syncronizeSelection() {
+    std::string text = buffer_->BufGetSelectionTextEx();
+    QApplication::clipboard()->setText(QString::fromStdString(text), QClipboard::Selection);
 }

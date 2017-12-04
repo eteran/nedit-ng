@@ -83,6 +83,7 @@ void ShiftSelectionEx(DocumentWidget *document, TextArea *area, ShiftDirection d
         }
 
         buf->BufSelect(selStart, selEnd);
+        document->syncronizeSelection();
         isRect = false;
         text = buf->BufGetRangeEx(selStart, selEnd);
 
@@ -102,6 +103,7 @@ void ShiftSelectionEx(DocumentWidget *document, TextArea *area, ShiftDirection d
             }
         }
         buf->BufSelect(selStart, selEnd);
+        document->syncronizeSelection();
         text = buf->BufGetRangeEx(selStart, selEnd);
     }
 
@@ -119,6 +121,7 @@ void ShiftSelectionEx(DocumentWidget *document, TextArea *area, ShiftDirection d
 
     const int newEndPos = selStart + gsl::narrow<int>(shiftedText.size());
     buf->BufSelect(selStart, newEndPos);
+    document->syncronizeSelection();
 }
 
 /*
@@ -165,6 +168,7 @@ static void shiftRectEx(DocumentWidget *document, TextArea *area, int direction,
     // Make the change in the real buffer
     buf->BufReplaceEx(selStart, selEnd, tempBuf.BufAsStringEx());
     buf->BufRectSelect(selStart, selStart + tempBuf.BufGetLength(), rectStart + offset, rectEnd + offset);
+    document->syncronizeSelection();
 }
 
 
@@ -218,10 +222,13 @@ static void changeCaseEx(DocumentWidget *document, TextArea *area, bool makeUppe
             buf->BufReplaceSelectedEx(text);
         }
 
-        if (isRect)
+        if (isRect) {
             buf->BufRectSelect(start, end, rectStart, rectEnd);
-        else
+        } else {
             buf->BufSelect(start, end);
+        }
+
+        document->syncronizeSelection();
     }
 }
 
@@ -261,7 +268,10 @@ void FillSelectionEx(DocumentWidget *document, TextArea *area) {
             if (right < buf->BufGetLength())
                 right++;
         }
+
         buf->BufSelect(left, right);
+        document->syncronizeSelection();
+
         text = buf->BufGetRangeEx(left, right);
     }
 
@@ -289,10 +299,12 @@ void FillSelectionEx(DocumentWidget *document, TextArea *area) {
     if (hasSelection && isRect) {
         buf->BufReplaceRectEx(left, right, rectStart, INT_MAX, filledText);
         buf->BufRectSelect(left, buf->BufEndOfLine(buf->BufCountForwardNLines(left, countLinesEx(filledText) - 1)), rectStart, rectEnd);
+        document->syncronizeSelection();
     } else {
         buf->BufReplaceEx(left, right, filledText);
         if (hasSelection) {
             buf->BufSelect(left, left + gsl::narrow<int>(filledText.size()));
+            document->syncronizeSelection();
         }
     }
 

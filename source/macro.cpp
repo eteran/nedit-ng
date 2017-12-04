@@ -2374,9 +2374,8 @@ static bool focusWindowMS(DocumentWidget *document, Arguments arguments, DataVal
                 M_FAILURE(PathnameTooLong);
             }
 
-            it = std::find_if(documents.begin(), documents.end(), [&normalizedString](DocumentWidget *win) {
-                QString fullname = win->FullPath();
-                return fullname == normalizedString;
+            it = std::find_if(documents.begin(), documents.end(), [&normalizedString](DocumentWidget *doc) {
+                return doc->FullPath() == normalizedString;
             });
         }
     }
@@ -3066,6 +3065,7 @@ static bool selectMS(DocumentWidget *document, Arguments arguments, DataValue *r
 
     // Make the selection
     document->buffer_->BufSelect(start, end);
+    document->syncronizeSelection();
     *result = to_value();
     return true;
 }
@@ -3080,6 +3080,7 @@ static bool selectRectangleMS(DocumentWidget *document, Arguments arguments, Dat
 
     // Make the selection
     document->buffer_->BufRectSelect(start, end, left, right);
+    document->syncronizeSelection();
     *result = to_value();
     return true;
 }

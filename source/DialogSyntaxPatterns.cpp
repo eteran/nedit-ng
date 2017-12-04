@@ -709,12 +709,12 @@ bool DialogSyntaxPatterns::updatePatternSet() {
 	});
 
 	// If it's a new pattern, add it at the end, otherwise free the existing pattern set and replace it
-	int oldNum = -1;
+    size_t oldNum;
     if (it == PatternSets.end()) {
         PatternSets.push_back(*patSet);
 		oldNum = 0;
 	} else {
-        oldNum = gsl::narrow<int>(it->patterns.size());
+        oldNum = it->patterns.size();
         *it = *patSet;
 	}
 

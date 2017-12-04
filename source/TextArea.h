@@ -229,7 +229,6 @@ private Q_SLOTS:
 	void exchangeAP(QMouseEvent *event, EventFlags flags = NoneFlag);
 
 public:
-    void syncronizeSelection();
     void TextDMaintainAbsLineNum(bool state);
     int TextDShowCalltip(const QString &text, bool anchored, int pos, TipHAlignMode hAlign, TipVAlignMode vAlign, TipAlignStrict alignMode);
 	int TextDStartOfLine(int pos) const;

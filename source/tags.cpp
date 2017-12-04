@@ -1181,8 +1181,8 @@ void editTaggedLocationEx(TextArea *area, int i) {
                 GetPrefOpenInTab(),
                 false);
 
-	DocumentWidget *windowToSearch = MainWindow::FindWindowWithFile(filename, pathname);
-    if(!windowToSearch) {
+    DocumentWidget *documentToSearch = MainWindow::FindWindowWithFile(filename, pathname);
+    if(!documentToSearch) {
         QMessageBox::warning(
                     document,
                     QLatin1String("File not found"),
@@ -1199,7 +1199,7 @@ void editTaggedLocationEx(TextArea *area, int i) {
     }
 
     // search for the tags file search string in the newly opened file
-    if (!fakeRegExSearchEx(windowToSearch->buffer_->BufAsStringEx(), tagSearch[i], &startPos, &endPos)) {
+    if (!fakeRegExSearchEx(documentToSearch->buffer_->BufAsStringEx(), tagSearch[i], &startPos, &endPos)) {
         QMessageBox::warning(
                     document,
                     QLatin1String("Tag Error"),
@@ -1208,12 +1208,13 @@ void editTaggedLocationEx(TextArea *area, int i) {
     }
 
     // select the matched string
-    windowToSearch->buffer_->BufSelect(startPos, endPos);
-    windowToSearch->RaiseFocusDocumentWindow(true);
+    documentToSearch->buffer_->BufSelect(startPos, endPos);
+    documentToSearch->syncronizeSelection();
+    documentToSearch->RaiseFocusDocumentWindow(true);
 
     /* Position it nicely in the window,
        about 1/4 of the way down from the top */
-	int lineNum = windowToSearch->buffer_->BufCountLines(0, startPos);
+    int lineNum = documentToSearch->buffer_->BufCountLines(0, startPos);
 
     rows = area->getRows();
 

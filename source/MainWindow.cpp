@@ -6085,10 +6085,11 @@ bool MainWindow::SearchAndSelectEx(DocumentWidget *document, TextArea *area, con
 
     // select the text found string
     document->buffer_->BufSelect(startPos, endPos);
+    document->syncronizeSelection();
+
     document->MakeSelectionVisible(area);
 
     area->TextSetCursorPos(endPos);
-    area->syncronizeSelection();
 
     return true;
 }
@@ -6122,7 +6123,9 @@ bool MainWindow::SearchAndSelectIncrementalEx(DocumentWidget *document, TextArea
         int beepBeginPos = (direction == Direction::Backward) ? beginPos - 1 : beginPos;
         iSearchTryBeepOnWrapEx(direction, beepBeginPos, beepBeginPos);
         iSearchRecordLastBeginPosEx(direction, iSearchStartPos_);
+
         document->buffer_->BufUnselect();
+        document->syncronizeSelection();
 
         area->TextSetCursorPos(beginPos);
         return true;
@@ -6158,11 +6161,11 @@ bool MainWindow::SearchAndSelectIncrementalEx(DocumentWidget *document, TextArea
 
     // select the text found string
     document->buffer_->BufSelect(startPos, endPos);
+    document->syncronizeSelection();
+
     document->MakeSelectionVisible(area);
 
     area->TextSetCursorPos(endPos);
-    area->syncronizeSelection();
-
     return true;
 }
 
@@ -6346,6 +6349,7 @@ bool MainWindow::SearchAndReplaceEx(DocumentWidget *document, TextArea *area, co
        attention away from the area of the replacement, particularly
        when the selection represents a previous search. so deselect */
     document->buffer_->BufUnselect();
+    document->syncronizeSelection();
 
     /* temporarily shut off autoShowInsertPos before setting the cursor
        position so MakeSelectionVisible gets a chance to place the replaced
@@ -6662,7 +6666,7 @@ void MainWindow::ReplaceInSelectionEx(DocumentWidget *document, TextArea *area, 
                are less useful since left/right positions are randomly adjusted) */
             if (!isRect) {
                 document->buffer_->BufSelect(selStart, selEnd + realOffset);
-                area->syncronizeSelection();
+                document->syncronizeSelection();
             }
         }
     } else {

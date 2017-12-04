@@ -186,6 +186,7 @@ public:
     void StartHighlightingEx(bool warn);
     void StopHighlightingEx();
     void UpdateHighlightStylesEx();
+    void syncronizeSelection();
 
 public:
 #if defined(REPLACE_SCOPE)
@@ -264,7 +265,7 @@ private:
     void Undo();
     void UnloadLanguageModeTipsFileEx();
     void UpdateMarkTable(int pos, int nInserted, int nDeleted);
-    void UpdateStatsLine(TextArea *area);
+    void UpdateStatsLine(TextArea *area);    
 
 public:
     bool multiFileBusy_     = false;             // suppresses multiple beeps/dialogs during multi-file replacements
