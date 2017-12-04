@@ -3065,7 +3065,6 @@ static bool selectMS(DocumentWidget *document, Arguments arguments, DataValue *r
 
     // Make the selection
     document->buffer_->BufSelect(start, end);
-    document->syncronizeSelection();
     *result = to_value();
     return true;
 }
@@ -3080,7 +3079,6 @@ static bool selectRectangleMS(DocumentWidget *document, Arguments arguments, Dat
 
     // Make the selection
     document->buffer_->BufRectSelect(start, end, left, right);
-    document->syncronizeSelection();
     *result = to_value();
     return true;
 }

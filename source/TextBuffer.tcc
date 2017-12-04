@@ -5,6 +5,8 @@
 #include <algorithm>
 #include <cassert>
 #include <QtDebug>
+#include <QApplication>
+#include <QClipboard>
 #include "util/raise.h"
 
 /*
@@ -649,6 +651,13 @@ void BasicTextBuffer<Ch, Tr>::BufSelect(int start, int end) noexcept {
 
     primary_.setSelection(start, end);
     redisplaySelection(&oldSelection, &primary_);
+
+#ifdef Q_OS_UNIX
+    if(syncXSelection_) {
+        std::string text = BufGetSelectionTextEx();
+        QApplication::clipboard()->setText(QString::fromStdString(text), QClipboard::Selection);
+    }
+#endif
 }
 
 template <class Ch, class Tr>
@@ -658,6 +667,13 @@ void BasicTextBuffer<Ch, Tr>::BufUnselect() noexcept {
     primary_.selected = false;
     primary_.zeroWidth = false;
     redisplaySelection(&oldSelection, &primary_);
+
+#ifdef Q_OS_UNIX
+    if(syncXSelection_) {
+        std::string text = BufGetSelectionTextEx();
+        QApplication::clipboard()->setText(QString::fromStdString(text), QClipboard::Selection);
+    }
+#endif
 }
 
 template <class Ch, class Tr>
@@ -666,6 +682,13 @@ void BasicTextBuffer<Ch, Tr>::BufRectSelect(int start, int end, int rectStart, i
 
     primary_.setRectSelect(start, end, rectStart, rectEnd);
     redisplaySelection(&oldSelection, &primary_);
+
+#ifdef Q_OS_UNIX
+    if(syncXSelection_) {
+        std::string text = BufGetSelectionTextEx();
+        QApplication::clipboard()->setText(QString::fromStdString(text), QClipboard::Selection);
+    }
+#endif
 }
 
 template <class Ch, class Tr>
@@ -2292,10 +2315,10 @@ BasicTextBuffer<Ch, Tr>::BasicTextBuffer() : BasicTextBuffer(0) {
 ** will need to hold
 */
 template <class Ch, class Tr>
-BasicTextBuffer<Ch, Tr>::BasicTextBuffer(int requestedSize) : gapStart_(0), gapEnd_(PreferredGapSize), length_(0), tabDist_(8), useTabs_(true), cursorPosHint_(0) {
+BasicTextBuffer<Ch, Tr>::BasicTextBuffer(int size) {
 
-    buf_ = new Ch[requestedSize + PreferredGapSize + 1];
-    buf_[requestedSize + PreferredGapSize] = Ch();
+    buf_ = new Ch[size + PreferredGapSize + 1];
+    buf_[size + PreferredGapSize] = Ch();
 
 #ifdef PURIFY
     std::fill(&buf_[gapStart_], &buf_[gapEnd_], Ch('.'));
@@ -2355,6 +2378,16 @@ TextSelection &BasicTextBuffer<Ch, Tr>::BufGetSecondary() {
 template <class Ch, class Tr>
 TextSelection &BasicTextBuffer<Ch, Tr>::BufGetHighlight() {
     return highlight_;
+}
+
+template <class Ch, class Tr>
+bool BasicTextBuffer<Ch, Tr>::BufGetSyncXSelection() const {
+    return syncXSelection_;
+}
+
+template <class Ch, class Tr>
+bool BasicTextBuffer<Ch, Tr>::BufSetSyncXSelection(bool sync) {
+    return std::exchange(syncXSelection_, sync);
 }
 
 #endif

@@ -1209,7 +1209,6 @@ void editTaggedLocationEx(TextArea *area, int i) {
 
     // select the matched string
     documentToSearch->buffer_->BufSelect(startPos, endPos);
-    documentToSearch->syncronizeSelection();
     documentToSearch->RaiseFocusDocumentWindow(true);
 
     /* Position it nicely in the window,

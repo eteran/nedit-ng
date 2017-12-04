@@ -76,6 +76,8 @@ public:
      */
     static constexpr int MAX_EXP_CHAR_LEN = 20;
 
+    static constexpr int DefaultTabWidth = 8;
+
 public:
     BasicTextBuffer();
     explicit BasicTextBuffer(int requestedSize);
@@ -158,6 +160,8 @@ public:
     TextSelection &BufGetPrimary();
     TextSelection &BufGetSecondary();
     TextSelection &BufGetHighlight();
+    bool BufGetSyncXSelection() const;
+    bool BufSetSyncXSelection(bool sync);
 
 public:
     /* unlike BufSetTabDistance, this version doesn't execute all of the
@@ -216,19 +220,25 @@ private:
     static string_type copyLineEx(Ran first, Ran last);
 
 private:
-    Ch *buf_;           // allocated memory where the text is stored
-    int gapStart_;      // points to the first character of the gap
-    int gapEnd_;        // points to the first char after the gap
-    int length_;        // length of the text in the buffer (the length of the buffer itself must be calculated: gapEnd gapStart + length)
-    TextSelection primary_;          // highlighted areas
+    int gapStart_        = 0;                // points to the first character of the gap
+    int gapEnd_          = PreferredGapSize; // points to the first char after the gap
+    int length_          = 0;                // length of the text in the buffer (the length of the buffer itself must be calculated: gapEnd gapStart + length)
+    int tabDist_         = DefaultTabWidth;  // equiv. number of characters in a tab
+    bool useTabs_        = true;             // true if buffer routines are allowed to use tabs for padding in rectangular operations
+    int cursorPosHint_   = 0;                // hint for reasonable cursor position after a buffer modification operation
+    bool syncXSelection_ = true;
+
+private:
+    Ch *buf_;                 // allocated memory where the text is stored
+    TextSelection primary_;   // highlighted areas
     TextSelection secondary_;
-    TextSelection highlight_;    
-    int tabDist_;       // equiv. number of characters in a tab
-    bool useTabs_;      // true if buffer routines are allowed to use tabs for padding in rectangular operations
-    int cursorPosHint_; // hint for reasonable cursor position after a buffer modification operation
+    TextSelection highlight_;
+
+private:
     std::deque<std::pair<bufPreDeleteCallbackProc, void *>> preDeleteProcs_; // procedure to call before text is deleted from the buffer; at most one is supported.
     std::deque<std::pair<bufModifyCallbackProc, void *>> modifyProcs_;       // procedures to call when buffer is modified to redisplay contents
 };
+
 
 #include "TextBuffer.tcc"
 

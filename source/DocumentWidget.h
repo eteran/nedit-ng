@@ -186,7 +186,6 @@ public:
     void StartHighlightingEx(bool warn);
     void StopHighlightingEx();
     void UpdateHighlightStylesEx();
-    void syncronizeSelection();
 
 public:
 #if defined(REPLACE_SCOPE)

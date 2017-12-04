@@ -1675,8 +1675,6 @@ void DocumentWidget::Undo() {
             } else {
                 buffer_->BufUnselect();
             }
-
-            syncronizeSelection();
         }
 
         if(QPointer<TextArea> area = win->lastFocus_) {
@@ -1731,8 +1729,6 @@ void DocumentWidget::Redo() {
             } else {
                 buffer_->BufUnselect();
             }
-
-            syncronizeSelection();
         }
 
         if(QPointer<TextArea> area = win->lastFocus_) {
@@ -3780,8 +3776,6 @@ void DocumentWidget::SelectToMatchingCharacter(TextArea *area) {
 
     // select the text between the matching characters
     buffer_->BufSelect(startPos, endPos + 1);
-    syncronizeSelection();
-
     MakeSelectionVisible(area);
     area->setAutoShowInsertPos(true);
 }
@@ -4781,7 +4775,6 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
 
                 if (reselectStart != -1) {
                     buf->BufSelect(reselectStart, reselectStart + gsl::narrow<int>(output_string.size()));
-                    syncronizeSelection();
                 }
             } else {
                 safeBufReplace(buf, &cmdData->leftPos, &cmdData->rightPos, output_string);
@@ -6231,6 +6224,7 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
 
     // Create the style buffer
     auto styleBuf = std::make_shared<TextBuffer>();
+    styleBuf->BufSetSyncXSelection(false);
 
     // Collect all of the highlighting information in a single structure
     auto highlightData = std::make_unique<WindowHighlightData>();
@@ -7030,7 +7024,6 @@ void DocumentWidget::SelectNumberedLineEx(TextArea *area, int lineNum) {
         QApplication::beep();
     }
 
-    syncronizeSelection();
     MakeSelectionVisible(area);
     area->TextSetCursorPos(lineStart);
 }
@@ -7076,8 +7069,6 @@ void DocumentWidget::gotoMark(TextArea *area, QChar label, bool extendSel) {
         }        
     }
 
-    syncronizeSelection();
-
     /* Move the window into a pleasing position relative to the selection
        or cursor.   MakeSelectionVisible is not great with multi-line
        selections, and here we will sometimes give it one.  And to set the
@@ -7096,9 +7087,4 @@ void DocumentWidget::gotoMark(TextArea *area, QChar label, bool extendSel) {
  */
 LockReasons DocumentWidget::lockReasons() const {
     return lockReasons_;
-}
-
-void DocumentWidget::syncronizeSelection() {
-    std::string text = buffer_->BufGetSelectionTextEx();
-    QApplication::clipboard()->setText(QString::fromStdString(text), QClipboard::Selection);
 }

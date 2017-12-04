@@ -428,8 +428,9 @@ TextArea::TextArea(DocumentWidget *document, TextBuffer *buffer, QFont fontStruc
 
         connect(QApplication::clipboard(), &QClipboard::selectionChanged, this, [this]() {
             if(!QApplication::clipboard()->ownsSelection()) {
+                const bool prev = buffer_->BufSetSyncXSelection(false);
                 buffer_->BufUnselect();
-                document_->syncronizeSelection();
+                buffer_->BufSetSyncXSelection(prev);
             }
         });
     }
@@ -595,7 +596,6 @@ void TextArea::processCancelAP(EventFlags flags) {
 
 	if (dragState == PRIMARY_DRAG || dragState == PRIMARY_RECT_DRAG) {
         buffer_->BufUnselect();
-        document_->syncronizeSelection();
 	}
 
 	cancelDrag();
@@ -775,7 +775,6 @@ void TextArea::selfInsertAP(const QString &string, EventFlags flags) {
     }
     TextInsertAtCursorEx(s, /*allowPendingDelete=*/true, /*allowWrap=*/true);
     buffer_->BufUnselect();
-    document_->syncronizeSelection();
 }
 
 /**
@@ -1357,7 +1356,6 @@ void TextArea::mouseTripleClickEvent(QMouseEvent *event) {
 void TextArea::mouseQuadrupleClickEvent(QMouseEvent *event) {
 	if (event->button() == Qt::LeftButton) {
 		buffer_->BufSelect(0, buffer_->BufGetLength());
-        document_->syncronizeSelection();
 	}
 }
 
@@ -1430,7 +1428,6 @@ void TextArea::mousePressEvent(QMouseEvent *event) {
 
 		// Clear any existing selections
         buffer_->BufUnselect();
-        document_->syncronizeSelection();
 
 		// Move the cursor to the pointer location
 		moveDestinationAP(event);
@@ -1466,24 +1463,6 @@ void TextArea::mousePressEvent(QMouseEvent *event) {
 void TextArea::mouseReleaseEvent(QMouseEvent *event) {
 
 	if(event->button() == Qt::LeftButton) {
-
-        // update the selection, we do this as infrequently as possible
-        // because Qt's model is a bit inefficient
-        switch(dragState_) {
-        case PRIMARY_DRAG:
-        case PRIMARY_RECT_DRAG:
-        case PRIMARY_BLOCK_DRAG:
-            document_->syncronizeSelection();
-            break;
-        case PRIMARY_CLICKED:
-            if(QApplication::clipboard()->ownsSelection()) {
-                document_->syncronizeSelection();
-            }
-            break;
-        default:
-            break;
-        }
-
 		endDrag();
     } else if(event->button() == Qt::RightButton) {
 		endDrag();
@@ -4332,7 +4311,6 @@ void TextArea::CancelBlockDrag() {
         buffer_->BufSelect(origSel->start, origSel->end);
     }
 
-    document_->syncronizeSelection();
     TextDSetInsertPosition(buffer_->BufCursorPosHint());
 
     callMovedCBs();
@@ -4379,7 +4357,6 @@ void TextArea::checkMoveSelectionChange(EventFlags flags, int startPos) {
 		keyMoveExtendSelection(startPos, rect);
 	} else {
         buffer_->BufUnselect();
-        document_->syncronizeSelection();
 	}
 }
 
@@ -4472,8 +4449,6 @@ void TextArea::keyMoveExtendSelection(int origPos, bool rectangular) {
 		rectAnchor_ = buffer_->BufCountDispChars(buffer_->BufStartOfLine(origPos), origPos);
 		buffer_->BufSelect(anchor_, newPos);
 	}
-
-    document_->syncronizeSelection();
 }
 
 
@@ -4952,7 +4927,6 @@ void TextArea::newlineNoIndentAP(EventFlags flags) {
 
 	simpleInsertAtCursorEx("\n", true);
     buffer_->BufUnselect();
-    document_->syncronizeSelection();
 }
 
 void TextArea::newlineAndIndentAP(EventFlags flags) {
@@ -4985,7 +4959,6 @@ void TextArea::newlineAndIndentAP(EventFlags flags) {
 	}
 
     buffer_->BufUnselect();
-    document_->syncronizeSelection();
 }
 
 /*
@@ -5721,7 +5694,6 @@ void TextArea::processTabAP(EventFlags flags) {
 	emTabsBeforeCursor_ = emTabsBeforeCursor + 1;
 
     buffer_->BufUnselect();
-    document_->syncronizeSelection();
 }
 
 /*
@@ -5744,7 +5716,6 @@ void TextArea::selectWord(int pointerX) {
 	}
 
 	buffer_->BufSelect(startOfWord(insertPos), endOfWord(insertPos));
-    document_->syncronizeSelection();
 }
 
 /*
@@ -5759,8 +5730,6 @@ void TextArea::selectLine() {
 	int startPos = buffer_->BufStartOfLine(insertPos);
 
     buffer_->BufSelect(startPos, std::min(endPos + 1, buffer_->BufGetLength()));
-    document_->syncronizeSelection();
-
 	TextDSetInsertPosition(endPos);
 }
 
@@ -5929,7 +5898,6 @@ void TextArea::selectAllAP(EventFlags flags) {
 
 	cancelDrag();
 	buffer_->BufSelect(0, buffer_->BufGetLength());
-    document_->syncronizeSelection();
 }
 
 /**
@@ -5942,7 +5910,6 @@ void TextArea::deselectAllAP(EventFlags flags) {
 
 	cancelDrag();
     buffer_->BufUnselect();
-    document_->syncronizeSelection();
 }
 
 /**
@@ -5993,10 +5960,8 @@ void TextArea::extendStartAP(QMouseEvent *event, EventFlags flags) {
 	// Make the new selection
 	if (flags & RectFlag) {
         buffer_->BufRectSelect(buffer_->BufStartOfLine(std::min(anchor, newPos)), buffer_->BufEndOfLine(std::max(anchor, newPos)), std::min(rectAnchor, column), std::max(rectAnchor, column));
-        document_->syncronizeSelection();
 	} else {
 		buffer_->BufSelect(std::min(anchor, newPos), std::max(anchor, newPos));
-        document_->syncronizeSelection();
 	}
 
 	/* Never mind the motion threshold, go right to dragging since
@@ -6090,8 +6055,6 @@ void TextArea::adjustSelection(const QPoint &coord) {
 	} else {
 		buffer_->BufSelect(anchor_, newPos);
 	}
-
-    document_->syncronizeSelection();
 
 	// Move the cursor
 	TextDSetInsertPosition(newPos);
@@ -6468,6 +6431,7 @@ void TextArea::BeginBlockDrag() {
 	/* Save a copy of the whole text buffer as a backup, and for
 	   deriving changes */
     dragOrigBuf_ = std::make_unique<TextBuffer>();
+    dragOrigBuf_->BufSetSyncXSelection(false);
     dragOrigBuf_->BufSetTabDistance(buffer_->BufGetTabDist());
     dragOrigBuf_->BufSetUseTabs(buffer_->BufGetUseTabs());
 
@@ -6475,10 +6439,8 @@ void TextArea::BeginBlockDrag() {
 
 	if (sel->rectangular) {
         dragOrigBuf_->BufRectSelect(sel->start, sel->end, sel->rectStart, sel->rectEnd);
-        document_->syncronizeSelection();
 	} else {
 		dragOrigBuf_->BufSelect(sel->start, sel->end);
-        document_->syncronizeSelection();
 	}
 
 	/* Record the mouse pointer offsets from the top left corner of the
@@ -6768,26 +6730,18 @@ void TextArea::BlockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
 	dragSourceDeleted_   = sourceDeleted;
 	dragType_            = dragType;
 
-	// Reset the selection and cursor position
+    // Reset the selection and cursor position
 	if (rectangular || overlay) {
         int insRectEnd = insRectStart + origSel->rectEnd - origSel->rectStart;
         buffer_->BufRectSelect(insStart, insStart + insertInserted, insRectStart, insRectEnd);
-#if 0 // NOTE(eteran): if we just move a selection, no need to update the selection
-        document_->syncronizeSelection();
-#endif
 		TextDSetInsertPosition(buffer_->BufCountForwardDispChars(buffer_->BufCountForwardNLines(insStart, dragNLines_), insRectEnd));
 	} else {
 		buffer_->BufSelect(insStart, insStart + origSel->end - origSel->start);
-#if 0 // NOTE(eteran): if we just move a selection, no need to update the selection
-        document_->syncronizeSelection();
-#endif
 		TextDSetInsertPosition(insStart + origSel->end - origSel->start);
 	}
 
 	TextDUnblankCursor();
-
     callMovedCBs();
-
 	emTabsBeforeCursor_ = 0;
 }
 
@@ -7065,7 +7019,6 @@ void TextArea::moveToAP(QMouseEvent *event, EventFlags flags) {
 
 		buffer_->BufRemoveSelected();
         buffer_->BufUnselect();
-        document_->syncronizeSelection();
 	} else {
         TextDSetInsertPosition(TextDXYToPosition(event->pos()));
 		MovePrimarySelection(false);
@@ -7125,9 +7078,7 @@ void TextArea::exchangeAP(QMouseEvent *event, EventFlags flags) {
         TextDSetInsertPosition(buffer_->BufCursorPosHint());
 	} else {
 		buffer_->BufSelect(newPrimaryStart, newPrimaryEnd);
-        document_->syncronizeSelection();
-
-		TextDSetInsertPosition(newPrimaryEnd);
+        TextDSetInsertPosition(newPrimaryEnd);
 	}
 	checkAutoShowInsertPos();
 }
@@ -7884,7 +7835,6 @@ void TextArea::insertStringAP(const QString &string, EventFlags flags) {
 
     TextInsertAtCursorEx(str, true, true);
     buffer_->BufUnselect();
-    document_->syncronizeSelection();
 }
 
 /*
