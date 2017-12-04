@@ -14,8 +14,8 @@ Q_SIGNALS:
 	void tabCountChanged(int);
 
 protected:
-    virtual void tabInserted(int index);
-    virtual void tabRemoved(int index);
+    void tabInserted(int index) override;
+    void tabRemoved(int index) override;
 };
 
 #endif
