@@ -258,6 +258,7 @@ public:
 #endif
 
 public Q_SLOTS:
+    void on_tabWidget_tabCountChanged(int count);
     void on_tabWidget_currentChanged(int index);
     void on_tabWidget_customContextMenuRequested(const QPoint &pos);
     void on_editIFind_textChanged(const QString &text);

@@ -60,6 +60,7 @@ qt5_wrap_cpp(MOC_SOURCES
 	MainWindow.h
 	MenuItemModel.h
 	NeditServer.h
+	TabWidget.h
 	TextArea.h
 )
 
@@ -227,6 +228,8 @@ add_executable(nedit-ng
 	SmartIndentEvent.h
 	Style.h
 	StyleTableEntry.h
+	TabWidget.cpp
+	TabWidget.h
 	TextArea.cpp
 	TextArea.h
 	TextBuffer.cpp

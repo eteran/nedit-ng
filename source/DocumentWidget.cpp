@@ -3030,7 +3030,6 @@ void DocumentWidget::CloseDocument() {
     // Close of window running a macro may have been disabled.
     MainWindow::CheckCloseDimEx();
 
-    window->ui.action_Detach_Tab->setEnabled(window->TabCount() > 1);
     window->ui.action_Move_Tab_To->setEnabled(MainWindow::allWindows().size() > 1);
 
     // if we deleted the last tab, then we can close the window too
@@ -3396,7 +3395,6 @@ void DocumentWidget::RefreshMenuToggleStates() {
         // Windows Menu
         win->ui.action_Split_Pane->setEnabled(textPanesCount() < MAX_PANES);
         win->ui.action_Close_Pane->setEnabled(textPanesCount() > 1);
-        win->ui.action_Detach_Tab->setEnabled(win->ui.tabWidget->count() > 1);
 
         std::vector<MainWindow *> windows = MainWindow::allWindows();
         win->ui.action_Move_Tab_To->setEnabled(windows.size() > 1);
