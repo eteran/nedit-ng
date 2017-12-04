@@ -840,7 +840,7 @@ void DocumentWidget::dragStartCallback(TextArea *area) {
 */
 void DocumentWidget::UpdateMarkTable(int pos, int nInserted, int nDeleted) {
 
-    for (int i = 0; i < nMarks_; i++) {
+    for (size_t i = 0; i < nMarks_; ++i) {
         maintainSelection(&markTable_[i].sel,       pos, nInserted, nDeleted);
         maintainPosition (&markTable_[i].cursorPos, pos, nInserted, nDeleted);
     }
@@ -873,7 +873,7 @@ void DocumentWidget::modifiedCallback(int pos, int nInserted, int nDeleted, int 
             /* do not refresh shell-level items (window, menu-bar etc)
                when motifying non-top document */
             if (IsTopDocument()) {
-                Q_EMIT selectionChanged(this, selected);
+                Q_EMIT selectionChanged(selected);
 
                 DimSelectionDepUserMenuItems(selected);
 
@@ -1568,7 +1568,7 @@ void DocumentWidget::addUndoItem(const UndoInfo &undo) {
         trimUndoList(UNDO_PURGE_TRIMTO);
     }
 
-    Q_EMIT undoAvailable(this, undo_.size() != 0);
+    Q_EMIT undoAvailable(undo_.size() != 0);
 }
 
 /*
@@ -1579,7 +1579,7 @@ void DocumentWidget::addRedoItem(const UndoInfo &redo) {
     // Add the item to the beginning of the list
     redo_.push_front(redo);
 
-    Q_EMIT redoAvailable(this, redo_.size() != 0);
+    Q_EMIT redoAvailable(redo_.size() != 0);
 }
 
 /*
@@ -1599,7 +1599,7 @@ void DocumentWidget::removeUndoItem() {
     // Remove and free the item
     undo_.pop_front();
 
-    Q_EMIT undoAvailable(this, undo_.size() != 0);
+    Q_EMIT undoAvailable(undo_.size() != 0);
 }
 
 /*
@@ -1610,7 +1610,7 @@ void DocumentWidget::removeRedoItem() {
     // Remove and free the item
     redo_.pop_front();
 
-    Q_EMIT redoAvailable(this, redo_.size() != 0);
+    Q_EMIT redoAvailable(redo_.size() != 0);
 }
 
 
@@ -1618,14 +1618,14 @@ void DocumentWidget::removeRedoItem() {
 ** Trim records off of the END of the undo list to reduce it to length
 ** maxLength
 */
-void DocumentWidget::trimUndoList(int maxLength) {
+void DocumentWidget::trimUndoList(size_t maxLength) {
 
     if (undo_.empty()) {
         return;
     }
 
     auto it = undo_.begin();
-    int i   = 1;
+    size_t i = 1;
 
     // Find last item on the list to leave intact
     while(it != undo_.end() && i < maxLength) {
@@ -2223,11 +2223,11 @@ void DocumentWidget::RevertToSaved() {
         }
 
         const std::vector<TextArea *> textAreas = textPanes();
-        const int panesCount = textAreas.size();
+        const size_t panesCount = textAreas.size();
 
         // save insert & scroll positions of all of the panes to restore later
-        for (int i = 0; i < panesCount; i++) {
-            TextArea *area = textAreas[static_cast<size_t>(i)];
+        for (size_t i = 0; i < panesCount; i++) {
+            TextArea *area = textAreas[i];
             insertPositions[i] = area->TextGetCursorPos();
             area->TextDGetScroll(&topLines[i], &horizOffsets[i]);
         }
@@ -2260,8 +2260,8 @@ void DocumentWidget::RevertToSaved() {
         win->UpdateWindowReadOnly(this);
 
         // restore the insert and scroll positions of each pane
-        for (int i = 0; i < panesCount; i++) {
-            TextArea *area = textAreas[static_cast<size_t>(i)];
+        for (size_t i = 0; i < panesCount; i++) {
+            TextArea *area = textAreas[i];
             area->TextSetCursorPos(insertPositions[i]);
             area->TextDSetScroll(topLines[i], horizOffsets[i]);
         }
@@ -2680,11 +2680,11 @@ void DocumentWidget::addWrapNewlines() {
     int horizOffset;
 
     const std::vector<TextArea *> textAreas = textPanes();
-	const int paneCount = textAreas.size();
+    const size_t paneCount = textAreas.size();
 
     // save the insert and scroll positions of each pane
-    for(int i = 0; i < paneCount; ++i) {
-        TextArea *area = textAreas[static_cast<size_t>(i)];
+    for(size_t i = 0; i < paneCount; ++i) {
+        TextArea *area = textAreas[i];
         insertPositions[i] = area->TextGetCursorPos();
         area->TextDGetScroll(&topLines[i], &horizOffset);
     }
@@ -2696,8 +2696,8 @@ void DocumentWidget::addWrapNewlines() {
     buffer_->BufSetAllEx(fileString);
 
     // restore the insert and scroll positions of each pane
-    for(int i = 0; i < paneCount; ++i) {
-        TextArea *area = textAreas[static_cast<size_t>(i)];
+    for(size_t i = 0; i < paneCount; ++i) {
+        TextArea *area = textAreas[i];
         area->TextSetCursorPos(insertPositions[i]);
         area->TextDSetScroll(topLines[i], 0);
     }
@@ -6047,7 +6047,7 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
 
         if (!pattern.subPatternOf.isNull()) {
 
-            int parentindex = findTopLevelParentIndex(patterns, i);
+            int parentindex = findTopLevelParentIndex(patterns, gsl::narrow<int>(i));
             if (parentindex == -1) {
                 QMessageBox::warning(
                             this,
@@ -6162,7 +6162,7 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
 
     // Create table for finding parent styles
     QByteArray parentStyles;
-    parentStyles.reserve(nPass1Patterns + nPass2Patterns + 2);
+    parentStyles.reserve(gsl::narrow<int>(nPass1Patterns + nPass2Patterns + 2));
 
     auto parentStylesPtr = std::back_inserter(parentStyles);
 
@@ -6977,7 +6977,7 @@ void DocumentWidget::AddMarkEx(TextArea *area, QChar label) {
        nMarks to create a new one */
     label = label.toUpper();
 
-    int index;
+    size_t index;
     for (index = 0; index < nMarks_; index++) {
         if (markTable_[index].label == label) {
             break;
@@ -7037,7 +7037,8 @@ void DocumentWidget::SelectNumberedLineEx(TextArea *area, int lineNum) {
 }
 
 void DocumentWidget::gotoMark(TextArea *area, QChar label, bool extendSel) {
-    int index;
+
+    size_t index;
 
     // look up the mark in the mark table
     label = label.toUpper();

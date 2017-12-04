@@ -70,9 +70,9 @@ public:
 
 Q_SIGNALS:
     void documentClosed();
-    void selectionChanged(DocumentWidget *document, bool selected);
-    void undoAvailable(DocumentWidget *document, bool available);
-    void redoAvailable(DocumentWidget *document, bool available);
+    void selectionChanged(bool selected);
+    void undoAvailable(bool available);
+    void redoAvailable(bool available);
 
 public:
 	void movedCallback(TextArea *area);
@@ -260,7 +260,7 @@ private:
     void SetBacklightChars(const QString &applyBacklightTypes);
     void SetModeMessageEx(const QString &message);
     void SetWindowModified(bool modified);
-    void trimUndoList(int maxLength);
+    void trimUndoList(size_t maxLength);
     void Undo();
     void UnloadLanguageModeTipsFileEx();
     void UpdateMarkTable(int pos, int nInserted, int nDeleted);
@@ -305,8 +305,8 @@ private:
     ino_t ino_             = 0;                         // file's inode
     int autoSaveCharCount_ = 0;                         // count of single characters typed since last backup file generated
     int autoSaveOpCount_   = 0;                         // count of editing operations ""
-    int nMarks_            = 0;                         // number of active bookmarks
-    int undoMemUsed_       = 0;                         // amount of memory (in bytes) dedicated to the undo list
+    size_t nMarks_         = 0;                         // number of active bookmarks
+    size_t undoMemUsed_    = 0;                         // amount of memory (in bytes) dedicated to the undo list
     mode_t mode_           = 0;                         // permissions of file being edited
     time_t lastModTime_    = 0;                         // time of last modification to file
     uid_t uid_             = 0;                         // last recorded user id of the file

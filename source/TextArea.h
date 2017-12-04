@@ -409,7 +409,7 @@ private:
     QPoint mouseCoord_;                            // Last known mouse position in drag operation (for autoscroll)
     std::shared_ptr<TextBuffer> styleBuffer_;      // Optional parallel buffer containing color and font information
     std::unique_ptr<TextBuffer> dragOrigBuf_;      // backup buffer copy used during block dragging of selections
-    std::vector<int> lineStarts_ = { 0 };
+    QVector<int> lineStarts_ = { 0 };
     std::vector<QColor> bgClassPixel_;             // table of colors for each BG class
     std::vector<uint8_t> bgClass_;                 // obtains index into bgClassPixel[]
     StyleTableEntry *styleTable_ = nullptr;        // Table of fonts and colors for coloring/syntax-highlighting

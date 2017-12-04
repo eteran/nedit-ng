@@ -1768,7 +1768,7 @@ void TextArea::measureDeletedLines(int pos, int nDeleted) {
     int retLines;
     int retLineStart;
     int retLineEnd;
-	int nVisLines   = nVisibleLines_;
+    int nVisLines = nVisibleLines_;
 	int countFrom;
 	int nLines = 0;
 	/*
@@ -1996,7 +1996,7 @@ void TextArea::wrappedLineCounter(const TextBuffer *buf, int startPos, int maxPo
 ** should now be solid because they are now used for online help display.
 */
 int TextArea::measurePropChar(char ch, int colNum, int pos) const {
-	int style;
+    int style;
     char expChar[TextBuffer::MAX_EXP_CHAR_LEN];
     const std::shared_ptr<TextBuffer> &styleBuf = styleBuffer_;
 
@@ -3019,9 +3019,7 @@ void TextArea::redisplayLineEx(int visLineNum, int leftClip, int rightClip, int 
 void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, int rightClip, int leftCharIndex, long rightCharIndex) {
 
 	int i;
-    int startX;
-	int charIndex;
-	int lineLen;
+    int startX;	
     int charWidth;
     int startIndex;
 	int style;
@@ -3056,6 +3054,7 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 	// Get the text, length, and  buffer position of the line to display
     const int lineStartPos = lineStarts_[visLineNum];
 	std::string lineStr;
+    int lineLen;
 	if (lineStartPos == -1) {
 		lineLen = 0;
 	} else {
@@ -3092,6 +3091,7 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 	int x = rect_.left() - horizOffset_;
 	int outIndex = 0;
 
+    int charIndex;
 	for (charIndex = 0;; charIndex++) {
 
         char expandedChar[TextBuffer::MAX_EXP_CHAR_LEN];
@@ -3308,65 +3308,64 @@ void TextArea::drawString(QPainter *painter, int style, int x, int y, int toX, c
         bground = palette().color(QPalette::Highlight);
         break;
     case DrawPlain:
+        break;
     case DrawStyle:
+        {
+            // we have work to do
+            StyleTableEntry *styleRec;
+            /* Set font, color, and gc depending on style.  For normal text, GCs
+               for normal drawing, or drawing within a selection or highlight are
+               pre-allocated and pre-configured.  For syntax highlighting, GCs are
+               configured here, on the fly. */
+            if (style & STYLE_LOOKUP_MASK) {
+                styleRec = &styleTable_[(style & STYLE_LOOKUP_MASK) - ASCII_A];
+                underlineStyle = styleRec->underline;
+
+                renderFont  = styleRec->font;
+                fground = styleRec->color;
+                // here you could pick up specific select and highlight fground
+            } else {
+                styleRec = nullptr;
+                renderFont = font_;
+                fground = palette().color(QPalette::Text);
+            }
+
+            /* Background color priority order is:
+            ** 1 Primary(Selection),
+            ** 2 Highlight(Parens),
+            ** 3 Rangeset
+            ** 4 SyntaxHighlightStyle,
+            ** 5 Backlight (if NOT fill)
+            ** 6 DefaultBackground
+            */
+            if(style & PRIMARY_MASK) {
+                bground = palette().color(QPalette::Highlight);
+
+            // NOTE(eteran): enabling this makes working with darker themes a lot nicer
+            // basically what it does is make it so highlights are disabled inside of
+            // selections. Giving the user control over the foreground color inside
+            // a highlight selection.
+            #if 0
+                fground = palette().color(QPalette::HighlightedText);
+            #endif
+            } else if(style & HIGHLIGHT_MASK) {
+                bground = highlightBGPixel_;
+            } else if(style & RANGESET_MASK) {
+                bground = getRangesetColor((style & RANGESET_MASK) >> RANGESET_SHIFT, bground);
+            } else if(styleRec && !styleRec->bgColorName.isNull()) {
+                bground = styleRec->bgColor;
+            } else if((style & BACKLIGHT_MASK) && !(style & FILL_MASK)) {
+                bground = bgClassPixel_[(style >> BACKLIGHT_SHIFT) & 0xff];
+            } else {
+                bground = palette().color(QPalette::Base);
+            }
+
+            if (fground == bground) { // B&W kludge
+                fground = palette().color(QPalette::Base);
+            }
+        }
         break;
     }
-
-	if(drawType == DrawStyle) {
-
-		// we have work to do
-        StyleTableEntry *styleRec;
-		/* Set font, color, and gc depending on style.  For normal text, GCs
-		   for normal drawing, or drawing within a selection or highlight are
-		   pre-allocated and pre-configured.  For syntax highlighting, GCs are
-		   configured here, on the fly. */
-		if (style & STYLE_LOOKUP_MASK) {
-			styleRec = &styleTable_[(style & STYLE_LOOKUP_MASK) - ASCII_A];
-			underlineStyle = styleRec->underline;
-
-            renderFont  = styleRec->font;
-            fground = styleRec->color;
-			// here you could pick up specific select and highlight fground
-		} else {
-			styleRec = nullptr;
-            renderFont = font_;
-            fground = palette().color(QPalette::Text);
-		}
-
-		/* Background color priority order is:
-		** 1 Primary(Selection),
-		** 2 Highlight(Parens),
-		** 3 Rangeset
-		** 4 SyntaxHighlightStyle,
-		** 5 Backlight (if NOT fill)
-		** 6 DefaultBackground
-		*/
-		if(style & PRIMARY_MASK) {
-            bground = palette().color(QPalette::Highlight);
-
-        // NOTE(eteran): enabling this makes working with darker themes a lot nicer
-        // basically what it does is make it so highlights are disabled inside of
-        // selections. Giving the user control over the foreground color inside
-        // a highlight selection.
-        #if 0
-            fground = palette().color(QPalette::HighlightedText);
-        #endif
-		} else if(style & HIGHLIGHT_MASK) {
-			bground = highlightBGPixel_;
-		} else if(style & RANGESET_MASK) {
-			bground = getRangesetColor((style & RANGESET_MASK) >> RANGESET_SHIFT, bground);
-		} else if(styleRec && !styleRec->bgColorName.isNull()) {
-            bground = styleRec->bgColor;
-		} else if((style & BACKLIGHT_MASK) && !(style & FILL_MASK)) {
-			bground = bgClassPixel_[(style >> BACKLIGHT_SHIFT) & 0xff];
-		} else {
-            bground = palette().color(QPalette::Base);
-		}
-
-		if (fground == bground) { // B&W kludge
-            fground = palette().color(QPalette::Base);
-		}
-	}
 
 	// Draw blank area rather than text, if that was the request
 	if (style & FILL_MASK) {

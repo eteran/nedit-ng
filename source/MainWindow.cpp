@@ -895,33 +895,10 @@ DocumentWidget *MainWindow::CreateDocument(QString name) {
 	ui.tabWidget->setCurrentIndex(i);
 
     connect(document, &DocumentWidget::selectionChanged, this, &MainWindow::selectionChanged);
-    connect(document, &DocumentWidget::undoAvailable, this, &MainWindow::undoAvailable);
-    connect(document, &DocumentWidget::redoAvailable, this, &MainWindow::redoAvailable);
+    connect(document, &DocumentWidget::undoAvailable, ui.action_Undo, &QAction::setEnabled);
+    connect(document, &DocumentWidget::redoAvailable, ui.action_Redo, &QAction::setEnabled);
 
     return document;
-}
-
-/**
- * @brief MainWindow::undoCountChanged
- * @param document
- * @param count
- */
-void MainWindow::undoAvailable(DocumentWidget *document, bool available) {
-
-    Q_UNUSED(document);
-    ui.action_Undo->setEnabled(available);
-}
-
-
-/**
- * @brief MainWindow::redoAvailable
- * @param document
- * @param available
- */
-void MainWindow::redoAvailable(DocumentWidget *document, bool available) {
-
-    Q_UNUSED(document);
-    ui.action_Redo->setEnabled(available);
 }
 
 /**
@@ -929,9 +906,7 @@ void MainWindow::redoAvailable(DocumentWidget *document, bool available) {
  * @param document
  * @param selected
  */
-void MainWindow::selectionChanged(DocumentWidget *document, bool selected) {
-
-    Q_UNUSED(document);
+void MainWindow::selectionChanged(bool selected) {
 
     ui.action_Print_Selection->setEnabled(selected);
     ui.action_Cut->setEnabled(selected);
@@ -949,26 +924,26 @@ void MainWindow::selectionChanged(DocumentWidget *document, bool selected) {
  * @brief MainWindow::UpdateWindowTitle
  * @param doc
  */
-void MainWindow::UpdateWindowTitle(DocumentWidget *doc) {
+void MainWindow::UpdateWindowTitle(DocumentWidget *document) {
 
     QString clearCaseTag = ClearCase::GetViewTag();
 
 	QString title = DialogWindowTitle::FormatWindowTitle(
-		doc->filename_,
-		doc->path_,
+        document->filename_,
+        document->path_,
 		clearCaseTag,
         GetPrefServerName(),
 		IsServer,
-		doc->filenameSet_,
-		doc->lockReasons_,
-		doc->fileChanged_,
+        document->filenameSet_,
+        document->lockReasons_,
+        document->fileChanged_,
         GetPrefTitleFormat());
 
 	setWindowTitle(title);
 
-	QString iconTitle = doc->filename_;
+    QString iconTitle = document->filename_;
 
-    if (doc->fileChanged_) {
+    if (document->fileChanged_) {
 		iconTitle.append(tr("*"));
 	}
 
@@ -977,11 +952,11 @@ void MainWindow::UpdateWindowTitle(DocumentWidget *doc) {
 	/* If there's a find or replace dialog up in "Keep Up" mode, with a
 	   file name in the title, update it too */
     if (dialogFind_) {
-        dialogFind_->setDocument(doc);
+        dialogFind_->setDocument(document);
 	}
 
     if(dialogReplace_) {
-        dialogReplace_->setDocument(doc);
+        dialogReplace_->setDocument(document);
 	}
 
 	// Update the Windows menus with the new name
@@ -1046,16 +1021,16 @@ void MainWindow::updateWindowMenu() {
 ** the ReadOnly toggle button in the File menu to agree with the state in
 ** the window data structure.
 */
-void MainWindow::UpdateWindowReadOnly(DocumentWidget *doc) {
+void MainWindow::UpdateWindowReadOnly(DocumentWidget *document) {
 
-	bool state = doc->lockReasons_.isAnyLocked();
+    bool state = document->lockReasons_.isAnyLocked();
 
-    for(TextArea *area : doc->textPanes()) {
+    for(TextArea *area : document->textPanes()) {
 		area->setReadOnly(state);
 	}
 
 	ui.action_Read_Only->setChecked(state);
-	ui.action_Read_Only->setEnabled(!doc->lockReasons_.isAnyLockedIgnoringUser());
+    ui.action_Read_Only->setEnabled(!document->lockReasons_.isAnyLockedIgnoringUser());
 }
 
 /**
@@ -1615,11 +1590,11 @@ void MainWindow::ShowLineNumbers(bool state) {
 
     /* line numbers panel is shell-level, hence other
        tabbed documents in the this should synch */
-    for(DocumentWidget *doc : openDocuments()) {
+    for(DocumentWidget *document : openDocuments()) {
 
         showLineNumbers_ = state;
 
-        for(TextArea *area : doc->textPanes()) {
+        for(TextArea *area : document->textPanes()) {
             //  reqCols should really be cast here, but into what? XmRInt?
             area->setLineNumCols(reqCols);
         }
