@@ -70,9 +70,6 @@ public:
 
 Q_SIGNALS:
     void documentClosed();
-    void selectionChanged(bool selected);
-    void undoAvailable(bool available);
-    void redoAvailable(bool available);
 
 public:
 	void movedCallback(TextArea *area);

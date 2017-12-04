@@ -897,12 +897,23 @@ DocumentWidget *MainWindow::CreateDocument(QString name) {
     auto document = new DocumentWidget(name, this);
     int i = ui.tabWidget->addTab(document, name);
 	ui.tabWidget->setCurrentIndex(i);
-
-    connect(document, &DocumentWidget::selectionChanged, this, &MainWindow::selectionChanged);
-    connect(document, &DocumentWidget::undoAvailable, ui.action_Undo, &QAction::setEnabled);
-    connect(document, &DocumentWidget::redoAvailable, ui.action_Redo, &QAction::setEnabled);
-
     return document;
+}
+
+/**
+ * @brief MainWindow::undoAvailable
+ * @param available
+ */
+void MainWindow::undoAvailable(bool available) {
+    ui.action_Undo->setEnabled(available);
+}
+
+/**
+ * @brief MainWindow::redoAvailable
+ * @param available
+ */
+void MainWindow::redoAvailable(bool available) {
+    ui.action_Redo->setEnabled(available);
 }
 
 /**
@@ -5067,7 +5078,7 @@ bool MainWindow::CheckPrefsChangesSavedEx() {
 /*
 ** close all the documents in a window
 */
-bool MainWindow::CloseAllDocumentInWindow() {
+bool MainWindow::CloseAllDocumentsInWindow() {
 
     if (TabCount() == 1) {
         // only one document in the window
@@ -5127,7 +5138,7 @@ void MainWindow::closeEvent(QCloseEvent *event) {
             }
 
             if (resp == QMessageBox::Close) {
-                CloseAllDocumentInWindow();
+                CloseAllDocumentsInWindow();
                 event->accept();
             } else {
                 event->ignore();
@@ -5232,7 +5243,7 @@ bool MainWindow::CloseAllFilesAndWindowsEx() {
          * Untitled.)
          */
 
-        if (!window->CloseAllDocumentInWindow()) {
+        if (!window->CloseAllDocumentsInWindow()) {
             return false;
         }
 

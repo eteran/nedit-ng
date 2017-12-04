@@ -52,7 +52,7 @@ private:
 
 public:
     bool CheckPrefsChangesSavedEx();
-    bool CloseAllDocumentInWindow();
+    bool CloseAllDocumentsInWindow();
     bool DoNamedBGMenuCmd(DocumentWidget *document, TextArea *area, const QString &name, bool fromMacro);
     bool DoNamedMacroMenuCmd(DocumentWidget *document, TextArea *area, const QString &name, bool fromMacro);
     bool DoNamedShellMenuCmd(DocumentWidget *document, TextArea *area, const QString &name, bool fromMacro);
@@ -393,6 +393,8 @@ public Q_SLOTS:
 private Q_SLOTS:
     void focusChanged(QWidget *from, QWidget *to);
     void selectionChanged(bool selected);
+    void undoAvailable(bool available);
+    void redoAvailable(bool available);
 
 public:
     QPointer<TextArea> lastFocus() const { return lastFocus_; }

@@ -873,7 +873,7 @@ void DocumentWidget::modifiedCallback(int pos, int nInserted, int nDeleted, int 
             /* do not refresh shell-level items (window, menu-bar etc)
                when motifying non-top document */
             if (IsTopDocument()) {
-                Q_EMIT selectionChanged(selected);
+                win->selectionChanged(selected);
 
                 DimSelectionDepUserMenuItems(selected);
 
@@ -1568,7 +1568,9 @@ void DocumentWidget::addUndoItem(const UndoInfo &undo) {
         trimUndoList(UNDO_PURGE_TRIMTO);
     }
 
-    Q_EMIT undoAvailable(undo_.size() != 0);
+    if(MainWindow *window = MainWindow::fromDocument(this)) {
+        window->undoAvailable(undo_.size() != 0);
+    }
 }
 
 /*
@@ -1579,7 +1581,9 @@ void DocumentWidget::addRedoItem(const UndoInfo &redo) {
     // Add the item to the beginning of the list
     redo_.push_front(redo);
 
-    Q_EMIT redoAvailable(redo_.size() != 0);
+    if(MainWindow *window = MainWindow::fromDocument(this)) {
+        window->redoAvailable(redo_.size() != 0);
+    }
 }
 
 /*
@@ -1599,7 +1603,9 @@ void DocumentWidget::removeUndoItem() {
     // Remove and free the item
     undo_.pop_front();
 
-    Q_EMIT undoAvailable(undo_.size() != 0);
+    if(MainWindow *window = MainWindow::fromDocument(this)) {
+        window->undoAvailable(undo_.size() != 0);
+    }
 }
 
 /*
@@ -1610,7 +1616,9 @@ void DocumentWidget::removeRedoItem() {
     // Remove and free the item
     redo_.pop_front();
 
-    Q_EMIT redoAvailable(redo_.size() != 0);
+    if(MainWindow *window = MainWindow::fromDocument(this)) {
+        window->redoAvailable(redo_.size() != 0);
+    }
 }
 
 
@@ -2985,6 +2993,9 @@ void DocumentWidget::CloseDocument() {
     }
 
     // deallocate the document data structure
+    // NOTE(eteran): we re-parent the document so that it is no longer in
+    // MainWindow::openDocuments() and DocumentWidget::allDocuments()
+    this->setParent(nullptr);
     this->deleteLater();
 
     // update window menus
@@ -4182,6 +4193,7 @@ void DocumentWidget::moveDocument(MainWindow *fromWindow) {
         if (dialog->moveAllSelected()) {
             // move all documents
             for(DocumentWidget *document : fromWindow->openDocuments()) {
+
                 targetWin->ui.tabWidget->addTab(document, document->filename_);
                 RaiseFocusDocumentWindow(true);
                 targetWin->show();
@@ -5154,6 +5166,10 @@ void DocumentWidget::RepeatMacroEx(const QString &command, int how) {
     runMacroEx(prog);
 }
 
+/**
+ * @brief DocumentWidget::allDocuments
+ * @return
+ */
 std::vector<DocumentWidget *> DocumentWidget::allDocuments() {
     std::vector<MainWindow *> windows = MainWindow::allWindows();
     std::vector<DocumentWidget *> documents;
@@ -5169,6 +5185,9 @@ std::vector<DocumentWidget *> DocumentWidget::allDocuments() {
 
 }
 
+/**
+ * @brief DocumentWidget::BeginLearnEx
+ */
 void DocumentWidget::BeginLearnEx() {
 
 	// If we're already in learn mode, return
