@@ -6467,6 +6467,7 @@ void TextArea::BeginBlockDrag() {
 	dragInserted_ = sel->end - sel->start;
 	if (sel->rectangular) {
         TextBuffer testBuf;
+        testBuf.BufSetSyncXSelection(false);
 
 		std::string testText = buffer_->BufGetRangeEx(sel->start, sel->end);
         testBuf.BufSetTabDistance(buffer_->BufGetTabDist());
@@ -6568,10 +6569,12 @@ void TextArea::BlockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
 	   range of characters which might be modified in this drag step
 	   (this could be tighter, but hopefully it's not too slow) */
     TextBuffer tempBuf;
+    tempBuf.BufSetSyncXSelection(false);
     tempBuf.BufSetTabDist(buffer_->BufGetTabDist());
     tempBuf.BufSetUseTabs(buffer_->BufGetUseTabs());
-	tempStart         = min3(dragInsertPos_, origSel->start, buffer_->BufCountBackwardNLines(firstChar_, nLines + 2));
-	tempEnd           = buffer_->BufCountForwardNLines(max3(dragInsertPos_, origSel->start, lastChar_), nLines + 2) + origSel->end - origSel->start;
+
+    tempStart = min3(dragInsertPos_, origSel->start, buffer_->BufCountBackwardNLines(firstChar_, nLines + 2));
+    tempEnd   = buffer_->BufCountForwardNLines(max3(dragInsertPos_, origSel->start, lastChar_), nLines + 2) + origSel->end - origSel->start;
 
 	const std::string text = origBuf->BufGetRangeEx(tempStart, tempEnd);
     tempBuf.BufSetAllEx(text);
@@ -6730,6 +6733,16 @@ void TextArea::BlockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
 	dragSourceDeleted_   = sourceDeleted;
 	dragType_            = dragType;
 
+
+    // NOTE(eteran): as an optimization, if we are moving a block
+    // but not combining it with the new location's content, then the selected
+    // text is functionally the same, so we don't need to constantly syncronize
+    // the X selection.
+    bool prev = true;
+    if(dragType == DRAG_OVERLAY_MOVE) {
+        prev = buffer_->BufSetSyncXSelection(false);
+    }
+
     // Reset the selection and cursor position
 	if (rectangular || overlay) {
         int insRectEnd = insRectStart + origSel->rectEnd - origSel->rectStart;
@@ -6739,6 +6752,10 @@ void TextArea::BlockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
 		buffer_->BufSelect(insStart, insStart + origSel->end - origSel->start);
 		TextDSetInsertPosition(insStart + origSel->end - origSel->start);
 	}
+
+    if(dragType == DRAG_OVERLAY_MOVE) {
+        buffer_->BufSetSyncXSelection(prev);
+    }
 
 	TextDUnblankCursor();
     callMovedCBs();

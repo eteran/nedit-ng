@@ -670,8 +670,7 @@ void BasicTextBuffer<Ch, Tr>::BufUnselect() noexcept {
 
 #ifdef Q_OS_UNIX
     if(syncXSelection_) {
-        std::string text = BufGetSelectionTextEx();
-        QApplication::clipboard()->setText(QString::fromStdString(text), QClipboard::Selection);
+        QApplication::clipboard()->setText(QString(), QClipboard::Selection);
     }
 #endif
 }

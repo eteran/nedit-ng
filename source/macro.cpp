@@ -2423,9 +2423,6 @@ static bool getRangeMS(DocumentWidget *document, Arguments arguments, DataValue 
         std::swap(from, to);
     }
 
-    /* Copy text from buffer (this extra copy could be avoided if TextBuffer.c
-       provided a routine for writing into a pre-allocated string) */
-
     std::string rangeText = buf->BufGetRangeEx(from, to);
 
     *result = to_value(rangeText);

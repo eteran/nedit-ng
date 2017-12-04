@@ -2,6 +2,8 @@
 #ifndef SIGNAL_BLOCKER_H_
 #define SIGNAL_BLOCKER_H_
 
+#include <utility>
+
 template <class T>
 class SignalBlocker {
 public:
@@ -17,16 +19,12 @@ public:
     SignalBlocker(const SignalBlocker &)            = delete;
     SignalBlocker& operator=(const SignalBlocker &) = delete;
 
-    SignalBlocker(SignalBlocker &&other) : blocked_(other.blocked_), previous_(other.previous_) {
-        other.blocked_  = nullptr;
-        other.previous_ = false;
+    SignalBlocker(SignalBlocker &&other) : blocked_(std::exchange(other.blocked_, nullptr)), previous_(std::exchange(other.previous_, false)) {
     }
 
     SignalBlocker& operator=(SignalBlocker &&rhs) {
-        blocked_      = rhs.blocked_;
-        previous_     = rhs.previous_;
-        rhs.blocked_  = nullptr;
-        rhs.previous_ = false;
+        blocked_  = std::exchange(rhs.blocked_, nullptr);
+        previous_ = std::exchange(rhs.previous_, false);
         return *this;
     }
 	

@@ -151,6 +151,7 @@ static void shiftRectEx(DocumentWidget *document, TextArea *area, int direction,
     /* Create a temporary buffer for the lines containing the selection, to
        hide the intermediate steps from the display update routines */
     TextBuffer tempBuf;
+    tempBuf.BufSetSyncXSelection(false);
     tempBuf.BufSetTabDist(buf->BufGetTabDist());
     tempBuf.BufSetUseTabs(buf->BufGetUseTabs());
 
