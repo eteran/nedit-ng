@@ -977,8 +977,8 @@ void DocumentWidget::RaiseFocusDocumentWindow(bool focus) {
         }
 
         if(focus) {
-            win->activateWindow();
-            //setFocus();
+            win->raise();
+            win->activateWindow();            
         }
     }
 }
@@ -4183,10 +4183,12 @@ void DocumentWidget::moveDocument(MainWindow *fromWindow) {
             // move all documents
             for(DocumentWidget *document : fromWindow->openDocuments()) {
                 targetWin->ui.tabWidget->addTab(document, document->filename_);
+                RaiseFocusDocumentWindow(true);
                 targetWin->show();
             }
         } else {
             targetWin->ui.tabWidget->addTab(this, filename_);
+            RaiseFocusDocumentWindow(true);
             targetWin->show();
         }
 
@@ -4435,8 +4437,6 @@ void DocumentWidget::SetColors(const QString &textFg, const QString &textBg, con
 
 
     for(TextArea *area : textPanes()) {
-        area->setForegroundPixel(textFgPix); // NOTE(eteran): seems redundant
-        area->setBackgroundPixel(textBgPix); // NOTE(eteran): seems redundant
         area->TextDSetColors(textFgPix, textBgPix, selectFgPix, selectBgPix, hiliteFgPix, hiliteBgPix, lineNoFgPix, cursorFgPix);
     }
 

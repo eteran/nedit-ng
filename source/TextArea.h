@@ -97,8 +97,6 @@ public:
 	void setEmulateTabs(int value);
 	void setWrapMargin(int value);
 	void setLineNumCols(int value);
-	void setForegroundPixel(const QColor &pixel);
-    void setBackgroundPixel(const QColor &pixel);
 	void setReadOnly(bool value);
 	void setOverstrike(bool value);
 	void setCursorVPadding(int value);

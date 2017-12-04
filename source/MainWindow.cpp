@@ -133,6 +133,10 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(par
 	ui.setupUi(this);
 
     connect(qApp, &QApplication::focusChanged, this, &MainWindow::focusChanged);
+
+
+    ui.menu_Windows->setStyleSheet(QLatin1String("QMenu { menu-scrollable: 1; }"));
+
 	
 	setupMenuGroups();
 	setupTabBar();

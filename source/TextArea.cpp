@@ -110,7 +110,7 @@ constexpr int CALLTIP_EDGE_GUARD = 5;
 /* Number of pixels of motion from the initial (grab-focus) button press
    required to begin recognizing a mouse drag for the purpose of making a
    selection */
-constexpr int SELECT_THRESHOLD = 5;
+const int SELECT_THRESHOLD = 4; // QApplication::startDragDistance();
 
 // Length of delay in milliseconds for vertical autoscrolling
 constexpr int VERTICAL_SCROLL_DELAY = 50;
@@ -5996,7 +5996,9 @@ void TextArea::extendAdjustAP(QMouseEvent *event, EventFlags flags) {
 	/* If the selection hasn't begun, decide whether the mouse has moved
 	   far enough from the initial mouse down to be considered a drag */
 	if (dragState_ == PRIMARY_CLICKED) {
-		if (abs(event->x() - btnDownCoord_.x()) > SELECT_THRESHOLD || abs(event->y() - btnDownCoord_.y()) > SELECT_THRESHOLD) {
+
+        const QPoint point = event->pos() - btnDownCoord_;
+        if(point.manhattanLength() > SELECT_THRESHOLD) {
 			dragState_ = rectDrag ? PRIMARY_RECT_DRAG : PRIMARY_DRAG;
 		} else {
 			return;
@@ -6360,7 +6362,8 @@ void TextArea::secondaryOrDragAdjustAP(QMouseEvent *event, EventFlags flags) {
 	/* Decide whether the mouse has moved far enough from the
 	   initial mouse down to be considered a drag */
 	if (dragState_ == CLICKED_IN_SELECTION) {
-        if (abs(event->x() - btnDownCoord_.x()) > SELECT_THRESHOLD || abs(event->y() - btnDownCoord_.y()) > SELECT_THRESHOLD) {
+        const QPoint point = event->pos() - btnDownCoord_;
+        if(point.manhattanLength() > SELECT_THRESHOLD) {
 			BeginBlockDrag();
 		} else {
 			return;
@@ -6393,7 +6396,8 @@ void TextArea::secondaryAdjustAP(QMouseEvent *event, EventFlags flags) {
 	/* If the selection hasn't begun, decide whether the mouse has moved
 	   far enough from the initial mouse down to be considered a drag */
 	if (dragState_ == SECONDARY_CLICKED) {
-        if (abs(event->x() - btnDownCoord_.x()) > SELECT_THRESHOLD || abs(event->y() - btnDownCoord_.y()) > SELECT_THRESHOLD) {
+        const QPoint point = event->pos() - btnDownCoord_;
+        if(point.manhattanLength() > SELECT_THRESHOLD) {
 			dragState_ = rectDrag ? SECONDARY_RECT_DRAG : SECONDARY_DRAG;
 		} else {
 			return;
@@ -7152,18 +7156,6 @@ QColor TextArea::getForegroundPixel() const {
 QColor TextArea::getBackgroundPixel() const {
     QPalette pal = palette();
     return pal.color(QPalette::Base);
-}
-
-void TextArea::setForegroundPixel(const QColor &pixel) {
-    QPalette pal = palette();
-    pal.setColor(QPalette::Text, pixel);
-    setPalette(pal);
-}
-
-void TextArea::setBackgroundPixel(const QColor &pixel) {
-    QPalette pal = palette();
-    pal.setColor(QPalette::Base, pixel);
-    setPalette(pal);
 }
 
 void TextArea::setReadOnly(bool value) {
