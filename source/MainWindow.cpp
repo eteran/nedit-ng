@@ -1025,7 +1025,8 @@ void MainWindow::updateWindowMenu() {
     for(DocumentWidget *document : documents) {
         QString title = document->getWindowsMenuEntry();
 
-        ui.menu_Windows->addAction(title, this, [document]() {
+        QAction *action = ui.menu_Windows->addAction(title);
+        connect(action, &QAction::triggered, this, [document]() {
             document->RaiseFocusDocumentWindow(true);
         });
     }
