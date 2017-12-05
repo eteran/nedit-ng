@@ -1947,7 +1947,7 @@ auto BasicTextBuffer<Ch, Tr>::expandTabsEx(view_type text, int startIndent, int 
 ** "origIndent" to starting at "newIndent".
 */
 template <class Ch, class Tr>
-auto BasicTextBuffer<Ch, Tr>::realignTabsEx(view_type text, int origIndent, int newIndent, int tabDist, int useTabs) noexcept -> string_type {
+auto BasicTextBuffer<Ch, Tr>::realignTabsEx(view_type text, int origIndent, int newIndent, int tabDist, bool useTabs) noexcept -> string_type {
 
     // If the tabs settings are the same, retain original tabs
     if (origIndent % tabDist == newIndent % tabDist) {
@@ -1967,7 +1967,7 @@ auto BasicTextBuffer<Ch, Tr>::realignTabsEx(view_type text, int origIndent, int 
 
 template <class Ch, class Tr>
 template <class Out>
-int BasicTextBuffer<Ch, Tr>::addPaddingEx(Out out, int startIndent, int toIndent, int tabDist, int useTabs) noexcept {
+int BasicTextBuffer<Ch, Tr>::addPaddingEx(Out out, int startIndent, int toIndent, int tabDist, bool useTabs) noexcept {
 
     int indent = startIndent;
     int count  = 0;
@@ -2004,7 +2004,7 @@ int BasicTextBuffer<Ch, Tr>::addPaddingEx(Out out, int startIndent, int toIndent
 ** to position the cursor).
 */
 template <class Ch, class Tr>
-void BasicTextBuffer<Ch, Tr>::insertColInLineEx(view_type line, view_type insLine, int column, int insWidth, int tabDist, int useTabs, string_type *outStr, int *endOffset) noexcept {
+void BasicTextBuffer<Ch, Tr>::insertColInLineEx(view_type line, view_type insLine, int column, int insWidth, int tabDist, bool useTabs, string_type *outStr, int *endOffset) noexcept {
 
     int len = 0;
     int postColIndent;
@@ -2095,7 +2095,7 @@ void BasicTextBuffer<Ch, Tr>::insertColInLineEx(view_type line, view_type insLin
 ** deleted (as a hint for routines which need to position the cursor).
 */
 template <class Ch, class Tr>
-void BasicTextBuffer<Ch, Tr>::deleteRectFromLine(view_type line, int rectStart, int rectEnd, int tabDist, int useTabs, string_type *outStr, int *endOffset) noexcept {
+void BasicTextBuffer<Ch, Tr>::deleteRectFromLine(view_type line, int rectStart, int rectEnd, int tabDist, bool useTabs, string_type *outStr, int *endOffset) noexcept {
 
     int len;
 
@@ -2195,7 +2195,7 @@ int BasicTextBuffer<Ch, Tr>::textWidthEx(view_type text, int tabDist) noexcept {
 ** This code does not handle control characters very well, but oh well.
 */
 template <class Ch, class Tr>
-void BasicTextBuffer<Ch, Tr>::overlayRectInLineEx(view_type line, view_type insLine, int rectStart, int rectEnd, int tabDist, int useTabs, string_type *outStr, int *endOffset) noexcept {
+void BasicTextBuffer<Ch, Tr>::overlayRectInLineEx(view_type line, view_type insLine, int rectStart, int rectEnd, int tabDist, bool useTabs, string_type *outStr, int *endOffset) noexcept {
 
     int postRectIndent;
 

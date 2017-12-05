@@ -15,6 +15,8 @@ class BasicTextBuffer;
 
 #include "TextBufferIterator.h"
 
+using index_type = int64_t;
+
 template <class Ch, class Tr>
 class BasicTextBuffer {
 public:
@@ -179,17 +181,17 @@ private:
 private:
     static string_type unexpandTabsEx(view_type text, int startIndent, int tabDist);
     static string_type expandTabsEx(view_type text, int startIndent, int tabDist);
-    static string_type realignTabsEx(view_type text, int origIndent, int newIndent, int tabDist, int useTabs) noexcept;
-    static void insertColInLineEx(view_type line, view_type insLine, int column, int insWidth, int tabDist, int useTabs, string_type *outStr, int *endOffset) noexcept;
-    static void deleteRectFromLine(view_type line, int rectStart, int rectEnd, int tabDist, int useTabs, string_type *outStr, int *endOffset) noexcept;
+    static string_type realignTabsEx(view_type text, int origIndent, int newIndent, int tabDist, bool useTabs) noexcept;
+    static void insertColInLineEx(view_type line, view_type insLine, int column, int insWidth, int tabDist, bool useTabs, string_type *outStr, int *endOffset) noexcept;
+    static void deleteRectFromLine(view_type line, int rectStart, int rectEnd, int tabDist, bool useTabs, string_type *outStr, int *endOffset) noexcept;
     static int textWidthEx(view_type text, int tabDist) noexcept;
     static int countLinesEx(view_type string) noexcept;
-    static void overlayRectInLineEx(view_type line, view_type insLine, int rectStart, int rectEnd, int tabDist, int useTabs, string_type *outStr, int *endOffset) noexcept;
+    static void overlayRectInLineEx(view_type line, view_type insLine, int rectStart, int rectEnd, int tabDist, bool useTabs, string_type *outStr, int *endOffset) noexcept;
     static const Ch *controlCharacter(size_t index) noexcept;
 
 private:
     template <class Out>
-    static int addPaddingEx(Out out, int startIndent, int toIndent, int tabDist, int useTabs) noexcept;
+    static int addPaddingEx(Out out, int startIndent, int toIndent, int tabDist, bool useTabs) noexcept;
 
     template <class Ran>
     static string_type copyLineEx(Ran first, Ran last);
