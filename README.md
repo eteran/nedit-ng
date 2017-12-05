@@ -63,3 +63,5 @@ is complete some post 1.0 goals are already planned:
 * Extensibility though plugins
 * Sessions, meaning that you can save and restore an edit session (such as 
   several open tabs)
+
+![Nedit-ng](https://github.com/eteran/nedit-ng/raw/master/doc/img/nedit-ng.png)
