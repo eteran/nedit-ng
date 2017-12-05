@@ -5,7 +5,7 @@
 #include <algorithm>
 
 template <class Cont>
-void moveItem(Cont cont, int from, int to) {
+void moveItem(Cont &cont, int from, int to) {
 	
     Q_ASSERT(from >= 0 && from < cont.size());
     Q_ASSERT(to >= 0 && to < cont.size());
