@@ -36,6 +36,7 @@
 #include "TextArea.h"
 #include "TextBuffer.h"
 #include "userCmds.h"
+#include "util/algorithm.h"
 #include "util/ClearCase.h"
 #include "util/fileUtils.h"
 #include "util/utils.h"
@@ -1640,7 +1641,7 @@ void MainWindow::AddToPrevOpenMenu(const QString &filename) {
     // If the name is already in the list, move it to the start
     const int index = PrevOpen.indexOf(filename);
     if(index != -1) {
-        PrevOpen.move(index, 0);
+        moveItem(PrevOpen, index, 0);
         MainWindow::invalidatePrevOpenMenus();
         MainWindow::WriteNEditDB();
         return;
