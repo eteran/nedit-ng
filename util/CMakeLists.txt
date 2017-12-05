@@ -10,6 +10,7 @@ add_library (NUtil
 	FileFormats.h
 	ServerCommon.cpp
 	ServerCommon.h
+	algorithm.h
 	fileUtils.cpp
 	fileUtils.h
 	raise.h

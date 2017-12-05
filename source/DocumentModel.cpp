@@ -1,5 +1,6 @@
 
 #include "DocumentModel.h"
+#include "util/algorithm.h"
 
 /**
  * @brief DocumentModel::LanguageModeModel
@@ -139,7 +140,7 @@ void DocumentModel::moveItemUp(const QModelIndex &index) {
         int row = index.row();
         if(row > 0) {
             beginMoveRows(QModelIndex(), row, row, QModelIndex(), row - 1);
-            items_.move(row, row - 1);
+            moveItem(items_, row, row - 1);
             endMoveRows();
         }
     }
@@ -154,7 +155,7 @@ void DocumentModel::moveItemDown(const QModelIndex &index) {
         int row = index.row();
         if(row < rowCount() - 1) {
             beginMoveRows(QModelIndex(), row, row, QModelIndex(), row + 2);
-            items_.move(row, row + 1);
+            moveItem(items_, row, row + 1);
             endMoveRows();
         }
     }
