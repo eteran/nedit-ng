@@ -1,6 +1,7 @@
 # nedit-ng
 
 [![Build Status](https://travis-ci.org/eteran/nedit-ng.svg?branch=master)](https://travis-ci.org/eteran/nedit-ng)
+[![License](https://img.shields.io/badge/license-GPL2-blue.svg)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
 
 nedit-ng is a Qt port of the Nirvana Editor (NEdit) version 5.6. It is intended
 to be a **drop in replacement** for nedit in every practical way, just as on 
