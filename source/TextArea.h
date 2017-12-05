@@ -344,8 +344,8 @@ private:
 	bool deletePendingSelection();
     int startOfWord(int pos) const;
     int endOfWord(int pos) const;
-    bool spanBackward(TextBuffer *buf, int startPos, const QByteArray &searchChars, bool ignoreSpace, int *foundPos) const;
-    bool spanForward(TextBuffer *buf, int startPos, const QByteArray &searchChars, bool ignoreSpace, int *foundPos) const;
+    bool spanBackward(TextBuffer *buf, int startPos, view::string_view searchChars, bool ignoreSpace, int *foundPos) const;
+    bool spanForward(TextBuffer *buf, int startPos, view::string_view searchChars, bool ignoreSpace, int *foundPos) const;
 	QShortcut *createShortcut(const QString &name, const QKeySequence &keySequence, const char *member);
 	void CopyToClipboard();
 	void InsertClipboard(bool isColumnar);
@@ -448,7 +448,7 @@ private:
     int         P_marginHeight       = DefaultVMargin;
     int         P_marginWidth        = DefaultHMargin;
     QSize       size_;
-    QString     P_delimiters;
+    std::string P_delimiters;
 
 private:
 	bool        P_autoWrap;
