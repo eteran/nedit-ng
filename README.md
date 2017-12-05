@@ -1,5 +1,7 @@
 # nedit-ng
 
+[![Build Status](https://travis-ci.org/eteran/nedit-ng.svg?branch=master)](https://travis-ci.org/eteran/nedit-ng)
+
 nedit-ng is a Qt port of the Nirvana Editor (NEdit) version 5.6. It is intended
 to be a **drop in replacement** for nedit in every practical way, just as on 
 many systems `/usr/bin/vi` is now a symlink to `/usr/bin/vim`.
