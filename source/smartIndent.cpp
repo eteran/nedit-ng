@@ -59,7 +59,7 @@ const SmartIndentEntry DefaultIndentSpecs[] = {
                       "    return -1\n"
                       "return measureIndent($1) + defaultIndent($pyIndentDist)\n")
         ,
-        QLatin1String()
+        QLatin1String("")
     },{
         QLatin1String("Matlab")
         ,
@@ -143,7 +143,7 @@ const SmartIndentEntry DefaultIndentSpecs[] = {
         ,
         QLatin1String("return matlabNewlineMacro($1)\n")
         ,
-        QLatin1String()
+        QLatin1String("")
     }
 };
 
