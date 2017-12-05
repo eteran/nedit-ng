@@ -13,6 +13,20 @@ aspects have been improved simply by the fact that it is now a Qt application.
 
 ![Nedit-ng](https://github.com/eteran/nedit-ng/raw/master/doc/img/nedit-ng-find.png)
 
+### Requirements:
+
+Dependency                                  | Version Required
+------------------------------------------- | ----------------
+[Qt](http://www.qt.io/)                     | >= 5.6
+[Boost](http://boost.org) (Headers Only)    | >= 1.35
+
+### Compiling:
+
+	$ mkdir build
+	$ cd build
+	$ cmake ..
+	$ make
+
 ### Inherited Limitations:
 
 * Text display is still ASCII only (for now).
