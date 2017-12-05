@@ -9,7 +9,6 @@ env:
     global:
         - MAKEFLAGS="-j2"
     matrix:
-        - QT_BASE=55
         - QT_BASE=56
 
 sudo: required
