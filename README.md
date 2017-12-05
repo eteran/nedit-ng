@@ -19,6 +19,7 @@ Dependency                                  | Version Required
 ------------------------------------------- | ----------------
 [Qt](http://www.qt.io/)                     | >= 5.6
 [Boost](http://boost.org) (Headers Only)    | >= 1.35
+[Bison](https://www.gnu.org/software/bison/)| >= 3.0
 
 ### Compiling:
 
