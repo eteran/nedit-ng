@@ -137,7 +137,7 @@ auto BasicTextBuffer<Ch, Tr>::BufGetRangeEx(int start, int end) const -> string_
 
     string_type text;
 
-    /* Make sure start and end are ok, and allocate memory for returned string.
+    /* Make sure start and end are ok.
        If start is bad, return "", if end is bad, adjust it. */
     if (start < 0 || start > length_) {
         return text;
@@ -1072,13 +1072,13 @@ int BasicTextBuffer<Ch, Tr>::BufCountForwardNLines(int startPos, int nLines) con
 */
 template <class Ch, class Tr>
 int BasicTextBuffer<Ch, Tr>::BufCountBackwardNLines(int startPos, int nLines) const noexcept {
-    int gapLen = gapEnd_ - gapStart_;
-    int lineCount = -1;
-
-    int pos = startPos - 1;
-    if (pos <= 0) {
+    if(startPos == 0) {
         return 0;
     }
+
+    const int gapLen = gapEnd_ - gapStart_;
+    int pos          = startPos - 1;
+    int lineCount    = -1;
 
     while (pos >= gapStart_) {
         if (buf_[pos + gapLen] == Ch('\n')) {
@@ -1108,8 +1108,8 @@ template <class Ch, class Tr>
 bool BasicTextBuffer<Ch, Tr>::BufSearchForwardEx(int startPos, view_type searchChars, int *foundPos) const noexcept {
 
     const int gapLen = gapEnd_ - gapStart_;
+    int pos          = startPos;
 
-    int pos = startPos;
     while (pos < gapStart_) {
         for (Ch ch : searchChars) {
             if (buf_[pos] == ch) {

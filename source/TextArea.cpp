@@ -5058,6 +5058,11 @@ bool TextArea::deletePendingSelection() {
 }
 
 int TextArea::startOfWord(int pos) const {
+
+    if(buffer_->BufIsEmpty()) {
+        return 0;
+    }
+
 	int startPos;
     QByteArray delimiters = P_delimiters.toLatin1();
 
@@ -5077,6 +5082,11 @@ int TextArea::startOfWord(int pos) const {
 }
 
 int TextArea::endOfWord(int pos) const {
+
+    if(buffer_->BufIsEmpty()) {
+        return 0;
+    }
+
 	int endPos;
     QByteArray delimiters = P_delimiters.toLatin1();
 
