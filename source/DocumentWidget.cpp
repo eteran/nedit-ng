@@ -3191,6 +3191,13 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
     }
 #endif
 
+    if(statbuf.st_size > std::numeric_limits<int>::max()) {
+        filenameSet_ = false; // Temp. prevent check for changes.
+        QMessageBox::critical(this, tr("Error opening File"), tr("The file %1 exceeds %2 in size, currently, this is unsupported.").arg(name).arg(std::numeric_limits<int>::max()));
+        filenameSet_ = true;
+        return false;
+    }
+
     const long fileLen = statbuf.st_size;
 
     // Allocate space for the whole contents of the file (unfortunately)
