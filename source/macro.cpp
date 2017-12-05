@@ -35,8 +35,6 @@
 #include <QFileDialog>
 #include <QMimeData>
 
-#include <sys/param.h>
-
 // The following definitions cause an exit from the macro with a message
 // added if (1) to remove compiler warnings on solaris
 #define M_FAILURE(s)     \

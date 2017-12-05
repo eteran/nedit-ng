@@ -13,10 +13,6 @@
 #include <cstring>
 
 #include <pwd.h>
-#include <sys/param.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <sys/utsname.h>
 #include <unistd.h>
 
 

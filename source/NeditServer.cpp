@@ -20,7 +20,6 @@
 #include <QThread>
 
 #include <memory>
-#include <sys/param.h>
 
 namespace {
 

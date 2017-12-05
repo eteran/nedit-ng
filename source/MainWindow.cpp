@@ -53,7 +53,6 @@
 
 #include <sys/param.h>
 #include <sys/stat.h>
-#include <sys/time.h>
 
 #if !defined(DONT_HAVE_GLOB)
 #include <glob.h>
