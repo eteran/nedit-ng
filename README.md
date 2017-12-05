@@ -8,6 +8,8 @@ Because it is a true port of the original code, it (at least for now) inherits
 some (but not all) of the limitations of the original. On the other hand, some 
 aspects have been improved simply by the fact that it is now a Qt application.
 
+![Nedit-ng](https://github.com/eteran/nedit-ng/raw/master/doc/img/nedit-ng-find.png)
+
 ### Inherited Limitations:
 
 * Text display is still ASCII only (for now).
@@ -63,5 +65,3 @@ is complete some post 1.0 goals are already planned:
 * Extensibility though plugins
 * Sessions, meaning that you can save and restore an edit session (such as 
   several open tabs)
-
-![Nedit-ng](https://github.com/eteran/nedit-ng/raw/master/doc/img/nedit-ng-find.png)
