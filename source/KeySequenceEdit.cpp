@@ -6,7 +6,6 @@
 #include <QLineEdit>
 #include <QStyle>
 
-
 /*!
     \class KeySequenceEdit
     \brief The KeySequenceEdit widget allows to input a QKeySequence.

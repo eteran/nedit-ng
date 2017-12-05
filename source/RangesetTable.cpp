@@ -1,5 +1,4 @@
 
-
 #include "RangesetTable.h"
 #include "TextBuffer.h"
 #include <gsl/gsl_util>

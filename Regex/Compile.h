@@ -8,8 +8,6 @@
 
 class Regex;
 
-
-
 // Array sizes for arrays used by function init_ansi_classes.
 constexpr int WHITE_SPACE_SIZE = 16;
 constexpr int ALNUM_CHAR_SIZE  = 256;

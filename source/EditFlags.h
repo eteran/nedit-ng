@@ -1,3 +1,4 @@
+
 #ifndef EDITFLAGS_H
 #define EDITFLAGS_H
 
