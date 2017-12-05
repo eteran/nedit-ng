@@ -19,14 +19,15 @@
 #include <vector>
 
 class CallTipWidget;
-class QMenu;
-class QPoint;
-class QShortcut;
-class QTimer;
 class TextArea;
 class DocumentWidget;
 struct DragEndEvent;
 struct SmartIndentEvent;
+
+class QMenu;
+class QPoint;
+class QShortcut;
+class QTimer;
 
 template <class Ch, class Tr>
 class BasicTextBuffer;

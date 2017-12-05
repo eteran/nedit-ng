@@ -32,6 +32,7 @@
 
 class DocumentWidget;
 class TextArea;
+
 class QString;
 
 void ShiftSelectionEx(DocumentWidget *document, TextArea *area, ShiftDirection direction, bool byTab);

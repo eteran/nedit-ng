@@ -33,9 +33,10 @@
 class DocumentWidget;
 class MainWindow;
 class Program;
+struct RestartData;
+
 class QString;
 class QWidget;
-struct RestartData;
 
 enum RepeatMethod {
     REPEAT_TO_END = -1,

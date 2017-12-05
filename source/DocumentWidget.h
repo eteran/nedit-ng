@@ -24,19 +24,14 @@
 #include <gsl/span>
 #include <array>
 
-class Style;
 class HighlightData;
 class HighlightPattern;
 class MainWindow;
 class PatternSet;
 class Program;
-class QFrame;
-class QLabel;
-class QMenu;
-class QSplitter;
-class QTimer;
 class RangesetTable;
 class Regex;
+class Style;
 class StyleTableEntry;
 class TextArea;
 class UndoInfo;
@@ -46,6 +41,12 @@ struct MacroCommandData;
 struct ShellCommandData;
 struct SmartIndentData;
 struct SmartIndentEvent;
+
+class QFrame;
+class QLabel;
+class QMenu;
+class QSplitter;
+class QTimer;
 
 template <class Ch, class Tr>
 class BasicTextBuffer;

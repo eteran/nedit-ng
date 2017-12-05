@@ -30,11 +30,12 @@
 #include <vector>
 #include <QPointer>
 
-class QString;
-class QByteArray;
 class SmartIndentEntry;
 class Program;
 class DialogSmartIndent;
+
+class QString;
+class QByteArray;
 
 int LMHasSmartIndentMacros(const QString &languageMode);
 int LoadSmartIndentCommonStringEx(const QString &string);

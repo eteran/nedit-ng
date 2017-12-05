@@ -31,6 +31,7 @@
 #include "string_view.h"
 
 class QString;
+
 enum class FileFormats : int;
 
 FileFormats FormatOfFileEx(view::string_view fileString);

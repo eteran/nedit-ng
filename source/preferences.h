@@ -37,13 +37,14 @@
 
 #include <vector>
 
-class QWidget;
-class QString;
-class LanguageMode;
-class QFont;
-class QDialog;
 class Input;
+class LanguageMode;
 class Settings;
+
+class QDialog;
+class QFont;
+class QString;
+class QWidget;
 
 enum ColorTypes : int;
 

@@ -169,6 +169,7 @@ int main(int argc, char *argv[]) {
 
     qInstallMessageHandler(messageHandler);
 
+    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 	QApplication app(argc, argv);
 	QApplication::setWindowIcon(QIcon(QLatin1String(":/res/nedit.png")));
 

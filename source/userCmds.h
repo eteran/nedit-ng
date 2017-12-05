@@ -31,6 +31,7 @@
 
 struct MenuItem;
 struct MenuData;
+
 class QString;
 
 // types of current dialog and/or menu
