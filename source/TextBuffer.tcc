@@ -916,6 +916,7 @@ int BasicTextBuffer<Ch, Tr>::BufExpandCharacter(Ch ch, int indent, Ch outStr[MAX
         return BufExpandTab(indent, outStr, tabDist);
     }
 
+#if defined(VISUAL_CTRL_CHARS)
     // Convert ASCII control codes to readable character sequences
     if ((static_cast<size_t>(ch)) < 32) {
         return snprintf(outStr, MAX_EXP_CHAR_LEN, "<%s>", controlCharacter(ch));
@@ -924,7 +925,7 @@ int BasicTextBuffer<Ch, Tr>::BufExpandCharacter(Ch ch, int indent, Ch outStr[MAX
     if (ch == 127) {
         return snprintf(outStr, MAX_EXP_CHAR_LEN, "<del>");
     }
-
+#endif
     // Otherwise, just return the character
     *outStr = ch;
     return 1;
@@ -941,6 +942,7 @@ int BasicTextBuffer<Ch, Tr>::BufCharWidth(Ch ch, int indent, int tabDist) noexce
         return tabDist - (indent % tabDist);
     }
 
+#if defined(VISUAL_CTRL_CHARS)
     if (static_cast<size_t>(ch) < 32) {
         return Tr::length(controlCharacter(ch)) + 2;
     }
@@ -948,7 +950,7 @@ int BasicTextBuffer<Ch, Tr>::BufCharWidth(Ch ch, int indent, int tabDist) noexce
     if (ch == 127) {
         return 5; // Tr::length("<del>")
     }
-
+#endif
     return 1;
 }
 

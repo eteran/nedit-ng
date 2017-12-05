@@ -10,6 +10,8 @@ option(ENABLE_LTO    "Enable Link Time Optimization")
 option(REPLACE_SCOPE "Use Alternative Search Dialog")
 option(PURIFY        "Fill Unused TextBuffer space")
 
+set(VISUAL_CTRL_CHARS ON CACHE BOOL "Visualize ASCII Control Characters")
+
 if(ENABLE_ASAN)
 	set(CMAKE_CXX_FLAGS        "${CMAKE_CXX_FLAGS}        -fsanitize=address") # -fsanitize-address-use-after-scope
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address")
@@ -47,6 +49,10 @@ endif()
 
 if(PURIFY)
 	add_definitions(-DPURIFY)
+endif()
+
+if(VISUAL_CTRL_CHARS)
+	add_definitions(-DVISUAL_CTRL_CHARS)
 endif()
 
 add_definitions(-DQT_NO_CAST_FROM_ASCII)
