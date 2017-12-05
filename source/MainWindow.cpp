@@ -1894,7 +1894,7 @@ void MainWindow::on_tabWidget_customContextMenuRequested(const QPoint &pos) {
                 } else if(selected == detachTab) {
                     if(TabCount() > 1) {
                         auto new_window = new MainWindow(nullptr);
-                        new_window->ui.tabWidget->addTab(document, document->filename_);
+                        new_window->tabWidget()->addTab(document, document->filename_);
                         new_window->show();
                     }
                 } else if(selected == moveTab) {
@@ -4209,7 +4209,7 @@ void MainWindow::on_action_Default_Tab_Show_Tab_Bar_toggled(bool state) {
     SetPrefTabBar(state);
     for(MainWindow *window : MainWindow::allWindows()) {
         no_signals(window->ui.action_Default_Tab_Show_Tab_Bar)->setChecked(state);
-        window->ui.tabWidget->tabBar()->setVisible(state);
+        window->tabWidget()->tabBar()->setVisible(state);
     }
 }
 
@@ -4222,7 +4222,7 @@ void MainWindow::on_action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Op
     SetPrefTabBarHideOne(state);
     for(MainWindow *window : MainWindow::allWindows()) {
         no_signals(window->ui.action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Open)->setChecked(state);
-        window->ui.tabWidget->setTabBarAutoHide(state);
+        window->tabWidget()->setTabBarAutoHide(state);
     }
 }
 
@@ -4542,7 +4542,7 @@ void MainWindow::action_Next_Document() {
 
             if(auto document = firstWidget) {
                 document->RaiseFocusDocumentWindow(true);
-                nextWindow->ui.tabWidget->setCurrentWidget(document);
+                nextWindow->tabWidget()->setCurrentWidget(document);
             }
 			
         } else {
@@ -4584,13 +4584,13 @@ void MainWindow::action_Prev_Document() {
 
             // raise the window set the focus to the first document in it
             MainWindow *nextWindow = *nextIndex;
-            DocumentWidget *lastWidget = nextWindow->documentAt(static_cast<size_t>(nextWindow->ui.tabWidget->count() - 1));
+            DocumentWidget *lastWidget = nextWindow->documentAt(static_cast<size_t>(nextWindow->tabWidget()->count() - 1));
 
             Q_ASSERT(lastWidget);
 
             if(auto document = lastWidget) {
                 document->RaiseFocusDocumentWindow(true);
-                nextWindow->ui.tabWidget->setCurrentWidget(document);
+                nextWindow->tabWidget()->setCurrentWidget(document);
             }
 
         } else {
@@ -5765,7 +5765,7 @@ void MainWindow::action_Detach_Document(DocumentWidget *document) {
     emit_event("detach_document");
     if(TabCount() > 1) {
         auto new_window = new MainWindow();
-        new_window->ui.tabWidget->addTab(document, document->filename_);
+        new_window->tabWidget()->addTab(document, document->filename_);
         new_window->show();
     }
 }
@@ -7148,4 +7148,12 @@ void MainWindow::SetShowLineNumbers(bool show) {
  */
 bool MainWindow::GetShowLineNumbers() const {
     return showLineNumbers_;
+}
+
+/**
+ * @brief MainWindow::tabWidget
+ * @return
+ */
+QTabWidget *MainWindow::tabWidget() const {
+    return ui.tabWidget;
 }

@@ -583,7 +583,7 @@ void DocumentWidget::SetWindowModified(bool modified) {
 void DocumentWidget::RefreshTabState() {
 
     if(auto w = MainWindow::fromDocument(this)) {
-        QTabWidget *tabWidget = w->ui.tabWidget;
+        QTabWidget *tabWidget = w->tabWidget();
 		int index = tabWidget->indexOf(this);
 
 		QString labelString;
@@ -1021,9 +1021,8 @@ void DocumentWidget::documentRaised() {
 
 void DocumentWidget::RaiseDocument() {
     if(auto win = MainWindow::fromDocument(this)) {
-
         // NOTE(eteran): indirectly triggers a call to documentRaised()
-        win->ui.tabWidget->setCurrentWidget(this);
+        win->tabWidget()->setCurrentWidget(this);
     }
 }
 
@@ -4194,12 +4193,12 @@ void DocumentWidget::moveDocument(MainWindow *fromWindow) {
             // move all documents
             for(DocumentWidget *document : fromWindow->openDocuments()) {
 
-                targetWin->ui.tabWidget->addTab(document, document->filename_);
+                targetWin->tabWidget()->addTab(document, document->filename_);
                 RaiseFocusDocumentWindow(true);
                 targetWin->show();
             }
         } else {
-            targetWin->ui.tabWidget->addTab(this, filename_);
+            targetWin->tabWidget()->addTab(this, filename_);
             RaiseFocusDocumentWindow(true);
             targetWin->show();
         }

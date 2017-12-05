@@ -44,6 +44,7 @@ private:
     void setupDocumentPrefernceDefaults();
     void setupPrevOpenMenuActions();
     QMenu *createUserMenu(DocumentWidget *document, const gsl::span<MenuData> &data);
+    QTabWidget *tabWidget() const;
 
 private:
     void keyPressEvent(QKeyEvent *event) override;
