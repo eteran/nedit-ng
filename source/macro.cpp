@@ -4122,20 +4122,7 @@ static bool showMatchingMV(DocumentWidget *document, Arguments arguments, DataVa
     Q_UNUSED(errMsg);
     Q_UNUSED(arguments);
 
-    QLatin1String res;
-
-    switch (document->showMatchingStyle_) {
-    case ShowMatchingStyle::None:
-        res = QLatin1String("off");
-        break;
-    case ShowMatchingStyle::Delimeter:
-        res = QLatin1String("delimiter");
-        break;
-    case ShowMatchingStyle::Range:
-        res = QLatin1String("range");
-        break;
-    }
-
+    QLatin1String res = to_string(document->showMatchingStyle_);
     *result = to_value(res);
     return true;
 }
@@ -4181,20 +4168,7 @@ static bool fileFormatMV(DocumentWidget *document, Arguments arguments, DataValu
     Q_UNUSED(errMsg);
     Q_UNUSED(arguments);
 
-    QLatin1String res;
-
-    switch (document->fileFormat_) {
-    case FileFormats::Unix:
-        res = QLatin1String("unix");
-        break;
-    case FileFormats::Dos:
-        res = QLatin1String("dos");
-        break;
-    case FileFormats::Mac:
-        res = QLatin1String("macintosh");
-        break;
-    }
-
+    QLatin1String res = to_string(document->fileFormat_);
     *result = to_value(res);
     return true;
 }
