@@ -2,6 +2,7 @@
 #ifndef TEXT_BUFFER_H_
 #define TEXT_BUFFER_H_
 
+#include "TextCursor.h"
 #include "TextSelection.h"
 #include "util/string_view.h"
 
