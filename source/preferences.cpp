@@ -39,11 +39,6 @@ const char *AutoWrapTypes[N_WRAP_STYLES + 3] = {"None", "Newline", "Continuous",
 #define N_INDENT_STYLES 3
 const char *AutoIndentTypes[N_INDENT_STYLES + 3] = {"None", "Auto", "Smart", "True", "False", nullptr};
 
-/* suplement wrap and indent styles w/ a value meaning "use default" for
-   the override fields in the language modes dialog */
-constexpr int DEFAULT_TAB_DIST     = -1;
-constexpr int DEFAULT_EM_TAB_DIST  = -1;
-
 Settings g_Settings;
 
 /* Module-global variable set when any preference changes (for asking the
@@ -536,7 +531,7 @@ void SetPrefTabDist(int tabDist) {
 int GetPrefTabDist(size_t langMode) {
 	int tabDist;
 
-    if (langMode == PLAIN_LANGUAGE_MODE || LanguageModes[langMode].tabDist == DEFAULT_TAB_DIST) {
+    if (langMode == PLAIN_LANGUAGE_MODE || LanguageModes[langMode].tabDist == LanguageMode::DEFAULT_TAB_DIST) {
         tabDist = g_Settings.tabDistance;
 	} else {
         tabDist = LanguageModes[langMode].tabDist;
@@ -564,7 +559,7 @@ void SetPrefEmTabDist(int tabDist) {
 }
 
 int GetPrefEmTabDist(size_t langMode) {
-    if (langMode == PLAIN_LANGUAGE_MODE || LanguageModes[langMode].emTabDist == DEFAULT_EM_TAB_DIST) {
+    if (langMode == PLAIN_LANGUAGE_MODE || LanguageModes[langMode].emTabDist == LanguageMode::DEFAULT_EM_TAB_DIST) {
         return g_Settings.emulateTabs;
     }
 
@@ -985,7 +980,7 @@ static int loadLanguageModesStringEx(const QString &string) {
 
 		// read the tab distance
 		if (in.atEnd() || *in == QLatin1Char('\n') || *in == QLatin1Char(':')) {
-			lm.tabDist = DEFAULT_TAB_DIST;
+            lm.tabDist = LanguageMode::DEFAULT_TAB_DIST;
 		} else if (!ReadNumericFieldEx(in, &lm.tabDist)) {
 			return modeErrorEx(in, QLatin1String("bad tab spacing"));
 		}
@@ -996,7 +991,7 @@ static int loadLanguageModesStringEx(const QString &string) {
 
 		// read emulated tab distance
 		if (in.atEnd() || *in == QLatin1Char('\n') || *in == QLatin1Char(':')) {
-			lm.emTabDist = DEFAULT_EM_TAB_DIST;
+            lm.emTabDist = LanguageMode::DEFAULT_EM_TAB_DIST;
 		}
 		else if (!ReadNumericFieldEx(in, &lm.emTabDist))
 			return modeErrorEx(in, QLatin1String("bad emulated tab spacing"));
@@ -1079,12 +1074,12 @@ static QString WriteLanguageModesStringEx() {
         }
 
         out << QLatin1Char(':');
-        if (language.tabDist != DEFAULT_TAB_DIST) {
+        if (language.tabDist != LanguageMode::DEFAULT_TAB_DIST) {
             out << language.tabDist;
         }
 
         out << QLatin1Char(':');
-        if (language.emTabDist != DEFAULT_EM_TAB_DIST) {
+        if (language.emTabDist != LanguageMode::DEFAULT_EM_TAB_DIST) {
             out << language.emTabDist;
         }
 
