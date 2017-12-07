@@ -57,7 +57,7 @@ constexpr bool starts_with(view::basic_string_view<Ch, Tr> str, Ch ch) noexcept 
 
 template <class Ch, class Tr = std::char_traits<Ch>>
 constexpr bool starts_with(view::basic_string_view<Ch, Tr> str, view::basic_string_view<Ch, Tr> other) noexcept {
-    return str.size_ >= other.size_ && Tr::compare(str.data_, other.data_, other.size_) == 0;
+    return str.size() >= other.size() && Tr::compare(str.data(), other.data(), other.size()) == 0;
 }
 
 template <class Ch, class Tr = std::char_traits<Ch>>
@@ -67,7 +67,7 @@ constexpr bool ends_with(view::basic_string_view<Ch, Tr> str, Ch ch) noexcept {
 
 template <class Ch, class Tr = std::char_traits<Ch>>
 constexpr bool ends_with(view::basic_string_view<Ch, Tr> str, view::basic_string_view<Ch, Tr> other) noexcept {
-    return str.size_ >= other.size_ && Tr::compare(str.data_ + str.size_ - other.size_, other.data_, other.size_) == 0;
+    return str.size() >= other.size() && Tr::compare(str.data() + str.size() - other.size(), other.data(), other.size()) == 0;
 }
 
 #endif
