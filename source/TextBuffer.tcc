@@ -1091,10 +1091,13 @@ int BasicTextBuffer<Ch, Tr>::BufCountBackwardNLines(int startPos, int nLines) co
         pos--;
     }
 
-    while (pos >= 0) {
+    while (true) {
         if (buf_[pos] == Ch('\n')) {
             if (++lineCount >= nLines)
                 return pos + 1;
+        }
+        if(pos == 0) {
+            break;
         }
         pos--;
     }
@@ -1163,12 +1166,15 @@ bool BasicTextBuffer<Ch, Tr>::BufSearchBackwardEx(int startPos, view_type search
         pos--;
     }
 
-    while (pos >= 0) {
+    while (true) {
         for (Ch ch : searchChars) {
             if (buf_[pos] == ch) {
                 *foundPos = pos;
                 return true;
             }
+        }
+        if(pos == 0) {
+            break;
         }
         pos--;
     }
@@ -1333,10 +1339,14 @@ bool BasicTextBuffer<Ch, Tr>::searchBackward(int startPos, Ch searchChar, int *f
         pos--;
     }
 
-    while (pos >= 0) {
+    while (true) {
         if (buf_[pos] == searchChar) {
             *foundPos = pos;
             return true;
+        }
+
+        if(pos == 0) {
+            break;
         }
         pos--;
     }
