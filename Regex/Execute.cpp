@@ -8,6 +8,7 @@
 #include "Regex.h"
 #include "util/utils.h"
 
+#include <cassert>
 #include <cstdio>
 #include <climits>
 #include <cstring>

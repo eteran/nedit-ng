@@ -81,6 +81,8 @@
 #include "Compile.h"
 #include "Execute.h"
 
+#include <cassert>
+
 // Default table for determining whether a character is a word delimiter.
 std::bitset<256> Regex::Default_Delimiters;
 
