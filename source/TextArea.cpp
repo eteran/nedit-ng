@@ -2999,7 +2999,7 @@ void TextArea::redisplayLineEx(int visLineNum, int leftClip, int rightClip, int 
 **
 ** The cursor is also drawn if it appears on the line.
 */
-void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, int rightClip, int leftCharIndex, long rightCharIndex) {
+void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, int rightClip, int leftCharIndex, int rightCharIndex) {
 
 	int i;
     int startX;	
@@ -3175,9 +3175,11 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 					drawCursor(painter, x - 1, y);
 				}
 			}
-		} else if ((lineStartPos + rightCharIndex) == cursorPos) {
-			drawCursor(painter, x - 1, y);
-		}
+        } else if(rightCharIndex != INT_MAX) {
+            if ((lineStartPos + rightCharIndex) == cursorPos) {
+                drawCursor(painter, x - 1, y);
+            }
+        }
 	}
 
 	// If the y position of the cursor has changed, redraw the calltip

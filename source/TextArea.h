@@ -320,7 +320,7 @@ private:
 	void extendRangeForStyleMods(int *start, int *end);
     void redrawLineNumbers(QPainter *painter);
     void redrawLineNumbersEx();
-    void redisplayLine(QPainter *painter, int visLineNum, int leftClip, int rightClip, int leftCharIndex, long rightCharIndex);
+    void redisplayLine(QPainter *painter, int visLineNum, int leftClip, int rightClip, int leftCharIndex, int rightCharIndex);
 	void redisplayLineEx(int visLineNum, int leftClip, int rightClip, int leftCharIndex, int rightCharIndex);
 	int styleOfPos(int lineStartPos, int lineLen, int lineIndex, int dispIndex, int thisChar);
     void drawString(QPainter *painter, int style, int x, int y, int toX, char *string, long nChars);
