@@ -8,6 +8,7 @@
 #include <QApplication>
 #include <QClipboard>
 #include "util/raise.h"
+#include "util/algorithm.h"
 
 /*
 ** Free a text buffer
@@ -2080,7 +2081,7 @@ void BasicTextBuffer<Ch, Tr>::insertColInLineEx(view_type line, view_type insLin
     indent = toIndent;
 
     // realign tabs for text beyond "column" and write it out
-    string_type retabbedStr = realignTabsEx(view::substr(linePtr, line.end()), postColIndent, indent, tabDist, useTabs);
+    string_type retabbedStr = realignTabsEx(substr(linePtr, line.end()), postColIndent, indent, tabDist, useTabs);
 
     *endOffset = gsl::narrow<int>(outStr->size());
 
@@ -2140,7 +2141,7 @@ void BasicTextBuffer<Ch, Tr>::deleteRectFromLine(view_type line, int rectStart, 
     /* Copy the rest of the line.  If the indentation has changed, preserve
        the position of non-whitespace characters by converting tabs to
        spaces, then back to tabs with the correct offset */
-    string_type retabbedStr = realignTabsEx(view::substr(c, line.end()), postRectIndent, indent, tabDist, useTabs);
+    string_type retabbedStr = realignTabsEx(substr(c, line.end()), postRectIndent, indent, tabDist, useTabs);
 
     *endOffset = gsl::narrow<int>(outStr->size());
 
