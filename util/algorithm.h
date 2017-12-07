@@ -28,7 +28,7 @@ void moveItem(Cont &cont, int from, int to) {
 // string_view algorithms
 
 template <class Ch, class Tr>
-constexpr view::basic_string_view<Ch, Tr> substr(const view::basic_string_view<Ch, Tr> &str, typename view::basic_string_view<Ch, Tr>::size_type pos, typename view::basic_string_view<Ch, Tr>::size_type count = view::basic_string_view<Ch, Tr>::npos) {
+constexpr view::basic_string_view<Ch, Tr> substr(view::basic_string_view<Ch, Tr> str, typename view::basic_string_view<Ch, Tr>::size_type pos, typename view::basic_string_view<Ch, Tr>::size_type count = view::basic_string_view<Ch, Tr>::npos) {
     return str.substr(pos, count);
 }
 

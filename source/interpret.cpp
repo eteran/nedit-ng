@@ -766,7 +766,7 @@ NString AllocNStringCpyEx(const QString &s) {
     return string;
 }
 
-NString AllocNStringCpyEx(const view::string_view s) {
+NString AllocNStringCpyEx(view::string_view s) {
     size_t length = s.size();
 
     NString string = AllocNStringEx(length + 1);

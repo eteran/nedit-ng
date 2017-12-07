@@ -217,7 +217,7 @@ void PreemptMacro();
 
 char *AllocStringCpyEx(const std::string &s);
 NString AllocNStringCpyEx(const QString &s);
-NString AllocNStringCpyEx(const view::string_view s);
+NString AllocNStringCpyEx(view::string_view s);
 void GarbageCollectStrings();
 Symbol *PromoteToGlobal(Symbol *sym);
 void FreeProgram(Program *prog);
@@ -268,7 +268,7 @@ inline DataValue to_value(bool n) {
     return DV;
 }
 
-inline DataValue to_value(const view::string_view str) {
+inline DataValue to_value(view::string_view str) {
     DataValue DV;
     DV.tag     = STRING_TAG;
     DV.val.str = AllocNStringCpyEx(str);

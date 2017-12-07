@@ -5796,7 +5796,11 @@ void MainWindow::action_Detach_Document_Dialog(DocumentWidget *document) {
  * @return
  */
 MainWindow *MainWindow::fromDocument(const DocumentWidget *document) {
-    return qobject_cast<MainWindow *>(document->window());
+    if(document) {
+        return qobject_cast<MainWindow *>(document->window());
+    }
+
+    return nullptr;
 }
 
 /*

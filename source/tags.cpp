@@ -1238,7 +1238,7 @@ static bool searchLine(const std::string &line, const std::string &regex) {
 }
 
 // Check if a line has non-ws characters 
-static bool lineEmpty(const view::string_view line) {
+static bool lineEmpty(view::string_view line) {
 
     for(char ch : line) {
         if(ch == '\n') {
