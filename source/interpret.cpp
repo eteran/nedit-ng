@@ -3,6 +3,7 @@
 #include "DocumentWidget.h"
 #include "utils.h"
 #include <cmath>
+#include <cassert>
 
 // This enables preemption, useful to disable it for debugging things
 #define ENABLE_PREEMPTION

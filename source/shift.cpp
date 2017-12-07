@@ -4,6 +4,7 @@
 #include "TextArea.h"
 #include "TextBuffer.h"
 #include "utils.h"
+#include "util/string_view.h"
 #include <gsl/gsl_util>
 #include <memory>
 
@@ -339,7 +340,7 @@ QString ShiftTextEx(const QString &text, ShiftDirection direction, int tabsAllow
 }
 
 std::string ShiftTextEx(view::string_view text, ShiftDirection direction, int tabsAllowed, int tabDist, int nChars) {
-	int bufLen;
+    int bufLen;
 
 	/*
 	** Allocate memory for shifted string.  Shift left adds a maximum of
@@ -366,7 +367,7 @@ std::string ShiftTextEx(view::string_view text, ShiftDirection direction, int ta
 	while (true) {
 		if (textPtr == text.end() || *textPtr == '\n') {
 		
-			auto segment = view::substr(lineStartPtr, text.end());
+            auto segment = substr(lineStartPtr, text.end());
 			
 			std::string shiftedLineString = (direction == SHIFT_RIGHT) ? 
 				shiftLineRightEx(segment, textPtr - lineStartPtr, tabsAllowed, tabDist, nChars): 
