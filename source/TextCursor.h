@@ -11,6 +11,9 @@ public:
     using value_type      = int64_t;
 
 public:
+    static TextCursor Invalid;
+
+public:
     TextCursor() : pos_(0) {}
     TextCursor(value_type pos) : pos_(pos) {}
     TextCursor(const TextCursor &other)          = default;
