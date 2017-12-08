@@ -130,16 +130,6 @@ public:
     void BufSetTabDist(int dist) noexcept;
 
 public:
-    // TODO(eteran): 2.0, implement a more complete STL style interface.
-    // Might allow some interesting use of algorithms
-    const_iterator begin() const  { return const_iterator(this, 0); }
-    const_iterator end() const    { return const_iterator(this, length_); }
-    const_iterator cbegin() const { return const_iterator(this, 0); }
-    const_iterator cend() const   { return const_iterator(this, length_); }
-    bool empty() const            { return BufIsEmpty(); }
-    size_type size() const        { return BufGetLength(); }
-
-public:
     bool GetSimpleSelection(int *left, int *right) const noexcept;
 
 private:
