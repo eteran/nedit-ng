@@ -21,9 +21,6 @@ public:
     void showEvent(QShowEvent *event) override;
 
 private:
-    void copyText();
-
-private:
     Ui::CallTipWidget ui;
 };
 
