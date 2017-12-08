@@ -2,7 +2,6 @@
 #ifndef TEXT_BUFFER_H_
 #define TEXT_BUFFER_H_
 
-#include "TextCursor.h"
 #include "TextSelection.h"
 #include "util/string_view.h"
 
@@ -14,8 +13,6 @@
 template <class Ch = char, class Tr = std::char_traits<Ch>>
 class BasicTextBuffer;
 
-#include "TextBufferIterator.h"
-
 using index_type = int64_t;
 
 template <class Ch, class Tr>
@@ -23,20 +20,6 @@ class BasicTextBuffer {
 public:
     using string_type = std::basic_string<Ch, Tr>;
     using view_type   = view::basic_string_view<Ch, Tr>;
-
-public:
-    using value_type             = Ch;
-    using allocator_type         = std::allocator<value_type>;
-    using size_type	             = size_t;
-    using difference_type	     = std::ptrdiff_t;
-    using reference	             = value_type&;
-    using const_reference        = const value_type&;
-    using pointer                = value_type*;
-    using const_pointer          = const value_type*;
-    using iterator               = BasicTextBufferIterator<Ch, Tr>;
-    using const_iterator	     = BasicTextBufferIterator<Ch, Tr>;
-    using reverse_iterator       = std::reverse_iterator<iterator>;
-    using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
 public:
     using bufModifyCallbackProc    = void (*)(int pos, int nInserted, int nDeleted, int nRestyled, view_type deletedText, void *user);
