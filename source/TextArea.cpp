@@ -6821,7 +6821,7 @@ void TextArea::setWordDelimiters(const QString &delimiters) {
 }
 
 void TextArea::setAutoShowInsertPos(bool value) {
-	P_autoShowInsertPos = value;
+    P_autoShowInsertPos = value;
 }
 
 void TextArea::setEmulateTabs(bool value) {

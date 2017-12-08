@@ -598,8 +598,8 @@ void ConvertFromMacFileString(char *fileString, int length) {
  * @param fileString
  */
 void ConvertFromMacFileStringEx(std::string *fileString) {
-	Q_ASSERT(fileString);
-	std::transform(fileString->begin(), fileString->end(), fileString->begin(), [](char ch) {
+    Q_ASSERT(fileString);
+    std::transform(fileString->begin(), fileString->end(), fileString->begin(), [](char ch) {
 		if(ch == '\r') {
 			return '\n';
 		}

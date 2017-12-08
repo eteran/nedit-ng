@@ -31,13 +31,13 @@ struct TagFile {
 extern std::deque<TagFile> TagsFileList; // list of loaded tags files
 extern std::deque<TagFile> TipsFileList; // list of loaded calltips tag files
 
-extern TagSearchMode searchMode;
-extern QString tagName;
+extern TagSearchMode  searchMode;
+extern QString        tagName;
 
-extern bool globAnchored;
-extern int globPos;
-extern TipHAlignMode globHAlign;
-extern TipVAlignMode globVAlign;
+extern bool           globAnchored;
+extern int            globPos;
+extern TipHAlignMode  globHAlign;
+extern TipVAlignMode  globVAlign;
 extern TipAlignStrict globAlignMode;
 
 bool AddRelTagsFileEx(const QString &tagSpec, const QString &windowPath, TagSearchMode file_type);

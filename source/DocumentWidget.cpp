@@ -2482,7 +2482,7 @@ bool DocumentWidget::doSave() {
  * @param addWrap
  * @return
  */
-int DocumentWidget::SaveWindowAs(const QString &newName, bool addWrap) {
+bool DocumentWidget::SaveWindowAs(const QString &newName, bool addWrap) {
 
     // NOTE(eteran): this seems a bit redundant to other code...
     if(auto win = MainWindow::fromDocument(this)) {
@@ -2494,7 +2494,7 @@ int DocumentWidget::SaveWindowAs(const QString &newName, bool addWrap) {
             QFileDialog dialog(this, tr("Save File As"));
             dialog.setFileMode(QFileDialog::AnyFile);
             dialog.setAcceptMode(QFileDialog::AcceptSave);
-            dialog.setDirectory((!path_.isEmpty()) ? path_ : QString());
+            dialog.setDirectory(path_);
             dialog.setOptions(QFileDialog::DontUseNativeDialog);
 
             if(QGridLayout* const layout = qobject_cast<QGridLayout*>(dialog.layout())) {
@@ -2660,7 +2660,7 @@ int DocumentWidget::SaveWindowAs(const QString &newName, bool addWrap) {
         return retVal;
     }
 
-    return 0;
+    return false;
 }
 
 /*
@@ -3099,15 +3099,14 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
             // Give option to create (or to exit if this is the only window)
 			if (!(flags & EditFlags::SUPPRESS_CREATE_WARN)) {
 
-
                 QMessageBox msgbox(this);
                 QAbstractButton  *exitButton;
 
                 // ask user for next action if file not found
-
                 std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
                 int resp;
-                if (this == documents.front() && documents.size() == 1) {
+
+                if (documents.size() == 1 && documents.front() == this) {
 
                     msgbox.setIcon(QMessageBox::Warning);
                     msgbox.setWindowTitle(tr("New File"));
@@ -3187,21 +3186,22 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
     }
 #endif
 
-    if(statbuf.st_size > std::numeric_limits<int>::max()) {
+    const long fileLength = statbuf.st_size;
+
+    // NOTE(eteran): due to the usage of 32-bit ints (all over the place), there is a limit of 2GB
+    if(fileLength > std::numeric_limits<int>::max()) {
         filenameSet_ = false; // Temp. prevent check for changes.
-        QMessageBox::critical(this, tr("Error opening File"), tr("The file %1 exceeds %2 in size, currently, this is unsupported.").arg(name).arg(std::numeric_limits<int>::max()));
+        QMessageBox::critical(this, tr("Error opening File"), tr("The file %1 exceeds %2 bytes in size, currently, this is unsupported.").arg(name).arg(std::numeric_limits<int>::max()));
         filenameSet_ = true;
         return false;
     }
 
-    const long fileLen = statbuf.st_size;
-
     // Allocate space for the whole contents of the file (unfortunately)
     try {
-        std::vector<char> fileString(static_cast<size_t>(fileLen) + 1); // +1 = space for null
+        std::vector<char> fileString(static_cast<size_t>(fileLength) + 1); // +1 = space for null
 
         // Read the file into fileString and terminate with a null
-        size_t readLen = ::fread(&fileString[0], 1, static_cast<size_t>(fileLen), fp);
+        size_t readLen = ::fread(&fileString[0], 1, static_cast<size_t>(fileLength), fp);
         if (::ferror(fp)) {
             filenameSet_ = false; // Temp. prevent check for changes.
             QMessageBox::critical(this, tr("Error while opening File"), tr("Error reading %1:\n%2").arg(name, ErrorString(errno)));
@@ -3383,62 +3383,59 @@ void DocumentWidget::RefreshMenuToggleStates() {
 */
 void DocumentWidget::executeNewlineMacroEx(SmartIndentEvent *cbInfo) {
 
-    const std::unique_ptr<SmartIndentData> &winData = smartIndentData_;
+    if(const std::unique_ptr<SmartIndentData> &winData = smartIndentData_) {
 
-    // posValue probably shouldn't be static due to re-entrance issues <slobasso>
-    static DataValue posValue[1] = {
-        {INT_TAG, {0}}
-    };
+        DataValue result;
+        QString errMsg;
 
-    DataValue result;    
-    QString errMsg;
+        /* Beware of recursion: the newline macro may insert a string which
+           triggers the newline macro to be called again and so on. Newline
+           macros shouldn't insert strings, but nedit must not crash either if
+           they do. */
+        if (winData->inNewLineMacro) {
+            return;
+        }
 
-    /* Beware of recursion: the newline macro may insert a string which
-       triggers the newline macro to be called again and so on. Newline
-       macros shouldn't insert strings, but nedit must not crash either if
-       they do. */
-    if (winData->inNewLineMacro) {
-        return;
+        // Call newline macro with the position at which to add newline/indent
+        std::array<DataValue, 1> args;
+        args[0] = to_value(cbInfo->pos);
+
+        ++(winData->inNewLineMacro);
+
+        std::shared_ptr<RestartData> continuation;
+        int stat = ExecuteMacroEx(this, winData->newlineMacro, args, &result, continuation, &errMsg);
+
+        // Don't allow preemption or time limit.  Must get return value
+        while (stat == MACRO_TIME_LIMIT) {
+            stat = ContinueMacroEx(continuation, &result, &errMsg);
+        }
+
+        --(winData->inNewLineMacro);
+
+        /* Collect Garbage.  Note that the mod macro does not collect garbage,
+           (because collecting per-line is more efficient than per-character)
+           but GC now depends on the newline macro being mandatory */
+        SafeGC();
+
+        // Process errors in macro execution
+        if (stat == MACRO_PREEMPT || stat == MACRO_ERROR) {
+            QMessageBox::critical(
+                        this,
+                        tr("Smart Indent"),
+                        tr("Error in smart indent macro:\n%1").arg(stat == MACRO_ERROR ? errMsg : tr("dialogs and shell commands not permitted")));
+            EndSmartIndent();
+            return;
+        }
+
+        // Validate and return the result
+        if (!is_integer(result) || to_integer(result) < -1 || to_integer(result) > 1000) {
+            QMessageBox::critical(this, tr("Smart Indent"), tr("Smart indent macros must return integer indent distance"));
+            EndSmartIndent();
+            return;
+        }
+
+        cbInfo->indentRequest = to_integer(result);
     }
-
-    // Call newline macro with the position at which to add newline/indent
-    posValue[0] = to_value(cbInfo->pos);
-
-    ++(winData->inNewLineMacro);
-
-    std::shared_ptr<RestartData> continuation;
-    int stat = ExecuteMacroEx(this, winData->newlineMacro, posValue, &result, continuation, &errMsg);
-
-    // Don't allow preemption or time limit.  Must get return value
-    while (stat == MACRO_TIME_LIMIT) {
-        stat = ContinueMacroEx(continuation, &result, &errMsg);
-    }
-
-    --(winData->inNewLineMacro);
-
-    /* Collect Garbage.  Note that the mod macro does not collect garbage,
-       (because collecting per-line is more efficient than per-character)
-       but GC now depends on the newline macro being mandatory */
-    SafeGC();
-
-    // Process errors in macro execution
-    if (stat == MACRO_PREEMPT || stat == MACRO_ERROR) {
-        QMessageBox::critical(
-                    this,
-                    tr("Smart Indent"),
-                    tr("Error in smart indent macro:\n%1").arg(stat == MACRO_ERROR ? errMsg : tr("dialogs and shell commands not permitted")));
-        EndSmartIndent();
-        return;
-    }
-
-    // Validate and return the result
-    if (!is_integer(result) || to_integer(result) < -1 || to_integer(result) > 1000) {
-        QMessageBox::critical(this, tr("Smart Indent"), tr("Smart indent macros must return integer indent distance"));
-        EndSmartIndent();
-        return;
-    }
-
-    cbInfo->indentRequest = to_integer(result);
 }
 
 /*
@@ -3473,56 +3470,45 @@ void DocumentWidget::SetShowMatching(ShowMatchingStyle state) {
 */
 void DocumentWidget::executeModMacroEx(SmartIndentEvent *cbInfo) {
 
-    const std::unique_ptr<SmartIndentData> &winData = smartIndentData_;
+    if(const std::unique_ptr<SmartIndentData> &winData = smartIndentData_) {
 
-    // args probably shouldn't be static due to future re-entrance issues <slobasso>
-    static DataValue args[2] = {
-        {INT_TAG, {0}},
-        {STRING_TAG, {0}}
-    };
+        DataValue result;
+        QString errMsg;
 
-    // NOTE(eteran): this used to be a static flag that was set and unset
-    // surrounding the ExecuteMacroEx call but the original nedit authors
-    // indicated that winData->inModMacro was intended to replace it.
-    // The idea being that a macro in one window shouldn't prevent an unrelated
-    // macro from executing
-    const bool inModCB = winData->inModMacro > 0;
+        /* Check for inappropriate calls and prevent re-entering if the macro
+           makes a buffer modification */
+        if (winData->modMacro == nullptr || winData->inModMacro > 0) {
+            return;
+        }
 
-    DataValue result;
-    QString errMsg;
+        /* Call modification macro with the position of the modification,
+           and the character(s) inserted.  Don't allow
+           preemption or time limit.  Execution must not overlap or re-enter */
+        std::array<DataValue, 2> args;
+        args[0] = to_value(cbInfo->pos);
+        args[1] = to_value(cbInfo->charsTyped);
 
-    /* Check for inappropriate calls and prevent re-entering if the macro
-       makes a buffer modification */
-    if (winData == nullptr || winData->modMacro == nullptr || inModCB > 0) {
-        return;
-    }
+        ++(winData->inModMacro);
 
-    /* Call modification macro with the position of the modification,
-       and the character(s) inserted.  Don't allow
-       preemption or time limit.  Execution must not overlap or re-enter */
-    args[0] = to_value(cbInfo->pos);
-    args[1] = to_value(cbInfo->charsTyped);
+        std::shared_ptr<RestartData> continuation;
+        int stat = ExecuteMacroEx(this, winData->modMacro, args, &result, continuation, &errMsg);
 
-    ++(winData->inModMacro);
+        while (stat == MACRO_TIME_LIMIT) {
+            stat = ContinueMacroEx(continuation, &result, &errMsg);
+        }
 
-    std::shared_ptr<RestartData> continuation;
-    int stat = ExecuteMacroEx(this, winData->modMacro, args, &result, continuation, &errMsg);
+        --(winData->inModMacro);
 
-    while (stat == MACRO_TIME_LIMIT) {
-        stat = ContinueMacroEx(continuation, &result, &errMsg);
-    }
+        // Process errors in macro execution
+        if (stat == MACRO_PREEMPT || stat == MACRO_ERROR) {
+            QMessageBox::critical(
+                        this,
+                        tr("Smart Indent"),
+                        tr("Error in smart indent modification macro:\n%1").arg((stat == MACRO_ERROR) ? errMsg : tr("dialogs and shell commands not permitted")));
 
-    --(winData->inModMacro);
-
-    // Process errors in macro execution
-    if (stat == MACRO_PREEMPT || stat == MACRO_ERROR) {
-        QMessageBox::critical(
-                    this,
-                    tr("Smart Indent"),
-                    tr("Error in smart indent modification macro:\n%1").arg((stat == MACRO_ERROR) ? errMsg : tr("dialogs and shell commands not permitted")));
-
-        EndSmartIndent();
-        return;
+            EndSmartIndent();
+            return;
+        }
     }
 }
 
@@ -3626,12 +3612,11 @@ void DocumentWidget::GotoMatchingCharacter(TextArea *area) {
     int selStart;
     int selEnd;
     int matchPos;
-    TextBuffer *buf = buffer_;
 
     /* get the character to match and its position from the selection, or
        the character before the insert point if nothing is selected.
        Give up if too many characters are selected */
-    if (!buf->GetSimpleSelection(&selStart, &selEnd)) {
+    if (!buffer_->GetSimpleSelection(&selStart, &selEnd)) {
 
         selEnd = area->TextGetCursorPos();
 
@@ -3639,11 +3624,12 @@ void DocumentWidget::GotoMatchingCharacter(TextArea *area) {
             selEnd += 1;
         }
 
-        selStart = selEnd - 1;
-        if (selStart < 0) {
+        if(selEnd == 0) {
             QApplication::beep();
             return;
         }
+
+        selStart = selEnd - 1;
     }
 
     if ((selEnd - selStart) != 1) {
@@ -3652,7 +3638,7 @@ void DocumentWidget::GotoMatchingCharacter(TextArea *area) {
     }
 
     // Search for it in the buffer
-    if (!findMatchingCharEx(buf->BufGetCharacter(selStart), GetHighlightInfoEx(selStart), selStart, 0, buf->BufGetLength(), &matchPos)) {
+    if (!findMatchingCharEx(buffer_->BufGetCharacter(selStart), GetHighlightInfoEx(selStart), selStart, 0, buffer_->BufGetLength(), &matchPos)) {
         QApplication::beep();
         return;
     }
@@ -3671,7 +3657,6 @@ void DocumentWidget::GotoMatchingCharacter(TextArea *area) {
 bool DocumentWidget::findMatchingCharEx(char toMatch, Style styleToMatch, int charPos, int startLimit, int endLimit, int *matchPos) {
 
     Style style;
-    TextBuffer *buf = buffer_;
     bool matchSyntaxBased = matchSyntaxBased_;
 
     // If we don't match syntax based, fake a matching style.
@@ -3698,45 +3683,53 @@ bool DocumentWidget::findMatchingCharEx(char toMatch, Style styleToMatch, int ch
     switch(direction) {
     case Direction::Forward:
         for (int pos = beginPos; pos < endLimit; pos++) {
-            const char ch = buf->BufGetCharacter(pos);
+            const char ch = buffer_->BufGetCharacter(pos);
             if (ch == matchChar) {
                 if (matchSyntaxBased) {
                     style = GetHighlightInfoEx(pos);
                 }
 
                 if (style == styleToMatch) {
-                    nestDepth--;
+                    --nestDepth;
                     if (nestDepth == 0) {
                         *matchPos = pos;
                         return true;
                     }
                 }
             } else if (ch == toMatch) {
-                if (matchSyntaxBased)
+                if (matchSyntaxBased) {
                     style = GetHighlightInfoEx(pos);
-                if (style == styleToMatch)
-                    nestDepth++;
+                }
+
+                if (style == styleToMatch) {
+                    ++nestDepth;
+                }
             }
         }
         break;
     case Direction::Backward:
         for (int pos = beginPos; pos >= startLimit; pos--) {
-            const char ch = buf->BufGetCharacter(pos);
+            const char ch = buffer_->BufGetCharacter(pos);
             if (ch == matchChar) {
-                if (matchSyntaxBased)
+                if (matchSyntaxBased) {
                     style = GetHighlightInfoEx(pos);
+                }
+
                 if (style == styleToMatch) {
-                    nestDepth--;
+                    --nestDepth;
                     if (nestDepth == 0) {
                         *matchPos = pos;
                         return true;
                     }
                 }
             } else if (ch == toMatch) {
-                if (matchSyntaxBased)
+                if (matchSyntaxBased) {
                     style = GetHighlightInfoEx(pos);
-                if (style == styleToMatch)
-                    nestDepth++;
+                }
+
+                if (style == styleToMatch) {
+                    ++nestDepth;
+                }
             }
         }
         break;
@@ -3746,6 +3739,7 @@ bool DocumentWidget::findMatchingCharEx(char toMatch, Style styleToMatch, int ch
 }
 
 void DocumentWidget::SelectToMatchingCharacter(TextArea *area) {
+
     int selStart;
     int selEnd;
     int matchPos;
@@ -3756,14 +3750,16 @@ void DocumentWidget::SelectToMatchingCharacter(TextArea *area) {
     if (!buffer_->GetSimpleSelection(&selStart, &selEnd)) {
 
         selEnd = area->TextGetCursorPos();
-        if (overstrike_)
+        if (overstrike_) {
             selEnd += 1;
+        }
 
-        selStart = selEnd - 1;
-        if (selStart < 0) {
+        if(selEnd == 0) {
             QApplication::beep();
             return;
         }
+
+        selStart = selEnd - 1;
     }
 
     if ((selEnd - selStart) != 1) {
@@ -3786,8 +3782,6 @@ void DocumentWidget::SelectToMatchingCharacter(TextArea *area) {
        be automatically scrolled on screen and MakeSelectionVisible would do
        nothing) */
     area->setAutoShowInsertPos(false);
-
-    // select the text between the matching characters
     buffer_->BufSelect(startPos, endPos + 1);
     MakeSelectionVisible(area);
     area->setAutoShowInsertPos(true);

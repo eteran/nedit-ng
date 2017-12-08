@@ -134,10 +134,8 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(par
 
     connect(qApp, &QApplication::focusChanged, this, &MainWindow::focusChanged);
 
-
     ui.menu_Windows->setStyleSheet(QLatin1String("QMenu { menu-scrollable: 1; }"));
 
-	
 	setupMenuGroups();
 	setupTabBar();
 	setupMenuStrings();
@@ -502,7 +500,6 @@ void MainWindow::setupPrevOpenMenuActions() {
 
             MainWindow::CheckCloseDimEx();
         });
-
 
         ui.action_Open_Previous->setMenu(prevMenu);
     }

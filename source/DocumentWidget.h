@@ -205,7 +205,7 @@ private:
     int MacroWindowCloseActionsEx();
     size_t matchLanguageMode() const;
     int SaveWindow();
-    int SaveWindowAs(const QString &newName, bool addWrap);
+    bool SaveWindowAs(const QString &newName, bool addWrap);
     int WriteBackupFile();
     MacroContinuationCode continueWorkProcEx();
     PatternSet *findPatternsForWindowEx(bool warn);
