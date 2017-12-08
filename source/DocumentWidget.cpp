@@ -58,16 +58,16 @@
 /* data attached to window during shell command execution with information for
  * controling and communicating with the process */
 struct ShellCommandData {
-    QByteArray standardError;
-    QByteArray standardOutput;
-    QProcess * process;
-    QTimer     bannerTimer;
-    TextArea * area;
-    int        flags;
-    int        leftPos;
-    int        rightPos;
-    bool       bannerIsUp;
-    bool       fromMacro;
+    QByteArray    standardError;
+    QByteArray    standardOutput;
+    QProcess *    process;
+    QTimer        bannerTimer;
+    TextArea *    area;
+    int           flags;
+    int           leftPos;
+    int           rightPos;
+    CommandSource source;
+    bool          bannerIsUp;
 };
 
 DocumentWidget *DocumentWidget::LastCreated;
@@ -3885,7 +3885,7 @@ void DocumentWidget::execAP(TextArea *area, const QString &command) {
         return;
     }
 
-    ExecShellCommandEx(area, command, false);
+    ExecShellCommandEx(area, command, CommandSource::User);
 }
 
 /*
@@ -3893,7 +3893,7 @@ void DocumentWidget::execAP(TextArea *area, const QString &command) {
 ** insert position or in the current selection if the window has a
 ** selection.
 */
-void DocumentWidget::ExecShellCommandEx(TextArea *area, const QString &command, bool fromMacro) {
+void DocumentWidget::ExecShellCommandEx(TextArea *area, const QString &command, CommandSource source) {
     if(auto win = MainWindow::fromDocument(this)) {
         int flags = 0;
 
@@ -3942,7 +3942,7 @@ void DocumentWidget::ExecShellCommandEx(TextArea *area, const QString &command, 
                     flags,
                     left,
                     right,
-                    fromMacro);
+                    source);
 
     }
 }
@@ -4541,7 +4541,7 @@ void DocumentWidget::UnloadLanguageModeTipsFileEx() {
 ** REPLACE_SELECTION, ERROR_DIALOGS, and OUTPUT_TO_STRING can only be used
 ** along with ACCUMULATE (these operations can't be done incrementally).
 */
-void DocumentWidget::issueCommandEx(MainWindow *window, TextArea *area, const QString &command, const QString &input, int flags, int replaceLeft, int replaceRight, bool fromMacro) {
+void DocumentWidget::issueCommandEx(MainWindow *window, TextArea *area, const QString &command, const QString &input, int flags, int replaceLeft, int replaceRight, CommandSource source) {
 
     // verify consistency of input parameters
     if ((flags & ERROR_DIALOGS || flags & REPLACE_SELECTION || flags & OUTPUT_TO_STRING) && !(flags & ACCUMULATE)) {
@@ -4553,17 +4553,17 @@ void DocumentWidget::issueCommandEx(MainWindow *window, TextArea *area, const QS
     /* a shell command called from a macro must be executed in the same
        window as the macro, regardless of where the output is directed,
        so the user can cancel them as a unit */
-    if (fromMacro) {
+    if (source == CommandSource::Macro) {
         document = MacroRunDocumentEx();
     }
 
     // put up a watch cursor over the waiting window
-    if (!fromMacro) {
+    if (source == CommandSource::User) {
         setCursor(Qt::WaitCursor);
     }
 
     // enable the cancel menu item
-    if (!fromMacro) {
+    if (source == CommandSource::User) {
         window->ui.action_Cancel_Shell_Command->setEnabled(true);
     }
 
@@ -4616,14 +4616,14 @@ void DocumentWidget::issueCommandEx(MainWindow *window, TextArea *area, const QS
     cmdData->flags       = flags;
     cmdData->area        = area;
     cmdData->bannerIsUp  = false;
-    cmdData->fromMacro   = fromMacro;
+    cmdData->source      = source;
     cmdData->leftPos     = replaceLeft;
     cmdData->rightPos    = replaceRight;
 
     document->shellCmdData_ = std::move(cmdData);
 
     // Set up timer proc for putting up banner when process takes too long
-    if (!fromMacro) {
+    if (source == CommandSource::User) {
         connect(&document->shellCmdData_->bannerTimer, &QTimer::timeout, document, &DocumentWidget::shellBannerTimeoutProc);
         document->shellCmdData_->bannerTimer.setSingleShot(true);
         document->shellCmdData_->bannerTimer.start(BANNER_WAIT_TIME);
@@ -4631,7 +4631,7 @@ void DocumentWidget::issueCommandEx(MainWindow *window, TextArea *area, const QS
 
     /* If this was called from a macro, preempt the macro until shell
        command completes */
-    if (fromMacro) {
+    if (source == CommandSource::Macro) {
         PreemptMacro();
     }
 }
@@ -4652,13 +4652,13 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
 
     const std::unique_ptr<ShellCommandData> &cmdData = shellCmdData_;
     bool cancel = false;
-    bool fromMacro = cmdData->fromMacro;
+    bool fromMacro = (cmdData->source == CommandSource::Macro);
 
     // Cancel pending timeouts
     cmdData->bannerTimer.stop();
 
     // Clean up waiting-for-shell-command-to-complete mode
-    if (!cmdData->fromMacro) {
+    if (cmdData->source == CommandSource::User) {
         setCursor(Qt::ArrowCursor);
         window->ui.action_Cancel_Shell_Command->setEnabled(false);
         if (cmdData->bannerIsUp) {
@@ -4820,7 +4820,7 @@ void DocumentWidget::AbortShellCommandEx() {
 ** Execute the line of text where the the insertion cursor is positioned
 ** as a shell command.
 */
-void DocumentWidget::ExecCursorLineEx(TextArea *area, bool fromMacro) {
+void DocumentWidget::ExecCursorLineEx(TextArea *area, CommandSource source) {
 
     auto window = MainWindow::fromDocument(this);
     if(!window) {
@@ -4885,7 +4885,7 @@ void DocumentWidget::ExecCursorLineEx(TextArea *area, bool fromMacro) {
                 0,
                 insertPos + 1,
                 insertPos + 1,
-                fromMacro);
+                source);
 
 }
 
@@ -4895,7 +4895,7 @@ void DocumentWidget::filterSelection(const QString &filterText) {
         return;
     }
 
-    FilterSelection(filterText, false);
+    FilterSelection(filterText, CommandSource::User);
 }
 
 /*
@@ -4903,7 +4903,7 @@ void DocumentWidget::filterSelection(const QString &filterText) {
 ** is removed, and replaced by the output from the command execution.  Failed
 ** command status and output to stderr are presented in dialog form.
 */
-void DocumentWidget::FilterSelection(const QString &command, bool fromMacro) {
+void DocumentWidget::FilterSelection(const QString &command, CommandSource source) {
 
     auto window = MainWindow::fromDocument(this);
     if(!window) {
@@ -4936,7 +4936,7 @@ void DocumentWidget::FilterSelection(const QString &command, bool fromMacro) {
                 ACCUMULATE | ERROR_DIALOGS | REPLACE_SELECTION,
                 left,
                 right,
-                fromMacro);
+                source);
 }
 
 /*
@@ -4944,7 +4944,7 @@ void DocumentWidget::FilterSelection(const QString &command, bool fromMacro) {
 ** output destination, save first and load after) in the shell commands
 ** menu.
 */
-void DocumentWidget::DoShellMenuCmd(MainWindow *inWindow, TextArea *area, const QString &command, InSrcs input, OutDests output, bool outputReplacesInput, bool saveFirst, bool loadAfter, bool fromMacro) {
+void DocumentWidget::DoShellMenuCmd(MainWindow *inWindow, TextArea *area, const QString &command, InSrcs input, OutDests output, bool outputReplacesInput, bool saveFirst, bool loadAfter, CommandSource source) {
 
     int flags = 0;
     int left  = 0;
@@ -5079,7 +5079,7 @@ void DocumentWidget::DoShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
                 flags,
                 left,
                 right,
-                fromMacro);
+                source);
 }
 
 /**
@@ -5106,7 +5106,7 @@ void DocumentWidget::ShellCmdToMacroStringEx(const QString &command, const QStri
                 ACCUMULATE | OUTPUT_TO_STRING,
                 0,
                 0,
-                true);
+                CommandSource::Macro);
 }
 
 /*

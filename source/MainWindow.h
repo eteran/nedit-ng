@@ -2,12 +2,13 @@
 #ifndef MAIN_WINDOW_H_
 #define MAIN_WINDOW_H_
 
-#include "FileFormats.h"
-#include "Direction.h"
-#include "SearchType.h"
-#include "NewMode.h"
 #include "CloseMode.h"
+#include "CommandSource.h"
+#include "Direction.h"
+#include "FileFormats.h"
 #include "IndentStyle.h"
+#include "NewMode.h"
+#include "SearchType.h"
 #include "WrapMode.h"
 
 #include <vector>
@@ -54,9 +55,9 @@ private:
 public:
     bool CheckPrefsChangesSavedEx();
     bool CloseAllDocumentsInWindow();
-    bool DoNamedBGMenuCmd(DocumentWidget *document, TextArea *area, const QString &name, bool fromMacro);
-    bool DoNamedMacroMenuCmd(DocumentWidget *document, TextArea *area, const QString &name, bool fromMacro);
-    bool DoNamedShellMenuCmd(DocumentWidget *document, TextArea *area, const QString &name, bool fromMacro);
+    bool DoNamedBGMenuCmd(DocumentWidget *document, TextArea *area, const QString &name, CommandSource source);
+    bool DoNamedMacroMenuCmd(DocumentWidget *document, TextArea *area, const QString &name, CommandSource source);
+    bool DoNamedShellMenuCmd(DocumentWidget *document, TextArea *area, const QString &name, CommandSource source);
     bool GetIncrementalSearchLineMS() const;
     bool GetShowLineNumbers() const;
     bool prefOrUserCancelsSubstEx(DocumentWidget *document);

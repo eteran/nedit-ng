@@ -4,6 +4,7 @@
 
 #include "Bookmark.h"
 #include "CloseMode.h"
+#include "CommandSource.h"
 #include "FileFormats.h"
 #include "IndentStyle.h"
 #include "LockReasons.h"
@@ -136,7 +137,7 @@ public:
     void DoMacroEx(const QString &macro, const QString &errInName);
     void EndSmartIndent();
     void execAP(TextArea *area, const QString &command);
-    void ExecShellCommandEx(TextArea *area, const QString &command, bool fromMacro);
+    void ExecShellCommandEx(TextArea *area, const QString &command, CommandSource source);
     void FindDefCalltip(TextArea *area, const QString &tipName);
     void findDefinitionHelper(TextArea *area, const QString &arg, TagSearchMode search_type);
     void FindDefinition(TextArea *area, const QString &tagName);
@@ -231,17 +232,17 @@ private:
     void dimSelDepItemsInMenu(QMenu *menuPane, const gsl::span<MenuData> &menuList, bool enabled);
     void DimSelectionDepUserMenuItems(bool enabled);
     void documentRaised();
-    void DoShellMenuCmd(MainWindow *inWindow, TextArea *area, const QString &command, InSrcs input, OutDests output, bool outputReplacesInput, bool saveFirst, bool loadAfter, bool fromMacro);
+    void DoShellMenuCmd(MainWindow *inWindow, TextArea *area, const QString &command, InSrcs input, OutDests output, bool outputReplacesInput, bool saveFirst, bool loadAfter, CommandSource source);
     void eraseFlashEx();
-    void ExecCursorLineEx(TextArea *area, bool fromMacro);
+    void ExecCursorLineEx(TextArea *area, CommandSource source);
     void executeModMacroEx(SmartIndentEvent *cbInfo);
     void executeNewlineMacroEx(SmartIndentEvent *cbInfo);
-    void FilterSelection(const QString &command, bool fromMacro);
+    void FilterSelection(const QString &command, CommandSource source);
     void filterSelection(const QString &filterText);
     void FinishLearnEx();
     void FlashMatchingEx(TextArea *area);
     void FreeHighlightingDataEx();
-    void issueCommandEx(MainWindow *window, TextArea *area, const QString &command, const QString &input, int flags, int replaceLeft, int replaceRight, bool fromMacro);
+    void issueCommandEx(MainWindow *window, TextArea *area, const QString &command, const QString &input, int flags, int replaceLeft, int replaceRight, CommandSource source);
     void reapplyLanguageMode(size_t mode, bool forceDefaults);
     void Redo();
     void refreshMenuBar();

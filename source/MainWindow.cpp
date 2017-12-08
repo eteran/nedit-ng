@@ -5158,7 +5158,7 @@ void MainWindow::action_Execute_Command_Line(DocumentWidget *document) {
     }
 
     if(QPointer<TextArea> area = lastFocus_) {
-        document->ExecCursorLineEx(area, false);
+        document->ExecCursorLineEx(area, CommandSource::User);
     }
 }
 
@@ -5689,7 +5689,7 @@ void MainWindow::shellTriggered(QAction *action) {
 void MainWindow::action_Shell_Menu_Command(DocumentWidget *document, const QString &name) {
     emit_event("shell_menu_command", name);
     if(QPointer<TextArea> area = lastFocus_) {
-        DoNamedShellMenuCmd(document, area, name, false);
+        DoNamedShellMenuCmd(document, area, name, CommandSource::User);
     }
 }
 
@@ -5728,7 +5728,7 @@ void MainWindow::macroTriggered(QAction *action) {
 void MainWindow::action_Macro_Menu_Command(DocumentWidget *document, const QString &name) {
     emit_event("macro_menu_command", name);
     if(QPointer<TextArea> area = lastFocus_) {
-        DoNamedMacroMenuCmd(document, area, name, false);
+        DoNamedMacroMenuCmd(document, area, name, CommandSource::User);
     }
 }
 
@@ -7061,7 +7061,7 @@ void MainWindow::updateMenuItems() {
 ** Search through the shell menu and execute the first command with menu item
 ** name "itemName".  Returns true on successs and false on failure.
 */
-bool MainWindow::DoNamedShellMenuCmd(DocumentWidget *document, TextArea *area, const QString &name, bool fromMacro) {
+bool MainWindow::DoNamedShellMenuCmd(DocumentWidget *document, TextArea *area, const QString &name, CommandSource source) {
 
     if(MenuData *p = findMenuItem(name, DialogTypes::SHELL_CMDS)) {
 
@@ -7078,7 +7078,7 @@ bool MainWindow::DoNamedShellMenuCmd(DocumentWidget *document, TextArea *area, c
             p->item.repInput,
             p->item.saveFirst,
             p->item.loadAfter,
-            fromMacro);
+            source);
 
         return true;
     }
@@ -7091,9 +7091,9 @@ bool MainWindow::DoNamedShellMenuCmd(DocumentWidget *document, TextArea *area, c
 ** with menu item name "itemName".  Returns true on successs and false on
 ** failure.
 */
-bool MainWindow::DoNamedMacroMenuCmd(DocumentWidget *document, TextArea *area, const QString &name, bool fromMacro) {
+bool MainWindow::DoNamedMacroMenuCmd(DocumentWidget *document, TextArea *area, const QString &name, CommandSource source) {
 
-    Q_UNUSED(fromMacro);
+    Q_UNUSED(source);
     Q_UNUSED(area);
 
     if(MenuData *p = findMenuItem(name, DialogTypes::MACRO_CMDS)) {
@@ -7115,9 +7115,9 @@ bool MainWindow::DoNamedMacroMenuCmd(DocumentWidget *document, TextArea *area, c
  * @param fromMacro
  * @return
  */
-bool MainWindow::DoNamedBGMenuCmd(DocumentWidget *document, TextArea *area, const QString &name, bool fromMacro) {
+bool MainWindow::DoNamedBGMenuCmd(DocumentWidget *document, TextArea *area, const QString &name, CommandSource source) {
 
-    Q_UNUSED(fromMacro);
+    Q_UNUSED(source);
     Q_UNUSED(area);
 
     if(MenuData *p = findMenuItem(name, DialogTypes::BG_MENU_CMDS)) {

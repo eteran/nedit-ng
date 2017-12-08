@@ -113,6 +113,7 @@ add_executable(nedit-ng
 	CloseMode.h
 	CommandRecorder.cpp
 	CommandRecorder.h
+	CommandSource.h
 	CursorStyles.h
 	Dialog.cpp
 	Dialog.h

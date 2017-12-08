@@ -1724,7 +1724,7 @@ static bool backgroundMenuCommandMS(DocumentWidget *document, Arguments argument
         return false;
     }
 
-    win->DoNamedBGMenuCmd(document, win->lastFocus(), name, true);
+    win->DoNamedBGMenuCmd(document, win->lastFocus(), name, CommandSource::Macro);
 
     *result = to_value();
     return true;
