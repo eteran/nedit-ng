@@ -154,13 +154,13 @@ void DialogLanguageModes::currentChanged(const QModelIndex &current, const QMode
         ui.editCallTips  ->setText(ptr->defTipsFile);
         ui.editDelimiters->setText(ptr->delimiters);
 
-        if(ptr->tabDist != -1) {
+        if(ptr->tabDist != LanguageMode::DEFAULT_TAB_DIST) {
             ui.editTabSpacing->setText(QString::number(ptr->tabDist));
         } else {
             ui.editTabSpacing->setText(QString());
         }
 
-        if(ptr->emTabDist != -1) {
+        if(ptr->emTabDist != LanguageMode::DEFAULT_EM_TAB_DIST) {
             ui.editEmulatedTabSpacing->setText(QString::number(ptr->emTabDist));
         } else {
             ui.editEmulatedTabSpacing->setText(QString());
@@ -302,14 +302,6 @@ std::unique_ptr<LanguageMode> DialogLanguageModes::readFields(Verbosity verbosit
 		}
 
 		lm->tabDist = tabsSpacingValue;
-
-        // NOTE(eteran): redundant, validator prevents bad value
-		if (lm->tabDist <= 0 || lm->tabDist > 100) {
-            if (verbosity == Verbosity::Verbose) {
-				QMessageBox::warning(this, tr("Invalid Tab Spacing"), tr("Invalid tab spacing: %1").arg(lm->tabDist));
-			}
-			return nullptr;
-		}
 	}
 
 	// read emulated tab field
@@ -325,14 +317,6 @@ std::unique_ptr<LanguageMode> DialogLanguageModes::readFields(Verbosity verbosit
 		}
 
 		lm->emTabDist = emulatedTabSpacingValue;
-
-        // NOTE(eteran): redundant, validator prevents bad value
-		if (lm->emTabDist < 0 || lm->emTabDist > 100) {
-            if (verbosity == Verbosity::Verbose) {
-				QMessageBox::warning(this, tr("Invalid Tab Spacing"), tr("Invalid emulated tab spacing: %1").arg(lm->emTabDist));
-			}
-			return nullptr;
-		}
 	}
 
 	// read delimiters string
