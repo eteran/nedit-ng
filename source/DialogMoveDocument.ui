@@ -22,7 +22,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QListWidget" name="listDocuments"/>
+    <widget class="QListWidget" name="listWindows"/>
    </item>
    <item>
     <widget class="QCheckBox" name="checkMoveAll">
@@ -40,8 +40,7 @@
        </property>
        <property name="icon">
         <iconset theme="arrow-left">
-         <normaloff/>
-        </iconset>
+         <normaloff>.</normaloff>.</iconset>
        </property>
        <property name="default">
         <bool>true</bool>
@@ -68,8 +67,7 @@
        </property>
        <property name="icon">
         <iconset theme="dialog-cancel">
-         <normaloff/>
-        </iconset>
+         <normaloff>.</normaloff>.</iconset>
        </property>
       </widget>
      </item>
