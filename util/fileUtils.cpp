@@ -617,7 +617,7 @@ void ConvertFromMacFileStringEx(std::string *fileString) {
 ** anyone cares about the performance or the potential for running out of
 ** memory on a save, it should probably be redone.
 */
-bool ConvertToDosFileStringEx(std::string &fileString) {
+void ConvertToDosFileStringEx(std::string &fileString) {
 
     // How long a string will we need?
 	size_t outLength = 0;
@@ -642,7 +642,6 @@ bool ConvertToDosFileStringEx(std::string &fileString) {
 	}
 
 	fileString = outString;
-    return true;
 }
 
 /*

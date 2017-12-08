@@ -2103,7 +2103,6 @@ QString DocumentWidget::FileName() const {
  */
 bool DocumentWidget::cmpWinAgainstFile(const QString &fileName) const {
 
-    char fileString[PREFERRED_CMPBUF_LEN + 2];
     struct stat statbuf;
     int offset;
     char pendingCR         = 0;
@@ -2134,17 +2133,16 @@ bool DocumentWidget::cmpWinAgainstFile(const QString &fileName) const {
         }
     }
 
-    /* For large files, the comparison can take a while. If it takes too long,
-       the user should be given a clue about what is happening. */
-    const auto message = tr("Comparing externally modified %1 ...").arg(filename_);
-
     long restLen = std::min(PREFERRED_CMPBUF_LEN, fileLen);
     int bufPos  = 0;
     int filePos = 0;
+    char fileString[PREFERRED_CMPBUF_LEN + 2];
+
+    /* For large files, the comparison can take a while. If it takes too long,
+       the user should be given a clue about what is happening. */
+    MainWindow::AllWindowsBusyEx(tr("Comparing externally modified %1 ...").arg(filename_));
 
     while (restLen > 0) {
-
-        MainWindow::AllWindowsBusyEx(message);
 
         if (pendingCR) {
             fileString[0] = pendingCR;
@@ -2163,7 +2161,7 @@ bool DocumentWidget::cmpWinAgainstFile(const QString &fileName) const {
         nRead += offset;
 
         // check for on-disk file format changes, but only for the first hunk
-        if (bufPos == 0 && fileFormat != FormatOfFileEx(view::string_view(fileString, nRead))) {
+        if (bufPos == 0 && fileFormat != FormatOfFileEx(view::string_view(fileString, static_cast<size_t>(nRead)))) {
             MainWindow::AllWindowsUnbusyEx();
             return true;
         }
@@ -2180,7 +2178,7 @@ bool DocumentWidget::cmpWinAgainstFile(const QString &fileName) const {
         }
 
         // Beware of NUL chars !
-        int rv = buf->BufCmpEx(bufPos, view::string_view(fileString, nRead));
+        int rv = buf->BufCmpEx(bufPos, view::string_view(fileString, static_cast<size_t>(nRead)));
         if (rv) {
             MainWindow::AllWindowsUnbusyEx();
             return rv;
@@ -2190,6 +2188,7 @@ bool DocumentWidget::cmpWinAgainstFile(const QString &fileName) const {
     }
 
     MainWindow::AllWindowsUnbusyEx();
+
     if (pendingCR) {
         int rv = buf->BufCmpEx(bufPos, view::string_view(&pendingCR, 1));
         if (rv) {
@@ -2439,10 +2438,7 @@ bool DocumentWidget::doSave() {
     // If the file is to be saved in DOS or Macintosh format, reconvert
     switch(fileFormat_) {
     case FileFormats::Dos:
-        if (!ConvertToDosFileStringEx(fileString)) {
-            QMessageBox::critical(this, tr("Out of Memory"), tr("Out of memory!  Try saving in Unix format"));
-            return false;
-        }
+        ConvertToDosFileStringEx(fileString);
         break;
     case FileFormats::Mac:
         ConvertToMacFileStringEx(fileString);

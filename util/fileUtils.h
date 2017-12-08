@@ -18,7 +18,7 @@ QString GetTrailingPathComponentsEx(const QString &path, int noOfComponents);
 QString ReadAnyTextFileEx(const QString &fileName, bool forceNL);
 QString ResolvePathEx(const QString &pathname);
 
-bool ConvertToDosFileStringEx(std::string &fileString);
+void ConvertToDosFileStringEx(std::string &fileString);
 void ConvertFromDosFileString(char *fileString, int *length, char *pendingCR);
 void ConvertFromDosFileString(char *fileString, size_t *length, char *pendingCR);
 void ConvertFromDosFileStringEx(std::string *fileString, char *pendingCR);
