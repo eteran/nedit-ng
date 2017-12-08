@@ -152,6 +152,13 @@ void CommandRecorder::lastActionHook(const WindowMenuEvent *ev) {
         lastCommand = actionString;
 
         if(isRecording_) {
+            /* beep on un-recordable operations which require a mouse position, to
+               remind the user that the action was not recorded */
+            if (isMouseAction(ev)) {
+                QApplication::beep();
+                return;
+            }
+
             macroRecordBuffer.append(actionString);
             macroRecordBuffer.append(QLatin1Char('\n'));
         }
