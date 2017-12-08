@@ -463,11 +463,11 @@ void TextArea::toggleOverstrikeAP(EventFlags flags) {
 
 	if (P_overstrike) {
 		P_overstrike = false;
-		TextDSetCursorStyle(P_heavyCursor ? HEAVY_CURSOR : NORMAL_CURSOR);
+        TextDSetCursorStyle(P_heavyCursor ? CursorStyles::Heavy : CursorStyles::Normal);
 	} else {
 		P_overstrike = true;
-		if (cursorStyle_ == NORMAL_CURSOR || cursorStyle_ == HEAVY_CURSOR)
-			TextDSetCursorStyle(BLOCK_CURSOR);
+        if (cursorStyle_ == CursorStyles::Normal || cursorStyle_ == CursorStyles::Heavy)
+            TextDSetCursorStyle(CursorStyles::Block);
 	}
 }
 
@@ -897,9 +897,9 @@ void TextArea::focusInEvent(QFocusEvent *event) {
 
 	// Change the cursor to active style
 	if (P_overstrike) {
-		TextDSetCursorStyle(BLOCK_CURSOR);
+        TextDSetCursorStyle(CursorStyles::Block);
 	} else {
-		TextDSetCursorStyle(P_heavyCursor ? HEAVY_CURSOR : NORMAL_CURSOR);
+        TextDSetCursorStyle(P_heavyCursor ? CursorStyles::Heavy : CursorStyles::Normal);
 	}
 
 	TextDUnblankCursor();
@@ -910,7 +910,7 @@ void TextArea::focusOutEvent(QFocusEvent *event) {
 
 	cursorBlinkTimer_->stop();
 
-    TextDSetCursorStyle(CARET_CURSOR);
+    TextDSetCursorStyle(CursorStyles::Caret);
 	TextDUnblankCursor();
 
 	// If there's a calltip displayed, kill it.
@@ -3446,7 +3446,7 @@ void TextArea::drawCursor(QPainter *painter, int x, int y) {
 
 	// Create segments and draw cursor
 	switch(cursorStyle_) {
-    case CARET_CURSOR: {
+    case CursorStyles::Caret: {
         const int midY = bot - fontHeight / 5;
 
 		path.moveTo(left, bot);
@@ -3459,7 +3459,7 @@ void TextArea::drawCursor(QPainter *painter, int x, int y) {
 		path.lineTo(right, bot);
 		break;
     }
-    case NORMAL_CURSOR: {
+    case CursorStyles::Normal: {
         path.moveTo(left, y);
         path.lineTo(right, y);
         path.moveTo(x, y);
@@ -3468,7 +3468,7 @@ void TextArea::drawCursor(QPainter *painter, int x, int y) {
         path.lineTo(right, bot);
         break;
     }
-    case HEAVY_CURSOR: {
+    case CursorStyles::Heavy: {
         path.moveTo(x - 1, y);
         path.lineTo(x - 1, bot);
         path.moveTo(x, y);
@@ -3481,7 +3481,7 @@ void TextArea::drawCursor(QPainter *painter, int x, int y) {
         path.lineTo(right, bot);
         break;
     }
-    case DIM_CURSOR: {
+    case CursorStyles::Dim: {
         const int midY = y + fontHeight / 2;
 
         path.moveTo(x, y);
@@ -3492,7 +3492,7 @@ void TextArea::drawCursor(QPainter *painter, int x, int y) {
         path.lineTo(x, bot);
         break;
     }
-    case BLOCK_CURSOR: {
+    case CursorStyles::Block: {
         right = x + fontWidth;
 
         path.moveTo(x, y);
@@ -7173,12 +7173,12 @@ void TextArea::setOverstrike(bool value) {
 	P_overstrike = value;
 
 	switch(getCursorStyle()) {
-	case BLOCK_CURSOR:
-		TextDSetCursorStyle(P_heavyCursor ? HEAVY_CURSOR : NORMAL_CURSOR);
+    case CursorStyles::Block:
+        TextDSetCursorStyle(P_heavyCursor ? CursorStyles::Heavy : CursorStyles::Normal);
 		break;
-	case NORMAL_CURSOR:
-	case HEAVY_CURSOR:
-		TextDSetCursorStyle(BLOCK_CURSOR);
+    case CursorStyles::Normal:
+    case CursorStyles::Heavy:
+        TextDSetCursorStyle(CursorStyles::Block);
         break;
 	default:
 		break;

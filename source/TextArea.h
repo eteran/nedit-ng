@@ -373,7 +373,7 @@ private:
     bool pointerHidden_          = false;          // true if the mouse pointer is hidden
     bool suppressResync_         = false;          // Suppress resynchronization of line starts during buffer updates
     CallTip calltip_;                              // The info for the calltip itself
-    CursorStyles cursorStyle_    = NORMAL_CURSOR;  // One of enum cursorStyles above
+    CursorStyles cursorStyle_    = CursorStyles::Normal;  // One of enum cursorStyles above
     DragStates dragState_        = NOT_CLICKED;    // Why is the mouse being dragged and what is being acquired
     int absTopLineNum_           = 1;              // In continuous wrap mode, the line number of the top line if the text were not wrapped (note that this is only maintained as needed).
     int clickCount_              = 0;

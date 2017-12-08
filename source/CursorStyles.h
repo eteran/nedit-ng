@@ -2,12 +2,12 @@
 #ifndef CURSOR_STYLES_H_
 #define CURSOR_STYLES_H_
 
-enum CursorStyles {
-	NORMAL_CURSOR,
-	CARET_CURSOR,
-	DIM_CURSOR,
-	BLOCK_CURSOR,
-	HEAVY_CURSOR
+enum class CursorStyles {
+    Normal,
+    Caret,
+    Dim,
+    Block,
+    Heavy
 };
 
 #endif
