@@ -453,10 +453,6 @@ void DialogSyntaxPatterns::on_buttonDeletePattern_clicked() {
 	// Clear out the dialog
     ui.editContextLines->setText(QString::number(PatternSet::DefaultLineContext));
     ui.editContextChars->setText(QString::number(PatternSet::DefaultCharContext));
-
-#if 0
-    on_listItems_itemSelectionChanged();
-#endif
 }
 
 /**
