@@ -63,9 +63,6 @@ Dependency                                  | Version Required
 There aren't many of them, but some things just can't be done in Qt to my 
 knowlege.
 
-* NEdit has several points of customization which are controlled by XResource
-  files. I intend to create a new dialog for these "advanced" options or Qt 
-  style sheets.
 * Secondary selection stuff. NEdit (apparently) has some features involing 
   X11's secondary selection system. I honestly had no idea these existed before
   starting this project. And it seems that secondary selections are not a 
