@@ -275,15 +275,6 @@ inline DataValue to_value(view::string_view str) {
     return DV;
 }
 
-// NOTE(eteran): this is a non-owning API
-inline DataValue to_value(char *str, int size) {
-    DataValue DV;
-    DV.tag     = STRING_TAG;
-    DV.val.str.rep = str;
-    DV.val.str.len = static_cast<size_t>(size);
-    return DV;
-}
-
 inline DataValue to_value(const QString &str) {
     DataValue DV;
     DV.tag     = STRING_TAG;

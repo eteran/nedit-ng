@@ -2789,14 +2789,10 @@ static bool searchMS(DocumentWidget *document, Arguments arguments, DataValue *r
     if (arguments.size() > 8)
         M_FAILURE(WrongNumberOfArguments);
 
-    /* we remove constness from BufAsString() result since we know
-     * searchStringMS will not modify the result. */
-
-    /* NOTE(eteran): We do this instead of using a string_view, because this
-     * version of to_value() doesn't make a copy! */
-    auto str = const_cast<char *>(document->buffer_->BufAsString());
-    int size = document->buffer_->BufGetLength();
-    newArgList[0] = to_value(str, size);
+    // NOTE(eteran): the original version of this code was copy-free
+    // in the interest of making the macro code simpler
+    // we just make a copy here
+    newArgList[0] = to_value(document->buffer_->BufAsStringEx());
 
     // copy other arguments to the new argument list
     std::copy(arguments.begin(), arguments.end(), &newArgList[1]);
