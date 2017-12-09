@@ -5635,9 +5635,9 @@ QColor DocumentWidget::GetHighlightBGColorOfCodeEx(int hCode) const {
 ** window. To avoid breaking encapsulation, the highlight style is converted
 ** to a Style object (no other module has to know that characters are used
 ** to represent highlight styles; that would complicate future extensions).
-** Returns nullptr if the window has highlighting turned off.
+** Returns Style() if the window has highlighting turned off.
 ** The only guarantee that this function offers, is that when the same
-** pointer is returned for two positions, the corresponding characters have
+** value is returned for two positions, the corresponding characters have
 ** the same highlight style.
 **/
 Style DocumentWidget::GetHighlightInfoEx(int pos) {
@@ -5649,12 +5649,12 @@ Style DocumentWidget::GetHighlightInfoEx(int pos) {
     }
 
     // Be careful with signed/unsigned conversions. NO conversion here!
-    auto style = static_cast<int>(highlightData->styleBuffer->BufGetCharacter(pos));
+    int style = highlightData->styleBuffer->BufGetCharacter(pos);
 
     // Beware of unparsed regions.
     if (style == UNFINISHED_STYLE) {
         handleUnparsedRegionEx(highlightData->styleBuffer, pos);
-        style = static_cast<int>(highlightData->styleBuffer->BufGetCharacter(pos));
+        style = highlightData->styleBuffer->BufGetCharacter(pos);
     }
 
     if (highlightData->pass1Patterns) {
@@ -5679,35 +5679,38 @@ Style DocumentWidget::GetHighlightInfoEx(int pos) {
 */
 int DocumentWidget::StyleLengthOfCodeFromPosEx(int pos) {
 
-    const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_;
-    const std::shared_ptr<TextBuffer> &styleBuf = highlightData ? highlightData->styleBuffer : nullptr;
     const int oldPos = pos;
 
-    if (styleBuf) {
-        int hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(pos));
-        if (!hCode)
-            return 0;
+    if(const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_) {
+        if (const std::shared_ptr<TextBuffer> &styleBuf = highlightData->styleBuffer) {
 
-        if (hCode == UNFINISHED_STYLE) {
-            // encountered "unfinished" style, trigger parsing
-            handleUnparsedRegionEx(highlightData->styleBuffer, pos);
-            hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(pos));
-        }
+            int hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(pos));
+            if (!hCode) {
+                return 0;
+            }
 
-        StyleTableEntry *entry = styleTableEntryOfCodeEx(hCode);
-        if(!entry)
-            return 0;
-
-        QString checkStyleName = entry->styleName;
-
-        while (hCode == UNFINISHED_STYLE || ((entry = styleTableEntryOfCodeEx(hCode)) && entry->styleName == checkStyleName)) {
             if (hCode == UNFINISHED_STYLE) {
-                // encountered "unfinished" style, trigger parsing, then loop
+                // encountered "unfinished" style, trigger parsing
                 handleUnparsedRegionEx(highlightData->styleBuffer, pos);
                 hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(pos));
-            } else {
-                // advance the position and get the new code
-                hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(++pos));
+            }
+
+            StyleTableEntry *entry = styleTableEntryOfCodeEx(hCode);
+            if(!entry) {
+                return 0;
+            }
+
+            QString checkStyleName = entry->styleName;
+
+            while (hCode == UNFINISHED_STYLE || ((entry = styleTableEntryOfCodeEx(hCode)) && entry->styleName == checkStyleName)) {
+                if (hCode == UNFINISHED_STYLE) {
+                    // encountered "unfinished" style, trigger parsing, then loop
+                    handleUnparsedRegionEx(highlightData->styleBuffer, pos);
+                    hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(pos));
+                } else {
+                    // advance the position and get the new code
+                    hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(++pos));
+                }
             }
         }
     }
@@ -5727,7 +5730,6 @@ QString DocumentWidget::HighlightNameOfCodeEx(int hCode) const {
 }
 
 QString DocumentWidget::HighlightStyleOfCodeEx(int hCode) const {
-
     if(StyleTableEntry *entry = styleTableEntryOfCodeEx(hCode)) {
         return entry->styleName;
     }
@@ -5736,7 +5738,6 @@ QString DocumentWidget::HighlightStyleOfCodeEx(int hCode) const {
 }
 
 QColor DocumentWidget::HighlightColorValueOfCodeEx(int hCode) const {
-
     if (StyleTableEntry *entry = styleTableEntryOfCodeEx(hCode)) {
         return entry->color;
     }
@@ -5767,16 +5768,17 @@ StyleTableEntry *DocumentWidget::styleTableEntryOfCodeEx(int hCode) const {
 */
 int DocumentWidget::HighlightCodeOfPosEx(int pos) {
 
-    const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_;
-    const std::shared_ptr<TextBuffer> &styleBuf = highlightData ? highlightData->styleBuffer : nullptr;
     int hCode = 0;
+    if(const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_) {
 
-    if (styleBuf) {
-        hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(pos));
-        if (hCode == UNFINISHED_STYLE) {
-            // encountered "unfinished" style, trigger parsing
-            handleUnparsedRegionEx(highlightData->styleBuffer, pos);
+        if (const std::shared_ptr<TextBuffer> &styleBuf = highlightData->styleBuffer) {
+
             hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(pos));
+            if (hCode == UNFINISHED_STYLE) {
+                // encountered "unfinished" style, trigger parsing
+                handleUnparsedRegionEx(highlightData->styleBuffer, pos);
+                hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(pos));
+            }
         }
     }
 
@@ -5792,34 +5794,36 @@ int DocumentWidget::HighlightCodeOfPosEx(int pos) {
     for checkCode and never evaluates it after the call. */
 int DocumentWidget::HighlightLengthOfCodeFromPosEx(int pos, int *checkCode) {
 
-    const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_;
-    const std::shared_ptr<TextBuffer> &styleBuf = highlightData ? highlightData->styleBuffer : nullptr;
     const int oldPos = pos;
 
-    if (styleBuf) {
-        int hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(pos));
-        if (!hCode) {
-            return 0;
-        }
+    if(const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_) {
 
-        if (hCode == UNFINISHED_STYLE) {
-            // encountered "unfinished" style, trigger parsing
-            handleUnparsedRegionEx(highlightData->styleBuffer, pos);
-            hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(pos));
-        }
+        if (const std::shared_ptr<TextBuffer> &styleBuf = highlightData->styleBuffer) {
 
-        if (*checkCode == 0) {
-            *checkCode = hCode;
-        }
+            int hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(pos));
+            if (!hCode) {
+                return 0;
+            }
 
-        while (hCode == *checkCode || hCode == UNFINISHED_STYLE) {
             if (hCode == UNFINISHED_STYLE) {
-                // encountered "unfinished" style, trigger parsing, then loop
+                // encountered "unfinished" style, trigger parsing
                 handleUnparsedRegionEx(highlightData->styleBuffer, pos);
                 hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(pos));
-            } else {
-                // advance the position and get the new code
-                hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(++pos));
+            }
+
+            if (*checkCode == 0) {
+                *checkCode = hCode;
+            }
+
+            while (hCode == *checkCode || hCode == UNFINISHED_STYLE) {
+                if (hCode == UNFINISHED_STYLE) {
+                    // encountered "unfinished" style, trigger parsing, then loop
+                    handleUnparsedRegionEx(highlightData->styleBuffer, pos);
+                    hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(pos));
+                } else {
+                    // advance the position and get the new code
+                    hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(++pos));
+                }
             }
         }
     }
@@ -5957,7 +5961,7 @@ void DocumentWidget::StartHighlightingEx(bool warn) {
     char *stylePtr = &styleString[0];
 
     if (!highlightData->pass1Patterns) {
-        for (int i = 0; i < bufLength; i++) {
+        for (int i = 0; i < bufLength; ++i) {
             *stylePtr++ = UNFINISHED_STYLE;
         }
     } else {
