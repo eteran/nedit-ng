@@ -4306,13 +4306,8 @@ void DocumentWidget::action_Set_Fonts(const QString &fontName, const QString &it
 */
 void DocumentWidget::SetBacklightChars(const QString &applyBacklightTypes) {
 
-    backlightChars_ = !applyBacklightTypes.isNull();
-
-    if(backlightChars_) {
-        backlightCharTypes_ = applyBacklightTypes;
-    } else {
-        backlightCharTypes_ = QString();
-    }
+    backlightChars_     = !applyBacklightTypes.isNull();
+    backlightCharTypes_ = applyBacklightTypes;
 
     for(TextArea *area : textPanes()) {
         area->setBacklightCharTypes(backlightCharTypes_);
@@ -4325,7 +4320,6 @@ void DocumentWidget::SetBacklightChars(const QString &applyBacklightTypes) {
  */
 void DocumentWidget::SetShowStatisticsLine(bool value) {
 
-    // TODO(eteran): support no parameter...
     emit_event("set_statistics_line", value ? QLatin1String("1") : QLatin1String("0"));
 
     // stats line is a shell-level item, so we toggle the button state
@@ -4359,7 +4353,6 @@ bool DocumentWidget::GetMatchSyntaxBased() const {
  */
 void DocumentWidget::SetMatchSyntaxBased(bool value) {
 
-    // TODO(eteran): support no parameter...
     emit_event("set_match_syntax_based", value ? QLatin1String("1") : QLatin1String("0"));
 
     if(IsTopDocument()) {
@@ -4455,7 +4448,14 @@ void DocumentWidget::SetColors(const QString &textFg, const QString &textBg, con
 
 
     for(TextArea *area : textPanes()) {
-        area->TextDSetColors(textFgPix, textBgPix, selectFgPix, selectBgPix, hiliteFgPix, hiliteBgPix, lineNoFgPix, cursorFgPix);
+        area->TextDSetColors(textFgPix,
+                             textBgPix,
+                             selectFgPix,
+                             selectBgPix,
+                             hiliteFgPix,
+                             hiliteBgPix,
+                             lineNoFgPix,
+                             cursorFgPix);
     }
 
     // Redo any syntax highlighting
@@ -4489,9 +4489,7 @@ void DocumentWidget::SetModeMessageEx(const QString &message) {
 
     ui.labelFileAndSize->setText(message);
 
-    /*
-     * Don't invoke the stats line again, if stats line is already displayed.
-     */
+    // Don't invoke the stats line again, if stats line is already displayed.
     if (!showStats_) {
         ShowStatsLine(true);
     }
@@ -4660,8 +4658,7 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
         return;
     }
 
-    const std::unique_ptr<ShellCommandData> &cmdData = shellCmdData_;
-    bool cancel = false;
+    const std::unique_ptr<ShellCommandData> &cmdData = shellCmdData_;    
     bool fromMacro = (cmdData->source == CommandSource::Macro);
 
     // Cancel pending timeouts
@@ -4676,12 +4673,22 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
         }
     }
 
+    // when this function ends, do some cleanup
+    auto _ = gsl::finally([this, &cmdData, fromMacro] {
+        delete cmdData->process;
+        shellCmdData_ = nullptr;
+
+        if (fromMacro) {
+            ResumeMacroExecutionEx();
+        }
+    });
+
     QString errText;
     QString outText;
 
     // If the process was killed or became inaccessable, give up
     if (exitStatus != QProcess::NormalExit) {
-        goto cmdDone;
+        return;
     }
 
     // if we have terminated the process, let's be 100% sure we've gotten all input
@@ -4707,6 +4714,8 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
 
     static const QRegularExpression trailingNewlines(QLatin1String("\\n+$"));
 
+    bool cancel = false;
+
     /* Present error and stderr-information dialogs.  If a command returned
        error output, or if the process' exit status indicated failure,
        present the information to the user. */
@@ -4717,7 +4726,7 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
         static constexpr int DF_MAX_MSG_LENGTH = 4096;
 
         if (failure && errorReport) {
-            errText.remove(trailingNewlines);    // remove trailing newlines
+            errText.remove(trailingNewlines);
             errText.truncate(DF_MAX_MSG_LENGTH);
 
             QMessageBox msgBox;
@@ -4745,7 +4754,7 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
 
         } else if (errorReport) {
 
-            errText.remove(trailingNewlines);    // remove trailing newlines
+            errText.remove(trailingNewlines);
             errText.truncate(DF_MAX_MSG_LENGTH);
 
             QMessageBox msgBox;
@@ -4760,7 +4769,7 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
         }
 
         if (cancel) {
-            goto cmdDone;
+            return;
         }
     }
 
@@ -4769,7 +4778,7 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
            (remaining) output in the text widget as requested, and move the
            insert point to the end */
         if (cmdData->flags & OUTPUT_TO_DIALOG) {
-            outText.remove(trailingNewlines); // remove trailing newlines
+            outText.remove(trailingNewlines);
 
             if (!outText.isEmpty()) {
                 auto dialog = new DialogOutput(this);
@@ -4804,14 +4813,6 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
         if (cmdData->flags & RELOAD_FILE_AFTER) {
             RevertToSaved();
         }
-    }
-
-cmdDone:
-    delete cmdData->process;
-    shellCmdData_ = nullptr;
-
-    if (fromMacro) {
-        ResumeMacroExecutionEx();
     }
 }
 
@@ -4978,6 +4979,7 @@ void DocumentWidget::DoShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
     substitutedCommand.replace(QLatin1Char('%'), fullName);
 	substitutedCommand.replace(QLatin1Char('#'), QString::number(line));
 
+    // NOTE(eteran): probably not possible for this to be true anymore...
     if(substitutedCommand.isNull()) {
         QMessageBox::critical(this,
                               tr("Shell Command"),
@@ -5132,31 +5134,25 @@ void DocumentWidget::SetAutoScroll(int margin) {
 /**
  * @brief DocumentWidget::repeatMacro
  * @param macro
- * @param how
+ * @param how REPEAT_IN_SEL, REPEAT_TO_END or a non-negative integer value
+ *
+ * Dispatches a macro to which repeats macro command in "command", either
+ * an integer number of times ("how" == positive integer), or within a
+ * selected range ("how" == REPEAT_IN_SEL), or to the end of the window
+ * ("how == REPEAT_TO_END).
+ *
+ * Note that as with most macro routines, this returns BEFORE the macro is
+ * finished executing
  */
 void DocumentWidget::repeatMacro(const QString &macro, int how) {
-    RepeatMacroEx(macro, how);
-}
-
-/*
-** Dispatches a macro to which repeats macro command in "command", either
-** an integer number of times ("how" == positive integer), or within a
-** selected range ("how" == REPEAT_IN_SEL), or to the end of the window
-** ("how == REPEAT_TO_END).
-**
-** Note that as with most macro routines, this returns BEFORE the macro is
-** finished executing
-*/
-void DocumentWidget::RepeatMacroEx(const QString &command, int how) {
-
     // Wrap a for loop and counter/tests around the command
     QString loopMacro = createRepeatMacro(how);
     QString loopedCmd;
 
     if (how == REPEAT_TO_END || how == REPEAT_IN_SEL) {
-        loopedCmd = loopMacro.arg(command);
+        loopedCmd = loopMacro.arg(macro);
     } else {
-        loopedCmd = loopMacro.arg(how).arg(command);
+        loopedCmd = loopMacro.arg(how).arg(macro);
     }
 
     // Parse the resulting macro into an executable program "prog"
@@ -5187,8 +5183,8 @@ std::vector<DocumentWidget *> DocumentWidget::allDocuments() {
         documents.reserve(documents.size() + openDocuments.size());
         documents.insert(documents.end(), openDocuments.begin(), openDocuments.end());
     }
-    return documents;
 
+    return documents;
 }
 
 /**
@@ -5248,7 +5244,7 @@ bool DocumentWidget::ReadMacroFileEx(const QString &fileName, bool warnNotExist)
 	*/
 	QString fileString = ReadAnyTextFileEx(fileName, true);
 	if (fileString.isNull()) {
-		if (errno != ENOENT || warnNotExist) {
+        if (warnNotExist) {
 			QMessageBox::critical(this, tr("Read Macro"), tr("Error reading macro file %1: %2").arg(fileName, ErrorString(errno)));
 		}
 		return false;
@@ -5435,10 +5431,12 @@ void DocumentWidget::FlashMatchingEx(TextArea *area) {
     }
 
     // get the character to match and the position to start from
-    const int pos = area->TextGetCursorPos() - 1;
-    if (pos < 0) {
+    const int currentPos = area->TextGetCursorPos();
+    if(currentPos == 0) {
         return;
     }
+
+    const int pos = currentPos - 1;
 
     const char ch = buffer_->BufGetCharacter(pos);
 
@@ -5510,7 +5508,7 @@ PatternSet *DocumentWidget::findPatternsForWindowEx(bool warn) {
     // Find the window's language mode.  If none is set, warn user
     QString modeName = LanguageModeName(languageMode_);
     if(modeName.isNull()) {
-        if (warn)
+        if (warn) {
             QMessageBox::warning(this,
                                  tr("Language Mode"),
                                  tr("No language-specific mode has been set for this file.\n\n"
@@ -5519,6 +5517,7 @@ PatternSet *DocumentWidget::findPatternsForWindowEx(bool warn) {
                                     "New language modes and syntax highlighting patterns can be\n"
                                     "added via Preferences -> Default Settings -> Language Modes,\n"
                                     "and Preferences -> Default Settings -> Syntax Highlighting."));
+        }
         return nullptr;
     }
 
@@ -5591,7 +5590,7 @@ void DocumentWidget::UpdateHighlightStylesEx() {
        preserve all of the effort that went in to parsing the buffer
        by swapping it with the empty one in highlightData (which is then
        freed in freeHighlightData) */
-    std::swap(oldHighlightData->styleBuffer, newHighlightData->styleBuffer);
+    newHighlightData->styleBuffer = oldHighlightData->styleBuffer;
 
     highlightData_ = std::move(newHighlightData);
 

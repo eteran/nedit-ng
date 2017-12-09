@@ -252,7 +252,6 @@ private:
     void RemoveBackupFile() const;
     void removeRedoItem();
     void removeUndoItem();
-    void RepeatMacroEx(const QString &command, int how);
     void ReplayEx();
     void RevertToSaved();
     void SaveUndoInformation(int pos, int nInserted, int nDeleted, view::string_view deletedText);
