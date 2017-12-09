@@ -802,8 +802,11 @@ static void MarkArrayContentsAsUsed(ArrayEntry *arrayPtr) {
 
             if (is_string(globalSEUse->value)) {
                 // test first because it may be read-only static string
-                if (globalSEUse->value.val.str.rep[-1] == 0) {
-                    globalSEUse->value.val.str.rep[-1] = 1;
+
+                NString str = globalSEUse->value.val.str;
+
+                if (str.rep[-1] == 0) {
+                    str.rep[-1] = 1;
 				}
             } else if (is_array(globalSEUse->value)) {
 				MarkArrayContentsAsUsed(globalSEUse->value.val.arrayPtr);
@@ -834,9 +837,12 @@ void GarbageCollectStrings() {
     for(Symbol *s : GlobalSymList) {
 
         if (is_string(s->value)) {
+
+            NString str = s->value.val.str;
+
 			// test first because it may be read-only static string 
-			if (s->value.val.str.rep[-1] == 0) {
-				s->value.val.str.rep[-1] = 1;
+            if (str.rep[-1] == 0) {
+                str.rep[-1] = 1;
 			}
         } else if (is_array(s->value)) {
 			MarkArrayContentsAsUsed(s->value.val.arrayPtr);
@@ -934,7 +940,7 @@ static void restoreContextEx(const std::shared_ptr<RestartData> &context) {
             return execError(StackUnderflowMsg);                               \
         --StackP;                                                              \
         if (is_integer(*StackP)) {                                             \
-            string_ref = std::to_string(StackP->val.n);                        \
+            string_ref = std::to_string(to_integer(*StackP));                  \
         } else if (is_string(*StackP)) {                                       \
             string_ref = std::string(StackP->val.str.rep, StackP->val.str.len);\
         } else {                                                               \
