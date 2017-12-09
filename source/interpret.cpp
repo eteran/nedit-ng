@@ -224,11 +224,11 @@ Program *FinishCreatingProgram() {
 
 	int fpOffset = 0;
 
-    auto newProg            = new Program;
-    const size_t count      = ProgP - Prog;
-    newProg->code           = new Inst[count];
+    auto newProg     = new Program;
+    const auto count = static_cast<size_t>(ProgP - Prog);
+    newProg->code    = new Inst[count];
 
-	std::copy_n(Prog, count, newProg->code);
+    std::copy_n(Prog, count, newProg->code);
 
     newProg->localSymList = LocalSymList;
     LocalSymList.clear();
@@ -240,14 +240,15 @@ Program *FinishCreatingProgram() {
 	}
 
     DISASM(newProg->code, count);
-
 	return newProg;
 }
 
 void FreeProgram(Program *prog) {
-	qDeleteAll(prog->localSymList);
-	delete [] prog->code;
-	delete prog;
+    if(prog) {
+        qDeleteAll(prog->localSymList);
+        delete [] prog->code;
+        delete prog;
+    }
 }
 
 /*
@@ -297,8 +298,9 @@ bool AddBranchOffset(Inst *to, const char **msg) {
 		*msg = "macro too large";
         return false;
 	}
-	// Should be ptrdiff_t for branch offsets 
-	ProgP->value = to - ProgP;
+
+    // NOTE(eteran): Should be ptrdiff_t for branch offsets
+    ProgP->value = gsl::narrow<int>(to - ProgP);
 	ProgP++;
 
     return true;

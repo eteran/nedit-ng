@@ -152,6 +152,11 @@ bool Input::operator!=(const Input &rhs) const {
 	return string_ != rhs.string_ || index_ != rhs.index_;
 }
 
+/**
+ * @brief Input::matchSize
+ * @param re
+ * @return
+ */
 int Input::matchSize(const QRegularExpression &re) const {
     QRegularExpressionMatch match = re.match(string_, index_, QRegularExpression::NormalMatch, QRegularExpression::AnchoredMatchOption);
     if(match.hasMatch()) {
@@ -160,7 +165,6 @@ int Input::matchSize(const QRegularExpression &re) const {
 
     return 0;
 }
-
 
 /**
  * @brief Input::match
