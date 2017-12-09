@@ -86,10 +86,10 @@ bool can_cross_line_boundaries(const ReparseContext *contextRequirements) {
 }
 
 static bool isDefaultPatternSet(const PatternSet *patSet);
-static bool isParentStyle(const QByteArray &parentStyles, int style1, int style2);
+static bool isParentStyle(const std::vector<uint8_t> &parentStyles, int style1, int style2);
 static int findSafeParseRestartPos(TextBuffer *buf, const std::unique_ptr<WindowHighlightData> &highlightData, int *pos);
 static int lastModified(const std::shared_ptr<TextBuffer> &styleBuf);
-static int parentStyleOf(const QByteArray &parentStyles, int style);
+static int parentStyleOf(const std::vector<uint8_t> &parentStyles, int style);
 static int parseBufferRange(HighlightData *pass1Patterns, HighlightData *pass2Patterns, TextBuffer *buf, const std::shared_ptr<TextBuffer> &styleBuf, ReparseContext *contextRequirements, int beginParse, int endParse, const QString &delimiters);
 static int readHighlightPatternEx(Input &in, QString *errMsg, HighlightPattern *pattern);
 static QString createPatternsString(const PatternSet *patSet, const QString &indentStr);
@@ -195,7 +195,7 @@ static void incrementalReparse(const std::unique_ptr<WindowHighlightData> &highl
 	HighlightData *pass2Patterns = highlightData->pass2Patterns;
 	ReparseContext *context      = &highlightData->contextRequirements;
 		
-    QByteArray parentStyles = highlightData->parentStyles;
+    const std::vector<uint8_t> &parentStyles = highlightData->parentStyles;
 
 	/* Find the position "beginParse" at which to begin reparsing.  This is
 	   far enough back in the buffer such that the guranteed number of
@@ -811,12 +811,12 @@ char getPrevChar(TextBuffer *buf, int pos) {
 	return pos == 0 ? '\0' : buf->BufGetCharacter(pos - 1);
 }
 
-static int parentStyleOf(const QByteArray &parentStyles, int style) {
+static int parentStyleOf(const std::vector<uint8_t> &parentStyles, int style) {
     Q_ASSERT(style != 0);
     return parentStyles[static_cast<uint8_t>(style) - UNFINISHED_STYLE];
 }
 
-static bool isParentStyle(const QByteArray &parentStyles, int style1, int style2) {
+static bool isParentStyle(const std::vector<uint8_t> &parentStyles, int style1, int style2) {
 
 	for (int p = parentStyleOf(parentStyles, style2); p != 0; p = parentStyleOf(parentStyles, p)) {
 		if (style1 == p) {
@@ -857,9 +857,9 @@ static int findSafeParseRestartPos(TextBuffer *buf, const std::unique_ptr<Window
 	int checkBackTo;
 	int safeParseStart;
 
-	QByteArray parentStyles      = highlightData->parentStyles;
-	HighlightData *pass1Patterns = highlightData->pass1Patterns;
-	ReparseContext *context      = &highlightData->contextRequirements;
+    std::vector<uint8_t> &parentStyles = highlightData->parentStyles;
+    HighlightData *pass1Patterns       = highlightData->pass1Patterns;
+    ReparseContext *context            = &highlightData->contextRequirements;
 
 	// We must begin at least one context distance back from the change 
 	*pos = backwardOneContext(buf, context, *pos);
@@ -1055,7 +1055,7 @@ int indexOfNamedPattern(const gsl::span<HighlightPattern> &patList, const QStrin
         return -1;
 	}
 	
-    for (int i = 0; i < patList.size(); i++) {
+    for (int i = 0; i < patList.size(); ++i) {
         if (patList[i].name == patName) {
             return i;
 		}

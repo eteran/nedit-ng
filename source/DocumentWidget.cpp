@@ -5924,7 +5924,7 @@ void DocumentWidget::handleUnparsedRegionEx(const std::shared_ptr<TextBuffer> &s
 
     /* Update the style buffer the new style information, but only between
        beginParse and endParse.  Skip the safety region */
-    auto view = view::string_view(&styleString[beginParse - beginSafety], endParse - beginParse);
+    auto view = view::string_view(&styleString[beginParse - beginSafety], static_cast<size_t>(endParse - beginParse));
     styleBuf->BufReplaceEx(beginParse, endParse, view);
 }
 
@@ -6181,8 +6181,8 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
     }
 
     // Create table for finding parent styles
-    QByteArray parentStyles;
-    parentStyles.reserve(gsl::narrow<int>(nPass1Patterns + nPass2Patterns + 2));
+    std::vector<uint8_t> parentStyles;
+    parentStyles.reserve(nPass1Patterns + nPass2Patterns + 2);
 
     auto parentStylesPtr = std::back_inserter(parentStyles);
 
@@ -6190,15 +6190,19 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
     *parentStylesPtr++ = '\0';
 
     for (size_t i = 1; i < nPass1Patterns; i++) {
-        *parentStylesPtr++ = pass1PatternSrc[i].subPatternOf.isNull() ?
-                    PLAIN_STYLE :
-                    pass1Pats[indexOfNamedPattern({pass1PatternSrc, gsl::narrow<int>(nPass1Patterns)}, pass1PatternSrc[i].subPatternOf)].style;
+        if(pass1PatternSrc[i].subPatternOf.isNull()) {
+            *parentStylesPtr++ = PLAIN_STYLE;
+        } else {
+            *parentStylesPtr++ = pass1Pats[indexOfNamedPattern({pass1PatternSrc, gsl::narrow<std::ptrdiff_t>(nPass1Patterns)}, pass1PatternSrc[i].subPatternOf)].style;
+        }
     }
 
     for (size_t i = 1; i < nPass2Patterns; i++) {
-        *parentStylesPtr++ = pass2PatternSrc[i].subPatternOf.isNull() ?
-                    PLAIN_STYLE :
-                    pass2Pats[indexOfNamedPattern({pass2PatternSrc, gsl::narrow<int>(nPass2Patterns)}, pass2PatternSrc[i].subPatternOf)].style;
+        if(pass2PatternSrc[i].subPatternOf.isNull()) {
+            *parentStylesPtr++ = PLAIN_STYLE;
+        } else {
+            *parentStylesPtr++ = pass2Pats[indexOfNamedPattern({pass2PatternSrc, gsl::narrow<std::ptrdiff_t>(nPass2Patterns)}, pass2PatternSrc[i].subPatternOf)].style;
+        }
     }
 
     // Set up table for mapping colors and fonts to syntax
@@ -6259,7 +6263,7 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
     auto highlightData = std::make_unique<WindowHighlightData>();
     highlightData->pass1Patterns              = pass1Pats;
     highlightData->pass2Patterns              = pass2Pats;
-    highlightData->parentStyles               = parentStyles;
+    highlightData->parentStyles               = std::move(parentStyles);
     highlightData->styleTable                 = styleTable;
     highlightData->nStyles                    = styleTablePtr - styleTable;
     highlightData->styleBuffer                = styleBuf;

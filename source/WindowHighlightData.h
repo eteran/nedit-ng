@@ -3,7 +3,7 @@
 #define WINDOW_HIGHLIGHT_DATA_H_
 
 #include "ReparseContext.h"
-#include <QByteArray>
+#include <vector>
 #include <memory>
 
 class HighlightData;
@@ -26,7 +26,7 @@ public:
     HighlightData*                   pass2Patterns       = nullptr;
     std::shared_ptr<TextBuffer>      styleBuffer;
     PatternSet*                      patternSetForWindow = nullptr;
-    QByteArray                       parentStyles;
+    std::vector<uint8_t>             parentStyles;
     ReparseContext                   contextRequirements = { 0, 0 };
     long                             nStyles             = 0;
 };
