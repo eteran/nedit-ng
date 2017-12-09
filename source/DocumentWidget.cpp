@@ -3677,11 +3677,14 @@ bool DocumentWidget::findMatchingCharEx(char toMatch, Style styleToMatch, int ch
     const Direction direction = matchIt->direction;
 
     // find it in the buffer
-    const int beginPos = (direction == Direction::Forward) ? charPos + 1 : charPos - 1;
+
     int nestDepth = 1;
 
     switch(direction) {
     case Direction::Forward:
+    {
+        const int beginPos = charPos + 1;
+
         for (int pos = beginPos; pos < endLimit; pos++) {
             const char ch = buffer_->BufGetCharacter(pos);
             if (ch == matchChar) {
@@ -3707,28 +3710,33 @@ bool DocumentWidget::findMatchingCharEx(char toMatch, Style styleToMatch, int ch
             }
         }
         break;
+    }
     case Direction::Backward:
-        for (int pos = beginPos; pos >= startLimit; pos--) {
-            const char ch = buffer_->BufGetCharacter(pos);
-            if (ch == matchChar) {
-                if (matchSyntaxBased) {
-                    style = GetHighlightInfoEx(pos);
-                }
+        if(charPos != startLimit) {
+            const int beginPos = charPos - 1;
 
-                if (style == styleToMatch) {
-                    --nestDepth;
-                    if (nestDepth == 0) {
-                        *matchPos = pos;
-                        return true;
+            for (int pos = beginPos; pos >= startLimit; pos--) {
+                const char ch = buffer_->BufGetCharacter(pos);
+                if (ch == matchChar) {
+                    if (matchSyntaxBased) {
+                        style = GetHighlightInfoEx(pos);
                     }
-                }
-            } else if (ch == toMatch) {
-                if (matchSyntaxBased) {
-                    style = GetHighlightInfoEx(pos);
-                }
 
-                if (style == styleToMatch) {
-                    ++nestDepth;
+                    if (style == styleToMatch) {
+                        --nestDepth;
+                        if (nestDepth == 0) {
+                            *matchPos = pos;
+                            return true;
+                        }
+                    }
+                } else if (ch == toMatch) {
+                    if (matchSyntaxBased) {
+                        style = GetHighlightInfoEx(pos);
+                    }
+
+                    if (style == styleToMatch) {
+                        ++nestDepth;
+                    }
                 }
             }
         }
@@ -3954,12 +3962,14 @@ void DocumentWidget::ExecShellCommandEx(TextArea *area, const QString &command, 
  */
 void DocumentWidget::PrintWindow(TextArea *area, bool selectedOnly) {
 
-    const TextSelection *sel = &buffer_->BufGetPrimary();
     std::string fileString;
 
     /* get the contents of the text buffer from the text area widget.  Add
        wrapping newlines if necessary to make it match the displayed text */
     if (selectedOnly) {
+
+        const TextSelection *sel = &buffer_->BufGetPrimary();
+
         if (!sel->selected) {
             QApplication::beep();
             return;
@@ -3997,7 +4007,7 @@ void DocumentWidget::PrintStringEx(const std::string &string, const QString &job
 		return;
 	}
 
-    tempFile.write(string.data(), gsl::narrow<int>(string.size()));
+    tempFile.write(string.data(), gsl::narrow<int64_t>(string.size()));
 	tempFile.close();
 
     // Print the temporary file, then delete it and return success
@@ -4042,7 +4052,7 @@ void DocumentWidget::closePane() {
         for(int i = 0; i < splitter_->count(); ++i) {
             if(auto area = qobject_cast<TextArea *>(splitter_->widget(i))) {
                 if(area == lastFocus) {
-                    delete area;
+                    area->deleteLater();
                     return;
                 }
             }
