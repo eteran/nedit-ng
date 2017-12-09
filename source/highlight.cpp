@@ -339,7 +339,7 @@ static int parseBufferRange(HighlightData *pass1Patterns, HighlightData *pass2Pa
 	parseString(
 		pass1Patterns, 
 		&stringPtr, 
-		&stylePtr, 
+        &stylePtr,
 		endParse - beginParse, 
 		&prevChar, 
 		false, 

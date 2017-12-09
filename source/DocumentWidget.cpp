@@ -5958,7 +5958,8 @@ void DocumentWidget::StartHighlightingEx(bool warn) {
     /* Parse the buffer with pass 1 patterns.  If there are none, initialize
        the style buffer to all UNFINISHED_STYLE to trigger parsing later */
     std::vector<char> styleString(static_cast<size_t>(bufLength) + 1);
-    char *stylePtr = &styleString[0];
+    char *const styleBegin = &styleString[0];
+    char *stylePtr = styleBegin;
 
     if (!highlightData->pass1Patterns) {
         for (int i = 0; i < bufLength; ++i) {
@@ -5982,7 +5983,7 @@ void DocumentWidget::StartHighlightingEx(bool warn) {
             match_to);
     }
 
-    highlightData->styleBuffer->BufSetAllEx(view::string_view(&styleString[0], std::distance(&styleString[0], stylePtr)));
+    highlightData->styleBuffer->BufSetAllEx(view::string_view(styleBegin, static_cast<size_t>(stylePtr - styleBegin)));
 
     // install highlight pattern data in the window data structure
     highlightData_ = std::move(highlightData);
