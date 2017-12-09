@@ -11,13 +11,13 @@ public:
 	QString      highlightName;
 	QString      styleName;
 	QString      colorName;
-	bool         isBold;
-	bool         isItalic;
+    QString      bgColorName;
 	QColor       color;
-	bool         underline;
+    QColor       bgColor;
     QFont        font;
-	QString      bgColorName; // background style coloring (name may be "empty")
-	QColor       bgColor;
+    bool         isBold;
+    bool         isItalic;
+    bool         underline;
 };
 
 #endif

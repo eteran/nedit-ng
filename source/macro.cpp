@@ -5272,7 +5272,7 @@ bool fillPatternResultEx(DataValue *result, const char **errMsg, DocumentWidget 
 
     if (bufferPos >= 0) {
         // insert extent
-        int checkCode = 0;
+        size_t checkCode = 0;
         DV = to_value(document->HighlightLengthOfCodeFromPosEx(bufferPos, &checkCode));
         if (!ArrayInsert(result, AllocStringCpyEx("extent"), &DV)) {
             M_FAILURE(InsertFailed);

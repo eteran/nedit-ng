@@ -7647,10 +7647,9 @@ int TextArea::getFontHeight() const {
 **
 ** Style buffers, tables and their associated memory are managed by the caller.
 */
-void TextArea::TextDAttachHighlightData(const std::shared_ptr<TextBuffer> &styleBuffer, StyleTableEntry *styleTable, long nStyles, char unfinishedStyle, unfinishedStyleCBProcEx unfinishedHighlightCB, void *user) {
+void TextArea::TextDAttachHighlightData(const std::shared_ptr<TextBuffer> &styleBuffer, const std::vector<StyleTableEntry> &styleTable, char unfinishedStyle, unfinishedStyleCBProcEx unfinishedHighlightCB, void *user) {
     styleBuffer_           = styleBuffer;
     styleTable_            = styleTable;
-    nStyles_               = nStyles;
     unfinishedStyle_       = unfinishedStyle;
     unfinishedHighlightCB_ = unfinishedHighlightCB;
     highlightCBArg_        = user;
@@ -7689,8 +7688,8 @@ void TextArea::updateFontHeightMetrics(const QFont &font) {
 
     /* If there is a (syntax highlighting) style table in use, find the new
        maximum font height for this text display */
-    for (int i = 0; i < nStyles_; i++) {
-        QFontMetrics styleFM(styleTable_[i].font);
+    for(const StyleTableEntry &style : styleTable_) {
+        QFontMetrics styleFM(style.font);
 
         maxAscent  = std::max(maxAscent, styleFM.ascent());
         maxDescent = std::max(maxDescent, styleFM.descent());
@@ -7709,9 +7708,9 @@ void TextArea::updateFontWidthMetrics(const QFont &font) {
     if(!fi.fixedPitch()) {
         fontWidth = -1;
     } else {
-        for (int i = 0; i < nStyles_; i++) {
-            QFontMetrics styleFM(styleTable_[i].font);
-            QFontInfo    styleFI(styleTable_[i].font);
+        for(const StyleTableEntry &style : styleTable_) {
+            QFontMetrics styleFM(style.font);
+            QFontInfo    styleFI(style.font);
 
             if ((styleFM.maxWidth() != fontWidth || !styleFI.fixedPitch())) {
                 fontWidth = -1;
@@ -8027,8 +8026,8 @@ int TextArea::TextDMinFontWidth(bool considerStyles) const {
 
     int fontWidth = fm.maxWidth();
     if (considerStyles) {
-        for (int i = 0; i < nStyles_; ++i) {
-            QFontMetrics fm(styleTable_[i].font);
+        for(const StyleTableEntry &style : styleTable_) {
+            QFontMetrics fm(style.font);
 
             // NOTE(eteran): this was min_bounds.width, we just assume that 'i' is the thinnest character
             fontWidth = std::min(fontWidth, fm.width(QLatin1Char('i')));
@@ -8044,8 +8043,8 @@ int TextArea::TextDMaxFontWidth(bool considerStyles) const {
 
     int fontWidth = fm.maxWidth();
     if (considerStyles) {
-        for (int i = 0; i < nStyles_; ++i) {
-            QFontMetrics fm(styleTable_[i].font);
+        for(const StyleTableEntry &style : styleTable_) {
+            QFontMetrics fm(style.font);
             fontWidth = std::max(fontWidth, fm.maxWidth());
         }
     }

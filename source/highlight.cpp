@@ -174,7 +174,7 @@ void SyntaxHighlightModifyCBEx(int pos, int nInserted, int nDeleted, int nRestyl
 ** Remove style information from a text widget and redisplay it.
 */
 void RemoveWidgetHighlightEx(TextArea *area) {
-    area->TextDAttachHighlightData(nullptr, nullptr, 0, UNFINISHED_STYLE, nullptr, nullptr);
+    area->TextDAttachHighlightData(nullptr, {}, UNFINISHED_STYLE, nullptr, nullptr);
 }
 
 void handleUnparsedRegionCBEx(const TextArea *area, int pos, const void *user) {

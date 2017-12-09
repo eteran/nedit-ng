@@ -251,7 +251,7 @@ public:
 	int TextDPosToLineAndCol(int pos, int *lineNum, int *column);
     void TextDSetScroll(int topLineNum, int horizOffset);
     void TextSetCursorPos(int pos);
-    void TextDAttachHighlightData(const std::shared_ptr<TextBuffer> &styleBuffer, StyleTableEntry *styleTable, long nStyles, char unfinishedStyle, unfinishedStyleCBProcEx unfinishedHighlightCB, void *user);
+    void TextDAttachHighlightData(const std::shared_ptr<TextBuffer> &styleBuffer, const std::vector<StyleTableEntry> &styleTable, char unfinishedStyle, unfinishedStyleCBProcEx unfinishedHighlightCB, void *user);
     int TextFirstVisiblePos() const;
     int TextLastVisiblePos() const;
     void TextDSetFont(const QFont &font);
@@ -391,7 +391,6 @@ private:
     int nLinesDeleted_           = 0;              // Number of lines deleted during buffer modification (only used when resynchronization is suppressed)
     int nVisibleLines_           = 1;              // # of visible (displayed) lines
     int topLineNum_              = 1;              // Line number of top displayed line of file (first line of file is 1)
-    long nStyles_                = 0;              // Number of entries in styleTable
 
 private:
     QColor cursorFGPixel_        = Qt::black;
@@ -410,7 +409,7 @@ private:
     QVector<int> lineStarts_ = { 0 };
     std::vector<QColor> bgClassPixel_;             // table of colors for each BG class
     std::vector<uint8_t> bgClass_;                 // obtains index into bgClassPixel[]
-    StyleTableEntry *styleTable_ = nullptr;        // Table of fonts and colors for coloring/syntax-highlighting
+    std::vector<StyleTableEntry> styleTable_;        // Table of fonts and colors for coloring/syntax-highlighting
 
 private:
     BlockDragTypes dragType_;                       // style of block drag operation

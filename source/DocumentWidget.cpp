@@ -5619,7 +5619,7 @@ HighlightPattern *DocumentWidget::FindPatternOfWindowEx(const QString &name) con
     return nullptr;
 }
 
-QColor DocumentWidget::GetHighlightBGColorOfCodeEx(int hCode) const {
+QColor DocumentWidget::GetHighlightBGColorOfCodeEx(size_t hCode) const {
     StyleTableEntry *entry = styleTableEntryOfCodeEx(hCode);
 
     if (entry && !entry->bgColorName.isNull()) {
@@ -5684,7 +5684,7 @@ int DocumentWidget::StyleLengthOfCodeFromPosEx(int pos) {
     if(const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_) {
         if (const std::shared_ptr<TextBuffer> &styleBuf = highlightData->styleBuffer) {
 
-            int hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(pos));
+            auto hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(pos));
             if (!hCode) {
                 return 0;
             }
@@ -5721,7 +5721,7 @@ int DocumentWidget::StyleLengthOfCodeFromPosEx(int pos) {
 /*
 ** Functions to return style information from the highlighting style table.
 */
-QString DocumentWidget::HighlightNameOfCodeEx(int hCode) const {
+QString DocumentWidget::HighlightNameOfCodeEx(size_t hCode) const {
     if(StyleTableEntry *entry = styleTableEntryOfCodeEx(hCode)) {
         return entry->highlightName;
     }
@@ -5729,7 +5729,7 @@ QString DocumentWidget::HighlightNameOfCodeEx(int hCode) const {
     return QString();
 }
 
-QString DocumentWidget::HighlightStyleOfCodeEx(int hCode) const {
+QString DocumentWidget::HighlightStyleOfCodeEx(size_t hCode) const {
     if(StyleTableEntry *entry = styleTableEntryOfCodeEx(hCode)) {
         return entry->styleName;
     }
@@ -5737,7 +5737,7 @@ QString DocumentWidget::HighlightStyleOfCodeEx(int hCode) const {
     return QString();
 }
 
-QColor DocumentWidget::HighlightColorValueOfCodeEx(int hCode) const {
+QColor DocumentWidget::HighlightColorValueOfCodeEx(size_t hCode) const {
     if (StyleTableEntry *entry = styleTableEntryOfCodeEx(hCode)) {
         return entry->color;
     }
@@ -5750,11 +5750,11 @@ QColor DocumentWidget::HighlightColorValueOfCodeEx(int hCode) const {
 ** Returns a pointer to the entry in the style table for the entry of code
 ** hCode (if any).
 */
-StyleTableEntry *DocumentWidget::styleTableEntryOfCodeEx(int hCode) const {
+StyleTableEntry *DocumentWidget::styleTableEntryOfCodeEx(size_t hCode) const {
     const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_;
 
     hCode -= UNFINISHED_STYLE; // get the correct index value
-    if (!highlightData || hCode < 0 || hCode >= highlightData->nStyles) {
+    if (!highlightData || hCode >= highlightData->styleTable.size()) {
         return nullptr;
     }
 
@@ -5766,9 +5766,9 @@ StyleTableEntry *DocumentWidget::styleTableEntryOfCodeEx(int hCode) const {
 ** Picks up the entry in the style buffer for the position (if any). Rather
 ** like styleOfPos() in TextDisplay.c. Returns the style code or zero.
 */
-int DocumentWidget::HighlightCodeOfPosEx(int pos) {
+size_t DocumentWidget::HighlightCodeOfPosEx(int pos) {
 
-    int hCode = 0;
+    size_t hCode = 0;
     if(const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_) {
 
         if (const std::shared_ptr<TextBuffer> &styleBuf = highlightData->styleBuffer) {
@@ -5792,7 +5792,7 @@ int DocumentWidget::HighlightCodeOfPosEx(int pos) {
 */
 /* YOO: This is called from only one other function, which uses a constant
     for checkCode and never evaluates it after the call. */
-int DocumentWidget::HighlightLengthOfCodeFromPosEx(int pos, int *checkCode) {
+int DocumentWidget::HighlightLengthOfCodeFromPosEx(int pos, size_t *checkCode) {
 
     const int oldPos = pos;
 
@@ -5800,7 +5800,7 @@ int DocumentWidget::HighlightLengthOfCodeFromPosEx(int pos, int *checkCode) {
 
         if (const std::shared_ptr<TextBuffer> &styleBuf = highlightData->styleBuffer) {
 
-            int hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(pos));
+            auto hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(pos));
             if (!hCode) {
                 return 0;
             }
@@ -6005,7 +6005,6 @@ void DocumentWidget::AttachHighlightToWidgetEx(TextArea *area) {
         area->TextDAttachHighlightData(
                     highlightData->styleBuffer,
                     highlightData->styleTable,
-                    highlightData->nStyles,
                     UNFINISHED_STYLE,
                     handleUnparsedRegionCBEx,
                     this);
@@ -6206,14 +6205,15 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
     }
 
     // Set up table for mapping colors and fonts to syntax
-    const auto styleTable = new StyleTableEntry[nPass1Patterns + nPass2Patterns + 1];
+    std::vector<StyleTableEntry> styleTable(nPass1Patterns + nPass2Patterns + 1);
+    auto it = styleTable.begin();
 
-    StyleTableEntry *styleTablePtr = styleTable;
+    auto setStyleTableEntry = [this](std::vector<StyleTableEntry>::iterator p, HighlightPattern *pat) {
 
-    auto setStyleTablePtr = [this](StyleTableEntry *p, HighlightPattern *pat) {
-
+        p->underline     = false;
         p->highlightName = pat->name;
         p->styleName     = pat->style;
+        p->font          = FontOfNamedStyleEx      (pat->style);
         p->colorName     = ColorOfNamedStyleEx     (pat->style);
         p->bgColorName   = BgColorOfNamedStyleEx   (pat->style);
         p->isBold        = FontOfNamedStyleIsBold  (pat->style);
@@ -6227,28 +6227,22 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
         } else {
             p->bgColor = p->color;
         }
-
-        p->font = FontOfNamedStyleEx(pat->style);
     };
 
     // PLAIN_STYLE (pass 1)
-    styleTablePtr->underline = false;
-    setStyleTablePtr(styleTablePtr++, noPass1 ? &pass2PatternSrc[0] : &pass1PatternSrc[0]);
+    setStyleTableEntry(it++, noPass1 ? &pass2PatternSrc[0] : &pass1PatternSrc[0]);
 
     // PLAIN_STYLE (pass 2)
-    styleTablePtr->underline = false;
-    setStyleTablePtr(styleTablePtr++, noPass2 ? &pass1PatternSrc[0] : &pass2PatternSrc[0]);
+    setStyleTableEntry(it++, noPass2 ? &pass1PatternSrc[0] : &pass2PatternSrc[0]);
 
     // explicit styles (pass 1)
     for (size_t i = 1; i < nPass1Patterns; i++) {
-        styleTablePtr->underline = false;
-        setStyleTablePtr(styleTablePtr++, &pass1PatternSrc[i]);
+        setStyleTableEntry(it++, &pass1PatternSrc[i]);
     }
 
     // explicit styles (pass 2)
     for (size_t i = 1; i < nPass2Patterns; i++) {
-        styleTablePtr->underline = false;
-        setStyleTablePtr(styleTablePtr++, &pass2PatternSrc[i]);
+        setStyleTableEntry(it++, &pass2PatternSrc[i]);
     }
 
     // Free the temporary sorted pattern source list
@@ -6264,8 +6258,7 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
     highlightData->pass1Patterns              = pass1Pats;
     highlightData->pass2Patterns              = pass2Pats;
     highlightData->parentStyles               = std::move(parentStyles);
-    highlightData->styleTable                 = styleTable;
-    highlightData->nStyles                    = styleTablePtr - styleTable;
+    highlightData->styleTable                 = std::move(styleTable);
     highlightData->styleBuffer                = styleBuf;
     highlightData->contextRequirements.nLines = contextLines;
     highlightData->contextRequirements.nChars = contextChars;
@@ -6280,7 +6273,7 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
 ** containing compiled regular expressions and style information.
 */
 HighlightData *DocumentWidget::compilePatternsEx(const gsl::span<HighlightPattern> &patternSrc) {
-    int length;
+
     int parentIndex;
 
     /* Allocate memory for the compiled patterns.  The list is terminated
@@ -6426,6 +6419,7 @@ HighlightData *DocumentWidget::compilePatternsEx(const gsl::span<HighlightPatter
             continue;
         }
 
+        int length;
         length  = (compiledPats[patternNum].colorOnly || patternSrc[patternNum].endRE.isNull())   ? 0 : patternSrc[patternNum].endRE.size()   + 5;
         length += (compiledPats[patternNum].colorOnly || patternSrc[patternNum].errorRE.isNull()) ? 0 : patternSrc[patternNum].errorRE.size() + 5;
 

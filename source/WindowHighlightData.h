@@ -21,14 +21,13 @@ class WindowHighlightData {
 public:
     ~WindowHighlightData();
 public:
-    StyleTableEntry*                 styleTable          = nullptr;
-    HighlightData*                   pass1Patterns       = nullptr;
-    HighlightData*                   pass2Patterns       = nullptr;
-    std::shared_ptr<TextBuffer>      styleBuffer;
-    PatternSet*                      patternSetForWindow = nullptr;
     std::vector<uint8_t>             parentStyles;
+    std::vector<StyleTableEntry>     styleTable;
+    std::shared_ptr<TextBuffer>      styleBuffer;
+    HighlightData*                   pass1Patterns       = nullptr;
+    HighlightData*                   pass2Patterns       = nullptr;    
+    PatternSet*                      patternSetForWindow = nullptr;    
     ReparseContext                   contextRequirements = { 0, 0 };
-    long                             nStyles             = 0;
 };
 
 #endif

@@ -32,5 +32,4 @@ void freePatterns(HighlightData *patterns) {
 WindowHighlightData::~WindowHighlightData() {
     freePatterns(pass1Patterns);
     freePatterns(pass2Patterns);
-    delete[] styleTable;
 }
