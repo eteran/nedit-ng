@@ -250,7 +250,13 @@ inline DataValue to_value(const array_new &) {
 }
 
 inline DataValue to_value() {
-    DataValue DV = INIT_DATA_VALUE;
+
+    // NOTE(eteran): don't use something like val.n = 0
+    // because that won't set ALL of the bits to zero since it
+    // isn't the widest member
+    DataValue DV;
+    DV.tag = NO_TAG;
+    DV.val = { 0 };
     return DV;
 }
 
