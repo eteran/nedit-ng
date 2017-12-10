@@ -156,6 +156,10 @@ int main(int argc, char *argv[]) {
 	InitMacroGlobals();
 	RegisterMacroSubroutines();
 
+    auto _ = gsl::finally([]() {
+        CleanupMacroGlobals();
+    });
+
 	/* Store preferences from the command line and .nedit file,
 	   and set the appropriate preferences */
 	RestoreNEditPrefs();

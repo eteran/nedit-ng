@@ -169,6 +169,7 @@ public:
 };
 
 void InitMacroGlobals();
+void CleanupMacroGlobals();
 
 ArrayEntry *arrayIterateFirst(DataValue *theArray);
 ArrayEntry *arrayIterateNext(ArrayEntry *iterator);

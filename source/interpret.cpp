@@ -191,6 +191,15 @@ void InitMacroGlobals() {
     InstallSymbol("$n_args", ARG_SYM, to_value(N_ARGS_ARG_SYM));
 }
 
+/**
+ * @brief CleanupMacroGlobals
+ */
+void CleanupMacroGlobals() {
+    for(Symbol *sym: GlobalSymList) {
+        delete sym;
+    }
+}
+
 /*
 ** To build a program for the interpreter, call BeginCreatingProgram, to
 ** begin accumulating the program, followed by calls to AddOp, AddSym,
