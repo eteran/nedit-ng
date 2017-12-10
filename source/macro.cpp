@@ -3756,7 +3756,6 @@ static bool splitMS(DocumentWidget *document, Arguments arguments, DataValue *re
     while (found && beginPos < strLength) {
 
         auto indexStr      = std::to_string(indexNum);
-        auto allocIndexStr = AllocStringCpyEx(indexStr);
 
         found = SearchString(
                     sourceStr,
@@ -3777,7 +3776,7 @@ static bool splitMS(DocumentWidget *document, Arguments arguments, DataValue *re
         std::string str(&sourceStr[lastEnd], elementLen);
 
         element = to_value(str);
-        if (!ArrayInsert(result, allocIndexStr, &element)) {
+        if (!ArrayInsert(result, indexStr, &element)) {
             M_FAILURE(InsertFailed);
         }
 
@@ -3798,13 +3797,12 @@ static bool splitMS(DocumentWidget *document, Arguments arguments, DataValue *re
     if (found) {
 
         auto indexStr = std::to_string(indexNum);
-        auto allocIndexStr = AllocStringCpyEx(indexStr);
 
         if (lastEnd == strLength) {
             // The pattern mathed the end of the string. Add an empty chunk.
             element = to_value(std::string());
 
-            if (!ArrayInsert(result, allocIndexStr, &element)) {
+            if (!ArrayInsert(result, indexStr, &element)) {
                 M_FAILURE(InsertFailed);
             }
         } else {
@@ -3814,7 +3812,7 @@ static bool splitMS(DocumentWidget *document, Arguments arguments, DataValue *re
             std::string str(&sourceStr[lastEnd], elementLen);
 
             element = to_value(str);
-            if (!ArrayInsert(result, allocIndexStr, &element)) {
+            if (!ArrayInsert(result, indexStr, &element)) {
                 M_FAILURE(InsertFailed);
             }
 
@@ -3843,10 +3841,9 @@ static bool splitMS(DocumentWidget *document, Arguments arguments, DataValue *re
                 ++indexNum;
 
                 auto indexStr = std::to_string(indexNum);
-                auto allocIndexStr = AllocStringCpyEx(indexStr);
 
                 element = to_value();
-                if (!ArrayInsert(result, allocIndexStr, &element)) {
+                if (!ArrayInsert(result, indexStr, &element)) {
                     M_FAILURE(InsertFailed);
                 }
             }
@@ -4369,7 +4366,7 @@ static bool rangesetListMV(DocumentWidget *document, Arguments arguments, DataVa
 
         element = to_value(rangesetList[i]);
 
-        if (!ArrayInsert(result, AllocStringCpyEx(std::to_string(nRangesets - i - 1)), &element)) {
+        if (!ArrayInsert(result, std::to_string(nRangesets - i - 1), &element)) {
             M_FAILURE(InsertFailed);
         }
     }
@@ -4435,7 +4432,7 @@ static bool rangesetCreateMS(DocumentWidget *document, Arguments arguments, Data
         for (int i = 0; i < nRangesetsRequired; i++) {
             element = to_value(rangesetTable->RangesetCreate());
 
-            ArrayInsert(result, AllocStringCpyEx(std::to_string(i)), &element);
+            ArrayInsert(result, std::to_string(i), &element);
         }
 
         return true;
@@ -4534,7 +4531,7 @@ static bool rangesetGetByNameMS(DocumentWidget *document, Arguments arguments, D
 
                 element = to_value(label);
 
-                if (!ArrayInsert(result, AllocStringCpyEx(std::to_string(insertIndex)), &element)) {
+                if (!ArrayInsert(result, std::to_string(insertIndex), &element)) {
                     M_FAILURE(InsertFailed);
                 }
 
@@ -4796,24 +4793,24 @@ static bool rangesetInfoMS(DocumentWidget *document, Arguments arguments, DataVa
     *result = to_value(array_new());
 
     element = to_value(defined);
-    if (!ArrayInsert(result, AllocStringCpyEx("defined"), &element))
+    if (!ArrayInsert(result, "defined", &element))
         M_FAILURE(InsertFailed);
 
     element = to_value(count);
-    if (!ArrayInsert(result, AllocStringCpyEx("count"), &element))
+    if (!ArrayInsert(result, "count", &element))
         M_FAILURE(InsertFailed);
 
     element = to_value(color);
-    if (!ArrayInsert(result, AllocStringCpyEx("color"), &element))
+    if (!ArrayInsert(result, "color", &element))
         M_FAILURE(InsertFailed);
 
     element = to_value(name);
-    if (!ArrayInsert(result, AllocStringCpyEx("name"), &element)) {
+    if (!ArrayInsert(result, "name", &element)) {
         M_FAILURE(InsertFailed);
     }
 
     element = to_value(mode);
-    if (!ArrayInsert(result, AllocStringCpyEx("mode"), &element))
+    if (!ArrayInsert(result, "mode", &element))
         M_FAILURE(InsertFailed);
 
     return true;
@@ -4870,11 +4867,11 @@ static bool rangesetRangeMS(DocumentWidget *document, Arguments arguments, DataV
         return true;
 
     element = to_value(start);
-    if (!ArrayInsert(result, AllocStringCpyEx("start"), &element))
+    if (!ArrayInsert(result, "start", &element))
         M_FAILURE(InsertFailed);
 
     element = to_value(end);
-    if (!ArrayInsert(result, AllocStringCpyEx("end"), &element))
+    if (!ArrayInsert(result, "end", &element))
         M_FAILURE(InsertFailed);
 
     return true;
@@ -5086,14 +5083,14 @@ static bool fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWi
         // insert style name
         DV = to_value(styleName);
 
-        if (!ArrayInsert(result, AllocStringCpyEx("style"), &DV)) {
+        if (!ArrayInsert(result, "style", &DV)) {
             M_FAILURE(InsertFailed);
         }
     }
 
     // insert color name
     DV = to_value(ColorOfNamedStyleEx(styleName));
-    if (!ArrayInsert(result, AllocStringCpyEx("color"), &DV)) {
+    if (!ArrayInsert(result, "color", &DV)) {
         M_FAILURE(InsertFailed);
     }
 
@@ -5104,14 +5101,14 @@ static bool fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWi
         QColor color = document->HighlightColorValueOfCodeEx(patCode);
         DV = to_value(color.name());
 
-        if (!ArrayInsert(result, AllocStringCpyEx("rgb"), &DV)) {
+        if (!ArrayInsert(result, "rgb", &DV)) {
             M_FAILURE(InsertFailed);
         }
     }
 
     // Prepare array element for background color name
     DV = to_value(BgColorOfNamedStyleEx(styleName));
-    if (!ArrayInsert(result, AllocStringCpyEx("background"), &DV)) {
+    if (!ArrayInsert(result, "background", &DV)) {
         M_FAILURE(InsertFailed);
     }
 
@@ -5122,27 +5119,27 @@ static bool fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWi
         QColor color = document->GetHighlightBGColorOfCodeEx(patCode);
         DV = to_value(color.name());
 
-        if (!ArrayInsert(result, AllocStringCpyEx("back_rgb"), &DV)) {
+        if (!ArrayInsert(result, "back_rgb", &DV)) {
             M_FAILURE(InsertFailed);
         }
     }
 
     // Put boldness value in array
     DV = to_value(FontOfNamedStyleIsBold(styleName));
-    if (!ArrayInsert(result, AllocStringCpyEx("bold"), &DV)) {
+    if (!ArrayInsert(result, "bold", &DV)) {
         M_FAILURE(InsertFailed);
     }
 
     // Put italicity value in array
     DV = to_value(FontOfNamedStyleIsItalic(styleName));
-    if (!ArrayInsert(result, AllocStringCpyEx("italic"), &DV)) {
+    if (!ArrayInsert(result, "italic", &DV)) {
         M_FAILURE(InsertFailed);
     }
 
     if (bufferPos >= 0) {
         // insert extent
         DV = to_value(document->StyleLengthOfCodeFromPosEx(bufferPos));
-        if (!ArrayInsert(result, AllocStringCpyEx("extent"), &DV)) {
+        if (!ArrayInsert(result, "extent", &DV)) {
             M_FAILURE(InsertFailed);
         }
     }
@@ -5253,14 +5250,14 @@ bool fillPatternResultEx(DataValue *result, const char **errMsg, DocumentWidget 
     if (includeName) {
         // insert pattern name
         DV = to_value(patternName);
-        if (!ArrayInsert(result, AllocStringCpyEx("pattern"), &DV)) {
+        if (!ArrayInsert(result, "pattern", &DV)) {
             M_FAILURE(InsertFailed);
         }
     }
 
     // insert style name
     DV = to_value(styleName);
-    if (!ArrayInsert(result, AllocStringCpyEx("style"), &DV)) {
+    if (!ArrayInsert(result, "style", &DV)) {
         M_FAILURE(InsertFailed);
     }
 
@@ -5268,7 +5265,7 @@ bool fillPatternResultEx(DataValue *result, const char **errMsg, DocumentWidget 
         // insert extent
         size_t checkCode = 0;
         DV = to_value(document->HighlightLengthOfCodeFromPosEx(bufferPos, &checkCode));
-        if (!ArrayInsert(result, AllocStringCpyEx("extent"), &DV)) {
+        if (!ArrayInsert(result, "extent", &DV)) {
             M_FAILURE(InsertFailed);
         }
     }
@@ -5396,7 +5393,7 @@ static bool readArgument(const DataValue &dv, int *result, const char **errMsg) 
 static bool readArgument(const DataValue &dv, std::string *result, const char **errMsg) {
 
     if(is_string(dv)) {
-        *result = to_string(dv).to_string();
+        *result = to_string(dv);
         return true;
     }
 

@@ -10,7 +10,6 @@
 
 // #define DEBUG_ASSEMBLY
 // #define DEBUG_STACK
-// #define TRACK_GARBAGE_LEAKS
 
 namespace {
 
@@ -42,13 +41,11 @@ constexpr char StringToNumberMsg[] = "string could not be converted to number";
 
 }
 
-static char *AllocString(int length);
-
 static void addLoopAddr(Inst *addr);
 
 static void saveContextEx(const std::shared_ptr<RestartData> &context);
 static void restoreContextEx(const std::shared_ptr<RestartData> &context);
-static NString AllocNStringEx(int length);
+
 
 static int returnNoVal();
 static int returnVal();
@@ -128,9 +125,6 @@ static void stackdump(int n, int extra);
 
 // Global symbols and function definitions 
 static std::deque<Symbol *> GlobalSymList;
-
-// List of all memory allocated for strings 
-static std::vector<char *> AllocatedStrings;
 
 static std::vector<ArrayEntry *> AllocatedSparseArrayEntries;
 
@@ -699,113 +693,10 @@ Symbol *PromoteToGlobal(Symbol *sym) {
 	return sym;
 }
 
-/*
-** Allocate memory for a string, and keep track of it, such that it
-** can be recovered later using GarbageCollectStrings.  (A linked list
-** of pointers is maintained by threading through the memory behind
-** the returned pointers).  Length does not include the terminating null
-** character, so to allocate space for a string of strlen == n, you must
-** use AllocString(n+1).
-*/
-
-// Allocate a new string buffer of length chars 
-char *AllocString(int length) {
-    auto mem = new char [length + 1];
-	AllocatedStrings.push_back(mem);
-	return mem + 1;
-}
-
-/*
- * Allocate a new NString buffer of length chars (terminating \0 included),
- * The buffer length is initialized to length-1 and the terminating \0 is
- * filled in.
- */
-NString AllocNStringEx(int length) {
-
-    NString str;
-
-    auto mem = new char[length + 1];
-
-    AllocatedStrings.push_back(mem);
-
-    str.rep = mem + 1;
-    str.rep[length - 1] = '\0'; // forced NUL
-    str.len = length - 1;
-    return str;
-}
-
-// Allocate a new copy of string s
-char *AllocStringCpyEx(const std::string &s) {
-
-    auto str = AllocString(s.size() + 1);
-    std::copy_n(s.data(), s.size(), str);
-    str[s.size()] = '\0';
-    return str;
-}
-
-NString AllocNStringCpyEx(const QString &s) {
-
-    if(s.isNull()) {
-        NString string;
-        string.len = 0;
-        string.rep = nullptr;
-        return string;
-    }
-
-    int length = s.size();
-
-    NString string = AllocNStringEx(length + 1);
-    std::copy_n(s.toLatin1().data(), length, string.rep);
-    string.rep[length] = '\0';
-
-    return string;
-}
-
-NString AllocNStringCpyEx(view::string_view s) {
-    size_t length = s.size();
-
-    NString string = AllocNStringEx(length + 1);
-    std::copy_n(s.data(), length, string.rep);
-    string.rep[length] = '\0';
-
-    return string;
-}
-
 static ArrayEntry *allocateSparseArrayEntry() {
 	auto mem = new ArrayEntry;
 	AllocatedSparseArrayEntries.push_back(mem);
 	return mem;
-}
-
-static void MarkArrayContentsAsUsed(ArrayEntry *arrayPtr) {
-
-	if (arrayPtr) {
-		arrayPtr->inUse = true;
-
-		auto first = static_cast<ArrayEntry *>(rbTreeBegin(arrayPtr));
-
-		for (ArrayEntry *globalSEUse = first; globalSEUse != nullptr; globalSEUse = static_cast<ArrayEntry *>(rbTreeNext(globalSEUse))) {
-
-			globalSEUse->inUse = true;
-
-			// test first because it may be read-only static string 
-			if (globalSEUse->key[-1] == 0) {
-				globalSEUse->key[-1] = 1;
-			}
-
-            if (is_string(globalSEUse->value)) {
-                // test first because it may be read-only static string
-
-                auto str = boost::get<NString>(globalSEUse->value.value);
-
-                if (str.rep[-1] == 0) {
-                    str.rep[-1] = 1;
-				}
-            } else if (is_array(globalSEUse->value)) {
-                MarkArrayContentsAsUsed(to_array(globalSEUse->value));
-			}
-		}
-	}
 }
 
 /*
@@ -816,60 +707,16 @@ static void MarkArrayContentsAsUsed(ArrayEntry *arrayPtr) {
 
 void GarbageCollectStrings() {
 
-	// mark all strings as unreferenced 
-    for(char *p : AllocatedStrings) {
-		*p = 0;
-	}
-
-    for(ArrayEntry *thisAP : AllocatedSparseArrayEntries) {
-		thisAP->inUse = false;
-	}
-
-	/* Sweep the global symbol list, marking which strings are still
-	   referenced */
-    for(Symbol *s : GlobalSymList) {
-
-        if (is_string(s->value)) {
-
-            auto str = boost::get<NString>(s->value.value);
-
-			// test first because it may be read-only static string 
-            if (str.rep[-1] == 0) {
-                str.rep[-1] = 1;
-			}
-        } else if (is_array(s->value)) {
-            MarkArrayContentsAsUsed(to_array(s->value));
-		}
-	}
-
-	// Collect all of the strings which remain unreferenced 
-	for(auto it = AllocatedStrings.begin(); it != AllocatedStrings.end(); ) {
-		char *p = *it;
-		assert(p);
-
-		if (*p == 0) {
-            delete [] p;
-			it = AllocatedStrings.erase(it);
-		} else {
-			++it;
-		}
-	}
-
-	for(auto it = AllocatedSparseArrayEntries.begin(); it != AllocatedSparseArrayEntries.end(); ) {
-		ArrayEntry *thisAP = *it;
-		assert(thisAP);
-
-		if (!thisAP->inUse) {
-			delete thisAP;
-			it = AllocatedSparseArrayEntries.erase(it);
-		} else {
-			++it;
-		}
-	}
-
-#ifdef TRACK_GARBAGE_LEAKS
-	printf("str count = %lu\nary count = %lu\n", AllocatedStrings.size(), AllocatedSparseArrayEntries.size());
-#endif
+    // clean up the RB tree entries that have been deleted...
+    auto it = AllocatedSparseArrayEntries.begin();
+    while(it != AllocatedSparseArrayEntries.end()) {
+        if((*it)->color < 0) {
+            delete *it;
+            it = AllocatedSparseArrayEntries.erase(it);
+        } else {
+            ++it;
+        }
+    }
 }
 
 /*
@@ -935,7 +782,7 @@ static void restoreContextEx(const std::shared_ptr<RestartData> &context) {
         if (is_integer(*StackP)) {                                             \
             string_ref = std::to_string(to_integer(*StackP));                  \
         } else if (is_string(*StackP)) {                                       \
-            string_ref = to_string(*StackP).to_string();                       \
+            string_ref = to_string(*StackP);                                   \
         } else {                                                               \
             return execError("can't convert array to string");                 \
         }                                                                      \
@@ -1075,7 +922,7 @@ static int pushArgArray() {
 			auto intStr = std::to_string(argNum);
 
 			argVal = FP_GET_ARG_N(FrameP, argNum);
-			if (!ArrayInsert(resultArray, AllocStringCpyEx(intStr), &argVal)) {
+            if (!ArrayInsert(resultArray, intStr, &argVal)) {
 				return execError("array insertion failure");
 			}
 		}
@@ -1417,7 +1264,7 @@ static int eq() {
 		}
     } else if (is_string(v2) && is_integer(v1)) {
 		int number;
-        std::string s2 = to_string(v1).to_string();
+        std::string s2 = to_string(v1);
         if (!StringToNum(s2, &number)) {
             v1 = to_value(0);
 		} else {
@@ -1891,7 +1738,7 @@ int ArrayCopy(DataValue *dstArray, DataValue *srcArray) {
 ** I really need to optimize the size approximation rather than assuming
 ** a worst case size for every integer argument
 */
-static int makeArrayKeyFromArgs(int nArgs, char **keyString, int leaveParams) {
+static int makeArrayKeyFromArgs(int nArgs, std::string *keyString, int leaveParams) {
 	DataValue tmpVal;
 
     std::string str;
@@ -1917,7 +1764,7 @@ static int makeArrayKeyFromArgs(int nArgs, char **keyString, int leaveParams) {
 		}
 	}
 
-    *keyString = AllocStringCpyEx(str);
+    *keyString = str;
 
     return STAT_OK;
 }
@@ -1929,7 +1776,7 @@ static int makeArrayKeyFromArgs(int nArgs, char **keyString, int leaveParams) {
 static rbTreeNode *arrayEmptyAllocator() {
 	ArrayEntry *newNode = allocateSparseArrayEntry();
 	if (newNode) {
-        newNode->key   = nullptr;
+        newNode->key   = std::string();
         newNode->value = to_value();
 	}
 	return newNode;
@@ -1964,7 +1811,7 @@ static int arrayEntryCopyToNode(rbTreeNode *dst, rbTreeNode *src) {
 static int arrayEntryCompare(rbTreeNode *left, rbTreeNode *right) {
     auto lkey = static_cast<ArrayEntry *>(left)->key;
     auto rkey = static_cast<ArrayEntry *>(right)->key;
-    return strcmp(lkey, rkey);
+    return lkey.compare(rkey);
 }
 
 /*
@@ -1976,7 +1823,7 @@ static void arrayDisposeNode(rbTreeNode *src) {
 	src->left   = nullptr;
 	src->right  = nullptr;
 	src->parent = nullptr;
-	src->color  = -1;
+    src->color  = -1;
 }
 
 ArrayEntry *ArrayNew() {
@@ -1987,7 +1834,7 @@ ArrayEntry *ArrayNew() {
 ** insert a DataValue into an array, allocate the array if needed
 ** keyStr must be a string that was allocated with AllocString()
 */
-bool ArrayInsert(DataValue *theArray, char *keyStr, DataValue *theValue) {
+bool ArrayInsert(DataValue *theArray, const std::string &keyStr, DataValue *theValue) {
 	ArrayEntry tmpEntry;
 
 	tmpEntry.key   = keyStr;
@@ -2013,7 +1860,7 @@ bool ArrayInsert(DataValue *theArray, char *keyStr, DataValue *theValue) {
 /*
 ** remove a node from an array whose key matches keyStr
 */
-void ArrayDelete(DataValue *theArray, char *keyStr) {
+void ArrayDelete(DataValue *theArray, const std::string &keyStr) {
 	ArrayEntry searchEntry;
 
     if (auto arr = to_array(*theArray)) {
@@ -2052,7 +1899,7 @@ int ArraySize(DataValue *theArray) {
 ** retrieves an array node whose key matches
 ** returns 1 for success 0 for not found
 */
-bool ArrayGet(DataValue *theArray, char *keyStr, DataValue *theValue) {
+bool ArrayGet(DataValue *theArray, const std::string &keyStr, DataValue *theValue) {
 
     if (auto arr = to_array(*theArray)) {
 		ArrayEntry searchEntry;
@@ -2105,7 +1952,7 @@ static int arrayRef() {
 
 	DataValue srcArray;
 	DataValue valueItem;
-	char *keyString = nullptr;
+    std::string keyString;
 
     int nDim = PC++->value;
 
@@ -2148,7 +1995,7 @@ static int arrayRef() {
 **         TheStack-> next, ...
 */
 static int arrayAssign() {
-	char *keyString = nullptr;
+    std::string keyString;
 	DataValue srcValue;
 	DataValue dstArray;
 	int nDim;
@@ -2204,7 +2051,7 @@ static int arrayRefAndAssignSetup() {
 	DataValue srcArray;
 	DataValue valueItem;
 	DataValue moveExpr;
-	char *keyString = nullptr;
+    std::string keyString;
 
 	int binaryOp = PC->value;
 	PC++;
@@ -2335,9 +2182,7 @@ static int arrayIter() {
 
     if (thisEntry.ptr && thisEntry.ptr->color != -1) {
 
-        auto key_string = view::string_view(thisEntry.ptr->key, strlen(thisEntry.ptr->key));
-        *itemValPtr = to_value(key_string);
-
+        *itemValPtr     = to_value(thisEntry.ptr->key);
         *iteratorValPtr = to_value(arrayIterateNext(thisEntry.ptr), array_iter());
 	} else {
 		PC = branchAddr;
@@ -2387,8 +2232,7 @@ static int inArray() {
         std::string keyStr;
         POP_STRING(keyStr);
 
-        char *key = AllocStringCpyEx(keyStr);
-        if (ArrayGet(&theArray, key, &theValue)) {
+        if (ArrayGet(&theArray, keyStr, &theValue)) {
 			inResult = 1;
 		}
 	}
@@ -2407,7 +2251,7 @@ static int inArray() {
 */
 static int deleteArrayElement() {
 	DataValue theArray;
-	char *keyString = nullptr;
+    std::string keyString;
 
     int nDim = PC++->value;
 
@@ -2510,32 +2354,23 @@ bool StringToNum(const std::string &string, int *number) {
 
 #if defined(DEBUG_DISASSEMBLER) // dumping values in disassembly or stack dump
 static void dumpVal(DataValue dv) {
-	switch (dv.tag) {
-	case INT_TAG:
+
+    if(is_integer(dv)) {
         printf("i=%d", to_integer(dv));
-		break;
-	case STRING_TAG: {
+    } else if(is_string(dv)) {
         auto str = to_string(dv);
         if(str.size() > 20) {
             printf("s=%.*s...[%lu]", 20, str.data(), str.size());
         } else {
             printf("s=%.*s[%lu]", static_cast<int>(str.size()), str.data(), str.size());
         }
-	} break;
-	case ARRAY_TAG:
-		printf("<array>");
-		break;
-    case NO_TAG:
-        if (!to_instruction(dv)) {
-			printf("<no value>");
-		} else {
-            printf("?%8p", static_cast<void *>(to_instruction(dv)));
-		}
-		break;
-	default:
-        printf("UNKNOWN DATA TAG %d ?%8p", dv.tag, static_cast<void *>(to_instruction(dv)));
-		break;
-	}
+    } else if(is_array(dv)) {
+        printf("<array>");
+    } else if(is_unset(dv)) {
+        printf("<no value>");
+    } else {
+        printf("<value>");
+    }
 }
 #endif // #ifdef DEBUG_DISASSEMBLER 
 

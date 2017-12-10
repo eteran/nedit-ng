@@ -123,7 +123,7 @@ struct DataValue {
     boost::variant<
         boost::blank,
         int,
-        NString,
+        std::string,
         ArrayEntry*,
         ArrayIterator,
         BuiltInSubrEx,
@@ -136,9 +136,8 @@ struct DataValue {
 
 //------------------------------------------------------------------------------
 struct ArrayEntry : public rbTreeNode {
-    char *key;
-	DataValue value;
-	bool      inUse; /* we use pointers to the data to refer to the entire struct */
+    std::string key;
+    DataValue   value;
 };
 
 /* symbol table entry */
@@ -174,11 +173,11 @@ void InitMacroGlobals();
 ArrayEntry *arrayIterateFirst(DataValue *theArray);
 ArrayEntry *arrayIterateNext(ArrayEntry *iterator);
 ArrayEntry *ArrayNew();
-bool ArrayInsert(DataValue *theArray, char *keyStr, DataValue *theValue);
-void ArrayDelete(DataValue *theArray, char *keyStr);
+bool ArrayInsert(DataValue *theArray, const std::string &keyStr, DataValue *theValue);
+void ArrayDelete(DataValue *theArray, const std::string &keyStr);
 void ArrayDeleteAll(DataValue *theArray);
 int ArraySize(DataValue *theArray);
-bool ArrayGet(DataValue *theArray, char *keyStr, DataValue *theValue);
+bool ArrayGet(DataValue *theArray, const std::string &keyStr, DataValue *theValue);
 int ArrayCopy(DataValue *dstArray, DataValue *srcArray);
 
 /* Routines for creating a program, (accumulated beginning with
@@ -209,9 +208,6 @@ int ContinueMacroEx(const std::shared_ptr<RestartData> &continuation, DataValue 
 void RunMacroAsSubrCall(Program *prog);
 void PreemptMacro();
 
-char *AllocStringCpyEx(const std::string &s);
-NString AllocNStringCpyEx(const QString &s);
-NString AllocNStringCpyEx(view::string_view s);
 void GarbageCollectStrings();
 Symbol *PromoteToGlobal(Symbol *sym);
 void FreeProgram(Program *prog);
@@ -267,13 +263,13 @@ inline DataValue to_value(bool n) {
 
 inline DataValue to_value(view::string_view str) {
     DataValue DV;
-    DV.value = AllocNStringCpyEx(str);
+    DV.value = str.to_string();
     return DV;
 }
 
 inline DataValue to_value(const QString &str) {
     DataValue DV;
-    DV.value = AllocNStringCpyEx(str);
+    DV.value = str.toStdString();
     return DV;
 }
 
@@ -317,16 +313,15 @@ inline bool is_array(const DataValue &dv) {
     return dv.value.which() == 3;
 }
 
-inline view::string_view to_string(const DataValue &dv) {
+inline std::string to_string(const DataValue &dv) {
     Q_ASSERT(is_string(dv));
-    auto str = boost::get<NString>(dv.value);
-    return view::string_view(str.rep, str.len);
+    return boost::get<std::string>(dv.value);
 }
 
 inline QString to_qstring(const DataValue &dv) {
     Q_ASSERT(is_string(dv));
-    auto str = boost::get<NString>(dv.value);
-    return QString::fromLatin1(str.rep, static_cast<int>(str.len));
+    auto str = boost::get<std::string>(dv.value);
+    return QString::fromStdString(str);
 }
 
 inline int to_integer(const DataValue &dv) {
