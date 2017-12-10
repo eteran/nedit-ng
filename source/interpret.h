@@ -357,4 +357,9 @@ inline Inst *to_instruction(const DataValue &dv) {
     return dv.val.inst;
 }
 
+inline ArrayEntry *to_array(const DataValue &dv) {
+    //Q_ASSERT(is_array(dv));
+    return dv.val.arrayPtr;
+}
+
 #endif

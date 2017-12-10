@@ -810,7 +810,7 @@ static void MarkArrayContentsAsUsed(ArrayEntry *arrayPtr) {
                     str.rep[-1] = 1;
 				}
             } else if (is_array(globalSEUse->value)) {
-				MarkArrayContentsAsUsed(globalSEUse->value.val.arrayPtr);
+                MarkArrayContentsAsUsed(to_array(globalSEUse->value));
 			}
 		}
 	}
@@ -2002,8 +2002,8 @@ bool ArrayInsert(DataValue *theArray, char *keyStr, DataValue *theValue) {
 		theArray->val.arrayPtr = ArrayNew();
 	}
 
-	if (theArray->val.arrayPtr) {
-		rbTreeNode *insertedNode = rbTreeInsert((theArray->val.arrayPtr), &tmpEntry, arrayEntryCompare, arrayAllocateNode, arrayEntryCopyToNode);
+    if (auto arr = to_array(*theArray)) {
+        rbTreeNode *insertedNode = rbTreeInsert(arr, &tmpEntry, arrayEntryCompare, arrayAllocateNode, arrayEntryCopyToNode);
 
 		if (insertedNode) {
             return true;
@@ -2021,9 +2021,9 @@ bool ArrayInsert(DataValue *theArray, char *keyStr, DataValue *theValue) {
 void ArrayDelete(DataValue *theArray, char *keyStr) {
 	ArrayEntry searchEntry;
 
-	if (theArray->val.arrayPtr) {
+    if (auto arr = to_array(*theArray)) {
 		searchEntry.key = keyStr;
-		rbTreeDelete(theArray->val.arrayPtr, &searchEntry, arrayEntryCompare, arrayDisposeNode);
+        rbTreeDelete(arr, &searchEntry, arrayEntryCompare, arrayDisposeNode);
 	}
 }
 
@@ -2031,8 +2031,8 @@ void ArrayDelete(DataValue *theArray, char *keyStr) {
 ** remove all nodes from an array
 */
 void ArrayDeleteAll(DataValue *theArray) {
-	if (theArray->val.arrayPtr) {
-		rbTreeNode *iter = rbTreeBegin(theArray->val.arrayPtr);
+    if (auto arr = to_array(*theArray)) {
+        rbTreeNode *iter = rbTreeBegin(arr);
 		while (iter) {
 			rbTreeNode *nextIter = rbTreeNext(iter);
 			rbTreeDeleteNode(theArray->val.arrayPtr, iter, arrayDisposeNode);
@@ -2046,8 +2046,8 @@ void ArrayDeleteAll(DataValue *theArray) {
 ** returns the number of elements (nodes containing values) of an array
 */
 int ArraySize(DataValue *theArray) {
-	if (theArray->val.arrayPtr) {
-		return rbTreeSize(theArray->val.arrayPtr);
+    if (auto arr = to_array(*theArray)) {
+        return rbTreeSize(arr);
 	} else {
 		return 0;
 	}
@@ -2059,10 +2059,10 @@ int ArraySize(DataValue *theArray) {
 */
 bool ArrayGet(DataValue *theArray, char *keyStr, DataValue *theValue) {
 
-	if (theArray->val.arrayPtr) {
+    if (auto arr = to_array(*theArray)) {
 		ArrayEntry searchEntry;
 		searchEntry.key = keyStr;
-		rbTreeNode *foundNode = rbTreeFind(theArray->val.arrayPtr, &searchEntry, arrayEntryCompare);
+        rbTreeNode *foundNode = rbTreeFind(arr, &searchEntry, arrayEntryCompare);
 		if (foundNode) {
 			*theValue = static_cast<ArrayEntry *>(foundNode)->value;
             return true;
@@ -2077,8 +2077,8 @@ bool ArrayGet(DataValue *theArray, char *keyStr, DataValue *theValue) {
 */
 ArrayEntry *arrayIterateFirst(DataValue *theArray) {
 	ArrayEntry *startPos;
-	if (theArray->val.arrayPtr) {
-		startPos = static_cast<ArrayEntry *>(rbTreeBegin(theArray->val.arrayPtr));
+    if (auto arr = to_array(*theArray)) {
+        startPos = static_cast<ArrayEntry *>(rbTreeBegin(arr));
 	} else {
 		startPos = nullptr;
 	}
