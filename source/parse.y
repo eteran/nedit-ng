@@ -494,12 +494,14 @@ static int yylex(void)
     /* process number tokens */
     if (isdigit(static_cast<uint8_t>(*InPtr)))  { /* number */
         char name[28];
-        sscanf(InPtr, "%d%n", &value.val.n, &len);
-        sprintf(name, "const %d", value.val.n);
+        int n;
+        sscanf(InPtr, "%d%n", &n, &len);
+        snprintf(name, sizeof(name), "const %d", n);
         InPtr += len;
-        value.tag = INT_TAG;
-        if ((yylval.sym = LookupSymbol(name)) == nullptr)
-            yylval.sym = InstallSymbol(name, CONST_SYM, value);
+
+        if ((yylval.sym = LookupSymbol(name)) == nullptr) {
+            yylval.sym = InstallSymbol(name, CONST_SYM, to_value(n));
+        }
         return NUMBER;
     }
 
