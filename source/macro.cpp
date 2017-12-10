@@ -151,7 +151,7 @@ static bool rangesetSetModeMS(DocumentWidget *document, Arguments arguments, Dat
 static bool fillPatternResultEx(DataValue *result, const char **errMsg, DocumentWidget *document, const QString &patternName, bool includeName, const QString &styleName, int bufferPos);
 static bool getPatternByNameMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
 static bool getPatternAtPosMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
-static bool fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWidget *document, const QString &styleName, bool includeName, int patCode, int bufferPos);
+static bool fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWidget *document, const QString &styleName, bool includeName, size_t patCode, int bufferPos);
 static bool getStyleByNameMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
 static bool getStyleAtPosMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
 static bool filenameDialogMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
@@ -5072,7 +5072,7 @@ static bool rangesetSetModeMS(DocumentWidget *document, Arguments arguments, Dat
 **      ["style"]       Name of style
 **
 */
-static bool fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWidget *document, const QString &styleName, bool includeName, int patCode, int bufferPos) {
+static bool fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWidget *document, const QString &styleName, bool includeName, size_t patCode, int bufferPos) {
     DataValue DV;
 
     *result = to_value(array_new());
@@ -5210,7 +5210,7 @@ static bool getStyleAtPosMS(DocumentWidget *document, Arguments arguments, DataV
     }
 
     // Determine pattern code
-    int patCode = document->HighlightCodeOfPosEx(bufferPos);
+    size_t patCode = document->HighlightCodeOfPosEx(bufferPos);
     if (patCode == 0) {
         // if there is no pattern we just return an empty array.
         return true;
@@ -5338,7 +5338,7 @@ static bool getPatternAtPosMS(DocumentWidget *document, Arguments arguments, Dat
     }
 
     // Determine the highlighting pattern used
-    int patCode = document->HighlightCodeOfPosEx(bufferPos);
+    size_t patCode = document->HighlightCodeOfPosEx(bufferPos);
     if (patCode == 0) {
         // if there is no highlighting pattern we just return an empty array.
         return true;
