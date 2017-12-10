@@ -895,9 +895,8 @@ static int pushArgVal() {
 
     const int nArgs = FP_GET_ARG_COUNT(FrameP);
 	if (argNum >= nArgs || argNum < 0) {
-        char argStr[TYPE_INT_STR_SIZE<int>];
-        snprintf(argStr, sizeof(argStr), "%d", argNum + 1);
-		return execError("referenced undefined argument: $args[%s]", argStr);
+        auto argStr = std::to_string(argNum + 1);
+        return execError("referenced undefined argument: $args[%s]", argStr.c_str());
 	}
 	PUSH(FP_GET_ARG_N(FrameP, argNum));
 	return STAT_OK;
@@ -1977,7 +1976,7 @@ static int arrayRef() {
         POP(srcArray);
         if (is_array(srcArray)) {
 			if (!ArrayGet(&srcArray, keyString, &valueItem)) {
-				return execError("referenced array value not in array: %s", keyString);
+                return execError("referenced array value not in array: %s", keyString.c_str());
 			}
             PUSH(valueItem);
 			return STAT_OK;
@@ -2083,7 +2082,7 @@ static int arrayRefAndAssignSetup() {
         PEEK(srcArray, nDim);
         if (is_array(srcArray)) {
 			if (!ArrayGet(&srcArray, keyString, &valueItem)) {
-				return execError("referenced array value not in array: %s", keyString);
+                return execError("referenced array value not in array: %s", keyString.c_str());
 			}
             PUSH(valueItem);
 			if (binaryOp) {
