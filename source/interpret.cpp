@@ -2032,10 +2032,10 @@ void ArrayDeleteAll(DataValue *theArray) {
         rbTreeNode *iter = rbTreeBegin(arr);
 		while (iter) {
 			rbTreeNode *nextIter = rbTreeNext(iter);
-			rbTreeDeleteNode(theArray->val.arrayPtr, iter, arrayDisposeNode);
+            rbTreeDeleteNode(arr, iter, arrayDisposeNode);
 
-			iter = nextIter;
-		}
+            iter = nextIter;
+        }
 	}
 }
 
@@ -2518,18 +2518,12 @@ static void dumpVal(DataValue dv) {
         printf("i=%d", to_integer(dv));
 		break;
 	case STRING_TAG: {
-		char *src = dv.val.str.rep;
-		if (!src) {
-			printf("s=<nullptr>");
-		} else {
-            size_t k;
-            char s[21];
-			for (k = 0; k < sizeof(s) - 1 && src[k]; k++) {
-                s[k] = safe_ctype<isprint>(src[k]) ? src[k] : '?';
-			}
-			s[k] = 0;
-            printf("s=\"%s\"%s[%lu]", s, src[k] ? "..." : "", strlen(src));
-		}
+        auto str = to_string(dv);
+        if(str.size() > 20) {
+            printf("s=%.*s...[%lu]", 20, str.data(), str.size());
+        } else {
+            printf("s=%.*s[%lu]", static_cast<int>(str.size()), str.data(), str.size());
+        }
 	} break;
 	case ARRAY_TAG:
 		printf("<array>");
