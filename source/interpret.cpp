@@ -694,12 +694,9 @@ Symbol *PromoteToGlobal(Symbol *sym) {
         qInfo("NEdit: duplicate symbol in LocalSymList and GlobalSymList: %s", sym->name.c_str());
 	}
 
-	/* Add the symbol directly to the GlobalSymList, because InstallSymbol()
-	   will allocate a new Symbol, which results in a memory leak of sym.
-	   Don't use MACRO_FUNCTION_SYM as type, because in
-	   macro.c:readCheckMacroString() we use ProgramFree() for the .val.prog,
-	   but this symbol has no program attached and ProgramFree() is not nullptr
-	   pointer safe */
+    /* Add the symbol directly to the GlobalSymList, because InstallSymbol()
+     * will allocate a new Symbol, which results in a memory leak of sym.
+     * Don't use MACRO_FUNCTION_SYM as type */
 	sym->type = GLOBAL_SYM;
 
 	GlobalSymList.push_back(sym);
@@ -846,7 +843,7 @@ void GarbageCollectStrings() {
                 str.rep[-1] = 1;
 			}
         } else if (is_array(s->value)) {
-			MarkArrayContentsAsUsed(s->value.val.arrayPtr);
+            MarkArrayContentsAsUsed(to_array(s->value));
 		}
 	}
 
@@ -1998,8 +1995,8 @@ bool ArrayInsert(DataValue *theArray, char *keyStr, DataValue *theValue) {
 	tmpEntry.key   = keyStr;
 	tmpEntry.value = *theValue;
 
-	if (!theArray->val.arrayPtr) {
-		theArray->val.arrayPtr = ArrayNew();
+    if (!to_array(*theArray)) {
+        *theArray = to_value(array_new());
 	}
 
     if (auto arr = to_array(*theArray)) {
@@ -2337,7 +2334,7 @@ static int arrayIter() {
 
     DataValue *iteratorValPtr = &FP_GET_SYM_VAL(FrameP, iterator);
 
-    ArrayEntry *thisEntry = iteratorValPtr->val.arrayPtr;
+    ArrayEntry *thisEntry = to_array(*iteratorValPtr);
 
 	if (thisEntry && thisEntry->color != -1) {
 
