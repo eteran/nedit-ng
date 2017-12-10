@@ -10,6 +10,7 @@
 #include <deque>
 #include <map>
 #include <memory>
+#include <boost/variant.hpp>
 
 #include <QtGlobal>
 #include <QString>
@@ -114,36 +115,24 @@ struct NString {
 };
 
 
-// NOTE(eteran): we can eventually replace this with boost::variant,
-
-enum TypeTags {
-    NO_TAG,
-    INT_TAG,
-    STRING_TAG,
-    ARRAY_TAG,
-    ITERATOR_TAG,
-};
-
 struct ArrayIterator {
     ArrayEntry* ptr;
 };
 
 struct DataValue {
-	TypeTags tag;
-	
-	union {
-        int            n;
-        NString        str;
-        ArrayEntry*    arrayPtr;
-
-        ArrayIterator  iterator;
-        BuiltInSubrEx  subr;
-        Program*       prog;
-        Inst*          inst;
-        DataValue*     dataval;
-
-	} val;
+    boost::variant<
+        boost::blank,
+        int,
+        NString,
+        ArrayEntry*,
+        ArrayIterator,
+        BuiltInSubrEx,
+        Program*,
+        Inst*,
+        DataValue*
+    > value;
 };
+
 
 //------------------------------------------------------------------------------
 struct ArrayEntry : public rbTreeNode {
@@ -243,147 +232,136 @@ struct array_iter   {};
 
 inline DataValue to_value(const array_empty &) {
     DataValue DV;
-    DV.tag          = ARRAY_TAG;
-    DV.val.arrayPtr = nullptr;
+    DV.value = static_cast<ArrayEntry*>(nullptr);
     return DV;
 }
 
 inline DataValue to_value(const array_new &) {
     DataValue DV;
-    DV.tag          = ARRAY_TAG;
-    DV.val.arrayPtr = ArrayNew();
+    DV.value = ArrayNew();
     return DV;
 }
 
 inline DataValue to_value(ArrayEntry *iter, const array_iter &) {
     DataValue DV;
-    DV.tag          = ITERATOR_TAG;
-    DV.val.iterator = { iter };
+    DV.value = ArrayIterator{iter};
     return DV;
 }
 
 inline DataValue to_value() {
-
-    // NOTE(eteran): don't use something like val.n = 0
-    // because that won't set ALL of the bits to zero since it
-    // isn't the widest member
     DataValue DV;
-    DV.tag = NO_TAG;
-    DV.val = { 0 };
     return DV;
 }
 
 inline DataValue to_value(int n) {
     DataValue DV;
-    DV.tag   = INT_TAG;
-    DV.val.n = n;
+    DV.value = n;
     return DV;
 }
 
 inline DataValue to_value(bool n) {
     DataValue DV;
-    DV.tag   = INT_TAG;
-    DV.val.n = n ? 1 : 0;
+    DV.value = n ? 1 : 0;
     return DV;
 }
 
 inline DataValue to_value(view::string_view str) {
     DataValue DV;
-    DV.tag     = STRING_TAG;
-    DV.val.str = AllocNStringCpyEx(str);
+    DV.value = AllocNStringCpyEx(str);
     return DV;
 }
 
 inline DataValue to_value(const QString &str) {
     DataValue DV;
-    DV.tag     = STRING_TAG;
-    DV.val.str = AllocNStringCpyEx(str);
+    DV.value = AllocNStringCpyEx(str);
     return DV;
 }
 
 inline DataValue to_value(Program *prog) {
     DataValue DV;
-    DV.tag      = NO_TAG;
-    DV.val.prog = prog;
+    DV.value = prog;
     return DV;
 }
 
 inline DataValue to_value(Inst *inst) {
     DataValue DV;
-    DV.tag      = NO_TAG;
-    DV.val.inst = inst;
+    DV.value = inst;
     return DV;
 }
 
 inline DataValue to_value(DataValue *v) {
     DataValue DV;
-    DV.tag         = NO_TAG;
-    DV.val.dataval = v;
+    DV.value = v;
     return DV;
 }
 
 inline DataValue to_value(BuiltInSubrEx routine) {
     DataValue DV;
-    DV.tag      = NO_TAG;
-    DV.val.subr = routine;
+    DV.value = routine;
     return DV;
 }
 
+inline bool is_unset(const DataValue &dv) {
+    return dv.value.which() == 0;
+}
+
 inline bool is_integer(const DataValue &dv) {
-    return dv.tag == INT_TAG;
+    return dv.value.which() == 1;
 }
 
 inline bool is_string(const DataValue &dv) {
-    return dv.tag == STRING_TAG;
+    return dv.value.which() == 2;
 }
 
 inline bool is_array(const DataValue &dv) {
-    return dv.tag == ARRAY_TAG;
+    return dv.value.which() == 3;
 }
 
 inline view::string_view to_string(const DataValue &dv) {
     Q_ASSERT(is_string(dv));
-    return view::string_view(dv.val.str.rep, dv.val.str.len);
+    auto str = boost::get<NString>(dv.value);
+    return view::string_view(str.rep, str.len);
 }
 
 inline QString to_qstring(const DataValue &dv) {
     Q_ASSERT(is_string(dv));
-    return QString::fromLatin1(dv.val.str.rep, static_cast<int>(dv.val.str.len));
+    auto str = boost::get<NString>(dv.value);
+    return QString::fromLatin1(str.rep, static_cast<int>(str.len));
 }
 
 inline int to_integer(const DataValue &dv) {
     Q_ASSERT(is_integer(dv));
-    return dv.val.n;
+    return boost::get<int>(dv.value);
 }
 
 inline Program *to_program(const DataValue &dv) {
     //Q_ASSERT(is_code(dv));
-    return dv.val.prog;
+    return boost::get<Program*>(dv.value);
 }
 
 inline BuiltInSubrEx to_subroutine(const DataValue &dv) {
     //Q_ASSERT(is_subroutine(dv));
-    return dv.val.subr;
+    return boost::get<BuiltInSubrEx>(dv.value);
 }
 
 inline DataValue *to_data_value(const DataValue &dv) {
     //Q_ASSERT(is_data_value(dv));
-    return dv.val.dataval;
+    return boost::get<DataValue*>(dv.value);
 }
 
 inline Inst *to_instruction(const DataValue &dv) {
     //Q_ASSERT(is_instruction(dv));
-    return dv.val.inst;
+    return boost::get<Inst*>(dv.value);
 }
 
 inline ArrayEntry *to_array(const DataValue &dv) {
     //Q_ASSERT(is_array(dv));
-    return dv.val.arrayPtr;
+    return boost::get<ArrayEntry*>(dv.value);
 }
 
 inline ArrayIterator to_iterator(const DataValue &dv) {
     //Q_ASSERT(is_iterator(dv));
-    return dv.val.iterator;
+    return boost::get<ArrayIterator>(dv.value);
 }
 
 #endif

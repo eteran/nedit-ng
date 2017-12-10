@@ -417,8 +417,8 @@ int ExecuteMacroEx(DocumentWidget *document, Program *prog, gsl::span<DataValue>
         *(context->stackP++) = dv;
     }
 
-    *(context->stackP++) = to_value();                                   // return PC
-    *(context->stackP++) = to_value();                                   // old FrameP
+    *(context->stackP++) = to_value(static_cast<Inst*>(nullptr));        // return PC
+    *(context->stackP++) = to_value(static_cast<DataValue*>(nullptr));   // old FrameP
     *(context->stackP++) = to_value(static_cast<int>(arguments.size())); // nArgs
     *(context->stackP++) = to_value();                                   // cached arg array
 
@@ -796,7 +796,7 @@ static void MarkArrayContentsAsUsed(ArrayEntry *arrayPtr) {
             if (is_string(globalSEUse->value)) {
                 // test first because it may be read-only static string
 
-                NString str = globalSEUse->value.val.str;
+                auto str = boost::get<NString>(globalSEUse->value.value);
 
                 if (str.rep[-1] == 0) {
                     str.rep[-1] = 1;
@@ -831,7 +831,7 @@ void GarbageCollectStrings() {
 
         if (is_string(s->value)) {
 
-            NString str = s->value.val.str;
+            auto str = boost::get<NString>(s->value.value);
 
 			// test first because it may be read-only static string 
             if (str.rep[-1] == 0) {
@@ -1018,7 +1018,8 @@ static int pushSymVal() {
 		}
 	} else
 		return execError("reading non-variable: %s", s->name.c_str());
-	if (symVal.tag == NO_TAG) {
+
+    if (is_unset(symVal)) {
 		return execError("variable not set: %s", s->name.c_str());
 	}
 
@@ -1110,11 +1111,11 @@ static int pushArraySymVal() {
 		return execError("assigning to non-lvalue array or non-array: %s", sym->name.c_str());
 	}
 
-	if (initEmpty && dataPtr->tag == NO_TAG) {
+    if (initEmpty && is_unset(*dataPtr)) {
         *dataPtr = to_value(array_new());
 	}
 
-	if (dataPtr->tag == NO_TAG) {
+    if (is_unset(*dataPtr)) {
 		return execError("variable not set: %s", sym->name.c_str());
 	}
 
@@ -1672,9 +1673,11 @@ static int callSubroutine() {
         }
 
         if (PC->func == fetchRetVal) {
-            if (result.tag == NO_TAG) {
+
+            if (is_unset(result)) {
                 return execError("%s does not return a value", sym->name.c_str());
             }
+
             PUSH(result);
             PC++;
         }
@@ -1926,8 +1929,8 @@ static int makeArrayKeyFromArgs(int nArgs, char **keyString, int leaveParams) {
 static rbTreeNode *arrayEmptyAllocator() {
 	ArrayEntry *newNode = allocateSparseArrayEntry();
 	if (newNode) {
-        newNode->key       = nullptr;
-		newNode->value.tag = NO_TAG;
+        newNode->key   = nullptr;
+        newNode->value = to_value();
 	}
 	return newNode;
 }
@@ -2165,9 +2168,11 @@ static int arrayAssign() {
 
         POP(dstArray);
 
-        if (!is_array(dstArray) && dstArray.tag != NO_TAG) {
+        // TODO(eteran): do we still want to test for unset here?
+        if (!is_array(dstArray) && is_unset(dstArray)) {
 			return execError("cannot assign array element of non-array");
 		}
+
         if (is_array(srcValue)) {
 			DataValue arrayCopyValue;
 
