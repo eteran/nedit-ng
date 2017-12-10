@@ -43,7 +43,7 @@ int countWritableWindows() {
     int nWritable = 0;
 
     std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
-    int nBefore = documents.size();
+    size_t nBefore = documents.size();
 
     auto first = documents.begin();
     auto last = documents.end();
@@ -57,7 +57,7 @@ int countWritableWindows() {
         document->CheckForChangesToFileEx();
 
         std::vector<DocumentWidget *> afterDocuments = DocumentWidget::allDocuments();
-        int nAfter = afterDocuments.size();
+        size_t nAfter = afterDocuments.size();
 
 		if (nAfter != nBefore) {
 			// The user has destroyed a file; start counting all over again 
