@@ -93,9 +93,6 @@ static int inArray();
 static int deleteArrayElement();
 static int errCheck(const char *s);
 
-template <class ...T>
-int execError(const char *s1, T ... args);
-
 static ArrayEntry *allocateSparseArrayEntry();
 static rbTreeNode *arrayEmptyAllocator();
 static rbTreeNode *arrayAllocateNode(rbTreeNode *src);
@@ -172,6 +169,20 @@ static int (*OpFns[N_OPS])() = {returnNoVal, returnVal,      pushSymVal, dupStac
 #define FP_GET_ARG_N(xFrameP, xN)       (FP_GET_ITEM(xFrameP, xN + FP_ARG_START_INDEX(xFrameP)))
 #define FP_GET_SYM_N(xFrameP, xN)       (FP_GET_ITEM(xFrameP, xN))
 #define FP_GET_SYM_VAL(xFrameP, xSym)   (FP_GET_SYM_N(xFrameP, to_integer(xSym->value)))
+
+/*
+** combine two strings in a static area and set ErrMsg to point to the
+** result.  Returns false so a single return execError() statement can
+** be used to both process the message and return.
+*/
+template <class ...T>
+int execError(const char *s1, T ... args) {
+    static char msg[MAX_ERR_MSG_LEN];
+
+    snprintf(msg, sizeof(msg), s1, args...);
+    ErrMsg = msg;
+    return STAT_ERROR;
+}
 
 /*
 ** Initialize macro language global variables.  Must be called before
@@ -2297,20 +2308,6 @@ static int errCheck(const char *s) {
 		return execError("%s result out of range", s);
 	else
 		return STAT_OK;
-}
-
-/*
-** combine two strings in a static area and set ErrMsg to point to the
-** result.  Returns false so a single return execError() statement can
-** be used to both process the message and return.
-*/
-template <class ...T>
-int execError(const char *s1, T ... args) {
-	static char msg[MAX_ERR_MSG_LEN];
-
-	snprintf(msg, sizeof(msg), s1, args...);
-	ErrMsg = msg;
-	return STAT_ERROR;
 }
 
 bool StringToNum(const QString &string, int *number) {
