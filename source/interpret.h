@@ -249,7 +249,7 @@ inline DataValue to_value(const array_new &) {
     return DV;
 }
 
-constexpr inline DataValue to_value() {
+inline DataValue to_value() {
     DataValue DV = INIT_DATA_VALUE;
     return DV;
 }

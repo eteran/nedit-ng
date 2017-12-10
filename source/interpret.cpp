@@ -399,8 +399,6 @@ void FillLoopAddrs(Inst *breakAddr, Inst *continueAddr) {
 */
 int ExecuteMacroEx(DocumentWidget *document, Program *prog, gsl::span<DataValue> arguments, DataValue *result, std::shared_ptr<RestartData> &continuation, QString *msg) {
 
-    static DataValue noValue = INIT_DATA_VALUE;
-
     /* Create an execution context (a stack, a stack pointer, a frame pointer,
        and a program counter) which will retain the program state across
        preemption and resumption of execution */
@@ -428,7 +426,7 @@ int ExecuteMacroEx(DocumentWidget *document, Program *prog, gsl::span<DataValue>
 
     // Initialize and make room on the stack for local variables
     for(Symbol *s : prog->localSymList) {
-        FP_GET_SYM_VAL(context->frameP, s) = noValue;
+        FP_GET_SYM_VAL(context->frameP, s) = to_value();
         context->stackP++;
     }
 
@@ -1658,7 +1656,6 @@ static int concat() {
 */
 static int callSubroutine() {
 
-	static DataValue noValue = INIT_DATA_VALUE;
     const char *errMsg = nullptr;
 
     Symbol *sym = PC++->sym;
@@ -1711,7 +1708,7 @@ static int callSubroutine() {
         PC            = prog->code;
 
         for(Symbol *s : prog->localSymList) {
-			FP_GET_SYM_VAL(FrameP, s) = noValue;
+            FP_GET_SYM_VAL(FrameP, s) = to_value();
 			StackP++;
 		}
 		return STAT_OK;
@@ -1747,7 +1744,6 @@ static int returnVal() {
 */
 static int returnValOrNone(bool valOnStack) {
 	DataValue retVal;
-	static DataValue noValue = INIT_DATA_VALUE;
 
 	DISASM_RT(PC - 1, 1);
 	STACKDUMP(StackP - FrameP + FP_GET_ARG_COUNT(FrameP) + FP_TO_ARGS_DIST, 3);
@@ -1773,7 +1769,7 @@ static int returnValOrNone(bool valOnStack) {
 		if (valOnStack) {
 			PUSH(retVal);
 		} else {
-			PUSH(noValue);
+            PUSH(to_value());
 		}
 	} else if (PC->func == fetchRetVal) {
 		if (valOnStack) {

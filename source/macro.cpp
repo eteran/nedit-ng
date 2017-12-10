@@ -1994,35 +1994,33 @@ static Symbol *ReturnGlobals[N_RETURN_GLOBALS];
 ** editor information
 */
 void RegisterMacroSubroutines() {
-    static DataValue subrPtr = INIT_DATA_VALUE;
-    static DataValue noValue = INIT_DATA_VALUE;
 
     /* Install symbols for built-in routines and variables, with pointers
        to the appropriate c routines to do the work */
     for(const SubRoutine &routine : MacroSubrs) {
-        subrPtr = to_value(routine.function);
+        DataValue subrPtr = to_value(routine.function);
         InstallSymbol(routine.name, C_FUNCTION_SYM, subrPtr);
     }
 
     for(const SubRoutine &routine : SpecialVars) {
-        subrPtr = to_value(routine.function);
+        DataValue subrPtr = to_value(routine.function);
         InstallSymbol(routine.name, PROC_VALUE_SYM, subrPtr);
     }
 
     for(const SubRoutine &routine : MenuMacroSubrNames) {
-        subrPtr = to_value(routine.function);
+        DataValue subrPtr = to_value(routine.function);
         InstallSymbol(routine.name, C_FUNCTION_SYM, subrPtr);
     }
 
     for(const SubRoutine &routine : TextAreaSubrNames) {
-        subrPtr = to_value(routine.function);
+        DataValue subrPtr = to_value(routine.function);
         InstallSymbol(routine.name, C_FUNCTION_SYM, subrPtr);
     }
 
     /* Define global variables used for return values, remember their
        locations so they can be set without a LookupSymbol call */
     for (unsigned int i = 0; i < N_RETURN_GLOBALS; i++)
-        ReturnGlobals[i] = InstallSymbol(ReturnGlobalNames[i], GLOBAL_SYM, noValue);
+        ReturnGlobals[i] = InstallSymbol(ReturnGlobalNames[i], GLOBAL_SYM, to_value());
 }
 
 
