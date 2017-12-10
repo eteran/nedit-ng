@@ -6,6 +6,7 @@
 #include <cstring>
 #include <cstdio>
 #include <cctype>
+#include <string>
 #include <sys/param.h>
 
 
@@ -684,6 +685,7 @@ static int follow(char expect, int yes, int no)
     InPtr--;
     return no;
 }
+
 static int follow2(char expect1, int yes1, char expect2, int yes2, int no)
 {
     char next = *InPtr++;
@@ -727,24 +729,26 @@ static int follow_non_whitespace(char expect, int yes, int no)
 static Symbol *matchesActionRoutine(const char **inPtr)
 {
     const char *c;
-	char *symPtr;
-    int hasDash = false;
-    char symbolName[MAX_SYM_LEN+1];
-    Symbol *s;
+    bool hasDash = false;
 
-    symPtr = symbolName;
-    for (c = *inPtr; isalnum(static_cast<uint8_t>(*c)) || *c=='_' ||
-            ( *c=='-' && isalnum(static_cast<uint8_t>(*(c+1)))); c++) {
-        if (*c == '-')
+    std::string symbolName;
+    auto symPtr = std::back_inserter(symbolName);
+
+    for (c = *inPtr; isalnum(static_cast<uint8_t>(*c)) || *c == '_' || (*c == '-' && isalnum(static_cast<uint8_t>(*(c + 1)))); c++) {
+        if (*c == '-') {
             hasDash = true;
+        }
         *symPtr++ = *c;
     }
+
     if (!hasDash)
         return nullptr;
-    *symPtr = '\0';
-    s = LookupSymbol(symbolName);
-    if (s != nullptr)
+
+    Symbol *s = LookupSymbol(symbolName);
+    if (s != nullptr) {
         *inPtr = c;
+    }
+
     return s;
 }
 
