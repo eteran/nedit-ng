@@ -35,8 +35,6 @@ constexpr int TYPE_INT_STR_SIZE = ((sizeof(T) * 3) + 2);
 
 #define ARRAY_DIM_SEP "\034"
 
-#define INIT_DATA_VALUE {NO_TAG, {0}}
-
 enum SymTypes {
     CONST_SYM,
     GLOBAL_SYM,

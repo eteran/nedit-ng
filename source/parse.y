@@ -461,8 +461,7 @@ Program *ParseMacro(const char *expr, const char **msg, const char **stoppedAt)
 static int yylex(void)
 {
     int i, len;
-    Symbol *s;
-    static DataValue value = INIT_DATA_VALUE;
+    Symbol *s;    
     static char escape[] = "\\\"ntbrfave";
     static char replace[] = "\\\"\n\t\b\r\f\a\v\x1B"; /* ASCII escape */
 
@@ -534,11 +533,12 @@ static int yylex(void)
                 InPtr -= 6;
                 return 0;
             }
+
+
             if ((s=LookupSymbol(symName)) == nullptr) {
-                s = InstallSymbol(symName, symName[0]=='$' ?
-                        (((symName[1] > '0' && symName[1] <= '9') && symName[2] == 0) ?
-                        ARG_SYM : GLOBAL_SYM) : LOCAL_SYM, value);
-                s->value.tag = NO_TAG;
+                s = InstallSymbol(symName,
+                                  symName[0]=='$' ? (((symName[1] > '0' && symName[1] <= '9') && symName[2] == 0) ? ARG_SYM : GLOBAL_SYM) : LOCAL_SYM,
+                                  to_value());
             }
         }
         yylval.sym = s;
