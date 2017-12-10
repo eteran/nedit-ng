@@ -121,6 +121,11 @@ enum TypeTags {
     INT_TAG,
     STRING_TAG,
     ARRAY_TAG,
+    ITERATOR_TAG,
+};
+
+struct ArrayIterator {
+    ArrayEntry* ptr;
 };
 
 struct DataValue {
@@ -131,10 +136,12 @@ struct DataValue {
         NString        str;
         ArrayEntry*    arrayPtr;
 
+        ArrayIterator  iterator;
         BuiltInSubrEx  subr;
         Program*       prog;
         Inst*          inst;
         DataValue*     dataval;
+
 	} val;
 };
 
@@ -232,6 +239,7 @@ bool StringToNum(const QString &string, int *number);
 
 struct array_empty {};
 struct array_new   {};
+struct array_iter   {};
 
 inline DataValue to_value(const array_empty &) {
     DataValue DV;
@@ -244,6 +252,13 @@ inline DataValue to_value(const array_new &) {
     DataValue DV;
     DV.tag          = ARRAY_TAG;
     DV.val.arrayPtr = ArrayNew();
+    return DV;
+}
+
+inline DataValue to_value(ArrayEntry *iter, const array_iter &) {
+    DataValue DV;
+    DV.tag          = ITERATOR_TAG;
+    DV.val.iterator = { iter };
     return DV;
 }
 
@@ -364,6 +379,11 @@ inline Inst *to_instruction(const DataValue &dv) {
 inline ArrayEntry *to_array(const DataValue &dv) {
     //Q_ASSERT(is_array(dv));
     return dv.val.arrayPtr;
+}
+
+inline ArrayIterator to_iterator(const DataValue &dv) {
+    //Q_ASSERT(is_iterator(dv));
+    return dv.val.iterator;
 }
 
 #endif

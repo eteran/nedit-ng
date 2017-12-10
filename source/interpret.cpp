@@ -574,12 +574,7 @@ Symbol *InstallIteratorSymbol() {
 
     auto symbolName = QString(QLatin1String("aryiter %1")).arg(interatorNameIndex++);
 
-    // NOTE(eteran): the "incorrect" tag appears to be deliberate
-	DataValue value;
-    value.tag          = INT_TAG;
-	value.val.arrayPtr = nullptr;
-
-    return InstallSymbolEx(symbolName, LOCAL_SYM, value);
+    return InstallSymbolEx(symbolName, LOCAL_SYM, to_value(nullptr, array_iter()));
 }
 
 /*
@@ -2271,14 +2266,11 @@ static int beginArrayIter() {
 
     DataValue *iteratorValPtr = &FP_GET_SYM_VAL(FrameP, iterator);
 
-
     if (!is_array(arrayVal)) {
 		return execError("can't iterate non-array");
 	}
 
-    // NOTE(eteran): the "incorrect" tag appears to be deliberate
-    iteratorValPtr->tag          = INT_TAG;
-	iteratorValPtr->val.arrayPtr = arrayIterateFirst(&arrayVal);
+    *iteratorValPtr = to_value(arrayIterateFirst(&arrayVal), array_iter());
 	return STAT_OK;
 }
 
@@ -2334,14 +2326,14 @@ static int arrayIter() {
 
     DataValue *iteratorValPtr = &FP_GET_SYM_VAL(FrameP, iterator);
 
-    ArrayEntry *thisEntry = to_array(*iteratorValPtr);
+    ArrayIterator thisEntry = to_iterator(*iteratorValPtr);
 
-	if (thisEntry && thisEntry->color != -1) {
+    if (thisEntry.ptr && thisEntry.ptr->color != -1) {
 
-        auto key_string = view::string_view(thisEntry->key, strlen(thisEntry->key));
+        auto key_string = view::string_view(thisEntry.ptr->key, strlen(thisEntry.ptr->key));
         *itemValPtr = to_value(key_string);
 
-		iteratorValPtr->val.arrayPtr = arrayIterateNext(thisEntry);
+        *iteratorValPtr = to_value(arrayIterateNext(thisEntry.ptr), array_iter());
 	} else {
 		PC = branchAddr;
 	}
