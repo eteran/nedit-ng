@@ -3196,7 +3196,7 @@ static bool dialogMS(DocumentWidget *document, Arguments arguments, DataValue *r
     }
     prompt->exec();
 
-    result->val.n = prompt->result();
+    *result = to_value(prompt->result());
     ModifyReturnedValueEx(cmdData->context, *result);
 
     document->ResumeMacroExecutionEx();

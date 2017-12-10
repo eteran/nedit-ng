@@ -943,7 +943,7 @@ static void restoreContextEx(const std::shared_ptr<RestartData> &context) {
         if (is_integer(*StackP)) {                                             \
             string_ref = std::to_string(to_integer(*StackP));                  \
         } else if (is_string(*StackP)) {                                       \
-            string_ref = std::string(StackP->val.str.rep, StackP->val.str.len);\
+            string_ref = to_string(*StackP).to_string();                       \
         } else {                                                               \
             return execError("can't convert array to string");                 \
         }                                                                      \
