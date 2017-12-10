@@ -259,7 +259,9 @@ Program *FinishCreatingProgram() {
 
 void FreeProgram(Program *prog) {
     if(prog) {
-        qDeleteAll(prog->localSymList);
+        for(Symbol *sym : prog->localSymList) {
+            delete sym;
+        }
         delete [] prog->code;
         delete prog;
     }
@@ -1008,21 +1010,20 @@ static int assign() {
 
     Symbol *sym = PC++->sym;
 
-	if (sym->type != GLOBAL_SYM && sym->type != LOCAL_SYM) {
-		if (sym->type == ARG_SYM) {
-			return execError("assignment to function argument: %s", sym->name.c_str());
-		} else if (sym->type == PROC_VALUE_SYM) {
-			return execError("assignment to read-only variable: %s", sym->name.c_str());
-		} else {
-			return execError("assignment to non-variable: %s", sym->name.c_str());
-		}
-	}
-
-	if (sym->type == LOCAL_SYM) {
-		dataPtr = &FP_GET_SYM_VAL(FrameP, sym);
-	} else {
-		dataPtr = &sym->value;
-	}
+    switch(sym->type) {
+    case LOCAL_SYM:
+        dataPtr = &FP_GET_SYM_VAL(FrameP, sym);
+        break;
+    case GLOBAL_SYM:
+        dataPtr = &sym->value;
+        break;
+    case ARG_SYM:
+        return execError("assignment to function argument: %s", sym->name.c_str());
+    case PROC_VALUE_SYM:
+        return execError("assignment to read-only variable: %s", sym->name.c_str());
+    default:
+        return execError("assignment to non-variable: %s", sym->name.c_str());
+    }
 
     POP(value);
 
@@ -1060,8 +1061,8 @@ static int dupStack() {
 ** After:  TheStack-> resValue, next, ...
 */
 static int add() {
-	DataValue leftVal, rightVal, resultArray;
-	int n1, n2;
+    DataValue leftVal;
+    DataValue rightVal;
 
 	DISASM_RT(PC - 1, 1);
 	STACKDUMP(2, 3);
@@ -1072,15 +1073,16 @@ static int add() {
         PEEK(leftVal, 1);
         if (is_array(leftVal)) {
 
-            ArrayEntry *leftIter, *rightIter;
-
-            resultArray = to_value(array_new());
+            DataValue resultArray = to_value(array_new());
 
             POP(rightVal);
             POP(leftVal);
-			leftIter = arrayIterateFirst(&leftVal);
-			rightIter = arrayIterateFirst(&rightVal);
+
+            ArrayEntry *leftIter  = arrayIterateFirst(&leftVal);
+            ArrayEntry *rightIter = arrayIterateFirst(&rightVal);
+
 			while (leftIter || rightIter) {
+
                 bool insertResult = true;
 
 				if (leftIter && rightIter) {
@@ -1112,6 +1114,9 @@ static int add() {
 			return execError("can't mix math with arrays and non-arrays");
 		}
 	} else {
+        int n1;
+        int n2;
+
         POP_INT(n2);
         POP_INT(n1);
         PUSH_INT(n1 + n2);
@@ -1127,8 +1132,9 @@ static int add() {
 ** After:  TheStack-> resValue, next, ...
 */
 static int subtract() {
-	DataValue leftVal, rightVal, resultArray;
-	int n1, n2;
+
+    DataValue leftVal;
+    DataValue rightVal;
 
 	DISASM_RT(PC - 1, 1);
 	STACKDUMP(2, 3);
@@ -1137,15 +1143,16 @@ static int subtract() {
     if(is_array(rightVal)) {
         PEEK(leftVal, 1);
         if(is_array(leftVal)) {
-			ArrayEntry *leftIter, *rightIter;
 
-            resultArray = to_value(array_new());
+            DataValue resultArray = to_value(array_new());
 
             POP(rightVal);
             POP(leftVal);
-			leftIter = arrayIterateFirst(&leftVal);
-			rightIter = arrayIterateFirst(&rightVal);
-			while (leftIter) {
+
+            ArrayEntry *leftIter = arrayIterateFirst(&leftVal);
+            ArrayEntry *rightIter = arrayIterateFirst(&rightVal);
+
+            while (leftIter) {
                 bool insertResult = true;
 
 				if (leftIter && rightIter) {
@@ -1172,6 +1179,9 @@ static int subtract() {
 			return execError("can't mix math with arrays and non-arrays");
 		}
 	} else {
+        int n1;
+        int n2;
+
         POP_INT(n2);
         POP_INT(n1);
         PUSH_INT(n1 - n2);
@@ -1311,8 +1321,9 @@ static int ne() {
 ** After:  TheStack-> resValue, next, ...
 */
 static int bitAnd() {
-	DataValue leftVal, rightVal, resultArray;
-	int n1, n2;
+
+    DataValue leftVal;
+    DataValue rightVal;
 
 	DISASM_RT(PC - 1, 1);
 	STACKDUMP(2, 3);
@@ -1321,14 +1332,15 @@ static int bitAnd() {
     if(is_array(rightVal)) {
         PEEK(leftVal, 1);
         if(is_array(leftVal)) {
-			ArrayEntry *leftIter, *rightIter;
 
-            resultArray = to_value(array_new());
+            DataValue resultArray = to_value(array_new());
 
             POP(rightVal);
             POP(leftVal);
-			leftIter = arrayIterateFirst(&leftVal);
-			rightIter = arrayIterateFirst(&rightVal);
+
+            ArrayEntry *leftIter  = arrayIterateFirst(&leftVal);
+            ArrayEntry *rightIter = arrayIterateFirst(&rightVal);
+
 			while (leftIter && rightIter) {
                 bool insertResult = true;
 				int compareResult = arrayEntryCompare(leftIter, rightIter);
@@ -1351,6 +1363,9 @@ static int bitAnd() {
 			return execError("can't mix math with arrays and non-arrays");
 		}
 	} else {
+        int n1;
+        int n2;
+
         POP_INT(n2);
         POP_INT(n1);
         PUSH_INT(n1 & n2);
@@ -1366,8 +1381,9 @@ static int bitAnd() {
 ** After:  TheStack-> resValue, next, ...
 */
 static int bitOr() {
-	DataValue leftVal, rightVal, resultArray;
-	int n1, n2;
+
+    DataValue leftVal;
+    DataValue rightVal;
 
 	DISASM_RT(PC - 1, 1);
 	STACKDUMP(2, 3);
@@ -1376,14 +1392,15 @@ static int bitOr() {
     if(is_array(rightVal)) {
         PEEK(leftVal, 1);
         if(is_array(leftVal)) {
-			ArrayEntry *leftIter, *rightIter;
 
-            resultArray = to_value(array_new());
+            DataValue resultArray = to_value(array_new());
 
             POP(rightVal);
             POP(leftVal);
-			leftIter = arrayIterateFirst(&leftVal);
-			rightIter = arrayIterateFirst(&rightVal);
+
+            ArrayEntry *leftIter  = arrayIterateFirst(&leftVal);
+            ArrayEntry *rightIter = arrayIterateFirst(&rightVal);
+
 			while (leftIter || rightIter) {
                 bool insertResult = true;
 
@@ -1415,6 +1432,8 @@ static int bitOr() {
 			return execError("can't mix math with arrays and non-arrays");
 		}
 	} else {
+        int n1;
+        int n2;
         POP_INT(n2);
         POP_INT(n1);
         PUSH_INT(n1 | n2);
@@ -1729,23 +1748,23 @@ int ArrayCopy(DataValue *dstArray, DataValue *srcArray) {
 
     while (srcIter) {
         if (is_array(srcIter->value)) {
-			int errNum;
-			DataValue tmpArray;
+            int errNum;
+            DataValue tmpArray;
 
-			errNum = ArrayCopy(&tmpArray, &srcIter->value);
-			if (errNum != STAT_OK) {
-				return errNum;
-			}
-			if (!ArrayInsert(dstArray, srcIter->key, &tmpArray)) {
-				return execError("array copy failed");
-			}
-		} else {
-			if (!ArrayInsert(dstArray, srcIter->key, &srcIter->value)) {
-				return execError("array copy failed");
-			}
-		}
-		srcIter = arrayIterateNext(srcIter);
-	}
+            errNum = ArrayCopy(&tmpArray, &srcIter->value);
+            if (errNum != STAT_OK) {
+                return errNum;
+            }
+            if (!ArrayInsert(dstArray, srcIter->key, &tmpArray)) {
+                return execError("array copy failed");
+            }
+        } else {
+            if (!ArrayInsert(dstArray, srcIter->key, &srcIter->value)) {
+                return execError("array copy failed");
+            }
+        }
+        srcIter = arrayIterateNext(srcIter);
+    }
 	return STAT_OK;
 }
 
@@ -1854,24 +1873,24 @@ ArrayEntry *ArrayNew() {
 ** keyStr must be a string that was allocated with AllocString()
 */
 bool ArrayInsert(DataValue *theArray, const std::string &keyStr, DataValue *theValue) {
-	ArrayEntry tmpEntry;
+    ArrayEntry tmpEntry;
 
-	tmpEntry.key   = keyStr;
-	tmpEntry.value = *theValue;
+    tmpEntry.key   = keyStr;
+    tmpEntry.value = *theValue;
 
     if (!to_array(*theArray)) {
         *theArray = to_value(array_new());
-	}
+    }
 
     if (auto arr = to_array(*theArray)) {
         rbTreeNode *insertedNode = rbTreeInsert(arr, &tmpEntry, arrayEntryCompare, arrayAllocateNode, arrayEntryCopyToNode);
 
-		if (insertedNode) {
+        if (insertedNode) {
             return true;
-		} else {
+        } else {
             return false;
-		}
-	}
+        }
+    }
 
     return false;
 }
@@ -1880,12 +1899,12 @@ bool ArrayInsert(DataValue *theArray, const std::string &keyStr, DataValue *theV
 ** remove a node from an array whose key matches keyStr
 */
 void ArrayDelete(DataValue *theArray, const std::string &keyStr) {
-	ArrayEntry searchEntry;
+    ArrayEntry searchEntry;
 
     if (auto arr = to_array(*theArray)) {
-		searchEntry.key = keyStr;
+        searchEntry.key = keyStr;
         rbTreeDelete(arr, &searchEntry, arrayEntryCompare, arrayDisposeNode);
-	}
+    }
 }
 
 /*
@@ -1894,13 +1913,13 @@ void ArrayDelete(DataValue *theArray, const std::string &keyStr) {
 void ArrayDeleteAll(DataValue *theArray) {
     if (auto arr = to_array(*theArray)) {
         rbTreeNode *iter = rbTreeBegin(arr);
-		while (iter) {
-			rbTreeNode *nextIter = rbTreeNext(iter);
+        while (iter) {
+            rbTreeNode *nextIter = rbTreeNext(iter);
             rbTreeDeleteNode(arr, iter, arrayDisposeNode);
 
             iter = nextIter;
         }
-	}
+    }
 }
 
 /*
@@ -1909,9 +1928,9 @@ void ArrayDeleteAll(DataValue *theArray) {
 int ArraySize(DataValue *theArray) {
     if (auto arr = to_array(*theArray)) {
         return rbTreeSize(arr);
-	} else {
-		return 0;
-	}
+    } else {
+        return 0;
+    }
 }
 
 /*
@@ -1921,14 +1940,14 @@ int ArraySize(DataValue *theArray) {
 bool ArrayGet(DataValue *theArray, const std::string &keyStr, DataValue *theValue) {
 
     if (auto arr = to_array(*theArray)) {
-		ArrayEntry searchEntry;
-		searchEntry.key = keyStr;
+        ArrayEntry searchEntry;
+        searchEntry.key = keyStr;
         rbTreeNode *foundNode = rbTreeFind(arr, &searchEntry, arrayEntryCompare);
-		if (foundNode) {
-			*theValue = static_cast<ArrayEntry *>(foundNode)->value;
+        if (foundNode) {
+            *theValue = static_cast<ArrayEntry *>(foundNode)->value;
             return true;
-		}
-	}
+        }
+    }
 
     return false;
 }
@@ -1937,26 +1956,26 @@ bool ArrayGet(DataValue *theArray, const std::string &keyStr, DataValue *theValu
 ** get pointer to start iterating an array
 */
 ArrayEntry *arrayIterateFirst(DataValue *theArray) {
-	ArrayEntry *startPos;
+    ArrayEntry *startPos;
     if (auto arr = to_array(*theArray)) {
         startPos = static_cast<ArrayEntry *>(rbTreeBegin(arr));
-	} else {
-		startPos = nullptr;
-	}
-	return startPos;
+    } else {
+        startPos = nullptr;
+    }
+    return startPos;
 }
 
 /*
 ** move iterator to next entry in array
 */
 ArrayEntry *arrayIterateNext(ArrayEntry *iterator) {
-	ArrayEntry *nextPos;
-	if (iterator) {
-		nextPos = static_cast<ArrayEntry *>(rbTreeNext(iterator));
-	} else {
-		nextPos = nullptr;
-	}
-	return nextPos;
+    ArrayEntry *nextPos;
+    if (iterator) {
+        nextPos = static_cast<ArrayEntry *>(rbTreeNext(iterator));
+    } else {
+        nextPos = nullptr;
+    }
+    return nextPos;
 }
 
 /*
@@ -2483,7 +2502,7 @@ static void stackdump(int n, int extra) {
 	// TheStack-> symN-sym1(FP), argArray, nArgs, oldFP, retPC, argN-arg1, next, ... 
 	int nArgs = FP_GET_ARG_COUNT(FrameP);
     int i;
-    char buffer[sizeof(STACK_DUMP_ARG_PREFIX) + TYPE_INT_STR_SIZE<int>];
+    char buffer[256];
 	printf("Stack ----->\n");
 	for (i = 0; i < n + extra; i++) {
         const char *pos = "";
@@ -2497,29 +2516,31 @@ static void stackdump(int n, int extra) {
 
 		printf("%4.4s", i < n ? ">>>>" : "");
         printf("%8p ", static_cast<void *>(dv));
+
 		switch (offset) {
-		case 0:
-			pos = "FrameP";
+        case 0:
+            pos = "FrameP";
 			break; // first local symbol value 
 		case FP_ARG_ARRAY_CACHE_INDEX:
-			pos = "args";
+            pos = "args";
 			break; // arguments array 
 		case FP_ARG_COUNT_INDEX:
-			pos = "NArgs";
+            pos = "NArgs";
 			break; // number of arguments 
 		case FP_OLD_FP_INDEX:
-			pos = "OldFP";
+            pos = "OldFP";
 			break;
 		case FP_RET_PC_INDEX:
-			pos = "RetPC";
+            pos = "RetPC";
 			break;
 		default:
 			if (offset < -FP_TO_ARGS_DIST && offset >= -FP_TO_ARGS_DIST - nArgs) {
                 pos = buffer;
-                sprintf(buffer, STACK_DUMP_ARG_PREFIX "%d", offset + FP_TO_ARGS_DIST + nArgs + 1);
+                snprintf(buffer, sizeof(buffer), STACK_DUMP_ARG_PREFIX "%d", offset + FP_TO_ARGS_DIST + nArgs + 1);
 			}
 			break;
-		}
+        }
+
 		printf("%-6s ", pos);
 		dumpVal(*dv);
 		printf("\n");

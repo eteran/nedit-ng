@@ -12,7 +12,6 @@
 #include <memory>
 #include <boost/variant.hpp>
 
-#include <QtGlobal>
 #include <QString>
 
 class DocumentWidget;
@@ -29,10 +28,6 @@ constexpr int MAX_SYM_LEN = 100;
 
 // Special value for the send_event field of events passed to action routines.  Tells them that they were called from a macro
 constexpr int MACRO_EVENT_MARKER = 2;
-
-// determine a safe size for a string to hold an integer-like number contained in T
-template <class T>
-constexpr int TYPE_INT_STR_SIZE = ((sizeof(T) * 3) + 2);
 
 #define ARRAY_DIM_SEP "\034"
 
@@ -108,12 +103,6 @@ union Inst {
 
 using Arguments     = gsl::span<DataValue>;
 using BuiltInSubrEx = bool (*)(DocumentWidget *document, Arguments arguments, struct DataValue *result, const char **errMsg);
-
-struct NString {
-	char *rep;
-	size_t len;
-};
-
 
 struct ArrayIterator {
     ArrayEntry* ptr;

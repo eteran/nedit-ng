@@ -4463,8 +4463,7 @@ static bool rangesetDestroyMS(DocumentWidget *document, Arguments arguments, Dat
 
         for (int i = 0; i < arraySize; i++) {
 
-            char keyString[TYPE_INT_STR_SIZE<int>];
-            sprintf(keyString, "%d", i);
+            auto keyString = std::to_string(i);
 
             if (!ArrayGet(array, keyString, &element)) {
                 M_FAILURE(InvalidArrayKey);
