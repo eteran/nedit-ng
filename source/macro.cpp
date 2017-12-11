@@ -3371,8 +3371,7 @@ static bool calltipMS(DocumentWidget *document, Arguments arguments, DataValue *
     }
 
     // Look up (maybe) a calltip and display it
-    *result = to_value(ShowTipStringEx(
-                           document,
+    *result = to_value(document->ShowTipStringEx(
                            tipText,
                            anchored,
                            anchorPos,

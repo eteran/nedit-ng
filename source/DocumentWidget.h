@@ -3,6 +3,7 @@
 #define DOCUMENT_WIDGET_H_
 
 #include "Bookmark.h"
+#include "CallTip.h"
 #include "CloseMode.h"
 #include "CommandSource.h"
 #include "FileFormats.h"
@@ -185,13 +186,17 @@ public:
     void StartHighlightingEx(bool warn);
     void StopHighlightingEx();
     void UpdateHighlightStylesEx();
+    int ShowTipStringEx(const QString &text, bool anchored, int pos, bool lookup, TagSearchMode search_type, TipHAlignMode hAlign, TipVAlignMode vAlign, TipAlignStrict alignMode);
+    void editTaggedLocationEx(TextArea *area, int i);
 
 public:
 #if defined(REPLACE_SCOPE)
     bool selectionSpansMultipleLines();
 #endif
 
-private:    
+private:
+    void createSelectMenuEx(TextArea *area, const QStringList &args);
+    int findAllMatchesEx(TextArea *area, const QString &string);
     void processFinished(int exitCode, QProcess::ExitStatus exitStatus);
     bool bckError(const QString &errString, const QString &file);
     bool doOpen(const QString &name, const QString &path, int flags);

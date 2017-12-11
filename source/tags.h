@@ -3,12 +3,14 @@
 #define TAGS_H_
 
 #include "CallTip.h"
+#include "util/string_view.h"
 #include <deque>
 
 #include <QString>
 #include <QDateTime>
 
-class DocumentWidget;
+constexpr int MAXDUPTAGS = 100;
+
 class TextArea;
 
 // file_type and search_type arguments are to select between tips and tags,
@@ -28,6 +30,16 @@ struct TagFile {
     int       refcount; // Only tips files are refcounted, not tags files
 };
 
+struct Tag {
+    QString name;
+    QString file;
+    QString searchString;
+    QString path;
+    size_t  language;
+    int     posInf;
+    int     index;
+};
+
 extern std::deque<TagFile> TagsFileList; // list of loaded tags files
 extern std::deque<TagFile> TipsFileList; // list of loaded calltips tag files
 
@@ -40,21 +52,16 @@ extern TipHAlignMode  globHAlign;
 extern TipVAlignMode  globVAlign;
 extern TipAlignStrict globAlignMode;
 
-bool AddRelTagsFileEx(const QString &tagSpec, const QString &windowPath, TagSearchMode file_type);
+extern QString tagFiles[MAXDUPTAGS];
+extern QString tagSearch[MAXDUPTAGS];
+extern int tagPosInf[MAXDUPTAGS];
 
-// tagSpec is a colon-delimited list of filenames 
+bool AddRelTagsFileEx(const QString &tagSpec, const QString &windowPath, TagSearchMode file_type);
 bool AddTagsFileEx(const QString &tagSpec, TagSearchMode file_type);
 int DeleteTagsFileEx(const QString &tagSpec, TagSearchMode file_type, bool force_unload);
 int tagsShowCalltipEx(TextArea *area, const QString &text);
-
-// Routines for handling tags or tips from the current selection
-
-//  Display (possibly finding first) a calltip.  Search type can only be TIP or TIP_FROM_TAG here.
-int ShowTipStringEx(DocumentWidget *document, const QString &text, bool anchored, int pos, bool lookup, TagSearchMode search_type, TipHAlignMode hAlign, TipVAlignMode vAlign, TipAlignStrict alignMode);
-
-void editTaggedLocationEx(TextArea *area, int i);
+QList<Tag> LookupTag(const QString &name, TagSearchMode search_type);
 void showMatchingCalltipEx(TextArea *area, int i);
-
-int findAllMatchesEx(DocumentWidget *document, TextArea *area, const QString &string);
+bool fakeRegExSearchEx(view::string_view buffer, const QString &searchString, int *startPos, int *endPos);
 
 #endif
