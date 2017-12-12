@@ -9,6 +9,7 @@
 #include <deque>
 #include <map>
 #include <memory>
+#include <vector>
 #include <boost/variant.hpp>
 
 #include <QString>
@@ -137,7 +138,7 @@ struct Symbol {
 class Program {
 public:
     std::deque<Symbol *> localSymList;
-	Inst *code;
+    std::vector<Inst>    code;
 };
 
 /* Information needed to re-start a preempted macro */

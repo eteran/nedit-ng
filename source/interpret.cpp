@@ -118,10 +118,10 @@ static std::deque<Symbol *> GlobalSymList;
 
 // Temporary global data for use while accumulating programs
 static std::deque<Symbol *> LocalSymList;     // symbols local to the program
-static Inst Prog[PROGRAM_SIZE];          // the program
-static Inst *ProgP;                      // next free spot for code gen.
-static Inst *LoopStack[LOOP_STACK_SIZE]; // addresses of break, cont stmts
-static Inst **LoopStackPtr = LoopStack;  //  to fill at the end of a loop
+static Inst Prog[PROGRAM_SIZE];               // the program
+static Inst *ProgP;                           // next free spot for code gen.
+static Inst *LoopStack[LOOP_STACK_SIZE];      // addresses of break, cont stmts
+static Inst **LoopStackPtr = LoopStack;       //  to fill at the end of a loop
 
 // Global data for the interpreter
 static DataValue *TheStack;                    // the stack
@@ -231,9 +231,9 @@ Program *FinishCreatingProgram() {
 
     auto newProg     = new Program;
     const auto count = static_cast<size_t>(ProgP - Prog);
-    newProg->code    = new Inst[count];
+    newProg->code.reserve(count);
 
-    std::copy_n(Prog, count, newProg->code);
+    std::copy_n(Prog, count, std::back_inserter(newProg->code));
 
     newProg->localSymList = LocalSymList;
     LocalSymList.clear();
@@ -253,7 +253,6 @@ void FreeProgram(Program *prog) {
         for(Symbol *sym : prog->localSymList) {
             delete sym;
         }
-        delete [] prog->code;
         delete prog;
     }
 }
@@ -413,7 +412,7 @@ int ExecuteMacroEx(DocumentWidget *document, Program *prog, gsl::span<DataValue>
 
     context->stack       = new DataValue[STACK_SIZE];
     context->stackP      = context->stack;
-    context->pc          = prog->code;
+    context->pc          = prog->code.data();
     context->runWindow   = document;
     context->focusWindow = document;
 
@@ -518,7 +517,7 @@ void RunMacroAsSubrCall(Program *prog) {
     *StackP++ = to_value();       // cached arg array
 
 	FrameP = StackP;
-	PC = prog->code;
+    PC = prog->code.data();
 
     for(Symbol *s : prog->localSymList) {
         FP_GET_SYM_VAL(FrameP, s) = to_value();
@@ -1562,7 +1561,7 @@ static int callSubroutine() {
 
 		FrameP = StackP;
         Program* prog = to_program(sym->value);
-        PC            = prog->code;
+        PC            = prog->code.data();
 
         for(Symbol *s : prog->localSymList) {
             FP_GET_SYM_VAL(FrameP, s) = to_value();
