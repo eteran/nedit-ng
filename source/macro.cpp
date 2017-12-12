@@ -5348,7 +5348,7 @@ static bool readArgument(const DataValue &dv, int *result, const char **errMsg) 
     }
 
     if(is_string(dv)) {
-        auto s = to_qstring(dv);
+        auto s = QString::fromStdString(to_string(dv));
         bool ok;
         int val = s.toInt(&ok);
         if(!ok) {
@@ -5388,7 +5388,7 @@ static bool readArgument(const DataValue &dv, std::string *result, const char **
 static bool readArgument(const DataValue &dv, QString *result, const char **errMsg) {
 
     if(is_string(dv)) {
-        *result = to_qstring(dv);
+        *result = QString::fromStdString(to_string(dv));
         return true;
     }
 

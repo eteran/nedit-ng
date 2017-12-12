@@ -292,43 +292,30 @@ inline bool is_array(const DataValue &dv) {
 }
 
 inline std::string to_string(const DataValue &dv) {
-    Q_ASSERT(is_string(dv));
     return boost::get<std::string>(dv.value);
 }
 
-inline QString to_qstring(const DataValue &dv) {
-    Q_ASSERT(is_string(dv));
-    auto str = boost::get<std::string>(dv.value);
-    return QString::fromStdString(str);
-}
-
 inline int to_integer(const DataValue &dv) {
-    Q_ASSERT(is_integer(dv));
     return boost::get<int>(dv.value);
 }
 
 inline Program *to_program(const DataValue &dv) {
-    //Q_ASSERT(is_code(dv));
     return boost::get<Program*>(dv.value);
 }
 
 inline BuiltInSubrEx to_subroutine(const DataValue &dv) {
-    //Q_ASSERT(is_subroutine(dv));
     return boost::get<BuiltInSubrEx>(dv.value);
 }
 
 inline DataValue *to_data_value(const DataValue &dv) {
-    //Q_ASSERT(is_data_value(dv));
     return boost::get<DataValue*>(dv.value);
 }
 
 inline Inst *to_instruction(const DataValue &dv) {
-    //Q_ASSERT(is_instruction(dv));
     return boost::get<Inst*>(dv.value);
 }
 
 inline ArrayPtr to_array(const DataValue &dv) {
-    //Q_ASSERT(is_array(dv));
     return boost::get<ArrayPtr>(dv.value);
 }
 
