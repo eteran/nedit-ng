@@ -41,7 +41,7 @@ public:
 
 public:
     BasicTextBuffer();
-    explicit BasicTextBuffer(int requestedSize);
+    explicit BasicTextBuffer(int size);
     BasicTextBuffer(const BasicTextBuffer &)            = delete;
     BasicTextBuffer &operator=(const BasicTextBuffer &) = delete;
     ~BasicTextBuffer() noexcept;

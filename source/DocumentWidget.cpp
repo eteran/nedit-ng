@@ -4710,12 +4710,11 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
 
     static const QRegularExpression trailingNewlines(QLatin1String("\\n+$"));
 
-    bool cancel = false;
-
     /* Present error and stderr-information dialogs.  If a command returned
        error output, or if the process' exit status indicated failure,
        present the information to the user. */
     if (cmdData->flags & ERROR_DIALOGS) {
+        bool cancel = false;
         bool failure = exitStatus != QProcess::NormalExit;
         bool errorReport = !errText.isEmpty();
 
