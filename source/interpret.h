@@ -21,9 +21,6 @@ struct Symbol;
 // Maximum stack size
 constexpr int STACK_SIZE = 1024;
 
-// Max. symbol name length
-constexpr int MAX_SYM_LEN = 100;
-
 // Special value for the send_event field of events passed to action routines.  Tells them that they were called from a macro
 constexpr int MACRO_EVENT_MARKER = 2;
 

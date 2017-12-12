@@ -511,26 +511,26 @@ static int yylex(void)
        the ambiguity, handled in matchesActionRoutine. */
     if (isalpha(static_cast<uint8_t>(*InPtr)) || *InPtr == '$') {
         if ((s=matchesActionRoutine(&InPtr)) == nullptr) {
-            char symName[MAX_SYM_LEN+1], *p = symName;
+
+            std::string symName;
+            auto p = std::back_inserter(symName);
+
             *p++ = *InPtr++;
             while (isalnum(static_cast<uint8_t>(*InPtr)) || *InPtr=='_') {
-                if (p >= symName + MAX_SYM_LEN)
-                    InPtr++;
-                else
-                    *p++ = *InPtr++;
+                *p++ = *InPtr++;
             }
-            *p = '\0';
-            if (!strcmp(symName, "while")) return WHILE;
-            if (!strcmp(symName, "if")) return IF;
-            if (!strcmp(symName, "else")) return ELSE;
-            if (!strcmp(symName, "for")) return FOR;
-            if (!strcmp(symName, "break")) return BREAK;
-            if (!strcmp(symName, "continue")) return CONTINUE;
-            if (!strcmp(symName, "return")) return RETURN;
-            if (!strcmp(symName, "in")) return IN;
-            if (!strcmp(symName, "$args")) return ARG_LOOKUP;
-            if (!strcmp(symName, "delete") && follow_non_whitespace('(', SYMBOL, DELETE) == DELETE) return DELETE;
-            if (!strcmp(symName, "define")) {
+
+            if (symName == "while")    return WHILE;
+            if (symName == "if")       return IF;
+            if (symName == "else")     return ELSE;
+            if (symName == "for")      return FOR;
+            if (symName == "break")    return BREAK;
+            if (symName == "continue") return CONTINUE;
+            if (symName == "return")   return RETURN;
+            if (symName == "in")       return IN;
+            if (symName == "$args")    return ARG_LOOKUP;
+            if (symName == "delete" && follow_non_whitespace('(', SYMBOL, DELETE) == DELETE) return DELETE;
+            if (symName == "define") {
                 InPtr -= 6;
                 return 0;
             }
