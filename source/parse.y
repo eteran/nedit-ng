@@ -9,16 +9,12 @@
 #include <string>
 #include <sys/param.h>
 
-
 /* Macros to add error processing to AddOp and AddSym calls */
 #define ADD_OP(op) if (!AddOp(op, &ErrMsg)) return 1
 #define ADD_SYM(sym) if (!AddSym(sym, &ErrMsg)) return 1
 #define ADD_IMMED(val) if (!AddImmediate(val, &ErrMsg)) return 1
 #define ADD_BR_OFF(to) if (!AddBranchOffset(to, &ErrMsg)) return 1
 #define SET_BR_OFF(from, to) ((from)->value) = ((to)) - ((from))
-
-/* Max. length for a string constant (... there shouldn't be a maximum) */
-#define MAX_STRING_CONST_LEN 5000
 
 static int yyerror(const char *s);
 static int yylex();
@@ -40,6 +36,7 @@ extern Inst **LoopStackPtr;  /*  to fill at the end of a loop */
     Inst *inst;
     int nArgs;
 }
+
 %token <sym> NUMBER STRING SYMBOL
 %token DELETE ARG_LOOKUP
 %token IF WHILE ELSE FOR BREAK CONTINUE RETURN
@@ -556,14 +553,15 @@ static int yylex(void)
        "0000hello". */
 
     if (*InPtr == '\"') {
-        char string[MAX_STRING_CONST_LEN], *p = string;
+
+        std::string string;
+        auto p = std::back_inserter(string);
+
         const char *backslash;
+
         InPtr++;
         while (*InPtr != '\0' && *InPtr != '\"' && *InPtr != '\n') {
-            if (p >= string + MAX_STRING_CONST_LEN) {
-                InPtr++;
-                continue;
-            }
+
             if (*InPtr == '\\') {
                 backslash = InPtr;
                 InPtr++;
@@ -651,7 +649,7 @@ static int yylex(void)
                 *p++= *InPtr++;
             }
         }
-        *p = '\0';
+
         InPtr++;
         yylval.sym = InstallStringConstSymbol(string);
         return STRING;
