@@ -95,7 +95,7 @@ static int errCheck(const char *s);
 
 #if defined(DEBUG_ASSEMBLY) || defined(DEBUG_STACK)
 #define DEBUG_DISASSEMBLER
-static void disasm(Inst *inst, int nInstr);
+static void disasm(Inst *inst, size_t nInstr);
 #endif
 
 #ifdef DEBUG_ASSEMBLY // for disassembly 
@@ -216,7 +216,7 @@ void CleanupMacroGlobals() {
 */
 void BeginCreatingProgram() {
 	LocalSymList.clear();
-	ProgP        = Prog;
+    ProgP        = Prog;
 	LoopStackPtr = LoopStack;
 }
 
@@ -227,16 +227,13 @@ void BeginCreatingProgram() {
 */
 Program *FinishCreatingProgram() {
 
-	int fpOffset = 0;
-
-    auto newProg     = new Program;
-    const auto count = static_cast<size_t>(ProgP - Prog);
-    newProg->code.reserve(count);
-
-    std::copy_n(Prog, count, std::back_inserter(newProg->code));
+    auto newProg = new Program;
+    std::copy(Prog, ProgP, std::back_inserter(newProg->code));
 
     newProg->localSymList = LocalSymList;
     LocalSymList.clear();
+
+    int fpOffset = 0;
 
 	/* Local variables' values are stored on the stack.  Here we assign
 	   frame pointer offsets to them. */
@@ -244,7 +241,7 @@ Program *FinishCreatingProgram() {
         s->value = to_value(fpOffset++);
 	}
 
-    DISASM(newProg->code, count);
+    DISASM(newProg->code.data(), newProg->code.size());
 	return newProg;
 }
 
@@ -261,10 +258,10 @@ void FreeProgram(Program *prog) {
 ** Add an operator (instruction) to the end of the current program
 */
 bool AddOp(int op, const char **msg) {
-	if (ProgP >= &Prog[PROGRAM_SIZE]) {
-		*msg = "macro too large";
+    if (ProgP >= &Prog[PROGRAM_SIZE]) {
+        *msg = "macro too large";
         return false;
-	}
+    }
 
     ProgP++->func = OpFns[op];
     return true;
@@ -2264,7 +2261,7 @@ static void dumpVal(DataValue dv) {
 #endif // #ifdef DEBUG_DISASSEMBLER 
 
 #ifdef DEBUG_DISASSEMBLER // For debugging code generation 
-static void disasm(Inst *inst, int nInstr) {
+static void disasm(Inst *inst, size_t nInstr) {
 	static const char *opNames[N_OPS] = {
 	    "RETURN_NO_VAL",          // returnNoVal 
 	    "RETURN",                 // returnVal 
@@ -2310,10 +2307,10 @@ static void disasm(Inst *inst, int nInstr) {
 	    "PUSH_ARG_COUNT",         // $arg[] 
 	    "PUSH_ARG_ARRAY"          // $arg 
 	};
-	int i, j;
+    int j;
 
 	printf("\n");
-	for (i = 0; i < nInstr; ++i) {
+    for (size_t i = 0; i < nInstr; ++i) {
         printf("Prog %8p ", static_cast<void *>(&inst[i]));
 		for (j = 0; j < N_OPS; ++j) {
 			if (inst[i].func == OpFns[j]) {
@@ -2377,7 +2374,7 @@ static void stackdump(int n, int extra) {
 			break;
 		}
 
-        int offset = dv - FrameP;
+        long offset = dv - FrameP;
 
 		printf("%4.4s", i < n ? ">>>>" : "");
         printf("%8p ", static_cast<void *>(dv));
@@ -2401,7 +2398,7 @@ static void stackdump(int n, int extra) {
 		default:
 			if (offset < -FP_TO_ARGS_DIST && offset >= -FP_TO_ARGS_DIST - nArgs) {
                 pos = buffer;
-                snprintf(buffer, sizeof(buffer), STACK_DUMP_ARG_PREFIX "%d", offset + FP_TO_ARGS_DIST + nArgs + 1);
+                snprintf(buffer, sizeof(buffer), STACK_DUMP_ARG_PREFIX "%ld", offset + FP_TO_ARGS_DIST + nArgs + 1);
 			}
 			break;
         }
