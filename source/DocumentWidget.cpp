@@ -3413,11 +3413,6 @@ void DocumentWidget::executeNewlineMacroEx(SmartIndentEvent *cbInfo) {
 
         --(winData->inNewLineMacro);
 
-        /* Collect Garbage.  Note that the mod macro does not collect garbage,
-           (because collecting per-line is more efficient than per-character)
-           but GC now depends on the newline macro being mandatory */
-        SafeGC();
-
         // Process errors in macro execution
         if (stat == MACRO_PREEMPT || stat == MACRO_ERROR) {
             QMessageBox::critical(
@@ -5351,9 +5346,6 @@ void DocumentWidget::finishMacroCmdExecutionEx() {
     if (closeOnCompletion && !filenameSet_ && !fileChanged_) {
         CloseDocument();
     }
-
-    // If no other macros are executing, do garbage collection
-    SafeGC();
 }
 
 /**

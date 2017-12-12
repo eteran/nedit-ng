@@ -24,7 +24,6 @@ bool readCheckMacroStringEx(QWidget *dialogParent, const QString &string, Docume
 
 void RegisterMacroSubroutines();
 void ReturnShellCommandOutputEx(DocumentWidget *document, const QString &outText, int status);
-void SafeGC();
 
 /* Data attached to window during shell command execution with
    information for controling and communicating with the process */

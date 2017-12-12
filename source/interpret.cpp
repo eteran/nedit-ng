@@ -93,13 +93,6 @@ static int inArray();
 static int deleteArrayElement();
 static int errCheck(const char *s);
 
-static ArrayEntry *allocateSparseArrayEntry();
-static rbTreeNode *arrayEmptyAllocator();
-static rbTreeNode *arrayAllocateNode(rbTreeNode *src);
-static int arrayEntryCopyToNode(rbTreeNode *dst, rbTreeNode *src);
-static int arrayEntryCompare(rbTreeNode *left, rbTreeNode *right);
-static void arrayDisposeNode(rbTreeNode *src);
-
 #if defined(DEBUG_ASSEMBLY) || defined(DEBUG_STACK)
 #define DEBUG_DISASSEMBLER
 static void disasm(Inst *inst, int nInstr);
@@ -122,8 +115,6 @@ static void stackdump(int n, int extra);
 
 // Global symbols and function definitions 
 static std::deque<Symbol *> GlobalSymList;
-
-static std::vector<ArrayEntry *> AllocatedSparseArrayEntries;
 
 // Temporary global data for use while accumulating programs
 static std::deque<Symbol *> LocalSymList;     // symbols local to the program
@@ -275,8 +266,8 @@ bool AddOp(int op, const char **msg) {
 		*msg = "macro too large";
         return false;
 	}
-	ProgP->func = OpFns[op];
-	ProgP++;
+
+    ProgP++->func = OpFns[op];
     return true;
 }
 
@@ -288,8 +279,8 @@ bool AddSym(Symbol *sym, const char **msg) {
 		*msg = "macro too large";
         return false;
 	}
-	ProgP->sym = sym;
-	ProgP++;
+
+    ProgP++->sym = sym;
     return true;
 }
 
@@ -301,8 +292,8 @@ bool AddImmediate(int value, const char **msg) {
 		*msg = "macro too large";
         return false;
 	}
-	ProgP->value = value;
-	ProgP++;
+
+    ProgP++->value = value;
     return true;
 }
 
@@ -320,7 +311,7 @@ bool AddBranchOffset(Inst *to, const char **msg) {
     //               when to is nullptr (why?) it produces values
     //               that won't fit into an int on 64-bit systems
     ProgP->value = static_cast<int>(to - ProgP);
-	ProgP++;
+    ProgP++;
 
     return true;
 }
@@ -590,7 +581,7 @@ Symbol *InstallIteratorSymbol() {
 
     auto symbolName = QString(QLatin1String("aryiter %1")).arg(interatorNameIndex++);
 
-    return InstallSymbolEx(symbolName, LOCAL_SYM, to_value(nullptr, array_iter()));
+    return InstallSymbolEx(symbolName, LOCAL_SYM, to_value(ArrayIterator()));
 }
 
 /*
@@ -713,32 +704,6 @@ Symbol *PromoteToGlobal(Symbol *sym) {
 	GlobalSymList.push_back(sym);
 
 	return sym;
-}
-
-static ArrayEntry *allocateSparseArrayEntry() {
-	auto mem = new ArrayEntry;
-	AllocatedSparseArrayEntries.push_back(mem);
-	return mem;
-}
-
-/*
-** Collect strings that are no longer referenced from the global symbol
-** list.  THIS CAN NOT BE RUN WHILE ANY MACROS ARE EXECUTING.  It must
-** only be run after all macro activity has ceased.
-*/
-
-void GarbageCollectStrings() {
-
-    // clean up the RB tree entries that have been deleted...
-    auto it = AllocatedSparseArrayEntries.begin();
-    while(it != AllocatedSparseArrayEntries.end()) {
-        if((*it)->color < 0) {
-            delete *it;
-            it = AllocatedSparseArrayEntries.erase(it);
-        } else {
-            ++it;
-        }
-    }
 }
 
 /*
@@ -936,7 +901,7 @@ static int pushArgArray() {
 
     if (!is_array(*resultArray)) {
 
-        *resultArray = to_value(array_new());
+        *resultArray = to_value(std::make_shared<Array>());
 
 		for (int argNum = 0; argNum < nArgs; ++argNum) {
 
@@ -980,7 +945,7 @@ static int pushArraySymVal() {
 	}
 
     if (initEmpty && is_unset(*dataPtr)) {
-        *dataPtr = to_value(array_new());
+        *dataPtr = to_value(std::make_shared<Array>());
 	}
 
     if (is_unset(*dataPtr)) {
@@ -1073,37 +1038,40 @@ static int add() {
         PEEK(leftVal, 1);
         if (is_array(leftVal)) {
 
-            DataValue resultArray = to_value(array_new());
+            DataValue resultArray = to_value(std::make_shared<Array>());
 
             POP(rightVal);
             POP(leftVal);
 
-            ArrayEntry *leftIter  = arrayIterateFirst(&leftVal);
-            ArrayEntry *rightIter = arrayIterateFirst(&rightVal);
+            const ArrayPtr &leftMap  = to_array(leftVal);
+            const ArrayPtr &rightMap = to_array(rightVal);
 
-			while (leftIter || rightIter) {
+            auto leftIter = leftMap->begin();
+            auto rightIter = rightMap->begin();
+
+            while (leftIter != leftMap->end() || rightIter != rightMap->end()) {
 
                 bool insertResult = true;
 
-				if (leftIter && rightIter) {
-					int compareResult = arrayEntryCompare(leftIter, rightIter);
+                if (leftIter != leftMap->end() && rightIter != rightMap->end()) {
+                    int compareResult = leftIter->first.compare(rightIter->first);
 					if (compareResult < 0) {
-						insertResult = ArrayInsert(&resultArray, leftIter->key, &leftIter->value);
-						leftIter = arrayIterateNext(leftIter);
+                        insertResult = ArrayInsert(&resultArray, leftIter->first, &leftIter->second);
+                        ++leftIter;
 					} else if (compareResult > 0) {
-						insertResult = ArrayInsert(&resultArray, rightIter->key, &rightIter->value);
-						rightIter = arrayIterateNext(rightIter);
+                        insertResult = ArrayInsert(&resultArray, rightIter->first, &rightIter->second);
+                        ++rightIter;
 					} else {
-						insertResult = ArrayInsert(&resultArray, rightIter->key, &rightIter->value);
-						leftIter = arrayIterateNext(leftIter);
-						rightIter = arrayIterateNext(rightIter);
+                        insertResult = ArrayInsert(&resultArray, rightIter->first, &rightIter->second);
+                        ++leftIter;
+                        ++rightIter;
 					}
-				} else if (leftIter) {
-					insertResult = ArrayInsert(&resultArray, leftIter->key, &leftIter->value);
-					leftIter = arrayIterateNext(leftIter);
+                } else if (leftIter != leftMap->end()) {
+                    insertResult = ArrayInsert(&resultArray, leftIter->first, &leftIter->second);
+                    ++leftIter;
 				} else {
-					insertResult = ArrayInsert(&resultArray, rightIter->key, &rightIter->value);
-					rightIter = arrayIterateNext(rightIter);
+                    insertResult = ArrayInsert(&resultArray, rightIter->first, &rightIter->second);
+                    ++rightIter;
 				}
 				if (!insertResult) {
 					return execError("array insertion failure");
@@ -1144,31 +1112,34 @@ static int subtract() {
         PEEK(leftVal, 1);
         if(is_array(leftVal)) {
 
-            DataValue resultArray = to_value(array_new());
+            DataValue resultArray = to_value(std::make_shared<Array>());
 
             POP(rightVal);
             POP(leftVal);
 
-            ArrayEntry *leftIter = arrayIterateFirst(&leftVal);
-            ArrayEntry *rightIter = arrayIterateFirst(&rightVal);
+            const ArrayPtr &leftMap  = to_array(leftVal);
+            const ArrayPtr &rightMap = to_array(rightVal);
 
-            while (leftIter) {
+            auto leftIter = leftMap->begin();
+            auto rightIter = rightMap->begin();
+
+            while (leftIter != leftMap->end()) {
                 bool insertResult = true;
 
-				if (leftIter && rightIter) {
-					int compareResult = arrayEntryCompare(leftIter, rightIter);
+                if (leftIter != leftMap->end() && rightIter != rightMap->end()) {
+                    int compareResult = leftIter->first.compare(rightIter->first);
 					if (compareResult < 0) {
-						insertResult = ArrayInsert(&resultArray, leftIter->key, &leftIter->value);
-						leftIter = arrayIterateNext(leftIter);
+                        insertResult = ArrayInsert(&resultArray, leftIter->first, &leftIter->second);
+                        ++leftIter;
 					} else if (compareResult > 0) {
-						rightIter = arrayIterateNext(rightIter);
+                        ++rightIter;
 					} else {
-						leftIter = arrayIterateNext(leftIter);
-						rightIter = arrayIterateNext(rightIter);
+                        ++leftIter;
+                        ++rightIter;
 					}
-				} else if (leftIter) {
-					insertResult = ArrayInsert(&resultArray, leftIter->key, &leftIter->value);
-					leftIter = arrayIterateNext(leftIter);
+                } else if (leftIter != leftMap->end()) {
+                    insertResult = ArrayInsert(&resultArray, leftIter->first, &leftIter->second);
+                    ++leftIter;
 				}
 				if (!insertResult) {
 					return execError("array insertion failure");
@@ -1333,26 +1304,29 @@ static int bitAnd() {
         PEEK(leftVal, 1);
         if(is_array(leftVal)) {
 
-            DataValue resultArray = to_value(array_new());
+            DataValue resultArray = to_value(std::make_shared<Array>());
 
             POP(rightVal);
             POP(leftVal);
 
-            ArrayEntry *leftIter  = arrayIterateFirst(&leftVal);
-            ArrayEntry *rightIter = arrayIterateFirst(&rightVal);
+            const ArrayPtr &leftMap  = to_array(leftVal);
+            const ArrayPtr &rightMap = to_array(rightVal);
 
-			while (leftIter && rightIter) {
+            auto leftIter  = leftMap->begin();
+            auto rightIter = rightMap->begin();
+
+            while (leftIter != leftMap->end() && rightIter != rightMap->end()) {
                 bool insertResult = true;
-				int compareResult = arrayEntryCompare(leftIter, rightIter);
+                int compareResult = leftIter->first.compare(rightIter->first);
 
 				if (compareResult < 0) {
-					leftIter = arrayIterateNext(leftIter);
+                    ++leftIter;
 				} else if (compareResult > 0) {
-					rightIter = arrayIterateNext(rightIter);
+                    ++rightIter;
 				} else {
-					insertResult = ArrayInsert(&resultArray, rightIter->key, &rightIter->value);
-					leftIter = arrayIterateNext(leftIter);
-					rightIter = arrayIterateNext(rightIter);
+                    insertResult = ArrayInsert(&resultArray, rightIter->first, &rightIter->second);
+                    ++leftIter;
+                    ++rightIter;
 				}
 				if (!insertResult) {
 					return execError("array insertion failure");
@@ -1393,35 +1367,38 @@ static int bitOr() {
         PEEK(leftVal, 1);
         if(is_array(leftVal)) {
 
-            DataValue resultArray = to_value(array_new());
+            DataValue resultArray = to_value(std::make_shared<Array>());
 
             POP(rightVal);
             POP(leftVal);
 
-            ArrayEntry *leftIter  = arrayIterateFirst(&leftVal);
-            ArrayEntry *rightIter = arrayIterateFirst(&rightVal);
+            const ArrayPtr &leftMap  = to_array(leftVal);
+            const ArrayPtr &rightMap = to_array(rightVal);
 
-			while (leftIter || rightIter) {
+            auto leftIter  = leftMap->begin();
+            auto rightIter = rightMap->begin();
+
+            while (leftIter != leftMap->end() || rightIter != rightMap->end()) {
                 bool insertResult = true;
 
-				if (leftIter && rightIter) {
-					int compareResult = arrayEntryCompare(leftIter, rightIter);
+                if (leftIter != leftMap->end() && rightIter != rightMap->end()) {
+                    int compareResult = leftIter->first.compare(rightIter->first);
 					if (compareResult < 0) {
-						insertResult = ArrayInsert(&resultArray, leftIter->key, &leftIter->value);
-						leftIter = arrayIterateNext(leftIter);
+                        insertResult = ArrayInsert(&resultArray, leftIter->first, &leftIter->second);
+                        ++leftIter;
 					} else if (compareResult > 0) {
-						insertResult = ArrayInsert(&resultArray, rightIter->key, &rightIter->value);
-						rightIter = arrayIterateNext(rightIter);
+                        insertResult = ArrayInsert(&resultArray, rightIter->first, &rightIter->second);
+                        ++rightIter;
 					} else {
-						leftIter = arrayIterateNext(leftIter);
-						rightIter = arrayIterateNext(rightIter);
+                        ++leftIter;
+                        ++rightIter;
 					}
-				} else if (leftIter) {
-					insertResult = ArrayInsert(&resultArray, leftIter->key, &leftIter->value);
-					leftIter = arrayIterateNext(leftIter);
+                } else if (leftIter != leftMap->end()) {
+                    insertResult = ArrayInsert(&resultArray, leftIter->first, &leftIter->second);
+                    ++leftIter;
 				} else {
-					insertResult = ArrayInsert(&resultArray, rightIter->key, &rightIter->value);
-					rightIter = arrayIterateNext(rightIter);
+                    insertResult = ArrayInsert(&resultArray, rightIter->first, &rightIter->second);
+                    ++rightIter;
 				}
 				if (!insertResult) {
 					return execError("array insertion failure");
@@ -1741,30 +1718,7 @@ static int branchNever() {
 ** modified, only replaced
 */
 int ArrayCopy(DataValue *dstArray, DataValue *srcArray) {
-
-    *dstArray = to_value(array_new());
-
-    ArrayEntry *srcIter = arrayIterateFirst(srcArray);
-
-    while (srcIter) {
-        if (is_array(srcIter->value)) {
-            int errNum;
-            DataValue tmpArray;
-
-            errNum = ArrayCopy(&tmpArray, &srcIter->value);
-            if (errNum != STAT_OK) {
-                return errNum;
-            }
-            if (!ArrayInsert(dstArray, srcIter->key, &tmpArray)) {
-                return execError("array copy failed");
-            }
-        } else {
-            if (!ArrayInsert(dstArray, srcIter->key, &srcIter->value)) {
-                return execError("array copy failed");
-            }
-        }
-        srcIter = arrayIterateNext(srcIter);
-    }
+    *dstArray = *srcArray;
 	return STAT_OK;
 }
 
@@ -1808,102 +1762,31 @@ static int makeArrayKeyFromArgs(int nArgs, std::string *keyString, int leavePara
 }
 
 /*
-** allocate an empty array node, this is used as the root node and never
-** contains any data, only refernces to other nodes
-*/
-static rbTreeNode *arrayEmptyAllocator() {
-	ArrayEntry *newNode = allocateSparseArrayEntry();
-	if (newNode) {
-        newNode->key   = std::string();
-        newNode->value = to_value();
-	}
-	return newNode;
-}
-
-/*
-** create and copy array node and copy contents, we merely copy pointers
-** since they are never modified, only replaced
-*/
-static rbTreeNode *arrayAllocateNode(rbTreeNode *src) {
-	ArrayEntry *newNode = allocateSparseArrayEntry();
-	if (newNode) {
-		newNode->key   = static_cast<ArrayEntry *>(src)->key;
-		newNode->value = static_cast<ArrayEntry *>(src)->value;
-	}
-	return newNode;
-}
-
-/*
-** copy array node data, we merely copy pointers since they are never
-** modified, only replaced
-*/
-static int arrayEntryCopyToNode(rbTreeNode *dst, rbTreeNode *src) {
-	static_cast<ArrayEntry *>(dst)->key   = static_cast<ArrayEntry *>(src)->key;
-	static_cast<ArrayEntry *>(dst)->value = static_cast<ArrayEntry *>(src)->value;
-	return 1;
-}
-
-/*
-** compare two array nodes returning an integer value similar to strcmp()
-*/
-static int arrayEntryCompare(rbTreeNode *left, rbTreeNode *right) {
-    auto lkey = static_cast<ArrayEntry *>(left)->key;
-    auto rkey = static_cast<ArrayEntry *>(right)->key;
-    return lkey.compare(rkey);
-}
-
-/*
-** dispose an array node, garbage collection handles this, so we mark it
-** to allow iterators in macro language to determine they have been unlinked
-*/
-static void arrayDisposeNode(rbTreeNode *src) {
-	// Let garbage collection handle this but mark it so iterators can tell 
-	src->left   = nullptr;
-	src->right  = nullptr;
-	src->parent = nullptr;
-    src->color  = -1;
-}
-
-ArrayEntry *ArrayNew() {
-	return static_cast<ArrayEntry *>(rbTreeNew(arrayEmptyAllocator));
-}
-
-/*
 ** insert a DataValue into an array, allocate the array if needed
 ** keyStr must be a string that was allocated with AllocString()
 */
 bool ArrayInsert(DataValue *theArray, const std::string &keyStr, DataValue *theValue) {
-    ArrayEntry tmpEntry;
 
-    tmpEntry.key   = keyStr;
-    tmpEntry.value = *theValue;
-
-    if (!to_array(*theArray)) {
-        *theArray = to_value(array_new());
+    const ArrayPtr &m = to_array(*theArray);
+    auto p = m->insert(std::make_pair(keyStr, *theValue));
+    if(p.second) {
+        return true;
     }
 
-    if (auto arr = to_array(*theArray)) {
-        rbTreeNode *insertedNode = rbTreeInsert(arr, &tmpEntry, arrayEntryCompare, arrayAllocateNode, arrayEntryCopyToNode);
-
-        if (insertedNode) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    return false;
+    p.first->second = *theValue;
+    return true;
 }
 
 /*
 ** remove a node from an array whose key matches keyStr
 */
 void ArrayDelete(DataValue *theArray, const std::string &keyStr) {
-    ArrayEntry searchEntry;
 
-    if (auto arr = to_array(*theArray)) {
-        searchEntry.key = keyStr;
-        rbTreeDelete(arr, &searchEntry, arrayEntryCompare, arrayDisposeNode);
+    const ArrayPtr &m = to_array(*theArray);
+
+    auto it = m->find(keyStr);
+    if(it != m->end()) {
+        m->erase(it);
     }
 }
 
@@ -1911,26 +1794,17 @@ void ArrayDelete(DataValue *theArray, const std::string &keyStr) {
 ** remove all nodes from an array
 */
 void ArrayDeleteAll(DataValue *theArray) {
-    if (auto arr = to_array(*theArray)) {
-        rbTreeNode *iter = rbTreeBegin(arr);
-        while (iter) {
-            rbTreeNode *nextIter = rbTreeNext(iter);
-            rbTreeDeleteNode(arr, iter, arrayDisposeNode);
 
-            iter = nextIter;
-        }
-    }
+    const ArrayPtr &m = to_array(*theArray);
+    m->clear();
 }
 
 /*
 ** returns the number of elements (nodes containing values) of an array
 */
 int ArraySize(DataValue *theArray) {
-    if (auto arr = to_array(*theArray)) {
-        return rbTreeSize(arr);
-    } else {
-        return 0;
-    }
+    const ArrayPtr &m = to_array(*theArray);
+    return gsl::narrow<int>(m->size());
 }
 
 /*
@@ -1939,14 +1813,11 @@ int ArraySize(DataValue *theArray) {
 */
 bool ArrayGet(DataValue *theArray, const std::string &keyStr, DataValue *theValue) {
 
-    if (auto arr = to_array(*theArray)) {
-        ArrayEntry searchEntry;
-        searchEntry.key = keyStr;
-        rbTreeNode *foundNode = rbTreeFind(arr, &searchEntry, arrayEntryCompare);
-        if (foundNode) {
-            *theValue = static_cast<ArrayEntry *>(foundNode)->value;
-            return true;
-        }
+    const ArrayPtr &m = to_array(*theArray);
+    auto it = m->find(keyStr);
+    if(it != m->end()) {
+        *theValue = it->second;
+        return true;
     }
 
     return false;
@@ -1955,27 +1826,22 @@ bool ArrayGet(DataValue *theArray, const std::string &keyStr, DataValue *theValu
 /*
 ** get pointer to start iterating an array
 */
-ArrayEntry *arrayIterateFirst(DataValue *theArray) {
-    ArrayEntry *startPos;
-    if (auto arr = to_array(*theArray)) {
-        startPos = static_cast<ArrayEntry *>(rbTreeBegin(arr));
-    } else {
-        startPos = nullptr;
-    }
-    return startPos;
+ArrayIterator arrayIterateFirst(DataValue *theArray) {
+
+    const ArrayPtr &m = to_array(*theArray);
+    ArrayIterator it { m, m->begin() };
+
+    return it;
 }
 
 /*
 ** move iterator to next entry in array
 */
-ArrayEntry *arrayIterateNext(ArrayEntry *iterator) {
-    ArrayEntry *nextPos;
-    if (iterator) {
-        nextPos = static_cast<ArrayEntry *>(rbTreeNext(iterator));
-    } else {
-        nextPos = nullptr;
-    }
-    return nextPos;
+ArrayIterator arrayIterateNext(ArrayIterator iterator) {
+
+    Q_ASSERT(iterator.it != iterator.m->end());
+    ++(iterator.it);
+    return iterator;
 }
 
 /*
@@ -2036,9 +1902,8 @@ static int arrayAssign() {
     std::string keyString;
 	DataValue srcValue;
 	DataValue dstArray;
-	int nDim;
 
-    nDim = PC++->value;
+    int nDim = PC++->value;
 
 	DISASM_RT(PC - 2, 1);
 	STACKDUMP(nDim, 3);
@@ -2091,10 +1956,8 @@ static int arrayRefAndAssignSetup() {
 	DataValue moveExpr;
     std::string keyString;
 
-	int binaryOp = PC->value;
-	PC++;
-	int nDim = PC->value;
-	PC++;
+    int binaryOp = PC++->value;
+    int nDim     = PC++->value;
 
 	DISASM_RT(PC - 3, 3);
 	STACKDUMP(nDim + 1, 3);
@@ -2160,7 +2023,7 @@ static int beginArrayIter() {
 		return execError("can't iterate non-array");
 	}
 
-    *iteratorValPtr = to_value(arrayIterateFirst(&arrayVal), array_iter());
+    *iteratorValPtr = to_value(arrayIterateFirst(&arrayVal));
 	return STAT_OK;
 }
 
@@ -2218,10 +2081,9 @@ static int arrayIter() {
 
     ArrayIterator thisEntry = to_iterator(*iteratorValPtr);
 
-    if (thisEntry.ptr && thisEntry.ptr->color != -1) {
-
-        *itemValPtr     = to_value(thisEntry.ptr->key);
-        *iteratorValPtr = to_value(arrayIterateNext(thisEntry.ptr), array_iter());
+    if (thisEntry.it != thisEntry.m->end()) {
+        *itemValPtr     = to_value(thisEntry.it->first);
+        *iteratorValPtr = to_value(arrayIterateNext(thisEntry));
 	} else {
 		PC = branchAddr;
 	}
@@ -2259,12 +2121,16 @@ static int inArray() {
     PEEK(leftArray, 0);
     if (is_array(leftArray)) {
 
+        // NOTE(eteran): this is approximately std::set_intersection...
         POP(leftArray);
+
+        const ArrayPtr &m = to_array(leftArray);
+
 		inResult = 1;
-		ArrayEntry *iter = arrayIterateFirst(&leftArray);
-		while (inResult && iter) {
-			inResult = inResult && ArrayGet(&theArray, iter->key, &theValue);
-			iter = arrayIterateNext(iter);
+        Array::iterator iter = m->begin();
+        while (inResult && iter != m->end()) {
+            inResult = inResult && ArrayGet(&theArray, iter->first, &theValue);
+            ++iter;
 		}
 	} else {
         std::string keyStr;

@@ -2,7 +2,6 @@
 #ifndef INTERPRET_H_
 #define INTERPRET_H_
 
-#include "rbTree/rbTree.h"
 #include "util/string_view.h"
 
 #include <gsl/span>
@@ -16,7 +15,6 @@
 
 class DocumentWidget;
 class Program;
-struct ArrayEntry;
 struct DataValue;
 struct Symbol;
 
@@ -104,8 +102,15 @@ union Inst {
 using Arguments     = gsl::span<DataValue>;
 using BuiltInSubrEx = bool (*)(DocumentWidget *document, Arguments arguments, struct DataValue *result, const char **errMsg);
 
+using Array    = std::map<std::string, DataValue>;
+using ArrayPtr = std::shared_ptr<Array>;
+
+// NOTE(eteran): we use a kind of "fat iterator", because the arrayIter function
+// needs to know if the iterator is at the end of the map. This requirement
+// means that we need a reference to the map to compare against
 struct ArrayIterator {
-    ArrayEntry* ptr;
+    ArrayPtr        m;
+    Array::iterator it;
 };
 
 struct DataValue {
@@ -113,7 +118,7 @@ struct DataValue {
         boost::blank,
         int,
         std::string,
-        ArrayEntry*,
+        ArrayPtr,
         ArrayIterator,
         BuiltInSubrEx,
         Program*,
@@ -124,10 +129,6 @@ struct DataValue {
 
 
 //------------------------------------------------------------------------------
-struct ArrayEntry : public rbTreeNode {
-    std::string key;
-    DataValue   value;
-};
 
 /* symbol table entry */
 struct Symbol {
@@ -160,9 +161,8 @@ public:
 void InitMacroGlobals();
 void CleanupMacroGlobals();
 
-ArrayEntry *arrayIterateFirst(DataValue *theArray);
-ArrayEntry *arrayIterateNext(ArrayEntry *iterator);
-ArrayEntry *ArrayNew();
+ArrayIterator arrayIterateFirst(DataValue *theArray);
+ArrayIterator arrayIterateNext(ArrayIterator iterator);
 bool ArrayInsert(DataValue *theArray, const std::string &keyStr, DataValue *theValue);
 void ArrayDelete(DataValue *theArray, const std::string &keyStr);
 void ArrayDeleteAll(DataValue *theArray);
@@ -198,7 +198,6 @@ int ContinueMacroEx(const std::shared_ptr<RestartData> &continuation, DataValue 
 void RunMacroAsSubrCall(Program *prog);
 void PreemptMacro();
 
-void GarbageCollectStrings();
 Symbol *PromoteToGlobal(Symbol *sym);
 void FreeProgram(Program *prog);
 void ModifyReturnedValueEx(const std::shared_ptr<RestartData> &context, const DataValue &dv);
@@ -211,26 +210,15 @@ bool StringToNum(const std::string &string, int *number);
 bool StringToNum(view::string_view string, int *number);
 bool StringToNum(const QString &string, int *number);
 
-
-struct array_empty {};
-struct array_new   {};
-struct array_iter   {};
-
-inline DataValue to_value(const array_empty &) {
+inline DataValue to_value(const ArrayPtr &map) {
     DataValue DV;
-    DV.value = static_cast<ArrayEntry*>(nullptr);
+    DV.value = map;
     return DV;
 }
 
-inline DataValue to_value(const array_new &) {
+inline DataValue to_value(const ArrayIterator &iter) {
     DataValue DV;
-    DV.value = ArrayNew();
-    return DV;
-}
-
-inline DataValue to_value(ArrayEntry *iter, const array_iter &) {
-    DataValue DV;
-    DV.value = ArrayIterator{iter};
+    DV.value = iter;
     return DV;
 }
 
@@ -339,9 +327,9 @@ inline Inst *to_instruction(const DataValue &dv) {
     return boost::get<Inst*>(dv.value);
 }
 
-inline ArrayEntry *to_array(const DataValue &dv) {
+inline ArrayPtr to_array(const DataValue &dv) {
     //Q_ASSERT(is_array(dv));
-    return boost::get<ArrayEntry*>(dv.value);
+    return boost::get<ArrayPtr>(dv.value);
 }
 
 inline ArrayIterator to_iterator(const DataValue &dv) {

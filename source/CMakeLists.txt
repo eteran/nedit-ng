@@ -286,7 +286,6 @@ target_link_libraries(nedit-ng LINK_PUBLIC
 	NUtil
 	Regex
 	Settings
-	rbTree
 	Qt5::Widgets
 	Qt5::Network
 	Qt5::Xml

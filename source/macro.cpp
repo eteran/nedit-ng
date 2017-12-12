@@ -2206,24 +2206,6 @@ bool readCheckMacroStringEx(QWidget *dialogParent, const QString &string, Docume
 }
 
 /*
-** Do garbage collection of strings if there are no macros currently
-** executing.  NEdit's macro language GC strategy is to call this routine
-** whenever a macro completes.  If other macros are still running (preempted
-** or waiting for a shell command or dialog), this does nothing and therefore
-** defers GC to the completion of the last macro out.
-*/
-void SafeGC() {
-
-    for(DocumentWidget *document : DocumentWidget::allDocuments()) {
-        if (document->macroCmdData_ || document->InSmartIndentMacrosEx()) {
-            return;
-        }
-    }
-
-    GarbageCollectStrings();
-}
-
-/*
 ** Built-in macro subroutine for getting the length of a string
 */
 static bool lengthMS(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg) {
@@ -3745,7 +3727,7 @@ static bool splitMS(DocumentWidget *document, Arguments arguments, DataValue *re
         searchType = SearchType::Literal;
     }
 
-    *result = to_value(array_new());
+    *result = to_value(std::make_shared<Array>());
 
     int beginPos  = 0;
     int lastEnd   = 0;
@@ -4274,7 +4256,7 @@ static bool emptyArrayMV(DocumentWidget *document, Arguments arguments, DataValu
     Q_UNUSED(arguments);
     Q_UNUSED(errMsg);
 
-    *result = to_value(array_empty());
+    *result = to_value(ArrayPtr());
     return true;
 }
 
@@ -4353,7 +4335,7 @@ static bool rangesetListMV(DocumentWidget *document, Arguments arguments, DataVa
     const std::shared_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
     DataValue element;
 
-    *result = to_value(array_new());
+    *result = to_value(std::make_shared<Array>());
 
     if(!rangesetTable) {
         return true;
@@ -4423,7 +4405,7 @@ static bool rangesetCreateMS(DocumentWidget *document, Arguments arguments, Data
         if (!readArgument(arguments[0], &nRangesetsRequired, errMsg))
             return false;
 
-        *result = to_value(array_new());
+        *result = to_value(std::make_shared<Array>());
 
         if (nRangesetsRequired > rangesetTable->nRangesetsAvailable())
             return true;
@@ -4511,7 +4493,7 @@ static bool rangesetGetByNameMS(DocumentWidget *document, Arguments arguments, D
         M_FAILURE(Param1NotAString);
     }
 
-    *result = to_value(array_new());
+    *result = to_value(std::make_shared<Array>());
 
     if(!rangesetTable) {
         return true;
@@ -4788,7 +4770,7 @@ static bool rangesetInfoMS(DocumentWidget *document, Arguments arguments, DataVa
     }
 
     // set up result
-    *result = to_value(array_new());
+    *result = to_value(std::make_shared<Array>());
 
     element = to_value(defined);
     if (!ArrayInsert(result, "defined", &element))
@@ -4859,7 +4841,7 @@ static bool rangesetRangeMS(DocumentWidget *document, Arguments arguments, DataV
         }
     }
 
-    *result = to_value(array_new());
+    *result = to_value(std::make_shared<Array>());
 
     if (!ok)
         return true;
@@ -5074,7 +5056,7 @@ static bool rangesetSetModeMS(DocumentWidget *document, Arguments arguments, Dat
 static bool fillStyleResultEx(DataValue *result, const char **errMsg, DocumentWidget *document, const QString &styleName, bool includeName, size_t patCode, int bufferPos) {
     DataValue DV;
 
-    *result = to_value(array_new());
+    *result = to_value(std::make_shared<Array>());
 
     if (includeName) {
 
@@ -5160,7 +5142,7 @@ static bool getStyleByNameMS(DocumentWidget *document, Arguments arguments, Data
         M_FAILURE(Param1NotAString);
     }
 
-    *result = to_value(array_empty());
+    *result = to_value(ArrayPtr());
 
     if (!NamedStyleExists(styleName)) {
         // if the given name is invalid we just return an empty array.
@@ -5199,7 +5181,7 @@ static bool getStyleAtPosMS(DocumentWidget *document, Arguments arguments, DataV
         return false;
     }
 
-    *result = to_value(array_empty());
+    *result = to_value(ArrayPtr());
 
     //  Verify sane buffer position
     if ((bufferPos < 0) || (bufferPos >= buf->BufGetLength())) {
@@ -5241,7 +5223,7 @@ bool fillPatternResultEx(DataValue *result, const char **errMsg, DocumentWidget 
 
     DataValue DV;
 
-    *result = to_value(array_new());
+    *result = to_value(std::make_shared<Array>());
 
     // the following array entries will be strings
 
@@ -5282,7 +5264,7 @@ static bool getPatternByNameMS(DocumentWidget *document, Arguments arguments, Da
 
     QString patternName;
 
-    *result = to_value(array_empty());
+    *result = to_value(ArrayPtr());
 
     // Validate number of arguments
     if(!readArguments(arguments, 0, errMsg, &patternName)) {
@@ -5317,7 +5299,7 @@ static bool getPatternAtPosMS(DocumentWidget *document, Arguments arguments, Dat
     int bufferPos;
     TextBuffer *buffer = document->buffer_;
 
-    *result = to_value(array_empty());
+    *result = to_value(ArrayPtr());
 
     // Validate number of arguments
     if(!readArguments(arguments, 0, errMsg, &bufferPos)) {
