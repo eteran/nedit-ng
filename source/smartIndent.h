@@ -6,8 +6,8 @@
 #include <QPointer>
 
 class SmartIndentEntry;
-class Program;
 class DialogSmartIndent;
+struct Program;
 
 class QString;
 class QByteArray;
@@ -30,10 +30,10 @@ extern std::vector<SmartIndentEntry> SmartIndentSpecs;
 extern QPointer<DialogSmartIndent> SmartIndentDlg;
 
 struct SmartIndentData {
-    Program *newlineMacro;
-    int      inNewLineMacro;
-    Program *modMacro;
-    int      inModMacro;
+    Program *newlineMacro = nullptr;
+    Program *modMacro     = nullptr;
+    int inNewLineMacro    = 0;
+    int inModMacro        = 0;
 };
 
 #endif 

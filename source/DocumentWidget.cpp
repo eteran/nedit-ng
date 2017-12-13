@@ -3403,7 +3403,7 @@ void DocumentWidget::executeNewlineMacroEx(SmartIndentEvent *cbInfo) {
 
         ++(winData->inNewLineMacro);
 
-        std::shared_ptr<RestartData> continuation;
+        std::shared_ptr<MacroContext> continuation;
         int stat = ExecuteMacroEx(this, winData->newlineMacro, args, &result, continuation, &errMsg);
 
         // Don't allow preemption or time limit.  Must get return value
@@ -3486,7 +3486,7 @@ void DocumentWidget::executeModMacroEx(SmartIndentEvent *cbInfo) {
 
         ++(winData->inModMacro);
 
-        std::shared_ptr<RestartData> continuation;
+        std::shared_ptr<MacroContext> continuation;
         int stat = ExecuteMacroEx(this, winData->modMacro, args, &result, continuation, &errMsg);
 
         while (stat == MACRO_TIME_LIMIT) {
@@ -4126,9 +4126,8 @@ void DocumentWidget::BeginSmartIndentEx(int warn) {
     // Compile the newline and modify macros and attach them to the window
     int stoppedAt;
     QString errMsg;
+
     auto winData = std::make_unique<SmartIndentData>();
-    winData->inNewLineMacro = false;
-    winData->inModMacro     = false;
     winData->newlineMacro   = ParseMacroEx(indentMacros->newlineMacro, &errMsg, &stoppedAt);
 
     if (!winData->newlineMacro) {
@@ -4139,7 +4138,6 @@ void DocumentWidget::BeginSmartIndentEx(int warn) {
     if (indentMacros->modMacro.isNull()) {
         winData->modMacro = nullptr;
     } else {
-
         winData->modMacro = ParseMacroEx(indentMacros->modMacro, &errMsg, &stoppedAt);
         if (!winData->modMacro) {
 
@@ -6534,11 +6532,13 @@ int DocumentWidget::MacroWindowCloseActionsEx() {
        their focus back to the window from which they were originally run */
     if(!cmdData) {
         for(DocumentWidget *document : DocumentWidget::allDocuments()) {
+
             const std::shared_ptr<MacroCommandData> &mcd = document->macroCmdData_;
+
             if (document == MacroRunDocumentEx() && MacroFocusDocument() == this) {
                 SetMacroFocusDocument(MacroRunDocumentEx());
-            } else if (mcd && mcd->context->focusWindow == this) {
-                mcd->context->focusWindow = mcd->context->runWindow;
+            } else if (mcd && mcd->context->FocusDocument == this) {
+                mcd->context->FocusDocument = mcd->context->RunDocument;
             }
         }
 

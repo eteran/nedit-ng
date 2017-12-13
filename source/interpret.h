@@ -15,8 +15,8 @@
 #include <QString>
 
 class DocumentWidget;
-class Program;
 struct DataValue;
+struct Program;
 struct Symbol;
 
 // Maximum stack size
@@ -135,25 +135,19 @@ struct Symbol {
 	DataValue   value;
 };
 
-class Program {
-public:
+struct Program {
     std::deque<Symbol *> localSymList;
     std::vector<Inst>    code;
 };
 
 /* Information needed to re-start a preempted macro */
-struct RestartData {
-public:
-    ~RestartData() {
-        delete [] stack;
-    }
-public:
-    DataValue *stack            = nullptr;
-    DataValue *stackP           = nullptr;
-    DataValue *frameP           = nullptr;
-    Inst *pc                    = nullptr;
-    DocumentWidget *runWindow   = nullptr;
-    DocumentWidget *focusWindow = nullptr;
+struct MacroContext {
+    DataValue Stack[STACK_SIZE];             // the stack
+    DataValue *StackP             = nullptr; // next free spot on stack
+    DataValue *FrameP             = nullptr; // frame pointer (start of local variables for the current subroutine invocation)
+    Inst *PC                      = nullptr; // program counter during execution
+    DocumentWidget *RunDocument   = nullptr; // document from which macro was run
+    DocumentWidget *FocusDocument = nullptr; // document on which macro commands operate
 };
 
 void InitMacroGlobals();
@@ -191,14 +185,14 @@ void StartLoopAddrList();
 void SwapCode(Inst *start, Inst *boundary, Inst *end);
 
 /* Routines for executing programs */
-int ExecuteMacroEx(DocumentWidget *document, Program *prog, gsl::span<DataValue> arguments, DataValue *result, std::shared_ptr<RestartData> &continuation, QString *msg);
-int ContinueMacroEx(const std::shared_ptr<RestartData> &continuation, DataValue *result, QString *msg);
+int ExecuteMacroEx(DocumentWidget *document, Program *prog, gsl::span<DataValue> arguments, DataValue *result, std::shared_ptr<MacroContext> &continuation, QString *msg);
+int ContinueMacroEx(std::shared_ptr<MacroContext> &continuation, DataValue *result, QString *msg);
 void RunMacroAsSubrCall(Program *prog);
 void PreemptMacro();
 
 Symbol *PromoteToGlobal(Symbol *sym);
 void FreeProgram(Program *prog);
-void ModifyReturnedValueEx(const std::shared_ptr<RestartData> &context, const DataValue &dv);
+void ModifyReturnedValueEx(const std::shared_ptr<MacroContext> &context, const DataValue &dv);
 DocumentWidget *MacroRunDocumentEx();
 DocumentWidget *MacroFocusDocument();
 void SetMacroFocusDocument(DocumentWidget *document);

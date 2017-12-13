@@ -30,7 +30,6 @@ class HighlightData;
 class HighlightPattern;
 class MainWindow;
 class PatternSet;
-class Program;
 class RangesetTable;
 class Regex;
 class Style;
@@ -40,9 +39,11 @@ class UndoInfo;
 class WindowHighlightData;
 struct DragEndEvent;
 struct MacroCommandData;
+struct Program;
 struct ShellCommandData;
 struct SmartIndentData;
 struct SmartIndentEvent;
+
 
 class QFrame;
 class QLabel;
