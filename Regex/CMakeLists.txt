@@ -30,16 +30,4 @@ target_link_libraries(Regex LINK_PUBLIC
 set_property(TARGET Regex PROPERTY CXX_STANDARD 14)
 set_property(TARGET Regex PROPERTY CXX_EXTENSIONS OFF)
 
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-	set_target_properties(Regex 
-		PROPERTIES 
-		COMPILE_FLAGS "-W -Wall -pedantic -Wunused -ggdb3")
-else()
-	set_target_properties(Regex
-		PROPERTIES 
-		COMPILE_FLAGS "-W -Wall -pedantic -Wunused")
-endif()
-
-
-
 

@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.0)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-find_package(Qt5 5.4.0 REQUIRED Widgets Network)
+find_package(Qt5 5.4.0 REQUIRED Core Network)
 
 add_library (NUtil 
 	ClearCase.cpp
@@ -26,22 +26,11 @@ target_include_directories (NUtil PUBLIC
 )
 
 target_link_libraries(NUtil LINK_PUBLIC
-	Qt5::Widgets
+	Qt5::Core
 	Qt5::Network
 )
 
 set_property(TARGET NUtil PROPERTY CXX_STANDARD 14)
 set_property(TARGET NUtil PROPERTY CXX_EXTENSIONS OFF)
-
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-	set_target_properties(NUtil 
-		PROPERTIES 
-		COMPILE_FLAGS "-W -Wall -pedantic -Wunused -ggdb3")
-else()
-	set_target_properties(NUtil
-		PROPERTIES 
-		COMPILE_FLAGS "-W -Wall -pedantic -Wunused")
-endif()
-
 
 

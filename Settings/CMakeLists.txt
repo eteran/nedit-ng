@@ -35,16 +35,4 @@ target_link_libraries(Settings LINK_PUBLIC
 set_property(TARGET Settings PROPERTY CXX_STANDARD 14)
 set_property(TARGET Settings PROPERTY CXX_EXTENSIONS OFF)
 
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-	set_target_properties(Settings 
-		PROPERTIES 
-		COMPILE_FLAGS "-W -Wall -pedantic -Wunused -ggdb3")
-else()
-	set_target_properties(Settings
-		PROPERTIES 
-		COMPILE_FLAGS "-W -Wall -pedantic -Wunused")
-endif()
-
-
-
 

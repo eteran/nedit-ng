@@ -294,16 +294,6 @@ target_link_libraries(nedit-ng LINK_PUBLIC
 set_property(TARGET nedit-ng PROPERTY CXX_EXTENSIONS OFF)
 set_property(TARGET nedit-ng PROPERTY CXX_STANDARD 14)
 
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-	set_target_properties(nedit-ng 
-		PROPERTIES 
-		COMPILE_FLAGS "-W -Wall -pedantic -Wunused -ggdb3")
-else()
-	set_target_properties(nedit-ng
-		PROPERTIES 
-		COMPILE_FLAGS "-W -Wall -pedantic -Wunused")
-endif()
-
 set_target_properties(nedit-ng
 	PROPERTIES
 	RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
