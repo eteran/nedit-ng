@@ -26,6 +26,7 @@ static Symbol *matchesActionRoutine(const char **inPtr);
 
 static const char *ErrMsg;
 static const char *InPtr;
+static const char *EndPtr;
 extern Inst *LoopStack[]; /* addresses of break, cont stmts */
 extern Inst **LoopStackPtr;  /*  to fill at the end of a loop */
 
@@ -429,7 +430,7 @@ blank:  /* nothing */
 ** as a pointer to a static string in msg, and the length of the string up
 ** to where parsing failed in stoppedAt.
 */
-Program *ParseMacro(const char *expr, const char **msg, const char **stoppedAt)
+Program *ParseMacro(const std::string &expr, std::string *msg, int *stoppedAt)
 {
     Program *prog;
 
@@ -438,10 +439,13 @@ Program *ParseMacro(const char *expr, const char **msg, const char **stoppedAt)
     /* call yyparse to parse the string and check for success.  If the parse
        failed, return the error message and string index (the grammar aborts
        parsing at the first error) */
-    InPtr = expr;
+    const char *start = expr.data();
+    InPtr  = start;
+    EndPtr = start + expr.size();
+
     if (yyparse()) {
-        *msg = ErrMsg;
-        *stoppedAt = InPtr;
+        *msg       = ErrMsg;
+        *stoppedAt = (InPtr - start);
         FreeProgram(FinishCreatingProgram());
         return nullptr;
     }
@@ -450,8 +454,8 @@ Program *ParseMacro(const char *expr, const char **msg, const char **stoppedAt)
     prog = FinishCreatingProgram();
 
     /* parse succeeded */
-    *msg = "";
-    *stoppedAt = InPtr;
+    *msg       = "";
+    *stoppedAt = (InPtr - start);
     return prog;
 }
 
@@ -471,7 +475,7 @@ static int yylex(void)
         else if (*InPtr == ' ' || *InPtr == '\t')
             InPtr++;
         else if (*InPtr == '#')
-            while (*InPtr != '\n' && *InPtr != '\0') {
+            while (*InPtr != '\n' && InPtr != EndPtr) {
                 /* Comments stop at escaped newlines */
                 if (*InPtr == '\\' && *(InPtr + 1) == '\n') {
                     InPtr += 2;
@@ -484,7 +488,7 @@ static int yylex(void)
 
 
     /* return end of input at the end of the string */
-    if (*InPtr == '\0') {
+    if (InPtr == EndPtr) {
         return 0;
     }
 
@@ -560,7 +564,7 @@ static int yylex(void)
         const char *backslash;
 
         InPtr++;
-        while (*InPtr != '\0' && *InPtr != '\"' && *InPtr != '\n') {
+        while (InPtr != EndPtr && *InPtr != '\"' && *InPtr != '\n') {
 
             if (*InPtr == '\\') {
                 backslash = InPtr;
@@ -575,7 +579,7 @@ static int yylex(void)
                     const char *hexDigits = "0123456789abcdef";
                     const char *hexD;
                     InPtr++;
-                    if (*InPtr == '\0' ||
+                    if (InPtr == EndPtr ||
                         (hexD = strchr(hexDigits, tolower(*InPtr))) == nullptr) {
                         *p++ = 'x';
                     }
@@ -583,7 +587,7 @@ static int yylex(void)
                         hexValue = hexD - hexDigits;
                         InPtr++;
                         /* now do we have another digit? only accept one more */
-                        if (*InPtr != '\0' &&
+                        if (InPtr != EndPtr &&
                             (hexD = strchr(hexDigits,tolower(*InPtr))) != nullptr){
                           hexValue = hexD - hexDigits + (hexValue << 4);
                           InPtr++;

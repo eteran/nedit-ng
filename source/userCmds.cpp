@@ -2,6 +2,7 @@
 #include "userCmds.h"
 #include "MenuData.h"
 #include "MenuItem.h"
+#include "interpret.h"
 #include "macro.h"
 #include "parse.h"
 #include "Input.h"

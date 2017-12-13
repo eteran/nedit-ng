@@ -2043,15 +2043,13 @@ bool CheckMacroStringEx(QWidget *dialogParent, const QString &string, const QStr
 ** returns a pointer to the error location in the string.
 */
 Program *ParseMacroEx(const QString &expr, QString *message, int *stoppedAt) {
-    QByteArray str = expr.toLatin1();
-    const char *ptr = str.data();
 
-    const char *msg = nullptr;
-    const char *e = nullptr;
-    Program *p = ParseMacro(ptr, &msg, &e);
+    auto str = expr.toStdString();
 
-    *message = QString::fromLatin1(msg);
-    *stoppedAt = gsl::narrow<int>(e - ptr);
+    std::string msg;
+    Program *p = ParseMacro(str, &msg, stoppedAt);
+
+    *message = QString::fromStdString(msg);
     return p;
 }
 

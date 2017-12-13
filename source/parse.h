@@ -2,8 +2,10 @@
 #ifndef PARSE_H_
 #define PARSE_H_
 
-#include "interpret.h"
+#include <string>
 
-Program *ParseMacro(const char *expr, const char **msg, const char **stoppedAt);
+struct Program;
+
+Program *ParseMacro(const std::string &expr, std::string *msg, int *stoppedAt);
 
 #endif
