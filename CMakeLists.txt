@@ -61,10 +61,10 @@ add_definitions(-DQT_NO_CAST_TO_ASCII)
 if(MSVC)
 
 else()
-	add_compile_options(-W -Wall -pedantic -Wunused  -Wno-unused-macros -Wno-newline-eof -Wno-exit-time-destructors -Wno-shadow -Wno-switch-enum -Wno-unknown-pragmas)
+	add_compile_options(-W -Wall -pedantic -Wunused -Wno-unused-macros -Wno-shadow -Wno-switch-enum -Wno-unknown-pragmas)
 endif()
 
-# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wuseless-cast -Wno-padded -Wno-date-time")
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wuseless-cast -Wno-padded -Wno-date-time -Wno-newline-eof -Wno-exit-time-destructors")
 # -Weverything
 # -Wno-c++98-compat-pedantic
 # -Wno-c++98-compat
