@@ -3209,7 +3209,7 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
             filenameSet_ = true;
             return false;
         }
-        fileString[static_cast<size_t>(readLen)] = '\0';
+        fileString[readLen] = '\0';
 
         /* Any errors that happen after this point leave the window in a
            "broken" state, and thus RevertToSaved will abandon the window if

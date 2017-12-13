@@ -1192,7 +1192,7 @@ uint8_t *piece(int *flag_param, len_range *range_param) {
             *flag_param = flags_local;
             *range_param = range_local;
             return ret_val;
-        } else if (pContext.Num_Braces > static_cast<int>(UINT8_MAX)) {
+        } else if (pContext.Num_Braces > static_cast<int>(std::numeric_limits<uint8_t>::max())) {
             raise<RegexError>("number of {m,n} constructs > %d", UINT8_MAX);
         }
     }
