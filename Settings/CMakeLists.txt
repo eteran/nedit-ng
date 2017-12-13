@@ -23,6 +23,9 @@ add_library (Settings
 
 target_include_directories (Settings PUBLIC
 	${CMAKE_CURRENT_SOURCE_DIR} 
+)
+
+target_include_directories (Settings PRIVATE
 	${PROJECT_SOURCE_DIR}
 	${PROJECT_SOURCE_DIR}/GSL/include/
 )
