@@ -42,6 +42,38 @@ constexpr const char CantConvertArrayToInteger[] = "can't convert array to integ
 constexpr const char CantConvertArrayToString[]  = "can't convert array to string";
 constexpr const char MacroTooLarge[]             = "macro too large";
 
+// Global symbols and function definitions
+std::deque<Symbol *> GlobalSymList;
+
+// Temporary global data for use while accumulating programs
+std::deque<Symbol *> LocalSymList;     // symbols local to the program
+Inst Prog[PROGRAM_SIZE];               // the program
+Inst *ProgP;                           // next free spot for code gen.
+Inst *LoopStack[LOOP_STACK_SIZE];      // addresses of break, cont stmts
+Inst **LoopStackPtr = LoopStack;       //  to fill at the end of a loop
+
+// Global data for the interpreter
+std::shared_ptr<MacroContext> Context;
+
+char *ErrMsg;                           // global for returning error messages from executing functions
+bool PreemptRequest;                    // passes preemption requests from called routines back up to the interpreter
+
+// Stack-> symN-sym0(FP), argArray, nArgs, oldFP, retPC, argN-arg1, next, ...
+constexpr int FP_ARG_ARRAY_CACHE_INDEX = -1;
+constexpr int FP_ARG_COUNT_INDEX       = -2;
+constexpr int FP_OLD_FP_INDEX          = -3;
+constexpr int FP_RET_PC_INDEX          = -4;
+constexpr int FP_TO_ARGS_DIST          = 4; // should be 0 - (above index)
+
+DataValue&       FP_GET_ARG_ARRAY_CACHE(DataValue *FrameP)      { return FrameP[FP_ARG_ARRAY_CACHE_INDEX];              }
+int              FP_GET_ARG_COUNT(const DataValue *FrameP)      { return to_integer(FrameP[FP_ARG_COUNT_INDEX]);        }
+DataValue*       FP_GET_OLD_FP(const DataValue *FrameP)         { return to_data_value(FrameP[FP_OLD_FP_INDEX]);        }
+Inst*            FP_GET_RET_PC(const DataValue *FrameP)         { return to_instruction(FrameP[FP_RET_PC_INDEX]);       }
+int              FP_ARG_START_INDEX(const DataValue *FrameP)    { return -(FP_GET_ARG_COUNT(FrameP) + FP_TO_ARGS_DIST); }
+const DataValue& FP_GET_ARG_N(const DataValue *FrameP, int n)   { return FrameP[n + FP_ARG_START_INDEX(FrameP)];        }
+DataValue&       FP_GET_SYM_N(DataValue *FrameP, int n)         { return FrameP[n];                                     }
+DataValue&       FP_GET_SYM_VAL(DataValue *FrameP, Symbol *sym) { return FP_GET_SYM_N(FrameP, to_integer(sym->value));  }
+
 }
 
 static void addLoopAddr(Inst *addr);
@@ -111,22 +143,6 @@ static void stackdump(int n, int extra);
 #define DISASM_RT(i, n)
 #endif
 
-// Global symbols and function definitions 
-static std::deque<Symbol *> GlobalSymList;
-
-// Temporary global data for use while accumulating programs
-static std::deque<Symbol *> LocalSymList;     // symbols local to the program
-static Inst Prog[PROGRAM_SIZE];               // the program
-static Inst *ProgP;                           // next free spot for code gen.
-static Inst *LoopStack[LOOP_STACK_SIZE];      // addresses of break, cont stmts
-static Inst **LoopStackPtr = LoopStack;       //  to fill at the end of a loop
-
-// Global data for the interpreter
-static std::shared_ptr<MacroContext> Context;
-
-static char *ErrMsg;                           // global for returning error messages from executing functions
-static bool PreemptRequest;                    // passes preemption requests from called routines back up to the interpreter
-
 /* Array for mapping operations to functions for performing the operations
    Must correspond to the enum called "operations" in interpret.h */
 static int (*OpFns[N_OPS])() = {
@@ -175,24 +191,7 @@ static int (*OpFns[N_OPS])() = {
         pushArgArray
 };
 
-// Stack-> symN-sym0(FP), argArray, nArgs, oldFP, retPC, argN-arg1, next, ... 
-#define FP_ARG_ARRAY_CACHE_INDEX (-1)
-#define FP_ARG_COUNT_INDEX       (-2)
-#define FP_OLD_FP_INDEX          (-3)
-#define FP_RET_PC_INDEX          (-4)
-#define FP_TO_ARGS_DIST           (4) // should be 0 - (above index) 
 
-#define FP_GET_ITEM(xFrameP, xIndex) (xFrameP[(xIndex)])
-
-#define FP_GET_ARG_ARRAY_CACHE(xFrameP) (FP_GET_ITEM(xFrameP, FP_ARG_ARRAY_CACHE_INDEX))
-#define FP_GET_ARG_COUNT(xFrameP)       (to_integer(FP_GET_ITEM(xFrameP, FP_ARG_COUNT_INDEX)))
-#define FP_GET_OLD_FP(xFrameP)          (to_data_value(FP_GET_ITEM(xFrameP, FP_OLD_FP_INDEX)))
-#define FP_GET_RET_PC(xFrameP)          (to_instruction(FP_GET_ITEM(xFrameP, FP_RET_PC_INDEX)))
-
-#define FP_ARG_START_INDEX(xFrameP)     (-(FP_GET_ARG_COUNT(xFrameP) + FP_TO_ARGS_DIST))
-#define FP_GET_ARG_N(xFrameP, xN)       (FP_GET_ITEM(xFrameP, xN + FP_ARG_START_INDEX(xFrameP)))
-#define FP_GET_SYM_N(xFrameP, xN)       (FP_GET_ITEM(xFrameP, xN))
-#define FP_GET_SYM_VAL(xFrameP, xSym)   (FP_GET_SYM_N(xFrameP, to_integer(xSym->value)))
 
 /*
 ** combine two strings in a static area and set ErrMsg to point to the
@@ -1623,7 +1622,7 @@ static int returnValOrNone(bool valOnStack) {
 	// get stored return information 
     int nArgs            = FP_GET_ARG_COUNT(Context->FrameP);
     DataValue *newFrameP = FP_GET_OLD_FP(Context->FrameP);
-    Context->PC           = FP_GET_RET_PC(Context->FrameP);
+    Context->PC          = FP_GET_RET_PC(Context->FrameP);
 
 	// pop past local variables 
     Context->StackP = Context->FrameP;
