@@ -7,6 +7,14 @@
 
 // container algorithms
 
+// this warning is pretty dumb in this context, the compiler inlines this
+// function and notices that moveItem(c, row, row + 1) means that from will
+// ALWAYS be less than to, which is good... but it's dumb to warn about
+// because it's only true in that particular expansion, but not all
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstrict-overflow"
+#endif
 template <class Cont>
 void moveItem(Cont &cont, int from, int to) {
 	
@@ -23,6 +31,9 @@ void moveItem(Cont &cont, int from, int to) {
         std::rotate(b + to, b + from, b + from + 1);
     }
 }
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#endif
 
 
 // string_view algorithms
