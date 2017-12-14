@@ -7,7 +7,6 @@
 #include <cstdio>
 #include <cctype>
 #include <string>
-#include <sys/param.h>
 
 /* Macros to add error processing to AddOp and AddSym calls */
 #define ADD_OP(op) if (!AddOp(op, &ErrMsg)) return 1
