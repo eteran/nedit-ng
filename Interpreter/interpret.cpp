@@ -1,6 +1,5 @@
 
 #include "interpret.h"
-#include "DocumentWidget.h"
 #include "utils.h"
 #include <cmath>
 #include <cassert>

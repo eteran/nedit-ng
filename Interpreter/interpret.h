@@ -2,7 +2,7 @@
 #ifndef INTERPRET_H_
 #define INTERPRET_H_
 
-#include "util/string_view.h"
+#include "string_view.h"
 
 #include <gsl/span>
 

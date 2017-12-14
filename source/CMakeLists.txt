@@ -5,14 +5,8 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 #set(CMAKE_AUTOUIC ON)
 #set(CMAKE_AUTORCC ON)
 
-find_package(BISON REQUIRED)
 find_package(Qt5 5.4.0 REQUIRED Widgets Network Xml)
 find_package(Boost 1.35 REQUIRED)
-
-# using a different name from parse.cpp
-# because it will also output parse.h, which will conflict with the
-# in source copy of that file!
-bison_target(parser parse.y ${CMAKE_CURRENT_BINARY_DIR}/parser.cpp)
 
 qt5_add_resources(QRC_SOURCES
 	nedit.qrc
@@ -252,13 +246,10 @@ add_executable(nedit-ng
 	X11Colors.h
 	highlight.cpp
 	highlight.h
-	interpret.cpp
-	interpret.h
 	macro.cpp
 	macro.h
 	nedit.cpp
 	nedit.h
-	parse.h
 	preferences.cpp
 	preferences.h
 	search.cpp
@@ -271,9 +262,7 @@ add_executable(nedit-ng
 	tags.h
 	userCmds.cpp
 	userCmds.h
-	version.h
-
-	${BISON_parser_OUTPUT_SOURCE}
+	version.h	
 )
 
 include_directories(nedit-ng
@@ -286,6 +275,7 @@ target_link_libraries(nedit-ng LINK_PUBLIC
 	NUtil
 	Regex
 	Settings
+	Interpreter
 	Qt5::Widgets
 	Qt5::Network
 	Qt5::Xml
