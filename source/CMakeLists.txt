@@ -289,4 +289,4 @@ set_target_properties(nedit-ng
 	RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
 )
 
-install (TARGETS nedit-ng RUNTIME DESTINATION bin)
+install (TARGETS nedit-ng DESTINATION bin)
