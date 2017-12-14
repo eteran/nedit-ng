@@ -261,8 +261,7 @@ add_executable(nedit-ng
 	tags.cpp
 	tags.h
 	userCmds.cpp
-	userCmds.h
-	version.h	
+	userCmds.h	
 )
 
 include_directories(nedit-ng

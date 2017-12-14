@@ -13,7 +13,7 @@
 #include "TextBuffer.h"
 #include "userCmds.h"
 #include "util/ClearCase.h"
-#include "version.h"
+#include "util/version.h"
 
 #include <QInputDialog>
 #include <QMessageBox>

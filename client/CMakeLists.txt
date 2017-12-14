@@ -7,11 +7,6 @@ set(CMAKE_AUTORCC ON)
 
 find_package(Qt5 5.4.0 REQUIRED Core Network)
 
-include_directories(nc-ng
-	${PROJECT_SOURCE_DIR}
-	${PROJECT_SOURCE_DIR}/source
-)
-
 add_executable(nc-ng
 	nc.cpp
 )

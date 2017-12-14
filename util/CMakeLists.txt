@@ -7,6 +7,8 @@ find_package(Qt5 5.4.0 REQUIRED Core Network)
 add_library (Util
 	ClearCase.cpp
 	fileUtils.cpp
+	ServerCommon.cpp
+	utils.cpp
 	include/util/algorithm.h
 	include/util/ClearCase.h
 	include/util/FileFormats.h
@@ -16,8 +18,7 @@ add_library (Util
 	include/util/string_view.h
 	include/util/system.h
 	include/util/utils.h
-	ServerCommon.cpp
-	utils.cpp
+	include/util/version.h
 )
 
 target_include_directories (Util PUBLIC

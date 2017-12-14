@@ -23,7 +23,7 @@
 #include "smartIndent.h"
 #include "util/fileUtils.h"
 #include "util/utils.h"
-#include "version.h"
+#include "util/version.h"
 
 #include <gsl/gsl_util>
 #include <boost/optional.hpp>

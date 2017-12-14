@@ -10,7 +10,7 @@
 #include <QDataStream>
 #include <QThread>
 
-#include "version.h"
+#include "util/version.h"
 #include "util/system.h"
 #include "util/fileUtils.h"
 #include "util/ClearCase.h"
