@@ -30,3 +30,5 @@ set_target_properties(nc-ng
 	PROPERTIES
 	RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
 )
+
+install (TARGETS nc-ng RUNTIME DESTINATION bin)
