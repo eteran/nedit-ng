@@ -20,7 +20,6 @@
 #include <QPushButton>
 #include <QRegExp>
 #include <QSettings>
-#include <QStandardPaths>
 #include <QString>
 #include <QtDebug>
 
