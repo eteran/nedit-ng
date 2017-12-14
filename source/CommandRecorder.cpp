@@ -61,9 +61,6 @@ QLatin1String RedundantActions[] = {
     QLatin1String("start_incremental_find")
 };
 
-
-QMutex instanceMutex;
-
 }
 
 /**
@@ -107,15 +104,9 @@ CommandRecorder::CommandRecorder(QObject *parent) : QObject(parent), isRecording
  * @brief CommandRecorder::getInstance
  * @return global unique instance
  */
-CommandRecorder *CommandRecorder::getInstance() {
+CommandRecorder &CommandRecorder::getInstance() {
 
-    static CommandRecorder *instance = nullptr;
-
-    QMutexLocker locker(&instanceMutex);
-    if(!instance) {
-        instance = new CommandRecorder;
-    }
-
+    static CommandRecorder instance;
     return instance;
 }
 

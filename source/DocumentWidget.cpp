@@ -5186,7 +5186,7 @@ std::vector<DocumentWidget *> DocumentWidget::allDocuments() {
 void DocumentWidget::BeginLearnEx() {
 
 	// If we're already in learn mode, return
-	if(CommandRecorder::getInstance()->isRecording()) {
+	if(CommandRecorder::getInstance().isRecording()) {
 		return;
 	}
 
@@ -5205,7 +5205,7 @@ void DocumentWidget::BeginLearnEx() {
 	thisWindow->ui.action_Cancel_Learn->setEnabled(true);
 
 	// Add the action hook for recording the actions
-	CommandRecorder::getInstance()->startRecording(this);
+	CommandRecorder::getInstance().startRecording(this);
 
 	// Extract accelerator texts from menu PushButtons
 	QString cFinish = thisWindow->ui.action_Finish_Learn->shortcut().toString();
@@ -6521,9 +6521,9 @@ std::shared_ptr<Regex> DocumentWidget::compileREAndWarnEx(const QString &re) {
 int DocumentWidget::MacroWindowCloseActionsEx() {
     const std::shared_ptr<MacroCommandData> &cmdData = macroCmdData_;
 
-    auto recorder = CommandRecorder::getInstance();
+    CommandRecorder &recorder = CommandRecorder::getInstance();
 
-    if (recorder->isRecording() && recorder->macroRecordWindowEx == this) {
+    if (recorder.isRecording() && recorder.macroRecordWindowEx == this) {
         FinishLearnEx();
     }
 
@@ -6582,7 +6582,7 @@ void DocumentWidget::AbortMacroCommandEx() {
 ** Cancel Learn mode, or macro execution (they're bound to the same menu item)
 */
 void DocumentWidget::CancelMacroOrLearnEx() {
-    if(CommandRecorder::getInstance()->isRecording()) {
+    if(CommandRecorder::getInstance().isRecording()) {
         cancelLearnEx();
     } else if (macroCmdData_) {
         AbortMacroCommandEx();
@@ -6594,7 +6594,7 @@ void DocumentWidget::CancelMacroOrLearnEx() {
 */
 void DocumentWidget::ReplayEx() {
 
-    QString replayMacro = CommandRecorder::getInstance()->replayMacro;
+    QString replayMacro = CommandRecorder::getInstance().replayMacro;
 
     // Verify that a replay macro exists and it's not empty and that
     // we're not already running a macro
@@ -6615,11 +6615,11 @@ void DocumentWidget::ReplayEx() {
 
 void DocumentWidget::cancelLearnEx() {
 
-    if(!CommandRecorder::getInstance()->isRecording()) {
+    if(!CommandRecorder::getInstance().isRecording()) {
         return;
     }
 
-    DocumentWidget *document = CommandRecorder::getInstance()->macroRecordWindowEx;
+    DocumentWidget *document = CommandRecorder::getInstance().macroRecordWindowEx;
     Q_ASSERT(document);
 
     for(MainWindow *window : MainWindow::allWindows()) {
@@ -6637,14 +6637,14 @@ void DocumentWidget::cancelLearnEx() {
 
 void DocumentWidget::FinishLearnEx() {
 
-    if(!CommandRecorder::getInstance()->isRecording()) {
+    if(!CommandRecorder::getInstance().isRecording()) {
         return;
     }
 
-    DocumentWidget *document = CommandRecorder::getInstance()->macroRecordWindowEx;
+    DocumentWidget *document = CommandRecorder::getInstance().macroRecordWindowEx;
     Q_ASSERT(document);
 
-    CommandRecorder::getInstance()->stopRecording();
+    CommandRecorder::getInstance().stopRecording();
 
     for(MainWindow *window : MainWindow::allWindows()) {
         window->ui.action_Learn_Keystrokes->setEnabled(true);

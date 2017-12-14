@@ -14,7 +14,7 @@ class WindowMenuEvent;
 class CommandRecorder : public QObject {
 	Q_OBJECT
 public:
-    static CommandRecorder *getInstance();
+    static CommandRecorder &getInstance();
 
 private:
     explicit CommandRecorder(QObject *parent = Q_NULLPTR);

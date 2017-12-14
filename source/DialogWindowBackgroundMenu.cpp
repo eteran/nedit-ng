@@ -22,7 +22,7 @@ DialogWindowBackgroundMenu::DialogWindowBackgroundMenu(QWidget *parent, Qt::Wind
 	ui.setupUi(this);
     ui.editAccelerator->setMaximumSequenceLength(1);
 
-    ui.buttonPasteLRMacro->setEnabled(!CommandRecorder::getInstance()->replayMacro.isEmpty());
+    ui.buttonPasteLRMacro->setEnabled(!CommandRecorder::getInstance().replayMacro.isEmpty());
 
     model_ = new MenuItemModel(this);
     ui.listItems->setModel(model_);
@@ -105,7 +105,7 @@ void DialogWindowBackgroundMenu::on_buttonDelete_clicked() {
  */
 void DialogWindowBackgroundMenu::on_buttonPasteLRMacro_clicked() {
 
-    QString replayMacro = CommandRecorder::getInstance()->replayMacro;
+    QString replayMacro = CommandRecorder::getInstance().replayMacro;
 
     if (replayMacro.isEmpty()) {
 		return;

@@ -429,7 +429,7 @@ int main(int argc, char *argv[]) {
 	}
 
     // Begin remembering last command invoked for "Repeat" menu item
-    qApp->installEventFilter(CommandRecorder::getInstance());
+    qApp->installEventFilter(&CommandRecorder::getInstance());
 
     // Set up communication server!
     std::unique_ptr<NeditServer> server;

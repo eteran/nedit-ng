@@ -317,7 +317,7 @@ void DialogPrint::on_buttonPrint_clicked() {
     bool success = true;
     process.setProcessChannelMode(QProcess::MergedChannels);
 
-    connect(&process, static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished), [this, &errorString, &success, &process](int exitCode, QProcess::ExitStatus exitStatus){
+    connect(&process, static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished), this, [this, &errorString, &success, &process](int exitCode, QProcess::ExitStatus exitStatus){
         if (exitStatus != QProcess::NormalExit) {
             QMessageBox::warning(this, tr("Print Error"), tr("Unable to Print:\n%1").arg(process.errorString()));
             success = false;
