@@ -174,7 +174,7 @@ bool readArguments(Arguments arguments, int index, const char **errMsg, T arg);
 
 struct SubRoutine {
     const char   *name;
-    SubRoutine function;
+    LibraryRoutine function;
 };
 
 namespace {
