@@ -2,11 +2,13 @@
 #ifndef DATA_VALUE_H_
 #define DATA_VALUE_H_
 
+#include "string_view.h"
 #include <gsl/span>
 #include <boost/variant.hpp>
 #include <string>
 #include <memory>
 #include <map>
+#include <QString>
 
 class DocumentWidget;
 struct DataValue;
