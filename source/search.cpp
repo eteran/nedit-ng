@@ -140,7 +140,7 @@ std::string ReplaceAllInStringEx(view::string_view inString, const QString &sear
                 replaceUsingREEx(
                     searchString,
                     replaceString,
-                    view::string_view(&inString[searchExtentBW], inString.size() - searchExtentBW),
+                    substr(inString, searchExtentBW),
                     startPos - searchExtentBW,
                     replaceResult,
                     startPos == 0 ? '\0' : inString[startPos - 1],
@@ -191,7 +191,7 @@ std::string ReplaceAllInStringEx(view::string_view inString, const QString &sear
                 replaceUsingREEx(
                     searchString,
                     replaceString,
-                    view::string_view(&inString[searchExtentBW], inString.size() - searchExtentBW),
+                    substr(inString, searchExtentBW),
                     startPos - searchExtentBW,
                     replaceResult,
                     startPos == 0 ? '\0' : inString[startPos - 1],
