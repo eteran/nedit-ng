@@ -122,6 +122,9 @@ static int inArray();
 static int deleteArrayElement();
 static int errCheck(const char *s);
 
+static ArrayIterator arrayIterateFirst(DataValue *theArray);
+static ArrayIterator arrayIterateNext(ArrayIterator iterator);
+
 #if defined(DEBUG_ASSEMBLY) || defined(DEBUG_STACK)
 #define DEBUG_DISASSEMBLER
 static void disasm(Inst *inst, size_t nInstr);
@@ -2211,10 +2214,6 @@ bool StringToNum(const QString &string, int *number) {
     }
     return ok;
 
-}
-
-bool StringToNum(view::string_view string, int *number) {
-    return StringToNum(string.to_string(), number);
 }
 
 bool StringToNum(const std::string &string, int *number) {

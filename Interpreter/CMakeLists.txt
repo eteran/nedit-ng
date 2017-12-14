@@ -11,7 +11,8 @@ find_package(Boost 1.35 REQUIRED)
 # in source copy of that file!
 bison_target(parser parse.y ${CMAKE_CURRENT_BINARY_DIR}/parser.cpp)
 
-add_library (Interpreter 
+add_library (Interpreter
+	DataValue.h
 	interpret.cpp
 	interpret.h
 	parse.h
