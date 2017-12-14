@@ -81,4 +81,5 @@ add_subdirectory (client)
 add_subdirectory (Regex)
 add_subdirectory (Settings)
 add_subdirectory (Interpreter)
+add_subdirectory (GSL)
 

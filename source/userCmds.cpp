@@ -8,7 +8,7 @@
 #include "Input.h"
 #include "preferences.h"
 #include "LanguageMode.h"
-#include "raise.h"
+#include "util/raise.h"
 #include <QTextStream>
 #include <memory>
 

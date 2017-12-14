@@ -8,7 +8,7 @@
 #include "DialogReplace.h"
 #include "DragEndEvent.h"
 #include "EditFlags.h"
-#include "fileUtils.h"
+#include "util/fileUtils.h"
 #include "Font.h"
 #include "FontType.h"
 #include "HighlightData.h"

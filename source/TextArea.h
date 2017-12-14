@@ -7,7 +7,7 @@
 #include "CursorStyles.h"
 #include "DragStates.h"
 #include "StyleTableEntry.h"
-#include "string_view.h"
+#include "util/string_view.h"
 #include <QAbstractScrollArea>
 #include <QColor>
 #include <QFlags>

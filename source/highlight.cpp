@@ -17,7 +17,7 @@
 #include "X11Colors.h"
 #include "preferences.h"
 #include "Regex/Regex.h"
-#include "utils.h"
+#include "util/utils.h"
 
 #include <gsl/gsl_util>
 

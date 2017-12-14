@@ -1,6 +1,6 @@
 
 #include "Settings.h"
-#include "utils.h"
+#include "util/utils.h"
 
 #include <QtDebug>
 #include <QSettings>

@@ -1,6 +1,6 @@
 
 #include "search.h"
-#include "utils.h"
+#include "util/utils.h"
 #include "DocumentWidget.h"
 #include "MainWindow.h"
 #include "TruncSubstitution.h"

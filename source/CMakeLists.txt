@@ -267,15 +267,15 @@ add_executable(nedit-ng
 
 include_directories(nedit-ng
 	${PROJECT_SOURCE_DIR}
-	${PROJECT_SOURCE_DIR}/GSL/include/
 	${Boost_INCLUDE_DIR}
 )
 
 target_link_libraries(nedit-ng LINK_PUBLIC
-	NUtil
+	Util
 	Regex
 	Settings
 	Interpreter
+	GSL
 	Qt5::Widgets
 	Qt5::Network
 	Qt5::Xml

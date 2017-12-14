@@ -18,13 +18,8 @@ add_library (Regex
 	Substitute.h
 )
 
-target_include_directories (Regex PUBLIC
-	${CMAKE_CURRENT_SOURCE_DIR} 
-)
-
-target_include_directories (Regex PRIVATE
-	${PROJECT_SOURCE_DIR}
-	${PROJECT_SOURCE_DIR}/GSL/include/
+target_link_libraries(Regex LINK_PUBLIC
+	Util
 )
 
 set_property(TARGET Regex PROPERTY CXX_STANDARD 14)

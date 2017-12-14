@@ -27,12 +27,11 @@ target_include_directories (Settings PUBLIC
 
 target_include_directories (Settings PRIVATE
 	${PROJECT_SOURCE_DIR}
-	${PROJECT_SOURCE_DIR}/GSL/include/
 )
 
 target_link_libraries(Settings LINK_PUBLIC
 	Qt5::Widgets
-	NUtil
+	Util
 )
 
 set_property(TARGET Settings PROPERTY CXX_STANDARD 14)

@@ -1,8 +1,8 @@
 
 #include <QString>
-#include "fileUtils.h"
-#include "FileFormats.h"
-#include "utils.h"
+#include "util/fileUtils.h"
+#include "util/FileFormats.h"
+#include "util/utils.h"
 #include <gsl/gsl_util>
 
 #include <cstdlib>

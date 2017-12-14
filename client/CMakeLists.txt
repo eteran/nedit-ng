@@ -19,7 +19,7 @@ add_executable(nc-ng
 target_link_libraries(nc-ng LINK_PUBLIC
 	Qt5::Core
 	Qt5::Network
-	NUtil
+	Util
 	Settings
 )
 

@@ -25,13 +25,10 @@ target_include_directories (Interpreter PUBLIC
 	${Boost_INCLUDE_DIR} 
 )
 
-target_include_directories (Interpreter PRIVATE
-	${PROJECT_SOURCE_DIR}/GSL/include/	
-)
-
 target_link_libraries(Interpreter LINK_PUBLIC
 	Qt5::Core
-	NUtil
+	Util
+	GSL
 )
 
 set_property(TARGET Interpreter PROPERTY CXX_STANDARD 14)
