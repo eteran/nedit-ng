@@ -8,7 +8,7 @@
 #include "WrapStyle.h"
 #include "highlight.h"
 #include "preferences.h"
-#include "Regex/Regex.h"
+#include "Regex.h"
 #include "userCmds.h"
 #include <gsl/gsl_util>
 

@@ -10,7 +10,7 @@
 #include "MainWindow.h"
 #include "NeditServer.h"
 #include "preferences.h"
-#include "Regex/Regex.h"
+#include "Regex.h"
 #include "Settings.h"
 #include "util/fileUtils.h"
 

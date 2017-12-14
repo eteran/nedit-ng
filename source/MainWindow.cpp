@@ -27,7 +27,7 @@
 #include "nedit.h"
 #include "PatternSet.h"
 #include "preferences.h"
-#include "Regex/Regex.h"
+#include "Regex.h"
 #include "search.h"
 #include "Settings.h"
 #include "shift.h"

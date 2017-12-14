@@ -264,8 +264,7 @@ add_executable(nedit-ng
 	userCmds.h	
 )
 
-include_directories(nedit-ng
-	${PROJECT_SOURCE_DIR}
+target_include_directories (nedit-ng PRIVATE
 	${Boost_INCLUDE_DIR}
 )
 

@@ -16,7 +16,7 @@
 #include "WindowHighlightData.h"
 #include "X11Colors.h"
 #include "preferences.h"
-#include "Regex/Regex.h"
+#include "Regex.h"
 #include "util/utils.h"
 
 #include <gsl/gsl_util>

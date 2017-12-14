@@ -18,6 +18,10 @@ add_library (Regex
 	Substitute.h
 )
 
+target_include_directories (Regex PUBLIC
+	${CMAKE_CURRENT_SOURCE_DIR}
+)
+
 target_link_libraries(Regex LINK_PUBLIC
 	Util
 )

@@ -22,7 +22,10 @@ add_library (Interpreter
 
 target_include_directories (Interpreter PUBLIC
 	${CMAKE_CURRENT_SOURCE_DIR}
-	${Boost_INCLUDE_DIR} 
+)
+
+target_include_directories (Interpreter PRIVATE
+	${Boost_INCLUDE_DIR}
 )
 
 target_link_libraries(Interpreter LINK_PUBLIC

@@ -2,7 +2,7 @@
 #ifndef HIGHLIGHT_DATA_H_X_
 #define HIGHLIGHT_DATA_H_X_
 
-#include "Regex/Regex.h"
+#include "Regex.h"
 #include <memory>
 #include <cstdint>
 
