@@ -3,11 +3,15 @@
 #define DATA_VALUE_H_
 
 #include "string_view.h"
+
 #include <gsl/span>
-#include <boost/variant.hpp>
+
 #include <string>
 #include <memory>
 #include <map>
+
+#include <boost/variant.hpp>
+
 #include <QString>
 
 class DocumentWidget;
@@ -15,10 +19,10 @@ struct DataValue;
 struct Program;
 union Inst;
 
-using Arguments     = gsl::span<DataValue>;
-using BuiltInSubrEx = bool (*)(DocumentWidget *document, Arguments arguments, struct DataValue *result, const char **errMsg);
-using Array         = std::map<std::string, DataValue>;
-using ArrayPtr      = std::shared_ptr<Array>;
+using Arguments  = gsl::span<DataValue>;
+using SubRoutine = bool (*)(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+using Array      = std::map<std::string, DataValue>;
+using ArrayPtr   = std::shared_ptr<Array>;
 
 // NOTE(eteran): we use a kind of "fat iterator", because the arrayIter function
 // needs to know if the iterator is at the end of the map. This requirement
@@ -35,7 +39,7 @@ struct DataValue {
         std::string,
         ArrayPtr,
         ArrayIterator,
-        BuiltInSubrEx,
+        SubRoutine,
         Program*,
         Inst*,
         DataValue*
@@ -102,7 +106,7 @@ inline DataValue to_value(DataValue *v) {
     return DV;
 }
 
-inline DataValue to_value(BuiltInSubrEx routine) {
+inline DataValue to_value(SubRoutine routine) {
     DataValue DV;
     DV.value = routine;
     return DV;
@@ -136,8 +140,8 @@ inline Program *to_program(const DataValue &dv) {
     return boost::get<Program*>(dv.value);
 }
 
-inline BuiltInSubrEx to_subroutine(const DataValue &dv) {
-    return boost::get<BuiltInSubrEx>(dv.value);
+inline SubRoutine to_subroutine(const DataValue &dv) {
+    return boost::get<SubRoutine>(dv.value);
 }
 
 inline DataValue *to_data_value(const DataValue &dv) {

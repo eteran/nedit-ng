@@ -8,10 +8,8 @@
 #include <gsl/span>
 
 #include <deque>
-#include <map>
 #include <memory>
 #include <vector>
-#include <boost/variant.hpp>
 
 #include <QString>
 
