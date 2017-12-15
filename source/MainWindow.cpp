@@ -4640,6 +4640,8 @@ DocumentWidget *MainWindow::EditNewFileEx(MainWindow *window, QString geometry, 
         }
     }
 
+    assert(window);
+
     document->filename_ = name;
     document->path_     = !defaultPath.isEmpty() ? defaultPath : GetCurrentDirEx();
 
