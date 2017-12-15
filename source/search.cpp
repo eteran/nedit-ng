@@ -284,25 +284,26 @@ static bool searchLiteralWord(view::string_view string, view::string_view search
     bool cignore_L = false;
     bool cignore_R = false;
 
-    auto do_search_word2 = [&](const char *filePtr) {
+    auto do_search_word2 = [&](const view::string_view::iterator filePtr) {
 		if (*filePtr == ucString[0] || *filePtr == lcString[0]) {
+
 			// matched first character 
-			auto ucPtr = ucString.begin();
-			auto lcPtr = lcString.begin();
-			const char *tempPtr = filePtr;
+            auto ucPtr   = ucString.begin();
+            auto lcPtr   = lcString.begin();
+            auto tempPtr = filePtr;
 
 			while (*tempPtr == *ucPtr || *tempPtr == *lcPtr) {
-				tempPtr++;
-				ucPtr++;
-				lcPtr++;
+                ++tempPtr;
+                ++ucPtr;
+                ++lcPtr;
 
-                if (ucPtr == ucString.end() &&                                                                   // matched whole string
+                if (ucPtr == ucString.end() &&                                                         // matched whole string
                     (cignore_R || safe_ctype<isspace>(*tempPtr) || strchr(delimiters, *tempPtr)) &&    // next char right delimits word ?
-                    (cignore_L || filePtr == &string[0] ||                                                       // border case
+                    (cignore_L || filePtr == string.begin() ||                                         // border case
                      safe_ctype<isspace>(filePtr[-1]) || strchr(delimiters, filePtr[-1]))) {           // next char left delimits word ?
 
-                    *startPos = gsl::narrow<int>(filePtr - &string[0]);
-                    *endPos   = gsl::narrow<int>(tempPtr - &string[0]);
+                    *startPos = gsl::narrow<int>(filePtr - string.begin());
+                    *endPos   = gsl::narrow<int>(tempPtr - string.begin());
 					return true;
 				}
 			}
@@ -336,7 +337,7 @@ static bool searchLiteralWord(view::string_view string, view::string_view search
 
     if (direction == Direction::Forward) {
 		// search from beginPos to end of string 
-		for (auto filePtr = string.begin() + beginPos; filePtr != string.end(); filePtr++) {
+        for (auto filePtr = string.begin() + beginPos; filePtr != string.end(); ++filePtr) {
             if(do_search_word2(filePtr)) {
 				return true;
 			}
@@ -389,21 +390,23 @@ static bool searchLiteral(view::string_view string, view::string_view searchStri
         lcString = downCaseStringEx(searchString);
     }
 
-    auto do_search2 = [&](const char *filePtr) {
+    auto do_search2 = [&](view::string_view::iterator filePtr) {
 		if (*filePtr == ucString[0] || *filePtr == lcString[0]) {
 			// matched first character 
 			auto ucPtr   = ucString.begin();
 			auto lcPtr   = lcString.begin();
-			const char *tempPtr = filePtr;
+            auto tempPtr = filePtr;
 
 			while (*tempPtr == *ucPtr || *tempPtr == *lcPtr) {
-				tempPtr++;
-				ucPtr++;
-				lcPtr++;
+                ++tempPtr;
+                ++ucPtr;
+                ++lcPtr;
+
 				if (ucPtr == ucString.end()) {
 					// matched whole string 
-                    *startPos = gsl::narrow<int>(filePtr - &string[0]);
-                    *endPos   = gsl::narrow<int>(tempPtr - &string[0]);
+                    *startPos = gsl::narrow<int>(filePtr - string.begin());
+                    *endPos   = gsl::narrow<int>(tempPtr - string.begin());
+
 					if(searchExtentBW) {
 						*searchExtentBW = *startPos;
 					}
@@ -548,10 +551,10 @@ static bool backwardRegexSearch(view::string_view string, view::string_view sear
 
 		// search from beginPos to start of file.  A negative begin pos	
 		// says begin searching from the far end of the file.		
-		if (beginPos >= 0) {
+        if (beginPos >= 0) {
 
             // NOTE(eteran): why do we use NUL as the previous char, and not string[beginPos - 1] (assuming that beginPos > 0)?
-			if (compiledRE.execute(string, 0, beginPos, '\0', '\0', delimiters, true)) {
+            if (compiledRE.execute(string, 0, beginPos, '\0', '\0', delimiters, true)) {
 
                 *startPos = gsl::narrow<int>(compiledRE.startp[0] - &string[0]);
                 *endPos   = gsl::narrow<int>(compiledRE.endp[0]   - &string[0]);

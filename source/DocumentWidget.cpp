@@ -190,15 +190,15 @@ void safeBufReplace(TextBuffer *buf, int *start, int *end, const std::string &te
 ** Update a position across buffer modifications specified by
 ** "modPos", "nDeleted", and "nInserted".
 */
-void maintainPosition(int *position, int modPos, int nInserted, int nDeleted) {
-    if (modPos > *position) {
+void maintainPosition(int &position, int modPos, int nInserted, int nDeleted) {
+    if (modPos > position) {
         return;
     }
 
-    if (modPos + nDeleted <= *position) {
-        *position += nInserted - nDeleted;
+    if (modPos + nDeleted <= position) {
+        position += nInserted - nDeleted;
     } else {
-        *position = modPos;
+        position = modPos;
     }
 }
 
@@ -206,16 +206,16 @@ void maintainPosition(int *position, int modPos, int nInserted, int nDeleted) {
 ** Update a selection across buffer modifications specified by
 ** "pos", "nDeleted", and "nInserted".
 */
-void maintainSelection(TextSelection *sel, int pos, int nInserted, int nDeleted) {
-    if (!sel->selected || pos > sel->end) {
+void maintainSelection(TextSelection &sel, int pos, int nInserted, int nDeleted) {
+    if (!sel.selected || pos > sel.end) {
         return;
     }
 
-    maintainPosition(&sel->start, pos, nInserted, nDeleted);
-    maintainPosition(&sel->end,   pos, nInserted, nDeleted);
+    maintainPosition(sel.start, pos, nInserted, nDeleted);
+    maintainPosition(sel.end,   pos, nInserted, nDeleted);
 
-    if (sel->end <= sel->start) {
-        sel->selected = false;
+    if (sel.end <= sel.start) {
+        sel.selected = false;
     }
 }
 
@@ -842,8 +842,8 @@ void DocumentWidget::dragStartCallback(TextArea *area) {
 void DocumentWidget::UpdateMarkTable(int pos, int nInserted, int nDeleted) {
 
     for (size_t i = 0; i < nMarks_; ++i) {
-        maintainSelection(&markTable_[i].sel,       pos, nInserted, nDeleted);
-        maintainPosition (&markTable_[i].cursorPos, pos, nInserted, nDeleted);
+        maintainSelection(markTable_[i].sel,       pos, nInserted, nDeleted);
+        maintainPosition (markTable_[i].cursorPos, pos, nInserted, nDeleted);
     }
 }
 
@@ -2771,7 +2771,7 @@ bool DocumentWidget::writeBckVersion() {
 
     // copy loop
     for (;;) {
-        ssize_t bytes_read = ::read(in_fd, &io_buffer[0], IO_BUFFER_SIZE);
+        ssize_t bytes_read = ::read(in_fd, io_buffer.data(), io_buffer.size());
 
         if (bytes_read < 0) {
 			QFile::remove(bckname);
@@ -2783,7 +2783,7 @@ bool DocumentWidget::writeBckVersion() {
         }
 
         // write to the file
-        ssize_t bytes_written = ::write(out_fd, &io_buffer[0], static_cast<size_t>(bytes_read));
+        ssize_t bytes_written = ::write(out_fd, io_buffer.data(), static_cast<size_t>(bytes_read));
         if (bytes_written != bytes_read) {
 			QFile::remove(bckname);
             return bckError(ErrorString(errno), bckname);
@@ -3202,7 +3202,7 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
         std::vector<char> fileString(static_cast<size_t>(fileLength) + 1); // +1 = space for null
 
         // Read the file into fileString and terminate with a null
-        size_t readLen = ::fread(&fileString[0], 1, static_cast<size_t>(fileLength), fp);
+        size_t readLen = ::fread(fileString.data(), 1, static_cast<size_t>(fileLength), fp);
         if (::ferror(fp)) {
             filenameSet_ = false; // Temp. prevent check for changes.
             QMessageBox::critical(this, tr("Error while opening File"), tr("Error reading %1:\n%2").arg(name, ErrorString(errno)));
@@ -3222,21 +3222,23 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
         ino_         = statbuf.st_ino;
         fileMissing_ = false;
 
+        assert(readLen <= fileString.size());
+
         // Detect and convert DOS and Macintosh format files
         if (GetPrefForceOSConversion()) {
-            switch (FormatOfFileEx(view::string_view(&fileString[0], readLen))) {
+            switch (FormatOfFileEx(view::string_view(fileString.data(), readLen))) {
             case FileFormats::Dos:
-                ConvertFromDosFileString(&fileString[0], &readLen, nullptr);
+                ConvertFromDosFileString(fileString.data(), &readLen, nullptr);
                 break;
             case FileFormats::Mac:
-                ConvertFromMacFileString(&fileString[0], readLen);
+                ConvertFromMacFileString(fileString.data(), readLen);
                 break;
             case FileFormats::Unix:
                 break;
             }
         }
 
-        auto contents = view::string_view(&fileString[0], readLen);
+        auto contents = view::string_view(fileString.data(), readLen);
 
         // Display the file contents in the text widget
         ignoreModify_ = true;
@@ -5889,10 +5891,9 @@ void DocumentWidget::handleUnparsedRegionEx(const std::shared_ptr<TextBuffer> &s
     /* printf("callback pass2 parsing from %d thru %d w/ safety from %d thru %d\n",
             beginParse, endParse, beginSafety, endSafety); */
 
-    std::string str       = buf->BufGetRangeEx(beginSafety, endSafety);
-    char *string          = &str[0];
-    const char *stringPtr = &str[0];
-    char *const match_to  = string + str.size();
+    std::string str             = buf->BufGetRangeEx(beginSafety, endSafety);
+    const char *string          = str.data();
+    const char *const match_to  = string + str.size();
 
     std::string styleStr  = styleBuf->BufGetRangeEx(beginSafety, endSafety);
     char *styleString     = &styleStr[0];
@@ -5903,7 +5904,7 @@ void DocumentWidget::handleUnparsedRegionEx(const std::shared_ptr<TextBuffer> &s
 
     parseString(
         pass2Patterns,
-        &stringPtr,
+        &string,
         &stylePtr,
         endParse - beginSafety,
         &prevChar,
@@ -7064,24 +7065,24 @@ void DocumentWidget::gotoMark(TextArea *area, QChar label, bool extendSel) {
     }
 
     // reselect marked the selection, and move the cursor to the marked pos
-    const TextSelection *sel    = &markTable_[index].sel;
-    const TextSelection *oldSel = &buffer_->BufGetPrimary();
+    const TextSelection &sel    = markTable_[index].sel;
+    const TextSelection &oldSel = buffer_->BufGetPrimary();
 
     int cursorPos = markTable_[index].cursorPos;
     if (extendSel) {
 
-        const int oldStart = oldSel->selected ? oldSel->start : area->TextGetCursorPos();
-        const int oldEnd   = oldSel->selected ? oldSel->end   : area->TextGetCursorPos();
-        const int newStart = sel->selected    ? sel->start    : cursorPos;
-        const int newEnd   = sel->selected    ? sel->end      : cursorPos;
+        const int oldStart = oldSel.selected ? oldSel.start : area->TextGetCursorPos();
+        const int oldEnd   = oldSel.selected ? oldSel.end   : area->TextGetCursorPos();
+        const int newStart = sel.selected    ? sel.start    : cursorPos;
+        const int newEnd   = sel.selected    ? sel.end      : cursorPos;
 
         buffer_->BufSelect(oldStart < newStart ? oldStart : newStart, oldEnd > newEnd ? oldEnd : newEnd);
     } else {
-        if (sel->selected) {
-            if (sel->rectangular) {
-                buffer_->BufRectSelect(sel->start, sel->end, sel->rectStart, sel->rectEnd);
+        if (sel.selected) {
+            if (sel.rectangular) {
+                buffer_->BufRectSelect(sel.start, sel.end, sel.rectStart, sel.rectEnd);
             } else {
-                buffer_->BufSelect(sel->start, sel->end);
+                buffer_->BufSelect(sel.start, sel.end);
             }
         } else {
             buffer_->BufUnselect();

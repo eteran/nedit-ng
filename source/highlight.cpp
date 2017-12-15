@@ -323,17 +323,17 @@ static int parseBufferRange(HighlightData *pass1Patterns, HighlightData *pass2Pa
 
 	// copy the buffer range into a string 
 	
-	std::string str      = buf->BufGetRangeEx(beginSafety, endSafety);
+    std::string str      = buf     ->BufGetRangeEx(beginSafety, endSafety);
 	std::string styleStr = styleBuf->BufGetRangeEx(beginSafety, endSafety);
 	
-	const char *const string   = &str[0];
+    const char *const string   = str.data();
 	char *const styleString    = &styleStr[0];
 	const char *const match_to = string + str.size();
 
 	// Parse it with pass 1 patterns 
 	// printf("parsing from %d thru %d\n", beginSafety, endSafety); 
 	char prevChar         = getPrevChar(buf, beginParse);
-	const char *stringPtr = &string[beginParse - beginSafety];
+    const char *stringPtr = &string     [beginParse - beginSafety];
 	char *stylePtr        = &styleString[beginParse - beginSafety];
 	
 	parseString(
