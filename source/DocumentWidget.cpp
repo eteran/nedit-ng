@@ -7028,7 +7028,7 @@ void DocumentWidget::SelectNumberedLineEx(TextArea *area, int lineNum) {
 
     for (i = 1; i <= lineNum && lineEnd < buffer_->BufGetLength(); i++) {
         lineStart = lineEnd + 1;
-        lineEnd = buffer_->BufEndOfLine( lineStart);
+        lineEnd = buffer_->BufEndOfLine(lineStart);
     }
 
     // highlight the line

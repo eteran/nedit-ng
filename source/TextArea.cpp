@@ -1610,9 +1610,9 @@ void TextArea::bufModifiedCallback(int pos, int nInserted, int nDeleted, int nRe
 	// Update the line starts and topLineNum
 	if (nInserted != 0 || nDeleted != 0) {
 		if (P_continuousWrap) {
-			updateLineStarts( wrapModStart, wrapModEnd - wrapModStart, nDeleted + pos - wrapModStart + (wrapModEnd - (pos + nInserted)), linesInserted, linesDeleted, &scrolled);
+            updateLineStarts(wrapModStart, wrapModEnd - wrapModStart, nDeleted + pos - wrapModStart + (wrapModEnd - (pos + nInserted)), linesInserted, linesDeleted, &scrolled);
 		} else {
-			updateLineStarts( pos, nInserted, nDeleted, linesInserted, linesDeleted, &scrolled);
+            updateLineStarts(pos, nInserted, nDeleted, linesInserted, linesDeleted, &scrolled);
 		}
 	} else {
 		scrolled = false;

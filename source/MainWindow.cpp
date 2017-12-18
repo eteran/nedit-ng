@@ -6547,7 +6547,7 @@ void MainWindow::ReplaceInSelectionEx(DocumentWidget *document, TextArea *area, 
     // get the selected text
     if (isRect) {
         selStart   = document->buffer_->BufStartOfLine(selStart);
-        selEnd     = document->buffer_->BufEndOfLine( selEnd);
+        selEnd     = document->buffer_->BufEndOfLine(selEnd);
         fileString = document->buffer_->BufGetRangeEx(selStart, selEnd);
     } else {
         fileString = document->buffer_->BufGetSelectionTextEx();
