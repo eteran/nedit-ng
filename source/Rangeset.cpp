@@ -58,14 +58,15 @@ void rangesetRefreshAllRanges(TextBuffer *buffer, Rangeset *rangeset) {
 //               though it is probably better to replace the fundamental
 //               data-structures instead of replacing a few random
 //               functions
-int at_or_before(int *table, int base, int len, int val) {
-	int lo, mid = 0, hi;
+template <class T>
+int at_or_before(T *table, int base, int len, T val) {
 
 	if (base >= len)
 		return len; // not sure what this means! 
 
-	lo = base;    // first valid index 
-	hi = len - 1; // last valid index 
+    int mid = 0;
+    int lo  = base;    // first valid index
+    int hi  = len - 1; // last valid index
 
 	while (lo <= hi) {
 		mid = (lo + hi) / 2;
@@ -76,6 +77,7 @@ int at_or_before(int *table, int base, int len, int val) {
 		else
 			lo = mid + 1;
 	}
+
 	// if we get here, we didn't find val itself 
 	if (val > table[mid])
 		mid++;
@@ -83,18 +85,18 @@ int at_or_before(int *table, int base, int len, int val) {
 	return mid;
 }
 
-int weighted_at_or_before(int *table, int base, int len, int val) {
-	int lo, mid = 0, hi;
-	int min, max;
+template <class T>
+int weighted_at_or_before(T *table, int base, int len, T val) {
 
 	if (base >= len)
 		return len; // not sure what this means! 
 
-	lo = base;    // first valid index 
-	hi = len - 1; // last valid index 
+    int mid = 0;
+    int lo  = base;    // first valid index
+    int hi  = len - 1; // last valid index
 
-	min = table[lo]; // establish initial min/max 
-	max = table[hi];
+    T min = table[lo]; // establish initial min/max
+    T max = table[hi];
 
 	if (val <= min) // initial range checks 
 		return lo;  // needed to avoid out-of-range mid values 
@@ -172,7 +174,8 @@ int rangesetWeightedAtOrBefore(Rangeset *rangeset, int pos) {
 ** Adjusts values in tab[] by an amount delta, perhaps moving them meanwhile.
 */
 int rangesetShuffleToFrom(int *rangeTable, int to, int from, int n, int delta) {
-	int end, diff = from - to;
+    int end;
+    int diff = from - to;
 
 	if (n <= 0)
 		return 0;
