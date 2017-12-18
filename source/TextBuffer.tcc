@@ -2,6 +2,7 @@
 #ifndef TEXT_BUFFER_TCC_
 #define TEXT_BUFFER_TCC_
 
+#include "TextBuffer.h"
 #include <algorithm>
 #include <cassert>
 #include <QtDebug>
@@ -1213,6 +1214,21 @@ int BasicTextBuffer<Ch, Tr>::BufCmpEx(int pos, view_type cmpText) const noexcept
 
         return Tr::compare(&buf_[gapEnd_], &cmpText[part1Length], cmpText.size() - gsl::narrow<size_t>(part1Length));
     }
+}
+
+template <class Ch, class Tr>
+int BasicTextBuffer<Ch, Tr>::BufCmpEx(int pos, Ch ch) const noexcept {
+
+    if (pos >= length_) {
+        return 1;
+    }
+
+    if (pos < 0) {
+        return -1;
+    }
+
+    const Ch buffer_char = BufGetCharacter(pos);
+    return Tr::compare(&buffer_char, &ch, 1);
 }
 
 /*

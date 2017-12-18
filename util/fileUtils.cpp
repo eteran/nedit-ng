@@ -482,10 +482,9 @@ FileFormats FormatOfFileEx(view::string_view fileString) {
 /*
 ** Converts a string (which may represent the entire contents of the file)
 ** from DOS or Macintosh format to Unix format.  Conversion is done in-place.
-** In the DOS case, the length will be shorter, and passed length will be
-** modified to reflect the new length. The routine has support for blockwise
-** file to string conversion: if the fileString has a trailing '\r' and
-** 'pendingCR' is not zero, the '\r' is deposited in there and is not
+** In the DOS case, the length will be shorter. The routine has support for
+** blockwise file to string conversion: if the fileString has a trailing '\r' and
+** 'pendingCR' is not null, the '\r' is deposited in there and is not
 ** converted. If there is no trailing '\r', a 0 is deposited in 'pendingCR'
 ** It's the caller's responsability to make sure that the pending character,
 ** if present, is inserted at the beginning of the next block to convert.

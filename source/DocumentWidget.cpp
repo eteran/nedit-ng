@@ -131,7 +131,7 @@ constexpr CharMatchTable FlashingChars[] = {
 /*
  * Number of bytes read at once by cmpWinAgainstFile
  */
-constexpr auto PREFERRED_CMPBUF_LEN = 0x8000L;
+constexpr auto PREFERRED_CMPBUF_LEN = 0x8000ul;
 
 /* Maximum frequency in miliseconds of checking for external modifications.
    The periodic check is only performed on buffer modification, and the check
@@ -2104,11 +2104,7 @@ QString DocumentWidget::FileName() const {
  */
 bool DocumentWidget::cmpWinAgainstFile(const QString &fileName) const {
 
-    struct stat statbuf;
-    int offset;
-    char pendingCR         = 0;
-    FileFormats fileFormat = fileFormat_;
-    TextBuffer *buf        = buffer_;
+    char pendingCR = '\0';
 
 	FILE *fp = ::fopen(fileName.toLatin1().data(), "r");
     if (!fp) {
@@ -2117,26 +2113,33 @@ bool DocumentWidget::cmpWinAgainstFile(const QString &fileName) const {
 
     auto _ = gsl::finally([fp] { ::fclose(fp); });
 
+    struct stat statbuf;
     if (::fstat(fileno(fp), &statbuf) != 0) {
         return true;
     }
 
-    const long fileLen = statbuf.st_size;
-    // For DOS files, we can't simply check the length
-    if (fileFormat != FileFormats::Dos) {
-        if (fileLen != buf->BufGetLength()) {
+    const off_t fileLen = statbuf.st_size;
+
+    // For UNIX/macOS files, we can do a quick check to see if the on disk file
+    // has a different length, but for DOS files, it's not that simple...
+    switch(fileFormat_) {
+    case FileFormats::Unix:
+    case FileFormats::Mac:
+        if (fileLen != buffer_->BufGetLength()) {
             return true;
         }
-    } else {
-        // If a DOS file is smaller on disk, it's certainly different
-        if (fileLen < buf->BufGetLength()) {
+        break;
+    case FileFormats::Dos:
+        // However, if a DOS file is smaller on disk, it's certainly different
+        if (fileLen < buffer_->BufGetLength()) {
             return true;
         }
+        break;
     }
 
-    long restLen = std::min(PREFERRED_CMPBUF_LEN, fileLen);
-    int bufPos  = 0;
-    int filePos = 0;
+    size_t restLen = std::min(PREFERRED_CMPBUF_LEN, static_cast<size_t>(fileLen));
+    int bufPos     = 0;
+    int filePos    = 0;
     char fileString[PREFERRED_CMPBUF_LEN + 2];
 
     /* For large files, the comparison can take a while. If it takes too long,
@@ -2145,6 +2148,7 @@ bool DocumentWidget::cmpWinAgainstFile(const QString &fileName) const {
 
     while (restLen > 0) {
 
+        size_t offset;
         if (pendingCR) {
             fileString[0] = pendingCR;
             offset = 1;
@@ -2152,7 +2156,7 @@ bool DocumentWidget::cmpWinAgainstFile(const QString &fileName) const {
             offset = 0;
         }
 
-        auto nRead = gsl::narrow<int>(::fread(fileString + offset, 1, static_cast<size_t>(restLen), fp));
+        size_t nRead = ::fread(fileString + offset, 1, static_cast<size_t>(restLen), fp);
         if (nRead != restLen) {
             MainWindow::AllWindowsUnbusyEx();
             return true;
@@ -2162,12 +2166,12 @@ bool DocumentWidget::cmpWinAgainstFile(const QString &fileName) const {
         nRead += offset;
 
         // check for on-disk file format changes, but only for the first hunk
-        if (bufPos == 0 && fileFormat != FormatOfFileEx(view::string_view(fileString, static_cast<size_t>(nRead)))) {
+        if (bufPos == 0 && fileFormat_ != FormatOfFileEx(view::string_view(fileString, nRead))) {
             MainWindow::AllWindowsUnbusyEx();
             return true;
         }
 
-        switch(fileFormat) {
+        switch(fileFormat_) {
         case FileFormats::Mac:
             ConvertFromMacFileString(fileString, nRead);
             break;
@@ -2178,27 +2182,27 @@ bool DocumentWidget::cmpWinAgainstFile(const QString &fileName) const {
             break;
         }
 
-        // Beware of NUL chars !
-        int rv = buf->BufCmpEx(bufPos, view::string_view(fileString, static_cast<size_t>(nRead)));
+        int rv = buffer_->BufCmpEx(bufPos, view::string_view(fileString, nRead));
         if (rv) {
             MainWindow::AllWindowsUnbusyEx();
             return rv;
         }
+
         bufPos += nRead;
-        restLen = std::min(fileLen - filePos, PREFERRED_CMPBUF_LEN);
+        restLen = std::min(static_cast<size_t>(fileLen - filePos), PREFERRED_CMPBUF_LEN);
     }
 
     MainWindow::AllWindowsUnbusyEx();
 
     if (pendingCR) {
-        int rv = buf->BufCmpEx(bufPos, view::string_view(&pendingCR, 1));
+        int rv = buffer_->BufCmpEx(bufPos, pendingCR);
         if (rv) {
             return rv;
         }
         bufPos += 1;
     }
 
-    if (bufPos != buf->BufGetLength()) {
+    if (bufPos != buffer_->BufGetLength()) {
         return true;
     }
     return false;

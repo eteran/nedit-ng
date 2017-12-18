@@ -59,6 +59,7 @@ public:
     Ch BufGetCharacter(int pos) const noexcept;
     const Ch *BufAsString() noexcept;
     int BufCmpEx(int pos, view_type cmpText) const noexcept;
+    int BufCmpEx(int pos, Ch ch) const noexcept;
     int BufCountBackwardNLines(int startPos, int nLines) const noexcept;
     int BufCountDispChars(int lineStartPos, int targetPos) const noexcept;
     int BufCountForwardDispChars(int lineStartPos, int nChars) const noexcept;
