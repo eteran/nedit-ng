@@ -5962,7 +5962,7 @@ void DocumentWidget::StartHighlightingEx(bool warn) {
         }
     } else {
 
-        view::string_view bufString = buffer_->BufAsString();
+        view::string_view bufString = buffer_->BufAsStringEx();
         const char *stringPtr       = bufString.data();
         const char *const match_to  = bufString.data() + bufString.size();
 

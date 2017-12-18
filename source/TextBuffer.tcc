@@ -39,36 +39,6 @@ auto BasicTextBuffer<Ch, Tr>::BufGetAllEx() const -> string_type {
 ** moved so that the buffer data can be accessed as a single contiguous
 ** character array.
 ** NB DO NOT ALTER THE TEXT THROUGH THE RETURNED POINTER!
-** (we make an exception in TextBuffer::BufSubstituteNullCharsEx() however)
-** This function is intended ONLY to provide a searchable string without copying
-** into a temporary buffer.
-*/
-template <class Ch, class Tr>
-auto BasicTextBuffer<Ch, Tr>::BufAsString() noexcept -> view_type {
-
-    const int bufLen   = length_;
-    int leftLen        = gapStart_;
-    const int rightLen = bufLen - leftLen;
-
-    // find where best to put the gap to minimise memory movement
-    if (leftLen != 0 && rightLen != 0) {
-        leftLen = (leftLen < rightLen) ? 0 : bufLen;
-        moveGap(leftLen);
-    }
-
-    // get the start position of the actual data
-    Ch *const text = &buf_[(leftLen == 0) ? gapEnd_ : 0];
-
-    // return a view into the string
-    return view::string_view(text, bufLen);
-}
-
-/*
-** Get the entire contents of a text buffer as a single string.  The gap is
-** moved so that the buffer data can be accessed as a single contiguous
-** character array.
-** NB DO NOT ALTER THE TEXT THROUGH THE RETURNED POINTER!
-** (we make an exception in TextBuffer::BufSubstituteNullCharsEx() however)
 ** This function is intended ONLY to provide a searchable string without copying
 ** into a temporary buffer.
 */
@@ -636,7 +606,7 @@ void BasicTextBuffer<Ch, Tr>::BufSetTabDistance(int tabDist) noexcept {
     tabDist_ = tabDist;
 
     // Force any display routines to redisplay everything
-    auto deletedText = BufAsStringEx();
+    view::string_view deletedText = BufAsStringEx();
     callModifyCBs(0, length_, length_, 0, deletedText);
 }
 

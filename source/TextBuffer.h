@@ -53,7 +53,6 @@ public:
     bool BufSearchBackwardEx(int startPos, view_type searchChars, int *foundPos) const noexcept;
     bool BufSearchForwardEx(int startPos, view_type searchChars, int *foundPos) const noexcept;
     Ch BufGetCharacter(int pos) const noexcept;
-    view_type BufAsString() noexcept;
     int BufCmpEx(int pos, view_type cmpText) const noexcept;
     int BufCmpEx(int pos, Ch ch) const noexcept;
     int BufCountBackwardNLines(int startPos, int nLines) const noexcept;
