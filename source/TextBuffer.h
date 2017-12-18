@@ -11,8 +11,6 @@
 #include <deque>
 #include <string>
 
-
-
 template <class Ch, class Tr>
 class BasicTextBuffer {
 public:
