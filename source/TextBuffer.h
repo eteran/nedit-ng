@@ -13,8 +13,6 @@
 template <class Ch = char, class Tr = std::char_traits<Ch>>
 class BasicTextBuffer;
 
-using index_type = int64_t;
-
 template <class Ch, class Tr>
 class BasicTextBuffer {
 public:
