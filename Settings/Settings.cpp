@@ -36,8 +36,8 @@ void writeEnum(QSettings &settings, const QString &key, const T &value) {
  * @return
  */
 QString Settings::themeFile() {
-    QString configDir = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
-    auto configFile   = tr("%1/%2/%3").arg(configDir, tr("nedit-ng"), tr("theme.xml"));
+    static const QString configDir = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
+    static const auto configFile   = tr("%1/%2/%3").arg(configDir, tr("nedit-ng"), tr("theme.xml"));
     return configFile;
 }
 
@@ -46,8 +46,8 @@ QString Settings::themeFile() {
  * @return
  */
 QString Settings::configFile() {
-    QString configDir = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
-    auto configFile   = tr("%1/%2/%3").arg(configDir, tr("nedit-ng"), tr("config.ini"));
+    static const QString configDir = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
+    static const auto configFile   = tr("%1/%2/%3").arg(configDir, tr("nedit-ng"), tr("config.ini"));
     return configFile;
 }
 
@@ -56,8 +56,8 @@ QString Settings::configFile() {
  * @return
  */
 QString Settings::historyFile() {
-    QString configDir = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
-    auto configFile   = tr("%1/%2/%3").arg(configDir, tr("nedit-ng"), tr("history"));
+    static const QString configDir = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
+    static const auto configFile   = tr("%1/%2/%3").arg(configDir, tr("nedit-ng"), tr("history"));
     return configFile;
 }
 
@@ -66,8 +66,8 @@ QString Settings::historyFile() {
  * @return
  */
 QString Settings::autoLoadMacroFile() {
-    QString configDir = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
-    auto configFile   = tr("%1/%2/%3").arg(configDir, tr("nedit-ng"), tr("autoload.nm"));
+    static const QString configDir = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
+    static const auto configFile   = tr("%1/%2/%3").arg(configDir, tr("nedit-ng"), tr("autoload.nm"));
     return configFile;
 }
 
@@ -76,8 +76,8 @@ QString Settings::autoLoadMacroFile() {
  * @return
  */
 QString Settings::styleFile() {
-    QString configDir = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
-    auto configFile   = tr("%1/%2/%3").arg(configDir, tr("nedit-ng"), tr("style.qss"));
+    static const QString configDir = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
+    static const auto configFile   = tr("%1/%2/%3").arg(configDir, tr("nedit-ng"), tr("style.qss"));
     return configFile;
 }
 
