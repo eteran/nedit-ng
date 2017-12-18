@@ -10,8 +10,7 @@
 #include <deque>
 #include <string>
 
-template <class Ch = char, class Tr = std::char_traits<Ch>>
-class BasicTextBuffer;
+#include "TextBufferFwd.h"
 
 template <class Ch, class Tr>
 class BasicTextBuffer {
@@ -191,7 +190,5 @@ private:
 
 
 #include "TextBuffer.tcc"
-
-using TextBuffer = BasicTextBuffer<char>;
 
 #endif

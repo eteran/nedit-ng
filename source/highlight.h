@@ -3,6 +3,7 @@
 #define HIGHLIGHT_H_
 
 #include "util/string_view.h"
+#include "TextBufferFwd.h"
 
 #include <gsl/span>
 #include <vector>
@@ -19,11 +20,6 @@ class Style;
 class QColor;
 class QString;
 class QWidget;
-
-template <class Ch, class Tr>
-class BasicTextBuffer;
-
-using TextBuffer = BasicTextBuffer<char, std::char_traits<char>>;
 
 // Pattern flags for modifying pattern matching behavior
 enum {

@@ -11,6 +11,7 @@
 #include "LockReasons.h"
 #include "MenuItem.h"
 #include "ShowMatchingStyle.h"
+#include "TextBufferFwd.h"
 #include "util/string_view.h"
 #include "tags.h"
 #include "UndoInfo.h"
@@ -50,11 +51,6 @@ class QLabel;
 class QMenu;
 class QSplitter;
 class QTimer;
-
-template <class Ch, class Tr>
-class BasicTextBuffer;
-
-using TextBuffer = BasicTextBuffer<char, std::char_traits<char>>;
 
 enum class Direction : uint8_t;
 

@@ -5,6 +5,7 @@
 #include "BlockDragTypes.h"
 #include "CallTip.h"
 #include "CursorStyles.h"
+#include "TextBufferFwd.h"
 #include "DragStates.h"
 #include "StyleTableEntry.h"
 #include "util/string_view.h"
@@ -28,11 +29,6 @@ class QMenu;
 class QPoint;
 class QShortcut;
 class QTimer;
-
-template <class Ch, class Tr>
-class BasicTextBuffer;
-
-using TextBuffer = BasicTextBuffer<char, std::char_traits<char>>;
 
 constexpr int NO_HINT = -1;
 

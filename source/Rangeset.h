@@ -2,16 +2,12 @@
 #ifndef RANGESET_H_
 #define RANGESET_H_
 
+#include "TextBufferFwd.h"
 #include <QColor>
 
 constexpr int N_RANGESETS = 63;
 
 class Rangeset;
-
-template <class Ch, class Tr>
-class BasicTextBuffer;
-
-using TextBuffer = BasicTextBuffer<char, std::char_traits<char>>;
 
 struct Range {
 	int start;

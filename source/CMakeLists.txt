@@ -109,12 +109,11 @@ add_executable(nedit-ng
 	CommandRecorder.h
 	CommandSource.h
 	CursorStyles.h
-	Dialog.cpp
-	Dialog.h
 	DialogAbout.cpp
 	DialogAbout.h
 	DialogColors.cpp
 	DialogColors.h
+	Dialog.cpp
 	DialogDrawingStyles.cpp
 	DialogDrawingStyles.h
 	DialogDuplicateTags.cpp
@@ -127,6 +126,7 @@ add_executable(nedit-ng
 	DialogFind.h
 	DialogFonts.cpp
 	DialogFonts.h
+	Dialog.h
 	DialogLanguageModes.cpp
 	DialogLanguageModes.h
 	DialogMacros.cpp
@@ -151,10 +151,10 @@ add_executable(nedit-ng
 	DialogReplace.h
 	DialogShellMenu.cpp
 	DialogShellMenu.h
-	DialogSmartIndent.cpp
-	DialogSmartIndent.h
 	DialogSmartIndentCommon.cpp
 	DialogSmartIndentCommon.h
+	DialogSmartIndent.cpp
+	DialogSmartIndent.h
 	DialogSyntaxPatterns.cpp
 	DialogSyntaxPatterns.h
 	DialogTabs.cpp
@@ -182,7 +182,9 @@ add_executable(nedit-ng
 	FontType.h
 	Help.cpp
 	Help.h
+	highlight.cpp
 	HighlightData.h
+	highlight.h
 	HighlightPattern.cpp
 	HighlightPattern.h
 	HighlightPatternModel.cpp
@@ -198,6 +200,8 @@ add_executable(nedit-ng
 	LanguageModeModel.cpp
 	LanguageModeModel.h
 	LockReasons.h
+	macro.cpp
+	macro.h
 	MainWindow.cpp
 	MainWindow.h
 	MenuData.h
@@ -205,29 +209,42 @@ add_executable(nedit-ng
 	MenuItemModel.cpp
 	MenuItemModel.h
 	MultiClickStates.h
+	nedit.cpp
+	nedit.h
 	NeditServer.cpp
 	NeditServer.h
 	NewMode.h
 	PatternSet.cpp
 	PatternSet.h
+	preferences.cpp
+	preferences.h
 	Rangeset.cpp
 	Rangeset.h
 	RangesetTable.cpp
 	RangesetTable.h
 	ReparseContext.h
 	ReplaceScope.h
+	search.cpp
+	search.h
+	shift.cpp
 	ShiftDirection.h
+	shift.h
 	SignalBlocker.h
+	smartIndent.cpp
 	SmartIndentEntry.cpp
 	SmartIndentEntry.h
 	SmartIndentEvent.h
+	smartIndent.h
 	Style.h
 	StyleTableEntry.h
 	TabWidget.cpp
 	TabWidget.h
+	tags.cpp
+	tags.h
 	TextArea.cpp
 	TextArea.h
 	TextBuffer.cpp
+	TextBufferFwd.h
 	TextBuffer.h
 	TextBuffer.tcc
 	TextEditEvent.cpp
@@ -236,6 +253,8 @@ add_executable(nedit-ng
 	TextSelection.h
 	UndoInfo.cpp
 	UndoInfo.h
+	userCmds.cpp
+	userCmds.h	
 	Verbosity.h
 	WindowHighlightData.cpp
 	WindowHighlightData.h
@@ -244,24 +263,6 @@ add_executable(nedit-ng
 	WrapMode.h
 	X11Colors.cpp
 	X11Colors.h
-	highlight.cpp
-	highlight.h
-	macro.cpp
-	macro.h
-	nedit.cpp
-	nedit.h
-	preferences.cpp
-	preferences.h
-	search.cpp
-	search.h
-	shift.cpp
-	shift.h
-	smartIndent.cpp
-	smartIndent.h
-	tags.cpp
-	tags.h
-	userCmds.cpp
-	userCmds.h	
 )
 
 target_include_directories (nedit-ng PRIVATE

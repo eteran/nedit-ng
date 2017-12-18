@@ -3,17 +3,13 @@
 #define WINDOW_HIGHLIGHT_DATA_H_
 
 #include "ReparseContext.h"
+#include "TextBufferFwd.h"
 #include <vector>
 #include <memory>
 
 class HighlightData;
 class PatternSet;
 class StyleTableEntry;
-
-template <class Ch, class Tr>
-class BasicTextBuffer;
-
-using TextBuffer = BasicTextBuffer<char, std::char_traits<char>>;
 
 // Data structure attached to window to hold all syntax highlighting
 // information (for both drawing and incremental reparsing)
