@@ -16,7 +16,7 @@
 */
 template <class Ch, class Tr>
 BasicTextBuffer<Ch, Tr>::~BasicTextBuffer() noexcept {
-    delete [] buf_;    
+    delete [] buf_;
 }
 
 /*
@@ -38,7 +38,6 @@ auto BasicTextBuffer<Ch, Tr>::BufGetAllEx() const -> string_type {
 ** Get the entire contents of a text buffer as a single string.  The gap is
 ** moved so that the buffer data can be accessed as a single contiguous
 ** character array.
-** NB DO NOT ALTER THE TEXT THROUGH THE RETURNED POINTER!
 ** This function is intended ONLY to provide a searchable string without copying
 ** into a temporary buffer.
 */
@@ -606,7 +605,7 @@ void BasicTextBuffer<Ch, Tr>::BufSetTabDistance(int tabDist) noexcept {
     tabDist_ = tabDist;
 
     // Force any display routines to redisplay everything
-    view::string_view deletedText = BufAsStringEx();
+    view_type deletedText = BufAsStringEx();
     callModifyCBs(0, length_, length_, 0, deletedText);
 }
 
