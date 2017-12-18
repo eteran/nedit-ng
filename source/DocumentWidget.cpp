@@ -5962,9 +5962,9 @@ void DocumentWidget::StartHighlightingEx(bool warn) {
         }
     } else {
 
-        const char *const bufString = buffer_->BufAsString();
-        const char *const match_to  = bufString + bufLength;
-        const char *stringPtr = bufString;
+        view::string_view bufString = buffer_->BufAsString();
+        const char *stringPtr       = bufString.data();
+        const char *const match_to  = bufString.data() + bufString.size();
 
         parseString(
             highlightData->pass1Patterns,
@@ -5974,7 +5974,7 @@ void DocumentWidget::StartHighlightingEx(bool warn) {
             &prevChar,
             false,
             GetWindowDelimiters(),
-            bufString,
+            stringPtr,
             match_to);
     }
 

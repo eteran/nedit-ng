@@ -44,7 +44,7 @@ auto BasicTextBuffer<Ch, Tr>::BufGetAllEx() const -> string_type {
 ** into a temporary buffer.
 */
 template <class Ch, class Tr>
-const Ch *BasicTextBuffer<Ch, Tr>::BufAsString() noexcept {
+auto BasicTextBuffer<Ch, Tr>::BufAsString() noexcept -> view_type {
 
     const int bufLen   = length_;
     int leftLen        = gapStart_;
@@ -59,9 +59,8 @@ const Ch *BasicTextBuffer<Ch, Tr>::BufAsString() noexcept {
     // get the start position of the actual data
     Ch *const text = &buf_[(leftLen == 0) ? gapEnd_ : 0];
 
-    // make sure it's null-terminated
-    text[bufLen] = Ch();
-    return text;
+    // return a view into the string
+    return view::string_view(text, bufLen);
 }
 
 /*
