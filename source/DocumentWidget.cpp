@@ -2590,7 +2590,7 @@ bool DocumentWidget::SaveWindowAs(const QString &newName, bool addWrap) {
         QString filename;
         QString pathname;
 
-        if (ParseFilenameEx(fullname, &filename, &pathname) != 0) {
+        if (!ParseFilenameEx(fullname, &filename, &pathname) != 0) {
             return false;
         }
 
@@ -3035,7 +3035,7 @@ void DocumentWidget::open(const QString &fullpath) {
     QString filename;
     QString pathname;
 
-    if (ParseFilenameEx(fullpath, &filename, &pathname) != 0) {
+    if (!ParseFilenameEx(fullpath, &filename, &pathname) != 0) {
         qWarning("NEdit: invalid file name for open action: %s", qPrintable(fullpath));
         return;
     }
@@ -7159,6 +7159,7 @@ int DocumentWidget::findAllMatchesEx(TextArea *area, const QString &string) {
         tagSearch[nMatches] = searchString;
         tagPosInf[nMatches] = startPos;
 
+        // NOTE(eteran): no error checking...
         ParseFilenameEx(tagFiles[nMatches], &filename, &pathname);
 
         // Is this match in the current file?  If so, use it!
@@ -7217,6 +7218,7 @@ int DocumentWidget::findAllMatchesEx(TextArea *area, const QString &string) {
 
             QString temp;
 
+            // NOTE(eteran): no error checking...
             ParseFilenameEx(tagFiles[i], &filename, &pathname);
             if ((i < nMatches - 1 && (tagFiles[i] == tagFiles[i + 1])) || (i > 0 && (tagFiles[i] == tagFiles[i - 1]))) {
 
@@ -7312,6 +7314,7 @@ void DocumentWidget::editTaggedLocationEx(TextArea *area, int i) {
     QString filename;
     QString pathname;
 
+    // NOTE(eteran): no error checking...
     ParseFilenameEx(tagFiles[i], &filename, &pathname);
 
     // open the file containing the definition

@@ -565,7 +565,7 @@ static int scanETagsLine(const QString &line, const QString &tagPath, int index,
             if (!QFileInfo(file).isAbsolute()) {
 
                 if ((tagPath.size() + file.size()) >= MAXPATHLEN) {
-                    qWarning("NEdit: tags.c: MAXPATHLEN overflow");
+                    qWarning("NEdit: tags.cpp: MAXPATHLEN overflow");
                     file = QString(); // invalidate
 					return 0;
                 }
@@ -612,6 +612,7 @@ static int loadTagsFile(const QString &tagSpec, int index, int recLevel) {
 		return 0;
 	}
 
+    // NOTE(eteran): no error checking...
 	ParseFilenameEx(resolvedTagsFile, nullptr, &tagPath);
 
 	/* This might take a while if you have a huge tags file (like I do)..
@@ -1217,6 +1218,7 @@ static int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
     }
 
     // Get the path to the tips file
+    // NOTE(eteran): no error checking...
     ParseFilenameEx(resolvedTipsFile, nullptr, &tipPath);
 
     // Open the file

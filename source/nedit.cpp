@@ -325,7 +325,7 @@ int main(int argc, char *argv[]) {
 			exit(EXIT_FAILURE);
 		} else {
 
-            if (ParseFilenameEx(args[i], &filename, &pathname) == 0) {
+            if (!ParseFilenameEx(args[i], &filename, &pathname) == 0) {
 				/* determine if file is to be openned in new tab, by
 				   factoring the options -group, -tabbed & -untabbed */
                 switch(group) {

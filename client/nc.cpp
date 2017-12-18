@@ -210,7 +210,7 @@ bool parseCommandLine(const QStringList &args, CommandLine *commandLine) {
             fprintf(stderr, "nc: Unrecognized option %s\n%s", qPrintable(args[i]), cmdLineHelp);
             exit(EXIT_FAILURE);
         } else {
-            if (ParseFilenameEx(args[i], &name, &path) != 0) {
+            if (!ParseFilenameEx(args[i], &name, &path) != 0) {
                 // An Error, most likely too long paths/strings given
                 return false;
             }

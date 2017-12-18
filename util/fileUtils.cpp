@@ -1,8 +1,8 @@
 
-#include <QString>
 #include "util/fileUtils.h"
 #include "util/FileFormats.h"
 #include "util/utils.h"
+#include "util/ClearCase.h"
 #include <gsl/gsl_util>
 
 #include <cstdlib>
@@ -19,7 +19,10 @@
 #include <unistd.h>
 #include <pwd.h>
 
-static int ResolvePath(const char *pathIn, char *pathResolved);
+#include <QString>
+#include <QFileInfo>
+
+
 
 /* Parameters to algorithm used to auto-detect DOS format files.  NEdit will
    scan up to the lesser of FORMAT_SAMPLE_LINES lines and FORMAT_SAMPLE_CHARS
@@ -33,34 +36,28 @@ static char *nextSlash(char *ptr);
 static char *prevSlash(char *ptr);
 static bool compareThruSlash(const char *string1, const char *string2);
 static void copyThruSlash(char **toString, char **fromString);
+static int ResolvePath(const char *pathIn, char *pathResolved);
+static bool CompressPathname(char *pathname);
+static bool NormalizePathname(char *pathname);
 
 /*
 ** Decompose a Unix file name into a file name and a path.
-** Return non-zero value if it fails, zero else.
-** For now we assume that filename and pathname are at
-** least MAXPATHLEN chars long.
-** To skip setting filename or pathname pass nullptr for that argument.
+** returns false if an error occured (currently, there is no error case).
 */
-int ParseFilenameEx(const QString &fullname, QString *filename, QString *pathname) {
+bool ParseFilenameEx(const QString &fullname, QString *filename, QString *pathname) {
+
     int fullLen = fullname.size();
-    int i;
-    int viewExtendPath;
-    int scanStart;
+    int scanStart = -1;
 
     /* For clearcase version extended paths, slash characters after the "@@/"
        should be considered part of the file name, rather than the path */
-    if ((viewExtendPath = fullname.indexOf(QLatin1String("@@/"))) != -1) {
+    const int viewExtendPath = ClearCase::GetVersionExtendedPathIndex(fullname);
+    if (viewExtendPath != -1) {
         scanStart = viewExtendPath - 1;
-    } else {
-        scanStart = fullLen - 1;
     }
 
     /* find the last slash */
-    for (i = scanStart; i >= 0; i--) {
-        if (fullname[i] == QLatin1Char('/')) {
-            break;
-        }
-    }
+    const int i = fullname.lastIndexOf(QLatin1Char('/'), scanStart);
 
     /* move chars before / (or ] or :) into pathname,& after into filename */
     int pathLen = i + 1;
@@ -78,13 +75,12 @@ int ParseFilenameEx(const QString &fullname, QString *filename, QString *pathnam
         *pathname = NormalizePathnameEx(*pathname);
     }
 
-    return 0;
+    return true;
 }
 
 /*
 ** Expand tilde characters which begin file names as done by the shell
-** If it doesn't work just out leave pathname unmodified.
-** This implementation is neither fast, nor elegant, nor ...
+** If it doesn't work just return the pathname originally passed pathname
 */
 QString ExpandTildeEx(const QString &pathname) {
 #ifdef Q_OS_UNIX
@@ -236,7 +232,7 @@ bool NormalizePathname(char *pathname) {
 		/* check for trailing slash, or pathname being root dir "/":
 		   don't add a second '/' character as this may break things
 		   on non-un*x systems */
-        const size_t len = strlen(pathname); /* GetCurrentDirEx() returns non-nullptr value */
+        const size_t len = strlen(pathname);
 
         /*  Apart from the fact that people putting conditional expressions in
          * ifs should be caned: How should len ever become 0 if
@@ -253,6 +249,14 @@ bool NormalizePathname(char *pathname) {
 	return CompressPathname(pathname);
 }
 
+/**
+ * @brief CompressPathnameEx
+ * @param pathname
+ * @return
+ *
+ * Returns a pathname without symbolic links or redundant "." or ".." elements.
+ *
+ */
 QString CompressPathnameEx(const QString &pathname) {
     char path[PATH_MAX];
     strncpy(path, pathname.toLatin1().data(), sizeof(path));
@@ -264,6 +268,15 @@ QString CompressPathnameEx(const QString &pathname) {
 
     return QString();
 }
+
+/**
+ * @brief CompressPathnameEx
+ * @param pathname
+ * @return
+ *
+ * Returns a pathname without symbolic links or redundant "." or ".." elements.
+ *
+ */
 QString CompressPathnameEx(const std::string &pathname) {
     char path[PATH_MAX];
     strncpy(path, pathname.c_str(), sizeof(path));
@@ -277,10 +290,19 @@ QString CompressPathnameEx(const std::string &pathname) {
 }
 
 
-/*
-** Return false if everything's fine, true else.
-*/
+/**
+ * @brief CompressPathname
+ * @param pathname
+ * @return
+ *
+ * Returns true upon error, pathname context is replaced with compressed path
+ *
+ */
 bool CompressPathname(char *pathname) {
+
+    // TODO(eteran): replace this function with QFileInfo::canonicalFilePath
+    // once we figure out the best way to test and make sure that they are
+    // comparable (I beleive that they are).
 
 	/* (Added by schwarzenberg)
 	** replace multiple slashes by a single slash
@@ -404,11 +426,11 @@ static void copyThruSlash(char **toString, char **fromString) {
 QString GetTrailingPathComponentsEx(const QString &path, int noOfComponents) {
 	
 	/* Start from the rear */
-	int index = path.size();
+    int index = path.size();
 	int count = 0;
 
-	while (--index > 0) {
-		if (path[index] == QLatin1Char('/')) {
+    while (--index > 0) {
+        if (path[index] == QLatin1Char('/')) {
 			if (count++ == noOfComponents) {
 				break;
 			}

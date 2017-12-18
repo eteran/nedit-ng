@@ -1991,7 +1991,7 @@ void MainWindow::openFile(DocumentWidget *document, const QString &text) {
         for (size_t i = 0; i < globbuf.gl_pathc; i++) {
             QString pathname;
             QString filename;
-            if (ParseFilenameEx(QString::fromLatin1(globbuf.gl_pathv[i]), &filename, &pathname) != 0) {
+            if (!ParseFilenameEx(QString::fromLatin1(globbuf.gl_pathv[i]), &filename, &pathname) != 0) {
                 QApplication::beep();
             } else {
                 DocumentWidget::EditExistingFileEx(
