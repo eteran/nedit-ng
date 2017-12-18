@@ -2,20 +2,23 @@
 #include "util/ClearCase.h"
 #include <QString>
 
-namespace {
-
-bool ClearCaseViewTagFound = false;
-QString ClearCaseViewRoot;
-QString ClearCaseViewTag;
-
-}
-
 namespace ClearCase {
 
+/**
+ * @brief GetVersionExtendedPathIndex
+ * @param fullname
+ * @return
+ */
 int GetVersionExtendedPathIndex(const QString &fullname) {
 	return fullname.indexOf(QLatin1String("@@/"));
 }
 
+
+/**
+ * @brief GetVersionExtendedPath
+ * @param fullname
+ * @return
+ */
 QString GetVersionExtendedPath(const QString &fullname) {
 	int n = fullname.indexOf(QLatin1String("@@/"));
 	if(n == -1) {
@@ -35,6 +38,11 @@ QString GetVersionExtendedPath(const QString &fullname) {
 ** compiled. (Thanks to Max Vohlken)
 */
 QString GetViewTag() {
+
+    static bool ClearCaseViewTagFound = false;
+    static QString ClearCaseViewRoot;
+    static QString ClearCaseViewTag;
+
 	if (!ClearCaseViewTagFound) {
 		/* Extract the view name from the CLEARCASE_ROOT environment variable */
         QByteArray envPtr = qgetenv("CLEARCASE_ROOT");
