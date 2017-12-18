@@ -693,13 +693,13 @@ void BasicTextBuffer<Ch, Tr>::BufRectSelect(int start, int end, int rectStart, i
 }
 
 template <class Ch, class Tr>
-int BasicTextBuffer<Ch, Tr>::BufGetSelectionPos(int *start, int *end, bool *isRect, int *rectStart, int *rectEnd) const noexcept {
+bool BasicTextBuffer<Ch, Tr>::BufGetSelectionPos(int *start, int *end, bool *isRect, int *rectStart, int *rectEnd) const noexcept {
     return primary_.getSelectionPos(start, end, isRect, rectStart, rectEnd);
 }
 
 // Same as above, but also returns TRUE for empty selections
 template <class Ch, class Tr>
-int BasicTextBuffer<Ch, Tr>::BufGetEmptySelectionPos(int *start, int *end, bool *isRect, int *rectStart, int *rectEnd) const noexcept {
+bool BasicTextBuffer<Ch, Tr>::BufGetEmptySelectionPos(int *start, int *end, bool *isRect, int *rectStart, int *rectEnd) const noexcept {
     return primary_.getSelectionPos(start, end, isRect, rectStart, rectEnd) || primary_.zeroWidth;
 }
 
@@ -744,7 +744,7 @@ void BasicTextBuffer<Ch, Tr>::BufSecRectSelect(int start, int end, int rectStart
 }
 
 template <class Ch, class Tr>
-int BasicTextBuffer<Ch, Tr>::BufGetSecSelectPos(int *start, int *end, bool *isRect, int *rectStart, int *rectEnd) const noexcept {
+bool BasicTextBuffer<Ch, Tr>::BufGetSecSelectPos(int *start, int *end, bool *isRect, int *rectStart, int *rectEnd) const noexcept {
     return secondary_.getSelectionPos(start, end, isRect, rectStart, rectEnd);
 }
 

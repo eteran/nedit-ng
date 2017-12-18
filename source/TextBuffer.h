@@ -2,6 +2,7 @@
 #ifndef TEXT_BUFFER_H_
 #define TEXT_BUFFER_H_
 
+#include "TextBufferFwd.h"
 #include "TextSelection.h"
 #include "util/string_view.h"
 
@@ -10,7 +11,7 @@
 #include <deque>
 #include <string>
 
-#include "TextBufferFwd.h"
+
 
 template <class Ch, class Tr>
 class BasicTextBuffer {
@@ -64,12 +65,12 @@ public:
     int BufCountLines(int startPos, int endPos) const noexcept;
     int BufCursorPosHint() const noexcept;
     int BufEndOfLine(int pos) const noexcept;
-    int BufGetEmptySelectionPos(int *start, int *end, bool *isRect, int *rectStart, int *rectEnd) const noexcept;
+    bool BufGetEmptySelectionPos(int *start, int *end, bool *isRect, int *rectStart, int *rectEnd) const noexcept;
     int BufGetExpandedChar(int pos, int indent, Ch outStr[MAX_EXP_CHAR_LEN]) const noexcept;
     int BufGetHighlightPos(int *start, int *end, bool *isRect, int *rectStart, int *rectEnd) const noexcept;
     int BufGetLength() const noexcept;
-    int BufGetSecSelectPos(int *start, int *end, bool *isRect, int *rectStart, int *rectEnd) const noexcept;
-    int BufGetSelectionPos(int *start, int *end, bool *isRect, int *rectStart, int *rectEnd) const noexcept;
+    bool BufGetSecSelectPos(int *start, int *end, bool *isRect, int *rectStart, int *rectEnd) const noexcept;
+    bool BufGetSelectionPos(int *start, int *end, bool *isRect, int *rectStart, int *rectEnd) const noexcept;
     int BufGetTabDistance() const noexcept;
     int BufGetTabDist() const noexcept;
     int BufStartOfLine(int pos) const noexcept;

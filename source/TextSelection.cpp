@@ -41,7 +41,7 @@ void TextSelection::setRectSelect(int newStart, int newEnd, int newRectStart, in
  * @param rectEnd
  * @return
  */
-int TextSelection::getSelectionPos(int *start, int *end, bool *isRect, int *rectStart, int *rectEnd) const {
+bool TextSelection::getSelectionPos(int *start, int *end, bool *isRect, int *rectStart, int *rectEnd) const {
 	// Always fill in the parameters (zero-width can be requested too). 
 	*isRect = this->rectangular;
 	*start  = this->start;
@@ -54,12 +54,12 @@ int TextSelection::getSelectionPos(int *start, int *end, bool *isRect, int *rect
 }
 
 /**
- * Update an individual selection for changes in the corresponding text
- *
  * @brief TextSelection::updateSelection
  * @param pos
  * @param nDeleted
  * @param nInserted
+ *
+ * Update an individual selection for changes in the corresponding text
  */
 void TextSelection::updateSelection(int pos, int nDeleted, int nInserted) {
 	if ((!selected && !zeroWidth) || pos > end) {
@@ -86,17 +86,17 @@ void TextSelection::updateSelection(int pos, int nDeleted, int nInserted) {
 }
 
 /*
-** Return true if position "pos" with indentation "dispIndex" is in
-** selection "this"
+** Return true if position "pos" with indentation "dispIndex" is in this
+** selection
 */
 bool TextSelection::inSelection(int pos, int lineStartPos, int dispIndex) const {
-	return this->selected && ((!this->rectangular && pos >= this->start && pos < this->end) || (this->rectangular && pos >= this->start && lineStartPos <= this->end && dispIndex >= this->rectStart && dispIndex < this->rectEnd));
+    return this->selected && ((!rectangular && pos >= start && pos < end) || (rectangular && pos >= start && lineStartPos <= end && dispIndex >= rectStart && dispIndex < rectEnd));
 }
 
 /*
-** Return true if the selection "this" is rectangular, and touches a
-** buffer position withing "rangeStart" to "rangeEnd"
+** Return true if this selection is rectangular, and touches a buffer position
+** within "rangeStart" to "rangeEnd"
 */
 bool TextSelection::rangeTouchesRectSel(int rangeStart, int rangeEnd) const {
-	return this->selected && this->rectangular && this->end >= rangeStart && this->start <= rangeEnd;
+    return selected && rectangular && end >= rangeStart && start <= rangeEnd;
 }

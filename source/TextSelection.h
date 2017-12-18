@@ -4,7 +4,7 @@
 
 class TextSelection {
 public:
-    int getSelectionPos(int *start, int *end, bool *isRect, int *rectStart, int *rectEnd) const;
+    bool getSelectionPos(int *start, int *end, bool *isRect, int *rectStart, int *rectEnd) const;
     bool inSelection(int pos, int lineStartPos, int dispIndex) const;
     bool rangeTouchesRectSel(int rangeStart, int rangeEnd) const;
 	void setRectSelect(int newStart, int newEnd, int newRectStart, int newRectEnd);
