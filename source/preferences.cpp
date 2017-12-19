@@ -243,6 +243,10 @@ void SetPrefSearch(SearchType searchType) {
     g_Settings.searchMethod = searchType;
 }
 
+bool GetPrefColorizeHighlightedText() {
+    return g_Settings.colorizeHighlightedText;
+}
+
 SearchType GetPrefSearch() {
     return g_Settings.searchMethod;
 }

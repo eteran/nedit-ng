@@ -374,6 +374,7 @@ TextArea::TextArea(DocumentWidget *document, TextBuffer *buffer, QFont fontStruc
     // defaults for the "resources"
     P_cursorBlinkRate = QApplication::cursorFlashTime() / 2;
 
+    P_colorizeHighlightedText = GetPrefColorizeHighlightedText();
     P_rows           = GetPrefRows();
     P_columns        = GetPrefCols();
     P_readOnly       = document->lockReasons().isAnyLocked();
@@ -3330,9 +3331,10 @@ void TextArea::drawString(QPainter *painter, int style, int x, int y, int toX, c
             // basically what it does is make it so highlights are disabled inside of
             // selections. Giving the user control over the foreground color inside
             // a highlight selection.
-            #if 0
+            if(!P_colorizeHighlightedText) {
                 fground = palette().color(QPalette::HighlightedText);
-            #endif
+            }
+
             } else if(style & HIGHLIGHT_MASK) {
                 bground = highlightBGPixel_;
             } else if(style & RANGESET_MASK) {

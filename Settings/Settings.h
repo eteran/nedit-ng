@@ -69,7 +69,7 @@ public:
     bool toolTips;
     bool warnExit;
     bool warnFileMods;
-    bool warnRealFileMods;
+    bool warnRealFileMods;    
     int fileVersion;
     IndentStyle autoIndent;
     WrapStyle autoWrap;
@@ -102,6 +102,7 @@ public:
 
 public:
     // Advanced
+    bool colorizeHighlightedText;
     bool alwaysCheckRelativeTagsSpecs;
     bool findReplaceUsesSelection;
     bool focusOnRaise;

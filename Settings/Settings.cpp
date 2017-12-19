@@ -167,6 +167,7 @@ void Settings::loadPreferences() {
     smartTags                         = settings.value(tr("nedit.smartTags"),					      true).toBool();
     typingHidesPointer                = settings.value(tr("nedit.typingHidesPointer"),  		      false).toBool();
     alwaysCheckRelativeTagsSpecs      = settings.value(tr("nedit.alwaysCheckRelativeTagsSpecs"),      true).toBool();
+    colorizeHighlightedText           = settings.value(tr("nedit.colorizeHighlightedText"),           true).toBool();
     prefFileRead                      = settings.value(tr("nedit.prefFileRead"),				      false).toBool();
     findReplaceUsesSelection          = settings.value(tr("nedit.findReplaceUsesSelection"),	      false).toBool();    
     titleFormat                       = settings.value(tr("nedit.titleFormat"),                       QLatin1String("{%c} [%s] %f (%S) - %d")).toString();
@@ -260,6 +261,7 @@ void Settings::importSettings(const QString &filename) {
     smartTags                         = settings.value(tr("nedit.smartTags"),					      smartTags).toBool();
     typingHidesPointer                = settings.value(tr("nedit.typingHidesPointer"),  		      typingHidesPointer).toBool();
     alwaysCheckRelativeTagsSpecs      = settings.value(tr("nedit.alwaysCheckRelativeTagsSpecs"),      alwaysCheckRelativeTagsSpecs).toBool();
+    colorizeHighlightedText           = settings.value(tr("nedit.colorizeHighlightedText"),           colorizeHighlightedText).toBool();
     prefFileRead                      = settings.value(tr("nedit.prefFileRead"),				      prefFileRead).toBool();
     findReplaceUsesSelection          = settings.value(tr("nedit.findReplaceUsesSelection"),	      findReplaceUsesSelection).toBool();    
     titleFormat                       = settings.value(tr("nedit.titleFormat"),                       titleFormat).toString();
@@ -346,6 +348,7 @@ bool Settings::savePreferences() {
     settings.setValue(tr("nedit.smartTags"), smartTags);
     settings.setValue(tr("nedit.typingHidesPointer"), typingHidesPointer);
     settings.setValue(tr("nedit.alwaysCheckRelativeTagsSpecs"), alwaysCheckRelativeTagsSpecs);
+    settings.setValue(tr("nedit.colorizeHighlightedText"), colorizeHighlightedText);
     settings.setValue(tr("nedit.prefFileRead"), prefFileRead);
     settings.setValue(tr("nedit.findReplaceUsesSelection"), findReplaceUsesSelection);
     settings.setValue(tr("nedit.titleFormat"), titleFormat);

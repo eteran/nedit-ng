@@ -23,6 +23,7 @@ class QWidget;
 
 enum ColorTypes : int;
 
+bool GetPrefColorizeHighlightedText();
 bool GetPrefAlwaysCheckRelTagsSpecs();
 bool GetPrefAppendLF();
 bool GetPrefAutoSave();

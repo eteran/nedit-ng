@@ -446,6 +446,7 @@ private:
     std::string P_delimiters;
 
 private:
+    bool        P_colorizeHighlightedText;
 	bool        P_autoWrap;
 	bool        P_continuousWrap;
 	bool        P_autoIndent;
