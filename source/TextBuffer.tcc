@@ -12,26 +12,12 @@
 #include "util/algorithm.h"
 
 /*
-** Free a text buffer
-*/
-template <class Ch, class Tr>
-BasicTextBuffer<Ch, Tr>::~BasicTextBuffer() noexcept {
-    delete [] buf_;
-}
-
-/*
 ** Get the entire contents of a text buffer.  Memory is allocated to contain
 ** the returned string, which the caller must free.
 */
 template <class Ch, class Tr>
 auto BasicTextBuffer<Ch, Tr>::BufGetAllEx() const -> string_type {
-    string_type text;
-    text.reserve(static_cast<size_t>(length_));
-
-    std::copy_n(buf_,           gapStart_,           std::back_inserter(text));
-    std::copy_n(&buf_[gapEnd_], length_ - gapStart_, std::back_inserter(text));
-
-    return text;
+    return buffer_.to_string();
 }
 
 /*
@@ -43,21 +29,7 @@ auto BasicTextBuffer<Ch, Tr>::BufGetAllEx() const -> string_type {
 */
 template <class Ch, class Tr>
 auto BasicTextBuffer<Ch, Tr>::BufAsStringEx() noexcept -> view_type {
-
-    const int bufLen   = length_;
-    int leftLen        = gapStart_;
-    const int rightLen = bufLen - leftLen;
-
-    // find where best to put the gap to minimise memory movement
-    if (leftLen != 0 && rightLen != 0) {
-        leftLen = (leftLen < rightLen) ? 0 : bufLen;
-        moveGap(leftLen);
-    }
-
-    // get the start position of the actual data
-    Ch *const text = &buf_[(leftLen == 0) ? gapEnd_ : 0];
-
-    return view_type(text, bufLen);
+    return buffer_.to_view();
 }
 
 /*
@@ -66,29 +38,14 @@ auto BasicTextBuffer<Ch, Tr>::BufAsStringEx() noexcept -> view_type {
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufSetAllEx(view_type text) {
 
-    const auto length = gsl::narrow<int>(text.size());
+    const int64_t length = text.size();
 
-    callPreDeleteCBs(0, length_);
+    callPreDeleteCBs(0, buffer_.size());
 
     // Save information for redisplay, and get rid of the old buffer
     const string_type deletedText = BufGetAllEx();
 
-    delete [] buf_;
-
-    // Start a new buffer with a gap of PreferredGapSize in the center
-    buf_ = new Ch[length + PreferredGapSize + 1];
-    buf_[length + PreferredGapSize] = Ch();
-
-    length_   = length;
-    gapStart_ = length / 2;
-    gapEnd_   = gapStart_ + PreferredGapSize;
-
-    std::copy_n(&text[0], gapStart_, buf_);
-    std::copy_n(&text[gapStart_], length - gapStart_, &buf_[gapEnd_]);
-
-#ifdef PURIFY
-    std::fill(&buf_[gapStart_], &buf_[gapEnd_], Ch('.'));
-#endif
+    buffer_.assign(text);
 
     // Zero all of the existing selections
     updateSelections(0, deletedText.size(), 0);
@@ -105,38 +62,21 @@ void BasicTextBuffer<Ch, Tr>::BufSetAllEx(view_type text) {
 template <class Ch, class Tr>
 auto BasicTextBuffer<Ch, Tr>::BufGetRangeEx(int start, int end) const -> string_type {
 
-    string_type text;
-
     /* Make sure start and end are ok.
        If start is bad, return "", if end is bad, adjust it. */
-    if (start < 0 || start > length_) {
-        return text;
+    if (start < 0 || start > buffer_.size()) {
+        return string_type();
     }
 
     if (end < start) {
         std::swap(start, end);
     }
 
-    if (end > length_) {
-        end = length_;
+    if (end > buffer_.size()) {
+        end = buffer_.size();
     }
 
-    const int length = end - start;
-    text.reserve(length);
-
-    // Copy the text from the buffer to the returned string
-    if (end <= gapStart_) {
-        std::copy_n(&buf_[start], length, std::back_inserter(text));
-    } else if (start >= gapStart_) {
-        std::copy_n(&buf_[start + (gapEnd_ - gapStart_)], length, std::back_inserter(text));
-    } else {
-        const int part1Length = gapStart_ - start;
-
-        std::copy_n(&buf_[start],   part1Length,          std::back_inserter(text));
-        std::copy_n(&buf_[gapEnd_], length - part1Length, std::back_inserter(text));
-    }
-
-    return text;
+    return buffer_.to_string(start, end);
 }
 
 /*
@@ -145,13 +85,10 @@ auto BasicTextBuffer<Ch, Tr>::BufGetRangeEx(int start, int end) const -> string_
 template <class Ch, class Tr>
 Ch BasicTextBuffer<Ch, Tr>::BufGetCharacter(int pos) const noexcept {
 
-    if (pos < 0 || pos >= length_)
+    if (pos < 0 || pos >= buffer_.size())
         return Ch();
 
-    if (pos < gapStart_)
-        return buf_[pos];
-
-    return buf_[pos + (gapEnd_ - gapStart_)];
+    return buffer_[pos];
 }
 
 /*
@@ -161,8 +98,8 @@ template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufInsertEx(int pos, view_type text) noexcept {
 
     // if pos is not contiguous to existing text, make it
-    if (pos > length_) {
-        pos = length_;
+    if (pos > buffer_.size()) {
+        pos = buffer_.size();
     }
 
     if (pos < 0) {
@@ -182,8 +119,8 @@ template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufInsertEx(int pos, Ch ch) noexcept {
 
     // if pos is not contiguous to existing text, make it
-    if (pos > length_) {
-        pos = length_;
+    if (pos > buffer_.size()) {
+        pos = buffer_.size();
     }
 
     if (pos < 0) {
@@ -227,16 +164,16 @@ void BasicTextBuffer<Ch, Tr>::BufRemove(int start, int end) noexcept {
         std::swap(start, end);
     }
 
-    if (start > length_) {
-        start = length_;
+    if (start > buffer_.size()) {
+        start = buffer_.size();
     }
 
     if (start < 0) {
         start = 0;
     }
 
-    if (end > length_) {
-        end = length_;
+    if (end > buffer_.size()) {
+        end = buffer_.size();
     }
 
     if (end < 0) {
@@ -258,30 +195,8 @@ void BasicTextBuffer<Ch, Tr>::BufCopyFromBuf(BasicTextBuffer<Ch, Tr> *fromBuf, i
 
     const int length = fromEnd - fromStart;
 
-    /* Prepare the buffer to receive the new text.  If the new text fits in
-       the current buffer, just move the gap (if necessary) to where
-       the text should be inserted.  If the new text is too large, reallocate
-       the buffer with a gap large enough to accomodate the new text and a
-       gap of PreferredGapSize */
-    if (length > gapEnd_ - gapStart_) {
-        reallocateBuf(toPos, length + PreferredGapSize);
-    } else if (toPos != gapStart_) {
-        moveGap(toPos);
-    }
+    buffer_.insert(toPos, fromBuf->buffer_.to_view(fromStart, fromEnd));
 
-    // Insert the new text (toPos now corresponds to the start of the gap)
-    if (fromEnd <= fromBuf->gapStart_) {
-        std::copy_n(&fromBuf->buf_[fromStart], length, &buf_[toPos]);
-    } else if (fromStart >= fromBuf->gapStart_) {
-        std::copy_n(&fromBuf->buf_[fromStart + (fromBuf->gapEnd_ - fromBuf->gapStart_)], length, &buf_[toPos]);
-    } else {
-        const int part1Length = fromBuf->gapStart_ - fromStart;
-        std::copy_n(&fromBuf->buf_[fromStart], part1Length, &buf_[toPos]);
-        std::copy_n(&fromBuf->buf_[fromBuf->gapEnd_], length - part1Length, &buf_[toPos + part1Length]);
-    }
-
-    gapStart_ += length;
-    length_   += length;
     updateSelections(toPos, 0, length);
 }
 
@@ -378,7 +293,7 @@ void BasicTextBuffer<Ch, Tr>::overlayRectEx(int startPos, int rectStart, int rec
         std::copy_n(temp.begin(), len, outPtr);
 
         *outPtr++ = Ch('\n');
-        lineStart = (lineEnd < length_) ? lineEnd + 1 : length_;
+        lineStart = (lineEnd < buffer_.size()) ? lineEnd + 1 : buffer_.size();
 
         if (insPtr == insText.end()) {
             break;
@@ -599,14 +514,14 @@ void BasicTextBuffer<Ch, Tr>::BufSetTabDistance(int tabDist) noexcept {
 
     /* First call the pre-delete callbacks with the previous tab setting
        still active. */
-    callPreDeleteCBs(0, length_);
+    callPreDeleteCBs(0, buffer_.size());
 
     // Change the tab setting
     tabDist_ = tabDist;
 
     // Force any display routines to redisplay everything
     view_type deletedText = BufAsStringEx();
-    callModifyCBs(0, length_, length_, 0, deletedText);
+    callModifyCBs(0, buffer_.size(), buffer_.size(), 0, deletedText);
 }
 
 template <class Ch, class Tr>
@@ -841,7 +756,7 @@ int BasicTextBuffer<Ch, Tr>::BufEndOfLine(int pos) const noexcept {
 
     int endPos;
     if (!searchForward(pos, Ch('\n'), &endPos)) {
-        return length_;
+        return buffer_.size();
     }
 
     return endPos;
@@ -937,7 +852,7 @@ int BasicTextBuffer<Ch, Tr>::BufCountDispChars(int lineStartPos, int targetPos) 
     Ch expandedChar[MAX_EXP_CHAR_LEN];
 
     int pos = lineStartPos;
-    while (pos < targetPos && pos < length_) {
+    while (pos < targetPos && pos < buffer_.size()) {
         charCount += BufGetExpandedChar(pos++, charCount, expandedChar);
     }
 
@@ -955,7 +870,7 @@ int BasicTextBuffer<Ch, Tr>::BufCountForwardDispChars(int lineStartPos, int nCha
     int charCount = 0;
 
     int pos = lineStartPos;
-    while (charCount < nChars && pos < length_) {
+    while (charCount < nChars && pos < buffer_.size()) {
         const Ch ch = BufGetCharacter(pos);
         if (ch == Ch('\n')) {
             return pos;
@@ -975,26 +890,16 @@ int BasicTextBuffer<Ch, Tr>::BufCountForwardDispChars(int lineStartPos, int nCha
 template <class Ch, class Tr>
 int BasicTextBuffer<Ch, Tr>::BufCountLines(int startPos, int endPos) const noexcept {
 
-    const int gapLen = gapEnd_ - gapStart_;
     int lineCount = 0;
 
     int pos = startPos;
-    while (pos < gapStart_) {
+
+    while (pos < buffer_.size()) {
         if (pos == endPos) {
             return lineCount;
         }
 
-        if (buf_[pos++] == Ch('\n')) {
-            lineCount++;
-        }
-    }
-
-    while (pos < length_) {
-        if (pos == endPos) {
-            return lineCount;
-        }
-
-        if (buf_[pos++ + gapLen] == Ch('\n')) {
+        if (buffer_[pos++] == Ch('\n')) {
             lineCount++;
         }
     }
@@ -1008,7 +913,6 @@ int BasicTextBuffer<Ch, Tr>::BufCountLines(int startPos, int endPos) const noexc
 template <class Ch, class Tr>
 int BasicTextBuffer<Ch, Tr>::BufCountForwardNLines(int startPos, int nLines) const noexcept {
 
-    int gapLen = gapEnd_ - gapStart_;
     int lineCount = 0;
 
     if (nLines == 0) {
@@ -1016,17 +920,9 @@ int BasicTextBuffer<Ch, Tr>::BufCountForwardNLines(int startPos, int nLines) con
     }
 
     int pos = startPos;
-    while (pos < gapStart_) {
-        if (buf_[pos++] == Ch('\n')) {
-            lineCount++;
-            if (lineCount == nLines) {
-                return pos;
-            }
-        }
-    }
 
-    while (pos < length_) {
-        if (buf_[pos++ + gapLen] == Ch('\n')) {
+    while (pos < buffer_.size()) {
+        if (buffer_[pos++] == Ch('\n')) {
             lineCount++;
             if (lineCount >= nLines) {
                 return pos;
@@ -1048,20 +944,11 @@ int BasicTextBuffer<Ch, Tr>::BufCountBackwardNLines(int startPos, int nLines) co
         return 0;
     }
 
-    const int gapLen = gapEnd_ - gapStart_;
     int pos          = startPos - 1;
     int lineCount    = -1;
 
-    while (pos >= gapStart_) {
-        if (buf_[pos + gapLen] == Ch('\n')) {
-            if (++lineCount >= nLines)
-                return pos + 1;
-        }
-        pos--;
-    }
-
     while (true) {
-        if (buf_[pos] == Ch('\n')) {
+        if (buffer_[pos] == Ch('\n')) {
             if (++lineCount >= nLines)
                 return pos + 1;
         }
@@ -1082,12 +969,11 @@ int BasicTextBuffer<Ch, Tr>::BufCountBackwardNLines(int startPos, int nLines) co
 template <class Ch, class Tr>
 bool BasicTextBuffer<Ch, Tr>::BufSearchForwardEx(int startPos, view_type searchChars, int *foundPos) const noexcept {
 
-    const int gapLen = gapEnd_ - gapStart_;
-    int pos          = startPos;
+    int pos = startPos;
 
-    while (pos < gapStart_) {
+    while (pos < buffer_.size()) {
         for (Ch ch : searchChars) {
-            if (buf_[pos] == ch) {
+            if (buffer_[pos] == ch) {
                 *foundPos = pos;
                 return true;
             }
@@ -1095,17 +981,7 @@ bool BasicTextBuffer<Ch, Tr>::BufSearchForwardEx(int startPos, view_type searchC
         pos++;
     }
 
-    while (pos < length_) {
-        for (Ch ch : searchChars) {
-            if (buf_[pos + gapLen] == ch) {
-                *foundPos = pos;
-                return true;
-            }
-        }
-        pos++;
-    }
-
-    *foundPos = length_;
+    *foundPos = buffer_.size();
     return false;
 }
 
@@ -1117,27 +993,16 @@ bool BasicTextBuffer<Ch, Tr>::BufSearchForwardEx(int startPos, view_type searchC
 template <class Ch, class Tr>
 bool BasicTextBuffer<Ch, Tr>::BufSearchBackwardEx(int startPos, view_type searchChars, int *foundPos) const noexcept {
 
-    const int gapLen = gapEnd_ - gapStart_;
-
     if (startPos == 0) {
         *foundPos = 0;
         return false;
     }
 
     int pos = (startPos == 0) ? 0 : startPos - 1;
-    while (pos >= gapStart_) {
-        for (Ch ch : searchChars) {
-            if (buf_[pos + gapLen] == ch) {
-                *foundPos = pos;
-                return true;
-            }
-        }
-        pos--;
-    }
 
     while (true) {
         for (Ch ch : searchChars) {
-            if (buf_[pos] == ch) {
+            if (buffer_[pos] == ch) {
                 *foundPos = pos;
                 return true;
             }
@@ -1159,44 +1024,12 @@ bool BasicTextBuffer<Ch, Tr>::BufSearchBackwardEx(int startPos, view_type search
 */
 template <class Ch, class Tr>
 int BasicTextBuffer<Ch, Tr>::BufCmpEx(int pos, view_type cmpText) const noexcept {
-
-    auto posEnd = pos + gsl::narrow<int>(cmpText.size());
-    if (posEnd > length_) {
-        return 1;
-    }
-
-    if (pos < 0) {
-        return -1;
-    }
-
-    if (posEnd <= gapStart_) {
-        return Tr::compare(&buf_[pos], cmpText.data(), cmpText.size());
-    } else if (pos >= gapStart_) {
-        return Tr::compare(&buf_[pos + (gapEnd_ - gapStart_)], cmpText.data(), cmpText.size());
-    } else {
-        const int part1Length = gapStart_ - pos;
-        const int result = Tr::compare(&buf_[pos], cmpText.data(), gsl::narrow<size_t>(part1Length));
-        if (result) {
-            return result;
-        }
-
-        return Tr::compare(&buf_[gapEnd_], &cmpText[part1Length], cmpText.size() - gsl::narrow<size_t>(part1Length));
-    }
+    return buffer_.compare(pos, cmpText);
 }
 
 template <class Ch, class Tr>
 int BasicTextBuffer<Ch, Tr>::BufCmpEx(int pos, Ch ch) const noexcept {
-
-    if (pos >= length_) {
-        return 1;
-    }
-
-    if (pos < 0) {
-        return -1;
-    }
-
-    const Ch buffer_char = BufGetCharacter(pos);
-    return Tr::compare(&buffer_char, &ch, 1);
+    return buffer_.compare(pos, ch);
 }
 
 /*
@@ -1208,24 +1041,10 @@ int BasicTextBuffer<Ch, Tr>::BufCmpEx(int pos, Ch ch) const noexcept {
 */
 template <class Ch, class Tr>
 int BasicTextBuffer<Ch, Tr>::insertEx(int pos, view_type text) noexcept {
-    const auto length = gsl::narrow<int>(text.size());
+    const int64_t length = text.size();
 
-    /* Prepare the buffer to receive the new text.  If the new text fits in
-       the current buffer, just move the gap (if necessary) to where
-       the text should be inserted.  If the new text is too large, reallocate
-       the buffer with a gap large enough to accomodate the new text and a
-       gap of PreferredGapSize */
-    if (length > gapEnd_ - gapStart_) {
-        reallocateBuf(pos, length + PreferredGapSize);
-    } else if (pos != gapStart_) {
-        moveGap(pos);
-    }
+    buffer_.insert(pos, text);
 
-    // Insert the new text (pos now corresponds to the start of the gap)
-    std::copy(text.begin(), text.end(), &buf_[pos]);
-
-    gapStart_ += length;
-    length_   += length;
     updateSelections(pos, 0, length);
 
     return length;
@@ -1234,24 +1053,10 @@ int BasicTextBuffer<Ch, Tr>::insertEx(int pos, view_type text) noexcept {
 template <class Ch, class Tr>
 int BasicTextBuffer<Ch, Tr>::insertEx(int pos, Ch ch) noexcept {
 
-    const auto length = 1;
+    const int64_t length = 1;
 
-    /* Prepare the buffer to receive the new text.  If the new text fits in
-       the current buffer, just move the gap (if necessary) to where
-       the text should be inserted.  If the new text is too large, reallocate
-       the buffer with a gap large enough to accomodate the new text and a
-       gap of PreferredGapSize */
-    if (length > gapEnd_ - gapStart_) {
-        reallocateBuf(pos, length + PreferredGapSize);
-    } else if (pos != gapStart_) {
-        moveGap(pos);
-    }
+    buffer_.insert(pos, ch);
 
-    // Insert the new text (pos now corresponds to the start of the gap)
-    buf_[pos] = ch;
-
-    gapStart_ += length;
-    length_   += length;
     updateSelections(pos, 0, length);
 
     return length;
@@ -1268,28 +1073,16 @@ int BasicTextBuffer<Ch, Tr>::insertEx(int pos, Ch ch) noexcept {
 template <class Ch, class Tr>
 bool BasicTextBuffer<Ch, Tr>::searchForward(int startPos, Ch searchChar, int *foundPos) const noexcept {
 
-    const int gapLen = gapEnd_ - gapStart_;
-
     int pos = startPos;
-    while (pos < gapStart_) {
-
-
-        if (buf_[pos] == searchChar) {
+    while (pos < buffer_.size()) {
+        if (buffer_[pos] == searchChar) {
             *foundPos = pos;
             return true;
         }
         pos++;
     }
 
-    while (pos < length_) {
-        if (buf_[pos + gapLen] == searchChar) {
-            *foundPos = pos;
-            return true;
-        }
-        pos++;
-    }
-
-    *foundPos = length_;
+    *foundPos = buffer_.size();
     return false;
 }
 
@@ -1304,27 +1097,14 @@ bool BasicTextBuffer<Ch, Tr>::searchForward(int startPos, Ch searchChar, int *fo
 template <class Ch, class Tr>
 bool BasicTextBuffer<Ch, Tr>::searchBackward(int startPos, Ch searchChar, int *foundPos) const noexcept {
 
-    const int gapLen = gapEnd_ - gapStart_;
-
-    assert(foundPos);
-
     if (startPos == 0) {
         *foundPos = 0;
         return false;
     }
 
     int pos = (startPos == 0) ? 0 : startPos - 1;
-
-    while (pos >= gapStart_) {
-        if (buf_[pos + gapLen] == searchChar) {
-            *foundPos = pos;
-            return true;
-        }
-        pos--;
-    }
-
     while (true) {
-        if (buf_[pos] == searchChar) {
+        if (buffer_[pos] == searchChar) {
             *foundPos = pos;
             return true;
         }
@@ -1387,19 +1167,7 @@ void BasicTextBuffer<Ch, Tr>::callPreDeleteCBs(int pos, int nDeleted) const noex
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::deleteRange(int start, int end) noexcept {
 
-    // if the gap is not contiguous to the area to remove, move it there
-    if (start > gapStart_) {
-        moveGap(start);
-    } else if (end < gapStart_) {
-        moveGap(end);
-    }
-
-    // expand the gap to encompass the deleted characters
-    gapEnd_   += (end - gapStart_);
-    gapStart_ -= (gapStart_ - start);
-
-    // update the length
-    length_ -= (end - start);
+    buffer_.erase(start, end);
 
     // fix up any selections which might be affected by the change
     updateSelections(start, end - start, 0);
@@ -1438,7 +1206,7 @@ void BasicTextBuffer<Ch, Tr>::deleteRect(int start, int end, int rectStart, int 
     int lineStart = start;
     auto outPtr = std::back_inserter(outStr);
 
-    while (lineStart <= length_ && lineStart <= end) {
+    while (lineStart <= buffer_.size() && lineStart <= end) {
         const int lineEnd = BufEndOfLine(lineStart);
         const string_type line = BufGetRangeEx(lineStart, lineEnd);
 
@@ -1487,7 +1255,7 @@ void BasicTextBuffer<Ch, Tr>::findRectSelBoundariesForCopy(int lineStartPos, int
     int indent = 0;
 
     // find the start of the selection
-    for (; pos < length_; pos++) {
+    for (; pos < buffer_.size(); pos++) {
         const Ch c = BufGetCharacter(pos);
         if (c == Ch('\n')) {
             break;
@@ -1507,7 +1275,7 @@ void BasicTextBuffer<Ch, Tr>::findRectSelBoundariesForCopy(int lineStartPos, int
     *selStart = pos;
 
     // find the end
-    for (; pos < length_; pos++) {
+    for (; pos < buffer_.size(); pos++) {
         const Ch c = BufGetCharacter(pos);
         if (c == Ch('\n')) {
             break;
@@ -1598,7 +1366,7 @@ void BasicTextBuffer<Ch, Tr>::insertColEx(int column, int startPos, view_type in
         std::copy_n(temp.begin(), len, outPtr);
 
         *outPtr++ = Ch('\n');
-        lineStart = lineEnd < length_ ? lineEnd + 1 : length_;
+        lineStart = lineEnd < buffer_.size() ? lineEnd + 1 : buffer_.size();
         if (insPtr == insText.end()) {
             break;
         }
@@ -1618,53 +1386,6 @@ void BasicTextBuffer<Ch, Tr>::insertColEx(int column, int startPos, view_type in
     *nInserted = gsl::narrow<int>(outStr.size());
     *nDeleted  = end - start;
     *endPos    = start + gsl::narrow<int>(outStr.size()) - len + endOffset;
-}
-
-template <class Ch, class Tr>
-void BasicTextBuffer<Ch, Tr>::moveGap(int pos) noexcept {
-
-    const int gapLen = gapEnd_ - gapStart_;
-
-    if (pos > gapStart_) {
-        Tr::move(&buf_[gapStart_], &buf_[gapEnd_], gsl::narrow<size_t>(pos - gapStart_));
-    } else {
-        Tr::move(&buf_[pos + gapLen], &buf_[pos], gsl::narrow<size_t>(gapStart_ - pos));
-    }
-
-    gapEnd_ += pos - gapStart_;
-    gapStart_ += pos - gapStart_;
-}
-
-/*
-** reallocate the text storage in "buf" to have a gap starting at "newGapStart"
-** and a gap size of "newGapLen", preserving the buffer's current contents.
-*/
-template <class Ch, class Tr>
-void BasicTextBuffer<Ch, Tr>::reallocateBuf(int newGapStart, int newGapLen) {
-
-    auto newBuf = new Ch[length_ + newGapLen + 1];
-    newBuf[length_ + PreferredGapSize] = Ch();
-    int newGapEnd = newGapStart + newGapLen;
-
-    if (newGapStart <= gapStart_) {
-        std::copy_n(buf_, newGapStart, newBuf);
-        std::copy_n(&buf_[newGapStart], gapStart_ - newGapStart, &newBuf[newGapEnd]);
-        std::copy_n(&buf_[gapEnd_], length_ - gapStart_, &newBuf[newGapEnd + gapStart_ - newGapStart]);
-    } else { // newGapStart > gapStart_
-        std::copy_n(buf_, gapStart_, newBuf);
-        std::copy_n(&buf_[gapEnd_], newGapStart - gapStart_, &newBuf[gapStart_]);
-        std::copy_n(&buf_[gapEnd_ + newGapStart - gapStart_], length_ - newGapStart, &newBuf[newGapEnd]);
-    }
-
-    delete [] buf_;
-
-    buf_      = newBuf;
-    gapStart_ = newGapStart;
-    gapEnd_   = newGapEnd;
-
-#ifdef PURIFY
-    std::fill(&buf_[gapStart_], &buf_[gapEnd_], Ch('.'));
-#endif
 }
 
 /*
@@ -1794,7 +1515,7 @@ void BasicTextBuffer<Ch, Tr>::updateSelections(int pos, int nDeleted, int nInser
 
 template <class Ch, class Tr>
 int BasicTextBuffer<Ch, Tr>::BufGetLength() const noexcept {
-    return length_;
+    return buffer_.size();
 }
 
 template <class Ch, class Tr>
@@ -2311,14 +2032,7 @@ BasicTextBuffer<Ch, Tr>::BasicTextBuffer() : BasicTextBuffer(0) {
 ** will need to hold
 */
 template <class Ch, class Tr>
-BasicTextBuffer<Ch, Tr>::BasicTextBuffer(int size) {
-
-    buf_ = new Ch[size + PreferredGapSize + 1];
-    buf_[size + PreferredGapSize] = Ch();
-
-#ifdef PURIFY
-    std::fill(&buf_[gapStart_], &buf_[gapEnd_], Ch('.'));
-#endif
+BasicTextBuffer<Ch, Tr>::BasicTextBuffer(int size) : buffer_(size) {
 }
 
 template <class Ch, class Tr>

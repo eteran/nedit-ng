@@ -2,6 +2,7 @@
 #ifndef TEXT_BUFFER_H_
 #define TEXT_BUFFER_H_
 
+#include "gap_buffer.h"
 #include "TextBufferFwd.h"
 #include "TextSelection.h"
 #include "util/string_view.h"
@@ -40,7 +41,7 @@ public:
     explicit BasicTextBuffer(int size);
     BasicTextBuffer(const BasicTextBuffer &)            = delete;
     BasicTextBuffer &operator=(const BasicTextBuffer &) = delete;
-    ~BasicTextBuffer() noexcept;
+    ~BasicTextBuffer() noexcept                         = default;
 
 public:
     static int BufCharWidth(Ch ch, int indent, int tabDist) noexcept;
@@ -140,9 +141,7 @@ private:
     void deleteRect(int start, int end, int rectStart, int rectEnd, int *replaceLen, int *endPos);
     void findRectSelBoundariesForCopy(int lineStartPos, int rectStart, int rectEnd, int *selStart, int *selEnd) const noexcept;
     void insertColEx(int column, int startPos, view_type insText, int *nDeleted, int *nInserted, int *endPos);
-    void moveGap(int pos) noexcept;
     void overlayRectEx(int startPos, int rectStart, int rectEnd, view_type insText, int *nDeleted, int *nInserted, int *endPos);
-    void reallocateBuf(int newGapStart, int newGapLen);
     void redisplaySelection(const TextSelection *oldSelection, TextSelection *newSelection) noexcept;
     void removeSelected(const TextSelection *sel) noexcept;
     void replaceSelectedEx(TextSelection *sel, view_type text) noexcept;
@@ -167,19 +166,16 @@ private:
     static string_type copyLineEx(Ran first, Ran last);
 
 private:
-    int gapStart_        = 0;                // points to the first character of the gap
-    int gapEnd_          = PreferredGapSize; // points to the first char after the gap
-    int length_          = 0;                // length of the text in the buffer (the length of the buffer itself must be calculated: gapEnd gapStart + length)
     int tabDist_         = DefaultTabWidth;  // equiv. number of characters in a tab
     bool useTabs_        = true;             // true if buffer routines are allowed to use tabs for padding in rectangular operations
     int cursorPosHint_   = 0;                // hint for reasonable cursor position after a buffer modification operation
     bool syncXSelection_ = true;
 
 private:
-    Ch *buf_;                 // allocated memory where the text is stored
-    TextSelection primary_;   // highlighted areas
-    TextSelection secondary_;
-    TextSelection highlight_;
+    gap_buffer<char> buffer_;
+    TextSelection    primary_;   // highlighted areas
+    TextSelection    secondary_;
+    TextSelection    highlight_;
 
 private:
     std::deque<std::pair<bufPreDeleteCallbackProc, void *>> preDeleteProcs_; // procedure to call before text is deleted from the buffer; at most one is supported.
