@@ -7,8 +7,6 @@
 #include <cassert>
 #include "util/string_view.h"
 
-#define PURIFY
-
 template <class Ch = char, class Tr = std::char_traits<Ch>>
 class gap_buffer {
 public:
