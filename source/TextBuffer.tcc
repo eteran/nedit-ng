@@ -8,7 +8,6 @@
 #include <QtDebug>
 #include <QApplication>
 #include <QClipboard>
-#include "util/raise.h"
 #include "util/algorithm.h"
 
 /*
