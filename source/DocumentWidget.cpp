@@ -407,8 +407,13 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
     // works correctly
     LastCreated = this;
 
+#if 0
     ui.labelFileAndSize->setElideMode(Qt::ElideLeft);
-
+#else
+    auto pal = ui.labelFileAndSize->palette();
+    pal.setBrush(QPalette::Base, pal.brush(QPalette::Window));
+    ui.labelFileAndSize->setPalette(pal);
+#endif
     // Every document has a backing buffer
 	buffer_ = new TextBuffer();
     buffer_->BufAddModifyCB(SyntaxHighlightModifyCBEx, this);
