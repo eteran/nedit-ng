@@ -447,7 +447,7 @@ void gap_buffer<Ch, Tr>::assign(view_type str) {
     delete [] buf_;
 
     // Start a new buffer with a gap of GapSize in the center
-    buf_       = new Ch[length + PreferredGapSize + 1];
+    buf_       = new Ch[length + PreferredGapSize];
     size_      = length;
     gap_start_ = length / 2;
     gap_end_   = gap_start_ + PreferredGapSize;
