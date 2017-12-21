@@ -59,7 +59,7 @@ void BasicTextBuffer<Ch, Tr>::BufSetAllEx(view_type text) {
 ** include the character pointed to by "end"
 */
 template <class Ch, class Tr>
-auto BasicTextBuffer<Ch, Tr>::BufGetRangeEx(int start, int end) const -> string_type {
+auto BasicTextBuffer<Ch, Tr>::BufGetRangeEx(int64_t start, int64_t end) const -> string_type {
 
     /* Make sure start and end are ok.
        If start is bad, return "", if end is bad, adjust it. */
@@ -82,10 +82,11 @@ auto BasicTextBuffer<Ch, Tr>::BufGetRangeEx(int start, int end) const -> string_
 ** Return the character at buffer position "pos".  Positions start at 0.
 */
 template <class Ch, class Tr>
-Ch BasicTextBuffer<Ch, Tr>::BufGetCharacter(int pos) const noexcept {
+Ch BasicTextBuffer<Ch, Tr>::BufGetCharacter(int64_t pos) const noexcept {
 
-    if (pos < 0 || pos >= buffer_.size())
+    if (pos < 0 || pos >= buffer_.size()) {
         return Ch();
+    }
 
     return buffer_[pos];
 }
@@ -94,7 +95,7 @@ Ch BasicTextBuffer<Ch, Tr>::BufGetCharacter(int pos) const noexcept {
 ** Insert null-terminated string "text" at position "pos" in "buf"
 */
 template <class Ch, class Tr>
-void BasicTextBuffer<Ch, Tr>::BufInsertEx(int pos, view_type text) noexcept {
+void BasicTextBuffer<Ch, Tr>::BufInsertEx(int64_t pos, view_type text) noexcept {
 
     // if pos is not contiguous to existing text, make it
     if (pos > buffer_.size()) {
@@ -109,13 +110,13 @@ void BasicTextBuffer<Ch, Tr>::BufInsertEx(int pos, view_type text) noexcept {
     callPreDeleteCBs(pos, 0);
 
     // insert and redisplay
-    const int nInserted = insertEx(pos, text);
+    const int64_t nInserted = insertEx(pos, text);
     cursorPosHint_ = pos + nInserted;
     callModifyCBs(pos, 0, nInserted, 0, {});
 }
 
 template <class Ch, class Tr>
-void BasicTextBuffer<Ch, Tr>::BufInsertEx(int pos, Ch ch) noexcept {
+void BasicTextBuffer<Ch, Tr>::BufInsertEx(int64_t pos, Ch ch) noexcept {
 
     // if pos is not contiguous to existing text, make it
     if (pos > buffer_.size()) {
@@ -130,7 +131,7 @@ void BasicTextBuffer<Ch, Tr>::BufInsertEx(int pos, Ch ch) noexcept {
     callPreDeleteCBs(pos, 0);
 
     // insert and redisplay
-    const int nInserted = insertEx(pos, ch);
+    const int64_t nInserted = insertEx(pos, ch);
     cursorPosHint_ = pos + nInserted;
     callModifyCBs(pos, 0, nInserted, 0, {});
 }
@@ -140,11 +141,11 @@ void BasicTextBuffer<Ch, Tr>::BufInsertEx(int pos, Ch ch) noexcept {
 ** null-terminated string "text" in their place in in "buf"
 */
 template <class Ch, class Tr>
-void BasicTextBuffer<Ch, Tr>::BufReplaceEx(int start, int end, view_type text) noexcept {
+void BasicTextBuffer<Ch, Tr>::BufReplaceEx(int64_t start, int64_t end, view_type text) noexcept {
 
     // TODO(eteran): 2.0, do same type of parameter normalization as BufRemove does?
 
-    const auto nInserted = gsl::narrow<int>(text.size());
+    const int64_t nInserted = text.size();
 
     callPreDeleteCBs(start, end - start);
     const string_type deletedText = BufGetRangeEx(start, end);
@@ -156,7 +157,7 @@ void BasicTextBuffer<Ch, Tr>::BufReplaceEx(int start, int end, view_type text) n
 }
 
 template <class Ch, class Tr>
-void BasicTextBuffer<Ch, Tr>::BufRemove(int start, int end) noexcept {
+void BasicTextBuffer<Ch, Tr>::BufRemove(int64_t start, int64_t end) noexcept {
 
     // Make sure the arguments make sense
     if (start > end) {
@@ -190,9 +191,9 @@ void BasicTextBuffer<Ch, Tr>::BufRemove(int start, int end) noexcept {
 }
 
 template <class Ch, class Tr>
-void BasicTextBuffer<Ch, Tr>::BufCopyFromBuf(BasicTextBuffer<Ch, Tr> *fromBuf, int fromStart, int fromEnd, int toPos) noexcept {
+void BasicTextBuffer<Ch, Tr>::BufCopyFromBuf(BasicTextBuffer<Ch, Tr> *fromBuf, int64_t fromStart, int64_t fromEnd, int64_t toPos) noexcept {
 
-    const int length = fromEnd - fromStart;
+    const int64_t length = (fromEnd - fromStart);
 
     buffer_.insert(toPos, fromBuf->buffer_.to_view(fromStart, fromEnd));
 
@@ -244,7 +245,7 @@ void BasicTextBuffer<Ch, Tr>::BufInsertColEx(int column, int startPos, view_type
 ** column (as a hint for routines which need to set a cursor position).
 */
 template <class Ch, class Tr>
-void BasicTextBuffer<Ch, Tr>::overlayRectEx(int startPos, int rectStart, int rectEnd, view_type insText, int *nDeleted, int *nInserted, int *endPos) {
+void BasicTextBuffer<Ch, Tr>::overlayRectEx(int startPos, int rectStart, int rectEnd, view_type insText, int *nDeleted, int *nInserted, int64_t *endPos) {
     int len;
     int endOffset;
 
@@ -409,7 +410,7 @@ void BasicTextBuffer<Ch, Tr>::BufReplaceRectEx(int start, int end, int rectStart
     const string_type deletedText = BufGetRangeEx(start, end);
 
     // Delete then insert
-    int hint;
+    int64_t hint;
     int deleteInserted;
     deleteRect(start, end, rectStart, rectEnd, &deleteInserted, &hint);
 
@@ -1170,7 +1171,7 @@ void BasicTextBuffer<Ch, Tr>::deleteRange(int start, int end) noexcept {
 ** routines which need to position the cursor after a delete operation)
 */
 template <class Ch, class Tr>
-void BasicTextBuffer<Ch, Tr>::deleteRect(int start, int end, int rectStart, int rectEnd, int *replaceLen, int *endPos) {
+void BasicTextBuffer<Ch, Tr>::deleteRect(int start, int end, int rectStart, int rectEnd, int *replaceLen, int64_t *endPos) {
 
     int endOffset = 0;
 
@@ -1292,7 +1293,7 @@ void BasicTextBuffer<Ch, Tr>::findRectSelBoundariesForCopy(int lineStartPos, int
 ** routines which need to set a cursor position).
 */
 template <class Ch, class Tr>
-void BasicTextBuffer<Ch, Tr>::insertColEx(int column, int startPos, view_type insText, int *nDeleted, int *nInserted, int *endPos) {
+void BasicTextBuffer<Ch, Tr>::insertColEx(int column, int startPos, view_type insText, int *nDeleted, int *nInserted, int64_t *endPos) {
 
     int len;
     int endOffset;
