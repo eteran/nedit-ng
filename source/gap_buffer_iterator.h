@@ -9,7 +9,7 @@
 //  non-const version
 template <class Ch, class Tr>
 class gap_buffer_iterator {
-    using traits_type = typename std::iterator<std::random_access_iterator_tag, char>;
+    using traits_type = typename std::iterator<std::random_access_iterator_tag, Ch>;
 
     template <class U, class Y>
     friend class gap_buffer_const_iterator;
@@ -69,7 +69,7 @@ private:
 // const version
 template <class Ch, class Tr>
 class gap_buffer_const_iterator {
-    using traits_type = typename std::iterator<std::random_access_iterator_tag, const char>;
+    using traits_type = typename std::iterator<std::random_access_iterator_tag, const Ch>;
 public:
     using difference_type   = typename traits_type::difference_type;
     using iterator_category = typename traits_type::iterator_category;
