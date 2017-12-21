@@ -552,7 +552,10 @@ void BasicTextBuffer<Ch, Tr>::BufUnselect() noexcept {
     primary_.zeroWidth = false;
     redisplaySelection(&oldSelection, &primary_);
 
-#ifdef Q_OS_UNIX
+    // NOTE(eteran): I think this breaks some things involving another app
+    // having a selection and then clicking in one of our windows. Which results
+    // in us taking ownership of the selection but setting it to nothing :-/
+#if defined(Q_OS_UNIX) && 0
     if(syncXSelection_) {
         QApplication::clipboard()->setText(QString(), QClipboard::Selection);
     }
