@@ -2,17 +2,34 @@
 #ifndef GAP_BUFFER_H_
 #define GAP_BUFFER_H_
 
+#include "gap_buffer_fwd.h"
+#include "gap_buffer_iterator.h"
+
 #include <string>
 #include <algorithm>
 #include <cassert>
 #include "util/string_view.h"
 
-template <class Ch = char, class Tr = std::char_traits<Ch>>
+template <class Ch, class Tr>
 class gap_buffer {
 public:
     static constexpr int PreferredGapSize = 80;
     using string_type = std::basic_string<Ch, Tr>;
     using view_type   = view::basic_string_view<Ch, Tr>;
+
+public:
+    using value_type             = std::allocator<char>::value_type;
+    using allocator_type         = std::allocator<char>;
+    using size_type              = int64_t; // NOTE(eteran): typically unsigned...
+    using difference_type        = std::allocator<char>::difference_type;
+    using reference              = std::allocator<char>::reference;
+    using const_reference        = std::allocator<char>::const_reference;
+    using pointer                = std::allocator<char>::pointer;
+    using const_pointer          = std::allocator<char>::const_pointer;
+    using iterator               = gap_buffer_iterator<Ch, Tr>;
+    using const_iterator         = gap_buffer_const_iterator<Ch, Tr>;
+    using reverse_iterator       = std::reverse_iterator<iterator>;
+    using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
 public:
     gap_buffer();
@@ -22,7 +39,22 @@ public:
     ~gap_buffer() noexcept;
 
 public:
-    int64_t gap_size() const { return gapEnd_ - gapStart_; }
+    iterator begin()              { return iterator(this, 0); }
+    iterator end()                { return iterator(this, size()); }
+    const_iterator begin() const  { return const_iterator(this, 0); }
+    const_iterator end() const    { return const_iterator(this, size()); }
+    const_iterator cbegin() const { return const_iterator(this, 0); }
+    const_iterator cend() const   { return const_iterator(this, size()); }
+
+    reverse_iterator rbegin()              { return reverse_iterator(end()); }
+    reverse_iterator rend()                { return reverse_iterator(begin()); }
+    const_reverse_iterator rbegin() const  { return const_reverse_iterator(end()); }
+    const_reverse_iterator rend() const    { return const_reverse_iterator(begin()); }
+    const_reverse_iterator crbegin() const { return const_reverse_iterator(end()); }
+    const_reverse_iterator crend() const   { return const_reverse_iterator(begin()); }
+
+public:
+    int64_t gap_size() const { return gap_end_ - gap_start_; }
     int64_t size() const     { return size_; }
     bool empty() const       { return size() == 0; }
 
@@ -59,10 +91,10 @@ private:
     void delete_range(int64_t start, int64_t end);
 
 private:
-    Ch *buf_;           // points to the internal buffer
-    int64_t gapStart_;  // points to the first character of the gap
-    int64_t gapEnd_;    // points to the first char after the gap
-    int64_t size_;      // length of the text in the buffer (the length of the buffer itself must be calculated: gapEnd - gapStart + length)
+    Ch *buf_;            // points to the internal buffer
+    int64_t gap_start_;  // points to the first character of the gap
+    int64_t gap_end_;    // points to the first char after the gap
+    int64_t size_;       // length of the text in the buffer (the length of the buffer itself must be calculated: gapEnd - gapStart + length)
 };
 
 
@@ -80,8 +112,8 @@ template <class Ch, class Tr>
 gap_buffer<Ch, Tr>::gap_buffer(int64_t size) {
 
     buf_      = new Ch[size + PreferredGapSize];
-    gapStart_ = 0;
-    gapEnd_   = PreferredGapSize;
+    gap_start_ = 0;
+    gap_end_   = PreferredGapSize;
     size_     = 0;
 
 #ifdef PURIFY
@@ -103,7 +135,7 @@ gap_buffer<Ch, Tr>::~gap_buffer() noexcept {
 template <class Ch, class Tr>
 Ch gap_buffer<Ch, Tr>::operator[](int64_t n) const {
 
-    if (n < gapStart_) {
+    if (n < gap_start_) {
         return buf_[n];
     }
 
@@ -116,7 +148,7 @@ Ch gap_buffer<Ch, Tr>::operator[](int64_t n) const {
 template <class Ch, class Tr>
 Ch& gap_buffer<Ch, Tr>::operator[](int64_t n) {
 
-    if (n < gapStart_) {
+    if (n < gap_start_) {
         return buf_[n];
     }
 
@@ -133,7 +165,7 @@ Ch gap_buffer<Ch, Tr>::at(int64_t n) const {
         raise<std::out_of_range>("gap_buffer::operator[]");
     }
 
-    if (n < gapStart_) {
+    if (n < gap_start_) {
         return buf_[n];
     }
 
@@ -150,7 +182,7 @@ Ch& gap_buffer<Ch, Tr>::at(int64_t n) {
         raise<std::out_of_range>("gap_buffer::at");
     }
 
-    if (n < gapStart_) {
+    if (n < gap_start_) {
         return buf_[n];
     }
 
@@ -177,18 +209,18 @@ int gap_buffer<Ch, Tr>::compare(int64_t pos, view_type str) const {
         return -1;
     }
 
-    if (posEnd <= gapStart_) {
+    if (posEnd <= gap_start_) {
         return Tr::compare(&buf_[pos], str.data(), str.size());
-    } else if (pos >= gapStart_) {
+    } else if (pos >= gap_start_) {
         return Tr::compare(&buf_[pos + gap_size()], str.data(), str.size());
     } else {
-        const int64_t part1Length = gapStart_ - pos;
+        const int64_t part1Length = gap_start_ - pos;
         const int result = Tr::compare(&buf_[pos], str.data(), part1Length);
         if (result) {
             return result;
         }
 
-        return Tr::compare(&buf_[gapEnd_], &str[part1Length], str.size() - part1Length);
+        return Tr::compare(&buf_[gap_end_], &str[part1Length], str.size() - part1Length);
     }
 }
 
@@ -217,8 +249,8 @@ auto gap_buffer<Ch, Tr>::to_string() const -> string_type {
     string_type text;
     text.reserve(size());
 
-    std::copy_n(buf_,           gapStart_,          std::back_inserter(text));
-    std::copy_n(&buf_[gapEnd_], size() - gapStart_, std::back_inserter(text));
+    std::copy_n(buf_,            gap_start_,          std::back_inserter(text));
+    std::copy_n(&buf_[gap_end_], size() - gap_start_, std::back_inserter(text));
 
     return text;
 }
@@ -238,15 +270,15 @@ auto gap_buffer<Ch, Tr>::to_string(int64_t start, int64_t end) const -> string_t
     text.reserve(length);
 
     // Copy the text from the buffer to the returned string
-    if (end <= gapStart_) {
+    if (end <= gap_start_) {
         std::copy_n(&buf_[start], length, std::back_inserter(text));
-    } else if (start >= gapStart_) {
+    } else if (start >= gap_start_) {
         std::copy_n(&buf_[start + gap_size()], length, std::back_inserter(text));
     } else {
-        const int64_t part1Length = gapStart_ - start;
+        const int64_t part1Length = gap_start_ - start;
 
-        std::copy_n(&buf_[start],   part1Length,          std::back_inserter(text));
-        std::copy_n(&buf_[gapEnd_], length - part1Length, std::back_inserter(text));
+        std::copy_n(&buf_[start],    part1Length,          std::back_inserter(text));
+        std::copy_n(&buf_[gap_end_], length - part1Length, std::back_inserter(text));
     }
 
     return text;
@@ -259,7 +291,7 @@ template <class Ch, class Tr>
 auto gap_buffer<Ch, Tr>::to_view() -> view_type {
 
     const int64_t bufLen   = size();
-    int64_t leftLen        = gapStart_;
+    int64_t leftLen        = gap_start_;
     const int64_t rightLen = bufLen - leftLen;
 
     // find where best to put the gap to minimise memory movement
@@ -269,7 +301,7 @@ auto gap_buffer<Ch, Tr>::to_view() -> view_type {
     }
 
     // get the start position of the actual data
-    Ch *const text = &buf_[(leftLen == 0) ? gapEnd_ : 0];
+    Ch *const text = &buf_[(leftLen == 0) ? gap_end_ : 0];
 
     return view_type(text, bufLen);
 }
@@ -285,7 +317,7 @@ auto gap_buffer<Ch, Tr>::to_view(int64_t start, int64_t end) -> view_type {
     assert(start <= end);
 
     const int64_t bufLen   = size();
-    int64_t leftLen        = gapStart_;
+    int64_t leftLen        = gap_start_;
     const int64_t rightLen = bufLen - leftLen;
 
     // find where best to put the gap to minimise memory movement
@@ -295,7 +327,7 @@ auto gap_buffer<Ch, Tr>::to_view(int64_t start, int64_t end) -> view_type {
     }
 
     // get the start position of the actual data
-    Ch *const text = &buf_[(leftLen == 0) ? gapEnd_ : 0];
+    Ch *const text = &buf_[(leftLen == 0) ? gap_end_ : 0];
 
     return view_type(text + start, end - start);
 }
@@ -333,15 +365,15 @@ void gap_buffer<Ch, Tr>::insert(int64_t pos, view_type str) {
        gap of PreferredGapSize */
     if (length > gap_size()) {
         reallocate_buffer(pos, length + PreferredGapSize);
-    } else if (pos != gapStart_) {
+    } else if (pos != gap_start_) {
         move_gap(pos);
     }
 
     // Insert the new text (pos now corresponds to the start of the gap)
     std::copy(str.begin(), str.end(), &buf_[pos]);
 
-    gapStart_ += length;
-    size_     += length;
+    gap_start_ += length;
+    size_      += length;
 }
 
 /**
@@ -361,15 +393,15 @@ void gap_buffer<Ch, Tr>::insert(int64_t pos, Ch ch) {
        gap of PreferredGapSize */
     if (length > gap_size()) {
         reallocate_buffer(pos, length + PreferredGapSize);
-    } else if (pos != gapStart_) {
+    } else if (pos != gap_start_) {
         move_gap(pos);
     }
 
     // Insert the new text (pos now corresponds to the start of the gap)
     buf_[pos] = ch;
 
-    gapStart_ += length;
-    size_     += length;
+    gap_start_ += length;
+    size_      += length;
 }
 
 /**
@@ -415,13 +447,13 @@ void gap_buffer<Ch, Tr>::assign(view_type str) {
     delete [] buf_;
 
     // Start a new buffer with a gap of GapSize in the center
-    buf_      = new Ch[length + PreferredGapSize + 1];
-    size_     = length;
-    gapStart_ = length / 2;
-    gapEnd_   = gapStart_ + PreferredGapSize;
+    buf_       = new Ch[length + PreferredGapSize + 1];
+    size_      = length;
+    gap_start_ = length / 2;
+    gap_end_   = gap_start_ + PreferredGapSize;
 
-    Tr::copy(&buf_[0],       &str[0],         gapStart_);
-    Tr::copy(&buf_[gapEnd_], &str[gapStart_], length - gapStart_);
+    Tr::copy(&buf_[0],        &str[0],          gap_start_);
+    Tr::copy(&buf_[gap_end_], &str[gap_start_], length - gap_start_);
 
 #ifdef PURIFY
     std::fill(&buf_[gapStart_], &buf_[gapEnd_], Ch('.'));
@@ -442,16 +474,16 @@ void gap_buffer<Ch, Tr>::clear() {
 template <class Ch, class Tr>
 void gap_buffer<Ch, Tr>::move_gap(int64_t pos) {
 
-    const int64_t gapLen = gapEnd_ - gapStart_;
+    const int64_t gapLen = gap_end_ - gap_start_;
 
-    if (pos > gapStart_) {
-        Tr::move(&buf_[gapStart_], &buf_[gapEnd_], pos - gapStart_);
+    if (pos > gap_start_) {
+        Tr::move(&buf_[gap_start_], &buf_[gap_end_], pos - gap_start_);
     } else {
-        Tr::move(&buf_[pos + gapLen], &buf_[pos], gapStart_ - pos);
+        Tr::move(&buf_[pos + gapLen], &buf_[pos], gap_start_ - pos);
     }
 
-    gapEnd_   += (pos - gapStart_);
-    gapStart_ += (pos - gapStart_);
+    gap_end_   += (pos - gap_start_);
+    gap_start_ += (pos - gap_start_);
 }
 
 /*
@@ -461,24 +493,24 @@ void gap_buffer<Ch, Tr>::move_gap(int64_t pos) {
 template <class Ch, class Tr>
 void gap_buffer<Ch, Tr>::reallocate_buffer(int64_t new_gap_start, int64_t new_gap_size) {
 
-    auto newBuf      = new Ch[size() + new_gap_size];
-    int64_t newGapEnd = new_gap_start + new_gap_size;
+    auto newBuf         = new Ch[size() + new_gap_size];
+    int64_t new_gap_end = new_gap_start + new_gap_size;
 
-    if (new_gap_start <= gapStart_) {
-        Tr::copy(newBuf,                                       &buf_[0],           new_gap_start);
-        Tr::copy(&newBuf[newGapEnd],                           &buf_[new_gap_start], gapStart_ - new_gap_start);
-        Tr::copy(&newBuf[newGapEnd + gapStart_ - new_gap_start], &buf_[gapEnd_],     size() - gapStart_);
+    if (new_gap_start <= gap_start_) {
+        Tr::copy(newBuf,                                            &buf_[0],             new_gap_start);
+        Tr::copy(&newBuf[new_gap_end],                              &buf_[new_gap_start], gap_start_ - new_gap_start);
+        Tr::copy(&newBuf[new_gap_end + gap_start_ - new_gap_start], &buf_[gap_end_],      size() - gap_start_);
     } else { // newGapStart > gapStart_
-        Tr::copy(newBuf,             &buf_[0],                                 gapStart_);
-        Tr::copy(&newBuf[gapStart_], &buf_[gapEnd_],                           new_gap_start - gapStart_);
-        Tr::copy(&newBuf[newGapEnd], &buf_[gapEnd_ + new_gap_start - gapStart_], size() - new_gap_start);
+        Tr::copy(newBuf,             &buf_[0],                                        gap_start_);
+        Tr::copy(&newBuf[gap_start_], &buf_[gap_end_],                                new_gap_start - gap_start_);
+        Tr::copy(&newBuf[new_gap_end],  &buf_[gap_end_ + new_gap_start - gap_start_], size() - new_gap_start);
     }
 
     delete [] buf_;
 
-    buf_      = newBuf;
-    gapStart_ = new_gap_start;
-    gapEnd_   = newGapEnd;
+    buf_       = newBuf;
+    gap_start_ = new_gap_start;
+    gap_end_   = new_gap_end;
 
 #ifdef PURIFY
     std::fill(&buf_[gapStart_], &buf_[gapEnd_], Ch('.'));
@@ -493,15 +525,15 @@ template <class Ch, class Tr>
 void gap_buffer<Ch, Tr>::delete_range(int64_t start, int64_t end) {
 
     // if the gap is not contiguous to the area to remove, move it there
-    if (start > gapStart_) {
+    if (start > gap_start_) {
         move_gap(start);
-    } else if (end < gapStart_) {
+    } else if (end < gap_start_) {
         move_gap(end);
     }
 
     // expand the gap to encompass the deleted characters
-    gapEnd_   += (end - gapStart_);
-    gapStart_ -= (gapStart_ - start);
+    gap_end_   += (end - gap_start_);
+    gap_start_ -= (gap_start_ - start);
 
     // update the length
     size_ -= (end - start);

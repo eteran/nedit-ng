@@ -99,6 +99,9 @@ add_executable(nedit-ng
 	${QRC_SOURCES}
 	${UIC_SOURCES}
 
+	gap_buffer.h
+	gap_buffer_fwd.h
+	gap_buffer_iterator.h
 	BlockDragTypes.h
 	Bookmark.h
 	CallTip.h
