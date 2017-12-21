@@ -740,12 +740,12 @@ void BasicTextBuffer<Ch, Tr>::BufRemovePreDeleteCB(bufPreDeleteCallbackProc bufP
 template <class Ch, class Tr>
 int BasicTextBuffer<Ch, Tr>::BufStartOfLine(int pos) const noexcept {
 
-    int startPos;
-    if (!searchBackward(pos, Ch('\n'), &startPos)) {
+    boost::optional<int> startPos = searchBackward(pos, Ch('\n'));
+    if (!startPos) {
         return 0;
     }
 
-    return startPos + 1;
+    return *startPos + 1;
 }
 
 /*
@@ -756,12 +756,12 @@ int BasicTextBuffer<Ch, Tr>::BufStartOfLine(int pos) const noexcept {
 template <class Ch, class Tr>
 int BasicTextBuffer<Ch, Tr>::BufEndOfLine(int pos) const noexcept {
 
-    int endPos;
-    if (!searchForward(pos, Ch('\n'), &endPos)) {
+    boost::optional<int> endPos = searchForward(pos, Ch('\n'));
+    if (!endPos) {
         return buffer_.size();
     }
 
-    return endPos;
+    return *endPos;
 }
 
 /*
@@ -965,39 +965,34 @@ int BasicTextBuffer<Ch, Tr>::BufCountBackwardNLines(int startPos, int nLines) co
 
 /*
 ** Search forwards in buffer "buf" for characters in "searchChars", starting
-** with the character "startPos", and returning the result in "foundPos"
-** returns true if found, false if not.
+** with the character "startPos", and returning the result
 */
 template <class Ch, class Tr>
-bool BasicTextBuffer<Ch, Tr>::BufSearchForwardEx(int startPos, view_type searchChars, int *foundPos) const noexcept {
+boost::optional<int> BasicTextBuffer<Ch, Tr>::BufSearchForwardEx(int startPos, view_type searchChars) const noexcept {
 
     int pos = startPos;
 
     while (pos < buffer_.size()) {
         for (Ch ch : searchChars) {
             if (buffer_[pos] == ch) {
-                *foundPos = pos;
-                return true;
+                return pos;
             }
         }
         pos++;
     }
 
-    *foundPos = buffer_.size();
-    return false;
+    return boost::none;
 }
 
 /*
 ** Search backwards in buffer "buf" for characters in "searchChars", starting
-** with the character BEFORE "startPos", returning the result in "foundPos"
-** returns true if found, false if not.
+** with the character BEFORE "startPos"
 */
 template <class Ch, class Tr>
-bool BasicTextBuffer<Ch, Tr>::BufSearchBackwardEx(int startPos, view_type searchChars, int *foundPos) const noexcept {
+boost::optional<int> BasicTextBuffer<Ch, Tr>::BufSearchBackwardEx(int startPos, view_type searchChars) const noexcept {
 
     if (startPos == 0) {
-        *foundPos = 0;
-        return false;
+        return boost::none;
     }
 
     int pos = (startPos == 0) ? 0 : startPos - 1;
@@ -1005,8 +1000,7 @@ bool BasicTextBuffer<Ch, Tr>::BufSearchBackwardEx(int startPos, view_type search
     while (true) {
         for (Ch ch : searchChars) {
             if (buffer_[pos] == ch) {
-                *foundPos = pos;
-                return true;
+                return pos;
             }
         }
         if(pos == 0) {
@@ -1015,8 +1009,7 @@ bool BasicTextBuffer<Ch, Tr>::BufSearchBackwardEx(int startPos, view_type search
         pos--;
     }
 
-    *foundPos = 0;
-    return false;
+    return boost::none;
 }
 
 /*
@@ -1066,49 +1059,43 @@ int BasicTextBuffer<Ch, Tr>::insertEx(int pos, Ch ch) noexcept {
 
 /*
 ** Search forwards in buffer "buf" for character "searchChar", starting
-** with the character "startPos", and returning the result in "foundPos"
-** returns true if found, false if not.  (The difference between this and
+** with the character "startPos". (The difference between this and
 ** BufSearchForwardEx is that it's optimized for single characters.  The
 ** overall performance of the text widget is dependent on its ability to
 ** count lines quickly, hence searching for a single character: newline)
 */
 template <class Ch, class Tr>
-bool BasicTextBuffer<Ch, Tr>::searchForward(int startPos, Ch searchChar, int *foundPos) const noexcept {
+boost::optional<int> BasicTextBuffer<Ch, Tr>::searchForward(int startPos, Ch searchChar) const noexcept {
 
     int pos = startPos;
     while (pos < buffer_.size()) {
         if (buffer_[pos] == searchChar) {
-            *foundPos = pos;
-            return true;
+            return pos;
         }
         pos++;
     }
 
-    *foundPos = buffer_.size();
-    return false;
+    return boost::none;
 }
 
 /*
 ** Search backwards in buffer "buf" for character "searchChar", starting
-** with the character BEFORE "startPos", returning the result in "foundPos"
-** returns true if found, false if not.  (The difference between this and
+** with the character BEFORE "startPos". (The difference between this and
 ** BufSearchBackwardEx is that it's optimized for single characters.  The
 ** overall performance of the text widget is dependent on its ability to
 ** count lines quickly, hence searching for a single character: newline)
 */
 template <class Ch, class Tr>
-bool BasicTextBuffer<Ch, Tr>::searchBackward(int startPos, Ch searchChar, int *foundPos) const noexcept {
+boost::optional<int> BasicTextBuffer<Ch, Tr>::searchBackward(int startPos, Ch searchChar) const noexcept {
 
     if (startPos == 0) {
-        *foundPos = 0;
-        return false;
+        return boost::none;
     }
 
     int pos = (startPos == 0) ? 0 : startPos - 1;
     while (true) {
         if (buffer_[pos] == searchChar) {
-            *foundPos = pos;
-            return true;
+            return pos;
         }
 
         if(pos == 0) {
@@ -1117,8 +1104,7 @@ bool BasicTextBuffer<Ch, Tr>::searchBackward(int startPos, Ch searchChar, int *f
         pos--;
     }
 
-    *foundPos = 0;
-    return false;
+    return boost::none;
 }
 
 template <class Ch, class Tr>

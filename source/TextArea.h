@@ -18,6 +18,7 @@
 #include <QTime>
 #include <memory>
 #include <vector>
+#include <boost/optional.hpp>
 
 class CallTipWidget;
 class TextArea;
@@ -227,21 +228,21 @@ public:
     void TextDMaintainAbsLineNum(bool state);
     int TextDShowCalltip(const QString &text, bool anchored, int pos, TipHAlignMode hAlign, TipVAlignMode vAlign, TipAlignStrict alignMode);
 	int TextDStartOfLine(int pos) const;
-	int TextDEndOfLine(int pos, bool startPosIsLineStart);
-	int TextDCountBackwardNLines(int startPos, int nLines);
+    int TextDEndOfLine(int pos, bool startPosIsLineStart) const;
+    int TextDCountBackwardNLines(int startPos, int nLines) const;
 	void TextDRedisplayRect(int left, int top, int width, int height);
     void TextDRedisplayRect(const QRect &rect);
-    int TextDCountForwardNLines(int startPos, int nLines, bool startPosIsLineStart);
-    int TextDPositionToXY(int pos, int *x, int *y);
-    int TextDPositionToXY(int pos, QPoint *coord);
+    int TextDCountForwardNLines(int startPos, int nLines, bool startPosIsLineStart) const;
+    int TextDPositionToXY(int pos, int *x, int *y) const;
+    int TextDPositionToXY(int pos, QPoint *coord) const;
     void TextDKillCalltip(int id);
     int TextDGetCalltipID(int id) const;
 	void TextDSetColors(const QColor &textFgP, const QColor &textBgP, const QColor &selectFgP, const QColor &selectBgP, const QColor &hiliteFgP, const QColor &hiliteBgP, const QColor &lineNoFgP, const QColor &cursorFgP);
-    void TextDXYToUnconstrainedPosition(const QPoint &coord, int *row, int *column);
-    int TextDXYToPosition(const QPoint &coord);
-	int TextDOffsetWrappedColumn(int row, int column);
+    void TextDXYToUnconstrainedPosition(const QPoint &coord, int *row, int *column) const;
+    int TextDXYToPosition(const QPoint &coord) const;
+    int TextDOffsetWrappedColumn(int row, int column) const;
 	void TextDGetScroll(int *topLineNum, int *horizOffset);
-    bool TextDInSelection(const QPoint &p);
+    bool TextDInSelection(const QPoint &p) const;
     int TextGetCursorPos() const;
 	int TextDGetInsertPosition() const;
 	int TextDPosToLineAndCol(int pos, int *lineNum, int *column);
@@ -308,20 +309,20 @@ private:
 	void findLineEnd(int startPos, int startPosIsLineStart, int *lineEnd, int *nextLineStart);
     bool updateHScrollBarRange();
     bool emptyLinesVisible() const;
-	int posToVisibleLineNum(int pos, int *lineNum);
+    int posToVisibleLineNum(int pos, int *lineNum) const;
 	void blankCursorProtrusions();
-	int measureVisLine(int visLineNum);
-	int visLineLength(int visLineNum);
-	int wrapUsesCharacter(int lineEndPos);
+    int measureVisLine(int visLineNum) const;
+    int visLineLength(int visLineNum) const;
+    int wrapUsesCharacter(int lineEndPos) const;
 	void extendRangeForStyleMods(int *start, int *end);
     void redrawLineNumbers(QPainter *painter);
     void redrawLineNumbersEx();
     void redisplayLine(QPainter *painter, int visLineNum, int leftClip, int rightClip, int leftCharIndex, int rightCharIndex);
 	void redisplayLineEx(int visLineNum, int leftClip, int rightClip, int leftCharIndex, int rightCharIndex);
-	int styleOfPos(int lineStartPos, int lineLen, int lineIndex, int dispIndex, int thisChar);
+    int styleOfPos(int lineStartPos, int lineLen, int lineIndex, int dispIndex, int thisChar) const;
     void drawString(QPainter *painter, int style, int x, int y, int toX, char *string, long nChars);
 	void drawCursor(QPainter *painter, int x, int y);
-	QColor getRangesetColor(int ind, QColor bground);
+    QColor getRangesetColor(int ind, QColor bground) const;
 	void setScroll(int topLineNum, int horizOffset, bool updateVScrollBar, bool updateHScrollBar);
 	void offsetLineStarts(int newTopLineNum);
 	void cancelDrag();
@@ -332,7 +333,7 @@ private:
 	void keyMoveExtendSelection(int origPos, bool rectangular);
 	bool checkReadOnly() const;
 	void simpleInsertAtCursorEx(view::string_view chars, bool allowPendingDelete);
-	int pendingSelection();
+    int pendingSelection() const;
 	std::string wrapTextEx(view::string_view startLine, view::string_view text, int bufOffset, int wrapMargin, int *breakBefore);
 	int wrapLine(TextBuffer *buf, int bufOffset, int lineStartPos, int lineEndPos, int limitPos, int *breakAt, int *charsAdded);
 	std::string createIndentStringEx(TextBuffer *buf, int bufOffset, int lineStartPos, int lineEndPos, int *column);
@@ -340,18 +341,18 @@ private:
 	bool deletePendingSelection();
     int startOfWord(int pos) const;
     int endOfWord(int pos) const;
-    bool spanBackward(TextBuffer *buf, int startPos, view::string_view searchChars, bool ignoreSpace, int *foundPos) const;
-    bool spanForward(TextBuffer *buf, int startPos, view::string_view searchChars, bool ignoreSpace, int *foundPos) const;
+    boost::optional<int> spanBackward(TextBuffer *buf, int startPos, view::string_view searchChars, bool ignoreSpace) const;
+    boost::optional<int> spanForward(TextBuffer *buf, int startPos, view::string_view searchChars, bool ignoreSpace) const;
 	QShortcut *createShortcut(const QString &name, const QKeySequence &keySequence, const char *member);
 	void CopyToClipboard();
 	void InsertClipboard(bool isColumnar);
 	void InsertPrimarySelection(bool isColumnar);
-	void xyToUnconstrainedPos(int x, int y, int *row, int *column, int posType);
-    void xyToUnconstrainedPos(const QPoint &pos, int *row, int *column, int posType);
+    void xyToUnconstrainedPos(int x, int y, int *row, int *column, int posType) const;
+    void xyToUnconstrainedPos(const QPoint &pos, int *row, int *column, int posType) const;
 	void selectWord(int pointerX);
 	void selectLine();
-	int xyToPos(int x, int y, int posType);
-    int xyToPos(const QPoint &pos, int posType);
+    int xyToPos(int x, int y, int posType) const;
+    int xyToPos(const QPoint &pos, int posType) const;
 	void endDrag();
     void adjustSelection(const QPoint &coord);
     void checkAutoScroll(const QPoint &coord);
@@ -361,7 +362,7 @@ private:
     void adjustSecondarySelection(const QPoint &coord);
 	void MovePrimarySelection(bool isColumnar);
 	void ExchangeSelections();
-	int getAbsTopLineNum();
+    int getAbsTopLineNum() const;
 	CursorStyles getCursorStyle() const;
 
     bool cursorOn_               = false;

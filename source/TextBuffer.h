@@ -12,6 +12,8 @@
 #include <deque>
 #include <string>
 
+#include <boost/optional.hpp>
+
 template <class Ch, class Tr>
 class BasicTextBuffer {
 public:
@@ -51,8 +53,8 @@ public:
 public:
     bool BufGetUseTabs() const noexcept;
     bool BufIsEmpty() const noexcept;
-    bool BufSearchBackwardEx(int startPos, view_type searchChars, int *foundPos) const noexcept;
-    bool BufSearchForwardEx(int startPos, view_type searchChars, int *foundPos) const noexcept;
+    boost::optional<int> BufSearchBackwardEx(int startPos, view_type searchChars) const noexcept;
+    boost::optional<int> BufSearchForwardEx(int startPos, view_type searchChars) const noexcept;
     Ch BufGetCharacter(int pos) const noexcept;
     int BufCmpEx(int pos, view_type cmpText) const noexcept;
     int BufCmpEx(int pos, Ch ch) const noexcept;
@@ -130,8 +132,8 @@ public:
     bool GetSimpleSelection(int *left, int *right) const noexcept;
 
 private:
-    bool searchBackward(int startPos, Ch searchChar, int *foundPos) const noexcept;
-    bool searchForward(int startPos, Ch searchChar, int *foundPos) const noexcept;
+    boost::optional<int> searchBackward(int startPos, Ch searchChar) const noexcept;
+    boost::optional<int> searchForward(int startPos, Ch searchChar) const noexcept;
     int insertEx(int pos, view_type text) noexcept;
     int insertEx(int pos, Ch ch) noexcept;
     string_type getSelectionTextEx(const TextSelection *sel) const;

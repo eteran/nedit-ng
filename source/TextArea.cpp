@@ -2213,7 +2213,7 @@ void TextArea::findWrapRangeEx(view::string_view deletedText, int pos, int nInse
 ** the start of the next line.  This is also consistent with the model used by
 ** visLineLength.
 */
-int TextArea::TextDEndOfLine(int pos, bool startPosIsLineStart) {
+int TextArea::TextDEndOfLine(int pos, bool startPosIsLineStart) const {
 	int retLines, retPos, retLineStart, retLineEnd;
 
 	// If we're not wrapping use more efficient BufEndOfLine
@@ -2417,7 +2417,7 @@ void TextArea::calcLastChar() {
 ** Same as BufCountBackwardNLines, but takes in to account line breaks when
 ** wrapping is turned on.
 */
-int TextArea::TextDCountBackwardNLines(int startPos, int nLines) {
+int TextArea::TextDCountBackwardNLines(int startPos, int nLines) const {
 
 	int retLines;
 	int retPos;
@@ -2527,7 +2527,7 @@ void TextArea::updateVScrollBarRange() {
  * @param startPosIsLineStart
  * @return
  */
-int TextArea::TextDCountForwardNLines(int startPos, int nLines, bool startPosIsLineStart) {
+int TextArea::TextDCountForwardNLines(int startPos, int nLines, bool startPosIsLineStart) const {
     int retLines;
     int retPos;
     int retLineStart;
@@ -2651,7 +2651,7 @@ bool TextArea::emptyLinesVisible() const {
  * @param lineNum
  * @return
  */
-int TextArea::posToVisibleLineNum(int pos, int *lineNum) {
+int TextArea::posToVisibleLineNum(int pos, int *lineNum) const {
 
 	if (pos < firstChar_) {
         return false;
@@ -2723,7 +2723,7 @@ void TextArea::blankCursorProtrusions() {
  * @param visLineNum
  * @return
  */
-int TextArea::measureVisLine(int visLineNum) {
+int TextArea::measureVisLine(int visLineNum) const {
 	int i;
 	int width = 0;
 	int len;
@@ -2762,7 +2762,7 @@ int TextArea::measureVisLine(int visLineNum) {
  * @param visLineNum
  * @return
  */
-int TextArea::visLineLength(int visLineNum) {
+int TextArea::visLineLength(int visLineNum) const {
 	int nextLineStart;
 	int lineStartPos = lineStarts_[visLineNum];
 
@@ -2799,7 +2799,7 @@ int TextArea::visLineLength(int visLineNum) {
 ** used as a wrap point, and just guesses that it wasn't.  So if an exact
 ** accounting is necessary, don't use this function.
 */
-int TextArea::wrapUsesCharacter(int lineEndPos) {
+int TextArea::wrapUsesCharacter(int lineEndPos) const {
 
 	if (!P_continuousWrap || lineEndPos == buffer_->BufGetLength()) {
 		return true;
@@ -3205,7 +3205,7 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 ** Note that style is a somewhat incorrect name, drawing method would
 ** be more appropriate.
 */
-int TextArea::styleOfPos(int lineStartPos, int lineLen, int lineIndex, int dispIndex, int thisChar) {
+int TextArea::styleOfPos(int lineStartPos, int lineLen, int lineIndex, int dispIndex, int thisChar) const {
 
     int style = 0;
 
@@ -3526,7 +3526,7 @@ void TextArea::drawCursor(QPainter *painter, int x, int y) {
  * @param bground
  * @return
  */
-QColor TextArea::getRangesetColor(int ind, QColor bground) {
+QColor TextArea::getRangesetColor(int ind, QColor bground) const {
 
 	if (ind > 0) {
 		ind--;
@@ -4051,7 +4051,7 @@ void TextArea::TextDSetupBGClasses(const QString &s, std::vector<QColor> *pp_bgC
 ** of view.  If the position is horizontally out of view, returns the
 ** x coordinate where the position would be if it were visible.
 */
-int TextArea::TextDPositionToXY(int pos, QPoint *coord) {
+int TextArea::TextDPositionToXY(int pos, QPoint *coord) const {
     int x;
     int y;
     int r = TextDPositionToXY(pos, &x, &y);
@@ -4060,7 +4060,7 @@ int TextArea::TextDPositionToXY(int pos, QPoint *coord) {
     return r;
 }
 
-int TextArea::TextDPositionToXY(int pos, int *x, int *y) {
+int TextArea::TextDPositionToXY(int pos, int *x, int *y) const {
 	int charIndex;
 	int lineStartPos;
 	int fontHeight;
@@ -4641,7 +4641,7 @@ void TextArea::TextInsertAtCursorEx(view::string_view chars, bool allowPendingDe
 ** if typing a character or inserting something should delete the selection
 ** first.
 */
-int TextArea::pendingSelection() {
+int TextArea::pendingSelection() const {
     const TextSelection *sel = &buffer_->BufGetPrimary();
 	int pos = cursorPos_;
 
@@ -5067,20 +5067,23 @@ int TextArea::startOfWord(int pos) const {
         return 0;
     }
 
-	int startPos;
-    const char c = buffer_->BufGetCharacter(pos);
+    const char ch = buffer_->BufGetCharacter(pos);
 
-	if (c == ' ' || c == '\t') {
-        if (!spanBackward(buffer_, pos, view::string_view(" \t", 2), false, &startPos))
-            return 0;
-    } else if (P_delimiters.find(c) != std::string::npos) {
-        if (!spanBackward(buffer_, pos, P_delimiters, true, &startPos))
-			return 0;
+    boost::optional<int> startPos;
+
+    if (ch == ' ' || ch == '\t') {
+        startPos = spanBackward(buffer_, pos, view::string_view(" \t", 2), false);
+    } else if (P_delimiters.find(ch) != std::string::npos) {
+        startPos = spanBackward(buffer_, pos, P_delimiters, true);
 	} else {
-        if (!buffer_->BufSearchBackwardEx(pos, P_delimiters, &startPos))
-			return 0;
+        startPos = buffer_->BufSearchBackwardEx(pos, P_delimiters);
 	}
-	return std::min(pos, startPos + 1);
+
+    if(!startPos) {
+        return 0;
+    }
+
+    return std::min(pos, *startPos + 1);
 }
 
 int TextArea::endOfWord(int pos) const {
@@ -5089,34 +5092,34 @@ int TextArea::endOfWord(int pos) const {
         return 0;
     }
 
-	int endPos;
+    const char ch = buffer_->BufGetCharacter(pos);
 
-    const char c = buffer_->BufGetCharacter(pos);
+    boost::optional<int> endPos;
 
-	if (c == ' ' || c == '\t') {
-        if (!spanForward(buffer_, pos, view::string_view(" \t", 2), false, &endPos))
-			return buffer_->BufGetLength();
-    } else if (P_delimiters.find(c) != std::string::npos) {
-        if (!spanForward(buffer_, pos, P_delimiters, true, &endPos))
-			return buffer_->BufGetLength();
+    if (ch == ' ' || ch == '\t') {
+        endPos = spanForward(buffer_, pos, view::string_view(" \t", 2), false);
+    } else if (P_delimiters.find(ch) != std::string::npos) {
+        endPos = spanForward(buffer_, pos, P_delimiters, true);
 	} else {
-        if (!buffer_->BufSearchForwardEx(pos, P_delimiters, &endPos))
-			return buffer_->BufGetLength();
+        endPos = buffer_->BufSearchForwardEx(pos, P_delimiters);
 	}
-	return endPos;
+
+    if (!endPos) {
+        return buffer_->BufGetLength();
+    }
+
+    return *endPos;
 }
 
 /*
 ** Search backwards in buffer "buf" for the first character NOT in
-** "searchChars",  starting with the character BEFORE "startPos", returning the
-** result in "foundPos" returns true if found, false if not. If ignoreSpace is
-** set, then Space, Tab, and Newlines are ignored in searchChars.
+** "searchChars",  starting with the character BEFORE "startPos". If
+** ignoreSpace is set, then Space, Tab, and Newlines are ignored in searchChars.
 */
-bool TextArea::spanBackward(TextBuffer *buf, int startPos, view::string_view searchChars, bool ignoreSpace, int *foundPos) const {
+boost::optional<int> TextArea::spanBackward(TextBuffer *buf, int startPos, view::string_view searchChars, bool ignoreSpace) const {
 
 	if (startPos == 0) {
-		*foundPos = 0;
-        return false;
+        return boost::none;
 	}
 
     int pos = (startPos == 0) ? 0 : startPos - 1;
@@ -5133,23 +5136,21 @@ bool TextArea::spanBackward(TextBuffer *buf, int startPos, view::string_view sea
         });
 
         if(it == searchChars.end()) {
-			*foundPos = pos;
-			return true;
+            return pos;
 		}
 
         pos--;
 	}
-	*foundPos = 0;
-    return false;
+
+    return boost::none;
 }
 
 /*
 ** Search forwards in buffer "buf" for the first character NOT in
-** "searchChars",  starting with the character "startPos", and returning the
-** result in "foundPos" returns true if found, false if not. If ignoreSpace
+** "searchChars",  starting with the character "startPos". If ignoreSpace
 ** is set, then Space, Tab, and Newlines are ignored in searchChars.
 */
-bool TextArea::spanForward(TextBuffer *buf, int startPos, view::string_view searchChars, bool ignoreSpace, int *foundPos) const {
+boost::optional<int> TextArea::spanForward(TextBuffer *buf, int startPos, view::string_view searchChars, bool ignoreSpace) const {
 
 	int pos = startPos;
 	while (pos < buf->BufGetLength()) {
@@ -5164,14 +5165,12 @@ bool TextArea::spanForward(TextBuffer *buf, int startPos, view::string_view sear
         });
 
         if (it == searchChars.end()) {
-			*foundPos = pos;
-			return true;
+            return pos;
 		}
 		pos++;
 	}
 
-	*foundPos = buf->BufGetLength();
-    return false;
+    return boost::none;
 }
 
 void TextArea::processShiftUpAP(EventFlags flags) {
@@ -5428,7 +5427,7 @@ void TextArea::InsertPrimarySelection(bool isColumnar) {
 ** positioning the cursor.  This, of course, makes no sense when the font
 ** is proportional, since there are no absolute columns.
 */
-void TextArea::TextDXYToUnconstrainedPosition(const QPoint &coord, int *row, int *column) {
+void TextArea::TextDXYToUnconstrainedPosition(const QPoint &coord, int *row, int *column) const {
     xyToUnconstrainedPos(coord.x(), coord.y(), row, column, CURSOR_POS);
 }
 
@@ -5440,11 +5439,11 @@ void TextArea::TextDXYToUnconstrainedPosition(const QPoint &coord, int *row, int
 ** coordinates to the nearest position between characters, and CHARACTER_POS
 ** means translate the position to the nearest character cell.
 */
-void TextArea::xyToUnconstrainedPos(const QPoint &pos, int *row, int *column, int posType) {
+void TextArea::xyToUnconstrainedPos(const QPoint &pos, int *row, int *column, int posType) const {
     xyToUnconstrainedPos(pos.x(), pos.y(), row, column, posType);
 }
 
-void TextArea::xyToUnconstrainedPos(int x, int y, int *row, int *column, int posType) {
+void TextArea::xyToUnconstrainedPos(int x, int y, int *row, int *column, int posType) const {
 
     QFontMetrics fm(font_);
     int fontHeight = ascent_ + descent_;
@@ -5753,7 +5752,7 @@ void TextArea::moveDestinationAP(QMouseEvent *event) {
 /*
 ** Translate window coordinates to the nearest text cursor position.
 */
-int TextArea::TextDXYToPosition(const QPoint &coord) {
+int TextArea::TextDXYToPosition(const QPoint &coord) const {
     return xyToPos(coord, CURSOR_POS);
 }
 
@@ -5764,11 +5763,11 @@ int TextArea::TextDXYToPosition(const QPoint &coord) {
 ** position, and CHARACTER_POS means return the position of the character
 ** closest to (x, y).
 */
-int TextArea::xyToPos(const QPoint &pos, int posType) {
+int TextArea::xyToPos(const QPoint &pos, int posType) const {
     return xyToPos(pos.x(), pos.y(), posType);
 }
 
-int TextArea::xyToPos(int x, int y, int posType) {
+int TextArea::xyToPos(int x, int y, int posType) const {
 
 	// Find the visible line number corresponding to the y coordinate
     int fontHeight = ascent_ + descent_;
@@ -5828,7 +5827,7 @@ int TextArea::xyToPos(int x, int y, int posType) {
 ** from the last newline.  Obviously this is time consuming, because it
 ** invloves character re-counting.
 */
-int TextArea::TextDOffsetWrappedColumn(int row, int column) {
+int TextArea::TextDOffsetWrappedColumn(int row, int column) const {
 
 	if (!P_continuousWrap || row < 0 || row > nVisibleLines_) {
 		return column;
@@ -6294,7 +6293,7 @@ void TextArea::secondaryOrDragStartAP(QMouseEvent *event, EventFlags flags) {
 /*
 ** Return true if position (x, y) is inside of the primary selection
 */
-bool TextArea::TextDInSelection(const QPoint &p) {
+bool TextArea::TextDInSelection(const QPoint &p) const {
 
     int pos = xyToPos(p, CHARACTER_POS);
 
@@ -7144,7 +7143,7 @@ void TextArea::ExchangeSelections() {
 ** Returns the absolute (non-wrapped) line number of the first line displayed.
 ** Returns 0 if the absolute top line number is not being maintained.
 */
-int TextArea::getAbsTopLineNum() {
+int TextArea::getAbsTopLineNum() const {
 
 	if (!P_continuousWrap) {
 		return topLineNum_;
