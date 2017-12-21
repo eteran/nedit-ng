@@ -33,7 +33,7 @@ public:
 
 public:
     gap_buffer();
-    gap_buffer(int64_t size);
+    explicit gap_buffer(int64_t size);
     gap_buffer(const gap_buffer&)            = delete;
     gap_buffer& operator=(const gap_buffer&) = delete;
     ~gap_buffer() noexcept;
@@ -111,10 +111,10 @@ gap_buffer<Ch, Tr>::gap_buffer() : gap_buffer(0){
 template <class Ch, class Tr>
 gap_buffer<Ch, Tr>::gap_buffer(int64_t size) {
 
-    buf_      = new Ch[size + PreferredGapSize];
+    buf_       = new Ch[size + PreferredGapSize];
     gap_start_ = 0;
     gap_end_   = PreferredGapSize;
-    size_     = 0;
+    size_      = 0;
 
 #ifdef PURIFY
     std::fill(&buf_[gapStart_], &buf_[gapEnd_], Ch('.'));

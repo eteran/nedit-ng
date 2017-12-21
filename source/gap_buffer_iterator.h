@@ -84,7 +84,7 @@ public:
     gap_buffer_const_iterator& operator=(const gap_buffer_const_iterator &) = default;
 
     // conversion from non-const to const
-    gap_buffer_const_iterator(const gap_buffer_iterator<Ch, Tr> &rhs) : buf_(rhs.buf_), pos_(rhs.pos_) {}
+    explicit gap_buffer_const_iterator(const gap_buffer_iterator<Ch, Tr> &rhs) : buf_(rhs.buf_), pos_(rhs.pos_) {}
 
 public:
     gap_buffer_const_iterator& operator+=(difference_type rhs) { pos_ += rhs; return *this; }
