@@ -3618,7 +3618,6 @@ bool DocumentWidget::includeFile(const QString &name) {
 void DocumentWidget::GotoMatchingCharacter(TextArea *area) {
     int selStart;
     int selEnd;
-    int matchPos;
 
     /* get the character to match and its position from the selection, or
        the character before the insert point if nothing is selected.
@@ -3645,7 +3644,8 @@ void DocumentWidget::GotoMatchingCharacter(TextArea *area) {
     }
 
     // Search for it in the buffer
-    if (!findMatchingCharEx(buffer_->BufGetCharacter(selStart), GetHighlightInfoEx(selStart), selStart, 0, buffer_->BufGetLength(), &matchPos)) {
+    boost::optional<int> matchPos = findMatchingCharEx(buffer_->BufGetCharacter(selStart), GetHighlightInfoEx(selStart), selStart, 0, buffer_->BufGetLength());
+    if (!matchPos) {
         QApplication::beep();
         return;
     }
@@ -3656,12 +3656,12 @@ void DocumentWidget::GotoMatchingCharacter(TextArea *area) {
        be automatically scrolled on screen and MakeSelectionVisible would do
        nothing) */
     area->setAutoShowInsertPos(false);
-    area->TextSetCursorPos(matchPos + 1);
+    area->TextSetCursorPos(*matchPos + 1);
     MakeSelectionVisible(area);
     area->setAutoShowInsertPos(true);
 }
 
-bool DocumentWidget::findMatchingCharEx(char toMatch, Style styleToMatch, int charPos, int startLimit, int endLimit, int *matchPos) {
+boost::optional<int> DocumentWidget::findMatchingCharEx(char toMatch, Style styleToMatch, int charPos, int startLimit, int endLimit) {
 
     Style style;
     bool matchSyntaxBased = matchSyntaxBased_;
@@ -3677,7 +3677,7 @@ bool DocumentWidget::findMatchingCharEx(char toMatch, Style styleToMatch, int ch
     });
 
     if(matchIt == std::end(MatchingChars)) {
-        return false;
+        return boost::none;
     }
 
     const char matchChar      = matchIt->match;
@@ -3702,8 +3702,7 @@ bool DocumentWidget::findMatchingCharEx(char toMatch, Style styleToMatch, int ch
                 if (style == styleToMatch) {
                     --nestDepth;
                     if (nestDepth == 0) {
-                        *matchPos = pos;
-                        return true;
+                        return pos;
                     }
                 }
             } else if (ch == toMatch) {
@@ -3732,8 +3731,7 @@ bool DocumentWidget::findMatchingCharEx(char toMatch, Style styleToMatch, int ch
                     if (style == styleToMatch) {
                         --nestDepth;
                         if (nestDepth == 0) {
-                            *matchPos = pos;
-                            return true;
+                            return pos;
                         }
                     }
                 } else if (ch == toMatch) {
@@ -3750,14 +3748,13 @@ bool DocumentWidget::findMatchingCharEx(char toMatch, Style styleToMatch, int ch
         break;
     }
 
-    return false;
+    return boost::none;
 }
 
 void DocumentWidget::SelectToMatchingCharacter(TextArea *area) {
 
     int selStart;
     int selEnd;
-    int matchPos;
 
     /* get the character to match and its position from the selection, or
        the character before the insert point if nothing is selected.
@@ -3783,13 +3780,14 @@ void DocumentWidget::SelectToMatchingCharacter(TextArea *area) {
     }
 
     // Search for it in the buffer
-    if (!findMatchingCharEx(buffer_->BufGetCharacter(selStart), GetHighlightInfoEx(selStart), selStart, 0, buffer_->BufGetLength(), &matchPos)) {
+    boost::optional<int> matchPos = findMatchingCharEx(buffer_->BufGetCharacter(selStart), GetHighlightInfoEx(selStart), selStart, 0, buffer_->BufGetLength());
+    if (!matchPos) {
         QApplication::beep();
         return;
     }
 
-    const int startPos = (matchPos > selStart) ? selStart : matchPos;
-    const int endPos   = (matchPos > selStart) ? matchPos : selStart;
+    const int startPos = (*matchPos > selStart) ? selStart : *matchPos;
+    const int endPos   = (*matchPos > selStart) ? *matchPos : selStart;
 
     /* temporarily shut off autoShowInsertPos before setting the cursor
        position so MakeSelectionVisible gets a chance to place the cursor
@@ -5443,7 +5441,6 @@ void DocumentWidget::FlashMatchingEx(TextArea *area) {
 
     Style style = GetHighlightInfoEx(pos);
 
-    int matchPos;
 
     // is the character one we want to flash?
     auto matchIt = std::find_if(std::begin(FlashingChars), std::end(FlashingChars), [ch](const CharMatchTable &entry) {
@@ -5473,19 +5470,20 @@ void DocumentWidget::FlashMatchingEx(TextArea *area) {
     }
 
     // do the search
-    if (!findMatchingCharEx(ch, style, searchPos, startPos, endPos, &matchPos)) {
+    boost::optional<int> matchPos = findMatchingCharEx(ch, style, searchPos, startPos, endPos);
+    if (!matchPos) {
         return;
     }
 
     if (showMatchingStyle_ == ShowMatchingStyle::Delimeter) {
         // Highlight either the matching character ...
-        buffer_->BufHighlight(matchPos, matchPos + 1);
+        buffer_->BufHighlight(*matchPos, *matchPos + 1);
     } else {
         // ... or the whole range.
         if (matchIt->direction == Direction::Backward) {
-            buffer_->BufHighlight(matchPos, pos + 1);
+            buffer_->BufHighlight(*matchPos, pos + 1);
         } else {
-            buffer_->BufHighlight(matchPos + 1, pos);
+            buffer_->BufHighlight(*matchPos + 1, pos);
         }
     }
 

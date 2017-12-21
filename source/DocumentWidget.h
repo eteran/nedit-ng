@@ -26,6 +26,7 @@
 
 #include <gsl/span>
 #include <array>
+#include <boost/optional.hpp>
 
 class HighlightData;
 class HighlightPattern;
@@ -198,7 +199,7 @@ private:
     bool bckError(const QString &errString, const QString &file);
     bool doOpen(const QString &name, const QString &path, int flags);
     bool doSave();
-    bool findMatchingCharEx(char toMatch, Style styleToMatch, int charPos, int startLimit, int endLimit, int *matchPos);
+    boost::optional<int> findMatchingCharEx(char toMatch, Style styleToMatch, int charPos, int startLimit, int endLimit);
     bool includeFile(const QString &name);
     bool writeBckVersion();
     HighlightData *compilePatternsEx(const gsl::span<HighlightPattern> &patternSrc);
