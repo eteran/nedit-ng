@@ -40,5 +40,7 @@
         <file>res/DefaultSmartIndentInitCommon.txt</file>
         <file>res/DefaultMacroCommands.txt</file>
         <file>res/DefaultLanguageModes.txt</file>
+        <file>res/tab-close.svg</file>
+        <file>res/edit-find.svg</file>
     </qresource>
 </RCC>
