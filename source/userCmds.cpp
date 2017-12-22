@@ -379,7 +379,7 @@ static QString copyMacroToEndEx(Input &in) {
 
     QString code = input.mid();
 
-    if (code[0] != QLatin1Char('{')) {
+    if (!code.startsWith(QLatin1Char('{'))) {
         ParseErrorEx(nullptr, code, input.index() - in.index(), QLatin1String("macro menu item"), QLatin1String("expecting '{'"));
         return QString();
     }
