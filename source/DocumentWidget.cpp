@@ -4077,7 +4077,7 @@ void DocumentWidget::closePane() {
 ** be repeated whenever a new text widget is created within this window
 ** (a split-window command).
 */
-void DocumentWidget::BeginSmartIndentEx(int warn) {
+void DocumentWidget::BeginSmartIndentEx(bool warn) {
 
     static bool initialized = false;
 

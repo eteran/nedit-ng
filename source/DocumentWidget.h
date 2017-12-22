@@ -128,7 +128,7 @@ public:
     TextArea *firstPane() const;
     void AbortShellCommandEx();
     void AddMarkEx(TextArea *area, QChar label);
-    void BeginSmartIndentEx(int warn);
+    void BeginSmartIndentEx(bool warn);
     void CancelMacroOrLearnEx();
     void CheckForChangesToFileEx();
     void ClearModeMessageEx();
