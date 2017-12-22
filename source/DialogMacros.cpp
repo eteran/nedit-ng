@@ -376,7 +376,7 @@ bool DialogMacros::checkMacroText(const QString &macro, Verbosity verbosity) {
 		ui.editMacro->setFocus();
 		return false;
 	}
-	FreeProgram(prog);
+    delete prog;
 
 	if(stoppedAt != macro.size()) {
         if(verbosity == Verbosity::Verbose) {

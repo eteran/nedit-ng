@@ -372,7 +372,7 @@ bool DialogWindowBackgroundMenu::checkMacroText(const QString &macro, Verbosity 
 		ui.editMacro->setFocus();
 		return false;
 	}
-	FreeProgram(prog);
+    delete prog;
 
 	if(stoppedAt != macro.size()) {
         if(verbosity == Verbosity::Verbose) {

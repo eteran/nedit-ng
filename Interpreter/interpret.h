@@ -12,6 +12,7 @@
 #include <vector>
 
 #include <QString>
+#include <QtAlgorithms>
 
 class DocumentWidget;
 struct DataValue;
@@ -106,6 +107,11 @@ struct Symbol {
 };
 
 struct Program {
+
+    ~Program() {
+        qDeleteAll(localSymList);
+    }
+
     std::deque<Symbol *> localSymList;
     std::vector<Inst>    code;
 };
@@ -159,7 +165,6 @@ void RunMacroAsSubrCall(Program *prog);
 void PreemptMacro();
 
 Symbol *PromoteToGlobal(Symbol *sym);
-void FreeProgram(Program *prog);
 void ModifyReturnedValueEx(const std::shared_ptr<MacroContext> &context, const DataValue &dv);
 DocumentWidget *MacroRunDocumentEx();
 DocumentWidget *MacroFocusDocument();

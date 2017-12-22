@@ -393,7 +393,7 @@ static QString copyMacroToEndEx(Input &in) {
         ParseErrorEx(nullptr, code, stoppedAt, QLatin1String("macro menu item"), errMsg);
         return QString();
     }
-    FreeProgram(prog);
+    delete prog;
 
     // Copy and return the body of the macro, stripping outer braces and
     // extra leading tabs added by the writer routine

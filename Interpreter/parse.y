@@ -445,7 +445,7 @@ Program *ParseMacro(const std::string &expr, std::string *msg, int *stoppedAt)
     if (yyparse()) {
         *msg       = ErrMsg;
         *stoppedAt = (InPtr - start);
-        FreeProgram(FinishCreatingProgram());
+        delete FinishCreatingProgram();
         return nullptr;
     }
 

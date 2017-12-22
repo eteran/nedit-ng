@@ -295,6 +295,7 @@ bool DialogSmartIndent::checkSmartIndentDialogData() {
 	QString widgetText = ensureNewline(newlineText);
 	QString errMsg;
 	int stoppedAt = 0;
+
     Program *prog = ParseMacroEx(widgetText, &errMsg, &stoppedAt);
 	if(!prog) {
 		ParseErrorEx(this, widgetText, stoppedAt, tr("newline macro"), errMsg);	
@@ -305,7 +306,7 @@ bool DialogSmartIndent::checkSmartIndentDialogData() {
 		return false;
 	}
 
-	FreeProgram(prog);
+    delete prog;
 
 	// Test compile the modify macro 
 	QString modMacroText = ui.editModMacro->toPlainText();
@@ -324,7 +325,7 @@ bool DialogSmartIndent::checkSmartIndentDialogData() {
 			return false;
 		}
 		
-		FreeProgram(prog);
+        delete prog;
 	}
 
 	return true;

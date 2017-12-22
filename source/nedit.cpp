@@ -63,7 +63,7 @@ bool checkDoMacroArg(const QString &macro) {
         return false;
     }
 
-    FreeProgram(prog);
+    delete prog;
     return true;
 }
 

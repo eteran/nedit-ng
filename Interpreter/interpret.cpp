@@ -279,15 +279,6 @@ Program *FinishCreatingProgram() {
 	return newProg;
 }
 
-void FreeProgram(Program *prog) {
-    if(prog) {
-        for(Symbol *sym : prog->localSymList) {
-            delete sym;
-        }
-        delete prog;
-    }
-}
-
 /*
 ** Add an operator (instruction) to the end of the current program
 */

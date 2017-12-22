@@ -4146,7 +4146,7 @@ void DocumentWidget::BeginSmartIndentEx(bool warn) {
         winData->modMacro = ParseMacroEx(indentMacros->modMacro, &errMsg, &stoppedAt);
         if (!winData->modMacro) {
 
-            FreeProgram(winData->newlineMacro);
+            delete winData->newlineMacro;
             ParseErrorEx(this, indentMacros->modMacro, stoppedAt, tr("smart indent modify macro"), errMsg);
             return;
         }
@@ -5339,7 +5339,7 @@ void DocumentWidget::finishMacroCmdExecutionEx() {
     }
 
     // Free execution information
-    FreeProgram(macroCmdData_->program);
+    delete macroCmdData_->program;
     macroCmdData_ = nullptr;
 
     /* If macro closed its own window, window was made empty and untitled,
@@ -6730,10 +6730,10 @@ void DocumentWidget::EndSmartIndent() {
 
     // Free programs and allocated data
     if (winData->modMacro) {
-        FreeProgram(winData->modMacro);
+        delete winData->modMacro;
     }
 
-    FreeProgram(winData->newlineMacro);
+    delete winData->newlineMacro;
 
     smartIndentData_ = nullptr;
 }

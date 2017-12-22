@@ -2135,7 +2135,7 @@ bool readCheckMacroStringEx(QWidget *dialogParent, const QString &string, Docume
                     sym = InstallSymbolEx(subrName, MACRO_FUNCTION_SYM, subrPtr);
                 } else {
                     if (sym->type == MACRO_FUNCTION_SYM) {
-                        FreeProgram(to_program(sym->value));
+                        delete to_program(sym->value);
                     } else {
                         sym->type = MACRO_FUNCTION_SYM;
                     }
