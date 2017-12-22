@@ -1007,14 +1007,10 @@ void DocumentWidget::documentRaised() {
         StartHighlightingEx(/*warn=*/false);
     }
 
-    RefreshTabState();
-
     /* now refresh this state/info. RefreshWindowStates()
        has a lot of work to do, so we update the screen first so
        the document appears to switch swiftly. */
     RefreshWindowStates();
-
-    RefreshTabState();
 
     /* Make sure that the "In Selection" button tracks the presence of a
        selection and that the this inherits the proper search scope. */
