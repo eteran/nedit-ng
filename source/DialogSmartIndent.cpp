@@ -6,6 +6,7 @@
 #include "Help.h"
 #include "interpret.h"
 #include "LanguageMode.h"
+#include "parse.h"
 #include "macro.h"
 #include "MainWindow.h"
 #include "preferences.h"

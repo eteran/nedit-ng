@@ -17,6 +17,7 @@
 #include "Input.h"
 #include "interpret.h"
 #include "LanguageMode.h"
+#include "parse.h"
 #include "macro.h"
 #include "MainWindow.h"
 #include "PatternSet.h"

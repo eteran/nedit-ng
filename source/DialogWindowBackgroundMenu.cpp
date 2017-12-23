@@ -2,7 +2,7 @@
 #include "DialogWindowBackgroundMenu.h"
 #include "CommandRecorder.h"
 #include "interpret.h"
-#include "macro.h"
+#include "parse.h"
 #include "MainWindow.h"
 #include "MenuData.h"
 #include "MenuItem.h"

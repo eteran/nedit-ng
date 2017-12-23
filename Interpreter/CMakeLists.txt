@@ -9,13 +9,14 @@ find_package(Boost 1.35 REQUIRED)
 # using a different name from parse.cpp
 # because it will also output parse.h, which will conflict with the
 # in source copy of that file!
-bison_target(parser parse.y ${CMAKE_CURRENT_BINARY_DIR}/parser.cpp)
+bison_target(parser parser.y ${CMAKE_CURRENT_BINARY_DIR}/parser.cpp)
 
 add_library (Interpreter
 	DataValue.h
 	interpret.cpp
 	interpret.h
 	parse.h
+	parse.cpp
 	
 	${BISON_parser_OUTPUT_SOURCE}
 )

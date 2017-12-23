@@ -6,6 +6,7 @@
 #include "DocumentWidget.h"
 #include "EditFlags.h"
 #include "interpret.h"
+#include "parse.h"
 #include "macro.h"
 #include "MainWindow.h"
 #include "NeditServer.h"

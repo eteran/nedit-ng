@@ -2,10 +2,9 @@
 #ifndef PARSE_H_
 #define PARSE_H_
 
-#include <string>
-
 struct Program;
+class QString;
 
-Program *ParseMacro(const std::string &expr, std::string *msg, int *stoppedAt);
+Program *ParseMacroEx(const QString &expr, QString *message, int *stoppedAt);
 
 #endif

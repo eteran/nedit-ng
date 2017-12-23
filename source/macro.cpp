@@ -2030,27 +2030,7 @@ void RegisterMacroSubroutines() {
 ** a dialog explaining if macro did not compile successfully.
 */
 bool CheckMacroStringEx(QWidget *dialogParent, const QString &string, const QString &errIn, int *errPos) {
-    Q_ASSERT(errPos);
     return readCheckMacroStringEx(dialogParent, string, nullptr, errIn, errPos);
-}
-
-/*
-** Parse and optionally execute a macro string including macro definitions.
-** Report parsing errors in a dialog posted over dialogParent, using the
-** string errIn to identify the entity being parsed (filename, macro string,
-** etc.).  If runWindow is specified, runs the macro against the window.  If
-** runWindow is passed as nullptr, does parse only.  If errPos is non-null,
-** returns a pointer to the error location in the string.
-*/
-Program *ParseMacroEx(const QString &expr, QString *message, int *stoppedAt) {
-
-    auto str = expr.toStdString();
-
-    std::string msg;
-    Program *p = ParseMacro(str, &msg, stoppedAt);
-
-    *message = QString::fromStdString(msg);
-    return p;
 }
 
 bool readCheckMacroStringEx(QWidget *dialogParent, const QString &string, DocumentWidget *runDocument, const QString &errIn, int *errPos) {

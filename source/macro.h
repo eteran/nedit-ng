@@ -18,7 +18,6 @@ enum RepeatMethod {
     REPEAT_IN_SEL = -2,
 };
 
-Program *ParseMacroEx(const QString &expr, QString *message, int *stoppedAt);
 bool CheckMacroStringEx(QWidget *dialogParent, const QString &string, const QString &errIn, int *errPos);
 bool readCheckMacroStringEx(QWidget *dialogParent, const QString &string, DocumentWidget *runDocument, const QString &errIn, int *errPos);
 
