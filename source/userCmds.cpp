@@ -4,7 +4,7 @@
 #include "MenuItem.h"
 #include "interpret.h"
 #include "parse.h"
-#include "Input.h"
+#include "util/Input.h"
 #include "preferences.h"
 #include "LanguageMode.h"
 #include "util/raise.h"

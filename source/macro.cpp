@@ -7,7 +7,7 @@
 #include "Direction.h"
 #include "DocumentWidget.h"
 #include "HighlightPattern.h"
-#include "Input.h"
+#include "util/Input.h"
 #include "MainWindow.h"
 #include "RangesetTable.h"
 #include "SearchType.h"

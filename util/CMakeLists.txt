@@ -9,6 +9,8 @@ add_library (Util
 	fileUtils.cpp
 	ServerCommon.cpp
 	utils.cpp
+	Input.cpp
+	include/util/Input.h
 	include/util/algorithm.h
 	include/util/ClearCase.h
 	include/util/FileFormats.h

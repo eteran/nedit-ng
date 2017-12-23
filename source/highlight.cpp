@@ -5,7 +5,7 @@
 #include "HighlightData.h"
 #include "HighlightPattern.h"
 #include "HighlightStyle.h"
-#include "Input.h"
+#include "util/Input.h"
 #include "MainWindow.h"
 #include "PatternSet.h"
 #include "ReparseContext.h"

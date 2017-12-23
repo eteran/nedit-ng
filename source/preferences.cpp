@@ -3,7 +3,7 @@
 #include "DocumentWidget.h"
 #include "Font.h"
 #include "highlight.h"
-#include "Input.h"
+#include "util/Input.h"
 #include "LanguageMode.h"
 #include "MainWindow.h"
 #include "search.h"

@@ -8,7 +8,7 @@
 #include "interpret.h"
 #include "macro.h"
 #include "preferences.h"
-#include "Input.h"
+#include "util/Input.h"
 #include "shift.h"
 #include "util/utils.h"
 

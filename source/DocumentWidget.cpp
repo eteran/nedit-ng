@@ -14,7 +14,7 @@
 #include "HighlightData.h"
 #include "highlight.h"
 #include "HighlightStyle.h"
-#include "Input.h"
+#include "util/Input.h"
 #include "interpret.h"
 #include "LanguageMode.h"
 #include "parse.h"

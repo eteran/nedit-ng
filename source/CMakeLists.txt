@@ -195,8 +195,6 @@ add_executable(nedit-ng
 	HighlightStyle.h
 	HighlightStyleModel.cpp
 	HighlightStyleModel.h
-	Input.cpp
-	Input.h
 	KeySequenceEdit.cpp
 	KeySequenceEdit.h
 	LanguageMode.h
