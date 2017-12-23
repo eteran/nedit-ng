@@ -83,3 +83,6 @@ add_subdirectory (Settings)
 add_subdirectory (Interpreter)
 add_subdirectory (GSL EXCLUDE_FROM_ALL)
 
+if (UNIX)
+add_subdirectory (import)
+endif()
