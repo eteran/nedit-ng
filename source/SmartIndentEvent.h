@@ -2,7 +2,7 @@
 #ifndef SMARTINDENTCBSTRUCT_H_
 #define SMARTINDENTCBSTRUCT_H_
 
-#include "util/string_view.h"
+#include "Util/string_view.h"
 
 enum SmartIndentCallbackReasons {
 	NEWLINE_INDENT_NEEDED, 

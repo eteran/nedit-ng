@@ -1,8 +1,8 @@
 
-#include "util/fileUtils.h"
-#include "util/FileFormats.h"
-#include "util/utils.h"
-#include "util/ClearCase.h"
+#include "Util/fileUtils.h"
+#include "Util/FileFormats.h"
+#include "Util/utils.h"
+#include "Util/ClearCase.h"
 #include <gsl/gsl_util>
 
 #include <cstdlib>

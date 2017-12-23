@@ -13,7 +13,7 @@
 #include "preferences.h"
 #include "Regex.h"
 #include "Settings.h"
-#include "util/fileUtils.h"
+#include "Util/fileUtils.h"
 
 #include <QStringList>
 #include <QApplication>

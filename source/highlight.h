@@ -2,7 +2,7 @@
 #ifndef HIGHLIGHT_H_
 #define HIGHLIGHT_H_
 
-#include "util/string_view.h"
+#include "Util/string_view.h"
 #include "TextBufferFwd.h"
 
 #include <gsl/span>

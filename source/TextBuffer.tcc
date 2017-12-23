@@ -8,7 +8,7 @@
 #include <QtDebug>
 #include <QApplication>
 #include <QClipboard>
-#include "util/algorithm.h"
+#include "Util/algorithm.h"
 
 /*
 ** Get the entire contents of a text buffer.  Memory is allocated to contain

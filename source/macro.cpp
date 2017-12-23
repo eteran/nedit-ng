@@ -7,7 +7,7 @@
 #include "Direction.h"
 #include "DocumentWidget.h"
 #include "HighlightPattern.h"
-#include "util/Input.h"
+#include "Util/Input.h"
 #include "MainWindow.h"
 #include "RangesetTable.h"
 #include "SearchType.h"
@@ -21,9 +21,9 @@
 #include "preferences.h"
 #include "search.h"
 #include "smartIndent.h"
-#include "util/fileUtils.h"
-#include "util/utils.h"
-#include "util/version.h"
+#include "Util/fileUtils.h"
+#include "Util/utils.h"
+#include "Util/version.h"
 
 #include <gsl/gsl_util>
 #include <boost/optional.hpp>

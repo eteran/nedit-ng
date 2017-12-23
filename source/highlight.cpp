@@ -5,7 +5,7 @@
 #include "HighlightData.h"
 #include "HighlightPattern.h"
 #include "HighlightStyle.h"
-#include "util/Input.h"
+#include "Util/Input.h"
 #include "MainWindow.h"
 #include "PatternSet.h"
 #include "ReparseContext.h"
@@ -17,7 +17,7 @@
 #include "X11Colors.h"
 #include "preferences.h"
 #include "Regex.h"
-#include "util/utils.h"
+#include "Util/utils.h"
 
 #include <gsl/gsl_util>
 

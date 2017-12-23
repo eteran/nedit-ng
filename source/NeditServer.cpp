@@ -6,8 +6,8 @@
 #include "macro.h"
 #include "preferences.h"
 
-#include "util/ServerCommon.h"
-#include "util/fileUtils.h"
+#include "Util/ServerCommon.h"
+#include "Util/fileUtils.h"
 
 #include <QApplication>
 #include <QDesktopWidget>

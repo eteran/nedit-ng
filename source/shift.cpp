@@ -3,8 +3,8 @@
 #include "DocumentWidget.h"
 #include "TextArea.h"
 #include "TextBuffer.h"
-#include "util/utils.h"
-#include "util/string_view.h"
+#include "Util/utils.h"
+#include "Util/string_view.h"
 #include <gsl/gsl_util>
 #include <memory>
 

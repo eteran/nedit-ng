@@ -1,6 +1,6 @@
 
 #include "DialogAbout.h"
-#include "util/version.h"
+#include "Util/version.h"
 #include <QLocale>
 #include <QSysInfo>
 #include <QtGlobal>

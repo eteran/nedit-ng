@@ -1,6 +1,6 @@
 
 #include "LanguageModeModel.h"
-#include "util/algorithm.h"
+#include "Util/algorithm.h"
 
 /**
  * @brief LanguageModeModel::LanguageModeModel

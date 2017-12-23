@@ -1,6 +1,6 @@
 
 #include "DocumentModel.h"
-#include "util/algorithm.h"
+#include "Util/algorithm.h"
 
 /**
  * @brief DocumentModel::LanguageModeModel

@@ -10,11 +10,11 @@
 #include <QDataStream>
 #include <QThread>
 
-#include "util/version.h"
-#include "util/system.h"
-#include "util/fileUtils.h"
-#include "util/ClearCase.h"
-#include "util/ServerCommon.h"
+#include "Util/version.h"
+#include "Util/system.h"
+#include "Util/fileUtils.h"
+#include "Util/ClearCase.h"
+#include "Util/ServerCommon.h"
 
 #include <memory>
 

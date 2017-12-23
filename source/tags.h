@@ -3,7 +3,7 @@
 #define TAGS_H_
 
 #include "CallTip.h"
-#include "util/string_view.h"
+#include "Util/string_view.h"
 #include <deque>
 
 #include <QString>

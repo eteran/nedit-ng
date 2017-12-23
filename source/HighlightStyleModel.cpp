@@ -1,6 +1,6 @@
 
 #include "HighlightStyleModel.h"
-#include "util/algorithm.h"
+#include "Util/algorithm.h"
 
 /**
  * @brief HighlightStyleModel::HighlightStyleModel

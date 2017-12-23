@@ -8,7 +8,7 @@
 #include "TextBufferFwd.h"
 #include "DragStates.h"
 #include "StyleTableEntry.h"
-#include "util/string_view.h"
+#include "Util/string_view.h"
 #include <QAbstractScrollArea>
 #include <QColor>
 #include <QFlags>

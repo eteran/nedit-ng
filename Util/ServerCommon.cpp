@@ -1,6 +1,6 @@
 
-#include "util/ServerCommon.h"
-#include "util/utils.h"
+#include "Util/ServerCommon.h"
+#include "Util/utils.h"
 #include <QString>
 #include <QStringList>
 #include <QStandardPaths>

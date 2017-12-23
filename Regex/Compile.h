@@ -3,7 +3,7 @@
 #define COMPILE_H_
 
 #include "RegexError.h"
-#include "util/string_view.h"
+#include "Util/string_view.h"
 #include <bitset>
 
 class Regex;

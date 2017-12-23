@@ -75,7 +75,7 @@ endif()
 # -Wno-missing-prototypes
 # -Wno-used-but-marked-unused
 
-add_subdirectory (util)
+add_subdirectory (Util)
 add_subdirectory (source)
 add_subdirectory (client)
 add_subdirectory (Regex)

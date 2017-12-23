@@ -3,7 +3,7 @@
 #include "DocumentWidget.h"
 #include "Font.h"
 #include "highlight.h"
-#include "util/Input.h"
+#include "Util/Input.h"
 #include "LanguageMode.h"
 #include "MainWindow.h"
 #include "search.h"
@@ -12,8 +12,8 @@
 #include "tags.h"
 #include "TextBuffer.h"
 #include "userCmds.h"
-#include "util/ClearCase.h"
-#include "util/version.h"
+#include "Util/ClearCase.h"
+#include "Util/version.h"
 
 #include <QInputDialog>
 #include <QMessageBox>

@@ -5,9 +5,9 @@
 #include "nedit.h"
 #include "preferences.h"
 #include "SignalBlocker.h"
-#include "util/ClearCase.h"
-#include "util/fileUtils.h"
-#include "util/utils.h"
+#include "Util/ClearCase.h"
+#include "Util/fileUtils.h"
+#include "Util/utils.h"
 
 struct UpdateState {
 	bool fileNamePresent;

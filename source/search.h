@@ -5,7 +5,7 @@
 #include "Direction.h"
 #include "SearchType.h"
 #include "WrapMode.h"
-#include "util/string_view.h"
+#include "Util/string_view.h"
 #include <QString>
 #include <memory>
 

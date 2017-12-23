@@ -5,7 +5,7 @@
 #include "Constants.h"
 #include "Opcodes.h"
 #include "RegexError.h"
-#include "util/raise.h"
+#include "Util/raise.h"
 
 #include <cstdint>
 #include <cstring>

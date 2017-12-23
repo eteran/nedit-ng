@@ -5,7 +5,7 @@
 #include "gap_buffer.h"
 #include "TextBufferFwd.h"
 #include "TextSelection.h"
-#include "util/string_view.h"
+#include "Util/string_view.h"
 
 #include <gsl/gsl_util>
 

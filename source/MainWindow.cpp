@@ -36,10 +36,10 @@
 #include "TextArea.h"
 #include "TextBuffer.h"
 #include "userCmds.h"
-#include "util/algorithm.h"
-#include "util/ClearCase.h"
-#include "util/fileUtils.h"
-#include "util/utils.h"
+#include "Util/algorithm.h"
+#include "Util/ClearCase.h"
+#include "Util/fileUtils.h"
+#include "Util/utils.h"
 #include "WindowMenuEvent.h"
 
 #include <QClipboard>

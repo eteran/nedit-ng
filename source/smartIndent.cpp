@@ -8,9 +8,9 @@
 #include "interpret.h"
 #include "macro.h"
 #include "preferences.h"
-#include "util/Input.h"
+#include "Util/Input.h"
 #include "shift.h"
-#include "util/utils.h"
+#include "Util/utils.h"
 
 #include <QMessageBox>
 #include <QPointer>

@@ -1,5 +1,5 @@
 
-#include "util/ClearCase.h"
+#include "Util/ClearCase.h"
 #include <QString>
 
 namespace ClearCase {

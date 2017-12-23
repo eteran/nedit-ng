@@ -6,7 +6,7 @@
 #include "Opcodes.h"
 #include "RegexError.h"
 #include "Regex.h"
-#include "util/utils.h"
+#include "Util/utils.h"
 
 #include <cassert>
 #include <cstdio>

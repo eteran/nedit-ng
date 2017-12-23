@@ -10,17 +10,17 @@ add_library (Util
 	ServerCommon.cpp
 	utils.cpp
 	Input.cpp
-	include/util/Input.h
-	include/util/algorithm.h
-	include/util/ClearCase.h
-	include/util/FileFormats.h
-	include/util/fileUtils.h
-	include/util/raise.h
-	include/util/ServerCommon.h
-	include/util/string_view.h
-	include/util/system.h
-	include/util/utils.h
-	include/util/version.h
+	include/Util/Input.h
+	include/Util/algorithm.h
+	include/Util/ClearCase.h
+	include/Util/FileFormats.h
+	include/Util/fileUtils.h
+	include/Util/raise.h
+	include/Util/ServerCommon.h
+	include/Util/string_view.h
+	include/Util/system.h
+	include/Util/utils.h
+	include/Util/version.h
 )
 
 target_include_directories (Util PUBLIC

@@ -7,8 +7,8 @@
 #include "preferences.h"
 #include "search.h"
 #include "LanguageMode.h"
-#include "util/fileUtils.h"
-#include "util/utils.h"
+#include "Util/fileUtils.h"
+#include "Util/utils.h"
 
 #include <gsl/gsl_util>
 
