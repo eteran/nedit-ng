@@ -56,8 +56,8 @@ public:
     boost::optional<int> BufSearchBackwardEx(int startPos, view_type searchChars) const noexcept;
     boost::optional<int> BufSearchForwardEx(int startPos, view_type searchChars) const noexcept;
     Ch BufGetCharacter(int64_t pos) const noexcept;
-    int BufCmpEx(int pos, view_type cmpText) const noexcept;
-    int BufCmpEx(int pos, Ch ch) const noexcept;
+    int BufCmpEx(int64_t pos, view_type cmpText) const noexcept;
+    int BufCmpEx(int64_t pos, Ch ch) const noexcept;
     int BufCountBackwardNLines(int startPos, int nLines) const noexcept;
     int BufCountDispChars(int lineStartPos, int targetPos) const noexcept;
     int BufCountForwardDispChars(int lineStartPos, int nChars) const noexcept;
@@ -134,8 +134,8 @@ public:
 private:
     boost::optional<int> searchBackward(int startPos, Ch searchChar) const noexcept;
     boost::optional<int> searchForward(int startPos, Ch searchChar) const noexcept;
-    int insertEx(int pos, view_type text) noexcept;
-    int insertEx(int pos, Ch ch) noexcept;
+    int64_t insertEx(int64_t pos, view_type text) noexcept;
+    int64_t insertEx(int64_t pos, Ch ch) noexcept;
     string_type getSelectionTextEx(const TextSelection *sel) const;
     void callModifyCBs(int pos, int nDeleted, int nInserted, int nRestyled, view_type deletedText) const noexcept;
     void callPreDeleteCBs(int pos, int nDeleted) const noexcept;

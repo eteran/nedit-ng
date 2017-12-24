@@ -1019,12 +1019,12 @@ boost::optional<int> BasicTextBuffer<Ch, Tr>::BufSearchBackwardEx(int startPos, 
 ** != 0 otherwise.
 */
 template <class Ch, class Tr>
-int BasicTextBuffer<Ch, Tr>::BufCmpEx(int pos, view_type cmpText) const noexcept {
+int BasicTextBuffer<Ch, Tr>::BufCmpEx(int64_t pos, view_type cmpText) const noexcept {
     return buffer_.compare(pos, cmpText);
 }
 
 template <class Ch, class Tr>
-int BasicTextBuffer<Ch, Tr>::BufCmpEx(int pos, Ch ch) const noexcept {
+int BasicTextBuffer<Ch, Tr>::BufCmpEx(int64_t pos, Ch ch) const noexcept {
     return buffer_.compare(pos, ch);
 }
 
@@ -1036,7 +1036,7 @@ int BasicTextBuffer<Ch, Tr>::BufCmpEx(int pos, Ch ch) const noexcept {
 ** the buffer (i.e. not past the end).
 */
 template <class Ch, class Tr>
-int BasicTextBuffer<Ch, Tr>::insertEx(int pos, view_type text) noexcept {
+int64_t BasicTextBuffer<Ch, Tr>::insertEx(int64_t pos, view_type text) noexcept {
     const int64_t length = text.size();
 
     buffer_.insert(pos, text);
@@ -1047,7 +1047,7 @@ int BasicTextBuffer<Ch, Tr>::insertEx(int pos, view_type text) noexcept {
 }
 
 template <class Ch, class Tr>
-int BasicTextBuffer<Ch, Tr>::insertEx(int pos, Ch ch) noexcept {
+int64_t BasicTextBuffer<Ch, Tr>::insertEx(int64_t pos, Ch ch) noexcept {
 
     const int64_t length = 1;
 
