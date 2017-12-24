@@ -3,6 +3,8 @@
 #include "SearchType.h"
 #include "WrapStyle.h"
 #include <QVariant>
+#include <QRegularExpression>
+#include <QTextStream>
 #include <string>
 #include <fstream>
 #include <iostream>
@@ -169,9 +171,9 @@ int main(int argc, char *argv[]) {
 	Settings settings;
 
 	// string preferences
-    settings.shellCommands           = readResource<QString>(prefDB, "nedit.shellCommands");
-    settings.macroCommands           = readResource<QString>(prefDB, "nedit.macroCommands");
-    settings.bgMenuCommands          = readResource<QString>(prefDB, "nedit.bgMenuCommands");
+    settings.shellCommands           = readResource<QString>(prefDB, "nedit.shellCommands");  // TODO(eteran): handle the slight difference in format
+    settings.macroCommands           = readResource<QString>(prefDB, "nedit.macroCommands");  // TODO(eteran): handle the slight difference in format
+    settings.bgMenuCommands          = readResource<QString>(prefDB, "nedit.bgMenuCommands"); // TODO(eteran): handle the slight difference in format
     settings.highlightPatterns       = readResource<QString>(prefDB, "nedit.highlightPatterns");
     settings.languageModes           = readResource<QString>(prefDB, "nedit.languageModes");
     settings.smartIndentInit         = readResource<QString>(prefDB, "nedit.smartIndentInit");
@@ -224,6 +226,16 @@ int main(int argc, char *argv[]) {
     settings.showMatching            = from_string<ShowMatchingStyle>(readResource<QString>(prefDB, "nedit.showMatching"));
     settings.autoIndent              = from_string<IndentStyle>	     (readResource<QString>(prefDB, "nedit.autoIndent"));
 
+    // theme colors
+    settings.colors[ColorTypes::TEXT_BG_COLOR]   = readResource<QString>(prefDB, "nedit.textBgColor");
+    settings.colors[ColorTypes::TEXT_FG_COLOR]   = readResource<QString>(prefDB, "nedit.textFgColor");
+    settings.colors[ColorTypes::SELECT_BG_COLOR] = readResource<QString>(prefDB, "nedit.selectBgColor");
+    settings.colors[ColorTypes::SELECT_FG_COLOR] = readResource<QString>(prefDB, "nedit.selectFgColor");
+    settings.colors[ColorTypes::HILITE_BG_COLOR] = readResource<QString>(prefDB, "nedit.hiliteBgColor");
+    settings.colors[ColorTypes::HILITE_FG_COLOR] = readResource<QString>(prefDB, "nedit.hiliteFgColor");
+    settings.colors[ColorTypes::CURSOR_FG_COLOR] = readResource<QString>(prefDB, "nedit.cursorFgColor");
+    settings.colors[ColorTypes::LINENO_FG_COLOR] = readResource<QString>(prefDB, "nedit.lineNoFgColor");
+
     std::cout << "WARNING: fonts will not be imported\n"
                  "X11 uses a different specification than Qt and it is difficult to map between the two reliably" << std::endl;
 
@@ -234,17 +246,24 @@ int main(int argc, char *argv[]) {
     settings.boldItalicHighlightFont = readResource<QString>(prefDB, "nedit.boldItalicHighlightFont");
 #endif
 
-#if 0 // theme colors
-	settings.styles        = readResource(prefDB, "nedit.styles");
-	settings.textFgColor   = readResource(prefDB, "nedit.textFgColor");
-	settings.textBgColor   = readResource(prefDB, "nedit.textBgColor");
-	settings.selectFgColor = readResource(prefDB, "nedit.selectFgColor");
-	settings.selectBgColor = readResource(prefDB, "nedit.selectBgColor");
-	settings.hiliteFgColor = readResource(prefDB, "nedit.hiliteFgColor");
-	settings.hiliteBgColor = readResource(prefDB, "nedit.hiliteBgColor");
-	settings.lineNoFgColor = readResource(prefDB, "nedit.lineNoFgColor");
-	settings.cursorFgColor = readResource(prefDB, "nedit.cursorFgColor");
-#endif
+
+    QString style = readResource<QString>(prefDB, "nedit.styles");
+    QTextStream stream(&style);
+    QRegularExpression re(QLatin1String("\\s*(?<name>[^:]+):(?<color>[^:]+):(?<font>[^:]+)"));
+
+    QString line;
+    while(stream.readLineInto(&line)) {
+        qDebug() << line;
+        QRegularExpressionMatch match = re.match(line);
+        if(match.hasMatch()) {
+            qDebug() << match.captured(QLatin1String("name"));
+            qDebug() << match.captured(QLatin1String("color"));
+            qDebug() << match.captured(QLatin1String("font"));
+        }
+    }
+
+
+    // Style format: Name:FGColor/BGColor:FontStyle
 	
 	XrmDestroyDatabase(prefDB);
 }
