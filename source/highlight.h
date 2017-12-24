@@ -48,7 +48,7 @@ void LoadTheme();
 void SaveTheme();
 bool LoadHighlightStringEx(const QString &string);
 bool NamedStyleExists(const QString &styleName);
-bool parseString(HighlightData *pattern, const char **string, char **styleString, int64_t length, char *prevChar, bool anchored, const QString &delimiters, const char *lookBehindTo, const char *match_till);
+bool parseString(HighlightData *pattern, const char **string, char **styleString, int64_t length, char *prevChar, bool anchored, const QString &delimiters, const char *look_behind_to, const char *match_till);
 char getPrevChar(TextBuffer *buf, int pos);
 HighlightData *patternOfStyle(HighlightData *patterns, int style);
 int backwardOneContext(TextBuffer *buf, ReparseContext *context, int fromPos);

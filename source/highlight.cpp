@@ -431,10 +431,10 @@ parseDone:
 ** far the string should be searched, and "length" the part which is actually
 ** required (the string may or may not be parsed beyond "length").
 **
-** "lookBehindTo" indicates the boundary till where look-behind patterns may
+** "look_behind_to" indicates the boundary till where look-behind patterns may
 ** look back. If nullptr, the start of the string is assumed to be the boundary.
 **
-** "match_till" indicates the boundary till where matches may extend. If nullptr,
+** "match_to" indicates the boundary till where matches may extend. If nullptr,
 ** it is assumed that the terminating \0 indicates the boundary. Note that
 ** look-ahead patterns can peek beyond the boundary, if supplied.
 **
@@ -442,11 +442,11 @@ parseDone:
 ** the error pattern matched, if the end of the string was reached without
 ** matching the end expression, or in the unlikely event of an internal error.
 */
-bool parseString(HighlightData *pattern, const char **string, char **styleString, int64_t length, char *prevChar, bool anchored, const QString &delimiters, const char *lookBehindTo, const char *match_till) {
+bool parseString(HighlightData *pattern, const char **string, char **styleString, int64_t length, char *prevChar, bool anchored, const QString &delimiters, const char *look_behind_to, const char *match_to) {
 
 	bool subExecuted;
 	int *subExpr;
-	char succChar = match_till ? (*match_till) : '\0';
+    char succChar = match_to ? (*match_to) : '\0';
 	HighlightData *subPat = nullptr;
 	HighlightData *subSubPat;
 
@@ -465,8 +465,8 @@ bool parseString(HighlightData *pattern, const char **string, char **styleString
                *prevChar,
                succChar,
                delimiters.isNull() ? nullptr : delimiters.toLatin1().data(),
-               lookBehindTo,
-               match_till)) {
+               look_behind_to,
+               match_to)) {
 	
 		/* Beware of the case where only one real branch exists, but that
 		   branch has sub-branches itself. In that case the top_branch refers
@@ -500,8 +500,8 @@ bool parseString(HighlightData *pattern, const char **string, char **styleString
                                         savedPrevChar,
                                         succChar,
                                         delimiters.isNull() ? nullptr : delimiters.toLatin1().data(),
-                                        lookBehindTo,
-                                        match_till)) {
+                                        look_behind_to,
+                                        match_to)) {
                                 qCritical("NEdit: Internal error, failed to recover end match in parseString");
 								return false;
 							}
@@ -579,8 +579,8 @@ bool parseString(HighlightData *pattern, const char **string, char **styleString
 				prevChar, 
 				false, 
 				delimiters, 
-				lookBehindTo, 
-				match_till);
+                look_behind_to,
+                match_to);
 				
 		} else {
 			/* If the parent pattern is not a start/end pattern, the
@@ -598,7 +598,7 @@ bool parseString(HighlightData *pattern, const char **string, char **styleString
 				prevChar, 
 				false, 
 				delimiters, 
-				lookBehindTo, 
+                look_behind_to,
 				pattern->subPatternRE->endp[0]);
 		}
 
@@ -616,8 +616,8 @@ bool parseString(HighlightData *pattern, const char **string, char **styleString
                                 savedPrevChar,
                                 succChar,
                                 delimiters.isNull() ? nullptr : delimiters.toLatin1().data(),
-                                lookBehindTo,
-                                match_till)) {
+                                look_behind_to,
+                                match_to)) {
                         qCritical("NEdit: Internal error, failed to recover start match in parseString");
 						return false;
 					}
