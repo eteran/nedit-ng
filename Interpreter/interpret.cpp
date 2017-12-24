@@ -201,6 +201,17 @@ static int (*OpFns[N_OPS])() = {
 ** be used to both process the message and return.
 */
 template <class ...T>
+int execError(const std::error_code &error_code, T ... args) {
+    static char msg[MAX_ERR_MSG_LEN];
+
+    std::string str = error_code.message();
+
+    snprintf(msg, sizeof(msg), str.c_str(), args...);
+    ErrMsg = msg;
+    return STAT_ERROR;
+}
+
+template <class ...T>
 int execError(const char *s1, T ... args) {
     static char msg[MAX_ERR_MSG_LEN];
 
@@ -848,7 +859,7 @@ static int pushSymVal() {
 		}
 	} else if (s->type == PROC_VALUE_SYM) {
 
-		const char *errMsg;
+        std::error_code errMsg;
         if (!(to_subroutine(s->value))(Context->FocusDocument, Arguments(), &symVal, &errMsg)) {
 			return execError(errMsg, s->name.c_str());
 		}
@@ -1513,8 +1524,6 @@ static int concat() {
 */
 static int callSubroutine() {
 
-    const char *errMsg = nullptr;
-
     Symbol *sym = Context->PC++->sym;
     int nArgs   = Context->PC++->value;
 
@@ -1532,6 +1541,9 @@ static int callSubroutine() {
 
 		// Call the function and check for preemption 
         PreemptRequest = false;
+
+        std::error_code errMsg;
+
         if (!to_subroutine(sym->value)(Context->FocusDocument, Arguments(Context->StackP, nArgs), &result, &errMsg)) {
             return execError(errMsg, sym->name.c_str());
         }

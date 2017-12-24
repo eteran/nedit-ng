@@ -9,6 +9,7 @@
 #include <string>
 #include <memory>
 #include <map>
+#include <system_error>
 
 #include <boost/variant.hpp>
 
@@ -20,7 +21,7 @@ struct Program;
 union Inst;
 
 using Arguments      = gsl::span<DataValue>;
-using LibraryRoutine = bool (*)(DocumentWidget *document, Arguments arguments, DataValue *result, const char **errMsg);
+using LibraryRoutine = bool (*)(DocumentWidget *document, Arguments arguments, DataValue *result, std::error_code *errMsg);
 using Array          = std::map<std::string, DataValue>;
 using ArrayPtr       = std::shared_ptr<Array>;
 

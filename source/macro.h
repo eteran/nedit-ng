@@ -4,6 +4,7 @@
 
 #include <QTimer>
 #include <memory>
+#include <system_error>
 
 class DocumentWidget;
 class MainWindow;
@@ -34,5 +35,7 @@ struct MacroCommandData {
     bool                          closeOnCompletion = false;
     std::shared_ptr<MacroContext> context;
 };
+
+
 
 #endif
