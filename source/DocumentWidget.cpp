@@ -3457,7 +3457,7 @@ void DocumentWidget::SetShowMatching(ShowMatchingStyle state) {
             case ShowMatchingStyle::None:
                 no_signals(win->ui.action_Matching_Off)->setChecked(true);
                 break;
-            case ShowMatchingStyle::Delimeter:
+            case ShowMatchingStyle::Delimiter:
                 no_signals(win->ui.action_Matching_Delimiter)->setChecked(true);
                 break;
             case ShowMatchingStyle::Range:
@@ -5450,7 +5450,7 @@ void DocumentWidget::FlashMatchingEx(TextArea *area) {
 
     /* constrain the search to visible text only when in single-pane mode
        AND using delimiter flashing (otherwise search the whole buffer) */
-    bool constrain = (textPanes().empty() && (showMatchingStyle_ == ShowMatchingStyle::Delimeter));
+    bool constrain = (textPanes().empty() && (showMatchingStyle_ == ShowMatchingStyle::Delimiter));
 
     int startPos;
     int endPos;
@@ -5472,7 +5472,7 @@ void DocumentWidget::FlashMatchingEx(TextArea *area) {
         return;
     }
 
-    if (showMatchingStyle_ == ShowMatchingStyle::Delimeter) {
+    if (showMatchingStyle_ == ShowMatchingStyle::Delimiter) {
         // Highlight either the matching character ...
         buffer_->BufHighlight(*matchPos, *matchPos + 1);
     } else {

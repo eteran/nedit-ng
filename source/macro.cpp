@@ -1446,7 +1446,7 @@ static std::error_code setShowMatchingMS(DocumentWidget *document, Arguments arg
         if (arg == QLatin1String("off")) {
             document->SetShowMatching(ShowMatchingStyle::None);
         } else if (arg == QLatin1String("delimiter")) {
-            document->SetShowMatching(ShowMatchingStyle::Delimeter);
+            document->SetShowMatching(ShowMatchingStyle::Delimiter);
         } else if (arg == QLatin1String("range")) {
             document->SetShowMatching(ShowMatchingStyle::Range);
         }
@@ -1458,7 +1458,7 @@ static std::error_code setShowMatchingMS(DocumentWidget *document, Arguments arg
         else if (arg == QLatin1String("0")) {
            document->SetShowMatching(ShowMatchingStyle::None);
         } else if (arg == QLatin1String("1")) {
-           document->SetShowMatching(ShowMatchingStyle::Delimeter);
+           document->SetShowMatching(ShowMatchingStyle::Delimiter);
         } else {
             qWarning("NEdit: Invalid argument for set_show_matching");
         }

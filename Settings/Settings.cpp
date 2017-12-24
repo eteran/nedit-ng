@@ -107,7 +107,7 @@ void Settings::loadPreferences() {
 
     autoWrap                          = readEnum(settings, tr("nedit.autoWrap"),                          WrapStyle::Continuous);
     autoIndent                        = readEnum(settings, tr("nedit.autoIndent"),                        IndentStyle::Auto);
-    showMatching                      = readEnum(settings, tr("nedit.showMatching"),                      ShowMatchingStyle::Delimeter);
+    showMatching                      = readEnum(settings, tr("nedit.showMatching"),                      ShowMatchingStyle::Delimiter);
     searchMethod                      = readEnum(settings, tr("nedit.searchMethod"),                      SearchType::Literal);
     overrideDefaultVirtualKeyBindings = readEnum(settings, tr("nedit.overrideDefaultVirtualKeyBindings"), VirtKeyOverride::VIRT_KEY_OVERRIDE_AUTO);
     truncSubstitution                 = readEnum(settings, tr("nedit.truncSubstitution"),                 TruncSubstitution::Fail);

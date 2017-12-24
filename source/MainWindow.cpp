@@ -326,7 +326,7 @@ void MainWindow::setupGlobalPrefenceDefaults() {
     case ShowMatchingStyle::None:
         no_signals(ui.action_Default_Matching_Off)->setChecked(true);
         break;
-    case ShowMatchingStyle::Delimeter:
+    case ShowMatchingStyle::Delimiter:
         no_signals(ui.action_Default_Matching_Delimiter)->setChecked(true);
         break;
     case ShowMatchingStyle::Range:
@@ -386,7 +386,7 @@ void MainWindow::setupDocumentPrefernceDefaults() {
     case ShowMatchingStyle::None:
         no_signals(ui.action_Matching_Off)->setChecked(true);
         break;
-    case ShowMatchingStyle::Delimeter:
+    case ShowMatchingStyle::Delimiter:
         no_signals(ui.action_Matching_Delimiter)->setChecked(true);
         break;
     case ShowMatchingStyle::Range:
@@ -3751,7 +3751,7 @@ void MainWindow::matchingGroupTriggered(QAction *action) {
         if(action == ui.action_Matching_Off) {
             document->SetShowMatching(ShowMatchingStyle::None);
         } else if(action == ui.action_Matching_Delimiter) {
-            document->SetShowMatching(ShowMatchingStyle::Delimeter);
+            document->SetShowMatching(ShowMatchingStyle::Delimiter);
         } else if(action == ui.action_Matching_Range) {
             document->SetShowMatching(ShowMatchingStyle::Range);
         } else {
@@ -4348,7 +4348,7 @@ void MainWindow::defaultMatchingGroupTriggered(QAction *action) {
             no_signals(window->ui.action_Default_Matching_Off)->setChecked(true);
         }
     } else if(action == ui.action_Default_Matching_Delimiter) {
-        SetPrefShowMatching(ShowMatchingStyle::Delimeter);
+        SetPrefShowMatching(ShowMatchingStyle::Delimiter);
         for(MainWindow *window : windows) {
             no_signals(window->ui.action_Default_Matching_Delimiter)->setChecked(true);
         }
