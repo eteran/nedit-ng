@@ -94,7 +94,7 @@ unsigned long greedy(uint8_t *p, long max) {
         /* Race to the end of the line or string. Dot DOESN'T match
            newline. */
 
-        while (count < max_cmp && *input_str != '\n' && !AT_END_OF_STRING(input_str)) {
+        while (count < max_cmp && !AT_END_OF_STRING(input_str) && *input_str != '\n') {
             count++;
             input_str++;
         }
@@ -112,7 +112,7 @@ unsigned long greedy(uint8_t *p, long max) {
         break;
 
     case EXACTLY: // Count occurrences of single character operand.
-        while (count < max_cmp && *operand == *input_str && !AT_END_OF_STRING(input_str)) {
+        while (count < max_cmp && !AT_END_OF_STRING(input_str) && *operand == *input_str) {
             count++;
             input_str++;
         }
@@ -120,7 +120,7 @@ unsigned long greedy(uint8_t *p, long max) {
         break;
 
     case SIMILAR: // Case insensitive version of EXACTLY
-        while (count < max_cmp && *operand == tolower(*input_str) && !AT_END_OF_STRING(input_str)) {
+        while (count < max_cmp && !AT_END_OF_STRING(input_str) && *operand == safe_ctype<tolower>(*input_str)) {
             count++;
             input_str++;
         }
@@ -128,7 +128,7 @@ unsigned long greedy(uint8_t *p, long max) {
         break;
 
     case ANY_OF: // [...] character class.
-        while (count < max_cmp && strchr(reinterpret_cast<char *>(operand), *input_str) != nullptr && !AT_END_OF_STRING(input_str)) {
+        while (count < max_cmp && !AT_END_OF_STRING(input_str) && strchr(reinterpret_cast<char *>(operand), *input_str) != nullptr) {
 
             count++;
             input_str++;
@@ -140,7 +140,7 @@ unsigned long greedy(uint8_t *p, long max) {
                      match newline (\n added usually to operand at compile
                      time.) */
 
-        while (count < max_cmp && strchr(reinterpret_cast<char *>(operand), *input_str) == nullptr && !AT_END_OF_STRING(input_str)) {
+        while (count < max_cmp && !AT_END_OF_STRING(input_str) && strchr(reinterpret_cast<char *>(operand), *input_str) == nullptr) {
 
             count++;
             input_str++;
@@ -151,7 +151,7 @@ unsigned long greedy(uint8_t *p, long max) {
     case IS_DELIM: /* \y (not a word delimiter char)
                        NOTE: '\n' and '\0' are always word delimiters. */
 
-        while (count < max_cmp && isDelimiter(*input_str) && !AT_END_OF_STRING(input_str)) {
+        while (count < max_cmp && !AT_END_OF_STRING(input_str) && isDelimiter(*input_str)) {
             count++;
             input_str++;
         }
@@ -161,7 +161,7 @@ unsigned long greedy(uint8_t *p, long max) {
     case NOT_DELIM: /* \Y (not a word delimiter char)
                        NOTE: '\n' and '\0' are always word delimiters. */
 
-        while (count < max_cmp && !isDelimiter(*input_str) && !AT_END_OF_STRING(input_str)) {
+        while (count < max_cmp && !AT_END_OF_STRING(input_str) && !isDelimiter(*input_str)) {
             count++;
             input_str++;
         }
@@ -169,7 +169,7 @@ unsigned long greedy(uint8_t *p, long max) {
         break;
 
     case WORD_CHAR: // \w (word character, alpha-numeric or underscore)
-        while (count < max_cmp && (safe_ctype<isalnum>(*input_str) || *input_str == static_cast<uint8_t>('_')) && !AT_END_OF_STRING(input_str)) {
+        while (count < max_cmp && !AT_END_OF_STRING(input_str) && (safe_ctype<isalnum>(*input_str) || *input_str == '_')) {
 
             count++;
             input_str++;
@@ -178,7 +178,7 @@ unsigned long greedy(uint8_t *p, long max) {
         break;
 
     case NOT_WORD_CHAR: // \W (NOT a word character)
-        while (count < max_cmp && !safe_ctype<isalnum>(*input_str) && *input_str != static_cast<uint8_t>('_') && *input_str != static_cast<uint8_t>('\n') && !AT_END_OF_STRING(input_str)) {
+        while (count < max_cmp && !AT_END_OF_STRING(input_str) && !safe_ctype<isalnum>(*input_str) && *input_str != '_' && *input_str != '\n') {
 
             count++;
             input_str++;
@@ -187,7 +187,7 @@ unsigned long greedy(uint8_t *p, long max) {
         break;
 
     case DIGIT: // same as [0123456789]
-        while (count < max_cmp && safe_ctype<isdigit>(*input_str) && !AT_END_OF_STRING(input_str)) {
+        while (count < max_cmp && !AT_END_OF_STRING(input_str) && safe_ctype<isdigit>(*input_str)) {
             count++;
             input_str++;
         }
@@ -195,7 +195,7 @@ unsigned long greedy(uint8_t *p, long max) {
         break;
 
     case NOT_DIGIT: // same as [^0123456789]
-        while (count < max_cmp && !safe_ctype<isdigit>(*input_str) && *input_str != '\n' && !AT_END_OF_STRING(input_str)) {
+        while (count < max_cmp && !AT_END_OF_STRING(input_str) && !safe_ctype<isdigit>(*input_str) && *input_str != '\n') {
 
             count++;
             input_str++;
@@ -204,7 +204,7 @@ unsigned long greedy(uint8_t *p, long max) {
         break;
 
     case SPACE: // same as [ \t\r\f\v]-- doesn't match newline.
-        while (count < max_cmp && safe_ctype<isspace>(*input_str) && *input_str != '\n' && !AT_END_OF_STRING(input_str)) {
+        while (count < max_cmp && !AT_END_OF_STRING(input_str) && safe_ctype<isspace>(*input_str) && *input_str != '\n') {
 
             count++;
             input_str++;
@@ -213,7 +213,7 @@ unsigned long greedy(uint8_t *p, long max) {
         break;
 
     case SPACE_NL: // same as [\n \t\r\f\v]-- matches newline.
-        while (count < max_cmp && safe_ctype<isspace>(*input_str) && !AT_END_OF_STRING(input_str)) {
+        while (count < max_cmp && !AT_END_OF_STRING(input_str) && safe_ctype<isspace>(*input_str)) {
 
             count++;
             input_str++;
@@ -231,7 +231,7 @@ unsigned long greedy(uint8_t *p, long max) {
         break;
 
     case NOT_SPACE_NL: // same as [^ \t\r\f\v]-- matches newline.
-        while (count < max_cmp && (!safe_ctype<isspace>(*input_str) || *input_str == '\n') && !AT_END_OF_STRING(input_str)) {
+        while (count < max_cmp && !AT_END_OF_STRING(input_str) && (!safe_ctype<isspace>(*input_str) || *input_str == '\n')) {
 
             count++;
             input_str++;
@@ -240,7 +240,7 @@ unsigned long greedy(uint8_t *p, long max) {
         break;
 
     case LETTER: // same as [a-zA-Z]
-        while (count < max_cmp && safe_ctype<isalpha>(*input_str) && !AT_END_OF_STRING(input_str)) {
+        while (count < max_cmp && !AT_END_OF_STRING(input_str) && safe_ctype<isalpha>(*input_str)) {
 
             count++;
             input_str++;
@@ -249,7 +249,7 @@ unsigned long greedy(uint8_t *p, long max) {
         break;
 
     case NOT_LETTER: // same as [^a-zA-Z]
-        while (count < max_cmp && !safe_ctype<isalpha>(*input_str) && *input_str != '\n' && !AT_END_OF_STRING(input_str)) {
+        while (count < max_cmp && !AT_END_OF_STRING(input_str) && !safe_ctype<isalpha>(*input_str) && *input_str != '\n') {
 
             count++;
             input_str++;
@@ -420,7 +420,7 @@ int match(uint8_t *prog, int *branch_index_param) {
             MATCH_RETURN(0);
 
         case EOL: // '$' anchor matches end of line and end of string
-            if (*eContext.Reg_Input == '\n' || (AT_END_OF_STRING(eContext.Reg_Input) && eContext.Succ_Is_EOL)) {
+            if ((AT_END_OF_STRING(eContext.Reg_Input) && eContext.Succ_Is_EOL) || *eContext.Reg_Input == '\n') {
                 break;
             }
 
@@ -495,7 +495,7 @@ int match(uint8_t *prog, int *branch_index_param) {
             MATCH_RETURN(0);
 
         case IS_DELIM: // \y (A word delimiter character.)
-            if (isDelimiter(*eContext.Reg_Input) && !AT_END_OF_STRING(eContext.Reg_Input)) {
+            if (!AT_END_OF_STRING(eContext.Reg_Input) && isDelimiter(*eContext.Reg_Input)) {
                 eContext.Reg_Input++;
                 break;
             }
@@ -503,7 +503,7 @@ int match(uint8_t *prog, int *branch_index_param) {
             MATCH_RETURN(0);
 
         case NOT_DELIM: // \Y (NOT a word delimiter character.)
-            if (!isDelimiter(*eContext.Reg_Input) && !AT_END_OF_STRING(eContext.Reg_Input)) {
+            if (!AT_END_OF_STRING(eContext.Reg_Input) && !isDelimiter(*eContext.Reg_Input)) {
                 eContext.Reg_Input++;
                 break;
             }
@@ -511,7 +511,7 @@ int match(uint8_t *prog, int *branch_index_param) {
             MATCH_RETURN(0);
 
         case WORD_CHAR: // \w (word character; alpha-numeric or underscore)
-            if ((safe_ctype<isalnum>(*eContext.Reg_Input) || *eContext.Reg_Input == '_') && !AT_END_OF_STRING(eContext.Reg_Input)) {
+            if (!AT_END_OF_STRING(eContext.Reg_Input) && (safe_ctype<isalnum>(*eContext.Reg_Input) || *eContext.Reg_Input == '_')) {
                 eContext.Reg_Input++;
                 break;
             }
@@ -519,7 +519,7 @@ int match(uint8_t *prog, int *branch_index_param) {
             MATCH_RETURN(0);
 
         case NOT_WORD_CHAR: // \W (NOT a word character)
-            if (safe_ctype<isalnum>(*eContext.Reg_Input) || *eContext.Reg_Input == '_' || *eContext.Reg_Input == '\n' || AT_END_OF_STRING(eContext.Reg_Input))
+            if (AT_END_OF_STRING(eContext.Reg_Input) || safe_ctype<isalnum>(*eContext.Reg_Input) || *eContext.Reg_Input == '_' || *eContext.Reg_Input == '\n')
                 MATCH_RETURN(0);
 
             eContext.Reg_Input++;
@@ -540,56 +540,56 @@ int match(uint8_t *prog, int *branch_index_param) {
             break;
 
         case DIGIT: // \d, same as [0123456789]
-            if (!safe_ctype<isdigit>(*eContext.Reg_Input) || AT_END_OF_STRING(eContext.Reg_Input))
+            if (AT_END_OF_STRING(eContext.Reg_Input) || !safe_ctype<isdigit>(*eContext.Reg_Input))
                 MATCH_RETURN(0);
 
             eContext.Reg_Input++;
             break;
 
         case NOT_DIGIT: // \D, same as [^0123456789]
-            if (safe_ctype<isdigit>(*eContext.Reg_Input) || *eContext.Reg_Input == '\n' || AT_END_OF_STRING(eContext.Reg_Input))
+            if (AT_END_OF_STRING(eContext.Reg_Input) || safe_ctype<isdigit>(*eContext.Reg_Input) || *eContext.Reg_Input == '\n')
                 MATCH_RETURN(0);
 
             eContext.Reg_Input++;
             break;
 
         case LETTER: // \l, same as [a-zA-Z]
-            if (!safe_ctype<isalpha>(*eContext.Reg_Input) || AT_END_OF_STRING(eContext.Reg_Input))
+            if (AT_END_OF_STRING(eContext.Reg_Input) || !safe_ctype<isalpha>(*eContext.Reg_Input))
                 MATCH_RETURN(0);
 
             eContext.Reg_Input++;
             break;
 
         case NOT_LETTER: // \L, same as [^0123456789]
-            if (safe_ctype<isalpha>(*eContext.Reg_Input) || *eContext.Reg_Input == '\n' || AT_END_OF_STRING(eContext.Reg_Input))
+            if (AT_END_OF_STRING(eContext.Reg_Input) || safe_ctype<isalpha>(*eContext.Reg_Input) || *eContext.Reg_Input == '\n')
                 MATCH_RETURN(0);
 
             eContext.Reg_Input++;
             break;
 
         case SPACE: // \s, same as [ \t\r\f\v]
-            if (!safe_ctype<isspace>(*eContext.Reg_Input) || *eContext.Reg_Input == '\n' || AT_END_OF_STRING(eContext.Reg_Input))
+            if (AT_END_OF_STRING(eContext.Reg_Input) || !safe_ctype<isspace>(*eContext.Reg_Input) || *eContext.Reg_Input == '\n')
                 MATCH_RETURN(0);
 
             eContext.Reg_Input++;
             break;
 
         case SPACE_NL: // \s, same as [\n \t\r\f\v]
-            if (!safe_ctype<isspace>(*eContext.Reg_Input) || AT_END_OF_STRING(eContext.Reg_Input))
+            if (AT_END_OF_STRING(eContext.Reg_Input) || !safe_ctype<isspace>(*eContext.Reg_Input))
                 MATCH_RETURN(0);
 
             eContext.Reg_Input++;
             break;
 
         case NOT_SPACE: // \S, same as [^\n \t\r\f\v]
-            if (safe_ctype<isspace>(*eContext.Reg_Input) || AT_END_OF_STRING(eContext.Reg_Input))
+            if (AT_END_OF_STRING(eContext.Reg_Input) || safe_ctype<isspace>(*eContext.Reg_Input))
                 MATCH_RETURN(0);
 
             eContext.Reg_Input++;
             break;
 
         case NOT_SPACE_NL: // \S, same as [^ \t\r\f\v]
-            if ((safe_ctype<isspace>(*eContext.Reg_Input) && *eContext.Reg_Input != '\n') || AT_END_OF_STRING(eContext.Reg_Input))
+            if (AT_END_OF_STRING(eContext.Reg_Input) || (safe_ctype<isspace>(*eContext.Reg_Input) && *eContext.Reg_Input != '\n'))
                 MATCH_RETURN(0);
 
             eContext.Reg_Input++;
@@ -705,7 +705,7 @@ int match(uint8_t *prog, int *branch_index_param) {
             }
 
             while (min <= num_matched && num_matched <= max) {
-                if (next_char == '\0' || next_char == *eContext.Reg_Input) {
+                if (next_char == '\0' || (!AT_END_OF_STRING(eContext.Reg_Input) && next_char == *eContext.Reg_Input)) {
                     if (match(next, nullptr))
                         MATCH_RETURN(1);
 
@@ -793,7 +793,7 @@ int match(uint8_t *prog, int *branch_index_param) {
                     if (GET_OP_CODE(scan) == BACK_REF_CI) {
 #endif
                         while (captured < finish) {
-                            if (AT_END_OF_STRING(eContext.Reg_Input) || tolower(*captured++) != tolower(*eContext.Reg_Input++)) {
+                            if (AT_END_OF_STRING(eContext.Reg_Input) || tolower(*captured++) != safe_ctype<tolower>(*eContext.Reg_Input++)) {
                                 MATCH_RETURN(0);
                             }
                         }
