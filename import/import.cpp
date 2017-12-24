@@ -224,12 +224,14 @@ int main(int argc, char *argv[]) {
     settings.showMatching            = from_string<ShowMatchingStyle>(readResource<QString>(prefDB, "nedit.showMatching"));
     settings.autoIndent              = from_string<IndentStyle>	     (readResource<QString>(prefDB, "nedit.autoIndent"));
 
+    std::cout << "WARNING: fonts will not be imported\n"
+                 "X11 uses a different specification than Qt and it is difficult to map between the two reliably" << std::endl;
 
 #if 0 // fonts
-	settings.textFont                = readResource(prefDB, "nedit.textFont");
-	settings.boldHighlightFont       = readResource(prefDB, "nedit.boldHighlightFont");
-	settings.italicHighlightFont     = readResource(prefDB, "nedit.italicHighlightFont");
-	settings.boldItalicHighlightFont = readResource(prefDB, "nedit.boldItalicHighlightFont");
+    settings.textFont                = readResource<QString>(prefDB, "nedit.textFont");
+    settings.boldHighlightFont       = readResource<QString>(prefDB, "nedit.boldHighlightFont");
+    settings.italicHighlightFont     = readResource<QString>(prefDB, "nedit.italicHighlightFont");
+    settings.boldItalicHighlightFont = readResource<QString>(prefDB, "nedit.boldItalicHighlightFont");
 #endif
 
 #if 0 // theme colors
