@@ -859,9 +859,8 @@ static int pushSymVal() {
 		}
 	} else if (s->type == PROC_VALUE_SYM) {
 
-        std::error_code errMsg;
-        if (!(to_subroutine(s->value))(Context->FocusDocument, Arguments(), &symVal, &errMsg)) {
-			return execError(errMsg, s->name.c_str());
+        if (std::error_code ec = (to_subroutine(s->value))(Context->FocusDocument, {}, &symVal)) {
+            return execError(ec, s->name.c_str());
 		}
 	} else
 		return execError("reading non-variable: %s", s->name.c_str());
@@ -1542,10 +1541,8 @@ static int callSubroutine() {
 		// Call the function and check for preemption 
         PreemptRequest = false;
 
-        std::error_code errMsg;
-
-        if (!to_subroutine(sym->value)(Context->FocusDocument, Arguments(Context->StackP, nArgs), &result, &errMsg)) {
-            return execError(errMsg, sym->name.c_str());
+        if (std::error_code ec = to_subroutine(sym->value)(Context->FocusDocument, Arguments(Context->StackP, nArgs), &result)) {
+            return execError(ec, sym->name.c_str());
         }
 
         if (Context->PC->func == fetchRetVal) {

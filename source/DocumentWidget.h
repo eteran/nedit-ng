@@ -186,6 +186,7 @@ public:
     void UpdateHighlightStylesEx();
     int ShowTipStringEx(const QString &text, bool anchored, int pos, bool lookup, TagSearchMode search_type, TipHAlignMode hAlign, TipVAlignMode vAlign, TipAlignStrict alignMode);
     void editTaggedLocationEx(TextArea *area, int i);
+    void SetBacklightChars(const QString &applyBacklightTypes);
 
 public:
 #if defined(REPLACE_SCOPE)
@@ -257,8 +258,7 @@ private:
     void removeUndoItem();
     void ReplayEx();
     void RevertToSaved();
-    void SaveUndoInformation(int pos, int nInserted, int nDeleted, view::string_view deletedText);
-    void SetBacklightChars(const QString &applyBacklightTypes);
+    void SaveUndoInformation(int pos, int nInserted, int nDeleted, view::string_view deletedText);    
     void SetModeMessageEx(const QString &message);
     void SetWindowModified(bool modified);
     void trimUndoList(size_t maxLength);

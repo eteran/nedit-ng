@@ -21,7 +21,7 @@ struct Program;
 union Inst;
 
 using Arguments      = gsl::span<DataValue>;
-using LibraryRoutine = bool (*)(DocumentWidget *document, Arguments arguments, DataValue *result, std::error_code *errMsg);
+using LibraryRoutine = std::error_code (*)(DocumentWidget *document, Arguments arguments, DataValue *result);
 using Array          = std::map<std::string, DataValue>;
 using ArrayPtr       = std::shared_ptr<Array>;
 
