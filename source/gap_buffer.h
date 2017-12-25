@@ -128,7 +128,7 @@ gap_buffer<Ch, Tr>::gap_buffer(int64_t size) {
  */
 template <class Ch, class Tr>
 gap_buffer<Ch, Tr>::~gap_buffer() noexcept {
-    delete buf_;
+    delete [] buf_;
 }
 
 /**
