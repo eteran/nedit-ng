@@ -1,12 +1,20 @@
 
 #include "DialogWrapMargin.h"
 #include "DocumentWidget.h"
+#include "TextArea.h"
 #include "preferences.h"
 
 #include <QMessageBox>
 
 DialogWrapMargin::DialogWrapMargin(DocumentWidget *document, QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f), document_(document) {
 	ui.setupUi(this);
+
+    const int margin = document ?
+                document->firstPane()->getWrapMargin() :
+                GetPrefWrapMargin();
+
+    ui.checkWrapAndFill->setChecked(margin == 0);
+    ui.spinWrapAndFill->setValue(margin);
 }
 
 void DialogWrapMargin::on_checkWrapAndFill_toggled(bool checked) {

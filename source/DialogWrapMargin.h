@@ -17,7 +17,7 @@ private Q_SLOTS:
 	void on_checkWrapAndFill_toggled(bool checked);
 	void on_buttonBox_accepted();
 
-public:
+private:
 	Ui::DialogWrapMargin ui;
     DocumentWidget *document_;
 };

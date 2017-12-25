@@ -3660,15 +3660,7 @@ void MainWindow::wrapGroupTriggered(QAction *action) {
  */
 void MainWindow::on_action_Wrap_Margin_triggered() {
     if(DocumentWidget *document = currentDocument()) {
-
 		auto dialog = std::make_unique<DialogWrapMargin>(document, this);
-
-        // Set default value
-        int margin = document->firstPane()->getWrapMargin();
-
-        dialog->ui.checkWrapAndFill->setChecked(margin == 0);
-        dialog->ui.spinWrapAndFill->setValue(margin);
-
         dialog->exec();
     }
 }
@@ -3870,13 +3862,6 @@ void MainWindow::defaultWrapGroupTriggered(QAction *action) {
 void MainWindow::on_action_Default_Wrap_Margin_triggered() {
 
 	auto dialog = std::make_unique<DialogWrapMargin>(nullptr, this);
-
-    // Set default value
-    int margin = GetPrefWrapMargin();
-
-    dialog->ui.checkWrapAndFill->setChecked(margin == 0);
-    dialog->ui.spinWrapAndFill->setValue(margin);
-
     dialog->exec();
 }
 
