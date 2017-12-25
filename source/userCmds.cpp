@@ -33,7 +33,7 @@ private:
 
 }
 
-static QString copyMacroToEndEx(Input &in);
+static QString copyMacroToEnd(Input &in);
 static int loadMenuItemStringEx(const QString &inString, std::vector<MenuData> &menuItems, DialogTypes listType);
 static QString stripLanguageModeEx(const QString &menuItemName);
 static QString writeMenuItemStringEx(const std::vector<MenuData> &menuItems, DialogTypes listType);
@@ -320,7 +320,7 @@ static int loadMenuItemStringEx(const QString &inString, std::vector<MenuData> &
 
             } else {
 
-                QString p = copyMacroToEndEx(in);
+                QString p = copyMacroToEnd(in);
                 if(p.isNull()) {
                     return false;
                 }
@@ -369,7 +369,7 @@ static int loadMenuItemStringEx(const QString &inString, std::vector<MenuData> &
 ** to be re-generated from the text as needed, but compile time is
 ** negligible for most macros.
 */
-static QString copyMacroToEndEx(Input &in) {
+static QString copyMacroToEnd(Input &in) {
 
     Input input = in;
 

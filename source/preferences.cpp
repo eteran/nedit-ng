@@ -32,11 +32,17 @@ namespace {
 
 constexpr int ConfigFileVersion = 1;
 
-#define N_WRAP_STYLES 3
-const char *AutoWrapTypes[N_WRAP_STYLES + 3] = {"None", "Newline", "Continuous", "True", "False", nullptr};
+QLatin1String AutoWrapTypes[] = {
+    QLatin1String("None"),
+    QLatin1String("Newline"),
+    QLatin1String("Continuous")
+};
 
-#define N_INDENT_STYLES 3
-const char *AutoIndentTypes[N_INDENT_STYLES + 3] = {"None", "Auto", "Smart", "True", "False", nullptr};
+QLatin1String AutoIndentTypes[] = {
+    QLatin1String("None"),
+    QLatin1String("Auto"),
+    QLatin1String("Smart")
+};
 
 Settings g_Settings;
 
@@ -942,17 +948,12 @@ static int loadLanguageModesStringEx(const QString &string) {
 		if(styleName.isNull()) {
             lm.indentStyle = IndentStyle::Default;
         } else {
-            int i;
-			for (i = 0; i < N_INDENT_STYLES; i++) {
-				if (styleName == QString::fromLatin1(AutoIndentTypes[i])) {
-					lm.indentStyle = static_cast<IndentStyle>(i);
-					break;
-				}
-			}
-
-            if (i == N_INDENT_STYLES) {
-				return modeErrorEx(in, QLatin1String("unrecognized indent style"));
+            auto it = std::find(std::begin(AutoIndentTypes), std::end(AutoIndentTypes), styleName);
+            if(it == std::end(AutoIndentTypes)) {
+                return modeErrorEx(in, QLatin1String("unrecognized indent style"));
             }
+
+            lm.indentStyle = static_cast<IndentStyle>(it - std::begin(AutoIndentTypes));
 		}
 
         if (!SkipDelimiterEx(in, &errMsg)) {
@@ -964,17 +965,12 @@ static int loadLanguageModesStringEx(const QString &string) {
 		if(styleName.isNull()) {
             lm.wrapStyle = WrapStyle::Default;
 		} else {
-            int i;
-			for (i = 0; i < N_WRAP_STYLES; i++) {
-				if ((styleName == QString::fromLatin1(AutoWrapTypes[i]))) {
-                    lm.wrapStyle = static_cast<WrapStyle>(i);
-					break;
-				}
-			}
-
-            if (i == N_WRAP_STYLES) {
-				return modeErrorEx(in, QLatin1String("unrecognized wrap style"));
+            auto it = std::find(std::begin(AutoWrapTypes), std::end(AutoWrapTypes), styleName);
+            if(it == std::end(AutoIndentTypes)) {
+                return modeErrorEx(in, QLatin1String("unrecognized wrap style"));
             }
+
+            lm.wrapStyle = static_cast<WrapStyle>(it - std::begin(AutoWrapTypes));
 		}
 
         if (!SkipDelimiterEx(in, &errMsg)) {
@@ -1068,12 +1064,12 @@ static QString WriteLanguageModesStringEx() {
 
         out << QLatin1Char(':');
         if (language.indentStyle != IndentStyle::Default) {
-            out << QString::fromLatin1(AutoIndentTypes[static_cast<int>(language.indentStyle)]);
+            out << AutoIndentTypes[static_cast<int>(language.indentStyle)];
         }
 
         out << QLatin1Char(':');
         if (language.wrapStyle != WrapStyle::Default) {
-            out << QString::fromLatin1(AutoWrapTypes[static_cast<int>(language.wrapStyle)]);
+            out << AutoWrapTypes[static_cast<int>(language.wrapStyle)];
         }
 
         out << QLatin1Char(':');
