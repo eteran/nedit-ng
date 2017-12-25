@@ -1,18 +1,162 @@
 
-#include "Settings.h"
+#include "interpret.h"
+#include "parse.h"
 #include "SearchType.h"
+#include "Settings.h"
+#include "Util/Input.h"
 #include "WrapStyle.h"
-#include <QVariant>
 #include <QRegularExpression>
 #include <QTextStream>
-#include <string>
+#include <QVariant>
 #include <fstream>
 #include <iostream>
 #include <iterator>
+#include <string>
 
 // Placing these before X11 includes because that header does defines some
-// invonvinience macros :-(
+// invonvinient macros :-(
 namespace {
+
+struct Style {
+    QString name;
+    QString foreground;
+    QString background;
+    QString font;
+};
+
+struct MenuItem {
+    QString            name;
+    QString            shortcut;
+    QString            accel;
+    QString            command;
+    std::vector<QChar> flags;
+};
+
+QString copyMacroToEnd(Input &in) {
+
+    Input input = in;
+
+    // Skip over whitespace to find make sure there's a beginning brace
+    // to anchor the parse (if not, it will take the whole file)
+    input.skipWhitespaceNL();
+
+    QString code = input.mid();
+
+    if (!code.startsWith(QLatin1Char('{'))) {
+        qWarning("Error In Macro/Command String");
+        return QString();
+    }
+
+    // Parse the input
+    int stoppedAt;
+    QString errMsg;
+
+    Program *const prog = ParseMacroEx(code, &errMsg, &stoppedAt);
+    if(!prog) {
+        qWarning("Error In Macro/Command String");
+        return QString();
+    }
+    delete prog;
+
+    // Copy and return the body of the macro, stripping outer braces and
+    // extra leading tabs added by the writer routine
+    ++input;
+    input.skipWhitespace();
+
+    if (*input == QLatin1Char('\n')) {
+        ++input;
+    }
+
+    if (*input == QLatin1Char('\t')) {
+        ++input;
+    }
+
+    if (*input == QLatin1Char('\t')) {
+        ++input;
+    }
+
+    QString retStr;
+    retStr.reserve(stoppedAt - input.index());
+
+    auto retPtr = std::back_inserter(retStr);
+
+
+    while(input.index() != stoppedAt + in.index()) {
+        if(input.match(QLatin1String("\n\t\t"))) {
+            *retPtr++ = QLatin1Char('\n');
+            input += 3;
+        } else {
+            *retPtr++ = *input++;
+        }
+    }
+
+    if(retStr.endsWith(QLatin1Char('\t'))) {
+        retStr.chop(1);
+    }
+
+    // NOTE(eteran): move past the trailing '}'
+    ++input;
+
+    in = input;
+
+    return retStr;
+}
+
+std::vector<MenuItem> loadMenuItemString(const QString &inString, bool isShellCommand) {
+
+    std::vector<MenuItem> items;
+
+    Input in(&inString);
+
+    Q_FOREVER {
+
+        // remove leading whitespace
+        in.skipWhitespace();
+
+        // end of string in proper place
+        if(in.atEnd()) {
+            return items;
+        }
+
+        MenuItem item;
+
+        // read name field
+        item.name = in.readUntil(QLatin1Char(':'));
+        ++in;
+
+        // read shortcut field
+        item.shortcut = in.readUntil(QLatin1Char(':'));
+        ++in;
+
+        // read accelerator field
+        item.accel = in.readUntil(QLatin1Char(':'));
+        ++in;
+
+        // read flags fiel
+        for(; !in.atEnd() && *in != QLatin1Char(':'); ++in) {
+            item.flags.push_back(*in);
+        }
+        ++in;
+
+        // read command field
+        if (isShellCommand) {
+            in.skipWhitespaceNL();
+            item.command = in.readUntil(QLatin1Char('\n'));
+        } else {
+
+            QString p = copyMacroToEnd(in);
+            if(p.isNull()) {
+                return items;
+            }
+
+            item.command = p;
+        }
+
+        in.skipWhitespaceNL();
+
+        items.push_back(item);
+    }
+}
 
 template <class T>
 T from_string(const QString &str);
@@ -131,7 +275,12 @@ int readResource(XrmDatabase db, const std::string &name) {
 
 }
 
-
+/**
+ * @brief main
+ * @param argc
+ * @param argv
+ * @return
+ */
 int main(int argc, char *argv[]) {
 
 	if(argc != 2) {
@@ -141,15 +290,12 @@ int main(int argc, char *argv[]) {
 	
 	Display *dpy = XOpenDisplay(nullptr);
 	
-	/* connect to X */
 	if (!dpy) {
 		std::cout << "Could not open DISPLAY." << std::endl;
 		return -1;
 	}
 
-	/* initialize xresources */
-	XrmInitialize();
-	
+    XrmInitialize();
 	
 	std::ifstream file(argv[1]);
 	if(!file) {
@@ -171,9 +317,14 @@ int main(int argc, char *argv[]) {
 	Settings settings;
 
 	// string preferences
-    settings.shellCommands           = readResource<QString>(prefDB, "nedit.shellCommands");  // TODO(eteran): handle the slight difference in format
-    settings.macroCommands           = readResource<QString>(prefDB, "nedit.macroCommands");  // TODO(eteran): handle the slight difference in format
-    settings.bgMenuCommands          = readResource<QString>(prefDB, "nedit.bgMenuCommands"); // TODO(eteran): handle the slight difference in format
+    settings.shellCommands           = readResource<QString>(prefDB, "nedit.shellCommands");
+    settings.macroCommands           = readResource<QString>(prefDB, "nedit.macroCommands");
+    settings.bgMenuCommands          = readResource<QString>(prefDB, "nedit.bgMenuCommands");
+
+    std::vector<MenuItem> shellCommands  = loadMenuItemString(settings.shellCommands, true);
+    std::vector<MenuItem> macroCommands  = loadMenuItemString(settings.macroCommands, false);
+    std::vector<MenuItem> bgMenuCommands = loadMenuItemString(settings.bgMenuCommands, false);
+
     settings.highlightPatterns       = readResource<QString>(prefDB, "nedit.highlightPatterns");
     settings.languageModes           = readResource<QString>(prefDB, "nedit.languageModes");
     settings.smartIndentInit         = readResource<QString>(prefDB, "nedit.smartIndentInit");
@@ -236,34 +387,36 @@ int main(int argc, char *argv[]) {
     settings.colors[ColorTypes::CURSOR_FG_COLOR] = readResource<QString>(prefDB, "nedit.cursorFgColor");
     settings.colors[ColorTypes::LINENO_FG_COLOR] = readResource<QString>(prefDB, "nedit.lineNoFgColor");
 
-    std::cout << "WARNING: fonts will not be imported\n"
-                 "X11 uses a different specification than Qt and it is difficult to map between the two reliably" << std::endl;
-
-#if 0 // fonts
+    // fonts
     settings.textFont                = readResource<QString>(prefDB, "nedit.textFont");
     settings.boldHighlightFont       = readResource<QString>(prefDB, "nedit.boldHighlightFont");
     settings.italicHighlightFont     = readResource<QString>(prefDB, "nedit.italicHighlightFont");
     settings.boldItalicHighlightFont = readResource<QString>(prefDB, "nedit.boldItalicHighlightFont");
-#endif
 
+    qWarning("WARNING: fonts will not be imported\n"
+             "X11 uses a different specification than Qt and it is difficult to map between the two reliably");
 
+    std::vector<Style> styles;
     QString style = readResource<QString>(prefDB, "nedit.styles");
     QTextStream stream(&style);
-    QRegularExpression re(QLatin1String("\\s*(?<name>[^:]+):(?<color>[^:]+):(?<font>[^:]+)"));
+    QRegularExpression re(QLatin1String("\\s*(?<name>[^:]+):(?<foreground>[^:/]+)(/(?<background>[^:]+))?:(?<font>[^:]+)"));
 
     QString line;
     while(stream.readLineInto(&line)) {
-        qDebug() << line;
         QRegularExpressionMatch match = re.match(line);
         if(match.hasMatch()) {
-            qDebug() << match.captured(QLatin1String("name"));
-            qDebug() << match.captured(QLatin1String("color"));
-            qDebug() << match.captured(QLatin1String("font"));
+
+
+            Style s;
+            s.name       = match.captured(QLatin1String("name"));
+            s.foreground = match.captured(QLatin1String("foreground"));
+            s.background = match.captured(QLatin1String("background"));
+            s.font       = match.captured(QLatin1String("font"));
+
+            styles.push_back(s);
+
         }
     }
-
-
-    // Style format: Name:FGColor/BGColor:FontStyle
 	
 	XrmDestroyDatabase(prefDB);
 }

@@ -6,6 +6,7 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
 find_package(Qt5 5.4.0 REQUIRED Core)
+find_package(X11 REQUIRED)
 
 add_executable(nedit-import
 	import.cpp
@@ -14,7 +15,8 @@ add_executable(nedit-import
 target_link_libraries(nedit-import LINK_PUBLIC
 	Qt5::Core
 	Settings
-	-lX11
+	Interpreter
+	X11
 )
 
 set_property(TARGET nedit-import PROPERTY CXX_STANDARD 14)
