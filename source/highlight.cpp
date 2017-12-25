@@ -456,7 +456,6 @@ bool parseString(HighlightData *pattern, const char **string, char **styleString
 
     const char *stringPtr = *string;
     char *stylePtr        = *styleString;
-    const char *stringEnd = stringPtr + length;
 	
     while (pattern->subPatternRE->ExecRE(
                stringPtr,
@@ -633,11 +632,11 @@ bool parseString(HighlightData *pattern, const char **string, char **styleString
 		if (stringPtr == startingStringPtr) {
 			/* Avoid stepping over the end of the string (possible for 
 			   zero-length matches at end of the string) */
-            if (stringPtr == stringEnd) {
+            if (stringPtr == match_to) {
 				break;
 			}
 			
-			fillStyleString(&stringPtr, &stylePtr, stringPtr + 1, pattern->style, prevChar);
+            fillStyleString(&stringPtr, &stylePtr, stringPtr + 1, pattern->style, prevChar);
 		}
 	}
 

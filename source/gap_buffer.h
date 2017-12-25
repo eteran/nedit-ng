@@ -111,10 +111,12 @@ gap_buffer<Ch, Tr>::gap_buffer() : gap_buffer(0){
 template <class Ch, class Tr>
 gap_buffer<Ch, Tr>::gap_buffer(int64_t size) {
 
-    buf_       = new Ch[size + PreferredGapSize];
+    buf_       = new Ch[size + PreferredGapSize + 1];
     gap_start_ = 0;
     gap_end_   = PreferredGapSize;
     size_      = 0;
+
+    buf_[size + PreferredGapSize] = Ch();
 
 #ifdef PURIFY
     std::fill(&buf_[gapStart_], &buf_[gapEnd_], Ch('.'));
@@ -447,13 +449,15 @@ void gap_buffer<Ch, Tr>::assign(view_type str) {
     delete [] buf_;
 
     // Start a new buffer with a gap of GapSize in the center
-    buf_       = new Ch[length + PreferredGapSize];
+    buf_       = new Ch[length + PreferredGapSize + 1];
     size_      = length;
     gap_start_ = length / 2;
     gap_end_   = gap_start_ + PreferredGapSize;
 
     Tr::copy(&buf_[0],        &str[0],          gap_start_);
     Tr::copy(&buf_[gap_end_], &str[gap_start_], length - gap_start_);
+
+    buf_[length + PreferredGapSize] = Ch();
 
 #ifdef PURIFY
     std::fill(&buf_[gapStart_], &buf_[gapEnd_], Ch('.'));
@@ -493,7 +497,8 @@ void gap_buffer<Ch, Tr>::move_gap(int64_t pos) {
 template <class Ch, class Tr>
 void gap_buffer<Ch, Tr>::reallocate_buffer(int64_t new_gap_start, int64_t new_gap_size) {
 
-    auto newBuf         = new Ch[size() + new_gap_size];
+    auto newBuf = new Ch[size() + new_gap_size + 1];
+
     int64_t new_gap_end = new_gap_start + new_gap_size;
 
     if (new_gap_start <= gap_start_) {
@@ -511,6 +516,8 @@ void gap_buffer<Ch, Tr>::reallocate_buffer(int64_t new_gap_start, int64_t new_ga
     buf_       = newBuf;
     gap_start_ = new_gap_start;
     gap_end_   = new_gap_end;
+
+    buf_[size() + new_gap_size] = Ch();
 
 #ifdef PURIFY
     std::fill(&buf_[gapStart_], &buf_[gapEnd_], Ch('.'));
