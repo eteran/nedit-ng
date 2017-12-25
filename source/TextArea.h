@@ -92,7 +92,7 @@ public:
 	void setWordDelimiters(const QString &delimiters);
 	void setBacklightCharTypes(const QString &charTypes);
     void setAutoShowInsertPos(bool value);
-    void setEmulateTabs(bool value);
+    void setEmulateTabs(int value);
 	void setWrapMargin(int value);
 	void setLineNumCols(int value);
 	void setReadOnly(bool value);

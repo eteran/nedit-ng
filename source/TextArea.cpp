@@ -6825,7 +6825,7 @@ void TextArea::setAutoShowInsertPos(bool value) {
     P_autoShowInsertPos = value;
 }
 
-void TextArea::setEmulateTabs(bool value) {
+void TextArea::setEmulateTabs(int value) {
 	P_emulateTabs = value;
 }
 

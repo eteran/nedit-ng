@@ -3,6 +3,7 @@
 #include "DocumentWidget.h"
 #include "Help.h"
 #include "LanguageMode.h"
+#include "TextArea.h"
 #include "preferences.h"
 #include "TextBuffer.h"
 
@@ -28,7 +29,7 @@ DialogTabs::DialogTabs(DocumentWidget *document, QWidget *parent, Qt::WindowFlag
 		useTabs   = GetPrefInsertTabs();
 		tabDist   = GetPrefTabDist(PLAIN_LANGUAGE_MODE);
 	} else {
-		emTabDist = ui.editEmulatedTabSpacing->text().toInt();
+        emTabDist = document->firstPane()->getEmulateTabs();
         useTabs   = document->buffer_->BufGetUseTabs();
         tabDist   = document->buffer_->BufGetTabDistance();
 	}
