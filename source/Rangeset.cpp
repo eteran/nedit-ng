@@ -64,71 +64,85 @@ void rangesetRefreshAllRanges(TextBuffer *buffer, Rangeset *rangeset) {
 //               though it is probably better to replace the fundamental
 //               data-structures instead of replacing a few random
 //               functions
-int at_or_before(int *table, int base, int len, int val) {
-    int lo, mid = 0, hi;
+template <class T>
+int at_or_before(const T *table, int base, int len, T val) {
 
-    if (base >= len)
-    return len;		/* not sure what this means! */
+    int mid = 0;
 
-    lo = base;			/* first valid index */
-    hi = len - 1;		/* last valid index */
+    if (base >= len) {
+        return len;		/* not sure what this means! */
+    }
+
+    int lo = base;			/* first valid index */
+    int hi = len - 1;		/* last valid index */
 
     while (lo <= hi) {
-    mid = (lo + hi) / 2;
-    if (val == table[mid])
-        return mid;
-    if (val < table[mid])
-        hi = mid - 1;
-    else
-        lo = mid + 1;
+        mid = (lo + hi) / 2;
+
+        if (val == table[mid]) {
+            return mid;
+        }
+
+        if (val < table[mid]) {
+            hi = mid - 1;
+        } else {
+            lo = mid + 1;
+        }
     }
+
     /* if we get here, we didn't find val itself */
-    if (val > table[mid])
-    mid++;
+    if (val > table[mid]) {
+        mid++;
+    }
 
     return mid;
 }
 
-int weighted_at_or_before(int *table, int base, int len, int val) {
-    int lo, mid = 0, hi;
-    int min, max;
+template <class T>
+int weighted_at_or_before(const T *table, int base, int len, T val) {
 
-    if (base >= len)
-    return len;		/* not sure what this means! */
+    int mid = 0;
 
-    lo = base;			/* first valid index */
-    hi = len - 1;		/* last valid index */
+    if (base >= len) {
+        return len;		/* not sure what this means! */
+    }
 
-    min = table[lo];		/* establish initial min/max */
-    max = table[hi];
+    int lo = base;          /* first valid index */
+    int hi = len - 1;       /* last valid index */
 
-    if (val <= min)		/* initial range checks */
-    return lo;		/* needed to avoid out-of-range mid values */
-    else if (val > max)
-    return len;
-    else if (val == max)
-    return hi;
+    int min = table[lo];    /* establish initial min/max */
+    int max = table[hi];
+
+    if (val <= min) {   /* initial range checks */
+        return lo;		/* needed to avoid out-of-range mid values */
+    } else if (val > max) {
+        return len;
+    } else if (val == max) {
+        return hi;
+    }
 
     while (lo <= hi) {
         /* Beware of integer overflow when multiplying large numbers! */
-        mid = lo + (int)((hi - lo) * (double)(val - min) / (max - min));
+        mid = lo + static_cast<int>((hi - lo) * static_cast<double>(val - min) / (max - min));
         /* we won't worry about min == max - values should be unique */
 
-    if (val == table[mid])
-        return mid;
-    if (val < table[mid]) {
-        hi = mid - 1;
-        max = table[mid];
-    }
-    else { /* val > table[mid] */
-        lo = mid + 1;
-        min = table[mid];
-    }
+        if (val == table[mid]) {
+            return mid;
+        }
+
+        if (val < table[mid]) {
+            hi = mid - 1;
+            max = table[mid];
+        } else { /* val > table[mid] */
+            lo = mid + 1;
+            min = table[mid];
+        }
     }
 
     /* if we get here, we didn't find val itself */
-    if (val > table[mid])
-    return mid + 1;
+    if (val > table[mid]) {
+        return mid + 1;
+    }
 
     return mid;
 }
