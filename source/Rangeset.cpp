@@ -722,7 +722,7 @@ int Rangeset::RangesetAdd(TextBuffer *buffer, Rangeset *plusSet) {
 */
 int Rangeset::RangesetAddBetween(TextBuffer *buffer, int start, int end) {
 	int i, j;
-    auto rangeTable = reinterpret_cast<int*>(ranges_);
+    auto rangeTable = reinterpret_cast<int *>(ranges_);
 
 	if (start > end) {
 		// quietly sort the positions 
@@ -735,7 +735,7 @@ int Rangeset::RangesetAddBetween(TextBuffer *buffer, int start, int end) {
 
 	if (n == 0) { // make sure we have space 
         ranges_ = Rangeset::RangesNew(1);
-        rangeTable = reinterpret_cast<int*>(ranges_);
+        rangeTable = reinterpret_cast<int *>(ranges_);
 		i = 0;
 	} else
 		i = rangesetWeightedAtOrBefore(this, start);
@@ -863,7 +863,7 @@ int Rangeset::RangesetCheckRangeOfPos(int pos) {
 	if (len == 0)
 		return -1; // no ranges 
 
-    auto ranges = reinterpret_cast<int*>(ranges_); // { s1,e1, s2,e2, s3,e3,... }
+    auto ranges = reinterpret_cast<int *>(ranges_); // { s1,e1, s2,e2, s3,e3,... }
     int last = last_index_;
 
 	// try to profit from the last lookup by using its index 
@@ -1011,7 +1011,7 @@ int Rangeset::RangesetRemove(TextBuffer *buffer, Rangeset *minusSet) {
 int Rangeset::RangesetRemoveBetween(TextBuffer *buffer, int start, int end) {
 	int j;
 	
-    auto rangeTable = reinterpret_cast<int*>(ranges_);
+    auto rangeTable = reinterpret_cast<int *>(ranges_);
 
 	if (start > end) {
 		// quietly sort the positions 
