@@ -3210,43 +3210,46 @@ int TextArea::styleOfPos(int lineStartPos, int lineLen, int lineIndex, int dispI
     int style = 0;
 
     if (lineStartPos == -1 || !buffer_) {
-		return FILL_MASK;
+        return FILL_MASK;
     }
 
     int pos = lineStartPos + std::min(lineIndex, lineLen);
 
-	if (lineIndex >= lineLen) {
-		style = FILL_MASK;
+    if (lineIndex >= lineLen) {
+        style = FILL_MASK;
     } else if (styleBuffer_) {
         style = static_cast<uint8_t>(styleBuffer_->BufGetCharacter(pos));
-		if (style == unfinishedStyle_) {
-			// encountered "unfinished" style, trigger parsing
-			(unfinishedHighlightCB_)(this, pos, highlightCBArg_);
+        if (style == unfinishedStyle_) {
+            /* encountered "unfinished" style, trigger parsing */
+            (unfinishedHighlightCB_)(this, pos, highlightCBArg_);
             style = static_cast<uint8_t>(styleBuffer_->BufGetCharacter(pos));
-		}
-	}
+        }
+    }
 
-    if (buffer_->BufGetPrimary().inSelection(pos, lineStartPos, dispIndex))
-		style |= PRIMARY_MASK;
+    if (buffer_->BufGetPrimary().inSelection(pos, lineStartPos, dispIndex)) {
+        style |= PRIMARY_MASK;
+    }
 
-    if (buffer_->BufGetHighlight().inSelection(pos, lineStartPos, dispIndex))
-		style |= HIGHLIGHT_MASK;
+    if (buffer_->BufGetHighlight().inSelection(pos, lineStartPos, dispIndex)) {
+        style |= HIGHLIGHT_MASK;
+    }
 
-    if (buffer_->BufGetSecondary().inSelection(pos, lineStartPos, dispIndex))
-		style |= SECONDARY_MASK;
+    if (buffer_->BufGetSecondary().inSelection(pos, lineStartPos, dispIndex)) {
+        style |= SECONDARY_MASK;
+    }
 
-	// store in the RANGESET_MASK portion of style the rangeset index for pos
+    /* store in the RANGESET_MASK portion of style the rangeset index for pos */
     if (document_->rangesetTable_) {
         int rangesetIndex = RangesetTable::RangesetIndex1ofPos(document_->rangesetTable_, pos, true);
-		style |= ((rangesetIndex << RANGESET_SHIFT) & RANGESET_MASK);
-	}
+        style |= ((rangesetIndex << RANGESET_SHIFT) & RANGESET_MASK);
+    }
 
-	/* store in the BACKLIGHT_MASK portion of style the background color class
-	   of the character thisChar */
+    /* store in the BACKLIGHT_MASK portion of style the background color class
+       of the character thisChar */
     if (!bgClass_.empty()) {
         style |= (bgClass_[static_cast<uint8_t>(thisChar)] << BACKLIGHT_SHIFT);
-	}
-	return style;
+    }
+    return style;
 }
 
 /*
@@ -3539,7 +3542,7 @@ QColor TextArea::getRangesetColor(int ind, QColor bground) const {
             if (!color_name.isNull()) {
                 color = X11Colors::fromString(color_name);
 			}
-			tab->RangesetTableAssignColorPixel(ind, color, valid);
+            tab->RangesetTableAssignColorPixel(ind, color, color.isValid());
 		}
 
 		if (color.isValid()) {

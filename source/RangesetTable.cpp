@@ -208,10 +208,11 @@ int RangesetTable::RangesetIndex1ofPos(const std::shared_ptr<RangesetTable> &tab
     }
 
     for (int i = 0; i < table->n_set_; i++) {
-        Rangeset *rangeset = &table->set_[(int)table->order_[i]];
+        Rangeset *rangeset = &table->set_[static_cast<int>(table->order_[i])];
         if (rangeset->RangesetCheckRangeOfPos(pos) >= 0) {
-            if (needs_color && rangeset->color_set_ >= 0 && !rangeset->color_name_.isNull())
+            if (needs_color && rangeset->color_set_ >= 0 && !rangeset->color_name_.isNull()) {
                 return table->order_[i] + 1;
+            }
         }
     }
 
