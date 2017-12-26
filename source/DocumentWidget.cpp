@@ -492,6 +492,9 @@ DocumentWidget::~DocumentWidget() noexcept {
     const std::vector<TextArea *> textAreas = textPanes();
     qDeleteAll(textAreas);
 
+    // And delete the rangeset table too for the same reasons
+    rangesetTable_ = nullptr;
+
     // NOTE(eteran): there used to be some logic about syncronizing the multi-file
     //               replace dialog. It was complex and error prone. Simpler to
     //               just make the multi-file replace dialog modal and avoid the
