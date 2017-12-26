@@ -300,9 +300,9 @@ QString CompressPathnameEx(const std::string &pathname) {
  */
 bool CompressPathname(char *pathname) {
 
-    // TODO(eteran): replace this function with QFileInfo::canonicalFilePath
-    // once we figure out the best way to test and make sure that they are
-    // comparable (I beleive that they are).
+    // NOTE(eteran): Things like QFileInfo::canonicalFilePath return an empty
+    // string if a path represents a file that doesn't exist yet. So we may not
+    // be able to use those in all cases!
 
 	/* (Added by schwarzenberg)
 	** replace multiple slashes by a single slash
