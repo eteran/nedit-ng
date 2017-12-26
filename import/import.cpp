@@ -8,6 +8,9 @@
 #include <QRegularExpression>
 #include <QTextStream>
 #include <QVariant>
+#include <QFile>
+#include <QDomDocument>
+#include <QDomElement>
 #include <fstream>
 #include <iostream>
 #include <iterator>
@@ -25,13 +28,87 @@ struct Style {
 };
 
 struct MenuItem {
-    QString            name;
-    QString            shortcut;
-    QString            accel;
-    QString            command;
-    std::vector<QChar> flags;
+    QString name;
+    QString shortcut;
+    QString mnemonic;
+    QString command;
+    QString flags;
 };
 
+static QString writeMenuItemStringEx(const std::vector<MenuItem> &menuItems, bool isShellCommand) {
+
+    QString outStr;
+    auto outPtr = std::back_inserter(outStr);
+
+    for (const MenuItem &item : menuItems) {
+
+        QString accStr = item.shortcut;
+        *outPtr++ = QLatin1Char('\t');
+
+        QString name = item.name;
+
+        name.replace(QLatin1String("&"), QLatin1String("&&"));
+
+        // handle that we do mnemonics the Qt way...
+        if(!item.mnemonic.isEmpty()) {
+            int n = name.indexOf(item.mnemonic);
+            if(n != -1) {
+                name.insert(n, QLatin1Char('&'));
+            }
+        }
+
+        std::copy(name.begin(), name.end(), outPtr);
+        *outPtr++ = QLatin1Char(':');
+
+        std::copy(accStr.begin(), accStr.end(), outPtr);
+        *outPtr++ = QLatin1Char(':');
+
+        if (isShellCommand) {
+            std::copy(item.flags.begin(), item.flags.end(), outPtr);
+
+            *outPtr++ = QLatin1Char(':');
+        } else {
+            std::copy(item.flags.begin(), item.flags.end(), outPtr);
+
+            *outPtr++ = QLatin1Char(':');
+            *outPtr++ = QLatin1Char(' ');
+            *outPtr++ = QLatin1Char('{');
+        }
+
+        *outPtr++ = QLatin1Char('\n');
+        *outPtr++ = QLatin1Char('\t');
+        *outPtr++ = QLatin1Char('\t');
+
+        Q_FOREACH(QChar ch, item.command) {
+            if (ch == QLatin1Char('\n')) { // and newlines to backslash-n's,
+                *outPtr++ = QLatin1Char('\n');
+                *outPtr++ = QLatin1Char('\t');
+                *outPtr++ = QLatin1Char('\t');
+            } else
+                *outPtr++ = ch;
+        }
+
+        if (!isShellCommand) {
+
+            if(outStr.endsWith(QLatin1Char('\t'))) {
+                outStr.chop(1);
+            }
+
+            *outPtr++ = QLatin1Char('}');
+        }
+
+        *outPtr++ = QLatin1Char('\n');
+    }
+
+    outStr.chop(1);
+    return outStr;
+}
+
+/**
+ * @brief copyMacroToEnd
+ * @param in
+ * @return
+ */
 QString copyMacroToEnd(Input &in) {
 
     Input input = in;
@@ -102,6 +179,12 @@ QString copyMacroToEnd(Input &in) {
     return retStr;
 }
 
+/**
+ * @brief loadMenuItemString
+ * @param inString
+ * @param isShellCommand
+ * @return
+ */
 std::vector<MenuItem> loadMenuItemString(const QString &inString, bool isShellCommand) {
 
     std::vector<MenuItem> items;
@@ -128,8 +211,8 @@ std::vector<MenuItem> loadMenuItemString(const QString &inString, bool isShellCo
         item.shortcut = in.readUntil(QLatin1Char(':'));
         ++in;
 
-        // read accelerator field
-        item.accel = in.readUntil(QLatin1Char(':'));
+        // read mnemonic field
+        item.mnemonic = in.readUntil(QLatin1Char(':'));
         ++in;
 
         // read flags fiel
@@ -155,6 +238,71 @@ std::vector<MenuItem> loadMenuItemString(const QString &inString, bool isShellCo
         in.skipWhitespaceNL();
 
         items.push_back(item);
+    }
+}
+
+void SaveTheme(const QString &filename, const Settings &settings, const std::vector<Style> &styles) {
+
+    QFile file(filename);
+    if(file.open(QIODevice::WriteOnly)) {
+        QDomDocument xml;
+        QDomProcessingInstruction pi = xml.createProcessingInstruction(QLatin1String("xml"), QLatin1String("version=\"1.0\" encoding=\"UTF-8\""));
+
+        xml.appendChild(pi);
+
+        QDomElement root = xml.createElement(QLatin1String("theme"));
+        root.setAttribute(QLatin1String("name"), QLatin1String("default"));
+        xml.appendChild(root);
+
+        // save basic color settings...
+        {
+            QDomElement text = xml.createElement(QLatin1String("text"));
+            text.setAttribute(QLatin1String("foreground"), settings.colors[ColorTypes::TEXT_FG_COLOR]);
+            text.setAttribute(QLatin1String("background"), settings.colors[ColorTypes::TEXT_BG_COLOR]);
+            root.appendChild(text);
+        }
+
+        {
+            QDomElement selection = xml.createElement(QLatin1String("selection"));
+            selection.setAttribute(QLatin1String("foreground"), settings.colors[ColorTypes::SELECT_FG_COLOR]);
+            selection.setAttribute(QLatin1String("background"), settings.colors[ColorTypes::SELECT_BG_COLOR]);
+            root.appendChild(selection);
+        }
+
+        {
+            QDomElement highlight = xml.createElement(QLatin1String("highlight"));
+            highlight.setAttribute(QLatin1String("foreground"), settings.colors[ColorTypes::HILITE_FG_COLOR]);
+            highlight.setAttribute(QLatin1String("background"), settings.colors[ColorTypes::HILITE_BG_COLOR]);
+            root.appendChild(highlight);
+        }
+
+        {
+            QDomElement cursor = xml.createElement(QLatin1String("cursor"));
+            cursor.setAttribute(QLatin1String("foreground"), settings.colors[ColorTypes::CURSOR_FG_COLOR]);
+            root.appendChild(cursor);
+        }
+
+        {
+            QDomElement lineno = xml.createElement(QLatin1String("line-numbers"));
+            lineno.setAttribute(QLatin1String("foreground"), settings.colors[ColorTypes::LINENO_FG_COLOR]);
+            root.appendChild(lineno);
+        }
+
+        // save styles for syntax highlighting...
+        for(const Style &hs : styles) {
+            QDomElement style = xml.createElement(QLatin1String("style"));
+            style.setAttribute(QLatin1String("name"), hs.name);
+            style.setAttribute(QLatin1String("foreground"), hs.foreground);
+            if(!hs.background.isEmpty()) {
+                style.setAttribute(QLatin1String("background"), hs.background);
+            }
+            style.setAttribute(QLatin1String("font"), hs.font);
+
+            root.appendChild(style);
+        }
+
+        QTextStream stream(&file);
+        stream << xml.toString();
     }
 }
 
@@ -261,7 +409,7 @@ QString readResource(XrmDatabase db, const std::string &name) {
 template <>
 bool readResource(XrmDatabase db, const std::string &name) {
     auto value = readResource<QString>(db, name);
-	return value.compare(QLatin1String("true"), Qt::CaseInsensitive);
+    return value.compare(QLatin1String("true"), Qt::CaseInsensitive) == 0;
 }
 
 template <>
@@ -316,6 +464,28 @@ int main(int argc, char *argv[]) {
 	
 	Settings settings;
 
+    // Advanced stuff from secondary XResources...
+    // make sure that there are some sensible defaults...
+    settings.fileVersion = 1;
+    settings.colorizeHighlightedText           = true;
+    settings.alwaysCheckRelativeTagsSpecs      = true;
+    settings.findReplaceUsesSelection          = false;
+    settings.focusOnRaise                      = false;
+    settings.forceOSConversion                 = true;
+    settings.honorSymlinks                     = true;
+    settings.remapDeleteKey                    = false;
+    settings.stdOpenDialog                     = false;
+    settings.stickyCaseSenseButton             = true;
+    settings.typingHidesPointer                = false;
+    settings.undoModifiesSelection             = true;
+    settings.autoScrollVPadding                = 4;
+    settings.maxPrevOpenFiles                  = 30;
+    settings.overrideDefaultVirtualKeyBindings = VirtKeyOverride::VIRT_KEY_OVERRIDE_AUTO;
+    settings.truncSubstitution                 = TruncSubstitution::Fail;
+    settings.backlightCharTypes                = QLatin1String("0-8,10-31,127:red;9:#dedede;32,160-255:#f0f0f0;128-159:orange");
+    settings.tagFile                           = QString();
+    settings.wordDelimiters                    = QLatin1String(".,/\\`'!|@#%^&*()-=+{}[]\":;<>?");
+
 	// string preferences
     settings.shellCommands           = readResource<QString>(prefDB, "nedit.shellCommands");
     settings.macroCommands           = readResource<QString>(prefDB, "nedit.macroCommands");
@@ -324,6 +494,10 @@ int main(int argc, char *argv[]) {
     std::vector<MenuItem> shellCommands  = loadMenuItemString(settings.shellCommands, true);
     std::vector<MenuItem> macroCommands  = loadMenuItemString(settings.macroCommands, false);
     std::vector<MenuItem> bgMenuCommands = loadMenuItemString(settings.bgMenuCommands, false);
+
+    settings.shellCommands           = writeMenuItemStringEx(shellCommands, true);
+    settings.macroCommands           = writeMenuItemStringEx(macroCommands, false);
+    settings.bgMenuCommands          = writeMenuItemStringEx(bgMenuCommands, false);
 
     settings.highlightPatterns       = readResource<QString>(prefDB, "nedit.highlightPatterns");
     settings.languageModes           = readResource<QString>(prefDB, "nedit.languageModes");
@@ -388,13 +562,20 @@ int main(int argc, char *argv[]) {
     settings.colors[ColorTypes::LINENO_FG_COLOR] = readResource<QString>(prefDB, "nedit.lineNoFgColor");
 
     // fonts
+#if 0
     settings.textFont                = readResource<QString>(prefDB, "nedit.textFont");
     settings.boldHighlightFont       = readResource<QString>(prefDB, "nedit.boldHighlightFont");
     settings.italicHighlightFont     = readResource<QString>(prefDB, "nedit.italicHighlightFont");
     settings.boldItalicHighlightFont = readResource<QString>(prefDB, "nedit.boldItalicHighlightFont");
-
+#else
     qWarning("WARNING: fonts will not be imported\n"
              "X11 uses a different specification than Qt and it is difficult to map between the two reliably");
+
+    settings.textFont                = QLatin1String("Courier New,10,-1,5,50,0,0,0,0,0");
+    settings.boldHighlightFont       = QLatin1String("Courier New,10,-1,5,75,0,0,0,0,0");
+    settings.italicHighlightFont     = QLatin1String("Courier New,10,-1,5,50,1,0,0,0,0");
+    settings.boldItalicHighlightFont = QLatin1String("Courier New,10,-1,5,75,1,0,0,0,0");
+#endif
 
     std::vector<Style> styles;
     QString style = readResource<QString>(prefDB, "nedit.styles");
@@ -405,8 +586,6 @@ int main(int argc, char *argv[]) {
     while(stream.readLineInto(&line)) {
         QRegularExpressionMatch match = re.match(line);
         if(match.hasMatch()) {
-
-
             Style s;
             s.name       = match.captured(QLatin1String("name"));
             s.foreground = match.captured(QLatin1String("foreground"));
@@ -414,9 +593,15 @@ int main(int argc, char *argv[]) {
             s.font       = match.captured(QLatin1String("font"));
 
             styles.push_back(s);
-
         }
     }
 	
 	XrmDestroyDatabase(prefDB);
+
+    // Write the theme XML file
+    QString themeFilename = Settings::themeFile();
+    SaveTheme(themeFilename, settings, styles);
+
+    // Write the INI file...
+    settings.savePreferences();
 }

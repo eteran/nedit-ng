@@ -5,7 +5,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
-find_package(Qt5 5.4.0 REQUIRED Core)
+find_package(Qt5 5.4.0 REQUIRED Core Xml)
 find_package(X11 REQUIRED)
 
 add_executable(nedit-import
@@ -14,6 +14,7 @@ add_executable(nedit-import
 
 target_link_libraries(nedit-import LINK_PUBLIC
 	Qt5::Core
+	Qt5::Xml
 	Settings
 	Interpreter
 	X11
