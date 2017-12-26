@@ -145,14 +145,12 @@ static QString writeMenuItemStringEx(const std::vector<MenuData> &menuItems, Dia
         QString accStr = f.shortcut.toString();
         *outPtr++ = QLatin1Char('\t');
 
-        Q_FOREACH(QChar ch, f.name) { // Copy the command name
-            *outPtr++ = ch;
-        }
-
+        std::copy(f.name.begin(), f.name.end(), outPtr);
         *outPtr++ = QLatin1Char(':');
+
         std::copy(accStr.begin(), accStr.end(), outPtr);
-
         *outPtr++ = QLatin1Char(':');
+
         if (listType == DialogTypes::SHELL_CMDS) {
             switch(f.input) {
             case FROM_SELECTION: *outPtr++ = QLatin1Char('I'); break;
