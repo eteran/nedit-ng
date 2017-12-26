@@ -8,11 +8,7 @@
 constexpr int N_RANGESETS = 63;
 
 class Rangeset;
-
-struct Range {
-	int start;
-    int end; /* range from [start-]end */
-};
+struct Range;
 
 struct RangesetInfo {
 	bool        defined;

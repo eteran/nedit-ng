@@ -7,6 +7,11 @@
 #include <cstdlib>
 #include <cstring>
 
+struct Range {
+    int start;
+    int end; /* range from [start-]end */
+};
+
 namespace {
 
 RangesetUpdateFn rangesetInsDelMaintain;
