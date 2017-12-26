@@ -44,7 +44,7 @@ public:
     bool RangesetAssignName(const QString &name);
     bool RangesetChangeModifyResponse(QString name);
 	int RangesetCheckRangeOfPos(int pos);
-	int RangesetFindRangeNo(int index, int *start, int *end) const;
+    bool RangesetFindRangeNo(int index, int *start, int *end) const;
 	int RangesetFindRangeOfPos(int pos, int incl_end) const;
 	int RangesetGetColorValid(QColor *color) const;
 	int RangesetGetNRanges() const;
@@ -63,10 +63,8 @@ public:
     QString update_name_;         // update function name
     int maxpos_;                  // text buffer maxpos
     int last_index_;              // a place to start looking
-
     int n_ranges_;                // how many ranges in ranges
     Range *ranges_;               // the ranges table
-
     uint8_t label_;               // a number 1-63
 
     int8_t color_set_;            // 0: unset; 1: set; -1: invalid
