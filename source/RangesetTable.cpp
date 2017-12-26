@@ -107,7 +107,7 @@ bool deactivateRangeset(RangesetTable *table, int active) {
 RangesetTable::RangesetTable(TextBuffer *buffer) : buf_(buffer) {
 
     for (int i = 0; i < N_RANGESETS; i++) {
-        set_[i].RangesetInit(rangeset_labels[i], buffer);
+        set_[i].RangesetInit(rangeset_labels[i]);
 
         order_[i]  = static_cast<uint8_t>(i);
         active_[i] = false;
@@ -290,7 +290,7 @@ int RangesetTable::RangesetCreate() {
     }
 
     if (activateRangeset(this, setIndex)) {
-        set_[setIndex].RangesetInit(rangeset_labels[setIndex], buf_);
+        set_[setIndex].RangesetInit(rangeset_labels[setIndex]);
     }
 
     return label;

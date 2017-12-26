@@ -56,12 +56,12 @@ public:
 	RangesetInfo RangesetGetInfo() const;
 
     static void RangesetRefreshRange(TextBuffer *buffer, int start, int end);
-    void RangesetInit(int label, TextBuffer *buf);
+    void RangesetInit(int label);
 
 public:
     RangesetUpdateFn *update_fn_; // modification update function
     QString update_name_;         // update function name
-    int maxpos_;                  // text buffer maxpos
+
     int last_index_;              // a place to start looking
     int n_ranges_;                // how many ranges in ranges
     Range *ranges_;               // the ranges table
