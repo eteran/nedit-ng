@@ -149,12 +149,6 @@ int weighted_at_or_before(const T *table, int base, int len, T val) {
 
 // -------------------------------------------------------------------------- 
 
-Rangeset *rangesetFixMaxpos(Rangeset *rangeset, int ins, int del) {
-    return rangeset;
-}
-
-// -------------------------------------------------------------------------- 
-
 /*
 ** Find the index of the first entry in the range set's ranges table (viewed as
 ** an int array) whose value is equal to or greater than pos. As a side effect,
