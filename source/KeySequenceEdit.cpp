@@ -4,6 +4,7 @@
 #include <QEvent>
 #include <QKeyEvent>
 #include <QLineEdit>
+#include <QAction>
 #include <QStyle>
 
 /*!
@@ -61,6 +62,13 @@ void KeySequenceEdit::resetState() {
     prevKey_ = -1;
     lineEdit_->setText(keySequence_.toString(QKeySequence::NativeText));
     lineEdit_->setPlaceholderText(KeySequenceEdit::tr("Press shortcut"));
+
+    // hook the clear button...
+    if(auto action = lineEdit_->findChild<QAction *>()) {
+        connect(action, &QAction::triggered, this, [this]() {
+            setKeySequence(QKeySequence());
+        }, Qt::QueuedConnection);
+    }
 }
 
 
