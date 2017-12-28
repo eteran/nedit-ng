@@ -11,9 +11,9 @@ class Rangeset;
 struct Range;
 
 struct RangesetInfo {
-	bool        defined;
-	int         label;
-	int         count;
+    bool        defined = false;
+    int         label   = 0;
+    int         count   = 0;
 	QString     color;
 	QString     name;
     QString     mode;
@@ -36,26 +36,25 @@ public:
     static Range *RangesRealloc(Range *ranges, int n);
 
 public:
-    QString RangesetGetName() const;
-    int RangesetAdd(TextBuffer *buffer, Rangeset *plusSet);
-    int RangesetAddBetween(TextBuffer *buffer, int start, int end);
+    static void RangesetRefreshRange(TextBuffer *buffer, int start, int end);
+
+public:
     bool RangesetAssignColorName(TextBuffer *buffer, const QString &color_name);
-    bool RangesetAssignColorPixel(const QColor &color, bool ok);
     bool RangesetAssignName(const QString &name);
     bool RangesetChangeModifyResponse(QString name);
-    int RangesetCheckRangeOfPos(int pos);
     bool RangesetFindRangeNo(int index, int *start, int *end) const;
-	int RangesetFindRangeOfPos(int pos, int incl_end) const;
-	int RangesetGetColorValid(QColor *color) const;
-	int RangesetGetNRanges() const;
+    int RangesetAddBetween(TextBuffer *buffer, int start, int end);
+    int RangesetAdd(TextBuffer *buffer, Rangeset *plusSet);
+    int RangesetCheckRangeOfPos(int pos);
+    int RangesetFindRangeOfPos(int pos, int incl_end) const;
+    int RangesetGetColorValid(QColor *color) const;
+    int RangesetGetNRanges() const;
     int RangesetInverse(TextBuffer *buffer);
-    int RangesetRemove(TextBuffer *buffer, Rangeset *minusSet);
     int RangesetRemoveBetween(TextBuffer *buffer, int start, int end);
+    int RangesetRemove(TextBuffer *buffer, Rangeset *minusSet);
+    QString RangesetGetName() const;
+    RangesetInfo RangesetGetInfo() const;
     void RangesetEmpty(TextBuffer *buffer);
-    void RangesetGetInfo(bool *defined, int *label, int *count, QString *color, QString *name, QString *mode) const;
-	RangesetInfo RangesetGetInfo() const;
-
-    static void RangesetRefreshRange(TextBuffer *buffer, int start, int end);
     void RangesetInit(int label);
 
 public:

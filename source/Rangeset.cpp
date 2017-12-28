@@ -24,7 +24,7 @@ auto DEFAULT_UPDATE_FN_NAME = QLatin1String("maintain");
 
 struct {
     QLatin1String name;
-	RangesetUpdateFn *update_fn;
+    RangesetUpdateFn *update_fn;
 } RangesetUpdateMap[] = {
     {DEFAULT_UPDATE_FN_NAME,   rangesetInsDelMaintain},
     {QLatin1String("ins_del"), rangesetInsDelMaintain},
@@ -853,16 +853,6 @@ bool Rangeset::RangesetAssignColorName(TextBuffer *buffer, const QString &color_
 }
 
 /*
-** Assign a color pixel value to a rangeset via the rangeset table. If ok is
-** false, the color_set flag is set to an invalid (negative) value.
-*/
-bool Rangeset::RangesetAssignColorPixel(const QColor &color, bool ok) {
-    color_set_ = ok ? 1 : -1;
-    color_     = color;
-    return true;
-}
-
-/*
 ** Assign a name to a rangeset via the rangeset table.
 */
 bool Rangeset::RangesetAssignName(const QString &name) {
@@ -1159,18 +1149,6 @@ RangesetInfo Rangeset::RangesetGetInfo() const {
     info.name    = name_;
     info.mode    = update_name_;
 	return info;
-}
-
-/*
-** Get information about rangeset.
-*/
-void Rangeset::RangesetGetInfo(bool *defined, int *label, int *count, QString *color, QString *name, QString *mode) const {
-    *defined = true;
-    *label   = static_cast<int>(label_);
-    *count   = n_ranges_;
-    *color   = color_name_;
-    *name    = name_;
-    *mode    = update_name_;
 }
 
 /*

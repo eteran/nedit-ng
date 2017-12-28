@@ -4725,43 +4725,39 @@ static std::error_code rangesetInfoMS(DocumentWidget *document, Arguments argume
         rangeset = rangesetTable->RangesetFetch(label);
     }
 
-    int count;
-    bool defined;
-    QString color;
-    QString name;
-    QString mode;
+    RangesetInfo rangeset_info;
 
     if(rangeset) {
-        rangeset->RangesetGetInfo(&defined, &label, &count, &color, &name, &mode);
-    } else {
-        defined = false;
-        label = 0;
-        count = 0;
+        rangeset_info = rangeset->RangesetGetInfo();
     }
 
     // set up result
     *result = to_value(std::make_shared<Array>());
 
-    element = to_value(defined);
-    if (!ArrayInsert(result, "defined", &element))
+    element = to_value(rangeset_info.defined);
+    if (!ArrayInsert(result, "defined", &element)) {
         return MacroErrorCode::InsertFailed;
+    }
 
-    element = to_value(count);
-    if (!ArrayInsert(result, "count", &element))
+    element = to_value(rangeset_info.count);
+    if (!ArrayInsert(result, "count", &element)) {
         return MacroErrorCode::InsertFailed;
+    }
 
-    element = to_value(color);
-    if (!ArrayInsert(result, "color", &element))
+    element = to_value(rangeset_info.color);
+    if (!ArrayInsert(result, "color", &element)) {
         return MacroErrorCode::InsertFailed;
+    }
 
-    element = to_value(name);
+    element = to_value(rangeset_info.name);
     if (!ArrayInsert(result, "name", &element)) {
         return MacroErrorCode::InsertFailed;
     }
 
-    element = to_value(mode);
-    if (!ArrayInsert(result, "mode", &element))
+    element = to_value(rangeset_info.mode);
+    if (!ArrayInsert(result, "mode", &element)) {
         return MacroErrorCode::InsertFailed;
+    }
 
     return MacroErrorCode::Success;
 }
