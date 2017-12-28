@@ -3340,6 +3340,9 @@ void TextArea::drawString(QPainter *painter, int style, int x, int y, int toX, c
 
             } else if(style & HIGHLIGHT_MASK) {
                 bground = highlightBGPixel_;
+                if(!P_colorizeHighlightedText) {
+                    fground = highlightFGPixel_;
+                }
             } else if(style & RANGESET_MASK) {
                 bground = getRangesetColor((style & RANGESET_MASK) >> RANGESET_SHIFT, bground);
             } else if(styleRec && !styleRec->bgColorName.isNull()) {
