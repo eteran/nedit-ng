@@ -152,8 +152,8 @@ Rangeset *RangesetTable::RangesetForget(int label) {
 /*
 ** Return the color name, if any.
 */
-QString RangesetTable::RangesetTableGetColorName(int index) {
-    Rangeset *rangeset = &set_[index];
+QString RangesetTable::RangesetTableGetColorName(int index) const {
+    const Rangeset *rangeset = &set_[index];
     return rangeset->color_name_;
 }
 

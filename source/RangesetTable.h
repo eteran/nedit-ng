@@ -14,28 +14,28 @@ public:
 	~RangesetTable();
 
 public:
-    QString RangesetTableGetColorName(int index);
-	int nRangesetsAvailable() const;
-	int RangesetCreate();	
-    void RangesetTableAssignColorPixel(int index, const QColor &color, bool ok);
-    int RangesetTableGetColorValid(int index, QColor *color) const;
-	Rangeset *RangesetFetch(int label);
-	Rangeset *RangesetForget(int label);
+    int nRangesetsAvailable() const;
+    int RangesetCreate();
     int RangesetFindIndex(int label, bool must_be_active) const;
-    std::vector<uint8_t> RangesetGetList() const;
     int RangesetIndex1ofPos(int pos, bool needs_color);
+    int RangesetTableGetColorValid(int index, QColor *color) const;
+    QString RangesetTableGetColorName(int index) const;
+    Rangeset *RangesetFetch(int label);
+    Rangeset *RangesetForget(int label);
+    std::vector<uint8_t> RangesetGetList() const;
+    void RangesetTableAssignColorPixel(int index, const QColor &color, bool ok);
     void RangesetTableUpdatePos(int pos, int ins, int del);
 
 public:
 	static int RangesetLabelOK(int label);
 
 public:
-    int n_set_;				        /* how many sets are active */
-    TextBuffer *buf_;			    /* the text buffer of the rangeset */
-    Rangeset set_[N_RANGESETS];		/* the rangeset table */
-    uint8_t order_[N_RANGESETS];	/* inds of set[]s ordered by depth */
-    uint8_t active_[N_RANGESETS];	/* entry true if corresp. set active */
-    uint8_t depth_[N_RANGESETS];	/* depth[i]: pos of set[i] in order[] */
+    int n_set_;				      /* how many sets are active */
+    TextBuffer *buf_;			  /* the text buffer of the rangeset */
+    Rangeset set_[N_RANGESETS];   /* the rangeset table */
+    uint8_t order_[N_RANGESETS];  /* inds of set[]s ordered by depth */
+    uint8_t depth_[N_RANGESETS];  /* depth[i]: pos of set[i] in order[] */
+    bool active_[N_RANGESETS];	  /* entry true if corresp. set active */
 };
 
 #endif
