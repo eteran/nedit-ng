@@ -200,9 +200,9 @@ int RangesetTable::RangesetIndex1ofPos(int pos, bool needs_color) {
 ** Assign a color pixel value to a rangeset via the rangeset table. If ok is
 ** false, the color_set flag is set to an invalid (negative) value.
 */
-void RangesetTable::RangesetTableAssignColorPixel(int index, const QColor &color, bool ok) {
+void RangesetTable::RangesetTableAssignColorPixel(int index, const QColor &color) {
     Rangeset *rangeset = &set_[index];
-    rangeset->color_set_ = ok ? 1 : -1;
+    rangeset->color_set_ = color.isValid() ? 1 : -1;
     rangeset->color_ = color;
 }
 

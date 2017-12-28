@@ -23,7 +23,7 @@ public:
     Rangeset *RangesetFetch(int label);
     Rangeset *RangesetForget(int label);
     std::vector<uint8_t> RangesetGetList() const;
-    void RangesetTableAssignColorPixel(int index, const QColor &color, bool ok);
+    void RangesetTableAssignColorPixel(int index, const QColor &color);
     void RangesetTableUpdatePos(int pos, int ins, int del);
 
 public:

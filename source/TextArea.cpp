@@ -3542,7 +3542,7 @@ QColor TextArea::getRangesetColor(int ind, QColor bground) const {
             if (!color_name.isNull()) {
                 color = X11Colors::fromString(color_name);
 			}
-            tab->RangesetTableAssignColorPixel(ind, color, color.isValid());
+            tab->RangesetTableAssignColorPixel(ind, color);
 		}
 
 		if (color.isValid()) {
