@@ -3240,7 +3240,7 @@ int TextArea::styleOfPos(int lineStartPos, int lineLen, int lineIndex, int dispI
 
     /* store in the RANGESET_MASK portion of style the rangeset index for pos */
     if (document_->rangesetTable_) {
-        int rangesetIndex = RangesetTable::RangesetIndex1ofPos(document_->rangesetTable_, pos, true);
+        int rangesetIndex = document_->rangesetTable_->RangesetIndex1ofPos(pos, true);
         style |= ((rangesetIndex << RANGESET_SHIFT) & RANGESET_MASK);
     }
 

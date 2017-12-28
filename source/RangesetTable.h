@@ -4,6 +4,7 @@
 
 #include "Rangeset.h"
 #include <memory>
+#include <vector>
 
 class RangesetTable {
 public:
@@ -17,15 +18,15 @@ public:
 	int nRangesetsAvailable() const;
 	int RangesetCreate();	
     void RangesetTableAssignColorPixel(int index, const QColor &color, bool ok);
-    int RangesetTableGetColorValid(int index, QColor *color);
+    int RangesetTableGetColorValid(int index, QColor *color) const;
 	Rangeset *RangesetFetch(int label);
 	Rangeset *RangesetForget(int label);
-    int RangesetFindIndex(int label, bool must_be_active);
+    int RangesetFindIndex(int label, bool must_be_active) const;
+    std::vector<uint8_t> RangesetGetList() const;
+    int RangesetIndex1ofPos(int pos, bool needs_color);
+    void RangesetTableUpdatePos(int pos, int ins, int del);
 
 public:
-	static void RangesetTableUpdatePos(RangesetTable *table, int pos, int ins, int del);
-    static const uint8_t *RangesetGetList(const std::shared_ptr<RangesetTable> &table);
-    static int RangesetIndex1ofPos(const std::shared_ptr<RangesetTable> &table, int pos, bool needs_color);
 	static int RangesetLabelOK(int label);
 
 public:
@@ -35,7 +36,6 @@ public:
     uint8_t order_[N_RANGESETS];	/* inds of set[]s ordered by depth */
     uint8_t active_[N_RANGESETS];	/* entry true if corresp. set active */
     uint8_t depth_[N_RANGESETS];	/* depth[i]: pos of set[i] in order[] */
-    uint8_t list_[N_RANGESETS + 1]; /* string of labels in depth order */
 };
 
 #endif

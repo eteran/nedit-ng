@@ -43,7 +43,7 @@ public:
     bool RangesetAssignColorPixel(const QColor &color, bool ok);
     bool RangesetAssignName(const QString &name);
     bool RangesetChangeModifyResponse(QString name);
-	int RangesetCheckRangeOfPos(int pos);
+    int RangesetCheckRangeOfPos(int pos);
     bool RangesetFindRangeNo(int index, int *start, int *end) const;
 	int RangesetFindRangeOfPos(int pos, int incl_end) const;
 	int RangesetGetColorValid(QColor *color) const;

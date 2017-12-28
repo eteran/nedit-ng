@@ -4307,8 +4307,8 @@ static std::error_code rangesetListMV(DocumentWidget *document, Arguments argume
         return MacroErrorCode::Success;
     }
 
-    const uint8_t *rangesetList = RangesetTable::RangesetGetList(rangesetTable);
-    size_t nRangesets = strlen(reinterpret_cast<const char *>(rangesetList));
+    std::vector<uint8_t> rangesetList = rangesetTable->RangesetGetList();
+    size_t nRangesets = rangesetList.size();
     for (size_t i = 0; i < nRangesets; i++) {
 
         element = to_value(rangesetList[i]);
@@ -4452,8 +4452,7 @@ static std::error_code rangesetGetByNameMS(DocumentWidget *document, Arguments a
 
     Rangeset *rangeset;
     QString name;
-    const std::shared_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
-    const uint8_t *rangesetList;
+    const std::shared_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;    
     int insertIndex = 0;
     DataValue element;
 
@@ -4467,8 +4466,8 @@ static std::error_code rangesetGetByNameMS(DocumentWidget *document, Arguments a
         return MacroErrorCode::Success;
     }
 
-    rangesetList = RangesetTable::RangesetGetList(rangesetTable);
-    size_t nRangesets = strlen(reinterpret_cast<const char *>(rangesetList));
+    std::vector<uint8_t> rangesetList = rangesetTable->RangesetGetList();
+    size_t nRangesets = rangesetList.size();
     for (size_t i = 0; i < nRangesets; ++i) {
         int label = rangesetList[i];
         rangeset = rangesetTable->RangesetFetch(label);
