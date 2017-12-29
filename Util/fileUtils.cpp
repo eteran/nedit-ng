@@ -16,6 +16,7 @@
 #include <string>
 
 #include <sys/param.h>
+#include <sys/stat.h>
 #include <unistd.h>
 #include <pwd.h>
 
