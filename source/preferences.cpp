@@ -1390,5 +1390,5 @@ static QString getDefaultShell() {
         return QLatin1String("sh");
     }
 
-    return QString::fromLatin1(passwdEntry->pw_shell);
+    return QString::fromUtf8(passwdEntry->pw_shell);
 }

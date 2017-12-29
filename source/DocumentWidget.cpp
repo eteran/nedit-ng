@@ -1947,7 +1947,7 @@ void DocumentWidget::CheckForChangesToFileEx() {
         QString fullname = FullPath();
 
         struct stat statbuf;
-        if (::stat(fullname.toLatin1().data(), &statbuf) != 0) {
+        if (::stat(fullname.toUtf8().data(), &statbuf) != 0) {
 
             // Return if we've already warned the user or we can't warn him now
             if (fileMissing_ || silent) {
@@ -2030,11 +2030,11 @@ void DocumentWidget::CheckForChangesToFileEx() {
             uid_  = statbuf.st_uid;
             gid_  = statbuf.st_gid;
 
-            FILE *fp = ::fopen(fullname.toLatin1().data(), "r");
+            FILE *fp = ::fopen(fullname.toUtf8().data(), "r");
             if (fp) {
                 ::fclose(fp);
 
-				bool readOnly = ::access(fullname.toLatin1().data(), W_OK) != 0;
+                bool readOnly = ::access(fullname.toUtf8().data(), W_OK) != 0;
 
                 if (lockReasons_.isPermLocked() != readOnly) {
                     lockReasons_.setPermLocked(readOnly);
@@ -2111,7 +2111,7 @@ bool DocumentWidget::cmpWinAgainstFile(const QString &fileName) const {
 
     char pendingCR = '\0';
 
-	FILE *fp = ::fopen(fileName.toLatin1().data(), "r");
+    FILE *fp = ::fopen(fileName.toUtf8().data(), "r");
     if (!fp) {
         return true;
     }
@@ -2293,7 +2293,7 @@ int DocumentWidget::WriteBackupFile() {
     /* open the file, set more restrictive permissions (using default
        permissions was somewhat of a security hole, because permissions were
        independent of those of the original file being edited */
-    int fd = ::open(name.toLatin1().data(), O_CREAT | O_EXCL | O_WRONLY, S_IRUSR | S_IWUSR);
+    int fd = ::open(name.toUtf8().data(), O_CREAT | O_EXCL | O_WRONLY, S_IRUSR | S_IWUSR);
     if (fd < 0 || (fp = fdopen(fd, "w")) == nullptr) {
 
         QMessageBox::warning(
@@ -2397,7 +2397,7 @@ bool DocumentWidget::doSave() {
 
     /*  Check for root and warn him if he wants to write to a file with
         none of the write bits set.  */
-	if ((getuid() == 0) && (::stat(fullname.toLatin1().data(), &statbuf) == 0) && !(statbuf.st_mode & (S_IWUSR | S_IWGRP | S_IWOTH))) {
+    if ((getuid() == 0) && (::stat(fullname.toUtf8().data(), &statbuf) == 0) && !(statbuf.st_mode & (S_IWUSR | S_IWGRP | S_IWOTH))) {
         int result = QMessageBox::warning(
                     this,
                     tr("Writing Read-only File"),
@@ -2421,7 +2421,7 @@ bool DocumentWidget::doSave() {
     }
 
     // open the file
-    FILE *fp = ::fopen(fullname.toLatin1().data(), "wb");
+    FILE *fp = ::fopen(fullname.toUtf8().data(), "wb");
     if(!fp) {
         QMessageBox messageBox(this);
         messageBox.setWindowTitle(tr("Error saving File"));
@@ -2470,7 +2470,7 @@ bool DocumentWidget::doSave() {
     SetWindowModified(false);
 
     // update the modification time
-    if (::stat(fullname.toLatin1().data(), &statbuf) == 0) {
+    if (::stat(fullname.toUtf8().data(), &statbuf) == 0) {
         lastModTime_ = statbuf.st_mtime;
         fileMissing_ = false;
         dev_         = statbuf.st_dev;
@@ -2741,7 +2741,7 @@ bool DocumentWidget::writeBckVersion() {
 
     /* open the file being edited.  If there are problems with the
      * old file, don't bother the user, just skip the backup */
-    int in_fd = ::open(fullname.toLatin1().data(), O_RDONLY);
+    int in_fd = ::open(fullname.toUtf8().data(), O_RDONLY);
     if (in_fd < 0) {
         return false;
     }
@@ -2759,7 +2759,7 @@ bool DocumentWidget::writeBckVersion() {
     }
 
     // open the destination file exclusive and with restrictive permissions.
-    int out_fd = ::open(bckname.toLatin1().data(), O_CREAT | O_EXCL | O_TRUNC | O_WRONLY, S_IRUSR | S_IWUSR);
+    int out_fd = ::open(bckname.toUtf8().data(), O_CREAT | O_EXCL | O_TRUNC | O_WRONLY, S_IRUSR | S_IWUSR);
     if (out_fd < 0) {
         return bckError(tr("Error open backup file"), bckname);
     }
@@ -2849,7 +2849,7 @@ int DocumentWidget::fileWasModifiedExternally() const {
     QString fullname = FullPath();
 
     struct stat statbuf;
-    if (::stat(fullname.toLatin1().data(), &statbuf) != 0) {
+    if (::stat(fullname.toUtf8().data(), &statbuf) != 0) {
         return false;
     }
 
@@ -3099,9 +3099,9 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
        this is now the default.
     */
     {
-        if ((fp = ::fopen(fullname.toLatin1().data(), "r"))) {
+        if ((fp = ::fopen(fullname.toUtf8().data(), "r"))) {
 
-            if (::access(fullname.toLatin1().data(), W_OK) != 0) {
+            if (::access(fullname.toUtf8().data(), W_OK) != 0) {
                 lockReasons_.setPermLocked(true);
             }
 
@@ -3145,7 +3145,7 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
             }
 
             // Test if new file can be created
-            int fd = ::creat(fullname.toLatin1().data(), 0666);
+            int fd = ::creat(fullname.toUtf8().data(), 0666);
             if (fd == -1) {
                 QMessageBox::critical(this, tr("Error creating File"), tr("Can't create %1:\n%2").arg(fullname, ErrorString(errno)));
                 return false;
@@ -4615,7 +4615,7 @@ void DocumentWidget::issueCommandEx(MainWindow *window, TextArea *area, const QS
     // if there's nothing to write to the process' stdin, close it now, otherwise
     // write it to the process
     if(!input.isEmpty()) {
-        process->write(input.toLatin1());
+        process->write(input.toLocal8Bit());
     }
 
     process->closeWriteChannel();

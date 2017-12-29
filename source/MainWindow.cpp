@@ -1547,7 +1547,7 @@ DocumentWidget *MainWindow::FindWindowWithFile(const QString &name, const QStrin
         QString fullname = tr("%1%2").arg(path, name);
 
         struct stat attribute;
-        if (::stat(fullname.toLatin1().data(), &attribute) == 0) {
+        if (::stat(fullname.toUtf8().data(), &attribute) == 0) {
 
             auto it = std::find_if(documents.begin(), documents.end(), [attribute](DocumentWidget *document){
                 return (attribute.st_dev == document->dev_) && (attribute.st_ino == document->ino_);
@@ -1989,12 +1989,12 @@ void MainWindow::openFile(DocumentWidget *document, const QString &text) {
     // Expand wildcards in file name.
     {
         glob_t globbuf;
-        glob(nameText.toLatin1().data(), GLOB_NOCHECK, nullptr, &globbuf);
+        glob(nameText.toUtf8().data(), GLOB_NOCHECK, nullptr, &globbuf);
 
         for (size_t i = 0; i < globbuf.gl_pathc; i++) {
             QString pathname;
             QString filename;
-            if (!ParseFilenameEx(QString::fromLatin1(globbuf.gl_pathv[i]), &filename, &pathname) != 0) {
+            if (!ParseFilenameEx(QString::fromUtf8(globbuf.gl_pathv[i]), &filename, &pathname) != 0) {
                 QApplication::beep();
             } else {
                 DocumentWidget::EditExistingFileEx(

@@ -58,7 +58,7 @@ QString GetUserNameEx() {
 	   is misconfigured through no fault of the user.  Be nice
 	   and let the user start nc anyway. */
 	perror("nedit: getpwuid() failed - reverting to $USER");
-    return QString::fromLatin1(qgetenv("USER"));
+    return QString::fromLocal8Bit(qgetenv("USER"));
 #else
 	return QString();
 #endif

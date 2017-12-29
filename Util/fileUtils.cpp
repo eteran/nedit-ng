@@ -114,7 +114,7 @@ QString ExpandTildeEx(const QString &pathname) {
         }
     }
 
-    return QString(QLatin1String("%1/%2")).arg(QString::fromLatin1(passwdEntry->pw_dir), pathname.mid(end));
+    return QString(QLatin1String("%1/%2")).arg(QString::fromUtf8(passwdEntry->pw_dir), pathname.mid(end));
 #else
     return pathname;
 #endif
@@ -137,8 +137,8 @@ QString ExpandTildeEx(const QString &pathname) {
 QString ResolvePathEx(const QString &pathname) {
     char path[MAXPATHLEN];
 
-    if(ResolvePath(pathname.toLatin1().data(), path)) {
-        return QString::fromLatin1(path);
+    if(ResolvePath(pathname.toUtf8().data(), path)) {
+        return QString::fromUtf8(path);
     }
 
     return QString();
@@ -194,7 +194,7 @@ QString NormalizePathnameEx(const std::string &pathname) {
     path[PATH_MAX - 1] = '\0';
 
     if(!NormalizePathname(path)) {
-        return QString::fromLatin1(path);
+        return QString::fromUtf8(path);
     }
 
     return QString();
@@ -203,11 +203,11 @@ QString NormalizePathnameEx(const std::string &pathname) {
 QString NormalizePathnameEx(const QString &pathname) {
 
     char path[PATH_MAX];
-    strncpy(path, pathname.toLatin1().data(), sizeof(path));
+    strncpy(path, pathname.toUtf8().data(), sizeof(path));
     path[PATH_MAX - 1] = '\0';
 
     if(!NormalizePathname(path)) {
-        return QString::fromLatin1(path);
+        return QString::fromUtf8(path);
     }
 
     return QString();
@@ -227,7 +227,7 @@ bool NormalizePathname(char *pathname) {
         strcpy(&oldPathname[0], pathname);
 		
 		/* get the working directory and prepend to the path */
-		strcpy(pathname, GetCurrentDirEx().toLatin1().data());
+        strcpy(pathname, GetCurrentDirEx().toUtf8().data());
 
 		/* check for trailing slash, or pathname being root dir "/":
 		   don't add a second '/' character as this may break things
@@ -259,11 +259,11 @@ bool NormalizePathname(char *pathname) {
  */
 QString CompressPathnameEx(const QString &pathname) {
     char path[PATH_MAX];
-    strncpy(path, pathname.toLatin1().data(), sizeof(path));
+    strncpy(path, pathname.toUtf8().data(), sizeof(path));
     path[PATH_MAX - 1] = '\0';
 
     if(!CompressPathname(path)) {
-        return QString::fromLatin1(path);
+        return QString::fromUtf8(path);
     }
 
     return QString();
@@ -283,7 +283,7 @@ QString CompressPathnameEx(const std::string &pathname) {
     path[PATH_MAX - 1] = '\0';
 
     if(!CompressPathname(path)) {
-        return QString::fromLatin1(path);
+        return QString::fromUtf8(path);
     }
 
     return QString();
