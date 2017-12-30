@@ -37,7 +37,6 @@ static char *nextSlash(char *ptr);
 static char *prevSlash(char *ptr);
 static bool compareThruSlash(const char *string1, const char *string2);
 static void copyThruSlash(char **toString, char **fromString);
-static int ResolvePath(const char *pathIn, char *pathResolved);
 static bool CompressPathname(char *pathname);
 static bool NormalizePathname(char *pathname);
 
@@ -121,72 +120,6 @@ QString ExpandTildeEx(const QString &pathname) {
 #endif
 }
 
-/**
- * @brief ResolvePathEx
- * @param pathname - pathname must contain an absolute path spec.
- * @return
- *
- * Resolve symbolic links (if any) for the absolute path given in pathname and
- * place the resolved absolute path and return it.
- */
-QString ResolvePathEx(const QString &pathname) {
-    char path[MAXPATHLEN];
-
-    if(ResolvePath(pathname.toUtf8().data(), path)) {
-        return QString::fromUtf8(path);
-    }
-
-    return QString();
-}
-
-int ResolvePath(const char *pathIn, char *pathResolved) {
-    char resolveBuf[MAXPATHLEN];
-    char pathBuf[MAXPATHLEN];
-	char *pathEnd;
-	int loops;
-
-	/* !! readlink does NOT recognize loops, i.e. links like file -> ./file */
-	for (loops = 0; loops < MAXSYMLINKS; loops++) {
-        auto rlResult = gsl::narrow<int>(::readlink(pathIn, resolveBuf, MAXPATHLEN - 1));
-		if (rlResult < 0) {
-
-			if (errno == EINVAL)
-			{
-				/* It's not a symlink - we are done */
-				strncpy(pathResolved, pathIn, MAXPATHLEN);
-				pathResolved[MAXPATHLEN - 1] = '\0';
-                return true;
-			} else {
-                return false;
-			}
-		} else if (rlResult == 0) {
-            return false;
-		}
-
-        resolveBuf[rlResult] = '\0';
-
-		if (resolveBuf[0] != '/') {
-			strncpy(pathBuf, pathIn, MAXPATHLEN);
-			pathBuf[MAXPATHLEN - 1] = '\0';
-			pathEnd = strrchr(pathBuf, '/');
-			if (!pathEnd) {
-                return false;
-			}
-			strcpy(pathEnd + 1, resolveBuf);
-		} else {
-			strcpy(pathBuf, resolveBuf);
-		}
-		NormalizePathname(pathBuf);
-		pathIn = pathBuf;
-	}
-
-    return false;
-}
-
-QString NormalizePathnameEx(const std::string &pathname) {
-    return NormalizePathnameEx(QString::fromStdString(pathname));
-}
-
 QString NormalizePathnameEx(const QString &pathname) {
 
     char path[PATH_MAX];
@@ -255,27 +188,6 @@ QString CompressPathnameEx(const QString &pathname) {
 
     return QString();
 }
-
-/**
- * @brief CompressPathnameEx
- * @param pathname
- * @return
- *
- * Returns a pathname without symbolic links or redundant "." or ".." elements.
- *
- */
-QString CompressPathnameEx(const std::string &pathname) {
-    char path[PATH_MAX];
-    strncpy(path, pathname.c_str(), sizeof(path));
-    path[PATH_MAX - 1] = '\0';
-
-    if(!CompressPathname(path)) {
-        return QString::fromUtf8(path);
-    }
-
-    return QString();
-}
-
 
 /**
  * @brief CompressPathname

@@ -14,7 +14,6 @@ bool ParseFilenameEx(const QString &fullname, QString *filename, QString *pathna
 QString ExpandTildeEx(const QString &pathname);
 QString GetTrailingPathComponentsEx(const QString &path, int noOfComponents);
 QString ReadAnyTextFileEx(const QString &fileName, bool forceNL);
-QString ResolvePathEx(const QString &pathname);
 
 void ConvertToDosFileStringEx(std::string &fileString);
 void ConvertFromDosFileString(char *fileString, int *length, char *pendingCR);
@@ -26,8 +25,6 @@ void ConvertFromMacFileStringEx(std::string *fileString);
 void ConvertToMacFileStringEx(std::string &fileString);
 
 QString NormalizePathnameEx(const QString &pathname);
-QString NormalizePathnameEx(const std::string &pathname);
 QString CompressPathnameEx(const QString &pathname);
-QString CompressPathnameEx(const std::string &pathname);
 
 #endif

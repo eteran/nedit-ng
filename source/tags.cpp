@@ -602,8 +602,9 @@ static int loadTagsFile(const QString &tagSpec, int index, int recLevel) {
 	 * definition source files are (in most cases) specified relatively inside
 	 * the tags file to the tags files directory.
 	 */
-    QString resolvedTagsFile = ResolvePathEx(tagSpec);
-    if (resolvedTagsFile.isNull()) {
+    QFileInfo fi(tagSpec);
+    QString resolvedTagsFile = fi.canonicalFilePath();
+    if (resolvedTagsFile.isEmpty()) {
 		return 0;
 	}
 
@@ -1212,8 +1213,9 @@ static int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
         return 0;
     }
 
-    QString resolvedTipsFile = ResolvePathEx(tipPath);
-    if(resolvedTipsFile.isNull()) {
+    QFileInfo fi(tipPath);
+    QString resolvedTipsFile = fi.canonicalFilePath();
+    if(resolvedTipsFile.isEmpty()) {
         return 0;
     }
 
