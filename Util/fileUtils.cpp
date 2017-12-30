@@ -189,16 +189,7 @@ int ResolvePath(const char *pathIn, char *pathResolved) {
 }
 
 QString NormalizePathnameEx(const std::string &pathname) {
-
-    char path[PATH_MAX];
-    strncpy(path, pathname.c_str(), sizeof(path));
-    path[PATH_MAX - 1] = '\0';
-
-    if(!NormalizePathname(path)) {
-        return QString::fromUtf8(path);
-    }
-
-    return QString();
+    return NormalizePathnameEx(QString::fromStdString(pathname));
 }
 
 QString NormalizePathnameEx(const QString &pathname) {
