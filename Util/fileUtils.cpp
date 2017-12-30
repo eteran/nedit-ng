@@ -121,19 +121,13 @@ QString ExpandTildeEx(const QString &pathname) {
 #endif
 }
 
-/*
- * Resolve symbolic links (if any) for the absolute path given in pathIn
- * and place the resolved absolute path in pathResolved.
- * -  pathIn must contain an absolute path spec.
- * -  pathResolved must point to a buffer of minimum size MAXPATHLEN.
+/**
+ * @brief ResolvePathEx
+ * @param pathname - pathname must contain an absolute path spec.
+ * @return
  *
- * Returns:
- *   TRUE  if pathResolved contains a valid resolved path
- *         OR pathIn is not a symlink (pathResolved will have the same
- *	      contents like pathIn)
- *
- *   FALSE an error occured while trying to resolve the symlink, i.e.
- *         pathIn was no absolute path or the link is a loop.
+ * Resolve symbolic links (if any) for the absolute path given in pathname and
+ * place the resolved absolute path and return it.
  */
 QString ResolvePathEx(const QString &pathname) {
     char path[MAXPATHLEN];
@@ -146,7 +140,8 @@ QString ResolvePathEx(const QString &pathname) {
 }
 
 int ResolvePath(const char *pathIn, char *pathResolved) {
-	char resolveBuf[MAXPATHLEN], pathBuf[MAXPATHLEN];
+    char resolveBuf[MAXPATHLEN];
+    char pathBuf[MAXPATHLEN];
 	char *pathEnd;
 	int loops;
 
@@ -168,7 +163,7 @@ int ResolvePath(const char *pathIn, char *pathResolved) {
             return false;
 		}
 
-		resolveBuf[rlResult] = 0;
+        resolveBuf[rlResult] = '\0';
 
 		if (resolveBuf[0] != '/') {
 			strncpy(pathBuf, pathIn, MAXPATHLEN);
