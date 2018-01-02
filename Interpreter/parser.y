@@ -21,7 +21,6 @@ int yyparse();
 static int follow(char expect, int yes, int no);
 static int follow2(char expect1, int yes1, char expect2, int yes2, int no);
 static int follow_non_whitespace(char expect, int yes, int no);
-static Symbol *matchesActionRoutine(const char **inPtr);
 
 static const char *ErrMsg;
 static const char *InPtr;
@@ -462,7 +461,6 @@ Program *ParseMacro(const std::string &expr, std::string *msg, int *stoppedAt)
 static int yylex(void) {
 
     int i;
-    int len;
     Symbol *s;    
     static char escape[] = "\\\"ntbrfave";
     static char replace[] = "\\\"\n\t\b\r\f\a\v\x1B"; /* ASCII escape */
@@ -522,7 +520,7 @@ static int yylex(void) {
         auto p = std::back_inserter(symName);
 
         *p++ = *InPtr++;
-        while (InPtr != EndPtr && isalnum(static_cast<uint8_t>(*InPtr)) || *InPtr=='_') {
+        while ((InPtr != EndPtr) && (isalnum(static_cast<uint8_t>(*InPtr)) || *InPtr=='_')) {
             *p++ = *InPtr++;
         }
 
@@ -566,13 +564,11 @@ static int yylex(void) {
         std::string string;
         auto p = std::back_inserter(string);
 
-        const char *backslash;
-
         InPtr++;
         while (InPtr != EndPtr && *InPtr != '\"' && *InPtr != '\n') {
 
             if (*InPtr == '\\') {
-                backslash = InPtr;
+                const char *backslash = InPtr;
                 InPtr++;
                 if (*InPtr == '\n') {
                     InPtr++;
