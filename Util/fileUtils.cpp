@@ -33,10 +33,10 @@
 constexpr int FORMAT_SAMPLE_LINES = 5;
 constexpr int FORMAT_SAMPLE_CHARS = 2000;
 
-static char *nextSlash(char *ptr);
+static const char *nextSlash(const char *ptr);
 static char *prevSlash(char *ptr);
 static bool compareThruSlash(const char *string1, const char *string2);
-static void copyThruSlash(char **toString, char **fromString);
+static void copyThruSlash(char **toString, const char **fromString);
 static bool CompressPathname(char *pathname);
 static bool NormalizePathname(char *pathname);
 
@@ -228,24 +228,36 @@ bool CompressPathname(char *pathname) {
 
 	/* compress out . and .. */
     auto buf = std::make_unique<char[]>(strlen(pathname) + 2);
-	char *inPtr = pathname;
-    char *outPtr = &buf[0];
+    char *buffer = &buf[0];
+    const char *inPtr = pathname;
+    char *outPtr = buffer;
 	
 	/* copy initial / */
 	copyThruSlash(&outPtr, &inPtr);
 	while (inPtr) {
 		/* if the next component is "../", remove previous component */
 		if (compareThruSlash(inPtr, "../")) {
-			*outPtr = 0;
+            *outPtr = '\0';
 		
 			/* If the ../ is at the beginning, or if the previous component
 			   is a symbolic link, preserve the ../.  It is not valid to
 			   compress ../ when the previous component is a symbolic link
 			   because ../ is relative to where the link points.  If there's
 			   no S_ISLNK macro, assume system does not do symbolic links. */
+
+
+            // NOTE(eteran): in the original NEdit, this code was broken!
+            // lstat ALWAYS returns a non-symlink mode for paths ending in '/'
+            // so we need to chop that off for the test!
+            auto tmp = QString::fromUtf8(buffer);
+            // this should always be true, but let's be defensive...
+            if(tmp.endsWith(QLatin1Char('/'))) {
+                tmp.chop(1);
+            }
+
 #ifdef S_ISLNK
 			struct stat statbuf;
-            if (outPtr - 1 == &buf[0] || (::lstat(&buf[0], &statbuf) == 0 && S_ISLNK(statbuf.st_mode))) {
+            if (outPtr - 1 == buffer || (::lstat(tmp.toUtf8().data(), &statbuf) == 0 && S_ISLNK(statbuf.st_mode))) {
 				copyThruSlash(&outPtr, &inPtr);
 			} else
 #endif
@@ -264,16 +276,16 @@ bool CompressPathname(char *pathname) {
 	}
 
 	/* updated pathname with the new value */
-    if (strlen(&buf[0]) > MAXPATHLEN) {
+    if (strlen(buffer) > MAXPATHLEN) {
         qWarning("NEdit: CompressPathname(): file name too long %s", pathname);
         return true;
 	} else {
-        strcpy(pathname, &buf[0]);
+        strcpy(pathname, buffer);
         return false;
 	}
 }
 
-static char *nextSlash(char *ptr) {
+static const char *nextSlash(const char *ptr) {
 	for (; *ptr != '/'; ptr++) {
 		if (*ptr == '\0')
 			return nullptr;
@@ -299,9 +311,9 @@ static bool compareThruSlash(const char *string1, const char *string2) {
 	}
 }
 
-static void copyThruSlash(char **toString, char **fromString) {
+static void copyThruSlash(char **toString, const char **fromString) {
 	char *to = *toString;
-	char *from = *fromString;
+    const char *from = *fromString;
 
     while (true) {
 		*to = *from;
