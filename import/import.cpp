@@ -579,7 +579,7 @@ int main(int argc, char *argv[]) {
     std::vector<Style> styles;
     QString style = readResource<QString>(prefDB, "nedit.styles");
     QTextStream stream(&style);
-    QRegularExpression re(QLatin1String("\\s*(?<name>[^:]+):(?<foreground>[^:/]+)(/(?<background>[^:]+))?:(?<font>[^:]+)"));
+    static const QRegularExpression re(QLatin1String("\\s*(?<name>[^:]+):(?<foreground>[^:/]+)(/(?<background>[^:]+))?:(?<font>[^:]+)"));
 
     QString line;
     while(stream.readLineInto(&line)) {

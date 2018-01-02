@@ -6205,7 +6205,7 @@ bool MainWindow::ReplaceAndSearchEx(DocumentWidget *document, TextArea *area, co
             document->buffer_->BufReplaceEx(startPos, endPos, replaceResult);
             replaceLen = gsl::narrow<int>(replaceResult.size());
         } else {
-            document->buffer_->BufReplaceEx(startPos, endPos, replaceString.toLatin1().data());
+            document->buffer_->BufReplaceEx(startPos, endPos, replaceString.toStdString());
             replaceLen = replaceString.size();
         }
 
@@ -6339,7 +6339,7 @@ bool MainWindow::SearchAndReplaceEx(DocumentWidget *document, TextArea *area, co
         document->buffer_->BufReplaceEx(startPos, endPos, replaceResult);
         replaceLen = gsl::narrow<int>(replaceResult.size());
     } else {
-        document->buffer_->BufReplaceEx(startPos, endPos, replaceString.toLatin1().data());
+        document->buffer_->BufReplaceEx(startPos, endPos, replaceString.toStdString());
         replaceLen = replaceString.size();
     }
 
@@ -6635,7 +6635,7 @@ void MainWindow::ReplaceInSelectionEx(DocumentWidget *document, TextArea *area, 
             replaceLen = gsl::narrow<int>(replaceResult.size());
         } else {
             // at this point plain substitutions (should) always work
-            tempBuf.BufReplaceEx(startPos + realOffset, endPos + realOffset, replaceString.toLatin1().data());
+            tempBuf.BufReplaceEx(startPos + realOffset, endPos + realOffset, replaceString.toStdString());
             substSuccess = true;
         }
 

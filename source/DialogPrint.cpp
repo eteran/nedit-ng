@@ -74,7 +74,7 @@ QString getFlprQueueDefault() {
         defqueue = foundTag("/usr/local/etc/flp.defaults", "queue");
     }
 
-    return QString::fromLatin1(defqueue);
+    return QString::fromLocal8Bit(defqueue);
 }
 
 /**
@@ -88,7 +88,7 @@ QString getFlprHostDefault() {
         defhost = foundTag("/usr/local/etc/flp.defaults", "host");
     }
 
-    return QString::fromLatin1(defhost);
+    return QString::fromLocal8Bit(defhost);
 }
 
 /**
@@ -98,7 +98,7 @@ QString getFlprHostDefault() {
 QString getLprQueueDefault() {
 
     QByteArray defqueue = qgetenv("PRINTER");
-    return QString::fromLatin1(defqueue);
+    return QString::fromLocal8Bit(defqueue);
 }
 
 }

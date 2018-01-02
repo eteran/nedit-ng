@@ -32,14 +32,14 @@ QString LocalSocketName(const QString &server_name) {
         QDir().mkpath(runtimePath);
 #ifdef Q_OS_LINUX
         QByteArray display = qgetenv("DISPLAY");
-        return QString(QLatin1String("%1/nedit-ng_%2_%3_%4")).arg(runtimePath, hostname, server_name, QString::fromLatin1(display));
+        return QString(QLatin1String("%1/nedit-ng_%2_%3_%4")).arg(runtimePath, hostname, server_name, QString::fromLocal8Bit(display));
 #else
         return QString(QLatin1String("%1/nedit-ng_%2_%3")).arg(runtimePath, hostname, server_name);
 #endif
     } else {
 #ifdef Q_OS_LINUX
         QByteArray display = qgetenv("DISPLAY");
-        return QString(QLatin1String("nedit-ng_%1_%2_%3_%4")).arg(GetUserNameEx(), hostname, server_name, QString::fromLatin1(display));
+        return QString(QLatin1String("nedit-ng_%1_%2_%3_%4")).arg(GetUserNameEx(), hostname, server_name, QString::fromLocal8Bit(display));
 #else
         return QString(QLatin1String("nedit-ng_%1_%2_%3")).arg(GetUserNameEx(), hostname, server_name);
 #endif

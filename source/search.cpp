@@ -247,17 +247,17 @@ bool SearchString(view::string_view string, const QString &searchString, Directi
 static bool SearchString(view::string_view string, const QString &searchString, Direction direction, SearchType searchType, WrapMode wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters) {
 	switch (searchType) {
     case SearchType::CaseSenseWord:
-        return searchLiteralWord(string, searchString.toLatin1().data(), true, direction, wrap, beginPos, startPos, endPos, delimiters);
+        return searchLiteralWord(string, searchString.toStdString(), true, direction, wrap, beginPos, startPos, endPos, delimiters);
     case SearchType::LiteralWord:
-        return searchLiteralWord(string, searchString.toLatin1().data(), false, direction, wrap, beginPos, startPos, endPos, delimiters);
+        return searchLiteralWord(string, searchString.toStdString(), false, direction, wrap, beginPos, startPos, endPos, delimiters);
     case SearchType::CaseSense:
-        return searchLiteral(string, searchString.toLatin1().data(), true, direction, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW);
+        return searchLiteral(string, searchString.toStdString(), true, direction, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW);
     case SearchType::Literal:
-        return searchLiteral(string, searchString.toLatin1().data(), false, direction, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW);
+        return searchLiteral(string, searchString.toStdString(), false, direction, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW);
     case SearchType::Regex:
-        return searchRegex(string, searchString.toLatin1().data(), direction, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW, delimiters, REDFLT_STANDARD);
+        return searchRegex(string, searchString.toStdString(), direction, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW, delimiters, REDFLT_STANDARD);
     case SearchType::RegexNoCase:
-        return searchRegex(string, searchString.toLatin1().data(), direction, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW, delimiters, REDFLT_CASE_INSENSITIVE);
+        return searchRegex(string, searchString.toStdString(), direction, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW, delimiters, REDFLT_CASE_INSENSITIVE);
 	}
 
     Q_UNREACHABLE();
@@ -633,7 +633,7 @@ static std::string downCaseStringEx(view::string_view inString) {
 ** code to continue using strings to represent the search and replace
 ** items.
 */
-bool replaceUsingREEx(view::string_view searchStr, const char *replaceStr, view::string_view sourceStr, int beginPos, std::string &dest, int prevChar, const char *delimiters, int defaultFlags) {
+bool replaceUsingREEx(view::string_view searchStr, view::string_view replaceStr, view::string_view sourceStr, int beginPos, std::string &dest, int prevChar, const char *delimiters, int defaultFlags) {
     try {
         Regex compiledRE(searchStr, defaultFlags);
         compiledRE.execute(sourceStr, beginPos, sourceStr.size(), prevChar, '\0', delimiters, false);
@@ -647,8 +647,8 @@ bool replaceUsingREEx(view::string_view searchStr, const char *replaceStr, view:
 
 bool replaceUsingREEx(const QString &searchStr, const QString &replaceStr, view::string_view sourceStr, int beginPos, std::string &dest, int prevChar, const QString &delimiters, int defaultFlags) {
     return replaceUsingREEx(
-                searchStr.toLatin1().data(),
-                replaceStr.toLatin1().data(),
+                searchStr.toStdString(),
+                replaceStr.toStdString(),
                 sourceStr,
                 beginPos,
                 dest,
