@@ -15,15 +15,15 @@
 #include <fstream>
 #include <string>
 
-#include <sys/param.h>
-#include <sys/stat.h>
+#ifdef Q_OS_UNIX
 #include <unistd.h>
 #include <pwd.h>
+#endif
 
 #include <QString>
 #include <QFileInfo>
 
-
+namespace {
 
 /* Parameters to algorithm used to auto-detect DOS format files.  NEdit will
    scan up to the lesser of FORMAT_SAMPLE_LINES lines and FORMAT_SAMPLE_CHARS
@@ -33,12 +33,77 @@
 constexpr int FORMAT_SAMPLE_LINES = 5;
 constexpr int FORMAT_SAMPLE_CHARS = 2000;
 
-static const char *nextSlash(const char *ptr);
-static char *prevSlash(char *ptr);
-static bool compareThruSlash(const char *string1, const char *string2);
-static void copyThruSlash(char **toString, const char **fromString);
-static bool CompressPathname(char *pathname);
-static bool NormalizePathname(char *pathname);
+/**
+ * @brief prevSlash
+ * @param str
+ * @param index
+ * @return
+ *
+ * Requires that index be an offset one past a given slash and will return the
+ * index of the previous slash
+ */
+int prevSlash(const QString &str, int index) {
+
+    for (index -= 2; index >= 0 && str[index] != QLatin1Char('/'); index--) {
+        ;
+    }
+
+    return index + 1;
+}
+
+template <class In>
+In nextSlash(In first, In last) {
+
+    while(first != last && *first != QLatin1Char('/')) {
+        ++first;
+    }
+
+    return std::next(first);
+}
+
+template <class In>
+bool compareThruSlash(In first, In last, const QString &str) {
+
+    auto first2 = str.begin();
+    auto last2  = str.end();
+
+    while (true) {
+
+        if (first2 == last2 || *first != *first2) {
+            return false;
+        }
+
+        if (first == last || *first == QLatin1Char('/')) {
+            return true;
+        }
+
+        ++first;
+        ++first2;
+    }
+}
+
+template <class Out, class In>
+void copyThruSlash(Out &to, In &from, In end) {
+
+    while (true) {
+        *to = *from;
+
+        if (from == end) {
+            return;
+        }
+
+        if (*from == QLatin1Char('/')) {
+            ++from;
+            ++to;
+            return;
+        }
+
+        ++from;
+        ++to;
+    }
+}
+
+}
 
 /*
 ** Decompose a Unix file name into a file name and a path.
@@ -122,51 +187,28 @@ QString ExpandTildeEx(const QString &pathname) {
 
 QString NormalizePathnameEx(const QString &pathname) {
 
-    char path[PATH_MAX];
-    strncpy(path, pathname.toUtf8().data(), sizeof(path));
-    path[PATH_MAX - 1] = '\0';
+    QString path = pathname;
 
-    if(!NormalizePathname(path)) {
-        return QString::fromUtf8(path);
+    QFileInfo fi(path);
+
+    // if this is a relative pathname, prepend current directory
+    if (!fi.isAbsolute()) {
+
+        // make a copy of pathname to work from
+        QString oldPathname = path;
+
+        // get the working directory and prepend to the path
+        path = GetCurrentDirEx();
+
+        if(!path.endsWith(QLatin1Char('/'))) {
+            path.append(QLatin1Char('/'));
+        }
+
+        path.append(oldPathname);
     }
 
-    return QString();
-}
-
-/*
-** Return false if everything's fine. In fact it always return false...
-** (No it doesn't) Capable to handle arbitrary path length (>MAXPATHLEN)!
-*/
-bool NormalizePathname(char *pathname) {
-
-	/* if this is a relative pathname, prepend current directory */
-	if (pathname[0] != '/') {
-
-		/* make a copy of pathname to work from */
-        auto oldPathname = std::make_unique<char[]>(strlen(pathname) + 1);
-        strcpy(&oldPathname[0], pathname);
-		
-		/* get the working directory and prepend to the path */
-        strcpy(pathname, GetCurrentDirEx().toUtf8().data());
-
-		/* check for trailing slash, or pathname being root dir "/":
-		   don't add a second '/' character as this may break things
-		   on non-un*x systems */
-        const size_t len = strlen(pathname);
-
-        /*  Apart from the fact that people putting conditional expressions in
-         * ifs should be caned: How should len ever become 0 if
-         * GetCurrentDirEx() always returns a useful value?
-         */
-		if ((len == 0) ? 1 : pathname[len - 1] != '/') {
-			strcat(pathname, "/");
-		}
-
-        strcat(pathname, &oldPathname[0]);
-	}
-
-	/* compress out .. and . */
-	return CompressPathname(pathname);
+    /* compress out .. and . */
+    return CompressPathnameEx(path);
 }
 
 /**
@@ -177,158 +219,83 @@ bool NormalizePathname(char *pathname) {
  * Returns a pathname without symbolic links or redundant "." or ".." elements.
  *
  */
-QString CompressPathnameEx(const QString &pathname) {
-    char path[PATH_MAX];
-    strncpy(path, pathname.toUtf8().data(), sizeof(path));
-    path[PATH_MAX - 1] = '\0';
-
-    if(!CompressPathname(path)) {
-        return QString::fromUtf8(path);
-    }
-
-    return QString();
-}
-
-/**
- * @brief CompressPathname
- * @param pathname
- * @return
- *
- * Returns true upon error, pathname context is replaced with compressed path
- *
- */
-bool CompressPathname(char *pathname) {
+QString CompressPathnameEx(const QString &path) {
 
     // NOTE(eteran): Things like QFileInfo::canonicalFilePath return an empty
     // string if a path represents a file that doesn't exist yet. So we may not
     // be able to use those in all cases!
 
-	/* (Added by schwarzenberg)
-	** replace multiple slashes by a single slash
-	**  (added by yooden)
-	**  Except for the first slash. From the Single UNIX Spec: "A pathname
-	**  that begins with two successive slashes may be interpreted in an
-	**  implementation-dependent manner"
-	*/
-	char *in  = pathname;
-	char *out = pathname;
-	
-	*out++ = *in++;	
-	while(*in != '\0') {
-		const char ch = *in++;
-		*out++ = ch;
-		if (ch == '/') {
-			while(*in == '/') {
-				++in;
-			}
-		}
-	}	
-	*out = '\0';
+    /* (Added by schwarzenberg)
+    ** replace multiple slashes by a single slash
+    **  (added by yooden)
+    **  Except for the first slash. From the Single UNIX Spec: "A pathname
+    **  that begins with two successive slashes may be interpreted in an
+    **  implementation-dependent manner"
+    */
 
+    QString pathname;
+    pathname.reserve(path.size());
+    auto out = std::back_inserter(pathname);
+    auto in  = path.begin();
 
-	/* compress out . and .. */
-    auto buf = std::make_unique<char[]>(strlen(pathname) + 2);
-    char *buffer = &buf[0];
-    const char *inPtr = pathname;
-    char *outPtr = buffer;
-	
-	/* copy initial / */
-	copyThruSlash(&outPtr, &inPtr);
-	while (inPtr) {
-		/* if the next component is "../", remove previous component */
-		if (compareThruSlash(inPtr, "../")) {
-            *outPtr = '\0';
-		
-			/* If the ../ is at the beginning, or if the previous component
-			   is a symbolic link, preserve the ../.  It is not valid to
-			   compress ../ when the previous component is a symbolic link
-			   because ../ is relative to where the link points.  If there's
-			   no S_ISLNK macro, assume system does not do symbolic links. */
+    *out++ = *in++;
+    while(in != path.end()) {
+        const QChar ch = *in++;
+        *out++ = ch;
+        if (ch == QLatin1Char('/')) {
+            while(*in == QLatin1Char('/')) {
+                ++in;
+            }
+        }
+    }
 
+    /* compress out . and .. */
+    QString buffer;
+    buffer.reserve(path.size());
+
+    auto inPtr = pathname.begin();
+    auto outPtr = std::back_inserter(buffer);
+
+    /* copy initial / */
+    copyThruSlash(outPtr, inPtr, pathname.end());
+
+    while (inPtr != pathname.end()) {
+        /* if the next component is "../", remove previous component */
+        if (compareThruSlash(inPtr, pathname.end(), QLatin1String("../"))) {
+
+            /* If the ../ is at the beginning, or if the previous component is
+             * a symbolic link, preserve the ../
+             * It is not valid to compress ../ when the previous component is
+             * a symbolic link because ../ is relative to where the link
+             * points. */
 
             // NOTE(eteran): in the original NEdit, this code was broken!
-            // lstat ALWAYS returns a non-symlink mode for paths ending in '/'
+            // lstat/QFileInfo ALWAYS returns a non-symlink mode for paths
+            // ending in '/'
             // so we need to chop that off for the test!
-            auto tmp = QString::fromUtf8(buffer);
-            // this should always be true, but let's be defensive...
-            if(tmp.endsWith(QLatin1Char('/'))) {
-                tmp.chop(1);
+            QFileInfo fi(buffer.left(buffer.size() - 1));
+
+            if (buffer == QLatin1String("/") || fi.isSymLink()) {
+                copyThruSlash(outPtr, inPtr, pathname.end());
+            } else {
+                /* back up outPtr to remove last path name component */
+                int index = prevSlash(buffer, buffer.size());
+                if(index != -1) {
+                    buffer = buffer.left(index);
+                }
+
+                inPtr = nextSlash(inPtr, pathname.end());
             }
-
-#ifdef S_ISLNK
-			struct stat statbuf;
-            if (outPtr - 1 == buffer || (::lstat(tmp.toUtf8().data(), &statbuf) == 0 && S_ISLNK(statbuf.st_mode))) {
-				copyThruSlash(&outPtr, &inPtr);
-			} else
-#endif
-			{
-				/* back up outPtr to remove last path name component */
-				outPtr = prevSlash(outPtr);
-				inPtr = nextSlash(inPtr);
-			}
-		} else if (compareThruSlash(inPtr, "./")) {
-			/* don't copy the component if it's the redundant "./" */
-			inPtr = nextSlash(inPtr);
-		} else {
-			/* copy the component to outPtr */
-			copyThruSlash(&outPtr, &inPtr);
-		}
-	}
-
-	/* updated pathname with the new value */
-    if (strlen(buffer) > MAXPATHLEN) {
-        qWarning("NEdit: CompressPathname(): file name too long %s", pathname);
-        return true;
-	} else {
-        strcpy(pathname, buffer);
-        return false;
-	}
-}
-
-static const char *nextSlash(const char *ptr) {
-	for (; *ptr != '/'; ptr++) {
-		if (*ptr == '\0')
-			return nullptr;
-	}
-	return ptr + 1;
-}
-
-static char *prevSlash(char *ptr) {
-    for (ptr -= 2; *ptr != '/'; ptr--) {
-		;
+        } else if (compareThruSlash(inPtr, pathname.end(), QLatin1String("./"))) {
+            /* don't copy the component if it's the redundant "./" */
+            inPtr = nextSlash(inPtr, pathname.end());
+        } else {
+            /* copy the component to outPtr */
+            copyThruSlash(outPtr, inPtr, pathname.end());
+        }
     }
-	return ptr + 1;
-}
 
-static bool compareThruSlash(const char *string1, const char *string2) {
-    while (true) {
-		if (*string1 != *string2)
-            return false;
-		if (*string1 == '\0' || *string1 == '/')
-            return true;
-		string1++;
-		string2++;
-	}
-}
-
-static void copyThruSlash(char **toString, const char **fromString) {
-	char *to = *toString;
-    const char *from = *fromString;
-
-    while (true) {
-		*to = *from;
-		if (*from == '\0') {
-			*fromString = nullptr;
-			return;
-		}
-		if (*from == '/') {
-			*toString = to + 1;
-			*fromString = from + 1;
-			return;
-		}
-		from++;
-		to++;
-	}
+    return buffer;
 }
 
 /*
