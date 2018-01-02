@@ -191,14 +191,15 @@ QString NormalizePathnameEx(const QString &pathname) {
 
     QFileInfo fi(path);
 
+    // TODO(eteran): investigate if we can just use QFileInfo::makeAbsolute
+    // here...
+
     // if this is a relative pathname, prepend current directory
-    if (!fi.isAbsolute()) {
+    if (fi.isRelative()) {
 
-        // make a copy of pathname to work from
-        QString oldPathname = path;
-
-        // get the working directory and prepend to the path
-        path = GetCurrentDirEx();
+        // make a copy of pathname to work from and get the working directory
+        // and prepend to the path
+        QString oldPathname = std::exchange(path, GetCurrentDirEx());
 
         if(!path.endsWith(QLatin1Char('/'))) {
             path.append(QLatin1Char('/'));
@@ -275,6 +276,7 @@ QString CompressPathnameEx(const QString &path) {
             // so we need to chop that off for the test!
             QFileInfo fi(buffer.left(buffer.size() - 1));
 
+            // NOTE(eteran): UNIX assumption here...
             if (buffer == QLatin1String("/") || fi.isSymLink()) {
                 copyThruSlash(outPtr, inPtr, pathname.end());
             } else {
@@ -408,8 +410,11 @@ void ConvertFromDosFileString(char *fileString, size_t *length, char *pendingCR)
     Q_ASSERT(fileString);
     char *outPtr = fileString;
     char *inPtr = fileString;
-    if (pendingCR)
-        *pendingCR = 0;
+
+    if (pendingCR) {
+        *pendingCR = '\0';
+    }
+
     while (inPtr < fileString + *length) {
         if (*inPtr == '\r') {
             if (inPtr < fileString + *length - 1) {
@@ -418,7 +423,7 @@ void ConvertFromDosFileString(char *fileString, size_t *length, char *pendingCR)
             } else {
                 if (pendingCR) {
                     *pendingCR = *inPtr;
-                    break; /* Don't copy this trailing '\r' */
+                    break; // Don't copy this trailing '\r'
                 }
             }
         }
@@ -426,7 +431,7 @@ void ConvertFromDosFileString(char *fileString, size_t *length, char *pendingCR)
     }
 
     *outPtr = '\0';
-    *length = outPtr - fileString;
+    *length = static_cast<size_t>(outPtr - fileString);
 }
 
 /**
