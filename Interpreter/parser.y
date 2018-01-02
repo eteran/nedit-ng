@@ -459,9 +459,10 @@ Program *ParseMacro(const std::string &expr, std::string *msg, int *stoppedAt)
 }
 
 
-static int yylex(void)
-{
-    int i, len;
+static int yylex(void) {
+
+    int i;
+    int len;
     Symbol *s;    
     static char escape[] = "\\\"ntbrfave";
     static char replace[] = "\\\"\n\t\b\r\f\a\v\x1B"; /* ASCII escape */
@@ -485,7 +486,6 @@ static int yylex(void)
             break;
     }
 
-
     /* return end of input at the end of the string */
     if (InPtr == EndPtr) {
         return 0;
@@ -493,55 +493,61 @@ static int yylex(void)
 
     /* process number tokens */
     if (isdigit(static_cast<uint8_t>(*InPtr)))  { /* number */
+
+        std::string value;
+        auto p = std::back_inserter(value);
+
+        *p++ = *InPtr++;
+        while (InPtr != EndPtr && isdigit(static_cast<uint8_t>(*InPtr))) {
+            *p++ = *InPtr++;
+        }
+
+        int n = std::stoi(value);
+
         char name[28];
-        int n;
-        sscanf(InPtr, "%d%n", &n, &len);
         snprintf(name, sizeof(name), "const %d", n);
-        InPtr += len;
 
         if ((yylval.sym = LookupSymbol(name)) == nullptr) {
             yylval.sym = InstallSymbol(name, CONST_SYM, to_value(n));
         }
+
         return NUMBER;
     }
 
     /* process symbol tokens.  "define" is a special case not handled
-       by this parser, considered end of input.  Another special case
-       is action routine names which are allowed to contain '-' despite
-       the ambiguity, handled in matchesActionRoutine. */
+       by this parser, considered end of input. */
     if (isalpha(static_cast<uint8_t>(*InPtr)) || *InPtr == '$') {
-        if ((s=matchesActionRoutine(&InPtr)) == nullptr) {
 
-            std::string symName;
-            auto p = std::back_inserter(symName);
+        std::string symName;
+        auto p = std::back_inserter(symName);
 
+        *p++ = *InPtr++;
+        while (InPtr != EndPtr && isalnum(static_cast<uint8_t>(*InPtr)) || *InPtr=='_') {
             *p++ = *InPtr++;
-            while (isalnum(static_cast<uint8_t>(*InPtr)) || *InPtr=='_') {
-                *p++ = *InPtr++;
-            }
-
-            if (symName == "while")    return WHILE;
-            if (symName == "if")       return IF;
-            if (symName == "else")     return ELSE;
-            if (symName == "for")      return FOR;
-            if (symName == "break")    return BREAK;
-            if (symName == "continue") return CONTINUE;
-            if (symName == "return")   return RETURN;
-            if (symName == "in")       return IN;
-            if (symName == "$args")    return ARG_LOOKUP;
-            if (symName == "delete" && follow_non_whitespace('(', SYMBOL, DELETE) == DELETE) return DELETE;
-            if (symName == "define") {
-                InPtr -= 6;
-                return 0;
-            }
-
-
-            if ((s=LookupSymbol(symName)) == nullptr) {
-                s = InstallSymbol(symName,
-                                  symName[0]=='$' ? (((symName[1] > '0' && symName[1] <= '9') && symName[2] == 0) ? ARG_SYM : GLOBAL_SYM) : LOCAL_SYM,
-                                  to_value());
-            }
         }
+
+        if (symName == "while")    return WHILE;
+        if (symName == "if")       return IF;
+        if (symName == "else")     return ELSE;
+        if (symName == "for")      return FOR;
+        if (symName == "break")    return BREAK;
+        if (symName == "continue") return CONTINUE;
+        if (symName == "return")   return RETURN;
+        if (symName == "in")       return IN;
+        if (symName == "$args")    return ARG_LOOKUP;
+        if (symName == "delete" && follow_non_whitespace('(', SYMBOL, DELETE) == DELETE) return DELETE;
+        if (symName == "define") {
+            InPtr -= 6;
+            return 0;
+        }
+
+
+        if ((s = LookupSymbol(symName)) == nullptr) {
+            s = InstallSymbol(symName,
+                              symName[0]=='$' ? (((symName[1] > '0' && symName[1] <= '9') && symName[2] == 0) ? ARG_SYM : GLOBAL_SYM) : LOCAL_SYM,
+                              to_value());
+        }
+
         yylval.sym = s;
         return SYMBOL;
     }
@@ -575,42 +581,46 @@ static int yylex(void)
                 if (*InPtr == 'x') {
                     /* a hex introducer */
                     int hexValue = 0;
-                    const char *hexDigits = "0123456789abcdef";
+                    const char *const hexDigits = "0123456789abcdef";
                     const char *hexD;
+
                     InPtr++;
-                    if (InPtr == EndPtr ||
-                        (hexD = strchr(hexDigits, tolower(*InPtr))) == nullptr) {
+
+                    if (InPtr == EndPtr || (hexD = strchr(hexDigits, tolower(*InPtr))) == nullptr) {
                         *p++ = 'x';
-                    }
-                    else {
+                    } else {
                         hexValue = hexD - hexDigits;
                         InPtr++;
+
                         /* now do we have another digit? only accept one more */
-                        if (InPtr != EndPtr &&
-                            (hexD = strchr(hexDigits,tolower(*InPtr))) != nullptr){
+                        if (InPtr != EndPtr && (hexD = strchr(hexDigits, tolower(*InPtr))) != nullptr){
                           hexValue = hexD - hexDigits + (hexValue << 4);
                           InPtr++;
                         }
+
                         if (hexValue != 0) {
                             *p++ = static_cast<char>(hexValue);
-                        }
-                        else {
+                        } else {
                             InPtr = backslash + 1; /* just skip the backslash */
                         }
                     }
                     continue;
                 }
+
                 /* the RE documentation requires \0 as the octal introducer;
                    here you can start with any octal digit, but you are only
                    allowed up to three (or four if the first is '0'). */
                 if ('0' <= *InPtr && *InPtr <= '7') {
+
                     if (*InPtr == '0') {
                         InPtr++;  /* octal introducer: don't count this digit */
                     }
+
                     if ('0' <= *InPtr && *InPtr <= '7') {
                         /* treat as octal - first digit */
                         char octD = *InPtr++;
                         int octValue = octD - '0';
+
                         if ('0' <= *InPtr && *InPtr <= '7') {
                             /* second digit */
                             octD = *InPtr++;
@@ -626,29 +636,29 @@ static int yylex(void)
                                 octValue = (octValue << 3) + octD - '0';
                             }
                         }
+
                         if (octValue != 0) {
                             *p++ = static_cast<char>(octValue);
-                        }
-                        else {
+                        } else {
                             InPtr = backslash + 1; /* just skip the backslash */
                         }
-                    }
-                    else { /* \0 followed by non-digits: go back to 0 */
+                    } else { /* \0 followed by non-digits: go back to 0 */
                         InPtr = backslash + 1; /* just skip the backslash */
                     }
                     continue;
                 }
-                for (i=0; escape[i]!='\0'; i++) {
+
+                for (i = 0; escape[i] != '\0'; i++) {
                     if (escape[i] == *InPtr) {
                         *p++ = replace[i];
                         InPtr++;
                         break;
                     }
                 }
+
                 /* if we get here, we didn't recognise the character after
                    the backslash: just copy it next time round the loop */
-            }
-            else {
+            } else {
                 *p++= *InPtr++;
             }
         }
@@ -679,16 +689,16 @@ static int yylex(void)
 /*
 ** look ahead for >=, etc.
 */
-static int follow(char expect, int yes, int no)
-{
+static int follow(char expect, int yes, int no) {
+
     if (*InPtr++ == expect)
         return yes;
     InPtr--;
     return no;
 }
 
-static int follow2(char expect1, int yes1, char expect2, int yes2, int no)
-{
+static int follow2(char expect1, int yes1, char expect2, int yes2, int no) {
+
     char next = *InPtr++;
     if (next == expect1)
         return yes1;
@@ -698,8 +708,8 @@ static int follow2(char expect1, int yes1, char expect2, int yes2, int no)
     return no;
 }
 
-static int follow_non_whitespace(char expect, int yes, int no)
-{
+static int follow_non_whitespace(char expect, int yes, int no) {
+
     const char *localInPtr = InPtr;
 
     while (1) {
@@ -719,48 +729,12 @@ static int follow_non_whitespace(char expect, int yes, int no)
 }
 
 /*
-** Look (way) ahead for hyphenated routine names which begin at inPtr.  A
-** hyphenated name is allowed if it is pre-defined in the global symbol
-** table.  If a matching name exists, returns the symbol, and update "inPtr".
-**
-** I know this is horrible language design, but existing nedit action routine
-** names contain hyphens.  Handling them here in the lexical analysis process
-** is much easier than trying to deal with it in the parser itself.  (sorry)
-*/
-static Symbol *matchesActionRoutine(const char **inPtr)
-{
-    const char *c;
-    bool hasDash = false;
-
-    std::string symbolName;
-    auto symPtr = std::back_inserter(symbolName);
-
-    for (c = *inPtr; isalnum(static_cast<uint8_t>(*c)) || *c == '_' || (*c == '-' && isalnum(static_cast<uint8_t>(*(c + 1)))); c++) {
-        if (*c == '-') {
-            hasDash = true;
-        }
-        *symPtr++ = *c;
-    }
-
-    if (!hasDash)
-        return nullptr;
-
-    Symbol *s = LookupSymbol(symbolName);
-    if (s != nullptr) {
-        *inPtr = c;
-    }
-
-    return s;
-}
-
-/*
 ** Called by yacc to report errors (just stores for returning when
 ** parsing is aborted.  The error token action is to immediate abort
 ** parsing, so this message is immediately reported to the caller
 ** of ParseExpr)
 */
-static int yyerror(const char *s)
-{
+static int yyerror(const char *s) {
     ErrMsg = s;
     return 0;
 }
