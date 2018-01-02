@@ -2724,26 +2724,27 @@ void TextArea::blankCursorProtrusions() {
  * @return
  */
 int TextArea::measureVisLine(int visLineNum) const {
-	int i;
-	int width = 0;
-	int len;
-	int lineLen = visLineLength(visLineNum);
-	int charCount = 0;
-	int lineStartPos = lineStarts_[visLineNum];
+
+    int width              = 0;
+    int charCount          = 0;
+    int lineLen            = visLineLength(visLineNum);
+    const int lineStartPos = lineStarts_[visLineNum];
     char expandedChar[TextBuffer::MAX_EXP_CHAR_LEN];
-    QFontMetrics fm(font_);
 
     if (!styleBuffer_) {
-		for (i = 0; i < lineLen; i++) {
-			len = buffer_->BufGetExpandedChar(lineStartPos + i, charCount, expandedChar);
+
+        QFontMetrics fm(font_);
+
+        for (int i = 0; i < lineLen; i++) {
+            int len = buffer_->BufGetExpandedChar(lineStartPos + i, charCount, expandedChar);
             width += fm.width(asciiCodec->toUnicode(expandedChar, len));
 			charCount += len;
 		}
 	} else {
-		for (i = 0; i < lineLen; i++) {
-			len = buffer_->BufGetExpandedChar(lineStartPos + i, charCount, expandedChar);
+        for (int i = 0; i < lineLen; i++) {
+            int len = buffer_->BufGetExpandedChar(lineStartPos + i, charCount, expandedChar);
             auto styleChar = styleBuffer_->BufGetCharacter(lineStartPos + i);
-            int style = static_cast<uint8_t>(styleChar) - ASCII_A;
+            uint8_t style = static_cast<uint8_t>(styleChar) - ASCII_A;
 
             QFontMetrics styleFm(styleTable_[style].font);
             width += styleFm.width(asciiCodec->toUnicode(expandedChar, len));
@@ -2763,22 +2764,26 @@ int TextArea::measureVisLine(int visLineNum) const {
  * @return
  */
 int TextArea::visLineLength(int visLineNum) const {
-	int nextLineStart;
+
 	int lineStartPos = lineStarts_[visLineNum];
 
-	if (lineStartPos == -1)
+    if (lineStartPos == -1) {
 		return 0;
+    }
 
-	if (visLineNum + 1 >= nVisibleLines_)
+    if (visLineNum + 1 >= nVisibleLines_) {
 		return lastChar_ - lineStartPos;
+    }
 
-	nextLineStart = lineStarts_[visLineNum + 1];
+    int nextLineStart = lineStarts_[visLineNum + 1];
 
-	if (nextLineStart == -1)
+    if (nextLineStart == -1) {
 		return lastChar_ - lineStartPos;
+    }
 
-	if (wrapUsesCharacter(nextLineStart - 1))
+    if (wrapUsesCharacter(nextLineStart - 1)) {
 		return nextLineStart - 1 - lineStartPos;
+    }
 
 	return nextLineStart - lineStartPos;
 }
