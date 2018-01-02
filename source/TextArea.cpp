@@ -426,12 +426,9 @@ TextArea::TextArea(DocumentWidget *document, TextBuffer *buffer, QFont fontStruc
 
     // track when we lose ownership of the selection
     if(QApplication::clipboard()->supportsSelection()) {
-
         connect(QApplication::clipboard(), &QClipboard::selectionChanged, this, [this]() {
             if(!QApplication::clipboard()->ownsSelection()) {
-                const bool prev = buffer_->BufSetSyncXSelection(false);
                 buffer_->BufUnselect();
-                buffer_->BufSetSyncXSelection(prev);
             }
         });
     }
