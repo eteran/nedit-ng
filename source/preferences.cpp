@@ -18,7 +18,6 @@
 #include <QInputDialog>
 #include <QMessageBox>
 #include <QPushButton>
-#include <QRegExp>
 #include <QSettings>
 #include <QString>
 #include <QtDebug>
@@ -1131,19 +1130,17 @@ bool ReadNumericFieldEx(Input &in, int *value) {
 	// skip over blank space
 	in.skipWhitespace();
 
-	QRegExp regex(QLatin1String("^(0|[-+]?[1-9][0-9]*)"));
+    static const QRegularExpression re(QLatin1String("(0|[-+]?[1-9][0-9]*)"));
+    QString number;
+    if(in.match(re, &number)) {
+        bool ok;
+        *value = number.toInt(&ok);
+        if(ok) {
+            return true;
+        }
+    }
 
-	int n = regex.indexIn(*in.string(), in.index(), QRegExp::CaretAtOffset);
-	if(n == in.index()) {
-		bool ok;
-		*value = regex.cap(1).toInt(&ok);
-		if(ok) {
-			in += regex.matchedLength();
-			return true;
-		}
-	}
-
-	return false;
+    return false;
 }
 
 /*

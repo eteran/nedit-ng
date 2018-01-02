@@ -1,4 +1,4 @@
-
+﻿
 #ifndef INPUT_H_
 #define INPUT_H_
 
@@ -37,18 +37,17 @@ public:
 	bool atEnd() const;
 
 public:
-	bool match(const QString &s) const;
-    bool match(QChar ch) const;
-    int matchSize(const QRegularExpression &re) const;
+    void consume(const QString &chars);
+    bool match(const QString &s);
+    bool match(QChar ch);
+    bool match(const QRegularExpression &re, QString *m = nullptr);
 	int find(const QString &s) const;
 	int find(QChar ch) const;
 	QString mid(int length) const;
 	QString mid() const;
-    QStringRef midRef(int length) const;
-    QStringRef midRef() const;
-    int remaining() const;
     QString readUntil(QChar ch);
-    QChar read() const;
+    QChar peek() const;
+    QChar read();
 
 public:
 	const QString *string() const;

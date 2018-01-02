@@ -161,7 +161,6 @@ QString copyMacroToEnd(Input &in) {
     while(input.index() != stoppedAt + in.index()) {
         if(input.match(QLatin1String("\n\t\t"))) {
             *retPtr++ = QLatin1Char('\n');
-            input += 3;
         } else {
             *retPtr++ = *input++;
         }

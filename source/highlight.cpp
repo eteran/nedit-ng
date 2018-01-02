@@ -1441,7 +1441,6 @@ static std::unique_ptr<PatternSet> readPatternSetEx(Input &in) {
     /* look for "Default" keyword, and if it's there, return the default
        pattern set */
     if (in.match(QLatin1String("Default"))) {
-        in += 7;
         std::unique_ptr<PatternSet> retPatSet = readDefaultPatternSet(patSet->languageMode);
         if(!retPatSet) {
             return highlightErrorEx(in, QLatin1String("No default pattern set"));

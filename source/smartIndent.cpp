@@ -218,7 +218,6 @@ int LoadSmartIndentStringEx(const QString &string) {
 		/* look for "Default" keyword, and if it's there, return the default
 		   smart indent macros */
 		if (in.match(QLatin1String("Default"))) {
-			in += 7;
 			if (!loadDefaultIndentSpec(is.lmName)) {
 				return siParseError(in, QLatin1String("no default smart indent macros"));
 			}
@@ -273,7 +272,6 @@ int LoadSmartIndentCommonStringEx(const QString &string) {
 	/* look for "Default" keyword, and if it's there, return the default
 	   smart common macro */
 	if (in.match(QLatin1String("Default"))) {
-
 		QByteArray defaults = defaultCommonMacros();
 		CommonMacros = QString::fromLatin1(defaults);
 		return true;

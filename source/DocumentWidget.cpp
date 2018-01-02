@@ -6335,12 +6335,11 @@ HighlightData *DocumentWidget::compilePatternsEx(const gsl::span<HighlightPatter
                 Q_FOREVER {
                     if(in.match(QLatin1Char('&'))) {
                         compiledPats[i].startSubexprs[nSubExprs++] = 0;
-                        ++in;
                     } else if(in.match(QLatin1Char('\\'))) {
-                        ++in;
-                        if(const int n = in.matchSize(re)) {
-                            compiledPats[i].startSubexprs[nSubExprs++] = in.midRef(n).toInt();
-                            in += n;
+
+                        QString number;
+                        if(in.match(re, &number)) {
+                            compiledPats[i].startSubexprs[nSubExprs++] = number.toInt();
                         } else {
                             break;
                         }
@@ -6359,12 +6358,11 @@ HighlightData *DocumentWidget::compilePatternsEx(const gsl::span<HighlightPatter
                 Q_FOREVER {
                     if(in.match(QLatin1Char('&'))) {
                         compiledPats[i].endSubexprs[nSubExprs++] = 0;
-                        ++in;
                     } else if(in.match(QLatin1Char('\\'))) {
-                        ++in;
-                        if(const int n = in.matchSize(re)) {
-                            compiledPats[i].endSubexprs[nSubExprs++] = in.midRef(n).toInt();
-                            in += n;
+
+                        QString number;
+                        if(in.match(re, &number)) {
+                            compiledPats[i].endSubexprs[nSubExprs++] = number.toInt();
                         } else {
                             break;
                         }

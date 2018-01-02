@@ -2084,25 +2084,24 @@ bool readCheckMacroStringEx(QWidget *dialogParent, const QString &string, Docume
         }
 
         // look for define keyword, and compile and store defined routines
-        if (in.match(QLatin1String("define"))  && (in[6] == QLatin1Char(' ') || in[6] == QLatin1Char('\t'))) {
-            in += 6;
+        static const QRegularExpression defineRE(QLatin1String("define[ \t]"));
+        if (in.match(defineRE)) {
             in.skipWhitespace();
 
             QString subrName;
-            auto namePtr = std::back_inserter(subrName);
-
-            while ((*in).isLetterOrNumber() || *in == QLatin1Char('_')) {
-                *namePtr++ = *in++;
-            }
-
-            if ((*in).isLetterOrNumber() || *in == QLatin1Char('_')) {
+            static const QRegularExpression identRE(QLatin1String("[A-Za-z0-9_]+"));
+            if(!in.match(identRE, &subrName)) {
+                if(errPos) {
+                    *errPos = in.index();
+                }
                 return ParseErrorEx(
                             dialogParent,
                             *in.string(),
                             in.index(),
                             errIn,
-                            QLatin1String("subroutine name too long"));
+                            QLatin1String("expected identifier"));
             }
+
 
             in.skipWhitespaceNL();
 
@@ -2119,6 +2118,7 @@ bool readCheckMacroStringEx(QWidget *dialogParent, const QString &string, Docume
             }
 
             QString code = in.mid();
+
             int stoppedAt;
             QString errMsg;
             Program *const prog = ParseMacroEx(code, &errMsg, &stoppedAt);
@@ -2134,6 +2134,7 @@ bool readCheckMacroStringEx(QWidget *dialogParent, const QString &string, Docume
                             errIn,
                             errMsg);
             }
+
             if (runDocument) {
                 Symbol *sym = LookupSymbolEx(subrName);
                 if(!sym) {
