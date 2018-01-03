@@ -430,8 +430,6 @@ blank:  /* nothing */
 */
 Program *ParseMacro(const std::string &expr, std::string *msg, int *stoppedAt)
 {
-    Program *prog;
-
     BeginCreatingProgram();
 
     /* call yyparse to parse the string and check for success.  If the parse
@@ -449,7 +447,7 @@ Program *ParseMacro(const std::string &expr, std::string *msg, int *stoppedAt)
     }
 
     /* get the newly created program */
-    prog = FinishCreatingProgram();
+    Program *prog = FinishCreatingProgram();
 
     /* parse succeeded */
     *msg       = "";

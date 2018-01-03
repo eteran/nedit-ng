@@ -1603,10 +1603,11 @@ static int readHighlightPatternEx(Input &in, QString *errMsg, HighlightPattern *
 }
 
 std::unique_ptr<PatternSet> readDefaultPatternSet(QByteArray &patternData, const QString &langModeName) {
-    int modeNameLen = langModeName.size();
-    auto defaultPattern = QString::fromLatin1(patternData);
 
-    if(defaultPattern.startsWith(langModeName) && defaultPattern[modeNameLen] == QLatin1Char(':')) {
+    auto defaultPattern = QString::fromLatin1(patternData);
+    auto compare        = QString(QLatin1String("%1:")).arg(langModeName);
+
+    if(defaultPattern.startsWith(compare)) {
         Input in(&defaultPattern);
         return readPatternSetEx(in);
     }

@@ -172,7 +172,7 @@ int main(int argc, char *argv[]) {
 	DialogPrint::LoadPrintPreferencesEx(true);
 
 	// Install word delimiters for regular expression matching
-    Regex::SetDefaultWordDelimiters(GetPrefDelimiters().toLatin1().data());
+    Regex::SetDefaultWordDelimiters(GetPrefDelimiters().toStdString());
 
 	/* Read the nedit dynamic database of files for the Open Previous
 	command (and eventually other information as well) */
