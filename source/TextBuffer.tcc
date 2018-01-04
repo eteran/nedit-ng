@@ -630,11 +630,6 @@ void BasicTextBuffer<Ch, Tr>::BufSecRectSelect(int start, int end, int rectStart
 }
 
 template <class Ch, class Tr>
-bool BasicTextBuffer<Ch, Tr>::BufGetSecSelectPos(int *start, int *end, bool *isRect, int *rectStart, int *rectEnd) const noexcept {
-    return secondary_.getSelectionPos(start, end, isRect, rectStart, rectEnd);
-}
-
-template <class Ch, class Tr>
 auto BasicTextBuffer<Ch, Tr>::BufGetSecSelectTextEx() const -> string_type {
     return getSelectionTextEx(&secondary_);
 }
@@ -672,11 +667,6 @@ void BasicTextBuffer<Ch, Tr>::BufRectHighlight(int start, int end, int rectStart
 
     highlight_.setRectSelect(start, end, rectStart, rectEnd);
     redisplaySelection(&oldSelection, &highlight_);
-}
-
-template <class Ch, class Tr>
-int BasicTextBuffer<Ch, Tr>::BufGetHighlightPos(int *start, int *end, bool *isRect, int *rectStart, int *rectEnd) const noexcept {
-    return highlight_.getSelectionPos(start, end, isRect, rectStart, rectEnd);
 }
 
 /*
