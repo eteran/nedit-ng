@@ -14,7 +14,10 @@
 #define ADD_SYM(sym) if (!AddSym(sym, &ErrMsg)) return 1
 #define ADD_IMMED(val) if (!AddImmediate(val, &ErrMsg)) return 1
 #define ADD_BR_OFF(to) if (!AddBranchOffset(to, &ErrMsg)) return 1
-#define SET_BR_OFF(from, to) ((from)->value) = ((to)) - ((from))
+
+void SET_BR_OFF(Inst *from, Inst *to) {
+    from->value = to - from;
+}
 
 static int yyerror(const char *s);
 static int yylex();
@@ -584,12 +587,12 @@ static int yylex(void) {
                     if (InPtr == EndPtr || (hexD = strchr(hexDigits, tolower(*InPtr))) == nullptr) {
                         *p++ = 'x';
                     } else {
-                        hexValue = hexD - hexDigits;
+                        hexValue = static_cast<int>(hexD - hexDigits);
                         InPtr++;
 
                         /* now do we have another digit? only accept one more */
                         if (InPtr != EndPtr && (hexD = strchr(hexDigits, tolower(*InPtr))) != nullptr){
-                          hexValue = hexD - hexDigits + (hexValue << 4);
+                          hexValue = static_cast<int>(hexD - hexDigits + (hexValue << 4));
                           InPtr++;
                         }
 
