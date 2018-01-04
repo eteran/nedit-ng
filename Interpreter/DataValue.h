@@ -71,6 +71,13 @@ inline DataValue to_value(int n) {
     return DV;
 }
 
+inline DataValue to_value(int64_t n) {
+    DataValue DV;
+    // TODO(eteran): warn if actually truncating
+    DV.value = n;
+    return DV;
+}
+
 inline DataValue to_value(bool n) {
     DataValue DV;
     DV.value = n ? 1 : 0;
