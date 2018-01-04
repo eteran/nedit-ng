@@ -14,7 +14,7 @@ static std::string shiftLineRightEx(view::string_view line, long lineLen, int ta
 static QString shiftLineRightEx(const QString &line, long lineLen, int tabsAllowed, int tabDist, int nChars);
 static QString shiftLineLeftEx(const QString &line, long lineLen, int tabDist, int nChars);
 static std::string ShiftTextEx(view::string_view text, ShiftDirection direction, int tabsAllowed, int tabDist, int nChars);
-static int atTabStop(int pos, int tabDist);
+static bool atTabStop(int pos, int tabDist);
 static int countLinesEx(view::string_view text);
 static int countLinesEx(const QString &text);
 
@@ -596,7 +596,7 @@ static std::string shiftLineLeftEx(view::string_view line, long lineLen, int tab
     }
 }
 
-static int atTabStop(int pos, int tabDist) {
+static bool atTabStop(int pos, int tabDist) {
 	return (pos % tabDist == 0);
 }
 
