@@ -1,6 +1,7 @@
 %{
 #include "parse.h"
 #include "interpret.h"
+#include "Util/utils.h"
 
 #include <cstdlib>
 #include <cstring>
@@ -488,13 +489,13 @@ static int yylex(void) {
     }
 
     /* process number tokens */
-    if (isdigit(static_cast<uint8_t>(*InPtr)))  { /* number */
+    if (safe_ctype<isdigit>(*InPtr))  { /* number */
 
         std::string value;
         auto p = std::back_inserter(value);
 
         *p++ = *InPtr++;
-        while (InPtr != EndPtr && isdigit(static_cast<uint8_t>(*InPtr))) {
+        while (InPtr != EndPtr && safe_ctype<isdigit>(*InPtr)) {
             *p++ = *InPtr++;
         }
 
@@ -512,13 +513,13 @@ static int yylex(void) {
 
     /* process symbol tokens.  "define" is a special case not handled
        by this parser, considered end of input. */
-    if (isalpha(static_cast<uint8_t>(*InPtr)) || *InPtr == '$') {
+    if (safe_ctype<isalpha>(*InPtr) || *InPtr == '$') {
 
         std::string symName;
         auto p = std::back_inserter(symName);
 
         *p++ = *InPtr++;
-        while ((InPtr != EndPtr) && (isalnum(static_cast<uint8_t>(*InPtr)) || *InPtr=='_')) {
+        while ((InPtr != EndPtr) && (safe_ctype<isalnum>(*InPtr) || *InPtr=='_')) {
             *p++ = *InPtr++;
         }
 
