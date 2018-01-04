@@ -1410,7 +1410,7 @@ void BasicTextBuffer<Ch, Tr>::redisplaySelection(const TextSelection *oldSelecti
        if a rectangular selection changed boundaries, redisplay everything */
     if ((oldSelection->rectangular && !newSelection->rectangular) || (!oldSelection->rectangular && newSelection->rectangular) ||
         (oldSelection->rectangular && ((oldSelection->rectStart != newSelection->rectStart) || (oldSelection->rectEnd != newSelection->rectEnd)))) {
-        callModifyCBs(std::min<int>(oldStart, newStart), 0, 0, std::max<int>(oldEnd, newEnd) - std::min<int>(oldStart, newStart), {});
+        callModifyCBs(std::min(oldStart, newStart), 0, 0, std::max(oldEnd, newEnd) - std::min(oldStart, newStart), {});
         return;
     }
 

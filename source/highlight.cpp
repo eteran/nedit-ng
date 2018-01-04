@@ -401,7 +401,7 @@ static int parseBufferRange(HighlightData *pass1Patterns, HighlightData *pass2Pa
 			prevChar = getPrevChar(buf, beginSafety);
 			passTwoParseString(pass2Patterns, string, styleString, endParse - beginSafety, &prevChar, delimiters, string, match_to);
 		} else {
-			startPass2Safety = std::max<int>(beginSafety, backwardOneContext(buf, contextRequirements, modEnd));
+            startPass2Safety = std::max(beginSafety, backwardOneContext(buf, contextRequirements, modEnd));
 
 
 			prevChar = getPrevChar(buf, startPass2Safety);

@@ -3608,7 +3608,7 @@ void TextArea::TextDResize(int width, int height) {
 	/* if the window became taller, there may be an opportunity to display
 	   more text by scrolling down */
 	if (canRedraw && oldVisibleLines < newVisibleLines && topLineNum_ + nVisibleLines_ > nBufferLines_) {
-		setScroll(std::max<int>(1, nBufferLines_ - nVisibleLines_ + 2 + P_cursorVPadding), horizOffset_, false, false);
+        setScroll(std::max(1, nBufferLines_ - nVisibleLines_ + 2 + P_cursorVPadding), horizOffset_, false, false);
 	}
 
 	/* Update the scroll bar page increment size (as well as other scroll
@@ -7322,7 +7322,7 @@ void TextArea::nextPageAP(EventFlags flags) {
 
     EMIT_EVENT_0("next_page");
 
-	int lastTopLine = std::max<int>(1, nBufferLines_ - (nVisibleLines_ - 2) + P_cursorVPadding);
+    int lastTopLine = std::max(1, nBufferLines_ - (nVisibleLines_ - 2) + P_cursorVPadding);
 	int insertPos = cursorPos_;
 	int column = 0;
 	int visLineNum;
