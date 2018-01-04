@@ -340,7 +340,7 @@ QString ShiftTextEx(const QString &text, ShiftDirection direction, int tabsAllow
 }
 
 std::string ShiftTextEx(view::string_view text, ShiftDirection direction, int tabsAllowed, int tabDist, int nChars) {
-    int bufLen;
+    size_t bufLen;
 
 	/*
 	** Allocate memory for shifted string.  Shift left adds a maximum of
@@ -348,9 +348,9 @@ std::string ShiftTextEx(view::string_view text, ShiftDirection direction, int ta
 	** Shift right adds a maximum of nChars character per line.
 	*/
 	if (direction == SHIFT_RIGHT) {
-        bufLen = gsl::narrow<int>(text.size()) + countLinesEx(text) * nChars;
+        bufLen = text.size() + gsl::narrow<size_t>(countLinesEx(text) * nChars);
 	} else {
-        bufLen = gsl::narrow<int>(text.size()) + countLinesEx(text) * tabDist;
+        bufLen = text.size() + gsl::narrow<size_t>(countLinesEx(text) * tabDist);
 	}
 
 	std::string shiftedText;
