@@ -69,6 +69,11 @@ public:
         Pages
     };
 
+    enum class PositionTypes {
+        CURSOR_POS,
+        CHARACTER_POS
+    };
+
 public:
     static constexpr int DefaultVMargin = 2;
     static constexpr int DefaultHMargin = 2;
@@ -347,12 +352,12 @@ private:
 	void CopyToClipboard();
 	void InsertClipboard(bool isColumnar);
 	void InsertPrimarySelection(bool isColumnar);
-    void xyToUnconstrainedPos(int x, int y, int *row, int *column, int posType) const;
-    void xyToUnconstrainedPos(const QPoint &pos, int *row, int *column, int posType) const;
+    void xyToUnconstrainedPos(int x, int y, int *row, int *column, PositionTypes posType) const;
+    void xyToUnconstrainedPos(const QPoint &pos, int *row, int *column, PositionTypes posType) const;
 	void selectWord(int pointerX);
 	void selectLine();
-    int xyToPos(int x, int y, int posType) const;
-    int xyToPos(const QPoint &pos, int posType) const;
+    int xyToPos(int x, int y, PositionTypes posType) const;
+    int xyToPos(const QPoint &pos, PositionTypes posType) const;
 	void endDrag();
     void adjustSelection(const QPoint &coord);
     void checkAutoScroll(const QPoint &coord);

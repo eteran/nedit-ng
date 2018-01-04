@@ -100,11 +100,6 @@ namespace {
 
 auto asciiCodec = new AsciiTextCodec;
 
-enum positionTypes {
-	CURSOR_POS,
-	CHARACTER_POS
-};
-
 constexpr int CALLTIP_EDGE_GUARD = 5;
 
 /* Number of pixels of motion from the initial (grab-focus) button press
@@ -5436,7 +5431,7 @@ void TextArea::InsertPrimarySelection(bool isColumnar) {
 ** is proportional, since there are no absolute columns.
 */
 void TextArea::TextDXYToUnconstrainedPosition(const QPoint &coord, int *row, int *column) const {
-    xyToUnconstrainedPos(coord.x(), coord.y(), row, column, CURSOR_POS);
+    xyToUnconstrainedPos(coord.x(), coord.y(), row, column, PositionTypes::CURSOR_POS);
 }
 
 /*
@@ -5447,11 +5442,11 @@ void TextArea::TextDXYToUnconstrainedPosition(const QPoint &coord, int *row, int
 ** coordinates to the nearest position between characters, and CHARACTER_POS
 ** means translate the position to the nearest character cell.
 */
-void TextArea::xyToUnconstrainedPos(const QPoint &pos, int *row, int *column, int posType) const {
+void TextArea::xyToUnconstrainedPos(const QPoint &pos, int *row, int *column, PositionTypes posType) const {
     xyToUnconstrainedPos(pos.x(), pos.y(), row, column, posType);
 }
 
-void TextArea::xyToUnconstrainedPos(int x, int y, int *row, int *column, int posType) const {
+void TextArea::xyToUnconstrainedPos(int x, int y, int *row, int *column, PositionTypes posType) const {
 
     QFontMetrics fm(font_);
     int fontHeight = ascent_ + descent_;
@@ -5468,7 +5463,7 @@ void TextArea::xyToUnconstrainedPos(int x, int y, int *row, int *column, int pos
 		*row = nVisibleLines_ - 1;
     }
 
-    *column = ((x - rect_.left()) + horizOffset_ + (posType == CURSOR_POS ? fontWidth / 2 : 0)) / fontWidth;
+    *column = ((x - rect_.left()) + horizOffset_ + (posType == PositionTypes::CURSOR_POS ? fontWidth / 2 : 0)) / fontWidth;
 
     if (*column < 0) {
 		*column = 0;
@@ -5761,7 +5756,7 @@ void TextArea::moveDestinationAP(QMouseEvent *event) {
 ** Translate window coordinates to the nearest text cursor position.
 */
 int TextArea::TextDXYToPosition(const QPoint &coord) const {
-    return xyToPos(coord, CURSOR_POS);
+    return xyToPos(coord, PositionTypes::CURSOR_POS);
 }
 
 /*
@@ -5771,11 +5766,11 @@ int TextArea::TextDXYToPosition(const QPoint &coord) const {
 ** position, and CHARACTER_POS means return the position of the character
 ** closest to (x, y).
 */
-int TextArea::xyToPos(const QPoint &pos, int posType) const {
+int TextArea::xyToPos(const QPoint &pos, PositionTypes posType) const {
     return xyToPos(pos.x(), pos.y(), posType);
 }
 
-int TextArea::xyToPos(int x, int y, int posType) const {
+int TextArea::xyToPos(int x, int y, PositionTypes posType) const {
 
 	// Find the visible line number corresponding to the y coordinate
     int fontHeight = ascent_ + descent_;
@@ -5813,7 +5808,7 @@ int TextArea::xyToPos(int x, int y, int posType) const {
         const int charStyle = styleOfPos(lineStart, lineLen, charIndex, outIndex, lineStr[charIndex]);
         const int charWidth = stringWidth(expandedChar, charLen, charStyle);
 
-		if (x < xStep + (posType == CURSOR_POS ? charWidth / 2 : charWidth)) {
+        if (x < xStep + (posType == PositionTypes::CURSOR_POS ? charWidth / 2 : charWidth)) {
 			return lineStart + charIndex;
 		}
 		xStep += charWidth;
@@ -6303,11 +6298,11 @@ void TextArea::secondaryOrDragStartAP(QMouseEvent *event, EventFlags flags) {
 */
 bool TextArea::TextDInSelection(const QPoint &p) const {
 
-    int pos = xyToPos(p, CHARACTER_POS);
+    int pos = xyToPos(p, PositionTypes::CHARACTER_POS);
 
     int row;
     int column;
-    xyToUnconstrainedPos(p, &row, &column, CHARACTER_POS);
+    xyToUnconstrainedPos(p, &row, &column, PositionTypes::CHARACTER_POS);
 
     if (buffer_->BufGetPrimary().rangeTouchesRectSel(firstChar_, lastChar_)) {
 		column = TextDOffsetWrappedColumn(row, column);
