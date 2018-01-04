@@ -46,7 +46,6 @@ qt5_wrap_cpp(MOC_SOURCES
 	DialogWrapMargin.h
 	DocumentModel.h
 	DocumentWidget.h
-	ElidedLabel.h
 	HighlightPatternModel.h
 	HighlightStyleModel.h
 	KeySequenceEdit.h
@@ -178,8 +177,6 @@ add_executable(nedit-ng
 	DragEndEvent.h
 	DragStates.h
 	EditFlags.h
-	ElidedLabel.cpp
-	ElidedLabel.h
 	Font.cpp
 	Font.h
 	FontType.h
