@@ -833,7 +833,7 @@ static bool isParentStyle(const std::vector<uint8_t> &parentStyles, int style1, 
 ** operation, i.e. the parent pattern initiates, and leaf patterns merely
 ** confirm and color.  Returns true if the pattern is suitable for parsing.
 */
-static int patternIsParsable(HighlightData *pattern) {
+static bool patternIsParsable(HighlightData *pattern) {
 	return pattern != nullptr && pattern->subPatternRE != nullptr;
 }
 
