@@ -11,7 +11,7 @@ class NeditServer : public QObject {
     Q_OBJECT
 
 public:
-    explicit NeditServer(QObject *parent = Q_NULLPTR);
+    explicit NeditServer(QObject *parent = nullptr);
     virtual ~NeditServer() = default;
 
 public Q_SLOTS:

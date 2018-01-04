@@ -8,7 +8,7 @@
 class CallTipWidget : public QWidget {
 	Q_OBJECT
 public:
-    CallTipWidget(QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
+    CallTipWidget(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
     ~CallTipWidget() override = default;
 	
 public:

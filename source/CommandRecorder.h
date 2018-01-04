@@ -17,7 +17,7 @@ public:
     static CommandRecorder &getInstance();
 
 private:
-    explicit CommandRecorder(QObject *parent = Q_NULLPTR);
+    explicit CommandRecorder(QObject *parent = nullptr);
     ~CommandRecorder() override = default;
 
 public:

@@ -16,7 +16,7 @@ class DialogDrawingStyles : public Dialog {
 	Q_OBJECT
 
 public:
-    DialogDrawingStyles(DialogSyntaxPatterns *dialogSyntaxPatterns, std::vector<HighlightStyle> &highlightStyles, QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
+    DialogDrawingStyles(DialogSyntaxPatterns *dialogSyntaxPatterns, std::vector<HighlightStyle> &highlightStyles, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
     ~DialogDrawingStyles() noexcept override = default;
 
 public:

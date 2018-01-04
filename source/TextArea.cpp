@@ -416,7 +416,7 @@ TextArea::TextArea(DocumentWidget *document, TextBuffer *buffer, QFont fontStruc
 
 #if 0
 	// NOTE(eteran): this seems to be a viable approach for shortcuts
-	new QShortcut(QKeySequence(tr("Ctrl+K")), this, SLOT(DebugSlot()), Q_NULLPTR, Qt::WidgetShortcut);
+    new QShortcut(QKeySequence(tr("Ctrl+K")), this, SLOT(DebugSlot()), nullptr, Qt::WidgetShortcut);
 #endif
 
     // track when we lose ownership of the selection

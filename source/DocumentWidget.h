@@ -66,7 +66,7 @@ public:
     };
 	
 public:
-    DocumentWidget(const QString &name, QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
+    DocumentWidget(const QString &name, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
     ~DocumentWidget() noexcept override;
 
 Q_SIGNALS:

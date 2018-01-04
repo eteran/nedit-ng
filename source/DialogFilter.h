@@ -10,7 +10,7 @@
 class DialogFilter : public Dialog {
 	Q_OBJECT
 public:
-    DialogFilter(QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
+    DialogFilter(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
     ~DialogFilter() override = default;
 	
 protected:

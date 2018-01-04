@@ -31,7 +31,7 @@ class MainWindow : public QMainWindow {
     friend class DialogReplace;
 
 public:
-    MainWindow (QWidget *parent = Q_NULLPTR, Qt::WindowFlags flags = Qt::WindowFlags());
+    MainWindow (QWidget *parent = nullptr, Qt::WindowFlags flags = Qt::WindowFlags());
     ~MainWindow() override = default;
 	
 private:

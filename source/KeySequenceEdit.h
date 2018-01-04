@@ -17,8 +17,8 @@ class KeySequenceEdit : public QWidget {
 	Q_DISABLE_COPY(KeySequenceEdit)
 
 public:
-    explicit KeySequenceEdit(QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
-    explicit KeySequenceEdit(const QKeySequence &keySequence, QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
+    explicit KeySequenceEdit(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+    explicit KeySequenceEdit(const QKeySequence &keySequence, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
     ~KeySequenceEdit() override = default;
 
 public:

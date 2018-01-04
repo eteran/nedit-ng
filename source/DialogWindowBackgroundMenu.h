@@ -15,7 +15,7 @@ class DialogWindowBackgroundMenu : public Dialog {
 	Q_OBJECT
 
 public:
-    DialogWindowBackgroundMenu(QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
+    DialogWindowBackgroundMenu(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
     ~DialogWindowBackgroundMenu() noexcept override = default;
 
 public:

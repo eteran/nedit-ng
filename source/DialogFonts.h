@@ -20,7 +20,7 @@ private:
     };
 
 public:
-    DialogFonts(DocumentWidget *document, QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
+    DialogFonts(DocumentWidget *document, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
     ~DialogFonts() override = default;
 
 private Q_SLOTS:
