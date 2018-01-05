@@ -965,7 +965,7 @@ static int loadLanguageModesStringEx(const QString &string) {
             lm.wrapStyle = WrapStyle::Default;
 		} else {
             auto it = std::find(std::begin(AutoWrapTypes), std::end(AutoWrapTypes), styleName);
-            if(it == std::end(AutoIndentTypes)) {
+            if(it == std::end(AutoWrapTypes)) {
                 return modeErrorEx(in, QLatin1String("unrecognized wrap style"));
             }
 
