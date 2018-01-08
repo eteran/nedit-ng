@@ -1786,13 +1786,13 @@ void DocumentWidget::MakeSelectionVisible(TextArea *area) {
 	bool isRect;
     int horizOffset;
     int64_t left;
-    int leftX;
+    int64_t leftX;
     int64_t rectEnd;
     int64_t rectStart;
     int64_t right;
-    int rightX;
+    int64_t rightX;
     int64_t topLineNum;
-    int y;
+    int64_t y;
 
     const int64_t topChar  = area->TextFirstVisiblePos();
     const int64_t lastChar = area->TextLastVisiblePos();

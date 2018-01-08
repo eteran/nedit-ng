@@ -784,8 +784,8 @@ void TextArea::autoScrollTimerTimeout() {
     QFontMetrics fm(font_);
     int64_t topLineNum;
 	int horizOffset;
-	int cursorX;
-	int y;
+    int64_t cursorX;
+    int64_t y;
     int fontWidth    = fm.maxWidth();
     int fontHeight   = ascent_ + descent_;
     Point mouseCoord = mouseCoord_;
@@ -3818,8 +3818,8 @@ void TextArea::TextDRedrawCalltip(int calltipID) {
         return;
     }
 
-    int rel_x;
-    int rel_y;
+    int64_t rel_x;
+    int64_t rel_y;
 
 	if (calltip_.anchored) {
 		// Put it at the anchor position
@@ -4038,15 +4038,15 @@ void TextArea::TextDSetupBGClasses(const QString &s, std::vector<QColor> *pp_bgC
 ** x coordinate where the position would be if it were visible.
 */
 bool TextArea::TextDPositionToXY(int64_t pos, Point *coord) const {
-    int x;
-    int y;
+    int64_t x;
+    int64_t y;
     bool r = TextDPositionToXY(pos, &x, &y);
     coord->setX(x);
     coord->setY(y);
     return r;
 }
 
-bool TextArea::TextDPositionToXY(int64_t pos, int *x, int *y) const {
+bool TextArea::TextDPositionToXY(int64_t pos, int64_t *x, int64_t *y) const {
 	int charIndex;
     int64_t lineStartPos;
 	int fontHeight;
@@ -4205,8 +4205,8 @@ void TextArea::checkAutoShowInsertPos() {
 void TextArea::TextDMakeInsertPosVisible() {
 	int hOffset;
     int64_t topLine;
-	int x;
-	int y;
+    int64_t x;
+    int64_t y;
     int64_t cursorPos    = cursorPos_;
     int64_t linesFromTop = 0;
     int cursorVPadding   = P_cursorVPadding;
@@ -5703,8 +5703,8 @@ void TextArea::processTabAP(EventFlags flags) {
 */
 void TextArea::selectWord(int pointerX) {
 
-	int x;
-	int y;
+    int64_t x;
+    int64_t y;
     int64_t insertPos = cursorPos_;
 
 	TextDPositionToXY(insertPos, &x, &y);
@@ -6427,8 +6427,8 @@ void TextArea::BeginBlockDrag() {
     const TextSelection *sel = &buffer_->BufGetPrimary();
     int64_t nLines;
     int64_t mousePos;
-    int x;
-	int y;
+    int64_t x;
+    int64_t y;
 
 	/* Save a copy of the whole text buffer as a backup, and for
 	   deriving changes */
@@ -7936,8 +7936,8 @@ int TextArea::TextDShowCalltip(const QString &text, bool anchored, int pos, TipH
 
     static int StaticCalltipID = 1;
 
-    int rel_x;
-    int rel_y;
+    int64_t rel_x;
+    int64_t rel_y;
 
     // Destroy any previous calltip
     TextDKillCalltip(0);

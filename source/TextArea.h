@@ -239,7 +239,7 @@ public:
 	void TextDRedisplayRect(int left, int top, int width, int height);
     void TextDRedisplayRect(const QRect &rect);
     int64_t TextDCountForwardNLines(int64_t startPos, int64_t nLines, bool startPosIsLineStart) const;
-    bool TextDPositionToXY(int64_t pos, int *x, int *y) const;
+    bool TextDPositionToXY(int64_t pos, int64_t *x, int64_t *y) const;
     bool TextDPositionToXY(int64_t pos, Point *coord) const;
     void TextDKillCalltip(int id);
     int TextDGetCalltipID(int id) const;
