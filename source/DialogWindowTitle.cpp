@@ -721,7 +721,9 @@ QString DialogWindowTitle::FormatWindowTitleInternal(const QString &filename, co
 						title.append(tr("*"));
 					break;
 				}
-			// fall-through 
+            #ifdef Q_FALLTHROUGH
+                Q_FALLTHROUGH();
+            #endif
 			default:
 				title.append(c);
 				break;

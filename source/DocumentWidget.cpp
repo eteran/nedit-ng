@@ -60,16 +60,16 @@
 /* data attached to window during shell command execution with information for
  * controling and communicating with the process */
 struct ShellCommandData {
+    QTimer        bannerTimer;
     QByteArray    standardError;
     QByteArray    standardOutput;
-    QProcess *    process;
-    QTimer        bannerTimer;
-    TextArea *    area;
-    int           flags;
+    QProcess *    process;    
+    TextArea *    area;    
     int64_t       leftPos;
     int64_t       rightPos;
     CommandSource source;
-    bool          bannerIsUp;
+    int           flags;
+    bool          bannerIsUp;    
 };
 
 DocumentWidget *DocumentWidget::LastCreated;
@@ -1673,7 +1673,7 @@ void DocumentWidget::Undo() {
         // use the saved undo information to reverse changes
         buffer_->BufReplaceEx(undo.startPos, undo.endPos, undo.oldText);
 
-        int64_t restoredTextLength = undo.oldText.size();
+        const int64_t restoredTextLength = undo.oldText.size();
         if (!buffer_->BufGetPrimary().selected || GetPrefUndoModifiesSelection()) {
             /* position the cursor in the focus pane after the changed text
                to show the user where the undo was done */
@@ -1726,7 +1726,7 @@ void DocumentWidget::Redo() {
         // use the saved redo information to reverse changes
         buffer_->BufReplaceEx(redo.startPos, redo.endPos, redo.oldText);
 
-        int64_t restoredTextLength = redo.oldText.size();
+        const int64_t restoredTextLength = redo.oldText.size();
         if (!buffer_->BufGetPrimary().selected || GetPrefUndoModifiesSelection()) {
             /* position the cursor in the focus pane after the changed text
                to show the user where the undo was done */
