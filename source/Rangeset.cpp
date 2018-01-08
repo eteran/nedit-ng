@@ -1200,7 +1200,7 @@ Range *Rangeset::RangesNew(int64_t n) {
          * so
          *     n = (n >= 256) ? (n + (1<<6)) & (~0<<6) : (n + (1<<4)) & (~0<<4)
          * or
-         * n = (n >= 256) ? ((n + 64) & ~63) : ((n + 16) & ~15)
+         *     n = (n >= 256) ? ((n + 64) & ~63) : ((n + 16) & ~15)
          */
         n = (n >= 256) ? ((n + 64) & ~63) : ((n + 16) & ~15);
         auto newRanges = reinterpret_cast<Range *>(malloc(n * sizeof (Range)));
